@@ -12,25 +12,34 @@ def combinations (V : Finset α) (ℓ : ℕ) : Finset (Finset α) :=
 
 theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
     ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ := by
-  induction ℓ
-  · intro V' hVV'
+  induction ℓ with
+  | zero =>
+    intro V' hVV'
     simp [combinations, card_filter]
-  · refine induction_on' V ?_ ?_
+  | succ _ hindℓ =>
+    refine induction_on' V ?_ ?_
     · intro V' hV'
       have : V' = ∅ := subset_empty.mp hV'
       rw [this]
       rfl
-    · intro a S haV hSV haS hind V' hV'
+    · intro a S haV hSV haS hindS V' hV'
       by_cases haV' : a ∈ V'
       · let V'a := V'.erase a
         have hsub : V'a ⊆ S := subset_insert_iff.mp hV'
         have hcard : V'.card = V'a.card + 1 := Eq.symm (card_erase_add_one haV')
         have hadd : V' = insert a V'a :=
           (erase_eq_iff_eq_insert haV' fun a_1 ↦ haS (hsub a_1)).mp rfl
+        rw [hcard, Nat.choose_succ_succ', add_comm (V'a.card.choose _)]
         rw [combinations, hadd, powerset_insert, filter_union, card_union_of_disjoint]
-        · rw [← combinations, hind V'a hsub]
-          rw [filter_image]
-          sorry
+        · rw [← combinations, hindS V'a hsub]
+          apply Nat.add_left_cancel_iff.mpr
+          have := hindℓ V'a (fun ⦃a⦄ a_1 ↦ hSV (hsub a_1))
+          rw [filter_image, ← this, combinations]
+          refine card_nbij' (erase · a) (insert a) ?_ ?_ ?_ ?_
+          · sorry
+          · sorry
+          · sorry
+          · sorry
         · apply disjoint_filter_filter
           intro T hT₁ hT₂ X hXT
           have hanX : a ∉ X :=
@@ -43,7 +52,7 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
             apply mem_insert_self a
           contradiction
       · have hsub : V' ⊆ S := (subset_insert_iff_of_not_mem haV').mp hV'
-        exact hind V' hsub
+        exact hindS V' hsub
 
 theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ := by
   apply comb_card_aux V ℓ
