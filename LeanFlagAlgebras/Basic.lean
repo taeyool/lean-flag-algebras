@@ -36,7 +36,10 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
           have := hindℓ V'a (fun ⦃a⦄ a_1 ↦ hSV (hsub a_1))
           rw [filter_image, ← this, combinations]
           refine card_nbij' (erase · a) (insert a) ?_ ?_ ?_ ?_
-          · sorry
+          · intro T hT
+            simp; simp at hT
+            obtain ⟨Ta, ⟨hTaV'a, hTacard⟩, hiaTa⟩ := hT
+            sorry
           · sorry
           · sorry
           · sorry
@@ -47,7 +50,7 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
           have haX : a ∈ X := by
             have := hT₂ hXT
             rw [mem_image] at this
-            have ⟨_, ⟨_, hiaX⟩⟩ := this
+            obtain ⟨_, ⟨_, hiaX⟩⟩ := this
             rw [← hiaX]
             apply mem_insert_self a
           contradiction
