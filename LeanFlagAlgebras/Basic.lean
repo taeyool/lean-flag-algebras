@@ -2,10 +2,11 @@ import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Set.Finite
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Finset.Card
+import Mathlib.Data.Rat.Cast.Order
 
 variable {α : Type*} [DecidableEq α]
 
-namespace Finset
+open Finset
 
 def combinations (V : Finset α) (ℓ : ℕ) : Finset (Finset α) :=
   (V.powerset).filter fun W ↦ W.card = ℓ
@@ -14,7 +15,7 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
     ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ := by
   induction ℓ with
   | zero =>
-    intro V' hVV'
+    intro V' _
     simp [combinations, card_filter]
   | succ _ hindℓ =>
     refine induction_on' V ?_ ?_
@@ -22,7 +23,7 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
       have : V' = ∅ := subset_empty.mp hV'
       rw [this]
       rfl
-    · intro a S haV hSV haS hindS V' hV'
+    · intro a S _ hSV haS hindS V' hV'
       by_cases haV' : a ∈ V'
       · let V'a := V'.erase a
         have hsub : V'a ⊆ S := subset_insert_iff.mp hV'
@@ -36,13 +37,34 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
           have := hindℓ V'a (fun ⦃a⦄ a_1 ↦ hSV (hsub a_1))
           rw [filter_image, ← this, combinations]
           refine card_nbij' (erase · a) (insert a) ?_ ?_ ?_ ?_
-          · intro T hT
-            simp; simp at hT
+          · intro T hT; simp_all
             obtain ⟨Ta, ⟨hTaV'a, hTacard⟩, hiaTa⟩ := hT
-            sorry
-          · sorry
-          · sorry
-          · sorry
+            constructor
+            · refine subset_trans ?_ hTaV'a
+              rw [← hiaTa]
+              exact erase_insert_subset a Ta
+            · rw [hiaTa] at hTacard
+              apply (@Nat.add_right_cancel _ 1)
+              simp only [← hTacard, card_erase_add_one, ← hiaTa, mem_insert_self]
+          · intro T hT
+            rw [mem_filter] at hT
+            obtain ⟨hTV'a, hTcard⟩ := hT
+            rw [mem_image]; use T
+            constructor
+            · rw [mem_filter, ← hTcard]
+              constructor
+              · exact hTV'a
+              · apply card_insert_of_not_mem
+                rw [mem_powerset] at hTV'a
+                exact fun a_1 ↦ haS (hsub (hTV'a a_1))
+            · rfl
+          · intro T hT; simp_all
+            apply insert_erase
+            obtain ⟨Ta, ⟨_, hTa⟩⟩ := hT
+            rw [← hTa]
+            exact mem_insert_self a Ta
+          · intro T hT; simp_all
+            exact fun a_1 ↦ haS (hsub (hT.1 a_1))
         · apply disjoint_filter_filter
           intro T hT₁ hT₂ X hXT
           have hanX : a ∉ X :=
@@ -61,7 +83,5 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
   apply comb_card_aux V ℓ
   exact fun ⦃a⦄ a ↦ a
 
-end Finset
-
-def p (M : SimpleGraph α) (N : SimpleGraph β) [DecidableRel M.Adj] [DecidableRel N.Adj] : ℚ :=
+def p (M : SimpleGraph V) (N : SimpleGraph W) [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] : ℚ :=
   sorry
