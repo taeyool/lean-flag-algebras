@@ -3,6 +3,8 @@ import Mathlib.Data.Set.Finite
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Rat.Cast.Order
+import Mathlib.Logic.Nonempty
+
 
 variable {α : Type*} [DecidableEq α]
 
@@ -83,5 +85,18 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
   apply comb_card_aux V ℓ
   exact fun ⦃a⦄ a ↦ a
 
-def p (M : SimpleGraph V) (N : SimpleGraph W) [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] : ℚ :=
+open SimpleGraph
+
+variable (M : SimpleGraph V) (N : SimpleGraph W) [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+
+def p : ℚ := by
+  let iso_sub := { N' : N.Subgraph | N'.IsInduced ∧ Nonempty (Subgraph.coe N' ≃g M) }
+  refine (@Set.toFinset _ iso_sub ?_).card / ((univ : Finset W).card.choose (univ : Finset V).card)
+  -- refine @Fintype.ofFinite _ ?_
+  sorry
+
+theorem p_ge_0 : p M N ≥ 0 :=
+  sorry
+
+theorem p_le_1 : p M N ≤ 1 :=
   sorry
