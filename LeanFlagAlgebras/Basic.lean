@@ -87,12 +87,15 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
+
 /-- Function that counts the number of induced subgraphs of a finite graph G that is isomorphic to a finite graph H -/
 def subgraph_count
       (H : SimpleGraph V) [Fintype V] [DecidableEq V]
       (G : SimpleGraph W) [Fintype W] [DecidableEq W] : ℕ :=
   let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let iso_sub_fintype : Fintype iso_sub := by sorry
+  let iso_sub_fintype : Fintype iso_sub := by
+    haveI : Fintype G.Subgraph := by sorry
+    exact Fintype.ofFinite ↑iso_sub
   (@Set.toFinset _ iso_sub iso_sub_fintype).card
 
   -- (@Set.toFinset _ iso_sub ?_).card / ((univ : Finset W).card.choose (univ : Finset V).card)
