@@ -87,16 +87,32 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
-variable (M : SimpleGraph V) (N : SimpleGraph W) [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+/-- Function that counts the number of induced subgraphs of a finite graph G that is isomorphic to a finite graph H -/
+def subgraph_count
+      (H : SimpleGraph V) [Fintype V] [DecidableEq V]
+      (G : SimpleGraph W) [Fintype W] [DecidableEq W] : ℕ :=
+  let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let iso_sub_fintype : Fintype iso_sub := by sorry
+  (@Set.toFinset _ iso_sub iso_sub_fintype).card
 
-def p : ℚ := by
+  -- (@Set.toFinset _ iso_sub ?_).card / ((univ : Finset W).card.choose (univ : Finset V).card)
+
+def subgraph_density
+      (M : SimpleGraph V) [Fintype V] [DecidableEq W]
+      (N : SimpleGraph W) [Fintype W] [DecidableEq W] : ℚ := by
   let iso_sub := { N' : N.Subgraph | N'.IsInduced ∧ Nonempty (Subgraph.coe N' ≃g M) }
   refine (@Set.toFinset _ iso_sub ?_).card / ((univ : Finset W).card.choose (univ : Finset V).card)
   -- refine @Fintype.ofFinite _ ?_
   sorry
 
-theorem p_ge_0 : p M N ≥ 0 :=
+theorem subgraph_density_ge_0
+          (H : SimpleGraph V) [Fintype V] [DecidableEq W]
+          (G : SimpleGraph W) [Fintype W] [DecidableEq W]
+          : subgraph_density H G ≥ 0 := by
   sorry
 
-theorem p_le_1 : p M N ≤ 1 :=
+theorem subgraph_density_le_1
+          (H : SimpleGraph V) [Fintype V] [DecidableEq W]
+          (G : SimpleGraph W) [Fintype W] [DecidableEq W]
+          : subgraph_density H G ≤ 1 := by
   sorry
