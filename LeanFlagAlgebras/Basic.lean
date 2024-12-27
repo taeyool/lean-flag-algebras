@@ -87,6 +87,22 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
+/-- The set of subgraphs of a finite graph is finite. -/
+theorem finite_subgraphs
+          {V : Type*} [Fintype V] (G : SimpleGraph V)
+          : Set.Finite { H : SimpleGraph V | H ≤ G } := by
+  let vertex_pair_sets : Set (Set (V × V)) := { E | ∀ {u v}, (u, v) ∈ E → u ∈ Set.univ ∧ v ∈ Set.univ }
+  have h_vertex_pair_sets_finite : vertex_pair_sets.Finite :=
+    Set.toFinite vertex_pair_sets
+  let f : { H : SimpleGraph V | H ≤ G } → Set (V × V) := fun H => { (u, v) | H.val.Adj u v }
+  have h_f_inj : Function.Injective f := by
+    rintro H1 H2 h_eq_edges
+    ext u v
+    rw [Set.ext_iff] at h_eq_edges
+    specialize h_eq_edges (u, v)
+    exact h_eq_edges
+  have h_finite : (Set.Finite { H : SimpleGraph V | H ≤ G }) := by sorry
+  exact h_finite
 
 /-- Function that counts the number of induced subgraphs of a finite graph G that is isomorphic to a finite graph H -/
 def subgraph_count
