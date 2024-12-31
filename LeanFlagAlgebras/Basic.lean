@@ -93,9 +93,9 @@ def get_fintyp {V : Type*} [Fintype V] [DecidableEq V] (n : ℕ) : Finset (Finse
 
 def induced_subgraphs {V : Type*} [Fintype V] (G : SimpleGraph V) (ℓ : ℕ) : Finset G.Subgraph :=
   let subgraphs := { H : G.Subgraph | H.IsInduced ∧ (Fintype.ofFinite H.verts).card = ℓ }
-  let f : subgraphs → Set W × Set (W × W) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
+  let f : subgraphs → Set V × Set (V × V) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
   have f_inj : Function.Injective f := by
-    rintro G1 G2 h_eq
+    intro G1 G2 h_eq
     dsimp [f] at h_eq
     ext u v
     . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
@@ -103,7 +103,8 @@ def induced_subgraphs {V : Type*} [Fintype V] (G : SimpleGraph V) (ℓ : ℕ) : 
     . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
       exact Eq.to_iff (congrFun h_eq_edges (u, v))
   have subgraphs_fintype : Fintype subgraphs := Fintype.ofInjective f f_inj
-  (Set.Finite.toFinset (by sorry))
+  -- (Set.Finite.toFinset (by sorry))
+  sorry
 
 
 noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -111,7 +112,7 @@ noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fint
   let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let f : iso_sub → Set W × Set (W × W) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
   have f_inj : Function.Injective f := by
-    rintro G1 G2 h_eq
+    intro G1 G2 h_eq
     dsimp [f] at h_eq
     ext u v
     . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
@@ -123,39 +124,15 @@ noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fint
 
 noncomputable def subgraph_density {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
-  let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let f : iso_sub → Set W × Set (W × W) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
-  have f_inj : Function.Injective f := by
-    rintro G1 G2 h_eq
-    dsimp [f] at h_eq
-    ext u v
-    . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
-      exact Eq.to_iff (congrFun h_eq_verts u)
-    . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
-      exact Eq.to_iff (congrFun h_eq_edges (u, v))
-  let iso_sub_fintype : Fintype iso_sub := Fintype.ofInjective f f_inj
+  let subgraph_cnt := subgraph_count H G
   let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
-  iso_sub_fintype.card / num_of_all_induced_subgraphs
+  subgraph_cnt / num_of_all_induced_subgraphs
 
 theorem subgraph_density_ge_0 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
           : 0 ≤ subgraph_density H G := by
   dsimp [subgraph_density]
-  apply div_nonneg
-  . let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-    let f : iso_sub → Set W × Set (W × W) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
-    have f_inj : Function.Injective f := by
-      rintro G1 G2 h_eq
-      dsimp [f] at h_eq
-      ext u v
-      . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
-        exact Eq.to_iff (congrFun h_eq_verts u)
-      . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
-        exact Eq.to_iff (congrFun h_eq_edges (u, v))
-    let iso_sub_fintype : Fintype iso_sub := Fintype.ofInjective f f_inj
-    exact Nat.cast_nonneg' iso_sub_fintype.card
-  . exact Nat.cast_nonneg' ((Fintype.card W).choose (Fintype.card V))
-
+  apply div_nonneg <;> simp
 
 theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
