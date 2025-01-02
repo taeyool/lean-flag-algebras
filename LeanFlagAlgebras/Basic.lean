@@ -87,26 +87,6 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
-
-def get_fintyp {V : Type*} [Fintype V] [DecidableEq V] (n : ℕ) : Finset (Finset V) :=
-  combinations Fintype.elems n
-
-def induced_subgraphs {V : Type*} [Fintype V] (G : SimpleGraph V) (ℓ : ℕ) : Finset G.Subgraph :=
-  let subgraphs := { H : G.Subgraph | H.IsInduced ∧ (Fintype.ofFinite H.verts).card = ℓ }
-  let f : subgraphs → Set V × Set (V × V) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
-  have f_inj : Function.Injective f := by
-    intro G1 G2 h_eq
-    dsimp [f] at h_eq
-    ext u v
-    . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
-      exact Eq.to_iff (congrFun h_eq_verts u)
-    . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
-      exact Eq.to_iff (congrFun h_eq_edges (u, v))
-  have subgraphs_fintype : Fintype subgraphs := Fintype.ofInjective f f_inj
-  -- (Set.Finite.toFinset (by sorry))
-  sorry
-
-
 noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
   let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
@@ -139,8 +119,15 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 #check Finset.card_le_card_of_inj_on
 #check comb_card
 #check Set V
+#check combinations
+#check Set.toFinset
+#check SimpleGraph.Subgraph.IsInduced
 
-lemma choose_card {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
+example {α : Type*} [Fintype α] [DecidableEq α] (s : Set α) : Finset α :=
+  have s_fintype : Fintype s := Fintype.ofFinite ↑s
+  Set.toFinset s
+
+example {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
   : (combinations (univ : Finset α) n).card = (univ : Finset α).card.choose n := by
   exact comb_card univ n
 
@@ -152,34 +139,43 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
   apply div_le_one_of_le
   . have := comb_card (univ : Finset W) (univ : Finset V).card
     simp at this; rw [←this]; simp
-    let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-    let f0 : iso_sub → Set W := fun G' => G'.val.verts
-    apply Finset.card_le_card_of_injOn (by sorry)
-    . sorry
-    . sorry
-  . simp
-
-/-
-  let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let iso_sub_fintype : Fintype iso_sub :=
-    let f : iso_sub → Set W × Set (W × W) :=
-      fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
-    have f_inj : Function.Injective f := by
-      rintro G1 G2 h_eq
+    let induced_subgraphs_iso_to_H :=
+      { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+    let f : induced_subgraphs_iso_to_H → Finset W := fun G' =>
+      have : Fintype G'.val.verts := Fintype.ofFinite ↑G'.val.verts
+      Set.toFinset G'.val.verts
+    apply Finset.card_le_card_of_injOn f
+    . rintro a ha
+      sorry
+    . intro G₁ hG₁ G₂ hG₂ h_eq
       dsimp [f] at h_eq
-      ext u v
-      . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
-        exact Eq.to_iff (congrFun h_eq_verts u)
-      . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
-        exact Eq.to_iff (congrFun h_eq_edges (u, v))
-    Fintype.ofInjective f f_inj
-  let num_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
-  have h_card_le : iso_sub_fintype.card ≤ (Fintype.card W).choose (Fintype.card V) := by
-    let all_subsets := combinations (Finset.univ : Finset W) (Fintype.card V)
-    have h_card : all_subsets.card = (Fintype.card W).choose (Fintype.card V) := by
-      apply comb_card
-    rw [← h_card]
-    sorry
-  apply div_le_one_of_le (Nat.cast_le.mpr h_card_le)
-  exact Nat.cast_nonneg' num_all_induced_subgraphs
--/
+      have h_eq_verts : G₁.val.verts = G₂.val.verts := by simp_all
+      ext x y
+      . simp_all
+      . dsimp [induced_subgraphs_iso_to_H] at G₁ G₂
+        constructor
+        . have ⟨h₂, _⟩ := G₂.property
+          dsimp [Subgraph.IsInduced] at h₂
+          intro h₁
+          have hx : x ∈ G₂.val.verts := by
+            rw [← h_eq_verts]
+            exact G₁.val.edge_vert h₁
+          have hy : y ∈ G₂.val.verts := by
+            rw [← h_eq_verts]
+            exact G₁.val.edge_vert (Subgraph.adj_symm G₁.val h₁)
+          have h_adj : G.Adj x y :=
+            Subgraph.Adj.adj_sub h₁
+          exact h₂ hx hy h_adj
+        . have ⟨h₁, _⟩ := G₁.property
+          dsimp [Subgraph.IsInduced] at h₁
+          intro h₂
+          have hx : x ∈ G₁.val.verts := by
+            rw [h_eq_verts]
+            exact G₂.val.edge_vert h₂
+          have hy : y ∈ G₁.val.verts := by
+            rw [h_eq_verts]
+            exact G₂.val.edge_vert (Subgraph.adj_symm G₂.val h₂)
+          have h_adj : G.Adj x y :=
+            Subgraph.Adj.adj_sub h₂
+          exact h₁ hx hy h_adj
+  . simp
