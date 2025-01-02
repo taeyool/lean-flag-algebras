@@ -162,7 +162,7 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
             exact G₁.val.edge_vert h₁
           have hy : y ∈ G₂.val.verts := by
             rw [← h_eq_verts]
-            exact G₁.val.edge_vert (Subgraph.adj_symm G₁.val h₁)
+            exact G₁.val.edge_vert (G₁.val.adj_symm h₁)
           have h_adj : G.Adj x y :=
             Subgraph.Adj.adj_sub h₁
           exact h₂ hx hy h_adj
@@ -174,7 +174,7 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
             exact G₂.val.edge_vert h₂
           have hy : y ∈ G₁.val.verts := by
             rw [h_eq_verts]
-            exact G₂.val.edge_vert (Subgraph.adj_symm G₂.val h₂)
+            exact G₂.val.edge_vert (G₂.val.adj_symm h₂)
           have h_adj : G.Adj x y :=
             Subgraph.Adj.adj_sub h₂
           exact h₁ hx hy h_adj
