@@ -125,7 +125,7 @@ noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fint
 noncomputable def subgraph_density {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
   let subgraph_cnt := subgraph_count H G
-  let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
+  let num_of_all_induced_subgraphs := (univ : Finset W).card.choose (univ : Finset V).card
   subgraph_cnt / num_of_all_induced_subgraphs
 
 theorem subgraph_density_ge_0 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -134,10 +134,32 @@ theorem subgraph_density_ge_0 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
   dsimp [subgraph_density]
   apply div_nonneg <;> simp
 
+variable {V : Type*} [Fintype V] [DecidableEq V]
+
+#check Finset.card_le_card_of_inj_on
+#check comb_card
+#check Set V
+
+lemma choose_card {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
+  : (combinations (univ : Finset α) n).card = (univ : Finset α).card.choose n := by
+  exact comb_card univ n
+
 theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
           : subgraph_density H G ≤ 1 := by
   dsimp [subgraph_density]
+  dsimp [subgraph_count]
+  apply div_le_one_of_le
+  . have := comb_card (univ : Finset W) (univ : Finset V).card
+    simp at this; rw [←this]; simp
+    let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+    let f0 : iso_sub → Set W := fun G' => G'.val.verts
+    apply Finset.card_le_card_of_injOn (by sorry)
+    . sorry
+    . sorry
+  . simp
+
+/-
   let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let iso_sub_fintype : Fintype iso_sub :=
     let f : iso_sub → Set W × Set (W × W) :=
@@ -160,3 +182,4 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
     sorry
   apply div_le_one_of_le (Nat.cast_le.mpr h_card_le)
   exact Nat.cast_nonneg' num_all_induced_subgraphs
+-/
