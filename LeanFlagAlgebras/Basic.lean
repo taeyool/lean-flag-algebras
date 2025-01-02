@@ -134,6 +134,20 @@ example {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
 example {α : Type*} [DecidableEq α] (s t : Finset α) (h_eq : s = t) : s.card = t.card := by
   exact congrArg card h_eq
 
+#check Equiv.ofBijective
+#check Nonempty
+
+open Classical
+
+noncomputable def vert_iso_from_graph_iso {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+  (H : SimpleGraph V) (G : SimpleGraph W) (G₀ : G.Subgraph)
+  (hG₀_iso : Nonempty (Subgraph.coe G₀ ≃g H))
+  : {x // x ∈ G₀.verts } ≃ V := by
+    let g : Subgraph.coe G₀ ≃g H := Classical.choice hG₀_iso
+    let f : {x // x ∈ G₀.verts } → V := sorry
+    have hf : Function.Bijective f := by sorry
+    exact Equiv.ofBijective f hf
+
 theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
           : subgraph_density H G ≤ 1 := by
@@ -153,7 +167,7 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
       apply mem_filter.mpr
       constructor
       . simp
-      . refine card_eq_of_equiv_fintype ?_
+      . apply card_eq_of_equiv_fintype
         sorry
     . intro G₁ hG₁ G₂ hG₂ h_eq
       dsimp [f] at h_eq
