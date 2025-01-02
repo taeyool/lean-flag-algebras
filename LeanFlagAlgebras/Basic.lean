@@ -123,13 +123,16 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 #check Set.toFinset
 #check SimpleGraph.Subgraph.IsInduced
 
-example {α : Type*} [Fintype α] [DecidableEq α] (s : Set α) : Finset α :=
+noncomputable example {α : Type*} [Fintype α] [DecidableEq α] (s : Set α) : Finset α :=
   have s_fintype : Fintype s := Fintype.ofFinite ↑s
   Set.toFinset s
 
 example {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
   : (combinations (univ : Finset α) n).card = (univ : Finset α).card.choose n := by
   exact comb_card univ n
+
+example {α : Type*} [DecidableEq α] (s t : Finset α) (h_eq : s = t) : s.card = t.card := by
+  exact congrArg card h_eq
 
 theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
@@ -142,11 +145,16 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
     let induced_subgraphs_iso_to_H :=
       { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
     let f : induced_subgraphs_iso_to_H → Finset W := fun G' =>
-      have : Fintype G'.val.verts := Fintype.ofFinite ↑G'.val.verts
+      have : Fintype G'.val.verts := Fintype.ofFinite G'.val.verts
       Set.toFinset G'.val.verts
     apply Finset.card_le_card_of_injOn f
-    . rintro a ha
-      sorry
+    . rintro G' hG'
+      dsimp [combinations, f]
+      apply mem_filter.mpr
+      constructor
+      . simp
+      . refine card_eq_of_equiv_fintype ?_
+        sorry
     . intro G₁ hG₁ G₂ hG₂ h_eq
       dsimp [f] at h_eq
       have h_eq_verts : G₁.val.verts = G₂.val.verts := by simp_all
