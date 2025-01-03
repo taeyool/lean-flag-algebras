@@ -114,26 +114,11 @@ theorem subgraph_density_ge_0 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
   dsimp [subgraph_density]
   apply div_nonneg <;> simp
 
-variable {V : Type*} [Fintype V] [DecidableEq V]
-
 #check Finset.card_le_card_of_inj_on
 #check comb_card
-#check Set V
 #check combinations
 #check Set.toFinset
 #check SimpleGraph.Subgraph.IsInduced
-
-noncomputable example {α : Type*} [Fintype α] [DecidableEq α] (s : Set α) : Finset α :=
-  have s_fintype : Fintype s := Fintype.ofFinite ↑s
-  Set.toFinset s
-
-example {α : Type*} [Fintype α] [DecidableEq α] (n : ℕ)
-  : (combinations (univ : Finset α) n).card = (univ : Finset α).card.choose n := by
-  exact comb_card univ n
-
-example {α : Type*} [DecidableEq α] (s t : Finset α) (h_eq : s = t) : s.card = t.card := by
-  exact congrArg card h_eq
-
 #check Equiv.ofBijective
 #check Nonempty
 
@@ -144,9 +129,9 @@ noncomputable def vert_iso_from_graph_iso {V W : Type*} [Fintype V] [DecidableEq
   (hG₀_iso : Nonempty (Subgraph.coe G₀ ≃g H))
   : {x // x ∈ G₀.verts } ≃ V := by
     let g : Subgraph.coe G₀ ≃g H := Classical.choice hG₀_iso
-    let f : {x // x ∈ G₀.verts } → V := sorry
-    have hf : Function.Bijective f := by sorry
-    exact Equiv.ofBijective f hf
+    let f₀ : {x // x ∈ G₀.verts } → V := g
+    have hf₀ : Function.Bijective f₀ := RelIso.bijective g
+    exact Equiv.ofBijective f₀ hf₀
 
 theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
@@ -162,14 +147,16 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
       have : Fintype G'.val.verts := Fintype.ofFinite G'.val.verts
       Set.toFinset G'.val.verts
     apply Finset.card_le_card_of_injOn f
-    . rintro G' hG'
+    . rintro G' _
       dsimp [combinations, f]
       apply mem_filter.mpr
       constructor
       . simp
       . apply card_eq_of_equiv_fintype
-        sorry
-    . intro G₁ hG₁ G₂ hG₂ h_eq
+        let ⟨_, hG'_iso⟩ := G'.property
+        simp
+        exact vert_iso_from_graph_iso H G G' hG'_iso
+    . intro G₁ _ G₂ _ h_eq
       dsimp [f] at h_eq
       have h_eq_verts : G₁.val.verts = G₂.val.verts := by simp_all
       ext x y
