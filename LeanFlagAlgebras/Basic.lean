@@ -198,21 +198,22 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
           exact h₁ hx hy h_adj
   . simp
 
-def complete_graph (V : Type*) :=
-  completeGraph (SimpleGraph V)
-
-noncomputable def set_of_subgraphs_of_size
-    (V : Type*) [Fintype V] [DecidableEq V]
-    (n : ℕ) : Finset (complete_graph V).Subgraph :=
-  let K := complete_graph V
-  let p (G' : Subgraph K) : Prop := (Set.toFinset G'.verts).card = n
-  let subgraph_set := { G' : (Subgraph K) |  p G' }
-  have : Fintype subgraph_set := fintype_of_subgraph_set K p
-  Set.toFinset subgraph_set
+noncomputable def all_graphs_on_vertex_set
+    (V : Type*) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
+  let all_graphs := { G : SimpleGraph V | true }
+  have : Fintype all_graphs :=
+    let f (G' : all_graphs) : Set (V × V) := { (u, v) | G'.val.Adj u v }
+    have f_inj : Function.Injective f := by
+      intro G1 G2 h_eq
+      dsimp [f] at h_eq
+      ext u v
+      exact Eq.to_iff (congrFun h_eq (u, v))
+    Fintype.ofInjective f f_inj
+  Set.toFinset all_graphs
 
 theorem subgraph_density_eq_sum_subgraph_densities
-  {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-  (H : SimpleGraph V) (G : SimpleGraph W) (n : ℕ)
-  (h_card : Fintype.card V ≤ n ∧ n ≤ Fintype.card W)
-  : subgraph_density H G = ∑ F in (set_of_subgraphs_of_size W n), subgraph_density H (Subgraph.coe F) * subgraph_density (Subgraph.coe F) G := by
+  {U V W : Type*} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+  (H : SimpleGraph V) (G : SimpleGraph W)
+  (h_card : Fintype.card V ≤ Fintype.card U ∧ Fintype.card U ≤ Fintype.card W)
+  : subgraph_density H G = ∑ F in (all_graphs_on_vertex_set U), subgraph_density H F * subgraph_density F G := by
   sorry
