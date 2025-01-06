@@ -87,10 +87,12 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
-noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-      (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
-  let iso_sub := { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let f : iso_sub → Set W × Set (W × W) := fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
+noncomputable def fintype_of_subgraph_set
+      {V : Type*} [Fintype V] [DecidableEq V]
+      (G : SimpleGraph V) (p : Subgraph G → Prop) : Fintype { G' : Subgraph G | p G' } :=
+  let subgraph_set := { G' : Subgraph G | p G' }
+  let f : subgraph_set → Set V × Set (V × V) :=
+    fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
   have f_inj : Function.Injective f := by
     intro G1 G2 h_eq
     dsimp [f] at h_eq
@@ -99,8 +101,15 @@ noncomputable def subgraph_count {V W : Type*} [Fintype V] [DecidableEq V] [Fint
       exact Eq.to_iff (congrFun h_eq_verts u)
     . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
       exact Eq.to_iff (congrFun h_eq_edges (u, v))
-  have iso_sub_fintype : Fintype iso_sub := Fintype.ofInjective f f_inj
-  iso_sub_fintype.card
+  Fintype.ofInjective f f_inj
+
+noncomputable def subgraph_count
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
+  let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
+  let iso_sub := { G' : Subgraph G | p G' }
+  have : Fintype iso_sub := fintype_of_subgraph_set G p
+  (Set.toFinset iso_sub).card
 
 noncomputable def subgraph_density {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
@@ -188,3 +197,22 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
             Subgraph.Adj.adj_sub h₂
           exact h₁ hx hy h_adj
   . simp
+
+def complete_graph (V : Type*) :=
+  completeGraph (SimpleGraph V)
+
+noncomputable def set_of_subgraphs_of_size
+    (V : Type*) [Fintype V] [DecidableEq V]
+    (n : ℕ) : Finset (complete_graph V).Subgraph :=
+  let K := complete_graph V
+  let p (G' : Subgraph K) : Prop := (Set.toFinset G'.verts).card = n
+  let subgraph_set := { G' : (Subgraph K) |  p G' }
+  have : Fintype subgraph_set := fintype_of_subgraph_set K p
+  Set.toFinset subgraph_set
+
+theorem subgraph_density_eq_sum_subgraph_densities
+  {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+  (H : SimpleGraph V) (G : SimpleGraph W) (n : ℕ)
+  (h_card : Fintype.card V ≤ n ∧ n ≤ Fintype.card W)
+  : subgraph_density H G = ∑ F in (set_of_subgraphs_of_size W n), subgraph_density H (Subgraph.coe F) * subgraph_density (Subgraph.coe F) G := by
+  sorry
