@@ -212,12 +212,23 @@ noncomputable def all_graphs_on_vertex_set
     Fintype.ofInjective f f_inj
   Set.toFinset all_graphs
 
+example (n m : ℚ) (h : n = m ∧ m ≠ 0) : n / m = 1 := by
+  rw [h.1]
+  rw [div_self h.2]
+
 theorem sum_subgraph_densities_eq_1
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
     : ∑ F in (all_graphs_on_vertex_set V), subgraph_density F G = 1.0 := by
   dsimp [all_graphs_on_vertex_set, subgraph_density] ; simp
+  let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
+  have h_sum : ∀ m : ℕ,
+    ∑ F : SimpleGraph V, subgraph_count F G / m
+    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by sorry
   sorry
+  -- rw [h_sum, Finset.sum_div]
+  -- simp only [div_self]
+  -- exact Nat.cast_ne_zero.mpr (Nat.choose_pos (Nat.le_of_lt (Finset.card_pos.mpr (Finset.nonempty_univ W))))
 
 theorem subgraph_density_eq_sum_subgraph_densities
   {U V W : Type*} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
