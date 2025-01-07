@@ -211,6 +211,13 @@ noncomputable def all_graphs_on_vertex_set
     Fintype.ofInjective f f_inj
   Set.toFinset all_graphs
 
+theorem sum_subgraph_densities_eq_1
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
+    : ∑ F in (all_graphs_on_vertex_set V), subgraph_density F G = 1.0 := by
+  dsimp [all_graphs_on_vertex_set, subgraph_density] ; simp
+  sorry
+
 theorem subgraph_density_eq_sum_subgraph_densities
   {U V W : Type*} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   (H : SimpleGraph V) (G : SimpleGraph W)
