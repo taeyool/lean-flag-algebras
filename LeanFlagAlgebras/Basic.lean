@@ -240,9 +240,7 @@ noncomputable def equivalence_graph_classes_on_vertex_set
     let f : V ≃ V := f01.trans f12
     have : ∀ {a b : V}, G₂.Adj (f a) (f b) ↔ G₀.Adj a b := by
       intro a b
-      have h01 := @hf01 a b
-      have h12 := @hf12 (f01 a) (f01 b)
-      simp_all
+      exact Iff.trans hf12 hf01
     exact ⟨f, this⟩
   Quotient (Setoid.mk equiv_rel ⟨equiv_rel_refl, equiv_rel_symm, equiv_rel_trans⟩)
 
