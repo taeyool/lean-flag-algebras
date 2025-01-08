@@ -216,6 +216,20 @@ example (n m : ℚ) (h : n = m ∧ m ≠ 0) : n / m = 1 := by
   rw [h.1]
   rw [div_self h.2]
 
+#check comb_card
+
+example {V : Type*} [Fintype V] : Finset V := univ
+
+lemma sum_subgraph_counts
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
+    : ∑ F in (all_graphs_on_vertex_set V), subgraph_count F G = (Fintype.card W).choose (Fintype.card V) := by
+  dsimp [all_graphs_on_vertex_set, subgraph_count]
+  let h := comb_card (univ : Finset W) (Fintype.card V)
+  dsimp at h
+  rw [← h]
+  sorry
+
 theorem sum_subgraph_densities_eq_1
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
@@ -224,7 +238,7 @@ theorem sum_subgraph_densities_eq_1
   let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
   have h_sum : ∀ m : ℕ,
     ∑ F : SimpleGraph V, subgraph_count F G / m
-    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by sorry
+    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by apply? Finset.sum_div
   sorry
   -- rw [h_sum, Finset.sum_div]
   -- simp only [div_self]
@@ -247,6 +261,7 @@ structure RealTimesGraph where
 
 instance : Add RealTimesGraph where
   add f g := ⟨fun G => f.f G + g.f G⟩
+
 
 noncomputable def chain_sum {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   (F : SimpleGraph V) (ℓ : ℕ) : RealTimesGraph := by
