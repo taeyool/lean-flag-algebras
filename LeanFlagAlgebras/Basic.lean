@@ -212,11 +212,54 @@ noncomputable def all_graphs_on_vertex_set
     Fintype.ofInjective f f_inj
   Set.toFinset all_graphs
 
+#check Equiv.symm
+
+noncomputable def equivalence_graph_classes_on_vertex_set
+    (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
+  let all_graphs := all_graphs_on_vertex_set V
+  let equiv_rel (G₀ G₁ : SimpleGraph V) : Prop := Nonempty (G₀ ≃g G₁)
+  have equiv_rel_refl : ∀ (G : SimpleGraph V), equiv_rel G G := by
+    intro G
+    exact instNonemptyOfInhabited
+  have equiv_rel_symm : ∀ {G₀ G₁ : SimpleGraph V}, equiv_rel G₀ G₁ → equiv_rel G₁ G₀ := by
+    intro G₀ G₁ h
+    dsimp [equiv_rel] at h
+    let ⟨f, hf⟩ := h
+    let f_symm : V ≃ V := f.symm
+    have hf_symm : ∀ {a b : V}, G₀.Adj (f_symm a) (f_symm b) ↔ G₁.Adj a b := by
+      intro a b
+      have := @hf (f.symm a) (f.symm b)
+      simp [Equiv.apply_symm_apply] at this
+      exact Iff.symm this
+    exact ⟨f_symm, hf_symm⟩
+  have equiv_rel_trans : ∀ {G₀ G₁ G₂ : SimpleGraph V}, equiv_rel G₀ G₁ → equiv_rel G₁ G₂ → equiv_rel G₀ G₂ := by
+    intro G₀ G₁ G₂ h01 h12
+    dsimp [equiv_rel] at h01 h12
+    let ⟨f01, hf01⟩ := h01
+    let ⟨f12, hf12⟩ := h12
+    let f : V ≃ V := f01.trans f12
+    have : ∀ {a b : V}, G₂.Adj (f a) (f b) ↔ G₀.Adj a b := by
+      intro a b
+      have h01 := @hf01 a b
+      have h12 := @hf12 (f01 a) (f01 b)
+      simp_all
+    exact ⟨f, this⟩
+  Quotient (Setoid.mk equiv_rel ⟨equiv_rel_refl, equiv_rel_symm, equiv_rel_trans⟩)
+
 example (n m : ℚ) (h : n = m ∧ m ≠ 0) : n / m = 1 := by
   rw [h.1]
   rw [div_self h.2]
 
+variable (V : Type*) [Fintype V] [DecidableEq V]
+
+
+#check Quotient (Setoid.mk (fun (G H : SimpleGraph V) => Nonempty (G ≃g H)) _)
+#check Setoid.mk
+#check (fun (G H : SimpleGraph V) => Nonempty (G ≃g H))
+
 #check comb_card
+#check card_eq_sum_card_fiberwise
+#check combinations
 
 example {V : Type*} [Fintype V] : Finset V := univ
 
