@@ -230,7 +230,7 @@ lemma sum_subgraph_counts
   rw [← h]
   sorry
 
-theorem sum_subgraph_densities_eq_1
+theorem sum_subgraph_densities_eq_one
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
     : ∑ F in (all_graphs_on_vertex_set V), subgraph_density F G = 1.0 := by
@@ -238,7 +238,7 @@ theorem sum_subgraph_densities_eq_1
   let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
   have h_sum : ∀ m : ℕ,
     ∑ F : SimpleGraph V, subgraph_count F G / m
-    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by apply? Finset.sum_div
+    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by sorry
   sorry
   -- rw [h_sum, Finset.sum_div]
   -- simp only [div_self]
