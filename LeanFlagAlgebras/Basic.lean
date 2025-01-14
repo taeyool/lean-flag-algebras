@@ -249,10 +249,22 @@ theorem is_equivalence {V : Type*} [Fintype V] [DecidableEq V]
     : Equivalence (@graph_eqv V _ _) :=
   { refl := graph_eqv.refl, symm := graph_eqv.symm, trans := graph_eqv.trans }
 
-instance graphSetoid {V : Type*} [Fintype V] [DecidableEq V]
+instance graphSetoid (V : Type*) [Fintype V] [DecidableEq V]
     : Setoid (SimpleGraph V) where
   r     := graph_eqv
   iseqv := is_equivalence
+
+def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
+  Quotient (graphSetoid V)
+
+variable (V : Type*) [Fintype V] [DecidableEq V]
+#check (Set.univ : Set (QuotSimpleGraph V))
+
+instance quotSimpleGraphFintype (V : Type*) [Fintype V] [DecidableEq V]
+    : Fintype (QuotSimpleGraph V) where
+    elems := sorry
+    complete := sorry
+
 
 noncomputable def equivalence_graph_classes_on_vertex_set
     (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
