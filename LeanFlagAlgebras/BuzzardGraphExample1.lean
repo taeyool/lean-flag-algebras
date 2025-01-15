@@ -5,9 +5,13 @@ Author : Kevin Buzzard
 -/
 import Mathlib.Tactic
 import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Combinatorics.SimpleGraph.Maps
+import Mathlib.Combinatorics.SimpleGraph.Finite
 -- definition of graph
 
 namespace Section18sheet1
+
+set_option diagnostics true
 
 /-
 
@@ -44,7 +48,7 @@ i.e. `∀ v, ¬ adj v v`.
 Here's how to say "let `G` be a (simple) graph with vertex set `V`"
 
 -/
-variable (V : Type) (G : SimpleGraph V)
+variable (V : Type) [Fintype V] [DecidableEq V] (G : SimpleGraph V)
 
 -- Here's how to say two edges are adjacent
 example (v w : V) : Prop :=
@@ -90,6 +94,7 @@ inductive SQE : SQV → SQV → Prop
   | e43 : SQE v4 v3
   | e13 : SQE v1 v3
   | e31 : SQE v3 v1
+
 
 -- Now let's make the graph
 def SQG : SimpleGraph SQV where
@@ -191,6 +196,7 @@ example : Type :=
 example : Type :=
   G ↪g H
 -- injections f : V → W such that v₁~v₂ ↔ f(v₁)~f(v₂)
+
 
 example : Type :=
   G ≃g H
