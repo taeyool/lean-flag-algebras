@@ -290,6 +290,24 @@ noncomputable def subgraph_density_quot
   ext G
   exact subgraph_density_lift_G_respects_eqv_on_H H₀ H₁ G h_eqv
 
+theorem subgraph_density_quot_ge_0
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
+    : 0 ≤ subgraph_density_quot H G := by
+  rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hHrep, ← hGrep]
+  apply subgraph_density_ge_0
+
+theorem subgraph_density_quot_le_1
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
+    : subgraph_density_quot H G ≤ 1 := by
+  rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hHrep, ← hGrep]
+  apply subgraph_density_le_1
+
 lemma sum_subgraph_counts
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
