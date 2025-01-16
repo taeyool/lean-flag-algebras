@@ -88,11 +88,11 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 
 open SimpleGraph
 
-noncomputable def fintype_of_subgraph_set
-      {V : Type*} [Fintype V] [DecidableEq V]
-      (G : SimpleGraph V) (p : Subgraph G → Prop) : Fintype { G' : Subgraph G | p G' } :=
-  let subgraph_set := { G' : Subgraph G | p G' }
-  let f : subgraph_set → Set V × Set (V × V) :=
+noncomputable instance subgraph_set_fintype
+    {V : Type*} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) (p : Subgraph G → Prop) :
+    Fintype { G' : Subgraph G | p G' } :=
+  let f : { G' : Subgraph G | p G' } → Set V × Set (V × V) :=
     fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
   have f_inj : Function.Injective f := by
     intro G1 G2 h_eq
@@ -108,9 +108,7 @@ noncomputable def subgraph_count
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
-  let iso_sub := { G' : Subgraph G | p G' }
-  have : Fintype iso_sub := fintype_of_subgraph_set G p
-  (Set.toFinset iso_sub).card
+  { G' : Subgraph G | p G' }.toFinset.card
 
 noncomputable def subgraph_density {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
