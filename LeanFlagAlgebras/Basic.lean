@@ -260,6 +260,36 @@ def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
 noncomputable instance quotSimpleGraphFintype (V : Type*) [Fintype V] [DecidableEq V]
     : Fintype (QuotSimpleGraph V) := Quotient.fintype (graphSetoid V)
 
+lemma subgraph_density_respects_eqv_on_G
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
+    (h_eqv : graph_eqv G₀ G₁)
+    : subgraph_density H G₀ = subgraph_density H G₁ := by
+  sorry
+
+noncomputable def subgraph_density_lift_G
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : SimpleGraph V) : QuotSimpleGraph W → ℚ := by
+  apply Quot.lift (fun G : SimpleGraph W => subgraph_density H G)
+  intro G₀ G₁ h_eqv
+  exact subgraph_density_respects_eqv_on_G H G₀ G₁ h_eqv
+
+lemma subgraph_density_lift_G_respects_eqv_on_H
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
+    (h_eqv : graph_eqv H₀ H₁)
+    : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G := by
+  sorry
+
+-- quotient version of subgraph_density
+noncomputable def subgraph_density_quot
+    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    : QuotSimpleGraph V → QuotSimpleGraph W → ℚ := by
+  apply Quot.lift subgraph_density_lift_G
+  intro H₀ H₁ h_eqv
+  ext G
+  exact subgraph_density_lift_G_respects_eqv_on_H H₀ H₁ G h_eqv
+
 lemma sum_subgraph_counts
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
