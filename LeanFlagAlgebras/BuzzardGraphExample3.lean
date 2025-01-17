@@ -47,7 +47,32 @@ example : G.IsTree ↔ Nonempty V ∧ ∀ v w : V, ∃! p : G.Walk v w, p.IsPath
 
 -- If you want a logic puzzle, rephrase this in terms of `G.path`
 -- (i.e. use the theorem above and then unpack and repack the RHS)
-example : G.IsTree ↔ Nonempty V ∧ ∀ v w : V, ∃! p : G.Path v w, True := by sorry
+-- Hongseok's solution. Not an elegant solution though.
+example : G.IsTree ↔ Nonempty V ∧ ∀ v w : V, ∃! p : G.Path v w, True := by
+  rw [SimpleGraph.isTree_iff_existsUnique_path]
+  apply and_congr_right
+  intro _
+  apply forall_congr'
+  intro v
+  apply forall_congr'
+  intro w
+  constructor
+  . rintro ⟨p, h_path, h_uniq⟩
+    dsimp at *
+    use ⟨p, h_path⟩
+    simp
+    intro p' h_path'
+    exact h_uniq p' h_path'
+  . rintro ⟨⟨p, h_path⟩, ⟨_, h_uniq⟩⟩
+    dsimp at *
+    use p
+    simp
+    constructor
+    . exact h_path
+    . intro p' h_path'
+      have := h_uniq ⟨p',h_path'⟩
+      simp at this
+      exact this
 
 /-
 If you want a hard graph theory puzzle, prove that in a finite tree,
