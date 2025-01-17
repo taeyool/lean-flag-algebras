@@ -4,7 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author : Kevin Buzzard
 -/
 import Mathlib.Tactic
-import Mathlib.Combinatorics.SimpleGraph.Connectivity
+import Mathlib.Combinatorics.SimpleGraph.Basic
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.WalkCounting
 -- paths, cycles etc in graph theory
 
 /-
@@ -101,7 +103,7 @@ example : Prop :=
   a.IsPath
 
 -- Paths are sufficiently common that `G.path v w` is defined to be the
--- subtype `{p : G.walk v w // p.is_path}`. So to give a term of type `G.path v w`
+-- subtype `{p : G.walk v w // p.IsPath}`. So to give a term of type `G.path v w`
 -- is to give a pair consisting of a walk `p : G.walk v w` and a proof of `p.IsPath`.
 -- A walk is a *circuit* at `v : V` if it's a nonempty trail beginning and ending at `v`.
 example (b : G.Walk v v) : Prop :=
@@ -147,7 +149,15 @@ example : G.Reachable v w ↔ Nonempty (G.Walk v w) :=
 
 -- true by definition
 -- Can you show that `G.reachable` is an equivalence relation?
-example : Equivalence G.Reachable := by sorry
+-- Hongseok's answer
+example : Equivalence G.Reachable := by
+  constructor
+  . intro x
+    exact ⟨Walk.nil' x⟩
+  . rintro x y ⟨a⟩
+    exact ⟨a.reverse⟩
+  . rintro x y z ⟨a⟩ ⟨b⟩
+    exact ⟨a.append b⟩
 
 -- A graph is "preconnected" if `G.reachable v w` is true for any `v w : V`.
 -- Note that this includes the empty graph with `V` empty, for silly logic reasons.
