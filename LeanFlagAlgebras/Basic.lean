@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
+import Mathlib.Combinatorics.SimpleGraph.Maps
 import Mathlib.Data.Set.Finite
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Finset.Card
@@ -260,12 +261,48 @@ def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
 noncomputable instance quotSimpleGraphFintype (V : Type*) [Fintype V] [DecidableEq V]
     : Fintype (QuotSimpleGraph V) := Quotient.fintype (graphSetoid V)
 
+lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) :
+  ∀ (H₁ : Subgraph G₁), ∃ (H₂ : Subgraph G₂),
+  H₁.IsInduced ↔ H₂.IsInduced ∧
+  (∀ H : SimpleGraph V, Nonempty (Subgraph.coe H₁ ≃g H) ↔ Nonempty (Subgraph.coe H₂ ≃g H)) := by
+  sorry
+
+lemma set_card_eq_of_equiv {α β : Type*} [Fintype α] [Fintype β] (e : α ≃ β) :
+  Fintype.card α = Fintype.card β := by
+  sorry
+
 lemma subgraph_density_respects_eqv_on_G
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
     (h_eqv : graph_eqv G₀ G₁)
     : subgraph_density H G₀ = subgraph_density H G₁ := by
-  sorry
+  unfold subgraph_density
+  have h_denom : (univ : Finset W).card.choose (univ : Finset V).card = (univ : Finset W).card.choose (univ : Finset V).card := by
+    simp
+  obtain ⟨φ⟩ := h_eqv
+  -- subgraph_map_of_iso
+  have subgraph_mapping : ∀ (H₁ : Subgraph G₀), ∃ (H₂ : Subgraph G₁),
+  H₁.IsInduced ↔ H₂.IsInduced ∧
+  (∀ H : SimpleGraph V, Nonempty (Subgraph.coe H₁ ≃g H) ↔ Nonempty (Subgraph.coe H₂ ≃g H)) := sorry
+  have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
+    unfold subgraph_count
+    let f : {G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} → {G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} := by
+      intro G'
+      obtain mapped_subgraph := subgraph_mapping G'
+      let H₂ := Classical.choose mapped_subgraph
+      let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
+      use H₂
+      constructor
+      · obtain ⟨h_ind, _⟩ := h_mapped_subgraph.1 G'.property.1
+        exact h_ind
+      · obtain ⟨_, h_iso⟩ := h_mapped_subgraph.1 G'.property.1
+        apply h_iso at H
+        rw [<-H]
+        exact G'.property.2
+    have f_bij : Function.Bijective f :=
+      sorry
+    sorry
+  rw [h_count]
 
 noncomputable def subgraph_density_lift_G
     {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
