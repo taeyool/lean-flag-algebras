@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author : Kevin Buzzard
 -/
 import Mathlib.Tactic
+import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Combinatorics.SimpleGraph.Acyclic
 -- trees and forests
 
