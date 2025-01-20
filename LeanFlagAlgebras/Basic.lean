@@ -10,7 +10,7 @@ import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Quotient
 
 
-variable {α : Type*} [DecidableEq α]
+variable {α : Type} [DecidableEq α]
 
 open Finset
 
@@ -90,9 +90,10 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
   exact fun ⦃a⦄ a ↦ a
 
 open SimpleGraph
+open Classical
 
 noncomputable instance subgraph_set_fintype
-    {V : Type*} [Fintype V] [DecidableEq V]
+    {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) (p : Subgraph G → Prop) :
     Fintype { G' : Subgraph G | p G' } :=
   let f : { G' : Subgraph G | p G' } → Set V × Set (V × V) :=
@@ -108,34 +109,24 @@ noncomputable instance subgraph_set_fintype
   Fintype.ofInjective f f_inj
 
 noncomputable def subgraph_count
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
   { G' : Subgraph G | p G' }.toFinset.card
 
-noncomputable def subgraph_density {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+noncomputable def subgraph_density {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
   let subgraph_cnt := subgraph_count H G
   let num_of_all_induced_subgraphs := (univ : Finset W).card.choose (univ : Finset V).card
   subgraph_cnt / num_of_all_induced_subgraphs
 
-theorem subgraph_density_ge_0 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+theorem subgraph_density_ge_0 {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
           : 0 ≤ subgraph_density H G := by
   dsimp [subgraph_density]
   apply div_nonneg <;> simp
 
-#check Finset.card_le_card_of_inj_on
-#check comb_card
-#check combinations
-#check Set.toFinset
-#check SimpleGraph.Subgraph.IsInduced
-#check Equiv.ofBijective
-#check Nonempty
-
-open Classical
-
-noncomputable def vert_iso_from_graph_iso {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+noncomputable def vert_iso_from_graph_iso {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   (H : SimpleGraph V) (G : SimpleGraph W) (G₀ : G.Subgraph)
   (hG₀_iso : Nonempty (Subgraph.coe G₀ ≃g H))
   : {x // x ∈ G₀.verts } ≃ V := by
@@ -144,7 +135,7 @@ noncomputable def vert_iso_from_graph_iso {V W : Type*} [Fintype V] [DecidableEq
     have hf₀ : Function.Bijective f₀ := RelIso.bijective g
     exact Equiv.ofBijective f₀ hf₀
 
-theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
           : subgraph_density H G ≤ 1 := by
   dsimp [subgraph_density]
@@ -201,7 +192,7 @@ theorem subgraph_density_le_1 {V W : Type*} [Fintype V] [DecidableEq V] [Fintype
   . simp
 
 noncomputable def all_graphs_on_vertex_set
-    (V : Type*) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
+    (V : Type) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
   let all_graphs := { G : SimpleGraph V | true }
   have : Fintype all_graphs :=
     let f (G' : all_graphs) : Set (V × V) := { (u, v) | G'.val.Adj u v }
@@ -215,14 +206,14 @@ noncomputable def all_graphs_on_vertex_set
 
 #check Equiv.symm
 
-def graph_eqv {V : Type*} [Fintype V] [DecidableEq V] (G₀ G₁ : SimpleGraph V) : Prop :=
+def graph_eqv {V : Type} [Fintype V] [DecidableEq V] (G₀ G₁ : SimpleGraph V) : Prop :=
   Nonempty (G₀ ≃g G₁)
 
-theorem graph_eqv.refl {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+theorem graph_eqv.refl {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     : graph_eqv G G := by
   exact instNonemptyOfInhabited
 
-theorem graph_eqv.symm {V : Type*} [Fintype V] [DecidableEq V]
+theorem graph_eqv.symm {V : Type} [Fintype V] [DecidableEq V]
     : ∀ {G₀ G₁ : SimpleGraph V}, graph_eqv G₀ G₁ → graph_eqv G₁ G₀ := by
   intro G₀ G₁ h
   let ⟨f, hf⟩ := h
@@ -234,7 +225,7 @@ theorem graph_eqv.symm {V : Type*} [Fintype V] [DecidableEq V]
     exact Iff.symm this
   exact ⟨f_symm, hf_symm⟩
 
-theorem graph_eqv.trans {V : Type*} [Fintype V] [DecidableEq V]
+theorem graph_eqv.trans {V : Type} [Fintype V] [DecidableEq V]
     : ∀ {G₀ G₁ G₂ : SimpleGraph V}, graph_eqv G₀ G₁ → graph_eqv G₁ G₂ → graph_eqv G₀ G₂ := by
   intro G₀ G₁ G₂ h01 h12
   dsimp [graph_eqv] at h01 h12
@@ -246,11 +237,11 @@ theorem graph_eqv.trans {V : Type*} [Fintype V] [DecidableEq V]
     exact Iff.trans hf12 hf01
   exact ⟨f, this⟩
 
-theorem is_equivalence {V : Type*} [Fintype V] [DecidableEq V]
+theorem is_equivalence {V : Type} [Fintype V] [DecidableEq V]
     : Equivalence (@graph_eqv V _ _) :=
   { refl := graph_eqv.refl, symm := graph_eqv.symm, trans := graph_eqv.trans }
 
-instance graphSetoid (V : Type*) [Fintype V] [DecidableEq V]
+instance graphSetoid (V : Type) [Fintype V] [DecidableEq V]
     : Setoid (SimpleGraph V) where
   r     := graph_eqv
   iseqv := is_equivalence
@@ -258,7 +249,7 @@ instance graphSetoid (V : Type*) [Fintype V] [DecidableEq V]
 def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
   Quotient (graphSetoid V)
 
-noncomputable instance quotSimpleGraphFintype (V : Type*) [Fintype V] [DecidableEq V]
+noncomputable instance quotSimpleGraphFintype (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (QuotSimpleGraph V) := Quotient.fintype (graphSetoid V)
 
 def subgraph_of_iso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁.Subgraph) : G₂.Subgraph :=
@@ -316,12 +307,12 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   --       (φ.map_edge_mem he)
   sorry
 
-lemma set_card_eq_of_equiv {α β : Type*} [Fintype α] [Fintype β] (e : α ≃ β) :
+lemma set_card_eq_of_equiv {α β : Type} [Fintype α] [Fintype β] (e : α ≃ β) :
   Fintype.card α = Fintype.card β := by
   sorry
 
 lemma subgraph_density_respects_eqv_on_G
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
     (h_eqv : graph_eqv G₀ G₁)
     : subgraph_density H G₀ = subgraph_density H G₁ := by
@@ -352,14 +343,14 @@ lemma subgraph_density_respects_eqv_on_G
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) : QuotSimpleGraph W → ℚ := by
   apply Quot.lift (fun G : SimpleGraph W => subgraph_density H G)
   intro G₀ G₁ h_eqv
   exact subgraph_density_respects_eqv_on_G H G₀ G₁ h_eqv
 
 lemma subgraph_density_lift_G_respects_eqv_on_H
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
     : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G := by
@@ -367,7 +358,7 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
 
 -- quotient version of subgraph_density
 noncomputable def subgraph_density_quot
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ := by
   apply Quot.lift subgraph_density_lift_G
   intro H₀ H₁ h_eqv
@@ -375,7 +366,7 @@ noncomputable def subgraph_density_quot
   exact subgraph_density_lift_G_respects_eqv_on_H H₀ H₁ G h_eqv
 
 theorem subgraph_density_quot_ge_0
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ subgraph_density_quot H G := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
@@ -384,7 +375,7 @@ theorem subgraph_density_quot_ge_0
   apply subgraph_density_ge_0
 
 theorem subgraph_density_quot_le_1
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : subgraph_density_quot H G ≤ 1 := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
@@ -393,7 +384,7 @@ theorem subgraph_density_quot_le_1
   apply subgraph_density_le_1
 
 lemma sum_subgraph_counts
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
     : ∑ F in (all_graphs_on_vertex_set V), subgraph_count F G = (Fintype.card W).choose (Fintype.card V) := by
   dsimp [all_graphs_on_vertex_set, subgraph_count]
@@ -403,7 +394,7 @@ lemma sum_subgraph_counts
   sorry
 
 theorem sum_subgraph_densities_eq_one
-    {V W : Type*} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
     : ∑ F in (all_graphs_on_vertex_set V), subgraph_density F G = 1.0 := by
   dsimp [all_graphs_on_vertex_set, subgraph_density] ; simp
@@ -417,7 +408,7 @@ theorem sum_subgraph_densities_eq_one
   -- exact Nat.cast_ne_zero.mpr (Nat.choose_pos (Nat.le_of_lt (Finset.card_pos.mpr (Finset.nonempty_univ W))))
 
 theorem subgraph_density_eq_sum_subgraph_densities
-  {U V W : Type*} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+  {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
   (H : SimpleGraph V) (G : SimpleGraph W)
   (h_card : Fintype.card V ≤ Fintype.card U ∧ Fintype.card U ≤ Fintype.card W)
   : subgraph_density H G = ∑ F in (all_graphs_on_vertex_set U), subgraph_density H F * subgraph_density F G := by
