@@ -261,10 +261,59 @@ def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
 noncomputable instance quotSimpleGraphFintype (V : Type*) [Fintype V] [DecidableEq V]
     : Fintype (QuotSimpleGraph V) := Quotient.fintype (graphSetoid V)
 
-lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) :
+def subgraph_of_iso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁.Subgraph) : G₂.Subgraph :=
+{
+  verts := φ.toEquiv '' H₁.verts,
+  Adj := fun u v => H₁.Adj (φ.toEquiv.symm u) (φ.toEquiv.symm v),
+  adj_sub := by
+    intro x y h1_adj
+    have g1_adj := H₁.adj_sub h1_adj
+    exact φ.symm.map_adj_iff.mp g1_adj,
+  edge_vert := by
+    intro x y h1_edge
+    have g1_edge := H₁.edge_vert h1_edge
+    have h_exists : ∃ v ∈ H₁.verts, φ.toEquiv v = x := ⟨φ.symm x, g1_edge, φ.apply_symm_apply x⟩
+    -- have h_exists : ∃ v ∈ H₁.verts, φ.toEquiv v = x := by
+    --   let v := φ.symm x
+    --   use v
+    --   constructor
+    --   · exact H₁.edge_vert h1_edge
+    --   · exact φ.apply_symm_apply x
+    obtain ⟨v, ⟨h1_vert, h1_eq⟩⟩ := h_exists
+    use v
+  symm := by
+    intro x y h_adj
+    exact H₁.symm h_adj,
+}
+
+
+lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H : SimpleGraph V) :
   ∀ (H₁ : Subgraph G₁), ∃ (H₂ : Subgraph G₂),
   H₁.IsInduced ↔ H₂.IsInduced ∧
   (∀ H : SimpleGraph V, Nonempty (Subgraph.coe H₁ ≃g H) ↔ Nonempty (Subgraph.coe H₂ ≃g H)) := by
+  intro H₁
+  let H₂ := subgraph_of_iso φ H₁
+  use H₂
+  apply Iff.intro
+  · intro H1_ind
+    constructor
+    · unfold Subgraph.IsInduced
+      unfold Subgraph.IsInduced at H1_ind
+      intro x y x_verts y_verts x_adj
+
+
+      sorry
+    sorry
+  -- · intro h_induced v₁ v₂ hv₁ hv₂ he
+  --     obtain ⟨u₁, hu₁, hv₁'⟩ := φ.surj_on_image _ hv₁
+  --     obtain ⟨u₂, hu₂, hv₂'⟩ := φ.surj_on_image _ hv₂
+  --     rw [←hv₁', ←hv₂']
+  --     exact h_induced u₁ u₂ hu₁ hu₂ (φ.inj_edge he)
+  --   · intro h_induced v₁ v₂ hv₁ hv₂ he
+  --     exact h_induced (φ v₁) (φ v₂)
+  --       (mem_image_of_mem _ hv₁)
+  --       (mem_image_of_mem _ hv₂)
+  --       (φ.map_edge_mem he)
   sorry
 
 lemma set_card_eq_of_equiv {α β : Type*} [Fintype α] [Fintype β] (e : α ≃ β) :
@@ -279,11 +328,9 @@ lemma subgraph_density_respects_eqv_on_G
   unfold subgraph_density
   have h_denom : (univ : Finset W).card.choose (univ : Finset V).card = (univ : Finset W).card.choose (univ : Finset V).card := by
     simp
-  obtain ⟨φ⟩ := h_eqv
-  -- subgraph_map_of_iso
-  have subgraph_mapping : ∀ (H₁ : Subgraph G₀), ∃ (H₂ : Subgraph G₁),
-  H₁.IsInduced ↔ H₂.IsInduced ∧
-  (∀ H : SimpleGraph V, Nonempty (Subgraph.coe H₁ ≃g H) ↔ Nonempty (Subgraph.coe H₂ ≃g H)) := sorry
+  dsimp [graph_eqv] at h_eqv
+  let φ := Classical.choice h_eqv
+  have subgraph_mapping := subgraph_map_of_iso φ H
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
     unfold subgraph_count
     let f : {G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} → {G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} := by
