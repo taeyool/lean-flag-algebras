@@ -189,21 +189,6 @@ theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype 
           exact h₁ hx hy h_adj
   . simp
 
-noncomputable def all_graphs_on_vertex_set
-    (V : Type) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
-  let all_graphs := { G : SimpleGraph V | true }
-  -- have : Fintype all_graphs :=
-  --  let f (G' : all_graphs) : Set (V × V) := { (u, v) | G'.val.Adj u v }
-  --  have f_inj : Function.Injective f := by
-  --    intro G1 G2 h_eq
-  --    dsimp [f] at h_eq
-  --    ext u v
-  --    exact Eq.to_iff (congrFun h_eq (u, v))
-  --  Fintype.ofInjective f f_inj
-  Set.toFinset all_graphs
-
-#check Equiv.symm
-
 def graph_eqv {V : Type} [Fintype V] [DecidableEq V] (G₀ G₁ : SimpleGraph V) : Prop :=
   Nonempty (G₀ ≃g G₁)
 
@@ -250,30 +235,20 @@ def QuotSimpleGraph (V : Type) [Fintype V] [DecidableEq V] : Type :=
 noncomputable instance quotSimpleGraphFintype (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (QuotSimpleGraph V) := Quotient.fintype (graphSetoid V)
 
-def subgraph_of_iso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁.Subgraph) : G₂.Subgraph :=
-{
-  verts := φ.toEquiv '' H₁.verts,
-  Adj := fun u v => H₁.Adj (φ.toEquiv.symm u) (φ.toEquiv.symm v),
+def subgraphOfIso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁.Subgraph) : G₂.Subgraph where
+  verts := φ.toEquiv '' H₁.verts
+  Adj u v := H₁.Adj (φ.toEquiv.symm u) (φ.toEquiv.symm v)
   adj_sub := by
     intro x y h1_adj
     have g1_adj := H₁.adj_sub h1_adj
-    exact φ.symm.map_adj_iff.mp g1_adj,
+    exact φ.symm.map_adj_iff.mp g1_adj
   edge_vert := by
-    intro x y h1_edge
-    have g1_edge := H₁.edge_vert h1_edge
-    have h_exists : ∃ v ∈ H₁.verts, φ.toEquiv v = x := ⟨φ.symm x, g1_edge, φ.apply_symm_apply x⟩
-    -- have h_exists : ∃ v ∈ H₁.verts, φ.toEquiv v = x := by
-    --   let v := φ.symm x
-    --   use v
-    --   constructor
-    --   · exact H₁.edge_vert h1_edge
-    --   · exact φ.apply_symm_apply x
-    obtain ⟨v, ⟨h1_vert, h1_eq⟩⟩ := h_exists
-    use v
+    intro x _ h1_edge
+    use (φ.symm x)
+    exact ⟨H₁.edge_vert h1_edge, by simp⟩
   symm := by
-    intro x y h_adj
-    exact H₁.symm h_adj,
-}
+    intro _ _ h_adj
+    exact H₁.symm h_adj
 
 
 lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H : SimpleGraph V) :
@@ -281,7 +256,7 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   H₁.IsInduced ↔ H₂.IsInduced ∧
   (∀ H : SimpleGraph V, Nonempty (Subgraph.coe H₁ ≃g H) ↔ Nonempty (Subgraph.coe H₂ ≃g H)) := by
   intro H₁
-  let H₂ := subgraph_of_iso φ H₁
+  let H₂ := subgraphOfIso φ H₁
   use H₂
   apply Iff.intro
   · intro H1_ind
@@ -380,6 +355,10 @@ theorem subgraph_density_quot_le_1
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraph_density_le_1
+
+noncomputable def all_graphs_on_vertex_set
+    (V : Type) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
+  Set.toFinset { G : SimpleGraph V | true }
 
 lemma sum_subgraph_counts
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
