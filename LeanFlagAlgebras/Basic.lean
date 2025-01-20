@@ -145,9 +145,7 @@ theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype 
     simp at this; rw [←this]; simp
     let induced_subgraphs_iso_to_H :=
       { G' : G.Subgraph | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-    let f : induced_subgraphs_iso_to_H → Finset W := fun G' =>
-      have : Fintype G'.val.verts := Fintype.ofFinite G'.val.verts
-      Set.toFinset G'.val.verts
+    let f : induced_subgraphs_iso_to_H → Finset W := fun G' => Set.toFinset G'.val.verts
     apply Finset.card_le_card_of_injOn f
     . rintro G' _
       dsimp [combinations, f]
@@ -194,14 +192,14 @@ theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype 
 noncomputable def all_graphs_on_vertex_set
     (V : Type) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
   let all_graphs := { G : SimpleGraph V | true }
-  have : Fintype all_graphs :=
-    let f (G' : all_graphs) : Set (V × V) := { (u, v) | G'.val.Adj u v }
-    have f_inj : Function.Injective f := by
-      intro G1 G2 h_eq
-      dsimp [f] at h_eq
-      ext u v
-      exact Eq.to_iff (congrFun h_eq (u, v))
-    Fintype.ofInjective f f_inj
+  -- have : Fintype all_graphs :=
+  --  let f (G' : all_graphs) : Set (V × V) := { (u, v) | G'.val.Adj u v }
+  --  have f_inj : Function.Injective f := by
+  --    intro G1 G2 h_eq
+  --    dsimp [f] at h_eq
+  --    ext u v
+  --    exact Eq.to_iff (congrFun h_eq (u, v))
+  --  Fintype.ofInjective f f_inj
   Set.toFinset all_graphs
 
 #check Equiv.symm
@@ -246,7 +244,7 @@ instance graphSetoid (V : Type) [Fintype V] [DecidableEq V]
   r     := graph_eqv
   iseqv := is_equivalence
 
-def QuotSimpleGraph (V : Type u) [Fintype V] [DecidableEq V] : Type u :=
+def QuotSimpleGraph (V : Type) [Fintype V] [DecidableEq V] : Type :=
   Quotient (graphSetoid V)
 
 noncomputable instance quotSimpleGraphFintype (V : Type) [Fintype V] [DecidableEq V]
