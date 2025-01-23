@@ -410,31 +410,32 @@ noncomputable instance : AddCommMonoid FiniteGraphModule := Finsupp.instAddCommM
 
 noncomputable instance : Module ℝ FiniteGraphModule := Finsupp.module FiniteSimpleGraph ℝ
 
-noncomputable def basis_elements_from_graph : FiniteSimpleGraph → FiniteGraphModule
+noncomputable def basis_element_from_graph : FiniteSimpleGraph → FiniteGraphModule
   := fun G => Finsupp.single G 1
 
 #check Finsupp.sum
 
 noncomputable def FiniteGraphModuleBasis : Basis (FiniteSimpleGraph) ℝ FiniteGraphModule :=
-  have h_indep : LinearIndependent ℝ basis_elements_from_graph := by
+  have h_indep : LinearIndependent ℝ basis_element_from_graph := by
     rw [linearIndependent_iff'']
     intro s f h_supp h_sum G
     by_cases hG : G ∈ s
-    · have : (∑ i ∈ s, f i • basis_elements_from_graph i) G = 0 := by
+    · have : (∑ i ∈ s, f i • basis_element_from_graph i) G = 0 := by
         simp [h_sum]
       rw [← this, sum_eq_sum_diff_singleton_add hG _]
-      simp [basis_elements_from_graph, Finset.sum_apply']
+      simp [basis_element_from_graph, Finset.sum_apply']
       rw [Finset.sum_eq_zero]
       intro H hH
-      have hHG : H ≠ G := by aesop
+      have hHG : H ≠ G := by
+        simp_all only [Finsupp.coe_zero, Pi.zero_apply, mem_sdiff, mem_singleton, ne_eq, not_false_eq_true]
       exact Finsupp.single_apply_eq_zero.mpr fun a ↦ h_supp H fun _ ↦ hHG (id (Eq.symm a))
     · exact h_supp G hG
-  have h_span : ∀ f, f ∈ Submodule.span ℝ (Set.range basis_elements_from_graph) := by
+  have h_span : ∀ f, f ∈ Submodule.span ℝ (Set.range basis_element_from_graph) := by
     intro f
     refine Finsupp.mem_span_range_iff_exists_finsupp.mpr ?_
     use f
     ext G
-    simp [basis_elements_from_graph]
+    simp [basis_element_from_graph]
   Basis.mk h_indep (fun v _ ↦ h_span v)
 
 instance : Module.Free ℝ FiniteGraphModule := by
