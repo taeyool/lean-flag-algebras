@@ -250,7 +250,6 @@ def subgraphOfIso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁
     intro _ _ h_adj
     exact H₁.symm h_adj
 
-
 lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H : SimpleGraph V) :
   ∀ (H₁ : Subgraph G₁), ∃ (H₂ : Subgraph G₂),
   H₁.IsInduced ↔ H₂.IsInduced ∧
@@ -280,15 +279,29 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   --       (φ.map_edge_mem he)
   sorry
 
-example {V W : Type} [Fintype V] [Fintype W]
-    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W)
-    (S₀ : Set (Subgraph G₀)) (S₁ : Set (Subgraph G₁))
-    [Fintype S₀] [Fintype S₁]
-    (f : S₀ → S₁) (h : Function.Bijective f)
-    : S₀.toFinset.card = S₁.toFinset.card := by
-  have : S₀ ≃ S₁ := Equiv.ofBijective f h
-  have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr this
-  aesop
+noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+      (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+      : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+        ≃ { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  := by
+  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  have subgraph_mapping := subgraph_map_of_iso φ H
+  let f : S₀ → S₁ := by
+    intro G'
+    obtain mapped_subgraph := subgraph_mapping G'
+    let H₂ := Classical.choose mapped_subgraph
+    let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
+    use H₂
+    constructor
+    · obtain ⟨h_ind, _⟩ := h_mapped_subgraph.1 G'.property.1
+      exact h_ind
+    · obtain ⟨_, h_iso⟩ := h_mapped_subgraph.1 G'.property.1
+      apply h_iso at H
+      rw [<-H]
+      exact G'.property.2
+  have f_bij : Function.Bijective f := sorry
+  exact Equiv.ofBijective f f_bij
 
 lemma subgraph_density_respects_eqv_on_G
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -300,26 +313,10 @@ lemma subgraph_density_respects_eqv_on_G
   let φ : G₀ ≃g G₁ := Classical.choice h_eqv
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  have : S₀ ≃ S₁ :=
-    have subgraph_mapping := subgraph_map_of_iso φ H
-    let f : S₀ → S₁ := by
-      intro G'
-      obtain mapped_subgraph := subgraph_mapping G'
-      let H₂ := Classical.choose mapped_subgraph
-      let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
-      use H₂
-      constructor
-      · obtain ⟨h_ind, _⟩ := h_mapped_subgraph.1 G'.property.1
-        exact h_ind
-      · obtain ⟨_, h_iso⟩ := h_mapped_subgraph.1 G'.property.1
-        apply h_iso at H
-        rw [<-H]
-        exact G'.property.2
-    have f_bij : Function.Bijective f := sorry
-    Equiv.ofBijective f f_bij
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := iso_subgraph_sets_from_iso_graphs H G₀ G₁ φ
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
     dsimp [subgraph_count]
-    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr this
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     aesop
   rw [h_count]
 
