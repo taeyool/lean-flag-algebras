@@ -280,24 +280,30 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   --       (φ.map_edge_mem he)
   sorry
 
-lemma set_card_eq_of_equiv {α β : Type} [Fintype α] [Fintype β] (e : α ≃ β) :
-  Fintype.card α = Fintype.card β := by
-  sorry
+example {V W : Type} [Fintype V] [Fintype W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W)
+    (S₀ : Set (Subgraph G₀)) (S₁ : Set (Subgraph G₁))
+    [Fintype S₀] [Fintype S₁]
+    (f : S₀ → S₁) (h : Function.Bijective f)
+    : S₀.toFinset.card = S₁.toFinset.card := by
+  have : S₀ ≃ S₁ := Equiv.ofBijective f h
+  have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr this
+  aesop
 
 lemma subgraph_density_respects_eqv_on_G
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
     (h_eqv : graph_eqv G₀ G₁)
     : subgraph_density H G₀ = subgraph_density H G₁ := by
-  unfold subgraph_density
-  have h_denom : (univ : Finset W).card.choose (univ : Finset V).card = (univ : Finset W).card.choose (univ : Finset V).card := by
-    simp
+  dsimp [subgraph_density]
   dsimp [graph_eqv] at h_eqv
   let φ := Classical.choice h_eqv
   have subgraph_mapping := subgraph_map_of_iso φ H
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
-    unfold subgraph_count
-    let f : {G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} → {G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} := by
+    let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+    let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+    dsimp [subgraph_count]
+    let f : S₀ → S₁ := by
       intro G'
       obtain mapped_subgraph := subgraph_mapping G'
       let H₂ := Classical.choose mapped_subgraph
@@ -310,9 +316,10 @@ lemma subgraph_density_respects_eqv_on_G
         apply h_iso at H
         rw [<-H]
         exact G'.property.2
-    have f_bij : Function.Bijective f :=
-      sorry
-    sorry
+    have f_bij : Function.Bijective f := sorry
+    have : S₀ ≃ S₁ := Equiv.ofBijective f f_bij
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr this
+    aesop
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G
