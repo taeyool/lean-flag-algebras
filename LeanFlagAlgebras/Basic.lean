@@ -297,12 +297,11 @@ lemma subgraph_density_respects_eqv_on_G
     : subgraph_density H G₀ = subgraph_density H G₁ := by
   dsimp [subgraph_density]
   dsimp [graph_eqv] at h_eqv
-  let φ := Classical.choice h_eqv
-  have subgraph_mapping := subgraph_map_of_iso φ H
-  have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
-    let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-    let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-    dsimp [subgraph_count]
+  let φ : G₀ ≃g G₁ := Classical.choice h_eqv
+  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  have : S₀ ≃ S₁ :=
+    have subgraph_mapping := subgraph_map_of_iso φ H
     let f : S₀ → S₁ := by
       intro G'
       obtain mapped_subgraph := subgraph_mapping G'
@@ -317,7 +316,9 @@ lemma subgraph_density_respects_eqv_on_G
         rw [<-H]
         exact G'.property.2
     have f_bij : Function.Bijective f := sorry
-    have : S₀ ≃ S₁ := Equiv.ofBijective f f_bij
+    Equiv.ofBijective f f_bij
+  have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
+    dsimp [subgraph_count]
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr this
     aesop
   rw [h_count]
