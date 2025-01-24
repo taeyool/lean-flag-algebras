@@ -302,8 +302,9 @@ noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [De
   := by
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let f : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
+  let g : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
     fun ⟨G_sub, _⟩ => inducedSubgraph G₁ (φ '' G_sub.verts)
+  have g_bij : Function.Bijective g := sorry
   have subgraph_mapping := subgraph_map_of_iso φ H
   let f (G' : S₀) : S₁ := by
     obtain mapped_subgraph := subgraph_mapping G'
