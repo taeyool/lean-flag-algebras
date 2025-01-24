@@ -291,10 +291,8 @@ def inducedSubgraph {V : Type} [DecidableEq V]
   }
   let h_induced : G'.IsInduced := by
     intro u v h_u h_v h_uv
-    have : G'.verts = S := sorry
-    rw [this] at h_u h_v
-    have : G.Adj u v ∧ u ∈ S ∧ v ∈ S := ⟨h_uv, h_u, h_v⟩
-    sorry
+    dsimp at *
+    exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
 
 noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
