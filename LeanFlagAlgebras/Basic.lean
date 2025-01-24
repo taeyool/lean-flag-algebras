@@ -279,6 +279,24 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   --       (φ.map_edge_mem he)
   sorry
 
+def inducedSubgraph {V : Type} [DecidableEq V]
+      (G : SimpleGraph V) (S : Set V) : { G' : Subgraph G // G'.IsInduced }
+  :=
+  let G' : Subgraph G := {
+    verts := S
+    Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
+    adj_sub := by aesop
+    edge_vert := by aesop
+    symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
+  }
+  let h_induced : G'.IsInduced := by
+    intro u v h_u h_v h_uv
+    have : G'.verts = S := sorry
+    rw [this] at h_u h_v
+    have : G.Adj u v ∧ u ∈ S ∧ v ∈ S := ⟨h_uv, h_u, h_v⟩
+    sorry
+  ⟨G', h_induced⟩
+
 noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
       : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
@@ -286,9 +304,10 @@ noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [De
   := by
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let f : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
+    fun ⟨G_sub, _⟩ => inducedSubgraph G₁ (φ '' G_sub.verts)
   have subgraph_mapping := subgraph_map_of_iso φ H
-  let f : S₀ → S₁ := by
-    intro G'
+  let f (G' : S₀) : S₁ := by
     obtain mapped_subgraph := subgraph_mapping G'
     let H₂ := Classical.choose mapped_subgraph
     let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
