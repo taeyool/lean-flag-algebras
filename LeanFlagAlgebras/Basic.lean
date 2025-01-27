@@ -295,18 +295,40 @@ def inducedSubgraph {V : Type} [DecidableEq V]
     exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
 
-noncomputable def mapOfInducedSubgraphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+def relOfSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
+  :=
+    H₁.verts = φ '' H₀.verts
+    ∧
+    ∀ (u v : V), H₁.Adj (φ u) (φ v) = H₀.Adj u v
+
+def relOfPredicateOnSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) : Prop
+  :=
+    ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph G₀ G₁ φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+
+def generalMapOfInducedSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) (h_rel : relOfPredicateOnSubgraph G₀ G₁ φ p₀ p₁)
+    : { G' : Subgraph G₀ | G'.IsInduced ∧ p₀ G' } → { G' : Subgraph G₁ | G'.IsInduced ∧ p₁ G'} :=
+  fun ⟨G₀_sub, _, _⟩ =>
+    let ⟨G₁_sub, h_ind⟩ := inducedSubgraph G₁ (φ '' G₀_sub.verts)
+    ⟨G₁_sub, h_ind, by sorry⟩
+
+def mapOfInducedSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
     : { G' : Subgraph G₀ | G'.IsInduced } → { G' : Subgraph G₁ | G'.IsInduced } :=
   fun ⟨G₀_sub, _⟩ => inducedSubgraph G₁ (φ '' G₀_sub.verts)
 
-lemma inv_map_of_induced_subgraphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+lemma inv_map_of_induced_subgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
-    : (mapOfInducedSubgraphs G₁ G₀ φ.symm) ∘ (mapOfInducedSubgraphs G₀ G₁ φ) = id := by
+    : (mapOfInducedSubgraph G₁ G₀ φ.symm) ∘ (mapOfInducedSubgraph G₀ G₁ φ) = id := by
   ext ⟨G',h_ind_G'⟩ u v
-  dsimp [mapOfInducedSubgraphs, inducedSubgraph]
+  dsimp [mapOfInducedSubgraph, inducedSubgraph]
   . aesop
-  . dsimp [mapOfInducedSubgraphs, inducedSubgraph]
+  . dsimp [mapOfInducedSubgraph, inducedSubgraph]
     simp
     constructor
     . rintro ⟨h_uv, h_u, h_v⟩
@@ -315,24 +337,24 @@ lemma inv_map_of_induced_subgraphs {V W : Type} [Fintype V] [DecidableEq V] [Fin
     . rintro h_uv
       exact ⟨G'.adj_sub h_uv, G'.edge_vert h_uv, G'.edge_vert (G'.symm h_uv)⟩
 
-noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+noncomputable def iso_subgraph_sets_from_iso_graph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
       : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
         ≃ { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   := by
   let g : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
-    mapOfInducedSubgraphs G₀ G₁ φ
+    mapOfInducedSubgraph G₀ G₁ φ
   let g_inv : { G' : Subgraph G₁ // G'.IsInduced } → {G' : Subgraph G₀ // G'.IsInduced} :=
-    mapOfInducedSubgraphs G₁ G₀ φ.symm
+    mapOfInducedSubgraph G₁ G₀ φ.symm
   have g_bij : Function.Bijective g := by
     have h_leftinv : Function.LeftInverse g_inv g := by
       intro G'_ind
       dsimp [g, g_inv]
-      exact congr_fun (inv_map_of_induced_subgraphs G₀ G₁ φ) G'_ind
+      exact congr_fun (inv_map_of_induced_subgraph G₀ G₁ φ) G'_ind
     have h_rightinv : Function.RightInverse g_inv g := by
       intro G'_ind
       dsimp [g, g_inv]
-      exact congr_fun (inv_map_of_induced_subgraphs G₁ G₀ φ.symm) G'_ind
+      exact congr_fun (inv_map_of_induced_subgraph G₁ G₀ φ.symm) G'_ind
     exact Function.bijective_iff_has_inverse.mpr ⟨g_inv, h_leftinv, h_rightinv⟩
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
@@ -362,7 +384,7 @@ lemma subgraph_density_respects_eqv_on_G
   let φ : G₀ ≃g G₁ := Classical.choice h_eqv
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := iso_subgraph_sets_from_iso_graphs H G₀ G₁ φ
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := iso_subgraph_sets_from_iso_graph H G₀ G₁ φ
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
     dsimp [subgraph_count]
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
