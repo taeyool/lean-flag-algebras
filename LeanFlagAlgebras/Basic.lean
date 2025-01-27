@@ -295,22 +295,47 @@ def inducedSubgraph {V : Type} [DecidableEq V]
     exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
 
+noncomputable def mapOfInducedSubgraphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    : { G' : Subgraph G₀ | G'.IsInduced } → { G' : Subgraph G₁ | G'.IsInduced } :=
+  fun ⟨G₀_sub, _⟩ => inducedSubgraph G₁ (φ '' G₀_sub.verts)
+
+lemma inv_map_of_induced_subgraphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    : (mapOfInducedSubgraphs G₁ G₀ φ.symm) ∘ (mapOfInducedSubgraphs G₀ G₁ φ) = id := by
+  ext ⟨G',h_ind_G'⟩ u v
+  dsimp [mapOfInducedSubgraphs, inducedSubgraph]
+  . aesop
+  . dsimp [mapOfInducedSubgraphs, inducedSubgraph]
+    simp
+    constructor
+    . rintro ⟨h_uv, h_u, h_v⟩
+      dsimp [Subgraph.IsInduced] at h_ind_G'
+      exact h_ind_G' h_u h_v h_uv
+    . rintro h_uv
+      exact ⟨G'.adj_sub h_uv, G'.edge_vert h_uv, G'.edge_vert (G'.symm h_uv)⟩
+
 noncomputable def iso_subgraph_sets_from_iso_graphs {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
       (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
       : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
         ≃ { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   := by
+  let g : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
+    mapOfInducedSubgraphs G₀ G₁ φ
+  let g_inv : { G' : Subgraph G₁ // G'.IsInduced } → {G' : Subgraph G₀ // G'.IsInduced} :=
+    mapOfInducedSubgraphs G₁ G₀ φ.symm
+  have g_bij : Function.Bijective g := by
+    have h_leftinv : Function.LeftInverse g_inv g := by
+      intro G'_ind
+      dsimp [g, g_inv]
+      exact congr_fun (inv_map_of_induced_subgraphs G₀ G₁ φ) G'_ind
+    have h_rightinv : Function.RightInverse g_inv g := by
+      intro G'_ind
+      dsimp [g, g_inv]
+      exact congr_fun (inv_map_of_induced_subgraphs G₁ G₀ φ.symm) G'_ind
+    exact Function.bijective_iff_has_inverse.mpr ⟨g_inv, h_leftinv, h_rightinv⟩
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let g : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
-    fun ⟨G_sub, _⟩ => inducedSubgraph G₁ (φ '' G_sub.verts)
-  let g_inv : { G' : Subgraph G₁ // G'.IsInduced } → {G' : Subgraph G₀ // G'.IsInduced} :=
-    fun ⟨G_sub, _⟩ => inducedSubgraph G₀ (φ.symm '' G_sub.verts)
-  have g_bij : Function.Bijective g := by
-    have h_leftinv : Function.LeftInverse g_inv g := sorry
-    have h_rightinv : Function.RightInverse g_inv g := sorry
-    refine Function.bijective_iff_has_inverse.mpr ?_
-    use g_inv
   have subgraph_mapping := subgraph_map_of_iso φ H
   let f (G' : S₀) : S₁ := by
     obtain mapped_subgraph := subgraph_mapping G'
