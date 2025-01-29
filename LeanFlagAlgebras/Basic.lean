@@ -250,7 +250,6 @@ def subgraphOfIso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁
     intro _ _ h_adj
     exact H₁.symm h_adj
 
-
 lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H : SimpleGraph V) :
   ∀ (H₁ : Subgraph G₁), ∃ (H₂ : Subgraph G₂),
   H₁.IsInduced ↔ H₂.IsInduced ∧
@@ -284,39 +283,116 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
     sorry
   sorry
 
-lemma set_card_eq_of_equiv {α β : Type} [Fintype α] [Fintype β] (e : α ≃ β) :
-  Fintype.card α = Fintype.card β := by
-  sorry
+def inducedSubgraph {V : Type} [DecidableEq V]
+      (G : SimpleGraph V) (S : Set V) : { G' : Subgraph G // G'.IsInduced }
+  :=
+  let G' : Subgraph G := {
+    verts := S
+    Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
+    adj_sub := by aesop
+    edge_vert := by aesop
+    symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
+  }
+  let h_induced : G'.IsInduced := by
+    intro u v h_u h_v h_uv
+    dsimp at *
+    exact ⟨h_uv, h_u, h_v⟩
+  ⟨G', h_induced⟩
+
+def relOfSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
+  :=
+    H₁.verts = φ '' H₀.verts
+    ∧
+    ∀ (u v : V), H₁.Adj (φ u) (φ v) = H₀.Adj u v
+
+def relOfPredicateOnSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) : Prop
+  :=
+    ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph G₀ G₁ φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+
+def generalMapOfInducedSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) (h_rel : relOfPredicateOnSubgraph G₀ G₁ φ p₀ p₁)
+    : { G' : Subgraph G₀ | G'.IsInduced ∧ p₀ G' } → { G' : Subgraph G₁ | G'.IsInduced ∧ p₁ G'} :=
+  fun ⟨G₀_sub, _, _⟩ =>
+    let ⟨G₁_sub, h_ind⟩ := inducedSubgraph G₁ (φ '' G₀_sub.verts)
+    ⟨G₁_sub, h_ind, by sorry⟩
+
+def mapOfInducedSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    : { G' : Subgraph G₀ | G'.IsInduced } → { G' : Subgraph G₁ | G'.IsInduced } :=
+  fun ⟨G₀_sub, _⟩ => inducedSubgraph G₁ (φ '' G₀_sub.verts)
+
+lemma inv_map_of_induced_subgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    : (mapOfInducedSubgraph G₁ G₀ φ.symm) ∘ (mapOfInducedSubgraph G₀ G₁ φ) = id := by
+  ext ⟨G',h_ind_G'⟩ u v
+  dsimp [mapOfInducedSubgraph, inducedSubgraph]
+  . aesop
+  . dsimp [mapOfInducedSubgraph, inducedSubgraph]
+    simp
+    constructor
+    . rintro ⟨h_uv, h_u, h_v⟩
+      dsimp [Subgraph.IsInduced] at h_ind_G'
+      exact h_ind_G' h_u h_v h_uv
+    . rintro h_uv
+      exact ⟨G'.adj_sub h_uv, G'.edge_vert h_uv, G'.edge_vert (G'.symm h_uv)⟩
+
+noncomputable def iso_subgraph_sets_from_iso_graph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+      (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+      : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+        ≃ { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  := by
+  let g : { G' : Subgraph G₀ // G'.IsInduced } → {G' : Subgraph G₁ // G'.IsInduced} :=
+    mapOfInducedSubgraph G₀ G₁ φ
+  let g_inv : { G' : Subgraph G₁ // G'.IsInduced } → {G' : Subgraph G₀ // G'.IsInduced} :=
+    mapOfInducedSubgraph G₁ G₀ φ.symm
+  have g_bij : Function.Bijective g := by
+    have h_leftinv : Function.LeftInverse g_inv g := by
+      intro G'_ind
+      dsimp [g, g_inv]
+      exact congr_fun (inv_map_of_induced_subgraph G₀ G₁ φ) G'_ind
+    have h_rightinv : Function.RightInverse g_inv g := by
+      intro G'_ind
+      dsimp [g, g_inv]
+      exact congr_fun (inv_map_of_induced_subgraph G₁ G₀ φ.symm) G'_ind
+    exact Function.bijective_iff_has_inverse.mpr ⟨g_inv, h_leftinv, h_rightinv⟩
+  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  have subgraph_mapping := subgraph_map_of_iso φ H
+  let f (G' : S₀) : S₁ := by
+    obtain mapped_subgraph := subgraph_mapping G'
+    let H₂ := Classical.choose mapped_subgraph
+    let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
+    use H₂
+    constructor
+    · obtain ⟨h_ind, _⟩ := h_mapped_subgraph.1 G'.property.1
+      exact h_ind
+    · obtain ⟨_, h_iso⟩ := h_mapped_subgraph.1 G'.property.1
+      apply h_iso at H
+      rw [<-H]
+      exact G'.property.2
+  have f_bij : Function.Bijective f := sorry
+  exact Equiv.ofBijective f f_bij
 
 lemma subgraph_density_respects_eqv_on_G
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
     (h_eqv : graph_eqv G₀ G₁)
     : subgraph_density H G₀ = subgraph_density H G₁ := by
-  unfold subgraph_density
-  have h_denom : (univ : Finset W).card.choose (univ : Finset V).card = (univ : Finset W).card.choose (univ : Finset V).card := by
-    simp
+  dsimp [subgraph_density]
   dsimp [graph_eqv] at h_eqv
-  let φ := Classical.choice h_eqv
-  have subgraph_mapping := subgraph_map_of_iso φ H
+  let φ : G₀ ≃g G₁ := Classical.choice h_eqv
+  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := iso_subgraph_sets_from_iso_graph H G₀ G₁ φ
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
-    unfold subgraph_count
-    let f : {G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} → {G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)} := by
-      intro G'
-      obtain mapped_subgraph := subgraph_mapping G'
-      let H₂ := Classical.choose mapped_subgraph
-      let h_mapped_subgraph := Classical.choose_spec mapped_subgraph
-      use H₂
-      constructor
-      · obtain ⟨h_ind, _⟩ := h_mapped_subgraph.1 G'.property.1
-        exact h_ind
-      · obtain ⟨_, h_iso⟩ := h_mapped_subgraph.1 G'.property.1
-        apply h_iso at H
-        rw [<-H]
-        exact G'.property.2
-    have f_bij : Function.Bijective f :=
-      sorry
-    sorry
+    dsimp [subgraph_count]
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    aesop
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G
@@ -407,31 +483,32 @@ noncomputable instance : AddCommMonoid FiniteGraphModule := Finsupp.instAddCommM
 
 noncomputable instance : Module ℝ FiniteGraphModule := Finsupp.module FiniteSimpleGraph ℝ
 
-noncomputable def basis_elements_from_graph : FiniteSimpleGraph → FiniteGraphModule
+noncomputable def basis_element_from_graph : FiniteSimpleGraph → FiniteGraphModule
   := fun G => Finsupp.single G 1
 
 #check Finsupp.sum
 
 noncomputable def FiniteGraphModuleBasis : Basis (FiniteSimpleGraph) ℝ FiniteGraphModule :=
-  have h_indep : LinearIndependent ℝ basis_elements_from_graph := by
+  have h_indep : LinearIndependent ℝ basis_element_from_graph := by
     rw [linearIndependent_iff'']
     intro s f h_supp h_sum G
     by_cases hG : G ∈ s
-    · have : (∑ i ∈ s, f i • basis_elements_from_graph i) G = 0 := by
+    · have : (∑ i ∈ s, f i • basis_element_from_graph i) G = 0 := by
         simp [h_sum]
       rw [← this, sum_eq_sum_diff_singleton_add hG _]
-      simp [basis_elements_from_graph, Finset.sum_apply']
+      simp [basis_element_from_graph, Finset.sum_apply']
       rw [Finset.sum_eq_zero]
       intro H hH
-      have hHG : H ≠ G := by aesop
+      have hHG : H ≠ G := by
+        simp_all only [Finsupp.coe_zero, Pi.zero_apply, mem_sdiff, mem_singleton, ne_eq, not_false_eq_true]
       exact Finsupp.single_apply_eq_zero.mpr fun a ↦ h_supp H fun _ ↦ hHG (id (Eq.symm a))
     · exact h_supp G hG
-  have h_span : ∀ f, f ∈ Submodule.span ℝ (Set.range basis_elements_from_graph) := by
+  have h_span : ∀ f, f ∈ Submodule.span ℝ (Set.range basis_element_from_graph) := by
     intro f
     refine Finsupp.mem_span_range_iff_exists_finsupp.mpr ?_
     use f
     ext G
-    simp [basis_elements_from_graph]
+    simp [basis_element_from_graph]
   Basis.mk h_indep (fun v _ ↦ h_span v)
 
 instance : Module.Free ℝ FiniteGraphModule := by
