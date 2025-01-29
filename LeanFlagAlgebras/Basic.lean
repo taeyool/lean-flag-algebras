@@ -264,20 +264,24 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
     · unfold Subgraph.IsInduced
       unfold Subgraph.IsInduced at H1_ind
       intro x y x_verts y_verts x_adj
-
-
-      sorry
+      have adj_in_G1 : G₁.Adj (φ.symm x) (φ.symm y) := by
+        exact φ.symm.map_adj_iff.mpr x_adj
+      have x_pre_in_H1 : φ.symm x ∈ H₁.verts := by
+        obtain ⟨x', ⟨hx'_in_H1, h_eq⟩⟩ := x_verts
+        rw [← h_eq]
+        have symm_app_app : φ.symm (φ.toEquiv x') = x' := by
+          exact φ.toEquiv.symm_apply_apply x'
+        rw [symm_app_app]
+        exact hx'_in_H1
+      have y_pre_in_H1 : φ.symm y ∈ H₁.verts := by
+        obtain ⟨y', ⟨hy'_in_H1, h_eq⟩⟩ := y_verts
+        rw [← h_eq]
+        have symm_app_app : φ.symm (φ.toEquiv y') = y' := by
+          exact φ.toEquiv.symm_apply_apply y'
+        rw [symm_app_app]
+        exact hy'_in_H1
+      exact H1_ind x_pre_in_H1 y_pre_in_H1 adj_in_G1
     sorry
-  -- · intro h_induced v₁ v₂ hv₁ hv₂ he
-  --     obtain ⟨u₁, hu₁, hv₁'⟩ := φ.surj_on_image _ hv₁
-  --     obtain ⟨u₂, hu₂, hv₂'⟩ := φ.surj_on_image _ hv₂
-  --     rw [←hv₁', ←hv₂']
-  --     exact h_induced u₁ u₂ hu₁ hu₂ (φ.inj_edge he)
-  --   · intro h_induced v₁ v₂ hv₁ hv₂ he
-  --     exact h_induced (φ v₁) (φ v₂)
-  --       (mem_image_of_mem _ hv₁)
-  --       (mem_image_of_mem _ hv₂)
-  --       (φ.map_edge_mem he)
   sorry
 
 lemma set_card_eq_of_equiv {α β : Type} [Fintype α] [Fintype β] (e : α ≃ β) :
