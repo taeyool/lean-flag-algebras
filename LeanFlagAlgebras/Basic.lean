@@ -289,7 +289,7 @@ lemma subgraph_map_of_iso {G₁ G₂ : SimpleGraph W} (φ : G₁ ≃g G₂) (H :
   sorry
 
 def relOfSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
   :=
   H₁.verts = φ '' H₀.verts
@@ -299,19 +299,19 @@ def relOfPredOnSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [De
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) : Prop
   :=
-  ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph G₀ G₁ φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+  ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
-def relOfIsoSubgraph {U V : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V]
+def predIsoH {U V : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V]
     (H : SimpleGraph U) (G : SimpleGraph V)
     : Subgraph G → Prop
   :=
   fun G' => Nonempty (Subgraph.coe G' ≃g H)
 
-lemma rel_of_iso_on_subgraph {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁) (H : SimpleGraph U)
-    : relOfPredOnSubgraph φ (relOfIsoSubgraph H G₀) (relOfIsoSubgraph H G₁)
+lemma predIsoH_related {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
+    : relOfPredOnSubgraph φ (predIsoH H G₀) (predIsoH H G₁)
   := by
-  dsimp [relOfPredOnSubgraph, relOfIsoSubgraph, relOfSubgraph]
+  dsimp [relOfPredOnSubgraph, predIsoH, relOfSubgraph]
   rintro H₀ H₁ ⟨h_vert, h_adj⟩
   constructor
   . rintro ⟨f₀, h_iso₀⟩
@@ -360,10 +360,10 @@ def inducedSubgraph {V : Type} [DecidableEq V]
     exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
 
-lemma induced_subgraph_rel {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+lemma inducedSubgraph_related {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
-    : relOfSubgraph G₀ G₁ φ H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
+    : relOfSubgraph φ H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
   := by
   dsimp [relOfSubgraph, inducedSubgraph]; simp
   intro u v
@@ -378,21 +378,21 @@ lemma induced_subgraph_rel {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] 
     exact ⟨(Iso.map_adj_iff φ).mpr h_uv_G₀, h_u_H₀, h_v_H₀⟩
 
 lemma induced_subgraph_pred {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) (h_rel : relOfPredOnSubgraph φ p₀ p₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
     : p₀ H₀ ↔ p₁ (inducedSubgraph G₁ (φ '' H₀.verts))
   := by
     have h_rel' := h_rel H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
-    exact h_rel' (induced_subgraph_rel G₀ G₁ φ H₀ h_ind₀)
+    exact h_rel' (inducedSubgraph_related φ H₀ h_ind₀)
 
 lemma induced_subgraph_pred_for_iso_subgraph {U V W: Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : ∀ (H₀ : Subgraph G₀),
-        H₀.IsInduced → (relOfIsoSubgraph H G₀ H₀ ↔ relOfIsoSubgraph H G₁ (inducedSubgraph G₁ (φ '' H₀.verts)))
+        H₀.IsInduced → (predIsoH H G₀ H₀ ↔ predIsoH H G₁ (inducedSubgraph G₁ (φ '' H₀.verts)))
   := by
   intro H₀ h_ind₀
-  exact induced_subgraph_pred G₀ G₁ φ (relOfIsoSubgraph H G₀) (relOfIsoSubgraph H G₁) (rel_of_iso_on_subgraph G₀ G₁ φ H) H₀ h_ind₀
+  exact induced_subgraph_pred φ (predIsoH H G₀) (predIsoH H G₁) (predIsoH_related φ H) H₀ h_ind₀
 
 def generalMapOfInducedSubgraph {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (G₀ : SimpleGraph V) (G₁ : SimpleGraph W) (φ : G₀ ≃g G₁)
