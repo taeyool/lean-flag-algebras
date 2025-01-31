@@ -382,9 +382,10 @@ noncomputable def isoSetOfInducedSubgraph
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ p₁ G' }
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
-    obtain ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-    obtain ⟨H₁, h_ind₁⟩ := inducedSubgraph G₁ (φ '' H₀.verts)
-    have : relOfSubgraph φ H₀ H₁ := sorry
+    let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
+    let H₁ := (inducedSubgraph G₁ (φ '' H₀.verts)).1
+    let h_ind₁ : H₁.IsInduced := (inducedSubgraph G₁ (φ '' H₀.verts)).2
+    have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
   let f_bij : Function.Bijective f := sorry
