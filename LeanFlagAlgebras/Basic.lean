@@ -459,14 +459,34 @@ noncomputable def subgraph_density_lift_G
   intro G₀ G₁ h_eqv
   exact subgraph_density_respects_eqv_on_G H G₀ G₁ h_eqv
 
+noncomputable def isoSetOfInducedSubgraphInG
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph U)
+    : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
+      ≃ { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₁) }
+  := sorry
+
 lemma subgraph_density_lift_G_respects_eqv_on_H
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
     : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G := by
-  sorry
+  -- rcases Quotient.exists_rep G with ⟨Greg, hGreg⟩
+  dsimp [subgraph_density_lift_G]
+  dsimp [graph_eqv] at h_eqv
+  congr
+  ext Greg
+  let φ : H₀ ≃g H₁ := Classical.choice h_eqv
+  let S₀ := { G' : Subgraph Greg | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
+  let S₁ := { G' : Subgraph Greg | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₁) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphInG φ Greg
+  have h_count : subgraph_density H₀ Greg = subgraph_density H₁ Greg := by
+    dsimp [subgraph_density]
+    dsimp [subgraph_count]
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    aesop
+  exact h_count
 
--- quotient version of subgraph_density
 noncomputable def subgraph_density_quot
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ := by
