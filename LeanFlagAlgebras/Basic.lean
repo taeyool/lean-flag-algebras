@@ -464,7 +464,20 @@ noncomputable def isoSetOfInducedSubgraphInG
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph U)
     : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
       ≃ { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₁) }
-  := sorry
+  := by
+  let h : ∀ G' : Subgraph G, Nonempty (Subgraph.coe G' ≃g H₀) ↔ Nonempty (Subgraph.coe G' ≃g H₁) := by
+    intro G'
+    constructor
+    . intro ⟨h_iso₀⟩
+      have h_iso₁ : Subgraph.coe G' ≃g H₁ := φ.comp h_iso₀
+      exact Nonempty.intro h_iso₁
+    . intro ⟨h_iso₁⟩
+      have h_iso₀ : Subgraph.coe G' ≃g H₀ := φ.symm.comp h_iso₁
+      exact Nonempty.intro h_iso₀
+  have : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
+         = { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₁) } :=
+    Set.sep_ext_iff.mpr fun x _ ↦ h x
+  exact Equiv.setCongr this
 
 lemma subgraph_density_lift_G_respects_eqv_on_H
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
