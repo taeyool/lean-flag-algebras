@@ -590,3 +590,28 @@ noncomputable def ZeroElement : Submodule ℝ GraphVector :=
   Submodule.span ℝ (⋃₀ Set.range S)
 
 noncomputable def GraphAlgebra : Module ℝ (GraphVector ⧸ ZeroElement) := inferInstance
+
+noncomputable instance subgraph_set_fintype'
+    {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) :
+    Fintype (Subgraph G × Subgraph G) :=
+  sorry
+
+noncomputable def subgraph_count'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ :=
+  let p (G₁ G₂ : Subgraph G) : Prop :=
+    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
+    G₁.verts ∩ G₂.verts = ∅
+  { (G₁, G₂) : Subgraph G × Subgraph G | p G₁ G₂ }.toFinset.card
+
+noncomputable def subgraph_density'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℚ :=
+  let subgraph_cnt := subgraph_count' H₁ H₂ G
+  let W_card := Fintype.card W
+  let V_card := Fintype.card V
+  let U_card := Fintype.card U
+  let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
+  subgraph_cnt / num_of_all_induced_subgraphs
