@@ -616,6 +616,9 @@ def IsoSimpleGraph : Type
 abbrev GraphVector : Type
   := IsoSimpleGraph →₀ ℝ
 
+noncomputable instance : HMul ℝ GraphVector GraphVector where
+  hMul r g := r • g
+
 noncomputable instance : AddCommGroup GraphVector := Finsupp.instAddCommGroup
 
 noncomputable instance : AddCommMonoid GraphVector := Finsupp.instAddCommMonoid
@@ -658,12 +661,75 @@ noncomputable def densityGraphSum
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ F in ℓ_graphs, (subgraph_density_quot G.2 F) • basisElementFromGraph G
 
-noncomputable def ZeroElement : Submodule ℝ GraphVector :=
+noncomputable def ZeroSet : Submodule ℝ GraphVector :=
   let f (G : IsoSimpleGraph) := fun (ℓ : ℕ) ↦ basisElementFromGraph G - densityGraphSum G ℓ
   let S (G : IsoSimpleGraph) := (f G) '' {ℓ | G.1 ≤ ℓ}
   Submodule.span ℝ (⋃₀ Set.range S)
 
-noncomputable def GraphAlgebra : Module ℝ (GraphVector ⧸ ZeroElement) := inferInstance
+lemma zeroset_closed_under_add
+    (h₁ h₂ : GraphVector) (h₁_zero : h₁ ∈ ZeroSet) (h₂_zero : h₂ ∈ ZeroSet)
+    : h₁ + h₂ ∈ ZeroSet := by
+  apply Submodule.add_mem <;> assumption
+
+lemma zeroset_closed_under_smul
+    (r : ℝ) (h : GraphVector) (h_zero : h ∈ ZeroSet)
+    : r • h ∈ ZeroSet := by
+  apply SMulMemClass.smul_mem
+  assumption
+
+def graph_algebra_eqv (g h : GraphVector) : Prop
+  :=
+  g - h ∈ ZeroSet
+
+theorem graph_algebra_eqv.refl (g : GraphVector)
+    : graph_algebra_eqv g g
+  :=
+  sorry
+
+theorem graph_algebra_eqv.symm
+    : ∀ {g h : GraphVector}, graph_algebra_eqv g h → graph_algebra_eqv h g
+  :=
+  sorry
+
+theorem graph_algebra_eqv.trans
+    : ∀ {f g h : GraphVector}, graph_algebra_eqv f g → graph_algebra_eqv g h → graph_algebra_eqv f h
+  :=
+  sorry
+
+theorem is_equivalence'
+    : Equivalence graph_algebra_eqv
+  :=
+  { refl := graph_algebra_eqv.refl, symm := graph_algebra_eqv.symm, trans := graph_algebra_eqv.trans }
+
+instance graphVectorSetoid
+    : Setoid GraphVector
+  where
+  r     := graph_algebra_eqv
+  iseqv := is_equivalence'
+
+abbrev GraphAlgebra : Type :=
+  Quotient graphVectorSetoid
+
+noncomputable instance : Add GraphAlgebra where
+  add := by
+    apply Quotient.map₂ (· + ·)
+    intro f f' hf g g' hg
+    simp
+    show graph_algebra_eqv (f + g) (f' + g')
+    dsimp [graph_algebra_eqv]
+    have : (f - f') + (g - g') = f + g - (f' + g') := sorry
+    sorry
+
+noncomputable instance : HSMul ℝ GraphAlgebra GraphAlgebra where
+  hSMul r := by
+    apply Quotient.map (r • ·)
+    intro g g' hg
+    simp
+    show graph_algebra_eqv (r • g) (r • g')
+    dsimp [graph_algebra_eqv]
+    rw [← smul_sub]
+    apply zeroset_closed_under_smul
+    exact hg
 
 noncomputable instance subgraph_set_fintype'
     {V : Type} [Fintype V] [DecidableEq V]
@@ -735,3 +801,79 @@ noncomputable def subgraph_density_quot'
   intro H₁ H₁' h_eqv
   ext H₂ G
   exact subgraph_density_lift_G_H₂_respects_eqv_on_H₁' H₁ H₁' H₂ G h_eqv
+
+noncomputable def graph_mul
+    (H₁ H₂ : IsoSimpleGraph) : GraphVector :=
+  let ℓ := H₁.1 + H₂.1
+  let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
+  ∑ G in ℓ_graphs, (subgraph_density_quot' H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
+
+noncomputable instance : Mul GraphVector where
+  mul g h := ∑ G in g.support, ∑ H in h.support, (g G) * (h H) • graph_mul G H
+
+noncomputable instance : Mul GraphAlgebra where
+  mul := by
+    apply Quotient.map₂ (· * ·)
+    intro g g' hg h h' hh
+    simp
+    sorry
+
+instance : Zero GraphAlgebra where
+  zero := ⟦0⟧
+
+instance : One GraphAlgebra where
+  one := sorry
+
+instance : Neg GraphAlgebra where
+  neg := sorry
+
+noncomputable instance : Ring GraphAlgebra where
+  add := (· + ·)
+  add_assoc := sorry
+  zero := 0
+  zero_add := sorry
+  add_zero := sorry
+  neg := -(·)
+  add_comm := sorry
+  neg_add_cancel := sorry
+  mul := (· * ·)
+  mul_assoc := sorry
+  zero_mul := sorry
+  mul_zero := sorry
+  one := 1
+  one_mul := sorry
+  mul_one := sorry
+  left_distrib := sorry
+  right_distrib := sorry
+  nsmul n g := (n : ℝ) • g
+  nsmul_zero := by
+    intro g; simp
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp; rfl
+  nsmul_succ := by
+    intro n g; simp
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp
+    have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
+      rw [add_smul, one_smul]
+    rw [this]
+  zsmul z g := (z : ℝ) • g
+  zsmul_zero' := by
+    intro g; simp
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp; rfl
+  zsmul_succ' := by
+    intro n g; simp
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp
+    have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
+      rw [add_smul, one_smul]
+    rw [this]
+  zsmul_neg' := sorry
+
+noncomputable instance : CommRing GraphAlgebra where
+  mul_comm := sorry
