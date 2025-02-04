@@ -302,8 +302,8 @@ lemma predIsoH_related
       constructor
       . intro w₀ w₁ h_eq
         simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
-        obtain ⟨val, property⟩ := w₀
-        obtain ⟨val_1, property_1⟩ := w₁
+        obtain ⟨_, property₀⟩ := w₀
+        obtain ⟨_, property₁⟩ := w₁
         simp_all only
       . intro u
         let w : H₁.verts := H₁.vert (φ (f₀.symm u)) (by aesop)
@@ -312,15 +312,15 @@ lemma predIsoH_related
     have h_iso₁ : ∀ {w₀ w₁ : H₁.verts}, H.Adj (f₁ w₀) (f₁ w₁) ↔ H₁.Adj w₀ w₁ := by
       intro w₀ w₁; dsimp [f₁]
       simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₁]
-      obtain ⟨val, property⟩ := w₀
-      obtain ⟨val_1, property_1⟩ := w₁
+      obtain ⟨_, property₀⟩ := w₀
+      obtain ⟨_, property₁⟩ := w₁
       simp_all only
       simp_all only [Set.mem_image]
-      obtain ⟨w, h⟩ := property
-      obtain ⟨w_1, h_1⟩ := property_1
-      obtain ⟨_, right⟩ := h
-      obtain ⟨left_1, right_1⟩ := h_1
-      subst right right_1
+      obtain ⟨_, h₀⟩ := property₀
+      obtain ⟨_, h₁⟩ := property₁
+      obtain ⟨_, right₀⟩ := h₀
+      obtain ⟨_, right₁⟩ := h₁
+      subst right₀ right₁
       simp_all only [RelIso.symm_apply_apply]
     exact ⟨Equiv.ofBijective f₁ h_bij₁, h_iso₁⟩
   . rintro ⟨f₁, h_iso₁⟩
@@ -334,8 +334,8 @@ lemma predIsoH_related
       constructor
       . intro v₀ v₁ h_eq
         simp_all
-        obtain ⟨val, property⟩ := v₀
-        obtain ⟨val_1, property_1⟩ := v₁
+        obtain ⟨_, property₀⟩ := v₀
+        obtain ⟨_, property₁⟩ := v₁
         simp_all only
       . intro u
         have : φ.symm (f₁.symm u) ∈ H₀.verts := by rw [←h_vert_inv]; simp
