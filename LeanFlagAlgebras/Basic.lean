@@ -690,3 +690,48 @@ noncomputable def subgraph_density'
   let U_card := Fintype.card U
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
+
+lemma subgraph_density_respects_eqv_on_G'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G G' : SimpleGraph W)
+    (h_eqv : graph_eqv G G')
+    : subgraph_density' H₁ H₂ G = subgraph_density' H₁ H₂ G' :=
+  sorry
+
+noncomputable def subgraph_density_lift_G'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ := by
+  apply Quot.lift (fun G : SimpleGraph W => subgraph_density' H₁ H₂ G)
+  intro G G' h_eqv
+  exact subgraph_density_respects_eqv_on_G' H₁ H₂ G G' h_eqv
+
+lemma subgraph_density_lift_G_respects_eqv_on_H₂'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V) (H₂ H₂' : SimpleGraph U) (G : QuotSimpleGraph W)
+    (h_eqv : graph_eqv H₂ H₂')
+    : subgraph_density_lift_G' H₁ H₂ G = subgraph_density_lift_G' H₁ H₂' G := by
+  sorry
+
+noncomputable def subgraph_density_lift_G_H₁'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ : SimpleGraph V)
+    : QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
+  apply Quot.lift (fun H₂ : SimpleGraph U => subgraph_density_lift_G' H₁ H₂)
+  intro H₂ H₂' h_eqv
+  ext G
+  exact subgraph_density_lift_G_respects_eqv_on_H₂' H₁ H₂ H₂' G h_eqv
+
+lemma subgraph_density_lift_G_H₂_respects_eqv_on_H₁'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H₁ H₁' : SimpleGraph V) (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
+    (h_eqv : graph_eqv H₁ H₁')
+    : subgraph_density_lift_G_H₁' H₁ H₂ G = subgraph_density_lift_G_H₁' H₁' H₂ G := by
+  sorry
+
+noncomputable def subgraph_density_quot'
+    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
+  apply Quot.lift subgraph_density_lift_G_H₁'
+  intro H₁ H₁' h_eqv
+  ext H₂ G
+  exact subgraph_density_lift_G_H₂_respects_eqv_on_H₁' H₁ H₁' H₂ G h_eqv
