@@ -92,21 +92,28 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 open SimpleGraph
 open Classical
 
-noncomputable instance subgraph_set_fintype
+noncomputable def subgraph_fintype
     {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) (p : Subgraph G → Prop) :
-    Fintype { G' : Subgraph G | p G' } :=
-  let f : { G' : Subgraph G | p G' } → Set V × Set (V × V) :=
-    fun G' => (G'.val.verts, { (u, v) | G'.val.Adj u v })
+    (G : SimpleGraph V) :
+    Fintype (Subgraph G) :=
+  let f : Subgraph G → Set V × Set (V × V) :=
+    fun G' => (G'.verts, { (u, v) | G'.Adj u v })
   have f_inj : Function.Injective f := by
     intro G1 G2 h_eq
     dsimp [f] at h_eq
     ext u v
-    . have h_eq_verts : G1.val.verts = G2.val.verts := (Prod.ext_iff.mp h_eq).1
+    . have h_eq_verts : G1.verts = G2.verts := (Prod.ext_iff.mp h_eq).1
       exact Eq.to_iff (congrFun h_eq_verts u)
     . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
       exact Eq.to_iff (congrFun h_eq_edges (u, v))
   Fintype.ofInjective f f_inj
+
+noncomputable instance subgraph_set_fintype
+    {V : Type} [Fintype V] [DecidableEq V]
+    (G : SimpleGraph V) (p : Subgraph G → Prop) :
+    Fintype { G' : Subgraph G | p G' } := by
+  have : Fintype (Subgraph G) := subgraph_fintype G
+  exact inferInstance
 
 noncomputable def subgraph_count
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -661,8 +668,9 @@ noncomputable def GraphAlgebra : Module ℝ (GraphVector ⧸ ZeroElement) := inf
 noncomputable instance subgraph_set_fintype'
     {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) :
-    Fintype (Subgraph G × Subgraph G) :=
-  sorry
+    Fintype (Subgraph G × Subgraph G) := by
+  have : Fintype (Subgraph G) := subgraph_fintype G
+  exact inferInstance
 
 noncomputable def subgraph_count'
     {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
