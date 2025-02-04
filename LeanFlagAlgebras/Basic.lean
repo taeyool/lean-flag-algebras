@@ -318,7 +318,7 @@ lemma predIsoH_related
       simp_all only [Set.mem_image]
       obtain ⟨w, h⟩ := property
       obtain ⟨w_1, h_1⟩ := property_1
-      obtain ⟨left, right⟩ := h
+      obtain ⟨_, right⟩ := h
       obtain ⟨left_1, right_1⟩ := h_1
       subst right right_1
       simp_all only [RelIso.symm_apply_apply]
