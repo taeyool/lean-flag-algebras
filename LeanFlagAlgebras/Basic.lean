@@ -691,12 +691,42 @@ noncomputable def subgraph_density'
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
 
+noncomputable def isoSetOfInducedSubgraphIsoH'
+    {T U V W : Type} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H₁ : SimpleGraph T) (H₂ : SimpleGraph U)
+    : { (G, G') : Subgraph G₀ × Subgraph G₀ |
+    G.IsInduced ∧ Nonempty (Subgraph.coe G ≃g H₁) ∧
+    G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₂) ∧
+    G.verts ∩ G'.verts = ∅ }
+      ≃ { (G, G') : Subgraph G₁ × Subgraph G₁ |
+    G.IsInduced ∧ Nonempty (Subgraph.coe G ≃g H₁) ∧
+    G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₂) ∧
+    G.verts ∩ G'.verts = ∅ }
+  := by
+  sorry
+
 lemma subgraph_density_respects_eqv_on_G'
     {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G G' : SimpleGraph W)
     (h_eqv : graph_eqv G G')
-    : subgraph_density' H₁ H₂ G = subgraph_density' H₁ H₂ G' :=
-  sorry
+    : subgraph_density' H₁ H₂ G = subgraph_density' H₁ H₂ G' := by
+  dsimp [subgraph_density']
+  dsimp [graph_eqv] at h_eqv
+  let φ : G ≃g G' := Classical.choice h_eqv
+  let S₀ := { (G₁, G₂) : Subgraph G × Subgraph G |
+    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
+    G₁.verts ∩ G₂.verts = ∅ }
+  let S₁ := { (G₁, G₂) : Subgraph G' × Subgraph G' |
+    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
+    G₁.verts ∩ G₂.verts = ∅ }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphIsoH' φ H₁ H₂
+  have h_count : subgraph_count' H₁ H₂ G = subgraph_count' H₁ H₂ G' := by
+    dsimp [subgraph_count']
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
+  rw [h_count]
 
 noncomputable def subgraph_density_lift_G'
     {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
