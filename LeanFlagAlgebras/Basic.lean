@@ -293,29 +293,53 @@ lemma predIsoH_related
     have h_bij₁ : Function.Bijective f₁ := by
       dsimp [Function.Bijective, f₁]
       constructor
-      . intro w₀ w₁ h_eq; aesop
+      . intro w₀ w₁ h_eq
+        simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
+        obtain ⟨val, property⟩ := w₀
+        obtain ⟨val_1, property_1⟩ := w₁
+        simp_all only
       . intro u
         let w : H₁.verts := H₁.vert (φ (f₀.symm u)) (by aesop)
-        use w; aesop
+        use w
+        simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, RelIso.symm_apply_apply, Subtype.coe_eta, Equiv.apply_symm_apply]
     have h_iso₁ : ∀ {w₀ w₁ : H₁.verts}, H.Adj (f₁ w₀) (f₁ w₁) ↔ H₁.Adj w₀ w₁ := by
-      intro w₀ w₁; dsimp [f₁]; aesop
+      intro w₀ w₁; dsimp [f₁]
+      simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₁]
+      obtain ⟨val, property⟩ := w₀
+      obtain ⟨val_1, property_1⟩ := w₁
+      simp_all only
+      simp_all only [Set.mem_image]
+      obtain ⟨w, h⟩ := property
+      obtain ⟨w_1, h_1⟩ := property_1
+      obtain ⟨left, right⟩ := h
+      obtain ⟨left_1, right_1⟩ := h_1
+      subst right right_1
+      simp_all only [RelIso.symm_apply_apply]
     exact ⟨Equiv.ofBijective f₁ h_bij₁, h_iso₁⟩
   . rintro ⟨f₁, h_iso₁⟩
-    have h_vert_inv : φ.symm '' H₁.verts = H₀.verts := by aesop
+    have h_vert_inv : φ.symm '' H₁.verts = H₀.verts := by
+      simp_all
+      ext1 x
+      simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
     let f₀ (v : H₀.verts) : U := f₁ (H₁.vert (φ ↑v) (by aesop))
     have h_bij₀ : Function.Bijective f₀ := by
       dsimp [Function.Bijective, f₀]
       constructor
-      . intro v₀ v₁ h_eq; aesop
+      . intro v₀ v₁ h_eq
+        simp_all
+        obtain ⟨val, property⟩ := v₀
+        obtain ⟨val_1, property_1⟩ := v₁
+        simp_all only
       . intro u
         have : φ.symm (f₁.symm u) ∈ H₀.verts := by rw [←h_vert_inv]; simp
         let v : H₀.verts := H₀.vert (φ.symm (f₁.symm u)) this
-        use v; aesop
+        use v
+        simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, RelIso.apply_symm_apply, Subtype.coe_eta, Equiv.apply_symm_apply]
     have h_iso₀ : ∀ {v₀ v₁ : H₀.verts}, H.Adj (f₀ v₀) (f₀ v₁) ↔ H₀.Adj v₀ v₁ := by
       intro v₀ v₁
       dsimp [f₀]
       rw [←h_adj v₀ v₁, h_iso₁]
-      aesop
+      simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, Multiset.bijective_iff_map_univ_eq_univ, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
 def inducedSubgraph
@@ -325,8 +349,12 @@ def inducedSubgraph
   let G' : Subgraph G := {
     verts := S
     Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
-    adj_sub := by aesop
-    edge_vert := by aesop
+    adj_sub := by
+      intro v w a
+      simp_all only
+    edge_vert := by
+      intro v w a
+      simp_all only
     symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
   }
   let h_induced : G'.IsInduced := by
@@ -402,22 +430,29 @@ noncomputable def isoSetOfInducedSubgraph
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
       dsimp [f, f_inv, inducedSubgraph]
       ext u v
-      . aesop
+      . simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
       . simp
         constructor
         . rintro ⟨h_uv, h_u, h_v⟩
-          aesop
+          apply h_ind₀
+          · simp_all only
+          · simp_all only
+          · simp_all only
         . rintro h_uv
           exact ⟨H₀.adj_sub h_uv, H₀.edge_vert h_uv, H₀.edge_vert (H₀.symm h_uv)⟩
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
       dsimp [f, f_inv, inducedSubgraph]
       ext u v
-      . aesop
+      . simp_all only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_image, exists_exists_and_eq_and, RelIso.apply_symm_apply, exists_eq_right, S₀, S₁, f_inv, f]
       . simp
         constructor
         . rintro ⟨h_uv, h_u, h_v⟩
-          aesop
+          simp_all only [Set.coe_setOf, Set.mem_setOf_eq, S₀, S₁, f_inv, f]
+          apply h_ind₁
+          · simp_all only
+          · simp_all only
+          · simp_all only
         . rintro h_uv
           exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
@@ -449,7 +484,7 @@ lemma subgraph_density_respects_eqv_on_G
   have h_count : subgraph_count H G₀ = subgraph_count H G₁ := by
     dsimp [subgraph_count]
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    aesop
+    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G
@@ -484,7 +519,6 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
     (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
     : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G := by
-  -- rcases Quotient.exists_rep G with ⟨Greg, hGreg⟩
   dsimp [subgraph_density_lift_G]
   dsimp [graph_eqv] at h_eqv
   congr
@@ -497,7 +531,7 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
     dsimp [subgraph_density]
     dsimp [subgraph_count]
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    aesop
+    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   exact h_count
 
 noncomputable def subgraph_density_quot
