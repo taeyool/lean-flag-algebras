@@ -672,12 +672,16 @@ theorem graph_algebra_eqv.refl
 theorem graph_algebra_eqv.symm
     : ∀ {g h : GraphVector}, graph_algebra_eqv g h → graph_algebra_eqv h g
   :=
-  sorry
+  sub_mem_comm_iff.mp
 
 theorem graph_algebra_eqv.trans
     : ∀ {f g h : GraphVector}, graph_algebra_eqv f g → graph_algebra_eqv g h → graph_algebra_eqv f h
-  :=
-  sorry
+  := by
+  intros f g h hfg hgh
+  rw [graph_algebra_eqv] at *
+  have : f - h = (f - g) + (g - h) := by simp
+  rw [this]
+  exact zeroset_closed_under_add (f - g) (g - h) hfg hgh
 
 theorem is_equivalence'
     : Equivalence graph_algebra_eqv
