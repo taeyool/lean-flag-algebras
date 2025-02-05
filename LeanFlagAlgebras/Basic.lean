@@ -605,7 +605,8 @@ noncomputable instance : Module ℝ GraphVector
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
 
-noncomputable def finiteGraphModuleBasis : Basis (IsoSimpleGraph) ℝ GraphVector :=
+noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
+  :=
   have h_indep : LinearIndependent ℝ basisElementFromGraph := by
     rw [linearIndependent_iff'']
     intro s f h_supp h_sum G
@@ -634,18 +635,21 @@ instance : Module.Free ℝ GraphVector := by
   exact finiteGraphModuleBasis
 
 noncomputable def densityGraphSum
-    (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector :=
+    (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
+  :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ F in ℓ_graphs, (subgraph_density_quot G.2 F) • basisElementFromGraph G
+  ∑ F in ℓ_graphs, (subgraph_density_quot G.2 F) • basisElementFromGraph ⟨ℓ,F⟩
 
-noncomputable def ZeroSet : Submodule ℝ GraphVector :=
-  let f (G : IsoSimpleGraph) := fun (ℓ : ℕ) ↦ basisElementFromGraph G - densityGraphSum G ℓ
+noncomputable def ZeroSet : Submodule ℝ GraphVector
+  :=
+  let f (G : IsoSimpleGraph) (ℓ : ℕ) := basisElementFromGraph G - densityGraphSum G ℓ
   let S (G : IsoSimpleGraph) := (f G) '' {ℓ | G.1 ≤ ℓ}
   Submodule.span ℝ (⋃₀ Set.range S)
 
 lemma zeroset_closed_under_add
     (h₁ h₂ : GraphVector) (h₁_zero : h₁ ∈ ZeroSet) (h₂_zero : h₂ ∈ ZeroSet)
-    : h₁ + h₂ ∈ ZeroSet := by
+    : h₁ + h₂ ∈ ZeroSet
+  := by
   apply Submodule.add_mem <;> assumption
 
 lemma zeroset_closed_under_smul
