@@ -235,16 +235,15 @@ theorem graph_eqv.trans {V : Type} [Fintype V] [DecidableEq V]
     exact Iff.trans hf12 hf01
   exact ⟨f, this⟩
 
-theorem is_equivalence {V : Type} [Fintype V] [DecidableEq V]
-    : Equivalence (@graph_eqv V _ _)
-  :=
-  { refl := graph_eqv.refl, symm := graph_eqv.symm, trans := graph_eqv.trans }
-
 instance graphSetoid (V : Type) [Fintype V] [DecidableEq V]
     : Setoid (SimpleGraph V)
   where
-  r     := graph_eqv
-  iseqv := is_equivalence
+    r     := graph_eqv
+    iseqv := {
+      refl  := graph_eqv.refl,
+      symm  := graph_eqv.symm,
+      trans := graph_eqv.trans
+    }
 
 def QuotSimpleGraph (V : Type) [Fintype V] [DecidableEq V] : Type :=
   Quotient (graphSetoid V)
@@ -683,19 +682,15 @@ theorem graph_algebra_eqv.trans
   rw [this]
   exact zeroset_closed_under_add (f - g) (g - h) hfg hgh
 
-theorem is_equivalence'
-    : Equivalence graph_algebra_eqv
-  := {
-    refl := graph_algebra_eqv.refl,
-    symm := graph_algebra_eqv.symm,
-    trans := graph_algebra_eqv.trans
-  }
-
 instance graphVectorSetoid
     : Setoid GraphVector
   where
-  r     := graph_algebra_eqv
-  iseqv := is_equivalence'
+    r     := graph_algebra_eqv
+    iseqv := {
+      refl := graph_algebra_eqv.refl,
+      symm := graph_algebra_eqv.symm,
+      trans := graph_algebra_eqv.trans
+    }
 
 abbrev GraphAlgebra : Type :=
   Quotient graphVectorSetoid
@@ -704,11 +699,12 @@ noncomputable instance : Add GraphAlgebra where
   add := by
     apply Quotient.map₂ (· + ·)
     intro f f' hf g g' hg
-    simp
     show graph_algebra_eqv (f + g) (f' + g')
     dsimp [graph_algebra_eqv]
-    have : (f - f') + (g - g') = f + g - (f' + g') := sorry
-    sorry
+    have h := zeroset_closed_under_add (f - f') (g - g') hf hg
+    have : f - f' + (g - g') = (f + g) - (f' + g') := sub_add_sub_comm f f' g g'
+    rw [←this]
+    exact h
 
 noncomputable instance : HSMul ℝ GraphAlgebra GraphAlgebra where
   hSMul r := by
