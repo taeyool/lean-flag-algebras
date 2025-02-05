@@ -685,8 +685,11 @@ theorem graph_algebra_eqv.trans
 
 theorem is_equivalence'
     : Equivalence graph_algebra_eqv
-  :=
-  { refl := graph_algebra_eqv.refl, symm := graph_algebra_eqv.symm, trans := graph_algebra_eqv.trans }
+  := {
+    refl := graph_algebra_eqv.refl,
+    symm := graph_algebra_eqv.symm,
+    trans := graph_algebra_eqv.trans
+  }
 
 instance graphVectorSetoid
     : Setoid GraphVector
