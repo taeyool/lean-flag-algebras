@@ -654,7 +654,8 @@ lemma zeroset_closed_under_add
 
 lemma zeroset_closed_under_smul
     (r : ℝ) (h : GraphVector) (h_zero : h ∈ ZeroSet)
-    : r • h ∈ ZeroSet := by
+    : r • h ∈ ZeroSet
+  := by
   apply SMulMemClass.smul_mem
   assumption
 
@@ -662,10 +663,11 @@ def graph_algebra_eqv (g h : GraphVector) : Prop
   :=
   g - h ∈ ZeroSet
 
-theorem graph_algebra_eqv.refl (g : GraphVector)
-    : graph_algebra_eqv g g
-  :=
-  sorry
+theorem graph_algebra_eqv.refl
+    (g : GraphVector) : graph_algebra_eqv g g
+  := by
+  rw [graph_algebra_eqv]
+  simp
 
 theorem graph_algebra_eqv.symm
     : ∀ {g h : GraphVector}, graph_algebra_eqv g h → graph_algebra_eqv h g
