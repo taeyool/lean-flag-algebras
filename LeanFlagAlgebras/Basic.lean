@@ -117,15 +117,18 @@ noncomputable instance subgraph_set_fintype
 
 noncomputable def subgraph_count
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H : SimpleGraph V) (G : SimpleGraph W) : ℕ :=
+    (H : SimpleGraph V) (G : SimpleGraph W) : ℕ
+  :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
   { G' : Subgraph G | p G' }.toFinset.card
 
-noncomputable def subgraph_density {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-      (H : SimpleGraph V) (G : SimpleGraph W) : ℚ :=
+noncomputable def subgraph_density
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
+  :=
   let subgraph_cnt := subgraph_count H G
-  let num_of_all_induced_subgraphs := (univ : Finset W).card.choose (univ : Finset V).card
-  subgraph_cnt / num_of_all_induced_subgraphs
+  let num_of_all_induced_subgraph := (univ : Finset W).card.choose (univ : Finset V).card
+  subgraph_cnt / num_of_all_induced_subgraph
 
 theorem subgraph_density_ge_0 {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
           (H : SimpleGraph V) (G : SimpleGraph W)
@@ -481,7 +484,8 @@ lemma subgraph_density_respects_eqv_on_G
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
     (h_eqv : graph_eqv G₀ G₁)
-    : subgraph_density H G₀ = subgraph_density H G₁ := by
+    : subgraph_density H G₀ = subgraph_density H G₁
+  := by
   dsimp [subgraph_density]
   dsimp [graph_eqv] at h_eqv
   let φ : G₀ ≃g G₁ := Classical.choice h_eqv
@@ -496,7 +500,8 @@ lemma subgraph_density_respects_eqv_on_G
 
 noncomputable def subgraph_density_lift_G
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H : SimpleGraph V) : QuotSimpleGraph W → ℚ := by
+    (H : SimpleGraph V) : QuotSimpleGraph W → ℚ
+  := by
   apply Quot.lift (fun G : SimpleGraph W => subgraph_density H G)
   intro G₀ G₁ h_eqv
   exact subgraph_density_respects_eqv_on_G H G₀ G₁ h_eqv
@@ -525,7 +530,8 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
-    : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G := by
+    : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G
+  := by
   dsimp [subgraph_density_lift_G]
   dsimp [graph_eqv] at h_eqv
   congr
@@ -543,7 +549,8 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
 
 noncomputable def subgraph_density_quot
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    : QuotSimpleGraph V → QuotSimpleGraph W → ℚ := by
+    : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
+  := by
   apply Quot.lift subgraph_density_lift_G
   intro H₀ H₁ h_eqv
   ext G
@@ -552,7 +559,8 @@ noncomputable def subgraph_density_quot
 theorem subgraph_density_quot_ge_0
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
-    : 0 ≤ subgraph_density_quot H G := by
+    : 0 ≤ subgraph_density_quot H G
+  := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
@@ -561,53 +569,19 @@ theorem subgraph_density_quot_ge_0
 theorem subgraph_density_quot_le_1
     {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
-    : subgraph_density_quot H G ≤ 1 := by
+    : subgraph_density_quot H G ≤ 1
+  := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraph_density_le_1
 
-noncomputable def all_graphs_on_vertex_set
-    (V : Type) [Fintype V] [DecidableEq V] : Finset (SimpleGraph V) :=
-  Set.toFinset { G : SimpleGraph V | true }
-
-lemma sum_subgraph_counts
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
-    : ∑ F in (all_graphs_on_vertex_set V), subgraph_count F G = (Fintype.card W).choose (Fintype.card V) := by
-  dsimp [all_graphs_on_vertex_set, subgraph_count]
-  let h := comb_card (univ : Finset W) (Fintype.card V)
-  dsimp at h
-  rw [← h]
-  sorry
-
-theorem sum_subgraph_densities_eq_one
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (G : SimpleGraph W) (h_card : Fintype.card V ≤ Fintype.card W)
-    : ∑ F in (all_graphs_on_vertex_set V), subgraph_density F G = 1.0 := by
-  dsimp [all_graphs_on_vertex_set, subgraph_density] ; simp
-  let num_of_all_induced_subgraphs := (Fintype.card W).choose (Fintype.card V)
-  have h_sum : ∀ m : ℕ,
-    ∑ F : SimpleGraph V, subgraph_count F G / m
-    = 1 / m * ∑ F : SimpleGraph V, subgraph_count F G := by sorry
-  sorry
-  -- rw [h_sum, Finset.sum_div]
-  -- simp only [div_self]
-  -- exact Nat.cast_ne_zero.mpr (Nat.choose_pos (Nat.le_of_lt (Finset.card_pos.mpr (Finset.nonempty_univ W))))
-
-theorem subgraph_density_eq_sum_subgraph_densities
-  {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-  (H : SimpleGraph V) (G : SimpleGraph W)
-  (h_card : Fintype.card V ≤ Fintype.card U ∧ Fintype.card U ≤ Fintype.card W)
-  : subgraph_density H G = ∑ F in (all_graphs_on_vertex_set U), subgraph_density H F * subgraph_density F G := by
-  sorry
-
 -- set of all graphs (up to isomorphism) on n vertices
 def IsoSimpleGraphWithSize (n : ℕ) : Type
   := QuotSimpleGraph (Fin n)
 
-noncomputable instance (n : ℕ) : Fintype (IsoSimpleGraphWithSize n) :=
-  quotSimpleGraphFintype (Fin n)
+noncomputable instance (n : ℕ) : Fintype (IsoSimpleGraphWithSize n)
+  := quotSimpleGraphFintype (Fin n)
 
 -- set of all graphs (up to isomorphism) on a finite vertex set
 def IsoSimpleGraph : Type
@@ -619,11 +593,14 @@ abbrev GraphVector : Type
 noncomputable instance : HMul ℝ GraphVector GraphVector where
   hMul r g := r • g
 
-noncomputable instance : AddCommGroup GraphVector := Finsupp.instAddCommGroup
+noncomputable instance : AddCommGroup GraphVector
+  := Finsupp.instAddCommGroup
 
-noncomputable instance : AddCommMonoid GraphVector := Finsupp.instAddCommMonoid
+noncomputable instance : AddCommMonoid GraphVector
+  := Finsupp.instAddCommMonoid
 
-noncomputable instance : Module ℝ GraphVector := Finsupp.module IsoSimpleGraph ℝ
+noncomputable instance : Module ℝ GraphVector
+  := Finsupp.module IsoSimpleGraph ℝ
 
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
