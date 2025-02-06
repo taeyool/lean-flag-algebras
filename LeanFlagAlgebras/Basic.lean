@@ -843,48 +843,38 @@ let f_bij : Function.Bijective f := by
     rintro ⟨⟨H₀, H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩⟩
     dsimp [f, f_inv, inducedSubgraph]
     ext u v
-    · aesop
+    · simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
     · simp
       constructor
       · rintro ⟨h_uv, h_u, h_v⟩
-        apply h_ind₀
-        · simp_all only
-        · simp_all only
-        · simp_all only
+        apply h_ind₀ <;> simp_all only
       · rintro h_uv
         exact ⟨H₀.adj_sub h_uv, H₀.edge_vert h_uv, H₀.edge_vert (H₀.symm h_uv)⟩
-    · aesop
+    · simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
     · simp
       constructor
       · rintro ⟨h_uv, h_u, h_v⟩
-        apply h_ind₂
-        · simp_all only
-        · simp_all only
-        · simp_all only
+        apply h_ind₂ <;> simp_all only
       · rintro h_uv
         exact ⟨H₂.adj_sub h_uv, H₂.edge_vert h_uv, H₂.edge_vert (H₂.symm h_uv)⟩
   have h_rightinv : Function.RightInverse f_inv f := by
     rintro ⟨⟨H₁, H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩⟩
     dsimp [f, f_inv, inducedSubgraph]
     ext u v
-    · aesop
+    · simp_all only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_image, exists_exists_and_eq_and, RelIso.apply_symm_apply,
+      exists_eq_right, S₀, S₁, f_inv, f]
     · simp
       constructor
       · rintro ⟨h_uv, h_u, h_v⟩
-        apply h_ind₁
-        · simp_all only
-        · simp_all only
-        · simp_all only
+        apply h_ind₁ <;> simp_all only
       · rintro h_uv
         exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
-    · aesop
+    · simp_all only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_image, exists_exists_and_eq_and, RelIso.apply_symm_apply,
+      exists_eq_right, S₀, S₁, f_inv, f]
     · simp
       constructor
       · rintro ⟨h_uv, h_u, h_v⟩
-        apply h_ind₃
-        · simp_all only
-        · simp_all only
-        · simp_all only
+        apply h_ind₃ <;> simp_all only
       · rintro h_uv
         exact ⟨H₃.adj_sub h_uv, H₃.edge_vert h_uv, H₃.edge_vert (H₃.symm h_uv)⟩
   exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
