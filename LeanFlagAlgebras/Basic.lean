@@ -8,6 +8,7 @@ import Mathlib.Logic.Nonempty
 import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Quotient
+import Mathlib.Logic.Unique
 
 
 variable {α : Type} [DecidableEq α]
@@ -604,6 +605,19 @@ noncomputable instance : Module ℝ GraphVector
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
 
+instance (n : ℕ) : Inhabited (IsoSimpleGraphWithSize n) where
+  default := sorry
+
+instance : Unique (IsoSimpleGraphWithSize 0) where
+  uniq := sorry
+
+theorem one_unique : ∃! _ : IsoSimpleGraphWithSize 0, true
+  := by
+  simp only [exists_unique_iff_exists, exists_const]
+
+noncomputable instance : One GraphVector where
+  one := basisElementFromGraph ⟨0, Classical.choose one_unique⟩
+
 noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
   :=
   have h_indep : LinearIndependent ℝ basisElementFromGraph := by
@@ -716,6 +730,15 @@ noncomputable instance : HSMul ℝ GraphAlgebra GraphAlgebra where
     rw [← smul_sub]
     apply zeroset_closed_under_smul
     exact hg
+
+instance : Zero GraphAlgebra where
+  zero := ⟦0⟧
+
+noncomputable instance : One GraphAlgebra where
+  one := ⟦1⟧
+
+noncomputable instance : Neg GraphAlgebra where
+  neg := ((-1 : ℝ) • ·)
 
 noncomputable instance subgraph_set_fintype'
     {V : Type} [Fintype V] [DecidableEq V]
@@ -920,15 +943,6 @@ noncomputable instance : Mul GraphAlgebra where
     intro g g' hg h h' hh
     simp
     sorry
-
-instance : Zero GraphAlgebra where
-  zero := ⟦0⟧
-
-instance : One GraphAlgebra where
-  one := sorry
-
-instance : Neg GraphAlgebra where
-  neg := sorry
 
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
