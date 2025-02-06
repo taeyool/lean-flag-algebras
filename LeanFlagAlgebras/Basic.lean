@@ -1050,3 +1050,25 @@ noncomputable instance : Ring GraphAlgebra where
 
 noncomputable instance : CommRing GraphAlgebra where
   mul_comm := sorry
+
+noncomputable instance : Algebra ℝ GraphAlgebra where
+  smul r g := r • g
+  toFun r := r • 1
+  map_zero' := by
+    simp
+    apply Quotient.sound
+    simp; rfl
+  map_one' := by
+    simp
+    apply Quotient.sound
+    simp; rfl
+  map_add' := by
+    intros; simp
+    apply Quotient.sound
+    simp
+    rw [add_smul]
+  map_mul' := sorry
+  smul_def' := sorry
+  commutes' := by
+    intros; simp
+    rw [mul_comm]
