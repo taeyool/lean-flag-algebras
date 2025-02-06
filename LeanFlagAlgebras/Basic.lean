@@ -903,9 +903,10 @@ noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
 lemma subgraphPairDensity_respects_eqv_on_G
-    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) {G G' : SimpleGraph W}
-    (h_eqv : graph_eqv G G')
-    : subgraphPairDensity H₁ H₂ G = subgraphPairDensity H₁ H₂ G' := by
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U)
+    {G G' : SimpleGraph W} (h_eqv : graph_eqv G G')
+    : subgraphPairDensity H₁ H₂ G = subgraphPairDensity H₁ H₂ G'
+  := by
   dsimp [subgraphPairDensity]
   dsimp [graph_eqv] at h_eqv
   let φ : G ≃g G' := Classical.choice h_eqv
@@ -925,7 +926,8 @@ lemma subgraphPairDensity_respects_eqv_on_G
   rw [h_count]
 
 noncomputable def subgraphPairDensityLifted
-    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ := by
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ
+  := by
   apply Quot.lift (fun G : SimpleGraph W => subgraphPairDensity H₁ H₂ G)
   intro _ _ h_eqv
   exact subgraphPairDensity_respects_eqv_on_G H₁ H₂ h_eqv
@@ -933,12 +935,13 @@ noncomputable def subgraphPairDensityLifted
 lemma subgraphPairDensityLifted_respects_eqv_on_H₂
     (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
-    : subgraphPairDensityLifted H₁ H₂ G = subgraphPairDensityLifted H₁ H₂' G := by
+    : subgraphPairDensityLifted H₁ H₂ G = subgraphPairDensityLifted H₁ H₂' G
+  := by
   sorry
 
 noncomputable def subgraphPairDensityLifted_H₁
-    (H₁ : SimpleGraph V)
-    : QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
+    (H₁ : SimpleGraph V) : QuotSimpleGraph U → QuotSimpleGraph W → ℚ
+  := by
   apply Quot.lift (fun H₂ : SimpleGraph U => subgraphPairDensityLifted H₁ H₂)
   intro _ _ h_eqv
   ext G
@@ -947,18 +950,21 @@ noncomputable def subgraphPairDensityLifted_H₁
 lemma subgraphPairDensityLifted_H₂_respects_eqv_on_H₁
     {H₁ H₁' : SimpleGraph V} (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₁ H₁')
-    : subgraphPairDensityLifted_H₁ H₁ H₂ G = subgraphPairDensityLifted_H₁ H₁' H₂ G := by
+    : subgraphPairDensityLifted_H₁ H₁ H₂ G = subgraphPairDensityLifted_H₁ H₁' H₂ G
+  := by
   sorry
 
 noncomputable def quotSubgraphPairDensity
-    : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
+    : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ
+  := by
   apply Quot.lift subgraphPairDensityLifted_H₁
   intro _ _ h_eqv
   ext H₂ G
   exact subgraphPairDensityLifted_H₂_respects_eqv_on_H₁ H₂ G h_eqv
 
 noncomputable def graph_mul
-    (H₁ H₂ : IsoSimpleGraph) : GraphVector :=
+    (H₁ H₂ : IsoSimpleGraph) : GraphVector
+  :=
   let ℓ := H₁.1 + H₂.1
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
