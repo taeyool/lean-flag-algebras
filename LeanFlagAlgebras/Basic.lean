@@ -139,7 +139,7 @@ noncomputable def subgraphDensity
   let num_of_all_induced_subgraph := (univ : Finset W).card.choose (univ : Finset V).card
   subgraph_cnt / num_of_all_induced_subgraph
 
-noncomputable def subgraphCountPair
+noncomputable def subgraphPairCount
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ
   :=
   let p (G₁ G₂ : Subgraph G) : Prop :=
@@ -148,10 +148,10 @@ noncomputable def subgraphCountPair
     G₁.verts ∩ G₂.verts = ∅
   { (G₁, G₂) : Subgraph G × Subgraph G | p G₁ G₂ }.toFinset.card
 
-noncomputable def subgraphDensityPair
+noncomputable def subgraphPairDensity
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℚ
   :=
-  let subgraph_cnt := subgraphCountPair H₁ H₂ G
+  let subgraph_cnt := subgraphPairCount H₁ H₂ G
   let W_card := Fintype.card W
   let V_card := Fintype.card V
   let U_card := Fintype.card U
@@ -654,7 +654,7 @@ lemma subgraphDensity_respects_eqv_on_G
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
 
-noncomputable def subgraphDensity_lift_G
+noncomputable def subgraphDensityLifted
     (H : SimpleGraph V) : QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift (fun G : SimpleGraph W => subgraphDensity H G)
@@ -680,12 +680,12 @@ noncomputable def isoSetOfInducedSubgraphInG
     Set.sep_ext_iff.mpr fun x _ ↦ h x
   exact Equiv.setCongr this
 
-lemma subgraphDensity_lift_G_respects_eqv_on_H
+lemma subgraphDensityLifted_respects_eqv_on_H
     {H₀ H₁ : SimpleGraph V} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
-    : subgraphDensity_lift_G H₀ G = subgraphDensity_lift_G H₁ G
+    : subgraphDensityLifted H₀ G = subgraphDensityLifted H₁ G
   := by
-  dsimp [subgraphDensity_lift_G]
+  dsimp [subgraphDensityLifted]
   dsimp [graph_eqv] at h_eqv
   congr
   ext Greg
@@ -703,10 +703,10 @@ lemma subgraphDensity_lift_G_respects_eqv_on_H
 noncomputable def quotSubgraphDensity
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
-  apply Quot.lift subgraphDensity_lift_G
+  apply Quot.lift subgraphDensityLifted
   intro _ _ h_eqv
   ext G
-  exact subgraphDensity_lift_G_respects_eqv_on_H G h_eqv
+  exact subgraphDensityLifted_respects_eqv_on_H G h_eqv
 
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
@@ -902,11 +902,11 @@ noncomputable instance : One GraphAlgebra where
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
-lemma subgraphDensityPair_respects_eqv_on_G
+lemma subgraphPairDensity_respects_eqv_on_G
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) {G G' : SimpleGraph W}
     (h_eqv : graph_eqv G G')
-    : subgraphDensityPair H₁ H₂ G = subgraphDensityPair H₁ H₂ G' := by
-  dsimp [subgraphDensityPair]
+    : subgraphPairDensity H₁ H₂ G = subgraphPairDensity H₁ H₂ G' := by
+  dsimp [subgraphPairDensity]
   dsimp [graph_eqv] at h_eqv
   let φ : G ≃g G' := Classical.choice h_eqv
   let S₀ := { (G₁, G₂) : Subgraph G × Subgraph G |
@@ -918,50 +918,50 @@ lemma subgraphDensityPair_respects_eqv_on_G
     G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
     G₁.verts ∩ G₂.verts = ∅ }
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphPairIsoH φ H₁ H₂
-  have h_count : subgraphCountPair H₁ H₂ G = subgraphCountPair H₁ H₂ G' := by
-    dsimp [subgraphCountPair]
+  have h_count : subgraphPairCount H₁ H₂ G = subgraphPairCount H₁ H₂ G' := by
+    dsimp [subgraphPairCount]
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
 
-noncomputable def subgraphDensityPair_lift_G
+noncomputable def subgraphPairDensityLifted
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ := by
-  apply Quot.lift (fun G : SimpleGraph W => subgraphDensityPair H₁ H₂ G)
+  apply Quot.lift (fun G : SimpleGraph W => subgraphPairDensity H₁ H₂ G)
   intro _ _ h_eqv
-  exact subgraphDensityPair_respects_eqv_on_G H₁ H₂ h_eqv
+  exact subgraphPairDensity_respects_eqv_on_G H₁ H₂ h_eqv
 
-lemma subgraphDensity_lift_G_respects_eqv_on_H₂'
+lemma subgraphPairDensityLifted_respects_eqv_on_H₂
     (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
-    : subgraphDensityPair_lift_G H₁ H₂ G = subgraphDensityPair_lift_G H₁ H₂' G := by
+    : subgraphPairDensityLifted H₁ H₂ G = subgraphPairDensityLifted H₁ H₂' G := by
   sorry
 
-noncomputable def subgraphDensity_lift_G_H₁'
+noncomputable def subgraphPairDensityLifted_H₁
     (H₁ : SimpleGraph V)
     : QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
-  apply Quot.lift (fun H₂ : SimpleGraph U => subgraphDensityPair_lift_G H₁ H₂)
+  apply Quot.lift (fun H₂ : SimpleGraph U => subgraphPairDensityLifted H₁ H₂)
   intro _ _ h_eqv
   ext G
-  exact subgraphDensity_lift_G_respects_eqv_on_H₂' H₁ G h_eqv
+  exact subgraphPairDensityLifted_respects_eqv_on_H₂ H₁ G h_eqv
 
-lemma subgraphDensity_lift_G_H₂_respects_eqv_on_H₁'
+lemma subgraphPairDensityLifted_H₂_respects_eqv_on_H₁
     {H₁ H₁' : SimpleGraph V} (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₁ H₁')
-    : subgraphDensity_lift_G_H₁' H₁ H₂ G = subgraphDensity_lift_G_H₁' H₁' H₂ G := by
+    : subgraphPairDensityLifted_H₁ H₁ H₂ G = subgraphPairDensityLifted_H₁ H₁' H₂ G := by
   sorry
 
-noncomputable def quotSubgraphDensity'
+noncomputable def quotSubgraphPairDensity
     : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
-  apply Quot.lift subgraphDensity_lift_G_H₁'
+  apply Quot.lift subgraphPairDensityLifted_H₁
   intro _ _ h_eqv
   ext H₂ G
-  exact subgraphDensity_lift_G_H₂_respects_eqv_on_H₁' H₂ G h_eqv
+  exact subgraphPairDensityLifted_H₂_respects_eqv_on_H₁ H₂ G h_eqv
 
 noncomputable def graph_mul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector :=
   let ℓ := H₁.1 + H₂.1
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ G in ℓ_graphs, (quotSubgraphDensity' H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
+  ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
 noncomputable instance : Mul GraphVector where
   mul g h := ∑ G in g.support, ∑ H in h.support, (g G) * (h H) • graph_mul G H
