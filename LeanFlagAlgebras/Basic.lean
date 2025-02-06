@@ -93,8 +93,13 @@ theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.ca
 open SimpleGraph
 open Classical
 
+variable {T U V W : Type}
+  [Fintype T] [DecidableEq T]
+  [Fintype U] [DecidableEq U]
+  [Fintype V] [DecidableEq V]
+  [Fintype W] [DecidableEq W]
+
 noncomputable def subgraph_fintype
-    {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) :
     Fintype (Subgraph G) :=
   let f : Subgraph G → Set V × Set (V × V) :=
@@ -110,34 +115,31 @@ noncomputable def subgraph_fintype
   Fintype.ofInjective f f_inj
 
 noncomputable instance subgraph_set_fintype
-    {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) (p : Subgraph G → Prop) :
     Fintype { G' : Subgraph G | p G' } := by
   have : Fintype (Subgraph G) := subgraph_fintype G
   exact inferInstance
 
 noncomputable def subgraph_count
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G : SimpleGraph W) : ℕ
   :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
   { G' : Subgraph G | p G' }.toFinset.card
 
 noncomputable def subgraph_density
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   :=
   let subgraph_cnt := subgraph_count H G
   let num_of_all_induced_subgraph := (univ : Finset W).card.choose (univ : Finset V).card
   subgraph_cnt / num_of_all_induced_subgraph
 
-theorem subgraph_density_ge_0 {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+theorem subgraph_density_ge_0
           (H : SimpleGraph V) (G : SimpleGraph W)
           : 0 ≤ subgraph_density H G := by
   dsimp [subgraph_density]
   apply div_nonneg <;> simp
 
-noncomputable def vert_iso_from_graph_iso {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+noncomputable def vert_iso_from_graph_iso
   (H : SimpleGraph V) (G : SimpleGraph W) (G₀ : G.Subgraph)
   (hG₀_iso : Nonempty (Subgraph.coe G₀ ≃g H))
   : {x // x ∈ G₀.verts } ≃ V := by
@@ -146,7 +148,7 @@ noncomputable def vert_iso_from_graph_iso {V W : Type} [Fintype V] [DecidableEq 
     have hf₀ : Function.Bijective f₀ := RelIso.bijective g
     exact Equiv.ofBijective f₀ hf₀
 
-theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+theorem subgraph_density_le_1
           (H : SimpleGraph V) (G : SimpleGraph W)
           : subgraph_density H G ≤ 1
   := by
@@ -201,16 +203,18 @@ theorem subgraph_density_le_1 {V W : Type} [Fintype V] [DecidableEq V] [Fintype 
           exact h₁ hx hy h_adj
   . simp
 
-def graph_eqv {V : Type} [Fintype V] [DecidableEq V] (G₀ G₁ : SimpleGraph V) : Prop
+def graph_eqv (G₀ G₁ : SimpleGraph V) : Prop
   :=
   Nonempty (G₀ ≃g G₁)
 
-theorem graph_eqv.refl {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+omit [Fintype V] [DecidableEq V] in
+theorem graph_eqv.refl (G : SimpleGraph V)
     : graph_eqv G G
   := by
   exact instNonemptyOfInhabited
 
-theorem graph_eqv.symm {V : Type} [Fintype V] [DecidableEq V]
+omit [Fintype V] [DecidableEq V] in
+theorem graph_eqv.symm
     : ∀ {G₀ G₁ : SimpleGraph V}, graph_eqv G₀ G₁ → graph_eqv G₁ G₀
   := by
   intro G₀ G₁ h
@@ -223,7 +227,8 @@ theorem graph_eqv.symm {V : Type} [Fintype V] [DecidableEq V]
     exact Iff.symm this
   exact ⟨f_symm, hf_symm⟩
 
-theorem graph_eqv.trans {V : Type} [Fintype V] [DecidableEq V]
+omit [Fintype V] [DecidableEq V] in
+theorem graph_eqv.trans
     : ∀ {G₀ G₁ G₂ : SimpleGraph V}, graph_eqv G₀ G₁ → graph_eqv G₁ G₂ → graph_eqv G₀ G₂
   := by
   intro G₀ G₁ G₂ h01 h12
@@ -269,7 +274,6 @@ def subgraphOfIso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁
     exact H₁.symm h_adj
 
 def relOfSubgraph
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
   :=
@@ -277,21 +281,18 @@ def relOfSubgraph
   ∧ ∀ (u v : V), H₁.Adj (φ u) (φ v) = H₀.Adj u v
 
 def relOfPredOnSubgraph
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) : Prop
   :=
   ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
 def predIsoH
-    {U V : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V]
     (H : SimpleGraph U) (G : SimpleGraph V)
     : Subgraph G → Prop
   :=
   fun G' => Nonempty (Subgraph.coe G' ≃g H)
 
 lemma predIsoH_related
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : relOfPredOnSubgraph φ (predIsoH H G₀) (predIsoH H G₁)
   := by
@@ -353,7 +354,6 @@ lemma predIsoH_related
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
 def inducedSubgraph
-    {V : Type} [DecidableEq V]
     (G : SimpleGraph V) (S : Set V) : { G' : Subgraph G // G'.IsInduced }
   :=
   let G' : Subgraph G := {
@@ -373,8 +373,8 @@ def inducedSubgraph
     exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma inducedSubgraph_related
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
     : relOfSubgraph φ H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
@@ -391,8 +391,8 @@ lemma inducedSubgraph_related
     have h_v_H₀ : v ∈ H₀.verts := H₀.edge_vert (H₀.symm h_uv_H₀)
     exact ⟨(Iso.map_adj_iff φ).mpr h_uv_G₀, h_u_H₀, h_v_H₀⟩
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma inducedSubgraph_pred_iff
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) (h_rel : relOfPredOnSubgraph φ p₀ p₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
@@ -402,7 +402,6 @@ lemma inducedSubgraph_pred_iff
   exact h_rel' (inducedSubgraph_related φ H₀ h_ind₀)
 
 lemma inducedSubgraph_predIsoH_iff
-    {U V W: Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : ∀ (H₀ : Subgraph G₀),
         H₀.IsInduced → (predIsoH H G₀ H₀ ↔ predIsoH H G₁ (inducedSubgraph G₁ (φ '' H₀.verts)))
@@ -411,7 +410,6 @@ lemma inducedSubgraph_predIsoH_iff
   exact inducedSubgraph_pred_iff φ (predIsoH H G₀) (predIsoH H G₁) (predIsoH_related φ H) H₀ h_ind₀
 
 noncomputable def isoSetOfInducedSubgraph
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop)
     (h_rel : relOfPredOnSubgraph φ p₀ p₁) (h_rel_inv : relOfPredOnSubgraph φ.symm p₁ p₀)
@@ -469,7 +467,6 @@ noncomputable def isoSetOfInducedSubgraph
   Equiv.ofBijective f f_bij
 
 noncomputable def isoSetOfInducedSubgraphIsoH
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
       ≃ { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
@@ -481,8 +478,7 @@ noncomputable def isoSetOfInducedSubgraphIsoH
     (predIsoH_related φ.symm H)
 
 lemma subgraph_density_respects_eqv_on_G
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H : SimpleGraph V) (G₀ G₁ : SimpleGraph W)
+    (H : SimpleGraph V) {G₀ G₁ : SimpleGraph W}
     (h_eqv : graph_eqv G₀ G₁)
     : subgraph_density H G₀ = subgraph_density H G₁
   := by
@@ -499,15 +495,13 @@ lemma subgraph_density_respects_eqv_on_G
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : SimpleGraph V) : QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift (fun G : SimpleGraph W => subgraph_density H G)
-  intro G₀ G₁ h_eqv
-  exact subgraph_density_respects_eqv_on_G H G₀ G₁ h_eqv
+  intro _ _ h_eqv
+  exact subgraph_density_respects_eqv_on_G H h_eqv
 
 noncomputable def isoSetOfInducedSubgraphInG
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph U)
     : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
       ≃ { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₁) }
@@ -527,8 +521,7 @@ noncomputable def isoSetOfInducedSubgraphInG
   exact Equiv.setCongr this
 
 lemma subgraph_density_lift_G_respects_eqv_on_H
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H₀ H₁ : SimpleGraph V) (G : QuotSimpleGraph W)
+    {H₀ H₁ : SimpleGraph V} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₀ H₁)
     : subgraph_density_lift_G H₀ G = subgraph_density_lift_G H₁ G
   := by
@@ -548,16 +541,14 @@ lemma subgraph_density_lift_G_respects_eqv_on_H
   exact h_count
 
 noncomputable def subgraph_density_quot
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift subgraph_density_lift_G
-  intro H₀ H₁ h_eqv
+  intro _ _ h_eqv
   ext G
-  exact subgraph_density_lift_G_respects_eqv_on_H H₀ H₁ G h_eqv
+  exact subgraph_density_lift_G_respects_eqv_on_H G h_eqv
 
 theorem subgraph_density_quot_ge_0
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ subgraph_density_quot H G
   := by
@@ -567,7 +558,6 @@ theorem subgraph_density_quot_ge_0
   apply subgraph_density_ge_0
 
 theorem subgraph_density_quot_le_1
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : subgraph_density_quot H G ≤ 1
   := by
@@ -753,14 +743,12 @@ noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
 noncomputable instance subgraph_set_fintype'
-    {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) :
     Fintype (Subgraph G × Subgraph G) := by
   have : Fintype (Subgraph G) := subgraph_fintype G
   exact inferInstance
 
 noncomputable def subgraph_count'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ :=
   let p (G₁ G₂ : Subgraph G) : Prop :=
     G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
@@ -769,7 +757,6 @@ noncomputable def subgraph_count'
   { (G₁, G₂) : Subgraph G × Subgraph G | p G₁ G₂ }.toFinset.card
 
 noncomputable def subgraph_density'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℚ :=
   let subgraph_cnt := subgraph_count' H₁ H₂ G
   let W_card := Fintype.card W
@@ -779,7 +766,6 @@ noncomputable def subgraph_density'
   subgraph_cnt / num_of_all_induced_subgraphs
 
 noncomputable def isoSetOfInducedSubgraph'
-    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop)
     (h_rel : relOfPredOnSubgraph φ p₀ p₁) (h_rel_inv : relOfPredOnSubgraph φ.symm p₁ p₀)
@@ -857,7 +843,6 @@ let f_bij : Function.Bijective f := by
 Equiv.ofBijective f f_bij
 
 noncomputable def isoSetOfInducedSubgraphIsoH'
-    {T U V W : Type} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H₁ : SimpleGraph T) (H₂ : SimpleGraph U)
     : { (G, G') : Subgraph G₀ × Subgraph G₀ |
     G.IsInduced ∧ Nonempty (Subgraph.coe G ≃g H₁) ∧
@@ -880,8 +865,7 @@ noncomputable def isoSetOfInducedSubgraphIsoH'
 
 
 lemma subgraph_density_respects_eqv_on_G'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G G' : SimpleGraph W)
+    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) {G G' : SimpleGraph W}
     (h_eqv : graph_eqv G G')
     : subgraph_density' H₁ H₂ G = subgraph_density' H₁ H₂ G' := by
   dsimp [subgraph_density']
@@ -903,42 +887,37 @@ lemma subgraph_density_respects_eqv_on_G'
   rw [h_count]
 
 noncomputable def subgraph_density_lift_G'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ := by
   apply Quot.lift (fun G : SimpleGraph W => subgraph_density' H₁ H₂ G)
-  intro G G' h_eqv
-  exact subgraph_density_respects_eqv_on_G' H₁ H₂ G G' h_eqv
+  intro _ _ h_eqv
+  exact subgraph_density_respects_eqv_on_G' H₁ H₂ h_eqv
 
 lemma subgraph_density_lift_G_respects_eqv_on_H₂'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H₁ : SimpleGraph V) (H₂ H₂' : SimpleGraph U) (G : QuotSimpleGraph W)
+    (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
     : subgraph_density_lift_G' H₁ H₂ G = subgraph_density_lift_G' H₁ H₂' G := by
   sorry
 
 noncomputable def subgraph_density_lift_G_H₁'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     (H₁ : SimpleGraph V)
     : QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
   apply Quot.lift (fun H₂ : SimpleGraph U => subgraph_density_lift_G' H₁ H₂)
-  intro H₂ H₂' h_eqv
+  intro _ _ h_eqv
   ext G
-  exact subgraph_density_lift_G_respects_eqv_on_H₂' H₁ H₂ H₂' G h_eqv
+  exact subgraph_density_lift_G_respects_eqv_on_H₂' H₁ G h_eqv
 
 lemma subgraph_density_lift_G_H₂_respects_eqv_on_H₁'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
-    (H₁ H₁' : SimpleGraph V) (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
+    {H₁ H₁' : SimpleGraph V} (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₁ H₁')
     : subgraph_density_lift_G_H₁' H₁ H₂ G = subgraph_density_lift_G_H₁' H₁' H₂ G := by
   sorry
 
 noncomputable def subgraph_density_quot'
-    {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
   apply Quot.lift subgraph_density_lift_G_H₁'
-  intro H₁ H₁' h_eqv
+  intro _ _ h_eqv
   ext H₂ G
-  exact subgraph_density_lift_G_H₂_respects_eqv_on_H₁' H₁ H₁' H₂ G h_eqv
+  exact subgraph_density_lift_G_H₂_respects_eqv_on_H₁' H₂ G h_eqv
 
 noncomputable def graph_mul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector :=
