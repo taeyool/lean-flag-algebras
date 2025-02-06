@@ -580,6 +580,24 @@ theorem subgraph_density_quot_le_1
 def IsoSimpleGraphWithSize (n : ℕ) : Type
   := QuotSimpleGraph (Fin n)
 
+instance (n : ℕ) : Inhabited (IsoSimpleGraphWithSize n) where
+  default := ⟦emptyGraph (Fin n)⟧
+
+instance : Unique (IsoSimpleGraphWithSize 0) where
+  uniq := by
+    intro G
+    have : G = ⟦Quotient.out G⟧ := by simp only [Quotient.out_eq]
+    rw [this]
+    apply Quotient.sound
+    let H := Quotient.out G
+    show graph_eqv H (emptyGraph (Fin 0))
+    have H_iso : H ≃g emptyGraph (Fin 0) :=
+      ⟨Equiv.refl _, by
+        intro u v
+        exact False.elim (Fin.elim0 u)
+      ⟩
+    exact Nonempty.intro H_iso
+
 noncomputable instance (n : ℕ) : Fintype (IsoSimpleGraphWithSize n)
   := quotSimpleGraphFintype (Fin n)
 
@@ -604,12 +622,6 @@ noncomputable instance : Module ℝ GraphVector
 
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
-
-instance (n : ℕ) : Inhabited (IsoSimpleGraphWithSize n) where
-  default := sorry
-
-instance : Unique (IsoSimpleGraphWithSize 0) where
-  uniq := sorry
 
 theorem one_unique : ∃! _ : IsoSimpleGraphWithSize 0, true
   := by
