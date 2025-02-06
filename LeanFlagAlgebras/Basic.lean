@@ -962,7 +962,27 @@ lemma subgraph_density_lift_G_respects_eqv_on_H₂'
     (H₁ : SimpleGraph V) (H₂ H₂' : SimpleGraph U) (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
     : subgraph_density_lift_G' H₁ H₂ G = subgraph_density_lift_G' H₁ H₂' G := by
-  sorry
+  dsimp [subgraph_density_lift_G']
+  dsimp [graph_eqv] at h_eqv
+  congr
+  ext Greg
+  let phi : H₂ ≃g H₂' := Classical.choice h_eqv
+  let S₀ := { (G₁, G₂) : Subgraph Greg × Subgraph Greg |
+    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
+    G₁.verts ∩ G₂.verts = ∅ }
+  let s₁ := { (G₁, G₂) : Subgraph Greg × Subgraph Greg |
+    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂') ∧
+    G₁.verts ∩ G₂.verts = ∅ }
+  let h_iso_S₀_S₁ : S₀ ≃ s₁ := sorry
+  have h_count : subgraph_density' H₁ H₂ Greg = subgraph_density' H₁ H₂' Greg := by
+    dsimp [subgraph_density']
+    dsimp [subgraph_count']
+    have : Fintype.card S₀ = Fintype.card s₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, s₁]
+  exact h_count
+
 
 noncomputable def subgraph_density_lift_G_H₁'
     {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
