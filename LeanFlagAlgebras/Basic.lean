@@ -99,9 +99,9 @@ variable {T U V W : Type}
   [Fintype V] [DecidableEq V]
   [Fintype W] [DecidableEq W]
 
-noncomputable def subgraph_fintype
-    (G : SimpleGraph V) :
-    Fintype (Subgraph G) :=
+noncomputable def subgraphFintype
+    (G : SimpleGraph V) : Fintype (Subgraph G)
+  :=
   let f : Subgraph G → Set V × Set (V × V) :=
     fun G' => (G'.verts, { (u, v) | G'.Adj u v })
   have f_inj : Function.Injective f := by
@@ -114,10 +114,16 @@ noncomputable def subgraph_fintype
       exact Eq.to_iff (congrFun h_eq_edges (u, v))
   Fintype.ofInjective f f_inj
 
-noncomputable instance subgraph_set_fintype
-    (G : SimpleGraph V) (p : Subgraph G → Prop) :
-    Fintype { G' : Subgraph G | p G' } := by
-  have : Fintype (Subgraph G) := subgraph_fintype G
+noncomputable instance subgraphProdFintype
+    (G : SimpleGraph V) : Fintype (Subgraph G × Subgraph G)
+  := by
+  have : Fintype (Subgraph G) := subgraphFintype G
+  exact inferInstance
+
+noncomputable instance subgraphSetFintype
+    (G : SimpleGraph V) (p : Subgraph G → Prop)
+    : Fintype { G' : Subgraph G | p G' } := by
+  have : Fintype (Subgraph G) := subgraphFintype G
   exact inferInstance
 
 noncomputable def subgraph_count
@@ -741,12 +747,6 @@ noncomputable instance : One GraphAlgebra where
 
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
-
-noncomputable instance subgraph_set_fintype'
-    (G : SimpleGraph V) :
-    Fintype (Subgraph G × Subgraph G) := by
-  have : Fintype (Subgraph G) := subgraph_fintype G
-  exact inferInstance
 
 noncomputable def subgraph_count'
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ :=
