@@ -700,7 +700,7 @@ lemma subgraphDensity_lift_G_respects_eqv_on_H
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   exact h_count
 
-noncomputable def subgraphDensity_quot
+noncomputable def quotSubgraphDensity
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift subgraphDensity_lift_G
@@ -708,18 +708,18 @@ noncomputable def subgraphDensity_quot
   ext G
   exact subgraphDensity_lift_G_respects_eqv_on_H G h_eqv
 
-theorem subgraphDensity_quot_ge_0
+theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
-    : 0 ≤ subgraphDensity_quot H G
+    : 0 ≤ quotSubgraphDensity H G
   := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraphDensity_ge_0
 
-theorem subgraphDensity_quot_le_1
+theorem quotSubgraphDensity_le_1
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
-    : subgraphDensity_quot H G ≤ 1
+    : quotSubgraphDensity H G ≤ 1
   := by
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
@@ -813,7 +813,7 @@ noncomputable def densityGraphSum
     (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ F in ℓ_graphs, (subgraphDensity_quot G.2 F) • basisElementFromGraph ⟨ℓ,F⟩
+  ∑ F in ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ,F⟩
 
 noncomputable def ZeroSet : Submodule ℝ GraphVector
   :=
@@ -902,7 +902,7 @@ noncomputable instance : One GraphAlgebra where
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
-lemma subgraphDensity_respects_eqv_on_G'
+lemma subgraphDensityPair_respects_eqv_on_G
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) {G G' : SimpleGraph W}
     (h_eqv : graph_eqv G G')
     : subgraphDensityPair H₁ H₂ G = subgraphDensityPair H₁ H₂ G' := by
@@ -924,22 +924,22 @@ lemma subgraphDensity_respects_eqv_on_G'
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
 
-noncomputable def subgraphDensity_lift_G'
+noncomputable def subgraphDensityPair_lift_G
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ := by
   apply Quot.lift (fun G : SimpleGraph W => subgraphDensityPair H₁ H₂ G)
   intro _ _ h_eqv
-  exact subgraphDensity_respects_eqv_on_G' H₁ H₂ h_eqv
+  exact subgraphDensityPair_respects_eqv_on_G H₁ H₂ h_eqv
 
 lemma subgraphDensity_lift_G_respects_eqv_on_H₂'
     (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
-    : subgraphDensity_lift_G' H₁ H₂ G = subgraphDensity_lift_G' H₁ H₂' G := by
+    : subgraphDensityPair_lift_G H₁ H₂ G = subgraphDensityPair_lift_G H₁ H₂' G := by
   sorry
 
 noncomputable def subgraphDensity_lift_G_H₁'
     (H₁ : SimpleGraph V)
     : QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
-  apply Quot.lift (fun H₂ : SimpleGraph U => subgraphDensity_lift_G' H₁ H₂)
+  apply Quot.lift (fun H₂ : SimpleGraph U => subgraphDensityPair_lift_G H₁ H₂)
   intro _ _ h_eqv
   ext G
   exact subgraphDensity_lift_G_respects_eqv_on_H₂' H₁ G h_eqv
@@ -950,7 +950,7 @@ lemma subgraphDensity_lift_G_H₂_respects_eqv_on_H₁'
     : subgraphDensity_lift_G_H₁' H₁ H₂ G = subgraphDensity_lift_G_H₁' H₁' H₂ G := by
   sorry
 
-noncomputable def subgraphDensity_quot'
+noncomputable def quotSubgraphDensity'
     : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ := by
   apply Quot.lift subgraphDensity_lift_G_H₁'
   intro _ _ h_eqv
@@ -961,7 +961,7 @@ noncomputable def graph_mul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector :=
   let ℓ := H₁.1 + H₂.1
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ G in ℓ_graphs, (subgraphDensity_quot' H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
+  ∑ G in ℓ_graphs, (quotSubgraphDensity' H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
 noncomputable instance : Mul GraphVector where
   mul g h := ∑ G in g.support, ∑ H in h.support, (g G) * (h H) • graph_mul G H
