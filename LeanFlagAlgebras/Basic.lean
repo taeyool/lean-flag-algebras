@@ -778,6 +778,84 @@ noncomputable def subgraph_density'
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
 
+noncomputable def isoSetOfInducedSubgraph'
+    {V W : Type} [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
+    (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop)
+    (h_rel : relOfPredOnSubgraph φ p₀ p₁) (h_rel_inv : relOfPredOnSubgraph φ.symm p₁ p₀)
+    (p₂ : Subgraph G₀ → Prop) (p₃ : Subgraph G₁ → Prop)
+    (h_rel' : relOfPredOnSubgraph φ p₂ p₃) (h_rel_inv' : relOfPredOnSubgraph φ.symm p₃ p₂)
+    : { (G, G') : Subgraph G₀ × Subgraph G₀ |
+    G.IsInduced ∧ p₀ G ∧
+    G'.IsInduced ∧ p₂ G' ∧
+    G.verts ∩ G'.verts = ∅ }
+      ≃ { (G, G') : Subgraph G₁ × Subgraph G₁ |
+    G.IsInduced ∧ p₁ G ∧
+    G'.IsInduced ∧ p₃ G' ∧
+    G.verts ∩ G'.verts = ∅ }
+  :=
+  let S₀ := { (G, G') : Subgraph G₀ × Subgraph G₀ |
+    G.IsInduced ∧ p₀ G ∧
+    G'.IsInduced ∧ p₂ G' ∧
+    G.verts ∩ G'.verts = ∅ }
+  let S₁ := { (G, G') : Subgraph G₁ × Subgraph G₁ |
+    G.IsInduced ∧ p₁ G ∧
+    G'.IsInduced ∧ p₃ G' ∧
+    G.verts ∩ G'.verts = ∅ }
+  let f (s₀ : S₀) : S₁ := by
+    dsimp [S₀] at s₀
+    let ⟨⟨H₀,H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩⟩ := s₀
+    let H₁ := (inducedSubgraph G₁ (φ '' H₀.verts)).1
+    let h_ind₁ : H₁.IsInduced := (inducedSubgraph G₁ (φ '' H₀.verts)).2
+    have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
+    have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
+    let H₃ := (inducedSubgraph G₁ (φ '' H₂.verts)).1
+    let h_ind₃ : H₃.IsInduced := (inducedSubgraph G₁ (φ '' H₂.verts)).2
+    have : relOfSubgraph φ H₂ H₃ := inducedSubgraph_related φ H₂ h_ind₂
+    have h_p₃ : p₃ H₃ := (h_rel' H₂ H₃ this).mp h_p₂
+    have h_inter' : H₁.verts ∩ H₃.verts = ∅ := by
+      have h_img₁ : H₁.verts = φ '' H₀.verts := (inducedSubgraph_related φ H₀ h_ind₀).1
+      have h_img₂ : H₃.verts = φ '' H₂.verts := (inducedSubgraph_related φ H₂ h_ind₂).1
+      rw [h_img₁, h_img₂]
+      by_contra h_contra
+      push_neg at h_contra
+      obtain ⟨v, h_v₁, h_v₂⟩ := h_contra
+      obtain ⟨v₁, hv₁⟩ := h_v₁
+      obtain ⟨v₂, hv₂⟩ := h_v₂
+      have v_eq : v₁ = v₂ := φ.injective (hv₁.2.trans hv₂.2.symm)
+      have v_mem : v₁ ∈ H₀.verts ∩ H₂.verts := Set.mem_inter hv₁.1 (v_eq ▸ hv₂.1)
+      rw [h_inter] at v_mem
+      exact v_mem
+    exact ⟨⟨H₁, H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter'⟩⟩
+  let f_inv (s₁ : S₁) : S₀ := by
+    dsimp [S₁] at s₁
+    let ⟨⟨H₁,H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩⟩ := s₁
+    let H₀ := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).1
+    let h_ind₀ : H₀.IsInduced := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).2
+    have : relOfSubgraph φ.symm H₁ H₀ := inducedSubgraph_related φ.symm H₁ h_ind₁
+    have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
+    let H₂ := (inducedSubgraph G₀ (φ.symm '' H₃.verts)).1
+    let h_ind₂ : H₂.IsInduced := (inducedSubgraph G₀ (φ.symm '' H₃.verts)).2
+    have : relOfSubgraph φ.symm H₃ H₂ := inducedSubgraph_related φ.symm H₃ h_ind₃
+    have h_p₂ : p₂ H₂ := (h_rel_inv' H₃ H₂ this).mp h_p₃
+    have h_inter' : H₀.verts ∩ H₂.verts = ∅ := by
+      have h_img₁ : H₀.verts = φ.symm '' H₁.verts := (inducedSubgraph_related φ.symm H₁ h_ind₁).1
+      have h_img₂ : H₂.verts = φ.symm '' H₃.verts := (inducedSubgraph_related φ.symm H₃ h_ind₃).1
+      rw [h_img₁, h_img₂]
+      by_contra h_contra
+      push_neg at h_contra
+      obtain ⟨v, h_v₁, h_v₂⟩ := h_contra
+      obtain ⟨v₁, hv₁⟩ := h_v₁
+      obtain ⟨v₂, hv₂⟩ := h_v₂
+      have v_eq : v₁ = v₂ := φ.symm.injective (hv₁.2.trans hv₂.2.symm)
+      have v_mem : v₁ ∈ H₁.verts ∩ H₃.verts := Set.mem_inter hv₁.1 (v_eq ▸ hv₂.1)
+      rw [h_inter] at v_mem
+      exact v_mem
+    exact ⟨⟨H₀, H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter'⟩⟩
+let f_bij : Function.Bijective f := by
+  sorry
+Equiv.ofBijective f f_bij
+
 noncomputable def isoSetOfInducedSubgraphIsoH'
     {T U V W : Type} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H₁ : SimpleGraph T) (H₂ : SimpleGraph U)
@@ -789,8 +867,17 @@ noncomputable def isoSetOfInducedSubgraphIsoH'
     G.IsInduced ∧ Nonempty (Subgraph.coe G ≃g H₁) ∧
     G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₂) ∧
     G.verts ∩ G'.verts = ∅ }
-  := by
-  sorry
+  :=
+  isoSetOfInducedSubgraph' φ
+    (predIsoH H₁ G₀)
+    (predIsoH H₁ G₁)
+    (predIsoH_related φ H₁)
+    (predIsoH_related φ.symm H₁)
+    (predIsoH H₂ G₀)
+    (predIsoH H₂ G₁)
+    (predIsoH_related φ H₂)
+    (predIsoH_related φ.symm H₂)
+
 
 lemma subgraph_density_respects_eqv_on_G'
     {U V W : Type} [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
