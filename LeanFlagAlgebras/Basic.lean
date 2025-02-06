@@ -958,13 +958,35 @@ noncomputable instance : Mul GraphAlgebra where
 
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
-  add_assoc := sorry
+  add_assoc := by
+    intros a b c
+    rw [← Quotient.out_eq a, ← Quotient.out_eq b, ← Quotient.out_eq c]
+    apply Quotient.sound
+    simp_all
+    rw [add_assoc]
   zero := 0
-  zero_add := sorry
-  add_zero := sorry
+  zero_add := by
+    intro a
+    rw [← Quotient.out_eq a]
+    apply Quotient.sound
+    simp
+  add_zero := by
+    intro a
+    rw [← Quotient.out_eq a]
+    apply Quotient.sound
+    simp
   neg := -(·)
-  add_comm := sorry
-  neg_add_cancel := sorry
+  add_comm := by
+    intros a b
+    rw [← Quotient.out_eq a, ← Quotient.out_eq b]
+    apply Quotient.sound
+    simp
+    rw [add_comm]
+  neg_add_cancel := by
+    intros a
+    rw [← Quotient.out_eq a]
+    apply Quotient.sound
+    simp; rfl
   mul := (· * ·)
   mul_assoc := sorry
   zero_mul := sorry
@@ -1002,7 +1024,12 @@ noncomputable instance : Ring GraphAlgebra where
     have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
       rw [add_smul, one_smul]
     rw [this]
-  zsmul_neg' := sorry
+  zsmul_neg' := by
+    intro n g; simp
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp
+    rw [← neg_smul, neg_add_rev]
 
 noncomputable instance : CommRing GraphAlgebra where
   mul_comm := sorry
