@@ -853,7 +853,55 @@ noncomputable def isoSetOfInducedSubgraph'
       exact v_mem
     exact ⟨⟨H₀, H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter'⟩⟩
 let f_bij : Function.Bijective f := by
-  sorry
+  have h_leftinv : Function.LeftInverse f_inv f := by
+    rintro ⟨⟨H₀, H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩⟩
+    dsimp [f, f_inv, inducedSubgraph]
+    ext u v
+    · aesop
+    · simp
+      constructor
+      · rintro ⟨h_uv, h_u, h_v⟩
+        apply h_ind₀
+        · simp_all only
+        · simp_all only
+        · simp_all only
+      · rintro h_uv
+        exact ⟨H₀.adj_sub h_uv, H₀.edge_vert h_uv, H₀.edge_vert (H₀.symm h_uv)⟩
+    · aesop
+    · simp
+      constructor
+      · rintro ⟨h_uv, h_u, h_v⟩
+        apply h_ind₂
+        · simp_all only
+        · simp_all only
+        · simp_all only
+      · rintro h_uv
+        exact ⟨H₂.adj_sub h_uv, H₂.edge_vert h_uv, H₂.edge_vert (H₂.symm h_uv)⟩
+  have h_rightinv : Function.RightInverse f_inv f := by
+    rintro ⟨⟨H₁, H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩⟩
+    dsimp [f, f_inv, inducedSubgraph]
+    ext u v
+    · aesop
+    · simp
+      constructor
+      · rintro ⟨h_uv, h_u, h_v⟩
+        apply h_ind₁
+        · simp_all only
+        · simp_all only
+        · simp_all only
+      · rintro h_uv
+        exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
+    · aesop
+    · simp
+      constructor
+      · rintro ⟨h_uv, h_u, h_v⟩
+        apply h_ind₃
+        · simp_all only
+        · simp_all only
+        · simp_all only
+      · rintro h_uv
+        exact ⟨H₃.adj_sub h_uv, H₃.edge_vert h_uv, H₃.edge_vert (H₃.symm h_uv)⟩
+  exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
 Equiv.ofBijective f f_bij
 
 noncomputable def isoSetOfInducedSubgraphIsoH'
