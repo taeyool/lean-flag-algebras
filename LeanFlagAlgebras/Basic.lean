@@ -930,6 +930,44 @@ noncomputable def subgraph_density_lift_G'
   intro _ _ h_eqv
   exact subgraph_density_respects_eqv_on_G' H₁ H₂ h_eqv
 
+noncomputable def isoSetOfInducedSubgraphInG'
+    {T U V W : Type} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (H : SimpleGraph T) (φ : H₀ ≃g H₁) (G : SimpleGraph U)
+    : { (G₁, G₂) : Subgraph G × Subgraph G |
+      G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H) ∧
+      G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₀) ∧
+      G₁.verts ∩ G₂.verts = ∅ }
+      ≃ { (G₁, G₂) : Subgraph G × Subgraph G |
+      G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H) ∧
+      G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₁) ∧
+      G₁.verts ∩ G₂.verts = ∅ }
+  := by
+  let h : ∀ G' : Subgraph G, Nonempty (Subgraph.coe G' ≃g H₀) ↔ Nonempty (Subgraph.coe G' ≃g H₁) := by
+    intro G'
+    constructor
+    · intro ⟨h_iso⟩
+      have h_iso' : Subgraph.coe G' ≃g H₁ := φ.comp h_iso
+      exact Nonempty.intro h_iso'
+    · intro ⟨h_iso⟩
+      have h_iso' : Subgraph.coe G' ≃g H₀ := φ.symm.comp h_iso
+      exact Nonempty.intro h_iso'
+  have : { (G₁, G₂) : Subgraph G × Subgraph G |
+      G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H) ∧
+      G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₀) ∧
+      G₁.verts ∩ G₂.verts = ∅ }
+      ≃ { (G₁, G₂) : Subgraph G × Subgraph G |
+      G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H) ∧
+      G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₁) ∧
+      G₁.verts ∩ G₂.verts = ∅ } := by
+    apply Equiv.subtypeEquiv (Equiv.refl (Subgraph G × Subgraph G))
+    intro x
+    constructor
+    · intro ⟨h₁, h₂, h₃, h₄, h₅⟩
+      exact ⟨h₁, h₂, h₃, (h x.2).mp h₄, h₅⟩
+    · intro ⟨h₁, h₂, h₃, h₄, h₅⟩
+      exact ⟨h₁, h₂, h₃, (h x.2).mpr h₄, h₅⟩
+  exact this
+
 lemma subgraph_density_lift_G_respects_eqv_on_H₂'
     (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
     (h_eqv : graph_eqv H₂ H₂')
@@ -947,14 +985,13 @@ lemma subgraph_density_lift_G_respects_eqv_on_H₂'
     G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
     G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂') ∧
     G₁.verts ∩ G₂.verts = ∅ }
-  let h_iso_S₀_S₁ : S₀ ≃ s₁ := sorry
+  let h_iso_S₀_S₁ : S₀ ≃ s₁ := isoSetOfInducedSubgraphInG' H₁ phi Greg
   have h_count : subgraph_density' H₁ H₂ Greg = subgraph_density' H₁ H₂' Greg := by
     dsimp [subgraph_density']
     dsimp [subgraph_count']
     have : Fintype.card S₀ = Fintype.card s₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, s₁]
   exact h_count
-
 
 noncomputable def subgraph_density_lift_G_H₁'
     (H₁ : SimpleGraph V)
