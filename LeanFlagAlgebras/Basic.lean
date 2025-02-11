@@ -804,47 +804,44 @@ noncomputable def isoSetOfInducedSubgraphPairInG
       exact ⟨h₁, (h_S x.1).mpr h₂, h₃, (h_H x.2).mpr h₄, h₅⟩
   exact this
 
-lemma subgraphPairDensityLifted_respects_eqv_on_H₂
-    (H₁ : SimpleGraph V) {H₂ H₂' : SimpleGraph U} (G : QuotSimpleGraph W)
-    (h_eqv : graph_eqv H₂ H₂')
-    : subgraphPairDensityLifted H₁ H₂ G = subgraphPairDensityLifted H₁ H₂' G
+lemma subgraphPairDensityLifted_respects_eqv
+    {S₀ : SimpleGraph U} {S₁ : SimpleGraph U} (h_eqv_S : graph_eqv S₀ S₁)
+    {H₀ : SimpleGraph V} {H₁ : SimpleGraph V} (h_eqv_H : graph_eqv H₀ H₁)
+    (G : QuotSimpleGraph W)
+    : subgraphPairDensityLifted S₀ H₀ G = subgraphPairDensityLifted S₁ H₁ G
   := by
   dsimp [subgraphPairDensityLifted]
-  dsimp [graph_eqv] at h_eqv
+  dsimp [graph_eqv] at h_eqv_S h_eqv_H
   congr
   ext Greg
-  let phi : H₂ ≃g H₂' := Classical.choice h_eqv
-  let S₀ := { (G₁, G₂) : Subgraph Greg × Subgraph Greg |
-    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
-    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
-    G₁.verts ∩ G₂.verts = ∅ }
-  let S₁ := { (G₁, G₂) : Subgraph Greg × Subgraph Greg |
-    G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
-    G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂') ∧
-    G₁.verts ∩ G₂.verts = ∅ }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphPairInG Iso.refl phi Greg
-  have h_count : subgraphPairDensity H₁ H₂ Greg = subgraphPairDensity H₁ H₂' Greg := by
+  let ψ : S₀ ≃g S₁ := Classical.choice h_eqv_S
+  let φ : H₀ ≃g H₁ := Classical.choice h_eqv_H
+  let X₀ := { (G', G'') : Subgraph Greg × Subgraph Greg |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g S₀) ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H₀) ∧
+                G'.verts ∩ G''.verts = ∅ }
+  let X₁ := { (G', G'') : Subgraph Greg × Subgraph Greg |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g S₁) ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H₁) ∧
+                G'.verts ∩ G''.verts = ∅ }
+  let h_iso_X₀_X₁ : X₀ ≃ X₁ := isoSetOfInducedSubgraphPairInG ψ φ Greg
+  have h_count : subgraphPairDensity S₀ H₀ Greg = subgraphPairDensity S₁ H₁ Greg := by
     dsimp [subgraphPairDensity]
     dsimp [subgraphPairCount]
-    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
+    have : Fintype.card X₀ = Fintype.card X₁ := Fintype.card_congr h_iso_X₀_X₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card, X₀, X₁]
   exact h_count
 
-noncomputable def subgraphPairDensityLifted_H₁
-    (H₁ : SimpleGraph V) : QuotSimpleGraph U → QuotSimpleGraph W → ℚ
+noncomputable def quotSubgraphPairDensity
+    : QuotSimpleGraph U → QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
-  apply Quot.lift (fun H₂ : SimpleGraph U => subgraphPairDensityLifted H₁ H₂)
-  intro _ _ h_eqv
-  ext G
-  exact subgraphPairDensityLifted_respects_eqv_on_H₂ H₁ G h_eqv
-
-lemma subgraphPairDensityLifted_H₂_respects_eqv_on_H₁
-    {H₁ H₁' : SimpleGraph V} (H₂ : QuotSimpleGraph U) (G : QuotSimpleGraph W)
-    (h_eqv : graph_eqv H₁ H₁')
-    : subgraphPairDensityLifted_H₁ H₁ H₂ G = subgraphPairDensityLifted_H₁ H₁' H₂ G
-  := by
-  sorry
-
+  apply Quot.lift₂ subgraphPairDensityLifted
+  . intro S _ _ h_eqv_H
+    ext G
+    exact subgraphPairDensityLifted_respects_eqv (graph_eqv.refl S) h_eqv_H G
+  . intro _ _ H h_eqv_S
+    ext G
+    exact subgraphPairDensityLifted_respects_eqv h_eqv_S (graph_eqv.refl H) G
 
 -- set of all graphs (up to isomorphism) on n vertices
 def IsoSimpleGraphWithSize (n : ℕ) : Type
@@ -1023,14 +1020,6 @@ noncomputable instance : One GraphAlgebra where
 
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
-
-noncomputable def quotSubgraphPairDensity
-    : QuotSimpleGraph V → QuotSimpleGraph U → QuotSimpleGraph W → ℚ
-  := by
-  apply Quot.lift subgraphPairDensityLifted_H₁
-  intro _ _ h_eqv
-  ext H₂ G
-  exact subgraphPairDensityLifted_H₂_respects_eqv_on_H₁ H₂ G h_eqv
 
 noncomputable def graph_mul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector
