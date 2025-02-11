@@ -1045,7 +1045,8 @@ noncomputable instance : Mul GraphAlgebra where
   mul := by
     apply Quotient.map₂ (· * ·)
     intro g g' hg h h' hh
-    simp
+    show graph_algebra_eqv (g * h) (g' * h')
+    dsimp [graph_algebra_eqv]
     sorry
 
 noncomputable instance : Ring GraphAlgebra where
