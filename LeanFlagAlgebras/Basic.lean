@@ -159,6 +159,7 @@ noncomputable def subgraphPairDensity
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
 
+omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_ge_0
     (H : SimpleGraph V) (G : SimpleGraph W)
     : 0 ≤ subgraphDensity H G
@@ -176,6 +177,7 @@ noncomputable def vert_iso_from_graph_iso
   have hf₀ : Function.Bijective f₀ := RelIso.bijective g
   exact Equiv.ofBijective f₀ hf₀
 
+omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_le_1
     (H : SimpleGraph V) (G : SimpleGraph W)
     : subgraphDensity H G ≤ 1
@@ -320,6 +322,7 @@ def predIsoH
   :=
   fun G' => Nonempty (Subgraph.coe G' ≃g H)
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] [Fintype U] [DecidableEq U] in
 lemma predIsoH_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : relOfPredOnSubgraph φ (predIsoH H G₀) (predIsoH H G₁)
@@ -429,6 +432,7 @@ lemma inducedSubgraph_pred_iff
   have h_rel' := h_rel H₀ (inducedSubgraph G₁ (φ '' H₀.verts))
   exact h_rel' (inducedSubgraph_related φ H₀ h_ind₀)
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] [Fintype U] [DecidableEq U] in
 lemma inducedSubgraph_predIsoH_iff
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : ∀ (H₀ : Subgraph G₀),
@@ -640,6 +644,7 @@ noncomputable def isoSetOfInducedSubgraphPairIsoH
     (predIsoH_related φ H₂)
     (predIsoH_related φ.symm H₂)
 
+omit [DecidableEq V] [DecidableEq W] in
 lemma subgraphDensity_respects_eqv_on_G
     (H : SimpleGraph V) {G₀ G₁ : SimpleGraph W} (h_eqv : graph_eqv G₀ G₁)
     : subgraphDensity H G₀ = subgraphDensity H G₁
@@ -683,6 +688,7 @@ noncomputable def isoSetOfInducedSubgraphInG
     Set.sep_ext_iff.mpr fun x _ ↦ h x
   exact Equiv.setCongr this
 
+omit [DecidableEq V] in
 lemma subgraphDensityLifted_respects_eqv_on_H
     {H₀ H₁ : SimpleGraph V} (h_eqv : graph_eqv H₀ H₁) (G : QuotSimpleGraph W)
     : subgraphDensityLifted H₀ G = subgraphDensityLifted H₁ G
@@ -728,8 +734,9 @@ theorem quotSubgraphDensity_le_1
   rw [← hHrep, ← hGrep]
   apply subgraphDensity_le_1
 
+omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairDensity_respects_eqv_on_G
-    (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) {G G' : SimpleGraph W} (h_eqv : graph_eqv G G')
+    (H₁ : SimpleGraph U) (H₂ : SimpleGraph V) {G G' : SimpleGraph W} (h_eqv : graph_eqv G G')
     : subgraphPairDensity H₁ H₂ G = subgraphPairDensity H₁ H₂ G'
   := by
   dsimp [subgraphPairDensity]
@@ -757,6 +764,7 @@ noncomputable def subgraphPairDensityLifted
   intro _ _ h_eqv
   exact subgraphPairDensity_respects_eqv_on_G H₁ H₂ h_eqv
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] [Fintype X] [DecidableEq X] in
 lemma subgraph_to_eqv_graph_iff
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph X)
     : ∀ G' : Subgraph G, Nonempty (Subgraph.coe G' ≃g H₀) ↔ Nonempty (Subgraph.coe G' ≃g H₁)
@@ -778,10 +786,11 @@ noncomputable def isoSetOfInducedSubgraphPairInG
           G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g S₀) ∧
           G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₀) ∧
           G₁.verts ∩ G₂.verts = ∅ }
-      ≃ { (G₁, G₂) : Subgraph G × Subgraph G |
-      G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g S₁) ∧
-      G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₁) ∧
-      G₁.verts ∩ G₂.verts = ∅ }
+      ≃
+      { (G₁, G₂) : Subgraph G × Subgraph G |
+          G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g S₁) ∧
+          G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₁) ∧
+          G₁.verts ∩ G₂.verts = ∅ }
   := by
   let h_S : ∀ G' : Subgraph G, Nonempty (Subgraph.coe G' ≃g S₀) ↔ Nonempty (Subgraph.coe G' ≃g S₁) :=
     subgraph_to_eqv_graph_iff ψ G
@@ -804,6 +813,7 @@ noncomputable def isoSetOfInducedSubgraphPairInG
       exact ⟨h₁, (h_S x.1).mpr h₂, h₃, (h_H x.2).mpr h₄, h₅⟩
   exact this
 
+omit [DecidableEq U] [DecidableEq V] in
 lemma subgraphPairDensityLifted_respects_eqv
     {S₀ : SimpleGraph U} {S₁ : SimpleGraph U} (h_eqv_S : graph_eqv S₀ S₁)
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph V} (h_eqv_H : graph_eqv H₀ H₁)
