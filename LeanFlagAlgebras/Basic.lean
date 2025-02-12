@@ -853,6 +853,12 @@ noncomputable def quotSubgraphPairDensity
     ext G
     exact subgraphPairDensityLifted_respects_eqv h_eqv_S (graph_eqv.refl H) G
 
+lemma quotSubgraphPairDensity_comm
+    (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
+    : quotSubgraphPairDensity H₁ H₂ G = quotSubgraphPairDensity H₂ H₁ G
+  := by
+  sorry
+
 -- set of all graphs (up to isomorphism) on n vertices
 def IsoSimpleGraphWithSize (n : ℕ) : Type
   := QuotSimpleGraph (Fin n)
@@ -1038,16 +1044,70 @@ noncomputable def graph_mul
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
+lemma graph_mul_comm
+    (G H : IsoSimpleGraph) : graph_mul G H = graph_mul H G
+  := by
+  dsimp [graph_mul]
+  rw [add_comm]
+  apply Finset.sum_congr
+  · rfl
+  · intros
+    simp [quotSubgraphPairDensity_comm]
+
 noncomputable instance : Mul GraphVector where
-  mul g h := ∑ G in g.support, ∑ H in h.support, (g G) * (h H) • graph_mul G H
+  mul g h := ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graph_mul G H
+
+lemma graphVector_mul_comm
+    (g h : GraphVector) : g * h = h * g
+  := by
+  show ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graph_mul G H
+       = ∑ H in h.support, ∑ G in g.support, ((h H) * (g G)) • graph_mul H G
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr
+  · rfl
+  · intros
+    apply Finset.sum_congr
+    · rfl
+    · intros
+      rw [mul_comm, graph_mul_comm]
+
+lemma graphVector_mul_add
+    (f g h : GraphVector) : f * (g + h) = f * g + f * h
+  := by
+  sorry
+
+lemma graphVector_add_mul
+    (f g h : GraphVector) : (f + g) * h = f * h + g * h
+  := by
+  simp [graphVector_mul_comm, graphVector_mul_add]
+
+lemma graphVector_mul_zero
+    (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
+  := by
+  sorry
 
 noncomputable instance : Mul GraphAlgebra where
   mul := by
     apply Quotient.map₂ (· * ·)
-    intro g g' hg h h' hh
-    show graph_algebra_eqv (g * h) (g' * h')
+    intro g' g hg h' h hh
+    show graph_algebra_eqv (g' * h') (g * h)
     dsimp [graph_algebra_eqv]
-    sorry
+    let kg := g' - g
+    let kh := h' - h
+    have hkg : kg ∈ ZeroSet := hg
+    have hkh : kh ∈ ZeroSet := hh
+    have : g' * h' = (g + kg) * (h + kh) := by
+      rw [← sub_add_cancel g' g, ← sub_add_cancel h' h]
+      simp only [kg, kh, add_comm]
+    rw [this]
+    rw [graphVector_mul_add, graphVector_add_mul, graphVector_add_mul]
+    rw [add_assoc, add_sub_cancel_left]
+    apply zeroset_closed_under_add
+    · rw [graphVector_mul_comm]
+      exact graphVector_mul_zero h hkg
+    · apply zeroset_closed_under_add
+      · exact graphVector_mul_zero g hkh
+      · exact graphVector_mul_zero kg hkh
 
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
