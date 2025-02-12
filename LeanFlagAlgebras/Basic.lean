@@ -965,6 +965,14 @@ lemma zeroset_closed_under_add
   := by
   apply Submodule.add_mem <;> assumption
 
+lemma zeroset_closed_under_multiple_sum
+    (S : Finset IsoSimpleGraph) (f : IsoSimpleGraph → GraphVector)
+    (h_zero : ∀ G ∈ S, f G ∈ ZeroSet)
+    : ∑ G ∈ S, f G ∈ ZeroSet
+  := by
+  apply Submodule.sum_mem
+  assumption
+
 lemma zeroset_closed_under_smul
     (r : ℝ) (h : GraphVector) (h_zero : h ∈ ZeroSet)
     : r • h ∈ ZeroSet
@@ -1097,7 +1105,19 @@ lemma graphVector_mul_one
     (g : GraphVector) : graph_algebra_eqv (g * 1) g
   := by
   show ∑ G in g.support, ∑ H in (1 : GraphVector).support, _ - g ∈ ZeroSet
-  rw [Finset.sum_comm]
+  have supp_singleton : Finsupp.support (1 : GraphVector) = {1} := by
+    show Finsupp.support (basisElementFromGraph 1) = {1}
+    dsimp [basisElementFromGraph]
+    rw [Finsupp.support_single_ne_zero _ (by simp)]
+  rw [Finset.sum_comm, supp_singleton, Finset.sum_singleton]
+  have : ∀ G ∈ g.support, (g G * (1 : GraphVector) 1) • graph_mul G 1 - (g G) • basisElementFromGraph G ∈ ZeroSet := by
+    intro G hG
+    have : (1 : GraphVector) 1 = 1 := by
+      show (basisElementFromGraph 1) 1 = 1
+      simp [basisElementFromGraph]
+    rw [this, mul_one, ← smul_sub]
+    apply zeroset_closed_under_smul
+    exact graph_mul_one G
   sorry
 
 noncomputable instance : Mul GraphAlgebra where
