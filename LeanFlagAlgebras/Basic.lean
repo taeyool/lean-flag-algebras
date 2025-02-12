@@ -1071,15 +1071,15 @@ lemma graphVector_mul_comm
     · intros
       rw [mul_comm, graph_mul_comm]
 
-lemma graphVector_mul_add
+lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
   sorry
 
-lemma graphVector_add_mul
+lemma graphVector_right_distrib
     (f g h : GraphVector) : (f + g) * h = f * h + g * h
   := by
-  simp [graphVector_mul_comm, graphVector_mul_add]
+  simp [graphVector_mul_comm, graphVector_left_distrib]
 
 lemma graphVector_mul_zero
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
@@ -1100,7 +1100,7 @@ noncomputable instance : Mul GraphAlgebra where
       rw [← sub_add_cancel g' g, ← sub_add_cancel h' h]
       simp only [kg, kh, add_comm]
     rw [this]
-    rw [graphVector_mul_add, graphVector_add_mul, graphVector_add_mul]
+    rw [graphVector_left_distrib, graphVector_right_distrib, graphVector_right_distrib]
     rw [add_assoc, add_sub_cancel_left]
     apply zeroset_closed_under_add
     · rw [graphVector_mul_comm]
@@ -1109,54 +1109,86 @@ noncomputable instance : Mul GraphAlgebra where
       · exact graphVector_mul_zero g hkh
       · exact graphVector_mul_zero kg hkh
 
+lemma graphAlgebra_mul_comm
+    (g h : GraphAlgebra) : g * h = h * g
+  := by
+  rw [← Quotient.out_eq g, ← Quotient.out_eq h]
+  apply Quotient.sound
+  simp
+  rw [graphVector_mul_comm]
+
+lemma graphAlgebra_left_distrib
+    (f g h : GraphAlgebra) : f * (g + h) = f * g + f * h
+  := by
+  rw [← Quotient.out_eq f, ← Quotient.out_eq g, ← Quotient.out_eq h]
+  apply Quotient.sound
+  simp
+  rw [graphVector_left_distrib]
+
+lemma graphAlgebra_mul_zero
+    (g : GraphAlgebra) : g * 0 = 0
+  := by
+  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+  rw [← hgrep]
+  apply Quotient.sound
+  simp
+  show grep * 0 - 0 ∈ ZeroSet
+  rw [sub_zero]
+  apply graphVector_mul_zero grep (by simp)
+
+lemma graphAlgebra_mul_one
+    (g : GraphAlgebra) : g * 1 = g
+  := by
+  sorry
+
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
-  add_assoc := by
-    intros a b c
+  add_assoc a b c := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b, ← Quotient.out_eq c]
     apply Quotient.sound
     simp_all
     rw [add_assoc]
   zero := 0
-  zero_add := by
-    intro a
+  zero_add a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
     simp
-  add_zero := by
-    intro a
+  add_zero a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
     simp
   neg := -(·)
-  add_comm := by
-    intros a b
+  add_comm a b := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b]
     apply Quotient.sound
     simp
     rw [add_comm]
-  neg_add_cancel := by
-    intros a
+  neg_add_cancel a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
     simp; rfl
   mul := (· * ·)
   mul_assoc := sorry
-  zero_mul := sorry
-  mul_zero := sorry
+  zero_mul a := by
+    rw [graphAlgebra_mul_comm]
+    apply graphAlgebra_mul_zero
+  mul_zero := graphAlgebra_mul_zero
   one := 1
-  one_mul := sorry
-  mul_one := sorry
-  left_distrib := sorry
-  right_distrib := sorry
+  one_mul a := by
+    rw [graphAlgebra_mul_comm]
+    apply graphAlgebra_mul_one
+  mul_one := graphAlgebra_mul_one
+  left_distrib := graphAlgebra_left_distrib
+  right_distrib a b c := by
+    simp [graphAlgebra_mul_comm, graphAlgebra_left_distrib]
   nsmul n g := (n : ℝ) • g
-  nsmul_zero := by
-    intro g; simp
+  nsmul_zero g := by
+    simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp; rfl
-  nsmul_succ := by
-    intro n g; simp
+  nsmul_succ n g := by
+    simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp
@@ -1164,28 +1196,28 @@ noncomputable instance : Ring GraphAlgebra where
       rw [add_smul, one_smul]
     rw [this]
   zsmul z g := (z : ℝ) • g
-  zsmul_zero' := by
-    intro g; simp
+  zsmul_zero' g := by
+    simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp; rfl
-  zsmul_succ' := by
-    intro n g; simp
+  zsmul_succ' n g := by
+    simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp
     have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
       rw [add_smul, one_smul]
     rw [this]
-  zsmul_neg' := by
-    intro n g; simp
+  zsmul_neg' n g := by
+    simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp
     rw [← neg_smul, neg_add_rev]
 
 noncomputable instance : CommRing GraphAlgebra where
-  mul_comm := sorry
+  mul_comm := graphAlgebra_mul_comm
 
 noncomputable instance : Algebra ℝ GraphAlgebra where
   smul r g := r • g
