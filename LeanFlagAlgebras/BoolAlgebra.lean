@@ -89,8 +89,8 @@ abbrev BoolPolyBase (n) := MvPolynomial (Fin n) ℚ
 
 def bool_eq (p q : BoolPolyBase n) :=
   ∀ (g : Fin n → ℚ),
-    ∀ (i : Fin n),
-      g i = 1 ∨ g i = -1 →
+    (∀ (i : Fin n),
+      g i = 1 ∨ g i = -1) →
       eval g p = eval g q
 
 lemma deg_quad_collapse_ :
@@ -119,11 +119,40 @@ theorem quad_collapse_eq_on_pmone (p : BoolPolyBase n) (g : Fin n → ℚ) :
     rw [eval_sum]
     rw [eval_eq']
     have h' :
-      ∀ i ∈ support p, (eval g) ((monomial (deg_quad_collapse i)) (coeff i p)) = coeff i p * ∏ j : Fin n, g j ^ i j := by
-
-      sorry
-    sorry
-
+      ∀ i : (Fin n →₀ ℕ), (eval g) ((monomial (deg_quad_collapse i)) (coeff i p)) = coeff i p * ∏ j : Fin n, g j ^ i j := by
+      intro i
+      rw [eval_monomial]
+      simp
+      have h'' :
+        ∀ a : Fin n, g a ^ deg_quad_collapse i a = g a ^ i a := by
+          intro a
+          unfold deg_quad_collapse
+          simp
+          have hga := h a
+          rcases hga with hga | hga
+          ·
+            rw [hga]
+            simp
+          ·
+            rw [hga]
+            -- i a = (i a % 2) + (i a / 2) * 2
+            rw [<- Nat.div_add_mod' (i a) 2]
+            simp
+            rw [Nat.add_mod]
+            simp
+            rw [pow_add]
+            simp
+      have h''f :
+        (fun a => g a ^ deg_quad_collapse i a) = (fun a => g a ^ i a) := by
+          ext
+          apply h''
+      rw [h''f]
+      simp
+    have h'f :
+      (fun i => eval g (monomial (deg_quad_collapse i) (coeff i p))) = (fun i => coeff i p * ∏ j : Fin n, g j ^ i j) := by
+        ext
+        apply h'
+    rw [h'f]
 
 theorem bool_eq_quad_eq (p q : BoolPolyBase n) :
   bool_eq p q ↔ quad_eq p q
@@ -132,14 +161,15 @@ theorem bool_eq_quad_eq (p q : BoolPolyBase n) :
     · -- bool_eq then quad_eq
       intro h_bool_eq
       unfold quad_eq
-      unfold quad_collapse
       unfold bool_eq at h_bool_eq
-      apply ext
-      intro m
-      rw [coeff_sum, coeff_sum]
-      simp
-
-
+      unfold quad_collapse
+      --
       sorry
     · -- quad_eq then bool_eq
-      sorry
+      intro h
+      unfold quad_eq at h
+      unfold bool_eq
+      intro g hgi
+      rw [<- quad_collapse_eq_on_pmone p g hgi]
+      rw [<- quad_collapse_eq_on_pmone q g hgi]
+      rw [h]
