@@ -957,11 +957,34 @@ noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
+lemma subgraphPairDensity_one
+    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
+    : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
+  := by
+  dsimp [subgraphPairDensity, subgraphDensity]
+  let S₀ := { (G', G'') : Subgraph G × Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g (emptyGraph (Fin 0))) ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H) ∧
+                G'.verts ∩ G''.verts = ∅ }
+  let S₁ := { G' : Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by sorry
+  have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  sorry
+
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
     : quotSubgraphPairDensity (1 : IsoSimpleGraph).2 H G = quotSubgraphDensity H G
   := by
-  sorry
+  rcases Quotient.exists_rep (1 : IsoSimpleGraph).2 with ⟨Orep, hOrep⟩
+  rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [<- hOrep, ← hHrep, ← hGrep]
+  have orep_eq_empty : Orep = emptyGraph (Fin 0) := by
+    exact edgeFinset_inj.mp rfl
+  rw [orep_eq_empty]
+  exact subgraphPairDensity_one Hrep Grep
+
 
 noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
   :=
