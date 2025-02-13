@@ -1126,7 +1126,7 @@ lemma graphVector_mul_comm
       rw [mul_comm, graph_mul_comm]
 
 lemma graphVector_left_distrib
-    (f g h : GraphVector) :  f * (g + h) = f * g + f * h
+    (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
   sorry
 
@@ -1153,7 +1153,7 @@ lemma graph_mul_one
     · rfl
     · intros
       rw [quotSubgraphPairDensity_one]
-      sorry
+      rfl
   rw [this, ZeroSet]
   refine Submodule.mem_span.mpr fun p a ↦ a ?_
   refine Set.mem_sUnion.mpr ?_
