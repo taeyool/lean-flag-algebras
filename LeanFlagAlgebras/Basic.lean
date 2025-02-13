@@ -1125,7 +1125,7 @@ lemma graphVector_mul_comm
       rw [mul_comm, graph_mul_comm]
 
 lemma graphVector_left_distrib
-    (f g h : GraphVector) : f * (g + h) = f * g + f * h
+    (f g h : GraphVector) :  f * (g + h) = f * g + f * h
   := by
   sorry
 
@@ -1148,20 +1148,24 @@ lemma graphVector_mul_one
     (g : GraphVector) : graph_algebra_eqv (g * 1) g
   := by
   show ∑ G in g.support, ∑ H in (1 : GraphVector).support, _ - g ∈ ZeroSet
-  have supp_singleton : Finsupp.support (1 : GraphVector) = {1} := by
+  have h_supp_one : Finsupp.support (1 : GraphVector) = {1} := by
     show Finsupp.support (basisElementFromGraph 1) = {1}
     dsimp [basisElementFromGraph]
     rw [Finsupp.support_single_ne_zero _ (by simp)]
-  rw [Finset.sum_comm, supp_singleton, Finset.sum_singleton]
-  have : ∀ G ∈ g.support, (g G * (1 : GraphVector) 1) • graph_mul G 1 - (g G) • basisElementFromGraph G ∈ ZeroSet := by
-    intro G hG
-    have : (1 : GraphVector) 1 = 1 := by
-      show (basisElementFromGraph 1) 1 = 1
-      simp [basisElementFromGraph]
-    rw [this, mul_one, ← smul_sub]
-    apply zeroset_closed_under_smul
-    exact graph_mul_one G
-  sorry
+  rw [Finset.sum_comm, h_supp_one, Finset.sum_singleton]
+  have hg : g = ∑ G in g.support, g G • basisElementFromGraph G := by
+    simp [basisElementFromGraph]
+    nth_rw 1 [← Finsupp.sum_single g, Finsupp.sum]
+  nth_rw 3 [hg]
+  rw [← Finset.sum_sub_distrib]
+  apply zeroset_closed_under_sum
+  intro G _
+  have : (1 : GraphVector) 1 = 1 := by
+    show (basisElementFromGraph 1) 1 = 1
+    simp [basisElementFromGraph]
+  rw [this, mul_one, ← smul_sub]
+  apply zeroset_closed_under_smul
+  exact graph_mul_one G
 
 noncomputable instance : Mul GraphAlgebra where
   mul := by
