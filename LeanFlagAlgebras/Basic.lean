@@ -156,7 +156,7 @@ noncomputable def subgraphPairDensity
   let W_card := Fintype.card W
   let V_card := Fintype.card V
   let U_card := Fintype.card U
-  let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
+  let num_of_all_induced_subgraphs := W_card.factorial / (V_card.factorial * U_card.factorial * (W_card - (V_card + U_card)).factorial)
   subgraph_cnt / num_of_all_induced_subgraphs
 
 omit [DecidableEq V] [DecidableEq W] in
@@ -877,12 +877,9 @@ lemma subgraphPairCount_comm
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
-example (a b c₀ c₁ d e : ℕ) : (a / (b * c₀)) * (c₀ / (d * e)) = (a / (b * c₁)) * (c₁ / (d * e)) := by
-  sorry
-
+omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairDensity_comm
     (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
-    (h_uvw : Fintype.card U + Fintype.card V ≤ Fintype.card W)
     : subgraphPairDensity H H' G = subgraphPairDensity H' H G
   := by
   dsimp [subgraphPairDensity]
@@ -891,35 +888,19 @@ lemma subgraphPairDensity_comm
   let n_U := Fintype.card U
   let n_V := Fintype.card V
   let n_W := Fintype.card W
-  show n_W.choose n_U * (n_W - n_U).choose n_V = n_W.choose n_V * (n_W - n_V).choose n_U
-  have h_U_W : n_U ≤ n_W := Nat.le_of_add_right_le h_uvw
-  have h_V_WsubU : n_V ≤ n_W - n_U := (Nat.le_sub_iff_add_le' h_U_W).mpr h_uvw
-  have h_V_W : n_V ≤ n_W := le_of_add_le_right h_uvw
-  have h_U_WsubV : n_U ≤ n_W - n_V := (Nat.le_sub_iff_add_le' h_V_W).mpr (Nat.add_le_of_le_sub h_U_W h_V_WsubU)
-  rw [Nat.choose_eq_factorial_div_factorial h_U_W]
-  rw [Nat.choose_eq_factorial_div_factorial h_V_W]
-  rw [Nat.choose_eq_factorial_div_factorial h_U_WsubV]
-  rw [Nat.choose_eq_factorial_div_factorial h_V_WsubU]
-  calc
-    (n_W.factorial / (n_U.factorial * (n_W - n_U).factorial)) *
-          ((n_W - n_U).factorial / (n_V.factorial * (n_W - n_U - n_V).factorial))
-      = (n_W.factorial * (n_W - n_U).factorial)
-               / (n_U.factorial * (n_W - n_U).factorial * n_V.factorial * (n_W - n_U - n_V).factorial)
-          := by sorry
-    _ = n_W.factorial / (n_U.factorial * n_V.factorial * (n_W - n_U - n_V).factorial)
-          := by sorry
-    _ = (n_W.factorial * (n_W - n_V).factorial)
-              / (n_V.factorial * (n_W - n_V).factorial * n_U.factorial * (n_W - n_V - n_U).factorial)
-          := by sorry
-    _ = (n_W.factorial / (n_V.factorial * (n_W - n_V).factorial)) *
-              ((n_W - n_V).factorial / (n_U.factorial * (n_W - n_V - n_U).factorial))
-          := by sorry
+  show n_W.factorial / (n_U.factorial * n_V.factorial * (n_W - (n_U + n_V)).factorial)
+       = n_W.factorial / (n_V.factorial * n_U.factorial * (n_W - (n_V + n_U)).factorial)
+  simp [Nat.mul_comm, Nat.add_comm]
 
 lemma quotSubgraphPairDensity_comm
     (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : quotSubgraphPairDensity H₁ H₂ G = quotSubgraphPairDensity H₂ H₁ G
   := by
-  sorry
+  rcases Quotient.exists_rep H₁ with ⟨H₁rep, hH₁rep⟩
+  rcases Quotient.exists_rep H₂ with ⟨H₂rep, hH₂rep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hH₁rep, ← hH₂rep, ← hGrep]
+  apply subgraphPairDensity_comm
 
 -- set of all graphs (up to isomorphism) on n vertices
 def IsoSimpleGraphWithSize (n : ℕ) : Type
