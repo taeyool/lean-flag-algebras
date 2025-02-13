@@ -877,7 +877,8 @@ lemma subgraphPairCount_comm
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
-
+example (a b c₀ c₁ d e : ℕ) : (a / (b * c₀)) * (c₀ / (d * e)) = (a / (b * c₁)) * (c₁ / (d * e)) := by
+  sorry
 
 lemma subgraphPairDensity_comm
     (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
@@ -900,7 +901,7 @@ lemma subgraphPairDensity_comm
   rw [Nat.choose_eq_factorial_div_factorial h_U_WsubV]
   rw [Nat.choose_eq_factorial_div_factorial h_V_WsubU]
   calc
-    n_W.factorial / (n_U.factorial * (n_W - n_U).factorial) *
+    (n_W.factorial / (n_U.factorial * (n_W - n_U).factorial)) *
           ((n_W - n_U).factorial / (n_V.factorial * (n_W - n_U - n_V).factorial))
       = (n_W.factorial * (n_W - n_U).factorial)
                / (n_U.factorial * (n_W - n_U).factorial * n_V.factorial * (n_W - n_U - n_V).factorial)
@@ -910,10 +911,7 @@ lemma subgraphPairDensity_comm
     _ = (n_W.factorial * (n_W - n_V).factorial)
               / (n_V.factorial * (n_W - n_V).factorial * n_U.factorial * (n_W - n_V - n_U).factorial)
           := by sorry
-    _ = (n_W.factorial / n_V.factorial) * (1 / (n_W - n_V).factorial) *
-              ((n_W - n_V).factorial / (n_U.factorial * (n_W - n_V - n_U).factorial))
-          := by sorry
-    _ = n_W.factorial / (n_V.factorial * (n_W - n_V).factorial) *
+    _ = (n_W.factorial / (n_V.factorial * (n_W - n_V).factorial)) *
               ((n_W - n_V).factorial / (n_U.factorial * (n_W - n_V - n_U).factorial))
           := by sorry
 
