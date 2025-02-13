@@ -689,7 +689,7 @@ noncomputable def isoSetOfInducedSubgraphInG
   exact Equiv.setCongr this
 
 omit [DecidableEq V] in
-lemma subgraphDensityLifted_respects_eqv_on_H
+lemma subgraphDensityLifted_respects_eqv
     {H₀ H₁ : SimpleGraph V} (h_eqv : graph_eqv H₀ H₁) (G : QuotSimpleGraph W)
     : subgraphDensityLifted H₀ G = subgraphDensityLifted H₁ G
   := by
@@ -714,7 +714,7 @@ noncomputable def quotSubgraphDensity
   apply Quot.lift subgraphDensityLifted
   intro _ _ h_eqv
   ext G
-  exact subgraphDensityLifted_respects_eqv_on_H h_eqv G
+  exact subgraphDensityLifted_respects_eqv h_eqv G
 
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
@@ -852,6 +852,70 @@ noncomputable def quotSubgraphPairDensity
   . intro _ _ H h_eqv_S
     ext G
     exact subgraphPairDensityLifted_respects_eqv h_eqv_S (graph_eqv.refl H) G
+
+omit [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [DecidableEq W] in
+lemma subgraphPairCount_comm
+    (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
+    : subgraphPairCount H H' G = subgraphPairCount H' H G
+  := by
+  dsimp [subgraphPairCount]
+  let S₀ := { (G', G'') : Subgraph G × Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H') ∧
+                G'.verts ∩ G''.verts = ∅ }
+  let S₁ := { (G', G'') : Subgraph G × Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H') ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H) ∧
+                G'.verts ∩ G''.verts = ∅ }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    apply Equiv.subtypeEquiv (Equiv.prodComm (Subgraph G) (Subgraph G))
+    intro ⟨G', G''⟩
+    constructor <;>
+    { intro ⟨h₁, h₂, h₃, h₄, h₅⟩
+      let h₅' := by rw [Set.inter_comm] at h₅; exact h₅
+      exact ⟨h₃, h₄, h₁, h₂, h₅'⟩ }
+  have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
+
+
+
+lemma subgraphPairDensity_comm
+    (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
+    (h_uvw : Fintype.card U + Fintype.card V ≤ Fintype.card W)
+    : subgraphPairDensity H H' G = subgraphPairDensity H' H G
+  := by
+  dsimp [subgraphPairDensity]
+  have h_count_comm : subgraphPairCount H H' G = subgraphPairCount H' H G := subgraphPairCount_comm H H' G
+  rw [h_count_comm]; congr 1; apply congrArg Nat.cast
+  let n_U := Fintype.card U
+  let n_V := Fintype.card V
+  let n_W := Fintype.card W
+  show n_W.choose n_U * (n_W - n_U).choose n_V = n_W.choose n_V * (n_W - n_V).choose n_U
+  have h_U_W : n_U ≤ n_W := Nat.le_of_add_right_le h_uvw
+  have h_V_WsubU : n_V ≤ n_W - n_U := (Nat.le_sub_iff_add_le' h_U_W).mpr h_uvw
+  have h_V_W : n_V ≤ n_W := le_of_add_le_right h_uvw
+  have h_U_WsubV : n_U ≤ n_W - n_V := (Nat.le_sub_iff_add_le' h_V_W).mpr (Nat.add_le_of_le_sub h_U_W h_V_WsubU)
+  rw [Nat.choose_eq_factorial_div_factorial h_U_W]
+  rw [Nat.choose_eq_factorial_div_factorial h_V_W]
+  rw [Nat.choose_eq_factorial_div_factorial h_U_WsubV]
+  rw [Nat.choose_eq_factorial_div_factorial h_V_WsubU]
+  calc
+    n_W.factorial / (n_U.factorial * (n_W - n_U).factorial) *
+          ((n_W - n_U).factorial / (n_V.factorial * (n_W - n_U - n_V).factorial))
+      = (n_W.factorial * (n_W - n_U).factorial)
+               / (n_U.factorial * (n_W - n_U).factorial * n_V.factorial * (n_W - n_U - n_V).factorial)
+          := by sorry
+    _ = n_W.factorial / (n_U.factorial * n_V.factorial * (n_W - n_U - n_V).factorial)
+          := by sorry
+    _ = (n_W.factorial * (n_W - n_V).factorial)
+              / (n_V.factorial * (n_W - n_V).factorial * n_U.factorial * (n_W - n_V - n_U).factorial)
+          := by sorry
+    _ = (n_W.factorial / n_V.factorial) * (1 / (n_W - n_V).factorial) *
+              ((n_W - n_V).factorial / (n_U.factorial * (n_W - n_V - n_U).factorial))
+          := by sorry
+    _ = n_W.factorial / (n_V.factorial * (n_W - n_V).factorial) *
+              ((n_W - n_V).factorial / (n_U.factorial * (n_W - n_V - n_U).factorial))
+          := by sorry
 
 lemma quotSubgraphPairDensity_comm
     (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
