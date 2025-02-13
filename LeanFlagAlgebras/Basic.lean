@@ -10,16 +10,15 @@ import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Quotient
 import Mathlib.Logic.Unique
 
-
-variable {α : Type} [DecidableEq α]
-
 open Finset
 
-def combinations (V : Finset α) (ℓ : ℕ) : Finset (Finset α) :=
-  (V.powerset).filter fun W ↦ W.card = ℓ
+def combinations [DecidableEq α] (V : Finset α) (ℓ : ℕ) : Finset (Finset α)
+  := (V.powerset).filter fun W ↦ W.card = ℓ
 
-theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
-    ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ := by
+theorem comb_card_aux
+    [DecidableEq α] (V : Finset α) (ℓ : ℕ) :
+    ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ
+  := by
   induction ℓ with
   | zero =>
     intro V' _
@@ -86,7 +85,9 @@ theorem comb_card_aux (V : Finset α) (ℓ : ℕ) :
       · have hsub : V' ⊆ S := (subset_insert_iff_of_not_mem haV').mp hV'
         exact hindS V' hsub
 
-theorem comb_card (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ := by
+theorem comb_card
+    [DecidableEq α] (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ
+  := by
   apply comb_card_aux V ℓ
   exact fun ⦃a⦄ a ↦ a
 
@@ -1008,9 +1009,8 @@ lemma zeroset_closed_under_add
   := by
   apply Submodule.add_mem <;> assumption
 
-lemma zeroset_closed_under_multiple_sum
-    (S : Finset IsoSimpleGraph) (f : IsoSimpleGraph → GraphVector)
-    (h_zero : ∀ G ∈ S, f G ∈ ZeroSet)
+lemma zeroset_closed_under_sum
+    (S : Finset α) (f : α → GraphVector) (h_zero : ∀ G ∈ S, f G ∈ ZeroSet)
     : ∑ G ∈ S, f G ∈ ZeroSet
   := by
   apply Submodule.sum_mem
