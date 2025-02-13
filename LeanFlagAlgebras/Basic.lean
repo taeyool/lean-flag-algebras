@@ -8,6 +8,7 @@ import Mathlib.Logic.Nonempty
 import Mathlib.Data.Real.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Quotient
+import Mathlib.LinearAlgebra.Span
 import Mathlib.Logic.Unique
 
 open Finset
@@ -957,8 +958,8 @@ noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
 lemma quotSubgraphPairDensity_one
-    (H G : IsoSimpleGraph)
-    : quotSubgraphPairDensity (1 : IsoSimpleGraph).2 H.2 G.2 = quotSubgraphDensity H.2 G.2
+    (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
+    : quotSubgraphPairDensity (1 : IsoSimpleGraph).2 H G = quotSubgraphDensity H G
   := by
   sorry
 
@@ -995,7 +996,7 @@ noncomputable def densityGraphSum
     (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ F in ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ,F⟩
+  ∑ F in ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ, F⟩
 
 noncomputable def ZeroSet : Submodule ℝ GraphVector
   :=
@@ -1142,7 +1143,26 @@ lemma graphVector_mul_zero
 lemma graph_mul_one
     (G : IsoSimpleGraph) : graph_algebra_eqv (graph_mul G 1) (basisElementFromGraph G)
   := by
-  sorry
+  rw [graph_mul_comm]
+  apply graph_algebra_eqv.symm
+  dsimp [graph_algebra_eqv]
+  have : graph_mul 1 G = densityGraphSum G G.1 := by
+    dsimp [densityGraphSum, graph_mul]
+    rw [add_comm]
+    apply Finset.sum_congr
+    · rfl
+    · intros
+      rw [quotSubgraphPairDensity_one]
+      sorry
+  rw [this, ZeroSet]
+  refine Submodule.mem_span.mpr fun p a ↦ a ?_
+  refine Set.mem_sUnion.mpr ?_
+  let S := (fun G ℓ ↦ basisElementFromGraph G - densityGraphSum G ℓ) G '' {ℓ | G.fst ≤ ℓ}
+  use S; constructor
+  · exact Set.mem_range_self G
+  · dsimp [S]
+    refine Set.mem_image_of_mem (fun ℓ ↦ basisElementFromGraph G - densityGraphSum G ℓ) ?_
+    simp
 
 lemma graphVector_mul_one
     (g : GraphVector) : graph_algebra_eqv (g * 1) g
