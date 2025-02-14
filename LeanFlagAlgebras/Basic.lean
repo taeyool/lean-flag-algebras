@@ -957,8 +957,9 @@ noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
-noncomputable def empty_subgraph_iso_empty_graph_on_fin_0
-    (G : SimpleGraph V) : Subgraph.coe (⊥ : Subgraph G) ≃g (emptyGraph (Fin 0))
+lemma empty_subgraph_iso_empty_graph_on_fin_0
+    {G : SimpleGraph V}
+    : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)))
   := by
   let H₀ := (⊥ : Subgraph G)
   let H₁ := emptyGraph (Fin 0)
@@ -967,7 +968,32 @@ noncomputable def empty_subgraph_iso_empty_graph_on_fin_0
     exact Fintype.equivFinOfCardEq rfl
   have h_edge : ∀ {u v : H₀.verts}, H₁.Adj (f_zero u) (f_zero v) ↔ H₀.coe.Adj u v := by
     intro u v; dsimp [H₀, H₁]; simp
-  exact ⟨f_zero, h_edge⟩
+  exact Nonempty.intro ⟨f_zero, h_edge⟩
+
+lemma subgraph_eq_empty_subgraph_if_iso_empty_graph_on_fin_0
+    {G : SimpleGraph V} {H : Subgraph G}
+    : Nonempty (H.coe ≃g (emptyGraph (Fin 0))) → H = ⊥
+  := by
+  intro h_iso
+  have f_iso : H.coe ≃g (emptyGraph (Fin 0)) := h_iso.some
+  have h_verts : H.verts = ∅ := by
+    ext u
+    constructor
+    . intro h_u
+      let u' : Fin 0 := f_iso ⟨u, h_u⟩
+      exact Fin.elim0 u'
+    . exact False.elim
+  have h_adj : ∀ u v, H.Adj u v ↔ False := by
+    intro u v
+    constructor
+    . intro h_uv
+      have : u ∈ ∅ := h_verts ▸ H.edge_vert h_uv
+      exact False.elim this
+    . exact False.elim
+  simp_all [Subgraph.ext_iff, Set.ext_iff]
+  ext u v
+  simp
+  exact h_adj u v
 
 lemma subgraphPairCount_one
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
@@ -990,7 +1016,9 @@ lemma subgraphPairCount_one
       . intro ⟨G₀,G₁⟩ ⟨h₁,h₂,h₃,h₄⟩ ⟨G'₀,G'₁⟩ ⟨h₁',h₂',h₃',h₄'⟩ h_eq
         simp at h_eq
         simp [h_eq]
-        sorry
+        have h_G₀ : G₀ = ⊥ := subgraph_eq_empty_subgraph_if_iso_empty_graph_on_fin_0 h₂
+        have h_G₀' : G'₀ = ⊥ := subgraph_eq_empty_subgraph_if_iso_empty_graph_on_fin_0 h₂'
+        rw [h_G₀, h_G₀']
       . intro G'' ⟨h₁,h₂⟩
         use ⟨⊥, G''⟩
         simp
@@ -998,9 +1026,9 @@ lemma subgraphPairCount_one
           dsimp [Subgraph.IsInduced]
           intro u _ h_u _ _
           exact False.elim h_u
-        have h_bot_iso : (⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)) :=
-          empty_subgraph_iso_empty_graph_on_fin_0 G
-        exact ⟨h_bot_isinduced, Nonempty.intro h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
+        have h_bot_iso : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0))) :=
+          empty_subgraph_iso_empty_graph_on_fin_0
+        exact ⟨h_bot_isinduced, h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
