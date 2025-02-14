@@ -962,10 +962,12 @@ noncomputable def empty_subgraph_iso_empty_graph_on_fin_0
   := by
   let H₀ := (⊥ : Subgraph G)
   let H₁ := emptyGraph (Fin 0)
-  let f_zero : H₀.verts ≃ Fin 0 := sorry
-  let h_edge : ∀ {u v : H₀.verts}, H₁.Adj (f_zero u) (f_zero v) ↔ H₀.coe.Adj u v := sorry
+  have f_zero : H₀.verts ≃ Fin 0 := by
+    dsimp [H₀]
+    exact Fintype.equivFinOfCardEq rfl
+  have h_edge : ∀ {u v : H₀.verts}, H₁.Adj (f_zero u) (f_zero v) ↔ H₀.coe.Adj u v := by
+    intro u v; dsimp [H₀, H₁]; simp
   exact ⟨f_zero, h_edge⟩
-
 
 lemma subgraphPairCount_one
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
@@ -985,12 +987,20 @@ lemma subgraphPairCount_one
     . refine Set.BijOn.mk ?h.h₁ ?h.h₂ ?h.h₃
       . intro ⟨_, G''⟩ ⟨_,_,h₃,h₄,_⟩
         exact ⟨h₃, h₄⟩
-      . sorry
+      . intro ⟨G₀,G₁⟩ ⟨h₁,h₂,h₃,h₄⟩ ⟨G'₀,G'₁⟩ ⟨h₁',h₂',h₃',h₄'⟩ h_eq
+        simp at h_eq
+        simp [h_eq]
+        sorry
       . intro G'' ⟨h₁,h₂⟩
         use ⟨⊥, G''⟩
         simp
-        have : (⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)) := sorry
-        exact ⟨by sorry, Nonempty.intro this, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
+        have h_bot_isinduced : (⊥ : Subgraph G).IsInduced := by
+          dsimp [Subgraph.IsInduced]
+          intro u _ h_u _ _
+          exact False.elim h_u
+        have h_bot_iso : (⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)) :=
+          empty_subgraph_iso_empty_graph_on_fin_0 G
+        exact ⟨h_bot_isinduced, Nonempty.intro h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
