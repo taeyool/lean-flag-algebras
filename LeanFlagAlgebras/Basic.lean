@@ -942,11 +942,11 @@ abbrev GraphVector : Type
 noncomputable instance : HMul ℝ GraphVector GraphVector where
   hMul r g := r • g
 
-noncomputable instance : AddCommGroup GraphVector
-  := Finsupp.instAddCommGroup
-
 noncomputable instance : AddCommMonoid GraphVector
   := Finsupp.instAddCommMonoid
+
+noncomputable instance : AddCommGroup GraphVector
+  := Finsupp.instAddCommGroup
 
 noncomputable instance : Module ℝ GraphVector
   := Finsupp.module IsoSimpleGraph ℝ
@@ -956,6 +956,43 @@ noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
 
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
+
+noncomputable def empty_subgraph_iso_empty_graph_on_fin_0
+    (G : SimpleGraph V) : Subgraph.coe (⊥ : Subgraph G) ≃g (emptyGraph (Fin 0))
+  := by
+  let H₀ := (⊥ : Subgraph G)
+  let H₁ := emptyGraph (Fin 0)
+  let f_zero : H₀.verts ≃ Fin 0 := sorry
+  let h_edge : ∀ {u v : H₀.verts}, H₁.Adj (f_zero u) (f_zero v) ↔ H₀.coe.Adj u v := sorry
+  exact ⟨f_zero, h_edge⟩
+
+
+lemma subgraphPairCount_one
+    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
+    : subgraphPairCount (emptyGraph (Fin 0)) H G = subgraphCount H G
+  := by
+  dsimp [subgraphPairCount, subgraphCount]
+  let S₀ := { (G', G'') : Subgraph G × Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g (emptyGraph (Fin 0))) ∧
+                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H) ∧
+                G'.verts ∩ G''.verts = ∅ }
+  let S₁ := { G' : Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  show S₀.toFinset.card = S₁.toFinset.card
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    refine Set.BijOn.equiv ?f ?h
+    . exact (fun ⟨_, G''⟩ => G'')
+    . refine Set.BijOn.mk ?h.h₁ ?h.h₂ ?h.h₃
+      . intro ⟨_, G''⟩ ⟨_,_,h₃,h₄,_⟩
+        exact ⟨h₃, h₄⟩
+      . sorry
+      . intro G'' ⟨h₁,h₂⟩
+        use ⟨⊥, G''⟩
+        simp
+        have : (⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)) := sorry
+        exact ⟨by sorry, Nonempty.intro this, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
+  have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
 lemma subgraphPairDensity_one
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
