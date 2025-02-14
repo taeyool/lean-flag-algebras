@@ -1,14 +1,14 @@
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Combinatorics.SimpleGraph.Maps
-import Mathlib.Data.Set.Finite
-import Mathlib.Data.Nat.Choose.Basic
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Finset.Card
+import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Rat.Cast.Order
-import Mathlib.Logic.Nonempty
 import Mathlib.Data.Real.Basic
+import Mathlib.Data.Set.Finite
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Quotient
 import Mathlib.LinearAlgebra.Span
+import Mathlib.Logic.Nonempty
 import Mathlib.Logic.Unique
 
 open Finset
@@ -160,7 +160,8 @@ noncomputable def subgraphPairDensity
   let W_card := Fintype.card W
   let V_card := Fintype.card V
   let U_card := Fintype.card U
-  let num_of_all_induced_subgraphs := W_card.factorial / (V_card.factorial * U_card.factorial * (W_card - (V_card + U_card)).factorial)
+  let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
+  -- let num_of_all_induced_subgraphs := W_card.factorial / (V_card.factorial * U_card.factorial * (W_card - (V_card + U_card)).factorial)
   subgraph_cnt / num_of_all_induced_subgraphs
 
 omit [DecidableEq V] [DecidableEq W] in
@@ -881,6 +882,40 @@ lemma subgraphPairCount_comm
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
+lemma choose_pair_eq_factorial_div
+    (n m k : ℕ) (h_size : m + k ≤ n)
+    : n.choose m * (n - m).choose k = n.factorial / (m.factorial * k.factorial * (n - (m + k)).factorial)
+  := by
+  have h₁ : m ≤ n := Nat.le_of_add_right_le h_size
+  have h₂ : k ≤ n - m := (Nat.le_sub_iff_add_le' h₁).mpr h_size
+  repeat rw [Nat.choose_eq_factorial_div_factorial] <;> try assumption
+  rw [← Nat.mul_div_assoc _ (Nat.factorial_mul_factorial_dvd_factorial h₂)]
+  rw [Nat.mul_comm, ← Nat.mul_div_assoc _ (Nat.factorial_mul_factorial_dvd_factorial h₁)]
+  rw [Nat.mul_comm (n - m).factorial, Nat.mul_comm m.factorial, ← Nat.div_div_eq_div_mul _ _ m.factorial]
+  rw [Nat.mul_div_cancel _ (Nat.factorial_pos (n - m))]
+  rw [Nat.div_div_eq_div_mul, Nat.sub_sub, Nat.mul_assoc]
+
+lemma choose_pair_zero
+    (n m k : ℕ) (h_size : m + k > n)
+    : n.choose m * (n - m).choose k = 0
+  := by
+  by_cases hm : m > n
+  · simp [Nat.choose_eq_zero_of_lt hm]
+  · have hk : k > n - m := by
+      apply @Nat.lt_of_add_lt_add_right _ _ m
+      rw [Nat.sub_add_cancel (Nat.le_of_not_lt hm), Nat.add_comm]
+      exact h_size
+    simp [Nat.choose_eq_zero_of_lt hk]
+
+lemma choose_pair_comm
+    (n m k : ℕ)
+    : n.choose m * (n - m).choose k = n.choose k * (n - k).choose m
+  := by
+  by_cases h_size : m + k ≤ n
+  · simp [choose_pair_eq_factorial_div, h_size, Nat.add_comm, Nat.mul_comm]
+  · have h_size' : m + k > n := Nat.not_le.mp h_size
+    simp [choose_pair_zero, h_size', Nat.add_comm]
+
 omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairDensity_comm
     (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
@@ -889,12 +924,7 @@ lemma subgraphPairDensity_comm
   dsimp [subgraphPairDensity]
   have h_count_comm : subgraphPairCount H H' G = subgraphPairCount H' H G := subgraphPairCount_comm H H' G
   rw [h_count_comm]; congr 1; apply congrArg Nat.cast
-  let n_U := Fintype.card U
-  let n_V := Fintype.card V
-  let n_W := Fintype.card W
-  show n_W.factorial / (n_U.factorial * n_V.factorial * (n_W - (n_U + n_V)).factorial)
-       = n_W.factorial / (n_V.factorial * n_U.factorial * (n_W - (n_V + n_U)).factorial)
-  simp [Nat.mul_comm, Nat.add_comm]
+  simp [choose_pair_comm]
 
 lemma quotSubgraphPairDensity_comm
     (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
@@ -959,6 +989,7 @@ noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
+omit [Fintype V] [DecidableEq V]
 lemma empty_subgraph_iso_empty_graph_on_fin_0
     {G : SimpleGraph V}
     : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0)))
@@ -972,6 +1003,7 @@ lemma empty_subgraph_iso_empty_graph_on_fin_0
     intro u v; dsimp [H₀, H₁]; simp
   exact Nonempty.intro ⟨f_zero, h_edge⟩
 
+omit [Fintype V] [DecidableEq V]
 lemma subgraph_eq_empty_subgraph_if_iso_empty_graph_on_fin_0
     {G : SimpleGraph V} {H : Subgraph G}
     : Nonempty (H.coe ≃g (emptyGraph (Fin 0))) → H = ⊥
@@ -1037,14 +1069,12 @@ lemma subgraphPairCount_one
 #check Nat.choose_eq_factorial_div_factorial
 
 lemma subgraphPairDensity_one
-    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m)) (h_nm : n ≤ m)
+    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
   := by
   dsimp [subgraphPairDensity, subgraphDensity]
   rw [←subgraphPairCount_one H G]
-  have : m.choose n = m.factorial / (n.factorial * (m - n).factorial) :=
-    Nat.choose_eq_factorial_div_factorial h_nm
-  simp [this]
+  simp
 
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
@@ -1057,8 +1087,7 @@ lemma quotSubgraphPairDensity_one
   have orep_eq_empty : Orep = emptyGraph (Fin 0) := by
     exact edgeFinset_inj.mp rfl
   rw [orep_eq_empty]
-  exact subgraphPairDensity_one Hrep Grep sorry
-
+  exact subgraphPairDensity_one Hrep Grep
 
 noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
   :=
