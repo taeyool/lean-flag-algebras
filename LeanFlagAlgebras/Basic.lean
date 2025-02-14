@@ -139,7 +139,9 @@ noncomputable def subgraphDensity
     (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   :=
   let subgraph_cnt := subgraphCount H G
-  let num_of_all_induced_subgraph := (univ : Finset W).card.choose (univ : Finset V).card
+  let card_V := Fintype.card V
+  let card_W := Fintype.card W
+  let num_of_all_induced_subgraph := card_W.choose card_V
   subgraph_cnt / num_of_all_induced_subgraph
 
 noncomputable def subgraphPairCount
@@ -1032,20 +1034,17 @@ lemma subgraphPairCount_one
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
+#check Nat.choose_eq_factorial_div_factorial
+
 lemma subgraphPairDensity_one
-    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
+    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m)) (h_nm : n ≤ m)
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
   := by
   dsimp [subgraphPairDensity, subgraphDensity]
-  let S₀ := { (G', G'') : Subgraph G × Subgraph G |
-                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g (emptyGraph (Fin 0))) ∧
-                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H) ∧
-                G'.verts ∩ G''.verts = ∅ }
-  let S₁ := { G' : Subgraph G |
-                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by sorry
-  have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-  sorry
+  rw [←subgraphPairCount_one H G]
+  have : m.choose n = m.factorial / (n.factorial * (m - n).factorial) :=
+    Nat.choose_eq_factorial_div_factorial h_nm
+  simp [this]
 
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
@@ -1058,7 +1057,7 @@ lemma quotSubgraphPairDensity_one
   have orep_eq_empty : Orep = emptyGraph (Fin 0) := by
     exact edgeFinset_inj.mp rfl
   rw [orep_eq_empty]
-  exact subgraphPairDensity_one Hrep Grep
+  exact subgraphPairDensity_one Hrep Grep sorry
 
 
 noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
