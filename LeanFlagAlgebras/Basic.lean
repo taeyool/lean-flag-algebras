@@ -1066,8 +1066,6 @@ lemma subgraphPairCount_one
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
-#check Nat.choose_eq_factorial_div_factorial
-
 lemma subgraphPairDensity_one
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
@@ -1251,6 +1249,19 @@ lemma graphVector_mul_comm
     · intros
       rw [mul_comm, graph_mul_comm]
 
+instance : IsScalarTower ℝ GraphVector GraphVector where
+  smul_assoc r g h := by
+    show ∑ G in (r • g).support, _ = r • ∑ G in g.support, _
+    by_cases hr : r = 0
+    · simp [hr]
+    · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
+      rw [hg_supp]
+      rw [Finset.smul_sum]
+      congr; apply funext; intro G
+      rw [Finset.smul_sum]
+      congr; apply funext; intro H
+      simp [smul_mul_assoc, mul_assoc, smul_smul]
+
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
@@ -1261,10 +1272,37 @@ lemma graphVector_right_distrib
   := by
   simp [graphVector_mul_comm, graphVector_left_distrib]
 
+lemma graph_mul_zero
+    (G H : IsoSimpleGraph) (ℓ : ℕ)
+    : (basisElementFromGraph G) * (basisElementFromGraph H - densityGraphSum H ℓ) ∈ ZeroSet
+  := by
+  sorry
+
+lemma graph_mul_zero'
+    (G : IsoSimpleGraph) {k : GraphVector} (hk : k ∈ ZeroSet)
+    : (basisElementFromGraph G) * k ∈ ZeroSet
+  := by
+  sorry
+
 lemma graphVector_mul_zero
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
   := by
-  sorry
+  apply zeroset_closed_under_sum
+  intro G hG
+  let G_vec := (g G) • basisElementFromGraph G
+  have hgG : g G = G_vec G := by
+    show g G = (g G) • (basisElementFromGraph G G)
+    simp [basisElementFromGraph]
+  rw [hgG, ← sum_singleton (fun G ↦ ∑ H ∈ k.support, (G_vec G * k H) • graph_mul G H) G]
+  have hG_supp : G_vec.support = {G} := by
+    have : (g G • basisElementFromGraph G).support = (basisElementFromGraph G).support := by
+      apply Finsupp.support_smul_eq
+      exact Finsupp.mem_support_iff.mp hG
+    rw [this]
+    simp [basisElementFromGraph, Finsupp.support_single_ne_zero]
+  rw [← hG_supp]
+  show G_vec * k ∈ ZeroSet
+  simp [G_vec, smul_mul_assoc, zeroset_closed_under_smul, graph_mul_zero' G hk]
 
 lemma graph_mul_one
     (G : IsoSimpleGraph) : graph_algebra_eqv (graph_mul G 1) (basisElementFromGraph G)
