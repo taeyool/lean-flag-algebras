@@ -986,6 +986,13 @@ noncomputable instance : Module ℝ GraphVector
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
 
+lemma basisElementFromGraph_support
+    (G : IsoSimpleGraph)
+    : (basisElementFromGraph G).support = {G}
+  := by
+  dsimp [basisElementFromGraph]
+  rw [Finsupp.support_single_ne_zero _ (by simp)]
+
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
@@ -1262,6 +1269,10 @@ instance : IsScalarTower ℝ GraphVector GraphVector where
       congr; apply funext; intro H
       simp [smul_mul_assoc, mul_assoc, smul_smul]
 
+noncomputable instance : HasDistribNeg GraphVector where
+  neg_mul g h := sorry
+  mul_neg g h := sorry
+
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
@@ -1272,10 +1283,21 @@ lemma graphVector_right_distrib
   := by
   simp [graphVector_mul_comm, graphVector_left_distrib]
 
+lemma graphVector_mul_sub
+    (f g h : GraphVector) : f * (g - h) = f * g - f * h
+  := by
+  simp [sub_eq_add_neg, graphVector_left_distrib]
+
+lemma graphVector_sub_mul
+    (f g h : GraphVector) : (f - g) * h = f * h - g * h
+  := by
+  simp [sub_eq_add_neg, graphVector_right_distrib]
+
 lemma graph_mul_zero
     (G H : IsoSimpleGraph) (ℓ : ℕ)
     : (basisElementFromGraph G) * (basisElementFromGraph H - densityGraphSum H ℓ) ∈ ZeroSet
   := by
+  rw [graphVector_mul_sub]
   sorry
 
 lemma graph_mul_zero'
