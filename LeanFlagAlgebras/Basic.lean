@@ -1034,27 +1034,29 @@ lemma subgraphPairCount_one
                 G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   show S₀.toFinset.card = S₁.toFinset.card
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    refine Set.BijOn.equiv ?f ?h
-    . exact (fun ⟨_, G''⟩ => G'')
-    . refine Set.BijOn.mk ?h.h₁ ?h.h₂ ?h.h₃
-      . intro ⟨_, G''⟩ ⟨_,_,h₃,h₄,_⟩
-        exact ⟨h₃, h₄⟩
-      . intro ⟨G₀,G₁⟩ ⟨h₁,h₂,h₃,h₄⟩ ⟨G'₀,G'₁⟩ ⟨h₁',h₂',h₃',h₄'⟩ h_eq
-        simp at h_eq
-        simp [h_eq]
-        have h_G₀ : G₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂
-        have h_G₀' : G'₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂'
-        rw [h_G₀, h_G₀']
-      . intro G'' ⟨h₁,h₂⟩
-        use ⟨⊥, G''⟩
-        simp
-        have h_bot_isinduced : (⊥ : Subgraph G).IsInduced := by
-          dsimp [Subgraph.IsInduced]
-          intro u _ h_u _ _
-          exact False.elim h_u
-        have h_bot_iso : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0))) :=
-          subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mp rfl
-        exact ⟨h_bot_isinduced, h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
+    let f : Subgraph G × Subgraph G → Subgraph G :=
+      fun ⟨_, G''⟩ => G''
+    have h_f_S₀_S₁ : Set.MapsTo f S₀ S₁ :=
+      fun ⟨_, G''⟩ ⟨_,_,h₃,h₄,_⟩ => ⟨h₃, h₄⟩
+    have h_f_inj : Set.InjOn f S₀ := by
+      intro ⟨G₀,G₁⟩ ⟨_,h₂,_,_⟩ ⟨G'₀,G'₁⟩ ⟨_,h₂',_,_⟩ h_eq
+      dsimp [f] at h_eq
+      simp [h_eq]
+      have h_G₀ : G₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂
+      have h_G₀' : G'₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂'
+      rw [h_G₀, h_G₀']
+    have h_f_surj : Set.SurjOn f S₀ S₁ := by
+      intro G'' ⟨h₁,h₂⟩
+      use ⟨⊥, G''⟩
+      simp
+      have h_bot_isinduced : (⊥ : Subgraph G).IsInduced := by
+        dsimp [Subgraph.IsInduced]
+        intro u _ h_u _ _
+        exact False.elim h_u
+      have h_bot_iso : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0))) :=
+        subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mp rfl
+      exact ⟨h_bot_isinduced, h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
+    exact Set.BijOn.equiv f (Set.BijOn.mk h_f_S₀_S₁ h_f_inj h_f_surj)
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
