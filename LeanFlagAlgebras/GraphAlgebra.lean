@@ -1,5 +1,4 @@
 import «LeanFlagAlgebras».SubgraphDensity
-
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Span
@@ -11,7 +10,7 @@ open SimpleGraph
 open Classical
 
 -- set of all graphs (up to isomorphism) on n vertices
-def IsoSimpleGraphWithSize (n : ℕ) : Type
+abbrev IsoSimpleGraphWithSize (n : ℕ) : Type
   := QuotSimpleGraph (Fin n)
 
 instance (n : ℕ) : Inhabited (IsoSimpleGraphWithSize n) where
@@ -80,89 +79,11 @@ lemma graphVector_eq_sum_basisElement
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
-lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
-    [Fintype V] {G : SimpleGraph V} {H : Subgraph G}
-    : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
-  := by
-  constructor
-  . intro h_eq
-    rw [h_eq]
-    have f_iso : (⊥ : Subgraph G).verts ≃ Fin 0 := Fintype.equivFinOfCardEq (by simp)
-    exact Nonempty.intro ⟨f_iso, by simp⟩
-  . intro h_iso
-    have h_verts : H.verts = ∅ := by
-      ext u
-      constructor
-      . intro h_u
-        let u' : Fin 0 := h_iso.some ⟨u, h_u⟩
-        exact Fin.elim0 u'
-      . exact False.elim
-    simp_all [Subgraph.ext_iff, Set.ext_iff]
-    ext u v
-    simp
-    intro h_uv
-    have : u ∈ H.verts := H.edge_vert h_uv
-    exact h_verts u this
-
-lemma subgraphPairCount_one
-    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
-    : subgraphPairCount (emptyGraph (Fin 0)) H G = subgraphCount H G
-  := by
-  dsimp [subgraphPairCount, subgraphCount]
-  let S₀ := { (G', G'') : Subgraph G × Subgraph G |
-                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g (emptyGraph (Fin 0))) ∧
-                G''.IsInduced ∧ Nonempty (Subgraph.coe G'' ≃g H) ∧
-                G'.verts ∩ G''.verts = ∅ }
-  let S₁ := { G' : Subgraph G |
-                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  show S₀.toFinset.card = S₁.toFinset.card
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    let f : Subgraph G × Subgraph G → Subgraph G :=
-      fun ⟨_, G''⟩ => G''
-    have h_f_S₀_S₁ : Set.MapsTo f S₀ S₁ :=
-      fun ⟨_, G''⟩ ⟨_,_,h₃,h₄,_⟩ => ⟨h₃, h₄⟩
-    have h_f_inj : Set.InjOn f S₀ := by
-      intro ⟨G₀,G₁⟩ ⟨_,h₂,_,_⟩ ⟨G'₀,G'₁⟩ ⟨_,h₂',_,_⟩ h_eq
-      dsimp [f] at h_eq
-      simp [h_eq]
-      have h_G₀ : G₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂
-      have h_G₀' : G'₀ = ⊥ := subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mpr h₂'
-      rw [h_G₀, h_G₀']
-    have h_f_surj : Set.SurjOn f S₀ S₁ := by
-      intro G'' ⟨h₁,h₂⟩
-      use ⟨⊥, G''⟩
-      simp
-      have h_bot_isinduced : (⊥ : Subgraph G).IsInduced := by
-        dsimp [Subgraph.IsInduced]
-        intro u _ h_u _ _
-        exact False.elim h_u
-      have h_bot_iso : Nonempty ((⊥ : Subgraph G).coe ≃g (emptyGraph (Fin 0))) :=
-        subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mp rfl
-      exact ⟨h_bot_isinduced, h_bot_iso, h₁, h₂, Disjoint.inter_eq fun _ a _ ↦ a⟩
-    exact Set.BijOn.equiv f (Set.BijOn.mk h_f_S₀_S₁ h_f_inj h_f_surj)
-  have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-  simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
-
-lemma subgraphPairDensity_one
-    (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
-    : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
-  := by
-  dsimp [subgraphPairDensity, subgraphDensity]
-  rw [←subgraphPairCount_one H G]
-  simp
-
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
     : quotSubgraphPairDensity (1 : IsoSimpleGraph).2 H G = quotSubgraphDensity H G
   := by
-  rcases Quotient.exists_rep (1 : IsoSimpleGraph).2 with ⟨Orep, hOrep⟩
-  rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
-  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
-  rw [<- hOrep, ← hHrep, ← hGrep]
-  have orep_eq_empty : Orep = emptyGraph (Fin 0) := by
-    exact edgeFinset_inj.mp rfl
-  rw [orep_eq_empty]
-  exact subgraphPairDensity_one Hrep Grep
+  exact quotSubgraphPairDensity_empty H G
 
 noncomputable def finiteGraphModuleBasis
     : Basis IsoSimpleGraph ℝ GraphVector
@@ -317,17 +238,52 @@ noncomputable instance : One GraphAlgebra where
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
-noncomputable def graph_mul
-    (H₁ H₂ : IsoSimpleGraph) : GraphVector
+noncomputable def graphMulWithSize
+    (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
-  let ℓ := H₁.1 + H₂.1
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
-lemma graph_mul_comm
-    (G H : IsoSimpleGraph) : graph_mul G H = graph_mul H G
+lemma graphMulWithSize_indep_on_size
+    {H₁ H₂ : IsoSimpleGraph} {ℓ₁ ℓ₂ : ℕ} (hℓ₁ : H₁.1 + H₂.1 ≤ ℓ₁) (hℓ₂ : H₁.1 + H₂.1 ≤ ℓ₂)
+    : graph_algebra_eqv (graphMulWithSize H₁ H₂ ℓ₁) (graphMulWithSize H₁ H₂ ℓ₂)
   := by
-  dsimp [graph_mul]
+  wlog hℓ : ℓ₁ ≤ ℓ₂ generalizing ℓ₁ ℓ₂
+  · have hℓ' : ℓ₂ ≤ ℓ₁ := Nat.le_of_not_ge hℓ
+    have h_eqv := this hℓ₂ hℓ₁ hℓ'
+    exact graph_algebra_eqv.symm h_eqv
+  · dsimp [graph_algebra_eqv, graphMulWithSize]
+    have : ∑ G₂ : IsoSimpleGraphWithSize ℓ₂, quotSubgraphPairDensity H₁.2 H₂.2 G₂ • basisElementFromGraph ⟨ℓ₂, G₂⟩
+      = ∑ G₁ : IsoSimpleGraphWithSize ℓ₁, ∑ G₂ : IsoSimpleGraphWithSize ℓ₂,
+        quotSubgraphPairDensity H₁.2 H₂.2 G₁ • quotSubgraphDensity G₂ G₁ • basisElementFromGraph ⟨ℓ₂, G₂⟩
+      := by
+      rw [sum_comm]
+      apply sum_congr (by rfl)
+      intro G₂ _
+      rw [density_chain_rule _ _ _ _ hℓ] <;> try assumption
+      sorry
+    rw [this, ← sum_sub_distrib]
+    apply zeroSet_closed_under_sum
+    intro G₁ _
+    rw [← smul_sum]
+    sorry
+
+noncomputable def graphMul
+    (H₁ H₂ : IsoSimpleGraph) : GraphVector
+  :=
+  graphMulWithSize H₁ H₂ (H₁.1 + H₂.1)
+
+lemma graphMul_indep_on_size
+    {H₁ H₂ : IsoSimpleGraph} {ℓ' : ℕ} (hℓ' : H₁.1 + H₂.1 ≤ ℓ')
+    : graph_algebra_eqv (graphMul H₁ H₂) (graphMulWithSize H₁ H₂ ℓ')
+  := by
+  refine graphMulWithSize_indep_on_size ?_ hℓ'
+  simp
+
+lemma graphMul_comm
+    (G H : IsoSimpleGraph) : graphMul G H = graphMul H G
+  := by
+  dsimp [graphMul]
   rw [add_comm]
   apply sum_congr
   · rfl
@@ -335,7 +291,7 @@ lemma graph_mul_comm
     simp [quotSubgraphPairDensity_comm]
 
 noncomputable instance : Mul GraphVector where
-  mul g h := ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graph_mul G H
+  mul g h := ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graphMul G H
 
 lemma graphVector_mul_comm
     (g h : GraphVector) : g * h = h * g
@@ -348,7 +304,7 @@ lemma graphVector_mul_comm
     apply sum_congr
     · rfl
     · intros
-      rw [mul_comm, graph_mul_comm]
+      rw [mul_comm, graphMul_comm]
 
 noncomputable instance : CommMagma GraphVector where
   mul_comm := graphVector_mul_comm
@@ -409,13 +365,13 @@ lemma graphVector_mul_zero
   simp [mul_comm, graph_mul_zero, hvi]
 
 lemma graph_mul_one
-    (G : IsoSimpleGraph) : graph_algebra_eqv (graph_mul G 1) (basisElementFromGraph G)
+    (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)
   := by
-  rw [graph_mul_comm]
+  rw [graphMul_comm]
   apply graph_algebra_eqv.symm
   dsimp [graph_algebra_eqv]
-  have : graph_mul 1 G = densityGraphSum G G.1 := by
-    dsimp [densityGraphSum, graph_mul]
+  have : graphMul 1 G = densityGraphSum G G.1 := by
+    dsimp [densityGraphSum, graphMul]
     rw [add_comm]
     apply sum_congr
     · rfl
