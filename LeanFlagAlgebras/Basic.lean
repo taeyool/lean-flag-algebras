@@ -993,6 +993,16 @@ lemma basisElementFromGraph_support
   dsimp [basisElementFromGraph]
   rw [Finsupp.support_single_ne_zero _ (by simp)]
 
+lemma graphVector_eq_sum_basisElement
+    (g : GraphVector)
+    : g = ∑ G in g.support, g G • basisElementFromGraph G
+  := by
+  dsimp [basisElementFromGraph]
+  rw [← Finsupp.sum_single g]
+  apply Finset.sum_congr
+  · simp
+  · intros; simp
+
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
@@ -1081,7 +1091,8 @@ lemma quotSubgraphPairDensity_one
   rw [orep_eq_empty]
   exact subgraphPairDensity_one Hrep Grep
 
-noncomputable def finiteGraphModuleBasis : Basis IsoSimpleGraph ℝ GraphVector
+noncomputable def finiteGraphModuleBasis
+    : Basis IsoSimpleGraph ℝ GraphVector
   :=
   have h_indep : LinearIndependent ℝ basisElementFromGraph := by
     rw [linearIndependent_iff'']
@@ -1116,26 +1127,49 @@ noncomputable def densityGraphSum
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ F in ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ, F⟩
 
+noncomputable def zeroElement
+    (G : IsoSimpleGraph) (ℓ : ℕ)
+    : GraphVector
+  := basisElementFromGraph G - densityGraphSum G ℓ
+
+noncomputable def zeroSpanSet : Set GraphVector
+  :=
+  let S (G : IsoSimpleGraph) := (zeroElement G) '' {ℓ | G.1 ≤ ℓ}
+  ⋃₀ Set.range S
+
+lemma zeroSpanSet_eq_zeroElement
+    (hk : k ∈ zeroSpanSet)
+    : ∃ (G : IsoSimpleGraph) (ℓ : ℕ), k = zeroElement G ℓ
+  := by
+  simp [zeroSpanSet] at hk
+  rcases hk with ⟨G, ℓ, hk⟩
+  exact ⟨G, ℓ, (by simp_all only)⟩
+
 noncomputable def ZeroSet : Submodule ℝ GraphVector
   :=
-  let f (G : IsoSimpleGraph) (ℓ : ℕ) := basisElementFromGraph G - densityGraphSum G ℓ
-  let S (G : IsoSimpleGraph) := (f G) '' {ℓ | G.1 ≤ ℓ}
-  Submodule.span ℝ (⋃₀ Set.range S)
+  Submodule.span ℝ zeroSpanSet
 
-lemma zeroset_closed_under_add
+lemma zeroSet_eq_sum_spanElement
+    {k : GraphVector} (h_zero : k ∈ ZeroSet)
+    : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → GraphVector),
+    (∀ i, v i ∈ zeroSpanSet) ∧ (k = ∑ i, c i • v i)
+  := by
+  sorry
+
+lemma zeroSet_closed_under_add
     (h₁ h₂ : GraphVector) (h₁_zero : h₁ ∈ ZeroSet) (h₂_zero : h₂ ∈ ZeroSet)
     : h₁ + h₂ ∈ ZeroSet
   := by
   apply Submodule.add_mem <;> assumption
 
-lemma zeroset_closed_under_sum
+lemma zeroSet_closed_under_sum
     (S : Finset α) (f : α → GraphVector) (h_zero : ∀ G ∈ S, f G ∈ ZeroSet)
     : ∑ G ∈ S, f G ∈ ZeroSet
   := by
   apply Submodule.sum_mem
   assumption
 
-lemma zeroset_closed_under_smul
+lemma zeroSet_closed_under_smul
     (r : ℝ) (h : GraphVector) (h_zero : h ∈ ZeroSet)
     : r • h ∈ ZeroSet
   := by
@@ -1164,7 +1198,7 @@ theorem graph_algebra_eqv.trans
   rw [graph_algebra_eqv] at *
   have : f - h = (f - g) + (g - h) := by simp
   rw [this]
-  exact zeroset_closed_under_add (f - g) (g - h) hfg hgh
+  exact zeroSet_closed_under_add (f - g) (g - h) hfg hgh
 
 instance graphVectorSetoid
     : Setoid GraphVector
@@ -1185,7 +1219,7 @@ noncomputable instance : Add GraphAlgebra where
     intro f f' hf g g' hg
     show graph_algebra_eqv (f + g) (f' + g')
     dsimp [graph_algebra_eqv]
-    have h := zeroset_closed_under_add (f - f') (g - g') hf hg
+    have h := zeroSet_closed_under_add (f - f') (g - g') hf hg
     have : f - f' + (g - g') = (f + g) - (f' + g') := sub_add_sub_comm f f' g g'
     rw [←this]
     exact h
@@ -1198,7 +1232,7 @@ noncomputable instance : HSMul ℝ GraphAlgebra GraphAlgebra where
     show graph_algebra_eqv (r • g) (r • g')
     dsimp [graph_algebra_eqv]
     rw [← smul_sub]
-    apply zeroset_closed_under_smul
+    apply zeroSet_closed_under_smul
     exact hg
 
 instance : Zero GraphAlgebra where
@@ -1243,6 +1277,9 @@ lemma graphVector_mul_comm
     · intros
       rw [mul_comm, graph_mul_comm]
 
+noncomputable instance : CommMagma GraphVector where
+  mul_comm := graphVector_mul_comm
+
 instance : IsScalarTower ℝ GraphVector GraphVector where
   smul_assoc r g h := by
     show ∑ G in (r • g).support, _ = r • ∑ G in g.support, _
@@ -1250,10 +1287,7 @@ instance : IsScalarTower ℝ GraphVector GraphVector where
     · simp [hr]
     · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
       rw [hg_supp]
-      rw [Finset.smul_sum]
-      congr; apply funext; intro G
-      rw [Finset.smul_sum]
-      congr; apply funext; intro H
+      repeat (rw [Finset.smul_sum]; congr; apply funext; intro)
       simp [smul_mul_assoc, mul_assoc, smul_smul]
 
 noncomputable instance : HasDistribNeg GraphVector where
@@ -1265,53 +1299,41 @@ lemma graphVector_left_distrib
   := by
   sorry
 
-lemma graphVector_right_distrib
-    (f g h : GraphVector) : (f + g) * h = f * h + g * h
+lemma graphVector_zero_mul
+    (f : GraphVector) : 0 * f = 0
   := by
-  simp [graphVector_mul_comm, graphVector_left_distrib]
+  sorry
 
-lemma graphVector_mul_sub
-    (f g h : GraphVector) : f * (g - h) = f * g - f * h
-  := by
-  simp [sub_eq_add_neg, graphVector_left_distrib]
-
-lemma graphVector_sub_mul
-    (f g h : GraphVector) : (f - g) * h = f * h - g * h
-  := by
-  simp [sub_eq_add_neg, graphVector_right_distrib]
+noncomputable instance : NonUnitalNonAssocRing GraphVector where
+  left_distrib := graphVector_left_distrib
+  right_distrib := by
+    simp [mul_comm, graphVector_left_distrib]
+  zero_mul := graphVector_zero_mul
+  mul_zero := by
+    intros; rw [mul_comm, graphVector_zero_mul]
 
 lemma graph_mul_zero
     (G H : IsoSimpleGraph) (ℓ : ℕ)
-    : (basisElementFromGraph G) * (basisElementFromGraph H - densityGraphSum H ℓ) ∈ ZeroSet
-  := by
-  rw [graphVector_mul_sub]
-  sorry
-
-lemma graph_mul_zero'
-    (G : IsoSimpleGraph) {k : GraphVector} (hk : k ∈ ZeroSet)
-    : (basisElementFromGraph G) * k ∈ ZeroSet
+    : (basisElementFromGraph G) * (zeroElement H ℓ) ∈ ZeroSet
   := by
   sorry
 
 lemma graphVector_mul_zero
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
   := by
-  apply zeroset_closed_under_sum
-  intro G hG
-  let G_vec := (g G) • basisElementFromGraph G
-  have hgG : g G = G_vec G := by
-    show g G = (g G) • (basisElementFromGraph G G)
-    simp [basisElementFromGraph]
-  rw [hgG, ← sum_singleton (fun G ↦ ∑ H ∈ k.support, (G_vec G * k H) • graph_mul G H) G]
-  have hG_supp : G_vec.support = {G} := by
-    have : (g G • basisElementFromGraph G).support = (basisElementFromGraph G).support := by
-      apply Finsupp.support_smul_eq
-      exact Finsupp.mem_support_iff.mp hG
-    rw [this]
-    simp [basisElementFromGraph, Finsupp.support_single_ne_zero]
-  rw [← hG_supp]
-  show G_vec * k ∈ ZeroSet
-  simp [G_vec, smul_mul_assoc, zeroset_closed_under_smul, graph_mul_zero' G hk]
+  rw [graphVector_eq_sum_basisElement g, sum_mul]
+  apply zeroSet_closed_under_sum
+  intro G _
+  obtain ⟨I, hI, c, v, hv, hk_sum⟩ := zeroSet_eq_sum_spanElement hk
+  rw [hk_sum, mul_sum]
+  apply zeroSet_closed_under_sum
+  intro i _
+  rw [smul_mul_assoc]
+  apply zeroSet_closed_under_smul
+  rw [mul_comm, smul_mul_assoc]
+  apply zeroSet_closed_under_smul
+  obtain ⟨H, ℓ, hvi⟩ := zeroSpanSet_eq_zeroElement (hv i)
+  simp [mul_comm, graph_mul_zero, hvi]
 
 lemma graph_mul_one
     (G : IsoSimpleGraph) : graph_algebra_eqv (graph_mul G 1) (basisElementFromGraph G)
@@ -1351,13 +1373,13 @@ lemma graphVector_mul_one
     nth_rw 1 [← Finsupp.sum_single g, Finsupp.sum]
   nth_rw 3 [hg]
   rw [← Finset.sum_sub_distrib]
-  apply zeroset_closed_under_sum
+  apply zeroSet_closed_under_sum
   intro G _
   have : (1 : GraphVector) 1 = 1 := by
     show (basisElementFromGraph 1) 1 = 1
     simp [basisElementFromGraph]
   rw [this, mul_one, ← smul_sub]
-  apply zeroset_closed_under_smul
+  apply zeroSet_closed_under_smul
   exact graph_mul_one G
 
 noncomputable instance : Mul GraphAlgebra where
@@ -1374,12 +1396,12 @@ noncomputable instance : Mul GraphAlgebra where
       rw [← sub_add_cancel g' g, ← sub_add_cancel h' h]
       simp only [kg, kh, add_comm]
     rw [this]
-    rw [graphVector_left_distrib, graphVector_right_distrib, graphVector_right_distrib]
+    rw [graphVector_left_distrib, right_distrib, right_distrib]
     rw [add_assoc, add_sub_cancel_left]
-    apply zeroset_closed_under_add
-    · rw [graphVector_mul_comm]
+    apply zeroSet_closed_under_add
+    · rw [mul_comm]
       exact graphVector_mul_zero h hkg
-    · apply zeroset_closed_under_add
+    · apply zeroSet_closed_under_add
       · exact graphVector_mul_zero g hkh
       · exact graphVector_mul_zero kg hkh
 
@@ -1389,7 +1411,7 @@ lemma graphAlgebra_mul_comm
   rw [← Quotient.out_eq g, ← Quotient.out_eq h]
   apply Quotient.sound
   simp
-  rw [graphVector_mul_comm]
+  rw [mul_comm]
 
 lemma graphAlgebra_left_distrib
     (f g h : GraphAlgebra) : f * (g + h) = f * g + f * h
@@ -1405,10 +1427,7 @@ lemma graphAlgebra_mul_zero
   rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
   rw [← hgrep]
   apply Quotient.sound
-  simp
-  show grep * 0 - 0 ∈ ZeroSet
-  rw [sub_zero]
-  apply graphVector_mul_zero grep (by simp)
+  simp; rfl
 
 lemma graphAlgebra_mul_one
     (g : GraphAlgebra) : g * 1 = g
