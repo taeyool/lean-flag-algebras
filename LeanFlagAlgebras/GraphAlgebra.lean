@@ -589,6 +589,12 @@ noncomputable instance : Ring GraphAlgebra where
 noncomputable instance : CommRing GraphAlgebra where
   mul_comm := graphAlgebra_mul_comm
 
+instance : NeZero (1 : GraphAlgebra) where
+  out := sorry
+
+instance : Nontrivial GraphAlgebra where
+  exists_pair_ne := ⟨0, 1, (by simp)⟩
+
 noncomputable instance : Algebra ℝ GraphAlgebra where
   smul r g := r • g
   toFun r := r • 1
