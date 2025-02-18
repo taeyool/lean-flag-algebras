@@ -44,9 +44,6 @@ instance : One IsoSimpleGraph where
 abbrev GraphVector : Type
   := IsoSimpleGraph →₀ ℝ
 
-noncomputable instance : HMul ℝ GraphVector GraphVector where
-  hMul r g := r • g
-
 noncomputable instance : AddCommMonoid GraphVector
   := Finsupp.instAddCommMonoid
 
@@ -115,6 +112,11 @@ instance : Module.Free ℝ GraphVector := by
   apply Module.Free.of_basis
   exact finiteGraphModuleBasis
 
+@[simp]
+lemma rat_smul_eq_real_smul
+    (a : ℚ) (g : GraphVector) : a • g = (a : ℝ) • g
+  := rfl
+
 noncomputable def densityGraphSum
     (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
@@ -128,8 +130,12 @@ noncomputable def zeroElement
 
 noncomputable def zeroSpanSet : Set GraphVector
   :=
-  let S (G : IsoSimpleGraph) := (zeroElement G) '' {ℓ | G.1 ≤ ℓ}
-  ⋃₀ Set.range S
+  {k | ∃ (G : IsoSimpleGraph) (ℓ : ℕ), G.1 ≤ ℓ ∧ k = zeroElement G ℓ}
+
+@[simp]
+lemma mem_zeroSpanSet
+    {k : GraphVector} : k ∈ zeroSpanSet ↔ ∃ G ℓ, G.1 ≤ ℓ ∧ k = zeroElement G ℓ
+  := Iff.rfl
 
 lemma zeroSpanSet_eq_zeroElement
     (hk : k ∈ zeroSpanSet)
@@ -142,6 +148,15 @@ lemma zeroSpanSet_eq_zeroElement
 noncomputable def ZeroSet : Submodule ℝ GraphVector
   :=
   Submodule.span ℝ zeroSpanSet
+
+lemma zeroElement_in_zeroSet
+    {G : IsoSimpleGraph} {ℓ : ℕ} (hℓ : G.1 ≤ ℓ)
+    : zeroElement G ℓ ∈ ZeroSet
+  := by
+  apply Submodule.mem_span.mpr fun p a ↦ a ?_
+  simp; use G; use ℓ
+
+#check mem_span_range_iff_exists_fun
 
 lemma zeroSet_eq_sum_spanElement
     {k : GraphVector} (h_zero : k ∈ ZeroSet)
@@ -218,8 +233,8 @@ noncomputable instance : Add GraphAlgebra where
     rw [←this]
     exact h
 
-noncomputable instance : HSMul ℝ GraphAlgebra GraphAlgebra where
-  hSMul r := by
+noncomputable instance : SMul ℝ GraphAlgebra where
+  smul r := by
     apply Quotient.map (r • ·)
     intro g g' hg
     simp
@@ -244,6 +259,14 @@ noncomputable def graphMulWithSize
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
+lemma sum_smul
+    (S : Finset α) (f : α → ℝ) (g : GraphVector) : (∑ a in S, f a) • g = ∑ a in S, f a • g
+  := by
+  refine Finset.induction_on S ?_ ?_
+  · simp
+  · intros r R hr ih
+    simp [sum_insert hr, Module.add_smul, ih]
+
 lemma graphMulWithSize_indep_on_size
     {H₁ H₂ : IsoSimpleGraph} {ℓ₁ ℓ₂ : ℕ} (hℓ₁ : H₁.1 + H₂.1 ≤ ℓ₁) (hℓ₂ : H₁.1 + H₂.1 ≤ ℓ₂)
     : graph_algebra_eqv (graphMulWithSize H₁ H₂ ℓ₁) (graphMulWithSize H₁ H₂ ℓ₂)
@@ -253,20 +276,24 @@ lemma graphMulWithSize_indep_on_size
     have h_eqv := this hℓ₂ hℓ₁ hℓ'
     exact graph_algebra_eqv.symm h_eqv
   · dsimp [graph_algebra_eqv, graphMulWithSize]
-    have : ∑ G₂ : IsoSimpleGraphWithSize ℓ₂, quotSubgraphPairDensity H₁.2 H₂.2 G₂ • basisElementFromGraph ⟨ℓ₂, G₂⟩
+    have : ∑ G₂ : IsoSimpleGraphWithSize ℓ₂, (quotSubgraphPairDensity H₁.2 H₂.2 G₂ : ℝ) • basisElementFromGraph ⟨ℓ₂, G₂⟩
       = ∑ G₁ : IsoSimpleGraphWithSize ℓ₁, ∑ G₂ : IsoSimpleGraphWithSize ℓ₂,
-        quotSubgraphPairDensity H₁.2 H₂.2 G₁ • quotSubgraphDensity G₂ G₁ • basisElementFromGraph ⟨ℓ₂, G₂⟩
+        (quotSubgraphPairDensity H₁.2 H₂.2 G₁ : ℝ) • (quotSubgraphDensity G₁ G₂ : ℝ) • basisElementFromGraph ⟨ℓ₂, G₂⟩
       := by
       rw [sum_comm]
       apply sum_congr (by rfl)
       intro G₂ _
-      rw [density_chain_rule _ _ _ _ hℓ] <;> try assumption
-      sorry
+      simp [density_chain_rule _ _ _ hℓ₁ hℓ, sum_smul]
+      apply sum_congr (by rfl)
+      intro G₁ _
+      rw [mul_smul]
     rw [this, ← sum_sub_distrib]
     apply zeroSet_closed_under_sum
     intro G₁ _
-    rw [← smul_sum]
-    sorry
+    rw [← smul_sum, ← smul_sub]
+    apply zeroSet_closed_under_smul
+    show zeroElement ⟨ℓ₁, G₁⟩ ℓ₂ ∈ ZeroSet
+    exact zeroElement_in_zeroSet hℓ
 
 noncomputable def graphMul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector
@@ -341,13 +368,13 @@ noncomputable instance : NonUnitalNonAssocRing GraphVector where
   mul_zero := by
     intros; rw [mul_comm, graphVector_zero_mul]
 
-lemma graph_mul_zero
+lemma graph_mul_zeroElement
     (G H : IsoSimpleGraph) (ℓ : ℕ)
     : (basisElementFromGraph G) * (zeroElement H ℓ) ∈ ZeroSet
   := by
   sorry
 
-lemma graphVector_mul_zero
+lemma graphVector_mul_zeroSet
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
   := by
   rw [graphVector_eq_sum_basisElement g, sum_mul]
@@ -362,7 +389,7 @@ lemma graphVector_mul_zero
   rw [mul_comm, smul_mul_assoc]
   apply zeroSet_closed_under_smul
   obtain ⟨H, ℓ, hvi⟩ := zeroSpanSet_eq_zeroElement (hv i)
-  simp [mul_comm, graph_mul_zero, hvi]
+  simp [mul_comm, graph_mul_zeroElement, hvi]
 
 lemma graph_mul_one
     (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)
@@ -380,13 +407,8 @@ lemma graph_mul_one
       rfl
   rw [this, ZeroSet]
   refine Submodule.mem_span.mpr fun p a ↦ a ?_
-  refine Set.mem_sUnion.mpr ?_
-  let S := (fun G ℓ ↦ basisElementFromGraph G - densityGraphSum G ℓ) G '' {ℓ | G.fst ≤ ℓ}
-  use S; constructor
-  · exact Set.mem_range_self G
-  · dsimp [S]
-    refine Set.mem_image_of_mem (fun ℓ ↦ basisElementFromGraph G - densityGraphSum G ℓ) ?_
-    simp
+  simp; use G; use G.1
+  constructor <;> rfl
 
 lemma graphVector_mul_one
     (g : GraphVector) : graph_algebra_eqv (g * 1) g
@@ -429,10 +451,10 @@ noncomputable instance : Mul GraphAlgebra where
     rw [add_assoc, add_sub_cancel_left]
     apply zeroSet_closed_under_add
     · rw [mul_comm]
-      exact graphVector_mul_zero h hkg
+      exact graphVector_mul_zeroSet h hkg
     · apply zeroSet_closed_under_add
-      · exact graphVector_mul_zero g hkh
-      · exact graphVector_mul_zero kg hkh
+      · exact graphVector_mul_zeroSet g hkh
+      · exact graphVector_mul_zeroSet kg hkh
 
 lemma graphAlgebra_mul_comm
     (g h : GraphAlgebra) : g * h = h * g
