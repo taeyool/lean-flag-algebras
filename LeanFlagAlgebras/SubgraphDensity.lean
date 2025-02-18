@@ -897,7 +897,7 @@ lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
     have : u ∈ H.verts := H.edge_vert h_uv
     exact h_verts u this
 
-lemma subgraphPairCount_one
+lemma subgraphPairCount_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairCount (emptyGraph (Fin 0)) H G = subgraphCount H G
   := by
@@ -941,7 +941,7 @@ lemma subgraphPairDensity_empty
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
   := by
   dsimp [subgraphPairDensity, subgraphDensity]
-  rw [←subgraphPairCount_one H G]
+  rw [←subgraphPairCount_empty H G]
   simp
 
 lemma quotSubgraphPairDensity_empty
@@ -951,8 +951,8 @@ lemma quotSubgraphPairDensity_empty
   rcases Quotient.exists_rep H with ⟨Hrep, hHrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
-  -- rw [orep_eq_empty]
-  exact subgraphPairDensity_empty Hrep Grep
+  apply subgraphPairDensity_empty
+  -- exact subgraphPairDensity_empty Hrep Grep
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
