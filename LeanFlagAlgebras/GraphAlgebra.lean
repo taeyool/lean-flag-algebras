@@ -326,12 +326,21 @@ noncomputable instance : HasDistribNeg GraphVector where
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
+  let k := g + h
+  show ∑ G in f.support, ∑ K in k.support, _ = ∑ G in f.support, ∑ H in g.support, _ + ∑ G in f.support, ∑ H in h.support, _
+  have support_inclusion : k.support ⊆ g.support ∪ h.support := by
+    intro K hK
+    simp only [Finsupp.mem_support_iff, Finsupp.add_apply, Pi.add_apply, mem_union, Finsupp.mem_support_iff, ne_eq] at *
+    contrapose! hK
+    have ⟨hg, hh⟩ := hK
+    simp [k, hg, hh]
   sorry
 
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
   := by
-  sorry
+  show ∑ G in (0 : GraphVector).support, ∑ H in f.support, _ = 0
+  simp
 
 noncomputable instance : NonUnitalNonAssocRing GraphVector where
   left_distrib := graphVector_left_distrib
