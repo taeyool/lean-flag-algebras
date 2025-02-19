@@ -156,14 +156,40 @@ lemma zeroElement_in_zeroSet
   apply Submodule.mem_span.mpr fun p a ↦ a ?_
   simp; use G; use ℓ
 
-#check mem_span_range_iff_exists_fun
-
 lemma zeroSet_eq_sum_spanElement
     {k : GraphVector} (h_zero : k ∈ ZeroSet)
     : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → GraphVector),
     (∀ i, v i ∈ zeroSpanSet) ∧ (k = ∑ i, c i • v i)
   := by
-  sorry
+  revert h_zero
+  apply Submodule.span_induction'
+  · intro k h_zero
+    use PUnit; use inferInstance
+    use fun _ ↦ 1; use fun _ ↦ k
+    simp_all only [mem_zeroSpanSet, implies_true, univ_unique, PUnit.default_eq_unit, one_smul, sum_const,
+      card_singleton, and_self]
+  · use Empty; use inferInstance
+    use fun _ ↦ 0; use fun _ ↦ 0
+    simp
+  · intro x hx y hy hx_ind hy_ind
+    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
+    rcases hy_ind with ⟨J, hJ, d, w, hw, hy⟩
+    use Sum I J; use inferInstance
+    use Sum.elim c d; use Sum.elim v w
+    subst hy hx
+    simp_all only [mem_zeroSpanSet, Sum.forall, Sum.elim_inl, implies_true, Sum.elim_inr, and_self,
+      Fintype.sum_sum_type]
+  · intro r x hx hx_ind
+    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
+    use I; use hI; use fun i ↦ r * c i; use fun i ↦ v i
+    constructor
+    · intro i
+      subst hx
+      simp_all only [mem_zeroSpanSet]
+    · rw [hx, smul_sum]
+      apply sum_congr (by rfl)
+      intro i _
+      rw [smul_smul]
 
 lemma zeroSet_closed_under_add
     (h₁ h₂ : GraphVector) (h₁_zero : h₁ ∈ ZeroSet) (h₂_zero : h₂ ∈ ZeroSet)
