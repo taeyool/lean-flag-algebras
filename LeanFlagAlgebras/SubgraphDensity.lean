@@ -631,7 +631,7 @@ noncomputable def isoSetOfInducedSubgraphInG
 
 omit [DecidableEq V] in
 lemma subgraphDensityLifted_respects_eqv
-    {H₀ H₁ : SimpleGraph V} (h_eqv : graph_eqv H₀ H₁) (G : QuotSimpleGraph W)
+    (H₀ H₁ : SimpleGraph V) (h_eqv : graph_eqv H₀ H₁) (G : QuotSimpleGraph W)
     : subgraphDensityLifted H₀ G = subgraphDensityLifted H₁ G
   := by
   dsimp [subgraphDensityLifted]
@@ -653,9 +653,9 @@ noncomputable def quotSubgraphDensity
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift subgraphDensityLifted
-  intro _ _ h_eqv
+  intro H₀ H₁ h_eqv
   ext G
-  exact subgraphDensityLifted_respects_eqv h_eqv G
+  exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
 
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
@@ -953,15 +953,37 @@ lemma quotSubgraphPairDensity_empty
   rw [← hHrep, ← hGrep]
   apply subgraphPairDensity_empty
 
-lemma subgraphPairDensityLifted_eq_sum_density_prods
-    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
+def multichoose (n m₁ m₂ : ℕ) : ℕ :=
+  n.choose m₁ * (n - m₁).choose m₂
+
+lemma subgraphPairCount_eq_sum_count_prods
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
-    : subgraphPairDensityLifted H₁ H₂ G
-      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * quotSubgraphDensity G' G
+    : subgraphPairCount H₁ H₂ G
+      =
+      (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂)
+      * ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
   := by
-  rw [subgraphPairDensityLifted, quotSubgraphDensity]
   sorry
 
+lemma subgraphPairDensityLifted_eq_sum_density_prods
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
+    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
+    : subgraphPairDensity H₁ H₂ G
+      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * quotSubgraphDensity G' ⟦G⟧
+  := by
+  have h₀ : ∀ {G' : QuotSimpleGraph (Fin ℓ')}, quotSubgraphDensity G' ⟦G⟧ = subgraphDensityLifted G'.out ⟦G⟧ := by
+    intro G'
+    have : G' = ⟦G'.out⟧ := by simp
+    calc
+      quotSubgraphDensity G' ⟦G⟧ = Quot.lift subgraphDensityLifted ?h G' ⟦G⟧ := rfl
+      _ = Quot.lift subgraphDensityLifted ?h ⟦G'.out⟧ ⟦G⟧ := by simp_all [this]
+      _ = subgraphDensityLifted G'.out ⟦G⟧ := congrArg (Quot.lift subgraphDensityLifted ?h ⟦G'.out⟧) rfl
+    intro H₀ H₁ h_eqv; ext G''; exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G''
+  have h_RHS : ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * quotSubgraphDensity G' ⟦G⟧
+    = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * subgraphDensityLifted G'.out ⟦G⟧ := by
+    simp [h₀]
+  sorry
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
@@ -971,7 +993,8 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods
   := by
   rcases Quotient.exists_rep H₁ with ⟨H₁rep, hH₁rep⟩
   rcases Quotient.exists_rep H₂ with ⟨H₂rep, hH₂rep⟩
-  rw [← hH₁rep, ← hH₂rep]
-  exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep G hℓ' hℓ
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hH₁rep, ← hH₂rep, ← hGrep]
+  exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep Grep hℓ' hℓ
 
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
