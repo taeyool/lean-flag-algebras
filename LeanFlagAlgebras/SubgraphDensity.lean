@@ -959,10 +959,9 @@ def multichoose (n m₁ m₂ : ℕ) : ℕ :=
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
-    : subgraphPairCount H₁ H₂ G
+    : (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂) * subgraphPairCount H₁ H₂ G
       =
-      (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂)
-      * ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
+      ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
   := by
   sorry
 
