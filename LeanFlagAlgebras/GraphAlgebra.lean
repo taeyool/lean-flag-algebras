@@ -56,6 +56,14 @@ noncomputable instance : Module ℝ GraphVector
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
 
+@[simp]
+lemma basisElementFromGraph_apply_self
+    (G : IsoSimpleGraph)
+    : (basisElementFromGraph G) G = 1
+  := by
+  simp [basisElementFromGraph]
+
+@[simp]
 lemma basisElementFromGraph_support
     (G : IsoSimpleGraph)
     : (basisElementFromGraph G).support = {G}
@@ -422,6 +430,11 @@ lemma graph_mul_zeroElement
     (G H : IsoSimpleGraph) (ℓ : ℕ)
     : (basisElementFromGraph G) * (zeroElement H ℓ) ∈ ZeroSet
   := by
+  dsimp [zeroElement]
+  rw [mul_sub]
+  show ∑ G' in _, ∑ H' in _,  _ - _ ∈ ZeroSet
+  simp; dsimp [densityGraphSum]
+  rw [mul_sum]
   sorry
 
 lemma graphVector_mul_zeroSet
