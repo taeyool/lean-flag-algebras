@@ -205,11 +205,18 @@ lemma zeroSet_closed_under_sum
   assumption
 
 lemma zeroSet_closed_under_smul
-    (r : ℝ) (h : GraphVector) (h_zero : h ∈ ZeroSet)
-    : r • h ∈ ZeroSet
+    (r : ℝ) (g : GraphVector) (h_zero : g ∈ ZeroSet)
+    : r • g ∈ ZeroSet
   := by
   apply SMulMemClass.smul_mem
   assumption
+
+lemma zero_smul_zeroSet
+    {r : ℝ} {g : GraphVector} (h_zero : r = 0)
+    : r • g ∈ ZeroSet
+  := by
+  subst h_zero
+  simp_all only [zero_smul, Submodule.zero_mem]
 
 def graph_algebra_eqv (g h : GraphVector) : Prop
   :=
@@ -617,23 +624,64 @@ instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
 
 noncomputable instance : Algebra ℝ GraphAlgebra where
-  smul r g := r • g
   toFun r := r • 1
   map_zero' := by
-    simp
     apply Quotient.sound
     simp; rfl
   map_one' := by
-    simp
     apply Quotient.sound
     simp; rfl
-  map_add' := by
-    intros; simp
+  map_add' x y := by
     apply Quotient.sound
     simp
     rw [add_smul]
-  map_mul' := sorry
-  smul_def' := sorry
+  map_mul' x y := by
+    simp
+    by_cases hxy : x = 0 ∨ y = 0
+    · apply Quotient.sound
+      simp
+      cases' hxy with hx hy
+      · rw [hx, zero_mul, zero_smul, zero_mul]
+      · rw [hy, mul_zero, zero_smul, mul_zero]
+    · have hx : x ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
+      have hy : y ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
+      nth_rw 1 [← one_mul 1]
+      apply Quotient.sound
+      simp
+      show (x * y) • ∑ G in (1 : GraphVector).support, ∑ H in (1 : GraphVector).support, _
+        - ∑ G in (x • 1 : GraphVector).support, ∑ H in (y • 1 : GraphVector).support, _ ∈ ZeroSet
+      rw [Finsupp.support_smul_eq hx, Finsupp.support_smul_eq hy]
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro G _
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro H _
+      simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
+      rw [← sub_smul]
+      apply zero_smul_zeroSet
+      ring
+  smul_def' r g := by
+    simp
+    nth_rw 1 [← one_mul g]
+    rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+    rw [← hgrep]
+    apply Quotient.sound
+    simp
+    by_cases hr : r = 0
+    · subst hgrep hr
+      simp_all only [zero_smul, zero_mul]
+      rfl
+    · show r • ∑ G in (1 : GraphVector).support, ∑ H in grep.support, _
+        - ∑ G in (r • 1 : GraphVector).support, ∑ H in grep.support, _ ∈ ZeroSet
+      rw [Finsupp.support_smul_eq hr]
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro G _
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro H _
+      simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul, mul_assoc]
   commutes' := by
     intros; simp
     rw [mul_comm]
