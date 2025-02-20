@@ -372,9 +372,17 @@ instance : IsScalarTower ℝ GraphVector GraphVector where
       repeat (rw [smul_sum]; congr; apply funext; intro)
       simp [smul_mul_assoc, mul_assoc, smul_smul]
 
+lemma graphVector_neg_mul
+    (g h : GraphVector) : -g * h = -(g * h)
+  := by
+  show ∑ G in (-g).support, ∑ H in h.support, _ = -∑ G in g.support, ∑ H in h.support, _
+  rw [Finsupp.support_neg g]
+  simp_all only [Finsupp.coe_neg, Pi.neg_apply, neg_mul, neg_smul, sum_neg_distrib]
+
 noncomputable instance : HasDistribNeg GraphVector where
-  neg_mul g h := sorry
-  mul_neg g h := sorry
+  neg_mul := graphVector_neg_mul
+  mul_neg g h := by
+    rw [mul_comm g (-h), mul_comm g h, graphVector_neg_mul h g]
 
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
