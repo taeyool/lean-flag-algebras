@@ -402,14 +402,22 @@ noncomputable instance : HasDistribNeg GraphVector where
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
-  let k := g + h
-  show ∑ G in f.support, ∑ K in k.support, _ = ∑ G in f.support, ∑ H in g.support, _ + ∑ G in f.support, ∑ H in h.support, _
-  have support_inclusion : k.support ⊆ g.support ∪ h.support := by
-    intro K hK
-    simp only [Finsupp.mem_support_iff, Finsupp.add_apply, Pi.add_apply, mem_union, Finsupp.mem_support_iff, ne_eq] at *
-    contrapose! hK
-    have ⟨hg, hh⟩ := hK
-    simp [k, hg, hh]
+  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
+  simp [Finset.sum_add_distrib]
+  rw [← sum_add_distrib]
+  apply sum_congr rfl
+  intro F _
+  simp [mul_add]
+  simp [add_smul]
+  have add_support_sub : (g + h).support ⊆ g.support ∪ h.support := Finsupp.support_add
+  let sum1 := ∑ x in (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
+  let sum2 := ∑ x in g.support ∪ h.support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
+  let sum3 := ∑ x in (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
+  have sum_decomposition : sum3 + sum1 = sum2 := sum_sdiff add_support_sub
+  have sum_decomposition' : sum1 = sum2 - sum3 := by
+    simp_all only [Finsupp.mem_support_iff, ne_eq, sum_sdiff_eq_sub, sub_add_cancel, sub_sub_cancel, sum3, sum1, sum2]
+  dsimp [sum1, sum2, sum3] at sum_decomposition'
+  rw [sum_decomposition']
   sorry
 
 lemma graphVector_zero_mul
