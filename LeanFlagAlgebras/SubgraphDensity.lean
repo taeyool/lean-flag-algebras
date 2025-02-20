@@ -956,14 +956,45 @@ lemma quotSubgraphPairDensity_empty
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
 
+lemma simpleGraph_iso_prod_quotSimpleGraph_automorphism
+    {ℓ : ℕ} : Nonempty (SimpleGraph (Fin ℓ)
+                        ≃ Π (G : QuotSimpleGraph (Fin ℓ)), ↑{ G' : SimpleGraph (Fin ℓ) | Nonempty (G' ≃g G.out)})
+  := by
+  sorry
+
+noncomputable def isographCount (G : SimpleGraph V) : ℕ
+  := { G' : SimpleGraph V | Nonempty (G' ≃g G) }.toFinset.card
+
+noncomputable def graphCount (ℓ : ℕ) : ℕ
+  := { G' : SimpleGraph (Fin ℓ) | True }.toFinset.card
+
+lemma sum_over_simpleGraph_eq_sum_over_quotSimpleGraph
+    {ℓ : ℕ} (f : SimpleGraph (Fin ℓ) → ℕ) (h_eqv : ∀ {G G' : SimpleGraph (Fin ℓ)}, graph_eqv G G' → f G = f G')
+    : ∑ (G : SimpleGraph (Fin ℓ)), f G = ∑ (G : QuotSimpleGraph (Fin ℓ)), isographCount G.out * f G.out
+  := by
+  sorry
+
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
     : (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂) * subgraphPairCount H₁ H₂ G
-      =
-      ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
+      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
   := by
-  sorry
+  let C : ℕ := (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂)
+  let f : SimpleGraph (Fin ℓ') → ℕ := fun _ => C * subgraphPairCount H₁ H₂ G / graphCount ℓ'
+  have h_f_eqv : ∀ {G₀ G₁ : SimpleGraph (Fin ℓ')}, graph_eqv G₀ G₁ → f G₀ = f G₁ := by
+    intro _ _ _
+    simp [f]
+  show C * subgraphPairCount H₁ H₂ G
+       = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
+  calc
+    C * subgraphPairCount H₁ H₂ G
+      = ∑ (G' : SimpleGraph (Fin ℓ')), C * subgraphPairCount H₁ H₂ G / graphCount ℓ'
+        := sorry
+    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), isographCount G'.out * (C * subgraphPairCount H₁ H₂ G / graphCount ℓ')
+        := by apply sum_over_simpleGraph_eq_sum_over_quotSimpleGraph f h_f_eqv
+    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
+        := sorry
 
 lemma subgraphPairDensityLifted_eq_sum_density_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -971,7 +1002,9 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
     : subgraphPairDensity H₁ H₂ G
       = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * quotSubgraphDensity G' ⟦G⟧
   := by
-  have h₀ : ∀ {G' : QuotSimpleGraph (Fin ℓ')}, quotSubgraphDensity G' ⟦G⟧ = subgraphDensityLifted G'.out ⟦G⟧ := by
+  have h₀ : ∀ {G' : QuotSimpleGraph (Fin ℓ')},
+              quotSubgraphDensity G' ⟦G⟧ = subgraphDensityLifted G'.out ⟦G⟧
+    := by
     intro G'
     have : G' = ⟦G'.out⟧ := by simp
     calc
@@ -980,9 +1013,13 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
       _ = subgraphDensityLifted G'.out ⟦G⟧ := congrArg (Quot.lift subgraphDensityLifted ?h ⟦G'.out⟧) rfl
     intro H₀ H₁ h_eqv; ext G''; exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G''
   have h_RHS : ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * quotSubgraphDensity G' ⟦G⟧
-    = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * subgraphDensityLifted G'.out ⟦G⟧ := by
-    simp [h₀]
+               = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * subgraphDensityLifted G'.out ⟦G⟧
+    := by simp [h₀]
+  rw [h_RHS]
+  show subgraphPairDensity H₁ H₂ G
+       = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * subgraphDensityLifted G'.out ⟦G⟧
   sorry
+
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
