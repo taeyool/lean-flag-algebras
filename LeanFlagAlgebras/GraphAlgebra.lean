@@ -407,20 +407,15 @@ lemma graphVector_left_distrib
   rw [← sum_add_distrib]
   apply sum_congr rfl
   intro F _
-  simp [mul_add]
-  simp [add_smul]
+  simp [mul_add, add_smul]
   have add_support_sub : (g + h).support ⊆ g.support ∪ h.support := Finsupp.support_add
   let sum1 := ∑ x in (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
   let sum2 := ∑ x in g.support ∪ h.support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
   let sum3 := ∑ x in (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
-  have sum_decomposition : sum3 + sum1 = sum2 := sum_sdiff add_support_sub
-  have sum_decomposition' : sum1 = sum2 - sum3 := by
+  have sum_decomposition : sum1 = sum2 - sum3 := by
     simp_all only [Finsupp.mem_support_iff, ne_eq, sum_sdiff_eq_sub, sub_add_cancel, sub_sub_cancel, sum3, sum1, sum2]
-  dsimp [sum1, sum2, sum3] at sum_decomposition'
-  rw [sum_decomposition']
-  have calc4 : ∑ x ∈ (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x) = 0 := by
-    sorry
-  rw [calc4, sub_zero]
+  dsimp [sum1, sum2, sum3] at sum_decomposition
+  rw [sum_decomposition]
   have p1 : g.support ∪ h.support = g.support ∪ h.support \ g.support := by rw [union_sdiff_self_eq_union]
   have hp1 : Disjoint g.support (h.support \ g.support) := by
     rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
@@ -444,31 +439,52 @@ lemma graphVector_left_distrib
     have ⟨h1, h2⟩ := hx
     simp
     exact h2.1 h1.2
+  have sum_extra_eq_0 : ∑ x ∈ (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x) = 0 := by
+    apply sum_eq_zero
+    intro x hx
+    rw [mem_sdiff] at hx
+    have ⟨h1, h2⟩ := hx
+    rw [p1, mem_union] at h1
+    cases' h1 with h1 h1
+    · rw [←p2, mem_union] at h1
+      cases' h1 with h1 h1
+      · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
+        rw [mem_sdiff] at h1
+        have ⟨h1, h1'⟩ := h1
+        rw [Finsupp.not_mem_support_iff] at h1'
+        rw [h1', add_zero] at h2
+        rw [Finsupp.mem_support_iff] at h1
+        exact False.elim (h1 h2)
+      · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
+        have t1 : g x = - h x := by
+          rw [add_eq_zero_iff_eq_neg] at h2
+          exact h2
+        rw [t1, ←add_smul, ←mul_add, neg_add_cancel]
+        show (f F * 0) • graphMul F x = 0
+        simp
+    · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
+      rw [mem_sdiff] at h1
+      have ⟨h1, h1'⟩ := h1
+      rw [Finsupp.not_mem_support_iff] at h1'
+      rw [h1', zero_add] at h2
+      rw [Finsupp.mem_support_iff] at h1
+      exact False.elim (h1 h2)
+  rw [sum_extra_eq_0, sub_zero]
   rw [p1, sum_union hp1]
   nth_rw 1 [←p2]
   rw [sum_union hp2, sum_add_distrib, sum_add_distrib, sum_add_distrib]
   have calc1 : ∑ x ∈ g.support \ h.support, (f F * h x) • graphMul F x = 0 := by
-    have h_0 : ∀ x ∈ g.support \ h.support, h x = 0 := by
-      intro G hG
-      apply Finsupp.not_mem_support_iff.mp
-      simp at hG
-      simp [hG]
     apply sum_eq_zero
     intro x hx
-    rw [h_0 x hx]
-    show (f F * 0) • graphMul F x = 0
-    simp
+    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
+    rw [hx.2]
+    show (f F * 0) • graphMul F x = 0 ; simp
   have calc2 : ∑ x ∈ h.support \ g.support, (f F * g x) • graphMul F x = 0 := by
-    have h_0 : ∀ x ∈ h.support \ g.support, g x = 0 := by
-      intro G hG
-      apply Finsupp.not_mem_support_iff.mp
-      simp at hG
-      simp [hG]
     apply sum_eq_zero
     intro x hx
-    rw [h_0 x hx]
-    show (f F * 0) • graphMul F x = 0
-    simp
+    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
+    rw [hx.2]
+    show (f F * 0) • graphMul F x = 0 ; simp
   rw [calc1, calc2, add_zero, zero_add]
   have : ∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x +
         (∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x +
@@ -479,8 +495,6 @@ lemma graphVector_left_distrib
       repeat (rw [add_assoc])
       nth_rw 6 [add_comm]
   rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
-
-
 
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
