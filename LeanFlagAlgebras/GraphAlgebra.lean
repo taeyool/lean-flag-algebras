@@ -423,118 +423,64 @@ lemma graphVector_left_distrib
   rw [calc4, sub_zero]
   have p1 : g.support ∪ h.support = g.support ∪ h.support \ g.support := by rw [union_sdiff_self_eq_union]
   have hp1 : Disjoint g.support (h.support \ g.support) := by
-    simp [Disjoint]
-    intro v hg hhg v' hv'
-    rw [subset_iff] at hg
-    rw [subset_iff] at hhg
-    have t1 := (hhg hv')
-    have t2 := hg hv'
-    have t3 : v' ∉ g.support := by
-      rw [mem_sdiff] at t1
-      exact t1.2
-    simp
-    exact t3 t2
-  have p2 : g.support = g.support \ h.support ∪ g.support ∩ h.support := by
-    ext v
-    simp
-    constructor
-    · intro hg
-      by_cases hh : h v = 0
-      · left
-        exact ⟨hg, hh⟩
-      · right
-        exact ⟨hg, hh⟩
-    · intro hgh
-      cases' hgh with hg hh
-      · exact hg.1
-      · exact hh.1
+    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
+    intro x hx
+    simp at hx
+  have p2 : g.support \ h.support ∪ g.support ∩ h.support = g.support  := by
+    rw [sdiff_union_inter g.support h.support]
   have hp2 : Disjoint (g.support \ h.support) (g.support ∩ h.support) := by
-    simp [Disjoint]
-    intro v hg hhg v' hv'
-    rw [subset_iff] at hg
-    rw [subset_iff] at hhg
-    have t1 := hhg hv'
-    have t2 := hg hv'
-    have t3 : v' ∉ h.support := by
-      rw [mem_sdiff] at t2
-      exact t2.2
-    have t4 : v' ∈ h.support := by
-      rw [mem_inter] at t1
-      exact t1.2
+    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
+    intro x hx
+    simp at hx
+    have ⟨h1, h2⟩ := hx
     simp
-    exact t3 t4
-  have p3 : h.support = h.support \ g.support ∪ g.support ∩ h.support := by
-    ext v
-    simp
-    constructor
-    · intro hh
-      by_cases hg : g v = 0
-      · left
-        exact ⟨hh, hg⟩
-      · right
-        exact ⟨hg, hh⟩
-    · intro hgh
-      cases' hgh with hh hg
-      · exact hh.1
-      · exact hg.2
+    exact h2.2 h1.2
+  have p3 : h.support \ g.support ∪ g.support ∩ h.support  = h.support  := by
+    rw [inter_comm, sdiff_union_inter h.support g.support]
   have hp3 : Disjoint (h.support \ g.support) (g.support ∩ h.support) := by
-    simp [Disjoint]
-    intro v hh hg v' hv'
-    rw [subset_iff] at hh
-    rw [subset_iff] at hg
-    have t1 := hg hv'
-    have t2 := hh hv'
-    have t3 : v' ∉ g.support := by
-      rw [mem_sdiff] at t2
-      exact t2.2
-    have t4 : v' ∈ g.support := by
-      rw [mem_inter] at t1
-      exact t1.1
+    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
+    intro x hx
+    simp at hx
+    have ⟨h1, h2⟩ := hx
     simp
-    exact t3 t4
-  rw [p1]
-  nth_rw 1 [p2]
-  rw [sum_union, sum_union]
-  · rw [sum_add_distrib, sum_add_distrib, sum_add_distrib]
-    have calc1 : ∑ x ∈ g.support \ h.support, (f F * h x) • graphMul F x = 0 := by
-      have h_0 : ∀ x ∈ g.support \ h.support, h x = 0 := by
-        intro G hG
-        apply Finsupp.not_mem_support_iff.mp
-        simp at hG
-        simp [hG]
-      apply sum_eq_zero
-      intro x hx
-      rw [h_0 x hx]
-      show (f F * 0) • graphMul F x = 0
-      simp
-    have calc2 : ∑ x ∈ h.support \ g.support, (f F * g x) • graphMul F x = 0 := by
-      have h_0 : ∀ x ∈ h.support \ g.support, g x = 0 := by
-        intro G hG
-        apply Finsupp.not_mem_support_iff.mp
-        simp at hG
-        simp [hG]
-      apply sum_eq_zero
-      intro x hx
-      rw [h_0 x hx]
-      show (f F * 0) • graphMul F x = 0
-      simp
-    rw [calc1, calc2, add_zero, zero_add]
-    have : ∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x +
-          (∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x +
-           ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) +
-           ∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x =
-          (∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x) +
-          (∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) := by
-        repeat (rw [add_assoc])
-        nth_rw 6 [add_comm]
-    rw [this]
-    rw [←sum_union, ←sum_union]
-    · rw [←p2, ←p3]
-    · exact hp3
-    · exact hp2
-  · exact hp2
-  · rw [← p2]
-    exact hp1
+    exact h2.1 h1.2
+  rw [p1, sum_union hp1]
+  nth_rw 1 [←p2]
+  rw [sum_union hp2, sum_add_distrib, sum_add_distrib, sum_add_distrib]
+  have calc1 : ∑ x ∈ g.support \ h.support, (f F * h x) • graphMul F x = 0 := by
+    have h_0 : ∀ x ∈ g.support \ h.support, h x = 0 := by
+      intro G hG
+      apply Finsupp.not_mem_support_iff.mp
+      simp at hG
+      simp [hG]
+    apply sum_eq_zero
+    intro x hx
+    rw [h_0 x hx]
+    show (f F * 0) • graphMul F x = 0
+    simp
+  have calc2 : ∑ x ∈ h.support \ g.support, (f F * g x) • graphMul F x = 0 := by
+    have h_0 : ∀ x ∈ h.support \ g.support, g x = 0 := by
+      intro G hG
+      apply Finsupp.not_mem_support_iff.mp
+      simp at hG
+      simp [hG]
+    apply sum_eq_zero
+    intro x hx
+    rw [h_0 x hx]
+    show (f F * 0) • graphMul F x = 0
+    simp
+  rw [calc1, calc2, add_zero, zero_add]
+  have : ∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x +
+        (∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x +
+          ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) +
+          ∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x =
+        (∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x) +
+        (∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) := by
+      repeat (rw [add_assoc])
+      nth_rw 6 [add_comm]
+  rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
+
+
 
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
