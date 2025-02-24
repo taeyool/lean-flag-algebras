@@ -1032,7 +1032,6 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
        = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairDensityLifted H₁ H₂ G' * subgraphDensityLifted G'.out ⟦G⟧
   sorry
 
-
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
@@ -1045,4 +1044,13 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
   exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep Grep hℓ' hℓ
 
+theorem quotSubgraphPairDensity_eq_sum_density_prods'
+    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
+    {ℓ' : ℕ} (hℓ' : ℓ₁ ≤ ℓ') (hℓ : ℓ' + ℓ₂ ≤ ℓ)
+    : quotSubgraphPairDensity H₁ H₂ G
+      = ∑ (H' : QuotSimpleGraph (Fin ℓ')), quotSubgraphDensity H₁ H' * quotSubgraphPairDensity H' H₂ G
+  := by
+  sorry
+
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
+alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'

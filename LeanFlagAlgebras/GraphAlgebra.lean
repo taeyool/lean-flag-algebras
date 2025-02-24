@@ -300,6 +300,14 @@ noncomputable def graphMulWithSize
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
+lemma graphMulWithSize_comm
+    (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : graphMulWithSize H₁ H₂ ℓ = graphMulWithSize H₂ H₁ ℓ
+  := by
+  dsimp [graphMulWithSize]
+  apply sum_congr (by rfl)
+  intro G _
+  simp [quotSubgraphPairDensity_comm]
+
 lemma sum_smul
     (S : Finset α) (f : α → ℝ) (g : GraphVector) : (∑ a in S, f a) • g = ∑ a in S, f a • g
   := by
@@ -351,12 +359,7 @@ lemma graphMul_indep_on_size
 lemma graphMul_comm
     (G H : IsoSimpleGraph) : graphMul G H = graphMul H G
   := by
-  dsimp [graphMul]
-  rw [add_comm]
-  apply sum_congr
-  · rfl
-  · intros
-    simp [quotSubgraphPairDensity_comm]
+  simp [graphMul, add_comm, graphMulWithSize_comm]
 
 noncomputable instance : Mul GraphVector where
   mul g h := ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graphMul G H
@@ -520,15 +523,50 @@ lemma graph_mul_zeroElement
   simp; dsimp [densityGraphSum]
   rw [mul_sum]
   let L := G.1 + H.1 + ℓ
-  have : ∑ F : IsoSimpleGraphWithSize ℓ, basisElementFromGraph G * (quotSubgraphDensity H.2 F : ℝ) • basisElementFromGraph ⟨ℓ, F⟩
-      = ∑ F : IsoSimpleGraphWithSize ℓ, ∑ F' : IsoSimpleGraphWithSize L,
-        (quotSubgraphDensity H.2 F : ℝ) • (quotSubgraphPairDensity G.2 F F') • basisElementFromGraph ⟨L, F'⟩
-    := by
-    apply sum_congr (by rfl)
+  apply graph_algebra_eqv.trans
+  · show graph_algebra_eqv _
+      (∑ F : IsoSimpleGraphWithSize L, (quotSubgraphPairDensity H.2 G.2 F) • basisElementFromGraph ⟨L, F⟩)
+    dsimp [graph_algebra_eqv, graphMul]
+    show graph_algebra_eqv _ (graphMulWithSize H G L)
+    rw [graphMulWithSize_comm]
+    apply graphMulWithSize_indep_on_size
+    · rw [add_comm]
+    · rw [add_comm]
+      exact Nat.le_add_right (G.fst + H.fst) ℓ
+  apply graph_algebra_eqv.trans
+  · show graph_algebra_eqv _
+      (∑ F' : IsoSimpleGraphWithSize ℓ, ∑ F : IsoSimpleGraphWithSize L,
+        ((quotSubgraphDensity H.2 F' : ℝ) * (quotSubgraphPairDensity F' G.2 F)) • basisElementFromGraph ⟨L, F⟩)
+    dsimp [graph_algebra_eqv]
+    rw [sum_comm, ← sum_sub_distrib]
+    apply zeroSet_closed_under_sum
     intro F _
-    rw [← smul_sum]
-    sorry
-  sorry
+    rw [← sum_smul, ← sub_smul]
+    apply zero_smul_zeroSet
+    rw [density_chain_rule' H.2 G.2 F hℓ (by simp [L, add_comm])]
+    simp
+  dsimp [graph_algebra_eqv]
+  rw [← sum_sub_distrib]
+  apply zeroSet_closed_under_sum
+  intro F' _
+  have : ∑ F : IsoSimpleGraphWithSize L,
+      ((quotSubgraphDensity H.snd F' : ℝ) * ↑(quotSubgraphPairDensity F' G.snd F)) • basisElementFromGraph ⟨L, F⟩ =
+      ∑ F : IsoSimpleGraphWithSize L,
+      (quotSubgraphDensity H.snd F') • ↑(quotSubgraphPairDensity F' G.snd F) • basisElementFromGraph ⟨L, F⟩ := by
+    apply sum_congr (by rfl)
+    intros; simp [mul_smul]
+  rw [this, mul_comm]
+  simp [← smul_sum, smul_mul_assoc, ← smul_sub]
+  apply zeroSet_closed_under_smul
+  apply graph_algebra_eqv.trans
+  · show graph_algebra_eqv (graphMulWithSize ⟨ℓ, F'⟩ G L) (graphMul ⟨ℓ, F'⟩ G)
+    apply graph_algebra_eqv.symm
+    apply graphMul_indep_on_size (by simp [L, add_comm])
+  · have : graphMul ⟨ℓ, F'⟩ G = basisElementFromGraph ⟨ℓ, F'⟩ * basisElementFromGraph G := by
+      show graphMul ⟨ℓ, F'⟩ G = ∑ _ ∈ (basisElementFromGraph ⟨ℓ, F'⟩).support, ∑ _ ∈ (basisElementFromGraph G).support, _
+      simp
+    rw [this]
+    apply graph_algebra_eqv.refl
 
 lemma graphVector_mul_zeroSet
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
