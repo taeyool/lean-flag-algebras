@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».QuotientGraph
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Real.Basic
+import Mathlib.Algebra.BigOperators.Ring
 
 open Finset
 open SimpleGraph
@@ -968,6 +969,15 @@ noncomputable def isographCount (G : SimpleGraph V) : ℕ
 noncomputable def graphCount (ℓ : ℕ) : ℕ
   := { G' : SimpleGraph (Fin ℓ) | True }.toFinset.card
 
+lemma graphCount_gt_zero (ℓ : ℕ) : graphCount ℓ > 0
+  := by
+  simp [graphCount]
+  exact NeZero.one_le
+
+lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph (Fin ℓ)), 1
+  := by
+  simp [graphCount]
+
 lemma sum_over_simpleGraph_eq_sum_over_quotSimpleGraph
     {ℓ : ℕ} (f : SimpleGraph (Fin ℓ) → ℕ) (h_eqv : ∀ {G G' : SimpleGraph (Fin ℓ)}, graph_eqv G G' → f G = f G')
     : ∑ (G : SimpleGraph (Fin ℓ)), f G = ∑ (G : QuotSimpleGraph (Fin ℓ)), isographCount G.out * f G.out
@@ -977,22 +987,24 @@ lemma sum_over_simpleGraph_eq_sum_over_quotSimpleGraph
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
-    : (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂) * subgraphPairCount H₁ H₂ G
+    : (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂) * subgraphPairCount H₁ H₂ G * graphCount ℓ'
       = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
   := by
   let C : ℕ := (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂)
-  let f : SimpleGraph (Fin ℓ') → ℕ := fun _ => C * subgraphPairCount H₁ H₂ G / graphCount ℓ'
+  let f : SimpleGraph (Fin ℓ') → ℕ := fun _ => C * subgraphPairCount H₁ H₂ G
   have h_f_eqv : ∀ {G₀ G₁ : SimpleGraph (Fin ℓ')}, graph_eqv G₀ G₁ → f G₀ = f G₁ := by
     intro _ _ _
     simp [f]
-  show C * subgraphPairCount H₁ H₂ G
+  show C * subgraphPairCount H₁ H₂ G * graphCount ℓ'
        = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
   calc
-    C * subgraphPairCount H₁ H₂ G
-      = ∑ (G' : SimpleGraph (Fin ℓ')), C * subgraphPairCount H₁ H₂ G / graphCount ℓ'
-        := sorry
-    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), isographCount G'.out * (C * subgraphPairCount H₁ H₂ G / graphCount ℓ')
-        := by apply sum_over_simpleGraph_eq_sum_over_quotSimpleGraph f h_f_eqv
+    C * subgraphPairCount H₁ H₂ G * graphCount ℓ'
+      = C * subgraphPairCount H₁ H₂ G * ∑ (G' : SimpleGraph (Fin ℓ')), 1
+        := by simp [graphCount_eq_sum_one ℓ']
+    _ = ∑ (G' : SimpleGraph (Fin ℓ')), C * subgraphPairCount H₁ H₂ G
+        := by rw [Finset.mul_sum]; simp
+    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), isographCount G'.out * (C * subgraphPairCount H₁ H₂ G)
+        := sum_over_simpleGraph_eq_sum_over_quotSimpleGraph f h_f_eqv
     _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
         := sorry
 
