@@ -804,21 +804,31 @@ instance : NeZero (1 : GraphAlgebra) where
     intro one_eq_zero
     have one := Quotient.exists_rep (1 : GraphAlgebra)
     obtain ⟨orep, horep⟩ := one
-    have h1 := graphAlgebra_mul_one ⟦0⟧
-    have h2 := graphAlgebra_mul_zero ⟦0⟧
-    rw [←horep] at h1
-    rw [←one_eq_zero] at h2 ; simp at h2
-    nth_rw 1 [h2] at h1
-    simp at h1
-    have h3 := Quotient.exact horep
-    have h_one_zero : (1 : GraphVector) ∈ ZeroSet := by
-      have one_equiv_zero := graph_algebra_eqv.trans (graph_algebra_eqv.symm h3) h1
+    have mul_one_zero := graphAlgebra_mul_one ⟦0⟧
+    have mul_zero_zero := graphAlgebra_mul_zero ⟦0⟧
+    rw [←horep] at mul_one_zero
+    rw [←one_eq_zero] at mul_zero_zero ; simp at mul_zero_zero
+    nth_rw 1 [mul_zero_zero] at mul_one_zero; simp at mul_one_zero
+    have orep_equiv_one := Quotient.exact horep
+    have h_one_zeroSet : (1 : GraphVector) ∈ ZeroSet := by
+      have one_equiv_zero := graph_algebra_eqv.trans (graph_algebra_eqv.symm orep_equiv_one) mul_one_zero
       dsimp [graph_algebra_eqv] at one_equiv_zero
       rw [sub_zero] at one_equiv_zero
       exact one_equiv_zero
-    have h := zeroSet_eq_sum_spanElement h_one_zero
-    obtain ⟨I, hI, c, v, hv, h⟩ := h
-    sorry
+    have zeroSet_decomp := zeroSet_eq_sum_spanElement h_one_zeroSet
+    rcases zeroSet_decomp with ⟨I, hI, c, v, hv, hx⟩
+    have zeroElem_exists : ∀ (i : I), ∃ (G : IsoSimpleGraph) (ℓ : ℕ), G.1 ≤ ℓ ∧ v i = zeroElement G ℓ := by
+      intro t; exact zeroSpanSet_exists_zeroElement (hv t)
+    choose G ℓ hG using zeroElem_exists
+    let L := Finset.sup (univ : Finset I) ℓ
+    have h_eq : ∀ i, v i = zeroElement (G i) (ℓ i) := by
+      intro i
+      exact (hG i).2
+    have : 1 ≠ ∑ i : I, c i • v i := by
+      intro h
+      simp_rw [h_eq] at h
+      sorry
+    exact this hx
 
 instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
