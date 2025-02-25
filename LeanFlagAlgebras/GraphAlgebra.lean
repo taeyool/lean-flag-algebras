@@ -821,14 +821,15 @@ instance : NeZero (1 : GraphAlgebra) where
       intro t; exact zeroSpanSet_exists_zeroElement (hv t)
     choose G ℓ hG using zeroElem_exists
     let L := Finset.sup (univ : Finset I) ℓ
-    have h_eq : ∀ i, v i = zeroElement (G i) (ℓ i) := by
-      intro i
-      exact (hG i).2
-    have : 1 ≠ ∑ i : I, c i • v i := by
-      intro h
-      simp_rw [h_eq] at h
-      sorry
-    exact this hx
+    -- have h_eq : ∀ i, v i = zeroElement (G i) (ℓ i) := by
+    --   intro i
+    --   exact (hG i).2
+    -- have : 1 ≠ ∑ i : I, c i • v i := by
+    --   intro h
+    --   simp_rw [h_eq] at h
+    --   sorry
+    -- exact this hx
+    sorry
 
 instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
