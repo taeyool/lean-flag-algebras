@@ -967,12 +967,46 @@ noncomputable def subgraphPairSet
     G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
     G₁.verts ∩ G₂.verts = ∅ }.toFinset
 
-def subgraphFromPartialIso
-  (G : SimpleGraph W) (G' : Subgraph G)
-  (H : SimpleGraph V) (h : Subgraph.coe G' ≃g H)
-  (H₀ : Subgraph H)
-  : Σ (G₀ : Subgraph G), Subgraph.coe G₀ ≃g Subgraph.coe H₀
-  := sorry
+def subgraphFromIso
+    {G : SimpleGraph V} {H : SimpleGraph W}
+    (iso : G ≃g H) (G₀ : Subgraph G)
+    : Σ (H₀ : Subgraph H), Subgraph.coe G₀ ≃g Subgraph.coe H₀
+  := by
+  let H₀ : Subgraph H := {
+    verts :=
+      iso '' G₀.verts,
+    Adj :=
+      fun u v => G₀.Adj (iso.symm u) (iso.symm v)
+    adj_sub := by
+      intro u v h_uv_G₀
+      have h_uv : G.Adj (iso.symm u) (iso.symm v) := G₀.adj_sub h_uv_G₀
+      exact (Iso.map_adj_iff iso.symm).mp h_uv
+    edge_vert := by
+      intro u v h_uv
+      use (iso.symm u)
+      simp
+      exact G₀.edge_vert h_uv
+    symm := by
+      intro u v h_uv_G₀
+      exact G₀.symm h_uv_G₀
+  }
+  let iso₀ : Subgraph.coe G₀ ≃g Subgraph.coe H₀ := {
+    toFun :=
+      fun u =>
+        have h : iso u ∈ iso '' G₀.verts := sorry
+        have : iso u ∈ H₀.verts := by dsimp [H₀]; exact h
+        ⟨iso u, this⟩
+        -- Set.mem_image_of_mem iso u.2⟩
+    invFun :=
+      fun u => ⟨iso.symm u, sorry⟩
+    left_inv :=
+      sorry
+    right_inv :=
+      sorry
+    map_rel_iff' :=
+      sorry
+  }
+  exact ⟨H₀, iso₀⟩
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
