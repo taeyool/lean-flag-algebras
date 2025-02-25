@@ -499,6 +499,17 @@ lemma graphVector_left_distrib
       nth_rw 6 [add_comm]
   rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
 
+lemma graphVector_right_distrib
+    (f g h : GraphVector) : (f + g) * h = f * h + g * h
+  := by
+  simp [graphVector_mul_comm, graphVector_left_distrib]
+
+lemma graphVector_mul_sum
+    (s : Finset ι) (f : ι → GraphVector) (g : GraphVector)
+    : g * ∑ i ∈ s, f i = ∑ i ∈ s, g * f i
+  := by
+  sorry
+
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
   := by
@@ -628,6 +639,21 @@ lemma graphVector_mul_one
   apply zeroSet_closed_under_smul
   exact graph_mul_one G
 
+lemma graph_mul_assoc
+    (F G H : IsoSimpleGraph)
+    : graph_algebra_eqv
+      (basisElementFromGraph F * basisElementFromGraph G * basisElementFromGraph H)
+      (basisElementFromGraph F * (basisElementFromGraph G * basisElementFromGraph H))
+  := by
+  sorry
+
+lemma graphVector_mul_assoc
+    (f g h : GraphVector) : graph_algebra_eqv (f * g * h) (f * (g * h))
+  := by
+  dsimp [graph_algebra_eqv]
+  show (∑ F ∈ f.support, ∑ G ∈ g.support, _) * _ - _ ∈ ZeroSet
+  sorry
+
 noncomputable instance : Mul GraphAlgebra where
   mul := by
     apply Quotient.map₂ (· * ·)
@@ -684,6 +710,17 @@ lemma graphAlgebra_mul_one
   simp
   apply graphVector_mul_one
 
+lemma graphAlgebra_mul_assoc
+    (f g h : GraphAlgebra) : f * g * h = f * (g * h)
+  := by
+  rcases Quotient.exists_rep f with ⟨frep, hfrep⟩
+  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+  rcases Quotient.exists_rep h with ⟨hrep, hhrep⟩
+  rw [← hfrep, ← hgrep, ← hhrep]
+  apply Quotient.sound
+  simp
+  apply graphVector_mul_assoc
+
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
   add_assoc a b c := by
@@ -711,7 +748,7 @@ noncomputable instance : Ring GraphAlgebra where
     apply Quotient.sound
     simp; rfl
   mul := (· * ·)
-  mul_assoc := sorry
+  mul_assoc := graphAlgebra_mul_assoc
   zero_mul a := by
     rw [graphAlgebra_mul_comm]
     apply graphAlgebra_mul_zero
