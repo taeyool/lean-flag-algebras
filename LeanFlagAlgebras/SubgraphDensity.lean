@@ -975,8 +975,8 @@ def subgraphFromIso
   let H₀ : Subgraph H := {
     verts :=
       iso '' G₀.verts,
-    Adj :=
-      fun u v => G₀.Adj (iso.symm u) (iso.symm v)
+    Adj := fun u v =>
+      G₀.Adj (iso.symm u) (iso.symm v)
     adj_sub := by
       intro u v h_uv_G₀
       have h_uv : G.Adj (iso.symm u) (iso.symm v) := G₀.adj_sub h_uv_G₀
@@ -991,20 +991,25 @@ def subgraphFromIso
       exact G₀.symm h_uv_G₀
   }
   let iso₀ : Subgraph.coe G₀ ≃g Subgraph.coe H₀ := {
-    toFun :=
-      fun u =>
-        have h : iso u ∈ iso '' G₀.verts := sorry
-        have : iso u ∈ H₀.verts := by dsimp [H₀]; exact h
-        ⟨iso u, this⟩
-        -- Set.mem_image_of_mem iso u.2⟩
-    invFun :=
-      fun u => ⟨iso.symm u, sorry⟩
-    left_inv :=
-      sorry
-    right_inv :=
-      sorry
-    map_rel_iff' :=
-      sorry
+    toFun := fun u =>
+      have : iso u ∈ H₀.verts := by dsimp [H₀]; simp
+      ⟨iso u, this⟩
+    invFun := fun u =>
+      have h_symm_u : iso.symm u ∈ iso.symm '' (iso '' G₀.verts) := by
+        have := u.property
+        dsimp [H₀] at this
+        exact Set.mem_image_of_mem iso.symm this
+      have : iso.symm u ∈ G₀.verts := by
+        rw [← Set.image_comp] at h_symm_u
+        simp at h_symm_u
+        exact h_symm_u
+      ⟨iso.symm u, this⟩
+    left_inv := by
+      intro u; simp
+    right_inv := by
+      intro u; simp
+    map_rel_iff' := by
+      intro u v; simp
   }
   exact ⟨H₀, iso₀⟩
 
