@@ -309,9 +309,9 @@ lemma graphMulWithSize_comm
   simp [quotSubgraphPairDensity_comm]
 
 lemma sum_smul
-    (S : Finset α) (f : α → ℝ) (g : GraphVector) : (∑ a in S, f a) • g = ∑ a in S, f a • g
+    (s : Finset ι) (f : ι → ℝ) (g : GraphVector) : (∑ i in s, f i) • g = ∑ i in s, f i • g
   := by
-  refine Finset.induction_on S ?_ ?_
+  refine Finset.induction_on s ?_ ?_
   · simp
   · intros r R hr ih
     simp [sum_insert hr, Module.add_smul, ih]
@@ -504,17 +504,27 @@ lemma graphVector_right_distrib
   := by
   simp [graphVector_mul_comm, graphVector_left_distrib]
 
-lemma graphVector_mul_sum
-    (s : Finset ι) (f : ι → GraphVector) (g : GraphVector)
-    : g * ∑ i ∈ s, f i = ∑ i ∈ s, g * f i
-  := by
-  sorry
-
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
   := by
   show ∑ G in (0 : GraphVector).support, ∑ H in f.support, _ = 0
   simp
+
+lemma graphVector_mul_sum
+    (s : Finset ι) (f : ι → GraphVector) (g : GraphVector)
+    : g * ∑ i ∈ s, f i = ∑ i ∈ s, g * f i
+  := by
+  refine Finset.induction_on s ?_ ?_
+  · simp
+    rw [graphVector_mul_comm, graphVector_zero_mul]
+  · intros r R hr ih
+    simp [sum_insert hr, graphVector_left_distrib, ih]
+
+lemma graphVector_sum_mul
+    (s : Finset ι) (f : ι → GraphVector) (g : GraphVector)
+    : (∑ i ∈ s, f i) * g = ∑ i ∈ s, f i * g
+  := by
+  simp [graphVector_mul_comm, graphVector_mul_sum]
 
 noncomputable instance : NonUnitalNonAssocRing GraphVector where
   left_distrib := graphVector_left_distrib
@@ -639,6 +649,22 @@ lemma graphVector_mul_one
   apply zeroSet_closed_under_smul
   exact graph_mul_one G
 
+lemma graphVector_smul_mul_smul_comm
+    (g h : GraphVector) (a b : ℝ)
+    : a • g * b • h = (a * b) • (g * h)
+  := by
+  by_cases hab : a = 0 ∨ b = 0
+  · cases' hab with ha hb
+    · simp [ha, zero_mul, zero_smul]
+    · simp [hb, mul_zero, zero_smul]
+  · have ha : a ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
+    have hb : b ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
+    show ∑ G in (a • g).support, ∑ H in (b • h).support, _ = (a * b) • ∑ G in _, ∑ H in _, _
+    rw [Finsupp.support_smul_eq ha, Finsupp.support_smul_eq hb]
+    repeat (rw [smul_sum]; apply sum_congr (by rfl); intros)
+    simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
+    congr 1; ring
+
 lemma graph_mul_assoc
     (F G H : IsoSimpleGraph)
     : graph_algebra_eqv
@@ -651,8 +677,14 @@ lemma graphVector_mul_assoc
     (f g h : GraphVector) : graph_algebra_eqv (f * g * h) (f * (g * h))
   := by
   dsimp [graph_algebra_eqv]
-  show (∑ F ∈ f.support, ∑ G ∈ g.support, _) * _ - _ ∈ ZeroSet
-  sorry
+  rw [graphVector_eq_sum_basisElement f,
+      graphVector_eq_sum_basisElement g,
+      graphVector_eq_sum_basisElement h]
+  simp [graphVector_mul_sum, graphVector_sum_mul, ← sum_sub_distrib, graphVector_smul_mul_smul_comm, mul_assoc]
+  repeat (apply zeroSet_closed_under_sum; intros)
+  rw [← smul_sub]
+  apply zeroSet_closed_under_smul
+  apply graph_mul_assoc
 
 noncomputable instance : Mul GraphAlgebra where
   mul := by
@@ -848,30 +880,10 @@ noncomputable instance : Algebra ℝ GraphAlgebra where
     rw [add_smul]
   map_mul' x y := by
     simp
-    by_cases hxy : x = 0 ∨ y = 0
-    · apply Quotient.sound
-      simp
-      cases' hxy with hx hy
-      · rw [hx, zero_mul, zero_smul, zero_mul]
-      · rw [hy, mul_zero, zero_smul, mul_zero]
-    · have hx : x ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
-      have hy : y ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
-      nth_rw 1 [← one_mul 1]
-      apply Quotient.sound
-      simp
-      show (x * y) • ∑ G in (1 : GraphVector).support, ∑ H in (1 : GraphVector).support, _
-        - ∑ G in (x • 1 : GraphVector).support, ∑ H in (y • 1 : GraphVector).support, _ ∈ ZeroSet
-      rw [Finsupp.support_smul_eq hx, Finsupp.support_smul_eq hy]
-      rw [smul_sum, ← sum_sub_distrib]
-      apply zeroSet_closed_under_sum
-      intro G _
-      rw [smul_sum, ← sum_sub_distrib]
-      apply zeroSet_closed_under_sum
-      intro H _
-      simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
-      rw [← sub_smul]
-      apply zero_smul_zeroSet
-      ring
+    nth_rw 1 [← one_mul 1]
+    apply Quotient.sound
+    simp [graphVector_smul_mul_smul_comm]
+    rfl
   smul_def' r g := by
     simp
     nth_rw 1 [← one_mul g]
