@@ -763,7 +763,25 @@ noncomputable instance : CommRing GraphAlgebra where
   mul_comm := graphAlgebra_mul_comm
 
 instance : NeZero (1 : GraphAlgebra) where
-  out := sorry
+  out := by
+    intro one_eq_zero
+    have one := Quotient.exists_rep (1 : GraphAlgebra)
+    obtain ⟨orep, horep⟩ := one
+    have h1 := graphAlgebra_mul_one ⟦0⟧
+    have h2 := graphAlgebra_mul_zero ⟦0⟧
+    rw [←horep] at h1
+    rw [←one_eq_zero] at h2 ; simp at h2
+    nth_rw 1 [h2] at h1
+    simp at h1
+    have h3 := Quotient.exact horep
+    have h_one_zero : (1 : GraphVector) ∈ ZeroSet := by
+      have one_equiv_zero := graph_algebra_eqv.trans (graph_algebra_eqv.symm h3) h1
+      dsimp [graph_algebra_eqv] at one_equiv_zero
+      rw [sub_zero] at one_equiv_zero
+      exact one_equiv_zero
+    have h := zeroSet_eq_sum_spanElement h_one_zero
+    obtain ⟨I, hI, c, v, hv, h⟩ := h
+    sorry
 
 instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
