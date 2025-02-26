@@ -1013,6 +1013,53 @@ def subgraphFromIso
   }
   exact ⟨H₀, iso₀⟩
 
+def subgraphByComposition
+    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
+    :  Σ (G₁' : Subgraph G), Subgraph.coe G₁ ≃g Subgraph.coe G₁'
+  := by
+  let G₁' : Subgraph G := {
+    verts :=
+      Subtype.val '' G₁.verts
+    Adj := fun u v =>
+      ∃ (w₁ w₂ : {x : V // x ∈ G₀.verts}),
+        w₁ ∈ G₁.verts ∧ w₂ ∈ G₁.verts ∧ u = w₁.val ∧ v = w₂.val ∧ G₁.Adj w₁ w₂
+    adj_sub := by
+      rintro u v ⟨w₁, w₂, _, _, h_u, h_v, h_w₁_w₂⟩
+      rw [h_u, h_v]
+      exact G₀.adj_sub (G₁.adj_sub h_w₁_w₂)
+    edge_vert := by
+      rintro u _ ⟨w₁, _, h_w₁, _, h_u, _, _⟩
+      rw [h_u]
+      simp [h_w₁]
+    symm := by
+      intro u v ⟨w₁, w₂, h_w₁, h_w₂, h_u, h_v, h_w₁_w₂⟩
+      use w₂, w₁
+      simp [h_w₁, h_w₂, h_u, h_v, h_w₁_w₂]
+      exact G₁.symm h_w₁_w₂
+  }
+  let iso' : Subgraph.coe G₁ ≃g Subgraph.coe G₁' := {
+    toFun := fun u =>
+      Set.imageFactorization Subtype.val G₁.verts u
+    invFun :=
+      sorry
+    left_inv :=
+      sorry
+    right_inv :=
+      sorry
+    map_rel_iff' :=
+      sorry
+  }
+  exact ⟨G₁', iso'⟩
+
+def subgraphFromPartialIso
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀)
+    : Σ (H₁ : Subgraph H), Subgraph.coe G₁ ≃g Subgraph.coe H₁
+  := by
+  obtain ⟨H₁_pre, h_iso_pre⟩ := subgraphFromIso iso G₁
+  obtain ⟨H₁, h_iso_post⟩ := subgraphByComposition H₀ H₁_pre
+  exact ⟨H₁, Iso.comp h_iso_post h_iso_pre⟩
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
