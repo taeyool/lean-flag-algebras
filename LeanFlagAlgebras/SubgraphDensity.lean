@@ -73,7 +73,6 @@ noncomputable def subgraphPairDensity
   let V_card := Fintype.card V
   let U_card := Fintype.card U
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
-  -- let num_of_all_induced_subgraphs := W_card.factorial / (V_card.factorial * U_card.factorial * (W_card - (V_card + U_card)).factorial)
   subgraph_cnt / num_of_all_induced_subgraphs
 
 omit [DecidableEq V] [DecidableEq W] in
@@ -873,7 +872,7 @@ lemma quotSubgraphPairDensity_comm
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
   apply subgraphPairDensity_comm
 
-omit [Fintype V] [DecidableEq V]
+omit [Fintype V] [DecidableEq V] in
 lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
     [Fintype V] {G : SimpleGraph V} {H : Subgraph G}
     : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
@@ -953,6 +952,17 @@ lemma quotSubgraphPairDensity_empty
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraphPairDensity_empty
+
+noncomputable def quotSubgraphTripleDensity
+    : QuotSimpleGraph U → QuotSimpleGraph V → QuotSimpleGraph X → QuotSimpleGraph W → ℚ
+  :=
+  sorry
+
+lemma quotSubgraphTripleDensity_comm
+    (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (H₃ : QuotSimpleGraph X) (G : QuotSimpleGraph W)
+    : quotSubgraphTripleDensity H₁ H₂ H₃ G = quotSubgraphTripleDensity H₂ H₃ H₁ G
+  := by
+  sorry
 
 noncomputable def subgraphSet
   (H : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G)
@@ -1181,5 +1191,14 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods'
   := by
   sorry
 
+theorem quotSubgraphTripleDensity_eq_sum_density_prods
+    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
+    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' + ℓ₃ ≤ ℓ)
+    : quotSubgraphTripleDensity H₁ H₂ H₃ G
+      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), quotSubgraphPairDensity H₁ H₂ G' * quotSubgraphPairDensity G' H₃ G
+  := by
+  sorry
+
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
 alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'
+alias density_chain_rule'' := quotSubgraphTripleDensity_eq_sum_density_prods
