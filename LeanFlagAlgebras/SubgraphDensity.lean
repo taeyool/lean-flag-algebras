@@ -657,6 +657,69 @@ noncomputable def quotSubgraphDensity
   ext G
   exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
 
+omit [DecidableEq V] in
+lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
+    {G : SimpleGraph V} {H : Subgraph G}
+    : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
+  := by
+  constructor
+  . intro h_eq
+    rw [h_eq]
+    have f_iso : (⊥ : Subgraph G).verts ≃ Fin 0 := Fintype.equivFinOfCardEq (by simp)
+    exact Nonempty.intro ⟨f_iso, by simp⟩
+  . intro h_iso
+    have h_verts : H.verts = ∅ := by
+      ext u
+      constructor
+      . intro h_u
+        let u' : Fin 0 := h_iso.some ⟨u, h_u⟩
+        exact Fin.elim0 u'
+      . exact False.elim
+    simp_all [Subgraph.ext_iff, Set.ext_iff]
+    ext u v
+    simp
+    intro h_uv
+    have : u ∈ H.verts := H.edge_vert h_uv
+    exact h_verts u this
+
+lemma subgraphCount_empty
+    (G : SimpleGraph (Fin n))
+    : subgraphCount (emptyGraph (Fin 0)) G = 1
+  := by
+  simp [subgraphCount]
+  let S₀ := { G' : Subgraph G |
+                G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g (emptyGraph (Fin 0))) }
+  let S₁ := { G' : Subgraph G | G' = ⊥ }
+  have h_S₀_S₁ : S₀ = S₁ := by
+    ext G'
+    constructor
+    · intro ⟨_, h_iso⟩
+      rw [← subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0] at h_iso
+      simp_all only [emptyGraph_eq_bot, Set.mem_setOf_eq, Subgraph.verts_bot, and_self, S₀, S₁]
+    · intro h
+      simp [S₁] at h
+      constructor
+      · subst h
+        intro; simp
+      · exact subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0.mp h
+  show Fintype.card S₀ = 1
+  have : Fintype.card S₁ = 1 := by
+    simp_all only [emptyGraph_eq_bot, Set.setOf_eq_eq_singleton, Fintype.card_unique, S₀, S₁]
+  rw [← this]; congr
+
+lemma subgraphDensity_empty
+    (G : SimpleGraph (Fin n)) : subgraphDensity (emptyGraph (Fin 0)) G = 1
+  := by
+  simp [subgraphDensity]
+  simp [← subgraphCount_empty G]
+
+lemma quotSubgraphDensity_empty
+    (G : QuotSimpleGraph (Fin n)) : quotSubgraphDensity ⟦emptyGraph (Fin 0)⟧ G = 1
+  := by
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hGrep]
+  apply subgraphDensity_empty
+
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ quotSubgraphDensity H G
@@ -872,31 +935,6 @@ lemma quotSubgraphPairDensity_comm
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
   apply subgraphPairDensity_comm
 
-omit [Fintype V] [DecidableEq V] in
-lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
-    [Fintype V] {G : SimpleGraph V} {H : Subgraph G}
-    : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
-  := by
-  constructor
-  . intro h_eq
-    rw [h_eq]
-    have f_iso : (⊥ : Subgraph G).verts ≃ Fin 0 := Fintype.equivFinOfCardEq (by simp)
-    exact Nonempty.intro ⟨f_iso, by simp⟩
-  . intro h_iso
-    have h_verts : H.verts = ∅ := by
-      ext u
-      constructor
-      . intro h_u
-        let u' : Fin 0 := h_iso.some ⟨u, h_u⟩
-        exact Fin.elim0 u'
-      . exact False.elim
-    simp_all [Subgraph.ext_iff, Set.ext_iff]
-    ext u v
-    simp
-    intro h_uv
-    have : u ∈ H.verts := H.edge_vert h_uv
-    exact h_verts u this
-
 lemma subgraphPairCount_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairCount (emptyGraph (Fin 0)) H G = subgraphCount H G
@@ -941,7 +979,7 @@ lemma subgraphPairDensity_empty
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
   := by
   dsimp [subgraphPairDensity, subgraphDensity]
-  rw [←subgraphPairCount_empty H G]
+  rw [← subgraphPairCount_empty H G]
   simp
 
 lemma quotSubgraphPairDensity_empty

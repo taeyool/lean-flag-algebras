@@ -88,7 +88,8 @@ noncomputable instance : One GraphVector where
 lemma quotSubgraphDensity_one
     (G : IsoSimpleGraphWithSize n)
     : quotSubgraphDensity (1 : IsoSimpleGraph).2 G = 1
-  := by sorry
+  := by
+  exact quotSubgraphDensity_empty G
 
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
