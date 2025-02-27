@@ -1027,31 +1027,13 @@ def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
     :  Σ (G₁' : Subgraph G), Subgraph.coe G₁ ≃g Subgraph.coe G₁'
   := by
-  let G₁' : Subgraph G := {
-    verts :=
-      Subtype.val '' G₁.verts
-    Adj := fun u v =>
-      ∃ (w₁ w₂ : {x : V // x ∈ G₀.verts}),
-        w₁ ∈ G₁.verts ∧ w₂ ∈ G₁.verts ∧ u = w₁.val ∧ v = w₂.val ∧ G₁.Adj w₁ w₂
-    adj_sub := by
-      rintro u v ⟨w₁, w₂, _, _, h_u, h_v, h_w₁_w₂⟩
-      rw [h_u, h_v]
-      exact G₀.adj_sub (G₁.adj_sub h_w₁_w₂)
-    edge_vert := by
-      rintro u _ ⟨w₁, _, h_w₁, _, h_u, _, _⟩
-      rw [h_u]
-      simp [h_w₁]
-    symm := by
-      intro u v ⟨w₁, w₂, h_w₁, h_w₂, h_u, h_v, h_w₁_w₂⟩
-      use w₂, w₁
-      simp [h_w₁, h_w₂, h_u, h_v, h_w₁_w₂]
-      exact G₁.symm h_w₁_w₂
-  }
+  let G₁' : Subgraph G := SimpleGraph.Subgraph.coeSubgraph G₁
   let iso' : Subgraph.coe G₁ ≃g Subgraph.coe G₁' := {
     toFun := fun u =>
       Set.imageFactorization Subtype.val G₁.verts u
     invFun := by
       intro ⟨u, h_u⟩
+      dsimp [G₁'] at h_u
       simp at h_u
       exact ⟨⟨u, h_u.1⟩, h_u.2⟩
     left_inv := by
@@ -1062,9 +1044,33 @@ def subgraphByComposition
       exact rfl
     map_rel_iff' := by
       intro u v
+      dsimp [G₁', Relation.Map]
       aesop
   }
   exact ⟨G₁', iso'⟩
+
+  def subgraphByJoin
+    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G)
+    : Subgraph G
+  where
+    verts := G₀.verts ∪ G₁.verts
+    Adj := fun u v => G₀.Adj u v ∨ G₁.Adj u v
+    adj_sub := by
+      intro u v h_uv
+      cases h_uv with
+      | inl h => exact G₀.adj_sub h
+      | inr h => exact G₁.adj_sub h
+    edge_vert := by
+      intro u v h_uv
+      simp [Set.mem_union]
+      cases h_uv with
+      | inl h => exact Or.inl (G₀.edge_vert h)
+      | inr h => exact Or.inr (G₁.edge_vert h)
+    symm := by
+      intro u v h_uv
+      cases h_uv with
+      | inl h => exact Or.inl (G₀.symm h)
+      | inr h => exact Or.inr (G₁.symm h)
 
 def subgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
@@ -1082,7 +1088,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       ≃
       Σ F : QuotSimpleGraph (Fin ℓ'), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   where
-    toFun := sorry
+    toFun := by
+      intro ⟨⟨G₁,G₂⟩, h⟩
+      let G' : Subgraph G := subgraphByJoin G₁ G₂
+      dsimp [subgraphPairSet] at h
+      simp at h
+      obtain ⟨h_G₁_ind, h_G₁_iso, h_G₂_ind, h_G₂_iso, h_G₁_G₂_disj⟩ := h
+      sorry
     invFun :=
       fun ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨G', h_G'⟩⟩
         => by
