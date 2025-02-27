@@ -4,6 +4,7 @@ import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Span
 import Mathlib.Logic.Nonempty
 import Mathlib.Logic.Unique
+import Mathlib.Tactic.Linarith.Frontend
 
 open Finset
 open SimpleGraph
@@ -665,13 +666,66 @@ lemma graphVector_smul_mul_smul_comm
     simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
     congr 1; ring
 
+lemma graph_mul_mul_eqv_sum_tripleDensity
+    {G₁ G₂ G₃ : IsoSimpleGraph} {ℓ : ℕ} (hℓ : G₁.1 + G₂.1 + G₃.1 ≤ ℓ)
+    : graph_algebra_eqv
+      (basisElementFromGraph G₁ * basisElementFromGraph G₂ * basisElementFromGraph G₃)
+      (∑ (F : IsoSimpleGraphWithSize ℓ), (quotSubgraphTripleDensity G₁.2 G₂.2 G₃.2 F) • basisElementFromGraph ⟨ℓ, F⟩)
+  := by
+  show (∑ G in _, ∑ G' in _, _) * _ - _ ∈ ZeroSet
+  simp; dsimp [graphMul, graphMulWithSize]
+  rw [graphVector_sum_mul]
+  let ℓ' := G₁.1 + G₂.1
+  apply graph_algebra_eqv.trans
+  · show graph_algebra_eqv _
+      (∑ (F : IsoSimpleGraphWithSize ℓ), ∑ (F' : IsoSimpleGraphWithSize ℓ'),
+        (quotSubgraphPairDensity G₁.2 G₂.2 F') • (quotSubgraphPairDensity F' G₃.2 F) • basisElementFromGraph ⟨ℓ, F⟩)
+    dsimp [graph_algebra_eqv]
+    rw [sum_comm, ← sum_sub_distrib]
+    apply zeroSet_closed_under_sum
+    intro F' _
+    rw [← smul_sum, smul_mul_assoc, ← smul_sub]
+    apply zeroSet_closed_under_smul
+    show ∑ F in _, _ - _ ∈ ZeroSet
+    simp
+    apply graph_algebra_eqv.trans
+    · apply graphMul_indep_on_size hℓ
+    · dsimp [graph_algebra_eqv, graphMulWithSize]
+      rw [← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro G _
+      simp
+  · dsimp [graph_algebra_eqv]
+    rw [← sum_sub_distrib]
+    apply zeroSet_closed_under_sum
+    intro G _
+    simp [smul_smul, ← sum_smul, ← sub_smul]
+    apply zero_smul_zeroSet
+    have hℓ' : G₁.1 + G₂.1 ≤ ℓ' := by simp
+    have hℓ₂ : ℓ' + G₃.1 ≤ ℓ := by simp_all only [ℓ']
+    rw [density_chain_rule'' G₁.2 G₂.2 G₃.2 G hℓ' hℓ₂]
+    simp
+
 lemma graph_mul_assoc
     (F G H : IsoSimpleGraph)
     : graph_algebra_eqv
       (basisElementFromGraph F * basisElementFromGraph G * basisElementFromGraph H)
       (basisElementFromGraph F * (basisElementFromGraph G * basisElementFromGraph H))
   := by
-  sorry
+  let ℓ := F.1 + G.1 + H.1
+  apply graph_algebra_eqv.trans
+  · have hℓ : F.1 + G.1 + H.1 ≤ ℓ := by simp
+    apply graph_mul_mul_eqv_sum_tripleDensity hℓ
+  apply graph_algebra_eqv.symm
+  rw [graphVector_mul_comm]
+  apply graph_algebra_eqv.trans
+  · have hℓ' : G.1 + H.1 + F.1 ≤ ℓ := by simp [ℓ]; linarith
+    apply graph_mul_mul_eqv_sum_tripleDensity hℓ'
+  dsimp [graph_algebra_eqv]
+  rw [← sum_sub_distrib]
+  apply zeroSet_closed_under_sum
+  intros
+  simp [← quotSubgraphTripleDensity_comm]
 
 lemma graphVector_mul_assoc
     (f g h : GraphVector) : graph_algebra_eqv (f * g * h) (f * (g * h))

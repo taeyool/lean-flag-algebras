@@ -73,7 +73,6 @@ noncomputable def subgraphPairDensity
   let V_card := Fintype.card V
   let U_card := Fintype.card U
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
-  -- let num_of_all_induced_subgraphs := W_card.factorial / (V_card.factorial * U_card.factorial * (W_card - (V_card + U_card)).factorial)
   subgraph_cnt / num_of_all_induced_subgraphs
 
 omit [DecidableEq V] [DecidableEq W] in
@@ -873,7 +872,7 @@ lemma quotSubgraphPairDensity_comm
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
   apply subgraphPairDensity_comm
 
-omit [Fintype V] [DecidableEq V]
+omit [Fintype V] [DecidableEq V] in
 lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
     [Fintype V] {G : SimpleGraph V} {H : Subgraph G}
     : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
@@ -954,6 +953,17 @@ lemma quotSubgraphPairDensity_empty
   rw [← hHrep, ← hGrep]
   apply subgraphPairDensity_empty
 
+noncomputable def quotSubgraphTripleDensity
+    : QuotSimpleGraph U → QuotSimpleGraph V → QuotSimpleGraph X → QuotSimpleGraph W → ℚ
+  :=
+  sorry
+
+lemma quotSubgraphTripleDensity_comm
+    (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (H₃ : QuotSimpleGraph X) (G : QuotSimpleGraph W)
+    : quotSubgraphTripleDensity H₁ H₂ H₃ G = quotSubgraphTripleDensity H₂ H₃ H₁ G
+  := by
+  sorry
+
 noncomputable def subgraphSet
   (H : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G)
   :=
@@ -1013,6 +1023,64 @@ def subgraphFromIso
   }
   exact ⟨H₀, iso₀⟩
 
+def subgraphByComposition
+    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
+    :  Σ (G₁' : Subgraph G), Subgraph.coe G₁ ≃g Subgraph.coe G₁'
+  := by
+  let G₁' : Subgraph G := SimpleGraph.Subgraph.coeSubgraph G₁
+  let iso' : Subgraph.coe G₁ ≃g Subgraph.coe G₁' := {
+    toFun := fun u =>
+      Set.imageFactorization Subtype.val G₁.verts u
+    invFun := by
+      intro ⟨u, h_u⟩
+      dsimp [G₁'] at h_u
+      simp at h_u
+      exact ⟨⟨u, h_u.1⟩, h_u.2⟩
+    left_inv := by
+      intro u
+      exact rfl
+    right_inv := by
+      intro u
+      exact rfl
+    map_rel_iff' := by
+      intro u v
+      dsimp [G₁', Relation.Map]
+      aesop
+  }
+  exact ⟨G₁', iso'⟩
+
+  def subgraphByJoin
+    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G)
+    : Subgraph G
+  where
+    verts := G₀.verts ∪ G₁.verts
+    Adj := fun u v => G₀.Adj u v ∨ G₁.Adj u v
+    adj_sub := by
+      intro u v h_uv
+      cases h_uv with
+      | inl h => exact G₀.adj_sub h
+      | inr h => exact G₁.adj_sub h
+    edge_vert := by
+      intro u v h_uv
+      simp [Set.mem_union]
+      cases h_uv with
+      | inl h => exact Or.inl (G₀.edge_vert h)
+      | inr h => exact Or.inr (G₁.edge_vert h)
+    symm := by
+      intro u v h_uv
+      cases h_uv with
+      | inl h => exact Or.inl (G₀.symm h)
+      | inr h => exact Or.inr (G₁.symm h)
+
+def subgraphFromPartialIso
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀)
+    : Σ (H₁ : Subgraph H), Subgraph.coe G₁ ≃g Subgraph.coe H₁
+  := by
+  obtain ⟨H₁_pre, h_iso_pre⟩ := subgraphFromIso iso G₁
+  obtain ⟨H₁, h_iso_post⟩ := subgraphByComposition H₀ H₁_pre
+  exact ⟨H₁, Iso.comp h_iso_post h_iso_pre⟩
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
@@ -1020,7 +1088,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       ≃
       Σ F : QuotSimpleGraph (Fin ℓ'), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   where
-    toFun := sorry
+    toFun := by
+      intro ⟨⟨G₁,G₂⟩, h⟩
+      let G' : Subgraph G := subgraphByJoin G₁ G₂
+      dsimp [subgraphPairSet] at h
+      simp at h
+      obtain ⟨h_G₁_ind, h_G₁_iso, h_G₂_ind, h_G₂_iso, h_G₁_G₂_disj⟩ := h
+      sorry
     invFun :=
       fun ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨G', h_G'⟩⟩
         => by
@@ -1134,5 +1208,14 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods'
   := by
   sorry
 
+theorem quotSubgraphTripleDensity_eq_sum_density_prods
+    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
+    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' + ℓ₃ ≤ ℓ)
+    : quotSubgraphTripleDensity H₁ H₂ H₃ G
+      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), quotSubgraphPairDensity H₁ H₂ G' * quotSubgraphPairDensity G' H₃ G
+  := by
+  sorry
+
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
 alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'
+alias density_chain_rule'' := quotSubgraphTripleDensity_eq_sum_density_prods
