@@ -294,19 +294,6 @@ noncomputable instance : One GraphAlgebra where
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
-noncomputable instance : MulAction ℝ GraphAlgebra where
-  one_smul g := by
-    rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-    rw [← hgrep]
-    apply Quotient.sound
-    simp; rfl
-  mul_smul r s g := by
-    rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-    rw [← hgrep]
-    apply Quotient.sound
-    simp
-    rw [mul_smul]
-
 noncomputable def graphMulWithSize
     (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
@@ -741,31 +728,27 @@ lemma graphAlgebra_left_distrib
 lemma graphAlgebra_mul_zero
     (g : GraphAlgebra) : g * 0 = 0
   := by
-  rw [← Quotient.out_eq g]
+  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+  rw [← hgrep]
   apply Quotient.sound
   simp; rfl
 
 lemma graphAlgebra_mul_one
     (g : GraphAlgebra) : g * 1 = g
   := by
-  rw [← Quotient.out_eq g]
+  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+  rw [← hgrep]
   apply Quotient.sound
   simp
   apply graphVector_mul_one
 
-lemma graphAlgebra_smul_mul_smul_comm
-    (g h : GraphAlgebra) (a b : ℝ)
-    : a • g * b • h = (a * b) • (g * h)
-  := by
-  rw [← Quotient.out_eq g, ← Quotient.out_eq h]
-  apply Quotient.sound
-  simp
-  rw [graphVector_smul_mul_smul_comm]
-
 lemma graphAlgebra_mul_assoc
     (f g h : GraphAlgebra) : f * g * h = f * (g * h)
   := by
-  rw [← Quotient.out_eq f, ← Quotient.out_eq g, ← Quotient.out_eq h]
+  rcases Quotient.exists_rep f with ⟨frep, hfrep⟩
+  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+  rcases Quotient.exists_rep h with ⟨hrep, hhrep⟩
+  rw [← hfrep, ← hgrep, ← hhrep]
   apply Quotient.sound
   simp
   apply graphVector_mul_assoc
@@ -851,25 +834,16 @@ noncomputable instance : CommRing GraphAlgebra where
 instance : NeZero (1 : GraphAlgebra) where
   out := by
     intro one_eq_zero
-    have one := Quotient.exists_rep (1 : GraphAlgebra)
-    obtain ⟨orep, horep⟩ := one
-    have mul_one_zero := graphAlgebra_mul_one ⟦0⟧
-    have mul_zero_zero := graphAlgebra_mul_zero ⟦0⟧
-    rw [←horep] at mul_one_zero
-    rw [←one_eq_zero] at mul_zero_zero ; simp at mul_zero_zero
-    nth_rw 1 [mul_zero_zero] at mul_one_zero; simp at mul_one_zero
-    have orep_equiv_one := Quotient.exact horep
     have h_one_zeroSet : (1 : GraphVector) ∈ ZeroSet := by
-      have one_equiv_zero := graph_algebra_eqv.trans (graph_algebra_eqv.symm orep_equiv_one) mul_one_zero
-      dsimp [graph_algebra_eqv] at one_equiv_zero
-      rw [sub_zero] at one_equiv_zero
-      exact one_equiv_zero
+      rw [← sub_zero 1]
+      exact Quotient.exact one_eq_zero
     have zeroSet_decomp := zeroSet_eq_sum_spanElement h_one_zeroSet
     rcases zeroSet_decomp with ⟨I, hI, c, v, hv, hx⟩
     have zeroElem_exists : ∀ (i : I), ∃ (G : IsoSimpleGraph) (ℓ : ℕ), G.1 ≤ ℓ ∧ v i = zeroElement G ℓ := by
       intro t; exact zeroSpanSet_exists_zeroElement (hv t)
     choose G ℓ hG using zeroElem_exists
     let L := Finset.sup (univ : Finset I) ℓ
+    let F := (default : IsoSimpleGraphWithSize L)
     -- have h_eq : ∀ i, v i = zeroElement (G i) (ℓ i) := by
     --   intro i
     --   exact (hG i).2
@@ -904,8 +878,24 @@ noncomputable instance : Algebra ℝ GraphAlgebra where
   smul_def' r g := by
     simp
     nth_rw 1 [← one_mul g]
-    nth_rw 2 [← one_smul ℝ g]
-    rw [graphAlgebra_smul_mul_smul_comm, mul_one]
+    rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
+    rw [← hgrep]
+    apply Quotient.sound
+    simp
+    by_cases hr : r = 0
+    · subst hgrep hr
+      simp_all only [zero_smul, zero_mul]
+      rfl
+    · show r • ∑ G in (1 : GraphVector).support, ∑ H in grep.support, _
+        - ∑ G in (r • 1 : GraphVector).support, ∑ H in grep.support, _ ∈ ZeroSet
+      rw [Finsupp.support_smul_eq hr]
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro G _
+      rw [smul_sum, ← sum_sub_distrib]
+      apply zeroSet_closed_under_sum
+      intro H _
+      simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul, mul_assoc]
   commutes' := by
     intros; simp
     rw [mul_comm]
