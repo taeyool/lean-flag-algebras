@@ -903,11 +903,43 @@ instance : NeZero (1 : GraphAlgebra) where
     choose G ℓ hG using zeroElem_exists
     let L := Finset.sup (univ : Finset I) ℓ
     let F := (default : IsoSimpleGraphWithSize L)
-    have horep_in_F : quotSubgraphDensity (1 : IsoSimpleGraph).2 F = 1 := quotSubgraphDensity_one F
     let φ : GraphVector → ℝ
       := fun g => ∑ G in g.support, (g G) * quotSubgraphDensity G.2 F
-    have hφ : ∀ (i : I), φ (v i) = 0 := sorry
-    sorry
+    have φ_add : ∀ (g h : GraphVector), φ (g + h) = φ g + φ h := by
+      intro g h
+      simp [φ, add_mul]
+      sorry
+    have φ_smul : ∀ (r : ℝ) (g : GraphVector), φ (r • g) = r * φ g := by
+      intro r g
+      show ∑ G in _, _ = _ * ∑ G in _, _
+      by_cases hr : r = 0
+      · simp [hr]
+      · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
+        rw [hg_supp, mul_sum]
+        apply sum_congr (by rfl)
+        intro x hx
+        simp [mul_sum, mul_assoc]
+    have φ_sum : ∀ (s : Finset I) (f : I → GraphVector), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+      intro s f
+      refine Finset.induction_on s ?_ ?_
+      · simp [φ]
+      · intro r R hr ih
+        simp [sum_insert hr, Module.add_smul]
+        rw [φ_add, ih]
+    have hφ : ∀ (i : I), φ (v i) = 0 := by sorry
+    have h_φ_1 : φ 1 = 1 := by
+      show ∑ G in (basisElementFromGraph 1).support, _ = 1
+      simp [sum_singleton, quotSubgraphDensity_one]
+      show (basisElementFromGraph 1) 1 = 1
+      simp
+    have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
+      rw [φ_sum]
+      apply sum_eq_zero
+      intro i hi
+      rw [φ_smul, hφ, mul_zero]
+    rw [hx]at h_φ_1
+    have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [←h_φ_1, ←h_φ_sum]
+    exact zero_ne_one zero_eq_one
 
 instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
