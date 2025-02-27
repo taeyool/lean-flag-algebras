@@ -1050,14 +1050,19 @@ def subgraphByComposition
   let iso' : Subgraph.coe G₁ ≃g Subgraph.coe G₁' := {
     toFun := fun u =>
       Set.imageFactorization Subtype.val G₁.verts u
-    invFun :=
-      sorry
-    left_inv :=
-      sorry
-    right_inv :=
-      sorry
-    map_rel_iff' :=
-      sorry
+    invFun := by
+      intro ⟨u, h_u⟩
+      simp at h_u
+      exact ⟨⟨u, h_u.1⟩, h_u.2⟩
+    left_inv := by
+      intro u
+      exact rfl
+    right_inv := by
+      intro u
+      exact rfl
+    map_rel_iff' := by
+      intro u v
+      aesop
   }
   exact ⟨G₁', iso'⟩
 
