@@ -85,6 +85,11 @@ lemma graphVector_eq_sum_basisElement
 noncomputable instance : One GraphVector where
   one := basisElementFromGraph 1
 
+lemma quotSubgraphDensity_one
+    (G : IsoSimpleGraphWithSize n)
+    : quotSubgraphDensity (1 : IsoSimpleGraph).2 G = 1
+  := by sorry
+
 lemma quotSubgraphPairDensity_one
     (H : IsoSimpleGraphWithSize n) (G : IsoSimpleGraphWithSize m)
     : quotSubgraphPairDensity (1 : IsoSimpleGraph).2 H G = quotSubgraphDensity H G
@@ -898,14 +903,10 @@ instance : NeZero (1 : GraphAlgebra) where
     choose G ℓ hG using zeroElem_exists
     let L := Finset.sup (univ : Finset I) ℓ
     let F := (default : IsoSimpleGraphWithSize L)
-    -- have h_eq : ∀ i, v i = zeroElement (G i) (ℓ i) := by
-    --   intro i
-    --   exact (hG i).2
-    -- have : 1 ≠ ∑ i : I, c i • v i := by
-    --   intro h
-    --   simp_rw [h_eq] at h
-    --   sorry
-    -- exact this hx
+    have horep_in_F : quotSubgraphDensity (1 : IsoSimpleGraph).2 F = 1 := quotSubgraphDensity_one F
+    let φ : GraphVector → ℝ
+      := fun g => ∑ G in g.support, (g G) * quotSubgraphDensity G.2 F
+    have hφ : ∀ (i : I), φ (v i) = 0 := sorry
     sorry
 
 instance : Nontrivial GraphAlgebra where
