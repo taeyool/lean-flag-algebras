@@ -1254,6 +1254,15 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
   := by
   sorry
 
+theorem quotSubgraphDensity_eq_sum_density_prods
+    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (G : QuotSimpleGraph (Fin ℓ))
+    {ℓ' : ℕ} (hℓ': ℓ₁ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
+    : quotSubgraphDensity H₁ G
+      = ∑ (H' : QuotSimpleGraph (Fin ℓ')), quotSubgraphDensity H₁ H' * quotSubgraphDensity H' G
+  := by
+  sorry
+
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
 alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'
 alias density_chain_rule'' := quotSubgraphTripleDensity_eq_sum_density_prods
+alias density_chain_rule''' := quotSubgraphDensity_eq_sum_density_prods

@@ -927,7 +927,20 @@ instance : NeZero (1 : GraphAlgebra) where
       · intro r R hr ih
         simp [sum_insert hr, Module.add_smul]
         rw [φ_add, ih]
-    have hφ : ∀ (i : I), φ (v i) = 0 := by sorry
+    have hφ : ∀ (i : I), φ (v i) = 0 := by
+      intro i
+      let iG := G i
+      have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
+      have hℓ : ℓ i ≤ L := by apply Finset.le_sup; simp
+      rw [hG2]
+      dsimp [zeroElement]
+      rw [sub_eq_add_neg, φ_add]
+      have temp :  φ (basisElementFromGraph iG) + φ (-densityGraphSum iG (ℓ i)) =  φ (basisElementFromGraph iG) - φ (densityGraphSum iG (ℓ i)) := by sorry
+      rw [temp, sub_eq_zero]
+      simp [densityGraphSum]
+      simp [φ]
+      rw [density_chain_rule''' _ _ hℓ' hℓ]
+      sorry
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (basisElementFromGraph 1).support, _ = 1
       simp [sum_singleton, quotSubgraphDensity_one]
