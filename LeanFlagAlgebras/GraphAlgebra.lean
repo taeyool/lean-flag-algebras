@@ -314,6 +314,17 @@ noncomputable instance : SMul ℝ GraphAlgebra where
     apply zeroSet_closed_under_smul
     exact hg
 
+noncomputable instance : MulAction ℝ GraphAlgebra where
+  one_smul g := by
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp
+  mul_smul r s g := by
+    rw [← Quotient.out_eq g]
+    apply Quotient.sound
+    simp
+    rw [mul_smul]
+
 instance : Zero GraphAlgebra where
   zero := ⟦0⟧
 
@@ -854,30 +865,33 @@ lemma graphAlgebra_left_distrib
 lemma graphAlgebra_mul_zero
     (g : GraphAlgebra) : g * 0 = 0
   := by
-  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-  rw [← hgrep]
+  rw [← Quotient.out_eq g]
   apply Quotient.sound
   simp; rfl
 
 lemma graphAlgebra_mul_one
     (g : GraphAlgebra) : g * 1 = g
   := by
-  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-  rw [← hgrep]
+  rw [← Quotient.out_eq g]
   apply Quotient.sound
   simp [graphVector_mul_one]
-  rfl
 
 lemma graphAlgebra_mul_assoc
     (f g h : GraphAlgebra) : f * g * h = f * (g * h)
   := by
-  rcases Quotient.exists_rep f with ⟨frep, hfrep⟩
-  rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-  rcases Quotient.exists_rep h with ⟨hrep, hhrep⟩
-  rw [← hfrep, ← hgrep, ← hhrep]
+  rw [← Quotient.out_eq f, ← Quotient.out_eq g, ← Quotient.out_eq h]
   apply Quotient.sound
   simp
   apply graphVector_mul_assoc
+
+lemma graphAlgebra_smul_mul_smul_comm
+    (g h : GraphAlgebra) (a b : ℝ)
+    : a • g * b • h = (a * b) • (g * h)
+  := by
+  rw [← Quotient.out_eq g, ← Quotient.out_eq h]
+  apply Quotient.sound
+  simp
+  rw [graphVector_smul_mul_smul_comm]
 
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
@@ -1034,32 +1048,14 @@ noncomputable instance : Algebra ℝ GraphAlgebra where
     simp
     rw [add_smul]
   map_mul' x y := by
-    simp
-    nth_rw 1 [← one_mul 1]
     apply Quotient.sound
-    simp [graphVector_smul_mul_smul_comm]
-    rfl
+    simp
+    rw [mul_smul]
   smul_def' r g := by
     simp
     nth_rw 1 [← one_mul g]
-    rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
-    rw [← hgrep]
-    apply Quotient.sound
-    simp
-    by_cases hr : r = 0
-    · subst hgrep hr
-      simp_all only [zero_smul, zero_mul]
-      rfl
-    · show r • ∑ G in (1 : GraphVector).support, ∑ H in grep.support, _
-        - ∑ G in (r • 1 : GraphVector).support, ∑ H in grep.support, _ ∈ ZeroSet
-      rw [Finsupp.support_smul_eq hr]
-      rw [smul_sum, ← sum_sub_distrib]
-      apply zeroSet_closed_under_sum
-      intro G _
-      rw [smul_sum, ← sum_sub_distrib]
-      apply zeroSet_closed_under_sum
-      intro H _
-      simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul, mul_assoc]
+    nth_rw 2 [← one_smul ℝ g]
+    rw [graphAlgebra_smul_mul_smul_comm, mul_one]
   commutes' := by
     intros; simp
     rw [mul_comm]
