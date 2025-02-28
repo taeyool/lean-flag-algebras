@@ -452,7 +452,14 @@ lemma graphVector_add_support
 lemma graphVector_left_distrib'
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
-  sorry
+  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
+  simp [Finset.sum_add_distrib, ← sum_add_distrib]
+  apply sum_congr rfl
+  intro F _
+  simp [mul_add, add_smul]
+  let ψ : GraphVector → IsoSimpleGraph → GraphVector
+    := fun g G => (f F * g G) • graphMul F G
+  rw [graphVector_add_support g h ψ]
 
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
@@ -989,7 +996,9 @@ instance : NeZero (1 : GraphAlgebra) where
     have φ_add : ∀ (g h : GraphVector), φ (g + h) = φ g + φ h := by
       intro g h
       simp [φ, add_mul]
-      sorry
+      let ψ : GraphVector → IsoSimpleGraph → ℝ
+        := fun g G => (g G) * quotSubgraphDensity G.2 F
+      rw [graphVector_add_support g h ψ]
     have φ_smul : ∀ (r : ℝ) (g : GraphVector), φ (r • g) = r * φ g := by
       intro r g
       show ∑ G in _, _ = _ * ∑ G in _, _
