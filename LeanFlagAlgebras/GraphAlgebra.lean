@@ -105,6 +105,20 @@ lemma quotSubgraphPairDensity_one
   := by
   exact quotSubgraphPairDensity_empty H G
 
+@[simp]
+lemma graphVector_one_support
+    : (1 : GraphVector).support = {(1 : IsoSimpleGraph)}
+  := by
+  show (basisElementFromGraph 1).support = {(1 : IsoSimpleGraph)}
+  simp [basisElementFromGraph_support]
+
+@[simp]
+lemma graphVector_one_apply_one
+    : (1 : GraphVector) 1 = 1
+  := by
+  show (basisElementFromGraph 1) 1 = 1
+  simp [basisElementFromGraph_apply_self]
+
 noncomputable def finiteGraphModuleBasis
     : Basis IsoSimpleGraph ℝ GraphVector
   :=
@@ -634,7 +648,7 @@ lemma graphVector_mul_zeroSet
   simp [mul_comm, hvi]
   exact graph_mul_zeroElement G H hℓ
 
-lemma graph_mul_one'
+lemma graph_mul_one
     (G : IsoSimpleGraph) : graphMul G 1 = basisElementFromGraph G
   := by
   rw [graphMul_comm]
@@ -651,47 +665,62 @@ lemma graph_mul_one'
   have hG'_ne_G : G.2 ≠ G' := by aesop
   simp [quotSubgraphDensity_other hG'_ne_G]
 
-lemma graph_mul_one
-    (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)
-  := by
-  rw [graphMul_comm]
-  apply graph_algebra_eqv.symm
-  dsimp [graph_algebra_eqv]
-  have : graphMul 1 G = densityGraphSum G G.1 := by
-    dsimp [densityGraphSum, graphMul]
-    rw [add_comm]
-    apply sum_congr
-    · rfl
-    · intros
-      rw [quotSubgraphPairDensity_one]
-      rfl
-  rw [this, ZeroSet]
-  refine Submodule.mem_span.mpr fun p a ↦ a ?_
-  simp; use G; use G.1
-  constructor <;> rfl
+-- lemma graph_mul_one
+--     (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)
+--   := by
+--   rw [graphMul_comm]
+--   apply graph_algebra_eqv.symm
+--   dsimp [graph_algebra_eqv]
+--   have : graphMul 1 G = densityGraphSum G G.1 := by
+--     dsimp [densityGraphSum, graphMul]
+--     rw [add_comm]
+--     apply sum_congr
+--     · rfl
+--     · intros
+--       rw [quotSubgraphPairDensity_one]
+--       rfl
+--   rw [this, ZeroSet]
+--   refine Submodule.mem_span.mpr fun p a ↦ a ?_
+--   simp; use G; use G.1
+--   constructor <;> rfl
 
 lemma graphVector_mul_one
-    (g : GraphVector) : graph_algebra_eqv (g * 1) g
+    (g : GraphVector) : g * 1 = g
   := by
-  show ∑ G in g.support, ∑ H in (1 : GraphVector).support, _ - g ∈ ZeroSet
-  have h_supp_one : Finsupp.support (1 : GraphVector) = {1} := by
-    show Finsupp.support (basisElementFromGraph 1) = {1}
-    dsimp [basisElementFromGraph]
-    rw [Finsupp.support_single_ne_zero _ (by simp)]
-  rw [sum_comm, h_supp_one, sum_singleton]
-  have hg : g = ∑ G in g.support, g G • basisElementFromGraph G := by
-    simp [basisElementFromGraph]
-    nth_rw 1 [← Finsupp.sum_single g, Finsupp.sum]
-  nth_rw 3 [hg]
-  rw [← sum_sub_distrib]
-  apply zeroSet_closed_under_sum
+  rw [graphVector_eq_sum_basisElement g, sum_mul]
+  apply sum_congr (by rfl)
   intro G _
-  have : (1 : GraphVector) 1 = 1 := by
-    show (basisElementFromGraph 1) 1 = 1
-    simp [basisElementFromGraph]
-  rw [this, mul_one, ← smul_sub]
-  apply zeroSet_closed_under_smul
-  exact graph_mul_one G
+  rw [smul_mul_assoc]; congr
+  show ∑ _ ∈ (basisElementFromGraph G).support, _ = _
+  simp [graph_mul_one]
+
+-- lemma graphVector_mul_one
+--     (g : GraphVector) : graph_algebra_eqv (g * 1) g
+--   := by
+--   show ∑ G in g.support, ∑ H in (1 : GraphVector).support, _ - g ∈ ZeroSet
+--   have h_supp_one : Finsupp.support (1 : GraphVector) = {1} := by
+--     show Finsupp.support (basisElementFromGraph 1) = {1}
+--     dsimp [basisElementFromGraph]
+--     rw [Finsupp.support_single_ne_zero _ (by simp)]
+--   rw [sum_comm, h_supp_one, sum_singleton]
+--   have hg : g = ∑ G in g.support, g G • basisElementFromGraph G := by
+--     simp [basisElementFromGraph]
+--     nth_rw 1 [← Finsupp.sum_single g, Finsupp.sum]
+--   nth_rw 3 [hg]
+--   rw [← sum_sub_distrib]
+--   apply zeroSet_closed_under_sum
+--   intro G _
+--   have : (1 : GraphVector) 1 = 1 := by
+--     show (basisElementFromGraph 1) 1 = 1
+--     simp [basisElementFromGraph]
+--   rw [this, mul_one, ← smul_sub]
+--   apply zeroSet_closed_under_smul
+--   exact graph_mul_one G
+
+noncomputable instance : MulOneClass GraphVector where
+  one_mul g := by
+    rw [graphVector_mul_comm, graphVector_mul_one]
+  mul_one := graphVector_mul_one
 
 lemma graphVector_smul_mul_smul_comm
     (g h : GraphVector) (a b : ℝ)
@@ -836,8 +865,8 @@ lemma graphAlgebra_mul_one
   rcases Quotient.exists_rep g with ⟨grep, hgrep⟩
   rw [← hgrep]
   apply Quotient.sound
-  simp
-  apply graphVector_mul_one
+  simp [graphVector_mul_one]
+  rfl
 
 lemma graphAlgebra_mul_assoc
     (f g h : GraphAlgebra) : f * g * h = f * (g * h)
@@ -972,8 +1001,7 @@ instance : NeZero (1 : GraphAlgebra) where
       rw [hG2]
       dsimp [zeroElement]
       rw [sub_eq_add_neg, φ_add]
-      have temp :  φ (basisElementFromGraph iG) + φ (-densityGraphSum iG (ℓ i)) =  φ (basisElementFromGraph iG) - φ (densityGraphSum iG (ℓ i)) := by sorry
-      rw [temp, sub_eq_zero]
+      rw [← @neg_one_smul ℝ GraphVector _, φ_smul (-1 : ℝ) _, neg_one_mul, ← sub_eq_add_neg, sub_eq_zero]
       simp [densityGraphSum]
       simp [φ]
       rw [density_chain_rule''' _ _ hℓ' hℓ]
@@ -981,8 +1009,6 @@ instance : NeZero (1 : GraphAlgebra) where
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (basisElementFromGraph 1).support, _ = 1
       simp [sum_singleton, quotSubgraphDensity_one]
-      show (basisElementFromGraph 1) 1 = 1
-      simp
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       rw [φ_sum]
       apply sum_eq_zero
