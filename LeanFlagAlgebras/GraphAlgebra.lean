@@ -42,6 +42,14 @@ def IsoSimpleGraph : Type
 instance : One IsoSimpleGraph where
   one := ⟨0, (default : IsoSimpleGraphWithSize 0)⟩
 
+lemma isoSimpleGraph_one_fst
+    : (1 : IsoSimpleGraph).1 = 0
+  := rfl
+
+lemma isoSimpleGraph_one_snd
+    : (1 : IsoSimpleGraph).2 = ⟦emptyGraph (Fin 0)⟧
+  := rfl
+
 abbrev GraphVector : Type
   := IsoSimpleGraph →₀ ℝ
 
@@ -409,6 +417,18 @@ noncomputable instance : HasDistribNeg GraphVector where
   mul_neg g h := by
     rw [mul_comm g (-h), mul_comm g h, graphVector_neg_mul h g]
 
+lemma graphVector_add_support
+    (g h : GraphVector) {α : Type} [AddCommMonoid α] (ψ : GraphVector → IsoSimpleGraph → α)
+    : ∑ K ∈ (g + h).support, (ψ g K + ψ h K) =
+      ∑ G ∈ g.support, ψ g G + ∑ H ∈ h.support, ψ h H
+  := by
+  sorry
+
+lemma graphVector_left_distrib'
+    (f g h : GraphVector) : f * (g + h) = f * g + f * h
+  := by
+  sorry
+
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
@@ -613,6 +633,23 @@ lemma graphVector_mul_zeroSet
   obtain ⟨H, ℓ, hℓ, hvi⟩ := zeroSpanSet_exists_zeroElement (hv i)
   simp [mul_comm, hvi]
   exact graph_mul_zeroElement G H hℓ
+
+lemma graph_mul_one'
+    (G : IsoSimpleGraph) : graphMul G 1 = basisElementFromGraph G
+  := by
+  rw [graphMul_comm]
+  simp [graphMul, graphMulWithSize, isoSimpleGraph_one_fst]
+  rw [zero_add]
+  have h_univ_split : univ = insert G.2 (univ.erase G.2) := Eq.symm (insert_erase (by simp))
+  rw [h_univ_split, sum_insert (not_mem_erase _ _)]
+  have : ((1 : ℚ) : ℝ) = (1 : ℝ) := by simp
+  rw [quotSubgraphPairDensity_one, quotSubgraphDensity_self, this, one_smul]
+  rw [← add_zero (basisElementFromGraph G)]; congr
+  apply sum_eq_zero
+  intro G' hG'
+  rw [quotSubgraphPairDensity_one]
+  have hG'_ne_G : G.2 ≠ G' := by aesop
+  simp [quotSubgraphDensity_other hG'_ne_G]
 
 lemma graph_mul_one
     (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)

@@ -720,6 +720,21 @@ lemma quotSubgraphDensity_empty
   rw [← hGrep]
   apply subgraphDensity_empty
 
+lemma quotSubgraphDensity_self
+    (G : QuotSimpleGraph (Fin n)) : quotSubgraphDensity G G = 1
+  := by
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hGrep]
+  sorry
+
+lemma quotSubgraphDensity_other
+    {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
+  := by
+  rcases Quotient.exists_rep G₀ with ⟨G₀rep, hG₀rep⟩
+  rcases Quotient.exists_rep G₁ with ⟨G₁rep, hG₁rep⟩
+  rw [← hG₀rep, ← hG₁rep]
+  sorry
+
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ quotSubgraphDensity H G
