@@ -720,9 +720,10 @@ lemma quotSubgraphDensity_empty
   rw [← hGrep]
   apply subgraphDensity_empty
 
+
 lemma iso_subset_of_finset_is_full
-   {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
- := by sorry
+    {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
+  := by sorry
 
 lemma subgraph_iso_G_iff_eq_top
     {G : SimpleGraph V} {G' : Subgraph G}
