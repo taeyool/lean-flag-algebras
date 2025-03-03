@@ -720,12 +720,47 @@ lemma quotSubgraphDensity_empty
   rw [← hGrep]
   apply subgraphDensity_empty
 
+lemma subgraph_iso_G_iff_eq_top
+    {G : SimpleGraph V} {G' : Subgraph G}
+    : G'.IsInduced ∧ Nonempty (G'.coe ≃g G) ↔ G' = ⊤
+  := by
+  constructor
+  . intro ⟨h₀,h₁⟩
+    ext u v
+    . simp; sorry
+    . simp; sorry
+  · intro h
+    constructor
+    · subst h; intro; simp
+    · rw [h]; exact Nonempty.intro SimpleGraph.Subgraph.topEquiv
+
+lemma subgraphCount_self
+    (G : SimpleGraph V) : subgraphCount G G = 1
+  := by
+  simp [subgraphCount]
+  let S₀ := { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g G) }
+  let S₁ : Finset (Subgraph G):= { ⊤ }
+  have h_S₀_S₁ : S₀ = S₁ := by
+    ext G'
+    simp_all [S₀, S₁]
+    exact subgraph_iso_G_iff_eq_top
+  show Fintype.card S₀ = 1
+  calc
+    Fintype.card S₀ = Fintype.card S₁ := by simp_all [h_S₀_S₁]
+    _ = 1 := by simp
+
+lemma subgraphDensity_self
+    (G : SimpleGraph V) : subgraphDensity G G = 1
+  := by
+  simp [subgraphDensity]
+  exact subgraphCount_self G
+
 lemma quotSubgraphDensity_self
     (G : QuotSimpleGraph (Fin n)) : quotSubgraphDensity G G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hGrep]
-  sorry
+  apply subgraphDensity_self
 
 lemma quotSubgraphDensity_other
     {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
@@ -1102,29 +1137,6 @@ def subgraphByComposition
   }
   exact ⟨G₁', iso'⟩
 
-  def subgraphByJoin
-    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G)
-    : Subgraph G
-  where
-    verts := G₀.verts ∪ G₁.verts
-    Adj := fun u v => G₀.Adj u v ∨ G₁.Adj u v
-    adj_sub := by
-      intro u v h_uv
-      cases h_uv with
-      | inl h => exact G₀.adj_sub h
-      | inr h => exact G₁.adj_sub h
-    edge_vert := by
-      intro u v h_uv
-      simp [Set.mem_union]
-      cases h_uv with
-      | inl h => exact Or.inl (G₀.edge_vert h)
-      | inr h => exact Or.inr (G₁.edge_vert h)
-    symm := by
-      intro u v h_uv
-      cases h_uv with
-      | inl h => exact Or.inl (G₀.symm h)
-      | inr h => exact Or.inr (G₁.symm h)
-
 def subgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀)
@@ -1134,16 +1146,38 @@ def subgraphFromPartialIso
   obtain ⟨H₁, h_iso_post⟩ := subgraphByComposition H₀ H₁_pre
   exact ⟨H₁, Iso.comp h_iso_post h_iso_pre⟩
 
+#check adj_symm
+
+def joinGraph
+    (G₀ : SimpleGraph V) (G₁ : SimpleGraph W)
+    : SimpleGraph (Sum V W)
+  where
+    Adj := fun u v =>
+      match u, v with
+      | Sum.inl u, Sum.inl v => G₀.Adj u v
+      | Sum.inr u, Sum.inr v => G₁.Adj u v
+      | _, _ => False
+    symm := by
+      intro u v h_uv
+      cases u <;> cases v <;> simp at *
+      . exact G₀.symm h_uv
+      . exact G₁.symm h_uv
+    loopless := by
+      intro u
+      cases u <;> simp
+
+
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
     : subgraphPairSet H₁ H₂ G
       ≃
-      Σ F : QuotSimpleGraph (Fin ℓ'), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
+      Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   where
     toFun := by
       intro ⟨⟨G₁,G₂⟩, h⟩
-      let G' : Subgraph G := subgraphByJoin G₁ G₂
+      let G' : Subgraph G := sorry
       dsimp [subgraphPairSet] at h
       simp at h
       obtain ⟨h_G₁_ind, h_G₁_iso, h_G₂_ind, h_G₂_iso, h_G₁_G₂_disj⟩ := h
