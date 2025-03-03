@@ -720,11 +720,18 @@ lemma quotSubgraphDensity_empty
   rw [← hGrep]
   apply subgraphDensity_empty
 
-
+omit [DecidableEq V] in
 lemma iso_subset_of_finset_is_full
     {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
-  := by sorry
+  := by
+  by_contra h_contra
+  have h_card : Fintype.card S < Fintype.card V :=
+    Fintype.card_subtype_lt h_contra
+  have h_card' : Fintype.card V = Fintype.card S := by
+    rw [Fintype.card_congr f_iso]
+  simp_all
 
+omit [DecidableEq V] in
 lemma subgraph_iso_G_iff_eq_top
     {G : SimpleGraph V} {G' : Subgraph G}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃g G) ↔ G' = ⊤
@@ -745,6 +752,7 @@ lemma subgraph_iso_G_iff_eq_top
     · subst h; intro; simp
     · rw [h]; exact Nonempty.intro SimpleGraph.Subgraph.topEquiv
 
+omit [DecidableEq V] in
 lemma subgraphCount_self
     (G : SimpleGraph V) : subgraphCount G G = 1
   := by
@@ -760,6 +768,7 @@ lemma subgraphCount_self
     Fintype.card S₀ = Fintype.card S₁ := by simp_all [h_S₀_S₁]
     _ = 1 := by simp
 
+omit [DecidableEq V] in
 lemma subgraphDensity_self
     (G : SimpleGraph V) : subgraphDensity G G = 1
   := by
@@ -1157,7 +1166,6 @@ def subgraphFromPartialIso
   obtain ⟨H₁, h_iso_post⟩ := subgraphByComposition H₀ H₁_pre
   exact ⟨H₁, Iso.comp h_iso_post h_iso_pre⟩
 
-#check adj_symm
 
 def joinGraph
     (G₀ : SimpleGraph V) (G₁ : SimpleGraph W)
