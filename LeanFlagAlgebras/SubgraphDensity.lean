@@ -720,15 +720,25 @@ lemma quotSubgraphDensity_empty
   rw [← hGrep]
   apply subgraphDensity_empty
 
+lemma iso_subset_of_finset_is_full
+   {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
+ := by sorry
+
 lemma subgraph_iso_G_iff_eq_top
     {G : SimpleGraph V} {G' : Subgraph G}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃g G) ↔ G' = ⊤
   := by
   constructor
-  . intro ⟨h₀,h₁⟩
+  . intro ⟨h,f_iso⟩
+    let f_iso_vertex : V ≃ ↑G'.verts := f_iso.some.toEquiv.symm
     ext u v
-    . simp; sorry
-    . simp; sorry
+    . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
+      simp_all
+    . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
+      have h_v := iso_subset_of_finset_is_full f_iso_vertex v
+      constructor
+      . apply G'.adj_sub
+      . exact h h_u h_v
   · intro h
     constructor
     · subst h; intro; simp
