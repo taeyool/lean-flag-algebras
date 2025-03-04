@@ -782,6 +782,8 @@ lemma quotSubgraphDensity_self
   rw [← hGrep]
   apply subgraphDensity_self
 
+/-- Hognseok: The following lemma is wrong. Even if G₀ is different from G₁, it might be
+    isomorphic to G₁, in which case the subgraph density of G₀ in G₁ should be one. -/
 lemma quotSubgraphDensity_other
     {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
   := by
