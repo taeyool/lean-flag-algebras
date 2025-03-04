@@ -782,15 +782,24 @@ lemma quotSubgraphDensity_self
   rw [← hGrep]
   apply subgraphDensity_self
 
-/-- Hognseok: The following lemma is wrong. Even if G₀ is different from G₁, it might be
-    isomorphic to G₁, in which case the subgraph density of G₀ in G₁ should be one. -/
+lemma subgraphDensity_other
+    {G₀ G₁ : SimpleGraph V} (h_neq : ¬ Nonempty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
+  := by
+  sorry
+
 lemma quotSubgraphDensity_other
     {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
   := by
   rcases Quotient.exists_rep G₀ with ⟨G₀rep, hG₀rep⟩
   rcases Quotient.exists_rep G₁ with ⟨G₁rep, hG₁rep⟩
   rw [← hG₀rep, ← hG₁rep]
-  sorry
+  have h_neq' : ¬ Nonempty (G₀rep ≃g G₁rep) := by
+    intro h_iso
+    have h_eq : G₀ = G₁ := by
+      rw [←hG₀rep, ←hG₁rep]
+      exact Quotient.sound h_iso
+    exact h_neq h_eq
+  apply subgraphDensity_other h_neq'
 
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
