@@ -782,10 +782,27 @@ lemma quotSubgraphDensity_self
   rw [← hGrep]
   apply subgraphDensity_self
 
-lemma subgraphDensity_other
-    {G₀ G₁ : SimpleGraph V} (h_neq : ¬ Nonempty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
+lemma subgraphCount_other
+    {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphCount G₀ G₁ = 0
   := by
-  sorry
+  simp [subgraphCount]
+  rw [←not_nonempty_iff] at h_neq
+  let S₀ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g G₀) }
+  have h_S₀ : S₀ ⊆ ∅ := by
+    intro G' ⟨h_ind_G', h_iso_G'⟩
+    have f_iso_G₀_G' : G₀ ≃g G'.coe := h_iso_G'.some.symm
+    have f_iso_G'_G₁ : G'.coe ≃g G₁ := sorry
+    have f_iso_G₀_G₁ : G₀ ≃g G₁ := Iso.comp f_iso_G'_G₁ f_iso_G₀_G'
+    exact h_neq ⟨f_iso_G₀_G₁⟩
+  show Fintype.card S₀ = 0
+  simp_all only [Set.subset_empty_iff, Fintype.card_ofIsEmpty]
+
+lemma subgraphDensity_other
+    {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
+  := by
+  dsimp [subgraphDensity]
+  have := subgraphCount_other h_neq
+  simp_all only [Nat.cast_zero, Nat.choose_self, Nat.cast_one, div_one]
 
 lemma quotSubgraphDensity_other
     {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
@@ -793,7 +810,8 @@ lemma quotSubgraphDensity_other
   rcases Quotient.exists_rep G₀ with ⟨G₀rep, hG₀rep⟩
   rcases Quotient.exists_rep G₁ with ⟨G₁rep, hG₁rep⟩
   rw [← hG₀rep, ← hG₁rep]
-  have h_neq' : ¬ Nonempty (G₀rep ≃g G₁rep) := by
+  have h_neq' : IsEmpty (G₀rep ≃g G₁rep) := by
+    rw [←not_nonempty_iff]
     intro h_iso
     have h_eq : G₀ = G₁ := by
       rw [←hG₀rep, ←hG₁rep]
