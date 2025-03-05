@@ -732,21 +732,28 @@ lemma iso_subset_of_finset_is_full
   simp_all
 
 omit [DecidableEq V] in
-lemma subgraph_iso_G_iff_eq_top
+lemma induced_full_subgraph_eq_top
+    {G₀ G₁ : SimpleGraph V} {G' : Subgraph G₀}
+    : G'.IsInduced ∧ Nonempty (G'.coe ≃g G₁) → G' = ⊤
+  := by
+  intro ⟨h,f_iso⟩
+  let f_iso_vertex : V ≃ ↑G'.verts := f_iso.some.toEquiv.symm
+  ext u v
+  . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
+    simp_all
+  . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
+    have h_v := iso_subset_of_finset_is_full f_iso_vertex v
+    constructor
+    . apply G'.adj_sub
+    . exact h h_u h_v
+
+omit [DecidableEq V] in
+lemma induced_subgraph_iso_G_iff_eq_top
     {G : SimpleGraph V} {G' : Subgraph G}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃g G) ↔ G' = ⊤
   := by
   constructor
-  . intro ⟨h,f_iso⟩
-    let f_iso_vertex : V ≃ ↑G'.verts := f_iso.some.toEquiv.symm
-    ext u v
-    . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
-      simp_all
-    . have h_u := iso_subset_of_finset_is_full f_iso_vertex u
-      have h_v := iso_subset_of_finset_is_full f_iso_vertex v
-      constructor
-      . apply G'.adj_sub
-      . exact h h_u h_v
+  . exact induced_full_subgraph_eq_top
   · intro h
     constructor
     · subst h; intro; simp
@@ -762,7 +769,7 @@ lemma subgraphCount_self
   have h_S₀_S₁ : S₀ = S₁ := by
     ext G'
     simp_all [S₀, S₁]
-    exact subgraph_iso_G_iff_eq_top
+    exact induced_subgraph_iso_G_iff_eq_top
   show Fintype.card S₀ = 1
   calc
     Fintype.card S₀ = Fintype.card S₁ := by simp_all [h_S₀_S₁]
@@ -782,6 +789,7 @@ lemma quotSubgraphDensity_self
   rw [← hGrep]
   apply subgraphDensity_self
 
+omit [DecidableEq V] in
 lemma subgraphCount_other
     {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphCount G₀ G₁ = 0
   := by
@@ -791,12 +799,17 @@ lemma subgraphCount_other
   have h_S₀ : S₀ ⊆ ∅ := by
     intro G' ⟨h_ind_G', h_iso_G'⟩
     have f_iso_G₀_G' : G₀ ≃g G'.coe := h_iso_G'.some.symm
-    have f_iso_G'_G₁ : G'.coe ≃g G₁ := sorry
+    have f_iso_G'_G₁ : G'.coe ≃g G₁ := by
+      have : G' = ⊤ := induced_full_subgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
+      let g : (⊤ : Subgraph G₁).coe ≃g G₁ := SimpleGraph.Subgraph.topEquiv
+      rw [←this] at g
+      exact g
     have f_iso_G₀_G₁ : G₀ ≃g G₁ := Iso.comp f_iso_G'_G₁ f_iso_G₀_G'
     exact h_neq ⟨f_iso_G₀_G₁⟩
   show Fintype.card S₀ = 0
   simp_all only [Set.subset_empty_iff, Fintype.card_ofIsEmpty]
 
+omit [DecidableEq V] in
 lemma subgraphDensity_other
     {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
   := by
