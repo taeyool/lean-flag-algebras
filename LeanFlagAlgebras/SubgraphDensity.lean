@@ -1227,36 +1227,20 @@ def joinGraph
       intro u
       cases u <;> simp
 
-
-
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
     : subgraphPairSet H₁ H₂ G
       ≃
       Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
-  where
-    toFun := by
-      intro ⟨⟨G₁,G₂⟩, h⟩
-      let G' : Subgraph G := sorry
-      dsimp [subgraphPairSet] at h
-      simp at h
-      obtain ⟨h_G₁_ind, h_G₁_iso, h_G₂_ind, h_G₂_iso, h_G₁_G₂_disj⟩ := h
-      sorry
-    invFun :=
-      fun ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨G', h_G'⟩⟩
-        => by
-        simp [subgraphPairSet, subgraphSet] at h_F₁_F₂ h_G'
-        obtain ⟨h_F₁_ind, h_F₁_iso, h_F₂_ind, h_F₂_iso, h_F₁_F₂_disj⟩ := h_F₁_F₂
-        obtain ⟨h_G'_ind, h_G'_iso⟩ := h_G'
-        let f_F_out_G : G'.coe ≃g F.out := h_G'_iso.some
-        let G₁ : Subgraph G := sorry
-        let G₂ : Subgraph G := sorry
-        use ⟨G₁,G₂⟩
-        simp [subgraphPairSet]
-        sorry
-    left_inv := sorry
-    right_inv := sorry
+  := by
+  let ℓ₁₂ := ℓ₁ + ℓ₂
+  let S₀ := subgraphPairSet H₁ H₂ G
+  let S₁ := { (G₁, G₂, G₁₂) : Subgraph G × Subgraph G × Subgraph G | (G₁, G₂) ∈ S₀ ∧ G₁₂ = G₁ ⊔ G₂}
+  have f_S₀_S₁ : S₀ ≃ S₁ := sorry
+  let S₂ := Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
+  have f_S₁_S₂ : S₁ ≃ S₂ := sorry
+  exact f_S₀_S₁.trans f_S₁_S₂
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
