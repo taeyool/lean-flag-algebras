@@ -1234,14 +1234,16 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       ≃
       Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   := by
-  let ℓ₁₂ := ℓ₁ + ℓ₂
   let S₀ := subgraphPairSet H₁ H₂ G
   let S₁ := { (G₁, G₂) : Subgraph G × Subgraph G |
                 G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
                 G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
                 G₁.verts ∩ G₂.verts = ∅ }
-  let S₂ := { (G₁, G₂, G₁₂) : Subgraph G × Subgraph G × Subgraph G | (G₁, G₂) ∈ S₁ ∧ G₁₂ = G₁ ⊔ G₂}
-  let S₃ := Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
+  let S₂ := { (G₁, G₂, G₁₂) : Subgraph G × Subgraph G × Subgraph G |
+                (G₁, G₂) ∈ S₁ ∧ G₁₂ = G₁ ⊔ G₂}
+  let S₃ := { ⟨F, G₁, G₂, G₁₂⟩ : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)) × Subgraph G × Subgraph G × Subgraph G |
+                ⟨G₁, G₂⟩ ∈ S₁ ∧ G₁₂ = G₁ ⊔ G₂ ∧ Nonempty (F.out ≃g G₁₂.coe) }
+  let S₄ := Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   have f_S₀_S₁ : S₀ ≃ S₁ := by
     have : S₀ = S₁ := by
       ext ⟨G₁, G₂⟩
@@ -1249,8 +1251,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       simp
     exact Equiv.subtypeEquivProp this
   have f_S₁_S₂ : S₁ ≃ S₂ := {
-    toFun := fun ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩ => by exact ⟨⟨G₁, G₂, G₁ ⊔ G₂⟩, h_G₁_G₂, rfl⟩
-    invFun := fun ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩ => ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩
+    toFun :=
+      fun ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩ =>
+        ⟨⟨G₁, G₂, G₁ ⊔ G₂⟩, h_G₁_G₂, rfl⟩
+    invFun :=
+      fun ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩ =>
+        ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩
     left_inv := by
       intro ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩
       simp
@@ -1258,8 +1264,18 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       intro ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
       simp [h_G₁₂]
   }
-  have f_S₂_S₃ : S₂ ≃ S₃ := sorry
-  exact (f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃
+  have f_S₂_S₃ : S₂ ≃ S₃ := {
+    toFun :=
+      fun ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩ =>
+        ⟨⟨sorry, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, sorry⟩
+    invFun :=
+      fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
+        ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
+    left_inv := sorry
+    right_inv := sorry
+  }
+  have f_S₃_S₄ : S₃ ≃ S₄ := sorry
+  exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
