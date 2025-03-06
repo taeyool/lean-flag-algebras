@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.Maps
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 
 variable {T : Type} [Fintype T]
 
@@ -13,6 +14,28 @@ instance LabeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [Decidable
     : Fintype (LabeledGraph σ V) where
   elems := sorry
   complete := sorry
+
+@[ext]
+structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
+  subgraph : G.graph.Subgraph
+  type_embed : σ ↪g subgraph.coe
+  embed_eq : ∀ (t : T), type_embed t = G.type_embed t
+
+initialize_simps_projections LabeledSubgraph (subgraph → coe)
+
+namespace LabeledSubgraph
+
+@[simps]
+def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G)
+    : LabeledGraph σ G'.subgraph.verts where
+  graph := sorry
+  type_embed := sorry
+
+def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G) : Prop
+  :=
+  sorry
+
+end LabeledSubgraph
 
 structure LabeledGraphIso {σ : FlagType T} {V W : Type}
   (G : LabeledGraph σ V) (G' : LabeledGraph σ W) where
