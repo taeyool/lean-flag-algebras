@@ -1227,6 +1227,11 @@ def joinGraph
       intro u
       cases u <;> simp
 
+def getCanonicalQuotSimpleGraph
+      (G : SimpleGraph V) (f_iso : V ≃ Fin ℓ)
+      : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
+  := sorry
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
@@ -1267,15 +1272,46 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   have f_S₂_S₃ : S₂ ≃ S₃ := {
     toFun :=
       fun ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩ =>
-        ⟨⟨sorry, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, sorry⟩
+        let f : ↑G₁₂.verts ≃ Fin (ℓ₁ + ℓ₂) :=
+          let ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
+          have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
+            calc
+              Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_G₁_H₁.some
+              _ = ℓ₁ := by apply Fintype.card_fin
+          have h_G₂_verts_card : Fintype.card G₂.verts = ℓ₂ :=
+            calc
+              Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
+              _ = ℓ₂ := by apply Fintype.card_fin
+          have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+            have h₀ : G₁₂.verts = G₁.verts ∪ G₂.verts := by
+              subst h_G₁₂
+              apply Subgraph.verts_sup
+            calc
+              Fintype.card G₁₂.verts = Fintype.card ↑(G₁.verts ∪ G₂.verts) :=
+                    Fintype.card_congr' (congrArg Set.Elem h₀)
+              _ = Fintype.card (G₁.verts ⊕ G₂.verts) := by
+                    apply Fintype.card_congr
+                    apply Equiv.Set.union
+                    exact Set.subset_empty_iff.mpr h_G₁_G₂_disj
+              _ = ℓ₁ + ℓ₂ := by
+                    subst h_G₁_verts_card h_G₂_verts_card
+                    apply Fintype.card_sum
+          Fintype.equivFinOfCardEq h_G₁₂_verts_card
+        let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe f
+        ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, Nonempty.intro h_F⟩
     invFun :=
       fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
         ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
-    left_inv := sorry
-    right_inv := sorry
+    left_inv := by
+      intro ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
+      simp
+    right_inv := by
+      intro ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩
+      sorry
   }
   have f_S₃_S₄ : S₃ ≃ S₄ := sorry
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
+
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
