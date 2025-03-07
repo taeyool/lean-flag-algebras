@@ -1227,10 +1227,29 @@ def joinGraph
       intro u
       cases u <;> simp
 
-def getCanonicalQuotSimpleGraph
+noncomputable def getCanonicalQuotSimpleGraph
       (G : SimpleGraph V) (f_iso : V ≃ Fin ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
-  := sorry
+  :=
+  let G' : SimpleGraph (Fin ℓ) := {
+    Adj := fun u' v' => G.Adj (f_iso.symm u') (f_iso.symm v')
+    symm := fun u' v' h_u'_v' => G.symm h_u'_v'
+    loopless := fun u' => G.loopless (f_iso.symm u')
+  }
+  let φ : G' ≃g G := {
+    toFun := f_iso.symm,
+    invFun := f_iso,
+    left_inv := by intro u'; simp
+    right_inv := by intro u; simp
+    map_rel_iff' := by intro u' v'; dsimp [G']; rfl
+  }
+  let φ' : ⟦G'⟧.out ≃g G' := by
+    have h : graph_eqv ⟦G'⟧.out G' := by
+      have := @Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G'
+      exact this.mp rfl
+    rw [graph_eqv] at h
+    exact h.some
+  ⟨⟦G'⟧, φ'.trans φ⟩
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -1271,9 +1290,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   }
   have f_S₂_S₃ : S₂ ≃ S₃ := {
     toFun :=
-      fun ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩ =>
+      fun ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩ =>
         let f : ↑G₁₂.verts ≃ Fin (ℓ₁ + ℓ₂) :=
-          let ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
           have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
             calc
               Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_G₁_H₁.some
@@ -1298,15 +1316,15 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
                     apply Fintype.card_sum
           Fintype.equivFinOfCardEq h_G₁₂_verts_card
         let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe f
-        ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, Nonempty.intro h_F⟩
+        ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, Nonempty.intro h_F⟩
     invFun :=
       fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
         ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
     left_inv := by
-      intro ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
+      intro ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩
       simp
     right_inv := by
-      intro ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩
+      intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
       sorry
   }
   have f_S₃_S₄ : S₃ ≃ S₄ := sorry
