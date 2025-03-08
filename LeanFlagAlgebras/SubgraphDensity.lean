@@ -1228,9 +1228,10 @@ def joinGraph
       cases u <;> simp
 
 noncomputable def getCanonicalQuotSimpleGraph
-      (G : SimpleGraph V) (f_iso : V ≃ Fin ℓ)
+      (G : SimpleGraph V) (h_V_size : Fintype.card V = ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
   :=
+  let f_iso : V ≃ Fin ℓ := Fintype.equivFinOfCardEq h_V_size
   let G' : SimpleGraph (Fin ℓ) := {
     Adj := fun u' v' => G.Adj (f_iso.symm u') (f_iso.symm v')
     symm := fun u' v' h_u'_v' => G.symm h_u'_v'
@@ -1250,6 +1251,21 @@ noncomputable def getCanonicalQuotSimpleGraph
     rw [graph_eqv] at h
     exact h.some
   ⟨⟦G'⟧, φ'.trans φ⟩
+
+
+lemma getCanonicalQuotSimpleGraph_self
+    (F : QuotSimpleGraph (Fin ℓ))
+    : (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin ℓ)).fst = F
+  := by
+  sorry
+
+lemma getCanonicalQuotSimpleGraph_iso
+    (G₀ : SimpleGraph V) (h_size₀ : Fintype.card V = ℓ)
+    (G₁ : SimpleGraph W) (h_size₁ : Fintype.card W = ℓ)
+    (h_iso : G₀ ≃g G₁)
+    : (getCanonicalQuotSimpleGraph G₀ h_size₀).fst = (getCanonicalQuotSimpleGraph G₁ h_size₁).fst
+  := by
+  sorry
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -1288,34 +1304,44 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       intro ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
       simp [h_G₁₂]
   }
-  have f_S₂_S₃ : S₂ ≃ S₃ := {
+  have f_S₂_S₃ : S₂ ≃ S₃ :=
+    let vertex_card_of_disj_union_eq_sum_of_vertex_cards :
+          ∀ (G₁ G₂ G₁₂ : Subgraph G),
+              Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
+              Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
+              G₁.verts ∩ G₂.verts = ∅ ∧
+              G₁₂ = G₁ ⊔ G₂
+              →
+              Fintype.card G₁₂.verts = ℓ₁ + ℓ₂
+      := by
+      intro G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
+      have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
+        calc
+          Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_G₁_H₁.some
+          _ = ℓ₁ := by apply Fintype.card_fin
+      have h_G₂_verts_card : Fintype.card G₂.verts = ℓ₂ :=
+        calc
+          Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
+          _ = ℓ₂ := by apply Fintype.card_fin
+      have h₀ : G₁₂.verts = G₁.verts ∪ G₂.verts := by
+        subst h_G₁₂
+        apply Subgraph.verts_sup
+      calc
+        Fintype.card G₁₂.verts = Fintype.card ↑(G₁.verts ∪ G₂.verts) :=
+              Fintype.card_congr' (congrArg Set.Elem h₀)
+        _ = Fintype.card (G₁.verts ⊕ G₂.verts) := by
+              apply Fintype.card_congr
+              apply Equiv.Set.union
+              exact Set.subset_empty_iff.mpr h_G₁_G₂_disj
+        _ = ℓ₁ + ℓ₂ := by
+              subst h_G₁_verts_card h_G₂_verts_card
+              apply Fintype.card_sum
+    {
     toFun :=
       fun ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩ =>
-        let f : ↑G₁₂.verts ≃ Fin (ℓ₁ + ℓ₂) :=
-          have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
-            calc
-              Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_G₁_H₁.some
-              _ = ℓ₁ := by apply Fintype.card_fin
-          have h_G₂_verts_card : Fintype.card G₂.verts = ℓ₂ :=
-            calc
-              Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
-              _ = ℓ₂ := by apply Fintype.card_fin
-          have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
-            have h₀ : G₁₂.verts = G₁.verts ∪ G₂.verts := by
-              subst h_G₁₂
-              apply Subgraph.verts_sup
-            calc
-              Fintype.card G₁₂.verts = Fintype.card ↑(G₁.verts ∪ G₂.verts) :=
-                    Fintype.card_congr' (congrArg Set.Elem h₀)
-              _ = Fintype.card (G₁.verts ⊕ G₂.verts) := by
-                    apply Fintype.card_congr
-                    apply Equiv.Set.union
-                    exact Set.subset_empty_iff.mpr h_G₁_G₂_disj
-              _ = ℓ₁ + ℓ₂ := by
-                    subst h_G₁_verts_card h_G₂_verts_card
-                    apply Fintype.card_sum
-          Fintype.equivFinOfCardEq h_G₁₂_verts_card
-        let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe f
+        have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+          vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
+        let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card
         ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, Nonempty.intro h_F⟩
     invFun :=
       fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
@@ -1325,7 +1351,15 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       simp
     right_inv := by
       intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
-      sorry
+      simp
+      have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+        vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
+      calc
+        (getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card).fst
+        _ = (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin (ℓ₁ + ℓ₂))).fst :=
+              getCanonicalQuotSimpleGraph_iso G₁₂.coe h_G₁₂_verts_card F.out (Fintype.card_fin (ℓ₁ + ℓ₂)) h_F.some.symm
+        _ = F :=
+              getCanonicalQuotSimpleGraph_self F
   }
   have f_S₃_S₄ : S₃ ≃ S₄ := sorry
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
