@@ -1257,7 +1257,12 @@ lemma getCanonicalQuotSimpleGraph_self
     (F : QuotSimpleGraph (Fin ℓ))
     : (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin ℓ)).fst = F
   := by
-  sorry
+  obtain ⟨F', h_iso⟩ := getCanonicalQuotSimpleGraph F.out (Fintype.card_fin ℓ)
+  show F' = F
+  have : graph_eqv F'.out F.out := sorry
+  have : (⟦F'.out⟧ : QuotSimpleGraph (Fin ℓ)) = (⟦F.out⟧ : QuotSimpleGraph (Fin ℓ)) := by
+    exact Quotient.sound this
+  simp_all only [Quotient.out_eq]
 
 lemma getCanonicalQuotSimpleGraph_iso
     (G₀ : SimpleGraph V) (h_size₀ : Fintype.card V = ℓ)
