@@ -1259,18 +1259,25 @@ lemma getCanonicalQuotSimpleGraph_self
   := by
   obtain ⟨F', h_iso⟩ := getCanonicalQuotSimpleGraph F.out (Fintype.card_fin ℓ)
   show F' = F
-  have : graph_eqv F'.out F.out := sorry
-  have : (⟦F'.out⟧ : QuotSimpleGraph (Fin ℓ)) = (⟦F.out⟧ : QuotSimpleGraph (Fin ℓ)) := by
-    exact Quotient.sound this
-  simp_all only [Quotient.out_eq]
+  calc F'
+    _  = ⟦F'.out⟧ := (Quotient.out_eq F').symm
+    _  = ⟦F.out⟧  := by rw [Quotient.sound]; exact Nonempty.intro h_iso
+    _  = F := Quotient.out_eq F
 
+omit [DecidableEq V] [DecidableEq W] in
 lemma getCanonicalQuotSimpleGraph_iso
     (G₀ : SimpleGraph V) (h_size₀ : Fintype.card V = ℓ)
     (G₁ : SimpleGraph W) (h_size₁ : Fintype.card W = ℓ)
     (h_iso : G₀ ≃g G₁)
     : (getCanonicalQuotSimpleGraph G₀ h_size₀).fst = (getCanonicalQuotSimpleGraph G₁ h_size₁).fst
   := by
-  sorry
+  obtain ⟨H₀, h_iso₀⟩ := getCanonicalQuotSimpleGraph G₀ h_size₀
+  obtain ⟨H₁, h_iso₁⟩ := getCanonicalQuotSimpleGraph G₁ h_size₁
+  have h_iso_H₀_H₁ : H₀.out ≃g H₁.out := (h_iso₀.trans h_iso).trans h_iso₁.symm
+  calc H₀
+    _  = ⟦H₀.out⟧ := (Quotient.out_eq H₀).symm
+    _  = ⟦H₁.out⟧ := by rw [Quotient.sound]; exact Nonempty.intro h_iso_H₀_H₁
+    _  = H₁ := Quotient.out_eq H₁
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -1342,29 +1349,29 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
               subst h_G₁_verts_card h_G₂_verts_card
               apply Fintype.card_sum
     {
-    toFun :=
-      fun ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩ =>
+      toFun :=
+        fun ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩ =>
+          have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+            vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
+          let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card
+          ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, Nonempty.intro h_F⟩
+      invFun :=
+        fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
+          ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
+      left_inv := by
+        intro ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩
+        simp
+      right_inv := by
+        intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
+        simp
         have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
           vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
-        let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card
-        ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, Nonempty.intro h_F⟩
-    invFun :=
-      fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
-        ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
-    left_inv := by
-      intro ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩
-      simp
-    right_inv := by
-      intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
-      simp
-      have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
-        vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
-      calc
-        (getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card).fst
-        _ = (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin (ℓ₁ + ℓ₂))).fst :=
-              getCanonicalQuotSimpleGraph_iso G₁₂.coe h_G₁₂_verts_card F.out (Fintype.card_fin (ℓ₁ + ℓ₂)) h_F.some.symm
-        _ = F :=
-              getCanonicalQuotSimpleGraph_self F
+        calc
+          (getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card).fst
+          _ = (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin (ℓ₁ + ℓ₂))).fst :=
+                getCanonicalQuotSimpleGraph_iso G₁₂.coe h_G₁₂_verts_card F.out (Fintype.card_fin (ℓ₁ + ℓ₂)) h_F.some.symm
+          _ = F :=
+                getCanonicalQuotSimpleGraph_self F
   }
   have f_S₃_S₄ : S₃ ≃ S₄ := sorry
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
