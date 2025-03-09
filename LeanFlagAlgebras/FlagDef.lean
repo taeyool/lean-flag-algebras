@@ -1,18 +1,43 @@
 import Mathlib.Combinatorics.SimpleGraph.Maps
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
+
+variable {T : Type} [Fintype T]
 
 abbrev FlagType := SimpleGraph
 
 @[ext]
-structure LabeledGraph {T : Type} [Fintype T] (σ : FlagType T) (V : Type) where
+structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
   type_embed : σ ↪g graph
 
-instance {T : Type} [Fintype T] {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+instance LabeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (LabeledGraph σ V) where
   elems := sorry
   complete := sorry
 
-structure LabeledGraphIso {T : Type} [Fintype T] {σ : FlagType T} {V W : Type}
+@[ext]
+structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
+  subgraph : G.graph.Subgraph
+  type_embed : σ ↪g subgraph.coe
+  embed_eq : ∀ (t : T), type_embed t = G.type_embed t
+
+initialize_simps_projections LabeledSubgraph (subgraph → coe)
+
+namespace LabeledSubgraph
+
+@[simps]
+def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G)
+    : LabeledGraph σ G'.subgraph.verts where
+  graph := sorry
+  type_embed := sorry
+
+def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G) : Prop
+  :=
+  sorry
+
+end LabeledSubgraph
+
+structure LabeledGraphIso {σ : FlagType T} {V W : Type}
   (G : LabeledGraph σ V) (G' : LabeledGraph σ W) where
   graph_iso : G.graph ≃g G'.graph
   type_preserve : graph_iso ∘ G.type_embed = G'.type_embed
@@ -40,11 +65,13 @@ def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
 
 infixl:50 " ∼f " => flagEqv
 
+omit [Fintype T] in
 theorem flagEqv.refl {σ : FlagType T} (G : LabeledGraph σ V)
     : G ∼f G
   :=
   Nonempty.intro LabeledGraphIso.refl
 
+omit [Fintype T] in
 theorem flagEqv.symm {σ : FlagType T}
     : ∀ {G G' : LabeledGraph σ V}, G ∼f G' → G' ∼f G
   := by
@@ -52,6 +79,7 @@ theorem flagEqv.symm {σ : FlagType T}
   have G_iso : G ≃f G' := Classical.choice h
   exact Nonempty.intro G_iso.symm
 
+omit [Fintype T] in
 theorem flagEqv.trans {σ : FlagType T}
     : ∀ {G G' G'' : LabeledGraph σ V}, G ∼f G' → G' ∼f G'' → G ∼f G''
   := by
@@ -75,7 +103,7 @@ instance labededGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
 def Flag (σ : FlagType T) (V : Type) [DecidableEq V] : Type :=
   Quotient (labededGraphSetoid σ V)
 
-noncomputable instance FlagFintype {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] : Fintype (Flag σ V)
+noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V] : Fintype (Flag σ V)
   := by
   classical
   exact Quotient.fintype (labededGraphSetoid σ V)
