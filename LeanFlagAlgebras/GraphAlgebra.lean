@@ -444,7 +444,8 @@ noncomputable instance : HasDistribNeg GraphVector where
 
 lemma graphVector_add_support
     (g h : GraphVector) {α : Type} [AddCommGroup α] (ψ : GraphVector → IsoSimpleGraph → α)
-    (hψ : ∀ g h x, ψ (g + h) x = ψ g x + ψ h x)
+    (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
+    (hψ2 : ∀ g x, g x =0 -> ψ g x = 0)
     : ∑ K ∈ (g + h).support, (ψ g K + ψ h K) =
       ∑ G ∈ g.support, ψ g G + ∑ H ∈ h.support, ψ h H
   := by
@@ -496,9 +497,8 @@ lemma graphVector_add_support
         rw [Finsupp.mem_support_iff] at h1
         exact False.elim (h1 h2)
       · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
-        rw [←hψ]
-
-        sorry
+        apply hψ1
+        exact h2
     · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
       rw [mem_sdiff] at h1
       have ⟨h1, h1'⟩ := h1
@@ -514,13 +514,14 @@ lemma graphVector_add_support
     apply sum_eq_zero
     intro x hx
     rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    have ⟨h1, h2⟩ := hx
-    sorry
+    apply hψ2
+    exact hx.2
   have calc2 : ∑ x ∈ h.support \ g.support, ψ g x = 0 := by
     apply sum_eq_zero
     intro x hx
     rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    sorry
+    apply hψ2
+    exact hx.2
   rw [calc1, calc2, add_zero, zero_add]
   have : ∑ x ∈ g.support \ h.support, ψ g x +
         (∑ x ∈ g.support ∩ h.support, ψ g x +
@@ -532,7 +533,6 @@ lemma graphVector_add_support
       nth_rw 6 [add_comm]
   rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
 
-
 lemma graphVector_left_distrib'
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
@@ -543,9 +543,18 @@ lemma graphVector_left_distrib'
   simp [mul_add, add_smul]
   let ψ : GraphVector → IsoSimpleGraph → GraphVector
     := fun g G => (f F * g G) • graphMul F G
-  rw [graphVector_add_support g h ψ]
-  sorry
-
+  have hψ1 : ∀ (g h : GraphVector) (x : IsoSimpleGraph), g x + h x = 0 → ψ g x + ψ h x = 0 := by
+    intro g' h' x hx
+    simp [ψ]
+    rw [add_eq_zero_iff_neg_eq] at hx
+    rw [←hx]
+    simp
+  have hψ2 : ∀ (g : GraphVector) (x : IsoSimpleGraph), g x = 0 → ψ g x = 0 := by
+    intro g x hx
+    simp [ψ]
+    left; right
+    exact hx
+  rw [graphVector_add_support g h ψ hψ1 hψ2]
 
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
@@ -1084,7 +1093,17 @@ instance : NeZero (1 : GraphAlgebra) where
       simp [φ, add_mul]
       let ψ : GraphVector → IsoSimpleGraph → ℝ
         := fun g G => (g G) * quotSubgraphDensity G.2 F
-      rw [graphVector_add_support g h ψ]
+      have hψ1 : ∀ (g h : GraphVector) (x : IsoSimpleGraph), g x + h x = 0 → ψ g x + ψ h x = 0 := by
+        intro g' h' x hx
+        simp [ψ]
+        rw [add_eq_zero_iff_eq_neg] at hx
+        rw [hx]
+        simp
+      have hψ2 : ∀ (g : GraphVector) (x : IsoSimpleGraph), g x = 0 → ψ g x = 0 := by
+        intro g x hx
+        simp [ψ]
+        left; exact hx
+      rw [graphVector_add_support g h ψ hψ1 hψ2]
     have φ_smul : ∀ (r : ℝ) (g : GraphVector), φ (r • g) = r * φ g := by
       intro r g
       show ∑ G in _, _ = _ * ∑ G in _, _
