@@ -1121,18 +1121,30 @@ instance : NeZero (1 : GraphAlgebra) where
       · intro r R hr ih
         simp [sum_insert hr, Module.add_smul]
         rw [φ_add, ih]
+    -- have φ'_sum : ∀ (s : IsoSimpleGraphWithSize 10) (f : )
     have hφ : ∀ (i : I), φ (v i) = 0 := by
       intro i
       let iG := G i
       have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
       have hℓ : ℓ i ≤ L := by apply Finset.le_sup; simp
+      have φ_sum' : ∀ (s : Finset (IsoSimpleGraphWithSize (ℓ i))) (f : IsoSimpleGraphWithSize (ℓ i) → GraphVector), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+        intro s f
+        refine Finset.induction_on s ?_ ?_
+        · simp [φ]
+        · intro r R hr ih
+          simp [sum_insert hr, Module.add_smul]
+          rw [φ_add, ih]
       rw [hG2]
       dsimp [zeroElement]
       rw [sub_eq_add_neg, φ_add]
       rw [← @neg_one_smul ℝ GraphVector _, φ_smul (-1 : ℝ) _, neg_one_mul, ← sub_eq_add_neg, sub_eq_zero]
-      simp [densityGraphSum]
-      simp [φ]
+      dsimp [densityGraphSum]
+      rw [φ_sum']
+      have : φ (basisElementFromGraph iG) = quotSubgraphDensity iG.2 F := by
+        simp [φ, basisElementFromGraph_support, mul_one]
+      rw [this]
       rw [density_chain_rule''' _ _ hℓ' hℓ]
+      simp [φ]
       sorry
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (basisElementFromGraph 1).support, _ = 1
