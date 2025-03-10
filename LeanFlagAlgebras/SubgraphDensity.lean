@@ -1296,12 +1296,14 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   let S₃ := { ⟨F, G₁, G₂, G₁₂⟩ : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)) × Subgraph G × Subgraph G × Subgraph G |
                 ⟨G₁, G₂⟩ ∈ S₁ ∧ G₁₂ = G₁ ⊔ G₂ ∧ Nonempty (F.out ≃g G₁₂.coe) }
   let S₄ := Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
+
   have f_S₀_S₁ : S₀ ≃ S₁ := by
     have : S₀ = S₁ := by
       ext ⟨G₁, G₂⟩
       dsimp [S₀, S₁, subgraphPairSet]
       simp
     exact Equiv.subtypeEquivProp this
+
   have f_S₁_S₂ : S₁ ≃ S₂ := {
     toFun :=
       fun ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩ =>
@@ -1316,6 +1318,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       intro ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
       simp [h_G₁₂]
   }
+
   have f_S₂_S₃ : S₂ ≃ S₃ :=
     let vertex_card_of_disj_union_eq_sum_of_vertex_cards :
           ∀ (G₁ G₂ G₁₂ : Subgraph G),
@@ -1373,7 +1376,24 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
           _ = F :=
                 getCanonicalQuotSimpleGraph_self F
   }
-  have f_S₃_S₄ : S₃ ≃ S₄ := sorry
+
+  have f_S₃_S₄ : S₃ ≃ S₄ := {
+    toFun :=
+      fun ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩ =>
+        ⟨F, sorry, sorry⟩
+    invFun :=
+      fun ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩ => by
+        dsimp [subgraphSet] at h_G₁₂_F; simp at h_G₁₂_F
+        obtain ⟨h_G₁₂_ind, h_G₁₂_iso⟩ := h_G₁₂_F
+        exact ⟨⟨F, sorry, sorry, G₁₂⟩, ⟨sorry, sorry, Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
+    left_inv := by
+      intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
+      sorry
+    right_inv := by
+      intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
+      sorry
+  }
+
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
 
 
