@@ -533,7 +533,7 @@ lemma graphVector_add_support
       nth_rw 6 [add_comm]
   rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
 
-lemma graphVector_left_distrib'
+lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
   show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
@@ -555,103 +555,6 @@ lemma graphVector_left_distrib'
     left; right
     exact hx
   rw [graphVector_add_support g h ψ hψ1 hψ2]
-
-lemma graphVector_left_distrib
-    (f g h : GraphVector) : f * (g + h) = f * g + f * h
-  := by
-  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
-  simp [Finset.sum_add_distrib]
-  rw [← sum_add_distrib]
-  apply sum_congr rfl
-  intro F _
-  simp [mul_add, add_smul]
-  have add_support_sub : (g + h).support ⊆ g.support ∪ h.support := Finsupp.support_add
-  let sum1 := ∑ x in (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
-  let sum2 := ∑ x in g.support ∪ h.support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
-  let sum3 := ∑ x in (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x)
-  have sum_decomposition : sum1 = sum2 - sum3 := by
-    simp_all only [Finsupp.mem_support_iff, ne_eq, sum_sdiff_eq_sub, sub_add_cancel, sub_sub_cancel, sum3, sum1, sum2]
-  dsimp [sum1, sum2, sum3] at sum_decomposition
-  rw [sum_decomposition]
-  have p1 : g.support ∪ h.support = g.support ∪ h.support \ g.support := by rw [union_sdiff_self_eq_union]
-  have hp1 : Disjoint g.support (h.support \ g.support) := by
-    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
-    intro x hx
-    simp at hx
-  have p2 : g.support \ h.support ∪ g.support ∩ h.support = g.support  := by
-    rw [sdiff_union_inter g.support h.support]
-  have hp2 : Disjoint (g.support \ h.support) (g.support ∩ h.support) := by
-    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
-    intro x hx
-    simp at hx
-    have ⟨h1, h2⟩ := hx
-    simp
-    exact h2.2 h1.2
-  have p3 : h.support \ g.support ∪ g.support ∩ h.support  = h.support  := by
-    rw [inter_comm, sdiff_union_inter h.support g.support]
-  have hp3 : Disjoint (h.support \ g.support) (g.support ∩ h.support) := by
-    rw [←Finset.sdiff_eq_self_iff_disjoint, Finset.sdiff_eq_self]
-    intro x hx
-    simp at hx
-    have ⟨h1, h2⟩ := hx
-    simp
-    exact h2.1 h1.2
-  have sum_extra_eq_0 : ∑ x ∈ (g.support ∪ h.support) \ (g + h).support, ((f F * g x) • graphMul F x + (f F * h x) • graphMul F x) = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff] at hx
-    have ⟨h1, h2⟩ := hx
-    rw [p1, mem_union] at h1
-    cases' h1 with h1 h1
-    · rw [←p2, mem_union] at h1
-      cases' h1 with h1 h1
-      · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
-        rw [mem_sdiff] at h1
-        have ⟨h1, h1'⟩ := h1
-        rw [Finsupp.not_mem_support_iff] at h1'
-        rw [h1', add_zero] at h2
-        rw [Finsupp.mem_support_iff] at h1
-        exact False.elim (h1 h2)
-      · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
-        have t1 : g x = - h x := by
-          rw [add_eq_zero_iff_eq_neg] at h2
-          exact h2
-        rw [t1, ←add_smul, ←mul_add, neg_add_cancel]
-        show (f F * 0) • graphMul F x = 0
-        simp
-    · rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h2
-      rw [mem_sdiff] at h1
-      have ⟨h1, h1'⟩ := h1
-      rw [Finsupp.not_mem_support_iff] at h1'
-      rw [h1', zero_add] at h2
-      rw [Finsupp.mem_support_iff] at h1
-      exact False.elim (h1 h2)
-  rw [sum_extra_eq_0, sub_zero]
-  rw [p1, sum_union hp1]
-  nth_rw 1 [←p2]
-  rw [sum_union hp2, sum_add_distrib, sum_add_distrib, sum_add_distrib]
-  have calc1 : ∑ x ∈ g.support \ h.support, (f F * h x) • graphMul F x = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    rw [hx.2]
-    show (f F * 0) • graphMul F x = 0 ; simp
-  have calc2 : ∑ x ∈ h.support \ g.support, (f F * g x) • graphMul F x = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    rw [hx.2]
-    show (f F * 0) • graphMul F x = 0 ; simp
-  rw [calc1, calc2, add_zero, zero_add]
-  have : ∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x +
-        (∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x +
-          ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) +
-          ∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x =
-        (∑ x ∈ g.support \ h.support, (f F * g x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * g x) • graphMul F x) +
-        (∑ x ∈ h.support \ g.support, (f F * h x) • graphMul F x + ∑ x ∈ g.support ∩ h.support, (f F * h x) • graphMul F x) := by
-      repeat (rw [add_assoc])
-      nth_rw 6 [add_comm]
-  rw [this, ←sum_union hp2, ←sum_union hp3, p2, p3]
 
 lemma graphVector_right_distrib
     (f g h : GraphVector) : (f + g) * h = f * h + g * h
@@ -778,25 +681,6 @@ lemma graph_mul_one
   have hG'_ne_G : G.2 ≠ G' := by aesop
   simp [quotSubgraphDensity_other hG'_ne_G]
 
--- lemma graph_mul_one
---     (G : IsoSimpleGraph) : graph_algebra_eqv (graphMul G 1) (basisElementFromGraph G)
---   := by
---   rw [graphMul_comm]
---   apply graph_algebra_eqv.symm
---   dsimp [graph_algebra_eqv]
---   have : graphMul 1 G = densityGraphSum G G.1 := by
---     dsimp [densityGraphSum, graphMul]
---     rw [add_comm]
---     apply sum_congr
---     · rfl
---     · intros
---       rw [quotSubgraphPairDensity_one]
---       rfl
---   rw [this, ZeroSet]
---   refine Submodule.mem_span.mpr fun p a ↦ a ?_
---   simp; use G; use G.1
---   constructor <;> rfl
-
 lemma graphVector_mul_one
     (g : GraphVector) : g * 1 = g
   := by
@@ -806,29 +690,6 @@ lemma graphVector_mul_one
   rw [smul_mul_assoc]; congr
   show ∑ _ ∈ (basisElementFromGraph G).support, _ = _
   simp [graph_mul_one]
-
--- lemma graphVector_mul_one
---     (g : GraphVector) : graph_algebra_eqv (g * 1) g
---   := by
---   show ∑ G in g.support, ∑ H in (1 : GraphVector).support, _ - g ∈ ZeroSet
---   have h_supp_one : Finsupp.support (1 : GraphVector) = {1} := by
---     show Finsupp.support (basisElementFromGraph 1) = {1}
---     dsimp [basisElementFromGraph]
---     rw [Finsupp.support_single_ne_zero _ (by simp)]
---   rw [sum_comm, h_supp_one, sum_singleton]
---   have hg : g = ∑ G in g.support, g G • basisElementFromGraph G := by
---     simp [basisElementFromGraph]
---     nth_rw 1 [← Finsupp.sum_single g, Finsupp.sum]
---   nth_rw 3 [hg]
---   rw [← sum_sub_distrib]
---   apply zeroSet_closed_under_sum
---   intro G _
---   have : (1 : GraphVector) 1 = 1 := by
---     show (basisElementFromGraph 1) 1 = 1
---     simp [basisElementFromGraph]
---   rw [this, mul_one, ← smul_sub]
---   apply zeroSet_closed_under_smul
---   exact graph_mul_one G
 
 noncomputable instance : MulOneClass GraphVector where
   one_mul g := by
@@ -1112,7 +973,7 @@ instance : NeZero (1 : GraphAlgebra) where
       · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
         rw [hg_supp, mul_sum]
         apply sum_congr (by rfl)
-        intro x hx
+        intro x _
         simp [mul_sum, mul_assoc]
     have φ_sum : ∀ (s : Finset I) (f : I → GraphVector), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
       intro s f
@@ -1121,7 +982,6 @@ instance : NeZero (1 : GraphAlgebra) where
       · intro r R hr ih
         simp [sum_insert hr, Module.add_smul]
         rw [φ_add, ih]
-    -- have φ'_sum : ∀ (s : IsoSimpleGraphWithSize 10) (f : )
     have hφ : ∀ (i : I), φ (v i) = 0 := by
       intro i
       let iG := G i
@@ -1144,15 +1004,24 @@ instance : NeZero (1 : GraphAlgebra) where
         simp [φ, basisElementFromGraph_support, mul_one]
       rw [this]
       rw [density_chain_rule''' _ _ hℓ' hℓ]
-      simp [φ]
-      sorry
+      simp
+      dsimp [IsoSimpleGraphWithSize]
+      apply sum_congr (by rfl)
+      · intro x
+        rw [φ_smul]
+        simp
+        by_cases s : quotSubgraphDensity iG.snd x = 0
+        · right; exact s
+        · left
+          dsimp [φ]
+          simp
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (basisElementFromGraph 1).support, _ = 1
       simp [sum_singleton, quotSubgraphDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       rw [φ_sum]
       apply sum_eq_zero
-      intro i hi
+      intro i _
       rw [φ_smul, hφ, mul_zero]
     rw [hx]at h_φ_1
     have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [←h_φ_1, ←h_φ_sum]
