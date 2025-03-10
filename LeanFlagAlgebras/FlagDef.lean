@@ -10,7 +10,7 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
   type_embed : σ ↪g graph
 
-instance LabeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
+instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (LabeledGraph σ V) where
   elems := sorry
   complete := sorry
@@ -26,12 +26,17 @@ initialize_simps_projections LabeledSubgraph (subgraph → coe)
 namespace LabeledSubgraph
 
 @[simps]
-def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G)
-    : LabeledGraph σ G'.subgraph.verts where
-  graph := sorry
+def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)
+    : LabeledGraph σ H.subgraph.verts where
+  graph := H.subgraph.coe
   type_embed := sorry
 
-def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (G' : LabeledSubgraph σ G) : Prop
+def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
+  :=
+  H.subgraph.IsInduced
+
+def labeledSubgraphFintype
+    (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
   :=
   sorry
 
@@ -90,7 +95,7 @@ theorem flagEqv.trans {σ : FlagType T}
 
 variable [DecidableEq T]
 
-instance labededGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
+instance labeledGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
     : Setoid (LabeledGraph σ V)
   where
     r     := flagEqv
@@ -101,9 +106,9 @@ instance labededGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
     }
 
 def Flag (σ : FlagType T) (V : Type) [DecidableEq V] : Type :=
-  Quotient (labededGraphSetoid σ V)
+  Quotient (labeledGraphSetoid σ V)
 
 noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V] : Fintype (Flag σ V)
   := by
   classical
-  exact Quotient.fintype (labededGraphSetoid σ V)
+  exact Quotient.fintype (labeledGraphSetoid σ V)
