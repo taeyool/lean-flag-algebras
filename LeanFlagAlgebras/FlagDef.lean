@@ -35,7 +35,7 @@ def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledS
   :=
   H.subgraph.IsInduced
 
-def labeledSubgraphFintype
+instance labeledSubgraphFintype
     (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
   :=
   sorry
