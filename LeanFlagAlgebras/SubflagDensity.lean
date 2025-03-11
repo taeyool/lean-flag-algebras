@@ -10,7 +10,7 @@ variable {V W : Type}
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
   :=
-  let p (G' : LabeledSubgraph σ G) : Prop := G'.IsInduced ∧ Nonempty (LabeledSubgraph.coe G' ≃f H)
+  let p (G' : LabeledSubgraph σ G) : Prop := G'.IsInduced ∧ Nonempty (G'.coe ≃f H)
   let S := { G' : LabeledSubgraph σ G | p G' }
   have : Fintype S := Fintype.ofFinite ↑S
   S.toFinset.card
@@ -51,3 +51,15 @@ noncomputable def subflagDensity
   intro H H' H_eqv
   ext G
   exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
+
+noncomputable def labeledSubgraphListCount
+    {ι : Type} [Fintype ι] {V : ι → Type}
+    (H_list : ∀ (i : ι), LabeledGraph σ (V i)) (G : LabeledGraph σ W) : ℕ
+  :=
+  let p₁ (G_list : ∀ (_ : ι), LabeledSubgraph σ G) : Prop
+    := ∀ (i : ι), (G_list i).IsInduced ∧ Nonempty ((G_list i).coe ≃f H_list i)
+  let p₂ (G_list : ∀ (_ : ι), LabeledSubgraph σ G) : Prop
+    := ∀ (i j : ι), i ≠ j → (G_list i).subgraph.verts ∩ (G_list j).subgraph.verts = ∅
+  let S := { G_list : ∀ (_ : ι), LabeledSubgraph σ G | p₁ G_list ∧ p₂ G_list }
+  have : Fintype S := Fintype.ofFinite ↑S
+  S.toFinset.card
