@@ -1174,8 +1174,31 @@ G₀.Adj (iso.symm u) (iso.symm v)
   exact ⟨H₀, iso₀⟩
 
 def subgraphFromOrder
-    {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁) : Subgraph G₁.coe
-  := sorry
+    {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
+    : (G₀' : Subgraph G₁.coe) × (Subgraph.coe G₀ ≃g Subgraph.coe G₀')
+  :=
+  let G₀' : Subgraph G₁.coe := {
+    verts := { u | u.1 ∈ G₀.verts }
+    Adj := fun u v => G₀.Adj u.1 v.1
+    adj_sub := by
+      intro u v h_uv
+      have : G₀.edgeSet ⊆ G₁.edgeSet := SimpleGraph.Subgraph.edgeSet_mono h_order
+      exact Subgraph.mem_edgeSet.mp (this h_uv)
+    edge_vert := by
+      intro u v h_uv
+      exact G₀.edge_vert h_uv
+    symm := by
+      intro u v h_uv
+      exact G₀.symm h_uv
+  }
+  let f_iso_G₀_G₀' : Subgraph.coe G₀ ≃g Subgraph.coe G₀' := {
+    toFun := sorry
+    invFun := sorry
+    left_inv := sorry
+    right_inv := sorry
+    map_rel_iff' := sorry
+  }
+  ⟨G₀', f_iso_G₀_G₀'⟩
 
 def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
@@ -1361,10 +1384,15 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   have f_S₃_S₄ : S₃ ≃ S₄ := {
     toFun := by
       intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
+      obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
       have h_G₁_le : G₁ ≤ G₁₂ := by simp_all only [le_sup_left]
       have h_G₂_le : G₂ ≤ G₁₂ := by simp_all only [le_sup_right]
-      obtain ⟨K₁ : Subgraph F.out, f_iso_G₁_K₁⟩ := subgraphFromIso h_F.some.symm (subgraphFromOrder h_G₁_le)
-      obtain ⟨K₂ : Subgraph F.out, f_iso_G₂_K₂⟩ := subgraphFromIso h_F.some.symm (subgraphFromOrder h_G₂_le)
+      obtain ⟨G₁', f_iso_G₁_G₁'⟩ := subgraphFromOrder h_G₁_le
+      obtain ⟨G₂', f_iso_G₂_G₂'⟩ := subgraphFromOrder h_G₂_le
+      obtain ⟨K₁ : Subgraph F.out, f_iso_G₁'_K₁⟩ := subgraphFromIso h_F.some.symm G₁'
+      obtain ⟨K₂ : Subgraph F.out, f_iso_G₂'_K₂⟩ := subgraphFromIso h_F.some.symm G₂'
+      let f_iso_K₁_H₁ : Subgraph.coe K₁ ≃g H₁ := (f_iso_G₁_G₁'.trans f_iso_G₁'_K₁).symm.trans h_G₁_iso_H₁.some
+      let f_iso_K₂_H₂ : Subgraph.coe K₂ ≃g H₂ := (f_iso_G₂_G₂'.trans f_iso_G₂'_K₂).symm.trans h_G₂_iso_H₂.some
       exact ⟨F, ⟨⟨K₁,K₂⟩, sorry⟩, ⟨G₁₂, sorry⟩⟩
     invFun := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
