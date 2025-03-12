@@ -1130,13 +1130,13 @@ noncomputable def subgraphPairSet
 def subgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W}
     (iso : G ≃g H) (G₀ : Subgraph G)
-    : Σ (H₀ : Subgraph H), Subgraph.coe G₀ ≃g Subgraph.coe H₀
+    : (H₀ : Subgraph H) × (Subgraph.coe G₀ ≃g Subgraph.coe H₀)
   := by
   let H₀ : Subgraph H := {
     verts :=
       iso '' G₀.verts,
     Adj := fun u v =>
-G₀.Adj (iso.symm u) (iso.symm v)
+      G₀.Adj (iso.symm u) (iso.symm v)
     adj_sub := by
       intro u v h_uv_G₀
       have h_uv : G.Adj (iso.symm u) (iso.symm v) := G₀.adj_sub h_uv_G₀
@@ -1173,6 +1173,12 @@ G₀.Adj (iso.symm u) (iso.symm v)
   }
   exact ⟨H₀, iso₀⟩
 
+lemma subgraphFromIso_preserve_inducedness
+    {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ : Subgraph G)
+    : G₀.IsInduced → (subgraphFromIso iso G₀).fst.IsInduced
+  := by
+  sorry
+
 def subgraphFromOrder
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
     : (G₀' : Subgraph G₁.coe) × (Subgraph.coe G₀ ≃g Subgraph.coe G₀')
@@ -1192,11 +1198,17 @@ def subgraphFromOrder
       exact G₀.symm h_uv
   }
   let f_iso_G₀_G₀' : Subgraph.coe G₀ ≃g Subgraph.coe G₀' := {
-    toFun := sorry
-    invFun := sorry
-    left_inv := sorry
-    right_inv := sorry
-    map_rel_iff' := sorry
+    toFun := fun ⟨u, h_u_G₀⟩ =>
+      have h_u_G₁ : u ∈ G₁.verts := SimpleGraph.Subgraph.verts_mono h_order h_u_G₀
+      ⟨⟨u, h_u_G₁⟩, h_u_G₀⟩
+    invFun := fun ⟨⟨u, _⟩, h_u_G₀'⟩ =>
+      ⟨u, h_u_G₀'⟩
+    left_inv := by
+      intro u; exact rfl
+    right_inv := by
+      intro u; exact rfl
+    map_rel_iff' := by
+      intro u v; simp
   }
   ⟨G₀', f_iso_G₀_G₀'⟩
 
@@ -1389,13 +1401,21 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       have h_G₂_le : G₂ ≤ G₁₂ := by simp_all only [le_sup_right]
       obtain ⟨G₁', f_iso_G₁_G₁'⟩ := subgraphFromOrder h_G₁_le
       obtain ⟨G₂', f_iso_G₂_G₂'⟩ := subgraphFromOrder h_G₂_le
-      obtain ⟨K₁ : Subgraph F.out, f_iso_G₁'_K₁⟩ := subgraphFromIso h_F.some.symm G₁'
-      obtain ⟨K₂ : Subgraph F.out, f_iso_G₂'_K₂⟩ := subgraphFromIso h_F.some.symm G₂'
+      have h_G₁'_ind : G₁'.IsInduced := sorry
+      have h_G₂'_ind : G₂'.IsInduced := sorry
+      let K_iso₁ := subgraphFromIso h_F.some.symm G₁'
+      let K_iso₂ := subgraphFromIso h_F.some.symm G₂'
+      let K₁ := K_iso₁.fst
+      let K₂ := K_iso₂.fst
+      let f_iso_G₁'_K₁ : Subgraph.coe G₁' ≃g Subgraph.coe K₁ := K_iso₁.snd
+      let f_iso_G₂'_K₂ : Subgraph.coe G₂' ≃g Subgraph.coe K₂ := K_iso₂.snd
+      have h_K₁_ind : K₁.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₁' h_G₁'_ind
+      have h_K₂_ind : K₂.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₂' h_G₂'_ind
       let f_iso_K₁_H₁ : Subgraph.coe K₁ ≃g H₁ := (f_iso_G₁_G₁'.trans f_iso_G₁'_K₁).symm.trans h_G₁_iso_H₁.some
       let f_iso_K₂_H₂ : Subgraph.coe K₂ ≃g H₂ := (f_iso_G₂_G₂'.trans f_iso_G₂'_K₂).symm.trans h_G₂_iso_H₂.some
       have h_K₁_K₂ : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
         simp [subgraphPairSet]
-        exact ⟨sorry, Nonempty.intro f_iso_K₁_H₁, sorry, Nonempty.intro f_iso_K₂_H₂, sorry⟩
+        exact ⟨h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, sorry⟩
       have h_F_out_G₁₂ : G₁₂ ∈ subgraphSet F.out G := by
         dsimp [subgraphSet]; simp
         exact ⟨sorry, Nonempty.intro h_F.some.symm⟩
