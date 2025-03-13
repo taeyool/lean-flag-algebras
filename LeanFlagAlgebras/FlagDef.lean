@@ -5,6 +5,10 @@ variable {T : Type} [Fintype T]
 
 abbrev FlagType := SimpleGraph
 
+def FlagType.size (_ : FlagType T) : ℕ
+  :=
+  Fintype.card T
+
 @[ext]
 structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
@@ -14,6 +18,11 @@ instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [Decidable
     : Fintype (LabeledGraph σ V) where
   elems := sorry
   complete := sorry
+
+def LabeledGraph.size
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (_ : LabeledGraph σ V) : ℕ
+  :=
+  Fintype.card V
 
 @[ext]
 structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
