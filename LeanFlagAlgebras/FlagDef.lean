@@ -73,11 +73,21 @@ namespace LabeledGraphIso
 variable {T : Type} [Fintype T] {σ : FlagType T} {V W U : Type}
 variable {G : LabeledGraph σ V} {G' : LabeledGraph σ W} {G'' : LabeledGraph σ U}
 
-def refl : G ≃f G := sorry
+def refl : G ≃f G where
+  graph_iso := by rfl
+  type_preserve := by ext t ; simp
 
-def symm (h : G ≃f G') : G' ≃f G := sorry
+def symm (h : G ≃f G') : G' ≃f G where
+  graph_iso := h.graph_iso.symm
+  type_preserve := by
+    ext t
+    simp [←h.type_preserve]
 
-def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' := sorry
+def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
+  graph_iso := RelIso.trans h.graph_iso h'.graph_iso
+  type_preserve := by
+    ext t
+    simp [←h.type_preserve, ←h'.type_preserve]
 
 end LabeledGraphIso
 
