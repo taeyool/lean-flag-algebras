@@ -110,4 +110,35 @@ noncomputable def labeledSubgraphListDensityLifted
   intro _ _ h_eqv
   exact labeledSubgraphListDensity_respects_eqv_on_G H_list (Classical.choice h_eqv)
 
+lemma labeledSubgraphListDensityLifted_respects_eqv
+    (H_list H_list' : ∀ (i : Fin t), LabeledGraph σ (V i)) (φ : ∀ (i : Fin t), H_list i ≃f H_list' i) (G : Flag σ W)
+    : labeledSubgraphListDensityLifted H_list G = labeledSubgraphListDensityLifted H_list' G
+  :=
+  sorry
+
+namespace Fin
+
+@[simps]
+def coe {s t : ℕ} (hst : s ≤ t) (i : Fin s) : Fin t where
+  val := i.val
+  isLt := Nat.lt_of_lt_of_le i.is_lt hst
+
+end Fin
+
+noncomputable def subflagDensityList_partiallyLifted
+    {s : ℕ} (hst : s ≤ t)
+    (F_list : ∀ (i : Fin s), Flag σ (V (i.coe hst)))
+    (H_list : ∀ (i : Fin (t - s)), Flag σ (V ⟨i.val + s, sorry⟩))
+    : Flag σ W → ℚ
+  :=
+  sorry
+
+noncomputable def subflagDensityList
+    : (∀ (i : Fin t), Flag σ (V i)) → Flag σ W → ℚ
+  := by
+  induction t with
+  | zero => exact fun _ _ ↦ 0
+  | succ t ih =>
+      sorry
+
 end
