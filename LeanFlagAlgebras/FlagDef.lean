@@ -48,7 +48,7 @@ namespace LabeledSubgraph
 def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)
     : LabeledGraph σ H.subgraph.verts where
   graph := H.subgraph.coe
-  type_embed := sorry
+  type_embed := H.type_embed
 
 def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
   :=
