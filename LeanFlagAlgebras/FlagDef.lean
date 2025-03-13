@@ -14,10 +14,20 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
   type_embed : σ ↪g graph
 
-instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
-    : Fintype (LabeledGraph σ V) where
-  elems := sorry
-  complete := sorry
+noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
+    : Fintype (LabeledGraph σ V)
+  :=
+  let f : LabeledGraph σ V → SimpleGraph V × (T → V) :=
+    fun ⟨G, embed⟩ ↦ (G, embed.toFun)
+  have f_inj : Function.Injective f := by
+    intro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
+    dsimp [f] at h_eq
+    simp_all only [Prod.mk.injEq, LabeledGraph.mk.injEq, true_and]
+    obtain ⟨left, right⟩ := h_eq
+    subst left
+    simp_all only [DFunLike.coe_fn_eq, heq_eq_eq]
+  have : Fintype (SimpleGraph V × (T → V)) := Fintype.ofFinite (SimpleGraph V × (T → V))
+  Fintype.ofInjective f f_inj
 
 def LabeledGraph.size
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (_ : LabeledGraph σ V) : ℕ
