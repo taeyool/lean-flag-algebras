@@ -1177,7 +1177,13 @@ lemma subgraphFromIso_preserve_inducedness
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ : Subgraph G)
     : G₀.IsInduced → (subgraphFromIso iso G₀).fst.IsInduced
   := by
+  intro h_ind_G₀
+  dsimp [Subgraph.IsInduced, subgraphFromIso]
+  intro u v h_u h_v h_uv
+  let u' := iso.symm u
+  let v' := iso.symm v
   sorry
+
 
 def subgraphFromOrder
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
