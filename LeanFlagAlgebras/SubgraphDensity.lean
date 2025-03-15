@@ -1130,9 +1130,9 @@ noncomputable def subgraphPairSet
 def subgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ : Subgraph G)
     : Subgraph H
-  := {
+  where
     verts :=
-      iso '' G₀.verts,
+      iso '' G₀.verts
     Adj := fun u v =>
       G₀.Adj (iso.symm u) (iso.symm v)
     adj_sub := by
@@ -1147,7 +1147,6 @@ def subgraphFromIso
     symm := by
       intro u v h_uv_G₀
       exact G₀.symm h_uv_G₀
-  }
 
 def isoToSubgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W}
@@ -1229,6 +1228,16 @@ def isoToSubgraphFromOrder
     map_rel_iff' := by
       intro u v; dsimp [G₀', subgraphFromOrder]; simp
   }
+
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+lemma subgraphFromOrder_preserve_inducedness
+    {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
+    : G₀.IsInduced → (subgraphFromOrder h_order).IsInduced
+  := by
+  intro h_ind_G₀
+  dsimp [Subgraph.IsInduced, subgraphFromOrder] at *
+  intro u v h_u_G₀ h_v_G₀ h_uv_G₁
+  exact h_ind_G₀ h_u_G₀ h_v_G₀ (G₁.adj_sub h_uv_G₁)
 
 def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
@@ -1422,8 +1431,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       let G₂' := subgraphFromOrder h_G₂_le
       let f_iso_G₁_G₁' : G₁.coe ≃g G₁'.coe := isoToSubgraphFromOrder h_G₁_le
       let f_iso_G₂_G₂' : G₂.coe ≃g G₂'.coe := isoToSubgraphFromOrder h_G₂_le
-      have h_G₁'_ind : G₁'.IsInduced := sorry
-      have h_G₂'_ind : G₂'.IsInduced := sorry
+      have h_G₁'_ind : G₁'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₁_le h_G₁_ind
+      have h_G₂'_ind : G₂'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₂_le h_G₂_ind
       let K₁ := subgraphFromIso h_F.some.symm G₁'
       let K₂ := subgraphFromIso h_F.some.symm G₂'
       let f_iso_G₁'_K₁ : Subgraph.coe G₁' ≃g Subgraph.coe K₁ := isoToSubgraphFromIso h_F.some.symm G₁'
