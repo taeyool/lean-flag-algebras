@@ -1433,17 +1433,19 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       let f_iso_G₂_G₂' : G₂.coe ≃g G₂'.coe := isoToSubgraphFromOrder h_G₂_le
       have h_G₁'_ind : G₁'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₁_le h_G₁_ind
       have h_G₂'_ind : G₂'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₂_le h_G₂_ind
+      have h_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := sorry
       let K₁ := subgraphFromIso h_F.some.symm G₁'
       let K₂ := subgraphFromIso h_F.some.symm G₂'
       let f_iso_G₁'_K₁ : Subgraph.coe G₁' ≃g Subgraph.coe K₁ := isoToSubgraphFromIso h_F.some.symm G₁'
       let f_iso_G₂'_K₂ : Subgraph.coe G₂' ≃g Subgraph.coe K₂ := isoToSubgraphFromIso h_F.some.symm G₂'
       have h_K₁_ind : K₁.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₁' h_G₁'_ind
       have h_K₂_ind : K₂.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₂' h_G₂'_ind
+      have h_K₁_K₂_disj : K₁.verts ∩ K₂.verts = ∅ := sorry
       let f_iso_K₁_H₁ : Subgraph.coe K₁ ≃g H₁ := (f_iso_G₁_G₁'.trans f_iso_G₁'_K₁).symm.trans h_G₁_iso_H₁.some
       let f_iso_K₂_H₂ : Subgraph.coe K₂ ≃g H₂ := (f_iso_G₂_G₂'.trans f_iso_G₂'_K₂).symm.trans h_G₂_iso_H₂.some
       have h_K₁_K₂ : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
         simp [subgraphPairSet]
-        exact ⟨h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, sorry⟩
+        exact ⟨h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, h_K₁_K₂_disj⟩
       have h_F_out_G₁₂ : G₁₂ ∈ subgraphSet F.out G := by
         dsimp [subgraphSet]; simp
         exact ⟨sorry, Nonempty.intro h_F.some.symm⟩
