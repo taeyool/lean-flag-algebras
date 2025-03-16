@@ -1239,6 +1239,19 @@ lemma subgraphFromOrder_preserve_inducedness
   intro u v h_u_G₀ h_v_G₀ h_uv_G₁
   exact h_ind_G₀ h_u_G₀ h_v_G₀ (G₁.adj_sub h_uv_G₁)
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+lemma subgraphFromOrder_preserve_disjointedness
+    {G : SimpleGraph V} {G₀ G₁ G₂ : Subgraph G}
+    (h_order_G₁ : G₁ ≤ G₀) (h_order_G₂ : G₂ ≤ G₀) (h_disj : G₁.verts ∩ G₂.verts = ∅)
+    : (subgraphFromOrder h_order_G₁).verts ∩ (subgraphFromOrder h_order_G₂).verts = ∅
+  := by
+  dsimp [subgraphFromOrder]
+  apply Set.eq_empty_of_subset_empty
+  intro ⟨u, h_u_G₀⟩ h_u_G₁_G₂
+  have : u ∈ G₁.verts ∩ G₂.verts := h_u_G₁_G₂
+  have : u ∈ ∅ := h_disj ▸ this
+  exact this
+
 def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
     :  Σ (G₁' : Subgraph G), Subgraph.coe G₁ ≃g Subgraph.coe G₁'
@@ -1433,7 +1446,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       let f_iso_G₂_G₂' : G₂.coe ≃g G₂'.coe := isoToSubgraphFromOrder h_G₂_le
       have h_G₁'_ind : G₁'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₁_le h_G₁_ind
       have h_G₂'_ind : G₂'.IsInduced := subgraphFromOrder_preserve_inducedness h_G₂_le h_G₂_ind
-      have h_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := sorry
+      have h_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromOrder_preserve_disjointedness h_G₁_le h_G₂_le h_G₁_G₂_disj
       let K₁ := subgraphFromIso h_F.some.symm G₁'
       let K₂ := subgraphFromIso h_F.some.symm G₂'
       let f_iso_G₁'_K₁ : Subgraph.coe G₁' ≃g Subgraph.coe K₁ := isoToSubgraphFromIso h_F.some.symm G₁'
