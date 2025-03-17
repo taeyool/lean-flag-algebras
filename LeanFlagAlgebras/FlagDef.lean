@@ -56,7 +56,7 @@ def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledS
 
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
-  := by
+  :=
   let f : LabeledSubgraph σ G → G.graph.Subgraph × (T → V) :=
     fun ⟨G', embed, _⟩ ↦ (G', fun t ↦ embed t)
   have f_inj : Function.Injective f := by
@@ -88,7 +88,7 @@ noncomputable instance labeledSubgraphFintype
           exact this
     exact Fintype.ofInjective g g_inj
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
-  exact Fintype.ofInjective f f_inj
+  Fintype.ofInjective f f_inj
 
 end LabeledSubgraph
 
