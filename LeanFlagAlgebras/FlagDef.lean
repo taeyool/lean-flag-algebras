@@ -54,10 +54,41 @@ def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledS
   :=
   H.subgraph.IsInduced
 
-instance labeledSubgraphFintype
-    (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
-  :=
-  sorry
+noncomputable instance labeledSubgraphFintype
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
+  := by
+  let f : LabeledSubgraph σ G → G.graph.Subgraph × (T → V) :=
+    fun ⟨G', embed, _⟩ ↦ (G', fun t ↦ embed t)
+  have f_inj : Function.Injective f := by
+    intro ⟨G, φ, _⟩ ⟨G', φ', _⟩ h_eq
+    dsimp [f] at h_eq
+    simp_all only [Prod.mk.injEq, and_true, mk.injEq, true_and]
+    subst h_eq
+    simp_all only [heq_eq_eq]
+    ext x : 2
+    simp_all only
+  have : Fintype (G.graph.Subgraph) := by
+    let g : G.graph.Subgraph → Set V × Set (V × V) :=
+      fun H ↦ (H.verts, { (u, v) | H.Adj u v })
+    have g_inj : Function.Injective g := by
+      intro H H' h_eq
+      dsimp [g] at h_eq
+      simp_all only [Prod.mk.injEq, f]
+      obtain ⟨left, right⟩ := h_eq
+      ext u v
+      · simp_all only
+      · constructor
+        · intro e
+          have : (u, v) ∈ {x | H.Adj x.1 x.2} := e
+          rw [right] at this
+          exact this
+        · intro e
+          have : (u, v) ∈ {x | H'.Adj x.1 x.2} := e
+          rw [←right] at this
+          exact this
+    exact Fintype.ofInjective g g_inj
+  have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
+  exact Fintype.ofInjective f f_inj
 
 end LabeledSubgraph
 
