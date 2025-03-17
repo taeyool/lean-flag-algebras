@@ -1193,6 +1193,20 @@ lemma subgraphFromIso_preserve_inducedness
   have h_uv_G : G.Adj (iso.symm u) (iso.symm v) := (Iso.map_adj_iff iso.symm).mpr h_uv_H
   exact h_ind_G₀ h_u_G₀ h_v_G₀ h_uv_G
 
+lemma subgraphFromIso_preserve_disjointedness
+    {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ G₁ : Subgraph G) (h_disj : G₀.verts ∩ G₁.verts = ∅)
+    : (subgraphFromIso iso G₀).verts ∩ (subgraphFromIso iso G₁).verts = ∅
+  := by
+  dsimp [subgraphFromIso]
+  apply Set.eq_empty_of_subset_empty
+  intro u ⟨h_u_G₀, h_u_G₁⟩
+  have h_iso₀ : iso.symm u ∈ iso.symm '' (iso '' G₀.verts) := Set.mem_image_of_mem iso.symm h_u_G₀
+  have h_iso₁ : iso.symm u ∈ iso.symm '' (iso '' G₁.verts) := Set.mem_image_of_mem iso.symm h_u_G₁
+  have h_iso₀' : iso.symm u ∈ G₀.verts := by rw [← Set.image_comp] at h_iso₀; simp at h_iso₀; exact h_iso₀
+  have h_iso₁' : iso.symm u ∈ G₁.verts := by rw [← Set.image_comp] at h_iso₁; simp at h_iso₁; exact h_iso₁
+  have : iso.symm u ∈ ∅ := h_disj ▸ Set.mem_inter h_iso₀' h_iso₁'
+  exact this
+
 def subgraphFromOrder
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
     : Subgraph G₁.coe
@@ -1453,7 +1467,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       let f_iso_G₂'_K₂ : Subgraph.coe G₂' ≃g Subgraph.coe K₂ := isoToSubgraphFromIso h_F.some.symm G₂'
       have h_K₁_ind : K₁.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₁' h_G₁'_ind
       have h_K₂_ind : K₂.IsInduced := subgraphFromIso_preserve_inducedness h_F.some.symm G₂' h_G₂'_ind
-      have h_K₁_K₂_disj : K₁.verts ∩ K₂.verts = ∅ := sorry
+      have h_K₁_K₂_disj : K₁.verts ∩ K₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_F.some.symm G₁' G₂' h_G₁'_G₂'_disj
       let f_iso_K₁_H₁ : Subgraph.coe K₁ ≃g H₁ := (f_iso_G₁_G₁'.trans f_iso_G₁'_K₁).symm.trans h_G₁_iso_H₁.some
       let f_iso_K₂_H₂ : Subgraph.coe K₂ ≃g H₂ := (f_iso_G₂_G₂'.trans f_iso_G₂'_K₂).symm.trans h_G₂_iso_H₂.some
       have h_K₁_K₂ : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
