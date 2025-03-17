@@ -1473,10 +1473,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       have h_K₁_K₂ : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
         simp [subgraphPairSet]
         exact ⟨h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, h_K₁_K₂_disj⟩
-      have h_F_out_G₁₂ : G₁₂ ∈ subgraphSet F.out G := by
-        dsimp [subgraphSet]; simp
-        exact ⟨sorry, Nonempty.intro h_F.some.symm⟩
-      exact ⟨F, ⟨⟨K₁,K₂⟩, h_K₁_K₂⟩, ⟨G₁₂, h_F_out_G₁₂⟩⟩
+      let G₁₂' : Subgraph G := sorry
+      have h_F_out_G₁₂' : G₁₂' ∈ subgraphSet F.out G := sorry
+      exact ⟨F, ⟨⟨K₁,K₂⟩, h_K₁_K₂⟩, ⟨G₁₂', h_F_out_G₁₂'⟩⟩
     invFun := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
       dsimp [subgraphSet] at h_G₁₂_F; simp at h_G₁₂_F
