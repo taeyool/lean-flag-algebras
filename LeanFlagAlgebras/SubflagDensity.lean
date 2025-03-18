@@ -8,7 +8,7 @@ section
 variable {V W T: Type}
   [Fintype V] [DecidableEq V]
   [Fintype W] [DecidableEq W]
-  [Fintype T] [DecidableEq T]
+  [Fintype U] [DecidableEq U]
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
@@ -26,30 +26,26 @@ noncomputable def labeledSubgraphDensity
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
 noncomputable def isoSetOfInducedlabeledSubgraphIsoH
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ T)
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
       ≃
       { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   := sorry
 
 lemma labeledSubgraphDensity_respects_eqv_on_G
-    (H : LabeledGraph σ T) {G G' : LabeledGraph σ W} (φ : G ≃f G')
-    : labeledSubgraphDensity H G = labeledSubgraphDensity H G'
+    (H : LabeledGraph σ U) {G₀ G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    : labeledSubgraphDensity H G₀ = labeledSubgraphDensity H G₁
   := by
   dsimp [labeledSubgraphDensity]
-  let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
-  let S₁ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    dsimp [S₀, S₁]
-    have := isoSetOfInducedlabeledSubgraphIsoH φ H
-    rfl
+  let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphIsoH φ H
   simp at h_iso_S₀_S₁
-  have hS₀ : Fintype S₀ := sorry
-  have hS₁ : Fintype S₁ := sorry
-  have h_count : labeledSubgraphCount H G = labeledSubgraphCount H G' := by
+  have hS₀ : Fintype S₀ := Fintype.ofFinite ↑S₀
+  have hS₁ : Fintype S₁ := Fintype.ofFinite ↑S₁
+  have h_count : labeledSubgraphCount H G₀ = labeledSubgraphCount H G₁ := by
     dsimp [labeledSubgraphCount]
-    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     sorry
   rw [h_count]
   rfl
