@@ -55,31 +55,18 @@ end
 
 section
 
-class FintypeList {t : ℕ} (V : Fin t → Type) where
-  fintype_all : ∀ (i : Fin t), Fintype (V i)
-
-class DecidableEqList {t : ℕ} (V : Fin t → Type) where
-  decidable_eq_all : ∀ (i : Fin t), DecidableEq (V i)
-
-instance fintype_V {t : ℕ} (V : Fin t → Type) [FintypeList V] (i : Fin t) : Fintype (V i)
-  :=
-  FintypeList.fintype_all i
-
-instance decidable_eq_V {t : ℕ} (V : Fin t → Type) [DecidableEqList V] (i : Fin t) : DecidableEq (V i)
-  :=
-  DecidableEqList.decidable_eq_all i
-
 variable {t : ℕ} {V : Fin t → Type} [FintypeList V] [DecidableEqList V]
   {W : Type} [Fintype W] [DecidableEq W]
+  {U : Type} [Fintype U] [DecidableEq U]
 
 noncomputable def labeledSubgraphListCount
-    (H_list : ∀ (i : Fin t), LabeledGraph σ (V i)) (G : LabeledGraph σ W) : ℕ
+    (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℕ
   :=
-  let p₁ (G_list : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
-    := ∀ (i : Fin t), (G_list i).IsInduced ∧ Nonempty ((G_list i).coe ≃f H_list i)
-  let p₂ (G_list : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
-    := ∀ (i j : Fin t), i ≠ j → (G_list i).subgraph.verts ∩ (G_list j).subgraph.verts = ∅
-  let S := { G_list : ∀ (_ : Fin t), LabeledSubgraph σ G | p₁ G_list ∧ p₂ G_list }
+  let p₁ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+    := ∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)
+  let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+    := ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅
+  let S := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | p₁ Gl ∧ p₂ Gl }
   have : Fintype S := Fintype.ofFinite ↑S
   S.toFinset.card
 
@@ -92,53 +79,46 @@ def multinomialCoefficient
   else 0
 
 noncomputable def labeledSubgraphListDensity
-    (H_list : ∀ (i : Fin t), LabeledGraph σ (V i)) (G : LabeledGraph σ W) : ℚ
+    (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℚ
   :=
-  let r_list := fun (i : Fin t) ↦ (H_list i).size - σ.size
-  labeledSubgraphListCount H_list G / multinomialCoefficient r_list G.size
+  let r_list := fun (i : Fin t) ↦ (Hl i).size - σ.size
+  labeledSubgraphListCount Hl G / multinomialCoefficient r_list G.size
 
 lemma labeledSubgraphListDensity_respects_eqv_on_G
-    (H_list : ∀ (i : Fin t), LabeledGraph σ (V i)) {G G' : LabeledGraph σ W} (φ : G ≃f G')
-    : labeledSubgraphListDensity H_list G = labeledSubgraphListDensity H_list G'
+    (Hl : LabeledGraphList σ t V) {G G' : LabeledGraph σ W} (φ : G ≃f G')
+    : labeledSubgraphListDensity Hl G = labeledSubgraphListDensity Hl G'
   :=
   sorry
 
 noncomputable def labeledSubgraphListDensityLifted
-    (H_list : ∀ (i : Fin t), LabeledGraph σ (V i)) : Flag σ W → ℚ
+    (Hl : LabeledGraphList σ t V) : Flag σ W → ℚ
   := by
-  apply Quot.lift (fun G => labeledSubgraphListDensity H_list G)
+  apply Quot.lift (fun G => labeledSubgraphListDensity Hl G)
   intro _ _ h_eqv
-  exact labeledSubgraphListDensity_respects_eqv_on_G H_list (Classical.choice h_eqv)
+  exact labeledSubgraphListDensity_respects_eqv_on_G Hl (Classical.choice h_eqv)
 
 lemma labeledSubgraphListDensityLifted_respects_eqv
-    (H_list H_list' : ∀ (i : Fin t), LabeledGraph σ (V i)) (φ : ∀ (i : Fin t), H_list i ≃f H_list' i) (G : Flag σ W)
-    : labeledSubgraphListDensityLifted H_list G = labeledSubgraphListDensityLifted H_list' G
+    (Hl Hl' : LabeledGraphList σ t V) (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
+    : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
   :=
   sorry
 
-namespace Fin
-
-@[simps]
-def coe {s t : ℕ} (hst : s ≤ t) (i : Fin s) : Fin t where
-  val := i.val
-  isLt := Nat.lt_of_lt_of_le i.is_lt hst
-
-end Fin
-
-noncomputable def subflagDensityList_partiallyLifted
-    {s : ℕ} (hst : s ≤ t)
-    (F_list : ∀ (i : Fin s), Flag σ (V (i.coe hst)))
-    (H_list : ∀ (i : Fin (t - s)), Flag σ (V ⟨i.val + s, sorry⟩))
-    : Flag σ W → ℚ
-  :=
-  sorry
-
-noncomputable def subflagDensityList
-    : (∀ (i : Fin t), Flag σ (V i)) → Flag σ W → ℚ
+noncomputable def QuotLabeledSubgraphListDensity
+    : QuotlabeledGraphList σ t V → Flag σ W → ℚ
   := by
-  induction t with
-  | zero => exact fun _ _ ↦ 0
-  | succ t ih =>
-      sorry
+  apply Quot.lift labeledSubgraphListDensityLifted
+  intro Hl Hl' Hl_eqv
+  ext G
+  have φ : ∀ (i : Fin t), Hl i ≃f Hl' i := by
+    intro i
+    exact Classical.choice (Hl_eqv i)
+  exact labeledSubgraphListDensityLifted_respects_eqv Hl Hl' φ G
+
+noncomputable def FlagListDensity
+    : FlagList σ t V → Flag σ W → ℚ
+  :=
+  fun Fl ↦ QuotLabeledSubgraphListDensity Fl.coe
+
+example (F : Flag σ U) (G : Flag σ W) : subflagDensity F G = FlagListDensity F.toSingletonList G := sorry
 
 end
