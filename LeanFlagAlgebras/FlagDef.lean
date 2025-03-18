@@ -117,8 +117,6 @@ def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
 
 end LabeledGraphIso
 
-variable {T : Type} [Fintype T] {V : Type}
-
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
   :=
   Nonempty (G ≃f G')
@@ -148,9 +146,7 @@ theorem flagEqv.trans {σ : FlagType T}
   have G'_iso : G' ≃f G'' := Classical.choice h'
   exact Nonempty.intro (G_iso.trans G'_iso)
 
-variable [DecidableEq T]
-
-instance labeledGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
+instance labeledGraphSetoid (σ : FlagType T) (V : Type)
     : Setoid (LabeledGraph σ V)
   where
     r     := flagEqv
@@ -160,10 +156,97 @@ instance labeledGraphSetoid (σ : FlagType T) (V : Type) [DecidableEq V]
       trans := flagEqv.trans
     }
 
-def Flag (σ : FlagType T) (V : Type) [DecidableEq V] : Type :=
+def Flag (σ : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid σ V)
 
 noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V] : Fintype (Flag σ V)
   := by
   classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
+
+class FintypeList {t : ℕ} (V : Fin t → Type) where
+  fintype_all : ∀ (i : Fin t), Fintype (V i)
+
+class DecidableEqList {t : ℕ} (V : Fin t → Type) where
+  decidable_eq_all : ∀ (i : Fin t), DecidableEq (V i)
+
+instance fintype_V {t : ℕ} (V : Fin t → Type) [FintypeList V] (i : Fin t) : Fintype (V i)
+  :=
+  FintypeList.fintype_all i
+
+instance decidable_eq_V {t : ℕ} (V : Fin t → Type) [DecidableEqList V] (i : Fin t) : DecidableEq (V i)
+  :=
+  DecidableEqList.decidable_eq_all i
+
+abbrev LabeledGraphList (σ : FlagType T) (t : ℕ) (V : Fin t → Type) := ∀ (i : Fin t), LabeledGraph σ (V i)
+
+def flagListEqv {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Gl Gl' : LabeledGraphList σ t V) : Prop
+  :=
+  ∀ (i : Fin t), Gl i ∼f Gl' i
+
+infixl:50 " ∼fl " => flagListEqv
+
+omit [Fintype T] in
+theorem flagListEqv.refl {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Gl : LabeledGraphList σ t V)
+    : Gl ∼fl Gl
+  :=
+  sorry
+
+omit [Fintype T] in
+theorem flagListEqv.symm {σ : FlagType T} {t : ℕ} {V : Fin t → Type}
+    : ∀ {Gl Gl' : LabeledGraphList σ t V}, Gl ∼fl Gl' → Gl' ∼fl Gl
+  :=
+  sorry
+
+omit [Fintype T] in
+theorem flagListEqv.trans {σ : FlagType T} {t : ℕ} {V : Fin t → Type}
+    : ∀ {Gl Gl' Gl'' : LabeledGraphList σ t V}, Gl ∼fl Gl' → Gl' ∼fl Gl'' → Gl ∼fl Gl''
+  :=
+  sorry
+
+instance labeledGraphListSetoid (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
+    : Setoid (LabeledGraphList σ t V)
+  where
+    r     := flagListEqv
+    iseqv := {
+      refl  := flagListEqv.refl,
+      symm  := flagListEqv.symm,
+      trans := flagListEqv.trans
+    }
+
+def QuotlabeledGraphList (σ : FlagType T) (t : ℕ) (V : Fin t → Type) : Type :=
+  Quotient (labeledGraphListSetoid σ t V)
+
+abbrev FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type) := ∀ (i : Fin t), Flag σ (V i)
+
+def Flag.toSingletonList {σ : FlagType T} {V : Type} (F : Flag σ V)
+    : FlagList σ 1 (fun _ => V)
+  :=
+  fun _ => F
+
+instance fintypeSingletonList {V : Type} [Fintype V]
+    : @FintypeList 1 (fun _ => V)
+  :=
+  { fintype_all := fun _ ↦ inferInstance }
+
+instance DecidableEqSingletonList {V : Type} [DecidableEq V]
+    : @DecidableEqList 1 (fun _ => V)
+  :=
+  { decidable_eq_all := fun _ ↦ inferInstance }
+
+instance eqv_QuotlabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
+    : QuotlabeledGraphList σ t V ≃ FlagList σ t V
+  :=
+  sorry
+
+@[simp]
+def QuotlabeledGraphList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : QuotlabeledGraphList σ t V)
+    : FlagList σ t V
+  :=
+  (eqv_QuotlabeledGraphList_FlagList σ t V).toFun Fl
+
+@[simp]
+def FlagList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : FlagList σ t V)
+    : QuotlabeledGraphList σ t V
+  :=
+  (eqv_QuotlabeledGraphList_FlagList σ t V).invFun Fl
