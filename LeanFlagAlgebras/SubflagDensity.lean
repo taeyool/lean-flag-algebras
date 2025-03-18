@@ -5,9 +5,10 @@ variable {T : Type} [Fintype T] {σ : FlagType T}
 
 section
 
-variable {V W : Type}
+variable {V W T: Type}
   [Fintype V] [DecidableEq V]
   [Fintype W] [DecidableEq W]
+  [Fintype T] [DecidableEq T]
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
@@ -24,11 +25,34 @@ noncomputable def labeledSubgraphDensity
   let num_of_all_induced_subgraph := (G.size - σ.size).choose (H.size - σ.size)
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
+noncomputable def isoSetOfInducedlabeledSubgraphIsoH
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ T)
+    : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+      ≃
+      { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  := sorry
+
 lemma labeledSubgraphDensity_respects_eqv_on_G
-    (H : LabeledGraph σ V) {G G' : LabeledGraph σ W} (φ : G ≃f G')
+    (H : LabeledGraph σ T) {G G' : LabeledGraph σ W} (φ : G ≃f G')
     : labeledSubgraphDensity H G = labeledSubgraphDensity H G'
-  :=
-  sorry
+  := by
+  dsimp [labeledSubgraphDensity]
+  let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  let S₁ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    dsimp [S₀, S₁]
+    have := isoSetOfInducedlabeledSubgraphIsoH φ H
+    rfl
+  simp at h_iso_S₀_S₁
+  have hS₀ : Fintype S₀ := sorry
+  have hS₁ : Fintype S₁ := sorry
+  have h_count : labeledSubgraphCount H G = labeledSubgraphCount H G' := by
+    dsimp [labeledSubgraphCount]
+    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp
+    sorry
+  rw [h_count]
+  rfl
 
 noncomputable def labeledSubgraphDensityLifted
     (H : LabeledGraph σ V) : Flag σ W → ℚ
