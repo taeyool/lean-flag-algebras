@@ -54,6 +54,21 @@ def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledS
   :=
   H.subgraph.IsInduced
 
+noncomputable instance subgraphFintype
+    {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) : Fintype (G.Subgraph)
+  :=
+  let f : G.Subgraph → Set V × Set (V × V) :=
+    fun G' => (G'.verts, { (u, v) | G'.Adj u v })
+  have f_inj : Function.Injective f := by
+    intro G1 G2 h_eq
+    dsimp [f] at h_eq
+    ext u v
+    . have h_eq_verts : G1.verts = G2.verts := (Prod.ext_iff.mp h_eq).1
+      exact Eq.to_iff (congrFun h_eq_verts u)
+    . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
+      exact Eq.to_iff (congrFun h_eq_edges (u, v))
+  Fintype.ofInjective f f_inj
+
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V) : Fintype (LabeledSubgraph σ G)
   :=
@@ -67,26 +82,6 @@ noncomputable instance labeledSubgraphFintype
     simp_all only [heq_eq_eq]
     ext x : 2
     simp_all only
-  have : Fintype (G.graph.Subgraph) := by
-    let g : G.graph.Subgraph → Set V × Set (V × V) :=
-      fun H ↦ (H.verts, { (u, v) | H.Adj u v })
-    have g_inj : Function.Injective g := by
-      intro H H' h_eq
-      dsimp [g] at h_eq
-      simp_all only [Prod.mk.injEq, f]
-      obtain ⟨left, right⟩ := h_eq
-      ext u v
-      · simp_all only
-      · constructor
-        · intro e
-          have : (u, v) ∈ {x | H.Adj x.1 x.2} := e
-          rw [right] at this
-          exact this
-        · intro e
-          have : (u, v) ∈ {x | H'.Adj x.1 x.2} := e
-          rw [←right] at this
-          exact this
-    exact Fintype.ofInjective g g_inj
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
   Fintype.ofInjective f f_inj
 
