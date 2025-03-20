@@ -1380,10 +1380,10 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
                 G₁.IsInduced ∧ Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
                 G₂.IsInduced ∧ Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
                 G₁.verts ∩ G₂.verts = ∅ }
-  let S₂ := { (G₁, G₂, G₁₂) : Subgraph G × Subgraph G × Subgraph G |
+  let S₂ := { (G₁, G₂, G₁₂) : Subgraph G × Subgraph G × { G₁₂ : Subgraph G // G₁₂.IsInduced } |
                 (G₁, G₂) ∈ S₁ ∧ G₁₂ = inducedSubgraph G (G₁.verts ∪ G₂.verts)}
-  let S₃ := { ⟨F, G₁, G₂, G₁₂⟩ : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)) × Subgraph G × Subgraph G × Subgraph G |
-                ⟨G₁, G₂⟩ ∈ S₁ ∧ G₁₂ = inducedSubgraph G (G₁.verts ∪ G₂.verts) ∧ Nonempty (F.out ≃g G₁₂.coe) }
+  let S₃ := { ⟨F, G₁, G₂, G₁₂⟩ : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)) × Subgraph G × Subgraph G × { G₁₂ : Subgraph G // G₁₂.IsInduced } |
+                ⟨G₁, G₂⟩ ∈ S₁ ∧ G₁₂ = inducedSubgraph G (G₁.verts ∪ G₂.verts) ∧ Nonempty (F.out ≃g (G₁₂ : Subgraph G).coe) }
   let S₄ := Σ F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
   have f_S₀_S₁ : S₀ ≃ S₁ := by
@@ -1408,13 +1408,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   have f_S₂_S₃ : S₂ ≃ S₃ :=
     let vertex_card_of_disj_union_eq_sum_of_vertex_cards :
-          ∀ (G₁ G₂ G₁₂ : Subgraph G),
+          ∀ (G₁ G₂ : Subgraph G), ∀ (G₁₂ : { G' : Subgraph G // G'.IsInduced }),
               Nonempty (Subgraph.coe G₁ ≃g H₁) ∧
               Nonempty (Subgraph.coe G₂ ≃g H₂) ∧
               G₁.verts ∩ G₂.verts = ∅ ∧
               G₁₂ = inducedSubgraph G (G₁.verts ∪ G₂.verts)
               →
-              Fintype.card G₁₂.verts = ℓ₁ + ℓ₂
+              Fintype.card (G₁₂ : Subgraph G).verts = ℓ₁ + ℓ₂
     := by
       intro G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
       have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
@@ -1425,11 +1425,11 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         calc
           Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
           _ = ℓ₂ := by apply Fintype.card_fin
-      have h₀ : G₁₂.verts = G₁.verts ∪ G₂.verts := by
+      have h₀ : (G₁₂ : Subgraph G).verts = G₁.verts ∪ G₂.verts := by
         subst h_G₁₂
         apply Subgraph.verts_sup
       calc
-        Fintype.card G₁₂.verts = Fintype.card ↑(G₁.verts ∪ G₂.verts) :=
+        Fintype.card (G₁₂ : Subgraph G).verts = Fintype.card ↑(G₁.verts ∪ G₂.verts) :=
               Fintype.card_congr' (congrArg Set.Elem h₀)
         _ = Fintype.card (G₁.verts ⊕ G₂.verts) := by
               apply Fintype.card_congr
@@ -1440,9 +1440,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
               apply Fintype.card_sum
   {
     toFun := fun ⟨⟨G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩ =>
-      have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+      have h_G₁₂_verts_card : Fintype.card (G₁₂ : Subgraph G).verts = ℓ₁ + ℓ₂ :=
         vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
-      let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card
+      let ⟨F, h_F⟩ := getCanonicalQuotSimpleGraph (G₁₂ : Subgraph G).coe h_G₁₂_verts_card
       ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, Nonempty.intro h_F⟩
     invFun := fun ⟨⟨F, G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂, h_F⟩ =>
       ⟨⟨G₁, G₂, G₁₂⟩, h_G₁_G₂, h_G₁₂⟩
@@ -1452,22 +1452,23 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     right_inv := by
       intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
       simp
-      have h_G₁₂_verts_card : Fintype.card G₁₂.verts = ℓ₁ + ℓ₂ :=
+      have h_G₁₂_verts_card : Fintype.card (G₁₂ : Subgraph G).verts = ℓ₁ + ℓ₂ :=
         vertex_card_of_disj_union_eq_sum_of_vertex_cards G₁ G₂ G₁₂ ⟨h_G₁_H₁, h_G₂_H₂, h_G₁_G₂_disj, h_G₁₂⟩
       calc
-        (getCanonicalQuotSimpleGraph G₁₂.coe h_G₁₂_verts_card).fst
+        (getCanonicalQuotSimpleGraph (G₁₂ : Subgraph G).coe h_G₁₂_verts_card).fst
         _ = (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin (ℓ₁ + ℓ₂))).fst :=
-              getCanonicalQuotSimpleGraph_iso G₁₂.coe h_G₁₂_verts_card F.out (Fintype.card_fin (ℓ₁ + ℓ₂)) h_F.some.symm
+              getCanonicalQuotSimpleGraph_iso (G₁₂ : Subgraph G).coe h_G₁₂_verts_card F.out (Fintype.card_fin (ℓ₁ + ℓ₂)) h_F.some.symm
         _ = F :=
               getCanonicalQuotSimpleGraph_self F
   }
 
   have f_S₃_S₄ : S₃ ≃ S₄ := {
     toFun := by
-      intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
+      intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
       obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
-      have h_G₁₂_ind : G₁₂.IsInduced := by sorry
-      have h_G₁₂_verts_eq_G₁_verts_union_G₂_verts : G₁₂.verts = G₁.verts ∪ G₂.verts := by sorry
+      have h_G₁₂_verts_eq_G₁_verts_union_G₂_verts : G₁₂.verts = G₁.verts ∪ G₂.verts := by
+        dsimp [inducedSubgraph] at h_G₁₂
+        simp_all only [Subtype.mk.injEq]
       have h_G₁_verts_sub_G₁₂_verts : G₁.verts ⊆ G₁₂.verts := by simp_all only [Set.subset_union_left]
       have h_G₂_verts_sub_G₁₂_verts : G₂.verts ⊆ G₁₂.verts := by simp_all only [Set.subset_union_right]
       have h_G₁_le : G₁ ≤ G₁₂ := inducedSubgraph_mono h_G₁₂_ind h_G₁_verts_sub_G₁₂_verts
@@ -1491,14 +1492,26 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       have h_K₁_K₂ : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
         simp [subgraphPairSet]
         exact ⟨h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, h_K₁_K₂_disj⟩
-      let G₁₂' : Subgraph G := sorry
-      have h_F_out_G₁₂' : G₁₂' ∈ subgraphSet F.out G := sorry
-      exact ⟨F, ⟨⟨K₁,K₂⟩, h_K₁_K₂⟩, ⟨G₁₂', h_F_out_G₁₂'⟩⟩
+      have h_F_out_G₁₂ : G₁₂ ∈ subgraphSet F.out G := by
+        simp [subgraphSet]
+        exact ⟨h_G₁₂_ind, Nonempty.intro h_F.some.symm⟩
+      exact ⟨F, ⟨⟨K₁,K₂⟩, h_K₁_K₂⟩, ⟨G₁₂, h_F_out_G₁₂⟩⟩
     invFun := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
       dsimp [subgraphSet] at h_G₁₂_F; simp at h_G₁₂_F
       obtain ⟨h_G₁₂_ind, h_G₁₂_iso⟩ := h_G₁₂_F
-      exact ⟨⟨F, sorry, sorry, G₁₂⟩, ⟨sorry, sorry, Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
+      let g_F_out_G₁₂ : F.out ≃g G₁₂.coe := h_G₁₂_iso.some.symm
+      obtain ⟨G₁', g_G₁'_iso⟩ := subgraphFromPartialIso g_F_out_G₁₂ G₁
+      obtain ⟨G₂', g_G₂'_iso⟩ := subgraphFromPartialIso g_F_out_G₁₂ G₂
+      have h_G₁'_G₂' : (G₁',G₂') ∈ S₁ := by
+        dsimp [subgraphPairSet] at h_G₁_G₂_F; simp at h_G₁_G₂_F
+        obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂_F
+        dsimp [S₁]
+        let g_G₁' : G₁'.coe ≃g H₁ := g_G₁'_iso.symm.trans h_G₁_iso_H₁.some
+        let g_G₂' : G₂'.coe ≃g H₂ := g_G₂'_iso.symm.trans h_G₂_iso_H₂.some
+        exact ⟨sorry, Nonempty.intro g_G₁', sorry, Nonempty.intro g_G₂', sorry⟩
+      have h_G₁₂_G₁'_G₂' : ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := sorry
+      exact ⟨⟨F, G₁', G₂', ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁'_G₂', h_G₁₂_G₁'_G₂', Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
     left_inv := by
       intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
       sorry
