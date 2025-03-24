@@ -25,6 +25,81 @@ noncomputable def labeledSubgraphDensity
   let num_of_all_induced_subgraph := (G.size - σ.size).choose (H.size - σ.size)
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
+def relOflabeledfSubgraph
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
+  :=
+  H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
+  ∧ ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
+  -- Several conditions will be added
+
+def relOfPredOnlabeledfSubgraph
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
+  := ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁), (relOflabeledfSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+
+def inducedlabeledSugraph
+    {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) : {G' : LabeledSubgraph σ G // G'.IsInduced}
+  :=
+  let G' : LabeledSubgraph σ G := {
+    subgraph := {
+      verts := S ∪ { G.type_embed t | t : T }
+      Adj := fun (u v : V) ↦ G.graph.Adj u v ∧ u ∈ S ∪ { G.type_embed t | t : T } ∧ v ∈ S ∪ { G.type_embed t | t : T }
+      adj_sub := by
+        intro v w h
+        simp_all only
+      edge_vert := by
+        intro v w h
+        simp_all only [Set.mem_union, Set.mem_setOf_eq]
+      symm := fun u v h ↦ ⟨G.graph.symm h.1, h.2.2, h.2.1⟩
+    }
+    type_embed := {
+      toFun := by
+        intro t
+        simp_all only
+        apply Subtype.mk
+        · simp_all only [Set.mem_union, Set.mem_setOf_eq]
+          apply Or.inr
+          apply Exists.intro
+          · rfl
+          · exact t
+      inj' := by
+        intro t₁ t₂ h
+        simp_all only [Set.mem_setOf_eq, id_eq, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq]
+      map_rel_iff' := by
+        intro t₁ t₂
+        simp_all only [Set.mem_setOf_eq, id_eq, Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj,
+          SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
+        intro h
+        simp_all only [Set.mem_union, Set.mem_setOf_eq, EmbeddingLike.apply_eq_iff_eq, exists_eq, or_true, and_self]
+    }
+    embed_eq := by
+      intro t
+      simp_all only [Set.mem_setOf_eq, eq_mp_eq_cast, cast_eq, id_eq, RelEmbedding.coe_mk,
+        Function.Embedding.coeFn_mk]
+  }
+
+  let h_induced : G'.IsInduced := by
+    intro u v hu hv huv
+    simp_all only [Set.mem_union, Set.mem_setOf_eq, and_self]
+
+  ⟨G', h_induced⟩
+
+noncomputable def isoSetOfInducedlabeledSubgraph
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
+    (h_rel : relOfPredOnlabeledfSubgraph φ p₀ p₁) (h_rel_inv : relOfPredOnlabeledfSubgraph φ.symm p₁ p₀)
+    : { G' : LabeledSubgraph σ G₀ | p₀ G' } ≃ { G' : LabeledSubgraph σ G₁ | p₁ G' }
+  :=
+  let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ p₀ G' }
+  let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ p₁ G' }
+  let f (s₀ : S₀) : S₁ := by
+    dsimp [S₀] at s₀
+    let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
+    let H₁ := (inducedlabeledSugraph G₁ (φ.graph_iso '' H₀.subgraph.verts)).1
+    sorry
+  sorry
+
 noncomputable def isoSetOfInducedlabeledSubgraphIsoH
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
@@ -40,12 +115,12 @@ lemma labeledSubgraphDensity_respects_eqv_on_G
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphIsoH φ H
-  simp at h_iso_S₀_S₁
   have hS₀ : Fintype S₀ := Fintype.ofFinite ↑S₀
   have hS₁ : Fintype S₁ := Fintype.ofFinite ↑S₁
   have h_count : labeledSubgraphCount H G₀ = labeledSubgraphCount H G₁ := by
-    dsimp [labeledSubgraphCount]
+    dsimp only [labeledSubgraphCount]
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
     sorry
   rw [h_count]
   rfl
