@@ -25,7 +25,7 @@ noncomputable def labeledSubgraphDensity
   let num_of_all_induced_subgraph := (G.size - σ.size).choose (H.size - σ.size)
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
-def relOflabeledfSubgraph
+def relOflabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
   :=
@@ -36,9 +36,9 @@ def relOflabeledfSubgraph
 def relOfPredOnlabeledfSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
-  := ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁), (relOflabeledfSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+  := ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁), (relOflabeledSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
-def inducedlabeledSugraph
+def inducedlabeledSubgraph
     {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) : {G' : LabeledSubgraph σ G // G'.IsInduced}
   :=
   let G' : LabeledSubgraph σ G := {
@@ -78,12 +78,16 @@ def inducedlabeledSugraph
       simp_all only [Set.mem_setOf_eq, eq_mp_eq_cast, cast_eq, id_eq, RelEmbedding.coe_mk,
         Function.Embedding.coeFn_mk]
   }
-
   let h_induced : G'.IsInduced := by
     intro u v hu hv huv
     simp_all only [Set.mem_union, Set.mem_setOf_eq, and_self]
-
   ⟨G', h_induced⟩
+
+lemma inducedlabeledSubgraph_related
+    {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
+    : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts))
+  := sorry
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -96,7 +100,8 @@ noncomputable def isoSetOfInducedlabeledSubgraph
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-    let H₁ := (inducedlabeledSugraph G₁ (φ.graph_iso '' H₀.subgraph.verts)).1
+    let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts)).1
+
     sorry
   sorry
 
