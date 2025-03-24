@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».FlagDef
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.Linarith.Frontend
 
 variable {T : Type} [Fintype T] {σ : FlagType T}
 
@@ -230,14 +231,14 @@ def multinomialCoefficient
   :=
   let r_sum := ∑ i : Fin t, r_list i
   if _ : n ≥ r_sum then
-    Nat.factorial n / (∏ i : Fin t, Nat.factorial (r_list i)) / Nat.factorial (n - r_sum)
+    Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - r_sum))
   else 0
 
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℚ
   :=
   let r_list := fun (i : Fin t) => (Hl i).size - σ.size
-  labeledSubgraphListCount Hl G / multinomialCoefficient r_list G.size
+  labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
 lemma labeledSubgraphListDensity_respects_eqv_on_G
     (Hl : LabeledGraphList σ t V) {G G' : LabeledGraph σ W} (φ : G ≃f G')
@@ -274,6 +275,61 @@ noncomputable def FlagListDensity
   :=
   fun Fl => QuotLabeledSubgraphListDensity Fl.coe
 
-example (F : Flag σ U) (G : Flag σ W) : subflagDensity F G = FlagListDensity F.toSingletonList G := sorry
+example : ∑ a : Fin 1, 1 = 1 := by
+  simp only [Finset.univ_unique, Fin.default_eq_zero, Fin.isValue, Finset.sum_const,
+    Finset.card_singleton, smul_eq_mul, mul_one]
+
+example (F : Flag σ U) (G : Flag σ W)
+    : subflagDensity F G = FlagListDensity F.toSingletonList G
+  := by
+  classical
+  rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  have h_count : labeledSubgraphCount Frep Grep = labeledSubgraphListCount (fun (_ : Fin 1) => Frep) Grep := by
+    dsimp [labeledSubgraphCount, labeledSubgraphListCount]
+    apply Finset.card_bij
+    · intro H hH
+      simp at hH
+      show (fun (_ : Fin 1) => H) ∈ _
+      simp [Set.toFinset_setOf]
+      constructor
+      · exact hH
+      · intro i j hij
+        have : i = j := by
+          rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+        contradiction
+    · intro H _ H' _ h_eq
+      calc
+        H = (fun (_ : Fin 1) => H) 0 := by simp
+        _ = (fun (_ : Fin 1) => H') 0 := by rw [h_eq]
+        _ = H' := by simp
+    · intro Hl _
+      use Hl 0
+      simp_all
+      ext1 i
+      rw [Fin.fin_one_eq_zero i]
+  calc
+    subflagDensity F G = labeledSubgraphDensity Frep Grep := by
+      subst hFrep hGrep
+      rfl
+    _ = labeledSubgraphListDensity (fun (_ : Fin 1) => Frep) Grep := by
+      dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
+      rw [← h_count]
+      congr
+      dsimp [multinomialCoefficient]
+      rw [Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Finset.prod_singleton]
+      split
+      · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
+      · rw [Nat.choose_eq_zero_of_lt (by linarith)]
+    _ = QuotLabeledSubgraphListDensity F.toSingletonList.coe G := by
+      have : F.toSingletonList.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
+        dsimp [eqv_QuotlabeledGraphList_FlagList]
+        apply Quotient.sound
+        intro i
+        simp [Flag.toSingletonList, ← hFrep]
+        apply Quotient.mk_out Frep
+      rw [this, ← hGrep]
+      rfl
+    _ = FlagListDensity F.toSingletonList G := rfl
 
 end
