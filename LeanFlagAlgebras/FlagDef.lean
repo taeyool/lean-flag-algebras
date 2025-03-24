@@ -190,19 +190,19 @@ omit [Fintype T] in
 theorem flagListEqv.refl {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Gl : LabeledGraphList σ t V)
     : Gl ∼fl Gl
   :=
-  sorry
+  fun i => flagEqv.refl (Gl i)
 
 omit [Fintype T] in
 theorem flagListEqv.symm {σ : FlagType T} {t : ℕ} {V : Fin t → Type}
     : ∀ {Gl Gl' : LabeledGraphList σ t V}, Gl ∼fl Gl' → Gl' ∼fl Gl
   :=
-  sorry
+  fun h i => flagEqv.symm (h i)
 
 omit [Fintype T] in
 theorem flagListEqv.trans {σ : FlagType T} {t : ℕ} {V : Fin t → Type}
     : ∀ {Gl Gl' Gl'' : LabeledGraphList σ t V}, Gl ∼fl Gl' → Gl' ∼fl Gl'' → Gl ∼fl Gl''
   :=
-  sorry
+  fun h h' i => flagEqv.trans (h i) (h' i)
 
 instance labeledGraphListSetoid (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
     : Setoid (LabeledGraphList σ t V)
@@ -244,7 +244,17 @@ noncomputable instance eqv_QuotlabeledGraphList_FlagList (σ : FlagType T) (t : 
     intro i
     simp
     apply Quotient.mk_out (Gl.out i)
-  right_inv := sorry
+  right_inv Fl := by
+    simp; ext i
+    rw [← Quotient.out_eq (Fl i)]
+    apply Quotient.sound
+    apply flagEqv.trans
+    · show _ ∼f (fun i ↦ Quotient.out (Fl i)) i
+      have : ⟦fun i ↦ Quotient.out (Fl i)⟧.out ∼fl (fun i ↦ Quotient.out (Fl i)) := by
+        apply Quotient.mk_out (fun i ↦ Quotient.out (Fl i))
+      exact this i
+    · simp
+      exact flagEqv.refl (Quotient.out (Fl i))
 
 @[simp]
 noncomputable def QuotlabeledGraphList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : QuotlabeledGraphList σ t V)
