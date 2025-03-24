@@ -70,7 +70,7 @@ def inducedlabeledSubgraph
         intro t₁ t₂
         simp_all only [Set.mem_setOf_eq, id_eq, Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj,
           SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
-        intro h
+        intro _
         simp_all only [Set.mem_union, Set.mem_setOf_eq, EmbeddingLike.apply_eq_iff_eq, exists_eq, or_true, and_self]
     }
     embed_eq := by
@@ -85,9 +85,64 @@ def inducedlabeledSubgraph
 
 lemma inducedlabeledSubgraph_related
     {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
+    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
     : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts))
-  := sorry
+  := by
+  dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]; simp
+  apply And.intro
+  · intro x hx
+    simp
+    obtain ⟨t, ht_G₁⟩ := hx
+    let x' := G₀.type_embed t
+    use x'
+    constructor
+    · let x'_eq := H₀.type_embed t
+      have h_eq : x' = x'_eq := by
+        simp [x', x'_eq]
+        rw [H₀.embed_eq t]
+      rw [h_eq]
+      simp
+    · simp_all only [x']
+      rw [←ht_G₁, ←φ.type_preserve]
+      simp
+  · intro u v
+    constructor
+    · intro h_uv_H₀
+      have h_uv_G₀ := H₀.subgraph.adj_sub h_uv_H₀
+      have h_u_H₀ : u ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv_H₀
+      have h_v_H₀ : v ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert (H₀.subgraph.symm h_uv_H₀)
+      constructor
+      · simp [φ.graph_iso.map_rel_iff]
+        exact h_uv_G₀
+      · constructor
+        · left; exact h_u_H₀
+        · left; exact h_v_H₀
+    · rintro ⟨h_uv, h_u, h_v⟩
+      cases' h_u with h_u h_u
+      · cases' h_v with h_v h_v
+        · apply h_ind₀ h_u h_v
+          exact (φ.graph_iso.map_rel_iff).mp h_uv
+        · sorry
+      · cases' h_v with h_v h_v
+        · sorry
+        · obtain ⟨u_T, h_uG₁⟩ := h_u
+          obtain ⟨v_T, h_vG₁⟩ := h_v
+          rw [←h_uG₁] at h_uv
+          rw [←h_vG₁] at h_uv
+          let h_uG₀ := G₀.type_embed u_T
+          let h_vG₀ := G₀.type_embed v_T
+          have h_uv_G₀ : G₀.graph.Adj h_uG₀ h_vG₀ := by
+            rw [←φ.graph_iso.map_rel_iff]
+            simp [h_uG₀, h_vG₀]
+            have h_u_eq : φ.graph_iso (G₀.type_embed u_T) = G₁.type_embed u_T := by
+              rw [←φ.type_preserve]
+              rfl
+            have h_v_eq : φ.graph_iso (G₀.type_embed v_T) = G₁.type_embed v_T := by
+              rw [←φ.type_preserve]
+              rfl
+            rw [h_u_eq, h_v_eq]
+            exact h_uv
+          sorry
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
