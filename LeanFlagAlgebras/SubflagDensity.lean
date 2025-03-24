@@ -101,7 +101,7 @@ def multinomialCoefficient
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℚ
   :=
-  let r_list := fun (i : Fin t) ↦ (Hl i).size - σ.size
+  let r_list := fun (i : Fin t) => (Hl i).size - σ.size
   labeledSubgraphListCount Hl G / multinomialCoefficient r_list G.size
 
 lemma labeledSubgraphListDensity_respects_eqv_on_G
@@ -137,7 +137,7 @@ noncomputable def QuotLabeledSubgraphListDensity
 noncomputable def FlagListDensity
     : FlagList σ t V → Flag σ W → ℚ
   :=
-  fun Fl ↦ QuotLabeledSubgraphListDensity Fl.coe
+  fun Fl => QuotLabeledSubgraphListDensity Fl.coe
 
 example (F : Flag σ U) (G : Flag σ W) : subflagDensity F G = FlagListDensity F.toSingletonList G := sorry
 

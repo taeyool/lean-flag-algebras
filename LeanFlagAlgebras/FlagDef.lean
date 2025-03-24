@@ -234,19 +234,26 @@ instance DecidableEqSingletonList {V : Type} [DecidableEq V]
   :=
   { decidable_eq_all := fun _ ↦ inferInstance }
 
-instance eqv_QuotlabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
-    : QuotlabeledGraphList σ t V ≃ FlagList σ t V
-  :=
-  sorry
+noncomputable instance eqv_QuotlabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
+    : QuotlabeledGraphList σ t V ≃ FlagList σ t V where
+  toFun := fun Gl (i : Fin t) => ⟦Gl.out i⟧
+  invFun := fun Fl => ⟦fun (i : Fin t) => (Fl i).out⟧
+  left_inv Gl := by
+    rw [← Quotient.out_eq Gl]
+    apply Quotient.sound
+    intro i
+    simp
+    apply Quotient.mk_out (Gl.out i)
+  right_inv := sorry
 
 @[simp]
-def QuotlabeledGraphList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : QuotlabeledGraphList σ t V)
+noncomputable def QuotlabeledGraphList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : QuotlabeledGraphList σ t V)
     : FlagList σ t V
   :=
   (eqv_QuotlabeledGraphList_FlagList σ t V).toFun Fl
 
 @[simp]
-def FlagList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : FlagList σ t V)
+noncomputable def FlagList.coe {σ : FlagType T} {t : ℕ} {V : Fin t → Type} (Fl : FlagList σ t V)
     : QuotlabeledGraphList σ t V
   :=
   (eqv_QuotlabeledGraphList_FlagList σ t V).invFun Fl
