@@ -287,8 +287,8 @@ lemma labeledSubgraphListDensityLifted_respects_eqv
   :=
   sorry
 
-noncomputable def QuotLabeledSubgraphListDensity
-    : QuotlabeledGraphList σ t V → Flag σ W → ℚ
+noncomputable def quotLabeledSubgraphListDensity
+    : QuotLabeledGraphList σ t V → Flag σ W → ℚ
   := by
   apply Quot.lift labeledSubgraphListDensityLifted
   intro Hl Hl' Hl_eqv
@@ -298,19 +298,14 @@ noncomputable def QuotLabeledSubgraphListDensity
     exact Classical.choice (Hl_eqv i)
   exact labeledSubgraphListDensityLifted_respects_eqv Hl Hl' φ G
 
-noncomputable def FlagListDensity
+noncomputable def flagListDensity
     : FlagList σ t V → Flag σ W → ℚ
   :=
-  fun Fl => QuotLabeledSubgraphListDensity Fl.coe
-
-example : ∑ a : Fin 1, 1 = 1 := by
-  simp only [Finset.univ_unique, Fin.default_eq_zero, Fin.isValue, Finset.sum_const,
-    Finset.card_singleton, smul_eq_mul, mul_one]
+  fun Fl => quotLabeledSubgraphListDensity Fl.coe
 
 example (F : Flag σ U) (G : Flag σ W)
-    : subflagDensity F G = FlagListDensity F.toSingletonList G
+    : subflagDensity F G = flagListDensity F.toSingletonList G
   := by
-  classical
   rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   have h_count : labeledSubgraphCount Frep Grep = labeledSubgraphListCount (fun (_ : Fin 1) => Frep) Grep := by
@@ -349,15 +344,15 @@ example (F : Flag σ U) (G : Flag σ W)
       split
       · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
       · rw [Nat.choose_eq_zero_of_lt (by linarith)]
-    _ = QuotLabeledSubgraphListDensity F.toSingletonList.coe G := by
+    _ = quotLabeledSubgraphListDensity F.toSingletonList.coe G := by
       have : F.toSingletonList.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
-        dsimp [eqv_QuotlabeledGraphList_FlagList]
+        dsimp [eqv_QuotLabeledGraphList_FlagList]
         apply Quotient.sound
         intro i
         simp [Flag.toSingletonList, ← hFrep]
         apply Quotient.mk_out Frep
       rw [this, ← hGrep]
       rfl
-    _ = FlagListDensity F.toSingletonList G := rfl
+    _ = flagListDensity F.toSingletonList G := rfl
 
 end
