@@ -128,22 +128,50 @@ lemma inducedlabeledSubgraph_related
         · sorry
         · obtain ⟨u_T, h_uG₁⟩ := h_u
           obtain ⟨v_T, h_vG₁⟩ := h_v
-          rw [←h_uG₁] at h_uv
-          rw [←h_vG₁] at h_uv
-          let h_uG₀ := G₀.type_embed u_T
-          let h_vG₀ := G₀.type_embed v_T
-          have h_uv_G₀ : G₀.graph.Adj h_uG₀ h_vG₀ := by
-            rw [←φ.graph_iso.map_rel_iff]
-            simp [h_uG₀, h_vG₀]
-            have h_u_eq : φ.graph_iso (G₀.type_embed u_T) = G₁.type_embed u_T := by
-              rw [←φ.type_preserve]
-              rfl
-            have h_v_eq : φ.graph_iso (G₀.type_embed v_T) = G₁.type_embed v_T := by
-              rw [←φ.type_preserve]
-              rfl
-            rw [h_u_eq, h_v_eq]
-            exact h_uv
-          sorry
+          let uG₀ := G₀.type_embed u_T
+          let vG₀ := G₀.type_embed v_T
+          let uG₁ := G₁.type_embed u_T
+          let vG₁ := G₁.type_embed v_T
+          have h_uG₀G₁ : uG₁ = φ.graph_iso.toFun uG₀:= by
+            dsimp [uG₀, uG₁]
+            rw [←φ.type_preserve]
+            rfl
+          have h_vG₀G₁ : vG₁ = φ.graph_iso.toFun vG₀:= by
+            dsimp [vG₀, vG₁]
+            rw [←φ.type_preserve]
+            rfl
+          have u_eq_uG₀ : u = uG₀ := by
+            have : φ.graph_iso u = φ.graph_iso uG₀ := by
+              dsimp [uG₁] at h_uG₀G₁
+              rw [h_uG₀G₁] at h_uG₁
+              symm; exact h_uG₁
+            simp_all only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, EmbeddingLike.apply_eq_iff_eq, uG₀, uG₁, vG₁, vG₀]
+          have v_eq_vG₀ : v = vG₀ := by
+            have : φ.graph_iso v = φ.graph_iso vG₀ := by
+              dsimp [vG₁] at h_vG₀G₁
+              rw [h_vG₀G₁] at h_vG₁
+              symm; exact h_vG₁
+            simp_all only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, EmbeddingLike.apply_eq_iff_eq, uG₀, uG₁, vG₁, vG₀]
+          let uH₀ := H₀.type_embed u_T
+          let vH₀ := H₀.type_embed v_T
+          have h_uH₀G₀ : uH₀ = uG₀ := by
+            have : H₀.type_embed u_T = uG₀ := H₀.embed_eq u_T
+            simp_all only [uH₀, uG₀]
+          have h_vH₀G₀ : vH₀ = vG₀ := by
+            have : H₀.type_embed v_T = vG₀ := H₀.embed_eq v_T
+            simp_all only [vH₀, vG₀]
+          have h_uv_G₀ : G₀.graph.Adj u v := by
+            rw [u_eq_uG₀, v_eq_vG₀]
+            rw [u_eq_uG₀, v_eq_vG₀] at h_uv
+            apply φ.graph_iso.map_rel_iff.mp h_uv
+          have h_uH₀H₀ : u ∈ H₀.subgraph.verts := by
+            rw [u_eq_uG₀, ←h_uH₀G₀]
+            simp
+          have h_vH₀H₀ : v ∈ H₀.subgraph.verts := by
+            rw [v_eq_vG₀, ←h_vH₀G₀]
+            simp
+          apply h_ind₀ h_uH₀H₀ h_vH₀H₀
+          exact h_uv_G₀
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
