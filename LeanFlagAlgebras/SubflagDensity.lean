@@ -370,4 +370,14 @@ noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F�
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
 
+theorem flagDensity_self
+    (F : Flag σ W) : flagDensity₁ F F = 1
+  :=
+  sorry
+
+theorem flagDensity_other
+    {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
+  :=
+  sorry
+
 end

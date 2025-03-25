@@ -34,13 +34,15 @@ def LabeledGraph.size
   :=
   Fintype.card V
 
+def emptyLabeledGraph (σ : FlagType T) (V : Type) : LabeledGraph σ V
+  :=
+  sorry
+
 @[ext]
 structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
   subgraph : G.graph.Subgraph
   type_embed : σ ↪g subgraph.coe
   embed_eq : ∀ (t : T), type_embed t = G.type_embed t
-
-initialize_simps_projections LabeledSubgraph (subgraph → coe)
 
 namespace LabeledSubgraph
 
@@ -163,6 +165,10 @@ noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [Dec
   := by
   classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
+
+def emptyFlag (σ : FlagType T) (V : Type) : Flag σ V
+  :=
+  sorry
 
 class FintypeList {t : ℕ} (V : Fin t → Type) where
   fintype_all : ∀ (i : Fin t), Fintype (V i)
