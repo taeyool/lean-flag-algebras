@@ -34,13 +34,15 @@ def LabeledGraph.size
   :=
   Fintype.card V
 
+def emptyLabeledGraph (σ : FlagType T) (V : Type) : LabeledGraph σ V
+  :=
+  sorry
+
 @[ext]
 structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
   subgraph : G.graph.Subgraph
   type_embed : σ ↪g subgraph.coe
   embed_eq : ∀ (t : T), type_embed t = G.type_embed t
-
-initialize_simps_projections LabeledSubgraph (subgraph → coe)
 
 namespace LabeledSubgraph
 
@@ -164,6 +166,10 @@ noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [Dec
   classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
 
+def emptyFlag (σ : FlagType T) (V : Type) : Flag σ V
+  :=
+  sorry
+
 class FintypeList {t : ℕ} (V : Fin t → Type) where
   fintype_all : ∀ (i : Fin t), Fintype (V i)
 
@@ -219,10 +225,24 @@ def QuotLabeledGraphList (σ : FlagType T) (t : ℕ) (V : Fin t → Type) : Type
 
 abbrev FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type) := ∀ (i : Fin t), Flag σ (V i)
 
-def Flag.toSingletonList {σ : FlagType T} {V : Type} (F : Flag σ V)
+def flagToList {σ : FlagType T} {V : Type} (F : Flag σ V)
     : FlagList σ 1 (fun _ => V)
   :=
   fun _ => F
+
+def flagPairToList {σ : FlagType T} {V W : Type} (F : Flag σ V) (G : Flag σ W)
+    : FlagList σ 2 (fun i => match i with | 0 => V | 1 => W)
+  :=
+  fun i => match i with | 0 => F | 1 => G
+
+def flagTripleToList {σ : FlagType T} {V W U : Type} (F : Flag σ V) (G : Flag σ W) (H : Flag σ U)
+    : FlagList σ 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
+  :=
+  fun i => match i with | 0 => F | 1 => G | 2 => H
+
+notation "[" F "]ᶠ" => (flagToList F)
+notation "[" F "," G "]ᶠ" => (flagPairToList F G)
+notation "[" F "," G "," H "]ᶠ" => (flagTripleToList F G H)
 
 instance fintypeSingletonList {V : Type} [Fintype V]
     : @FintypeList 1 (fun _ => V)
@@ -233,6 +253,26 @@ instance DecidableEqSingletonList {V : Type} [DecidableEq V]
     : @DecidableEqList 1 (fun _ => V)
   :=
   { decidable_eq_all := fun _ ↦ inferInstance }
+
+instance fintypePairList {V W : Type} [Fintype V] [Fintype W]
+    : @FintypeList 2 (fun i => match i with | 0 => V | 1 => W)
+  :=
+  { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
+
+instance DecidableEqPairList {V W : Type} [DecidableEq V] [DecidableEq W]
+    : @DecidableEqList 2 (fun i => match i with | 0 => V | 1 => W)
+  :=
+  { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
+
+instance fintypeTripleList {V W U : Type} [Fintype V] [Fintype W] [Fintype U]
+    : @FintypeList 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
+  :=
+  { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
+
+instance DecidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
+    : @DecidableEqList 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
+  :=
+  { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
 noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (V : Fin t → Type)
     : QuotLabeledGraphList σ t V ≃ FlagList σ t V where

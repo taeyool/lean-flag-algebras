@@ -292,6 +292,9 @@ section
 variable {t : ℕ} {V : Fin t → Type} [FintypeList V] [DecidableEqList V]
   {W : Type} [Fintype W] [DecidableEq W]
   {U : Type} [Fintype U] [DecidableEq U]
+  {U₁ : Type} [Fintype U₁] [DecidableEq U₁]
+  {U₂ : Type} [Fintype U₂] [DecidableEq U₂]
+  {U₃ : Type} [Fintype U₃] [DecidableEq U₃]
 
 noncomputable def labeledSubgraphListCount
     (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℕ
@@ -354,7 +357,7 @@ noncomputable def flagListDensity
   fun Fl => quotLabeledSubgraphListDensity Fl.coe
 
 example (F : Flag σ U) (G : Flag σ W)
-    : subflagDensity F G = flagListDensity F.toSingletonList G
+    : subflagDensity F G = flagListDensity [F]ᶠ G
   := by
   rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
@@ -394,15 +397,37 @@ example (F : Flag σ U) (G : Flag σ W)
       split
       · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
       · rw [Nat.choose_eq_zero_of_lt (by linarith)]
-    _ = quotLabeledSubgraphListDensity F.toSingletonList.coe G := by
-      have : F.toSingletonList.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
+    _ = quotLabeledSubgraphListDensity [F]ᶠ.coe G := by
+      have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
         dsimp [eqv_QuotLabeledGraphList_FlagList]
         apply Quotient.sound
         intro i
-        simp [Flag.toSingletonList, ← hFrep]
+        simp [flagToList, ← hFrep]
         apply Quotient.mk_out Frep
       rw [this, ← hGrep]
       rfl
-    _ = flagListDensity F.toSingletonList G := rfl
+    _ = flagListDensity [F]ᶠ G := rfl
+
+noncomputable def flagDensity₁ (F : Flag σ U) (G : Flag σ W) : ℚ
+  :=
+  flagListDensity [F]ᶠ G
+
+noncomputable def flagDensity₂ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W) : ℚ
+  :=
+  flagListDensity [F₁, F₂]ᶠ G
+
+noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W) : ℚ
+  :=
+  flagListDensity [F₁, F₂, F₃]ᶠ G
+
+theorem flagDensity_self
+    (F : Flag σ W) : flagDensity₁ F F = 1
+  :=
+  sorry
+
+theorem flagDensity_other
+    {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
+  :=
+  sorry
 
 end
