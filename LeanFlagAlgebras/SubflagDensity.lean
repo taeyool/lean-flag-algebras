@@ -176,7 +176,7 @@ lemma inducedlabeledSubgraph_related
             simp
           apply h_ind₀ h_uH₀ h_v
           exact h_uv_G₀
-        · obtain ⟨u_T, h_uG₁⟩ := h_u
+        · obtain ⟨u_T, h_uG₀⟩ := h_u
           obtain ⟨v_T, h_vG₁⟩ := h_v
           let uG₀ := G₀.type_embed u_T
           let vG₀ := G₀.type_embed v_T
@@ -193,8 +193,8 @@ lemma inducedlabeledSubgraph_related
           have u_eq_uG₀ : u = uG₀ := by
             have : φ.graph_iso u = φ.graph_iso uG₀ := by
               dsimp [uG₁] at h_uG₀G₁
-              rw [h_uG₀G₁] at h_uG₁
-              symm; exact h_uG₁
+              rw [h_uG₀G₁] at h_uG₀
+              symm; exact h_uG₀
             simp_all only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, EmbeddingLike.apply_eq_iff_eq, uG₀, uG₁, vG₁, vG₀]
           have v_eq_vG₀ : v = vG₀ := by
             have : φ.graph_iso v = φ.graph_iso vG₀ := by
@@ -235,7 +235,28 @@ noncomputable def isoSetOfInducedlabeledSubgraph
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
     let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts)).1
-
+    let h_ind₁ : H₁.IsInduced := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts)).2
+    have : relOflabeledSubgraph φ H₀ H₁ := inducedlabeledSubgraph_related φ H₀ h_ind₀
+    have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
+    exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+  let f_inv (s₁ : S₁) : S₀ := by
+    dsimp [S₁] at s₁
+    let ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩ := s₁
+    let H₀ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts)).1
+    let h_ind₀ : H₀.IsInduced := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts)).2
+    have : relOflabeledSubgraph φ.symm H₁ H₀ := inducedlabeledSubgraph_related φ.symm H₁ h_ind₁
+    have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
+    exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
+  let f_bij : Function.Bijective f := by
+    have h_leftinv : Function.LeftInverse f_inv f := by
+      rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
+      dsimp [f, f_inv, inducedlabeledSubgraph]
+      ext u v
+      · simp ; constructor
+        · sorry
+        · sorry
+      · sorry
+      · sorry
     sorry
   sorry
 
