@@ -317,24 +317,48 @@ def listTypeInsert {t : ℕ} (Vl : Fin t → Type) (W : Type)
   :=
   fun i => if h : i.val = t then W else Vl (i.coe h)
 
-omit [Fintype T] in
-theorem listTypeInsert_eq {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
-    (i : Fin (t + 1)) (hi : i.val = t)
-    : Flag σ W = Flag σ (listTypeInsert Vl W i)
+theorem listTypeInsert_eq {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    {i : Fin (t + 1)} (hi : i.val = t)
+    : W = listTypeInsert Vl W i
   := by
   simp [listTypeInsert, hi]
 
-omit [Fintype T] in
-theorem listTypeInsert_eq' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
-    (i : Fin (t + 1)) (hi : i.val ≠ t)
-    : Flag σ (Vl (i.coe hi)) = Flag σ (listTypeInsert Vl W i)
+theorem listTypeInsert_eq' {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    {i : Fin (t + 1)} (hi : i.val ≠ t)
+    : Vl (i.coe hi) = listTypeInsert Vl W i
   := by
   simp [listTypeInsert, hi]
+
+instance fintypeListInsert {t : ℕ} (Vl : Fin t → Type) (W : Type) [Fintype W] [FintypeList Vl]
+    : @FintypeList (t + 1) (listTypeInsert Vl W) where
+  fintype_all i := if h : i.val = t
+    then (by rw [← listTypeInsert_eq h]; infer_instance)
+    else (by rw [← listTypeInsert_eq' h]; infer_instance)
+
+instance decidableEqListInsert {t : ℕ} (Vl : Fin t → Type) (W : Type) [DecidableEq W] [DecidableEqList Vl]
+    : @DecidableEqList (t + 1) (listTypeInsert Vl W) where
+  decidable_eq_all i := if h : i.val = t
+    then (by rw [← listTypeInsert_eq h]; infer_instance)
+    else (by rw [← listTypeInsert_eq' h]; infer_instance)
+
+omit [Fintype T] in
+theorem flag_listTypeInsert_eq {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    {i : Fin (t + 1)} (hi : i.val = t)
+    : Flag σ W = Flag σ (listTypeInsert Vl W i)
+  := by
+  rw [← listTypeInsert_eq hi]
+
+omit [Fintype T] in
+theorem flag_listTypeInsert_eq' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    {i : Fin (t + 1)} (hi : i.val ≠ t)
+    : Flag σ (Vl (i.coe hi)) = Flag σ (listTypeInsert Vl W i)
+  := by
+  rw [← listTypeInsert_eq' hi]
 
 def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     : FlagList σ (t + 1) (listTypeInsert Vl W)
   :=
   fun i => if hi : i.val = t
-    then (cast (listTypeInsert_eq i hi) F)
-    else (cast (listTypeInsert_eq' i hi) (Fl (i.coe hi)))
+    then (cast (flag_listTypeInsert_eq hi) F)
+    else (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi)))

@@ -2,7 +2,7 @@ import «LeanFlagAlgebras».FlagDef
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
 
-variable {T : Type} [Fintype T] {σ : FlagType T}
+variable {T : Type} [Fintype T] [DecidableEq T] {σ : FlagType T}
 
 section
 
@@ -448,6 +448,12 @@ theorem flagDensity_self
 
 theorem flagDensity_other
     {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
+  :=
+  sorry
+
+theorem flagDensity_empty
+    (Fl : FlagList σ t Vl) (G : Flag σ W)
+    : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
   :=
   sorry
 
