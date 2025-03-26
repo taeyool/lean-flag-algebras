@@ -310,7 +310,7 @@ end
 
 section
 
-variable {t : ℕ} {V : Fin t → Type} [FintypeList V] [DecidableEqList V]
+variable {t : ℕ} {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
   {W : Type} [Fintype W] [DecidableEq W]
   {U : Type} [Fintype U] [DecidableEq U]
   {U₁ : Type} [Fintype U₁] [DecidableEq U₁]
@@ -318,7 +318,7 @@ variable {t : ℕ} {V : Fin t → Type} [FintypeList V] [DecidableEqList V]
   {U₃ : Type} [Fintype U₃] [DecidableEq U₃]
 
 noncomputable def labeledSubgraphListCount
-    (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℕ
+    (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
   :=
   let p₁ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)
@@ -337,32 +337,32 @@ def multinomialCoefficient
   else 0
 
 noncomputable def labeledSubgraphListDensity
-    (Hl : LabeledGraphList σ t V) (G : LabeledGraph σ W) : ℚ
+    (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
   :=
   let r_list := fun (i : Fin t) => (Hl i).size - σ.size
   labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
 lemma labeledSubgraphListDensity_respects_eqv_on_G
-    (Hl : LabeledGraphList σ t V) {G G' : LabeledGraph σ W} (φ : G ≃f G')
+    (Hl : LabeledGraphList σ t Vl) {G G' : LabeledGraph σ W} (φ : G ≃f G')
     : labeledSubgraphListDensity Hl G = labeledSubgraphListDensity Hl G'
   :=
   sorry
 
 noncomputable def labeledSubgraphListDensityLifted
-    (Hl : LabeledGraphList σ t V) : Flag σ W → ℚ
+    (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
   := by
   apply Quot.lift (fun G => labeledSubgraphListDensity Hl G)
   intro _ _ h_eqv
   exact labeledSubgraphListDensity_respects_eqv_on_G Hl (Classical.choice h_eqv)
 
 lemma labeledSubgraphListDensityLifted_respects_eqv
-    (Hl Hl' : LabeledGraphList σ t V) (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
+    (Hl Hl' : LabeledGraphList σ t Vl) (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
     : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
   :=
   sorry
 
 noncomputable def quotLabeledSubgraphListDensity
-    : QuotLabeledGraphList σ t V → Flag σ W → ℚ
+    : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
   := by
   apply Quot.lift labeledSubgraphListDensityLifted
   intro Hl Hl' Hl_eqv
@@ -373,7 +373,7 @@ noncomputable def quotLabeledSubgraphListDensity
   exact labeledSubgraphListDensityLifted_respects_eqv Hl Hl' φ G
 
 noncomputable def flagListDensity
-    : FlagList σ t V → Flag σ W → ℚ
+    : FlagList σ t Vl → Flag σ W → ℚ
   :=
   fun Fl => quotLabeledSubgraphListDensity Fl.coe
 
