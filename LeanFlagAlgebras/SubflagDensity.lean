@@ -457,4 +457,34 @@ theorem flagDensity_empty
   :=
   sorry
 
+theorem flagDensity_permute
+    (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
+    : flagListDensity Fl G = flagListDensity (Fl.permute π) G
+  :=
+  sorry
+
+theorem flagPairDensity_comm
+    (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
+    : flagDensity₂ F₁ F₂ G = flagDensity₂ F₂ F₁ G
+  := by
+  let Fl₁ := [F₁, F₂]ᶠ
+  let Fl₂ := [F₂, F₁]ᶠ
+  show flagListDensity Fl₁ G = flagListDensity Fl₂ G
+  let π : Perm 2 := by
+    let f : Fin 2 → Fin 2 := fun i => match i with | 0 => 1 | 1 => 0
+    refine ⟨f, f, ?_, ?_⟩
+    · intro i; match i with | 0 => simp | 1 => simp
+    · intro i; match i with | 0 => simp | 1 => simp
+  rw [flagDensity_permute Fl₁ G π]
+  have h_type_eq : FlagList σ 2 (fun i => match i with | 0 => U₂ | 1 => U₁)
+      = FlagList σ 2 (listTypePermute (fun i => match i with | 0 => U₁ | 1 => U₂) π) := by
+    congr; ext i
+    match i with | 0 => simp [listTypePermute] | 1 => simp [listTypePermute]
+  have h_eq : Fl₁.permute π = cast h_type_eq Fl₂ := by
+    sorry
+  rw [h_eq]
+  -- apply congrArg
+  -- rw [cast_eq h_type_eq Fl₂]
+  sorry
+
 end

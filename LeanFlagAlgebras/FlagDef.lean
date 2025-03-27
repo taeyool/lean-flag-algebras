@@ -308,6 +308,8 @@ noncomputable def FlagList.coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
   :=
   (eqv_QuotLabeledGraphList_FlagList σ t Vl).invFun Fl
 
+/- FlagList.insert -/
+
 def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
   :=
   ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
@@ -362,3 +364,30 @@ def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
   fun i => if hi : i.val = t
     then (cast (flag_listTypeInsert_eq hi) F)
     else (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi)))
+
+/- FlagList.permute -/
+
+abbrev Perm (t : ℕ) := Fin t ≃ Fin t
+
+def listTypePermute {t : ℕ} (Vl : Fin t → Type) (π : Perm t)
+    : Fin t → Type
+  :=
+  fun i => Vl (π i)
+
+instance fintypeListPermute {t : ℕ} (Vl : Fin t → Type) [FintypeList Vl] (π : Perm t)
+    : @FintypeList t (listTypePermute Vl π) where
+  fintype_all i := by
+    simp [listTypePermute]
+    infer_instance
+
+instance decidableEqListPermute {t : ℕ} (Vl : Fin t → Type) [DecidableEqList Vl] (π : Perm t)
+    : @DecidableEqList t (listTypePermute Vl π) where
+  decidable_eq_all i := by
+    simp [listTypePermute]
+    infer_instance
+
+def FlagList.permute {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
+    (Fl : FlagList σ t Vl) (π : Perm t)
+    : FlagList σ t (listTypePermute Vl π)
+  :=
+  fun i => Fl (π i)
