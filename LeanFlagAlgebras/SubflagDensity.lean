@@ -510,8 +510,8 @@ theorem flagPairDensity_comm
   have h_eq : Fl₁.permute π = cast h_type_eq Fl₂ := by
     sorry
   rw [h_eq]
-  -- apply congrArg
-  -- rw [cast_eq h_type_eq Fl₂]
+  have tt := cast_heq h_type_eq Fl₂
+  -- apply HEq.subst tt
   sorry
 
 end
