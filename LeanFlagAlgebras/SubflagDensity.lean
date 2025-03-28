@@ -264,10 +264,52 @@ noncomputable def isoSetOfInducedlabeledSubgraph
       dsimp [f, f_inv, inducedlabeledSubgraph]
       ext u v
       · simp ; constructor
-        · sorry
-        · sorry
-      · sorry
-      · sorry
+        · intro h
+          cases' h with h1 h2
+          · obtain ⟨w, ⟨h_w, h_u⟩⟩ := h1
+            cases' h_w with h1 h2
+            · obtain ⟨u', ⟨h1_u', h2_u'⟩⟩ := h1
+              have u_eq_u' : u = u' := by
+                rw [←h2_u'] at h_u
+                by_contra t
+                push_neg at t
+                rw [←h_u] at t
+                apply t
+                exact φ.graph_iso.left_inv u'
+              rw [←u_eq_u'] at h1_u'
+              exact h1_u'
+            · sorry
+          · obtain ⟨u_T', h_u⟩ := h2
+            let u' := H₀.type_embed u_T'
+            have h_eq : u' = u := by
+              simp [u']
+              rw [H₀.embed_eq u_T']
+              simp [h_u]
+            rw [←h_eq]
+            simp [h_u]
+        · intro h
+          left
+          let x := φ.graph_iso.toFun u
+          use x
+          constructor
+          · left
+            use u
+            simp [x]
+            exact h
+          · simp [x]
+            exact φ.graph_iso.left_inv u
+      · simp; constructor
+        · intro ⟨h1, h2, h3⟩
+          -- I expect this can be proven in a similar way to what we've done before.
+          sorry
+        · intro h
+          constructor
+          · exact SimpleGraph.Subgraph.Adj.adj_sub h
+          · constructor
+            · sorry
+            · sorry
+      · simp
+        sorry
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
       dsimp [f, f_inv, inducedlabeledSubgraph]
