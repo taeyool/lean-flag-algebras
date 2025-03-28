@@ -95,6 +95,32 @@ def inducedlabeledSubgraph
     simp_all only [Set.mem_union, Set.mem_setOf_eq, and_self]
   ⟨G', h_induced⟩
 
+lemma propOfTypeVertex
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    {t : T} {v : V} (h_G₁t : G₁.type_embed t = φ.graph_iso v) (H₀ : LabeledSubgraph σ G₀)
+    : ∃ (G₀t : V) (G₁t : W) (H₀t : V), G₁t = φ.graph_iso G₀t ∧ v = G₀t ∧ H₀t = G₀t ∧ v ∈ H₀.subgraph.verts
+    := by
+    let G₀t := G₀.type_embed t
+    let G₁t := G₁.type_embed t
+    let H₀t := H₀.type_embed t
+    have h_eq : G₁t = φ.graph_iso G₀t := by
+      dsimp [G₀t, G₁t]
+      rw [←φ.type_preserve]
+      rfl
+    have h_eq' : v = G₀t := by
+      have : φ.graph_iso v = φ.graph_iso G₀t := by
+        dsimp [G₁t] at h_eq
+        rw [h_G₁t] at h_eq
+        exact h_eq
+      simp_all only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, EmbeddingLike.apply_eq_iff_eq, G₀t, G₁t]
+    have h_eq'' : H₀t = G₀t := by
+      dsimp [H₀t]
+      rw [H₀.embed_eq t]
+    have h_vert : v ∈ H₀.subgraph.verts := by
+      rw [h_eq', ←h_eq'']
+      simp
+    use G₀t, G₁t, H₀t
+
 lemma inducedlabeledSubgraph_related
     {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
