@@ -47,8 +47,7 @@ def predIsolabeledH
 lemma predIsolabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnlabeledfSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
-  := by
-  sorry
+  := by sorry
 
 def inducedlabeledSubgraph
     {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) : {G' : LabeledSubgraph σ G // G'.IsInduced}
@@ -261,7 +260,7 @@ lemma inducedlabeledSubgraph_related
           exact h_uv_G₀
 
 noncomputable def isoSetOfInducedlabeledSubgraph
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
     (h_rel : relOfPredOnlabeledfSubgraph φ p₀ p₁) (h_rel_inv : relOfPredOnlabeledfSubgraph φ.symm p₁ p₀)
     : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ p₀ G' } ≃ { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ p₁ G' }
@@ -335,7 +334,10 @@ noncomputable def isoSetOfInducedlabeledSubgraph
             · sorry
             · sorry
       · simp
+        cases' H₀.type_embed with embed map_rel_iff''
+        obtain ⟨toFun', inj''⟩ := embed
         sorry
+
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
       dsimp [f, f_inv, inducedlabeledSubgraph]
@@ -578,8 +580,8 @@ theorem flagPairDensity_comm
   have h_eq : Fl₁.permute π = cast h_type_eq Fl₂ := by
     sorry
   rw [h_eq]
-  -- apply congrArg
-  -- rw [cast_eq h_type_eq Fl₂]
+  have tt := cast_heq h_type_eq Fl₂
+  -- apply HEq.subst tt
   sorry
 
 end
