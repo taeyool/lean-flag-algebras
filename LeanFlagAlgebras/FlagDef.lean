@@ -249,7 +249,7 @@ instance fintypeSingletonList {V : Type} [Fintype V]
   :=
   { fintype_all := fun _ ↦ inferInstance }
 
-instance DecidableEqSingletonList {V : Type} [DecidableEq V]
+instance decidableEqSingletonList {V : Type} [DecidableEq V]
     : @DecidableEqList 1 (fun _ => V)
   :=
   { decidable_eq_all := fun _ ↦ inferInstance }
@@ -259,7 +259,7 @@ instance fintypePairList {V W : Type} [Fintype V] [Fintype W]
   :=
   { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
-instance DecidableEqPairList {V W : Type} [DecidableEq V] [DecidableEq W]
+instance decidableEqPairList {V W : Type} [DecidableEq V] [DecidableEq W]
     : @DecidableEqList 2 (fun i => match i with | 0 => V | 1 => W)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
@@ -269,7 +269,7 @@ instance fintypeTripleList {V W U : Type} [Fintype V] [Fintype W] [Fintype U]
   :=
   { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
-instance DecidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
+instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
     : @DecidableEqList 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
