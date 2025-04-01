@@ -69,11 +69,11 @@ def inducedlabeledSubgraph
         intro t
         simp_all only
         apply Subtype.mk
-        · simp_all only [Set.mem_union, Set.mem_setOf_eq]
-          apply Or.inr
-          apply Exists.intro
-          · rfl
-          · exact t
+        simp_all only [Set.mem_union, Set.mem_setOf_eq]
+        apply Or.inr
+        apply Exists.intro
+        · rfl
+        · exact t
       inj' := by
         intro t₁ t₂ h
         simp_all only [Set.mem_setOf_eq, id_eq, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq]
@@ -231,7 +231,14 @@ noncomputable def isoSetOfInducedlabeledSubgraph
                 exact φ.graph_iso.left_inv u'
               rw [←u_eq_u'] at h1_u'
               exact h1_u'
-            · sorry
+            · obtain ⟨w_t, h_wG₁⟩  := h2
+              have h_w : w = φ.graph_iso u := by
+                rw [←h_u]
+                symm
+                exact φ.symm.graph_iso.left_inv w
+              rw [h_w] at h_wG₁
+              obtain ⟨G₀wt, G₁wt, H₀wt, h_G₀G₁wt, w_eq_G₀wt, G₀wt_eq_H₀wt, h_H₀wt⟩ := relOfTypeVertex φ h_wG₁ H₀
+              exact h_H₀wt
           · obtain ⟨u_T', h_u⟩ := h2
             let u' := H₀.type_embed u_T'
             have h_eq : u' = u := by
@@ -253,18 +260,29 @@ noncomputable def isoSetOfInducedlabeledSubgraph
             exact φ.graph_iso.left_inv u
       · simp; constructor
         · intro ⟨h1, h2, h3⟩
-          -- I expect this can be proven in a similar way to what we've done before.
-          sorry
+          cases' h2 with h_u h_u
+          · cases' h3 with h_v h_v
+            · sorry
+            · sorry
+          · cases' h3 with h_v h_v
+            · sorry
+            · sorry
         · intro h
           constructor
           · exact SimpleGraph.Subgraph.Adj.adj_sub h
           · constructor
             · sorry
             · sorry
-      · simp
+      · simp_all
         cases' H₀.type_embed with embed map_rel_iff''
         obtain ⟨toFun', inj''⟩ := embed
-        sorry
+        congr
+        · sorry
+        · sorry
+        · sorry
+        · sorry
+        · sorry
+        · sorry
 
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
@@ -305,7 +323,7 @@ lemma labeledSubgraphDensity_respects_eqv_on_G
   have h_count : labeledSubgraphCount H G₀ = labeledSubgraphCount H G₁ := by
     dsimp only [labeledSubgraphCount]
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
     sorry
   rw [h_count]
   rfl
