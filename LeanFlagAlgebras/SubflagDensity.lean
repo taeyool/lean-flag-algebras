@@ -488,6 +488,13 @@ theorem flagDensity_permute
   :=
   sorry
 
+theorem FlagListHEq.subst
+    {Vl Vl' : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl] [FintypeList Vl'] [DecidableEqList Vl']
+    {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
+    {p : {Wl : Fin t → Type} → [FintypeList Wl] → [DecidableEqList Wl] → FlagList σ t Wl → Prop}
+    (hHEq : HEq Fl Fl') (h : p Fl) : p Fl' :=
+  sorry
+
 theorem flagPairDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
     : flagDensity₂ F₁ F₂ G = flagDensity₂ F₂ F₁ G
@@ -507,9 +514,19 @@ theorem flagPairDensity_comm
     match i with | 0 => simp [listTypePermute] | 1 => simp [listTypePermute]
   have h_eq : Fl₁.permute π = cast h_type_eq Fl₂ := by
     sorry
-  rw [h_eq]
-  have tt := cast_heq h_type_eq Fl₂
-  -- apply HEq.subst tt
+  have hHEq : HEq Fl₂ (Fl₁.permute π) := by simp [HEq.symm, h_eq, cast_heq]
+  have : FintypeList (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁) := fintypePairList
+  have : DecidableEqList (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁) := decidableEqPairList
+  have : FintypeList (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := sorry
+  have : DecidableEqList (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := sorry
+  have tt := @FlagListHEq.subst T _ _ σ 2 (fun i => match i with | 0 => U₂ | 1 => U₁)
+              (listTypePermute (fun i => match i with | 0 => U₁ | 1 => U₂) π) _ _ _ _ Fl₂ (Fl₁.permute π)
+              (fun Wl => flagListDensity Wl G = flagListDensity Fl₂ G) hHEq
+  simp at tt
+  have tt' : flagListDensity Fl₂ G = flagListDensity Fl₂ G := rfl
+  -- exact tt tt'
   sorry
+
+#check @FlagListHEq.subst
 
 end
