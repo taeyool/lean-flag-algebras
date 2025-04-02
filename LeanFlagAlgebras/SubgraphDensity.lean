@@ -359,6 +359,23 @@ lemma inducedSubgraph_mono
     have h_uv_G : G.Adj u v := G₀.adj_sub h_uv_G₀
     exact h_G₁_ind h_u_G₁ h_v_G₁ h_uv_G
 
+omit [Fintype V] [DecidableEq V] in
+lemma inducedSubgraph_eq
+    {G : SimpleGraph V} {G₀ : Subgraph G}
+    (h_G₀_ind : G₀.IsInduced) : ⟨G₀, h_G₀_ind⟩ = (inducedSubgraph G G₀.verts)
+  := by
+  dsimp [inducedSubgraph]
+  ext u v
+  . exact Set.mem_def
+  . constructor
+    . intro h_uv_G₀
+      have h_u_G₀ : u ∈ G₀.verts := G₀.edge_vert h_uv_G₀
+      have h_v_G₀ : v ∈ G₀.verts := G₀.edge_vert (G₀.symm h_uv_G₀)
+      have h_uv_G : G.Adj u v := G₀.adj_sub h_uv_G₀
+      exact ⟨h_uv_G, h_u_G₀, h_v_G₀⟩
+    . intro ⟨h_uv_G, h_u_G₀, h_v_G₀⟩
+      exact h_G₀_ind h_u_G₀ h_v_G₀ h_uv_G
+
 omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma inducedSubgraph_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
@@ -1207,6 +1224,7 @@ lemma subgraphFromIso_preserve_inducedness
   have h_uv_G : G.Adj (iso.symm u) (iso.symm v) := (Iso.map_adj_iff iso.symm).mpr h_uv_H
   exact h_ind_G₀ h_u_G₀ h_v_G₀ h_uv_G
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma subgraphFromIso_preserve_disjointedness
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ G₁ : Subgraph G) (h_disj : G₀.verts ∩ G₁.verts = ∅)
     : (subgraphFromIso iso G₀).verts ∩ (subgraphFromIso iso G₁).verts = ∅
@@ -1580,7 +1598,11 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         let g_G₂'_ind : G₂'.IsInduced := subgraphFromPartialIso_preserve_inducedness g_F_out_G₁₂ G₂ h_G₁₂_ind h_G₂_ind
         let g_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromPartialIso_preserve_disjointedness g_F_out_G₁₂ G₁ G₂ h_G₁_G₂_disj
         exact ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', g_G₁'_G₂'_disj⟩
-      have h_G₁₂_G₁'_G₂' : ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := sorry
+      have h_G₁'_verts_union_G₂'_verts : G₁₂.verts = G₁'.verts ∪ G₂'.verts := by
+        sorry
+      have h_G₁₂_G₁'_G₂' : ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := by
+        rw [←h_G₁'_verts_union_G₂'_verts]
+        exact inducedSubgraph_eq h_G₁₂_ind
       exact ⟨⟨F, G₁', G₂', ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁'_G₂', h_G₁₂_G₁'_G₂', Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
     left_inv := by
       intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
