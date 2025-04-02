@@ -1354,6 +1354,33 @@ lemma subgraphFromPartialIso_preserve_inducedness
   simp only [Subtype.coe_eta, RelIso.symm_apply_apply, Subtype.coe_prop, exists_const]
   exact h_ind_G₁ h_u₀_G₁_verts h_v₀_G₁_verts h_u₀v₀_G₀
 
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+lemma subgraphFromPartialIso_preserve_disjointedness
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g Subgraph.coe H₀) (G₁ G₂ : Subgraph G₀) (h_disj : G₁.verts ∩ G₂.verts = ∅)
+    : (subgraphFromPartialIso iso G₁).verts ∩ (subgraphFromPartialIso iso G₂).verts = ∅
+  := by
+  dsimp [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+  apply Set.eq_empty_of_subset_empty
+  intro u ⟨h_u_G₁, h_u_G₂⟩
+  simp at h_u_G₁ h_u_G₂
+  obtain ⟨u₁, h_u₁_G₁_verts, h_u₁_u⟩ := h_u_G₁
+  obtain ⟨u₂, h_u₂_G₂_verts, h_u₂_u⟩ := h_u_G₂
+  have h_u₁_G₁_G₂ : u₁ ∈ G₁.verts ∩ G₂.verts := by
+    have h_iso_u₁_eq_iso_u₂: (iso u₁) = (iso u₂) := by
+      rw [←h_u₂_u] at h_u₁_u
+      exact SetCoe.ext h_u₁_u
+    have : u₁ = u₂ :=
+      calc
+        u₁ = iso.symm (iso u₁) := Eq.symm (RelIso.symm_apply_apply iso u₁)
+        _  = iso.symm (iso u₂) := by rw [h_iso_u₁_eq_iso_u₂]
+        _  = u₂                := RelIso.symm_apply_apply iso u₂
+    constructor
+    . assumption
+    . rw [this]; assumption
+  have : u₁ ∈ ∅ := h_disj ▸ h_u₁_G₁_G₂
+  exact this
+
 noncomputable def getCanonicalQuotSimpleGraph
       (G : SimpleGraph V) (h_V_size : Fintype.card V = ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
@@ -1551,7 +1578,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         let g_G₂' : G₂'.coe ≃g H₂ := g_G₂'_iso.symm.trans h_G₂_iso_H₂.some
         let g_G₁'_ind : G₁'.IsInduced := subgraphFromPartialIso_preserve_inducedness g_F_out_G₁₂ G₁ h_G₁₂_ind h_G₁_ind
         let g_G₂'_ind : G₂'.IsInduced := subgraphFromPartialIso_preserve_inducedness g_F_out_G₁₂ G₂ h_G₁₂_ind h_G₂_ind
-        exact ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', sorry⟩
+        let g_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromPartialIso_preserve_disjointedness g_F_out_G₁₂ G₁ G₂ h_G₁_G₂_disj
+        exact ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', g_G₁'_G₂'_disj⟩
       have h_G₁₂_G₁'_G₂' : ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := sorry
       exact ⟨⟨F, G₁', G₂', ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁'_G₂', h_G₁₂_G₁'_G₂', Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
     left_inv := by
