@@ -245,32 +245,32 @@ notation "[" F "," G "]ᶠ" => (flagPairToList F G)
 notation "[" F "," G "," H "]ᶠ" => (flagTripleToList F G H)
 
 instance fintypeSingletonList {V : Type} [Fintype V]
-    : @FintypeList 1 (fun _ => V)
+    : FintypeList (fun (_ : Fin 1) => V)
   :=
   { fintype_all := fun _ ↦ inferInstance }
 
 instance decidableEqSingletonList {V : Type} [DecidableEq V]
-    : @DecidableEqList 1 (fun _ => V)
+    : DecidableEqList (fun (_ : Fin 1) => V)
   :=
   { decidable_eq_all := fun _ ↦ inferInstance }
 
 instance fintypePairList {V W : Type} [Fintype V] [Fintype W]
-    : @FintypeList 2 (fun i => match i with | 0 => V | 1 => W)
+    : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
   { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
 instance decidableEqPairList {V W : Type} [DecidableEq V] [DecidableEq W]
-    : @DecidableEqList 2 (fun i => match i with | 0 => V | 1 => W)
+    : DecidableEqList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
 instance fintypeTripleList {V W U : Type} [Fintype V] [Fintype W] [Fintype U]
-    : @FintypeList 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
+    : FintypeList (fun (i : Fin 3) => match i with | 0 => V | 1 => W | 2 => U)
   :=
   { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
 instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
-    : @DecidableEqList 3 (fun i => match i with | 0 => V | 1 => W | 2 => U)
+    : DecidableEqList (fun (i : Fin 3) => match i with | 0 => V | 1 => W | 2 => U)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
