@@ -1399,6 +1399,38 @@ lemma subgraphFromPartialIso_preserve_disjointedness
   have : u₁ ∈ ∅ := h_disj ▸ h_u₁_G₁_G₂
   exact this
 
+omit [DecidableEq V] [Fintype W] [DecidableEq W] in
+lemma subgraphFromPartialIso_preserve_cover
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g Subgraph.coe H₀) (G₁ G₂ : Subgraph G₀)
+    (h_cover : G₁.verts ∪ G₂.verts = (univ : Finset V))
+    : H₀.verts = (subgraphFromPartialIso iso G₁).verts ∪ (subgraphFromPartialIso iso G₂).verts
+  := by
+  dsimp [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+  ext u; simp
+  constructor
+  . intro h_u_H₀
+    have h_iso_symm_u_V : (iso.symm ⟨u,h_u_H₀⟩) ∈ G₁.verts ∪ G₂.verts := by
+      rw [h_cover]
+      exact mem_univ (iso.symm ⟨u, h_u_H₀⟩)
+    cases h_iso_symm_u_V with
+    | inl h_u_G₁ =>
+        apply Or.inl
+        use (iso.symm ⟨u, h_u_H₀⟩)
+        exact ⟨h_u_G₁, by simp⟩
+    | inr h_u_G₂ =>
+        apply Or.inr
+        use (iso.symm ⟨u, h_u_H₀⟩)
+        exact ⟨h_u_G₂, by simp⟩
+  . intro h_u
+    cases h_u with
+    | inl h_u_G₁ =>
+        obtain ⟨a₁, _, h_a₁_u⟩ := h_u_G₁
+        rw [←h_a₁_u]; simp
+    | inr h_u_G₂ =>
+        obtain ⟨a₂, _, h_a₂_u⟩ := h_u_G₂
+        rw [←h_a₂_u]; simp
+
 noncomputable def getCanonicalQuotSimpleGraph
       (G : SimpleGraph V) (h_V_size : Fintype.card V = ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
@@ -1450,6 +1482,15 @@ lemma getCanonicalQuotSimpleGraph_iso
     _  = ⟦H₀.out⟧ := (Quotient.out_eq H₀).symm
     _  = ⟦H₁.out⟧ := by rw [Quotient.sound]; exact Nonempty.intro h_iso_H₀_H₁
     _  = H₁ := Quotient.out_eq H₁
+
+lemma card_eq_imply_set_eq
+    (A B : Set (Fin ℓ)) (h_card_eq : (Fintype.card A) + (Fintype.card B) = ℓ) (h_disj : A ∩ B = ∅)
+    : A ∪ B = (univ : Finset (Fin ℓ))
+  := by
+  let C := A ∪ B
+  show C = (univ : Finset (Fin ℓ))
+  have h_card_C : Fintype.card C = Fintype.card (univ : Finset (Fin ℓ)) := by sorry
+  sorry
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -1598,8 +1639,24 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         let g_G₂'_ind : G₂'.IsInduced := subgraphFromPartialIso_preserve_inducedness g_F_out_G₁₂ G₂ h_G₁₂_ind h_G₂_ind
         let g_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromPartialIso_preserve_disjointedness g_F_out_G₁₂ G₁ G₂ h_G₁_G₂_disj
         exact ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', g_G₁'_G₂'_disj⟩
+      have h_G₁_verts_union_G₂_verts : G₁.verts ∪ G₂.verts = (univ : Finset (Fin (ℓ₁ + ℓ₂))) := by
+        dsimp [subgraphPairSet] at h_G₁_G₂_F
+        simp at h_G₁_G₂_F
+        obtain ⟨_, h_G₁_H₁, _, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂_F
+        have h_G₁_verts_card : Fintype.card G₁.verts = ℓ₁ :=
+          calc
+            Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_G₁_H₁.some
+            _ = ℓ₁ := by apply Fintype.card_fin
+        have h_G₂_verts_card : Fintype.card G₂.verts = ℓ₂ :=
+          calc
+            Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
+            _ = ℓ₂ := by apply Fintype.card_fin
+        have h_G₁_G₂_card : Fintype.card G₁.verts + Fintype.card G₂.verts = ℓ₁ + ℓ₂ := by
+          simp_all
+        exact card_eq_imply_set_eq G₁.verts G₂.verts h_G₁_G₂_card h_G₁_G₂_disj
       have h_G₁'_verts_union_G₂'_verts : G₁₂.verts = G₁'.verts ∪ G₂'.verts := by
-        sorry
+        dsimp [G₁', G₂']
+        exact subgraphFromPartialIso_preserve_cover g_F_out_G₁₂ G₁ G₂ h_G₁_verts_union_G₂_verts
       have h_G₁₂_G₁'_G₂' : ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := by
         rw [←h_G₁'_verts_union_G₂'_verts]
         exact inducedSubgraph_eq h_G₁₂_ind
