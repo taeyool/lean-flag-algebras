@@ -49,6 +49,54 @@ lemma predIsolabeldH_related
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
   := by sorry
 
+def inducedlabeledSubgraph'
+    {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) (hS : ∀ t : T, G.type_embed t ∈ S) : {G' : LabeledSubgraph σ G // G'.IsInduced}
+  :=
+  let G' : LabeledSubgraph σ G := {
+    subgraph := {
+      verts := S
+      Adj := fun (u v : V) ↦ G.graph.Adj u v ∧ u ∈ S ∧ v ∈ S
+      adj_sub := by
+        intro v w h
+        simp_all only [Set.mem_union, Set.mem_setOf_eq]
+      edge_vert := by
+        intro v w h
+        simp_all only
+      symm := by
+        intro v w H
+        simp_all
+        exact G.graph.symm H.1
+    }
+    type_embed := {
+      toFun := fun t ↦ ⟨G.type_embed t, by
+        simp
+        exact hS t⟩
+      inj' := by
+        intro t₁ t₂ h
+        simp at h
+        exact h
+      map_rel_iff' := by
+        intro t₁ t₂
+        simp; intro _
+        exact ⟨hS t₁, hS t₂⟩
+    }
+    embed_eq := by
+      intro t; simp
+  }
+  let h_induced : G'.IsInduced := by
+    intro v w hv hw hvw
+    simp_all [Set.mem_union, Set.mem_setOf_eq]
+  ⟨G', h_induced⟩
+
+lemma inducedlabeledSubgraph_related'
+    {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
+    : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph' G₁ (φ.graph_iso '' H₀.subgraph.verts) (fun t => by
+        simp
+        use H₀.type_embed t
+        sorry))
+  := by sorry
+
 def inducedlabeledSubgraph
     {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) : {G' : LabeledSubgraph σ G // G'.IsInduced}
   :=
