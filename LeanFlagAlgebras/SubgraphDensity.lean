@@ -1501,7 +1501,6 @@ lemma card_eq_imply_set_eq
       _ = 0 := by simp
   exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
 
-
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
@@ -1680,7 +1679,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         exact inducedSubgraph_eq h_G₁₂_ind
       exact ⟨⟨F, G₁', G₂', ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁'_G₂', h_G₁₂_G₁'_G₂', Nonempty.intro h_G₁₂_iso.some.symm⟩⟩
     left_inv := by
-      intro ⟨⟨F, G₁, G₂, G₁₂⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
+      intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩⟩
       sorry
     right_inv := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
@@ -1688,6 +1687,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   }
 
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
+
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
