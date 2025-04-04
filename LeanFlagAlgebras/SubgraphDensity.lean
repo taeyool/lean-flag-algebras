@@ -1484,13 +1484,23 @@ lemma getCanonicalQuotSimpleGraph_iso
     _  = H₁ := Quotient.out_eq H₁
 
 lemma card_eq_imply_set_eq
-    (A B : Set (Fin ℓ)) (h_card_eq : (Fintype.card A) + (Fintype.card B) = ℓ) (h_disj : A ∩ B = ∅)
-    : A ∪ B = (univ : Finset (Fin ℓ))
+    (A B : Finset (Fin ℓ)) (h_card_eq : A.card + B.card = ℓ) (h_disj : A ∩ B = ∅)
+    : A ∪ B = univ
   := by
-  let C := A ∪ B
-  show C = (univ : Finset (Fin ℓ))
-  have h_card_C : Fintype.card C = Fintype.card (univ : Finset (Fin ℓ)) := by sorry
-  sorry
+  have h_card_A_union_B : (A ∪ B).card = ℓ := by
+    have : Disjoint A B := Finset.disjoint_iff_inter_eq_empty.mpr h_disj
+    rw [Finset.card_union_of_disjoint this]
+    assumption
+  have h_compl_A_union_B_empty : (univ \ (A ∪ B)) = ∅ := by
+    apply Finset.card_eq_zero.mp
+    calc
+      (univ \ (A ∪ B)).card
+      _ = (univ : Finset (Fin ℓ)).card - (A ∪ B).card := Finset.card_sdiff (subset_univ (A ∪ B))
+      _ = ℓ - (A ∪ B).card := by simp
+      _ = ℓ - ℓ := by rw [h_card_A_union_B]
+      _ = 0 := by simp
+  exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
+
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -1640,6 +1650,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         let g_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromPartialIso_preserve_disjointedness g_F_out_G₁₂ G₁ G₂ h_G₁_G₂_disj
         exact ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', g_G₁'_G₂'_disj⟩
       have h_G₁_verts_union_G₂_verts : G₁.verts ∪ G₂.verts = (univ : Finset (Fin (ℓ₁ + ℓ₂))) := by
+        rw [coe_univ]
         dsimp [subgraphPairSet] at h_G₁_G₂_F
         simp at h_G₁_G₂_F
         obtain ⟨_, h_G₁_H₁, _, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂_F
@@ -1651,9 +1662,16 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
           calc
             Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_G₂_H₂.some
             _ = ℓ₂ := by apply Fintype.card_fin
-        have h_G₁_G₂_card : Fintype.card G₁.verts + Fintype.card G₂.verts = ℓ₁ + ℓ₂ := by
+        have h_G₁_G₂_card : G₁.verts.toFinset.card + G₂.verts.toFinset.card = ℓ₁ + ℓ₂ := by
           simp_all
-        exact card_eq_imply_set_eq G₁.verts G₂.verts h_G₁_G₂_card h_G₁_G₂_disj
+        have h_G₁_G₂_disj' : G₁.verts.toFinset ∩ G₂.verts.toFinset = ∅ := by
+          rw [←Set.toFinset_inter]
+          apply Set.toFinset_eq_empty.mpr
+          exact h_G₁_G₂_disj
+        have : (G₁.verts ∪ G₂.verts).toFinset = Finset.univ := by
+          rw [Set.toFinset_union]
+          exact card_eq_imply_set_eq G₁.verts.toFinset G₂.verts.toFinset h_G₁_G₂_card h_G₁_G₂_disj'
+        exact Set.toFinset_eq_univ.mp this
       have h_G₁'_verts_union_G₂'_verts : G₁₂.verts = G₁'.verts ∪ G₂'.verts := by
         dsimp [G₁', G₂']
         exact subgraphFromPartialIso_preserve_cover g_F_out_G₁₂ G₁ G₂ h_G₁_verts_union_G₂_verts
