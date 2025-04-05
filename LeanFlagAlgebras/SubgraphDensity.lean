@@ -1595,7 +1595,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
               getCanonicalQuotSimpleGraph_self F
   }
 
-  let f_S₃_S₄_foward : S₃ → S₄ := by
+  let f_S₃_S₄_forward : S₃ → S₄ := by
     intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨h_G₁_G₂, h_G₁₂, h_F⟩⟩
     obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
     have h_G₁₂_verts_eq_G₁_verts_union_G₂_verts : G₁₂.verts = G₁.verts ∪ G₂.verts := by
@@ -1681,10 +1681,15 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   have f_S₃_S₄ : S₃ ≃ S₄ :=
   {
-    toFun := f_S₃_S₄_foward
+    toFun := f_S₃_S₄_forward
     invFun := f_S₃_S₄_backward
     left_inv := by
       intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩⟩
+      let h_G₁_G₂_F : ⟨G₁, G₂⟩ ∈ S₁ ∧ ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁.verts ∪ G₂.verts) ∧ Nonempty (F.out ≃g (G₁₂ : Subgraph G).coe)
+        := ⟨⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
+      have : (f_S₃_S₄_backward (f_S₃_S₄_forward ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, h_G₁_G₂_F⟩)).1
+             = ⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩
+        := sorry
       sorry
     right_inv := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
