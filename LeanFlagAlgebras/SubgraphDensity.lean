@@ -1631,8 +1631,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   let f_S₃_S₄_backward : S₄ → S₃ := by
     intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
-    dsimp [subgraphSet] at h_G₁₂_F; simp at h_G₁₂_F
-    obtain ⟨h_G₁₂_ind, h_G₁₂_iso⟩ := h_G₁₂_F
+    have ⟨h_G₁₂_ind, h_G₁₂_iso⟩ : G₁₂.IsInduced ∧ Nonempty (G₁₂.coe ≃g Quotient.out F) := by
+      dsimp [subgraphSet] at h_G₁₂_F; simp at h_G₁₂_F
+      exact h_G₁₂_F
     let g_F_out_G₁₂ : F.out ≃g G₁₂.coe := h_G₁₂_iso.some.symm
     let G₁' := subgraphFromPartialIso g_F_out_G₁₂ G₁
     let G₂' := subgraphFromPartialIso g_F_out_G₁₂ G₂
@@ -1685,11 +1686,30 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     invFun := f_S₃_S₄_backward
     left_inv := by
       intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, ⟨⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩⟩
+      let F_G₁_G₂_G₁₂ : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)) × G.Subgraph × G.Subgraph × {G' : G.Subgraph | G'.IsInduced }
+        := ⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩
       let h_G₁_G₂_F : ⟨G₁, G₂⟩ ∈ S₁ ∧ ⟨G₁₂, h_G₁₂_ind⟩ = inducedSubgraph G (G₁.verts ∪ G₂.verts) ∧ Nonempty (F.out ≃g (G₁₂ : Subgraph G).coe)
         := ⟨⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂, h_F⟩
-      have : (f_S₃_S₄_backward (f_S₃_S₄_forward ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, h_G₁_G₂_F⟩)).1
-             = ⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩
-        := sorry
+      have h_eq_F : (f_S₃_S₄_backward (f_S₃_S₄_forward ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, h_G₁_G₂_F⟩)).1.1
+                      = F
+        := by
+          dsimp [f_S₃_S₄_forward, f_S₃_S₄_backward]
+          simp_all only [Set.mem_setOf_eq, Set.coe_setOf, S₃, S₁]
+          obtain ⟨fst, snd⟩ := F_G₁_G₂_G₁₂
+          obtain ⟨left, right⟩ := h_G₁_G₂_F
+          obtain ⟨fst_1, snd⟩ := snd
+          obtain ⟨left_1, right⟩ := right
+          obtain ⟨fst_2, snd⟩ := snd
+          obtain ⟨val, property⟩ := snd
+          simp_all only [Set.mem_setOf_eq, and_self, S₁]
+          split
+          rename_i x h_G₁₂_ind_1 h_G₁₂_iso heq
+          simp_all only [and_self]
+      have h_eq_G₁ : (f_S₃_S₄_backward (f_S₃_S₄_forward ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, h_G₁_G₂_F⟩)).1.2.1
+                     = G₁
+        := by
+          dsimp [f_S₃_S₄_forward, f_S₃_S₄_backward]
+          sorry
       sorry
     right_inv := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
