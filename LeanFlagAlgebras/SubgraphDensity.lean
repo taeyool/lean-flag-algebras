@@ -1695,15 +1695,40 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
           dsimp [res_forward, f_S₃_S₄_forward]
         have : res_backward.1.1 = res_forward.1 := by
           dsimp [res_backward, f_S₃_S₄_backward]
-          aesop
+          simp_all
+          simp_all only [Set.mem_setOf_eq, Set.coe_setOf, S₃, S₁]
+          obtain ⟨fst, snd⟩ := res_forward
+          obtain ⟨fst_1, snd⟩ := snd
+          obtain ⟨val, property⟩ := fst_1
+          obtain ⟨val_1, property_1⟩ := snd
+          obtain ⟨fst_1, snd⟩ := val
+          obtain ⟨val, property_2⟩ := res_backward
+          obtain ⟨fst_2, snd_1⟩ := val
+          obtain ⟨fst_3, snd_1⟩ := snd_1
+          obtain ⟨fst_4, snd_1⟩ := snd_1
+          obtain ⟨val, property_2⟩ := snd_1
+          simp_all only [Set.mem_setOf_eq, S₃, S₁]
+          obtain ⟨left, right⟩ := property_2
+          obtain ⟨left, right_1⟩ := left
+          obtain ⟨left_1, right⟩ := right
+          obtain ⟨left_2, right_1⟩ := right_1
+          obtain ⟨left_3, right_1⟩ := right_1
+          obtain ⟨left_4, right_1⟩ := right_1
+          split
+          rename_i x h_G₁₂_ind_1 h_G₁₂_iso heq
+          simp_all only [and_self]
         simp_all
       have h_eq_G₁ : res_backward.1.2.2.1 = G₁₂ := by
         have : res_forward.2.2.1 = G₁₂ := by
           dsimp [res_forward, f_S₃_S₄_forward]
         have : res_backward.1.2.2.1 = res_forward.2.2.1 := by
-          dsimp [res_backward, f_S₃_S₄_backward]
+          have h_res_backward : res_backward = f_S₃_S₄_backward ⟨res_forward.1, ⟨⟨res_forward.2.1.1.1, res_forward.2.1.1.2⟩, res_forward.2.1.2⟩, ⟨res_forward.2.2.1, res_forward.2.2.2⟩⟩
+            := by simp
+          rw [h_res_backward]
+          dsimp [f_S₃_S₄_backward]
+          simp_all
           sorry
-        simp_all
+        sorry
       sorry
     right_inv := by
       intro ⟨F, ⟨⟨G₁, G₂⟩, h_G₁_G₂_F⟩, ⟨G₁₂, h_G₁₂_F⟩⟩
