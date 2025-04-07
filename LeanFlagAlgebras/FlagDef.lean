@@ -148,6 +148,9 @@ theorem flagEqv.trans {σ : FlagType T}
   have G'_iso : G' ≃f G'' := Classical.choice h'
   exact Nonempty.intro (G_iso.trans G'_iso)
 
+instance : Trans (@flagEqv T V σ) (@flagEqv T V σ) (@flagEqv T V σ) where
+  trans := flagEqv.trans
+
 instance labeledGraphSetoid (σ : FlagType T) (V : Type)
     : Setoid (LabeledGraph σ V)
   where
@@ -184,19 +187,63 @@ instance decidable_eq_V {t : ℕ} (Vl : Fin t → Type) [DecidableEqList Vl] (i 
   :=
   DecidableEqList.decidable_eq_all i
 
+abbrev LabeledGraphList' (σ : FlagType T) := List (Σ (V : Type), LabeledGraph σ V)
+
 abbrev LabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), LabeledGraph σ (Vl i)
+
+def flagListEqv' {σ : FlagType T} (Gl Gl' : LabeledGraphList' σ) : Prop
+  := by
+  classical
+  -- exact Gl.length = Gl'.length ∧ (Gl.zip Gl').all (fun ⟨⟨V, G⟩, ⟨V', G'⟩⟩ =>
+  --   if h : V = V' then G ∼f (cast (congrArg (LabeledGraph σ) h.symm) G')
+  --   else false)
+  exact if hl_eq : Gl.length = Gl'.length
+    then ∀ (i : Fin Gl.length), if hV_eq : Gl[i].1 = Gl'[i].1
+      then Gl[i].2 ∼f (cast (congrArg (LabeledGraph σ) hV_eq.symm) Gl'[i].2)
+      -- then Nonempty (Gl[i].2 ≃f Gl'[i].2)
+      else false
+    else false
 
 def flagListEqv {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl Gl' : LabeledGraphList σ t Vl) : Prop
   :=
   ∀ (i : Fin t), Gl i ∼f Gl' i
 
+infixl:50 " ∼fl' " => flagListEqv'
+
 infixl:50 " ∼fl " => flagListEqv
+
+omit [Fintype T] in
+theorem flagListEqv'.refl {σ : FlagType T} {Gl : LabeledGraphList' σ} : Gl ∼fl' Gl
+  := by
+  simp [flagListEqv']
+  intro i
+  apply flagEqv.refl
 
 omit [Fintype T] in
 theorem flagListEqv.refl {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl : LabeledGraphList σ t Vl)
     : Gl ∼fl Gl
   :=
   fun i => flagEqv.refl (Gl i)
+
+omit [Fintype T] in
+theorem flagListEqv'.symm {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ} : Gl ∼fl' Gl' → Gl' ∼fl' Gl
+  := by
+  simp [flagListEqv']
+  intro hl_eq h
+  use hl_eq.symm
+  intro i
+  obtain ⟨hV_eq', hGl⟩ := h (i.cast hl_eq.symm)
+  have hV_eq : Gl'[i].1 = Gl[i].1 := by
+    calc
+      Gl'[i].1 = Gl'[i.cast hl_eq.symm].1 := rfl
+      _ = Gl[i.cast hl_eq.symm].1 := hV_eq'.symm
+      _ = Gl[i].1 := rfl
+  use hV_eq
+  have ⟨φ, t⟩ := Classical.choice hGl
+  apply Nonempty.intro
+  refine { graph_iso := ?_, type_preserve := ?_ }
+  · sorry
+  · sorry
 
 omit [Fintype T] in
 theorem flagListEqv.symm {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
