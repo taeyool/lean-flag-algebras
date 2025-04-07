@@ -47,7 +47,34 @@ def predIsolabeledH
 lemma predIsolabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
-  := by sorry
+  := by
+    dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph, relOflabeledSubgraph]
+    rintro H₀ H₁ ⟨h_vert, h_adj⟩
+    constructor
+    · rintro ⟨f₀, h_iso₀⟩
+      let f₁ (w : H₁.subgraph.verts) : U := f₀ (H₀.subgraph.vert (φ.graph_iso.symm ↑w) (by aesop))
+      have h_bij₁ : Function.Bijective f₁ := by
+        dsimp [Function.Bijective, f₁]
+        constructor
+        · intro w₀ w₁ h_eq
+          simp_all only [eq_iff_iff, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
+          obtain ⟨_, property₀⟩ := w₀
+          obtain ⟨_, property₁⟩ := w₁
+          simp_all only
+        · intro u
+          let w : H₁.subgraph.verts := H₁.subgraph.vert (φ.graph_iso (f₀.symm u)) (by aesop)
+          use w
+          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, LabeledSubgraph.coe_type_embed, RelIso.symm_apply_apply,
+            Subtype.coe_eta, RelIso.apply_symm_apply]
+      have h_iso₁ : ∀ {w₀ w₁ : H₁.subgraph.verts}, H.graph.Adj (f₁ w₀) (f₁ w₁) ↔ H₁.subgraph.Adj w₀ w₁ := by
+        intro w₀ w₁; dsimp [f₁]
+        simp_all only [eq_iff_iff, LabeledSubgraph.coe, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₁]
+        obtain ⟨_, property₀⟩ := w₀
+        obtain ⟨_, property₁⟩ := w₁
+        simp_all only
+        sorry
+      sorry
+    · sorry
 
 lemma relOfTypeVertex
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -173,9 +200,44 @@ noncomputable def isoSetOfInducedlabeledSubgraph
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
       dsimp [f, f_inv, inducedlabeledSubgraph]
       ext u v
-      · sorry
-      · sorry
-      · sorry
+      · simp; constructor
+        · intro ⟨u', ⟨hu'_vert, hu'_iso⟩⟩
+          have : u' = u := by
+            rw [←hu'_iso]; symm
+            exact φ.graph_iso.left_inv u'
+          rw [←this]
+          exact hu'_vert
+        · intro hu_vert
+          use u
+          simp_all
+          exact φ.graph_iso.left_inv u
+      · simp; constructor
+        · intro ⟨h_uv, ⟨h_u, h_v⟩⟩
+          obtain ⟨u', ⟨hu'_vert, hu'_iso⟩⟩ := h_u
+          obtain ⟨v', ⟨hv'_vert, hv'_iso⟩⟩ := h_v
+          have : u' = u := by
+            rw [←hu'_iso]; symm
+            exact φ.graph_iso.left_inv u'
+          rw [this] at hu'_vert
+          have : v' = v := by
+            rw [←hv'_iso]; symm
+            exact φ.graph_iso.left_inv v'
+          rw [this] at hv'_vert
+          apply h_ind₀ hu'_vert hv'_vert h_uv
+        · intro h_uv
+          constructor
+          · exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
+          · constructor
+            · use u
+              have u_vert : u ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv
+              simp_all
+              exact φ.graph_iso.left_inv u
+            · use v
+              have v_vert : v ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv.symm
+              simp_all
+              exact φ.graph_iso.left_inv v
+      · simp
+        sorry
     have h_rightinv : Function.RightInverse f_inv f := by
       sorry
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
@@ -192,23 +254,6 @@ noncomputable def isoSetOfInducedlabeledSubgraphIsoH
     (predIsolabeldH_related φ.symm H)
   dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph] at iso
   exact iso
-
-lemma labeledSubgraphDensity_respects_eqv_on_G'
-    (H : LabeledGraph σ U) {G₀ G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    : labeledSubgraphDensity H G₀ = labeledSubgraphDensity H G₁
-  := by
-  dsimp [labeledSubgraphDensity]
-  let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
-  let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphIsoH φ H
-  have hS₀ : Fintype S₀ := Fintype.ofFinite ↑S₀
-  have hS₁ : Fintype S₁ := Fintype.ofFinite ↑S₁
-  have h_count : labeledSubgraphCount H G₀ = labeledSubgraphCount H G₁ := by
-    dsimp only [labeledSubgraphCount]
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    sorry
-  rw [h_count]
-  rfl
 
 lemma labeledSubgraphDensity_respects_eqv_on_G
     (H : LabeledGraph σ U) {G₀ G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
