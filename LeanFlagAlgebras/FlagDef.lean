@@ -286,6 +286,8 @@ def QuotLabeledGraphList' (σ : FlagType T) : Type 1 :=
 def QuotLabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) : Type :=
   Quotient (labeledGraphListSetoid σ t Vl)
 
+abbrev FlagList' (σ : FlagType T) := List (Σ (V : Type), Flag σ V)
+
 abbrev FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), Flag σ (Vl i)
 
 def flagToList {σ : FlagType T} {V : Type} (F : Flag σ V)
@@ -336,6 +338,28 @@ instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [D
     : DecidableEqList (fun (i : Fin 3) => match i with | 0 => V | 1 => W | 2 => U)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
+
+noncomputable instance eqv_QuotLabeledGraphList_FlagList' (σ : FlagType T)
+    : QuotLabeledGraphList' σ ≃ FlagList' σ where
+  toFun := fun Gl => Gl.out.map (fun ⟨V, G⟩ => ⟨V, ⟦G⟧⟩)
+  invFun := fun Fl => ⟦Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)⟧
+  left_inv Gl := by
+    nth_rw 2 [← Quotient.out_eq Gl]
+    apply Quotient.sound
+    show flagListEqv' _ _
+    simp [flagListEqv']
+    intro i
+    apply Nonempty.intro
+    repeat rw [List.getElem_map]
+    simp
+    exact Classical.choice (Quotient.mk_out (Gl.out[i].2))
+  right_inv Fl := by
+    simp
+    have : ⟦Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)⟧.out ∼fl' (Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)) := by
+      sorry
+    -- apply List.ext_getElem?
+    -- intro i
+    sorry
 
 noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type)
     : QuotLabeledGraphList σ t Vl ≃ FlagList σ t Vl where
