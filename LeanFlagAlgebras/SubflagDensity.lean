@@ -121,9 +121,11 @@ def inducedlabeledSubgraph
         exact G.graph.symm H.1
     }
     type_embed := {
-      toFun := fun t ↦ ⟨G.type_embed t, by
-        simp
-        exact hS t⟩
+      toFun := fun t ↦
+        let val := G.type_embed t
+        let property : (G.type_embed t) ∈ S := by
+          apply hS
+        ⟨val, property⟩
       inj' := by
         intro t₁ t₂ h
         simp at h
@@ -199,6 +201,7 @@ noncomputable def isoSetOfInducedlabeledSubgraph
     have h_leftinv : Function.LeftInverse f_inv f := by
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
       dsimp [f, f_inv, inducedlabeledSubgraph]
+      simp
       ext u v
       · simp; constructor
         · intro ⟨u', ⟨hu'_vert, hu'_iso⟩⟩
@@ -237,11 +240,53 @@ noncomputable def isoSetOfInducedlabeledSubgraph
               simp_all
               exact φ.graph_iso.left_inv v
       · simp
+        have verts_eq : φ.symm.graph_iso '' (φ.graph_iso '' H₀.subgraph.verts) = H₀.subgraph.verts := by
+          ext u
+          simp; constructor
+          · intro h
+            obtain⟨u', ⟨h1, h2⟩⟩ := h
+            have : u' = u := by
+              rw [←h2]; symm
+              exact φ.graph_iso.left_inv u'
+            rw [←this]
+            exact h1
+          · intro u'
+            use u
+            constructor
+            · exact u'
+            · exact φ.graph_iso.left_inv u
+        have : {
+          toFun := fun t => ⟨G₀.type_embed t, by
+            have := H₀.embed_eq t
+            rw [←this]; simp⟩,
+          inj' := by
+            intro t₁ t₂ h
+            simp at h
+            exact h,
+          map_rel_iff' := by
+            intro t₁ t₂; simp
+            constructor
+            · sorry
+            · sorry
+             } = H₀.type_embed := by
+             refine RelEmbedding.ext_iff.mpr ?_
+             intro t
+             simp
+             have := H₀.embed_eq t
+             ext1
+             simp_all only
+
         sorry
     have h_rightinv : Function.RightInverse f_inv f := by
       sorry
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
+
+#check heq_eq_eq
+example {α : Type} (a b : α) (h : a = b) : HEq a  b := by
+  have h' : HEq a b := by
+    exact heq_of_eq h
+  exact h'
 
 noncomputable def isoSetOfInducedlabeledSubgraphIsoH
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
