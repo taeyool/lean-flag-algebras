@@ -200,10 +200,9 @@ noncomputable def isoSetOfInducedlabeledSubgraph
   let f_bij : Function.Bijective f := by
     have h_leftinv : Function.LeftInverse f_inv f := by
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
-      dsimp [f, f_inv, inducedlabeledSubgraph]
-      simp
       ext u v
-      · simp; constructor
+      · dsimp [f, f_inv, inducedlabeledSubgraph]
+        simp; constructor
         · intro ⟨u', ⟨hu'_vert, hu'_iso⟩⟩
           have : u' = u := by
             rw [←hu'_iso]; symm
@@ -214,7 +213,8 @@ noncomputable def isoSetOfInducedlabeledSubgraph
           use u
           simp_all
           exact φ.graph_iso.left_inv u
-      · simp; constructor
+      · dsimp [f, f_inv, inducedlabeledSubgraph]
+        simp; constructor
         · intro ⟨h_uv, ⟨h_u, h_v⟩⟩
           obtain ⟨u', ⟨hu'_vert, hu'_iso⟩⟩ := h_u
           obtain ⟨v', ⟨hv'_vert, hv'_iso⟩⟩ := h_v
@@ -239,7 +239,14 @@ noncomputable def isoSetOfInducedlabeledSubgraph
               have v_vert : v ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv.symm
               simp_all
               exact φ.graph_iso.left_inv v
-      · simp
+      · dsimp [f, f_inv, inducedlabeledSubgraph]
+        let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
+        let H₂ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
+        have verts_eq_H₀H₂ : H₀.subgraph.verts = H₂.subgraph.verts := by
+          dsimp [inducedlabeledSubgraph]
+          sorry
+        let toFun := H₂.type_embed.toFun
+        rw [←verts_eq_H₀H₂] at toFun
         have verts_eq : φ.symm.graph_iso '' (φ.graph_iso '' H₀.subgraph.verts) = H₀.subgraph.verts := by
           ext u
           simp; constructor
@@ -255,28 +262,25 @@ noncomputable def isoSetOfInducedlabeledSubgraph
             constructor
             · exact u'
             · exact φ.graph_iso.left_inv u
-        have : {
-          toFun := fun t => ⟨G₀.type_embed t, by
-            have := H₀.embed_eq t
-            rw [←this]; simp⟩,
-          inj' := by
-            intro t₁ t₂ h
-            simp at h
-            exact h,
-          map_rel_iff' := by
-            intro t₁ t₂; simp
-            constructor
-            · sorry
-            · sorry
-             } = H₀.type_embed := by
-             refine RelEmbedding.ext_iff.mpr ?_
-             intro t
-             simp
-             have := H₀.embed_eq t
-             ext1
-             simp_all only
-
+        -- have : {
+        --   toFun := fun t ↦ ⟨G₀.type_embed t, by
+        --     rw [←verts_eq_H₀H₂]
+        --     apply H₀.type_embed.property⟩
+        --   inj' := by
+        --     intro t₁ t₂ h
+        --     simp at h
+        --     exact H₀.type_embed.inj' h
+        --   map_rel_iff' := by
+        --     intro t₁ t₂
+        --     simp
+        --     exact H₀.type_embed.map_rel_iff'
+        -- } = H₀.type_embed := by
+        --   ext t
+        --   simp
+        --   exact H₀.embed_eq t
+        -- exact heq_of_eq this
         sorry
+
     have h_rightinv : Function.RightInverse f_inv f := by
       sorry
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
