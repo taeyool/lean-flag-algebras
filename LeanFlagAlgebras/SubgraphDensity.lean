@@ -1794,13 +1794,20 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
              ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩, h_G₁₂⟩
       dsimp [f_S₅_S₆_backward, f_S₅_S₆_forward, subgraphFromPartialIso, subgraphByComposition, subgraphFromIso, subgraphFromOrder, Relation.Map]
       simp_all
+      dsimp [inducedSubgraph] at h_G₁₂
       constructor
       . ext u v
         . constructor
           . simp_all
-            sorry
-          . simp_all
-            sorry
+            intro a b h_b_G₁ h_b_G₁₂ h_a_b h_a_u
+            subst h_a_u h_a_b
+            simp_all only [RelIso.symm_apply_apply]
+          . intro h_u_G₁
+            have h_u_G₁₂ : u ∈ G₁₂.verts := by simp_all only [Set.mem_union, Subtype.mk.injEq, true_or]
+            use ⟨u, h_u_G₁₂⟩
+            simp_all
+            use (f_G₁₂_Fout ⟨u, h_u_G₁₂⟩)
+            simp_all [RelIso.symm_apply_apply]
         . constructor
           . intro ⟨a, b, h_a_b, h_a_u, h_b_v⟩
             rw [←h_a_u, ←h_b_v]
@@ -1809,25 +1816,38 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
             dsimp [Relation.Map]
             simp_all
             use u
+            have : u ∈ G₁.verts := G₁.edge_vert h_uv
+            have : v ∈ G₁.verts := G₁.edge_vert h_uv.symm
             simp_all
-            sorry
       . ext u v
         . simp_all
-          sorry
+          constructor
+          . simp_all
+            intro a b h_b_G₂ h_b_a h_a_u
+            subst h_a_u h_b_a
+            simp_all only [RelIso.symm_apply_apply]
+          . intro h_u_G₂
+            have h_u_G₁₂ : u ∈ G₁₂.verts := by simp_all only [Set.mem_union, Subtype.mk.injEq, or_true]
+            use (f_G₁₂_Fout ⟨u, h_u_G₁₂⟩)
+            simp_all [RelIso.symm_apply_apply]
         . simp_all
-          sorry
+          dsimp [Relation.Map]
+          constructor
+          . intro ⟨a, b, h_a_b, h_a_u, h_b_v⟩
+            rw [←h_a_u, ←h_b_v]
+            assumption
+          . intro h_uv
+            simp_all
+            use u
+            have : u ∈ G₂.verts := G₂.edge_vert h_uv
+            have : v ∈ G₂.verts := G₂.edge_vert h_uv.symm
+            simp_all
     right_inv := by
       intro ⟨⟨F, K₁, K₂, ⟨G₁₂, h_G₁₂_ind⟩, f_G₁₂_Fout⟩, h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩
       dsimp [f_S₅_S₆_backward, f_S₅_S₆_forward, subgraphFromPartialIso, subgraphByComposition, subgraphFromIso, subgraphFromOrder, Relation.Map]
       have : f_G₁₂_Fout.symm.symm = f_G₁₂_Fout := by rfl
       simp_all
-      constructor
-      . ext u v
-        . simp_all
-        . simp_all
-      . ext u v
-        . simp_all
-        . simp_all
+      constructor <;> (ext u v <;> simp_all)
   }
 
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
