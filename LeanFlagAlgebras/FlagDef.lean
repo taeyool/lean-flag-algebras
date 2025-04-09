@@ -169,6 +169,13 @@ noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [Dec
   classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
 
+omit [Fintype T] in
+theorem flagEqv.sound {σ : FlagType T} {V : Type} {G G' : LabeledGraph σ V} (h : G ∼f G')
+    : (⟦G⟧ : Flag σ V) = (⟦G'⟧ : Flag σ V)
+  := by
+  apply Quotient.sound
+  exact h
+
 def emptyFlag (σ : FlagType T) : Flag σ T
   :=
   ⟦emptyLabeledGraph σ⟧
@@ -204,6 +211,31 @@ def flagListEqv {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl Gl' : Labe
 infixl:50 " ∼fl' " => flagListEqv'
 
 infixl:50 " ∼fl " => flagListEqv
+
+omit [Fintype T] in
+theorem flagListEqv'_length_eq {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
+    (h : Gl ∼fl' Gl') : Gl.length = Gl'.length
+  := by
+  simp [flagListEqv'] at h
+  exact h.1
+
+omit [Fintype T] in
+theorem flagListEqv'_getElem_type_eq {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
+    (h : Gl ∼fl' Gl') (hl : Gl.length = Gl'.length) (i : Fin Gl.length)
+    : Gl[i].1 = Gl'[i].1
+  := by
+  simp [flagListEqv'] at h
+  obtain ⟨_, h₁⟩ := h
+  exact (h₁ i).1
+
+omit [Fintype T] in
+theorem flagListEqv'_getElem_iso {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
+    (h : Gl ∼fl' Gl') (hl : Gl.length = Gl'.length) (i : Fin Gl.length)
+    : Nonempty (Gl[i].2 ≃f Gl'[i].2)
+  := by
+  simp [flagListEqv'] at h
+  obtain ⟨_, h₁⟩ := h
+  exact (h₁ i).2
 
 omit [Fintype T] in
 theorem flagListEqv'.refl {σ : FlagType T} (Gl : LabeledGraphList' σ)
@@ -259,6 +291,9 @@ theorem flagListEqv.trans {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
     : ∀ {Gl Gl' Gl'' : LabeledGraphList σ t Vl}, Gl ∼fl Gl' → Gl' ∼fl Gl'' → Gl ∼fl Gl''
   :=
   fun h h' i => flagEqv.trans (h i) (h' i)
+
+instance {σ : FlagType T} : Trans (@flagListEqv' T σ) (@flagListEqv' T σ) (@flagListEqv' T σ) where
+  trans := flagListEqv'.trans
 
 instance labeledGraphListSetoid' (σ : FlagType T)
     : Setoid (LabeledGraphList' σ)
@@ -339,6 +374,65 @@ instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [D
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
+lemma aux {A B : List α} (hl : A.length = B.length) (h : ∀ (i : Fin A.length), A[i] = B[i]) : A = B := by
+  apply List.ext_get_iff.mpr
+  constructor
+  · exact hl
+  · intro i h' _
+    exact h ⟨i, h'⟩
+
+def labeledGraphList'_to_flagList' {σ : FlagType T} (Gl : LabeledGraphList' σ)
+    : FlagList' σ
+  :=
+  Gl.map (fun ⟨V, G⟩ => ⟨V, ⟦G⟧⟩)
+
+noncomputable def flagList'_to_labeledGraphList' {σ : FlagType T} (Fl : FlagList' σ)
+    : LabeledGraphList' σ
+  :=
+  Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)
+
+omit [Fintype T] in
+theorem flagList'_to_labeledGraphList'_to_flagList'
+    {σ : FlagType T} (Fl : FlagList' σ)
+    : labeledGraphList'_to_flagList' (flagList'_to_labeledGraphList' Fl) = Fl
+  := by
+  simp [flagList'_to_labeledGraphList', labeledGraphList'_to_flagList']
+  apply List.map_id''
+  simp
+
+omit [Fintype T] in
+theorem flag_aux {σ : FlagType T} {V W : Type} (h : V = W) : Flag σ V = Flag σ W
+  := by
+  subst h
+  rfl
+
+omit [Fintype T] in
+theorem labeledGraph_HEq {σ : FlagType T} {V W : Type} (h_type_eq : V = W)
+    {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (h_iso : Nonempty (G ≃f G'))
+    : HEq (⟦G⟧ : Flag σ V) (⟦G'⟧ : Flag σ W)
+  := by
+  subst h_type_eq
+  simp_all only [heq_eq_eq, Quotient.eq]
+  exact h_iso
+
+lemma aux' {Gl Gl' : LabeledGraphList' σ} (h : Gl ∼fl' Gl')
+    : labeledGraphList'_to_flagList' Gl = labeledGraphList'_to_flagList' Gl'
+  := by
+  simp [flagListEqv'] at h
+  obtain ⟨hl, h₁⟩ := h
+  simp [labeledGraphList'_to_flagList']
+  apply aux
+  · intro i
+    simp [List.getElem_map]
+    have hl_eq := @List.length_map (Σ (V : Type), LabeledGraph σ V) (Σ (V : Type), Flag σ V) Gl (fun ⟨V, G⟩ => ⟨V, ⟦G⟧⟩)
+    have h_type_eq := (h₁ (i.cast hl_eq)).1
+    have h_iso := (h₁ (i.cast hl_eq)).2
+    constructor
+    · exact h_type_eq
+    · exact labeledGraph_HEq h_type_eq h_iso
+  · rw [List.length_map, List.length_map]
+    exact hl
+
 noncomputable instance eqv_QuotLabeledGraphList_FlagList' (σ : FlagType T)
     : QuotLabeledGraphList' σ ≃ FlagList' σ where
   toFun := fun Gl => Gl.out.map (fun ⟨V, G⟩ => ⟨V, ⟦G⟧⟩)
@@ -354,12 +448,11 @@ noncomputable instance eqv_QuotLabeledGraphList_FlagList' (σ : FlagType T)
     simp
     exact Classical.choice (Quotient.mk_out (Gl.out[i].2))
   right_inv Fl := by
-    simp
-    have : ⟦Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)⟧.out ∼fl' (Fl.map (fun ⟨V, F⟩ => ⟨V, F.out⟩)) := by
-      sorry
-    -- apply List.ext_getElem?
-    -- intro i
-    sorry
+    show labeledGraphList'_to_flagList' _ = Fl
+    nth_rw 2 [← flagList'_to_labeledGraphList'_to_flagList' Fl]
+    apply aux'
+    show ⟦flagList'_to_labeledGraphList' Fl⟧.out ∼fl' _
+    apply Quotient.mk_out (flagList'_to_labeledGraphList' Fl)
 
 noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type)
     : QuotLabeledGraphList σ t Vl ≃ FlagList σ t Vl where
