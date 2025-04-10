@@ -1501,6 +1501,28 @@ lemma card_eq_imply_set_eq
       _ = 0 := by simp
   exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
 
+
+
+noncomputable def isoFromProj
+  {S T S₁ T₁ : Type} (f : S ≃ T)
+  (prj_S : S → S₁) (h_prj_S : Function.Surjective prj_S)
+  (prj_T : T → T₁) (h_prj_T : Function.Surjective prj_T)
+  (h : ∀ s s' : S, prj_S s = prj_S s' ↔ prj_T (f s) = prj_T (f s'))
+  : S₁ ≃ T₁
+  where
+    toFun := fun s₁ =>
+      prj_T (f (h_prj_S s₁).choose)
+    invFun := fun t₁ =>
+      prj_S (f.symm (h_prj_T t₁).choose)
+    left_inv := by
+      intro s₁
+      have h_s₁ : s₁ = prj_S (h_prj_S s₁).choose  := (h_prj_S s₁).choose_spec.symm
+      nth_rw 2 [h_s₁]
+      sorry
+    right_inv := by
+      intro t₁
+      sorry
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
