@@ -121,11 +121,7 @@ def inducedlabeledSubgraph
         exact G.graph.symm H.1
     }
     type_embed := {
-      toFun := fun t ↦
-        let val := G.type_embed t
-        let property : (G.type_embed t) ∈ S := by
-          apply hS
-        ⟨val, property⟩
+      toFun := fun t ↦ ⟨G.type_embed t, hS t⟩
       inj' := by
         intro t₁ t₂ h
         simp at h
@@ -242,11 +238,7 @@ noncomputable def isoSetOfInducedlabeledSubgraph
       · dsimp [f, f_inv, inducedlabeledSubgraph]
         let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
         let H₂ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
-        have verts_eq_H₀H₂ : H₀.subgraph.verts = H₂.subgraph.verts := by
-          dsimp [inducedlabeledSubgraph]
-          sorry
         let toFun := H₂.type_embed.toFun
-        rw [←verts_eq_H₀H₂] at toFun
         have verts_eq : φ.symm.graph_iso '' (φ.graph_iso '' H₀.subgraph.verts) = H₀.subgraph.verts := by
           ext u
           simp; constructor
@@ -262,32 +254,21 @@ noncomputable def isoSetOfInducedlabeledSubgraph
             constructor
             · exact u'
             · exact φ.graph_iso.left_inv u
-        -- have : {
-        --   toFun := fun t ↦ ⟨G₀.type_embed t, by
-        --     rw [←verts_eq_H₀H₂]
-        --     apply H₀.type_embed.property⟩
-        --   inj' := by
-        --     intro t₁ t₂ h
-        --     simp at h
-        --     exact H₀.type_embed.inj' h
-        --   map_rel_iff' := by
-        --     intro t₁ t₂
-        --     simp
-        --     exact H₀.type_embed.map_rel_iff'
-        -- } = H₀.type_embed := by
-        --   ext t
-        --   simp
-        --   exact H₀.embed_eq t
-        -- exact heq_of_eq this
-        sorry
-
+        have verts_eq_H₀H₂ : H₀.subgraph.verts = H₂.subgraph.verts := by
+          dsimp [H₂, inducedlabeledSubgraph, H₁]
+          rw [verts_eq]
+        have : HEq H₂.type_embed H₀.type_embed := by
+          sorry
+        dsimp [H₂, H₁, inducedlabeledSubgraph] at this
+        exact this
     have h_rightinv : Function.RightInverse f_inv f := by
       sorry
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
 #check heq_eq_eq
-example {α : Type} (a b : α) (h : a = b) : HEq a  b := by
+
+example {α : Type} {a b : α} (h : a = b) : HEq a b := by
   have h' : HEq a b := by
     exact heq_of_eq h
   exact h'
