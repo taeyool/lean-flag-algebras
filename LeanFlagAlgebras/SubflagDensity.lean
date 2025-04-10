@@ -328,6 +328,7 @@ end
 
 section
 
+/-
 variable {t : ℕ} {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
   {W : Type} [Fintype W] [DecidableEq W]
   {U : Type} [Fintype U] [DecidableEq U]
@@ -521,5 +522,6 @@ theorem flagPairDensity_comm
   have h_subst := FlagListHEq.subst (fun Wl => flagListDensity Wl G = flagListDensity Fl₂ G) hHEq
   simp at h_subst
   exact h_subst
+-/
 
 end
