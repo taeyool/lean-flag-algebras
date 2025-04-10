@@ -213,31 +213,6 @@ infixl:50 " ∼fl' " => flagListEqv'
 infixl:50 " ∼fl " => flagListEqv
 
 omit [Fintype T] in
-theorem flagListEqv'_length_eq {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
-    (h : Gl ∼fl' Gl') : Gl.length = Gl'.length
-  := by
-  simp [flagListEqv'] at h
-  exact h.1
-
-omit [Fintype T] in
-theorem flagListEqv'_getElem_type_eq {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
-    (h : Gl ∼fl' Gl') (hl : Gl.length = Gl'.length) (i : Fin Gl.length)
-    : Gl[i].1 = Gl'[i].1
-  := by
-  simp [flagListEqv'] at h
-  obtain ⟨_, h₁⟩ := h
-  exact (h₁ i).1
-
-omit [Fintype T] in
-theorem flagListEqv'_getElem_iso {σ : FlagType T} {Gl Gl' : LabeledGraphList' σ}
-    (h : Gl ∼fl' Gl') (hl : Gl.length = Gl'.length) (i : Fin Gl.length)
-    : Nonempty (Gl[i].2 ≃f Gl'[i].2)
-  := by
-  simp [flagListEqv'] at h
-  obtain ⟨_, h₁⟩ := h
-  exact (h₁ i).2
-
-omit [Fintype T] in
 theorem flagListEqv'.refl {σ : FlagType T} (Gl : LabeledGraphList' σ)
     : Gl ∼fl' Gl
   := by
@@ -374,13 +349,6 @@ instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [D
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
-lemma aux {A B : List α} (hl : A.length = B.length) (h : ∀ (i : Fin A.length), A[i] = B[i]) : A = B := by
-  apply List.ext_get_iff.mpr
-  constructor
-  · exact hl
-  · intro i h' _
-    exact h ⟨i, h'⟩
-
 def labeledGraphList'_to_flagList' {σ : FlagType T} (Gl : LabeledGraphList' σ)
     : FlagList' σ
   :=
@@ -400,14 +368,15 @@ theorem flagList'_to_labeledGraphList'_to_flagList'
   apply List.map_id''
   simp
 
-omit [Fintype T] in
-theorem flag_aux {σ : FlagType T} {V W : Type} (h : V = W) : Flag σ V = Flag σ W
-  := by
-  subst h
-  rfl
+theorem List.ext_getElem' {A B : List α} (hl : A.length = B.length) (h : ∀ (i : Fin A.length), A[i] = B[i]) : A = B := by
+  apply List.ext_get_iff.mpr
+  constructor
+  · exact hl
+  · intro i h' _
+    exact h ⟨i, h'⟩
 
 omit [Fintype T] in
-theorem labeledGraph_HEq {σ : FlagType T} {V W : Type} (h_type_eq : V = W)
+theorem quot_labeledGraph_HEq {σ : FlagType T} {V W : Type} (h_type_eq : V = W)
     {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (h_iso : Nonempty (G ≃f G'))
     : HEq (⟦G⟧ : Flag σ V) (⟦G'⟧ : Flag σ W)
   := by
@@ -415,21 +384,21 @@ theorem labeledGraph_HEq {σ : FlagType T} {V W : Type} (h_type_eq : V = W)
   simp_all only [heq_eq_eq, Quotient.eq]
   exact h_iso
 
-lemma aux' {Gl Gl' : LabeledGraphList' σ} (h : Gl ∼fl' Gl')
+lemma labeledGraphList'_to_flagList'_eq {Gl Gl' : LabeledGraphList' σ} (h_eqv : Gl ∼fl' Gl')
     : labeledGraphList'_to_flagList' Gl = labeledGraphList'_to_flagList' Gl'
   := by
-  simp [flagListEqv'] at h
-  obtain ⟨hl, h₁⟩ := h
+  simp [flagListEqv'] at h_eqv
+  obtain ⟨hl, h⟩ := h_eqv
   simp [labeledGraphList'_to_flagList']
-  apply aux
+  apply List.ext_getElem'
   · intro i
     simp [List.getElem_map]
     have hl_eq := @List.length_map (Σ (V : Type), LabeledGraph σ V) (Σ (V : Type), Flag σ V) Gl (fun ⟨V, G⟩ => ⟨V, ⟦G⟧⟩)
-    have h_type_eq := (h₁ (i.cast hl_eq)).1
-    have h_iso := (h₁ (i.cast hl_eq)).2
+    have h_type_eq := (h (i.cast hl_eq)).1
+    have h_iso := (h (i.cast hl_eq)).2
     constructor
     · exact h_type_eq
-    · exact labeledGraph_HEq h_type_eq h_iso
+    · exact quot_labeledGraph_HEq h_type_eq h_iso
   · rw [List.length_map, List.length_map]
     exact hl
 
@@ -450,7 +419,7 @@ noncomputable instance eqv_QuotLabeledGraphList_FlagList' (σ : FlagType T)
   right_inv Fl := by
     show labeledGraphList'_to_flagList' _ = Fl
     nth_rw 2 [← flagList'_to_labeledGraphList'_to_flagList' Fl]
-    apply aux'
+    apply labeledGraphList'_to_flagList'_eq
     show ⟦flagList'_to_labeledGraphList' Fl⟧.out ∼fl' _
     apply Quotient.mk_out (flagList'_to_labeledGraphList' Fl)
 
