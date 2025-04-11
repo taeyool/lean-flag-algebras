@@ -1501,9 +1501,7 @@ lemma card_eq_imply_set_eq
       _ = 0 := by simp
   exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
 
-
-
-noncomputable def isoFromProj
+noncomputable def isoOnProjTypeFromIsoType
   {S T S₁ T₁ : Type} (f : S ≃ T)
   (prj_S : S → S₁) (h_prj_S : Function.Surjective prj_S)
   (prj_T : T → T₁) (h_prj_T : Function.Surjective prj_T)
@@ -1516,12 +1514,28 @@ noncomputable def isoFromProj
       prj_S (f.symm (h_prj_T t₁).choose)
     left_inv := by
       intro s₁
-      have h_s₁ : s₁ = prj_S (h_prj_S s₁).choose  := (h_prj_S s₁).choose_spec.symm
-      nth_rw 2 [h_s₁]
-      sorry
+      show prj_S (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose) = s₁
+      have h₀ : prj_T (f (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose))
+                = prj_T (f ((h_prj_S s₁).choose)) :=
+        calc
+          prj_T (f (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose))
+          _ = prj_T ((h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose) := by simp
+          _ = prj_T (f (h_prj_S s₁).choose) := (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose_spec
+      calc
+        prj_S (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose)
+        _ = prj_S (h_prj_S s₁).choose := by apply (h _ _).mpr h₀
+        _ = s₁ := (h_prj_S s₁).choose_spec
     right_inv := by
       intro t₁
-      sorry
+      show prj_T (f (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose) = t₁
+      have h₀ : prj_S (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose
+                = prj_S (f.symm (h_prj_T t₁).choose)
+        := (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose_spec
+      calc
+        prj_T (f (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose)
+        _ = prj_T (f (f.symm (h_prj_T t₁).choose)) := by apply (h _ _).mp h₀
+        _ = prj_T ((h_prj_T t₁).choose) := by simp
+        _ = t₁ := (h_prj_T t₁).choose_spec
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
