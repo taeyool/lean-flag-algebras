@@ -349,6 +349,20 @@ end
 
 section
 
+variable {V : Type} [Fintype V] [DecidableEq V]
+
+noncomputable def labeledSubgraphListCount
+    (Hl : LabeledGraphList σ) (G : LabeledGraph σ W) : ℕ
+  :=
+  let ℓ := Hl.length
+  let p₁ (Gl : List (LabeledSubgraph σ G)) : Prop
+    := if h : Gl.length = ℓ then ∀ (i : Fin ℓ), Gl[i].IsInduced ∧ Nonempty (Gl[i].coe ≃f Hl[i].2) else false
+  let p₂ (Gl : List (LabeledSubgraph σ G)) : Prop
+    := ∀ (i j : Fin Gl.length), i ≠ j → Gl[i].subgraph.verts ∩ Gl[j].subgraph.verts = ∅
+  let S := { Gl : List (LabeledSubgraph σ G) | p₁ Gl ∧ p₂ Gl }
+  have : Fintype S := sorry
+  S.toFinset.card
+
 /-
 variable {t : ℕ} {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
   {W : Type} [Fintype W] [DecidableEq W]

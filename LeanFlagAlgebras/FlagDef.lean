@@ -198,7 +198,7 @@ instance decidable_eq_V {t : ℕ} (Vl : Fin t → Type) [DecidableEqList Vl] (i 
   DecidableEqList.decidable_eq_all i
 /-- TODO END --/
 
-abbrev LabeledGraphList (σ : FlagType T) := List (Σ (V : Type), LabeledGraph σ V)
+abbrev LabeledGraphList (σ : FlagType T) := List (Σ (V : Type) , LabeledGraph σ V)
 
 def flagListEqv {σ : FlagType T} (Gl Gl' : LabeledGraphList σ) : Prop
   :=
