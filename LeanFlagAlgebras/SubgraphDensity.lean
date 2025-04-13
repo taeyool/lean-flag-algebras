@@ -1808,7 +1808,19 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     have h_pres : ∀ s s' : S₅, prj_S₃ s = prj_S₃ s' ↔ prj_S₄ (f_S₅_S₆.toFun s) = prj_S₄ (f_S₅_S₆.toFun s') := by
       intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩, f_G₁₂_Fout⟩, h_G₁_G₂, h_G₁₂⟩
       intro ⟨⟨F', G₁', G₂', ⟨G₁₂', h_G₁₂_ind'⟩, f_G₁₂_Fout'⟩, h_G₁_G₂', h_G₁₂'⟩
-      sorry
+      constructor
+      . intro h_eq
+        dsimp [prj_S₃] at h_eq
+        dsimp [prj_S₄, f_S₅_S₆, f_S₅_S₆_forward, subgraphFromPartialIso]
+        dsimp [subgraphByComposition, subgraphFromIso, subgraphFromOrder, Relation.Map]
+        simp_all [Subtype.mk.injEq]
+        -- split; apply Eq.symm; split
+        sorry
+      . intro h_eq
+        dsimp [prj_S₄, f_S₅_S₆, f_S₅_S₆_forward] at h_eq
+        dsimp [prj_S₃]
+        simp_all only [Subtype.mk.injEq]
+        sorry
     isoOnProjTypeFromIsoType f_S₅_S₆ prj_S₃ h_S₃ prj_S₄ h_S₄ h_pres
 
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
