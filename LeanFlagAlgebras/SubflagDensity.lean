@@ -2,14 +2,14 @@ import «LeanFlagAlgebras».FlagDef
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
 
-variable {T : Type} [Fintype T] [DecidableEq T] {σ : FlagType T}
+variable {T : Type} [FintypeExist T] [DecidableEqExist T] {σ : FlagType T}
 
 section
 
 variable {V W T: Type}
-  [Fintype V] [DecidableEq V]
-  [Fintype W] [DecidableEq W]
-  [Fintype U] [DecidableEq U]
+  [FintypeExist V] [DecidableEqExist V]
+  [FintypeExist W] [DecidableEqExist W]
+  [FintypeExist U] [DecidableEqExist U]
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
@@ -328,27 +328,14 @@ end
 
 section
 
-variable {V : Type} [Fintype V] [DecidableEq V]
-
-noncomputable def labeledSubgraphListCount
-    (Hl : LabeledGraphList σ) (G : LabeledGraph σ W) : ℕ
-  :=
-  let ℓ := Hl.length
-  let p₁ (Gl : List (LabeledSubgraph σ G)) : Prop
-    := if h : Gl.length = ℓ then ∀ (i : Fin ℓ), Gl[i].IsInduced ∧ Nonempty (Gl[i].coe ≃f Hl[i].2) else false
-  let p₂ (Gl : List (LabeledSubgraph σ G)) : Prop
-    := ∀ (i j : Fin Gl.length), i ≠ j → Gl[i].subgraph.verts ∩ Gl[j].subgraph.verts = ∅
-  let S := { Gl : List (LabeledSubgraph σ G) | p₁ Gl ∧ p₂ Gl }
-  have : Fintype S := sorry
-  S.toFinset.card
-
-/-
-variable {t : ℕ} {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
-  {W : Type} [Fintype W] [DecidableEq W]
-  {U : Type} [Fintype U] [DecidableEq U]
-  {U₁ : Type} [Fintype U₁] [DecidableEq U₁]
-  {U₂ : Type} [Fintype U₂] [DecidableEq U₂]
-  {U₃ : Type} [Fintype U₃] [DecidableEq U₃]
+variable {t : ℕ}
+  {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
+  {Vl' : Fin t → Type} [FintypeList Vl'] [DecidableEqList Vl']
+  {W : Type} [FintypeExist W] [DecidableEqExist W]
+  {U : Type} [FintypeExist U] [DecidableEqExist U]
+  {U₁ : Type} [FintypeExist U₁] [DecidableEqExist U₁]
+  {U₂ : Type} [FintypeExist U₂] [DecidableEqExist U₂]
+  {U₃ : Type} [FintypeExist U₃] [DecidableEqExist U₃]
 
 noncomputable def labeledSubgraphListCount
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
@@ -496,22 +483,38 @@ theorem flagDensity_permute
   :=
   sorry
 
-inductive FlagListHEq
-    : FlagList σ t Vl →
-      {Vl' : Fin t → Type} → [FintypeList Vl'] → [DecidableEqList Vl'] → FlagList σ t Vl' → Prop where
-  | refl (Fl : FlagList σ t Vl) : FlagListHEq Fl Fl
+theorem aux'
+    (h_Vl_eq : Vl' = Vl) (i : Fin t)
+    : Flag σ (Vl' i) = Flag σ (Vl i) := by
+  rw [h_Vl_eq]
 
-theorem FlagListHEq.subst
-    {Vl Vl' : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl] [FintypeList Vl'] [DecidableEqList Vl']
+theorem aux''
+    (h_Vl_eq : Vl' = Vl)
+    : FlagList σ t Vl' = FlagList σ t Vl := by
+  rw [h_Vl_eq]
+
+theorem aux
     {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
-    (p : {Wl : Fin t → Type} → [FintypeList Wl] → [DecidableEqList Wl] → FlagList σ t Wl → Prop)
-    (hHEq : HEq Fl Fl') (h : p Fl) : p Fl' := by
-  sorry
+    (h_Vl_eq : Vl' = Vl) (h_Fl_eq : ∀ (i : Fin t), Fl i = cast (aux' h_Vl_eq i) (Fl' i)) (G : Flag σ W)
+    : flagListDensity Fl G = flagListDensity Fl' G := by
+  have : Fl = cast (aux'' h_Vl_eq) Fl' := by
+    subst h_Vl_eq
+    simp_all only [cast_eq]
+    ext1 x
+    simp_all only
+  subst h_Vl_eq
+  subst this
+  rfl
 
--- (hHEq : @FlagListHEq T σ t Vl _ _ Fl Vl' _ _ Fl')
+instance fintypePairList' {V W : Type} [FintypeExist V] [FintypeExist W]
+    : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
+  :=
+  { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
-#check @FlagListHEq.subst
-#check HEq.subst
+instance decidableEqPairList' {V W : Type} [DecidableEqExist V] [DecidableEqExist W]
+    : DecidableEqList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
+  :=
+  { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
 theorem flagPairDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
@@ -526,16 +529,13 @@ theorem flagPairDensity_comm
     · intro i; match i with | 0 => simp | 1 => simp
     · intro i; match i with | 0 => simp | 1 => simp
   rw [flagDensity_permute Fl₁ G π]
-  have h_type_eq : FlagList σ 2 (fun i => match i with | 0 => U₂ | 1 => U₁)
-      = FlagList σ 2 (listTypePermute (fun i => match i with | 0 => U₁ | 1 => U₂) π) := by
-    congr; ext i
+  have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁)
+      = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
+    ext i
     match i with | 0 => simp [listTypePermute] | 1 => simp [listTypePermute]
-  have h_list_eq : Fl₁.permute π = cast h_type_eq Fl₂ := by
-    sorry
-  have hHEq : HEq Fl₂ (Fl₁.permute π) := by simp [HEq.symm, h_list_eq, cast_heq]
-  have h_subst := FlagListHEq.subst (fun Wl => flagListDensity Wl G = flagListDensity Fl₂ G) hHEq
-  simp at h_subst
-  exact h_subst
--/
+  have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (aux' h_Vl_eq i) (Fl₂ i) := by
+    intro i
+    split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
+  exact aux h_Vl_eq h_Fl_eq G
 
 end
