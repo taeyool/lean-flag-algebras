@@ -464,12 +464,6 @@ theorem flagDensity_other
   :=
   sorry
 
-theorem flagDensity_empty
-    (Fl : FlagList σ t Vl) (G : Flag σ W)
-    : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
-  :=
-  sorry
-
 theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute π) G
@@ -561,5 +555,22 @@ theorem flagTripleDensity_comm
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
   exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
+
+theorem flagDensity_empty
+    (Fl : FlagList σ t Vl) (G : Flag σ W)
+    : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
+  :=
+  sorry
+
+theorem flagPairDensity_empty
+    (F : Flag σ U) (G : Flag σ W)
+    : flagDensity₂ (emptyFlag σ) F G = flagDensity₁ F G
+  := by
+  rw [flagPairDensity_comm]
+  let Fl₁ := [F, emptyFlag σ]ᶠ
+  let Fl₂ := [F]ᶠ
+  show flagListDensity Fl₁ G = flagListDensity Fl₂ G
+  -- have : Fl₁ = Fl₂.insert (emptyFlag σ) := sorry
+  sorry
 
 end
