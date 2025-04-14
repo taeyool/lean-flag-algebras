@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».FlagDef
+import «LeanFlagAlgebras».«FlagDef»
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
 
@@ -476,21 +476,21 @@ theorem flagDensity_permute
   :=
   sorry
 
-theorem aux'
-    (h_Vl_eq : Vl' = Vl) (i : Fin t)
+theorem flag_eq
+    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl) (i : Fin t)
     : Flag σ (Vl' i) = Flag σ (Vl i) := by
   rw [h_Vl_eq]
 
-theorem aux''
-    (h_Vl_eq : Vl' = Vl)
+theorem flagList_eq
+    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl)
     : FlagList σ t Vl' = FlagList σ t Vl := by
   rw [h_Vl_eq]
 
-theorem aux
+theorem flagListDensity_cast_eq
     {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
-    (h_Vl_eq : Vl' = Vl) (h_Fl_eq : ∀ (i : Fin t), Fl i = cast (aux' h_Vl_eq i) (Fl' i)) (G : Flag σ W)
+    (h_Vl_eq : Vl' = Vl) (h_Fl_eq : ∀ (i : Fin t), Fl i = cast (flag_eq h_Vl_eq i) (Fl' i)) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity Fl' G := by
-  have : Fl = cast (aux'' h_Vl_eq) Fl' := by
+  have : Fl = cast (flagList_eq h_Vl_eq) Fl' := by
     subst h_Vl_eq
     simp_all only [cast_eq]
     ext1 x
@@ -499,12 +499,12 @@ theorem aux
   subst this
   rfl
 
-instance fintypePairList' {V W : Type} [FintypeExist V] [FintypeExist W]
+instance {V W : Type} [FintypeExist V] [FintypeExist W]
     : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
   { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
-instance decidableEqPairList' {V W : Type} [DecidableEqExist V] [DecidableEqExist W]
+instance {V W : Type} [DecidableEqExist V] [DecidableEqExist W]
     : DecidableEqList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
@@ -526,9 +526,9 @@ theorem flagPairDensity_comm
       = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
     ext i
     match i with | 0 => simp [listTypePermute] | 1 => simp [listTypePermute]
-  have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (aux' h_Vl_eq i) (Fl₂ i) := by
+  have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (flag_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
-  exact aux h_Vl_eq h_Fl_eq G
+  exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
 
 end
