@@ -509,6 +509,16 @@ instance {V W : Type} [DecidableEqExist V] [DecidableEqExist W]
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance }
 
+instance {V W U : Type} [FintypeExist V] [FintypeExist W] [FintypeExist U]
+    : FintypeList (fun (i : Fin 3) => match i with | 0 => V | 1 => W | 2 => U)
+  :=
+  { fintype_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
+
+instance {V W U : Type} [DecidableEqExist V] [DecidableEqExist W] [DecidableEqExist U]
+    : DecidableEqList (fun (i : Fin 3) => match i with | 0 => V | 1 => W | 2 => U)
+  :=
+  { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
+
 theorem flagPairDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
     : flagDensity₂ F₁ F₂ G = flagDensity₂ F₂ F₁ G
@@ -524,9 +534,30 @@ theorem flagPairDensity_comm
   rw [flagDensity_permute Fl₁ G π]
   have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁)
       = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
-    ext i
-    match i with | 0 => simp [listTypePermute] | 1 => simp [listTypePermute]
+    ext i; split <;> simp [listTypePermute]
   have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (flag_eq h_Vl_eq i) (Fl₂ i) := by
+    intro i
+    split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
+  exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
+
+theorem flagTripleDensity_comm
+    (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W)
+    : flagDensity₃ F₁ F₂ F₃ G = flagDensity₃ F₂ F₃ F₁ G
+  := by
+  let Fl₁ := [F₁, F₂, F₃]ᶠ
+  let Fl₂ := [F₂, F₃, F₁]ᶠ
+  show flagListDensity Fl₁ G = flagListDensity Fl₂ G
+  let π : Perm 3 := by
+    let f : Fin 3 → Fin 3 := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+    let f_inv : Fin 3 → Fin 3 := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+    refine ⟨f, f_inv, ?_, ?_⟩
+    · intro i; match i with | 0 => simp | 1 => simp | 2 => simp
+    · intro i; match i with | 0 => simp | 1 => simp | 2 => simp
+  rw [flagDensity_permute Fl₁ G π]
+  have h_Vl_eq : (fun (i : Fin 3) => match i with | 0 => U₂ | 1 => U₃ | 2 => U₁)
+      = (listTypePermute (fun (i : Fin 3) => match i with | 0 => U₁ | 1 => U₂ | 2 => U₃) π) := by
+    ext i; split <;> simp [listTypePermute]
+  have h_Fl_eq : ∀ (i : Fin 3), (Fl₁.permute π) i = cast (flag_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
   exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
