@@ -1699,16 +1699,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     obtain ⟨h_F_F', h_eq'⟩ := h_eq
     subst h_F_F'
     simp_all
-    have : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by
-      simp_all
-    have : G₁₂ = G₁₂' := by
-      sorry
+    have : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
+    have : G₁₂ = G₁₂' := by sorry
     subst this
-    have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by
-      simp_all
+    have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by simp_all
     subst this
-    have : h_iso_Fout_G₁₂.some.symm.symm = h_iso_Fout_G₁₂.some := by
-      simp
+    have : h_iso_Fout_G₁₂.some.symm.symm = h_iso_Fout_G₁₂.some := rfl
     simp_all [this]
     sorry
 
