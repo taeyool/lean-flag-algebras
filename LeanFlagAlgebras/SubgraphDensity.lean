@@ -1694,7 +1694,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     intro h_eq
     obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
     obtain ⟨h_G₁'_ind, h_G₁'_iso_H₁, h_G₂'_ind, h_G₂'_iso_H₂, h_G₁'_G₂'_disj⟩ := h_G₁'_G₂'
-    dsimp [f_S₃_S₄_fwd, subgraphFromIso] at h_eq
+    dsimp [f_S₃_S₄_fwd, subgraphFromIso, subgraphFromOrder] at h_eq
     simp at h_eq
     obtain ⟨h_F_F', h_eq'⟩ := h_eq
     subst h_F_F'
@@ -1707,7 +1707,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by
       simp_all
     subst this
-    simp_all
+    have : h_iso_Fout_G₁₂.some.symm.symm = h_iso_Fout_G₁₂.some := by
+      simp
+    simp_all [this]
     sorry
 
   have h_surj_S₃_S₄ : Function.Surjective f_S₃_S₄_fwd := by
