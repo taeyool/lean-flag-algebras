@@ -185,6 +185,11 @@ noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [FintypeExist V]
   classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
 
+theorem Flag.type_eq
+    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl) (i : Fin t)
+    : Flag σ (Vl' i) = Flag σ (Vl i) := by
+  rw [h_Vl_eq]
+
 omit [FintypeExist T] in
 theorem flagEqv.sound {σ : FlagType T} {V : Type} {G G' : LabeledGraph σ V} (h : G ∼f G')
     : (⟦G⟧ : Flag σ V) = (⟦G'⟧ : Flag σ V)
@@ -252,6 +257,24 @@ def QuotLabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) : Typ
   Quotient (labeledGraphListSetoid σ t Vl)
 
 abbrev FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), Flag σ (Vl i)
+
+theorem FlagList.type_eq
+    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl)
+    : FlagList σ t Vl' = FlagList σ t Vl := by
+  rw [h_Vl_eq]
+
+theorem flagList_HEq
+    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
+    (h_Vl_eq : Vl' = Vl) (h_Fl_eq : ∀ (i : Fin t), Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
+    : HEq Fl Fl' := by
+  have h_Fl_cast : Fl = cast (FlagList.type_eq h_Vl_eq) Fl' := by
+    subst h_Vl_eq
+    simp_all only [cast_eq]
+    ext1 x
+    simp_all only
+  subst h_Vl_eq
+  subst h_Fl_cast
+  simp_all only [cast_eq, heq_eq_eq]
 
 def flagToList {σ : FlagType T} {V : Type} (F : Flag σ V)
     : FlagList σ 1 (fun _ => V)

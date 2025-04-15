@@ -390,6 +390,16 @@ noncomputable def flagListDensity
   :=
   fun Fl => quotLabeledSubgraphListDensity Fl.coe
 
+theorem flagListDensity_HEq_eq
+    {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
+    (h_Vl_eq : Vl' = Vl) (h_HEq : HEq Fl Fl') (G : Flag σ W)
+    : flagListDensity Fl G = flagListDensity Fl' G
+  := by
+  subst h_Vl_eq
+  have h_Fl_eq : Fl = Fl' := by simp_all only [heq_eq_eq]
+  subst h_Fl_eq
+  rfl
+
 example (F : Flag σ U) (G : Flag σ W)
     : subflagDensity F G = flagListDensity [F]ᶠ G
   := by
@@ -470,29 +480,6 @@ theorem flagDensity_permute
   :=
   sorry
 
-theorem flag_eq
-    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl) (i : Fin t)
-    : Flag σ (Vl' i) = Flag σ (Vl i) := by
-  rw [h_Vl_eq]
-
-theorem flagList_eq
-    {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl)
-    : FlagList σ t Vl' = FlagList σ t Vl := by
-  rw [h_Vl_eq]
-
-theorem flagListDensity_cast_eq
-    {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
-    (h_Vl_eq : Vl' = Vl) (h_Fl_eq : ∀ (i : Fin t), Fl i = cast (flag_eq h_Vl_eq i) (Fl' i)) (G : Flag σ W)
-    : flagListDensity Fl G = flagListDensity Fl' G := by
-  have : Fl = cast (flagList_eq h_Vl_eq) Fl' := by
-    subst h_Vl_eq
-    simp_all only [cast_eq]
-    ext1 x
-    simp_all only
-  subst h_Vl_eq
-  subst this
-  rfl
-
 instance {V W : Type} [FintypeExist V] [FintypeExist W]
     : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
@@ -529,10 +516,11 @@ theorem flagPairDensity_comm
   have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁)
       = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
     ext i; split <;> simp [listTypePermute]
-  have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (flag_eq h_Vl_eq i) (Fl₂ i) := by
+  have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (Flag.type_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
-  exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
+  refine flagListDensity_HEq_eq h_Vl_eq ?_ G
+  exact flagList_HEq h_Vl_eq h_Fl_eq
 
 theorem flagTripleDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W)
@@ -551,10 +539,11 @@ theorem flagTripleDensity_comm
   have h_Vl_eq : (fun (i : Fin 3) => match i with | 0 => U₂ | 1 => U₃ | 2 => U₁)
       = (listTypePermute (fun (i : Fin 3) => match i with | 0 => U₁ | 1 => U₂ | 2 => U₃) π) := by
     ext i; split <;> simp [listTypePermute]
-  have h_Fl_eq : ∀ (i : Fin 3), (Fl₁.permute π) i = cast (flag_eq h_Vl_eq i) (Fl₂ i) := by
+  have h_Fl_eq : ∀ (i : Fin 3), (Fl₁.permute π) i = cast (Flag.type_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
-  exact flagListDensity_cast_eq h_Vl_eq h_Fl_eq G
+  refine flagListDensity_HEq_eq h_Vl_eq ?_ G
+  exact flagList_HEq h_Vl_eq h_Fl_eq
 
 theorem flagDensity_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
@@ -570,7 +559,17 @@ theorem flagPairDensity_empty
   let Fl₁ := [F, emptyFlag σ]ᶠ
   let Fl₂ := [F]ᶠ
   show flagListDensity Fl₁ G = flagListDensity Fl₂ G
-  -- have : Fl₁ = Fl₂.insert (emptyFlag σ) := sorry
-  sorry
+  have h_insert : flagListDensity (Fl₂.insert (emptyFlag σ)) G = flagListDensity Fl₁ G := by
+    have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U | 1 => T) = (listTypeInsert (fun x ↦ U) T)
+      := by
+      ext i; split <;> simp [listTypeInsert]
+    have h_Fl_eq : ∀ (i : Fin 2), (Fl₂.insert (emptyFlag σ)) i = cast (Flag.type_eq h_Vl_eq i) (Fl₁ i)
+      := by
+      intro i
+      split <;> (simp_all only [cast_eq, Fl₁, Fl₂]; rfl)
+    refine flagListDensity_HEq_eq h_Vl_eq ?_ G
+    exact flagList_HEq h_Vl_eq h_Fl_eq
+  rw [← h_insert]
+  exact (flagDensity_empty Fl₂ G).symm
 
 end
