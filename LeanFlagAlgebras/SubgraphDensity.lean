@@ -1689,7 +1689,27 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
           h_K₁_ind, Nonempty.intro f_iso_K₁_H₁, h_K₂_ind, Nonempty.intro f_iso_K₂_H₂, h_K₁_K₂_disj, Nonempty.intro f_G₁₂_Fout⟩
 
   have h_inj_S₃_S₄ : Function.Injective f_S₃_S₄_fwd := by
+    intro ⟨⟨F, G₁, G₂, ⟨G₁₂, h_G₁₂_ind⟩⟩, h_G₁_G₂, h_G₁₂, h_iso_Fout_G₁₂⟩
+    intro ⟨⟨F', G₁', G₂', ⟨G₁₂', h_G₁₂'_ind⟩⟩, h_G₁'_G₂', h_G₁₂', h_iso_Fout_G₁₂'⟩
+    intro h_eq
+    obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
+    obtain ⟨h_G₁'_ind, h_G₁'_iso_H₁, h_G₂'_ind, h_G₂'_iso_H₂, h_G₁'_G₂'_disj⟩ := h_G₁'_G₂'
+    dsimp [f_S₃_S₄_fwd, subgraphFromIso] at h_eq
+    simp at h_eq
+    obtain ⟨h_F_F', h_eq'⟩ := h_eq
+    subst h_F_F'
+    simp_all
+    have : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by
+      simp_all
+    have : G₁₂ = G₁₂' := by
+      sorry
+    subst this
+    have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by
+      simp_all
+    subst this
+    simp_all
     sorry
+
   have h_surj_S₃_S₄ : Function.Surjective f_S₃_S₄_fwd := by
     sorry
   have f_S₃_S₄ : S₃ ≃ S₄ :=
