@@ -560,7 +560,7 @@ theorem flagPairDensity_empty
   let Fl₂ := [F]ᶠ
   show flagListDensity Fl₁ G = flagListDensity Fl₂ G
   have h_insert : flagListDensity (Fl₂.insert (emptyFlag σ)) G = flagListDensity Fl₁ G := by
-    have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U | 1 => T) = (listTypeInsert (fun x ↦ U) T)
+    have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U | 1 => T) = (listTypeInsert (fun _ ↦ U) T)
       := by
       ext i; split <;> simp [listTypeInsert]
     have h_Fl_eq : ∀ (i : Fin 2), (Fl₂.insert (emptyFlag σ)) i = cast (Flag.type_eq h_Vl_eq i) (Fl₁ i)
@@ -571,5 +571,12 @@ theorem flagPairDensity_empty
     exact flagList_HEq h_Vl_eq h_Fl_eq
   rw [← h_insert]
   exact (flagDensity_empty Fl₂ G).symm
+
+theorem flagTripleDensity_eq_sum_density_prods
+    (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
+    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' + ℓ₃ ≤ ℓ)
+    : flagDensity₃ F₁ F₂ F₃ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₂ G' F₃ G
+  := by
+  sorry
 
 end

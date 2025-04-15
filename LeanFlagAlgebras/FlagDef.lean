@@ -15,6 +15,16 @@ noncomputable instance (α : Type) [DecidableEqExist α] : DecidableEq α
   :=
   Classical.choice (DecidableEqExist.decidable_eq_exist)
 
+instance {ℓ : ℕ} : FintypeExist (Fin ℓ)
+  :=
+  have h : Fintype (Fin ℓ) := inferInstance
+  { fintype_exist := Nonempty.intro h }
+
+instance {ℓ : ℕ} : DecidableEqExist (Fin ℓ)
+  :=
+  have h : DecidableEq (Fin ℓ) := inferInstance
+  { decidable_eq_exist := Nonempty.intro h }
+
 variable {T : Type} [FintypeExist T]
 
 abbrev FlagType := SimpleGraph
