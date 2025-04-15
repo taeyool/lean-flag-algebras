@@ -1537,6 +1537,8 @@ noncomputable def isoOnProjTypeFromIsoType
         _ = prj_T ((h_prj_T t₁).choose) := by simp
         _ = t₁ := (h_prj_T t₁).choose_spec
 
+#check Equiv.ofBijective
+
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
