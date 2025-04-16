@@ -273,7 +273,54 @@ noncomputable def isoSetOfInducedlabeledSubgraph
         dsimp [H₂, H₁, inducedlabeledSubgraph] at this
         exact this
     have h_rightinv : Function.RightInverse f_inv f := by
-        sorry
+      rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+      ext u v
+      · dsimp [f, f_inv, inducedlabeledSubgraph]
+        simp; constructor
+        · intro ⟨u', ⟨hu'_vert, hu'_iso⟩⟩
+          have : u' = u := by
+            rw [←hu'_iso]; symm
+            exact φ.symm.graph_iso.left_inv u'
+          rw [←this]
+          exact hu'_vert
+        · intro hu_vert
+          use u
+          simp_all
+          exact φ.symm.graph_iso.left_inv u
+      · dsimp [f, f_inv, inducedlabeledSubgraph]
+        simp; constructor
+        · intro ⟨h_uv, ⟨h_u, h_v⟩⟩
+          obtain ⟨u', ⟨hu'_vert, hu'_iso⟩⟩ := h_u
+          obtain ⟨v', ⟨hv'_vert, hv'_iso⟩⟩ := h_v
+          have : u' = u := by
+            rw [←hu'_iso]; symm
+            exact φ.symm.graph_iso.left_inv u'
+          rw [this] at hu'_vert
+          have : v' = v := by
+            rw [←hv'_iso]; symm
+            exact φ.symm.graph_iso.left_inv v'
+          rw [this] at hv'_vert
+          apply h_ind₁ hu'_vert hv'_vert h_uv
+        · intro h_uv
+          constructor
+          · exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
+          · constructor
+            · use u
+              have u_vert : u ∈ H₁.subgraph.verts := H₁.subgraph.edge_vert h_uv
+              simp_all
+              exact φ.symm.graph_iso.left_inv u
+            · use v
+              have v_vert : v ∈ H₁.subgraph.verts := H₁.subgraph.edge_vert h_uv.symm
+              simp_all
+              exact φ.symm.graph_iso.left_inv v
+      · dsimp [f, f_inv]
+        let H₀ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
+        let H₂ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
+        let toFun := H₂.type_embed.toFun
+        have : HEq H₂.type_embed H₁.type_embed := by
+            sorry
+        dsimp [H₂, H₀] at this
+        exact this
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
