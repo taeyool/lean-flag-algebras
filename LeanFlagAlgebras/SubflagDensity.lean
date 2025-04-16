@@ -6,7 +6,7 @@ variable {T : Type} [FintypeExist T] [DecidableEqExist T] {σ : FlagType T}
 
 section
 
-variable {V W T: Type}
+variable {V W U: Type}
   [FintypeExist V] [DecidableEqExist V]
   [FintypeExist W] [DecidableEqExist W]
   [FintypeExist U] [DecidableEqExist U]
@@ -32,7 +32,7 @@ def relOflabeledSubgraph
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
   ∧ ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
-  -- Several conditions will be added
+  -- Several conditions will be added?
 
 def relOfPredOnlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -177,7 +177,8 @@ lemma H_eq_reverseinduced_induced_H
   · simp; ext u v
     · sorry
     · sorry
-  · sorry
+  · have h : H₀.subgraph.verts = ⇑φ.symm.graph_iso '' (⇑φ.graph_iso '' H₀.subgraph.verts) := by sorry
+    sorry
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -245,17 +246,34 @@ noncomputable def isoSetOfInducedlabeledSubgraph
               have v_vert : v ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv.symm
               simp_all
               exact φ.graph_iso.left_inv v
-      · have f_inv_f : ∀ s₀ : S₀, f_inv (f s₀) = s₀ := by
-          intro s₀
-          obtain ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-          dsimp [f, f_inv]
-          simp
-          have temp := (H_eq_reverseinduced_induced_H φ H₀).symm
-          exact temp
-        let s₀ : S₀ := ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
-        rw [f_inv_f s₀]
+      · dsimp [f, f_inv]
+        let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
+        let H₂ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
+        let toFun := H₂.type_embed.toFun
+        have verts_eq : φ.symm.graph_iso '' (φ.graph_iso '' H₀.subgraph.verts) = H₀.subgraph.verts := by
+           ext u
+           simp; constructor
+           · intro h
+             obtain⟨u', ⟨h1, h2⟩⟩ := h
+             have : u' = u := by
+               rw [←h2]; symm
+               exact φ.graph_iso.left_inv u'
+             rw [←this]
+             exact h1
+           · intro u'
+             use u
+             constructor
+             · exact u'
+             · exact φ.graph_iso.left_inv u
+        have verts_eq_H₀H₂ : H₀.subgraph.verts = H₂.subgraph.verts := by
+           dsimp [H₂, inducedlabeledSubgraph, H₁]
+           rw [verts_eq]
+        have : HEq H₂.type_embed H₀.type_embed := by
+          sorry
+        dsimp [H₂, H₁, inducedlabeledSubgraph] at this
+        exact this
     have h_rightinv : Function.RightInverse f_inv f := by
-      sorry
+        sorry
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
