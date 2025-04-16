@@ -1712,26 +1712,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     subst this
     have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by simp_all
     subst this
-    have : h_iso_Fout_G₁₂.some.symm.symm = h_iso_Fout_G₁₂.some := rfl
-    simp_all [this]
-    have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts :=
-      calc
-        G₁.verts
-        _ = {u : G₁₂.verts | ↑u ∈ G₁.verts} := by
-              sorry
-        _ = (h_iso_Fout_G₁₂.some ∘ h_iso_Fout_G₁₂.some.symm) '' {u : G₁₂.verts | ↑u ∈ G₁.verts} := by
-              simp
-        _ = (h_iso_Fout_G₁₂.some '' (h_iso_Fout_G₁₂.some.symm '' {u : G₁₂.verts | ↑u ∈ G₁.verts})) := by
-              sorry
-        _ = (h_iso_Fout_G₁₂.some '' (h_iso_Fout_G₁₂.some.symm '' {u : G₁₂.verts | ↑u ∈ G₁'.verts})) := by
-              simp_all only [h_eq'.1.1, true_and]
-        _ = (h_iso_Fout_G₁₂.some ∘ h_iso_Fout_G₁₂.some.symm) '' {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
-              sorry
-        _ = {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
-              simp
-        _ = G₁'.verts := by
-              sorry
-    have h_G₂_verts_G₂'_verts : G₂.verts = G₂'.verts := by sorry
+    have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts := by
+      ext u
+      sorry
+    have h_G₂_verts_G₂'_verts : G₂.verts = G₂'.verts := by
+      ext u
+      sorry
     constructor
     . calc
       G₁ = ↑(⟨G₁, h_G₁_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := rfl
@@ -1932,9 +1918,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
 
-example (f : U → V) (g : V → W) (S : Set U) : (g ∘ f) '' S = g '' (f '' S)
+example (Z : Type) (f : U → V) (g : V → W) (h : W → Z) (S : Set U)
+        : h '' ((g ∘ f) '' S) = h '' (g '' (f '' S))
   := by
-  exact Set.image_comp g f S
+  simp_all only [Function.comp_apply]
+  ext1 x
+  simp_all only [Set.mem_image, exists_exists_and_eq_and]
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
