@@ -545,7 +545,7 @@ theorem flagTripleDensity_comm
   refine flagListDensity_HEq_eq h_Vl_eq ?_ G
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
-theorem flagDensity_empty
+theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
   :=
@@ -570,7 +570,7 @@ theorem flagPairDensity_empty
     refine flagListDensity_HEq_eq h_Vl_eq ?_ G
     exact flagList_HEq h_Vl_eq h_Fl_eq
   rw [← h_insert]
-  exact (flagDensity_empty Fl₂ G).symm
+  exact (flagDensity_insert_empty Fl₂ G).symm
 
 theorem flagPairDensity_empty'
     (F : Flag σ U) (G : Flag σ W)
@@ -599,7 +599,7 @@ theorem flagTripleDensity_empty
     refine flagListDensity_HEq_eq h_Vl_eq ?_ G
     exact flagList_HEq h_Vl_eq h_Fl_eq
   rw [← h_insert]
-  exact (flagDensity_empty Fl₂ G).symm
+  exact (flagDensity_insert_empty Fl₂ G).symm
 
 theorem flagTripleDensity_empty'
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
