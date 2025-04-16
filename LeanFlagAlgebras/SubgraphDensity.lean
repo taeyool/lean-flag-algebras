@@ -1694,19 +1694,53 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     intro h_eq
     obtain ⟨h_G₁_ind, h_G₁_iso_H₁, h_G₂_ind, h_G₂_iso_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
     obtain ⟨h_G₁'_ind, h_G₁'_iso_H₁, h_G₂'_ind, h_G₂'_iso_H₂, h_G₁'_G₂'_disj⟩ := h_G₁'_G₂'
-    dsimp [f_S₃_S₄_fwd, subgraphFromIso, subgraphFromOrder] at h_eq
-    simp at h_eq
+    dsimp [f_S₃_S₄_fwd, subgraphFromIso, subgraphFromOrder] at h_eq; simp at h_eq
     obtain ⟨h_F_F', h_eq'⟩ := h_eq
     subst h_F_F'
-    simp_all
-    have : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
-    have : G₁₂ = G₁₂' := by sorry
+    simp_all only [heq_eq_eq, Prod.mk.injEq, Subgraph.mk.injEq, Subtype.mk.injEq, and_true, true_and]
+    have h_G₁₂_ind_G₁₂'_ind : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ :=
+      calc
+        ⟨G₁₂, h_G₁₂_ind⟩
+        _ = inducedSubgraph G (G₁.verts ∪ G₂.verts) := by assumption
+        _ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := by simp_all
+        _ = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
+    have : G₁₂ = G₁₂' :=
+      calc
+        G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
+        _   = ↑(⟨G₁₂', h_G₁₂'_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := congrArg Subtype.val h_G₁₂_ind_G₁₂'_ind
+        _   = G₁₂' := rfl
     subst this
     have : h_iso_Fout_G₁₂ = h_iso_Fout_G₁₂' := by simp_all
     subst this
     have : h_iso_Fout_G₁₂.some.symm.symm = h_iso_Fout_G₁₂.some := rfl
     simp_all [this]
-    sorry
+    have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts := by sorry
+    have h_G₂_verts_G₂'_verts : G₂.verts = G₂'.verts := by sorry
+    constructor
+    . calc
+      G₁ = ↑(⟨G₁, h_G₁_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := rfl
+      _  = ↑(inducedSubgraph G G₁.verts) := by
+              apply congrArg Subtype.val
+              apply inducedSubgraph_eq
+      _  = ↑(inducedSubgraph G G₁'.verts) := by
+              rw [←h_G₁_verts_G₁'_verts]
+      _  = ↑(⟨G₁', h_G₁'_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := by
+              apply congrArg Subtype.val
+              apply Eq.symm
+              apply inducedSubgraph_eq
+      _  = G₁' := rfl
+    . calc
+      G₂ = ↑(⟨G₂, h_G₂_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := rfl
+      _  = ↑(inducedSubgraph G G₂.verts) := by
+              apply congrArg Subtype.val
+              apply inducedSubgraph_eq
+      _  = ↑(inducedSubgraph G G₂'.verts) := by
+              rw [←h_G₂_verts_G₂'_verts]
+      _  = ↑(⟨G₂', h_G₂'_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := by
+              apply congrArg Subtype.val
+              apply Eq.symm
+              apply inducedSubgraph_eq
+      _  = G₂' := rfl
 
   have h_surj_S₃_S₄ : Function.Surjective f_S₃_S₄_fwd := by
     sorry
