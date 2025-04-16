@@ -16,7 +16,7 @@ noncomputable def labeledSubgraphCount
   :=
   let p (G' : LabeledSubgraph σ G) : Prop := G'.IsInduced ∧ Nonempty (G'.coe ≃f H)
   let S := { G' : LabeledSubgraph σ G | p G' }
-  have : Fintype S := Fintype.ofFinite ↑S
+  have : FintypeExist S := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S) }
   S.toFinset.card
 
 noncomputable def labeledSubgraphDensity
@@ -286,13 +286,13 @@ lemma labeledSubgraphDensity_respects_eqv_on_G
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphIsoH φ H
-  have hS₀ : Fintype S₀ := Fintype.ofFinite ↑S₀
-  have hS₁ : Fintype S₁ := Fintype.ofFinite ↑S₁
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
   have h_count : labeledSubgraphCount H G₀ = labeledSubgraphCount H G₁ := by
     dsimp only [labeledSubgraphCount]
+    show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
-    sorry
   rw [h_count]
   rfl
 
