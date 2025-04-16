@@ -515,7 +515,7 @@ theorem flagPairDensity_comm
   rw [flagDensity_permute Fl₁ G π]
   have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁)
       = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
-    ext i; split <;> simp [listTypePermute]
+    ext i; split <;> rfl
   have h_Fl_eq : ∀ (i : Fin 2), (Fl₁.permute π) i = cast (Flag.type_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
@@ -538,7 +538,7 @@ theorem flagTripleDensity_comm
   rw [flagDensity_permute Fl₁ G π]
   have h_Vl_eq : (fun (i : Fin 3) => match i with | 0 => U₂ | 1 => U₃ | 2 => U₁)
       = (listTypePermute (fun (i : Fin 3) => match i with | 0 => U₁ | 1 => U₂ | 2 => U₃) π) := by
-    ext i; split <;> simp [listTypePermute]
+    ext i; split <;> rfl
   have h_Fl_eq : ∀ (i : Fin 3), (Fl₁.permute π) i = cast (Flag.type_eq h_Vl_eq i) (Fl₂ i) := by
     intro i
     split <;> (simp_all only [cast_eq, π, Fl₁, Fl₂]; rfl)
@@ -560,9 +560,9 @@ theorem flagPairDensity_empty
   let Fl₂ := [F]ᶠ
   show flagListDensity Fl₁ G = flagListDensity Fl₂ G
   have h_insert : flagListDensity (Fl₂.insert (emptyFlag σ)) G = flagListDensity Fl₁ G := by
-    have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U | 1 => T) = (listTypeInsert (fun _ ↦ U) T)
+    have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U | 1 => T) = (listTypeInsert (fun _ => U) T)
       := by
-      ext i; split <;> simp [listTypeInsert]
+      ext i; split <;> rfl
     have h_Fl_eq : ∀ (i : Fin 2), (Fl₂.insert (emptyFlag σ)) i = cast (Flag.type_eq h_Vl_eq i) (Fl₁ i)
       := by
       intro i
@@ -572,11 +572,88 @@ theorem flagPairDensity_empty
   rw [← h_insert]
   exact (flagDensity_empty Fl₂ G).symm
 
+theorem flagPairDensity_empty'
+    (F : Flag σ U) (G : Flag σ W)
+    : flagDensity₂ F (emptyFlag σ) G = flagDensity₁ F G
+  := by
+  rw [flagPairDensity_comm]
+  exact flagPairDensity_empty F G
+
+theorem flagTripleDensity_empty
+    (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
+    : flagDensity₃ (emptyFlag σ) F₁ F₂ G = flagDensity₂ F₁ F₂ G
+  := by
+  rw [flagTripleDensity_comm]
+  let Fl₁ := [F₁, F₂, emptyFlag σ]ᶠ
+  let Fl₂ := [F₁, F₂]ᶠ
+  show flagListDensity Fl₁ G = flagListDensity Fl₂ G
+  have h_insert : flagListDensity (Fl₂.insert (emptyFlag σ)) G = flagListDensity Fl₁ G := by
+    have h_Vl_eq : (fun (i : Fin 3) => match i with | 0 => U₁ | 1 => U₂ | 2 => T)
+        = (listTypeInsert (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) T)
+      := by
+      ext i; split <;> rfl
+    have h_Fl_eq : ∀ (i : Fin 3), (Fl₂.insert (emptyFlag σ)) i = cast (Flag.type_eq h_Vl_eq i) (Fl₁ i)
+      := by
+      intro i
+      split <;> (simp_all only [cast_eq, Fl₁, Fl₂]; rfl)
+    refine flagListDensity_HEq_eq h_Vl_eq ?_ G
+    exact flagList_HEq h_Vl_eq h_Fl_eq
+  rw [← h_insert]
+  exact (flagDensity_empty Fl₂ G).symm
+
+theorem flagTripleDensity_empty'
+    (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
+    : flagDensity₃ F₁ F₂ (emptyFlag σ) G = flagDensity₂ F₁ F₂ G
+  := by
+  rw [← flagTripleDensity_comm]
+  exact flagTripleDensity_empty F₁ F₂ G
+
+/- Chain rules -/
+
+variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
+
 theorem flagTripleDensity_eq_sum_density_prods
-    (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
-    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' + ℓ₃ ≤ ℓ)
+    (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : flagDensity₃ F₁ F₂ F₃ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₂ G' F₃ G
   := by
   sorry
+
+theorem flagPairDensity_eq_sum_density_prods
+    (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (G : Flag σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' ≤ ℓ)
+    : flagDensity₂ F₁ F₂ G
+      = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₁ G' G
+  := by
+  rw [← flagTripleDensity_empty', flagTripleDensity_eq_sum_density_prods ℓ'] <;> try linarith
+  apply Finset.sum_congr (by rfl)
+  intros
+  rw [flagPairDensity_empty']
+
+theorem flagPairDensity_eq_sum_density_prods'
+    (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (G : Flag σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ' : ℓ₁ ≤ ℓ') (hℓ : ℓ' + ℓ₂ ≤ ℓ + ℓ₀)
+    : flagDensity₂ F₁ F₂ G
+      = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₁ F₁ G' * flagDensity₂ G' F₂ G
+  := by
+  rw [← flagTripleDensity_empty, flagTripleDensity_eq_sum_density_prods ℓ'] <;> try linarith
+  apply Finset.sum_congr (by rfl)
+  intros
+  rw [flagPairDensity_empty]
+
+theorem flagDensity_eq_sum_density_prods
+    (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (G : Flag σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ' : ℓ₁ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
+    : flagDensity₁ F₁ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₁ F₁ G' * flagDensity₁ G' G
+  := by
+  rw [← flagPairDensity_empty, flagPairDensity_eq_sum_density_prods ℓ'] <;> try linarith
+  apply Finset.sum_congr (by rfl)
+  intros
+  rw [flagPairDensity_empty]
+
+alias density_chain_rule₁₁ := flagDensity_eq_sum_density_prods
+alias density_chain_rule₁₂ := flagPairDensity_eq_sum_density_prods'
+alias density_chain_rule₂₁ := flagPairDensity_eq_sum_density_prods
+alias density_chain_rule₂₂ := flagTripleDensity_eq_sum_density_prods
 
 end
