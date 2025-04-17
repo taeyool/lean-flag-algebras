@@ -1501,53 +1501,12 @@ lemma card_eq_imply_set_eq
       _ = 0 := by simp
   exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
 
-noncomputable def isoOnProjTypeFromIsoType
-  {S T S₁ T₁ : Type} (f : S ≃ T)
-  (prj_S : S → S₁) (h_prj_S : Function.Surjective prj_S)
-  (prj_T : T → T₁) (h_prj_T : Function.Surjective prj_T)
-  (h : ∀ s s' : S, prj_S s = prj_S s' ↔ prj_T (f s) = prj_T (f s'))
-  : S₁ ≃ T₁
-  where
-    toFun := fun s₁ =>
-      prj_T (f (h_prj_S s₁).choose)
-    invFun := fun t₁ =>
-      prj_S (f.symm (h_prj_T t₁).choose)
-    left_inv := by
-      intro s₁
-      show prj_S (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose) = s₁
-      have h₀ : prj_T (f (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose))
-                = prj_T (f ((h_prj_S s₁).choose)) :=
-        calc
-          prj_T (f (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose))
-          _ = prj_T ((h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose) := by simp
-          _ = prj_T (f (h_prj_S s₁).choose) := (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose_spec
-      calc
-        prj_S (f.symm (h_prj_T (prj_T (f (h_prj_S s₁).choose))).choose)
-        _ = prj_S (h_prj_S s₁).choose := by apply (h _ _).mpr h₀
-        _ = s₁ := (h_prj_S s₁).choose_spec
-    right_inv := by
-      intro t₁
-      show prj_T (f (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose) = t₁
-      have h₀ : prj_S (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose
-                = prj_S (f.symm (h_prj_T t₁).choose)
-        := (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose_spec
-      calc
-        prj_T (f (h_prj_S (prj_S (f.symm (h_prj_T t₁).choose))).choose)
-        _ = prj_T (f (f.symm (h_prj_T t₁).choose)) := by apply (h _ _).mp h₀
-        _ = prj_T ((h_prj_T t₁).choose) := by simp
-        _ = t₁ := (h_prj_T t₁).choose_spec
-
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
     : subgraphPairSet H₁ H₂ G
       ≃
-      { ⟨F, K₁, K₂, G₁₂⟩
-          :  (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂)))
-              × Subgraph F.out
-              × Subgraph F.out
-              × { G' : Subgraph G // G'.IsInduced }
-        | K₁.IsInduced ∧ Nonempty (K₁.coe ≃g H₁) ∧ K₂.IsInduced ∧ Nonempty (K₂.coe ≃g H₂) ∧ K₁.verts ∩ K₂.verts = ∅ ∧ Nonempty (F.out ≃g (G₁₂ : Subgraph G).coe)}
+      (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
   := by
   let S₀ := subgraphPairSet H₁ H₂ G
   let S₁ := { (G₁, G₂) : Subgraph G × Subgraph G |
@@ -1564,6 +1523,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
                     × Subgraph F.out
                     × { G' : Subgraph G // G'.IsInduced }
                | K₁.IsInduced ∧ Nonempty (K₁.coe ≃g H₁) ∧ K₂.IsInduced ∧ Nonempty (K₂.coe ≃g H₂) ∧ K₁.verts ∩ K₂.verts = ∅ ∧ Nonempty (F.out ≃g (G₁₂ : Subgraph G).coe)}
+  let S₅ := (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
   have f_S₀_S₁ : S₀ ≃ S₁ := by
     have : S₀ = S₁ := by
@@ -1866,7 +1826,40 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   have f_S₃_S₄ : S₃ ≃ S₄ :=
     Equiv.ofBijective f_S₃_S₄_fwd ⟨h_inj_S₃_S₄, h_surj_S₃_S₄⟩
 
-  exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄
+  let f_S₄_S₅_fwd : S₄ → S₅ := by
+    intro ⟨⟨F, K₁, K₂, ⟨G₁₂, h_G₁₂_ind⟩⟩,
+            h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj, h_iso_Fout_G₁₂⟩
+    let h_K₁_K₂_Fout : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
+      dsimp [subgraphPairSet]; simp
+      exact ⟨h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩
+    let h_G₁₂_G : G₁₂ ∈ subgraphSet F.out G := by
+      dsimp [subgraphSet]; simp
+      exact ⟨h_G₁₂_ind, Nonempty.intro h_iso_Fout_G₁₂.some.symm⟩
+    exact ⟨F, ⟨⟨K₁, K₂⟩, h_K₁_K₂_Fout⟩, ⟨G₁₂, h_G₁₂_G⟩⟩
+
+  have h_inj_S₄_S₅ : Function.Injective f_S₄_S₅_fwd := by
+    intro ⟨⟨F, K₁, K₂, ⟨G₁₂, h_G₁₂_ind⟩⟩,
+           h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj, h_iso_Fout_G₁₂⟩
+    intro ⟨⟨F', K₁', K₂', ⟨G₁₂', h_G₁₂'_ind⟩⟩,
+            h_K₁'_ind, h_iso_K₁'_H₁, h_K₂'_ind, h_iso_K₂'_H₂, h_K₁'_K₂'_disj, h_iso_Fout_G₁₂'⟩
+    intro h_eq
+    dsimp [f_S₄_S₅_fwd] at h_eq
+    rcases h_eq with ⟨h_F_F', h_eq'⟩
+    simp
+
+  have h_surj_S₄_S₅ : Function.Surjective f_S₄_S₅_fwd := by
+    intro ⟨F, ⟨⟨K₁, K₂⟩, h_K₁_K₂_Fout⟩, ⟨G₁₂, h_G₁₂_G⟩⟩
+    dsimp [subgraphSet] at h_G₁₂_G; simp at h_G₁₂_G
+    obtain ⟨h_G₁₂_ind, h_iso_Fout_G₁₂⟩ := h_G₁₂_G
+    dsimp [subgraphPairSet] at h_K₁_K₂_Fout; simp at h_K₁_K₂_Fout
+    obtain ⟨h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩ := h_K₁_K₂_Fout
+    use ⟨⟨F, K₁, K₂, ⟨G₁₂, h_G₁₂_ind⟩⟩,
+          h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj, Nonempty.intro h_iso_Fout_G₁₂.some.symm⟩
+
+  have f_S₄_S₅ : S₄ ≃ S₅ :=
+    Equiv.ofBijective f_S₄_S₅_fwd ⟨h_inj_S₄_S₅, h_surj_S₄_S₅⟩
+
+  exact (((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄).trans f_S₄_S₅
 
 example (Z : Type) (f : U → V) (g : V → W) (h : W → Z) (S : Set U)
         : h '' ((g ∘ f) '' S) = h '' (g '' (f '' S))
