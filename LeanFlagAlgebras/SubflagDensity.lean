@@ -188,7 +188,8 @@ noncomputable def isoSetOfInducedlabeledSubgraph
   :=
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ p₀ G' }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ p₁ G' }
-  let f (s₀ : S₀) : S₁ := by
+  let f : S₀ → S₁ := by
+    intro s₀
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
     let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
@@ -196,6 +197,30 @@ noncomputable def isoSetOfInducedlabeledSubgraph
     have : relOflabeledSubgraph φ H₀ H₁ := inducedlabeledSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+  have f_inj : Function.Injective f := by
+    intro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
+    intro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+    intro h_eq
+    dsimp [f, inducedlabeledSubgraph] at h_eq
+    simp at h_eq
+    rcases h_eq with ⟨⟨h_verts, h_adj⟩, h_HEq⟩
+    simp
+    ext u v
+    · have : H₀.subgraph.verts = H₁.subgraph.verts := by
+        sorry
+      rw [this]
+    · sorry
+    · sorry
+  have f_surj : Function.Surjective f := by
+    intro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+    let H₀ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
+    let h_ind₀ : H₀.IsInduced := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).2
+    have : relOflabeledSubgraph φ.symm H₁ H₀ := inducedlabeledSubgraph_related φ.symm H₁ h_ind₁
+    have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
+    use ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
+    dsimp [f, inducedlabeledSubgraph]
+    simp
+    sorry
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩ := s₁
@@ -250,7 +275,8 @@ noncomputable def isoSetOfInducedlabeledSubgraph
         let H₁ := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1
         let H₂ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H₁)).1
         let toFun := H₂.type_embed.toFun
-        have verts_eq : φ.symm.graph_iso '' (φ.graph_iso '' H₀.subgraph.verts) = H₀.subgraph.verts := by
+        have verts_eq_H₀H₂ : H₂.subgraph.verts = H₀.subgraph.verts := by
+           dsimp [H₂, inducedlabeledSubgraph, H₁]
            ext u
            simp; constructor
            · intro h
@@ -265,9 +291,17 @@ noncomputable def isoSetOfInducedlabeledSubgraph
              constructor
              · exact u'
              · exact φ.graph_iso.left_inv u
-        have verts_eq_H₀H₂ : H₀.subgraph.verts = H₂.subgraph.verts := by
-           dsimp [H₂, inducedlabeledSubgraph, H₁]
-           rw [verts_eq]
+        have type_eq : (H₂.subgraph.verts : Type) = (H₀.subgraph.verts : Type) := by
+          rw [verts_eq_H₀H₂]
+        have t1 : ∀ t : T, H₀.type_embed t = cast type_eq (H₂.type_embed t) := by
+                intro t
+                obtain ⟨f1, f2⟩ := H₀.type_embed t
+                obtain ⟨g1, g2⟩ := H₂.type_embed t
+                have : f1 = g1 := by
+                  sorry
+                rw [verts_eq_H₀H₂] at g2
+                subst this
+                simp_all only [Set.coe_setOf, Set.mem_setOf_eq, set_coe_cast, S₀, S₁, f, H₂, H₁]
         have : HEq H₂.type_embed H₀.type_embed := by
           sorry
         dsimp [H₂, H₁, inducedlabeledSubgraph] at this
@@ -322,7 +356,7 @@ noncomputable def isoSetOfInducedlabeledSubgraph
         dsimp [H₂, H₀] at this
         exact this
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
-  Equiv.ofBijective f f_bij
+  Equiv.ofBijective f ⟨f_inj, f_surj⟩
 
 #check heq_eq_eq
 
