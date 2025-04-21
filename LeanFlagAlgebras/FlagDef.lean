@@ -25,6 +25,12 @@ instance {ℓ : ℕ} : DecidableEqExist (Fin ℓ)
   have h : DecidableEq (Fin ℓ) := inferInstance
   { decidable_eq_exist := Nonempty.intro h }
 
+def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
+  :=
+  ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
+
+namespace FlagAlgebras
+
 variable {T : Type} [FintypeExist T]
 
 abbrev FlagType := SimpleGraph
@@ -371,10 +377,6 @@ noncomputable def FlagList.coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
 
 /- FlagList.insert -/
 
-def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
-  :=
-  ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
-
 def listTypeInsert {t : ℕ} (Vl : Fin t → Type) (W : Type)
     : Fin (t + 1) → Type
   :=
@@ -456,3 +458,5 @@ def FlagList.permute {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
     : FlagList σ t (listTypePermute Vl π)
   :=
   fun i => Fl (π i)
+
+end FlagAlgebras

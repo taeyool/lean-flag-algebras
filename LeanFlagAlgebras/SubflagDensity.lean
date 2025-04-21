@@ -1,6 +1,8 @@
-import «LeanFlagAlgebras».«FlagDef»
+import «LeanFlagAlgebras».FlagDef
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
+
+open FlagAlgebras
 
 variable {T : Type} [FintypeExist T] [DecidableEqExist T] {σ : FlagType T}
 
