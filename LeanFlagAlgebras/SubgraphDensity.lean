@@ -1748,16 +1748,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
       ⟨g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂', g_G₁'_G₂'_disj⟩
     have h_K₁_verts_union_K₂_verts : K₁.verts ∪ K₂.verts = (univ : Finset (Fin (ℓ₁ + ℓ₂))) := by
       rw [coe_univ]
-      have h_K₁_verts_card : Fintype.card K₁.verts = ℓ₁ :=
-        calc
-          Fintype.card K₁.verts = Fintype.card (Fin ℓ₁) := Fintype.card_congr h_iso_K₁_H₁.some
-          _ = ℓ₁ := by apply Fintype.card_fin
-      have h_K₂_verts_card : Fintype.card K₂.verts = ℓ₂ :=
-        calc
-          Fintype.card K₂.verts = Fintype.card (Fin ℓ₂) := Fintype.card_congr h_iso_K₂_H₂.some
-          _ = ℓ₂ := by apply Fintype.card_fin
-      have h_K₁_K₂_card : K₁.verts.toFinset.card + K₂.verts.toFinset.card = ℓ₁ + ℓ₂ := by
-        simp_all
+      have h_K₁_verts_card : Fintype.card K₁.verts = ℓ₁ := subgraph_verts_card_from_iso_graph h_iso_K₁_H₁.some
+      have h_K₂_verts_card : Fintype.card K₂.verts = ℓ₂ := subgraph_verts_card_from_iso_graph h_iso_K₂_H₂.some
+      have h_K₁_K₂_card : K₁.verts.toFinset.card + K₂.verts.toFinset.card = ℓ₁ + ℓ₂ := by simp_all
       have h_K₁_K₂_disj' : K₁.verts.toFinset ∩ K₂.verts.toFinset = ∅ := by
         rw [←Set.toFinset_inter]
         apply Set.toFinset_eq_empty.mpr
@@ -1816,13 +1809,6 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     Equiv.ofBijective f_S₄_S₅_fwd ⟨h_inj_S₄_S₅, h_surj_S₄_S₅⟩
 
   exact (((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₃_S₄).trans f_S₄_S₅
-
-example (Z : Type) (f : U → V) (g : V → W) (h : W → Z) (S : Set U)
-        : h '' ((g ∘ f) '' S) = h '' (g '' (f '' S))
-  := by
-  simp_all only [Function.comp_apply]
-  ext1 x
-  simp_all only [Set.mem_image, exists_exists_and_eq_and]
 
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
