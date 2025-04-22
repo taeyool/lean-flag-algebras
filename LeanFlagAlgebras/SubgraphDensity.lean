@@ -1647,25 +1647,18 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     obtain ⟨h_F_F', h_eq'⟩ := h_eq
     subst h_F_F'
     simp_all only [heq_eq_eq, Prod.mk.injEq, Subgraph.mk.injEq, Subtype.mk.injEq, and_true, true_and]
-    have h_G₁₂_ind_G₁₂'_ind : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ :=
-      calc
-        ⟨G₁₂, h_G₁₂_ind⟩
-        _ = inducedSubgraph G (G₁.verts ∪ G₂.verts) := by assumption
-        _ = inducedSubgraph G (G₁'.verts ∪ G₂'.verts) := by simp_all
-        _ = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
+    have h_G₁₂_ind_G₁₂'_ind : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
     have : G₁₂ = G₁₂' := congrArg Subtype.val h_G₁₂_ind_G₁₂'_ind
     subst this
     have : h_iso_G₁₂_Fout = h_iso_G₁₂_Fout' := by simp_all
     subst this
     have ⟨h_G₁_verts_G₁₂_verts, h_G₂_verts_G₁₂_verts⟩ : G₁.verts ⊆ G₁₂.verts ∧ G₂.verts ⊆ G₁₂.verts := by
       have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
-      rw [h', h_G₁₂]
-      rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts)]
+      rw [h', h_G₁₂, inducedSubgraph_verts G (G₁.verts ∪ G₂.verts)]
       simp
     have ⟨h_G₁'_verts_G₁₂_verts, h_G₂'_verts_G₁₂_verts⟩ : G₁'.verts ⊆ G₁₂.verts ∧ G₂'.verts ⊆ G₁₂.verts := by
       have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
-      rw [h', h_G₁₂, h_eq'.2.2]
-      rw [inducedSubgraph_verts G (G₁'.verts ∪ G₂'.verts)]
+      rw [h', h_G₁₂, h_eq'.2.2, inducedSubgraph_verts G (G₁'.verts ∪ G₂'.verts)]
       simp
     have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts := by
       calc
@@ -1674,14 +1667,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
               Eq.symm (Subtype.coe_image_of_subset h_G₁_verts_G₁₂_verts)
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁.verts} := by
               simp
-        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁.verts})) := by
-              apply congr rfl
-              exact Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁.verts}
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁.verts})) :=
+              congr rfl (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁.verts})
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁'.verts})) := by
               simp_all
-        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
-              apply congr rfl
-              exact Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁'.verts})
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁'.verts} :=
+              congr rfl (Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁'.verts}))
         _ = {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
               simp
         _ = G₁'.verts :=
@@ -1693,14 +1684,12 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
               Eq.symm (Subtype.coe_image_of_subset h_G₂_verts_G₁₂_verts)
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂.verts} := by
               simp
-        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂.verts})) := by
-              apply congr rfl
-              exact Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂.verts}
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂.verts})) :=
+              congr rfl (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂.verts})
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂'.verts})) := by
               simp_all
-        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂'.verts} := by
-              apply congr rfl
-              exact Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂'.verts})
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂'.verts} :=
+              congr rfl (Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂'.verts}))
         _ = {u : G₁₂.verts | ↑u ∈ G₂'.verts} := by
               simp
         _ = G₂'.verts :=
