@@ -1657,25 +1657,15 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     subst this
     have : h_iso_G₁₂_Fout = h_iso_G₁₂_Fout' := by simp_all
     subst this
-    have h_G₁_verts_G₁₂_verts : G₁.verts ⊆ G₁₂.verts := by
+    have ⟨h_G₁_verts_G₁₂_verts, h_G₂_verts_G₁₂_verts⟩ : G₁.verts ⊆ G₁₂.verts ∧ G₂.verts ⊆ G₁₂.verts := by
       have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
       rw [h', h_G₁₂]
-      dsimp [inducedSubgraph]
+      rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts)]
       simp
-    have h_G₁'_verts_G₁₂_verts : G₁'.verts ⊆ G₁₂.verts := by
+    have ⟨h_G₁'_verts_G₁₂_verts, h_G₂'_verts_G₁₂_verts⟩ : G₁'.verts ⊆ G₁₂.verts ∧ G₂'.verts ⊆ G₁₂.verts := by
       have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
       rw [h', h_G₁₂, h_eq'.2.2]
-      dsimp [inducedSubgraph]
-      simp
-    have h_G₂_verts_G₁₂_verts : G₂.verts ⊆ G₁₂.verts := by
-      have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
-      rw [h', h_G₁₂]
-      dsimp [inducedSubgraph]
-      simp
-    have h_G₂'_verts_G₁₂_verts : G₂'.verts ⊆ G₁₂.verts := by
-      have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
-      rw [h', h_G₁₂, h_eq'.2.2]
-      dsimp [inducedSubgraph]
+      rw [inducedSubgraph_verts G (G₁'.verts ∪ G₂'.verts)]
       simp
     have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts := by
       calc
@@ -1685,31 +1675,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁.verts} := by
               simp
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁.verts})) := by
-              ext u; simp
-              constructor
-              . intro ⟨h_u_G₁, h_u_G₁₂⟩
-                use (h_iso_G₁₂_Fout.some ⟨u, h_u_G₁₂⟩)
-                simp
-                exact ⟨h_u_G₁, h_u_G₁₂⟩
-              . intro ⟨a, ⟨⟨a₁, h_a₁_G₁, h_a₁_G₁₂, h_a₁_a⟩, h_a_u⟩⟩
-                rw [←h_a_u]
-                have h_a₁_a' : a₁ = h_iso_G₁₂_Fout.some.symm a := by rw [←h_a₁_a]; simp
-                rw [←h_a₁_a']
-                exact ⟨h_a₁_G₁, h_a₁_G₁₂⟩
+              apply congr rfl
+              exact Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁.verts}
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁'.verts})) := by
               simp_all
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
-              ext u; simp
-              constructor
-              . intro ⟨a, ⟨⟨a₁, h_a₁_G₁', h_a₁_G₁₂, h_a₁_a⟩, h_a_u⟩⟩
-                rw [←h_a_u]
-                have h_a₁_a' : a₁ = h_iso_G₁₂_Fout.some.symm a := by rw [←h_a₁_a]; simp
-                rw [←h_a₁_a']
-                exact ⟨h_a₁_G₁', h_a₁_G₁₂⟩
-              . intro ⟨h_u_G₁', h_u_G₁₂⟩
-                use (h_iso_G₁₂_Fout.some ⟨u, h_u_G₁₂⟩)
-                simp
-                exact ⟨h_u_G₁', h_u_G₁₂⟩
+              apply congr rfl
+              exact Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁'.verts})
         _ = {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
               simp
         _ = G₁'.verts :=
@@ -1722,31 +1694,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂.verts} := by
               simp
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂.verts})) := by
-              ext u; simp
-              constructor
-              . intro ⟨h_u_G₂, h_u_G₁₂⟩
-                use (h_iso_G₁₂_Fout.some ⟨u, h_u_G₁₂⟩)
-                simp
-                exact ⟨h_u_G₂, h_u_G₁₂⟩
-              . intro ⟨a, ⟨⟨a₁, h_a₁_G₂, h_a₁_G₁₂, h_a₁_a⟩, h_a_u⟩⟩
-                rw [←h_a_u]
-                have h_a₁_a' : a₁ = h_iso_G₁₂_Fout.some.symm a := by rw [←h_a₁_a]; simp
-                rw [←h_a₁_a']
-                exact ⟨h_a₁_G₂, h_a₁_G₁₂⟩
+              apply congr rfl
+              exact Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂.verts}
         _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂'.verts})) := by
               simp_all
         _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂'.verts} := by
-              ext u; simp
-              constructor
-              . intro ⟨a, ⟨⟨a₁, h_a₁_G₂', h_a₁_G₁₂, h_a₁_a⟩, h_a_u⟩⟩
-                rw [←h_a_u]
-                have h_a₁_a' : a₁ = h_iso_G₁₂_Fout.some.symm a := by rw [←h_a₁_a]; simp
-                rw [←h_a₁_a']
-                exact ⟨h_a₁_G₂', h_a₁_G₁₂⟩
-              . intro ⟨h_u_G₂', h_u_G₁₂⟩
-                use (h_iso_G₁₂_Fout.some ⟨u, h_u_G₁₂⟩)
-                simp
-                exact ⟨h_u_G₂', h_u_G₁₂⟩
+              apply congr rfl
+              exact Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂'.verts})
         _ = {u : G₁₂.verts | ↑u ∈ G₂'.verts} := by
               simp
         _ = G₂'.verts :=
