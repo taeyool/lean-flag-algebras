@@ -47,6 +47,63 @@ def predIsolabeledH
     : LabeledSubgraph σ G → Prop
   := fun G' ↦ Nonempty (G'.coe ≃f H)
 
+lemma predIsolabeledH_related_support
+  {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
+  (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
+  (h_vert : H₁.subgraph.verts = ⇑φ.graph_iso '' H₀.subgraph.verts)
+  (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ∧ ∀ (t : T), ↑(H₀.type_embed t) = φ.symm.graph_iso ↑(H₁.type_embed t))
+  (h : Nonempty (H₀.coe ≃f H))
+  : Nonempty (H₁.coe ≃f H) := by
+    obtain ⟨⟨f₀, h_iso₀⟩, h_emb₀⟩ := h
+    let f₁_toFun (w : H₁.subgraph.verts) : U := f₀ (H₀.subgraph.vert (φ.graph_iso.symm ↑w) (by aesop))
+    have h_bij₁ : Function.Bijective f₁_toFun := by
+      dsimp [Function.Bijective, f₁_toFun]
+      constructor
+      · intro w₀ w₁ h_eq
+        simp_all only [eq_iff_iff, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
+        obtain ⟨_, property₀⟩ := w₀
+        obtain ⟨_, property₁⟩ := w₁
+        simp_all only
+      · intro u
+        let w : H₁.subgraph.verts := H₁.subgraph.vert (φ.graph_iso (f₀.symm u)) (by aesop)
+        use w
+        simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, LabeledSubgraph.coe_type_embed, RelIso.symm_apply_apply,
+          Subtype.coe_eta, RelIso.apply_symm_apply]
+        exact Equiv.apply_symm_apply f₀ u
+    have h_iso₁ : ∀ {w₀ w₁ : H₁.subgraph.verts}, H.graph.Adj (f₁_toFun w₀) (f₁_toFun w₁) ↔ H₁.subgraph.Adj w₀ w₁ := by
+      intro w₀ w₁; dsimp [f₁_toFun]
+      simp_all only [eq_iff_iff, LabeledSubgraph.coe, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₁_toFun]
+      obtain ⟨w₀, property₀⟩ := w₀
+      obtain ⟨w₁, property₁⟩ := w₁
+      simp
+      constructor
+      · intro h_adj₀
+        simp_all only [RelIso.coe_fn_mk, Set.mem_image, RelIso.apply_symm_apply]
+      · intro h_adj₁
+        simp_all only [RelIso.coe_fn_mk, Set.mem_image, RelIso.apply_symm_apply]
+    let f₁ : H₁.subgraph.verts ≃ U := Equiv.ofBijective f₁_toFun h_bij₁
+    let f₁_iso : H₁.subgraph.coe ≃g H.graph := ⟨f₁, h_iso₁⟩
+    have h_emb₁ : ∀ t : T, f₁_iso (H₁.coe.type_embed t) = H.type_embed t := by
+      intro t
+      dsimp [f₁_iso, f₁]
+      have h_eq : f₁_toFun (H₁.type_embed t) = f₀.toFun (H₀.type_embed t) := by
+        have h_t : H₁.type_embed t = φ.graph_iso (H₀.type_embed t) := by
+          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed]
+          rw [H₀.embed_eq t, H₁.embed_eq t]
+          have := φ.type_preserve
+          exact congrFun (id (Eq.symm this)) t
+        have tmp : f₁_toFun (H₁.type_embed t) = f₁_toFun (H₁.subgraph.vert (φ.graph_iso (H₀.type_embed t)) (by aesop)) := by
+          dsimp [f₁_toFun]
+          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
+            RelIso.symm_apply_apply, Subtype.coe_eta]
+        rw [tmp]
+        simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
+          RelIso.symm_apply_apply, Subtype.coe_eta, Equiv.toFun_as_coe, f₁_toFun]
+      rw [h_eq]
+      have temp := congr_fun h_emb₀ t
+      rw [←temp]; simp
+    exact ⟨⟨f₁, h_iso₁⟩, funext h_emb₁⟩
+
 lemma predIsolabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
@@ -54,106 +111,28 @@ lemma predIsolabeldH_related
     dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph, relOflabeledSubgraph]
     rintro H₀ H₁ ⟨h_vert, h_adj⟩
     constructor
-    · rintro ⟨⟨f₀, h_iso₀⟩, h_emb₀⟩
-      let f₁_toFun (w : H₁.subgraph.verts) : U := f₀ (H₀.subgraph.vert (φ.graph_iso.symm ↑w) (by aesop))
-      have h_bij₁ : Function.Bijective f₁_toFun := by
-        dsimp [Function.Bijective, f₁_toFun]
+    · intro f_iso
+      exact predIsolabeledH_related_support φ H H₀ H₁ h_vert h_adj f_iso
+    · intro f_iso
+      have h_vert' : H₀.subgraph.verts = φ.graph_iso.symm '' H₁.subgraph.verts := by
+        rw [h_vert]
+        simp_all only [eq_iff_iff]
+        ext1 x
+        simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
+      have h_adj' : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) ∧ ∀ (t: T), (H₁.type_embed t) = φ.graph_iso (H₀.type_embed t):= by
+        intro u v
         constructor
-        · intro w₀ w₁ h_eq
-          simp_all only [eq_iff_iff, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
-          obtain ⟨_, property₀⟩ := w₀
-          obtain ⟨_, property₁⟩ := w₁
-          simp_all only
-        · intro u
-          let w : H₁.subgraph.verts := H₁.subgraph.vert (φ.graph_iso (f₀.symm u)) (by aesop)
-          use w
-          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, LabeledSubgraph.coe_type_embed, RelIso.symm_apply_apply,
-            Subtype.coe_eta, RelIso.apply_symm_apply]
-          exact Equiv.apply_symm_apply f₀ u
-      have h_iso₁ : ∀ {w₀ w₁ : H₁.subgraph.verts}, H.graph.Adj (f₁_toFun w₀) (f₁_toFun w₁) ↔ H₁.subgraph.Adj w₀ w₁ := by
-        intro w₀ w₁; dsimp [f₁_toFun]
-        simp_all only [eq_iff_iff, LabeledSubgraph.coe, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₁_toFun]
-        obtain ⟨w₀, property₀⟩ := w₀
-        obtain ⟨w₁, property₁⟩ := w₁
-        simp
-        constructor
-        · intro h_adj₀
-          simp_all only [RelIso.coe_fn_mk, Set.mem_image, RelIso.apply_symm_apply]
-        · intro h_adj₁
-          simp_all only [RelIso.coe_fn_mk, Set.mem_image, RelIso.apply_symm_apply]
-      let f₁ : H₁.subgraph.verts ≃ U := Equiv.ofBijective f₁_toFun h_bij₁
-      let f₁_iso : H₁.subgraph.coe ≃g H.graph := ⟨f₁, h_iso₁⟩
-      have h_emb₁ : ∀ t : T, f₁_iso (H₁.coe.type_embed t) = H.type_embed t := by
-        intro t
-        dsimp [f₁_iso, f₁]
-        let f₀_isp : H₀.subgraph.coe ≃g H.graph := ⟨f₀, h_iso₀⟩
-        have h_eq : f₁_toFun (H₁.type_embed t) = f₀.toFun (H₀.type_embed t) := by
-          have h_t : H₁.type_embed t = φ.graph_iso (H₀.type_embed t) := by
-            simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed]
-            rw [H₀.embed_eq t, H₁.embed_eq t]
-            have := φ.type_preserve
-            exact congrFun (id (Eq.symm this)) t
-          have tmp : f₁_toFun (H₁.type_embed t) = f₁_toFun (H₁.subgraph.vert (φ.graph_iso (H₀.type_embed t)) (by aesop)) := by
-            dsimp [f₁_toFun]
-            simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
-              RelIso.symm_apply_apply, Subtype.coe_eta]
-          rw [tmp]
-          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
-            RelIso.symm_apply_apply, Subtype.coe_eta, Equiv.toFun_as_coe, f₁_toFun]
-        rw [h_eq]
-        have temp := congr_fun h_emb₀ t
-        rw [←temp]; simp
-      exact ⟨⟨f₁, h_iso₁⟩, funext h_emb₁⟩
-    · rintro ⟨⟨f₁, h_iso₁⟩, h_emb₁⟩
-      let f₀_toFun (w : H₀.subgraph.verts) : U := f₁ (H₁.subgraph.vert (φ.graph_iso ↑w) (by aesop))
-      have h_bij₀ : Function.Bijective f₀_toFun := by
-        dsimp [Function.Bijective, f₀_toFun]
-        constructor
-        · intro w₀ w₁ h_eq
-          simp_all only [eq_iff_iff, Subtype.forall, EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq]
-          obtain ⟨_, property₀⟩ := w₀
-          obtain ⟨_, property₁⟩ := w₁
-          simp_all only
-        · intro u
-          let w : H₀.subgraph.verts := H₀.subgraph.vert (φ.symm.graph_iso (f₁.symm u))
-            (by sorry)
-          use w
-          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, LabeledSubgraph.coe_type_embed, RelIso.symm_apply_apply,
-            Subtype.coe_eta, RelIso.apply_symm_apply]
-          simp_all only [RelIso.coe_fn_mk, Set.mem_image, RelIso.apply_symm_apply]
-          have h_φ : φ.graph_iso ∘ φ.symm.graph_iso = id := by
-            sorry
-          sorry
-      have h_iso₀ : ∀ {w₀ w₁ : H₀.subgraph.verts}, H.graph.Adj (f₀_toFun w₀) (f₀_toFun w₁) ↔ H₀.subgraph.Adj w₀ w₁ := by
-        intro w₀ w₁; dsimp [f₀_toFun]
-        simp_all only [eq_iff_iff, LabeledSubgraph.coe, Subtype.forall, Multiset.bijective_iff_map_univ_eq_univ, f₀_toFun]
-        obtain ⟨w₀, property₀⟩ := w₀
-        obtain ⟨w₁, property₁⟩ := w₁
-        simp
-      let f₀ : H₀.subgraph.verts ≃ U := Equiv.ofBijective f₀_toFun h_bij₀
-      let f₀_iso : H₀.subgraph.coe ≃g H.graph := ⟨f₀, h_iso₀⟩
-      have h_emb₀ : ∀ t : T, f₀_iso (H₀.coe.type_embed t) = H.type_embed t := by
-        intro t
-        dsimp [f₀_iso, f₀]
-        let f₁_isp : H₁.subgraph.coe ≃g H.graph := ⟨f₁, h_iso₁⟩
-        have h_eq : f₀_toFun (H₀.type_embed t) = f₁.toFun (H₁.type_embed t) := by
-          have h_t : H₀.type_embed t = φ.symm.graph_iso (H₁.type_embed t) := by
-            simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed]
-            rw [H₀.embed_eq t, H₁.embed_eq t]
-            have := φ.symm.type_preserve
-            exact congrFun (id (Eq.symm this)) t
-          have tmp : f₀_toFun (H₀.type_embed t) = f₀_toFun (H₀.subgraph.vert (φ.symm.graph_iso (H₁.type_embed t)) (by sorry)) := by
-            dsimp [f₀_toFun]
-            simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
-              RelIso.symm_apply_apply, Subtype.coe_eta]
-          rw [tmp]
-          simp_all only [eq_iff_iff, LabeledSubgraph.coe_graph, RelIso.coe_fn_mk, LabeledSubgraph.coe_type_embed,
-            RelIso.symm_apply_apply, Subtype.coe_eta, Equiv.toFun_as_coe, f₀_toFun]
-          sorry
-        rw [h_eq]
-        have temp := congr_fun h_emb₁ t
-        rw [←temp]; simp
-      exact ⟨⟨f₀, h_iso₀⟩, funext h_emb₀⟩
+        · have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)).1
+          rw [h_uv]
+          simp
+        · intro t
+          have h_t := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)).2 t
+          rw [h_t]
+          rw [H₁.embed_eq t]
+          have := φ.graph_iso.symm.left_inv (G₁.type_embed t)
+          rw [←this]
+          exact congrArg (⇑φ.graph_iso.symm.symm) (congrArg (⇑φ.graph_iso.symm) (id (Eq.symm this)))
+      exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' h_adj' f_iso
 
 lemma relOfTypeVertex
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
