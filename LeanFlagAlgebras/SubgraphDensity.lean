@@ -1552,7 +1552,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet_gen
     intro ⟨⟨F, G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃, h_F_G₃⟩
     use ⟨⟨G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃⟩
     simp [f_S₀'_S₁'_fwd]
-    sorry
+    rw [←(getCanonicalQuotSimpleGraph_self F)]
+    apply getCanonicalQuotSimpleGraph_iso
+    exact h_F_G₃.some
 
   let f_S₀'_S₁' : S₀' ≃ S₁' :=
     Equiv.ofBijective f_S₀'_S₁'_fwd ⟨h_inj_S₀'_S₁', h_surj_S₀'_S₁'⟩
