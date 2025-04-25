@@ -1567,7 +1567,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet_gen
   let f_S₀'_S₁' : S₀' ≃ S₁' :=
     Equiv.ofBijective f_S₀'_S₁'_fwd ⟨h_inj_S₀'_S₁', h_surj_S₀'_S₁'⟩
 
-  let f_S₃_S₄_fwd : S₁' → S₂' := by
+  let f_S₁'_S₂'_fwd : S₁' → S₂' := by
     intro ⟨⟨F, G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃, h_G₃_F⟩
     let f_G₃_Fout : G₃.coe ≃g F.out := h_G₃_F.some
     have h_G₁_verts_sub_G₃_verts : G₁.verts ⊆ G₃.verts := fun a h_a => h_G₁_G₂_G₃ (by simp [h_a])
@@ -1595,6 +1595,90 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet_gen
            h_K₂_ind, Nonempty.intro f_iso_K₂_H₂,
            h_G₃_ind, h_G₃_card,
            h_K₁_K₂_disj, h_G₃_F⟩
+
+  have h_inj_S₁'_S₂' : Function.Injective f_S₁'_S₂'_fwd := by
+    intro ⟨⟨F, G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃, h_G₃_F⟩
+    intro ⟨⟨F', G₁', G₂', G₃'⟩, h_G₁'_ind, h_G₁'_H₁, h_G₂'_ind, h_G₂'_H₂, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂', h_G₁'_G₂'_G₃', h_G₃'_F⟩
+    intro h_eq
+    simp [f_S₁'_S₂'_fwd, subgraphFromIso, subgraphFromOrder] at h_eq
+    obtain ⟨h_F_F', h_eq'⟩ := h_eq
+    subst h_F_F'
+    sorry
+    /-
+    simp_all only [heq_eq_eq, Prod.mk.injEq, Subgraph.mk.injEq, Subtype.mk.injEq, and_true, true_and]
+    have h_G₁₂_ind_G₁₂'_ind : (⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) = ⟨G₁₂', h_G₁₂'_ind⟩ := by simp_all
+    have : G₁₂ = G₁₂' := congrArg Subtype.val h_G₁₂_ind_G₁₂'_ind
+    subst this
+    have : h_iso_G₁₂_Fout = h_iso_G₁₂_Fout' := by simp_all
+    subst this
+    have ⟨h_G₁_verts_G₁₂_verts, h_G₂_verts_G₁₂_verts⟩ : G₁.verts ⊆ G₁₂.verts ∧ G₂.verts ⊆ G₁₂.verts := by
+      have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
+      rw [h', h_G₁₂, inducedSubgraph_verts G (G₁.verts ∪ G₂.verts)]
+      simp
+    have ⟨h_G₁'_verts_G₁₂_verts, h_G₂'_verts_G₁₂_verts⟩ : G₁'.verts ⊆ G₁₂.verts ∧ G₂'.verts ⊆ G₁₂.verts := by
+      have h' : G₁₂ = ↑(⟨G₁₂, h_G₁₂_ind⟩ : { G' : Subgraph G | G'.IsInduced}) := rfl
+      rw [h', h_G₁₂, h_eq'.2.2, inducedSubgraph_verts G (G₁'.verts ∪ G₂'.verts)]
+      simp
+    have h_G₁_verts_G₁'_verts : G₁.verts = G₁'.verts := by
+      calc
+        G₁.verts
+        _ = {u : G₁₂.verts | ↑u ∈ G₁.verts} :=
+              Eq.symm (Subtype.coe_image_of_subset h_G₁_verts_G₁₂_verts)
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁.verts} := by
+              simp
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁.verts})) :=
+              congr rfl (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁.verts})
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₁'.verts})) := by
+              simp_all
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₁'.verts} :=
+              congr rfl (Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₁'.verts}))
+        _ = {u : G₁₂.verts | ↑u ∈ G₁'.verts} := by
+              simp
+        _ = G₁'.verts :=
+              Subtype.coe_image_of_subset h_G₁'_verts_G₁₂_verts
+    have h_G₂_verts_G₂'_verts : G₂.verts = G₂'.verts := by
+      calc
+        G₂.verts
+        _ = {u : G₁₂.verts | ↑u ∈ G₂.verts} :=
+              Eq.symm (Subtype.coe_image_of_subset h_G₂_verts_G₁₂_verts)
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂.verts} := by
+              simp
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂.verts})) :=
+              congr rfl (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂.verts})
+        _ = (h_iso_G₁₂_Fout.some.symm '' (h_iso_G₁₂_Fout.some '' {u : G₁₂.verts | ↑u ∈ G₂'.verts})) := by
+              simp_all
+        _ = (h_iso_G₁₂_Fout.some.symm ∘ h_iso_G₁₂_Fout.some) '' {u : G₁₂.verts | ↑u ∈ G₂'.verts} :=
+              congr rfl (Eq.symm (Set.image_comp ⇑h_iso_G₁₂_Fout.some.symm ⇑h_iso_G₁₂_Fout.some {u | ↑u ∈ G₂'.verts}))
+        _ = {u : G₁₂.verts | ↑u ∈ G₂'.verts} := by
+              simp
+        _ = G₂'.verts :=
+              Subtype.coe_image_of_subset h_G₂'_verts_G₁₂_verts
+    constructor
+    . calc
+      G₁ = ↑(⟨G₁, h_G₁_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := rfl
+      _  = ↑(inducedSubgraph G G₁.verts) := by
+              apply congrArg Subtype.val
+              apply inducedSubgraph_eq
+      _  = ↑(inducedSubgraph G G₁'.verts) := by
+              rw [←h_G₁_verts_G₁'_verts]
+      _  = ↑(⟨G₁', h_G₁'_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := by
+              apply congrArg Subtype.val
+              apply Eq.symm
+              apply inducedSubgraph_eq
+      _  = G₁' := rfl
+    . calc
+      G₂ = ↑(⟨G₂, h_G₂_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := rfl
+      _  = ↑(inducedSubgraph G G₂.verts) := by
+              apply congrArg Subtype.val
+              apply inducedSubgraph_eq
+      _  = ↑(inducedSubgraph G G₂'.verts) := by
+              rw [←h_G₂_verts_G₂'_verts]
+      _  = ↑(⟨G₂', h_G₂'_ind⟩ : {G' : Subgraph G | G'.IsInduced}) := by
+              apply congrArg Subtype.val
+              apply Eq.symm
+              apply inducedSubgraph_eq
+      _  = G₂' := rfl
+    -/
 
   have hℓ : ℓ₁ + ℓ₂ ≤ ℓ := Nat.le_trans hℓ₃_lb hℓ₃_ub
   let S₁ := { (G₁, G₂) : Subgraph G × Subgraph G
