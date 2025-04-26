@@ -1324,6 +1324,14 @@ def isoToSubgraphByComposition
       dsimp [subgraphByComposition, Relation.Map]
       aesop
 
+omit [Fintype V] [DecidableEq V] in
+lemma subgraphByComposition_le
+    {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph (Subgraph.coe G₀))
+    : subgraphByComposition G₀ G₁ ≤ G₀
+  := by
+  simp [subgraphByComposition]
+  exact Subgraph.coeSubgraph_le G₁
+
 def subgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀) : Subgraph H
@@ -1340,6 +1348,14 @@ def isoToSubgraphFromPartialIso
   let h_iso_pre := isoToSubgraphFromIso iso G₁
   let h_iso_post := isoToSubgraphByComposition H₀ H₁_pre
   Iso.comp h_iso_post h_iso_pre
+
+omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+lemma subgraphFromPartialIso_le
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀)
+    : subgraphFromPartialIso iso G₁ ≤ H₀
+  := by
+  simp [subgraphFromPartialIso, subgraphByComposition_le]
 
 omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma subgraphFromPartialIso_preserve_inducedness
@@ -1651,6 +1667,31 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet_gen
     constructor
     . exact h_eq_ind_subgraph G₁ G₁' h_G₁_ind h_G₁'_ind h_G₁_verts_G₁'_verts
     . exact h_eq_ind_subgraph G₂ G₂' h_G₂_ind h_G₂'_ind h_G₂_verts_G₂'_verts
+
+  have h_surj_S₁'_S₂' : Function.Surjective f_S₁'_S₂'_fwd := by
+    intro ⟨⟨F, K₁, K₂, G₃⟩,
+          h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_G₃_ind, h_G₃_card, h_K₁_K₂_disj, h_iso_G₃_Fout⟩
+    let f_G₃_Fout : G₃.coe ≃g F.out := h_iso_G₃_Fout.some
+    let G₁' := subgraphFromPartialIso f_G₃_Fout.symm K₁
+    let G₂' := subgraphFromPartialIso f_G₃_Fout.symm K₂
+    let g_G₁'_iso := isoToSubgraphFromPartialIso f_G₃_Fout.symm K₁
+    let g_G₂'_iso := isoToSubgraphFromPartialIso f_G₃_Fout.symm K₂
+    let g_G₁' : G₁'.coe ≃g H₁ := g_G₁'_iso.symm.trans h_iso_K₁_H₁.some
+    let g_G₂' : G₂'.coe ≃g H₂ := g_G₂'_iso.symm.trans h_iso_K₂_H₂.some
+    let g_G₁'_ind : G₁'.IsInduced := subgraphFromPartialIso_preserve_inducedness f_G₃_Fout.symm K₁ h_G₃_ind h_K₁_ind
+    let g_G₂'_ind : G₂'.IsInduced := subgraphFromPartialIso_preserve_inducedness f_G₃_Fout.symm K₂ h_G₃_ind h_K₂_ind
+    let g_G₁'_G₂'_disj : G₁'.verts ∩ G₂'.verts = ∅ := subgraphFromPartialIso_preserve_disjointedness f_G₃_Fout.symm K₁ K₂ h_K₁_K₂_disj
+    have h_G₁'_verts_union_G₂'_verts : G₁'.verts ∪ G₂'.verts ⊆ G₃.verts := by
+      have h_G₁'_le_G₃ : G₁'.verts ≤ G₃.verts := by dsimp [G₁']; apply Subgraph.verts_mono; apply subgraphFromPartialIso_le
+      have h_G₂'_le_G₃ : G₂'.verts ≤ G₃.verts := by dsimp [G₂']; apply Subgraph.verts_mono; apply subgraphFromPartialIso_le
+      simp_all
+    use ⟨⟨F, G₁', G₂', G₃⟩,
+          g_G₁'_ind, Nonempty.intro g_G₁', g_G₂'_ind, Nonempty.intro g_G₂',
+          h_G₃_ind, h_G₃_card, g_G₁'_G₂'_disj, h_G₁'_verts_union_G₂'_verts, h_iso_G₃_Fout⟩
+    simp [G₁', G₂', f_S₁'_S₂'_fwd]
+    simp [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso, subgraphFromOrder, Relation.Map]
+    have : h_iso_G₃_Fout.some.symm.symm = h_iso_G₃_Fout.some := rfl
+    constructor <;> ext u v <;> simp
 
   have hℓ : ℓ₁ + ℓ₂ ≤ ℓ := Nat.le_trans hℓ₃_lb hℓ₃_ub
   let S₁ := { (G₁, G₂) : Subgraph G × Subgraph G
