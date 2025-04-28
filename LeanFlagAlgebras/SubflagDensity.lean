@@ -235,6 +235,14 @@ theorem embed_HEq
   {T : Type} {σ : FlagType T} {G₀ : LabeledGraph σ V} {H : LabeledSubgraph σ G₀} {H' : LabeledSubgraph σ G₀}
   (h_V_eq : H.subgraph.verts = H'.subgraph.verts)
   : HEq H.type_embed H'.type_embed := by
+  have h_iso : H.subgraph.coe ≃g H'.subgraph.coe := sorry
+  have t : H'.type_embed = h_iso ∘ H.type_embed := sorry
+  have t' : h_iso.symm ∘ H'.type_embed = h_iso.symm ∘ h_iso ∘ H.type_embed := sorry
+  have t'' : h_iso.symm ∘ h_iso ∘ H.type_embed = H.type_embed := sorry
+  have heq_t := heq_of_eq t
+  have heq_t' := heq_of_eq t'
+  have heq_t'' := heq_of_eq t''
+  refine HEq.symm ?h
   sorry
 
 lemma H_eq_reverseinduced_induced_H
@@ -291,6 +299,20 @@ lemma H_eq_reverseinduced_induced_H
     have verts_eq : H₀.subgraph.verts = H₁.subgraph.verts := by
       dsimp [H₁, inducedlabeledSubgraph]
       exact h
+
+    have h_H' := inducedlabeledSubgraph_related φ H₀ h_ind₀
+    dsimp [relOflabeledSubgraph] at h_H'
+    obtain ⟨h1, h2⟩ := h_H'
+    let temp := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀))
+    have ⟨H', ind_H'⟩ := temp
+    have h_H'' := inducedlabeledSubgraph_related φ.symm H' ind_H'
+    dsimp [relOflabeledSubgraph] at h_H''
+    obtain ⟨h3, h4⟩ := h_H''
+    let temp' := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H'.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H')).1
+    have t' : H₀.subgraph.verts = temp'.subgraph.verts := sorry
+    have t'' := embed_HEq t'
+    dsimp [temp', inducedlabeledSubgraph] at t''
+
     have := embed_HEq verts_eq
     exact this
 
