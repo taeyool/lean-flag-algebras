@@ -235,8 +235,6 @@ theorem embed_HEq
   {T : Type} {σ : FlagType T} {G₀ : LabeledGraph σ V} {H : LabeledSubgraph σ G₀} {H' : LabeledSubgraph σ G₀}
   (h_V_eq : H.subgraph.verts = H'.subgraph.verts)
   : HEq H.type_embed H'.type_embed := by
-  -- We can't use `subst` here because the equality isn't of form x = t or t = x
-  -- Instead, we'll need to construct the heterogeneous equality directly
   sorry
 
 lemma H_eq_reverseinduced_induced_H
@@ -379,11 +377,52 @@ noncomputable def labeledSubgraphDensityLifted
   intro _ _ G_eqv
   exact labeledSubgraphDensity_respects_eqv_on_G H (Classical.choice G_eqv)
 
+noncomputable def isoSetOfInducedlabeledSubgraphInG
+    {H₀ : LabeledGraph σ V} {H₁ : LabeledGraph σ W} (φ : H₀ ≃f H₁) (G : LabeledGraph σ U)
+    : {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀)}
+      ≃
+      {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁)}
+  := by
+  let h : ∀ G' : LabeledSubgraph σ G, Nonempty (G'.coe ≃f H₀) ↔ Nonempty (G'.coe ≃f H₁) := by
+    intro G'
+    constructor
+    · intro ⟨h_iso₀, h_emb₀⟩
+      let h_iso₁ : G'.coe.graph ≃g H₁.graph := φ.graph_iso.comp h_iso₀
+      have h_emb₀ : h_iso₁ ∘ G'.coe.type_embed = H₁.type_embed := by
+        ext t
+        rw [←φ.type_preserve, ←h_emb₀]
+        dsimp [h_iso₁]
+      exact ⟨h_iso₁, h_emb₀⟩
+    · intro ⟨h_iso₁, h_emb₁⟩
+      let h_iso₀ : G'.coe.graph ≃g H₀.graph := φ.symm.graph_iso.comp h_iso₁
+      have h_emb₁ : h_iso₀ ∘ G'.coe.type_embed = H₀.type_embed := by
+        ext t
+        rw [←φ.symm.type_preserve, ←h_emb₁]
+        dsimp [h_iso₀]
+      exact ⟨h_iso₀, h_emb₁⟩
+  have : {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀)} = {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁)} :=
+    Set.sep_ext_iff.mpr fun x _ ↦ h x
+  exact Equiv.setCongr this
+
 lemma labeledSubgraphDensityLifted_respects_eqv
     (H H' : LabeledGraph σ V) (φ : H ≃f H') (G : Flag σ W)
     : labeledSubgraphDensityLifted H G = labeledSubgraphDensityLifted H' G
-  :=
-  sorry
+  := by
+  dsimp [labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  congr
+  ext Grep
+  let S₀ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+  let S₁ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H') }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphInG φ Grep
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
+  have h_count : labeledSubgraphCount H Grep = labeledSubgraphCount H' Grep := by
+    dsimp only [labeledSubgraphCount]
+    show S₀.toFinset.card = S₁.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  rw [h_count]
+  rfl
 
 noncomputable def subflagDensity
     : Flag σ V → Flag σ W → ℚ
