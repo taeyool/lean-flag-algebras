@@ -10,11 +10,18 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 abbrev FlagWithSize (σ : FlagType T) (n : ℕ) : Type
   := Flag σ (Fin n)
 
-instance flagWithSize_inhabited (n : ℕ) (hn : n ≥ n₀) : Inhabited (FlagWithSize σ n) where
-  default := sorry
+instance labeledGraph_inhabited (σ : FlagType (Fin n₀)) (n : ℕ) (hn : n ≥ n₀)
+    : Inhabited (LabeledGraph σ (Fin n)) where
+  default :=
+    let f : Fin n₀ ↪ Fin n := sorry
+    { graph := σ.map f, type_embed := SimpleGraph.Embedding.map f σ }
+
+instance flagWithSize_inhabited (σ : FlagType (Fin n₀)) (n : ℕ) (hn : n ≥ n₀)
+    : Inhabited (FlagWithSize σ n) where
+  default := ⟦(labeledGraph_inhabited σ n hn).default⟧
 
 instance : Unique (FlagWithSize σ n₀) where
-  default := (flagWithSize_inhabited n₀ (by simp)).default
+  default := (flagWithSize_inhabited σ n₀ (by simp)).default
   uniq := sorry
 
 noncomputable instance (n : ℕ) : Fintype (FlagWithSize σ n)
