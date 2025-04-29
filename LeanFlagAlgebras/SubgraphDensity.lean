@@ -2,6 +2,7 @@ import «LeanFlagAlgebras».QuotientGraph
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Data.Fintype.BigOperators
 
 open Finset
 open SimpleGraph
@@ -1810,29 +1811,18 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
   let S₂ := (F : QuotSimpleGraph (Fin ℓ₃)) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
   have fintypeSubgraphG : Fintype (Subgraph G) := subgraphFintype G
-  have fintypeS₁ : Fintype S₁ := inferInstance
-  have fintypeS₂ : Fintype S₂ := inferInstance
 
   have h_S₁_iso_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
   have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr h_S₁_iso_S₂
 
   have h_S₁_card : Fintype.card S₁ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
-  := by
+    := by
     dsimp [S₁, subgraphPairCount]
     sorry
-
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
-  := by
-    dsimp [S₂, subgraphPairCount, subgraphCount]
-    apply Eq.symm
-    calc
-      ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (subgraphPairSet H₁ H₂ F.out).card * (subgraphSet F.out G).card
-      _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (Fintype.card (subgraphPairSet H₁ H₂ F.out)) * (Fintype.card (subgraphSet F.out G))
-              := rfl
-      _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (Fintype.card (subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G))
-              := by sorry
-      _ = Fintype.card (Σ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G)
-              := by sorry
+    := by
+    simp only [S₂, subgraphPairCount, subgraphCount]
+    simp only [Fintype.card_sigma, Fintype.card_coe, Fintype.card_prod]
 
   rw [←h_S₁_card, ←h_S₂_card]
   exact h_S₁_card_eq_S₂_card
