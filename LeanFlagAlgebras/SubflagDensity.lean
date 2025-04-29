@@ -33,8 +33,8 @@ def relOflabeledSubgraph
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
-  ∧ ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
-  ∧ ∀ (t : T), H₀.type_embed t = φ.symm.graph_iso (H₁.type_embed t)
+  ∧ (∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v))
+  ∧ (∀ (t : T), H₀.type_embed t = φ.symm.graph_iso (H₁.type_embed t))
   -- Several conditions will be added?
 
 def relOfPredOnlabeledSubgraph
@@ -109,30 +109,40 @@ lemma predIsolabeldH_related
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
   := by
     dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph, relOflabeledSubgraph]
-    rintro H₀ H₁ ⟨h_vert, h_adj⟩
+    rintro H₀ H₁ ⟨h_vert, ⟨h_adj, h_emb⟩⟩
     constructor
     · intro f_iso
-      exact predIsolabeledH_related_support φ H H₀ H₁ h_vert h_adj f_iso
+      have : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ∧ ∀ (t : T), ↑(H₀.type_embed t) = φ.symm.graph_iso ↑(H₁.type_embed t) := by
+        intro u v
+        simp_all only [eq_iff_iff, implies_true, and_self]
+      exact predIsolabeledH_related_support φ H H₀ H₁ h_vert this f_iso
     · intro f_iso
       have h_vert' : H₀.subgraph.verts = φ.graph_iso.symm '' H₁.subgraph.verts := by
         rw [h_vert]
         simp_all only [eq_iff_iff]
         ext1 x
         simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-      have h_adj' : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) ∧ ∀ (t: T), (H₁.type_embed t) = φ.graph_iso (H₀.type_embed t):= by
+      have h_adj_emb : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) ∧ ∀ (t: T), (H₁.type_embed t) = φ.graph_iso (H₀.type_embed t):= by
         intro u v
         constructor
-        · have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)).1
+        · have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v))
           rw [h_uv]
           simp
         · intro t
-          have h_t := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)).2 t
+          have h_t := h_emb t
           rw [h_t]
           rw [H₁.embed_eq t]
           have := φ.graph_iso.symm.left_inv (G₁.type_embed t)
           rw [←this]
           exact congrArg (⇑φ.graph_iso.symm.symm) (congrArg (⇑φ.graph_iso.symm) (id (Eq.symm this)))
-      exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' h_adj' f_iso
+      have : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) ∧ ∀ (t : T), ↑(H₁.type_embed t) = φ.symm.symm.graph_iso ↑(H₀.type_embed t) := by
+        intro u v
+        constructor
+        · exact (h_adj_emb u v).1
+        · intro t
+          rw [(h_adj_emb u v).2 t]
+          rfl
+      exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' this f_iso
 
 lemma relOfTypeVertex
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -216,16 +226,17 @@ lemma inducedlabeledSubgraph_related
     : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀))
   := by
   dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]; simp
-  intro u v
-  constructor; constructor
-  · intro u_uv
+  constructor
+  · intro u v
     constructor
-    · have : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub u_uv
-      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr this
-    · exact ⟨H₀.subgraph.edge_vert u_uv, H₀.subgraph.edge_vert u_uv.symm⟩
-  · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
-    have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
-    apply h_ind₀ h_u h_v h_G₀uv
+    · intro h_uv
+      constructor
+      · have : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
+        exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr this
+      · exact ⟨H₀.subgraph.edge_vert h_uv, H₀.subgraph.edge_vert h_uv.symm⟩
+    · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
+      have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
+      apply h_ind₀ h_u h_v h_G₀uv
   · intro t
     rw [H₀.embed_eq t]
     rw [←φ.symm.type_preserve]
