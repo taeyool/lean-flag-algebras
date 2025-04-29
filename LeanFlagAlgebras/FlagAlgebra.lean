@@ -10,19 +10,50 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 abbrev FlagWithSize (σ : FlagType T) (n : ℕ) : Type
   := Flag σ (Fin n)
 
-instance labeledGraph_inhabited (σ : FlagType (Fin n₀)) (n : ℕ) (hn : n ≥ n₀)
+instance labeledGraph_inhabited (σ : FlagType (Fin n₀)) {n : ℕ} (hn : n ≥ n₀)
     : Inhabited (LabeledGraph σ (Fin n)) where
   default :=
-    let f : Fin n₀ ↪ Fin n := sorry
+    let f : Fin n₀ ↪ Fin n := {
+      toFun := fun ⟨i, hi⟩ => ⟨i, Nat.lt_of_lt_of_le hi hn⟩,
+      inj' := by
+        intro i j h
+        simp [Fin.mk.injEq, ge_iff_le] at h
+        ext1
+        assumption
+    }
     { graph := σ.map f, type_embed := SimpleGraph.Embedding.map f σ }
 
-instance flagWithSize_inhabited (σ : FlagType (Fin n₀)) (n : ℕ) (hn : n ≥ n₀)
+instance flagWithSize_inhabited (σ : FlagType (Fin n₀)) {n : ℕ} (hn : n ≥ n₀)
     : Inhabited (FlagWithSize σ n) where
-  default := ⟦(labeledGraph_inhabited σ n hn).default⟧
+  default := ⟦(labeledGraph_inhabited σ hn).default⟧
+
+instance flagWithSize_inhabited_empty (σ : FlagType (Fin n₀))
+    : Inhabited (FlagWithSize σ n₀) where
+  default := emptyFlag σ
+
+noncomputable def graphEmbedIso
+    {G G' : SimpleGraph (Fin n₀)} (f : G ↪g G') : G ≃g G' where
+  toEquiv := by
+    apply Equiv.ofBijective f
+    rw [← Finite.injective_iff_bijective]
+    exact RelEmbedding.injective f
+  map_rel_iff' := by
+    intro a b
+    simp only [Equiv.ofBijective_apply, SimpleGraph.Embedding.map_adj_iff]
 
 instance : Unique (FlagWithSize σ n₀) where
-  default := (flagWithSize_inhabited σ n₀ (by simp)).default
-  uniq := sorry
+  uniq := by
+    intro F
+    rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+    rw [← hFrep]
+    apply Quotient.sound
+    apply Nonempty.intro
+    refine ⟨?_, ?_⟩
+    · exact (graphEmbedIso Frep.type_embed).symm
+    · simp [graphEmbedIso, emptyLabeledGraph]
+      subst hFrep
+      ext
+      simp only [Function.comp_apply, Equiv.ofBijective_symm_apply_apply, RelEmbedding.refl_apply]
 
 noncomputable instance (n : ℕ) : Fintype (FlagWithSize σ n)
   := FlagFintype σ (Fin n)
