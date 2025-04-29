@@ -29,16 +29,36 @@ noncomputable def subgraphFintype
       exact Eq.to_iff (congrFun h_eq_edges (u, v))
   Fintype.ofInjective f f_inj
 
-noncomputable instance subgraphProdFintype
+noncomputable instance qualSubgraphFintype
+    (G : SimpleGraph V) (p : Subgraph G → Prop)
+    : Fintype { G₁ : Subgraph G | p G₁ } := by
+  have : Fintype (Subgraph G) := subgraphFintype G
+  exact inferInstance
+
+noncomputable instance subgraphPairFintype
     (G : SimpleGraph V) : Fintype (Subgraph G × Subgraph G)
   := by
   have : Fintype (Subgraph G) := subgraphFintype G
   exact inferInstance
 
-noncomputable instance subgraphSetFintype
-    (G : SimpleGraph V) (p : Subgraph G → Prop)
-    : Fintype { G' : Subgraph G | p G' } := by
-  have : Fintype (Subgraph G) := subgraphFintype G
+noncomputable instance qualifiedSubgraphPairFintype
+    (G : SimpleGraph V) (p : Subgraph G × Subgraph G → Prop)
+    : Fintype {⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} := by
+  have : Fintype (Subgraph G × Subgraph G) := subgraphPairFintype G
+  exact inferInstance
+
+noncomputable instance qualifiedSubgraphPairProdSubgraphFintype
+    (G : SimpleGraph V) (p : Subgraph G × Subgraph G → Prop)
+    : Fintype ({⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} × Subgraph G) := by
+  have fintypeQualPair : Fintype {⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} := qualifiedSubgraphPairFintype G p
+  have fintypeSubgraph : Fintype (Subgraph G) := subgraphFintype G
+  exact inferInstance
+
+noncomputable instance doublyQualiedSubgraphPairProdSubgraphFintype
+    (G : SimpleGraph V) (p : Subgraph G × Subgraph G → Prop) (q : Subgraph G × Subgraph G × Subgraph G → Prop)
+    : Fintype {⟨⟨⟨G₁,G₂⟩,_⟩, G₃⟩ : {⟨G',G''⟩ : Subgraph G × Subgraph G | p ⟨G',G''⟩} × Subgraph G | q ⟨G₁,G₂,G₃⟩}
+  := by
+  have : Fintype ({⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} × Subgraph G) := qualifiedSubgraphPairProdSubgraphFintype G p
   exact inferInstance
 
 noncomputable def subgraphSet (H : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G)
@@ -1692,9 +1712,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
                 apply inducedSubgraph_eq
         _  = G₀' := rfl
 
-    constructor
-    . exact h_eq_ind_subgraph G₁ G₁' h_G₁_ind h_G₁'_ind h_G₁_verts_G₁'_verts
-    . exact h_eq_ind_subgraph G₂ G₂' h_G₂_ind h_G₂'_ind h_G₂_verts_G₂'_verts
+    exact ⟨h_eq_ind_subgraph G₁ G₁' h_G₁_ind h_G₁'_ind h_G₁_verts_G₁'_verts,
+           h_eq_ind_subgraph G₂ G₂' h_G₂_ind h_G₂'_ind h_G₂_verts_G₂'_verts⟩
 
   have h_surj_S₁'_S₂' : Function.Surjective f_S₁'_S₂'_fwd := by
     intro ⟨⟨F, K₁, K₂, G₃⟩,
@@ -1764,12 +1783,6 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 def multichoose (n m₁ m₂ : ℕ) : ℕ :=
   n.choose m₁ * (n - m₁).choose m₂
 
-lemma simpleGraph_iso_prod_quotSimpleGraph_automorphism
-    {ℓ : ℕ} : Nonempty (SimpleGraph (Fin ℓ)
-                        ≃ Π (G : QuotSimpleGraph (Fin ℓ)), ↑{ G' : SimpleGraph (Fin ℓ) | Nonempty (G' ≃g G.out)})
-  := by
-  sorry
-
 noncomputable def isoGraphCount (G : SimpleGraph V) : ℕ
   := { G' : SimpleGraph V | Nonempty (G' ≃g G) }.toFinset.card
 
@@ -1785,10 +1798,19 @@ lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph 
   := by
   simp [graphCount]
 
-lemma sum_over_simpleGraph_eq_sum_over_quotSimpleGraph
-    {ℓ : ℕ} (f : SimpleGraph (Fin ℓ) → ℕ) (h_eqv : ∀ {G G' : SimpleGraph (Fin ℓ)}, graph_eqv G G' → f G = f G')
-    : ∑ (G : SimpleGraph (Fin ℓ)), f G = ∑ (G : QuotSimpleGraph (Fin ℓ)), isoGraphCount G.out * f G.out
+lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
+    (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
+    : (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
+      =
+      ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
   := by
+  let S₁ := { (⟨⟨G₁,G₂⟩, _⟩, G₃) : subgraphPairSet H₁ H₂ G × Subgraph G
+                | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ ∧ G₁.verts ∪ G₂.verts ⊆ G₃.verts }
+  let S₂ := (F : QuotSimpleGraph (Fin ℓ₃)) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
+
+  have h_S₁_iso_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
+  -- have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := by sorry
   sorry
 
 lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
@@ -1811,7 +1833,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
     _ = ∑ (G' : SimpleGraph (Fin ℓ')), C * subgraphPairCount H₁ H₂ G
         := by rw [Finset.mul_sum]; simp
     _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), isoGraphCount G'.out * (C * subgraphPairCount H₁ H₂ G)
-        := sum_over_simpleGraph_eq_sum_over_quotSimpleGraph f h_f_eqv
+        := sorry
     _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
         := sorry
 
