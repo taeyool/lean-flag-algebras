@@ -1817,14 +1817,22 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
   have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr h_S₁_iso_S₂
 
   have h_S₁_card : Fintype.card S₁ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
-    := by
+  := by
     dsimp [S₁, subgraphPairCount]
     sorry
 
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
-    := by
+  := by
     dsimp [S₂, subgraphPairCount, subgraphCount]
-    sorry
+    apply Eq.symm
+    calc
+      ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (subgraphPairSet H₁ H₂ F.out).card * (subgraphSet F.out G).card
+      _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (Fintype.card (subgraphPairSet H₁ H₂ F.out)) * (Fintype.card (subgraphSet F.out G))
+              := rfl
+      _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), (Fintype.card (subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G))
+              := by sorry
+      _ = Fintype.card (Σ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G)
+              := by sorry
 
   rw [←h_S₁_card, ←h_S₂_card]
   exact h_S₁_card_eq_S₂_card
