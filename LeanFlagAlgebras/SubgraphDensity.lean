@@ -1809,9 +1809,25 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
                 | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ ∧ G₁.verts ∪ G₂.verts ⊆ G₃.verts }
   let S₂ := (F : QuotSimpleGraph (Fin ℓ₃)) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
+  have fintypeSubgraphG : Fintype (Subgraph G) := subgraphFintype G
+  have fintypeS₁ : Fintype S₁ := inferInstance
+  have fintypeS₂ : Fintype S₂ := inferInstance
+
   have h_S₁_iso_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
-  -- have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := by sorry
-  sorry
+  have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr h_S₁_iso_S₂
+
+  have h_S₁_card : Fintype.card S₁ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
+    := by
+    dsimp [S₁, subgraphPairCount]
+    sorry
+
+  have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
+    := by
+    dsimp [S₂, subgraphPairCount, subgraphCount]
+    sorry
+
+  rw [←h_S₁_card, ←h_S₂_card]
+  exact h_S₁_card_eq_S₂_card
 
 lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
