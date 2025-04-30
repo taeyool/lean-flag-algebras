@@ -1862,14 +1862,21 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     simp_all
     let ⟨⟨h_G₁_G₁', h_G₂_G₂'⟩, h_ind_ind'⟩ := h_eq
     subst h_G₁_G₁' h_G₂_G₂'
-    have h_G₃_verts_eq_G₃'_verts : G₃.verts = G₃'.verts := by
+    have h_G₃_verts_eq_G₃'_verts : G₃.verts = G₃'.verts :=
       let G₁_G₂_G₃_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
       let G₁'_G₂'_G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)
-      have : G₁.verts ∪ G₂.verts ∪ G₃.verts = (G₁_G₂_G₃_ind : Subgraph G).verts :=
-        inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
-      have : G₁.verts ∪ G₂.verts ∪ G₃'.verts = (G₁'_G₂'_G₃'_ind : Subgraph G).verts :=
-        inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)
-      sorry
+      calc
+        G₃.verts
+        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃.verts) \ (G₁.verts ∪ G₂.verts) := by
+                apply Eq.symm; apply Set.union_diff_cancel_left; simp only [h_G₁_G₂_G₃, subset_refl]
+        _ = (G₁_G₂_G₃_ind : Subgraph G).verts \ (G₁.verts ∪ G₂.verts) := by
+                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)]
+        _ = (G₁'_G₂'_G₃'_ind : Subgraph G).verts \ (G₁.verts ∪ G₂.verts) := by
+                rw [h_ind_ind']
+        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃'.verts) \ (G₁.verts ∪ G₂.verts) := by
+                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)]
+        _ = G₃'.verts := by
+                apply Set.union_diff_cancel_left; simp only [h_G₁'_G₂'_G₃', subset_refl]
     have : (⟨G₃, h_G₃_ind⟩ : {G' : Subgraph G | G'.IsInduced })= ⟨G₃', h_G₃'_ind⟩ := by
       rw [inducedSubgraph_eq h_G₃_ind]
       rw [inducedSubgraph_eq h_G₃'_ind]
@@ -1878,7 +1885,16 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
 
   have h_surj_S₀_S₁ : Function.Surjective f_S₀_S₁_fwd := by
     intro ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-    sorry
+    let G₃'_ind := inducedSubgraph G (G₃.verts \ (G₁.verts ∪ G₂.verts))
+    let G₃' := G₃'_ind.val
+    have h_G₃'_ind : G₃'.IsInduced := G₃'_ind.property
+    have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ - (ℓ₁ + ℓ₂) := sorry
+    have h_G₁_G₂_G₃' : (G₁.verts ∪ G₂.verts) ∩ G₃'.verts = ∅ := sorry
+    use ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃'⟩, h_G₃'_ind, h_G₃'_card, h_G₁_G₂_G₃'⟩
+    simp [f_S₀_S₁_fwd]
+    have : G₁.verts ∪ G₂.verts ∪ G₃'.verts = G₃.verts := sorry
+    rw [this]
+    rw [←(inducedSubgraph_eq h_G₃_ind)]
 
   have h_S₁_iso_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
   have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr h_S₁_iso_S₂
