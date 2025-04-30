@@ -1865,6 +1865,10 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     have h_G₃_verts_eq_G₃'_verts : G₃.verts = G₃'.verts := by
       let G₁_G₂_G₃_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
       let G₁'_G₂'_G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)
+      have : G₁.verts ∪ G₂.verts ∪ G₃.verts = (G₁_G₂_G₃_ind : Subgraph G).verts :=
+        inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
+      have : G₁.verts ∪ G₂.verts ∪ G₃'.verts = (G₁'_G₂'_G₃'_ind : Subgraph G).verts :=
+        inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)
       sorry
     have : (⟨G₃, h_G₃_ind⟩ : {G' : Subgraph G | G'.IsInduced })= ⟨G₃', h_G₃'_ind⟩ := by
       rw [inducedSubgraph_eq h_G₃_ind]
