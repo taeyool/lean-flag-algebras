@@ -247,54 +247,60 @@ theorem embed_HEq
   (h_V_eq : H.subgraph.verts = H'.subgraph.verts)
   : HEq H.type_embed H'.type_embed := by
   have h_iso : H.subgraph.coe ≃g H'.subgraph.coe := sorry
-  have t : H'.type_embed = h_iso ∘ H.type_embed := sorry
-  have t' : h_iso.symm ∘ H'.type_embed = h_iso.symm ∘ h_iso ∘ H.type_embed := sorry
-  have t'' : h_iso.symm ∘ h_iso ∘ H.type_embed = H.type_embed := sorry
-  have heq_t := heq_of_eq t
-  have heq_t' := heq_of_eq t'
-  have heq_t'' := heq_of_eq t''
-  refine HEq.symm ?h
-  sorry
+  have type_eq : (σ ↪g H'.subgraph.coe : Type) = (σ ↪g H.subgraph.coe : Type) := by
+    sorry
+  have h_type : H.type_embed = cast type_eq H'.type_embed := by
+    sorry
+  exact HEq.symm (heq_of_eqRec_eq type_eq (id (Eq.symm h_type)))
+
+theorem graph_eq
+  {P Q : Type} (h : P = Q)
+  : SimpleGraph P = SimpleGraph Q := by
+  subst h
+  rfl
+
+theorem inducedGraph_eq
+  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
+  (h_verts : H.verts = H'.verts) (h_adj : ∀ u v : V, H.Adj u v = H'.Adj u v)
+  : H = H' := by
+  ext u v
+  · exact Eq.to_iff (congrFun h_verts u)
+  · exact Eq.to_iff (h_adj u v)
+
+theorem coe_eq
+  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H')
+  : HEq H.coe H'.coe := by
+  subst h
+  rfl
+
+theorem cast_coe_eq
+  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H') (h' : ↑H'.verts = ↑H.verts)
+  : (H.coe : SimpleGraph H.verts) = cast (graph_eq h') (H'.coe : SimpleGraph H'.verts) := by
+  subst h
+  rfl
+
+theorem embed_val_eq
+  {T : Type} {σ : FlagType T}
+  {H_emb : σ ↪g P} {H'_emb : σ ↪g Q} (h : P = Q)
+  : ∀ t : T, H_emb t = H'_emb t := by sorry
+
+theorem embed_eq'
+  {T : Type} {σ : FlagType T}
+  {H_emb : σ ↪g P} {H'_emb : σ ↪g Q}
+  (h : P = Q) (h' : ∀ t : T, H_emb t = (H'_emb t))
+  : HEq H_emb H'_emb := by
+  subst h
+  have : H_emb = H'_emb := by
+    ext t
+    exact h' t
+  exact heq_of_eq this
 
 lemma H_eq_reverseinduced_induced_H
   {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
   : H₀ = (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1).subgraph.verts) (inducerdlabeledSubgraph_support φ.symm ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1))).1 := by
   dsimp [inducedlabeledSubgraph]
-  refine LabeledSubgraph.ext ?subgraph ?type_embed
-  · simp; ext u v
-    · constructor
-      · intro h_u
-        simp; use u
-        exact ⟨h_u, φ.graph_iso.left_inv u⟩
-      · simp; intro v h_v h_uv
-        have : u = v := by
-          rw [←h_uv]
-          exact φ.graph_iso.left_inv v
-        rw [this]; exact h_v
-    · constructor
-      · simp; intro h_uv
-        constructor
-        · exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
-        · constructor
-          · use u
-            have h_u : u ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv
-            exact ⟨h_u, φ.graph_iso.left_inv u⟩
-          · use v
-            have h_v : v ∈ H₀.subgraph.verts := H₀.subgraph.edge_vert h_uv.symm
-            exact ⟨h_v, φ.graph_iso.left_inv v⟩
-      · simp; intro h_uv u' h_u' h_uu' v' h_v' h_vv'
-        have u_eq_u' : u = u' := by
-          rw [←h_uu']
-          exact φ.graph_iso.left_inv u'
-        rw [←u_eq_u'] at h_u'
-        have v_eq_v' : v = v' := by
-          rw [←h_vv']
-          exact φ.graph_iso.left_inv v'
-        rw [←v_eq_v'] at h_v'
-        exact h_ind₀ h_u' h_v' h_uv
-  · have h : H₀.subgraph.verts = ⇑φ.symm.graph_iso '' (⇑φ.graph_iso '' H₀.subgraph.verts) := by
-      ext v
-      constructor
+  have h : H₀.subgraph.verts = ⇑φ.symm.graph_iso '' (⇑φ.graph_iso '' H₀.subgraph.verts) := by
+      ext v; constructor
       · intro h
         simp_all only [Set.mem_image, exists_exists_and_eq_and]
         use v
@@ -306,26 +312,50 @@ lemma H_eq_reverseinduced_induced_H
         rw [←h2]
         rw [←this] at h1
         exact h1
-    let H₁ := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1).subgraph.verts) (inducerdlabeledSubgraph_support φ.symm ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1))).1
-    have verts_eq : H₀.subgraph.verts = H₁.subgraph.verts := by
-      dsimp [H₁, inducedlabeledSubgraph]
-      exact h
+  let f_H := inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)
+  let f_inv_f_H := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' (f_H.1).subgraph.verts) (inducerdlabeledSubgraph_support φ.symm (f_H.1))).1
 
-    have h_H' := inducedlabeledSubgraph_related φ H₀ h_ind₀
-    dsimp [relOflabeledSubgraph] at h_H'
-    obtain ⟨h1, h2⟩ := h_H'
-    let temp := (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀))
-    have ⟨H', ind_H'⟩ := temp
-    have h_H'' := inducedlabeledSubgraph_related φ.symm H' ind_H'
-    dsimp [relOflabeledSubgraph] at h_H''
-    obtain ⟨h3, h4⟩ := h_H''
-    let temp' := (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' H'.subgraph.verts) (inducerdlabeledSubgraph_support φ.symm H')).1
-    have t' : H₀.subgraph.verts = temp'.subgraph.verts := sorry
-    have t'' := embed_HEq t'
-    dsimp [temp', inducedlabeledSubgraph] at t''
+  have h_verts_eq : H₀.subgraph.verts = f_inv_f_H.subgraph.verts := by
+    dsimp [f_inv_f_H, inducedlabeledSubgraph]
+    exact h
+  have h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = f_inv_f_H.subgraph.Adj u v := by
+    intro u v
+    dsimp [f_inv_f_H, f_H, inducedlabeledSubgraph]
+    rw [eq_iff_iff]; constructor
+    · intro h_adj
+      constructor
+      · exact SimpleGraph.Subgraph.Adj.adj_sub h_adj
+      · simp; constructor
+        · use u
+          exact ⟨H₀.subgraph.edge_vert h_adj, φ.graph_iso.left_inv u⟩
+        · use v
+          exact ⟨H₀.subgraph.edge_vert h_adj.symm, φ.graph_iso.left_inv v⟩
+    · intro ⟨h_adj, ⟨h_u, h_v⟩⟩
+      rw [←h] at h_u h_v
+      exact h_ind₀ h_u h_v h_adj
+  have inducedGraph_test := inducedGraph_eq h_verts_eq h_adj
+  refine LabeledSubgraph.ext ?subgraph ?type_embed
+  · exact inducedGraph_test
+  · simp
+    let H_emb := H₀.type_embed
+    let H'_emb := f_inv_f_H.type_embed
 
-    have := embed_HEq verts_eq
-    exact this
+    let H_coe := H₀.subgraph.coe
+    let H'_coe := f_inv_f_H.subgraph.coe
+
+    let H₀_to_G : H₀.subgraph.verts → V := by
+      intro v
+      exact φ.graph_iso.symm (φ.graph_iso v)
+    let H₁_to_G : f_inv_f_H.subgraph.verts → V := by
+      intro v
+      exact φ.graph_iso.symm (φ.graph_iso v)
+
+    have type_eq : (f_inv_f_H.subgraph.verts : Type) = (H₀.subgraph.verts : Type) := congrArg Set.Elem (id (Eq.symm h))
+    have graph_eq := graph_eq type_eq
+    have inducedGraph_test := inducedGraph_eq h_verts_eq h_adj
+    have coe_test'' := coe_eq inducedGraph_test
+    have test : (σ ↪g H₀.subgraph.coe) = (σ ↪g f_inv_f_H.subgraph.coe) := sorry
+    sorry
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
