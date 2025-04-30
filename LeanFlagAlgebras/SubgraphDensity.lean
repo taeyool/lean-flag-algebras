@@ -1938,10 +1938,24 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
   have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr f_S₁_S₂
 
   have h_S₀_card : Fintype.card S₀ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
-    := by
-    simp only [S₀, subgraphPairCount]
-    simp only [Fintype.card_sigma]
-    sorry
+    :=
+    let f : subgraphPairSet H₁ H₂ G → ℕ :=
+      fun G_pair =>
+        Fintype.card { G₃ : Subgraph G |
+          G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂)
+          ∧ (G_pair.val.1.verts ∪ G_pair.val.2.verts) ∩ G₃.verts = ∅ }
+    let g : subgraphPairSet H₁ H₂ G → ℕ :=
+      fun _ => (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
+    have h : ∀ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair = g G_pair := by
+      simp [f, g]
+      intro G₁ G₂ h_G₁_G₂
+      sorry
+    calc
+      Fintype.card S₀
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair := by simp only [S₀, f, Fintype.card_sigma]
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), g G_pair := by simp only [h]
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [g]
+      _ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [subgraphPairCount]
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
     := by
     simp only [S₂, subgraphPairCount, subgraphCount]
