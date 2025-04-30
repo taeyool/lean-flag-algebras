@@ -1802,30 +1802,167 @@ lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph 
 lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
-    : (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
+    : subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
       =
       ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
   := by
+  let S₀ := (G_pair : subgraphPairSet H₁ H₂ G)
+           × { G₃ : Subgraph G | G₃.IsInduced
+                                  ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂)
+                                  ∧ (G_pair.val.1.verts ∪ G_pair.val.2.verts) ∩ G₃.verts = ∅ }
   let S₁ := { (⟨⟨G₁,G₂⟩, _⟩, G₃) : subgraphPairSet H₁ H₂ G × Subgraph G
                 | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ ∧ G₁.verts ∪ G₂.verts ⊆ G₃.verts }
   let S₂ := (F : QuotSimpleGraph (Fin ℓ₃)) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
   have fintypeSubgraphG : Fintype (Subgraph G) := subgraphFintype G
 
-  have h_S₁_iso_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
-  have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr h_S₁_iso_S₂
+  let f_S₀_S₁_fwd : S₀ → S₁ := fun ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩ =>
+    let G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
+    let G₃' := G₃'_ind.val
+    let h_G₃'_ind : G₃'.IsInduced := G₃'_ind.property
+    have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ := by
+      simp [subgraphPairSet] at h_G₁_G₂
+      calc
+        Fintype.card G₃'.verts
+        _ = ((G₁.verts ∪ G₂.verts).toFinset ∪ G₃.verts.toFinset).card := by
+              simp [G₃', G₃'_ind, inducedSubgraph]
+        _ = (G₁.verts ∪ G₂.verts).toFinset.card + G₃.verts.toFinset.card := by
+              have : Disjoint (G₁.verts ∪ G₂.verts).toFinset G₃.verts.toFinset := by
+                apply Finset.disjoint_iff_inter_eq_empty.mpr
+                rw [←Set.toFinset_inter]
+                exact Set.toFinset_eq_empty.mpr h_G₁_G₂_G₃
+              exact Finset.card_union_of_disjoint this
+        _ = G₁.verts.toFinset.card + G₂.verts.toFinset.card + G₃.verts.toFinset.card := by
+              let ⟨_, _, _, _, h_G₁_G₂_disj⟩ := h_G₁_G₂
+              have : Disjoint G₁.verts.toFinset G₂.verts.toFinset := by
+                apply Finset.disjoint_iff_inter_eq_empty.mpr
+                rw [←Set.toFinset_inter]
+                exact Set.toFinset_eq_empty.mpr h_G₁_G₂_disj
+              have := Finset.card_union_of_disjoint this
+              simp_all only [Set.toFinset_union]
+        _ = Fintype.card G₁.verts + Fintype.card G₂.verts + Fintype.card G₃.verts := by
+              simp only [Set.toFinset_card]
+        _ = ℓ₁ + ℓ₂ + (ℓ₃ - (ℓ₁ + ℓ₂)) := by
+              rw [h_G₃_card]
+              let ⟨_, h_G₁_H₁, _, h_G₂_H₂, _⟩ := h_G₁_G₂
+              have h_G₁_H₁_card : Fintype.card G₁.verts = Fintype.card (Fin ℓ₁) := by
+                apply Fintype.card_of_bijective (RelIso.bijective h_G₁_H₁.some)
+              have h_G₂_H₂_card : Fintype.card G₂.verts = Fintype.card (Fin ℓ₂) := by
+                apply Fintype.card_of_bijective (RelIso.bijective h_G₂_H₂.some)
+              rw [h_G₁_H₁_card, h_G₂_H₂_card, Fintype.card_fin ℓ₁, Fintype.card_fin ℓ₂]
+        _ = ℓ₃ :=
+              Nat.add_sub_of_le hℓ₃_lb
+    have h_G₁_G₂_G₃' : G₁.verts ∪ G₂.verts ⊆ G₃'.verts := by
+      simp [G₃', G₃'_ind, inducedSubgraph]
+    ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃'⟩, h_G₃'_ind, h_G₃'_card, h_G₁_G₂_G₃'⟩
 
-  have h_S₁_card : Fintype.card S₁ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) * subgraphPairCount H₁ H₂ G
-    := by
-    dsimp [S₁, subgraphPairCount]
-    sorry
+  have h_inj_S₀_S₁ : Function.Injective f_S₀_S₁_fwd := by
+    intro ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
+    intro ⟨⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
+    intro h_eq
+    simp [f_S₀_S₁_fwd] at h_eq
+    simp_all
+    let ⟨⟨h_G₁_G₁', h_G₂_G₂'⟩, h_ind_ind'⟩ := h_eq
+    subst h_G₁_G₁' h_G₂_G₂'
+    have h_G₃_verts_eq_G₃'_verts : G₃.verts = G₃'.verts :=
+      let G₁_G₂_G₃_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
+      let G₁'_G₂'_G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)
+      calc
+        G₃.verts
+        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃.verts) \ (G₁.verts ∪ G₂.verts) := by
+                apply Eq.symm; apply Set.union_diff_cancel_left; simp only [h_G₁_G₂_G₃, subset_refl]
+        _ = (G₁_G₂_G₃_ind : Subgraph G).verts \ (G₁.verts ∪ G₂.verts) := by
+                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)]
+        _ = (G₁'_G₂'_G₃'_ind : Subgraph G).verts \ (G₁.verts ∪ G₂.verts) := by
+                rw [h_ind_ind']
+        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃'.verts) \ (G₁.verts ∪ G₂.verts) := by
+                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)]
+        _ = G₃'.verts := by
+                apply Set.union_diff_cancel_left; simp only [h_G₁'_G₂'_G₃', subset_refl]
+    have : (⟨G₃, h_G₃_ind⟩ : {G' : Subgraph G | G'.IsInduced })= ⟨G₃', h_G₃'_ind⟩ := by
+      rw [inducedSubgraph_eq h_G₃_ind]
+      rw [inducedSubgraph_eq h_G₃'_ind]
+      rw [h_G₃_verts_eq_G₃'_verts]
+    simp_all only [Subtype.mk.injEq]
+
+  have h_surj_S₀_S₁ : Function.Surjective f_S₀_S₁_fwd := by
+    intro ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
+    let G₃'_ind := inducedSubgraph G (G₃.verts \ (G₁.verts ∪ G₂.verts))
+    let G₃' := G₃'_ind.val
+    have h_G₃'_ind : G₃'.IsInduced := G₃'_ind.property
+    have h_G₃'_verts : G₃'.verts = G₃.verts \ (G₁.verts ∪ G₂.verts) := by
+      simp [G₃', G₃'_ind, inducedSubgraph]
+    have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ - (ℓ₁ + ℓ₂) := by
+      simp [subgraphPairSet] at h_G₁_G₂
+      have ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
+      calc
+        Fintype.card G₃'.verts
+        _ = Fintype.card ↑(G₃.verts \ (G₁.verts ∪ G₂.verts)) := by
+              simp [h_G₃'_verts]
+        _ = (G₃.verts \ (G₁.verts ∪ G₂.verts)).toFinset.card := by
+              apply Eq.symm; apply Set.toFinset_card
+        _ = (G₃.verts.toFinset \ (G₁.verts ∪ G₂.verts).toFinset).card := by
+              simp
+        _ = G₃.verts.toFinset.card - (G₁.verts ∪ G₂.verts).toFinset.card := by
+              apply Finset.card_sdiff
+              exact Set.toFinset_subset_toFinset.mpr h_G₁_G₂_G₃
+        _ = G₃.verts.toFinset.card - (G₁.verts.toFinset ∪ G₂.verts.toFinset).card := by
+              simp
+        _ = G₃.verts.toFinset.card - (G₁.verts.toFinset.card + G₂.verts.toFinset.card) := by
+              rw [Finset.card_union]
+              have : G₁.verts.toFinset ∩ G₂.verts.toFinset = ∅ := by
+                rw [←Set.toFinset_inter]
+                exact Set.toFinset_eq_empty.mpr h_G₁_G₂_disj
+              simp_all only [card_empty, tsub_zero]
+        _ = (Fintype.card G₃.verts) - (Fintype.card G₁.verts + Fintype.card G₂.verts) := by
+              simp only [Set.toFinset_card]
+        _ = ℓ₃ - (ℓ₁ + ℓ₂) := by
+              rw [h_G₃_card]
+              rw [Fintype.card_of_bijective (RelIso.bijective h_G₁_H₁.some)]
+              rw [Fintype.card_of_bijective (RelIso.bijective h_G₂_H₂.some)]
+              rw [Fintype.card_fin ℓ₁]
+              rw [Fintype.card_fin ℓ₂]
+    have h_G₁_G₂_G₃' : (G₁.verts ∪ G₂.verts) ∩ G₃'.verts = ∅ := by
+      simp [h_G₃'_verts]
+    use ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁_G₂_G₃'⟩
+    simp [f_S₀_S₁_fwd]
+    have : G₁.verts ∪ G₂.verts ∪ G₃'.verts = G₃.verts := by
+      simp [h_G₃'_verts, h_G₁_G₂_G₃]
+    rw [this]
+    rw [←(inducedSubgraph_eq h_G₃_ind)]
+
+  let f_S₀_S₁ : S₀ ≃ S₁ := Equiv.ofBijective f_S₀_S₁_fwd ⟨h_inj_S₀_S₁, h_surj_S₀_S₁⟩
+  have h_S₀_card_eq_S₁_card : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr f_S₀_S₁
+
+  let f_S₁_S₂ : S₁ ≃ S₂ := by dsimp [S₁, S₂]; apply subgraphPairSet_iso_union_quotSimpleGraphSet
+  have h_S₁_card_eq_S₂_card : Fintype.card S₁ = Fintype.card S₂ := Fintype.card_congr f_S₁_S₂
+
+  have h_S₀_card : Fintype.card S₀ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
+    :=
+    let f : subgraphPairSet H₁ H₂ G → ℕ :=
+      fun G_pair =>
+        Fintype.card { G₃ : Subgraph G |
+          G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂)
+          ∧ (G_pair.val.1.verts ∪ G_pair.val.2.verts) ∩ G₃.verts = ∅ }
+    let g : subgraphPairSet H₁ H₂ G → ℕ :=
+      fun _ => (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
+    have h : ∀ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair = g G_pair := by
+      simp [f, g]
+      intro G₁ G₂ h_G₁_G₂
+      sorry
+    calc
+      Fintype.card S₀
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair := by simp only [S₀, f, Fintype.card_sigma]
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), g G_pair := by simp only [h]
+      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [g]
+      _ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [subgraphPairCount]
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
     := by
     simp only [S₂, subgraphPairCount, subgraphCount]
     simp only [Fintype.card_sigma, Fintype.card_coe, Fintype.card_prod]
 
-  rw [←h_S₁_card, ←h_S₂_card]
-  exact h_S₁_card_eq_S₂_card
+  rw [←h_S₀_card, ←h_S₂_card]
+  rw [h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
 lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
