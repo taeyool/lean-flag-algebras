@@ -88,10 +88,23 @@ noncomputable def flagMulWithSize
   let ℓ_flags : Finset (FlagWithSize σ ℓ) := univ
   ∑ G in ℓ_flags, (flagDensity₂ F.2 F'.2 G) • unitVector ⟨ℓ, G⟩
 
+theorem flagMulWithSize_comm
+    (F F' : FinFlag σ) (ℓ : ℕ) : flagMulWithSize F F' ℓ = flagMulWithSize F' F ℓ
+  := by
+  dsimp [flagMulWithSize]
+  apply sum_congr rfl
+  intros
+  simp [flagPairDensity_comm]
+
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
   :=
   flagMulWithSize F F' (F.1 + F'.1)
+
+theorem flagMul_comm
+    (F F' : FinFlag σ) : flagMul F F' = flagMul F' F
+  := by
+  simp [flagMul, add_comm, flagMulWithSize_comm]
 
 noncomputable instance : Mul (FlagVector σ) where
   mul f g := ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
@@ -102,8 +115,11 @@ theorem flagVector_mul_def
 
 theorem flagVector_mul_comm
     (f g : FlagVector σ) : f * g = g * f
-  :=
-  sorry
+  := by
+  simp [flagVector_mul_def]
+  rw [sum_comm]
+  repeat (apply sum_congr rfl; intros)
+  rw [mul_comm, flagMul_comm]
 
 theorem flagVector_mul_one
     (f : FlagVector σ) : f * 1 = f
