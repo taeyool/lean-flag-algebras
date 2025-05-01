@@ -1949,15 +1949,34 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     have h : ∀ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair = g G_pair := by
       simp [f, g]
       intro G₁ G₂ h_G₁_G₂
+      simp [subgraphPairSet] at h_G₁_G₂
+      have ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
       let S := { G₃ : Subgraph G | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) ∧ (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ }
       let U := (G₁.verts ∪ G₂.verts)ᶜ
       have h_U_size : U.toFinset.card = ℓ - (ℓ₁ + ℓ₂) := by
         calc
           U.toFinset.card
-          _ = (G₁.verts ∪ G₂.verts).toFinsetᶜ.card := by dsimp [U]; simp only [Set.toFinset_compl]
-          _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card := Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
-          _ = ℓ - (G₁.verts ∪ G₂.verts).toFinset.card := by simp only [Fintype.card_fin]
-          _ = ℓ - (ℓ₁ + ℓ₂) := by sorry
+          _ = (G₁.verts ∪ G₂.verts).toFinsetᶜ.card := by
+                dsimp [U]; simp only [Set.toFinset_compl]
+          _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card :=
+                Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
+          _ = ℓ - (G₁.verts ∪ G₂.verts).toFinset.card := by
+                simp only [Fintype.card_fin]
+          _ = ℓ - (G₁.verts.toFinset ∪ G₂.verts.toFinset).card := by
+                simp
+          _ = ℓ - (G₁.verts.toFinset.card + G₂.verts.toFinset.card) := by
+                rw [Finset.card_union]
+                have : G₁.verts.toFinset ∩ G₂.verts.toFinset = ∅ := by
+                  rw [←Set.toFinset_inter]
+                  exact Set.toFinset_eq_empty.mpr h_G₁_G₂_disj
+                simp_all only [card_empty, tsub_zero]
+          _ = ℓ - ((Fintype.card G₁.verts) + (Fintype.card G₂.verts)) := by
+                simp
+          _ = ℓ - (ℓ₁ + ℓ₂) := by
+                rw [Fintype.card_of_bijective (RelIso.bijective h_G₁_H₁.some)]
+                rw [Fintype.card_of_bijective (RelIso.bijective h_G₂_H₂.some)]
+                rw [Fintype.card_fin ℓ₁]
+                rw [Fintype.card_fin ℓ₂]
       let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
       have h_iso_S_S' : S ≃ S' := sorry
       have h_S_card_eq_S'_card : Fintype.card S = Fintype.card S' := Fintype.card_congr h_iso_S_S'
