@@ -1949,7 +1949,16 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     have h : ∀ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair = g G_pair := by
       simp [f, g]
       intro G₁ G₂ h_G₁_G₂
-      sorry
+      let S := { G₃ : Subgraph G | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) ∧ (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ }
+      let U := ⊤ \ (G₁.verts ∪ G₂.verts)
+      let S' := Set U
+      have h_iso_S_S' : S ≃ S' := sorry
+      have h_S_card_eq_S'_card : Fintype.card S = Fintype.card S' := Fintype.card_congr h_iso_S_S'
+      have h_S'_card_eq_choose : Fintype.card S' = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := sorry
+      rw [←h_S'_card_eq_choose]
+      rw [←h_S_card_eq_S'_card]
+      dsimp [S]
+      simp only [Fintype.card_ofFinset]
     calc
       Fintype.card S₀
       _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair := by simp only [S₀, f, Fintype.card_sigma]
