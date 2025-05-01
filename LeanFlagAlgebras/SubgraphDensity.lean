@@ -1950,11 +1950,24 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
       simp [f, g]
       intro G₁ G₂ h_G₁_G₂
       let S := { G₃ : Subgraph G | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) ∧ (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ }
-      let U := ⊤ \ (G₁.verts ∪ G₂.verts)
-      let S' := Set U
+      let U := (G₁.verts ∪ G₂.verts)ᶜ
+      have h_U_size : U.toFinset.card = ℓ - (ℓ₁ + ℓ₂) := by
+        calc
+          U.toFinset.card
+          _ = (G₁.verts ∪ G₂.verts).toFinsetᶜ.card := by dsimp [U]; simp only [Set.toFinset_compl]
+          _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card := Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
+          _ = ℓ - (G₁.verts ∪ G₂.verts).toFinset.card := by simp only [Fintype.card_fin]
+          _ = ℓ - (ℓ₁ + ℓ₂) := by sorry
+      let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
       have h_iso_S_S' : S ≃ S' := sorry
       have h_S_card_eq_S'_card : Fintype.card S = Fintype.card S' := Fintype.card_congr h_iso_S_S'
-      have h_S'_card_eq_choose : Fintype.card S' = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := sorry
+      have h_S'_card_eq_choose : Fintype.card S' = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) :=
+        calc
+          Fintype.card S'
+          _ = S'.card := by simp only [Fintype.card_coe]
+          _ = (powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset).card := by dsimp [S']
+          _ = U.toFinset.card.choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by apply card_powersetCard
+          _ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [h_U_size]
       rw [←h_S'_card_eq_choose]
       rw [←h_S_card_eq_S'_card]
       dsimp [S]
