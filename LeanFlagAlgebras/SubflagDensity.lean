@@ -265,23 +265,30 @@ theorem coe_eq
 theorem embed_val_eq
   {T : Type} {σ : FlagType T}
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
-  (H_emb : σ ↪g H.coe) (H'_emb : σ ↪g H'.coe)
+  (G_emb : σ ↪g G) (H_emb : σ ↪g H.coe) (H'_emb : σ ↪g H'.coe)
   (h : H = H') (h' : ↑H'.verts = ↑H.verts)
+  (h'' : ∀ t : T, H_emb t = G_emb t)
+  (h''' : ∀ t : T, H'_emb t = G_emb t)
   : ∀ t : T, H_emb t = cast h' (H'_emb t) := by
   intro t
   subst h
   simp_all only [cast_eq]
   obtain ⟨h₁, h₂⟩ := H_emb
   obtain ⟨h₃, h₄⟩ := H'_emb
+  obtain ⟨h₆, h₇⟩ := G_emb
   have h₅ : h₁ = h₃ := by
-    sorry
+    refine Function.Embedding.ext_iff.mpr ?_
+    intro t
+    simp_all only [RelEmbedding.coe_mk]
+    simp_all only [SimpleGraph.Subgraph.coe_adj, implies_true]
+    ext1
+    simp_all only
   subst h₅
   simp_all only [RelEmbedding.coe_mk]
 
 theorem embed_eq
   {T : Type} {σ : FlagType T}
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
-  -- {G : LabeledGraph σ V} {H : LabeledSubgraph σ G} {H' : LabeledSubgraph σ G}
   (H_emb : σ ↪g H.coe) (H'_emb : σ ↪g H'.coe)
   (h : H = H') (h' : ↑H'.verts = ↑H.verts)
   (h'' : H.coe = cast (graph_eq h') H'.coe)
@@ -345,9 +352,14 @@ lemma H_eq_reverseinduced_induced_H
   · simp
     have type_eq : (f_inv_f_H.subgraph.verts : Type) = (H₀.subgraph.verts : Type) := congrArg Set.Elem (id (Eq.symm h))
     have coe_eq := coe_eq inducedGraph_test type_eq
-    have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) :=   by
+    have h_H₀_embed := H₀.embed_eq
+    have h_f_inv_f_H_embed := f_inv_f_H.embed_eq
+
+    have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) := by
       intro t
-      exact embed_val_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq t
+      exact
+        embed_val_eq G₀.type_embed H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq
+          h_H₀_embed h_f_inv_f_H_embed t
     have HEq := embed_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq coe_eq emb_eq
     exact HEq
 
