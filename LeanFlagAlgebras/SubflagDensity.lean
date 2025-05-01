@@ -242,17 +242,6 @@ lemma inducedlabeledSubgraph_related
     rw [←φ.symm.type_preserve]
     simp
 
-theorem embed_HEq
-  {T : Type} {σ : FlagType T} {G₀ : LabeledGraph σ V} {H : LabeledSubgraph σ G₀} {H' : LabeledSubgraph σ G₀}
-  (h_V_eq : H.subgraph.verts = H'.subgraph.verts)
-  : HEq H.type_embed H'.type_embed := by
-  have h_iso : H.subgraph.coe ≃g H'.subgraph.coe := sorry
-  have type_eq : (σ ↪g H'.subgraph.coe : Type) = (σ ↪g H.subgraph.coe : Type) := by
-    sorry
-  have h_type : H.type_embed = cast type_eq H'.type_embed := by
-    sorry
-  exact HEq.symm (heq_of_eqRec_eq type_eq (id (Eq.symm h_type)))
-
 theorem graph_eq
   {P Q : Type} (h : P = Q)
   : SimpleGraph P = SimpleGraph Q := by
@@ -268,32 +257,49 @@ theorem inducedGraph_eq
   · exact Eq.to_iff (h_adj u v)
 
 theorem coe_eq
-  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H')
-  : HEq H.coe H'.coe := by
-  subst h
-  rfl
-
-theorem cast_coe_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H') (h' : ↑H'.verts = ↑H.verts)
-  : (H.coe : SimpleGraph H.verts) = cast (graph_eq h') (H'.coe : SimpleGraph H'.verts) := by
+  : H.coe = cast (graph_eq h') H'.coe := by
   subst h
-  rfl
+  dsimp [SimpleGraph.Subgraph.coe]
 
 theorem embed_val_eq
   {T : Type} {σ : FlagType T}
-  {H_emb : σ ↪g P} {H'_emb : σ ↪g Q} (h : P = Q)
-  : ∀ t : T, H_emb t = H'_emb t := by sorry
-
-theorem embed_eq'
-  {T : Type} {σ : FlagType T}
-  {H_emb : σ ↪g P} {H'_emb : σ ↪g Q}
-  (h : P = Q) (h' : ∀ t : T, H_emb t = (H'_emb t))
-  : HEq H_emb H'_emb := by
+  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
+  (H_emb : σ ↪g H.coe) (H'_emb : σ ↪g H'.coe)
+  (h : H = H') (h' : ↑H'.verts = ↑H.verts)
+  : ∀ t : T, H_emb t = cast h' (H'_emb t) := by
+  intro t
   subst h
-  have : H_emb = H'_emb := by
-    ext t
-    exact h' t
-  exact heq_of_eq this
+  simp_all only [cast_eq]
+  obtain ⟨h₁, h₂⟩ := H_emb
+  obtain ⟨h₃, h₄⟩ := H'_emb
+  have h₅ : h₁ = h₃ := by
+    sorry
+  subst h₅
+  simp_all only [RelEmbedding.coe_mk]
+
+theorem embed_eq
+  {T : Type} {σ : FlagType T}
+  {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
+  -- {G : LabeledGraph σ V} {H : LabeledSubgraph σ G} {H' : LabeledSubgraph σ G}
+  (H_emb : σ ↪g H.coe) (H'_emb : σ ↪g H'.coe)
+  (h : H = H') (h' : ↑H'.verts = ↑H.verts)
+  (h'' : H.coe = cast (graph_eq h') H'.coe)
+  (h''' : ∀ t : T, H_emb t = cast h' (H'_emb t))
+  : HEq H_emb H'_emb := by
+  have test : H_emb = cast (by
+    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by
+      congr
+    subst h
+    simp_all only [cast_eq]
+  ) H'_emb := by
+    subst h
+    simp_all only [cast_eq]
+    ext1 x
+    simp_all only [cast_eq]
+  subst h
+  subst test
+  rfl
 
 lemma H_eq_reverseinduced_induced_H
   {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
@@ -337,25 +343,13 @@ lemma H_eq_reverseinduced_induced_H
   refine LabeledSubgraph.ext ?subgraph ?type_embed
   · exact inducedGraph_test
   · simp
-    let H_emb := H₀.type_embed
-    let H'_emb := f_inv_f_H.type_embed
-
-    let H_coe := H₀.subgraph.coe
-    let H'_coe := f_inv_f_H.subgraph.coe
-
-    let H₀_to_G : H₀.subgraph.verts → V := by
-      intro v
-      exact φ.graph_iso.symm (φ.graph_iso v)
-    let H₁_to_G : f_inv_f_H.subgraph.verts → V := by
-      intro v
-      exact φ.graph_iso.symm (φ.graph_iso v)
-
     have type_eq : (f_inv_f_H.subgraph.verts : Type) = (H₀.subgraph.verts : Type) := congrArg Set.Elem (id (Eq.symm h))
-    have graph_eq := graph_eq type_eq
-    have inducedGraph_test := inducedGraph_eq h_verts_eq h_adj
-    have coe_test'' := coe_eq inducedGraph_test
-    have test : (σ ↪g H₀.subgraph.coe) = (σ ↪g f_inv_f_H.subgraph.coe) := sorry
-    sorry
+    have coe_eq := coe_eq inducedGraph_test type_eq
+    have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) :=   by
+      intro t
+      exact embed_val_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq t
+    have HEq := embed_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq coe_eq emb_eq
+    exact HEq
 
 noncomputable def isoSetOfInducedlabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
