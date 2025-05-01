@@ -47,6 +47,7 @@ def predIsolabeledH
     : LabeledSubgraph σ G → Prop
   := fun G' ↦ Nonempty (G'.coe ≃f H)
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist  W] [DecidableEqExist W] [FintypeExist U] [DecidableEqExist U] in
 lemma predIsolabeledH_related_support
   {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
   (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
@@ -104,6 +105,7 @@ lemma predIsolabeledH_related_support
       rw [←temp]; simp
     exact ⟨⟨f₁, h_iso₁⟩, funext h_emb₁⟩
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist  W] [DecidableEqExist W] [FintypeExist U] [DecidableEqExist U] in
 lemma predIsolabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
@@ -144,6 +146,7 @@ lemma predIsolabeldH_related
           rfl
       exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' this f_iso
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma relOfTypeVertex
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     {t : T} {v : V} (h_G₁t : G₁.type_embed t = φ.graph_iso v) (H₀ : LabeledSubgraph σ G₀)
@@ -207,6 +210,7 @@ def inducedlabeledSubgraph
     simp_all [Set.mem_union, Set.mem_setOf_eq]
   ⟨G', h_induced⟩
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma inducerdlabeledSubgraph_support
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
     : ∀ (t : T), G₁.type_embed t ∈ ⇑φ.graph_iso '' H₀.subgraph.verts
@@ -220,6 +224,7 @@ lemma inducerdlabeledSubgraph_support
     simp
   · rw [←φ.type_preserve]; simp
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist  W] [DecidableEqExist W] in
 lemma inducedlabeledSubgraph_related
     {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
@@ -248,6 +253,7 @@ theorem graph_eq
   subst h
   rfl
 
+omit [FintypeExist V] [DecidableEqExist V] in
 theorem inducedGraph_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
   (h_verts : H.verts = H'.verts) (h_adj : ∀ u v : V, H.Adj u v = H'.Adj u v)
@@ -256,12 +262,14 @@ theorem inducedGraph_eq
   · exact Eq.to_iff (congrFun h_verts u)
   · exact Eq.to_iff (h_adj u v)
 
+omit [FintypeExist V] [DecidableEqExist V] in
 theorem coe_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H') (h' : ↑H'.verts = ↑H.verts)
   : H.coe = cast (graph_eq h') H'.coe := by
   subst h
   dsimp [SimpleGraph.Subgraph.coe]
 
+omit [FintypeExist V] [DecidableEqExist V] in
 theorem embed_val_eq
   {T : Type} {σ : FlagType T}
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
@@ -286,6 +294,7 @@ theorem embed_val_eq
   subst h₅
   simp_all only [RelEmbedding.coe_mk]
 
+omit [FintypeExist V] [DecidableEqExist V] in
 theorem embed_eq
   {T : Type} {σ : FlagType T}
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
@@ -308,6 +317,7 @@ theorem embed_eq
   subst test
   rfl
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist   W] [DecidableEqExist W] in
 lemma H_eq_reverseinduced_induced_H
   {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
   : H₀ = (inducedlabeledSubgraph G₀ (φ.symm.graph_iso '' ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1).subgraph.verts) (inducerdlabeledSubgraph_support φ.symm ((inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀)).1))).1 := by
@@ -421,6 +431,7 @@ noncomputable def isoSetOfInducedlabeledSubgraphIsoH
   dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph] at iso
   exact iso
 
+omit [DecidableEqExist T] in
 lemma labeledSubgraphDensity_respects_eqv_on_G
     (H : LabeledGraph σ U) {G₀ G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     : labeledSubgraphDensity H G₀ = labeledSubgraphDensity H G₁
@@ -473,6 +484,7 @@ noncomputable def isoSetOfInducedlabeledSubgraphInG
     Set.sep_ext_iff.mpr fun x _ ↦ h x
   exact Equiv.setCongr this
 
+omit [DecidableEqExist T] in
 lemma labeledSubgraphDensityLifted_respects_eqv
     (H H' : LabeledGraph σ V) (φ : H ≃f H') (G : Flag σ W)
     : labeledSubgraphDensityLifted H G = labeledSubgraphDensityLifted H' G
