@@ -1978,7 +1978,21 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
                 rw [Fintype.card_fin ℓ₁]
                 rw [Fintype.card_fin ℓ₂]
       let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
-      have h_iso_S_S' : S ≃ S' := sorry
+      have h_iso_S_S' : S ≃ S' :=
+        let f_S_S'_fwd : S → S' := fun ⟨G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩ =>
+          have h_G₃_verts_S' : G₃.verts.toFinset ∈ S' := by
+            simp [S', U]
+            have h_G₃_G₁ : G₃.verts ∩ G₁.verts = ∅ := by sorry
+            have h_G₃_G₁' : G₃.verts ⊆ G₁.vertsᶜ := by sorry
+            have h_G₃_G₂ : G₃.verts ∩ G₂.verts = ∅ := by sorry
+            have h_G₃_G₂' : G₃.verts ⊆ G₂.vertsᶜ := by sorry
+            constructor
+            . exact ⟨h_G₃_G₁', h_G₃_G₂'⟩
+            . sorry
+          ⟨G₃.verts.toFinset, h_G₃_verts_S'⟩
+        have h_S_S'_inj : Function.Injective f_S_S'_fwd := sorry
+        have h_S_S'_surj : Function.Surjective f_S_S'_fwd := sorry
+        Equiv.ofBijective f_S_S'_fwd ⟨h_S_S'_inj, h_S_S'_surj⟩
       have h_S_card_eq_S'_card : Fintype.card S = Fintype.card S' := Fintype.card_congr h_iso_S_S'
       have h_S'_card_eq_choose : Fintype.card S' = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) :=
         calc
