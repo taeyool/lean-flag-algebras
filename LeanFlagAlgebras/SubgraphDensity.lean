@@ -101,6 +101,18 @@ noncomputable def subgraphPairDensity
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
 
+lemma subgraphPairSet_card_each
+    {H₁ : SimpleGraph U} {H₂ : SimpleGraph V} {G : SimpleGraph W}
+    {G₁ G₂ : Subgraph G} (h : ⟨G₁, G₂⟩ ∈ subgraphPairSet H₁ H₂ G)
+    : Fintype.card G₁.verts = Fintype.card U ∧ Fintype.card G₂.verts = Fintype.card V
+  := sorry
+
+lemma subgraphPairSet_card_union
+    {H₁ : SimpleGraph U} {H₂ : SimpleGraph V} {G : SimpleGraph W}
+    {G₁ G₂ : Subgraph G} (h : ⟨G₁, G₂⟩ ∈ subgraphPairSet H₁ H₂ G)
+    : Fintype.card (G₁.verts ∪ G₂.verts).toFinset = Fintype.card U + Fintype.card V
+  := sorry
+
 omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_ge_0
     (H : SimpleGraph V) (G : SimpleGraph W)
