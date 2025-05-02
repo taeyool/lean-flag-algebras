@@ -7,7 +7,7 @@ open Finset
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
-abbrev FlagWithSize (σ : FlagType T) (n : ℕ) : Type
+abbrev FlagWithSize (σ : FlagType (Fin n₀)) (n : ℕ) : Type
   := Flag σ (Fin n)
 
 instance labeledGraph_inhabited (σ : FlagType (Fin n₀)) {n : ℕ} (hn : n ≥ n₀)
@@ -145,12 +145,14 @@ theorem flagMulWithSize_comm
 theorem flagMulWithSize_one
     (F : FinFlag σ) : flagMulWithSize F 1 F.1 = unitVector F
   := by
+  dsimp [flagMulWithSize]
+  rw [finFlag_one_snd]
   sorry
 
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
   :=
-  flagMulWithSize F F' (F.1 + F'.1)
+  flagMulWithSize F F' (F.1 + F'.1 - n₀)
 
 theorem flagMul_comm
     (F F' : FinFlag σ) : flagMul F F' = flagMul F' F
@@ -160,7 +162,9 @@ theorem flagMul_comm
 theorem flagMul_one
     (F : FinFlag σ) : flagMul F 1 = unitVector F
   := by
-  sorry
+  dsimp [flagMul]
+  rw [finFlag_one_fst, ← Nat.eq_sub_of_add_eq rfl]
+  exact flagMulWithSize_one F
 
 noncomputable instance : Mul (FlagVector σ) where
   mul f g := ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
