@@ -154,10 +154,37 @@ noncomputable instance : HasDistribNeg (FlagVector σ) where
   mul_neg g h := by
     rw [mul_comm g (-h), mul_comm g h, flagVector_neg_mul h g]
 
+lemma falgVector_add_support
+    (g h : FlagVector σ) {α : Type} [AddCommGroup α] (ψ : FlagVector σ → FinFlag σ → α)
+    (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
+    (hψ2 : ∀ g x, g x = 0 -> ψ g x = 0)
+    : ∑ K ∈ (g + h).support, (ψ g K + ψ h K) =
+        ∑ G ∈ g.support, ψ g G + ∑ H ∈ h.support, ψ h H
+  := by
+  sorry
+
 theorem flagVector_left_distrib
     (f g h : FlagVector σ) : f * (g + h) = f * g + f * h
-  :=
-  sorry
+  := by
+  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
+  simp [Finset.sum_add_distrib, ← sum_add_distrib]
+  apply sum_congr rfl
+  intro F _
+  simp [mul_add, add_smul]
+  let ψ : (FlagVector σ) → (FinFlag σ) → (FlagVector σ)
+    := fun g G => (f F * g G) • flagMul F G
+  have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
+    intro g' h' x hx
+    simp [ψ]
+    rw [add_eq_zero_iff_neg_eq] at hx
+    rw [←hx]
+    simp
+  have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
+    intro g x hx
+    simp [ψ]
+    left; right
+    exact hx
+  apply falgVector_add_support g h ψ hψ1 hψ2
 
 theorem flagVector_right_distrib
     (f g h : FlagVector σ) : (f + g) * h = f * h + g * h
