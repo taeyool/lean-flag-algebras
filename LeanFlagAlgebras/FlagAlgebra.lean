@@ -64,6 +64,14 @@ def FinFlag (σ : FlagType (Fin n₀)) : Type
 instance : One (FinFlag σ) where
   one := ⟨n₀, (default : FlagWithSize σ n₀)⟩
 
+theorem finFlag_one_fst
+    : (1 : FinFlag σ).1 = n₀
+  := rfl
+
+theorem finFlag_one_snd
+    : (1 : FinFlag σ).2 = emptyFlag σ
+  := rfl
+
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
 
@@ -79,8 +87,46 @@ noncomputable instance : Module ℝ (FlagVector σ)
 noncomputable def unitVector (F : FinFlag σ) : FlagVector σ
   := Finsupp.single F 1
 
+@[simp]
+theorem unitVector_apply_self
+    (F : FinFlag σ)
+    : (unitVector F) F = 1
+  := by
+  simp [unitVector]
+
+@[simp]
+theorem unitVector_support
+    (F : FinFlag σ)
+    : (unitVector F).support = {F}
+  := by
+  dsimp [unitVector]
+  rw [Finsupp.support_single_ne_zero _ (by simp)]
+
+theorem flagVector_eq_sum_unitVector
+    (f : FlagVector σ)
+    : f = ∑ F in f.support, f F • unitVector F
+  := by
+  dsimp [unitVector]
+  rw [← Finsupp.sum_single f]
+  apply sum_congr (by simp)
+  intros; simp
+
 noncomputable instance : One (FlagVector σ) where
   one := unitVector 1
+
+@[simp]
+theorem flagVector_one_support
+    : (1 : FlagVector σ).support = {(1 : FinFlag σ)}
+  := by
+  show (unitVector 1).support = {(1 : FinFlag σ)}
+  simp
+
+@[simp]
+theorem flagVector_one_apply_one
+    : (1 : FlagVector σ) 1 = 1
+  := by
+  show (unitVector 1) 1 = 1
+  simp
 
 noncomputable def flagMulWithSize
     (F F' : FinFlag σ) (ℓ : ℕ) : FlagVector σ
@@ -96,6 +142,11 @@ theorem flagMulWithSize_comm
   intros
   simp [flagPairDensity_comm]
 
+theorem flagMulWithSize_one
+    (F : FinFlag σ) : flagMulWithSize F 1 F.1 = unitVector F
+  := by
+  sorry
+
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
   :=
@@ -105,6 +156,11 @@ theorem flagMul_comm
     (F F' : FinFlag σ) : flagMul F F' = flagMul F' F
   := by
   simp [flagMul, add_comm, flagMulWithSize_comm]
+
+theorem flagMul_one
+    (F : FinFlag σ) : flagMul F 1 = unitVector F
+  := by
+  sorry
 
 noncomputable instance : Mul (FlagVector σ) where
   mul f g := ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
@@ -121,28 +177,22 @@ theorem flagVector_mul_comm
   repeat (apply sum_congr rfl; intros)
   rw [mul_comm, flagMul_comm]
 
-theorem flagVector_mul_one
-    (f : FlagVector σ) : f * 1 = f
-  :=
-  sorry
-
 noncomputable instance : CommMagma (FlagVector σ) where
   mul_comm := flagVector_mul_comm
 
-noncomputable instance : MulOneClass (FlagVector σ) where
-  one_mul g := by
-    rw [mul_comm, flagVector_mul_one]
-  mul_one := flagVector_mul_one
+theorem flagVector_smul_assoc
+    (r : ℝ) (f g : FlagVector σ) : (r • f) * g = r • (f * g)
+  := by
+  simp [flagVector_mul_def]
+  by_cases hr : r = 0
+  · simp [hr]
+  · have hf_supp : (r • f).support = f.support := Finsupp.support_smul_eq hr
+    rw [hf_supp]
+    repeat (rw [smul_sum]; congr; apply funext; intro)
+    simp [smul_mul_assoc, mul_assoc, smul_smul]
 
 instance : IsScalarTower ℝ (FlagVector σ) (FlagVector σ) where
-  smul_assoc r g h := by
-    simp [flagVector_mul_def]
-    by_cases hr : r = 0
-    · simp [hr]
-    · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
-      rw [hg_supp]
-      repeat (rw [smul_sum]; congr; apply funext; intro)
-      simp [smul_mul_assoc, mul_assoc, smul_smul]
+  smul_assoc := flagVector_smul_assoc
 
 theorem flagVector_neg_mul
     (f g : FlagVector σ) : -f * g = -(f * g)
@@ -151,15 +201,15 @@ theorem flagVector_neg_mul
 
 noncomputable instance : HasDistribNeg (FlagVector σ) where
   neg_mul := flagVector_neg_mul
-  mul_neg g h := by
-    rw [mul_comm g (-h), mul_comm g h, flagVector_neg_mul h g]
+  mul_neg f g := by
+    rw [mul_comm f (-g), mul_comm f g, flagVector_neg_mul g f]
 
-lemma falgVector_add_support
-    (g h : FlagVector σ) {α : Type} [AddCommGroup α] (ψ : FlagVector σ → FinFlag σ → α)
-    (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
-    (hψ2 : ∀ g x, g x = 0 -> ψ g x = 0)
-    : ∑ K ∈ (g + h).support, (ψ g K + ψ h K) =
-        ∑ G ∈ g.support, ψ g G + ∑ H ∈ h.support, ψ h H
+lemma flagVector_add_support
+    (f g : FlagVector σ) {α : Type} [AddCommGroup α] (ψ : FlagVector σ → FinFlag σ → α)
+    (hψ1 : ∀ f g x, f x + g x = 0 → ψ f x + ψ g x = 0)
+    (hψ2 : ∀ f x, f x = 0 -> ψ f x = 0)
+    : ∑ K ∈ (f + g).support, (ψ f K + ψ g K) =
+        ∑ F ∈ f.support, ψ f F + ∑ G ∈ g.support, ψ g G
   := by
   sorry
 
@@ -177,14 +227,14 @@ theorem flagVector_left_distrib
     intro g' h' x hx
     simp [ψ]
     rw [add_eq_zero_iff_neg_eq] at hx
-    rw [←hx]
+    rw [← hx]
     simp
   have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
     intro g x hx
     simp [ψ]
     left; right
     exact hx
-  apply falgVector_add_support g h ψ hψ1 hψ2
+  apply flagVector_add_support g h ψ hψ1 hψ2
 
 theorem flagVector_right_distrib
     (f g h : FlagVector σ) : (f + g) * h = f * h + g * h
@@ -220,6 +270,21 @@ noncomputable instance : NonUnitalNonAssocRing (FlagVector σ) where
   zero_mul := flagVector_zero_mul
   mul_zero := by
     intros; rw [mul_comm, flagVector_zero_mul]
+
+theorem flagVector_mul_one
+    (f : FlagVector σ) : f * 1 = f
+  := by
+  rw [flagVector_eq_sum_unitVector f, sum_mul]
+  apply sum_congr rfl
+  intro G _
+  rw [smul_mul_assoc]; congr
+  dsimp [flagVector_mul_def]
+  simp [flagMul_one]
+
+noncomputable instance : MulOneClass (FlagVector σ) where
+  one_mul g := by
+    rw [mul_comm, flagVector_mul_one]
+  mul_one := flagVector_mul_one
 
 @[simp]
 theorem rat_smul_eq_real_smul
