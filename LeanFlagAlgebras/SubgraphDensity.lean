@@ -1852,16 +1852,19 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
 
   have fintypeSubgraphG : Fintype (Subgraph G) := subgraphFintype G
 
-  let f_S₀_S₁_fwd : S₀ → S₁ := fun ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩ =>
+  let subgraphPairSet_card_union_Finset :
+        ∀ (G₁ G₂ : Subgraph G), ⟨G₁,G₂⟩ ∈ subgraphPairSet H₁ H₂ G → (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂
+    := by
+    intro G₁ G₂ h_G₁_G₂
+    rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
+    rw [subgraphPairSet_card_union h_G₁_G₂]
+    simp only [Fintype.card_fin]
+
+  let f_S₀_S₁_fwd : S₀ → S₁ := fun ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, _, h_G₃_card, h_G₁_G₂_G₃⟩ =>
     let G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
     let G₃' := G₃'_ind.val
     let h_G₃'_ind : G₃'.IsInduced := G₃'_ind.property
     have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ := by
-      have h_G₁_vert_union_G₂_vert_card : (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂ := by
-        rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
-        rw [subgraphPairSet_card_union h_G₁_G₂]
-        simp only [Fintype.card_fin]
-      simp [subgraphPairSet] at h_G₁_G₂
       calc
         Fintype.card G₃'.verts
         _ = ((G₁.verts ∪ G₂.verts).toFinset ∪ G₃.verts.toFinset).card := by
@@ -1873,7 +1876,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
                 exact Set.toFinset_eq_empty.mpr h_G₁_G₂_G₃
               exact Finset.card_union_of_disjoint this
         _ = (ℓ₁ + ℓ₂) + Fintype.card G₃.verts := by
-              rw [h_G₁_vert_union_G₂_vert_card]
+              rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
               simp only [Set.toFinset_card]
         _ = ℓ₃ := by
               rw [h_G₃_card]
@@ -1919,10 +1922,6 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     have h_G₃'_verts : G₃'.verts = G₃.verts \ (G₁.verts ∪ G₂.verts) := by
       simp [G₃', G₃'_ind, inducedSubgraph]
     have h_G₃'_card : Fintype.card G₃'.verts = ℓ₃ - (ℓ₁ + ℓ₂) :=
-      let h_G₁_verts_union_G₂_verts_card : (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂ := by
-        rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
-        rw [subgraphPairSet_card_union h_G₁_G₂]
-        simp only [Fintype.card_fin]
       calc
         Fintype.card G₃'.verts
         _ = Fintype.card ↑(G₃.verts \ (G₁.verts ∪ G₂.verts)) := by
@@ -1935,7 +1934,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
               apply Finset.card_sdiff
               exact Set.toFinset_subset_toFinset.mpr h_G₁_G₂_G₃
         _ = ℓ₃ - (ℓ₁ + ℓ₂) := by
-              rw [h_G₁_verts_union_G₂_verts_card]
+              rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
               rw [←h_G₃_card]
               simp only [Set.toFinset_card, Fintype.card_ofFinset]
     have h_G₁_G₂_G₃' : (G₁.verts ∪ G₂.verts) ∩ G₃'.verts = ∅ := by
@@ -1967,11 +1966,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
       intro G₁ G₂ h_G₁_G₂
       let S := { G₃ : Subgraph G | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) ∧ (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ }
       let U := (G₁.verts ∪ G₂.verts)ᶜ
-      have h_U_size : U.toFinset.card = ℓ - (ℓ₁ + ℓ₂) := by
-        let h_G₁_verts_union_G₂_verts_card : (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂ := by
-          rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
-          rw [subgraphPairSet_card_union h_G₁_G₂]
-          simp only [Fintype.card_fin]
+      have h_U_size : U.toFinset.card = ℓ - (ℓ₁ + ℓ₂) :=
         calc
           U.toFinset.card
           _ = (G₁.verts ∪ G₂.verts).toFinsetᶜ.card := by
@@ -1979,7 +1974,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
           _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card :=
                 Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
           _ = ℓ - (ℓ₁ + ℓ₂):= by
-                rw [h_G₁_verts_union_G₂_verts_card]
+                rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
                 simp only [Fintype.card_fin]
       let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
       have h_iso_S_S' : S ≃ S' :=
