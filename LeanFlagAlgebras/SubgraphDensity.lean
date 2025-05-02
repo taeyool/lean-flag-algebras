@@ -1965,37 +1965,25 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
     have h : ∀ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair = g G_pair := by
       simp [f, g]
       intro G₁ G₂ h_G₁_G₂
-      simp [subgraphPairSet] at h_G₁_G₂
-      have ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
       let S := { G₃ : Subgraph G | G₃.IsInduced ∧ Fintype.card G₃.verts = ℓ₃ - (ℓ₁ + ℓ₂) ∧ (G₁.verts ∪ G₂.verts) ∩ G₃.verts = ∅ }
       let U := (G₁.verts ∪ G₂.verts)ᶜ
       have h_U_size : U.toFinset.card = ℓ - (ℓ₁ + ℓ₂) := by
+        let h_G₁_verts_union_G₂_verts_card : (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂ := by
+          rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
+          rw [subgraphPairSet_card_union h_G₁_G₂]
+          simp only [Fintype.card_fin]
         calc
           U.toFinset.card
           _ = (G₁.verts ∪ G₂.verts).toFinsetᶜ.card := by
                 dsimp [U]; simp only [Set.toFinset_compl]
           _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card :=
                 Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
-          _ = ℓ - (G₁.verts ∪ G₂.verts).toFinset.card := by
+          _ = ℓ - (ℓ₁ + ℓ₂):= by
+                rw [h_G₁_verts_union_G₂_verts_card]
                 simp only [Fintype.card_fin]
-          _ = ℓ - (G₁.verts.toFinset ∪ G₂.verts.toFinset).card := by
-                simp
-          _ = ℓ - (G₁.verts.toFinset.card + G₂.verts.toFinset.card) := by
-                rw [Finset.card_union]
-                have : G₁.verts.toFinset ∩ G₂.verts.toFinset = ∅ := by
-                  rw [←Set.toFinset_inter]
-                  exact Set.toFinset_eq_empty.mpr h_G₁_G₂_disj
-                simp_all only [card_empty, tsub_zero]
-          _ = ℓ - ((Fintype.card G₁.verts) + (Fintype.card G₂.verts)) := by
-                simp
-          _ = ℓ - (ℓ₁ + ℓ₂) := by
-                rw [Fintype.card_of_bijective (RelIso.bijective h_G₁_H₁.some)]
-                rw [Fintype.card_of_bijective (RelIso.bijective h_G₂_H₂.some)]
-                rw [Fintype.card_fin ℓ₁]
-                rw [Fintype.card_fin ℓ₂]
       let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
       have h_iso_S_S' : S ≃ S' :=
-        let f_S_S'_fwd : S → S' := fun ⟨G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩ =>
+        let f_S_S'_fwd : S → S' := fun ⟨G₃, _, h_G₃_card, h_G₁_G₂_G₃⟩ =>
           have h_G₃_verts_S' : G₃.verts.toFinset ∈ S' := by
             simp [S', U]
             rw [Set.union_inter_distrib_right G₁.verts G₂.verts G₃.verts] at h_G₁_G₂_G₃
@@ -2065,7 +2053,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
       Fintype.card S₀
       _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair := by simp only [S₀, f, Fintype.card_sigma]
       _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), g G_pair := by simp only [h]
-      _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [g]
+      _ = ∑ (_ : subgraphPairSet H₁ H₂ G), (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [g]
       _ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [subgraphPairCount]
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
     := by
