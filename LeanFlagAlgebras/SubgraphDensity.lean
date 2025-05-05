@@ -2073,7 +2073,33 @@ lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
     simp [C, Nat.choose_pos this]
   have h_C_self_div_eq_1 : ((C : ℚ) / (C : ℚ)) = 1 :=
     div_self (ne_of_gt h_C_gt_0)
-  -- have h_C : (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) =
+  have h_C : (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C)
+              = ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ)
+    :=
+    calc
+      ((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C
+      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * ((ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))) := by
+              simp [C]
+      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂ * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))) : ℚ) := by
+              simp
+      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂ * ((ℓ - ℓ₁) - ℓ₂).choose ((ℓ - ℓ₁) - ℓ₂)) : ℚ) := by
+              have : ℓ - (ℓ₁ + ℓ₂) = (ℓ - ℓ₁) - ℓ₂ := Nat.sub_add_eq ℓ ℓ₁ ℓ₂
+              rw [this]
+      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose (ℓ₃ - ℓ₁) * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
+              rw [mul_assoc, mul_assoc]
+              have h₀ : (ℓ₃ - ℓ₁) ≤ (ℓ - ℓ₁) := sorry
+              have h₁ : ℓ₂ ≤ ℓ₃ - ℓ₁ := by sorry
+              rw [Nat.choose_mul h₀ h₁]
+              sorry
+      _ = (↑(ℓ.choose ℓ₃ * ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
+              have h₀ : ℓ₃ ≤ ℓ := hℓ₃_ub
+              have h₁ : ℓ₁ ≤ ℓ₃ :=
+                calc
+                  ℓ₁ ≤ ℓ₁ + ℓ₂ := Nat.le_add_right ℓ₁ ℓ₂
+                  _ ≤ ℓ₃ := hℓ₃_lb
+              rw [Nat.choose_mul h₀ h₁]
+      _ = ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ) := by
+              simp only [mul_assoc, Nat.cast_mul, mul_comm]
   calc
     subgraphPairDensity H₁ H₂ G
     _ = ((subgraphPairCount H₁ H₂ G : ℚ) / (ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂)) * 1 := by
@@ -2093,16 +2119,16 @@ lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
               simp
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
           ((subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ)
-          / (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) :=
-              sorry
+          / (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) := by
+              apply sum_div
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
           ((subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ)
           / ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ) := by
-              sorry
+              simp [h_C]
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
           ((subgraphPairCount H₁ H₂ F.out : ℚ) / (ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂))
           * ((subgraphCount F.out G : ℚ) / ℓ.choose ℓ₃) := by
-              sorry
+              simp only [div_mul_div_comm]
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G := by
               simp [subgraphPairDensity, subgraphDensity]
 
