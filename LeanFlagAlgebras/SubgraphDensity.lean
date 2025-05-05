@@ -2060,7 +2060,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
   rw [h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
 
-lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
+lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
     : subgraphPairDensity H₁ H₂ G
@@ -2082,15 +2082,16 @@ lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
               simp [C]
       _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂ * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))) : ℚ) := by
               simp
-      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂ * ((ℓ - ℓ₁) - ℓ₂).choose ((ℓ - ℓ₁) - ℓ₂)) : ℚ) := by
+      _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂ * ((ℓ - ℓ₁) - ℓ₂).choose ((ℓ₃ - ℓ₁) - ℓ₂)) : ℚ) := by
               have : ℓ - (ℓ₁ + ℓ₂) = (ℓ - ℓ₁) - ℓ₂ := Nat.sub_add_eq ℓ ℓ₁ ℓ₂
+              rw [this]
+              have : ℓ₃ - (ℓ₁ + ℓ₂) = (ℓ₃ - ℓ₁) - ℓ₂ := Nat.sub_add_eq ℓ₃ ℓ₁ ℓ₂
               rw [this]
       _ = (↑(ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose (ℓ₃ - ℓ₁) * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
               rw [mul_assoc, mul_assoc]
-              have h₀ : (ℓ₃ - ℓ₁) ≤ (ℓ - ℓ₁) := sorry
-              have h₁ : ℓ₂ ≤ ℓ₃ - ℓ₁ := by sorry
+              have h₀ : (ℓ₃ - ℓ₁) ≤ (ℓ - ℓ₁) := by apply Nat.sub_le_sub_right hℓ₃_ub
+              have h₁ : ℓ₂ ≤ ℓ₃ - ℓ₁ := Nat.le_sub_of_add_le' hℓ₃_lb
               rw [Nat.choose_mul h₀ h₁]
-              sorry
       _ = (↑(ℓ.choose ℓ₃ * ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
               have h₀ : ℓ₃ ≤ ℓ := hℓ₃_ub
               have h₁ : ℓ₁ ≤ ℓ₃ :=
