@@ -2073,6 +2073,7 @@ lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
     simp [C, Nat.choose_pos this]
   have h_C_self_div_eq_1 : ((C : ℚ) / (C : ℚ)) = 1 :=
     div_self (ne_of_gt h_C_gt_0)
+  -- have h_C : (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) =
   calc
     subgraphPairDensity H₁ H₂ G
     _ = ((subgraphPairCount H₁ H₂ G : ℚ) / (ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂)) * 1 := by
@@ -2087,6 +2088,17 @@ lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
     _ = ((∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ)
           / (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) := by
               simp [subgraphPairCount_eq_sum_over_quotSimpleGraph H₁ H₂ G hℓ₃_lb]
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₃)), ((subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ))
+          / (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) := by
+              simp
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
+          ((subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ)
+          / (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C) :=
+              sorry
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
+          ((subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G) : ℚ)
+          / ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ) := by
+              sorry
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)),
           ((subgraphPairCount H₁ H₂ F.out : ℚ) / (ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂))
           * ((subgraphCount F.out G : ℚ) / ℓ.choose ℓ₃) := by
