@@ -138,6 +138,15 @@ lemma subgraphPairSet_card_union
           rw [←h_G₁_card, ←h_G₂_card]
           simp only [Set.toFinset_card]
 
+omit [DecidableEq U] [DecidableEq V] in
+lemma subgraphPairSet_card_union_Finset
+    {H₁ : SimpleGraph U} {H₂ : SimpleGraph V} {G : SimpleGraph W}
+    {G₁ G₂ : Subgraph G} (h : ⟨G₁, G₂⟩ ∈ subgraphPairSet H₁ H₂ G)
+    : (G₁.verts ∪ G₂.verts).toFinset.card = Fintype.card U + Fintype.card V
+  := by
+  rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
+  rw [subgraphPairSet_card_union h]
+
 omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_ge_0
     (H : SimpleGraph V) (G : SimpleGraph W)
@@ -1836,7 +1845,7 @@ lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph 
   := by
   simp [graphCount]
 
-lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
+lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ)) (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃)
     : subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
       =
@@ -1851,14 +1860,6 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
   let S₂ := (F : QuotSimpleGraph (Fin ℓ₃)) × subgraphPairSet H₁ H₂ F.out × subgraphSet F.out G
 
   have fintypeSubgraphG : Fintype (Subgraph G) := subgraphFintype G
-
-  let subgraphPairSet_card_union_Finset :
-        ∀ (G₁ G₂ : Subgraph G), ⟨G₁,G₂⟩ ∈ subgraphPairSet H₁ H₂ G → (G₁.verts ∪ G₂.verts).toFinset.card = ℓ₁ + ℓ₂
-    := by
-    intro G₁ G₂ h_G₁_G₂
-    rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
-    rw [subgraphPairSet_card_union h_G₁_G₂]
-    simp only [Fintype.card_fin]
 
   let f_S₀_S₁_fwd : S₀ → S₁ := fun ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, _, h_G₃_card, h_G₁_G₂_G₃⟩ =>
     let G₃'_ind := inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)
@@ -1876,8 +1877,8 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
                 exact Set.toFinset_eq_empty.mpr h_G₁_G₂_G₃
               exact Finset.card_union_of_disjoint this
         _ = (ℓ₁ + ℓ₂) + Fintype.card G₃.verts := by
-              rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
-              simp only [Set.toFinset_card]
+              rw [subgraphPairSet_card_union_Finset h_G₁_G₂]
+              simp only [Fintype.card_fin, Set.toFinset_card]
         _ = ℓ₃ := by
               rw [h_G₃_card]
               exact (Nat.add_sub_of_le hℓ₃_lb)
@@ -1934,9 +1935,9 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
               apply Finset.card_sdiff
               exact Set.toFinset_subset_toFinset.mpr h_G₁_G₂_G₃
         _ = ℓ₃ - (ℓ₁ + ℓ₂) := by
-              rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
+              rw [subgraphPairSet_card_union_Finset h_G₁_G₂]
               rw [←h_G₃_card]
-              simp only [Set.toFinset_card, Fintype.card_ofFinset]
+              simp only [Set.toFinset_card, Fintype.card_ofFinset, Fintype.card_fin]
     have h_G₁_G₂_G₃' : (G₁.verts ∪ G₂.verts) ∩ G₃'.verts = ∅ := by
       simp [h_G₃'_verts]
     use ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁_G₂_G₃'⟩
@@ -1974,7 +1975,7 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
           _ = (Fintype.card (Fin ℓ)) - (G₁.verts ∪ G₂.verts).toFinset.card :=
                 Finset.card_compl (G₁.verts ∪ G₂.verts).toFinset
           _ = ℓ - (ℓ₁ + ℓ₂):= by
-                rw [subgraphPairSet_card_union_Finset G₁ G₂ h_G₁_G₂]
+                rw [subgraphPairSet_card_union_Finset h_G₁_G₂]
                 simp only [Fintype.card_fin]
       let S' := powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset
       have h_iso_S_S' : S ≃ S' :=
@@ -2058,29 +2059,28 @@ lemma subgraphPairCount_eq_sum_over_quotSimpleGraph_gen
   rw [←h_S₀_card, ←h_S₂_card]
   rw [h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
-lemma subgraphPairCount_eq_sum_over_quotSimpleGraph
+
+lemma subgraphPairDensity_eq_sum_over_quotSimpleGraph_gen
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
-    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
-    : (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂) * subgraphPairCount H₁ H₂ G * graphCount ℓ'
-      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
-  := by
-  let C : ℕ := (ℓ - ℓ₁ - ℓ₂).choose (ℓ' - ℓ₁ - ℓ₂)
-  let f : SimpleGraph (Fin ℓ') → ℕ := fun _ => C * subgraphPairCount H₁ H₂ G
-  have h_f_eqv : ∀ {G₀ G₁ : SimpleGraph (Fin ℓ')}, graph_eqv G₀ G₁ → f G₀ = f G₁ := by
-    intro _ _ _
-    simp [f]
-  show C * subgraphPairCount H₁ H₂ G * graphCount ℓ'
-       = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
+    (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
+    : subgraphPairDensity H₁ H₂ G
+      =
+      ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G
+  :=
+  let C : ℚ := (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
+  have h_C_ne_0 : (C / C) = 1 := by
+    apply div_self
+    apply ne_of_gt
+    have : ℓ₃ - (ℓ₁ + ℓ₂) ≤ ℓ - (ℓ₁ + ℓ₂) := by simp; sorry
+    simp [C, Nat.choose_pos this]
   calc
-    C * subgraphPairCount H₁ H₂ G * graphCount ℓ'
-      = C * subgraphPairCount H₁ H₂ G * ∑ (G' : SimpleGraph (Fin ℓ')), 1
-        := by simp [graphCount_eq_sum_one ℓ']
-    _ = ∑ (G' : SimpleGraph (Fin ℓ')), C * subgraphPairCount H₁ H₂ G
-        := by rw [Finset.mul_sum]; simp
-    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), isoGraphCount G'.out * (C * subgraphPairCount H₁ H₂ G)
-        := sorry
-    _ = ∑ (G' : QuotSimpleGraph (Fin ℓ')), subgraphPairCount H₁ H₂ G'.out * subgraphCount G'.out G
-        := sorry
+    subgraphPairDensity H₁ H₂ G
+    _ = (subgraphPairCount H₁ H₂ G  / (ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂)) * 1 := by
+          simp [subgraphPairDensity]
+    _ = (subgraphPairCount H₁ H₂ G / (ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂)) * (C / C) := by
+          simp [h_C_ne_0]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G := by
+          sorry
 
 lemma subgraphPairDensityLifted_eq_sum_density_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
