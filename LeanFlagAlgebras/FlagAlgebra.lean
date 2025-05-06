@@ -75,6 +75,11 @@ theorem finFlag_one_snd
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
 
+@[simp]
+lemma rat_smul_eq_real_smul
+    (a : ℚ) (f : FlagVector σ) : a • f = (a : ℝ) • f
+  := rfl
+
 noncomputable instance : AddCommMonoid (FlagVector σ)
   := Finsupp.instAddCommMonoid
 
@@ -145,9 +150,21 @@ theorem flagMulWithSize_comm
 theorem flagMulWithSize_one
     (F : FinFlag σ) : flagMulWithSize F 1 F.1 = unitVector F
   := by
+  classical
   dsimp [flagMulWithSize]
   rw [finFlag_one_snd]
-  sorry
+  have h_univ_split : univ = insert F.2 (univ.erase F.2) := Eq.symm (insert_erase (by simp))
+  rw [h_univ_split, sum_insert (not_mem_erase _ _)]
+  rw [flagPairDensity_empty', flagDensity_self, ← add_zero (unitVector F)]
+  congr
+  · simp
+  · apply sum_eq_zero
+    intro F' hF'
+    rw [flagPairDensity_empty']
+    have hF'_ne_F : F.2 ≠ F' := by
+      simp_all only [mem_univ, insert_erase, mem_erase, ne_eq, and_true]
+      exact fun a ↦ hF' (id (Eq.symm a))
+    simp [flagDensity_other hF'_ne_F]
 
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
@@ -332,11 +349,6 @@ noncomputable instance : MulOneClass (FlagVector σ) where
   one_mul g := by
     rw [mul_comm, flagVector_mul_one]
   mul_one := flagVector_mul_one
-
-@[simp]
-theorem rat_smul_eq_real_smul
-    (a : ℚ) (f : FlagVector σ) : a • f = (a : ℝ) • f
-  := rfl
 
 noncomputable def densityFlagSum
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
