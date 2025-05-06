@@ -391,18 +391,25 @@ infixl:50 " ∼v " => flagVectorEqv
 
 theorem flagVectorEqv.refl (f : FlagVector σ)
     : f ∼v f
-  :=
-  sorry
+  := by
+  dsimp [flagVectorEqv]
+  rw [sub_self]
+  apply Submodule.zero_mem
 
 theorem flagVectorEqv.symm
     : ∀ {f f' : FlagVector σ}, f ∼v f' → f' ∼v f
-  :=
-  sorry
+  := by
+  intro f f' h
+  dsimp [flagVectorEqv] at *
+  exact sub_mem_comm_iff.mp h
 
 theorem flagVectorEqv.trans
     : ∀ {f f' f'' : FlagVector σ}, f ∼v f' → f' ∼v f'' → f ∼v f''
-  :=
-  sorry
+  := by
+  intro f f' f'' h h'
+  dsimp [flagVectorEqv] at *
+  rw [← sub_add_sub_cancel]
+  exact zeroSpace_closed_under_add (f - f') (f' - f'') h h'
 
 instance flagVectorSetoid (σ : FlagType (Fin n₀))
     : Setoid (FlagVector σ) where
