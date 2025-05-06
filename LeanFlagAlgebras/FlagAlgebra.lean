@@ -232,9 +232,7 @@ lemma flagVector_add_support
     obtain ⟨h_in_union, h_not_in_sum⟩ := hx
     rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h_not_in_sum
     rw [←union_sdiff_self_eq_union, mem_union] at h_in_union
-    cases' h_in_union with h_in_f h_in_g
-    · exact hψ1 f g x h_not_in_sum
-    · exact hψ1 f g x h_not_in_sum
+    exact hψ1 f g x h_not_in_sum
   rw [sum_decomposition, sum_extra_eq_0, sub_zero]
   have disjoint_1 : Disjoint f.support (g.support \ f.support) := disjoint_sdiff
   have disjoint_2 : Disjoint (f.support \ g.support) (f.support ∩ g.support) := disjoint_sdiff_inter f.support g.support

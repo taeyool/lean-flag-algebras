@@ -442,6 +442,56 @@ noncomputable instance : HasDistribNeg GraphVector where
   mul_neg g h := by
     rw [mul_comm g (-h), mul_comm g h, graphVector_neg_mul h g]
 
+lemma graphVector_add_support'
+    (g h : GraphVector) {α : Type} [AddCommGroup α] (ψ : GraphVector → IsoSimpleGraph → α)
+    (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
+    (hψ2 : ∀ g x, g x =0 -> ψ g x = 0)
+    : ∑ K ∈ (g + h).support, (ψ g K + ψ h K) =
+      ∑ G ∈ g.support, ψ g G + ∑ H ∈ h.support, ψ h H
+  := by
+  have add_support_sub : (g + h).support ⊆ g.support ∪ h.support := Finsupp.support_add
+  have sum_decomposition : ∑ x ∈ (g + h).support, (ψ g x + ψ h x) =
+  ∑ x ∈ g.support ∪ h.support, (ψ g x + ψ h x) - ∑ x ∈ (g.support ∪ h.support) \ (g + h).support, (ψ g x + ψ h x) := by
+    rw [sum_sdiff_eq_sub add_support_sub]
+    exact
+      Eq.symm
+        (sub_sub_self (∑ x ∈ g.support ∪ h.support, (ψ g x + ψ h x))
+          (∑ x ∈ (g + h).support, (ψ g x + ψ h x)))
+  have sum_extra_eq_0 : ∑ x ∈ (g.support ∪ h.support) \ (g + h).support, (ψ g x + ψ h x) = 0 := by
+    apply sum_eq_zero
+    intro x hx
+    rw [mem_sdiff] at hx
+    obtain ⟨h_in_union, h_not_in_sum⟩ := hx
+    rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h_not_in_sum
+    rw [←union_sdiff_self_eq_union, mem_union] at h_in_union
+    exact hψ1 g h x h_not_in_sum
+  rw [sum_decomposition, sum_extra_eq_0, sub_zero]
+  have disjoint_1 : Disjoint g.support (h.support \ g.support) := disjoint_sdiff
+  have disjoint_2 : Disjoint (g.support \ h.support) (g.support ∩ h.support) := disjoint_sdiff_inter g.support h.support
+  have disjoint_3 : Disjoint (g.support ∩ h.support) (h.support \ g.support)  := by
+    rw [inter_comm]; symm
+    exact disjoint_sdiff_inter h.support g.support
+  have decomposition : ∑ x ∈ g.support ∪ h.support, (ψ g x + ψ h x) = ∑ x ∈ g.support \ h.support ∪ g.support ∩ h.support, (ψ g x + ψ h x) + ∑ x ∈ h.support \ g.support, (ψ g x + ψ h x) := by
+    rw [←union_sdiff_self_eq_union]
+    rw [sdiff_union_inter g.support h.support]
+    exact sum_union disjoint_1
+  rw [decomposition, sum_union disjoint_2, sum_add_distrib, sum_add_distrib, sum_add_distrib]
+  have sum_not_g_supp_eq_0 : ∑ x ∈ g.support \ h.support, ψ h x = 0 := by
+    apply sum_eq_zero
+    intro x hx
+    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
+    apply hψ2
+    exact hx.2
+  have sum_not_f_supp_eq_0 : ∑ x ∈ h.support \ g.support, ψ g x = 0 := by
+    apply sum_eq_zero
+    intro x hx
+    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
+    apply hψ2
+    exact hx.2
+  rw [sum_not_g_supp_eq_0, sum_not_f_supp_eq_0, add_zero, zero_add]
+  rw [add_assoc, add_assoc, ← sum_union disjoint_3, union_comm, inter_comm, sdiff_union_inter h.support g.support]
+  rw [←add_assoc, inter_comm, ← sum_union disjoint_2, sdiff_union_inter g.support h.support]
+
 lemma graphVector_add_support
     (g h : GraphVector) {α : Type} [AddCommGroup α] (ψ : GraphVector → IsoSimpleGraph → α)
     (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
