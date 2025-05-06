@@ -2147,7 +2147,7 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
       quotSubgraphDensity F ⟦G⟧
       _ = Quot.lift subgraphDensityLifted ?h F ⟦G⟧ := rfl
       _ = Quot.lift subgraphDensityLifted ?h ⟦F.out⟧ ⟦G⟧ := by simp
-      _ = subgraphDensityLifted F.out ⟦G⟧ := congrArg (Quot.lift subgraphDensityLifted ?h ⟦F.out⟧) rfl
+      _ = subgraphDensityLifted F.out ⟦G⟧ := rfl
     intro F₀ F₁ h_eqv; ext G''; exact subgraphDensityLifted_respects_eqv F₀ F₁ h_eqv G''
   have h_RHS₀ : ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensityLifted H₁ H₂ F * quotSubgraphDensity F ⟦G⟧
                 = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensityLifted H₁ H₂ F * subgraphDensityLifted F.out ⟦G⟧
@@ -2160,7 +2160,7 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
     calc
       subgraphDensityLifted F.out ⟦G⟧
       _ = @Quot.lift _ graph_eqv _ (subgraphDensity F.out) ?h' ⟦G⟧ := rfl
-      _ = subgraphDensity F.out G := congrArg (subgraphDensity F.out) rfl
+      _ = subgraphDensity F.out G := rfl
     intro _ _ h_eqv; exact subgraphDensity_respects_eqv_on_G F.out h_eqv
   have h₂ : ∀ {F : QuotSimpleGraph (Fin ℓ₃)}, subgraphPairDensityLifted H₁ H₂ F = subgraphPairDensity H₁ H₂ F.out
     := by
@@ -2169,7 +2169,7 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
       subgraphPairDensityLifted H₁ H₂ F
       _ = Quot.lift (subgraphPairDensity H₁ H₂) ?h'' F := rfl
       _ = Quot.lift (subgraphPairDensity H₁ H₂) ?h'' ⟦F.out⟧ := by simp
-      _ = subgraphPairDensity H₁ H₂ F.out := by sorry
+      _ = subgraphPairDensity H₁ H₂ F.out := rfl
     intro F₀ F₁ h_eqv; exact subgraphPairDensity_respects_eqv_on_G H₁ H₂ h_eqv
   have h_RHS₁ : ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensityLifted H₁ H₂ F * subgraphDensityLifted F.out ⟦G⟧
                 = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G
