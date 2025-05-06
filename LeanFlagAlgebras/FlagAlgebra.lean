@@ -200,8 +200,9 @@ instance : IsScalarTower ℝ (FlagVector σ) (FlagVector σ) where
 
 theorem flagVector_neg_mul
     (f g : FlagVector σ) : -f * g = -(f * g)
-  :=
-  sorry
+  := by
+  show ∑ F in (-f).support, ∑ G in g.support, _ = -∑ F in f.support, ∑ G in g.support, _
+  simp [flagVector_mul_def]
 
 noncomputable instance : HasDistribNeg (FlagVector σ) where
   neg_mul := flagVector_neg_mul
