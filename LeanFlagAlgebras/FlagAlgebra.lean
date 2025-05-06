@@ -464,8 +464,7 @@ noncomputable instance : MulAction ℝ (FlagAlgebra σ) where
 
 theorem flagVector_mul_zeroSpace
    (f : FlagVector σ) {k : FlagVector σ} (hk_zero : k ∈ ZeroSpace σ) : f * k ∈ ZeroSpace σ
-  :=
-  sorry
+  := by sorry
 
 noncomputable instance : Mul (FlagAlgebra σ) where
   mul := by
@@ -519,8 +518,18 @@ theorem flagAlgebra_mul_one
 theorem flagVector_smul_mul_smul_comm
     (f g : FlagVector σ) (a b : ℝ)
     : a • f * b • g = (a * b) • (f * g)
-  :=
-  sorry
+  := by
+  by_cases hab : a = 0 ∨ b = 0
+  · cases' hab with ha hb
+    · simp [ha, zero_mul, zero_smul]
+    · simp [hb, zero_mul, zero_smul]
+  · push_neg at hab
+    obtain ⟨ha, hb⟩ := hab
+    show ∑ F in (a • f).support, ∑ G in (b • g).support, _ = (a * b) • ∑ F in _, ∑ G in _, _
+    rw [Finsupp.support_smul_eq ha, Finsupp.support_smul_eq hb]
+    repeat (rw [smul_sum]; apply sum_congr (by rfl); intros)
+    simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
+    congr 1; ring
 
 theorem flagVector_mul_assoc
     (f g h : FlagVector σ) : (f * g * h) ∼v (f * (g * h))
@@ -623,7 +632,7 @@ noncomputable instance : CommRing (FlagAlgebra σ) where
   mul_comm := flagAlgebra_mul_comm
 
 instance : NeZero (1 : FlagAlgebra σ) where
-  out := sorry
+  out := by sorry
 
 instance : Nontrivial (FlagAlgebra σ) where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
