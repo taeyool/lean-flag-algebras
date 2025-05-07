@@ -2060,7 +2060,7 @@ lemma subgraphPairCount_eq_sum_count_prods
   rw [h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
 
-lemma subgraphPairDensity_eq_sum_desity_prods
+lemma subgraphPairDensity_eq_sum_density_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
     : subgraphPairDensity H₁ H₂ G
@@ -2178,19 +2178,43 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
 
   show subgraphPairDensity H₁ H₂ G
        = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G
-  exact subgraphPairDensity_eq_sum_desity_prods H₁ H₂ G hℓ₃_lb hℓ₃_ub
+  exact subgraphPairDensity_eq_sum_density_prods H₁ H₂ G hℓ₃_lb hℓ₃_ub
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
-    {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
+    {ℓ₃ : ℕ} (hℓ₃_lb: ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
     : quotSubgraphPairDensity H₁ H₂ G
-      = ∑ (G' : QuotSimpleGraph (Fin ℓ')), quotSubgraphPairDensity H₁ H₂ G' * quotSubgraphDensity G' G
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphDensity F G
   := by
   rcases Quotient.exists_rep H₁ with ⟨H₁rep, hH₁rep⟩
   rcases Quotient.exists_rep H₂ with ⟨H₂rep, hH₂rep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
-  exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep Grep hℓ' hℓ
+  exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep Grep hℓ₃_lb hℓ₃_ub
+
+
+theorem quotSubgraphDensity_eq_sum_density_prods
+    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (G : QuotSimpleGraph (Fin ℓ))
+    {ℓ₂ : ℕ} (hℓ₂_lb: ℓ₁ ≤ ℓ₂) (hℓ₂_ub : ℓ₂ ≤ ℓ)
+    : quotSubgraphDensity H₁ G
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂)), quotSubgraphDensity H₁ F * quotSubgraphDensity F G
+  := by
+  let H₀ : QuotSimpleGraph (Fin 0) := ⟦emptyGraph (Fin 0)⟧
+  let h_lb : 0 + ℓ₁ ≤ ℓ₂ := by simp [hℓ₂_lb]
+
+  have h_LHS : quotSubgraphPairDensity H₀ H₁ G = quotSubgraphDensity H₁ G := quotSubgraphPairDensity_empty H₁ G
+  rw [←h_LHS]
+
+  have h : ∀ (F : QuotSimpleGraph (Fin ℓ₂)), quotSubgraphPairDensity H₀ H₁ F = quotSubgraphDensity H₁ F := by
+    intro F
+    rw [quotSubgraphPairDensity_empty H₁ F]
+  have h_RHS :  ∑ (F : QuotSimpleGraph (Fin ℓ₂)), quotSubgraphDensity H₁ F * quotSubgraphDensity F G
+              = ∑ (F : QuotSimpleGraph (Fin ℓ₂)), quotSubgraphPairDensity H₀ H₁ F * quotSubgraphDensity F G := by
+    simp [h]
+  rw [h_RHS]
+
+  exact quotSubgraphPairDensity_eq_sum_density_prods H₀ H₁ G h_lb hℓ₂_ub
+
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods'
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
@@ -2200,6 +2224,7 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods'
   := by
   sorry
 
+
 theorem quotSubgraphTripleDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ' : ℕ} (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ') (hℓ : ℓ' + ℓ₃ ≤ ℓ)
@@ -2208,13 +2233,6 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
   := by
   sorry
 
-theorem quotSubgraphDensity_eq_sum_density_prods
-    (H₁ : QuotSimpleGraph (Fin ℓ₁)) (G : QuotSimpleGraph (Fin ℓ))
-    {ℓ' : ℕ} (hℓ': ℓ₁ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
-    : quotSubgraphDensity H₁ G
-      = ∑ (H' : QuotSimpleGraph (Fin ℓ')), quotSubgraphDensity H₁ H' * quotSubgraphDensity H' G
-  := by
-  sorry
 
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
 alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'
