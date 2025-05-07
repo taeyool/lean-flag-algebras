@@ -385,7 +385,35 @@ theorem zeroSpace_eq_sum_spanElement
     : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → FlagVector σ),
       (∀ i, v i ∈ zeroSet σ) ∧ (k = ∑ i, c i • v i)
   := by
-  sorry
+  revert h_zero
+  apply Submodule.span_induction'
+  · intro k h_zero
+    use PUnit; use inferInstance
+    use fun _ ↦ 1; use fun _ ↦ k
+    simp_all only [mem_zeroSet, implies_true, univ_unique, PUnit.default_eq_unit, one_smul, sum_const,
+      card_singleton, and_self]
+  · use Empty; use inferInstance
+    use fun _ ↦ 0; use fun _ ↦ 0
+    simp
+  · intro x hx y hy hx_ind hy_ind
+    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
+    rcases hy_ind with ⟨J, hJ, d, w, hw, hy⟩
+    use Sum I J; use inferInstance
+    use Sum.elim c d; use Sum.elim v w
+    subst hy hx
+    simp_all only [mem_zeroSet, Sum.forall, Sum.elim_inl, implies_true, Sum.elim_inr, and_self,
+      Fintype.sum_sum_type]
+  · intro r x hx hx_ind
+    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
+    use I; use hI; use fun i ↦ r * c i; use fun i ↦ v i
+    constructor
+    · intro i
+      subst hx
+      simp_all only [mem_zeroSet]
+    · rw [hx, smul_sum]
+      apply sum_congr (by rfl)
+      intro i _
+      rw [smul_smul]
 
 theorem zeroSpace_closed_under_add
     (f f' : FlagVector σ) (f_zero : f ∈ ZeroSpace σ) (f'_zero : f' ∈ ZeroSpace σ)
