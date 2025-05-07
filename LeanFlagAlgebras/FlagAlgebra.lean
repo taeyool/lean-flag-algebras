@@ -375,6 +375,18 @@ noncomputable def ZeroSpace
   :=
   Submodule.span ℝ (zeroSet σ)
 
+theorem flag_mul_zeroElement
+    (F G: FinFlag σ) (ℓ : ℕ) (hℓ : G.1 ≤ ℓ) : (unitVector F) * (zeroElement G ℓ) ∈ ZeroSpace σ
+  := by
+  sorry
+
+theorem zeroSpace_eq_sum_spanElement
+    (k : FlagVector σ) (h_zero : k ∈ ZeroSpace σ)
+    : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → FlagVector σ),
+      (∀ i, v i ∈ zeroSet σ) ∧ (k = ∑ i, c i • v i)
+  := by
+  sorry
+
 theorem zeroSpace_closed_under_add
     (f f' : FlagVector σ) (f_zero : f ∈ ZeroSpace σ) (f'_zero : f' ∈ ZeroSpace σ)
     : f + f' ∈ ZeroSpace σ
@@ -388,7 +400,7 @@ lemma zeroSpace_closed_under_sum
   apply Submodule.sum_mem
   assumption
 
-lemma zeroSet_closed_under_smul
+lemma zeroSpace_closed_under_smul
     (r : ℝ) (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
     : r • f ∈ ZeroSpace σ
   := by
@@ -457,7 +469,7 @@ noncomputable instance : SMul ℝ (FlagAlgebra σ) where
     show (r • g) ∼v (r • g')
     dsimp [flagVectorEqv]
     rw [← smul_sub]
-    apply zeroSet_closed_under_smul
+    apply zeroSpace_closed_under_smul
     exact hg
 
 noncomputable instance : Neg (FlagAlgebra σ) where
@@ -476,7 +488,21 @@ noncomputable instance : MulAction ℝ (FlagAlgebra σ) where
 
 theorem flagVector_mul_zeroSpace
    (f : FlagVector σ) {k : FlagVector σ} (hk_zero : k ∈ ZeroSpace σ) : f * k ∈ ZeroSpace σ
-  := by sorry
+  := by
+  rw [flagVector_eq_sum_unitVector f, sum_mul]
+  apply zeroSpace_closed_under_sum
+  intro F _
+  rcases zeroSpace_eq_sum_spanElement k hk_zero with ⟨I, hI, c, v, hv, hk_sum⟩
+  rw [hk_sum, mul_sum]
+  apply zeroSpace_closed_under_sum
+  intro i _
+  rw [smul_mul_assoc]
+  apply zeroSpace_closed_under_smul
+  rw [mul_comm, smul_mul_assoc]
+  apply zeroSpace_closed_under_smul
+  obtain ⟨H, ℓ, hℓ, hvi⟩ := mem_zeroSet.mp (hv i)
+  simp [mul_comm, hvi]
+  exact flag_mul_zeroElement F H ℓ hℓ
 
 noncomputable instance : Mul (FlagAlgebra σ) where
   mul := by
