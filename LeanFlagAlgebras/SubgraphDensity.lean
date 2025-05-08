@@ -2246,10 +2246,40 @@ lemma quotSubgraphPairDensity_sum_comm
 
 lemma quotSubgraphTripleDensity_comm
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
+    (h : ℓ₁ + ℓ₂ + ℓ₃ ≤ ℓ)
     : quotSubgraphTripleDensity H₁ H₂ H₃ G = quotSubgraphTripleDensity H₂ H₃ H₁ G
   := by
   dsimp [quotSubgraphTripleDensity]
-  sorry
+
+  have h : ∀ (F : QuotSimpleGraph (Fin (ℓ₂ + ℓ₃))), quotSubgraphPairDensity H₂ H₃ F = quotSubgraphPairDensity H₃ H₂ F := by
+    intro F
+    rw [quotSubgraphPairDensity_comm H₂ H₃ F]
+  have h_LHS :  ∑ (F : QuotSimpleGraph (Fin (ℓ₂ + ℓ₃))), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity H₁ F G
+              = ∑ (F : QuotSimpleGraph (Fin (ℓ₂ + ℓ₃))), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity H₁ F G
+    := by
+    simp [h]
+  rw [h_LHS]
+
+  have h' : ∀ (F : QuotSimpleGraph (Fin (ℓ₃ + ℓ₁))),
+              quotSubgraphPairDensity H₃ H₁ F * quotSubgraphPairDensity H₂ F G
+              = quotSubgraphPairDensity H₁ H₃ F * quotSubgraphPairDensity F H₂ G
+    := by
+    intro F
+    rw [quotSubgraphPairDensity_comm H₃ H₁ F, quotSubgraphPairDensity_comm H₂ F G]
+  have h_RHS :  ∑ (F : QuotSimpleGraph (Fin (ℓ₃ + ℓ₁))), quotSubgraphPairDensity H₃ H₁ F * quotSubgraphPairDensity H₂ F G
+              = ∑ (F : QuotSimpleGraph (Fin (ℓ₃ + ℓ₁))), quotSubgraphPairDensity H₁ H₃ F * quotSubgraphPairDensity F H₂ G
+    := by
+    simp [h']
+  rw [h_RHS]
+
+  let ℓ₁₃ := ℓ₃ + ℓ₁
+  let ℓ₃₂ := ℓ₂ + ℓ₃
+  have hℓ₁₃_lb : ℓ₁ + ℓ₃ ≤ ℓ₁₃ := by dsimp [ℓ₁₃]; linarith [h]
+  have hℓ₁₃_ub : ℓ₁₃ + ℓ₂ ≤ ℓ := by dsimp [ℓ₁₃]; linarith [h]
+  have hℓ₃₂_lb : ℓ₃ + ℓ₂ ≤ ℓ₃₂ := by dsimp [ℓ₃₂]; linarith [h]
+  have hℓ₃₂_ub : ℓ₁ + ℓ₃₂ ≤ ℓ := by dsimp [ℓ₃₂]; linarith [h]
+  rw [quotSubgraphPairDensity_sum_comm H₁ H₃ H₂ G hℓ₁₃_lb hℓ₁₃_ub hℓ₃₂_lb hℓ₃₂_ub]
+
 
 theorem quotSubgraphTripleDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
@@ -2270,6 +2300,8 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
     simp [h]
   rw [h_LHS]
 
+  sorry
+  sorry
   sorry
 
 
