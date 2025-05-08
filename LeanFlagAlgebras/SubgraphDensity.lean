@@ -2287,22 +2287,27 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
     : quotSubgraphTripleDensity H₁ H₂ H₃ G
       = ∑ (F : QuotSimpleGraph (Fin ℓ₄)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
   := by
-  rw [quotSubgraphTripleDensity_comm H₁ H₂ H₃ G]
-  rw [quotSubgraphTripleDensity_comm H₂ H₃ H₁ G]
+  rw [quotSubgraphTripleDensity_comm H₁ H₂ H₃ G (by linarith [hℓ₄_lb, hℓ₄_ub])]
+  rw [quotSubgraphTripleDensity_comm H₂ H₃ H₁ G (by linarith [hℓ₄_lb, hℓ₄_ub])]
   dsimp [quotSubgraphTripleDensity]
 
   have h : ∀ (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))), quotSubgraphPairDensity H₃ F G = quotSubgraphPairDensity F H₃ G := by
     intro F
     rw [quotSubgraphPairDensity_comm H₃ F G]
   have h_LHS :  ∑ (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity H₃ F G
-              = ∑ (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity H₃ F G
+              = ∑ (F : QuotSimpleGraph (Fin (ℓ₁ + ℓ₂))), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
     := by
     simp [h]
   rw [h_LHS]
 
-  sorry
-  sorry
-  sorry
+  let ℓ₁₂ := ℓ₁ + ℓ₂
+  have hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂ := by simp only [le_refl, ℓ₁₂]
+  have hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ := by dsimp [ℓ₁₂]; linarith [hℓ₄_lb, hℓ₄_ub]
+  let ℓ₂₃ := ℓ₂ + ℓ₃
+  have hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃ := by simp only [le_refl, ℓ₂₃]
+  have hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ := by dsimp [ℓ₂₃]; linarith [hℓ₄_lb, hℓ₄_ub]
+  rw [quotSubgraphPairDensity_sum_comm H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub]
+  rw [quotSubgraphPairDensity_sum_comm H₁ H₂ H₃ G hℓ₄_lb hℓ₄_ub hℓ₂₃_lb hℓ₂₃_ub]
 
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods'
