@@ -27,5 +27,10 @@ instance : LE (FlagAlgebra σ) where
   le := fun f g => g - f ∈ semanticCone σ
 
 instance : Preorder (FlagAlgebra σ) where
-  le_refl := sorry
+  le_refl := by
+    intro f
+    show f - f ∈ semanticCone σ
+    simp [semanticCone]
+    intro φ
+    sorry
   le_trans := sorry
