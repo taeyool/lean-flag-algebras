@@ -2207,6 +2207,7 @@ theorem quotSubgraphDensity_eq_sum_density_prods
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₀ H₁ G h_lb hℓ₂_ub
 
+
 /- Hongseok: The following definition of the triple density is a hack which would let us proceed but which we should fix at some point. -/
 noncomputable def quotSubgraphTripleDensity
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph W)
@@ -2235,6 +2236,18 @@ lemma quotSubgraphTripleDensity_empty
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₁ H₂ G (Nat.le_refl (ℓ₁ + ℓ₂)) hℓ
 
+
+lemma subgraphPairDensityLifted_sum_comm'
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
+    (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
+    (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
+    (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
+    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensityLifted H₁ H₂ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₃ ⟦G⟧
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensityLifted H₂ H₃ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₁ ⟦G⟧
+  := by
+  sorry
+
+
 lemma quotSubgraphPairDensity_sum_comm'
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2243,7 +2256,21 @@ lemma quotSubgraphPairDensity_sum_comm'
     :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
       = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity F H₁ G
   := by
-  sorry
+  have h_LHS :  ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
+              = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ ⟦F.out⟧ * quotSubgraphPairDensity ⟦F.out⟧ H₃ G
+    := by simp
+  have h_RHS :  ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity F H₁ G
+              = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ ⟦F.out⟧ * quotSubgraphPairDensity ⟦F.out⟧ H₁ G
+    := by simp
+  rw [h_LHS, h_RHS]
+
+  rcases Quotient.exists_rep H₁ with ⟨H₁rep, hH₁rep⟩
+  rcases Quotient.exists_rep H₂ with ⟨H₂rep, hH₂rep⟩
+  rcases Quotient.exists_rep H₃ with ⟨H₃rep, hH₃rep⟩
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rw [← hH₁rep, ← hH₂rep, ← hH₃rep, ← hGrep]
+  exact subgraphPairDensityLifted_sum_comm' H₁rep H₂rep H₃rep Grep hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
+
 
 lemma quotSubgraphPairDensity_sum_comm
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
@@ -2292,6 +2319,7 @@ lemma quotSubgraphPairDensity_sum_comm
       := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G hℓ₃₂_lb hℓ₃₂_ub hℓ₂₁_lb hℓ₂₁_ub h_ge'
     rw [h_comm₂']
   }
+
 
 lemma quotSubgraphTripleDensity_comm
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
