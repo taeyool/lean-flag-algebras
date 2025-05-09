@@ -2283,9 +2283,13 @@ lemma quotSubgraphPairDensity_sum_comm
     rw [h_comm₁']
 
     have h_ge' : ℓ₂₃ + ℓ₁ ≥ ℓ₃ + ℓ₁₂ := by linarith [h_ge]
+    have hℓ₃₂_lb : ℓ₃ + ℓ₂ ≤ ℓ₂₃ := by linarith [hℓ₂₃_lb]
+    have hℓ₃₂_ub : ℓ₂₃ + ℓ₁ ≤ ℓ := by linarith [hℓ₂₃_ub]
+    have hℓ₂₁_lb : ℓ₂ + ℓ₁ ≤ ℓ₁₂ := by linarith [hℓ₁₂_lb]
+    have hℓ₂₁_ub : ℓ₃ + ℓ₁₂ ≤ ℓ := by linarith [hℓ₁₂_ub]
     have h_comm₂' :   ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G
                     = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₂ H₁ F * quotSubgraphPairDensity F H₃ G
-      := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G sorry sorry sorry sorry h_ge'
+      := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G hℓ₃₂_lb hℓ₃₂_ub hℓ₂₁_lb hℓ₂₁_ub h_ge'
     rw [h_comm₂']
   }
 
