@@ -2257,13 +2257,37 @@ lemma quotSubgraphPairDensity_sum_comm
     have h_comm : ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
                   = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity F H₁ G
       := quotSubgraphPairDensity_sum_comm' H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h_ge
-    sorry
+    rw [h_comm]
+    have h : ∀ (F : QuotSimpleGraph (Fin (ℓ₂₃))), quotSubgraphPairDensity F H₁ G = quotSubgraphPairDensity H₁ F G := by
+      intro F
+      rw [quotSubgraphPairDensity_comm F H₁ G]
+    simp only [h]
   }
-  let h_ge' : ℓ₂₃ + ℓ₁ ≥ ℓ₃ + ℓ₁₂ := by linarith [h_ge]
-  have h_comm' : ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G
-                = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₂ H₁ F * quotSubgraphPairDensity F H₃ G
-    := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G sorry sorry sorry sorry h_ge'
-  sorry
+  {
+    have h₀' : ∀ (F : QuotSimpleGraph (Fin (ℓ₂₃))),
+               quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity H₁ F G
+                = quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G := by
+        intro F
+        rw [quotSubgraphPairDensity_comm F H₁ G, quotSubgraphPairDensity_comm H₂ H₃ F]
+    have h_comm₀' :  ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity H₁ F G
+                   = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G := by
+      simp [h₀']
+    rw [h_comm₀']
+
+    have h₁' : ∀ (F : QuotSimpleGraph (Fin (ℓ₁₂))), quotSubgraphPairDensity H₁ H₂ F = quotSubgraphPairDensity H₂ H₁ F := by
+      intro F
+      rw [quotSubgraphPairDensity_comm H₁ H₂ F]
+    have h_comm₁' :  ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
+                   = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₂ H₁ F * quotSubgraphPairDensity F H₃ G := by
+      simp [h₁']
+    rw [h_comm₁']
+
+    have h_ge' : ℓ₂₃ + ℓ₁ ≥ ℓ₃ + ℓ₁₂ := by linarith [h_ge]
+    have h_comm₂' :   ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G
+                    = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₂ H₁ F * quotSubgraphPairDensity F H₃ G
+      := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G sorry sorry sorry sorry h_ge'
+    rw [h_comm₂']
+  }
 
 lemma quotSubgraphTripleDensity_comm
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
