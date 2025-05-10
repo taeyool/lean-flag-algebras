@@ -2236,6 +2236,25 @@ lemma quotSubgraphTripleDensity_empty
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₁ H₂ G (Nat.le_refl (ℓ₁ + ℓ₂)) hℓ
 
+noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
+    (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
+    (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
+    (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
+    : (F : QuotSimpleGraph (Fin ℓ₁₂)) × { ⟨F₁,F₂,G₁₂,G₃,S⟩ : Subgraph F.out × Subgraph F.out × Subgraph G × Subgraph G × Finset (Fin ℓ₁₂)
+                                            | ⟨F₁,F₂⟩ ∈ subgraphPairSet H₁ H₂ F.out
+                                            ∧ ⟨G₁₂,G₃⟩ ∈ subgraphPairSet F.out H₃ G
+                                            ∧ S.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                                            ∧ ↑S ∩ (F₁.verts ∪ F₂.verts) = ∅ }
+      ≃
+      (F : QuotSimpleGraph (Fin ℓ₂₃)) × { ⟨F₂,F₃,G₂₃,G₁,S⟩ : Subgraph F.out × Subgraph F.out × Subgraph G × Subgraph G × Finset (Fin ℓ)
+                                            | ⟨F₂,F₃⟩ ∈ subgraphPairSet H₂ H₃ F.out
+                                            ∧ ⟨G₂₃,G₁⟩ ∈ subgraphPairSet F.out H₁ G
+                                            ∧ S.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                                            ∧ ↑S ∩ (G₂₃.verts ∪ G₁.verts) = ∅ }
+  :=
+  sorry
+
 
 lemma subgraphPairDensity_sum_comm
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
@@ -2246,6 +2265,7 @@ lemma subgraphPairDensity_sum_comm
       = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G
   := by
   sorry
+
 
 lemma subgraphPairDensityLifted_sum_comm'
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
