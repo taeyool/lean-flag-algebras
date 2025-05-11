@@ -2281,9 +2281,9 @@ lemma subgraphPairDensity_sum_assoc
           subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
       = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
           subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G
-  := by
+  :=
   let C₁₂ : ℚ := (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
-  let h_C₁₂_gt_0 : C₁₂ > 0 := by
+  have h_C₁₂_gt_0 : C₁₂ > 0 := by
     have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) :=
       calc
         ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂ + ℓ₃) := by apply Nat.sub_le_sub_left; linarith
@@ -2293,15 +2293,36 @@ lemma subgraphPairDensity_sum_assoc
     div_self (ne_of_gt h_C₁₂_gt_0)
 
   let C₂₃ : ℚ := (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
-  let h_C₂₃_gt_0 : C₂₃ > 0 := by
+  have h_C₂₃_gt_0 : C₂₃ > 0 := by
     have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ - (ℓ₁ + ℓ₂₃) := Nat.sub_le_sub_right hℓ₁₂_ub (ℓ₁ + ℓ₂₃)
     simp [C₂₃, Nat.choose_pos this]
   have h_C₂₃_self_div_eq_1 : C₂₃ / C₂₃ = 1 :=
     div_self (ne_of_gt h_C₂₃_gt_0)
 
   have h_C₁₂_C₂₃ : ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
-                    = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ := by
-    sorry
+                    = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ :=
+    have h₁ : ℓ₁ ≤ ℓ₁₂ := by linarith
+    have h₂ : ℓ₂ ≤ ℓ₁₂ - ℓ₁ := sorry
+    have h₃ : ℓ₁₂ ≤ ℓ := by linarith
+    have h₄ : ℓ₃ ≤ ℓ - ℓ₁₂ := sorry
+    have h₅ : (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) ≤ (ℓ₁₂ - (ℓ₁ + ℓ₂)) := sorry
+    have h₁' : ℓ₂ ≤ ℓ₂₃ := by linarith
+    have h₂' : ℓ₃ ≤ ℓ₂₃ - ℓ₂ := sorry
+    have h₃' : ℓ₂₃ ≤ ℓ := by linarith
+    have h₄' : ℓ₁ ≤ ℓ - ℓ₂₃ := sorry
+    have h₅' : (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) ≤ (ℓ₂₃ - (ℓ₂ + ℓ₃)) := sorry
+    calc
+      ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
+      _ = ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+            * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+              dsimp [C₁₂]
+      _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃
+            * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁
+            * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+              sorry
+      _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ := by
+              dsimp [C₂₃]
 
   calc
     ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
