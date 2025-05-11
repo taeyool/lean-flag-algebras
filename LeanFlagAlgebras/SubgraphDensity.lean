@@ -4,6 +4,8 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.FieldSimp
 
 open Finset
 open SimpleGraph
@@ -2302,25 +2304,153 @@ lemma subgraphPairDensity_sum_assoc
   have h_C₁₂_C₂₃ : ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
                     = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ :=
     have h₁ : ℓ₁ ≤ ℓ₁₂ := by linarith
-    have h₂ : ℓ₂ ≤ ℓ₁₂ - ℓ₁ := sorry
+    have h₂ : ℓ₂ ≤ ℓ₁₂ - ℓ₁ := (Nat.le_sub_iff_add_le' h₁).mpr hℓ₁₂_lb
     have h₃ : ℓ₁₂ ≤ ℓ := by linarith
-    have h₄ : ℓ₃ ≤ ℓ - ℓ₁₂ := sorry
-    have h₅ : (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) ≤ (ℓ₁₂ - (ℓ₁ + ℓ₂)) := sorry
+    have h₄ : ℓ₃ ≤ ℓ - ℓ₁₂ := (Nat.le_sub_iff_add_le' h₃).mpr hℓ₁₂_ub
+    have h₅ : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) := by
+      apply (Nat.le_sub_iff_add_le' hℓ₁₂_lb).mpr
+      rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂)]
+      apply Nat.sub_le_of_le_add
+      linarith
     have h₁' : ℓ₂ ≤ ℓ₂₃ := by linarith
-    have h₂' : ℓ₃ ≤ ℓ₂₃ - ℓ₂ := sorry
+    have h₂' : ℓ₃ ≤ ℓ₂₃ - ℓ₂ := (Nat.le_sub_iff_add_le' h₁').mpr hℓ₂₃_lb
     have h₃' : ℓ₂₃ ≤ ℓ := by linarith
-    have h₄' : ℓ₁ ≤ ℓ - ℓ₂₃ := sorry
-    have h₅' : (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) ≤ (ℓ₂₃ - (ℓ₂ + ℓ₃)) := sorry
+    have h₄' : ℓ₁ ≤ ℓ - ℓ₂₃ := by apply (Nat.le_sub_iff_add_le' h₃').mpr; linarith
+    have h₅' : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ - (ℓ₁ + ℓ₂₃) := by
+      apply (Nat.le_sub_iff_add_le' hℓ₂₃_ub).mpr
+      rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂₃)]
+      apply Nat.sub_le_of_le_add
+      linarith
     calc
       ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
       _ = ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
-            * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
-            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
-              dsimp [C₁₂]
-      _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃
-            * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁
-            * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+          * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+          * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+                dsimp [C₁₂]
+      _ = ↑(ℓ₁₂.factorial / (ℓ₁.factorial * (ℓ₁₂ - ℓ₁).factorial))
+          * ↑((ℓ₁₂ - ℓ₁).factorial / (ℓ₂.factorial * (ℓ₁₂ - ℓ₁ - ℓ₂).factorial))
+          * ↑(ℓ.factorial / (ℓ₁₂.factorial * (ℓ - ℓ₁₂).factorial))
+          * ↑((ℓ - ℓ₁₂).factorial / (ℓ₃.factorial * (ℓ - ℓ₁₂ - ℓ₃).factorial))
+          * ↑((ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial / ((ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * (ℓ₁₂ - (ℓ₁ + ℓ₂) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))).factorial)) := by
+                rw [Nat.choose_eq_factorial_div_factorial h₁]
+                rw [Nat.choose_eq_factorial_div_factorial h₂]
+                rw [Nat.choose_eq_factorial_div_factorial h₃]
+                rw [Nat.choose_eq_factorial_div_factorial h₄]
+                rw [Nat.choose_eq_factorial_div_factorial h₅]
+      _ = ↑(ℓ₁₂.factorial / (ℓ₁.factorial * (ℓ₁₂ - ℓ₁).factorial))
+          * ↑((ℓ₁₂ - ℓ₁).factorial / (ℓ₂.factorial * (ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial))
+          * ↑(ℓ.factorial / (ℓ₁₂.factorial * (ℓ - ℓ₁₂).factorial))
+          * ↑((ℓ - ℓ₁₂).factorial / (ℓ₃.factorial * (ℓ - (ℓ₁₂ + ℓ₃)).factorial))
+          * ↑((ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial / ((ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * (ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial)) := by
+                have : ℓ₁₂ - ℓ₁ - ℓ₂ = ℓ₁₂ - (ℓ₁ + ℓ₂) := by exact Nat.sub_sub ℓ₁₂ ℓ₁ ℓ₂
+                rw [this]
+                have : ℓ - ℓ₁₂ - ℓ₃ = ℓ - (ℓ₁₂ + ℓ₃) := by exact Nat.sub_sub ℓ ℓ₁₂ ℓ₃
+                rw [this]
+                have : ℓ₁₂ - (ℓ₁ + ℓ₂) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
+                  refine Eq.symm (tsub_eq_tsub_of_add_eq_add ?h')
+                  rw [←Nat.add_sub_assoc h ℓ₂₃]
+                  apply Nat.sub_eq_of_eq_add
+                  ring_nf
+                  rw [←Nat.add_sub_assoc hℓ₁₂_lb (ℓ₂₃ + ℓ₃ + ℓ₁ + ℓ₂)]
+                  refine Eq.symm (Nat.sub_eq_of_eq_add ?h'')
+                  linarith
+                rw [this]
+      _ = (↑ℓ₁₂.factorial / (↑ℓ₁.factorial * ↑(ℓ₁₂ - ℓ₁).factorial))
+          * (↑(ℓ₁₂ - ℓ₁).factorial / (↑ℓ₂.factorial * ↑(ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial))
+          * (↑ℓ.factorial / (↑ℓ₁₂.factorial * ↑(ℓ - ℓ₁₂).factorial))
+          * (↑(ℓ - ℓ₁₂).factorial / (ℓ₃.factorial * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial))
+          * (↑(ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial / ↑((ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial)) := by
+                sorry
+      _ = (↑ℓ₁₂.factorial
+            * ↑(ℓ₁₂ - ℓ₁).factorial
+            * ↑ℓ.factorial
+            * ↑(ℓ - ℓ₁₂).factorial
+            * ↑(ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial)
+          / (↑ℓ₁.factorial
+              * ↑(ℓ₁₂ - ℓ₁).factorial
+              * ↑ℓ₂.factorial
+              * ↑(ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial
+              * ↑ℓ₁₂.factorial
+              * ↑(ℓ - ℓ₁₂).factorial
+              * ↑ℓ₃.factorial
+              * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial
+              * ↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial) := by
+                simp only [div_mul_div_comm, mul_assoc, Nat.cast_mul]
+      _ = ↑ℓ.factorial
+          / (↑ℓ₁.factorial
+              * ↑ℓ₂.factorial
+              * ↑ℓ₃.factorial
+              * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial
+              * ↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial) := by
+              field_simp
+              ring
+        _ = ↑ℓ.factorial
+          / (↑ℓ₂.factorial
+              * ↑ℓ₃.factorial
+              * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial
+              * ↑ℓ₁.factorial
+              * ↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial) := by
+              ring
+      _ = (↑ℓ₂₃.factorial
+            * ↑(ℓ₂₃ - ℓ₂).factorial
+            * ↑ℓ.factorial
+            * ↑(ℓ - ℓ₂₃).factorial
+            * ↑(ℓ - (ℓ₁ + ℓ₂₃)).factorial)
+          / (↑ℓ₂.factorial
+              * ↑(ℓ₂₃ - ℓ₂).factorial
+              * ↑ℓ₃.factorial
+              * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial
+              * ↑ℓ₂₃.factorial
+              * ↑(ℓ - ℓ₂₃).factorial
+              * ↑ℓ₁.factorial
+              * ↑(ℓ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
+              * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial) := by
+              field_simp
+              ring
+      _ = (↑ℓ₂₃.factorial / (↑ℓ₂.factorial * ↑(ℓ₂₃ - ℓ₂).factorial))
+          * (↑(ℓ₂₃ - ℓ₂).factorial / (↑ℓ₃.factorial * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial))
+          * (↑ℓ.factorial / (↑ℓ₂₃.factorial * ↑(ℓ - ℓ₂₃).factorial))
+          * (↑(ℓ - ℓ₂₃).factorial / (↑ℓ₁.factorial * ↑(ℓ - (ℓ₁ + ℓ₂₃)).factorial))
+          * (↑(ℓ - (ℓ₁ + ℓ₂₃)).factorial / (↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial)) := by
+              simp only [div_mul_div_comm, mul_assoc, Nat.cast_mul]
+      _ = ↑(ℓ₂₃.factorial / (ℓ₂.factorial * (ℓ₂₃ - ℓ₂).factorial))
+          * ↑((ℓ₂₃ - ℓ₂).factorial / (ℓ₃.factorial * (ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial))
+          * ↑(ℓ.factorial / (ℓ₂₃.factorial * (ℓ - ℓ₂₃).factorial))
+          * ↑((ℓ - ℓ₂₃).factorial / (ℓ₁.factorial * (ℓ - (ℓ₁ + ℓ₂₃)).factorial))
+          * ↑((ℓ - (ℓ₁ + ℓ₂₃)).factorial / ((ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial * (ℓ - (ℓ₁₂ + ℓ₃)).factorial)) := by
               sorry
+      _ = ↑(ℓ₂₃.factorial / (ℓ₂.factorial * (ℓ₂₃ - ℓ₂).factorial))
+          * ↑((ℓ₂₃ - ℓ₂).factorial / (ℓ₃.factorial * (ℓ₂₃ - ℓ₂ - ℓ₃).factorial))
+          * ↑(ℓ.factorial / (ℓ₂₃.factorial * (ℓ - ℓ₂₃).factorial))
+          * ↑((ℓ - ℓ₂₃).factorial / (ℓ₁.factorial * (ℓ - ℓ₂₃ - ℓ₁).factorial))
+          * ↑((ℓ - (ℓ₁ + ℓ₂₃)).factorial / ((ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial * (ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))).factorial)) := by
+              have : ℓ₂₃ - ℓ₂ - ℓ₃ = ℓ₂₃ - (ℓ₂ + ℓ₃) := Nat.sub_sub ℓ₂₃ ℓ₂ ℓ₃
+              rw [this]
+              have : ℓ - ℓ₂₃ - ℓ₁ = ℓ - (ℓ₁ + ℓ₂₃) := Eq.symm (Nat.Simproc.sub_add_eq_comm ℓ ℓ₁ ℓ₂₃)
+              rw [this]
+              have : ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ - (ℓ₁₂ + ℓ₃) := by
+                refine Eq.symm (tsub_eq_tsub_of_add_eq_add ?h)
+                ring_nf
+                rw [←Nat.add_sub_assoc h ℓ]
+                apply Nat.sub_eq_of_eq_add
+                ring_nf
+                rw [←Nat.add_sub_assoc hℓ₂₃_ub _]
+                refine Eq.symm (Nat.sub_eq_of_eq_add ?_)
+                linarith
+              rw [this]
+      _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+              rw [Nat.choose_eq_factorial_div_factorial h₁']
+              rw [Nat.choose_eq_factorial_div_factorial h₂']
+              rw [Nat.choose_eq_factorial_div_factorial h₃']
+              rw [Nat.choose_eq_factorial_div_factorial h₄']
+              rw [Nat.choose_eq_factorial_div_factorial h₅']
       _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ := by
               dsimp [C₂₃]
 
@@ -2351,7 +2481,7 @@ lemma subgraphPairDensity_sum_assoc
         / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
             * ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃
             * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
-                dsimp [C₁₂]
+                simp only [Nat.cast_sum, Nat.cast_mul, C₁₂]
     _ = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
             subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G
             * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
@@ -2362,7 +2492,7 @@ lemma subgraphPairDensity_sum_assoc
     _  = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
             subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G * C₂₃)
         / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂) : ℚ) := by
-                dsimp [C₁₂, C₂₃]
+                simp only [Nat.cast_sum, Nat.cast_mul, C₂₃, C₁₂]
     _  = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
             subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G * C₂₃)
         / ((ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃) : ℚ) := by
@@ -2377,7 +2507,7 @@ lemma subgraphPairDensity_sum_assoc
           * (C₂₃ / C₂₃) := by
                 simp only [div_mul_div_comm, mul_assoc]
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G := by
-                simp only [subgraphPairDensity, card_fin, h_C₂₃_self_div_eq_1]
+                simp only [h_C₂₃_self_div_eq_1, mul_one, subgraphPairDensity, Fintype.card_fin, Nat.cast_mul]
 
 
 lemma subgraphPairDensityLifted_sum_assoc'
