@@ -2255,25 +2255,90 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   :=
   sorry
 
-
-lemma subgraphPairDensity_sum_comm
+lemma subgraphPairCount_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
     (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
     (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
-    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
-      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G
+    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            subgraphPairCount H₁ H₂ F.out
+          * subgraphPairCount F.out H₃ G
+          * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out
+          * subgraphPairCount F.out H₁ G
+          * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
   := by
   sorry
 
 
-lemma subgraphPairDensityLifted_sum_comm'
+lemma subgraphPairDensity_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
     (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
     (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
-    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensityLifted H₁ H₂ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₃ ⟦G⟧
-      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensityLifted H₂ H₃ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₁ ⟦G⟧
+    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+          subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G
+  := by
+  calc
+    ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            (subgraphPairCount H₁ H₂ F.out / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂) : ℚ))
+            * (subgraphPairCount F.out H₃ G / ((ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃) : ℚ)) := by
+                simp_all [subgraphPairDensity, card_fin]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            (subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G)
+            / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂) * (ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃) : ℚ) := by
+                simp only [div_mul_div_comm]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            (subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G
+                * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+            / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂)
+                * (ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃
+                * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
+                sorry
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+        / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+            * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
+                sorry
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G
+            * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+        / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+            * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
+                rw [subgraphPairCount_sum_assoc H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h]
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            (subgraphPairCount H₂ H₃ F.out / ((ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃) : ℚ))
+            * (subgraphPairCount F.out H₁ G / ((ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁) : ℚ)))
+        *
+        (((ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁) : ℚ)
+          / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+              * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+              * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ)) := by
+                sorry
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          (subgraphPairCount H₂ H₃ F.out / ((ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃) : ℚ))
+          * (subgraphPairCount F.out H₁ G / ((ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁) : ℚ)) := by
+                sorry
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G := by
+                simp_all [subgraphPairDensity, card_fin]
+
+
+lemma subgraphPairDensityLifted_sum_assoc'
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
+    (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
+    (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
+    (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
+    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+          subgraphPairDensityLifted H₁ H₂ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₃ ⟦G⟧
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          subgraphPairDensityLifted H₂ H₃ ⟦F.out⟧ * subgraphPairDensityLifted F.out H₁ ⟦G⟧
   := by
   have h₀ : ∀ {F : QuotSimpleGraph (Fin ℓ₁₂)},
               subgraphPairDensityLifted H₁ H₂ F * subgraphPairDensityLifted F.out H₃ ⟦G⟧
@@ -2311,10 +2376,10 @@ lemma subgraphPairDensityLifted_sum_comm'
     simp only [Quotient.out_eq, h₁]
   rw [h_RHS]
 
-  exact subgraphPairDensity_sum_comm H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
+  exact subgraphPairDensity_sum_assoc H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
 
 
-lemma quotSubgraphPairDensity_sum_comm'
+lemma quotSubgraphPairDensity_sum_assoc'
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
     (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
@@ -2335,10 +2400,10 @@ lemma quotSubgraphPairDensity_sum_comm'
   rcases Quotient.exists_rep H₃ with ⟨H₃rep, hH₃rep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hH₁rep, ← hH₂rep, ← hH₃rep, ← hGrep]
-  exact subgraphPairDensityLifted_sum_comm' H₁rep H₂rep H₃rep Grep hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
+  exact subgraphPairDensityLifted_sum_assoc' H₁rep H₂rep H₃rep Grep hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
 
 
-lemma quotSubgraphPairDensity_sum_comm
+lemma quotSubgraphPairDensity_sum_assoc
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
     (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
@@ -2349,7 +2414,7 @@ lemma quotSubgraphPairDensity_sum_comm
   {
     have h_comm : ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₁ H₂ F * quotSubgraphPairDensity F H₃ G
                   = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity F H₁ G
-      := quotSubgraphPairDensity_sum_comm' H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h_ge
+      := quotSubgraphPairDensity_sum_assoc' H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h_ge
     rw [h_comm]
     have h : ∀ (F : QuotSimpleGraph (Fin (ℓ₂₃))), quotSubgraphPairDensity F H₁ G = quotSubgraphPairDensity H₁ F G := by
       intro F
@@ -2382,7 +2447,7 @@ lemma quotSubgraphPairDensity_sum_comm
     have hℓ₂₁_ub : ℓ₃ + ℓ₁₂ ≤ ℓ := by linarith [hℓ₁₂_ub]
     have h_comm₂' :   ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), quotSubgraphPairDensity H₃ H₂ F * quotSubgraphPairDensity F H₁ G
                     = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), quotSubgraphPairDensity H₂ H₁ F * quotSubgraphPairDensity F H₃ G
-      := quotSubgraphPairDensity_sum_comm' H₃ H₂ H₁ G hℓ₃₂_lb hℓ₃₂_ub hℓ₂₁_lb hℓ₂₁_ub h_ge'
+      := quotSubgraphPairDensity_sum_assoc' H₃ H₂ H₁ G hℓ₃₂_lb hℓ₃₂_ub hℓ₂₁_lb hℓ₂₁_ub h_ge'
     rw [h_comm₂']
   }
 
@@ -2421,7 +2486,7 @@ lemma quotSubgraphTripleDensity_comm
   have hℓ₁₃_ub : ℓ₁₃ + ℓ₂ ≤ ℓ := by dsimp [ℓ₁₃]; linarith [h]
   have hℓ₃₂_lb : ℓ₃ + ℓ₂ ≤ ℓ₃₂ := by dsimp [ℓ₃₂]; linarith [h]
   have hℓ₃₂_ub : ℓ₁ + ℓ₃₂ ≤ ℓ := by dsimp [ℓ₃₂]; linarith [h]
-  rw [quotSubgraphPairDensity_sum_comm H₁ H₃ H₂ G hℓ₁₃_lb hℓ₁₃_ub hℓ₃₂_lb hℓ₃₂_ub]
+  rw [quotSubgraphPairDensity_sum_assoc H₁ H₃ H₂ G hℓ₁₃_lb hℓ₁₃_ub hℓ₃₂_lb hℓ₃₂_ub]
 
 
 theorem quotSubgraphTripleDensity_eq_sum_density_prods
@@ -2449,8 +2514,8 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
   let ℓ₂₃ := ℓ₂ + ℓ₃
   have hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃ := by simp only [le_refl, ℓ₂₃]
   have hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ := by dsimp [ℓ₂₃]; linarith [hℓ₄_lb, hℓ₄_ub]
-  rw [quotSubgraphPairDensity_sum_comm H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub]
-  rw [quotSubgraphPairDensity_sum_comm H₁ H₂ H₃ G hℓ₄_lb hℓ₄_ub hℓ₂₃_lb hℓ₂₃_ub]
+  rw [quotSubgraphPairDensity_sum_assoc H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub]
+  rw [quotSubgraphPairDensity_sum_assoc H₁ H₂ H₃ G hℓ₄_lb hℓ₄_ub hℓ₂₃_lb hℓ₂₃_ub]
 
 
 theorem quotSubgraphPairDensity_eq_sum_density_prods'
