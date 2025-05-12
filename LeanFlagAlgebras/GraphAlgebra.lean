@@ -978,10 +978,7 @@ instance : NeZero (1 : GraphAlgebra) where
       show ∑ G in (basisElementFromGraph 1).support, _ = 1
       simp [sum_singleton, quotSubgraphDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
-      rw [φ_sum]
-      apply sum_eq_zero
-      intro i _
-      rw [φ_smul, hφ, mul_zero]
+      simp_all only [mul_zero, sum_const_zero, zero_ne_one]
     rw [hx]at h_φ_1
     have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [←h_φ_1, ←h_φ_sum]
     exact zero_ne_one zero_eq_one

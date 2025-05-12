@@ -698,7 +698,96 @@ noncomputable instance : CommRing (FlagAlgebra σ) where
   mul_comm := flagAlgebra_mul_comm
 
 instance : NeZero (1 : FlagAlgebra σ) where
-  out := by sorry
+  out := by
+    intro one_eq_zero
+    have h_one_zeroSet : (1 : FlagVector σ) ∈ ZeroSpace σ := by
+      rw [← sub_zero 1]
+      exact Quotient.exact one_eq_zero
+    have zeroSet_decomp := zeroSpace_eq_sum_spanElement 1 h_one_zeroSet
+    rcases zeroSet_decomp with ⟨I, hI, c, v, hv, hx⟩
+    have zeroElem_exists : ∀ (i : I), ∃ (G : FinFlag σ) (ℓ : ℕ), G.1 ≤ ℓ ∧ v i = zeroElement G ℓ := by
+      intro t; exact hv t
+    choose G ℓ hG using zeroElem_exists
+    let L := max (Finset.sup (univ : Finset I) ℓ) n₀
+    have hL : L ≥ n₀ := le_max_right _ _
+    let F := (flagWithSize_inhabited σ hL).default
+    let φ : FlagVector σ → ℝ
+      := fun g => ∑ G in g.support, (g G) * flagDensity₁ G.2 F
+    have φ_add : ∀ (g h : FlagVector σ), φ (g + h) = φ g + φ h := by
+      intro g h
+      simp [φ, add_mul]
+      let ψ : FlagVector σ → FinFlag σ → ℝ
+        := fun g G => (g G) * flagDensity₁ G.2 F
+      have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
+        intro g' h' x hx
+        simp [ψ]
+        rw [add_eq_zero_iff_neg_eq] at hx
+        rw [← hx]
+        simp only [neg_mul, add_neg_cancel]
+      have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
+        intro g' x hx
+        simp [ψ]
+        exact Or.symm (Or.inr hx)
+      apply flagVector_add_support g h ψ hψ1 hψ2
+    have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := by
+      intro r g
+      show ∑ G in _, _ = _ * ∑ G in _, _
+      by_cases hr : r = 0
+      · simp [hr]
+      · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
+        rw [hg_supp, mul_sum]
+        apply sum_congr (by rfl)
+        intro x _
+        simp [mul_sum, mul_assoc]
+    have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+      intro s f
+      show ∑ G in _, _ = ∑ i in _, _
+      classical
+      refine Finset.induction_on s ?_ ?_
+      · simp [φ]
+      · intro r R hr ih
+        simp [sum_insert hr, Module.add_smul]
+        simp_all only [Finsupp.coe_add, Pi.add_apply, φ]
+    have hφ : ∀ (i : I), φ (v i) = 0 := by
+      intro i
+      let iG := G i
+      have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
+      have hℓ : ℓ i ≤ L := by
+        simp [L, le_max_iff]; left
+        apply Finset.le_sup; simp
+      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by sorry
+      rw [hG2]
+      dsimp [zeroElement]
+      rw [sub_eq_add_neg, φ_add]
+      have : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) := by
+        simp_all only [Finsupp.support_neg, Finsupp.coe_neg, Pi.neg_apply, neg_mul, sum_neg_distrib, φ]
+      rw [this, ← sub_eq_add_neg, sub_eq_zero]
+      dsimp [densityFlagSum]
+      rw [φ_sum']
+      have : φ (unitVector iG) = flagDensity₁ iG.2 F := by
+        simp_all only [unitVector_support, sum_singleton, unitVector_apply_self, one_mul, φ]
+      have todo : n₀ ≤ iG.fst := by sorry
+      rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F todo hℓ' hℓ]
+      simp
+      dsimp [FlagWithSize]
+      apply sum_congr (by rfl)
+      intro x
+      rw [φ_smul]
+      simp
+      by_cases s : flagDensity₁ iG.2 x = 0
+      · right; exact s
+      · left
+        dsimp [φ]
+        simp
+    have h_φ_1 : φ 1 = 1 := by
+      show ∑ G in (unitVector 1).support, _ = 1
+      simp
+      sorry
+    have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
+      simp_all only [mul_zero, sum_const_zero, zero_ne_one]
+    rw [hx] at h_φ_1
+    have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [←h_φ_1, ←h_φ_sum]
+    exact zero_ne_one zero_eq_one
 
 instance : Nontrivial (FlagAlgebra σ) where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
