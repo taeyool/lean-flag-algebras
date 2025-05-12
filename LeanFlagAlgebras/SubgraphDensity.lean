@@ -2271,7 +2271,61 @@ lemma subgraphPairCount_sum_assoc
           * subgraphPairCount F.out H₁ G
           * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
   := by
-  sorry
+  let fintypeSubgraphG : Fintype (Subgraph G) :=
+    subgraphFintype G
+  let fintypeSubgraphFoutℓ₁₂ (F : QuotSimpleGraph (Fin ℓ₁₂)) : Fintype (Subgraph F.out) :=
+    subgraphFintype F.out
+  let fintypeSubgraphFoutℓ₂₃ (F : QuotSimpleGraph (Fin ℓ₂₃)) : Fintype (Subgraph F.out) :=
+    subgraphFintype F.out
+
+  let f_LHS (F : QuotSimpleGraph (Fin ℓ₁₂)) :=
+    { ⟨F₁,F₂,G₁₂,G₃,S⟩ : Subgraph F.out × Subgraph F.out
+                          × Subgraph G × Subgraph G × Finset (Fin ℓ₁₂)
+                  | ⟨F₁,F₂⟩ ∈ subgraphPairSet H₁ H₂ F.out
+                  ∧ ⟨G₁₂,G₃⟩ ∈ subgraphPairSet F.out H₃ G
+                  ∧ S.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                  ∧ ↑S ∩ (F₁.verts ∪ F₂.verts) = ∅ }
+  let f_RHS (F : QuotSimpleGraph (Fin ℓ₂₃)) :=
+    { ⟨F₂,F₃,G₂₃,G₁,S⟩ : Subgraph F.out × Subgraph F.out
+                          × Subgraph G × Subgraph G × Finset (Fin ℓ)
+                  | ⟨F₂,F₃⟩ ∈ subgraphPairSet H₂ H₃ F.out
+                  ∧ ⟨G₂₃,G₁⟩ ∈ subgraphPairSet F.out H₁ G
+                  ∧ S.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                  ∧ ↑S ∩ (G₂₃.verts ∪ G₁.verts) = ∅ }
+  have h_iso : (F : QuotSimpleGraph (Fin ℓ₁₂)) × f_LHS F ≃ (F : QuotSimpleGraph (Fin ℓ₂₃)) × f_RHS F :=
+    subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet
+      H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
+  have h_LHS : ∀ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+                Fintype.card (f_LHS F)
+                =
+                subgraphPairCount H₁ H₂ F.out
+                * subgraphPairCount F.out H₃ G
+                * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+    := by sorry
+  have h_RHS : ∀ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+                Fintype.card (f_RHS F)
+                =
+                subgraphPairCount H₂ H₃ F.out
+                * subgraphPairCount F.out H₁ G
+                * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+    := by sorry
+  calc
+    ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+          subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G
+          * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), Fintype.card (f_LHS F) := by
+              simp [h_LHS]
+    _ = Fintype.card ((F : QuotSimpleGraph (Fin ℓ₁₂)) × f_LHS F) :=
+              Eq.symm Fintype.card_sigma
+    _ = Fintype.card ((F : QuotSimpleGraph (Fin ℓ₂₃)) × f_RHS F) :=
+              Fintype.card_congr h_iso
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), Fintype.card (f_RHS F) :=
+              Fintype.card_sigma
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G
+            * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
+              simp [h_RHS]
+
 
 lemma choose_eq_factorial_div_factorial_rational
     {n k : ℕ} (h_k_n : k ≤ n) :
