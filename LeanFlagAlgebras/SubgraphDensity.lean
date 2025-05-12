@@ -2301,14 +2301,24 @@ lemma subgraphPairCount_sum_assoc
                 subgraphPairCount H₁ H₂ F.out
                 * subgraphPairCount F.out H₃ G
                 * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
-    := by sorry
+    := by
+    intro F
+    let S_F := (Fpair : subgraphPairSet H₁ H₂ F.out)
+                × subgraphPairSet F.out H₃ G
+                × { S : Finset (Fin ℓ₁₂)
+                      | S.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                      ∧ ↑S ∩ (Fpair.val.1.verts ∪ Fpair.val.2.verts) = ∅ }
+    have : Fintype.card (f_LHS F) = Fintype.card S_F := sorry
+    sorry
   have h_RHS : ∀ (F : QuotSimpleGraph (Fin ℓ₂₃)),
                 Fintype.card (f_RHS F)
                 =
                 subgraphPairCount H₂ H₃ F.out
                 * subgraphPairCount F.out H₁ G
                 * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
-    := by sorry
+    := by
+    intro F
+    sorry
   calc
     ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
           subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G
