@@ -72,6 +72,19 @@ theorem finFlag_one_snd
     : (1 : FinFlag σ).2 = emptyFlag σ
   := rfl
 
+theorem finFlag_size_ge_n₀
+    (F : FinFlag σ) : n₀ ≤ F.1 := by
+  rcases F with ⟨n, F⟩
+  simp_all only
+  dsimp [FlagWithSize] at F
+  rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+  have ⟨emb, adj⟩ := Frep.type_embed
+  subst hFrep
+  have ⟨funF, inj⟩ := emb
+  have : n₀ ≤ n := by
+    sorry
+  sorry
+
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
 
@@ -778,8 +791,8 @@ instance : NeZero (1 : FlagAlgebra σ) where
       rw [φ_sum']
       have : φ (unitVector iG) = flagDensity₁ iG.2 F := by
         simp_all only [unitVector_support, sum_singleton, unitVector_apply_self, one_mul, φ]
-      have todo : n₀ ≤ iG.fst := by sorry
-      rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F todo hℓ' hℓ]
+      have hℓ'' : n₀ ≤ iG.fst := finFlag_size_ge_n₀ iG
+      rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F hℓ'' hℓ' hℓ]
       simp
       dsimp [FlagWithSize]
       apply sum_congr (by rfl)

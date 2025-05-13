@@ -2321,7 +2321,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               Set.card_image_of_injective (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) Subtype.val_injective
         _ = Fintype.card ↑(Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ :=
               Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Gpair1_Fout.symm.injective
-        _ = ℓ - Fintype.card (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset := by
+        _ = ℓ₁₂ - Fintype.card (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset := by
+              sorry
+        _ = ℓ₁₂ - (Fintype.card Fpair.val.1.verts + Fintype.card Fpair.val.2.verts + Fintype.card X) := by
+              sorry
+        _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) := by
               sorry
         _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
               sorry
