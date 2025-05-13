@@ -2292,13 +2292,54 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let g_Gpair1_Fout : Gpair.val.1.coe ≃g F.out := h_Gpair1_Fout.some
     let g_Gpair2_H₃ : Gpair.val.2.coe ≃g H₃:= h_Gpair2_H₃.some
 
-    let X₁ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' Fpair.val.1.verts).toFinset
-    let X₂ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' Fpair.val.2.verts).toFinset
-    let X₃ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair2_H₃.symm) '' (univ : Finset (Fin ℓ₃))).toFinset
-    let X₄ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' X).toFinset
-    let X₅ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ).toFinset
-    let h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := sorry
-    exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩, h_X₁_X₂_disj, sorry⟩
+    let X₁ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts)).toFinset
+    let X₂ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)).toFinset
+    let X₃ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair2_H₃.symm '' (univ : Finset (Fin ℓ₃)))).toFinset
+    let X₄ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)).toFinset
+    let X₅ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' X)).toFinset
+
+    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := sorry
+    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := sorry
+    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := sorry
+
+    have h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := sorry
+    have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := sorry
+    have h_X₁_X₂_X₃_X₄_disj : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := sorry
+    have h_X₁_X₂_X₃_X₄_X₅_disj : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := sorry
+    have h_X₁_card : X₁.card = ℓ₁ := by
+      simp only [← subgraph_verts_card_from_iso_graph g_X₁_H₁, inducedSubgraph_verts G X₁, coe_sort_coe, Fintype.card_coe]
+    have h_X₂_card : X₂.card = ℓ₂ := by
+      simp only [← subgraph_verts_card_from_iso_graph g_X₂_H₂, inducedSubgraph_verts G X₂, coe_sort_coe, Fintype.card_coe]
+    have h_X₃_card : X₃.card = ℓ₃ := by
+      simp only [← subgraph_verts_card_from_iso_graph g_X₃_H₃, inducedSubgraph_verts G X₃, coe_sort_coe, Fintype.card_coe]
+    have h_X₄_card : X₄.card = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
+      calc
+        X₄.card
+        _  = Fintype.card (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)) := by
+              simp [X₄]
+        _ = Fintype.card (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) :=
+              Set.card_image_of_injective (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) Subtype.val_injective
+        _ = Fintype.card ↑(Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ :=
+              Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Gpair1_Fout.symm.injective
+        _ = ℓ - Fintype.card (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset := by
+              sorry
+        _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
+              sorry
+    have h_X₅_card : X₅.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃) :=
+      calc
+        X₅.card
+        _ = Fintype.card (Subtype.val '' (g_Gpair1_Fout.symm '' X)) := by
+              simp [X₅]
+        _ = Fintype.card (g_Gpair1_Fout.symm '' X) :=
+              Set.card_image_of_injective (g_Gpair1_Fout.symm '' X) Subtype.val_injective
+        _ = Fintype.card X :=
+              Set.card_image_of_injective X g_Gpair1_Fout.symm.injective
+        _ = ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) := by
+              simp [Finset.mem_powersetCard.mp X.property]
+    exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩,
+            h_X₁_X₂_disj, h_X₁_X₂_X₃_disj, h_X₁_X₂_X₃_X₄_disj, h_X₁_X₂_X₃_X₄_X₅_disj,
+            h_X₁_card, h_X₂_card, h_X₃_card, h_X₄_card, h_X₅_card,
+            Nonempty.intro g_X₁_H₁, Nonempty.intro g_X₂_H₂, Nonempty.intro g_X₃_H₃⟩
 
   have h_f_S₁_S₂_inj : Function.Injective f_S₁_S₂_fwd := by sorry
   have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by sorry
