@@ -119,6 +119,11 @@ theorem flagVector_eq_sum_unitVector
 noncomputable instance : One (FlagVector σ) where
   one := unitVector 1
 
+lemma quotLabledSubgraphDensity_one
+    (F : FlagWithSize σ n)
+    : flagDensity₁ (1: FinFlag σ).2 F = 1
+  := by sorry
+
 @[simp]
 theorem flagVector_one_support
     : (1 : FlagVector σ).support = {(1 : FinFlag σ)}
@@ -755,7 +760,14 @@ instance : NeZero (1 : FlagAlgebra σ) where
       have hℓ : ℓ i ≤ L := by
         simp [L, le_max_iff]; left
         apply Finset.le_sup; simp
-      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by sorry
+      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+        intro s f
+        classical
+        refine Finset.induction_on s ?_ ?_
+        · simp [φ]
+        · intro r R hr ih
+          simp [sum_insert hr, Module.add_smul]
+          simp_all only [Finsupp.coe_add, Pi.add_apply, φ]
       rw [hG2]
       dsimp [zeroElement]
       rw [sub_eq_add_neg, φ_add]
@@ -781,8 +793,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
         simp
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (unitVector 1).support, _ = 1
-      simp
-      sorry
+      simp [sum_singleton, quotLabledSubgraphDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       simp_all only [mul_zero, sum_const_zero, zero_ne_one]
     rw [hx] at h_φ_1
