@@ -2297,7 +2297,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let X₃ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair2_H₃.symm) '' (univ : Finset (Fin ℓ₃))).toFinset
     let X₄ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' X).toFinset
     let X₅ : Finset (Fin ℓ) := ((Subtype.val ∘ g_Gpair1_Fout.symm) '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ).toFinset
-    exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩, sorry⟩
+    let h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := sorry
+    exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩, h_X₁_X₂_disj, sorry⟩
 
   have h_f_S₁_S₂_inj : Function.Injective f_S₁_S₂_fwd := by sorry
   have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by sorry
