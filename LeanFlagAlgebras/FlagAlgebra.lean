@@ -77,13 +77,14 @@ theorem finFlag_size_ge_n₀
   rcases F with ⟨n, F⟩
   simp_all only
   dsimp [FlagWithSize] at F
-  rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+  rcases Quotient.exists_rep F with ⟨Frep, _⟩
   have ⟨emb, adj⟩ := Frep.type_embed
-  subst hFrep
   have ⟨funF, inj⟩ := emb
   have : n₀ ≤ n := by
-    sorry
-  sorry
+    have h_card : Fintype.card (Fin n₀) ≤ Fintype.card (Fin n) := Fintype.card_le_of_injective funF inj
+    simp only [Fintype.card_fin] at h_card
+    exact h_card
+  exact this
 
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
