@@ -174,6 +174,39 @@ noncomputable def P3₁' : FlagAlgebra Sₜ :=
 noncomputable def K3₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦K3₁_labeledGraph⟧⟩⟧
 
+/- downward operations -/
+
+lemma unlabel_O3₁
+    : unlabel ⟦O3₁_labeledGraph⟧ = ⟦O3_labeledGraph⟧
+  := by
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph O3₁_labeledGraph := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out O3₁_labeledGraph
+    _ ∼f O3_labeledGraph := by
+      dsimp [unlabeledGraph, O3₁_labeledGraph, O3_labeledGraph]
+      apply flagEqv.refl
+
+lemma downwardNormalizingFactor_O3₁
+    : downwardNormalizingFactor ⟦O3₁_labeledGraph⟧ = 1
+  := by
+  dsimp [downwardNormalizingFactor, isomorphismCount]
+  sorry
+
+lemma downwardFlagVectorQuot_O3₁
+    : downwardFlagVector (unitVector ⟨3, ⟦O3₁_labeledGraph⟧⟩) = unitVector ⟨3, ⟦O3_labeledGraph⟧⟩
+  := by
+  simp [downwardFlagVector, downwardFlag]
+  simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
+
+lemma downward_O3₁
+    : ⟦O3₁⟧₀ = O3
+  := by
+  dsimp [O3₁, downward, O3, downwardFlagVectorQuot]
+  rw [downwardFlagVectorQuot_O3₁]
+
 /- proof of Mantel's theorem -/
 
 theorem mantel_theorem

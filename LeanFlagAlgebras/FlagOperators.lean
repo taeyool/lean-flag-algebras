@@ -23,6 +23,12 @@ def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V wh
   graph := G.graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.graph.Adj
 
+theorem unlabeledGraph_iso
+    (G G' : LabeledGraph σ V) (h : G ∼f G')
+    : unlabeledGraph G ∼f unlabeledGraph G'
+  := by
+  sorry
+
 noncomputable def unlabel {V : Type} (F : Flag σ V) : Flag ∅ₜ V :=
   ⟦unlabeledGraph F.out⟧
 
