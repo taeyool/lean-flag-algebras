@@ -2254,6 +2254,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         × powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((Gpair.val.1.verts ∪ Gpair.val.2.verts)ᶜ).toFinset
   := by
 
+  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
+    calc
+      ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+      _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by sorry
+      _ = ℓ₁₂ - (ℓ₁₂ + ℓ₂ + ℓ₃ - ℓ₂₃) := by sorry
+      _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by sorry
+
   let S₁ := (F : QuotSimpleGraph (Fin ℓ₁₂))
               × (Fpair : subgraphPairSet H₁ H₂ F.out)
               × subgraphPairSet F.out H₃ G
@@ -2321,14 +2328,22 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               Set.card_image_of_injective (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) Subtype.val_injective
         _ = Fintype.card ↑(Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ :=
               Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Gpair1_Fout.symm.injective
-        _ = ℓ₁₂ - Fintype.card (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset := by
-              sorry
+        _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ.toFinset.card := by
+              apply Eq.symm
+              apply Set.toFinset_card
+        _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinsetᶜ.card := by
+              simp only [Set.toFinset_compl]
+        _ = Fintype.card ↑(Fin ℓ₁₂) - (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset.card := by
+              rw [card_compl]
+        _ = ℓ₁₂ - (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X).toFinset.card := by
+              simp only [Fintype.card_fin, toFinset_coe]
         _ = ℓ₁₂ - (Fintype.card Fpair.val.1.verts + Fintype.card Fpair.val.2.verts + Fintype.card X) := by
               sorry
         _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) := by
-              sorry
-        _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-              sorry
+              rw [Iso.card_eq f_Fpair1_H₁, Iso.card_eq f_Fpair2_H₂]
+              simp only [Fintype.card_fin, Fintype.card_coe]
+              simp only [Finset.mem_powersetCard.mp X.property]
+        _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := h_ℓ_eq₁
     have h_X₅_card : X₅.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃) :=
       calc
         X₅.card
