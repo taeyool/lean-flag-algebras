@@ -2344,12 +2344,18 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             rw [Finset.card_union (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset) X.val]
             rw [Finset.card_union Fpair.val.1.verts.toFinset Fpair.val.2.verts.toFinset]
             have : (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset) ∩ X.val = ∅ := by
-              rw [←Set.toFinset_union Fpair.val.1.verts Fpair.val.2.verts]
               have h_Fpair_X_disj : X.val ⊆ (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset)ᶜ := by
                 rw [←Set.toFinset_union Fpair.val.1.verts Fpair.val.2.verts]
                 rw [←Set.toFinset_compl (Fpair.val.1.verts ∪ Fpair.val.2.verts)]
                 exact (Finset.mem_powersetCard.mp X.property).1
-              sorry
+              apply Finset.subset_empty.mp
+              calc
+                (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset) ∩ X.val
+                _ ⊆ (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset)
+                    ∩ (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset)ᶜ :=
+                  inter_subset_inter (subset_refl (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset)) h_Fpair_X_disj
+                _ = ∅ :=
+                  Finset.inter_compl (Fpair.val.1.verts.toFinset ∪ Fpair.val.2.verts.toFinset)
             simp only [this, card_empty, tsub_zero]
             have : Fpair.val.1.verts.toFinset ∩ Fpair.val.2.verts.toFinset = ∅ := by
               rw [←Set.toFinset_inter Fpair.val.1.verts Fpair.val.2.verts]
