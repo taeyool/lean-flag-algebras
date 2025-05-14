@@ -2320,20 +2320,25 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [←Set.image_inter Subtype.val_injective, ←Set.image_inter g_Gpair1_Fout.symm.injective]
       simp [h_Fpair_disj]
     have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
-      dsimp [X₁, X₂, X₃]
-      rw [←Set.toFinset_union
-            (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-            (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts))]
-      rw [←Set.toFinset_inter
-            (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts)
-                ∪ Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts))
-            (Subtype.val '' (g_Gpair2_H₃.symm '' (univ : Finset (Fin ℓ₃))))]
-      apply Set.toFinset_eq_empty.mpr
-      rw [←Set.image_union Subtype.val
-            (g_Gpair1_Fout.symm '' Fpair.val.1.verts)
-            (g_Gpair1_Fout.symm '' Fpair.val.2.verts)]
-      simp only [coe_univ, Set.image_univ]
-      sorry
+      have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
+        simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
+          Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+          Subtype.coe_preimage_self, Set.subset_univ]
+      have h_X₃_included_in_Gpair2_verts : X₃ ⊆ Gpair.val.2.verts.toFinset := by
+        simp only [X₃,
+          Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+          Subtype.coe_preimage_self, Set.subset_univ]
+      apply Finset.subset_empty.mp
+      calc
+        (X₁ ∪ X₂) ∩ X₃
+        _ ⊆  Gpair.val.1.verts.toFinset ∩ Gpair.val.2.verts.toFinset := by
+                apply Finset.subset_inter_iff.mpr
+                exact ⟨ Finset.Subset.trans Finset.inter_subset_left h_X₁_X₂_included_in_Gpair1_verts,
+                        Finset.Subset.trans Finset.inter_subset_right h_X₃_included_in_Gpair2_verts ⟩
+        _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
+                simp only [Eq.symm, Set.toFinset_inter]
+        _ = ∅ := by
+                simp only [h_Gpair_disj, Set.toFinset_empty]
     have h_X₁_X₂_X₃_X₄_disj : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := sorry
     have h_X₁_X₂_X₃_X₄_X₅_disj : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := sorry
     have h_X₁_card : X₁.card = ℓ₁ := by
