@@ -2310,6 +2310,23 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := sorry
     let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := sorry
 
+    have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
+      simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
+        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+        Subtype.coe_preimage_self, Set.subset_univ]
+    have h_X₃_included_in_Gpair2_verts : X₃ ⊆ Gpair.val.2.verts.toFinset := by
+      simp only [X₃,
+        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+        Subtype.coe_preimage_self, Set.subset_univ]
+    have h_X₄_included_in_Gpair1_verts : X₄ ⊆ Gpair.val.1.verts.toFinset := by
+      simp only [X₄,
+        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+        Subtype.coe_preimage_self, Set.subset_univ]
+    have h_X₅_included_in_Gpair1_verts : X₅ ⊆ Gpair.val.1.verts.toFinset := by
+      simp only [X₅,
+        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
+        Subtype.coe_preimage_self, Set.subset_univ]
+
     have h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := by
       dsimp [X₁, X₂]
       rw [←Set.toFinset_inter
@@ -2320,14 +2337,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [←Set.image_inter Subtype.val_injective, ←Set.image_inter g_Gpair1_Fout.symm.injective]
       simp [h_Fpair_disj]
     have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
-      have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
-        simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
-          Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-          Subtype.coe_preimage_self, Set.subset_univ]
-      have h_X₃_included_in_Gpair2_verts : X₃ ⊆ Gpair.val.2.verts.toFinset := by
-        simp only [X₃,
-          Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-          Subtype.coe_preimage_self, Set.subset_univ]
       apply Finset.subset_empty.mp
       calc
         (X₁ ∪ X₂) ∩ X₃
