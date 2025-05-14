@@ -2254,12 +2254,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         × powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((Gpair.val.1.verts ∪ Gpair.val.2.verts)ᶜ).toFinset
   := by
 
-  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
-    calc
-      ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
-      _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by sorry
-      _ = ℓ₁₂ - (ℓ₁₂ + ℓ₂ + ℓ₃ - ℓ₂₃) := by sorry
-      _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by sorry
+  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
+    apply tsub_eq_tsub_of_add_eq_add
+    rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂)]
+    rw [←Nat.add_sub_assoc (by linarith) ℓ₂₃]
+    apply Eq.symm
+    apply Nat.sub_eq_of_eq_add
+    linarith
 
   let S₁ := (F : QuotSimpleGraph (Fin ℓ₁₂))
               × (Fpair : subgraphPairSet H₁ H₂ F.out)
