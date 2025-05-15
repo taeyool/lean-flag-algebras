@@ -1,8 +1,9 @@
 import «LeanFlagAlgebras».QuotientGraph
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Order.BooleanAlgebra
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -2355,8 +2356,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       . dsimp [X₁, X₂, X₄]
         rw [←Set.toFinset_union
               (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts))]
-        rw [←Set.toFinset_inter
+              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)),
+            ←Set.toFinset_inter
               ((Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
                 ∪ (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)))
               (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ))]
@@ -2370,7 +2371,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             ←Set.image_inter g_Gpair1_Fout.symm.injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
-        sorry
+        apply (Set.inter_subset (Fpair.val.1.verts ∪ Fpair.val.2.verts) (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ ∅).mpr
+        calc
+          (Fpair.val.1.verts ∪ Fpair.val.2.verts) ⊆ (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X) := Set.subset_union_left
+          _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜᶜ := Eq.symm (compl_compl (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X))
+          _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜᶜ ∪ ∅ := Set.union_empty (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜᶜ
       . apply Finset.subset_empty.mp
         calc
           X₃ ∩ X₄
