@@ -62,21 +62,27 @@ def K3_labeledGraph : LabeledGraph ∅ₜ (Fin 3) where
   graph := K3_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K3_graph.Adj
 
+/-- a non-edge --/
 noncomputable def O2 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨2, ⟦O2_labeledGraph⟧⟩⟧
 
+/-- an edge --/
 noncomputable def K2 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨2, ⟦K2_labeledGraph⟧⟩⟧
 
+/-- an empty graph with 3 vertices --/
 noncomputable def O3 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨3, ⟦O3_labeledGraph⟧⟩⟧
 
+/-- an edge and an isolated vertex --/
 noncomputable def E3 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨3, ⟦E3_labeledGraph⟧⟩⟧
 
+/-- a path of length 2 (3 vertices) --/
 noncomputable def P3 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨3, ⟦P3_labeledGraph⟧⟩⟧
 
+/-- a complete graph with 3 vertices --/
 noncomputable def K3 : FlagAlgebra ∅ₜ :=
   ⟦unitVector ⟨3, ⟦K3_labeledGraph⟧⟩⟧
 
@@ -150,27 +156,35 @@ def K3₁_labeledGraph : LabeledGraph Sₜ (Fin 3) where
       map_rel_iff' := by intros; simp; exact id
     }
 
+/-- a non-edge with one labeled vertex --/
 noncomputable def O2₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨2, ⟦O2₁_labeledGraph⟧⟩⟧
 
+/-- an edge with one labeled vertex --/
 noncomputable def K2₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨2, ⟦K2₁_labeledGraph⟧⟩⟧
 
+/-- an empty graph with one labeled vertex --/
 noncomputable def O3₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦O3₁_labeledGraph⟧⟩⟧
 
+/-- an edge with one labeled vertex and an isolated vertex --/
 noncomputable def E3₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦E3₁_labeledGraph⟧⟩⟧
 
+/-- an edge and an isolated vertex with a label --/
 noncomputable def E3₁' : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦E3₁'_labeledGraph⟧⟩⟧
 
+/-- a path of length 2 (3 vertices) with the middle vertex labeled --/
 noncomputable def P3₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦P3₁_labeledGraph⟧⟩⟧
 
+/-- a path of length 2 (3 vertices) where one of the endpoints is labeled --/
 noncomputable def P3₁' : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦P3₁'_labeledGraph⟧⟩⟧
 
+/-- a complete graph with one labeled vertex --/
 noncomputable def K3₁ : FlagAlgebra Sₜ :=
   ⟦unitVector ⟨3, ⟦K3₁_labeledGraph⟧⟩⟧
 
@@ -206,6 +220,37 @@ lemma downward_O3₁
   := by
   dsimp [O3₁, downward, O3, downwardFlagVectorQuot]
   rw [downwardFlagVectorQuot_O3₁]
+
+lemma unlabel_K3₁
+    : unlabel ⟦K3₁_labeledGraph⟧ = ⟦K3_labeledGraph⟧
+  := by
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph K3₁_labeledGraph := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out K3₁_labeledGraph
+    _ ∼f K3_labeledGraph := by
+      dsimp [unlabeledGraph, K3₁_labeledGraph, K3_labeledGraph]
+      apply flagEqv.refl
+
+lemma downwardNormalizingFactor_K3₁
+    : downwardNormalizingFactor ⟦K3₁_labeledGraph⟧ = 1
+  := by
+  dsimp [downwardNormalizingFactor, isomorphismCount]
+  sorry
+
+lemma downwardFlagVectorQuot_K3₁
+    : downwardFlagVector (unitVector ⟨3, ⟦K3₁_labeledGraph⟧⟩) = unitVector ⟨3, ⟦K3_labeledGraph⟧⟩
+  := by
+  simp [downwardFlagVector, downwardFlag]
+  simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]
+
+lemma downward_K3₁
+    : ⟦K3₁⟧₀ = K3
+  := by
+  dsimp [K3₁, downward, K3, downwardFlagVectorQuot]
+  rw [downwardFlagVectorQuot_K3₁]
 
 /- proof of Mantel's theorem -/
 
