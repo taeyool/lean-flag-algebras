@@ -2319,22 +2319,27 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ ⊆ (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinset ∩ (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinsetᶜ := Finset.inter_subset_inter_left this
         _ = ∅ := Finset.inter_compl (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinset
 
+    let g_Fout_to_G : Fin ℓ₁₂ ↪ Fin ℓ := {
+      toFun := Subtype.val ∘ g_Gpair1_Fout.symm
+      inj' :=  Function.Injective.comp Subtype.val_injective g_Gpair1_Fout.symm.injective
+    }
+
     let X₁ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts)).toFinset
     let X₂ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)).toFinset
-    let X₃ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair2_H₃.symm '' (univ : Finset (Fin ℓ₃)))).toFinset
+    let X₃ : Finset (Fin ℓ) := Gpair.val.2.verts.toFinset
     let X₄ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)).toFinset
     let X₅ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' X)).toFinset
 
+    have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = Gpair.val.2 := by
+      simp only [X₃, Set.coe_toFinset, inducedSubgraph_eq h_Gpair2_ind]
+
     let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := sorry
     let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := sorry
-    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := sorry
+    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ :=
+      by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
     have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
       simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
-        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-        Subtype.coe_preimage_self, Set.subset_univ]
-    have h_X₃_included_in_Gpair2_verts : X₃ ⊆ Gpair.val.2.verts.toFinset := by
-      simp only [X₃,
         Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
         Subtype.coe_preimage_self, Set.subset_univ]
     have h_X₄_included_in_Gpair1_verts : X₄ ⊆ Gpair.val.1.verts.toFinset := by
@@ -2360,7 +2365,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       calc
         (X₁ ∪ X₂) ∩ X₃
         _ ⊆  Gpair.val.1.verts.toFinset ∩ Gpair.val.2.verts.toFinset :=
-                Finset.inter_subset_inter h_X₁_X₂_included_in_Gpair1_verts h_X₃_included_in_Gpair2_verts
+                Finset.inter_subset_inter h_X₁_X₂_included_in_Gpair1_verts (subset_refl X₃)
         _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
                 simp only [Eq.symm, Set.toFinset_inter]
         _ = ∅ := by
@@ -2399,7 +2404,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         calc
           X₃ ∩ X₄
           _ ⊆ Gpair.val.2.verts.toFinset ∩ Gpair.val.1.verts.toFinset :=
-                Finset.inter_subset_inter h_X₃_included_in_Gpair2_verts h_X₄_included_in_Gpair1_verts
+                Finset.inter_subset_inter (subset_refl X₃) h_X₄_included_in_Gpair1_verts
           _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
                 simp only [Eq.symm, Set.toFinset_inter, Finset.inter_comm]
           _ = ∅ := by
@@ -2436,7 +2441,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         calc
           X₃ ∩ X₅
           _ ⊆ Gpair.val.2.verts.toFinset ∩ Gpair.val.1.verts.toFinset :=
-                Finset.inter_subset_inter h_X₃_included_in_Gpair2_verts h_X₅_included_in_Gpair1_verts
+                Finset.inter_subset_inter (subset_refl X₃) h_X₅_included_in_Gpair1_verts
           _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
                 simp only [Eq.symm, Set.toFinset_inter, Finset.inter_comm]
           _ = ∅ := by
