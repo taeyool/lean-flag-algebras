@@ -2352,7 +2352,24 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         exact Finset.union_eq_empty.mpr this
       }
       constructor
-      . apply Finset.subset_empty.mp
+      . dsimp [X₁, X₂, X₄]
+        rw [←Set.toFinset_union
+              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
+              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts))]
+        rw [←Set.toFinset_inter
+              ((Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
+                ∪ (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)))
+              (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ))]
+        apply Set.toFinset_eq_empty.mpr
+        rw [←Set.image_union Subtype.val
+              (g_Gpair1_Fout.symm '' Fpair.val.1.verts)
+              (g_Gpair1_Fout.symm '' Fpair.val.2.verts),
+            ←Set.image_inter Subtype.val_injective]
+        apply Set.image_eq_empty.mpr
+        rw [←Set.image_union g_Gpair1_Fout.symm Fpair.val.1.verts Fpair.val.2.verts,
+            ←Set.image_inter g_Gpair1_Fout.symm.injective]
+        apply Set.image_eq_empty.mpr
+        apply Set.subset_empty_iff.mp
         sorry
       . apply Finset.subset_empty.mp
         calc
