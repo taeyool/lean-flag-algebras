@@ -2324,41 +2324,41 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       inj' :=  Function.Injective.comp Subtype.val_injective g_Gpair1_Fout.symm.injective
     }
 
-    let X₁ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts)).toFinset
-    let X₂ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)).toFinset
+    let X₁ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.1.verts).toFinset
+    let X₂ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.2.verts).toFinset
     let X₃ : Finset (Fin ℓ) := Gpair.val.2.verts.toFinset
-    let X₄ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)).toFinset
-    let X₅ : Finset (Fin ℓ) := (Subtype.val '' (g_Gpair1_Fout.symm '' X)).toFinset
+    let X₄ : Finset (Fin ℓ) := (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ).toFinset
+    let X₅ : Finset (Fin ℓ) := (g_Fout_to_G '' X).toFinset
 
     have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = Gpair.val.2 := by
-      simp only [X₃, Set.coe_toFinset, inducedSubgraph_eq h_Gpair2_ind]
+      simp only [X₃, Set.coe_toFinset, Eq.symm (inducedSubgraph_eq h_Gpair2_ind)]
 
     let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := sorry
     let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := sorry
-    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ :=
-      by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
+    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
     have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
       simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
         Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
         Subtype.coe_preimage_self, Set.subset_univ]
+      sorry
     have h_X₄_included_in_Gpair1_verts : X₄ ⊆ Gpair.val.1.verts.toFinset := by
       simp only [X₄,
         Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
         Subtype.coe_preimage_self, Set.subset_univ]
+      sorry
     have h_X₅_included_in_Gpair1_verts : X₅ ⊆ Gpair.val.1.verts.toFinset := by
       simp only [X₅,
         Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
         Subtype.coe_preimage_self, Set.subset_univ]
+      sorry
 
     have h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := by
       dsimp [X₁, X₂]
-      rw [←Set.toFinset_inter
-            (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-            (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts))]
+      rw [←Set.toFinset_inter (g_Fout_to_G '' Fpair.val.1.verts) (g_Fout_to_G '' Fpair.val.2.verts)]
       apply Set.toFinset_eq_empty.mpr
       apply Set.subset_empty_iff.mp
-      rw [←Set.image_inter Subtype.val_injective, ←Set.image_inter g_Gpair1_Fout.symm.injective]
+      rw [←Set.image_inter g_Fout_to_G.injective]
       simp [h_Fpair_disj]
     have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
       apply Finset.subset_empty.mp
@@ -2377,21 +2377,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       }
       have h_X₁_union_X₂_disj_X₄ : (X₁ ∪ X₂) ∩ X₄ = ∅ := by
         dsimp [X₁, X₂, X₄]
-        rw [←Set.toFinset_union
-              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)),
+        rw [←Set.toFinset_union (g_Fout_to_G '' Fpair.val.1.verts) (g_Fout_to_G '' Fpair.val.2.verts),
             ←Set.toFinset_inter
-              ((Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-                ∪ (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ))]
+              ((g_Fout_to_G '' Fpair.val.1.verts) ∪ (g_Fout_to_G '' Fpair.val.2.verts))
+              (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)]
         apply Set.toFinset_eq_empty.mpr
-        rw [←Set.image_union Subtype.val
-              (g_Gpair1_Fout.symm '' Fpair.val.1.verts)
-              (g_Gpair1_Fout.symm '' Fpair.val.2.verts),
-            ←Set.image_inter Subtype.val_injective]
-        apply Set.image_eq_empty.mpr
-        rw [←Set.image_union g_Gpair1_Fout.symm Fpair.val.1.verts Fpair.val.2.verts,
-            ←Set.image_inter g_Gpair1_Fout.symm.injective]
+        rw [←Set.image_union g_Fout_to_G Fpair.val.1.verts Fpair.val.2.verts,
+            ←Set.image_inter g_Fout_to_G.injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         apply (Set.inter_subset (Fpair.val.1.verts ∪ Fpair.val.2.verts) (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ ∅).mpr
@@ -2418,21 +2410,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       }
       have h_X₁_union_X₂_disj_X₅ : (X₁ ∪ X₂) ∩ X₅ = ∅ := by
         dsimp [X₁, X₂, X₅]
-        rw [←Set.toFinset_union
-              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)),
+        rw [←Set.toFinset_union (g_Fout_to_G '' Fpair.val.1.verts) (g_Fout_to_G '' Fpair.val.2.verts),
             ←Set.toFinset_inter
-              ((Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.1.verts))
-                ∪ (Subtype.val '' (g_Gpair1_Fout.symm '' Fpair.val.2.verts)))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' X))]
+              ((g_Fout_to_G '' Fpair.val.1.verts) ∪ (g_Fout_to_G '' Fpair.val.2.verts))
+              (g_Fout_to_G '' X)]
         apply Set.toFinset_eq_empty.mpr
-        rw [←Set.image_union Subtype.val
-              (g_Gpair1_Fout.symm '' Fpair.val.1.verts)
-              (g_Gpair1_Fout.symm '' Fpair.val.2.verts),
-            ←Set.image_inter Subtype.val_injective]
-        apply Set.image_eq_empty.mpr
-        rw [←Set.image_union g_Gpair1_Fout.symm Fpair.val.1.verts Fpair.val.2.verts,
-            ←Set.image_inter g_Gpair1_Fout.symm.injective]
+        rw [←Set.image_union g_Fout_to_G Fpair.val.1.verts Fpair.val.2.verts,
+            ←Set.image_inter g_Fout_to_G.injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         exact h_Fpair_verts_disj_X
@@ -2449,12 +2433,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       have h_X₄_disj_X₅ : X₄ ∩ X₅ = ∅ := by
         dsimp [X₄, X₅]
         rw [←Set.toFinset_inter
-              (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ))
-              (Subtype.val '' (g_Gpair1_Fout.symm '' X))]
+              (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)
+              (g_Fout_to_G '' X)]
         apply Set.toFinset_eq_empty.mpr
-        rw [←Set.image_inter Subtype.val_injective]
-        apply Set.image_eq_empty.mpr
-        rw [←Set.image_inter g_Gpair1_Fout.symm.injective]
+        rw [←Set.image_inter g_Fout_to_G.injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         rw [Set.inter_comm]
@@ -2471,12 +2453,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_X₄_card : X₄.card = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
       calc
         X₄.card
-        _  = Fintype.card (Subtype.val '' (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)) := by
+        _  = Fintype.card (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) := by
               simp [X₄]
-        _ = Fintype.card (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) :=
-              Set.card_image_of_injective (g_Gpair1_Fout.symm '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) Subtype.val_injective
         _ = Fintype.card ↑(Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ :=
-              Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Gpair1_Fout.symm.injective
+              Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Fout_to_G.injective
         _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ.toFinset.card := by
               apply Eq.symm
               apply Set.toFinset_card
@@ -2518,12 +2498,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_X₅_card : X₅.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃) :=
       calc
         X₅.card
-        _ = Fintype.card (Subtype.val '' (g_Gpair1_Fout.symm '' X)) := by
+        _ = Fintype.card (g_Fout_to_G '' X) := by
               simp [X₅]
-        _ = Fintype.card (g_Gpair1_Fout.symm '' X) :=
-              Set.card_image_of_injective (g_Gpair1_Fout.symm '' X) Subtype.val_injective
         _ = Fintype.card X :=
-              Set.card_image_of_injective X g_Gpair1_Fout.symm.injective
+              Set.card_image_of_injective X g_Fout_to_G.injective
         _ = ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) := by
               simp [Finset.mem_powersetCard.mp X.property]
     exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩,
