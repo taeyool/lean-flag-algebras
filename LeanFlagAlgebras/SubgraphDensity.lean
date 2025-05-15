@@ -2340,15 +2340,29 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       apply Finset.subset_empty.mp
       calc
         (X₁ ∪ X₂) ∩ X₃
-        _ ⊆  Gpair.val.1.verts.toFinset ∩ Gpair.val.2.verts.toFinset := by
-                apply Finset.subset_inter_iff.mpr
-                exact ⟨ Finset.Subset.trans Finset.inter_subset_left h_X₁_X₂_included_in_Gpair1_verts,
-                        Finset.Subset.trans Finset.inter_subset_right h_X₃_included_in_Gpair2_verts ⟩
+        _ ⊆  Gpair.val.1.verts.toFinset ∩ Gpair.val.2.verts.toFinset :=
+                Finset.inter_subset_inter h_X₁_X₂_included_in_Gpair1_verts h_X₃_included_in_Gpair2_verts
         _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
                 simp only [Eq.symm, Set.toFinset_inter]
         _ = ∅ := by
                 simp only [h_Gpair_disj, Set.toFinset_empty]
-    have h_X₁_X₂_X₃_X₄_disj : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := sorry
+    have h_X₁_X₂_X₃_X₄_disj : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := by
+      suffices (X₁ ∪ X₂) ∩ X₄ = ∅ ∧ X₃ ∩ X₄ = ∅ by {
+        rw [Finset.union_inter_distrib_right (X₁ ∪ X₂) X₃ X₄]
+        exact Finset.union_eq_empty.mpr this
+      }
+      constructor
+      . apply Finset.subset_empty.mp
+        sorry
+      . apply Finset.subset_empty.mp
+        calc
+          X₃ ∩ X₄
+          _ ⊆ Gpair.val.2.verts.toFinset ∩ Gpair.val.1.verts.toFinset :=
+                Finset.inter_subset_inter h_X₃_included_in_Gpair2_verts h_X₄_included_in_Gpair1_verts
+          _ = (Gpair.val.1.verts ∩ Gpair.val.2.verts).toFinset := by
+                simp only [Eq.symm, Set.toFinset_inter, Finset.inter_comm]
+          _ = ∅ := by
+                simp only [h_Gpair_disj, Set.toFinset_empty]
     have h_X₁_X₂_X₃_X₄_X₅_disj : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := sorry
     have h_X₁_card : X₁.card = ℓ₁ := by
       simp only [← subgraph_verts_card_from_iso_graph g_X₁_H₁, inducedSubgraph_verts G X₁, coe_sort_coe, Fintype.card_coe]
