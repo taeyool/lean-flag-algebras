@@ -2,6 +2,8 @@ import «LeanFlagAlgebras».PositiveHom
 
 open FlagAlgebras
 
+namespace MantelTheorem
+
 /- flags with empty type -/
 
 def O2_graph := emptyGraph (Fin 2)
@@ -215,7 +217,8 @@ lemma downwardFlagVectorQuot_O3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
 
-lemma downward_O3₁
+@[simp]
+theorem downward_O3₁
     : ⟦O3₁⟧₀ = O3
   := by
   dsimp [O3₁, downward, O3, downwardFlagVectorQuot]
@@ -237,7 +240,8 @@ lemma downwardFlagVectorQuot_E3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁, downwardNormalizingFactor_E3₁]
 
-lemma downward_E3₁
+@[simp]
+theorem downward_E3₁
     : ⟦E3₁⟧₀ = (2 / 3 : ℝ) • E3
   := by
   dsimp [E3₁, downward, E3, downwardFlagVectorQuot]
@@ -260,7 +264,8 @@ lemma downwardFlagVectorQuot_E3₁'
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁', downwardNormalizingFactor_E3₁']
 
-lemma downward_E3₁'
+@[simp]
+theorem downward_E3₁'
     : ⟦E3₁'⟧₀ = (1 / 3 : ℝ) • E3
   := by
   dsimp [E3₁', downward, E3, downwardFlagVectorQuot]
@@ -283,7 +288,8 @@ lemma downwardFlagVectorQuot_P3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁, downwardNormalizingFactor_P3₁]
 
-lemma downward_P3₁
+@[simp]
+theorem downward_P3₁
     : ⟦P3₁⟧₀ = (1 / 3 : ℝ) • P3
   := by
   dsimp [P3₁, downward, P3, downwardFlagVectorQuot]
@@ -306,7 +312,8 @@ lemma downwardFlagVectorQuot_P3₁'
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁', downwardNormalizingFactor_P3₁']
 
-lemma downward_P3₁'
+@[simp]
+theorem downward_P3₁'
     : ⟦P3₁'⟧₀ = (2 / 3 : ℝ) • P3
   := by
   dsimp [P3₁', downward, P3, downwardFlagVectorQuot]
@@ -338,7 +345,8 @@ lemma downwardFlagVectorQuot_K3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]
 
-lemma downward_K3₁
+@[simp]
+theorem downward_K3₁
     : ⟦K3₁⟧₀ = K3
   := by
   dsimp [K3₁, downward, K3, downwardFlagVectorQuot]
@@ -350,3 +358,5 @@ theorem mantel_theorem
     : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
   sorry
+
+end MantelTheorem
