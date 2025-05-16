@@ -2239,6 +2239,29 @@ lemma quotSubgraphTripleDensity_empty
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₁ H₂ G (Nat.le_refl (ℓ₁ + ℓ₂)) hℓ
 
+noncomputable def isoFromInducedSubgraphByPartialIso
+    {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
+    (iso_G₀_F₀ : Subgraph.coe G₀ ≃g F₀) (iso_F₁_H₁ : Subgraph.coe F₁ ≃g H₁)
+    (h_F₁_ind : F₁.IsInduced) (h_G₀_ind : G₀.IsInduced)
+    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts)).val.coe ≃g H₁
+  := by
+    let X₁ := (Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts
+    let G₁ := subgraphFromPartialIso iso_G₀_F₀.symm F₁
+    let g₁ : F₁.coe ≃g G₁.coe := isoToSubgraphFromPartialIso iso_G₀_F₀.symm F₁
+    have : G₁ = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts)) := by
+      have h_G₁_vert_eq_X₁ : G₁.verts = (Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts := by
+        dsimp only [X₁, G₁]
+        dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+        simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
+          Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
+          Set.coe_toFinset]
+      have h_G₁_ind : G₁.IsInduced :=
+        subgraphFromPartialIso_preserve_inducedness iso_G₀_F₀.symm F₁ h_G₀_ind h_F₁_ind
+      rw [←h_G₁_vert_eq_X₁]
+      rw [←inducedSubgraph_eq h_G₁_ind]
+    rw [←this]
+    exact g₁.symm.trans iso_F₁_H₁
+
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2331,7 +2354,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = Subtype.val '' (g_Gpair1_Fout.symm '' V) := by simp only [Function.comp_apply, Set.image_image]
         _ ⊆ Gpair.val.1.verts := by simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
 
-
     let X₁ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.1.verts).toFinset
     let X₂ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.2.verts).toFinset
     let X₃ : Finset (Fin ℓ) := Gpair.val.2.verts.toFinset
@@ -2344,14 +2366,36 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := by
       let G₁' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
       let g₁' : Fpair.val.1.coe ≃g G₁'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
-      have : inducedSubgraph G X₁ = G₁' := sorry
-      rw [this]
+      have : G₁' = ↑(inducedSubgraph G X₁) := by
+        have h_G₁'_vert_eq_X₁ : G₁'.verts = X₁ := by
+          dsimp only [X₁, G₁', g_Fout_to_G]
+          dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+          simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
+            Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
+            Set.coe_toFinset]
+        have h_G₁'_ind : G₁'.IsInduced :=
+          subgraphFromPartialIso_preserve_inducedness
+            g_Gpair1_Fout.symm Fpair.val.1 h_Gpair1_ind h_Fpair1_ind
+        rw [←h_G₁'_vert_eq_X₁]
+        rw [←inducedSubgraph_eq h_G₁'_ind]
+      rw [←this]
       exact g₁'.symm.trans g_Fpair1_H₁
     let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := by
       let G₂' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
       let g₂' : Fpair.val.2.coe ≃g G₂'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
-      have : inducedSubgraph G X₂ = G₂' := sorry
-      rw [this]
+      have : G₂' = inducedSubgraph G X₂ := by
+        have h_G₂'_vert_eq_X₂ : G₂'.verts = X₂ := by
+          dsimp only [X₂, G₂', g_Fout_to_G]
+          dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+          simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
+            Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
+            Set.coe_toFinset]
+        have h_G₂'_ind : G₂'.IsInduced :=
+          subgraphFromPartialIso_preserve_inducedness
+            g_Gpair1_Fout.symm Fpair.val.2 h_Gpair1_ind h_Fpair2_ind
+        rw [←h_G₂'_vert_eq_X₂]
+        rw [←inducedSubgraph_eq h_G₂'_ind]
+      rw [←this]
       exact g₂'.symm.trans g_Fpair2_H₂
     let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
