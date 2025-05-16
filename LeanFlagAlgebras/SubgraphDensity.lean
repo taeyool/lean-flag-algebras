@@ -2292,8 +2292,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_Fpair := Fpair.property
     simp [subgraphPairSet] at h_Fpair
     obtain ⟨h_Fpair1_ind, h_Fpair1_H₁, h_Fpair2_ind, h_Fpair2_H₂, h_Fpair_disj⟩ := h_Fpair
-    let f_Fpair1_H₁ : Fpair.val.1.coe ≃g H₁ := h_Fpair1_H₁.some
-    let f_Fpair2_H₂ : Fpair.val.2.coe ≃g H₂ := h_Fpair2_H₂.some
+    let g_Fpair1_H₁ : Fpair.val.1.coe ≃g H₁ := h_Fpair1_H₁.some
+    let g_Fpair2_H₂ : Fpair.val.2.coe ≃g H₂ := h_Fpair2_H₂.some
 
     have h_Gpair := Gpair.property
     simp [subgraphPairSet] at h_Gpair
@@ -2331,6 +2331,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = Subtype.val '' (g_Gpair1_Fout.symm '' V) := by simp only [Function.comp_apply, Set.image_image]
         _ ⊆ Gpair.val.1.verts := by simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
 
+
     let X₁ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.1.verts).toFinset
     let X₂ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.2.verts).toFinset
     let X₃ : Finset (Fin ℓ) := Gpair.val.2.verts.toFinset
@@ -2340,8 +2341,18 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = Gpair.val.2 := by
       simp only [X₃, Set.coe_toFinset, Eq.symm (inducedSubgraph_eq h_Gpair2_ind)]
 
-    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := sorry
-    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := sorry
+    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := by
+      let G₁' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
+      let g₁' : Fpair.val.1.coe ≃g G₁'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
+      have : inducedSubgraph G X₁ = G₁' := sorry
+      rw [this]
+      exact g₁'.symm.trans g_Fpair1_H₁
+    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := by
+      let G₂' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
+      let g₂' : Fpair.val.2.coe ≃g G₂'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
+      have : inducedSubgraph G X₂ = G₂' := sorry
+      rw [this]
+      exact g₂'.symm.trans g_Fpair2_H₂
     let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
     have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
@@ -2497,7 +2508,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             simp only [this, card_empty, tsub_zero]
             simp only [Set.toFinset_card, Fintype.card_ofFinset, Fintype.card_coe]
         _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) := by
-              rw [Iso.card_eq f_Fpair1_H₁, Iso.card_eq f_Fpair2_H₂]
+              rw [Iso.card_eq g_Fpair1_H₁, Iso.card_eq g_Fpair2_H₂]
               simp only [Fintype.card_fin, Fintype.card_coe]
               simp only [Finset.mem_powersetCard.mp X.property]
         _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := h_ℓ_eq₁
