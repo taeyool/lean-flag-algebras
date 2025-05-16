@@ -2323,6 +2323,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       toFun := Subtype.val ∘ g_Gpair1_Fout.symm
       inj' :=  Function.Injective.comp Subtype.val_injective g_Gpair1_Fout.symm.injective
     }
+    have h_image_g_Fout_to_G_subset_Gpair1_verts :
+        ∀ (V : Set (Fin ℓ₁₂)), g_Fout_to_G '' V ⊆ Gpair.val.1.verts := by
+      intro V
+      calc
+        (Subtype.val ∘ g_Gpair1_Fout.symm) '' V
+        _ = Subtype.val '' (g_Gpair1_Fout.symm '' V) := by simp only [Function.comp_apply, Set.image_image]
+        _ ⊆ Gpair.val.1.verts := by simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
 
     let X₁ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.1.verts).toFinset
     let X₂ : Finset (Fin ℓ) := (g_Fout_to_G '' Fpair.val.2.verts).toFinset
@@ -2338,20 +2345,19 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
     have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
-      simp only [X₁, X₂, and_self, coe_union, Set.union_subset_iff,
-        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-        Subtype.coe_preimage_self, Set.subset_univ]
-      sorry
+      dsimp only [X₁, X₂]
+      rw [←Set.toFinset_union (g_Fout_to_G '' Fpair.val.1.verts) (g_Fout_to_G '' Fpair.val.2.verts)]
+      apply Set.toFinset_mono
+      rw [←Set.image_union g_Fout_to_G Fpair.val.1.verts Fpair.val.2.verts]
+      exact h_image_g_Fout_to_G_subset_Gpair1_verts (Fpair.val.1.verts ∪ Fpair.val.2.verts)
     have h_X₄_included_in_Gpair1_verts : X₄ ⊆ Gpair.val.1.verts.toFinset := by
-      simp only [X₄,
-        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-        Subtype.coe_preimage_self, Set.subset_univ]
-      sorry
+      dsimp only [X₄]
+      apply Set.toFinset_mono
+      exact h_image_g_Fout_to_G_subset_Gpair1_verts (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ
     have h_X₅_included_in_Gpair1_verts : X₅ ⊆ Gpair.val.1.verts.toFinset := by
-      simp only [X₅,
-        Set.subset_toFinset, coe_image, Set.toFinset_image, Set.image_subset_iff,
-        Subtype.coe_preimage_self, Set.subset_univ]
-      sorry
+      simp only [X₅]
+      apply Set.toFinset_mono
+      exact h_image_g_Fout_to_G_subset_Gpair1_verts X
 
     have h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := by
       dsimp [X₁, X₂]
