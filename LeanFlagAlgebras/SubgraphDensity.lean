@@ -2243,13 +2243,13 @@ noncomputable def isoFromInducedSubgraphByPartialIso
     {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
     (iso_G₀_F₀ : Subgraph.coe G₀ ≃g F₀) (iso_F₁_H₁ : Subgraph.coe F₁ ≃g H₁)
     (h_F₁_ind : F₁.IsInduced) (h_G₀_ind : G₀.IsInduced)
-    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts)).val.coe ≃g H₁
+    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).val.coe ≃g H₁
   := by
-    let X₁ := (Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts
+    let X₁ := ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset
     let G₁ := subgraphFromPartialIso iso_G₀_F₀.symm F₁
     let g₁ : F₁.coe ≃g G₁.coe := isoToSubgraphFromPartialIso iso_G₀_F₀.symm F₁
-    have : G₁ = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts)) := by
-      have h_G₁_vert_eq_X₁ : G₁.verts = (Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts := by
+    have : G₁ = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset) := by
+      have h_G₁_vert_eq_X₁ : G₁.verts = ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset := by
         dsimp only [X₁, G₁]
         dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
         simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
@@ -2342,10 +2342,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ ⊆ (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinset ∩ (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinsetᶜ := Finset.inter_subset_inter_left this
         _ = ∅ := Finset.inter_compl (Fpair.val.1.verts ∪ Fpair.val.2.verts).toFinset
 
-    let g_Fout_to_G : Fin ℓ₁₂ ↪ Fin ℓ := {
-      toFun := Subtype.val ∘ g_Gpair1_Fout.symm
-      inj' :=  Function.Injective.comp Subtype.val_injective g_Gpair1_Fout.symm.injective
-    }
+    let g_Fout_to_G : Fin ℓ₁₂ → Fin ℓ := Subtype.val ∘ g_Gpair1_Fout.symm
+    have h_g_Fout_to_G_injective :=  Function.Injective.comp Subtype.val_injective g_Gpair1_Fout.symm.injective
+
     have h_image_g_Fout_to_G_subset_Gpair1_verts :
         ∀ (V : Set (Fin ℓ₁₂)), g_Fout_to_G '' V ⊆ Gpair.val.1.verts := by
       intro V
@@ -2363,40 +2362,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = Gpair.val.2 := by
       simp only [X₃, Set.coe_toFinset, Eq.symm (inducedSubgraph_eq h_Gpair2_ind)]
 
-    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ := by
-      let G₁' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
-      let g₁' : Fpair.val.1.coe ≃g G₁'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.1
-      have : G₁' = ↑(inducedSubgraph G X₁) := by
-        have h_G₁'_vert_eq_X₁ : G₁'.verts = X₁ := by
-          dsimp only [X₁, G₁', g_Fout_to_G]
-          dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
-          simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
-            Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
-            Set.coe_toFinset]
-        have h_G₁'_ind : G₁'.IsInduced :=
-          subgraphFromPartialIso_preserve_inducedness
-            g_Gpair1_Fout.symm Fpair.val.1 h_Gpair1_ind h_Fpair1_ind
-        rw [←h_G₁'_vert_eq_X₁]
-        rw [←inducedSubgraph_eq h_G₁'_ind]
-      rw [←this]
-      exact g₁'.symm.trans g_Fpair1_H₁
-    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ := by
-      let G₂' := subgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
-      let g₂' : Fpair.val.2.coe ≃g G₂'.coe := isoToSubgraphFromPartialIso g_Gpair1_Fout.symm Fpair.val.2
-      have : G₂' = inducedSubgraph G X₂ := by
-        have h_G₂'_vert_eq_X₂ : G₂'.verts = X₂ := by
-          dsimp only [X₂, G₂', g_Fout_to_G]
-          dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
-          simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
-            Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
-            Set.coe_toFinset]
-        have h_G₂'_ind : G₂'.IsInduced :=
-          subgraphFromPartialIso_preserve_inducedness
-            g_Gpair1_Fout.symm Fpair.val.2 h_Gpair1_ind h_Fpair2_ind
-        rw [←h_G₂'_vert_eq_X₂]
-        rw [←inducedSubgraph_eq h_G₂'_ind]
-      rw [←this]
-      exact g₂'.symm.trans g_Fpair2_H₂
+    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ :=
+      isoFromInducedSubgraphByPartialIso g_Gpair1_Fout g_Fpair1_H₁ h_Fpair1_ind h_Gpair1_ind
+    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ :=
+      isoFromInducedSubgraphByPartialIso g_Gpair1_Fout g_Fpair2_H₂ h_Fpair2_ind h_Gpair1_ind
     let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_Gpair2_H₃
 
     have h_X₁_X₂_included_in_Gpair1_verts : X₁ ∪ X₂ ⊆ Gpair.val.1.verts.toFinset := by
@@ -2419,7 +2388,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [←Set.toFinset_inter (g_Fout_to_G '' Fpair.val.1.verts) (g_Fout_to_G '' Fpair.val.2.verts)]
       apply Set.toFinset_eq_empty.mpr
       apply Set.subset_empty_iff.mp
-      rw [←Set.image_inter g_Fout_to_G.injective]
+      rw [←Set.image_inter h_g_Fout_to_G_injective]
       simp [h_Fpair_disj]
     have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
       apply Finset.subset_empty.mp
@@ -2444,7 +2413,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)]
         apply Set.toFinset_eq_empty.mpr
         rw [←Set.image_union g_Fout_to_G Fpair.val.1.verts Fpair.val.2.verts,
-            ←Set.image_inter g_Fout_to_G.injective]
+            ←Set.image_inter h_g_Fout_to_G_injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         apply (Set.inter_subset (Fpair.val.1.verts ∪ Fpair.val.2.verts) (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ ∅).mpr
@@ -2477,7 +2446,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               (g_Fout_to_G '' X)]
         apply Set.toFinset_eq_empty.mpr
         rw [←Set.image_union g_Fout_to_G Fpair.val.1.verts Fpair.val.2.verts,
-            ←Set.image_inter g_Fout_to_G.injective]
+            ←Set.image_inter h_g_Fout_to_G_injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         exact h_Fpair_verts_disj_X
@@ -2497,7 +2466,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ)
               (g_Fout_to_G '' X)]
         apply Set.toFinset_eq_empty.mpr
-        rw [←Set.image_inter g_Fout_to_G.injective]
+        rw [←Set.image_inter h_g_Fout_to_G_injective]
         apply Set.image_eq_empty.mpr
         apply Set.subset_empty_iff.mp
         rw [Set.inter_comm]
@@ -2517,7 +2486,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _  = Fintype.card (g_Fout_to_G '' (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ) := by
               simp [X₄]
         _ = Fintype.card ↑(Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ :=
-              Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ g_Fout_to_G.injective
+              Set.card_image_of_injective (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ h_g_Fout_to_G_injective
         _ = (Fpair.val.1.verts ∪ Fpair.val.2.verts ∪ X)ᶜ.toFinset.card := by
               apply Eq.symm
               apply Set.toFinset_card
@@ -2562,7 +2531,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = Fintype.card (g_Fout_to_G '' X) := by
               simp [X₅]
         _ = Fintype.card X :=
-              Set.card_image_of_injective X g_Fout_to_G.injective
+              Set.card_image_of_injective X h_g_Fout_to_G_injective
         _ = ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) := by
               simp [Finset.mem_powersetCard.mp X.property]
     exact ⟨⟨X₁, X₂, X₃, X₄, X₅⟩,
