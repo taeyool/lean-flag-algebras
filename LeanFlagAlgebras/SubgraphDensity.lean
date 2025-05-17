@@ -2566,11 +2566,24 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     subst h_F₂_eq_F₂'
     simp only [true_and]
 
-    have h_G₁_eq_G₁' : G₁ = G₁' := sorry
+    have h_G₁_eq_G₁' : G₁ = G₁' := by
+      have : G₁.verts = G₁'.verts := by sorry
+      calc
+        G₁ = (⟨G₁, h_G₁_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rfl
+        _ = (inducedSubgraph G G₁.verts).val := by rw [inducedSubgraph_eq h_G₁_ind]
+        _ = (inducedSubgraph G G₁'.verts).val := by rw [this]
+        _ = (⟨G₁', h_G₁'_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_G₁'_ind]
+        _ = G₁' := by rfl
     subst h_G₁_eq_G₁'
     simp only [true_and]
 
-    have h_G₂_eq_G₂' : G₂ = G₂' := sorry
+    have h_G₂_eq_G₂' : G₂ = G₂' :=
+      calc
+        G₂ = (⟨G₂, h_G₂_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rfl
+        _ = (inducedSubgraph G G₂.verts).val := by rw [inducedSubgraph_eq h_G₂_ind]
+        _ = (inducedSubgraph G G₂'.verts).val := by rw [h_X₃_eq_X₃']
+        _ = (⟨G₂', h_G₂'_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_G₂'_ind]
+        _ = G₂' := by rfl
     subst h_G₂_eq_G₂'
     simp only [true_and]
 
