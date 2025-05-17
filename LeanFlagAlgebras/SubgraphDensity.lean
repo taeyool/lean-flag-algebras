@@ -2558,14 +2558,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     subst h_F_eq_F'
     simp only [heq_eq_eq, Prod.mk.injEq, true_and]
 
-    have h_F₁_eq_F₁' : F₁ = F₁' := sorry
-    subst h_F₁_eq_F₁'
-    simp only [true_and]
-
-    have h_F₂_eq_F₂' : F₂ = F₂' := sorry
-    subst h_F₂_eq_F₂'
-    simp only [true_and]
-
     have h_G₁_eq_G₁' : G₁ = G₁' := by
       have : G₁.verts = G₁'.verts := by sorry
       calc
@@ -2585,6 +2577,74 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = (⟨G₂', h_G₂'_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_G₂'_ind]
         _ = G₂' := by rfl
     subst h_G₂_eq_G₂'
+    simp only [true_and]
+
+    have h_F₁_eq_F₁' : F₁ = F₁' := by
+      have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' F₁.verts = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts := by
+        calc
+          (Subtype.val ∘ h_G₁_Fout.some.symm) '' F₁.verts = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) F₁.verts.toFinset).toSet := by
+                simp only [Function.comp_apply, coe_image, Set.coe_toFinset]
+          _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) F₁'.verts.toFinset).toSet := by
+                simp [h_X₁_eq_X₁']
+          _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts := by
+                simp only [coe_image, Set.coe_toFinset, Function.comp_apply]
+      have : F₁.verts = F₁'.verts :=
+        calc
+          F₁.verts = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁_Fout.some.symm) '' F₁.verts)).toFinset := by
+              have : Function.Injective (Subtype.val ∘ h_G₁_Fout.some.symm) :=
+                Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
+              rw [Function.Injective.preimage_image this F₁.verts]
+              simp only [Set.coe_toFinset]
+        _ = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts)).toFinset := by
+              rw [this]
+        _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts)).toFinset := by
+              rfl
+        _ = F₁'.verts := by
+              have : Function.Injective (Subtype.val ∘ h_G₁'_Fout'.some.symm) :=
+                Function.Injective.comp Subtype.val_injective h_G₁'_Fout'.some.symm.injective
+              rw [Function.Injective.preimage_image this F₁'.verts]
+              simp only [Set.coe_toFinset]
+      calc
+        F₁ = (⟨F₁, h_F₁_ind⟩ : {G' : Subgraph F.out | G'.IsInduced }).val := by rfl
+        _ = (inducedSubgraph F.out F₁.verts).val := by rw [inducedSubgraph_eq h_F₁_ind]
+        _ = (inducedSubgraph F.out F₁'.verts).val := by rw [this]
+        _ = (⟨F₁', h_F₁'_ind⟩ : {G' : Subgraph F.out | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_F₁'_ind]
+        _ = F₁' := by rfl
+    subst h_F₁_eq_F₁'
+    simp only [true_and]
+
+    have h_F₂_eq_F₂' : F₂ = F₂' := by
+      have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' F₂.verts = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts := by
+        calc
+          (Subtype.val ∘ h_G₁_Fout.some.symm) '' F₂.verts = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) F₂.verts.toFinset).toSet := by
+                simp only [Function.comp_apply, coe_image, Set.coe_toFinset]
+          _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) F₂'.verts.toFinset).toSet := by
+                simp [h_X₂_eq_X₂']
+          _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts := by
+                simp only [coe_image, Set.coe_toFinset, Function.comp_apply]
+      have : F₂.verts = F₂'.verts :=
+        calc
+          F₂.verts = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁_Fout.some.symm) '' F₂.verts)).toFinset := by
+              have : Function.Injective (Subtype.val ∘ h_G₁_Fout.some.symm) :=
+                Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
+              rw [Function.Injective.preimage_image this F₂.verts]
+              simp only [Set.coe_toFinset]
+          _ = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts)).toFinset := by
+                rw [this]
+          _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts)).toFinset := by
+                rfl
+          _ = F₂'.verts := by
+                have : Function.Injective (Subtype.val ∘ h_G₁'_Fout'.some.symm) :=
+                  Function.Injective.comp Subtype.val_injective h_G₁'_Fout'.some.symm.injective
+                rw [Function.Injective.preimage_image this F₂'.verts]
+                simp only [Set.coe_toFinset]
+      calc
+        F₂ = (⟨F₂, h_F₂_ind⟩ : {G' : Subgraph F.out | G'.IsInduced }).val := by rfl
+        _ = (inducedSubgraph F.out F₂.verts).val := by rw [inducedSubgraph_eq h_F₂_ind]
+        _ = (inducedSubgraph F.out F₂'.verts).val := by rw [this]
+        _ = (⟨F₂', h_F₂'_ind⟩ : {G' : Subgraph F.out | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_F₂'_ind]
+        _ = F₂' := by rfl
+    subst h_F₂_eq_F₂'
     simp only [true_and]
 
     show X = X'
