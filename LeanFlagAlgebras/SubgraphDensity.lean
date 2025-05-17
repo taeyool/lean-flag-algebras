@@ -2574,30 +2574,30 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     subst h_G₂_eq_G₂'
     simp only [true_and]
 
-    have h_X_eq_X' : X = X' := by
-      have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' X  = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X' := by
-        calc
-          (Subtype.val ∘ h_G₁_Fout.some.symm) '' X = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X).toSet := by
-                simp only [Function.comp_apply, coe_image]
-          _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X').toSet := by
-                simp [h_X₅_eq_X₅']
-          _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X' := by
-                simp only [Function.comp_apply, coe_image]
+    show X = X'
+    have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' X  = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X' := by
       calc
-        X = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁_Fout.some.symm) '' X)).toFinset := by
-                have : Function.Injective (Subtype.val ∘ h_G₁_Fout.some.symm) :=
-                  Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
-                rw [Function.Injective.preimage_image this X]
-                simp only [toFinset_coe]
-        _ = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X')).toFinset := by
-                rw [this]
-        _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X')).toFinset := by
-                rfl
-        _ = X' := by
-                have : Function.Injective (Subtype.val ∘ h_G₁'_Fout'.some.symm) :=
-                  Function.Injective.comp Subtype.val_injective h_G₁'_Fout'.some.symm.injective
-                rw [Function.Injective.preimage_image this X']
-                simp only [toFinset_coe]
+        (Subtype.val ∘ h_G₁_Fout.some.symm) '' X = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X).toSet := by
+              simp only [Function.comp_apply, coe_image]
+        _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X').toSet := by
+              simp [h_X₅_eq_X₅']
+        _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X' := by
+              simp only [Function.comp_apply, coe_image]
+    calc
+      X = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁_Fout.some.symm) '' X)).toFinset := by
+              have : Function.Injective (Subtype.val ∘ h_G₁_Fout.some.symm) :=
+                Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
+              rw [Function.Injective.preimage_image this X]
+              simp only [toFinset_coe]
+      _ = ((Subtype.val ∘ h_G₁_Fout.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X')).toFinset := by
+              rw [this]
+      _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm)⁻¹' ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X')).toFinset := by
+              rfl
+      _ = X' := by
+              have : Function.Injective (Subtype.val ∘ h_G₁'_Fout'.some.symm) :=
+                Function.Injective.comp Subtype.val_injective h_G₁'_Fout'.some.symm.injective
+              rw [Function.Injective.preimage_image this X']
+              simp only [toFinset_coe]
 
   have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by sorry
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
