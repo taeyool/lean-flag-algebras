@@ -2709,8 +2709,66 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
     let G₁_ind := inducedSubgraph G X_F
     let G₂_ind := inducedSubgraph G X₃
-    let G₁₁_ind := inducedSubgraph G X₁
-    let G₁₂_ind := inducedSubgraph G X₂
+    let G₁₁_ind := inducedSubgraph G₁_ind.val.coe {v : G₁_ind.val.verts | v.val ∈ X₁}
+    let G₁₂_ind := inducedSubgraph G₁_ind.val.coe {v : G₁_ind.val.verts | v.val ∈ X₂}
+
+    have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
+      rw [inducedSubgraph_verts G X_F]
+      rw [Fintype.card_fin]
+      suffices (X₁ ∪ X₂ ∪ X₄ ∪ X₅).card = ℓ₁₂ by simp only [coe_sort_coe, Fintype.card_coe, this]
+      have : (X₁ ∪ X₂ ∪ X₄) ∩ X₅ = ∅ := by
+        suffices (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ by {
+          have h' : X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₃ ∪ X₄ :=
+            calc
+              X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₄ ∪ X₃ := Finset.subset_union_left
+              _ = (X₁ ∪ X₂) ∪ (X₄ ∪ X₃) := by simp only [Finset.union_assoc]
+              _ = (X₁ ∪ X₂) ∪ (X₃ ∪ X₄) := by simp only [Finset.union_comm]
+              _ = X₁ ∪ X₂ ∪ X₃ ∪ X₄ := by simp only [Finset.union_assoc]
+          apply Finset.subset_empty.mp
+          calc
+            (X₁ ∪ X₂ ∪ X₄) ∩ X₅ ⊆ (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ := Finset.inter_subset_inter_right h'
+            _ = ∅ := this
+          }
+        exact h_X₁_to_X₄_disj_X₅
+      rw [Finset.card_union (X₁ ∪ X₂ ∪ X₄) X₅, this]
+      have : (X₁ ∪ X₂) ∩ X₄ = ∅ := by
+        suffices (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ by {
+          have h' : X₁ ∪ X₂ ⊆ X₁ ∪ X₂ ∪ X₃ := Finset.subset_union_left
+          apply Finset.subset_empty.mp
+          calc
+            (X₁ ∪ X₂) ∩ X₄ ⊆ (X₁ ∪ X₂ ∪ X₃) ∩ X₄ := Finset.inter_subset_inter_right h'
+            _ = ∅ := this
+        }
+        exact h_X₁_to_X₃_disj_X₄
+      rw [Finset.card_union (X₁ ∪ X₂) X₄, this]
+      rw [Finset.card_union X₁ X₂, h_X₁_disj_X₂]
+      rw [h_X₁_card, h_X₂_card, h_X₄_card, h_X₅_card]
+      show ℓ₁ + ℓ₂ + (ℓ₂₃ - (ℓ₂ + ℓ₃)) + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₁₂
+      rw [←add_tsub_assoc_of_le h (ℓ₁ + ℓ₂ + (ℓ₂₃ - (ℓ₂ + ℓ₃)))]
+      apply Nat.sub_eq_of_eq_add
+      ring_nf
+      rw [Nat.add_assoc (ℓ₁ + ℓ₂ + ℓ₃) (ℓ₂₃ - (ℓ₂ + ℓ₃)) ℓ₁₂,
+          Nat.add_comm (ℓ₂₃ - (ℓ₂ + ℓ₃)) ℓ₁₂]
+      rw [←Nat.add_assoc (ℓ₁ + ℓ₂ + ℓ₃) ℓ₁₂ (ℓ₂₃ - (ℓ₂ + ℓ₃)),
+          ←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₁ + ℓ₂ + ℓ₃ + ℓ₁₂)]
+      apply Nat.sub_eq_of_eq_add
+      linarith
+
+    let f_G₁_Finℓ₁₂ : G₁_ind.val.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
+
+    let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map f_G₁_Finℓ₁₂.toEmbedding G₁_ind.val.coe
+    let F : QuotSimpleGraph (Fin ℓ₁₂) := ⟦F₀⟧
+
+    let g_G₁_F₀ : G₁_ind.val.coe ≃g F₀ := SimpleGraph.Iso.map f_G₁_Finℓ₁₂ G₁_ind.val.coe
+    let g_F₀_Fout : F₀ ≃g F.out := by
+      have : graph_eqv F₀ F.out := Quotient.mk_eq_iff_out.mp rfl
+      dsimp [graph_eqv] at this
+      exact this.some
+    let g_G₁_Fout : G₁_ind.val.coe ≃g F.out := SimpleGraph.Iso.comp g_F₀_Fout g_G₁_F₀
+
+    let F₁ : Subgraph F.out := subgraphFromIso g_G₁_Fout G₁₁_ind.val
+    let F₂ : Subgraph F.out := subgraphFromIso g_G₁_Fout G₁₂_ind.val
+    let X : Finset (Fin ℓ₁₂) := (g_G₁_Fout '' {v : G₁_ind.val.verts | v.val ∈ X₅}).toFinset
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
