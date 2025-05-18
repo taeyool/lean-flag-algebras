@@ -2554,10 +2554,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     obtain ⟨h_X₁_eq_X₁', h_X₂_eq_X₂', h_X₃_eq_X₃', h_X₄_eq_X₄', h_X₅_eq_X₅'⟩ := h_eq
     simp only [Subtype.mk.injEq, Sigma.mk.inj_iff]
 
-    have h_F_eq_F' : F = F' := sorry
-    subst h_F_eq_F'
-    simp only [heq_eq_eq, Prod.mk.injEq, true_and]
-
     have h_G₁_eq_G₁' : G₁ = G₁' := by
       have : G₁.verts = G₁'.verts :=
         calc
@@ -2623,7 +2619,14 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = (⟨G₁', h_G₁'_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rw [inducedSubgraph_eq h_G₁'_ind]
         _ = G₁' := by rfl
     subst h_G₁_eq_G₁'
-    simp only [true_and]
+
+    have h_F_eq_F' : F = F' :=
+      calc
+        F = ⟦F.out⟧ := Eq.symm (Quotient.out_eq F)
+        _ = ⟦F'.out⟧ := Quotient.sound (Nonempty.intro (h_G₁_Fout.some.symm.trans h_G₁'_Fout'.some))
+        _ = F' := Quotient.out_eq F'
+    subst h_F_eq_F'
+    simp only [heq_eq_eq, Prod.mk.injEq, true_and]
 
     have h_G₂_eq_G₂' : G₂ = G₂' :=
       calc
