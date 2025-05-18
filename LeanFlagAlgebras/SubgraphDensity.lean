@@ -2700,7 +2700,17 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     show X = X'
     exact h_source_eq_from_target_eq h_X₅_eq_X₅'
 
-  have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by sorry
+  have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by
+    intro ⟨⟨X₁, X₂, X₃, X₄, X₅⟩,
+            h_X₁_disj_X₂, h_X₁_to_X₂_disj_X₃, h_X₁_to_X₃_disj_X₄, h_X₁_to_X₄_disj_X₅,
+            h_X₁_card, h_X₂_card, h_X₃_card, h_X₄_card, h_X₅_card,
+            h_X₁_H₁, h_X₂_H₂, h_X₃_H₃⟩
+
+    let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
+    let ⟨G₁, h_G₁_ind⟩ := inducedSubgraph G X_F
+    let ⟨G₂, h_G₂_ind⟩ := inducedSubgraph G X₃
+    sorry
+
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
 
   let f_S₂_S₃_fwd : S₂ → S₃ := by sorry
