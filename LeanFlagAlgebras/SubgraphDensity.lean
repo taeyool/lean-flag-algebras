@@ -2561,15 +2561,21 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_G₁_eq_G₁' : G₁ = G₁' := by
       have : G₁.verts = G₁'.verts :=
         calc
-          G₁.verts = (h_G₁_Fout.some.symm '' (univ : Finset (Fin ℓ₁₂))) := by
-                  sorry
-          _ = (h_G₁_Fout.some.symm '' ((F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X) ∪ (F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X)ᶜ)) := by
+          G₁.verts
+          _ = Subtype.val '' (⇑h_G₁_Fout.some.symm '' (univ : Finset (Fin ℓ₁₂))) := by
+                  have : ⇑h_G₁_Fout.some.symm '' (Set.univ : Set (Fin ℓ₁₂))
+                          = (Set.univ : Set (G₁.verts))
+                    := Set.image_univ_of_surjective h_G₁_Fout.some.symm.surjective
+                  simp only [this, coe_univ, Set.image_univ, Subtype.range_coe_subtype, Set.setOf_mem_eq]
+          _ = h_G₁_Fout.some.symm '' ((F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X) ∪ (F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X)ᶜ) := by
                   simp only [coe_univ, Set.image_univ, Set.coe_toFinset, Set.union_self, Set.union_compl_self]
+          _ = h_G₁_Fout.some.symm '' (F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X ∪ (F₁.verts.toFinsetᶜ ∩ F₂.verts.toFinsetᶜ ∩ Xᶜ)) := by
+                  simp only [Set.coe_toFinset, Set.compl_union]
           _ = (h_G₁_Fout.some.symm '' F₁.verts.toFinset)
                 ∪ (h_G₁_Fout.some.symm '' F₂.verts.toFinset)
                 ∪ (h_G₁_Fout.some.symm '' X)
                 ∪ (h_G₁_Fout.some.symm '' (F₁.verts.toFinsetᶜ ∩ F₂.verts.toFinsetᶜ ∩ Xᶜ)) := by
-                  sorry
+                  simp only [Set.image_union h_G₁_Fout.some.symm]
           _ = (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₁.verts.toFinset)
                 ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₂.verts.toFinset)
                 ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) X)
@@ -2585,12 +2591,17 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                 ∪ (h_G₁'_Fout'.some.symm '' X')
                 ∪ (h_G₁'_Fout'.some.symm '' (F₁'.verts.toFinsetᶜ ∩ F₂'.verts.toFinsetᶜ ∩ X'ᶜ)) := by
                   sorry
-          _ = (h_G₁'_Fout'.some.symm '' ((F₁'.verts.toFinset ∪ F₂'.verts.toFinset ∪ X') ∪ (F₁'.verts.toFinset ∪ F₂'.verts.toFinset ∪ X')ᶜ)) := by
-                  sorry
-          _ = (h_G₁'_Fout'.some.symm '' (univ : Finset (Fin ℓ₁₂))) := by
+          _ = h_G₁'_Fout'.some.symm '' (F₁'.verts.toFinset ∪ F₂'.verts.toFinset ∪ X' ∪ (F₁'.verts.toFinsetᶜ ∩ F₂'.verts.toFinsetᶜ ∩ X'ᶜ)) := by
+                  simp only [Set.image_union h_G₁'_Fout'.some.symm]
+          _ = h_G₁'_Fout'.some.symm '' ((F₁'.verts.toFinset ∪ F₂'.verts.toFinset ∪ X') ∪ (F₁'.verts.toFinset ∪ F₂'.verts.toFinset ∪ X')ᶜ) := by
+                  simp only [Set.coe_toFinset, Set.compl_union]
+          _ = h_G₁'_Fout'.some.symm '' (univ : Finset (Fin ℓ₁₂)) := by
                   simp only [coe_univ, Set.image_univ, Set.coe_toFinset, Set.union_self, Set.union_compl_self]
           _ = G₁'.verts := by
-                  sorry
+                  have : ⇑h_G₁'_Fout'.some.symm '' (Set.univ : Set (Fin ℓ₁₂))
+                          = (Set.univ : Set (G₁'.verts))
+                    := Set.image_univ_of_surjective h_G₁'_Fout'.some.symm.surjective
+                  simp only [this, coe_univ, Set.image_univ, Subtype.range_coe_subtype, Set.setOf_mem_eq]
       calc
         G₁ = (⟨G₁, h_G₁_ind⟩ : {G' : Subgraph G | G'.IsInduced }).val := by rfl
         _ = (inducedSubgraph G G₁.verts).val := by rw [inducedSubgraph_eq h_G₁_ind]
