@@ -2707,8 +2707,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_X₁_H₁, h_X₂_H₂, h_X₃_H₃⟩
 
     let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
-    let ⟨G₁, h_G₁_ind⟩ := inducedSubgraph G X_F
-    let ⟨G₂, h_G₂_ind⟩ := inducedSubgraph G X₃
+    let G₁_ind := inducedSubgraph G X_F
+    let G₂_ind := inducedSubgraph G X₃
+    let G₁₁_ind := inducedSubgraph G X₁
+    let G₁₂_ind := inducedSubgraph G X₂
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
