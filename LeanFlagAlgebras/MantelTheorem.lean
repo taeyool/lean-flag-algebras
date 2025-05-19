@@ -189,18 +189,79 @@ lemma unlabel_O3₁
       dsimp [unlabeledGraph, O3₁_labeledGraph, O3_labeledGraph]
       apply flagEqv.refl
 
-lemma isoLabeledGraphSetWithSameGraph_O3₁
-    : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)) = { O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2 }
+def isoSet_O3₁
+    : Set (LabeledGraph Sₜ (Fin 3))
+  :=
+  {O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2}
+
+instance : FintypeExist isoSet_O3₁
+    := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑isoSet_O3₁) }
+
+lemma O3₁_labeledGraph_0_1_neq
+    : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 1 := by
+  simp [O3₁_labeledGraph]
+  exact ne_of_beq_false rfl
+
+lemma O3₁_labeledGraph_0_2_neq
+    : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 2 := by
+  simp [O3₁_labeledGraph]
+  exact ne_of_beq_false rfl
+
+lemma O3₁_labeledGraph_1_2_neq
+    : O3₁_labeledGraph 1 ≠ O3₁_labeledGraph 2 := by
+  simp [O3₁_labeledGraph]
+  exact ne_of_beq_false rfl
+
+lemma isoSet_O3₁_card
+    : isoSet_O3₁.toFinset.card = 3
   := by
-  sorry
+  classical
+  refine Finset.card_eq_three.mpr ?_
+  use O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2
+  repeat' constructor
+  · exact O3₁_labeledGraph_0_1_neq
+  · exact O3₁_labeledGraph_0_2_neq
+  · exact O3₁_labeledGraph_1_2_neq
+  · simp [isoSet_O3₁]
+
+lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
+    : isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0) = isoSet_O3₁
+  := by
+  dsimp [isoLabeledGraphSetWithSameGraph, isoSet_O3₁]
+  ext H; constructor
+  · intro h
+    sorry
+  · intro h
+    rcases h with h₀ | (h₁ | h₂)
+    · subst h₀
+      simp
+      exact flagEqv.refl (O3₁_labeledGraph 0)
+    · subst h₁
+      simp; constructor
+      · dsimp [O3₁_labeledGraph]
+      · sorry
+    · subst h₂
+      simp; constructor
+      · dsimp [O3₁_labeledGraph]
+      · sorry
+
+lemma isoLabeledGraphSetWithSameGraph_O3₁_card
+    : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)).toFinset.card = 3
+  := by
+  calc
+    _ = isoSet_O3₁.toFinset.card := by
+      simp [Set.toFinset_card]
+      apply Fintype.card_congr
+      rw [isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card]
+    _ = 3 := isoSet_O3₁_card
 
 lemma downwardNormalizingFactor_O3₁
     : downwardNormalizingFactor ⟦O3₁_labeledGraph 0⟧ = 1
   := by
   dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
-  have h₁ : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)).toFinset.card = 3 := sorry
-  have h₂ : Nat.factorial 3 / 2 = 3 := rfl
-  simp [h₁, h₂]
+  have : Nat.factorial 3 / 2 = 3 := rfl
+  rw [isoLabeledGraphSetWithSameGraph_O3₁_card, this]
+  rfl
 
 lemma downwardFlagVectorQuot_O3₁
     : downwardFlagVector (unitVector ⟨3, ⟦O3₁_labeledGraph 0⟧⟩) = unitVector ⟨3, ⟦O3_labeledGraph⟧⟩
