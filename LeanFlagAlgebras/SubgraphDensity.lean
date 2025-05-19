@@ -2707,10 +2707,46 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_X₁_H₁, h_X₂_H₂, h_X₃_H₃⟩
 
     let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
+    have h_X_F_disj_X₃ : X_F ∩ X₃ = ∅ := by
+      apply Finset.subset_empty.mp
+      calc
+        X_F ∩ X₃ = (X₁ ∪ X₂ ∪ X₄ ∪ X₅) ∩ X₃ := by rfl
+        _ = ((X₁ ∪ X₂) ∩ X₃) ∪ (X₄ ∩ X₃) ∪ (X₅ ∩ X₃) := by simp only [union_assoc, union_inter_distrib_right]
+        _ = ((X₁ ∪ X₂) ∩ X₃) ∪ (X₃ ∩ X₄) ∪ (X₃ ∩ X₅) := by simp only [Finset.inter_comm]
+        _ ⊆ ((X₁ ∪ X₂) ∩ X₃) ∪ ((X₁ ∪ X₂ ∪ X₃) ∩ X₄) ∪ (X₃ ∩ X₅) := by
+                apply Finset.union_subset_union_left
+                apply Finset.union_subset_union_right
+                apply Finset.inter_subset_inter_right
+                apply Finset.subset_union_right
+        _ ⊆ ((X₁ ∪ X₂) ∩ X₃) ∪ ((X₁ ∪ X₂ ∪ X₃) ∩ X₄) ∪ ((X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅) := by
+                apply Finset.union_subset_union_right
+                apply Finset.inter_subset_inter_right
+                rw [Finset.union_assoc (X₁ ∪ X₂) X₃ X₄]
+                rw [Finset.union_comm X₃ X₄]
+                rw [←Finset.union_assoc (X₁ ∪ X₂) X₄ X₃]
+                apply Finset.subset_union_right
+        _ = (∅ ∪ ∅ ∪ ∅) := by rw [h_X₁_to_X₂_disj_X₃, h_X₁_to_X₃_disj_X₄, h_X₁_to_X₄_disj_X₅]
+        _ = ∅ := by simp only [union_idempotent]
+
     let G₁_ind := inducedSubgraph G X_F
     let G₂_ind := inducedSubgraph G X₃
-    let G₁₁_ind := inducedSubgraph G₁_ind.val.coe {v : G₁_ind.val.verts | v.val ∈ X₁}
-    let G₁₂_ind := inducedSubgraph G₁_ind.val.coe {v : G₁_ind.val.verts | v.val ∈ X₂}
+    let G₁ := G₁_ind.val
+    let G₂ := G₂_ind.val
+    let h_G₁_ind : G₁.IsInduced := G₁_ind.property
+    let h_G₂_ind : G₂.IsInduced := G₂_ind.property
+    let h_G₁_disj_G₂ : G₁.verts ∩ G₂.verts = ∅ := by
+      apply Set.subset_empty_iff.mp
+      calc
+        G₁.verts ∩ G₂.verts = ↑X_F ∩ ↑X₃ := by rw [inducedSubgraph_verts G X_F, inducedSubgraph_verts G X₃]
+        _ = ↑(X_F ∩ X₃) := by simp only [coe_inter]
+        _ ⊆ ∅ := by simp only [h_X_F_disj_X₃, coe_empty, subset_refl]
+
+    let G₁₁_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₁}
+    let G₁₂_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₂}
+    let G₁₁ := G₁₁_ind.val
+    let G₁₂ := G₁₂_ind.val
+    let h_G₁₁_ind : G₁₁.IsInduced := G₁₁_ind.property
+    let h_G₁₂_ind : G₁₂.IsInduced := G₁₂_ind.property
 
     have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
       rw [inducedSubgraph_verts G X_F]
@@ -2753,22 +2789,22 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           ←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₁ + ℓ₂ + ℓ₃ + ℓ₁₂)]
       apply Nat.sub_eq_of_eq_add
       linarith
+    let f_G₁_Finℓ₁₂ : G₁.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
 
-    let f_G₁_Finℓ₁₂ : G₁_ind.val.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
-
-    let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map f_G₁_Finℓ₁₂.toEmbedding G₁_ind.val.coe
+    let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map f_G₁_Finℓ₁₂.toEmbedding G₁.coe
     let F : QuotSimpleGraph (Fin ℓ₁₂) := ⟦F₀⟧
 
-    let g_G₁_F₀ : G₁_ind.val.coe ≃g F₀ := SimpleGraph.Iso.map f_G₁_Finℓ₁₂ G₁_ind.val.coe
+    let g_G₁_F₀ : G₁.coe ≃g F₀ := SimpleGraph.Iso.map f_G₁_Finℓ₁₂ G₁.coe
     let g_F₀_Fout : F₀ ≃g F.out := by
       have : graph_eqv F₀ F.out := Quotient.mk_eq_iff_out.mp rfl
       dsimp [graph_eqv] at this
       exact this.some
-    let g_G₁_Fout : G₁_ind.val.coe ≃g F.out := SimpleGraph.Iso.comp g_F₀_Fout g_G₁_F₀
+    let h_G₁_Fout : Nonempty (G₁.coe ≃g F.out) := Nonempty.intro (SimpleGraph.Iso.comp g_F₀_Fout g_G₁_F₀)
 
-    let F₁ : Subgraph F.out := subgraphFromIso g_G₁_Fout G₁₁_ind.val
-    let F₂ : Subgraph F.out := subgraphFromIso g_G₁_Fout G₁₂_ind.val
-    let X : Finset (Fin ℓ₁₂) := (g_G₁_Fout '' {v : G₁_ind.val.verts | v.val ∈ X₅}).toFinset
+    let F₁ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₁
+    let F₂ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₂
+    let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
+
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
