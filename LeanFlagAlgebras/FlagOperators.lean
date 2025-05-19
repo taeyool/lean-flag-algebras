@@ -10,14 +10,51 @@ def emptyType : FlagType (Fin 0) := emptyGraph (Fin 0)
 
 notation "∅ₜ" => emptyType
 
-noncomputable def isomorphismCount (F : Flag σ (Fin n)) : ℕ :=
-  let S := { G : LabeledGraph σ (Fin n) | G ∼f F.out }
-  have : FintypeExist S := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S) }
-  S.toFinset.card
+def isoLabeledGraphSetWithSameGraph
+    (G : LabeledGraph σ (Fin n)) : Set (LabeledGraph σ (Fin n))
+  :=
+  { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
 
-noncomputable def downwardNormalizingFactor (F : Flag σ (Fin n)) : ℚ :=
+instance (G : LabeledGraph σ (Fin n)) : FintypeExist (isoLabeledGraphSetWithSameGraph G) where
+  fintype_exist := Nonempty.intro (Fintype.ofFinite _)
+
+noncomputable def isomorphismCount
+    (G : LabeledGraph σ (Fin n)) : ℕ
+  :=
+  (isoLabeledGraphSetWithSameGraph G).toFinset.card
+
+noncomputable def downwardNormalizingFactor_labeledGraph
+    (G : LabeledGraph σ (Fin n)) : ℚ
+  :=
   let num_of_all_injections := n.factorial / (n - n₀).factorial
-  isomorphismCount F / num_of_all_injections
+  isomorphismCount G / num_of_all_injections
+
+def isoSetOfIsoLabeledGraphWithSameGraph
+    {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
+    : isoLabeledGraphSetWithSameGraph G ≃ isoLabeledGraphSetWithSameGraph G'
+  := by
+  sorry
+
+lemma isomorphismCount_respects_eqv
+    {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
+    : isomorphismCount G = isomorphismCount G'
+  := by
+  dsimp [isomorphismCount]
+  simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h)]
+
+lemma downwardNormalizingFactor_labeledGraph_respects_eqv
+    {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
+    : downwardNormalizingFactor_labeledGraph G = downwardNormalizingFactor_labeledGraph G'
+  := by
+  dsimp [downwardNormalizingFactor_labeledGraph]
+  rw [isomorphismCount_respects_eqv h]
+
+noncomputable def downwardNormalizingFactor
+    : Flag σ (Fin n) → ℚ
+  := by
+  apply Quot.lift (fun G : LabeledGraph σ (Fin n) => downwardNormalizingFactor_labeledGraph G)
+  intro G G' G_eqv
+  exact downwardNormalizingFactor_labeledGraph_respects_eqv G_eqv
 
 def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V where
   graph := G.graph

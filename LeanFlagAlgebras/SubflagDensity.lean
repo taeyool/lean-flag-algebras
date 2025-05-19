@@ -520,6 +520,7 @@ section
 variable {t : ℕ}
   {Vl : Fin t → Type} [FintypeList Vl] [DecidableEqList Vl]
   {Vl' : Fin t → Type} [FintypeList Vl'] [DecidableEqList Vl']
+  {V : Type} [FintypeExist V] [DecidableEqExist V]
   {W : Type} [FintypeExist W] [DecidableEqExist W]
   {U : Type} [FintypeExist U] [DecidableEqExist U]
   {U₁ : Type} [FintypeExist U₁] [DecidableEqExist U₁]
@@ -551,11 +552,88 @@ noncomputable def labeledSubgraphListDensity
   let r_list := fun (i : Fin t) => (Hl i).size - σ.size
   labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
+def relOflabeledSubgraphList
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (Hl : LabeledGraphList σ t Vl)
+    (H₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀)
+    (H₁ : ∀ (_ : Fin t), LabeledSubgraph σ G₁) : Prop
+  := ∀ (i : Fin t), (H₁ i).subgraph.verts = φ.graph_iso '' (H₀ i).subgraph.verts
+    ∧ ∀ (u v : V), (H₀ i).subgraph.Adj u v ↔ (H₁ i).subgraph.Adj (φ.graph_iso u) (φ.graph_iso v)
+
+
+def relOfPredOnlabeledSubgraphList
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (Hl : LabeledGraphList σ t Vl)
+    (p₀ : (∀ (_ : Fin t), LabeledSubgraph σ G₀) → Prop)
+    (p'₀ : (∀ (_ : Fin t), LabeledSubgraph σ G₀) → Prop)
+    (p₁ : (∀ (_ : Fin t), LabeledSubgraph σ G₁) → Prop)
+    (p'₁ : (∀ (_ : Fin t), LabeledSubgraph σ G₁) → Prop)
+  := ∀ (H₀: ∀ (_ : Fin t), LabeledSubgraph σ G₀) (H₁: ∀ (_ : Fin t), LabeledSubgraph σ G₁), (relOflabeledSubgraphList φ Hl H₀ H₁) → ((p₀ H₀) ∧ (p'₀ H₀) ↔ (p₁ H₁) ∧ (p'₁ H₁))
+
+def predIsoLabeledHList_ind
+    {σ : FlagType T} (G : LabeledGraph σ V)
+    (Hl : LabeledGraphList σ t Vl)
+    : (∀ (_ : Fin t), LabeledSubgraph σ G) → Prop
+  := fun Gl ↦ ∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)
+
+def predIsoLabeledHList_indep
+    {σ : FlagType T} (G : LabeledGraph σ V)
+    (Hl : LabeledGraphList σ t Vl)
+    : (∀ (_ : Fin t), LabeledSubgraph σ G) → Prop
+  := fun Gl ↦ ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅
+
+lemma predIsoLabeledHList_related
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
+    : relOfPredOnlabeledSubgraphList φ Hl (predIsoLabeledHList_ind G₀ Hl) (predIsoLabeledHList_indep G₀ Hl) (predIsoLabeledHList_ind G₁ Hl) (predIsoLabeledHList_indep G₁ Hl)
+  := sorry
+
+noncomputable def isoSetOfInducedlabeledSubgraphList
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (Hl : LabeledGraphList σ t Vl)
+    (p₀ : (∀ (_ : Fin t), LabeledSubgraph σ G₀) → Prop)
+    (p'₀ : (∀ (_ : Fin t), LabeledSubgraph σ G₀) → Prop)
+    (p₁ : (∀ (_ : Fin t), LabeledSubgraph σ G₁) → Prop)
+    (p'₁ : (∀ (_ : Fin t), LabeledSubgraph σ G₁) → Prop)
+    (h_rel : relOfPredOnlabeledSubgraphList φ Hl p₀ p'₀ p₁ p'₁)
+    (h_rel_inv : relOfPredOnlabeledSubgraphList φ.symm Hl p₁ p'₁ p₀ p'₀)
+    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G₀ | p₀ Gl ∧ p'₀ Gl } ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G₁ | p₁ Gl ∧ p'₁ Gl }
+  := sorry
+
+noncomputable def isoSetOfInducedlabeledSubgraphListIsoH
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (Hl : LabeledGraphList σ t Vl)
+    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+    ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  := by
+  let iso := isoSetOfInducedlabeledSubgraphList φ Hl
+    (predIsoLabeledHList_ind G₀ Hl)
+    (predIsoLabeledHList_indep G₀ Hl)
+    (predIsoLabeledHList_ind G₁ Hl)
+    (predIsoLabeledHList_indep G₁ Hl)
+    (predIsoLabeledHList_related φ Hl)
+    (predIsoLabeledHList_related φ.symm Hl)
+  dsimp only [predIsoLabeledHList_ind, predIsoLabeledHList_indep] at iso
+  -- dsimp only [relOfPredOnlabeledSubgraphList] at iso
+  -- exact iso
+  sorry
+
 lemma labeledSubgraphListDensity_respects_eqv_on_G
     (Hl : LabeledGraphList σ t Vl) {G G' : LabeledGraph σ W} (φ : G ≃f G')
     : labeledSubgraphListDensity Hl G = labeledSubgraphListDensity Hl G'
-  :=
-  sorry
+  := by
+  dsimp [labeledSubgraphListDensity]
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphListIsoH φ Hl
+  have h_count : labeledSubgraphListCount Hl G = labeledSubgraphListCount Hl G' := by
+    dsimp only [labeledSubgraphListCount]
+    show S₀.toFinset.card = S₁.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  rw [h_count]
+  rfl
 
 noncomputable def labeledSubgraphListDensityLifted
     (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
