@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».PositiveHom
+import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
 
@@ -197,32 +198,102 @@ def isoSet_O3₁
 instance : FintypeExist isoSet_O3₁
     := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑isoSet_O3₁) }
 
-lemma O3₁_labeledGraph_0_1_neq
-    : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 1 := by
-  simp [O3₁_labeledGraph]
-  exact ne_of_beq_false rfl
-
-lemma O3₁_labeledGraph_0_2_neq
-    : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 2 := by
-  simp [O3₁_labeledGraph]
-  exact ne_of_beq_false rfl
-
-lemma O3₁_labeledGraph_1_2_neq
-    : O3₁_labeledGraph 1 ≠ O3₁_labeledGraph 2 := by
-  simp [O3₁_labeledGraph]
-  exact ne_of_beq_false rfl
-
 lemma isoSet_O3₁_card
     : isoSet_O3₁.toFinset.card = 3
   := by
   classical
   refine Finset.card_eq_three.mpr ?_
   use O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2
-  repeat' constructor
-  · exact O3₁_labeledGraph_0_1_neq
-  · exact O3₁_labeledGraph_0_2_neq
-  · exact O3₁_labeledGraph_1_2_neq
-  · simp [isoSet_O3₁]
+  have : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 1 := by
+    simp [O3₁_labeledGraph]
+    exact ne_of_beq_false rfl
+  have : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 2 := by
+    simp [O3₁_labeledGraph]
+    exact ne_of_beq_false rfl
+  have : O3₁_labeledGraph 1 ≠ O3₁_labeledGraph 2 := by
+    simp [O3₁_labeledGraph]
+    exact ne_of_beq_false rfl
+  repeat' constructor <;> try assumption
+  simp [isoSet_O3₁]
+
+def O3₁_labeledGraph_0_1_iso
+    : O3₁_labeledGraph 0 ≃f O3₁_labeledGraph 1 where
+  graph_iso := {
+    toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+    invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+    left_inv := by
+      dsimp [Function.LeftInverse]
+      intro i
+      aesop
+    right_inv := by
+      dsimp [Function.RightInverse]
+      intro i
+      aesop
+    map_rel_iff' := by intros; simp; rfl
+  }
+  type_preserve := by simp; rfl
+
+def O3₁_labeledGraph_0_2_iso
+    : O3₁_labeledGraph 0 ≃f O3₁_labeledGraph 2 where
+  graph_iso := {
+    toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+    invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+    left_inv := by
+      dsimp [Function.LeftInverse]
+      intro i
+      aesop
+    right_inv := by
+      dsimp [Function.RightInverse]
+      intro i
+      aesop
+    map_rel_iff' := by intros; simp; rfl
+  }
+  type_preserve := by simp; rfl
+
+lemma fun_Fin1_Fin3
+    (f : Fin 1 → Fin 3)
+    : f = (fun _ => 0) ∨ f = (fun _ => 1) ∨ f = (fun _ => 2)
+  := by
+  match h_f0 : f 0 with
+  | 0 =>
+    left
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+  | 1 =>
+    right; left
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+  | 2 =>
+    right; right
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+
+def funOnFin1ToEmbedding
+    {n : ℕ} (f : Fin 1 → Fin n) (G : SimpleGraph (Fin n))
+    : Sₜ ↪g G where
+  toFun := f
+  inj' := by
+    dsimp [Function.Injective]
+    intros; ext1
+    simp only [Fin.coe_fin_one]
+  map_rel_iff' := by
+    intro i j
+    have h : i = j := by
+      ext1
+      simp only [Fin.coe_fin_one]
+    subst h
+    simp only [SimpleGraph.irrefl]
+
+lemma graph_embedding_Fin1_Fin3
+    (H : LabeledGraph Sₜ (Fin 3))
+    : H.type_embed = funOnFin1ToEmbedding (fun _ => 0) H.graph ∨
+      H.type_embed = funOnFin1ToEmbedding (fun _ => 1) H.graph ∨
+      H.type_embed = funOnFin1ToEmbedding (fun _ => 2) H.graph
+  := by
+  sorry
 
 lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
     : isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0) = isoSet_O3₁
@@ -230,7 +301,20 @@ lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
   dsimp [isoLabeledGraphSetWithSameGraph, isoSet_O3₁]
   ext H; constructor
   · intro h
-    sorry
+    simp; simp [O3₁_labeledGraph] at h
+    obtain ⟨h₁, h₂⟩ := h
+    -- rcases h₂ with ⟨h_graph, h_type_embed⟩
+    -- simp at h_graph
+    -- simp at h_type_embed
+    -- rw [← h₁] at h_graph
+    rcases graph_embedding_Fin1_Fin3 H with h₀ | (h₁ | h₂)
+    · left
+      ext1
+      · simp [O3₁_labeledGraph, h₁]
+      · simp [h₀, funOnFin1ToEmbedding, O3₁_labeledGraph]
+        sorry
+    · sorry
+    · sorry
   · intro h
     rcases h with h₀ | (h₁ | h₂)
     · subst h₀
@@ -239,11 +323,11 @@ lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
     · subst h₁
       simp; constructor
       · dsimp [O3₁_labeledGraph]
-      · sorry
+      · exact Nonempty.intro O3₁_labeledGraph_0_1_iso
     · subst h₂
       simp; constructor
       · dsimp [O3₁_labeledGraph]
-      · sorry
+      · exact Nonempty.intro O3₁_labeledGraph_0_2_iso
 
 lemma isoLabeledGraphSetWithSameGraph_O3₁_card
     : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)).toFinset.card = 3
