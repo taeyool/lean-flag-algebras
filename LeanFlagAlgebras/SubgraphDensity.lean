@@ -2741,6 +2741,19 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = ↑(X_F ∩ X₃) := by simp only [coe_inter]
         _ ⊆ ∅ := by simp only [h_X_F_disj_X₃, coe_empty, subset_refl]
 
+    have h_X₁_subset_G₁_verts : X₁ ⊆ G₁.verts.toFinset := by
+      dsimp [G₁, G₁_ind]
+      rw [inducedSubgraph_verts G X_F]
+      simp only [union_assoc, coe_union, Set.toFinset_union, toFinset_coe, subset_union_left, X_F]
+    have h_X₂_subset_G₁_verts : X₂ ⊆ G₁.verts.toFinset := by
+      dsimp [G₁, G₁_ind]
+      rw [inducedSubgraph_verts G X_F]
+      simp only [coe_union, Set.toFinset_union, toFinset_coe, X_F]
+      rw [union_comm X₁ X₂]
+      rw [union_assoc (X₂ ∪ X₁) X₄ X₅]
+      rw [union_assoc X₂ X₁ (X₄ ∪ X₅)]
+      simp only [subset_union_left]
+
     let G₁₁_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₁}
     let G₁₂_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₂}
     let G₁₁ := G₁₁_ind.val
@@ -2816,13 +2829,34 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let h_F₁_ind : F₁.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₁ h_G₁₁_ind
     let h_F₂_ind : F₂.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₂ h_G₁₂_ind
 
+    have h_X₁_G₁₁ : (inducedSubgraph G X₁).val = subgraphByComposition G₁ G₁₁ := by
+      dsimp [subgraphByComposition, G₁₁, G₁₁_ind, Subgraph.coeSubgraph, inducedSubgraph]
+      ext u v
+      . simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
+                    Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop', nonempty_prop,
+                    exists_eq_right_right, iff_self_and]
+        exact Finset.mem_of_subset sorry
+      . simp [Relation.Map]
+        constructor
+        . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
+          use u
+          simp [h_u_v, h_u_X₁, h_v_X₁, G₁, G₁_ind, inducedSubgraph]
+          exact ⟨Finset.mem_of_subset sorry h_u_X₁, Finset.mem_of_subset sorry h_v_X₁⟩
+        . sorry
+
+    have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ := sorry
+
     let h_F₁_H₁ : Nonempty (F₁.coe ≃g H₁) :=
       let g_F₁_G₁₁ : F₁.coe ≃g G₁₁.coe := (isoToSubgraphFromIso h_G₁_Fout.some G₁₁).symm
-      let g_G₁₁_X₁ : G₁₁.coe ≃g (inducedSubgraph G X₁).val.coe := sorry
+      let g_G₁₁_X₁ : G₁₁.coe ≃g (inducedSubgraph G X₁).val.coe := by
+        rw [h_X₁_G₁₁]
+        exact isoToSubgraphByComposition G₁ G₁₁
       Nonempty.intro ((g_F₁_G₁₁.trans g_G₁₁_X₁).trans h_X₁_H₁.some)
     let h_F₂_H₂ : Nonempty (F₂.coe ≃g H₂) :=
       let g_F₂_G₁₂ : F₂.coe ≃g G₁₂.coe := (isoToSubgraphFromIso h_G₁_Fout.some G₁₂).symm
-      let g_G₁₂_X₂ : G₁₂.coe ≃g (inducedSubgraph G X₂).val.coe := sorry
+      let g_G₁₂_X₂ : G₁₂.coe ≃g (inducedSubgraph G X₂).val.coe := by
+        rw [h_X₂_G₁₂]
+        exact isoToSubgraphByComposition G₁ G₁₂
       Nonempty.intro ((g_F₂_G₁₂.trans g_G₁₂_X₂).trans h_X₂_H₂.some)
 
     let h_F₁_disj_F₂ : F₁.verts ∩ F₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_G₁_Fout.some G₁₁ G₁₂ h_G₁₁_disj_G₁₂
