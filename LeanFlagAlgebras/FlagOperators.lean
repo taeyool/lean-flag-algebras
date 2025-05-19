@@ -10,12 +10,18 @@ def emptyType : FlagType (Fin 0) := emptyGraph (Fin 0)
 
 notation "∅ₜ" => emptyType
 
+def isoLabeledGraphSetWithSameGraph
+    (G : LabeledGraph σ (Fin n)) : Set (LabeledGraph σ (Fin n))
+  :=
+  { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
+
+instance (G : LabeledGraph σ (Fin n)) : FintypeExist (isoLabeledGraphSetWithSameGraph G) where
+  fintype_exist := Nonempty.intro (Fintype.ofFinite _)
+
 noncomputable def isomorphismCount
     (G : LabeledGraph σ (Fin n)) : ℕ
   :=
-  let S := { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
-  have : FintypeExist S := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S) }
-  S.toFinset.card
+  (isoLabeledGraphSetWithSameGraph G).toFinset.card
 
 noncomputable def downwardNormalizingFactor_labeledGraph
     (G : LabeledGraph σ (Fin n)) : ℚ
@@ -25,7 +31,7 @@ noncomputable def downwardNormalizingFactor_labeledGraph
 
 def isoSetOfIsoLabeledGraphWithSameGraph
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
-    : { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H } ≃ { H : LabeledGraph σ (Fin n) | G'.graph = H.graph ∧ G' ∼f H }
+    : isoLabeledGraphSetWithSameGraph G ≃ isoLabeledGraphSetWithSameGraph G'
   := by
   sorry
 
@@ -34,13 +40,7 @@ lemma isomorphismCount_respects_eqv
     : isomorphismCount G = isomorphismCount G'
   := by
   dsimp [isomorphismCount]
-  let S := { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
-  let S' := { H : LabeledGraph σ (Fin n) | G'.graph = H.graph ∧ G' ∼f H }
-  have h_iso_S_S' : S ≃ S' := isoSetOfIsoLabeledGraphWithSameGraph h
-  have : FintypeExist S := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S) }
-  have : FintypeExist S' := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S') }
-  have := Fintype.card_congr h_iso_S_S'
-  simp_all only [Set.toFinset_card, S, S']
+  simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h)]
 
 lemma downwardNormalizingFactor_labeledGraph_respects_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')

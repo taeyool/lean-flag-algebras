@@ -94,125 +94,116 @@ def singletonType : FlagType (Fin 1) := emptyGraph (Fin 1)
 
 alias Sₜ := singletonType
 
-def O2₁_labeledGraph : LabeledGraph Sₜ (Fin 2) where
+def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   graph := O2_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
-def K2₁_labeledGraph : LabeledGraph Sₜ (Fin 2) where
+def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   graph := K2_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
-def O3₁_labeledGraph : LabeledGraph Sₜ (Fin 3) where
+def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   graph := O3_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
-def E3₁_labeledGraph : LabeledGraph Sₜ (Fin 3) where
+def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   graph := E3_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
-def E3₁'_labeledGraph : LabeledGraph Sₜ (Fin 3) where
-  graph := E3_graph
-  type_embed := {
-      toFun := fun _ => 2
-      inj' := Function.injective_of_subsingleton fun _ => 2
-      map_rel_iff' := by intros; simp; exact id
-    }
-
-def P3₁_labeledGraph : LabeledGraph Sₜ (Fin 3) where
+def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   graph := P3_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
-def P3₁'_labeledGraph : LabeledGraph Sₜ (Fin 3) where
-  graph := P3_graph
-  type_embed := {
-      toFun := fun _ => 1
-      inj' := Function.injective_of_subsingleton fun _ => 1
-      map_rel_iff' := by intros; simp; exact id
-    }
-
-def K3₁_labeledGraph : LabeledGraph Sₜ (Fin 3) where
+def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   graph := K3_graph
   type_embed := {
-      toFun := fun _ => 0
-      inj' := Function.injective_of_subsingleton fun _ => 0
+      toFun := fun _ => label_idx
+      inj' := Function.injective_of_subsingleton fun _ => label_idx
       map_rel_iff' := by intros; simp; exact id
     }
 
 /-- a non-edge with one labeled vertex -/
 noncomputable def O2₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨2, ⟦O2₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨2, ⟦O2₁_labeledGraph 0⟧⟩⟧
 
 /-- an edge with one labeled vertex -/
 noncomputable def K2₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨2, ⟦K2₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨2, ⟦K2₁_labeledGraph 0⟧⟩⟧
 
 /-- an empty graph with one labeled vertex -/
 noncomputable def O3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦O3₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦O3₁_labeledGraph 0⟧⟩⟧
 
 /-- an edge with one labeled vertex and an isolated vertex -/
 noncomputable def E3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦E3₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦E3₁_labeledGraph 0⟧⟩⟧
 
 /-- an edge and an isolated vertex with a label -/
 noncomputable def E3₁' : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦E3₁'_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦E3₁_labeledGraph 2⟧⟩⟧
 
 /-- a path of length 2 (3 vertices) with the middle vertex labeled -/
 noncomputable def P3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦P3₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦P3₁_labeledGraph 0⟧⟩⟧
 
 /-- a path of length 2 (3 vertices) where one of the endpoints is labeled -/
 noncomputable def P3₁' : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦P3₁'_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦P3₁_labeledGraph 1⟧⟩⟧
 
 /-- a complete graph with one labeled vertex -/
 noncomputable def K3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦K3₁_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, ⟦K3₁_labeledGraph 0⟧⟩⟧
 
 /- downward operations -/
 
 lemma unlabel_O3₁
-    : unlabel ⟦O3₁_labeledGraph⟧ = ⟦O3_labeledGraph⟧
+    : unlabel ⟦O3₁_labeledGraph 0⟧ = ⟦O3_labeledGraph⟧
   := by
   dsimp [unlabel]
   apply Quotient.sound
   calc
-    _ ∼f unlabeledGraph O3₁_labeledGraph := by
+    _ ∼f unlabeledGraph (O3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out O3₁_labeledGraph
+      exact Quotient.mk_out (O3₁_labeledGraph 0)
     _ ∼f O3_labeledGraph := by
       dsimp [unlabeledGraph, O3₁_labeledGraph, O3_labeledGraph]
       apply flagEqv.refl
 
-lemma downwardNormalizingFactor_O3₁
-    : downwardNormalizingFactor ⟦O3₁_labeledGraph⟧ = 1
+lemma isoLabeledGraphSetWithSameGraph_O3₁
+    : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)) = { O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2 }
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount]
   sorry
 
+lemma downwardNormalizingFactor_O3₁
+    : downwardNormalizingFactor ⟦O3₁_labeledGraph 0⟧ = 1
+  := by
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  have h₁ : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)).toFinset.card = 3 := sorry
+  have h₂ : Nat.factorial 3 / 2 = 3 := rfl
+  simp [h₁, h₂]
+
 lemma downwardFlagVectorQuot_O3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦O3₁_labeledGraph⟧⟩) = unitVector ⟨3, ⟦O3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦O3₁_labeledGraph 0⟧⟩) = unitVector ⟨3, ⟦O3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
@@ -225,17 +216,17 @@ theorem downward_O3₁
   rw [downwardFlagVectorQuot_O3₁]
 
 lemma unlabel_E3₁
-    : unlabel ⟦E3₁_labeledGraph⟧ = ⟦E3_labeledGraph⟧
+    : unlabel ⟦E3₁_labeledGraph 0⟧ = ⟦E3_labeledGraph⟧
   := by
   sorry
 
 lemma downwardNormalizingFactor_E3₁
-    : downwardNormalizingFactor ⟦E3₁_labeledGraph⟧ = 2 / 3
+    : downwardNormalizingFactor ⟦E3₁_labeledGraph 0⟧ = 2 / 3
   := by
   sorry
 
 lemma downwardFlagVectorQuot_E3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph 0⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁, downwardNormalizingFactor_E3₁]
@@ -249,17 +240,17 @@ theorem downward_E3₁
   rfl
 
 lemma unlabel_E3₁'
-    : unlabel ⟦E3₁'_labeledGraph⟧ = ⟦E3_labeledGraph⟧
+    : unlabel ⟦E3₁_labeledGraph 2⟧ = ⟦E3_labeledGraph⟧
   := by
   sorry
 
 lemma downwardNormalizingFactor_E3₁'
-    : downwardNormalizingFactor ⟦E3₁'_labeledGraph⟧ = 1 / 3
+    : downwardNormalizingFactor ⟦E3₁_labeledGraph 2⟧ = 1 / 3
   := by
   sorry
 
 lemma downwardFlagVectorQuot_E3₁'
-    : downwardFlagVector (unitVector ⟨3, ⟦E3₁'_labeledGraph⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph 2⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁', downwardNormalizingFactor_E3₁']
@@ -273,17 +264,17 @@ theorem downward_E3₁'
   rfl
 
 lemma unlabel_P3₁
-    : unlabel ⟦P3₁_labeledGraph⟧ = ⟦P3_labeledGraph⟧
+    : unlabel ⟦P3₁_labeledGraph 0⟧ = ⟦P3_labeledGraph⟧
   := by
   sorry
 
 lemma downwardNormalizingFactor_P3₁
-    : downwardNormalizingFactor ⟦P3₁_labeledGraph⟧ = 1 / 3
+    : downwardNormalizingFactor ⟦P3₁_labeledGraph 0⟧ = 1 / 3
   := by
   sorry
 
 lemma downwardFlagVectorQuot_P3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦P3₁_labeledGraph⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦P3₁_labeledGraph 0⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁, downwardNormalizingFactor_P3₁]
@@ -297,17 +288,17 @@ theorem downward_P3₁
   rfl
 
 lemma unlabel_P3₁'
-    : unlabel ⟦P3₁'_labeledGraph⟧ = ⟦P3_labeledGraph⟧
+    : unlabel ⟦P3₁_labeledGraph 1⟧ = ⟦P3_labeledGraph⟧
   := by
   sorry
 
 lemma downwardNormalizingFactor_P3₁'
-    : downwardNormalizingFactor ⟦P3₁'_labeledGraph⟧ = 2 / 3
+    : downwardNormalizingFactor ⟦P3₁_labeledGraph 1⟧ = 2 / 3
   := by
   sorry
 
 lemma downwardFlagVectorQuot_P3₁'
-    : downwardFlagVector (unitVector ⟨3, ⟦P3₁'_labeledGraph⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦P3₁_labeledGraph 1⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁', downwardNormalizingFactor_P3₁']
@@ -321,26 +312,26 @@ theorem downward_P3₁'
   rfl
 
 lemma unlabel_K3₁
-    : unlabel ⟦K3₁_labeledGraph⟧ = ⟦K3_labeledGraph⟧
+    : unlabel ⟦K3₁_labeledGraph 0⟧ = ⟦K3_labeledGraph⟧
   := by
   dsimp [unlabel]
   apply Quotient.sound
   calc
-    _ ∼f unlabeledGraph K3₁_labeledGraph := by
+    _ ∼f unlabeledGraph (K3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out K3₁_labeledGraph
+      exact Quotient.mk_out (K3₁_labeledGraph 0)
     _ ∼f K3_labeledGraph := by
       dsimp [unlabeledGraph, K3₁_labeledGraph, K3_labeledGraph]
       apply flagEqv.refl
 
 lemma downwardNormalizingFactor_K3₁
-    : downwardNormalizingFactor ⟦K3₁_labeledGraph⟧ = 1
+    : downwardNormalizingFactor ⟦K3₁_labeledGraph 0⟧ = 1
   := by
   dsimp [downwardNormalizingFactor, isomorphismCount]
   sorry
 
 lemma downwardFlagVectorQuot_K3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦K3₁_labeledGraph⟧⟩) = unitVector ⟨3, ⟦K3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, ⟦K3₁_labeledGraph 0⟧⟩) = unitVector ⟨3, ⟦K3_labeledGraph⟧⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]
