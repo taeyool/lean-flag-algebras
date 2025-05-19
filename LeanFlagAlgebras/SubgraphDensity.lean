@@ -2706,11 +2706,33 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_X₁_card, h_X₂_card, h_X₃_card, h_X₄_card, h_X₅_card,
             h_X₁_H₁, h_X₂_H₂, h_X₃_H₃⟩
 
-    let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
-    have h_X_F_disj_X₃ : X_F ∩ X₃ = ∅ := by
+    have h_X₁_X₂_disj_X₄ : (X₁ ∪ X₂) ∩ X₄ = ∅ := by
+      suffices (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ by {
+        have h' : X₁ ∪ X₂ ⊆ X₁ ∪ X₂ ∪ X₃ := Finset.subset_union_left
+        apply Finset.subset_empty.mp
+        calc
+          (X₁ ∪ X₂) ∩ X₄ ⊆ (X₁ ∪ X₂ ∪ X₃) ∩ X₄ := Finset.inter_subset_inter_right h'
+          _ = ∅ := this
+      }
+      exact h_X₁_to_X₃_disj_X₄
+    have h_X₁_X₂_X₄_disj_X₅ : (X₁ ∪ X₂ ∪ X₄) ∩ X₅ = ∅ := by
+      suffices (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ by {
+        have h' : X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₃ ∪ X₄ :=
+          calc
+            X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₄ ∪ X₃ := Finset.subset_union_left
+            _ = (X₁ ∪ X₂) ∪ (X₄ ∪ X₃) := by simp only [Finset.union_assoc]
+            _ = (X₁ ∪ X₂) ∪ (X₃ ∪ X₄) := by simp only [Finset.union_comm]
+            _ = X₁ ∪ X₂ ∪ X₃ ∪ X₄ := by simp only [Finset.union_assoc]
+        apply Finset.subset_empty.mp
+        calc
+          (X₁ ∪ X₂ ∪ X₄) ∩ X₅ ⊆ (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ := Finset.inter_subset_inter_right h'
+          _ = ∅ := this
+        }
+      exact h_X₁_to_X₄_disj_X₅
+    have h_X₁_X₂_X₄_X₅_disj_X₃ : (X₁ ∪ X₂ ∪ X₄ ∪ X₅) ∩ X₃ = ∅ := by
       apply Finset.subset_empty.mp
       calc
-        X_F ∩ X₃ = (X₁ ∪ X₂ ∪ X₄ ∪ X₅) ∩ X₃ := by rfl
+        (X₁ ∪ X₂ ∪ X₄ ∪ X₅) ∩ X₃
         _ = ((X₁ ∪ X₂) ∩ X₃) ∪ (X₄ ∩ X₃) ∪ (X₅ ∩ X₃) := by simp only [union_assoc, union_inter_distrib_right]
         _ = ((X₁ ∪ X₂) ∩ X₃) ∪ (X₃ ∩ X₄) ∪ (X₃ ∩ X₅) := by simp only [Finset.inter_comm]
         _ ⊆ ((X₁ ∪ X₂) ∩ X₃) ∪ ((X₁ ∪ X₂ ∪ X₃) ∩ X₄) ∪ (X₃ ∩ X₅) := by
@@ -2728,19 +2750,27 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = (∅ ∪ ∅ ∪ ∅) := by rw [h_X₁_to_X₂_disj_X₃, h_X₁_to_X₃_disj_X₄, h_X₁_to_X₄_disj_X₅]
         _ = ∅ := by simp only [union_idempotent]
 
+    let X_F := X₁ ∪ X₂ ∪ X₄ ∪ X₅
+    have h_X_F_disj_X₃ : X_F ∩ X₃ = ∅ := h_X₁_X₂_X₄_X₅_disj_X₃
+    have h_X₁_subset_X_F : X₁ ⊆ X_F := by
+      dsimp [X_F]
+      rw [Finset.union_assoc (X₁ ∪ X₂) X₄ X₅]
+      rw [Finset.union_assoc X₁ X₂ (X₄ ∪ X₅)]
+      apply Finset.subset_union_left
+
     let G₁_ind := inducedSubgraph G X_F
     let G₂_ind := inducedSubgraph G X₃
     let G₁ := G₁_ind.val
     let G₂ := G₂_ind.val
     let h_G₁_ind : G₁.IsInduced := G₁_ind.property
     let h_G₂_ind : G₂.IsInduced := G₂_ind.property
+
     have h_G₁_disj_G₂ : G₁.verts ∩ G₂.verts = ∅ := by
       apply Set.subset_empty_iff.mp
       calc
         G₁.verts ∩ G₂.verts = ↑X_F ∩ ↑X₃ := by rw [inducedSubgraph_verts G X_F, inducedSubgraph_verts G X₃]
         _ = ↑(X_F ∩ X₃) := by simp only [coe_inter]
         _ ⊆ ∅ := by simp only [h_X_F_disj_X₃, coe_empty, subset_refl]
-
     have h_X₁_subset_G₁_verts : X₁ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
       rw [inducedSubgraph_verts G X_F]
@@ -2760,6 +2790,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let G₁₂ := G₁₂_ind.val
     let h_G₁₁_ind : G₁₁.IsInduced := G₁₁_ind.property
     let h_G₁₂_ind : G₁₂.IsInduced := G₁₂_ind.property
+
     have h_G₁₁_disj_G₁₂ : G₁₁.verts ∩ G₁₂.verts = ∅ := by
       apply Set.subset_empty_iff.mp
       calc
@@ -2770,35 +2801,37 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = ↑({v : G₁.verts | v.val ∈ X₁ ∩ X₂}) := by simp only [mem_inter]; exact rfl
         _ ⊆ ∅ := by rw [h_X₁_disj_X₂]; simp only [not_mem_empty, Set.setOf_false, subset_refl]
 
+    have h_X₁_G₁₁ : (inducedSubgraph G X₁).val = subgraphByComposition G₁ G₁₁ := by
+      dsimp [subgraphByComposition, G₁₁, G₁₁_ind, Subgraph.coeSubgraph, inducedSubgraph]
+      ext u v
+      . simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
+                    Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop',
+                    nonempty_prop, exists_eq_right_right, iff_self_and]
+        exact Finset.mem_of_subset h_X₁_subset_X_F
+      . simp only [mem_coe, Subgraph.map_adj, Relation.Map, Subgraph.hom_apply,
+                    Subtype.exists, exists_and_left, exists_prop', nonempty_prop]
+        constructor
+        . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
+          use u
+          constructor
+          . exact Finset.mem_of_subset h_X₁_subset_X_F h_u_X₁
+          . use v
+            simp only [inducedSubgraph, mem_coe, h_u_v,
+                        Finset.mem_of_subset h_X₁_subset_X_F h_u_X₁,
+                        Finset.mem_of_subset h_X₁_subset_X_F h_v_X₁,
+                        and_self, h_u_X₁, h_v_X₁, G₁, G₁_ind]
+        . rintro ⟨a, h_a_G₁, b, ⟨h_G₁_adj_a_b, h_a_X₁, h_b_X₁⟩, h_a_u, h_b_G₁, h_b_v⟩
+          rw [←h_a_u, ←h_b_v]
+          exact ⟨G₁.adj_sub h_G₁_adj_a_b, h_a_X₁, h_b_X₁⟩
+
+    have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ := sorry
+
     have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
       rw [inducedSubgraph_verts G X_F]
       rw [Fintype.card_fin]
       suffices (X₁ ∪ X₂ ∪ X₄ ∪ X₅).card = ℓ₁₂ by simp only [coe_sort_coe, Fintype.card_coe, this]
-      have : (X₁ ∪ X₂ ∪ X₄) ∩ X₅ = ∅ := by
-        suffices (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ by {
-          have h' : X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₃ ∪ X₄ :=
-            calc
-              X₁ ∪ X₂ ∪ X₄ ⊆ X₁ ∪ X₂ ∪ X₄ ∪ X₃ := Finset.subset_union_left
-              _ = (X₁ ∪ X₂) ∪ (X₄ ∪ X₃) := by simp only [Finset.union_assoc]
-              _ = (X₁ ∪ X₂) ∪ (X₃ ∪ X₄) := by simp only [Finset.union_comm]
-              _ = X₁ ∪ X₂ ∪ X₃ ∪ X₄ := by simp only [Finset.union_assoc]
-          apply Finset.subset_empty.mp
-          calc
-            (X₁ ∪ X₂ ∪ X₄) ∩ X₅ ⊆ (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ := Finset.inter_subset_inter_right h'
-            _ = ∅ := this
-          }
-        exact h_X₁_to_X₄_disj_X₅
-      rw [Finset.card_union (X₁ ∪ X₂ ∪ X₄) X₅, this]
-      have : (X₁ ∪ X₂) ∩ X₄ = ∅ := by
-        suffices (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ by {
-          have h' : X₁ ∪ X₂ ⊆ X₁ ∪ X₂ ∪ X₃ := Finset.subset_union_left
-          apply Finset.subset_empty.mp
-          calc
-            (X₁ ∪ X₂) ∩ X₄ ⊆ (X₁ ∪ X₂ ∪ X₃) ∩ X₄ := Finset.inter_subset_inter_right h'
-            _ = ∅ := this
-        }
-        exact h_X₁_to_X₃_disj_X₄
-      rw [Finset.card_union (X₁ ∪ X₂) X₄, this]
+      rw [Finset.card_union (X₁ ∪ X₂ ∪ X₄) X₅, h_X₁_X₂_X₄_disj_X₅]
+      rw [Finset.card_union (X₁ ∪ X₂) X₄, h_X₁_X₂_disj_X₄]
       rw [Finset.card_union X₁ X₂, h_X₁_disj_X₂]
       rw [h_X₁_card, h_X₂_card, h_X₄_card, h_X₅_card]
       show ℓ₁ + ℓ₂ + (ℓ₂₃ - (ℓ₂ + ℓ₃)) + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₁₂
@@ -2811,6 +2844,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           ←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₁ + ℓ₂ + ℓ₃ + ℓ₁₂)]
       apply Nat.sub_eq_of_eq_add
       linarith
+
     let g_G₁_Finℓ₁₂ : G₁.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
 
     let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map g_G₁_Finℓ₁₂.toEmbedding G₁.coe
@@ -2828,23 +2862,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
     let h_F₁_ind : F₁.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₁ h_G₁₁_ind
     let h_F₂_ind : F₂.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₂ h_G₁₂_ind
-
-    have h_X₁_G₁₁ : (inducedSubgraph G X₁).val = subgraphByComposition G₁ G₁₁ := by
-      dsimp [subgraphByComposition, G₁₁, G₁₁_ind, Subgraph.coeSubgraph, inducedSubgraph]
-      ext u v
-      . simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
-                    Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop', nonempty_prop,
-                    exists_eq_right_right, iff_self_and]
-        exact Finset.mem_of_subset sorry
-      . simp [Relation.Map]
-        constructor
-        . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
-          use u
-          simp [h_u_v, h_u_X₁, h_v_X₁, G₁, G₁_ind, inducedSubgraph]
-          exact ⟨Finset.mem_of_subset sorry h_u_X₁, Finset.mem_of_subset sorry h_v_X₁⟩
-        . sorry
-
-    have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ := sorry
 
     let h_F₁_H₁ : Nonempty (F₁.coe ≃g H₁) :=
       let g_F₁_G₁₁ : F₁.coe ≃g G₁₁.coe := (isoToSubgraphFromIso h_G₁_Fout.some G₁₁).symm
