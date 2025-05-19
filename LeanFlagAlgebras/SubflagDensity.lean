@@ -554,8 +554,19 @@ noncomputable def labeledSubgraphListDensity
 lemma labeledSubgraphListDensity_respects_eqv_on_G
     (Hl : LabeledGraphList σ t Vl) {G G' : LabeledGraph σ W} (φ : G ≃f G')
     : labeledSubgraphListDensity Hl G = labeledSubgraphListDensity Hl G'
-  :=
-  sorry
+  := by
+  dsimp [labeledSubgraphListDensity]
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
+  have h_count : labeledSubgraphListCount Hl G = labeledSubgraphListCount Hl G' := by
+    dsimp only [labeledSubgraphListCount]
+    show S₀.toFinset.card = S₁.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := sorry
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  rw [h_count]
+  rfl
 
 noncomputable def labeledSubgraphListDensityLifted
     (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
