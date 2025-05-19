@@ -2798,12 +2798,12 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           ←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₁ + ℓ₂ + ℓ₃ + ℓ₁₂)]
       apply Nat.sub_eq_of_eq_add
       linarith
-    let f_G₁_Finℓ₁₂ : G₁.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
+    let g_G₁_Finℓ₁₂ : G₁.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
 
-    let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map f_G₁_Finℓ₁₂.toEmbedding G₁.coe
+    let F₀ : SimpleGraph (Fin ℓ₁₂) := SimpleGraph.map g_G₁_Finℓ₁₂.toEmbedding G₁.coe
     let F : QuotSimpleGraph (Fin ℓ₁₂) := ⟦F₀⟧
 
-    let g_G₁_F₀ : G₁.coe ≃g F₀ := SimpleGraph.Iso.map f_G₁_Finℓ₁₂ G₁.coe
+    let g_G₁_F₀ : G₁.coe ≃g F₀ := SimpleGraph.Iso.map g_G₁_Finℓ₁₂ G₁.coe
     let g_F₀_Fout : F₀ ≃g F.out := by
       have : graph_eqv F₀ F.out := Quotient.mk_eq_iff_out.mp rfl
       dsimp [graph_eqv] at this
@@ -2812,11 +2812,22 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
     let F₁ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₁
     let F₂ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₂
-    let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
 
     let h_F₁_ind : F₁.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₁ h_G₁₁_ind
     let h_F₂_ind : F₂.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₂ h_G₁₂_ind
+
+    let h_F₁_H₁ : Nonempty (F₁.coe ≃g H₁) :=
+      let g_F₁_G₁₁ : F₁.coe ≃g G₁₁.coe := (isoToSubgraphFromIso h_G₁_Fout.some G₁₁).symm
+      let g_G₁₁_X₁ : G₁₁.coe ≃g (inducedSubgraph G X₁).val.coe := sorry
+      Nonempty.intro ((g_F₁_G₁₁.trans g_G₁₁_X₁).trans h_X₁_H₁.some)
+    let h_F₂_H₂ : Nonempty (F₂.coe ≃g H₂) :=
+      let g_F₂_G₁₂ : F₂.coe ≃g G₁₂.coe := (isoToSubgraphFromIso h_G₁_Fout.some G₁₂).symm
+      let g_G₁₂_X₂ : G₁₂.coe ≃g (inducedSubgraph G X₂).val.coe := sorry
+      Nonempty.intro ((g_F₂_G₁₂.trans g_G₁₂_X₂).trans h_X₂_H₂.some)
+
     let h_F₁_disj_F₂ : F₁.verts ∩ F₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_G₁_Fout.some G₁₁ G₁₂ h_G₁₁_disj_G₁₂
+
+    let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
