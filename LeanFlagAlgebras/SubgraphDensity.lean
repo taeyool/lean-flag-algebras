@@ -2734,7 +2734,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let G₂ := G₂_ind.val
     let h_G₁_ind : G₁.IsInduced := G₁_ind.property
     let h_G₂_ind : G₂.IsInduced := G₂_ind.property
-    let h_G₁_disj_G₂ : G₁.verts ∩ G₂.verts = ∅ := by
+    have h_G₁_disj_G₂ : G₁.verts ∩ G₂.verts = ∅ := by
       apply Set.subset_empty_iff.mp
       calc
         G₁.verts ∩ G₂.verts = ↑X_F ∩ ↑X₃ := by rw [inducedSubgraph_verts G X_F, inducedSubgraph_verts G X₃]
@@ -2747,6 +2747,15 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let G₁₂ := G₁₂_ind.val
     let h_G₁₁_ind : G₁₁.IsInduced := G₁₁_ind.property
     let h_G₁₂_ind : G₁₂.IsInduced := G₁₂_ind.property
+    have h_G₁₁_disj_G₁₂ : G₁₁.verts ∩ G₁₂.verts = ∅ := by
+      apply Set.subset_empty_iff.mp
+      calc
+        G₁₁.verts ∩ G₁₂.verts = ↑{v : G₁.verts | v.val ∈ X₁} ∩ ↑{v : G₁.verts | v.val ∈ X₂} := by
+                rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₁}]
+                rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₂}]
+        _ = ↑({v : G₁.verts | v.val ∈ X₁} ∩ {v : G₁.verts | v.val ∈ X₂}) := by simp only [coe_inter]
+        _ = ↑({v : G₁.verts | v.val ∈ X₁ ∩ X₂}) := by simp only [mem_inter]; exact rfl
+        _ ⊆ ∅ := by rw [h_X₁_disj_X₂]; simp only [not_mem_empty, Set.setOf_false, subset_refl]
 
     have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
       rw [inducedSubgraph_verts G X_F]
@@ -2805,6 +2814,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let F₂ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₂
     let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
 
+    let h_F₁_ind : F₁.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₁ h_G₁₁_ind
+    let h_F₂_ind : F₂.IsInduced := subgraphFromIso_preserve_inducedness h_G₁_Fout.some G₁₂ h_G₁₂_ind
+    let h_F₁_disj_F₂ : F₁.verts ∩ F₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_G₁_Fout.some G₁₁ G₁₂ h_G₁₁_disj_G₁₂
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
