@@ -567,16 +567,16 @@ def relOfPredOnlabeledSubgraphList
     (p₁ : (∀ (_ : Fin t), LabeledSubgraph σ G₁) → Prop)
   := ∀ (H₀: ∀ (_ : Fin t), LabeledSubgraph σ G₀) (H₁: ∀ (_ : Fin t), LabeledSubgraph σ G₁), (relOflabeledSubgraphList φ Hl H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
-def predIsoLabeledHList
+def predIsoLabeledHl
     {σ : FlagType T} (G : LabeledGraph σ V)
     (Hl : LabeledGraphList σ t Vl)
     : (∀ (_ : Fin t), LabeledSubgraph σ G) → Prop
   := fun Gl ↦ (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅)
 
-lemma predIsoLabeledHList_related
+lemma predIsoLabeledHl_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
     : relOfPredOnlabeledSubgraphList φ Hl
-    (predIsoLabeledHList G₀ Hl) (predIsoLabeledHList G₁ Hl)
+    (predIsoLabeledHl G₀ Hl) (predIsoLabeledHl G₁ Hl)
   := sorry
 
 noncomputable def isoSetOfInducedlabeledSubgraphList
@@ -589,18 +589,18 @@ noncomputable def isoSetOfInducedlabeledSubgraphList
     : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G₀ | p₀ Gl } ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G₁ | p₁ Gl }
   := sorry
 
-noncomputable def isoSetOfInducedlabeledSubgraphListIsoH
+noncomputable def isoSetOfInducedlabeledSubgraphListIsoHl
     {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (φ : G ≃f G')
     (Hl : LabeledGraphList σ t Vl)
     : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
     ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
   := by
   let iso := isoSetOfInducedlabeledSubgraphList φ Hl
-    (predIsoLabeledHList G Hl)
-    (predIsoLabeledHList G' Hl)
-    (predIsoLabeledHList_related φ Hl)
-    (predIsoLabeledHList_related φ.symm Hl)
-  dsimp only [predIsoLabeledHList, relOfPredOnlabeledSubgraphList] at iso
+    (predIsoLabeledHl G Hl)
+    (predIsoLabeledHl G' Hl)
+    (predIsoLabeledHl_related φ Hl)
+    (predIsoLabeledHl_related φ.symm Hl)
+  dsimp only [predIsoLabeledHl, relOfPredOnlabeledSubgraphList] at iso
   exact iso
 
 lemma labeledSubgraphListDensity_respects_eqv_on_G
@@ -612,7 +612,7 @@ lemma labeledSubgraphListDensity_respects_eqv_on_G
   let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced ∧ Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
   have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
   have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphListIsoH φ Hl
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphListIsoHl φ Hl
   have h_count : labeledSubgraphListCount Hl G = labeledSubgraphListCount Hl G' := by
     dsimp only [labeledSubgraphListCount]
     show S₀.toFinset.card = S₁.toFinset.card
