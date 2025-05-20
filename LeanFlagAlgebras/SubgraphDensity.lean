@@ -2760,6 +2760,18 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           _ = ∅ := this
         }
       exact h_X₁_to_X₄_disj_X₅
+    have h_X₁_disj_X₅ : X₁ ∩ X₅ = ∅ := by
+      apply Finset.subset_empty.mp
+      calc
+        X₁ ∩ X₅ ⊆ (X₁ ∪ (X₂ ∪ X₄)) ∩ X₅ := Finset.inter_subset_inter_right (by simp only [Finset.subset_union_left])
+        _ = (X₁ ∪ X₂ ∪ X₄) ∩ X₅ := by simp only [Finset.union_assoc]
+        _ = ∅ := h_X₁_X₂_X₄_disj_X₅
+    have h_X₂_disj_X₅ : X₂ ∩ X₅ = ∅ := by
+      apply Finset.subset_empty.mp
+      calc
+        X₂ ∩ X₅ ⊆ (X₂ ∪ (X₁ ∪ X₄)) ∩ X₅ := Finset.inter_subset_inter_right (by simp only [Finset.subset_union_left])
+        _ = (X₁ ∪ X₂ ∪ X₄) ∩ X₅ := by rw [←Finset.union_assoc X₂ X₁ X₄, Finset.union_comm X₂ X₁]
+        _ = ∅ := h_X₁_X₂_X₄_disj_X₅
     have h_X₁_X₂_X₄_X₅_disj_X₃ : (X₁ ∪ X₂ ∪ X₄ ∪ X₅) ∩ X₃ = ∅ := by
       apply Finset.subset_empty.mp
       calc
@@ -2923,7 +2935,22 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       by {
         exact Set.toFinset_mono this
       }
-      have h' : {v : G₁.verts | v.val ∈ X₅} ⊆ (G₁₁.verts ∪ G₁₂.verts)ᶜ := sorry
+      have h' : {v : G₁.verts | v.val ∈ X₅} ⊆ (G₁₁.verts ∪ G₁₂.verts)ᶜ := by
+        intro v h_v_X₅
+        simp only [Set.mem_setOf_eq] at h_v_X₅
+        dsimp [G₁₁, G₁₁_ind, G₁₂, G₁₂_ind]
+        rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₁}]
+        rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₂}]
+        simp only [Set.compl_union, Set.mem_inter_iff, Set.mem_compl_iff, Set.mem_setOf_eq]
+        constructor
+        . intro h_v_X₁
+          have : ↑v ∈ X₁ ∩ X₅ := by simp only [mem_inter, h_v_X₁, h_v_X₅, and_self]
+          rw [h_X₁_disj_X₅] at this
+          exact Finset.not_mem_empty ↑v this
+        . intro h_v_X₂
+          have : ↑v ∈ X₂ ∩ X₅ := by simp only [mem_inter, h_v_X₂, h_v_X₅, and_self]
+          rw [h_X₂_disj_X₅] at this
+          exact Finset.not_mem_empty ↑v this
       calc
         ⇑h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}
         _ ⊆ ⇑h_G₁_Fout.some '' ((G₁₁.verts ∪ G₁₂.verts)ᶜ) :=
