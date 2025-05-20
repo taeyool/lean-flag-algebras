@@ -4,6 +4,7 @@ import Mathlib.Order.BooleanAlgebra
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Real.Basic
+import Mathlib.Logic.Function.Defs
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
@@ -2800,6 +2801,15 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [Finset.union_assoc (X₁ ∪ X₂) X₄ X₅]
       rw [Finset.union_assoc X₁ X₂ (X₄ ∪ X₅)]
       apply Finset.subset_union_left
+    have h_X₂_subset_X_F : X₂ ⊆ X_F := by
+      dsimp [X_F]
+      rw [Finset.union_comm X₁ X₂]
+      rw [Finset.union_assoc (X₂ ∪ X₁) X₄ X₅]
+      rw [Finset.union_assoc X₂ X₁ (X₄ ∪ X₅)]
+      apply Finset.subset_union_left
+    have h_X₅_subset_X_F : X₅ ⊆ X_F := by
+      dsimp [X_F]
+      apply Finset.subset_union_right
 
     let G₁_ind := inducedSubgraph G X_F
     let G₂_ind := inducedSubgraph G X₃
@@ -2822,15 +2832,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_X₁_subset_G₁_verts : X₁ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
       rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
-      simp only [union_assoc, coe_union, Set.toFinset_union, toFinset_coe, subset_union_left, X_F]
+      simp only [Finset.toFinset_coe]
+      exact h_X₁_subset_X_F
     have h_X₂_subset_G₁_verts : X₂ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
       rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
-      simp only [coe_union, Set.toFinset_union, toFinset_coe, X_F]
-      rw [union_comm X₁ X₂]
-      rw [union_assoc (X₂ ∪ X₁) X₄ X₅]
-      rw [union_assoc X₂ X₁ (X₄ ∪ X₅)]
-      simp only [subset_union_left]
+      simp only [Finset.toFinset_coe]
+      exact h_X₂_subset_X_F
 
     let G₁₁_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₁}
     let G₁₂_ind := inducedSubgraph G₁.coe {v : G₁.verts | v.val ∈ X₂}
@@ -2971,29 +2979,47 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
           h_X_card, h_X_subset_compl_F₁_F₂⟩
 
-    have h_cancel :
-        ∀ (X₀ : Finset ↑G₁.verts),
-            image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) (image ⇑h_G₁_Fout.some X₀) = image Subtype.val X₀ := sorry
-    have h_subtype_comp_G₁_Fout_injective : Function.Injective (fun a ↦ ↑(h_G₁_Fout.some.symm a)) := sorry
-      -- rw [←Function.comp_apply]
-      -- exact Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
-
-    simp only [f_S₁_S₂_fwd, F₁, F₂, X, subgraphFromIso]
-    simp only [Function.comp_apply, Set.toFinset_image, Set.toFinset_setOf, coe_image, coe_filter,
-                mem_univ, true_and, Set.compl_union, Set.toFinset_inter, Set.toFinset_compl, inter_assoc,
-                Subtype.mk.injEq, Prod.mk.injEq]
-    rw [h_cancel G₁₁.verts.toFinset]
-    rw [h_cancel G₁₂.verts.toFinset]
-    rw [h_cancel (filter (fun x ↦ ↑x ∈ X₅) univ)]
+    dsimp only [f_S₁_S₂_fwd, F₁, F₂, X, subgraphFromIso]
+    simp only [Subtype.mk.injEq, Prod.mk.injEq]
     rw [h_G₁₁_verts_eq_X₁]
     rw [h_G₁₂_verts_eq_X₂]
     rw [h_G₂_verts_eq_X₃]
-    simp only [Set.mem_setOf_eq, Set.toFinset_setOf, toFinset_coe, true_and]
+    simp only [Set.coe_toFinset, Finset.toFinset_coe, true_and]
+    simp only [←Set.image_union, ←Set.image_compl_eq h_G₁_Fout.some.bijective]
+    simp only [←Set.image_comp]
+    have h_fn_eq : (Subtype.val ∘ ⇑h_G₁_Fout.some.symm) ∘ ⇑h_G₁_Fout.some = Subtype.val := by
+      ext u
+      simp only [Function.comp_apply, RelIso.symm_apply_apply]
+    rw [h_fn_eq]
     refine ⟨?h₁, ?h₂, ?h₃, ?h₄⟩
-    . apply?
-    . sorry
-    . sorry
-    . sorry
+    . ext u
+      simp only [Set.toFinset_image, Set.toFinset_setOf,
+                  mem_image, mem_filter, mem_univ, true_and,
+                  Subtype.exists, exists_and_left, exists_prop',
+                  nonempty_prop, exists_eq_right_right, and_iff_left_iff_imp]
+      intro h_u_X₁
+      exact h_X₁_subset_X_F h_u_X₁
+    . ext u
+      simp only [Set.toFinset_image, Set.toFinset_setOf,
+                  mem_image, mem_filter, mem_univ, true_and,
+                  Subtype.exists, exists_and_left, exists_prop',
+                  nonempty_prop, exists_eq_right_right, and_iff_left_iff_imp]
+      intro h_u_X₂
+      exact h_X₂_subset_X_F h_u_X₂
+    . ext u
+      simp
+      constructor
+      . rintro ⟨⟨h_u_not_X₁, h_u_not_X₂, h_u_not_X₅⟩, h_u_G₁_verts⟩
+        sorry
+      . intro h_u_X₄
+        sorry
+    . ext u
+      simp only [Set.toFinset_image, Set.toFinset_setOf,
+                  mem_image, mem_filter, mem_univ, true_and,
+                  Subtype.exists, exists_and_left, exists_prop',
+                  nonempty_prop, exists_eq_right_right, and_iff_left_iff_imp]
+      intro h_u_X₅
+      exact h_X₅_subset_X_F h_u_X₅
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
 
