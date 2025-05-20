@@ -271,29 +271,14 @@ lemma fun_Fin1_Fin3
     intro
     simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
 
-def funOnFin1ToEmbedding
-    {n : ℕ} (f : Fin 1 → Fin n) (G : SimpleGraph (Fin n))
-    : Sₜ ↪g G where
-  toFun := f
-  inj' := by
-    dsimp [Function.Injective]
-    intros; ext1
-    simp only [Fin.coe_fin_one]
-  map_rel_iff' := by
-    intro i j
-    have h : i = j := by
-      ext1
-      simp only [Fin.coe_fin_one]
-    subst h
-    simp only [SimpleGraph.irrefl]
-
-lemma graph_embedding_Fin1_Fin3
-    (H : LabeledGraph Sₜ (Fin 3))
-    : H.type_embed = funOnFin1ToEmbedding (fun _ => 0) H.graph ∨
-      H.type_embed = funOnFin1ToEmbedding (fun _ => 1) H.graph ∨
-      H.type_embed = funOnFin1ToEmbedding (fun _ => 2) H.graph
+lemma type_embed_HEq
+    {T V : Type} {σ : FlagType T} {G G' : SimpleGraph V} {f : σ ↪g G} {f' : σ ↪g G'}
+    (hG : G = G') (hf : f.toFun = f'.toFun)
+    : HEq f f'
   := by
-  sorry
+  subst hG
+  simp
+  exact RelEmbedding.ext_iff.mpr (congrFun hf)
 
 lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
     : isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0) = isoSet_O3₁
@@ -302,19 +287,32 @@ lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
   ext H; constructor
   · intro h
     simp; simp [O3₁_labeledGraph] at h
-    obtain ⟨h₁, h₂⟩ := h
-    -- rcases h₂ with ⟨h_graph, h_type_embed⟩
-    -- simp at h_graph
-    -- simp at h_type_embed
-    -- rw [← h₁] at h_graph
-    rcases graph_embedding_Fin1_Fin3 H with h₀ | (h₁ | h₂)
+    obtain ⟨h_graph, _⟩ := h
+    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · left
       ext1
-      · simp [O3₁_labeledGraph, h₁]
-      · simp [h₀, funOnFin1ToEmbedding, O3₁_labeledGraph]
-        sorry
-    · sorry
-    · sorry
+      · simp [O3₁_labeledGraph, h_graph]
+      · apply type_embed_HEq
+        · dsimp [O3₁_labeledGraph]
+          rw [h_graph]
+        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
+          rfl
+    · right; left
+      ext1
+      · simp [O3₁_labeledGraph, h_graph]
+      · apply type_embed_HEq
+        · dsimp [O3₁_labeledGraph]
+          rw [h_graph]
+        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
+          rfl
+    · right; right
+      ext1
+      · simp [O3₁_labeledGraph, h_graph]
+      · apply type_embed_HEq
+        · dsimp [O3₁_labeledGraph]
+          rw [h_graph]
+        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
+          rfl
   · intro h
     rcases h with h₀ | (h₁ | h₂)
     · subst h₀

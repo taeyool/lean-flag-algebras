@@ -30,17 +30,57 @@ noncomputable def downwardNormalizingFactor_labeledGraph
   isomorphismCount G / num_of_all_injections
 
 def isoSetOfIsoLabeledGraphWithSameGraph
-    {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
-    : isoLabeledGraphSetWithSameGraph G ≃ isoLabeledGraphSetWithSameGraph G'
-  := by
-  sorry
+    {G G' : LabeledGraph σ (Fin n)} (φ : G ≃f G')
+    : isoLabeledGraphSetWithSameGraph G ≃ isoLabeledGraphSetWithSameGraph G' where
+  toFun := by
+    intro ⟨H, ⟨hH₁, hH₂⟩⟩
+    let H' : LabeledGraph σ (Fin n) := {
+      graph := G'.graph
+      type_embed := {
+        toFun := φ.graph_iso ∘ H.type_embed
+        inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+        map_rel_iff' := by
+          intro a b
+          simp_all only [Function.Embedding.coeFn_mk, Function.comp_apply]
+          constructor
+          · intro h
+            rw [type_embed_Adj_iff H]
+            nth_rw 1 [← hH₁]
+            exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h
+          · intro h
+            rw [SimpleGraph.Iso.map_adj_iff φ.graph_iso, hH₁, ← type_embed_Adj_iff H]
+            exact h
+      }
+    }
+    let ψ : G ≃f H := hH₂.some
+    have hH' : G'.graph = H'.graph ∧ G' ∼f H' := by
+      constructor
+      · simp
+      · apply Nonempty.intro
+        exact {
+          graph_iso := by
+            have : G'.graph = H'.graph := rfl
+            sorry
+          type_preserve := by
+            -- have : ⇑SimpleGraph.Iso.refl = id := by aesop
+            -- simp_all only [Function.Embedding.coeFn_mk, Function.comp_apply, id_eq, eq_mpr_eq_cast, RelEmbedding.coe_mk]
+            -- have : ⇑(RelIso.refl G'.graph.Adj) = id := rfl
+            -- rw [this]; simp
+            -- rw [← φ.type_preserve, ← hH₂.some.type_preserve]
+            -- have := φ.type_preserve
+            sorry
+        }
+    exact ⟨H', hH'⟩
+  invFun := sorry
+  left_inv := sorry
+  right_inv := sorry
 
 lemma isomorphismCount_respects_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
     : isomorphismCount G = isomorphismCount G'
   := by
   dsimp [isomorphismCount]
-  simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h)]
+  simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h.some)]
 
 lemma downwardNormalizingFactor_labeledGraph_respects_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
