@@ -2817,6 +2817,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ ⊆ ∅ := by simp only [h_X_F_disj_X₃, coe_empty, subset_refl]
     have h_G₁_verts_eq_X₁_X₂_X₄_X₅ : G₁.verts = X₁ ∪ X₂ ∪ X₄ ∪ X₅ :=
       inducedSubgraph_verts G X_F
+    have h_G₂_verts_eq_X₃ : G₂.verts = X₃ :=
+      inducedSubgraph_verts G X₃
     have h_X₁_subset_G₁_verts : X₁ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
       rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
@@ -2836,6 +2838,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let G₁₂ := G₁₂_ind.val
     let h_G₁₁_ind : G₁₁.IsInduced := G₁₁_ind.property
     let h_G₁₂_ind : G₁₂.IsInduced := G₁₂_ind.property
+    have h_G₁₁_verts_eq_X₁ : G₁₁.verts = {v : G₁.verts | v.val ∈ X₁} := by
+      rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₁}]
+    have h_G₁₂_verts_eq_X₂ : G₁₂.verts = {v : G₁.verts | v.val ∈ X₂} := by
+      rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₂}]
 
     have h_G₁₁_disj_G₁₂ : G₁₁.verts ∩ G₁₂.verts = ∅ := by
       apply Set.subset_empty_iff.mp
@@ -2964,7 +2970,30 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
           h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
           h_X_card, h_X_subset_compl_F₁_F₂⟩
-    sorry
+
+    have h_cancel :
+        ∀ (X₀ : Finset ↑G₁.verts),
+            image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) (image ⇑h_G₁_Fout.some X₀) = image Subtype.val X₀ := sorry
+    have h_subtype_comp_G₁_Fout_injective : Function.Injective (fun a ↦ ↑(h_G₁_Fout.some.symm a)) := sorry
+      -- rw [←Function.comp_apply]
+      -- exact Function.Injective.comp Subtype.val_injective h_G₁_Fout.some.symm.injective
+
+    simp only [f_S₁_S₂_fwd, F₁, F₂, X, subgraphFromIso]
+    simp only [Function.comp_apply, Set.toFinset_image, Set.toFinset_setOf, coe_image, coe_filter,
+                mem_univ, true_and, Set.compl_union, Set.toFinset_inter, Set.toFinset_compl, inter_assoc,
+                Subtype.mk.injEq, Prod.mk.injEq]
+    rw [h_cancel G₁₁.verts.toFinset]
+    rw [h_cancel G₁₂.verts.toFinset]
+    rw [h_cancel (filter (fun x ↦ ↑x ∈ X₅) univ)]
+    rw [h_G₁₁_verts_eq_X₁]
+    rw [h_G₁₂_verts_eq_X₂]
+    rw [h_G₂_verts_eq_X₃]
+    simp only [Set.mem_setOf_eq, Set.toFinset_setOf, toFinset_coe, true_and]
+    refine ⟨?h₁, ?h₂, ?h₃, ?h₄⟩
+    . apply?
+    . sorry
+    . sorry
+    . sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
 
