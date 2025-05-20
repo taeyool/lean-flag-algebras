@@ -64,6 +64,13 @@ noncomputable def LabeledGraph.size
   :=
   Fintype.card V
 
+omit [FintypeExist T] in
+theorem type_embed_Adj_iff
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : T)
+    : σ.Adj u v ↔ G.graph.Adj (G.type_embed u) (G.type_embed v)
+  :=
+  Iff.symm (SimpleGraph.Embedding.map_adj_iff G.type_embed)
+
 def emptyLabeledGraph (σ : FlagType T) : LabeledGraph σ T
   :=
   ⟨σ, SimpleGraph.Embedding.refl⟩
