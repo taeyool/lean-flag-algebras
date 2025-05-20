@@ -3009,9 +3009,16 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     . ext u
       simp
       constructor
-      . rintro ⟨⟨h_u_not_X₁, h_u_not_X₂, h_u_not_X₅⟩, h_u_G₁_verts⟩
-        sorry
+      . rintro ⟨⟨h_u_not_X₁, h_u_not_X₂, h_u_not_X₅⟩, h_u⟩
+        rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅] at h_u
+        rw [mem_coe] at h_u
+        simp only [union_assoc, mem_union] at h_u
+        refine Or.resolve_right (?_ : u ∈ X₄ ∨ u ∈ X₅) h_u_not_X₅
+        refine Or.resolve_left (?_ : u ∈ X₂ ∨ u ∈ X₄ ∨ u ∈ X₅) h_u_not_X₂
+        exact Or.resolve_left h_u h_u_not_X₁
       . intro h_u_X₄
+        rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅, mem_coe]
+        simp only [union_assoc, mem_union]
         sorry
     . ext u
       simp only [Set.toFinset_image, Set.toFinset_setOf,
