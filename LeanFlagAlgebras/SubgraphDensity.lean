@@ -1392,6 +1392,37 @@ lemma subgraphByComposition_le
   simp [subgraphByComposition]
   exact Subgraph.coeSubgraph_le G₁
 
+omit [DecidableEq V] in
+lemma inducedSubgraph_eq_subgraphByComposition
+    {G : SimpleGraph V} (G₀ : Subgraph G) (h_G₀_ind : G₀.IsInduced)
+    (X₁ : Finset V) (h_X₁ : X₁ ⊆ G₀.verts.toFinset)
+    : (inducedSubgraph G X₁).val
+      =
+      subgraphByComposition G₀ (inducedSubgraph G₀.coe {v : G₀.verts | v.val ∈ X₁}).val
+  := by
+    dsimp [subgraphByComposition, Subgraph.coeSubgraph, inducedSubgraph]
+    ext u v
+    . simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
+                  Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop',
+                  nonempty_prop, exists_eq_right_right, iff_self_and]
+      intro h_u_X₁
+      exact Set.mem_toFinset.mp (h_X₁ h_u_X₁)
+    . simp only [mem_coe, Subgraph.map_adj, Relation.Map, Subgraph.hom_apply,
+                  Subtype.exists, exists_and_left, exists_prop', nonempty_prop]
+      constructor
+      . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
+        use u
+        constructor
+        . exact Set.mem_toFinset.mp (h_X₁ h_u_X₁)
+        . use v
+          have h_u_G₀ : u ∈ G₀.verts := Set.mem_toFinset.mp (h_X₁ h_u_X₁)
+          have h_v_G₀ : v ∈ G₀.verts := Set.mem_toFinset.mp (h_X₁ h_v_X₁)
+          simp only [h_u_X₁, h_v_X₁, and_self, and_true, h_v_G₀]
+          exact h_G₀_ind h_u_G₀ h_v_G₀ h_u_v
+      . rintro ⟨a, _, b, ⟨h_G₀_adj_a_b, h_a_X₁, h_b_X₁⟩, h_a_u, _, h_b_v⟩
+        rw [←h_a_u, ←h_b_v]
+        exact ⟨G₀.adj_sub h_G₀_adj_a_b, h_a_X₁, h_b_X₁⟩
+
 def subgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g Subgraph.coe H₀) (G₁ : Subgraph G₀) : Subgraph H
@@ -2764,6 +2795,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let G₂ := G₂_ind.val
     let h_G₁_ind : G₁.IsInduced := G₁_ind.property
     let h_G₂_ind : G₂.IsInduced := G₂_ind.property
+    have h_G₂_H₃ : Nonempty (G₂.coe ≃g H₃) := h_X₃_H₃
 
     have h_G₁_disj_G₂ : G₁.verts ∩ G₂.verts = ∅ := by
       apply Set.subset_empty_iff.mp
@@ -2801,30 +2833,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = ↑({v : G₁.verts | v.val ∈ X₁ ∩ X₂}) := by simp only [mem_inter]; exact rfl
         _ ⊆ ∅ := by rw [h_X₁_disj_X₂]; simp only [not_mem_empty, Set.setOf_false, subset_refl]
 
-    have h_X₁_G₁₁ : (inducedSubgraph G X₁).val = subgraphByComposition G₁ G₁₁ := by
-      dsimp [subgraphByComposition, G₁₁, G₁₁_ind, Subgraph.coeSubgraph, inducedSubgraph]
-      ext u v
-      . simp only [mem_coe, Subgraph.map_verts, Subgraph.hom_apply, Set.mem_image,
-                    Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop',
-                    nonempty_prop, exists_eq_right_right, iff_self_and]
-        exact Finset.mem_of_subset h_X₁_subset_X_F
-      . simp only [mem_coe, Subgraph.map_adj, Relation.Map, Subgraph.hom_apply,
-                    Subtype.exists, exists_and_left, exists_prop', nonempty_prop]
-        constructor
-        . intro ⟨h_u_v, h_u_X₁, h_v_X₁⟩
-          use u
-          constructor
-          . exact Finset.mem_of_subset h_X₁_subset_X_F h_u_X₁
-          . use v
-            simp only [inducedSubgraph, mem_coe, h_u_v,
-                        Finset.mem_of_subset h_X₁_subset_X_F h_u_X₁,
-                        Finset.mem_of_subset h_X₁_subset_X_F h_v_X₁,
-                        and_self, h_u_X₁, h_v_X₁, G₁, G₁_ind]
-        . rintro ⟨a, h_a_G₁, b, ⟨h_G₁_adj_a_b, h_a_X₁, h_b_X₁⟩, h_a_u, h_b_G₁, h_b_v⟩
-          rw [←h_a_u, ←h_b_v]
-          exact ⟨G₁.adj_sub h_G₁_adj_a_b, h_a_X₁, h_b_X₁⟩
-
-    have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ := sorry
+    have h_X₁_G₁₁ : (inducedSubgraph G X₁).val = subgraphByComposition G₁ G₁₁ :=
+      inducedSubgraph_eq_subgraphByComposition G₁ h_G₁_ind X₁ h_X₁_subset_G₁_verts
+    have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ :=
+      inducedSubgraph_eq_subgraphByComposition G₁ h_G₁_ind X₂ h_X₂_subset_G₁_verts
 
     have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
       rw [inducedSubgraph_verts G X_F]
@@ -2879,6 +2891,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     let h_F₁_disj_F₂ : F₁.verts ∩ F₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_G₁_Fout.some G₁₁ G₁₂ h_G₁₁_disj_G₁₂
 
     let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
+
+    use ⟨⟨F, ⟨F₁, F₂, G₁, G₂, X⟩⟩,
+          h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
+          h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
+          sorry, sorry⟩
     sorry
 
   let f_S₁_S₂ : S₁ ≃ S₂ := Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
