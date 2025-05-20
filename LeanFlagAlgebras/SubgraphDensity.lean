@@ -2803,13 +2803,15 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         G₁.verts ∩ G₂.verts = ↑X_F ∩ ↑X₃ := by rw [inducedSubgraph_verts G X_F, inducedSubgraph_verts G X₃]
         _ = ↑(X_F ∩ X₃) := by simp only [coe_inter]
         _ ⊆ ∅ := by simp only [h_X_F_disj_X₃, coe_empty, subset_refl]
+    have h_G₁_verts_eq_X₁_X₂_X₄_X₅ : G₁.verts = X₁ ∪ X₂ ∪ X₄ ∪ X₅ :=
+      inducedSubgraph_verts G X_F
     have h_X₁_subset_G₁_verts : X₁ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
-      rw [inducedSubgraph_verts G X_F]
+      rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
       simp only [union_assoc, coe_union, Set.toFinset_union, toFinset_coe, subset_union_left, X_F]
     have h_X₂_subset_G₁_verts : X₂ ⊆ G₁.verts.toFinset := by
       dsimp [G₁, G₁_ind]
-      rw [inducedSubgraph_verts G X_F]
+      rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
       simp only [coe_union, Set.toFinset_union, toFinset_coe, X_F]
       rw [union_comm X₁ X₂]
       rw [union_assoc (X₂ ∪ X₁) X₄ X₅]
@@ -2838,8 +2840,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_X₂_G₁₂ : (inducedSubgraph G X₂).val = subgraphByComposition G₁ G₁₂ :=
       inducedSubgraph_eq_subgraphByComposition G₁ h_G₁_ind X₂ h_X₂_subset_G₁_verts
 
-    have h_G₁_verts_card : Fintype.card G₁_ind.val.verts = Fintype.card (Fin ℓ₁₂) := by
-      rw [inducedSubgraph_verts G X_F]
+    have h_G₁_verts_card : Fintype.card G₁.verts = Fintype.card (Fin ℓ₁₂) := by
+      rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
       rw [Fintype.card_fin]
       suffices (X₁ ∪ X₂ ∪ X₄ ∪ X₅).card = ℓ₁₂ by simp only [coe_sort_coe, Fintype.card_coe, this]
       rw [Finset.card_union (X₁ ∪ X₂ ∪ X₄) X₅, h_X₁_X₂_X₄_disj_X₅]
@@ -2900,21 +2902,36 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                 rw [Set.card_image_of_injective ({v : G₁.verts | v.val ∈ X₅}) h_G₁_Fout.some.injective]
                 rw [←Set.toFinset_card ({v : G₁.verts | v.val ∈ X₅})]
         _ = {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅}.toFinset.card := by
-                rw [inducedSubgraph_verts G X_F]
+                rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
                 simp only [coe_sort_coe, Set.toFinset_setOf, univ_eq_attach, X_F]
         _ = Fintype.card {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅} := by
                 rw [Set.toFinset_card]
         _ = Fintype.card X₅ := by
                 let g : {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅ } ≃ X₅ := {
                   toFun := fun v => ⟨v.val.val, v.property⟩
-                  invFun := fun x => ⟨⟨x.val, sorry⟩, x.property⟩
-                  left_inv := by sorry
-                  right_inv := by sorry
+                  invFun := fun u => ⟨⟨u.val, by simp only [union_assoc, mem_union, coe_mem, or_true]⟩, u.property⟩
+                  left_inv := by intro u; simp only [Set.coe_setOf, Set.mem_setOf_eq, Subtype.coe_eta]
+                  right_inv := by intro v; simp only [Subtype.coe_eta]
                 }
                 exact Fintype.card_congr g
-        _ = X₅.card := by simp only [Set.toFinset_card]
+        _ = X₅.card := by simp only [Fintype.card_coe]
         _ = ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) := h_X₅_card
-    have h_X_subset_compl_F₁_F₂ : X ⊆ (F₁.verts ∪ F₂.verts)ᶜ.toFinset := by sorry
+    have h_X_subset_compl_F₁_F₂ : X ⊆ (F₁.verts ∪ F₂.verts)ᶜ.toFinset := by
+      dsimp [X, F₁, F₂, subgraphFromIso]
+      suffices
+        ⇑h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅} ⊆ (⇑h_G₁_Fout.some '' G₁₁.verts ∪ ⇑h_G₁_Fout.some '' G₁₂.verts)ᶜ
+      by {
+        exact Set.toFinset_mono this
+      }
+      have h' : {v : G₁.verts | v.val ∈ X₅} ⊆ (G₁₁.verts ∪ G₁₂.verts)ᶜ := sorry
+      calc
+        ⇑h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}
+        _ ⊆ ⇑h_G₁_Fout.some '' ((G₁₁.verts ∪ G₁₂.verts)ᶜ) :=
+                Set.image_mono h'
+        _ = (⇑h_G₁_Fout.some '' (G₁₁.verts ∪ G₁₂.verts))ᶜ := by
+                rw [←Set.image_compl_eq h_G₁_Fout.some.bijective]
+        _ = (⇑h_G₁_Fout.some '' G₁₁.verts ∪ ⇑h_G₁_Fout.some '' G₁₂.verts)ᶜ := by
+                rw [Set.image_union (⇑h_G₁_Fout.some) G₁₁.verts G₁₂.verts]
 
     use ⟨⟨F, ⟨F₁, F₂, G₁, G₂, X⟩⟩,
           h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
