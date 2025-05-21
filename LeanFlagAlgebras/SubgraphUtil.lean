@@ -67,22 +67,6 @@ noncomputable instance doublyQualiedSubgraphPairProdSubgraphFintype
   have : Fintype ({⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} × Subgraph G) := qualifiedSubgraphPairProdSubgraphFintype G p
   exact inferInstance
 
-def subgraphOfIso {G₁ G₂ : SimpleGraph V} (φ : G₁ ≃g G₂) (H₁ : G₁.Subgraph) : G₂.Subgraph
-  where
-  verts := φ.toEquiv '' H₁.verts
-  Adj u v := H₁.Adj (φ.toEquiv.symm u) (φ.toEquiv.symm v)
-  adj_sub := by
-    intro x y h1_adj
-    have g1_adj := H₁.adj_sub h1_adj
-    exact φ.symm.map_adj_iff.mp g1_adj
-  edge_vert := by
-    intro x _ h1_edge
-    use (φ.symm x)
-    exact ⟨H₁.edge_vert h1_edge, by simp⟩
-  symm := by
-    intro _ _ h_adj
-    exact H₁.symm h_adj
-
 def relOfSubgraph
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
@@ -461,8 +445,6 @@ noncomputable def isoSetOfInducedSubgraphPairIsoH
     (predIsoH_related φ H₂)
     (predIsoH_related φ.symm H₂)
 
-
-
 noncomputable def isoSetOfInducedSubgraphInG
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph U)
     : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
@@ -547,7 +529,6 @@ lemma induced_subgraph_iso_G_iff_eq_top
     · subst h; intro; simp
     · rw [h]; exact Nonempty.intro SimpleGraph.Subgraph.topEquiv
 
-
 omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] [Fintype X] [DecidableEq X] in
 lemma subgraph_to_eqv_graph_iff
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph X)
@@ -596,7 +577,6 @@ noncomputable def isoSetOfInducedSubgraphPairInG
     · intro ⟨h₁, h₂, h₃, h₄, h₅⟩
       exact ⟨h₁, (h_S x.1).mpr h₂, h₃, (h_H x.2).mpr h₄, h₅⟩
   exact this
-
 
 def subgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ : Subgraph G)
@@ -943,7 +923,6 @@ noncomputable def getCanonicalQuotSimpleGraph
     exact h.some
   ⟨⟦G'⟧, φ'.trans φ⟩
 
-
 lemma getCanonicalQuotSimpleGraph_self
     (F : QuotSimpleGraph (Fin ℓ))
     : (getCanonicalQuotSimpleGraph F.out (Fintype.card_fin ℓ)).fst = F
@@ -970,33 +949,13 @@ lemma getCanonicalQuotSimpleGraph_iso
     _  = ⟦H₁.out⟧ := by rw [Quotient.sound]; exact Nonempty.intro h_iso_H₀_H₁
     _  = H₁ := Quotient.out_eq H₁
 
-lemma card_eq_imply_set_eq
-    (A B : Finset (Fin ℓ)) (h_card_eq : A.card + B.card = ℓ) (h_disj : A ∩ B = ∅)
-    : A ∪ B = univ
-  := by
-  have h_card_A_union_B : (A ∪ B).card = ℓ := by
-    have : Disjoint A B := Finset.disjoint_iff_inter_eq_empty.mpr h_disj
-    rw [Finset.card_union_of_disjoint this]
-    assumption
-  have h_compl_A_union_B_empty : (univ \ (A ∪ B)) = ∅ := by
-    apply Finset.card_eq_zero.mp
-    calc
-      (univ \ (A ∪ B)).card
-      _ = (univ : Finset (Fin ℓ)).card - (A ∪ B).card := Finset.card_sdiff (subset_univ (A ∪ B))
-      _ = ℓ - (A ∪ B).card := by simp
-      _ = ℓ - ℓ := by rw [h_card_A_union_B]
-      _ = 0 := by simp
-  exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
-
-
 omit [DecidableEq V] [DecidableEq W] in
 lemma subgraph_verts_card_from_iso_graph
     {G : SimpleGraph V} {G' : Subgraph G} {H : SimpleGraph (Fin ℓ)} (h_iso : G'.coe ≃g H)
     : Fintype.card G'.verts = ℓ
-  :=
-  calc
-    Fintype.card G'.verts = Fintype.card (Fin ℓ) := Fintype.card_congr h_iso
-    _ = ℓ := by simp
+  := by
+  rw [←Fintype.card_fin ℓ]
+  exact Fintype.card_congr h_iso
 
 noncomputable def isoFromInducedSubgraphByPartialIso
     {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
@@ -1020,37 +979,3 @@ noncomputable def isoFromInducedSubgraphByPartialIso
       rw [←inducedSubgraph_eq h_G₁_ind]
     rw [←this]
     exact g₁.symm.trans iso_F₁_H₁
-
-lemma choose_pair_eq_factorial_div
-    (n m k : ℕ) (h_size : m + k ≤ n)
-    : n.choose m * (n - m).choose k = n.factorial / (m.factorial * k.factorial * (n - (m + k)).factorial)
-  := by
-  have h₁ : m ≤ n := Nat.le_of_add_right_le h_size
-  have h₂ : k ≤ n - m := (Nat.le_sub_iff_add_le' h₁).mpr h_size
-  repeat rw [Nat.choose_eq_factorial_div_factorial] <;> try assumption
-  rw [← Nat.mul_div_assoc _ (Nat.factorial_mul_factorial_dvd_factorial h₂)]
-  rw [Nat.mul_comm, ← Nat.mul_div_assoc _ (Nat.factorial_mul_factorial_dvd_factorial h₁)]
-  rw [Nat.mul_comm (n - m).factorial, Nat.mul_comm m.factorial, ← Nat.div_div_eq_div_mul _ _ m.factorial]
-  rw [Nat.mul_div_cancel _ (Nat.factorial_pos (n - m))]
-  rw [Nat.div_div_eq_div_mul, Nat.sub_sub, Nat.mul_assoc]
-
-lemma choose_pair_zero
-    (n m k : ℕ) (h_size : m + k > n)
-    : n.choose m * (n - m).choose k = 0
-  := by
-  by_cases hm : m > n
-  · simp [Nat.choose_eq_zero_of_lt hm]
-  · have hk : k > n - m := by
-      apply @Nat.lt_of_add_lt_add_right _ _ m
-      rw [Nat.sub_add_cancel (Nat.le_of_not_lt hm), Nat.add_comm]
-      exact h_size
-    simp [Nat.choose_eq_zero_of_lt hk]
-
-lemma choose_pair_comm
-    (n m k : ℕ)
-    : n.choose m * (n - m).choose k = n.choose k * (n - k).choose m
-  := by
-  by_cases h_size : m + k ≤ n
-  · simp [choose_pair_eq_factorial_div, h_size, Nat.add_comm, Nat.mul_comm]
-  · have h_size' : m + k > n := Nat.not_le.mp h_size
-    simp [choose_pair_zero, h_size', Nat.add_comm]
