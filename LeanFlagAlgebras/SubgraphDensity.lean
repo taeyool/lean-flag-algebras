@@ -3019,7 +3019,23 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       . intro h_u_X₄
         rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅, mem_coe]
         simp only [union_assoc, mem_union]
-        sorry
+        refine ⟨?_, by simp only [h_u_X₄, true_or, or_true]⟩
+        have h_u_not_X₁ : u ∉ X₁ := by
+          intro h_u_X₁
+          have : u ∈ (X₁ ∪ X₂) ∩ X₄ := Finset.mem_inter.mpr ⟨Finset.subset_union_left h_u_X₁, h_u_X₄⟩
+          rw [h_X₁_X₂_disj_X₄] at this
+          exact Finset.not_mem_empty u this
+        have h_u_not_X₂ : u ∉ X₂ := by
+          intro h_u_X₂
+          have : u ∈ (X₁ ∪ X₂) ∩ X₄ := Finset.mem_inter.mpr ⟨Finset.subset_union_right h_u_X₂, h_u_X₄⟩
+          rw [h_X₁_X₂_disj_X₄] at this
+          exact Finset.not_mem_empty u this
+        have h_u_not_X₅ : u ∉ X₅ := by
+          intro h_u_X₅
+          have : u ∈ (X₁ ∪ X₂ ∪ X₄) ∩ X₅ := Finset.mem_inter.mpr ⟨Finset.subset_union_right h_u_X₄, h_u_X₅⟩
+          rw [h_X₁_X₂_X₄_disj_X₅] at this
+          exact Finset.not_mem_empty u this
+        exact ⟨h_u_not_X₁, h_u_not_X₂, h_u_not_X₅⟩
     . ext u
       simp only [Set.toFinset_image, Set.toFinset_setOf,
                   mem_image, mem_filter, mem_univ, true_and,
