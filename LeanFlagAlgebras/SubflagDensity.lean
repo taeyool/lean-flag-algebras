@@ -694,7 +694,11 @@ lemma predIsoLabeledHl_related
           exact Set.mem_of_eq_of_mem this h_v'
       have e_rel' : ∀ (u v : W), (Hl₁ i).subgraph.Adj u v ↔ (Hl₀ i).subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
         intro u v
-        sorry
+        have h_u : φ.graph_iso (φ.symm.graph_iso u) = u := φ.symm.graph_iso.left_inv u
+        have h_v : φ.graph_iso (φ.symm.graph_iso v) = v := φ.symm.graph_iso.left_inv v
+        have := e_rel (φ.symm.graph_iso u) (φ.symm.graph_iso v)
+        rw [h_u, h_v] at this
+        exact this.symm
       dsimp [LabeledSubgraph.IsInduced]
       intro u v h_u h_v h_uv
       apply predIsoLabeledH_related_ind φ.symm (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_ind₁ i) h_u h_v h_uv
