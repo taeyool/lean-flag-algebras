@@ -139,7 +139,12 @@ theorem unlabeledGraph_iso
     (G G' : LabeledGraph σ V) (h : G ∼f G')
     : unlabeledGraph G ∼f unlabeledGraph G'
   := by
-  sorry
+  let φ : G ≃f G' := h.some
+  apply Nonempty.intro
+  exact {
+    graph_iso := φ.graph_iso
+    type_preserve := List.ofFn_inj.mp rfl
+  }
 
 noncomputable def unlabel {V : Type} (F : Flag σ V) : Flag ∅ₜ V :=
   ⟦unlabeledGraph F.out⟧
