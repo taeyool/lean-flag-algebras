@@ -33,7 +33,7 @@ def isoSetOfIsoLabeledGraphWithSameGraph
     {G G' : LabeledGraph σ (Fin n)} (φ : G ≃f G')
     : isoLabeledGraphSetWithSameGraph G ≃ isoLabeledGraphSetWithSameGraph G' where
   toFun := by
-    intro ⟨H, ⟨hH₁, hH₂⟩⟩
+    intro ⟨H, ⟨hGH_graph, hGH_iso⟩⟩
     let H' : LabeledGraph σ (Fin n) := {
       graph := G'.graph
       type_embed := {
@@ -45,30 +45,50 @@ def isoSetOfIsoLabeledGraphWithSameGraph
           constructor
           · intro h
             rw [type_embed_Adj_iff H]
-            nth_rw 1 [← hH₁]
+            nth_rw 1 [← hGH_graph]
             exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h
           · intro h
-            rw [SimpleGraph.Iso.map_adj_iff φ.graph_iso, hH₁, ← type_embed_Adj_iff H]
+            rw [SimpleGraph.Iso.map_adj_iff φ.graph_iso, hGH_graph, ← type_embed_Adj_iff H]
             exact h
       }
     }
-    let ψ : G ≃f H := hH₂.some
+    have hG'H'_graph : G'.graph = H'.graph := rfl
+    -- let φH : H.graph ≃g H'.graph := by
+    --   rw [← hGH_graph, ← hG'H'_graph]
+    --   exact φ.graph_iso
+    let φn : Fin n ≃ Fin n := φ.graph_iso
+    let φH : H.graph ≃g H'.graph := {
+      toFun := φn
+      invFun := φn.symm
+      left_inv := φn.left_inv
+      right_inv := φn.right_inv
+      map_rel_iff' := by
+        intro a b
+        simp
+        rw [← hGH_graph]
+        sorry
+    }
+    have : φH.toFun = φn := by aesop
+    have : ⇑φH = ⇑φ.graph_iso := by
+      simp_all only [Function.Embedding.coeFn_mk, Function.comp_apply, id_eq, eq_mpr_eq_cast, cast_eq, H', φH]
+      sorry
+    let ψ : G ≃f H := hGH_iso.some
     have hH' : G'.graph = H'.graph ∧ G' ∼f H' := by
       constructor
       · simp
       · apply Nonempty.intro
         exact {
-          graph_iso := by
-            have : G'.graph = H'.graph := rfl
-            sorry
+          graph_iso := (φ.graph_iso.symm.trans ψ.graph_iso).trans φH
           type_preserve := by
-            -- have : ⇑SimpleGraph.Iso.refl = id := by aesop
-            -- simp_all only [Function.Embedding.coeFn_mk, Function.comp_apply, id_eq, eq_mpr_eq_cast, RelEmbedding.coe_mk]
-            -- have : ⇑(RelIso.refl G'.graph.Adj) = id := rfl
-            -- rw [this]; simp
-            -- rw [← φ.type_preserve, ← hH₂.some.type_preserve]
-            -- have := φ.type_preserve
-            sorry
+            simp
+            rw [← ψ.type_preserve, ← φ.type_preserve]
+            calc
+              _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ (⇑φ.graph_iso.symm ∘ ⇑φ.graph_iso) ∘ ⇑G.type_embed := rfl
+              _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by ext; simp
+              _ = ⇑φ.graph_iso ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by
+                ext x
+                simp
+                sorry
         }
     exact ⟨H', hH'⟩
   invFun := sorry
