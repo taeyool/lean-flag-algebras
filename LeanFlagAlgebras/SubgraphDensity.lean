@@ -2360,7 +2360,50 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               × (Gpair : subgraphPairSet F.out H₁ G)
               × powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((Gpair.val.1.verts ∪ Gpair.val.2.verts)ᶜ).toFinset
 
-  let f_S₀_S₁ : S₀ ≃ S₁ := sorry
+  let f_S₀_S₁_fwd : S₀ → S₁ := by
+    intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+    refine ⟨⟨F, F₁, F₂, G₁, G₂, X⟩, ?_⟩
+    simp [subgraphPairSet] at h_F₁_F₂
+    have ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩ := h_F₁_F₂
+    simp [subgraphPairSet] at h_G₁_G₂
+    have ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩ := h_G₁_G₂
+    have ⟨h_X_subset, h_X_card⟩ := Finset.mem_powersetCard.mp h_X
+    exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
+            h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
+            h_X_card, h_X_subset⟩
+
+  have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
+    intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+    intro ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
+    intro h_eq
+    simp only [Subtype.mk.injEq, Sigma.mk.inj_iff, f_S₀_S₁_fwd] at h_eq
+    let ⟨h_eq_F_F', h_eq_rest⟩ := h_eq
+    subst h_eq_F_F'
+    simp only [heq_eq_eq, Prod.mk.injEq] at h_eq_rest
+    let ⟨h_eq_F₁_F₁', h_eq_F₂_F₂', h_eq_G₁_G₁', h_eq_G₂_G₂', h_eq_X_X'⟩ := h_eq_rest
+    subst h_eq_F₁_F₁'
+    subst h_eq_F₂_F₂'
+    subst h_eq_G₁_G₁'
+    subst h_eq_G₂_G₂'
+    subst h_eq_X_X'
+    rfl
+
+  have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := by
+    intro ⟨⟨F, F₁, F₂, G₁, G₂, X⟩,
+            h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
+            h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
+            h_X_card, h_X_F₁_F₂⟩
+    have h_F₁_F₂ : ⟨F₁, F₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
+      simp [subgraphPairSet]
+      exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩
+    have h_G₁_G₂ : ⟨G₁, G₂⟩ ∈ subgraphPairSet F.out H₃ G := by
+      simp [subgraphPairSet]
+      exact ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩
+    have h_X : X ∈ powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((F₁.verts ∪ F₂.verts)ᶜ).toFinset :=
+      Finset.mem_powersetCard.mpr ⟨h_X_F₁_F₂, h_X_card⟩
+    use ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+
+  let f_S₀_S₁ : S₀ ≃ S₁ := Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
 
   let f_S₁_S₂_fwd : S₁ → S₂ := by
     intro ⟨⟨F, F₁, F₂, G₁, G₂, X⟩,
