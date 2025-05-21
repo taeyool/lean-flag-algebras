@@ -2355,7 +2355,24 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                   ∧ Nonempty ((inducedSubgraph G X₂).val.coe ≃g H₂)
                   ∧ Nonempty ((inducedSubgraph G X₃).val.coe ≃g H₃) }
 
-  let S₃ := (F : QuotSimpleGraph (Fin ℓ₂₃))
+  let S₃ := { ⟨F, F₁, F₂, G₁, G₂, X⟩ :  (F : QuotSimpleGraph (Fin ℓ₂₃))
+                                      × Subgraph F.out × Subgraph F.out
+                                      × Subgraph G × Subgraph G
+                                      × Finset (Fin ℓ)
+                  | F₁.IsInduced
+                  ∧ Nonempty (F₁.coe ≃g H₂)
+                  ∧ F₂.IsInduced
+                  ∧ Nonempty (F₂.coe ≃g H₃)
+                  ∧ F₁.verts ∩ F₂.verts = ∅
+                  ∧ G₁.IsInduced
+                  ∧ Nonempty (G₁.coe ≃g F.out)
+                  ∧ G₂.IsInduced
+                  ∧ Nonempty (G₂.coe ≃g H₁)
+                  ∧ G₁.verts ∩ G₂.verts = ∅
+                  ∧ X.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)
+                  ∧ X ⊆ (G₁.verts ∪ G₂.verts)ᶜ.toFinset }
+
+  let S₄ := (F : QuotSimpleGraph (Fin ℓ₂₃))
               × subgraphPairSet H₂ H₃ F.out
               × (Gpair : subgraphPairSet F.out H₁ G)
               × powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((Gpair.val.1.verts ∪ Gpair.val.2.verts)ᶜ).toFinset
@@ -3094,7 +3111,52 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   have h_f_S₂_S₃_surj : Function.Surjective f_S₂_S₃_fwd := by sorry
   let f_S₂_S₃ : S₂ ≃ S₃ := Equiv.ofBijective f_S₂_S₃_fwd ⟨h_f_S₂_S₃_inj, h_f_S₂_S₃_surj⟩
 
-  exact (f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃
+  let f_S₄_S₃_fwd : S₄ → S₃ := by
+    intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+    refine ⟨⟨F, F₁, F₂, G₁, G₂, X⟩, ?_⟩
+    simp [subgraphPairSet] at h_F₁_F₂
+    have ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩ := h_F₁_F₂
+    simp [subgraphPairSet] at h_G₁_G₂
+    have ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩ := h_G₁_G₂
+    have ⟨h_X_subset, h_X_card⟩ := Finset.mem_powersetCard.mp h_X
+    exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
+            h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
+            h_X_card, h_X_subset⟩
+
+  have h_f_S₄_S₃_inj : Function.Injective f_S₄_S₃_fwd := by
+    intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+    intro ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
+    intro h_eq
+    simp only [Subtype.mk.injEq, Sigma.mk.inj_iff, f_S₄_S₃_fwd] at h_eq
+    let ⟨h_eq_F_F', h_eq_rest⟩ := h_eq
+    subst h_eq_F_F'
+    simp only [heq_eq_eq, Prod.mk.injEq] at h_eq_rest
+    let ⟨h_eq_F₁_F₁', h_eq_F₂_F₂', h_eq_G₁_G₁', h_eq_G₂_G₂', h_eq_X_X'⟩ := h_eq_rest
+    subst h_eq_F₁_F₁'
+    subst h_eq_F₂_F₂'
+    subst h_eq_G₁_G₁'
+    subst h_eq_G₂_G₂'
+    subst h_eq_X_X'
+    rfl
+
+  have h_f_S₄_S₃_surj : Function.Surjective f_S₄_S₃_fwd := by
+    intro ⟨⟨F, F₁, F₂, G₁, G₂, X⟩,
+            h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂,
+            h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂,
+            h_X_card, h_X_F₁_F₂⟩
+    have h_F₁_F₂ : ⟨F₁, F₂⟩ ∈ subgraphPairSet H₂ H₃ F.out := by
+      simp [subgraphPairSet]
+      exact ⟨h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂⟩
+    have h_G₁_G₂ : ⟨G₁, G₂⟩ ∈ subgraphPairSet F.out H₁ G := by
+      simp [subgraphPairSet]
+      exact ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂⟩
+    have h_X : X ∈ powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((G₁.verts ∪ G₂.verts)ᶜ).toFinset :=
+      Finset.mem_powersetCard.mpr ⟨h_X_F₁_F₂, h_X_card⟩
+    use ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
+
+  let f_S₄_S₃ : S₄ ≃ S₃ := Equiv.ofBijective f_S₄_S₃_fwd ⟨h_f_S₄_S₃_inj, h_f_S₄_S₃_surj⟩
+
+  exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₄_S₃.symm
 
 lemma subgraphPairCount_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
