@@ -2189,9 +2189,34 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_X₃_card : X₃.card = ℓ₃ := by
       dsimp only [X₃]
       simp only [←subgraph_verts_card_from_iso_graph g_X₃_H₃, inducedSubgraph_verts G X₃, coe_sort_coe, Fintype.card_coe]
-    have h_X₄_card : X₄.card = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-      dsimp only [X₄]
-      sorry
+    have h_X₄_card : X₄.card = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
+      calc
+        X₄.card
+        _  = Fintype.card (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)ᶜ) := by
+              simp [X₄]
+        _ = Fintype.card ↑(F₁.verts ∪ F₂.verts)ᶜ :=
+              Set.card_image_of_injective (F₁.verts ∪ F₂.verts)ᶜ h_g_Fout_to_G_injective
+        _ = (F₁.verts ∪ F₂.verts)ᶜ.toFinset.card := by
+              apply Eq.symm
+              apply Set.toFinset_card
+        _ = (F₁.verts ∪ F₂.verts).toFinsetᶜ.card := by
+              simp only [Set.toFinset_compl]
+        _ = Fintype.card ↑(Fin ℓ₂₃) - (F₁.verts ∪ F₂.verts).toFinset.card := by
+              rw [card_compl]
+        _ = ℓ₂₃ - (F₁.verts ∪ F₂.verts).toFinset.card := by
+              simp only [Fintype.card_fin, toFinset_coe]
+        _ = ℓ₂₃ - (F₁.verts.toFinset ∪ F₂.verts.toFinset).card := by
+              simp only [Set.toFinset_union, toFinset_coe]
+        _ = ℓ₂₃ - (Fintype.card F₁.verts + Fintype.card F₂.verts) := by
+            rw [Finset.card_union F₁.verts.toFinset F₂.verts.toFinset]
+            have : F₁.verts.toFinset ∩ F₂.verts.toFinset = ∅ := by
+              rw [←Set.toFinset_inter F₁.verts F₂.verts]
+              simp only [h_F₁_disj_F₂, Set.toFinset_empty]
+            simp only [this, card_empty, tsub_zero]
+            simp only [Set.toFinset_card, Fintype.card_ofFinset, Fintype.card_coe]
+        _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
+              rw [Iso.card_eq g_F₁_H₂, Iso.card_eq g_F₂_H₃]
+              simp only [Fintype.card_fin, Fintype.card_coe]
     have h_X₅_card : X₅.card = ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) := h_X_card
 
     exact ⟨h_X₁_disj_X₂, h_X₁_X₂_disj_X₃, h_X₁_X₂_X₃_disj_X₄, h_X₁_X₂_X₃_X₄_disj_X₅,
