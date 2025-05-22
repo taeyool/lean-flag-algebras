@@ -610,19 +610,6 @@ lemma predIsoLabeledH_related_iso
   have h_iso₁ : H₁.coe ≃f H := H₁_H₀.trans H₀_H
   exact Nonempty.intro h_iso₁
 
-lemma predIsoLabeledH_related_indep
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
-    (H₀i : LabeledSubgraph σ G₀) (H₀j : LabeledSubgraph σ G₀)
-    (H₁i : LabeledSubgraph σ G₁) (H₁j : LabeledSubgraph σ G₁)
-    (h_vert_i : H₁i.subgraph.verts = ⇑φ.graph_iso '' H₀i.subgraph.verts)
-    (h_adj_i : ∀ (u v : V), H₀i.subgraph.Adj u v ↔ H₁i.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
-    (h_emb_i : ∀ (t : T), (H₀i.type_embed t) = φ.symm.graph_iso (H₁i.type_embed t))
-    (h_vert_j : H₁j.subgraph.verts = ⇑φ.graph_iso '' H₀j.subgraph.verts)
-    (h_adj_j : ∀ (u v : V), H₀j.subgraph.Adj u v ↔ H₁j.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
-    (h_emb_j : ∀ (t : T), (H₀j.type_embed t) = φ.symm.graph_iso (H₁j.type_embed t))
-    (h_indep₀ : H₀i.subgraph.verts ∩ H₀j.subgraph.verts = ∅)
-  : H₁i.subgraph.verts ∩ H₁j.subgraph.verts = ∅ := by sorry
-
 omit [FintypeExist T] [DecidableEqExist T] [FintypeList Vl] [DecidableEqList Vl] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma predIsoLabeledHl_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
@@ -674,55 +661,40 @@ lemma predIsoLabeledHl_related
       simp_all only [Set.mem_empty_iff_false]
     exact ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
   · intro ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
+    have v_rels : ∀ (i : Fin t), (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
+      intro i
+      have ⟨v_rel, _⟩ := h_rel i
+      rw [v_rel]
+      ext v; simp
+      constructor
+      · intro h_v
+        use v
+        exact ⟨h_v, φ.graph_iso.left_inv v⟩
+      · intro h_v
+        obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
+        have : v = v' := by
+          rw [←h_vv']
+          exact φ.graph_iso.left_inv v'
+        exact Set.mem_of_eq_of_mem this h_v'
+    have e_rels : ∀ (i : Fin t), ∀ (u v : W), (Hl₁ i).subgraph.Adj u v ↔ (Hl₀ i).subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
+      intro i u v
+      have ⟨_, e_rel⟩ := h_rel i
+      have h_u : φ.graph_iso (φ.symm.graph_iso u) = u := φ.symm.graph_iso.left_inv u
+      have h_v : φ.graph_iso (φ.symm.graph_iso v) = v := φ.symm.graph_iso.left_inv v
+      have := e_rel (φ.symm.graph_iso u) (φ.symm.graph_iso v)
+      rw [h_u, h_v] at this
+      exact this.symm
     have h_ind₀ : ∀ (i : Fin t), (Hl₀ i).IsInduced := by
       intro i
-      have ⟨v_rel, e_rel⟩ := h_rel i
-      have v_rel' : (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
-        rw [v_rel]
-        ext v; simp
-        constructor
-        · intro h_v
-          use v
-          exact ⟨h_v, φ.graph_iso.left_inv v⟩
-        · intro h_v
-          obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
-          have : v = v' := by
-            rw [←h_vv']
-            exact φ.graph_iso.left_inv v'
-          exact Set.mem_of_eq_of_mem this h_v'
-      have e_rel' : ∀ (u v : W), (Hl₁ i).subgraph.Adj u v ↔ (Hl₀ i).subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
-        intro u v
-        have h_u : φ.graph_iso (φ.symm.graph_iso u) = u := φ.symm.graph_iso.left_inv u
-        have h_v : φ.graph_iso (φ.symm.graph_iso v) = v := φ.symm.graph_iso.left_inv v
-        have := e_rel (φ.symm.graph_iso u) (φ.symm.graph_iso v)
-        rw [h_u, h_v] at this
-        exact this.symm
+      have v_rel := v_rels i
+      have e_rel := e_rels i
       dsimp [LabeledSubgraph.IsInduced]
       intro u v h_u h_v h_uv
-      apply predIsoLabeledH_related_ind φ.symm (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_ind₁ i) h_u h_v h_uv
+      apply predIsoLabeledH_related_ind φ.symm (Hl₁ i) (Hl₀ i) v_rel e_rel (h_ind₁ i) h_u h_v h_uv
     have h_1₀ : ∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Hl i) := by
       intro i
-      have ⟨v_rel, e_rel⟩ := h_rel i
-      have v_rel' : (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
-        rw [v_rel]
-        ext v; simp
-        constructor
-        · intro h_v
-          use v
-          exact ⟨h_v, φ.graph_iso.left_inv v⟩
-        · intro h_v
-          obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
-          have : v = v' := by
-            rw [←h_vv']
-            exact φ.graph_iso.left_inv v'
-          exact Set.mem_of_eq_of_mem this h_v'
-      have e_rel' : ∀ (u v : W), (Hl₁ i).subgraph.Adj u v ↔ (Hl₀ i).subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
-        intro u v
-        have h_u : φ.graph_iso (φ.symm.graph_iso u) = u := φ.symm.graph_iso.left_inv u
-        have h_v : φ.graph_iso (φ.symm.graph_iso v) = v := φ.symm.graph_iso.left_inv v
-        have := e_rel (φ.symm.graph_iso u) (φ.symm.graph_iso v)
-        rw [h_u, h_v] at this
-        exact this.symm
+      have v_rel' := v_rels i
+      have e_rel' := e_rels i
       have h_emb : ∀ (t : T), ((Hl₁ i).type_embed t) = φ.graph_iso ((Hl₀ i).type_embed t) := by
         intro t
         rw [(Hl₁ i).embed_eq t, (Hl₀ i).embed_eq t, ← φ.symm.type_preserve]
@@ -735,48 +707,16 @@ lemma predIsoLabeledHl_related
       push_neg at h_nonempty
       have h_nomempty_exists : ∃ v : V, v ∈ (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts := h_nonempty
       obtain ⟨v, ⟨h_vi₀, h_vj₀⟩⟩ := h_nomempty_exists
-      have ⟨v_rel_i, e_rel_i⟩ := h_rel i
-      have ⟨v_rel_j, e_rel_j⟩ := h_rel j
-      have v_rel_i' : (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
-        rw [v_rel_i]
-        ext v; simp
-        constructor
-        · intro h_v
-          use v
-          exact ⟨h_v, φ.graph_iso.left_inv v⟩
-        · intro h_v
-          obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
-          have : v = v' := by
-            rw [←h_vv']
-            exact φ.graph_iso.left_inv v'
-          exact Set.mem_of_eq_of_mem this h_v'
-      have v_rel_j' : (Hl₀ j).subgraph.verts = φ.symm.graph_iso '' (Hl₁ j).subgraph.verts := by
-        rw [v_rel_j]
-        ext v; simp
-        constructor
-        · intro h_v
-          use v
-          exact ⟨h_v, φ.graph_iso.left_inv v⟩
-        · intro h_v
-          obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
-          have : v = v' := by
-            rw [←h_vv']
-            exact φ.graph_iso.left_inv v'
-          exact Set.mem_of_eq_of_mem this h_v'
-      have h_v_i : φ.graph_iso v ∈ (Hl₁ i).subgraph.verts := by
-        rw [v_rel_i'] at h_vi₀
-        rw [Set.mem_image] at h_vi₀
-        obtain ⟨v', ⟨h_v_i', h_vv'⟩⟩ := h_vi₀
+      have h_v : ∀ (k : Fin t), v ∈ (Hl₀ k).subgraph.verts → φ.graph_iso v ∈ (Hl₁ k).subgraph.verts := by
+        intro k h_vk₀
+        rw [v_rels k] at h_vk₀
+        rw [Set.mem_image] at h_vk₀
+        obtain ⟨v', ⟨h_vk₀', h_vv'⟩⟩ := h_vk₀
         rw [← h_vv']
         have := φ.symm.graph_iso.left_inv' v'
-        exact Set.mem_of_eq_of_mem this h_v_i'
-      have h_v_j : φ.graph_iso v ∈ (Hl₁ j).subgraph.verts := by
-        rw [v_rel_j'] at h_vj₀
-        rw [Set.mem_image] at h_vj₀
-        obtain ⟨v', ⟨h_v_j', h_vv'⟩⟩ := h_vj₀
-        rw [← h_vv']
-        have := φ.symm.graph_iso.left_inv' v'
-        exact Set.mem_of_eq_of_mem this h_v_j'
+        exact Set.mem_of_eq_of_mem this h_vk₀'
+      have h_v_i := h_v i h_vi₀
+      have h_v_j := h_v j h_vj₀
       have h_v_ij : φ.graph_iso v ∈ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := Set.mem_inter h_v_i h_v_j
       have h_contra : φ.graph_iso v ∉ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := by
         rw [h_empty₁]
