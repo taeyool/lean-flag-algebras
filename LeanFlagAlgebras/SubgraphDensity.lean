@@ -2127,7 +2127,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     intro ⟨⟨F, F₁, F₂, G₁, G₂, X⟩,
             h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂,
             h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂,
-            h_X_card, h_X_F₁_F₂⟩
+            h_X_card, h_X_G₁_G₂⟩
 
     let g_F₁_H₂ : F₁.coe ≃g H₂ := h_F₁_H₂.some
     let g_F₂_H₃ : F₂.coe ≃g H₃ := h_F₂_H₃.some
@@ -2239,8 +2239,23 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                 rw [Set.image_eq_empty]
                 rw [Set.inter_compl_self (F₁.verts ∪ F₂.verts)]
     have h_X₁_X₂_X₃_X₄_disj_X₅ : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := by
-      dsimp only [X₁, X₂, X₃, X₄, X₅]
-      sorry
+      have h' : X₁ ⊆ G₂.verts.toFinset := by simp only [subset_refl]
+      have h'' : X₂ ∪ X₃ ∪ X₄ ⊆ G₁.verts.toFinset := h_X₂_X₃_X₄_subset_G₁_verts
+      apply Finset.subset_empty.mp
+      calc
+        (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = (X₁ ∪ (X₂ ∪ X₃ ∪ X₄)) ∩ X₅ := by
+                rw [Finset.union_assoc (X₁ ∪ X₂) X₃ X₄]
+                rw [Finset.union_assoc X₁ X₂ (X₃ ∪ X₄)]
+                rw [←Finset.union_assoc X₂ X₃ X₄]
+        _ ⊆ (G₂.verts.toFinset ∪ G₁.verts.toFinset) ∩ X₅ :=
+                Finset.inter_subset_inter (Finset.union_subset_union h' h'') (subset_refl X₅)
+        _ ⊆ (G₁.verts.toFinset ∪ G₂.verts.toFinset) ∩ (G₁.verts ∪ G₂.verts)ᶜ.toFinset := by
+                rw [Finset.union_comm G₂.verts.toFinset G₁.verts.toFinset]
+                exact Finset.inter_subset_inter (subset_refl (G₁.verts.toFinset ∪ G₂.verts.toFinset)) h_X_G₁_G₂
+        _ = ((G₁.verts ∪ G₂.verts) ∩ (G₁.verts ∪ G₂.verts)ᶜ).toFinset := by
+                simp only [Set.compl_union, Set.toFinset_inter, Set.toFinset_compl, Set.toFinset_union]
+        _ = ∅ :=
+                Set.toFinset_eq_empty.mpr (Set.inter_compl_self (G₁.verts ∪ G₂.verts))
 
     have h_X₁_card : X₁.card = ℓ₁ := by
       simp only [← subgraph_verts_card_from_iso_graph g_X₁_H₁, inducedSubgraph_verts G X₁, coe_sort_coe, Fintype.card_coe]
@@ -2282,195 +2297,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     exact ⟨h_X₁_disj_X₂, h_X₁_X₂_disj_X₃, h_X₁_X₂_X₃_disj_X₄, h_X₁_X₂_X₃_X₄_disj_X₅,
             h_X₁_card, h_X₂_card, h_X₃_card, h_X₄_card, h_X₅_card,
             Nonempty.intro g_X₁_H₁, Nonempty.intro g_X₂_H₂, Nonempty.intro g_X₃_H₃⟩
-    /-
-    have h_Fpair_verts_disj_X : (F₁.verts ∪ F₂.verts) ∩ X ⊆ ∅ := by
-      rw [←Finset.coe_empty]
-      apply Set.toFinset_subset.mp
-      calc
-        ((F₁.verts ∪ F₂.verts) ∩ ↑↑X).toFinset
-        _ ⊆ (F₁.verts ∪ F₂.verts).toFinset ∩ ↑X := by simp [Set.toFinset_inter]
-        _ ⊆ (F₁.verts ∪ F₂.verts).toFinset ∩ (F₁.verts ∪ F₂.verts)ᶜ.toFinset :=
-                Finset.inter_subset_inter_left h_X_F₁_F₂
-        _ = (F₁.verts ∪ F₂.verts).toFinset ∩ (F₁.verts ∪ F₂.verts).toFinsetᶜ := by
-                rw [Set.toFinset_compl]
-        _ = ∅ := Finset.inter_compl (F₁.verts ∪ F₂.verts).toFinset
 
-    have h_g_Fout_to_G_injective :=  Function.Injective.comp Subtype.val_injective g_G₁_Fout.symm.injective
-
-    have h_image_g_Fout_to_G_subset_G₁_verts : ∀ (V : Set (Fin ℓ₁₂)), g_Fout_to_G '' V ⊆ G₁.verts := by
-      intro V
-      calc
-        (Subtype.val ∘ g_G₁_Fout.symm) '' V
-        _ = Subtype.val '' (g_G₁_Fout.symm '' V) := by simp only [Function.comp_apply, Set.image_image]
-        _ ⊆ G₁.verts := by simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
-
-    have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = G₂ := by
-      simp only [X₃, Set.coe_toFinset, Eq.symm (inducedSubgraph_eq h_G₂_ind)]
-
-    let g_X₁_H₁ : (inducedSubgraph G X₁).val.coe ≃g H₁ :=
-      isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₁_H₁ h_F₁_ind h_G₁_ind
-    let g_X₂_H₂ : (inducedSubgraph G X₂).val.coe ≃g H₂ :=
-      isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₂_H₂ h_F₂_ind h_G₁_ind
-    let g_X₃_H₃ : (inducedSubgraph G X₃).val.coe ≃g H₃ := by rw [h_inducedSubgraph_X₃]; exact g_G₂_H₃
-
-    have h_X₁_X₂_included_in_G₁_verts : X₁ ∪ X₂ ⊆ G₁.verts.toFinset := by
-      dsimp only [X₁, X₂]
-      rw [←Set.toFinset_union (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts)]
-      apply Set.toFinset_mono
-      rw [←Set.image_union g_Fout_to_G F₁.verts F₂.verts]
-      exact h_image_g_Fout_to_G_subset_G₁_verts (F₁.verts ∪ F₂.verts)
-    have h_X₄_included_in_G₁_verts : X₄ ⊆ G₁.verts.toFinset := by
-      dsimp only [X₄]
-      apply Set.toFinset_mono
-      exact h_image_g_Fout_to_G_subset_G₁_verts (F₁.verts ∪ F₂.verts ∪ X)ᶜ
-    have h_X₅_included_in_G₁_verts : X₅ ⊆ G₁.verts.toFinset := by
-      simp only [X₅]
-      apply Set.toFinset_mono
-      exact h_image_g_Fout_to_G_subset_G₁_verts X
-
-    have h_X₁_X₂_disj : X₁ ∩ X₂ = ∅ := by
-      dsimp [X₁, X₂]
-      rw [←Set.toFinset_inter (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts)]
-      apply Set.toFinset_eq_empty.mpr
-      apply Set.subset_empty_iff.mp
-      rw [←Set.image_inter h_g_Fout_to_G_injective]
-      simp [h_F₁_disj_F₂]
-    have h_X₁_X₂_X₃_disj : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
-      apply Finset.subset_empty.mp
-      calc
-        (X₁ ∪ X₂) ∩ X₃ ⊆ G₁.verts.toFinset ∩ G₂.verts.toFinset :=
-                Finset.inter_subset_inter h_X₁_X₂_included_in_G₁_verts (subset_refl X₃)
-        _ = (G₁.verts ∩ G₂.verts).toFinset := by simp only [Eq.symm, Set.toFinset_inter]
-        _ = ∅ := by simp only [h_G₁_disj_G₂, Set.toFinset_empty]
-    have h_X₁_union_X₂_disj_X₄ : (X₁ ∪ X₂) ∩ X₄ = ∅ := by
-      dsimp [X₁, X₂, X₄]
-      rw [←Set.toFinset_union (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts),
-          ←Set.toFinset_inter
-            ((g_Fout_to_G '' F₁.verts) ∪ (g_Fout_to_G '' F₂.verts))
-            (g_Fout_to_G '' (F₁.verts ∪ F₂.verts ∪ X)ᶜ)]
-      apply Set.toFinset_eq_empty.mpr
-      rw [←Set.image_union g_Fout_to_G F₁.verts F₂.verts,
-          ←Set.image_inter h_g_Fout_to_G_injective]
-      apply Set.image_eq_empty.mpr
-      apply Set.subset_empty_iff.mp
-      apply (Set.inter_subset (F₁.verts ∪ F₂.verts) (F₁.verts ∪ F₂.verts ∪ X)ᶜ ∅).mpr
-      calc
-        (F₁.verts ∪ F₂.verts) ⊆ (F₁.verts ∪ F₂.verts ∪ X) := Set.subset_union_left
-        _ = (F₁.verts ∪ F₂.verts ∪ X)ᶜᶜ := Eq.symm (compl_compl (F₁.verts ∪ F₂.verts ∪ X))
-        _ = (F₁.verts ∪ F₂.verts ∪ X)ᶜᶜ ∪ ∅ := Eq.symm (Set.union_empty (F₁.verts ∪ F₂.verts ∪ X)ᶜᶜ)
-    have h_X₃_disj_X₄ : X₃ ∩ X₄ = ∅ := by
-      apply Finset.subset_empty.mp
-      calc
-        X₃ ∩ X₄ ⊆ G₂.verts.toFinset ∩ G₁.verts.toFinset :=
-                Finset.inter_subset_inter (subset_refl X₃) h_X₄_included_in_G₁_verts
-        _ = (G₁.verts ∩ G₂.verts).toFinset := by simp only [Eq.symm, Set.toFinset_inter, Finset.inter_comm]
-        _ = ∅ := by simp only [h_G₁_disj_G₂, Set.toFinset_empty]
-    have h_X₁_X₂_X₃_X₄_disj : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := by
-      suffices (X₁ ∪ X₂) ∩ X₄ = ∅ ∧ X₃ ∩ X₄ = ∅ by {
-        rw [Finset.union_inter_distrib_right (X₁ ∪ X₂) X₃ X₄]
-        exact Finset.union_eq_empty.mpr this
-      }
-      exact ⟨h_X₁_union_X₂_disj_X₄, h_X₃_disj_X₄⟩
-    have h_X₁_union_X₂_disj_X₅ : (X₁ ∪ X₂) ∩ X₅ = ∅ := by
-      dsimp [X₁, X₂, X₅]
-      rw [←Set.toFinset_union (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts),
-          ←Set.toFinset_inter
-            ((g_Fout_to_G '' F₁.verts) ∪ (g_Fout_to_G '' F₂.verts))
-            (g_Fout_to_G '' X)]
-      apply Set.toFinset_eq_empty.mpr
-      rw [←Set.image_union g_Fout_to_G F₁.verts F₂.verts,
-          ←Set.image_inter h_g_Fout_to_G_injective]
-      apply Set.image_eq_empty.mpr
-      apply Set.subset_empty_iff.mp
-      exact h_Fpair_verts_disj_X
-    have h_X₃_disj_X₅ : X₃ ∩ X₅ = ∅ := by
-      apply Finset.subset_empty.mp
-      calc
-        X₃ ∩ X₅ ⊆ G₂.verts.toFinset ∩ G₁.verts.toFinset :=
-                Finset.inter_subset_inter (subset_refl X₃) h_X₅_included_in_G₁_verts
-        _ = (G₁.verts ∩ G₂.verts).toFinset := by simp only [Eq.symm, Set.toFinset_inter, Finset.inter_comm]
-        _ = ∅ := by simp only [h_G₁_disj_G₂, Set.toFinset_empty]
-    have h_X₄_disj_X₅ : X₄ ∩ X₅ = ∅ := by
-      dsimp [X₄, X₅]
-      rw [←Set.toFinset_inter
-            (g_Fout_to_G '' (F₁.verts ∪ F₂.verts ∪ X)ᶜ)
-            (g_Fout_to_G '' X)]
-      apply Set.toFinset_eq_empty.mpr
-      rw [←Set.image_inter h_g_Fout_to_G_injective]
-      apply Set.image_eq_empty.mpr
-      apply Set.subset_empty_iff.mp
-      rw [Set.inter_comm]
-      apply (Set.inter_subset X (F₁.verts ∪ F₂.verts ∪ X)ᶜ ∅).mpr
-      rw [Set.union_empty, compl_compl]
-      simp only [Set.subset_union_right]
-    have h_X₁_X₂_X₃_X₄_X₅_disj : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := by
-      suffices (X₁ ∪ X₂) ∩ X₅ = ∅ ∧ X₃ ∩ X₅ = ∅ ∧ X₄ ∩ X₅ = ∅ by {
-        rw [Finset.union_inter_distrib_right (X₁ ∪ X₂ ∪ X₃) X₄ X₅]
-        rw [Finset.union_inter_distrib_right (X₁ ∪ X₂) X₃ X₅]
-        simp only [Finset.union_eq_empty, this, and_self]
-      }
-      exact ⟨h_X₁_union_X₂_disj_X₅, h_X₃_disj_X₅, h_X₄_disj_X₅⟩
-
-    have h_X₁_card : X₁.card = ℓ₁ := by
-      simp only [← subgraph_verts_card_from_iso_graph g_X₁_H₁, inducedSubgraph_verts G X₁, coe_sort_coe, Fintype.card_coe]
-    have h_X₂_card : X₂.card = ℓ₂ := by
-      simp only [← subgraph_verts_card_from_iso_graph g_X₂_H₂, inducedSubgraph_verts G X₂, coe_sort_coe, Fintype.card_coe]
-    have h_X₃_card : X₃.card = ℓ₃ := by
-      simp only [← subgraph_verts_card_from_iso_graph g_X₃_H₃, inducedSubgraph_verts G X₃, coe_sort_coe, Fintype.card_coe]
-    have h_X₄_card : X₄.card = ℓ₂₃ - (ℓ₂ + ℓ₃) :=
-      calc
-        X₄.card
-        _  = Fintype.card (g_Fout_to_G '' (F₁.verts ∪ F₂.verts ∪ X)ᶜ) := by
-              simp [X₄]
-        _ = Fintype.card ↑(F₁.verts ∪ F₂.verts ∪ X)ᶜ :=
-              Set.card_image_of_injective (F₁.verts ∪ F₂.verts ∪ X)ᶜ h_g_Fout_to_G_injective
-        _ = (F₁.verts ∪ F₂.verts ∪ X)ᶜ.toFinset.card := by
-              apply Eq.symm
-              apply Set.toFinset_card
-        _ = (F₁.verts ∪ F₂.verts ∪ X).toFinsetᶜ.card := by
-              simp only [Set.toFinset_compl]
-        _ = Fintype.card ↑(Fin ℓ₁₂) - (F₁.verts ∪ F₂.verts ∪ X).toFinset.card := by
-              rw [card_compl]
-        _ = ℓ₁₂ - (F₁.verts ∪ F₂.verts ∪ X).toFinset.card := by
-              simp only [Fintype.card_fin, toFinset_coe]
-        _ = ℓ₁₂ - (F₁.verts.toFinset ∪ F₂.verts.toFinset ∪ X).card := by
-              simp only [Set.toFinset_union, toFinset_coe]
-        _ = ℓ₁₂ - (Fintype.card F₁.verts + Fintype.card F₂.verts + Fintype.card X) := by
-            rw [Finset.card_union (F₁.verts.toFinset ∪ F₂.verts.toFinset) X]
-            rw [Finset.card_union F₁.verts.toFinset F₂.verts.toFinset]
-            have : (F₁.verts.toFinset ∪ F₂.verts.toFinset) ∩ X = ∅ := by
-              have h_Fpair_X_disj : X ⊆ (F₁.verts.toFinset ∪ F₂.verts.toFinset)ᶜ := by
-                rw [←Set.toFinset_union F₁.verts F₂.verts]
-                rw [←Set.toFinset_compl (F₁.verts ∪ F₂.verts)]
-                exact h_X_F₁_F₂
-              apply Finset.subset_empty.mp
-              calc
-                (F₁.verts.toFinset ∪ F₂.verts.toFinset) ∩ X
-                _ ⊆ (F₁.verts.toFinset ∪ F₂.verts.toFinset)
-                    ∩ (F₁.verts.toFinset ∪ F₂.verts.toFinset)ᶜ :=
-                  inter_subset_inter (subset_refl (F₁.verts.toFinset ∪ F₂.verts.toFinset)) h_Fpair_X_disj
-                _ = ∅ :=
-                  Finset.inter_compl (F₁.verts.toFinset ∪ F₂.verts.toFinset)
-            simp only [this, card_empty, tsub_zero]
-            have : F₁.verts.toFinset ∩ F₂.verts.toFinset = ∅ := by
-              rw [←Set.toFinset_inter F₁.verts F₂.verts]
-              simp only [h_F₁_disj_F₂, Set.toFinset_empty]
-            simp only [this, card_empty, tsub_zero]
-            simp only [Set.toFinset_card, Fintype.card_ofFinset, Fintype.card_coe]
-        _ = ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) := by
-              rw [Iso.card_eq g_F₁_H₁, Iso.card_eq g_F₂_H₂]
-              simp only [Fintype.card_fin, Fintype.card_coe]
-              simp only [h_X_card]
-        _ = ℓ₂₃ - (ℓ₂ + ℓ₃) := h_ℓ_eq₁
-    have h_X₅_card : X₅.card = (ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃) :=
-      calc
-        X₅.card = Fintype.card (g_Fout_to_G '' X) := by simp only [Set.toFinset_image, toFinset_coe, Fintype.card_ofFinset, X₅]
-        _ = Fintype.card X := Set.card_image_of_injective X h_g_Fout_to_G_injective
-        _ = ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) := by simp only [Fintype.card_coe, h_X_card]
-    exact  ⟨h_X₁_X₂_disj, h_X₁_X₂_X₃_disj, h_X₁_X₂_X₃_X₄_disj, h_X₁_X₂_X₃_X₄_X₅_disj,
-            h_X₁_card, h_X₂_card, h_X₃_card, h_X₄_card, h_X₅_card,
-            Nonempty.intro g_X₁_H₁, Nonempty.intro g_X₂_H₂, Nonempty.intro g_X₃_H₃⟩
-    -/
   have h_f_S₃_S₂_inj : Function.Injective f_S₃_S₂_fwd := by sorry
   have h_f_S₃_S₂_surj : Function.Surjective f_S₃_S₂_fwd := by sorry
   let f_S₃_S₂ : S₃ ≃ S₂ := Equiv.ofBijective f_S₃_S₂_fwd ⟨h_f_S₃_S₂_inj, h_f_S₃_S₂_surj⟩
