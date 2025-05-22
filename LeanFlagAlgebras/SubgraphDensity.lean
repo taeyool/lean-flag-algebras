@@ -2524,7 +2524,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         _ = ∅ := by simp only [union_idempotent]
 -/
 
-    have h_X₁_disj_X₂_X₃_X₄ : X₁ ∩ (X₂ ∪ X₃ ∪ X₄) = ∅ :=
+    have h_X₁_disj_X₂_X₃_X₄ : X₁ ∩ (X₂ ∪ X₃ ∪ X₄) = ∅ := by
       apply Finset.subset_empty.mp
       calc
         X₁ ∩ (X₂ ∪ X₃ ∪ X₄) = (X₁ ∩ X₂) ∪ (X₁ ∩ X₃) ∪ (X₁ ∩ X₄) := by
