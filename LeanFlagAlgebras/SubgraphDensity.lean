@@ -2690,14 +2690,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂,
           h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂,
           h_X_card, h_X_subset_compl_G₁_G₂⟩
-    sorry
-  /-
 
-    dsimp only [f_S₁_S₂_fwd, F₁, F₂, X, subgraphFromIso]
+    dsimp only [f_S₃_S₂_fwd, F₁, F₂, X, subgraphFromIso]
     simp only [Subtype.mk.injEq, Prod.mk.injEq]
-    rw [h_G₁₁_verts_eq_X₁]
-    rw [h_G₁₂_verts_eq_X₂]
-    rw [h_G₂_verts_eq_X₃]
+
+    rw [h_G₁₁_verts_eq_X₂]
+    rw [h_G₁₂_verts_eq_X₃]
+    rw [h_G₂_verts_eq_X₁]
     simp only [Set.coe_toFinset, Finset.toFinset_coe, true_and]
     simp only [←Set.image_union, ←Set.image_compl_eq h_G₁_Fout.some.bijective]
     simp only [←Set.image_comp]
@@ -2705,6 +2704,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       ext u
       simp only [Function.comp_apply, RelIso.symm_apply_apply]
     rw [h_fn_eq]
+    simp only [and_true]
+    sorry
+    /-
     refine ⟨?h₁, ?h₂, ?h₃, ?h₄⟩
     . ext u
       simp only [Set.toFinset_image, Set.toFinset_setOf,
