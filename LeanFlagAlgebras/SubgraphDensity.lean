@@ -2647,34 +2647,12 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       Nonempty.intro ((g_F₂_G₁₂.trans g_G₁₂_X₃).trans h_X₃_H₃.some)
 
     have h_F₁_disj_F₂ : F₁.verts ∩ F₂.verts = ∅ := subgraphFromIso_preserve_disjointedness h_G₁_Fout.some G₁₁ G₁₂ h_G₁₁_disj_G₁₂
+
+    let X : Finset (Fin ℓ) := X₅
+    have h_X_card : X.card = ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) := h_X₅_card
+    have h_X_subset_compl_G₁_G₂ : X ⊆ (G₁.verts ∪ G₂.verts)ᶜ.toFinset := sorry
     sorry
   /-
-
-
-    let X : Finset (Fin ℓ₁₂) := (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset
-    have h_X_card : X.card = ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) :=
-      calc
-        X.card = (h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}).toFinset.card := by
-                rfl
-        _ = {v : G₁.verts | v.val ∈ X₅}.toFinset.card := by
-                rw [Set.toFinset_card (⇑h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅})]
-                rw [Set.card_image_of_injective ({v : G₁.verts | v.val ∈ X₅}) h_G₁_Fout.some.injective]
-                rw [←Set.toFinset_card ({v : G₁.verts | v.val ∈ X₅})]
-        _ = {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅}.toFinset.card := by
-                rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
-                simp only [coe_sort_coe, Set.toFinset_setOf, univ_eq_attach, X_F]
-        _ = Fintype.card {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅} := by
-                rw [Set.toFinset_card]
-        _ = Fintype.card X₅ := by
-                let g : {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅ } ≃ X₅ := {
-                  toFun := fun v => ⟨v.val.val, v.property⟩
-                  invFun := fun u => ⟨⟨u.val, by simp only [union_assoc, mem_union, coe_mem, or_true]⟩, u.property⟩
-                  left_inv := by intro u; simp only [Set.coe_setOf, Set.mem_setOf_eq, Subtype.coe_eta]
-                  right_inv := by intro v; simp only [Subtype.coe_eta]
-                }
-                exact Fintype.card_congr g
-        _ = X₅.card := by simp only [Fintype.card_coe]
-        _ = ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) := h_X₅_card
     have h_X_subset_compl_F₁_F₂ : X ⊆ (F₁.verts ∪ F₂.verts)ᶜ.toFinset := by
       dsimp [X, F₁, F₂, subgraphFromIso]
       suffices
