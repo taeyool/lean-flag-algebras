@@ -2147,7 +2147,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
     have h_g_Fout_to_G_injective := Function.Injective.comp Subtype.val_injective g_G₁_Fout.symm.injective
 
-    have h_image_g_Fout_to_G_subset_G₁_verts : ∀ (V : Set (Fin ℓ₂₃)), g_Fout_to_G '' V ⊆ G₁.verts := by
+    have h_image_g_Fout_to_G_subset_G₁_verts :
+        ∀ (V : Set (Fin ℓ₂₃)), g_Fout_to_G '' V ⊆ G₁.verts
+      := by
       intro V
       calc
         (Subtype.val ∘ g_G₁_Fout.symm) '' V
@@ -2206,22 +2208,36 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         X₁ ∩ X₄ ⊆ X₁ ∩ (X₂ ∪ X₃ ∪ X₄) := Finset.inter_subset_inter (subset_refl X₁) Finset.subset_union_right
         _ = ∅ := h_X₁_disj_X₂_X₃_X₄
 
-    have h_X₂_disj_X₃ : X₂ ∩ X₃ = ∅ := by
+    have h_X₂_disj_X₃ : X₂ ∩ X₃ = ∅ :=
       rw [←Set.toFinset_inter (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts)]
       apply Set.toFinset_eq_empty.mpr
-      apply Set.subset_empty_iff.mp
       rw [←Set.image_inter h_g_Fout_to_G_injective]
-      simp [h_F₁_disj_F₂]
+      rw [Set.image_eq_empty]
+      rw [h_F₁_disj_F₂]
     have h_X₁_X₂_disj_X₃ : (X₁ ∪ X₂) ∩ X₃ = ∅ := by
       rw [Finset.union_inter_distrib_right X₁ X₂ X₃]
       rw [h_X₁_disj_X₃, h_X₂_disj_X₃]
       simp only [empty_union]
     have h_X₁_X₂_X₃_disj_X₄ : (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = ∅ := by
-      apply Finset.subset_empty.mp
       calc
-        (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = X₁ ∩ X₄ ∪ (X₂ ∪ X₃) ∩ X₄ := by sorry
+        (X₁ ∪ X₂ ∪ X₃) ∩ X₄ = (X₁ ∩ X₄) ∪ ((X₂ ∪ X₃) ∩ X₄) := by
+                rw [Finset.union_inter_distrib_right (X₁ ∪ X₂) X₃ X₄]
+                rw [Finset.union_inter_distrib_right X₁ X₂ X₄]
+                rw [Finset.union_assoc (X₁ ∩ X₄) (X₂ ∩ X₄) (X₃ ∩ X₄)]
+                rw [←Finset.union_inter_distrib_right X₂ X₃ X₄]
         _ = (X₂ ∪ X₃) ∩ X₄ := by simp only [h_X₁_disj_X₄, empty_union]
-        _ ⊆ ∅ := by sorry
+        _ = (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)).toFinset ∩ X₄ := by
+                rw [←Set.toFinset_union (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts)]
+                simp only [Set.toFinset_union, Set.toFinset_image,
+                  Set.image_union g_Fout_to_G F₁.verts F₂.verts]
+        _ = (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)).toFinset ∩ (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)ᶜ).toFinset := by
+                rfl
+        _ = ∅ := by
+                rw [←Set.toFinset_inter (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)) (g_Fout_to_G '' (F₁.verts ∪ F₂.verts)ᶜ)]
+                apply Set.toFinset_eq_empty.mpr
+                rw [←Set.image_inter h_g_Fout_to_G_injective]
+                rw [Set.image_eq_empty]
+                rw [Set.inter_compl_self (F₁.verts ∪ F₂.verts)]
     have h_X₁_X₂_X₃_X₄_disj_X₅ : (X₁ ∪ X₂ ∪ X₃ ∪ X₄) ∩ X₅ = ∅ := by
       dsimp only [X₁, X₂, X₃, X₄, X₅]
       sorry
