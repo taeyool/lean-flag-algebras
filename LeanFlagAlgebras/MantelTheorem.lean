@@ -221,14 +221,8 @@ def O3₁_labeledGraph_0_1_iso
   graph_iso := {
     toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
     invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
-    left_inv := by
-      dsimp [Function.LeftInverse]
-      intro i
-      aesop
-    right_inv := by
-      dsimp [Function.RightInverse]
-      intro i
-      aesop
+    left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+    right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
     map_rel_iff' := by intros; simp; rfl
   }
   type_preserve := by simp; rfl
@@ -238,14 +232,8 @@ def O3₁_labeledGraph_0_2_iso
   graph_iso := {
     toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
     invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
-    left_inv := by
-      dsimp [Function.LeftInverse]
-      intro i
-      aesop
-    right_inv := by
-      dsimp [Function.RightInverse]
-      intro i
-      aesop
+    left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+    right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
     map_rel_iff' := by intros; simp; rfl
   }
   type_preserve := by simp; rfl
