@@ -2208,7 +2208,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         X₁ ∩ X₄ ⊆ X₁ ∩ (X₂ ∪ X₃ ∪ X₄) := Finset.inter_subset_inter (subset_refl X₁) Finset.subset_union_right
         _ = ∅ := h_X₁_disj_X₂_X₃_X₄
 
-    have h_X₂_disj_X₃ : X₂ ∩ X₃ = ∅ :=
+    have h_X₂_disj_X₃ : X₂ ∩ X₃ = ∅ := by
       rw [←Set.toFinset_inter (g_Fout_to_G '' F₁.verts) (g_Fout_to_G '' F₂.verts)]
       apply Set.toFinset_eq_empty.mpr
       rw [←Set.image_inter h_g_Fout_to_G_injective]
