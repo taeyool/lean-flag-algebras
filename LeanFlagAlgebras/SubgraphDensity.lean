@@ -2529,7 +2529,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       calc
         X₁ ∩ (X₂ ∪ X₃ ∪ X₄) = (X₁ ∩ X₂) ∪ (X₁ ∩ X₃) ∪ (X₁ ∩ X₄) := by
                 rw [Finset.inter_union_distrib_left, Finset.inter_union_distrib_left]
-        _ ⊆ (X₁ ∩ X₂) ∪ ((X₁ ∪ X₂) ∩ X₃) ∪ ((X₁ ∪ X₂ ∪ X₃) ∩ X₄) := by
+        _ ⊆ (X₁ ∩ X₂) ∪ ((X₁ ∪ X₂) ∩ X₃) ∪ ((X₁ ∪ X₂ ∪ X₃) ∩ X₄) :=
                 Finset.union_subset_union
                   (Finset.union_subset_union_right (Finset.inter_subset_inter_right Finset.subset_union_left))
                   (by rw [Finset.union_assoc X₁ X₂ X₃]; exact Finset.inter_subset_inter_right Finset.subset_union_left)
