@@ -591,6 +591,26 @@ lemma predIsoLabeledH_related_ind
   have h_uv' : G₀.graph.Adj (u') (v') := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_uv
   exact (h_adj u' v').mp (h_ind₀ h_u' h_v' h_uv')
 
+lemma predIsoLabeledH_related_iso
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
+    (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
+    (h_vert : H₁.subgraph.verts = ⇑φ.graph_iso '' H₀.subgraph.verts)
+    (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v ↔ H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
+    (h_emb : ∀ (t : T), (H₀.type_embed t) = φ.symm.graph_iso (H₁.type_embed t))
+    (h_iso₀ : Nonempty (H₀.coe ≃f H))
+  : Nonempty (H₁.coe ≃f H) := by
+  have h := predIsolabeldH_related φ (H₀).coe
+  dsimp [relOfPredOnlabeledSubgraph, relOflabeledSubgraph, predIsolabeledH] at h
+  simp at h
+  have iso_refl : Nonempty ((H₀).coe ≃f (H₀).coe) := by
+    have : (H₀).coe ≃f (H₀).coe := LabeledGraphIso.refl
+    exact Nonempty.intro this
+  have iso_H₁_H₀ := (h H₀ H₁ h_vert h_adj h_emb).mp iso_refl
+  let H₀_H := Classical.choice h_iso₀
+  let H₁_H₀ := Classical.choice iso_H₁_H₀
+  have h_iso₁ : H₁.coe ≃f H := H₁_H₀.trans H₀_H
+  exact Nonempty.intro h_iso₁
+
 lemma predIsoLabeledHl_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
     : relOfPredOnlabeledSubgraphList φ Hl
@@ -610,22 +630,11 @@ lemma predIsoLabeledHl_related
     have h_1₁ : ∀ (i : Fin t), Nonempty ((Hl₁ i).coe ≃f Hl i) := by
       intro i
       have ⟨v_rel, e_rel⟩ := h_rel i
-      have h := predIsolabeldH_related φ (Hl₀ i).coe
-      dsimp [relOfPredOnlabeledSubgraph, relOflabeledSubgraph, predIsolabeledH] at h
-      simp at h
       have h_emb : ∀ (t : T), ((Hl₀ i).type_embed t) = φ.symm.graph_iso ((Hl₁ i).type_embed t) := by
         intro t
         rw [(Hl₀ i).embed_eq t, (Hl₁ i).embed_eq t, ← φ.type_preserve]
         exact id (Eq.symm (φ.symm.graph_iso.right_inv' (G₀.type_embed t)))
-      have iso_refl : Nonempty ((Hl₀ i).coe ≃f (Hl₀ i).coe) := by
-        have : (Hl₀ i).coe ≃f (Hl₀ i).coe := LabeledGraphIso.refl
-        exact Nonempty.intro this
-      have iso_Hl₀_Hl : Nonempty ((Hl₀ i).coe ≃f Hl i) := h_1₀ i
-      have iso_Hl₁_Hl₀ := (h (Hl₀ i) (Hl₁ i) v_rel e_rel h_emb).mp iso_refl
-      let Hl₀_Hl := Classical.choice iso_Hl₀_Hl
-      let Hl₁_Hl₀ := Classical.choice iso_Hl₁_Hl₀
-      have h_iso₁ : (Hl₁ i).coe ≃f Hl i := Hl₁_Hl₀.trans Hl₀_Hl
-      exact Nonempty.intro h_iso₁
+      exact predIsoLabeledH_related_iso φ (Hl i) (Hl₀ i) (Hl₁ i) v_rel e_rel h_emb (h_1₀ i)
     have h_2₁ : ∀ (i j : Fin t), i ≠ j → (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts = ∅ := by
       intro i j h_ij
       have h_empty_i := (h_2₀ i j h_ij)
@@ -648,8 +657,6 @@ lemma predIsoLabeledHl_related
         exact Nonempty.intro this
       have iso_Hl₁_Hl₀_i := (h_i (Hl₀ i) (Hl₁ i) v_rel_i e_rel_i (h_emb i)).mp iso_refl_i
       have iso_Hl₁_Hl₀_j := (h_j (Hl₀ j) (Hl₁ j) v_rel_j e_rel_j (h_emb j)).mp iso_refl_j
-      let Hl₁_Hl₀_i := Classical.choice iso_Hl₁_Hl₀_i
-      let Hl₁_Hl₀_j := Classical.choice iso_Hl₁_Hl₀_j
       by_contra h_nonempty
       push_neg at h_nonempty
       have h_nomempty_exists : ∃ w : W, w ∈ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := h_nonempty
@@ -703,7 +710,33 @@ lemma predIsoLabeledHl_related
       intro u v h_u h_v h_uv
       apply predIsoLabeledH_related_ind φ.symm (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_ind₁ i) h_u h_v h_uv
     have h_1₀ : ∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Hl i) := by
-      sorry
+      intro i
+      have ⟨v_rel, e_rel⟩ := h_rel i
+      have v_rel' : (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
+        rw [v_rel]
+        ext v; simp
+        constructor
+        · intro h_v
+          use v
+          exact ⟨h_v, φ.graph_iso.left_inv v⟩
+        · intro h_v
+          obtain ⟨v', ⟨h_v', h_vv'⟩⟩ := h_v
+          have : v = v' := by
+            rw [←h_vv']
+            exact φ.graph_iso.left_inv v'
+          exact Set.mem_of_eq_of_mem this h_v'
+      have e_rel' : ∀ (u v : W), (Hl₁ i).subgraph.Adj u v ↔ (Hl₀ i).subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
+        intro u v
+        have h_u : φ.graph_iso (φ.symm.graph_iso u) = u := φ.symm.graph_iso.left_inv u
+        have h_v : φ.graph_iso (φ.symm.graph_iso v) = v := φ.symm.graph_iso.left_inv v
+        have := e_rel (φ.symm.graph_iso u) (φ.symm.graph_iso v)
+        rw [h_u, h_v] at this
+        exact this.symm
+      have h_emb : ∀ (t : T), ((Hl₁ i).type_embed t) = φ.graph_iso ((Hl₀ i).type_embed t) := by
+        intro t
+        rw [(Hl₁ i).embed_eq t, (Hl₀ i).embed_eq t, ← φ.symm.type_preserve]
+        exact id (Eq.symm (φ.graph_iso.right_inv' (G₁.type_embed t)))
+      exact predIsoLabeledH_related_iso φ.symm (Hl i) (Hl₁ i) (Hl₀ i) v_rel' e_rel' h_emb (h_1₁ i)
     have h_2₀ : ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts = ∅ := by
       intro i j h_ij
       have h_empty₁ := (h_2₁ i j h_ij)
@@ -914,11 +947,48 @@ noncomputable def labeledSubgraphListDensityLifted
   intro _ _ h_eqv
   exact labeledSubgraphListDensity_respects_eqv_on_G Hl (Classical.choice h_eqv)
 
+noncomputable def isoSetOfInducedlabeledSubgraph_eqv
+    {Hl Hl' : LabeledGraphList σ t Vl} (φ : ∀ (i : Fin t), Hl i ≃f Hl' i)
+    (G : LabeledGraph σ W)
+    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) } ≃
+      { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  := by
+  let h : ∀ (G' : LabeledSubgraph σ G) (i : Fin t), Nonempty (G'.coe ≃f Hl i) ↔ Nonempty (G'.coe ≃f Hl' i) := by
+    intro G' i
+    constructor
+    · intro h_iso₀
+      let h_iso₀ := Classical.choice h_iso₀
+      let h_iso₁ : G'.coe ≃f (Hl' i) := h_iso₀.trans (φ i)
+      exact Nonempty.intro h_iso₁
+    · intro h_iso₁
+      let h_iso₁ := Classical.choice h_iso₁
+      let h_iso₀ : G'.coe ≃f (Hl i) := h_iso₁.trans (φ i).symm
+      exact Nonempty.intro h_iso₀
+  have : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) } = { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) } :=
+    Set.sep_ext_iff.mpr (fun x _ ↦
+      Iff.intro
+        (fun ⟨h_iso, h_indep⟩ ↦ ⟨fun i ↦ (h (x i) i).mp (h_iso i) , h_indep⟩)
+        (fun ⟨h_iso, h_indep⟩ ↦ ⟨fun i ↦ (h (x i) i).mpr (h_iso i) , h_indep⟩))
+  exact Equiv.setCongr this
+
 lemma labeledSubgraphListDensityLifted_respects_eqv
     (Hl Hl' : LabeledGraphList σ t Vl) (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
     : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
-  :=
-  sorry
+  := by
+  dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
+  congr
+  ext Grep
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅) }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraph_eqv φ Grep
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
+  have h_count : labeledSubgraphListCount Hl Grep = labeledSubgraphListCount Hl' Grep := by
+    dsimp only [labeledSubgraphListCount]
+    show S₀.toFinset.card = S₁.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  rw [h_count]; rfl
 
 noncomputable def quotLabeledSubgraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
