@@ -25,6 +25,24 @@ def E3_graph : SimpleGraph (Fin 3) where
   loopless := by
     rintro (_ | _ | _) (_ | _ | _)
 
+@[simp]
+theorem E3_graph_01 : E3_graph.Adj 0 1 := E3_edge.e01
+
+@[simp]
+theorem E3_graph_10 : E3_graph.Adj 1 0 := E3_edge.e10
+
+@[simp]
+theorem E3_graph_02 : ¬ E3_graph.Adj 0 2 := by rintro (_ | _ | _)
+
+@[simp]
+theorem E3_graph_20 : ¬ E3_graph.Adj 2 0 := by rintro (_ | _ | _)
+
+@[simp]
+theorem E3_graph_12 : ¬ E3_graph.Adj 1 2 := by rintro (_ | _ | _)
+
+@[simp]
+theorem E3_graph_21 : ¬ E3_graph.Adj 2 1 := by rintro (_ | _ | _)
+
 inductive P3_edge : Fin 3 → Fin 3 → Prop
   | e01 : P3_edge 0 1
   | e10 : P3_edge 1 0
@@ -38,6 +56,24 @@ def P3_graph : SimpleGraph (Fin 3) where
     repeat' constructor
   loopless := by
     rintro (_ | _ | _) (_ | _ | _)
+
+@[simp]
+theorem P3_graph_01 : P3_graph.Adj 0 1 := P3_edge.e01
+
+@[simp]
+theorem P3_graph_10 : P3_graph.Adj 1 0 := P3_edge.e10
+
+@[simp]
+theorem P3_graph_02 : P3_graph.Adj 0 2 := P3_edge.e02
+
+@[simp]
+theorem P3_graph_20 : P3_graph.Adj 2 0 := P3_edge.e20
+
+@[simp]
+theorem P3_graph_12 : ¬ P3_graph.Adj 1 2 := by rintro (_ | _ | _)
+
+@[simp]
+theorem P3_graph_21 : ¬ P3_graph.Adj 2 1 := by rintro (_ | _ | _)
 
 def K3_graph := completeGraph (Fin 3)
 
@@ -177,6 +213,38 @@ noncomputable def K3₁ : FlagAlgebra Sₜ :=
 
 /- downward operations -/
 
+lemma fun_Fin1_Fin3
+    (f : Fin 1 → Fin 3)
+    : f = (fun _ => 0) ∨ f = (fun _ => 1) ∨ f = (fun _ => 2)
+  := by
+  match h_f0 : f 0 with
+  | 0 =>
+    left
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+  | 1 =>
+    right; left
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+  | 2 =>
+    right; right
+    apply funext
+    intro
+    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
+
+lemma type_embed_HEq
+    {T V : Type} {σ : FlagType T} {G G' : SimpleGraph V} {f : σ ↪g G} {f' : σ ↪g G'}
+    (hG : G = G') (hf : f.toFun = f'.toFun)
+    : HEq f f'
+  := by
+  subst hG
+  simp
+  exact RelEmbedding.ext_iff.mpr (congrFun hf)
+
+/-- downward of O3₁ -/
+
 lemma unlabel_O3₁
     : unlabel ⟦O3₁_labeledGraph 0⟧ = ⟦O3_labeledGraph⟧
   := by
@@ -187,7 +255,7 @@ lemma unlabel_O3₁
       apply unlabeledGraph_iso
       exact Quotient.mk_out (O3₁_labeledGraph 0)
     _ ∼f O3_labeledGraph := by
-      dsimp [unlabeledGraph, O3₁_labeledGraph, O3_labeledGraph]
+      dsimp [unlabeledGraph]
       apply flagEqv.refl
 
 def isoSet_O3₁
@@ -237,36 +305,6 @@ def O3₁_labeledGraph_0_2_iso
     map_rel_iff' := by intros; simp; rfl
   }
   type_preserve := by simp; rfl
-
-lemma fun_Fin1_Fin3
-    (f : Fin 1 → Fin 3)
-    : f = (fun _ => 0) ∨ f = (fun _ => 1) ∨ f = (fun _ => 2)
-  := by
-  match h_f0 : f 0 with
-  | 0 =>
-    left
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
-  | 1 =>
-    right; left
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
-  | 2 =>
-    right; right
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
-
-lemma type_embed_HEq
-    {T V : Type} {σ : FlagType T} {G G' : SimpleGraph V} {f : σ ↪g G} {f' : σ ↪g G'}
-    (hG : G = G') (hf : f.toFun = f'.toFun)
-    : HEq f f'
-  := by
-  subst hG
-  simp
-  exact RelEmbedding.ext_iff.mpr (congrFun hf)
 
 lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
     : isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0) = isoSet_O3₁
@@ -346,15 +384,112 @@ theorem downward_O3₁
   dsimp [O3₁, downward, O3, downwardFlagVectorQuot]
   rw [downwardFlagVectorQuot_O3₁]
 
+/-- downward of E3₁ -/
+
 lemma unlabel_E3₁
     : unlabel ⟦E3₁_labeledGraph 0⟧ = ⟦E3_labeledGraph⟧
   := by
-  sorry
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph (E3₁_labeledGraph 0) := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out (E3₁_labeledGraph 0)
+    _ ∼f E3_labeledGraph := by
+      dsimp [unlabeledGraph]
+      apply flagEqv.refl
+
+def isoSet_E3₁
+    : Set (LabeledGraph Sₜ (Fin 3))
+  :=
+  {E3₁_labeledGraph 0, E3₁_labeledGraph 1}
+
+instance : FintypeExist isoSet_E3₁
+    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_E3₁) }
+
+lemma isoSet_E3₁_card
+    : isoSet_E3₁.toFinset.card = 2
+  := by
+  classical
+  refine Finset.card_eq_two.mpr ?_
+  use E3₁_labeledGraph 0, E3₁_labeledGraph 1
+  have : E3₁_labeledGraph 0 ≠ E3₁_labeledGraph 1 := by
+    simp [E3₁_labeledGraph]
+    exact ne_of_beq_false rfl
+  repeat' constructor <;> try assumption
+  simp [isoSet_E3₁]
+
+example : E3_edge 0 1 := by
+  exact E3_edge.e01
+
+def E3₁_labeledGraph_0_1_iso
+    : E3₁_labeledGraph 0 ≃f E3₁_labeledGraph 1 where
+  graph_iso := {
+    toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+    invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+    left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+    right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+    map_rel_iff' := by
+      simp [E3₁_labeledGraph]
+      intros; constructor
+      · split <;> (intro h; split at h) <;> simp at *
+      · split <;> (intro; split) <;> simp at *
+  }
+  type_preserve := by simp; rfl
+
+lemma isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card
+    : isoLabeledGraphSetWithSameGraph (E3₁_labeledGraph 0) = isoSet_E3₁
+  := by
+  dsimp [isoLabeledGraphSetWithSameGraph, isoSet_E3₁]
+  ext H; constructor
+  · intro h
+    simp; simp [E3₁_labeledGraph] at h
+    obtain ⟨h_graph, _⟩ := h
+    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    · left
+      ext1
+      · simp [E3₁_labeledGraph, h_graph]
+      · apply type_embed_HEq
+        · dsimp [E3₁_labeledGraph]
+          rw [h_graph]
+        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
+          rfl
+    · right
+      ext1
+      · simp [E3₁_labeledGraph, h_graph]
+      · apply type_embed_HEq
+        · dsimp [E3₁_labeledGraph]
+          rw [h_graph]
+        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
+          rfl
+    · sorry
+  · intro h
+    rcases h with h₀ | h₁
+    · subst h₀
+      simp
+      exact flagEqv.refl (E3₁_labeledGraph 0)
+    · subst h₁
+      simp; constructor
+      · dsimp [E3₁_labeledGraph]
+      · exact Nonempty.intro E3₁_labeledGraph_0_1_iso
+
+lemma isoLabeledGraphSetWithSameGraph_E3₁_card
+    : (isoLabeledGraphSetWithSameGraph (E3₁_labeledGraph 0)).toFinset.card = 2
+  := by
+  calc
+    _ = isoSet_E3₁.toFinset.card := by
+      simp [Set.toFinset_card]
+      apply Fintype.card_congr
+      rw [isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card]
+    _ = 2 := isoSet_E3₁_card
 
 lemma downwardNormalizingFactor_E3₁
     : downwardNormalizingFactor ⟦E3₁_labeledGraph 0⟧ = 2 / 3
   := by
-  sorry
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  have : Nat.factorial 3 / 2 = 3 := rfl
+  rw [isoLabeledGraphSetWithSameGraph_E3₁_card, this]
+  rfl
 
 lemma downwardFlagVectorQuot_E3₁
     : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph 0⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
@@ -370,10 +505,20 @@ theorem downward_E3₁
   rw [downwardFlagVectorQuot_E3₁]
   rfl
 
+/-- downward of E3₁' -/
+
 lemma unlabel_E3₁'
     : unlabel ⟦E3₁_labeledGraph 2⟧ = ⟦E3_labeledGraph⟧
   := by
-  sorry
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph (E3₁_labeledGraph 2) := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out (E3₁_labeledGraph 2)
+    _ ∼f E3_labeledGraph := by
+      dsimp [unlabeledGraph]
+      apply flagEqv.refl
 
 lemma downwardNormalizingFactor_E3₁'
     : downwardNormalizingFactor ⟦E3₁_labeledGraph 2⟧ = 1 / 3
@@ -394,10 +539,20 @@ theorem downward_E3₁'
   rw [downwardFlagVectorQuot_E3₁']
   rfl
 
+/-- downward of P3₁ -/
+
 lemma unlabel_P3₁
     : unlabel ⟦P3₁_labeledGraph 0⟧ = ⟦P3_labeledGraph⟧
   := by
-  sorry
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph (P3₁_labeledGraph 0) := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out (P3₁_labeledGraph 0)
+    _ ∼f P3_labeledGraph := by
+      dsimp [unlabeledGraph]
+      apply flagEqv.refl
 
 lemma downwardNormalizingFactor_P3₁
     : downwardNormalizingFactor ⟦P3₁_labeledGraph 0⟧ = 1 / 3
@@ -418,10 +573,20 @@ theorem downward_P3₁
   rw [downwardFlagVectorQuot_P3₁]
   rfl
 
+/-- downward of P3₁' -/
+
 lemma unlabel_P3₁'
     : unlabel ⟦P3₁_labeledGraph 1⟧ = ⟦P3_labeledGraph⟧
   := by
-  sorry
+  dsimp [unlabel]
+  apply Quotient.sound
+  calc
+    _ ∼f unlabeledGraph (P3₁_labeledGraph 1) := by
+      apply unlabeledGraph_iso
+      exact Quotient.mk_out (P3₁_labeledGraph 1)
+    _ ∼f P3_labeledGraph := by
+      dsimp [unlabeledGraph]
+      apply flagEqv.refl
 
 lemma downwardNormalizingFactor_P3₁'
     : downwardNormalizingFactor ⟦P3₁_labeledGraph 1⟧ = 2 / 3
@@ -442,6 +607,8 @@ theorem downward_P3₁'
   rw [downwardFlagVectorQuot_P3₁']
   rfl
 
+/-- downward of K3₁ -/
+
 lemma unlabel_K3₁
     : unlabel ⟦K3₁_labeledGraph 0⟧ = ⟦K3_labeledGraph⟧
   := by
@@ -452,7 +619,7 @@ lemma unlabel_K3₁
       apply unlabeledGraph_iso
       exact Quotient.mk_out (K3₁_labeledGraph 0)
     _ ∼f K3_labeledGraph := by
-      dsimp [unlabeledGraph, K3₁_labeledGraph, K3_labeledGraph]
+      dsimp [unlabeledGraph]
       apply flagEqv.refl
 
 lemma downwardNormalizingFactor_K3₁
