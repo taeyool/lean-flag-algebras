@@ -33,8 +33,7 @@ def relOflabeledSubgraph
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
-  ∧ (∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v))
-  ∧ (∀ (t : T), H₀.type_embed t = φ.symm.graph_iso (H₁.type_embed t))
+  ∧ ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
 
 def relOfPredOnlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -51,7 +50,7 @@ lemma predIsolabeledH_related_support
   {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
   (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
   (h_vert : H₁.subgraph.verts = ⇑φ.graph_iso '' H₀.subgraph.verts)
-  (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ∧ ∀ (t : T), ↑(H₀.type_embed t) = φ.symm.graph_iso ↑(H₁.type_embed t))
+  (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
   (h : Nonempty (H₀.coe ≃f H))
   : Nonempty (H₁.coe ≃f H) := by
     obtain ⟨⟨f₀, h_iso₀⟩, h_emb₀⟩ := h
@@ -110,10 +109,10 @@ lemma predIsolabeldH_related
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
   := by
     dsimp [predIsolabeledH, relOfPredOnlabeledSubgraph, relOflabeledSubgraph]
-    rintro H₀ H₁ ⟨h_vert, ⟨h_adj, h_emb⟩⟩
+    rintro H₀ H₁ ⟨h_vert, h_adj⟩
     constructor
     · intro f_iso
-      have : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ∧ ∀ (t : T), ↑(H₀.type_embed t) = φ.symm.graph_iso ↑(H₁.type_embed t) := by
+      have : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) := by
         intro u v
         simp_all only [eq_iff_iff, implies_true, and_self]
       exact predIsolabeledH_related_support φ H H₀ H₁ h_vert this f_iso
@@ -123,26 +122,15 @@ lemma predIsolabeldH_related
         simp_all only [eq_iff_iff]
         ext1 x
         simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-      have h_adj_emb : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) ∧ ∀ (t: T), (H₁.type_embed t) = φ.graph_iso (H₀.type_embed t):= by
+      have h_adj_emb : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) := by
         intro u v
-        constructor
-        · have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v))
-          rw [h_uv]
-          simp
-        · intro t
-          have h_t := h_emb t
-          rw [h_t]
-          rw [H₁.embed_eq t]
-          have := φ.graph_iso.symm.left_inv (G₁.type_embed t)
-          rw [←this]
-          exact congrArg (⇑φ.graph_iso.symm.symm) (congrArg (⇑φ.graph_iso.symm) (id (Eq.symm this)))
-      have : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) ∧ ∀ (t : T), ↑(H₁.type_embed t) = φ.symm.symm.graph_iso ↑(H₀.type_embed t) := by
+        have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v))
+        rw [h_uv]
+        simp
+      have : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
         intro u v
-        constructor
-        · exact (h_adj_emb u v).1
-        · intro t
-          rw [(h_adj_emb u v).2 t]
-          rfl
+        exact (h_adj_emb u v)
+
       exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' this f_iso
 
 omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
@@ -230,21 +218,16 @@ lemma inducedlabeledSubgraph_related
     : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducerdlabeledSubgraph_support φ H₀))
   := by
   dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]; simp
+  intro u v
   constructor
-  · intro u v
+  · intro h_uv
     constructor
-    · intro h_uv
-      constructor
-      · have : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
-        exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr this
-      · exact ⟨H₀.subgraph.edge_vert h_uv, H₀.subgraph.edge_vert h_uv.symm⟩
-    · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
-      have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
-      apply h_ind₀ h_u h_v h_G₀uv
-  · intro t
-    rw [H₀.embed_eq t]
-    rw [←φ.symm.type_preserve]
-    simp
+    · have : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
+      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr this
+    · exact ⟨H₀.subgraph.edge_vert h_uv, H₀.subgraph.edge_vert h_uv.symm⟩
+  · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
+    have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
+    apply h_ind₀ h_u h_v h_G₀uv
 
 theorem graph_eq
   {P Q : Type} (h : P = Q)
@@ -410,13 +393,6 @@ noncomputable def isoSetOfInducedlabeledSubgraph
       exact H_eq_reverseinduced_induced_H φ.symm H₁ h_ind₁
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
-
-#check heq_eq_eq
-
-example {α : Type} {a b : α} (h : a = b) : HEq a b := by
-  have h' : HEq a b := by
-    exact heq_of_eq h
-  exact h'
 
 noncomputable def isoSetOfInducedlabeledSubgraphIsoH
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
@@ -595,7 +571,6 @@ lemma predIsoLabeledH_related_iso
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
     (h_vert : H₁.subgraph.verts = ⇑φ.graph_iso '' H₀.subgraph.verts)
     (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v ↔ H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
-    (h_emb : ∀ (t : T), (H₀.type_embed t) = φ.symm.graph_iso (H₁.type_embed t))
     (h_iso₀ : Nonempty (H₀.coe ≃f H))
   : Nonempty (H₁.coe ≃f H) := by
   have h := predIsolabeldH_related φ (H₀).coe
@@ -604,7 +579,7 @@ lemma predIsoLabeledH_related_iso
   have iso_refl : Nonempty ((H₀).coe ≃f (H₀).coe) := by
     have : (H₀).coe ≃f (H₀).coe := LabeledGraphIso.refl
     exact Nonempty.intro this
-  have iso_H₁_H₀ := (h H₀ H₁ h_vert h_adj h_emb).mp iso_refl
+  have iso_H₁_H₀ := (h H₀ H₁ h_vert h_adj).mp iso_refl
   let H₀_H := Classical.choice h_iso₀
   let H₁_H₀ := Classical.choice iso_H₁_H₀
   have h_iso₁ : H₁.coe ≃f H := H₁_H₀.trans H₀_H
@@ -621,10 +596,6 @@ lemma predIsoLabeledHl_related
   dsimp [relOflabeledSubgraphList] at h_rel
   constructor
   · intro ⟨h_ind₀, ⟨h_1₀, h_2₀⟩⟩
-    have h_emb₀ : ∀ (i : Fin t) (t : T), ((Hl₀ i).type_embed t) = φ.symm.graph_iso ((Hl₁ i).type_embed t) := by
-        intro i t
-        rw [(Hl₀ i).embed_eq t, (Hl₁ i).embed_eq t, ← φ.type_preserve]
-        exact id (Eq.symm (φ.symm.graph_iso.right_inv' (G₀.type_embed t)))
     have h_ind₁ : ∀ (i : Fin t), (Hl₁ i).IsInduced := by
       intro i
       have ⟨h_vert, h_adj⟩ := h_rel i
@@ -634,8 +605,7 @@ lemma predIsoLabeledHl_related
     have h_1₁ : ∀ (i : Fin t), Nonempty ((Hl₁ i).coe ≃f Hl i) := by
       intro i
       have ⟨h_vert, h_adj⟩ := h_rel i
-      have h_emb := h_emb₀ i
-      exact predIsoLabeledH_related_iso φ (Hl i) (Hl₀ i) (Hl₁ i) h_vert h_adj h_emb (h_1₀ i)
+      exact predIsoLabeledH_related_iso φ (Hl i) (Hl₀ i) (Hl₁ i) h_vert h_adj (h_1₀ i)
     have h_2₁ : ∀ (i j : Fin t), i ≠ j → (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts = ∅ := by
       intro i j h_ij
       have h_empty_i := (h_2₀ i j h_ij)
@@ -695,11 +665,7 @@ lemma predIsoLabeledHl_related
       intro i
       have v_rel' := v_rels i
       have e_rel' := e_rels i
-      have h_emb : ∀ (t : T), ((Hl₁ i).type_embed t) = φ.graph_iso ((Hl₀ i).type_embed t) := by
-        intro t
-        rw [(Hl₁ i).embed_eq t, (Hl₀ i).embed_eq t, ← φ.symm.type_preserve]
-        exact id (Eq.symm (φ.graph_iso.right_inv' (G₁.type_embed t)))
-      exact predIsoLabeledH_related_iso φ.symm (Hl i) (Hl₁ i) (Hl₀ i) v_rel' e_rel' h_emb (h_1₁ i)
+      exact predIsoLabeledH_related_iso φ.symm (Hl i) (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_1₁ i)
     have h_2₀ : ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts = ∅ := by
       intro i j h_ij
       have h_empty₁ := (h_2₁ i j h_ij)
