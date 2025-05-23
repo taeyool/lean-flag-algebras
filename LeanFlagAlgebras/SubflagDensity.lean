@@ -939,6 +939,7 @@ noncomputable def flagListDensity
   :=
   fun Fl => quotLabeledSubgraphListDensity Fl.coe
 
+omit [DecidableEqExist T] in
 theorem flagListDensity_HEq_eq
     {Fl : FlagList σ t Vl} {Fl' : FlagList σ t Vl'}
     (h_Vl_eq : Vl' = Vl) (h_HEq : HEq Fl Fl') (G : Flag σ W)

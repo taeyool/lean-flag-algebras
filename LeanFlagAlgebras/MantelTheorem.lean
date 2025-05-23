@@ -437,14 +437,29 @@ def E3₁_labeledGraph_0_1_iso
   }
   type_preserve := by simp; rfl
 
+lemma E3₁_labeledGraph_0_2_not_iso
+    : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
+  := by
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  have : φG 0 = 2 := by
+    calc
+      _ = φG ((E3₁_labeledGraph 0).type_embed 0) := rfl
+      _ = (φG ∘ (E3₁_labeledGraph 0).type_embed) 0 := rfl
+      _ = (E3₁_labeledGraph 2).type_embed 0 := by rw [φ.type_preserve]
+      _ = 2 := rfl
+  sorry
+
 lemma isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card
     : isoLabeledGraphSetWithSameGraph (E3₁_labeledGraph 0) = isoSet_E3₁
   := by
   dsimp [isoLabeledGraphSetWithSameGraph, isoSet_E3₁]
   ext H; constructor
   · intro h
-    simp; simp [E3₁_labeledGraph] at h
-    obtain ⟨h_graph, _⟩ := h
+    simp
+    obtain ⟨h_graph, h_iso⟩ := h
+    simp [E3₁_labeledGraph] at h_graph
     rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · left
       ext1
@@ -462,7 +477,13 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card
           rw [h_graph]
         · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
           rfl
-    · sorry
+    · have hH : H = E3₁_labeledGraph 2 := by
+        ext1
+        · simp [E3₁_labeledGraph, h_graph]
+        · simp [E3₁_labeledGraph]
+          exact type_embed_HEq (id (Eq.symm h_graph)) h₂
+      rw [hH] at h_iso
+      exact False.elim (E3₁_labeledGraph_0_2_not_iso h_iso)
   · intro h
     rcases h with h₀ | h₁
     · subst h₀
