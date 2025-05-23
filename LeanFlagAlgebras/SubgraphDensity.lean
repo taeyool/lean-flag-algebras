@@ -2114,14 +2114,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                   ∧ X ⊆ (G₁.verts ∪ G₂.verts)ᶜ.toFinset }
   := by
 
-  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-    apply tsub_eq_tsub_of_add_eq_add
-    rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂)]
-    rw [←Nat.add_sub_assoc (by linarith) ℓ₂₃]
-    apply Eq.symm
-    apply Nat.sub_eq_of_eq_add
-    linarith
-
   let S₂ := { ⟨X₁, X₂, X₃, X₄, X₅⟩ :  Finset (Fin ℓ) × Finset (Fin ℓ)
                                     × Finset (Fin ℓ) × Finset (Fin ℓ) × Finset (Fin ℓ)
                   | X₁ ∩ X₂ = ∅
@@ -2528,8 +2520,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [Finset.union_comm X₂ X₃]
       rw [Finset.union_assoc X₃ X₂ X₄]
       exact Finset.subset_union_left
-    have h_X₄_subset_X₂₃₄ : X₄ ⊆ X₂₃₄ :=
-      Finset.subset_union_right
 
     let G₁_ind := inducedSubgraph G X₂₃₄
     let G₂_ind := inducedSubgraph G X₁
@@ -2733,14 +2723,6 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         × (Gpair : subgraphPairSet F.out H₁ G)
         × powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((Gpair.val.1.verts ∪ Gpair.val.2.verts)ᶜ).toFinset
   := by
-
-  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-    apply tsub_eq_tsub_of_add_eq_add
-    rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂)]
-    rw [←Nat.add_sub_assoc (by linarith) ℓ₂₃]
-    apply Eq.symm
-    apply Nat.sub_eq_of_eq_add
-    linarith
 
   let S₀ := (F : QuotSimpleGraph (Fin ℓ₁₂))
               × (Fpair : subgraphPairSet H₁ H₂ F.out)
