@@ -34,6 +34,7 @@ lemma choose_pair_eq_factorial_div
   rw [Nat.mul_div_cancel _ (Nat.factorial_pos (n - m))]
   rw [Nat.div_div_eq_div_mul, Nat.sub_sub, Nat.mul_assoc]
 
+
 lemma choose_pair_zero
     (n m k : ℕ) (h_size : m + k > n)
     : n.choose m * (n - m).choose k = 0
@@ -46,6 +47,7 @@ lemma choose_pair_zero
       exact h_size
     simp [Nat.choose_eq_zero_of_lt hk]
 
+
 lemma choose_pair_comm
     (n m k : ℕ)
     : n.choose m * (n - m).choose k = n.choose k * (n - k).choose m
@@ -55,14 +57,17 @@ lemma choose_pair_comm
   · have h_size' : m + k > n := Nat.not_le.mp h_size
     simp [choose_pair_zero, h_size', Nat.add_comm]
 
+
 noncomputable def subgraphSet (H : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G)
   :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
   { G' : Subgraph G | p G' }.toFinset
 
+
 noncomputable def subgraphCount (H : SimpleGraph V) (G : SimpleGraph W) : ℕ
   :=
   (subgraphSet H G).card
+
 
 noncomputable def subgraphDensity (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   :=
@@ -72,6 +77,7 @@ noncomputable def subgraphDensity (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   let num_of_all_induced_subgraph := card_W.choose card_V
   subgraph_cnt / num_of_all_induced_subgraph
 
+
 noncomputable def subgraphPairSet (H₁ : SimpleGraph U) (H₂ : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G × Subgraph G)
   :=
   let p (G₁ G₂ : Subgraph G) : Prop :=
@@ -80,9 +86,11 @@ noncomputable def subgraphPairSet (H₁ : SimpleGraph U) (H₂ : SimpleGraph V) 
     G₁.verts ∩ G₂.verts = ∅
   { (G₁, G₂) : Subgraph G × Subgraph G | p G₁ G₂ }.toFinset
 
+
 noncomputable def subgraphPairCount (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ
   :=
   (subgraphPairSet H₁ H₂ G).card
+
 
 noncomputable def subgraphPairDensity
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℚ
@@ -93,6 +101,7 @@ noncomputable def subgraphPairDensity
   let U_card := Fintype.card U
   let num_of_all_induced_subgraphs := W_card.choose V_card * (W_card - V_card).choose U_card
   subgraph_cnt / num_of_all_induced_subgraphs
+
 
 omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairSet_card_each
@@ -105,6 +114,7 @@ lemma subgraphPairSet_card_each
   rw [Fintype.card_of_bijective (RelIso.bijective h_G₁_H₁.some)]
   rw [Fintype.card_of_bijective (RelIso.bijective h_G₂_H₂.some)]
   simp only [and_self]
+
 
 omit [DecidableEq U] [DecidableEq V] in
 lemma subgraphPairSet_card_union
@@ -131,6 +141,7 @@ lemma subgraphPairSet_card_union
           rw [←h_G₁_card, ←h_G₂_card]
           simp only [Set.toFinset_card]
 
+
 omit [DecidableEq U] [DecidableEq V] in
 lemma subgraphPairSet_card_union_Finset
     {H₁ : SimpleGraph U} {H₂ : SimpleGraph V} {G : SimpleGraph W}
@@ -140,6 +151,7 @@ lemma subgraphPairSet_card_union_Finset
   rw [←Fintype.card_coe (G₁.verts ∪ G₂.verts).toFinset]
   rw [subgraphPairSet_card_union h]
 
+
 omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_ge_0
     (H : SimpleGraph V) (G : SimpleGraph W)
@@ -148,8 +160,10 @@ theorem subgraphDensity_ge_0
   dsimp [subgraphDensity]
   apply div_nonneg <;> simp
 
+
 def combinations [DecidableEq α] (V : Finset α) (ℓ : ℕ) : Finset (Finset α)
   := (V.powerset).filter fun W ↦ W.card = ℓ
+
 
 theorem comb_card_aux
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) :
@@ -221,11 +235,13 @@ theorem comb_card_aux
       · have hsub : V' ⊆ S := (subset_insert_iff_of_not_mem haV').mp hV'
         exact hindS V' hsub
 
+
 theorem comb_card
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ
   := by
   apply comb_card_aux V ℓ
   exact fun ⦃a⦄ a ↦ a
+
 
 noncomputable def vert_iso_from_graph_iso
     (H : SimpleGraph V) (G : SimpleGraph W) (G₀ : G.Subgraph)
@@ -236,6 +252,7 @@ noncomputable def vert_iso_from_graph_iso
   let f₀ : {x // x ∈ G₀.verts } → V := g
   have hf₀ : Function.Bijective f₀ := RelIso.bijective g
   exact Equiv.ofBijective f₀ hf₀
+
 
 omit [DecidableEq V] [DecidableEq W] in
 theorem subgraphDensity_le_1
@@ -293,6 +310,7 @@ theorem subgraphDensity_le_1
           exact h₁ hx hy h_adj
   . simp
 
+
 omit [DecidableEq V] [DecidableEq W] in
 lemma subgraphDensity_respects_eqv_on_G
     (H : SimpleGraph V) {G₀ G₁ : SimpleGraph W} (h_eqv : graph_eqv G₀ G₁)
@@ -310,12 +328,14 @@ lemma subgraphDensity_respects_eqv_on_G
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
 
+
 noncomputable def subgraphDensityLifted
     (H : SimpleGraph V) : QuotSimpleGraph W → ℚ
   := by
   apply Quot.lift (fun G : SimpleGraph W => subgraphDensity H G)
   intro _ _ h_eqv
   exact subgraphDensity_respects_eqv_on_G H h_eqv
+
 
 omit [DecidableEq V] in
 lemma subgraphDensityLifted_respects_eqv
@@ -337,6 +357,7 @@ lemma subgraphDensityLifted_respects_eqv
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   exact h_count
 
+
 noncomputable def quotSubgraphDensity
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
@@ -344,6 +365,7 @@ noncomputable def quotSubgraphDensity
   intro H₀ H₁ h_eqv
   ext G
   exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
+
 
 lemma subgraphCount_empty
     (G : SimpleGraph (Fin n))
@@ -370,11 +392,13 @@ lemma subgraphCount_empty
     simp_all only [emptyGraph_eq_bot, Set.setOf_eq_eq_singleton, Fintype.card_unique, S₀, S₁]
   rw [← this]; congr
 
+
 lemma subgraphDensity_empty
     (G : SimpleGraph (Fin n)) : subgraphDensity (emptyGraph (Fin 0)) G = 1
   := by
   simp [subgraphDensity]
   simp [← subgraphCount_empty G]
+
 
 lemma quotSubgraphDensity_empty
     (G : QuotSimpleGraph (Fin n)) : quotSubgraphDensity ⟦emptyGraph (Fin 0)⟧ G = 1
@@ -382,6 +406,7 @@ lemma quotSubgraphDensity_empty
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hGrep]
   apply subgraphDensity_empty
+
 
 omit [DecidableEq V] in
 lemma subgraphCount_self
@@ -399,6 +424,7 @@ lemma subgraphCount_self
     Fintype.card S₀ = Fintype.card S₁ := by simp_all [h_S₀_S₁]
     _ = 1 := by simp
 
+
 omit [DecidableEq V] in
 lemma subgraphDensity_self
     (G : SimpleGraph V) : subgraphDensity G G = 1
@@ -406,12 +432,14 @@ lemma subgraphDensity_self
   simp [subgraphDensity]
   exact subgraphCount_self G
 
+
 lemma quotSubgraphDensity_self
     (G : QuotSimpleGraph (Fin n)) : quotSubgraphDensity G G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hGrep]
   apply subgraphDensity_self
+
 
 omit [DecidableEq V] in
 lemma subgraphCount_other
@@ -433,6 +461,7 @@ lemma subgraphCount_other
   show Fintype.card S₀ = 0
   simp_all only [Set.subset_empty_iff, Fintype.card_ofIsEmpty]
 
+
 omit [DecidableEq V] in
 lemma subgraphDensity_other
     {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
@@ -440,6 +469,7 @@ lemma subgraphDensity_other
   dsimp [subgraphDensity]
   have := subgraphCount_other h_neq
   simp_all only [Nat.cast_zero, Nat.choose_self, Nat.cast_one, div_one]
+
 
 lemma quotSubgraphDensity_other
     {G₀ G₁ : QuotSimpleGraph (Fin n)} (h_neq : G₀ ≠ G₁) : quotSubgraphDensity G₀ G₁ = 0
@@ -456,6 +486,7 @@ lemma quotSubgraphDensity_other
     exact h_neq h_eq
   apply subgraphDensity_other h_neq'
 
+
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ quotSubgraphDensity H G
@@ -465,6 +496,7 @@ theorem quotSubgraphDensity_ge_0
   rw [← hHrep, ← hGrep]
   apply subgraphDensity_ge_0
 
+
 theorem quotSubgraphDensity_le_1
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : quotSubgraphDensity H G ≤ 1
@@ -473,6 +505,7 @@ theorem quotSubgraphDensity_le_1
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraphDensity_le_1
+
 
 omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairDensity_respects_eqv_on_G
@@ -496,6 +529,7 @@ lemma subgraphPairDensity_respects_eqv_on_G
     have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
   rw [h_count]
+
 
 noncomputable def subgraphPairDensityLifted
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ
@@ -534,6 +568,7 @@ lemma subgraphPairDensityLifted_respects_eqv
     simp_all only [Set.coe_setOf, Set.toFinset_card, X₀, X₁]
   exact h_count
 
+
 noncomputable def quotSubgraphPairDensity
     : QuotSimpleGraph U → QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
@@ -544,6 +579,7 @@ noncomputable def quotSubgraphPairDensity
   . intro _ _ H h_eqv_S
     ext G
     exact subgraphPairDensityLifted_respects_eqv h_eqv_S (graph_eqv.refl H) G
+
 
 omit [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairCount_comm
@@ -569,6 +605,7 @@ lemma subgraphPairCount_comm
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
+
 omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
 lemma subgraphPairDensity_comm
     (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
@@ -579,6 +616,7 @@ lemma subgraphPairDensity_comm
   rw [h_count_comm]; congr 1; apply congrArg Nat.cast
   simp [choose_pair_comm]
 
+
 lemma quotSubgraphPairDensity_comm
     (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : quotSubgraphPairDensity H₁ H₂ G = quotSubgraphPairDensity H₂ H₁ G
@@ -588,6 +626,7 @@ lemma quotSubgraphPairDensity_comm
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hH₁rep, ← hH₂rep, ← hGrep]
   apply subgraphPairDensity_comm
+
 
 lemma subgraphPairCount_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
@@ -628,6 +667,7 @@ lemma subgraphPairCount_empty
   have h_count : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.coe_setOf, Set.toFinset_card, S₀, S₁]
 
+
 lemma subgraphPairDensity_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
@@ -635,6 +675,7 @@ lemma subgraphPairDensity_empty
   dsimp [subgraphPairDensity, subgraphDensity]
   rw [← subgraphPairCount_empty H G]
   simp
+
 
 lemma quotSubgraphPairDensity_empty
     (H : QuotSimpleGraph (Fin n)) (G : QuotSimpleGraph (Fin m))
@@ -644,6 +685,7 @@ lemma quotSubgraphPairDensity_empty
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   rw [← hHrep, ← hGrep]
   apply subgraphPairDensity_empty
+
 
 lemma card_eq_imply_set_eq
     (A B : Finset (Fin ℓ)) (h_card_eq : A.card + B.card = ℓ) (h_disj : A ∩ B = ∅)
@@ -662,6 +704,7 @@ lemma card_eq_imply_set_eq
       _ = ℓ - ℓ := by rw [h_card_A_union_B]
       _ = 0 := by simp only [le_refl, tsub_eq_zero_of_le]
   exact (compl_eq_empty_iff (A ∪ B)).mp h_compl_A_union_B_empty
+
 
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
@@ -898,20 +941,25 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   exact (((f_S_S₀'.trans f_S₀'_S₁').trans f_S₁'_S₂').trans f_S₂'_S₃')
 
+
 noncomputable def isoGraphCount (G : SimpleGraph V) : ℕ
   := { G' : SimpleGraph V | Nonempty (G' ≃g G) }.toFinset.card
 
+
 noncomputable def graphCount (ℓ : ℕ) : ℕ
   := { G' : SimpleGraph (Fin ℓ) | True }.toFinset.card
+
 
 lemma graphCount_gt_zero (ℓ : ℕ) : graphCount ℓ > 0
   := by
   simp [graphCount]
   exact NeZero.one_le
 
+
 lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph (Fin ℓ)), 1
   := by
   simp [graphCount]
+
 
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ)) (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃)
@@ -1201,6 +1249,7 @@ lemma subgraphPairDensity_eq_sum_density_prods
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairDensity H₁ H₂ F.out * subgraphDensity F.out G := by
               simp [subgraphPairDensity, subgraphDensity]
 
+
 lemma subgraphPairDensityLifted_eq_sum_density_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
@@ -1313,6 +1362,7 @@ lemma quotSubgraphTripleDensity_empty
   rw [h_RHS]
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₁ H₂ G (Nat.le_refl (ℓ₁ + ℓ₂)) hℓ
+
 
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet_step1
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
@@ -2708,6 +2758,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
   exact f_S₃_S₂.symm
 
+
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2883,6 +2934,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₄_S₃.symm
 
+
 lemma subgraphPairCount_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -3037,6 +3089,7 @@ lemma choose_eq_factorial_div_factorial_rational
         have h_dvd : (k.factorial * (n - k).factorial) ∣ n.factorial :=
           Nat.factorial_mul_factorial_dvd_factorial h_k_n
         simp only [h_dvd, Nat.cast_div_charZero, Nat.cast_mul]
+
 
 lemma subgraphPairDensity_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
