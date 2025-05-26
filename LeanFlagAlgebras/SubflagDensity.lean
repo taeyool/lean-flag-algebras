@@ -548,7 +548,33 @@ lemma predIsoLabeledH_related_iso  -- Same as predIsolabeledH_related_support
   have h_iso₁ : H₁.coe ≃f H := H₁_H₀.trans H₀_H
   exact Nonempty.intro h_iso₁
 
-omit [FintypeExist T] [DecidableEqExist T] [FintypeList Vl] [DecidableEqList Vl] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
+lemma predIsoLabeledHl_related_indep
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀)
+    (Hl₁ : ∀ (_ : Fin t), LabeledSubgraph σ G₁)
+    (v_rel :  ∀ (i : Fin t), (Hl₁ i).subgraph.verts = ⇑φ.graph_iso '' (Hl₀ i).subgraph.verts)
+    : ∀ (i j : Fin t), ((Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts = ∅) →
+      ((Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts = ∅) := by
+  intro i j h_empty
+  by_contra h_nonempty
+  push_neg at h_nonempty
+  have h_nomempty_exists : ∃ w : W, w ∈ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := h_nonempty
+  obtain ⟨w, ⟨h_wi₁, h_wj₁⟩⟩ := h_nomempty_exists
+  have h_w : ∀ (k : Fin t), w ∈ (Hl₁ k).subgraph.verts → φ.symm.graph_iso w ∈ (Hl₀ k).subgraph.verts := by
+    intro k h_wk₁
+    rw [v_rel k] at h_wk₁
+    rw [Set.mem_image] at h_wk₁
+    obtain ⟨w', ⟨h_wk₀, h_ww'⟩⟩ := h_wk₁
+    rw [← h_ww']
+    have := φ.graph_iso.left_inv' w'
+    exact Set.mem_of_eq_of_mem this h_wk₀
+  have h_wi₀ : φ.symm.graph_iso w ∈ (Hl₀ i).subgraph.verts := h_w i h_wi₁
+  have h_wj₀ : φ.symm.graph_iso w ∈ (Hl₀ j).subgraph.verts := h_w j h_wj₁
+  have h_w_ij : φ.symm.graph_iso w ∈ (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts := Set.mem_inter h_wi₀ h_wj₀
+  simp_all only [Set.mem_empty_iff_false]
+
+ omit [FintypeExist T] [DecidableEqExist T] [FintypeList Vl] [DecidableEqList Vl] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma predIsoLabeledHl_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
     : relOfPredOnlabeledSubgraphList φ
@@ -572,26 +598,8 @@ lemma predIsoLabeledHl_related
     have h_2₁ : ∀ (i j : Fin t), i ≠ j → (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts = ∅ := by
       intro i j h_ij
       have h_empty_i := (h_2₀ i j h_ij)
-      have h_empty : φ.graph_iso '' ((Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts) = ∅ := Set.image_eq_empty.mpr (h_2₀ i j h_ij)
-      by_contra h_nonempty
-      push_neg at h_nonempty
-      have h_nomempty_exists : ∃ w : W, w ∈ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := h_nonempty
-      obtain ⟨w, ⟨h_wi₁, h_wj₁⟩⟩ := h_nomempty_exists
-      have h_w : ∀ (k : Fin t), w ∈ (Hl₁ k).subgraph.verts → φ.symm.graph_iso w ∈ (Hl₀ k).subgraph.verts := by
-        intro k h_wk₁
-        let ⟨v_rel, e_rel⟩ := h_rel k
-        rw [v_rel] at h_wk₁
-        simp_all only [Set.mem_image]
-        obtain ⟨w', ⟨h_wk₀, h_ww'⟩⟩ := h_wk₁
-        have h_ww' : w' = φ.symm.graph_iso w := by
-          rw [← h_ww']
-          exact id (Eq.symm (φ.graph_iso.left_inv' w'))
-        rw [h_ww'] at h_wk₀
-        exact h_wk₀
-      have h_wi₀ : φ.symm.graph_iso w ∈ (Hl₀ i).subgraph.verts := h_w i h_wi₁
-      have h_wj₀ : φ.symm.graph_iso w ∈ (Hl₀ j).subgraph.verts := h_w j h_wj₁
-      have h_w_ij : φ.symm.graph_iso w ∈ (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts := Set.mem_inter h_wi₀ h_wj₀
-      simp_all only [Set.mem_empty_iff_false]
+      have v_rel : ∀ (i : Fin t), (Hl₁ i).subgraph.verts = φ.graph_iso '' (Hl₀ i).subgraph.verts := fun i ↦ (h_rel i).1
+      exact (predIsoLabeledHl_related_indep φ Hl₀ Hl₁ v_rel) i j h_empty_i
     exact ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
   · intro ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
     have v_rels : ∀ (i : Fin t), (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
@@ -631,26 +639,7 @@ lemma predIsoLabeledHl_related
       exact predIsoLabeledH_related_iso φ.symm (Hl i) (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_1₁ i)
     have h_2₀ : ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts = ∅ := by
       intro i j h_ij
-      have h_empty₁ := (h_2₁ i j h_ij)
-      by_contra h_nonempty
-      push_neg at h_nonempty
-      have h_nomempty_exists : ∃ v : V, v ∈ (Hl₀ i).subgraph.verts ∩ (Hl₀ j).subgraph.verts := h_nonempty
-      obtain ⟨v, ⟨h_vi₀, h_vj₀⟩⟩ := h_nomempty_exists
-      have h_v : ∀ (k : Fin t), v ∈ (Hl₀ k).subgraph.verts → φ.graph_iso v ∈ (Hl₁ k).subgraph.verts := by
-        intro k h_vk₀
-        rw [v_rels k] at h_vk₀
-        rw [Set.mem_image] at h_vk₀
-        obtain ⟨v', ⟨h_vk₀', h_vv'⟩⟩ := h_vk₀
-        rw [← h_vv']
-        have := φ.symm.graph_iso.left_inv' v'
-        exact Set.mem_of_eq_of_mem this h_vk₀'
-      have h_v_i := h_v i h_vi₀
-      have h_v_j := h_v j h_vj₀
-      have h_v_ij : φ.graph_iso v ∈ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := Set.mem_inter h_v_i h_v_j
-      have h_contra : φ.graph_iso v ∉ (Hl₁ i).subgraph.verts ∩ (Hl₁ j).subgraph.verts := by
-        rw [h_empty₁]
-        exact Set.not_mem_empty (φ.graph_iso v)
-      contradiction
+      exact predIsoLabeledHl_related_indep φ.symm Hl₁ Hl₀ v_rels i j (h_2₁ i j h_ij)
     exact ⟨h_ind₀, ⟨h_1₀, h_2₀⟩⟩
 
 def inducedlabeledSubgraphList
@@ -673,13 +662,8 @@ lemma inducedlabeledSubgraphList_type_embed_mem
     (φ : G₀ ≃f G₁) (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀)
     : ∀ (i : Fin t), ∀ (t : T), G₁.type_embed t ∈ ⇑φ.graph_iso '' (Hl₀ i).subgraph.verts
   := by
-  intro i t
-  simp_all only [Set.mem_image]
-  use (Hl₀ i).type_embed t
-  constructor
-  · simp
-  · rw [←φ.type_preserve]; simp
-    exact (Hl₀ i).embed_eq t
+  intro i
+  exact inducedlabeledSubgraph_type_embed_mem φ (Hl₀ i)
 
 omit [FintypeExist T] [DecidableEqExist T] [FintypeList Vl] [DecidableEqList Vl] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma inducedlabeledSubgraphList_related
@@ -706,7 +690,6 @@ lemma Hl_eq_reverseinduced_induced_Hl
   {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
   (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀) (h_ind₀ : ∀ i, (Hl₀ i).subgraph.IsInduced)
   : Hl₀ = (inducedlabeledSubgraphList G₀ (fun i => φ.symm.graph_iso '' ((inducedlabeledSubgraphList G₁ (fun i => φ.graph_iso '' (Hl₀ i).subgraph.verts) (inducedlabeledSubgraphList_type_embed_mem φ Hl₀)).1 i).subgraph.verts) (inducedlabeledSubgraphList_type_embed_mem φ.symm (inducedlabeledSubgraphList G₁ (fun i => φ.graph_iso '' (Hl₀ i).subgraph.verts) (inducedlabeledSubgraphList_type_embed_mem φ Hl₀)).1)).1 := by
-  dsimp [inducedlabeledSubgraphList]
   funext i
   exact H_eq_reverseinduced_induced_H φ (Hl₀ i) (h_ind₀ i)
 
