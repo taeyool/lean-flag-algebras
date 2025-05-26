@@ -451,6 +451,69 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
 
+lemma labeledSubgraphCount_self
+    (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
+  := by
+  simp [labeledSubgraphCount]
+  let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f G) }
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  let top : LabeledSubgraph σ G := {
+    subgraph := {
+      verts := Set.univ
+      Adj := fun u v => G.graph.Adj u v
+      adj_sub := by simp [SimpleGraph.Adj]
+      edge_vert := by simp
+      symm := by simp [SimpleGraph.symm]
+    }
+    type_embed := {
+      toFun := fun t ↦ ⟨G.type_embed t, by simp⟩
+      inj' := by
+        intro t₁ t₂ h
+        simp at h
+        exact h
+      map_rel_iff' := by
+        intro t₁ t₂
+        simp
+    }
+    embed_eq := by
+      intro t; simp
+  }
+  let S₁ : Finset (LabeledSubgraph σ G) := { top }
+  have h_S₀_S₁ : S₀ = S₁ := by
+    ext G'
+    dsimp [S₀, S₁]; simp
+    constructor
+    · intro ⟨G'_ind, G'_iso⟩
+      ext u v
+      · sorry
+      · sorry
+      · sorry
+    · intro h
+      constructor
+      · subst h; intro; simp
+      · rw [h]
+        dsimp [top]
+        sorry
+  have : Fintype.card S₀ = Fintype.card S₁ := by
+    sorry
+  dsimp [S₀] at this
+  rw [this]
+
+lemma labeledSubgraphDensity_self
+    (G : LabeledGraph σ V) : labeledSubgraphDensity G G = 1
+  := by
+  simp [labeledSubgraphDensity]
+  exact labeledSubgraphCount_self G
+
+lemma subflagDensity_self
+    (G : Flag σ V) : subflagDensity G G = 1
+  := by
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  dsimp [subflagDensity, labeledSubgraphDensityLifted]
+  subst hGrep
+  simp [labeledSubgraphDensity_self]
+  dsimp [labeledSubgraphDensityLifted]
+  exact labeledSubgraphDensity_self Grep
 end
 
 section
@@ -474,6 +537,8 @@ noncomputable def labeledSubgraphListCount
     := ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)
   let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅
+  -- let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+  --   := ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = (G.type_embed '' Set.univ)
   let S := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | ind Gl ∧ p₁ Gl ∧ p₂ Gl }
   have : Fintype S := Fintype.ofFinite ↑S
   S.toFinset.card
@@ -916,8 +981,60 @@ noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F�
 
 theorem flagDensity_self
     (F : Flag σ W) : flagDensity₁ F F = 1
-  :=
-  sorry
+  := by
+  rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+  dsimp [flagDensity₁]
+  have goal' : subflagDensity F F = flagListDensity (flagToList F) F := by
+    have h_count : labeledSubgraphCount Frep Frep = labeledSubgraphListCount (fun (_ : Fin 1) => Frep) Frep := by
+      dsimp [labeledSubgraphCount, labeledSubgraphListCount]
+      apply Finset.card_bij
+      · intro H hH
+        simp at hH
+        show (fun (_ : Fin 1) => H) ∈ _
+        simp [Set.toFinset_setOf]
+        constructor
+        · exact hH.1
+        · constructor
+          · exact hH.2
+          · intro i j hij
+            have : i = j := by
+              rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+            contradiction
+      · intro H _ H' _ h_eq
+        calc
+          H = (fun (_ : Fin 1) => H) 0 := by simp
+          _ = (fun (_ : Fin 1) => H') 0 := by rw [h_eq]
+          _ = H' := by simp
+      · intro Hl _
+        use Hl 0
+        simp_all
+        ext1 i
+        rw [Fin.fin_one_eq_zero i]
+    calc
+      subflagDensity F F = labeledSubgraphDensity Frep Frep := by
+        subst hFrep
+        rfl
+      _ = labeledSubgraphListDensity (fun (_ : Fin 1) => Frep) Frep := by
+        dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
+        rw [← h_count]
+        congr
+        dsimp [multinomialCoefficient]
+        rw [Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Finset.prod_singleton]
+        split
+        · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
+        · rw [Nat.choose_eq_zero_of_lt (by linarith)]
+      _ = quotLabeledSubgraphListDensity [F]ᶠ.coe F := by
+        have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
+          dsimp [eqv_QuotLabeledGraphList_FlagList]
+          apply Quotient.sound
+          intro i
+          simp [flagToList, ← hFrep]
+          apply Quotient.mk_out Frep
+        rw [this, ← hFrep]
+        rfl
+      _ = flagListDensity [F]ᶠ F := rfl
+  rw [← goal']
+  exact subflagDensity_self F
 
 theorem flagDensity_other
     {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
