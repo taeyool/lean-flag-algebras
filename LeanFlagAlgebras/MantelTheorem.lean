@@ -443,13 +443,27 @@ lemma E3₁_labeledGraph_0_2_not_iso
   intro h
   let φ := h.some
   let φG := φ.graph_iso
-  have : φG 0 = 2 := by
+  have h₀ : φG 0 = 2 := by
     calc
       _ = φG ((E3₁_labeledGraph 0).type_embed 0) := rfl
       _ = (φG ∘ (E3₁_labeledGraph 0).type_embed) 0 := rfl
       _ = (E3₁_labeledGraph 2).type_embed 0 := by rw [φ.type_preserve]
       _ = 2 := rfl
-  sorry
+  match h₁ : φG 1 with
+  | 0 =>
+      have : E3_graph.Adj 0 1 := by simp
+      have : E3_graph.Adj (φG 0) (φG 1) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
+      have : ¬ E3_graph.Adj (φG 0) (φG 1) := by simp [h₀, h₁]
+      contradiction
+  | 1 =>
+      have : E3_graph.Adj 0 1 := by simp
+      have : E3_graph.Adj (φG 0) (φG 1) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
+      have : ¬ E3_graph.Adj (φG 0) (φG 1) := by simp [h₀, h₁]
+      contradiction
+  | 2 =>
+      have : φG 0 = φG 1 := by rw [h₀, h₁]
+      have : φG 0 ≠ φG 1 := by simp
+      contradiction
 
 lemma isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card
     : isoLabeledGraphSetWithSameGraph (E3₁_labeledGraph 0) = isoSet_E3₁
