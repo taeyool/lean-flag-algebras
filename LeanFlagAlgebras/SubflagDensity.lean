@@ -1107,7 +1107,23 @@ theorem flagDensity_other
 theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute π) G
-  :=
+  := by
+  dsimp [flagListDensity, quotLabeledSubgraphListDensity]
+  congr
+  ext Grep
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl.permute π i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    let φ : ∀ (i : Fin t), (Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl.permute π i) : LabeledGraph σ (Vl (π i))) := by
+      intro i
+      -- Use the fact that Fl.permute π i = Fl (π i) and construct the equivalence
+      have h_eq : Fl.permute π i = Fl (π i) := rfl
+      rw [h_eq]
+      sorry
+    -- exact isoSetOfInducedlabeledSubgraph_eqv φ Grep
+    sorry
+  have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
+  have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
   sorry
 
 instance {V W : Type} [FintypeExist V] [FintypeExist W]
