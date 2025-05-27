@@ -499,31 +499,26 @@ lemma labeledSubgraphCount_self
     · intro ⟨G'_ind, G'_iso⟩
       obtain ⟨graph_iso, type_embed⟩ := G'_iso
       obtain ⟨iso_verts, iso_adj⟩ := graph_iso
-      ext u v
-      · simp; exact iso_subset_of_finset_is_full (id iso_verts.symm) u
-      · have h_u := iso_subset_of_finset_is_full (id iso_verts.symm) u
-        have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
-        constructor
-        · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
-        · exact fun a ↦ G'_ind h_u h_v a
-      · have tmp : G'.subgraph = top.subgraph := by
-          ext u v
-          · simp; exact iso_subset_of_finset_is_full (id iso_verts.symm) u
-          · have h_u := iso_subset_of_finset_is_full (id iso_verts.symm) u
-            have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
-            constructor
-            · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
-            · exact fun a ↦ G'_ind h_u h_v a
-        have tmp' : ↑top.subgraph.verts = ↑G'.subgraph.verts := congrArg SimpleGraph.Subgraph.verts (id (Eq.symm tmp))
-        have type_eq : (top.subgraph.verts : Type) = (G'.subgraph.verts : Type) := congrArg Set.Elem tmp'
-        have coe_eq := coe_eq tmp type_eq
+      have G'_eq_top : G'.subgraph = top.subgraph := by
+        ext u v
+        · simp; exact iso_subset_of_finset_is_full (id iso_verts.symm) u
+        · have h_u := iso_subset_of_finset_is_full (id iso_verts.symm) u
+          have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
+          constructor
+          · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
+          · exact fun a ↦ G'_ind h_u h_v a
+      refine LabeledSubgraph.ext ?subgraph ?type_embed
+      · exact G'_eq_top
+      · have verts_eq : ↑top.subgraph.verts = ↑G'.subgraph.verts := congrArg SimpleGraph.Subgraph.verts (id (Eq.symm G'_eq_top))
+        have type_eq : (top.subgraph.verts : Type) = (G'.subgraph.verts : Type) := congrArg Set.Elem verts_eq
+        have coe_eq := coe_eq G'_eq_top type_eq
         have h_G'_embed := G'.embed_eq
         have h_top_embed := top.embed_eq
         have emb_eq : ∀ t : T, G'.type_embed t = cast type_eq (top.type_embed t) := by
           intro t
           exact
-            embed_val_eq G.type_embed G'.type_embed top.type_embed tmp type_eq h_G'_embed h_top_embed t
-        exact embed_eq G'.type_embed top.type_embed tmp type_eq coe_eq emb_eq
+            embed_val_eq G.type_embed G'.type_embed top.type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
+        exact embed_eq G'.type_embed top.type_embed G'_eq_top type_eq coe_eq emb_eq
     · intro h
       constructor
       · subst h; intro; simp
