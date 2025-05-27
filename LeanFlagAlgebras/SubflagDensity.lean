@@ -684,13 +684,17 @@ lemma predIsoLabeledHl_related_indep
     intro k h_wk₁
     by_contra h_w'
     have : w ∈ G₁.type_verts := by
-      have : ∃ t : T, φ.symm.graph_iso w = G₀.type_embed t := sorry
+      have : ∃ t : T, φ.symm.graph_iso w = G₀.type_embed t := by
+        unfold LabeledGraph.type_verts at h_w'
+        obtain ⟨t, h_t⟩ := h_w'
+        use t
+        simp_all only [Set.mem_univ]
       obtain ⟨t, h_t⟩ := this
-      have := φ.symm.type_preserve
-      rw [← this] at h_t
+      rw [← φ.symm.type_preserve] at h_t
       simp at h_t
       rw [h_t]
-      sorry
+      unfold LabeledGraph.type_verts
+      exact Set.mem_image_of_mem (⇑G₁.type_embed) trivial
     exact h_wk₁ this
   have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w i h_wi₁.left) (h_w' i h_wi₁.right)
   have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w j h_wj₁.left) (h_w' j h_wj₁.right)
