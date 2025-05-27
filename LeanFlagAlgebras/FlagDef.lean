@@ -44,6 +44,9 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
   type_embed : σ ↪g graph
 
+def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
+  G.type_embed '' Set.univ
+
 noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [FintypeExist V] [DecidableEqExist V]
     : Fintype (LabeledGraph σ V)
   :=

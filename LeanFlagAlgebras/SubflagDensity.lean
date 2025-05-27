@@ -451,6 +451,7 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
 
+omit [DecidableEqExist V] in
 lemma iso_subset_of_finset_is_full
     {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
   := by
@@ -464,6 +465,7 @@ lemma iso_subset_of_finset_is_full
     rw [Fintype.card_congr f_iso]
   simp_all
 
+omit [DecidableEqExist T] in
 lemma labeledSubgraphCount_self
     (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
   := by
@@ -543,12 +545,14 @@ lemma labeledSubgraphCount_self
   dsimp [S₀] at this
   rw [this]
 
+omit [DecidableEqExist T] in
 lemma labeledSubgraphDensity_self
     (G : LabeledGraph σ V) : labeledSubgraphDensity G G = 1
   := by
   simp [labeledSubgraphDensity]
   exact labeledSubgraphCount_self G
 
+omit [DecidableEqExist T] in
 lemma subflagDensity_self
     (G : Flag σ V) : subflagDensity G G = 1
   := by
@@ -580,12 +584,7 @@ noncomputable def labeledSubgraphListCount
   let p₁ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)
   let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
-    := ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = ∅
-  let type_verts := (G.type_embed '' Set.univ)
-  let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
-    := ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅
-  -- let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
-  --   := ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts = (G.type_embed '' Set.univ)
+    := ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
   let S := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | ind Gl ∧ p₁ Gl ∧ p₂ Gl }
   have : Fintype S := Fintype.ofFinite ↑S
   S.toFinset.card
@@ -619,9 +618,9 @@ def relOfPredOnlabeledSubgraphList
 
 def predIsoLabeledHl
     {σ : FlagType T} (G : LabeledGraph σ V)
-    (Hl : LabeledGraphList σ t Vl) (type_verts : Set V)
+    (Hl : LabeledGraphList σ t Vl)
     : (∀ (_ : Fin t), LabeledSubgraph σ G) → Prop
-  := fun Gl ↦ (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅)
+  := fun Gl ↦ (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅)
 
 omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma predIsoLabeledH_related_ind
@@ -666,13 +665,12 @@ lemma predIsoLabeledHl_related_indep
     (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀)
     (Hl₁ : ∀ (_ : Fin t), LabeledSubgraph σ G₁)
     (v_rel :  ∀ (i : Fin t), (Hl₁ i).subgraph.verts = ⇑φ.graph_iso '' (Hl₀ i).subgraph.verts)
-    (type_verts_G : Set V) (type_verts_G' : Set W)
-    : ∀ (i j : Fin t), (((Hl₀ i).subgraph.verts \ type_verts_G) ∩ ((Hl₀ j).subgraph.verts \ type_verts_G) = ∅) →
-      (((Hl₁ i).subgraph.verts \ type_verts_G') ∩ ((Hl₁ j).subgraph.verts \ type_verts_G') = ∅) := by
+    : ∀ (i j : Fin t), (((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅) →
+      (((Hl₁ i).subgraph.verts \ G₁.type_verts) ∩ ((Hl₁ j).subgraph.verts \ G₁.type_verts) = ∅) := by
   intro i j h_empty
   by_contra h_nonempty
   push_neg at h_nonempty
-  have h_nomempty_exists : ∃ w : W, w ∈ ((Hl₁ i).subgraph.verts \ type_verts_G') ∩ ((Hl₁ j).subgraph.verts \ type_verts_G') := h_nonempty
+  have h_nomempty_exists : ∃ w : W, w ∈ ((Hl₁ i).subgraph.verts \ G₁.type_verts) ∩ ((Hl₁ j).subgraph.verts \ G₁.type_verts) := h_nonempty
   obtain ⟨w, ⟨h_wi₁, h_wj₁⟩⟩ := h_nomempty_exists
   have h_w : ∀ (k : Fin t), w ∈ (Hl₁ k).subgraph.verts → φ.symm.graph_iso w ∈ (Hl₀ k).subgraph.verts := by
     intro k h_wk₁
@@ -682,20 +680,28 @@ lemma predIsoLabeledHl_related_indep
     rw [← h_ww']
     have := φ.graph_iso.left_inv' w'
     exact Set.mem_of_eq_of_mem this h_wk₀
-  have h_wi₀' : φ.symm.graph_iso w ∈ (Hl₀ i).subgraph.verts := h_w i h_wi₁.left
-  have h_wi₀'' : φ.symm.graph_iso w ∉ type_verts_G := sorry
-  have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ type_verts_G) := Set.mem_diff_of_mem h_wi₀' h_wi₀''
-  have h_wj₀' : φ.symm.graph_iso w ∈ (Hl₀ j).subgraph.verts := h_w j h_wj₁.left
-  have h_wj₀'' : φ.symm.graph_iso w ∉ type_verts_G := sorry
-  have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ type_verts_G) := Set.mem_diff_of_mem h_wj₀' h_wj₀''
-  have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ type_verts_G) ∩ ((Hl₀ j).subgraph.verts \ type_verts_G) := Set.mem_inter h_wi₀ h_wj₀
+  have h_w' : ∀ (k : Fin t), w ∉ G₁.type_verts → φ.symm.graph_iso w ∉ G₀.type_verts := by
+    intro k h_wk₁
+    by_contra h_w'
+    have : w ∈ G₁.type_verts := by
+      have : ∃ t : T, φ.symm.graph_iso w = G₀.type_embed t := sorry
+      obtain ⟨t, h_t⟩ := this
+      have := φ.symm.type_preserve
+      rw [← this] at h_t
+      simp at h_t
+      rw [h_t]
+      sorry
+    exact h_wk₁ this
+  have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w i h_wi₁.left) (h_w' i h_wi₁.right)
+  have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w j h_wj₁.left) (h_w' j h_wj₁.right)
+  have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_inter h_wi₀ h_wj₀
   simp_all only [Set.mem_empty_iff_false]
 
  omit [FintypeExist T] [DecidableEqExist T] [FintypeList Vl] [DecidableEqList Vl] [FintypeExist V] [DecidableEqExist V] [FintypeExist W] [DecidableEqExist W] in
 lemma predIsoLabeledHl_related
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl) (type_verts_G : Set V) (type_verts_G' : Set W)
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
     : relOfPredOnlabeledSubgraphList φ
-    (predIsoLabeledHl G₀ Hl type_verts_G) (predIsoLabeledHl G₁ Hl type_verts_G')
+    (predIsoLabeledHl G₀ Hl) (predIsoLabeledHl G₁ Hl)
   := by
   dsimp [predIsoLabeledHl, relOfPredOnlabeledSubgraphList, relOflabeledSubgraph]
   intro Hl₀ Hl₁ h_rel
@@ -712,11 +718,11 @@ lemma predIsoLabeledHl_related
       intro i
       have ⟨h_vert, h_adj⟩ := h_rel i
       exact predIsoLabeledH_related_iso φ (Hl i) (Hl₀ i) (Hl₁ i) h_vert h_adj (h_1₀ i)
-    have h_2₁ : ∀ (i j : Fin t), i ≠ j → ((Hl₁ i).subgraph.verts \ type_verts_G') ∩ ((Hl₁ j).subgraph.verts \ type_verts_G') = ∅ := by
+    have h_2₁ : ∀ (i j : Fin t), i ≠ j → ((Hl₁ i).subgraph.verts \ G₁.type_verts) ∩ ((Hl₁ j).subgraph.verts \ G₁.type_verts) = ∅ := by
       intro i j h_ij
       have h_empty_i := (h_2₀ i j h_ij)
       have v_rel : ∀ (i : Fin t), (Hl₁ i).subgraph.verts = φ.graph_iso '' (Hl₀ i).subgraph.verts := fun i ↦ (h_rel i).1
-      exact (predIsoLabeledHl_related_indep φ Hl₀ Hl₁ v_rel type_verts_G type_verts_G') i j h_empty_i
+      exact (predIsoLabeledHl_related_indep φ Hl₀ Hl₁ v_rel) i j h_empty_i
     exact ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
   · intro ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
     have v_rels : ∀ (i : Fin t), (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
@@ -754,9 +760,9 @@ lemma predIsoLabeledHl_related
       have v_rel' := v_rels i
       have e_rel' := e_rels i
       exact predIsoLabeledH_related_iso φ.symm (Hl i) (Hl₁ i) (Hl₀ i) v_rel' e_rel' (h_1₁ i)
-    have h_2₀ : ∀ (i j : Fin t), i ≠ j → ((Hl₀ i).subgraph.verts \ type_verts_G) ∩ ((Hl₀ j).subgraph.verts \ type_verts_G) = ∅ := by
+    have h_2₀ : ∀ (i j : Fin t), i ≠ j → ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅ := by
       intro i j h_ij
-      exact predIsoLabeledHl_related_indep φ.symm Hl₁ Hl₀ v_rels type_verts_G' type_verts_G i j (h_2₁ i j h_ij)
+      exact predIsoLabeledHl_related_indep φ.symm Hl₁ Hl₀ v_rels i j (h_2₁ i j h_ij)
     exact ⟨h_ind₀, ⟨h_1₀, h_2₀⟩⟩
 
 def inducedlabeledSubgraphList
@@ -854,15 +860,15 @@ noncomputable def isoSetOfInducedlabeledSubgraphList
 
 noncomputable def isoSetOfInducedlabeledSubgraphListIsoHl
     {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (φ : G ≃f G')
-    (Hl : LabeledGraphList σ t Vl) (type_verts_G : Set V) (type_verts_G' : Set W)
-    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts_G) ∩ ((Gl j).subgraph.verts \ type_verts_G) = ∅) }
-    ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts_G') ∩ ((Gl j).subgraph.verts \ type_verts_G') = ∅) }
+    (Hl : LabeledGraphList σ t Vl)
+    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) }
+    ≃ { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G'.type_verts) ∩ ((Gl j).subgraph.verts \ G'.type_verts) = ∅) }
   := by
   let iso := isoSetOfInducedlabeledSubgraphList φ
-    (predIsoLabeledHl G Hl type_verts_G)
-    (predIsoLabeledHl G' Hl type_verts_G')
-    (predIsoLabeledHl_related φ Hl type_verts_G type_verts_G')
-    (predIsoLabeledHl_related φ.symm Hl type_verts_G' type_verts_G)
+    (predIsoLabeledHl G Hl)
+    (predIsoLabeledHl G' Hl)
+    (predIsoLabeledHl_related φ Hl)
+    (predIsoLabeledHl_related φ.symm Hl)
   dsimp only [predIsoLabeledHl, relOfPredOnlabeledSubgraphList] at iso
   simp
   simp at iso
@@ -874,13 +880,11 @@ lemma labeledSubgraphListDensity_respects_eqv_on_G
     : labeledSubgraphListDensity Hl G = labeledSubgraphListDensity Hl G'
   := by
   dsimp [labeledSubgraphListDensity]
-  let type_verts_G := G.type_embed '' Set.univ
-  let type_verts_G' := G'.type_embed '' Set.univ
-  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts_G) ∩ ((Gl j).subgraph.verts \ type_verts_G) = ∅) }
-  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts_G') ∩ ((Gl j).subgraph.verts \ type_verts_G') = ∅) }
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G' | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G'.type_verts) ∩ ((Gl j).subgraph.verts \ G'.type_verts) = ∅) }
   have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
   have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphListIsoHl φ Hl type_verts_G type_verts_G'
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraphListIsoHl φ Hl
   have h_count : labeledSubgraphListCount Hl G = labeledSubgraphListCount Hl G' := by
     dsimp only [labeledSubgraphListCount]
     show S₀.toFinset.card = S₁.toFinset.card
@@ -898,9 +902,9 @@ noncomputable def labeledSubgraphListDensityLifted
 
 noncomputable def isoSetOfInducedlabeledSubgraph_eqv
     {Hl Hl' : LabeledGraphList σ t Vl} (φ : ∀ (i : Fin t), Hl i ≃f Hl' i)
-    (G : LabeledGraph σ W) (type_verts : Set W)
-    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) } ≃
-      { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) }
+    (G : LabeledGraph σ W)
+    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } ≃
+      { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) }
   := by
   let h : ∀ (G' : LabeledSubgraph σ G) (i : Fin t), Nonempty (G'.coe ≃f Hl i) ↔ Nonempty (G'.coe ≃f Hl' i) := by
     intro G' i
@@ -913,7 +917,7 @@ noncomputable def isoSetOfInducedlabeledSubgraph_eqv
       let h_iso₁ := Classical.choice h_iso₁
       let h_iso₀ : G'.coe ≃f (Hl i) := h_iso₁.trans (φ i).symm
       exact Nonempty.intro h_iso₀
-  have : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) } = { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) } :=
+  have : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } = { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } :=
     Set.sep_ext_iff.mpr (fun x _ ↦
       Iff.intro
         (fun ⟨h_iso, h_indep⟩ ↦ ⟨fun i ↦ (h (x i) i).mp (h_iso i) , h_indep⟩)
@@ -928,10 +932,9 @@ lemma labeledSubgraphListDensityLifted_respects_eqv
   dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
   congr
   ext Grep
-  let type_verts := (Grep.type_embed '' Set.univ)
-  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) }
-  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ type_verts) ∩ ((Gl j).subgraph.verts \ type_verts) = ∅) }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraph_eqv φ Grep type_verts
+  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedlabeledSubgraph_eqv φ Grep
   have hS₀ : FintypeExist S₀ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₀) }
   have hS₁ : FintypeExist S₁ := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S₁) }
   have h_count : labeledSubgraphListCount Hl Grep = labeledSubgraphListCount Hl' Grep := by
