@@ -680,8 +680,8 @@ lemma predIsoLabeledHl_related_indep
     rw [← h_ww']
     have := φ.graph_iso.left_inv' w'
     exact Set.mem_of_eq_of_mem this h_wk₀
-  have h_w' : ∀ (k : Fin t), w ∉ G₁.type_verts → φ.symm.graph_iso w ∉ G₀.type_verts := by
-    intro k h_wk₁
+  have h_w' : w ∉ G₁.type_verts → φ.symm.graph_iso w ∉ G₀.type_verts := by
+    intro h_wk₁
     by_contra h_w'
     have : w ∈ G₁.type_verts := by
       have : ∃ t : T, φ.symm.graph_iso w = G₀.type_embed t := by
@@ -696,8 +696,8 @@ lemma predIsoLabeledHl_related_indep
       unfold LabeledGraph.type_verts
       exact Set.mem_image_of_mem (⇑G₁.type_embed) trivial
     exact h_wk₁ this
-  have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w i h_wi₁.left) (h_w' i h_wi₁.right)
-  have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w j h_wj₁.left) (h_w' j h_wj₁.right)
+  have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w i h_wi₁.left) (h_w' h_wi₁.right)
+  have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w j h_wj₁.left) (h_w' h_wj₁.right)
   have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_inter h_wi₀ h_wj₀
   simp_all only [Set.mem_empty_iff_false]
 
@@ -1041,6 +1041,7 @@ noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F�
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
 
+omit [DecidableEqExist T] in
 theorem flagDensity_self
     (F : Flag σ W) : flagDensity₁ F F = 1
   := by
