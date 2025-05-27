@@ -451,6 +451,19 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
 
+lemma iso_subset_of_finset_is_full
+    {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
+  := by
+  by_contra h_contra
+  have h_dec : DecidablePred (Membership.mem S) := by
+    intro v
+    exact Classical.propDecidable (v ∈ S)
+  have h_card : Fintype.card S < Fintype.card V :=
+    @Fintype.card_subtype_lt _ _ _ h_dec u h_contra
+  have h_card' : Fintype.card V = Fintype.card S := by
+    rw [Fintype.card_congr f_iso]
+  simp_all
+
 lemma labeledSubgraphCount_self
     (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
   := by
@@ -484,18 +497,54 @@ lemma labeledSubgraphCount_self
     dsimp [S₀, S₁]; simp
     constructor
     · intro ⟨G'_ind, G'_iso⟩
+      obtain ⟨graph_iso, type_embed⟩ := G'_iso
+      obtain ⟨iso_verts, iso_adj⟩ := graph_iso
       ext u v
-      · sorry
-      · sorry
-      · sorry
+      · simp; exact iso_subset_of_finset_is_full (id iso_verts.symm) u
+      · have h_u := iso_subset_of_finset_is_full (id iso_verts.symm) u
+        have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
+        constructor
+        · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
+        · exact fun a ↦ G'_ind h_u h_v a
+      · have tmp : G'.subgraph = top.subgraph := by
+          ext u v
+          · simp; exact iso_subset_of_finset_is_full (id iso_verts.symm) u
+          · have h_u := iso_subset_of_finset_is_full (id iso_verts.symm) u
+            have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
+            constructor
+            · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
+            · exact fun a ↦ G'_ind h_u h_v a
+        have tmp' : ↑top.subgraph.verts = ↑G'.subgraph.verts := congrArg SimpleGraph.Subgraph.verts (id (Eq.symm tmp))
+        have type_eq : (top.subgraph.verts : Type) = (G'.subgraph.verts : Type) := congrArg Set.Elem tmp'
+        have coe_eq := coe_eq tmp type_eq
+        have h_G'_embed := G'.embed_eq
+        have h_top_embed := top.embed_eq
+        have emb_eq : ∀ t : T, G'.type_embed t = cast type_eq (top.type_embed t) := by
+          intro t
+          exact
+            embed_val_eq G.type_embed G'.type_embed top.type_embed tmp type_eq h_G'_embed h_top_embed t
+        exact embed_eq G'.type_embed top.type_embed tmp type_eq coe_eq emb_eq
     · intro h
       constructor
       · subst h; intro; simp
       · rw [h]
         dsimp [top]
-        sorry
-  have : Fintype.card S₀ = Fintype.card S₁ := by
-    sorry
+        let f (v : top.subgraph.verts) : V := v
+        have h_bij : Function.Bijective f := by
+          constructor
+          · intro v₁ v₂ h_eq
+            dsimp [f] at h_eq
+            exact SetCoe.ext h_eq
+          · intro v
+            exact CanLift.prf v trivial
+        have h_iso : ∀ {w₀ w₁ : top.subgraph.verts}, G.graph.Adj (f w₀) (f w₁) ↔ top.subgraph.Adj w₀ w₁ := by
+          simp
+        let f₁ : top.subgraph.verts ≃ V := Equiv.ofBijective f h_bij
+        let f₁_iso : top.subgraph.coe ≃g G.graph := ⟨f₁, h_iso⟩
+        have h_emb₁ : ∀ t : T, f₁_iso (top.coe.type_embed t) = G.type_embed t := by
+          dsimp [f₁_iso, f₁]; simp
+        exact ⟨f₁_iso, funext h_emb₁⟩
+  have : Fintype.card S₀ = Fintype.card S₁ := Eq.symm (Fintype.card_congr' (congrArg Subtype (id (Eq.symm h_S₀_S₁))))
   dsimp [S₀] at this
   rw [this]
 
