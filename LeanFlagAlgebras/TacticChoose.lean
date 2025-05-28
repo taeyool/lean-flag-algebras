@@ -116,31 +116,35 @@ elab "choose_eq" : tactic =>
     let combinedDenominatorsPositiveType ← mkAppM ``LT.lt #[mkNatLit 0, combinedDenominators]
     let positiveDenomMVar ← mkFreshExprMVar combinedDenominatorsPositiveType (userName := `h_den_pos)
 
-    let tacticStxDenPos ← `(tactic| simp_all (config := {arith := true}) only [one_le_mul, Nat.factorial_pos, Nat.mul_pos, Nat.one_pos, Nat.mul_eq, mul_one, gt_iff_lt, zero_lt_one]; done)
+    let tacticStxDenPos ← `(tactic| repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos]))
 
     let remainingGoalsDenPos ← Tactic.run positiveDenomMVar.mvarId! (evalTactic tacticStxDenPos)
     let positiveDenomProof ← instantiateMVars positiveDenomMVar
 
     if !remainingGoalsDenPos.isEmpty then
-      throwError m!"choose_eq: Failed to prove/ that the product of all denominators {← ppExpr combinedDenominators} is positive. Proof attempt: {← ppExpr positiveDenomMVar}."
+      throwError m!"choose_eq:
+      Failed to prove the positivity of the product of all denominators:
+      {← ppExpr combinedDenominators}
+      Proof attempt:
+      {← ppExpr positiveDenomMVar}"
 
     -- Apply Nat.mul_left_inj to change the goal to:
-    --   combinedDenominators * lhsExpr = combinedDenominators * rhsExpr
+    --   lhsExpr * combinedDenominators = rhsExpr * combinedDenominators
     -- Derive combinedDenominators ≠ 0 from 0 < combinedDenominators
     let posIffNeZeroTheorem ← mkAppOptM ``Nat.pos_iff_ne_zero #[combinedDenominators]
     let h_ne_zero_proof ← mkAppM ``Iff.mp #[posIffNeZeroTheorem, positiveDenomProof]
 
-    -- Get the Nat.mul_right_inj iff lemma: combinedDenominators * ?b = combinedDenominators * ?c ↔ ?b = ?c
+    -- Get the Nat.mul_left_inj iff lemma: ?b * combinedDenominators = ?c * combinedDenominators ↔ ?b = ?c
     -- Implicit arguments ?b (lhsExpr) and ?c (rhsExpr) will be filled by unification when applying to the goal.
-    -- Constructing Nat.mul_right_inj' lhsExpr rhsExpr combinedDenominators h_ne_zero_proof
-    -- The order of implicit arguments {a b c : Nat} is {lhsExpr, rhsExpr, combinedDenominators}
-    let mulRightInjLemma ← mkAppOptM ``Nat.mul_right_inj #[combinedDenominators, lhsExpr, rhsExpr, h_ne_zero_proof]
+    -- Constructing @Nat.mul_left_inj combinedDenominators lhsExpr rhsExpr h_ne_zero_proof
+    -- The order of implicit arguments {a b c : Nat} is {combinedDenominators, lhsExpr, rhsExpr}
+    let mulLeftInjLemma ← mkAppOptM ``Nat.mul_left_inj #[combinedDenominators, lhsExpr, rhsExpr, h_ne_zero_proof]
 
-    -- We want to change the goal from `lhsExpr = rhsExpr` to `combinedDenominators * lhsExpr = combinedDenominators * rhsExpr`.
-    -- The `mulRightInjLemma` is `(den * lhs = den * rhs) ↔ (lhs = rhs)`.
-    -- `Iff.mp mulRightInjLemma` gives `(den * lhs = den * rhs) → (lhs = rhs)`.
-    -- Applying this to the current goal `lhs = rhs` changes the goal to `den * lhs = den * rhs`.
-    let goalTransformer ← mkAppM ``Iff.mp #[mulRightInjLemma]
+    -- We want to change the goal from `lhsExpr = rhsExpr` to `lhsExpr * combinedDenominators = rhsExpr * combinedDenominators`.
+    -- The `mulLeftInjLemma` is `(lhs * den = rhs * den) ↔ (lhs = rhs)`.
+    -- `Iff.mp mulLeftInjLemma` gives `(lhs * den = rhs * den) → (lhs = rhs)`.
+    -- Applying this to the current goal `lhs = rhs` changes the goal to `lhs * den = rhs * den`.
+    let goalTransformer ← mkAppM ``Iff.mp #[mulLeftInjLemma]
     let goalAfterMulInj ← mainGoal.apply goalTransformer
 
     -- Assert all k <= n proofs into the context for `simp` to use.
@@ -161,7 +165,9 @@ elab "choose_eq" : tactic =>
 
     let mainGoal ← getMainGoal
     let mainGoalType ← mainGoal.getType
-    throwError "choose_eq: main goal = {← ppExpr mainGoalType}"
+    throwError
+    "choose_eq: main goal:
+      {← ppExpr mainGoalType}"
 
     -- Step 3: Use `conv` to rewrite products involving `Nat.choose` terms.
     -- `Nat.choose_mul_factorial_mul_factorial` will be applied using the `k <= n` hypotheses now in context.
@@ -186,10 +192,10 @@ open ChooseEqTactic
 
 example : Nat.mul 1 1 > 0 := by simp only [Nat.mul_eq, mul_one, gt_iff_lt, zero_lt_one]
 
-example : Nat.choose 5 2 = Nat.choose 5 2 := by
+example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 3 * Nat.choose 2 0 := by
   choose_eq
 
-example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 3 * Nat.choose 2 0 := by
+example : Nat.choose 5 2 = Nat.choose 5 2 := by
   choose_eq
 
 example : Nat.choose 4 2 = (Nat.factorial 4) / (Nat.factorial 2 * Nat.factorial 2) := by
@@ -204,3 +210,24 @@ example (n k : Nat) : k * n.choose k = n * (n - 1).choose (k - 1) := by
 
 set_option pp.explicit true in
 #check (Nat.choose 5 3 * Nat.choose 2 0)
+
+example : 0 <
+  Mul.mul
+    (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
+    (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial) (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial))
+  := by
+    repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos])
+
+example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
+    Nat.choose 5 2 * Nat.choose 3 1 *
+    Mul.mul
+      (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
+      (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial)
+        (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial)) =
+  Nat.choose 5 3 * Nat.choose 2 0 *
+    Mul.mul
+      (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
+      (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial) (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial))
+  := by
+    ring_nf
+    simp_all only [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
