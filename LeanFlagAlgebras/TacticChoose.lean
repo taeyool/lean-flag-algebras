@@ -219,15 +219,27 @@ example : 0 <
     repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos])
 
 example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
-    Nat.choose 5 2 * Nat.choose 3 1 *
     Mul.mul
-      (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
-      (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial)
-        (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial)) =
-  Nat.choose 5 3 * Nat.choose 2 0 *
+      (Mul.mul (Nat.choose 5 2) (Nat.choose 3 1))
+      (Mul.mul
+        (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
+        (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial)
+          (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial))) =
     Mul.mul
-      (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
-      (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial) (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial))
+      (Mul.mul
+        (Nat.choose 5 3) (Nat.choose 2 0))
+      (Mul.mul
+       (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
+        (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial) (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial)))
   := by
-    ring_nf
-    simp_all only [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
+    conv =>
+      lhs
+      simp [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
+      simp [Nat.mul_one, Nat.one_mul]
+      simp [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
+    conv =>
+      rhs
+      simp [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
+      simp [Nat.mul_one, Nat.one_mul]
+      simp [Nat.choose_mul_factorial_mul_factorial, Nat.mul_assoc, Nat.mul_comm]
+    sorry
