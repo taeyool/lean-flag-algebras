@@ -494,8 +494,34 @@ lemma induced_full_labeledsubgraph_eq_top
     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = labeledSubgraph_top G₀
   := by
-  unfold labeledSubgraph_top
-  sorry
+  intro ⟨h_ind_G', h_iso_G'⟩
+  have ⟨graph_iso, _⟩ := h_iso_G'
+  let f_iso_vertex : V ≃ G'.subgraph.verts := graph_iso.toEquiv.symm
+  have G'_eq_top : G'.subgraph = (labeledSubgraph_top G₀).subgraph := by
+    unfold labeledSubgraph_top
+    simp; ext u v
+    · simp; exact iso_subset_of_finset_is_full f_iso_vertex u
+    · simp
+      have h_u := iso_subset_of_finset_is_full f_iso_vertex u
+      have h_v := iso_subset_of_finset_is_full f_iso_vertex v
+      constructor
+      · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
+      · exact fun a ↦ h_ind_G' h_u h_v a
+  refine LabeledSubgraph.ext ?subgraph ?type_embed
+  · exact G'_eq_top
+  · have verts_eq : (labeledSubgraph_top G₀).subgraph.verts = G'.subgraph.verts := by
+      unfold labeledSubgraph_top
+      simp; ext u
+      have := iso_subset_of_finset_is_full f_iso_vertex u
+      exact (iff_true_right this).mpr trivial
+    have type_eq : ((labeledSubgraph_top G₀).subgraph.verts : Type) = (G'.subgraph.verts : Type) := congrArg Set.Elem verts_eq
+    have coe_eq := coe_eq G'_eq_top type_eq
+    have h_G'_embed := G'.embed_eq
+    have h_top_embed := (labeledSubgraph_top G₀).embed_eq
+    have emb_eq : ∀ t : T, G'.type_embed t = cast type_eq ((labeledSubgraph_top G₀).type_embed t) := by
+      intro t
+      exact embed_val_eq G₀.type_embed G'.type_embed (labeledSubgraph_top G₀).type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
+    exact embed_eq G'.type_embed (labeledSubgraph_top G₀).type_embed G'_eq_top type_eq coe_eq emb_eq
 
 omit [DecidableEqExist T] in
 lemma labeledSubgraphCount_self
@@ -550,8 +576,7 @@ lemma labeledSubgraphCount_self
         have h_top_embed := top.embed_eq
         have emb_eq : ∀ t : T, G'.type_embed t = cast type_eq (top.type_embed t) := by
           intro t
-          exact
-            embed_val_eq G.type_embed G'.type_embed top.type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
+          exact embed_val_eq G.type_embed G'.type_embed top.type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
         exact embed_eq G'.type_embed top.type_embed G'_eq_top type_eq coe_eq emb_eq
     · intro h
       constructor
@@ -608,7 +633,17 @@ lemma subgraphCount_other
     have f_iso_G'_G₁ : G'.coe ≃f G₁ := by
       have : G' = labeledSubgraph_top G₁ := induced_full_labeledsubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
       let g : (labeledSubgraph_top G₁).coe ≃f G₁ := by
-        sorry
+        have graph_iso : (labeledSubgraph_top G₁).subgraph.coe ≃g G₁.graph := by
+          dsimp [labeledSubgraph_top]
+          simp [SimpleGraph.Subgraph.coe]
+
+          sorry
+        have type_preserve : graph_iso ∘ (labeledSubgraph_top G₁).coe.type_embed = G₁.type_embed := by
+          dsimp [labeledSubgraph_top]
+          ext t
+          simp
+          sorry
+        exact ⟨graph_iso, type_preserve⟩
       rw [← this] at g
       exact g
     have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
