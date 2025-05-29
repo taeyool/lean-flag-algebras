@@ -636,12 +636,25 @@ lemma subgraphCount_other
         have graph_iso : (labeledSubgraph_top G₁).subgraph.coe ≃g G₁.graph := by
           dsimp [labeledSubgraph_top]
           simp [SimpleGraph.Subgraph.coe]
-
-          sorry
+          let f : (labeledSubgraph_top G₁).subgraph.verts → V := by
+            dsimp [labeledSubgraph_top]
+            intro v
+            exact v.val
+          have h_bij : Function.Bijective f := by
+            constructor
+            · intro v₁ v₂ h_eq
+              dsimp [f] at h_eq
+              exact SetCoe.ext h_eq
+            · intro v
+              exact CanLift.prf v trivial
+          have h_iso : ∀ {w₀ w₁ : (labeledSubgraph_top G₁).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (labeledSubgraph_top G₁).subgraph.Adj w₀ w₁ := by
+            intro u v
+            simp [labeledSubgraph_top, f]
+          let f_equiv := Equiv.ofBijective f h_bij
+          exact ⟨f_equiv, h_iso⟩
         have type_preserve : graph_iso ∘ (labeledSubgraph_top G₁).coe.type_embed = G₁.type_embed := by
-          dsimp [labeledSubgraph_top]
           ext t
-          simp
+          dsimp [labeledSubgraph_top]
           sorry
         exact ⟨graph_iso, type_preserve⟩
       rw [← this] at g
