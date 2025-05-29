@@ -179,6 +179,18 @@ theorem downward_add
   :=
   sorry
 
+theorem downward_neg
+    (f : FlagAlgebra σ)
+    : ⟦-f⟧₀ = -⟦f⟧₀
+  := by
+  sorry
+
+theorem downward_sub
+    (f f' : FlagAlgebra σ)
+    : ⟦f - f'⟧₀ = ⟦f⟧₀ - ⟦f'⟧₀
+  := by
+  simp [sub_eq_add_neg, downward_add, downward_neg]
+
 theorem downward_smul
     (f : FlagAlgebra σ) (r : ℝ)
     : ⟦r • f⟧₀ = r • ⟦f⟧₀
