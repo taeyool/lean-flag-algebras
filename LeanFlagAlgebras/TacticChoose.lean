@@ -10,13 +10,12 @@ open Lean Elab Tactic Meta
 
 namespace ChooseEqTactic
 
-set_option pp.explicit true
-
 -- Data structure to hold information about one side of the equality
 structure SideData where
   chooseArgsProofs : List (Expr × Expr × Expr) -- List of (n_expr, k_expr, h_le_proof)
-  termProduct : Expr                           -- Product of all terms (N!, other_factors)
   denFactorialProd : Expr                      -- Product of (K! * (N-K)!) terms for this side's chooses
+  curTerm : Expr                               -- (N.choose K * K! * (N-K)!)
+  newTerm : Expr                               -- N!
 
 -- Recursive helper to gather data from one side of the equality
 partial def processSideExpr (e : Expr) : TermElabM SideData := do
@@ -36,12 +35,16 @@ partial def processSideExpr (e : Expr) : TermElabM SideData := do
     let k_fact ← mkAppM ``Nat.factorial #[k]
     let nk_sub ← mkAppM ``Nat.sub #[n, k]
     let nk_fact ← mkAppM ``Nat.factorial #[nk_sub]
-    let den_fact_part ← mkAppM ``Mul.mul #[k_fact, nk_fact]
+    let den_fact ← mkAppM ``HMul.hMul #[k_fact, nk_fact]
+    let cur_term_pre ← mkAppM ``HMul.hMul #[e, k_fact]
+    let cur_term ← mkAppM ``HMul.hMul #[cur_term_pre, nk_fact]
+    let new_term := n_fact
 
     return {
       chooseArgsProofs := [(n, k, h_le_mvar)],
-      termProduct := n_fact,
-      denFactorialProd := den_fact_part
+      denFactorialProd := den_fact,
+      curTerm := cur_term,
+      newTerm := new_term
     }
 
   | Expr.app (Expr.app e0 e1) e2 =>
@@ -49,29 +52,31 @@ partial def processSideExpr (e : Expr) : TermElabM SideData := do
     | Expr.app (Expr.app (Expr.app (Expr.app (Expr.const ``HMul.hMul _) _) _) _) _ =>
         let data1 ← processSideExpr e1
         let data2 ← processSideExpr e2
-        let new_term_prod ← mkAppM ``Mul.mul #[data1.termProduct, data2.termProduct]
-        let new_den_prod ← mkAppM ``Mul.mul #[data1.denFactorialProd, data2.denFactorialProd]
+        let den_fact ← mkAppM ``HMul.hMul #[data1.denFactorialProd, data2.denFactorialProd]
+        let cur_term ← mkAppM ``HMul.hMul #[data1.curTerm, data2.curTerm]
+        let new_term ← mkAppM ``HMul.hMul #[data1.newTerm, data2.newTerm]
         return {
           chooseArgsProofs := data1.chooseArgsProofs ++ data2.chooseArgsProofs,
-          termProduct := new_term_prod,
-          denFactorialProd := new_den_prod
+          denFactorialProd := den_fact,
+          curTerm := cur_term,
+          newTerm := new_term
         }
     | _ =>
         return {
           chooseArgsProofs := [],
-          termProduct := e, -- This term itself
-          denFactorialProd := oneLit -- No denominators from this term
+          denFactorialProd := oneLit, -- No denominators from this term
+          curTerm := e,
+          newTerm := e
         }
 
   | _ => -- Not a choose or a multiplication, treat as an "other factor"
     -- This allows expressions like `A * n.choose k = B * m.choose j`
     -- where A and B are arbitrary expressions.
-    -- `ac_refl` will succeed if A and B are syntactically identical
-    -- and the factorial parts match.
     return {
       chooseArgsProofs := [],
-      termProduct := e, -- This term itself
-      denFactorialProd := oneLit -- No denominators from this term
+      denFactorialProd := oneLit, -- No denominators from this term
+      curTerm := e,
+      newTerm := e
     }
 
 -- Helper to assert an assumption and get the new MVarId and FVarId of the hypothesis.
@@ -98,35 +103,42 @@ elab "choose_eq" : tactic =>
     throwError m!"choose_eq:
       lhsExpr = {← ppExpr lhsExpr},
       rhsExpr = {← ppExpr rhsExpr},
-      lhsData.termProduct = {← ppExpr lhsData.termProduct},
-      rhsData.termProduct = {← ppExpr rhsData.termProduct},
+      lhsData.curTerm = {← ppExpr lhsData.curTerm},
+      rhsData.curTerm = {← ppExpr rhsData.curTerm},
+      lhsData.newTerm = {← ppExpr lhsData.newTerm},
+      rhsData.newTerm = {← ppExpr rhsData.newTerm},
       lhsData.denFactorialProd = {← ppExpr lhsData.denFactorialProd},
-      rhsData.denFactorialProd = {← ppExpr rhsData.denFactorialProd},"
+      rhsData.denFactorialProd = {← ppExpr rhsData.denFactorialProd}"
     -/
 
     -- Step 2: Justify the transformation to the factorial form.
-    -- Goal: LHS = RHS
-    -- We want to show this is equivalent to:
-    --   lhsData.termProduct * rhsData.denFactorialProd = rhsData.termProduct * lhsData.denFactorialProd
-    -- This is done by multiplying the original equality by (lhsData.denFactorialProd * rhsData.denFactorialProd),
-    -- then rewriting terms like `C(n,k) * k! * (n-k)!` to `n!`.
+    --     Goal: lhsExpr = rhsExpr
+    --
+    -- We prove this in three steps. Let
+    --     combinedDenominator := lhsData.denFatorialProd * rhsData.denoFactorialProd
+    -- First, using the ring tactic, we show:
+    --     lhsExpr * combinedDenominator = lhsData.curTerm * rhsData.denFactorialProd
+    --     rhsExpr * combinedDenominator = rhsData.curTerm * lhsData.denFactorialProd
+    -- Second, by using the "simp only [Nat.choose_mul_factorial_mul_factorial]", we show that
+    --     lhsData.curTerm * rhsData.denFactorialProd = lhsData.newTerm * rhsData.denFactorialProd
+    --     rhsData.curTerm * lhsData.denFactorialProd = rhsData.newTerm * rhsData.denoFactorialProd
+    -- Finally, using the ring tactic, we show that
+    --     lhsData.newTerm * rhsData.denFactorialProd = rhsData.newTerm * lhsData.denFactorialProd
 
     -- Prove that the combined product of all denominators is positive.
-    let combinedDenominators ← mkAppM ``Mul.mul #[lhsData.denFactorialProd, rhsData.denFactorialProd]
+    let combinedDenominators ← mkAppM ``HMul.hMul #[lhsData.denFactorialProd, rhsData.denFactorialProd]
     let combinedDenominatorsPositiveType ← mkAppM ``LT.lt #[mkNatLit 0, combinedDenominators]
+
     let positiveDenomMVar ← mkFreshExprMVar combinedDenominatorsPositiveType (userName := `h_den_pos)
-
     let tacticStxDenPos ← `(tactic| repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos]))
-
     let remainingGoalsDenPos ← Tactic.run positiveDenomMVar.mvarId! (evalTactic tacticStxDenPos)
-    let positiveDenomProof ← instantiateMVars positiveDenomMVar
-
     if !remainingGoalsDenPos.isEmpty then
       throwError m!"choose_eq:
       Failed to prove the positivity of the product of all denominators:
       {← ppExpr combinedDenominators}
       Proof attempt:
       {← ppExpr positiveDenomMVar}"
+    let positiveDenomProof ← instantiateMVars positiveDenomMVar
 
     -- Apply Nat.mul_left_inj to change the goal to:
     --   lhsExpr * combinedDenominators = rhsExpr * combinedDenominators
@@ -135,21 +147,89 @@ elab "choose_eq" : tactic =>
     let h_ne_zero_proof ← mkAppM ``Iff.mp #[posIffNeZeroTheorem, positiveDenomProof]
 
     -- Get the Nat.mul_left_inj iff lemma: ?b * combinedDenominators = ?c * combinedDenominators ↔ ?b = ?c
-    -- Implicit arguments ?b (lhsExpr) and ?c (rhsExpr) will be filled by unification when applying to the goal.
     -- Constructing @Nat.mul_left_inj combinedDenominators lhsExpr rhsExpr h_ne_zero_proof
     -- The order of implicit arguments {a b c : Nat} is {combinedDenominators, lhsExpr, rhsExpr}
     let mulLeftInjLemma ← mkAppOptM ``Nat.mul_left_inj #[combinedDenominators, lhsExpr, rhsExpr, h_ne_zero_proof]
 
     -- We want to change the goal from `lhsExpr = rhsExpr` to `lhsExpr * combinedDenominators = rhsExpr * combinedDenominators`.
-    -- The `mulLeftInjLemma` is `(lhs * den = rhs * den) ↔ (lhs = rhs)`.
-    -- `Iff.mp mulLeftInjLemma` gives `(lhs * den = rhs * den) → (lhs = rhs)`.
-    -- Applying this to the current goal `lhs = rhs` changes the goal to `lhs * den = rhs * den`.
+    -- The `mulLeftInjLemma` is `(lhsExpr * combinedDen. = rhsExpr * combinedDen.) ↔ (lhsExpr = rhsExpr)`.
+    -- `Iff.mp mulLeftInjLemma` gives `(lhsExpr * combinedDen. = rhsExpr * denCombinedDeno.) → (lhsExpr = rhsExpr)`.
+    -- Applying this to the current goal `lhsExpr = rhsExpr` changes the goal to `lhsExpr * den = rhsExpr * den`.
     let goalTransformer ← mkAppM ``Iff.mp #[mulLeftInjLemma]
     let goalAfterMulInj ← mainGoal.apply goalTransformer
-
-    -- Assert all k <= n proofs into the context for `simp` to use.
     if goalAfterMulInj.isEmpty then
       throwError "choose_eq: Applying equivalence transformation yielded no goals."
+
+    let lhsExtended ← mkAppM ``HMul.hMul #[lhsExpr, combinedDenominators]
+    let rhsExtended ← mkAppM ``HMul.hMul #[rhsExpr, combinedDenominators]
+    let lhsGrouped ← mkAppM ``HMul.hMul #[lhsData.curTerm, rhsData.denFactorialProd]
+    let rhsGrouped ← mkAppM ``HMul.hMul #[rhsData.curTerm, lhsData.denFactorialProd]
+    let lhsContracted ← mkAppM ``HMul.hMul #[lhsData.newTerm, rhsData.denFactorialProd]
+    let rhsContracted ← mkAppM ``HMul.hMul #[rhsData.newTerm, lhsData.denFactorialProd]
+
+    let lhsGroupedType ← mkAppM ``Eq #[lhsExtended, lhsGrouped]
+    let rhsGroupedType ← mkAppM ``Eq #[rhsExtended, rhsGrouped]
+    let lhsContractedType ← mkAppM ``Eq #[lhsGrouped, lhsContracted]
+    let rhsContractedType ← mkAppM ``Eq #[rhsGrouped, rhsContracted]
+
+    let lhsGroupedMVar ← mkFreshExprMVar lhsGroupedType (userName := `h_lhs_grouped_eq)
+    let tacticStxLhsGrouped ← `(tactic| ring_nf)
+    let remainingGoalLhsGroupedMVar ← Tactic.run lhsGroupedMVar.mvarId! (evalTactic tacticStxLhsGrouped)
+    if !remainingGoalLhsGroupedMVar.isEmpty then
+      throwError m!"choose_eq:
+      Failed to prove the equality for the grouping of factors on the LHS:
+      {← ppExpr lhsGroupedType}
+      Proof attempt:
+      {← ppExpr lhsGroupedMVar}"
+    let lhsGroupedProof ← instantiateMVars lhsGroupedMVar
+
+    let rhsGroupedMVar ← mkFreshExprMVar rhsGroupedType (userName := `h_rhs_grouped_eq)
+    let tacticStxRhsGrouped ← `(tactic| ring_nf)
+    let remainingGoalRhsGroupedMVar ← Tactic.run rhsGroupedMVar.mvarId! (evalTactic tacticStxRhsGrouped)
+    if !remainingGoalRhsGroupedMVar.isEmpty then
+      throwError m!"choose_eq:
+      Failed to prove the equality for the grouping of factors on the RHS:
+      {← ppExpr rhsGroupedType}
+      Proof attempt:
+      {← ppExpr rhsGroupedMVar}"
+    let rhsGroupedProof ← instantiateMVars rhsGroupedMVar
+
+    throwError m!"choose_eq:
+      lhsGroupedType:
+          {← ppExpr lhsGroupedType},
+
+      rhsGroupedType:
+          {← ppExpr rhsGroupedType},
+
+      lhsContractedType:
+          {← ppExpr lhsContractedType},
+
+      rhsContractedType:
+          {← ppExpr rhsContractedType}"
+
+    let lhsContractedMVar ← mkFreshExprMVar lhsContractedType (userName := `h_lhs_contracted_eq)
+    let tacticStxLhsContracted ← `(tactic| simp only [Nat.choose_mul_factorial_mul_factorial])
+    let remainingGoalLhsContractedMVar ← Tactic.run lhsContractedMVar.mvarId! (evalTactic tacticStxLhsContracted)
+    if !remainingGoalLhsContractedMVar.isEmpty then
+      throwError m!"choose_eq:
+      Failed to prove the equality for the contraction of factors on the LHS:
+      {← ppExpr lhsContractedType}
+      Proof attempt:
+      {← ppExpr lhsContractedMVar}"
+    let lhsContractedProof ← instantiateMVars lhsContractedMVar
+
+    let rhsContractedMVar ← mkFreshExprMVar rhsContractedType (userName := `h_rhs_contracted_eq)
+    let tacticStxRhsContracted ← `(tactic| simp only [Nat.choose_mul_factorial_mul_factorial])
+    let remainingGoalRhsContractedMVar ← Tactic.run rhsContractedMVar.mvarId! (evalTactic tacticStxRhsContracted)
+    if !remainingGoalRhsContractedMVar.isEmpty then
+      throwError m!"choose_eq:
+      Failed to prove the equality for the contraction of factors on the RHS:
+      {← ppExpr rhsContractedType}
+      Proof attempt:
+      {← ppExpr rhsContractedMVar}"
+    let rhsContractedProof ← instantiateMVars rhsContractedMVar
+
+    -- Assert all k <= n proofs into the context for `simp` to use.
     let mut currentGoalId := goalAfterMulInj[0]! -- Use the first goal from the list
     for i in [:lhsData.chooseArgsProofs.length] do
       let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
@@ -208,9 +288,6 @@ example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
 example (n k : Nat) : k * n.choose k = n * (n - 1).choose (k - 1) := by
   choose_eq
 
-set_option pp.explicit true in
-#check (Nat.choose 5 3 * Nat.choose 2 0)
-
 example : 0 <
   Mul.mul
     (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
@@ -218,7 +295,7 @@ example : 0 <
   := by
     repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos])
 
-example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
+example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
     (Nat.choose 5 2)
       * (Nat.choose 3 1)
       * (Nat.factorial 2)
@@ -230,6 +307,22 @@ example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
       * (Nat.factorial 0)
       * (Nat.sub 2 0).factorial
     =
+    ((Nat.choose 5 2)
+      * (Nat.factorial 2)
+      * (Nat.sub 5 2).factorial)
+    *
+    ((Nat.choose 3 1)
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
+    *
+    ((Nat.factorial 3)
+      * (Nat.sub 5 3).factorial
+      * (Nat.factorial 0)
+      * (Nat.sub 2 0).factorial)
+  := by
+  ring
+
+example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
     (Nat.choose 5 3)
       * (Nat.choose 2 0)
       * (Nat.factorial 2)
@@ -240,14 +333,54 @@ example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
       * (Nat.sub 5 3).factorial
       * (Nat.factorial 0)
       * (Nat.sub 2 0).factorial
+    =
+    ((Nat.choose 5 3)
+      * (Nat.factorial 3)
+      * (Nat.sub 5 3).factorial)
+    *
+    ((Nat.choose 2 0)
+      * (Nat.factorial 0)
+      * (Nat.sub 2 0).factorial)
+    *
+    ((Nat.factorial 2)
+      * (Nat.sub 5 2).factorial
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
   := by
-    ring_nf
+  ring
+
+example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
+    ((Nat.choose 5 2)
+      * (Nat.factorial 2)
+      * (Nat.sub 5 2).factorial)
+    *
+    ((Nat.choose 3 1)
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
+    *
+    ((Nat.factorial 3)
+      * (Nat.sub 5 3).factorial
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
+    =
+    ((Nat.choose 5 3)
+      * (Nat.factorial 3)
+      * (Nat.sub 5 3).factorial)
+    *
+    ((Nat.choose 3 1)
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
+    *
+    ((Nat.factorial 2)
+      * (Nat.sub 5 2).factorial
+      * (Nat.factorial 1)
+      * (Nat.sub 3 1).factorial)
+  := by
     simp only [
       Nat.choose_mul_factorial_mul_factorial h₁,
       Nat.choose_mul_factorial_mul_factorial h₂,
       Nat.choose_mul_factorial_mul_factorial h₃,
-      Nat.choose_mul_factorial_mul_factorial h₄,
-      Nat.mul_assoc, Nat.mul_comm]
+      Nat.choose_mul_factorial_mul_factorial h₄]
     ring_nf
 
 
@@ -259,3 +392,25 @@ example (a b c d : ℕ) (h : a ≤ b) :
   ring_nf
   simp only [Nat.mul_comm, Nat.mul_assoc, Nat.choose_mul_factorial_mul_factorial h]
   ring_nf
+
+
+example :
+Nat.choose 5 2 * Nat.choose 3 1 *
+    ((Nat.factorial 2 * (Nat.sub 5 2).factorial * (Nat.factorial 1 * (Nat.sub 3 1).factorial))
+    * (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))) =
+  Nat.choose 5 2 * Nat.factorial 2 * (Nat.sub 5 2).factorial *
+      (Nat.choose 3 1 * Nat.factorial 1 * (Nat.sub 3 1).factorial) *
+    (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))
+  := by
+  ring_nf
+
+example   (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
+    Nat.choose 5 2 * Nat.factorial 2 * (Nat.sub 5 2).factorial *
+      (Nat.choose 3 1 * Nat.factorial 1 * (Nat.sub 3 1).factorial) *
+      (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial)) =
+    Nat.factorial 5 * Nat.factorial 3 *
+      (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))
+  := by
+  simp only
+    [Nat.choose_mul_factorial_mul_factorial h₁, Nat.choose_mul_factorial_mul_factorial h₂,
+    Nat.choose_mul_factorial_mul_factorial h₃, Nat.choose_mul_factorial_mul_factorial h₄]
