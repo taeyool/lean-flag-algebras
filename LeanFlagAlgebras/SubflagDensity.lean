@@ -465,6 +465,38 @@ lemma iso_subset_of_finset_is_full
     rw [Fintype.card_congr f_iso]
   simp_all
 
+def labeledSubgraph_top
+    {σ : FlagType T} (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
+  let top : LabeledSubgraph σ G := {
+    subgraph := {
+      verts := Set.univ
+      Adj := fun u v => G.graph.Adj u v
+      adj_sub := by simp [SimpleGraph.Adj]
+      edge_vert := by simp
+      symm := by simp [SimpleGraph.symm]
+    }
+    type_embed := {
+      toFun := fun t ↦ ⟨G.type_embed t, by simp⟩
+      inj' := by
+        intro t₁ t₂ h
+        simp at h
+        exact h
+      map_rel_iff' := by
+        intro t₁ t₂
+        simp
+    }
+    embed_eq := by
+      intro t; simp
+  }
+  top
+
+lemma induced_full_labeledsubgraph_eq_top
+    {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
+    : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = labeledSubgraph_top G₀
+  := by
+  unfold labeledSubgraph_top
+  sorry
+
 omit [DecidableEqExist T] in
 lemma labeledSubgraphCount_self
     (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
@@ -562,6 +594,50 @@ lemma subflagDensity_self
   simp [labeledSubgraphDensity_self]
   dsimp [labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_self Grep
+
+lemma subgraphCount_other
+    {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphCount G₀ G₁ = 0
+  := by
+  simp [labeledSubgraphCount]
+  rw [← not_nonempty_iff] at h_neq
+  let S := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f G₀) }
+  have hS : FintypeExist S := { fintype_exist := Nonempty.intro (Fintype.ofFinite ↑S) }
+  have h_S : S ⊆ ∅ := by
+    intro G' ⟨h_ind_G', h_iso_G'⟩
+    have f_iso_G₀_G' := h_iso_G'.some.symm
+    have f_iso_G'_G₁ : G'.coe ≃f G₁ := by
+      have : G' = labeledSubgraph_top G₁ := induced_full_labeledsubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
+      let g : (labeledSubgraph_top G₁).coe ≃f G₁ := by
+        sorry
+      rw [← this] at g
+      exact g
+    have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
+    exact h_neq ⟨f_iso_G₀_G₁⟩
+  show Fintype.card S = 0
+  simp_all only [not_nonempty_iff, Set.subset_empty_iff, Fintype.card_ofIsEmpty]
+
+lemma labeledSubgraphDensity_other
+    {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphDensity G₀ G₁ = 0
+  := by
+  dsimp [labeledSubgraphDensity]
+  have := subgraphCount_other h_neq
+  simp_all only [Nat.cast_zero, zero_div]
+
+lemma subflagDensity_other
+    {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁) : subflagDensity G₀ G₁ = 0
+  := by
+  rcases Quotient.exists_rep G₀ with ⟨Grep₀, hGrep₀⟩
+  rcases Quotient.exists_rep G₁ with ⟨Grep₁, hGrep₁⟩
+  rw [← hGrep₀, ← hGrep₁]
+  have h_neq' : IsEmpty (Grep₀ ≃f Grep₁) := by
+    rw [← not_nonempty_iff]
+    intro h_iso
+    have h_eq : G₀ = G₁ := by
+      rw [← hGrep₀, ← hGrep₁]
+      exact Quotient.sound h_iso
+    exact h_neq h_eq
+  apply labeledSubgraphDensity_other h_neq'
+
 end
 
 section
@@ -1101,8 +1177,14 @@ theorem flagDensity_self
 
 theorem flagDensity_other
     {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
-  :=
-  sorry
+  := by
+  rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
+  rcases Quotient.exists_rep F' with ⟨Frep', hFrep'⟩
+  dsimp [flagDensity₁]
+  have goal : subflagDensity F F' = flagListDensity (flagToList F) F' := by
+    sorry
+  rw [← goal]
+  apply  subflagDensity_other h_neq
 
 theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
