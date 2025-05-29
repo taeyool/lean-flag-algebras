@@ -40,7 +40,7 @@ lemma type_embed_HEq
 /-- downward of O3₁ -/
 
 lemma unlabel_O3₁
-    : unlabel ⟦O3₁_labeledGraph 0⟧ = ⟦O3_labeledGraph⟧
+    : unlabel O3₁_flag = O3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -158,15 +158,15 @@ lemma isoLabeledGraphSetWithSameGraph_O3₁_card
     _ = 3 := isoSet_O3₁_card
 
 lemma downwardNormalizingFactor_O3₁
-    : downwardNormalizingFactor ⟦O3₁_labeledGraph 0⟧ = 1
+    : downwardNormalizingFactor O3₁_flag = 1
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, O3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_O3₁_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_O3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦O3₁_labeledGraph 0⟧⟩) = unitVector ⟨3, ⟦O3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, O3₁_flag⟩) = unitVector ⟨3, O3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
@@ -181,7 +181,7 @@ theorem downward_O3₁
 /-- downward of E3₁ -/
 
 lemma unlabel_E3₁
-    : unlabel ⟦E3₁_labeledGraph 0⟧ = ⟦E3_labeledGraph⟧
+    : unlabel E3₁_flag = E3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -320,15 +320,15 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁_card
     _ = 2 := isoSet_E3₁_card
 
 lemma downwardNormalizingFactor_E3₁
-    : downwardNormalizingFactor ⟦E3₁_labeledGraph 0⟧ = 2 / 3
+    : downwardNormalizingFactor E3₁_flag = 2 / 3
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, E3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_E3₁_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_E3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph 0⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, E3₁_flag⟩) = (2 / 3 : ℝ) • unitVector ⟨3, E3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁, downwardNormalizingFactor_E3₁]
@@ -344,7 +344,7 @@ theorem downward_E3₁
 /-- downward of E3₁' -/
 
 lemma unlabel_E3₁'
-    : unlabel ⟦E3₁_labeledGraph 2⟧ = ⟦E3_labeledGraph⟧
+    : unlabel E3₁'_flag = E3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -418,15 +418,15 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁'_card
     _ = 1 := isoSet_E3₁'_card
 
 lemma downwardNormalizingFactor_E3₁'
-    : downwardNormalizingFactor ⟦E3₁_labeledGraph 2⟧ = 1 / 3
+    : downwardNormalizingFactor E3₁'_flag = 1 / 3
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, E3₁'_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_E3₁'_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_E3₁'
-    : downwardFlagVector (unitVector ⟨3, ⟦E3₁_labeledGraph 2⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦E3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, E3₁'_flag⟩) = (1 / 3 : ℝ) • unitVector ⟨3, E3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁', downwardNormalizingFactor_E3₁']
@@ -442,7 +442,7 @@ theorem downward_E3₁'
 /-- downward of P3₁ -/
 
 lemma unlabel_P3₁
-    : unlabel ⟦P3₁_labeledGraph 0⟧ = ⟦P3_labeledGraph⟧
+    : unlabel P3₁_flag = P3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -577,15 +577,15 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁_card
     _ = 1 := isoSet_P3₁_card
 
 lemma downwardNormalizingFactor_P3₁
-    : downwardNormalizingFactor ⟦P3₁_labeledGraph 0⟧ = 1 / 3
+    : downwardNormalizingFactor P3₁_flag = 1 / 3
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, P3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_P3₁_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_P3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦P3₁_labeledGraph 0⟧⟩) = (1 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, P3₁_flag⟩) = (1 / 3 : ℝ) • unitVector ⟨3, P3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁, downwardNormalizingFactor_P3₁]
@@ -601,7 +601,7 @@ theorem downward_P3₁
 /-- downward of P3₁' -/
 
 lemma unlabel_P3₁'
-    : unlabel ⟦P3₁_labeledGraph 1⟧ = ⟦P3_labeledGraph⟧
+    : unlabel P3₁'_flag = P3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -687,15 +687,15 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁'_card
     _ = 2 := isoSet_P3₁'_card
 
 lemma downwardNormalizingFactor_P3₁'
-    : downwardNormalizingFactor ⟦P3₁_labeledGraph 1⟧ = 2 / 3
+    : downwardNormalizingFactor P3₁'_flag = 2 / 3
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, P3₁'_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_P3₁'_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_P3₁'
-    : downwardFlagVector (unitVector ⟨3, ⟦P3₁_labeledGraph 1⟧⟩) = (2 / 3 : ℝ) • unitVector ⟨3, ⟦P3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, P3₁'_flag⟩) = (2 / 3 : ℝ) • unitVector ⟨3, P3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁', downwardNormalizingFactor_P3₁']
@@ -711,7 +711,7 @@ theorem downward_P3₁'
 /-- downward of K3₁ -/
 
 lemma unlabel_K3₁
-    : unlabel ⟦K3₁_labeledGraph 0⟧ = ⟦K3_labeledGraph⟧
+    : unlabel K3₁_flag = K3_flag
   := by
   dsimp [unlabel]
   apply Quotient.sound
@@ -837,15 +837,15 @@ lemma isoLabeledGraphSetWithSameGraph_K3₁_card
     _ = 3 := isoSet_K3₁_card
 
 lemma downwardNormalizingFactor_K3₁
-    : downwardNormalizingFactor ⟦K3₁_labeledGraph 0⟧ = 1
+    : downwardNormalizingFactor K3₁_flag = 1
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph]
+  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, K3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_K3₁_card, this]
   rfl
 
 lemma downwardFlagVectorQuot_K3₁
-    : downwardFlagVector (unitVector ⟨3, ⟦K3₁_labeledGraph 0⟧⟩) = unitVector ⟨3, ⟦K3_labeledGraph⟧⟩
+    : downwardFlagVector (unitVector ⟨3, K3₁_flag⟩) = unitVector ⟨3, K3_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]

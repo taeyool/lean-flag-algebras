@@ -118,29 +118,47 @@ def K3_labeledGraph : LabeledGraph ∅ₜ (Fin 3) where
   graph := K3_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K3_graph.Adj
 
+def O2_flag : Flag ∅ₜ (Fin 2) :=
+  ⟦O2_labeledGraph⟧
+
+def K2_flag : Flag ∅ₜ (Fin 2) :=
+  ⟦K2_labeledGraph⟧
+
+def O3_flag : Flag ∅ₜ (Fin 3) :=
+  ⟦O3_labeledGraph⟧
+
+def E3_flag : Flag ∅ₜ (Fin 3) :=
+  ⟦E3_labeledGraph⟧
+
+def P3_flag : Flag ∅ₜ (Fin 3) :=
+  ⟦P3_labeledGraph⟧
+
+def K3_flag : Flag ∅ₜ (Fin 3) :=
+  ⟦K3_labeledGraph⟧
+
 /-- a non-edge -/
 noncomputable def O2 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨2, ⟦O2_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨2, O2_flag⟩⟧
 
 /-- an edge -/
 noncomputable def K2 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨2, ⟦K2_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨2, K2_flag⟩⟧
 
 /-- an empty graph with 3 vertices -/
 noncomputable def O3 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨3, ⟦O3_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, O3_flag⟩⟧
 
 /-- an edge and an isolated vertex -/
 noncomputable def E3 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨3, ⟦E3_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, E3_flag⟩⟧
 
 /-- a path of length 2 (3 vertices) -/
 noncomputable def P3 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨3, ⟦P3_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, P3_flag⟩⟧
 
 /-- a complete graph with 3 vertices -/
 noncomputable def K3 : FlagAlgebra ∅ₜ :=
-  ⟦unitVector ⟨3, ⟦K3_labeledGraph⟧⟩⟧
+  ⟦unitVector ⟨3, K3_flag⟩⟧
 
 /- flags with singleton type -/
 
@@ -196,36 +214,60 @@ def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
       map_rel_iff' := by intros; simp; exact id
     }
 
+def O2₁_flag : Flag Sₜ (Fin 2) :=
+  ⟦O2₁_labeledGraph 0⟧
+
+def K2₁_flag : Flag Sₜ (Fin 2) :=
+  ⟦K2₁_labeledGraph 0⟧
+
+def O3₁_flag : Flag Sₜ (Fin 3) :=
+  ⟦O3₁_labeledGraph 0⟧
+
+def E3₁_flag : Flag Sₜ (Fin 3) :=
+  ⟦E3₁_labeledGraph 0⟧
+
+def E3₁'_flag : Flag Sₜ (Fin 3) :=
+  ⟦E3₁_labeledGraph 2⟧
+
+def P3₁_flag : Flag Sₜ (Fin 3) :=
+  ⟦P3₁_labeledGraph 0⟧
+
+def P3₁'_flag : Flag Sₜ (Fin 3) :=
+  ⟦P3₁_labeledGraph 1⟧
+
+def K3₁_flag : Flag Sₜ (Fin 3) :=
+  ⟦K3₁_labeledGraph 0⟧
+
 /-- a non-edge with one labeled vertex -/
 noncomputable def O2₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨2, ⟦O2₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨2, O2₁_flag⟩⟧
 
 /-- an edge with one labeled vertex -/
 noncomputable def K2₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨2, ⟦K2₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨2, K2₁_flag⟩⟧
 
 /-- an empty graph with one labeled vertex -/
 noncomputable def O3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦O3₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨3, O3₁_flag⟩⟧
 
 /-- an edge with one labeled vertex and an isolated vertex -/
 noncomputable def E3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦E3₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨3, E3₁_flag⟩⟧
 
 /-- an edge and an isolated vertex with a label -/
 noncomputable def E3₁' : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦E3₁_labeledGraph 2⟧⟩⟧
+  ⟦unitVector ⟨3, E3₁'_flag⟩⟧
 
 /-- a path of length 2 (3 vertices) with the middle vertex labeled -/
 noncomputable def P3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦P3₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨3, P3₁_flag⟩⟧
 
 /-- a path of length 2 (3 vertices) where one of the endpoints is labeled -/
 noncomputable def P3₁' : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦P3₁_labeledGraph 1⟧⟩⟧
+  ⟦unitVector ⟨3, P3₁'_flag⟩⟧
 
 /-- a complete graph with one labeled vertex -/
 noncomputable def K3₁ : FlagAlgebra Sₜ :=
-  ⟦unitVector ⟨3, ⟦K3₁_labeledGraph 0⟧⟩⟧
+  ⟦unitVector ⟨3, K3₁_flag⟩⟧
 
 end MantelTheorem
