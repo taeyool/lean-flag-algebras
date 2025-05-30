@@ -99,20 +99,6 @@ elab "choose_eq" t:term : tactic =>
     let lhsData ← processSideExpr lhsExpr
     let rhsData ← processSideExpr rhsExpr
 
-    -- Assert all k <= n proofs in lhsData and rhsData into the context for `simp` to use later.
-    let mut currentGoalId := mainGoal
-    for i in [:lhsData.chooseArgsProofs.length] do
-      let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_lhs_le).appendIndexAfter i)
-      currentGoalId := newId
-    for i in [:rhsData.chooseArgsProofs.length] do
-      let (_, _, h_le_proof) := rhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
-      currentGoalId := newId
-    replaceMainGoal [currentGoalId]
-
     /-
     throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
 
@@ -181,88 +167,83 @@ elab "choose_eq" t:term : tactic =>
     let rhsExtended ← mkAppM ``HMul.hMul #[rhsExpr, combinedDenominators]
     let lhsGrouped ← mkAppM ``HMul.hMul #[lhsData.curTerm, rhsData.denFactorialProd]
     let rhsGrouped ← mkAppM ``HMul.hMul #[rhsData.curTerm, lhsData.denFactorialProd]
+
+    let groupedType1 ← mkAppM ``Eq #[lhsExtended, lhsGrouped]
+    let groupedType2 ← mkAppM ``Eq #[rhsGrouped, rhsExtended]
+    let groupedType3 ← mkAppM ``Eq #[lhsGrouped, rhsExtended]
+    let groupedType4 ← mkAppM ``Eq #[lhsGrouped, rhsGrouped]
+
+    let groupedMVar1 ← mkFreshExprMVar groupedType1 .syntheticOpaque (userName := `h_grouped_eq1)
+    let groupedMVar2 ← mkFreshExprMVar groupedType2 .syntheticOpaque (userName := `h_grouped_eq2)
+    let groupedMVar3 ← mkFreshExprMVar groupedType3 .syntheticOpaque (userName := `h_grouped_eq_inter_goal)
+    let groupedMVar4 ← mkFreshExprMVar groupedType4 .syntheticOpaque (userName := `h_grouped_eq_final_goal)
+
+    let groupedTacticStx ← `(tactic| ring_nf)
+    let groupedMVarRest1 ← Tactic.run groupedMVar1.mvarId! (evalTactic groupedTacticStx)
+    let groupedMVarRest2 ← Tactic.run groupedMVar2.mvarId! (evalTactic groupedTacticStx)
+
+    if !groupedMVarRest1.isEmpty then
+      throwError m!"[choose_eq] Failed to prove the equality for the grouping of factors on the LHS:
+          {← ppExpr groupedType1}
+      Proof attempt:
+          {← ppExpr groupedMVar1}"
+    if !groupedMVarRest2.isEmpty then
+      throwError m!"[choose_eq] Failed to prove the equality for the grouping of factors on the RHS:
+          {← ppExpr groupedType2}
+      Proof attempt:
+          {← ppExpr groupedMVar2}"
+
+    let proofGrouped1 ← mkAppM ``Eq.trans #[groupedMVar1, groupedMVar3]
+    let proofGrouped2 ← mkAppM ``Eq.trans #[groupedMVar4, groupedMVar2]
+    let curGoal1 ← getMainGoal
+    curGoal1.assign proofGrouped1
+    replaceMainGoal [groupedMVar3.mvarId!]
+    let curGoal2 ← getMainGoal
+    curGoal2.assign proofGrouped2
+    replaceMainGoal [groupedMVar4.mvarId!]
+
     let lhsContracted ← mkAppM ``HMul.hMul #[lhsData.newTerm, rhsData.denFactorialProd]
     let rhsContracted ← mkAppM ``HMul.hMul #[rhsData.newTerm, lhsData.denFactorialProd]
 
-    let lhsGroupedType ← mkAppM ``Eq #[lhsExtended, lhsGrouped]
-    let rhsGroupedType ← mkAppM ``Eq #[rhsExtended, rhsGrouped]
-    let lhsContractedType ← mkAppM ``Eq #[lhsGrouped, lhsContracted]
-    let rhsContractedType ← mkAppM ``Eq #[rhsGrouped, rhsContracted]
+    let contractedType1 ← mkAppM ``Eq #[lhsGrouped, lhsContracted]
+    let contractedType2 ← mkAppM ``Eq #[rhsContracted, rhsGrouped]
+    let contractedType3 ← mkAppM ``Eq #[lhsContracted, rhsGrouped]
+    let contractedType4 ← mkAppM ``Eq #[lhsContracted, rhsContracted]
 
-    let lhsGroupedMVar ← mkFreshExprMVar lhsGroupedType .syntheticOpaque (userName := `h_lhs_grouped_eq)
-    let tacticStxLhsGrouped ← `(tactic| ring_nf)
-    let remainingGoalLhsGroupedMVar ← Tactic.run lhsGroupedMVar.mvarId! (evalTactic tacticStxLhsGrouped)
-    if !remainingGoalLhsGroupedMVar.isEmpty then
-      throwError m!"[choose_eq] Failed to prove the equality for the grouping of factors on the LHS:
-          {← ppExpr lhsGroupedType}
+    let contractedMVar1 ← mkFreshExprMVar contractedType1 (userName := `h_contracted_eq1)
+    let contractedMVar2 ← mkFreshExprMVar contractedType2 (userName := `h_contracted_eq2)
+    let contractedMVar3 ← mkFreshExprMVar contractedType3 (userName := `h_contracted_eq_inter_goal)
+    let contractedMVar4 ← mkFreshExprMVar contractedType4 (userName := `h_contracted_eq_final_goal)
+
+    let mut contractedRefinedGoalId1 := contractedMVar1.mvarId!
+    for i in [:lhsData.chooseArgsProofs.length] do
+      let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
+      let proofType ← inferType h_le_proof
+      let (_, newId) ← assertHyp contractedRefinedGoalId1 proofType h_le_proof ((`h_lhs_le).appendIndexAfter i)
+      contractedRefinedGoalId1 := newId
+    let mut contractedRefinedGoalId2 := contractedMVar2.mvarId!
+    for i in [:rhsData.chooseArgsProofs.length] do
+      let (_, _, h_le_proof) := rhsData.chooseArgsProofs[i]!
+      let proofType ← inferType h_le_proof
+      let (_, newId) ← assertHyp contractedRefinedGoalId2 proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
+      contractedRefinedGoalId2 := newId
+
+    let contractedTacticStx ← `(tactic| simp_all [Nat.choose_mul_factorial_mul_factorial])
+    let contractedMVarRest1 ← Tactic.run contractedRefinedGoalId1 (evalTactic contractedTacticStx)
+    let contractedMVarRest2 ← Tactic.run contractedRefinedGoalId2 (evalTactic contractedTacticStx)
+    if !contractedMVarRest1.isEmpty then
+      throwError m!"[choose_eq] Failed to prove the equality for the contraction of factors on the LHS:
+          {← ppExpr contractedType1}
       Proof attempt:
-          {← ppExpr lhsGroupedMVar}"
+          {← ppExpr contractedMVar1}"
+    if !contractedMVarRest2.isEmpty then
+      throwError m!"[choose_eq] Failed to prove the equality for the contraction of factors on the RHS:
+          {← ppExpr contractedType2}
+      Proof attempt:
+          {← ppExpr contractedMVar2}"
 
-    let (_, goalAfterAddingLhsGrouped) ← assertHyp (← getMainGoal) lhsGroupedType lhsGroupedMVar `h_lhs_grouped_eq
-    replaceMainGoal [goalAfterAddingLhsGrouped]
-    evalTactic (← `(tactic|
-      conv =>
-        lhs
-        rw [h_lhs_grouped_eq]))
+    throwError m!"[choose_eq] goal states for ContractedType1 and ContractedType2:\n\n{← Meta.ppGoal contractedRefinedGoalId1}\n\n{← Meta.ppGoal contractedRefinedGoalId2}"
     throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
-
-    let rhsGroupedMVar ← mkFreshExprMVar rhsGroupedType (userName := `h_rhs_grouped_eq)
-    let tacticStxRhsGrouped ← `(tactic| ring_nf)
-    let remainingGoalRhsGroupedMVar ← Tactic.run rhsGroupedMVar.mvarId! (evalTactic tacticStxRhsGrouped)
-    if !remainingGoalRhsGroupedMVar.isEmpty then
-      throwError m!"choose_eq:
-      Failed to prove the equality for the grouping of factors on the RHS:
-      {← ppExpr rhsGroupedType}
-      Proof attempt:
-      {← ppExpr rhsGroupedMVar}"
-    let rhsGroupedProof ← instantiateMVars rhsGroupedMVar
-
-    let lemmaListForChoose :=
-      (lhsData.chooseArgsProofs ++ rhsData.chooseArgsProofs).map (fun (n, k, h_le_proof) =>
-        mkApp3 (mkConst ``Nat.choose_mul_factorial_mul_factorial) n k h_le_proof)
-
-    throwError m!"choose_eq:
-      lemmaListForChoose[0](type):
-            {← ppExpr (← inferType lemmaListForChoose[0]!)}
-
-      lemmaListForChoose[0](proof):
-            {← ppExpr lemmaListForChoose[0]!}
-
-      lhsGroupedType:
-          {← ppExpr lhsGroupedType},
-
-      rhsGroupedType:
-          {← ppExpr rhsGroupedType},
-
-      lhsContractedType:
-          {← ppExpr lhsContractedType},
-
-      rhsContractedType:
-          {← ppExpr rhsContractedType}"
-
-    let lhsContractedMVar ← mkFreshExprMVar lhsContractedType (userName := `h_lhs_contracted_eq)
-    let tacticStxLhsContracted ← `(tactic| simp only [Nat.choose_mul_factorial_mul_factorial])
-    let remainingGoalLhsContractedMVar ← Tactic.run lhsContractedMVar.mvarId! (evalTactic tacticStxLhsContracted)
-    if !remainingGoalLhsContractedMVar.isEmpty then
-      throwError m!"choose_eq:
-      Failed to prove the equality for the contraction of factors on the LHS:
-      {← ppExpr lhsContractedType}
-      Proof attempt:
-      {← ppExpr lhsContractedMVar}"
-    let lhsContractedProof ← instantiateMVars lhsContractedMVar
-
-    let rhsContractedMVar ← mkFreshExprMVar rhsContractedType (userName := `h_rhs_contracted_eq)
-    let tacticStxRhsContracted ← `(tactic| simp only [Nat.choose_mul_factorial_mul_factorial])
-    let remainingGoalRhsContractedMVar ← Tactic.run rhsContractedMVar.mvarId! (evalTactic tacticStxRhsContracted)
-    if !remainingGoalRhsContractedMVar.isEmpty then
-      throwError m!"choose_eq:
-      Failed to prove the equality for the contraction of factors on the RHS:
-      {← ppExpr rhsContractedType}
-      Proof attempt:
-      {← ppExpr rhsContractedMVar}"
-    let rhsContractedProof ← instantiateMVars rhsContractedMVar
-
-
 
     let mainGoal ← getMainGoal
     let mainGoalType ← mainGoal.getType
