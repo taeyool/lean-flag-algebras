@@ -230,7 +230,7 @@ elab "choose_eq" t:term : tactic =>
       let (_, newId) ← assertHyp contractedRefinedGoalId2 proofType contractionProof ((`h_rhs_contr).appendIndexAfter i)
       contractedRefinedGoalId2 := newId
 
-    let contractedTacticStx ← `(tactic| simp_all (config := {contextual := true}) [Nat.choose_mul_factorial_mul_factorial])
+    let contractedTacticStx ← `(tactic| simp_all (config := {contextual := true}) only [Nat.choose_mul_factorial_mul_factorial])
     let contractedMVarRest1 ← Tactic.run contractedRefinedGoalId1 (evalTactic contractedTacticStx)
     let contractedMVarRest2 ← Tactic.run contractedRefinedGoalId2 (evalTactic contractedTacticStx)
     if !contractedMVarRest1.isEmpty then
