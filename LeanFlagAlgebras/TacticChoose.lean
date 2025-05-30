@@ -85,7 +85,7 @@ def assertHyp (mvarId : MVarId) (type : Expr) (proof : Expr) (userName : Name) :
   let (fvarId, newerMVarId) ← mvarIdNew.intro1P
   return (fvarId, newerMVarId)
 
-elab "choose_eq" : tactic =>
+elab "choose_eq" t:term : tactic =>
   withMainContext do
     let mainGoal ← getMainGoal
     let goalType ← mainGoal.getType
@@ -99,16 +99,32 @@ elab "choose_eq" : tactic =>
     let lhsData ← processSideExpr lhsExpr
     let rhsData ← processSideExpr rhsExpr
 
+    -- Assert all k <= n proofs in lhsData and rhsData into the context for `simp` to use later.
+    let mut currentGoalId := mainGoal
+    for i in [:lhsData.chooseArgsProofs.length] do
+      let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
+      let proofType ← inferType h_le_proof
+      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_lhs_le).appendIndexAfter i)
+      currentGoalId := newId
+    for i in [:rhsData.chooseArgsProofs.length] do
+      let (_, _, h_le_proof) := rhsData.chooseArgsProofs[i]!
+      let proofType ← inferType h_le_proof
+      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
+      currentGoalId := newId
+    replaceMainGoal [currentGoalId]
+
     /-
-    throwError m!"choose_eq:
-      lhsExpr = {← ppExpr lhsExpr},
-      rhsExpr = {← ppExpr rhsExpr},
-      lhsData.curTerm = {← ppExpr lhsData.curTerm},
-      rhsData.curTerm = {← ppExpr rhsData.curTerm},
-      lhsData.newTerm = {← ppExpr lhsData.newTerm},
-      rhsData.newTerm = {← ppExpr rhsData.newTerm},
-      lhsData.denFactorialProd = {← ppExpr lhsData.denFactorialProd},
-      rhsData.denFactorialProd = {← ppExpr rhsData.denFactorialProd}"
+    throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
+
+    throwError m!"[choose_eq] lhsData and rhsData:
+        lhsExpr = {← ppExpr lhsExpr},
+        rhsExpr = {← ppExpr rhsExpr},
+        lhsData.curTerm = {← ppExpr lhsData.curTerm},
+        rhsData.curTerm = {← ppExpr rhsData.curTerm},
+        lhsData.newTerm = {← ppExpr lhsData.newTerm},
+        rhsData.newTerm = {← ppExpr rhsData.newTerm},
+        lhsData.denFactorialProd = {← ppExpr lhsData.denFactorialProd},
+        rhsData.denFactorialProd = {← ppExpr rhsData.denFactorialProd}"
     -/
 
     -- Step 2: Justify the transformation to the factorial form.
@@ -133,11 +149,10 @@ elab "choose_eq" : tactic =>
     let tacticStxDenPos ← `(tactic| repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos]))
     let remainingGoalsDenPos ← Tactic.run positiveDenomMVar.mvarId! (evalTactic tacticStxDenPos)
     if !remainingGoalsDenPos.isEmpty then
-      throwError m!"choose_eq:
-      Failed to prove the positivity of the product of all denominators:
-      {← ppExpr combinedDenominators}
+      throwError m!"[choose_eq] Failed to prove the positivity of the product of all denominators:
+          {← ppExpr combinedDenominators}
       Proof attempt:
-      {← ppExpr positiveDenomMVar}"
+          {← ppExpr positiveDenomMVar}"
     let positiveDenomProof ← instantiateMVars positiveDenomMVar
 
     -- Apply Nat.mul_left_inj to change the goal to:
@@ -156,9 +171,11 @@ elab "choose_eq" : tactic =>
     -- `Iff.mp mulLeftInjLemma` gives `(lhsExpr * combinedDen. = rhsExpr * denCombinedDeno.) → (lhsExpr = rhsExpr)`.
     -- Applying this to the current goal `lhsExpr = rhsExpr` changes the goal to `lhsExpr * den = rhsExpr * den`.
     let goalTransformer ← mkAppM ``Iff.mp #[mulLeftInjLemma]
-    let goalAfterMulInj ← mainGoal.apply goalTransformer
-    if goalAfterMulInj.isEmpty then
-      throwError "choose_eq: Applying equivalence transformation yielded no goals."
+
+    let goalAfterMultiplyingDeno ← (← getMainGoal).apply goalTransformer
+    if goalAfterMultiplyingDeno.isEmpty then
+      throwError "[choose_eq] Applying equivalence transformation yielded no goals."
+    replaceMainGoal [goalAfterMultiplyingDeno[0]!]
 
     let lhsExtended ← mkAppM ``HMul.hMul #[lhsExpr, combinedDenominators]
     let rhsExtended ← mkAppM ``HMul.hMul #[rhsExpr, combinedDenominators]
@@ -172,16 +189,22 @@ elab "choose_eq" : tactic =>
     let lhsContractedType ← mkAppM ``Eq #[lhsGrouped, lhsContracted]
     let rhsContractedType ← mkAppM ``Eq #[rhsGrouped, rhsContracted]
 
-    let lhsGroupedMVar ← mkFreshExprMVar lhsGroupedType (userName := `h_lhs_grouped_eq)
+    let lhsGroupedMVar ← mkFreshExprMVar lhsGroupedType .syntheticOpaque (userName := `h_lhs_grouped_eq)
     let tacticStxLhsGrouped ← `(tactic| ring_nf)
     let remainingGoalLhsGroupedMVar ← Tactic.run lhsGroupedMVar.mvarId! (evalTactic tacticStxLhsGrouped)
     if !remainingGoalLhsGroupedMVar.isEmpty then
-      throwError m!"choose_eq:
-      Failed to prove the equality for the grouping of factors on the LHS:
-      {← ppExpr lhsGroupedType}
+      throwError m!"[choose_eq] Failed to prove the equality for the grouping of factors on the LHS:
+          {← ppExpr lhsGroupedType}
       Proof attempt:
-      {← ppExpr lhsGroupedMVar}"
-    let lhsGroupedProof ← instantiateMVars lhsGroupedMVar
+          {← ppExpr lhsGroupedMVar}"
+
+    let (_, goalAfterAddingLhsGrouped) ← assertHyp (← getMainGoal) lhsGroupedType lhsGroupedMVar `h_lhs_grouped_eq
+    replaceMainGoal [goalAfterAddingLhsGrouped]
+    evalTactic (← `(tactic|
+      conv =>
+        lhs
+        rw [h_lhs_grouped_eq]))
+    throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
 
     let rhsGroupedMVar ← mkFreshExprMVar rhsGroupedType (userName := `h_rhs_grouped_eq)
     let tacticStxRhsGrouped ← `(tactic| ring_nf)
@@ -194,7 +217,17 @@ elab "choose_eq" : tactic =>
       {← ppExpr rhsGroupedMVar}"
     let rhsGroupedProof ← instantiateMVars rhsGroupedMVar
 
+    let lemmaListForChoose :=
+      (lhsData.chooseArgsProofs ++ rhsData.chooseArgsProofs).map (fun (n, k, h_le_proof) =>
+        mkApp3 (mkConst ``Nat.choose_mul_factorial_mul_factorial) n k h_le_proof)
+
     throwError m!"choose_eq:
+      lemmaListForChoose[0](type):
+            {← ppExpr (← inferType lemmaListForChoose[0]!)}
+
+      lemmaListForChoose[0](proof):
+            {← ppExpr lemmaListForChoose[0]!}
+
       lhsGroupedType:
           {← ppExpr lhsGroupedType},
 
@@ -229,19 +262,7 @@ elab "choose_eq" : tactic =>
       {← ppExpr rhsContractedMVar}"
     let rhsContractedProof ← instantiateMVars rhsContractedMVar
 
-    -- Assert all k <= n proofs into the context for `simp` to use.
-    let mut currentGoalId := goalAfterMulInj[0]! -- Use the first goal from the list
-    for i in [:lhsData.chooseArgsProofs.length] do
-      let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_lhs_le).appendIndexAfter i)
-      currentGoalId := newId
-    for i in [:rhsData.chooseArgsProofs.length] do
-      let (_, _, h_le_proof) := rhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp currentGoalId proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
-      currentGoalId := newId
-    replaceMainGoal [currentGoalId]
+
 
     let mainGoal ← getMainGoal
     let mainGoalType ← mainGoal.getType
@@ -272,21 +293,26 @@ open ChooseEqTactic
 
 example : Nat.mul 1 1 > 0 := by simp only [Nat.mul_eq, mul_one, gt_iff_lt, zero_lt_one]
 
-example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 3 * Nat.choose 2 0 := by
+example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 1 * Nat.choose 4 2 := by
   choose_eq
+  sorry
 
 example : Nat.choose 5 2 = Nat.choose 5 2 := by
   choose_eq
+  sorry
 
 example : Nat.choose 4 2 = (Nat.factorial 4) / (Nat.factorial 2 * Nat.factorial 2) := by
   choose_eq
+  sorry
 
 example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
     n.choose k * k.choose j = n.choose j * (n - j).choose (k - j) := by
   choose_eq
+  sorry
 
 example (n k : Nat) : k * n.choose k = n * (n - 1).choose (k - 1) := by
   choose_eq
+  sorry
 
 example : 0 <
   Mul.mul
@@ -348,40 +374,6 @@ example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
       * (Nat.sub 3 1).factorial)
   := by
   ring
-
-example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2):
-    ((Nat.choose 5 2)
-      * (Nat.factorial 2)
-      * (Nat.sub 5 2).factorial)
-    *
-    ((Nat.choose 3 1)
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-    *
-    ((Nat.factorial 3)
-      * (Nat.sub 5 3).factorial
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-    =
-    ((Nat.choose 5 3)
-      * (Nat.factorial 3)
-      * (Nat.sub 5 3).factorial)
-    *
-    ((Nat.choose 3 1)
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-    *
-    ((Nat.factorial 2)
-      * (Nat.sub 5 2).factorial
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-  := by
-    simp only [
-      Nat.choose_mul_factorial_mul_factorial h₁,
-      Nat.choose_mul_factorial_mul_factorial h₂,
-      Nat.choose_mul_factorial_mul_factorial h₃,
-      Nat.choose_mul_factorial_mul_factorial h₄]
-    ring_nf
 
 
 example (a b c d : ℕ) (h : a ≤ b) :
