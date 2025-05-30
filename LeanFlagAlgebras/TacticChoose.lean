@@ -228,7 +228,7 @@ elab "choose_eq" t:term : tactic =>
       let (_, newId) ← assertHyp contractedRefinedGoalId2 proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
       contractedRefinedGoalId2 := newId
 
-    let contractedTacticStx ← `(tactic| simp_all [Nat.choose_mul_factorial_mul_factorial])
+    let contractedTacticStx ← `(tactic| simp_all (config := {contextual := true}) [Nat.choose_mul_factorial_mul_factorial])
     let contractedMVarRest1 ← Tactic.run contractedRefinedGoalId1 (evalTactic contractedTacticStx)
     let contractedMVarRest2 ← Tactic.run contractedRefinedGoalId2 (evalTactic contractedTacticStx)
     if !contractedMVarRest1.isEmpty then
@@ -384,6 +384,4 @@ example   (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
     Nat.factorial 5 * Nat.factorial 3 *
       (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))
   := by
-  simp only
-    [Nat.choose_mul_factorial_mul_factorial h₁, Nat.choose_mul_factorial_mul_factorial h₂,
-    Nat.choose_mul_factorial_mul_factorial h₃, Nat.choose_mul_factorial_mul_factorial h₄]
+  simp (config := {contextual := true}) only [Nat.choose_mul_factorial_mul_factorial]
