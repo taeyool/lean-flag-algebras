@@ -249,9 +249,6 @@ elab "choose_eq" t:term : tactic =>
 
     let mainGoal ← getMainGoal
     let mainGoalType ← mainGoal.getType
-    throwError
-    "choose_eq: main goal:
-      {← ppExpr mainGoalType}"
 
     -- Step 3: Use `conv` to rewrite products involving `Nat.choose` terms.
     -- `Nat.choose_mul_factorial_mul_factorial` will be applied using the `k <= n` hypotheses now in context.
