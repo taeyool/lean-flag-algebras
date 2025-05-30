@@ -218,14 +218,16 @@ elab "choose_eq" t:term : tactic =>
     let mut contractedRefinedGoalId1 := contractedMVar1.mvarId!
     for i in [:lhsData.chooseArgsProofs.length] do
       let (_, _, h_le_proof) := lhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp contractedRefinedGoalId1 proofType h_le_proof ((`h_lhs_le).appendIndexAfter i)
+      let contractionProof ← mkAppM ``Nat.choose_mul_factorial_mul_factorial #[h_le_proof]
+      let proofType ← inferType contractionProof
+      let (_, newId) ← assertHyp contractedRefinedGoalId1 proofType contractionProof ((`h_lhs_contr).appendIndexAfter i)
       contractedRefinedGoalId1 := newId
     let mut contractedRefinedGoalId2 := contractedMVar2.mvarId!
     for i in [:rhsData.chooseArgsProofs.length] do
       let (_, _, h_le_proof) := rhsData.chooseArgsProofs[i]!
-      let proofType ← inferType h_le_proof
-      let (_, newId) ← assertHyp contractedRefinedGoalId2 proofType h_le_proof ((`h_rhs_le).appendIndexAfter i)
+      let contractionProof ← mkAppM ``Nat.choose_mul_factorial_mul_factorial #[h_le_proof]
+      let proofType ← inferType contractionProof
+      let (_, newId) ← assertHyp contractedRefinedGoalId2 proofType contractionProof ((`h_rhs_contr).appendIndexAfter i)
       contractedRefinedGoalId2 := newId
 
     let contractedTacticStx ← `(tactic| simp_all (config := {contextual := true}) [Nat.choose_mul_factorial_mul_factorial])
@@ -242,8 +244,8 @@ elab "choose_eq" t:term : tactic =>
       Proof attempt:
           {← ppExpr contractedMVar2}"
 
-    throwError m!"[choose_eq] goal states for ContractedType1 and ContractedType2:\n\n{← Meta.ppGoal contractedRefinedGoalId1}\n\n{← Meta.ppGoal contractedRefinedGoalId2}"
-    throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
+    -- throwError m!"[choose_eq] goal states for ContractedType1 and ContractedType2:\n\n{← Meta.ppGoal contractedRefinedGoalId1}\n\n{← Meta.ppGoal contractedRefinedGoalId2}"
+    -- throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
 
     let mainGoal ← getMainGoal
     let mainGoalType ← mainGoal.getType
