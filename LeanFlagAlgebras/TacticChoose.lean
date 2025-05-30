@@ -85,7 +85,7 @@ def assertHyp (mvarId : MVarId) (type : Expr) (proof : Expr) (userName : Name) :
   let (fvarId, newerMVarId) ← mvarIdNew.intro1P
   return (fvarId, newerMVarId)
 
-elab "choose_eq" t:term : tactic =>
+elab "choose_eq" : tactic =>
   withMainContext do
     let mainGoal ← getMainGoal
     let goalType ← mainGoal.getType
@@ -244,12 +244,19 @@ elab "choose_eq" t:term : tactic =>
       Proof attempt:
           {← ppExpr contractedMVar2}"
 
-    -- throwError m!"[choose_eq] goal states for ContractedType1 and ContractedType2:\n\n{← Meta.ppGoal contractedRefinedGoalId1}\n\n{← Meta.ppGoal contractedRefinedGoalId2}"
-    -- throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
+    let proofContracted1 ← mkAppM ``Eq.trans #[contractedMVar1, contractedMVar3]
+    let proofContracted2 ← mkAppM ``Eq.trans #[contractedMVar4, contractedMVar2]
+    let curGoal1 ← getMainGoal
+    curGoal1.assign proofContracted1
+    replaceMainGoal [contractedMVar3.mvarId!]
+    let curGoal2 ← getMainGoal
+    curGoal2.assign proofContracted2
+    replaceMainGoal [contractedMVar4.mvarId!]
 
-    let mainGoal ← getMainGoal
-    let mainGoalType ← mainGoal.getType
+    evalTactic (← `(tactic| try simp only [Nat.sub_eq, Nat.add_one_sub_one, Nat.reduceSub]; try ring_nf))
+    return
 
+  /-
     -- Step 3: Use `conv` to rewrite products involving `Nat.choose` terms.
     -- `Nat.choose_mul_factorial_mul_factorial` will be applied using the `k <= n` hypotheses now in context.
     -- `mul_assoc`, `mul_comm`, `mul_left_comm` are used to rearrange terms for the rewrite.
@@ -264,6 +271,7 @@ elab "choose_eq" t:term : tactic =>
     evalTactic (← `(tactic| try ring))
     evalTactic (← `(tactic| try rfl))
     evalTactic (← `(tactic| try ring_nf))
+  -/
 
 end ChooseEqTactic
 
@@ -271,19 +279,14 @@ open ChooseEqTactic
 
 -- Example usage and tests
 
-example : Nat.mul 1 1 > 0 := by simp only [Nat.mul_eq, mul_one, gt_iff_lt, zero_lt_one]
-
 example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 1 * Nat.choose 4 2 := by
   choose_eq
-  sorry
 
 example : Nat.choose 5 2 = Nat.choose 5 2 := by
   choose_eq
-  sorry
 
 example : Nat.choose 4 2 = (Nat.factorial 4) / (Nat.factorial 2 * Nat.factorial 2) := by
   choose_eq
-  sorry
 
 example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
     n.choose k * k.choose j = n.choose j * (n - j).choose (k - j) := by
@@ -293,94 +296,3 @@ example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
 example (n k : Nat) : k * n.choose k = n * (n - 1).choose (k - 1) := by
   choose_eq
   sorry
-
-example : 0 <
-  Mul.mul
-    (Mul.mul (Mul.mul (Nat.factorial 2) (Nat.sub 5 2).factorial) (Mul.mul (Nat.factorial 1) (Nat.sub 3 1).factorial))
-    (Mul.mul (Mul.mul (Nat.factorial 3) (Nat.sub 5 3).factorial) (Mul.mul (Nat.factorial 0) (Nat.sub 2 0).factorial))
-  := by
-    repeat (first | apply mul_pos | simp only [Nat.factorial_pos, Nat.succ_pos])
-
-example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
-    (Nat.choose 5 2)
-      * (Nat.choose 3 1)
-      * (Nat.factorial 2)
-      * (Nat.sub 5 2).factorial
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial
-      * (Nat.factorial 3)
-      * (Nat.sub 5 3).factorial
-      * (Nat.factorial 0)
-      * (Nat.sub 2 0).factorial
-    =
-    ((Nat.choose 5 2)
-      * (Nat.factorial 2)
-      * (Nat.sub 5 2).factorial)
-    *
-    ((Nat.choose 3 1)
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-    *
-    ((Nat.factorial 3)
-      * (Nat.sub 5 3).factorial
-      * (Nat.factorial 0)
-      * (Nat.sub 2 0).factorial)
-  := by
-  ring
-
-example (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
-    (Nat.choose 5 3)
-      * (Nat.choose 2 0)
-      * (Nat.factorial 2)
-      * (Nat.sub 5 2).factorial
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial
-      * (Nat.factorial 3)
-      * (Nat.sub 5 3).factorial
-      * (Nat.factorial 0)
-      * (Nat.sub 2 0).factorial
-    =
-    ((Nat.choose 5 3)
-      * (Nat.factorial 3)
-      * (Nat.sub 5 3).factorial)
-    *
-    ((Nat.choose 2 0)
-      * (Nat.factorial 0)
-      * (Nat.sub 2 0).factorial)
-    *
-    ((Nat.factorial 2)
-      * (Nat.sub 5 2).factorial
-      * (Nat.factorial 1)
-      * (Nat.sub 3 1).factorial)
-  := by
-  ring
-
-
-example (a b c d : ℕ) (h : a ≤ b) :
-  (Nat.choose b a) * ((c * d) * ((Nat.factorial a) * (b - a).factorial))
-  =
-  (Nat.factorial b) * (c * d)
-  := by
-  ring_nf
-  simp only [Nat.mul_comm, Nat.mul_assoc, Nat.choose_mul_factorial_mul_factorial h]
-  ring_nf
-
-
-example :
-Nat.choose 5 2 * Nat.choose 3 1 *
-    ((Nat.factorial 2 * (Nat.sub 5 2).factorial * (Nat.factorial 1 * (Nat.sub 3 1).factorial))
-    * (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))) =
-  Nat.choose 5 2 * Nat.factorial 2 * (Nat.sub 5 2).factorial *
-      (Nat.choose 3 1 * Nat.factorial 1 * (Nat.sub 3 1).factorial) *
-    (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))
-  := by
-  ring_nf
-
-example   (h₁ : 2 ≤ 5) (h₂ : 1 ≤ 3) (h₃ : 3 ≤ 5) (h₄ : 0 ≤ 2) :
-    Nat.choose 5 2 * Nat.factorial 2 * (Nat.sub 5 2).factorial *
-      (Nat.choose 3 1 * Nat.factorial 1 * (Nat.sub 3 1).factorial) *
-      (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial)) =
-    Nat.factorial 5 * Nat.factorial 3 *
-      (Nat.factorial 3 * (Nat.sub 5 3).factorial * (Nat.factorial 0 * (Nat.sub 2 0).factorial))
-  := by
-  simp (config := {contextual := true}) only [Nat.choose_mul_factorial_mul_factorial]
