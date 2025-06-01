@@ -255,9 +255,24 @@ elab "choose_eq" : tactic =>
     let contractedMVar3 ← mkFreshExprMVar contractedType3 .syntheticOpaque
     let contractedMVar4 ← mkFreshExprMVar contractedType4 .syntheticOpaque
 
-    let contractedTactic ← `(tactic| repeat cc)
-    let contractedMVarRest1 ← Tactic.run contractedMVar1.mvarId! (evalTactic contractedTactic)
-    let contractedMVarRest2 ← Tactic.run contractedMVar2.mvarId! (evalTactic contractedTactic)
+    let contractedAssmList1 : List (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+      (List.range lhsData.args.length).map
+        (fun i => TSyntax.mk (mkIdent ((`h_lhs_contr).appendIndexAfter i)))
+    let contractedAssmList2 : List (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+      (List.range rhsData.args.length).map
+        (fun i => TSyntax.mk (mkIdent ((`h_rhs_contr).appendIndexAfter i)))
+    let contractedAssmArray1 : Array (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+      contractedAssmList1.toArray
+    let contractedAssmArray2 : Array (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+      contractedAssmList2.toArray
+
+    -- throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
+
+    let contractedTactic1 ← `(tactic| rw [$contractedAssmArray1,*])
+    let contractedTactic2 ← `(tactic| rw [$contractedAssmArray2,*])
+
+    let contractedMVarRest1 ← Tactic.run contractedMVar1.mvarId! (evalTactic contractedTactic1)
+    let contractedMVarRest2 ← Tactic.run contractedMVar2.mvarId! (evalTactic contractedTactic2)
 
     if !contractedMVarRest1.isEmpty then
       throwError m!"[choose_eq] Failed to prove the equality for the contraction of factors on the LHS:
@@ -287,72 +302,22 @@ elab "choose_eq" : tactic =>
 
     evalTactic (← `(tactic| try simp only [Nat.sub_eq, Nat.add_one_sub_one, Nat.reduceSub]; try ring_nf))
     return
-  /-
-    --     rhsExpr * combinedDenominator = rhsData.curTerm * lhsData.denFactorialProd
-    -- Second, by using the "simp only [Nat.choose_mul_factorial_mul_factorial]", we show that
-    --     lhsData.curTerm * rhsData.denFactorialProd = lhsData.newTerm * rhsData.denFactorialProd
-    --     rhsData.curTerm * lhsData.denFactorialProd = rhsData.newTerm * rhsData.denoFactorialProd
-    -- Finally, using the ring tactic, we show that
-    --     lhsData.newTerm * rhsData.denFactorialProd = rhsData.newTerm * lhsData.denFactorialProd
-
 
     /-
     throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
-
-    throwError m!"[choose_eq] lhsData and rhsData:
-        lhsExpr = {← ppExpr lhsExpr},
-        rhsExpr = {← ppExpr rhsExpr},
-        lhsData.denTerm = {← ppExpr lhsData.denTerm},
-        rhsData.denTerm = {← ppExpr rhsData.denTerm}
-        lhsData.curTerm = {← ppExpr lhsData.curTerm},
-        rhsData.curTerm = {← ppExpr rhsData.curTerm},
-        lhsData.newTerm = {← ppExpr lhsData.newTerm},
-        rhsData.newTerm = {← ppExpr rhsData.newTerm}"
     -/
-
-/-
-    let oneLit := mkNatLit 1
-    let h_le_type ← mkAppM ``LE.le #[k, n]
-    let h_le_mvar ← mkFreshExprMVar h_le_type .syntheticOpaque (userName := `h_le)
-    let tacticStx ← `(tactic| simp_all (config := {decide := true, arith := true, contextual := true}))
-    let remainingGoals ← Tactic.run h_le_mvar.mvarId! (evalTactic tacticStx)
-    throwError "[choose_eq] Failed to prove {← ppExpr h_le_type} for term C({← ppExpr n}, {← ppExpr k}). This tactic requires k ≤ n for all choose terms."
-    if !remainingGoals.isEmpty then
-      throwError "[choose_eq] Failed to prove {← ppExpr h_le_type} for term C({← ppExpr n}, {← ppExpr k}). This tactic requires k ≤ n for all choose terms."
--/
-
-    -- We want to change the goal from `lhsExpr = rhsExpr` to `lhsExpr * combinedDenominators = rhsExpr * combinedDenominators`.
-    -- The `mulLeftInjLemma` is `(lhsExpr * combinedDen. = rhsExpr * combinedDen.) ↔ (lhsExpr = rhsExpr)`.
-    -- `Iff.mp mulLeftInjLemma` gives `(lhsExpr * combinedDen. = rhsExpr * denCombinedDeno.) → (lhsExpr = rhsExpr)`.
-    -- Applying this to the current goal `lhsExpr = rhsExpr` changes the goal to `lhsExpr * den = rhsExpr * den`.
-
-
-    evalTactic (← `(tactic| try simp only [Nat.sub_eq, Nat.add_one_sub_one, Nat.reduceSub]; try ring_nf))
-    return
-
-  /-
-    -- Step 3: Use `conv` to rewrite products involving `Nat.choose` terms.
-    -- `Nat.choose_mul_factorial_mul_factorial` will be applied using the `k <= n` hypotheses now in context.
-    -- `mul_assoc`, `mul_comm`, `mul_left_comm` are used to rearrange terms for the rewrite.
-    evalTactic (← `(tactic|
-      conv =>
-        lhs
-        (simp (config := {failIfUnchanged := false, arith := true, contextual := true}) only [Nat.choose_mul_factorial_mul_factorial, mul_assoc, mul_comm, mul_left_comm])))
-    evalTactic (← `(tactic|
-      conv =>
-        rhs
-        (simp (config := {failIfUnchanged := false, arith := true, contextual := true}) only [Nat.choose_mul_factorial_mul_factorial, mul_assoc, mul_comm, mul_left_comm])))
-    evalTactic (← `(tactic| try ring))
-    evalTactic (← `(tactic| try rfl))
-    evalTactic (← `(tactic| try ring_nf))
-  -/
-  -/
 
 end ChooseEqTactic
 
 open ChooseEqTactic
 
 -- Example usage and tests
+
+/-
+example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
+    n.choose k * k.choose j = n.choose j * (n - j).choose (k - j) := by
+  choose_eq
+  sorry
 
 example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 1 * Nat.choose 4 2 := by
   choose_eq
@@ -363,10 +328,18 @@ example : Nat.choose 5 2 = Nat.choose 5 2 := by
 example : Nat.choose 4 2 = (Nat.factorial 4) / (Nat.factorial 2 * Nat.factorial 2) := by
   choose_eq
 
-example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
-    n.choose k * k.choose j = n.choose j * (n - j).choose (k - j) := by
-  choose_eq
-  sorry
+example
+  (h_lhs_contr_0 : Nat.choose 5 2 * Nat.factorial 2 * (5 - 2).factorial = Nat.factorial 5)
+  (h_lhs_contr_1 : Nat.choose 3 1 * Nat.factorial 1 * (3 - 1).factorial = Nat.factorial 3)
+  (h_rhs_contr_0 : Nat.choose 5 1 * Nat.factorial 1 * (5 - 1).factorial = Nat.factorial 5)
+  (h_rhs_contr_1 : Nat.choose 4 2 * Nat.factorial 2 * (4 - 2).factorial = Nat.factorial 4)
+  : Nat.choose 5 2 * Nat.factorial 2 * (5 - 2).factorial * (Nat.choose 3 1 * Nat.factorial 1 * (3 - 1).factorial) *
+    (Nat.factorial 1 * (5 - 1).factorial * (Nat.factorial 2 * (4 - 2).factorial))
+    =
+    Nat.factorial 5 * Nat.factorial 3 * (Nat.factorial 1 * (5 - 1).factorial * (Nat.factorial 2 * (4 - 2).factorial))
+  := by
+  rw [h_lhs_contr_0, h_lhs_contr_1]
+
 
 example
   (n k j : ℕ)
@@ -384,3 +357,20 @@ example
       (k.factorial * (n.sub k).factorial * (j.factorial * (k.sub j).factorial))
 := by
 repeat cc
+
+elab "my_custom_rewrite" h0:array term : tactic =>
+  withMainContext do
+    -- let rwRule : TSyntax `Lean.Parser.Tactic.rwRule := TSyntax.mk (mkIdent `h0)
+    -- let tacticSyntax ← `(tactic| rw [$rwRule])
+    let h := #[mkIdent `h1, mkIdent `h0]
+    let tacticSyntax ← `(tactic| rw [$h0:array term])
+    -- throwError m!"{tacticSyntax}"
+    evalTactic tacticSyntax
+
+theorem example_with_hyps (a b c d : Nat)
+    (h0 : a = 100)
+    (h1 : b = a)
+    (h2 : c = d)
+    (h_final : d = 100) : a = 100 := by
+  my_custom_rewrite [h0,h1]
+-/

@@ -1210,10 +1210,7 @@ lemma subgraphPairDensity_eq_sum_density_prods
               rw [Nat.choose_mul h₀ h₁]
       _ = (↑(ℓ.choose ℓ₃ * ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
               have h₀ : ℓ₃ ≤ ℓ := hℓ₃_ub
-              have h₁ : ℓ₁ ≤ ℓ₃ :=
-                calc
-                  ℓ₁ ≤ ℓ₁ + ℓ₂ := Nat.le_add_right ℓ₁ ℓ₂
-                  _ ≤ ℓ₃ := hℓ₃_lb
+              have h₁ : ℓ₁ ≤ ℓ₃ := by omega
               rw [Nat.choose_mul h₀ h₁]
       _ = ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ) := by
               simp only [mul_assoc, Nat.cast_mul, mul_comm]
@@ -1402,13 +1399,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                   ∧ Nonempty ((inducedSubgraph G X₃).val.coe ≃g H₃) }
   := by
 
-  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-    apply tsub_eq_tsub_of_add_eq_add
-    rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂)]
-    rw [←Nat.add_sub_assoc (by linarith) ℓ₂₃]
-    apply Eq.symm
-    apply Nat.sub_eq_of_eq_add
-    linarith
+  have h_ℓ_eq₁ : ℓ₁₂ - (ℓ₁ + ℓ₂ + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
 
   let S₁ := { ⟨F, F₁, F₂, G₁, G₂, X⟩ :  (F : QuotSimpleGraph (Fin ℓ₁₂))
                                       × Subgraph F.out × Subgraph F.out
@@ -1951,15 +1942,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [Finset.card_union X₁ X₂, h_X₁_disj_X₂]
       rw [h_X₁_card, h_X₂_card, h_X₄_card, h_X₅_card]
       show ℓ₁ + ℓ₂ + (ℓ₂₃ - (ℓ₂ + ℓ₃)) + (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₁₂
-      rw [←add_tsub_assoc_of_le h (ℓ₁ + ℓ₂ + (ℓ₂₃ - (ℓ₂ + ℓ₃)))]
-      apply Nat.sub_eq_of_eq_add
-      ring_nf
-      rw [Nat.add_assoc (ℓ₁ + ℓ₂ + ℓ₃) (ℓ₂₃ - (ℓ₂ + ℓ₃)) ℓ₁₂,
-          Nat.add_comm (ℓ₂₃ - (ℓ₂ + ℓ₃)) ℓ₁₂]
-      rw [←Nat.add_assoc (ℓ₁ + ℓ₂ + ℓ₃) ℓ₁₂ (ℓ₂₃ - (ℓ₂ + ℓ₃)),
-          ←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₁ + ℓ₂ + ℓ₃ + ℓ₁₂)]
-      apply Nat.sub_eq_of_eq_add
-      linarith
+      omega
 
     let g_G₁_Finℓ₁₂ : G₁.verts ≃ Fin ℓ₁₂ := Fintype.equivOfCardEq h_G₁_verts_card
 
@@ -2634,9 +2617,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       rw [Finset.card_union X₂ X₃, h_X₂_disj_X₃]
       rw [h_X₂_card, h_X₃_card, h_X₄_card]
       show ℓ₂ + ℓ₃ + (ℓ₂₃ - (ℓ₂ + ℓ₃)) = ℓ₂₃
-      rw [←add_tsub_assoc_of_le hℓ₂₃_lb (ℓ₂ + ℓ₃)]
-      apply Nat.sub_eq_of_eq_add
-      linarith
+      omega
 
     let g_G₁_Finℓ₂₃ : G₁.verts ≃ Fin ℓ₂₃ := Fintype.equivOfCardEq h_G₁_verts_card
 
@@ -3103,10 +3084,7 @@ lemma subgraphPairDensity_sum_assoc
   :=
   let C₁₂ : ℚ := (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
   have h_C₁₂_gt_0 : C₁₂ > 0 := by
-    have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) :=
-      calc
-        ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂ + ℓ₃) := by apply Nat.sub_le_sub_left; linarith
-        _ ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) := add_tsub_add_le_tsub_right
+    have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) := by omega
     simp [C₁₂, Nat.choose_pos this]
   have h_C₁₂_self_div_eq_1 : C₁₂ / C₁₂ = 1 :=
     div_self (ne_of_gt h_C₁₂_gt_0)
@@ -3161,18 +3139,11 @@ lemma subgraphPairDensity_sum_assoc
           * (↑(ℓ - ℓ₁₂).factorial / (↑ℓ₃.factorial * ↑(ℓ - (ℓ₁₂ + ℓ₃)).factorial))
           * (↑(ℓ₁₂ - (ℓ₁ + ℓ₂)).factorial / (↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial
               * ↑(ℓ₂₃ - (ℓ₂ + ℓ₃)).factorial)) := by
-                have : ℓ₁₂ - ℓ₁ - ℓ₂ = ℓ₁₂ - (ℓ₁ + ℓ₂) := by exact Nat.sub_sub ℓ₁₂ ℓ₁ ℓ₂
+                have : ℓ₁₂ - ℓ₁ - ℓ₂ = ℓ₁₂ - (ℓ₁ + ℓ₂) := by omega
                 rw [this]
-                have : ℓ - ℓ₁₂ - ℓ₃ = ℓ - (ℓ₁₂ + ℓ₃) := by exact Nat.sub_sub ℓ ℓ₁₂ ℓ₃
+                have : ℓ - ℓ₁₂ - ℓ₃ = ℓ - (ℓ₁₂ + ℓ₃) := by omega
                 rw [this]
-                have : ℓ₁₂ - (ℓ₁ + ℓ₂) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by
-                  refine Eq.symm (tsub_eq_tsub_of_add_eq_add ?h')
-                  rw [←Nat.add_sub_assoc h ℓ₂₃]
-                  apply Nat.sub_eq_of_eq_add
-                  ring_nf
-                  rw [←Nat.add_sub_assoc hℓ₁₂_lb (ℓ₂₃ + ℓ₃ + ℓ₁ + ℓ₂)]
-                  refine Eq.symm (Nat.sub_eq_of_eq_add ?h'')
-                  linarith
+                have : ℓ₁₂ - (ℓ₁ + ℓ₂) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
                 rw [this]
       _ = (↑ℓ₁₂.factorial
             * ↑(ℓ₁₂ - ℓ₁).factorial
@@ -3235,19 +3206,11 @@ lemma subgraphPairDensity_sum_assoc
           * (↑ℓ.factorial / (↑ℓ₂₃.factorial * ↑(ℓ - ℓ₂₃).factorial))
           * (↑(ℓ - ℓ₂₃).factorial / (↑ℓ₁.factorial * ↑(ℓ - ℓ₂₃ - ℓ₁).factorial))
           * (↑(ℓ - (ℓ₁ + ℓ₂₃)).factorial / (↑(ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)).factorial * ↑(ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))).factorial)) := by
-              have : ℓ₂₃ - ℓ₂ - ℓ₃ = ℓ₂₃ - (ℓ₂ + ℓ₃) := Nat.sub_sub ℓ₂₃ ℓ₂ ℓ₃
+              have : ℓ₂₃ - ℓ₂ - ℓ₃ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
               rw [this]
-              have : ℓ - ℓ₂₃ - ℓ₁ = ℓ - (ℓ₁ + ℓ₂₃) := Eq.symm (Nat.Simproc.sub_add_eq_comm ℓ ℓ₁ ℓ₂₃)
+              have : ℓ - ℓ₂₃ - ℓ₁ = ℓ - (ℓ₁ + ℓ₂₃) := by omega
               rw [this]
-              have : ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ - (ℓ₁₂ + ℓ₃) := by
-                refine Eq.symm (tsub_eq_tsub_of_add_eq_add ?h)
-                ring_nf
-                rw [←Nat.add_sub_assoc h ℓ]
-                apply Nat.sub_eq_of_eq_add
-                ring_nf
-                rw [←Nat.add_sub_assoc hℓ₂₃_ub _]
-                refine Eq.symm (Nat.sub_eq_of_eq_add ?_)
-                linarith
+              have : ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ - (ℓ₁₂ + ℓ₃) := by omega
               rw [this]
       _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) := by
               rw [choose_eq_factorial_div_factorial_rational h₁']
