@@ -54,6 +54,12 @@ instance : LE (FlagAlgebra σ) where
 theorem le_def (f g : FlagAlgebra σ) : f ≤ g ↔ g - f ∈ semanticCone σ :=
   Iff.rfl
 
+theorem flag_sub_nonneg
+    (f g : FlagAlgebra σ)
+    : f ≤ g ↔ 0 ≤ g - f
+  := by
+  simp only [le_def, sub_zero]
+
 instance : Preorder (FlagAlgebra σ) where
   le_refl f := by
     simp [semanticCone]
@@ -70,6 +76,14 @@ instance : Preorder (FlagAlgebra σ) where
       ring
     rw [this]
     exact add_nonneg hgh hfg
+
+theorem flag_geq_zero
+    (F : FinFlag σ)
+    : (⟦unitVector F⟧ : FlagAlgebra σ) ≥ 0
+  := by
+  simp [semanticCone]
+  intro φ
+  exact φ.2 F
 
 theorem square_downward_geq_zero
     (f : FlagAlgebra σ)
