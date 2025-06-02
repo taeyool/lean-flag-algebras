@@ -72,6 +72,17 @@ theorem finFlag_one_snd
     : (1 : FinFlag σ).2 = emptyFlag σ
   := rfl
 
+theorem flagDensity_one
+    (F : FlagWithSize σ n)
+    : flagDensity₁ (1 : FinFlag σ).2 F = 1
+  := by sorry
+
+theorem flagPairDensity_one
+    (F : FlagWithSize σ n) (G : FlagWithSize σ m)
+    : flagDensity₂ (1 : FinFlag σ).2 F G = flagDensity₁ F G
+  :=
+  flagPairDensity_empty F G
+
 theorem finFlag_size_ge_n₀
     (F : FinFlag σ) : n₀ ≤ F.1 := by
   rcases F with ⟨n, F⟩
@@ -132,11 +143,6 @@ theorem flagVector_eq_sum_unitVector
 
 noncomputable instance : One (FlagVector σ) where
   one := unitVector 1
-
-lemma quotLabledSubgraphDensity_one
-    (F : FlagWithSize σ n)
-    : flagDensity₁ (1: FinFlag σ).2 F = 1
-  := by sorry
 
 @[simp]
 theorem flagVector_one_support
@@ -807,7 +813,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
         simp
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (unitVector 1).support, _ = 1
-      simp [sum_singleton, quotLabledSubgraphDensity_one]
+      simp [sum_singleton, flagDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       simp_all only [mul_zero, sum_const_zero, zero_ne_one]
     rw [hx] at h_φ_1
