@@ -75,7 +75,9 @@ theorem finFlag_one_snd
 theorem flagDensity_one
     (F : FlagWithSize σ n)
     : flagDensity₁ (1 : FinFlag σ).2 F = 1
-  := by sorry
+  := by
+  rw [finFlag_one_snd]
+  exact flagDensity_empty F
 
 theorem flagPairDensity_one
     (F : FlagWithSize σ n) (G : FlagWithSize σ m)
@@ -488,6 +490,9 @@ theorem flagVectorEqv.trans
   rw [← sub_add_sub_cancel]
   exact zeroSpace_closed_under_add (f - f') (f' - f'') h h'
 
+instance : Trans (@flagVectorEqv n₀ σ) (@flagVectorEqv n₀ σ) (@flagVectorEqv n₀ σ) where
+  trans := flagVectorEqv.trans
+
 instance flagVectorSetoid (σ : FlagType (Fin n₀))
     : Setoid (FlagVector σ) where
   r     := flagVectorEqv
@@ -622,10 +627,96 @@ theorem flagVector_smul_mul_smul_comm
     simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
     congr 1; ring
 
+theorem sum_smul
+    (s : Finset ι) (c : ι → ℝ) (f : FlagVector σ) : (∑ i in s, c i) • f = ∑ i in s, c i • f
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · simp
+  · intros r R hr ih
+    simp [sum_insert hr, Module.add_smul, ih]
+
+theorem three_flag_mul_eqv_sum_tripleDensity
+    {F₁ F₂ F₃ : FinFlag σ} {ℓ : ℕ} (hℓ : ℓ = F₁.1 + F₂.1 + F₃.1 - n₀ - n₀)
+    : (unitVector F₁ * unitVector F₂ * unitVector F₃) ∼v
+      (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩)
+  := by
+  nth_rw 2 [flagVector_mul_def]
+  simp [flagMul, flagMulWithSize]
+  rw [flagVector_sum_mul]
+  let ℓ' := F₁.1 + F₂.1 - n₀
+  calc
+    _ ∼v (∑ F : FlagWithSize σ ℓ, ∑ F' : FlagWithSize σ ℓ',
+          flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 F • unitVector ⟨ℓ, F⟩) := by
+      rw [flagVectorEqv, sum_comm, ← sum_sub_distrib]
+      apply zeroSpace_closed_under_sum
+      intro F' _
+      rw [smul_mul_assoc, ← smul_sum, rat_smul_eq_real_smul, ← smul_sub]
+      apply zeroSpace_closed_under_smul
+      simp [flagVector_mul_def, flagMul, flagMulWithSize]
+      have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by sorry
+      rw [this, ← sum_sub_distrib]
+      apply zeroSpace_closed_under_sum
+      intro G _
+      simp
+    _ ∼v (∑ G : FlagWithSize σ ℓ, (∑ F' : FlagWithSize σ ℓ',
+          flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 G) • unitVector ⟨ℓ, G⟩) := by
+      rw [flagVectorEqv, ← sum_sub_distrib]
+      apply zeroSpace_closed_under_sum
+      intro G _
+      simp
+      rw [sum_smul, ← sum_sub_distrib]
+      apply zeroSpace_closed_under_sum
+      intro F' _
+      simp [smul_smul]
+    _ ∼v _ := by
+      rw [flagVectorEqv, ← sum_sub_distrib]
+      apply zeroSpace_closed_under_sum
+      intro G _
+      simp
+      rw [← sub_smul]
+      have : flagDensity₃ F₁.snd F₂.snd F₃.snd G
+        = ∑ x : FlagWithSize σ ℓ', flagDensity₂ F₁.snd F₂.snd x * flagDensity₂ x F₃.snd G := by
+        apply density_chain_rule₂₂ ℓ' <;> try (apply finFlag_size_ge_n₀)
+        · dsimp [ℓ']
+          rw [Nat.sub_add_cancel]
+          refine Nat.le_add_right_of_le ?_
+          apply finFlag_size_ge_n₀
+        · simp [ℓ', hℓ]
+          sorry
+      simp [this]
+
+theorem unitVector_mul_assoc
+    (F G H : FinFlag σ)
+    : (unitVector F * unitVector G * unitVector H) ∼v
+      (unitVector F * (unitVector G * unitVector H))
+  := by
+  sorry
+  -- let ℓ := F.1 + G.1 + H.1
+  -- apply graph_algebra_eqv.trans
+  -- · have hℓ : F.1 + G.1 + H.1 ≤ ℓ := by simp
+  --   apply graph_mul_mul_eqv_sum_tripleDensity hℓ
+  -- apply graph_algebra_eqv.symm
+  -- rw [graphVector_mul_comm]
+  -- apply graph_algebra_eqv.trans
+  -- · have hℓ' : G.1 + H.1 + F.1 ≤ ℓ := by simp [ℓ]; linarith
+  --   apply graph_mul_mul_eqv_sum_tripleDensity hℓ'
+  -- dsimp [graph_algebra_eqv]
+  -- rw [← sum_sub_distrib]
+  -- apply zeroSet_closed_under_sum
+  -- intros
+  -- simp [← quotSubgraphTripleDensity_comm]
+
 theorem flagVector_mul_assoc
     (f g h : FlagVector σ) : (f * g * h) ∼v (f * (g * h))
-  :=
-  sorry
+  := by
+  dsimp [flagVectorEqv]
+  rw [flagVector_eq_sum_unitVector f, flagVector_eq_sum_unitVector g, flagVector_eq_sum_unitVector h]
+  simp [flagVector_mul_sum, flagVector_sum_mul, ← sum_sub_distrib, flagVector_smul_mul_smul_comm, mul_assoc]
+  repeat (apply zeroSpace_closed_under_sum; intros)
+  rw [← smul_sub]
+  apply zeroSpace_closed_under_smul
+  apply unitVector_mul_assoc
 
 theorem flagAlgebra_mul_assoc
     (f g h : FlagAlgebra σ) : f * g * h = f * (g * h)

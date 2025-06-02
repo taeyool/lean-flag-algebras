@@ -1165,6 +1165,11 @@ noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F�
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
 
+theorem flagDensity_empty
+    (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
+  := by
+  sorry
+
 omit [DecidableEqExist T] in
 theorem flagDensity_self
     (F : Flag σ W) : flagDensity₁ F F = 1
