@@ -524,10 +524,34 @@ lemma induced_full_labeledsubgraph_eq_top
       exact embed_val_eq G₀.type_embed G'.type_embed (labeledSubgraph_top G₀).type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
     exact embed_eq G'.type_embed (labeledSubgraph_top G₀).type_embed G'_eq_top type_eq coe_eq emb_eq
 
+lemma labeledSubgraphCount_empty
+    (E : LabeledGraph σ T) (G : LabeledGraph σ V) : labeledSubgraphCount E G = ((G.size - σ.size).choose (E.size - σ.size))
+  := by
+  sorry
+
+example (a : ℚ) (h : a ≠ 0) : a / a = 1 := by
+  exact (div_eq_one_iff_eq h).mpr rfl
+
+
+lemma labeledSubgraphDensity_empty
+    (E : LabeledGraph σ T) (G : LabeledGraph σ V) : labeledSubgraphDensity E G = 1
+  := by
+  simp [labeledSubgraphDensity]
+  rw [labeledSubgraphCount_empty E G]
+  have : ((G.size - σ.size).choose (E.size - σ.size) : ℚ) ≠ 0 := by
+    sorry
+  exact (div_eq_one_iff_eq this).mpr rfl
+
 lemma subflagDensity_empty
     (G : Flag σ V) : subflagDensity (emptyFlag σ) G = 1
   := by
-  sorry
+  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
+  rcases Quotient.exists_rep (emptyFlag σ) with ⟨Erep, hErep⟩
+  dsimp [subflagDensity, labeledSubgraphDensityLifted]
+  subst hGrep
+  rw [← hErep]
+  dsimp [labeledSubgraphDensityLifted]
+  exact labeledSubgraphDensity_empty Erep Grep
 
 omit [DecidableEqExist T] in
 lemma labeledSubgraphCount_self
@@ -622,7 +646,6 @@ lemma subflagDensity_self
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   dsimp [subflagDensity, labeledSubgraphDensityLifted]
   subst hGrep
-  simp [labeledSubgraphDensity_self]
   dsimp [labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_self Grep
 
