@@ -652,10 +652,29 @@ lemma subgraphCount_other
             simp [labeledSubgraph_top, f]
           let f_equiv := Equiv.ofBijective f h_bij
           exact ⟨f_equiv, h_iso⟩
-        have type_preserve : graph_iso ∘ (labeledSubgraph_top G₁).coe.type_embed = G₁.type_embed := by
+        have type_preserve : graph_iso ∘ (labeledSubgraph_top G₁).type_embed = G₁.type_embed := by
           ext t
           dsimp [labeledSubgraph_top]
-          sorry
+          simp [labeledSubgraph_top] at graph_iso
+          simp [SimpleGraph.Subgraph.coe, LabeledGraph.type_embed]
+          have tmp' : (labeledSubgraph_top G₁).subgraph.verts ≃ V := by
+            apply Equiv.ofBijective (fun v => v.val)
+            constructor
+            · intro v₁ v₂ h_eq
+              exact SetCoe.ext h_eq
+            · intro v
+              exact CanLift.prf v trivial
+          -- have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
+          have tmp : ∀ v : (labeledSubgraph_top G₁).subgraph.verts, graph_iso v = v := by
+            intro v
+            have h_v := iso_subset_of_finset_is_full (id tmp'.symm) v
+            dsimp [labeledSubgraph_top]
+            dsimp [labeledSubgraph_top] at h_v
+
+            -- Use the fact that graph_iso preserves vertex identity in this context
+            -- For vertices in the universal set, graph_iso maps to the same vertex
+            sorry
+          exact tmp ⟨G₁.type_embed t, labeledSubgraph_top.proof_4 G₁ t⟩
         exact ⟨graph_iso, type_preserve⟩
       rw [← this] at g
       exact g
@@ -1230,7 +1249,54 @@ theorem flagDensity_other
   rcases Quotient.exists_rep F' with ⟨Frep', hFrep'⟩
   dsimp [flagDensity₁]
   have goal : subflagDensity F F' = flagListDensity (flagToList F) F' := by
-    sorry
+    have h_count : labeledSubgraphCount Frep Frep' = labeledSubgraphListCount (fun (_ : Fin 1) => Frep) Frep' := by
+      dsimp [labeledSubgraphCount, labeledSubgraphListCount]
+      apply Finset.card_bij
+      · intro H hH
+        simp at hH
+        show (fun (_ : Fin 1) => H) ∈ _
+        simp [Set.toFinset_setOf]
+        constructor
+        · exact hH.1
+        · constructor
+          · exact hH.2
+          · intro i j hij
+            have : i = j := by
+              rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+            contradiction
+      · intro H _ H' _ h_eq
+        calc
+          H = (fun (_ : Fin 1) => H) 0 := by simp
+          _ = (fun (_ : Fin 1) => H') 0 := by rw [h_eq]
+          _ = H' := by simp
+      · intro Hl _
+        use Hl 0
+        simp_all
+        ext1 i
+        rw [Fin.fin_one_eq_zero i]
+    calc
+      subflagDensity F F' = labeledSubgraphDensity Frep Frep' := by
+        subst hFrep hFrep'
+        rfl
+      _ = labeledSubgraphListDensity (fun (_ : Fin 1) => Frep) Frep' := by
+        dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
+        rw [← h_count]
+        congr
+        dsimp [multinomialCoefficient]
+        rw [Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Finset.prod_singleton]
+        split
+        · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
+        · rw [Nat.choose_eq_zero_of_lt (by linarith)]
+      _ = quotLabeledSubgraphListDensity [F]ᶠ.coe F' := by
+        have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
+          dsimp [eqv_QuotLabeledGraphList_FlagList]
+          apply Quotient.sound
+          intro i
+          simp [flagToList, ← hFrep]
+          apply Quotient.mk_out Frep
+        rw [this, ← hFrep']
+        rfl
+      _ = flagListDensity [F]ᶠ F' := rfl
   rw [← goal]
   apply  subflagDensity_other h_neq
 
