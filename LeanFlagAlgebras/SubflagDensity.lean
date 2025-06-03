@@ -490,6 +490,7 @@ def labeledSubgraph_top
   }
   top
 
+omit [FintypeExist T] [DecidableEqExist T] [DecidableEqExist V] in
 lemma induced_full_labeledsubgraph_eq_top
     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = labeledSubgraph_top G₀
@@ -620,6 +621,7 @@ lemma subflagDensity_self
   dsimp [labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_self Grep
 
+omit [DecidableEqExist T] in
 lemma subgraphCount_other
     {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphCount G₀ G₁ = 0
   := by
@@ -633,7 +635,7 @@ lemma subgraphCount_other
     have f_iso_G'_G₁ : G'.coe ≃f G₁ := by
       have : G' = labeledSubgraph_top G₁ := induced_full_labeledsubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
       let g : (labeledSubgraph_top G₁).coe ≃f G₁ := by
-        have graph_iso : (labeledSubgraph_top G₁).subgraph.coe ≃g G₁.graph := by
+        let graph_iso : (labeledSubgraph_top G₁).subgraph.coe ≃g G₁.graph := by
           dsimp [labeledSubgraph_top]
           simp [SimpleGraph.Subgraph.coe]
           let f : (labeledSubgraph_top G₁).subgraph.verts → V := by
@@ -652,30 +654,10 @@ lemma subgraphCount_other
             simp [labeledSubgraph_top, f]
           let f_equiv := Equiv.ofBijective f h_bij
           exact ⟨f_equiv, h_iso⟩
-        have type_preserve : graph_iso ∘ (labeledSubgraph_top G₁).type_embed = G₁.type_embed := by
-          ext t
-          dsimp [labeledSubgraph_top]
-          simp [labeledSubgraph_top] at graph_iso
-          simp [SimpleGraph.Subgraph.coe, LabeledGraph.type_embed]
-          have tmp' : (labeledSubgraph_top G₁).subgraph.verts ≃ V := by
-            apply Equiv.ofBijective (fun v => v.val)
-            constructor
-            · intro v₁ v₂ h_eq
-              exact SetCoe.ext h_eq
-            · intro v
-              exact CanLift.prf v trivial
-          -- have h_v := iso_subset_of_finset_is_full (id iso_verts.symm) v
-          have tmp : ∀ v : (labeledSubgraph_top G₁).subgraph.verts, graph_iso v = v := by
-            intro v
-            have h_v := iso_subset_of_finset_is_full (id tmp'.symm) v
-            dsimp [labeledSubgraph_top]
-            dsimp [labeledSubgraph_top] at h_v
-
-            -- Use the fact that graph_iso preserves vertex identity in this context
-            -- For vertices in the universal set, graph_iso maps to the same vertex
-            sorry
-          exact tmp ⟨G₁.type_embed t, labeledSubgraph_top.proof_4 G₁ t⟩
-        exact ⟨graph_iso, type_preserve⟩
+        have h_emb : ∀ t : T, graph_iso ((labeledSubgraph_top G₁).type_embed t) = G₁.type_embed t := by
+          intro t
+          exact rfl
+        exact ⟨graph_iso, funext h_emb⟩
       rw [← this] at g
       exact g
     have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
@@ -683,6 +665,7 @@ lemma subgraphCount_other
   show Fintype.card S = 0
   simp_all only [not_nonempty_iff, Set.subset_empty_iff, Fintype.card_ofIsEmpty]
 
+omit [DecidableEqExist T] in
 lemma labeledSubgraphDensity_other
     {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphDensity G₀ G₁ = 0
   := by
@@ -690,6 +673,7 @@ lemma labeledSubgraphDensity_other
   have := subgraphCount_other h_neq
   simp_all only [Nat.cast_zero, zero_div]
 
+omit [DecidableEqExist T] in
 lemma subflagDensity_other
     {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁) : subflagDensity G₀ G₁ = 0
   := by
