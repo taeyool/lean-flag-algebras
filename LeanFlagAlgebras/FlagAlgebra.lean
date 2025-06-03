@@ -468,6 +468,7 @@ def flagVectorEqv (f g : FlagVector σ) : Prop
 
 infixl:50 " ∼v " => flagVectorEqv
 
+@[refl]
 theorem flagVectorEqv.refl (f : FlagVector σ)
     : f ∼v f
   := by
@@ -475,6 +476,7 @@ theorem flagVectorEqv.refl (f : FlagVector σ)
   rw [sub_self]
   apply Submodule.zero_mem
 
+@[symm]
 theorem flagVectorEqv.symm
     : ∀ {f f' : FlagVector σ}, f ∼v f' → f' ∼v f
   := by
@@ -654,7 +656,12 @@ theorem three_flag_mul_eqv_sum_tripleDensity
       rw [smul_mul_assoc, ← smul_sum, rat_smul_eq_real_smul, ← smul_sub]
       apply zeroSpace_closed_under_smul
       simp [flagVector_mul_def, flagMul, flagMulWithSize]
-      have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by sorry
+      have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by
+        rw [hℓ]
+        congr
+        rw [← Nat.sub_add_comm]
+        refine Nat.le_add_right_of_le ?_
+        apply finFlag_size_ge_n₀
       rw [this, ← sum_sub_distrib]
       apply zeroSpace_closed_under_sum
       intro G _
@@ -683,15 +690,39 @@ theorem three_flag_mul_eqv_sum_tripleDensity
           refine Nat.le_add_right_of_le ?_
           apply finFlag_size_ge_n₀
         · simp [ℓ', hℓ]
-          sorry
+          apply Nat.le_of_eq
+          calc
+            _ = F₁.1 + F₂.1 + F₃.1 - n₀ := by
+              rw [← Nat.sub_add_comm]
+              refine Nat.le_add_right_of_le ?_
+              apply finFlag_size_ge_n₀
+            _ = F₁.1 + F₂.1 + F₃.1 - n₀ - n₀ + n₀ := by
+              rw [Nat.sub_add_cancel]
+              refine Nat.le_sub_of_add_le ?_
+              refine Nat.add_le_add ?_ ?_
+              · refine Nat.le_add_right_of_le ?_
+                apply finFlag_size_ge_n₀
+              · apply finFlag_size_ge_n₀
       simp [this]
 
 theorem unitVector_mul_assoc
-    (F G H : FinFlag σ)
-    : (unitVector F * unitVector G * unitVector H) ∼v
-      (unitVector F * (unitVector G * unitVector H))
+    (F₁ F₂ F₃ : FinFlag σ)
+    : (unitVector F₁ * unitVector F₂ * unitVector F₃) ∼v
+      (unitVector F₁ * (unitVector F₂ * unitVector F₃))
   := by
-  sorry
+  nth_rw 2 [mul_comm (unitVector F₁)]
+  let ℓ := F₁.1 + F₂.1 + F₃.1 - n₀ - n₀
+  calc
+    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩) := by
+      apply three_flag_mul_eqv_sum_tripleDensity
+      dsimp [ℓ]
+    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₂.2 F₃.2 F₁.2 G) • unitVector ⟨ℓ, G⟩) := by
+      sorry
+    _ ∼v unitVector F₂ * unitVector F₃ * unitVector F₁ := by
+      symm
+      apply three_flag_mul_eqv_sum_tripleDensity
+      dsimp [ℓ]
+      ring_nf
   -- let ℓ := F.1 + G.1 + H.1
   -- apply graph_algebra_eqv.trans
   -- · have hℓ : F.1 + G.1 + H.1 ≤ ℓ := by simp
