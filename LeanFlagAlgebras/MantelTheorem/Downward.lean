@@ -171,7 +171,6 @@ lemma downwardFlagVectorQuot_O3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
 
-@[simp]
 theorem downward_O3₁
     : ⟦O3₁⟧₀ = O3
   := by
@@ -333,7 +332,6 @@ lemma downwardFlagVectorQuot_E3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁, downwardNormalizingFactor_E3₁]
 
-@[simp]
 theorem downward_E3₁
     : ⟦E3₁⟧₀ = (2 / 3 : ℝ) • E3
   := by
@@ -431,7 +429,6 @@ lemma downwardFlagVectorQuot_E3₁'
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_E3₁', downwardNormalizingFactor_E3₁']
 
-@[simp]
 theorem downward_E3₁'
     : ⟦E3₁'⟧₀ = (1 / 3 : ℝ) • E3
   := by
@@ -590,7 +587,6 @@ lemma downwardFlagVectorQuot_P3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁, downwardNormalizingFactor_P3₁]
 
-@[simp]
 theorem downward_P3₁
     : ⟦P3₁⟧₀ = (1 / 3 : ℝ) • P3
   := by
@@ -700,7 +696,6 @@ lemma downwardFlagVectorQuot_P3₁'
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_P3₁', downwardNormalizingFactor_P3₁']
 
-@[simp]
 theorem downward_P3₁'
     : ⟦P3₁'⟧₀ = (2 / 3 : ℝ) • P3
   := by
@@ -850,7 +845,6 @@ lemma downwardFlagVectorQuot_K3₁
   simp [downwardFlagVector, downwardFlag]
   simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]
 
-@[simp]
 theorem downward_K3₁
     : ⟦K3₁⟧₀ = K3
   := by

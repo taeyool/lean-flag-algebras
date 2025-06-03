@@ -38,6 +38,13 @@ theorem map_sub (φ : positiveHom σ) (f g : FlagAlgebra σ) : φ (f - g) = φ f
   :=
   RingHom.map_sub (φ.val : FlagAlgebra σ →+* ℝ) f g
 
+theorem map_smul (φ : positiveHom σ) (r : ℝ) (f : FlagAlgebra σ) : φ (r • f) = r * φ f
+  := by
+  calc
+    _ = φ.val (r • f) := rfl
+    _ = r * φ.val f := by simp only [_root_.map_smul, smul_eq_mul]
+    _ = r * φ f := rfl
+
 theorem map_mul (φ : positiveHom σ) (f g : FlagAlgebra σ) : φ (f * g) = φ f * φ g
   :=
   RingHom.map_mul (φ.val : FlagAlgebra σ →+* ℝ) f g
@@ -53,6 +60,12 @@ instance : LE (FlagAlgebra σ) where
 @[simp]
 theorem le_def (f g : FlagAlgebra σ) : f ≤ g ↔ g - f ∈ semanticCone σ :=
   Iff.rfl
+
+theorem flag_sub_nonneg
+    (f g : FlagAlgebra σ)
+    : f ≤ g ↔ 0 ≤ g - f
+  := by
+  simp only [le_def, sub_zero]
 
 instance : Preorder (FlagAlgebra σ) where
   le_refl f := by
@@ -70,6 +83,37 @@ instance : Preorder (FlagAlgebra σ) where
       ring
     rw [this]
     exact add_nonneg hgh hfg
+
+theorem flag_geq_zero
+    (F : FinFlag σ)
+    : (⟦unitVector F⟧ : FlagAlgebra σ) ≥ 0
+  := by
+  simp [semanticCone]
+  intro φ
+  exact φ.2 F
+
+theorem flag_add_le_add
+    {f f' g g' : FlagAlgebra σ} (hf : f ≤ f') (hg : g ≤ g')
+    : f + g ≤ f' + g'
+  := by
+  simp [le_def] at *
+  intro φ
+  have : f' + g' - (f + g) = (f' - f) + (g' - g) := by ring
+  rw [this]
+  rw [PositiveHom.map_add φ]
+  exact add_nonneg (hf φ) (hg φ)
+
+theorem nonneg_smul_nonneg_geq_zero
+    {r : ℝ} {f : FlagAlgebra σ} (hr : r ≥ 0) (hf : f ≥ 0)
+    : r • f ≥ 0
+  := by
+  simp [semanticCone]
+  intro φ
+  rw [PositiveHom.map_smul]
+  have hφf : 0 ≤ φ f := by
+    rw [ge_iff_le, le_def, sub_zero] at hf
+    exact hf φ
+  exact Left.mul_nonneg hr hφf
 
 theorem square_downward_geq_zero
     (f : FlagAlgebra σ)

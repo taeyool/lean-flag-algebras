@@ -5,7 +5,6 @@ open FlagAlgebras
 
 namespace MantelTheorem
 
-@[simp]
 theorem mul_O2₁_O2₁
     : O2₁ * O2₁ = O3₁ + E3₁'
   := by
@@ -29,7 +28,6 @@ theorem mul_O2₁_K2₁
   := by
   sorry
 
-@[simp]
 theorem mul_K2₁_K2₁
     : K2₁ * K2₁ = P3₁ + K3₁
   := by
