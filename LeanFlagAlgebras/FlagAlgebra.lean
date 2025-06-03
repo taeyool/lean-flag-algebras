@@ -666,11 +666,10 @@ theorem three_flag_mul_eqv_sum_tripleDensity
   calc
     _ ∼v (∑ F : FlagWithSize σ ℓ, ∑ F' : FlagWithSize σ ℓ',
           flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 F • unitVector ⟨ℓ, F⟩) := by
-      rw [flagVectorEqv, sum_comm, ← sum_sub_distrib]
-      apply zeroSpace_closed_under_sum
-      intro F' _
-      rw [smul_mul_assoc, ← smul_sum, rat_smul_eq_real_smul, ← smul_sub]
-      apply zeroSpace_closed_under_smul
+      rw [sum_comm]
+      apply flagVectorEqv_sum; intros; simp
+      rw [smul_mul_assoc, ← smul_sum]
+      apply flagVectorEqv_smul
       simp [flagVector_mul_def, flagMul, flagMulWithSize]
       have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by
         rw [hℓ]
@@ -678,28 +677,18 @@ theorem three_flag_mul_eqv_sum_tripleDensity
         rw [← Nat.sub_add_comm]
         refine Nat.le_add_right_of_le ?_
         apply finFlag_size_ge_n₀
-      rw [this, ← sum_sub_distrib]
-      apply zeroSpace_closed_under_sum
-      intro G _
-      simp
+      rw [this]
     _ ∼v (∑ G : FlagWithSize σ ℓ, (∑ F' : FlagWithSize σ ℓ',
           flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 G) • unitVector ⟨ℓ, G⟩) := by
-      rw [flagVectorEqv, ← sum_sub_distrib]
-      apply zeroSpace_closed_under_sum
-      intro G _
-      simp
-      rw [sum_smul, ← sum_sub_distrib]
-      apply zeroSpace_closed_under_sum
-      intro F' _
-      simp [smul_smul]
+      apply flagVectorEqv_sum; intros; simp [sum_smul]
+      apply flagVectorEqv_sum; intros; simp [smul_smul]
+      rfl
     _ ∼v _ := by
-      rw [flagVectorEqv, ← sum_sub_distrib]
-      apply zeroSpace_closed_under_sum
+      apply flagVectorEqv_sum
       intro G _
       simp
-      rw [← sub_smul]
-      have : flagDensity₃ F₁.snd F₂.snd F₃.snd G
-        = ∑ x : FlagWithSize σ ℓ', flagDensity₂ F₁.snd F₂.snd x * flagDensity₂ x F₃.snd G := by
+      have : flagDensity₃ F₁.2 F₂.2 F₃.2 G
+        = ∑ F' : FlagWithSize σ ℓ', flagDensity₂ F₁.2 F₂.2 F' * flagDensity₂ F' F₃.2 G := by
         apply density_chain_rule₂₂ ℓ' <;> try (apply finFlag_size_ge_n₀)
         · dsimp [ℓ']
           rw [Nat.sub_add_cancel]
@@ -720,6 +709,7 @@ theorem three_flag_mul_eqv_sum_tripleDensity
                 apply finFlag_size_ge_n₀
               · apply finFlag_size_ge_n₀
       simp [this]
+      rfl
 
 theorem unitVector_mul_assoc
     (F₁ F₂ F₃ : FinFlag σ)
