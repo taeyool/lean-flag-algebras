@@ -448,14 +448,14 @@ theorem zeroSpace_closed_under_add
   := by
   apply Submodule.add_mem <;> assumption
 
-lemma zeroSpace_closed_under_sum
+theorem zeroSpace_closed_under_sum
     (S : Finset α) (v : α → FlagVector σ) (h_zero : ∀ s ∈ S, v s ∈ ZeroSpace σ)
     : ∑ s ∈ S, v s ∈ ZeroSpace σ
   := by
   apply Submodule.sum_mem
   assumption
 
-lemma zeroSpace_closed_under_smul
+theorem zeroSpace_closed_under_smul
     (r : ℝ) (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
     : r • f ∈ ZeroSpace σ
   := by
@@ -494,6 +494,22 @@ theorem flagVectorEqv.trans
 
 instance : Trans (@flagVectorEqv n₀ σ) (@flagVectorEqv n₀ σ) (@flagVectorEqv n₀ σ) where
   trans := flagVectorEqv.trans
+
+theorem flagVectorEqv_sum
+    {S : Finset α} {v v' : α → FlagVector σ} (h_eqv : ∀ s ∈ S, v s ∼v v' s)
+    : ∑ s ∈ S, v s ∼v ∑ s ∈ S, v' s
+  := by
+  rw [flagVectorEqv, ← sum_sub_distrib]
+  apply zeroSpace_closed_under_sum
+  exact h_eqv
+
+theorem flagVectorEqv_smul
+    (r : ℝ) {f f' : FlagVector σ} (h_eqv : f ∼v f')
+    : r • f ∼v r • f'
+  := by
+  rw [flagVectorEqv, ← smul_sub]
+  apply zeroSpace_closed_under_smul
+  exact h_eqv
 
 instance flagVectorSetoid (σ : FlagType (Fin n₀))
     : Setoid (FlagVector σ) where
@@ -717,36 +733,22 @@ theorem unitVector_mul_assoc
       apply three_flag_mul_eqv_sum_tripleDensity
       dsimp [ℓ]
     _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₂.2 F₃.2 F₁.2 G) • unitVector ⟨ℓ, G⟩) := by
-      sorry
+      apply flagVectorEqv_sum
+      intro G _
+      rw [flagTripleDensity_comm]
     _ ∼v unitVector F₂ * unitVector F₃ * unitVector F₁ := by
       symm
       apply three_flag_mul_eqv_sum_tripleDensity
       dsimp [ℓ]
       ring_nf
-  -- let ℓ := F.1 + G.1 + H.1
-  -- apply graph_algebra_eqv.trans
-  -- · have hℓ : F.1 + G.1 + H.1 ≤ ℓ := by simp
-  --   apply graph_mul_mul_eqv_sum_tripleDensity hℓ
-  -- apply graph_algebra_eqv.symm
-  -- rw [graphVector_mul_comm]
-  -- apply graph_algebra_eqv.trans
-  -- · have hℓ' : G.1 + H.1 + F.1 ≤ ℓ := by simp [ℓ]; linarith
-  --   apply graph_mul_mul_eqv_sum_tripleDensity hℓ'
-  -- dsimp [graph_algebra_eqv]
-  -- rw [← sum_sub_distrib]
-  -- apply zeroSet_closed_under_sum
-  -- intros
-  -- simp [← quotSubgraphTripleDensity_comm]
 
 theorem flagVector_mul_assoc
     (f g h : FlagVector σ) : (f * g * h) ∼v (f * (g * h))
   := by
-  dsimp [flagVectorEqv]
   rw [flagVector_eq_sum_unitVector f, flagVector_eq_sum_unitVector g, flagVector_eq_sum_unitVector h]
   simp [flagVector_mul_sum, flagVector_sum_mul, ← sum_sub_distrib, flagVector_smul_mul_smul_comm, mul_assoc]
-  repeat (apply zeroSpace_closed_under_sum; intros)
-  rw [← smul_sub]
-  apply zeroSpace_closed_under_smul
+  iterate 3 (apply flagVectorEqv_sum; intros)
+  apply flagVectorEqv_smul
   apply unitVector_mul_assoc
 
 theorem flagAlgebra_mul_assoc
