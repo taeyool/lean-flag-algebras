@@ -35,7 +35,7 @@ def emptyTypeThreeFlagSet : Finset (FlagWithSize ∅ₜ 3) where
     sorry
 
 lemma emptyTypeThreeFlagSet_eq_univ
-    : emptyTypeThreeFlagSet = univ
+    : emptyTypeThreeFlagSet = Finset.univ
   := by
   sorry
 
@@ -45,12 +45,34 @@ lemma expand_K2_on_3_vertex_graphs
   apply Quotient.sound
   apply flagVectorEqv.trans (unitVector_eqv_densityFlagSum ⟨2, K2_flag⟩ 3 (by simp))
   dsimp [densityFlagSum]
-  sorry
+  rw [Finset.sum_eq_multiset_sum, ← emptyTypeThreeFlagSet_eq_univ]
+  simp only [emptyTypeThreeFlagSet, Multiset.map_coe, List.map_cons, List.map_nil,
+    Multiset.sum_coe, List.sum_cons, List.sum_nil, add_zero]
+  apply flagVector_eq_eqv
+  calc
+    _ = (0 : ℝ) • unitVector ⟨3, O3_flag⟩ + ((1 / 3 : ℝ) • unitVector ⟨3, E3_flag⟩ +
+        ((2 / 3 : ℝ) • unitVector ⟨3, P3_flag⟩ + (1 : ℝ) • unitVector ⟨3, K3_flag⟩)) := by
+      congr <;> simp
+    _ = _ := by simp only [add_assoc, zero_smul, zero_add, one_smul]
 
 lemma expand_1_on_3_vertex_graphs
     : 1 = O3 + E3 + P3 + K3
   := by
-  sorry
+  apply Quotient.sound
+  apply flagVectorEqv.trans (one_vector_eqv_densityFlagSum 3 (by simp))
+  dsimp [densityFlagSum]
+  calc
+    _ ∼v (∑ F' : FlagWithSize ∅ₜ 3, unitVector ⟨3, F'⟩) := by
+      apply flagVectorEqv_sum; intros
+      rw [finFlag_one_snd, flagDensity_empty]
+      simp only [Rat.cast_one, one_smul]
+      rfl
+    _ ∼v _ := by
+      rw [Finset.sum_eq_multiset_sum, ← emptyTypeThreeFlagSet_eq_univ]
+      simp only [emptyTypeThreeFlagSet, Multiset.map_coe, List.map_cons, List.map_nil,
+        Multiset.sum_coe, List.sum_cons, List.sum_nil, add_zero]
+      apply flagVector_eq_eqv
+      simp only [add_assoc]
 
 theorem mantel_theorem
     : K2 ≤ (1 / 2 : ℝ) • 1 + K3

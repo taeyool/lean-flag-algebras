@@ -471,12 +471,20 @@ def flagVectorEqv (f g : FlagVector σ) : Prop
 infixl:50 " ∼v " => flagVectorEqv
 
 theorem unitVector_eqv_densityFlagSum
-    (F : FinFlag σ) (ℓ : ℕ) (h : F.1 ≤ ℓ)
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : unitVector F ∼v densityFlagSum F ℓ
   := by
   dsimp [flagVectorEqv]
   show zeroElement F ℓ ∈ ZeroSpace σ
-  apply zeroElement_in_zeroSpace h
+  apply zeroElement_in_zeroSpace hℓ
+
+theorem one_vector_eqv_densityFlagSum
+    (ℓ : ℕ) (hℓ : n₀ ≤ ℓ)
+    : (1 : FlagVector σ) ∼v densityFlagSum 1 ℓ
+  := by
+  apply unitVector_eqv_densityFlagSum
+  rw [finFlag_one_fst]
+  exact hℓ
 
 @[refl]
 theorem flagVectorEqv.refl (f : FlagVector σ)
