@@ -28,6 +28,17 @@ lemma O2₁_minus_K2₁_square_downward
         simp only [← sub_smul]
         norm_num
 
+def emptyTypeThreeFlagSet : Finset (FlagWithSize ∅ₜ 3) where
+  val := [O3_flag, E3_flag, P3_flag, K3_flag]
+  nodup := by
+    simp
+    sorry
+
+lemma emptyTypeThreeFlagSet_eq_univ
+    : emptyTypeThreeFlagSet = univ
+  := by
+  sorry
+
 lemma expand_K2_on_3_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
