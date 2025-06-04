@@ -8,11 +8,41 @@ namespace MantelTheorem
 
 /- proof of Mantel's theorem -/
 
+lemma O3_E3_not_iso
+    : ¬ O3_labeledGraph ∼f E3_labeledGraph
+  := by
+  sorry
+
+lemma O3_P3_not_iso
+    : ¬ O3_labeledGraph ∼f P3_labeledGraph
+  := by
+  sorry
+
+lemma O3_K3_not_iso
+    : ¬ O3_labeledGraph ∼f K3_labeledGraph
+  := by
+  sorry
+
+lemma E3_P3_not_iso
+    : ¬ E3_labeledGraph ∼f P3_labeledGraph
+  := by
+  sorry
+
+lemma E3_K3_not_iso
+    : ¬ E3_labeledGraph ∼f K3_labeledGraph
+  := by
+  sorry
+
+lemma P3_K3_not_iso
+    : ¬ P3_labeledGraph ∼f K3_labeledGraph
+  := by
+  sorry
+
 def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
   val := [O3_flag, E3_flag, P3_flag, K3_flag]
   nodup := by
     simp
-    sorry
+    repeat' constructor <;> sorry
 
 example {i : ℕ} (h : i < 0) : False := by
   exact Nat.not_succ_le_zero i h
