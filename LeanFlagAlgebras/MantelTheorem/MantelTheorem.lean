@@ -31,6 +31,9 @@ lemma O2₁_minus_K2₁_square_downward
 lemma expand_K2_on_3_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
+  apply Quotient.sound
+  apply flagVectorEqv.trans (unitVector_eqv_densityFlagSum ⟨2, K2_flag⟩ 3 (by simp))
+  dsimp [densityFlagSum]
   sorry
 
 lemma expand_1_on_3_vertex_graphs
