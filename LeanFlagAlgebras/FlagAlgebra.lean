@@ -402,7 +402,7 @@ noncomputable def ZeroSpace
   :=
   Submodule.span ℝ (zeroSet σ)
 
-theorem zeroElement_in_zeroSet
+theorem zeroElement_in_zeroSpace
     {F : FinFlag σ} {ℓ : ℕ} (hℓ : F.1 ≤ ℓ)
     : zeroElement F ℓ ∈ ZeroSpace σ
   := by
@@ -469,6 +469,22 @@ def flagVectorEqv (f g : FlagVector σ) : Prop
   f - g ∈ ZeroSpace σ
 
 infixl:50 " ∼v " => flagVectorEqv
+
+theorem unitVector_eqv_densityFlagSum
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : unitVector F ∼v densityFlagSum F ℓ
+  := by
+  dsimp [flagVectorEqv]
+  show zeroElement F ℓ ∈ ZeroSpace σ
+  apply zeroElement_in_zeroSpace hℓ
+
+theorem one_vector_eqv_densityFlagSum
+    (ℓ : ℕ) (hℓ : n₀ ≤ ℓ)
+    : (1 : FlagVector σ) ∼v densityFlagSum 1 ℓ
+  := by
+  apply unitVector_eqv_densityFlagSum
+  rw [finFlag_one_fst]
+  exact hℓ
 
 @[refl]
 theorem flagVectorEqv.refl (f : FlagVector σ)
@@ -592,7 +608,7 @@ theorem flagMulWithSize_indep_on_size
       apply flagVectorEqv_sum; intros
       apply flagVectorEqv_smul
       simp [flagVectorEqv]
-      apply zeroElement_in_zeroSet hℓ
+      apply zeroElement_in_zeroSpace hℓ
     _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ∑ G' : FlagWithSize σ ℓ₂,
           ↑(flagDensity₂ F₁.snd F₂.snd F') • ↑(flagDensity₁ F' G') • unitVector ⟨ℓ₂, G'⟩) := by
       apply flagVectorEqv_sum; intros
