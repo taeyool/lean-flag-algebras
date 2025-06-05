@@ -458,27 +458,19 @@ lemma emptyTypeThreeVertexFlagSet_eq_univ
     simp only [Finset.mem_univ]
   · intro _
     simp [emptyTypeThreeVertexFlagSet]
-    cases (emptyTypeThreeVertexLabeledGraph_eqv F.out) with
-    | inl h₀ =>
-      left
+    rcases (emptyTypeThreeVertexLabeledGraph_eqv F.out) with h₀ | h₁ | h₂ | h₃
+    · left
       rw [← F.out_eq]
       exact Quotient.sound h₀
-    | inr h =>
-      cases h with
-      | inl h₁ =>
-        right; left
-        rw [← F.out_eq]
-        exact Quotient.sound h₁
-      | inr h =>
-        cases h with
-        | inl h₂ =>
-          right; right; left
-          rw [← F.out_eq]
-          exact Quotient.sound h₂
-        | inr h₃ =>
-          right; right; right
-          rw [← F.out_eq]
-          exact Quotient.sound h₃
+    · right; left
+      rw [← F.out_eq]
+      exact Quotient.sound h₁
+    · right; right; left
+      rw [← F.out_eq]
+      exact Quotient.sound h₂
+    · right; right; right
+      rw [← F.out_eq]
+      exact Quotient.sound h₃
 
 lemma expand_K2_on_3_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
