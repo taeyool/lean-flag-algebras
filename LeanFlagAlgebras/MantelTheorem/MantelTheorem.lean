@@ -8,41 +8,267 @@ namespace MantelTheorem
 
 /- proof of Mantel's theorem -/
 
+lemma all_isomorphism_on_Fin3
+    (φ : Fin 3 ≃ Fin 3)
+    : (φ 0 = 0 ∧ φ 1 = 1 ∧ φ 2 = 2) ∨
+      (φ 0 = 0 ∧ φ 1 = 2 ∧ φ 2 = 1) ∨
+      (φ 0 = 1 ∧ φ 1 = 0 ∧ φ 2 = 2) ∨
+      (φ 0 = 1 ∧ φ 1 = 2 ∧ φ 2 = 0) ∨
+      (φ 0 = 2 ∧ φ 1 = 0 ∧ φ 2 = 1) ∨
+      (φ 0 = 2 ∧ φ 1 = 1 ∧ φ 2 = 0)
+  := by
+  have inj_φ := Equiv.injective φ
+  match h₀ : φ 0 with
+  | 0 =>
+    match h₁ : φ 1 with
+    | 0 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
+    | 1 => match h₂ : φ 2 with
+      | 0 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+      | 1 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+      | 2 => left; simp
+    | 2 => match h₂ : φ 2 with
+      | 0 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+      | 1 => right; left; simp
+      | 2 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+  | 1 =>
+    match h₁ : φ 1 with
+    | 0 => match h₂ : φ 2 with
+      | 0 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+      | 1 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+      | 2 => right; right; left; simp
+    | 1 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
+    | 2 => match h₂ : φ 2 with
+      | 0 => right; right; right; left; simp
+      | 1 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+      | 2 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+  | 2 =>
+    match h₁ : φ 1 with
+    | 0 => match h₂ : φ 2 with
+      | 0 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+      | 1 => right; right; right; right; left; simp
+      | 2 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+    | 1 => match h₂ : φ 2 with
+      | 0 => right; right; right; right; right; simp
+      | 1 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
+      | 2 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
+    | 2 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
+
 lemma O3_E3_not_iso
     : ¬ O3_labeledGraph ∼f E3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [O3_labeledGraph, E3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+
 
 lemma O3_P3_not_iso
     : ¬ O3_labeledGraph ∼f P3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [O3_labeledGraph, P3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
 
 lemma O3_K3_not_iso
     : ¬ O3_labeledGraph ∼f K3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [O3_labeledGraph, K3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 1 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₁]
+      simp
+    contradiction
+  · have : O3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : O3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
 
 lemma E3_P3_not_iso
     : ¬ E3_labeledGraph ∼f P3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [E3_labeledGraph, P3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : E3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
 
 lemma E3_K3_not_iso
     : ¬ E3_labeledGraph ∼f K3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [E3_labeledGraph, K3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : E3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 0 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₀, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : E3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
 
 lemma P3_K3_not_iso
     : ¬ P3_labeledGraph ∼f K3_labeledGraph
   := by
-  sorry
+  intro h
+  let φ := h.some
+  let φG := φ.graph_iso
+  dsimp [P3_labeledGraph, K3_labeledGraph] at φG
+  rcases (all_isomorphism_on_Fin3 φG) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+  <;> simp at h₀ h₁ h₂
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
+  · have : P3_graph.Adj 1 2 := by
+      rw [← SimpleGraph.Iso.map_adj_iff φG, h₁, h₂]
+      simp
+    contradiction
 
 def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
   val := [O3_flag, E3_flag, P3_flag, K3_flag]
   nodup := by
     simp
-    repeat' constructor <;> sorry
+    (repeat' constructor) <;> intro h
+    · exact O3_E3_not_iso (Quotient.exact h)
+    · exact O3_P3_not_iso (Quotient.exact h)
+    · exact O3_K3_not_iso (Quotient.exact h)
+    · exact E3_P3_not_iso (Quotient.exact h)
+    · exact E3_K3_not_iso (Quotient.exact h)
+    · exact P3_K3_not_iso (Quotient.exact h)
 
 example {i : ℕ} (h : i < 0) : False := by
   exact Nat.not_succ_le_zero i h

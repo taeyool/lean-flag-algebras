@@ -12,6 +12,24 @@ def K2_graph := completeGraph (Fin 2)
 
 def O3_graph := emptyGraph (Fin 3)
 
+@[simp]
+theorem O3_graph_01 : ¬ O3_graph.Adj 0 1 := by rintro (_ | _ | _)
+
+@[simp]
+theorem O3_graph_10 : ¬ O3_graph.Adj 1 0 := by rintro (_ | _ | _)
+
+@[simp]
+theorem O3_graph_02 : ¬ O3_graph.Adj 0 2 := by rintro (_ | _ | _)
+
+@[simp]
+theorem O3_graph_20 : ¬ O3_graph.Adj 2 0 := by rintro (_ | _ | _)
+
+@[simp]
+theorem O3_graph_12 : ¬ O3_graph.Adj 1 2 := by rintro (_ | _ | _)
+
+@[simp]
+theorem O3_graph_21 : ¬ O3_graph.Adj 2 1 := by rintro (_ | _ | _)
+
 inductive E3_edge : Fin 3 → Fin 3 → Prop
   | e01 : E3_edge 0 1
   | e10 : E3_edge 1 0
