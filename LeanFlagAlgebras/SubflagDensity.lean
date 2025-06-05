@@ -564,25 +564,26 @@ def labeledSubgraph_bottom
   bottom
 
 noncomputable def type_iso
-    {σ : FlagType T} {G : LabeledGraph σ V} [Nonempty T]
-    : G.type_verts ≃ T := by
-  let f : G.type_verts → T := by
-    intro v
-    exact Function.invFun G.type_embed v
+    {σ : FlagType T} (G : LabeledGraph σ V)
+    : T ≃ G.type_verts  := by
+  let f : T → G.type_verts := by
+    intro t
+    use G.type_embed t
+    unfold LabeledGraph.type_verts
+    exact Set.mem_image_of_mem (⇑G.type_embed) trivial
   have h_bij : Function.Bijective f := by
     constructor
-    · intro u v h_uv
-      dsimp [f] at h_uv
-      sorry
-    · intro t
-      use ⟨G.type_embed t, by
-        unfold LabeledGraph.type_verts
-        exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t)⟩
-      dsimp [f]
-      sorry
-  let f_bij : G.type_verts ≃ T := Equiv.ofBijective f h_bij
+    · intro t₁ t₂ h_eq
+      dsimp [f] at h_eq
+      simp at h_eq
+      exact h_eq
+    · intro u
+      unfold LabeledGraph.type_verts at u
+      obtain ⟨t, h_t⟩ := u
+      simp_all only [Subtype.mk.injEq, f]
+      simp_all only [Set.image_univ, Set.mem_range]
+  let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
   exact f_bij
-
 
 lemma labeledSubgraph_eq_empty_leabledSubgraph_iff_iso_empty_graph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
@@ -590,24 +591,48 @@ lemma labeledSubgraph_eq_empty_leabledSubgraph_iff_iso_empty_graph
   constructor
   · intro h_eq
     rw [h_eq]
+    let type_iso := type_iso G
     let f : (labeledSubgraph_bottom G).subgraph.verts → T := by
       intro v
       dsimp [labeledSubgraph_bottom] at v
-      -- dsimp [bottom, LabeledGraph.type_verts] at v
-      -- obtain ⟨v, h_v⟩ := v
-      sorry
+      exact type_iso.symm v
     have h_bij : Function.Bijective f := by
       constructor
       · intro v₁ v₂ h_eq
         dsimp [f] at h_eq
-        sorry
-      · sorry
+        dsimp [type_iso] at h_eq
+        simp at h_eq
+        exact h_eq
+      · intro t
+        use type_iso t
+        exact Equiv.symm_apply_apply type_iso t
     have h_iso : ∀ {w₀ w₁ : (labeledSubgraph_bottom G).subgraph.verts}, (emptyLabeledGraph σ).graph.Adj (f w₀) (f w₁) ↔ (labeledSubgraph_bottom G).subgraph.Adj w₀ w₁ := by
-      sorry
+      dsimp [labeledSubgraph_bottom]
+      intro w₁ w₂
+      constructor
+      · intro h_adj
+        dsimp [emptyLabeledGraph] at h_adj
+        obtain ⟨w₁, hw₁⟩ := w₁
+        obtain ⟨w₂, hw₂⟩ := w₂
+        have : G.graph.Adj w₁ w₂ := by
+          sorry
+        exact ⟨hw₁, ⟨hw₂, this⟩⟩
+      · intro ⟨hw₁, ⟨hw₂, h_adj⟩⟩
+        dsimp [emptyLabeledGraph]
+        let t₁ := type_iso.symm w₁
+        let t₂ := type_iso.symm w₂
+        have h_t₁ : f w₁ = t₁ := rfl
+        have h_t₂ : f w₂ = t₂ := rfl
+        rw [h_t₁, h_t₂]
+        sorry
     let f₁ : (labeledSubgraph_bottom G).subgraph.verts ≃ T := Equiv.ofBijective f h_bij
     let f₁_iso : (labeledSubgraph_bottom G).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f₁, h_iso⟩
     have h_emb₁ : ∀ t : T, f₁_iso ((labeledSubgraph_bottom G).coe.type_embed t) = (emptyLabeledGraph σ).type_embed t := by
-      sorry
+      intro t
+      dsimp [labeledSubgraph_bottom]
+      dsimp [emptyLabeledGraph]
+      dsimp [f₁_iso, f₁, f]
+      exact (Equiv.symm_apply_eq type_iso).mpr rfl
     exact ⟨f₁_iso, funext h_emb₁⟩
   · intro H_iso
     obtain ⟨graph_iso, type_embed⟩ := H_iso
