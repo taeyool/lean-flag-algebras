@@ -532,7 +532,7 @@ def labeledSubgraph_bottom
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
       adj_sub := by simp [SimpleGraph.Adj]
       edge_vert := by
-        intro u v ⟨hu, ⟨hv, h_adj⟩⟩
+        intro u v ⟨hu, _⟩
         exact hu
       symm := by
         intro u v ⟨hu, ⟨hv, h_uv⟩⟩
@@ -566,7 +566,19 @@ def labeledSubgraph_bottom
 lemma labeledSubgraph_eq_empty_leabledSubgraph_iff_iso_empty_graph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
     : H = labeledSubgraph_bottom G ↔ Nonempty (H.coe ≃f (emptyLabeledGraph σ)) := by
-  sorry
+  constructor
+  · intro h_eq
+    rw [h_eq]
+    have f_iso : (labeledSubgraph_bottom G).subgraph.verts ≃ T := by
+      sorry
+    sorry
+  · intro h_iso
+    have h_verts : H.subgraph.verts = T := by
+      sorry
+    ext u v
+    · sorry
+    · sorry
+    · sorry
 
 lemma labeledSubgraphCount_empty
     {σ : FlagType T} (G : LabeledGraph σ V) : labeledSubgraphCount (emptyLabeledGraph σ) G = ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size))
