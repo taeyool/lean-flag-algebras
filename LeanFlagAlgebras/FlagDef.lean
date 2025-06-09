@@ -142,10 +142,12 @@ namespace LabeledGraphIso
 variable {T : Type} [FintypeExist T] {σ : FlagType T} {V W U : Type}
 variable {G : LabeledGraph σ V} {G' : LabeledGraph σ W} {G'' : LabeledGraph σ U}
 
+@[refl]
 def refl : G ≃f G where
   graph_iso := by rfl
   type_preserve := by ext t ; simp
 
+@[symm]
 def symm (h : G ≃f G') : G' ≃f G where
   graph_iso := h.graph_iso.symm
   type_preserve := by
