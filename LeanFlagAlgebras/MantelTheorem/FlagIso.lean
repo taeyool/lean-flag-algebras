@@ -709,7 +709,7 @@ lemma singletonType_K3_eqv
           · split <;> (intro h; split at h) <;>
             (first | assumption | symm; assumption | simp at *)
           · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
+            (first | contradiction | simp at *)
       }
       type_preserve := by
         simp [K3₁_labeledGraph]
@@ -729,7 +729,7 @@ lemma singletonType_K3_eqv
           · split <;> (intro h; split at h) <;>
             (first | assumption | symm; assumption | simp at *)
           · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
+            (first | contradiction | simp at *)
       }
       type_preserve := by
         simp [K3₁_labeledGraph]
@@ -749,7 +749,7 @@ lemma singletonType_K3_eqv
           · split <;> (intro h; split at h) <;>
             (first | assumption | symm; assumption | simp at *)
           · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
+            (first | contradiction | simp at *)
       }
       type_preserve := by
         simp [K3₁_labeledGraph]
