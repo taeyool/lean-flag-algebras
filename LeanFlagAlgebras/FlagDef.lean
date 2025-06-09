@@ -247,6 +247,21 @@ noncomputable instance decidable_eq_V {t : ℕ} (Vl : Fin t → Type) [Decidable
 
 abbrev LabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), LabeledGraph σ (Vl i)
 
+def labeledGraphToList
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
+    : LabeledGraphList σ 1 (fun _ => V)
+  :=
+  fun _ => G
+
+def labeledGraphPairToList
+    {σ : FlagType T} {V W : Type} (G : LabeledGraph σ V) (H : LabeledGraph σ W)
+    : LabeledGraphList σ 2 (fun i => match i with | 0 => V | 1 => W)
+  :=
+  fun i => match i with | 0 => G | 1 => H
+
+notation "[" G "]ᵍ" => (labeledGraphToList G)
+notation "[" G "," H "]ᵍ" => (labeledGraphPairToList G H)
+
 def flagListEqv {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl Gl' : LabeledGraphList σ t Vl) : Prop
   :=
   ∀ (i : Fin t), Gl i ∼f Gl' i
@@ -270,6 +285,9 @@ theorem flagListEqv.trans {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
     : ∀ {Gl Gl' Gl'' : LabeledGraphList σ t Vl}, Gl ∼fl Gl' → Gl' ∼fl Gl'' → Gl ∼fl Gl''
   :=
   fun h h' i => flagEqv.trans (h i) (h' i)
+
+instance : Trans (@flagListEqv T σ t Vl) (@flagListEqv T σ t Vl) (@flagListEqv T σ t Vl) where
+  trans := flagListEqv.trans
 
 instance labeledGraphListSetoid (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type)
     : Setoid (LabeledGraphList σ t Vl)
