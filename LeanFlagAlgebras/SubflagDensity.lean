@@ -1299,6 +1299,14 @@ noncomputable def quotLabeledSubgraphListDensity
     exact Classical.choice (Hl_eqv i)
   exact labeledSubgraphListDensityLifted_respects_eqv Hl Hl' φ G
 
+omit [DecidableEqExist T] in
+theorem quotLabeledSubgraphListDensity_eq_labeledSubgraphListDensityLifted_out
+    (Hl : QuotLabeledGraphList σ t Vl) (G : Flag σ W)
+    : quotLabeledSubgraphListDensity Hl G = labeledSubgraphListDensityLifted Hl.out G
+  := by
+  nth_rw 1 [← Quotient.out_eq Hl]
+  rfl
+
 noncomputable def flagListDensity
     : FlagList σ t Vl → Flag σ W → ℚ
   :=
@@ -1382,6 +1390,33 @@ noncomputable def flagDensity₂ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G 
 noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W) : ℚ
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
+
+omit [DecidableEqExist T] in
+theorem labeledSubgraphListDensity_eq_flagDensity₁
+    (F : LabeledGraph σ U) (G : LabeledGraph σ W)
+    : labeledSubgraphListDensity [F]ᵍ G = flagDensity₁ ⟦F⟧ ⟦G⟧
+  := by
+  show labeledSubgraphListDensityLifted [F]ᵍ ⟦G⟧ = quotLabeledSubgraphListDensity [⟦F⟧]ᶠ.coe ⟦G⟧
+  rw [quotLabeledSubgraphListDensity_eq_labeledSubgraphListDensityLifted_out]
+  apply labeledSubgraphListDensityLifted_respects_eqv
+  intro i
+  rw [Fin.fin_one_eq_zero i]
+  dsimp [labeledGraphToList, eqv_QuotLabeledGraphList_FlagList, flagToList]
+  have h_fl : (fun (_ : Fin 1) => F) ∼fl ⟦fun (_ : Fin 1) => ⟦F⟧.out⟧.out := by
+    calc
+      _ ∼fl fun (_ : Fin 1) => ⟦F⟧.out := by
+        dsimp [flagListEqv]
+        intro _
+        exact (Quotient.mk_out F).symm
+      _ ∼fl ⟦fun (_ : Fin 1) => ⟦F⟧.out⟧.out := by
+        exact (Quotient.mk_out (fun (_ : Fin 1) => ⟦F⟧.out)).symm
+  exact Classical.choice (h_fl 0)
+
+theorem labeledSubgraphListDensity_eq_flagListDensity
+    (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
+    : labeledSubgraphListDensity Fl G = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
+  := by
+  sorry
 
 theorem flagDensity_empty
     (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
