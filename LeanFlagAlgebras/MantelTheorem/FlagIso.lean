@@ -755,14 +755,367 @@ lemma singletonType_E3_eqv
           simp [Fin.fin_one_eq_zero i]
           rw [ht]
       }
-  · sorry
-  · sorry
+  · match ht : G.type_embed 0 with
+    | 0 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 1 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 2 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+  · match ht : G.type_embed 0 with
+    | 0 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 1 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+          invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 2 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
 
 lemma singletonType_P3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g P3_graph)
     : G ∼f P3₁_labeledGraph 0 ∨ G ∼f P3₁_labeledGraph 1
   := by
-  sorry
+  have h : (G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2) ∨
+      (G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) ∨
+      (¬ G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by
+    rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+    <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
+  rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
+  · match ht : G.type_embed 0 with
+    | 0 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
+          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 1 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
+          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 2 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+  · match ht : G.type_embed 0 with
+    | 0 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+          invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 1 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+          invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 2 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+          invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+  · match ht : G.type_embed 0 with
+    | 0 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 1 =>
+      right
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
+    | 2 =>
+      left
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [P3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [P3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          rw [ht]
+      }
 
 lemma singletonType_K3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g K3_graph)
