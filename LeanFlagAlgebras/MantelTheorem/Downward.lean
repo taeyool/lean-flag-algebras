@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».MantelTheorem.FlagDefs
+import «LeanFlagAlgebras».MantelTheorem.FlagIso
 import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
@@ -229,31 +229,7 @@ def E3₁_labeledGraph_0_1_iso
 
 lemma E3₁_labeledGraph_0_2_not_iso
     : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
-  := by
-  intro h
-  let φ := h.some
-  let φG := φ.graph_iso
-  have h₀ : φG 0 = 2 := by
-    calc
-      _ = φG ((E3₁_labeledGraph 0).type_embed 0) := rfl
-      _ = (φG ∘ (E3₁_labeledGraph 0).type_embed) 0 := rfl
-      _ = (E3₁_labeledGraph 2).type_embed 0 := by rw [φ.type_preserve]
-      _ = 2 := rfl
-  match h₁ : φG 1 with
-  | 0 =>
-      have : E3_graph.Adj 0 1 := by simp
-      have : E3_graph.Adj (φG 0) (φG 1) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
-      have : ¬ E3_graph.Adj (φG 0) (φG 1) := by simp [h₀, h₁]
-      contradiction
-  | 1 =>
-      have : E3_graph.Adj 0 1 := by simp
-      have : E3_graph.Adj (φG 0) (φG 1) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
-      have : ¬ E3_graph.Adj (φG 0) (φG 1) := by simp [h₀, h₁]
-      contradiction
-  | 2 =>
-      have : φG 0 = φG 1 := by rw [h₀, h₁]
-      have : φG 0 ≠ φG 1 := by simp
-      contradiction
+  := E3₁_E3₁'_not_iso
 
 lemma E3₁_labeledGraph_1_2_not_iso
     : ¬ E3₁_labeledGraph 1 ∼f E3₁_labeledGraph 2
@@ -483,39 +459,7 @@ def P3₁_labeledGraph_1_2_iso
 
 lemma P3₁_labeledGraph_0_1_not_iso
     : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
-  := by
-  intro h
-  let φ := h.some
-  let φG := φ.graph_iso
-  have h₀ : φG 0 = 1 := by
-    calc
-      _ = φG ((P3₁_labeledGraph 0).type_embed 0) := rfl
-      _ = (φG ∘ (P3₁_labeledGraph 0).type_embed) 0 := rfl
-      _ = (P3₁_labeledGraph 1).type_embed 0 := by rw [φ.type_preserve]
-      _ = 1 := rfl
-  match h₂ : φG.invFun 2 with
-  | 0 =>
-      have h' : φG 0 = 2 := by
-        rw [← h₂]
-        exact φG.right_inv 2
-      rw [h₀] at h'
-      contradiction
-  | 1 =>
-      have h' : φG 1 = 2 := by
-        rw [← h₂]
-        exact φG.right_inv 2
-      have : P3_graph.Adj 0 1 := by simp
-      have : P3_graph.Adj (φG 0) (φG 1) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
-      have : ¬ P3_graph.Adj (φG 0) (φG 1) := by simp [h₀, h']
-      contradiction
-  | 2 =>
-      have h' : φG 2 = 2 := by
-        nth_rw 1 [← h₂]
-        exact φG.right_inv 2
-      have : P3_graph.Adj 0 2 := by simp
-      have : P3_graph.Adj (φG 0) (φG 2) := (SimpleGraph.Iso.map_adj_iff φG).mpr this
-      have : ¬ P3_graph.Adj (φG 0) (φG 2) := by simp [h₀, h']
-      contradiction
+  := P3₁_P3₁'_not_iso
 
 lemma P3₁_labeledGraph_0_2_not_iso
     : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 2
