@@ -944,18 +944,22 @@ variable {t : ℕ}
   {U₂ : Type} [FintypeExist U₂] [DecidableEqExist U₂]
   {U₃ : Type} [FintypeExist U₃] [DecidableEqExist U₃]
 
-noncomputable def labeledSubgraphListCount
-    (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
-  :=
+def labeledSubgraphListSet
+    (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
+  : Set (∀ (_ : Fin t), LabeledSubgraph σ G) :=
   let ind (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), (Gl i).IsInduced
   let p₁ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)
   let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
     := ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
-  let S := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | ind Gl ∧ p₁ Gl ∧ p₂ Gl }
-  have : Fintype S := Fintype.ofFinite ↑S
-  S.toFinset.card
+  { Gl | ind Gl ∧ p₁ Gl ∧ p₂ Gl }
+
+noncomputable def labeledSubgraphListCount
+    (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
+  :=
+  have : Fintype (labeledSubgraphListSet Hl G) := Fintype.ofFinite _
+  (labeledSubgraphListSet Hl G).toFinset.card
 
 def multinomialCoefficient
     (r_list : Fin t → ℕ) (n : ℕ) : ℕ
@@ -1365,7 +1369,7 @@ theorem subflagDensity_eq_flagListDensity
     · intro H hH
       simp at hH
       show (fun (_ : Fin 1) => H) ∈ _
-      simp [Set.toFinset_setOf]
+      simp [Set.toFinset_setOf, labeledSubgraphListSet]
       constructor
       · exact hH.1
       · constructor
@@ -1381,7 +1385,7 @@ theorem subflagDensity_eq_flagListDensity
         _ = H' := by simp
     · intro Hl _
       use Hl 0
-      simp_all
+      simp_all [labeledSubgraphListSet]
       ext1 i
       rw [Fin.fin_one_eq_zero i]
   calc

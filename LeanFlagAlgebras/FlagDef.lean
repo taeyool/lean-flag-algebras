@@ -86,6 +86,13 @@ structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) w
 
 namespace LabeledSubgraph
 
+noncomputable def size
+    {σ : FlagType T} {V : Type} [FintypeExist V] [DecidableEqExist V]
+    (G : LabeledGraph σ V) (H : LabeledSubgraph σ G) : ℕ
+  :=
+  have : Fintype (H.subgraph.verts) := Fintype.ofFinite _
+  Fintype.card H.subgraph.verts
+
 @[simps]
 def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)
     : LabeledGraph σ H.subgraph.verts where
@@ -127,6 +134,82 @@ noncomputable instance labeledSubgraphFintype
     simp_all only
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
   Fintype.ofInjective f f_inj
+
+def inducedSubgraph
+    {V : Type} (G : SimpleGraph V) (S : Set V)
+    : { G' : G.Subgraph // G'.IsInduced }
+  :=
+  let G' : G.Subgraph := {
+    verts := S
+    Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
+    adj_sub := by
+      intro v w a
+      simp_all only
+    edge_vert := by
+      intro v w a
+      simp_all only
+    symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
+  }
+  let h_induced : G'.IsInduced := by
+    intro u v h_u h_v h_uv
+    dsimp at *
+    exact ⟨h_uv, h_u, h_v⟩
+  ⟨G', h_induced⟩
+
+@[simp]
+theorem inducedSubgraph_verts
+    {V : Type} (G : SimpleGraph V) (S : Set V)
+    : ((inducedSubgraph G S) : G.Subgraph).verts = S
+  := by
+  simp only [inducedSubgraph]
+
+def inducedLabeledSubgraph
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
+    : { G' : LabeledSubgraph σ G // G'.IsInduced }
+  :=
+  let G' : LabeledSubgraph σ G := {
+    subgraph := inducedSubgraph G.graph S
+    type_embed := {
+      toFun := by
+        simp only [inducedSubgraph_verts]
+        intro t
+        have ht : G.type_embed t ∈ G.type_verts := by
+          dsimp [LabeledGraph.type_verts]
+          exact Set.mem_image_of_mem G.type_embed trivial
+        have ht' : G.type_embed t ∈ S := h ht
+        exact ⟨G.type_embed t, ht'⟩
+      inj' := by
+        intro t u h_tu
+        simp at h_tu
+        exact h_tu
+      map_rel_iff' := by
+        intro t u
+        dsimp [inducedSubgraph_verts, inducedSubgraph]
+        simp only [SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
+        intro _
+        constructor
+        · apply h
+          simp [LabeledGraph.type_verts]
+        · apply h
+          simp [LabeledGraph.type_verts]
+    }
+    embed_eq := by
+      intro t
+      simp only [eq_mpr_eq_cast, cast_eq, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+  }
+  let h_induced : G'.IsInduced := by
+    intro t u h_t h_u h_adj
+    simp [inducedSubgraph] at *
+    (repeat' constructor) <;> assumption
+  ⟨G', h_induced⟩
+
+omit [FintypeExist T] in
+@[simp]
+theorem inducedLabeledSubgraph_verts
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
+    : ((inducedLabeledSubgraph G S h) : LabeledSubgraph σ G).subgraph.verts = S
+  := by
+  simp only [inducedLabeledSubgraph, eq_mpr_eq_cast, cast_eq, inducedSubgraph_verts]
 
 end LabeledSubgraph
 

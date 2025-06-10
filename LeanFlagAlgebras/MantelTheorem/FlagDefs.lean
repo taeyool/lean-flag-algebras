@@ -136,13 +136,37 @@ def K3_labeledGraph : LabeledGraph ∅ₜ (Fin 3) where
   graph := K3_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K3_graph.Adj
 
-@[simp]
-theorem O2_labeledGraph_size : O2_labeledGraph.size = 2 := by
+lemma fin_2_card
+    : @Fintype.card (Fin 2) (instFintypeOfFintypeExist (Fin 2)) = 2 := by
   calc
-    _ = @Fintype.card (Fin 2) (instFintypeOfFintypeExist (Fin 2)) := rfl
     _ = @Fintype.card (Fin 2) (Fin.fintype 2) := by
       exact @Fintype.card_congr' (Fin 2) (Fin 2) (instFintypeOfFintypeExist (Fin 2)) (Fin.fintype 2) (by rfl)
     _ = 2 := Fintype.card_fin 2
+
+lemma fin_3_card
+    : @Fintype.card (Fin 3) (instFintypeOfFintypeExist (Fin 3)) = 3 := by
+  calc
+    _ = @Fintype.card (Fin 3) (Fin.fintype 3) := by
+      exact @Fintype.card_congr' (Fin 3) (Fin 3) (instFintypeOfFintypeExist (Fin 3)) (Fin.fintype 3) (by rfl)
+    _ = 3 := Fintype.card_fin 3
+
+@[simp]
+theorem O2_labeledGraph_size : O2_labeledGraph.size = 2 := fin_2_card
+
+@[simp]
+theorem K2_labeledGraph_size : K2_labeledGraph.size = 2 := fin_2_card
+
+@[simp]
+theorem O3_labeledGraph_size : O3_labeledGraph.size = 3 := fin_3_card
+
+@[simp]
+theorem E3_labeledGraph_size : E3_labeledGraph.size = 3 := fin_3_card
+
+@[simp]
+theorem P3_labeledGraph_size : P3_labeledGraph.size = 3 := fin_3_card
+
+@[simp]
+theorem K3_labeledGraph_size : K3_labeledGraph.size = 3 := fin_3_card
 
 def O2_flag : Flag ∅ₜ (Fin 2) :=
   ⟦O2_labeledGraph⟧
