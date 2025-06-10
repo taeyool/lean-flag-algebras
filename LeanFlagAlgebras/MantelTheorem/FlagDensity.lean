@@ -11,6 +11,17 @@ namespace MantelTheorem
 theorem flagDensity_K2_O3
     : flagDensity₁ K2_flag O3_flag = 0
   := by
+  dsimp [K2_flag, O3_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₁]
+  dsimp [labeledSubgraphListDensity]
+  simp only [emptyType_size, tsub_zero]
+  let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) O3_labeledGraph
+  let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) O3_labeledGraph.size
+  have : denom = 3 := by
+    dsimp [denom, multinomialCoefficient]
+    simp [labeledGraphToList]
+    sorry
+  show (num : ℚ) / (denom : ℚ) = 0
   sorry
 
 @[simp]

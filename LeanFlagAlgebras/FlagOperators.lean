@@ -10,6 +10,11 @@ def emptyType : FlagType (Fin 0) := emptyGraph (Fin 0)
 
 notation "∅ₜ" => emptyType
 
+@[simp]
+theorem emptyType_size : ∅ₜ.size = 0 := by
+  dsimp [emptyType, FlagType.size]
+  simp only [Fintype.card_eq_zero]
+
 def isoLabeledGraphSetWithSameGraph
     (G : LabeledGraph σ (Fin n)) : Set (LabeledGraph σ (Fin n))
   :=

@@ -136,6 +136,14 @@ def K3_labeledGraph : LabeledGraph ∅ₜ (Fin 3) where
   graph := K3_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K3_graph.Adj
 
+@[simp]
+theorem O2_labeledGraph_size : O2_labeledGraph.size = 2 := by
+  calc
+    _ = @Fintype.card (Fin 2) (instFintypeOfFintypeExist (Fin 2)) := rfl
+    _ = @Fintype.card (Fin 2) (Fin.fintype 2) := by
+      exact @Fintype.card_congr' (Fin 2) (Fin 2) (instFintypeOfFintypeExist (Fin 2)) (Fin.fintype 2) (by rfl)
+    _ = 2 := Fintype.card_fin 2
+
 def O2_flag : Flag ∅ₜ (Fin 2) :=
   ⟦O2_labeledGraph⟧
 
@@ -183,6 +191,11 @@ noncomputable def K3 : FlagAlgebra ∅ₜ :=
 def singletonType : FlagType (Fin 1) := emptyGraph (Fin 1)
 
 alias Sₜ := singletonType
+
+@[simp]
+theorem singletonType_size : Sₜ.size = 1 := by
+  dsimp [emptyType, FlagType.size]
+  simp only [Fintype.card_unique]
 
 def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   graph := O2_graph
