@@ -242,6 +242,7 @@ elab "choose_eq" : tactic =>
 
     replaceMainGoal [contractedRefinedGoalId2]
 
+/-
     let lhsContracted ← mkAppM ``HMul.hMul #[lhsData.newTerm, rhsData.denTerm]
     let rhsContracted ← mkAppM ``HMul.hMul #[rhsData.newTerm, lhsData.denTerm]
 
@@ -255,21 +256,21 @@ elab "choose_eq" : tactic =>
     let contractedMVar3 ← mkFreshExprMVar contractedType3 .syntheticOpaque
     let contractedMVar4 ← mkFreshExprMVar contractedType4 .syntheticOpaque
 
-    let contractedAssmList1 : List (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+    let contractedAssmList1 : List Ident :=
       (List.range lhsData.args.length).map
         (fun i => TSyntax.mk (mkIdent ((`h_lhs_contr).appendIndexAfter i)))
-    let contractedAssmList2 : List (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+    let contractedAssmList2 : List Ident :=
       (List.range rhsData.args.length).map
         (fun i => TSyntax.mk (mkIdent ((`h_rhs_contr).appendIndexAfter i)))
-    let contractedAssmArray1 : Array (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+    let contractedAssmArray1 : Array Ident :=
       contractedAssmList1.toArray
-    let contractedAssmArray2 : Array (TSyntax ``Lean.Parser.Tactic.rwRule) :=
+    let contractedAssmArray2 : Array Ident :=
       contractedAssmList2.toArray
 
     -- throwError m!"[choose_eq] Current goal state:\n{← Meta.ppGoal (← getMainGoal)}"
 
-    let contractedTactic1 ← `(tactic| rw [$contractedAssmArray1,*])
-    let contractedTactic2 ← `(tactic| rw [$contractedAssmArray2,*])
+    let contractedTactic1 ← `(tactic| rw [$[$contractedAssmArray1:ident],*])
+    let contractedTactic2 ← `(tactic| rw [$[$contractedAssmArray2:ident],*])
 
     let contractedMVarRest1 ← Tactic.run contractedMVar1.mvarId! (evalTactic contractedTactic1)
     let contractedMVarRest2 ← Tactic.run contractedMVar2.mvarId! (evalTactic contractedTactic2)
@@ -301,6 +302,7 @@ elab "choose_eq" : tactic =>
     replaceMainGoal [goalAfterContracted2[0]!]
 
     evalTactic (← `(tactic| try simp only [Nat.sub_eq, Nat.add_one_sub_one, Nat.reduceSub]; try ring_nf))
+    -/
     return
 
     /-
@@ -313,20 +315,18 @@ open ChooseEqTactic
 
 -- Example usage and tests
 
-/-
 example (n k j : Nat) (h1 : j ≤ k) (h2 : k ≤ n) :
     n.choose k * k.choose j = n.choose j * (n - j).choose (k - j) := by
   choose_eq
-  sorry
+  rw [h_lhs_contr_0, h_lhs_contr_1, h_rhs_contr_0, h_rhs_contr_1]
+  have : n - j - (k - j) = n - k := by omega
+  rw [this]
+  ring
 
 example : Nat.choose 5 2 * Nat.choose 3 1 = Nat.choose 5 1 * Nat.choose 4 2 := by
   choose_eq
-
-example : Nat.choose 5 2 = Nat.choose 5 2 := by
-  choose_eq
-
-example : Nat.choose 4 2 = (Nat.factorial 4) / (Nat.factorial 2 * Nat.factorial 2) := by
-  choose_eq
+  rw [h_lhs_contr_0, h_lhs_contr_1, h_rhs_contr_0, h_rhs_contr_1]
+  ring
 
 example
   (h_lhs_contr_0 : Nat.choose 5 2 * Nat.factorial 2 * (5 - 2).factorial = Nat.factorial 5)
@@ -340,37 +340,20 @@ example
   := by
   rw [h_lhs_contr_0, h_lhs_contr_1]
 
-
-example
-  (n k j : ℕ)
-  (h1 : j ≤ k)
-  (h2 : k ≤ n)
-  (h_lhs_contr_0 : n.choose k * k.factorial * (n - k).factorial = n.factorial)
-  (h_lhs_contr_1 : k.choose j * j.factorial * (k - j).factorial = k.factorial)
-  (h_rhs_contr_0 : n.choose j * j.factorial * (n - j).factorial = n.factorial)
-  (h_rhs_contr_1 : (n - j).choose (k - j) * (k - j).factorial * (n - j - (k - j)).factorial = (n - j).factorial)
-  :  n.choose k * k.factorial * (n - k).factorial * (k.choose j * j.factorial * (k - j).factorial) *
-      (j.factorial * (n - j).factorial * ((k - j).factorial * (n - j - (k - j)).factorial))
-      =
-    n.choose j * j.factorial * (n.sub j).factorial *
-        ((n - j).choose (k - j) * (k - j).factorial * ((n - j).sub (k - j)).factorial) *
-      (k.factorial * (n.sub k).factorial * (j.factorial * (k.sub j).factorial))
-:= by
-repeat cc
-
-elab "my_custom_rewrite" h0:array term : tactic =>
+set_option pp.explicit true in
+elab "my_custom_rewrite" : tactic =>
   withMainContext do
     -- let rwRule : TSyntax `Lean.Parser.Tactic.rwRule := TSyntax.mk (mkIdent `h0)
     -- let tacticSyntax ← `(tactic| rw [$rwRule])
-    let h := #[mkIdent `h1, mkIdent `h0]
-    let tacticSyntax ← `(tactic| rw [$h0:array term])
+    let hs := #[mkIdent `h1, mkIdent `h0]
+    let tacticSyntax ← `(tactic| rw [$[$hs:ident],*])
     -- throwError m!"{tacticSyntax}"
     evalTactic tacticSyntax
 
+set_option pp.explicit true in
 theorem example_with_hyps (a b c d : Nat)
     (h0 : a = 100)
     (h1 : b = a)
     (h2 : c = d)
-    (h_final : d = 100) : a = 100 := by
-  my_custom_rewrite [h0,h1]
--/
+    (h_final : d = 100) : b = 100 := by
+  my_custom_rewrite

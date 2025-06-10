@@ -569,15 +569,6 @@ def labeledSubgraph_bottom
   }
   bottom
 
-lemma type_embed_adj_iff
-    {σ : FlagType T} (G : LabeledGraph σ V) (t₁ t₂ : T)
-    : σ.Adj t₁ t₂ ↔ G.graph.Adj (G.type_embed t₁) (G.type_embed t₂) := by
-  constructor
-  · intro h_adj
-    exact (type_embed_Adj_iff G t₁ t₂).mp h_adj
-  · intro h_adj
-    exact (SimpleGraph.Embedding.map_adj_iff G.type_embed).mp h_adj
-
 noncomputable def type_iso
     {σ : FlagType T} (G : LabeledGraph σ V)
     : T ≃ G.type_verts  := by
@@ -622,8 +613,18 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
         · intro T_adj
           dsimp [labeledSubgraph_bottom] at u v f
           have G_adj : G.graph.Adj u v := by
-            dsimp [f, iso_T_G, type_iso] at T_adj
-            sorry
+            let u_t := iso_T_G.symm u
+            let v_t := iso_T_G.symm v
+            have h_ut : u = iso_T_G u_t := Eq.symm (Equiv.apply_symm_apply iso_T_G u)
+            have h_ut' : u_t = iso_T_G.symm u := rfl
+            have h_vt : v = iso_T_G v_t := Eq.symm (Equiv.apply_symm_apply iso_T_G v)
+            have h_vt' : v_t = iso_T_G.symm v := rfl
+            dsimp [f] at T_adj
+            rw [← h_ut', ← h_vt'] at T_adj
+            have := (type_embed_Adj_iff G u_t v_t).mp T_adj
+            rw [h_ut, h_vt]
+            dsimp [iso_T_G, type_iso]
+            exact this
           exact ⟨u.property, ⟨v.property, G_adj⟩⟩
         · intro ⟨hu, ⟨hv, G_adj⟩⟩
           dsimp [f]
@@ -633,7 +634,7 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
           have h_vt : v = iso_T_G v_t := Eq.symm (Equiv.apply_symm_apply iso_T_G v)
           rw [h_ut, h_vt]
           rw [iso_T_G.symm_apply_apply, iso_T_G.symm_apply_apply]
-          apply (type_embed_adj_iff G u_t v_t).mpr
+          apply (type_embed_Adj_iff G u_t v_t).mpr
           dsimp [iso_T_G, type_iso] at h_ut h_vt
           rw [h_ut, h_vt] at G_adj
           exact G_adj
