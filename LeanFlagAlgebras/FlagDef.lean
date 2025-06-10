@@ -405,6 +405,30 @@ noncomputable def FlagList.coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
   :=
   (eqv_QuotLabeledGraphList_FlagList σ t Vl).invFun Fl
 
+omit [FintypeExist T] in
+theorem list_quot_eq_quot_list_singleton
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
+    : ⟦[G]ᵍ⟧ = [⟦G⟧]ᶠ.coe
+  := by
+  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
+  apply Quotient.sound
+  intro i
+  dsimp [labeledGraphToList]
+  exact (Quotient.mk_out G).symm
+
+omit [FintypeExist T] in
+theorem list_quot_eq_quot_list_pair
+    {σ : FlagType T} {V W : Type} (G : LabeledGraph σ V) (G' : LabeledGraph σ W)
+    : ⟦[G, G']ᵍ⟧ = [⟦G⟧, ⟦G'⟧]ᶠ.coe
+  := by
+  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
+  apply Quotient.sound
+  intro i
+  dsimp [labeledGraphPairToList]
+  match i with
+  | 0 => exact (Quotient.mk_out G).symm
+  | 1 => exact (Quotient.mk_out G').symm
+
 /- FlagList.insert -/
 
 def listTypeInsert {t : ℕ} (Vl : Fin t → Type) (W : Type)
