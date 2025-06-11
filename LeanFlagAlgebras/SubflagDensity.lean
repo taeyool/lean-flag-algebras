@@ -660,19 +660,21 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
       ext u v
       · simp; constructor
         · intro hu
-          dsimp [emptyLabeledGraph] at type_embed
           let t := iso_H_T ⟨u, hu⟩
-          have h_embed_t: H.type_embed t = u := by
+          have h_embed_t : H.type_embed t = u := by
             have ht := h_type_embed t
             dsimp [t] at *
             have := iso_H_T.injective ht
             simp_all only
-          rw [H.embed_eq] at h_embed_t
-          rw [← h_embed_t]
+          rw [← h_embed_t, H.embed_eq]
           unfold LabeledGraph.type_verts
           exact Set.mem_image_of_mem (⇑G.type_embed) trivial
         · intro hu
-          sorry
+          unfold LabeledGraph.type_verts at hu
+          simp at hu
+          obtain ⟨t, h_t⟩ := hu
+          rw [← h_t, ← H.embed_eq]
+          exact Subtype.coe_prop (H.type_embed t)
       · simp; constructor
         · intro H_uv
           have hu : u ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv
@@ -683,7 +685,19 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
           have := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp this
           sorry
         · intro ⟨hu, ⟨hv, h_adj⟩⟩
-          sorry
+          have hu' : u ∈ H.subgraph.verts := by
+            unfold LabeledGraph.type_verts at hu
+            simp at hu
+            obtain ⟨t, h_t⟩ := hu
+            rw [← h_t, ← H.embed_eq]
+            exact Subtype.coe_prop (H.type_embed t)
+          have hv' : v ∈ H.subgraph.verts := by
+            unfold LabeledGraph.type_verts at hv
+            simp at hv
+            obtain ⟨t, h_t⟩ := hv
+            rw [← h_t, ← H.embed_eq]
+            exact Subtype.coe_prop (H.type_embed t)
+          exact H_ind hu' hv' h_adj
     refine LabeledSubgraph.ext ?subgraph ?type_embed
     · exact graph_eq_H_G
     · have verts_eq : ↑(labeledSubgraph_bottom G).subgraph.verts = ↑H.subgraph.verts := congrArg SimpleGraph.Subgraph.verts (id (Eq.symm graph_eq_H_G))
