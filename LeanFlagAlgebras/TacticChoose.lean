@@ -286,3 +286,32 @@ theorem example_with_hyps (a b c d : Nat)
     (h_final : d = 100) : b = 100 := by
   my_custom_rewrite
 -/
+
+lemma factorial_property
+    (ℓ : Nat) (ℓ₁ ℓ₂ ℓ₃ ℓ₁₂ ℓ₂₃ : Nat)
+    (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
+    (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
+    (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
+    : ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+      = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+  :=
+  let C₁₂ : ℕ := (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+  let C₂₃ : ℕ := (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+  have h_C₁₂_C₂₃ :
+      ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
+      = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃
+    := by
+    dsimp [C₁₂, C₂₃]
+    simp_choose_eq `h_choose
+    rw [h_choose_lhs_0, h_choose_lhs_1, h_choose_lhs_2, h_choose_lhs_3, h_choose_lhs_4]
+    rw [h_choose_rhs_0, h_choose_rhs_1, h_choose_rhs_2, h_choose_rhs_3, h_choose_rhs_4]
+    ring_nf
+    have h₁ : ℓ₁₂ - (ℓ₁ + ℓ₂) = ℓ₁₂ - ℓ₁ - ℓ₂ := by omega
+    have h₂ : ℓ₁₂ - ℓ₁ - ℓ₂ - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
+    have h₃ : ℓ - ℓ₂₃ - ℓ₁ = ℓ - (ℓ₁ + ℓ₂₃) := by omega
+    have h₄ : ℓ₂₃ - ℓ₂ - ℓ₃ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
+    have h₅ : ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ - ℓ₁₂ - ℓ₃ := by omega
+    rw [h₁, h₂, h₃, h₄, h₅]
+    ring_nf
+
+  h_C₁₂_C₂₃
