@@ -29,10 +29,6 @@ def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
   :=
   ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
 
-noncomputable instance [FintypeExist V] (S : Set V) : Fintype S
-  :=
-  Fintype.ofFinite S
-
 namespace FlagAlgebras
 
 variable {T : Type} [FintypeExist T]
@@ -221,8 +217,8 @@ theorem inducedLabeledSubgraph_verts
 
 @[simp]
 theorem inducedLabeledSubgraph_size
-    {σ : FlagType T} {V : Type} [FintypeExist V] [DecidableEqExist V] (G : LabeledGraph σ V) (S : Set V)
-    (h : G.type_verts ⊆ S)
+    {σ : FlagType T} {V : Type} [FintypeExist V] [DecidableEqExist V]
+    (G : LabeledGraph σ V) (S : Set V) [DecidablePred (· ∈ S)] (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).size = S.toFinset.card
   := by
   sorry
