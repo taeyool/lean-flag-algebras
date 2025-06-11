@@ -455,15 +455,11 @@ omit [DecidableEqExist V] in
 lemma iso_subset_of_finset_is_full
     {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
   := by
+  classical
   by_contra h_contra
-  have h_dec : DecidablePred (Membership.mem S) := by
-    intro v
-    exact Classical.propDecidable (v ∈ S)
-  have h_card : Fintype.card S < Fintype.card V :=
-    @Fintype.card_subtype_lt _ _ _ h_dec u h_contra
-  have h_card' : Fintype.card V = Fintype.card S := by
-    rw [Fintype.card_congr f_iso]
-  simp_all
+  have h_card : Fintype.card S < Fintype.card V :=  Fintype.card_subtype_lt h_contra
+  have h_card' : Fintype.card V = Fintype.card S := Fintype.card_congr f_iso
+  simp_all only [lt_self_iff_false]
 
 omit [DecidableEqExist V] [FintypeExist V] in
 lemma iso_to_subset_mem
