@@ -47,8 +47,15 @@ theorem inducedLabeledSubgraph_emptyType_cases
       H = inducedLabeledSubgraph_emptyType G {0, 2} ∨
       H = inducedLabeledSubgraph_emptyType G {1, 2}
   := by
+  classical
   have h := IsInduced_exist_induce_set H h_ind
   rcases h with ⟨S, hS, hH⟩
+  have hS_card : Fintype.card S = 2 := by
+    have := inducedLabeledSubgraph_size G S hS
+    rw [hH, h_size] at this
+    rw [this]
+    -- apply Fintype.card_congr
+    sorry
   sorry
 
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
