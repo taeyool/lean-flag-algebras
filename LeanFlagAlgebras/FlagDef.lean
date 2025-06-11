@@ -29,6 +29,10 @@ def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
   :=
   ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
 
+noncomputable instance [FintypeExist V] (S : Set V) : Fintype S
+  :=
+  Fintype.ofFinite S
+
 namespace FlagAlgebras
 
 variable {T : Type} [FintypeExist T]
@@ -88,7 +92,7 @@ namespace LabeledSubgraph
 
 noncomputable def size
     {σ : FlagType T} {V : Type} [FintypeExist V] [DecidableEqExist V]
-    (G : LabeledGraph σ V) (H : LabeledSubgraph σ G) : ℕ
+    {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : ℕ
   :=
   have : Fintype (H.subgraph.verts) := Fintype.ofFinite _
   Fintype.card H.subgraph.verts
@@ -215,6 +219,14 @@ theorem inducedLabeledSubgraph_verts
   := by
   simp only [inducedLabeledSubgraph, eq_mpr_eq_cast, cast_eq, inducedSubgraph_verts]
 
+@[simp]
+theorem inducedLabeledSubgraph_size
+    {σ : FlagType T} {V : Type} [FintypeExist V] [DecidableEqExist V] (G : LabeledGraph σ V) (S : Set V)
+    (h : G.type_verts ⊆ S)
+    : (inducedLabeledSubgraph G S h).size = S.toFinset.card
+  := by
+  sorry
+
 omit [FintypeExist T] in
 @[simp]
 theorem inducedLabeledSubgraph_isInduced
@@ -227,7 +239,7 @@ theorem inducedLabeledSubgraph_isInduced
 
 omit [FintypeExist T] in
 theorem IsInduced_exist_induce_set
-    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (H : LabeledSubgraph σ G) (h_ind : H.IsInduced)
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (h_ind : H.IsInduced)
     : ∃ (S : Set V) (h : G.type_verts ⊆ S), inducedLabeledSubgraph G S h = H
   := by
   let S := H.subgraph.verts
