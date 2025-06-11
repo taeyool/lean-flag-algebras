@@ -647,54 +647,42 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
   · intro ⟨H_ind, H_iso⟩
     obtain ⟨graph_iso, type_embed⟩ := H_iso
     obtain ⟨iso_H_T, iso_adj⟩ := graph_iso
+    have h_type_embed : ∀ t : T, iso_H_T (H.type_embed t) = t := by
+      intro t
+      have := congrFun type_embed t
+      simp only [Function.comp_apply] at this
+      exact this
     let iso_H_G := iso_H_T.trans (id iso_T_G)
     dsimp [labeledSubgraph_bottom] at *
     have graph_eq_H_G : H.subgraph = (labeledSubgraph_bottom G).subgraph := by
       dsimp [labeledSubgraph_bottom] at *
       simp at *
       ext u v
-      · constructor
+      · simp; constructor
         · intro hu
-          simp
+          dsimp [emptyLabeledGraph] at type_embed
           let t := iso_H_T ⟨u, hu⟩
-          let u' := iso_T_G t
-
-          have tmp1 := iso_to_subset_mem iso_H_T.symm t
-          have tmp2 := iso_to_subset_mem iso_T_G t
-          dsimp [iso_T_G, type_iso] at tmp2
-
-          have : u = G.type_embed t := by
-            have h_embed := type_embed
-            have h_map : iso_H_T (H.type_embed t) = t := by
-              have := congrFun h_embed t
-              simp [emptyLabeledGraph] at this
-              exact this
-            have h_u : iso_H_T ⟨u, hu⟩ = t := sorry
-            have h_type_embed : H.type_embed t = ⟨u, hu⟩ := by
-              apply iso_H_T.injective
-              rw [h_map, h_u]
-
-            sorry
-          rw [this]
+          have h_embed_t: H.type_embed t = u := by
+            have ht := h_type_embed t
+            dsimp [t] at *
+            have := iso_H_T.injective ht
+            simp_all only
+          rw [H.embed_eq] at h_embed_t
+          rw [← h_embed_t]
+          unfold LabeledGraph.type_verts
           exact Set.mem_image_of_mem (⇑G.type_embed) trivial
-        · sorry
-      · constructor
+        · intro hu
+          sorry
+      · simp; constructor
         · intro H_uv
           have hu : u ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv
           have hv : v ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv.symm
           have h_uv : H.coe.graph.Adj ⟨u, hu⟩ ⟨v, hv⟩ := H_uv
           have := (iso_adj u hu v hv).mpr h_uv
           dsimp [emptyLabeledGraph] at this
-          have h_type_verts : u ∈ G.type_verts := by
-            -- Attempt to prove u is in G.type_verts directly
-            unfold LabeledGraph.type_verts
-            obtain t := iso_H_T ⟨u, hu⟩
-            use t
-            simp
-            sorry
+          have := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp this
           sorry
-        · intro G_uv
-          obtain tmp := H_ind
+        · intro ⟨hu, ⟨hv, h_adj⟩⟩
           sorry
     refine LabeledSubgraph.ext ?subgraph ?type_embed
     · exact graph_eq_H_G

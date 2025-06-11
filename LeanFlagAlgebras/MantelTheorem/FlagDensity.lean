@@ -36,7 +36,7 @@ theorem flagDensity_K2_O3
 
 def inducedLabeledSubgraph_emptyType
     {V : Type} (G : LabeledGraph ∅ₜ V) (S : Set V)
-    : { G' : LabeledSubgraph ∅ₜ G // G'.IsInduced }
+    : LabeledSubgraph ∅ₜ G
   :=
   have h : G.type_verts ⊆ S := by simp [LabeledGraph.type_verts]
   inducedLabeledSubgraph G S h
@@ -47,6 +47,8 @@ theorem inducedLabeledSubgraph_emptyType_cases
       H = inducedLabeledSubgraph_emptyType G {0, 2} ∨
       H = inducedLabeledSubgraph_emptyType G {1, 2}
   := by
+  have h := IsInduced_exist_induce_set H h_ind
+  rcases h with ⟨S, hS, hH⟩
   sorry
 
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
