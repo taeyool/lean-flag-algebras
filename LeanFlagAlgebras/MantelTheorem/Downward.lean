@@ -2,6 +2,7 @@ import «LeanFlagAlgebras».MantelTheorem.FlagIso
 import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
+open Classical
 
 namespace MantelTheorem
 
@@ -56,9 +57,6 @@ def isoSet_O3₁
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2}
-
-instance : FintypeExist isoSet_O3₁
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_O3₁) }
 
 lemma isoSet_O3₁_card
     : isoSet_O3₁.toFinset.card = 3
@@ -152,7 +150,7 @@ lemma isoLabeledGraphSetWithSameGraph_O3₁_card
   := by
   calc
     _ = isoSet_O3₁.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card]
     _ = 3 := isoSet_O3₁_card
@@ -196,9 +194,6 @@ def isoSet_E3₁
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {E3₁_labeledGraph 0, E3₁_labeledGraph 1}
-
-instance : FintypeExist isoSet_E3₁
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_E3₁) }
 
 lemma isoSet_E3₁_card
     : isoSet_E3₁.toFinset.card = 2
@@ -289,7 +284,7 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁_card
   := by
   calc
     _ = isoSet_E3₁.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card]
     _ = 2 := isoSet_E3₁_card
@@ -334,9 +329,6 @@ def isoSet_E3₁'
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {E3₁_labeledGraph 2}
-
-instance : FintypeExist isoSet_E3₁'
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_E3₁') }
 
 lemma isoSet_E3₁'_card
     : isoSet_E3₁'.toFinset.card = 1
@@ -386,7 +378,7 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁'_card
   := by
   calc
     _ = isoSet_E3₁'.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_E3₁'_eq_isoSet_E3₁'_card]
     _ = 1 := isoSet_E3₁'_card
@@ -431,9 +423,6 @@ def isoSet_P3₁
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {P3₁_labeledGraph 0}
-
-instance : FintypeExist isoSet_P3₁
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_P3₁) }
 
 lemma isoSet_P3₁_card
     : isoSet_P3₁.toFinset.card = 1
@@ -512,7 +501,7 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁_card
   := by
   calc
     _ = isoSet_P3₁.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_P3₁_eq_isoSet_P3₁_card]
     _ = 1 := isoSet_P3₁_card
@@ -557,9 +546,6 @@ def isoSet_P3₁'
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {P3₁_labeledGraph 1, P3₁_labeledGraph 2}
-
-instance : FintypeExist isoSet_P3₁'
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_P3₁') }
 
 lemma isoSet_P3₁'_card
     : isoSet_P3₁'.toFinset.card = 2
@@ -621,7 +607,7 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁'_card
   := by
   calc
     _ = isoSet_P3₁'.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_P3₁'_eq_isoSet_P3₁'_card]
     _ = 2 := isoSet_P3₁'_card
@@ -666,9 +652,6 @@ def isoSet_K3₁
     : Set (LabeledGraph Sₜ (Fin 3))
   :=
   {K3₁_labeledGraph 0, K3₁_labeledGraph 1, K3₁_labeledGraph 2}
-
-instance : FintypeExist isoSet_K3₁
-    := { fintype_exist := Nonempty.intro (Fintype.ofFinite isoSet_K3₁) }
 
 lemma isoSet_K3₁_card
     : isoSet_K3₁.toFinset.card = 3
@@ -770,7 +753,7 @@ lemma isoLabeledGraphSetWithSameGraph_K3₁_card
   := by
   calc
     _ = isoSet_K3₁.toFinset.card := by
-      simp [Set.toFinset_card]
+      simp only [Set.toFinset_card]
       apply Fintype.card_congr
       rw [isoLabeledGraphSetWithSameGraph_K3₁_eq_isoSet_K3₁_card]
     _ = 3 := isoSet_K3₁_card

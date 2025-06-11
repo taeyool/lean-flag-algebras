@@ -25,6 +25,27 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
+noncomputable def LabeledGraph.iso_type_G
+     {σ : FlagType T} (G : LabeledGraph σ V) : T ≃ G.type_verts := by
+  let f : T → G.type_verts := by
+    intro t
+    use G.type_embed t
+    unfold LabeledGraph.type_verts
+    exact Set.mem_image_of_mem (⇑G.type_embed) (Set.mem_univ t)
+  have h_bij : Function.Bijective f := by
+    constructor
+    · intro t₁ t₂ h_eq
+      dsimp [f] at h_eq
+      simp at h_eq
+      exact h_eq
+    · intro u
+      unfold LabeledGraph.type_verts at u
+      obtain ⟨t, h_t⟩ := u
+      simp_all only [Subtype.mk.injEq, f]
+      simp_all only [Set.image_univ, Set.mem_range]
+  let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
+  exact f_bij
+
 noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (LabeledGraph σ V)
   :=
@@ -61,6 +82,66 @@ structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) w
   subgraph : G.graph.Subgraph
   type_embed : σ ↪g subgraph.coe
   embed_eq : ∀ (t : T), type_embed t = G.type_embed t
+
+def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
+  {
+    subgraph := {
+      verts := Set.univ
+      Adj := fun u v => G.graph.Adj u v
+      adj_sub := by simp [SimpleGraph.Adj]
+      edge_vert := by simp
+      symm := by simp [SimpleGraph.symm]
+    }
+    type_embed := {
+      toFun := fun t ↦ ⟨G.type_embed t, by simp⟩
+      inj' := by
+        intro t₁ t₂ h
+        simp at h
+        exact h
+      map_rel_iff' := by
+        intro t₁ t₂
+        simp
+    }
+    embed_eq := by
+      intro t; simp
+  }
+
+def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
+  {
+    subgraph := {
+      verts := G.type_verts
+      Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
+      adj_sub := by simp [SimpleGraph.Adj]
+      edge_vert := by
+        intro u v ⟨hu, _⟩
+        exact hu
+      symm := by
+        intro u v ⟨hu, ⟨hv, h_uv⟩⟩
+        exact ⟨hv, ⟨hu, h_uv.symm⟩⟩
+    }
+    type_embed := {
+      toFun := fun t ↦ ⟨G.type_embed t, by unfold LabeledGraph.type_verts; simp⟩
+      inj' := by
+        intro t₁ t₂ h
+        simp at h
+        exact h
+      map_rel_iff' := by
+        intro t₁ t₂; simp
+        constructor
+        · intro ⟨_, ⟨_, h_adj⟩⟩
+          exact h_adj
+        · intro h_adj
+          have ht₁: G.type_embed t₁ ∈ G.type_verts := by
+            unfold LabeledGraph.type_verts
+            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₁)
+          have ht₂: G.type_embed t₂ ∈ G.type_verts := by
+            unfold LabeledGraph.type_verts
+            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₂)
+          exact ⟨ht₁, ⟨ht₂, h_adj⟩⟩
+    }
+    embed_eq := by
+      intro t; simp
+  }
 
 namespace LabeledSubgraph
 
