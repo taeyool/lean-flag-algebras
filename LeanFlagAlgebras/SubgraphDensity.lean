@@ -3086,14 +3086,14 @@ lemma subgraphPairDensity_sum_assoc
   let C₁₂ : ℚ := (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
   have h_C₁₂_gt_0 : C₁₂ > 0 := by
     have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) := by omega
-    simp [C₁₂, Nat.choose_pos this]
+    simp only [gt_iff_lt, Nat.cast_pos, Nat.choose_pos this, C₁₂]
   have h_C₁₂_self_div_eq_1 : C₁₂ / C₁₂ = 1 :=
     div_self (ne_of_gt h_C₁₂_gt_0)
 
   let C₂₃ : ℚ := (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
   have h_C₂₃_gt_0 : C₂₃ > 0 := by
     have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ - (ℓ₁ + ℓ₂₃) := Nat.sub_le_sub_right hℓ₁₂_ub (ℓ₁ + ℓ₂₃)
-    simp [C₂₃, Nat.choose_pos this]
+    simp only [gt_iff_lt, Nat.cast_pos, Nat.choose_pos this, C₂₃]
   have h_C₂₃_self_div_eq_1 : C₂₃ / C₂₃ = 1 :=
     div_self (ne_of_gt h_C₂₃_gt_0)
 
