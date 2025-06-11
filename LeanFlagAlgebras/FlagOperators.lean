@@ -13,15 +13,15 @@ notation "∅ₜ" => emptyType
 @[simp]
 theorem emptyType_size : ∅ₜ.size = 0 := by
   dsimp [emptyType, FlagType.size]
-  simp only [Fintype.card_eq_zero]
 
 def isoLabeledGraphSetWithSameGraph
     (G : LabeledGraph σ (Fin n)) : Set (LabeledGraph σ (Fin n))
   :=
   { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
 
-instance (G : LabeledGraph σ (Fin n)) : FintypeExist (isoLabeledGraphSetWithSameGraph G) where
-  fintype_exist := Nonempty.intro (Fintype.ofFinite _)
+noncomputable instance (G : LabeledGraph σ (Fin n)) : Fintype (isoLabeledGraphSetWithSameGraph G)
+  :=
+  Fintype.ofFinite (isoLabeledGraphSetWithSameGraph G)
 
 noncomputable def isomorphismCount
     (G : LabeledGraph σ (Fin n)) : ℕ

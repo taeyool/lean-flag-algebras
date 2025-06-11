@@ -20,7 +20,6 @@ theorem flagDensity_K2_O3
   dsimp [K2_flag, O3_flag]
   rw [← labeledSubgraphListDensity_eq_flagDensity₁]
   dsimp [labeledSubgraphListDensity]
-  simp only [emptyType_size, tsub_zero]
   let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) O3_labeledGraph
   let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) O3_labeledGraph.size
   show (num : ℚ) / (denom : ℚ) = 0
@@ -47,8 +46,13 @@ theorem inducedLabeledSubgraph_emptyType_cases
       H = inducedLabeledSubgraph_emptyType G {0, 2} ∨
       H = inducedLabeledSubgraph_emptyType G {1, 2}
   := by
+  classical
   have h := IsInduced_exist_induce_set H h_ind
   rcases h with ⟨S, hS, hH⟩
+  have hS_card : Fintype.card S = 2 := by
+    have := inducedLabeledSubgraph_size G S hS
+    rw [hH, h_size] at this
+    rw [this]
   sorry
 
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
@@ -78,7 +82,6 @@ theorem flagDensity_K2_E3
   dsimp [K2_flag, E3_flag]
   rw [← labeledSubgraphListDensity_eq_flagDensity₁]
   dsimp [labeledSubgraphListDensity]
-  simp only [emptyType_size, tsub_zero]
   let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) E3_labeledGraph
   let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) O3_labeledGraph.size
   show (num : ℚ) / (denom : ℚ) = 1 / 3
