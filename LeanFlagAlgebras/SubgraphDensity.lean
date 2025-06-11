@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».QuotientGraph
 import «LeanFlagAlgebras».SubgraphUtil
+import «LeanFlagAlgebras».TacticChoose
 import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Order.BooleanAlgebra
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
@@ -21,6 +22,7 @@ variable {T U V W X : Type}
   [Fintype W] [DecidableEq W]
   [Fintype X] [DecidableEq X]
 
+
 lemma choose_pair_eq_factorial_div
     (n m k : ℕ) (h_size : m + k ≤ n)
     : n.choose m * (n - m).choose k = n.factorial / (m.factorial * k.factorial * (n - (m + k)).factorial)
@@ -33,7 +35,6 @@ lemma choose_pair_eq_factorial_div
   rw [Nat.mul_comm (n - m).factorial, Nat.mul_comm m.factorial, ← Nat.div_div_eq_div_mul _ _ m.factorial]
   rw [Nat.mul_div_cancel _ (Nat.factorial_pos (n - m))]
   rw [Nat.div_div_eq_div_mul, Nat.sub_sub, Nat.mul_assoc]
-
 
 lemma choose_pair_zero
     (n m k : ℕ) (h_size : m + k > n)
@@ -3097,7 +3098,7 @@ lemma subgraphPairDensity_sum_assoc
     div_self (ne_of_gt h_C₂₃_gt_0)
 
   have h_C₁₂_C₂₃ : ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
-                    = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ :=
+                    = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ := by
     have h₁ : ℓ₁ ≤ ℓ₁₂ := by linarith
     have h₂ : ℓ₂ ≤ ℓ₁₂ - ℓ₁ := (Nat.le_sub_iff_add_le' h₁).mpr hℓ₁₂_lb
     have h₃ : ℓ₁₂ ≤ ℓ := by linarith
@@ -3116,6 +3117,7 @@ lemma subgraphPairDensity_sum_assoc
       rw [←Nat.add_sub_assoc h (ℓ₁ + ℓ₂₃)]
       apply Nat.sub_le_of_le_add
       linarith
+    -- simp_choose_eq `h_choose
     calc
       ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
       _ = ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
@@ -3220,7 +3222,6 @@ lemma subgraphPairDensity_sum_assoc
               rw [choose_eq_factorial_div_factorial_rational h₅']
       _ = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃ := by
               dsimp [C₂₃]
-
   calc
     ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
