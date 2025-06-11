@@ -334,6 +334,15 @@ structure LabeledGraphIso {σ : FlagType T} {V W : Type}
 
 infixl:50 " ≃f " => LabeledGraphIso
 
+omit [Fintype T] in
+theorem labeledGraphIso_size_eq
+    {σ : FlagType T} {V W : Type} [Fintype V] [Fintype W] [DecidableEq V] [DecidableEq W]
+    (G : LabeledGraph σ V) (G' : LabeledGraph σ W) (h_iso : G ≃f G')
+    : G.size = G'.size
+  := by
+  dsimp [LabeledGraph.size]
+  rw [Fintype.card_congr h_iso.graph_iso.toEquiv]
+
 namespace LabeledGraphIso
 
 variable {T : Type} [Fintype T] {σ : FlagType T} {V W U : Type}

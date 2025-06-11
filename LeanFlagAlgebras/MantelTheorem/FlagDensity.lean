@@ -3,6 +3,7 @@ import «LeanFlagAlgebras».MantelTheorem.FlagIso
 
 open FlagAlgebras
 open LabeledSubgraph
+open Classical
 
 namespace MantelTheorem
 
@@ -40,24 +41,51 @@ def inducedLabeledSubgraph_emptyType
   have h : G.type_verts ⊆ S := by simp [LabeledGraph.type_verts]
   inducedLabeledSubgraph G S h
 
-theorem inducedLabeledSubgraph_emptyType_cases
-    (G : LabeledGraph ∅ₜ (Fin 3)) (H : LabeledSubgraph ∅ₜ G) (h_ind : H.IsInduced) (h_size : H.size = 2)
+lemma set_fin3_card_eq_2
+    (S : Set (Fin 3)) (hS_card : Fintype.card S = 2)
+    : S = {0, 1} ∨ S = {0, 2} ∨ S = {1, 2}
+  := by
+  rw [← Set.toFinset_card, Finset.card_eq_two] at hS_card
+  obtain ⟨x, y, h₁, h₂⟩ := hS_card
+  match x, y with
+  | 0, 0 => contradiction
+  | 0, 1 => left; exact Set.toFinset_inj.mp h₂
+  | 0, 2 => right; left; exact Set.toFinset_inj.mp h₂
+  | 1, 0 => left; rw [Set.pair_comm 0 1]; exact Set.toFinset_inj.mp h₂
+  | 1, 1 => contradiction
+  | 1, 2 => right; right; exact Set.toFinset_inj.mp h₂
+  | 2, 0 => right; left; rw [Set.pair_comm 0 2]; exact Set.toFinset_inj.mp h₂
+  | 2, 1 => right; right; rw [Set.pair_comm 1 2]; exact Set.toFinset_inj.mp h₂
+  | 2, 2 => contradiction
+
+theorem inducedLabeledSubgraph_emptyType_size_2
+    {G : LabeledGraph ∅ₜ (Fin 3)} (H : LabeledSubgraph ∅ₜ G) (h_ind : H.IsInduced) (h_size : H.size = 2)
     : H = inducedLabeledSubgraph_emptyType G {0, 1} ∨
       H = inducedLabeledSubgraph_emptyType G {0, 2} ∨
       H = inducedLabeledSubgraph_emptyType G {1, 2}
   := by
   classical
   have h := IsInduced_exist_induce_set H h_ind
-  rcases h with ⟨S, hS, hH⟩
+  rcases h with ⟨S, h_type_S, hH⟩
   have hS_card : Fintype.card S = 2 := by
-    have := inducedLabeledSubgraph_size G S hS
-    rw [hH, h_size] at this
-    rw [this]
-  sorry
+    rw [← inducedLabeledSubgraph_size G S h_type_S, hH, h_size]
+  rcases set_fin3_card_eq_2 S hS_card with hS | hS | hS
+  · left
+    rw [inducedLabeledSubgraph_emptyType, ← hH, ← hS]
+  · right; left
+    rw [inducedLabeledSubgraph_emptyType, ← hH, ← hS]
+  · right; right
+    rw [inducedLabeledSubgraph_emptyType, ← hH, ← hS]
 
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType E3_labeledGraph {0, 1}
+
+-- theorem coe_adj_iff
+--     {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
+--     : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
+--   :=
+--   Eq.to_iff rfl
 
 lemma labeledSubgraphListSet_K2_E3
     : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) E3_labeledGraph =
@@ -67,12 +95,28 @@ lemma labeledSubgraphListSet_K2_E3
   ext Hl
   simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
   constructor
-  · intro ⟨h₁, h₂, h₃⟩
+  · intro ⟨h_ind, h_iso, _⟩
     funext i
     rw [Fin.fin_one_eq_zero i]
-    specialize @h₁ 0
-    specialize @h₂ 0
-    sorry
+    specialize @h_ind 0
+    specialize @h_iso 0
+    let φ := h_iso.some
+    have h_size : (Hl 0).size = 2 := by
+      calc
+        _ = K2_labeledGraph.size := labeledGraphIso_size_eq (Hl 0).coe K2_labeledGraph φ
+        _ = 2 := K2_labeledGraph_size
+    rcases inducedLabeledSubgraph_emptyType_size_2 (Hl 0) h_ind h_size with h | h | h
+    · simp only [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, labeledSubgraph_K2_E3]
+    · have : (Hl 0).subgraph.Adj 0 2 := by
+        have : (Hl 0).subgraph.verts = {0, 2} := by simp [h, inducedLabeledSubgraph_emptyType]
+        -- rw [← φ.graph_iso.map_adj_iff]
+        rw [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, E3_labeledGraph] at φ
+        simp at φ
+        sorry
+      have : ¬ (Hl 0).subgraph.Adj 0 2 := by
+        simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, E3_labeledGraph]
+      contradiction
+    · sorry
   · sorry
 
 @[simp]
