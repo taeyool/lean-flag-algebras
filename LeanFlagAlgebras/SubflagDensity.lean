@@ -587,6 +587,7 @@ noncomputable def type_iso
   let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
   exact f_bij
 
+omit [FintypeExist T] [DecidableEqExist T] [FintypeExist V] [DecidableEqExist V] in
 lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
     : H = labeledSubgraph_bottom G ↔ H.IsInduced ∧ Nonempty (H.coe ≃f (emptyLabeledGraph σ)) := by
@@ -622,7 +623,7 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
             dsimp [iso_T_G, type_iso]
             exact this
           exact ⟨u.property, ⟨v.property, G_adj⟩⟩
-        · intro ⟨hu, ⟨hv, G_adj⟩⟩
+        · intro ⟨_, ⟨_, G_adj⟩⟩
           dsimp [f]
           let u_t := iso_T_G.symm u
           let v_t := iso_T_G.symm v
@@ -648,7 +649,6 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
       have := congrFun type_embed t
       simp only [Function.comp_apply] at this
       exact this
-    let iso_H_G := iso_H_T.trans (id iso_T_G)
     dsimp [labeledSubgraph_bottom] at *
     have graph_eq_H_G : H.subgraph = (labeledSubgraph_bottom G).subgraph := by
       dsimp [labeledSubgraph_bottom] at *
@@ -674,12 +674,37 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
       · simp; constructor
         · intro H_uv
           have hu : u ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv
+          let t₁ := iso_H_T ⟨u, hu⟩
+          have h_embed_t₁ : H.type_embed t₁ = u := by
+            have ht₁ := h_type_embed t₁
+            dsimp [t₁] at *
+            have := iso_H_T.injective ht₁
+            simp_all only
+          have h_t₁ : iso_H_T ⟨u, hu⟩ = t₁ := by
+            simp only [h_embed_t₁]
           have hv : v ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv.symm
+          let t₂ := iso_H_T ⟨v, hv⟩
+          have h_embed_t₂ : H.type_embed t₂ = v := by
+            have ht₂ := h_type_embed t₂
+            dsimp [t₂] at *
+            have := iso_H_T.injective ht₂
+            simp_all only
+          have h_t₂ : iso_H_T ⟨v, hv⟩ = t₂ := by
+            simp only [h_embed_t₂]
           have h_uv : H.coe.graph.Adj ⟨u, hu⟩ ⟨v, hv⟩ := H_uv
-          have := (iso_adj u hu v hv).mpr h_uv
-          dsimp [emptyLabeledGraph] at this
-          have := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp this
-          sorry
+          have flag_adj := (iso_adj u hu v hv).mpr h_uv
+          have G_adj := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp flag_adj
+          rw [h_t₁, h_t₂] at G_adj
+          have hu' : u ∈ G.type_verts := by
+            unfold LabeledGraph.type_verts
+            rw [← h_embed_t₁, H.embed_eq]
+            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₁)
+          have hv' : v ∈ G.type_verts := by
+            unfold LabeledGraph.type_verts
+            rw [← h_embed_t₂, H.embed_eq]
+            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₂)
+          have h_adj : G.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub H_uv
+          exact ⟨hu', ⟨hv', h_adj⟩⟩
         · intro ⟨hu, ⟨hv, h_adj⟩⟩
           have hu' : u ∈ H.subgraph.verts := by
             unfold LabeledGraph.type_verts at hu
