@@ -285,7 +285,6 @@ theorem example_with_hyps (a b c d : Nat)
     (h2 : c = d)
     (h_final : d = 100) : b = 100 := by
   my_custom_rewrite
--/
 
 lemma factorial_property
     (ℓ : Nat) (ℓ₁ ℓ₂ ℓ₃ ℓ₁₂ ℓ₂₃ : Nat)
@@ -315,3 +314,4 @@ lemma factorial_property
     ring_nf
 
   h_C₁₂_C₂₃
+-/
