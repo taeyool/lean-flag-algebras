@@ -41,6 +41,12 @@ def inducedLabeledSubgraph_emptyType
   have h : G.type_verts ⊆ S := by simp [LabeledGraph.type_verts]
   inducedLabeledSubgraph G S h
 
+theorem inducedLabeledSubgraph_emptyType_isInduced
+    {V : Type} (G : LabeledGraph ∅ₜ V) (S : Set V)
+    : (inducedLabeledSubgraph_emptyType G S).IsInduced
+  := by
+  simp [inducedLabeledSubgraph_emptyType]
+
 lemma set_fin3_card_eq_2
     (S : Set (Fin 3)) (hS_card : Fintype.card S = 2)
     : S = {0, 1} ∨ S = {0, 2} ∨ S = {1, 2}
@@ -81,11 +87,11 @@ def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType E3_labeledGraph {0, 1}
 
--- theorem coe_adj_iff
---     {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
---     : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
---   :=
---   Eq.to_iff rfl
+theorem coe_adj_iff
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
+    : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
+  :=
+  Eq.to_iff rfl
 
 lemma labeledSubgraphListSet_K2_E3
     : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) E3_labeledGraph =
@@ -108,16 +114,53 @@ lemma labeledSubgraphListSet_K2_E3
     rcases inducedLabeledSubgraph_emptyType_size_2 (Hl 0) h_ind h_size with h | h | h
     · simp only [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, labeledSubgraph_K2_E3]
     · have : (Hl 0).subgraph.Adj 0 2 := by
-        have : (Hl 0).subgraph.verts = {0, 2} := by simp [h, inducedLabeledSubgraph_emptyType]
-        -- rw [← φ.graph_iso.map_adj_iff]
-        rw [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, E3_labeledGraph] at φ
-        simp at φ
-        sorry
+        have h_0 : 0 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
+        have h_2 : 2 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
+        rw [← coe_adj_iff (Hl 0) ⟨0, h_0⟩ ⟨2, h_2⟩]
+        rw [← φ.graph_iso.map_adj_iff]
+        simp [K2_labeledGraph, K2_graph]
       have : ¬ (Hl 0).subgraph.Adj 0 2 := by
         simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, E3_labeledGraph]
       contradiction
-    · sorry
-  · sorry
+    · have : (Hl 0).subgraph.Adj 1 2 := by
+        have h_1 : 1 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
+        have h_2 : 2 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
+        rw [← coe_adj_iff (Hl 0) ⟨1, h_1⟩ ⟨2, h_2⟩]
+        rw [← φ.graph_iso.map_adj_iff]
+        simp [K2_labeledGraph, K2_graph]
+      have : ¬ (Hl 0).subgraph.Adj 1 2 := by
+        simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, E3_labeledGraph]
+      contradiction
+  · intro h
+    have h₀ : Hl 0 = labeledSubgraph_K2_E3 := by rw [h]
+    repeat' constructor
+    · intro i
+      rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_E3]
+      apply inducedLabeledSubgraph_emptyType_isInduced
+    · intro i
+      rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_E3]
+      apply Nonempty.intro
+      dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, E3_labeledGraph, K2_labeledGraph, coe]
+      have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 1}) = Fintype.card (Fin 2) := rfl
+      have φ := Fintype.equivOfCardEq h_card
+      exact {
+        graph_iso := {
+          toFun := φ.toFun
+          invFun := φ.invFun
+          left_inv := φ.left_inv
+          right_inv := φ.right_inv
+          map_rel_iff' := by
+            simp; intro i hi j hj
+            rcases hi with hi | hi <;> rcases hj with hj | hj
+            <;> (subst hi hj; simp [K2_graph])
+        }
+        type_preserve := by
+          funext i
+          exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+      }
+    · intro i j
+      rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+      simp only [not_true_eq_false, false_implies]
 
 @[simp]
 theorem flagDensity_K2_E3
