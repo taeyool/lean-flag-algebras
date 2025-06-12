@@ -157,6 +157,13 @@ def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgrap
   graph := H.subgraph.coe
   type_embed := H.type_embed
 
+omit [Fintype T] in
+theorem coe_adj_iff
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
+    : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
+  :=
+  Eq.to_iff rfl
+
 def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
   :=
   H.subgraph.IsInduced

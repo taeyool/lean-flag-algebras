@@ -7,33 +7,6 @@ open Classical
 
 namespace MantelTheorem
 
-/- single flag densities -/
-
-lemma labeledSubgraphListSet_K2_O3
-    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) O3_labeledGraph = ∅
-  := by
-  sorry
-
-@[simp]
-theorem flagDensity_K2_O3
-    : flagDensity₁ K2_flag O3_flag = 0
-  := by
-  dsimp [K2_flag, O3_flag]
-  rw [← labeledSubgraphListDensity_eq_flagDensity₁]
-  dsimp [labeledSubgraphListDensity]
-  let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) O3_labeledGraph
-  let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) O3_labeledGraph.size
-  show (num : ℚ) / (denom : ℚ) = 0
-  have h₁ : num = 0 := by
-    dsimp [num, labeledSubgraphListCount]
-    simp only [labeledSubgraphListSet_K2_O3, Set.toFinset_empty, Finset.card_empty]
-  have h₂ : denom = 3 := by
-    dsimp [denom, multinomialCoefficient]
-    simp [labeledGraphToList]
-    rfl
-  rw [h₁, h₂]
-  rfl
-
 def inducedLabeledSubgraph_emptyType
     {V : Type} (G : LabeledGraph ∅ₜ V) (S : Set V)
     : LabeledSubgraph ∅ₜ G
@@ -83,15 +56,60 @@ theorem inducedLabeledSubgraph_emptyType_size_2
   · right; right
     rw [inducedLabeledSubgraph_emptyType, ← hH, ← hS]
 
+
+/- single flag densities -/
+
+lemma labeledSubgraphListSet_K2_O3
+    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) O3_labeledGraph = ∅
+  := by
+  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  ext Hl
+  simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, Classical.not_imp]
+  push_neg
+  intro h_ind h_iso
+  specialize @h_ind 0
+  specialize h_iso 0
+  let φ := h_iso.some
+  have h_rel := @RelIso.map_rel_iff' _ _ _ _ φ.graph_iso
+  dsimp [K2_labeledGraph] at h_rel
+  have h_size : (Hl 0).size = 2 := by
+    calc
+      _ = K2_labeledGraph.size := labeledGraphIso_size_eq (Hl 0).coe K2_labeledGraph φ
+      _ = 2 := K2_labeledGraph_size
+  rcases inducedLabeledSubgraph_emptyType_size_2 (Hl 0) h_ind h_size with h | h | h
+  · simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, O3_labeledGraph] at h_rel
+    specialize h_rel 0 (by simp) 1 (by simp)
+    simp [K2_graph] at h_rel
+  · simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, O3_labeledGraph] at h_rel
+    specialize h_rel 0 (by simp) 2 (by simp)
+    simp [K2_graph] at h_rel
+  · simp [h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, O3_labeledGraph] at h_rel
+    specialize h_rel 1 (by simp) 2 (by simp)
+    simp [K2_graph] at h_rel
+
+@[simp]
+theorem flagDensity_K2_O3
+    : flagDensity₁ K2_flag O3_flag = 0
+  := by
+  dsimp [K2_flag, O3_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₁]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) O3_labeledGraph
+  let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) O3_labeledGraph.size
+  show (num : ℚ) / (denom : ℚ) = 0
+  have h₁ : num = 0 := by
+    dsimp [num, labeledSubgraphListCount]
+    simp only [labeledSubgraphListSet_K2_O3, Set.toFinset_empty, Finset.card_empty]
+  have h₂ : denom = 3 := by
+    dsimp [denom, multinomialCoefficient]
+    simp [labeledGraphToList]
+    rfl
+  rw [h₁, h₂]
+  rfl
+
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType E3_labeledGraph {0, 1}
-
-theorem coe_adj_iff
-    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
-    : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
-  :=
-  Eq.to_iff rfl
 
 lemma labeledSubgraphListSet_K2_E3
     : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) E3_labeledGraph =
@@ -116,7 +134,7 @@ lemma labeledSubgraphListSet_K2_E3
     · have : (Hl 0).subgraph.Adj 0 2 := by
         have h_0 : 0 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
         have h_2 : 2 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
-        rw [← coe_adj_iff (Hl 0) ⟨0, h_0⟩ ⟨2, h_2⟩]
+        rw [← LabeledSubgraph.coe_adj_iff (Hl 0) ⟨0, h_0⟩ ⟨2, h_2⟩]
         rw [← φ.graph_iso.map_adj_iff]
         simp [K2_labeledGraph, K2_graph]
       have : ¬ (Hl 0).subgraph.Adj 0 2 := by
@@ -125,7 +143,7 @@ lemma labeledSubgraphListSet_K2_E3
     · have : (Hl 0).subgraph.Adj 1 2 := by
         have h_1 : 1 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
         have h_2 : 2 ∈ (Hl 0).subgraph.verts := by simp [h, inducedLabeledSubgraph_emptyType]
-        rw [← coe_adj_iff (Hl 0) ⟨1, h_1⟩ ⟨2, h_2⟩]
+        rw [← LabeledSubgraph.coe_adj_iff (Hl 0) ⟨1, h_1⟩ ⟨2, h_2⟩]
         rw [← φ.graph_iso.map_adj_iff]
         simp [K2_labeledGraph, K2_graph]
       have : ¬ (Hl 0).subgraph.Adj 1 2 := by
@@ -193,6 +211,7 @@ theorem flagDensity_K2_K3
     : flagDensity₁ K2_flag K3_flag = 1
   := by
   sorry
+
 
 /- flag pair densities -/
 
