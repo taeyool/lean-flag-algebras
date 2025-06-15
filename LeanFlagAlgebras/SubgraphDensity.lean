@@ -3072,7 +3072,106 @@ lemma choose_eq_factorial_div_factorial_rational
           Nat.factorial_mul_factorial_dvd_factorial h_k_n
         simp only [h_dvd, Nat.cast_div_charZero, Nat.cast_mul]
 
+lemma subgraphPairDensity_sum_assoc
+    (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
+    (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
+    (hℓ₂₃_lb : ℓ₂ + ℓ₃ ≤ ℓ₂₃) (hℓ₂₃_ub : ℓ₁ + ℓ₂₃ ≤ ℓ)
+    (h : ℓ₁₂ + ℓ₃ ≥ ℓ₁ + ℓ₂₃)
+    :   ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+          subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
+      = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G
+  :=
+  let C₁₂ : ℕ := (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+  have h_C₁₂_gt_0 : (↑C₁₂ : ℚ) > 0 := by
+    have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ₁₂ - (ℓ₁ + ℓ₂) := by omega
+    simp only [gt_iff_lt, Nat.cast_pos, Nat.choose_pos this, C₁₂]
+  have h_C₁₂_self_div_eq_1 : (↑C₁₂ : ℚ) / (↑C₁₂ : ℚ) = 1 :=
+    div_self (ne_of_gt h_C₁₂_gt_0)
 
+  let C₂₃ : ℕ := (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))
+  have h_C₂₃_gt_0 : (↑C₂₃ : ℚ) > 0 := by
+    have : ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃) ≤ ℓ - (ℓ₁ + ℓ₂₃) := Nat.sub_le_sub_right hℓ₁₂_ub (ℓ₁ + ℓ₂₃)
+    simp only [gt_iff_lt, Nat.cast_pos, Nat.choose_pos this, C₂₃]
+  have h_C₂₃_self_div_eq_1 : (↑C₂₃ : ℚ) / (↑C₂₃ : ℚ) = 1 :=
+    div_self (ne_of_gt h_C₂₃_gt_0)
+
+  have h_C₁₂_C₂₃ :
+      ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂
+      = ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃
+    := by
+    dsimp [C₁₂, C₂₃]
+    simp_choose_eq `h_choose
+    rw [h_choose_lhs_0, h_choose_lhs_1, h_choose_lhs_2, h_choose_lhs_3, h_choose_lhs_4]
+    rw [h_choose_rhs_0, h_choose_rhs_1, h_choose_rhs_2, h_choose_rhs_3, h_choose_rhs_4]
+    ring_nf
+    have h₁ : ℓ₁₂ - (ℓ₁ + ℓ₂) = ℓ₁₂ - ℓ₁ - ℓ₂ := by omega
+    have h₂ : ℓ₁₂ - ℓ₁ - ℓ₂ - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
+    have h₃ : ℓ - ℓ₂₃ - ℓ₁ = ℓ - (ℓ₁ + ℓ₂₃) := by omega
+    have h₄ : ℓ₂₃ - ℓ₂ - ℓ₃ = ℓ₂₃ - (ℓ₂ + ℓ₃) := by omega
+    have h₅ : ℓ - (ℓ₁ + ℓ₂₃) - (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)) = ℓ - ℓ₁₂ - ℓ₃ := by omega
+    rw [h₁, h₂, h₃, h₄, h₅]
+    ring_nf
+
+  calc
+    ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)), subgraphPairDensity H₁ H₂ F.out * subgraphPairDensity F.out H₃ G
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            subgraphPairDensity H₁ H₂ F.out
+            * subgraphPairDensity F.out H₃ G
+            * (C₁₂ / C₁₂) := by
+                simp only [h_C₁₂_self_div_eq_1, mul_one]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            (subgraphPairCount H₁ H₂ F.out / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂) : ℚ))
+            * (subgraphPairCount F.out H₃ G / ((ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃) : ℚ))
+            * (C₁₂ / C₁₂) := by
+                simp only [subgraphPairDensity, Fintype.card_fin, Nat.cast_mul]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            (subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G * ↑C₁₂)
+            / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂) : ℚ) := by
+                simp only [div_mul_div_comm, mul_assoc]
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            subgraphPairCount H₁ H₂ F.out * subgraphPairCount F.out H₃ G * ↑C₁₂)
+        / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂) : ℚ) := by
+                apply Eq.symm; simp only [Nat.cast_sum, Nat.cast_mul, sum_div]
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₁₂)),
+            subgraphPairCount H₁ H₂ F.out
+            * subgraphPairCount F.out H₃ G
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+        / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+            * ℓ.choose ℓ₁₂  * (ℓ - ℓ₁₂).choose ℓ₃
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
+                simp only [Nat.cast_sum, Nat.cast_mul, C₁₂]
+    _ = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G
+            * (ℓ - (ℓ₁ + ℓ₂₃)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃)))
+        / ((ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂
+            * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃
+            * (ℓ₁₂ - (ℓ₁ + ℓ₂)).choose (ℓ₁₂ + ℓ₃ - (ℓ₁ + ℓ₂₃))) : ℚ) := by
+                rw [subgraphPairCount_sum_assoc H₁ H₂ H₃ G hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h]
+    _  = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G * C₂₃)
+        / (↑(ℓ₁₂.choose ℓ₁ * (ℓ₁₂ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₁₂ * (ℓ - ℓ₁₂).choose ℓ₃ * C₁₂) : ℚ) := by
+                simp only [Nat.cast_sum, Nat.cast_mul, C₂₃, C₁₂]
+    _  = (∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+            subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G * ↑C₂₃)
+        / (↑(ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃) : ℚ) := by
+                rw [h_C₁₂_C₂₃]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          (subgraphPairCount H₂ H₃ F.out * subgraphPairCount F.out H₁ G * C₂₃)
+          / (↑(ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃ * ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁ * C₂₃) : ℚ) := by
+                simp only [Nat.cast_sum, Nat.cast_mul, sum_div]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)),
+          (subgraphPairCount H₂ H₃ F.out / ((ℓ₂₃.choose ℓ₂ * (ℓ₂₃ - ℓ₂).choose ℓ₃) : ℚ))
+          * (subgraphPairCount F.out H₁ G / ((ℓ.choose ℓ₂₃ * (ℓ - ℓ₂₃).choose ℓ₁) : ℚ))
+          * (C₂₃ / C₂₃) := by
+                simp only [mul_assoc, Nat.cast_mul, div_mul_div_comm]
+    _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G := by
+                simp only [h_C₂₃_self_div_eq_1, mul_one, subgraphPairDensity, Fintype.card_fin, Nat.cast_mul]
+
+/-
+ - Hongseok: What follows is the previous proof of subgraphPairDensity_sum_assoc that does not use our custom tactic simp_choose_eq.
+ - We keep this old proof since it may be useful for explaining the benefit of our tactic in our future paper or presentation.
+ -
 lemma subgraphPairDensity_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -3276,6 +3375,7 @@ lemma subgraphPairDensity_sum_assoc
                 simp only [div_mul_div_comm, mul_assoc]
     _ = ∑ (F : QuotSimpleGraph (Fin ℓ₂₃)), subgraphPairDensity H₂ H₃ F.out * subgraphPairDensity F.out H₁ G := by
                 simp only [h_C₂₃_self_div_eq_1, mul_one, subgraphPairDensity, Fintype.card_fin, Nat.cast_mul]
+-/
 
 
 lemma subgraphPairDensityLifted_sum_assoc'

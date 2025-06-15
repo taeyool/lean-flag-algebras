@@ -157,6 +157,13 @@ def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgrap
   graph := H.subgraph.coe
   type_embed := H.type_embed
 
+omit [Fintype T] in
+theorem coe_adj_iff
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
+    : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
+  :=
+  Eq.to_iff rfl
+
 def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
   :=
   H.subgraph.IsInduced
@@ -333,6 +340,15 @@ structure LabeledGraphIso {σ : FlagType T} {V W : Type}
   type_preserve : graph_iso ∘ G.type_embed = G'.type_embed
 
 infixl:50 " ≃f " => LabeledGraphIso
+
+omit [Fintype T] in
+theorem labeledGraphIso_size_eq
+    {σ : FlagType T} {V W : Type} [Fintype V] [Fintype W] [DecidableEq V] [DecidableEq W]
+    (G : LabeledGraph σ V) (G' : LabeledGraph σ W) (h_iso : G ≃f G')
+    : G.size = G'.size
+  := by
+  dsimp [LabeledGraph.size]
+  rw [Fintype.card_congr h_iso.graph_iso.toEquiv]
 
 namespace LabeledGraphIso
 
