@@ -25,6 +25,12 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
+omit [Fintype T] in
+lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (t : T)
+  : G.type_embed t ∈ G.type_verts := by
+  unfold LabeledGraph.type_verts
+  exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t)
+
 noncomputable def LabeledGraph.iso_type_G
      {σ : FlagType T} (G : LabeledGraph σ V) : T ≃ G.type_verts := by
   let f : T → G.type_verts := by
@@ -55,10 +61,11 @@ noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype
   have f_inj : Function.Injective f := by
     intro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
     dsimp [f] at h_eq
-    simp_all only [Prod.mk.injEq, LabeledGraph.mk.injEq, true_and]
+    simp only [Prod.mk.injEq] at h_eq
     obtain ⟨left, right⟩ := h_eq
     subst left
-    simp_all only [DFunLike.coe_fn_eq, heq_eq_eq]
+    simp only [LabeledGraph.mk.injEq, true_and, heq_eq_eq]
+    apply DFunLike.coe_fn_eq.mp right
   have : Fintype (SimpleGraph V × (T → V)) := Fintype.ofFinite (SimpleGraph V × (T → V))
   Fintype.ofInjective f f_inj
 
@@ -88,23 +95,24 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := {
       verts := Set.univ
-      Adj := fun u v => G.graph.Adj u v
-      adj_sub := by simp [SimpleGraph.Adj]
-      edge_vert := by simp
-      symm := by simp [SimpleGraph.symm]
+      Adj := G.graph.Adj
+      adj_sub := fun a ↦ a
+      edge_vert := fun _ ↦ trivial
+      symm := by simp only [SimpleGraph.symm]
     }
     type_embed := {
-      toFun := fun t ↦ ⟨G.type_embed t, by simp⟩
+      toFun := fun t ↦ ⟨G.type_embed t, trivial⟩
       inj' := by
-        intro t₁ t₂ h
-        simp at h
-        exact h
+        intro t₁ t₂ h_eq
+        simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
+        exact h_eq
       map_rel_iff' := by
         intro t₁ t₂
-        simp
+        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
     }
     embed_eq := by
-      intro t; simp
+      intro t
+      simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
   }
 
 def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
@@ -112,36 +120,34 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
     subgraph := {
       verts := G.type_verts
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
-      adj_sub := by simp [SimpleGraph.Adj]
+      adj_sub := by simp only [and_imp, imp_self, implies_true]
       edge_vert := by
         intro u v ⟨hu, _⟩
         exact hu
       symm := by
-        intro u v ⟨hu, ⟨hv, h_uv⟩⟩
-        exact ⟨hv, ⟨hu, h_uv.symm⟩⟩
+        intro u v ⟨hu, hv, h_uv⟩
+        exact ⟨hv, hu, h_uv.symm⟩
     }
     type_embed := {
-      toFun := fun t ↦ ⟨G.type_embed t, by unfold LabeledGraph.type_verts; simp⟩
+      toFun := fun t ↦ ⟨G.type_embed t, G.type_verts_contain t⟩
       inj' := by
-        intro t₁ t₂ h
-        simp at h
-        exact h
+        intro t₁ t₂ h_eq
+        simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
+        exact h_eq
       map_rel_iff' := by
-        intro t₁ t₂; simp
+        intro t₁ t₂
+        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
         constructor
-        · intro ⟨_, ⟨_, h_adj⟩⟩
+        · intro ⟨_, _, h_adj⟩
           exact h_adj
         · intro h_adj
-          have ht₁: G.type_embed t₁ ∈ G.type_verts := by
-            unfold LabeledGraph.type_verts
-            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₁)
-          have ht₂: G.type_embed t₂ ∈ G.type_verts := by
-            unfold LabeledGraph.type_verts
-            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₂)
-          exact ⟨ht₁, ⟨ht₂, h_adj⟩⟩
+          have ht₁: G.type_embed t₁ ∈ G.type_verts := G.type_verts_contain t₁
+          have ht₂: G.type_embed t₂ ∈ G.type_verts := G.type_verts_contain t₂
+          exact ⟨ht₁, ht₂, h_adj⟩
     }
     embed_eq := by
-      intro t; simp
+      intro t
+      simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
   }
 
 namespace LabeledSubgraph
