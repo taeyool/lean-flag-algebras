@@ -36,13 +36,14 @@ noncomputable def LabeledGraph.iso_type_G
     constructor
     · intro t₁ t₂ h_eq
       dsimp [f] at h_eq
-      simp at h_eq
+      simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
       exact h_eq
     · intro u
       unfold LabeledGraph.type_verts at u
       obtain ⟨t, h_t⟩ := u
-      simp_all only [Subtype.mk.injEq, f]
-      simp_all only [Set.image_univ, Set.mem_range]
+      simp only [Subtype.mk.injEq, f]
+      simp only [Set.image_univ, Set.mem_range] at h_t
+      exact h_t
   let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
   exact f_bij
 
