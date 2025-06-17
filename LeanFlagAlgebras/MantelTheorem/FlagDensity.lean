@@ -43,8 +43,7 @@ theorem inducedLabeledSubgraph_emptyType_size_2
       H = inducedLabeledSubgraph_emptyType G {0, 2} ∨
       H = inducedLabeledSubgraph_emptyType G {1, 2}
   := by
-  classical
-  have h := IsInduced_exist_induce_set H h_ind
+  have h := isInduced_exist_induce_set H h_ind
   rcases h with ⟨S, h_type_S, hH⟩
   have hS_card : Fintype.card S = 2 := by
     rw [← inducedLabeledSubgraph_size G S h_type_S, hH, h_size]

@@ -307,7 +307,7 @@ theorem inducedLabeledSubgraph_isInduced
   (repeat' constructor) <;> assumption
 
 omit [Fintype T] in
-theorem IsInduced_exist_induce_set
+theorem isInduced_exist_induce_set
     {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (h_ind : H.IsInduced)
     : ∃ (S : Set V) (h : G.type_verts ⊆ S), inducedLabeledSubgraph G S h = H
   := by
