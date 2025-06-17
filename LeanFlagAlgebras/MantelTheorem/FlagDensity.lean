@@ -157,7 +157,8 @@ lemma labeledSubgraphListSet_K2_E3
     · intro i
       rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_E3]
       apply Nonempty.intro
-      dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, E3_labeledGraph, K2_labeledGraph, coe]
+      dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+        E3_labeledGraph, K2_labeledGraph, coe]
       have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 1}) = Fintype.card (Fin 2) := rfl
       have φ := Fintype.equivOfCardEq h_card
       exact {
@@ -256,7 +257,8 @@ lemma labeledSubgraphListSet_K2_P3
       · intro i
         rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_P3]
         apply Nonempty.intro
-        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, P3_labeledGraph, K2_labeledGraph, coe]
+        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+          P3_labeledGraph, K2_labeledGraph, coe]
         have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 1}) = Fintype.card (Fin 2) := rfl
         have φ := Fintype.equivOfCardEq h_card
         exact {
@@ -284,7 +286,8 @@ lemma labeledSubgraphListSet_K2_P3
       · intro i
         rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_P3']
         apply Nonempty.intro
-        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph, P3_labeledGraph, K2_labeledGraph, coe]
+        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+          P3_labeledGraph, K2_labeledGraph, coe]
         have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 2}) = Fintype.card (Fin 2) := rfl
         have φ := Fintype.equivOfCardEq h_card
         exact {
@@ -314,13 +317,14 @@ lemma labeledSubgraphListCount_K2_P3
   use fun _ => labeledSubgraph_K2_P3, fun _ => labeledSubgraph_K2_P3'
   constructor
   · refine Function.ne_iff.mpr ⟨0, ?_⟩
-    dsimp [labeledSubgraph_K2_P3, labeledSubgraph_K2_P3', inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph]
+    dsimp [labeledSubgraph_K2_P3, labeledSubgraph_K2_P3', inducedLabeledSubgraph_emptyType,
+      inducedLabeledSubgraph, inducedSubgraph]
     intro h
     simp only [mk.injEq, SimpleGraph.Subgraph.mk.injEq] at h
     obtain ⟨⟨h_verts, _⟩, _⟩ := h
     have : (1 : Fin 3) ∈ ({0, 2} : Set (Fin 3)) := by
       rw [← h_verts]
-      simp only [Set.mem_insert_iff, Set.mem_singleton_iff, or_true]
+      exact Set.mem_insert_of_mem 0 rfl
     contradiction
   · dsimp [labeledSubgraphListSet_K2_P3]
     simp only [labeledSubgraphListSet_K2_P3, Set.toFinset_insert, Set.toFinset_singleton]
@@ -345,11 +349,195 @@ theorem flagDensity_K2_P3
   rw [h₁, h₂]
   rfl
 
+def labeledSubgraph_K2_K3 : LabeledSubgraph ∅ₜ K3_labeledGraph
+  :=
+  inducedLabeledSubgraph_emptyType K3_labeledGraph {0, 1}
+
+def labeledSubgraph_K2_K3' : LabeledSubgraph ∅ₜ K3_labeledGraph
+  :=
+  inducedLabeledSubgraph_emptyType K3_labeledGraph {0, 2}
+
+def labeledSubgraph_K2_K3'' : LabeledSubgraph ∅ₜ K3_labeledGraph
+  :=
+  inducedLabeledSubgraph_emptyType K3_labeledGraph {1, 2}
+
+lemma labeledSubgraphListSet_K2_K3
+    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) K3_labeledGraph =
+      {fun _ => labeledSubgraph_K2_K3, fun _ => labeledSubgraph_K2_K3', fun _ => labeledSubgraph_K2_K3''}
+  := by
+  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  ext Hl
+  simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+  constructor
+  · intro ⟨h_ind, h_iso, _⟩
+    specialize @h_ind 0
+    specialize @h_iso 0
+    let φ := h_iso.some
+    have h_size : (Hl 0).size = 2 := by
+      calc
+        _ = K2_labeledGraph.size := labeledGraphIso_size_eq (Hl 0).coe K2_labeledGraph φ
+        _ = 2 := K2_labeledGraph_size
+    rcases inducedLabeledSubgraph_emptyType_size_2 (Hl 0) h_ind h_size with h | h | h
+    <;> simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    · left
+      funext i
+      simp only [Fin.fin_one_eq_zero i, h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, labeledSubgraph_K2_K3]
+    · right; left
+      funext i
+      simp only [Fin.fin_one_eq_zero i, h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, labeledSubgraph_K2_K3']
+    · right; right
+      funext i
+      simp only [Fin.fin_one_eq_zero i, h, inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, labeledSubgraph_K2_K3'']
+  · intro h
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at h
+    rcases h with h₀ | h₀ | h₀
+    · repeat' constructor
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3]
+        apply inducedLabeledSubgraph_emptyType_isInduced
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3]
+        apply Nonempty.intro
+        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+          K3_labeledGraph, K2_labeledGraph, coe]
+        have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 1}) = Fintype.card (Fin 2) := rfl
+        have φ := Fintype.equivOfCardEq h_card
+        exact {
+          graph_iso := {
+            toFun := φ.toFun
+            invFun := φ.invFun
+            left_inv := φ.left_inv
+            right_inv := φ.right_inv
+            map_rel_iff' := by
+              simp; intro i hi j hj
+              rcases hi with hi | hi <;> rcases hj with hj | hj
+              <;> (subst hi hj; simp [K2_graph])
+          }
+          type_preserve := by
+            funext i
+            exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+        }
+      · intro i j
+        rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+        simp only [not_true_eq_false, false_implies]
+    · repeat' constructor
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3']
+        apply inducedLabeledSubgraph_emptyType_isInduced
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3']
+        apply Nonempty.intro
+        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+          K3_labeledGraph, K2_labeledGraph, coe]
+        have h_card : Fintype.card (@Set.Elem (Fin 3) {0, 2}) = Fintype.card (Fin 2) := rfl
+        have φ := Fintype.equivOfCardEq h_card
+        exact {
+          graph_iso := {
+            toFun := φ.toFun
+            invFun := φ.invFun
+            left_inv := φ.left_inv
+            right_inv := φ.right_inv
+            map_rel_iff' := by
+              simp; intro i hi j hj
+              rcases hi with hi | hi <;> rcases hj with hj | hj
+              <;> (subst hi hj; simp [K2_graph])
+          }
+          type_preserve := by
+            funext i
+            exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+        }
+      · intro i j
+        rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+        simp only [not_true_eq_false, false_implies]
+    · repeat' constructor
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3'']
+        apply inducedLabeledSubgraph_emptyType_isInduced
+      · intro i
+        rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3'']
+        apply Nonempty.intro
+        dsimp [inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph,
+          K3_labeledGraph, K2_labeledGraph, coe]
+        have h_card : Fintype.card (@Set.Elem (Fin 3) {1, 2}) = Fintype.card (Fin 2) := rfl
+        have φ := Fintype.equivOfCardEq h_card
+        exact {
+          graph_iso := {
+            toFun := φ.toFun
+            invFun := φ.invFun
+            left_inv := φ.left_inv
+            right_inv := φ.right_inv
+            map_rel_iff' := by
+              simp; intro i hi j hj
+              rcases hi with hi | hi <;> rcases hj with hj | hj
+              <;> (subst hi hj; simp [K2_graph])
+          }
+          type_preserve := by
+            funext i
+            exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+        }
+      · intro i j
+        rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+        simp only [not_true_eq_false, false_implies]
+
+lemma labeledSubgraphListCount_K2_K3
+    : labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) K3_labeledGraph = 3
+  := by
+  dsimp [labeledSubgraphListCount]
+  refine Finset.card_eq_three.mpr ?_
+  use fun _ => labeledSubgraph_K2_K3, fun _ => labeledSubgraph_K2_K3', fun _ => labeledSubgraph_K2_K3''
+  repeat' constructor
+  · dsimp [labeledSubgraph_K2_K3, labeledSubgraph_K2_K3', labeledSubgraph_K2_K3'',
+      inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph]
+    refine Function.ne_iff.mpr ⟨0, ?_⟩
+    intro h
+    simp only [mk.injEq, SimpleGraph.Subgraph.mk.injEq] at h
+    obtain ⟨⟨h_verts, _⟩, _⟩ := h
+    have : (1 : Fin 3) ∈ ({0, 2} : Set (Fin 3)) := by
+      rw [← h_verts]
+      exact Set.mem_insert_of_mem 0 rfl
+    contradiction
+  · dsimp [labeledSubgraph_K2_K3, labeledSubgraph_K2_K3', labeledSubgraph_K2_K3'',
+      inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph]
+    refine Function.ne_iff.mpr ⟨0, ?_⟩
+    intro h
+    simp only [mk.injEq, SimpleGraph.Subgraph.mk.injEq] at h
+    obtain ⟨⟨h_verts, _⟩, _⟩ := h
+    have : (0 : Fin 3) ∈ ({1, 2} : Set (Fin 3)) := by
+      rw [← h_verts]
+      exact Set.mem_insert 0 {1}
+    contradiction
+  · dsimp [labeledSubgraph_K2_K3, labeledSubgraph_K2_K3', labeledSubgraph_K2_K3'',
+      inducedLabeledSubgraph_emptyType, inducedLabeledSubgraph, inducedSubgraph]
+    refine Function.ne_iff.mpr ⟨0, ?_⟩
+    intro h
+    simp only [mk.injEq, SimpleGraph.Subgraph.mk.injEq] at h
+    obtain ⟨⟨h_verts, _⟩, _⟩ := h
+    have : (0 : Fin 3) ∈ ({1, 2} : Set (Fin 3)) := by
+      rw [← h_verts]
+      exact Set.mem_insert 0 {2}
+    contradiction
+  · dsimp [labeledSubgraphListSet_K2_K3]
+    simp only [labeledSubgraphListSet_K2_K3, Set.toFinset_insert, Set.toFinset_singleton]
+
 @[simp]
 theorem flagDensity_K2_K3
     : flagDensity₁ K2_flag K3_flag = 1
   := by
-  sorry
+  dsimp [K2_flag, K3_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₁]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) K3_labeledGraph
+  let denom := multinomialCoefficient (fun i ↦ (labeledGraphToList K2_labeledGraph i).size) K3_labeledGraph.size
+  show (num : ℚ) / (denom : ℚ) = 1
+  have h₁ : num = 3 := by
+    dsimp [num]
+    exact labeledSubgraphListCount_K2_K3
+  have h₂ : denom = 3 := by
+    dsimp [denom, multinomialCoefficient]
+    simp [labeledGraphToList]
+    rfl
+  rw [h₁, h₂]
+  rfl
 
 
 /- flag pair densities -/
