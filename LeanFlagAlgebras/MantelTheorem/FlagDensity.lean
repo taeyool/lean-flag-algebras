@@ -546,108 +546,264 @@ theorem flagDensity_K2_K3
 theorem flagDensity_O2₁_O2₁_O3₁
     : flagDensity₂ O2₁_flag O2₁_flag O3₁_flag = 1
   := by
-  sorry
+  dsimp [O2₁_flag, O3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (O3₁_labeledGraph 0)
+  have h_num : num = 2 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  show (num : ℚ) / 2 = 1
+  rw [h_num]
+  rfl
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_O3₁
     : flagDensity₂ O2₁_flag K2₁_flag O3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, O3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (O3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_O3₁
     : flagDensity₂ K2₁_flag K2₁_flag O3₁_flag = 0
   := by
-  sorry
+  dsimp [K2₁_flag, O3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (O3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_E3₁
     : flagDensity₂ O2₁_flag O2₁_flag E3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, E3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (E3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_E3₁
     : flagDensity₂ O2₁_flag K2₁_flag E3₁_flag = 1 / 2
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, E3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (E3₁_labeledGraph 0)
+  have h_num : num = 1 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList, ← one_div]
+  show (num : ℚ) / 2 = 1 / 2
+  rw [h_num]
+  rfl
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_E3₁
     : flagDensity₂ K2₁_flag K2₁_flag E3₁_flag = 0
   := by
-  sorry
+  dsimp [K2₁_flag, E3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (E3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_E3₁'
     : flagDensity₂ O2₁_flag O2₁_flag E3₁'_flag = 1
   := by
-  sorry
+  dsimp [O2₁_flag, E3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (E3₁_labeledGraph 2)
+  have h_num : num = 2 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList, ← one_div]
+  show (num : ℚ) / 2 = 1
+  rw [h_num]
+  rfl
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_E3₁'
     : flagDensity₂ O2₁_flag K2₁_flag E3₁'_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, E3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (E3₁_labeledGraph 2)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_E3₁'
     : flagDensity₂ K2₁_flag K2₁_flag E3₁'_flag = 0
   := by
-  sorry
+  dsimp [K2₁_flag, E3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (E3₁_labeledGraph 2)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_P3₁
     : flagDensity₂ O2₁_flag O2₁_flag P3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, P3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (P3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_P3₁
     : flagDensity₂ O2₁_flag K2₁_flag P3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, P3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (P3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_P3₁
     : flagDensity₂ K2₁_flag K2₁_flag P3₁_flag = 1
   := by
-  sorry
+  dsimp [K2₁_flag, P3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (P3₁_labeledGraph 0)
+  have h_num : num = 2 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList, ← one_div]
+  show (num : ℚ) / 2 = 1
+  rw [h_num]
+  rfl
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_P3₁'
     : flagDensity₂ O2₁_flag O2₁_flag P3₁'_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, P3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (P3₁_labeledGraph 1)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_P3₁'
     : flagDensity₂ O2₁_flag K2₁_flag P3₁'_flag = 1 / 2
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, P3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (P3₁_labeledGraph 1)
+  have h_num : num = 1 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList, ← one_div]
+  show (num : ℚ) / 2 = 1 / 2
+  rw [h_num]
+  rfl
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_P3₁'
     : flagDensity₂ K2₁_flag K2₁_flag P3₁'_flag = 0
   := by
-  sorry
+  dsimp [K2₁_flag, P3₁'_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (P3₁_labeledGraph 1)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_K3₁
     : flagDensity₂ O2₁_flag O2₁_flag K3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, K3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (K3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_K3₁
     : flagDensity₂ O2₁_flag K2₁_flag K3₁_flag = 0
   := by
-  sorry
+  dsimp [O2₁_flag, K2₁_flag, K3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (K3₁_labeledGraph 0)
+  have h_num : num = 0 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList]
+  exact h_num
 
 @[simp]
 theorem flagDensity_K2₁_K2₁_K3₁
     : flagDensity₂ K2₁_flag K2₁_flag K3₁_flag = 1
   := by
-  sorry
+  dsimp [K2₁_flag, K3₁_flag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂]
+  dsimp [labeledSubgraphListDensity]
+  let num := labeledSubgraphListCount (labeledGraphPairToList (K2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (K3₁_labeledGraph 0)
+  have h_num : num = 2 := by
+    sorry
+  dsimp [multinomialCoefficient]
+  simp [labeledGraphPairToList, ← one_div]
+  show (num : ℚ) / 2 = 1
+  rw [h_num]
+  rfl
 
 end MantelTheorem

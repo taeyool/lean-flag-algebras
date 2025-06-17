@@ -254,6 +254,36 @@ def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
       map_rel_iff' := by intros; simp; exact id
     }
 
+@[simp]
+theorem O2₁_labeledGraph_size (label_idx : Fin 2)
+    : (O2₁_labeledGraph label_idx).size = 2
+  := Fintype.card_fin 2
+
+@[simp]
+theorem K2₁_labeledGraph_size (label_idx : Fin 2)
+    : (K2₁_labeledGraph label_idx).size = 2
+  := Fintype.card_fin 2
+
+@[simp]
+theorem O3₁_labeledGraph_size (label_idx : Fin 3)
+    : (O3₁_labeledGraph label_idx).size = 3
+  := Fintype.card_fin 3
+
+@[simp]
+theorem E3₁_labeledGraph_size (label_idx : Fin 3)
+    : (E3₁_labeledGraph label_idx).size = 3
+  := Fintype.card_fin 3
+
+@[simp]
+theorem P3₁_labeledGraph_size (label_idx : Fin 3)
+    : (P3₁_labeledGraph label_idx).size = 3
+  := Fintype.card_fin 3
+
+@[simp]
+theorem K3₁_labeledGraph_size (label_idx : Fin 3)
+    : (K3₁_labeledGraph label_idx).size = 3
+  := Fintype.card_fin 3
+
 def O2₁_flag : Flag Sₜ (Fin 2) :=
   ⟦O2₁_labeledGraph 0⟧
 
