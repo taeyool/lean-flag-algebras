@@ -196,12 +196,6 @@ lemma inducedlabeledSubgraph_related
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
     apply h_ind₀ h_u h_v h_G₀uv
 
-theorem graph_eq
-  {P Q : Type} (h : P = Q)
-  : SimpleGraph P = SimpleGraph Q := by
-  subst h
-  rfl
-
 omit [Fintype V] [DecidableEq V] in
 theorem inducedGraph_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
@@ -211,12 +205,16 @@ theorem inducedGraph_eq
   · exact Eq.to_iff (congrFun h_verts u)
   · exact Eq.to_iff (h_adj u v)
 
+theorem graph_eq
+  {P Q : Type} (h : P = Q)
+  : SimpleGraph P = SimpleGraph Q := by
+  subst h; rfl
+
 omit [Fintype V] [DecidableEq V] in
 theorem coe_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H') (h' : ↑H'.verts = ↑H.verts)
   : H.coe = cast (graph_eq h') H'.coe := by
-  subst h
-  dsimp [SimpleGraph.Subgraph.coe]
+  subst h; rfl
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_val_eq
@@ -230,18 +228,7 @@ theorem embed_val_eq
   intro t
   subst h
   simp_all only [cast_eq]
-  obtain ⟨h₁, h₂⟩ := H_emb
-  obtain ⟨h₃, h₄⟩ := H'_emb
-  obtain ⟨h₆, h₇⟩ := G_emb
-  have h₅ : h₁ = h₃ := by
-    refine Function.Embedding.ext_iff.mpr ?_
-    intro t
-    simp_all only [RelEmbedding.coe_mk]
-    simp_all only [SimpleGraph.Subgraph.coe_adj, implies_true]
-    ext1
-    simp_all only
-  subst h₅
-  simp_all only [RelEmbedding.coe_mk]
+  ext; rw [h'' t, h''' t]
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_eq
@@ -252,19 +239,13 @@ theorem embed_eq
   (h'' : H.coe = cast (graph_eq h') H'.coe)
   (h''' : ∀ t : T, H_emb t = cast h' (H'_emb t))
   : HEq H_emb H'_emb := by
-  have test : H_emb = cast (by
-    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by
-      congr
+  have embedding_cast_eq : H_emb = cast (by
+    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by congr
+    subst h; rfl) H'_emb := by
     subst h
-    simp_all only [cast_eq])
-    H'_emb := by
-    subst h
-    simp_all only [cast_eq]
     ext1 x
     simp_all only [cast_eq]
-  subst h
-  subst test
-  rfl
+  subst h embedding_cast_eq; rfl
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype   W] [DecidableEq W] in
 lemma H_eq_reverseinduced_induced_H
@@ -309,7 +290,6 @@ lemma H_eq_reverseinduced_induced_H
     have coe_eq := coe_eq inducedGraph_test type_eq
     have h_H₀_embed := H₀.embed_eq
     have h_f_inv_f_H_embed := f_inv_f_H.embed_eq
-
     have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) := by
       intro t
       exact
@@ -1187,8 +1167,8 @@ noncomputable def isoSetOfInducedlabeledSubgraphListIsoHl
     (predIsoLabeledHl_related φ Hl)
     (predIsoLabeledHl_related φ.symm Hl)
   dsimp only [predIsoLabeledHl, relOfPredOnlabeledSubgraphList] at iso
-  simp
-  simp at iso
+  simp only [Set.coe_setOf]
+  simp only [and_self_left] at iso
   exact iso
 
 omit [DecidableEq T] in
@@ -1428,20 +1408,84 @@ theorem flagDensity_permute
   dsimp [flagListDensity, quotLabeledSubgraphListDensity]
   congr
   ext Grep
-  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
-  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl.permute π i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  dsimp [labeledSubgraphListCount]
+  let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
+  let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl.permute π i)) Grep
+  let S₂ := labeledSubgraphListSet (fun i => Quotient.out (Fl (π i))) Grep
+
+  have h_iso_S₀_S₂ : S₀ ≃ S₂ := by
+    dsimp [S₀, S₂]
+    let f : ∀ (i : Fin t), ∃ (j : Fin t), Nonempty ((Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl (π j)) : LabeledGraph σ (Vl (π j)))) := by
+      intro i
+      use π.invFun i
+      have h_eq : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+      rw [← h_eq]
+      exact Nonempty.intro (LabeledGraphIso.refl)
+    apply Equiv.ofBijective
+    · simp
+      sorry
+    · sorry
+  have h_iso_S₂_S₁ : S₂ ≃ S₁ := by
+    dsimp [S₁, S₂]
+    have h_eq : ∀ i, Fl.permute π i = Fl (π i) := by
+      intro i; rfl
+    dsimp [labeledSubgraphListSet]
+    simp_all only
+    rfl
+
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
     let φ : ∀ (i : Fin t), (Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl.permute π i) : LabeledGraph σ (Vl (π i))) := by
       intro i
-      -- Use the fact that Fl.permute π i = Fl (π i) and construct the equivalence
       have h_eq : Fl.permute π i = Fl (π i) := rfl
       rw [h_eq]
       sorry
-    -- exact isoSetOfInducedlabeledSubgraph_eqv φ Grep
     sorry
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-  sorry
+  have h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
+    dsimp only [labeledSubgraphListCount]
+    show S₁.toFinset.card = S₀.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size) := by
+    dsimp [multinomialCoefficient]
+    simp
+    have h1 : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size) := by
+      apply Finset.sum_bij (fun i _ => π.invFun i) (by simp) (by simp)
+      · intro i hi
+        use π i
+        simp only [Equiv.invFun_as_coe, Equiv.symm_apply_apply, Finset.mem_univ, exists_const]
+      · intro i hi
+        have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+        dsimp [FlagList.permute]
+        have : (Quotient.out (Fl i)).size = (Quotient.out (Fl.permute π (π.invFun i))).size := by
+          have h_eq : π (π.invFun i) = i := Equiv.apply_symm_apply π i
+          have h_cast : ∀ j, Fl.permute π j = cast (Flag.type_eq rfl j) (Fl (π j)) := by
+            intro j; rfl
+          have h_Fl_size_eq : ∀ (j : Fin t), (Quotient.out (Fl.permute π j)).size = (Quotient.out (Fl (π j))).size := by
+            intro j
+            rfl
+          rw [h_Fl_size_eq (π.invFun i), ← this]
+        rw [this]; rfl
+    have h2 : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial := by
+      apply Finset.prod_bij (fun i _ => π.invFun i) (by simp) (by simp)
+      · intro i hi
+        use π i
+        simp_all only [Finset.mem_univ, Equiv.invFun_as_coe, Equiv.symm_apply_apply, exists_const]
+      · intro i hi
+        have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+        have : (Quotient.out (Fl i)).size = (Quotient.out (Fl.permute π (π.invFun i))).size := by
+          have h_eq : π (π.invFun i) = i := Equiv.apply_symm_apply π i
+          have h_cast : ∀ j, Fl.permute π j = cast (Flag.type_eq rfl j) (Fl (π j)) := by
+            intro j; rfl
+          have h_Fl_size_eq : ∀ (j : Fin t), (Quotient.out (Fl.permute π j)).size = (Quotient.out (Fl (π j))).size := by
+            intro j
+            rfl
+          rw [h_Fl_size_eq (π.invFun i), ← this]
+        rw [this]
+    rw [h1, h2]
+  dsimp [labeledSubgraphListDensity]
+  rw [h_count, h_coeff]
 
 instance {V W : Type} [Fintype V] [Fintype W]
     : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
