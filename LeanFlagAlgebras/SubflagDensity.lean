@@ -1411,6 +1411,28 @@ theorem flagDensity_permute
   dsimp [labeledSubgraphListCount]
   let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
   let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl.permute π i)) Grep
+  let S₂ := labeledSubgraphListSet (fun i => Quotient.out (Fl (π i))) Grep
+
+  have h_iso_S₀_S₂ : S₀ ≃ S₂ := by
+    dsimp [S₀, S₂]
+    let f : ∀ (i : Fin t), ∃ (j : Fin t), Nonempty ((Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl (π j)) : LabeledGraph σ (Vl (π j)))) := by
+      intro i
+      use π.invFun i
+      have h_eq : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+      rw [← h_eq]
+      exact Nonempty.intro (LabeledGraphIso.refl)
+    apply Equiv.ofBijective
+    · simp
+      sorry
+    · sorry
+  have h_iso_S₂_S₁ : S₂ ≃ S₁ := by
+    dsimp [S₁, S₂]
+    have h_eq : ∀ i, Fl.permute π i = Fl (π i) := by
+      intro i; rfl
+    dsimp [labeledSubgraphListSet]
+    simp_all only
+    rfl
+
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
     let φ : ∀ (i : Fin t), (Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl.permute π i) : LabeledGraph σ (Vl (π i))) := by
       intro i
