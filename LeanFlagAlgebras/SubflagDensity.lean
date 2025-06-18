@@ -1167,8 +1167,8 @@ noncomputable def isoSetOfInducedlabeledSubgraphListIsoHl
     (predIsoLabeledHl_related φ Hl)
     (predIsoLabeledHl_related φ.symm Hl)
   dsimp only [predIsoLabeledHl, relOfPredOnlabeledSubgraphList] at iso
-  simp
-  simp at iso
+  simp only [Set.coe_setOf]
+  simp only [and_self_left] at iso
   exact iso
 
 omit [DecidableEq T] in
@@ -1408,20 +1408,62 @@ theorem flagDensity_permute
   dsimp [flagListDensity, quotLabeledSubgraphListDensity]
   congr
   ext Grep
-  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
-  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Quotient.out (Fl.permute π i))) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
+  dsimp [labeledSubgraphListCount]
+  let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
+  let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl.permute π i)) Grep
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
     let φ : ∀ (i : Fin t), (Quotient.out (Fl i) : LabeledGraph σ (Vl i)) ≃f (Quotient.out (Fl.permute π i) : LabeledGraph σ (Vl (π i))) := by
       intro i
-      -- Use the fact that Fl.permute π i = Fl (π i) and construct the equivalence
       have h_eq : Fl.permute π i = Fl (π i) := rfl
       rw [h_eq]
       sorry
-    -- exact isoSetOfInducedlabeledSubgraph_eqv φ Grep
     sorry
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-  sorry
+  have h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
+    dsimp only [labeledSubgraphListCount]
+    show S₁.toFinset.card = S₀.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size) := by
+    dsimp [multinomialCoefficient]
+    simp
+    have h1 : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size) := by
+      apply Finset.sum_bij (fun i _ => π.invFun i) (by simp) (by simp)
+      · intro i hi
+        use π i
+        simp only [Equiv.invFun_as_coe, Equiv.symm_apply_apply, Finset.mem_univ, exists_const]
+      · intro i hi
+        have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+        dsimp [FlagList.permute]
+        have : (Quotient.out (Fl i)).size = (Quotient.out (Fl.permute π (π.invFun i))).size := by
+          have h_eq : π (π.invFun i) = i := Equiv.apply_symm_apply π i
+          have h_cast : ∀ j, Fl.permute π j = cast (Flag.type_eq rfl j) (Fl (π j)) := by
+            intro j; rfl
+          have h_Fl_size_eq : ∀ (j : Fin t), (Quotient.out (Fl.permute π j)).size = (Quotient.out (Fl (π j))).size := by
+            intro j
+            rfl
+          rw [h_Fl_size_eq (π.invFun i), ← this]
+        rw [this]; rfl
+    have h2 : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial := by
+      apply Finset.prod_bij (fun i _ => π.invFun i) (by simp) (by simp)
+      · intro i hi
+        use π i
+        simp_all only [Finset.mem_univ, Equiv.invFun_as_coe, Equiv.symm_apply_apply, exists_const]
+      · intro i hi
+        have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
+        have : (Quotient.out (Fl i)).size = (Quotient.out (Fl.permute π (π.invFun i))).size := by
+          have h_eq : π (π.invFun i) = i := Equiv.apply_symm_apply π i
+          have h_cast : ∀ j, Fl.permute π j = cast (Flag.type_eq rfl j) (Fl (π j)) := by
+            intro j; rfl
+          have h_Fl_size_eq : ∀ (j : Fin t), (Quotient.out (Fl.permute π j)).size = (Quotient.out (Fl (π j))).size := by
+            intro j
+            rfl
+          rw [h_Fl_size_eq (π.invFun i), ← this]
+        rw [this]
+    rw [h1, h2]
+  dsimp [labeledSubgraphListDensity]
+  rw [h_count, h_coeff]
 
 instance {V W : Type} [Fintype V] [Fintype W]
     : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
