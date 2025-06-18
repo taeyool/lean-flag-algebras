@@ -196,12 +196,6 @@ lemma inducedlabeledSubgraph_related
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
     apply h_ind₀ h_u h_v h_G₀uv
 
-theorem graph_eq
-  {P Q : Type} (h : P = Q)
-  : SimpleGraph P = SimpleGraph Q := by
-  subst h
-  rfl
-
 omit [Fintype V] [DecidableEq V] in
 theorem inducedGraph_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph}
@@ -211,12 +205,16 @@ theorem inducedGraph_eq
   · exact Eq.to_iff (congrFun h_verts u)
   · exact Eq.to_iff (h_adj u v)
 
+theorem graph_eq
+  {P Q : Type} (h : P = Q)
+  : SimpleGraph P = SimpleGraph Q := by
+  subst h; rfl
+
 omit [Fintype V] [DecidableEq V] in
 theorem coe_eq
   {G : SimpleGraph V} {H : G.Subgraph} {H' : G.Subgraph} (h : H = H') (h' : ↑H'.verts = ↑H.verts)
   : H.coe = cast (graph_eq h') H'.coe := by
-  subst h
-  dsimp [SimpleGraph.Subgraph.coe]
+  subst h; rfl
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_val_eq
@@ -230,18 +228,7 @@ theorem embed_val_eq
   intro t
   subst h
   simp_all only [cast_eq]
-  obtain ⟨h₁, h₂⟩ := H_emb
-  obtain ⟨h₃, h₄⟩ := H'_emb
-  obtain ⟨h₆, h₇⟩ := G_emb
-  have h₅ : h₁ = h₃ := by
-    refine Function.Embedding.ext_iff.mpr ?_
-    intro t
-    simp_all only [RelEmbedding.coe_mk]
-    simp_all only [SimpleGraph.Subgraph.coe_adj, implies_true]
-    ext1
-    simp_all only
-  subst h₅
-  simp_all only [RelEmbedding.coe_mk]
+  ext; rw [h'' t, h''' t]
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_eq
@@ -252,19 +239,13 @@ theorem embed_eq
   (h'' : H.coe = cast (graph_eq h') H'.coe)
   (h''' : ∀ t : T, H_emb t = cast h' (H'_emb t))
   : HEq H_emb H'_emb := by
-  have test : H_emb = cast (by
-    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by
-      congr
+  have embedding_cast_eq : H_emb = cast (by
+    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by congr
+    subst h; rfl) H'_emb := by
     subst h
-    simp_all only [cast_eq])
-    H'_emb := by
-    subst h
-    simp_all only [cast_eq]
     ext1 x
     simp_all only [cast_eq]
-  subst h
-  subst test
-  rfl
+  subst h embedding_cast_eq; rfl
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype   W] [DecidableEq W] in
 lemma H_eq_reverseinduced_induced_H
@@ -309,7 +290,6 @@ lemma H_eq_reverseinduced_induced_H
     have coe_eq := coe_eq inducedGraph_test type_eq
     have h_H₀_embed := H₀.embed_eq
     have h_f_inv_f_H_embed := f_inv_f_H.embed_eq
-
     have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) := by
       intro t
       exact
