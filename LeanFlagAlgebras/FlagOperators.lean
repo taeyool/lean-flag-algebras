@@ -46,7 +46,7 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
       inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
       map_rel_iff' := by
         intro a b
-        simp_all only [Function.Embedding.coeFn_mk, Function.comp_apply]
+        simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
         constructor
         · intro h
           rw [type_embed_Adj_iff H]
@@ -64,26 +64,25 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
   let ψ : G ≃f H := hGH_iso.some
   have hH' : G'.graph = H'.graph ∧ G' ∼f H' := by
     constructor
-    · simp
+    · rfl
     · apply Nonempty.intro
       exact {
         graph_iso := (φ.graph_iso.symm.trans ψ.graph_iso).trans φH
         type_preserve := by
-          simp
+          simp only [SimpleGraph.Iso.coe_comp, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
           rw [← ψ.type_preserve, ← φ.type_preserve]
           calc
             _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ (⇑φ.graph_iso.symm ∘ ⇑φ.graph_iso) ∘ ⇑G.type_embed := rfl
             _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by ext; simp
             _ = ⇑φ.graph_iso ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by
-              have : ⇑φH = ⇑φ.graph_iso := by
-                show φH.toFun = φ.graph_iso
-                dsimp [φH]
-                funext x
-                congr
-                · rw [hGH_graph]
-                · rw [hGH_graph]
-                · simp [cast_heq]
-              rw [this]
+              congr! 1
+              show φH.toFun = φ.graph_iso
+              dsimp [φH]
+              funext x
+              congr
+              · rw [hGH_graph]
+              · rw [hGH_graph]
+              · simp only [cast_heq]
       }
   exact ⟨H', hH'⟩
 
@@ -97,15 +96,12 @@ lemma comp_funBetweenIsoLabeledGraphSetWithSameGraph
   rename_i h H_1 hGH_graph_1 hGH_iso_1 heq
   simp_all only [Subtype.mk.injEq]
   subst heq
-  simp_all only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
-  congr
-  · simp_all only
-  · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
-    calc
-      _ = (⇑φ.graph_iso.symm ∘ ⇑φ.graph_iso) ∘ ⇑H.type_embed := rfl
-      _ = ⇑H.type_embed := by ext; simp
-      _ = ⇑H.2 := rfl
-  · apply proof_irrel_heq
+  simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+  congr!
+  calc
+    _ = (⇑φ.graph_iso.symm ∘ ⇑φ.graph_iso) ∘ ⇑H.type_embed := rfl
+    _ = ⇑H.type_embed := by ext; simp only [Function.comp_apply, RelIso.symm_apply_apply]
+    _ = H.2.1.toFun := rfl
 
 def isoSetOfIsoLabeledGraphWithSameGraph
     {G G' : LabeledGraph σ (Fin n)} (φ : G ≃f G')
