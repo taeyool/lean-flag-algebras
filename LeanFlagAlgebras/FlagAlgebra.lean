@@ -256,7 +256,7 @@ noncomputable instance : HasDistribNeg (FlagVector σ) where
 lemma flagVector_add_support
     (f g : FlagVector σ) {α : Type} [AddCommGroup α] (ψ : FlagVector σ → FinFlag σ → α)
     (hψ1 : ∀ f g x, f x + g x = 0 → ψ f x + ψ g x = 0)
-    (hψ2 : ∀ f x, f x = 0 -> ψ f x = 0)
+    (hψ2 : ∀ f x, f x = 0 → ψ f x = 0)
     : ∑ K ∈ (f + g).support, (ψ f K + ψ g K) =
         ∑ F ∈ f.support, ψ f F + ∑ G ∈ g.support, ψ g G
   := by
@@ -316,16 +316,13 @@ theorem flagVector_left_distrib
     := fun g G => (f F * g G) • flagMul F G
   have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
     intro g' h' x hx
-    simp [ψ]
-    rw [add_eq_zero_iff_neg_eq] at hx
-    rw [← hx]
-    simp
+    simp only [ψ]
+    rw [← add_smul, ← mul_add, hx, mul_zero, zero_smul]
   have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
     intro g x hx
-    simp [ψ]
-    left; right
-    exact hx
-  apply flagVector_add_support g h ψ hψ1 hψ2
+    simp only [ψ]
+    rw [hx, mul_zero, zero_smul]
+  exact flagVector_add_support g h ψ hψ1 hψ2
 
 theorem flagVector_right_distrib
     (f g h : FlagVector σ) : (f + g) * h = f * h + g * h
@@ -983,15 +980,13 @@ instance : NeZero (1 : FlagAlgebra σ) where
         := fun g G => (g G) * flagDensity₁ G.2 F
       have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
         intro g' h' x hx
-        simp [ψ]
-        rw [add_eq_zero_iff_neg_eq] at hx
-        rw [← hx]
-        simp only [neg_mul, add_neg_cancel]
+        simp only [ψ]
+        rw [← add_mul, hx, zero_mul]
       have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
         intro g' x hx
-        simp [ψ]
-        exact Or.symm (Or.inr hx)
-      apply flagVector_add_support g h ψ hψ1 hψ2
+        simp only [ψ]
+        rw [hx, zero_mul]
+      exact flagVector_add_support g h ψ hψ1 hψ2
     have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := by
       intro r g
       show ∑ G in _, _ = _ * ∑ G in _, _

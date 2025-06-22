@@ -159,12 +159,43 @@ noncomputable def downwardFlagVector (f : FlagVector σ) : FlagVector ∅ₜ :=
 noncomputable def downwardFlagVectorQuot (f : FlagVector σ) : FlagAlgebra ∅ₜ :=
   ⟦downwardFlagVector f⟧
 
+lemma downwardFlagVector_zero
+    : downwardFlagVector (0 : FlagVector σ) = 0
+  := by
+  dsimp [downwardFlagVector]
+
 lemma downwardFlagVector_add
     (f f' : FlagVector σ)
     : downwardFlagVector (f + f') = downwardFlagVector f + downwardFlagVector f'
   := by
   dsimp [downwardFlagVector]
-  sorry
+  have : ∑ F ∈ (f + f').support, (f F + f' F) • downwardFlag F.2
+    = ∑ F ∈ (f + f').support, ((f F) • downwardFlag F.2 + (f' F) • downwardFlag F.2) := by
+    apply Finset.sum_congr rfl
+    intro F _
+    rw [add_smul]
+  rw [this]
+  let ψ : (FlagVector σ) → (FinFlag σ) → (FlagVector ∅ₜ)
+    := fun f F => f F • downwardFlag F.2
+  have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
+    intro g' h' x hx
+    simp only [ψ]
+    rw [← add_smul, hx, zero_smul]
+  have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
+    intro g x hx
+    simp only [ψ]
+    rw [hx, zero_smul]
+  exact flagVector_add_support f f' ψ hψ1 hψ2
+
+lemma downwardFlagVector_sum
+    (s : Finset ι) (c : ι → FlagVector σ)
+    : downwardFlagVector (∑ i in s, c i) = ∑ i in s, downwardFlagVector (c i)
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · simp only [Finset.sum_empty, downwardFlagVector_zero]
+  · intro r R hr ih
+    simp only [Finset.sum_insert hr, downwardFlagVector_add, ih]
 
 lemma downwardFlagVector_neg
     (f : FlagVector σ)
@@ -191,11 +222,33 @@ lemma downwardFlagVector_smul
     intro F _
     exact mul_smul r (f F) (downwardFlag F.2)
 
+lemma downwardFlagVector_zeroElement_zeroSpace
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : downwardFlagVector (zeroElement F ℓ) ∈ ZeroSpace ∅ₜ
+  := by
+  sorry
+
 lemma downwardFlagVector_zeroSpace
     (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
     : downwardFlagVector f ∈ ZeroSpace ∅ₜ
   := by
-  sorry
+  have ⟨I, hI, c, v, hv_zero, hf⟩ := zeroSpace_eq_sum_spanElement f f_zero
+  rw [hf, downwardFlagVector_sum]
+  apply zeroSpace_closed_under_sum
+  intro i _
+  rw [downwardFlagVector_smul]
+  apply zeroSpace_closed_under_smul
+  have ⟨F, ℓ, hℓ, hvi⟩ := hv_zero i
+  rw [hvi]
+  exact downwardFlagVector_zeroElement_zeroSpace F ℓ hℓ
+
+lemma downwardFlagVectorQuot_zero
+    : downwardFlagVectorQuot (0 : FlagVector σ) = 0
+  := by
+  apply Quotient.sound
+  show downwardFlagVector (0 : FlagVector σ) - 0 ∈ ZeroSpace ∅ₜ
+  rw [downwardFlagVector_zero, sub_self]
+  simp only [Submodule.zero_mem]
 
 lemma downwardFlagVectorQuot_add
     (f f' : FlagVector σ)
@@ -240,12 +293,27 @@ noncomputable def downward
 
 notation "⟦" f "⟧₀" => (downward f)
 
+theorem downward_zero
+    : ⟦(0 : FlagAlgebra σ)⟧₀ = 0
+  := by
+  exact downwardFlagVectorQuot_zero
+
 theorem downward_add
     (f f' : FlagAlgebra σ)
     : ⟦f + f'⟧₀ = ⟦f⟧₀ + ⟦f'⟧₀
   := by
   rw [← Quotient.out_eq f, ← Quotient.out_eq f']
   apply downwardFlagVectorQuot_add
+
+theorem downward_sum
+    {ι : Type*} (s : Finset ι) (c : ι → FlagAlgebra σ)
+    : ⟦∑ i in s, c i⟧₀ = ∑ i in s, ⟦c i⟧₀
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · simp only [Finset.sum_empty, downward_zero]
+  · intro r R hr ih
+    simp only [Finset.sum_insert hr, downward_add, ih]
 
 theorem downward_neg
     (f : FlagAlgebra σ)
