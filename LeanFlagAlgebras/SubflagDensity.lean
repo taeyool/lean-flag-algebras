@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».FlagDef
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
+import Mathlib.Data.Fintype.BigOperators
 
 open FlagAlgebras
 open Classical
@@ -1571,8 +1572,81 @@ theorem flagTripleDensity_comm
 theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
-  :=
-  sorry
+  := by
+  dsimp [flagListDensity, quotLabeledSubgraphListDensity]
+  congr; ext Grep
+  let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
+  let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep
+  let h_S₀ : Fintype S₀ := Fintype.ofFinite S₀
+  let h_S₁ : Fintype S₁ := Fintype.ofFinite S₁
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    sorry
+  dsimp [labeledSubgraphListDensity]
+  let h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
+    dsimp only [labeledSubgraphListCount]
+    show S₁.toFinset.card = S₀.toFinset.card
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    simp_all only [Set.coe_setOf, Set.toFinset_card]
+  have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) (Grep.size - σ.size) := by
+    dsimp [multinomialCoefficient]; simp
+    have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) := by
+      symm
+      rw [Finset.sum_fin_eq_sum_range]
+      rw [Finset.sum_range_succ]
+      simp
+      have : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
+        apply Finset.sum_bij (fun i _ => if h : i < t then i else 0)
+        · intro i hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi j hj h
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi
+          use i
+          use hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi
+          split
+          next hi_1 h =>
+            let h' : (if h : i < t then i else 0) = i := by
+              simp_all only [Finset.mem_range, ↓reduceDIte]
+            rw [h']
+            split
+            · let i : Fin (t + 1) := ⟨i, h⟩
+              have hi : i.val ≠ t := by
+                simp_all only [Finset.mem_range, ne_eq]
+                apply Aesop.BuiltinRules.not_intro
+                intro a
+                subst a
+                simp_all only [lt_self_iff_false]
+              have := tmp Fl (emptyFlag σ) hi
+              congr!
+              exact id (Eq.symm this)
+            · have : i < t := by
+                simp_all only [not_lt]
+                split at h'
+                next h_2 => simp_all only [Finset.mem_range]
+                next h_2 =>
+                  subst h'
+                  simp_all only [Finset.mem_range]
+              simp_all only [not_true_eq_false]
+          next hi_1 h =>
+            simp_all only [Finset.mem_range, not_lt]
+            have hi' : t < i := by
+              simp_all only [Finset.mem_range]
+              exact h
+            exact False.elim (lt_asymm hi hi')
+      rw [this, Finset.sum_fin_eq_sum_range, add_right_eq_self]
+      dsimp [FlagList.insert, emptyFlag, emptyLabeledGraph]
+      simp
+      sorry
+    have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size).factorial := by
+      apply Finset.prod_bij (fun i _ => sorry)
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+    rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
+  rw [h_count, h_coeff]
 
 theorem flagPairDensity_empty
     (F : Flag σ U) (G : Flag σ W)

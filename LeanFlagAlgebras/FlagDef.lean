@@ -704,6 +704,14 @@ def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     then (cast (flag_listTypeInsert_eq hi) F)
     else (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi)))
 
+theorem tmp {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    [FintypeList Vl] [DecidableEqList Vl] [Fintype W] [DecidableEq W]
+    (Fl : FlagList σ t Vl) (F : Flag σ W)
+    {i : Fin (t + 1)} (hi : i.val ≠ t)
+    : (Fl (i.coe hi)).out.size = (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out.size
+  := by
+  sorry
+
 /- FlagList.permute -/
 
 abbrev Perm (t : ℕ) := Fin t ≃ Fin t
