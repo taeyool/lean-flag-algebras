@@ -585,6 +585,19 @@ noncomputable instance : MulAction ℝ (FlagAlgebra σ) where
     simp
     rw [mul_smul]
 
+theorem neg_quot
+    (f : FlagVector σ) : (⟦-f⟧ : FlagAlgebra σ) = -⟦f⟧
+  := by
+  apply Quotient.sound
+  simp only [neg_smul, one_smul]
+  rfl
+
+theorem smul_quot
+    (r : ℝ) (f : FlagVector σ) : (⟦r • f⟧ : FlagAlgebra σ) = r • ⟦f⟧
+  := by
+  apply Quotient.sound
+  rfl
+
 theorem sum_smul
     (s : Finset ι) (c : ι → ℝ) (f : FlagVector σ) : (∑ i in s, c i) • f = ∑ i in s, c i • f
   := by

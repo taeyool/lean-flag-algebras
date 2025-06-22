@@ -159,11 +159,77 @@ noncomputable def downwardFlagVector (f : FlagVector σ) : FlagVector ∅ₜ :=
 noncomputable def downwardFlagVectorQuot (f : FlagVector σ) : FlagAlgebra ∅ₜ :=
   ⟦downwardFlagVector f⟧
 
+lemma downwardFlagVector_add
+    (f f' : FlagVector σ)
+    : downwardFlagVector (f + f') = downwardFlagVector f + downwardFlagVector f'
+  := by
+  dsimp [downwardFlagVector]
+  sorry
+
+lemma downwardFlagVector_neg
+    (f : FlagVector σ)
+    : downwardFlagVector (-f) = -downwardFlagVector f
+  := by
+  dsimp [downwardFlagVector]
+  simp only [Finsupp.support_neg, neg_smul, Finset.sum_neg_distrib]
+
+lemma downwardFlagVector_sub
+    (f f' : FlagVector σ)
+    : downwardFlagVector (f - f') = downwardFlagVector f - downwardFlagVector f'
+  := by
+  simp only [sub_eq_add_neg, downwardFlagVector_add, downwardFlagVector_neg]
+
+lemma downwardFlagVector_smul
+    (f : FlagVector σ) (r : ℝ)
+    : downwardFlagVector (r • f) = r • downwardFlagVector f
+  := by
+  dsimp [downwardFlagVector]
+  by_cases hr : r = 0
+  · simp only [hr, zero_smul, zero_mul, Finset.sum_const_zero]
+  · rw [Finsupp.support_smul_eq hr, Finset.smul_sum]
+    apply Finset.sum_congr rfl
+    intro F _
+    exact mul_smul r (f F) (downwardFlag F.2)
+
+lemma downwardFlagVector_zeroSpace
+    (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
+    : downwardFlagVector f ∈ ZeroSpace ∅ₜ
+  := by
+  sorry
+
+lemma downwardFlagVectorQuot_add
+    (f f' : FlagVector σ)
+    : downwardFlagVectorQuot (f + f') = downwardFlagVectorQuot f + downwardFlagVectorQuot f'
+  := by
+  apply Quotient.sound
+  show downwardFlagVector (f + f') - (downwardFlagVector f + downwardFlagVector f') ∈ ZeroSpace ∅ₜ
+  rw [← downwardFlagVector_add, sub_self]
+  simp only [Submodule.zero_mem]
+
+lemma downwardFlagVectorQuot_neg
+    (f : FlagVector σ)
+    : downwardFlagVectorQuot (-f) = -(downwardFlagVectorQuot f)
+  := by
+  apply Quotient.sound
+  simp only [neg_smul, one_smul]
+  rw [downwardFlagVector_neg]
+
+lemma downwardFlagVectorQuot_smul
+    (f : FlagVector σ) (r : ℝ)
+    : downwardFlagVectorQuot (r • f) = r • downwardFlagVectorQuot f
+  := by
+  apply Quotient.sound
+  simp only [smul_smul, one_smul]
+  rw [downwardFlagVector_smul]
+
 lemma downwardFlagVectorQuot_respects_eqv
     (f f' : FlagVector σ) (h : f ∼v f')
     : downwardFlagVectorQuot f = downwardFlagVectorQuot f'
-  :=
-  sorry
+  := by
+  apply Quotient.sound
+  show downwardFlagVector f - downwardFlagVector f' ∈ ZeroSpace ∅ₜ
+  rw [← downwardFlagVector_sub]
+  exact downwardFlagVector_zeroSpace (f - f') h
 
 noncomputable def downward
     : FlagAlgebra σ → FlagAlgebra ∅ₜ
@@ -177,23 +243,26 @@ notation "⟦" f "⟧₀" => (downward f)
 theorem downward_add
     (f f' : FlagAlgebra σ)
     : ⟦f + f'⟧₀ = ⟦f⟧₀ + ⟦f'⟧₀
-  :=
-  sorry
+  := by
+  rw [← Quotient.out_eq f, ← Quotient.out_eq f']
+  apply downwardFlagVectorQuot_add
 
 theorem downward_neg
     (f : FlagAlgebra σ)
     : ⟦-f⟧₀ = -⟦f⟧₀
   := by
-  sorry
+  rw [← Quotient.out_eq f, ← neg_quot]
+  apply downwardFlagVectorQuot_neg
 
 theorem downward_sub
     (f f' : FlagAlgebra σ)
     : ⟦f - f'⟧₀ = ⟦f⟧₀ - ⟦f'⟧₀
   := by
-  simp [sub_eq_add_neg, downward_add, downward_neg]
+  simp only [sub_eq_add_neg, downward_add, downward_neg]
 
 theorem downward_smul
     (f : FlagAlgebra σ) (r : ℝ)
     : ⟦r • f⟧₀ = r • ⟦f⟧₀
-  :=
-  sorry
+  := by
+  rw [← Quotient.out_eq f, ← smul_quot]
+  apply downwardFlagVectorQuot_smul
