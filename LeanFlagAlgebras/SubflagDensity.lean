@@ -1407,15 +1407,13 @@ theorem flagDensity_permute
     : flagListDensity Fl G = flagListDensity (Fl.permute π) G
   := by
   dsimp [flagListDensity, quotLabeledSubgraphListDensity]
-  congr
-  ext Grep
+  congr; ext Grep
   dsimp [labeledSubgraphListCount]
   let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
-  let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl.permute π i)) Grep
-  let S₂ := labeledSubgraphListSet (fun i => Quotient.out (Fl (π i))) Grep
-  have h_iso_S₀_S₂ : S₀ ≃ S₂ := by
-    dsimp [S₀, S₂]
-    let f : S₀ → S₂ := by
+  let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl (π i))) Grep
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
+    dsimp [S₀, S₁]
+    let f : S₀ → S₁ := by
       intro s₀
       dsimp [S₀, labeledSubgraphListSet] at s₀
       let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
@@ -1427,11 +1425,7 @@ theorem flagDensity_permute
         exact @h_ind₀ (π i)
       let h_p₂ : (∀ (i : Fin t), Nonempty ((Hl₂ i).coe ≃f Quotient.out (Fl (π i)))) ∧
   ∀ (i j : Fin t), ¬i = j → (Hl₂ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₂ j).subgraph.verts \ Grep.type_verts) = ∅ := by
-        constructor
-        · intro i
-          simp_all only [Hl₂]
-        · intro i j h_ij
-          simp_all only [EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, Hl₂]
+        simp_all only [implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self]
       exact ⟨Hl₂, h_ind₂, h_p₂⟩
     have h_inj_f : Function.Injective f := by
       intro s₀ s₁ h_eq
@@ -1441,7 +1435,7 @@ theorem flagDensity_permute
       simp_all only [Subtype.mk.injEq]
       funext i
       have : Hl₀ (π (π.invFun i)) = Hl₁ (π (π.invFun i)) := congrFun h_eq (π.invFun i)
-      simp_all only [ne_eq, Equiv.invFun_as_coe, Equiv.apply_symm_apply]
+      simp_all only [Equiv.invFun_as_coe, Equiv.apply_symm_apply]
     have h_surj_f : Function.Surjective f := by
       intro s₂
       obtain ⟨Hl₂, h_ind₂, h_p₂⟩ := s₂
@@ -1462,22 +1456,21 @@ theorem flagDensity_permute
             exact this
           exact this
         · intro i j h_ij
-          simp_all only [ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, S₀, S₂, f, Hl₀]
+          simp_all only [ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
       use ⟨Hl₀, h_ind₀, h_p₀⟩
       dsimp [f]
-      simp_all only [Equiv.invFun_as_coe, Equiv.symm_apply_apply, S₀, S₂, f, Hl₀]
+      simp_all only [Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
     exact Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
   have h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
     dsimp only [labeledSubgraphListCount]
     show S₁.toFinset.card = S₀.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₂
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size) := by
-    dsimp [multinomialCoefficient]
-    simp
-    have h1 : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size) := by
+    dsimp [multinomialCoefficient]; simp
+    have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size) := by
       apply Finset.sum_bij (fun i _ => π.invFun i) (by simp) (by simp)
       · intro i _
         use π i
@@ -1491,7 +1484,7 @@ theorem flagDensity_permute
             rfl
           rw [h_Fl_size_eq (π.invFun i), ← this]
         rw [this]; rfl
-    have h2 : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial := by
+    have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial := by
       apply Finset.prod_bij (fun i _ => π.invFun i) (by simp) (by simp)
       · intro i _
         use π i
@@ -1504,7 +1497,7 @@ theorem flagDensity_permute
             rfl
           rw [h_Fl_size_eq (π.invFun i), ← this]
         rw [this]
-    rw [h1, h2]
+    rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
   dsimp [labeledSubgraphListDensity]
   rw [h_count, h_coeff]
 
@@ -1528,6 +1521,7 @@ instance {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
+omit [DecidableEq T] in
 theorem flagPairDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
     : flagDensity₂ F₁ F₂ G = flagDensity₂ F₂ F₁ G
@@ -1550,6 +1544,7 @@ theorem flagPairDensity_comm
   refine flagListDensity_HEq_eq h_Vl_eq ?_ G
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
+omit [DecidableEq T] in
 theorem flagTripleDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W)
     : flagDensity₃ F₁ F₂ F₃ G = flagDensity₃ F₂ F₃ F₁ G
