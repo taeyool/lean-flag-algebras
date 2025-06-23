@@ -1602,7 +1602,30 @@ theorem flagDensity_insert_empty
       let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
                   ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
-        · sorry
+        · intro i
+          dsimp [Hl₁]
+          sorry -- split is not possible
+          -- split
+          -- next h =>
+          --   have := h_p₀.1 ⟨i.val, h⟩
+          --   have h_eq : Quotient.out (Fl.insert (emptyFlag σ) i) = Quotient.out (Fl ⟨i.val, h⟩) := by
+          --     dsimp [FlagList.insert]
+          --     split
+          --     next h_eq => simp_all only [Fin.val_natCast]
+          --     next h_neq => rfl
+          --   rw [h_eq]
+          --   exact Classical.choice this
+          -- next h =>
+          --   have h_eq : Quotient.out (Fl.insert (emptyFlag σ) i) = Quotient.out (emptyFlag σ) := by
+          --     dsimp [FlagList.insert]
+          --     split
+          --     next h_eq =>
+          --       have : i.val = t := by simp_all only [Fin.val_natCast]
+          --       have : i.val < t := by linarith [i.isLt]
+          --       exact absurd this h
+          --     next h_neq => rfl
+          --   rw [h_eq]
+          --   exact (labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mp rfl).2.some
         · intro i j h_ij
           dsimp [Hl₁]
           split <;> split
@@ -1669,8 +1692,13 @@ theorem flagDensity_insert_empty
             apply Fin.ext
             exact this
           rw [fin_eq]
-        next hi => -- contradiction by simple(?) calculation
-          sorry
+        next hi =>
+          simp_all only [ne_eq, not_lt]
+          have : i % (t + 1) = i := by
+            simp_all only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+            exact Nat.lt_add_right 1 i.isLt
+          rw [this] at hi
+          exact absurd i.isLt (not_lt.mpr hi)
       have h_rightinv : Function.RightInverse f_inv f := by
         rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
         dsimp [f, f_inv]
