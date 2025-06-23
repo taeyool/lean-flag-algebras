@@ -1598,82 +1598,95 @@ theorem flagDensity_insert_empty
         next hi =>
           exact h_ind₀ ⟨i, hi⟩
         next _ =>
-          intro u v
-          sorry
+          exact Grep.bottom_isInduced
       let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
                   ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
-        · intro i
-          dsimp [Hl₁]
-          sorry
+        · sorry
         · intro i j h_ij
           dsimp [Hl₁]
-          split
-          next h1 =>
-            split
-            next h2 =>
-              let i' : Fin t := ⟨i, h1⟩
-              let j' : Fin t := ⟨j, h2⟩
-              have h_ij' : i' ≠ j' := by
-                dsimp [i', j']
-                intro h_eq
-                have h_val_eq : i.val = j.val := by
-                  simp_all only [Fin.mk.injEq]
-                have h_fin_eq : i = j := Fin.ext h_val_eq
-                exact h_ij h_fin_eq
-              exact h_p₀.2 i' j' h_ij'
-            next h2 =>
-              ext x
-              simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and,
-                not_false_eq_true, and_true, and_imp]
-              intro _ hx
-              exact hx
-          next h1 =>
-            split
-            next h2 =>
-              rw [Set.inter_comm]
-              ext x
-              simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and,
-                not_false_eq_true, and_true, and_imp]
-              intro _ hx
-              exact hx
-            next h2 =>
-              ext x
-              simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
-              simp only [Set.inter_self, Set.mem_diff, not_and]
-              exact fun x hx ↦ hx x
+          split <;> split
+          next h1 h2 =>
+            let i' : Fin t := ⟨i, h1⟩
+            let j' : Fin t := ⟨j, h2⟩
+            have h_ij' : i' ≠ j' := by
+              dsimp [i', j']
+              intro h_eq
+              have h_val_eq : i.val = j.val := by
+                simp_all only [Fin.mk.injEq]
+              have h_fin_eq : i = j := Fin.ext h_val_eq
+              exact h_ij h_fin_eq
+            exact h_p₀.2 i' j' h_ij'
+          next h1 h2 =>
+            ext x
+            simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
+            intro _ hx
+            exact hx
+          next h1 h2 =>
+            rw [Set.inter_comm]
+            ext x
+            simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
+            intro _ hx
+            exact hx
+          next h1 h2 =>
+            ext x
+            simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
+            simp only [Set.inter_self, Set.mem_diff, not_and]
+            exact fun x hx ↦ hx x
       exact ⟨Hl₁, h_ind₁, h_p₁⟩
-    let h_inj_f : Function.Injective f := by
-      intro s₀ s₁ h_eq
-      dsimp [f] at h_eq
-      obtain ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      obtain ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      simp_all only [Subtype.mk.injEq]
-      funext i
-      have := congrFun h_eq i
-      simp only [Fin.coe_eq_castSucc, Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta] at this
-      exact this
-    let h_surj_f : Function.Surjective f := by
-      intro s₂
-      obtain ⟨Hl₂, h_ind₂, h_p₂⟩ := s₂
+    let f_inv : S₁ → S₀ := by
+      intro s₁
+      dsimp [S₁, labeledSubgraphListSet] at s₁
+      let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
       let Hl₀ : Fin t → LabeledSubgraph σ Grep := by
         intro i
-        exact Hl₂ i
+        exact Hl₁ i
       let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := by
-
-        sorry
+        intro i
+        exact h_ind₁ i
       let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
                   ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
-        sorry
-      use ⟨Hl₀, h_ind₀, h_p₀⟩
-      dsimp [f]
-      simp only [Subtype.mk.injEq]
-      dsimp [Hl₀]
-      funext i
-      split
-      · simp only [Fin.cast_val_eq_self]
-      · sorry
-    exact Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
+        constructor
+        · intro i
+          dsimp [Hl₀]
+          have := h_p₁.1 i
+          sorry
+        · intro i j a
+          simp_all only [Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
+      exact ⟨Hl₀, h_ind₀, h_p₀⟩
+    let f_bij : Function.Bijective f := by
+      have h_leftinv : Function.LeftInverse f_inv f := by
+        rintro ⟨Hl₀, ⟨h_ind₀, h_p₀⟩⟩
+        dsimp [f, f_inv]
+        simp only [Subtype.mk.injEq]
+        funext i
+        split
+        next hi =>
+          have : i % (t + 1) = i := by
+            simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+            exact Nat.lt_succ_of_lt i.isLt
+          have fin_eq : ⟨↑i % (t + 1), hi⟩ = i := by
+            apply Fin.ext
+            exact this
+          rw [fin_eq]
+        next hi => -- contradiction by simple(?) calculation
+          sorry
+      have h_rightinv : Function.RightInverse f_inv f := by
+        rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
+        dsimp [f, f_inv]
+        simp only [Subtype.mk.injEq]
+        funext i
+        split
+        next _ =>
+          simp_all only [Fin.cast_val_eq_self]
+        next hi =>
+          have hi : i = t := by
+            simp only [Fin.natCast_eq_last]
+            exact Fin.eq_last_of_not_lt hi
+          have := h_p₁.1 i
+          sorry
+      exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
+    exact Equiv.ofBijective f f_bij
   dsimp [labeledSubgraphListDensity]
   let h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
     dsimp only [labeledSubgraphListCount]

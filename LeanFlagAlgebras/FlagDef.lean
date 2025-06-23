@@ -150,6 +150,11 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
       simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
   }
 
+lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)
+  : G.bottom.subgraph.IsInduced := by
+  intro u v h_u h_v h_adj
+  exact ⟨h_u, ⟨h_v, h_adj⟩⟩
+
 namespace LabeledSubgraph
 
 noncomputable def size
