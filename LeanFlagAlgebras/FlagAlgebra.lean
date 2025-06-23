@@ -134,6 +134,20 @@ theorem unitVector_support
   dsimp [unitVector]
   rw [Finsupp.support_single_ne_zero _ (by simp)]
 
+theorem unitVector_apply_other
+    (F F' : FinFlag σ) (hF : F ≠ F')
+    : (unitVector F) F' = 0
+  := by
+  dsimp [unitVector]
+  rw [Finsupp.single_eq_of_ne hF]
+
+theorem unitVector_apply_other_size
+    (F F' : FinFlag σ) (hF : F.1 ≠ F'.1)
+    : (unitVector F) F' = 0
+  := by
+  apply unitVector_apply_other
+  exact fun a => hF (congrArg Sigma.fst a)
+
 theorem flagVector_eq_sum_unitVector
     (f : FlagVector σ)
     : f = ∑ F in f.support, f F • unitVector F

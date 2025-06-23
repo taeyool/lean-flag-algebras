@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».FlagAlgebra
 
 open FlagAlgebras
+open Classical
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
@@ -222,11 +223,82 @@ lemma downwardFlagVector_smul
     intro F _
     exact mul_smul r (f F) (downwardFlag F.2)
 
+lemma downwardFlag_zeroElement_zeroSpace
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : downwardFlag F.2 - ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G ∈ ZeroSpace ∅ₜ
+  := by
+  sorry
+
 lemma downwardFlagVector_zeroElement_zeroSpace
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : downwardFlagVector (zeroElement F ℓ) ∈ ZeroSpace ∅ₜ
   := by
-  sorry
+  dsimp [downwardFlagVector]
+  let S : Finset (FinFlag σ) := (Finset.univ : Finset (FlagWithSize σ ℓ)).map {
+    toFun := fun F' => ⟨ℓ, F'⟩
+    inj' := fun F₁' F₂' h => by injection h
+  }
+  by_cases hℓ_eq : F.1 = ℓ
+  · have h_supp : (zeroElement F ℓ).support = S := by
+      sorry
+    sorry
+  · have h_supp : (zeroElement F ℓ).support = S ∪ {F} := by
+      sorry
+    have h_disjoint : Disjoint S {F} := by
+      rw [Finset.disjoint_singleton_right]
+      intro hF
+      have : F.1 = ℓ := by
+        simp_all only [Finset.mem_map, Finset.mem_univ, Function.Embedding.coeFn_mk, true_and, S]
+        obtain ⟨G, hG⟩ := hF
+        subst hG
+        simp_all only [not_true_eq_false]
+      contradiction
+    rw [h_supp, Finset.sum_union h_disjoint, Finset.sum_singleton]
+    have h₁ : ∀ G ∈ S, (zeroElement F ℓ) G = -(flagDensity₁ F.2 G.2) := by
+      intro G hG
+      have h_Gℓ : G.1 = ℓ := by
+        simp_all only [Finset.mem_map, Finset.mem_univ, true_and, S]
+        obtain ⟨w, h⟩ := hG
+        subst h
+        simp only [Function.Embedding.coeFn_mk]
+      simp only [zeroElement, densityFlagSum]
+      subst h_Gℓ
+      rw [Finsupp.sub_apply, unitVector_apply_other_size F G hℓ_eq, zero_sub, neg_inj]
+      simp only [Finset.sum_apply', rat_smul_eq_real_smul, Finsupp.smul_apply, smul_eq_mul]
+      rw [Finset.sum_eq_single_of_mem G.2]
+      · simp only [Sigma.eta, unitVector_apply_self, mul_one]
+      · simp only [Finset.mem_univ]
+      · intro G' _ hG'
+        rw [unitVector_apply_other]
+        · simp only [mul_zero]
+        · contrapose! hG'
+          simp only [ne_eq, Decidable.not_not] at *
+          sorry
+    have h₂ : (zeroElement F ℓ) F = 1 := by
+      dsimp [zeroElement, densityFlagSum]
+      simp only [unitVector_apply_self, sub_eq_self]
+      rw [Finset.sum_apply']
+      apply Finset.sum_eq_zero
+      intro G hG
+      simp only [Finsupp.smul_apply, smul_eq_mul, mul_eq_zero]
+      right
+      apply unitVector_apply_other_size
+      simp only [ne_eq]
+      intro h; symm at h
+      contradiction
+    have h₃ : ∑ G ∈ S, (zeroElement F ℓ) G • downwardFlag G.2 + (zeroElement F ℓ) F • downwardFlag F.2 =
+      downwardFlag F.2 - ∑ G ∈ S, (flagDensity₁ F.snd G.snd) • downwardFlag G.2 := by
+      rw [h₂, one_smul, add_comm, sub_eq_add_neg, ← Finset.sum_neg_distrib]
+      congr 1
+      apply Finset.sum_congr rfl
+      intro G hG
+      rw [h₁ G hG, neg_smul]
+      rfl
+    have h₄ : ∑ G ∈ S, (flagDensity₁ F.snd G.snd) • downwardFlag G.2 =
+      ∑ G' : FlagWithSize σ ℓ, flagDensity₁ F.2 G' • downwardFlag G' := by
+      simp only [Function.Embedding.coeFn_mk, Finset.sum_map, S]
+    rw [h₃, h₄]
+    exact downwardFlag_zeroElement_zeroSpace F ℓ hℓ
 
 lemma downwardFlagVector_zeroSpace
     (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
