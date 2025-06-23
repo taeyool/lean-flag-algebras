@@ -1593,8 +1593,7 @@ theorem flagDensity_insert_empty
       symm
       rw [Finset.sum_fin_eq_sum_range]
       rw [Finset.sum_range_succ]
-      simp
-      have : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
+      have sum_insert_empty_eq_original : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
         apply Finset.sum_bij (fun i _ => if h : i < t then i else 0)
         · intro i hi
           simp_all only [Finset.mem_range, ↓reduceDIte]
@@ -1618,7 +1617,7 @@ theorem flagDensity_insert_empty
                 intro a
                 subst a
                 simp_all only [lt_self_iff_false]
-              have := tmp Fl (emptyFlag σ) hi
+              have := cast_preserves_flag_size' Fl (emptyFlag σ) hi
               congr!
               exact id (Eq.symm this)
             · have : i < t := by
@@ -1635,10 +1634,20 @@ theorem flagDensity_insert_empty
               simp_all only [Finset.mem_range]
               exact h
             exact False.elim (lt_asymm hi hi')
-      rw [this, Finset.sum_fin_eq_sum_range, add_right_eq_self]
-      dsimp [FlagList.insert, emptyFlag, emptyLabeledGraph]
-      simp
-      sorry
+      split
+      next h1 =>
+        rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original, add_right_eq_self]
+        dsimp [FlagList.insert, emptyFlag, emptyLabeledGraph]
+        split
+        next h2 =>
+          let i : Fin (t + 1) := ⟨t, h1⟩
+          have hi : i.val = t := h2
+          exact Eq.symm (Nat.eq_sub_of_add_eq' (cast_preserves_flag_size Fl (emptyFlag σ) hi))
+        next h2 =>
+          exact False.elim (h2 rfl)
+      next h1 =>
+        rw [add_zero]
+        rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original]
     have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size).factorial := by
       apply Finset.prod_bij (fun i _ => sorry)
       · sorry
