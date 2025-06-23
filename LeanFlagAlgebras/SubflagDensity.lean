@@ -1418,16 +1418,16 @@ theorem flagDensity_permute
       intro s₀
       dsimp [S₀, labeledSubgraphListSet] at s₀
       let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      let Hl₂ : Fin t → LabeledSubgraph σ Grep := by
+      let Hl₁ : Fin t → LabeledSubgraph σ Grep := by
         intro i
         exact Hl₀ (π i)
-      let h_ind₂ : ∀ (i : Fin t), (Hl₂ i).subgraph.IsInduced := by
+      let h_ind₁ : ∀ (i : Fin t), (Hl₁ i).subgraph.IsInduced := by
         intro i
         exact @h_ind₀ (π i)
-      let h_p₂ : (∀ (i : Fin t), Nonempty ((Hl₂ i).coe ≃f Quotient.out (Fl (π i)))) ∧
-  ∀ (i j : Fin t), ¬i = j → (Hl₂ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₂ j).subgraph.verts \ Grep.type_verts) = ∅ := by
+      let h_p₁ : (∀ (i : Fin t), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl (π i)))) ∧
+                  ∀ (i j : Fin t), ¬i = j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         simp_all only [implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self]
-      exact ⟨Hl₂, h_ind₂, h_p₂⟩
+      exact ⟨Hl₁, h_ind₁, h_p₁⟩
     have h_inj_f : Function.Injective f := by
       intro s₀ s₁ h_eq
       simp [f] at h_eq
@@ -1580,7 +1580,100 @@ theorem flagDensity_insert_empty
   let h_S₀ : Fintype S₀ := Fintype.ofFinite S₀
   let h_S₁ : Fintype S₁ := Fintype.ofFinite S₁
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    sorry
+    dsimp [S₀, S₁]
+    let f : S₀ → S₁ := by
+      intro s₀
+      dsimp [S₀, labeledSubgraphListSet] at s₀
+      let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
+      let Hl₁ : Fin (t + 1) → LabeledSubgraph σ Grep := by
+        intro i
+        if h : i.val < t then
+          exact Hl₀ ⟨i.val, h⟩
+        else
+          exact Grep.bottom
+      let h_ind₁ : ∀ (i : Fin (t + 1)), (Hl₁ i).subgraph.IsInduced := by
+        intro i
+        dsimp [Hl₁]
+        split
+        next hi =>
+          exact h_ind₀ ⟨i, hi⟩
+        next _ =>
+          intro u v
+          sorry
+      let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
+                  ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
+        constructor
+        · intro i
+          dsimp [Hl₁]
+          sorry
+        · intro i j h_ij
+          dsimp [Hl₁]
+          split
+          next h1 =>
+            split
+            next h2 =>
+              let i' : Fin t := ⟨i, h1⟩
+              let j' : Fin t := ⟨j, h2⟩
+              have h_ij' : i' ≠ j' := by
+                dsimp [i', j']
+                intro h_eq
+                have h_val_eq : i.val = j.val := by
+                  simp_all only [Fin.mk.injEq]
+                have h_fin_eq : i = j := Fin.ext h_val_eq
+                exact h_ij h_fin_eq
+              exact h_p₀.2 i' j' h_ij'
+            next h2 =>
+              ext x
+              simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and,
+                not_false_eq_true, and_true, and_imp]
+              intro _ hx
+              exact hx
+          next h1 =>
+            split
+            next h2 =>
+              rw [Set.inter_comm]
+              ext x
+              simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and,
+                not_false_eq_true, and_true, and_imp]
+              intro _ hx
+              exact hx
+            next h2 =>
+              ext x
+              simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
+              simp only [Set.inter_self, Set.mem_diff, not_and]
+              exact fun x hx ↦ hx x
+      exact ⟨Hl₁, h_ind₁, h_p₁⟩
+    let h_inj_f : Function.Injective f := by
+      intro s₀ s₁ h_eq
+      dsimp [f] at h_eq
+      obtain ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
+      obtain ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
+      simp_all only [Subtype.mk.injEq]
+      funext i
+      have := congrFun h_eq i
+      simp only [Fin.coe_eq_castSucc, Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta] at this
+      exact this
+    let h_surj_f : Function.Surjective f := by
+      intro s₂
+      obtain ⟨Hl₂, h_ind₂, h_p₂⟩ := s₂
+      let Hl₀ : Fin t → LabeledSubgraph σ Grep := by
+        intro i
+        exact Hl₂ i
+      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := by
+
+        sorry
+      let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
+                  ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
+        sorry
+      use ⟨Hl₀, h_ind₀, h_p₀⟩
+      dsimp [f]
+      simp only [Subtype.mk.injEq]
+      dsimp [Hl₀]
+      funext i
+      split
+      · simp only [Fin.cast_val_eq_self]
+      · sorry
+    exact Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
   dsimp [labeledSubgraphListDensity]
   let h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
     dsimp only [labeledSubgraphListCount]
@@ -1649,11 +1742,70 @@ theorem flagDensity_insert_empty
         rw [add_zero]
         rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original]
     have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size).factorial := by
-      apply Finset.prod_bij (fun i _ => sorry)
-      · sorry
-      · sorry
-      · sorry
-      · sorry
+      symm
+      rw [Finset.prod_fin_eq_prod_range]
+      rw [Finset.prod_range_succ]
+      have prod_insert_empty_eq_original : (∏ x ∈ Finset.range t, if h : x < t + 1 then ((Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size).factorial else 1) = ∏ x ∈ Finset.range t, if h : x < t then ((Quotient.out (Fl ⟨x, h⟩)).size - σ.size).factorial else 1 := by
+        apply Finset.prod_bij (fun i _ => if h : i < t then i else 0)
+        · intro i hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi j hj h
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi
+          use i
+          use hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi
+          split
+          next hi_1 h =>
+            let h' : (if h : i < t then i else 0) = i := by
+              simp_all only [Finset.mem_range, ↓reduceDIte]
+            rw [h']
+            split
+            · let i : Fin (t + 1) := ⟨i, h⟩
+              have hi : i.val ≠ t := by
+                simp_all only [Finset.mem_range, ne_eq]
+                apply Aesop.BuiltinRules.not_intro
+                intro a
+                subst a
+                simp_all only [lt_self_iff_false]
+              have := cast_preserves_flag_size' Fl (emptyFlag σ) hi
+              congr!
+              exact id (Eq.symm this)
+            · have : i < t := by
+                simp_all only [not_lt]
+                split at h'
+                next h_2 => simp_all only [Finset.mem_range]
+                next h_2 =>
+                  subst h'
+                  simp_all only [Finset.mem_range]
+              simp_all only [not_true_eq_false]
+          next hi_1 h =>
+            simp_all only [Finset.mem_range, not_lt]
+            have hi' : t < i := by
+              simp_all only [Finset.mem_range]
+              exact h
+            exact False.elim (lt_asymm hi hi')
+      split
+      next h1 =>
+        rw [Finset.prod_fin_eq_prod_range, prod_insert_empty_eq_original]
+        dsimp [FlagList.insert]
+        split
+        next h2 =>
+          let i : Fin (t + 1) := ⟨t, h1⟩
+          have hi : i.val = t := h2
+          simp only [eq_comm]
+          rw [← cast_preserves_flag_size Fl (emptyFlag σ) hi]
+          have h_empty_size : (Quotient.out (emptyFlag σ)).size = σ.size := by
+            simp [emptyFlag, LabeledGraph.size]
+            exact rfl
+          rw [h_empty_size]
+          simp_all only [le_refl, tsub_eq_zero_of_le, Nat.factorial_zero, mul_one]
+        next h2 =>
+          exact False.elim (h2 rfl)
+      next h1 =>
+        rw [mul_one]
+        rw [Finset.prod_fin_eq_prod_range, prod_insert_empty_eq_original]
     rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
   rw [h_count, h_coeff]
 
