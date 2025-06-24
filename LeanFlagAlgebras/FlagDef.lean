@@ -707,6 +707,28 @@ def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     then (cast (flag_listTypeInsert_eq hi) F)
     else (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi)))
 
+theorem insert_preserves_existing_flags_Fin_t {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    (Fl : FlagList σ t Vl) (F : Flag σ W)
+    {i : Fin t} (hi : i.val ≠ t)
+    : Nonempty ((Fl i).out ≃f (Fl.insert F i).out) := by
+    apply Nonempty.intro
+    simp [FlagList.insert, hi]
+    sorry
+
+theorem insert_preserves_existing_flags {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    (Fl : FlagList σ t Vl) (F : Flag σ W)
+    {i : Fin (t + 1)} (hi : i.val = t)
+    : Nonempty (F.out ≃f (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out) := by
+    apply Nonempty.intro
+    sorry
+
+theorem insert_preserves_existing_flags' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    (Fl : FlagList σ t Vl) (F : Flag σ W)
+    {i : Fin (t + 1)} (hi : i.val ≠ t)
+    : Nonempty ((Fl (i.coe hi)).out ≃f (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out) := by
+    apply Nonempty.intro
+    sorry
+
 theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     [FintypeList Vl] [DecidableEqList Vl] [Fintype W] [DecidableEq W]
     (Fl : FlagList σ t Vl) (F : Flag σ W)

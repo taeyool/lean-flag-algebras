@@ -1603,29 +1603,36 @@ theorem flagDensity_insert_empty
                   ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
         · intro i
-          dsimp [Hl₁]
-          sorry -- split is not possible
-          -- split
-          -- next h =>
-          --   have := h_p₀.1 ⟨i.val, h⟩
-          --   have h_eq : Quotient.out (Fl.insert (emptyFlag σ) i) = Quotient.out (Fl ⟨i.val, h⟩) := by
-          --     dsimp [FlagList.insert]
-          --     split
-          --     next h_eq => simp_all only [Fin.val_natCast]
-          --     next h_neq => rfl
-          --   rw [h_eq]
-          --   exact Classical.choice this
-          -- next h =>
-          --   have h_eq : Quotient.out (Fl.insert (emptyFlag σ) i) = Quotient.out (emptyFlag σ) := by
-          --     dsimp [FlagList.insert]
-          --     split
-          --     next h_eq =>
-          --       have : i.val = t := by simp_all only [Fin.val_natCast]
-          --       have : i.val < t := by linarith [i.isLt]
-          --       exact absurd this h
-          --     next h_neq => rfl
-          --   rw [h_eq]
-          --   exact (labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mp rfl).2.some
+          apply Nonempty.intro; symm
+          dsimp [FlagList.insert]
+          split
+          next hi =>
+            dsimp [Hl₁]
+            have empty_equiv := (@labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph T σ W Grep Grep.bottom).1
+            simp only [true_implies] at empty_equiv
+            have empty_iso := Classical.choice empty_equiv.2
+            have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Grep.bottom := by
+              simp_all only [lt_self_iff_false, ↓reduceDIte]
+            rw [h_Hl₁]
+            have := (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)).symm
+            have tmp : Quotient.out (emptyFlag σ) ≃f Grep.bottom.coe := by sorry
+            exact this.trans tmp
+          next hi =>
+            have hi_lt : i.val < t := by
+              have := i.isLt
+              rw [← Nat.succ_le_iff] at this
+              simp at this
+              exact Nat.lt_of_le_of_ne this hi
+            let i' : Fin t := ⟨i.val, hi_lt⟩
+            have hi_neq : i'.val ≠ t := hi_lt.ne
+            dsimp [Hl₁]
+            have h_Hl₁ :  (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Hl₀ ⟨↑i, hi_lt⟩ := by
+              simp [hi_lt]
+            rw [h_Hl₁]
+            have iso_from_existing := Classical.choice (h_p₀.1 i')
+            dsimp [i'] at iso_from_existing
+            have perserv_iso := Classical.choice (insert_preserves_existing_flags' Fl (emptyFlag σ) hi)
+            exact (iso_from_existing.trans perserv_iso).symm
         · intro i j h_ij
           dsimp [Hl₁]
           split <;> split
@@ -1671,9 +1678,28 @@ theorem flagDensity_insert_empty
                   ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
         · intro i
+          have hi : i.val ≠ t := i.isLt.ne
+          apply Nonempty.intro
           dsimp [Hl₀]
-          have := h_p₁.1 i
-          sorry
+          let h_iso := Classical.choice (h_p₁.1 i)
+          have h_iso' := (Classical.choice (insert_preserves_existing_flags_Fin_t Fl (emptyFlag σ) hi)).symm
+          -- have h_iso' : Quotient.out (Fl.insert (emptyFlag σ) i) ≃f Quotient.out (Fl i) := by
+          --   dsimp [FlagList.insert]
+          --   split
+          --   next h =>
+          --     exfalso
+          --     have this : i % (t + 1) = i := by
+          --       simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+          --       exact Nat.lt_succ_of_lt i.isLt
+          --     rw [this] at h
+          --     exact hi h
+          --   next h =>
+          --     let i' : Fin (t + 1) := ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
+          --     have hi' : i'.val ≠ t := by sorry
+          --     have perserv_iso := (Classical.choice (insert_preserves_existing_flags' Fl (emptyFlag σ) hi')).symm
+          --     dsimp [i'] at perserv_iso
+          --     sorry
+          exact h_iso.trans h_iso'
         · intro i j a
           simp_all only [Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
       exact ⟨Hl₀, h_ind₀, h_p₀⟩
@@ -1708,10 +1734,19 @@ theorem flagDensity_insert_empty
         next _ =>
           simp_all only [Fin.cast_val_eq_self]
         next hi =>
-          have hi : i = t := by
-            simp only [Fin.natCast_eq_last]
-            exact Fin.eq_last_of_not_lt hi
-          have := h_p₁.1 i
+          have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
+          have iso_exist := Classical.choice (h_p₁.1 i)
+          dsimp [FlagList.insert] at iso_exist
+          have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
+            simp_all only [↓reduceDIte]
+          rw [h_Fl] at iso_exist
+          have h_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)).symm).symm
+          let ⟨graph_iso, type_embed⟩ := h_iso
+
+
+
+
+
           sorry
       exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
     exact Equiv.ofBijective f f_bij
