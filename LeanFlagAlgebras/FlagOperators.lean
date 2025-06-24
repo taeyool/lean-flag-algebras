@@ -238,21 +238,27 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     toFun := fun F' => ⟨ℓ, F'⟩
     inj' := fun F₁' F₂' h => by injection h
   }
-  have h_supp : (zeroElement F ℓ).support = S ∪ {F} := by
+  have h_supp : (zeroElement F ℓ).support ⊆ S ∪ {F} := by
     dsimp [zeroElement]
-    apply Finset.Subset.antisymm
-    · calc
-        _ ⊆ (unitVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
-        _ ⊆ S ∪ {F} := by
-          rw [Finset.union_comm]
-          apply Finset.union_subset_union
-          · dsimp [densityFlagSum]
-            -- calc
-            --   _ ⊆ (Finset.univ : Finset (FlagWithSize σ ℓ)).biUnion (fun G => (flagDensity₁ F.2 G • unitVector ⟨ℓ, G⟩).support) := Finsupp.support_sum
-            --   _ ⊆ _ := sorry
-            sorry
-          · simp only [unitVector_support, subset_refl]
-    · sorry
+    calc
+      _ ⊆ (unitVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
+      _ ⊆ S ∪ {F} := by
+        rw [Finset.union_comm]
+        apply Finset.union_subset_union
+        · dsimp [densityFlagSum]
+          apply Finset.Subset.trans Finsupp.support_finset_sum
+          apply Finset.biUnion_subset.mpr
+          intro G _
+          apply Finset.Subset.trans Finsupp.support_smul
+          simp only [unitVector_support, Finset.singleton_subset_iff, Finset.mem_map,
+            Finset.mem_univ, Function.Embedding.coeFn_mk, true_and, exists_apply_eq_apply, S]
+        · simp only [unitVector_support, subset_refl]
+  have h_supp_outside : ∀ G ∈ S ∪ {F},
+    G ∉ (zeroElement F ℓ).support → (zeroElement F ℓ) G • downwardFlag G.2 = 0 := by
+    intro G _ hG
+    simp only [smul_eq_zero]; left
+    exact Finsupp.not_mem_support_iff.mp hG
+  rw [Finset.sum_subset h_supp h_supp_outside]
   have hF_iff : F ∈ S ↔ F.1 = ℓ := by
     constructor
     · intro hF
@@ -304,14 +310,13 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     next h =>
       simp only [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, sub_eq_self]
       apply Finset.sum_eq_zero
-      intro G hG
+      intro G _
       simp only [mul_eq_zero]
       right
       apply unitVector_apply_other_size
       symm; simp only
       rw [ne_eq, ← hF_iff]
       exact h
-  rw [h_supp]
   have h₃ : ∑ G ∈ S ∪ {F}, (zeroElement F ℓ) G • downwardFlag G.2 =
       downwardFlag F.2 - ∑ G ∈ S, (flagDensity₁ F.snd G.snd) • downwardFlag G.2 := by
     by_cases hF : F ∈ S
@@ -335,8 +340,8 @@ lemma downwardFlagVector_zeroElement_zeroSpace
         exact this hG
       have h_G_neq_F : G ≠ F := by
         intro h; subst h
-        contrapose! hG
-        exact Finset.disjoint_singleton_left.mp (Disjoint.symm h_disjoint)
+        revert hG
+        simp only [Finset.mem_sdiff, Finset.mem_singleton, not_true_eq_false, and_false, imp_self]
       rw [h₁ G h_G_S h_G_neq_F]
       simp only [neg_smul, neg_neg, rat_smul_eq_real_smul]
     · have h_disjoint : Disjoint S {F} := Finset.disjoint_singleton_right.mpr hF
