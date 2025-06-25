@@ -1614,9 +1614,9 @@ theorem flagDensity_insert_empty
             have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Grep.bottom := by
               simp_all only [lt_self_iff_false, ↓reduceDIte]
             rw [h_Hl₁]
-            have := (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)).symm
-            have tmp : Quotient.out (emptyFlag σ) ≃f Grep.bottom.coe := by sorry
-            exact this.trans tmp
+            have insert_iso := (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm
+            have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
+            exact (insert_iso.trans quotient_iso).trans empty_iso.symm
           next hi =>
             have hi_lt : i.val < t := by
               have := i.isLt
@@ -1631,7 +1631,7 @@ theorem flagDensity_insert_empty
             rw [h_Hl₁]
             have iso_from_existing := Classical.choice (h_p₀.1 i')
             dsimp [i'] at iso_from_existing
-            have perserv_iso := Classical.choice (insert_preserves_existing_flags' Fl (emptyFlag σ) hi)
+            have perserv_iso := Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)
             exact (iso_from_existing.trans perserv_iso).symm
         · intro i j h_ij
           dsimp [Hl₁]
@@ -1696,7 +1696,7 @@ theorem flagDensity_insert_empty
           --   next h =>
           --     let i' : Fin (t + 1) := ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
           --     have hi' : i'.val ≠ t := by sorry
-          --     have perserv_iso := (Classical.choice (insert_preserves_existing_flags' Fl (emptyFlag σ) hi')).symm
+          --     have perserv_iso := (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi')).symm
           --     dsimp [i'] at perserv_iso
           --     sorry
           exact h_iso.trans h_iso'
@@ -1740,13 +1740,8 @@ theorem flagDensity_insert_empty
           have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
             simp_all only [↓reduceDIte]
           rw [h_Fl] at iso_exist
-          have h_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)).symm).symm
+          have h_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
           let ⟨graph_iso, type_embed⟩ := h_iso
-
-
-
-
-
           sorry
       exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
     exact Equiv.ofBijective f f_bij
