@@ -438,12 +438,6 @@ lemma iso_subset_of_finset_is_full
   have h_card' : Fintype.card V = Fintype.card S := Fintype.card_congr f_iso
   simp_all only [lt_self_iff_false]
 
-omit [DecidableEq V] [Fintype V] in
-lemma iso_to_subset_mem
-    {A : Type} [Fintype A] {S : Set V} (f_iso : A ≃ ↑S) (a : A) : (f_iso a).val ∈ S
-  := by
-  simp
-
 omit [Fintype T] [DecidableEq T] [DecidableEq V] in
 lemma induced_full_labeledsubgraph_eq_top
     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
@@ -1624,7 +1618,6 @@ theorem flagDensity_insert_empty
               simp at this
               exact Nat.lt_of_le_of_ne this hi
             let i' : Fin t := ⟨i.val, hi_lt⟩
-            have hi_neq : i'.val ≠ t := hi_lt.ne
             dsimp [Hl₁]
             have h_Hl₁ :  (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Hl₀ ⟨↑i, hi_lt⟩ := by
               simp [hi_lt]
@@ -1683,22 +1676,6 @@ theorem flagDensity_insert_empty
           dsimp [Hl₀]
           let h_iso := Classical.choice (h_p₁.1 i)
           have h_iso' := (Classical.choice (insert_preserves_existing_flags_Fin_t Fl (emptyFlag σ) hi)).symm
-          -- have h_iso' : Quotient.out (Fl.insert (emptyFlag σ) i) ≃f Quotient.out (Fl i) := by
-          --   dsimp [FlagList.insert]
-          --   split
-          --   next h =>
-          --     exfalso
-          --     have this : i % (t + 1) = i := by
-          --       simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-          --       exact Nat.lt_succ_of_lt i.isLt
-          --     rw [this] at h
-          --     exact hi h
-          --   next h =>
-          --     let i' : Fin (t + 1) := ⟨i.val, Nat.lt_succ_of_lt i.isLt⟩
-          --     have hi' : i'.val ≠ t := by sorry
-          --     have perserv_iso := (Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi')).symm
-          --     dsimp [i'] at perserv_iso
-          --     sorry
           exact h_iso.trans h_iso'
         · intro i j a
           simp_all only [Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
@@ -1740,9 +1717,10 @@ theorem flagDensity_insert_empty
           have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
             simp_all only [↓reduceDIte]
           rw [h_Fl] at iso_exist
-          have h_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
-          let ⟨graph_iso, type_embed⟩ := h_iso
-          sorry
+          have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
+          have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
+          have h_iso := Hl₁_iso.symm.trans quotient_iso
+          symm; apply (@labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph T σ W Grep (Hl₁ i)).2 ⟨h_ind₁ i, Nonempty.intro h_iso⟩
       exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
     exact Equiv.ofBijective f f_bij
   dsimp [labeledSubgraphListDensity]
@@ -1758,7 +1736,7 @@ theorem flagDensity_insert_empty
       rw [Finset.sum_fin_eq_sum_range]
       rw [Finset.sum_range_succ]
       have sum_insert_empty_eq_original : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
-        apply Finset.sum_bij (fun i _ => if h : i < t then i else 0)
+        apply Finset.sum_bij (fun i _ => if _ : i < t then i else 0)
         · intro i hi
           simp_all only [Finset.mem_range, ↓reduceDIte]
         · intro i hi j hj h
@@ -1770,7 +1748,7 @@ theorem flagDensity_insert_empty
         · intro i hi
           split
           next hi_1 h =>
-            let h' : (if h : i < t then i else 0) = i := by
+            let h' : (if _ : i < t then i else 0) = i := by
               simp_all only [Finset.mem_range, ↓reduceDIte]
             rw [h']
             split
@@ -1817,7 +1795,7 @@ theorem flagDensity_insert_empty
       rw [Finset.prod_fin_eq_prod_range]
       rw [Finset.prod_range_succ]
       have prod_insert_empty_eq_original : (∏ x ∈ Finset.range t, if h : x < t + 1 then ((Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size).factorial else 1) = ∏ x ∈ Finset.range t, if h : x < t then ((Quotient.out (Fl ⟨x, h⟩)).size - σ.size).factorial else 1 := by
-        apply Finset.prod_bij (fun i _ => if h : i < t then i else 0)
+        apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
         · intro i hi
           simp_all only [Finset.mem_range, ↓reduceDIte]
         · intro i hi j hj h
@@ -1829,7 +1807,7 @@ theorem flagDensity_insert_empty
         · intro i hi
           split
           next hi_1 h =>
-            let h' : (if h : i < t then i else 0) = i := by
+            let h' : (if _ : i < t then i else 0) = i := by
               simp_all only [Finset.mem_range, ↓reduceDIte]
             rw [h']
             split
