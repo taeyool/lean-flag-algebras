@@ -707,24 +707,73 @@ def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     then (cast (flag_listTypeInsert_eq hi) F)
     else (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi)))
 
-theorem insert_preserves_existing_flags_Fin_t {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+omit [Fintype T] in
+theorem flaglist_heq_of_idx_eq {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {Fl : FlagList σ t Vl}
+    {i i' : Fin t} (h : i = i')
+    : HEq (Fl i) (Fl i') := by
+  subst h; rfl
+
+def flag_heq_to_iso {σ : FlagType T} {W : Type} {V : Type}
+    {F₁ : Flag σ W} {F₂ : Flag σ V} (type_eq : W = V) (HEq : HEq F₁ F₂)
+    : F₁.out ≃f F₂.out := by
+  subst type_eq
+  simp_all only [heq_eq_eq]
+  subst HEq
+  rfl
+
+omit [Fintype T] in
+theorem insert_new_flag_cast_iso {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    (_ : FlagList σ t Vl) (F : Flag σ W)
+    {i : Fin (t + 1)} (hi : i.val = t)
+    : Nonempty (F.out ≃f (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out) := by
+  apply Nonempty.intro
+  have h : HEq F (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F) := by
+    apply HEq.symm
+    apply cast_heq
+  exact flag_heq_to_iso (listTypeInsert_eq hi) h
+
+omit [Fintype T] in
+theorem insert_preserves_existing_flags {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
+    (Fl : FlagList σ t Vl) (_ : Flag σ W)
+    {i : Fin (t + 1)} (hi : i.val ≠ t)
+    : Nonempty ((Fl (i.coe hi)).out ≃f (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out) := by
+  apply Nonempty.intro
+  have h : HEq (Fl (i.coe hi)) (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))) := by
+    apply HEq.symm
+    apply cast_heq
+  exact flag_heq_to_iso (listTypeInsert_eq' hi) h
+
+omit [Fintype T] in
+theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin t} (hi : i.val ≠ t)
     : Nonempty ((Fl i).out ≃f (Fl.insert F i).out) := by
-    sorry
+  apply Nonempty.intro
+  dsimp [FlagList.insert]
+  split
+  next hi' =>
+    exfalso
+    have : i % (t + 1) = i := by
+      simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+      exact Nat.lt_succ_of_lt i.isLt
+    rw [this] at hi'
+    exact hi hi'
+  next hi =>
+    have hi' : (i : Fin (t + 1)).val ≠ t := by
+      simp_all only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true]
+    have cast_heq : HEq (Fl (i.coe hi)) (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))) := by
+      apply HEq.symm
+      apply cast_heq
+    have  cast_iso := flag_heq_to_iso (listTypeInsert_eq' hi') cast_heq
+    have type_eq : (Vl i) = (Vl ((i : Fin (t + 1)).coe hi)) := by
+      simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
+    have idx_heq : HEq (Fl i) (Fl ((i : Fin (t + 1)).coe hi)) := by
+      apply flaglist_heq_of_idx_eq
+      simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
+    have idx_iso := flag_heq_to_iso type_eq idx_heq
+    exact idx_iso.trans cast_iso
 
-theorem insert_new_flag_cast_iso {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
-    (Fl : FlagList σ t Vl) (F : Flag σ W)
-    {i : Fin (t + 1)} (hi : i.val = t)
-    : Nonempty (F.out ≃f (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out) := by
-    sorry
-
-theorem insert_preserves_existing_flags {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
-    (Fl : FlagList σ t Vl) (F : Flag σ W)
-    {i : Fin (t + 1)} (hi : i.val ≠ t)
-    : Nonempty ((Fl (i.coe hi)).out ≃f (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out) := by
-    sorry
-
+omit [Fintype T] in
 theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     [FintypeList Vl] [DecidableEqList Vl] [Fintype W] [DecidableEq W]
     (Fl : FlagList σ t Vl) (F : Flag σ W)
@@ -734,6 +783,7 @@ theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Typ
                              (Quotient.out (cast (flag_listTypeInsert_eq hi) F))
                              (Classical.choice (insert_new_flag_cast_iso Fl F hi))
 
+omit [Fintype T] in
 theorem cast_preserves_flag_size' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     [FintypeList Vl] [DecidableEqList Vl] [Fintype W] [DecidableEq W]
     (Fl : FlagList σ t Vl) (F : Flag σ W)

@@ -240,13 +240,9 @@ theorem embed_eq
   (h'' : H.coe = cast (graph_eq h') H'.coe)
   (h''' : ∀ t : T, H_emb t = cast h' (H'_emb t))
   : HEq H_emb H'_emb := by
-  have embedding_cast_eq : H_emb = cast (by
-    have h_embedding_eq : (σ ↪g H.coe) = (σ ↪g cast (graph_eq h') H'.coe) := by congr
-    subst h; rfl) H'_emb := by
-    subst h
-    ext1 x
-    simp_all only [cast_eq]
-  subst h embedding_cast_eq; rfl
+  subst h
+  apply heq_of_eq
+  ext t; simp_all only [cast_eq]
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype   W] [DecidableEq W] in
 lemma H_eq_reverseinduced_induced_H
@@ -1675,7 +1671,7 @@ theorem flagDensity_insert_empty
           apply Nonempty.intro
           dsimp [Hl₀]
           let h_iso := Classical.choice (h_p₁.1 i)
-          have h_iso' := (Classical.choice (insert_preserves_existing_flags_Fin_t Fl (emptyFlag σ) hi)).symm
+          have h_iso' := (Classical.choice (insert_preserves_existing_flags_coe Fl (emptyFlag σ) hi)).symm
           exact h_iso.trans h_iso'
         · intro i j a
           simp_all only [Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
