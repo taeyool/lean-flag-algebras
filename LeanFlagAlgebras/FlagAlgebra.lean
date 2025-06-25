@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».SubflagDensity
+import «LeanFlagAlgebras».SubflagListDensity
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Span
 
