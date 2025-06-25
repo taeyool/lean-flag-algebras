@@ -663,6 +663,38 @@ lemma subflagDensity_empty
   exact labeledSubgraphDensity_empty Grep
 
 omit [DecidableEq T] in
+lemma labeledSubgraphCount_self'
+    (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
+  := by
+  simp [labeledSubgraphCount]
+  let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f G) }
+  let S₁ : Finset (LabeledSubgraph σ G) := { G.top }
+  have h_S₀_S₁ : S₀ ≃ S₁ := by
+    let f : S₀ → S₁ := by
+      dsimp [S₀, S₁]
+      intro ⟨G', h_G'⟩
+      rw [← induced_full_labeledsubgraph_eq_top h_G']
+      exact ⟨G', by simp only [Finset.mem_singleton]⟩
+    let f_inj : Function.Injective f := by
+      intro G₁ G₂ h_eq
+      have h₁ := induced_full_labeledsubgraph_eq_top G₁.property
+      have h₂ := induced_full_labeledsubgraph_eq_top G₂.property
+      rw [← h₂] at h₁
+      exact SetCoe.ext h₁
+    let f_surj : Function.Surjective f := by
+      intro ⟨G', h_G'⟩
+      dsimp [S₁] at h_G'
+      rw [Finset.mem_singleton] at h_G'
+      sorry
+    exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
+  have card_eq : Fintype.card S₀ = S₁.card := Fintype.card_congr h_S₀_S₁
+  have h_finset_eq_fintype : (Finset.filter (fun x : LabeledSubgraph σ G ↦ x.IsInduced ∧ Nonempty (x.coe ≃f G)) Finset.univ).card = Fintype.card S₀ := by
+    rw [← Set.toFinset_card]
+    simp_all only [Set.toFinset_setOf, S₀]
+  rw [h_finset_eq_fintype, card_eq]
+  rfl
+
+omit [DecidableEq T] in
 lemma labeledSubgraphCount_self
     (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
   := by
