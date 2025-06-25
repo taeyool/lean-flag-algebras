@@ -223,11 +223,58 @@ lemma downwardFlagVector_smul
     intro F _
     exact mul_smul r (f F) (downwardFlag F.2)
 
-lemma downwardFlag_zeroElement_zeroSpace
-    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
-    : downwardFlag F.2 - ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G ∈ ZeroSpace ∅ₜ
+noncomputable def labelExtensions
+    {ℓ : ℕ} (F : FlagWithSize ∅ₜ ℓ) (σ : FlagType (Fin n₀))
+    : Finset (FlagWithSize σ ℓ)
+  :=
+  { G : FlagWithSize σ ℓ | unlabel G = F }
+
+lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
+    {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
+    : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
+      ∑ G ∈ labelExtensions F' σ, flagDensity₁ F G * downwardNormalizingFactor G
   := by
   sorry
+
+lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : downwardFlag F.2 ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G
+  := by
+  calc
+    _ = (downwardNormalizingFactor F.2) • unitVector ⟨F.1, unlabel F.2⟩ := rfl
+    _ ∼v (downwardNormalizingFactor F.2) • densityFlagSum ⟨F.1, unlabel F.2⟩ ℓ := by
+      apply flagVectorEqv_smul
+      exact unitVector_eqv_densityFlagSum _ ℓ hℓ
+    _ ∼v (downwardNormalizingFactor F.2) • (∑ G : FlagWithSize ∅ₜ ℓ, flagDensity₁ (unlabel F.2) G • unitVector ⟨ℓ, G⟩) := by
+      apply flagVectorEqv_smul
+      rfl
+    _ ∼v ∑ G : FlagWithSize ∅ₜ ℓ, ∑ G' ∈ labelExtensions G σ,
+          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • unitVector ⟨ℓ, G⟩ := by
+      rw [Finset.smul_sum]
+      apply flagVectorEqv_sum
+      intro G _
+      rw [smul_smul, mul_comm, flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions _ _ hℓ]
+      simp only [rat_smul_eq_real_smul, Rat.cast_sum, Rat.cast_mul]
+      rw [sum_smul]
+      apply flagVectorEqv_sum
+      intro G' _
+      rw [smul_smul]
+    _ ∼v ∑ G : FlagWithSize ∅ₜ ℓ, ∑ G' ∈ Finset.filter (fun G' ↦ unlabel G' = G) Finset.univ,
+          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • unitVector ⟨ℓ, unlabel G'⟩ := by
+      apply flagVectorEqv_sum
+      intro G _
+      apply flagVectorEqv_sum
+      intro G' hG'
+      iterate 2 (apply flagVectorEqv_smul)
+      dsimp [labelExtensions] at hG'
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'
+      rw [hG']
+    _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardNormalizingFactor G • unitVector ⟨ℓ, unlabel G⟩ := by
+      rw [Finset.sum_fiberwise _ (fun G => unlabel G)]
+    _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G := by
+      apply flagVectorEqv_sum
+      intro G _
+      rfl
 
 lemma downwardFlagVector_zeroElement_zeroSpace
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
@@ -362,7 +409,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     ∑ G' : FlagWithSize σ ℓ, flagDensity₁ F.2 G' • downwardFlag G' := by
     simp only [Function.Embedding.coeFn_mk, Finset.sum_map, S]
   rw [h₃, h₄]
-  exact downwardFlag_zeroElement_zeroSpace F ℓ hℓ
+  exact downwardFlag_eqv_sum_flagDensity_smul_downwardFlag F ℓ hℓ
 
 lemma downwardFlagVector_zeroSpace
     (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)

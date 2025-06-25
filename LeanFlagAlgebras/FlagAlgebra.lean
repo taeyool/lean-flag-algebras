@@ -107,6 +107,12 @@ lemma rat_smul_eq_real_smul
     (a : ℚ) (f : FlagVector σ) : a • f = (a : ℝ) • f
   := rfl
 
+noncomputable instance : MulAction ℚ (FlagVector σ) where
+  one_smul f := by simp only [rat_smul_eq_real_smul, Rat.cast_one, one_smul]
+  mul_smul r s f := by
+    simp only [rat_smul_eq_real_smul, Rat.cast_mul]
+    rw [smul_smul]
+
 noncomputable instance : AddCommMonoid (FlagVector σ)
   := Finsupp.instAddCommMonoid
 
