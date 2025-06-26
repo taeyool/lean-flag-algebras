@@ -115,6 +115,9 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
       simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
   }
 
+lemma LabeledGraph.top_isInduced (G : LabeledGraph σ V)
+  : G.top.subgraph.IsInduced := fun _ _ h_adj ↦ h_adj
+
 def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := {
