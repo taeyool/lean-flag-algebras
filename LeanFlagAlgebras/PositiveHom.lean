@@ -115,8 +115,18 @@ theorem nonneg_smul_nonneg_geq_zero
     exact hf φ
   exact Left.mul_nonneg hr hφf
 
+theorem downward_preserve_semanticCone
+    (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
+    : ⟦f⟧₀ ∈ semanticCone ∅ₜ
+  := by
+  sorry
+
 theorem square_downward_geq_zero
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ ≥ 0
-  :=
-  sorry
+  := by
+  simp only [ge_iff_le, le_def, sub_zero]
+  apply downward_preserve_semanticCone
+  intro φ
+  rw [PosHom.map_mul]
+  exact mul_self_nonneg (φ f)
