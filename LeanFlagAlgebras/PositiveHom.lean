@@ -49,6 +49,10 @@ theorem map_mul (φ : PositiveHom σ) (f g : FlagAlgebra σ) : φ (f * g) = φ f
   :=
   RingHom.map_mul (φ.val : FlagAlgebra σ →+* ℝ) f g
 
+theorem map_sum (φ : PositiveHom σ) {ι : Type*} (s : Finset ι) (f : ι → FlagAlgebra σ) :
+  φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) :=
+  _root_.map_sum (φ.val : FlagAlgebra σ →+* ℝ) f s
+
 end PosHom
 
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
@@ -118,5 +122,39 @@ theorem nonneg_smul_nonneg_geq_zero
 theorem square_downward_geq_zero
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ ≥ 0
-  :=
-  sorry
+  := by
+  simp [semanticCone]
+  intro φ
+  obtain ⟨f', hf'⟩ := Quotient.exists_rep f
+  rw [← hf']
+  have tmp : ∃ (g : FlagVector σ), (⟦f'⟧ * ⟦f'⟧ : FlagAlgebra σ) = ⟦g * g⟧ := by
+    sorry
+  obtain ⟨g, hg⟩ := tmp
+  rw [hg]
+  dsimp [downward, downwardFlagVectorQuot, downwardFlagVector]
+  have tmp1 : ⟦∑ G ∈ (g * g).support, ((g * g) G) • downwardFlag G.snd⟧ = ∑ G ∈ (g * g).support, (⟦((g * g) G) • downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) := by
+
+    sorry
+  rw [tmp1, PosHom.map_sum φ]
+  have tmp2 : ∀ G ∈ (g * g).support, φ ⟦((g * g) G) • downwardFlag G.snd⟧ ≥ 0 := by
+    intro G hG
+    have tmp3 : ⟦((g * g) G) • downwardFlag G.snd⟧ = (g * g) G • (⟦downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) := by sorry
+    rw [tmp3]
+    rw [PosHom.map_smul φ]
+    have tmp4 : (g * g) G ≥ 0 := by
+      rw [flagVector_mul_def]
+      sorry
+    have tmp5 : φ (⟦downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) ≥ 0 := by
+      dsimp [downwardFlag]
+      have h_smul : ⟦(downwardNormalizingFactor G.snd) • unitVector ⟨G.fst, unlabel G.snd⟩⟧ =
+        (downwardNormalizingFactor G.snd : ℝ) • (⟦unitVector ⟨G.fst, unlabel G.snd⟩⟧ : FlagAlgebra ∅ₜ) := by
+        sorry
+      -- rw [PosHom.map_smul φ]
+
+      have h_nonneg_factor : (downwardNormalizingFactor G.snd : ℝ) ≥ 0 := by
+        sorry -- downward normalizing factor should be nonnegative
+      have h_unit_nonneg : φ ⟦unitVector ⟨G.fst, unlabel G.snd⟩⟧ ≥ 0 := φ.2 ⟨G.fst, unlabel G.snd⟩
+      -- exact Left.mul_nonneg h_nonneg_factor h_unit_nonneg
+      sorry
+    exact Left.mul_nonneg tmp4 tmp5
+  exact Finset.sum_nonneg tmp2
