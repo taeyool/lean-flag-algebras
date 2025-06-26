@@ -616,29 +616,28 @@ lemma labeledSubgraphCount_empty
   simp [labeledSubgraphCount]
   let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f (emptyLabeledGraph σ)) }
   let S₁ := { G' : LabeledSubgraph σ G | G' = G.bottom }
-  have h_S₀_S₁ : S₀ = S₁ := by
-    ext G'
-    constructor
-    · intro h
-      dsimp [S₀] at h
-      rw [← labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph] at h
-      exact h
-    · intro h
-      simp [S₁] at h
-      constructor
-      · subst h
-        intro u v hu hv h_adj
-        dsimp [LabeledGraph.bottom] at *
-        simp at *
-        exact ⟨hu, ⟨hv, h_adj⟩⟩
-      · exact (labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mp h).2
-  calc
-    _ = Fintype.card S₀ := Eq.symm
-        (Fintype.card_ofFinset (Finset.filter (Membership.mem S₀) Finset.univ)
-          (Subtype.fintype.proof_1 (Membership.mem S₀)))
-    _ = Fintype.card S₁ := Fintype.card_congr' (congrArg Set.Elem h_S₀_S₁)
-    _ = 1 := by
-      simp_all only [Set.setOf_eq_eq_singleton, Fintype.card_unique, S₀, S₁]
+  have h_S₀_S₁' : S₀ ≃ S₁ := by
+    let f : S₀ → S₁ := by
+      dsimp [S₀, S₁]
+      intro ⟨G', h_G'⟩
+      have h_eq : G' = G.bottom := labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mpr h_G'
+      exact ⟨G', h_eq⟩
+    have f_inj : Function.Injective f := by
+      intro ⟨G₁', h₁⟩ ⟨G₂', h₂⟩ h_eq
+      simp_all only [id_eq, Subtype.mk.injEq, f]
+    have f_surj : Function.Surjective f := by
+      intro ⟨G', h_G'⟩
+      dsimp [S₁] at h_G'
+      subst h_G'
+      have h_bottom : G.bottom ∈ S₀ := labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mp rfl
+      exact ⟨⟨G.bottom, h_bottom⟩, rfl⟩
+    exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
+  have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_S₀_S₁'
+  have h_finset_eq_fintype : (Finset.filter (fun x : LabeledSubgraph σ G ↦ x.IsInduced ∧ Nonempty (x.coe ≃f (emptyLabeledGraph σ))) Finset.univ).card = Fintype.card S₀ := by
+    rw [← Set.toFinset_card]
+    simp_all only [Set.toFinset_setOf, S₀]
+  rw [h_finset_eq_fintype, card_eq]
+  simp_all only [Set.setOf_eq_eq_singleton, Fintype.card_unique, S₁]
 
 lemma labeledSubgraphDensity_empty
     (G : LabeledGraph σ V) : labeledSubgraphDensity (emptyLabeledGraph σ) G = 1
