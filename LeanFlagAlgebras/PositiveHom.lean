@@ -119,42 +119,36 @@ theorem nonneg_smul_nonneg_geq_zero
     exact hf φ
   exact Left.mul_nonneg hr hφf
 
+theorem downward_unitVector_nonneg
+    (φ : PositiveHom ∅ₜ) (F : FinFlag σ)
+    : 0 ≤ φ (downward ⟦unitVector F⟧) := by
+  dsimp [downward, downwardFlagVectorQuot, downwardFlagVector]
+  simp_all only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
+  dsimp [downwardFlag]
+  have tmp : ⟦((downwardNormalizingFactor F.snd : ℝ)) • unitVector ⟨F.fst, unlabel F.snd⟩⟧ = (downwardNormalizingFactor F.snd : ℝ) • (⟦unitVector ⟨F.fst, unlabel F.snd⟩⟧ : FlagAlgebra ∅ₜ) := rfl
+  rw [tmp, PosHom.map_smul φ]
+  apply mul_nonneg
+  · let F' := F.snd
+    obtain ⟨f', hf'⟩ := Quotient.exists_rep F'
+    dsimp [F'] at hf'
+    rw [← hf']
+    dsimp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
+    simp only [Rat.cast_div, Rat.cast_natCast]
+    apply div_nonneg <;> simp_all only [Nat.cast_nonneg]
+  · exact φ.2 ⟨F.fst, unlabel F.snd⟩
+
+theorem downward_preserve_semanticCone
+    (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
+    : ⟦f⟧₀ ∈ semanticCone ∅ₜ
+  := by
+  sorry
+
 theorem square_downward_geq_zero
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ ≥ 0
   := by
-  simp [semanticCone]
+  simp only [ge_iff_le, le_def, sub_zero]
+  apply downward_preserve_semanticCone
   intro φ
-  obtain ⟨f', hf'⟩ := Quotient.exists_rep f
-  rw [← hf']
-  have tmp : ∃ (g : FlagVector σ), (⟦f'⟧ * ⟦f'⟧ : FlagAlgebra σ) = ⟦g * g⟧ := by
-    sorry
-  obtain ⟨g, hg⟩ := tmp
-  rw [hg]
-  dsimp [downward, downwardFlagVectorQuot, downwardFlagVector]
-  have tmp1 : ⟦∑ G ∈ (g * g).support, ((g * g) G) • downwardFlag G.snd⟧ = ∑ G ∈ (g * g).support, (⟦((g * g) G) • downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) := by
-
-    sorry
-  rw [tmp1, PosHom.map_sum φ]
-  have tmp2 : ∀ G ∈ (g * g).support, φ ⟦((g * g) G) • downwardFlag G.snd⟧ ≥ 0 := by
-    intro G hG
-    have tmp3 : ⟦((g * g) G) • downwardFlag G.snd⟧ = (g * g) G • (⟦downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) := by sorry
-    rw [tmp3]
-    rw [PosHom.map_smul φ]
-    have tmp4 : (g * g) G ≥ 0 := by
-      rw [flagVector_mul_def]
-      sorry
-    have tmp5 : φ (⟦downwardFlag G.snd⟧ : FlagAlgebra ∅ₜ) ≥ 0 := by
-      dsimp [downwardFlag]
-      have h_smul : ⟦(downwardNormalizingFactor G.snd) • unitVector ⟨G.fst, unlabel G.snd⟩⟧ =
-        (downwardNormalizingFactor G.snd : ℝ) • (⟦unitVector ⟨G.fst, unlabel G.snd⟩⟧ : FlagAlgebra ∅ₜ) := by
-        sorry
-      -- rw [PosHom.map_smul φ]
-
-      have h_nonneg_factor : (downwardNormalizingFactor G.snd : ℝ) ≥ 0 := by
-        sorry -- downward normalizing factor should be nonnegative
-      have h_unit_nonneg : φ ⟦unitVector ⟨G.fst, unlabel G.snd⟩⟧ ≥ 0 := φ.2 ⟨G.fst, unlabel G.snd⟩
-      -- exact Left.mul_nonneg h_nonneg_factor h_unit_nonneg
-      sorry
-    exact Left.mul_nonneg tmp4 tmp5
-  exact Finset.sum_nonneg tmp2
+  rw [PosHom.map_mul]
+  exact mul_self_nonneg (φ f)
