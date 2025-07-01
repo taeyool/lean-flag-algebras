@@ -119,6 +119,28 @@ theorem nonneg_smul_nonneg_geq_zero
     exact hf φ
   exact Left.mul_nonneg hr hφf
 
+variable {V : Type} [Fintype V] [DecidableEq V]
+
+noncomputable def flagVectorDensity
+    (f : FlagVector σ) (G : Flag σ V)
+    : ℝ
+  :=
+  ∑ F in f.support, f F * flagDensity₁ F.2 G
+
+theorem flagVectorDensity_respects_eqv
+    (f f' : FlagVector σ) (hf : f ∼v f') (G : Flag σ V)
+    : flagVectorDensity f G = flagVectorDensity f' G
+  := by
+  sorry
+
+noncomputable def flagAlgebraDensity
+    : FlagAlgebra σ → Flag σ V → ℝ
+  := by
+  apply Quot.lift flagVectorDensity
+  intro f f' hf
+  ext G
+  exact flagVectorDensity_respects_eqv f f' hf G
+
 theorem downward_unitVector_nonneg
     (φ : PositiveHom ∅ₜ) (F : FinFlag σ)
     : 0 ≤ φ (downward ⟦unitVector F⟧) := by
