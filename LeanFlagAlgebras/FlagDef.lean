@@ -93,13 +93,7 @@ structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) w
 
 def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
-    subgraph := {
-      verts := Set.univ
-      Adj := G.graph.Adj
-      adj_sub := fun a ↦ a
-      edge_vert := fun _ ↦ trivial
-      symm := by simp only [SimpleGraph.symm]
-    }
+    subgraph := ⊤
     type_embed := {
       toFun := fun t ↦ ⟨G.type_embed t, trivial⟩
       inj' := by
@@ -108,7 +102,9 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
         exact h_eq
       map_rel_iff' := by
         intro t₁ t₂
-        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
+        simp only [
+          SimpleGraph.Subgraph.verts_top, SimpleGraph.Subgraph.top_adj,
+          Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
     }
     embed_eq := by
       intro t
