@@ -146,7 +146,7 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   }
 
 lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)
-  : G.bottom.subgraph.IsInduced := fun h_u h_v h_adj ↦ ⟨h_u, ⟨h_v, h_adj⟩⟩
+  : G.bottom.subgraph.IsInduced := fun h_u h_v h_adj ↦ ⟨h_u, h_v, h_adj⟩
 
 namespace LabeledSubgraph
 
