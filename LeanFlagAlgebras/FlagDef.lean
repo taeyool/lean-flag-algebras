@@ -121,7 +121,7 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
       adj_sub := by simp only [and_imp, imp_self, implies_true]
       edge_vert := by
-        intro u v ⟨hu, _⟩
+        intro u _ ⟨hu, _⟩
         exact hu
       symm := by
         intro u v ⟨hu, hv, h_uv⟩
@@ -136,13 +136,9 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
       map_rel_iff' := by
         intro t₁ t₂
         simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
-        constructor
-        · intro ⟨_, _, h_adj⟩
-          exact h_adj
-        · intro h_adj
-          have ht₁: G.type_embed t₁ ∈ G.type_verts := G.type_verts_contain t₁
-          have ht₂: G.type_embed t₂ ∈ G.type_verts := G.type_verts_contain t₂
-          exact ⟨ht₁, ht₂, h_adj⟩
+        have ht₁: G.type_embed t₁ ∈ G.type_verts := G.type_verts_contain t₁
+        have ht₂: G.type_embed t₂ ∈ G.type_verts := G.type_verts_contain t₂
+        simp only [ht₁, ht₂, true_and]
     }
     embed_eq := by
       intro t
