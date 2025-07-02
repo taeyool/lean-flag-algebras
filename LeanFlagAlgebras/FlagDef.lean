@@ -193,14 +193,14 @@ noncomputable instance labeledSubgraphFintype
     : Fintype (LabeledSubgraph σ G)
   :=
   let f : LabeledSubgraph σ G → G.graph.Subgraph × (T → V) :=
-    fun ⟨G', embed, _⟩ ↦ (G', fun t ↦ embed t)
+    fun ⟨G', embed, _⟩ ↦ (G', fun t ↦ embed.toFun t)
   have f_inj : Function.Injective f := by
-    intro ⟨G, φ, _⟩ ⟨G', φ', _⟩ h_eq
+    intro ⟨G, φ, embed_eq⟩ ⟨G', φ', embed_eq'⟩ h_eq
     dsimp [f] at h_eq
     simp_all only [Prod.mk.injEq, and_true, mk.injEq, true_and]
     subst h_eq
     simp_all only [heq_eq_eq]
-    ext x : 2
+    ext x
     simp_all only
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
   Fintype.ofInjective f f_inj
