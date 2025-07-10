@@ -4,7 +4,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset
 
 open Finset
 
-variable {α β : Type} [AddCommGroup β] [SMul ℝ β]
+variable {α β : Type} [AddCommGroup β] [Module ℝ β]
 
 def linearExtension
     (f : α → β)
@@ -17,8 +17,9 @@ theorem linearExtension_zero
     : linearExtension f 0 = 0 := by
   simp only [linearExtension, Finsupp.support_zero, Finset.sum_empty]
 
+omit [Module ℝ β] in
 lemma flagVector_add_support
-    (v w : α →₀ ℝ) {γ : Type} (ψ : (α →₀ ℝ) → α → β)
+    (v w : α →₀ ℝ) (ψ : (α →₀ ℝ) → α → β)
     (hψ₁ : ∀ v w a, v a + w a = 0 → ψ v a + ψ w a = 0)
     (hψ₂ : ∀ v a, v a = 0 → ψ v a = 0)
     : ∑ a ∈ (v + w).support, (ψ v a + ψ w a) =
@@ -67,8 +68,33 @@ lemma flagVector_add_support
       rw [sum_supp_sdiff_inter v w, inter_comm, sum_supp_sdiff_inter w v]
 
 theorem linearExtension_add
-    (f : α → β)
-    (v w : (α →₀ ℝ))
+    (f : α → β) (v w : α →₀ ℝ)
     : linearExtension f (v + w) = linearExtension f v + linearExtension f w := by
   dsimp [linearExtension]
-  sorry
+  let ψ : (α →₀ ℝ) → α → β := fun v a => (v a) • (f a)
+  have hψ₁ : ∀ v w a, v a + w a = 0 → ψ v a + ψ w a = 0 := by
+    intro v' w' a ha
+    dsimp [ψ]
+    rw [← add_smul, ha, zero_smul]
+  have hψ₂ : ∀ v a, v a = 0 → ψ v a = 0 := by
+    intro v a ha
+    dsimp [ψ]
+    rw [ha, zero_smul]
+  calc
+    _ = ∑ a in (v + w).support, (ψ v a + ψ w a) := by
+      apply sum_congr rfl
+      intro a _
+      dsimp [ψ]
+      rw [add_smul]
+    _ = ∑ a in v.support, ψ v a + ∑ a in w.support, ψ w a :=
+      flagVector_add_support v w ψ hψ₁ hψ₂
+
+lemma linearExtension_sum
+    (f : α → β) (s : Finset ι) (c : ι → (α →₀ ℝ))
+    : linearExtension f (∑ i in s, c i) = ∑ i in s, linearExtension f (c i)
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · simp only [Finset.sum_empty, linearExtension_zero]
+  · intro i s his ih
+    simp only [Finset.sum_insert his, linearExtension_add, ih]
