@@ -155,9 +155,6 @@ noncomputable def unlabel {V : Type} (F : Flag σ V) : Flag ∅ₜ V :=
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
 
--- noncomputable def downwardFlagVector (f : FlagVector σ) : FlagVector ∅ₜ :=
---   ∑ F in f.support, (f F) • downwardFlag F.2
-
 noncomputable def downwardFlagVector : FlagVector σ → FlagVector ∅ₜ :=
   linearExtension (fun F : FinFlag σ => downwardFlag F.2)
 
