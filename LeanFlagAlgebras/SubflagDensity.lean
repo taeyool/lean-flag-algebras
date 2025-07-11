@@ -50,7 +50,6 @@ lemma predIsolabeledH_related_support
     (h : Nonempty (H₀.coe ≃f H))
   : Nonempty (H₁.coe ≃f H) := by
   have iso_H₀_H₁ : Nonempty (H₀.coe ≃f H₁.coe) := by
-    apply Nonempty.intro
     let ψ : H₀.subgraph.verts → H₁.subgraph.verts := by
       intro v
       use φ.graph_iso v
@@ -73,8 +72,7 @@ lemma predIsolabeledH_related_support
       intro t
       dsimp [ψ', ψ]
       have h_type_preserve := congr_fun φ.type_preserve t
-      rw [Function.comp_apply] at h_type_preserve
-      rw [← (H₀.embed_eq t), ← (H₁.embed_eq t)] at h_type_preserve
+      rw [Function.comp_apply, ← (H₀.embed_eq t), ← (H₁.embed_eq t)] at h_type_preserve
       exact SetCoe.ext h_type_preserve
     exact ⟨⟨ψ', hψ'⟩, funext h_emb⟩
   let iso_H₀_H := Classical.choice h
@@ -126,19 +124,21 @@ def inducedlabeledSubgraph
       toFun := fun t ↦ ⟨G.type_embed t, hS t⟩
       inj' := by
         intro t₁ t₂ h
-        simp at h
+        simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h
         exact h
       map_rel_iff' := by
         intro t₁ t₂
-        simp; intro _
+        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
+        intro _
         exact ⟨hS t₁, hS t₂⟩
     }
     embed_eq := by
-      intro t; simp
+      intro t
+      simp only [eq_mpr_eq_cast, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
   }
   let h_induced : G'.IsInduced := by
     intro v w hv hw hvw
-    simp_all [Set.mem_union, Set.mem_setOf_eq]
+    simp_all only [and_self]
   ⟨G', h_induced⟩
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
@@ -150,10 +150,10 @@ lemma inducedlabeledSubgraph_type_embed_mem
   simp_all only [Set.mem_image]
   use G₀.type_embed t
   constructor
-  · have : H₀.type_embed t = G₀.type_embed t := H₀.embed_eq t
-    rw [←this]
-    simp
-  · rw [←φ.type_preserve]; simp
+  · rw [← H₀.embed_eq t]
+    simp only [Subtype.coe_prop]
+  · rw [← φ.type_preserve]
+    simp only [Function.comp_apply]
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] in
 lemma inducedlabeledSubgraph_related
@@ -161,13 +161,14 @@ lemma inducedlabeledSubgraph_related
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
     : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedlabeledSubgraph_type_embed_mem φ H₀))
   := by
-  dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]; simp
+  dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]
+  simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, eq_iff_iff, true_and]
   intro u v
   constructor
   · intro h_uv
     constructor
-    · have : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
-      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr this
+    · have h_G₀uv : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
+      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr h_G₀uv
     · exact ⟨H₀.subgraph.edge_vert h_uv, H₀.subgraph.edge_vert h_uv.symm⟩
   · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
@@ -244,9 +245,7 @@ lemma H_eq_reverseinduced_induced_H
       · constructor
         · use u; exact ⟨H₀.subgraph.edge_vert h_adj, φ.graph_iso.left_inv u⟩
         · use v; exact ⟨H₀.subgraph.edge_vert h_adj.symm, φ.graph_iso.left_inv v⟩
-    · intro ⟨h_adj, ⟨h_u, h_v⟩⟩
-      obtain ⟨u', ⟨h_u', huu'⟩⟩ := h_u
-      obtain ⟨v', ⟨h_v', hvv'⟩⟩ := h_v
+    · intro ⟨h_adj, ⟨⟨u', ⟨h_u', huu'⟩⟩, ⟨v', ⟨h_v', hvv'⟩⟩⟩⟩
       have h_u_eq : u = u' := by
         rw [←huu']
         exact φ.graph_iso.left_inv' u'
@@ -255,20 +254,21 @@ lemma H_eq_reverseinduced_induced_H
         exact φ.graph_iso.left_inv' v'
       subst h_u_eq h_v_eq
       exact h_ind₀ h_u' h_v' h_adj
-  have inducedGraph_test := inducedGraph_eq h_verts h_adj
+  have inducedGraph_eq := inducedGraph_eq h_verts h_adj
   refine LabeledSubgraph.ext ?subgraph ?type_embed
-  · exact inducedGraph_test
-  · simp
+  · exact inducedGraph_eq
+  · simp only
+    -- I'd like to refactor this part.
     have type_eq : (f_inv_f_H.subgraph.verts : Type) = (H₀.subgraph.verts : Type) := congrArg Set.Elem (id (Eq.symm h))
-    have coe_eq := coe_eq inducedGraph_test type_eq
+    have coe_eq := coe_eq inducedGraph_eq type_eq
     have h_H₀_embed := H₀.embed_eq
     have h_f_inv_f_H_embed := f_inv_f_H.embed_eq
     have emb_eq : ∀ t : T, H₀.type_embed t = cast type_eq (f_inv_f_H.type_embed t) := by
       intro t
       exact
-        embed_val_eq G₀.type_embed H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq
+        embed_val_eq G₀.type_embed H₀.type_embed f_inv_f_H.type_embed inducedGraph_eq type_eq
           h_H₀_embed h_f_inv_f_H_embed t
-    have HEq := embed_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_test type_eq coe_eq emb_eq
+    have HEq := embed_eq H₀.type_embed f_inv_f_H.type_embed inducedGraph_eq type_eq coe_eq emb_eq
     exact HEq
 
 noncomputable def isoSetOfInducedlabeledSubgraph
@@ -300,12 +300,12 @@ noncomputable def isoSetOfInducedlabeledSubgraph
     have h_leftinv : Function.LeftInverse f_inv f := by
       rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
       dsimp [f, f_inv]
-      simp;symm
+      simp only [Subtype.mk.injEq]; symm
       exact H_eq_reverseinduced_induced_H φ H₀ h_ind₀
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
       dsimp [f, f_inv]
-      simp; symm
+      simp only [Subtype.mk.injEq]; symm
       exact H_eq_reverseinduced_induced_H φ.symm H₁ h_ind₁
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
@@ -359,7 +359,7 @@ noncomputable def isoSetOfInducedlabeledSubgraphInG
       let h_iso₁ : G'.coe.graph ≃g H₁.graph := φ.graph_iso.comp h_iso₀
       have h_emb₀ : h_iso₁ ∘ G'.coe.type_embed = H₁.type_embed := by
         ext t
-        rw [←φ.type_preserve, ←h_emb₀]
+        rw [← φ.type_preserve, ← h_emb₀]
         dsimp [h_iso₁]
       exact ⟨h_iso₁, h_emb₀⟩
     · intro ⟨h_iso₁, h_emb₁⟩
@@ -409,6 +409,12 @@ lemma iso_subset_of_finset_is_full
   have h_card : Fintype.card S < Fintype.card V :=  Fintype.card_subtype_lt h_contra
   have h_card' : Fintype.card V = Fintype.card S := Fintype.card_congr f_iso
   simp_all only [lt_self_iff_false]
+
+-- omit [Fintype T] [DecidableEq T] [DecidableEq V] in
+-- lemma induced_full_labeledsubgraph_eq_top'
+--     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
+--     :  G' = G₀.top → G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁)
+--   := by sorry
 
 omit [Fintype T] [DecidableEq T] [DecidableEq V] in
 lemma induced_full_labeledsubgraph_eq_top
