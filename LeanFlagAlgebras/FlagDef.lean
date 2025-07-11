@@ -81,6 +81,17 @@ theorem type_embed_Adj_iff
   :=
   Iff.symm (SimpleGraph.Embedding.map_adj_iff G.type_embed)
 
+theorem iso_type_Adj_iff
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : G.type_verts)
+    : σ.Adj (G.iso_type_G.symm u) (G.iso_type_G.symm v) ↔ G.graph.Adj u v := by
+  let u_t := G.iso_type_G.symm u
+  have h_ut : G.iso_type_G u_t = u := Equiv.apply_symm_apply G.iso_type_G u
+  let v_t := G.iso_type_G.symm v
+  have h_vt : G.iso_type_G v_t = v := Equiv.apply_symm_apply G.iso_type_G v
+  rw [type_embed_Adj_iff G u_t v_t, ← h_ut, ← h_vt]
+  rfl
+
+
 def emptyLabeledGraph (σ : FlagType T) : LabeledGraph σ T
   :=
   ⟨σ, SimpleGraph.Embedding.refl⟩

@@ -432,8 +432,8 @@ lemma induced_full_labeledsubgraph_eq_top
       have h_u := iso_subset_of_finset_is_full f_iso_vertex u
       have h_v := iso_subset_of_finset_is_full f_iso_vertex v
       constructor
-      · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
-      · exact fun a ↦ h_ind_G' h_u h_v a
+      · exact fun h_uv ↦ SimpleGraph.Subgraph.Adj.adj_sub h_uv
+      · exact fun h_uv ↦ h_ind_G' h_u h_v h_uv
   refine LabeledSubgraph.ext ?subgraph ?type_embed
   · exact G'_eq_top
   · have verts_eq : (G₀.top).subgraph.verts = G'.subgraph.verts := by
@@ -443,20 +443,18 @@ lemma induced_full_labeledsubgraph_eq_top
       exact (iff_true_right this).mpr trivial
     have type_eq : ((G₀.top).subgraph.verts : Type) = (G'.subgraph.verts : Type) := congrArg Set.Elem verts_eq
     have coe_eq := coe_eq G'_eq_top type_eq
-    have h_G'_embed := G'.embed_eq
-    have h_top_embed := (G₀.top).embed_eq
     have emb_eq : ∀ t : T, G'.type_embed t = cast type_eq ((G₀.top).type_embed t) := by
       intro t
-      exact embed_val_eq G₀.type_embed G'.type_embed (G₀.top).type_embed G'_eq_top type_eq h_G'_embed h_top_embed t
+      exact embed_val_eq G₀.type_embed G'.type_embed (G₀.top).type_embed G'_eq_top type_eq G'.embed_eq (G₀.top).embed_eq t
     exact embed_eq G'.type_embed (G₀.top).type_embed G'_eq_top type_eq coe_eq emb_eq
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
+omit [DecidableEq T] [Fintype V] [DecidableEq V] in
 lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
     : H = G.bottom ↔ H.IsInduced ∧ Nonempty (H.coe ≃f (emptyLabeledGraph σ)) := by
-  let iso_T_G := G.iso_type_G
   constructor
-  · intro h_eq
+  · let iso_T_G := G.iso_type_G
+    intro h_eq
     subst h_eq
     constructor
     · intro u v hu hv h_adj
@@ -464,7 +462,7 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
       exact ⟨hu, ⟨hv, h_adj⟩⟩
     · let f : (G.bottom).subgraph.verts ≃ T := by
         dsimp [LabeledGraph.bottom]
-        exact id iso_T_G.symm
+        exact id G.iso_type_G.symm
       have f_adj : ∀ {u v : ↑(G.bottom).subgraph.verts},
   (emptyLabeledGraph σ).graph.Adj (f u) (f v) ↔ (G.bottom).subgraph.coe.Adj u v := by
         intro u v
@@ -472,31 +470,12 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
         constructor
         · intro T_adj
           dsimp [LabeledGraph.bottom] at u v f
-          have G_adj : G.graph.Adj u v := by
-            let u_t := iso_T_G.symm u
-            let v_t := iso_T_G.symm v
-            have h_ut : u = iso_T_G u_t := Eq.symm (Equiv.apply_symm_apply iso_T_G u)
-            have h_ut' : u_t = iso_T_G.symm u := rfl
-            have h_vt : v = iso_T_G v_t := Eq.symm (Equiv.apply_symm_apply iso_T_G v)
-            have h_vt' : v_t = iso_T_G.symm v := rfl
-            dsimp [f] at T_adj
-            rw [← h_ut', ← h_vt'] at T_adj
-            have := (type_embed_Adj_iff G u_t v_t).mp T_adj
-            rw [h_ut, h_vt]
-            dsimp [iso_T_G]
-            exact this
+          dsimp [f] at T_adj
+          have G_adj := (iso_type_Adj_iff G u v).mp T_adj
           exact ⟨u.property, ⟨v.property, G_adj⟩⟩
         · intro ⟨_, ⟨_, G_adj⟩⟩
           dsimp [f]
-          let u_t := iso_T_G.symm u
-          let v_t := iso_T_G.symm v
-          have h_ut : u = iso_T_G u_t := Eq.symm (Equiv.apply_symm_apply iso_T_G u)
-          have h_vt : v = iso_T_G v_t := Eq.symm (Equiv.apply_symm_apply iso_T_G v)
-          rw [h_ut, h_vt]
-          rw [iso_T_G.symm_apply_apply, iso_T_G.symm_apply_apply]
-          apply (type_embed_Adj_iff G u_t v_t).mpr
-          dsimp [iso_T_G] at h_ut h_vt
-          rw [h_ut, h_vt] at G_adj
+          have G_adj := (iso_type_Adj_iff G u v).mpr G_adj
           exact G_adj
       let f_iso : (G.bottom).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f, f_adj⟩
       have h_emb : ∀ t : T, f_iso ((G.bottom).coe.type_embed t) = (emptyLabeledGraph σ).type_embed t := by
