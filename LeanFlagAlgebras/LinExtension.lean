@@ -1,6 +1,7 @@
 import Mathlib.Data.Finsupp.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.GroupWithZero.Action
 
 open Finset
 
@@ -18,7 +19,7 @@ theorem linearExtension_zero
   simp only [linearExtension, Finsupp.support_zero, Finset.sum_empty]
 
 omit [Module ℝ β] in
-lemma flagVector_add_support
+lemma linearExtension_add_support
     (v w : α →₀ ℝ) (ψ : (α →₀ ℝ) → α → β)
     (hψ₁ : ∀ v w a, v a + w a = 0 → ψ v a + ψ w a = 0)
     (hψ₂ : ∀ v a, v a = 0 → ψ v a = 0)
@@ -87,9 +88,9 @@ theorem linearExtension_add
       dsimp [ψ]
       rw [add_smul]
     _ = ∑ a in v.support, ψ v a + ∑ a in w.support, ψ w a :=
-      flagVector_add_support v w ψ hψ₁ hψ₂
+      linearExtension_add_support v w ψ hψ₁ hψ₂
 
-lemma linearExtension_sum
+theorem linearExtension_sum
     (f : α → β) (s : Finset ι) (c : ι → (α →₀ ℝ))
     : linearExtension f (∑ i in s, c i) = ∑ i in s, linearExtension f (c i)
   := by
@@ -98,3 +99,25 @@ lemma linearExtension_sum
   · simp only [Finset.sum_empty, linearExtension_zero]
   · intro i s his ih
     simp only [Finset.sum_insert his, linearExtension_add, ih]
+
+theorem linearExtension_neg
+    (f : α → β) (v : α →₀ ℝ)
+    : linearExtension f (-v) = -linearExtension f v := by
+  dsimp [linearExtension]
+  simp only [Finsupp.support_neg, neg_smul, Finset.sum_neg_distrib]
+
+theorem linearExtension_sub
+    (f : α → β) (v w : α →₀ ℝ)
+    : linearExtension f (v - w) = linearExtension f v - linearExtension f w := by
+  simp only [sub_eq_add_neg, linearExtension_add, linearExtension_neg]
+
+theorem linearExtension_smul
+    (f : α → β) (r : ℝ) (v : α →₀ ℝ)
+    : linearExtension f (r • v) = r • linearExtension f v := by
+  dsimp [linearExtension]
+  by_cases hr : r = 0
+  · simp only [hr, zero_smul, zero_mul, Finset.sum_const_zero]
+  · rw [Finsupp.support_smul_eq hr, Finset.smul_sum]
+    apply Finset.sum_congr rfl
+    intro a _
+    exact mul_smul r (v a) (f a)

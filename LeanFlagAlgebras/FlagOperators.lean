@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagAlgebra
+import «LeanFlagAlgebras».LinExtension
 
 open FlagAlgebras
 open Classical
@@ -154,8 +155,11 @@ noncomputable def unlabel {V : Type} (F : Flag σ V) : Flag ∅ₜ V :=
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
 
-noncomputable def downwardFlagVector (f : FlagVector σ) : FlagVector ∅ₜ :=
-  ∑ F in f.support, (f F) • downwardFlag F.2
+-- noncomputable def downwardFlagVector (f : FlagVector σ) : FlagVector ∅ₜ :=
+--   ∑ F in f.support, (f F) • downwardFlag F.2
+
+noncomputable def downwardFlagVector : FlagVector σ → FlagVector ∅ₜ :=
+  linearExtension (fun F : FinFlag σ => downwardFlag F.2)
 
 noncomputable def downwardFlagVectorQuot (f : FlagVector σ) : FlagAlgebra ∅ₜ :=
   ⟦downwardFlagVector f⟧
@@ -163,65 +167,37 @@ noncomputable def downwardFlagVectorQuot (f : FlagVector σ) : FlagAlgebra ∅�
 lemma downwardFlagVector_zero
     : downwardFlagVector (0 : FlagVector σ) = 0
   := by
-  dsimp [downwardFlagVector]
+  simp only [downwardFlagVector, linearExtension_zero]
 
 lemma downwardFlagVector_add
     (f f' : FlagVector σ)
     : downwardFlagVector (f + f') = downwardFlagVector f + downwardFlagVector f'
   := by
-  dsimp [downwardFlagVector]
-  have : ∑ F ∈ (f + f').support, (f F + f' F) • downwardFlag F.2
-    = ∑ F ∈ (f + f').support, ((f F) • downwardFlag F.2 + (f' F) • downwardFlag F.2) := by
-    apply Finset.sum_congr rfl
-    intro F _
-    rw [add_smul]
-  rw [this]
-  let ψ : (FlagVector σ) → (FinFlag σ) → (FlagVector ∅ₜ)
-    := fun f F => f F • downwardFlag F.2
-  have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
-    intro g' h' x hx
-    simp only [ψ]
-    rw [← add_smul, hx, zero_smul]
-  have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
-    intro g x hx
-    simp only [ψ]
-    rw [hx, zero_smul]
-  exact flagVector_add_support f f' ψ hψ1 hψ2
+  simp only [downwardFlagVector, linearExtension_add]
 
 lemma downwardFlagVector_sum
     (s : Finset ι) (c : ι → FlagVector σ)
     : downwardFlagVector (∑ i in s, c i) = ∑ i in s, downwardFlagVector (c i)
   := by
-  classical
-  refine Finset.induction_on s ?_ ?_
-  · simp only [Finset.sum_empty, downwardFlagVector_zero]
-  · intro r R hr ih
-    simp only [Finset.sum_insert hr, downwardFlagVector_add, ih]
+  simp only [downwardFlagVector, linearExtension_sum]
 
 lemma downwardFlagVector_neg
     (f : FlagVector σ)
     : downwardFlagVector (-f) = -downwardFlagVector f
   := by
-  dsimp [downwardFlagVector]
-  simp only [Finsupp.support_neg, neg_smul, Finset.sum_neg_distrib]
+  simp only [downwardFlagVector, linearExtension_neg]
 
 lemma downwardFlagVector_sub
     (f f' : FlagVector σ)
     : downwardFlagVector (f - f') = downwardFlagVector f - downwardFlagVector f'
   := by
-  simp only [sub_eq_add_neg, downwardFlagVector_add, downwardFlagVector_neg]
+  simp only [downwardFlagVector, linearExtension_sub]
 
 lemma downwardFlagVector_smul
     (f : FlagVector σ) (r : ℝ)
     : downwardFlagVector (r • f) = r • downwardFlagVector f
   := by
-  dsimp [downwardFlagVector]
-  by_cases hr : r = 0
-  · simp only [hr, zero_smul, zero_mul, Finset.sum_const_zero]
-  · rw [Finsupp.support_smul_eq hr, Finset.smul_sum]
-    apply Finset.sum_congr rfl
-    intro F _
-    exact mul_smul r (f F) (downwardFlag F.2)
+  simp only [downwardFlagVector, linearExtension_smul]
 
 noncomputable def labelExtensions
     {ℓ : ℕ} (F : FlagWithSize ∅ₜ ℓ) (σ : FlagType (Fin n₀))
@@ -305,7 +281,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     intro G _ hG
     simp only [smul_eq_zero]; left
     exact Finsupp.not_mem_support_iff.mp hG
-  rw [Finset.sum_subset h_supp h_supp_outside]
+  rw [linearExtension, Finset.sum_subset h_supp h_supp_outside]
   have hF_iff : F ∈ S ↔ F.1 = ℓ := by
     constructor
     · intro hF
