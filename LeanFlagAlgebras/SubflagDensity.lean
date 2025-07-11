@@ -91,25 +91,18 @@ lemma predIsolabeldH_related
   rintro H₀ H₁ ⟨h_vert, h_adj⟩
   constructor
   · intro f_iso
-    have : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) := by
-      intro u v
-      simp_all only [eq_iff_iff, implies_true, and_self]
-    exact predIsolabeledH_related_support φ H H₀ H₁ h_vert this f_iso
+    exact predIsolabeledH_related_support φ H H₀ H₁ h_vert h_adj f_iso
   · intro f_iso
     have h_vert' : H₀.subgraph.verts = φ.graph_iso.symm '' H₁.subgraph.verts := by
       rw [h_vert]
-      simp_all only [eq_iff_iff]
       ext1 x
       simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-    have h_adj_emb : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) := by
+    have h_adj' : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) := by
       intro u v
-      have h_uv := (h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v))
+      have h_uv := h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
       rw [h_uv]
-      simp
-    have : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.symm.graph_iso u) (φ.symm.graph_iso v) := by
-      intro u v
-      exact (h_adj_emb u v)
-    exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' this f_iso
+      simp only [RelIso.apply_symm_apply]
+    exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' h_adj' f_iso
 
 def inducedlabeledSubgraph
     {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) (hS : ∀ t : T, G.type_embed t ∈ S) : {G' : LabeledSubgraph σ G // G'.IsInduced}
