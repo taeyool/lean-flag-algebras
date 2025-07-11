@@ -81,6 +81,7 @@ theorem type_embed_Adj_iff
   :=
   Iff.symm (SimpleGraph.Embedding.map_adj_iff G.type_embed)
 
+omit [Fintype T] in
 theorem iso_type_Adj_iff
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : G.type_verts)
     : σ.Adj (G.iso_type_G.symm u) (G.iso_type_G.symm v) ↔ G.graph.Adj u v := by
