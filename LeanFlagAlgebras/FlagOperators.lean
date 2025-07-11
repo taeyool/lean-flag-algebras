@@ -1,5 +1,4 @@
 import «LeanFlagAlgebras».FlagAlgebra
-import «LeanFlagAlgebras».LinExtension
 
 open FlagAlgebras
 open Classical

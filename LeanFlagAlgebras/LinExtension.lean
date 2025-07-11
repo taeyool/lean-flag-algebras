@@ -7,6 +7,8 @@ open Finset
 
 variable {α β : Type} [AddCommGroup β] [Module ℝ β]
 
+/- Linear Extension -/
+
 def linearExtension
     (f : α → β)
     : (α →₀ ℝ) → β
@@ -121,3 +123,112 @@ theorem linearExtension_smul
     apply Finset.sum_congr rfl
     intro a _
     exact mul_smul r (v a) (f a)
+
+
+/- Bilinear Extension -/
+
+def bilinearExtension
+    (f : α → α → β)
+    : (α →₀ ℝ) → (α →₀ ℝ) → β
+  :=
+  fun v w => linearExtension (flip (fun a => linearExtension (f a)) w) v
+
+def bilinearExtension'
+    (f : α → α → β)
+    : (α →₀ ℝ) → (α →₀ ℝ) → β
+  :=
+  fun v w => linearExtension (fun b => linearExtension (flip f b) v) w
+
+theorem bilinearExtension_eq_nested_sum
+    (f : α → α → β) (v w : α →₀ ℝ)
+    : bilinearExtension f v w = ∑ a in v.support, ∑ b in w.support, ((v a) * (w b)) • f a b := by
+  dsimp [bilinearExtension, linearExtension]
+  apply Finset.sum_congr rfl
+  intro a _
+  rw [flip, linearExtension, Finset.smul_sum]
+  apply Finset.sum_congr rfl
+  intro b _
+  exact smul_smul (v a) (w b) (f a b)
+
+theorem bilinearExtension'_eq_nested_sum
+    (f : α → α → β) (v w : α →₀ ℝ)
+    : bilinearExtension' f v w = ∑ a in v.support, ∑ b in w.support, ((v a) * (w b)) • f a b := by
+  dsimp [bilinearExtension', linearExtension]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro b _
+  rw [Finset.smul_sum]
+  apply Finset.sum_congr rfl
+  intro a _
+  rw [flip, smul_smul, mul_comm]
+
+theorem bilinearExtension_def_eq
+    (f : α → α → β) (v w : α →₀ ℝ)
+    : bilinearExtension f v w = bilinearExtension' f v w := by
+  simp only [bilinearExtension_eq_nested_sum, bilinearExtension'_eq_nested_sum]
+
+theorem bilinearExtension_zero_left
+    (f : α → α → β) (w : α →₀ ℝ)
+    : bilinearExtension f 0 w = 0 := by
+  simp only [bilinearExtension, linearExtension_zero]
+
+theorem bilinearExtension_zero_right
+    (f : α → α → β) (v : α →₀ ℝ)
+    : bilinearExtension f v 0 = 0 := by
+  rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_zero]
+
+theorem bilinearExtension_add_left
+    (f : α → α → β) (v v' : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f (v + v') w = bilinearExtension f v w + bilinearExtension f v' w := by
+  simp only [bilinearExtension, linearExtension_add]
+
+theorem bilinearExtension_add_right
+    (f : α → α → β) (v : α →₀ ℝ) (w w' : α →₀ ℝ)
+    : bilinearExtension f v (w + w') = bilinearExtension f v w + bilinearExtension f v w' := by
+  repeat rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_add]
+
+theorem bilinearExtension_sum_left
+    (f : α → α → β) (s : Finset ι) (c : ι → (α →₀ ℝ)) (w : α →₀ ℝ)
+    : bilinearExtension f (∑ i in s, c i) w = ∑ i in s, bilinearExtension f (c i) w := by
+  simp only [bilinearExtension, linearExtension_sum]
+
+theorem bilinearExtension_sum_right
+    (f : α → α → β) (v : α →₀ ℝ) (s : Finset ι) (c : ι → (α →₀ ℝ))
+    : bilinearExtension f v (∑ i in s, c i) = ∑ i in s, bilinearExtension f v (c i) := by
+  repeat simp_rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_sum]
+
+theorem bilinearExtension_neg_left
+    (f : α → α → β) (v : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f (-v) w = -bilinearExtension f v w := by
+  simp only [bilinearExtension, linearExtension_neg]
+
+theorem bilinearExtension_neg_right
+    (f : α → α → β) (v : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f v (-w) = -bilinearExtension f v w := by
+  repeat rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_neg]
+
+theorem bilinearExtension_sub_left
+    (f : α → α → β) (v v' : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f (v - v') w = bilinearExtension f v w - bilinearExtension f v' w := by
+  simp only [bilinearExtension, linearExtension_sub]
+
+theorem bilinearExtension_sub_right
+    (f : α → α → β) (v : α →₀ ℝ) (w w' : α →₀ ℝ)
+    : bilinearExtension f v (w - w') = bilinearExtension f v w - bilinearExtension f v w' := by
+  repeat rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_sub]
+
+theorem bilinearExtension_smul_left
+    (f : α → α → β) (r : ℝ) (v : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f (r • v) w = r • bilinearExtension f v w := by
+  simp only [bilinearExtension, linearExtension_smul]
+
+theorem bilinearExtension_smul_right
+    (f : α → α → β) (r : ℝ) (v : α →₀ ℝ) (w : α →₀ ℝ)
+    : bilinearExtension f v (r • w) = r • bilinearExtension f v w := by
+  repeat rw [bilinearExtension_def_eq]
+  simp only [bilinearExtension', linearExtension_smul]

@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».SubflagListDensity
+import «LeanFlagAlgebras».LinExtension
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.LinearAlgebra.Span
 
@@ -231,16 +232,17 @@ theorem flagMul_one
   exact flagMulWithSize_one F
 
 noncomputable instance : Mul (FlagVector σ) where
-  mul f g := ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
+  mul := bilinearExtension flagMul
 
-theorem flagVector_mul_def
+theorem flagVector_mul_eq_nested_sum
     (f g : FlagVector σ) : f * g = ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
-  := rfl
+  := by
+  apply bilinearExtension_eq_nested_sum
 
 theorem flagVector_mul_comm
     (f g : FlagVector σ) : f * g = g * f
   := by
-  simp [flagVector_mul_def]
+  simp only [flagVector_mul_eq_nested_sum]
   rw [sum_comm]
   repeat (apply sum_congr rfl; intros)
   rw [mul_comm, flagMul_comm]
@@ -248,136 +250,18 @@ theorem flagVector_mul_comm
 noncomputable instance : CommMagma (FlagVector σ) where
   mul_comm := flagVector_mul_comm
 
-theorem flagVector_smul_assoc
-    (r : ℝ) (f g : FlagVector σ) : (r • f) * g = r • (f * g)
-  := by
-  simp [flagVector_mul_def]
-  by_cases hr : r = 0
-  · simp [hr]
-  · have hf_supp : (r • f).support = f.support := Finsupp.support_smul_eq hr
-    rw [hf_supp]
-    repeat (rw [smul_sum]; congr; apply funext; intro)
-    simp [smul_mul_assoc, mul_assoc, smul_smul]
-
 instance : IsScalarTower ℝ (FlagVector σ) (FlagVector σ) where
-  smul_assoc := flagVector_smul_assoc
-
-theorem flagVector_neg_mul
-    (f g : FlagVector σ) : -f * g = -(f * g)
-  := by
-  show ∑ F in (-f).support, ∑ G in g.support, _ = -∑ F in f.support, ∑ G in g.support, _
-  simp [flagVector_mul_def]
+  smul_assoc := bilinearExtension_smul_left flagMul
 
 noncomputable instance : HasDistribNeg (FlagVector σ) where
-  neg_mul := flagVector_neg_mul
-  mul_neg f g := by
-    rw [mul_comm f (-g), mul_comm f g, flagVector_neg_mul g f]
-
-lemma flagVector_add_support
-    (f g : FlagVector σ) {α : Type} [AddCommGroup α] (ψ : FlagVector σ → FinFlag σ → α)
-    (hψ1 : ∀ f g x, f x + g x = 0 → ψ f x + ψ g x = 0)
-    (hψ2 : ∀ f x, f x = 0 → ψ f x = 0)
-    : ∑ K ∈ (f + g).support, (ψ f K + ψ g K) =
-        ∑ F ∈ f.support, ψ f F + ∑ G ∈ g.support, ψ g G
-  := by
-  classical
-  have add_support_sub : (f + g).support ⊆ f.support ∪ g.support := Finsupp.support_add
-  have sum_decomposition : ∑ x ∈ (f + g).support, (ψ f x + ψ g x) =
-  ∑ x ∈ f.support ∪ g.support, (ψ f x + ψ g x) - ∑ x ∈ (f.support ∪ g.support) \ (f + g).support, (ψ f x + ψ g x) := by
-    rw [sum_sdiff_eq_sub add_support_sub]
-    exact
-      Eq.symm
-        (sub_sub_self (∑ x ∈ f.support ∪ g.support, (ψ f x + ψ g x))
-          (∑ x ∈ (f + g).support, (ψ f x + ψ g x)))
-  have sum_extra_eq_0 : ∑ x ∈ (f.support ∪ g.support) \ (f + g).support, (ψ f x + ψ g x) = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff] at hx
-    obtain ⟨h_in_union, h_not_in_sum⟩ := hx
-    rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h_not_in_sum
-    rw [←union_sdiff_self_eq_union, mem_union] at h_in_union
-    exact hψ1 f g x h_not_in_sum
-  rw [sum_decomposition, sum_extra_eq_0, sub_zero]
-  have disjoint_1 : Disjoint f.support (g.support \ f.support) := disjoint_sdiff
-  have disjoint_2 : Disjoint (f.support \ g.support) (f.support ∩ g.support) := disjoint_sdiff_inter f.support g.support
-  have disjoint_3 : Disjoint (f.support ∩ g.support) (g.support \ f.support)  := by
-    rw [inter_comm]; symm
-    exact disjoint_sdiff_inter g.support f.support
-  have decomposition : ∑ x ∈ f.support ∪ g.support, (ψ f x + ψ g x) = ∑ x ∈ f.support \ g.support ∪ f.support ∩ g.support, (ψ f x + ψ g x) + ∑ x ∈ g.support \ f.support, (ψ f x + ψ g x) := by
-    rw [←union_sdiff_self_eq_union]
-    rw [sdiff_union_inter f.support g.support]
-    exact sum_union disjoint_1
-  rw [decomposition, sum_union disjoint_2, sum_add_distrib, sum_add_distrib, sum_add_distrib]
-  have sum_not_g_supp_eq_0 : ∑ x ∈ f.support \ g.support, ψ g x = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    apply hψ2
-    exact hx.2
-  have sum_not_f_supp_eq_0 : ∑ x ∈ g.support \ f.support, ψ f x = 0 := by
-    apply sum_eq_zero
-    intro x hx
-    rw [mem_sdiff, Finsupp.not_mem_support_iff] at hx
-    apply hψ2
-    exact hx.2
-  rw [sum_not_g_supp_eq_0, sum_not_f_supp_eq_0, add_zero, zero_add]
-  rw [add_assoc, add_assoc, ← sum_union disjoint_3, union_comm, inter_comm, sdiff_union_inter g.support f.support]
-  rw [←add_assoc, inter_comm, ← sum_union disjoint_2, sdiff_union_inter f.support g.support]
-
-theorem flagVector_left_distrib
-    (f g h : FlagVector σ) : f * (g + h) = f * g + f * h
-  := by
-  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
-  simp [Finset.sum_add_distrib, ← sum_add_distrib]
-  apply sum_congr rfl
-  intro F _
-  simp [mul_add, add_smul]
-  let ψ : (FlagVector σ) → (FinFlag σ) → (FlagVector σ)
-    := fun g G => (f F * g G) • flagMul F G
-  have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
-    intro g' h' x hx
-    simp only [ψ]
-    rw [← add_smul, ← mul_add, hx, mul_zero, zero_smul]
-  have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
-    intro g x hx
-    simp only [ψ]
-    rw [hx, mul_zero, zero_smul]
-  exact flagVector_add_support g h ψ hψ1 hψ2
-
-theorem flagVector_right_distrib
-    (f g h : FlagVector σ) : (f + g) * h = f * h + g * h
-  := by
-  simp [flagVector_mul_comm, flagVector_left_distrib]
-
-theorem flagVector_zero_mul
-    (f : FlagVector σ) : 0 * f = 0
-  := by
-  simp [flagVector_mul_def]
-
-theorem flagVector_mul_sum
-    (I : Finset ι) (v : ι → FlagVector σ) (f : FlagVector σ)
-    : f * ∑ i ∈ I, v i = ∑ i ∈ I, f * v i
-  := by
-  classical
-  refine Finset.induction_on I ?_ ?_
-  · simp
-    rw [flagVector_mul_comm, flagVector_zero_mul]
-  · intros r R hr ih
-    simp [sum_insert hr, flagVector_left_distrib, ih]
-
-theorem flagVector_sum_mul
-    (I : Finset ι) (v : ι → FlagVector σ) (f : FlagVector σ)
-    : (∑ i ∈ I, v i) * f = ∑ i ∈ I, v i * f
-  := by
-  simp [flagVector_mul_comm, flagVector_mul_sum]
+  neg_mul := bilinearExtension_neg_left flagMul
+  mul_neg := bilinearExtension_neg_right flagMul
 
 noncomputable instance : NonUnitalNonAssocRing (FlagVector σ) where
-  left_distrib := flagVector_left_distrib
-  right_distrib := by
-    simp [mul_comm, flagVector_left_distrib]
-  zero_mul := flagVector_zero_mul
-  mul_zero := by
-    intros; rw [mul_comm, flagVector_zero_mul]
+  left_distrib := bilinearExtension_add_right flagMul
+  right_distrib := bilinearExtension_add_left flagMul
+  zero_mul := bilinearExtension_zero_left flagMul
+  mul_zero := bilinearExtension_zero_right flagMul
 
 theorem flagVector_mul_one
     (f : FlagVector σ) : f * 1 = f
@@ -386,8 +270,7 @@ theorem flagVector_mul_one
   apply sum_congr rfl
   intro G _
   rw [smul_mul_assoc]; congr
-  dsimp [flagVector_mul_def]
-  simp [flagMul_one]
+  simp [flagVector_mul_eq_nested_sum, flagMul_one]
 
 noncomputable instance : MulOneClass (FlagVector σ) where
   one_mul g := by
@@ -677,7 +560,7 @@ theorem flag_mul_zeroElement
     _ ∼v (∑ F' : FlagWithSize σ ℓ, ↑(flagDensity₁ G.2 F') • flagMulWithSize F ⟨ℓ, F'⟩ L) := by
       apply flagVectorEqv_sum; intros
       apply flagVectorEqv_smul
-      simp [flagVector_mul_def]
+      simp [flagVector_mul_eq_nested_sum]
       apply flagMul_indep_on_size
       dsimp [L]
       linarith
@@ -706,7 +589,7 @@ theorem flag_mul_zeroElement
       · dsimp [L]
         linarith
     _ ∼v (unitVector F * unitVector G) := by
-      simp [flagVector_mul_def]
+      simp [flagVector_mul_eq_nested_sum]
       symm
       apply flagMul_indep_on_size
       dsimp [L]
@@ -783,26 +666,17 @@ theorem flagVector_smul_mul_smul_comm
     (f g : FlagVector σ) (a b : ℝ)
     : a • f * b • g = (a * b) • (f * g)
   := by
-  by_cases hab : a = 0 ∨ b = 0
-  · cases' hab with ha hb
-    · simp [ha, zero_mul, zero_smul]
-    · simp [hb, zero_mul, zero_smul]
-  · push_neg at hab
-    obtain ⟨ha, hb⟩ := hab
-    show ∑ F in (a • f).support, ∑ G in (b • g).support, _ = (a * b) • ∑ F in _, ∑ G in _, _
-    rw [Finsupp.support_smul_eq ha, Finsupp.support_smul_eq hb]
-    repeat (rw [smul_sum]; apply sum_congr (by rfl); intros)
-    simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
-    congr 1; ring
+  show bilinearExtension flagMul (a • f) (b • g) = (a * b) • bilinearExtension flagMul f g
+  rw [bilinearExtension_smul_left, bilinearExtension_smul_right, smul_smul]
 
 theorem three_flag_mul_eqv_sum_tripleDensity
     {F₁ F₂ F₃ : FinFlag σ} {ℓ : ℕ} (hℓ : ℓ = F₁.1 + F₂.1 + F₃.1 - n₀ - n₀)
     : (unitVector F₁ * unitVector F₂ * unitVector F₃) ∼v
       (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩)
   := by
-  nth_rw 2 [flagVector_mul_def]
+  nth_rw 2 [flagVector_mul_eq_nested_sum]
   simp [flagMul, flagMulWithSize]
-  rw [flagVector_sum_mul]
+  rw [sum_mul]
   let ℓ' := F₁.1 + F₂.1 - n₀
   calc
     _ ∼v (∑ F : FlagWithSize σ ℓ, ∑ F' : FlagWithSize σ ℓ',
@@ -811,7 +685,7 @@ theorem three_flag_mul_eqv_sum_tripleDensity
       apply flagVectorEqv_sum; intros; simp
       rw [smul_mul_assoc, ← smul_sum]
       apply flagVectorEqv_smul
-      simp [flagVector_mul_def, flagMul, flagMulWithSize]
+      simp [flagVector_mul_eq_nested_sum, flagMul, flagMulWithSize]
       have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by
         rw [hℓ]
         congr
@@ -877,7 +751,7 @@ theorem flagVector_mul_assoc
     (f g h : FlagVector σ) : (f * g * h) ∼v (f * (g * h))
   := by
   rw [flagVector_eq_sum_unitVector f, flagVector_eq_sum_unitVector g, flagVector_eq_sum_unitVector h]
-  simp [flagVector_mul_sum, flagVector_sum_mul, ← sum_sub_distrib, flagVector_smul_mul_smul_comm, mul_assoc]
+  simp only [mul_sum, sum_mul, flagVector_smul_mul_smul_comm, mul_assoc]
   iterate 3 (apply flagVectorEqv_sum; intros)
   apply flagVectorEqv_smul
   apply unitVector_mul_assoc
@@ -991,41 +865,13 @@ instance : NeZero (1 : FlagAlgebra σ) where
     let L := max (Finset.sup (univ : Finset I) ℓ) n₀
     have hL : L ≥ n₀ := le_max_right _ _
     let F := (flagWithSize_inhabited σ hL).default
-    let φ : FlagVector σ → ℝ
-      := fun g => ∑ G in g.support, (g G) * flagDensity₁ G.2 F
+    let φ : FlagVector σ → ℝ := linearExtension (fun G => flagDensity₁ G.2 F)
     have φ_add : ∀ (g h : FlagVector σ), φ (g + h) = φ g + φ h := by
-      intro g h
-      simp [φ, add_mul]
-      let ψ : FlagVector σ → FinFlag σ → ℝ
-        := fun g G => (g G) * flagDensity₁ G.2 F
-      have hψ1 : ∀ (g h : FlagVector σ) (x : FinFlag σ), g x + h x = 0 → ψ g x + ψ h x = 0 := by
-        intro g' h' x hx
-        simp only [ψ]
-        rw [← add_mul, hx, zero_mul]
-      have hψ2 : ∀ (g : FlagVector σ) (x : FinFlag σ), g x = 0 → ψ g x = 0 := by
-        intro g' x hx
-        simp only [ψ]
-        rw [hx, zero_mul]
-      exact flagVector_add_support g h ψ hψ1 hψ2
+      apply linearExtension_add
     have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := by
-      intro r g
-      show ∑ G in _, _ = _ * ∑ G in _, _
-      by_cases hr : r = 0
-      · simp [hr]
-      · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
-        rw [hg_supp, mul_sum]
-        apply sum_congr (by rfl)
-        intro x _
-        simp [mul_sum, mul_assoc]
+      apply linearExtension_smul
     have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
-      intro s f
-      show ∑ G in _, _ = ∑ i in _, _
-      classical
-      refine Finset.induction_on s ?_ ?_
-      · simp [φ]
-      · intro r R hr ih
-        simp [sum_insert hr, Module.add_smul]
-        simp_all only [Finsupp.coe_add, Pi.add_apply, φ]
+      apply linearExtension_sum
     have hφ : ∀ (i : I), φ (v i) = 0 := by
       intro i
       let iG := G i
@@ -1034,23 +880,13 @@ instance : NeZero (1 : FlagAlgebra σ) where
         simp [L, le_max_iff]; left
         apply Finset.le_sup; simp
       have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
-        intro s f
-        classical
-        refine Finset.induction_on s ?_ ?_
-        · simp [φ]
-        · intro r R hr ih
-          simp [sum_insert hr, Module.add_smul]
-          simp_all only [Finsupp.coe_add, Pi.add_apply, φ]
-      rw [hG2]
-      dsimp [zeroElement]
-      rw [sub_eq_add_neg, φ_add]
-      have : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) := by
-        simp_all only [Finsupp.support_neg, Finsupp.coe_neg, Pi.neg_apply, neg_mul, sum_neg_distrib, φ]
-      rw [this, ← sub_eq_add_neg, sub_eq_zero]
-      dsimp [densityFlagSum]
-      rw [φ_sum']
+        apply linearExtension_sum
+      have φ_neg : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) := by
+        apply linearExtension_neg
+      rw [hG2, zeroElement, sub_eq_add_neg, φ_add]
+      rw [φ_neg, ← sub_eq_add_neg, sub_eq_zero, densityFlagSum, φ_sum']
       have : φ (unitVector iG) = flagDensity₁ iG.2 F := by
-        simp_all only [unitVector_support, sum_singleton, unitVector_apply_self, one_mul, φ]
+        simp only [unitVector_support, sum_singleton, unitVector_apply_self, φ, linearExtension, one_smul]
       have hℓ'' : n₀ ≤ iG.fst := finFlag_size_ge_n₀ iG
       rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F hℓ'' hℓ' hℓ]
       simp
@@ -1062,15 +898,15 @@ instance : NeZero (1 : FlagAlgebra σ) where
       by_cases s : flagDensity₁ iG.2 x = 0
       · right; exact s
       · left
-        dsimp [φ]
-        simp
+        dsimp [φ, linearExtension]
+        simp only [unitVector_support, sum_singleton, unitVector_apply_self, one_mul]
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (unitVector 1).support, _ = 1
       simp [sum_singleton, flagDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       simp_all only [mul_zero, sum_const_zero, zero_ne_one]
     rw [hx] at h_φ_1
-    have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [←h_φ_1, ←h_φ_sum]
+    have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [← h_φ_1, ← h_φ_sum]
     exact zero_ne_one zero_eq_one
 
 instance : Nontrivial (FlagAlgebra σ) where
