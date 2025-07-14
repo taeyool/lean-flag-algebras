@@ -256,7 +256,7 @@ lemma inducedlabeledSubgraphList_related
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
     apply (h_ind₀ i) h_G₀u h_G₀v h_G₀uv
 
-omit [Fintype T] [DecidableEq T] [FintypeList Vl] [DecidableEqList Vl] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma Hl_eq_reverseinduced_induced_Hl
   {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
   (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀) (h_ind₀ : ∀ i, (Hl₀ i).subgraph.IsInduced)

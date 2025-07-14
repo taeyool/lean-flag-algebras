@@ -131,7 +131,9 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
     subgraph := {
       verts := G.type_verts
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
-      adj_sub := by simp only [and_imp, imp_self, implies_true]
+      adj_sub := by
+        intro u v ⟨_, _, h_uv⟩
+        exact h_uv
       edge_vert := by
         intro u _ ⟨hu, _⟩
         exact hu
@@ -211,7 +213,7 @@ noncomputable instance labeledSubgraphFintype
     dsimp [f] at h_eq
     simp_all only [Prod.mk.injEq, and_true, mk.injEq, true_and]
     subst h_eq
-    simp_all only [heq_eq_eq]
+    simp only [heq_eq_eq]
     ext x
     simp_all only
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
