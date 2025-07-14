@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagOperators
+import Mathlib.Order.Filter.Basic
 
 open FlagAlgebras
 
@@ -204,6 +205,14 @@ noncomputable def flagAlgebraDensity
   intro f f' hf
   ext G
   exact flagVectorDensity_respects_eqv f f' hf G
+
+def Increases (s : ℕ → FinFlag σ) : Prop
+  :=
+  ∀ n m, n ≤ m → (s n).1 ≤ (s m).1
+
+def Converges (s : ℕ → FinFlag σ) : Prop
+  :=
+  sorry
 
 theorem downward_unitVector_nonneg
     (φ : PositiveHom ∅ₜ) (F : FinFlag σ)
