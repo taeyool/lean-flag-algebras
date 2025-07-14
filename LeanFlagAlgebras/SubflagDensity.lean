@@ -485,7 +485,6 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
       exact congrFun type_embed t
     have graph_eq_H_G : H.subgraph = (G.bottom).subgraph := by
       dsimp [LabeledGraph.bottom] at *
-      simp at *
       have H_verts_iff_type_verts : ∀ w : V, w ∈ H.subgraph.verts ↔ w ∈ G.type_verts := by
         intro w
         constructor
@@ -502,58 +501,17 @@ lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
           rw [← h_t, ← H.embed_eq]
           exact Subtype.coe_prop (H.type_embed t)
       ext u v
-      · simp only
-        exact H_verts_iff_type_verts u
+      · rw [H_verts_iff_type_verts]
       · simp only
         constructor
         · intro H_uv
-          have hu : u ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv
-          have hu' : u ∈ G.type_verts := (H_verts_iff_type_verts u).mp hu
-          have hv : v ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv.symm
-          have hv' : v ∈ G.type_verts := (H_verts_iff_type_verts v).mp hv
-          have flag_adj := (iso_adj u hu v hv).mpr H_uv
-          have G_adj := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp flag_adj
-
-          have hu : u ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv
-          let t₁ := iso_H_T ⟨u, hu⟩
-          have h_embed_t₁ : H.type_embed t₁ = u := by
-            have ht₁ := h_type_embed t₁
-            dsimp [t₁] at *
-            have := iso_H_T.injective ht₁
-            simp_all only
-          have h_t₁ : iso_H_T ⟨u, hu⟩ = t₁ := by
-            simp only [h_embed_t₁]
-          have hu' : u ∈ G.type_verts := by
-            rw [← h_embed_t₁, H.embed_eq]
-            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₁)
-          have hv : v ∈ H.subgraph.verts := H.subgraph.edge_vert H_uv.symm
-          let t₂ := iso_H_T ⟨v, hv⟩
-          have h_embed_t₂ : H.type_embed t₂ = v := by
-            have ht₂ := h_type_embed t₂
-            dsimp [t₂] at *
-            have := iso_H_T.injective ht₂
-            simp_all only
-          have h_t₂ : iso_H_T ⟨v, hv⟩ = t₂ := by
-            simp only [h_embed_t₂]
-          have hv' : v ∈ G.type_verts := by
-            rw [← h_embed_t₂, H.embed_eq]
-            exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t₂)
-          have h_uv : H.coe.graph.Adj ⟨u, hu⟩ ⟨v, hv⟩ := H_uv
-          have flag_adj := (iso_adj u hu v hv).mpr h_uv
-          have G_adj := (type_embed_Adj_iff G (iso_H_T ⟨u, hu⟩) (iso_H_T ⟨v, hv⟩)).mp flag_adj
-          rw [h_t₁, h_t₂] at G_adj
-
+          have hu : u ∈ G.type_verts := (H_verts_iff_type_verts u).mp (H.subgraph.edge_vert H_uv)
+          have hv : v ∈ G.type_verts := (H_verts_iff_type_verts v).mp (H.subgraph.edge_vert H_uv.symm)
           have h_adj : G.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub H_uv
-          exact ⟨hu', hv', h_adj⟩
+          exact ⟨hu, hv, h_adj⟩
         · intro ⟨hu, hv, h_adj⟩
-          have hu' : u ∈ H.subgraph.verts := by
-            obtain ⟨t, _, h_t⟩ := hu
-            rw [← h_t, ← H.embed_eq]
-            exact Subtype.coe_prop (H.type_embed t)
-          have hv' : v ∈ H.subgraph.verts := by
-            obtain ⟨t, _, h_t⟩ := hv
-            rw [← h_t, ← H.embed_eq]
-            exact Subtype.coe_prop (H.type_embed t)
+          have hu' : u ∈ H.subgraph.verts := (H_verts_iff_type_verts u).mpr hu
+          have hv' : v ∈ H.subgraph.verts := (H_verts_iff_type_verts v).mpr hv
           exact H_ind hu' hv' h_adj
     refine LabeledSubgraph.ext ?subgraph ?type_embed
     · exact graph_eq_H_G
@@ -701,11 +659,9 @@ lemma subgraphCount_other
       let g : (G₁.top).coe ≃f G₁ := by
         let graph_iso : (G₁.top).subgraph.coe ≃g G₁.graph := by
           dsimp [LabeledGraph.top]
-          simp [SimpleGraph.Subgraph.coe]
           let f : (G₁.top).subgraph.verts → V := by
             dsimp [LabeledGraph.top]
-            intro v
-            exact v.val
+            exact fun v ↦ v.val
           have h_bij : Function.Bijective f := by
             constructor
             · intro v₁ v₂ h_eq
@@ -713,17 +669,16 @@ lemma subgraphCount_other
               exact SetCoe.ext h_eq
             · intro v
               exact CanLift.prf v trivial
-          have h_iso : ∀ {w₀ w₁ : (G₁.top).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (G₁.top).subgraph.Adj w₀ w₁ := by
+          have h_adj : ∀ {w₀ w₁ : (G₁.top).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (G₁.top).subgraph.Adj w₀ w₁ := by
             intro u v
-            simp [LabeledGraph.top, f]
-          let f_equiv := Equiv.ofBijective f h_bij
-          exact ⟨f_equiv, h_iso⟩
+            simp only [id_eq, LabeledGraph.top, SimpleGraph.Subgraph.top_adj, f]
+          let h_iso := Equiv.ofBijective f h_bij
+          exact ⟨h_iso, h_adj⟩
         have h_emb : ∀ t : T, graph_iso ((G₁.top).type_embed t) = G₁.type_embed t := by
           intro t
           exact rfl
         exact ⟨graph_iso, funext h_emb⟩
-      rw [← this] at g
-      exact g
+      rwa [← this] at g
     have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
     exact h_neq ⟨f_iso_G₀_G₁⟩
   rw [Set.subset_empty_iff] at h_S
