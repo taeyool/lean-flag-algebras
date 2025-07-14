@@ -659,11 +659,9 @@ lemma subgraphCount_other
       let g : (G₁.top).coe ≃f G₁ := by
         let graph_iso : (G₁.top).subgraph.coe ≃g G₁.graph := by
           dsimp [LabeledGraph.top]
-          simp [SimpleGraph.Subgraph.coe]
           let f : (G₁.top).subgraph.verts → V := by
             dsimp [LabeledGraph.top]
-            intro v
-            exact v.val
+            exact fun v ↦ v.val
           have h_bij : Function.Bijective f := by
             constructor
             · intro v₁ v₂ h_eq
@@ -671,17 +669,16 @@ lemma subgraphCount_other
               exact SetCoe.ext h_eq
             · intro v
               exact CanLift.prf v trivial
-          have h_iso : ∀ {w₀ w₁ : (G₁.top).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (G₁.top).subgraph.Adj w₀ w₁ := by
+          have h_adj : ∀ {w₀ w₁ : (G₁.top).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (G₁.top).subgraph.Adj w₀ w₁ := by
             intro u v
-            simp [LabeledGraph.top, f]
-          let f_equiv := Equiv.ofBijective f h_bij
-          exact ⟨f_equiv, h_iso⟩
+            simp only [id_eq, LabeledGraph.top, SimpleGraph.Subgraph.top_adj, f]
+          let h_iso := Equiv.ofBijective f h_bij
+          exact ⟨h_iso, h_adj⟩
         have h_emb : ∀ t : T, graph_iso ((G₁.top).type_embed t) = G₁.type_embed t := by
           intro t
           exact rfl
         exact ⟨graph_iso, funext h_emb⟩
-      rw [← this] at g
-      exact g
+      rwa [← this] at g
     have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
     exact h_neq ⟨f_iso_G₀_G₁⟩
   rw [Set.subset_empty_iff] at h_S
