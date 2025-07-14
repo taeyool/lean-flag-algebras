@@ -213,7 +213,7 @@ noncomputable instance labeledSubgraphFintype
     dsimp [f] at h_eq
     simp_all only [Prod.mk.injEq, and_true, mk.injEq, true_and]
     subst h_eq
-    simp_all only [heq_eq_eq]
+    simp only [heq_eq_eq]
     ext x
     simp_all only
   have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
