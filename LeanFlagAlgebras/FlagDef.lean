@@ -131,7 +131,9 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
     subgraph := {
       verts := G.type_verts
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
-      adj_sub := by simp only [and_imp, imp_self, implies_true]
+      adj_sub := by
+        intro u v ⟨_, _, h_uv⟩
+        exact h_uv
       edge_vert := by
         intro u _ ⟨hu, _⟩
         exact hu
