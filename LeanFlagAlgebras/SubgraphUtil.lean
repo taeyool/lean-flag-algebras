@@ -20,8 +20,7 @@ variable {T U V W X : Type}
   [Fintype W] [DecidableEq W]
   [Fintype X] [DecidableEq X]
 
-noncomputable def subgraphFintype
-    (G : SimpleGraph V) : Fintype (Subgraph G)
+noncomputable instance subgraphFintype (G : SimpleGraph V) : Fintype (Subgraph G)
   :=
   let f : Subgraph G → Set V × Set (V × V) :=
     fun G' => (G'.verts, { (u, v) | G'.Adj u v })
@@ -148,6 +147,7 @@ lemma predIsoH_related
       simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, Multiset.bijective_iff_map_univ_eq_univ, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
+/-
 def inducedSubgraph
     (G : SimpleGraph V) (S : Set V) : { G' : Subgraph G // G'.IsInduced }
   :=
@@ -167,10 +167,34 @@ def inducedSubgraph
     dsimp at *
     exact ⟨h_uv, h_u, h_v⟩
   ⟨G', h_induced⟩
+-/
+
+def inducedSubgraph
+    (G : SimpleGraph V) (S : Set V) : G.Subgraph where
+  verts := S
+  Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
+  adj_sub := by
+    intro v w a
+    simp_all only
+  edge_vert := by
+    intro v w a
+    simp_all only
+  symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
 
 omit [Fintype V] [DecidableEq V] in
+@[simp]
+lemma inducedSubgraph_isInduced
+    (G : SimpleGraph V) (S : Set V)
+    : (inducedSubgraph G S).IsInduced
+  := by
+  intro u v h_u h_v h_adj
+  simp only [inducedSubgraph] at *
+  (repeat' constructor) <;> assumption
+
+omit [Fintype V] [DecidableEq V] in
+@[simp]
 lemma inducedSubgraph_verts
-    (G : SimpleGraph V) (S : Set V) : ((inducedSubgraph G S) : Subgraph G).verts = S
+    (G : SimpleGraph V) (S : Set V) : (inducedSubgraph G S).verts = S
   := by
   simp [inducedSubgraph]
 
@@ -191,7 +215,7 @@ lemma inducedSubgraph_mono
 omit [Fintype V] [DecidableEq V] in
 lemma inducedSubgraph_eq
     {G : SimpleGraph V} {G₀ : Subgraph G}
-    (h_G₀_ind : G₀.IsInduced) : ⟨G₀, h_G₀_ind⟩ = (inducedSubgraph G G₀.verts)
+    (h_G₀_ind : G₀.IsInduced) : G₀ = (inducedSubgraph G G₀.verts)
   := by
   dsimp [inducedSubgraph]
   ext u v
@@ -253,16 +277,16 @@ noncomputable def isoSetOfInducedSubgraph
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-    let H₁ := (inducedSubgraph G₁ (φ '' H₀.verts)).1
-    let h_ind₁ : H₁.IsInduced := (inducedSubgraph G₁ (φ '' H₀.verts)).2
+    let H₁ := inducedSubgraph G₁ (φ '' H₀.verts)
+    let h_ind₁ : H₁.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₀.verts)
     have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩ := s₁
-    let H₀ := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).1
-    let h_ind₀ : H₀.IsInduced := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).2
+    let H₀ := inducedSubgraph G₀ (φ.symm '' H₁.verts)
+    let h_ind₀ : H₀.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₁.verts)
     have : relOfSubgraph φ.symm H₁ H₀ := inducedSubgraph_related φ.symm H₁ h_ind₁
     have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
@@ -322,12 +346,12 @@ noncomputable def isoSetOfInducedSubgraphPair
   let f (s₀ : S₀) : S₁ := by
     dsimp [S₀] at s₀
     let ⟨⟨H₀,H₂⟩, ⟨h_ind₀, h_p₀, h_ind₂, h_p₂, h_inter⟩⟩ := s₀
-    let H₁ := (inducedSubgraph G₁ (φ '' H₀.verts)).1
-    let h_ind₁ : H₁.IsInduced := (inducedSubgraph G₁ (φ '' H₀.verts)).2
+    let H₁ := inducedSubgraph G₁ (φ '' H₀.verts)
+    let h_ind₁ : H₁.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₀.verts)
     have : relOfSubgraph φ H₀ H₁ := inducedSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
-    let H₃ := (inducedSubgraph G₁ (φ '' H₂.verts)).1
-    let h_ind₃ : H₃.IsInduced := (inducedSubgraph G₁ (φ '' H₂.verts)).2
+    let H₃ := inducedSubgraph G₁ (φ '' H₂.verts)
+    let h_ind₃ : H₃.IsInduced := inducedSubgraph_isInduced G₁ (φ '' H₂.verts)
     have : relOfSubgraph φ H₂ H₃ := inducedSubgraph_related φ H₂ h_ind₂
     have h_p₃ : p₃ H₃ := (h_rel' H₂ H₃ this).mp h_p₂
     have h_inter' : H₁.verts ∩ H₃.verts = ∅ := by
@@ -347,12 +371,12 @@ noncomputable def isoSetOfInducedSubgraphPair
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨⟨H₁,H₃⟩, ⟨h_ind₁, h_p₁, h_ind₃, h_p₃, h_inter⟩⟩ := s₁
-    let H₀ := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).1
-    let h_ind₀ : H₀.IsInduced := (inducedSubgraph G₀ (φ.symm '' H₁.verts)).2
+    let H₀ := inducedSubgraph G₀ (φ.symm '' H₁.verts)
+    let h_ind₀ : H₀.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₁.verts)
     have : relOfSubgraph φ.symm H₁ H₀ := inducedSubgraph_related φ.symm H₁ h_ind₁
     have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
-    let H₂ := (inducedSubgraph G₀ (φ.symm '' H₃.verts)).1
-    let h_ind₂ : H₂.IsInduced := (inducedSubgraph G₀ (φ.symm '' H₃.verts)).2
+    let H₂ := inducedSubgraph G₀ (φ.symm '' H₃.verts)
+    let h_ind₂ : H₂.IsInduced := inducedSubgraph_isInduced G₀ (φ.symm '' H₃.verts)
     have : relOfSubgraph φ.symm H₃ H₂ := inducedSubgraph_related φ.symm H₃ h_ind₃
     have h_p₂ : p₂ H₂ := (h_rel_inv' H₃ H₂ this).mp h_p₃
     have h_inter' : H₀.verts ∩ H₂.verts = ∅ := by
@@ -758,9 +782,9 @@ omit [DecidableEq V] in
 lemma inducedSubgraph_eq_subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (h_G₀_ind : G₀.IsInduced)
     (X₁ : Finset V) (h_X₁ : X₁ ⊆ G₀.verts.toFinset)
-    : (inducedSubgraph G X₁).val
+    : inducedSubgraph G X₁
       =
-      subgraphByComposition G₀ (inducedSubgraph G₀.coe {v : G₀.verts | v.val ∈ X₁}).val
+      subgraphByComposition G₀ (inducedSubgraph G₀.coe {v : G₀.verts | v.val ∈ X₁})
   := by
     dsimp [subgraphByComposition, Subgraph.coeSubgraph, inducedSubgraph]
     ext u v
@@ -961,7 +985,7 @@ noncomputable def isoFromInducedSubgraphByPartialIso
     {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
     (iso_G₀_F₀ : Subgraph.coe G₀ ≃g F₀) (iso_F₁_H₁ : Subgraph.coe F₁ ≃g H₁)
     (h_F₁_ind : F₁.IsInduced) (h_G₀_ind : G₀.IsInduced)
-    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).val.coe ≃g H₁
+    : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).coe ≃g H₁
   := by
     let X₁ := ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset
     let G₁ := subgraphFromPartialIso iso_G₀_F₀.symm F₁

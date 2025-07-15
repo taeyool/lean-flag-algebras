@@ -1,3 +1,4 @@
+import «LeanFlagAlgebras».SubgraphUtil
 import Mathlib.Combinatorics.SimpleGraph.Maps
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 
@@ -187,21 +188,6 @@ def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledS
   :=
   H.subgraph.IsInduced
 
-noncomputable instance subgraphFintype
-    {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) : Fintype (G.Subgraph)
-  :=
-  let f : G.Subgraph → Set V × Set (V × V) :=
-    fun G' => (G'.verts, { (u, v) | G'.Adj u v })
-  have f_inj : Function.Injective f := by
-    intro G1 G2 h_eq
-    dsimp [f] at h_eq
-    ext u v
-    . have h_eq_verts : G1.verts = G2.verts := (Prod.ext_iff.mp h_eq).1
-      exact Eq.to_iff (congrFun h_eq_verts u)
-    . have h_eq_edges := (Prod.ext_iff.mp h_eq).2
-      exact Eq.to_iff (congrFun h_eq_edges (u, v))
-  Fintype.ofInjective f f_inj
-
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V)
     : Fintype (LabeledSubgraph σ G)
@@ -230,34 +216,6 @@ theorem labeledSubgraph_contain_type_verts
   rw [← ht, ← H.embed_eq t]
   simp only [Subtype.coe_prop]
 
-def inducedSubgraph
-    {V : Type} (G : SimpleGraph V) (S : Set V)
-    : G.Subgraph where
-  verts := S
-  Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
-  adj_sub := by
-    intro v w a
-    simp_all only
-  edge_vert := by
-    intro v w a
-    simp_all only
-  symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
-
-@[simp]
-theorem inducedSubgraph_verts
-    {V : Type} (G : SimpleGraph V) (S : Set V)
-    : (inducedSubgraph G S).verts = S
-  := by
-  simp only [inducedSubgraph]
-
-@[simp]
-theorem inducedSubgraph_isInduced
-    {V : Type} (G : SimpleGraph V) (S : Set V)
-    : (inducedSubgraph G S).IsInduced
-  := by
-  intro u v h_u h_v h_adj
-  simp [inducedSubgraph] at *
-  (repeat' constructor) <;> assumption
 
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
