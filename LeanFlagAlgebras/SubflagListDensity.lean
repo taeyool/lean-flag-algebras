@@ -541,7 +541,6 @@ theorem flagDensity_permute
   := by
   dsimp [flagListDensity, quotLabeledSubgraphListDensity]
   congr; ext Grep
-  dsimp [labeledSubgraphListCount]
   let S₀ := labeledSubgraphListSet (fun i => Quotient.out (Fl i)) Grep
   let S₁ := labeledSubgraphListSet (fun i => Quotient.out (Fl (π i))) Grep
   have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
@@ -550,49 +549,40 @@ theorem flagDensity_permute
       intro s₀
       dsimp [S₀, labeledSubgraphListSet] at s₀
       let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      let Hl₁ : Fin t → LabeledSubgraph σ Grep := by
-        intro i
-        exact Hl₀ (π i)
-      let h_ind₁ : ∀ (i : Fin t), (Hl₁ i).subgraph.IsInduced := by
-        intro i
-        exact @h_ind₀ (π i)
+      let Hl₁ : Fin t → LabeledSubgraph σ Grep :=  fun i ↦ Hl₀ (π i)
+      let h_ind₁ : ∀ (i : Fin t), (Hl₁ i).subgraph.IsInduced := fun i ↦ @h_ind₀ (π i)
       let h_p₁ : (∀ (i : Fin t), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl (π i)))) ∧
                   ∀ (i j : Fin t), ¬i = j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         simp_all only [implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self]
       exact ⟨Hl₁, h_ind₁, h_p₁⟩
     have h_inj_f : Function.Injective f := by
       intro s₀ s₁ h_eq
-      simp [f] at h_eq
       obtain ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
       obtain ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      simp_all only [Subtype.mk.injEq]
+      simp only [f, Subtype.mk.injEq] at h_eq
+      simp only [Subtype.mk.injEq]
       funext i
       have : Hl₀ (π (π.invFun i)) = Hl₁ (π (π.invFun i)) := congrFun h_eq (π.invFun i)
-      simp_all only [Equiv.invFun_as_coe, Equiv.apply_symm_apply]
+      rwa [Equiv.invFun_as_coe, Equiv.apply_symm_apply] at this
     have h_surj_f : Function.Surjective f := by
-      intro s₂
-      obtain ⟨Hl₂, h_ind₂, h_p₂⟩ := s₂
-      let Hl₀ : Fin t → LabeledSubgraph σ Grep := by
-        intro i
-        exact Hl₂ (π.invFun i)
-      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := by
-        intro i
-        exact @h_ind₂ (π.invFun i)
+      intro s₁
+      obtain ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
+      let Hl₀ : Fin t → LabeledSubgraph σ Grep := fun i ↦ Hl₁ (π.invFun i)
+      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ @h_ind₁ (π.invFun i)
       let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧ ∀ (i j : Fin t), ¬i = j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
         · intro i
           dsimp [Hl₀]
           have : Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i)) := by
             have h_eq : π (π.invFun i) = i := by apply Equiv.apply_symm_apply
-            have : Nonempty ((Hl₂ (π.invFun i)).coe ≃f Quotient.out (Fl (π (π.invFun i)))) := h_p₂.1 (π.invFun i)
+            have : Nonempty ((Hl₁ (π.invFun i)).coe ≃f Quotient.out (Fl (π (π.invFun i)))) := h_p₁.1 (π.invFun i)
             rw [h_eq] at this
             exact this
           exact this
         · intro i j h_ij
           simp_all only [ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
       use ⟨Hl₀, h_ind₀, h_p₀⟩
-      dsimp [f]
-      simp_all only [Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
+      simp_all only [f, Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
     exact Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
