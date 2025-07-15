@@ -24,7 +24,7 @@ def ConvergesTo (s : FlagSeq σ) (a : FinFlag σ → ℝ) : Prop
 
 #check CompactSpace.tendsto_subseq
 
-theorem increasing_seq_contain_convergent_subseq
+theorem increasing_flagSeq_contain_convergent_subseq
     (s : FlagSeq σ) (hs_inc : Increases s)
     : ∃ (a : FinFlag σ → ℝ) (ϕ : ℕ → ℕ), StrictMono ϕ ∧ ConvergesTo (s ∘ ϕ) a
   := by
@@ -37,3 +37,15 @@ noncomputable def coe (φ : PositiveHom σ) : FinFlag σ → ℝ
   fun F => φ ⟦unitVector F⟧
 
 end PositiveHom
+
+theorem flagSeq_limit_mem_positiveHom
+    (s : FlagSeq σ) {a : FinFlag σ → ℝ} (hs_conv : ConvergesTo s a)
+    : ∃ (φ : PositiveHom σ), φ.coe = a
+  := by
+  sorry
+
+theorem positiveHom_as_flagSeq_limit
+    (φ : PositiveHom σ)
+    : ∃ (s : FlagSeq σ), ConvergesTo s φ.coe
+  := by
+  sorry
