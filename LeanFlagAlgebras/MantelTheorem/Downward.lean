@@ -166,7 +166,7 @@ lemma downwardNormalizingFactor_O3₁
 lemma downwardFlagVectorQuot_O3₁
     : downwardFlagVector (unitVector ⟨3, O3₁_flag⟩) = unitVector ⟨3, O3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_O3₁, downwardNormalizingFactor_O3₁]
 
 theorem downward_O3₁
@@ -300,7 +300,7 @@ lemma downwardNormalizingFactor_E3₁
 lemma downwardFlagVectorQuot_E3₁
     : downwardFlagVector (unitVector ⟨3, E3₁_flag⟩) = (2 / 3 : ℝ) • unitVector ⟨3, E3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_E3₁, downwardNormalizingFactor_E3₁]
 
 theorem downward_E3₁
@@ -394,7 +394,7 @@ lemma downwardNormalizingFactor_E3₁'
 lemma downwardFlagVectorQuot_E3₁'
     : downwardFlagVector (unitVector ⟨3, E3₁'_flag⟩) = (1 / 3 : ℝ) • unitVector ⟨3, E3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_E3₁', downwardNormalizingFactor_E3₁']
 
 theorem downward_E3₁'
@@ -517,7 +517,7 @@ lemma downwardNormalizingFactor_P3₁
 lemma downwardFlagVectorQuot_P3₁
     : downwardFlagVector (unitVector ⟨3, P3₁_flag⟩) = (1 / 3 : ℝ) • unitVector ⟨3, P3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_P3₁, downwardNormalizingFactor_P3₁]
 
 theorem downward_P3₁
@@ -623,7 +623,7 @@ lemma downwardNormalizingFactor_P3₁'
 lemma downwardFlagVectorQuot_P3₁'
     : downwardFlagVector (unitVector ⟨3, P3₁'_flag⟩) = (2 / 3 : ℝ) • unitVector ⟨3, P3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_P3₁', downwardNormalizingFactor_P3₁']
 
 theorem downward_P3₁'
@@ -769,7 +769,7 @@ lemma downwardNormalizingFactor_K3₁
 lemma downwardFlagVectorQuot_K3₁
     : downwardFlagVector (unitVector ⟨3, K3₁_flag⟩) = unitVector ⟨3, K3_flag⟩
   := by
-  simp [downwardFlagVector, downwardFlag]
+  simp [downwardFlagVector, downwardFlag, linearExtension]
   simp [unlabel_K3₁, downwardNormalizingFactor_K3₁]
 
 theorem downward_K3₁
