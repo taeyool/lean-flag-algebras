@@ -761,24 +761,19 @@ theorem flagDensity_insert_empty
             let i' : Fin t := ⟨i, h1⟩
             let j' : Fin t := ⟨j, h2⟩
             have h_ij' : i' ≠ j' := by
-              dsimp [i', j']
-              intro h_eq
-              have h_val_eq : i.val = j.val := by
-                simp_all only [Fin.mk.injEq]
-              have h_fin_eq : i = j := Fin.ext h_val_eq
-              exact h_ij h_fin_eq
+              simp only [i', j']
+              rwa [ne_eq, Fin.mk.injEq, ← ne_eq, ← Fin.ne_iff_vne]
             exact h_p₀.2 i' j' h_ij'
           next h1 h2 =>
             ext x
             simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
-            intro _ hx
-            exact hx
+            exact fun _ hx ↦ hx
           next h1 h2 =>
             rw [Set.inter_comm]
             ext x
-            simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
-            intro _ hx
-            exact hx
+            rw [Set.mem_empty_iff_false, iff_false]
+            simp_all only [Set.mem_inter_iff, Set.mem_diff, not_and, not_false_eq_true, and_true, and_imp]
+            exact fun _ hx ↦ hx
           next h1 h2 =>
             ext x
             simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
@@ -789,40 +784,32 @@ theorem flagDensity_insert_empty
       intro s₁
       dsimp [S₁, labeledSubgraphListSet] at s₁
       let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      let Hl₀ : Fin t → LabeledSubgraph σ Grep := by
-        intro i
-        exact Hl₁ i
-      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := by
-        intro i
-        exact h_ind₁ i
+      let Hl₀ : Fin t → LabeledSubgraph σ Grep := fun i ↦ Hl₁ i
+      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ h_ind₁ i
       let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
                   ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
         · intro i
-          have hi : i.val ≠ t := i.isLt.ne
           apply Nonempty.intro
+          have hi : i.val ≠ t := i.isLt.ne
           dsimp [Hl₀]
           let h_iso := Classical.choice (h_p₁.1 i)
           have h_iso' := (Classical.choice (insert_preserves_existing_flags_coe Fl (emptyFlag σ) hi)).symm
           exact h_iso.trans h_iso'
-        · intro i j a
+        · intro i j h_ij
           simp_all only [Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
       exact ⟨Hl₀, h_ind₀, h_p₀⟩
     let f_bij : Function.Bijective f := by
       have h_leftinv : Function.LeftInverse f_inv f := by
-        rintro ⟨Hl₀, ⟨h_ind₀, h_p₀⟩⟩
+        rintro ⟨Hl₀, h_ind₀, h_p₀⟩
         dsimp [f, f_inv]
         simp only [Subtype.mk.injEq]
         funext i
         split
         next hi =>
-          have : i % (t + 1) = i := by
-            simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-            exact Nat.lt_succ_of_lt i.isLt
-          have fin_eq : ⟨↑i % (t + 1), hi⟩ = i := by
-            apply Fin.ext
-            exact this
-          rw [fin_eq]
+          congr
+          simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+          exact Nat.lt_succ_of_lt i.isLt
         next hi =>
           simp_all only [ne_eq, not_lt]
           have : i % (t + 1) = i := by
@@ -858,11 +845,10 @@ theorem flagDensity_insert_empty
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) (Grep.size - σ.size) := by
-    dsimp [multinomialCoefficient]; simp
+    simp only [multinomialCoefficient, ge_iff_le]
     have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) := by
       symm
-      rw [Finset.sum_fin_eq_sum_range]
-      rw [Finset.sum_range_succ]
+      rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
       have sum_insert_empty_eq_original : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
         apply Finset.sum_bij (fun i _ => if _ : i < t then i else 0)
         · intro i hi
@@ -875,34 +861,23 @@ theorem flagDensity_insert_empty
           simp_all only [Finset.mem_range, ↓reduceDIte]
         · intro i hi
           split
-          next hi_1 h =>
-            let h' : (if _ : i < t then i else 0) = i := by
+          next _ h =>
+            have h' : (if _ : i < t then i else 0) = i := by
               simp_all only [Finset.mem_range, ↓reduceDIte]
             rw [h']
             split
-            · let i : Fin (t + 1) := ⟨i, h⟩
-              have hi : i.val ≠ t := by
-                simp_all only [Finset.mem_range, ne_eq]
-                apply Aesop.BuiltinRules.not_intro
-                intro a
-                subst a
-                simp_all only [lt_self_iff_false]
-              have := cast_preserves_flag_size' Fl (emptyFlag σ) hi
+            next hi' =>
+              let i' : Fin (t + 1) := ⟨i, h⟩
+              have hi'' : i'.val ≠ t := Nat.ne_of_lt hi'
+              have := (cast_preserves_flag_size' Fl (emptyFlag σ) (hi'')).symm
               congr!
-              exact id (Eq.symm this)
-            · have : i < t := by
-                simp_all only [not_lt]
-                split at h'
-                next h_2 => simp_all only [Finset.mem_range]
-                next h_2 =>
-                  subst h'
-                  simp_all only [Finset.mem_range]
-              simp_all only [not_true_eq_false]
-          next hi_1 h =>
-            simp_all only [Finset.mem_range, not_lt]
+            next hi' =>
+              rw [Finset.mem_range] at hi
+              exact False.elim (hi' hi)
+          next _ h =>
+            rw [Finset.mem_range] at hi
             have hi' : t < i := by
-              simp_all only [Finset.mem_range]
-              exact h
+              rwa [not_lt] at h
             exact False.elim (lt_asymm hi hi')
       split
       next h1 =>
@@ -920,8 +895,7 @@ theorem flagDensity_insert_empty
         rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original]
     have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size).factorial := by
       symm
-      rw [Finset.prod_fin_eq_prod_range]
-      rw [Finset.prod_range_succ]
+      rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
       have prod_insert_empty_eq_original : (∏ x ∈ Finset.range t, if h : x < t + 1 then ((Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size).factorial else 1) = ∏ x ∈ Finset.range t, if h : x < t then ((Quotient.out (Fl ⟨x, h⟩)).size - σ.size).factorial else 1 := by
         apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
         · intro i hi
@@ -934,34 +908,23 @@ theorem flagDensity_insert_empty
           simp_all only [Finset.mem_range, ↓reduceDIte]
         · intro i hi
           split
-          next hi_1 h =>
+          next _ h =>
             let h' : (if _ : i < t then i else 0) = i := by
               simp_all only [Finset.mem_range, ↓reduceDIte]
             rw [h']
             split
-            · let i : Fin (t + 1) := ⟨i, h⟩
-              have hi : i.val ≠ t := by
-                simp_all only [Finset.mem_range, ne_eq]
-                apply Aesop.BuiltinRules.not_intro
-                intro a
-                subst a
-                simp_all only [lt_self_iff_false]
-              have := cast_preserves_flag_size' Fl (emptyFlag σ) hi
+            next hi' =>
+              let i' : Fin (t + 1) := ⟨i, h⟩
+              have hi'' : i'.val ≠ t := Nat.ne_of_lt hi'
+              have := (cast_preserves_flag_size' Fl (emptyFlag σ) hi'').symm
               congr!
-              exact id (Eq.symm this)
-            · have : i < t := by
-                simp_all only [not_lt]
-                split at h'
-                next h_2 => simp_all only [Finset.mem_range]
-                next h_2 =>
-                  subst h'
-                  simp_all only [Finset.mem_range]
-              simp_all only [not_true_eq_false]
-          next hi_1 h =>
-            simp_all only [Finset.mem_range, not_lt]
+            next hi' =>
+              rw [Finset.mem_range] at hi
+              exact False.elim (hi' hi)
+          next _ h =>
+            rw [Finset.mem_range] at hi
             have hi' : t < i := by
-              simp_all only [Finset.mem_range]
-              exact h
+              rwa [not_lt] at h
             exact False.elim (lt_asymm hi hi')
       split
       next h1 =>
