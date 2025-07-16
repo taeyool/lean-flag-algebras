@@ -223,8 +223,8 @@ def inducedLabeledSubgraph
   subgraph := inducedSubgraph G.graph S
   type_embed := {
     toFun := by
-      simp only [inducedSubgraph_verts]
       intro t
+      simp only [inducedSubgraph_verts]
       have ht : G.type_embed t ∈ G.type_verts := by
         dsimp [LabeledGraph.type_verts]
         exact Set.mem_image_of_mem G.type_embed trivial
@@ -232,18 +232,19 @@ def inducedLabeledSubgraph
       exact ⟨G.type_embed t, ht'⟩
     inj' := by
       intro t u h_tu
-      simp at h_tu
+      simp only [eq_mpr_eq_cast, cast_eq, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_tu
       exact h_tu
     map_rel_iff' := by
       intro t u
-      dsimp [inducedSubgraph_verts, inducedSubgraph]
+      dsimp [inducedSubgraph]
       simp only [SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
       intro _
-      constructor
-      · apply h
-        simp [LabeledGraph.type_verts]
-      · apply h
-        simp [LabeledGraph.type_verts]
+      constructor <;> {
+        apply h
+        simp only [
+          LabeledGraph.type_verts, Set.image_univ, Set.mem_range,
+          EmbeddingLike.apply_eq_iff_eq, exists_eq]
+      }
   }
   embed_eq := by
     intro t
