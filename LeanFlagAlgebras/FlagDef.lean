@@ -283,27 +283,14 @@ theorem isInduced_exist_induce_set
     : ∃ (S : Set V) (h : G.type_verts ⊆ S), inducedLabeledSubgraph G S h = H
   := by
   let S := H.subgraph.verts
+  dsimp [IsInduced] at h_ind
   have h : G.type_verts ⊆ S := labeledSubgraph_contain_type_verts G H
   use S, h
   dsimp [inducedLabeledSubgraph]
-  have hH_graph : inducedSubgraph G.graph S = H.subgraph := by
-    dsimp [inducedSubgraph]
-    dsimp [LabeledSubgraph.IsInduced, SimpleGraph.Subgraph.IsInduced] at h_ind
-    congr
-    funext u v
-    simp only [eq_iff_iff]
-    constructor
-    · intro ⟨h_adj, h_u, h_v⟩
-      exact h_ind h_u h_v h_adj
-    · intro h_adj
-      repeat' constructor
-      · exact H.subgraph.adj_sub h_adj
-      · exact H.subgraph.edge_vert h_adj
-      · symm at h_adj
-        exact H.subgraph.edge_vert h_adj
+  have hH_graph : inducedSubgraph G.graph S = H.subgraph := Eq.symm (inducedSubgraph_eq h_ind)
   congr
   · funext u v
-    simp [hH_graph]
+    simp only [SimpleGraph.Subgraph.coe_adj, hH_graph]
   · funext t
     congr
     exact Eq.symm (H.embed_eq t)
