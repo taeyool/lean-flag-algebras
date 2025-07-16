@@ -364,16 +364,6 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
 
-omit [DecidableEq V] in
-lemma iso_subset_of_finset_is_full
-    {S : Set V} (f_iso : V ≃ ↑S) (u : V) : u ∈ S
-  := by
-  classical
-  by_contra h_contra
-  have h_card : Fintype.card S < Fintype.card V :=  Fintype.card_subtype_lt h_contra
-  have h_card' : Fintype.card V = Fintype.card S := Fintype.card_congr f_iso
-  simp_all only [lt_self_iff_false]
-
 -- omit [Fintype T] [DecidableEq T] [DecidableEq V] in
 -- lemma induced_full_labeledsubgraph_eq_top'
 --     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
