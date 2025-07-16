@@ -497,11 +497,11 @@ theorem flagList_HEq
   have h_Fl_cast : Fl = cast (FlagList.type_eq h_Vl_eq) Fl' := by
     subst h_Vl_eq
     simp_all only [cast_eq]
-    ext1 x
-    simp_all only
+    ext1 i
+    exact h_Fl_eq i
   subst h_Vl_eq
   subst h_Fl_cast
-  simp_all only [cast_eq, heq_eq_eq]
+  exact HEq.refl Fl
 
 def flagToList {σ : FlagType T} {V : Type} (F : Flag σ V)
     : FlagList σ 1 (fun _ => V)
