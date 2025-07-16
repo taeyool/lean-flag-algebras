@@ -265,7 +265,8 @@ theorem inducedLabeledSubgraph_size
     (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).size = Fintype.card S
   := by
-  dsimp [inducedLabeledSubgraph, inducedSubgraph, LabeledSubgraph.size]
+  dsimp [LabeledSubgraph.size]
+  rw [inducedLabeledSubgraph_verts G S h]
 
 omit [Fintype T] in
 @[simp]
@@ -273,9 +274,8 @@ theorem inducedLabeledSubgraph_isInduced
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).IsInduced
   := by
-  simp only [inducedLabeledSubgraph, eq_mpr_eq_cast, cast_eq, inducedSubgraph_isInduced]
-  intro t u h_t h_u h_adj
-  (repeat' constructor) <;> assumption
+  dsimp [IsInduced, inducedLabeledSubgraph]
+  exact inducedSubgraph_isInduced G.graph S
 
 omit [Fintype T] in
 theorem isInduced_exist_induce_set
