@@ -317,26 +317,29 @@ theorem labeledGraphIso_size_eq
 
 namespace LabeledGraphIso
 
-variable {T : Type} [Fintype T] {σ : FlagType T} {V W U : Type}
+variable {T : Type} [Fintype T] {σ : FlagType T}
+variable {V W U : Type}
 variable {G : LabeledGraph σ V} {G' : LabeledGraph σ W} {G'' : LabeledGraph σ U}
 
 @[refl]
 def refl : G ≃f G where
   graph_iso := by rfl
-  type_preserve := by ext t ; simp
+  type_preserve := by ext t ; simp only [Function.comp_apply, RelIso.refl_apply]
 
 @[symm]
 def symm (h : G ≃f G') : G' ≃f G where
   graph_iso := h.graph_iso.symm
   type_preserve := by
     ext t
-    simp [←h.type_preserve]
+    rw [←h.type_preserve]
+    simp only [Function.comp_apply, RelIso.symm_apply_apply]
 
 def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
   graph_iso := RelIso.trans h.graph_iso h'.graph_iso
   type_preserve := by
-    ext t
-    simp [←h.type_preserve, ←h'.type_preserve]
+    rw [← h'.type_preserve, ← h.type_preserve]
+    simp only [SimpleGraph.Iso.coe_comp]
+    exact rfl
 
 end LabeledGraphIso
 
