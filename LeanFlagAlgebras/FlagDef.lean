@@ -560,10 +560,10 @@ noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : 
     rw [← Quotient.out_eq Gl]
     apply Quotient.sound
     intro i
-    simp
+    simp only [Quotient.out_eq]
     apply Quotient.mk_out (Gl.out i)
   right_inv Fl := by
-    simp; ext i
+    simp only; ext i
     rw [← Quotient.out_eq (Fl i)]
     apply Quotient.sound
     apply flagEqv.trans
@@ -571,7 +571,7 @@ noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : 
       have : ⟦fun i ↦ Quotient.out (Fl i)⟧.out ∼fl (fun i ↦ Quotient.out (Fl i)) := by
         apply Quotient.mk_out (fun i ↦ Quotient.out (Fl i))
       exact this i
-    · simp
+    · simp only
       exact flagEqv.refl (Quotient.out (Fl i))
 
 @[simp]
