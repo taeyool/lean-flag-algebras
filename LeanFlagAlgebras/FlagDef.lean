@@ -705,23 +705,18 @@ theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fi
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin t} (hi : i.val ≠ t)
     : Nonempty ((Fl i).out ≃f (Fl.insert F i).out) := by
-  apply Nonempty.intro
   dsimp [FlagList.insert]
   split
   next hi' =>
     exfalso
-    have : i % (t + 1) = i := by
-      simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-      exact Nat.lt_succ_of_lt i.isLt
+    have : i % (t + 1) = i := by rw [Nat.mod_succ_eq_iff_lt]; omega
     rw [this] at hi'
     exact hi hi'
   next hi =>
+    apply Nonempty.intro
     have hi' : (i : Fin (t + 1)).val ≠ t := by
       simp_all only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true]
-    have cast_heq : HEq (Fl (i.coe hi)) (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))) := by
-      apply HEq.symm
-      apply cast_heq
-    have  cast_iso := flag_heq_to_iso (listTypeInsert_eq' hi') cast_heq
+    let cast_iso := (insert_preserves_existing_flags Fl F hi').some
     have type_eq : (Vl i) = (Vl ((i : Fin (t + 1)).coe hi)) := by
       simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
     have idx_heq : HEq (Fl i) (Fl ((i : Fin (t + 1)).coe hi)) := by
