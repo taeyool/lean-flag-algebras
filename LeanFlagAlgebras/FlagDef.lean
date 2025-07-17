@@ -716,7 +716,7 @@ theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fi
     apply Nonempty.intro
     have hi' : (i : Fin (t + 1)).val ≠ t := by
       simp_all only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true]
-    let cast_iso := (insert_preserves_existing_flags Fl F hi').some
+    let cast_iso := Classical.choice (insert_preserves_existing_flags Fl F hi')
     have type_eq : (Vl i) = (Vl ((i : Fin (t + 1)).coe hi)) := by
       simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
     have idx_heq : HEq (Fl i) (Fl ((i : Fin (t + 1)).coe hi)) := by
