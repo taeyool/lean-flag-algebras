@@ -741,9 +741,10 @@ theorem cast_preserves_flag_size' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Ty
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin (t + 1)} (hi : i.val ≠ t)
     : (Fl (i.coe hi)).out.size = (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out.size
-  := Eq.symm (labeledGraphIso_size_eq (Quotient.out (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))))
-                                      (Quotient.out (Fl (i.coe hi)))
-                                      (Classical.choice (insert_preserves_existing_flags Fl F hi)).symm)
+  := labeledGraphIso_size_eq (Quotient.out (Fl (i.coe hi)))
+                             (Quotient.out (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))))
+                             (Classical.choice (insert_preserves_existing_flags Fl F hi))
+
 
 /- FlagList.permute -/
 
