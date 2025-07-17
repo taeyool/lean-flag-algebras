@@ -759,14 +759,14 @@ noncomputable instance fintypeListPermute
     {t : ℕ} (Vl : Fin t → Type) [FintypeList Vl] (π : Perm t)
     : @FintypeList t (listTypePermute Vl π) where
   fintype_all i := by
-    simp [listTypePermute]
+    dsimp [listTypePermute]
     infer_instance
 
 noncomputable instance decidableEqListPermute
     {t : ℕ} (Vl : Fin t → Type) [DecidableEqList Vl] (π : Perm t)
     : @DecidableEqList t (listTypePermute Vl π) where
   decidable_eq_all i := by
-    simp [listTypePermute]
+    dsimp [listTypePermute]
     infer_instance
 
 def FlagList.permute {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
