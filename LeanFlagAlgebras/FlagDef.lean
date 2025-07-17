@@ -675,7 +675,6 @@ def flag_heq_to_iso {σ : FlagType T} {W : Type} {V : Type}
     {F₁ : Flag σ W} {F₂ : Flag σ V} (type_eq : W = V) (HEq : HEq F₁ F₂)
     : F₁.out ≃f F₂.out := by
   subst type_eq
-  simp_all only [heq_eq_eq]
   subst HEq
   rfl
 
