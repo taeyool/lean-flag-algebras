@@ -621,13 +621,13 @@ theorem listTypeInsert_eq {t : ℕ} {Vl : Fin t → Type} {W : Type}
     {i : Fin (t + 1)} (hi : i.val = t)
     : W = listTypeInsert Vl W i
   := by
-  simp [listTypeInsert, hi]
+  simp only [listTypeInsert, hi, ↓reduceDIte]
 
 theorem listTypeInsert_eq' {t : ℕ} {Vl : Fin t → Type} {W : Type}
     {i : Fin (t + 1)} (hi : i.val ≠ t)
     : Vl (i.coe hi) = listTypeInsert Vl W i
   := by
-  simp [listTypeInsert, hi]
+  simp only [listTypeInsert, hi, ↓reduceDIte]
 
 noncomputable instance fintypeListInsert
     {t : ℕ} (Vl : Fin t → Type) (W : Type) [Fintype W] [FintypeList Vl]
