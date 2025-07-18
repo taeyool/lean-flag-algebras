@@ -29,26 +29,33 @@ def relOflabeledSubgraph
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
-  ∧ ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
+  ∧ ∀ (u v : V),
+      H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
 
 def relOfPredOnlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
-  := ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁), (relOflabeledSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+  :=
+  ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁),
+    (relOflabeledSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
 def predIsolabeledH
     (H : LabeledGraph σ U) (G : LabeledGraph σ W)
     : LabeledSubgraph σ G → Prop
   := fun G' ↦ Nonempty (G'.coe ≃f H)
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [DecidableEq T]
+     [Fintype V] [DecidableEq V]
+     [Fintype W] [DecidableEq W]
+     [Fintype U] [DecidableEq U] in
 lemma predIsolabeledH_related_support
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
-    (h_vert : H₁.subgraph.verts = ⇑φ.graph_iso '' H₀.subgraph.verts)
-    (h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v))
+    (h_rel : relOflabeledSubgraph φ H₀ H₁)
     (h : Nonempty (H₀.coe ≃f H))
-  : Nonempty (H₁.coe ≃f H) := by
+    : Nonempty (H₁.coe ≃f H)
+  := by
+  let ⟨h_vert, h_adj⟩ := h_rel
   have iso_H₀_H₁ : Nonempty (H₀.coe ≃f H₁.coe) := by
     let ψ : H₀.subgraph.verts → H₁.subgraph.verts := by
       intro v
@@ -89,7 +96,7 @@ lemma predIsolabeldH_related
   rintro H₀ H₁ ⟨h_vert, h_adj⟩
   constructor
   · intro f_iso
-    exact predIsolabeledH_related_support φ H H₀ H₁ h_vert h_adj f_iso
+    exact predIsolabeledH_related_support φ H H₀ H₁ ⟨h_vert,h_adj⟩ f_iso
   · intro f_iso
     have h_vert' : H₀.subgraph.verts = φ.graph_iso.symm '' H₁.subgraph.verts := by
       rw [h_vert]
@@ -100,7 +107,7 @@ lemma predIsolabeldH_related
       have h_uv := h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
       rw [h_uv]
       simp only [RelIso.apply_symm_apply]
-    exact predIsolabeledH_related_support φ.symm H H₁ H₀ h_vert' h_adj' f_iso
+    exact predIsolabeledH_related_support φ.symm H H₁ H₀ ⟨h_vert', h_adj'⟩ f_iso
 
 def inducedlabeledSubgraph
     {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) (hS : ∀ t : T, G.type_embed t ∈ S) : {G' : LabeledSubgraph σ G // G'.IsInduced}
