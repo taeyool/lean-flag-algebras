@@ -4,11 +4,11 @@ import Mathlib.Tactic.Linarith.Frontend
 open FlagAlgebras
 open Classical
 
-variable {T : Type} [Fintype T] [DecidableEq T] {σ : FlagType T}
-  {V W U: Type}
-  [Fintype V] [DecidableEq V]
-  [Fintype W] [DecidableEq W]
-  [Fintype U] [DecidableEq U]
+variable {T : Type} [Fintype T] [DecidableEq T]
+variable {V : Type} [Fintype V] [DecidableEq V]
+variable {W : Type} [Fintype W] [DecidableEq W]
+variable {U : Type} [Fintype U] [DecidableEq U]
+variable {σ : FlagType T}
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
