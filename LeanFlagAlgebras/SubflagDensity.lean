@@ -30,7 +30,7 @@ def relOflabeledSubgraph
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
   ∧ ∀ (u v : V),
-      H₀.subgraph.Adj u v = H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
+      H₀.subgraph.Adj u v ↔ H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
 
 def relOfPredOnlabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -56,38 +56,41 @@ lemma predIsolabeledH_related_support
     : Nonempty (H₁.coe ≃f H)
   := by
   let ⟨h_vert, h_adj⟩ := h_rel
-  have iso_H₀_H₁ : Nonempty (H₀.coe ≃f H₁.coe) := by
-    let ψ : H₀.subgraph.verts → H₁.subgraph.verts := by
-      intro v
-      use φ.graph_iso v
-      simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, Subtype.coe_prop]
-    have hψ : Function.Bijective ψ := by
-      constructor
-      · intro v₀ v₁ h_eq
-        simp only [ψ, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
-        exact SetCoe.ext h_eq
-      · intro w
-        use ⟨(φ.graph_iso.symm w), by aesop⟩
-        simp_all only [ψ, RelIso.apply_symm_apply]
-    let ψ' := Equiv.ofBijective ψ hψ
-    have hψ' : ∀ {v₀ v₁ : ↑H₀.subgraph.verts}, H₁.coe.graph.Adj (ψ' v₀) (ψ' v₁) ↔ H₀.coe.graph.Adj v₀ v₁ := by
-      intro v₀ v₁
-      dsimp [ψ']
-      rw [← eq_iff_iff]
-      exact (h_adj v₀ v₁).symm
-    have h_emb : ∀ t : T, ψ' (H₀.type_embed t) = H₁.type_embed t := by
-      intro t
-      dsimp [ψ', ψ]
-      have h_type_preserve := congr_fun φ.type_preserve t
-      rw [Function.comp_apply, ← (H₀.embed_eq t), ← (H₁.embed_eq t)] at h_type_preserve
-      exact SetCoe.ext h_type_preserve
-    exact ⟨⟨ψ', hψ'⟩, funext h_emb⟩
-  let iso_H₀_H := Classical.choice h
-  let iso_H₀_H₁ := Classical.choice iso_H₀_H₁
-  let iso_H₁_H := iso_H₀_H₁.symm.trans iso_H₀_H
-  exact Nonempty.intro iso_H₁_H
+  let ψ : H₀.subgraph.verts → H₁.subgraph.verts := by
+    intro v
+    use φ.graph_iso v
+    rw [h_vert]
+    simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, Subtype.coe_prop]
+  have hψ : Function.Bijective ψ := by
+    constructor
+    · intro v₀ v₁ h_eq
+      simp only [ψ, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
+      exact SetCoe.ext h_eq
+    · intro w
+      use ⟨(φ.graph_iso.symm w), by aesop⟩
+      dsimp [ψ]
+      simp only [RelIso.apply_symm_apply, Subtype.coe_eta]
+  let ψ' := Equiv.ofBijective ψ hψ
+  have hψ' : ∀ {v₀ v₁ : ↑H₀.subgraph.verts},
+              H₁.coe.graph.Adj (ψ' v₀) (ψ' v₁) ↔ H₀.coe.graph.Adj v₀ v₁
+    := by
+    intro v₀ v₁
+    dsimp [ψ']
+    exact (h_adj v₀ v₁).symm
+  have h_emb : ∀ t : T, ψ' (H₀.type_embed t) = H₁.type_embed t := by
+    intro t
+    dsimp [ψ']
+    have h_type_preserve := congr_fun φ.type_preserve t
+    rw [Function.comp_apply, ← (H₀.embed_eq t), ← (H₁.embed_eq t)] at h_type_preserve
+    exact SetCoe.ext h_type_preserve
+  let iso_H₀_H₁ : H₀.coe ≃f H₁.coe := ⟨⟨ψ', hψ'⟩, funext h_emb⟩
+  let iso_H₀_H : H₀.coe ≃f H := Classical.choice h
+  exact Nonempty.intro (iso_H₀_H₁.symm.trans iso_H₀_H)
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [DecidableEq T]
+     [Fintype V] [DecidableEq V]
+     [Fintype W] [DecidableEq W]
+     [Fintype U] [DecidableEq U] in
 lemma predIsolabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnlabeledSubgraph φ (predIsolabeledH H G₀) (predIsolabeledH H G₁)
@@ -102,7 +105,7 @@ lemma predIsolabeldH_related
       rw [h_vert]
       ext1 x
       simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-    have h_adj' : ∀ (u v : W), H₁.subgraph.Adj u v = H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) := by
+    have h_adj' : ∀ (u v : W), H₁.subgraph.Adj u v ↔ H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) := by
       intro u v
       have h_uv := h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
       rw [h_uv]
