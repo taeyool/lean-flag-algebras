@@ -5,10 +5,11 @@ open FlagAlgebras
 open Classical
 
 variable {T : Type} [Fintype T] [DecidableEq T]
+variable {σ : FlagType T}
 variable {V : Type} [Fintype V] [DecidableEq V]
 variable {W : Type} [Fintype W] [DecidableEq W]
 variable {U : Type} [Fintype U] [DecidableEq U]
-variable {σ : FlagType T}
+
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
@@ -123,58 +124,26 @@ lemma predIsolabeldH_related
   . exact predIsolabeledH_related_support φ H H₀ H₁ h_rel
   . exact predIsolabeledH_related_support φ.symm H H₁ H₀ (relOflabeledSubgraph_symm φ H₀ H₁ h_rel)
 
-
 def inducedlabeledSubgraph
-    {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) (hS : ∀ t : T, G.type_embed t ∈ S) : {G' : LabeledSubgraph σ G // G'.IsInduced}
+    {σ : FlagType T} (G : LabeledGraph σ V) (S : Set V) (hS : G.type_verts ⊆ S) : {G' : LabeledSubgraph σ G // G'.IsInduced}
   :=
-  let G' : LabeledSubgraph σ G := {
-    subgraph := {
-      verts := S
-      Adj := fun (u v : V) ↦ G.graph.Adj u v ∧ u ∈ S ∧ v ∈ S
-      adj_sub := by
-        intro v w h
-        simp_all only [Set.mem_union, Set.mem_setOf_eq]
-      edge_vert := by
-        intro v w h
-        simp_all only
-      symm := by
-        intro v w H
-        simp_all only [and_self, and_true]
-        exact G.graph.symm H.1
-    }
-    type_embed := {
-      toFun := fun t ↦ ⟨G.type_embed t, hS t⟩
-      inj' := by
-        intro t₁ t₂ h
-        simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h
-        exact h
-      map_rel_iff' := by
-        intro t₁ t₂
-        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
-        intro _
-        exact ⟨hS t₁, hS t₂⟩
-    }
-    embed_eq := by
-      intro t
-      simp only [eq_mpr_eq_cast, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
-  }
-  let h_induced : G'.IsInduced := by
-    intro v w hv hw hvw
-    simp_all only [and_self]
+  let G' : LabeledSubgraph σ G := LabeledSubgraph.inducedLabeledSubgraph G S hS
+  let h_induced : G'.IsInduced := LabeledSubgraph.inducedLabeledSubgraph_isInduced G S hS
   ⟨G', h_induced⟩
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma inducedlabeledSubgraph_type_embed_mem
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
-    : ∀ (t : T), G₁.type_embed t ∈ ⇑φ.graph_iso '' H₀.subgraph.verts
+    : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
   := by
   intro t
-  simp_all only [Set.mem_image]
-  use G₀.type_embed t
+  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range, Set.mem_image, forall_exists_index]
+  intro u h_u
+  use G₀.type_embed u
   constructor
-  · rw [← H₀.embed_eq t]
+  · rw [← H₀.embed_eq u]
     simp only [Subtype.coe_prop]
-  · rw [← φ.type_preserve]
+  · rw [←h_u, ← φ.type_preserve]
     simp only [Function.comp_apply]
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] in
@@ -184,17 +153,24 @@ lemma inducedlabeledSubgraph_related
     : relOflabeledSubgraph φ H₀ (inducedlabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedlabeledSubgraph_type_embed_mem φ H₀))
   := by
   dsimp [relOflabeledSubgraph, inducedlabeledSubgraph]
-  simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, eq_iff_iff, true_and]
+  simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, true_and]
+  -- simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, eq_iff_iff, true_and]
   intro u v
   constructor
   · intro h_uv
     constructor
-    · have h_G₀uv : G₀.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
+    · have h_G₀uv : G₀.graph.Adj u v := H₀.subgraph.adj_sub h_uv
       exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr h_G₀uv
-    · exact ⟨H₀.subgraph.edge_vert h_uv, H₀.subgraph.edge_vert h_uv.symm⟩
+    · constructor
+      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv]
+      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv.symm]
   · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
+    have h_u' : u ∈ H₀.subgraph.verts := by
+      simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
+    have h_v' : v ∈ H₀.subgraph.verts := by
+      simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
-    apply h_ind₀ h_u h_v h_G₀uv
+    apply h_ind₀ h_u' h_v' h_G₀uv
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_heq_of_subgraph_eq
@@ -240,18 +216,27 @@ lemma H_eq_reverseinduced_induced_H
     · intro h_adj
       constructor
       · exact SimpleGraph.Subgraph.Adj.adj_sub h_adj
-      · constructor
+      · simp only [Set.mem_image, exists_exists_and_eq_and]
+        constructor
         · use u; exact ⟨H₀.subgraph.edge_vert h_adj, φ.graph_iso.left_inv u⟩
         · use v; exact ⟨H₀.subgraph.edge_vert h_adj.symm, φ.graph_iso.left_inv v⟩
     · intro ⟨h_adj, ⟨⟨u', ⟨h_u', huu'⟩⟩, ⟨v', ⟨h_v', hvv'⟩⟩⟩⟩
-      have h_u_eq : u = u' := by
+      have h_u : u ∈ H₀.subgraph.verts := by
         rw [←huu']
-        exact φ.graph_iso.left_inv' u'
-      have h_v_eq : v = v' := by
+        simp only [Set.mem_image] at h_u'
+        obtain ⟨u'', ⟨h_u''₀, h_u''₁⟩⟩ := h_u'
+        rw [←h_u''₁]
+        show φ.graph_iso.symm (φ.graph_iso u'') ∈ H₀.subgraph.verts
+        simp only [RelIso.symm_apply_apply, φ.graph_iso.left_inv u'', h_u''₀]
+      have h_v : v ∈ H₀.subgraph.verts := by
         rw [←hvv']
-        exact φ.graph_iso.left_inv' v'
-      subst h_u_eq h_v_eq
-      exact h_ind₀ h_u' h_v' h_adj
+        simp only [Set.mem_image] at h_v'
+        obtain ⟨v'', ⟨h_v''₀, h_v''₁⟩⟩ := h_v'
+        rw [←h_v''₁]
+        show φ.graph_iso.symm (φ.graph_iso v'') ∈ H₀.subgraph.verts
+        simp only [RelIso.symm_apply_apply, φ.graph_iso.left_inv v'', h_v''₀]
+      exact h_ind₀ h_u h_v h_adj
+
   have inducedGraph_eq := SimpleGraph.Subgraph.ext_iff.mpr ⟨h_verts, funext (fun u => funext (fun v => h_adj u v))⟩
   refine LabeledSubgraph.ext ?subgraph ?type_embed
   · exact inducedGraph_eq
