@@ -31,9 +31,13 @@ def relOfLabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
   :=
+  relOfSubgraph φ.graph_iso H₀.subgraph H₁.subgraph
+
+  /-
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
   ∧ ∀ (u v : V),
       H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ↔ H₀.subgraph.Adj u v
+  -/
 
 omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
@@ -148,7 +152,7 @@ lemma inducedLabeledSubgraph_related
                                    (φ.graph_iso '' H₀.subgraph.verts)
                                    (labeledGraphIso_preserve_type_verts φ H₀))
   := by
-  dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph]
+  dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph, relOfSubgraph]
   simp only [inducedSubgraph_verts, true_and]
   intro u v
   constructor

@@ -71,7 +71,7 @@ def relOfSubgraph
     (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
   :=
   H₁.verts = φ '' H₀.verts
-  ∧ ∀ (u v : V), H₁.Adj (φ u) (φ v) = H₀.Adj u v
+  ∧ ∀ (u v : V), H₁.Adj (φ u) (φ v) ↔ H₀.Adj u v
 
 def relOfPredOnSubgraph
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
