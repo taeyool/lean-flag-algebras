@@ -1,3 +1,4 @@
+import «LeanFlagAlgebras».SubgraphUtil
 import «LeanFlagAlgebras».FlagDef
 import Mathlib.Tactic.Linarith.Frontend
 
@@ -32,7 +33,7 @@ def relOfLabeledSubgraph
   :=
   H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
   ∧ ∀ (u v : V),
-      H₀.subgraph.Adj u v ↔ H₁.subgraph.Adj (φ.graph_iso.toFun u) (φ.graph_iso.toFun v)
+      H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ↔ H₀.subgraph.Adj u v
 
 omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
@@ -48,11 +49,11 @@ lemma relOfLabeledSubgraph_symm
     ext1 u
     simp only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
   have h_adj' : ∀ (u v : W),
-                  H₁.subgraph.Adj u v ↔ H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
+                  H₀.subgraph.Adj (φ.graph_iso.symm u) (φ.graph_iso.symm v) ↔ H₁.subgraph.Adj u v
     := by
     intro u v
     have h_uv := h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
-    rw [h_uv]
+    rw [←h_uv]
     simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, RelIso.apply_symm_apply]
   exact ⟨h_vert', h_adj'⟩
 
@@ -99,7 +100,7 @@ lemma predIsoLabeledH_related_support
     := by
     intro v₀ v₁
     dsimp [ψ']
-    exact (h_adj v₀ v₁).symm
+    exact h_adj v₀ v₁
   have h_emb : ∀ t : T, ψ' (H₀.type_embed t) = H₁.type_embed t := by
     intro t
     dsimp [ψ']
@@ -151,13 +152,6 @@ lemma inducedLabeledSubgraph_related
   simp only [inducedSubgraph_verts, true_and]
   intro u v
   constructor
-  · intro h_uv
-    constructor
-    · have h_G₀uv : G₀.graph.Adj u v := H₀.subgraph.adj_sub h_uv
-      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr h_G₀uv
-    · constructor
-      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv]
-      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv.symm]
   · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
     have h_u' : u ∈ H₀.subgraph.verts := by
       simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
@@ -165,6 +159,13 @@ lemma inducedLabeledSubgraph_related
       simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
     have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
     apply h_ind₀ h_u' h_v' h_G₀uv
+  · intro h_uv
+    constructor
+    · have h_G₀uv : G₀.graph.Adj u v := H₀.subgraph.adj_sub h_uv
+      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr h_G₀uv
+    · constructor
+      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv]
+      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv.symm]
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_heq_of_subgraph_eq

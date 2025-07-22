@@ -147,27 +147,6 @@ lemma predIsoH_related
       simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, Multiset.bijective_iff_map_univ_eq_univ, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
-/-
-def inducedSubgraph
-    (G : SimpleGraph V) (S : Set V) : { G' : Subgraph G // G'.IsInduced }
-  :=
-  let G' : Subgraph G := {
-    verts := S
-    Adj := fun (u v : V) => G.Adj u v ∧ u ∈ S ∧ v ∈ S
-    adj_sub := by
-      intro v w a
-      simp_all only
-    edge_vert := by
-      intro v w a
-      simp_all only
-    symm := fun u v h => ⟨G.symm h.1, h.2.2, h.2.1⟩
-  }
-  let h_induced : G'.IsInduced := by
-    intro u v h_u h_v h_uv
-    dsimp at *
-    exact ⟨h_uv, h_u, h_v⟩
-  ⟨G', h_induced⟩
--/
 
 def inducedSubgraph
     (G : SimpleGraph V) (S : Set V) : G.Subgraph where
