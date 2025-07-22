@@ -1,8 +1,10 @@
+import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagDensity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.BigOperators
 
 open FlagAlgebras
+open LabeledSubgraph
 open Classical
 
 variable {T : Type}  [Fintype T]  [DecidableEq T]
@@ -210,11 +212,11 @@ def inducedlabeledSubgraphList
     : {Gl' : ∀ (_ : Fin t), LabeledSubgraph σ G // ∀ i, (Gl' i).subgraph.IsInduced}
   := by
   let Gl' : ∀ (_ : Fin t), LabeledSubgraph σ G := fun i ↦
-    inducedlabeledSubgraph G (Sl i) (hSl i)
+    inducedLabeledSubgraph G (Sl i) (hSl i)
   let h_ind : ∀ i : Fin t, (Gl' i).subgraph.IsInduced := by
     intro i
     dsimp [Gl']
-    exact (inducedlabeledSubgraph G (Sl i) (hSl i)).2
+    exact inducedLabeledSubgraph_isInduced G (Sl i) (hSl i)
   exact ⟨Gl', h_ind⟩
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
@@ -224,7 +226,7 @@ lemma inducedlabeledSubgraphList_type_embed_mem
     : ∀ (i : Fin t), G₁.type_verts ⊆ ⇑φ.graph_iso '' (Hl₀ i).subgraph.verts
   := by
   intro i
-  exact inducedlabeledSubgraph_type_embed_mem φ (Hl₀ i)
+  exact inducedLabeledSubgraph_type_embed_mem φ (Hl₀ i)
 
 omit [Fintype T] [DecidableEq T] [FintypeList Vl] [DecidableEqList Vl] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma inducedlabeledSubgraphList_related
@@ -236,7 +238,7 @@ lemma inducedlabeledSubgraphList_related
   := by
   dsimp [relOfLabeledSubgraphList, inducedlabeledSubgraphList, inducedlabeledSubgraphList_type_embed_mem]
   intro i
-  exact inducedlabeledSubgraph_related φ (Hl₀ i) (h_ind₀ i)
+  exact inducedLabeledSubgraph_related φ (Hl₀ i) (h_ind₀ i)
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma Hl_eq_reverseinduced_induced_Hl
