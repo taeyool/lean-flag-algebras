@@ -95,8 +95,7 @@ lemma predIsoLabeledH_related_support
       dsimp [ψ]
       simp only [RelIso.apply_symm_apply, Subtype.coe_eta]
   let ψ' := Equiv.ofBijective ψ hψ
-  have hψ' : ∀ {v₀ v₁ : ↑H₀.subgraph.verts},
-              H₁.coe.graph.Adj (ψ' v₀) (ψ' v₁) ↔ H₀.coe.graph.Adj v₀ v₁
+  have hψ' : ∀ {v₀ v₁ : ↑H₀.subgraph.verts}, H₁.coe.graph.Adj (ψ' v₀) (ψ' v₁) ↔ H₀.coe.graph.Adj v₀ v₁
     := by
     intro v₀ v₁
     dsimp [ψ']
@@ -125,9 +124,8 @@ lemma predIsolabeldH_related
   . exact predIsoLabeledH_related_support φ H H₀ H₁ h_rel
   . exact predIsoLabeledH_related_support φ.symm H H₁ H₀ (relOfLabeledSubgraph_symm φ H₀ H₁ h_rel)
 
-
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
-lemma inducedLabeledSubgraph_type_embed_mem
+lemma labeledGraphIso_preserve_type_verts
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
     : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
   := by
@@ -144,8 +142,10 @@ lemma inducedLabeledSubgraph_type_embed_mem
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] in
 lemma inducedLabeledSubgraph_related
     {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.subgraph.IsInduced)
-    : relOfLabeledSubgraph φ H₀ (inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ H₀))
+    (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
+    : relOfLabeledSubgraph φ H₀ (inducedLabeledSubgraph G₁
+                                   (φ.graph_iso '' H₀.subgraph.verts)
+                                   (labeledGraphIso_preserve_type_verts φ H₀))
   := by
   dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph]
   simp only [inducedSubgraph_verts, true_and]
@@ -197,17 +197,17 @@ lemma H_eq_reverseinduced_induced_H
     (inducedLabeledSubgraph G₀
       (φ.symm.graph_iso '' (inducedLabeledSubgraph G₁
                               (φ.graph_iso '' H₀.subgraph.verts)
-                              (inducedLabeledSubgraph_type_embed_mem φ H₀)).subgraph.verts)
-      (inducedLabeledSubgraph_type_embed_mem
-        φ.symm (inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ H₀))))
+                              (labeledGraphIso_preserve_type_verts φ H₀)).subgraph.verts)
+      (labeledGraphIso_preserve_type_verts
+        φ.symm (inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (labeledGraphIso_preserve_type_verts φ H₀))))
   := by
   dsimp [inducedLabeledSubgraph]
   have h : H₀.subgraph.verts = ⇑φ.symm.graph_iso '' (⇑φ.graph_iso '' H₀.subgraph.verts) := by
     rw [Set.LeftInvOn.image_image]
     intro v _
     exact φ.graph_iso.left_inv v
-  let f_H := inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ H₀)
-  let f_inv_f_H := inducedLabeledSubgraph G₀ (φ.symm.graph_iso '' f_H.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ.symm f_H)
+  let f_H := inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (labeledGraphIso_preserve_type_verts φ H₀)
+  let f_inv_f_H := inducedLabeledSubgraph G₀ (φ.symm.graph_iso '' f_H.subgraph.verts) (labeledGraphIso_preserve_type_verts φ.symm f_H)
   have h_verts : H₀.subgraph.verts = f_inv_f_H.subgraph.verts := by
     dsimp [f_inv_f_H, inducedLabeledSubgraph]
     exact h
@@ -256,16 +256,16 @@ noncomputable def isoSetOfInducedLabeledSubgraph
     intro s₀
     dsimp [S₀] at s₀
     let ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩ := s₀
-    let H₁ := inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ H₀)
-    let h_ind₁ : H₁.IsInduced := inducedLabeledSubgraph_isInduced G₁ (φ.graph_iso '' H₀.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ H₀)
+    let H₁ := inducedLabeledSubgraph G₁ (φ.graph_iso '' H₀.subgraph.verts) (labeledGraphIso_preserve_type_verts φ H₀)
+    let h_ind₁ : H₁.IsInduced := inducedLabeledSubgraph_isInduced G₁ (φ.graph_iso '' H₀.subgraph.verts) (labeledGraphIso_preserve_type_verts φ H₀)
     have : relOfLabeledSubgraph φ H₀ H₁ := inducedLabeledSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
   let f_inv (s₁ : S₁) : S₀ := by
     dsimp [S₁] at s₁
     let ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩ := s₁
-    let H₀ := inducedLabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ.symm H₁)
-    let h_ind₀ : H₀.IsInduced := inducedLabeledSubgraph_isInduced G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (inducedLabeledSubgraph_type_embed_mem φ.symm H₁)
+    let H₀ := inducedLabeledSubgraph G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (labeledGraphIso_preserve_type_verts φ.symm H₁)
+    let h_ind₀ : H₀.IsInduced := inducedLabeledSubgraph_isInduced G₀ (φ.symm.graph_iso '' H₁.subgraph.verts) (labeledGraphIso_preserve_type_verts φ.symm H₁)
     have : relOfLabeledSubgraph φ.symm H₁ H₀ := inducedLabeledSubgraph_related φ.symm H₁ h_ind₁
     have h_p₀ : p₀ H₀ := (h_rel_inv H₁ H₀ this).mp h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
