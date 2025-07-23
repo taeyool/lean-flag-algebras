@@ -119,7 +119,7 @@ omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
      [Fintype W] [DecidableEq W]
      [Fintype U] [DecidableEq U] in
-lemma predIsolabeldH_related
+lemma predIsoLabeldH_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
     : relOfPredOnLabeledSubgraph φ (predIsoLabeledH H G₀) (predIsoLabeledH H G₁)
   := by
@@ -295,8 +295,8 @@ noncomputable def isoSetOfInducedLabeledSubgraphIsoH
   let iso := isoSetOfInducedLabeledSubgraph φ
     (predIsoLabeledH H G₀)
     (predIsoLabeledH H G₁)
-    (predIsolabeldH_related φ H)
-    (predIsolabeldH_related φ.symm H)
+    (predIsoLabeldH_related φ H)
+    (predIsoLabeldH_related φ.symm H)
   dsimp [predIsoLabeledH, relOfPredOnLabeledSubgraph] at iso
   exact iso
 
