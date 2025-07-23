@@ -1063,4 +1063,5 @@ theorem flagListDensity_prod_approx'
     (F : Flag σ U) (G : Flag σ W)
     : ∃ k , abs (flagDensity₂ F F G - flagDensity₁ F G * flagDensity₁ F G ) ≤ (2 * F.out.size) ^ k / G.out.size
   := by
+  use 2
   sorry
