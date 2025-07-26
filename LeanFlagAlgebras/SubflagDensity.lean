@@ -33,11 +33,6 @@ def relOfLabeledSubgraph
   :=
   relOfSubgraph φ.graph_iso H₀.subgraph H₁.subgraph
 
-  /-
-  H₁.subgraph.verts = φ.graph_iso '' H₀.subgraph.verts
-  ∧ ∀ (u v : V),
-      H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ↔ H₀.subgraph.Adj u v
-  -/
 
 omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
