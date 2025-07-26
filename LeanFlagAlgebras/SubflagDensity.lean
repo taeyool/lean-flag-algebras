@@ -141,7 +141,7 @@ lemma labeledGraphIso_preserve_type_verts
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] in
 lemma inducedLabeledSubgraph_related
-    {σ : FlagType T } {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
     : relOfLabeledSubgraph φ H₀ (inducedLabeledSubgraph G₁
                                    (φ.graph_iso '' H₀.subgraph.verts)
@@ -150,29 +150,28 @@ lemma inducedLabeledSubgraph_related
   dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph]
   apply inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
 
-
-omit [Fintype V] [DecidableEq V] in
+omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
 theorem embed_heq_of_subgraph_eq
-  {T : Type} {σ : FlagType T}
-  {G : SimpleGraph V} {H H' : G.Subgraph}
-  (h : H = H')
-  (H_emb : σ ↪g H.coe)
-  (H'_emb : σ ↪g H'.coe)
-  (h_fun_eq : ∀ t : T, (H_emb t : V) = (H'_emb t : V))
-  : HEq H_emb H'_emb := by
+    {σ : FlagType T} {G : SimpleGraph V}
+    {H H' : G.Subgraph} {H_emb : σ ↪g H.coe} {H'_emb : σ ↪g H'.coe}
+    (h : H = H') (h_fun_eq : ∀ t : T, (H_emb t : V) = (H'_emb t : V))
+    : HEq H_emb H'_emb
+  := by
   subst h
   apply heq_of_eq
   ext t
   exact h_fun_eq t
 
-omit [Fintype V] [DecidableEq V] in
+omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
 theorem type_embed_heq_of_subgraph_eq
-  {T : Type} {σ : FlagType T} {G : LabeledGraph σ V} {H H' : LabeledSubgraph σ G} (H_eq_H' : H.subgraph = H'.subgraph)
-  : HEq H.type_embed H'.type_embed := by
+    {σ : FlagType T} {G : LabeledGraph σ V} {H H' : LabeledSubgraph σ G}
+    (H_eq_H' : H.subgraph = H'.subgraph)
+    : HEq H.type_embed H'.type_embed
+  := by
   have h_embed_eq : ∀ t : T, (H.type_embed t : V) = (H'.type_embed t : V) := by
     intro t
     rw [H.embed_eq t, H'.embed_eq t]
-  exact embed_heq_of_subgraph_eq H_eq_H' H.type_embed H'.type_embed h_embed_eq
+  exact embed_heq_of_subgraph_eq H_eq_H' h_embed_eq
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma H_eq_reverseinduced_induced_H
