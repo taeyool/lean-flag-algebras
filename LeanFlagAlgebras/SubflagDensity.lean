@@ -185,48 +185,16 @@ lemma H_eq_reverseinduced_induced_H
     (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
     : H₀ = (inducedLabeledSubgraphByIso φ.symm (inducedLabeledSubgraphByIso φ H₀))
   := by
-  dsimp [inducedLabeledSubgraph, inducedLabeledSubgraphByIso]
+  let H₀' := inducedLabeledSubgraphByIso φ.symm (inducedLabeledSubgraphByIso φ H₀)
   have h : H₀.subgraph.verts = ⇑φ.symm.graph_iso '' (⇑φ.graph_iso '' H₀.subgraph.verts) := by
     rw [Set.LeftInvOn.image_image]
     intro v _
     exact φ.graph_iso.left_inv v
-  let f_H := inducedLabeledSubgraphByIso φ H₀
-  let f_inv_f_H := inducedLabeledSubgraphByIso φ.symm f_H
-  have h_verts : H₀.subgraph.verts = f_inv_f_H.subgraph.verts := by
-    dsimp [f_inv_f_H, inducedLabeledSubgraph]
-    exact h
-  have h_adj : ∀ (u v : V), H₀.subgraph.Adj u v = f_inv_f_H.subgraph.Adj u v := by
-    intro u v
-    dsimp [f_inv_f_H, f_H, inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
-    simp; constructor
-    · intro h_adj
-      constructor
-      · exact SimpleGraph.Subgraph.Adj.adj_sub h_adj
-      · simp only [Set.mem_image, exists_exists_and_eq_and]
-        constructor
-        · use u; exact ⟨H₀.subgraph.edge_vert h_adj, φ.graph_iso.left_inv u⟩
-        · use v; exact ⟨H₀.subgraph.edge_vert h_adj.symm, φ.graph_iso.left_inv v⟩
-    · intro ⟨h_adj, ⟨⟨u', ⟨h_u', huu'⟩⟩, ⟨v', ⟨h_v', hvv'⟩⟩⟩⟩
-      have h_u : u ∈ H₀.subgraph.verts := by
-        rw [←huu']
-        simp only [Set.mem_image] at h_u'
-        obtain ⟨u'', ⟨h_u''₀, h_u''₁⟩⟩ := h_u'
-        rw [←h_u''₁]
-        show φ.graph_iso.symm (φ.graph_iso u'') ∈ H₀.subgraph.verts
-        simp only [RelIso.symm_apply_apply, φ.graph_iso.left_inv u'', h_u''₀]
-      have h_v : v ∈ H₀.subgraph.verts := by
-        rw [←hvv']
-        simp only [Set.mem_image] at h_v'
-        obtain ⟨v'', ⟨h_v''₀, h_v''₁⟩⟩ := h_v'
-        rw [←h_v''₁]
-        show φ.graph_iso.symm (φ.graph_iso v'') ∈ H₀.subgraph.verts
-        simp only [RelIso.symm_apply_apply, φ.graph_iso.left_inv v'', h_v''₀]
-      exact h_ind₀ h_u h_v h_adj
-
-  have inducedGraph_eq := SimpleGraph.Subgraph.ext_iff.mpr ⟨h_verts, funext (fun u => funext (fun v => h_adj u v))⟩
-  refine LabeledSubgraph.ext ?subgraph ?type_embed
-  · exact inducedGraph_eq
-  · exact type_embed_heq_of_subgraph_eq inducedGraph_eq
+  have h_eq : H₀.subgraph = H₀'.subgraph := by
+    dsimp [H₀',inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
+    simp only [inducedSubgraph_verts, ←h]
+    exact inducedSubgraph_eq h_ind₀
+  exact LabeledSubgraph.ext h_eq (type_embed_heq_of_subgraph_eq h_eq)
 
 noncomputable def isoSetOfInducedLabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
