@@ -147,24 +147,9 @@ lemma inducedLabeledSubgraph_related
                                    (φ.graph_iso '' H₀.subgraph.verts)
                                    (labeledGraphIso_preserve_type_verts φ H₀))
   := by
-  dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph, relOfSubgraph]
-  simp only [inducedSubgraph_verts, true_and]
-  intro u v
-  constructor
-  · intro ⟨h_G₁uv, ⟨h_u, h_v⟩⟩
-    have h_u' : u ∈ H₀.subgraph.verts := by
-      simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
-    have h_v' : v ∈ H₀.subgraph.verts := by
-      simp_all only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right]
-    have h_G₀uv : G₀.graph.Adj u v := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_G₁uv
-    apply h_ind₀ h_u' h_v' h_G₀uv
-  · intro h_uv
-    constructor
-    · have h_G₀uv : G₀.graph.Adj u v := H₀.subgraph.adj_sub h_uv
-      exact (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mpr h_G₀uv
-    · constructor
-      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv]
-      . simp only [Set.mem_image, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, H₀.subgraph.edge_vert h_uv.symm]
+  dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph]
+  apply inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
+
 
 omit [Fintype V] [DecidableEq V] in
 theorem embed_heq_of_subgraph_eq
