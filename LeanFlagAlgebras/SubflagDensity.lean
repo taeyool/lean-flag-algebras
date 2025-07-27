@@ -325,24 +325,23 @@ noncomputable def subflagDensity
   exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
 
-omit [Fintype T] [DecidableEq T] [DecidableEq V] in
-lemma induced_full_labeledsubgraph_eq_top
-    {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
+omit [Fintype T] [DecidableEq T] [DecidableEq U] in
+lemma induced_full_labeledSubgraph_eq_top
+    {σ : FlagType T} {G₀ G₁ : LabeledGraph σ U} {G' : LabeledSubgraph σ G₀}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = G₀.top
   := by
-  intro ⟨h_ind_G', h_iso_G'⟩
-  have ⟨graph_iso, _⟩ := h_iso_G'
-  let f_iso_vertex : V ≃ G'.subgraph.verts := graph_iso.toEquiv.symm
-  have G'_eq_top : G'.subgraph = (G₀.top).subgraph := by
+  intro ⟨h_ind_G', ⟨f_G'_G₁, _⟩⟩
+  let f_U_G'_vertex : U ≃ G'.subgraph.verts := f_G'_G₁.toEquiv.symm
+  have G'_eq_top : G'.subgraph = G₀.top.subgraph := by
     dsimp [LabeledGraph.top]
     ext u v
-    · simp; exact iso_subset_of_finset_is_full f_iso_vertex u
-    · simp
-      have h_u := iso_subset_of_finset_is_full f_iso_vertex u
-      have h_v := iso_subset_of_finset_is_full f_iso_vertex v
+    · simp only [SimpleGraph.Subgraph.verts_top, Set.mem_univ, iff_true]
+      exact iso_subset_of_finset_is_full f_U_G'_vertex u
+    · have h_u := iso_subset_of_finset_is_full f_U_G'_vertex u
+      have h_v := iso_subset_of_finset_is_full f_U_G'_vertex v
       constructor
-      · exact fun h_uv ↦ SimpleGraph.Subgraph.Adj.adj_sub h_uv
-      · exact fun h_uv ↦ h_ind_G' h_u h_v h_uv
+      · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
+      · intro h_uv; exact h_ind_G' h_u h_v h_uv
   refine LabeledSubgraph.ext ?subgraph ?type_embed
   · exact G'_eq_top
   · exact type_embed_heq_of_subgraph_eq G'_eq_top
@@ -481,12 +480,12 @@ lemma labeledSubgraphCount_self
     let f : S₀ → S₁ := by
       dsimp [S₀, S₁]
       intro ⟨G', h_G'⟩
-      rw [← induced_full_labeledsubgraph_eq_top h_G']
+      rw [← induced_full_labeledSubgraph_eq_top h_G']
       exact ⟨G', by simp only [Finset.mem_singleton]⟩
     let f_inj : Function.Injective f := by
       intro G₁ G₂ _
-      have h₁ := induced_full_labeledsubgraph_eq_top G₁.property
-      have h₂ := induced_full_labeledsubgraph_eq_top G₂.property
+      have h₁ := induced_full_labeledSubgraph_eq_top G₁.property
+      have h₂ := induced_full_labeledSubgraph_eq_top G₂.property
       rw [← h₂] at h₁
       exact SetCoe.ext h₁
     let f_surj : Function.Surjective f := by
@@ -546,7 +545,7 @@ lemma subgraphCount_other
     intro G' ⟨h_ind_G', h_iso_G'⟩
     have f_iso_G₀_G' := h_iso_G'.some.symm
     have f_iso_G'_G₁ : G'.coe ≃f G₁ := by
-      have : G' = G₁.top := induced_full_labeledsubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
+      have : G' = G₁.top := induced_full_labeledSubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
       let g : (G₁.top).coe ≃f G₁ := by
         let graph_iso : (G₁.top).subgraph.coe ≃g G₁.graph := by
           dsimp [LabeledGraph.top]
