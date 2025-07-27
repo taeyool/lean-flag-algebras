@@ -96,7 +96,7 @@ lemma predIsoLabeledH_related_iso  -- Same as predIsoLabeledH_related_support
     (h_adj : ∀ (u v : V), H₁.subgraph.Adj (φ.graph_iso u) (φ.graph_iso v) ↔ H₀.subgraph.Adj u v)
     (h_iso₀ : Nonempty (H₀.coe ≃f H))
   : Nonempty (H₁.coe ≃f H) := by
-  have h := predIsoLabeldH_related φ (H₀).coe
+  have h := predIsoLabeledH_related φ (@LabeledGraphIso.refl _ _ _ H₀.coe)
   dsimp [relOfPredOnLabeledSubgraph, relOfLabeledSubgraph, predIsoLabeledH, relOfSubgraph] at h
   simp at h
   have iso_refl : Nonempty ((H₀).coe ≃f (H₀).coe) := by
