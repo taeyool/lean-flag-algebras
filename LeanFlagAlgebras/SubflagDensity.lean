@@ -251,7 +251,8 @@ noncomputable def isoSetOfInducedLabeledSubgraph
 
 noncomputable def isoSetOfInducedLabeledSubgraphIsoH
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H : LabeledGraph σ U)
-    : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) } ≃ { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+    : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
+      ≃ { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
   := by
   let iso := isoSetOfInducedLabeledSubgraph φ
     (predIsoLabeledH H G₀)
@@ -290,26 +291,17 @@ noncomputable def isoSetOfInducedLabeledSubgraphInG
       ≃
       {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁)}
   := by
-  let h : ∀ G' : LabeledSubgraph σ G, Nonempty (G'.coe ≃f H₀) ↔ Nonempty (G'.coe ≃f H₁) := by
+  let h : ∀ G' : LabeledSubgraph σ G,
+            Nonempty (G'.coe ≃f H₀) ↔ Nonempty (G'.coe ≃f H₁)
+    := by
     intro G'
     constructor
-    · intro ⟨h_iso₀, h_emb₀⟩
-      let h_iso₁ : G'.coe.graph ≃g H₁.graph := φ.graph_iso.comp h_iso₀
-      have h_emb₀ : h_iso₁ ∘ G'.coe.type_embed = H₁.type_embed := by
-        ext t
-        rw [← φ.type_preserve, ← h_emb₀]
-        dsimp [h_iso₁]
-      exact ⟨h_iso₁, h_emb₀⟩
-    · intro ⟨h_iso₁, h_emb₁⟩
-      let h_iso₀ : G'.coe.graph ≃g H₀.graph := φ.symm.graph_iso.comp h_iso₁
-      have h_emb₁ : h_iso₀ ∘ G'.coe.type_embed = H₀.type_embed := by
-        ext t
-        rw [←φ.symm.type_preserve, ←h_emb₁]
-        dsimp [h_iso₀]
-      exact ⟨h_iso₀, h_emb₁⟩
-  have : {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀)} = {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁)} :=
-    Set.sep_ext_iff.mpr fun x _ ↦ h x
-  exact Equiv.setCongr this
+    . intro ⟨ψ⟩; exact ⟨ψ.trans φ⟩
+    . intro ⟨ψ'⟩; exact ⟨ψ'.trans φ.symm⟩
+  have h' : {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀)}
+            = {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁)}
+    := Set.sep_ext_iff.mpr fun x _ ↦ h x
+  exact Equiv.setCongr h'
 
 omit [DecidableEq T] in
 lemma labeledSubgraphDensityLifted_respects_eqv
