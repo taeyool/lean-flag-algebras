@@ -1050,18 +1050,3 @@ alias density_chain_rule₁₁ := flagDensity_eq_sum_density_prods
 alias density_chain_rule₁₂ := flagPairDensity_eq_sum_density_prods'
 alias density_chain_rule₂₁ := flagPairDensity_eq_sum_density_prods
 alias density_chain_rule₂₂ := flagTripleDensity_eq_sum_density_prods
-
-/- Lemma 2.3 -/
-
-theorem flagListDensity_prod_approx
-    (Fl : FlagList σ t Vl) (G : Flag σ W)
-    : ∃ k , abs (flagListDensity Fl G - ∏ i in Finset.univ, flagDensity₁ (Fl i) G ) ≤ (∑ i in Finset.univ, (Fl i).out.size ) ^ k / G.out.size
-  := by
-  sorry
-
-theorem flagListDensity_prod_approx'
-    (F : Flag σ U) (G : Flag σ W)
-    : ∃ k , abs (flagDensity₂ F F G - flagDensity₁ F G * flagDensity₁ F G ) ≤ (2 * F.out.size) ^ k / G.out.size
-  := by
-  use 2
-  sorry
