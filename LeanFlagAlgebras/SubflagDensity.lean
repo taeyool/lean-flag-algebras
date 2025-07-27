@@ -298,37 +298,32 @@ noncomputable def labeledSubgraphDensityLifted
 
 
 omit [DecidableEq T] in
-lemma labeledSubgraphDensityLifted_respects_eqv
-    (H H' : LabeledGraph σ V) (φ : H ≃f H') (G : Flag σ W)
-    : labeledSubgraphDensityLifted H G = labeledSubgraphDensityLifted H' G
+lemma labeledSubgraphDensityLifted_respect_eqv
+    {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
+    : labeledSubgraphDensityLifted H₀ G = labeledSubgraphDensityLifted H₁ G
   := by
   dsimp [labeledSubgraphDensityLifted, labeledSubgraphDensity]
   congr
   ext Grep
-  let S₀ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H) }
-  let S₁ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H') }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoHG LabeledGraphIso.refl φ
-  have h_count : labeledSubgraphCount H Grep = labeledSubgraphCount H' Grep := by
+  let S₀ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
+  let S₁ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoHG LabeledGraphIso.refl ψ
+  have h_count : labeledSubgraphCount H₀ Grep = labeledSubgraphCount H₁ Grep := by
     dsimp only [labeledSubgraphCount]
     show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
-  rw [h_count]
-  rfl
+  have h_H_size : H₀.size = H₁.size := labeledGraphIso_size_eq H₀ H₁ ψ
+  rw [h_count, h_H_size]
 
 noncomputable def subflagDensity
     : Flag σ V → Flag σ W → ℚ
   := by
   apply Quot.lift labeledSubgraphDensityLifted
-  intro H H' H_eqv
+  intro H H' h_eqv
   ext G
-  exact labeledSubgraphDensityLifted_respects_eqv H H' (Classical.choice H_eqv) G
+  exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
--- omit [Fintype T] [DecidableEq T] [DecidableEq V] in
--- lemma induced_full_labeledsubgraph_eq_top'
---     {G₀ G₁ : LabeledGraph σ V} {G' : LabeledSubgraph σ G₀}
---     :  G' = G₀.top → G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁)
---   := by sorry
 
 omit [Fintype T] [DecidableEq T] [DecidableEq V] in
 lemma induced_full_labeledsubgraph_eq_top
