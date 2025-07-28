@@ -727,7 +727,7 @@ theorem flagDensity_insert_empty
           split
           next hi =>
             dsimp [Hl₁]
-            have empty_equiv := (@labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph T σ W Grep Grep.bottom).1
+            have empty_equiv := (@labeledSubgraph_eq_bot_iff_iso_empty_graph T σ W Grep Grep.bottom).1
             simp only [true_implies] at empty_equiv
             have empty_iso := Classical.choice empty_equiv.2
             have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Grep.bottom := by
@@ -832,7 +832,7 @@ theorem flagDensity_insert_empty
           have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
           have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
           have h_iso := Hl₁_iso.symm.trans quotient_iso
-          symm; apply (@labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph T σ W Grep (Hl₁ i)).2 ⟨h_ind₁ i, Nonempty.intro h_iso⟩
+          symm; apply (@labeledSubgraph_eq_bot_iff_iso_empty_graph T σ W Grep (Hl₁ i)).2 ⟨h_ind₁ i, Nonempty.intro h_iso⟩
       exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
     exact Equiv.ofBijective f f_bij
   dsimp [labeledSubgraphListDensity]
