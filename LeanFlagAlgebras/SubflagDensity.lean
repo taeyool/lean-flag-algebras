@@ -330,40 +330,43 @@ lemma induced_full_labeledSubgraph_eq_top
       constructor
       · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
       · intro h_uv; exact h_ind_G' h_u h_v h_uv
-  refine LabeledSubgraph.ext ?subgraph ?type_embed
-  · exact G'_eq_top
-  · exact type_embed_heq_of_subgraph_eq G'_eq_top
+  exact LabeledSubgraph.ext G'_eq_top (type_embed_heq_of_subgraph_eq G'_eq_top)
+
+omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+lemma bot_labeledSubgraph_isInduced (G : LabeledGraph σ U) : G.bottom.IsInduced
+  := by
+  intro u v h_u h_v h_uv
+  dsimp [LabeledGraph.bottom]
+  exact ⟨h_u, h_v, h_uv⟩
+
+omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+lemma bot_labeledSubgraph_iso_emptyLabeledGraph (G : LabeledGraph σ U) : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ)
+  := by
+  let f : G.bottom.subgraph.verts ≃ T := G.iso_type_G.symm
+  have h_adj : ∀ {u v : G.bottom.subgraph.verts},
+                 (emptyLabeledGraph σ).graph.Adj (f u) (f v) ↔ G.bottom.subgraph.coe.Adj u v
+    := by
+    intro u v
+    dsimp [LabeledGraph.bottom, emptyLabeledGraph, f]
+    rw [iso_type_Adj_iff G u v]
+    simp only [Subtype.coe_prop, true_and]
+  let f_iso : (G.bottom).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f, h_adj⟩
+  have h_emb : ∀ t : T, f_iso (G.bottom.coe.type_embed t) = (emptyLabeledGraph σ).type_embed t := by
+    intro t
+    dsimp [LabeledGraph.bottom, emptyLabeledGraph, f_iso, f]
+    exact (Equiv.symm_apply_eq G.iso_type_G).mpr rfl
+  exact ⟨f_iso, funext h_emb⟩
+
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
-lemma labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph
+lemma labeledSubgraph_eq_bot_iff_iso_empty_graph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
-    : H = G.bottom ↔ H.IsInduced ∧ Nonempty (H.coe ≃f (emptyLabeledGraph σ)) := by
+    : H = G.bottom ↔ H.IsInduced ∧ Nonempty (H.coe ≃f (emptyLabeledGraph σ))
+  := by
   constructor
   · intro h_eq
     subst h_eq
-    constructor
-    · intro u v hu hv h_adj
-      dsimp [LabeledGraph.bottom] at *
-      exact ⟨hu, hv, h_adj⟩
-    · let f : (G.bottom).subgraph.verts ≃ T := by
-        dsimp [LabeledGraph.bottom]
-        exact id G.iso_type_G.symm
-      have f_adj : ∀ {u v : ↑(G.bottom).subgraph.verts},
-  (emptyLabeledGraph σ).graph.Adj (f u) (f v) ↔ (G.bottom).subgraph.coe.Adj u v := by
-        intro u v
-        dsimp [LabeledGraph.bottom, emptyLabeledGraph]
-        constructor
-        · intro T_adj
-          have G_adj := (iso_type_Adj_iff G u v).mp T_adj
-          exact ⟨u.property, ⟨v.property, G_adj⟩⟩
-        · intro ⟨_, _, G_adj⟩
-          exact (iso_type_Adj_iff G u v).mpr G_adj
-      let f_iso : (G.bottom).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f, f_adj⟩
-      have h_emb : ∀ t : T, f_iso ((G.bottom).coe.type_embed t) = (emptyLabeledGraph σ).type_embed t := by
-        intro t
-        dsimp [LabeledGraph.bottom, emptyLabeledGraph, f_iso, f]
-        exact (Equiv.symm_apply_eq G.iso_type_G).mpr rfl
-      exact ⟨f_iso, funext h_emb⟩
+    exact ⟨bot_labeledSubgraph_isInduced G, bot_labeledSubgraph_iso_emptyLabeledGraph G⟩
   · intro ⟨H_ind, H_iso⟩
     obtain ⟨⟨iso_H_T, iso_adj⟩, type_embed⟩ := H_iso
     have h_type_embed : ∀ t : T, iso_H_T (H.type_embed t) = t := by
@@ -416,7 +419,7 @@ lemma labeledSubgraphCount_empty
     let f : S₀ → S₁ := by
       dsimp [S₀, S₁]
       intro ⟨G', h_G'⟩
-      have h_eq : G' = G.bottom := labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mpr h_G'
+      have h_eq : G' = G.bottom := labeledSubgraph_eq_bot_iff_iso_empty_graph.mpr h_G'
       exact ⟨G', h_eq⟩
     have f_inj : Function.Injective f := by
       intro ⟨G₁', h₁⟩ ⟨G₂', h₂⟩ h_eq
@@ -425,7 +428,7 @@ lemma labeledSubgraphCount_empty
       intro ⟨G', h_G'⟩
       dsimp [S₁] at h_G'
       subst h_G'
-      have h_bottom : G.bottom ∈ S₀ := labeledSubgraph_eq_empty_labeledSubgraph_iff_iso_empty_graph.mp rfl
+      have h_bottom : G.bottom ∈ S₀ := labeledSubgraph_eq_bot_iff_iso_empty_graph.mp rfl
       exact ⟨⟨G.bottom, h_bottom⟩, rfl⟩
     exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
   have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_S₀_S₁'
