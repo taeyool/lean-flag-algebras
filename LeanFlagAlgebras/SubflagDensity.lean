@@ -288,7 +288,6 @@ lemma labeledSubgraphDensity_respect_eqv
   have h_G_size : G₀.size = G₁.size := labeledGraphIso_size_eq G₀ G₁ φ
   rw [h_count, h_H_size, h_G_size]
 
-
 noncomputable def labeledSubgraphDensityLifted
     (H : LabeledGraph σ V) : Flag σ W → ℚ
   := by
@@ -296,25 +295,15 @@ noncomputable def labeledSubgraphDensityLifted
   intro _ _ G_eqv
   exact labeledSubgraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
 
-
 omit [DecidableEq T] in
 lemma labeledSubgraphDensityLifted_respect_eqv
     {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
     : labeledSubgraphDensityLifted H₀ G = labeledSubgraphDensityLifted H₁ G
   := by
-  dsimp [labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  dsimp [labeledSubgraphDensityLifted]
   congr
   ext Grep
-  let S₀ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
-  let S₁ := { G' : LabeledSubgraph σ Grep | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoHG LabeledGraphIso.refl ψ
-  have h_count : labeledSubgraphCount H₀ Grep = labeledSubgraphCount H₁ Grep := by
-    dsimp only [labeledSubgraphCount]
-    show S₀.toFinset.card = S₁.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.coe_setOf, Set.toFinset_card]
-  have h_H_size : H₀.size = H₁.size := labeledGraphIso_size_eq H₀ H₁ ψ
-  rw [h_count, h_H_size]
+  exact labeledSubgraphDensity_respect_eqv LabeledGraphIso.refl ψ
 
 noncomputable def subflagDensity
     : Flag σ V → Flag σ W → ℚ
@@ -323,7 +312,6 @@ noncomputable def subflagDensity
   intro H H' h_eqv
   ext G
   exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
-
 
 omit [Fintype T] [DecidableEq T] [DecidableEq U] in
 lemma induced_full_labeledSubgraph_eq_top
