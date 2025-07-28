@@ -368,7 +368,7 @@ lemma bot_labeledSubgraph_iso_emptyLabeledGraph
 
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
-lemma labeledSubgraph_eq_bot_iff_iso_empty_graph
+lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
     {G : LabeledGraph σ V} {H : LabeledSubgraph σ G}
     : H = G.bottom ↔ H.IsInduced ∧ Nonempty (H.coe ≃f (emptyLabeledGraph σ))
   := by
@@ -425,7 +425,7 @@ lemma labeledSubgraphCount_empty
     let f : S₀ → S₁ := by
       dsimp [S₀, S₁]
       intro ⟨G', h_G'⟩
-      have h_eq : G' = G.bottom := labeledSubgraph_eq_bot_iff_iso_empty_graph.mpr h_G'
+      have h_eq : G' = G.bottom := labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph.mpr h_G'
       exact ⟨G', h_eq⟩
     have f_inj : Function.Injective f := by
       intro ⟨G₁', h₁⟩ ⟨G₂', h₂⟩ h_eq
@@ -434,7 +434,7 @@ lemma labeledSubgraphCount_empty
       intro ⟨G', h_G'⟩
       dsimp [S₁] at h_G'
       subst h_G'
-      have h_bottom : G.bottom ∈ S₀ := labeledSubgraph_eq_bot_iff_iso_empty_graph.mp rfl
+      have h_bottom : G.bottom ∈ S₀ := labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph.mp rfl
       exact ⟨⟨G.bottom, h_bottom⟩, rfl⟩
     exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
   have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_S₀_S₁'
