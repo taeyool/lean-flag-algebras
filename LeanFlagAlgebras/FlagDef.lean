@@ -54,6 +54,14 @@ noncomputable def LabeledGraph.iso_type_G
   let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
   exact f_bij
 
+omit [Fintype T] in
+lemma iso_type_G_eq_type_embed
+    {σ : FlagType T} (G : LabeledGraph σ U) (t : T)
+    : G.iso_type_G t = G.type_embed t
+  := by
+  dsimp [LabeledGraph.iso_type_G]
+
+
 noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (LabeledGraph σ V)
   :=
