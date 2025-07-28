@@ -200,6 +200,13 @@ theorem type_embed_heq_of_subgraph_eq
     rw [H.embed_eq t, H'.embed_eq t]
   exact embed_heq_of_subgraph_eq H_eq_H' h_embed_eq
 
+omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+lemma labeledSubgraph_eq_from_subgraph_eq
+    {σ : FlagType T} {G : LabeledGraph σ U} {H₀ H₁ : LabeledSubgraph σ G}
+    (h_subgraph_eq : H₀.subgraph = H₁.subgraph) : H₀ = H₁
+  :=
+  LabeledSubgraph.ext h_subgraph_eq (type_embed_heq_of_subgraph_eq h_subgraph_eq)
+
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma H_eq_reverseinduced_induced_H
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W}
@@ -215,7 +222,7 @@ lemma H_eq_reverseinduced_induced_H
     dsimp [H₀',inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
     simp only [inducedSubgraph_verts, ←h]
     exact inducedSubgraph_eq h_ind₀
-  exact LabeledSubgraph.ext h_eq (type_embed_heq_of_subgraph_eq h_eq)
+  exact labeledSubgraph_eq_from_subgraph_eq h_eq
 
 noncomputable def isoSetOfInducedLabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
@@ -330,18 +337,20 @@ lemma induced_full_labeledSubgraph_eq_top
       constructor
       · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
       · intro h_uv; exact h_ind_G' h_u h_v h_uv
-  exact LabeledSubgraph.ext G'_eq_top (type_embed_heq_of_subgraph_eq G'_eq_top)
+  exact labeledSubgraph_eq_from_subgraph_eq G'_eq_top
 
 omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
-lemma bot_labeledSubgraph_isInduced (G : LabeledGraph σ U) : G.bottom.IsInduced
+lemma bot_labeledSubgraph_isInduced
+    (G : LabeledGraph σ U) : G.bottom.IsInduced
   := by
   intro u v h_u h_v h_uv
   dsimp [LabeledGraph.bottom]
   exact ⟨h_u, h_v, h_uv⟩
 
 omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
-lemma bot_labeledSubgraph_iso_emptyLabeledGraph (G : LabeledGraph σ U) : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ)
-  := by
+lemma bot_labeledSubgraph_iso_emptyLabeledGraph
+    (G : LabeledGraph σ U) : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ)
+  :=
   let f : G.bottom.subgraph.verts ≃ T := G.iso_type_G.symm
   have h_adj : ∀ {u v : G.bottom.subgraph.verts},
                  (emptyLabeledGraph σ).graph.Adj (f u) (f v) ↔ G.bottom.subgraph.coe.Adj u v
@@ -355,7 +364,7 @@ lemma bot_labeledSubgraph_iso_emptyLabeledGraph (G : LabeledGraph σ U) : Nonemp
     intro t
     dsimp [LabeledGraph.bottom, emptyLabeledGraph, f_iso, f]
     exact (Equiv.symm_apply_eq G.iso_type_G).mpr rfl
-  exact ⟨f_iso, funext h_emb⟩
+  ⟨f_iso, funext h_emb⟩
 
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
@@ -367,8 +376,7 @@ lemma labeledSubgraph_eq_bot_iff_iso_empty_graph
   · intro h_eq
     subst h_eq
     exact ⟨bot_labeledSubgraph_isInduced G, bot_labeledSubgraph_iso_emptyLabeledGraph G⟩
-  · intro ⟨H_ind, H_iso⟩
-    obtain ⟨⟨iso_H_T, iso_adj⟩, type_embed⟩ := H_iso
+  · intro ⟨H_ind, ⟨⟨iso_H_T, iso_adj⟩, type_embed⟩⟩
     have h_type_embed : ∀ t : T, iso_H_T (H.type_embed t) = t := by
       intro t
       exact congrFun type_embed t
@@ -402,9 +410,7 @@ lemma labeledSubgraph_eq_bot_iff_iso_empty_graph
           have hu' : u ∈ H.subgraph.verts := (H_verts_iff_type_verts u).mpr hu
           have hv' : v ∈ H.subgraph.verts := (H_verts_iff_type_verts v).mpr hv
           exact H_ind hu' hv' h_adj
-    refine LabeledSubgraph.ext ?subgraph ?type_embed
-    · exact graph_eq_H_G
-    · exact type_embed_heq_of_subgraph_eq graph_eq_H_G
+    exact labeledSubgraph_eq_from_subgraph_eq graph_eq_H_G
 
 lemma labeledSubgraphCount_empty
     {σ : FlagType T} (G : LabeledGraph σ V) : labeledSubgraphCount (emptyLabeledGraph σ) G = ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size))
