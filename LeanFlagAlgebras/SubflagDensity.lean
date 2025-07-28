@@ -389,14 +389,11 @@ lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
           let t := iso_H_T ⟨w, hw⟩
           have h_embed_t : H.type_embed t = w := by
             have ht := h_type_embed t
-            dsimp [t] at *
+            dsimp [t]
             exact congr_arg Subtype.val (iso_H_T.injective ht)
           rw [← h_embed_t, H.embed_eq]
           exact LabeledGraph.type_verts_contain G t
-        · intro hw
-          obtain ⟨t, _, h_t⟩ := hw
-          rw [← h_t, ← H.embed_eq]
-          exact Subtype.coe_prop (H.type_embed t)
+        · apply labeledSubgraph_contain_type_verts
       ext u v
       · rw [H_verts_iff_type_verts]
       · simp only
@@ -407,9 +404,18 @@ lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
           have h_adj : G.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub H_uv
           exact ⟨hu, hv, h_adj⟩
         · intro ⟨hu, hv, h_adj⟩
-          have hu' : u ∈ H.subgraph.verts := (H_verts_iff_type_verts u).mpr hu
-          have hv' : v ∈ H.subgraph.verts := (H_verts_iff_type_verts v).mpr hv
-          exact H_ind hu' hv' h_adj
+          rw [←iso_type_Adj_iff G ⟨u,hu⟩ ⟨v,hv⟩] at h_adj
+          rw [type_embed_Adj_iff H.coe (G.iso_type_G.symm ⟨u,hu⟩) (G.iso_type_G.symm ⟨v,hv⟩)] at h_adj
+          simp only [coe_graph, coe_type_embed, SimpleGraph.Subgraph.coe_adj] at h_adj
+          rw [H.embed_eq (G.iso_type_G.symm ⟨u,hu⟩), H.embed_eq (G.iso_type_G.symm ⟨v,hv⟩)] at h_adj
+          have h_eq_u : G.type_embed (G.iso_type_G.symm ⟨u, hu⟩) = u := by
+            rw [←iso_type_G_eq_type_embed G (G.iso_type_G.symm ⟨u, hu⟩)]
+            simp only [Equiv.apply_symm_apply]
+          have h_eq_v : G.type_embed (G.iso_type_G.symm ⟨v, hv⟩) = v := by
+            rw [←iso_type_G_eq_type_embed G (G.iso_type_G.symm ⟨v, hv⟩)]
+            simp only [Equiv.apply_symm_apply]
+          rw [←h_eq_u, ←h_eq_v]
+          assumption
     exact labeledSubgraph_eq_from_subgraph_eq graph_eq_H_G
 
 lemma labeledSubgraphCount_empty
