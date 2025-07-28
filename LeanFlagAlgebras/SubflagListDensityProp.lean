@@ -56,12 +56,22 @@ theorem flagListDensity_prod_approx'
   use 2
   sorry
 
-theorem subflagListDensity_ge_0
+theorem flagListDensity_ge_zero
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : 0 ≤ flagListDensity Fl G := by
   sorry
 
-theorem subflagListDensity_le_1
+theorem flagListDensity_le_one
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G ≤ 1 := by
   sorry
+
+theorem flagListDensity₁_ge_zero
+    (F : Flag σ V) (G : Flag σ W)
+    : 0 ≤ flagDensity₁ F G := by
+  apply flagListDensity_ge_zero
+
+theorem flagListDensity₁_le_one
+    (F : Flag σ V) (G : Flag σ W)
+    : flagDensity₁ F G ≤ 1 := by
+  apply flagListDensity_le_one
