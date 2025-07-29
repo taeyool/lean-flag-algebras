@@ -62,6 +62,10 @@ noncomputable instance (n : ℕ) : Fintype (FlagWithSize σ n)
 def FinFlag (σ : FlagType (Fin n₀)) : Type
   := Σ (n : ℕ), FlagWithSize σ n
 
+instance : Countable (FinFlag σ)
+  :=
+  instCountableSigma
+
 instance : One (FinFlag σ) where
   one := ⟨n₀, (default : FlagWithSize σ n₀)⟩
 

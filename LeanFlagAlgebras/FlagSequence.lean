@@ -68,10 +68,6 @@ theorem flagDensitySpace_mem_Icc_zero_one
   simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc] at property
   exact ⟨property.1 F, property.2 F⟩
 
-instance : Countable (FinFlag σ)
-  := by
-  sorry
-
 theorem flagDensitySpace_compact
     : IsCompact (FlagDensitySpace σ)
   := by
