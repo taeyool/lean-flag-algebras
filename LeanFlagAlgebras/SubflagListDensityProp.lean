@@ -103,16 +103,52 @@ theorem flagListDensity_prod_approx'
   let Ω := { v : Finset W × Finset W // v.1.card = Frep.size ∧ v.2.card = Frep.size}
   sorry
 
+omit [DecidableEq T] in
+theorem labeledGraphListDensity_ge_zero
+    (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
+    : 0 ≤ labeledSubgraphListDensity Fl G := by
+    dsimp [labeledSubgraphListDensity]
+    apply div_nonneg <;> simp only [Nat.cast_nonneg]
+
+theorem labeledGraphListDensity_le_one
+    (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
+    : labeledSubgraphListDensity Fl G ≤ 1 := by
+    dsimp [labeledSubgraphListDensity, labeledSubgraphListCount, labeledSubgraphListSet]
+    apply div_le_one_of_le
+    · sorry
+    · simp only [Nat.cast_nonneg]
+
+omit [DecidableEq T] in
+theorem quotLabeledGraphListDensity_ge_zero
+    (Fl : QuotLabeledGraphList σ t Vl) (G :Flag σ W)
+    : 0 ≤ quotLabeledSubgraphListDensity Fl G := by
+    rcases Quot.exists_rep Fl with ⟨Flrep, hFlrep⟩
+    rcases Quot.exists_rep G with ⟨Grep, hGrep⟩
+    rw [← hFlrep, ← hGrep]
+    apply labeledGraphListDensity_ge_zero
+
+theorem quotLabeledGraphListDensity_le_one
+    (Fl : QuotLabeledGraphList σ t Vl) (G :Flag σ W)
+    : quotLabeledSubgraphListDensity Fl G ≤ 1 := by
+    rcases Quot.exists_rep Fl with ⟨Flrep, hFlrep⟩
+    rcases Quot.exists_rep G with ⟨Grep, hGrep⟩
+    rw [← hFlrep, ← hGrep]
+    apply labeledGraphListDensity_le_one
+
+omit [DecidableEq T] in
 theorem flagListDensity_ge_zero
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : 0 ≤ flagListDensity Fl G := by
-  sorry
+  dsimp [flagListDensity]
+  apply quotLabeledGraphListDensity_ge_zero
 
 theorem flagListDensity_le_one
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G ≤ 1 := by
-  sorry
+  dsimp [flagListDensity]
+  apply quotLabeledGraphListDensity_le_one
 
+omit [DecidableEq T] in
 theorem flagListDensity₁_ge_zero
     (F : Flag σ V) (G : Flag σ W)
     : 0 ≤ flagDensity₁ F G := by
