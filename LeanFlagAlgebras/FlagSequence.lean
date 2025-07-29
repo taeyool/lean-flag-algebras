@@ -125,7 +125,11 @@ namespace PositiveHom
 noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
     val := fun F => φ ⟦unitVector F⟧
-    property := sorry
+    property := by
+      simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc]
+      constructor <;> (intro F; simp only)
+      · exact positiveHom_unitVector_ge_zero φ F
+      · exact positiveHom_unitVector_le_one φ F
   }
 
 end PositiveHom

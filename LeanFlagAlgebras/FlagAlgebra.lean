@@ -489,6 +489,14 @@ noncomputable instance : MulAction ℝ (FlagAlgebra σ) where
     simp
     rw [mul_smul]
 
+theorem add_quot
+    (f f' : FlagVector σ)
+    : (⟦f + f'⟧ : FlagAlgebra σ) = ⟦f⟧ + ⟦f'⟧
+  := by
+  apply Quotient.sound
+  simp only [add_smul]
+  rfl
+
 theorem neg_quot
     (f : FlagVector σ) : (⟦-f⟧ : FlagAlgebra σ) = -⟦f⟧
   := by
@@ -940,3 +948,26 @@ noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
   commutes' := by
     intros; simp
     rw [mul_comm]
+
+theorem sum_quot
+    {ι : Type} (s : Finset ι) (f : ι → FlagVector σ)
+    : ⟦∑ i in s, f i⟧ = ∑ i in s, (⟦f i⟧ : FlagAlgebra σ)
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · rfl
+  · intro i s his ih
+    simp only [Finset.sum_insert his, add_quot, ih]
+
+theorem sum_flagWithSize_eq_one
+    (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
+    : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
+  := by
+  rw [← sum_quot]
+  apply Quotient.sound
+  calc
+    _ ∼v ∑ F : FlagWithSize σ ℓ, flagDensity₁ (1 : FinFlag σ).2 F • unitVector ⟨ℓ, F⟩ := by
+      apply flagVectorEqv_sum
+      intro F _
+      rw [flagDensity_one F, one_smul]
+    _ ∼v unitVector (1 : FinFlag σ) := (unitVector_eqv_densityFlagSum (1 : FinFlag σ) ℓ hℓ).symm

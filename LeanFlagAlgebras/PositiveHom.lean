@@ -49,11 +49,30 @@ theorem map_mul (φ : PositiveHom σ) (f g : FlagAlgebra σ) : φ (f * g) = φ f
   :=
   RingHom.map_mul (φ.val : FlagAlgebra σ →+* ℝ) f g
 
-theorem map_sum (φ : PositiveHom σ) {ι : Type*} (s : Finset ι) (f : ι → FlagAlgebra σ) :
-  φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) :=
+theorem map_sum (φ : PositiveHom σ) {ι : Type} (s : Finset ι) (f : ι → FlagAlgebra σ)
+    : φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i)
+  :=
   _root_.map_sum (φ.val : FlagAlgebra σ →+* ℝ) f s
 
 end PosHom
+
+theorem positiveHom_unitVector_ge_zero
+    (φ : PositiveHom σ) (F : FinFlag σ)
+    : 0 ≤ φ ⟦unitVector F⟧
+  :=
+  φ.2 F
+
+theorem sum_positiveHom_unitVector_flagWithSize_eq_one
+    (φ : PositiveHom σ) (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
+    : ∑ F : FlagWithSize σ ℓ, φ ⟦unitVector ⟨ℓ, F⟩⟧ = 1
+  := by
+  rw [← PosHom.map_sum, sum_flagWithSize_eq_one ℓ hℓ, PosHom.map_one]
+
+theorem positiveHom_unitVector_le_one
+    (φ : PositiveHom σ) (F : FinFlag σ)
+    : φ ⟦unitVector F⟧ ≤ 1
+  := by
+  sorry
 
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }
