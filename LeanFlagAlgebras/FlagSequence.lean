@@ -20,7 +20,8 @@ noncomputable def flagDensitySeq (s : FlagSeq σ) : ℕ → FinFlag σ → ℝ
 
 theorem flagDensitySeq_comp_assoc
     (s : FlagSeq σ) (ϕ : ℕ → ℕ)
-    : flagDensitySeq (s ∘ ϕ) = flagDensitySeq s ∘ ϕ := by
+    : flagDensitySeq (s ∘ ϕ) = flagDensitySeq s ∘ ϕ
+  :=
   rfl
 
 def Increases (s : FlagSeq σ) : Prop
@@ -67,10 +68,6 @@ theorem flagDensitySpace_mem_Icc_zero_one
   simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc] at property
   exact ⟨property.1 F, property.2 F⟩
 
-instance : Countable (FinFlag σ)
-  := by
-  sorry
-
 theorem flagDensitySpace_compact
     : IsCompact (FlagDensitySpace σ)
   := by
@@ -99,6 +96,16 @@ noncomputable def flagDensitySeq' (s : FlagSeq σ) : ℕ → FlagDensitySpace σ
         apply flagListDensity₁_le_one
   }
 
+lemma flagDensitySpace_mem_nhds
+    {a : FlagDensitySpace σ} {A : Set (FinFlag σ → ℝ)} (hA : A ∈ 𝓝 (a : FinFlag σ → ℝ))
+    : { a' : FlagDensitySpace σ | a'.val ∈ A } ∈ 𝓝 a
+  := by
+  rw [mem_nhds_subtype]
+  use A
+  constructor
+  · exact hA
+  · rfl
+
 theorem increasing_flagSeq_contain_convergent_subseq
     (s : FlagSeq σ) (hs_inc : Increases s)
     : ∃ (a : FlagDensitySpace σ) (ϕ : ℕ → ℕ), StrictMono ϕ ∧ ConvergesTo (s ∘ ϕ) a
@@ -110,24 +117,19 @@ theorem increasing_flagSeq_contain_convergent_subseq
   · exact hs_inc.comp h_stmono
   · rw [flagDensitySeq_comp_assoc]
     intro A hA
-    simp only [mem_map, mem_atTop_sets, Set.mem_preimage, Function.comp_apply]
-    have : A ⊆ FlagDensitySpace σ := by sorry
-    let A' : Set (FlagDensitySpace σ) := { a | a.val ∈ A }
-    have : A' ∈ 𝓝 a := by sorry
-    specialize h_lim this
-    simp at h_lim
-    obtain ⟨n, hn⟩ := h_lim
-    use n
-    intro m hm
-    specialize hn m hm
-    sorry
+    specialize h_lim (flagDensitySpace_mem_nhds hA)
+    exact h_lim
 
 namespace PositiveHom
 
 noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
     val := fun F => φ ⟦unitVector F⟧
-    property := sorry
+    property := by
+      simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc]
+      constructor <;> (intro F; simp only)
+      · exact positiveHom_unitVector_ge_zero φ F
+      · exact positiveHom_unitVector_le_one φ F
   }
 
 end PositiveHom
