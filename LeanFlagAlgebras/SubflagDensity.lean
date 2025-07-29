@@ -415,15 +415,16 @@ lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
     exact labeledSubgraph_eq_from_subgraph_eq graph_eq_H_G
 
 lemma labeledSubgraphCount_empty
-    {σ : FlagType T} (G : LabeledGraph σ V)
+    {σ : FlagType T} (G : LabeledGraph σ U)
     : labeledSubgraphCount (emptyLabeledGraph σ) G = ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size))
   := by
-  dsimp only [LabeledGraph.size]
+  dsimp [LabeledGraph.size]
   have h_σ_size : Fintype.card T = σ.size := by rfl
   rw [h_σ_size]
-  simp only [labeledSubgraphCount, Set.toFinset_setOf, le_refl, tsub_eq_zero_of_le, Nat.choose_zero_right]
   let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f (emptyLabeledGraph σ)) }
   let S₁ := { G' : LabeledSubgraph σ G | G' = G.bottom }
+  simp only [labeledSubgraphCount, le_refl,tsub_eq_zero_of_le, Nat.choose_zero_right]
+  show S₀.toFinset.card = 1
   have h_S₀_S₁ : S₀ = S₁ := by
     ext G'
     simp only [Set.mem_setOf_eq, Set.setOf_eq_eq_singleton, Set.mem_singleton_iff, S₀, S₁]
@@ -432,19 +433,13 @@ lemma labeledSubgraphCount_empty
     constructor
     . intro h_iso; rw [h_iso]; exact ⟨bot_labeledSubgraph_isInduced G, rfl⟩
     . intro ⟨_, h_iso⟩; exact h_iso
-  have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr' (congrArg Set.Elem h_S₀_S₁)
-  have h_finset_eq_fintype :
-      (Finset.filter (fun x : LabeledSubgraph σ G ↦ x.IsInduced ∧ Nonempty (x.coe ≃f (emptyLabeledGraph σ))) Finset.univ).card = Fintype.card S₀
-    := by
-    rw [←Set.toFinset_card]
-    simp only [Set.toFinset_setOf, S₀]
-  rw [h_finset_eq_fintype, card_eq]
-  simp only [Set.setOf_eq_eq_singleton, Fintype.card_unique, S₁]
+  simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
 lemma labeledSubgraphDensity_empty
-    (G : LabeledGraph σ V) : labeledSubgraphDensity (emptyLabeledGraph σ) G = 1
+    {σ : FlagType T} (G : LabeledGraph σ U)
+    : labeledSubgraphDensity (emptyLabeledGraph σ) G = 1
   := by
-  simp [labeledSubgraphDensity]
+  simp only [labeledSubgraphDensity]
   rw [labeledSubgraphCount_empty G]
   have : ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size) : ℚ) ≠ 0 := by
     dsimp only [emptyLabeledGraph, LabeledGraph.size]
