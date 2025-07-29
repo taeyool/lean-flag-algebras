@@ -26,6 +26,14 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
+noncomputable instance {σ : FlagType T} (G : LabeledGraph σ V) : Fintype G.type_verts := Set.univ.fintypeImage ⇑G.type_embed
+
+lemma LabeledGraph.type_verts_card_eq {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
+  : Fintype.card G.type_verts = σ.size := by
+  dsimp [LabeledGraph.type_verts, FlagType.size]
+  rw [Set.card_image_of_injective Set.univ G.type_embed.injective]
+  exact (set_fintype_card_eq_univ_iff Set.univ).mpr rfl
+
 omit [Fintype T] in
 lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (t : T)
   : G.type_embed t ∈ G.type_verts := by
