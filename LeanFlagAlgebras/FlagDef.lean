@@ -181,6 +181,10 @@ lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)
 
 namespace LabeledSubgraph
 
+def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
+  :=
+  H.subgraph.IsInduced
+
 noncomputable def size
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
     {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : ℕ
@@ -199,10 +203,6 @@ theorem coe_adj_iff
     : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
   :=
   Eq.to_iff rfl
-
-def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
-  :=
-  H.subgraph.IsInduced
 
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V)

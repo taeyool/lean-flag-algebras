@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».SubgraphUtil
 import «LeanFlagAlgebras».FlagDef
 import Mathlib.Tactic.Linarith.Frontend
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -320,33 +321,6 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
-omit [Fintype T] [DecidableEq T] [DecidableEq U] in
-lemma induced_full_labeledSubgraph_eq_top
-    {σ : FlagType T} {G₀ G₁ : LabeledGraph σ U} {G' : LabeledSubgraph σ G₀}
-    : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = G₀.top
-  := by
-  intro ⟨h_ind_G', ⟨f_G'_G₁, _⟩⟩
-  let f_U_G'_vertex : U ≃ G'.subgraph.verts := f_G'_G₁.toEquiv.symm
-  have G'_eq_top : G'.subgraph = G₀.top.subgraph := by
-    dsimp [LabeledGraph.top]
-    ext u v
-    · simp only [SimpleGraph.Subgraph.verts_top, Set.mem_univ, iff_true]
-      exact iso_subset_of_finset_is_full f_U_G'_vertex u
-    · have h_u := iso_subset_of_finset_is_full f_U_G'_vertex u
-      have h_v := iso_subset_of_finset_is_full f_U_G'_vertex v
-      constructor
-      · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
-      · intro h_uv; exact h_ind_G' h_u h_v h_uv
-  exact labeledSubgraph_eq_from_subgraph_eq G'_eq_top
-
-omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
-lemma bot_labeledSubgraph_isInduced
-    (G : LabeledGraph σ U) : G.bottom.IsInduced
-  := by
-  intro u v h_u h_v h_uv
-  dsimp [LabeledGraph.bottom]
-  exact ⟨h_u, h_v, h_uv⟩
-
 omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
 lemma bot_labeledSubgraph_iso_emptyLabeledGraph
     (G : LabeledGraph σ U) : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ)
@@ -365,7 +339,6 @@ lemma bot_labeledSubgraph_iso_emptyLabeledGraph
     dsimp [LabeledGraph.bottom, emptyLabeledGraph, f_iso, f]
     exact (Equiv.symm_apply_eq G.iso_type_G).mpr rfl
   ⟨f_iso, funext h_emb⟩
-
 
 omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
 lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
@@ -431,7 +404,7 @@ lemma labeledSubgraphCount_empty
     symm
     rw [←labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph]
     constructor
-    . intro h_iso; rw [h_iso]; exact ⟨bot_labeledSubgraph_isInduced G, rfl⟩
+    . intro h_iso; rw [h_iso]; exact ⟨LabeledGraph.bottom_isInduced G, rfl⟩
     . intro ⟨_, h_iso⟩; exact h_iso
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
@@ -450,7 +423,8 @@ lemma labeledSubgraphDensity_empty
   exact (div_eq_one_iff_eq this).mpr rfl
 
 lemma subflagDensity_empty
-    (G : Flag σ V) : subflagDensity (emptyFlag σ) G = 1
+    {σ : FlagType T} (G : Flag σ U)
+    : subflagDensity (emptyFlag σ) G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
   dsimp [emptyFlag]
@@ -458,53 +432,60 @@ lemma subflagDensity_empty
   dsimp [subflagDensity, labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_empty Grep
 
+omit [Fintype T] [DecidableEq T] [DecidableEq U] in
+lemma induced_full_labeledSubgraph_eq_top
+    {σ : FlagType T} {G₀ G₁ : LabeledGraph σ U} {G' : LabeledSubgraph σ G₀}
+    : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = G₀.top
+  := by
+  intro ⟨h_ind_G', ⟨f_G'_G₁, _⟩⟩
+  let f_U_G'_vertex : U ≃ G'.subgraph.verts := f_G'_G₁.toEquiv.symm
+  have G'_eq_top : G'.subgraph = G₀.top.subgraph := by
+    dsimp [LabeledGraph.top]
+    ext u v
+    · simp only [SimpleGraph.Subgraph.verts_top, Set.mem_univ, iff_true]
+      exact iso_subset_of_finset_is_full f_U_G'_vertex u
+    · have h_u := iso_subset_of_finset_is_full f_U_G'_vertex u
+      have h_v := iso_subset_of_finset_is_full f_U_G'_vertex v
+      constructor
+      · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
+      · intro h_uv; exact h_ind_G' h_u h_v h_uv
+  exact labeledSubgraph_eq_from_subgraph_eq G'_eq_top
+
+omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+lemma top_labeledSubgraph_iso_G
+    {σ : FlagType T} {G : LabeledGraph σ U}
+    : Nonempty (G.top.coe ≃f G)
+  := by
+  let graph_iso : G.top.subgraph.coe ≃g G.graph := {
+    toFun := (↑)
+    invFun := fun u ↦ ⟨u, Set.mem_univ u⟩
+    left_inv := by intro u; rfl
+    right_inv := by intro u; rfl
+    map_rel_iff' := by intro u v; exact Eq.to_iff rfl
+  }
+  have type_preserve : graph_iso ∘ G.top.coe.type_embed = G.type_embed := by
+    dsimp [LabeledGraph.top, graph_iso]
+    exact rfl
+  exact Nonempty.intro ⟨graph_iso, type_preserve⟩
+
 omit [DecidableEq T] in
 lemma labeledSubgraphCount_self
-    (G : LabeledGraph σ V) : labeledSubgraphCount G G = 1
+    {σ : FlagType T} (G : LabeledGraph σ U)
+    : labeledSubgraphCount G G = 1
   := by
-  simp [labeledSubgraphCount]
+  dsimp [labeledSubgraphCount]
   let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f G) }
-  let S₁ : Finset (LabeledSubgraph σ G) := { G.top }
-  have h_S₀_S₁ : S₀ ≃ S₁ := by
-    let f : S₀ → S₁ := by
-      dsimp [S₀, S₁]
-      intro ⟨G', h_G'⟩
-      rw [← induced_full_labeledSubgraph_eq_top h_G']
-      exact ⟨G', by simp only [Finset.mem_singleton]⟩
-    let f_inj : Function.Injective f := by
-      intro G₁ G₂ _
-      have h₁ := induced_full_labeledSubgraph_eq_top G₁.property
-      have h₂ := induced_full_labeledSubgraph_eq_top G₂.property
-      rw [← h₂] at h₁
-      exact SetCoe.ext h₁
-    let f_surj : Function.Surjective f := by
-      intro ⟨G', h_G'⟩
-      dsimp [S₁] at h_G'
-      rw [Finset.mem_singleton] at h_G'
-      subst h_G'
-      have h_G_top : G.top ∈ S₀ := by
-        constructor
-        · exact G.top_isInduced
-        · let g : G.top.subgraph.verts ≃ V := by
-            dsimp [LabeledGraph.top]
-            exact Equiv.Set.univ V
-          have g_adj : ∀ {w₀ w₁ : G.top.subgraph.verts}, G.graph.Adj (g w₀) (g w₁) ↔ G.top.subgraph.Adj w₀ w₁ := by
-            intro u v
-            dsimp [LabeledGraph.top]
-            exact Eq.to_iff rfl
-          let g_iso : G.top.subgraph.coe ≃g G.graph := ⟨g, g_adj⟩
-          have h_emb : ∀ t : T, g ((G.top).type_embed t) = G.type_embed t := by
-            intro t; rfl
-          exact ⟨g_iso, funext h_emb⟩
-      use ⟨G.top, h_G_top⟩
-      dsimp [f]
-    exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
-  have card_eq : Fintype.card S₀ = S₁.card := Fintype.card_congr h_S₀_S₁
-  have h_finset_eq_fintype : (Finset.filter (fun x : LabeledSubgraph σ G ↦ x.IsInduced ∧ Nonempty (x.coe ≃f G)) Finset.univ).card = Fintype.card S₀ := by
-    rw [← Set.toFinset_card]
-    simp_all only [Set.toFinset_setOf, S₀]
-  rw [h_finset_eq_fintype, card_eq]
-  rfl
+  let S₁ := { G' : LabeledSubgraph σ G | G' = G.top }
+  show S₀.toFinset.card = 1
+  have h_S₀_S₁ : S₀ = S₁ := by
+    ext G'
+    simp only [Set.mem_setOf_eq, Set.setOf_eq_eq_singleton, Set.mem_singleton_iff, S₀, S₁]
+    constructor
+    . exact induced_full_labeledSubgraph_eq_top
+    . intro h_eq_top
+      rw [h_eq_top]
+      exact ⟨LabeledGraph.top_isInduced G, top_labeledSubgraph_iso_G⟩
+  simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
 omit [DecidableEq T] in
 lemma labeledSubgraphDensity_self
