@@ -491,7 +491,7 @@ omit [DecidableEq T] in
 lemma labeledSubgraphDensity_self
     (G : LabeledGraph σ V) : labeledSubgraphDensity G G = 1
   := by
-  simp [labeledSubgraphDensity]
+  simp only [labeledSubgraphDensity, Nat.choose_self, Nat.cast_one, div_one, Nat.cast_eq_one]
   exact labeledSubgraphCount_self G
 
 omit [DecidableEq T] in
@@ -506,73 +506,43 @@ lemma subflagDensity_self
 
 omit [DecidableEq T] in
 lemma subgraphCount_other
-    {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphCount G₀ G₁ = 0
+    {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
+    : labeledSubgraphCount G₀ G₁ = 0
   := by
-  simp [labeledSubgraphCount]
-  rw [← not_nonempty_iff] at h_neq
+  dsimp [labeledSubgraphCount]
   let S := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f G₀) }
-  have h_S : S ⊆ ∅ := by
-    intro G' ⟨h_ind_G', h_iso_G'⟩
-    have f_iso_G₀_G' := h_iso_G'.some.symm
-    have f_iso_G'_G₁ : G'.coe ≃f G₁ := by
-      have : G' = G₁.top := induced_full_labeledSubgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
-      let g : (G₁.top).coe ≃f G₁ := by
-        let graph_iso : (G₁.top).subgraph.coe ≃g G₁.graph := by
-          dsimp [LabeledGraph.top]
-          let f : (G₁.top).subgraph.verts → V := by
-            dsimp [LabeledGraph.top]
-            exact fun v ↦ v.val
-          have h_bij : Function.Bijective f := by
-            constructor
-            · intro v₁ v₂ h_eq
-              dsimp [f] at h_eq
-              exact SetCoe.ext h_eq
-            · intro v
-              exact CanLift.prf v trivial
-          have h_adj : ∀ {w₀ w₁ : (G₁.top).subgraph.verts}, G₁.graph.Adj (f w₀) (f w₁) ↔ (G₁.top).subgraph.Adj w₀ w₁ := by
-            intro u v
-            simp only [id_eq, LabeledGraph.top, SimpleGraph.Subgraph.top_adj, f]
-          let h_iso := Equiv.ofBijective f h_bij
-          exact ⟨h_iso, h_adj⟩
-        have h_emb : ∀ t : T, graph_iso ((G₁.top).type_embed t) = G₁.type_embed t := by
-          intro t
-          exact rfl
-        exact ⟨graph_iso, funext h_emb⟩
-      rwa [← this] at g
-    have f_iso_G₀_G₁ := f_iso_G₀_G'.trans f_iso_G'_G₁
-    exact h_neq ⟨f_iso_G₀_G₁⟩
-  rw [Set.subset_empty_iff] at h_S
-  rw [← Finset.card_eq_zero]
-  calc
-    _ = Fintype.card S := Eq.symm
-        (Fintype.card_ofFinset (Finset.filter (Membership.mem S) Finset.univ)
-          (Subtype.fintype.proof_1 (Membership.mem S)))
-    _ = 0 := by
-      simp_all only [not_nonempty_iff, Fintype.card_ofIsEmpty, S]
-
-example (S : Finset V) (h : Fintype.card S = 0) : S = ∅ := by
-  simp_all only [Fintype.card_coe, Finset.card_eq_zero]
+  show S.toFinset.card = 0
+  suffices h_S_empty : S = ∅ by simp only [h_S_empty, Set.toFinset_empty, Finset.card_empty]
+  apply Set.subset_empty_iff.mp
+  intro G' ⟨h_G'_ind, h_G'_iso_G₀⟩
+  have h_G'_eq_G₁_top := induced_full_labeledSubgraph_eq_top ⟨h_G'_ind, h_G'_iso_G₀⟩
+  have h_G₁_top_iso_G₁ : Nonempty (G₁.top.coe ≃f G₁) := top_labeledSubgraph_iso_G
+  rw [←h_G'_eq_G₁_top] at h_G₁_top_iso_G₁
+  let f_G₀_G₁ : G₀ ≃f G₁ := h_G'_iso_G₀.some.symm.trans h_G₁_top_iso_G₁.some
+  exact h_not_iso.elim f_G₀_G₁
 
 omit [DecidableEq T] in
 lemma labeledSubgraphDensity_other
-    {G₀ G₁ : LabeledGraph σ V} (h_neq : IsEmpty (G₀ ≃f G₁)) : labeledSubgraphDensity G₀ G₁ = 0
+    {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
+    : labeledSubgraphDensity G₀ G₁ = 0
   := by
   dsimp [labeledSubgraphDensity]
-  have := subgraphCount_other h_neq
-  simp_all only [Nat.cast_zero, zero_div]
+  rw [subgraphCount_other h_not_iso]
+  simp only [Nat.cast_zero, zero_div]
 
 omit [DecidableEq T] in
 lemma subflagDensity_other
-    {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁) : subflagDensity G₀ G₁ = 0
+    {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁)
+    : subflagDensity G₀ G₁ = 0
   := by
   rcases Quotient.exists_rep G₀ with ⟨Grep₀, hGrep₀⟩
   rcases Quotient.exists_rep G₁ with ⟨Grep₁, hGrep₁⟩
   rw [← hGrep₀, ← hGrep₁]
-  have h_neq' : IsEmpty (Grep₀ ≃f Grep₁) := by
+  have h_not_iso : IsEmpty (Grep₀ ≃f Grep₁) := by
     rw [← not_nonempty_iff]
     intro h_iso
     have h_eq : G₀ = G₁ := by
       rw [← hGrep₀, ← hGrep₁]
       exact Quotient.sound h_iso
     exact h_neq h_eq
-  apply labeledSubgraphDensity_other h_neq'
+  apply labeledSubgraphDensity_other h_not_iso
