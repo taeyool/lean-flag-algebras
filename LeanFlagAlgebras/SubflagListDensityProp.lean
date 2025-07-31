@@ -104,12 +104,30 @@ theorem flagListDensity_prod_approx'
   let Ω := { v : Finset W × Finset W // v.1.card = Frep.size ∧ v.2.card = Frep.size}
   sorry
 
-def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : Finset (Fin t → Finset α) :=
-  (Finset.univ : Finset (Fin t → Finset α)).filter (fun p => (∀ i, p i ⊆ V ∧ (p i).card = r_list i) ∧ ∀ i j, i ≠ j → Disjoint (p i) (p j))
+def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : Finset (Fin t → Finset α)
+  := (Finset.univ : Finset (Fin t → Finset α)).filter (fun p =>
+      (∀ i, p i ⊆ V ∧ (p i).card = r_list i) ∧
+      (∀ i j, i ≠ j → Disjoint (p i) (p j)) ∧
+      (Finset.univ : Finset (Fin t)).biUnion p ⊆ V) -- extually, this is not a partition
 
 theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
-  sorry
+  dsimp [multinomialCoefficient]
+  split
+  next h =>
+    sorry
+  next h =>
+    rw [Finset.card_eq_zero]
+    ext x
+    simp only [Finset.not_mem_empty, iff_false, partitions, Finset.mem_filter, Finset.mem_univ, true_and]
+    intro ⟨p_sub, p_disj, p_card⟩
+    have card_le : (Finset.univ.biUnion x).card ≤ V.card := Finset.card_le_card p_card
+    have card_bUnion : (Finset.univ.biUnion x).card = ∑ i : Fin t, (x i).card := Finset.card_biUnion (fun i _ j _ hij => p_disj i j hij)
+    have card_sum : ∑ i : Fin t, (x i).card = ∑ i : Fin t, r_list i := Finset.sum_congr rfl (fun i _ => (p_sub i).2)
+    rw [card_bUnion, card_sum] at card_le
+    exact h card_le
+
+#check Finset.card_eq_of_bijective
 
 omit [DecidableEq T] in
 theorem labeledGraphListDensity_ge_zero
@@ -154,19 +172,25 @@ theorem labeledGraphListDensity_le_one
               dsimp [r_list]
               have size_eq := labeledGraphIso_size_eq (Gl i).coe (Fl i) (Classical.choice (hGl_iso i))
               exact congrFun (congrArg HSub.hSub size_eq) σ.size
-          · intro i j hij
-            simp only
-            rw [Finset.disjoint_left]
-            intro w h_wi h_wj
-            rw [Finset.mem_sdiff] at h_wi h_wj
-            obtain ⟨h_w_mem_i, h_w_not_type⟩ := h_wi
-            obtain ⟨h_w_mem_j, _⟩ := h_wj
-            rw [Set.mem_toFinset] at h_w_mem_i h_w_mem_j h_w_not_type
-            have h_w_in_inter : w ∈ (Gl i).subgraph.verts \ G.type_verts ∩ ((Gl j).subgraph.verts \ G.type_verts) := by
-              rw [Set.mem_inter_iff, Set.mem_diff, Set.mem_diff]
-              exact ⟨⟨h_w_mem_i, h_w_not_type⟩, ⟨h_w_mem_j, h_w_not_type⟩⟩
-            rw [hGl_disj i j hij] at h_w_in_inter
-            exact h_w_in_inter
+          · constructor
+            · intro i j hij
+              simp only
+              rw [Finset.disjoint_left]
+              intro w h_wi h_wj
+              rw [Finset.mem_sdiff] at h_wi h_wj
+              obtain ⟨h_w_mem_i, h_w_not_type⟩ := h_wi
+              obtain ⟨h_w_mem_j, _⟩ := h_wj
+              rw [Set.mem_toFinset] at h_w_mem_i h_w_mem_j h_w_not_type
+              have h_w_in_inter : w ∈ (Gl i).subgraph.verts \ G.type_verts ∩ ((Gl j).subgraph.verts \ G.type_verts) := by
+                rw [Set.mem_inter_iff, Set.mem_diff, Set.mem_diff]
+                exact ⟨⟨h_w_mem_i, h_w_not_type⟩, ⟨h_w_mem_j, h_w_not_type⟩⟩
+              rw [hGl_disj i j hij] at h_w_in_inter
+              exact h_w_in_inter
+            · simp only [Finset.biUnion_subset_iff_forall_subset, Finset.mem_univ, true_implies]
+              intro i
+              dsimp [VG]
+              refine Finset.sdiff_subset_sdiff ?h.hf.right.intro.intro.right.right.hst fun ⦃a⦄ a ↦ a
+              simp_all only [Finset.subset_univ]
       · intro Gl₁ hGl₁ Gl₂ hGl₂ h_eq
         rw [Function.funext_iff] at h_eq
         dsimp [f] at h_eq
@@ -182,12 +206,12 @@ theorem labeledGraphListDensity_le_one
         have h_eq_verts : (Gl₁ i).subgraph.verts = (Gl₂ i).subgraph.verts := by
           calc
             (Gl₁ i).subgraph.verts = (Gl₁ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₁ i))).symm
-                       _           = (Gl₂ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by rw [h_eq]
-                       _           = (Gl₂ i).subgraph.verts := by exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₂ i)))
+          _                        = (Gl₂ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by rw [h_eq]
+          _                        = (Gl₂ i).subgraph.verts := by exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₂ i)))
         calc
           (Gl₁ i).subgraph = inducedSubgraph G.graph (Gl₁ i).subgraph.verts := by exact inducedSubgraph_eq hGl₁_i_ind
-                  _        = inducedSubgraph G.graph (Gl₂ i).subgraph.verts := by rw [h_eq_verts]
-                  _        = (Gl₂ i).subgraph := by exact (inducedSubgraph_eq hGl₂_i_ind).symm
+          _                = inducedSubgraph G.graph (Gl₂ i).subgraph.verts := by rw [h_eq_verts]
+          _                = (Gl₂ i).subgraph := by exact (inducedSubgraph_eq hGl₂_i_ind).symm
     · simp only [Nat.cast_nonneg]
 
 omit [DecidableEq T] in
