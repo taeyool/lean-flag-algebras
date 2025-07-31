@@ -118,6 +118,7 @@ theorem labeledGraphListDensity_ge_zero
     dsimp [labeledSubgraphListDensity]
     apply div_nonneg <;> simp only [Nat.cast_nonneg]
 
+omit [DecidableEq T] in
 theorem labeledGraphListDensity_le_one
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity Fl G ≤ 1 := by
@@ -126,8 +127,7 @@ theorem labeledGraphListDensity_le_one
     · let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
       have hVG : VG.card = G.size - σ.size := by
         simp only [VG, LabeledGraph.size, Finset.card_sdiff (Finset.subset_univ _)]
-        rw [Set.toFinset_card, LabeledGraph.type_verts_card_eq]
-        simp_all only [Finset.card_univ]
+        rw [Set.toFinset_card, Finset.card_univ, LabeledGraph.type_verts_card_eq]
       let r_list : Fin t → ℕ := fun i => (Fl i).size - σ.size
       have := partition_card VG (r_list)
       rw [hVG] at this
@@ -140,21 +140,20 @@ theorem labeledGraphListDensity_le_one
         constructor
         · simp only [Finset.mem_univ]
         · simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hGl
-          obtain ⟨hGl_ind, hGl_iso, hGl_disj⟩ := hGl
+          obtain ⟨_, hGl_iso, hGl_disj⟩ := hGl
           constructor
           · intro i
             simp only
             constructor
             · refine Finset.sdiff_subset_sdiff ?h.hf.right.left.left.hst fun ⦃a⦄ a ↦ a
               simp_all only [Finset.subset_univ]
-            · rw [Finset.card_sdiff]
-              rw [Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
-              dsimp [r_list]
-              have iso_Gl_i_Fl_i := Classical.choice (hGl_iso i)
-              have := labeledGraphIso_size_eq (Gl i).coe (Fl i) iso_Gl_i_Fl_i
-              exact congrFun (congrArg HSub.hSub this) σ.size
-              · simp only [Set.subset_toFinset, Set.coe_toFinset]
+            · have : G.type_verts.toFinset ⊆ (Gl i).subgraph.verts.toFinset := by
+                simp only [Set.subset_toFinset, Set.coe_toFinset]
                 exact labeledSubgraph_contain_type_verts G (Gl i)
+              rw [Finset.card_sdiff this, Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
+              dsimp [r_list]
+              have size_eq := labeledGraphIso_size_eq (Gl i).coe (Fl i) (Classical.choice (hGl_iso i))
+              exact congrFun (congrArg HSub.hSub size_eq) σ.size
           · intro i j hij
             simp only
             rw [Finset.disjoint_left]
@@ -170,17 +169,21 @@ theorem labeledGraphListDensity_le_one
             exact h_w_in_inter
       · intro Gl₁ hGl₁ Gl₂ hGl₂ h_eq
         rw [Function.funext_iff] at h_eq
+        dsimp [f] at h_eq
         simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hGl₁ hGl₂
-        obtain ⟨hGl₁_ind, hGl₁_iso, hGl₁_disj⟩ := hGl₁
-        obtain ⟨hGl₂_ind, hGl₂_iso, hGl₂_disj⟩ := hGl₂
+        obtain ⟨hGl₁_ind, _, _⟩ := hGl₁
+        obtain ⟨hGl₂_ind, _, _⟩ := hGl₂
         funext i
         apply labeledSubgraph_eq_from_subgraph_eq
         have hGl₁_i_ind := @hGl₁_ind i
         have hGl₂_i_ind := @hGl₂_ind i
+        specialize h_eq i
+        rw [← Set.toFinset_diff, ← Set.toFinset_diff, Set.toFinset_inj] at h_eq
         have h_eq_verts : (Gl₁ i).subgraph.verts = (Gl₂ i).subgraph.verts := by
-          have := h_eq i
-          dsimp [f] at this
-          sorry
+          calc
+            (Gl₁ i).subgraph.verts = (Gl₁ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₁ i))).symm
+                       _           = (Gl₂ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by rw [h_eq]
+                       _           = (Gl₂ i).subgraph.verts := by exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl₂ i)))
         calc
           (Gl₁ i).subgraph = inducedSubgraph G.graph (Gl₁ i).subgraph.verts := by exact inducedSubgraph_eq hGl₁_i_ind
                   _        = inducedSubgraph G.graph (Gl₂ i).subgraph.verts := by rw [h_eq_verts]
@@ -196,6 +199,7 @@ theorem quotLabeledGraphListDensity_ge_zero
     rw [← hFlrep, ← hGrep]
     apply labeledGraphListDensity_ge_zero
 
+omit [DecidableEq T] in
 theorem quotLabeledGraphListDensity_le_one
     (Fl : QuotLabeledGraphList σ t Vl) (G :Flag σ W)
     : quotLabeledSubgraphListDensity Fl G ≤ 1 := by
@@ -211,6 +215,7 @@ theorem flagListDensity_ge_zero
   dsimp [flagListDensity]
   apply quotLabeledGraphListDensity_ge_zero
 
+omit [DecidableEq T] in
 theorem flagListDensity_le_one
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G ≤ 1 := by
@@ -223,6 +228,7 @@ theorem flagListDensity₁_ge_zero
     : 0 ≤ flagDensity₁ F G := by
   apply flagListDensity_ge_zero
 
+omit [DecidableEq T] in
 theorem flagListDensity₁_le_one
     (F : Flag σ V) (G : Flag σ W)
     : flagDensity₁ F G ≤ 1 := by
