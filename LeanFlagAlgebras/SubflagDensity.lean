@@ -40,11 +40,12 @@ omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
      [Fintype W] [DecidableEq W] in
 lemma relOfLabeledSubgraph_symm
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) :
-    (relOfLabeledSubgraph φ H₀ H₁) → (relOfLabeledSubgraph φ.symm H₁ H₀)
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} {φ : G₀ ≃f G₁}
+    {H₀ : LabeledSubgraph σ G₀} {H₁ : LabeledSubgraph σ G₁}
+    (h_rel : relOfLabeledSubgraph φ H₀ H₁)
+    : (relOfLabeledSubgraph φ.symm H₁ H₀)
   := by
-  intro ⟨h_vert, h_adj⟩
+  let ⟨h_vert, h_adj⟩ := h_rel
   have h_vert' : H₀.subgraph.verts = φ.graph_iso.symm '' H₁.subgraph.verts := by
     rw [h_vert]
     ext1 u
@@ -128,7 +129,7 @@ lemma predIsoLabeledH_related
   rintro G₀' G₁' h_rel
   constructor
   . exact predIsoLabeledH_related_support φ ψ G₀' G₁' h_rel
-  . exact predIsoLabeledH_related_support φ.symm ψ.symm G₁' G₀' (relOfLabeledSubgraph_symm φ G₀' G₁' h_rel)
+  . exact predIsoLabeledH_related_support φ.symm ψ.symm G₁' G₀' (relOfLabeledSubgraph_symm h_rel)
 
 omit [Fintype T] [DecidableEq T]
      [Fintype U] [DecidableEq U]
@@ -265,7 +266,7 @@ noncomputable def isoSetOfInducedLabeledSubgraph
     let H₀ := inducedLabeledSubgraphByIso φ.symm H₁
     let h_ind₀ : H₀.IsInduced := inducedLabeledSubgraphByIso_isInduced φ.symm H₁
     have : relOfLabeledSubgraph φ.symm H₁ H₀ := inducedLabeledSubgraph_related φ.symm H₁ h_ind₁
-    have : relOfLabeledSubgraph φ H₀ H₁ := relOfLabeledSubgraph_symm φ.symm H₁ H₀ this
+    have : relOfLabeledSubgraph φ H₀ H₁ := relOfLabeledSubgraph_symm this
     have h_p₀ : p₀ H₀ := (h_rel H₀ H₁ this).mpr h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
   let f_bij : Function.Bijective f := by
