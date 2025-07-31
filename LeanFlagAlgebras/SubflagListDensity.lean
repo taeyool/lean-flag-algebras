@@ -21,13 +21,13 @@ variable {Vl' : Fin t → Type} [FintypeList Vl'] [DecidableEqList Vl']
 
 def labeledSubgraphListSet
       (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
-      : Set (∀ (_ : Fin t), LabeledSubgraph σ G)
+      : Set (Fin t → LabeledSubgraph σ G)
   :=
-  let ind (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+  let ind (Gl : Fin t → LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), (Gl i).IsInduced
-  let p₁ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+  let p₁ (Gl : Fin t → LabeledSubgraph σ G) : Prop
     := ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)
-  let p₂ (Gl : ∀ (_ : Fin t), LabeledSubgraph σ G) : Prop
+  let p₂ (Gl : Fin t → LabeledSubgraph σ G) : Prop
     := ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
   { Gl | ind Gl ∧ p₁ Gl ∧ p₂ Gl }
 
@@ -48,7 +48,7 @@ def multinomialCoefficient
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
   :=
-  let r_list := fun (i : Fin t) => (Hl i).size - σ.size
+  let r_list (i : Fin t) := (Hl i).size - σ.size
   labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
 def relOfLabeledSubgraphList
