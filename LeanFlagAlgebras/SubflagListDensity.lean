@@ -77,31 +77,19 @@ lemma relOfLabeledSubgraphList_indep
         (((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅)
         → (((Hl₁ i).subgraph.verts \ G₁.type_verts) ∩ ((Hl₁ j).subgraph.verts \ G₁.type_verts) = ∅)
   := by
+  have h (k : Fin t) : φ.graph_iso '' ((Hl₀ k).subgraph.verts \ G₀.type_verts) = ((Hl₁ k).subgraph.verts \ G₁.type_verts)
+    := by
+    have ⟨h_Hl_verts, _⟩ := h_rel k
+    have h_G_verts : G₁.type_verts = φ.graph_iso '' G₀.type_verts := by
+      dsimp [LabeledGraph.type_verts]
+      rw [←Set.image_comp φ.graph_iso G₀.type_embed Set.univ]
+      rw [φ.type_preserve]
+    rw [h_G_verts, h_Hl_verts]
+    exact Set.image_diff φ.graph_iso.injective (Hl₀ k).subgraph.verts G₀.type_verts
   intro i j h_empty
-  by_contra h_nonempty
-  push_neg at h_nonempty
-  obtain ⟨w, ⟨h_wi₁, h_wj₁⟩⟩ := h_nonempty
-  have h_w : ∀ (k : Fin t), w ∈ (Hl₁ k).subgraph.verts → φ.symm.graph_iso w ∈ (Hl₀ k).subgraph.verts := by
-    intro k h_wk₁
-    let ⟨v_rel, _⟩ := h_rel k
-    rw [v_rel, Set.mem_image] at h_wk₁
-    obtain ⟨w', ⟨h_wk₀, h_ww'⟩⟩ := h_wk₁
-    rw [← h_ww']
-    rwa [← φ.graph_iso.left_inv' w'] at h_wk₀
-  have h_w' : w ∉ G₁.type_verts → φ.symm.graph_iso w ∉ G₀.type_verts := by
-    intro h_wk₁
-    by_contra h_w'
-    have : w ∈ G₁.type_verts := by
-      obtain ⟨t, _, h_t⟩ := h_w'
-      rw [← φ.symm.type_preserve, Function.comp_apply, EmbeddingLike.apply_eq_iff_eq] at h_t
-      rw [← h_t]
-      exact LabeledGraph.type_verts_contain G₁ t
-    exact h_wk₁ this
-  have h_wi₀ : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w i h_wi₁.left) (h_w' h_wi₁.right)
-  have h_wj₀ : φ.symm.graph_iso w ∈ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_diff_of_mem (h_w j h_wj₁.left) (h_w' h_wj₁.right)
-  have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_inter h_wi₀ h_wj₀
-  simp_all only [Set.mem_empty_iff_false]
-
+  rw [←(h i), ←(h j)]
+  rw [←Set.image_inter φ.graph_iso.injective, h_empty]
+  exact Set.image_empty ⇑φ.graph_iso
 
 def relOfPredOnLabeledSubgraphList
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
