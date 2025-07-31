@@ -83,6 +83,42 @@ theorem positiveHom_unitVector_le_one
   intro G _
   exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
 
+theorem temp
+    (f_den : FinFlag σ → ℝ) (f f' : FlagVector σ) (h : f ∼v f')
+    : linearExtension f_den f = linearExtension f_den f'
+  := by
+  rw [← sub_eq_zero, ← linearExtension_sub]
+  apply zeroSpace_eq_sum_spanElement _ at h
+  rcases h with ⟨I, hI, c, v, hv, hk_sum⟩
+  rw [hk_sum, linearExtension_sum]
+  apply Finset.sum_eq_zero
+  intro i _
+  rw [linearExtension_smul]
+  simp only [smul_eq_mul, mul_eq_zero]; right
+  rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
+  dsimp [linearExtension]
+  sorry
+
+def homFromFlagDensity
+    (f_den : FinFlag σ → ℝ)
+    : Hom σ
+  := {
+    toFun := sorry
+    map_zero' := sorry
+    map_one' := sorry
+    map_add' := sorry
+    map_mul' := sorry
+    commutes' := sorry
+  }
+
+def positiveHomFromFlagDensity
+    (f_den : FinFlag σ → ℝ)
+    : PositiveHom σ
+  := {
+    val := sorry
+    property := sorry
+  }
+
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }
 
