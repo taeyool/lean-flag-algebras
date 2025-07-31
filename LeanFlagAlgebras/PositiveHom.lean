@@ -72,7 +72,16 @@ theorem positiveHom_unitVector_le_one
     (φ : PositiveHom σ) (F : FinFlag σ)
     : φ ⟦unitVector F⟧ ≤ 1
   := by
-  sorry
+  classical
+  let ℓ := F.1
+  have hℓ : ℓ ≥ n₀ := finFlag_size_ge_n₀ F
+  rw [← sum_positiveHom_unitVector_flagWithSize_eq_one φ ℓ hℓ]
+  rw [← @Finset.add_sum_erase _ _ _ _ _ _ F.2 (by simp)]
+  have : F = ⟨ℓ, F.2⟩ := rfl
+  rw [← this, le_add_iff_nonneg_right]
+  apply Finset.sum_nonneg
+  intro G _
+  exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
 
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }

@@ -863,6 +863,29 @@ noncomputable instance : Ring (FlagAlgebra σ) where
 noncomputable instance : CommRing (FlagAlgebra σ) where
   mul_comm := flagAlgebra_mul_comm
 
+theorem sum_quot
+    {ι : Type} (s : Finset ι) (f : ι → FlagVector σ)
+    : ⟦∑ i in s, f i⟧ = ∑ i in s, (⟦f i⟧ : FlagAlgebra σ)
+  := by
+  classical
+  refine Finset.induction_on s ?_ ?_
+  · rfl
+  · intro i s his ih
+    simp only [Finset.sum_insert his, add_quot, ih]
+
+theorem sum_flagWithSize_eq_one
+    (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
+    : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
+  := by
+  rw [← sum_quot]
+  apply Quotient.sound
+  calc
+    _ ∼v ∑ F : FlagWithSize σ ℓ, flagDensity₁ (1 : FinFlag σ).2 F • unitVector ⟨ℓ, F⟩ := by
+      apply flagVectorEqv_sum
+      intro F _
+      rw [flagDensity_one F, one_smul]
+    _ ∼v unitVector (1 : FinFlag σ) := (unitVector_eqv_densityFlagSum (1 : FinFlag σ) ℓ hℓ).symm
+
 instance : NeZero (1 : FlagAlgebra σ) where
   out := by
     intro one_eq_zero
@@ -948,26 +971,3 @@ noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
   commutes' := by
     intros; simp
     rw [mul_comm]
-
-theorem sum_quot
-    {ι : Type} (s : Finset ι) (f : ι → FlagVector σ)
-    : ⟦∑ i in s, f i⟧ = ∑ i in s, (⟦f i⟧ : FlagAlgebra σ)
-  := by
-  classical
-  refine Finset.induction_on s ?_ ?_
-  · rfl
-  · intro i s his ih
-    simp only [Finset.sum_insert his, add_quot, ih]
-
-theorem sum_flagWithSize_eq_one
-    (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
-    : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
-  := by
-  rw [← sum_quot]
-  apply Quotient.sound
-  calc
-    _ ∼v ∑ F : FlagWithSize σ ℓ, flagDensity₁ (1 : FinFlag σ).2 F • unitVector ⟨ℓ, F⟩ := by
-      apply flagVectorEqv_sum
-      intro F _
-      rw [flagDensity_one F, one_smul]
-    _ ∼v unitVector (1 : FinFlag σ) := (unitVector_eqv_densityFlagSum (1 : FinFlag σ) ℓ hℓ).symm
