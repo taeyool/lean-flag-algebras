@@ -68,26 +68,11 @@ lemma relOfLabeledSubgraphList_symm
   intro i
   exact relOfLabeledSubgraph_symm (h_rel i)
 
-def relOfPredOnLabeledSubgraphList
-    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (p₀ : (Fin t → LabeledSubgraph σ G₀) → Prop)
-    (p₁ : (Fin t → LabeledSubgraph σ G₁) → Prop) : Prop
-  :=
-  ∀ (H₀: Fin t → LabeledSubgraph σ G₀) (H₁: Fin t → LabeledSubgraph σ G₁),
-      (relOfLabeledSubgraphList φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
-
-def predIsoLabeledHl
-    {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
-    : (Fin t → LabeledSubgraph σ G) → Prop
-  := fun Gl ↦
-      (∀ (i : Fin t), (Gl i).IsInduced)
-      ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
-      ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅)
-
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
-lemma predIsoLabeledHl_related_indep
+lemma relOfLabeledSubgraphList_indep
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} {φ : G₀ ≃f G₁}
-    {Hl₀ : Fin t → LabeledSubgraph σ G₀} {Hl₁ : Fin t → LabeledSubgraph σ G₁} (h_rel : relOfLabeledSubgraphList φ Hl₀ Hl₁)
+    {Hl₀ : Fin t → LabeledSubgraph σ G₀} {Hl₁ : Fin t → LabeledSubgraph σ G₁}
+    (h_rel : relOfLabeledSubgraphList φ Hl₀ Hl₁)
     : ∀ (i j : Fin t),
         (((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅)
         → (((Hl₁ i).subgraph.verts \ G₁.type_verts) ∩ ((Hl₁ j).subgraph.verts \ G₁.type_verts) = ∅)
@@ -117,6 +102,23 @@ lemma predIsoLabeledHl_related_indep
   have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_inter h_wi₀ h_wj₀
   simp_all only [Set.mem_empty_iff_false]
 
+
+def relOfPredOnLabeledSubgraphList
+    {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    (p₀ : (Fin t → LabeledSubgraph σ G₀) → Prop)
+    (p₁ : (Fin t → LabeledSubgraph σ G₁) → Prop) : Prop
+  :=
+  ∀ (H₀: Fin t → LabeledSubgraph σ G₀) (H₁: Fin t → LabeledSubgraph σ G₁),
+      (relOfLabeledSubgraphList φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
+
+def predIsoLabeledHl
+    {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
+    : (Fin t → LabeledSubgraph σ G) → Prop
+  := fun Gl ↦
+      (∀ (i : Fin t), (Gl i).IsInduced)
+      ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
+      ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅)
+
  omit [Fintype T] [DecidableEq T] [FintypeList Vl] [DecidableEqList Vl] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma predIsoLabeledHl_related
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (Hl : LabeledGraphList σ t Vl)
@@ -138,7 +140,7 @@ lemma predIsoLabeledHl_related
       intro i j h_ij
       have h_empty_i := (h_2₀ i j h_ij)
       have v_rel : ∀ (i : Fin t), (Hl₁ i).subgraph.verts = φ.graph_iso '' (Hl₀ i).subgraph.verts := fun i ↦ (h_rel i).1
-      exact (predIsoLabeledHl_related_indep h_rel) i j h_empty_i
+      exact (relOfLabeledSubgraphList_indep h_rel) i j h_empty_i
     exact ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
   · intro ⟨h_ind₁, ⟨h_1₁, h_2₁⟩⟩
     have v_rels : ∀ (i : Fin t), (Hl₀ i).subgraph.verts = φ.symm.graph_iso '' (Hl₁ i).subgraph.verts := by
@@ -175,7 +177,7 @@ lemma predIsoLabeledHl_related
       exact predIsoLabeledH_related_support φ.symm LabeledGraphIso.refl (Hl₁ i) (Hl₀ i) ⟨v_rel, e_rel⟩ (h_1₁ i)
     have h_2₀ : ∀ (i j : Fin t), i ≠ j → ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅ := by
       intro i j h_ij
-      exact (predIsoLabeledHl_related_indep (relOfLabeledSubgraphList_symm h_rel)) i j (h_2₁ i j h_ij)
+      exact (relOfLabeledSubgraphList_indep (relOfLabeledSubgraphList_symm h_rel)) i j (h_2₁ i j h_ij)
     exact ⟨h_ind₀, ⟨h_1₀, h_2₀⟩⟩
 
 def inducedlabeledSubgraphList
