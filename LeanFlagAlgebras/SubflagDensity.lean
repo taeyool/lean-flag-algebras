@@ -131,6 +131,25 @@ lemma predIsoLabeledH_related
   . exact predIsoLabeledH_related_support φ.symm ψ.symm G₁' G₀' (relOfLabeledSubgraph_symm φ G₀' G₁' h_rel)
 
 omit [Fintype T] [DecidableEq T]
+     [Fintype U] [DecidableEq U]
+     [Fintype V] [DecidableEq V] in
+lemma predIsoLabeledH_related_ind
+    {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
+    (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
+    (h_rel : relOfLabeledSubgraph φ H₀ H₁)
+    (h_ind₀ : H₀.IsInduced)
+    : H₁.IsInduced
+  := by
+  intro u v h_u h_v h_uv
+  let ⟨h_vert, h_adj⟩ := h_rel
+  rw [h_vert, Set.mem_image] at h_u h_v
+  obtain ⟨u', h_u', h_uu'⟩ := h_u
+  obtain ⟨v', h_v', h_vv'⟩ := h_v
+  subst h_vv' h_uu'
+  have h_u'_v' : G₀.graph.Adj u' v' := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_uv
+  exact (h_adj u' v').mpr (h_ind₀ h_u' h_v' h_u'_v')
+
+omit [Fintype T] [DecidableEq T]
      [Fintype V] [DecidableEq V]
      [Fintype W] [DecidableEq W] in
 lemma labeledGraphIso_preserve_type_verts
