@@ -104,18 +104,29 @@ theorem flagListDensity_prod_approx'
   let Ω := { v : Finset W × Finset W // v.1.card = Frep.size ∧ v.2.card = Frep.size}
   sorry
 
+
 def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : Finset (Fin t → Finset α)
   := (Finset.univ : Finset (Fin t → Finset α)).filter (fun p =>
       (∀ i, p i ⊆ V ∧ (p i).card = r_list i) ∧
       (∀ i j, i ≠ j → Disjoint (p i) (p j)) ∧
-      (Finset.univ : Finset (Fin t)).biUnion p ⊆ V) -- extually, this is not a partition
+      (Finset.univ : Finset (Fin t)).biUnion p ⊆ V)
+
+def permutationToPartitions
+    (l : List α) (V : Finset α) (hl : l.Nodup ∧ ∀ x, x ∈ l ↔ x ∈ V) (r_list : Fin t → ℕ)
+    : (Fin t → Finset α) := sorry
 
 theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
   dsimp [multinomialCoefficient]
   split
   next h =>
-    sorry
+    let lV := V.toList
+    apply Finset.card_eq_of_bijective
+    · sorry
+    · sorry
+    · sorry
+    · intro i hi
+      sorry
   next h =>
     rw [Finset.card_eq_zero]
     ext x
