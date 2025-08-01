@@ -58,15 +58,15 @@ noncomputable def labeledSubgraphListDensity
 
 def relOfLabeledSubgraphList
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (H₀ : Fin t → LabeledSubgraph σ G₀)
-    (H₁ : Fin t → LabeledSubgraph σ G₁) : Prop
+    (H₀ : LabeledSubgraphList σ t G₀)
+    (H₁ : LabeledSubgraphList σ t G₁) : Prop
   :=
   ∀ (i : Fin t), relOfLabeledSubgraph φ (H₀ i) (H₁ i)
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma relOfLabeledSubgraphList_symm
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} {φ : G₀ ≃f G₁}
-    {H₀ : Fin t → LabeledSubgraph σ G₀} {H₁ : Fin t → LabeledSubgraph σ G₁}
+    {H₀ : LabeledSubgraphList σ t G₀} {H₁ : LabeledSubgraphList σ t G₁}
     (h_rel : relOfLabeledSubgraphList φ H₀ H₁)
     : relOfLabeledSubgraphList φ.symm H₁ H₀
   := by
@@ -76,7 +76,7 @@ lemma relOfLabeledSubgraphList_symm
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
 lemma relOfLabeledSubgraphList_indep
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} {φ : G₀ ≃f G₁}
-    {Hl₀ : Fin t → LabeledSubgraph σ G₀} {Hl₁ : Fin t → LabeledSubgraph σ G₁}
+    {Hl₀ : LabeledSubgraphList σ t G₀} {Hl₁ : LabeledSubgraphList σ t G₁}
     (h_rel : relOfLabeledSubgraphList φ Hl₀ Hl₁)
     : ∀ (i j : Fin t),
         (((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) = ∅)
@@ -98,15 +98,14 @@ lemma relOfLabeledSubgraphList_indep
 
 def relOfPredOnLabeledSubgraphList
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (p₀ : (Fin t → LabeledSubgraph σ G₀) → Prop)
-    (p₁ : (Fin t → LabeledSubgraph σ G₁) → Prop) : Prop
+    (p₀ : LabeledSubgraphList σ t G₀ → Prop) (p₁ : LabeledSubgraphList σ t G₁ → Prop) : Prop
   :=
-  ∀ (H₀: Fin t → LabeledSubgraph σ G₀) (H₁: Fin t → LabeledSubgraph σ G₁),
+  ∀ (H₀: LabeledSubgraphList σ t G₀) (H₁: LabeledSubgraphList σ t G₁),
       (relOfLabeledSubgraphList φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
 def predIsoLabeledHl
     {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
-    : (Fin t → LabeledSubgraph σ G) → Prop
+    : LabeledSubgraphList σ t G → Prop
   := fun Gl ↦
       (∀ (i : Fin t), (Gl i).IsInduced)
       ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
@@ -149,14 +148,15 @@ def inducedLabeledSubgraphList
     : LabeledSubgraphList σ t G
   := fun i ↦ inducedLabeledSubgraph G (Sl i) (hSl i)
 
-def inducedLabeledSubgraphList_isInduced
+omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+lemma inducedLabeledSubgraphList_isInduced
     {σ : FlagType T} (G : LabeledGraph σ U) (Sl : Fin t → Set U) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
     : (inducedLabeledSubgraphList G Sl hSl).IsInduced
   := fun i ↦ inducedLabeledSubgraph_isInduced G (Sl i) (hSl i)
 
 def inducedlabeledSubgraphList
     {σ : FlagType T} (G : LabeledGraph σ V) (Sl : Fin t → Set V) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
-    : {Gl' : Fin t → LabeledSubgraph σ G // ∀ i, (Gl' i).subgraph.IsInduced}
+    : {Gl' : LabeledSubgraphList σ t G // ∀ i, (Gl' i).subgraph.IsInduced}
   := by
   let Gl' : ∀ (_ : Fin t), LabeledSubgraph σ G := fun i ↦
     inducedLabeledSubgraph G (Sl i) (hSl i)
@@ -165,7 +165,6 @@ def inducedlabeledSubgraphList
     dsimp [Gl']
     exact inducedLabeledSubgraph_isInduced G (Sl i) (hSl i)
   exact ⟨Gl', h_ind⟩
-
 
 
 omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
@@ -497,7 +496,7 @@ theorem flagDensity_permute
       intro s₀
       dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
       let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      let Hl₁ : Fin t → LabeledSubgraph σ Grep :=  fun i ↦ Hl₀ (π i)
+      let Hl₁ : LabeledSubgraphList σ t Grep :=  fun i ↦ Hl₀ (π i)
       let h_ind₁ : ∀ (i : Fin t), (Hl₁ i).subgraph.IsInduced := fun i ↦ @h_ind₀ (π i)
       let h_p₁ : (∀ (i : Fin t), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl (π i)))) ∧
                   ∀ (i j : Fin t), ¬i = j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
@@ -515,7 +514,7 @@ theorem flagDensity_permute
     have h_surj_f : Function.Surjective f := by
       intro s₁
       obtain ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      let Hl₀ : Fin t → LabeledSubgraph σ Grep := fun i ↦ Hl₁ (π.invFun i)
+      let Hl₀ : LabeledSubgraphList σ t Grep := fun i ↦ Hl₁ (π.invFun i)
       let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ @h_ind₁ (π.invFun i)
       let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧ ∀ (i j : Fin t), ¬i = j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
         constructor
@@ -732,7 +731,7 @@ theorem flagDensity_insert_empty
       intro s₁
       dsimp [S₁, setOfLabeledSubgraphListIsoHl] at s₁
       let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      let Hl₀ : Fin t → LabeledSubgraph σ Grep := fun i ↦ Hl₁ i
+      let Hl₀ : LabeledSubgraphList σ t Grep := fun i ↦ Hl₁ i
       let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ h_ind₁ i
       let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
                   ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
