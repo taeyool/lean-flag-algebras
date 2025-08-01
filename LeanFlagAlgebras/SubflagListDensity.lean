@@ -146,9 +146,13 @@ lemma predIsoLabeledHl_related
 
 def inducedLabeledSubgraphList
     {σ : FlagType T} (G : LabeledGraph σ U) (Sl : Fin t → Set U) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
-    : Fin t → LabeledSubgraph σ G
+    : LabeledSubgraphList σ t G
   := fun i ↦ inducedLabeledSubgraph G (Sl i) (hSl i)
 
+def inducedLabeledSubgraphList_isInduced
+    {σ : FlagType T} (G : LabeledGraph σ U) (Sl : Fin t → Set U) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
+    : (inducedLabeledSubgraphList G Sl hSl).IsInduced
+  := fun i ↦ inducedLabeledSubgraph_isInduced G (Sl i) (hSl i)
 
 def inducedlabeledSubgraphList
     {σ : FlagType T} (G : LabeledGraph σ V) (Sl : Fin t → Set V) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
