@@ -151,7 +151,7 @@ omit [DecidableEq T] in
 theorem labeledGraphListDensity_le_one
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity Fl G ≤ 1 := by
-    dsimp [labeledSubgraphListDensity, labeledSubgraphListCount, labeledSubgraphListSet]
+    dsimp [labeledSubgraphListDensity, labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl]
     apply div_le_one_of_le
     · let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
       have hVG : VG.card = G.size - σ.size := by
