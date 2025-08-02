@@ -176,23 +176,43 @@ lemma labeledGraphIso_preserve_type_verts_list
   intro i
   exact labeledGraphIso_preserve_type_verts φ (Hl₀ i)
 
-omit [Fintype T] [DecidableEq T] [FintypeList Vl] [DecidableEqList Vl] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+def inducedLabeledSubgraphListByIso
+    {σ : FlagType T} {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V}
+    (φ : G₀ ≃f G₁) (Hl₀ : LabeledSubgraphList σ t G₀)
+    : LabeledSubgraphList σ t G₁
+  :=
+  fun i ↦ inducedLabeledSubgraphByIso φ (Hl₀ i)
+
+omit [Fintype T] [DecidableEq T]
+     [Fintype U] [DecidableEq U]
+     [Fintype V] [DecidableEq V] in
+lemma inducedLabeledSubgraphListByIso_isInduced
+    {σ : FlagType T} {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V}
+    (φ : G₀ ≃f G₁) (Hl₀ : LabeledSubgraphList σ t G₀)
+    : (inducedLabeledSubgraphListByIso φ Hl₀).IsInduced
+  :=
+  fun i ↦ inducedLabeledSubgraphByIso_isInduced φ (Hl₀ i)
+
+omit [Fintype T] [DecidableEq T]
+     [Fintype U] [DecidableEq U]
+     [Fintype V] [DecidableEq V] in
 lemma inducedlabeledSubgraphList_related
-    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    (Hl₀ : ∀ (_ : Fin t), LabeledSubgraph σ G₀)
-    (h_ind₀ : ∀ i, (Hl₀ i).subgraph.IsInduced)
-    : relOfLabeledSubgraphList φ Hl₀
-      (inducedLabeledSubgraphList G₁ (fun i => φ.graph_iso '' (Hl₀ i).subgraph.verts) (labeledGraphIso_preserve_type_verts_list φ Hl₀))
+    {σ : FlagType T} {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
+    (Hl₀ : LabeledSubgraphList σ t G₀) (h_ind₀ : Hl₀.IsInduced)
+    : relOfLabeledSubgraphList φ Hl₀ (inducedLabeledSubgraphListByIso φ Hl₀)
   := by
-  dsimp [relOfLabeledSubgraphList, inducedLabeledSubgraphList, labeledGraphIso_preserve_type_verts_list]
+  dsimp [relOfLabeledSubgraphList, inducedLabeledSubgraphListByIso]
   intro i
   exact inducedLabeledSubgraph_related φ (Hl₀ i) (h_ind₀ i)
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+omit [Fintype T] [DecidableEq T]
+     [Fintype U] [DecidableEq U]
+     [Fintype V] [DecidableEq V] in
 lemma Hl_eq_reverseinduced_induced_Hl
-  {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-  (Hl₀ : LabeledSubgraphList σ t G₀) (h_ind₀ : Hl₀.IsInduced)
-  : Hl₀ = (inducedlabeledSubgraphList G₀ (fun i => φ.symm.graph_iso '' ((inducedlabeledSubgraphList G₁ (fun i => φ.graph_iso '' (Hl₀ i).subgraph.verts) (labeledGraphIso_preserve_type_verts_list φ Hl₀)).1 i).subgraph.verts) (labeledGraphIso_preserve_type_verts_list φ.symm (inducedlabeledSubgraphList G₁ (fun i => φ.graph_iso '' (Hl₀ i).subgraph.verts) (labeledGraphIso_preserve_type_verts_list φ Hl₀)).1)).1 := by
+    {σ : FlagType T} {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V}
+    (φ : G₀ ≃f G₁) (Hl₀ : LabeledSubgraphList σ t G₀) (h_ind₀ : Hl₀.IsInduced)
+    : Hl₀ = inducedLabeledSubgraphListByIso φ.symm (inducedLabeledSubgraphListByIso φ Hl₀)
+  := by
   funext i
   exact H_eq_reverseinduced_induced_H φ (Hl₀ i) (h_ind₀ i)
 
