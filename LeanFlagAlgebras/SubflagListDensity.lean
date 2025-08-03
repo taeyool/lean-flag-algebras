@@ -267,10 +267,11 @@ noncomputable def labeledSubgraphListDensityLifted
   exact labeledSubgraphListDensity_respect_eqv_on_G (Classical.choice h_eqv) Hl
 
 noncomputable def isoSetOfInducedLabeledSubgraph_eqv
-    {Hl Hl' : LabeledGraphList σ t Vl} (φ : ∀ (i : Fin t), Hl i ≃f Hl' i)
-    (G : LabeledGraph σ W)
-    : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } ≃
-      { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) }
+    {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'}
+    (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : LabeledGraph σ W)
+    : { Gl : LabeledSubgraphList σ t G | Gl.IsInduced ∧ predIsoLabeledHl G Hl Gl }
+      ≃
+      { Gl : LabeledSubgraphList σ t G | Gl.IsInduced ∧ predIsoLabeledHl G Hl' Gl }
   := by
   let h : ∀ (G' : LabeledSubgraph σ G) (i : Fin t), Nonempty (G'.coe ≃f Hl i) ↔ Nonempty (G'.coe ≃f Hl' i) := by
     intro G' i
@@ -292,15 +293,16 @@ noncomputable def isoSetOfInducedLabeledSubgraph_eqv
 
 omit [DecidableEq T] in
 lemma labeledSubgraphListDensityLifted_respect_eqv
-    (Hl Hl' : LabeledGraphList σ t Vl) (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
+    {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'}
+    (ψ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
     : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
   := by
   dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
   congr
   ext Grep
-  let S₀ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
-  let S₁ := { Gl : ∀ (_ : Fin t), LabeledSubgraph σ Grep | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ Grep.type_verts) ∩ ((Gl j).subgraph.verts \ Grep.type_verts) = ∅) }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraph_eqv φ Grep
+  let S₀ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl Gl }
+  let S₁ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl' Gl }
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraph_eqv ψ Grep
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
   have h_count : labeledSubgraphListCount Hl Grep = labeledSubgraphListCount Hl' Grep := by
@@ -308,7 +310,10 @@ lemma labeledSubgraphListDensityLifted_respect_eqv
     show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
-  rw [h_count]; rfl
+  rw [h_count]
+  have h_Hl_sizes : ∀ i : Fin t, (Hl i).size = (Hl' i).size :=
+    fun i ↦ labeledGraphIso_size_eq (Hl i) (Hl' i) (ψ i)
+  simp only [h_Hl_sizes]
 
 noncomputable def quotLabeledSubgraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
@@ -319,7 +324,7 @@ noncomputable def quotLabeledSubgraphListDensity
   have φ : ∀ (i : Fin t), Hl i ≃f Hl' i := by
     intro i
     exact Classical.choice (Hl_eqv i)
-  exact labeledSubgraphListDensityLifted_respect_eqv Hl Hl' φ G
+  exact labeledSubgraphListDensityLifted_respect_eqv φ G
 
 omit [DecidableEq T] in
 lemma quotLabeledSubgraphListDensity_respect_eqv
