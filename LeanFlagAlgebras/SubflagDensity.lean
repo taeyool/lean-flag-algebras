@@ -283,19 +283,17 @@ noncomputable def isoSetOfInducedLabeledSubgraph
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
-noncomputable def isoSetOfInducedLabeledSubgraphFromIsoHG
+noncomputable def isoSetOfInducedLabeledSubgraphFromIsoGH
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
-    : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
-      ≃ { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
-  := by
-  let iso :=
-    isoSetOfInducedLabeledSubgraph φ
-      (predIsoLabeledH H₀ G₀)
-      (predIsoLabeledH H₁ G₁)
-      (predIsoLabeledH_related φ ψ)
-  dsimp [predIsoLabeledH, relOfPredOnLabeledSubgraph] at iso
-  exact iso
+    : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ predIsoLabeledH H₀ G₀ G' }
+      ≃ { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ predIsoLabeledH H₁ G₁ G' }
+  :=
+  isoSetOfInducedLabeledSubgraph φ
+    (predIsoLabeledH H₀ G₀)
+    (predIsoLabeledH H₁ G₁)
+    (predIsoLabeledH_related φ ψ)
+
 
 omit [DecidableEq T] in
 lemma labeledSubgraphDensity_respect_eqv
@@ -306,7 +304,7 @@ lemma labeledSubgraphDensity_respect_eqv
   dsimp [labeledSubgraphDensity]
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoHG φ ψ
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoGH φ ψ
   have h_count : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁ := by
     dsimp only [labeledSubgraphCount]
     show S₀.toFinset.card = S₁.toFinset.card
