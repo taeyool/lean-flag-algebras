@@ -279,33 +279,18 @@ lemma labeledSubgraphListDensityLifted_respect_eqv
     (ψ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
     : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
   := by
-  dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
+  dsimp [labeledSubgraphListDensityLifted]
   congr
   ext Grep
-  let S₀ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl Gl }
-  let S₁ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl' Gl }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphListFromIsoGHl LabeledGraphIso.refl ψ
-  let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
-  let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-  have h_count : labeledSubgraphListCount Hl Grep = labeledSubgraphListCount Hl' Grep := by
-    dsimp only [labeledSubgraphListCount]
-    show S₀.toFinset.card = S₁.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.coe_setOf, Set.toFinset_card]
-  rw [h_count]
-  have h_Hl_sizes : ∀ i : Fin t, (Hl i).size = (Hl' i).size :=
-    fun i ↦ labeledGraphIso_size_eq (Hl i) (Hl' i) (ψ i)
-  simp only [h_Hl_sizes]
+  exact labeledSubgraphListDensity_respect_eqv LabeledGraphIso.refl ψ
 
 noncomputable def quotLabeledSubgraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
   := by
   apply Quot.lift labeledSubgraphListDensityLifted
-  intro Hl Hl' Hl_eqv
+  intro Hl₀ Hl₁ ψ
   ext G
-  have φ : ∀ (i : Fin t), Hl i ≃f Hl' i := by
-    intro i
-    exact Classical.choice (Hl_eqv i)
+  have φ : ∀ (i : Fin t), Hl₀ i ≃f Hl₁ i := fun i ↦ Classical.choice (ψ i)
   exact labeledSubgraphListDensityLifted_respect_eqv φ G
 
 omit [DecidableEq T] in
