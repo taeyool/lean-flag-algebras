@@ -273,30 +273,6 @@ noncomputable def labeledSubgraphListDensityLifted
   intro _ _ h_eqv
   exact labeledSubgraphListDensity_respect_eqv (Classical.choice h_eqv) (fun _ ↦ LabeledGraphIso.refl)
 
-noncomputable def isoSetOfInducedLabeledSubgraph_eqv
-    {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'}
-    (φ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : LabeledGraph σ W)
-    : { Gl : LabeledSubgraphList σ t G | Gl.IsInduced ∧ predIsoLabeledHl G Hl Gl }
-      ≃ { Gl : LabeledSubgraphList σ t G | Gl.IsInduced ∧ predIsoLabeledHl G Hl' Gl }
-  := by
-  let h : ∀ (G' : LabeledSubgraph σ G) (i : Fin t), Nonempty (G'.coe ≃f Hl i) ↔ Nonempty (G'.coe ≃f Hl' i) := by
-    intro G' i
-    constructor
-    · intro h_iso₀
-      let h_iso₀ := Classical.choice h_iso₀
-      let h_iso₁ : G'.coe ≃f (Hl' i) := h_iso₀.trans (φ i)
-      exact Nonempty.intro h_iso₁
-    · intro h_iso₁
-      let h_iso₁ := Classical.choice h_iso₁
-      let h_iso₀ : G'.coe ≃f (Hl i) := h_iso₁.trans (φ i).symm
-      exact Nonempty.intro h_iso₀
-  have : { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } = { Gl : ∀ (_ : Fin t), LabeledSubgraph σ G | (∀ (i : Fin t), (Gl i).IsInduced) ∧ (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl' i)) ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅) } :=
-    Set.sep_ext_iff.mpr (fun x _ ↦
-      Iff.intro
-        (fun ⟨h_iso, h_indep⟩ ↦ ⟨fun i ↦ (h (x i) i).mp (h_iso i) , h_indep⟩)
-        (fun ⟨h_iso, h_indep⟩ ↦ ⟨fun i ↦ (h (x i) i).mpr (h_iso i) , h_indep⟩))
-  exact Equiv.setCongr this
-
 omit [DecidableEq T] in
 lemma labeledSubgraphListDensityLifted_respect_eqv
     {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'}
@@ -308,7 +284,7 @@ lemma labeledSubgraphListDensityLifted_respect_eqv
   ext Grep
   let S₀ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl Gl }
   let S₁ := { Gl : LabeledSubgraphList σ t Grep | Gl.IsInduced ∧ predIsoLabeledHl Grep Hl' Gl }
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraph_eqv ψ Grep
+  have h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphListFromIsoGHl LabeledGraphIso.refl ψ
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
   have h_count : labeledSubgraphListCount Hl Grep = labeledSubgraphListCount Hl' Grep := by
