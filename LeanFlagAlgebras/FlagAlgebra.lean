@@ -515,7 +515,7 @@ theorem sum_smul
   := by
   classical
   refine Finset.induction_on s ?_ ?_
-  · simp
+  · simp only [sum_empty, zero_smul]
   · intros r R hr ih
     simp [sum_insert hr, Module.add_smul, ih]
 
@@ -786,13 +786,11 @@ theorem flagAlgebra_smul_mul_smul_comm
   rw [flagVector_smul_mul_smul_comm]
 
 noncomputable instance : Ring (FlagAlgebra σ) where
-  add := (· + ·)
   add_assoc a b c := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b, ← Quotient.out_eq c]
     apply Quotient.sound
     simp_all
     rw [add_assoc]
-  zero := 0
   zero_add a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
@@ -801,7 +799,6 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     rw [← Quotient.out_eq a]
     apply Quotient.sound
     simp
-  neg := -(·)
   add_comm a b := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b]
     apply Quotient.sound
@@ -811,13 +808,11 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     rw [← Quotient.out_eq a]
     apply Quotient.sound
     simp; rfl
-  mul := (· * ·)
   mul_assoc := flagAlgebra_mul_assoc
   zero_mul a := by
     rw [flagAlgebra_mul_comm]
     apply flagAlgebra_mul_zero
   mul_zero := flagAlgebra_mul_zero
-  one := 1
   one_mul a := by
     rw [flagAlgebra_mul_comm]
     apply flagAlgebra_mul_one

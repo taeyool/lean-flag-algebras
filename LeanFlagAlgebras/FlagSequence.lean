@@ -134,10 +134,56 @@ noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
 
 end PositiveHom
 
+theorem flagSeq_limit_linearExtension_respect_eqv
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    {f f' : FlagVector σ} (h : f ∼v f')
+    : linearExtension a f = linearExtension a f'
+  := by
+  rw [← sub_eq_zero, ← linearExtension_sub]
+  apply zeroSpace_eq_sum_spanElement _ at h
+  rcases h with ⟨I, hI, c, v, hv, hk_sum⟩
+  rw [hk_sum, linearExtension_sum]
+  apply Finset.sum_eq_zero
+  intro i _
+  rw [linearExtension_smul]
+  simp only [smul_eq_mul, mul_eq_zero]; right
+  rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
+  dsimp [linearExtension]
+  sorry
+
+noncomputable def homFunFromFlagSeqLimit
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    : FlagAlgebra σ → ℝ
+  := by
+  apply Quot.lift (linearExtension a)
+  intro f f' f_eqv
+  exact flagSeq_limit_linearExtension_respect_eqv hs_conv f_eqv
+
+noncomputable def homFromFlagSeqLimit
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    : Hom σ
+  := {
+    toFun := homFunFromFlagSeqLimit hs_conv
+    map_zero' := sorry
+    map_one' := sorry
+    map_add' := sorry
+    map_mul' := sorry
+    commutes' := sorry
+  }
+
+noncomputable def positiveHomFromFlagSeqLimit
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    : PositiveHom σ
+  := {
+    val := homFromFlagSeqLimit hs_conv
+    property := sorry
+  }
+
 theorem flagSeq_limit_mem_positiveHom
     (s : FlagSeq σ) {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : ∃ (φ : PositiveHom σ), φ.coe = a
   := by
+  use positiveHomFromFlagSeqLimit hs_conv
   sorry
 
 theorem positiveHom_as_flagSeq_limit

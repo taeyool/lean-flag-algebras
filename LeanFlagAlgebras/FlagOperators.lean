@@ -112,26 +112,26 @@ def isoSetOfIsoLabeledGraphWithSameGraph
   left_inv := comp_funBetweenIsoLabeledGraphSetWithSameGraph φ
   right_inv := comp_funBetweenIsoLabeledGraphSetWithSameGraph φ.symm
 
-lemma isomorphismCount_respects_eqv
+lemma isomorphismCount_respect_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
     : isomorphismCount G = isomorphismCount G'
   := by
   dsimp [isomorphismCount]
   simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h.some)]
 
-lemma downwardNormalizingFactor_labeledGraph_respects_eqv
+lemma downwardNormalizingFactor_labeledGraph_respect_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
     : downwardNormalizingFactor_labeledGraph G = downwardNormalizingFactor_labeledGraph G'
   := by
   dsimp [downwardNormalizingFactor_labeledGraph]
-  rw [isomorphismCount_respects_eqv h]
+  rw [isomorphismCount_respect_eqv h]
 
 noncomputable def downwardNormalizingFactor
     : Flag σ (Fin n) → ℚ
   := by
   apply Quot.lift (fun G : LabeledGraph σ (Fin n) => downwardNormalizingFactor_labeledGraph G)
   intro G G' G_eqv
-  exact downwardNormalizingFactor_labeledGraph_respects_eqv G_eqv
+  exact downwardNormalizingFactor_labeledGraph_respect_eqv G_eqv
 
 def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V where
   graph := G.graph
