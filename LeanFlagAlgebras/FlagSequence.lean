@@ -134,6 +134,13 @@ noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
 
 end PositiveHom
 
+theorem flagSeq_limit_chain_rule
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    {F : FinFlag σ} {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
+    : a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • a ⟨ℓ, G⟩
+  := by
+  sorry
+
 theorem flagSeq_limit_linearExtension_respect_eqv
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     {f f' : FlagVector σ} (h : f ∼v f')
@@ -148,8 +155,12 @@ theorem flagSeq_limit_linearExtension_respect_eqv
   rw [linearExtension_smul]
   simp only [smul_eq_mul, mul_eq_zero]; right
   rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
-  dsimp [linearExtension]
-  sorry
+  dsimp [zeroElement, densityFlagSum] at hvi
+  rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
+  nth_rw 1 [unitVector]
+  rw [linearExtension_single_one]
+  simp_rw [linearExtension_smul, unitVector, linearExtension_single_one]
+  exact flagSeq_limit_chain_rule hs_conv hℓ
 
 noncomputable def homFunFromFlagSeqLimit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)

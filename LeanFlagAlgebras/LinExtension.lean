@@ -17,8 +17,18 @@ def linearExtension
 
 theorem linearExtension_zero
     (f : α → β)
-    : linearExtension f 0 = 0 := by
+    : linearExtension f 0 = 0
+  := by
   simp only [linearExtension, Finsupp.support_zero, Finset.sum_empty]
+
+theorem linearExtension_single_one
+    (f : α → β) (a : α)
+    : linearExtension f (Finsupp.single a 1) = f a
+  := by
+  classical
+  dsimp [linearExtension]
+  rw [Finsupp.support_single_ne_zero a one_ne_zero, Finset.sum_singleton, Finsupp.single_apply]
+  simp only [↓reduceIte, one_smul]
 
 omit [Module ℝ β] in
 lemma linearExtension_add_support
