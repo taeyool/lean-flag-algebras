@@ -245,8 +245,8 @@ noncomputable def isoSetOfInducedLabeledSubgraphListFromIsoGHl
 
 omit [DecidableEq T] in
 lemma labeledSubgraphListDensity_respect_eqv
-    {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {Hl₀ : LabeledGraphList σ t Vl} {Hl₁ : LabeledGraphList σ t Vl'} (ψ : ∀ (i : Fin t), Hl₀ i ≃f Hl₁ i)
+    {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     : labeledSubgraphListDensity Hl₀ G₀ = labeledSubgraphListDensity Hl₁ G₁
   := by
   dsimp [labeledSubgraphListDensity]
@@ -271,7 +271,7 @@ noncomputable def labeledSubgraphListDensityLifted
   := by
   apply Quot.lift (fun G => labeledSubgraphListDensity Hl G)
   intro _ _ h_eqv
-  exact labeledSubgraphListDensity_respect_eqv (Classical.choice h_eqv) (fun _ ↦ LabeledGraphIso.refl)
+  exact labeledSubgraphListDensity_respect_eqv (fun _ ↦ LabeledGraphIso.refl) h_eqv.some
 
 omit [DecidableEq T] in
 lemma labeledSubgraphListDensityLifted_respect_eqv
@@ -282,25 +282,22 @@ lemma labeledSubgraphListDensityLifted_respect_eqv
   dsimp [labeledSubgraphListDensityLifted]
   congr
   ext Grep
-  exact labeledSubgraphListDensity_respect_eqv LabeledGraphIso.refl ψ
+  exact labeledSubgraphListDensity_respect_eqv ψ LabeledGraphIso.refl
 
 noncomputable def quotLabeledSubgraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
   := by
   apply Quot.lift labeledSubgraphListDensityLifted
-  intro Hl₀ Hl₁ ψ
+  intro _ _ ψ
   ext G
-  have φ : ∀ (i : Fin t), Hl₀ i ≃f Hl₁ i := fun i ↦ Classical.choice (ψ i)
-  exact labeledSubgraphListDensityLifted_respect_eqv φ G
+  exact labeledSubgraphListDensityLifted_respect_eqv (fun i ↦ (ψ i).some) G
 
 omit [DecidableEq T] in
 lemma quotLabeledSubgraphListDensity_respect_eqv
-    (Hl Hl' : LabeledGraphList σ t Vl) (h : Hl ∼fl Hl') (G : Flag σ W)
+    {Hl Hl' : LabeledGraphList σ t Vl} (h : Hl ∼fl Hl') (G : Flag σ W)
     : quotLabeledSubgraphListDensity ⟦Hl⟧ G = quotLabeledSubgraphListDensity ⟦Hl'⟧ G
-  := by
-  apply labeledSubgraphListDensityLifted_respect_eqv
-  intro i
-  exact Classical.choice (h i)
+  :=
+  labeledSubgraphListDensityLifted_respect_eqv (fun i ↦ (h i).some) G
 
 noncomputable def flagListDensity
     : FlagList σ t Vl → Flag σ W → ℚ
