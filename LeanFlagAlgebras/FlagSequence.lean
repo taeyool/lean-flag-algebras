@@ -28,6 +28,16 @@ def Increases (s : FlagSeq σ) : Prop
   :=
   StrictMono (fun n => (s n).1)
 
+theorem Increases.eventually_ge
+    {s : FlagSeq σ} (h_inc : Increases s) (ℓ : ℕ)
+    : ∃ N, ∀ n ≥ N, (s n).1 ≥ ℓ
+  := by
+  use ℓ
+  intro n hn
+  calc
+    (s n).1 ≥ n := h_inc.id_le n
+    _ ≥ ℓ := hn
+
 def ConvergesTo (s : FlagSeq σ) (a : FinFlag σ → ℝ) : Prop
   :=
   Increases s ∧
@@ -134,12 +144,48 @@ noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
 
 end PositiveHom
 
+lemma tendsto_sum
+    {ι : Type} [Fintype ι] (s : ι → ℕ → ℝ) (a : ι → ℝ)
+    (h : ∀ i, Tendsto (s i) atTop (𝓝 (a i)))
+    : Tendsto (fun n ↦ ∑ i, s i n) atTop (𝓝 (∑ i, a i))
+  := by
+  classical
+  have : ∀ (I : Finset ι), Tendsto (fun n ↦ ∑ i ∈ I, s i n) atTop (𝓝 (∑ i ∈ I, a i)) := by
+    intro I
+    induction I using Finset.induction with
+    | empty =>
+      simp only [Finset.sum_empty]
+      exact tendsto_const_nhds
+    | @insert j I hj ih =>
+      simp only [Finset.sum_insert hj]
+      exact (h j).add ih
+  exact this Finset.univ
+
 theorem flagSeq_limit_chain_rule
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     {F : FinFlag σ} {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
-    : a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • a ⟨ℓ, G⟩
+    : a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩
   := by
-  sorry
+  rw [flagSeq_convergesTo_iff] at hs_conv
+  obtain ⟨h_inc, h_lim⟩ := hs_conv
+  apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq s n F) atTop
+  · exact h_lim F
+  · dsimp [flagDensitySeq]
+    have h_eventually_sum : ∀ᶠ (n : ℕ) in atTop, (flagDensity₁ F.2 (s n).2 : ℝ)
+      = ∑ G : FlagWithSize σ ℓ, (flagDensity₁ F.2 G : ℝ) * flagDensity₁ G (s n).2 := by
+      rw [eventually_atTop]
+      obtain ⟨N, hN⟩ := h_inc.eventually_ge ℓ
+      use N
+      intro n hn
+      simp_rw [← Rat.cast_mul, ← Rat.cast_sum, Rat.cast_inj]
+      apply density_chain_rule₁₁
+      · exact finFlag_size_ge_n₀ F
+      · exact hℓ
+      · exact hN n hn
+    rw [tendsto_congr' h_eventually_sum]
+    apply tendsto_sum
+    intro G
+    exact (h_lim ⟨ℓ, G⟩).const_smul (flagDensity₁ F.2 G)
 
 theorem flagSeq_limit_linearExtension_respect_eqv
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
