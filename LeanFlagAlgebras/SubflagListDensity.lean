@@ -311,7 +311,7 @@ theorem flagListDensity_HEq_eq
     : flagListDensity Fl G = flagListDensity Fl' G
   := by
   subst h_Vl_eq
-  have h_Fl_eq : Fl = Fl' := by simp_all only [heq_eq_eq]
+  have h_Fl_eq : Fl = Fl' := by rw [←heq_eq_eq Fl Fl']; exact h_HEq
   subst h_Fl_eq
   dsimp [flagListDensity, quotLabeledSubgraphListDensity, eqv_QuotLabeledGraphList_FlagList]
   dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
@@ -328,25 +328,25 @@ theorem subflagDensity_eq_flagListDensity
     dsimp [labeledSubgraphCount, labeledSubgraphListCount]
     apply Finset.card_bij
     · intro H hH
-      simp at hH
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH
       show (fun (_ : Fin 1) => H) ∈ _
-      simp [Set.toFinset_setOf, setOfLabeledSubgraphListIsoHl]
-      constructor
-      · exact hH.1
-      · constructor
-        · exact hH.2
-        · intro i j hij
-          have : i = j := by
-            rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-          contradiction
+      simp only [setOfLabeledSubgraphListIsoHl, ne_eq, forall_const, true_and,
+        Set.coe_setOf, Set.toFinset_setOf, Set.inter_self,
+        Finset.mem_filter, Finset.mem_univ]
+      refine ⟨hH.1, hH.2, ?_⟩
+      intro i j hij
+      have : i = j := by
+        rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
+      contradiction
     · intro H _ H' _ h_eq
       calc
-        H = (fun (_ : Fin 1) => H) 0 := by simp
+        H = (fun (_ : Fin 1) => H) 0 := by simp only
         _ = (fun (_ : Fin 1) => H') 0 := by rw [h_eq]
-        _ = H' := by simp
-    · intro Hl _
+        _ = H' := by simp only
+    · intro Hl hHl
       use Hl 0
-      simp_all [setOfLabeledSubgraphListIsoHl]
+      simp_all only [setOfLabeledSubgraphListIsoHl, ne_eq, true_and, and_self, exists_const,
+        Set.coe_setOf, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ]
       ext1 i
       rw [Fin.fin_one_eq_zero i]
   calc
@@ -367,7 +367,7 @@ theorem subflagDensity_eq_flagListDensity
         dsimp [eqv_QuotLabeledGraphList_FlagList]
         apply Quotient.sound
         intro i
-        simp [flagToList, ← hFrep]
+        simp only [flagToList, ← hFrep]
         apply Quotient.mk_out Frep
       rw [this, ← hGrep]
       rfl
