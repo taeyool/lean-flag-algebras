@@ -406,7 +406,8 @@ theorem labeledSubgraphListDensity_eq_flagDensity₁
     : labeledSubgraphListDensity [F]ᵍ G = flagDensity₁ ⟦F⟧ ⟦G⟧
   := by
   rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_singleton]
-  simp [flagDensity₁]
+  simp only [QuotLabeledGraphList.coe, FlagList.coe,
+    Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₁]
 
 omit [DecidableEq T] in
 theorem labeledSubgraphListDensity_eq_flagDensity₂
@@ -414,7 +415,8 @@ theorem labeledSubgraphListDensity_eq_flagDensity₂
     : labeledSubgraphListDensity [F₁, F₂]ᵍ G = flagDensity₂ ⟦F₁⟧ ⟦F₂⟧ ⟦G⟧
   := by
   rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_pair]
-  simp [flagDensity₂]
+  simp only [QuotLabeledGraphList.coe, FlagList.coe,
+    Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₂]
 
 theorem flagDensity_empty
     (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
