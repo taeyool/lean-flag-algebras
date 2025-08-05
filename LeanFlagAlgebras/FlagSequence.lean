@@ -250,6 +250,13 @@ theorem flagPairDensity_tendsto_flagDensity_mul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
     : Tendsto (fun n ↦ (flagDensity₂ F.2 G.2 (s n).2 : ℝ)) atTop (𝓝 (a F * a G))
   := by
+  rw [flagSeq_convergesTo_iff] at hs_conv
+  obtain ⟨h_inc, h_lim⟩ := hs_conv
+  have h_seq_mul : Tendsto (fun n ↦ flagDensitySeq s n F * flagDensitySeq s n G) atTop (𝓝 (a F * a G)) := Tendsto.mul (h_lim F) (h_lim G)
+  apply Tendsto.congr_dist h_seq_mul
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  simp_rw [dist_eq_norm, Real.norm_eq_abs, sub_zero, abs_abs]
   sorry
 
 theorem flagSeq_limit_linearExtension_flagMul
