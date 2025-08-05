@@ -682,9 +682,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
           simp only [h_bottom_verts, Set.inter_self]
     exact ⟨Hl₁, h_ind₁, h_p₁⟩
   let f_inv : S₁ → S₀ := by
-    intro s₁
-    dsimp [S₁, setOfLabeledSubgraphListIsoHl] at s₁
-    let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
+    intro  ⟨Hl₁, h_ind₁, h_p₁⟩
     let Hl₀ : LabeledSubgraphList σ t G := fun i ↦ Hl₁ i
     let h_ind₀ : Hl₀.IsInduced := fun i ↦ h_ind₁ i
     let h_p₀ : predIsoLabeledHl G (fun i ↦ Quotient.out (Fl i)) Hl₀ := by
