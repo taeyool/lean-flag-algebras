@@ -27,22 +27,80 @@ def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t →
       (∀ i j, i ≠ j → Disjoint (p i) (p j)) ∧
       (Finset.univ : Finset (Fin t)).biUnion p ⊆ V)
 
-def permutationToPartitions
-    (l : List α) (V : Finset α) (hl : l.Nodup ∧ ∀ x, x ∈ l ↔ x ∈ V) (r_list : Fin t → ℕ)
-    : (Fin t → Finset α) := sorry
+theorem choose_eq
+    {n₁ n₂ m : ℕ} (h : n₁ = n₂)
+    : n₁.choose m = n₂.choose m
+  := by subst h; rfl
+
+theorem choose_sequence_eq_factorial_div
+    (n : ℕ) (r_list : Fin t → ℕ) (h_size : ∑ i : Fin t, r_list i ≤ n)
+    : ∏ i : Fin t, (n - ∑ j : Fin i, r_list (j.castLE (by simp_all only [Fin.is_le']))).choose (r_list i) = Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - ∑ i : Fin t, r_list i))
+  := by
+  induction t with
+  | zero =>
+      simp only [Finset.univ_eq_empty, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
+      rw [Nat.div_self (Nat.factorial_pos n)]
+  | succ t ih =>
+      have calc1 :  ∏ i : Fin (t + 1), (n - ∑ j : Fin ↑i, r_list (j.castLE (by simp_all only [Fin.is_le']))).choose (r_list i) =
+      (∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (Nat.le_add_right_of_le Fin.is_le'))).choose (r_list i)) * ((n - ∑ j : Fin t, r_list j).choose (r_list t))
+        := by
+        rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
+        simp only [lt_add_iff_pos_right, Fin.coe_eq_castSucc, Fin.natCast_eq_last]
+        congr!
+        rw [Finset.prod_fin_eq_prod_range]
+        apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
+        · intro i hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi j hj hij
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi
+          use i
+          use hi
+          simp_all only [Finset.mem_range, ↓reduceDIte]
+        · intro i hi₁
+          simp_all [↓reduceDIte]
+          split
+          next hi' h =>
+            apply @_root_.choose_eq
+            congr <;> try simp_all only [Finset.mem_range, ↓reduceIte]
+            refine (Fin.heq_fun_iff ?h.e_a.h.e_5.h).mpr ?h.e_a.h.e_5.a
+            · simp_all only [Finset.mem_range, ↓reduceIte]
+            · intro i; rfl
+          next _ hi₂ =>
+            exfalso
+            exact hi₂ (Nat.lt_add_right 1 hi₁)
+      rw [calc1]; clear calc1
+      let r_list' : Fin t → ℕ := fun i => r_list i
+      have h_size' : ∑ i : Fin t, r_list' i ≤ n := by
+        have : ∑ i : Fin t, r_list' i ≤ ∑ i : Fin (t + 1), r_list i := by
+          dsimp [r_list']
+          #check Finset.sum_fin_eq_sum_range
+          #check Finset.sum_le_sum_of_subset
+          sorry
+        exact this.trans h_size
+      have calc2 := ih r_list' h_size'
+      dsimp [r_list'] at calc2
+      have cast_simp : ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (Nat.le_add_right_of_le Fin.is_le'))).choose (r_list ↑↑i) =
+                       ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list ↑↑j).choose (r_list ↑↑i) := by
+        sorry
+      rw [cast_simp]
+      rw [calc2]
+      sorry
 
 theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
   dsimp [multinomialCoefficient]
   split
   next h =>
-    let lV := V.toList
-    apply Finset.card_eq_of_bijective
-    · sorry
-    · sorry
-    · sorry
-    · intro i hi
-      sorry
+    rw [← choose_sequence_eq_factorial_div V.card r_list h]
+    sorry
+    -- let lV := V.toList
+    -- apply Finset.card_eq_of_bijective
+    -- · sorry
+    -- · sorry
+    -- · sorry
+    -- · intro i hi
+    --   sorry
   next h =>
     rw [Finset.card_eq_zero]
     ext x
