@@ -645,8 +645,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
         split
         next hi =>
           dsimp [Hl₁]
-          have empty_equiv := (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G G.bottom).mp
-          simp only [true_implies] at empty_equiv
+          have empty_equiv : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ) := labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph.mp rfl
           have empty_iso := Classical.choice empty_equiv
           have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else G.bottom) = G.bottom := by
             simp_all only [lt_self_iff_false, ↓reduceDIte]
@@ -655,45 +654,32 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
           have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
           exact (insert_iso.trans quotient_iso).trans empty_iso.symm
         next hi =>
-          have hi_lt : i.val < t := by
-            have := i.isLt
-            rw [← Nat.succ_le_iff] at this
-            simp at this
-            exact Nat.lt_of_le_of_ne this hi
+          have hi_lt : i.val < t := by omega
           let i' : Fin t := ⟨i.val, hi_lt⟩
           dsimp [Hl₁]
           have h_Hl₁ :  (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else G.bottom) = Hl₀ ⟨↑i, hi_lt⟩ := by
-            simp [hi_lt]
+            simp only [hi_lt, ↓reduceDIte]
           rw [h_Hl₁]
           have iso_from_existing := Classical.choice (h_p₀.1 i')
           dsimp [i'] at iso_from_existing
-          have perserv_iso := Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)
-          exact (iso_from_existing.trans perserv_iso).symm
+          have preserv_iso := Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)
+          exact (iso_from_existing.trans preserv_iso).symm
       · intro i j h_ij
         dsimp [Hl₁]
+        have h_bottom_verts : G.bottom.subgraph.verts \ G.type_verts = ∅ := Set.diff_eq_empty.mpr fun ⦃a⦄ a ↦ a
         split <;> split
         next h1 h2 =>
           let i' : Fin t := ⟨i, h1⟩
           let j' : Fin t := ⟨j, h2⟩
           have h_ij' : i' ≠ j' := by
-            simp only [i', j']
             rwa [ne_eq, Fin.mk.injEq, ← ne_eq, ← Fin.ne_iff_vne]
           exact h_p₀.2 i' j' h_ij'
-        next h1 h2 =>
-          ext x
-          simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
-          exact fun _ hx ↦ hx
-        next h1 h2 =>
-          rw [Set.inter_comm]
-          ext x
-          rw [Set.mem_empty_iff_false, iff_false]
-          simp_all only [Set.mem_inter_iff, Set.mem_diff, not_and, not_false_eq_true, and_true, and_imp]
-          exact fun _ hx ↦ hx
-        next h1 h2 =>
-          ext x
-          simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
-          simp only [Set.inter_self, Set.mem_diff, not_and]
-          exact fun x hx ↦ hx x
+        next _ _ =>
+          simp only [h_bottom_verts, Set.inter_empty, Set.mem_empty_iff_false]
+        next _ _ =>
+          simp only [h_bottom_verts, Set.empty_inter]
+        next _ _ =>
+          simp only [h_bottom_verts, Set.inter_self]
     exact ⟨Hl₁, h_ind₁, h_p₁⟩
   let f_inv : S₁ → S₀ := by
     intro s₁
