@@ -52,11 +52,11 @@ theorem flagSeq_convergesTo_iff
   · intro ⟨h_inc, h_lim⟩
     constructor; exact h_inc
     intro F
-    rw [nhds_pi, Filter.tendsto_pi] at h_lim
+    rw [nhds_pi, tendsto_pi] at h_lim
     exact h_lim F
   · intro ⟨h_inc, h_lim⟩
     constructor; exact h_inc
-    rw [nhds_pi, Filter.tendsto_pi]
+    rw [nhds_pi, tendsto_pi]
     exact h_lim
 
 def FlagDensitySpace (σ : FlagType (Fin n₀)) : Set (FinFlag σ → ℝ)
@@ -216,16 +216,74 @@ noncomputable def homFunFromFlagSeqLimit
   intro f f' f_eqv
   exact flagSeq_limit_linearExtension_respect_eqv hs_conv f_eqv
 
+theorem homFunFromFlagSeqLimit_map_zero
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    : homFunFromFlagSeqLimit hs_conv 0 = 0
+  :=
+  rfl
+
+theorem homFunFromFlagSeqLimit_map_one
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
+    : homFunFromFlagSeqLimit hs_conv 1 = 1
+  := by
+  show linearExtension a (unitVector 1) = 1
+  simp only [linearExtension, unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
+  rw [flagSeq_convergesTo_iff] at hs_conv
+  obtain ⟨_, h_lim⟩ := hs_conv
+  apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq s n 1) atTop
+  · exact h_lim 1
+  · have h_den_one : ∀ n, flagDensitySeq s n 1 = 1 := by
+      intro n
+      simp only [flagDensitySeq]
+      rw [flagDensity_one, Rat.cast_one]
+    rw [tendsto_congr h_den_one, tendsto_const_nhds_iff]
+
+theorem homFunFromFlagSeqLimit_map_add
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (f g : FlagAlgebra σ)
+    : homFunFromFlagSeqLimit hs_conv (f + g) = homFunFromFlagSeqLimit hs_conv f + homFunFromFlagSeqLimit hs_conv g
+  := by
+  rcases Quotient.exists_rep f with ⟨F, hF⟩
+  rcases Quotient.exists_rep g with ⟨G, hG⟩
+  rw [← hF, ← hG, ← add_quot]
+  simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
+  exact linearExtension_add a F G
+
+theorem homFunFromFlagSeqLimit_map_mul
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (f g : FlagAlgebra σ)
+    : homFunFromFlagSeqLimit hs_conv (f * g) = homFunFromFlagSeqLimit hs_conv f * homFunFromFlagSeqLimit hs_conv g
+  := by
+  rcases Quotient.exists_rep f with ⟨F, hF⟩
+  rcases Quotient.exists_rep g with ⟨G, hG⟩
+  rw [← hF, ← hG, ← mul_quot]
+  simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
+  sorry
+
+theorem homFunFromFlagSeqLimit_map_smul
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (r : ℝ) (f : FlagAlgebra σ)
+    : homFunFromFlagSeqLimit hs_conv (r • f) = r * homFunFromFlagSeqLimit hs_conv f
+  := by
+  rcases Quotient.exists_rep f with ⟨F, hF⟩
+  rw [← hF, ← smul_quot]
+  simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
+  exact linearExtension_smul a r F
+
+theorem homFunFromFlagSeqLimit_commutes
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (r : ℝ)
+    : homFunFromFlagSeqLimit hs_conv (Algebra.cast r) = r
+  := by
+  show homFunFromFlagSeqLimit hs_conv (r • 1) = r
+  rw [homFunFromFlagSeqLimit_map_smul, homFunFromFlagSeqLimit_map_one, mul_one]
+
 noncomputable def homFromFlagSeqLimit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : Hom σ
   := {
     toFun := homFunFromFlagSeqLimit hs_conv
-    map_zero' := sorry
-    map_one' := sorry
-    map_add' := sorry
-    map_mul' := sorry
-    commutes' := sorry
+    map_zero' := homFunFromFlagSeqLimit_map_zero hs_conv
+    map_one' := homFunFromFlagSeqLimit_map_one hs_conv
+    map_add' := homFunFromFlagSeqLimit_map_add hs_conv
+    map_mul' := homFunFromFlagSeqLimit_map_mul hs_conv
+    commutes' := homFunFromFlagSeqLimit_commutes hs_conv
   }
 
 noncomputable def positiveHomFromFlagSeqLimit
@@ -233,7 +291,18 @@ noncomputable def positiveHomFromFlagSeqLimit
     : PositiveHom σ
   := {
     val := homFromFlagSeqLimit hs_conv
-    property := sorry
+    property := by
+      intro F
+      simp only [homFromFlagSeqLimit, homFunFromFlagSeqLimit, AlgHom.coe_mk, RingHom.coe_mk,
+        MonoidHom.coe_mk, OneHom.coe_mk, Quotient.lift_mk, linearExtension, unitVector_support,
+        Finset.sum_singleton, unitVector_apply_self, one_smul, ge_iff_le]
+      rw [flagSeq_convergesTo_iff] at hs_conv
+      obtain ⟨_, h_lim⟩ := hs_conv
+      have h_den_nonneg : ∀ n, 0 ≤ flagDensitySeq s n F := by
+        intro n
+        simp only [flagDensitySeq, Rat.cast_nonneg]
+        exact flagListDensity₁_ge_zero F.2 (s n).2
+      exact ge_of_tendsto' (h_lim F) h_den_nonneg
   }
 
 theorem flagSeq_limit_mem_positiveHom
@@ -241,7 +310,9 @@ theorem flagSeq_limit_mem_positiveHom
     : ∃ (φ : PositiveHom σ), φ.coe = a
   := by
   use positiveHomFromFlagSeqLimit hs_conv
-  sorry
+  ext F
+  show linearExtension a (unitVector F) = a F
+  simp only [linearExtension, unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
 
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)

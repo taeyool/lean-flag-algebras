@@ -492,9 +492,7 @@ noncomputable instance : MulAction ℝ (FlagAlgebra σ) where
 theorem add_quot
     (f f' : FlagVector σ)
     : (⟦f + f'⟧ : FlagAlgebra σ) = ⟦f⟧ + ⟦f'⟧
-  := by
-  apply Quotient.sound
-  simp only [add_smul]
+  :=
   rfl
 
 theorem neg_quot
@@ -506,8 +504,7 @@ theorem neg_quot
 
 theorem smul_quot
     (r : ℝ) (f : FlagVector σ) : (⟦r • f⟧ : FlagAlgebra σ) = r • ⟦f⟧
-  := by
-  apply Quotient.sound
+  :=
   rfl
 
 theorem sum_smul
@@ -857,6 +854,12 @@ noncomputable instance : Ring (FlagAlgebra σ) where
 
 noncomputable instance : CommRing (FlagAlgebra σ) where
   mul_comm := flagAlgebra_mul_comm
+
+theorem mul_quot
+    (f f' : FlagVector σ)
+    : (⟦f * f'⟧ : FlagAlgebra σ) = ⟦f⟧ * ⟦f'⟧
+  :=
+  rfl
 
 theorem sum_quot
     {ι : Type} (s : Finset ι) (f : ι → FlagVector σ)
