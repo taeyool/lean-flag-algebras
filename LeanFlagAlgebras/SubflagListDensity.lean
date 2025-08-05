@@ -617,6 +617,7 @@ theorem flagTripleDensity_comm
   refine flagListDensity_HEq_eq h_Vl_eq ?_ G
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
+
 noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
     (G : LabeledGraph σ V) (Fl : FlagList σ t Vl)
     : setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl i))
@@ -625,16 +626,10 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
   let S₀ := setOfLabeledSubgraphListIsoHl G (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl G (fun i => Quotient.out (Fl.insert (emptyFlag σ) i))
   let f : S₀ → S₁ := by
-    intro s₀
-    dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
-    let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-    let Hl₁ : Fin (t + 1) → LabeledSubgraph σ G := by
-      intro i
-      if h : i.val < t then
-        exact Hl₀ ⟨i.val, h⟩
-      else
-        exact G.bottom
-    let h_ind₁ : ∀ (i : Fin (t + 1)), (Hl₁ i).subgraph.IsInduced := by
+    intro ⟨Hl₀, h_ind₀, h_p₀⟩
+    let Hl₁ : LabeledSubgraphList σ (t+1) G :=
+      fun i ↦ if h : i.val < t then Hl₀ ⟨i.val, h⟩ else G.bottom
+    let h_ind₁ : Hl₁.IsInduced := by
       intro i
       dsimp [Hl₁]
       split
@@ -642,8 +637,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
         exact h_ind₀ ⟨i, hi⟩
       next _ =>
         exact G.bottom_isInduced
-    let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
-                ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ G.type_verts ∩ ((Hl₁ j).subgraph.verts \ G.type_verts) = ∅ := by
+    let h_p₁ : predIsoLabeledHl G (fun i ↦ Quotient.out (Fl.insert (emptyFlag σ) i)) Hl₁ := by
       constructor
       · intro i
         apply Nonempty.intro; symm
@@ -706,9 +700,8 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
     dsimp [S₁, setOfLabeledSubgraphListIsoHl] at s₁
     let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
     let Hl₀ : LabeledSubgraphList σ t G := fun i ↦ Hl₁ i
-    let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ h_ind₁ i
-    let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
-                ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ G.type_verts ∩ ((Hl₀ j).subgraph.verts \ G.type_verts) = ∅ := by
+    let h_ind₀ : Hl₀.IsInduced := fun i ↦ h_ind₁ i
+    let h_p₀ : predIsoLabeledHl G (fun i ↦ Quotient.out (Fl i)) Hl₀ := by
       constructor
       · intro i
         apply Nonempty.intro
