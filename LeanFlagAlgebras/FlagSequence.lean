@@ -44,7 +44,7 @@ def ConvergesTo (s : FlagSeq σ) (a : FinFlag σ → ℝ) : Prop
   Tendsto (flagDensitySeq s) atTop (𝓝 a)
 
 theorem flagSeq_convergesTo_iff
-    (s : FlagSeq σ) (a : FinFlag σ → ℝ)
+    {s : FlagSeq σ} {a : FinFlag σ → ℝ}
     : ConvergesTo s a ↔
       Increases s ∧ ∀ (F : FinFlag σ), Tendsto (fun n => flagDensitySeq s n F) atTop (𝓝 (a F))
   := by
@@ -203,9 +203,7 @@ theorem flagSeq_limit_linearExtension_respect_eqv
   rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
   dsimp [zeroElement, densityFlagSum] at hvi
   rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
-  nth_rw 1 [unitVector]
-  rw [linearExtension_single_one]
-  simp_rw [linearExtension_smul, unitVector, linearExtension_single_one]
+  simp_rw [linearExtension_smul, linearExtension_unitVector]
   exact flagSeq_limit_chain_rule hs_conv hℓ
 
 noncomputable def homFunFromFlagSeqLimit
@@ -248,15 +246,60 @@ theorem homFunFromFlagSeqLimit_map_add
   simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
   exact linearExtension_add a F G
 
+theorem flagPairDensity_tendsto_flagDensity_mul
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
+    : Tendsto (fun n ↦ (flagDensity₂ F.2 G.2 (s n).2 : ℝ)) atTop (𝓝 (a F * a G))
+  := by
+  sorry
+
+theorem flagSeq_limit_linearExtension_flagMul
+    {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
+    : linearExtension a (flagMul F G) = a F * a G
+  := by
+  dsimp [flagMul, flagMulWithSize]
+  simp_rw [linearExtension_sum, linearExtension_smul, linearExtension_unitVector]
+  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp hs_conv
+  apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ (flagDensity₂ F.2 G.2 (s n).2 : ℝ)) atTop
+  · have h_eventually_sum : ∀ᶠ (n : ℕ) in atTop, (flagDensity₂ F.2 G.2 (s n).2 : ℝ)
+      = ∑ H : FlagWithSize σ (F.1 + G.1 - n₀), (flagDensity₂ F.2 G.2 H : ℝ) * flagDensity₁ H (s n).2 := by
+      rw [eventually_atTop]
+      obtain ⟨N, hN⟩ := h_inc.eventually_ge (F.1 + G.1 - n₀)
+      use N
+      intro n hn
+      simp_rw [← Rat.cast_mul, ← Rat.cast_sum, Rat.cast_inj]
+      apply density_chain_rule₂₁
+      · exact finFlag_size_ge_n₀ F
+      · exact finFlag_size_ge_n₀ G
+      · exact le_tsub_add
+      · exact hN n hn
+    rw [tendsto_congr' h_eventually_sum]
+    apply tendsto_sum
+    intro H
+    apply Tendsto.const_smul
+    exact h_lim ⟨F.1 + G.1 - n₀, H⟩
+  · exact flagPairDensity_tendsto_flagDensity_mul hs_conv F G
+
 theorem homFunFromFlagSeqLimit_map_mul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (f g : FlagAlgebra σ)
     : homFunFromFlagSeqLimit hs_conv (f * g) = homFunFromFlagSeqLimit hs_conv f * homFunFromFlagSeqLimit hs_conv g
   := by
-  rcases Quotient.exists_rep f with ⟨F, hF⟩
-  rcases Quotient.exists_rep g with ⟨G, hG⟩
-  rw [← hF, ← hG, ← mul_quot]
+  rcases Quotient.exists_rep f with ⟨frep, h_frep⟩
+  rcases Quotient.exists_rep g with ⟨grep, h_grep⟩
+  rw [← h_frep, ← h_grep, ← mul_quot]
   simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
-  sorry
+  rw [flagVector_mul_eq_nested_sum]
+  nth_rw 3 [flagVector_eq_sum_unitVector frep, flagVector_eq_sum_unitVector grep]
+  simp_rw [linearExtension_sum]
+  rw [Finset.sum_mul_sum]
+  apply Finset.sum_congr rfl
+  intro F _
+  apply Finset.sum_congr rfl
+  intro G _
+  simp_rw [linearExtension_smul]
+  rw [smul_mul_smul_comm]
+  congr
+  simp only [linearExtension_unitVector]
+  exact flagSeq_limit_linearExtension_flagMul hs_conv F G
 
 theorem homFunFromFlagSeqLimit_map_smul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (r : ℝ) (f : FlagAlgebra σ)

@@ -884,6 +884,12 @@ theorem sum_flagWithSize_eq_one
       rw [flagDensity_one F, one_smul]
     _ ∼v unitVector (1 : FinFlag σ) := (unitVector_eqv_densityFlagSum (1 : FinFlag σ) ℓ hℓ).symm
 
+theorem linearExtension_unitVector
+    (f : FinFlag σ → ℝ) (F : FinFlag σ)
+    : linearExtension f (unitVector F) = f F
+  := by
+  simp only [unitVector, linearExtension_single_one]
+
 instance : NeZero (1 : FlagAlgebra σ) where
   out := by
     intro one_eq_zero
@@ -919,7 +925,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       rw [hG2, zeroElement, sub_eq_add_neg, φ_add]
       rw [φ_neg, ← sub_eq_add_neg, sub_eq_zero, densityFlagSum, φ_sum']
       have : φ (unitVector iG) = flagDensity₁ iG.2 F := by
-        simp only [unitVector_support, sum_singleton, unitVector_apply_self, φ, linearExtension, one_smul]
+        simp only [φ, linearExtension_unitVector]
       have hℓ'' : n₀ ≤ iG.fst := finFlag_size_ge_n₀ iG
       rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F hℓ'' hℓ' hℓ]
       simp
@@ -930,9 +936,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       simp
       by_cases s : flagDensity₁ iG.2 x = 0
       · right; exact s
-      · left
-        dsimp [φ, linearExtension]
-        simp only [unitVector_support, sum_singleton, unitVector_apply_self, one_mul]
+      · left; simp only [φ, linearExtension_unitVector]
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G in (unitVector 1).support, _ = 1
       simp [sum_singleton, flagDensity_one]
