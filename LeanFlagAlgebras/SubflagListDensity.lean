@@ -579,8 +579,8 @@ theorem flagPairDensity_comm
   let π : Perm 2 := by
     let f : Fin 2 → Fin 2 := fun i => match i with | 0 => 1 | 1 => 0
     refine ⟨f, f, ?_, ?_⟩
-    · intro i; match i with | 0 => simp | 1 => simp
-    · intro i; match i with | 0 => simp | 1 => simp
+    · intro i; match i with | 0 => simp only [Fin.isValue] | 1 => simp only [Fin.isValue]
+    · intro i; match i with | 0 => simp only [Fin.isValue] | 1 => simp only [Fin.isValue]
   rw [flagDensity_permute Fl₁ G π]
   have h_Vl_eq : (fun (i : Fin 2) => match i with | 0 => U₂ | 1 => U₁)
       = (listTypePermute (fun (i : Fin 2) => match i with | 0 => U₁ | 1 => U₂) π) := by
@@ -603,8 +603,8 @@ theorem flagTripleDensity_comm
     let f : Fin 3 → Fin 3 := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
     let f_inv : Fin 3 → Fin 3 := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
     refine ⟨f, f_inv, ?_, ?_⟩
-    · intro i; match i with | 0 => simp | 1 => simp | 2 => simp
-    · intro i; match i with | 0 => simp | 1 => simp | 2 => simp
+    · intro i; match i with | 0 => simp only [Fin.isValue] | 1 => simp only [Fin.isValue] | 2 => simp only [Fin.isValue]
+    · intro i; match i with | 0 => simp only [Fin.isValue] | 1 => simp only [Fin.isValue] | 2 => simp only [Fin.isValue]
   rw [flagDensity_permute Fl₁ G π]
   have h_Vl_eq : (fun (i : Fin 3) => match i with | 0 => U₂ | 1 => U₃ | 2 => U₁)
       = (listTypePermute (fun (i : Fin 3) => match i with | 0 => U₁ | 1 => U₂ | 2 => U₃) π) := by
