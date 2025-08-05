@@ -35,10 +35,6 @@ def predIsoLabeledHl
 def setOfLabeledSubgraphListIsoHl (G : LabeledGraph σ U) (Hl : LabeledGraphList σ t Vl)
       : Set (LabeledSubgraphList σ t G)
   :=
-  let p₁ (Gl : LabeledSubgraphList σ t G) : Prop
-    := ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)
-  let p₂ (Gl : LabeledSubgraphList σ t G) : Prop
-    := ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
   { Gl | Gl.IsInduced ∧ predIsoLabeledHl G Hl Gl }
 
 noncomputable def labeledSubgraphListCount
@@ -473,6 +469,48 @@ lemma prod_perm_eq
     have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
     rw [←this]
 
+noncomputable def setOfLabeledSubgraphListIsoHl_permute
+    (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl) (π : Perm t)
+    : setOfLabeledSubgraphListIsoHl G Hl ≃ setOfLabeledSubgraphListIsoHl G (fun i ↦ Hl (π i))
+  :=
+  let S₀ := setOfLabeledSubgraphListIsoHl G Hl
+  let S₁ := setOfLabeledSubgraphListIsoHl G (fun i => Hl (π i))
+  let f : S₀ → S₁ := by
+    intro s₀
+    dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
+    let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
+    let Hl₁ : LabeledSubgraphList σ t G :=  fun i ↦ Hl₀ (π i)
+    let h_ind₁ : Hl₁.IsInduced := fun i ↦ @h_ind₀ (π i)
+    let h_p₁ : predIsoLabeledHl G (fun i ↦ Hl (π i)) Hl₁ := by
+      simp_all only [predIsoLabeledHl, ne_eq, implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self]
+    exact ⟨Hl₁, h_ind₁, h_p₁⟩
+  have h_inj_f : Function.Injective f := by
+    intro ⟨Hl₀, h_ind₀, h_p₀⟩ ⟨Hl₁, h_ind₁, h_p₁⟩ h_eq
+    simp only [f, Subtype.mk.injEq] at h_eq
+    simp only [Subtype.mk.injEq]
+    funext i
+    have : Hl₀ (π (π.invFun i)) = Hl₁ (π (π.invFun i)) := congrFun h_eq (π.invFun i)
+    rwa [Equiv.invFun_as_coe, Equiv.apply_symm_apply] at this
+  have h_surj_f : Function.Surjective f := by
+    intro ⟨Hl₁, h_ind₁, h_p₁⟩
+    let Hl₀ : LabeledSubgraphList σ t G := fun i ↦ Hl₁ (π.invFun i)
+    let h_ind₀ : Hl₀.IsInduced := fun i ↦ @h_ind₁ (π.invFun i)
+    let h_p₀ : predIsoLabeledHl G Hl Hl₀ := by
+      constructor
+      · intro i
+        dsimp [Hl₀]
+        have : Nonempty ((Hl₀ i).coe ≃f (Hl i)) := by
+          have h_eq : π (π.invFun i) = i := by apply Equiv.apply_symm_apply
+          have : Nonempty ((Hl₁ (π.invFun i)).coe ≃f (Hl (π (π.invFun i)))) := h_p₁.1 (π.invFun i)
+          rw [h_eq] at this
+          exact this
+        exact this
+      · intro i j h_ij
+        simp_all only [predIsoLabeledHl, ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
+    use ⟨Hl₀, h_ind₀, h_p₀⟩
+    simp_all only [f, Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
+  Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
+
 omit [DecidableEq T] in
 theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
@@ -482,43 +520,7 @@ theorem flagDensity_permute
   congr; ext Grep
   let S₀ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl (π i)))
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    dsimp [S₀, S₁]
-    let f : S₀ → S₁ := by
-      intro s₀
-      dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
-      let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      let Hl₁ : LabeledSubgraphList σ t Grep :=  fun i ↦ Hl₀ (π i)
-      let h_ind₁ : Hl₁.IsInduced := fun i ↦ @h_ind₀ (π i)
-      let h_p₁ : predIsoLabeledHl Grep (fun i ↦ Quotient.out (Fl (π i))) Hl₁ := by
-        simp_all only [predIsoLabeledHl, ne_eq, implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self]
-      exact ⟨Hl₁, h_ind₁, h_p₁⟩
-    have h_inj_f : Function.Injective f := by
-      intro ⟨Hl₀, h_ind₀, h_p₀⟩ ⟨Hl₁, h_ind₁, h_p₁⟩ h_eq
-      simp only [f, Subtype.mk.injEq] at h_eq
-      simp only [Subtype.mk.injEq]
-      funext i
-      have : Hl₀ (π (π.invFun i)) = Hl₁ (π (π.invFun i)) := congrFun h_eq (π.invFun i)
-      rwa [Equiv.invFun_as_coe, Equiv.apply_symm_apply] at this
-    have h_surj_f : Function.Surjective f := by
-      intro ⟨Hl₁, h_ind₁, h_p₁⟩
-      let Hl₀ : LabeledSubgraphList σ t Grep := fun i ↦ Hl₁ (π.invFun i)
-      let h_ind₀ : Hl₀.IsInduced := fun i ↦ @h_ind₁ (π.invFun i)
-      let h_p₀ : predIsoLabeledHl Grep (fun i ↦ Quotient.out (Fl i)) Hl₀ := by
-        constructor
-        · intro i
-          dsimp [Hl₀]
-          have : Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i)) := by
-            have h_eq : π (π.invFun i) = i := by apply Equiv.apply_symm_apply
-            have : Nonempty ((Hl₁ (π.invFun i)).coe ≃f Quotient.out (Fl (π (π.invFun i)))) := h_p₁.1 (π.invFun i)
-            rw [h_eq] at this
-            exact this
-          exact this
-        · intro i j h_ij
-          simp_all only [predIsoLabeledHl, ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
-      use ⟨Hl₀, h_ind₀, h_p₀⟩
-      simp_all only [f, Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
-    exact Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
+  let f_iso_S₀_S₁ : S₀ ≃ S₁ := setOfLabeledSubgraphListIsoHl_permute Grep (fun i => Quotient.out (Fl i)) π
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
   have h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep
@@ -526,7 +528,7 @@ theorem flagDensity_permute
     := by
     dsimp only [labeledSubgraphListCount]
     show S₁.toFinset.card = S₀.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr f_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size)
                  = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size)
@@ -615,6 +617,149 @@ theorem flagTripleDensity_comm
   refine flagListDensity_HEq_eq h_Vl_eq ?_ G
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
+noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
+    (G : LabeledGraph σ V) (Fl : FlagList σ t Vl)
+    : setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl i))
+      ≃ setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl.insert (emptyFlag σ) i))
+  :=
+  let S₀ := setOfLabeledSubgraphListIsoHl G (fun i => Quotient.out (Fl i))
+  let S₁ := setOfLabeledSubgraphListIsoHl G (fun i => Quotient.out (Fl.insert (emptyFlag σ) i))
+  let f : S₀ → S₁ := by
+    intro s₀
+    dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
+    let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
+    let Hl₁ : Fin (t + 1) → LabeledSubgraph σ G := by
+      intro i
+      if h : i.val < t then
+        exact Hl₀ ⟨i.val, h⟩
+      else
+        exact G.bottom
+    let h_ind₁ : ∀ (i : Fin (t + 1)), (Hl₁ i).subgraph.IsInduced := by
+      intro i
+      dsimp [Hl₁]
+      split
+      next hi =>
+        exact h_ind₀ ⟨i, hi⟩
+      next _ =>
+        exact G.bottom_isInduced
+    let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
+                ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ G.type_verts ∩ ((Hl₁ j).subgraph.verts \ G.type_verts) = ∅ := by
+      constructor
+      · intro i
+        apply Nonempty.intro; symm
+        dsimp [FlagList.insert]
+        split
+        next hi =>
+          dsimp [Hl₁]
+          have empty_equiv := (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G G.bottom).mp
+          simp only [true_implies] at empty_equiv
+          have empty_iso := Classical.choice empty_equiv
+          have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else G.bottom) = G.bottom := by
+            simp_all only [lt_self_iff_false, ↓reduceDIte]
+          rw [h_Hl₁]
+          have insert_iso := (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm
+          have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
+          exact (insert_iso.trans quotient_iso).trans empty_iso.symm
+        next hi =>
+          have hi_lt : i.val < t := by
+            have := i.isLt
+            rw [← Nat.succ_le_iff] at this
+            simp at this
+            exact Nat.lt_of_le_of_ne this hi
+          let i' : Fin t := ⟨i.val, hi_lt⟩
+          dsimp [Hl₁]
+          have h_Hl₁ :  (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else G.bottom) = Hl₀ ⟨↑i, hi_lt⟩ := by
+            simp [hi_lt]
+          rw [h_Hl₁]
+          have iso_from_existing := Classical.choice (h_p₀.1 i')
+          dsimp [i'] at iso_from_existing
+          have perserv_iso := Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)
+          exact (iso_from_existing.trans perserv_iso).symm
+      · intro i j h_ij
+        dsimp [Hl₁]
+        split <;> split
+        next h1 h2 =>
+          let i' : Fin t := ⟨i, h1⟩
+          let j' : Fin t := ⟨j, h2⟩
+          have h_ij' : i' ≠ j' := by
+            simp only [i', j']
+            rwa [ne_eq, Fin.mk.injEq, ← ne_eq, ← Fin.ne_iff_vne]
+          exact h_p₀.2 i' j' h_ij'
+        next h1 h2 =>
+          ext x
+          simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
+          exact fun _ hx ↦ hx
+        next h1 h2 =>
+          rw [Set.inter_comm]
+          ext x
+          rw [Set.mem_empty_iff_false, iff_false]
+          simp_all only [Set.mem_inter_iff, Set.mem_diff, not_and, not_false_eq_true, and_true, and_imp]
+          exact fun _ hx ↦ hx
+        next h1 h2 =>
+          ext x
+          simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
+          simp only [Set.inter_self, Set.mem_diff, not_and]
+          exact fun x hx ↦ hx x
+    exact ⟨Hl₁, h_ind₁, h_p₁⟩
+  let f_inv : S₁ → S₀ := by
+    intro s₁
+    dsimp [S₁, setOfLabeledSubgraphListIsoHl] at s₁
+    let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
+    let Hl₀ : LabeledSubgraphList σ t G := fun i ↦ Hl₁ i
+    let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ h_ind₁ i
+    let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
+                ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ G.type_verts ∩ ((Hl₀ j).subgraph.verts \ G.type_verts) = ∅ := by
+      constructor
+      · intro i
+        apply Nonempty.intro
+        have hi : i.val ≠ t := i.isLt.ne
+        dsimp [Hl₀]
+        let h_iso := Classical.choice (h_p₁.1 i)
+        have h_iso' := (Classical.choice (insert_preserves_existing_flags_coe Fl (emptyFlag σ) hi)).symm
+        exact h_iso.trans h_iso'
+      · intro i j h_ij
+        simp_all only [predIsoLabeledHl, ne_eq, Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
+    exact ⟨Hl₀, h_ind₀, h_p₀⟩
+  let f_bij : Function.Bijective f := by
+    have h_leftinv : Function.LeftInverse f_inv f := by
+      rintro ⟨Hl₀, h_ind₀, h_p₀⟩
+      dsimp [f, f_inv]
+      simp only [Subtype.mk.injEq]
+      funext i
+      split
+      next hi =>
+        congr
+        simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+        exact Nat.lt_succ_of_lt i.isLt
+      next hi =>
+        simp_all only [ne_eq, not_lt]
+        have : i % (t + 1) = i := by
+          simp_all only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+          exact Nat.lt_add_right 1 i.isLt
+        rw [this] at hi
+        exact absurd i.isLt (not_lt.mpr hi)
+    have h_rightinv : Function.RightInverse f_inv f := by
+      rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
+      dsimp [f, f_inv]
+      simp only [Subtype.mk.injEq]
+      funext i
+      split
+      next _ =>
+        simp_all only [Fin.cast_val_eq_self]
+      next hi =>
+        have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
+        have iso_exist := Classical.choice (h_p₁.1 i)
+        dsimp [FlagList.insert] at iso_exist
+        have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
+          simp_all only [↓reduceDIte]
+        rw [h_Fl] at iso_exist
+        have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
+        have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
+        have h_iso := Hl₁_iso.symm.trans quotient_iso
+        symm; apply (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G (Hl₁ i)).mpr (Nonempty.intro h_iso)
+    exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
+  Equiv.ofBijective f f_bij
+
 theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
@@ -623,150 +768,14 @@ theorem flagDensity_insert_empty
   congr; ext Grep
   let S₀ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl.insert (emptyFlag σ) i))
+  let f_iso_S₀_S₁ : S₀ ≃ S₁ := setOfLabeledSubgraphListIsoHl_insert_empty Grep Fl
   let h_S₀ : Fintype S₀ := Fintype.ofFinite S₀
   let h_S₁ : Fintype S₁ := Fintype.ofFinite S₁
-  have h_iso_S₀_S₁ : S₀ ≃ S₁ := by
-    dsimp [S₀, S₁]
-    let f : S₀ → S₁ := by
-      intro s₀
-      dsimp [S₀, setOfLabeledSubgraphListIsoHl] at s₀
-      let ⟨Hl₀, h_ind₀, h_p₀⟩ := s₀
-      let Hl₁ : Fin (t + 1) → LabeledSubgraph σ Grep := by
-        intro i
-        if h : i.val < t then
-          exact Hl₀ ⟨i.val, h⟩
-        else
-          exact Grep.bottom
-      let h_ind₁ : ∀ (i : Fin (t + 1)), (Hl₁ i).subgraph.IsInduced := by
-        intro i
-        dsimp [Hl₁]
-        split
-        next hi =>
-          exact h_ind₀ ⟨i, hi⟩
-        next _ =>
-          exact Grep.bottom_isInduced
-      let h_p₁ : (∀ (i : Fin (t + 1)), Nonempty ((Hl₁ i).coe ≃f Quotient.out (Fl.insert (emptyFlag σ) i))) ∧
-                  ∀ (i j : Fin (t + 1)), i ≠ j → (Hl₁ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₁ j).subgraph.verts \ Grep.type_verts) = ∅ := by
-        constructor
-        · intro i
-          apply Nonempty.intro; symm
-          dsimp [FlagList.insert]
-          split
-          next hi =>
-            dsimp [Hl₁]
-            have empty_equiv := (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ W Grep Grep.bottom).mp
-            simp only [true_implies] at empty_equiv
-            have empty_iso := Classical.choice empty_equiv
-            have h_Hl₁ : (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Grep.bottom := by
-              simp_all only [lt_self_iff_false, ↓reduceDIte]
-            rw [h_Hl₁]
-            have insert_iso := (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm
-            have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
-            exact (insert_iso.trans quotient_iso).trans empty_iso.symm
-          next hi =>
-            have hi_lt : i.val < t := by
-              have := i.isLt
-              rw [← Nat.succ_le_iff] at this
-              simp at this
-              exact Nat.lt_of_le_of_ne this hi
-            let i' : Fin t := ⟨i.val, hi_lt⟩
-            dsimp [Hl₁]
-            have h_Hl₁ :  (if h : ↑i < t then Hl₀ ⟨↑i, h⟩ else Grep.bottom) = Hl₀ ⟨↑i, hi_lt⟩ := by
-              simp [hi_lt]
-            rw [h_Hl₁]
-            have iso_from_existing := Classical.choice (h_p₀.1 i')
-            dsimp [i'] at iso_from_existing
-            have perserv_iso := Classical.choice (insert_preserves_existing_flags Fl (emptyFlag σ) hi)
-            exact (iso_from_existing.trans perserv_iso).symm
-        · intro i j h_ij
-          dsimp [Hl₁]
-          split <;> split
-          next h1 h2 =>
-            let i' : Fin t := ⟨i, h1⟩
-            let j' : Fin t := ⟨j, h2⟩
-            have h_ij' : i' ≠ j' := by
-              simp only [i', j']
-              rwa [ne_eq, Fin.mk.injEq, ← ne_eq, ← Fin.ne_iff_vne]
-            exact h_p₀.2 i' j' h_ij'
-          next h1 h2 =>
-            ext x
-            simp_all only [Set.mem_inter_iff, Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, not_false_eq_true, and_true, and_imp]
-            exact fun _ hx ↦ hx
-          next h1 h2 =>
-            rw [Set.inter_comm]
-            ext x
-            rw [Set.mem_empty_iff_false, iff_false]
-            simp_all only [Set.mem_inter_iff, Set.mem_diff, not_and, not_false_eq_true, and_true, and_imp]
-            exact fun _ hx ↦ hx
-          next h1 h2 =>
-            ext x
-            simp_all only [Set.mem_diff, Set.mem_empty_iff_false, iff_false, not_and, Decidable.not_not]
-            simp only [Set.inter_self, Set.mem_diff, not_and]
-            exact fun x hx ↦ hx x
-      exact ⟨Hl₁, h_ind₁, h_p₁⟩
-    let f_inv : S₁ → S₀ := by
-      intro s₁
-      dsimp [S₁, setOfLabeledSubgraphListIsoHl] at s₁
-      let ⟨Hl₁, h_ind₁, h_p₁⟩ := s₁
-      let Hl₀ : LabeledSubgraphList σ t Grep := fun i ↦ Hl₁ i
-      let h_ind₀ : ∀ (i : Fin t), (Hl₀ i).subgraph.IsInduced := fun i ↦ h_ind₁ i
-      let h_p₀ : (∀ (i : Fin t), Nonempty ((Hl₀ i).coe ≃f Quotient.out (Fl i))) ∧
-                  ∀ (i j : Fin t), i ≠ j → (Hl₀ i).subgraph.verts \ Grep.type_verts ∩ ((Hl₀ j).subgraph.verts \ Grep.type_verts) = ∅ := by
-        constructor
-        · intro i
-          apply Nonempty.intro
-          have hi : i.val ≠ t := i.isLt.ne
-          dsimp [Hl₀]
-          let h_iso := Classical.choice (h_p₁.1 i)
-          have h_iso' := (Classical.choice (insert_preserves_existing_flags_coe Fl (emptyFlag σ) hi)).symm
-          exact h_iso.trans h_iso'
-        · intro i j h_ij
-          simp_all only [predIsoLabeledHl, ne_eq, Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
-      exact ⟨Hl₀, h_ind₀, h_p₀⟩
-    let f_bij : Function.Bijective f := by
-      have h_leftinv : Function.LeftInverse f_inv f := by
-        rintro ⟨Hl₀, h_ind₀, h_p₀⟩
-        dsimp [f, f_inv]
-        simp only [Subtype.mk.injEq]
-        funext i
-        split
-        next hi =>
-          congr
-          simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-          exact Nat.lt_succ_of_lt i.isLt
-        next hi =>
-          simp_all only [ne_eq, not_lt]
-          have : i % (t + 1) = i := by
-            simp_all only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-            exact Nat.lt_add_right 1 i.isLt
-          rw [this] at hi
-          exact absurd i.isLt (not_lt.mpr hi)
-      have h_rightinv : Function.RightInverse f_inv f := by
-        rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
-        dsimp [f, f_inv]
-        simp only [Subtype.mk.injEq]
-        funext i
-        split
-        next _ =>
-          simp_all only [Fin.cast_val_eq_self]
-        next hi =>
-          have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
-          have iso_exist := Classical.choice (h_p₁.1 i)
-          dsimp [FlagList.insert] at iso_exist
-          have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
-            simp_all only [↓reduceDIte]
-          rw [h_Fl] at iso_exist
-          have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
-          have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
-          have h_iso := Hl₁_iso.symm.trans quotient_iso
-          symm; apply (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ W Grep (Hl₁ i)).mpr (Nonempty.intro h_iso)
-      exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
-    exact Equiv.ofBijective f f_bij
   dsimp [labeledSubgraphListDensity]
   let h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
     dsimp only [labeledSubgraphListCount]
     show S₁.toFinset.card = S₀.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr f_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) (Grep.size - σ.size) := by
     simp only [multinomialCoefficient, ge_iff_le]
