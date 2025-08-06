@@ -246,18 +246,37 @@ theorem homFunFromFlagSeqLimit_map_add
   simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
   exact linearExtension_add a F G
 
+example (a b : ℚ) (h : a ≤ b) : (a : ℝ) ≤ (b : ℝ) := by
+  rw [Rat.cast_le]
+  exact h
+
 theorem flagPairDensity_tendsto_flagDensity_mul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
     : Tendsto (fun n ↦ (flagDensity₂ F.2 G.2 (s n).2 : ℝ)) atTop (𝓝 (a F * a G))
   := by
   rw [flagSeq_convergesTo_iff] at hs_conv
   obtain ⟨h_inc, h_lim⟩ := hs_conv
-  have h_seq_mul : Tendsto (fun n ↦ flagDensitySeq s n F * flagDensitySeq s n G) atTop (𝓝 (a F * a G)) := Tendsto.mul (h_lim F) (h_lim G)
+  have h_seq_mul : Tendsto (fun n ↦ flagDensitySeq s n F * flagDensitySeq s n G) atTop (𝓝 (a F * a G)) :=
+    Tendsto.mul (h_lim F) (h_lim G)
   apply Tendsto.congr_dist h_seq_mul
   rw [Metric.tendsto_atTop]
   intro ε hε
-  simp_rw [dist_eq_norm, Real.norm_eq_abs, sub_zero, abs_abs]
-  sorry
+  obtain ⟨k, hk⟩ := flagListDensity₂_prod_approx F.2 G.2
+  obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, (F.1 + G.1) ^ k / (s n).1 < ε := by
+    sorry
+  use N
+  intro n hn
+  specialize hk (s n).2
+  specialize hN n hn
+  simp only [LabeledGraph.size, Fintype.card_fin] at hk
+  rw [← @Rat.cast_le _ _ ℝ] at hk
+  simp only [Rat.cast_abs, Rat.cast_sub, Rat.cast_mul, Rat.cast_div, Rat.cast_pow, Rat.cast_add] at hk
+  simp only [dist_eq_norm, Real.norm_eq_abs, sub_zero, abs_abs]
+  calc
+    _ ≤ ((F.1 : ℝ) + (G.1 : ℝ)) ^ k / ((s n).1 : ℝ) := by
+      rw [abs_sub_comm]
+      exact hk
+    _ < ε := hN
 
 theorem flagSeq_limit_linearExtension_flagMul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
