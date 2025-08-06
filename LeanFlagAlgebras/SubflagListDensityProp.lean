@@ -294,10 +294,12 @@ theorem SampleSpace_eq_multinomialCoefficient
 /- Lemma 2.3 -/
 
 theorem flagListDensity_prod_approx
-    (Fl : FlagList σ t Vl) (G : Flag σ W)
-    : ∃ k, |flagListDensity Fl G - ∏ i in Finset.univ, flagDensity₁ (Fl i) G| ≤ (∑ i in Finset.univ, (Fl i).out.size) ^ k / G.out.size
+    (Fl : FlagList σ t Vl)
+    : ∃ k, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
+    |flagListDensity Fl G - ∏ i in Finset.univ, flagDensity₁ (Fl i) G| ≤ (∑ i in Finset.univ, (Fl i).out.size) ^ k / G.out.size
   := by
   use 2
+  intro W _ _ G
   let Vs := Fin t → Finset W
   let Ω : Finset Vs := { Vs : Vs | ∀ i , (Vs i).card = (Fl i).out.size ∧ ∀ i, G.out.type_verts ⊆ (Vs i).toSet }
   let B : Finset Vs := { Vs : Vs | ∀ i j, i ≠ j → Disjoint (Vs i) (Vs j) }
@@ -307,10 +309,12 @@ theorem flagListDensity_prod_approx
   sorry
 
 theorem flagListDensity₂_prod_approx
-    (F : Flag σ V) (F' : Flag σ U) (G : Flag σ W)
-    : ∃ k, |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ (F.out.size + F'.out.size) ^ k / G.out.size
+    (F : Flag σ V) (F' : Flag σ U)
+    : ∃ k, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
+    |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ (F.out.size + F'.out.size) ^ k / G.out.size
   := by
   use 2
+  intro W _ _ G
   let ⟨Frep, hFrep⟩ := Quotient.exists_rep F
   let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
   let ⟨Grep, hGrep⟩ := Quotient.exists_rep G
