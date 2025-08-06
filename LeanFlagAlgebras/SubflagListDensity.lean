@@ -2,6 +2,7 @@ import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagDensity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Algebra.BigOperators.Fin
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -731,125 +732,91 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
     exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
   Equiv.ofBijective f f_bij
 
+
+lemma sum_eq_sum_plus_last
+    (f : Fin (t + 1) → ℕ) : ∑ i : Fin (t + 1), f i = (∑ i : Fin t, f i) + (f t)
+  := by
+  have := @Fin.sum_univ_castSucc ℕ _ t f
+  simp only [this, Fin.coe_eq_castSucc, Fin.natCast_eq_last]
+
+lemma prod_eq_prod_mul_last
+    (f : Fin (t + 1) → ℕ) : ∏ i : Fin (t + 1), f i = (∏ i : Fin t, f i) * (f t)
+  := by
+  have := @Fin.prod_univ_castSucc ℕ _ t f
+  simp only [this, Fin.coe_eq_castSucc, Fin.natCast_eq_last]
+
 theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
   := by
   dsimp [flagListDensity, quotLabeledSubgraphListDensity]
   congr; ext Grep
+  dsimp [labeledSubgraphListDensity, labeledSubgraphListCount]
   let S₀ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl.insert (emptyFlag σ) i))
-  let f_iso_S₀_S₁ : S₀ ≃ S₁ := setOfLabeledSubgraphListIsoHl_insert_empty Grep Fl
   let h_S₀ : Fintype S₀ := Fintype.ofFinite S₀
   let h_S₁ : Fintype S₁ := Fintype.ofFinite S₁
-  dsimp [labeledSubgraphListDensity]
-  let h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.insert (emptyFlag σ) i)) Grep = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep := by
-    dsimp only [labeledSubgraphListCount]
-    show S₁.toFinset.card = S₀.toFinset.card
+  let Z₀ := multinomialCoefficient (fun i ↦ (Fl i).out.size - σ.size) (Grep.size - σ.size)
+  let Z₁ := multinomialCoefficient (fun i ↦ (Fl.insert (emptyFlag σ) i).out.size - σ.size) (Grep.size - σ.size)
+  show (S₀.toFinset.card : ℚ) / Z₀ = (S₁.toFinset.card : ℚ) / Z₁
+  let h_count : S₁.toFinset.card = S₀.toFinset.card := by
+    let f_iso_S₀_S₁ : S₀ ≃ S₁ := setOfLabeledSubgraphListIsoHl_insert_empty Grep Fl
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr f_iso_S₀_S₁
     simp_all only [Set.coe_setOf, Set.toFinset_card]
-  have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size) = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) (Grep.size - σ.size) := by
-    simp only [multinomialCoefficient, ge_iff_le]
-    have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size) = ∑ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size) := by
+  have h_eq : σ.size = (Fl.insert (emptyFlag σ) t).out.size := by
+    simp only [FlagType.size, LabeledGraph.size, Fin.natCast_eq_last]
+    have : T = listTypeInsert Vl T (Fin.last t) := listTypeInsert_eq (Fin.val_last t)
+    simp only [← this]
+  have h_eq' : ∀ i : Fin t, (Fl i).out.size = (Fl.insert (emptyFlag σ) i.castSucc).out.size := by
+    intro i
+    dsimp [LabeledGraph.size]
+    let i' := i.castSucc
+    have hi' : i'.val ≠ t := Nat.ne_of_lt i.isLt
+    have : Vl (i'.coe hi') = listTypeInsert Vl T i' := listTypeInsert_eq' hi'
+    simp only [←this]
+    congr!
+  have h_coeff : Z₀ = Z₁ := by
+    simp only [Z₀, Z₁, multinomialCoefficient, ge_iff_le]
+    have sum_sizes_perm_eq : ∑ i : Fin t, ((Fl i).out.size - σ.size)
+                             = ∑ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size)
+      := by
       symm
-      rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-      have sum_insert_empty_eq_original : (∑ x ∈ Finset.range t, if h : x < t + 1 then (Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size else 0) = ∑ x ∈ Finset.range t, if h : x < t then (Quotient.out (Fl ⟨x, h⟩)).size - σ.size else 0 := by
-        apply Finset.sum_bij (fun i _ => if _ : i < t then i else 0)
-        · intro i hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi j hj h
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi
-          use i
-          use hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi
-          split
-          next _ h =>
-            have h' : (if _ : i < t then i else 0) = i := by
-              simp_all only [Finset.mem_range, ↓reduceDIte]
-            rw [h']
-            split
-            next hi' =>
-              let i' : Fin (t + 1) := ⟨i, h⟩
-              have hi'' : i'.val ≠ t := Nat.ne_of_lt hi'
-              have := (cast_preserves_flag_size' Fl (emptyFlag σ) (hi'')).symm
-              congr!
-            next hi' =>
-              rw [Finset.mem_range] at hi
-              exact False.elim (hi' hi)
-          next _ h =>
-            rw [Finset.mem_range] at hi
-            have hi' : t < i := by
-              rwa [not_lt] at h
-            exact False.elim (lt_asymm hi hi')
-      split
-      next h1 =>
-        rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original, add_right_eq_self]
-        dsimp [FlagList.insert, emptyFlag, emptyLabeledGraph]
-        split
-        next h2 =>
-          let i : Fin (t + 1) := ⟨t, h1⟩
-          have hi : i.val = t := h2
-          exact Eq.symm (Nat.eq_sub_of_add_eq' (cast_preserves_flag_size Fl (emptyFlag σ) hi))
-        next h2 =>
-          exact False.elim (h2 rfl)
-      next h1 =>
-        rw [add_zero]
-        rw [Finset.sum_fin_eq_sum_range, sum_insert_empty_eq_original]
-    have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial = ∏ i : Fin (t + 1), ((Quotient.out (Fl.insert (emptyFlag σ) i)).size - σ.size).factorial := by
+      calc
+        ∑ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size)
+        _ = (∑ i : Fin t, ((Fl.insert (emptyFlag σ) i).out.size - σ.size))
+            + ((Fl.insert (emptyFlag σ) t).out.size - σ.size)
+              := by
+              rw [sum_eq_sum_plus_last]
+        _ = ∑ i : Fin t, ((Fl.insert (emptyFlag σ) i).out.size - σ.size)
+              := by
+              rw [←h_eq]
+              simp only [le_refl, tsub_eq_zero_of_le, add_zero]
+        _ = ∑ i : Fin t, ((Fl i).out.size - σ.size)
+              := by
+              congr
+              ext i
+              have : ↑↑i = i.castSucc := Fin.coe_eq_castSucc
+              rw [h_eq' i, this]
+    have prod_factorials_perm_eq : ∏ i : Fin t, ((Fl i).out.size - σ.size).factorial
+                                   = ∏ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial
+      := by
       symm
-      rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
-      have prod_insert_empty_eq_original : (∏ x ∈ Finset.range t, if h : x < t + 1 then ((Quotient.out (Fl.insert (emptyFlag σ) ⟨x, h⟩)).size - σ.size).factorial else 1) = ∏ x ∈ Finset.range t, if h : x < t then ((Quotient.out (Fl ⟨x, h⟩)).size - σ.size).factorial else 1 := by
-        apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
-        · intro i hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi j hj h
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi
-          use i
-          use hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi
-          split
-          next _ h =>
-            let h' : (if _ : i < t then i else 0) = i := by
-              simp_all only [Finset.mem_range, ↓reduceDIte]
-            rw [h']
-            split
-            next hi' =>
-              let i' : Fin (t + 1) := ⟨i, h⟩
-              have hi'' : i'.val ≠ t := Nat.ne_of_lt hi'
-              have := (cast_preserves_flag_size' Fl (emptyFlag σ) hi'').symm
-              congr!
-            next hi' =>
-              rw [Finset.mem_range] at hi
-              exact False.elim (hi' hi)
-          next _ h =>
-            rw [Finset.mem_range] at hi
-            have hi' : t < i := by
-              rwa [not_lt] at h
-            exact False.elim (lt_asymm hi hi')
-      split
-      next h1 =>
-        rw [Finset.prod_fin_eq_prod_range, prod_insert_empty_eq_original]
-        dsimp [FlagList.insert]
-        split
-        next h2 =>
-          let i : Fin (t + 1) := ⟨t, h1⟩
-          have hi : i.val = t := h2
-          simp only [eq_comm]
-          rw [← cast_preserves_flag_size Fl (emptyFlag σ) hi]
-          have h_empty_size : (Quotient.out (emptyFlag σ)).size = σ.size := by
-            simp [emptyFlag, LabeledGraph.size]
-            exact rfl
-          rw [h_empty_size]
-          simp_all only [le_refl, tsub_eq_zero_of_le, Nat.factorial_zero, mul_one]
-        next h2 =>
-          exact False.elim (h2 rfl)
-      next h1 =>
-        rw [mul_one]
-        rw [Finset.prod_fin_eq_prod_range, prod_insert_empty_eq_original]
+      calc
+        ∏ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial
+        _ = (∏ i : Fin t, ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial)
+            * ((Fl.insert (emptyFlag σ) t).out.size - σ.size).factorial
+              := by
+              rw [prod_eq_prod_mul_last]
+        _ = ∏ i : Fin t, ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial
+              := by
+              rw [←h_eq]
+              simp only [le_refl, tsub_eq_zero_of_le, Nat.factorial_zero, mul_one]
+        _ = ∏ i : Fin t, ((Fl i).out.size - σ.size).factorial
+              := by
+              congr
+              ext i
+              have : ↑↑i = i.castSucc := Fin.coe_eq_castSucc
+              rw [h_eq' i, this]
     rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
   rw [h_count, h_coeff]
 
