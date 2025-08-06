@@ -682,7 +682,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
           simp only [h_bottom_verts, Set.inter_self]
     exact ⟨Hl₁, h_ind₁, h_p₁⟩
   let f_inv : S₁ → S₀ := by
-    intro  ⟨Hl₁, h_ind₁, h_p₁⟩
+    intro ⟨Hl₁, h_ind₁, h_p₁⟩
     let Hl₀ : LabeledSubgraphList σ t G := fun i ↦ Hl₁ i
     let h_ind₀ : Hl₀.IsInduced := fun i ↦ h_ind₁ i
     let h_p₀ : predIsoLabeledHl G (fun i ↦ Quotient.out (Fl i)) Hl₀ := by
@@ -695,26 +695,20 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
         have h_iso' := (Classical.choice (insert_preserves_existing_flags_coe Fl (emptyFlag σ) hi)).symm
         exact h_iso.trans h_iso'
       · intro i j h_ij
-        simp_all only [predIsoLabeledHl, ne_eq, Fin.coe_eq_castSucc, Fin.castSucc_inj, not_false_eq_true]
+        refine h_p₁.2 i j ?h_ij'
+        simp only [Fin.coe_eq_castSucc, ne_eq, Fin.castSucc_inj, h_ij, not_false_eq_true]
     exact ⟨Hl₀, h_ind₀, h_p₀⟩
   let f_bij : Function.Bijective f := by
     have h_leftinv : Function.LeftInverse f_inv f := by
-      rintro ⟨Hl₀, h_ind₀, h_p₀⟩
+      intro ⟨Hl₀, h_ind₀, h_p₀⟩
       dsimp [f, f_inv]
       simp only [Subtype.mk.injEq]
       funext i
-      split
-      next hi =>
-        congr
-        simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-        exact Nat.lt_succ_of_lt i.isLt
-      next hi =>
-        simp_all only [ne_eq, not_lt]
-        have : i % (t + 1) = i := by
-          simp_all only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
-          exact Nat.lt_add_right 1 i.isLt
-        rw [this] at hi
-        exact absurd i.isLt (not_lt.mpr hi)
+      have : i % (t + 1) = i := by
+        simp_all only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+        exact Nat.lt_add_right 1 i.isLt
+      rw [this]
+      simp only [Fin.is_lt, ↓reduceDIte, Fin.eta]
     have h_rightinv : Function.RightInverse f_inv f := by
       rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
       dsimp [f, f_inv]
@@ -722,7 +716,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
       funext i
       split
       next _ =>
-        simp_all only [Fin.cast_val_eq_self]
+        simp only [Fin.cast_val_eq_self]
       next hi =>
         have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
         have iso_exist := Classical.choice (h_p₁.1 i)
