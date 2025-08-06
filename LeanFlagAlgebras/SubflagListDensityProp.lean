@@ -34,15 +34,15 @@ theorem choose_eq
 
 theorem choose_sequence_eq_factorial_div
     (n : ℕ) (r_list : Fin t → ℕ) (h_size : ∑ i : Fin t, r_list i ≤ n)
-    : ∏ i : Fin t, (n - ∑ j : Fin i, r_list (j.castLE (by simp_all only [Fin.is_le']))).choose (r_list i) = Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - ∑ i : Fin t, r_list i))
+    : ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (i.is_le'))).choose (r_list i) = Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - ∑ i : Fin t, r_list i))
   := by
   induction t with
   | zero =>
       simp only [Finset.univ_eq_empty, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
       rw [Nat.div_self (Nat.factorial_pos n)]
   | succ t ih =>
-      have calc1 :  ∏ i : Fin (t + 1), (n - ∑ j : Fin ↑i, r_list (j.castLE (by simp_all only [Fin.is_le']))).choose (r_list i) =
-      (∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (Nat.le_add_right_of_le Fin.is_le'))).choose (r_list i)) * ((n - ∑ j : Fin t, r_list j).choose (r_list t))
+      have calc1 :  ∏ i : Fin (t + 1), (n - ∑ j : Fin ↑i, r_list (j.castLE (i.is_le'))).choose (r_list i) =
+      (∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list j).choose (r_list i)) * ((n - ∑ j : Fin t, r_list j).choose (r_list t))
         := by
         rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
         simp only [lt_add_iff_pos_right, Fin.coe_eq_castSucc, Fin.natCast_eq_last]
@@ -65,7 +65,11 @@ theorem choose_sequence_eq_factorial_div
             congr <;> try simp_all only [Finset.mem_range, ↓reduceIte]
             refine (Fin.heq_fun_iff ?h.e_a.h.e_5.h).mpr ?h.e_a.h.e_5.a
             · simp_all only [Finset.mem_range, ↓reduceIte]
-            · intro i; rfl
+            · intro i'
+              congr
+              ext
+              simp_all only [Fin.coe_castLE, Fin.val_natCast]
+              exact Eq.symm (Nat.mod_eq_of_lt (i'.2.trans h))
           next _ hi₂ =>
             exfalso
             exact hi₂ (Nat.lt_add_right 1 hi₁)
@@ -74,26 +78,65 @@ theorem choose_sequence_eq_factorial_div
       have h_size' : ∑ i : Fin t, r_list' i ≤ n := by
         have : ∑ i : Fin t, r_list' i ≤ ∑ i : Fin (t + 1), r_list i := by
           dsimp [r_list']
-          #check Finset.sum_fin_eq_sum_range
-          #check Finset.sum_le_sum_of_subset
-          sorry
+          rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
+          simp only [Finset.sum_range_add]
+          apply Nat.le_add_right_of_le
+          simp only [dite_eq_ite]
+          congr! with x hx
+          rw [Finset.mem_range] at hx
+          have hx' : x < t + 1 := Nat.lt_add_right 1 hx
+          simp only [hx, hx', ↓reduceIte, ↓reduceDIte]
+          congr!
+          simp_all only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt]
         exact this.trans h_size
       have calc2 := ih r_list' h_size'
       dsimp [r_list'] at calc2
-      have cast_simp : ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (Nat.le_add_right_of_le Fin.is_le'))).choose (r_list ↑↑i) =
-                       ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list ↑↑j).choose (r_list ↑↑i) := by
+      rw [calc2]; clear calc2
+      rw [Nat.choose_eq_factorial_div_factorial]
+      ·
         sorry
-      rw [cast_simp]
-      rw [calc2]
-      sorry
+      · sorry
 
 theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
   dsimp [multinomialCoefficient]
   split
   next h =>
-    rw [← choose_sequence_eq_factorial_div V.card r_list h]
-    sorry
+    induction t with
+    | zero =>
+        simp only [Finset.univ_eq_empty, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
+        rw [Nat.div_self (Nat.factorial_pos V.card)]
+        simp only [partitions, IsEmpty.forall_iff, Finset.univ_eq_empty, Finset.biUnion_empty,
+          Finset.empty_subset, and_self, Finset.univ_unique, Finset.filter_True,
+          Finset.card_singleton]
+    | succ t ih =>
+        let r_list' : Fin t → ℕ := fun i => r_list i
+        have h_size : ∑ i : Fin t, r_list' i ≤ V.card := by
+          have : ∑ i : Fin t, r_list' i ≤ ∑ i : Fin (t + 1), r_list i := by
+            dsimp [r_list']
+            rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
+            simp only [Finset.sum_range_add]
+            apply Nat.le_add_right_of_le
+            simp only [dite_eq_ite]
+            congr! with x hx
+            rw [Finset.mem_range] at hx
+            have hx' : x < t + 1 := Nat.lt_add_right 1 hx
+            simp only [hx, hx', ↓reduceIte, ↓reduceDIte]
+            congr!
+            simp_all only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt]
+          exact this.trans h
+        let sub_partitions := partitions V r_list'
+        have h_sub_partitions := ih r_list' h_size
+        let parts := (V.card - ∑ j : Fin t, r_list j).choose (r_list t)
+        have : (partitions V r_list).card = sub_partitions.card * parts := by
+          sorry
+        rw [this]
+        dsimp [sub_partitions]
+        rw [h_sub_partitions]
+
+        sorry
+    -- rw [← choose_sequence_eq_factorial_div V.card r_list h]
+    -- sorry
     -- let lV := V.toList
     -- apply Finset.card_eq_of_bijective
     -- · sorry
