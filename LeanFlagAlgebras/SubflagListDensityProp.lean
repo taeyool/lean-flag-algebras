@@ -51,21 +51,15 @@ theorem partitions_card_eq_multinomial
       have : Finset.univ = insert ⟨t + 1, Nat.lt_add_one _⟩ s := by
         ext j
         simp_all only [Finset.mem_univ, Finset.mem_insert, true_iff, s]
-        by_cases hj : j < t + 1
+        by_cases hj : j.val < t + 1
         · right
           rw [Finset.mem_filter]
           simp only [Finset.mem_univ, true_and]
-          sorry
+          exact hj
         · left
           rw [Fin.eq_mk_iff_val_eq]
           push_neg at hj
-          have : j ≤ t + 1 := by
-            have := j.2
-            apply Nat.le_of_lt_succ
-            simp only [Nat.succ_eq_add_one]
-            sorry
-          have : j = t + 1 := by exact Fin.le_antisymm this hj
-          sorry
+          exact Nat.le_antisymm (Fin.is_le j) hj
       sorry
 
 theorem choose_eq
