@@ -451,13 +451,20 @@ def labeledGraphToList
   fun _ => G
 
 def labeledGraphPairToList
-    {σ : FlagType T} {V W : Type} (G : LabeledGraph σ V) (H : LabeledGraph σ W)
-    : LabeledGraphList σ 2 (fun i => match i with | 0 => V | 1 => W)
+    {σ : FlagType T} {U V : Type} (G₀ : LabeledGraph σ U) (G₁ : LabeledGraph σ V)
+    : LabeledGraphList σ 2 (fun i => match i with | 0 => U | 1 => V)
   :=
-  fun i => match i with | 0 => G | 1 => H
+  fun i => match i with | 0 => G₀ | 1 => G₁
+
+def labeledGraphTripleToList
+    {σ : FlagType T} {U V W : Type} (G₀ : LabeledGraph σ U) (G₁ : LabeledGraph σ V) (G₂ : LabeledGraph σ W)
+    : LabeledGraphList σ 3 (fun i => match i with | 0 => U | 1 => V | 2 => W)
+  :=
+  fun i => match i with | 0 => G₀ | 1 => G₁ | 2 => G₂
 
 notation "[" G "]ᵍ" => (labeledGraphToList G)
-notation "[" G "," H "]ᵍ" => (labeledGraphPairToList G H)
+notation "[" G₀ "," G₁ "]ᵍ" => (labeledGraphPairToList G₀ G₁)
+notation "[" G₀ "," G₁ "," G₂ "]ᵍ" => (labeledGraphTripleToList G₀ G₁ G₂)
 
 def flagListEqv {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl Gl' : LabeledGraphList σ t Vl) : Prop
   :=
@@ -625,6 +632,20 @@ theorem list_quot_eq_quot_list_pair
   match i with
   | 0 => exact (Quotient.mk_out G).symm
   | 1 => exact (Quotient.mk_out G').symm
+
+omit [Fintype T] in
+theorem list_quot_eq_quot_list_triple
+    {σ : FlagType T} {V W U : Type} (G : LabeledGraph σ V) (G' : LabeledGraph σ W) (G'' : LabeledGraph σ U)
+    : ⟦[G, G', G'']ᵍ⟧ = [⟦G⟧, ⟦G'⟧, ⟦G''⟧]ᶠ.coe
+  := by
+  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
+  apply Quotient.sound
+  intro i
+  dsimp [labeledGraphTripleToList]
+  match i with
+  | 0 => exact (Quotient.mk_out G).symm
+  | 1 => exact (Quotient.mk_out G').symm
+  | 2 => exact (Quotient.mk_out G'').symm
 
 /- FlagList.insert -/
 

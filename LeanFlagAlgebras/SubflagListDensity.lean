@@ -415,6 +415,17 @@ theorem labeledSubgraphListDensity_eq_flagDensity₂
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₂]
 
+omit [DecidableEq T] in
+theorem labeledSubgraphListDensity_eq_flagDensity₃
+    (F₁ : LabeledGraph σ U₁) (F₂ : LabeledGraph σ U₂) (F₃ : LabeledGraph σ U₃) (G : LabeledGraph σ W)
+    : labeledSubgraphListDensity [F₁, F₂, F₃]ᵍ G = flagDensity₃ ⟦F₁⟧ ⟦F₂⟧ ⟦F₃⟧ ⟦G⟧
+  := by sorry
+  /-
+  rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_triple]
+  simp only [QuotLabeledGraphList.coe, FlagList.coe,
+    Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₃]
+  -/
+
 theorem flagDensity_empty
     (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
   := by
@@ -886,6 +897,7 @@ theorem flagTripleDensity_eq_sum_density_prods
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : flagDensity₃ F₁ F₂ F₃ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₂ G' F₃ G
   := by
+  dsimp [flagDensity₃, flagDensity₂, flagListDensity]
   sorry
 
 theorem flagPairDensity_eq_sum_density_prods
