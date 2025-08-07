@@ -28,15 +28,23 @@ def Increases (s : FlagSeq σ) : Prop
   :=
   StrictMono (fun n => (s n).1)
 
+theorem Increases.eventually_gt
+    {s : FlagSeq σ} (h_inc : Increases s) (ℓ : ℕ)
+    : ∃ N, ∀ n ≥ N, (s n).1 > ℓ
+  := by
+  use ℓ + 1
+  intro n hn
+  calc
+    (s n).1 ≥ n := h_inc.id_le n
+    _ > ℓ := hn
+
 theorem Increases.eventually_ge
     {s : FlagSeq σ} (h_inc : Increases s) (ℓ : ℕ)
     : ∃ N, ∀ n ≥ N, (s n).1 ≥ ℓ
   := by
-  use ℓ
-  intro n hn
-  calc
-    (s n).1 ≥ n := h_inc.id_le n
-    _ ≥ ℓ := hn
+  obtain ⟨N, hN⟩ := h_inc.eventually_gt ℓ
+  use N
+  exact fun n hn ↦ Nat.le_of_succ_le (hN n hn)
 
 def ConvergesTo (s : FlagSeq σ) (a : FinFlag σ → ℝ) : Prop
   :=
@@ -246,10 +254,6 @@ theorem homFunFromFlagSeqLimit_map_add
   simp only [homFunFromFlagSeqLimit, Quotient.lift_mk]
   exact linearExtension_add a F G
 
-example (a b : ℚ) (h : a ≤ b) : (a : ℝ) ≤ (b : ℝ) := by
-  rw [Rat.cast_le]
-  exact h
-
 theorem flagPairDensity_tendsto_flagDensity_mul
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a) (F G : FinFlag σ)
     : Tendsto (fun n ↦ (flagDensity₂ F.2 G.2 (s n).2 : ℝ)) atTop (𝓝 (a F * a G))
@@ -263,7 +267,18 @@ theorem flagPairDensity_tendsto_flagDensity_mul
   intro ε hε
   obtain ⟨k, hk⟩ := flagListDensity₂_prod_approx F.2 G.2
   obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, (F.1 + G.1) ^ k / (s n).1 < ε := by
-    sorry
+    obtain ⟨N, hN⟩ := h_inc.eventually_gt ⌈(F.1 + G.1) ^ k / ε⌉₊
+    use N
+    intro n hn
+    specialize hN n hn
+    have hsn_pos : 0 < (s n).1 := by
+      calc
+        0 ≤ ⌈(↑F.fst + ↑G.fst) ^ k / ε⌉₊ := Nat.zero_le _
+        _ < (s n).1 := hN
+    apply Nat.lt_of_ceil_lt at hN
+    rw [div_lt_iff (Nat.cast_pos.mpr hsn_pos)]
+    rw [div_lt_iff hε, mul_comm] at hN
+    exact hN
   use N
   intro n hn
   specialize hk (s n).2
