@@ -419,12 +419,10 @@ omit [DecidableEq T] in
 theorem labeledSubgraphListDensity_eq_flagDensity₃
     (F₁ : LabeledGraph σ U₁) (F₂ : LabeledGraph σ U₂) (F₃ : LabeledGraph σ U₃) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity [F₁, F₂, F₃]ᵍ G = flagDensity₃ ⟦F₁⟧ ⟦F₂⟧ ⟦F₃⟧ ⟦G⟧
-  := by sorry
-  /-
+  := by
   rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_triple]
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₃]
-  -/
 
 theorem flagDensity_empty
     (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
@@ -892,13 +890,32 @@ theorem flagTripleDensity_empty'
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
 
+lemma labeledGraphTripleDensity_eq_sum_density_prods
+    (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
+    : labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
+      = ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
+  := by
+  sorry
+
 theorem flagTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : flagDensity₃ F₁ F₂ F₃ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₂ G' F₃ G
   := by
-  dsimp [flagDensity₃, flagDensity₂, flagListDensity]
-  sorry
+  rw [←F₁.out_eq, ←F₂.out_eq, ←F₃.out_eq, ←G.out_eq]
+  rw [←labeledSubgraphListDensity_eq_flagDensity₃ F₁.out F₂.out F₃.out G.out]
+  have h : ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ ⟦F₁.out⟧ ⟦F₂.out⟧ G' * flagDensity₂ G' ⟦F₃.out⟧ ⟦G.out⟧
+           = ∑ (G' : Flag σ (Fin ℓ')), labeledSubgraphListDensity [F₁.out, F₂.out]ᵍ G'.out * labeledSubgraphListDensity [G'.out, F₃.out]ᵍ G.out
+    := by
+    apply Finset.sum_congr (by rfl)
+    intros G'
+    rw [←G'.out_eq]
+    rw [←labeledSubgraphListDensity_eq_flagDensity₂ F₁.out F₂.out G'.out]
+    rw [←labeledSubgraphListDensity_eq_flagDensity₂ G'.out F₃.out G.out]
+    simp only [Quotient.out_eq, Finset.mem_univ, imp_self]
+  rw [h]
+  exact labeledGraphTripleDensity_eq_sum_density_prods ℓ' F₁.out F₂.out F₃.out G.out hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
 
 theorem flagPairDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (G : Flag σ (Fin ℓ))
