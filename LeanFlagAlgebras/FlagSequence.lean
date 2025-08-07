@@ -2,6 +2,8 @@ import «LeanFlagAlgebras».SubflagListDensityProp
 import «LeanFlagAlgebras».PositiveHom
 import Mathlib.Topology.Instances.Real
 import Mathlib.Topology.Sequences
+import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
 
 open FlagAlgebras
 
@@ -9,6 +11,7 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 open Filter
 open scoped Topology
+open MeasureTheory
 
 abbrev FlagSeq (σ : FlagType (Fin n₀))
   :=
@@ -389,6 +392,7 @@ noncomputable def positiveHomFromFlagSeqLimit
       exact ge_of_tendsto' (h_lim F) h_den_nonneg
   }
 
+/- Theorem 3.3 (a) -/
 theorem flagSeq_limit_mem_positiveHom
     (s : FlagSeq σ) {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : ∃ (φ : PositiveHom σ), φ.coe = a
@@ -398,6 +402,36 @@ theorem flagSeq_limit_mem_positiveHom
   show linearExtension a (unitVector F) = a F
   simp only [linearExtension, unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
 
+instance {ℓ : ℕ} : MeasurableSpace (FlagWithSize σ ℓ) := ⊤
+
+noncomputable def PositiveHom.toPMF
+    (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
+    : PMF (FlagWithSize σ ℓ)
+  := {
+    val := fun (F : FlagWithSize σ ℓ) ↦ ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧)
+    property := by
+      have h := hasSum_fintype (fun F ↦ ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧))
+      have h_sum : ∑ F : FlagWithSize σ ℓ, ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧) = 1 := by
+        rw [← ENNReal.ofReal_sum_of_nonneg (fun F _ ↦ positiveHom_unitVector_ge_zero φ ⟨ℓ, F⟩), ← ENNReal.ofReal_one]
+        congr
+        exact sum_positiveHom_unitVector_flagWithSize_eq_one φ ℓ hℓ
+      rw [h_sum] at h
+      exact h
+  }
+
+noncomputable def PositiveHom.toMeasure
+    (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
+    : Measure (FlagWithSize σ ℓ)
+  :=
+  (φ.toPMF hℓ).toMeasure
+
+theorem PositiveHom.toMeasure.isProbabilityMeasure
+    (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
+    : IsProbabilityMeasure (φ.toMeasure hℓ)
+  :=
+  PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
+
+/- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)
     : ∃ (s : FlagSeq σ), ConvergesTo s φ.coe
