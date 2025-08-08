@@ -936,6 +936,14 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
   := by
   sorry
 
+lemma funapp_match_comm_three
+    {f : Type → ℕ} {T₁ T₂ T₃ : Type}
+    : ∀ (i : Fin 3), f (match i with | 0 => T₁ | 1 => T₂ | 2 => T₃)
+                     = match i with | 0 => f T₁ | 1 => f T₂ | 2 => f T₃
+  := by
+  intro i
+  split <;> rfl
+
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -975,9 +983,13 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
                                        * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
   by exact (mul_right_inj' (by exact_mod_cast h_C_pos.ne')).mp this
   {
-    dsimp [labeledSubgraphListDensity, LabeledGraph.size]
+    dsimp [labeledSubgraphListDensity]
     have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
     simp only [h_σ_size, Fintype.card_fin]
+    simp [LabeledGraph.size, Fintype.card_fin]
+    conv =>
+      lhs
+      enter [1, 2, 1, 1, i, 1]
     sorry
   }
 
