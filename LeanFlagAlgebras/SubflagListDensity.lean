@@ -890,12 +890,43 @@ theorem flagTripleDensity_empty'
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
 
+lemma labeledGraphTripleCount_eq_sum_density_prods
+    (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
+    :     multinomialCoefficient
+            (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
+            (ℓ' - ℓ₀)
+        * multinomialCoefficient
+            (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
+            (ℓ - ℓ₀)
+        * labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G
+      =
+          multinomialCoefficient
+            (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
+            (ℓ - ℓ₀)
+        * ∑ G' : Flag σ (Fin ℓ'),
+            labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
+  := by
+  sorry
+
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
       = ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
   := by
+  dsimp [labeledSubgraphListDensity, LabeledGraph.size]
+  have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
+  simp only [h_σ_size, Fintype.card_fin]
+  let C_lhs  := multinomialCoefficient
+                  (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
+                  (ℓ - ℓ₀)
+  let C_rhs₀ := multinomialCoefficient
+                  (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
+                  (ℓ' - ℓ₀)
+  let C_rhs₁ := multinomialCoefficient
+                  (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
+                  (ℓ - ℓ₀)
   sorry
 
 theorem flagTripleDensity_eq_sum_density_prods
