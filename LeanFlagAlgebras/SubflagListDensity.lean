@@ -52,6 +52,26 @@ def multinomialCoefficient
     Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - r_sum))
   else 0
 
+lemma multinomialCoefficient_pos
+    (r_list : Fin t → ℕ) (n : ℕ) (h_n : n ≥ ∑ i : Fin t, r_list i) :
+    multinomialCoefficient r_list n > 0
+  := by
+  dsimp [multinomialCoefficient]
+  split
+  next h =>
+    let r_sum := ∑ i : Fin t, r_list i
+    have h_dvd : (∏ i : Fin t, (r_list i).factorial) * (n - r_sum).factorial ∣ n.factorial := by
+      have h_sum_le_n : r_sum ≤ n := h
+      have h_prod_dvd_sum_fact : (∏ i : Fin t, (r_list i).factorial) ∣ r_sum.factorial := by
+        sorry
+      have h_choose_dvd : r_sum.factorial * (n - r_sum).factorial ∣ n.factorial :=
+        Nat.factorial_mul_factorial_dvd_factorial h_sum_le_n
+      sorry
+    sorry
+  next h =>
+    exact False.elim (h h_n)
+
+
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
   :=
@@ -913,21 +933,46 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
-      = ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
+      =
+      ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out
+                              * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
   := by
-  dsimp [labeledSubgraphListDensity, LabeledGraph.size]
-  have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
-  simp only [h_σ_size, Fintype.card_fin]
   let C_lhs  := multinomialCoefficient
                   (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
                   (ℓ - ℓ₀)
+  have h_C_lhs_pos : C_lhs > 0 := multinomialCoefficient_pos
+                                    (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
+                                    (ℓ - ℓ₀)
+                                    (by simp only [Fin.sum_univ_three]; omega)
   let C_rhs₀ := multinomialCoefficient
                   (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
                   (ℓ' - ℓ₀)
+  have h_C_rhs₀_pos : C_rhs₀ > 0 := multinomialCoefficient_pos
+                                      (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
+                                      (ℓ' - ℓ₀)
+                                      (by simp only [Fin.sum_univ_two]; omega)
   let C_rhs₁ := multinomialCoefficient
                   (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
                   (ℓ - ℓ₀)
-  sorry
+  have h_C_rhs₁_pos : C_rhs₁ > 0 := multinomialCoefficient_pos
+                                      (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
+                                      (ℓ - ℓ₀)
+                                      (by simp only [Fin.sum_univ_two]; omega)
+  let C := C_lhs * C_rhs₀ * C_rhs₁
+  have h_C_pos : C > 0 := by
+    dsimp [C]
+    simp only [gt_iff_lt, mul_pos_iff_of_pos_left, h_C_lhs_pos, h_C_rhs₀_pos, h_C_rhs₁_pos]
+  suffices C * labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
+           =
+           C * ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out
+                                       * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
+  by exact (mul_right_inj' (by exact_mod_cast h_C_pos.ne')).mp this
+  {
+    dsimp [labeledSubgraphListDensity, LabeledGraph.size]
+    have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
+    simp only [h_σ_size, Fintype.card_fin]
+    sorry
+  }
 
 theorem flagTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
