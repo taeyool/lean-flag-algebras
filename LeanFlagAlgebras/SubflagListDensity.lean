@@ -4,6 +4,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Tactic.Linarith
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -383,9 +384,9 @@ theorem subflagDensity_eq_flagListDensity
       congr
       dsimp [multinomialCoefficient]
       rw [Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Finset.prod_singleton]
-      split
-      · rw [Nat.choose_eq_factorial_div_factorial (by assumption)]
-      · rw [Nat.choose_eq_zero_of_lt (by linarith)]
+      split <;> rename_i h
+      · exact Nat.choose_eq_factorial_div_factorial h
+      · exact Nat.choose_eq_zero_of_lt (Nat.lt_of_not_ge h)
     _ = quotLabeledSubgraphListDensity [F]ᶠ.coe G := by
       have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
         dsimp [eqv_QuotLabeledGraphList_FlagList]
