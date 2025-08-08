@@ -1009,15 +1009,36 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
                                        * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
   by exact (mul_right_inj' (by exact_mod_cast h_C_pos.ne')).mp this
   {
-    dsimp [labeledSubgraphListDensity]
     have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
-    simp only [h_σ_size, Fintype.card_fin]
-    dsimp [LabeledGraph.size, labeledGraphPairToList]
     have h_fintype_two₀ := fintype_card_match_comm_two ℓ₀ ℓ₁ ℓ₂
     have h_fintype_two₁ := fintype_card_match_comm_two ℓ₀ ℓ' ℓ₃
     have h_fintype_three := fintype_card_match_comm_three ℓ₀ ℓ₁ ℓ₂ ℓ₃
-
     congr
+    have pair_density_eq_count_over_coeff :
+      (∑ G' : Flag σ (Fin ℓ'),
+        labeledSubgraphListDensity (labeledGraphPairToList H₁ H₂) (Quotient.out G') *
+        labeledSubgraphListDensity (labeledGraphPairToList (Quotient.out G') H₃) G) =
+      ∑ G' : Flag σ (Fin ℓ'),
+        @Nat.cast ℚ Rat.instNatCast ((labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G'))) / (C_rhs₀) *
+        ((labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) / C_rhs₁)
+      := by
+      apply Finset.sum_congr rfl
+      intro G' _
+      congr!
+      · dsimp [labeledSubgraphListDensity]
+        congr
+        · dsimp [labeledGraphPairToList, LabeledGraph.size]
+          rw [h_σ_size]
+          rw [← h_fintype_two₀]
+          rfl
+        · simp [LabeledGraph.size]
+      · dsimp [labeledSubgraphListDensity]
+        congr
+        · dsimp [labeledGraphPairToList, LabeledGraph.size]
+          rw [h_σ_size]
+          rw [← h_fintype_two₁]
+          rfl
+        · simp [LabeledGraph.size]
     have triple_density_eq_count_over_coeff : labeledSubgraphListDensity (labeledGraphTripleToList H₁ H₂ H₃) G =
       (labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / C_lhs := by
       dsimp [labeledSubgraphListDensity]
@@ -1027,10 +1048,9 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
         rw [← h_fintype_three]
         rfl
       · exact Fintype.card_fin ℓ
-    dsimp [labeledSubgraphListDensity, labeledGraphTripleToList, LabeledGraph.size] at triple_density_eq_count_over_coeff
-    rw [h_σ_size] at triple_density_eq_count_over_coeff
     rw [triple_density_eq_count_over_coeff]
-    dsimp [C_lhs]
+    rw [pair_density_eq_count_over_coeff]
+    dsimp [C_lhs, C_rhs₀, C_rhs₁]
     -- rw [h_fintype_two₀]
     -- rw [h_fintype_two₁]
     -- rw [h_fintype_three]
