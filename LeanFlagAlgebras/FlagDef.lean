@@ -1,6 +1,4 @@
 import «LeanFlagAlgebras».SubgraphUtil
-import Mathlib.Combinatorics.SimpleGraph.Maps
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
 
 open Classical
 
@@ -31,14 +29,13 @@ noncomputable instance {σ : FlagType T} (G : LabeledGraph σ V) : Fintype G.typ
 lemma LabeledGraph.type_verts_card_eq {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
   : Fintype.card G.type_verts = σ.size := by
   dsimp [LabeledGraph.type_verts, FlagType.size]
-  rw [Set.card_image_of_injective Set.univ G.type_embed.injective]
+  rw [Set.univ.card_image_of_injective G.type_embed.injective]
   exact (set_fintype_card_eq_univ_iff Set.univ).mpr rfl
 
 omit [Fintype T] in
 lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (t : T)
-  : G.type_embed t ∈ G.type_verts := by
-  unfold LabeledGraph.type_verts
-  exact Set.mem_image_of_mem G.type_embed (Set.mem_univ t)
+  : G.type_embed t ∈ G.type_verts :=
+  Set.mem_image_of_mem G.type_embed (Set.mem_univ t)
 
 noncomputable def LabeledGraph.iso_type_G
      {σ : FlagType T} (G : LabeledGraph σ V) : T ≃ G.type_verts := by
@@ -59,16 +56,14 @@ noncomputable def LabeledGraph.iso_type_G
       simp only [Subtype.mk.injEq, f]
       simp only [Set.image_univ, Set.mem_range] at h_t
       exact h_t
-  let f_bij : T ≃ G.type_verts := Equiv.ofBijective f h_bij
-  exact f_bij
+  exact Equiv.ofBijective f h_bij
 
 omit [Fintype T] in
 lemma iso_type_G_eq_type_embed
     {σ : FlagType T} (G : LabeledGraph σ U) (t : T)
     : G.iso_type_G t = G.type_embed t
-  := by
-  dsimp [LabeledGraph.iso_type_G]
-
+  :=
+  rfl
 
 noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (LabeledGraph σ V)
@@ -76,14 +71,13 @@ noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype
   let f : LabeledGraph σ V → SimpleGraph V × (T → V) :=
     fun ⟨G, embed⟩ ↦ (G, embed.toFun)
   have f_inj : Function.Injective f := by
-    intro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
+    rintro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
     dsimp [f] at h_eq
     simp only [Prod.mk.injEq] at h_eq
     obtain ⟨left, right⟩ := h_eq
     subst left
     simp only [LabeledGraph.mk.injEq, true_and, heq_eq_eq]
-    apply DFunLike.coe_fn_eq.mp right
-  have : Fintype (SimpleGraph V × (T → V)) := Fintype.ofFinite (SimpleGraph V × (T → V))
+    exact DFunLike.coe_fn_eq.mp right
   Fintype.ofInjective f f_inj
 
 noncomputable def LabeledGraph.size
@@ -96,7 +90,7 @@ theorem type_embed_Adj_iff
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : T)
     : σ.Adj u v ↔ G.graph.Adj (G.type_embed u) (G.type_embed v)
   :=
-  Iff.symm (SimpleGraph.Embedding.map_adj_iff G.type_embed)
+  (SimpleGraph.Embedding.map_adj_iff G.type_embed).symm
 
 omit [Fintype T] in
 theorem iso_type_Adj_iff
@@ -141,22 +135,16 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   }
 
 lemma LabeledGraph.top_isInduced (G : LabeledGraph σ V)
-  : G.top.subgraph.IsInduced := fun _ _ h_adj ↦ h_adj
+  : G.top.subgraph.IsInduced := fun _ _ ↦ id
 
 def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := {
       verts := G.type_verts
       Adj := fun u v => u ∈ G.type_verts ∧ v ∈ G.type_verts ∧ G.graph.Adj u v
-      adj_sub := by
-        intro u v ⟨_, _, h_uv⟩
-        exact h_uv
-      edge_vert := by
-        intro u _ ⟨hu, _⟩
-        exact hu
-      symm := by
-        intro u v ⟨hu, hv, h_uv⟩
-        exact ⟨hv, hu, h_uv.symm⟩
+      adj_sub := by tauto
+      edge_vert := by tauto
+      symm := by tauto
     }
     type_embed := {
       toFun := fun t ↦ ⟨G.type_embed t, G.type_verts_contain t⟩
@@ -165,19 +153,15 @@ def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
         simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
         exact h_eq
       map_rel_iff' := by
-        intro t₁ t₂
-        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
-        have ht₁: G.type_embed t₁ ∈ G.type_verts := G.type_verts_contain t₁
-        have ht₂: G.type_embed t₂ ∈ G.type_verts := G.type_verts_contain t₂
-        simp only [ht₁, ht₂, true_and]
+        simp only [Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj,
+          SimpleGraph.Embedding.map_adj_iff, G.type_verts_contain, true_and, implies_true]
     }
     embed_eq := by
-      intro t
-      simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+      simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk, implies_true]
   }
 
 lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)
-  : G.bottom.subgraph.IsInduced := fun h_u h_v h_adj ↦ ⟨h_u, h_v, h_adj⟩
+  : G.bottom.subgraph.IsInduced := by tauto
 
 namespace LabeledSubgraph
 
@@ -202,7 +186,7 @@ theorem coe_adj_iff
     {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (u v : H.subgraph.verts)
     : H.coe.graph.Adj u v ↔ H.subgraph.Adj u.val v.val
   :=
-  Eq.to_iff rfl
+  rfl.to_iff
 
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V)
@@ -211,14 +195,10 @@ noncomputable instance labeledSubgraphFintype
   let f : LabeledSubgraph σ G → G.graph.Subgraph × (T → V) :=
     fun ⟨G', embed, _⟩ ↦ (G', fun t ↦ embed.toFun t)
   have f_inj : Function.Injective f := by
-    intro ⟨G, φ, embed_eq⟩ ⟨G', φ', embed_eq'⟩ h_eq
-    dsimp [f] at h_eq
-    simp_all only [Prod.mk.injEq, and_true, mk.injEq, true_and]
-    subst h_eq
-    simp only [heq_eq_eq]
-    ext x
-    simp_all only
-  have : Fintype (G.graph.Subgraph × (T → V)) := Fintype.ofFinite (G.graph.Subgraph × (T → V))
+    rintro ⟨G, φ, embed_eq⟩ ⟨G', φ', embed_eq'⟩ h_eq
+    obtain ⟨rfl, _⟩ := Prod.mk.injEq _ _ _ _ ▸ h_eq
+    simp only [mk.injEq, true_and, heq_eq_eq]
+    ext x; simp only [embed_eq, embed_eq']
   Fintype.ofInjective f f_inj
 
 omit [Fintype T] in
@@ -227,11 +207,10 @@ theorem labeledSubgraph_contain_type_verts
     : G.type_verts ⊆ H.subgraph.verts
   := by
   intro v hv
-  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range] at hv
-  obtain ⟨t, ht⟩ := hv
-  rw [← ht, ← H.embed_eq t]
-  simp only [Subtype.coe_prop]
-
+  simp only [LabeledGraph.type_verts, Set.image_univ] at hv
+  obtain ⟨t, rfl⟩ := hv
+  rw [← H.embed_eq t]
+  exact Subtype.coe_prop _
 
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
@@ -240,15 +219,12 @@ def inducedLabeledSubgraph
   type_embed := {
     toFun := by
       intro t
-      simp only [inducedSubgraph_verts]
-      have ht : G.type_embed t ∈ G.type_verts := by
-        dsimp [LabeledGraph.type_verts]
-        exact Set.mem_image_of_mem G.type_embed trivial
-      have ht' : G.type_embed t ∈ S := h ht
-      exact ⟨G.type_embed t, ht'⟩
+      have ht : G.type_embed t ∈ G.type_verts :=
+        Set.mem_image_of_mem G.type_embed trivial
+      exact ⟨G.type_embed t, h ht⟩
     inj' := by
       intro t u h_tu
-      simp only [eq_mpr_eq_cast, cast_eq, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_tu
+      simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_tu
       exact h_tu
     map_rel_iff' := by
       intro t u
@@ -263,8 +239,7 @@ def inducedLabeledSubgraph
       }
   }
   embed_eq := by
-    intro t
-    simp only [eq_mpr_eq_cast, cast_eq, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+    intro; simp only [eq_mpr_eq_cast, cast_eq, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
 
 omit [Fintype T] in
 @[simp]
@@ -289,9 +264,8 @@ omit [Fintype T] in
 theorem inducedLabeledSubgraph_isInduced
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).IsInduced
-  := by
-  dsimp [IsInduced, inducedLabeledSubgraph]
-  exact inducedSubgraph_isInduced G.graph S
+  :=
+  inducedSubgraph_isInduced G.graph S
 
 omit [Fintype T] in
 theorem isInduced_exist_induce_set
@@ -299,7 +273,6 @@ theorem isInduced_exist_induce_set
     : ∃ (S : Set V) (h : G.type_verts ⊆ S), inducedLabeledSubgraph G S h = H
   := by
   let S := H.subgraph.verts
-  dsimp [IsInduced] at h_ind
   have h : G.type_verts ⊆ S := labeledSubgraph_contain_type_verts G H
   use S, h
   dsimp [inducedLabeledSubgraph]
@@ -309,9 +282,8 @@ theorem isInduced_exist_induce_set
     simp only [SimpleGraph.Subgraph.coe_adj, hH_graph]
   · funext t
     congr
-    exact Eq.symm (H.embed_eq t)
-  · apply proof_irrel_heq
-  · apply proof_irrel_heq
+    exact (H.embed_eq t).symm
+  all_goals apply proof_irrel_heq
 
 end LabeledSubgraph
 
@@ -340,7 +312,7 @@ variable {G : LabeledGraph σ V} {G' : LabeledGraph σ W} {G'' : LabeledGraph σ
 @[refl]
 def refl : G ≃f G where
   graph_iso := by rfl
-  type_preserve := by ext t ; simp only [Function.comp_apply, RelIso.refl_apply]
+  type_preserve := by ext t; rw [Function.comp_apply, RelIso.refl_apply]
 
 @[symm]
 def symm (h : G ≃f G') : G' ≃f G where
@@ -359,6 +331,7 @@ def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
 
 end LabeledGraphIso
 
+/-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
   :=
   Nonempty (G ≃f G')
@@ -407,7 +380,6 @@ def Flag (σ : FlagType T) (V : Type) : Type :=
 noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (Flag σ V)
   := by
-  classical
   exact Quotient.fintype (labeledGraphSetoid σ V)
 
 theorem Flag.type_eq
@@ -418,9 +390,8 @@ theorem Flag.type_eq
 omit [Fintype T] in
 theorem flagEqv.sound {σ : FlagType T} {V : Type} {G G' : LabeledGraph σ V} (h : G ∼f G')
     : (⟦G⟧ : Flag σ V) = (⟦G'⟧ : Flag σ V)
-  := by
-  apply Quotient.sound
-  exact h
+  :=
+  Quotient.sound h
 
 def emptyFlag (σ : FlagType T) : Flag σ T
   :=
@@ -519,11 +490,10 @@ theorem flagList_HEq
     : HEq Fl Fl' := by
   have h_Fl_cast : Fl = cast (FlagList.type_eq h_Vl_eq) Fl' := by
     subst h_Vl_eq
-    simp_all only [cast_eq]
+    rw [cast_eq]
     ext1 i
     exact h_Fl_eq i
-  subst h_Vl_eq
-  subst h_Fl_cast
+  subst h_Vl_eq h_Fl_cast
   exact HEq.refl Fl
 
 def flagToList {σ : FlagType T} {V : Type} (F : Flag σ V)
@@ -580,22 +550,18 @@ noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : 
   toFun := fun Gl (i : Fin t) => ⟦Gl.out i⟧
   invFun := fun Fl => ⟦fun (i : Fin t) => (Fl i).out⟧
   left_inv Gl := by
-    rw [← Quotient.out_eq Gl]
+    rw [← Gl.out_eq]
     apply Quotient.sound
     intro i
     simp only [Quotient.out_eq]
-    apply Quotient.mk_out (Gl.out i)
+    exact Quotient.mk_out (Gl.out i)
   right_inv Fl := by
     simp only; ext i
-    rw [← Quotient.out_eq (Fl i)]
-    apply Quotient.sound
-    apply flagEqv.trans
-    · show _ ∼f (fun i ↦ Quotient.out (Fl i)) i
-      have : ⟦fun i ↦ Quotient.out (Fl i)⟧.out ∼fl (fun i ↦ Quotient.out (Fl i)) := by
-        apply Quotient.mk_out (fun i ↦ Quotient.out (Fl i))
-      exact this i
-    · simp only
-      exact flagEqv.refl (Quotient.out (Fl i))
+    refine (Fl i).out_eq ▸ Quotient.sound (flagEqv.trans ?_ (flagEqv.refl (Quotient.out (Fl i))))
+    show _ ∼f Quotient.out (Fl i)
+    have : ⟦fun i ↦ Quotient.out (Fl i)⟧.out ∼fl (fun i ↦ Quotient.out (Fl i)) :=
+      Quotient.mk_out fun i ↦ (Fl i).out
+    exact this i
 
 @[simp]
 noncomputable def QuotLabeledGraphList.coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Fl : QuotLabeledGraphList σ t Vl)
@@ -613,39 +579,27 @@ omit [Fintype T] in
 theorem list_quot_eq_quot_list_singleton
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
     : ⟦[G]ᵍ⟧ = [⟦G⟧]ᶠ.coe
-  := by
-  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
-  apply Quotient.sound
-  intro i
-  dsimp [labeledGraphToList]
-  exact (Quotient.mk_out G).symm
+  :=
+  Quotient.sound fun _ ↦(Quotient.mk_out G).symm
 
 omit [Fintype T] in
 theorem list_quot_eq_quot_list_pair
     {σ : FlagType T} {V W : Type} (G : LabeledGraph σ V) (G' : LabeledGraph σ W)
     : ⟦[G, G']ᵍ⟧ = [⟦G⟧, ⟦G'⟧]ᶠ.coe
-  := by
-  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
-  apply Quotient.sound
-  intro i
-  dsimp [labeledGraphPairToList]
-  match i with
-  | 0 => exact (Quotient.mk_out G).symm
-  | 1 => exact (Quotient.mk_out G').symm
+  :=
+  Quotient.sound fun i ↦ match i with
+  | 0 => (Quotient.mk_out G).symm
+  | 1 => (Quotient.mk_out G').symm
 
 omit [Fintype T] in
 theorem list_quot_eq_quot_list_triple
     {σ : FlagType T} {V W U : Type} (G : LabeledGraph σ V) (G' : LabeledGraph σ W) (G'' : LabeledGraph σ U)
     : ⟦[G, G', G'']ᵍ⟧ = [⟦G⟧, ⟦G'⟧, ⟦G''⟧]ᶠ.coe
-  := by
-  dsimp [eqv_QuotLabeledGraphList_FlagList, flagToList]
-  apply Quotient.sound
-  intro i
-  dsimp [labeledGraphTripleToList]
-  match i with
-  | 0 => exact (Quotient.mk_out G).symm
-  | 1 => exact (Quotient.mk_out G').symm
-  | 2 => exact (Quotient.mk_out G'').symm
+  :=
+  Quotient.sound fun i ↦ match i with
+  | 0 => (Quotient.mk_out G).symm
+  | 1 => (Quotient.mk_out G').symm
+  | 2 => (Quotient.mk_out G'').symm
 
 /- FlagList.insert -/
 
@@ -709,58 +663,45 @@ theorem flaglist_heq_of_idx_eq {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
   subst h; rfl
 
 def flag_heq_to_iso {σ : FlagType T} {W : Type} {V : Type}
-    {F₁ : Flag σ W} {F₂ : Flag σ V} (type_eq : W = V) (HEq : HEq F₁ F₂)
+    {F₁ : Flag σ W} {F₂ : Flag σ V} (type_eq : W = V) (hHEq : HEq F₁ F₂)
     : F₁.out ≃f F₂.out := by
-  subst type_eq
-  subst HEq
+  subst type_eq hHEq
   rfl
 
 omit [Fintype T] in
 theorem insert_new_flag_cast_iso {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (_ : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin (t + 1)} (hi : i.val = t)
-    : Nonempty (F.out ≃f (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out) := by
-  apply Nonempty.intro
-  have h : HEq F (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F) := by
-    apply HEq.symm
-    apply cast_heq
-  exact flag_heq_to_iso (listTypeInsert_eq hi) h
+    : Nonempty (F.out ≃f (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out) :=
+  Nonempty.intro <| flag_heq_to_iso (listTypeInsert_eq hi) (cast_heq _ _).symm
 
 omit [Fintype T] in
 theorem insert_preserves_existing_flags {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (_ : Flag σ W)
     {i : Fin (t + 1)} (hi : i.val ≠ t)
-    : Nonempty ((Fl (i.coe hi)).out ≃f (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out) := by
-  apply Nonempty.intro
-  have h : HEq (Fl (i.coe hi)) (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))) := by
-    apply HEq.symm
-    apply cast_heq
-  exact flag_heq_to_iso (listTypeInsert_eq' hi) h
+    : Nonempty ((Fl (i.coe hi)).out ≃f (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out) :=
+  Nonempty.intro <| flag_heq_to_iso (listTypeInsert_eq' hi) (cast_heq _ _).symm
 
 omit [Fintype T] in
 theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (F : Flag σ W)
-    {i : Fin t} (hi : i.val ≠ t)
+    {i : Fin t} (hi₀ : i.val ≠ t)
     : Nonempty ((Fl i).out ≃f (Fl.insert F i).out) := by
   dsimp [FlagList.insert]
   split
   next hi' =>
-    exfalso
     have : i % (t + 1) = i := by rw [Nat.mod_succ_eq_iff_lt]; omega
-    rw [this] at hi'
-    exact hi hi'
+    exact (hi₀ (this ▸ hi')).elim
   next hi =>
-    apply Nonempty.intro
     have hi' : (i : Fin (t + 1)).val ≠ t := by
-      simp_all only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true]
+      simp only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true, hi₀]
     let cast_iso := Classical.choice (insert_preserves_existing_flags Fl F hi')
     have type_eq : (Vl i) = (Vl ((i : Fin (t + 1)).coe hi)) := by
-      simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
+      simp only [Fin.coe_eq_castSucc]; rfl
     have idx_heq : HEq (Fl i) (Fl ((i : Fin (t + 1)).coe hi)) := by
       apply flaglist_heq_of_idx_eq
-      simp_all only [ne_eq, Fin.coe_eq_castSucc]; rfl
-    have idx_iso := flag_heq_to_iso type_eq idx_heq
-    exact idx_iso.trans cast_iso
+      simp only [Fin.coe_eq_castSucc]; rfl
+    exact Nonempty.intro <| (flag_heq_to_iso type_eq idx_heq).trans cast_iso
 
 omit [Fintype T] in
 theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
@@ -803,7 +744,6 @@ noncomputable instance decidableEqListPermute
     {t : ℕ} (Vl : Fin t → Type) [DecidableEqList Vl] (π : Perm t)
     : @DecidableEqList t (listTypePermute Vl π) where
   decidable_eq_all i := by
-    dsimp [listTypePermute]
     infer_instance
 
 def FlagList.permute {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}

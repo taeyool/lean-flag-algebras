@@ -1,7 +1,6 @@
+import Mathlib.Algebra.BigOperators.GroupWithZero.Action
 import Mathlib.Data.Finsupp.Basic
 import Mathlib.Data.Real.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset
-import Mathlib.Algebra.BigOperators.GroupWithZero.Action
 
 open Finset
 
