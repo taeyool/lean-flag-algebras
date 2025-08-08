@@ -936,13 +936,32 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
   := by
   sorry
 
-lemma funapp_match_comm_three
-    {f : Type → ℕ} {T₁ T₂ T₃ : Type}
-    : ∀ (i : Fin 3), f (match i with | 0 => T₁ | 1 => T₂ | 2 => T₃)
-                     = match i with | 0 => f T₁ | 1 => f T₂ | 2 => f T₃
+lemma fintype_card_match_comm_two
+    (ℓ₀ ℓ₁ ℓ₂ : ℕ)
+    : (fun i : Fin 2 ↦ @Fintype.card
+                         (match i with | 0 => Fin ℓ₁ | 1 => Fin ℓ₂)
+                         (@fintype_V 2
+                            (fun i : Fin 2 ↦ match i with | 0 => Fin ℓ₁ | 1 => Fin ℓ₂)
+                            (@fintypePairList (Fin ℓ₁) (Fin ℓ₂) (Fin.fintype ℓ₁) (Fin.fintype ℓ₂))
+                            i)
+                        - ℓ₀)
+      =
+      (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
   := by
-  intro i
-  split <;> rfl
+  funext i
+  split <;> simp only [Fin.isValue, Fintype.card_fin]
+
+lemma fintype_card_match_comm_three
+    (ℓ₀ ℓ₁ ℓ₂ ℓ₃ : ℕ)
+    : (fun i : Fin 3 ↦ @Fintype.card
+                         (match i with | 0 => Fin ℓ₁ | 1 => Fin ℓ₂ | 2 => Fin ℓ₃)
+                         (fintype_V (fun i : Fin 3 ↦ match i with | 0 => (Fin ℓ₁) | 1 => (Fin ℓ₂) | 2 => (Fin ℓ₃)) i)
+                        - ℓ₀)
+      =
+      (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
+  := by
+  funext i
+  split <;> simp only [Fin.isValue, Fintype.card_fin]
 
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -986,10 +1005,13 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
     dsimp [labeledSubgraphListDensity]
     have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
     simp only [h_σ_size, Fintype.card_fin]
-    simp [LabeledGraph.size, Fintype.card_fin]
-    conv =>
-      lhs
-      enter [1, 2, 1, 1, i, 1]
+    dsimp only [LabeledGraph.size]
+    have h_fintype_two₀ := fintype_card_match_comm_two ℓ₀ ℓ₁ ℓ₂
+    have h_fintype_two₁ := fintype_card_match_comm_two ℓ₀ ℓ' ℓ₃
+    have h_fintype_three := fintype_card_match_comm_three ℓ₀ ℓ₁ ℓ₂ ℓ₃
+    -- rw [h_fintype_two₀]
+    -- rw [h_fintype_two₁]
+    -- rw [h_fintype_three]
     sorry
   }
 
