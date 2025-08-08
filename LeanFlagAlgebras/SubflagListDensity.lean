@@ -54,6 +54,11 @@ def multinomialCoefficient
     Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - r_sum))
   else 0
 
+lemma multinomialCoefficient_eq
+    {r_list₁ r_list₂ : Fin t → ℕ} (n : ℕ) (heq : r_list₁ = r_list₂)
+    : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
+  := by subst heq; rfl
+
 lemma multinomialCoefficient_pos
     (r_list : Fin t → ℕ) (n : ℕ) (h_n : n ≥ ∑ i : Fin t, r_list i) :
     multinomialCoefficient r_list n > 0
@@ -1011,6 +1016,21 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
     have h_fintype_two₀ := fintype_card_match_comm_two ℓ₀ ℓ₁ ℓ₂
     have h_fintype_two₁ := fintype_card_match_comm_two ℓ₀ ℓ' ℓ₃
     have h_fintype_three := fintype_card_match_comm_three ℓ₀ ℓ₁ ℓ₂ ℓ₃
+
+    congr
+    have triple_density_eq_count_over_coeff : labeledSubgraphListDensity (labeledGraphTripleToList H₁ H₂ H₃) G =
+      (labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / C_lhs := by
+      dsimp [labeledSubgraphListDensity]
+      congr
+      · dsimp [labeledGraphTripleToList, LabeledGraph.size]
+        rw [h_σ_size]
+        rw [← h_fintype_three]
+        rfl
+      · exact Fintype.card_fin ℓ
+    dsimp [labeledSubgraphListDensity, labeledGraphTripleToList, LabeledGraph.size] at triple_density_eq_count_over_coeff
+    rw [h_σ_size] at triple_density_eq_count_over_coeff
+    rw [triple_density_eq_count_over_coeff]
+    dsimp [C_lhs]
     -- rw [h_fintype_two₀]
     -- rw [h_fintype_two₁]
     -- rw [h_fintype_three]
