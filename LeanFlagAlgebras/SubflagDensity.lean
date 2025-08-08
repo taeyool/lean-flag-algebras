@@ -1,19 +1,16 @@
-import «LeanFlagAlgebras».SubgraphUtil
 import «LeanFlagAlgebras».FlagDef
-import Mathlib.Tactic.Linarith.Frontend
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
+import Mathlib.Algebra.Order.Field.Rat
 
 open FlagAlgebras
 open LabeledSubgraph
 open Classical
 
-variable {T : Type} [Fintype T] [DecidableEq T]
+variable {T : Type} [Fintype T]
 variable {σ : FlagType T}
-variable {U : Type} [Fintype U] [DecidableEq U]
-variable {V : Type} [Fintype V] [DecidableEq V]
-variable {W : Type} [Fintype W] [DecidableEq W]
-variable {Z : Type} [Fintype Z] [DecidableEq Z]
-
+variable {U : Type} [Fintype U]
+variable {V : Type} [Fintype V]
+variable {W : Type} [Fintype W]
+variable {Z : Type} [Fintype Z]
 
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
@@ -35,10 +32,7 @@ def relOfLabeledSubgraph
   :=
   relOfSubgraph φ.graph_iso H₀.subgraph H₁.subgraph
 
-
-omit [Fintype T] [DecidableEq T]
-     [Fintype V] [DecidableEq V]
-     [Fintype W] [DecidableEq W] in
+omit [Fintype T] [Fintype V] [Fintype W] in
 lemma relOfLabeledSubgraph_symm
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} {φ : G₀ ≃f G₁}
     {H₀ : LabeledSubgraph σ G₀} {H₁ : LabeledSubgraph σ G₁}
@@ -71,11 +65,7 @@ def predIsoLabeledH
     : LabeledSubgraph σ G → Prop
   := fun G' ↦ Nonempty (G'.coe ≃f H)
 
-omit [Fintype T] [DecidableEq T]
-     [Fintype U] [DecidableEq U]
-     [Fintype V] [DecidableEq V]
-     [Fintype W] [DecidableEq W]
-     [Fintype Z] [DecidableEq Z] in
+omit [Fintype T] [Fintype U] [Fintype V] [Fintype W] [Fintype Z] in
 lemma predIsoLabeledH_related_support
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
@@ -96,7 +86,9 @@ lemma predIsoLabeledH_related_support
       simp only [f_ζ, Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
       exact SetCoe.ext h_eq
     · intro w
-      use ⟨(φ.graph_iso.symm w), by aesop⟩
+      use ⟨(φ.graph_iso.symm w), by
+        obtain ⟨_, h⟩ := w; obtain ⟨_, h', rfl⟩ := h_vert ▸ h
+        simp only [h', RelIso.symm_apply_apply]⟩
       dsimp [f_ζ]
       simp only [RelIso.apply_symm_apply, Subtype.coe_eta]
   let ζ := Equiv.ofBijective f_ζ h_ζ_bij
@@ -115,11 +107,7 @@ lemma predIsoLabeledH_related_support
   let iso_G₀'_H₀ : G₀'.coe ≃f H₀ := Classical.choice h
   exact Nonempty.intro ((iso_G₀'_G₁'.symm.trans iso_G₀'_H₀).trans ψ)
 
-omit [Fintype T] [DecidableEq T]
-     [Fintype V] [DecidableEq V]
-     [Fintype W] [DecidableEq W]
-     [Fintype U] [DecidableEq U]
-     [Fintype Z] [DecidableEq Z] in
+omit [Fintype T] [Fintype V] [Fintype W] [Fintype U] [Fintype Z] in
 lemma predIsoLabeledH_related
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
@@ -131,9 +119,7 @@ lemma predIsoLabeledH_related
   . exact predIsoLabeledH_related_support φ ψ G₀' G₁' h_rel
   . exact predIsoLabeledH_related_support φ.symm ψ.symm G₁' G₀' (relOfLabeledSubgraph_symm h_rel)
 
-omit [Fintype T] [DecidableEq T]
-     [Fintype U] [DecidableEq U]
-     [Fintype V] [DecidableEq V] in
+omit [Fintype T] [Fintype U] [Fintype V] in
 lemma predIsoLabeledH_related_ind
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁)
@@ -143,16 +129,13 @@ lemma predIsoLabeledH_related_ind
   := by
   intro u v h_u h_v h_uv
   let ⟨h_vert, h_adj⟩ := h_rel
-  rw [h_vert, Set.mem_image] at h_u h_v
-  obtain ⟨u', h_u', h_uu'⟩ := h_u
-  obtain ⟨v', h_v', h_vv'⟩ := h_v
-  subst h_vv' h_uu'
+  rw [h_vert] at h_u h_v
+  obtain ⟨u', h_u', rfl⟩ := h_u
+  obtain ⟨v', h_v', rfl⟩ := h_v
   have h_u'_v' : G₀.graph.Adj u' v' := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_uv
   exact (h_adj u' v').mpr (h_ind₀ h_u' h_v' h_u'_v')
 
-omit [Fintype T] [DecidableEq T]
-     [Fintype V] [DecidableEq V]
-     [Fintype W] [DecidableEq W] in
+omit [Fintype T] [Fintype V] [Fintype W] in
 lemma labeledGraphIso_preserve_type_verts
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
     : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
@@ -175,9 +158,7 @@ def inducedLabeledSubgraphByIso
   inducedLabeledSubgraph
     G₁ (φ.graph_iso '' H₀.subgraph.verts) (labeledGraphIso_preserve_type_verts φ H₀)
 
-omit [Fintype T] [DecidableEq T]
-     [Fintype V] [DecidableEq V]
-     [Fintype W] [DecidableEq W] in
+omit [Fintype T] [Fintype V] [Fintype W] in
 lemma inducedLabeledSubgraphByIso_isInduced
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W}
     (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
@@ -188,17 +169,15 @@ lemma inducedLabeledSubgraphByIso_isInduced
     (φ.graph_iso '' H₀.subgraph.verts)
     (labeledGraphIso_preserve_type_verts φ H₀)
 
-
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype  W] [DecidableEq W] in
+omit [Fintype T] [Fintype V] [Fintype W] in
 lemma inducedLabeledSubgraph_related
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
     : relOfLabeledSubgraph φ H₀ (inducedLabeledSubgraphByIso φ H₀)
-  := by
-  dsimp [relOfLabeledSubgraph, inducedLabeledSubgraph]
-  apply inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
+  :=
+  inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
+omit [Fintype T] [Fintype V] in
 theorem embed_heq_of_subgraph_eq
     {σ : FlagType T} {G : SimpleGraph V}
     {H H' : G.Subgraph} {H_emb : σ ↪g H.coe} {H'_emb : σ ↪g H'.coe}
@@ -210,7 +189,7 @@ theorem embed_heq_of_subgraph_eq
   ext t
   exact h_fun_eq t
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] in
+omit [Fintype T] [Fintype V] in
 theorem type_embed_heq_of_subgraph_eq
     {σ : FlagType T} {G : LabeledGraph σ V} {H H' : LabeledSubgraph σ G}
     (H_eq_H' : H.subgraph = H'.subgraph)
@@ -221,14 +200,14 @@ theorem type_embed_heq_of_subgraph_eq
     rw [H.embed_eq t, H'.embed_eq t]
   exact embed_heq_of_subgraph_eq H_eq_H' h_embed_eq
 
-omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [Fintype U] in
 lemma labeledSubgraph_eq_from_subgraph_eq
     {σ : FlagType T} {G : LabeledGraph σ U} {H₀ H₁ : LabeledSubgraph σ G}
     (h_subgraph_eq : H₀.subgraph = H₁.subgraph) : H₀ = H₁
   :=
   LabeledSubgraph.ext h_subgraph_eq (type_embed_heq_of_subgraph_eq h_subgraph_eq)
 
-omit [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
+omit [Fintype T] [Fintype V] [Fintype W] in
 lemma H_eq_reverseinduced_induced_H
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W}
     (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀) (h_ind₀ : H₀.IsInduced)
@@ -255,14 +234,14 @@ noncomputable def isoSetOfInducedLabeledSubgraph
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ p₀ G' }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ p₁ G' }
   let f : S₀ → S₁ := by
-    intro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
+    intro ⟨H₀, h_ind₀, h_p₀⟩
     let H₁ := inducedLabeledSubgraphByIso φ H₀
     let h_ind₁ : H₁.IsInduced := inducedLabeledSubgraphByIso_isInduced φ H₀
     have : relOfLabeledSubgraph φ H₀ H₁ := inducedLabeledSubgraph_related φ H₀ h_ind₀
     have h_p₁ : p₁ H₁ := (h_rel H₀ H₁ this).mp h_p₀
     exact ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
   let f_inv : S₁ → S₀ := by
-    intro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
+    intro ⟨H₁, h_ind₁, h_p₁⟩
     let H₀ := inducedLabeledSubgraphByIso φ.symm H₁
     let h_ind₀ : H₀.IsInduced := inducedLabeledSubgraphByIso_isInduced φ.symm H₁
     have : relOfLabeledSubgraph φ.symm H₁ H₀ := inducedLabeledSubgraph_related φ.symm H₁ h_ind₁
@@ -270,17 +249,10 @@ noncomputable def isoSetOfInducedLabeledSubgraph
     have h_p₀ : p₀ H₀ := (h_rel H₀ H₁ this).mpr h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
   let f_bij : Function.Bijective f := by
-    have h_leftinv : Function.LeftInverse f_inv f := by
-      rintro ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]; symm
-      exact H_eq_reverseinduced_induced_H φ H₀ h_ind₀
-    have h_rightinv : Function.RightInverse f_inv f := by
-      rintro ⟨H₁, ⟨h_ind₁, h_p₁⟩⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]; symm
-      exact H_eq_reverseinduced_induced_H φ.symm H₁ h_ind₁
-    exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
+    refine Function.bijective_iff_has_inverse.mpr ⟨f_inv, ?_, ?_⟩ <;>
+    rintro ⟨H, h_ind, h_p⟩ <;> dsimp [f, f_inv] <;> simp only [Subtype.mk.injEq] <;> symm
+    · exact H_eq_reverseinduced_induced_H φ H h_ind
+    · exact H_eq_reverseinduced_induced_H φ.symm H h_ind
   Equiv.ofBijective f f_bij
 
 noncomputable def isoSetOfInducedLabeledSubgraphFromIsoGH
@@ -294,8 +266,6 @@ noncomputable def isoSetOfInducedLabeledSubgraphFromIsoGH
     (predIsoLabeledH H₁ G₁)
     (predIsoLabeledH_related φ ψ)
 
-
-omit [DecidableEq T] in
 lemma labeledSubgraphDensity_respect_eqv
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
@@ -317,18 +287,17 @@ lemma labeledSubgraphDensity_respect_eqv
 noncomputable def labeledSubgraphDensityLifted
     (H : LabeledGraph σ V) : Flag σ W → ℚ
   := by
-  apply Quot.lift (fun G : LabeledGraph σ W => labeledSubgraphDensity H G)
+  apply Quot.lift (fun G : LabeledGraph σ W ↦ labeledSubgraphDensity H G)
   intro _ _ G_eqv
   exact labeledSubgraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
 
-omit [DecidableEq T] in
 lemma labeledSubgraphDensityLifted_respect_eqv
     {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
     : labeledSubgraphDensityLifted H₀ G = labeledSubgraphDensityLifted H₁ G
   := by
   dsimp [labeledSubgraphDensityLifted]
   congr
-  ext Grep
+  ext
   exact labeledSubgraphDensity_respect_eqv LabeledGraphIso.refl ψ
 
 noncomputable def subflagDensity
@@ -339,7 +308,7 @@ noncomputable def subflagDensity
   ext G
   exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
-omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [Fintype U] in
 lemma bot_labeledSubgraph_iso_emptyLabeledGraph
     (G : LabeledGraph σ U) : Nonempty (G.bottom.coe ≃f emptyLabeledGraph σ)
   :=
@@ -352,58 +321,48 @@ lemma bot_labeledSubgraph_iso_emptyLabeledGraph
     rw [iso_type_Adj_iff G u v]
     simp only [Subtype.coe_prop, true_and]
   let f_iso : (G.bottom).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f, h_adj⟩
-  have h_emb : ∀ t : T, f_iso (G.bottom.coe.type_embed t) = (emptyLabeledGraph σ).type_embed t := by
-    intro t
-    dsimp [LabeledGraph.bottom, emptyLabeledGraph, f_iso, f]
-    exact (Equiv.symm_apply_eq G.iso_type_G).mpr rfl
+  have h_emb : ∀ t : T, f_iso (G.bottom.coe.type_embed t) = (emptyLabeledGraph σ).type_embed t :=
+    fun _ ↦ G.iso_type_G.symm_apply_eq.mpr rfl
   ⟨f_iso, funext h_emb⟩
 
-omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [Fintype U] in
 lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
     {G : LabeledGraph σ U} {H : LabeledSubgraph σ G}
     : H = G.bottom ↔ Nonempty (H.coe ≃f (emptyLabeledGraph σ))
   := by
+  refine ⟨fun h_eq ↦ h_eq ▸ bot_labeledSubgraph_iso_emptyLabeledGraph G, ?_⟩
+  rintro ⟨⟨iso_H_T, h_iso_adj⟩, h_type_embed⟩
+  apply labeledSubgraph_eq_from_subgraph_eq
+  have h_type_embed_comp_iso_H_T : ∀ u : H.subgraph.verts, H.type_embed (iso_H_T u) = u.val := by
+    intro u
+    have h₀ : iso_H_T (H.type_embed (iso_H_T u)) = iso_H_T u := congrFun h_type_embed (iso_H_T u)
+    exact congr_arg Subtype.val (iso_H_T.injective h₀)
+  dsimp [LabeledGraph.bottom]
+  have H_verts_iff_type_verts : ∀ u : U, u ∈ H.subgraph.verts ↔ u ∈ G.type_verts := by
+    intro u
+    constructor
+    · intro h_u
+      let u' : H.subgraph.verts := ⟨u, h_u⟩
+      have h₀ : H.type_embed (iso_H_T u') = u := h_type_embed_comp_iso_H_T u'
+      rw [←h₀, H.embed_eq]
+      exact G.type_verts_contain (iso_H_T u')
+    · apply labeledSubgraph_contain_type_verts
+  ext u v <;> try exact H_verts_iff_type_verts u
+  simp only [←H_verts_iff_type_verts]
   constructor
-  · intro h_eq
-    rw [h_eq]
-    exact bot_labeledSubgraph_iso_emptyLabeledGraph G
-  · intro ⟨⟨iso_H_T, h_iso_adj⟩, h_type_embed⟩
-    have h_type_embed_comp_iso_H_T : ∀ u : H.subgraph.verts, H.type_embed (iso_H_T u) = u.val := by
-      intro u
-      have h₀ : iso_H_T (H.type_embed (iso_H_T u)) = iso_H_T u := congrFun h_type_embed (iso_H_T u)
-      exact congr_arg Subtype.val (iso_H_T.injective h₀)
-    have graph_eq_H_G : H.subgraph = G.bottom.subgraph := by
-      dsimp [LabeledGraph.bottom]
-      have H_verts_iff_type_verts : ∀ u : U, u ∈ H.subgraph.verts ↔ u ∈ G.type_verts := by
-        intro u
-        constructor
-        · intro h_u
-          let u' : H.subgraph.verts := ⟨u, h_u⟩
-          have h₀ : H.type_embed (iso_H_T u') = u := h_type_embed_comp_iso_H_T u'
-          rw [←h₀, H.embed_eq]
-          exact LabeledGraph.type_verts_contain G (iso_H_T u')
-        · apply labeledSubgraph_contain_type_verts
-      ext u v
-      · rw [H_verts_iff_type_verts]
-      · simp only [←H_verts_iff_type_verts]
-        constructor
-        · intro h_uv
-          have h_u : u ∈ H.subgraph.verts := H.subgraph.edge_vert h_uv
-          have h_v : v ∈ H.subgraph.verts := H.subgraph.edge_vert h_uv.symm
-          have h_uv_G : G.graph.Adj u v := SimpleGraph.Subgraph.Adj.adj_sub h_uv
-          exact ⟨h_u, h_v, h_uv_G⟩
-        · intro ⟨h_u, h_v, h_uv_G⟩
-          let u' : H.subgraph.verts := ⟨u, h_u⟩
-          let v' : H.subgraph.verts := ⟨v, h_v⟩
-          have h₀ : (emptyLabeledGraph σ).graph.Adj (iso_H_T u') (iso_H_T v') ↔ H.subgraph.Adj u' v' := @h_iso_adj u' v'
-          rw [←h₀]
-          dsimp [emptyLabeledGraph]
-          rw [type_embed_Adj_iff G (iso_H_T u') (iso_H_T v')]
-          have h_eq_u' : H.type_embed (iso_H_T u') = u := h_type_embed_comp_iso_H_T u'
-          have h_eq_v' : H.type_embed (iso_H_T v') = v := h_type_embed_comp_iso_H_T v'
-          rw [←H.embed_eq, ←H.embed_eq, h_eq_u', h_eq_v']
-          exact h_uv_G
-    exact labeledSubgraph_eq_from_subgraph_eq graph_eq_H_G
+  · intro h_uv
+    have h_u : u ∈ H.subgraph.verts := H.subgraph.edge_vert h_uv
+    have h_v : v ∈ H.subgraph.verts := H.subgraph.edge_vert h_uv.symm
+    exact ⟨h_u, h_v, h_uv.adj_sub⟩
+  · rintro ⟨h_u, h_v, h_uv_G⟩
+    let u' : H.subgraph.verts := ⟨u, h_u⟩
+    let v' : H.subgraph.verts := ⟨v, h_v⟩
+    have h₀ : (emptyLabeledGraph σ).graph.Adj (iso_H_T u') (iso_H_T v') ↔ H.subgraph.Adj u' v' :=
+      h_iso_adj
+    rw [←h₀]
+    simp only [emptyLabeledGraph, type_embed_Adj_iff G (iso_H_T u') (iso_H_T v'), ← H.embed_eq,
+      h_type_embed_comp_iso_H_T, h_uv_G]
+
 
 lemma labeledSubgraphCount_empty
     {σ : FlagType T} (G : LabeledGraph σ U)
@@ -421,55 +380,46 @@ lemma labeledSubgraphCount_empty
     simp only [Set.mem_setOf_eq, Set.setOf_eq_eq_singleton, Set.mem_singleton_iff, S₀, S₁]
     symm
     rw [←labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph]
-    constructor
-    . intro h_iso; rw [h_iso]; exact ⟨LabeledGraph.bottom_isInduced G, rfl⟩
-    . intro ⟨_, h_iso⟩; exact h_iso
+    refine ⟨?_, And.right⟩
+    rintro rfl; exact ⟨LabeledGraph.bottom_isInduced G, rfl⟩
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
 lemma labeledSubgraphDensity_empty
     {σ : FlagType T} (G : LabeledGraph σ U)
     : labeledSubgraphDensity (emptyLabeledGraph σ) G = 1
   := by
-  simp only [labeledSubgraphDensity]
-  rw [labeledSubgraphCount_empty G]
-  have : ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size) : ℚ) ≠ 0 := by
-    dsimp only [emptyLabeledGraph, LabeledGraph.size]
-    have : Fintype.card T = σ.size := by rfl
-    rw [this]
-    simp only [le_refl, tsub_eq_zero_of_le, Nat.choose_zero_right]
-    simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true]
-  exact (div_eq_one_iff_eq this).mpr rfl
+  simp only [labeledSubgraphDensity, labeledSubgraphCount_empty G]
+  refine (div_eq_one_iff_eq ?_).mpr rfl
+  dsimp only [emptyLabeledGraph, LabeledGraph.size]
+  have : Fintype.card T = σ.size := by rfl
+  simp only [this, le_rfl, tsub_eq_zero_of_le, Nat.choose_zero_right]
+  simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true]
 
 lemma subflagDensity_empty
     {σ : FlagType T} (G : Flag σ U)
     : subflagDensity (emptyFlag σ) G = 1
   := by
-  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
-  dsimp [emptyFlag]
-  subst hGrep
-  dsimp [subflagDensity, labeledSubgraphDensityLifted]
+  rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
+  dsimp [emptyFlag, subflagDensity, labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_empty Grep
 
-omit [Fintype T] [DecidableEq T] [DecidableEq U] in
+omit [Fintype T] in
 lemma induced_full_labeledSubgraph_eq_top
     {σ : FlagType T} {G₀ G₁ : LabeledGraph σ U} {G' : LabeledSubgraph σ G₀}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃f G₁) → G' = G₀.top
   := by
   intro ⟨h_ind_G', ⟨f_G'_G₁, _⟩⟩
   let f_U_G'_vertex : U ≃ G'.subgraph.verts := f_G'_G₁.toEquiv.symm
-  have G'_eq_top : G'.subgraph = G₀.top.subgraph := by
-    dsimp [LabeledGraph.top]
-    ext u v
-    · simp only [SimpleGraph.Subgraph.verts_top, Set.mem_univ, iff_true]
-      exact iso_subset_of_finset_is_full f_U_G'_vertex u
-    · have h_u := iso_subset_of_finset_is_full f_U_G'_vertex u
-      have h_v := iso_subset_of_finset_is_full f_U_G'_vertex v
-      constructor
-      · intro h_uv; exact SimpleGraph.Subgraph.Adj.adj_sub h_uv
-      · intro h_uv; exact h_ind_G' h_u h_v h_uv
-  exact labeledSubgraph_eq_from_subgraph_eq G'_eq_top
+  apply labeledSubgraph_eq_from_subgraph_eq
+  dsimp [LabeledGraph.top]
+  ext u v
+  · simp only [SimpleGraph.Subgraph.verts_top, Set.mem_univ, iff_true]
+    exact iso_subset_of_finset_is_full f_U_G'_vertex u
+  · have h_u := iso_subset_of_finset_is_full f_U_G'_vertex u
+    have h_v := iso_subset_of_finset_is_full f_U_G'_vertex v
+    exact ⟨SimpleGraph.Subgraph.Adj.adj_sub, h_ind_G' h_u h_v⟩
 
-omit [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] in
+omit [Fintype T] [Fintype U] in
 lemma top_labeledSubgraph_iso_G
     {σ : FlagType T} {G : LabeledGraph σ U}
     : Nonempty (G.top.coe ≃f G)
@@ -477,16 +427,12 @@ lemma top_labeledSubgraph_iso_G
   let graph_iso : G.top.subgraph.coe ≃g G.graph := {
     toFun := (↑)
     invFun := fun u ↦ ⟨u, Set.mem_univ u⟩
-    left_inv := by intro u; rfl
-    right_inv := by intro u; rfl
-    map_rel_iff' := by intro u v; exact Eq.to_iff rfl
+    left_inv := fun _ ↦ rfl
+    right_inv := fun _ ↦rfl
+    map_rel_iff' := by rfl
   }
-  have type_preserve : graph_iso ∘ G.top.coe.type_embed = G.type_embed := by
-    dsimp [LabeledGraph.top, graph_iso]
-    exact rfl
-  exact Nonempty.intro ⟨graph_iso, type_preserve⟩
+  exact Nonempty.intro ⟨graph_iso, rfl⟩
 
-omit [DecidableEq T] in
 lemma labeledSubgraphCount_self
     {σ : FlagType T} (G : LabeledGraph σ U)
     : labeledSubgraphCount G G = 1
@@ -498,31 +444,23 @@ lemma labeledSubgraphCount_self
   have h_S₀_S₁ : S₀ = S₁ := by
     ext G'
     simp only [Set.mem_setOf_eq, Set.setOf_eq_eq_singleton, Set.mem_singleton_iff, S₀, S₁]
-    constructor
-    . exact induced_full_labeledSubgraph_eq_top
-    . intro h_eq_top
-      rw [h_eq_top]
-      exact ⟨LabeledGraph.top_isInduced G, top_labeledSubgraph_iso_G⟩
+    refine ⟨induced_full_labeledSubgraph_eq_top, ?_⟩
+    rintro rfl
+    exact ⟨LabeledGraph.top_isInduced G, top_labeledSubgraph_iso_G⟩
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
-omit [DecidableEq T] in
 lemma labeledSubgraphDensity_self
     (G : LabeledGraph σ V) : labeledSubgraphDensity G G = 1
   := by
   simp only [labeledSubgraphDensity, Nat.choose_self, Nat.cast_one, div_one, Nat.cast_eq_one]
   exact labeledSubgraphCount_self G
 
-omit [DecidableEq T] in
 lemma subflagDensity_self
     (G : Flag σ V) : subflagDensity G G = 1
   := by
-  rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
-  dsimp [subflagDensity, labeledSubgraphDensityLifted]
-  subst hGrep
-  dsimp [labeledSubgraphDensityLifted]
+  rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
   exact labeledSubgraphDensity_self Grep
 
-omit [DecidableEq T] in
 lemma subgraphCount_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
     : labeledSubgraphCount G₀ G₁ = 0
@@ -531,7 +469,7 @@ lemma subgraphCount_other
   let S := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f G₀) }
   show S.toFinset.card = 0
   suffices h_S_empty : S = ∅ by simp only [h_S_empty, Set.toFinset_empty, Finset.card_empty]
-  apply Set.subset_empty_iff.mp
+  rw [← Set.subset_empty_iff]
   intro G' ⟨h_G'_ind, h_G'_iso_G₀⟩
   have h_G'_eq_G₁_top := induced_full_labeledSubgraph_eq_top ⟨h_G'_ind, h_G'_iso_G₀⟩
   have h_G₁_top_iso_G₁ : Nonempty (G₁.top.coe ≃f G₁) := top_labeledSubgraph_iso_G
@@ -539,7 +477,6 @@ lemma subgraphCount_other
   let f_G₀_G₁ : G₀ ≃f G₁ := h_G'_iso_G₀.some.symm.trans h_G₁_top_iso_G₁.some
   exact h_not_iso.elim f_G₀_G₁
 
-omit [DecidableEq T] in
 lemma labeledSubgraphDensity_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
     : labeledSubgraphDensity G₀ G₁ = 0
@@ -548,19 +485,12 @@ lemma labeledSubgraphDensity_other
   rw [subgraphCount_other h_not_iso]
   simp only [Nat.cast_zero, zero_div]
 
-omit [DecidableEq T] in
 lemma subflagDensity_other
     {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁)
     : subflagDensity G₀ G₁ = 0
   := by
-  rcases Quotient.exists_rep G₀ with ⟨Grep₀, hGrep₀⟩
-  rcases Quotient.exists_rep G₁ with ⟨Grep₁, hGrep₁⟩
-  rw [← hGrep₀, ← hGrep₁]
-  have h_not_iso : IsEmpty (Grep₀ ≃f Grep₁) := by
-    rw [← not_nonempty_iff]
-    intro h_iso
-    have h_eq : G₀ = G₁ := by
-      rw [← hGrep₀, ← hGrep₁]
-      exact Quotient.sound h_iso
-    exact h_neq h_eq
-  apply labeledSubgraphDensity_other h_not_iso
+  rcases Quotient.exists_rep G₀ with ⟨Grep₀, rfl⟩
+  rcases Quotient.exists_rep G₁ with ⟨Grep₁, rfl⟩
+  apply labeledSubgraphDensity_other
+  rw [← not_nonempty_iff]
+  exact fun h_iso ↦ h_neq <| Quotient.sound h_iso
