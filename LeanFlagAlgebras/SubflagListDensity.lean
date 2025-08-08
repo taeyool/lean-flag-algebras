@@ -964,6 +964,7 @@ lemma fintype_card_match_comm_three
   funext i
   split <;> simp only [Fin.isValue, Fintype.card_fin]
 
+-- set_option pp.all true in
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -1006,7 +1007,7 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
     dsimp [labeledSubgraphListDensity]
     have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
     simp only [h_σ_size, Fintype.card_fin]
-    dsimp only [LabeledGraph.size]
+    dsimp [LabeledGraph.size, labeledGraphPairToList]
     have h_fintype_two₀ := fintype_card_match_comm_two ℓ₀ ℓ₁ ℓ₂
     have h_fintype_two₁ := fintype_card_match_comm_two ℓ₀ ℓ' ℓ₃
     have h_fintype_three := fintype_card_match_comm_three ℓ₀ ℓ₁ ℓ₂ ℓ₃
