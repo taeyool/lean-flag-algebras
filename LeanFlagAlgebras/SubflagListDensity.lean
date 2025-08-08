@@ -2,6 +2,7 @@ import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagDensity
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Algebra.BigOperators.Fin
 
 open FlagAlgebras
@@ -58,18 +59,24 @@ lemma multinomialCoefficient_pos
   := by
   dsimp [multinomialCoefficient]
   split
-  next h =>
+  next h_sum_le_n =>
     let r_sum := ∑ i : Fin t, r_list i
-    have h_dvd : (∏ i : Fin t, (r_list i).factorial) * (n - r_sum).factorial ∣ n.factorial := by
-      have h_sum_le_n : r_sum ≤ n := h
-      have h_prod_dvd_sum_fact : (∏ i : Fin t, (r_list i).factorial) ∣ r_sum.factorial := by
-        sorry
-      have h_choose_dvd : r_sum.factorial * (n - r_sum).factorial ∣ n.factorial :=
+    let C₀ := ∏ i : Fin t, (r_list i).factorial
+    let C₁ := (n - r_sum).factorial
+    let C := C₀ * C₁
+    show n.factorial / C > 0
+    have h_n_factorial_pos : n.factorial > 0 := Nat.factorial_pos n
+    have h_dvd : C ∣ n.factorial := by
+      have h₀ : C₀ ∣ r_sum.factorial := by
+        dsimp [C₀, r_sum]
+        exact Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list
+      have h₁ : C ∣ r_sum.factorial * C₁ := Nat.mul_dvd_mul_right h₀ C₁
+      have h₂ : r_sum.factorial * C₁ ∣ n.factorial :=
         Nat.factorial_mul_factorial_dvd_factorial h_sum_le_n
-      sorry
-    sorry
-  next h =>
-    exact False.elim (h h_n)
+      exact dvd_trans h₁ h₂
+    exact (Nat.lt_div_iff_mul_lt h_dvd 0).mpr h_n_factorial_pos
+  next h_not_sum_lt_n =>
+    exact False.elim (h_not_sum_lt_n h_n)
 
 
 noncomputable def labeledSubgraphListDensity
