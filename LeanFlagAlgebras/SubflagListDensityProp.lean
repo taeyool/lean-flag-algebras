@@ -40,10 +40,10 @@ theorem partitions_card_eq_multinomial
                  Finset.empty_subset, and_self, Finset.univ_unique, Finset.filter_True,
                  Finset.card_singleton]
   | succ t ih =>
-      let r_list₁' : Fin t → ℕ := fun i => r_list₁ i
-      let r_list₂' : Fin (t + 1) → ℕ := fun i => r_list₂ i
+      let r_list₁' : Fin t → ℕ := fun i => r_list₁ i.castSucc
+      let r_list₂' : Fin (t + 1) → ℕ := fun i => r_list₂ i.castSucc
       specialize ih r_list₁' r_list₂'
-      let parts := (V.card - ∑ j : Fin t, r_list₁' j).choose (r_list₁ t)
+      let parts := (V.card - ∑ j : Fin t, r_list₁' j).choose (r_list₁ (Fin.last t))
       have : (partitions V r_list₁).card = (partitions V r_list₁').card * parts := by
         sorry
       rw [this, ih]
@@ -77,10 +77,10 @@ theorem choose_sequence_eq_factorial_div
       rw [Nat.div_self (Nat.factorial_pos n)]
   | succ t ih =>
       have calc1 :  ∏ i : Fin (t + 1), (n - ∑ j : Fin ↑i, r_list (j.castLE (i.is_le'))).choose (r_list i) =
-      (∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list j).choose (r_list i)) * ((n - ∑ j : Fin t, r_list j).choose (r_list t))
+      (∏ i : Fin t, (n - ∑ j : Fin i, r_list (j.castLE (Nat.le_add_right_of_le i.is_le'))).choose (r_list i.castSucc)) * ((n - ∑ j : Fin t, r_list j.castSucc).choose (r_list (Fin.last t)))
         := by
         rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
-        simp only [lt_add_iff_pos_right, Fin.coe_eq_castSucc, Fin.natCast_eq_last]
+        simp only [lt_add_iff_pos_right]
         congr!
         rw [Finset.prod_fin_eq_prod_range]
         apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
@@ -101,28 +101,24 @@ theorem choose_sequence_eq_factorial_div
             refine (Fin.heq_fun_iff ?h.e_a.h.e_5.h).mpr ?h.e_a.h.e_5.a
             · simp_all only [Finset.mem_range, ↓reduceIte]
             · intro i'
-              congr
-              ext
-              simp_all only [Fin.coe_castLE, Fin.val_natCast]
-              exact Eq.symm (Nat.mod_eq_of_lt (i'.2.trans h))
+              rfl
           next _ hi₂ =>
             exfalso
             exact hi₂ (Nat.lt_add_right 1 hi₁)
       rw [calc1]; clear calc1
-      let r_list' : Fin t → ℕ := fun i => r_list i
+      let r_list' : Fin t → ℕ := fun i => r_list i.castSucc
       have h_size' : ∑ i : Fin t, r_list' i ≤ n := by
         have : ∑ i : Fin t, r_list' i ≤ ∑ i : Fin (t + 1), r_list i := by
           dsimp [r_list']
           rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-          simp only [Finset.sum_range_add]
+          simp only [Fin.castSucc_mk, lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
           apply Nat.le_add_right_of_le
-          simp only [dite_eq_ite]
-          congr! with x hx
-          rw [Finset.mem_range] at hx
-          have hx' : x < t + 1 := Nat.lt_add_right 1 hx
-          simp only [hx, hx', ↓reduceIte, ↓reduceDIte]
+          apply Finset.sum_le_sum
+          intro x hx
+          have hx' : x < t := List.mem_range.mp hx
+          have hx'' : x < t + 1 := Nat.lt_add_right 1 hx'
+          simp only [hx', hx'', ↓reduceDIte]
           congr!
-          simp_all only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt]
         exact this.trans h_size
       have calc2 := ih r_list' h_size'
       dsimp [r_list'] at calc2
@@ -221,7 +217,7 @@ theorem partition_card
   next h =>
     rw [Finset.card_eq_zero]
     ext x
-    simp only [Finset.not_mem_empty, iff_false, partitions, Finset.mem_filter, Finset.mem_univ, true_and]
+    simp only [Finset.notMem_empty, iff_false, partitions, Finset.mem_filter, Finset.mem_univ, true_and]
     intro ⟨p_sub, p_disj, p_card⟩
     have card_le : (Finset.univ.biUnion x).card ≤ V.card := Finset.card_le_card p_card
     have card_bUnion : (Finset.univ.biUnion x).card = ∑ i : Fin t, (x i).card := Finset.card_biUnion (fun i _ j _ hij => p_disj i j hij)
@@ -241,7 +237,7 @@ theorem labeledGraphListDensity_le_one
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity Fl G ≤ 1 := by
     dsimp [labeledSubgraphListDensity, labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl]
-    apply div_le_one_of_le
+    apply div_le_one_of_le₀
     · let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
       have hVG : VG.card = G.size - σ.size := by
         simp only [VG, LabeledGraph.size, Finset.card_sdiff (Finset.subset_univ _)]
@@ -257,7 +253,8 @@ theorem labeledGraphListDensity_le_one
         apply Finset.mem_filter.mpr
         constructor
         · simp only [Finset.mem_univ]
-        · simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hGl
+        · simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and,
+          Set.mem_setOf_eq] at hGl
           obtain ⟨_, hGl_iso, hGl_disj⟩ := hGl
           constructor
           · intro i
@@ -292,7 +289,7 @@ theorem labeledGraphListDensity_le_one
               refine Finset.sdiff_subset_sdiff ?h.hf.right.intro.intro.right.right.hst fun ⦃a⦄ a ↦ a
               simp_all only [Finset.subset_univ]
       · intro Gl₁ hGl₁ Gl₂ hGl₂ h_eq
-        rw [Function.funext_iff] at h_eq
+        rw [funext_iff] at h_eq
         dsimp [f] at h_eq
         simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hGl₁ hGl₂
         obtain ⟨hGl₁_ind, _, _⟩ := hGl₁
@@ -365,8 +362,10 @@ def SingleChoiceSpace
   { S : Finset V // S.card = (Fl i).out.size ∧ G.type_verts ⊆ S.toSet }
 instance (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) (i : Fin t) : Fintype (SingleChoiceSpace Fl G i) := by
   apply Subtype.fintype
+
 instance (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) (i : Fin t) : MeasurableSpace (SingleChoiceSpace Fl G i) :=
   sorry
+
 instance (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) (i : Fin t) : Nonempty (SingleChoiceSpace Fl G i) := by
   dsimp [SingleChoiceSpace]
   let S := (Fl i).out.top.subgraph.verts.toFinset
@@ -384,6 +383,7 @@ instance measurableSpaceΩ (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) : Mea
 
 def P (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) : Measure (Ω Fl G) :=
   Measure.pi (fun i => P_single Fl G i)
+
 instance P.isProbabilityMeasure (Fl : FlagList σ t Vl) (G : LabeledGraph σ V) :
   IsProbabilityMeasure (P Fl G) := sorry
 
@@ -394,10 +394,13 @@ def r_list (Fl : LabeledGraphList σ t Vl) : Fin t → ℕ := fun i => (Fl i).si
 
 def SampleSpace (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ V) : Type _ :=
   { parts : Fin t → Finset V // ∀ i, parts i ⊆ base_verts G ∧ ∀ i, (parts i).card = (r_list Fl) i ∧ ∀ i j, i ≠ j → Disjoint (parts i) (parts j)}
+
 instance SampleSpace.fintype (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ V) : Fintype (SampleSpace Fl G) := by
   apply Subtype.fintype
+
 instance SampleSpace.measurableSpace (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ V) : MeasurableSpace (SampleSpace Fl G) :=
   sorry
+
 instance SampleSpace.nonempty (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ V) : Nonempty (SampleSpace Fl G) := by
   sorry
 
@@ -438,8 +441,8 @@ theorem flagListDensity₂_prod_approx
   rw [← hFrep, ← hF'rep, ← hGrep]
   rw [← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
   dsimp [subflagDensity, labeledSubgraphDensityLifted]
-  have hFrep' : ⟦Frep⟧.out.size = Frep.size := rfl
-  have hGrep' : ⟦Grep⟧.out.size = Grep.size := rfl
+  have hFrep' : (⟦Frep⟧ : Quotient (labeledGraphSetoid σ V)).out.size = Frep.size := rfl
+  have hGrep' : (⟦Grep⟧ : Quotient (labeledGraphSetoid σ W)).out.size = Grep.size := rfl
   rw [hFrep', hGrep']
   dsimp [labeledSubgraphDensity, labeledSubgraphListDensity] -- Is it possible to prove using cardinality....?
 

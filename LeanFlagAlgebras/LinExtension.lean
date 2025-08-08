@@ -1,5 +1,5 @@
 import Mathlib.Algebra.BigOperators.GroupWithZero.Action
-import Mathlib.Data.Finsupp.Basic
+import Mathlib.Data.Finsupp.SMul
 import Mathlib.Data.Real.Basic
 
 open Finset
@@ -12,7 +12,7 @@ def linearExtension
     (f : α → β)
     : (α →₀ ℝ) → β
   :=
-  fun v => ∑ a in v.support, (v a) • (f a)
+  fun v => ∑ a ∈ v.support, (v a) • (f a)
 
 theorem linearExtension_zero
     (f : α → β)
@@ -52,7 +52,7 @@ lemma linearExtension_add_support
         intro a ha
         rw [mem_sdiff] at ha
         obtain ⟨h_in_union, h_not_in_sum⟩ := ha
-        rw [Finsupp.not_mem_support_iff, Finsupp.add_apply] at h_not_in_sum
+        rw [Finsupp.notMem_support_iff, Finsupp.add_apply] at h_not_in_sum
         rw [← union_sdiff_self_eq_union, mem_union] at h_in_union
         exact hψ₁ v w a h_not_in_sum
       exact sub_eq_self.mpr sum_extra_eq_0
@@ -66,7 +66,7 @@ lemma linearExtension_add_support
         intro v w
         apply sum_eq_zero
         intro a ha
-        rw [mem_sdiff, Finsupp.not_mem_support_iff] at ha
+        rw [mem_sdiff, Finsupp.notMem_support_iff] at ha
         apply hψ₂ _ _ ha.2
       rw [sum_not_supp_eq_0 v w, sum_not_supp_eq_0 w v, add_zero, zero_add]
       rw [add_comm (∑ x ∈ w.support \ v.support, ψ w x)]
@@ -93,17 +93,17 @@ theorem linearExtension_add
     dsimp [ψ]
     rw [ha, zero_smul]
   calc
-    _ = ∑ a in (v + w).support, (ψ v a + ψ w a) := by
+    _ = ∑ a ∈ (v + w).support, (ψ v a + ψ w a) := by
       apply sum_congr rfl
       intro a _
       dsimp [ψ]
       rw [add_smul]
-    _ = ∑ a in v.support, ψ v a + ∑ a in w.support, ψ w a :=
+    _ = ∑ a ∈ v.support, ψ v a + ∑ a ∈ w.support, ψ w a :=
       linearExtension_add_support v w ψ hψ₁ hψ₂
 
 theorem linearExtension_sum
     (f : α → β) (s : Finset ι) (c : ι → (α →₀ ℝ))
-    : linearExtension f (∑ i in s, c i) = ∑ i in s, linearExtension f (c i)
+    : linearExtension f (∑ i ∈ s, c i) = ∑ i ∈ s, linearExtension f (c i)
   := by
   classical
   refine Finset.induction_on s ?_ ?_
@@ -150,7 +150,7 @@ def bilinearExtension'
 
 theorem bilinearExtension_eq_nested_sum
     (f : α → α → β) (v w : α →₀ ℝ)
-    : bilinearExtension f v w = ∑ a in v.support, ∑ b in w.support, ((v a) * (w b)) • f a b := by
+    : bilinearExtension f v w = ∑ a ∈ v.support, ∑ b ∈ w.support, ((v a) * (w b)) • f a b := by
   dsimp [bilinearExtension, linearExtension]
   apply Finset.sum_congr rfl
   intro a _
@@ -161,7 +161,7 @@ theorem bilinearExtension_eq_nested_sum
 
 theorem bilinearExtension'_eq_nested_sum
     (f : α → α → β) (v w : α →₀ ℝ)
-    : bilinearExtension' f v w = ∑ a in v.support, ∑ b in w.support, ((v a) * (w b)) • f a b := by
+    : bilinearExtension' f v w = ∑ a ∈ v.support, ∑ b ∈ w.support, ((v a) * (w b)) • f a b := by
   dsimp [bilinearExtension', linearExtension]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
@@ -200,12 +200,12 @@ theorem bilinearExtension_add_right
 
 theorem bilinearExtension_sum_left
     (f : α → α → β) (s : Finset ι) (c : ι → (α →₀ ℝ)) (w : α →₀ ℝ)
-    : bilinearExtension f (∑ i in s, c i) w = ∑ i in s, bilinearExtension f (c i) w := by
+    : bilinearExtension f (∑ i ∈ s, c i) w = ∑ i ∈ s, bilinearExtension f (c i) w := by
   simp only [bilinearExtension, linearExtension_sum]
 
 theorem bilinearExtension_sum_right
     (f : α → α → β) (v : α →₀ ℝ) (s : Finset ι) (c : ι → (α →₀ ℝ))
-    : bilinearExtension f v (∑ i in s, c i) = ∑ i in s, bilinearExtension f v (c i) := by
+    : bilinearExtension f v (∑ i ∈ s, c i) = ∑ i ∈ s, bilinearExtension f v (c i) := by
   repeat simp_rw [bilinearExtension_def_eq]
   simp only [bilinearExtension', linearExtension_sum]
 

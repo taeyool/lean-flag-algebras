@@ -1,3 +1,25 @@
--- This module serves as the root of the `LeanFlagAlgebras` library.
--- Import modules here that should be built as part of the library.
-import «LeanFlagAlgebras».GraphAlgebra
+import LeanFlagAlgebras.BoolAlgebra
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample1
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample2
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample3
+import LeanFlagAlgebras.DefinitionImpactOnProofs
+import LeanFlagAlgebras.FlagAlgebra
+import LeanFlagAlgebras.FlagDef
+import LeanFlagAlgebras.FlagOperators
+import LeanFlagAlgebras.FlagSequence
+import LeanFlagAlgebras.GraphAlgebra
+import LeanFlagAlgebras.LinExtension
+import LeanFlagAlgebras.MantelTheorem.Downward
+import LeanFlagAlgebras.MantelTheorem.FlagDefs
+import LeanFlagAlgebras.MantelTheorem.FlagDensity
+import LeanFlagAlgebras.MantelTheorem.FlagIso
+import LeanFlagAlgebras.MantelTheorem.FlagMuls
+import LeanFlagAlgebras.MantelTheorem.MantelTheorem
+import LeanFlagAlgebras.PositiveHom
+import LeanFlagAlgebras.QuotientGraph
+import LeanFlagAlgebras.SubflagDensity
+import LeanFlagAlgebras.SubflagListDensity
+import LeanFlagAlgebras.SubflagListDensityProp
+import LeanFlagAlgebras.SubgraphDensity
+import LeanFlagAlgebras.SubgraphUtil
+import LeanFlagAlgebras.TacticChoose

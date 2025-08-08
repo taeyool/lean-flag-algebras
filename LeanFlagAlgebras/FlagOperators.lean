@@ -7,13 +7,14 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 /- Downward operator from σ-type to the empty type -/
 
-def emptyType : FlagType (Fin 0) := emptyGraph (Fin 0)
+def emptyType : FlagType (Fin 0) := SimpleGraph.emptyGraph (Fin 0)
 
 notation "∅ₜ" => emptyType
 
 @[simp]
 theorem emptyType_size : ∅ₜ.size = 0 := by
   dsimp [emptyType, FlagType.size]
+  simp only [Fintype.card_eq_zero]
 
 def isoLabeledGraphSetWithSameGraph
     (G : LabeledGraph σ (Fin n)) : Set (LabeledGraph σ (Fin n))
@@ -70,8 +71,8 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
       exact {
         graph_iso := (φ.graph_iso.symm.trans ψ.graph_iso).trans φH
         type_preserve := by
-          simp only [SimpleGraph.Iso.coe_comp, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
-          rw [← ψ.type_preserve, ← φ.type_preserve]
+          simp only [SimpleGraph.Iso.coe_comp]
+          rw [← φ.type_preserve]
           calc
             _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ (⇑φ.graph_iso.symm ∘ ⇑φ.graph_iso) ∘ ⇑G.type_embed := rfl
             _ = ⇑φH ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by ext; simp
@@ -84,6 +85,9 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
               · rw [hGH_graph]
               · rw [hGH_graph]
               · simp only [cast_heq]
+            _ = ⇑H'.type_embed := by
+              rw [ψ.type_preserve]
+              rfl
       }
   exact ⟨H', hH'⟩
 
@@ -276,7 +280,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     G ∉ (zeroElement F ℓ).support → (zeroElement F ℓ) G • downwardFlag G.2 = 0 := by
     intro G _ hG
     simp only [smul_eq_zero]; left
-    exact Finsupp.not_mem_support_iff.mp hG
+    exact Finsupp.notMem_support_iff.mp hG
   rw [linearExtension, Finset.sum_subset h_supp h_supp_outside]
   have hF_iff : F ∈ S ↔ F.1 = ℓ := by
     constructor
@@ -284,7 +288,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       simp_all only [Finset.mem_map, Finset.mem_univ, Function.Embedding.coeFn_mk, true_and, S]
       obtain ⟨G, hG⟩ := hF
       subst hG
-      simp_all only [not_true_eq_false]
+      simp_all only
     · intro hF
       subst hF
       simp only [Finset.mem_map, Finset.mem_univ, true_and, S]
@@ -307,13 +311,13 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     · intro G' _ hG'
       rw [Finsupp.smul_apply, unitVector_apply_other, smul_zero]
       contrapose! hG'
-      simp only [ne_eq, Decidable.not_not] at *
+      simp only [ne_eq] at *
       rw [Sigma.ext_iff] at hG'
       simp only [heq_eq_eq, true_and] at hG'
       exact hG'
   have h₂ : (zeroElement F ℓ) F = if F ∈ S then 0 else 1 := by
     dsimp [zeroElement, densityFlagSum]
-    simp only [unitVector_apply_self, sub_eq_self]
+    simp only [unitVector_apply_self]
     rw [Finset.sum_apply']
     split
     next h =>
@@ -427,7 +431,6 @@ lemma downwardFlagVectorQuot_smul
     : downwardFlagVectorQuot (r • f) = r • downwardFlagVectorQuot f
   := by
   apply Quotient.sound
-  simp only [smul_smul, one_smul]
   rw [downwardFlagVector_smul]
 
 lemma downwardFlagVectorQuot_respects_eqv

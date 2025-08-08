@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».FlagOperators
 
 open FlagAlgebras
+open SimpleGraph
 
 namespace MantelTheorem
 
@@ -205,6 +206,7 @@ alias Sₜ := singletonType
 @[simp]
 theorem singletonType_size : Sₜ.size = 1 := by
   dsimp [emptyType, FlagType.size]
+  rfl
 
 def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   graph := O2_graph

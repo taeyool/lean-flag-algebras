@@ -135,7 +135,7 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   }
 
 lemma LabeledGraph.top_isInduced (G : LabeledGraph σ V)
-  : G.top.subgraph.IsInduced := fun _ _ ↦ id
+  : G.top.subgraph.IsInduced := fun _ _ _ _ ↦ id
 
 def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
@@ -239,7 +239,7 @@ def inducedLabeledSubgraph
       }
   }
   embed_eq := by
-    intro; simp only [eq_mpr_eq_cast, cast_eq, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+    intro; simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
 
 omit [Fintype T] in
 @[simp]
@@ -247,7 +247,7 @@ theorem inducedLabeledSubgraph_verts
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : (inducedLabeledSubgraph G S h).subgraph.verts = S
   := by
-  simp only [inducedLabeledSubgraph, eq_mpr_eq_cast, cast_eq, inducedSubgraph_verts]
+  simp only [inducedLabeledSubgraph, inducedSubgraph_verts]
 
 omit [Fintype T] in
 @[simp]
@@ -580,7 +580,7 @@ theorem list_quot_eq_quot_list_singleton
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
     : ⟦[G]ᵍ⟧ = [⟦G⟧]ᶠ.coe
   :=
-  Quotient.sound fun _ ↦(Quotient.mk_out G).symm
+  Quotient.sound fun _ ↦ flagEqv.symm (Quotient.mk_out G)
 
 omit [Fintype T] in
 theorem list_quot_eq_quot_list_pair
@@ -588,8 +588,8 @@ theorem list_quot_eq_quot_list_pair
     : ⟦[G, G']ᵍ⟧ = [⟦G⟧, ⟦G'⟧]ᶠ.coe
   :=
   Quotient.sound fun i ↦ match i with
-  | 0 => (Quotient.mk_out G).symm
-  | 1 => (Quotient.mk_out G').symm
+  | 0 => flagEqv.symm (Quotient.mk_out G)
+  | 1 => flagEqv.symm (Quotient.mk_out G')
 
 omit [Fintype T] in
 theorem list_quot_eq_quot_list_triple
@@ -597,9 +597,9 @@ theorem list_quot_eq_quot_list_triple
     : ⟦[G, G', G'']ᵍ⟧ = [⟦G⟧, ⟦G'⟧, ⟦G''⟧]ᶠ.coe
   :=
   Quotient.sound fun i ↦ match i with
-  | 0 => (Quotient.mk_out G).symm
-  | 1 => (Quotient.mk_out G').symm
-  | 2 => (Quotient.mk_out G'').symm
+  | 0 => flagEqv.symm (Quotient.mk_out G)
+  | 1 => flagEqv.symm (Quotient.mk_out G')
+  | 2 => flagEqv.symm (Quotient.mk_out G'')
 
 /- FlagList.insert -/
 
@@ -662,7 +662,7 @@ theorem flaglist_heq_of_idx_eq {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
     : HEq (Fl i) (Fl i') := by
   subst h; rfl
 
-def flag_heq_to_iso {σ : FlagType T} {W : Type} {V : Type}
+noncomputable def flag_heq_to_iso {σ : FlagType T} {W : Type} {V : Type}
     {F₁ : Flag σ W} {F₂ : Flag σ V} (type_eq : W = V) (hHEq : HEq F₁ F₂)
     : F₁.out ≃f F₂.out := by
   subst type_eq hHEq
@@ -686,21 +686,21 @@ omit [Fintype T] in
 theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin t} (hi₀ : i.val ≠ t)
-    : Nonempty ((Fl i).out ≃f (Fl.insert F i).out) := by
+    : Nonempty ((Fl i).out ≃f (Fl.insert F i.castSucc).out) := by
   dsimp [FlagList.insert]
   split
   next hi' =>
     have : i % (t + 1) = i := by rw [Nat.mod_succ_eq_iff_lt]; omega
     exact (hi₀ (this ▸ hi')).elim
   next hi =>
-    have hi' : (i : Fin (t + 1)).val ≠ t := by
-      simp only [ne_eq, Fin.coe_eq_castSucc, Fin.coe_castSucc, not_false_eq_true, hi₀]
+    have hi' : i.castSucc.val ≠ t := by
+      simp only [ne_eq]
+      exact hi
     let cast_iso := Classical.choice (insert_preserves_existing_flags Fl F hi')
-    have type_eq : (Vl i) = (Vl ((i : Fin (t + 1)).coe hi)) := by
-      simp only [Fin.coe_eq_castSucc]; rfl
-    have idx_heq : HEq (Fl i) (Fl ((i : Fin (t + 1)).coe hi)) := by
+    have type_eq : (Vl i) = (Vl (i.castSucc.coe hi)) := rfl
+    have idx_heq : HEq (Fl i) (Fl (i.castSucc.coe hi)) := by
       apply flaglist_heq_of_idx_eq
-      simp only [Fin.coe_eq_castSucc]; rfl
+      rfl
     exact Nonempty.intro <| (flag_heq_to_iso type_eq idx_heq).trans cast_iso
 
 omit [Fintype T] in

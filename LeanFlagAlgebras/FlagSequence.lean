@@ -1,9 +1,10 @@
 import «LeanFlagAlgebras».SubflagListDensityProp
 import «LeanFlagAlgebras».PositiveHom
-import Mathlib.Topology.Instances.Real
+import Mathlib.Topology.Algebra.Ring.Real
 import Mathlib.Topology.Sequences
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
+import Mathlib.Probability.ProductMeasure
 
 open FlagAlgebras
 
@@ -279,8 +280,8 @@ theorem flagPairDensity_tendsto_flagDensity_mul
         0 ≤ ⌈(↑F.fst + ↑G.fst) ^ k / ε⌉₊ := Nat.zero_le _
         _ < (s n).1 := hN
     apply Nat.lt_of_ceil_lt at hN
-    rw [div_lt_iff (Nat.cast_pos.mpr hsn_pos)]
-    rw [div_lt_iff hε, mul_comm] at hN
+    rw [div_lt_iff₀ (Nat.cast_pos.mpr hsn_pos)]
+    rw [div_lt_iff₀ hε, mul_comm] at hN
     exact hN
   use N
   intro n hn
@@ -430,6 +431,12 @@ theorem PositiveHom.toMeasure.isProbabilityMeasure
     : IsProbabilityMeasure (φ.toMeasure hℓ)
   :=
   PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
+
+#check measure_empty
+
+variable (φ : PositiveHom σ)
+#check Measure.infinitePi
+-- #check Measure.pi (fun n ↦ φ.toMeasure (n + n₀))
 
 /- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit

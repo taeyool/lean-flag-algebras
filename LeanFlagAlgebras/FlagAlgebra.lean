@@ -1,7 +1,8 @@
 import «LeanFlagAlgebras».SubflagListDensity
 import «LeanFlagAlgebras».LinExtension
+import Mathlib.Data.Countable.Basic
+import Mathlib.Algebra.Group.Subgroup.Basic
 import Mathlib.LinearAlgebra.FreeModule.Basic
-import Mathlib.LinearAlgebra.Span
 
 open FlagAlgebras
 open Finset
@@ -18,7 +19,7 @@ instance labeledGraph_inhabited (σ : FlagType (Fin n₀)) {n : ℕ} (hn : n ≥
       toFun := fun ⟨i, hi⟩ => ⟨i, Nat.lt_of_lt_of_le hi hn⟩,
       inj' := by
         intro i j h
-        simp [Fin.mk.injEq, ge_iff_le] at h
+        simp only [Fin.mk.injEq] at h
         ext1
         assumption
     }
@@ -206,7 +207,7 @@ theorem flagMulWithSize_one
   dsimp [flagMulWithSize]
   rw [finFlag_one_snd]
   have h_univ_split : univ = insert F.2 (univ.erase F.2) := Eq.symm (insert_erase (by simp))
-  rw [h_univ_split, sum_insert (not_mem_erase _ _)]
+  rw [h_univ_split, sum_insert (notMem_erase _ _)]
   rw [flagPairDensity_empty', flagDensity_self, ← add_zero (unitVector F)]
   congr
   · simp
@@ -319,7 +320,7 @@ theorem zeroSpace_eq_sum_spanElement
       (∀ i, v i ∈ zeroSet σ) ∧ (k = ∑ i, c i • v i)
   := by
   revert h_zero
-  apply Submodule.span_induction'
+  apply Submodule.span_induction
   · intro k h_zero
     use PUnit; use inferInstance
     use fun _ ↦ 1; use fun _ ↦ k
@@ -655,14 +656,13 @@ theorem flagAlgebra_left_distrib
   rw [← Quotient.out_eq f, ← Quotient.out_eq g, ← Quotient.out_eq h]
   apply Quotient.sound
   simp [mul_add]
-  rfl
 
 theorem flagAlgebra_mul_zero
     (f : FlagAlgebra σ) : f * 0 = 0
   := by
   rw [← Quotient.out_eq f]
   apply Quotient.sound
-  simp; rfl
+  simp
 
 theorem flagAlgebra_mul_one
     (f : FlagAlgebra σ) : f * 1 = f
@@ -804,7 +804,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
   neg_add_cancel a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
-    simp; rfl
+    simp
   mul_assoc := flagAlgebra_mul_assoc
   zero_mul a := by
     rw [flagAlgebra_mul_comm]
@@ -822,7 +822,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
-    simp; rfl
+    simp
   nsmul_succ n g := by
     simp
     rw [← Quotient.out_eq g]
@@ -836,7 +836,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     simp
     rw [← Quotient.out_eq g]
     apply Quotient.sound
-    simp; rfl
+    simp
   zsmul_succ' n g := by
     simp
     rw [← Quotient.out_eq g]
@@ -916,7 +916,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       let iG := G i
       have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
       have hℓ : ℓ i ≤ L := by
-        simp [L, le_max_iff]; left
+        simp only [le_sup_iff, L]; left
         apply Finset.le_sup; simp
       have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
         apply linearExtension_sum
@@ -950,26 +950,28 @@ instance : Nontrivial (FlagAlgebra σ) where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
 
 noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
-  toFun r := r • 1
-  map_zero' := by
-    apply Quotient.sound
-    simp; rfl
-  map_one' := by
-    apply Quotient.sound
-    simp; rfl
-  map_add' x y := by
-    apply Quotient.sound
-    simp
-    rw [add_smul]
-  map_mul' x y := by
-    apply Quotient.sound
-    simp
-    rw [mul_smul]
+  algebraMap := {
+    toFun r := r • 1
+    map_zero' := by
+      apply Quotient.sound
+      simp only [zero_smul, Setoid.refl]
+    map_one' := by
+      apply Quotient.sound
+      simp only [one_smul, Setoid.refl]
+    map_add' x y := by
+      apply Quotient.sound
+      simp only
+      rw [add_smul]
+    map_mul' x y := by
+      apply Quotient.sound
+      simp only [smul_one_mul]
+      rw [mul_smul]
+  }
   smul_def' r g := by
-    simp
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
     nth_rw 1 [← one_mul g]
     nth_rw 2 [← one_smul ℝ g]
     rw [flagAlgebra_smul_mul_smul_comm, mul_one]
   commutes' := by
-    intros; simp
+    intros; simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
     rw [mul_comm]

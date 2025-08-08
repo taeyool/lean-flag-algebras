@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagOperators
+import Mathlib.Algebra.Algebra.Hom
 
 open FlagAlgebras
 

@@ -50,7 +50,7 @@ lemma relOfLabeledSubgraph_symm
     intro u v
     have h_uv := h_adj (φ.graph_iso.symm u) (φ.graph_iso.symm v)
     rw [←h_uv]
-    simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, RelIso.apply_symm_apply]
+    simp only [RelIso.apply_symm_apply]
   exact ⟨h_vert', h_adj'⟩
 
 def relOfPredOnLabeledSubgraph
@@ -127,7 +127,7 @@ lemma predIsoLabeledH_related_ind
     (h_ind₀ : H₀.IsInduced)
     : H₁.IsInduced
   := by
-  intro u v h_u h_v h_uv
+  intro u h_u v h_v h_uv
   let ⟨h_vert, h_adj⟩ := h_rel
   rw [h_vert] at h_u h_v
   obtain ⟨u', h_u', rfl⟩ := h_u
@@ -279,7 +279,7 @@ lemma labeledSubgraphDensity_respect_eqv
     dsimp only [labeledSubgraphCount]
     show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.coe_setOf, Set.toFinset_card]
+    simp_all only [Set.toFinset_card]
   have h_H_size : H₀.size = H₁.size := labeledGraphIso_size_eq H₀ H₁ ψ
   have h_G_size : G₀.size = G₁.size := labeledGraphIso_size_eq G₀ G₁ φ
   rw [h_count, h_H_size, h_G_size]
@@ -361,7 +361,8 @@ lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
       h_iso_adj
     rw [←h₀]
     simp only [emptyLabeledGraph, type_embed_Adj_iff G (iso_H_T u') (iso_H_T v'), ← H.embed_eq,
-      h_type_embed_comp_iso_H_T, h_uv_G]
+      h_type_embed_comp_iso_H_T]
+    exact h_uv_G
 
 
 lemma labeledSubgraphCount_empty

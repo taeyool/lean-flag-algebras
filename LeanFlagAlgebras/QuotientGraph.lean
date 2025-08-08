@@ -2,6 +2,8 @@ import Mathlib.Combinatorics.SimpleGraph.Maps
 
 open Classical
 
+variable {V : Type}
+
 def graph_eqv (G₀ G₁ : SimpleGraph V) : Prop
   :=
   Nonempty (G₀ ≃g G₁)

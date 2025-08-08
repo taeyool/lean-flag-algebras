@@ -85,12 +85,12 @@ lemma predIsoH_related
     let f₁ (w : H₁.verts) : U := f₀ (H₀.vert (φ.symm ↑w) (by
       obtain ⟨_, h⟩ := w
       obtain ⟨_, h₀, rfl⟩ := h_vert ▸ h
-      simp only [h, h₀, RelIso.symm_apply_apply]))
+      simp only [h₀, RelIso.symm_apply_apply]))
     have h_bij₁ : Function.Bijective f₁ := by
       dsimp [Function.Bijective, f₁]
       constructor
       . intro w₀ w₁ h_eq
-        simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, EmbeddingLike.apply_eq_iff_eq,
+        simp_all only [Subgraph.coe_adj, Subtype.forall, EmbeddingLike.apply_eq_iff_eq,
           Subtype.mk.injEq]
         obtain ⟨_, _⟩ := w₀
         congr
@@ -126,8 +126,7 @@ lemma predIsoH_related
       intro v₀ v₁
       dsimp [f₀]
       rw [←h_adj v₀ v₁, h_iso₁]
-      simp_all only [eq_iff_iff, Subgraph.coe_adj, Subtype.forall, Set.mem_image,
-        forall_exists_index, Multiset.bijective_iff_map_univ_eq_univ, f₀]
+      simp_all only [Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
 def inducedSubgraph
@@ -175,7 +174,7 @@ lemma inducedSubgraph_eq
   := by
   dsimp [inducedSubgraph]
   ext u v
-  . exact Set.mem_def
+  . rfl
   . constructor
     . intro h_uv_G₀
       have h_u_G₀ : u ∈ G₀.verts := G₀.edge_vert h_uv_G₀
@@ -550,7 +549,7 @@ lemma subgraphFromIso_preserve_inducedness
     : (subgraphFromIso iso G₀).IsInduced
   := by
   dsimp [Subgraph.IsInduced, subgraphFromIso] at *
-  intro u v h_u_H h_v_H h_uv_H
+  intro u h_u_H v h_v_H h_uv_H
   let h : ∀ {w : W}, (w ∈ iso '' G₀.verts) → (iso.symm w ∈ G₀.verts) := by
     intro w h_w
     obtain ⟨u', h_u', rfl⟩ := h_w
@@ -615,7 +614,7 @@ lemma subgraphFromOrder_preserve_inducedness
   := by
   intro h_ind_G₀
   dsimp [Subgraph.IsInduced, subgraphFromOrder] at *
-  intro u v h_u_G₀ h_v_G₀ h_uv_G₁
+  intro u h_u_G₀ v h_v_G₀ h_uv_G₁
   exact h_ind_G₀ h_u_G₀ h_v_G₀ (G₁.adj_sub h_uv_G₁)
 
 omit [Fintype V] [Fintype W] in
@@ -628,7 +627,7 @@ lemma subgraphFromOrder_preserve_disjointedness
   apply Set.eq_empty_of_subset_empty
   rintro ⟨u, h_u_G₀⟩ h_u_G₁_G₂
   have : u ∈ G₁.verts ∩ G₂.verts := h_u_G₁_G₂
-  exact (Set.not_mem_empty _ (h_disj ▸ this)).elim
+  exact (Set.notMem_empty _ (h_disj ▸ this)).elim
 
 def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G₀.coe)
@@ -718,7 +717,7 @@ lemma subgraphFromPartialIso_preserve_inducedness
     : (subgraphFromPartialIso iso G₁).IsInduced
   := by
   dsimp [Subgraph.IsInduced] at *
-  intro u v h_u_H₁ h_v_H₁ h_uv_H
+  intro u h_u_H₁ v h_v_H₁ h_uv_H
   dsimp [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso, Relation.Map] at *
   simp at *
   obtain ⟨u₀, h_u₀_G₁_verts, rfl⟩ := h_u_H₁
@@ -749,7 +748,7 @@ lemma subgraphFromPartialIso_preserve_disjointedness
         _  = iso.symm (iso u₂) := by rw [h_iso_u₁_eq_iso_u₂]
         _  = u₂                := RelIso.symm_apply_apply iso u₂
     constructor <;> simp only [h_u₁_G₁_verts, this ▸ h_u₂_G₂_verts]
-  exact (Set.not_mem_empty _ (h_disj ▸ h_u₁_G₁_G₂)).elim
+  exact (Set.notMem_empty _ (h_disj ▸ h_u₁_G₁_G₂)).elim
 
 omit [Fintype W] in
 lemma subgraphFromPartialIso_preserve_cover
@@ -788,7 +787,7 @@ noncomputable def getCanonicalQuotSimpleGraph
     right_inv := by intro; rw [Equiv.symm_apply_apply]
     map_rel_iff' := by intro u' v'; dsimp [G']; rfl
   }
-  let φ' : ⟦G'⟧.out ≃g G' := ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl).some
+  let φ' : ⟦G'⟧.out ≃g G' := Nonempty.some ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl)
   ⟨⟦G'⟧, φ'.trans φ⟩
 
 lemma getCanonicalQuotSimpleGraph_self
@@ -835,7 +834,7 @@ noncomputable def isoFromInducedSubgraphByPartialIso
         dsimp only [X₁, G₁]
         dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
         simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
-          Function.Embedding.coeFn_mk, Function.comp_apply, Set.toFinset_image, coe_image,
+          Function.comp_apply, Set.toFinset_image, coe_image,
           Set.coe_toFinset]
       have h_G₁_ind : G₁.IsInduced :=
         subgraphFromPartialIso_preserve_inducedness iso_G₀_F₀.symm F₁ h_G₀_ind h_F₁_ind
