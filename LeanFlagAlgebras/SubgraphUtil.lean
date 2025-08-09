@@ -249,7 +249,7 @@ noncomputable def isoSetOfInducedSubgraph
       dsimp [f, f_inv, inducedSubgraph]
       ext u v
       . simp_all only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
-      . simp
+      . simp only [Set.mem_image, exists_exists_and_eq_and, RelIso.symm_apply_apply, exists_eq_right]
         constructor
         . rintro ⟨h_uv, h_u, h_v⟩
           apply h_ind₀ <;> simp_all only
@@ -413,7 +413,7 @@ lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
       . exact False.elim
     simp_all [Subgraph.ext_iff, Set.ext_iff]
     ext u v
-    simp
+    simp only [Subgraph.not_bot_adj, iff_false]
     intro h_uv
     exact h_verts u (H.edge_vert h_uv)
 
@@ -510,8 +510,7 @@ def subgraphFromIso
     edge_vert := by
       intro u v h_uv
       use (iso.symm u)
-      simp
-      exact G₀.edge_vert h_uv
+      exact ⟨G₀.edge_vert h_uv, RelIso.apply_symm_apply iso u⟩
     symm := by
       intro u v h_uv_G₀
       exact G₀.symm h_uv_G₀
@@ -524,22 +523,23 @@ def isoToSubgraphFromIso
   let H₀ : Subgraph H := subgraphFromIso iso G₀
   exact {
     toFun := fun u =>
-      have : iso u ∈ H₀.verts := by dsimp [H₀, subgraphFromIso]; simp
+      have : iso u ∈ H₀.verts := by dsimp [H₀, subgraphFromIso]; simp only [Set.mem_image,
+        EmbeddingLike.apply_eq_iff_eq, exists_eq_right, Subtype.coe_prop]
       ⟨iso u, this⟩
     invFun := fun u =>
       have h_symm_u : iso.symm u ∈ iso.symm '' (iso '' G₀.verts) :=
         Set.mem_image_of_mem iso.symm u.property
       have : iso.symm u ∈ G₀.verts := by
         rw [← Set.image_comp] at h_symm_u
-        simp at h_symm_u
+        simp only [Function.comp_apply, RelIso.symm_apply_apply, Set.image_id'] at h_symm_u
         exact h_symm_u
       ⟨iso.symm u, this⟩
     left_inv := by
-      intro; simp
+      intro; simp only [RelIso.symm_apply_apply, Subtype.coe_eta]
     right_inv := by
-      intro; simp
+      intro; simp only [RelIso.apply_symm_apply, Subtype.coe_eta]
     map_rel_iff' := by
-      intro u v; dsimp [subgraphFromIso]; simp
+      intro u v; dsimp [subgraphFromIso]; simp only [RelIso.symm_apply_apply]
   }
 
 omit [Fintype V] [Fintype W] in
@@ -567,8 +567,8 @@ lemma subgraphFromIso_preserve_disjointedness
   rintro u ⟨h_u_G₀, h_u_G₁⟩
   have h_iso₀ : iso.symm u ∈ iso.symm '' (iso '' G₀.verts) := Set.mem_image_of_mem iso.symm h_u_G₀
   have h_iso₁ : iso.symm u ∈ iso.symm '' (iso '' G₁.verts) := Set.mem_image_of_mem iso.symm h_u_G₁
-  have h_iso₀' : iso.symm u ∈ G₀.verts := by rw [← Set.image_comp] at h_iso₀; simp at h_iso₀; exact h_iso₀
-  have h_iso₁' : iso.symm u ∈ G₁.verts := by rw [← Set.image_comp] at h_iso₁; simp at h_iso₁; exact h_iso₁
+  have h_iso₀' : iso.symm u ∈ G₀.verts := by rw [← Set.image_comp] at h_iso₀; simp only [Function.comp_apply, RelIso.symm_apply_apply, Set.image_id'] at h_iso₀; exact h_iso₀
+  have h_iso₁' : iso.symm u ∈ G₁.verts := by rw [← Set.image_comp] at h_iso₁; simp only [Function.comp_apply, RelIso.symm_apply_apply, Set.image_id'] at h_iso₁; exact h_iso₁
   exact (h_disj ▸ Set.mem_inter h_iso₀' h_iso₁').elim
 
 def subgraphFromOrder
@@ -604,7 +604,7 @@ def isoToSubgraphFromOrder
     right_inv := by
       intro u; exact rfl
     map_rel_iff' := by
-      intro u v; dsimp [G₀', subgraphFromOrder]; simp
+      intro u v; dsimp [G₀', subgraphFromOrder]; simp only
   }
 
 omit [Fintype V] [Fintype W] in
@@ -770,6 +770,24 @@ lemma subgraphFromPartialIso_preserve_cover
       exact ⟨h_u_G₂, by simp⟩
   . rintro (⟨_, _, rfl⟩ | ⟨_, _, rfl⟩) <;> exact Subtype.coe_prop _
 
+omit [Fintype W] in
+lemma subgraphFromPartialIso_eq_inducedSubgraph
+    {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
+    (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
+    (h_G₁_ind : G₁.IsInduced) (h_H₀_ind : H₀.IsInduced)
+    : subgraphFromPartialIso iso G₁ = ↑(inducedSubgraph H ((Subtype.val ∘ iso) '' G₁.verts).toFinset)
+  := by
+    let H₁ := subgraphFromPartialIso iso G₁
+    have h_H₁_vert_eq : H₁.verts = ((Subtype.val ∘ iso) '' G₁.verts).toFinset := by
+      dsimp only [H₁]
+      dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
+      simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
+          Function.comp_apply, Set.toFinset_image, coe_image,
+          Set.coe_toFinset]
+    have h_H₁_ind : H₁.IsInduced :=
+        subgraphFromPartialIso_preserve_inducedness iso G₁ h_H₀_ind h_G₁_ind
+    rw [←h_H₁_vert_eq, ←inducedSubgraph_eq h_H₁_ind]
+
 noncomputable def getCanonicalQuotSimpleGraph
       (G : SimpleGraph V) (h_V_size : Fintype.card V = ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
@@ -826,18 +844,10 @@ noncomputable def isoFromInducedSubgraphByPartialIso
     (h_F₁_ind : F₁.IsInduced) (h_G₀_ind : G₀.IsInduced)
     : (inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset).coe ≃g H₁
   := by
-    let X₁ := ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset
-    let G₁ := subgraphFromPartialIso iso_G₀_F₀.symm F₁
-    let g₁ : F₁.coe ≃g G₁.coe := isoToSubgraphFromPartialIso iso_G₀_F₀.symm F₁
-    have : G₁ = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset) := by
-      have h_G₁_vert_eq_X₁ : G₁.verts = ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset := by
-        dsimp only [X₁, G₁]
-        dsimp only [subgraphFromPartialIso, subgraphByComposition, subgraphFromIso]
-        simp only [Subgraph.map_verts, Subgraph.hom_apply, Set.image_image,
-          Function.comp_apply, Set.toFinset_image, coe_image,
-          Set.coe_toFinset]
-      have h_G₁_ind : G₁.IsInduced :=
-        subgraphFromPartialIso_preserve_inducedness iso_G₀_F₀.symm F₁ h_G₀_ind h_F₁_ind
-      rw [←h_G₁_vert_eq_X₁, ←inducedSubgraph_eq h_G₁_ind]
+    have : subgraphFromPartialIso iso_G₀_F₀.symm F₁
+           = ↑(inducedSubgraph G ((Subtype.val ∘ iso_G₀_F₀.symm) '' F₁.verts).toFinset) :=
+      subgraphFromPartialIso_eq_inducedSubgraph iso_G₀_F₀.symm F₁ h_F₁_ind h_G₀_ind
     rw [←this]
+    let g₁ : F₁.coe ≃g (subgraphFromPartialIso iso_G₀_F₀.symm F₁).coe :=
+      isoToSubgraphFromPartialIso iso_G₀_F₀.symm F₁
     exact g₁.symm.trans iso_F₁_H₁
