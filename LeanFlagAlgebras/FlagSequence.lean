@@ -426,21 +426,34 @@ noncomputable def PositiveHom.toMeasure
   :=
   (φ.toPMF hℓ).toMeasure
 
-theorem PositiveHom.toMeasure.isProbabilityMeasure
+instance PositiveHom.toMeasure_isProbabilityMeasure
     (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
     : IsProbabilityMeasure (φ.toMeasure hℓ)
   :=
   PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
-
-#check measure_empty
-
-variable (φ : PositiveHom σ)
-#check Measure.infinitePi
--- #check Measure.pi (fun n ↦ φ.toMeasure (n + n₀))
 
 /- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)
     : ∃ (s : FlagSeq σ), ConvergesTo s φ.coe
   := by
-  sorry
+  have : ∀ n, n ^ 2 + n₀ ≥ n₀ := fun n ↦ Nat.le_add_left n₀ (n ^ 2)
+  let μ := Measure.infinitePi (fun n ↦ φ.toMeasure (this n))
+  let S : Set (∀ n, FlagWithSize σ (n ^ 2 + n₀)) :=
+    { s : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
+      ∀ (F : FinFlag σ), Tendsto (fun n ↦ (flagDensity₁ F.2 (s n) : ℝ)) atTop (𝓝 (φ.coe F)) }
+  have hS_measure : μ S = 1 := sorry
+  obtain ⟨s, hs⟩ : ∃ s, s ∈ S := by
+    rw [← Set.nonempty_def, Set.nonempty_iff_ne_empty]
+    contrapose hS_measure
+    simp only [ne_eq, not_not] at hS_measure
+    rw [hS_measure]
+    simp only [measure_empty, zero_ne_one, not_false_eq_true]
+  dsimp [S] at hs
+  use fun n ↦ ⟨n ^ 2 + n₀, s n⟩
+  rw [flagSeq_convergesTo_iff]
+  constructor
+  · intro n m hnm
+    simp only [add_lt_add_iff_right]
+    exact Nat.pow_lt_pow_left hnm (by norm_num)
+  · exact hs

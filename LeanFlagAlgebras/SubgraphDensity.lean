@@ -1453,16 +1453,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_inducedSubgraph_X₃ : inducedSubgraph G X₃ = G₂ := by
       simp only [X₃, Set.coe_toFinset, Eq.symm (inducedSubgraph_eq h_G₂_ind)]
 
-    sorry
-  sorry
   /- Hongseok: If we include the next two lines, this file doesn't compile. This is quite surprising
     because I thought that these lines are harmless in terms of their computational overhead.
     let g_X₁_H₁ : (inducedSubgraph G X₁).coe ≃g H₁ :=
       isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₁_H₁ h_F₁_ind h_G₁_ind
   -/
 
-  /- Gyeongwon: The following code works, but it is not very clean.
-
+  /- Gyeongwon: The following code works, but it is not very clean. -/
     let g_X₁_H₁ : (inducedSubgraph G X₁).coe ≃g H₁ := by
       have type_eq : X₁ = (@Set.toFinset (Fin ℓ) (Subtype.val ∘ ⇑g_G₁_Fout.symm '' F₁.verts)
             (@Set.fintypeImage (Fin ℓ₁₂) (Fin ℓ) (fun a b ↦ propDecidable (a = b)) F₁.verts (Subtype.val ∘ ⇑g_G₁_Fout.symm) (Subtype.fintype (Membership.mem F₁.verts))))
@@ -1470,7 +1467,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         congr!
       rw [type_eq]
       exact isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₁_H₁ h_F₁_ind h_G₁_ind
-  -/
+
+    sorry
+  sorry
 
     /-
     let g_X₂_H₂ : (inducedSubgraph G X₂).coe ≃g H₂ :=
