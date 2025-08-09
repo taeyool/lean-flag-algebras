@@ -1461,6 +1461,17 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₁_H₁ h_F₁_ind h_G₁_ind
   -/
 
+  /- Gyeongwon: The following code works, but it is not very clean.
+
+    let g_X₁_H₁ : (inducedSubgraph G X₁).coe ≃g H₁ := by
+      have type_eq : X₁ = (@Set.toFinset (Fin ℓ) (Subtype.val ∘ ⇑g_G₁_Fout.symm '' F₁.verts)
+            (@Set.fintypeImage (Fin ℓ₁₂) (Fin ℓ) (fun a b ↦ propDecidable (a = b)) F₁.verts (Subtype.val ∘ ⇑g_G₁_Fout.symm) (Subtype.fintype (Membership.mem F₁.verts))))
+        := by
+        congr!
+      rw [type_eq]
+      exact isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₁_H₁ h_F₁_ind h_G₁_ind
+  -/
+
     /-
     let g_X₂_H₂ : (inducedSubgraph G X₂).coe ≃g H₂ :=
       isoFromInducedSubgraphByPartialIso g_G₁_Fout g_F₂_H₂ h_F₂_ind h_G₁_ind
