@@ -432,17 +432,114 @@ instance PositiveHom.toMeasure_isProbabilityMeasure
   :=
   PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
 
+noncomputable def flagSeqMeasure
+    (φ : PositiveHom σ)
+    : Measure ((n : ℕ) → FlagWithSize σ (n ^ 2 + n₀))
+  :=
+  have : ∀ n, n ^ 2 + n₀ ≥ n₀ := fun n ↦ Nat.le_add_left n₀ (n ^ 2)
+  Measure.infinitePi (fun n ↦ φ.toMeasure (this n))
+
+notation "μ[" φ "]" => (flagSeqMeasure φ)
+
+theorem flagSeqMeasure_converge_prob_one
+    (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
+    : μ[φ] { s | ∃ n₀, ∀ n ≥ n₀, |flagDensity₁ F.2 (s n) - φ.coe F| ≤ ε } = 1
+  := by
+  sorry
+
+lemma Set.forall_compl
+    {α β : Type} (p : α → β → Prop)
+    : { b | ∀ a, p a b }ᶜ = { b | ∃ a, ¬p a b }
+  := by
+  ext b
+  simp only [Set.mem_compl_iff, Set.mem_setOf_eq, not_forall]
+
+lemma MeasureTheory.measure_exists_zero
+    {α β : Type} [Countable α] [MeasurableSpace β] {μ : Measure β} {p : α → β → Prop}
+    (hμ : ∀ a, μ { b | p a b } = 0)
+    : μ { b | ∃ a, p a b } = 0 := by
+  rw [Set.setOf_exists, ← nonpos_iff_eq_zero]
+  apply le_trans (measure_iUnion_le _)
+  apply tsum_nonpos
+  intro a
+  simp_all only [le_refl]
+
+lemma nhds_basis_Icc_Nat_pos
+    (a : ℝ)
+    : (𝓝 a).HasBasis (fun (n : ℕ) ↦ 0 < n) fun n ↦ Set.Icc (a - 1 / n) (a + 1 / n)
+  := by
+  have h_ε_basis := nhds_basis_Icc_pos a
+  rw [hasBasis_iff] at *
+  intro S
+  rw [h_ε_basis S]
+  constructor
+  · intro ⟨ε, εpos, hε⟩
+    obtain ⟨n, npos, hn⟩ : ∃ (n : ℕ), 0 < n ∧ 1 / n ≤ ε := by
+      use ⌈1 / ε⌉₊
+      have : 0 < ⌈1 / ε⌉₊ := by
+        rw [Nat.ceil_pos]
+        exact one_div_pos.mpr εpos
+      constructor
+      · exact this
+      · rw [← one_div_le εpos (Nat.cast_pos'.mpr this)]
+        exact Nat.le_ceil (1 / ε)
+    use n
+    constructor
+    · exact npos
+    · calc
+        _ ⊆ Set.Icc (a - ε) (a + ε) := by
+          apply Set.Icc_subset_Icc <;> linarith
+        _ ⊆ S := hε
+  · intro ⟨n, npos, hn⟩
+    use 1 / n
+    constructor
+    · simp only [one_div, inv_pos, Nat.cast_pos, npos]
+    · exact hn
+
+lemma real_mem_Icc_iff_abs_sub_le
+    {a b x : ℝ}
+    : x ∈ Set.Icc (a - b) (a + b) ↔ |x - a| ≤ b := by
+  rw [abs_sub_le_iff, Set.mem_Icc]
+  constructor <;> (intro; constructor) <;> linarith
+
 /- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)
     : ∃ (s : FlagSeq σ), ConvergesTo s φ.coe
   := by
-  have : ∀ n, n ^ 2 + n₀ ≥ n₀ := fun n ↦ Nat.le_add_left n₀ (n ^ 2)
-  let μ := Measure.infinitePi (fun n ↦ φ.toMeasure (this n))
   let S : Set (∀ n, FlagWithSize σ (n ^ 2 + n₀)) :=
-    { s : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
-      ∀ (F : FinFlag σ), Tendsto (fun n ↦ (flagDensity₁ F.2 (s n) : ℝ)) atTop (𝓝 (φ.coe F)) }
-  have hS_measure : μ S = 1 := sorry
+    { s | ∀ (F : FinFlag σ), Tendsto (fun n ↦ (flagDensity₁ F.2 (s n) : ℝ)) atTop (𝓝 (φ.coe F)) }
+  have hS_measurable : MeasurableSet S := by
+    rw [measurableSet_setOf]
+    apply Measurable.forall
+    intro F
+    -- simp_rw [atTop_basis.tendsto_iff (nhds_basis_Ioo_pos (φ.coe F))]
+    -- measurability
+    -- repeat apply Measurable.eval
+    sorry
+  have hS_measure : μ[φ] S = 1 := by
+    dsimp [flagSeqMeasure]
+    rw [← prob_compl_eq_zero_iff hS_measurable, Set.forall_compl]
+    apply MeasureTheory.measure_exists_zero
+    intro F
+    simp_rw [atTop_basis.tendsto_iff (nhds_basis_Icc_Nat_pos (φ.coe F))]
+    push_neg
+    apply MeasureTheory.measure_exists_zero
+    intro n
+    simp_rw [real_mem_Icc_iff_abs_sub_le]
+    rw [← prob_compl_eq_one_iff sorry]
+    simp_rw [← forall_and_left, Set.forall_compl]
+    push_neg
+    by_cases hn : n = 0
+    · subst hn
+      simp only [lt_self_iff_false, Set.mem_Ici, CharP.cast_eq_zero, div_zero, abs_nonpos_iff,
+        IsEmpty.forall_iff, and_self, exists_const, Set.setOf_true, measure_univ]
+    · apply Nat.zero_lt_of_ne_zero at hn
+      simp only [hn, Set.mem_Ici, forall_const, true_and]
+      have hn_recip_pos : 0 < (1 / n : ℝ) := by
+        rw [one_div, inv_pos]
+        exact Nat.cast_pos.mpr hn
+      exact flagSeqMeasure_converge_prob_one φ F hn_recip_pos
   obtain ⟨s, hs⟩ : ∃ s, s ∈ S := by
     rw [← Set.nonempty_def, Set.nonempty_iff_ne_empty]
     contrapose hS_measure
