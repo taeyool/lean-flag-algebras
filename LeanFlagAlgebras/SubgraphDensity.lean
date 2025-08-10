@@ -1989,7 +1989,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                 rw [←Set.toFinset_card ({v : G₁.verts | v.val ∈ X₅})]
         _ = {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅}.toFinset.card := by
                 rw [h_G₁_verts_eq_X₁_X₂_X₄_X₅]
-                simp only [coe_sort_coe, Set.toFinset_setOf, univ_eq_attach, X_F]
+                simp only [coe_sort_coe, Set.toFinset_setOf, univ_eq_attach]
         _ = Fintype.card {v : ↑(X₁ ∪ X₂ ∪ X₄ ∪ X₅) | v.val ∈ X₅} := by
                 rw [Set.toFinset_card]
         _ = Fintype.card X₅ := by
@@ -2020,13 +2020,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         . intro h_v_X₁
           have : ↑v ∈ X₁ ∩ X₅ := by simp only [mem_inter, h_v_X₁, h_v_X₅, and_self]
           rw [h_X₁_disj_X₅] at this
-          -- exact Finset.notMem_empty ↑v this
-          sorry
+          exact Finset.notMem_empty (↑v : Fin ℓ) this
         . intro h_v_X₂
           have : ↑v ∈ X₂ ∩ X₅ := by simp only [mem_inter, h_v_X₂, h_v_X₅, and_self]
           rw [h_X₂_disj_X₅] at this
-          -- exact Finset.not_mem_empty ↑v this
-          sorry
+          exact Finset.notMem_empty (↑v : Fin ℓ) this
       calc
         ⇑h_G₁_Fout.some '' {v : G₁.verts | v.val ∈ X₅}
         _ ⊆ ⇑h_G₁_Fout.some '' ((G₁₁.verts ∪ G₁₂.verts)ᶜ) :=
