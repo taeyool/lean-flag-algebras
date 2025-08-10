@@ -2621,7 +2621,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
     have h_G₁_verts_card : Fintype.card G₁.verts = Fintype.card (Fin ℓ₂₃) := by
       rw [h_G₁_verts_eq_X₂₃₄]
       rw [Fintype.card_fin]
-      suffices (X₂ ∪ X₃ ∪ X₄).card = ℓ₂₃ by sorry -- simp only [coe_sort_coe, Fintype.card_coe, this]
+      suffices (X₂ ∪ X₃ ∪ X₄).card = ℓ₂₃ by {
+         dsimp [X₂₃₄]
+         rw [←this, ←Fintype.card_coe (X₂ ∪ X₃ ∪ X₄)]
+         congr!
+      }
       rw [Finset.card_union (X₂ ∪ X₃) X₄, h_X₂_X₃_disj_X₄]
       rw [Finset.card_union X₂ X₃, h_X₂_disj_X₃]
       rw [h_X₂_card, h_X₃_card, h_X₄_card]
