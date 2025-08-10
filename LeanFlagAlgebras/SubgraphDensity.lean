@@ -1925,7 +1925,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
                 rw [inducedSubgraph_verts G₁.coe {v : G₁.verts | v.val ∈ X₂}]
         _ = ↑({v : G₁.verts | v.val ∈ X₁} ∩ {v : G₁.verts | v.val ∈ X₂}) := by simp only
         _ = ↑({v : G₁.verts | v.val ∈ X₁ ∩ X₂}) := by simp only [mem_inter]; exact rfl
-        _ ⊆ ∅ := by rw [h_X₁_disj_X₂]; sorry -- simp only [Set.setOf_false, subset_refl]
+        _ ⊆ ∅ := by
+          rw [h_X₁_disj_X₂]; simp only [notMem_empty, Set.setOf_false, subset_refl]
 
     have h_X₁_G₁₁ : inducedSubgraph G X₁ = subgraphByComposition G₁ G₁₁ :=
       inducedSubgraph_eq_subgraphByComposition G₁ h_G₁_ind X₁ h_X₁_subset_G₁_verts
@@ -1950,10 +1951,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
     let g_G₁_F₀ : G₁.coe ≃g F₀ := SimpleGraph.Iso.map g_G₁_Finℓ₁₂ G₁.coe
     let g_F₀_Fout : F₀ ≃g F.out := by
-      -- have : graph_eqv F₀ F.out := Quotient.mk_eq_iff_out.mp rfl
-      -- dsimp [graph_eqv] at this
-      -- exact this.some
-      sorry
+      have : graph_eqv F₀ F.out :=
+        (@Quotient.mk_eq_iff_out (SimpleGraph (Fin ℓ₁₂)) (graphSetoid (Fin ℓ₁₂)) F₀ ⟦F₀⟧).mp rfl
+      dsimp [graph_eqv] at this
+      exact this.some
     have h_G₁_Fout : Nonempty (G₁.coe ≃g F.out) := Nonempty.intro (SimpleGraph.Iso.comp g_F₀_Fout g_G₁_F₀)
 
     let F₁ : Subgraph F.out := subgraphFromIso h_G₁_Fout.some G₁₁
@@ -2019,7 +2020,7 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
         . intro h_v_X₁
           have : ↑v ∈ X₁ ∩ X₅ := by simp only [mem_inter, h_v_X₁, h_v_X₅, and_self]
           rw [h_X₁_disj_X₅] at this
-          -- exact Finset.not_mem_empty ↑v this
+          -- exact Finset.notMem_empty ↑v this
           sorry
         . intro h_v_X₂
           have : ↑v ∈ X₂ ∩ X₅ := by simp only [mem_inter, h_v_X₂, h_v_X₅, and_self]
@@ -2088,17 +2089,17 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
           intro h_u_X₁
           have : u ∈ (X₁ ∪ X₂) ∩ X₄ := Finset.mem_inter.mpr ⟨Finset.subset_union_left h_u_X₁, h_u_X₄⟩
           rw [h_X₁_X₂_disj_X₄] at this
-          exact Finset.not_mem_empty u this
+          exact Finset.notMem_empty u this
         have h_u_not_X₂ : u ∉ X₂ := by
           intro h_u_X₂
           have : u ∈ (X₁ ∪ X₂) ∩ X₄ := Finset.mem_inter.mpr ⟨Finset.subset_union_right h_u_X₂, h_u_X₄⟩
           rw [h_X₁_X₂_disj_X₄] at this
-          exact Finset.not_mem_empty u this
+          exact Finset.notMem_empty u this
         have h_u_not_X₅ : u ∉ X₅ := by
           intro h_u_X₅
           have : u ∈ (X₁ ∪ X₂ ∪ X₄) ∩ X₅ := Finset.mem_inter.mpr ⟨Finset.subset_union_right h_u_X₄, h_u_X₅⟩
           rw [h_X₁_X₂_X₄_disj_X₅] at this
-          exact Finset.not_mem_empty u this
+          exact Finset.notMem_empty u this
         exact ⟨h_u_not_X₁, h_u_not_X₂, h_u_not_X₅⟩
     . ext u
       simp only [Set.toFinset_image, Set.toFinset_setOf,
