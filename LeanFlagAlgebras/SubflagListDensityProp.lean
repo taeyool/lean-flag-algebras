@@ -93,7 +93,49 @@ theorem partitions_card_eq_multinomial
       specialize ih r_list₁' h_r_list₁'
 
       let parts := (V.card - ∑ j : Fin t, r_list₁' j).choose (r_list₁ (Fin.last t))
-      have : (partitions V r_list₁).card = (partitions V r_list₁').card * parts := by sorry
+      have : (partitions V r_list₁).card = (partitions V r_list₁').card * parts := by
+        dsimp [partitions]
+        have : {p | (∀ (i : Fin (t + 1)), p i ⊆ V ∧ (p i).card = r_list₁ i) ∧ (∀ (i j : Fin (t + 1)), ¬i = j → Disjoint (p i) (p j)) ∧ Finset.univ.biUnion p ⊆ V} ≃
+        {p | (∀ (i : Fin (t)), p i ⊆ V ∧ (p i).card = r_list₁' i) ∧ (∀ (i j : Fin (t)), ¬i = j → Disjoint (p i) (p j)) ∧ Finset.univ.biUnion p ⊆ V} := by sorry
+
+-- lemma partitions_succ_bijection [Fintype α] [DecidableEq α] (V : Finset α) (r_list₁ : Fin (t + 1) → ℕ)
+--   (h_sum : ∑ i, r_list₁ i ≤ V.card) :
+--   (partitions V r_list₁).card =
+--     (partitions V (fun i : Fin t => r_list₁ (Fin.castSucc i))).card *
+--     (V.card - ∑ j : Fin t, r_list₁ (Fin.castSucc j)).choose (r_list₁ (Fin.last t)) :=
+-- begin
+--   -- Let p ∈ partitions V r_list₁
+--   -- Define p' : Fin t → Finset α by p' i = p (Fin.castSucc i)
+--   -- Let S = p (Fin.last t)
+--   -- Then p' ∈ partitions V' r_list₁', S ⊆ V \ (⋃ p' i), |S| = r_list₁ (Fin.last t)
+--   let to_prod : (Fin (t + 1) → Finset α) → (Fin t → Finset α) × Finset α :=
+--     fun p => (fun i => p (Fin.castSucc i), p (Fin.last t)),
+--   let from_prod : (Fin t → Finset α) × Finset α → (Fin (t + 1) → Finset α) :=
+--     fun ⟨p', S⟩ => fun i => if h : i = Fin.last t then S else p' (Fin.castPred i h),
+--   -- Define the set of valid pairs (p', S)
+--   let valid_pairs :=
+--     { ps : (Fin t → Finset α) × Finset α |
+--       let p' := ps.1; let S := ps.2 in
+--       (∀ i, p' i ⊆ V ∧ (p' i).card = r_list₁ (Fin.castSucc i)) ∧
+--       (∀ i j, i ≠ j → Disjoint (p' i) (p' j)) ∧
+--       (⋃ i, p' i) ⊆ V ∧
+--       S ⊆ V \ (⋃ i, p' i) ∧ S.card = r_list₁ (Fin.last t)
+--     },
+--   -- There is a bijection between partitions V r_list₁ and valid_pairs
+--   have bij :
+--     (partitions V r_list₁).toFinset ≃ valid_pairs,
+--   { -- Sketch: construct forward and inverse maps, check they are inverses
+--     -- (details omitted for brevity)
+--     sorry },
+--   -- The cardinality of valid_pairs is the product of the cardinalities
+--   have card_eq :
+--     Fintype.card valid_pairs = (partitions V (fun i : Fin t => r_list₁ (Fin.castSucc i))).card *
+--       (V.card - ∑ j : Fin t, r_list₁ (Fin.castSucc j)).choose (r_list₁ (Fin.last t)),
+--   { -- For each p', the number of S is ...
+--     sorry },
+--   rw [Fintype.card_congr bij, card_eq],
+
+        sorry
       rw [this, ih]
       let s : Finset (Fin (t + 1 + 1)) := Finset.univ.filter (fun i => i.val < t + 1)
       let a : Fin (t + 1 + 1) := ⟨t + 1, Nat.lt_add_one _⟩
