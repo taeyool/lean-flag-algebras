@@ -184,6 +184,15 @@ lemma inducedSubgraph_eq
     . intro ⟨h_uv_G, h_u_G₀, h_v_G₀⟩
       exact h_G₀_ind h_u_G₀ h_v_G₀ h_uv_G
 
+omit [Fintype V] in
+lemma inducedSubgraph_eq_verts
+    {G : SimpleGraph V}
+    {G₁ : Subgraph G} (hG₁ : G₁.IsInduced)
+    {G₂ : Subgraph G} (hG₂ : G₂.IsInduced)
+    (h : G₁.verts = G₂.verts) :
+    G₁ = G₂ := by
+  rw [inducedSubgraph_eq hG₁, inducedSubgraph_eq hG₂, h]
+
 omit [Fintype V] [Fintype W] in
 lemma inducedSubgraph_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
