@@ -5,6 +5,7 @@ import Mathlib.Topology.Sequences
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
 import Mathlib.Probability.ProductMeasure
+import Mathlib.NumberTheory.ZetaValues
 
 open FlagAlgebras
 
@@ -13,6 +14,7 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 open Filter
 open scoped Topology
 open MeasureTheory
+open scoped ENNReal
 
 abbrev FlagSeq (σ : FlagType (Fin n₀))
   :=
@@ -442,11 +444,47 @@ noncomputable def flagSeqMeasure
 
 notation "μ[" φ "]" => (flagSeqMeasure φ)
 
+lemma limsup_eq_forall_exists
+    {α : Type} (s : ℕ → Set α)
+    : limsup s atTop = { a | ∀ n₀, ∃ n ≥ n₀, a ∈ s n } := by
+  rw [limsup_eq_iInf_iSup_of_nat, Set.setOf_forall]
+  apply Set.iInter_congr
+  intro n₀
+  rw [Set.setOf_exists]
+  apply Set.iUnion_congr
+  intro n
+  ext a
+  simp only [ge_iff_le, Set.iSup_eq_iUnion, Set.mem_iUnion, exists_prop, Set.mem_setOf_eq]
+
+def flagDensityErrorSet
+    (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
+    : Set (∀ n, FlagWithSize σ (n ^ 2 + n₀))
+  :=
+  { s | |flagDensity₁ F.2 (s n) - φ.coe F| > ε }
+
+theorem measure_flagDensityErrorSet_bounded
+    (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
+    : ∃ (c : ℝ), c > 0 ∧
+    ∀ n, μ[φ] (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) := by
+  sorry
+
 theorem flagSeqMeasure_converge_prob_one
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
-    : μ[φ] { s | ∃ n₀, ∀ n ≥ n₀, |flagDensity₁ F.2 (s n) - φ.coe F| ≤ ε } = 1
+    : μ[φ] { s | ∀ n₀, ∃ n ≥ n₀, |flagDensity₁ F.2 (s n) - φ.coe F| > ε } = 0
   := by
-  sorry
+  let E : ℕ → Set (∀ n, FlagWithSize σ (n ^ 2 + n₀)) := flagDensityErrorSet φ F ε
+  show μ[φ] { s | ∀ n₀, ∃ n ≥ n₀, s ∈ E n } = 0
+  rw [← limsup_eq_forall_exists]
+  apply measure_limsup_atTop_eq_zero
+  obtain ⟨c, hc, hE⟩ := measure_flagDensityErrorSet_bounded φ F hε
+  have : ∑' (n : ℕ), ENNReal.ofReal (c / (n ^ 2)) ≠ ∞ := by
+    simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul (le_of_lt hc)]
+    rw [ENNReal.tsum_mul_left]
+    apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
+    apply Summable.tsum_ofReal_ne_top
+    exact ⟨_, hasSum_zeta_two⟩
+  apply ne_top_of_le_ne_top this
+  exact ENNReal.tsum_le_tsum hE
 
 lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
   rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
@@ -544,30 +582,13 @@ theorem positiveHom_as_flagSeq_limit
     intro n
     simp_rw [real_mem_Icc_iff_abs_sub_le]
     simp only [Set.mem_Ici, forall_const]
-    have : MeasurableSet { s : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
-      0 < n ∧ ∀ (M : ℕ), ∃ m, M ≤ m ∧ ¬|↑(flagDensity₁ F.2 (s m)) - φ.coe F| ≤ 1 / n } := by
-      rw [measurableSet_setOf]
-      apply Measurable.and measurable_const
-      apply Measurable.forall
-      intro M
-      apply Measurable.exists
-      intro m
-      apply Measurable.and measurable_const
-      apply Measurable.not
-      rw [← measurableSet_setOf]
-      apply measurableSet_le
-      · have : Measurable fun (s : (n : ℕ) → FlagWithSize σ (n ^ 2 + n₀)) ↦ ↑(flagDensity₁ F.2 (s m)) - φ.coe F := by measurability
-        exact Measurable.sup this (Measurable.neg this)
-      · exact measurable_const
-    rw [← prob_compl_eq_one_iff this]
-    simp_rw [← forall_and_left, Set.forall_compl]
-    push_neg
+    simp_rw [← forall_and_left]
     by_cases hn : n = 0
     · subst hn
-      simp only [lt_self_iff_false, CharP.cast_eq_zero, div_zero, abs_nonpos_iff,
-        IsEmpty.forall_iff, exists_const, Set.setOf_true, measure_univ]
+      simp only [lt_self_iff_false, CharP.cast_eq_zero, div_zero, abs_nonpos_iff, false_and,
+        forall_const, Set.setOf_false, measure_empty]
     · apply Nat.zero_lt_of_ne_zero at hn
-      simp only [hn, forall_const]
+      simp only [hn, true_and, not_le]
       have hn_recip_pos : 0 < (1 / n : ℝ) := by
         rw [one_div, inv_pos]
         exact Nat.cast_pos.mpr hn
