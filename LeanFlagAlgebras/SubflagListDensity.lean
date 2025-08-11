@@ -1,10 +1,13 @@
 import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagDensity
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Algebra.BigOperators.Field
+import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+import Mathlib.Tactic.FieldSimp
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -1061,23 +1064,45 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
                 ring
       _ = (C_rhs₀ : ℚ) * ↑C_rhs₁ *
           ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
-                sorry
+                field_simp
       _ = ↑(C_rhs₀ * C_rhs₁ * labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
-                sorry
+                simp only [Nat.cast_mul]
       _ = ↑(C_lhs * ∑ G' : Flag σ (Fin ℓ'),
                       (labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
                       (labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
                 rw [labeledGraphTripleCount_eq_sum_density_prods ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ]
-      _ = ((C : ℚ) / ↑C_rhs₀ * ↑C_rhs₁)
+      _ = ↑C_lhs * ∑ G' : Flag σ (Fin ℓ'),
+                      ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                      ↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) := by
+                simp only [Nat.cast_mul, Nat.cast_sum]
+      _ = ((C_lhs : ℚ) * (↑C_rhs₀ * ↑C_rhs₁) / (↑C_rhs₀ * ↑C_rhs₁))
           * ∑ G' : Flag σ (Fin ℓ'),
-            ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-            (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
-                sorry
+              ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+              (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+                field_simp
+      _ = ((C : ℚ) / (↑C_rhs₀ * ↑C_rhs₁))
+          * ∑ G' : Flag σ (Fin ℓ'),
+              ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+              (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+                rw [Nat.cast_mul, Nat.cast_mul]
+                ring
+      _ = (C : ℚ)
+          * ((∑ G' : Flag σ (Fin ℓ'),
+                ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)))
+             / (↑C_rhs₀ * ↑C_rhs₁)) := by
+                field_simp
+      _ = (C : ℚ)
+          * ∑ G' : Flag σ (Fin ℓ'),
+              (↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+               ↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G))
+              / (↑C_rhs₀ * ↑C_rhs₁) := by
+                rw [Finset.sum_div]
       _ = (C : ℚ)
           * ∑ G' : Flag σ (Fin ℓ'),
             ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) / ↑C_rhs₀ *
             (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) / ↑C_rhs₁) := by
-                sorry
+                field_simp
   }
 
 theorem flagTripleDensity_eq_sum_density_prods
