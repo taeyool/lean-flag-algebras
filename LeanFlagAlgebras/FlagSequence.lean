@@ -447,6 +447,11 @@ theorem flagSeqMeasure_converge_prob_one
   := by
   sorry
 
+lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
+  rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
+  intro p hp
+  exact Classical.propComplete p
+
 lemma Set.forall_compl
     {α β : Type} (p : α → β → Prop)
     : { b | ∀ a, p a b }ᶜ = { b | ∃ a, ¬p a b }
@@ -502,11 +507,6 @@ lemma real_mem_Icc_iff_abs_sub_le
   rw [abs_sub_le_iff, Set.mem_Icc]
   constructor <;> (intro; constructor) <;> linarith
 
-lemma temp (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
-  rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
-  intro p hp
-  exact Classical.propComplete p
-
 /- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)
@@ -523,7 +523,7 @@ theorem positiveHom_as_flagSeq_limit
       apply measurableSet_tendsto (𝓝 (φ.coe F))
       measurability
     intro P hP
-    rcases temp P with hP | hP | hP | hP <;> rw [hP]
+    rcases prop_set_cases P with hP | hP | hP | hP <;> rw [hP]
     · exact MeasurableSet.empty
     · simp only [Set.preimage_singleton_true, measurableSet_setOf]
       exact this
@@ -543,9 +543,21 @@ theorem positiveHom_as_flagSeq_limit
     intro n
     simp_rw [real_mem_Icc_iff_abs_sub_le]
     simp only [Set.mem_Ici, forall_const]
-    have : MeasurableSet { a : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
-      0 < n ∧ ∀ (M : ℕ), ∃ m, M ≤ m ∧ ¬|↑(flagDensity₁ F.2 (a m)) - φ.coe F| ≤ 1 / n } := by
-      sorry
+    have : MeasurableSet { s : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
+      0 < n ∧ ∀ (M : ℕ), ∃ m, M ≤ m ∧ ¬|↑(flagDensity₁ F.2 (s m)) - φ.coe F| ≤ 1 / n } := by
+      rw [measurableSet_setOf]
+      apply Measurable.and measurable_const
+      apply Measurable.forall
+      intro M
+      apply Measurable.exists
+      intro m
+      apply Measurable.and measurable_const
+      apply Measurable.not
+      rw [← measurableSet_setOf]
+      apply measurableSet_le
+      · have : Measurable fun (s : (n : ℕ) → FlagWithSize σ (n ^ 2 + n₀)) ↦ ↑(flagDensity₁ F.2 (s m)) - φ.coe F := by measurability
+        exact Measurable.sup this (Measurable.neg this)
+      · exact measurable_const
     rw [← prob_compl_eq_one_iff this]
     simp_rw [← forall_and_left, Set.forall_compl]
     push_neg
