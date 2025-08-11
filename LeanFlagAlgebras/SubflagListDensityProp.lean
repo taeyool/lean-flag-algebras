@@ -1,5 +1,5 @@
 import «LeanFlagAlgebras».SubgraphUtil
-import «LeanFlagAlgebras».TacticChoose
+-- import «LeanFlagAlgebras».TacticChoose
 import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagListDensity
 
@@ -79,7 +79,17 @@ theorem partitions_card_eq_multinomial
   | succ t ih =>
       let r_list₁' : Fin t → ℕ := fun i => r_list₁ i.castSucc
       have h_r_list₁' : ∑ i : Fin t, r_list₁' i ≤ V.card := by
-        sorry
+        have : ∑ i, r_list₁' i ≤ ∑ i, r_list₁ i := by
+          dsimp [r_list₁']
+          rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
+          simp only [Fin.castSucc_mk, lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
+          apply Nat.le_add_right_of_le
+          apply Finset.sum_le_sum
+          intro x hx
+          rw [Finset.mem_range] at hx
+          simp only [hx, Nat.lt_add_right 1 hx, ↓reduceDIte]
+          congr!
+        exact this.trans h_r_list₁
       specialize ih r_list₁' h_r_list₁'
 
       let parts := (V.card - ∑ j : Fin t, r_list₁' j).choose (r_list₁ (Fin.last t))
@@ -161,18 +171,18 @@ theorem partitions_card_eq_multinomial
       rw [Nat.choose_eq_factorial_div_factorial (by simp only [tsub_le_iff_right, le_add_iff_nonneg_right, zero_le])]
       rw [Nat.sub_sub_self h_r_list₁]
 
-      have rhs_calc5 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) *
+      have rhs_calc4 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) *
     ((∑ i, r_list₁ i).factorial / ∏ i, (r_list₁ i).factorial) =
       V.card.factorial / (V.card - ∑ i, r_list₁ i).factorial / ∏ i, (r_list₁ i).factorial := by
         rw [← Nat.mul_div_assoc]
-        · have rhs_calc6 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) * (∑ i, r_list₁ i).factorial
+        · have rhs_calc5 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) * (∑ i, r_list₁ i).factorial
           = V.card.factorial / (V.card - ∑ i, r_list₁ i).factorial := by
-            have rhs_calc7 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) = V.card.factorial / (V.card - ∑ i, r_list₁ i).factorial / (∑ i, r_list₁ i).factorial := by
+            have rhs_calc6 : V.card.factorial / ((V.card - ∑ i, r_list₁ i).factorial * (∑ i, r_list₁ i).factorial) = V.card.factorial / (V.card - ∑ i, r_list₁ i).factorial / (∑ i, r_list₁ i).factorial := by
               exact
                 Eq.symm
                   (Nat.div_div_eq_div_mul V.card.factorial (V.card - ∑ i, r_list₁ i).factorial
                     (∑ i, r_list₁ i).factorial)
-            rw [rhs_calc7]
+            rw [rhs_calc6]
             rw [Nat.div_mul_cancel]
             refine (Nat.dvd_div_iff_mul_dvd ?_).mpr ?_
             · refine Nat.factorial_dvd_factorial ?_
@@ -180,9 +190,10 @@ theorem partitions_card_eq_multinomial
             · rw [mul_comm]
               apply Nat.factorial_mul_factorial_dvd_factorial
               exact h_r_list₁
-          rw [rhs_calc6]
+          rw [rhs_calc5]
         · exact Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list₁
-      rw [rhs_calc5]
+      rw [rhs_calc4]
+      clear rhs_calc1 rhs_calc2 rhs_calc3 rhs_calc4
 
       rw [Nat.multinomial, extendPartitions.sum_eq V r_list₁' h_r_list₁']
       have lhs_calc1 : ∏ i, (extendPartitions V r_list₁' i).factorial =
@@ -241,7 +252,55 @@ theorem partitions_card_eq_multinomial
             congr
         rwa [← this]
       rw [Nat.choose_eq_factorial_div_factorial choose_eq]
-      sorry
+      rw [← Nat.mul_div_assoc]
+      · have lhs_calc2 : V.card.factorial / ((∏ i, (r_list₁' i).factorial) * (V.card - ∑ i, r_list₁' i).factorial) *
+      (V.card - ∑ j, r_list₁' j).factorial = V.card.factorial / (∏ i, (r_list₁' i).factorial) := by
+          rw [← Nat.div_div_eq_div_mul, Nat.div_mul_cancel]
+          refine Nat.dvd_div_of_mul_dvd ?_
+          rw [← lhs_calc1, ← extendPartitions.sum_eq V r_list₁' h_r_list₁']
+          exact Nat.prod_factorial_dvd_factorial_sum Finset.univ (extendPartitions V r_list₁')
+        rw [lhs_calc2]
+        rw [Nat.div_div_eq_div_mul]
+        have lhs_calc3 : ((∏ i, (r_list₁' i).factorial) *
+      ((r_list₁ (Fin.last t)).factorial * (V.card - ∑ j, r_list₁' j - r_list₁ (Fin.last t)).factorial)) = (V.card - ∑ j, r_list₁' j - r_list₁ (Fin.last t)).factorial * ∏ i, (r_list₁ i).factorial := by
+          rw [← mul_assoc, mul_comm]
+          congr
+          rw [Finset.prod_fin_eq_prod_range, Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
+          simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
+          refine (Nat.mul_left_inj ?_).mpr ?_
+          · exact Nat.factorial_ne_zero (r_list₁ (Fin.last t))
+          · apply Finset.prod_bij (fun i _ ↦ i)
+            · intro i hi
+              exact hi
+            · intro i hi j hj hij
+              exact hij
+            · intro i hi
+              use i
+            · intro i hi
+              rw [Finset.mem_range] at hi
+              simp [hi, Nat.lt_add_right 1 hi, ↓reduceDIte]
+              congr
+        rw [lhs_calc3]
+        have lhs_calc4 : (V.card - ∑ j, r_list₁' j - r_list₁ (Fin.last t)).factorial = (V.card - ∑ i, r_list₁ i).factorial := by
+          rw [Nat.sub_sub]
+          congr
+          rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
+          simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
+          refine Nat.add_left_inj.mpr ?_
+          apply Finset.sum_bij (fun i _ ↦ i)
+          · intro i hi
+            exact hi
+          · intro i hi j hj hij
+            exact hij
+          · intro i hi
+            use i
+          · intro i hi
+            rw [Finset.mem_range] at hi
+            simp [hi, Nat.lt_add_right 1 hi, ↓reduceDIte]
+            congr
+        rw [lhs_calc4]
+        rw [Nat.div_div_eq_div_mul]
+      · exact Nat.factorial_mul_factorial_dvd_factorial choose_eq
 
 theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
