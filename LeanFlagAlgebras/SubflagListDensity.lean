@@ -1049,8 +1049,26 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
       · dsimp [LabeledGraph.size]
         exact Fintype.card_fin ℓ
     rw [triple_density_eq_count_over_coeff]
-    -- dsimp [C_lhs, C_rhs₀, C_rhs₁]
-    sorry
+    calc
+      (C : ℚ) * (↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / ↑C_lhs)
+      _ = ((C : ℚ) / ↑C_lhs) * ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+                ring
+      _ = ↑(C_rhs₀ * C_rhs₁ * labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+                sorry
+      _ = ↑(C_lhs * ∑ G' : Flag σ (Fin ℓ'),
+                      (labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                      (labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+                rw [labeledGraphTripleCount_eq_sum_density_prods ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ]
+      _ = ((C : ℚ) / ↑C_rhs₀ * ↑C_rhs₁)
+          * ∑ G' : Flag σ (Fin ℓ'),
+            ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+            (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+                sorry
+      _ = (C : ℚ)
+          * ∑ G' : Flag σ (Fin ℓ'),
+            ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) / ↑C_rhs₀ *
+            (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) / ↑C_rhs₁) := by
+                sorry
   }
 
 theorem flagTripleDensity_eq_sum_density_prods
