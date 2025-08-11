@@ -1053,6 +1053,15 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
       (C : ℚ) * (↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / ↑C_lhs)
       _ = ((C : ℚ) / ↑C_lhs) * ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 ring
+      _ = ((C_lhs : ℚ) * ↑C_rhs₀ * ↑C_rhs₁ / ↑C_lhs) *
+          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+                rw [Nat.cast_mul, Nat.cast_mul]
+      _ = ((C_lhs : ℚ) * ((↑C_rhs₀ * ↑C_rhs₁) / ↑C_lhs)) *
+          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+                ring
+      _ = (C_rhs₀ : ℚ) * ↑C_rhs₁ *
+          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+                sorry
       _ = ↑(C_rhs₀ * C_rhs₁ * labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 sorry
       _ = ↑(C_lhs * ∑ G' : Flag σ (Fin ℓ'),
