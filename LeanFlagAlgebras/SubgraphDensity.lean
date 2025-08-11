@@ -85,6 +85,14 @@ noncomputable def subgraphPairSet (H₁ : SimpleGraph U) (H₂ : SimpleGraph V) 
     G₁.verts ∩ G₂.verts = ∅
   { (G₁, G₂) : Subgraph G × Subgraph G | p G₁ G₂ }.toFinset
 
+omit [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [DecidableEq W] in
+lemma pair_mem_subgraphPairSet_iff
+    {H₁ : SimpleGraph U} {H₂ : SimpleGraph V} {G : SimpleGraph W} {g₁ g₂ : Subgraph G} :
+    ⟨g₁, g₂⟩ ∈ subgraphPairSet H₁ H₂ G ↔
+      g₁.IsInduced ∧ Nonempty (g₁.coe ≃g H₁) ∧
+      g₂.IsInduced ∧ Nonempty (g₂.coe ≃g H₂) ∧
+      g₁.verts ∩ g₂.verts = ∅ := by
+  simp only [subgraphPairSet, Set.toFinset_setOf, mem_filter, mem_univ, true_and]
 
 noncomputable def subgraphPairCount (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ
   :=
@@ -718,26 +726,24 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   let f_S_S₀'_fwd : S → S₀' := by
     intro ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-    simp [subgraphPairSet] at h_G₁_G₂
+    rw [pair_mem_subgraphPairSet_iff] at h_G₁_G₂
     let ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩ := h_G₁_G₂
     exact ⟨⟨G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂_disj, h_G₁_G₂_G₃⟩
 
   have h_inj_S_S₀' : Function.Injective f_S_S₀'_fwd := by
-    intro ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-    intro ⟨⟨⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, G₃'⟩, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
-    intro h_eq
-    simp_all [f_S_S₀'_fwd]
-    split at h_eq
-    split at h_eq
-    simp_all
+    intro _ _ h_eq
+    simp only [f_S_S₀'_fwd] at h_eq
+    repeat split at h_eq
+    simp only [Subtype.mk.injEq, Prod.mk.injEq] at h_eq
+    simp only [Set.mem_setOf_eq, h_eq]
 
   have h_surj_S_S₀' : Function.Surjective f_S_S₀'_fwd := by
     intro ⟨⟨G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂_disj, h_G₁_G₂_G₃⟩
     have h_G₁_G₂ : ⟨G₁, G₂⟩ ∈ subgraphPairSet H₁ H₂ G := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₁_G₂_disj⟩
     use ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-    simp [f_S_S₀'_fwd]
+    simp only [f_S_S₀'_fwd]
     split
     simp
 
@@ -762,8 +768,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     use ⟨⟨G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃⟩
     simp [f_S₀'_S₁'_fwd]
     rw [←(getCanonicalQuotSimpleGraph_self F)]
-    apply getCanonicalQuotSimpleGraph_iso
-    exact h_G₃_F.some
+    exact getCanonicalQuotSimpleGraph_iso _ _ _ _ h_G₃_F.some
 
   let f_S₀'_S₁' : S₀' ≃ S₁' :=
     Equiv.ofBijective f_S₀'_S₁'_fwd ⟨h_inj_S₀'_S₁', h_surj_S₀'_S₁'⟩
@@ -883,7 +888,7 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     intro ⟨⟨F, K₁, K₂, G₃⟩,
           h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_G₃_ind, _, h_K₁_K₂_disj, h_iso_G₃_Fout⟩
     let h_K₁_K₂_Fout : ⟨K₁,K₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩
     let h_G₃_G : G₃ ∈ subgraphSet F.out G := by
       simp [subgraphSet]
@@ -904,11 +909,11 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     intro ⟨F, ⟨⟨K₁, K₂⟩, h_K₁_K₂_Fout⟩, ⟨G₃, h_G₃_G⟩⟩
     simp [subgraphSet] at h_G₃_G
     obtain ⟨h_G₃_ind, h_iso_G₃_Fout⟩ := h_G₃_G
-    simp [subgraphPairSet] at h_K₁_K₂_Fout
-    obtain ⟨h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩ := h_K₁_K₂_Fout
+    obtain ⟨h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_K₁_K₂_disj⟩ :=
+      pair_mem_subgraphPairSet_iff.mp h_K₁_K₂_Fout
     have h_G₃_card : Fintype.card G₃.verts = ℓ₃ := by
       rw [←Fintype.card_fin ℓ₃]
-      apply Fintype.card_of_bijective (RelIso.bijective h_iso_G₃_Fout.some)
+      exact Fintype.card_of_bijective (RelIso.bijective h_iso_G₃_Fout.some)
     use ⟨⟨F, K₁, K₂, G₃⟩, h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_G₃_ind, h_G₃_card, h_K₁_K₂_disj, h_iso_G₃_Fout⟩
 
   let f_S₂'_S₃' : S₂' ≃ S₃' :=
@@ -922,7 +927,7 @@ noncomputable def isoGraphCount (G : SimpleGraph V) : ℕ
 
 
 noncomputable def graphCount (ℓ : ℕ) : ℕ
-  := { G' : SimpleGraph (Fin ℓ) | True }.toFinset.card
+  := (.univ : Set (SimpleGraph (Fin ℓ))).toFinset.card
 
 
 lemma graphCount_gt_zero (ℓ : ℕ) : graphCount ℓ > 0
@@ -931,10 +936,28 @@ lemma graphCount_gt_zero (ℓ : ℕ) : graphCount ℓ > 0
   exact NeZero.one_le
 
 
-lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (G : SimpleGraph (Fin ℓ)), 1
+lemma graphCount_eq_sum_one (ℓ : ℕ) : graphCount ℓ = ∑ (_ : SimpleGraph (Fin ℓ)), 1
   := by
   simp [graphCount]
 
+-- have ⟨h_G₁_G₃, h_G₂_G₃⟩ : G₁.verts ∩ G₃.verts = ∅ ∧ G₂.verts ∩ G₃.verts = ∅ :=
+--     Set.union_empty_iff.mp h_G₁_G₂_G₃
+-- have h_G₃_G₁' : G₃.verts ⊆ G₁.vertsᶜ := by
+--   have := (Set.inter_subset G₁.verts G₃.verts ∅).mp (by simp [h_G₁_G₃])
+--   rw [Set.union_empty] at this
+--   apply Set.subset_compl_comm.mp this
+-- have h_G₃_G₂' : G₃.verts ⊆ G₂.vertsᶜ := by
+--   have := (Set.inter_subset G₂.verts G₃.verts ∅).mp (by simp [h_G₂_G₃])
+--   rw [Set.union_empty] at this
+--   apply Set.subset_compl_comm.mp this
+
+lemma subset_compl_of_inter_empty {α : Type*} {s t : Set α} (h : s ∩ t = ∅) :
+    s ⊆ tᶜ := fun e he ↦
+  (Set.mem_compl_iff _ _).mpr fun ht ↦ (Set.ext_iff.mp h e).mp ⟨he, ht⟩
+
+lemma subset_compl_of_inter_empty' {α : Type*} {s t : Set α} (h : s ∩ t = ∅) :
+    t ⊆ sᶜ := fun e he ↦
+  (Set.mem_compl_iff _ _).mpr fun ht ↦ (Set.ext_iff.mp h e).mp ⟨ht, he⟩
 
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ)) (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃)
@@ -962,8 +985,7 @@ lemma subgraphPairCount_eq_sum_count_prods
               simp only [inducedSubgraph, Set.mem_union, Fintype.card_ofFinset, Set.toFinset_union, union_assoc, G₃']
         _ = (G₁.verts ∪ G₂.verts).toFinset.card + G₃.verts.toFinset.card := by
               have : Disjoint (G₁.verts ∪ G₂.verts).toFinset G₃.verts.toFinset := by
-                apply Finset.disjoint_iff_inter_eq_empty.mpr
-                rw [←Set.toFinset_inter]
+                rw [Finset.disjoint_iff_inter_eq_empty, ←Set.toFinset_inter]
                 exact Set.toFinset_eq_empty.mpr h_G₁_G₂_G₃
               exact Finset.card_union_of_disjoint this
         _ = (ℓ₁ + ℓ₂) + Fintype.card G₃.verts := by
@@ -981,28 +1003,22 @@ lemma subgraphPairCount_eq_sum_count_prods
     intro ⟨⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
     intro h_eq
     simp [f_S₀_S₁_fwd] at h_eq
-    simp_all
-    let ⟨⟨h_G₁_G₁', h_G₂_G₂'⟩, h_ind_ind'⟩ := h_eq
-    subst h_G₁_G₁' h_G₂_G₂'
-    have h_G₃_verts_eq_G₃'_verts : G₃.verts = G₃'.verts :=
-      calc
-        G₃.verts
-        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃.verts) \ (G₁.verts ∪ G₂.verts) := by
-                apply Eq.symm; apply Set.union_diff_cancel_left; simp only [h_G₁_G₂_G₃, subset_refl]
-        _ = (inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)).verts \ (G₁.verts ∪ G₂.verts) := by
-                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)]
-        _ = (inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)).verts \ (G₁.verts ∪ G₂.verts) := by
-                rw [h_ind_ind']
-        _ = ((G₁.verts ∪ G₂.verts) ∪ G₃'.verts) \ (G₁.verts ∪ G₂.verts) := by
-                rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)]
-        _ = G₃'.verts := by
-                apply Set.union_diff_cancel_left; simp only [h_G₁'_G₂'_G₃', subset_refl]
-    have : (⟨G₃, h_G₃_ind⟩ : {G' : Subgraph G | G'.IsInduced })= ⟨G₃', h_G₃'_ind⟩ := by
-      simp only [Set.mem_setOf_eq, Subtype.mk.injEq]
-      rw [inducedSubgraph_eq h_G₃_ind]
-      rw [inducedSubgraph_eq h_G₃'_ind]
-      rw [h_G₃_verts_eq_G₃'_verts]
-    simp_all only [Subtype.mk.injEq]
+    obtain ⟨⟨rfl, rfl⟩, h_ind_ind'⟩ := h_eq
+    congr
+    rw [inducedSubgraph_eq h_G₃_ind, inducedSubgraph_eq h_G₃'_ind]
+    congr
+    calc
+      G₃.verts
+      _ = ((G₁.verts ∪ G₂.verts) ∪ G₃.verts) \ (G₁.verts ∪ G₂.verts) := by
+              apply Eq.symm; apply Set.union_diff_cancel_left; simp only [h_G₁_G₂_G₃, subset_refl]
+      _ = (inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃.verts)).verts \ (G₁.verts ∪ G₂.verts) := by
+              rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃.verts)]
+      _ = (inducedSubgraph G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)).verts \ (G₁.verts ∪ G₂.verts) := by
+              rw [h_ind_ind']
+      _ = ((G₁.verts ∪ G₂.verts) ∪ G₃'.verts) \ (G₁.verts ∪ G₂.verts) := by
+              rw [inducedSubgraph_verts G (G₁.verts ∪ G₂.verts ∪ G₃'.verts)]
+      _ = G₃'.verts := by
+              apply Set.union_diff_cancel_left; simp only [h_G₁'_G₂'_G₃', subset_refl]
 
   have h_surj_S₀_S₁ : Function.Surjective f_S₀_S₁_fwd := by
     intro ⟨⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃⟩, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
@@ -1073,30 +1089,17 @@ lemma subgraphPairCount_eq_sum_count_prods
             rw [Set.union_inter_distrib_right G₁.verts G₂.verts G₃.verts] at h_G₁_G₂_G₃
             have ⟨h_G₁_G₃, h_G₂_G₃⟩ : G₁.verts ∩ G₃.verts = ∅ ∧ G₂.verts ∩ G₃.verts = ∅ :=
               Set.union_empty_iff.mp h_G₁_G₂_G₃
-            have h_G₃_G₁' : G₃.verts ⊆ G₁.vertsᶜ := by
-              have := (Set.inter_subset G₁.verts G₃.verts ∅).mp (by simp [h_G₁_G₃])
-              rw [Set.union_empty] at this
-              apply Set.subset_compl_comm.mp this
-            have h_G₃_G₂' : G₃.verts ⊆ G₂.vertsᶜ := by
-              have := (Set.inter_subset G₂.verts G₃.verts ∅).mp (by simp [h_G₂_G₃])
-              rw [Set.union_empty] at this
-              apply Set.subset_compl_comm.mp this
-            constructor
-            . exact ⟨h_G₃_G₁', h_G₃_G₂'⟩
-            . rw [←h_G₃_card]; simp
+            have h_G₃_G₁' : G₃.verts ⊆ G₁.vertsᶜ := subset_compl_of_inter_empty' h_G₁_G₃
+            have h_G₃_G₂' : G₃.verts ⊆ G₂.vertsᶜ := subset_compl_of_inter_empty' h_G₂_G₃
+            refine ⟨⟨h_G₃_G₁', h_G₃_G₂'⟩, ?_⟩
+            rw [←h_G₃_card]; simp
           ⟨G₃.verts.toFinset, h_G₃_verts_S'⟩
         have h_S_S'_inj : Function.Injective f_S_S'_fwd := by
           intro ⟨G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
           intro ⟨G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
           intro h_eq
-          simp [f_S_S'_fwd] at h_eq
-          simp
-          have : (⟨G₃, h_G₃_ind⟩ : {G' : Subgraph G | G'.IsInduced }) = ⟨G₃', h_G₃'_ind⟩ := by
-            simp only [Set.mem_setOf_eq, Subtype.mk.injEq]
-            rw [inducedSubgraph_eq h_G₃_ind]
-            rw [inducedSubgraph_eq h_G₃'_ind]
-            rw [h_eq]
-          simp_all only [Subtype.mk.injEq]
+          simp [f_S_S'_fwd, Set.toFinset_inj, ← Subtype.val_inj] at h_eq ⊢
+          rw [inducedSubgraph_eq h_G₃_ind, inducedSubgraph_eq h_G₃'_ind, h_eq]
         have h_S_S'_surj : Function.Surjective f_S_S'_fwd := by
           intro ⟨V₀, h₀⟩
           simp [S', U] at h₀
@@ -1129,8 +1132,7 @@ lemma subgraphPairCount_eq_sum_count_prods
           _ = (powersetCard (ℓ₃ - (ℓ₁ + ℓ₂)) U.toFinset).card := by dsimp [S']
           _ = U.toFinset.card.choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by apply card_powersetCard
           _ = (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [h_U_size]
-      rw [←h_S'_card_eq_choose]
-      rw [←h_S_card_eq_S'_card]
+      rw [←h_S'_card_eq_choose, ←h_S_card_eq_S'_card]
       dsimp [S]
       simp only [Fintype.card_ofFinset]
     calc
@@ -1138,14 +1140,13 @@ lemma subgraphPairCount_eq_sum_count_prods
       _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), f G_pair := by simp only [S₀, f, Fintype.card_sigma]
       _ = ∑ (G_pair : subgraphPairSet H₁ H₂ G), g G_pair := by simp only [h]
       _ = ∑ (_ : subgraphPairSet H₁ H₂ G), (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [g]
-      _ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp [subgraphPairCount]
+      _ = subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂)) := by simp only [univ_eq_attach,
+        sum_const, card_attach, smul_eq_mul, subgraphPairCount]
   have h_S₂_card : Fintype.card S₂ = ∑ (F : QuotSimpleGraph (Fin ℓ₃)), subgraphPairCount H₁ H₂ F.out * subgraphCount F.out G
     := by
-    simp only [S₂, subgraphPairCount, subgraphCount]
-    simp only [Fintype.card_sigma, Fintype.card_coe, Fintype.card_prod]
+    simp only [S₂, subgraphPairCount, subgraphCount, Fintype.card_sigma, Fintype.card_coe, Fintype.card_prod]
 
-  rw [←h_S₀_card, ←h_S₂_card]
-  rw [h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
+  rw [←h_S₀_card, ←h_S₂_card, h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
 
 lemma subgraphPairDensity_eq_sum_density_prods
@@ -1157,9 +1158,8 @@ lemma subgraphPairDensity_eq_sum_density_prods
   :=
   let C : ℚ := (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
   let h_C_gt_0 : C > 0 := by
-    have : ℓ₃ - (ℓ₁ + ℓ₂) ≤ ℓ - (ℓ₁ + ℓ₂) := by apply Nat.sub_le_sub_right hℓ₃_ub
-    simp [C, Nat.choose_pos this]
-  have h_C_self_div_eq_1 : ((C : ℚ) / (C : ℚ)) = 1 :=
+    simp [C, Nat.choose_pos (Nat.sub_le_sub_right hℓ₃_ub (ℓ₁ + ℓ₂))]
+  have h_C_self_div_eq_1 : C / C = 1 :=
     div_self (ne_of_gt h_C_gt_0)
   have h_C : (((ℓ.choose ℓ₁ * (ℓ - ℓ₁).choose ℓ₂) : ℚ) * C)
               = ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ)
@@ -2832,9 +2832,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   let f_S₀_S₁_fwd : S₀ → S₁ := by
     intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
     refine ⟨⟨F, F₁, F₂, G₁, G₂, X⟩, ?_⟩
-    simp [subgraphPairSet] at h_F₁_F₂
+    rw [pair_mem_subgraphPairSet_iff] at h_F₁_F₂
     have ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩ := h_F₁_F₂
-    simp [subgraphPairSet] at h_G₁_G₂
+    rw [pair_mem_subgraphPairSet_iff] at h_G₁_G₂
     have ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩ := h_G₁_G₂
     have ⟨h_X_subset, h_X_card⟩ := Finset.mem_powersetCard.mp h_X
     exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
@@ -2863,10 +2863,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
             h_X_card, h_X_F₁_F₂⟩
     have h_F₁_F₂ : ⟨F₁, F₂⟩ ∈ subgraphPairSet H₁ H₂ F.out := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩
     have h_G₁_G₂ : ⟨G₁, G₂⟩ ∈ subgraphPairSet F.out H₃ G := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩
     have h_X : X ∈ powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((F₁.verts ∪ F₂.verts)ᶜ).toFinset :=
       Finset.mem_powersetCard.mpr ⟨h_X_F₁_F₂, h_X_card⟩
@@ -2885,9 +2885,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   let f_S₄_S₃_fwd : S₄ → S₃ := by
     intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
     refine ⟨⟨F, F₁, F₂, G₁, G₂, X⟩, ?_⟩
-    simp [subgraphPairSet] at h_F₁_F₂
+    rw [pair_mem_subgraphPairSet_iff] at h_F₁_F₂
     have ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂⟩ := h_F₁_F₂
-    simp [subgraphPairSet] at h_G₁_G₂
+    rw [pair_mem_subgraphPairSet_iff] at h_G₁_G₂
     have ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂⟩ := h_G₁_G₂
     have ⟨h_X_subset, h_X_card⟩ := Finset.mem_powersetCard.mp h_X
     exact ⟨h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
@@ -2916,10 +2916,10 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂,
             h_X_card, h_X_F₁_F₂⟩
     have h_F₁_F₂ : ⟨F₁, F₂⟩ ∈ subgraphPairSet H₂ H₃ F.out := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂⟩
     have h_G₁_G₂ : ⟨G₁, G₂⟩ ∈ subgraphPairSet F.out H₁ G := by
-      simp [subgraphPairSet]
+      rw [pair_mem_subgraphPairSet_iff]
       exact ⟨h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂⟩
     have h_X : X ∈ powersetCard ((ℓ₁₂ + ℓ₃) - (ℓ₁ + ℓ₂₃)) ((G₁.verts ∪ G₂.verts)ᶜ).toFinset :=
       Finset.mem_powersetCard.mpr ⟨h_X_F₁_F₂, h_X_card⟩

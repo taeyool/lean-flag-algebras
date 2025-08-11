@@ -503,6 +503,11 @@ lemma real_mem_Icc_iff_abs_sub_le
   rw [abs_sub_le_iff, Set.mem_Icc]
   constructor <;> (intro; constructor) <;> linarith
 
+lemma temp (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
+  rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
+  intro p hp
+  exact Classical.propComplete p
+
 /- Theorem 3.3 (b) -/
 theorem positiveHom_as_flagSeq_limit
     (φ : PositiveHom σ)
@@ -514,10 +519,20 @@ theorem positiveHom_as_flagSeq_limit
     rw [measurableSet_setOf]
     apply Measurable.forall
     intro F
-    -- simp_rw [atTop_basis.tendsto_iff (nhds_basis_Ioo_pos (φ.coe F))]
-    -- measurability
-    -- repeat apply Measurable.eval
-    sorry
+    have : Measurable fun (s : ∀ n, FlagWithSize σ (n ^ 2 + n₀)) ↦ Tendsto (fun n ↦ (flagDensity₁ F.2 (s n) : ℝ)) atTop (𝓝 (φ.coe F)) := by
+      rw [← measurableSet_setOf]
+      apply measurableSet_tendsto (𝓝 (φ.coe F))
+      measurability
+    intro P hP
+    rcases temp P with hP | hP | hP | hP <;> rw [hP]
+    · exact MeasurableSet.empty
+    · simp only [Set.preimage_singleton_true, measurableSet_setOf]
+      exact this
+    · simp only [Set.preimage_singleton_false, measurableSet_setOf]
+      apply Measurable.not
+      exact this
+    · rw [← Set.univ_eq_true_false]
+      simp only [Set.preimage_univ, MeasurableSet.univ]
   have hS_measure : μ[φ] S = 1 := by
     dsimp [flagSeqMeasure]
     rw [← prob_compl_eq_zero_iff hS_measurable, Set.forall_compl]
@@ -528,15 +543,19 @@ theorem positiveHom_as_flagSeq_limit
     apply MeasureTheory.measure_exists_zero
     intro n
     simp_rw [real_mem_Icc_iff_abs_sub_le]
-    rw [← prob_compl_eq_one_iff sorry]
+    simp only [Set.mem_Ici, forall_const]
+    have : MeasurableSet { a : ∀ n, FlagWithSize σ (n ^ 2 + n₀) |
+      0 < n ∧ ∀ (M : ℕ), ∃ m, M ≤ m ∧ ¬|↑(flagDensity₁ F.2 (a m)) - φ.coe F| ≤ 1 / n } := by
+      sorry
+    rw [← prob_compl_eq_one_iff this]
     simp_rw [← forall_and_left, Set.forall_compl]
     push_neg
     by_cases hn : n = 0
     · subst hn
-      simp only [lt_self_iff_false, Set.mem_Ici, CharP.cast_eq_zero, div_zero, abs_nonpos_iff,
-        IsEmpty.forall_iff, and_self, exists_const, Set.setOf_true, measure_univ]
+      simp only [lt_self_iff_false, CharP.cast_eq_zero, div_zero, abs_nonpos_iff,
+        IsEmpty.forall_iff, exists_const, Set.setOf_true, measure_univ]
     · apply Nat.zero_lt_of_ne_zero at hn
-      simp only [hn, Set.mem_Ici, forall_const, true_and]
+      simp only [hn, forall_const]
       have hn_recip_pos : 0 < (1 / n : ℝ) := by
         rw [one_div, inv_pos]
         exact Nat.cast_pos.mpr hn
