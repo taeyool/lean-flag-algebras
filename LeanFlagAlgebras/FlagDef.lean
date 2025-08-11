@@ -24,7 +24,9 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
-noncomputable instance {σ : FlagType T} (G : LabeledGraph σ V) : Fintype G.type_verts := Set.univ.fintypeImage ⇑G.type_embed
+noncomputable instance {σ : FlagType T} (G : LabeledGraph σ V) :
+    Fintype G.type_verts :=
+  Set.univ.fintypeImage G.type_embed
 
 lemma LabeledGraph.type_verts_card_eq {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)
   : Fintype.card G.type_verts = σ.size := by
@@ -73,9 +75,8 @@ noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype
   have f_inj : Function.Injective f := by
     rintro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
     dsimp [f] at h_eq
-    simp only [Prod.mk.injEq] at h_eq
-    obtain ⟨left, right⟩ := h_eq
-    subst left
+    rw [Prod.mk.injEq] at h_eq
+    obtain ⟨rfl, right⟩ := h_eq
     simp only [LabeledGraph.mk.injEq, true_and, heq_eq_eq]
     exact DFunLike.coe_fn_eq.mp right
   Fintype.ofInjective f f_inj
@@ -118,16 +119,15 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := ⊤
     type_embed := {
-      toFun := fun t ↦ ⟨G.type_embed t, trivial⟩
+      toFun t := ⟨G.type_embed t, trivial⟩
       inj' := by
         intro t₁ t₂ h_eq
         simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_eq
         exact h_eq
       map_rel_iff' := by
         intro t₁ t₂
-        simp only [
-          SimpleGraph.Subgraph.verts_top, SimpleGraph.Subgraph.top_adj,
-          Function.Embedding.coeFn_mk, SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
+        simp only [SimpleGraph.Subgraph.top_adj, Function.Embedding.coeFn_mk,
+          SimpleGraph.Subgraph.coe_adj, SimpleGraph.Embedding.map_adj_iff]
     }
     embed_eq := by
       intro t
@@ -209,8 +209,7 @@ theorem labeledSubgraph_contain_type_verts
   intro v hv
   simp only [LabeledGraph.type_verts, Set.image_univ] at hv
   obtain ⟨t, rfl⟩ := hv
-  rw [← H.embed_eq t]
-  exact Subtype.coe_prop _
+  exact H.embed_eq t ▸ Subtype.coe_prop _
 
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
@@ -693,15 +692,10 @@ theorem insert_preserves_existing_flags_coe {σ : FlagType T} {t : ℕ} {Vl : Fi
     have : i % (t + 1) = i := by rw [Nat.mod_succ_eq_iff_lt]; omega
     exact (hi₀ (this ▸ hi')).elim
   next hi =>
-    have hi' : i.castSucc.val ≠ t := by
-      simp only [ne_eq]
-      exact hi
+    have hi' : i.castSucc.val ≠ t := hi
     let cast_iso := Classical.choice (insert_preserves_existing_flags Fl F hi')
-    have type_eq : (Vl i) = (Vl (i.castSucc.coe hi)) := rfl
-    have idx_heq : HEq (Fl i) (Fl (i.castSucc.coe hi)) := by
-      apply flaglist_heq_of_idx_eq
-      rfl
-    exact Nonempty.intro <| (flag_heq_to_iso type_eq idx_heq).trans cast_iso
+    have idx_heq : HEq (Fl i) (Fl (i.castSucc.coe hi)) := flaglist_heq_of_idx_eq rfl
+    exact Nonempty.intro <| (flag_heq_to_iso rfl idx_heq).trans cast_iso
 
 omit [Fintype T] in
 theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
@@ -709,8 +703,8 @@ theorem cast_preserves_flag_size {σ : FlagType T} {t : ℕ} {Vl : Fin t → Typ
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin (t + 1)} (hi : i.val = t)
     : F.out.size = (cast (@flag_listTypeInsert_eq T σ t Vl W i hi) F).out.size
-  := labeledGraphIso_size_eq (Quotient.out F)
-                             (Quotient.out (cast (flag_listTypeInsert_eq hi) F))
+  := labeledGraphIso_size_eq F.out
+                             (cast (flag_listTypeInsert_eq hi) F).out
                              (Classical.choice (insert_new_flag_cast_iso Fl F hi))
 
 omit [Fintype T] in
@@ -719,8 +713,8 @@ theorem cast_preserves_flag_size' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Ty
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     {i : Fin (t + 1)} (hi : i.val ≠ t)
     : (Fl (i.coe hi)).out.size = (cast (@flag_listTypeInsert_eq' T σ t Vl W i hi) (Fl (i.coe hi))).out.size
-  := labeledGraphIso_size_eq (Quotient.out (Fl (i.coe hi)))
-                             (Quotient.out (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))))
+  := labeledGraphIso_size_eq (Fl (i.coe hi)).out
+                             (cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))).out
                              (Classical.choice (insert_preserves_existing_flags Fl F hi))
 
 
