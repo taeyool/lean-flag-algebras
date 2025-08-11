@@ -5,6 +5,7 @@ import Mathlib.Topology.Sequences
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
 import Mathlib.Probability.ProductMeasure
+import Mathlib.Probability.Moments.Variance
 import Mathlib.NumberTheory.ZetaValues
 
 open FlagAlgebras
@@ -435,6 +436,18 @@ instance PositiveHom.toMeasure_isProbabilityMeasure
   :=
   PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
 
+noncomputable def randomDensity
+    (F : FinFlag σ) (ℓ : ℕ)
+    : FlagWithSize σ ℓ → ℝ
+  :=
+  fun G ↦ (flagDensity₁ F.2 G : ℝ)
+
+theorem randomDensity_L2
+    (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
+    : MemLp (randomDensity F ℓ) 2 (φ.toMeasure hℓ)
+  :=
+  MemLp.of_discrete
+
 noncomputable def flagSeqMeasure
     (φ : PositiveHom σ)
     : Measure ((n : ℕ) → FlagWithSize σ (n ^ 2 + n₀))
@@ -442,19 +455,7 @@ noncomputable def flagSeqMeasure
   have : ∀ n, n ^ 2 + n₀ ≥ n₀ := fun n ↦ Nat.le_add_left n₀ (n ^ 2)
   Measure.infinitePi (fun n ↦ φ.toMeasure (this n))
 
-notation "μ[" φ "]" => (flagSeqMeasure φ)
-
-lemma limsup_eq_forall_exists
-    {α : Type} (s : ℕ → Set α)
-    : limsup s atTop = { a | ∀ n₀, ∃ n ≥ n₀, a ∈ s n } := by
-  rw [limsup_eq_iInf_iSup_of_nat, Set.setOf_forall]
-  apply Set.iInter_congr
-  intro n₀
-  rw [Set.setOf_exists]
-  apply Set.iUnion_congr
-  intro n
-  ext a
-  simp only [ge_iff_le, Set.iSup_eq_iUnion, Set.mem_iUnion, exists_prop, Set.mem_setOf_eq]
+notation "μ{" φ "}" => (flagSeqMeasure φ)
 
 def flagDensityErrorSet
     (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
@@ -462,18 +463,60 @@ def flagDensityErrorSet
   :=
   { s | |flagDensity₁ F.2 (s n) - φ.coe F| > ε }
 
+theorem flagDensityErrorSet_flagSeqMeasure
+    (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
+    : μ{φ} (flagDensityErrorSet φ F ε n) = (φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| > ε }
+  := by
+  have : flagDensityErrorSet φ F ε n = Set.pi {n} (
+      fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| > ε }
+    ) := by
+    simp only [gt_iff_lt, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
+    rfl
+  rw [this]
+  dsimp [flagSeqMeasure]
+  have temp : MeasurableSet { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| > ε } := by
+    measurability
+  have := @Measure.infinitePi_pi _ _ _ (fun n ↦ φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) _ {n} (fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| > ε }) (fun m ↦ by {
+    intro hm
+    simp only [Finset.mem_singleton] at hm
+    rw [hm]
+    exact temp
+  })
+  simp only [Finset.prod_singleton] at this
+  rw [← this]
+  congr!
+  exact Eq.symm (Finset.coe_singleton n)
+
+#check ProbabilityTheory.meas_ge_le_variance_div_sq
+
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : ∃ (c : ℝ), c > 0 ∧
-    ∀ n, μ[φ] (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) := by
+    ∀ n, μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) := by
+  use 1 -- To be changed
+  simp
+  intro n
+  rw [flagDensityErrorSet_flagSeqMeasure φ F ε n]
   sorry
+
+lemma limsup_eq_forall_exists
+    {α : Type} (s : ℕ → Set α)
+    : limsup s atTop = { a | ∀ N, ∃ n ≥ N, a ∈ s n } := by
+  rw [limsup_eq_iInf_iSup_of_nat, Set.setOf_forall]
+  apply Set.iInter_congr
+  intro N
+  rw [Set.setOf_exists]
+  apply Set.iUnion_congr
+  intro n
+  ext a
+  simp only [ge_iff_le, Set.iSup_eq_iUnion, Set.mem_iUnion, exists_prop, Set.mem_setOf_eq]
 
 theorem flagSeqMeasure_converge_prob_one
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
-    : μ[φ] { s | ∀ n₀, ∃ n ≥ n₀, |flagDensity₁ F.2 (s n) - φ.coe F| > ε } = 0
+    : μ{φ} { s | ∀ N, ∃ n ≥ N, |flagDensity₁ F.2 (s n) - φ.coe F| > ε } = 0
   := by
   let E : ℕ → Set (∀ n, FlagWithSize σ (n ^ 2 + n₀)) := flagDensityErrorSet φ F ε
-  show μ[φ] { s | ∀ n₀, ∃ n ≥ n₀, s ∈ E n } = 0
+  show μ{φ} { s | ∀ N, ∃ n ≥ N, s ∈ E n } = 0
   rw [← limsup_eq_forall_exists]
   apply measure_limsup_atTop_eq_zero
   obtain ⟨c, hc, hE⟩ := measure_flagDensityErrorSet_bounded φ F hε
@@ -571,7 +614,7 @@ theorem positiveHom_as_flagSeq_limit
       exact this
     · rw [← Set.univ_eq_true_false]
       simp only [Set.preimage_univ, MeasurableSet.univ]
-  have hS_measure : μ[φ] S = 1 := by
+  have hS_measure : μ{φ} S = 1 := by
     dsimp [flagSeqMeasure]
     rw [← prob_compl_eq_zero_iff hS_measurable, Set.forall_compl]
     apply MeasureTheory.measure_exists_zero
