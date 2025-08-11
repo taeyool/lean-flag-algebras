@@ -144,6 +144,7 @@ theorem increasing_flagSeq_contain_convergent_subseq
 
 namespace PositiveHom
 
+@[coe]
 noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
     val := fun F => φ ⟦unitVector F⟧
