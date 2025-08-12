@@ -643,7 +643,7 @@ theorem SampleSpace_eq_multinomialCoefficient
 theorem flagListDensity_prod_approx
     (Fl : FlagList σ t Vl)
     : ∃ k, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
-    |flagListDensity Fl G - ∏ i in Finset.univ, flagDensity₁ (Fl i) G| ≤ (∑ i in Finset.univ, (Fl i).out.size) ^ k / G.out.size
+    |flagListDensity Fl G - ∏ i ∈ Finset.univ, flagDensity₁ (Fl i) G| ≤ (∑ i ∈ Finset.univ, (Fl i).out.size) ^ k / G.out.size
   := by
   use 2
   intro W _ _ G
@@ -657,10 +657,10 @@ theorem flagListDensity_prod_approx
 
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
-    : ∃ k, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
-    |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ (F.out.size + F'.out.size) ^ k / G.out.size
+    : ∃ c, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
+    |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ c / G.out.size
   := by
-  use 2
+  use (F.out.size + F'.out.size) ^ 2
   intro W _ _ G
   let ⟨Frep, hFrep⟩ := Quotient.exists_rep F
   let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'

@@ -281,15 +281,15 @@ theorem flagPairDensity_tendsto_flagDensity_mul
   apply Tendsto.congr_dist h_seq_mul
   rw [Metric.tendsto_atTop]
   intro ε hε
-  obtain ⟨k, hk⟩ := flagListDensity₂_prod_approx F.2 G.2
-  obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, (F.1 + G.1) ^ k / (s n).1 < ε := by
-    obtain ⟨N, hN⟩ := h_inc.eventually_gt ⌈(F.1 + G.1) ^ k / ε⌉₊
+  obtain ⟨c, hc⟩ := flagListDensity₂_prod_approx F.2 G.2
+  obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, c / (s n).1 < ε := by
+    obtain ⟨N, hN⟩ := h_inc.eventually_gt ⌈c / ε⌉₊
     use N
     intro n hn
     specialize hN n hn
     have hsn_pos : 0 < (s n).1 := by
       calc
-        0 ≤ ⌈(↑F.fst + ↑G.fst) ^ k / ε⌉₊ := Nat.zero_le _
+        0 ≤ ⌈c / ε⌉₊ := Nat.zero_le _
         _ < (s n).1 := hN
     apply Nat.lt_of_ceil_lt at hN
     rw [div_lt_iff₀ (Nat.cast_pos.mpr hsn_pos)]
@@ -297,16 +297,16 @@ theorem flagPairDensity_tendsto_flagDensity_mul
     exact hN
   use N
   intro n hn
-  specialize hk (s n).2
+  specialize hc (s n).2
   specialize hN n hn
-  simp only [LabeledGraph.size, Fintype.card_fin] at hk
-  rw [← @Rat.cast_le _ _ ℝ] at hk
-  simp only [Rat.cast_abs, Rat.cast_sub, Rat.cast_mul, Rat.cast_div, Rat.cast_pow, Rat.cast_add] at hk
+  simp only [LabeledGraph.size, Fintype.card_fin] at hc
+  rw [← @Rat.cast_le _ _ ℝ] at hc
+  simp only [Rat.cast_abs, Rat.cast_sub, Rat.cast_mul, Rat.cast_div] at hc
   simp only [dist_eq_norm, Real.norm_eq_abs, sub_zero, abs_abs]
   calc
-    _ ≤ ((F.1 : ℝ) + (G.1 : ℝ)) ^ k / ((s n).1 : ℝ) := by
+    _ ≤ c / ((s n).1 : ℝ) := by
       rw [abs_sub_comm]
-      exact hk
+      exact hc
     _ < ε := hN
 
 theorem flagSeq_limit_linearExtension_flagMul
@@ -470,6 +470,13 @@ theorem randomDensity_expectation
   rw [← ENNReal.toReal_ofReal this]
   congr
 
+theorem randomDensity_variance_bounded
+    (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
+    : ∃ (c : ℝ), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / (F.1 ^ 2)
+  := by
+  obtain ⟨c', hc'⟩ := flagListDensity₂_prod_approx F.2 F.2
+  sorry
+
 noncomputable def flagSeqMeasure
     (φ : PositiveHom σ)
     : Measure ((n : ℕ) → FlagWithSize σ (n ^ 2 + n₀))
@@ -504,7 +511,8 @@ theorem flagDensityErrorSet_flagSeqMeasure
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : ∃ (c : ℝ), c > 0 ∧
-    ∀ n, μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) := by
+      ∀ n, n ^ 2 + n₀ ≥ F.1 → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
+  := by
   use 1 -- To be changed
   simp
   intro n
@@ -523,7 +531,65 @@ lemma limsup_eq_forall_exists
   ext a
   simp only [ge_iff_le, Set.iSup_eq_iUnion, Set.mem_iUnion, exists_prop, Set.mem_setOf_eq]
 
-theorem flagSeqMeasure_converge_prob_one
+lemma temp (f : ℕ → ℝ) (hf_nonneg : ∀ n, f n ≥ 0) (hf : ∑' n, ENNReal.ofReal (f n) ≠ ∞)
+    : Summable f
+  := by
+  let f' : ℕ → NNReal := fun n ↦ ⟨f n, hf_nonneg n⟩
+  have : Summable f' → Summable f := by
+    intro hf'
+    exact (NNReal.summable_mk hf_nonneg).mp hf'
+  apply this
+  have : f' = ENNReal.toNNReal ∘ (fun n ↦ ENNReal.ofReal (f n)) := by
+    funext n
+    dsimp [f']
+    congr
+    exact left_eq_sup.mpr (hf_nonneg n)
+  rw [this]
+  apply ENNReal.summable_toNNReal_of_tsum_ne_top hf
+
+lemma temp2 (f g : ℕ → ℝ) (hg_nonneg : ∀ n, g n ≥ 0)
+    (h : ∀ᶠ n in atTop, f n = g n) (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞)
+    : ∑' n, ENNReal.ofReal (f n) ≠ ∞
+  := by
+  have := temp g hg_nonneg hg
+  rw [← summable_congr_atTop h] at this
+  exact Summable.tsum_ofReal_ne_top this
+
+lemma temp3 (f : ℕ → ENNReal) (g : ℕ → ℝ)
+    (hf_not_top : ∀ n, f n ≠ ∞) (hg_nonneg : ∀ n, g n ≥ 0)
+    (h : ∀ᶠ n in atTop, f n ≤ ENNReal.ofReal (g n)) (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞)
+    : ∑' n, f n ≠ ∞
+  := by
+  have : ∑' n, f n = ∑' n, ENNReal.ofReal (ENNReal.toReal (f n)) := by
+    apply tsum_congr
+    intro n
+    rw [ENNReal.ofReal_toReal (hf_not_top n)]
+  rw [this]
+  let g' : ℕ → ENNReal := fun n ↦ ENNReal.ofReal (max (ENNReal.toReal (f n)) (g n))
+  have h_f_le_g' : ∀ n, f n ≤ g' n := by
+    intro n
+    dsimp [g']
+    rw [ENNReal.le_ofReal_iff_toReal_le]
+    · exact le_max_left (f n).toReal (g n)
+    · exact hf_not_top n
+    · exact le_sup_of_le_right (hg_nonneg n)
+  have h_fsum_le_g'sum : ∑' n, ENNReal.ofReal (ENNReal.toReal (f n)) ≤ ∑' n, g' n := by
+    apply ENNReal.tsum_le_tsum
+    intro n
+    refine ENNReal.ofReal_le_ofReal ?_
+    exact le_max_left (f n).toReal (g n)
+  refine ne_top_of_le_ne_top ?_ h_fsum_le_g'sum
+  apply temp2 (fun n ↦ max (ENNReal.toReal (f n)) (g n)) g
+  · exact hg_nonneg
+  · simp_rw [max_eq_right_iff]
+    rw [eventually_atTop] at *
+    obtain ⟨M, hM⟩ := h
+    use M
+    intro m hm
+    exact ENNReal.toReal_le_of_le_ofReal (hg_nonneg m) (hM m hm)
+  · exact hg
+
+theorem flagSeqMeasure_error_prob_zero
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : μ{φ} { s | ∀ N, ∃ n ≥ N, |flagDensity₁ F.2 (s n) - φ.coe F| > ε } = 0
   := by
@@ -538,8 +604,21 @@ theorem flagSeqMeasure_converge_prob_one
     apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     apply Summable.tsum_ofReal_ne_top
     exact ⟨_, hasSum_zeta_two⟩
-  apply ne_top_of_le_ne_top this
-  exact ENNReal.tsum_le_tsum hE
+  apply temp3 _ (fun n ↦ c / (n ^ 2))
+  · intro n
+    sorry
+  · intro n
+    exact div_nonneg (le_of_lt hc) (sq_nonneg _)
+  · rw [eventually_atTop]
+    use F.1
+    intro n hn
+    have hn' : n ^ 2 + n₀ ≥ F.1 := by
+      calc
+        _ ≥ n ^ 2 := Nat.le_add_right (n ^ 2) n₀
+        _ ≥ n := Nat.le_self_pow (by norm_num) n
+        _ ≥ F.1 := hn
+    exact hE n hn'
+  · exact this
 
 lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
   rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
@@ -647,7 +726,7 @@ theorem positiveHom_as_flagSeq_limit
       have hn_recip_pos : 0 < (1 / n : ℝ) := by
         rw [one_div, inv_pos]
         exact Nat.cast_pos.mpr hn
-      exact flagSeqMeasure_converge_prob_one φ F hn_recip_pos
+      exact flagSeqMeasure_error_prob_zero φ F hn_recip_pos
   obtain ⟨s, hs⟩ : ∃ s, s ∈ S := by
     rw [← Set.nonempty_def, Set.nonempty_iff_ne_empty]
     contrapose hS_measure
