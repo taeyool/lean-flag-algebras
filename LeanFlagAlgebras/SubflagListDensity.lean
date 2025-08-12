@@ -1,13 +1,15 @@
 import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagDensity
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
-import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.BigOperators.Field
-import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Data.Nat.Choose.Basic
+import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import Mathlib.Tactic.FieldSimp
+
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -922,6 +924,15 @@ theorem flagTripleDensity_empty'
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
 
+lemma labeledGraphTripleCount_eq_sum_density_prods'
+    (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
+    : (Nat.choose (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀) (ℓ' - ℓ₁ - ℓ₂ + ℓ₀))
+        * labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G
+      = ∑ G' : Flag σ (Fin ℓ'),
+          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
+  := sorry
+
 lemma labeledGraphTripleCount_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -939,7 +950,25 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
         * ∑ G' : Flag σ (Fin ℓ'),
             labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
   := by
-  sorry
+  rw [← labeledGraphTripleCount_eq_sum_density_prods' ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ]
+  have : multinomialCoefficient
+           (fun i : Fin 2 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀)
+           (ℓ' - ℓ₀)
+         * multinomialCoefficient
+             (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
+             (ℓ - ℓ₀)
+         = multinomialCoefficient
+             (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
+             (ℓ - ℓ₀)
+           * (Nat.choose (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀) (ℓ' - ℓ₁ - ℓ₂ + ℓ₀))
+    := by
+    dsimp [multinomialCoefficient]
+    simp [Fin.sum_univ_three, Fin.sum_univ_two, Fin.prod_univ_three]
+    repeat (split <;> try omega)
+    sorry
+  rw [this]
+  ring
+
 
 lemma fintype_card_match_comm_two
     (ℓ₀ ℓ₁ ℓ₂ : ℕ)
