@@ -977,7 +977,9 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
     have h_dvd₀ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' - ℓ₁ - ℓ₂ + ℓ₀).factorial) ∣ (ℓ' - ℓ₀).factorial := sorry
     have h_dvd₁ : ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' - ℓ₃ + ℓ₀).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
     have h_dvd₂ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
-    have h_dvd₃ : ((ℓ' - ℓ₁ - ℓ₂ + ℓ₀).factorial * (ℓ - ℓ' - ℓ₃ + ℓ₀).factorial) ∣ (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀).factorial := sorry
+    have h_dvd₃ : ((ℓ' - ℓ₁ - ℓ₂ + ℓ₀).factorial * (ℓ - ℓ' - ℓ₃ + ℓ₀).factorial) ∣ (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀).factorial := by
+      rw [←h_rw₃]
+      exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
     calc
       (ℓ' - ℓ₀).factorial / ((ℓ₁ - ℓ₀).factorial *
                              (ℓ₂ - ℓ₀).factorial *
