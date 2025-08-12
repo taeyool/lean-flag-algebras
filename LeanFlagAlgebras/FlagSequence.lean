@@ -467,25 +467,15 @@ theorem flagDensityErrorSet_flagSeqMeasure
     (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
     : μ{φ} (flagDensityErrorSet φ F ε n) = (φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| > ε }
   := by
-  have : flagDensityErrorSet φ F ε n = Set.pi {n} (
+  have : flagDensityErrorSet φ F ε n = Set.pi ({n} : Finset ℕ) (
       fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| > ε }
     ) := by
-    simp only [gt_iff_lt, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
+    simp only [Finset.coe_singleton, gt_iff_lt, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
     rfl
   rw [this]
   dsimp [flagSeqMeasure]
-  have temp : MeasurableSet { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| > ε } := by
-    measurability
-  have := @Measure.infinitePi_pi _ _ _ (fun n ↦ φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) _ {n} (fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| > ε }) (fun m ↦ by {
-    intro hm
-    simp only [Finset.mem_singleton] at hm
-    rw [hm]
-    exact temp
-  })
-  simp only [Finset.prod_singleton] at this
-  rw [← this]
-  congr!
-  exact Eq.symm (Finset.coe_singleton n)
+  rw [Measure.infinitePi_pi _ (by measurability)]
+  simp only [gt_iff_lt, Finset.prod_singleton]
 
 #check ProbabilityTheory.meas_ge_le_variance_div_sq
 
