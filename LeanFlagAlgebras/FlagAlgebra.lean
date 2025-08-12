@@ -162,7 +162,7 @@ theorem unitVector_apply_other_size
 
 theorem flagVector_eq_sum_unitVector
     (f : FlagVector σ)
-    : f = ∑ F in f.support, f F • unitVector F
+    : f = ∑ F ∈ f.support, f F • unitVector F
   := by
   dsimp [unitVector]
   rw [← Finsupp.sum_single f]
@@ -190,7 +190,7 @@ noncomputable def flagMulWithSize
     (F F' : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
   let ℓ_flags : Finset (FlagWithSize σ ℓ) := univ
-  ∑ G in ℓ_flags, (flagDensity₂ F.2 F'.2 G) • unitVector ⟨ℓ, G⟩
+  ∑ G ∈ ℓ_flags, (flagDensity₂ F.2 F'.2 G) • unitVector ⟨ℓ, G⟩
 
 theorem flagMulWithSize_comm
     (F F' : FinFlag σ) (ℓ : ℕ) : flagMulWithSize F F' ℓ = flagMulWithSize F' F ℓ
@@ -240,7 +240,7 @@ noncomputable instance : Mul (FlagVector σ) where
   mul := bilinearExtension flagMul
 
 theorem flagVector_mul_eq_nested_sum
-    (f g : FlagVector σ) : f * g = ∑ F in f.support, ∑ G in g.support, ((f F) * (g G)) • flagMul F G
+    (f g : FlagVector σ) : f * g = ∑ F ∈ f.support, ∑ G ∈ g.support, ((f F) * (g G)) • flagMul F G
   := by
   apply bilinearExtension_eq_nested_sum
 
@@ -285,8 +285,7 @@ noncomputable instance : MulOneClass (FlagVector σ) where
 noncomputable def densityFlagSum
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
-  let ℓ_flags : Finset (FlagWithSize σ ℓ) := univ
-  ∑ F' in ℓ_flags, (flagDensity₁ F.2 F') • unitVector ⟨ℓ, F'⟩
+  ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F') • unitVector ⟨ℓ, F'⟩
 
 noncomputable def zeroElement
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
@@ -509,7 +508,7 @@ theorem smul_quot
   rfl
 
 theorem sum_smul
-    (s : Finset ι) (c : ι → ℝ) (f : FlagVector σ) : (∑ i in s, c i) • f = ∑ i in s, c i • f
+    (s : Finset ι) (c : ι → ℝ) (f : FlagVector σ) : (∑ i ∈ s, c i) • f = ∑ i ∈ s, c i • f
   := by
   classical
   refine Finset.induction_on s ?_ ?_
@@ -863,7 +862,7 @@ theorem mul_quot
 
 theorem sum_quot
     {ι : Type} (s : Finset ι) (f : ι → FlagVector σ)
-    : ⟦∑ i in s, f i⟧ = ∑ i in s, (⟦f i⟧ : FlagAlgebra σ)
+    : ⟦∑ i ∈ s, f i⟧ = ∑ i ∈ s, (⟦f i⟧ : FlagAlgebra σ)
   := by
   classical
   refine Finset.induction_on s ?_ ?_
@@ -871,18 +870,24 @@ theorem sum_quot
   · intro i s his ih
     simp only [Finset.sum_insert his, add_quot, ih]
 
+theorem unitVector_quot_eq_sum_density_mul_flagWithSize
+    (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : ⟦unitVector F⟧ = ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F' : ℝ) • (⟦unitVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ)
+  := by
+  simp_rw [← smul_quot, ← sum_quot]
+  apply Quotient.sound
+  exact unitVector_eqv_densityFlagSum _ _ hℓ
+
 theorem sum_flagWithSize_eq_one
     (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
     : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
   := by
-  rw [← sum_quot]
-  apply Quotient.sound
-  calc
-    _ ∼v ∑ F : FlagWithSize σ ℓ, flagDensity₁ (1 : FinFlag σ).2 F • unitVector ⟨ℓ, F⟩ := by
-      apply flagVectorEqv_sum
-      intro F _
-      rw [flagDensity_one F, one_smul]
-    _ ∼v unitVector (1 : FinFlag σ) := (unitVector_eqv_densityFlagSum (1 : FinFlag σ) ℓ hℓ).symm
+  show _ = ⟦unitVector 1⟧
+  rw [unitVector_quot_eq_sum_density_mul_flagWithSize 1 ℓ hℓ]
+  apply Finset.sum_congr rfl
+  intro F _
+  rw [flagDensity_one F]
+  simp only [Rat.cast_one, one_smul]
 
 theorem linearExtension_unitVector
     (f : FinFlag σ → ℝ) (F : FinFlag σ)

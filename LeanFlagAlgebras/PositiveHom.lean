@@ -21,7 +21,7 @@ instance : FunLike (PositiveHom σ) (FlagAlgebra σ) ℝ where
     simp at h
     congr
 
-namespace PosHom
+namespace PositiveHom
 
 theorem map_zero (φ : PositiveHom σ) : φ 0 = 0
   :=
@@ -55,7 +55,7 @@ theorem map_sum (φ : PositiveHom σ) {ι : Type} (s : Finset ι) (f : ι → Fl
   :=
   _root_.map_sum (φ.val : FlagAlgebra σ →+* ℝ) f s
 
-end PosHom
+end PositiveHom
 
 theorem positiveHom_unitVector_ge_zero
     (φ : PositiveHom σ) (F : FinFlag σ)
@@ -67,7 +67,7 @@ theorem sum_positiveHom_unitVector_flagWithSize_eq_one
     (φ : PositiveHom σ) (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
     : ∑ F : FlagWithSize σ ℓ, φ ⟦unitVector ⟨ℓ, F⟩⟧ = 1
   := by
-  rw [← PosHom.map_sum, sum_flagWithSize_eq_one ℓ hℓ, PosHom.map_one]
+  rw [← PositiveHom.map_sum, sum_flagWithSize_eq_one ℓ hℓ, PositiveHom.map_one]
 
 theorem positiveHom_unitVector_le_one
     (φ : PositiveHom σ) (F : FinFlag σ)
@@ -104,7 +104,7 @@ instance : Preorder (FlagAlgebra σ) where
   le_refl f := by
     simp [semanticCone]
     intro φ
-    rw [PosHom.map_zero φ]
+    rw [PositiveHom.map_zero φ]
   le_trans f g h := by
     intro hfg hgh
     simp [semanticCone] at *
@@ -112,7 +112,7 @@ instance : Preorder (FlagAlgebra σ) where
     specialize hfg φ
     specialize hgh φ
     have : φ (h - f) = φ (h - g) + φ (g - f) := by
-      repeat rw [PosHom.map_sub φ]
+      repeat rw [PositiveHom.map_sub φ]
       ring
     rw [this]
     exact add_nonneg hgh hfg
@@ -133,7 +133,7 @@ theorem flag_add_le_add
   intro φ
   have : f' + g' - (f + g) = (f' - f) + (g' - g) := by ring
   rw [this]
-  rw [PosHom.map_add φ]
+  rw [PositiveHom.map_add φ]
   exact add_nonneg (hf φ) (hg φ)
 
 theorem nonneg_smul_nonneg_geq_zero
@@ -142,7 +142,7 @@ theorem nonneg_smul_nonneg_geq_zero
   := by
   simp [semanticCone]
   intro φ
-  rw [PosHom.map_smul]
+  rw [PositiveHom.map_smul]
   have hφf : 0 ≤ φ f := by
     rw [ge_iff_le, le_def, sub_zero] at hf
     exact hf φ
@@ -168,7 +168,7 @@ theorem flagVectorDensity_add
 
 theorem flagVectorDensity_sum
     (s : Finset ι) (c : ι → FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (∑ i in s, c i) G = ∑ i in s, flagVectorDensity (c i) G
+    : flagVectorDensity (∑ i ∈ s, c i) G = ∑ i ∈ s, flagVectorDensity (c i) G
   := by
   simp only [flagVectorDensity, linearExtension_sum]
 
@@ -197,7 +197,7 @@ theorem downward_unitVector_nonneg
   simp_all only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
   dsimp [downwardFlag]
   have tmp : ⟦((downwardNormalizingFactor F.snd : ℝ)) • unitVector ⟨F.fst, unlabel F.snd⟩⟧ = (downwardNormalizingFactor F.snd : ℝ) • (⟦unitVector ⟨F.fst, unlabel F.snd⟩⟧ : FlagAlgebra ∅ₜ) := rfl
-  rw [tmp, PosHom.map_smul φ]
+  rw [tmp, PositiveHom.map_smul φ]
   apply mul_nonneg
   · let F' := F.snd
     obtain ⟨f', hf'⟩ := Quotient.exists_rep F'
@@ -221,5 +221,5 @@ theorem square_downward_geq_zero
   simp only [ge_iff_le, le_def, sub_zero]
   apply downward_preserve_semanticCone
   intro φ
-  rw [PosHom.map_mul]
+  rw [PositiveHom.map_mul]
   exact mul_self_nonneg (φ f)

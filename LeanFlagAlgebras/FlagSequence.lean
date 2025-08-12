@@ -6,6 +6,7 @@ import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.OuterMeasure.BorelCantelli
 import Mathlib.Probability.ProductMeasure
 import Mathlib.Probability.Moments.Variance
+import Mathlib.Probability.ProbabilityMassFunction.Integrals
 import Mathlib.NumberTheory.ZetaValues
 
 open FlagAlgebras
@@ -16,6 +17,7 @@ open Filter
 open scoped Topology
 open MeasureTheory
 open scoped ENNReal
+open scoped ProbabilityTheory
 
 abbrev FlagSeq (σ : FlagType (Fin n₀))
   :=
@@ -157,6 +159,12 @@ noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
       · exact positiveHom_unitVector_ge_zero φ F
       · exact positiveHom_unitVector_le_one φ F
   }
+
+theorem coe_flag
+    (φ : PositiveHom σ) (F : FinFlag σ)
+    : φ.coe F = φ ⟦unitVector F⟧
+  :=
+  rfl
 
 end PositiveHom
 
@@ -447,6 +455,20 @@ theorem randomDensity_L2
     : MemLp (randomDensity F ℓ) 2 (φ.toMeasure hℓ)
   :=
   MemLp.of_discrete
+
+theorem randomDensity_expectation
+    (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
+    : (φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ))[randomDensity F ℓ] = φ.coe F
+  := by
+  dsimp [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
+  rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
+  rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ, PositiveHom.map_sum]
+  apply Finset.sum_congr rfl
+  intro G _
+  rw [PositiveHom.map_smul, mul_comm]
+  have : φ ⟦unitVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+  rw [← ENNReal.toReal_ofReal this]
+  congr
 
 noncomputable def flagSeqMeasure
     (φ : PositiveHom σ)
