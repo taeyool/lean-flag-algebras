@@ -497,21 +497,21 @@ def flagDensityErrorSet
     (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
     : Set (∀ n, FlagWithSize σ (n ^ 2 + n₀))
   :=
-  { s | |flagDensity₁ F.2 (s n) - φ.coe F| > ε }
+  { s | |flagDensity₁ F.2 (s n) - φ.coe F| ≥ ε }
 
 theorem flagDensityErrorSet_flagSeqMeasure
     (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
-    : μ{φ} (flagDensityErrorSet φ F ε n) = (φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| > ε }
+    : μ{φ} (flagDensityErrorSet φ F ε n) = (φ.toMeasure (Nat.le_add_left n₀ (n ^ 2))) { G | |randomDensity F (n ^ 2 + n₀) G - φ.coe F| ≥ ε }
   := by
   have : flagDensityErrorSet φ F ε n = Set.pi ({n} : Finset ℕ) (
-      fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| > ε }
+      fun m ↦ { G | |randomDensity F (m ^ 2 + n₀) G - φ.coe F| ≥ ε }
     ) := by
-    simp only [Finset.coe_singleton, gt_iff_lt, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
+    simp only [Finset.coe_singleton, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
     rfl
   rw [this]
   dsimp [flagSeqMeasure]
   rw [Measure.infinitePi_pi _ (by measurability)]
-  simp only [gt_iff_lt, Finset.prod_singleton]
+  simp only [Finset.prod_singleton]
 
 #check ProbabilityTheory.meas_ge_le_variance_div_sq
 
@@ -580,7 +580,7 @@ lemma tsum_ENNReal_le_tsum_ne_infty
 
 theorem flagSeqMeasure_error_prob_zero
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
-    : μ{φ} { s | ∀ N, ∃ n ≥ N, |flagDensity₁ F.2 (s n) - φ.coe F| > ε } = 0
+    : μ{φ} { s | ∀ N, ∃ n ≥ N, |flagDensity₁ F.2 (s n) - φ.coe F| ≥ ε } = 0
   := by
   let E : ℕ → Set (∀ n, FlagWithSize σ (n ^ 2 + n₀)) := flagDensityErrorSet φ F ε
   show μ{φ} { s | ∀ N, ∃ n ≥ N, s ∈ E n } = 0
@@ -627,11 +627,11 @@ lemma MeasureTheory.measure_exists_zero
   intro a
   simp_all only [le_refl]
 
-lemma nhds_basis_Icc_Nat_pos
+lemma nhds_basis_Ioo_Nat_pos
     (a : ℝ)
-    : (𝓝 a).HasBasis (fun (n : ℕ) ↦ 0 < n) fun n ↦ Set.Icc (a - 1 / n) (a + 1 / n)
+    : (𝓝 a).HasBasis (fun (n : ℕ) ↦ 0 < n) fun n ↦ Set.Ioo (a - 1 / n) (a + 1 / n)
   := by
-  have h_ε_basis := nhds_basis_Icc_pos a
+  have h_ε_basis := nhds_basis_Ioo_pos a
   rw [hasBasis_iff] at *
   intro S
   rw [h_ε_basis S]
@@ -650,8 +650,8 @@ lemma nhds_basis_Icc_Nat_pos
     constructor
     · exact npos
     · calc
-        _ ⊆ Set.Icc (a - ε) (a + ε) := by
-          apply Set.Icc_subset_Icc <;> linarith
+        _ ⊆ Set.Ioo (a - ε) (a + ε) := by
+          apply Set.Ioo_subset_Ioo <;> linarith
         _ ⊆ S := hε
   · intro ⟨n, npos, hn⟩
     use 1 / n
@@ -659,10 +659,11 @@ lemma nhds_basis_Icc_Nat_pos
     · simp only [one_div, inv_pos, Nat.cast_pos, npos]
     · exact hn
 
-lemma real_mem_Icc_iff_abs_sub_le
+lemma real_mem_Ioo_iff_abs_sub_lt
     {a b x : ℝ}
-    : x ∈ Set.Icc (a - b) (a + b) ↔ |x - a| ≤ b := by
-  rw [abs_sub_le_iff, Set.mem_Icc]
+    : x ∈ Set.Ioo (a - b) (a + b) ↔ |x - a| < b
+  := by
+  rw [Set.mem_Ioo, abs_sub_lt_iff]
   constructor <;> (intro; constructor) <;> linarith
 
 /- Theorem 3.3 (b) -/
@@ -695,19 +696,18 @@ theorem positiveHom_as_flagSeq_limit
     rw [← prob_compl_eq_zero_iff hS_measurable, Set.forall_compl]
     apply MeasureTheory.measure_exists_zero
     intro F
-    simp_rw [atTop_basis.tendsto_iff (nhds_basis_Icc_Nat_pos (φ.coe F))]
+    simp_rw [atTop_basis.tendsto_iff (nhds_basis_Ioo_Nat_pos (φ.coe F))]
     push_neg
     apply MeasureTheory.measure_exists_zero
     intro n
-    simp_rw [real_mem_Icc_iff_abs_sub_le]
+    simp_rw [real_mem_Ioo_iff_abs_sub_lt]
     simp only [Set.mem_Ici, forall_const]
     simp_rw [← forall_and_left]
     by_cases hn : n = 0
     · subst hn
-      simp only [lt_self_iff_false, CharP.cast_eq_zero, div_zero, abs_nonpos_iff, false_and,
-        forall_const, Set.setOf_false, measure_empty]
+      simp only [lt_self_iff_false, CharP.cast_eq_zero, div_zero, false_and, forall_const, Set.setOf_false, measure_empty]
     · apply Nat.zero_lt_of_ne_zero at hn
-      simp only [hn, true_and, not_le]
+      simp only [hn, true_and, not_lt]
       have hn_recip_pos : 0 < (1 / n : ℝ) := by
         rw [one_div, inv_pos]
         exact Nat.cast_pos.mpr hn
