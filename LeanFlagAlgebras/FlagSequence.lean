@@ -484,6 +484,13 @@ noncomputable def flagSeqMeasure
   have : ∀ n, n ^ 2 + n₀ ≥ n₀ := fun n ↦ Nat.le_add_left n₀ (n ^ 2)
   Measure.infinitePi (fun n ↦ φ.toMeasure (this n))
 
+instance flagSeqMeasure_isProbabilityMeasure
+    (φ : PositiveHom σ)
+    : IsProbabilityMeasure (flagSeqMeasure φ)
+  := by
+  dsimp [flagSeqMeasure]
+  infer_instance
+
 notation "μ{" φ "}" => (flagSeqMeasure φ)
 
 def flagDensityErrorSet
@@ -531,63 +538,45 @@ lemma limsup_eq_forall_exists
   ext a
   simp only [ge_iff_le, Set.iSup_eq_iUnion, Set.mem_iUnion, exists_prop, Set.mem_setOf_eq]
 
-lemma temp (f : ℕ → ℝ) (hf_nonneg : ∀ n, f n ≥ 0) (hf : ∑' n, ENNReal.ofReal (f n) ≠ ∞)
-    : Summable f
-  := by
-  let f' : ℕ → NNReal := fun n ↦ ⟨f n, hf_nonneg n⟩
-  have : Summable f' → Summable f := by
-    intro hf'
-    exact (NNReal.summable_mk hf_nonneg).mp hf'
-  apply this
-  have : f' = ENNReal.toNNReal ∘ (fun n ↦ ENNReal.ofReal (f n)) := by
-    funext n
-    dsimp [f']
-    congr
-    exact left_eq_sup.mpr (hf_nonneg n)
-  rw [this]
-  apply ENNReal.summable_toNNReal_of_tsum_ne_top hf
-
-lemma temp2 (f g : ℕ → ℝ) (hg_nonneg : ∀ n, g n ≥ 0)
-    (h : ∀ᶠ n in atTop, f n = g n) (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞)
+lemma tsum_ENNReal_ne_infty_congr
+    (f g : ℕ → ℝ) (hg_nonneg : ∀ n, g n ≥ 0)
+    (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞) (h : ∀ᶠ n in atTop, f n = g n)
     : ∑' n, ENNReal.ofReal (f n) ≠ ∞
   := by
-  have := temp g hg_nonneg hg
-  rw [← summable_congr_atTop h] at this
-  exact Summable.tsum_ofReal_ne_top this
+  have hg_summable : Summable g := by
+    rw [← NNReal.summable_mk hg_nonneg]
+    have : (fun n ↦ (⟨g n, hg_nonneg n⟩ : NNReal)) = ENNReal.toNNReal ∘ (fun n ↦ ENNReal.ofReal (g n)) := by
+      funext n
+      congr
+      exact left_eq_sup.mpr (hg_nonneg n)
+    rw [this]
+    exact ENNReal.summable_toNNReal_of_tsum_ne_top hg
+  rw [← summable_congr_atTop h] at hg_summable
+  exact Summable.tsum_ofReal_ne_top hg_summable
 
-lemma temp3 (f : ℕ → ENNReal) (g : ℕ → ℝ)
-    (hf_not_top : ∀ n, f n ≠ ∞) (hg_nonneg : ∀ n, g n ≥ 0)
-    (h : ∀ᶠ n in atTop, f n ≤ ENNReal.ofReal (g n)) (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞)
+lemma tsum_ENNReal_le_tsum_ne_infty
+    (f : ℕ → ENNReal) (g : ℕ → ℝ) (hf_ne_top : ∀ n, f n ≠ ∞) (hg_nonneg : ∀ n, g n ≥ 0)
+    (hg : ∑' n, ENNReal.ofReal (g n) ≠ ∞) (h : ∀ᶠ n in atTop, f n ≤ ENNReal.ofReal (g n))
     : ∑' n, f n ≠ ∞
   := by
   have : ∑' n, f n = ∑' n, ENNReal.ofReal (ENNReal.toReal (f n)) := by
     apply tsum_congr
     intro n
-    rw [ENNReal.ofReal_toReal (hf_not_top n)]
+    rw [ENNReal.ofReal_toReal (hf_ne_top n)]
   rw [this]
   let g' : ℕ → ENNReal := fun n ↦ ENNReal.ofReal (max (ENNReal.toReal (f n)) (g n))
-  have h_f_le_g' : ∀ n, f n ≤ g' n := by
-    intro n
-    dsimp [g']
-    rw [ENNReal.le_ofReal_iff_toReal_le]
-    · exact le_max_left (f n).toReal (g n)
-    · exact hf_not_top n
-    · exact le_sup_of_le_right (hg_nonneg n)
   have h_fsum_le_g'sum : ∑' n, ENNReal.ofReal (ENNReal.toReal (f n)) ≤ ∑' n, g' n := by
     apply ENNReal.tsum_le_tsum
     intro n
-    refine ENNReal.ofReal_le_ofReal ?_
-    exact le_max_left (f n).toReal (g n)
+    exact ENNReal.ofReal_le_ofReal (le_max_left (f n).toReal (g n))
   refine ne_top_of_le_ne_top ?_ h_fsum_le_g'sum
-  apply temp2 (fun n ↦ max (ENNReal.toReal (f n)) (g n)) g
-  · exact hg_nonneg
-  · simp_rw [max_eq_right_iff]
-    rw [eventually_atTop] at *
-    obtain ⟨M, hM⟩ := h
-    use M
-    intro m hm
-    exact ENNReal.toReal_le_of_le_ofReal (hg_nonneg m) (hM m hm)
-  · exact hg
+  apply tsum_ENNReal_ne_infty_congr (fun n ↦ max (ENNReal.toReal (f n)) (g n)) g hg_nonneg hg
+  simp_rw [max_eq_right_iff]
+  rw [eventually_atTop] at *
+  obtain ⟨M, hM⟩ := h
+  use M
+  intro m hm
+  exact ENNReal.toReal_le_of_le_ofReal (hg_nonneg m) (hM m hm)
 
 theorem flagSeqMeasure_error_prob_zero
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
@@ -598,17 +587,14 @@ theorem flagSeqMeasure_error_prob_zero
   rw [← limsup_eq_forall_exists]
   apply measure_limsup_atTop_eq_zero
   obtain ⟨c, hc, hE⟩ := measure_flagDensityErrorSet_bounded φ F hε
-  have : ∑' (n : ℕ), ENNReal.ofReal (c / (n ^ 2)) ≠ ∞ := by
-    simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul (le_of_lt hc)]
+  apply tsum_ENNReal_le_tsum_ne_infty _ (fun n ↦ c / (n ^ 2))
+  · exact fun n ↦ measure_ne_top (flagSeqMeasure φ) (E n)
+  · exact fun n ↦ div_nonneg (le_of_lt hc) (sq_nonneg _)
+  · simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul (le_of_lt hc)]
     rw [ENNReal.tsum_mul_left]
     apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     apply Summable.tsum_ofReal_ne_top
     exact ⟨_, hasSum_zeta_two⟩
-  apply temp3 _ (fun n ↦ c / (n ^ 2))
-  · intro n
-    sorry
-  · intro n
-    exact div_nonneg (le_of_lt hc) (sq_nonneg _)
   · rw [eventually_atTop]
     use F.1
     intro n hn
@@ -618,7 +604,6 @@ theorem flagSeqMeasure_error_prob_zero
         _ ≥ n := Nat.le_self_pow (by norm_num) n
         _ ≥ F.1 := hn
     exact hE n hn'
-  · exact this
 
 lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
   rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]
