@@ -471,8 +471,9 @@ theorem randomDensity_expectation
   congr
 
 theorem randomDensity_variance_bounded
-    (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
-    : ∃ (c : ℝ), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / (F.1 ^ 2)
+    (φ : PositiveHom σ) (F : FinFlag σ)
+    : ∃ (c : ℝ), c > 0 ∧
+      ∀ {ℓ : ℕ} (hℓ : ℓ ≥ F.1), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / F.1
   := by
   obtain ⟨c', hc'⟩ := flagListDensity₂_prod_approx F.2 F.2
   sorry
@@ -513,18 +514,31 @@ theorem flagDensityErrorSet_flagSeqMeasure
   rw [Measure.infinitePi_pi _ (by measurability)]
   simp only [Finset.prod_singleton]
 
-#check ProbabilityTheory.meas_ge_le_variance_div_sq
-
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : ∃ (c : ℝ), c > 0 ∧
-      ∀ n, n ^ 2 + n₀ ≥ F.1 → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
+      ∀ n, n ^ 2 + n₀ ≥ F.1 → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) -- bound should be changed
   := by
-  use 1 -- To be changed
-  simp
-  intro n
-  rw [flagDensityErrorSet_flagSeqMeasure φ F ε n]
-  sorry
+  choose c' c'pos hc' using randomDensity_variance_bounded φ F
+  use c' / (ε ^ 2)
+  constructor
+  · exact div_pos c'pos (sq_pos_of_pos hε)
+  · intro n hn
+    rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn]
+    have n_sq_add_n₀_ge_n₀ : n ^ 2 + n₀ ≥ n₀ := Nat.le_add_left n₀ (n ^ 2)
+    let μ_n := φ.toMeasure n_sq_add_n₀_ge_n₀
+    let rand_F := randomDensity F (n ^ 2 + n₀)
+    have rand_F_L2 : MemLp rand_F 2 μ_n := randomDensity_L2 φ F n_sq_add_n₀_ge_n₀
+    have chebyshev := @ProbabilityTheory.meas_ge_le_variance_div_sq _ _ μ_n _ rand_F rand_F_L2 ε hε
+    apply le_trans chebyshev
+    apply ENNReal.ofReal_le_ofReal
+    calc
+      _ ≤ (c' / F.1) / (ε ^ 2) := by
+        rw [div_le_div_iff_of_pos_right (sq_pos_of_pos hε)]
+        exact hc' hn
+      _ = (c' / (ε ^ 2)) / F.1 := div_right_comm c' F.1 (ε ^ 2)
+      _ ≤ (c' / (ε ^ 2)) / (n ^ 2) := by
+        sorry
 
 lemma limsup_eq_forall_exists
     {α : Type} (s : ℕ → Set α)
@@ -601,7 +615,7 @@ theorem flagSeqMeasure_error_prob_zero
     have hn' : n ^ 2 + n₀ ≥ F.1 := by
       calc
         _ ≥ n ^ 2 := Nat.le_add_right (n ^ 2) n₀
-        _ ≥ n := Nat.le_self_pow (by norm_num) n
+        _ ≥ n := Nat.le_pow (by norm_num)
         _ ≥ F.1 := hn
     exact hE n hn'
 
