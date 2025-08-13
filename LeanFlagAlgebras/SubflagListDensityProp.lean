@@ -9,6 +9,7 @@ import Mathlib.Probability.Distributions.Uniform
 import Mathlib.Probability.ProbabilityMassFunction.Basic
 import Mathlib.Data.Nat.Choose.Multinomial
 import Mathlib.Data.Nat.Factorial.Basic
+import Mathlib.Data.Finset.Powerset
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -32,18 +33,18 @@ def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t →
       (Finset.univ : Finset (Fin t)).biUnion p ⊆ V)
 
 def extend_r_list
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list₁ : Fin t → ℕ)
+    (n : ℕ) (r_list₁ : Fin t → ℕ)
     : Fin (t + 1) → ℕ
   := by
   intro i
   if h : i.val < t then
     exact r_list₁ ⟨i.val, h⟩
   else
-    exact V.card - ∑ j : Fin t, r_list₁ j
+    exact n - ∑ j : Fin t, r_list₁ j
 
 lemma extend_r_list.factorial_prod_eq
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ)
-    : ∏ i, ((extend_r_list V r_list) i).factorial = (∏ i, (r_list i).factorial) * (V.card - ∑ j : Fin t, r_list j).factorial
+    (n : ℕ) (r_list : Fin t → ℕ)
+    : ∏ i, ((extend_r_list n r_list) i).factorial = (∏ i, (r_list i).factorial) * (n - ∑ j : Fin t, r_list j).factorial
   := by
   dsimp [extend_r_list]
   rw [Finset.prod_fin_eq_prod_range, Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
@@ -63,13 +64,13 @@ lemma extend_r_list.factorial_prod_eq
     simp [hi, Nat.lt_add_right 1 hi]
 
 lemma extend_r_list.sum_eq
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list₁ : Fin t → ℕ) (h_r_list₁ : ∑ i, r_list₁ i ≤ V.card)
-    : ∑ i : Fin (t + 1), extend_r_list V r_list₁ i = V.card
+    (n : ℕ) (r_list₁ : Fin t → ℕ) (h_r_list₁ : ∑ i, r_list₁ i ≤ n)
+    : ∑ i : Fin (t + 1), extend_r_list n r_list₁ i = n
   := by
   dsimp [extend_r_list]
   rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
   simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte, lt_self_iff_false]
-  have sum_eq : ∑ x ∈ Finset.range t, (if _ : x < t + 1 then if h_1 : x < t then r_list₁ ⟨x, Eq.mpr_prop (Eq.refl (x < t)) h_1⟩ else V.card - ∑ j : Fin t, r_list₁ j else 0) = ∑ j : Fin t, r_list₁ j := by
+  have sum_eq : ∑ x ∈ Finset.range t, (if _ : x < t + 1 then if h_1 : x < t then r_list₁ ⟨x, Eq.mpr_prop (Eq.refl (x < t)) h_1⟩ else n - ∑ j : Fin t, r_list₁ j else 0) = ∑ j : Fin t, r_list₁ j := by
     simp only [dite_eq_ite]
     rw [Finset.sum_fin_eq_sum_range]
     apply Finset.sum_bij (fun i _ => if _ : i < t then i else 0)
@@ -89,7 +90,7 @@ lemma extend_r_list.sum_eq
 
 theorem partitions_card_eq_multinomial
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list₁ : Fin t → ℕ) (h_r_list₁ : ∑ i, r_list₁ i ≤ V.card)
-    : (partitions V r_list₁).card = Nat.multinomial Finset.univ (extend_r_list V r_list₁)
+    : (partitions V r_list₁).card = Nat.multinomial Finset.univ (extend_r_list V.card r_list₁)
   := by
   induction t with
   | zero =>
@@ -186,9 +187,9 @@ theorem partitions_card_eq_multinomial
           rw [Fin.eq_mk_iff_val_eq]
           push_neg at hj
           exact Nat.le_antisymm (Fin.is_le j) hj
-      rw [hs, Nat.multinomial_insert ha (extend_r_list V r_list₁)]
+      rw [hs, Nat.multinomial_insert ha (extend_r_list V.card r_list₁)]
 
-      have rhs_calc1 : ∑ i ∈ s, (extend_r_list V r_list₁) i = ∑ i, r_list₁ i := by
+      have rhs_calc1 : ∑ i ∈ s, (extend_r_list V.card r_list₁) i = ∑ i, r_list₁ i := by
           dsimp [s, extend_r_list]
           let f : (a : Fin (t + 1 + 1)) → a ∈ s → Fin (t + 1) := by
             intro i hi
@@ -212,11 +213,11 @@ theorem partitions_card_eq_multinomial
           · intro i hi
             rw [Finset.mem_filter] at hi
             simp [hi, f]
-      have rhs_calc2 : (extend_r_list V r_list₁) a = V.card - (∑ i, r_list₁ i) := by
+      have rhs_calc2 : (extend_r_list V.card r_list₁) a = V.card - (∑ i, r_list₁ i) := by
         simp only [extend_r_list, a, lt_self_iff_false, ↓reduceDIte]
       rw [rhs_calc1, rhs_calc2, Nat.sub_add_cancel h_r_list₁]
 
-      have rhs_calc3 : ∏ i ∈ s, (extend_r_list V r_list₁ i).factorial = (∏ i, (r_list₁ i).factorial) := by
+      have rhs_calc3 : ∏ i ∈ s, (extend_r_list V.card r_list₁ i).factorial = (∏ i, (r_list₁ i).factorial) := by
           let f : (a : Fin (t + 1 + 1)) → a ∈ s → Fin (t + 1) := by
             intro i hi
             rw [Finset.mem_filter] at hi
@@ -266,10 +267,10 @@ theorem partitions_card_eq_multinomial
       rw [rhs_calc4]
       clear rhs_calc1 rhs_calc2 rhs_calc3 rhs_calc4
 
-      rw [Nat.multinomial, extend_r_list.sum_eq V r_list₁' h_r_list₁']
-      have lhs_calc1 : ∏ i, (extend_r_list V r_list₁' i).factorial =
+      rw [Nat.multinomial, extend_r_list.sum_eq V.card r_list₁' h_r_list₁']
+      have lhs_calc1 : ∏ i, (extend_r_list V.card r_list₁' i).factorial =
           (∏ i, (r_list₁' i).factorial) * (V.card - (∑ i, r_list₁' i)).factorial := by
-          exact extend_r_list.factorial_prod_eq V r_list₁'
+          exact extend_r_list.factorial_prod_eq V.card r_list₁'
       rw [lhs_calc1]
       dsimp [parts]
       have choose_eq : r_list₁ (Fin.last t) ≤ V.card - ∑ j, r_list₁' j := by
@@ -304,8 +305,9 @@ theorem partitions_card_eq_multinomial
     (V.card - ∑ j, r_list₁' j).factorial = V.card.factorial / (∏ i, (r_list₁' i).factorial) := by
         rw [← Nat.div_div_eq_div_mul, Nat.div_mul_cancel]
         refine Nat.dvd_div_of_mul_dvd ?_
-        rw [← lhs_calc1, ← extend_r_list.sum_eq V r_list₁' h_r_list₁']
-        exact Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list V r_list₁')
+        rw [← lhs_calc1]
+        have := Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list V.card r_list₁')
+        rwa [extend_r_list.sum_eq V.card r_list₁' h_r_list₁'] at this
       rw [lhs_calc2]
       rw [Nat.div_div_eq_div_mul]
       have lhs_calc3 : ((∏ i, (r_list₁' i).factorial) *
@@ -354,12 +356,12 @@ theorem partition_card
   dsimp [multinomialCoefficient]
   split
   next h =>
-    let f := extend_r_list V r_list
+    let f := extend_r_list V.card r_list
     have factorial_eq_multinomial : V.card.factorial / ((∏ i : Fin t, (r_list i).factorial) * (V.card - ∑ i : Fin t, r_list i).factorial) = Nat.multinomial Finset.univ f := by
       dsimp [Nat.multinomial]
       congr
-      · rw [extend_r_list.sum_eq V r_list h]
-      · rw [extend_r_list.factorial_prod_eq V r_list]
+      · rw [extend_r_list.sum_eq V.card r_list h]
+      · rw [extend_r_list.factorial_prod_eq V.card r_list]
     rw [factorial_eq_multinomial]
     have partitions_eq_multinomial := partitions_card_eq_multinomial V r_list h
     rw [partitions_eq_multinomial]
@@ -438,9 +440,11 @@ theorem choose_sequence_eq_factorial_div
       rw [Nat.choose_eq_factorial_div_factorial]
       · rw [← Nat.mul_div_assoc]
         · have calc1 : n.factorial / ((∏ i : Fin t, (r_list i.castSucc).factorial) * (n - ∑ i : Fin t, r_list i.castSucc).factorial) * (n - ∑ j : Fin t, r_list j.castSucc).factorial = n.factorial / (∏ i : Fin t, (r_list i.castSucc).factorial) := by
-            rw [← Nat.div_div_eq_div_mul]
-            rw [Nat.div_mul_cancel]
-            sorry
+            rw [← Nat.div_div_eq_div_mul, Nat.div_mul_cancel]
+            apply Nat.dvd_div_of_mul_dvd
+            rw [← extend_r_list.factorial_prod_eq n r_list']
+            nth_rw 2 [← extend_r_list.sum_eq n r_list' h_size']
+            exact Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list n r_list')
           rw [calc1]
           nth_rw 1 [← Nat.div_div_eq_div_mul]
           nth_rw 2 [Nat.div_div_eq_div_mul]
@@ -449,13 +453,56 @@ theorem choose_sequence_eq_factorial_div
           rw [Nat.sub_sub]
           rw [sum_eq_sum_plus_last r_list]
         · rw [Nat.sub_sub, ← sum_eq_sum_plus_last r_list]
-          refine (Nat.dvd_div_iff_mul_dvd ?_).mp ?_
-          · sorry
-          · sorry
+          let n' := n - ∑ j : Fin t, r_list j.castSucc
+          let k' := r_list (Fin.last t)
+          have hk : k' ≤ n' := by
+            apply Nat.le_sub_of_add_le
+            rwa [add_comm, ← sum_eq_sum_plus_last r_list]
+          have h_dvd := Nat.factorial_mul_factorial_dvd_factorial hk
+          dsimp [n', k'] at h_dvd
+          rwa [Nat.sub_sub, ← sum_eq_sum_plus_last r_list] at h_dvd
       · apply Nat.le_sub_of_add_le
         rwa [add_comm, ← sum_eq_sum_plus_last r_list]
 
--- #check Finset.card_eq_of_bijective
+theorem partition_card'
+    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
+  dsimp [multinomialCoefficient]
+  split
+  next h =>
+    have := choose_sequence_eq_factorial_div V.card r_list h
+    rw [← this]
+    -- let P := partitions V r_list
+    -- let p : Fin t → Finset α := by sorry
+    let f' (f : Fin t → Finset α) := (Finset.univ : Finset (Fin t)).pi f
+    let F' := (partitions V r_list).image f'
+
+    have card_eq : (partitions V r_list).card = F'.card := by
+      refine Eq.symm (Finset.card_image_of_injective (partitions V r_list) ?_)
+      intro p₁ p₂ h_eq
+      simp only [f'] at h_eq
+
+      sorry
+
+
+
+
+
+
+
+
+    sorry
+  next h =>
+    rw [Finset.card_eq_zero]
+    ext x
+    simp only [Finset.notMem_empty, iff_false, partitions, Finset.mem_filter, Finset.mem_univ, true_and]
+    intro ⟨p_sub, p_disj, p_card⟩
+    have card_le : (Finset.univ.biUnion x).card ≤ V.card := Finset.card_le_card p_card
+    have card_bUnion : (Finset.univ.biUnion x).card = ∑ i : Fin t, (x i).card := Finset.card_biUnion (fun i _ j _ hij => p_disj i j hij)
+    have card_sum : ∑ i : Fin t, (x i).card = ∑ i : Fin t, r_list i := Finset.sum_congr rfl (fun i _ => (p_sub i).2)
+    rw [card_bUnion, card_sum] at card_le
+    exact h card_le
+
+#check Finset.card_eq_of_bijective
 
 omit [DecidableEq T] in
 theorem labeledGraphListDensity_ge_zero
