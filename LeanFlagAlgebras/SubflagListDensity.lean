@@ -974,7 +974,19 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
     have h_rw₂ : ℓ - ℓ₀ - (ℓ₁ - ℓ₀ + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀)) = ℓ + 2*ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃ := by omega
     have h_rw₃ : ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃ - (ℓ' + ℓ₀ - ℓ₁ - ℓ₂) = ℓ - ℓ' + ℓ₀ - ℓ₃ := by omega
     rw [h_rw₀, h_rw₁, h_rw₂, h_rw₃]
-    have h_dvd₀ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial) ∣ (ℓ' - ℓ₀).factorial := sorry
+    have h_dvd₀ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial) ∣ (ℓ' - ℓ₀).factorial :=
+      have h₀ : (ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial ∣ (ℓ₁ + ℓ₂ - 2 * ℓ₀).factorial := by
+        have : ℓ₂ - ℓ₀ = (ℓ₁ + ℓ₂ - 2 * ℓ₀) - (ℓ₁ - ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      have h₁ : (ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial
+                ∣ (ℓ₁ + ℓ₂ - 2 * ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial :=
+        Nat.mul_dvd_mul h₀ (by simp)
+      have h₂ : (ℓ₁ + ℓ₂ - 2 * ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial ∣ (ℓ' - ℓ₀).factorial := by
+        have : ℓ' + ℓ₀ - ℓ₁ - ℓ₂  = (ℓ' - ℓ₀) - (ℓ₁ + ℓ₂ - 2 * ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      Nat.dvd_trans h₁ h₂
     have h_dvd₁ : ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
     have h_dvd₂ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
     have h_dvd₃ : ((ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) ∣ (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial := by
@@ -989,20 +1001,20 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
                                (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial))
       _ = ((ℓ' - ℓ₀).factorial * (ℓ - ℓ₀).factorial)
           / (((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial) *
-             ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ + ℓ₀ - ℓ' - ℓ₃).factorial)) := by
+             ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
                   rw [Nat.div_mul_div_comm h_dvd₀ h_dvd₁]
       _ = ((ℓ' - ℓ₀).factorial * (ℓ - ℓ₀).factorial)
           / ((ℓ' - ℓ₀).factorial *
-             ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ + ℓ₀ - ℓ' - ℓ₃).factorial)) := by
+             ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
                   ring_nf
       _ = (ℓ - ℓ₀).factorial
-          / ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ + ℓ₀ - ℓ' - ℓ₃).factorial) := by
+          / ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) := by
                   rw [Nat.mul_div_mul_left _ _ (Nat.factorial_pos (ℓ' - ℓ₀))]
       _ = ((ℓ + 2*ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial * (ℓ - ℓ₀).factorial)
           / ((ℓ + 2*ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial *
-             ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ + ℓ₀ - ℓ' - ℓ₃).factorial)) := by
+             ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
                   rw [Nat.mul_div_mul_left _ _ (Nat.factorial_pos (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃))]
-      _ =  ((ℓ - ℓ₀).factorial * (ℓ - ℓ₁ - ℓ₂ - ℓ₃ + 2 * ℓ₀).factorial)
+      _ =  ((ℓ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial)
           / (((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial) *
              ((ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
                   ring_nf
