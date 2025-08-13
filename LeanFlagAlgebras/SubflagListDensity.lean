@@ -933,6 +933,7 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
           labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
   := sorry
 
+set_option maxHeartbeats 400000 in
 lemma labeledGraphTripleCount_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -987,8 +988,38 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
         rw [this]
         exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
       Nat.dvd_trans h₁ h₂
-    have h_dvd₁ : ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
-    have h_dvd₂ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial := sorry
+    have h_dvd₁ : ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial :=
+      have h₀ : (ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial ∣ (ℓ' + ℓ₃ - 2 * ℓ₀).factorial := by
+        have : ℓ₃ - ℓ₀ = (ℓ' + ℓ₃ - 2 * ℓ₀) - (ℓ' - ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      have h₁ : (ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial
+                ∣ (ℓ' + ℓ₃ - 2 * ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial :=
+        Nat.mul_dvd_mul h₀ (by simp)
+      have h₂ : (ℓ' + ℓ₃ - 2 * ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial ∣ (ℓ - ℓ₀).factorial := by
+        have : ℓ - ℓ' + ℓ₀ - ℓ₃  = (ℓ - ℓ₀) - (ℓ' + ℓ₃ - 2 * ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      Nat.dvd_trans h₁ h₂
+    have h_dvd₂ : ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial) ∣ (ℓ - ℓ₀).factorial :=
+      have h₀ : (ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial ∣ (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀).factorial := by
+        have : ℓ₂ - ℓ₀ = (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀) - (ℓ₁ - ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      have h₁ : (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial ∣ (ℓ + ℓ₀ - ℓ₁ - ℓ₂).factorial := by
+        have : ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃ = (ℓ + ℓ₀ - ℓ₁ - ℓ₂) - (ℓ₃ - ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      have h₃ : (ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial  * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial
+                ∣ (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀).factorial * (ℓ + ℓ₀ - ℓ₁ - ℓ₂).factorial := by
+        have := mul_assoc ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial) (ℓ₃ - ℓ₀).factorial (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial
+        rw [this]
+        exact Nat.mul_dvd_mul h₀ h₁
+      have h₄ : (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀).factorial * (ℓ + ℓ₀ - ℓ₁ - ℓ₂).factorial ∣ (ℓ - ℓ₀).factorial := by
+        have : ℓ + ℓ₀ - ℓ₁ - ℓ₂ = ℓ - ℓ₀ - (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀) := by omega
+        rw [this]
+        exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
+      Nat.dvd_trans h₃ h₄
     have h_dvd₃ : ((ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) ∣ (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial := by
       rw [←h_rw₃]
       exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
