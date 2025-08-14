@@ -24,6 +24,11 @@ structure LabeledGraph (σ : FlagType T) (V : Type) where
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
+omit [Fintype T] in
+lemma LabeledGraph.mem_type_verts {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} {v : V} :
+    v ∈ G.type_verts ↔ ∃ t, G.type_embed t = v := by
+  simp only [type_verts, Set.image_univ, Set.mem_range]
+
 noncomputable instance {σ : FlagType T} (G : LabeledGraph σ V) :
     Fintype G.type_verts :=
   Set.univ.fintypeImage G.type_embed
@@ -37,15 +42,15 @@ lemma LabeledGraph.type_verts_card_eq {σ : FlagType T} {V : Type} (G : LabeledG
 omit [Fintype T] in
 lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (t : T)
   : G.type_embed t ∈ G.type_verts :=
-  Set.mem_image_of_mem G.type_embed (Set.mem_univ t)
+  LabeledGraph.mem_type_verts.mpr ⟨t, rfl⟩
 
 noncomputable def LabeledGraph.iso_type_G
      {σ : FlagType T} (G : LabeledGraph σ V) : T ≃ G.type_verts := by
   let f : T → G.type_verts := by
     intro t
     use G.type_embed t
-    unfold LabeledGraph.type_verts
-    exact Set.mem_image_of_mem (⇑G.type_embed) (Set.mem_univ t)
+    rw [mem_type_verts]
+    use t
   have h_bij : Function.Bijective f := by
     constructor
     · intro t₁ t₂ h_eq
@@ -98,9 +103,9 @@ theorem iso_type_Adj_iff
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : G.type_verts)
     : σ.Adj (G.iso_type_G.symm u) (G.iso_type_G.symm v) ↔ G.graph.Adj u v := by
   let u_t := G.iso_type_G.symm u
-  have h_ut : G.iso_type_G u_t = u := Equiv.apply_symm_apply G.iso_type_G u
+  have h_ut : G.iso_type_G u_t = u := G.iso_type_G.apply_symm_apply u
   let v_t := G.iso_type_G.symm v
-  have h_vt : G.iso_type_G v_t = v := Equiv.apply_symm_apply G.iso_type_G v
+  have h_vt : G.iso_type_G v_t = v := G.iso_type_G.apply_symm_apply v
   rw [type_embed_Adj_iff G u_t v_t, ← h_ut, ← h_vt]
   rfl
 
@@ -207,8 +212,7 @@ theorem labeledSubgraph_contain_type_verts
     : G.type_verts ⊆ H.subgraph.verts
   := by
   intro v hv
-  simp only [LabeledGraph.type_verts, Set.image_univ] at hv
-  obtain ⟨t, rfl⟩ := hv
+  obtain ⟨t, rfl⟩ := LabeledGraph.mem_type_verts.mp hv
   exact H.embed_eq t ▸ Subtype.coe_prop _
 
 def inducedLabeledSubgraph
@@ -218,24 +222,17 @@ def inducedLabeledSubgraph
   type_embed := {
     toFun := by
       intro t
-      have ht : G.type_embed t ∈ G.type_verts :=
-        Set.mem_image_of_mem G.type_embed trivial
-      exact ⟨G.type_embed t, h ht⟩
+      exact ⟨G.type_embed t, h (LabeledGraph.type_verts_contain _ _)⟩
     inj' := by
       intro t u h_tu
       simp only [Subtype.mk.injEq, EmbeddingLike.apply_eq_iff_eq] at h_tu
       exact h_tu
     map_rel_iff' := by
-      intro t u
+      intros
       dsimp [inducedSubgraph]
       simp only [SimpleGraph.Embedding.map_adj_iff, and_iff_left_iff_imp]
       intro _
-      constructor <;> {
-        apply h
-        simp only [
-          LabeledGraph.type_verts, Set.image_univ, Set.mem_range,
-          EmbeddingLike.apply_eq_iff_eq, exists_eq]
-      }
+      constructor <;> exact h (LabeledGraph.type_verts_contain _ _)
   }
   embed_eq := by
     intro; simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
