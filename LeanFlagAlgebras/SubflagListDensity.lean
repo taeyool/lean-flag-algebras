@@ -944,7 +944,7 @@ noncomputable def
              × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
   let S₀ := { (X, Gl') : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
               | X.card = ℓ'_other ∧ Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
-  let f_LHS_S₀ : S_LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : S_LHS) =>
+  let f_LHS_S₀ : LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : LHS) =>
     have h_X_card : X.val.card = ℓ'_other := by
       simp_all only [
         Finset.mem_powersetCard, Finset.subset_univ, true_and,
