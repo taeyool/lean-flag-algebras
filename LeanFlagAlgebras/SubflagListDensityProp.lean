@@ -10,6 +10,7 @@ import Mathlib.Probability.ProbabilityMassFunction.Basic
 import Mathlib.Data.Nat.Choose.Multinomial
 import Mathlib.Data.Nat.Factorial.Basic
 import Mathlib.Data.Finset.Powerset
+import Mathlib.Data.Vector.Basic
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -128,29 +129,21 @@ theorem partitions_card_eq_multinomial
         by_cases h : i.val < t
         · exact congrFun h_eq₁ ⟨i, h⟩
         · rwa [← Fin.eq_last_of_not_lt h] at h_eq₂
-
       let split_card : Finset ((Fin t → Finset α) × Finset α) → Finset (Fin t → Finset α) × Finset (Finset α) := by
         intro P
         exact (P.image (fun p ↦ p.1), P.image (fun p ↦ p.2))
-
-
-
       have tmp5 : Fintype.card ((Fin t → Finset α) × Finset α) =
   Fintype.card (Fin t → Finset α) * Fintype.card (Finset α) := by
         rw [Fintype.card_prod]
-
       let choose_left (V : Finset α) (selected : (Fin t → Finset α)) : (Fin t → Finset α) × Finset α := (selected, V \ (Finset.univ.biUnion selected))
-
       let tmp1 : ℕ → (Fin (t + 1) → ℕ) → (Fin t → ℕ) × ℕ := by
         intro n r_list
         let r_list' : Fin t → ℕ := fun i ↦ r_list i.castSucc
         exact (r_list', r_list (Fin.last t))
-
       let tmp2 : (Fin (t + 1) → Finset α) → (Fin t → Finset α) × Finset α := by
         intro r_list
         let r_list' : Fin t → Finset α := fun i ↦ r_list i.castSucc
         exact (r_list', r_list (Fin.last t))
-
       have tmp3 := P.image tmp2
       let tmp4 : (P.image tmp2).card = P.card := by
         apply Finset.card_image_of_injective
@@ -159,7 +152,17 @@ theorem partitions_card_eq_multinomial
         simp at h_eq
         sorry
 
-
+      let trans_vec (f : Fin (t + 1) → Finset α) := Vector.ofFn f
+      let vec := (partitions V r_list₁).image trans_vec
+      have card_eq : vec.card = (partitions V r_list₁).card := by
+        apply Finset.card_image_of_injective
+        intro p₁ p₂ h_eq
+        simp only [trans_vec] at h_eq
+        rw [Vector.ext_iff] at h_eq
+        funext i
+        specialize h_eq i i.2
+        simp only [Vector.getElem_ofFn, Fin.eta] at h_eq
+        exact h_eq
 
 
 
@@ -471,22 +474,19 @@ theorem partition_card'
   next h =>
     have := choose_sequence_eq_factorial_div V.card r_list h
     rw [← this]
-    -- let P := partitions V r_list
-    -- let p : Fin t → Finset α := by sorry
-    let f' (f : Fin t → Finset α) := (Finset.univ : Finset (Fin t)).pi f
-    let F' := (partitions V r_list).image f'
 
-    have card_eq : (partitions V r_list).card = F'.card := by
-      refine Eq.symm (Finset.card_image_of_injective (partitions V r_list) ?_)
+    let trans_vec (f : Fin t → Finset α) := Vector.ofFn f
+    let vec := (partitions V r_list).image trans_vec
+    have card_eq : vec.card = (partitions V r_list).card := by
+      apply Finset.card_image_of_injective
       intro p₁ p₂ h_eq
-      simp only [f'] at h_eq
-
-      sorry
-
-
-
-
-
+      simp only [trans_vec] at h_eq
+      rw [Vector.ext_iff] at h_eq
+      funext i
+      specialize h_eq i i.2
+      simp only [Vector.getElem_ofFn, Fin.eta] at h_eq
+      exact h_eq
+    rw [← card_eq]
 
 
 
