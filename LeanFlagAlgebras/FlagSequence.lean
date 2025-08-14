@@ -281,7 +281,7 @@ theorem flagPairDensity_tendsto_flagDensity_mul
   apply Tendsto.congr_dist h_seq_mul
   rw [Metric.tendsto_atTop]
   intro ε hε
-  obtain ⟨c, hc⟩ := flagListDensity₂_prod_approx F.2 G.2
+  obtain ⟨c, _, hc⟩ := flagListDensity₂_prod_approx F.2 G.2
   obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, c / (s n).1 < ε := by
     obtain ⟨N, hN⟩ := h_inc.eventually_gt ⌈c / ε⌉₊
     use N
