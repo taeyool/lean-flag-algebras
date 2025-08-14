@@ -281,7 +281,7 @@ theorem flagPairDensity_tendsto_flagDensity_mul
   apply Tendsto.congr_dist h_seq_mul
   rw [Metric.tendsto_atTop]
   intro ε hε
-  obtain ⟨c, hc⟩ := flagListDensity₂_prod_approx F.2 G.2
+  obtain ⟨c, _, hc⟩ := flagListDensity₂_prod_approx F.2 G.2
   obtain ⟨N, hN⟩ : ∃ N, ∀ n ≥ N, c / (s n).1 < ε := by
     obtain ⟨N, hN⟩ := h_inc.eventually_gt ⌈c / ε⌉₊
     use N
@@ -470,12 +470,17 @@ theorem randomDensity_expectation
   rw [← ENNReal.toReal_ofReal this]
   congr
 
+#check ProbabilityTheory.evariance_def'
+
 theorem randomDensity_variance_bounded
     (φ : PositiveHom σ) (F : FinFlag σ)
-    : ∃ (c : ℝ), c > 0 ∧
-      ∀ {ℓ : ℕ} (hℓ : ℓ ≥ F.1), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / F.1
+    : ∃ (c : ℝ), c ≥ 0 ∧
+      ∀ {ℓ : ℕ} (hℓ : ℓ ≥ F.1), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / ℓ
   := by
-  obtain ⟨c', hc'⟩ := flagListDensity₂_prod_approx F.2 F.2
+  obtain ⟨c, cpos, hc⟩ := flagListDensity₂_prod_approx F.2 F.2
+  use c
+  constructor; exact Rat.cast_nonneg.mpr cpos
+  intro ℓ hℓ
   sorry
 
 noncomputable def flagSeqMeasure
@@ -516,15 +521,15 @@ theorem flagDensityErrorSet_flagSeqMeasure
 
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
-    : ∃ (c : ℝ), c > 0 ∧
-      ∀ n, n ^ 2 + n₀ ≥ F.1 → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2)) -- bound should be changed
+    : ∃ (c : ℝ), c ≥ 0 ∧
+      ∀ n, (n > 0 ∧ n ^ 2 + n₀ ≥ F.1) → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
   := by
   choose c' c'pos hc' using randomDensity_variance_bounded φ F
   use c' / (ε ^ 2)
   constructor
-  · exact div_pos c'pos (sq_pos_of_pos hε)
-  · intro n hn
-    rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn]
+  · exact div_nonneg c'pos (sq_nonneg ε)
+  · intro n ⟨hn₁, hn₂⟩
+    rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn₂]
     have n_sq_add_n₀_ge_n₀ : n ^ 2 + n₀ ≥ n₀ := Nat.le_add_left n₀ (n ^ 2)
     let μ_n := φ.toMeasure n_sq_add_n₀_ge_n₀
     let rand_F := randomDensity F (n ^ 2 + n₀)
@@ -533,12 +538,15 @@ theorem measure_flagDensityErrorSet_bounded
     apply le_trans chebyshev
     apply ENNReal.ofReal_le_ofReal
     calc
-      _ ≤ (c' / F.1) / (ε ^ 2) := by
+      _ ≤ (c' / (n ^ 2 + n₀ : ℕ)) / (ε ^ 2) := by
         rw [div_le_div_iff_of_pos_right (sq_pos_of_pos hε)]
-        exact hc' hn
-      _ = (c' / (ε ^ 2)) / F.1 := div_right_comm c' F.1 (ε ^ 2)
+        exact hc' hn₂
+      _ = (c' / (ε ^ 2)) / (n ^ 2 + n₀ : ℕ) := div_right_comm c' _ _
       _ ≤ (c' / (ε ^ 2)) / (n ^ 2) := by
-        sorry
+        apply div_le_div_of_nonneg_left
+        · exact div_nonneg c'pos (sq_nonneg ε)
+        · exact sq_pos_of_pos (Nat.cast_pos'.mpr hn₁)
+        · simp only [Nat.cast_add, Nat.cast_pow, le_add_iff_nonneg_right, Nat.cast_nonneg]
 
 lemma limsup_eq_forall_exists
     {α : Type} (s : ℕ → Set α)
@@ -603,21 +611,22 @@ theorem flagSeqMeasure_error_prob_zero
   obtain ⟨c, hc, hE⟩ := measure_flagDensityErrorSet_bounded φ F hε
   apply tsum_ENNReal_le_tsum_ne_infty _ (fun n ↦ c / (n ^ 2))
   · exact fun n ↦ measure_ne_top (flagSeqMeasure φ) (E n)
-  · exact fun n ↦ div_nonneg (le_of_lt hc) (sq_nonneg _)
-  · simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul (le_of_lt hc)]
+  · exact fun n ↦ div_nonneg hc (sq_nonneg _)
+  · simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul hc]
     rw [ENNReal.tsum_mul_left]
     apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     apply Summable.tsum_ofReal_ne_top
     exact ⟨_, hasSum_zeta_two⟩
   · rw [eventually_atTop]
-    use F.1
+    use max F.1 1
     intro n hn
-    have hn' : n ^ 2 + n₀ ≥ F.1 := by
+    have hn₁ : n > 0 := le_of_max_le_right hn
+    have hn₂ : n ^ 2 + n₀ ≥ F.1 := by
       calc
         _ ≥ n ^ 2 := Nat.le_add_right (n ^ 2) n₀
         _ ≥ n := Nat.le_pow (by norm_num)
-        _ ≥ F.1 := hn
-    exact hE n hn'
+        _ ≥ F.1 := le_of_max_le_left hn
+    exact hE n ⟨hn₁, hn₂⟩
 
 lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
   rw [← Set.subset_pair_iff_eq, Set.subset_pair_iff]

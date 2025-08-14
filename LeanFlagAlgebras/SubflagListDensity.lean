@@ -924,6 +924,39 @@ theorem flagTripleDensity_empty'
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
 
+noncomputable def
+  powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
+    (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
+    (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
+    : (Finset.univ : Finset (Fin ((ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)))).powersetCard ((ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀))
+        × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
+      ≃
+      (G' : Flag σ (Fin ℓ'))
+        × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
+        × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
+  :=
+  let ℓ_other := (ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)
+  let ℓ'_other := (ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀)
+  let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
+             × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
+  let RHS := (G' : Flag σ (Fin ℓ'))
+             × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
+             × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
+  let S₀ := { (X, Gl') : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
+              | X.card = ℓ'_other ∧ Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+  let f_LHS_S₀ : LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : LHS) =>
+    have h_X_card : X.val.card = ℓ'_other := by
+      simp_all only [
+        Finset.mem_powersetCard, Finset.subset_univ, true_and,
+        Set.mem_toFinset, Finset.card_val]
+    let ⟨h_Gl'_ind, h_Gl'_other⟩ : Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' := by
+      dsimp [setOfLabeledSubgraphListIsoHl] at h_Gl'
+      simp_all only [
+        Finset.mem_powersetCard, Finset.subset_univ, true_and, Set.toFinset_setOf,
+        Finset.mem_filter, Finset.mem_univ, Finset.card_val, and_self]
+    ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+  sorry
+
 lemma labeledGraphTripleCount_eq_sum_density_prods'
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -942,7 +975,8 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
   let S_RHS := (G' : Flag σ (Fin ℓ'))
                × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
                × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
-  let h_iso : S_LHS ≃ S_RHS := sorry
+  let h_iso : S_LHS ≃ S_RHS :=
+    powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
   calc
     (Nat.choose ℓ_other ℓ'_other) * (labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G)
     _ = (Nat.choose ℓ_other ℓ'_other) * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
