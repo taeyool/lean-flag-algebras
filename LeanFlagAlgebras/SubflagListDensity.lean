@@ -946,16 +946,28 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
   calc
     (Nat.choose ℓ_other ℓ'_other) * (labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G)
     _ = (Nat.choose ℓ_other ℓ'_other) * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
-            dsimp [labeledSubgraphListCount]
-            congr!
+              dsimp [labeledSubgraphListCount]
+              congr!
     _ = ((Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other).card
         * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
-            simp only [Set.toFinset_card, Fintype.card_ofFinset, Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
-    _ = (Fintype.card S_LHS) := by sorry
+              simp only [Set.toFinset_card, Fintype.card_ofFinset, Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+    _ = (Fintype.card S_LHS) := by
+              dsimp [S_LHS]
+              simp only [Finset.card_powersetCard, Finset.card_univ,
+                Fintype.card_fin, Set.toFinset_card, Fintype.card_ofFinset,
+                Finset.mem_powersetCard, Finset.subset_univ, true_and,
+                Set.mem_toFinset, Fintype.card_prod, Fintype.card_finset_len]
     _ = (Fintype.card S_RHS) :=
-            Fintype.card_congr h_iso
+              Fintype.card_congr h_iso
     _ = ∑ G' : Flag σ (Fin ℓ'),
-          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G := by sorry
+          (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset.card
+          * (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset.card := by
+              dsimp [S_RHS]
+              simp only [Set.mem_toFinset, Fintype.card_sigma, Fintype.card_prod, Fintype.card_ofFinset, Set.toFinset_card]
+    _ = ∑ G' : Flag σ (Fin ℓ'),
+          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G := by
+              dsimp [labeledSubgraphListCount]
+              congr!
 
 set_option maxHeartbeats 400000 in
 lemma labeledGraphTripleCount_eq_sum_density_prods
