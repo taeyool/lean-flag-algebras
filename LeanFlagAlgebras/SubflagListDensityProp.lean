@@ -707,10 +707,11 @@ theorem flagListDensity_prod_approx
 
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
-    : ∃ c, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
+    : ∃ c ≥ 0, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
     |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ c / G.out.size
   := by
   use (F.out.size + F'.out.size) ^ 2
+  constructor; (apply sq_nonneg)
   intro W _ _ G
   let ⟨Frep, hFrep⟩ := Quotient.exists_rep F
   let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'

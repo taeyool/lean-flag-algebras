@@ -470,12 +470,17 @@ theorem randomDensity_expectation
   rw [← ENNReal.toReal_ofReal this]
   congr
 
+#check ProbabilityTheory.evariance_def'
+
 theorem randomDensity_variance_bounded
     (φ : PositiveHom σ) (F : FinFlag σ)
-    : ∃ (c : ℝ), c > 0 ∧
+    : ∃ (c : ℝ), c ≥ 0 ∧
       ∀ {ℓ : ℕ} (hℓ : ℓ ≥ F.1), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / ℓ
   := by
-  obtain ⟨c', hc'⟩ := flagListDensity₂_prod_approx F.2 F.2
+  obtain ⟨c, cpos, hc⟩ := flagListDensity₂_prod_approx F.2 F.2
+  use c
+  constructor; exact Rat.cast_nonneg.mpr cpos
+  intro ℓ hℓ
   sorry
 
 noncomputable def flagSeqMeasure
@@ -516,13 +521,13 @@ theorem flagDensityErrorSet_flagSeqMeasure
 
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
-    : ∃ (c : ℝ), c > 0 ∧
+    : ∃ (c : ℝ), c ≥ 0 ∧
       ∀ n, (n > 0 ∧ n ^ 2 + n₀ ≥ F.1) → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
   := by
   choose c' c'pos hc' using randomDensity_variance_bounded φ F
   use c' / (ε ^ 2)
   constructor
-  · exact div_pos c'pos (sq_pos_of_pos hε)
+  · exact div_nonneg c'pos (sq_nonneg ε)
   · intro n ⟨hn₁, hn₂⟩
     rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn₂]
     have n_sq_add_n₀_ge_n₀ : n ^ 2 + n₀ ≥ n₀ := Nat.le_add_left n₀ (n ^ 2)
@@ -539,7 +544,7 @@ theorem measure_flagDensityErrorSet_bounded
       _ = (c' / (ε ^ 2)) / (n ^ 2 + n₀ : ℕ) := div_right_comm c' _ _
       _ ≤ (c' / (ε ^ 2)) / (n ^ 2) := by
         apply div_le_div_of_nonneg_left
-        · exact div_nonneg (le_of_lt c'pos) (sq_nonneg ε)
+        · exact div_nonneg c'pos (sq_nonneg ε)
         · exact sq_pos_of_pos (Nat.cast_pos'.mpr hn₁)
         · simp only [Nat.cast_add, Nat.cast_pow, le_add_iff_nonneg_right, Nat.cast_nonneg]
 
@@ -606,8 +611,8 @@ theorem flagSeqMeasure_error_prob_zero
   obtain ⟨c, hc, hE⟩ := measure_flagDensityErrorSet_bounded φ F hε
   apply tsum_ENNReal_le_tsum_ne_infty _ (fun n ↦ c / (n ^ 2))
   · exact fun n ↦ measure_ne_top (flagSeqMeasure φ) (E n)
-  · exact fun n ↦ div_nonneg (le_of_lt hc) (sq_nonneg _)
-  · simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul (le_of_lt hc)]
+  · exact fun n ↦ div_nonneg hc (sq_nonneg _)
+  · simp_rw [div_eq_mul_one_div c, ENNReal.ofReal_mul hc]
     rw [ENNReal.tsum_mul_left]
     apply ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     apply Summable.tsum_ofReal_ne_top
