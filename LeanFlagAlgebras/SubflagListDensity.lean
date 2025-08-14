@@ -931,7 +931,31 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
         * labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G
       = ∑ G' : Flag σ (Fin ℓ'),
           labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
-  := sorry
+  := by
+  let ℓ_other := (ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)
+  let ℓ'_other := (ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀)
+  have hℓ_other : ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃ = ℓ_other := by omega
+  have hℓ'_other : ℓ' + ℓ₀ - ℓ₁ - ℓ₂ = ℓ'_other := by omega
+  rw [hℓ_other, hℓ'_other]
+  let S_LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
+                × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
+  let S_RHS := (G' : Flag σ (Fin ℓ'))
+               × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
+               × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
+  let h_iso : S_LHS ≃ S_RHS := sorry
+  calc
+    (Nat.choose ℓ_other ℓ'_other) * (labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G)
+    _ = (Nat.choose ℓ_other ℓ'_other) * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
+            dsimp [labeledSubgraphListCount]
+            congr!
+    _ = ((Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other).card
+        * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
+            simp only [Set.toFinset_card, Fintype.card_ofFinset, Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+    _ = (Fintype.card S_LHS) := by sorry
+    _ = (Fintype.card S_RHS) :=
+            Fintype.card_congr h_iso
+    _ = ∑ G' : Flag σ (Fin ℓ'),
+          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G := by sorry
 
 set_option maxHeartbeats 400000 in
 lemma labeledGraphTripleCount_eq_sum_density_prods
