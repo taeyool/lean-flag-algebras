@@ -89,17 +89,15 @@ lemma predIsoLabeledH_related_support
       use ⟨(φ.graph_iso.symm w), by
         obtain ⟨_, h⟩ := w; obtain ⟨_, h', rfl⟩ := h_vert ▸ h
         simp only [h', RelIso.symm_apply_apply]⟩
-      dsimp [f_ζ]
+      dsimp only [f_ζ]
       simp only [RelIso.apply_symm_apply, Subtype.coe_eta]
   let ζ := Equiv.ofBijective f_ζ h_ζ_bij
   have h_ζ_adj : ∀ {v₀ v₁ : ↑G₀'.subgraph.verts}, G₁'.coe.graph.Adj (ζ v₀) (ζ v₁) ↔ G₀'.coe.graph.Adj v₀ v₁
     := by
     intro v₀ v₁
-    dsimp [ζ]
     exact h_adj v₀ v₁
   have h_emb : ∀ t : T, ζ (G₀'.type_embed t) = G₁'.type_embed t := by
     intro t
-    dsimp [ζ]
     have h_type_preserve := congr_fun φ.type_preserve t
     rw [Function.comp_apply, ← (G₀'.embed_eq t), ← (G₁'.embed_eq t)] at h_type_preserve
     exact SetCoe.ext h_type_preserve
@@ -113,7 +111,6 @@ lemma predIsoLabeledH_related
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
     : relOfPredOnLabeledSubgraph φ (predIsoLabeledH H₀ G₀) (predIsoLabeledH H₁ G₁)
   := by
-  dsimp [predIsoLabeledH, relOfPredOnLabeledSubgraph]
   rintro G₀' G₁' h_rel
   constructor
   . exact predIsoLabeledH_related_support φ ψ G₀' G₁' h_rel
@@ -219,12 +216,12 @@ lemma H_eq_reverseinduced_induced_H
     intro v _
     exact φ.graph_iso.left_inv v
   have h_eq : H₀.subgraph = H₀'.subgraph := by
-    dsimp [H₀',inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
+    dsimp only [H₀', inducedLabeledSubgraphByIso, inducedLabeledSubgraph]
     simp only [inducedSubgraph_verts, ←h]
     exact inducedSubgraph_eq h_ind₀
   exact labeledSubgraph_eq_from_subgraph_eq h_eq
 
-noncomputable def isoSetOfInducedLabeledSubgraph
+def isoSetOfInducedLabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
     (h_rel : relOfPredOnLabeledSubgraph φ p₀ p₁)
@@ -248,14 +245,13 @@ noncomputable def isoSetOfInducedLabeledSubgraph
     have : relOfLabeledSubgraph φ H₀ H₁ := relOfLabeledSubgraph_symm this
     have h_p₀ : p₀ H₀ := (h_rel H₀ H₁ this).mpr h_p₁
     exact ⟨H₀, ⟨h_ind₀, h_p₀⟩⟩
-  let f_bij : Function.Bijective f := by
-    refine Function.bijective_iff_has_inverse.mpr ⟨f_inv, ?_, ?_⟩ <;>
-    rintro ⟨H, h_ind, h_p⟩ <;> dsimp [f, f_inv] <;> simp only [Subtype.mk.injEq] <;> symm
+  let f_bij : Function.LeftInverse f_inv f ∧ Function.RightInverse f_inv f := by
+    constructor <;> rintro ⟨H, h_ind, h_p⟩ <;> simp only [f, f_inv, Subtype.mk.injEq] <;> symm
     · exact H_eq_reverseinduced_induced_H φ H h_ind
     · exact H_eq_reverseinduced_induced_H φ.symm H h_ind
-  Equiv.ofBijective f f_bij
+  ⟨f, f_inv, f_bij.1, f_bij.2⟩
 
-noncomputable def isoSetOfInducedLabeledSubgraphFromIsoGH
+def isoSetOfInducedLabeledSubgraphFromIsoGH
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
     : { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ predIsoLabeledH H₀ G₀ G' }
@@ -271,12 +267,11 @@ lemma labeledSubgraphDensity_respect_eqv
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
     : labeledSubgraphDensity H₀ G₀ = labeledSubgraphDensity H₁ G₁
   := by
-  dsimp [labeledSubgraphDensity]
+  dsimp only [labeledSubgraphDensity]
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoGH φ ψ
   have h_count : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁ := by
-    dsimp only [labeledSubgraphCount]
     show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.toFinset_card]
@@ -295,7 +290,7 @@ lemma labeledSubgraphDensityLifted_respect_eqv
     {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
     : labeledSubgraphDensityLifted H₀ G = labeledSubgraphDensityLifted H₁ G
   := by
-  dsimp [labeledSubgraphDensityLifted]
+  dsimp only [labeledSubgraphDensityLifted]
   congr
   ext
   exact labeledSubgraphDensity_respect_eqv LabeledGraphIso.refl ψ
@@ -317,7 +312,7 @@ lemma bot_labeledSubgraph_iso_emptyLabeledGraph
                  (emptyLabeledGraph σ).graph.Adj (f u) (f v) ↔ G.bottom.subgraph.coe.Adj u v
     := by
     intro u v
-    dsimp [LabeledGraph.bottom, emptyLabeledGraph, f]
+    dsimp only [LabeledGraph.bottom, emptyLabeledGraph, SimpleGraph.Subgraph.coe_adj]
     rw [iso_type_Adj_iff G u v]
     simp only [Subtype.coe_prop, true_and]
   let f_iso : (G.bottom).subgraph.coe ≃g (emptyLabeledGraph σ).graph := ⟨f, h_adj⟩
@@ -379,9 +374,8 @@ lemma labeledSubgraphCount_empty
   have h_S₀_S₁ : S₀ = S₁ := by
     ext G'
     simp only [Set.mem_setOf_eq, Set.setOf_eq_eq_singleton, Set.mem_singleton_iff, S₀, S₁]
-    symm
     rw [←labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph]
-    refine ⟨?_, And.right⟩
+    refine ⟨And.right, ?_⟩
     rintro rfl; exact ⟨LabeledGraph.bottom_isInduced G, rfl⟩
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
@@ -391,7 +385,7 @@ lemma labeledSubgraphDensity_empty
   := by
   simp only [labeledSubgraphDensity, labeledSubgraphCount_empty G]
   refine (div_eq_one_iff_eq ?_).mpr rfl
-  dsimp only [emptyLabeledGraph, LabeledGraph.size]
+  dsimp only [LabeledGraph.size]
   have : Fintype.card T = σ.size := by rfl
   simp only [this, le_rfl, tsub_eq_zero_of_le, Nat.choose_zero_right]
   simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true]
@@ -401,7 +395,6 @@ lemma subflagDensity_empty
     : subflagDensity (emptyFlag σ) G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
-  dsimp [emptyFlag, subflagDensity, labeledSubgraphDensityLifted]
   exact labeledSubgraphDensity_empty Grep
 
 omit [Fintype T] in
@@ -466,7 +459,6 @@ lemma subgraphCount_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
     : labeledSubgraphCount G₀ G₁ = 0
   := by
-  dsimp [labeledSubgraphCount]
   let S := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f G₀) }
   show S.toFinset.card = 0
   suffices h_S_empty : S = ∅ by simp only [h_S_empty, Set.toFinset_empty, Finset.card_empty]
@@ -482,7 +474,7 @@ lemma labeledSubgraphDensity_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
     : labeledSubgraphDensity G₀ G₁ = 0
   := by
-  dsimp [labeledSubgraphDensity]
+  dsimp only [labeledSubgraphDensity]
   rw [subgraphCount_other h_not_iso]
   simp only [Nat.cast_zero, zero_div]
 
