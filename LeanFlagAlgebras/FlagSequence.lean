@@ -470,18 +470,76 @@ theorem randomDensity_expectation
   rw [← ENNReal.toReal_ofReal this]
   congr
 
-#check ProbabilityTheory.evariance_def'
+theorem randomDensity_second_moment
+    (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
+    : ∫ G, (randomDensity F ℓ G) ^ 2 ∂(φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)) =
+      ∑ G : FlagWithSize σ ℓ, (flagDensity₁ F.2 G) ^ 2 * φ.coe ⟨ℓ, G⟩
+  := by
+  dsimp [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
+  simp_rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
+  apply Finset.sum_congr rfl
+  intro G _
+  rw [mul_comm]
+  congr
+  have : φ ⟦unitVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+  rw [← ENNReal.toReal_ofReal this]
+  congr
 
 theorem randomDensity_variance_bounded
     (φ : PositiveHom σ) (F : FinFlag σ)
     : ∃ (c : ℝ), c ≥ 0 ∧
-      ∀ {ℓ : ℕ} (hℓ : ℓ ≥ F.1), Var[randomDensity F ℓ; φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)] ≤ c / ℓ
+      ∀ {ℓ : ℕ} (hℓ : ℓ ≥ 2 * F.1), Var[randomDensity F ℓ; φ.toMeasure (by linarith [finFlag_size_ge_n₀ F])] ≤ c / ℓ
   := by
   obtain ⟨c, cpos, hc⟩ := flagListDensity₂_prod_approx F.2 F.2
   use c
   constructor; exact Rat.cast_nonneg.mpr cpos
   intro ℓ hℓ
-  sorry
+  rw [ProbabilityTheory.variance_eq_sub (randomDensity_L2 φ F _)]
+  simp only [Pi.pow_apply]
+  have hℓ' : ℓ ≥ F.1 := by linarith
+  rw [randomDensity_expectation φ F hℓ', randomDensity_second_moment φ F hℓ']
+  simp_rw [PositiveHom.coe_flag]
+  calc
+    _ = ∑ G : FlagWithSize σ ℓ,
+        ((flagDensity₁ F.2 G) ^ 2 - flagDensity₂ F.2 F.2 G) * φ ⟦unitVector ⟨ℓ, G⟩⟧ := by
+      simp_rw [sub_mul, Finset.sum_sub_distrib]
+      congr
+      rw [pow_two, ← PositiveHom.map_mul, ← mul_quot, flagVector_mul_eq_nested_sum]
+      simp_rw [← PositiveHom.map_smul, ← PositiveHom.map_sum]
+      congr
+      simp only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, mul_one, one_smul]
+      simp_rw [← smul_quot, ← sum_quot]
+      apply Quotient.sound
+      calc
+        _ ∼v flagMulWithSize F F ℓ := by
+          apply flagMul_indep_on_size
+          linarith
+        _ = ∑ G : FlagWithSize σ ℓ, flagDensity₂ F.2 F.2 G • unitVector ⟨ℓ, G⟩ := rfl
+    _ ≤ ∑ G : FlagWithSize σ ℓ, (c / ℓ) * φ ⟦unitVector ⟨ℓ, G⟩⟧ := by
+      apply Finset.sum_le_sum
+      intro G _
+      apply mul_le_mul_of_nonneg_right
+      · calc
+          _ ≤ (|flagDensity₂ F.2 F.2 G - (flagDensity₁ F.2 G) ^ 2| : ℝ) := by
+            rw [abs_sub_comm]
+            apply le_abs_self
+          _ ≤ (c / ℓ : ℝ) := by
+            specialize hc G
+            have hG_size : G.out.size = ℓ := by
+              simp only [LabeledGraph.size, Fintype.card_fin]
+            rw [hG_size, ← @Rat.cast_le _ _ ℝ] at hc
+            simp only [Rat.cast_abs, Rat.cast_sub, Rat.cast_mul, Rat.cast_div,
+              Rat.cast_natCast] at hc
+            rw [pow_two]
+            exact hc
+      · exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+    _ = c / ℓ := by
+      rw [← Finset.mul_sum, ← PositiveHom.map_sum]
+      have hℓ_ge_n₀ : ℓ ≥ n₀ := by linarith [finFlag_size_ge_n₀ F]
+      rw [sum_flagWithSize_eq_one ℓ hℓ_ge_n₀, PositiveHom.map_one, mul_one]
+
+example (a b : ℚ) (h : a ≤ b) : (a : ℝ) ≤ (b : ℝ) := by
+  simp_all only [Rat.cast_le]
 
 noncomputable def flagSeqMeasure
     (φ : PositiveHom σ)
@@ -522,14 +580,15 @@ theorem flagDensityErrorSet_flagSeqMeasure
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : ∃ (c : ℝ), c ≥ 0 ∧
-      ∀ n, (n > 0 ∧ n ^ 2 + n₀ ≥ F.1) → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
+      ∀ n, (n > 0 ∧ n ^ 2 + n₀ ≥ 2 * F.1) → μ{φ} (flagDensityErrorSet φ F ε n) ≤ ENNReal.ofReal (c / (n ^ 2))
   := by
   choose c' c'pos hc' using randomDensity_variance_bounded φ F
   use c' / (ε ^ 2)
   constructor
   · exact div_nonneg c'pos (sq_nonneg ε)
   · intro n ⟨hn₁, hn₂⟩
-    rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn₂]
+    have hn₂' : n ^ 2 + n₀ ≥ F.1 := by linarith
+    rw [flagDensityErrorSet_flagSeqMeasure φ F ε n, ← randomDensity_expectation φ F hn₂']
     have n_sq_add_n₀_ge_n₀ : n ^ 2 + n₀ ≥ n₀ := Nat.le_add_left n₀ (n ^ 2)
     let μ_n := φ.toMeasure n_sq_add_n₀_ge_n₀
     let rand_F := randomDensity F (n ^ 2 + n₀)
@@ -618,14 +677,14 @@ theorem flagSeqMeasure_error_prob_zero
     apply Summable.tsum_ofReal_ne_top
     exact ⟨_, hasSum_zeta_two⟩
   · rw [eventually_atTop]
-    use max F.1 1
+    use max (2 * F.1) 1
     intro n hn
     have hn₁ : n > 0 := le_of_max_le_right hn
-    have hn₂ : n ^ 2 + n₀ ≥ F.1 := by
+    have hn₂ : n ^ 2 + n₀ ≥ 2 * F.1 := by
       calc
         _ ≥ n ^ 2 := Nat.le_add_right (n ^ 2) n₀
         _ ≥ n := Nat.le_pow (by norm_num)
-        _ ≥ F.1 := le_of_max_le_left hn
+        _ ≥ 2 * F.1 := le_of_max_le_left hn
     exact hE n ⟨hn₁, hn₂⟩
 
 lemma prop_set_cases (P : Set Prop) : P = ∅ ∨ P = {True} ∨ P = {False} ∨ P = {True, False} := by
