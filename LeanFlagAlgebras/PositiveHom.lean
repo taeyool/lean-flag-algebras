@@ -21,6 +21,12 @@ instance : FunLike (PositiveHom σ) (FlagAlgebra σ) ℝ where
     simp at h
     congr
 
+@[ext]
+theorem ext {φ₁ φ₂ : PositiveHom σ} (h : ∀ f : FlagAlgebra σ, φ₁ f = φ₂ f) : φ₁ = φ₂
+  := by
+  apply Subtype.ext
+  exact AlgHom.ext h
+
 namespace PositiveHom
 
 theorem map_zero (φ : PositiveHom σ) : φ 0 = 0

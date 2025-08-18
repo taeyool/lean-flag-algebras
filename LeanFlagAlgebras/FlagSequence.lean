@@ -166,6 +166,22 @@ theorem coe_flag
   :=
   rfl
 
+theorem coe_injective
+    : Function.Injective (coe : PositiveHom σ → FlagDensitySpace σ)
+  := by
+  intro φ φ' h
+  simp only [coe, Subtype.mk.injEq] at h
+  apply congrFun at h
+  ext f
+  rcases Quotient.exists_rep f with ⟨frep, hfrep⟩
+  symm at hfrep
+  subst hfrep
+  rw [flagVector_eq_sum_unitVector frep]
+  simp_rw [sum_quot, smul_quot, map_sum, map_smul]
+  apply Finset.sum_congr rfl
+  intro F _
+  rw [h F]
+
 end PositiveHom
 
 lemma tendsto_sum
