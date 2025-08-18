@@ -937,6 +937,7 @@ noncomputable def
   :=
   let ℓ_other := (ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)
   let ℓ'_other := (ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀)
+
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
   let RHS := (G' : Flag σ (Fin ℓ'))
@@ -944,7 +945,8 @@ noncomputable def
              × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
   let S₀ := { (X, Gl') : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
               | X.card = ℓ'_other ∧ Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
-  let f_LHS_S₀ : LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : LHS) =>
+
+  let f_LHS_S₀_fwd : LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : LHS) =>
     have h_X_card : X.val.card = ℓ'_other := by
       simp_all only [
         Finset.mem_powersetCard, Finset.subset_univ, true_and,
@@ -955,6 +957,17 @@ noncomputable def
         Finset.mem_powersetCard, Finset.subset_univ, true_and, Set.toFinset_setOf,
         Finset.mem_filter, Finset.mem_univ, Finset.card_val, and_self]
     ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+
+  have h_f_LHS_S₀_inj : Function.Injective f_LHS_S₀_fwd := by
+    intro ⟨⟨X₁, Gl₁⟩, h₁⟩ ⟨⟨X₂, Gl₂⟩, h₂⟩ h_eq
+    sorry
+
+  have h_f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
+    intro ⟨⟨X, Gl'⟩, h⟩
+    sorry
+
+  let f_LHS_S₀ := Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
+
   sorry
 
 lemma labeledGraphTripleCount_eq_sum_density_prods'
