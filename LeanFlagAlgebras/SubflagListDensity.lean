@@ -946,7 +946,9 @@ noncomputable def
   let S₀ := { (X, Gl') : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
               | X.card = ℓ'_other ∧ Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
 
-  let f_LHS_S₀_fwd : LHS → S₀ := fun (⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩ : LHS) =>
+  let f_LHS_S₀_fwd : LHS → S₀ := by
+    intro ⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩
+    refine ⟨⟨X, Gl'⟩, ?h⟩
     have h_X_card : X.val.card = ℓ'_other := by
       simp_all only [
         Finset.mem_powersetCard, Finset.subset_univ, true_and,
@@ -956,15 +958,24 @@ noncomputable def
       simp_all only [
         Finset.mem_powersetCard, Finset.subset_univ, true_and, Set.toFinset_setOf,
         Finset.mem_filter, Finset.mem_univ, Finset.card_val, and_self]
-    ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+    exact ⟨h_X_card, h_Gl'_ind, h_Gl'_other⟩
 
   have h_f_LHS_S₀_inj : Function.Injective f_LHS_S₀_fwd := by
     intro ⟨⟨X₁, Gl₁⟩, h₁⟩ ⟨⟨X₂, Gl₂⟩, h₂⟩ h_eq
-    sorry
+    simp only [Subtype.mk.injEq, Prod.mk.injEq, f_LHS_S₀_fwd] at h_eq
+    let ⟨h_eq_X, h_eq_h'⟩ := h_eq
+    have h_eq_h : h₁ = h₂ := Subtype.eq h_eq_h'
+    simp only [h_eq_X, h_eq_h]
 
   have h_f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
-    intro ⟨⟨X, Gl'⟩, h⟩
-    sorry
+    intro ⟨⟨X, Gl⟩, h_X_card, h_Gl_ind, h_Gl_other⟩
+    have h_X : X ∈ Finset.powersetCard ℓ'_other Finset.univ := by
+      simp only [Finset.mem_powersetCard, Finset.subset_univ, h_X_card, and_self]
+    have h_Gl : Gl ∈ (setOfLabeledSubgraphListIsoHl G (labeledGraphTripleToList H₁ H₂ H₃)).toFinset := by
+      simp only [setOfLabeledSubgraphListIsoHl, Set.mem_setOf_eq, Set.toFinset_setOf,
+        Finset.mem_filter, Finset.mem_univ, true_and]
+      exact ⟨h_Gl_ind, h_Gl_other⟩
+    use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
 
   let f_LHS_S₀ := Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
 
