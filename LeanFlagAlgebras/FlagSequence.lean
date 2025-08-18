@@ -184,21 +184,39 @@ theorem coe_injective
 
 end PositiveHom
 
--- def PositiveHomSpace (σ : FlagType (Fin n₀))
---   :=
---   (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) '' Set.univ
+def PositiveHomSpace (σ : FlagType (Fin n₀))
+  :=
+  Set.range (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ)
 
--- theorem PositiveHomSpace_closed
---     : IsClosed (PositiveHomSpace σ)
+-- noncomputable def positiveHom_iso_positiveHomSpace
+--     : PositiveHom σ ≃ PositiveHomSpace σ
 --   := by
---   sorry
+--   let f : PositiveHom σ → PositiveHomSpace σ := fun φ => ⟨φ.coe, Set.mem_range_self φ⟩
+--   apply Equiv.ofBijective f
+--   constructor
+--   · sorry
+--   · sorry
 
--- #check TopologicalSpace.IsClosedEmbedding
--- #check Topology.IsClosedEmbedding.compactSpace
+instance : TopologicalSpace (PositiveHom σ)
+  :=
+  TopologicalSpace.induced (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) instTopologicalSpaceSubtype
 
--- instance : CompactSpace (PositiveHomSpace σ)
---   := by
---   apply Topology.IsClosedEmbedding.compactSpace
+-- theorem positiveHomSpace_isClosedEmbedding
+--     : Topology.IsClosedEmbedding (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) where
+--   eq_induced := rfl
+--   injective := PositiveHom.coe_injective
+--   isClosed_range := by
+--     sorry
+
+theorem positiveHomSpace_isClosed
+    : IsClosed (PositiveHomSpace σ)
+  := by
+  dsimp only [PositiveHomSpace]
+  sorry
+
+instance : CompactSpace (PositiveHomSpace σ)
+  :=
+  isCompact_iff_compactSpace.mp (positiveHomSpace_isClosed.isCompact)
 
 lemma tendsto_sum
     {ι : Type} [Fintype ι] (s : ι → ℕ → ℝ) (a : ι → ℝ)
