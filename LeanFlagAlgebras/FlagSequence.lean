@@ -184,6 +184,22 @@ theorem coe_injective
 
 end PositiveHom
 
+-- def PositiveHomSpace (σ : FlagType (Fin n₀))
+--   :=
+--   (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) '' Set.univ
+
+-- theorem PositiveHomSpace_closed
+--     : IsClosed (PositiveHomSpace σ)
+--   := by
+--   sorry
+
+-- #check TopologicalSpace.IsClosedEmbedding
+-- #check Topology.IsClosedEmbedding.compactSpace
+
+-- instance : CompactSpace (PositiveHomSpace σ)
+--   := by
+--   apply Topology.IsClosedEmbedding.compactSpace
+
 lemma tendsto_sum
     {ι : Type} [Fintype ι] (s : ι → ℕ → ℝ) (a : ι → ℝ)
     (h : ∀ i, Tendsto (s i) atTop (𝓝 (a i)))
