@@ -11,6 +11,7 @@ import Mathlib.Data.Nat.Choose.Multinomial
 import Mathlib.Data.Nat.Factorial.Basic
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Data.Vector.Basic
+import Mathlib.Data.FinEnum
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -89,6 +90,50 @@ lemma extend_r_list.sum_eq
   rw [sum_eq]
   apply Nat.add_sub_of_le h_r_list₁
 
+example {A : Type} [FinEnum A] : Fintype.card A = FinEnum.card A := by
+  exact Eq.symm FinEnum.card_eq_fintypeCard
+
+theorem tmp
+    (f : V → W) {k : ℕ} (hf : ∀ w : W, (f ⁻¹' {w}).toFinset.card = k)
+    : Fintype.card V = Fintype.card W * k := by
+  rw [← Fintype.card_fin k, ← Fintype.card_prod]
+  apply Finset.card_eq_of_equiv
+  symm
+  refine Equiv.ofBijective ?_ ?_
+  · intro ⟨⟨w, i⟩, h⟩
+    specialize hf w
+    have : FinEnum (f ⁻¹' {w}).toFinset := by
+      refine { card := ?_, equiv := ?_, decEq := fun a b ↦ a.instDecidableEq b }
+      · exact k
+      · exact Finset.equivFinOfCardEq hf
+    let list := FinEnum.toList (f ⁻¹' {w}).toFinset
+    have : list.length = (f ⁻¹' {w}).toFinset.card := by
+      dsimp [list, FinEnum.toList]
+      simp only [List.length_map, List.length_finRange]
+      rw [FinEnum.card_eq_fintypeCard]
+      exact Fintype.card_coe (f ⁻¹' {w}).toFinset
+    have : Fin k = Fin list.length := by
+      congr
+      dsimp [list]
+      subst hf
+      simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Finset.mem_univ, list]
+    have := list.get (cast this i)
+    exact {
+      val := this,
+      property := Finset.mem_univ _
+    }
+  · constructor
+    · intro ⟨⟨w₁, i₁⟩, hw₁⟩ ⟨⟨w₂, i₂⟩, hw₂⟩ h_eq
+      simp at h_eq
+      dsimp [FinEnum.toList] at h_eq
+      sorry
+    · sorry
+
+-- theorem tmp
+--     [Fintype α] [DecidableEq α] (S₁ S₂: Finset α) (f : S₁ → S₂) (h : ∀ s₂ ∈ S₂, (f ⁻¹' ⟨(Set.singleton s₂), sorry⟩).card = k)
+--     : S₁.card = S₂.card * k := by
+--     sorry
+
 theorem partitions_card_eq_multinomial
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list₁ : Fin t → ℕ) (h_r_list₁ : ∑ i, r_list₁ i ≤ V.card)
     : (partitions V r_list₁).card = Nat.multinomial Finset.univ (extend_r_list V.card r_list₁)
@@ -115,68 +160,9 @@ theorem partitions_card_eq_multinomial
         exact this.trans h_r_list₁
       specialize ih r_list₁' h_r_list₁'
 
-      let P := partitions V r_list₁
-      let split_partition : Finset (Fin (t + 1) → Finset α) → Finset ((Fin t → Finset α) × Finset α) := by
-        intro P
-        exact P.image (fun p => (fun i ↦ p i.castSucc, p (Fin.last t)))
-      let split_P := split_partition (partitions V r_list₁)
-      have : P.card = split_P.card := by
-        rw [Finset.card_image_of_injective]
-        intro p₁ p₂ h_eq
-        simp only [Prod.mk.injEq] at h_eq
-        obtain ⟨h_eq₁, h_eq₂⟩ := h_eq
-        funext i
-        by_cases h : i.val < t
-        · exact congrFun h_eq₁ ⟨i, h⟩
-        · rwa [← Fin.eq_last_of_not_lt h] at h_eq₂
-      let split_card : Finset ((Fin t → Finset α) × Finset α) → Finset (Fin t → Finset α) × Finset (Finset α) := by
-        intro P
-        exact (P.image (fun p ↦ p.1), P.image (fun p ↦ p.2))
-      have tmp5 : Fintype.card ((Fin t → Finset α) × Finset α) =
-  Fintype.card (Fin t → Finset α) * Fintype.card (Finset α) := by
-        rw [Fintype.card_prod]
-      let choose_left (V : Finset α) (selected : (Fin t → Finset α)) : (Fin t → Finset α) × Finset α := (selected, V \ (Finset.univ.biUnion selected))
-      let tmp1 : ℕ → (Fin (t + 1) → ℕ) → (Fin t → ℕ) × ℕ := by
-        intro n r_list
-        let r_list' : Fin t → ℕ := fun i ↦ r_list i.castSucc
-        exact (r_list', r_list (Fin.last t))
-      let tmp2 : (Fin (t + 1) → Finset α) → (Fin t → Finset α) × Finset α := by
-        intro r_list
-        let r_list' : Fin t → Finset α := fun i ↦ r_list i.castSucc
-        exact (r_list', r_list (Fin.last t))
-      have tmp3 := P.image tmp2
-      let tmp4 : (P.image tmp2).card = P.card := by
-        apply Finset.card_image_of_injective
-        intro p₁ p₂ h_eq
-        dsimp [tmp2] at h_eq
-        simp at h_eq
-        sorry
-
-      let trans_vec'' (f : Fin (t + 1) → Finset α) := by
-        let f' : Fin t → Finset α := fun i => f i.castSucc
-        exact (Vector.ofFn f', f (Fin.last t))
-      let plz := (partitions V r_list₁).image trans_vec''
-      have card_eq'' : plz.card = (partitions V r_list₁).card := by
-        apply Finset.card_image_of_injective
-        intro p₁ p₂ h_eq
-        simp only [trans_vec'', Prod.mk.injEq] at h_eq
-        obtain ⟨h_eq₁, h_eq₂⟩ := h_eq
-        funext i
-        by_cases hi : i.val < t
-        · rw [Vector.ext_iff] at h_eq₁
-          specialize h_eq₁ i.val hi
-          simp only [Vector.getElem_ofFn] at h_eq₁
-          exact h_eq₁
-        · rwa [← Fin.eq_last_of_not_lt hi] at h_eq₂
-
-
-
       let trans_vec (f : Fin (t + 1) → Finset α) := Vector.ofFn f
-      let trans_vec' (f : Fin t → Finset α) := Vector.ofFn f
       let vec := (partitions V r_list₁).image trans_vec
-      let vec' := (partitions V r_list₁').image trans_vec'
-
-      have card_eq : vec.card = (partitions V r_list₁).card := by
+      have card_eq₁ : vec.card = (partitions V r_list₁).card := by
         apply Finset.card_image_of_injective
         intro p₁ p₂ h_eq
         simp only [trans_vec] at h_eq
@@ -185,19 +171,10 @@ theorem partitions_card_eq_multinomial
         specialize h_eq i i.2
         simp only [Vector.getElem_ofFn, Fin.eta] at h_eq
         exact h_eq
-      have card_eq' : vec'.card = (partitions V r_list₁').card := by
-        apply Finset.card_image_of_injective
-        intro p₁ p₂ h_eq
-        simp only [trans_vec'] at h_eq
-        rw [Vector.ext_iff] at h_eq
-        funext i
-        specialize h_eq i i.2
-        simp only [Vector.getElem_ofFn, Fin.eta] at h_eq
-        exact h_eq
 
       let pop := vec.image (fun v => v.pop)
       let last := vec.image (fun v => v.get (Fin.last t))
-      have : vec.card = pop.card * last.card := by
+      have card_eq₂ : vec.card = pop.card * last.card := by
         rw [← Finset.card_product]
         have iso_vec_pop_x_card : vec ≃ pop ×ˢ last := by
           let S₀ := {x | x ∈ vec}
@@ -231,18 +208,39 @@ theorem partitions_card_eq_multinomial
               exact h_eq₂
           have f_surj : Function.Surjective f := by
             intro ⟨⟨tail, head⟩, hv⟩
-            let v_f := fun i : Fin (t + 1) => if h : i.val < t then tail.get ⟨i, h⟩ else head
+            simp only [S₁, Finset.mem_product, Finset.mem_image, vec, pop, last] at hv
+            obtain ⟨htail, hhead⟩ := hv
+            simp only [trans_vec] at htail hhead
+            obtain ⟨w_tail, hw_tail, htail_eq⟩ := htail
+            obtain ⟨hw_tail₁, hw_tail₂, hw_tail₃⟩ := hw_tail
+            simp only [partitions, Finset.mem_filter] at hw_tail₂
+            obtain ⟨hw_tail₄, hw_tail₅, hw_tail₆⟩ := hw_tail₂
+            obtain ⟨w_head, hw_head, hhead_eq⟩ := hhead
+            obtain ⟨hw_head₁, hw_head₂, hw_head₃⟩ := hw_head
+            simp only [partitions, Finset.mem_filter] at hw_head₂
+            obtain ⟨hw_head₄, hw_head₅, hw_head₆⟩ := hw_head₂
+            subst htail_eq
+            subst hhead_eq
+
+            let v_f := fun i : Fin (t + 1) => if h : i.val < t then w_tail.pop.get ⟨i, h⟩ else w_head.get (Fin.last t)
             let v : Vector (Finset α) (t + 1) := Vector.ofFn v_f
             have v_in_vec : v ∈ vec := by
-              simp only [S₁, Finset.mem_product, Finset.mem_image, vec, pop, last] at hv
-              obtain ⟨htail, hhead⟩ := hv
-              simp only [trans_vec] at htail hhead
-              obtain ⟨w_tail, hw_tail, htail_eq⟩ := htail
-              obtain ⟨w_head, hw_head, hhead_eq⟩ := hhead
               rw [Finset.mem_image]
               use v_f
               constructor
-              · sorry
+              · dsimp [partitions]
+                simp only [Finset.biUnion_subset_iff_forall_subset, Finset.mem_univ, forall_const, Finset.mem_filter, true_and]
+                constructor <;> try constructor
+                · intro i
+                  constructor
+                  · dsimp [v_f]
+                    split
+                    · sorry
+                    · sorry
+                  · sorry
+                · intro i j hij
+                  sorry
+                · sorry
               · dsimp only [trans_vec]
             use ⟨v, v_in_vec⟩
             simp only [Nat.add_one_sub_one, id_eq, Subtype.mk.injEq, Prod.mk.injEq, f]
@@ -251,20 +249,45 @@ theorem partitions_card_eq_multinomial
               intro i hi
               rw [Nat.add_one_sub_one] at hi
               simp only [Nat.add_one_sub_one, Vector.getElem_pop', Vector.getElem_ofFn, hi, ↓reduceDIte, v, v_f]
-              congr
+
+              sorry
             · have : (Vector.ofFn v_f).get (Fin.last t) = (Vector.ofFn v_f)[t] := rfl
               rw [this, Vector.getElem_ofFn]
               simp only [Nat.add_one_sub_one, lt_self_iff_false, ↓reduceDIte, v_f]
           exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
         apply Finset.card_eq_of_equiv iso_vec_pop_x_card
+      have card_eq₃ : pop.card = (partitions V r_list₁').card := by
+        let f : pop → (partitions V r_list₁') := by
+          intro v
+          let x := fun i ↦ v.val.get i
+          have hx : x ∈ partitions V r_list₁' := by
+            sorry
+          exact ⟨x, hx⟩
+        have f_inj : Function.Injective f := by
+          sorry
+          -- intro p₁ p₂ h_eq
+          -- simp only [Prod.mk.injEq] at h_eq
+          -- obtain ⟨h_eq₁, h_eq₂⟩ := h_eq
+          -- funext i
+          -- by_cases hi : i.val < t
+          -- · exact congrFun h_eq₁ ⟨i, hi⟩
+          -- · rwa [← Fin.eq_last_of_not_lt hi] at h_eq₂
+        have f_surj : Function.Surjective f := by
+          sorry
+        apply Finset.card_eq_of_equiv (Equiv.ofBijective f ⟨f_inj, f_surj⟩)
 
+      let split := vec.image (fun v => (v.pop, v.get (Fin.last t)))
 
 
       let parts := (V.card - ∑ j : Fin t, r_list₁' j).choose (r_list₁ (Fin.last t))
+      have card_eq₄ : split.card = pop.card * parts := by
+        refine Finset.card_eq_of_equiv_fin ?_
+
+        sorry
+
       have : (partitions V r_list₁).card = (partitions V r_list₁').card * parts := by
-        -- rw [this]
-
-
+        rw [← card_eq₁, card_eq₂]
+        congr!
         sorry
       rw [this, ih]
 
@@ -581,6 +604,7 @@ theorem partition_card'
       simp only [Vector.getElem_ofFn, Fin.eta] at h_eq
       exact h_eq
     rw [← card_eq]
+
 
 
 
