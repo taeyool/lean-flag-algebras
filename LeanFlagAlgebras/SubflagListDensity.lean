@@ -940,11 +940,23 @@ noncomputable def
 
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
+
+  let S₀ := { ⟨X, Gl'⟩ : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
+                | X.card = ℓ'_other
+                ∧ Gl'.IsInduced
+                ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+
   let RHS := (G' : Flag σ (Fin ℓ'))
              × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
              × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
-  let S₀ := { (X, Gl') : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
-              | X.card = ℓ'_other ∧ Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+
+  let T₀ := { ⟨G', Gl', Gl''⟩ : (G' : Flag σ (Fin ℓ'))
+                                × LabeledSubgraphList σ 2 G'.out
+                                × LabeledSubgraphList σ 2 G
+                | Gl'.IsInduced
+                ∧ predIsoLabeledHl G'.out [H₁, H₂]ᵍ Gl'
+                ∧ Gl''.IsInduced
+                ∧ predIsoLabeledHl G [G'.out, H₃]ᵍ Gl'' }
 
   let f_LHS_S₀_fwd : LHS → S₀ := by
     intro ⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩
@@ -978,6 +990,30 @@ noncomputable def
     use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
 
   let f_LHS_S₀ := Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
+
+  let f_T₀_RHS_fwd : T₀ → RHS := by
+    intro ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
+    refine ⟨G', ⟨Gl', ?r_Gl'⟩, ⟨Gl'', ?r_Gl''⟩⟩
+    dsimp [RHS]
+    . dsimp [setOfLabeledSubgraphListIsoHl]
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+      exact ⟨h_Gl'_ind, h_Gl'_other⟩
+    . dsimp [setOfLabeledSubgraphListIsoHl]
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+      exact ⟨h_Gl''_ind, h_Gl''_other⟩
+
+  let h_f_T₀_RHS_inj : Function.Injective f_T₀_RHS_fwd := by
+    intro ⟨⟨G'₁, Gl'₁, Gl''₁⟩, h₁⟩  ⟨⟨G'₂, Gl'₂, Gl''₂⟩, h₂⟩ h_eq
+    dsimp [f_T₀_RHS_fwd, RHS] at h_eq
+    split at h_eq
+    rename_i _ _ G'₁_copy Gl'₁_copy Gl''₁_copy _ _ _ _ h_eq_lhs
+    split at h_eq
+    rename_i _ _ G'₂_copy Gl'₂_copy Gl''₂_copy _ _ _ _ h_eq_rhs
+    have h_eq_G'₁_G'₂ : G'₁ = G'₂ := by simp_all only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq]
+    subst h_eq_G'₁_G'₂
+    simp_all only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq, true_and,
+      heq_eq_eq, Prod.mk.injEq, and_self]
+    sorry
 
   sorry
 
