@@ -274,11 +274,9 @@ theorem isInduced_exist_induce_set
   dsimp [inducedLabeledSubgraph]
   have hH_graph : inducedSubgraph G.graph S = H.subgraph := Eq.symm (inducedSubgraph_eq h_ind)
   congr
-  · funext u v
-    simp only [SimpleGraph.Subgraph.coe_adj, hH_graph]
-  · funext t
+  . funext u
     congr
-    exact (H.embed_eq t).symm
+    exact (H.embed_eq u).symm
   all_goals apply proof_irrel_heq
 
 end LabeledSubgraph
