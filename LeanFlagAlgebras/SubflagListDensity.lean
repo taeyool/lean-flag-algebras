@@ -971,6 +971,7 @@ noncomputable def
                 ∧ Gl''.IsInduced
                 ∧ predIsoLabeledHl G [G'.out, H₃]ᵍ Gl'' }
 
+
   let f_LHS_S₀_fwd : LHS → S₀ := by
     intro ⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩
     refine ⟨⟨X, Gl'⟩, ?h⟩
@@ -1003,6 +1004,25 @@ noncomputable def
     use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
 
   let f_LHS_S₀ := Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
+
+
+  let f_S₀_S₁_fwd : S₀ → S₁ := by
+    intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+    let G₁ := Gl' 0
+    let V₁ := G₁.subgraph.verts \ G.type_verts
+    let G₂ := Gl' 1
+    let V₂ := G₂.subgraph.verts \ G.type_verts
+    let G₃ := Gl' 2
+    let V₃ := G₃.subgraph.verts \ G.type_verts
+    dsimp [predIsoLabeledHl] at h_Gl'_other
+    sorry
+
+  have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
+
+  have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
+
+  let f_S₀_S₁ := Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
+
 
   let f_T₀_RHS_fwd : T₀ → RHS := by
     intro ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
