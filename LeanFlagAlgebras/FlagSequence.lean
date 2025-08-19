@@ -108,6 +108,10 @@ instance : CompactSpace (FlagDensitySpace σ)
   :=
   isCompact_iff_compactSpace.mp flagDensitySpace_compact
 
+noncomputable instance : MetricSpace (FlagDensitySpace σ)
+  :=
+  TopologicalSpace.metrizableSpaceMetric (FlagDensitySpace σ)
+
 noncomputable def flagDensitySeq' (s : FlagSeq σ) : ℕ → FlagDensitySpace σ
   :=
   fun n => {
@@ -188,30 +192,9 @@ def PositiveHomSpace (σ : FlagType (Fin n₀))
   :=
   Set.range (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ)
 
--- noncomputable def positiveHom_iso_positiveHomSpace
---     : PositiveHom σ ≃ PositiveHomSpace σ
---   := by
---   let f : PositiveHom σ → PositiveHomSpace σ := fun φ => ⟨φ.coe, Set.mem_range_self φ⟩
---   apply Equiv.ofBijective f
---   constructor
---   · sorry
---   · sorry
-
-instance : TopologicalSpace (PositiveHom σ)
-  :=
-  TopologicalSpace.induced (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) instTopologicalSpaceSubtype
-
--- theorem positiveHomSpace_isClosedEmbedding
---     : Topology.IsClosedEmbedding (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ) where
---   eq_induced := rfl
---   injective := PositiveHom.coe_injective
---   isClosed_range := by
---     sorry
-
 theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
-  dsimp only [PositiveHomSpace]
   sorry
 
 instance : CompactSpace (PositiveHomSpace σ)
