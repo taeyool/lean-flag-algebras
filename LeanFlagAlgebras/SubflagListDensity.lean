@@ -1002,20 +1002,38 @@ noncomputable def
       simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
       exact ⟨h_Gl''_ind, h_Gl''_other⟩
 
-  let h_f_T₀_RHS_inj : Function.Injective f_T₀_RHS_fwd := by
+  have h_f_T₀_RHS_inj : Function.Injective f_T₀_RHS_fwd := by
     intro ⟨⟨G'₁, Gl'₁, Gl''₁⟩, h₁⟩  ⟨⟨G'₂, Gl'₂, Gl''₂⟩, h₂⟩ h_eq
     dsimp [f_T₀_RHS_fwd, RHS] at h_eq
+
     split at h_eq
     rename_i _ _ G'₁_copy Gl'₁_copy Gl''₁_copy _ _ _ _ h_eq_lhs
+    simp only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq] at h_eq_lhs
+    obtain ⟨h_eq_lhs₀, h_eq_lhs₁⟩ := h_eq_lhs
+    subst h_eq_lhs₀
+
     split at h_eq
     rename_i _ _ G'₂_copy Gl'₂_copy Gl''₂_copy _ _ _ _ h_eq_rhs
-    have h_eq_G'₁_G'₂ : G'₁ = G'₂ := by simp_all only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq]
-    subst h_eq_G'₁_G'₂
-    simp_all only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq, true_and,
-      heq_eq_eq, Prod.mk.injEq, and_self]
-    sorry
+    simp only [Set.mem_setOf_eq, Subtype.mk.injEq, Sigma.mk.injEq] at h_eq_rhs
+    obtain ⟨h_eq_rhs₀, h_eq_rhs₁⟩ := h_eq_rhs
+    subst h_eq_rhs₀
 
-  sorry
+    simp only [Sigma.mk.injEq] at h_eq
+    obtain ⟨h_eq₀, h_eq₁⟩ := h_eq
+    subst h_eq₀
+
+    simp_all only [heq_eq_eq, Prod.mk.injEq, Subtype.mk.injEq]
+
+  have h_f_T₀_RHS_surj : Function.Surjective f_T₀_RHS_fwd := by
+    intro ⟨G', ⟨Gl', h_Gl'⟩, ⟨Gl'', h_Gl''⟩⟩
+    dsimp [setOfLabeledSubgraphListIsoHl] at h_Gl' h_Gl''
+    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at h_Gl' h_Gl''
+    obtain ⟨h_Gl'_ind, h_Gl'_other⟩ := h_Gl'
+    obtain ⟨h_Gl''_ind, h_Gl''_other⟩ := h_Gl''
+    use ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
+
+  let f_T₀_RHS := Equiv.ofBijective f_T₀_RHS_fwd ⟨h_f_T₀_RHS_inj, h_f_T₀_RHS_surj⟩
+sorry
 
 lemma labeledGraphTripleCount_eq_sum_density_prods'
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
