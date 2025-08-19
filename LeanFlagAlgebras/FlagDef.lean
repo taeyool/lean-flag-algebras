@@ -274,7 +274,7 @@ theorem isInduced_exist_induce_set
   dsimp [inducedLabeledSubgraph]
   have hH_graph : inducedSubgraph G.graph S = H.subgraph := Eq.symm (inducedSubgraph_eq h_ind)
   congr
-  · congr!
+  -- · congr!
   · funext t
     congr
     exact (H.embed_eq t).symm
