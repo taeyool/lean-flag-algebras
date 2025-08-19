@@ -192,6 +192,12 @@ def PositiveHomSpace (σ : FlagType (Fin n₀))
   :=
   Set.range (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ)
 
+noncomputable def PositiveHomSpace.toPosHom
+    (φ : PositiveHomSpace σ)
+    : PositiveHom σ
+  :=
+  Classical.choose φ.property
+
 theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
