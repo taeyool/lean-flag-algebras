@@ -6,9 +6,11 @@ import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Data.Set.Pairwise.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+
 
 
 open FlagAlgebras
@@ -945,6 +947,17 @@ noncomputable def
                 | X.card = ℓ'_other
                 ∧ Gl'.IsInduced
                 ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+
+  let S₁ := { ⟨V₁, V₂, V₃, V⟩ : Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ)
+                | V₁.toFinset.card = ℓ₁ - ℓ₀
+                ∧ V₂.toFinset.card = ℓ₂ - ℓ₀
+                ∧ V₃.toFinset.card = ℓ₃ - ℓ₀
+                ∧ V.toFinset.card = ℓ'_other
+                ∧ (Set.univ : Set (Fin 5)).PairwiseDisjoint
+                    (fun i ↦ match i with | 0 => G.type_verts | 1 => V₁ | 2 => V₂ | 3 => V₃ | 4 => V)
+                ∧ Nonempty ((inducedLabeledSubgraph G (V₁ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₁)
+                ∧ Nonempty ((inducedLabeledSubgraph G (V₂ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₂)
+                ∧ Nonempty ((inducedLabeledSubgraph G (V₃ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₃) }
 
   let RHS := (G' : Flag σ (Fin ℓ'))
              × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
