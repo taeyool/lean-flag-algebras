@@ -1,8 +1,8 @@
-import LeanFlagAlgebras.BoolAlgebra
-import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample1
-import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample2
-import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample3
-import LeanFlagAlgebras.DefinitionImpactOnProofs
+-- import LeanFlagAlgebras.BoolAlgebra
+-- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample1
+-- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample2
+-- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample3
+-- import LeanFlagAlgebras.DefinitionImpactOnProofs
 import LeanFlagAlgebras.FlagAlgebra
 import LeanFlagAlgebras.FlagDef
 import LeanFlagAlgebras.FlagOperators
