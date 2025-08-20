@@ -926,6 +926,33 @@ theorem flagTripleDensity_empty'
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
 
+lemma labeledSubgraph_card_from_iso
+    (G : LabeledGraph σ (Fin ℓ)) (G' : LabeledSubgraph σ G) (H₁ : LabeledGraph σ (Fin ℓ₁)) (h : Nonempty (G'.coe ≃f H₁))
+    : (G'.subgraph.verts \ G.type_verts).toFinset.card = ℓ₁ - ℓ₀
+  := by
+  let V' : Set (Fin ℓ) := G'.subgraph.verts \ G.type_verts
+  have h_G'_verts_card : (Fintype.card G'.subgraph.verts) = ℓ₁ := by
+    have : ℓ₁ = (Fintype.card (Fin ℓ₁) : ℕ) := Eq.symm (Fintype.card_fin ℓ₁)
+    rw [this]
+    exact Fintype.card_congr h.some.graph_iso
+  have h_G_type_verts_subset_G'_verts : G.type_verts ⊆ G'.subgraph.verts :=
+    labeledSubgraph_contain_type_verts G G'
+  have h_G_type_verts_card : (Fintype.card G.type_verts) = ℓ₀ := by
+    rw [G.type_verts_card_eq]
+    dsimp [FlagType.size]
+    exact (Fintype.card_fin ℓ₀)
+  have h : V'.toFinset.card = ℓ₁ - ℓ₀ :=
+    calc
+      V'.toFinset.card = (G'.subgraph.verts.toFinset \ G.type_verts.toFinset).card := by
+            dsimp [V']; simp only [Set.toFinset_diff]
+      _ = G'.subgraph.verts.toFinset.card - G.type_verts.toFinset.card :=
+            Finset.card_sdiff (by simp only [Set.subset_toFinset, Set.coe_toFinset, h_G_type_verts_subset_G'_verts])
+      _ = Fintype.card G'.subgraph.verts - Fintype.card G.type_verts := by
+            simp only [Set.toFinset_card, Fintype.card_ofFinset]
+      _ = ℓ₁ - ℓ₀ := by
+            rw [h_G'_verts_card, h_G_type_verts_card]
+  rw [←h]
+
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -1014,30 +1041,17 @@ noncomputable def
               ?h_V₁_card, ?h_V₂_card, ?h_V₃_card, ?h_V_card,
               ?h_disjoint, ?h_iso₁, ?h_iso₂, ?h_iso₃⟩
       next h_V₁_card =>
-        have h_G₁_verts_card : (Fintype.card G₁.subgraph.verts) = ℓ₁ := by
-          have : ℓ₁ = (Fintype.card (Fin ℓ₁) : ℕ) := Eq.symm (Fintype.card_fin ℓ₁)
-          rw [this]
-          exact Fintype.card_congr (h_Gl'_other_iso 0).some.graph_iso
-        have h_G_type_verts_subset_G₁_verts : G.type_verts ⊆ G₁.subgraph.verts :=
-          labeledSubgraph_contain_type_verts G G₁
-        have h_G_type_verts_card : (Fintype.card G.type_verts) = ℓ₀ := by
-          rw [G.type_verts_card_eq]
-          dsimp [FlagType.size]
-          exact (Fintype.card_fin ℓ₀)
-        have h : V₁.toFinset.card = ℓ₁ - ℓ₀ :=
-          calc
-            V₁.toFinset.card = (G₁.subgraph.verts.toFinset \ G.type_verts.toFinset).card := by
-                  dsimp [V₁]; simp only [Set.toFinset_diff]
-            _ = G₁.subgraph.verts.toFinset.card - G.type_verts.toFinset.card :=
-                  Finset.card_sdiff (by simp only [Set.subset_toFinset, Set.coe_toFinset, h_G_type_verts_subset_G₁_verts])
-            _ = Fintype.card G₁.subgraph.verts - Fintype.card G.type_verts := by
-                  simp only [Set.toFinset_card, Fintype.card_ofFinset]
-            _ = ℓ₁ - ℓ₀ := by
-                  rw [h_G₁_verts_card, h_G_type_verts_card]
-        rw [←h]
+        have := labeledSubgraph_card_from_iso G G₁ H₁ (h_Gl'_other_iso 0)
+        rw [←this]
         congr!
-      next h_V₂_card => sorry
-      next h_V₃_card => sorry
+      next h_V₂_card =>
+        have := labeledSubgraph_card_from_iso G G₂ H₂ (h_Gl'_other_iso 1)
+        rw [←this]
+        congr!
+      next h_V₃_card =>
+        have := labeledSubgraph_card_from_iso G G₃ H₃ (h_Gl'_other_iso 2)
+        rw [←this]
+        congr!
       next h_V_card => sorry
       next h_disjoint => sorry
       next h_iso₁ => sorry
