@@ -942,11 +942,49 @@ noncomputable def
 
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
+  let RHS := (G' : Flag σ (Fin ℓ'))
+             × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
+             × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
+
 
   let S₀ := { ⟨X, Gl'⟩ : Finset (Fin ℓ_other) × LabeledSubgraphList σ 3 G
                 | X.card = ℓ'_other
                 ∧ Gl'.IsInduced
                 ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+
+  let f_LHS_S₀ : LHS ≃ S₀ :=
+    let f_LHS_S₀_fwd : LHS → S₀ := by
+      intro ⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩
+      refine ⟨⟨X, Gl'⟩, ?h⟩
+      have h_X_card : X.val.card = ℓ'_other := by
+        simp_all only [
+          Finset.mem_powersetCard, Finset.subset_univ, true_and,
+          Set.mem_toFinset, Finset.card_val]
+      let ⟨h_Gl'_ind, h_Gl'_other⟩ : Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' := by
+        dsimp [setOfLabeledSubgraphListIsoHl] at h_Gl'
+        simp_all only [
+          Finset.mem_powersetCard, Finset.subset_univ, true_and, Set.toFinset_setOf,
+          Finset.mem_filter, Finset.mem_univ, Finset.card_val, and_self]
+      exact ⟨h_X_card, h_Gl'_ind, h_Gl'_other⟩
+
+    have h_f_LHS_S₀_inj : Function.Injective f_LHS_S₀_fwd := by
+      intro ⟨⟨X₁, Gl₁⟩, h₁⟩ ⟨⟨X₂, Gl₂⟩, h₂⟩ h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq, f_LHS_S₀_fwd] at h_eq
+      let ⟨h_eq_X, h_eq_h'⟩ := h_eq
+      have h_eq_h : h₁ = h₂ := Subtype.eq h_eq_h'
+      simp only [h_eq_X, h_eq_h]
+
+    have h_f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
+      intro ⟨⟨X, Gl⟩, h_X_card, h_Gl_ind, h_Gl_other⟩
+      have h_X : X ∈ Finset.powersetCard ℓ'_other Finset.univ := by
+        simp only [Finset.mem_powersetCard, Finset.subset_univ, h_X_card, and_self]
+      have h_Gl : Gl ∈ (setOfLabeledSubgraphListIsoHl G (labeledGraphTripleToList H₁ H₂ H₃)).toFinset := by
+        simp only [setOfLabeledSubgraphListIsoHl, Set.mem_setOf_eq, Set.toFinset_setOf,
+          Finset.mem_filter, Finset.mem_univ, true_and]
+        exact ⟨h_Gl_ind, h_Gl_other⟩
+      use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
+
+    Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
 
   let S₁ := { ⟨V₁, V₂, V₃, V⟩ : Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ)
                 | V₁.toFinset.card = ℓ₁ - ℓ₀
@@ -959,9 +997,58 @@ noncomputable def
                 ∧ Nonempty ((inducedLabeledSubgraph G (V₂ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₂)
                 ∧ Nonempty ((inducedLabeledSubgraph G (V₃ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₃) }
 
-  let RHS := (G' : Flag σ (Fin ℓ'))
-             × (setOfLabeledSubgraphListIsoHl G'.out [H₁, H₂]ᵍ).toFinset
-             × (setOfLabeledSubgraphListIsoHl G [G'.out, H₃]ᵍ).toFinset
+  let f_S₀_S₁ : S₀ ≃ S₁ :=
+    let f_S₀_S₁_fwd : S₀ → S₁ := by
+      intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+      let G₁ := Gl' 0
+      let V₁ : Set (Fin ℓ) := G₁.subgraph.verts \ G.type_verts
+      let G₂ := Gl' 1
+      let V₂ : Set (Fin ℓ) := G₂.subgraph.verts \ G.type_verts
+      let G₃ := Gl' 2
+      let V₃ : Set (Fin ℓ) := G₃.subgraph.verts \ G.type_verts
+      let f_other : (Fin ℓ_other) → (Fin ℓ) := sorry
+      let V : Set (Fin ℓ) := f_other '' X
+      dsimp [predIsoLabeledHl] at h_Gl'_other
+      obtain ⟨h_Gl'_other_iso, h_Gl'_other_disj⟩ := h_Gl'_other
+      refine ⟨⟨V₁, V₂, V₃, V⟩,
+              ?h_V₁_card, ?h_V₂_card, ?h_V₃_card, ?h_V_card,
+              ?h_disjoint, ?h_iso₁, ?h_iso₂, ?h_iso₃⟩
+      next h_V₁_card =>
+        have h_G₁_verts_card : (Fintype.card G₁.subgraph.verts) = ℓ₁ := by
+          have : ℓ₁ = (Fintype.card (Fin ℓ₁) : ℕ) := Eq.symm (Fintype.card_fin ℓ₁)
+          rw [this]
+          exact Fintype.card_congr (h_Gl'_other_iso 0).some.graph_iso
+        have h_G_type_verts_subset_G₁_verts : G.type_verts ⊆ G₁.subgraph.verts :=
+          labeledSubgraph_contain_type_verts G G₁
+        have h_G_type_verts_card : (Fintype.card G.type_verts) = ℓ₀ := by
+          rw [G.type_verts_card_eq]
+          dsimp [FlagType.size]
+          exact (Fintype.card_fin ℓ₀)
+        have h : V₁.toFinset.card = ℓ₁ - ℓ₀ :=
+          calc
+            V₁.toFinset.card = (G₁.subgraph.verts.toFinset \ G.type_verts.toFinset).card := by
+                  dsimp [V₁]; simp only [Set.toFinset_diff]
+            _ = G₁.subgraph.verts.toFinset.card - G.type_verts.toFinset.card :=
+                  Finset.card_sdiff (by simp only [Set.subset_toFinset, Set.coe_toFinset, h_G_type_verts_subset_G₁_verts])
+            _ = Fintype.card G₁.subgraph.verts - Fintype.card G.type_verts := by
+                  simp only [Set.toFinset_card, Fintype.card_ofFinset]
+            _ = ℓ₁ - ℓ₀ := by
+                  rw [h_G₁_verts_card, h_G_type_verts_card]
+        rw [←h]
+        congr!
+      next h_V₂_card => sorry
+      next h_V₃_card => sorry
+      next h_V_card => sorry
+      next h_disjoint => sorry
+      next h_iso₁ => sorry
+      next h_iso₂ => sorry
+      next h_iso₃ => sorry
+
+    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
+
+    have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
+
+    Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
 
   let T₀ := { ⟨G', Gl', Gl''⟩ : (G' : Flag σ (Fin ℓ'))
                                 × LabeledSubgraphList σ 2 G'.out
@@ -970,58 +1057,6 @@ noncomputable def
                 ∧ predIsoLabeledHl G'.out [H₁, H₂]ᵍ Gl'
                 ∧ Gl''.IsInduced
                 ∧ predIsoLabeledHl G [G'.out, H₃]ᵍ Gl'' }
-
-
-  let f_LHS_S₀_fwd : LHS → S₀ := by
-    intro ⟨⟨X,h_X⟩, ⟨Gl',h_Gl'⟩⟩
-    refine ⟨⟨X, Gl'⟩, ?h⟩
-    have h_X_card : X.val.card = ℓ'_other := by
-      simp_all only [
-        Finset.mem_powersetCard, Finset.subset_univ, true_and,
-        Set.mem_toFinset, Finset.card_val]
-    let ⟨h_Gl'_ind, h_Gl'_other⟩ : Gl'.IsInduced ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' := by
-      dsimp [setOfLabeledSubgraphListIsoHl] at h_Gl'
-      simp_all only [
-        Finset.mem_powersetCard, Finset.subset_univ, true_and, Set.toFinset_setOf,
-        Finset.mem_filter, Finset.mem_univ, Finset.card_val, and_self]
-    exact ⟨h_X_card, h_Gl'_ind, h_Gl'_other⟩
-
-  have h_f_LHS_S₀_inj : Function.Injective f_LHS_S₀_fwd := by
-    intro ⟨⟨X₁, Gl₁⟩, h₁⟩ ⟨⟨X₂, Gl₂⟩, h₂⟩ h_eq
-    simp only [Subtype.mk.injEq, Prod.mk.injEq, f_LHS_S₀_fwd] at h_eq
-    let ⟨h_eq_X, h_eq_h'⟩ := h_eq
-    have h_eq_h : h₁ = h₂ := Subtype.eq h_eq_h'
-    simp only [h_eq_X, h_eq_h]
-
-  have h_f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
-    intro ⟨⟨X, Gl⟩, h_X_card, h_Gl_ind, h_Gl_other⟩
-    have h_X : X ∈ Finset.powersetCard ℓ'_other Finset.univ := by
-      simp only [Finset.mem_powersetCard, Finset.subset_univ, h_X_card, and_self]
-    have h_Gl : Gl ∈ (setOfLabeledSubgraphListIsoHl G (labeledGraphTripleToList H₁ H₂ H₃)).toFinset := by
-      simp only [setOfLabeledSubgraphListIsoHl, Set.mem_setOf_eq, Set.toFinset_setOf,
-        Finset.mem_filter, Finset.mem_univ, true_and]
-      exact ⟨h_Gl_ind, h_Gl_other⟩
-    use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
-
-  let f_LHS_S₀ := Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
-
-
-  let f_S₀_S₁_fwd : S₀ → S₁ := by
-    intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
-    let G₁ := Gl' 0
-    let V₁ := G₁.subgraph.verts \ G.type_verts
-    let G₂ := Gl' 1
-    let V₂ := G₂.subgraph.verts \ G.type_verts
-    let G₃ := Gl' 2
-    let V₃ := G₃.subgraph.verts \ G.type_verts
-    dsimp [predIsoLabeledHl] at h_Gl'_other
-    sorry
-
-  have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
-
-  have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
-
-  let f_S₀_S₁ := Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
 
 
   let f_T₀_RHS_fwd : T₀ → RHS := by
