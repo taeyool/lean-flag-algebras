@@ -4,12 +4,14 @@ import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Data.Set.Pairwise.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+
 
 
 
@@ -1027,31 +1029,49 @@ noncomputable def
   let f_S₀_S₁ : S₀ ≃ S₁ :=
     let f_S₀_S₁_fwd : S₀ → S₁ := by
       intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
-      let G₁ := Gl' 0
-      let V₁ : Set (Fin ℓ) := G₁.subgraph.verts \ G.type_verts
-      let G₂ := Gl' 1
-      let V₂ : Set (Fin ℓ) := G₂.subgraph.verts \ G.type_verts
-      let G₃ := Gl' 2
-      let V₃ : Set (Fin ℓ) := G₃.subgraph.verts \ G.type_verts
-      let f_other : (Fin ℓ_other) → (Fin ℓ) := sorry
-      let V : Set (Fin ℓ) := f_other '' X
       dsimp [predIsoLabeledHl] at h_Gl'_other
       obtain ⟨h_Gl'_other_iso, h_Gl'_other_disj⟩ := h_Gl'_other
+
+      let G₁ := Gl' 0
+      let V₁ : Set (Fin ℓ) := G₁.subgraph.verts \ G.type_verts
+      let h_V₁_card : V₁.toFinset.card = ℓ₁ - ℓ₀ := labeledSubgraph_card_from_iso G G₁ H₁ (h_Gl'_other_iso 0)
+
+      let G₂ := Gl' 1
+      let V₂ : Set (Fin ℓ) := G₂.subgraph.verts \ G.type_verts
+      let h_V₂_card : V₂.toFinset.card = ℓ₂ - ℓ₀ := labeledSubgraph_card_from_iso G G₂ H₂ (h_Gl'_other_iso 1)
+
+      let G₃ := Gl' 2
+      let V₃ : Set (Fin ℓ) := G₃.subgraph.verts \ G.type_verts
+      let h_V₃_card : V₃.toFinset.card = ℓ₃ - ℓ₀ := labeledSubgraph_card_from_iso G G₃ H₃ (h_Gl'_other_iso 2)
+
+      let V_other := (V₁ ∪ V₂ ∪ V₃ ∪ G.type_verts)ᶜ
+      have h_V_other_card : V_other.toFinset.card = ℓ_other :=
+        calc
+          V_other.toFinset.card
+          _ = (V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset ∪ G.type_verts.toFinset)ᶜ.card := by
+                  dsimp [V_other]; simp only [Set.toFinset_compl, Set.toFinset_union]
+          _ = ℓ - (V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset ∪ G.type_verts.toFinset).card := by
+                  rw [Finset.card_compl]
+                  simp only [Fintype.card_fin, Finset.union_assoc]
+          _ = ℓ - (V₁.toFinset.card + V₂.toFinset.card + V₃.toFinset.card + G.type_verts.toFinset.card) := by
+                  sorry
+          _ = ℓ_other := by
+                  simp only [h_V₁_card, h_V₂_card, h_V₃_card,
+                      Set.toFinset_card, G.type_verts_card_eq,
+                      FlagType.size, Fintype.card_fin]
+                  omega
+      let f_V_other : Fin ℓ_other → Fin ℓ := by
+        rw [←h_V_other_card]
+        intro i
+        exact ((Finset.equivFin V_other.toFinset).symm i).val
+      let V : Set (Fin ℓ) := f_V_other '' X
+
       refine ⟨⟨V₁, V₂, V₃, V⟩,
               ?h_V₁_card, ?h_V₂_card, ?h_V₃_card, ?h_V_card,
               ?h_disjoint, ?h_iso₁, ?h_iso₂, ?h_iso₃⟩
-      next h_V₁_card =>
-        have := labeledSubgraph_card_from_iso G G₁ H₁ (h_Gl'_other_iso 0)
-        rw [←this]
-        congr!
-      next h_V₂_card =>
-        have := labeledSubgraph_card_from_iso G G₂ H₂ (h_Gl'_other_iso 1)
-        rw [←this]
-        congr!
-      next h_V₃_card =>
-        have := labeledSubgraph_card_from_iso G G₃ H₃ (h_Gl'_other_iso 2)
-        rw [←this]
-        congr!
+      next h_V₁_card_S₁ => rw [←h_V₁_card]; congr!
+      next h_V₂_card_S₁ => rw [←h_V₂_card]; congr!
+      next h_V₃_card_S₁ => rw [←h_V₃_card]; congr!
       next h_V_card => sorry
       next h_disjoint => sorry
       next h_iso₁ => sorry
