@@ -213,19 +213,3 @@ theorem downward_unitVector_nonneg
     simp only [Rat.cast_div, Rat.cast_natCast]
     apply div_nonneg <;> simp_all only [Nat.cast_nonneg]
   · exact φ.2 ⟨F.fst, unlabel F.snd⟩
-
-theorem downward_preserve_semanticCone
-    (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
-    : ⟦f⟧₀ ∈ semanticCone ∅ₜ
-  := by
-  sorry
-
-theorem square_downward_geq_zero
-    (f : FlagAlgebra σ)
-    : ⟦f * f⟧₀ ≥ 0
-  := by
-  simp only [ge_iff_le, le_def, sub_zero]
-  apply downward_preserve_semanticCone
-  intro φ
-  rw [PositiveHom.map_mul]
-  exact mul_self_nonneg (φ f)
