@@ -177,7 +177,7 @@ lemma downwardFlagVector_add
 
 lemma downwardFlagVector_sum
     (s : Finset ι) (c : ι → FlagVector σ)
-    : downwardFlagVector (∑ i in s, c i) = ∑ i in s, downwardFlagVector (c i)
+    : downwardFlagVector (∑ i ∈ s, c i) = ∑ i ∈ s, downwardFlagVector (c i)
   := by
   simp only [downwardFlagVector, linearExtension_sum]
 
@@ -465,7 +465,7 @@ theorem downward_add
 
 theorem downward_sum
     {ι : Type*} (s : Finset ι) (c : ι → FlagAlgebra σ)
-    : ⟦∑ i in s, c i⟧₀ = ∑ i in s, ⟦c i⟧₀
+    : ⟦∑ i ∈ s, c i⟧₀ = ∑ i ∈ s, ⟦c i⟧₀
   := by
   classical
   refine Finset.induction_on s ?_ ?_
