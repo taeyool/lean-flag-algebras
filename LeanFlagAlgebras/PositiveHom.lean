@@ -90,6 +90,13 @@ theorem positiveHom_unitVector_le_one
   intro G _
   exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
 
+theorem positiveHom_unitVector_eq_zero
+    (φ : PositiveHom σ) {ℓ ℓ' : ℕ} {F : FlagWithSize σ ℓ} {G : FlagWithSize σ ℓ'}
+    (h : flagDensity₁ F G > 0) (hF : φ ⟦unitVector ⟨ℓ, F⟩⟧ = 0)
+    : φ ⟦unitVector ⟨ℓ', G⟩⟧ = 0
+  := by
+  sorry
+
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }
 
@@ -154,62 +161,62 @@ theorem nonneg_smul_nonneg_geq_zero
     exact hf φ
   exact Left.mul_nonneg hr hφf
 
-noncomputable def flagVectorDensity
-    (f : FlagVector σ) (G : FinFlag σ)
-    : ℝ
-  :=
-  linearExtension (fun F : FinFlag σ => flagDensity₁ F.2 G.2) f
+-- noncomputable def flagVectorDensity
+--     (f : FlagVector σ) (G : FinFlag σ)
+--     : ℝ
+--   :=
+--   linearExtension (fun F : FinFlag σ => flagDensity₁ F.2 G.2) f
 
-theorem flagVectorDensity_zero
-    (G : FinFlag σ)
-    : flagVectorDensity 0 G = 0
-  := by
-  simp only [flagVectorDensity, linearExtension_zero]
+-- theorem flagVectorDensity_zero
+--     (G : FinFlag σ)
+--     : flagVectorDensity 0 G = 0
+--   := by
+--   simp only [flagVectorDensity, linearExtension_zero]
 
-theorem flagVectorDensity_add
-    (f f' : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (f + f') G = flagVectorDensity f G + flagVectorDensity f' G
-  := by
-  simp only [flagVectorDensity, linearExtension_add]
+-- theorem flagVectorDensity_add
+--     (f f' : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (f + f') G = flagVectorDensity f G + flagVectorDensity f' G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_add]
 
-theorem flagVectorDensity_sum
-    (s : Finset ι) (c : ι → FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (∑ i ∈ s, c i) G = ∑ i ∈ s, flagVectorDensity (c i) G
-  := by
-  simp only [flagVectorDensity, linearExtension_sum]
+-- theorem flagVectorDensity_sum
+--     (s : Finset ι) (c : ι → FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (∑ i ∈ s, c i) G = ∑ i ∈ s, flagVectorDensity (c i) G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_sum]
 
-theorem flagVectorDensity_neg
-    (f : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (-f) G = -flagVectorDensity f G
-  := by
-  simp only [flagVectorDensity, linearExtension_neg]
+-- theorem flagVectorDensity_neg
+--     (f : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (-f) G = -flagVectorDensity f G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_neg]
 
-theorem flagVectorDensity_sub
-    (f f' : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (f - f') G = flagVectorDensity f G - flagVectorDensity f' G
-  := by
-  simp only [flagVectorDensity, linearExtension_sub]
+-- theorem flagVectorDensity_sub
+--     (f f' : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (f - f') G = flagVectorDensity f G - flagVectorDensity f' G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_sub]
 
-theorem flagVectorDensity_smul
-    (f : FlagVector σ) (r : ℝ) (G : FinFlag σ)
-    : flagVectorDensity (r • f) G = r • flagVectorDensity f G
-  := by
-  simp only [flagVectorDensity, linearExtension_smul]
+-- theorem flagVectorDensity_smul
+--     (f : FlagVector σ) (r : ℝ) (G : FinFlag σ)
+--     : flagVectorDensity (r • f) G = r • flagVectorDensity f G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_smul]
 
-theorem downward_unitVector_nonneg
-    (φ : PositiveHom ∅ₜ) (F : FinFlag σ)
-    : 0 ≤ φ (downward ⟦unitVector F⟧) := by
-  dsimp [downward, downwardFlagVectorQuot, downwardFlagVector, linearExtension]
-  simp_all only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
-  dsimp [downwardFlag]
-  have tmp : ⟦((downwardNormalizingFactor F.snd : ℝ)) • unitVector ⟨F.fst, unlabel F.snd⟩⟧ = (downwardNormalizingFactor F.snd : ℝ) • (⟦unitVector ⟨F.fst, unlabel F.snd⟩⟧ : FlagAlgebra ∅ₜ) := rfl
-  rw [tmp, PositiveHom.map_smul φ]
-  apply mul_nonneg
-  · let F' := F.snd
-    obtain ⟨f', hf'⟩ := Quotient.exists_rep F'
-    dsimp [F'] at hf'
-    rw [← hf']
-    dsimp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
-    simp only [Rat.cast_div, Rat.cast_natCast]
-    apply div_nonneg <;> simp_all only [Nat.cast_nonneg]
-  · exact φ.2 ⟨F.fst, unlabel F.snd⟩
+-- theorem downward_unitVector_nonneg
+--     (φ : PositiveHom ∅ₜ) (F : FinFlag σ)
+--     : 0 ≤ φ (downward ⟦unitVector F⟧) := by
+--   dsimp [downward, downwardFlagVectorQuot, downwardFlagVector, linearExtension]
+--   simp_all only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
+--   dsimp [downwardFlag]
+--   have tmp : ⟦((downwardNormalizingFactor F.snd : ℝ)) • unitVector ⟨F.fst, unlabel F.snd⟩⟧ = (downwardNormalizingFactor F.snd : ℝ) • (⟦unitVector ⟨F.fst, unlabel F.snd⟩⟧ : FlagAlgebra ∅ₜ) := rfl
+--   rw [tmp, PositiveHom.map_smul φ]
+--   apply mul_nonneg
+--   · let F' := F.snd
+--     obtain ⟨f', hf'⟩ := Quotient.exists_rep F'
+--     dsimp [F'] at hf'
+--     rw [← hf']
+--     dsimp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
+--     simp only [Rat.cast_div, Rat.cast_natCast]
+--     apply div_nonneg <;> simp_all only [Nat.cast_nonneg]
+--   · exact φ.2 ⟨F.fst, unlabel F.snd⟩

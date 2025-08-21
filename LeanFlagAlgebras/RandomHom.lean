@@ -6,18 +6,30 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 open MeasureTheory
 
-noncomputable def flagType_asEmptyType
+def flagType_asEmptyTypeFlag
+    (σ : FlagType (Fin n₀))
+    : Flag ∅ₜ (Fin n₀)
+  :=
+  let σ₀ : LabeledGraph ∅ₜ (Fin n₀) := {
+    graph := σ
+    type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj σ.Adj
+  }
+  ⟦σ₀⟧
+
+noncomputable def flagType_asEmptyTypeAlgebra
     (σ : FlagType (Fin n₀))
     : FlagAlgebra ∅ₜ
   :=
-  let σ₀ : LabeledGraph ∅ₜ (Fin n₀) := {
-    graph := σ,
-    type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj σ.Adj
-  }
-  let σ₀_finFlag : FinFlag ∅ₜ := ⟨n₀, ⟦σ₀⟧⟩
+  let σ₀_finFlag : FinFlag ∅ₜ := ⟨n₀, flagType_asEmptyTypeFlag σ⟩
   ⟦unitVector σ₀_finFlag⟧
 
-notation "⟨" σ "⟩₀" => (flagType_asEmptyType σ)
+notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
+
+theorem flagDensity₁_flagType_asEmptyType
+    (F : FinFlag σ)
+    : flagDensity₁ (flagType_asEmptyTypeFlag σ) (unlabel F.2) > 0
+  := by
+  sorry
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
     (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
@@ -45,7 +57,8 @@ theorem downward_preserve_semanticCone
       dsimp only [downwardFlag]
       rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
       right
-      sorry
+      apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType F)
+      exact Eq.symm hφ₀
     exact le_of_eq (Eq.symm this)
   · obtain ⟨ℙ, _, hℙ⟩ := exists_prob_measure_extend_emptyType_positiveHom φ₀ hφ₀
     specialize hℙ f
