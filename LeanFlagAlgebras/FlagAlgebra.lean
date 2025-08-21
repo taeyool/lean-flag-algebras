@@ -914,7 +914,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       apply linearExtension_add
     have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := by
       apply linearExtension_smul
-    have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+    have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
       apply linearExtension_sum
     have hφ : ∀ (i : I), φ (v i) = 0 := by
       intro i
@@ -923,7 +923,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       have hℓ : ℓ i ≤ L := by
         simp only [le_sup_iff, L]; left
         apply Finset.le_sup; simp
-      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
         apply linearExtension_sum
       have φ_neg : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) := by
         apply linearExtension_neg
@@ -943,7 +943,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
       · right; exact s
       · left; simp only [φ, linearExtension_unitVector]
     have h_φ_1 : φ 1 = 1 := by
-      show ∑ G in (unitVector 1).support, _ = 1
+      show ∑ G ∈ (unitVector 1).support, _ = 1
       simp [sum_singleton, flagDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       simp_all only [mul_zero, sum_const_zero, zero_ne_one]
