@@ -213,12 +213,11 @@ lemma subgraphDensity_respects_eqv_on_G
   let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphIsoH φ H
-  have h_count : subgraphCount H G₀ = subgraphCount H G₁ := by
-    dsimp only [subgraphCount, subgraphSet]
-    have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp only [Set.toFinset_card, Set.coe_setOf]
-    exact this
-  rw [h_count]
+  congr 2
+  dsimp only [subgraphCount, subgraphSet]
+  have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  simp only [Set.toFinset_card, Set.coe_setOf]
+  exact this
 
 
 noncomputable def subgraphDensityLifted
@@ -1204,6 +1203,7 @@ lemma quotSubgraphTripleDensity_empty
 
 
 -- set_option maxHeartbeats 4000000 in
+set_option linter.unusedVariables false in
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet_step1
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
