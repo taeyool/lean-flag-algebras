@@ -1053,6 +1053,10 @@ noncomputable def
           _ = ℓ - (V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset ∪ G.type_verts.toFinset).card := by
                   rw [Finset.card_compl]
                   simp only [Fintype.card_fin, Finset.union_assoc]
+          _ = ℓ - ((V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset).card + G.type_verts.toFinset.card) := by
+                  have : Disjoint (V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset) G.type_verts.toFinset := by
+                    dsimp [V₁, V₂, V₃]; sorry
+                  rw [Finset.card_union_of_disjoint this]
           _ = ℓ - (V₁.toFinset.card + V₂.toFinset.card + V₃.toFinset.card + G.type_verts.toFinset.card) := by
                   sorry
           _ = ℓ_other := by
