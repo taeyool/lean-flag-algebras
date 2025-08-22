@@ -31,7 +31,7 @@ def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t →
   := (Finset.univ : Finset (Fin t → Finset α)).filter (fun p =>
       (∀ i, p i ⊆ V ∧ (p i).card = r_list i) ∧
       (∀ i j, i ≠ j → Disjoint (p i) (p j)) ∧
-      (Finset.univ : Finset (Fin t)).biUnion p ⊆ V)
+      (Finset.univ : Finset (Fin t)).biUnion p ⊆ V) -- Actually, this can be derived from the first property, but it was included for the convenience of the proof.
 
 def extend_r_list
     (n : ℕ) (r_list : Fin t → ℕ)
@@ -43,27 +43,6 @@ def extend_r_list
   else
     exact n - ∑ j : Fin t, r_list j
 
-lemma extend_r_list.factorial_prod_eq
-    (n : ℕ) (r_list : Fin t → ℕ)
-    : ∏ i, ((extend_r_list n r_list) i).factorial = (∏ i, (r_list i).factorial) * (n - ∑ j : Fin t, r_list j).factorial
-  := by
-  dsimp [extend_r_list]
-  rw [Finset.prod_fin_eq_prod_range, Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
-  simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte, lt_self_iff_false, mul_eq_mul_right_iff]
-  left
-  apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
-  · intro i hi
-    simp_all only [Finset.mem_range, ↓reduceDIte]
-  · intro i hi j hj hij
-    simp_all only [Finset.mem_range, ↓reduceDIte]
-  · intro i hi
-    use i
-    use hi
-    simp_all only [Finset.mem_range, ↓reduceDIte]
-  · intro i hi
-    rw [Finset.mem_range] at hi
-    simp [hi, Nat.lt_add_right 1 hi]
-
 lemma extend_r_list.sum_eq
     (n : ℕ) (r_list : Fin t → ℕ) (h_r_list : ∑ i, r_list i ≤ n)
     : ∑ i : Fin (t + 1), extend_r_list n r_list i = n
@@ -72,399 +51,27 @@ lemma extend_r_list.sum_eq
   rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
   simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte, lt_self_iff_false]
   have sum_eq : ∑ x ∈ Finset.range t, (if _ : x < t + 1 then if h_1 : x < t then r_list ⟨x, Eq.mpr_prop (Eq.refl (x < t)) h_1⟩ else n - ∑ j : Fin t, r_list j else 0) = ∑ j : Fin t, r_list j := by
-    simp only [dite_eq_ite]
-    rw [Finset.sum_fin_eq_sum_range]
-    apply Finset.sum_bij (fun i _ => if _ : i < t then i else 0)
-    · intro i hi
-      simp_all only [Finset.mem_range, ↓reduceDIte]
-    · intro i hi j hj hij
-      simp_all only [Finset.mem_range, ↓reduceDIte]
-    · intro i hi
-      use i
-      use hi
-      simp_all only [Finset.mem_range, ↓reduceDIte]
-    · intro i hi
-      rw [Finset.mem_range] at hi
-      simp [hi, Nat.lt_add_right 1 hi]
-  rw [sum_eq]
-  apply Nat.add_sub_of_le h_r_list
+    simp only [dite_eq_ite, Finset.sum_fin_eq_sum_range]
+    apply Finset.sum_bij (fun i _ => i) <;> try simp only [mem_range, imp_self, implies_true, exists_prop, exists_eq_right, imp_self, implies_true]
+    intro i hi
+    simp only [Nat.lt_add_right 1 hi, ↓reduceIte, hi, ↓reduceDIte]
+  rw [sum_eq, Nat.add_sub_of_le h_r_list]
 
-theorem partitions_card_eq_multinomial
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) (h_r_list : ∑ i, r_list i ≤ V.card)
-    : (partitions V r_list).card = Nat.multinomial Finset.univ (extend_r_list V.card r_list)
+lemma extend_r_list.factorial_prod_eq
+    (n : ℕ) (r_list : Fin t → ℕ)
+    : ∏ i, ((extend_r_list n r_list) i).factorial = (∏ i, (r_list i).factorial) * (n - ∑ j : Fin t, r_list j).factorial
   := by
-  induction t with
-  | zero =>
-      simp only [Nat.reduceAdd, Finset.univ_unique, Nat.multinomial_singleton]
-      simp only [partitions, IsEmpty.forall_iff, Finset.univ_eq_empty, Finset.biUnion_empty,
-                 Finset.empty_subset, and_self, Finset.univ_unique, Finset.filter_True,
-                 Finset.card_singleton]
-  | succ t ih =>
-      let r_list' : Fin t → ℕ := fun i => r_list i.castSucc
-      have h_r_list' : ∑ i : Fin t, r_list' i ≤ V.card := by
-        have : ∑ i, r_list' i ≤ ∑ i, r_list i := by
-          dsimp [r_list']
-          rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-          simp only [Fin.castSucc_mk, lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
-          apply Nat.le_add_right_of_le
-          apply Finset.sum_le_sum
-          intro x hx
-          rw [Finset.mem_range] at hx
-          simp only [hx, Nat.lt_add_right 1 hx, ↓reduceDIte]
-          congr!
-        exact this.trans h_r_list
-      specialize ih r_list' h_r_list'
+  dsimp [extend_r_list]
+  rw [Finset.prod_fin_eq_prod_range, Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
+  simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte, lt_self_iff_false, mul_eq_mul_right_iff]
+  left
+  apply Finset.prod_bij (fun i _ => i) <;> try simp only [mem_range, imp_self, implies_true, exists_prop, exists_eq_right, imp_self, implies_true]
+  intro i hi
+  simp only [Nat.lt_add_right 1 hi, hi, ↓reduceDIte]
 
-      let rest_part (p : Fin t → Finset α) := V \ (Finset.univ : Finset (Fin t)).biUnion p
-      have card_eq₁ : (partitions V r_list).card = (Fintype.card (Σ (S : (partitions V r_list')), combinations (rest_part S) (r_list (Fin.last t)))) := by
-        apply Finset.card_eq_of_equiv
-        let f : {x // x ∈ partitions V r_list} → {x // x ∈ (Finset.univ : Finset (Σ (S : (partitions V r_list')), combinations (rest_part S) (r_list (Fin.last t))))} := by
-          intro ⟨p, hp⟩
-          let p' : (Fin t) → Finset α := fun i => p i.castSucc
-          have hp' : p' ∈ partitions V r_list' := by
-            simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and] at hp
-            obtain ⟨hp₁, hp₂, hp₃⟩ := hp
-            simp only [partitions, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter,
-              true_and, p', r_list']
-            constructor <;> try constructor
-            · intro i
-              exact hp₁ i.castSucc
-            · intro i j hij
-              rw [ne_eq, ← Fin.castSucc_inj] at hij
-              exact hp₂ i.castSucc j.castSucc hij
-            · intro i
-              exact hp₃ i.castSucc
-          let x₁ : {x // x ∈ partitions V r_list'} := ⟨p', hp'⟩
-          let r := p (Fin.last t)
-          have hr : r ∈ combinations (rest_part p') (r_list (Fin.last t)) := by
-            simp only [combinations, mem_filter, mem_powerset]
-            simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and] at hp
-            obtain ⟨hp₁, hp₂, hp₃⟩ := hp
-            constructor
-            · intro x hx₁
-              refine mem_sdiff.mpr ?_
-              constructor
-              · exact hp₃ (Fin.last t) hx₁
-              · dsimp [p']
-                simp only [mem_biUnion, mem_univ, true_and, not_exists]
-                intro i
-                have hi : i.castSucc ≠ Fin.last t := by
-                  simp only [ne_eq, Fin.castSucc_ne_last, not_false_eq_true]
-                specialize hp₂ i.castSucc (Fin.last t) hi
-                by_contra hx₂
-                dsimp [r] at hx₁
-                simp only [disjoint_iff, inf_eq_inter, bot_eq_empty] at hp₂
-                have : x ∈ p i.castSucc ∩ p (Fin.last t) := by
-                  simp only [mem_inter]
-                  exact ⟨hx₂, hx₁⟩
-                rw [hp₂] at this
-                exact Finset.notMem_empty x this
-            · exact (hp₁ (Fin.last t)).2
-          let x₂ : {x // x ∈ combinations (rest_part p') (r_list (Fin.last t))} := ⟨r, hr⟩
-          let result : Σ (S : (partitions V r_list')), combinations (rest_part S) (r_list (Fin.last t)) := ⟨x₁, x₂⟩
-          have : result ∈ univ := Finset.mem_univ _
-          use result
-        have f_inj : Function.Injective f := by
-          intro ⟨p₁, hp₁⟩ ⟨p₂, hp₂⟩ h_eq
-          simp only [Subtype.mk.injEq]
-          simp only [f, Subtype.mk.injEq, Sigma.mk.injEq] at h_eq
-          obtain ⟨h_p, h_r⟩ := h_eq
-          funext i
-          by_cases hi : i.val < t
-          · exact funext_iff.mp h_p ⟨i, hi⟩
-          · rw [Fin.eq_last_of_not_lt hi]
-            rw [Subtype.heq_iff_coe_eq] at h_r
-            · exact h_r
-            · intro r
-              simp_all only [not_lt, r_list', rest_part]
-        have f_surj : Function.Surjective f := by
-          intro ⟨⟨⟨p, hp⟩, ⟨r, hr⟩⟩, h⟩
-          simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and] at hp
-          obtain ⟨hp₁, hp₂, hp₃⟩ := hp
-          simp only [combinations, mem_filter, mem_powerset] at hr
-          obtain ⟨hr₁, hr₂⟩ := hr
-          have hr₃ : rest_part p ⊆ V := by simp only [sdiff_subset, rest_part]
-          let x : Fin (t + 1) → Finset α := fun i => if h : i.val < t then p ⟨i.val, h⟩ else r
-          have hx : x ∈ partitions V r_list := by
-            simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and]
-            constructor <;> try constructor
-            · intro i; dsimp [x]; split
-              next hi => exact hp₁ ⟨i, hi⟩
-              next hi =>
-                rw [Fin.eq_last_of_not_lt hi]
-                constructor
-                · exact fun ⦃a⦄ a_1 ↦ hr₃ (hr₁ a_1)
-                · exact hr₂
-            · intro i j hij; dsimp [x]; split
-              next hi =>
-                split
-                next hj =>
-                  apply hp₂ ⟨i, hi⟩ ⟨j, hj⟩
-                  simp only [Fin.mk.injEq]
-                  exact fun h => hij (Fin.val_inj.mp h)
-                next hj =>
-                  refine disjoint_left.mpr ?_
-                  intro x hx₁ hx₂
-                  have hx₃ : x ∈ rest_part p := hr₁ hx₂
-                  simp_all only [mem_univ, true_and, mem_sdiff, mem_biUnion, not_exists, rest_part]
-              next hi =>
-                split
-                next hj =>
-                  refine disjoint_right.mpr ?_
-                  intro x hx₁ hx₂
-                  have hx₃ : x ∈ rest_part p := hr₁ hx₂
-                  simp_all only [mem_univ, true_and, mem_sdiff, mem_biUnion, not_exists, rest_part]
-                next hj =>
-                  exfalso
-                  rw [Fin.eq_last_of_not_lt hi, Fin.eq_last_of_not_lt hj] at hij
-                  exact hij rfl
-            · intro i; dsimp [x]; split
-              next hi => exact hp₃ ⟨i, hi⟩
-              next _ => exact fun ⦃a⦄ a_1 ↦ hr₃ (hr₁ a_1)
-          use ⟨x, hx⟩
-          simp only [f, Subtype.mk.injEq, Sigma.mk.injEq]
-          constructor
-          · funext i
-            simp [x, i.2]
-          · congr! with _ i
-            · simp only [Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, x]
-            · simp only [Fin.val_last, lt_self_iff_false, ↓reduceDIte, x]
-        exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
-      let parts := (V.card - ∑ j : Fin t, r_list' j).choose (r_list (Fin.last t))
-      have card_eq₂ : (Fintype.card (Σ (S : (partitions V r_list')), combinations (rest_part S) (r_list (Fin.last t)))) = (partitions V r_list').card * parts := by
-        rw [Fintype.card_sigma]
-        have : ∀ p : partitions V r_list', Fintype.card { x // x ∈ combinations (rest_part ↑p) (r_list (Fin.last t)) } = parts := by
-          intro ⟨p, hp⟩
-          simp only [Fintype.card_coe, parts]
-          simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const,
-            mem_filter, true_and] at hp
-          obtain ⟨hp₁, hp₂, hp₃⟩ := hp
-          have card_eq : (rest_part p).card = V.card - ∑ j : Fin t, r_list' j := by
-            dsimp [rest_part]
-            have h_bp₁ : univ.biUnion p ⊆ V := by
-              simp only [biUnion_subset_iff_forall_subset, mem_univ, forall_const]
-              exact hp₃
-            have h_bp₂ : (univ.biUnion p).card = ∑ j, r_list' j := by
-              rw [card_biUnion]
-              · congr! with i hi
-                exact (hp₁ i).2
-              · simp only [coe_univ]
-                intro i hi j hj hij
-                exact hp₂ i j hij
-            rw [card_sdiff h_bp₁, h_bp₂]
-          rw [← card_eq]
-          exact comb_card (rest_part p) (r_list (Fin.last t))
-        simp_all only [univ_eq_attach, sum_const, card_attach, smul_eq_mul]
-      rw [card_eq₁, card_eq₂, ih]
-
-      let s : Finset (Fin (t + 1 + 1)) := Finset.univ.filter (fun i => i.val < t + 1)
-      let a : Fin (t + 1 + 1) := ⟨t + 1, Nat.lt_add_one _⟩
-      have ha : a ∉ s := by
-        simp_all only [s, a, Finset.mem_filter, lt_self_iff_false, and_false, not_false_eq_true]
-      have hs : Finset.univ = insert a s := by
-        ext j
-        simp_all only [Finset.mem_univ, Finset.mem_insert, true_iff, s]
-        by_cases hj : j.val < t + 1
-        · right
-          rw [Finset.mem_filter]
-          simp only [Finset.mem_univ, true_and]
-          exact hj
-        · left
-          rw [Fin.eq_mk_iff_val_eq]
-          push_neg at hj
-          exact Nat.le_antisymm (Fin.is_le j) hj
-      rw [hs, Nat.multinomial_insert ha (extend_r_list V.card r_list)]
-
-      have rhs_calc1 : ∑ i ∈ s, (extend_r_list V.card r_list) i = ∑ i, r_list i := by
-          dsimp [s, extend_r_list]
-          let f : (a : Fin (t + 1 + 1)) → a ∈ s → Fin (t + 1) := by
-            intro i hi
-            use i
-            rw [Finset.mem_filter] at hi
-            exact hi.2
-          apply Finset.sum_bij f
-          · intro i hi
-            simp only [Finset.mem_univ]
-          · intro i hi j hj hij
-            dsimp [f] at hij
-            simp at hij
-            exact Fin.eq_of_val_eq hij
-          · intro i hi
-            let i' : Fin (t + 1 + 1) := ⟨i, Nat.lt_add_one_of_lt i.2⟩
-            have hi' : i' ∈ s := by
-              simp only [s, Finset.mem_filter, Finset.mem_univ, true_and]
-              exact i.2
-            use i'
-            use hi'
-          · intro i hi
-            rw [Finset.mem_filter] at hi
-            simp [hi, f]
-      have rhs_calc2 : (extend_r_list V.card r_list) a = V.card - (∑ i, r_list i) := by
-        simp only [extend_r_list, a, lt_self_iff_false, ↓reduceDIte]
-      rw [rhs_calc1, rhs_calc2, Nat.sub_add_cancel h_r_list]
-
-      have rhs_calc3 : ∏ i ∈ s, (extend_r_list V.card r_list i).factorial = (∏ i, (r_list i).factorial) := by
-          let f : (a : Fin (t + 1 + 1)) → a ∈ s → Fin (t + 1) := by
-            intro i hi
-            rw [Finset.mem_filter] at hi
-            exact ⟨i, hi.2⟩
-          apply Finset.prod_bij f
-          · intro i hi
-            simp only [Finset.mem_univ]
-          · intro i hi j hj hij
-            simp only [f, Fin.mk.injEq] at hij
-            exact Fin.eq_of_val_eq hij
-          · intro i hi
-            let i' : Fin (t + 1 + 1) := ⟨i, Nat.lt_add_one_of_lt i.2⟩
-            have hi' : i' ∈ s := by
-              simp only [s, Finset.mem_filter, Finset.mem_univ, true_and]
-              exact i.2
-            use i'
-            use hi'
-          · intro i hi
-            congr!
-            dsimp [f, extend_r_list]
-            rw [Finset.mem_filter] at hi
-            simp only [hi, ↓reduceDIte]
-      nth_rw 2 [Nat.multinomial]
-      rw [rhs_calc1, rhs_calc3]
-      rw [Nat.choose_eq_factorial_div_factorial (by simp only [tsub_le_iff_right, le_add_iff_nonneg_right, zero_le])]
-      rw [Nat.sub_sub_self h_r_list]
-
-      have rhs_calc4 : V.card.factorial / ((V.card - ∑ i, r_list i).factorial * (∑ i, r_list i).factorial) * ((∑ i, r_list i).factorial / ∏ i, (r_list i).factorial) = V.card.factorial / (V.card - ∑ i, r_list i).factorial / ∏ i, (r_list i).factorial := by
-        rw [← Nat.mul_div_assoc]
-        · have rhs_calc5 : V.card.factorial / ((V.card - ∑ i, r_list i).factorial * (∑ i, r_list i).factorial) * (∑ i, r_list i).factorial
-          = V.card.factorial / (V.card - ∑ i, r_list i).factorial := by
-            have rhs_calc6 : V.card.factorial / ((V.card - ∑ i, r_list i).factorial * (∑ i, r_list i).factorial) = V.card.factorial / (V.card - ∑ i, r_list i).factorial / (∑ i, r_list i).factorial := by
-              exact
-                Eq.symm
-                  (Nat.div_div_eq_div_mul V.card.factorial (V.card - ∑ i, r_list i).factorial
-                    (∑ i, r_list i).factorial)
-            rw [rhs_calc6]
-            rw [Nat.div_mul_cancel]
-            refine (Nat.dvd_div_iff_mul_dvd ?_).mpr ?_
-            · refine Nat.factorial_dvd_factorial ?_
-              exact Nat.sub_le V.card (∑ i, r_list i)
-            · rw [mul_comm]
-              apply Nat.factorial_mul_factorial_dvd_factorial
-              exact h_r_list
-          rw [rhs_calc5]
-        · exact Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list
-      rw [rhs_calc4]
-      clear rhs_calc1 rhs_calc2 rhs_calc3 rhs_calc4
-
-      rw [Nat.multinomial, extend_r_list.sum_eq V.card r_list' h_r_list']
-      have lhs_calc1 : ∏ i, (extend_r_list V.card r_list' i).factorial =
-          (∏ i, (r_list' i).factorial) * (V.card - (∑ i, r_list' i)).factorial := by
-          exact extend_r_list.factorial_prod_eq V.card r_list'
-      rw [lhs_calc1]
-      dsimp [parts]
-      have choose_eq : r_list (Fin.last t) ≤ V.card - ∑ j, r_list' j := by
-        apply Nat.le_sub_of_add_le
-        have : ∑ i, r_list i = r_list (Fin.last t) + ∑ j, r_list' j := by
-          nth_rw 5 [add_comm]
-          rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-          congr!
-          · rw [Finset.sum_fin_eq_sum_range]
-            let f :  (a : ℕ) → a ∈ Finset.range t → ℕ := fun i _ ↦ i
-            apply Finset.sum_bij f
-            · intro i hi
-              dsimp [f]
-              exact hi
-            · intro i hi j hj hij
-              dsimp [f] at hij
-              exact hij
-            · intro i hi
-              use i
-              use hi
-            · intro i hi
-              dsimp [f]
-              rw [Finset.mem_range] at hi
-              simp only [hi, Nat.lt_add_right 1 hi, ↓reduceDIte]
-              congr
-          · simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
-            congr
-        rwa [← this]
-      rw [Nat.choose_eq_factorial_div_factorial choose_eq]
-      rw [← Nat.mul_div_assoc]
-      have lhs_calc2 : V.card.factorial / ((∏ i, (r_list' i).factorial) * (V.card - ∑ i, r_list' i).factorial) *
-    (V.card - ∑ j, r_list' j).factorial = V.card.factorial / (∏ i, (r_list' i).factorial) := by
-        rw [← Nat.div_div_eq_div_mul, Nat.div_mul_cancel]
-        refine Nat.dvd_div_of_mul_dvd ?_
-        rw [← lhs_calc1]
-        have := Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list V.card r_list')
-        rwa [extend_r_list.sum_eq V.card r_list' h_r_list'] at this
-      rw [lhs_calc2]
-      rw [Nat.div_div_eq_div_mul]
-      have lhs_calc3 : ((∏ i, (r_list' i).factorial) *
-    ((r_list (Fin.last t)).factorial * (V.card - ∑ j, r_list' j - r_list (Fin.last t)).factorial)) = (V.card - ∑ j, r_list' j - r_list (Fin.last t)).factorial * ∏ i, (r_list i).factorial := by
-        rw [← mul_assoc, mul_comm]
-        congr
-        rw [Finset.prod_fin_eq_prod_range, Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
-        simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
-        refine (Nat.mul_left_inj ?_).mpr ?_
-        · exact Nat.factorial_ne_zero (r_list (Fin.last t))
-        · apply Finset.prod_bij (fun i _ ↦ i)
-          · intro i hi
-            exact hi
-          · intro i hi j hj hij
-            exact hij
-          · intro i hi
-            use i
-          · intro i hi
-            rw [Finset.mem_range] at hi
-            simp [hi, Nat.lt_add_right 1 hi, ↓reduceDIte]
-            congr
-      rw [lhs_calc3]
-      have lhs_calc4 : (V.card - ∑ j, r_list' j - r_list (Fin.last t)).factorial = (V.card - ∑ i, r_list i).factorial := by
-        rw [Nat.sub_sub]
-        congr
-        rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-        simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
-        refine Nat.add_left_inj.mpr ?_
-        apply Finset.sum_bij (fun i _ ↦ i)
-        · intro i hi
-          exact hi
-        · intro i hi j hj hij
-          exact hij
-        · intro i hi
-          use i
-        · intro i hi
-          rw [Finset.mem_range] at hi
-          simp [hi, Nat.lt_add_right 1 hi, ↓reduceDIte]
-          congr
-      rw [lhs_calc4]
-      rw [Nat.div_div_eq_div_mul]
-      exact Nat.factorial_mul_factorial_dvd_factorial choose_eq
-
-theorem partition_card
+  theorem partition_card
     [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
-  dsimp [multinomialCoefficient]
-  split
-  next h =>
-    let f := extend_r_list V.card r_list
-    have factorial_eq_multinomial : V.card.factorial / ((∏ i : Fin t, (r_list i).factorial) * (V.card - ∑ i : Fin t, r_list i).factorial) = Nat.multinomial Finset.univ f := by
-      dsimp [Nat.multinomial]
-      congr
-      · rw [extend_r_list.sum_eq V.card r_list h]
-      · rw [extend_r_list.factorial_prod_eq V.card r_list]
-    rw [factorial_eq_multinomial]
-    have partitions_eq_multinomial := partitions_card_eq_multinomial V r_list h
-    rw [partitions_eq_multinomial]
-  next h =>
-    rw [Finset.card_eq_zero]
-    ext x
-    simp only [Finset.notMem_empty, iff_false, partitions, Finset.mem_filter, Finset.mem_univ, true_and]
-    intro ⟨p_sub, p_disj, p_card⟩
-    have card_le : (Finset.univ.biUnion x).card ≤ V.card := Finset.card_le_card p_card
-    have card_bUnion : (Finset.univ.biUnion x).card = ∑ i : Fin t, (x i).card := Finset.card_biUnion (fun i _ j _ hij => p_disj i j hij)
-    have card_sum : ∑ i : Fin t, (x i).card = ∑ i : Fin t, r_list i := Finset.sum_congr rfl (fun i _ => (p_sub i).2)
-    rw [card_bUnion, card_sum] at card_le
-    exact h card_le
-
-  theorem partition_card'
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
-  dsimp [multinomialCoefficient]
+  dsimp only [multinomialCoefficient]
   split
   next h =>
     induction t with
@@ -472,11 +79,10 @@ theorem partition_card
         simp only [partitions, IsEmpty.forall_iff, ne_eq, univ_eq_empty,
           biUnion_empty, empty_subset, and_self, univ_unique, filter_True, card_singleton,
           prod_empty, sum_empty, tsub_zero, one_mul]
-        refine Eq.symm (Nat.div_self ?_)
-        exact Nat.factorial_pos #V
+        rw [Nat.div_self (Nat.factorial_pos #V)]
     | succ t ih =>
         let r_list' : Fin t → ℕ := fun i => r_list i.castSucc
-        have h_r_list' : ∑ i : Fin t, r_list' i ≤ V.card := by
+        have h_r_list'₁ : ∑ i : Fin t, r_list' i ≤ V.card := by
           have : ∑ i, r_list' i ≤ ∑ i, r_list i := by
             dsimp [r_list']
             rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
@@ -485,26 +91,25 @@ theorem partition_card
             apply Finset.sum_le_sum
             intro x hx
             rw [Finset.mem_range] at hx
-            simp only [hx, Nat.lt_add_right 1 hx, ↓reduceDIte]
-            congr!
+            simp only [hx, Nat.lt_add_right 1 hx, ↓reduceDIte, Nat.le_refl]
           exact this.trans h
-        have h_r_list'' : ∑ i, r_list i = r_list (Fin.last t) + ∑ j, r_list' j := by
-          nth_rw 5 [add_comm]
+        have h_r_list'₂ : ∑ i, r_list i = ∑ j, r_list' j + r_list (Fin.last t) := by
           rw [Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
           simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
           congr!
           rw [Finset.sum_fin_eq_sum_range]
-          apply Finset.sum_bij (fun i _ => i)
-          · simp only [mem_range, imp_self, implies_true]
-          · simp only [mem_range, imp_self, implies_true]
-          · simp only [mem_range, exists_prop, exists_eq_right, imp_self, implies_true]
-          · intro i hi
-            rw [Finset.mem_range] at hi
-            simp [hi, Nat.lt_add_right 1 hi, ↓reduceDIte, r_list']
-        have h_r_list''' : r_list (Fin.last t) ≤ V.card - ∑ j : Fin t, r_list' j := by
-          apply Nat.le_sub_of_add_le
-          rwa [← h_r_list'']
-        specialize ih r_list' h_r_list'
+          apply Finset.sum_bij (fun i _ => i) <;> try simp only [mem_range, imp_self, implies_true, exists_prop, exists_eq_right, imp_self, implies_true]
+          intro i hi
+          simp only [Nat.lt_add_right 1 hi, ↓reduceDIte, hi, Fin.castSucc_mk, r_list']
+        have h_r_list'₃ : ∏ i, (r_list i).factorial = (∏ i, (r_list' i).factorial) * (r_list (Fin.last t)).factorial := by
+          rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
+          simp only [lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
+          congr!
+          rw [Finset.prod_fin_eq_prod_range]
+          apply Finset.prod_bij (fun i _ => i) <;> try simp only [mem_range, imp_self, implies_true, exists_prop, exists_eq_right, imp_self, implies_true]
+          intro i hi
+          simp only [Nat.lt_add_right 1 hi, ↓reduceDIte, hi, Fin.castSucc_mk, r_list']
+        specialize ih r_list' h_r_list'₁
         let rest_part (p : Fin t → Finset α) := V \ (Finset.univ : Finset (Fin t)).biUnion p
         have card_eq₁ : (partitions V r_list).card = (Fintype.card (Σ (S : (partitions V r_list')), combinations (rest_part S) (r_list (Fin.last t)))) := by
           apply Finset.card_eq_of_equiv
@@ -650,27 +255,38 @@ theorem partition_card
                ((#V - ∑ j, r_list' j).factorial / ((r_list (Fin.last t)).factorial * (#V - ∑ j, r_list' j - r_list (Fin.last t)).factorial))
                = (∏ i, (r_list' i).factorial) * (#V - ∑ i, r_list' i).factorial
           := by
-            rw [← Nat.mul_div_assoc]
-            · rw [mul_comm, ← mul_assoc, ← Nat.div_div_eq_div_mul]
-              sorry
-            · #check Nat.factorial_mul_factorial_dvd_factorial
-              sorry
+            rw [Nat.sub_sub, ← h_r_list'₂, ← Nat.mul_div_assoc]
+            · nth_rw 3 [mul_comm]
+              rw [mul_comm, ← mul_assoc, ← Nat.div_div_eq_div_mul, Nat.mul_div_assoc]
+              · rw [Nat.div_self (Nat.factorial_pos (#V - ∑ i, r_list i)), mul_one, Nat.mul_div_assoc]
+                · nth_rw 2 [mul_comm]
+                  congr
+                  rw [h_r_list'₃, Nat.mul_div_assoc, Nat.div_self (Nat.factorial_pos (r_list (Fin.last t))), mul_one]
+                  exact Nat.dvd_refl (r_list (Fin.last t)).factorial
+                · rw [h_r_list'₃]
+                  exact Nat.dvd_mul_left (r_list (Fin.last t)).factorial (∏ i, (r_list' i).factorial)
+              · exact Nat.dvd_refl (#V - ∑ i, r_list i).factorial
+            · have : r_list (Fin.last t) ≤ #V - ∑ j, r_list' j := by
+                apply Nat.le_sub_of_add_le
+                rwa [add_comm, ← h_r_list'₂]
+              have := Nat.factorial_mul_factorial_dvd_factorial this
+              rwa [Nat.sub_sub, ← h_r_list'₂] at this
         refine Eq.symm (Nat.eq_mul_of_div_eq_left ?_ ?_)
         · refine Nat.dvd_div_of_mul_dvd ?_
           dsimp [parts]
           rw [Nat.choose_eq_factorial_div_factorial]
           · rw [factorial_calc]
             have := Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list V.card r_list')
-            rw [extend_r_list.sum_eq V.card r_list' h_r_list', extend_r_list.factorial_prod_eq V.card r_list'] at this
+            rw [extend_r_list.sum_eq V.card r_list' h_r_list'₁, extend_r_list.factorial_prod_eq V.card r_list'] at this
             exact this
           · apply Nat.le_sub_of_add_le
-            rwa [← h_r_list'']
+            rwa [add_comm, ← h_r_list'₂]
         · have : (∏ i, (r_list i).factorial) * (#V - ∑ i, r_list i).factorial * parts = ((∏ i, (r_list' i).factorial) * (#V - ∑ i, r_list' i).factorial) := by
             dsimp [parts]
             rw [Nat.choose_eq_factorial_div_factorial]
             · exact factorial_calc
             · apply Nat.le_sub_of_add_le
-              rwa [← h_r_list'']
+              rwa [add_comm, ← h_r_list'₂]
           rw [Nat.div_div_eq_div_mul, this]
   next h =>
     rw [Finset.card_eq_zero]
@@ -682,94 +298,6 @@ theorem partition_card
     have card_sum : ∑ i : Fin t, (x i).card = ∑ i : Fin t, r_list i := Finset.sum_congr rfl (fun i _ => (p_sub i).2)
     rw [card_bUnion, card_sum] at card_le
     exact h card_le
-
-theorem choose_eq
-    {n₁ n₂ m : ℕ} (h : n₁ = n₂)
-    : n₁.choose m = n₂.choose m
-  := by subst h; rfl
-
-theorem choose_sequence_eq_factorial_div
-    (n : ℕ) (r_list : Fin t → ℕ) (h_size : ∑ i : Fin t, r_list i ≤ n)
-    : ∏ i : Fin t, (n - ∑ j : Fin ↑i, r_list (j.castLE (i.is_le'))).choose (r_list i) = Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - ∑ i : Fin t, r_list i))
-  := by
-  induction t with
-  | zero =>
-      simp only [Finset.univ_eq_empty, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
-      rw [Nat.div_self (Nat.factorial_pos n)]
-  | succ t ih =>
-      have calc1 :  ∏ i : Fin (t + 1), (n - ∑ j : Fin ↑i, r_list (j.castLE (i.is_le'))).choose (r_list i) =
-      (∏ i : Fin t, (n - ∑ j : Fin i, r_list (j.castLE (Nat.le_add_right_of_le i.is_le'))).choose (r_list i.castSucc)) * ((n - ∑ j : Fin t, r_list j.castSucc).choose (r_list (Fin.last t)))
-        := by
-        rw [Finset.prod_fin_eq_prod_range, Finset.prod_range_succ]
-        simp only [lt_add_iff_pos_right]
-        congr!
-        rw [Finset.prod_fin_eq_prod_range]
-        apply Finset.prod_bij (fun i _ => if _ : i < t then i else 0)
-        · intro i hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi j hj hij
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi
-          use i
-          use hi
-          simp_all only [Finset.mem_range, ↓reduceDIte]
-        · intro i hi₁
-          simp_all [↓reduceDIte]
-          split
-          next hi' h =>
-            apply @_root_.choose_eq
-            congr <;> try simp_all only [Finset.mem_range, ↓reduceIte]
-            refine (Fin.heq_fun_iff ?h.e_a.h.e_5.h).mpr ?h.e_a.h.e_5.a
-            · simp_all only [Finset.mem_range, ↓reduceIte]
-            · intro i'
-              rfl
-          next _ hi₂ =>
-            exfalso
-            exact hi₂ (Nat.lt_add_right 1 hi₁)
-      rw [calc1]; clear calc1
-      let r_list' : Fin t → ℕ := fun i => r_list i.castSucc
-      have h_size' : ∑ i : Fin t, r_list' i ≤ n := by
-        have : ∑ i : Fin t, r_list' i ≤ ∑ i : Fin (t + 1), r_list i := by
-          dsimp [r_list']
-          rw [Finset.sum_fin_eq_sum_range, Finset.sum_fin_eq_sum_range, Finset.sum_range_succ]
-          simp only [Fin.castSucc_mk, lt_add_iff_pos_right, zero_lt_one, ↓reduceDIte]
-          apply Nat.le_add_right_of_le
-          apply Finset.sum_le_sum
-          intro x hx
-          have hx' : x < t := List.mem_range.mp hx
-          have hx'' : x < t + 1 := Nat.lt_add_right 1 hx'
-          simp only [hx', hx'', ↓reduceDIte]
-          congr!
-        exact this.trans h_size
-      have calc2 := ih r_list' h_size'
-      dsimp [r_list'] at calc2
-      rw [calc2]; clear calc2
-      rw [Nat.choose_eq_factorial_div_factorial]
-      · rw [← Nat.mul_div_assoc]
-        · have calc1 : n.factorial / ((∏ i : Fin t, (r_list i.castSucc).factorial) * (n - ∑ i : Fin t, r_list i.castSucc).factorial) * (n - ∑ j : Fin t, r_list j.castSucc).factorial = n.factorial / (∏ i : Fin t, (r_list i.castSucc).factorial) := by
-            rw [← Nat.div_div_eq_div_mul, Nat.div_mul_cancel]
-            apply Nat.dvd_div_of_mul_dvd
-            rw [← extend_r_list.factorial_prod_eq n r_list']
-            nth_rw 2 [← extend_r_list.sum_eq n r_list' h_size']
-            exact Nat.prod_factorial_dvd_factorial_sum Finset.univ (extend_r_list n r_list')
-          rw [calc1]
-          nth_rw 1 [← Nat.div_div_eq_div_mul]
-          nth_rw 2 [Nat.div_div_eq_div_mul]
-          rw [← prod_eq_prod_mul_last fun i ↦ (r_list i).factorial]
-          rw [Nat.div_div_eq_div_mul]
-          rw [Nat.sub_sub]
-          rw [sum_eq_sum_plus_last r_list]
-        · rw [Nat.sub_sub, ← sum_eq_sum_plus_last r_list]
-          let n' := n - ∑ j : Fin t, r_list j.castSucc
-          let k' := r_list (Fin.last t)
-          have hk : k' ≤ n' := by
-            apply Nat.le_sub_of_add_le
-            rwa [add_comm, ← sum_eq_sum_plus_last r_list]
-          have h_dvd := Nat.factorial_mul_factorial_dvd_factorial hk
-          dsimp [n', k'] at h_dvd
-          rwa [Nat.sub_sub, ← sum_eq_sum_plus_last r_list] at h_dvd
-      · apply Nat.le_sub_of_add_le
-        rwa [add_comm, ← sum_eq_sum_plus_last r_list]
 
 omit [DecidableEq T] in
 theorem labeledGraphListDensity_ge_zero
@@ -785,13 +313,11 @@ theorem labeledGraphListDensity_le_one
     dsimp [labeledSubgraphListDensity, labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl]
     apply div_le_one_of_le₀
     · let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
-      have hVG : VG.card = G.size - σ.size := by
+      have h_VG : VG.card = G.size - σ.size := by
         simp only [VG, LabeledGraph.size, Finset.card_sdiff (Finset.subset_univ _)]
         rw [Set.toFinset_card, Finset.card_univ, LabeledGraph.type_verts_card_eq]
       let r_list : Fin t → ℕ := fun i => (Fl i).size - σ.size
-      have := partition_card VG (r_list)
-      rw [hVG] at this
-      rw [← this, Nat.cast_le]
+      rw [← h_VG, ← partition_card VG (r_list), Nat.cast_le]
       let f : (Fin t → LabeledSubgraph σ G) → (Fin t → Finset W) := fun Gl i => (Gl i).subgraph.verts.toFinset \ G.type_verts.toFinset
       apply Finset.card_le_card_of_injOn f
       · rintro Gl hGl
