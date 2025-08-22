@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagOperators
+import «LeanFlagAlgebras».SubflagListDensityProp
 import Mathlib.Algebra.Algebra.Hom
 
 open FlagAlgebras
@@ -95,7 +96,22 @@ theorem positiveHom_unitVector_eq_zero
     (h : flagDensity₁ F G > 0) (hF : φ ⟦unitVector ⟨ℓ, F⟩⟧ = 0)
     : φ ⟦unitVector ⟨ℓ', G⟩⟧ = 0
   := by
-  sorry
+  have hℓ : ℓ ≤ ℓ' := by
+    have := flagDensity_le_card h
+    simp_all only [gt_iff_lt, Fintype.card_fin]
+  rw [unitVector_quot_eq_sum_density_mul_flagWithSize ⟨ℓ, F⟩ ℓ' hℓ] at hF
+  simp_rw [PositiveHom.map_sum, PositiveHom.map_smul] at hF
+  rw [Finset.sum_eq_zero_iff_of_nonneg] at hF
+  · specialize hF G (Finset.mem_univ G)
+    simp only [Rat.cast_eq_zero, mul_eq_zero] at hF
+    rcases hF with hG | hG
+    · simp_all only [lt_self_iff_false]
+    · exact hG
+  · intro G' hG'
+    apply Left.mul_nonneg
+    · simp only [Rat.cast_nonneg]
+      apply flagListDensity_ge_zero
+    · exact positiveHom_unitVector_ge_zero φ ⟨ℓ', G'⟩
 
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }
