@@ -1,8 +1,11 @@
-import «LeanFlagAlgebras».SubflagListDensity
 import «LeanFlagAlgebras».LinExtension
-import Mathlib.Data.Countable.Basic
+import «LeanFlagAlgebras».SubflagListDensity
+import Mathlib.Algebra.Algebra.Defs
 import Mathlib.Algebra.Group.Subgroup.Basic
-import Mathlib.LinearAlgebra.FreeModule.Basic
+import Mathlib.Algebra.Module.Submodule.Basic
+import Mathlib.Data.Countable.Basic
+import Mathlib.Data.Nat.Lattice
+import Mathlib.LinearAlgebra.Span.Defs
 
 open FlagAlgebras
 open Finset
@@ -46,16 +49,11 @@ noncomputable def graphEmbedIso
 instance : Unique (FlagWithSize σ n₀) where
   uniq := by
     intro F
-    rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
-    rw [← hFrep]
-    apply Quotient.sound
-    apply Nonempty.intro
-    refine ⟨?_, ?_⟩
-    · exact (graphEmbedIso Frep.type_embed).symm
-    · simp [graphEmbedIso, emptyLabeledGraph]
-      subst hFrep
-      ext
-      simp only [Function.comp_apply, Equiv.ofBijective_symm_apply_apply, RelEmbedding.refl_apply]
+    rcases Quotient.exists_rep F with ⟨Frep, rfl⟩
+    refine Quotient.sound (Nonempty.intro ⟨(graphEmbedIso Frep.type_embed).symm, ?_⟩)
+    simp [graphEmbedIso, emptyLabeledGraph]
+    ext
+    simp only [Function.comp_apply, Equiv.ofBijective_symm_apply_apply, RelEmbedding.refl_apply]
 
 noncomputable instance (n : ℕ) : Fintype (FlagWithSize σ n)
   := FlagFintype σ (Fin n)
@@ -97,13 +95,10 @@ theorem finFlag_size_ge_n₀
   simp_all only
   dsimp [FlagWithSize] at F
   rcases Quotient.exists_rep F with ⟨Frep, _⟩
-  have ⟨emb, adj⟩ := Frep.type_embed
-  have ⟨funF, inj⟩ := emb
-  have : n₀ ≤ n := by
-    have h_card : Fintype.card (Fin n₀) ≤ Fintype.card (Fin n) := Fintype.card_le_of_injective funF inj
-    simp only [Fintype.card_fin] at h_card
-    exact h_card
-  exact this
+  have ⟨⟨funF, inj⟩, adj⟩ := Frep.type_embed
+  have h_card : Fintype.card (Fin n₀) ≤ Fintype.card (Fin n) := Fintype.card_le_of_injective funF inj
+  simp only [Fintype.card_fin] at h_card
+  exact h_card
 
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
@@ -143,14 +138,14 @@ theorem unitVector_support
     (F : FinFlag σ)
     : (unitVector F).support = {F}
   := by
-  dsimp [unitVector]
+  dsimp only [unitVector]
   rw [Finsupp.support_single_ne_zero _ (by simp)]
 
 theorem unitVector_apply_other
     (F F' : FinFlag σ) (hF : F ≠ F')
     : (unitVector F) F' = 0
   := by
-  dsimp [unitVector]
+  dsimp only [unitVector]
   rw [Finsupp.single_eq_of_ne hF]
 
 theorem unitVector_apply_other_size
@@ -158,16 +153,17 @@ theorem unitVector_apply_other_size
     : (unitVector F) F' = 0
   := by
   apply unitVector_apply_other
-  exact fun a => hF (congrArg Sigma.fst a)
+  exact fun a ↦ hF (congrArg Sigma.fst a)
 
 theorem flagVector_eq_sum_unitVector
     (f : FlagVector σ)
     : f = ∑ F ∈ f.support, f F • unitVector F
   := by
-  dsimp [unitVector]
+  dsimp only [unitVector]
   rw [← Finsupp.sum_single f]
-  apply sum_congr (by simp)
-  intros; simp
+  apply sum_congr (by simp_rw [Finsupp.sum_single])
+  rintro _ -
+  simp_rw [Finsupp.sum_single, Finsupp.smul_single, smul_eq_mul, mul_one]
 
 noncomputable instance : One (FlagVector σ) where
   one := unitVector 1
@@ -197,7 +193,7 @@ theorem flagMulWithSize_comm
   := by
   dsimp [flagMulWithSize]
   apply sum_congr rfl
-  intros
+  rintro _ -
   simp [flagPairDensity_comm]
 
 theorem flagMulWithSize_one
@@ -206,7 +202,7 @@ theorem flagMulWithSize_one
   classical
   dsimp [flagMulWithSize]
   rw [finFlag_one_snd]
-  have h_univ_split : univ = insert F.2 (univ.erase F.2) := Eq.symm (insert_erase (by simp))
+  have h_univ_split : univ = insert F.2 (univ.erase F.2) := (insert_erase (mem_univ _)).symm
   rw [h_univ_split, sum_insert (notMem_erase _ _)]
   rw [flagPairDensity_empty', flagDensity_self, ← add_zero (unitVector F)]
   congr
@@ -217,7 +213,7 @@ theorem flagMulWithSize_one
     have hF'_ne_F : F.2 ≠ F' := by
       simp_all only [mem_univ, insert_erase, mem_erase, ne_eq, and_true]
       exact fun a ↦ hF' (id (Eq.symm a))
-    simp [flagDensity_other hF'_ne_F]
+    norm_num [flagDensity_other hF'_ne_F]
 
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
@@ -241,15 +237,15 @@ noncomputable instance : Mul (FlagVector σ) where
 
 theorem flagVector_mul_eq_nested_sum
     (f g : FlagVector σ) : f * g = ∑ F ∈ f.support, ∑ G ∈ g.support, ((f F) * (g G)) • flagMul F G
-  := by
-  apply bilinearExtension_eq_nested_sum
+  :=
+  bilinearExtension_eq_nested_sum _ _ _
 
 theorem flagVector_mul_comm
     (f g : FlagVector σ) : f * g = g * f
   := by
   simp only [flagVector_mul_eq_nested_sum]
   rw [sum_comm]
-  repeat (apply sum_congr rfl; intros)
+  repeat (apply sum_congr rfl; rintro _ -)
   rw [mul_comm, flagMul_comm]
 
 noncomputable instance : CommMagma (FlagVector σ) where
@@ -313,6 +309,7 @@ theorem zeroElement_in_zeroSpace
   apply Submodule.mem_span.mpr fun p a ↦ a ?_
   simp; use F; use ℓ
 
+set_option linter.unusedVariables false in
 theorem zeroSpace_eq_sum_spanElement
     (k : FlagVector σ) (h_zero : k ∈ ZeroSpace σ)
     : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → FlagVector σ),
@@ -321,31 +318,26 @@ theorem zeroSpace_eq_sum_spanElement
   revert h_zero
   apply Submodule.span_induction
   · intro k h_zero
-    use PUnit; use inferInstance
-    use fun _ ↦ 1; use fun _ ↦ k
-    simp_all only [mem_zeroSet, implies_true, univ_unique, PUnit.default_eq_unit, one_smul, sum_const,
-      card_singleton, and_self]
-  · use Empty; use inferInstance
-    use fun _ ↦ 0; use fun _ ↦ 0
-    simp
+    use Unit, inferInstance, fun _ ↦ 1, fun _ ↦ k
+    rcases h_zero with ⟨f, ℓ, hf⟩
+    simp only [forall_const, univ_unique, one_smul, sum_const, card_singleton, and_true]
+    use f, ℓ
+  · use Empty, inferInstance, fun _ ↦ 0, fun _ ↦ 0
+    simp only [mem_zeroSet, IsEmpty.forall_iff, univ_eq_empty, smul_zero, sum_const_zero, and_self]
   · intro x hx y hy hx_ind hy_ind
-    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
-    rcases hy_ind with ⟨J, hJ, d, w, hw, hy⟩
-    use Sum I J; use inferInstance
-    use Sum.elim c d; use Sum.elim v w
-    subst hy hx
+    rcases hx_ind with ⟨I, hI, c, v, hv, rfl⟩
+    rcases hy_ind with ⟨J, hJ, d, w, hw, rfl⟩
+    use Sum I J, inferInstance, Sum.elim c d, Sum.elim v w
     simp_all only [mem_zeroSet, Sum.forall, Sum.elim_inl, implies_true, Sum.elim_inr, and_self,
       Fintype.sum_sum_type]
   · intro r x hx hx_ind
-    rcases hx_ind with ⟨I, hI, c, v, hv, hx⟩
-    use I; use hI; use fun i ↦ r * c i; use fun i ↦ v i
+    rcases hx_ind with ⟨I, hI, c, v, hv, rfl⟩
+    use I, hI, fun i ↦ r * c i, v
     constructor
     · intro i
-      subst hx
       simp_all only [mem_zeroSet]
-    · rw [hx, smul_sum]
-      apply sum_congr (by rfl)
-      intro i _
+    · rw [smul_sum]
+      refine sum_congr rfl fun _ _ ↦ ?_
       rw [smul_smul]
 
 theorem zeroSpace_closed_under_add
@@ -357,16 +349,14 @@ theorem zeroSpace_closed_under_add
 theorem zeroSpace_closed_under_sum
     (S : Finset α) (v : α → FlagVector σ) (h_zero : ∀ s ∈ S, v s ∈ ZeroSpace σ)
     : ∑ s ∈ S, v s ∈ ZeroSpace σ
-  := by
-  apply Submodule.sum_mem
-  assumption
+  :=
+  Submodule.sum_mem _ h_zero
 
 theorem zeroSpace_closed_under_smul
     (r : ℝ) (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
     : r • f ∈ ZeroSpace σ
-  := by
-  apply SMulMemClass.smul_mem
-  assumption
+  :=
+  SMulMemClass.smul_mem _ f_zero
 
 def flagVectorEqv (f g : FlagVector σ) : Prop
   :=
@@ -378,17 +368,14 @@ theorem unitVector_eqv_densityFlagSum
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : unitVector F ∼v densityFlagSum F ℓ
   := by
-  dsimp [flagVectorEqv]
   show zeroElement F ℓ ∈ ZeroSpace σ
-  apply zeroElement_in_zeroSpace hℓ
+  exact zeroElement_in_zeroSpace hℓ
 
 theorem one_vector_eqv_densityFlagSum
     (ℓ : ℕ) (hℓ : n₀ ≤ ℓ)
     : (1 : FlagVector σ) ∼v densityFlagSum 1 ℓ
-  := by
-  apply unitVector_eqv_densityFlagSum
-  rw [finFlag_one_fst]
-  exact hℓ
+  :=
+  unitVector_eqv_densityFlagSum _ _ (finFlag_one_fst ▸ hℓ)
 
 @[refl]
 theorem flagVectorEqv.refl (f : FlagVector σ)
@@ -396,7 +383,13 @@ theorem flagVectorEqv.refl (f : FlagVector σ)
   := by
   dsimp [flagVectorEqv]
   rw [sub_self]
-  apply Submodule.zero_mem
+  exact Submodule.zero_mem _
+
+@[simp]
+theorem flagVectorEqv.rfl {f : FlagVector σ}
+    : f ∼v f
+  :=
+  .refl f
 
 @[symm]
 theorem flagVectorEqv.symm
@@ -419,24 +412,22 @@ instance : Trans (@flagVectorEqv n₀ σ) (@flagVectorEqv n₀ σ) (@flagVectorE
 
 theorem flagVector_eq_eqv
     {f f' : FlagVector σ} (h : f = f') : f ∼v f'
-  := by
-  rw [h]
+  :=
+  h ▸ .rfl
 
 theorem flagVectorEqv_sum
     {S : Finset α} {v v' : α → FlagVector σ} (h_eqv : ∀ s ∈ S, v s ∼v v' s)
     : ∑ s ∈ S, v s ∼v ∑ s ∈ S, v' s
   := by
   rw [flagVectorEqv, ← sum_sub_distrib]
-  apply zeroSpace_closed_under_sum
-  exact h_eqv
+  exact zeroSpace_closed_under_sum _ _ h_eqv
 
 theorem flagVectorEqv_smul
     (r : ℝ) {f f' : FlagVector σ} (h_eqv : f ∼v f')
     : r • f ∼v r • f'
   := by
   rw [flagVectorEqv, ← smul_sub]
-  apply zeroSpace_closed_under_smul
-  exact h_eqv
+  exact zeroSpace_closed_under_smul _ _ h_eqv
 
 instance flagVectorSetoid (σ : FlagType (Fin n₀))
     : Setoid (FlagVector σ) where
@@ -472,8 +463,7 @@ noncomputable instance : SMul ℝ (FlagAlgebra σ) where
     show (r • g) ∼v (r • g')
     dsimp [flagVectorEqv]
     rw [← smul_sub]
-    apply zeroSpace_closed_under_smul
-    exact hg
+    exact zeroSpace_closed_under_smul _ _ hg
 
 noncomputable instance : Neg (FlagAlgebra σ) where
   neg := ((-1 : ℝ) • ·)
@@ -513,8 +503,8 @@ theorem sum_smul
   classical
   refine Finset.induction_on s ?_ ?_
   · simp only [sum_empty, zero_smul]
-  · intros r R hr ih
-    simp [sum_insert hr, Module.add_smul, ih]
+  · intro r R hr ih
+    simp only [sum_insert hr, add_smul, ih]
 
 theorem flagMulWithSize_indep_on_size
     {F₁ F₂ : FinFlag σ} {ℓ₁ ℓ₂ : ℕ} (hℓ₁ : F₁.1 + F₂.1 ≤ ℓ₁ + n₀) (hℓ₂ : F₁.1 + F₂.1 ≤ ℓ₂ + n₀)
@@ -522,26 +512,24 @@ theorem flagMulWithSize_indep_on_size
   := by
   wlog hℓ : ℓ₁ ≤ ℓ₂ generalizing ℓ₁ ℓ₂
   · have hℓ' : ℓ₂ ≤ ℓ₁ := Nat.le_of_not_ge hℓ
-    have h_eqv := this hℓ₂ hℓ₁ hℓ'
-    exact flagVectorEqv.symm h_eqv
-  simp [flagMulWithSize]
+    exact (this hℓ₂ hℓ₁ hℓ').symm
+  simp only [flagMulWithSize]
   calc
     _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ↑(flagDensity₂ F₁.2 F₂.2 F') • densityFlagSum ⟨ℓ₁, F'⟩ ℓ₂) := by
-      apply flagVectorEqv_sum; intros
+      apply flagVectorEqv_sum; rintro _ -
       apply flagVectorEqv_smul
-      simp [flagVectorEqv]
       apply zeroElement_in_zeroSpace hℓ
     _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ∑ G' : FlagWithSize σ ℓ₂,
           ↑(flagDensity₂ F₁.snd F₂.snd F') • ↑(flagDensity₁ F' G') • unitVector ⟨ℓ₂, G'⟩) := by
-      apply flagVectorEqv_sum; intros
-      dsimp [densityFlagSum]
+      apply flagVectorEqv_sum; rintro _ -
+      dsimp only [densityFlagSum]
       rw [smul_sum]
     _ ∼v _ := by
       rw [sum_comm]
-      apply flagVectorEqv_sum; intros
+      apply flagVectorEqv_sum; rintro _ -
       rw [density_chain_rule₂₁ ℓ₁] <;> try (first | assumption | apply finFlag_size_ge_n₀)
-      simp; rw [sum_smul]
-      apply flagVectorEqv_sum; intros
+      simp_rw [rat_smul_eq_real_smul, Rat.cast_sum, Rat.cast_mul, sum_smul]
+      apply flagVectorEqv_sum; rintro _ -
       rw [smul_smul]
 
 theorem flagMul_indep_on_size
@@ -550,59 +538,54 @@ theorem flagMul_indep_on_size
   := by
   refine flagMulWithSize_indep_on_size ?_ hℓ'
   rw [Nat.sub_add_cancel]
-  refine Nat.le_add_right_of_le ?_
-  apply finFlag_size_ge_n₀
+  exact Nat.le_add_right_of_le (finFlag_size_ge_n₀ _)
 
 theorem flag_mul_zeroElement
     (F G : FinFlag σ) (ℓ : ℕ) (hℓ : G.1 ≤ ℓ) : (unitVector F) * (zeroElement G ℓ) ∈ ZeroSpace σ
   := by
   rw [zeroElement, mul_sub]
   show _ ∼v _
-  simp [densityFlagSum, mul_sum]
-  symm
+  simp only [densityFlagSum, rat_smul_eq_real_smul, mul_sum]
   let L := F.1 + G.1 + ℓ
+  symm
   calc
     _ ∼v (∑ i : FlagWithSize σ ℓ, ↑(flagDensity₁ G.2 i) • (unitVector F * unitVector ⟨ℓ, i⟩)) := by
-      apply flagVectorEqv_sum; intros
-      rw [mul_comm, smul_mul_assoc, mul_comm]
+      apply flagVectorEqv_sum; rintro _ -
+      simp_rw [mul_comm (unitVector F), smul_mul_assoc, mul_comm]
       rfl
     _ ∼v (∑ F' : FlagWithSize σ ℓ, ↑(flagDensity₁ G.2 F') • flagMulWithSize F ⟨ℓ, F'⟩ L) := by
-      apply flagVectorEqv_sum; intros
+      apply flagVectorEqv_sum; rintro _ -
       apply flagVectorEqv_smul
-      simp [flagVector_mul_eq_nested_sum]
+      simp_rw [flagVector_mul_eq_nested_sum, unitVector_support, sum_singleton,
+        unitVector_apply_self, mul_one, one_smul]
       apply flagMul_indep_on_size
-      dsimp [L]
-      linarith
+      grind
     _ ∼v (∑ G' : FlagWithSize σ L, ∑ F' : FlagWithSize σ ℓ,
           ↑(flagDensity₁ G.2 F') • ↑(flagDensity₂ F.2 F' G') • unitVector ⟨L, G'⟩) := by
       rw [sum_comm]
-      apply flagVectorEqv_sum; intros
-      simp [flagMulWithSize]
+      apply flagVectorEqv_sum; rintro _ -
+      simp_rw [flagMulWithSize, rat_smul_eq_real_smul]
       rw [smul_sum]
     _ ∼v (∑ G' : FlagWithSize σ L, (∑ F' : FlagWithSize σ ℓ,
           ↑(flagDensity₁ G.2 F') * ↑(flagDensity₂ F.2 F' G')) • unitVector ⟨L, G'⟩) := by
-      apply flagVectorEqv_sum; intros
-      simp [sum_smul]
-      apply flagVectorEqv_sum; intros
+      apply flagVectorEqv_sum; rintro _ -
+      simp_rw [rat_smul_eq_real_smul, Rat.cast_sum, Rat.cast_mul, sum_smul]
+      apply flagVectorEqv_sum; rintro _ -
       rw [smul_smul]
-    _ ∼v flagMulWithSize F G L := by
-      simp [flagMulWithSize]
-      apply flagVectorEqv_sum; intros
+    _ ∼v flagMulWithSize F G (F.1 + G.1 + ℓ) := by
+      apply flagVectorEqv_sum; rintro _ -
       nth_rw 1 [flagPairDensity_comm]
-      rw [density_chain_rule₁₂ ℓ] <;> try (apply finFlag_size_ge_n₀)
-      · apply flagVector_eq_eqv
-        simp; congr
-        funext
-        rw [flagPairDensity_comm]
-      · exact hℓ
-      · dsimp [L]
-        linarith
+      rw [density_chain_rule₁₂ ℓ _ _ _ _ _ hℓ (by grind)] <;> try (apply finFlag_size_ge_n₀)
+      apply flagVector_eq_eqv
+      simp_rw [rat_smul_eq_real_smul]; congr
+      funext
+      rw [flagPairDensity_comm]
     _ ∼v (unitVector F * unitVector G) := by
-      simp [flagVector_mul_eq_nested_sum]
+      simp_rw [flagVector_mul_eq_nested_sum, unitVector_support, sum_singleton,
+        unitVector_apply_self, mul_one, one_smul]
       symm
       apply flagMul_indep_on_size
-      dsimp [L]
-      linarith
+      grind
 
 theorem flagVector_mul_zeroSpace
    (f : FlagVector σ) {k : FlagVector σ} (hk_zero : k ∈ ZeroSpace σ) : f * k ∈ ZeroSpace σ
@@ -631,8 +614,7 @@ noncomputable instance : Mul (FlagAlgebra σ) where
     let kf := f' - f
     let kg := g' - g
     have : f' * g' = (f + kf) * (g + kg) := by
-      rw [← sub_add_cancel f' f, ← sub_add_cancel g' g]
-      simp only [kf, kg, add_comm]
+      rw [← sub_add_cancel f' f, ← sub_add_cancel g' g, add_comm _ f, add_comm _ g]
     rw [this, mul_add, add_mul, add_mul, add_assoc, add_sub_cancel_left]
     apply zeroSpace_closed_under_add
     · rw [mul_comm]
@@ -656,6 +638,7 @@ theorem flagAlgebra_left_distrib
   apply Quotient.sound
   simp [mul_add]
 
+@[simp]
 theorem flagAlgebra_mul_zero
     (f : FlagAlgebra σ) : f * 0 = 0
   := by
@@ -663,6 +646,7 @@ theorem flagAlgebra_mul_zero
   apply Quotient.sound
   simp
 
+@[simp]
 theorem flagAlgebra_mul_one
     (f : FlagAlgebra σ) : f * 1 = f
   := by
@@ -683,56 +667,42 @@ theorem three_flag_mul_eqv_sum_tripleDensity
       (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩)
   := by
   nth_rw 2 [flagVector_mul_eq_nested_sum]
-  simp [flagMul, flagMulWithSize]
-  rw [sum_mul]
+  simp_rw [unitVector_support, flagMul, flagMulWithSize, sum_singleton, unitVector_apply_self,
+    mul_one, one_smul, sum_mul]
   let ℓ' := F₁.1 + F₂.1 - n₀
   calc
     _ ∼v (∑ F : FlagWithSize σ ℓ, ∑ F' : FlagWithSize σ ℓ',
           flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 F • unitVector ⟨ℓ, F⟩) := by
       rw [sum_comm]
-      apply flagVectorEqv_sum; intros; simp
+      apply flagVectorEqv_sum; rintro _ -; simp_rw [rat_smul_eq_real_smul]
       rw [smul_mul_assoc, ← smul_sum]
       apply flagVectorEqv_smul
       simp [flagVector_mul_eq_nested_sum, flagMul, flagMulWithSize]
-      have : F₁.fst + F₂.fst - n₀ + F₃.fst - n₀ = ℓ := by
-        rw [hℓ]
-        congr
-        rw [← Nat.sub_add_comm]
-        refine Nat.le_add_right_of_le ?_
-        apply finFlag_size_ge_n₀
-      rw [this]
+      rw [hℓ, ← Nat.sub_add_comm]
+      exact Nat.le_add_right_of_le (finFlag_size_ge_n₀ _)
     _ ∼v (∑ G : FlagWithSize σ ℓ, (∑ F' : FlagWithSize σ ℓ',
           flagDensity₂ F₁.2 F₂.2 F' • flagDensity₂ F' F₃.2 G) • unitVector ⟨ℓ, G⟩) := by
-      apply flagVectorEqv_sum; intros; simp [sum_smul]
-      apply flagVectorEqv_sum; intros; simp [smul_smul]
-      rfl
+      apply flagVectorEqv_sum; rintro _ -; simp [sum_smul]
+      apply flagVectorEqv_sum; rintro _ -; simp [smul_smul]
     _ ∼v _ := by
       apply flagVectorEqv_sum
-      intro G _
-      simp
+      rintro G -
       have : flagDensity₃ F₁.2 F₂.2 F₃.2 G
         = ∑ F' : FlagWithSize σ ℓ', flagDensity₂ F₁.2 F₂.2 F' * flagDensity₂ F' F₃.2 G := by
         apply density_chain_rule₂₂ ℓ' <;> try (apply finFlag_size_ge_n₀)
-        · dsimp [ℓ']
-          rw [Nat.sub_add_cancel]
-          refine Nat.le_add_right_of_le ?_
-          apply finFlag_size_ge_n₀
-        · simp [ℓ', hℓ]
+        · rw [Nat.sub_add_cancel]
+          exact Nat.le_add_right_of_le (finFlag_size_ge_n₀ _)
+        · simp only [ℓ', hℓ]
           apply Nat.le_of_eq
           calc
             _ = F₁.1 + F₂.1 + F₃.1 - n₀ := by
               rw [← Nat.sub_add_comm]
-              refine Nat.le_add_right_of_le ?_
-              apply finFlag_size_ge_n₀
+              exact Nat.le_add_right_of_le (finFlag_size_ge_n₀ _)
             _ = F₁.1 + F₂.1 + F₃.1 - n₀ - n₀ + n₀ := by
               rw [Nat.sub_add_cancel]
-              refine Nat.le_sub_of_add_le ?_
-              refine Nat.add_le_add ?_ ?_
-              · refine Nat.le_add_right_of_le ?_
-                apply finFlag_size_ge_n₀
-              · apply finFlag_size_ge_n₀
+              refine Nat.le_sub_of_add_le (Nat.add_le_add (Nat.le_add_right_of_le ?_) ?_) <;>
+              apply finFlag_size_ge_n₀
       simp [this]
-      rfl
 
 theorem unitVector_mul_assoc
     (F₁ F₂ F₃ : FinFlag σ)
@@ -742,17 +712,13 @@ theorem unitVector_mul_assoc
   nth_rw 2 [mul_comm (unitVector F₁)]
   let ℓ := F₁.1 + F₂.1 + F₃.1 - n₀ - n₀
   calc
-    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩) := by
-      apply three_flag_mul_eqv_sum_tripleDensity
-      dsimp [ℓ]
-    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₂.2 F₃.2 F₁.2 G) • unitVector ⟨ℓ, G⟩) := by
-      apply flagVectorEqv_sum
-      intro G _
-      rw [flagTripleDensity_comm]
+    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₁.2 F₂.2 F₃.2 G) • unitVector ⟨ℓ, G⟩) :=
+      three_flag_mul_eqv_sum_tripleDensity rfl
+    _ ∼v (∑ (G : FlagWithSize σ ℓ), (flagDensity₃ F₂.2 F₃.2 F₁.2 G) • unitVector ⟨ℓ, G⟩) :=
+      flagVectorEqv_sum fun _ _ ↦ by rw [flagTripleDensity_comm]
     _ ∼v unitVector F₂ * unitVector F₃ * unitVector F₁ := by
-      symm
-      apply three_flag_mul_eqv_sum_tripleDensity
-      dsimp [ℓ]
+      refine (three_flag_mul_eqv_sum_tripleDensity ?_).symm
+      dsimp only [ℓ]
       ring_nf
 
 theorem flagVector_mul_assoc
@@ -760,17 +726,14 @@ theorem flagVector_mul_assoc
   := by
   rw [flagVector_eq_sum_unitVector f, flagVector_eq_sum_unitVector g, flagVector_eq_sum_unitVector h]
   simp only [mul_sum, sum_mul, flagVector_smul_mul_smul_comm, mul_assoc]
-  iterate 3 (apply flagVectorEqv_sum; intros)
-  apply flagVectorEqv_smul
-  apply unitVector_mul_assoc
+  iterate 3 (apply flagVectorEqv_sum; rintro _ -)
+  exact flagVectorEqv_smul _ (unitVector_mul_assoc _ _ _)
 
 theorem flagAlgebra_mul_assoc
     (f g h : FlagAlgebra σ) : f * g * h = f * (g * h)
   := by
   rw [← Quotient.out_eq f, ← Quotient.out_eq g, ← Quotient.out_eq h]
-  apply Quotient.sound
-  simp
-  apply flagVector_mul_assoc
+  exact Quotient.sound (flagVector_mul_assoc _ _ _)
 
 theorem flagAlgebra_smul_mul_smul_comm
     (f g : FlagAlgebra σ) (a b : ℝ)
@@ -778,15 +741,13 @@ theorem flagAlgebra_smul_mul_smul_comm
   := by
   rw [← Quotient.out_eq f, ← Quotient.out_eq g]
   apply Quotient.sound
-  simp
-  rw [flagVector_smul_mul_smul_comm]
+  simp only [flagVector_smul_mul_smul_comm, Setoid.refl]
 
 noncomputable instance : Ring (FlagAlgebra σ) where
   add_assoc a b c := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b, ← Quotient.out_eq c]
     apply Quotient.sound
-    simp_all
-    rw [add_assoc]
+    simp [add_assoc]
   zero_add a := by
     rw [← Quotient.out_eq a]
     apply Quotient.sound
@@ -806,16 +767,14 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     simp
   mul_assoc := flagAlgebra_mul_assoc
   zero_mul a := by
-    rw [flagAlgebra_mul_comm]
-    apply flagAlgebra_mul_zero
+    simp only [flagAlgebra_mul_comm, flagAlgebra_mul_zero]
   mul_zero := flagAlgebra_mul_zero
   one_mul a := by
-    rw [flagAlgebra_mul_comm]
-    apply flagAlgebra_mul_one
+    simp only [flagAlgebra_mul_comm, flagAlgebra_mul_one]
   mul_one := flagAlgebra_mul_one
   left_distrib := flagAlgebra_left_distrib
   right_distrib a b c := by
-    simp [flagAlgebra_mul_comm, flagAlgebra_left_distrib]
+    simp only [flagAlgebra_mul_comm, flagAlgebra_left_distrib]
   nsmul n g := (n : ℝ) • g
   nsmul_zero g := by
     simp
@@ -827,9 +786,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp
-    have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
-      rw [add_smul, one_smul]
-    rw [this]
+    rw [add_smul, one_smul]
   zsmul z g := (z : ℝ) • g
   zsmul_zero' g := by
     simp
@@ -841,9 +798,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     rw [← Quotient.out_eq g]
     apply Quotient.sound
     simp
-    have : (n + 1 : ℝ) • Quotient.out g = (n : ℝ) • Quotient.out g + Quotient.out g := by
-      rw [add_smul, one_smul]
-    rw [this]
+    rw [add_smul, one_smul]
   zsmul_neg' n g := by
     simp
     rw [← Quotient.out_eq g]
@@ -865,10 +820,9 @@ theorem sum_quot
     : ⟦∑ i ∈ s, f i⟧ = ∑ i ∈ s, (⟦f i⟧ : FlagAlgebra σ)
   := by
   classical
-  refine Finset.induction_on s ?_ ?_
-  · rfl
-  · intro i s his ih
-    simp only [Finset.sum_insert his, add_quot, ih]
+  refine Finset.induction_on s rfl ?_
+  intro i s his ih
+  simp only [Finset.sum_insert his, add_quot, ih]
 
 theorem unitVector_quot_eq_sum_density_mul_flagWithSize
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
@@ -885,7 +839,7 @@ theorem sum_flagWithSize_eq_one
   show _ = ⟦unitVector 1⟧
   rw [unitVector_quot_eq_sum_density_mul_flagWithSize 1 ℓ hℓ]
   apply Finset.sum_congr rfl
-  intro F _
+  rintro F -
   rw [flagDensity_one F]
   simp only [Rat.cast_one, one_smul]
 
@@ -901,47 +855,36 @@ instance : NeZero (1 : FlagAlgebra σ) where
     have h_one_zeroSet : (1 : FlagVector σ) ∈ ZeroSpace σ := by
       rw [← sub_zero 1]
       exact Quotient.exact one_eq_zero
-    have zeroSet_decomp := zeroSpace_eq_sum_spanElement 1 h_one_zeroSet
-    rcases zeroSet_decomp with ⟨I, hI, c, v, hv, hx⟩
-    have zeroElem_exists : ∀ (i : I), ∃ (G : FinFlag σ) (ℓ : ℕ), G.1 ≤ ℓ ∧ v i = zeroElement G ℓ := by
-      intro t; exact hv t
-    choose G ℓ hG using zeroElem_exists
+    rcases zeroSpace_eq_sum_spanElement 1 h_one_zeroSet with ⟨I, hI, c, v, hv, hx⟩
+    choose G ℓ hG using hv
     let L := max (Finset.sup (univ : Finset I) ℓ) n₀
     have hL : L ≥ n₀ := le_max_right _ _
     let F := (flagWithSize_inhabited σ hL).default
     let φ : FlagVector σ → ℝ := linearExtension (fun G => flagDensity₁ G.2 F)
-    have φ_add : ∀ (g h : FlagVector σ), φ (g + h) = φ g + φ h := by
-      apply linearExtension_add
-    have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := by
-      apply linearExtension_smul
-    have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
-      apply linearExtension_sum
+    have φ_add : ∀ (g h : FlagVector σ), φ (g + h) = φ g + φ h := linearExtension_add _
+    have φ_smul : ∀ (r : ℝ) (g : FlagVector σ), φ (r • g) = r * φ g := linearExtension_smul _
+    have φ_sum : ∀ (s : Finset I) (f : I → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) :=
+      linearExtension_sum _
     have hφ : ∀ (i : I), φ (v i) = 0 := by
       intro i
       let iG := G i
       have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
-      have hℓ : ℓ i ≤ L := by
-        simp only [le_sup_iff, L]; left
-        apply Finset.le_sup; simp
-      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
-        apply linearExtension_sum
-      have φ_neg : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) := by
-        apply linearExtension_neg
+      have hℓ : ℓ i ≤ L := le_sup_iff.mpr <| .inl <| le_sup (mem_univ _)
+      have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) :=
+        linearExtension_sum _
+      have φ_neg : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) :=
+        linearExtension_neg _ _
       rw [hG2, zeroElement, sub_eq_add_neg, φ_add]
       rw [φ_neg, ← sub_eq_add_neg, sub_eq_zero, densityFlagSum, φ_sum']
       have : φ (unitVector iG) = flagDensity₁ iG.2 F := by
         simp only [φ, linearExtension_unitVector]
       have hℓ'' : n₀ ≤ iG.fst := finFlag_size_ge_n₀ iG
       rw [this, density_chain_rule₁₁ (ℓ i) iG.2 F hℓ'' hℓ' hℓ]
-      simp
-      dsimp [FlagWithSize]
-      apply sum_congr (by rfl)
-      intro x
-      rw [φ_smul]
-      simp
-      by_cases s : flagDensity₁ iG.2 x = 0
-      · right; exact s
-      · left; simp only [φ, linearExtension_unitVector]
+      simp only [Rat.cast_sum, Rat.cast_mul, rat_smul_eq_real_smul]
+      refine sum_congr rfl fun x _ ↦ ?_
+      simp_rw [φ_smul, mul_eq_mul_left_iff, Rat.cast_eq_zero]
+      rw [Or.comm, or_iff_not_imp_left]
+      simp only [linearExtension_unitVector, φ, implies_true]
     have h_φ_1 : φ 1 = 1 := by
       show ∑ G ∈ (unitVector 1).support, _ = 1
       simp [sum_singleton, flagDensity_one]
@@ -952,7 +895,7 @@ instance : NeZero (1 : FlagAlgebra σ) where
     exact zero_ne_one zero_eq_one
 
 instance : Nontrivial (FlagAlgebra σ) where
-  exists_pair_ne := ⟨0, 1, (by simp)⟩
+  exists_pair_ne := ⟨0, 1, zero_ne_one⟩
 
 noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
   algebraMap := {
@@ -978,5 +921,5 @@ noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
     nth_rw 2 [← one_smul ℝ g]
     rw [flagAlgebra_smul_mul_smul_comm, mul_one]
   commutes' := by
-    intros; simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+    rintro _ -; simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
     rw [mul_comm]

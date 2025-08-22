@@ -38,30 +38,26 @@ theorem comb_card_aux
           apply Nat.add_left_cancel_iff.mpr
           have := hindℓ V'a (fun ⦃a⦄ a_1 ↦ hSV (hsub a_1))
           rw [filter_image, ← this, combinations]
-          refine card_nbij' (erase · a) (insert a) ?_ ?_ ?_ ?_
-          · intro T hT
-            simp only [coe_image, coe_filter, mem_powerset] at hT ⊢
+          refine card_nbij' (erase · a) (insert a) ?_ ?_ ?_ ?_ <;> intro T hT
+          · simp only [coe_image, coe_filter, mem_powerset] at hT ⊢
             obtain ⟨Ta, ⟨hTaV'a, hTacard⟩, rfl⟩ := hT
             refine ⟨subset_trans (erase_insert_subset a Ta) hTaV'a, ?_⟩
             have : a ∉ Ta := fun h ↦ haS (hsub (hTaV'a h))
             rw [Finset.card_insert_of_notMem this] at hTacard
             rw [Finset.erase_insert this]
             omega
-          · intro T hT
-            simp only [coe_filter, mem_powerset, Set.mem_setOf_eq] at hT
+          · simp only [coe_filter, mem_powerset, Set.mem_setOf_eq] at hT
             obtain ⟨hTV'a, rfl⟩ := hT
             simp only [coe_image, coe_filter, mem_powerset, Set.mem_image, Set.mem_setOf_eq]
             use T
             refine ⟨⟨hTV'a, ?_⟩, rfl⟩
             rw [card_insert_of_notMem]
             exact fun x ↦ haS (hsub (hTV'a x))
-          · intro T hT
-            simp only [coe_image, Set.mem_image] at hT
+          · simp only [coe_image, Set.mem_image] at hT
             apply insert_erase
             obtain ⟨Ta, ⟨_, rfl⟩⟩ := hT
             exact mem_insert_self a Ta
-          · intro T hT
-            simp only [coe_filter, mem_powerset, erase_insert_eq_erase, erase_eq_self] at hT ⊢
+          · simp only [coe_filter, mem_powerset, erase_insert_eq_erase, erase_eq_self] at hT ⊢
             exact fun a_1 ↦ haS (hsub (hT.1 a_1))
         · apply disjoint_filter_filter
           intro T hT₁ hT₂ X hXT
