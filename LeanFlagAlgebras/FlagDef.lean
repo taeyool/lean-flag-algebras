@@ -79,10 +79,8 @@ noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype
     fun ⟨G, embed⟩ ↦ (G, embed.toFun)
   have f_inj : Function.Injective f := by
     rintro ⟨G, φ⟩ ⟨G', φ'⟩ h_eq
-    dsimp [f] at h_eq
-    rw [Prod.mk.injEq] at h_eq
-    obtain ⟨rfl, right⟩ := h_eq
-    simp only [LabeledGraph.mk.injEq, true_and, heq_eq_eq]
+    obtain ⟨rfl, right⟩ := Prod.mk.injEq _ _ _ _ ▸ h_eq
+    congr
     exact DFunLike.coe_fn_eq.mp right
   Fintype.ofInjective f f_inj
 

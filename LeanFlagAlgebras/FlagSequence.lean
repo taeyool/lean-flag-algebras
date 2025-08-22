@@ -1,4 +1,3 @@
-import «LeanFlagAlgebras».SubflagListDensityProp
 import «LeanFlagAlgebras».PositiveHom
 import Mathlib.Topology.Algebra.Ring.Real
 import Mathlib.Topology.Sequences

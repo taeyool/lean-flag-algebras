@@ -489,6 +489,12 @@ theorem flagDensity_other
   rw [← subflagDensity_eq_flagListDensity F F']
   exact subflagDensity_other h_neq
 
+theorem flagDensity_le_card
+    {F : Flag σ V} {G : Flag σ W} (h : flagDensity₁ F G > 0)
+    : Fintype.card V ≤ Fintype.card W
+  := by
+  sorry
+
 lemma sum_perm_eq
     (f : Fin t → ℕ) (π : Perm t)
     : ∑ i : Fin t, f i = ∑ i : Fin t, f (π i)
