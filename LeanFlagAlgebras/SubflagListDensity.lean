@@ -489,11 +489,32 @@ theorem flagDensity_other
   rw [← subflagDensity_eq_flagListDensity F F']
   exact subflagDensity_other h_neq
 
+omit [DecidableEq T] in
 theorem flagDensity_le_card
     {F : Flag σ V} {G : Flag σ W} (h : flagDensity₁ F G > 0)
     : Fintype.card V ≤ Fintype.card W
   := by
-  sorry
+  obtain ⟨Grep, hGrep⟩ := Quotient.exists_rep G
+  obtain ⟨Frep, hFrep⟩ := Quotient.exists_rep F
+  dsimp [flagDensity₁] at h
+  rw [← subflagDensity_eq_flagListDensity F G, ← hGrep, ← hFrep] at h
+  dsimp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity] at h
+  have : labeledSubgraphCount Frep Grep > 0 := by
+    apply Nat.pos_of_ne_zero
+    intro h_zero
+    rw [h_zero] at h
+    simp only [Nat.cast_zero, zero_div, gt_iff_lt, lt_self_iff_false] at h
+  simp [labeledSubgraphCount] at this
+  obtain ⟨G_sub, hG_sub⟩ := this
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG_sub
+  obtain ⟨h_ind, h_iso⟩ := hG_sub
+  let h_iso := h_iso.some
+  have h_G_sub_Frep : G_sub.size = Frep.size := labeledGraphIso_size_eq G_sub.coe Frep h_iso
+  have : G_sub.size ≤ Grep.size := by
+    simp only [size, Fintype.card_ofFinset, LabeledGraph.size]
+    exact Finset.card_le_univ (Finset.filter (Membership.mem G_sub.subgraph.verts) Finset.univ)
+  rw [h_G_sub_Frep] at this
+  exact this
 
 lemma sum_perm_eq
     (f : Fin t → ℕ) (π : Perm t)
