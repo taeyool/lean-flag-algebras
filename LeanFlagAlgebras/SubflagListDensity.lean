@@ -1050,6 +1050,11 @@ noncomputable def
       let V₃ : Set (Fin ℓ) := G₃.subgraph.verts \ G.type_verts
       let h_V₃_card : V₃.toFinset.card = ℓ₃ - ℓ₀ := labeledSubgraph_card_from_iso G G₃ H₃ (h_Gl'_other_iso 2)
 
+      have h_V₁₂₃ : V₁ ∪ V₂ ∪ V₃ = (G₁.subgraph.verts ∪ G₂.subgraph.verts ∪ G₃.subgraph.verts) \ G.type_verts := by
+        dsimp [V₁, V₂, V₃]
+        simp only [Set.union_diff_distrib]
+      have h_V₁₂₃_diff_G_type_verts : (V₁ ∪ V₂ ∪ V₃) \ G.type_verts = V₁ ∪ V₂ ∪ V₃ := by
+        simp only [h_V₁₂₃, sdiff_idem]
       let V_other := (V₁ ∪ V₂ ∪ V₃ ∪ G.type_verts)ᶜ
       have h_V_other_card : V_other.toFinset.card = ℓ_other :=
         calc
@@ -1061,7 +1066,12 @@ noncomputable def
                   simp only [Fintype.card_fin, Finset.union_assoc]
           _ = ℓ - ((V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset).card + G.type_verts.toFinset.card) := by
                   have : Disjoint (V₁.toFinset ∪ V₂.toFinset ∪ V₃.toFinset) G.type_verts.toFinset := by
-                    dsimp [V₁, V₂, V₃]; sorry
+                    suffices Disjoint (V₁ ∪ V₂ ∪ V₃).toFinset G.type_verts.toFinset by {
+                      rw [←Set.toFinset_union V₁ V₂, ←Set.toFinset_union (V₁ ∪ V₂) V₃]; exact this
+                    }
+                    apply Finset.sdiff_eq_self_iff_disjoint.mp
+                    rw [←Set.toFinset_diff (V₁ ∪ V₂ ∪ V₃) G.type_verts]
+                    simp only [h_V₁₂₃_diff_G_type_verts, Set.toFinset_union, Finset.union_assoc]
                   rw [Finset.card_union_of_disjoint this]
           _ = ℓ - (V₁.toFinset.card + V₂.toFinset.card + V₃.toFinset.card + G.type_verts.toFinset.card) := by
                   sorry
