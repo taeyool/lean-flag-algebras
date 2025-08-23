@@ -504,7 +504,7 @@ theorem flagDensity_le_card
     intro h_zero
     rw [h_zero] at h
     simp only [Nat.cast_zero, zero_div, gt_iff_lt, lt_self_iff_false] at h
-  simp [labeledSubgraphCount] at this
+  simp only [labeledSubgraphCount, Set.toFinset_setOf, gt_iff_lt, Finset.card_pos] at this
   obtain ⟨G_sub, hG_sub⟩ := this
   simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG_sub
   obtain ⟨h_ind, h_iso⟩ := hG_sub
