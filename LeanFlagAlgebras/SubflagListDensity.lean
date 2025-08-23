@@ -961,6 +961,29 @@ lemma labeledSubgraph_card_from_iso
             rw [h_G'_verts_card, h_G_type_verts_card]
   rw [←h]
 
+lemma inducedLabeledSubgraph_iso_from_iso
+    {G : LabeledGraph σ (Fin ℓ)} {G₁ : LabeledSubgraph σ G} (h_ind : G₁.IsInduced)
+    {H₁ : LabeledGraph σ (Fin ℓ₁)} (h_iso : Nonempty (G₁.coe ≃f H₁))
+    : Nonempty ((inducedLabeledSubgraph G
+                    ((G₁.subgraph.verts \ G.type_verts) ∪ G.type_verts)
+                    Set.subset_union_right).coe
+                ≃f H₁)
+  := by
+  let V₁ := G₁.subgraph.verts \ G.type_verts
+  have h_G₁_verts : G₁.subgraph.verts = V₁ ∪ G.type_verts := by
+    have : G₁.subgraph.verts = G₁.subgraph.verts ∪ ∅ := Eq.symm (Set.union_empty G₁.subgraph.verts)
+    rw [this]
+    have : V₁ ∪ G.type_verts = G₁.subgraph.verts ∪ G.type_verts := by dsimp [V₁]; exact Set.diff_union_self
+    rw [this]
+    have := labeledSubgraph_contain_type_verts G G₁
+    exact Set.union_congr_left (by exact Set.empty_subset _) (by simp only [Set.union_empty, this])
+  let G₁' := inducedLabeledSubgraph G G₁.subgraph.verts (labeledSubgraph_contain_type_verts G G₁)
+  let G₁'' := inducedLabeledSubgraph G (V₁ ∪ G.type_verts) Set.subset_union_right
+  have h_eq₀ : G₁ = G₁' := inducedLabeledSubgraph_eq (h_Gl'_ind 0)
+  have h_eq₁ : G₁' = G₁'' := by dsimp [G₁', G₁'']; congr!
+  rw [h_eq₀, h_eq₁] at h_iso
+  exact h_iso
+
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -1094,23 +1117,9 @@ noncomputable def
       next h_V₃_card_S₁ => rw [←h_V₃_card]; congr!
       next h_V_card => sorry
       next h_disjoint => sorry
-      next h_iso₁ =>
-        have h_iso : Nonempty (G₁.coe ≃f H₁) := h_Gl'_other_iso 0
-        have h_G₁_verts : G₁.subgraph.verts = V₁ ∪ G.type_verts := by
-          have : G₁.subgraph.verts = G₁.subgraph.verts ∪ ∅ := Eq.symm (Set.union_empty G₁.subgraph.verts)
-          rw [this]
-          have : V₁ ∪ G.type_verts = G₁.subgraph.verts ∪ G.type_verts := by dsimp [V₁]; exact Set.diff_union_self
-          rw [this]
-          have := labeledSubgraph_contain_type_verts G G₁
-          exact Set.union_congr_left (by exact Set.empty_subset _) (by simp only [Set.union_empty, this])
-        have h_eq : G₁ = inducedLabeledSubgraph G G₁.subgraph.verts (labeledSubgraph_contain_type_verts G G₁) :=
-          inducedLabeledSubgraph_eq (h_Gl'_ind 0)
-        -- rw [h_G₁_verts] at h_eq
-        rw [h_eq] at h_iso
-        sorry
-        -- exact h_iso
-      next h_iso₂ => sorry
-      next h_iso₃ => sorry
+      next h_iso₁ => exact inducedLabeledSubgraph_iso_from_iso (h_Gl'_ind 0) (h_Gl'_other_iso 0)
+      next h_iso₂ => exact inducedLabeledSubgraph_iso_from_iso (h_Gl'_ind 1) (h_Gl'_other_iso 1)
+      next h_iso₃ => exact inducedLabeledSubgraph_iso_from_iso (h_Gl'_ind 2) (h_Gl'_other_iso 2)
 
     have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
 
