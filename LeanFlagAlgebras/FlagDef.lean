@@ -262,6 +262,16 @@ theorem inducedLabeledSubgraph_isInduced
   inducedSubgraph_isInduced G.graph S
 
 omit [Fintype T] in
+theorem inducedLabeledSubgraph_eq
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} {H : LabeledSubgraph σ G} (h_H_ind : H.IsInduced)
+    : H = inducedLabeledSubgraph G H.subgraph.verts (labeledSubgraph_contain_type_verts G H)
+  := by
+  dsimp [inducedLabeledSubgraph]
+  congr!
+  . exact inducedSubgraph_eq h_H_ind
+  . simp only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, H.embed_eq]
+
+omit [Fintype T] in
 theorem isInduced_exist_induce_set
     {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) (h_ind : H.IsInduced)
     : ∃ (S : Set V) (h : G.type_verts ⊆ S), inducedLabeledSubgraph G S h = H
