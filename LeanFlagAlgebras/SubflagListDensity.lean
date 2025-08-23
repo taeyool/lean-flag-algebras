@@ -12,9 +12,6 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
-
-
-
 open FlagAlgebras
 open LabeledSubgraph
 open Classical
@@ -37,12 +34,18 @@ def LabeledSubgraphList.IsInduced
     {σ : FlagType T} {t : ℕ} {G : LabeledGraph σ U} (Hl : LabeledSubgraphList σ t G) : Prop
   := ∀ (i : Fin t), (Hl i).IsInduced
 
+def predDisjointLabeledSubgraphList
+    {σ : FlagType T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList σ t G) : Prop
+  :=
+  ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
+
 def predIsoLabeledHl
     {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
     : LabeledSubgraphList σ t G → Prop
   := fun Gl ↦
       (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
-      ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅)
+      ∧ predDisjointLabeledSubgraphList Gl
+      -- ∧ (∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅)
 
 def setOfLabeledSubgraphListIsoHl (G : LabeledGraph σ U) (Hl : LabeledGraphList σ t Vl)
       : Set (LabeledSubgraphList σ t G)
@@ -368,9 +371,7 @@ theorem subflagDensity_eq_flagListDensity
       simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH
       show (fun (_ : Fin 1) => H) ∈ _
       simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
-        ne_eq, forall_const, true_and,
-        Set.coe_setOf, Set.toFinset_setOf, Set.inter_self,
-        Finset.mem_filter, Finset.mem_univ]
+        forall_const, true_and, Set.coe_setOf, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ]
       refine ⟨hH.1, hH.2, ?_⟩
       intro i j hij
       have : i = j := by
@@ -384,8 +385,7 @@ theorem subflagDensity_eq_flagListDensity
     · intro Hl hHl
       use Hl 0
       simp_all only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
-        ne_eq, true_and, and_self, exists_const,
-        Set.coe_setOf, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ]
+        true_and, and_self, exists_const, Set.coe_setOf, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ]
       ext1 i
       rw [Fin.fin_one_eq_zero i]
   calc
@@ -540,7 +540,8 @@ noncomputable def setOfLabeledSubgraphListIsoHl_permute
     let Hl₁ : LabeledSubgraphList σ t G :=  fun i ↦ Hl₀ (π i)
     let h_ind₁ : Hl₁.IsInduced := fun i ↦ @h_ind₀ (π i)
     let h_p₁ : predIsoLabeledHl G (fun i ↦ Hl (π i)) Hl₁ := by
-      simp_all only [predIsoLabeledHl, ne_eq, implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self, Hl₁]
+      simp_all only [predIsoLabeledHl, predDisjointLabeledSubgraphList,
+        ne_eq, implies_true, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, and_self, Hl₁]
     exact ⟨Hl₁, h_ind₁, h_p₁⟩
   have h_inj_f : Function.Injective f := by
     intro ⟨Hl₀, h_ind₀, h_p₀⟩ ⟨Hl₁, h_ind₁, h_p₁⟩ h_eq
@@ -564,7 +565,8 @@ noncomputable def setOfLabeledSubgraphListIsoHl_permute
           exact this
         exact this
       · intro i j h_ij
-        simp_all only [predIsoLabeledHl, ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, Hl₀]
+        simp_all only [predIsoLabeledHl, predDisjointLabeledSubgraphList,
+          ne_eq, Equiv.invFun_as_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true, Hl₀]
     use ⟨Hl₀, h_ind₀, h_p₀⟩
     simp_all only [f, Equiv.invFun_as_coe, Equiv.symm_apply_apply, Hl₀]
   Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
@@ -979,10 +981,46 @@ lemma inducedLabeledSubgraph_iso_from_iso
     exact Set.union_congr_left (by exact Set.empty_subset _) (by simp only [Set.union_empty, this])
   let G₁' := inducedLabeledSubgraph G G₁.subgraph.verts (labeledSubgraph_contain_type_verts G G₁)
   let G₁'' := inducedLabeledSubgraph G (V₁ ∪ G.type_verts) Set.subset_union_right
-  have h_eq₀ : G₁ = G₁' := inducedLabeledSubgraph_eq (h_Gl'_ind 0)
+  have h_eq₀ : G₁ = G₁' := inducedLabeledSubgraph_eq h_ind
   have h_eq₁ : G₁' = G₁'' := by dsimp [G₁', G₁'']; congr!
   rw [h_eq₀, h_eq₁] at h_iso
   exact h_iso
+
+def vertexSetListFromLabeledSubgraphList
+    {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G)
+    : (i : Fin (t+1)) → Set (Fin ℓ)
+  := fun i ↦
+      if h : i.val < t then (Gl ⟨i.val, h⟩).subgraph.verts \ G.type_verts
+      else G.type_verts
+
+lemma disjointLabeledSubgraphList_induce_disjointVertexSetList
+  {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G) (h_disj : predDisjointLabeledSubgraphList Gl)
+  : (Set.univ : Set (Fin (t + 1))).PairwiseDisjoint (vertexSetListFromLabeledSubgraphList Gl)
+  := by
+  intro i h_i j h_j h_ij_neq
+  dsimp [Function.onFun, vertexSetListFromLabeledSubgraphList]
+  by_cases h : i < t ∧ j < t
+  {
+    obtain ⟨h_i_lt_t, h_j_lt_t⟩ := h
+    simp_all only [Set.mem_univ, ne_eq, ↓reduceDIte]
+    apply Set.disjoint_iff_inter_eq_empty.mpr
+    apply h_disj ⟨i.val, h_i_lt_t⟩ ⟨j.val, h_j_lt_t⟩
+    intro h_ij_eq
+    have h_ij_eq' : i = j := by
+      apply Fin.eq_of_val_eq
+      simp only [Fin.mk.injEq] at h_ij_eq
+      exact h_ij_eq
+    exact False.elim (h_ij_neq h_ij_eq')
+  }
+  {
+    split
+    . split
+      . rename_i h_i h_j; exact False.elim (h ⟨h_i, h_j⟩)
+      . rename_i h_i h_j; exact Set.disjoint_sdiff_left
+    . split
+      . rename_i h_i h_j; exact Set.disjoint_sdiff_right
+      . omega
+  }
 
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
@@ -1050,7 +1088,7 @@ noncomputable def
                 ∧ V₃.toFinset.card = ℓ₃ - ℓ₀
                 ∧ V.toFinset.card = ℓ'_other
                 ∧ (Set.univ : Set (Fin 5)).PairwiseDisjoint
-                    (fun i ↦ match i with | 0 => G.type_verts | 1 => V₁ | 2 => V₂ | 3 => V₃ | 4 => V)
+                    (fun i ↦ match i with | 0 => V₁ | 1 => V₂ | 2 => V₃ | 3 => G.type_verts | 4 => V)
                 ∧ Nonempty ((inducedLabeledSubgraph G (V₁ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₁)
                 ∧ Nonempty ((inducedLabeledSubgraph G (V₂ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₂)
                 ∧ Nonempty ((inducedLabeledSubgraph G (V₃ ∪ G.type_verts) Set.subset_union_right).coe ≃f H₃) }
