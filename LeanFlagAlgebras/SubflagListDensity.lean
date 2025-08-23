@@ -1094,7 +1094,21 @@ noncomputable def
       next h_V₃_card_S₁ => rw [←h_V₃_card]; congr!
       next h_V_card => sorry
       next h_disjoint => sorry
-      next h_iso₁ => sorry
+      next h_iso₁ =>
+        have h_iso : Nonempty (G₁.coe ≃f H₁) := h_Gl'_other_iso 0
+        have h_G₁_verts : G₁.subgraph.verts = V₁ ∪ G.type_verts := by
+          have : G₁.subgraph.verts = G₁.subgraph.verts ∪ ∅ := Eq.symm (Set.union_empty G₁.subgraph.verts)
+          rw [this]
+          have : V₁ ∪ G.type_verts = G₁.subgraph.verts ∪ G.type_verts := by dsimp [V₁]; exact Set.diff_union_self
+          rw [this]
+          have := labeledSubgraph_contain_type_verts G G₁
+          exact Set.union_congr_left (by exact Set.empty_subset _) (by simp only [Set.union_empty, this])
+        have h_eq : G₁ = inducedLabeledSubgraph G G₁.subgraph.verts (labeledSubgraph_contain_type_verts G G₁) :=
+          inducedLabeledSubgraph_eq (h_Gl'_ind 0)
+        -- rw [h_G₁_verts] at h_eq
+        rw [h_eq] at h_iso
+        sorry
+        -- exact h_iso
       next h_iso₂ => sorry
       next h_iso₃ => sorry
 
