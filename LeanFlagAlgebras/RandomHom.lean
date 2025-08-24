@@ -29,7 +29,20 @@ theorem flagDensity₁_flagType_asEmptyType
     (F : FinFlag σ)
     : flagDensity₁ (flagType_asEmptyTypeFlag σ) (unlabel F.2) > 0
   := by
-  sorry
+  dsimp only [flagDensity₁]
+  rw [← subflagDensity_eq_flagListDensity]
+  dsimp only [flagType_asEmptyTypeFlag, unlabel, subflagDensity, Quotient.lift_mk]
+  dsimp only [labeledSubgraphDensityLifted, labeledSubgraphDensity,
+    Quotient.lift_mk]
+  apply div_pos
+  · simp only [Nat.cast_pos, labeledSubgraphCount]
+    rw [Finset.card_pos]
+    simp only [Finset.Nonempty, Set.mem_toFinset, Set.mem_setOf_eq]
+    let G : LabeledSubgraph ∅ₜ (unlabeledGraph F.2.out) := sorry
+    sorry
+  · simp only [emptyType_size, tsub_zero, Nat.cast_pos, LabeledGraph.size, Fintype.card_fin]
+    have : F.1 ≥ n₀ := finFlag_size_ge_n₀ F
+    exact Nat.choose_pos this
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
     (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
