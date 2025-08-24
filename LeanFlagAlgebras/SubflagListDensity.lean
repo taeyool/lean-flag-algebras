@@ -986,7 +986,8 @@ def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t →
       (Finset.univ : Finset (Fin t)).biUnion p ⊆ V) -- Actually, this can be derived from the first property, but it was included for the convenience of the proof.
 
 theorem partition_card
-    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ) : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
+    [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ)
+    : (partitions V r_list).card = multinomialCoefficient r_list V.card := by
   dsimp only [multinomialCoefficient]
   split
   next h =>
