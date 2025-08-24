@@ -25,7 +25,7 @@ noncomputable def flagType_asEmptyTypeAlgebra
 
 notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
 
-theorem flagDensity₁_flagType_asEmptyType
+theorem flagDensity₁_flagType_asEmptyType_pos
     (F : FinFlag σ)
     : flagDensity₁ (flagType_asEmptyTypeFlag σ) (unlabel F.2) > 0
   := by
@@ -37,8 +37,58 @@ theorem flagDensity₁_flagType_asEmptyType
   · simp only [Nat.cast_pos, labeledSubgraphCount]
     rw [Finset.card_pos]
     simp only [Finset.Nonempty, Set.mem_toFinset, Set.mem_setOf_eq]
-    let G : LabeledSubgraph ∅ₜ (unlabeledGraph F.2.out) := sorry
-    sorry
+    let G : LabeledSubgraph ∅ₜ (unlabeledGraph F.2.out) :=
+      LabeledSubgraph.inducedLabeledSubgraph _ F.2.out.type_verts (by
+        simp only [LabeledGraph.type_verts, unlabeledGraph, Set.image_univ, Matrix.range_empty,
+          Set.empty_subset]
+      )
+    use G
+    constructor
+    · apply LabeledSubgraph.inducedLabeledSubgraph_isInduced
+    · apply Nonempty.intro
+      simp only [unlabeledGraph, LabeledSubgraph.inducedLabeledSubgraph, LabeledGraph.type_verts, inducedSubgraph, LabeledSubgraph.coe, G]
+      exact {
+        graph_iso := {
+            toFun v := by
+              have : ∃ i, F.2.out.type_embed i = v := by
+                obtain ⟨val, property⟩ := v
+                simp only
+                simp_all only [Set.image_univ, Set.mem_range]
+              exact this.choose
+            invFun v := by
+              simp only [Set.image_univ]
+              exact Set.rangeFactorization F.2.out.type_embed v
+            left_inv := by
+              intro ⟨v, hv⟩
+              simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe]
+              obtain ⟨i, hi⟩ : ∃ i, F.2.out.type_embed i = v := by
+                obtain ⟨val, property⟩ := v
+                simp_all only [Set.image_univ, Set.mem_range]
+              subst hi
+              simp only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+            right_inv := by
+              intro ⟨i, hi⟩
+              simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+            map_rel_iff' := by
+              intro ⟨v, hv⟩ ⟨w, hw⟩
+              simp only [Set.image_univ, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
+              constructor
+              · intro h
+                constructor
+                · simp only [Set.image_univ, Set.mem_range] at hv hw
+                  obtain ⟨vi, hvi⟩ := hv
+                  obtain ⟨wi, hwi⟩ := hw
+                  subst hvi hwi
+                  simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff]
+                · constructor
+                  · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hv
+                  · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hw
+              · intro ⟨h, ⟨vi, hvi⟩, ⟨wi, hwi⟩⟩
+                subst hvi hwi
+                simp_all only [SimpleGraph.Embedding.map_adj_iff, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+          }
+        type_preserve := List.ofFn_inj.mp rfl
+      }
   · simp only [emptyType_size, tsub_zero, Nat.cast_pos, LabeledGraph.size, Fintype.card_fin]
     have : F.1 ≥ n₀ := finFlag_size_ge_n₀ F
     exact Nat.choose_pos this
@@ -69,7 +119,7 @@ theorem downward_preserve_semanticCone
       dsimp only [downwardFlag]
       rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
       right
-      apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType F)
+      apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType_pos F)
       exact Eq.symm hφ₀
     exact le_of_eq (Eq.symm this)
   · obtain ⟨ℙ, _, hℙ⟩ := exists_prob_measure_extend_emptyType_positiveHom φ₀ hφ₀
@@ -78,7 +128,7 @@ theorem downward_preserve_semanticCone
     rw [← hℙ, ge_iff_le, mul_nonneg_iff_left_nonneg_of_pos hφ₀]
     exact integral_nonneg fun φ ↦ hf (PositiveHomSpace.toPosHom φ)
 
-theorem square_downward_geq_zero
+theorem square_downward_nonneg
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ ≥ 0
   := by
