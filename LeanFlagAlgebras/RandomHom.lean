@@ -31,8 +31,8 @@ theorem flagDensity₁_flagType_asEmptyType
   := by
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity]
-  dsimp only [flagType_asEmptyTypeFlag, unlabel, subflagDensity, Quotient.lift_mk]
-  dsimp only [labeledSubgraphDensityLifted, labeledSubgraphDensity, Quotient.lift_mk]
+  dsimp only [flagType_asEmptyTypeFlag, unlabel, subflagDensity, labeledSubgraphDensityLifted,
+    labeledSubgraphDensity, Quotient.lift_mk]
   apply div_pos
   · simp only [Nat.cast_pos, labeledSubgraphCount]
     rw [Finset.card_pos]
