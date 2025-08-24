@@ -34,11 +34,8 @@ lemma choose_pair_zero
   := by
   by_cases hm : m > n
   · simp only [Nat.choose_eq_zero_of_lt hm, zero_mul]
-  · have hk : k > n - m := by
-      apply @Nat.lt_of_add_lt_add_right _ _ m
-      rw [Nat.sub_add_cancel (Nat.le_of_not_lt hm), Nat.add_comm]
-      exact h_size
-    simp only [Nat.choose_eq_zero_of_lt hk, mul_zero]
+  · have hk : k > n - m := by omega
+    rw [Nat.choose_eq_zero_of_lt hk, mul_zero]
 
 lemma choose_pair_comm
     (n m k : ℕ)

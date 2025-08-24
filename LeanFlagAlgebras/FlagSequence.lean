@@ -77,7 +77,7 @@ theorem flagSeq_convergesTo_iff
 
 def FlagDensitySpace (σ : FlagType (Fin n₀)) : Set (FinFlag σ → ℝ)
   :=
-  Set.pi (Set.univ : Set (FinFlag σ)) (fun _ => (Set.Icc 0 1 : Set ℝ))
+  (Set.univ : Set (FinFlag σ)).pi (fun _ => (Set.Icc 0 1 : Set ℝ))
 
 instance : FunLike (FlagDensitySpace σ) (FinFlag σ) ℝ where
   coe := fun a => a.val
@@ -85,6 +85,14 @@ instance : FunLike (FlagDensitySpace σ) (FinFlag σ) ℝ where
     intro a b h
     ext F
     exact congrFun h F
+
+instance : TopologicalSpace (PositiveHom σ) :=
+  TopologicalSpace.induced (fun a ↦ ⟨fun F ↦ a ⟦unitVector F⟧, (by
+    intro f _; simp; constructor
+    · exact positiveHom_unitVector_ge_zero a f
+    · exact positiveHom_unitVector_le_one a f
+    : (fun F ↦ a ⟦unitVector F⟧) ∈ FlagDensitySpace σ)⟩)
+    instTopologicalSpaceSubtype
 
 theorem flagDensitySpace_mem_Icc_zero_one
     (a : FlagDensitySpace σ) (F : FinFlag σ)
@@ -153,12 +161,12 @@ theorem increasing_flagSeq_contain_convergent_subseq
 namespace PositiveHom
 
 @[coe]
-noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
+protected noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
     val := fun F => φ ⟦unitVector F⟧
     property := by
       simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc]
-      constructor <;> (intro F; simp only)
+      constructor <;> intro F
       · exact positiveHom_unitVector_ge_zero φ F
       · exact positiveHom_unitVector_le_one φ F
   }
@@ -169,27 +177,26 @@ theorem coe_flag
   :=
   rfl
 
+@[ext]
 theorem coe_injective
-    : Function.Injective (coe : PositiveHom σ → FlagDensitySpace σ)
+    : Function.Injective (@PositiveHom.coe _ σ)
   := by
   intro φ φ' h
-  simp only [coe, Subtype.mk.injEq] at h
+  simp only [PositiveHom.coe, Subtype.mk.injEq] at h
   apply congrFun at h
   ext f
-  rcases Quotient.exists_rep f with ⟨frep, hfrep⟩
-  symm at hfrep
-  subst hfrep
+  rcases Quotient.exists_rep f with ⟨frep, rfl⟩
   rw [flagVector_eq_sum_unitVector frep]
   simp_rw [sum_quot, smul_quot, map_sum, map_smul]
   apply Finset.sum_congr rfl
-  intro F _
+  rintro F -
   rw [h F]
 
 end PositiveHom
 
 def PositiveHomSpace (σ : FlagType (Fin n₀))
   :=
-  Set.range (PositiveHom.coe : PositiveHom σ → FlagDensitySpace σ)
+  Set.range (@PositiveHom.coe _ σ)
 
 noncomputable def PositiveHomSpace.toPosHom
     (φ : PositiveHomSpace σ)
@@ -200,7 +207,29 @@ noncomputable def PositiveHomSpace.toPosHom
 theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
-  sorry
+  rw [isClosed_induced_iff]
+  use PositiveHomSpace σ
+  simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
+  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
+  · simp [Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal, FlagDensitySpace]
+    have := @Set.sep_mem_eq _ (fun x : (FinFlag σ → ℝ) ↦ (fun _ ↦ 0) ≤ x) (fun x : (FinFlag σ → ℝ) ↦ x ≤ (fun _ ↦ 1))
+    simp only [Set.mem_def] at this
+    rw [this]
+    exact IsClosed.inter (isClosed_le continuous_const continuous_id)
+      <| isClosed_le continuous_id continuous_const
+  · apply IsClosedMap.isClosed_range
+    intro s h
+    simp [isClosed_induced_iff]
+    use ↑((@PositiveHom.coe _ σ) '' s)
+    simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
+    refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
+    · apply IsClosed.isClosedEmbedding_subtypeVal
+      simp only [FlagDensitySpace, Set.pi_univ_Icc]
+      exact isClosed_Icc
+    · refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ⟨⟨⟨rfl⟩, ?_⟩, ?_⟩).mp h
+      · intro _ _; exact PositiveHom.coe_injective_iff.mpr
+      · rw [isClosed_induced_iff]
+        sorry
 
 instance : CompactSpace (PositiveHomSpace σ)
   :=
