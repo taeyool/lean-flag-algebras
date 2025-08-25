@@ -94,6 +94,9 @@ instance : TopologicalSpace (PositiveHom σ) :=
     : (fun F ↦ a ⟦unitVector F⟧) ∈ FlagDensitySpace σ)⟩)
     instTopologicalSpaceSubtype
 
+instance : T1Space (FlagDensitySpace σ) :=
+  inferInstance
+
 theorem flagDensitySpace_mem_Icc_zero_one
     (a : FlagDensitySpace σ) (F : FinFlag σ)
     : a F ∈ Set.Icc 0 1 := by
@@ -204,6 +207,22 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
+-- TODO: Prove it & Better naming.
+theorem asdf₁
+    {α : Type*} [TopologicalSpace α] [T1Space α] {p : α → Prop}
+    {β : Type*} {f : β → {α | p α}} (hf : Function.Injective f)
+    {x : α} {s : Set β} (hx : p x)
+    (h : ∃ᶠ y : {v | p v} in 𝓝 ⟨x, hx⟩, ∃ z ∈ s, f z = y) :
+    ∃ e, s = {e} := by
+  sorry
+
+-- TODO: Prove it & Better naming.
+theorem asdf₂
+    {α : Type*} [TopologicalSpace α] [T1Space α] {a b : α}
+    (h : ∃ᶠ x in 𝓝 a, b = x) :
+    a = b := by
+  sorry
+
 theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
@@ -226,10 +245,13 @@ theorem positiveHomSpace_isClosed
     · apply IsClosed.isClosedEmbedding_subtypeVal
       simp only [FlagDensitySpace, Set.pi_univ_Icc]
       exact isClosed_Icc
-    · refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ⟨⟨⟨rfl⟩, ?_⟩, ?_⟩).mp h
-      · intro _ _; exact PositiveHom.coe_injective_iff.mpr
-      · rw [isClosed_induced_iff]
-        sorry
+    · simp [isClosed_iff_frequently]
+      rintro f h₁ h₂
+      obtain ⟨g, rfl⟩ := asdf₁ PositiveHom.coe_injective h₁ h₂
+      use g; simp at h₂
+      rcases h₃ : g.coe with ⟨x, hx⟩
+      simp_rw [h₃] at h₂
+      simp [asdf₂ h₂]
 
 instance : CompactSpace (PositiveHomSpace σ)
   :=
