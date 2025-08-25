@@ -1375,40 +1375,16 @@ lemma inducedLabeledSubgraph_iso_from_iso
   exact h_iso
 
 def vertexSetListFromLabeledSubgraphList
-    {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G)
-    : (i : Fin (t+1)) → Set (Fin ℓ)
-  := fun i ↦
-      if h : i.val < t then (Gl ⟨i.val, h⟩).subgraph.verts \ G.type_verts
-      else G.type_verts
+    {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G) : (i : Fin t) → Set (Fin ℓ)
+  := fun i ↦(Gl i).subgraph.verts \ G.type_verts
 
 lemma disjointLabeledSubgraphList_induce_disjointVertexSetList
   {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G) (h_disj : predDisjointLabeledSubgraphList Gl)
-  : (Set.univ : Set (Fin (t + 1))).PairwiseDisjoint (vertexSetListFromLabeledSubgraphList Gl)
+  : Set.univ.PairwiseDisjoint (vertexSetListFromLabeledSubgraphList Gl)
   := by
-  intro i h_i j h_j h_ij_neq
+  intro i _ j _ h_ij_neq
   dsimp [Function.onFun, vertexSetListFromLabeledSubgraphList]
-  by_cases h : i < t ∧ j < t
-  {
-    obtain ⟨h_i_lt_t, h_j_lt_t⟩ := h
-    simp_all only [Set.mem_univ, ne_eq, ↓reduceDIte]
-    apply Set.disjoint_iff_inter_eq_empty.mpr
-    apply h_disj ⟨i.val, h_i_lt_t⟩ ⟨j.val, h_j_lt_t⟩
-    intro h_ij_eq
-    have h_ij_eq' : i = j := by
-      apply Fin.eq_of_val_eq
-      simp only [Fin.mk.injEq] at h_ij_eq
-      exact h_ij_eq
-    exact False.elim (h_ij_neq h_ij_eq')
-  }
-  {
-    split
-    . split
-      . rename_i h_i h_j; exact False.elim (h ⟨h_i, h_j⟩)
-      . rename_i h_i h_j; exact Set.disjoint_sdiff_left
-    . split
-      . rename_i h_i h_j; exact Set.disjoint_sdiff_right
-      . omega
-  }
+  exact Set.disjoint_iff_inter_eq_empty.mpr (h_disj i j h_ij_neq)
 
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
@@ -1469,6 +1445,62 @@ noncomputable def
       use ⟨⟨X, h_X⟩, ⟨Gl, h_Gl⟩⟩
 
     Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
+
+  let Hl_size (i : Fin 3) : ℕ :=
+    match i with
+    | 0 => ℓ₁
+    | 1 => ℓ₂
+    | 2 => ℓ₃
+  let Hl (i : Fin 3) : LabeledGraph σ (Fin (Hl_size i)) :=
+    match i with
+    | 0 => H₁
+    | 1 => H₂
+    | 2 => H₃
+  let S₁ := { ⟨Vl, V⟩ : (Fin 3 → Set (Fin ℓ)) × Set (Fin ℓ)
+                | (∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀)
+                ∧ (∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)))
+                ∧ (∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅)
+                ∧ Set.univ.PairwiseDisjoint Vl
+                ∧ V.toFinset.card = ℓ'_other
+                ∧ V ∩ G.type_verts = ∅
+                ∧ (∀ i : Fin 3, (Vl i) ∩ V = ∅) }
+
+  let f_S₀_S₁ : S₀ ≃ S₁ :=
+    let f_S₀_S₁_fwd : S₀ → S₁ := by
+      intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
+
+      dsimp [predIsoLabeledHl] at h_Gl'_other
+      obtain ⟨h_Gl'_other_iso', h_Gl'_other_disj⟩ := h_Gl'_other
+      have h_Gl'_other_iso : ∀ i : Fin 3, Nonempty ((Gl' i).coe ≃f Hl i) := by
+        intro i
+        let f_iso₁ : (Gl' i).coe ≃f labeledGraphTripleToList H₁ H₂ H₃ i := (h_Gl'_other_iso' i).some
+        let f_iso₂ : labeledGraphTripleToList H₁ H₂ H₃ i ≃f Hl i := by
+          dsimp [labeledGraphTripleToList, Hl]
+          split <;> (simp only [Fin.isValue]; exact LabeledGraphIso.refl)
+        exact Nonempty.intro (f_iso₁.trans f_iso₂)
+
+      let Vl (i : Fin 3) := (Gl' i).subgraph.verts \ G.type_verts
+      have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
+        intro i
+        exact labeledSubgraph_card_from_iso G (Gl' i) (Hl i) (h_Gl'_other_iso i)
+      have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by
+        intro i
+        exact inducedLabeledSubgraph_iso_from_iso (h_Gl'_ind i) (h_Gl'_other_iso i)
+      have h_Vl_disj_G_type_verts : ∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅ := by
+        intro i
+        dsimp [Vl]
+        exact Set.diff_inter_self
+      have h_Vl_disj_pairwise : Set.univ.PairwiseDisjoint Vl := by
+        intro i _ j _ h_ij_neq
+        exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl'_other_disj i j h_ij_neq)
+
+      sorry
+
+    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
+
+    have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
+
+    Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
 
   let S₁ := { ⟨V₁, V₂, V₃, V⟩ : Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ)
                 | V₁.toFinset.card = ℓ₁ - ℓ₀
