@@ -98,8 +98,8 @@ theorem flagListDensity_prod_approx
   have : B_c.card ≤ ∑ i : Fin t, ∑ j : Fin t, (B_c_ij i j).card := sorry
   sorry
 
-example (a b : ℕ) : (a + b) ^ 2 = a ^ 2 + b ^ 2 + 2 * (a * b) := by
-  ring
+example (a b c d : ℚ) : (a / b) * (c / d) = (a * c) / (b * d) := by
+  field_simp
 
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
@@ -122,9 +122,88 @@ theorem flagListDensity₂_prod_approx
   have hGrep₂ : (⟦Grep⟧ : Quotient (labeledGraphSetoid σ W)).out.size = Grep.size := rfl
   rw [hFrep₂, hF'rep₂, hGrep₂]
 
-  let Ω := (Finset.univ : Finset (Finset W × Finset W)).filter (fun v => (v.1.card = Frep.size ∧ Grep.type_verts ⊆ v.1) ∧ (v.2.card = F'rep.size ∧ Grep.type_verts ⊆ v.2))
-  let A := Ω.filter (fun v => Nonempty ((inducedLabeledSubgraph Grep v.1.toSet (by sorry)).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v.2.toSet (by sorry)).coe ≃f F'rep))
-  let B := Ω.filter (fun (v : Finset W × Finset W) => (v.1 \ Grep.type_verts.toFinset) ∩ (v.2 \ Grep.type_verts.toFinset) = ∅)
+  let Ω := { v : Finset W × Finset W | (v.1.card = Frep.size ∧ Grep.type_verts ⊆ v.1) ∧ (v.2.card = F'rep.size ∧ Grep.type_verts ⊆ v.2)}
+  let A : Finset Ω := { v | by
+    obtain ⟨⟨v₁, v₂⟩, h⟩ := v
+    exact Nonempty ((inducedLabeledSubgraph Grep v₁ h.1.2).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v₂ h.2.2).coe ≃f F'rep) }
+  let B : Finset Ω := { v | by
+    obtain ⟨⟨v₁, v₂⟩, h⟩ := v
+    exact (v₁ \ Grep.type_verts.toFinset) ∩ (v₂ \ Grep.type_verts.toFinset) = ∅ }
+  have P₁ : labeledSubgraphDensity Frep Grep * labeledSubgraphDensity F'rep Grep
+    = A.card / Ω.toFinset.card := by
+    dsimp [labeledSubgraphDensity]
+    field_simp
+    congr
+    · dsimp [labeledSubgraphCount]
+      rw [← Nat.cast_mul, Nat.cast_inj, ← Finset.card_product]
+      apply Finset.card_eq_of_equiv
+      refine Equiv.ofBijective ?_ ?_
+      · intro ⟨⟨G₁, G₂⟩, h⟩
+        let V_G₁_G₂ : Finset W × Finset W := (G₁.subgraph.verts.toFinset, G₂.subgraph.verts.toFinset)
+        have h_V_G₁_G₂ : V_G₁_G₂ ∈ Ω := by
+          simp only [Set.mem_setOf_eq, Ω, V_G₁_G₂]
+          simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and] at h
+          obtain ⟨⟨h_G₁_1, h_G₁_2⟩, ⟨h_G₂_1, h_G₂_2⟩⟩ := h
+          constructor
+          · constructor
+            · have := labeledGraphIso_size_eq G₁.coe Frep (Classical.choice h_G₁_2)
+              simp only [Set.toFinset_card, Fintype.card_ofFinset]
+              simp [LabeledGraph.size] at this
+              exact this
+            · simp only [Set.coe_toFinset]
+              exact labeledSubgraph_contain_type_verts Grep G₁
+          · constructor
+            · have := labeledGraphIso_size_eq G₂.coe F'rep (Classical.choice h_G₂_2)
+              simp only [Set.toFinset_card, Fintype.card_ofFinset]
+              simp [LabeledGraph.size] at this
+              exact this
+            · simp only [Set.coe_toFinset]
+              exact labeledSubgraph_contain_type_verts Grep G₂
+        use ⟨V_G₁_G₂, h_V_G₁_G₂⟩
+        simp_all only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and, Set.coe_setOf, Set.mem_setOf_eq, Ω, A]
+        obtain ⟨⟨h_G₁_1, h_G₁_2⟩, ⟨h_G₂_1, h_G₂_2⟩⟩ := h
+        obtain ⟨⟨h_G₁_3, h_G₁_4⟩, ⟨h_G₂_3, h_G₂_4⟩⟩ := h_V_G₁_G₂
+        constructor
+        · apply Nonempty.intro
+          let iso_G₁_F := Classical.choice h_G₁_2
+          have iso_G₁_G₁' : G₁.coe ≃f (inducedLabeledSubgraph Grep V_G₁_G₂.1 h_G₁_4).coe := by
+            rw [inducedLabeledSubgraph_eq h_G₁_1]
+            apply LabeledGraphIso.labeledSubgraphIso_eq
+            congr!
+            simp only [Set.coe_toFinset, V_G₁_G₂]
+          exact iso_G₁_G₁'.symm.trans iso_G₁_F
+        · apply Nonempty.intro
+          let iso_G₂_F' := Classical.choice h_G₂_2
+          have iso_G₂_G₂' : G₂.coe ≃f (inducedLabeledSubgraph Grep V_G₁_G₂.2 h_G₂_4).coe := by
+            rw [inducedLabeledSubgraph_eq h_G₂_1]
+            apply LabeledGraphIso.labeledSubgraphIso_eq
+            congr!
+            simp only [Set.coe_toFinset, V_G₁_G₂]
+          exact iso_G₂_G₂'.symm.trans iso_G₂_F'
+      · constructor
+        · intro ⟨⟨v1_1, v1_2⟩, h1⟩ ⟨⟨v2_1, v2_2⟩, h2⟩ h
+          simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Set.toFinset_inj,]
+          simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and] at h1 h2
+          obtain ⟨h₁, h₂⟩ := h
+          obtain ⟨⟨h1_v₁_1, h1_v₁_2⟩, ⟨h1_v₂_1, h1_v₂_2⟩⟩ := h1
+          obtain ⟨⟨h2_v₁_1, h2_v₁_2⟩, ⟨h2_v₂_1, h2_v₂_2⟩⟩ := h2
+          constructor
+          · exact labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts h1_v₁_1 h2_v₁_1 h₁)
+          · exact labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts h1_v₂_1 h2_v₂_1 h₂)
+        · intro ⟨⟨⟨v1, v2⟩, hΩ⟩, hA⟩
+          obtain ⟨⟨h_v1_1, h_v1_2⟩, ⟨h_v2_1, h_v2_2⟩⟩ := hΩ
+          simp only [mem_filter, mem_univ, true_and, A] at hA
+          let G₁ := inducedLabeledSubgraph Grep v1 h_v1_2
+          let G₂ := inducedLabeledSubgraph Grep v2 h_v2_2
+          use ⟨(G₁, G₂), by
+            simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, inducedLabeledSubgraph_isInduced, true_and, G₁, G₂]
+            exact hA⟩
+          simp only [inducedLabeledSubgraph_verts, toFinset_coe, G₁, G₂]
+    · sorry
+  -- let Ω := (Finset.univ : Finset (Finset W × Finset W)).filter (fun v => (v.1.card = Frep.size ∧ Grep.type_verts ⊆ v.1) ∧ (v.2.card = F'rep.size ∧ Grep.type_verts ⊆ v.2))
+  -- let A' := { v | ∃ (h : v ∈ Ω), true }
+  -- let A := Ω.filter (fun v => Nonempty ((inducedLabeledSubgraph Grep v.1.toSet (by sorry)).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v.2.toSet (by sorry)).coe ≃f F'rep))
+  -- let B := Ω.filter (fun (v : Finset W × Finset W) => (v.1 \ Grep.type_verts.toFinset) ∩ (v.2 \ Grep.type_verts.toFinset) = ∅)
 
   have calc₁ : 2 * Frep.size * F'rep.size ≤ (Frep.size + F'rep.size) ^ 2 := by
     ring_nf

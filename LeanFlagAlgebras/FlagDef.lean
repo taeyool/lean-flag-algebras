@@ -332,6 +332,9 @@ def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
     simp only [SimpleGraph.Iso.coe_comp]
     exact rfl
 
+def labeledSubgraphIso_eq
+  {G : LabeledGraph σ V} {F F' : LabeledSubgraph σ G} (h : F = F') : F.coe ≃f F'.coe := h ▸ LabeledGraphIso.refl
+
 end LabeledGraphIso
 
 /-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
