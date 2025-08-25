@@ -207,8 +207,8 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
--- TODO: Prove it & Better naming.
-theorem asdf₁
+-- TODO: Prove it.
+theorem frequently_exists_eq_in_T1Space
     {α : Type*} [TopologicalSpace α] [T1Space α] {p : α → Prop}
     {β : Type*} {f : β → {α | p α}} (hf : Function.Injective f)
     {x : α} {s : Set β} (hx : p x)
@@ -216,8 +216,8 @@ theorem asdf₁
     ∃ e, s = {e} := by
   sorry
 
--- TODO: Prove it & Better naming.
-theorem asdf₂
+-- TODO: Prove it.
+theorem eq_of_frequently_eq
     {α : Type*} [TopologicalSpace α] [T1Space α] {a b : α}
     (h : ∃ᶠ x in 𝓝 a, b = x) :
     a = b := by
@@ -230,16 +230,13 @@ theorem positiveHomSpace_isClosed
   use PositiveHomSpace σ
   simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
   refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
-  · simp [Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal, FlagDensitySpace]
-    have := @Set.sep_mem_eq _ (fun x : (FinFlag σ → ℝ) ↦ (fun _ ↦ 0) ≤ x) (fun x : (FinFlag σ → ℝ) ↦ x ≤ (fun _ ↦ 1))
-    simp only [Set.mem_def] at this
-    rw [this]
-    exact IsClosed.inter (isClosed_le continuous_const continuous_id)
-      <| isClosed_le continuous_id continuous_const
+  · simp only [FlagDensitySpace, Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal,
+    Subtype.range_coe_subtype, Set.pi_univ_Icc, true_and]
+    exact isClosed_Icc
   · apply IsClosedMap.isClosed_range
     intro s h
-    simp [isClosed_induced_iff]
-    use ↑((@PositiveHom.coe _ σ) '' s)
+    rw [isClosed_induced_iff]
+    use ↑(PositiveHom.coe '' s)
     simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
     refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
     · apply IsClosed.isClosedEmbedding_subtypeVal
@@ -247,11 +244,11 @@ theorem positiveHomSpace_isClosed
       exact isClosed_Icc
     · simp [isClosed_iff_frequently]
       rintro f h₁ h₂
-      obtain ⟨g, rfl⟩ := asdf₁ PositiveHom.coe_injective h₁ h₂
+      obtain ⟨g, rfl⟩ := frequently_exists_eq_in_T1Space PositiveHom.coe_injective h₁ h₂
       use g; simp at h₂
-      rcases h₃ : g.coe with ⟨x, hx⟩
+      rcases h₃ : g.coe with ⟨x, _⟩
       simp_rw [h₃] at h₂
-      simp [asdf₂ h₂]
+      simp [eq_of_frequently_eq h₂]
 
 instance : CompactSpace (PositiveHomSpace σ)
   :=
