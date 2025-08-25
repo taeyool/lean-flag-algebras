@@ -16,6 +16,25 @@ def flagType_asEmptyTypeFlag
   }
   ⟦σ₀⟧
 
+theorem flagType_asEmptyTypeFlag_eq
+    (σ : FlagType (Fin n₀))
+    : flagType_asEmptyTypeFlag σ = unlabel (1 : FinFlag σ).2
+  := by
+  apply Quotient.sound
+  apply Nonempty.intro
+  exact {
+    graph_iso := by
+      show σ ≃g ⟦emptyLabeledGraph σ⟧.out.graph
+      have : σ = (emptyLabeledGraph σ).graph := rfl
+      nth_rw 1 [this]
+      apply LabeledGraphIso.graph_iso
+      symm
+      apply Classical.choice
+      show ⟦emptyLabeledGraph σ⟧.out ≈ emptyLabeledGraph σ
+      apply Quotient.mk_out
+    type_preserve := List.ofFn_inj.mp rfl
+  }
+
 noncomputable def flagType_asEmptyTypeAlgebra
     (σ : FlagType (Fin n₀))
     : FlagAlgebra ∅ₜ
@@ -94,11 +113,28 @@ theorem flagDensity₁_flagType_asEmptyType_pos
     exact Nat.choose_pos this
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
-    (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
+    {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
-      ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟨σ⟩₀)
+      ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
   sorry
+
+theorem positiveHom_one_downward_pos
+    {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
+    : φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ > 0
+  := by
+  have : (1 : FlagAlgebra σ) = ⟦unitVector ⟨n₀, emptyFlag σ⟩⟧ := by rfl
+  rw [this]
+  dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, downwardFlag, Quotient.lift_mk]
+  rw [linearExtension_unitVector]
+  dsimp [flagType_asEmptyTypeAlgebra] at hσ
+  simp only [rat_smul_eq_real_smul]
+  rw [smul_quot, PositiveHom.map_smul]
+  apply mul_pos
+  · simp only [Rat.cast_pos]
+    exact downwardNormalizingFactor_emptyFlag_pos
+  · rw [flagType_asEmptyTypeFlag_eq] at hσ
+    exact hσ
 
 theorem downward_preserve_semanticCone
     (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
@@ -114,18 +150,19 @@ theorem downward_preserve_semanticCone
       intro F _
       rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
       right
-      dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, unitVector, Quotient.lift_mk]
-      rw [linearExtension_single_one]
+      dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
+      rw [linearExtension_unitVector]
       dsimp only [downwardFlag]
       rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
       right
       apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType_pos F)
       exact Eq.symm hφ₀
     exact le_of_eq (Eq.symm this)
-  · obtain ⟨ℙ, _, hℙ⟩ := exists_prob_measure_extend_emptyType_positiveHom φ₀ hφ₀
+  · obtain ⟨ℙ, _, hℙ⟩ := exists_prob_measure_extend_emptyType_positiveHom hφ₀
     specialize hℙ f
-    rw [eq_div_iff (ne_of_gt hφ₀)] at hℙ
-    rw [← hℙ, ge_iff_le, mul_nonneg_iff_left_nonneg_of_pos hφ₀]
+    have hφ₀' : φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := positiveHom_one_downward_pos hφ₀
+    rw [eq_div_iff (ne_of_gt hφ₀')] at hℙ
+    rw [← hℙ, ge_iff_le, mul_nonneg_iff_left_nonneg_of_pos hφ₀']
     exact integral_nonneg fun φ ↦ hf (PositiveHomSpace.toPosHom φ)
 
 theorem square_downward_nonneg

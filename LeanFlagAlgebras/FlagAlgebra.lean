@@ -844,7 +844,7 @@ theorem sum_flagWithSize_eq_one
   simp only [Rat.cast_one, one_smul]
 
 theorem linearExtension_unitVector
-    (f : FinFlag σ → ℝ) (F : FinFlag σ)
+    {R : Type} [AddCommGroup R] [Module ℝ R] (f : FinFlag σ → R) (F : FinFlag σ)
     : linearExtension f (unitVector F) = f F
   := by
   simp only [unitVector, linearExtension_single_one]
