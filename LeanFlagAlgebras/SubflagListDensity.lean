@@ -1465,7 +1465,7 @@ noncomputable def
                 ∧ Set.univ.PairwiseDisjoint Vl
                 ∧ V.toFinset.card = ℓ'_other
                 ∧ V ∩ G.type_verts = ∅
-                ∧ (∀ i : Fin 3, (Vl i) ∩ V = ∅) }
+                ∧ (∀ i : Fin 3, V ∩ (Vl i) = ∅) }
 
   let f_S₀_S₁ : S₀ ≃ S₁ :=
     let f_S₀_S₁_fwd : S₀ → S₁ := by
@@ -1540,13 +1540,45 @@ noncomputable def
                   rw [Fintype.card_fin ℓ₀]
           _ = ℓ_other := by
                   omega
+      have h_V_other_disj_G_type_verts : V_other ∩ G.type_verts = ∅ := by
+        dsimp [V_other]
+        simp only [Set.compl_union]
+        rw [Set.inter_assoc, Set.compl_inter_self]
+        exact Set.inter_empty _
+      have h_V_other_disj_Vl : ∀ (i : Fin 3), V_other ∩ Vl i = ∅ := by
+        intro i
+        dsimp [V_other]
+        rw [Set.compl_union (⋃ i, Vl i) G.type_verts]
+        rw [Set.inter_comm (⋃ i, Vl i)ᶜ G.type_vertsᶜ]
+        rw [Set.inter_assoc]
+        have : (⋃ i, Vl i)ᶜ ∩ (Vl i) = ∅ := by
+          refine Set.subset_eq_empty ?_ rfl
+          have h₀ : (⋃ i, Vl i)ᶜ ⊆ (Vl i)ᶜ := Set.compl_subset_compl.mpr (Set.subset_iUnion Vl i)
+          calc
+            (⋃ i, Vl i)ᶜ ∩ (Vl i) ⊆ (Vl i)ᶜ ∩ (Vl i) := Set.inter_subset_inter_left (Vl i) h₀
+            _ = ∅ := Set.compl_inter_self (Vl i)
+        rw [this]
+        exact Set.inter_empty _
+
       let f_V_other : Fin ℓ_other → Fin ℓ := by
         rw [←h_V_other_card]
         intro i
         exact ((Finset.equivFin V_other.toFinset).symm i).val
       let V : Set (Fin ℓ) := f_V_other '' X
-
-      sorry
+      have h_V_subset_V_other : V ⊆ V_other := by sorry
+      have h_V_card : V.toFinset.card = ℓ'_other := sorry
+      have h_V_disj_G_type_verts : V ∩ G.type_verts = ∅ := by
+        suffices V ∩ G.type_verts ⊆ ∅ by exact Set.subset_eq_empty this rfl
+        rw [←h_V_other_disj_G_type_verts]
+        exact Set.inter_subset_inter_left G.type_verts h_V_subset_V_other
+      have h_V_disj_Vl : ∀ (i : Fin 3), V ∩ Vl i = ∅ := by
+        intro i
+        suffices V ∩ Vl i ⊆ ∅ by exact Set.subset_eq_empty this rfl
+        rw [←h_V_other_disj_Vl i]
+        exact Set.inter_subset_inter_left (Vl i) h_V_subset_V_other
+      exact ⟨⟨Vl, V⟩,
+          (by intro i; rw [←h_Vl_card i]; congr!), h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise,
+          (by rw [←h_V_card]; congr!) , h_V_disj_G_type_verts, h_V_disj_Vl⟩
 
     have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
 
