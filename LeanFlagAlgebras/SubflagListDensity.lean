@@ -7,10 +7,12 @@ import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Data.Set.Finite.Lattice
 import Mathlib.Data.Set.Pairwise.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+
 
 open FlagAlgebras
 open LabeledSubgraph
@@ -1493,6 +1495,56 @@ noncomputable def
       have h_Vl_disj_pairwise : Set.univ.PairwiseDisjoint Vl := by
         intro i _ j _ h_ij_neq
         exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl'_other_disj i j h_ij_neq)
+
+      let unionVl := ⋃ (i : Fin 3), Vl i
+      have h_unionVl_disj : unionVl ∩ G.type_verts = ∅ := by
+        rw [Set.iUnion_inter G.type_verts Vl]
+        rw [Set.iUnion_congr h_Vl_disj_G_type_verts]
+        exact Set.iUnion_empty
+      have h_unionVl_card : unionVl.toFinset.card = (ℓ₁ - ℓ₀) + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀) :=
+        calc
+          unionVl.toFinset.card
+          _ = (Finset.univ.biUnion fun x ↦ (Vl x).toFinset).card := by
+                rw [Set.toFinset_iUnion Vl]
+          _ = ∑ i : Fin 3, (Vl i).toFinset.card := by
+                apply Finset.card_biUnion
+                intro i h_i j h_j h_neq
+                simp only [Set.disjoint_toFinset]
+                have := Set.PairwiseDisjoint.eq_or_disjoint h_Vl_disj_pairwise (Set.mem_univ i) (Set.mem_univ j)
+                simp_all only [Set.toFinset_card, Finset.coe_univ, Set.mem_univ, ne_eq, false_or]
+          _ = ∑ i : Fin 3, (Hl_size i - ℓ₀) := by
+                apply Finset.sum_congr rfl
+                intro i _
+                exact h_Vl_card i
+          _ = (ℓ₁ - ℓ₀) + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀) := by
+                simp only [Fin.sum_univ_three, Hl_size]
+      let V_other := (Set.iUnion Vl ∪ G.type_verts)ᶜ
+      have h_V_other_card : V_other.toFinset.card = ℓ_other :=
+        calc
+          V_other.toFinset.card
+          _ = (unionVl.toFinset ∪ G.type_verts.toFinset)ᶜ.card := by
+                  dsimp [V_other, unionVl]; simp only [Set.toFinset_compl, Set.toFinset_union]
+          _ = ℓ - (unionVl.toFinset ∪ G.type_verts.toFinset).card := by
+                  rw [Finset.card_compl (unionVl.toFinset ∪ G.type_verts.toFinset)]
+                  rw [Fintype.card_fin]
+          _ = ℓ - (unionVl.toFinset.card + G.type_verts.toFinset.card) := by
+                  have : Disjoint unionVl.toFinset G.type_verts.toFinset := by
+                    suffices Disjoint unionVl G.type_verts by exact Set.disjoint_toFinset.mpr this
+                    apply Set.disjoint_iff_inter_eq_empty.mpr h_unionVl_disj
+                  rw [Finset.card_union_of_disjoint this]
+          _ = ℓ - ((ℓ₁ - ℓ₀) + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀) + ℓ₀) := by
+                  rw [h_unionVl_card]
+                  rw [Set.toFinset_card G.type_verts]
+                  rw [G.type_verts_card_eq]
+                  dsimp [FlagType.size]
+                  rw [Fintype.card_fin ℓ₀]
+          _ = ℓ_other := by
+                  omega
+      let f_V_other : Fin ℓ_other → Fin ℓ := by
+        rw [←h_V_other_card]
+        intro i
+        exact ((Finset.equivFin V_other.toFinset).symm i).val
+      let V : Set (Fin ℓ) := f_V_other '' X
 
       sorry
 
