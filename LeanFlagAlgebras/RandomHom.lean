@@ -134,12 +134,30 @@ noncomputable def FinFlag.toMeasure
     }
   exact ProbabilityTheory.uniformOn (f '' S)
 
-instance {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+theorem exists_labeledSubgraph_of_flagDensity_pos
+    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : ∃ F' : LabeledSubgraph ∅ₜ F.2.out, F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)
+  := by
+  dsimp only [flagDensity₁] at hF
+  rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2] at hF
+  dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledSubgraphDensityLifted,
+    labeledSubgraphDensity, Quotient.lift_mk] at hF
+  rw [gt_iff_lt, div_pos_iff] at hF
+  rcases hF with ⟨hF_num, hF_den⟩ | ⟨hF_num, hF_den⟩
+  · dsimp only [labeledSubgraphCount] at hF_num
+    simp only [Set.toFinset_setOf, Nat.cast_pos, Finset.card_pos] at hF_num
+    obtain ⟨F', hF'⟩ := hF_num
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hF'
+    exact ⟨F', hF'.1, Nonempty.intro hF'.2.some.graph_iso⟩
+  · linarith
+
+theorem FinFlag.PositiveHom.toMeasure_isProbabilityMeasure
+    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : IsProbabilityMeasure (F.toMeasure σ) := by
   apply ProbabilityTheory.uniformOn_isProbabilityMeasure
   · exact Set.toFinite _
   · simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.image_nonempty]
-    sorry
+    exact exists_labeledSubgraph_of_flagDensity_pos hF
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
