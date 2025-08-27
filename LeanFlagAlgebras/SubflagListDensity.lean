@@ -1593,7 +1593,17 @@ noncomputable def
           (by intro i; rw [←h_Vl_card i]; congr!), h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise,
           (by rw [←h_V_card]; congr!) , h_V_disj_G_type_verts, h_V_disj_Vl⟩
 
-    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
+    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
+      intro ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
+      intro ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
+      intro h_eq
+      let R₀ := f_S₀_S₁_fwd ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
+      let R₁ := f_S₀_S₁_fwd ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
+      have h_eq_Vl : R₀.1.1 = R₁.1.1 := by dsimp [R₀, R₁]; simp [h_eq]
+      have h_eq_V : R₀.1.2 = R₁.1.2 := by dsimp [R₀, R₁]; simp [h_eq]
+      simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      simp [R₀,R₁,f_S₀_S₁_fwd] at h_eq_Vl h_eq_V
+      sorry
 
     have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
 
