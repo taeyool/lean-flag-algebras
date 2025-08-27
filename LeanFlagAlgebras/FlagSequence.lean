@@ -94,9 +94,6 @@ instance : TopologicalSpace (PositiveHom σ) :=
     : (fun F ↦ a ⟦unitVector F⟧) ∈ FlagDensitySpace σ)⟩)
     instTopologicalSpaceSubtype
 
-instance : T1Space (FlagDensitySpace σ) :=
-  inferInstance
-
 theorem flagDensitySpace_mem_Icc_zero_one
     (a : FlagDensitySpace σ) (F : FinFlag σ)
     : a F ∈ Set.Icc 0 1 := by
@@ -207,20 +204,11 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
--- TODO: Prove it.
-theorem frequently_exists_eq_in_T1Space
-    {α : Type*} [TopologicalSpace α] [T1Space α] {p : α → Prop}
-    {β : Type*} {f : β → {α | p α}} (hf : Function.Injective f)
-    {x : α} {s : Set β} (hx : p x)
-    (h : ∃ᶠ y : {v | p v} in 𝓝 ⟨x, hx⟩, ∃ z ∈ s, f z = y) :
-    ∃ e, s = {e} := by
-  sorry
-
--- TODO: Prove it.
-theorem eq_of_frequently_eq
-    {α : Type*} [TopologicalSpace α] [T1Space α] {a b : α}
-    (h : ∃ᶠ x in 𝓝 a, b = x) :
-    a = b := by
+theorem PositiveHom.isClosedMap_coe : IsClosedMap (@PositiveHom.coe _ σ) := by
+  intro s h
+  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp h
+  refine (Topology.isClosedEmbedding_iff PositiveHom.coe).mpr
+    ⟨Topology.IsEmbedding.induced coe_injective, ?_⟩
   sorry
 
 theorem positiveHomSpace_isClosed
@@ -229,26 +217,11 @@ theorem positiveHomSpace_isClosed
   rw [isClosed_induced_iff]
   use PositiveHomSpace σ
   simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
-  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
-  · simp only [FlagDensitySpace, Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal,
+  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp
+    <| IsClosedMap.isClosed_range PositiveHom.isClosedMap_coe
+  simp only [FlagDensitySpace, Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal,
     Subtype.range_coe_subtype, Set.pi_univ_Icc, true_and]
-    exact isClosed_Icc
-  · apply IsClosedMap.isClosed_range
-    intro s h
-    rw [isClosed_induced_iff]
-    use ↑(PositiveHom.coe '' s)
-    simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
-    refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp ?_
-    · apply IsClosed.isClosedEmbedding_subtypeVal
-      simp only [FlagDensitySpace, Set.pi_univ_Icc]
-      exact isClosed_Icc
-    · simp [isClosed_iff_frequently]
-      rintro f h₁ h₂
-      obtain ⟨g, rfl⟩ := frequently_exists_eq_in_T1Space PositiveHom.coe_injective h₁ h₂
-      use g; simp at h₂
-      rcases h₃ : g.coe with ⟨x, _⟩
-      simp_rw [h₃] at h₂
-      simp [eq_of_frequently_eq h₂]
+  exact isClosed_Icc
 
 instance : CompactSpace (PositiveHomSpace σ)
   :=
