@@ -159,12 +159,33 @@ theorem FinFlag.PositiveHom.toMeasure_isProbabilityMeasure
   · simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.image_nonempty]
     exact exists_labeledSubgraph_of_flagDensity_pos hF
 
+section
+
+open Filter
+open scoped Topology
+
+theorem integral_flagDensitySpace_eq_flagAlgebraDensity_div
+    (F : FinFlag σ) (G : FinFlag ∅ₜ)
+    : ∫ (a : FlagDensitySpace σ), a F ∂(G.toMeasure σ)
+      = (flagAlgebraDensity ⟦⟦unitVector F⟧⟧₀ G) / (flagAlgebraDensity ⟦(1 : FlagAlgebra σ)⟧₀ G)
+  := by
+  sorry
+
+theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
+    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (h : ConvergesTo s φ.coe)
+    : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)) atTop
+      (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
+  := by
+  sorry
+
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
       ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
   sorry
+
+end
 
 theorem positiveHom_one_downward_pos
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
