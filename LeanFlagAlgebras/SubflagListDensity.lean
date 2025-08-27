@@ -1560,13 +1560,26 @@ noncomputable def
         rw [this]
         exact Set.inter_empty _
 
-      let f_V_other : Fin ℓ_other → Fin ℓ := by
-        rw [←h_V_other_card]
-        intro i
-        exact ((Finset.equivFin V_other.toFinset).symm i).val
-      let V : Set (Fin ℓ) := f_V_other '' X
-      have h_V_subset_V_other : V ⊆ V_other := by sorry
-      have h_V_card : V.toFinset.card = ℓ'_other := sorry
+      have h_eq_ty : Fin ℓ_other = Fin V_other.toFinset.card := by
+        rw [h_V_other_card]
+      let f_V_other₀ : Fin ℓ_other ≃ V_other.toFinset := by
+        rw [h_eq_ty]
+        exact (Finset.equivFin V_other.toFinset).symm
+      let f_V_other₁ : V_other.toFinset ≃ V_other :=
+        Equiv.subtypeEquivRight (by simp only [Set.mem_toFinset, implies_true])
+      let f_V_other : Fin ℓ_other ≃ V_other :=
+        f_V_other₀.trans f_V_other₁
+      let V : Set (Fin ℓ) := Subtype.val '' (f_V_other '' X.toSet)
+      have h_V_subset_V_other : V ⊆ V_other := by
+        dsimp [V]
+        simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
+      have h_V_card : V.toFinset.card = ℓ'_other := by
+        dsimp [V]
+        rw [Set.toFinset_image, Set.toFinset_image]
+        rw [Finset.card_image_of_injective _ (Subtype.val_injective)]
+        rw [Finset.card_image_of_injective _ (Equiv.injective _)]
+        rw [Finset.toFinset_coe]
+        exact h_X_card
       have h_V_disj_G_type_verts : V ∩ G.type_verts = ∅ := by
         suffices V ∩ G.type_verts ⊆ ∅ by exact Set.subset_eq_empty this rfl
         rw [←h_V_other_disj_G_type_verts]
@@ -1580,7 +1593,17 @@ noncomputable def
           (by intro i; rw [←h_Vl_card i]; congr!), h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise,
           (by rw [←h_V_card]; congr!) , h_V_disj_G_type_verts, h_V_disj_Vl⟩
 
-    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := sorry
+    have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
+      intro ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
+      intro ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
+      intro h_eq
+      let R₀ := f_S₀_S₁_fwd ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
+      let R₁ := f_S₀_S₁_fwd ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
+      have h_eq_Vl : R₀.1.1 = R₁.1.1 := by dsimp [R₀, R₁]; simp [h_eq]
+      have h_eq_V : R₀.1.2 = R₁.1.2 := by dsimp [R₀, R₁]; simp [h_eq]
+      simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      simp [R₀,R₁,f_S₀_S₁_fwd] at h_eq_Vl h_eq_V
+      sorry
 
     have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
 

@@ -446,7 +446,7 @@ lemma downwardFlagVectorQuot_smul
   apply Quotient.sound
   rw [downwardFlagVector_smul]
 
-lemma downwardFlagVectorQuot_respects_eqv
+lemma downwardFlagVectorQuot_respect_eqv
     (f f' : FlagVector σ) (h : f ∼v f')
     : downwardFlagVectorQuot f = downwardFlagVectorQuot f'
   := by
@@ -460,7 +460,7 @@ noncomputable def downward
   := by
   apply Quot.lift (fun g : FlagVector σ => downwardFlagVectorQuot g)
   intro f f' f_eqv
-  exact downwardFlagVectorQuot_respects_eqv f f' f_eqv
+  exact downwardFlagVectorQuot_respect_eqv f f' f_eqv
 
 notation "⟦" f "⟧₀" => (downward f)
 
