@@ -45,6 +45,17 @@ noncomputable def flagType_asEmptyTypeAlgebra
 
 notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
 
+theorem one_downward_eq
+    : ⟦(1 : FlagAlgebra σ)⟧₀ = (downwardNormalizingFactor (emptyFlag σ) : ℝ) • ⟨σ⟩₀
+  := by
+  have : (1 : FlagAlgebra σ) = ⟦unitVector ⟨n₀, emptyFlag σ⟩⟧ := by rfl
+  rw [this]
+  dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, downwardFlag, Quotient.lift_mk]
+  rw [linearExtension_unitVector, rat_smul_eq_real_smul, smul_quot]
+  congr
+  rw [flagType_asEmptyTypeFlag_eq]
+  rfl
+
 theorem flagDensity₁_flagType_asEmptyType_pos
     (F : FinFlag σ)
     : flagDensity₁ σ.toEmptyTypeFlag (unlabel F.2) > 0
@@ -151,8 +162,8 @@ theorem exists_labeledSubgraph_of_flagDensity_pos
     exact ⟨F', hF'.1, Nonempty.intro hF'.2.some.graph_iso⟩
   · linarith
 
-theorem FinFlag.PositiveHom.toMeasure_isProbabilityMeasure
-    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+theorem FinFlag.toMeasure_isProbabilityMeasure
+    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : IsProbabilityMeasure (F.toMeasure σ) := by
   apply ProbabilityTheory.uniformOn_isProbabilityMeasure
   · exact Set.toFinite _
@@ -164,19 +175,49 @@ section
 open Filter
 open scoped Topology
 
-theorem integral_flagDensitySpace_eq_flagAlgebraDensity_div
-    (F : FinFlag σ) (G : FinFlag ∅ₜ)
+theorem integral_flagDensitySpace_eq_flagVectorDensity_div
+    (F : FinFlag σ) (G : FinFlag ∅ₜ) (hG : G.1 ≥ max F.1 n₀)
     : ∫ (a : FlagDensitySpace σ), a F ∂(G.toMeasure σ)
-      = (flagAlgebraDensity ⟦⟦unitVector F⟧⟧₀ G) / (flagAlgebraDensity ⟦(1 : FlagAlgebra σ)⟧₀ G)
+      = (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) G.2) /
+        (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag G.2)
   := by
   sorry
+
+example (a b : ℕ → ℝ) (ha : Tendsto a atTop (𝓝 0)) (h : ∀ᶠ n in atTop, a n = b n)
+    : Tendsto b atTop (𝓝 0) := by
+  exact (tendsto_congr' h).mp ha
+
+example (a b : ℕ → ℝ) (c d : ℝ) (ha : Tendsto a atTop (𝓝 c)) (hb : Tendsto b atTop (𝓝 d)) (hd : d ≠ 0)
+    : Tendsto (a / b) atTop (𝓝 (c / d)) :=
+  by
+  exact Tendsto.div ha hb hd
+
+#check Tendsto.const_mul
 
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (h : ConvergesTo s φ.coe)
     : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)) atTop
       (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
-  sorry
+  intro F
+  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
+  let f₁ : ℕ → ℝ := fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)
+  let f₂ : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
+    (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag (s n).2)
+  have h_eventually_eq : ∀ᶠ n in atTop, f₁ n = f₂ n := by
+    sorry
+  rw [tendsto_congr' h_eventually_eq]
+  apply Tendsto.div
+  · dsimp [downward, downwardFlagVectorQuot]
+    simp_rw [downwardFlagVector_unitVector]
+    dsimp [downwardFlag]
+    simp_rw [smul_quot, PositiveHom.map_smul]
+    apply Tendsto.const_mul
+    exact h_lim ⟨F.1, unlabel F.2⟩
+  · rw [one_downward_eq, PositiveHom.map_smul]
+    apply Tendsto.const_mul
+    exact h_lim ⟨n₀, σ.toEmptyTypeFlag⟩
+  · sorry
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
@@ -191,18 +232,11 @@ theorem positiveHom_one_downward_pos
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ > 0
   := by
-  have : (1 : FlagAlgebra σ) = ⟦unitVector ⟨n₀, emptyFlag σ⟩⟧ := by rfl
-  rw [this]
-  dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, downwardFlag, Quotient.lift_mk]
-  rw [linearExtension_unitVector]
-  dsimp [flagType_asEmptyTypeAlgebra] at hσ
-  simp only [rat_smul_eq_real_smul]
-  rw [smul_quot, PositiveHom.map_smul]
+  rw [one_downward_eq, PositiveHom.map_smul]
   apply mul_pos
   · simp only [Rat.cast_pos]
     exact downwardNormalizingFactor_emptyFlag_pos
-  · rw [flagType_asEmptyTypeFlag_eq] at hσ
-    exact hσ
+  · exact hσ
 
 theorem downward_preserve_semanticCone
     (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)

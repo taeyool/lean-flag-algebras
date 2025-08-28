@@ -177,59 +177,65 @@ theorem nonneg_smul_nonneg_geq_zero
     exact hf φ
   exact Left.mul_nonneg hr hφf
 
-noncomputable def flagVectorDensity
-    (f : FlagVector σ) (G : FinFlag σ)
-    : ℝ
-  :=
-  linearExtension (fun F : FinFlag σ => flagDensity₁ F.2 G.2) f
+-- noncomputable def flagVectorDensity
+--     (f : FlagVector σ) (G : FinFlag σ)
+--     : ℝ
+--   :=
+--   linearExtension (fun F : FinFlag σ => flagDensity₁ F.2 G.2) f
 
-theorem flagVectorDensity_zero
-    (G : FinFlag σ)
-    : flagVectorDensity 0 G = 0
-  := by
-  simp only [flagVectorDensity, linearExtension_zero]
+-- theorem flagVectorDensity_zero
+--     (G : FinFlag σ)
+--     : flagVectorDensity 0 G = 0
+--   := by
+--   simp only [flagVectorDensity, linearExtension_zero]
 
-theorem flagVectorDensity_add
-    (f f' : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (f + f') G = flagVectorDensity f G + flagVectorDensity f' G
-  := by
-  simp only [flagVectorDensity, linearExtension_add]
+-- theorem flagVectorDensity_unitVector
+--     (F G : FinFlag σ)
+--     : flagVectorDensity (unitVector F) G = flagDensity₁ F.2 G.2
+--   := by
+--   simp only [flagVectorDensity, linearExtension_unitVector]
 
-theorem flagVectorDensity_sum
-    (s : Finset ι) (c : ι → FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (∑ i ∈ s, c i) G = ∑ i ∈ s, flagVectorDensity (c i) G
-  := by
-  simp only [flagVectorDensity, linearExtension_sum]
+-- theorem flagVectorDensity_add
+--     (f f' : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (f + f') G = flagVectorDensity f G + flagVectorDensity f' G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_add]
 
-theorem flagVectorDensity_neg
-    (f : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (-f) G = -flagVectorDensity f G
-  := by
-  simp only [flagVectorDensity, linearExtension_neg]
+-- theorem flagVectorDensity_sum
+--     (s : Finset ι) (c : ι → FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (∑ i ∈ s, c i) G = ∑ i ∈ s, flagVectorDensity (c i) G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_sum]
 
-theorem flagVectorDensity_sub
-    (f f' : FlagVector σ) (G : FinFlag σ)
-    : flagVectorDensity (f - f') G = flagVectorDensity f G - flagVectorDensity f' G
-  := by
-  simp only [flagVectorDensity, linearExtension_sub]
+-- theorem flagVectorDensity_neg
+--     (f : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (-f) G = -flagVectorDensity f G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_neg]
 
-theorem flagVectorDensity_smul
-    (f : FlagVector σ) (r : ℝ) (G : FinFlag σ)
-    : flagVectorDensity (r • f) G = r • flagVectorDensity f G
-  := by
-  simp only [flagVectorDensity, linearExtension_smul]
+-- theorem flagVectorDensity_sub
+--     (f f' : FlagVector σ) (G : FinFlag σ)
+--     : flagVectorDensity (f - f') G = flagVectorDensity f G - flagVectorDensity f' G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_sub]
 
-theorem flagVectorDensity_respect_eqv
-    {f f' : FlagVector σ} (h : f ∼v f') (G : FinFlag σ)
-    : flagVectorDensity f G = flagVectorDensity f' G
-  := by
-  sorry
+-- theorem flagVectorDensity_smul
+--     (f : FlagVector σ) (r : ℝ) (G : FinFlag σ)
+--     : flagVectorDensity (r • f) G = r • flagVectorDensity f G
+--   := by
+--   simp only [flagVectorDensity, linearExtension_smul]
 
-noncomputable def flagAlgebraDensity
-    (f : FlagAlgebra σ) (G : FinFlag σ)
-    : ℝ
-  :=
-  Quotient.lift (fun g : FlagVector σ => flagVectorDensity g G) (fun _ _ h => flagVectorDensity_respect_eqv h G) f
+-- theorem flagVectorDensity_respect_eqv
+--     {f f' : FlagVector σ} (h : f ∼v f') (G : FinFlag σ)
+--     : flagVectorDensity f G = flagVectorDensity f' G
+--   := by
+--   sorry
+
+-- noncomputable def flagAlgebraDensity
+--     (f : FlagAlgebra σ) (G : FinFlag σ)
+--     : ℝ
+--   :=
+--   Quotient.lift (fun g : FlagVector σ => flagVectorDensity g G) (fun _ _ h => flagVectorDensity_respect_eqv h G) f
 
 -- theorem downward_unitVector_nonneg
 --     (φ : PositiveHom ∅ₜ) (F : FinFlag σ)

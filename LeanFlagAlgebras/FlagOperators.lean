@@ -182,6 +182,12 @@ lemma downwardFlagVector_zero
   := by
   simp only [downwardFlagVector, linearExtension_zero]
 
+lemma downwardFlagVector_unitVector
+    (F : FinFlag σ)
+    : downwardFlagVector (unitVector F) = downwardFlag F.2
+  := by
+  simp only [downwardFlagVector, linearExtension_unitVector]
+
 lemma downwardFlagVector_add
     (f f' : FlagVector σ)
     : downwardFlagVector (f + f') = downwardFlagVector f + downwardFlagVector f'
