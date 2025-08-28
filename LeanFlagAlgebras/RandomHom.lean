@@ -221,6 +221,7 @@ theorem exists_prob_measure_extend_emptyType_positiveHom
     : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
       ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
+  obtain ⟨s, hs⟩ := positiveHom_as_flagSeq_limit φ₀
   sorry
 
 end
