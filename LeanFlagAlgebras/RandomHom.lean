@@ -183,19 +183,8 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   := by
   sorry
 
-example (a b : ℕ → ℝ) (ha : Tendsto a atTop (𝓝 0)) (h : ∀ᶠ n in atTop, a n = b n)
-    : Tendsto b atTop (𝓝 0) := by
-  exact (tendsto_congr' h).mp ha
-
-example (a b : ℕ → ℝ) (c d : ℝ) (ha : Tendsto a atTop (𝓝 c)) (hb : Tendsto b atTop (𝓝 d)) (hd : d ≠ 0)
-    : Tendsto (a / b) atTop (𝓝 (c / d)) :=
-  by
-  exact Tendsto.div ha hb hd
-
-#check Tendsto.const_mul
-
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
-    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (h : ConvergesTo s φ.coe)
+    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
     : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)) atTop
       (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
@@ -205,7 +194,11 @@ theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
   let f₂ : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
     (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag (s n).2)
   have h_eventually_eq : ∀ᶠ n in atTop, f₁ n = f₂ n := by
-    sorry
+    rw [eventually_atTop]
+    obtain ⟨N, hN⟩ := h_inc.eventually_ge (max F.1 n₀)
+    use N
+    intro n hn
+    apply integral_flagDensitySpace_eq_flagVectorDensity_div F (s n) (hN n hn)
   rw [tendsto_congr' h_eventually_eq]
   apply Tendsto.div
   · dsimp [downward, downwardFlagVectorQuot]
@@ -217,7 +210,11 @@ theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
   · rw [one_downward_eq, PositiveHom.map_smul]
     apply Tendsto.const_mul
     exact h_lim ⟨n₀, σ.toEmptyTypeFlag⟩
-  · sorry
+  · rw [one_downward_eq, PositiveHom.map_smul]
+    apply mul_ne_zero
+    · simp only [ne_eq, Rat.cast_eq_zero]
+      apply ne_of_gt downwardNormalizingFactor_emptyFlag_pos
+    · exact (ne_of_lt hσ).symm
 
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
