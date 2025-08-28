@@ -204,11 +204,12 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
+instance : Nonempty (FlagDensitySpace σ) :=
+  .intro ⟨fun _ ↦ 0, by simp [FlagDensitySpace]; exact fun _ ↦ zero_le_one⟩
+
 theorem PositiveHom.isClosedMap_coe : IsClosedMap (@PositiveHom.coe _ σ) := by
-  intro s h
-  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp h
-  refine (Topology.isClosedEmbedding_iff PositiveHom.coe).mpr
-    ⟨Topology.IsEmbedding.induced coe_injective, ?_⟩
+  intro s h₁
+  simp only [PositiveHom.coe, isClosed_induced_iff]
   sorry
 
 theorem positiveHomSpace_isClosed
