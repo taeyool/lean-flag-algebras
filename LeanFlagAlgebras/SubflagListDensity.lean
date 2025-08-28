@@ -9,6 +9,7 @@ import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Data.Set.Finite.Lattice
 import Mathlib.Data.Set.Pairwise.Basic
+import Mathlib.Data.Set.Subset
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
@@ -1604,7 +1605,8 @@ noncomputable def
       simp only [Subtype.mk.injEq, Prod.mk.injEq]
       obtain ⟨h_eq_Gl_verts, h_eq_X⟩ := h_eq
       constructor
-      . sorry
+      . ext v
+        sorry
       . funext i
         have h_eq_verts : (Gl'₀ i).subgraph.verts = (Gl'₁ i).subgraph.verts :=
           calc
