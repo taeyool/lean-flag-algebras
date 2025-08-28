@@ -1471,8 +1471,9 @@ noncomputable def
     let f_S₀_S₁_fwd : S₀ → S₁ := by
       intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
 
-      dsimp [predIsoLabeledHl] at h_Gl'_other
-      obtain ⟨h_Gl'_other_iso', h_Gl'_other_disj⟩ := h_Gl'_other
+      let Vl (i : Fin 3) := (Gl' i).subgraph.verts \ G.type_verts
+
+      let ⟨h_Gl'_other_iso', h_Gl'_other_disj⟩ := h_Gl'_other
       have h_Gl'_other_iso : ∀ i : Fin 3, Nonempty ((Gl' i).coe ≃f Hl i) := by
         intro i
         let f_iso₁ : (Gl' i).coe ≃f labeledGraphTripleToList H₁ H₂ H₃ i := (h_Gl'_other_iso' i).some
@@ -1481,7 +1482,6 @@ noncomputable def
           split <;> (simp only [Fin.isValue]; exact LabeledGraphIso.refl)
         exact Nonempty.intro (f_iso₁.trans f_iso₂)
 
-      let Vl (i : Fin 3) := (Gl' i).subgraph.verts \ G.type_verts
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
         intro i
         exact labeledSubgraph_card_from_iso G (Gl' i) (Hl i) (h_Gl'_other_iso i)
@@ -1597,13 +1597,31 @@ noncomputable def
       intro ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
       intro ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
       intro h_eq
-      let R₀ := f_S₀_S₁_fwd ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
-      let R₁ := f_S₀_S₁_fwd ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
-      have h_eq_Vl : R₀.1.1 = R₁.1.1 := by dsimp [R₀, R₁]; simp [h_eq]
-      have h_eq_V : R₀.1.2 = R₁.1.2 := by dsimp [R₀, R₁]; simp [h_eq]
+      dsimp [f_S₀_S₁_fwd] at h_eq
+      split at h_eq
+      split at h_eq
+      simp only [Function.comp_apply, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
       simp only [Subtype.mk.injEq, Prod.mk.injEq]
-      simp [R₀,R₁,f_S₀_S₁_fwd] at h_eq_Vl h_eq_V
-      sorry
+      obtain ⟨h_eq_Gl_verts, h_eq_X⟩ := h_eq
+      constructor
+      . sorry
+      . funext i
+        have h_eq_verts : (Gl'₀ i).subgraph.verts = (Gl'₁ i).subgraph.verts :=
+          calc
+            (Gl'₀ i).subgraph.verts
+            _ = ((Gl'₀ i).subgraph.verts \ G.type_verts) ∪ G.type_verts := by
+                exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl'₀ i))).symm
+            _ = ((fun j ↦ ((Gl'₀ j).subgraph.verts \ G.type_verts)) i) ∪ G.type_verts := by
+                rfl
+            _ = ((fun j ↦ ((Gl'₁ j).subgraph.verts \ G.type_verts)) i) ∪ G.type_verts := by
+                rw [h_eq_Gl_verts]
+            _ = (Gl'₁ i).subgraph.verts \ G.type_verts ∪ G.type_verts := by
+                rfl
+            _ = (Gl'₁ i).subgraph.verts := by
+                exact (Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl'₁ i)))
+        rw [inducedLabeledSubgraph_eq (h_Gl'₀_ind i)]
+        rw [inducedLabeledSubgraph_eq (h_Gl'₁_ind i)]
+        congr!
 
     have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := sorry
 
