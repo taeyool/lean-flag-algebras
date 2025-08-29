@@ -1389,6 +1389,15 @@ lemma disjointLabeledSubgraphList_induce_disjointVertexSetList
   dsimp [Function.onFun, vertexSetListFromLabeledSubgraphList]
   exact Set.disjoint_iff_inter_eq_empty.mpr (h_disj i j h_ij_neq)
 
+noncomputable def isoFromFinToFiniteSet
+    {ℓ ℓ₀ : ℕ} (X₀ : Set (Fin ℓ)) (h : X₀.toFinset.card = ℓ₀)
+    : Fin ℓ₀ ≃ X₀
+  :=
+  let f₀ : Fin ℓ₀ ≃ Fin X₀.toFinset.card := by rw [h]
+  let f₁ : Fin X₀.toFinset.card ≃ X₀.toFinset := X₀.toFinset.equivFin.symm
+  let f₂ : X₀.toFinset ≃ X₀ := Equiv.subtypeEquivRight (by simp only [Set.mem_toFinset, implies_true])
+  (f₀.trans f₁).trans f₂
+
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -1561,15 +1570,7 @@ noncomputable def
         rw [this]
         exact Set.inter_empty _
 
-      have h_eq_ty : Fin ℓ_other = Fin V_other.toFinset.card := by
-        rw [h_V_other_card]
-      let f_V_other₀ : Fin ℓ_other ≃ V_other.toFinset := by
-        rw [h_eq_ty]
-        exact (Finset.equivFin V_other.toFinset).symm
-      let f_V_other₁ : V_other.toFinset ≃ V_other :=
-        Equiv.subtypeEquivRight (by simp only [Set.mem_toFinset, implies_true])
-      let f_V_other : Fin ℓ_other ≃ V_other :=
-        f_V_other₀.trans f_V_other₁
+      let f_V_other : Fin ℓ_other ≃ V_other := isoFromFinToFiniteSet V_other (by rw [←h_V_other_card]; congr!)
       let V : Set (Fin ℓ) := Subtype.val '' (f_V_other '' X.toSet)
       have h_V_subset_V_other : V ⊆ V_other := by
         dsimp [V]
@@ -1601,12 +1602,17 @@ noncomputable def
       dsimp [f_S₀_S₁_fwd] at h_eq
       split at h_eq
       split at h_eq
-      simp only [Function.comp_apply, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq] at h_eq
       simp only [Subtype.mk.injEq, Prod.mk.injEq]
       obtain ⟨h_eq_Gl_verts, h_eq_X⟩ := h_eq
       constructor
       . ext v
-        sorry
+        rw [Set.ext_iff] at h_eq_X
+        simp at h_eq_X
+        constructor
+        . intro h_v
+          sorry
+        . sorry
       . funext i
         have h_eq_verts : (Gl'₀ i).subgraph.verts = (Gl'₁ i).subgraph.verts :=
           calc
