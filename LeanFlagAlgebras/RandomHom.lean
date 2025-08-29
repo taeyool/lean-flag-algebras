@@ -219,7 +219,7 @@ open Filter
 open scoped Topology
 
 theorem integral_flagDensitySpace_eq_flagVectorDensity_div
-    (F : FinFlag σ) (G : FinFlag ∅ₜ)
+    {F : FinFlag σ} {G : FinFlag ∅ₜ}
     (hG : flagDensity₁ σ.toEmptyTypeFlag G.2 > 0) (hG_size : G.1 ≥ max F.1 n₀)
     : ∫ (a : FlagDensitySpace σ), a F ∂(G.toMeasure hG)
       = (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) G.2) /
@@ -227,6 +227,14 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   := by
   dsimp only [FinFlag.toMeasure]
   sorry
+
+noncomputable def integralFlagDensitySpaceSeq
+    (s : FlagSeq ∅ₜ) (F : FinFlag σ)
+    : ℕ → ℝ
+  :=
+  fun n ↦ if h : flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
+  then ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure h)
+  else 0
 
 theorem eventually_flagDensity_pos_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
@@ -240,20 +248,25 @@ theorem eventually_flagDensity_pos_of_converge_flagSeq
 
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
-    : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure sorry)) atTop
+    : ∀ (F : FinFlag σ), Tendsto (integralFlagDensitySpaceSeq s F) atTop
       (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
   intro F
   obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
-  let f₁ : ℕ → ℝ := fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure sorry)
-  let f₂ : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
+  let f : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
     (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag (s n).2)
-  have h_eventually_eq : ∀ᶠ n in atTop, f₁ n = f₂ n := by
+  have h_eventually_eq : ∀ᶠ n in atTop, integralFlagDensitySpaceSeq s F n = f n := by
+    have h_den_pos := eventually_flagDensity_pos_of_converge_flagSeq hσ h
+    rw [eventually_atTop] at h_den_pos
+    obtain ⟨M, hM⟩ := h_den_pos
     rw [eventually_atTop]
     obtain ⟨N, hN⟩ := h_inc.eventually_ge (max F.1 n₀)
-    use N
+    use max M N
     intro n hn
-    apply integral_flagDensitySpace_eq_flagVectorDensity_div F (s n) sorry (hN n hn)
+    dsimp [integralFlagDensitySpaceSeq]
+    specialize hM n (le_of_max_le_left hn)
+    simp_all only [reduceDIte]
+    exact integral_flagDensitySpace_eq_flagVectorDensity_div hM (hN n (le_of_max_le_right hn))
   rw [tendsto_congr' h_eventually_eq]
   apply Tendsto.div
   · dsimp only [downward, downwardFlagVectorQuot, Quotient.lift_mk]
