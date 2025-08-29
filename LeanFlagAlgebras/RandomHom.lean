@@ -127,10 +127,10 @@ theorem flagDensity₁_flagType_asEmptyType_pos
 -- instance : BorelSpace (FlagDensitySpace σ) :=
 --   Subtype.borelSpace fun x ↦ x ∈ FlagDensitySpace σ
 
-noncomputable def FinFlag.toMeasure
+def FinFlag.flagDensitySpace_support
     (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
-    : Measure (FlagDensitySpace σ)
-  := by
+    : Set (FlagDensitySpace σ)
+  :=
   let S := { F' : LabeledSubgraph ∅ₜ F.2.out | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)}.toFinset
   let f : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ := fun F' ↦ {
       val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
@@ -143,7 +143,37 @@ noncomputable def FinFlag.toMeasure
         · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
         · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
     }
-  exact ProbabilityTheory.uniformOn (f '' S)
+  f '' S
+
+noncomputable def FinFlag.toPMF
+    (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
+    : PMF (FlagDensitySpace σ)
+  := by
+  let T := { F' : LabeledSubgraph ∅ₜ F.2.out | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)}
+  let f : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ := fun F' ↦ {
+      val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
+      property := by
+        intro G _
+        simp only [Set.mem_Icc]
+        rw [← Rat.cast_one]
+        simp only [Rat.cast_nonneg, Rat.cast_le]
+        constructor
+        · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
+        · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
+    }
+  let S : Finset (FlagDensitySpace σ) := (f '' T).toFinset
+  let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S then (f ⁻¹' {a}).toFinset.card / T.toFinset.card else 0
+  have g_sum : ∑ a ∈ S, g a = 1 := sorry
+  have g_other : ∀ a ∉ S, g a = 0 := by
+    intro a ha
+    simp only [g, if_neg ha]
+  exact PMF.ofFinset g S g_sum g_other
+
+noncomputable def FinFlag.toMeasure
+    (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
+    : Measure (FlagDensitySpace σ)
+  :=
+  (F.toPMF σ).toMeasure
 
 theorem exists_labeledSubgraph_of_flagDensity_pos
     {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
@@ -165,10 +195,11 @@ theorem exists_labeledSubgraph_of_flagDensity_pos
 theorem FinFlag.toMeasure_isProbabilityMeasure
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : IsProbabilityMeasure (F.toMeasure σ) := by
-  apply ProbabilityTheory.uniformOn_isProbabilityMeasure
-  · exact Set.toFinite _
-  · simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.image_nonempty]
-    exact exists_labeledSubgraph_of_flagDensity_pos hF
+  sorry
+  -- apply ProbabilityTheory.uniformOn_isProbabilityMeasure
+  -- · exact Set.toFinite _
+  -- · simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, Set.image_nonempty]
+  --   exact exists_labeledSubgraph_of_flagDensity_pos hF
 
 section
 
@@ -181,6 +212,8 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
       = (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) G.2) /
         (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag G.2)
   := by
+  dsimp [FinFlag.toMeasure, ProbabilityTheory.uniformOn]
+  -- rw [MeasureTheory.integral_count]
   sorry
 
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
