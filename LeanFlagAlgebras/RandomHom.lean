@@ -127,57 +127,15 @@ theorem flagDensity₁_flagType_asEmptyType_pos
 -- instance : BorelSpace (FlagDensitySpace σ) :=
 --   Subtype.borelSpace fun x ↦ x ∈ FlagDensitySpace σ
 
-def FinFlag.flagDensitySpace_support
+def FinFlag.typeSubgraphSet
     (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
-    : Set (FlagDensitySpace σ)
+    : Set (LabeledSubgraph ∅ₜ F.2.out)
   :=
-  let S := { F' : LabeledSubgraph ∅ₜ F.2.out | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)}.toFinset
-  let f : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ := fun F' ↦ {
-      val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
-      property := by
-        intro G _
-        simp only [Set.mem_Icc]
-        rw [← Rat.cast_one]
-        simp only [Rat.cast_nonneg, Rat.cast_le]
-        constructor
-        · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
-        · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
-    }
-  f '' S
+  { F' | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ) }
 
-noncomputable def FinFlag.toPMF
-    (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
-    : PMF (FlagDensitySpace σ)
-  := by
-  let T := { F' : LabeledSubgraph ∅ₜ F.2.out | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)}
-  let f : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ := fun F' ↦ {
-      val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
-      property := by
-        intro G _
-        simp only [Set.mem_Icc]
-        rw [← Rat.cast_one]
-        simp only [Rat.cast_nonneg, Rat.cast_le]
-        constructor
-        · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
-        · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
-    }
-  let S : Finset (FlagDensitySpace σ) := (f '' T).toFinset
-  let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S then (f ⁻¹' {a}).toFinset.card / T.toFinset.card else 0
-  have g_sum : ∑ a ∈ S, g a = 1 := sorry
-  have g_other : ∀ a ∉ S, g a = 0 := by
-    intro a ha
-    simp only [g, if_neg ha]
-  exact PMF.ofFinset g S g_sum g_other
-
-noncomputable def FinFlag.toMeasure
-    (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
-    : Measure (FlagDensitySpace σ)
-  :=
-  (F.toPMF σ).toMeasure
-
-theorem exists_labeledSubgraph_of_flagDensity_pos
-    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
-    : ∃ F' : LabeledSubgraph ∅ₜ F.2.out, F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ)
+theorem FinFlag.typeSubgraphSet_nonempty
+    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : (F.typeSubgraphSet σ).Nonempty
   := by
   dsimp only [flagDensity₁] at hF
   rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2] at hF
@@ -192,9 +150,75 @@ theorem exists_labeledSubgraph_of_flagDensity_pos
     exact ⟨F', hF'.1, Nonempty.intro hF'.2.some.graph_iso⟩
   · linarith
 
+noncomputable def FinFlag.toPMF
+    (F : FinFlag ∅ₜ) {σ : FlagType (Fin n₀)} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : PMF (FlagDensitySpace σ)
+  := by
+  let T := F.typeSubgraphSet σ
+  have T_card_ne_zero : T.toFinset.card ≠ 0 := by
+    simp only [ne_eq, Finset.card_eq_zero]
+    apply Finset.Nonempty.ne_empty
+    rw [Set.toFinset_nonempty]
+    exact F.typeSubgraphSet_nonempty hF
+  let f : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ := fun F' ↦ {
+      val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
+      property := by
+        intro G _
+        simp only [Set.mem_Icc]
+        rw [← Rat.cast_one]
+        simp only [Rat.cast_nonneg, Rat.cast_le]
+        constructor
+        · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
+        · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
+    }
+  let S : Finset (FlagDensitySpace σ) := (f '' T).toFinset
+  let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S
+    then ENNReal.ofReal ((f ⁻¹' {a}).toFinset.card / T.toFinset.card : ℝ)
+    else 0
+  have g_nonneg : ∀ a ∈ S, 0 ≤ ((f ⁻¹' {a}).toFinset.card / T.toFinset.card : ℝ) := by sorry
+  have g_sum : ∑ a ∈ S, g a = 1 := by
+    dsimp [g]
+    rw [← ENNReal.toReal_eq_one_iff]
+    simp only [Finset.sum_ite_mem, Finset.inter_self]
+    have : (∑ a ∈ S, ENNReal.ofReal ((f ⁻¹' {a}).toFinset.card / T.toFinset.card : ℝ)).toReal =
+            ∑ a ∈ S, ((f ⁻¹' {a}).toFinset.card / T.toFinset.card : ℝ) := by
+      rw [ENNReal.toReal_sum (fun _ _ ↦ ENNReal.ofReal_ne_top)]
+      apply Finset.sum_congr rfl
+      intro a ha
+      rw [ENNReal.toReal_ofReal (g_nonneg a ha)]
+    rw [this]
+    rw [← Finset.sum_div, div_eq_iff (Nat.cast_ne_zero.mpr T_card_ne_zero), one_mul]
+    rw [← Nat.cast_sum, Nat.cast_inj]
+    rw [Finset.card_eq_sum_card_image f T.toFinset]
+    dsimp only [S]
+    rw [Set.toFinset_image]
+    apply Finset.sum_congr rfl
+    intro a ha
+    congr
+    ext F'
+    constructor <;> intro hF'
+    · simp only [Finset.mem_filter, Set.mem_toFinset]
+      simp only [Set.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff] at hF'
+      rw [← hF'] at ha
+      simp only [Finset.mem_image, Set.mem_toFinset] at ha
+      sorry
+    · simp only [Set.mem_toFinset, Set.mem_preimage, Set.mem_singleton_iff]
+      simp only [Finset.mem_filter, Set.mem_toFinset] at hF'
+      exact hF'.2
+  have g_other : ∀ a ∉ S, g a = 0 := by
+    intro a ha
+    simp only [g, if_neg ha]
+  exact PMF.ofFinset g S g_sum g_other
+
+noncomputable def FinFlag.toMeasure
+    (F : FinFlag ∅ₜ) {σ : FlagType (Fin n₀)} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : Measure (FlagDensitySpace σ)
+  :=
+  (F.toPMF hF).toMeasure
+
 theorem FinFlag.toMeasure_isProbabilityMeasure
-    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
-    : IsProbabilityMeasure (F.toMeasure σ) := by
+    (F : FinFlag ∅ₜ) {σ : FlagType (Fin n₀)} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : IsProbabilityMeasure (F.toMeasure hF) := by
   sorry
   -- apply ProbabilityTheory.uniformOn_isProbabilityMeasure
   -- · exact Set.toFinite _
@@ -208,7 +232,7 @@ open scoped Topology
 
 theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     (F : FinFlag σ) (G : FinFlag ∅ₜ) (hG : G.1 ≥ max F.1 n₀)
-    : ∫ (a : FlagDensitySpace σ), a F ∂(G.toMeasure σ)
+    : ∫ (a : FlagDensitySpace σ), a F ∂(G.toMeasure sorry)
       = (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) G.2) /
         (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag G.2)
   := by
@@ -218,12 +242,12 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
 
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
-    : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)) atTop
+    : ∀ (F : FinFlag σ), Tendsto (fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure sorry)) atTop
       (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
   intro F
   obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
-  let f₁ : ℕ → ℝ := fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure σ)
+  let f₁ : ℕ → ℝ := fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure sorry)
   let f₂ : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
     (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag (s n).2)
   have h_eventually_eq : ∀ᶠ n in atTop, f₁ n = f₂ n := by
