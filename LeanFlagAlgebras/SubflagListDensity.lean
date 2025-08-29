@@ -1551,11 +1551,12 @@ noncomputable def
       have h_Gl_other_disj : predDisjointLabeledSubgraphList Gl := by
         dsimp [predDisjointLabeledSubgraphList]
         intro i j h_neq
-        have h_Vl_i_j_disj := h_Vl_disj_pairwise (by simp only [Set.mem_univ]) (by simp only [Set.mem_univ]) h_neq
-        dsimp [Function.onFun] at h_Vl_i_j_disj
         rw [inducedLabeledSubgraph_verts G ((Vl i) ∪ G.type_verts) Set.subset_union_right]
         rw [inducedLabeledSubgraph_verts G ((Vl j) ∪ G.type_verts) Set.subset_union_right]
-        sorry
+        simp only [Set.union_diff_right]
+        rw [←Set.diff_inter_distrib_right G.type_verts (Vl i) (Vl j)]
+        suffices Vl i ∩ Vl j = ∅ by simp only [this, Set.empty_diff]
+        exact Disjoint.inter_eq (h_Vl_disj_pairwise trivial trivial h_neq)
 
       use ⟨⟨X, Gl⟩, h_X_card, h_Gl_ind, ⟨h_Gl_other_iso, h_Gl_other_disj⟩⟩
       dsimp [f_S₀_S₁_fwd]
@@ -1564,7 +1565,6 @@ noncomputable def
       rw [inducedLabeledSubgraph_verts G ((Vl i) ∪ G.type_verts) Set.subset_union_right]
       apply Set.union_diff_cancel_right
       simp only [h_Vl_disj_G_type_verts i, subset_refl]
-
 
     Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
 /-
