@@ -438,7 +438,12 @@ theorem flagListDensity₂_prod_approx
 
   rw [P₁, P₂]
 
-  have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by sorry
+  have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
+    rw [abs_le]
+    constructor
+    · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
+      sorry
+    · sorry
 
   have calc₂ : 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ ((2 : ℚ) * ↑Frep.size * ↑F'rep.size) / ↑Grep.size := by
     sorry
@@ -455,3 +460,14 @@ theorem flagListDensity₂_prod_approx
       exact calc₄
 
   exact (calc₁.trans calc₂).trans calc₃
+
+lemma condisional_probability_prop
+    {a b a_b ab: ℚ} (h₁ : a_b = ab / b)
+    : |a - a_b| ≤ 1 - b
+  := by
+  rw [abs_le]
+  constructor
+  · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
+    sorry
+  · rw [h₁]
+    sorry
