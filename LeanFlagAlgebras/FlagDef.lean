@@ -332,6 +332,12 @@ def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
     simp only [SimpleGraph.Iso.coe_comp]
     exact rfl
 
+def labeledSubgraphIso_cast
+    {σ : FlagType T} {G : LabeledGraph σ V} {F : LabeledGraph σ U} {F₁ F₂ : LabeledSubgraph σ G}
+    (h_eq : F₁ = F₂) (h_iso : F₁.coe ≃f F) : F₂.coe ≃f F := by
+  rw [h_eq] at h_iso
+  exact h_iso
+
 def labeledSubgraphIso_eq
   {G : LabeledGraph σ V} {F F' : LabeledSubgraph σ G} (h : F = F') : F.coe ≃f F'.coe := h ▸ LabeledGraphIso.refl
 

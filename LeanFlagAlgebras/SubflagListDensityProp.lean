@@ -42,13 +42,6 @@ theorem flagListDensity_prod_approx
   have : B_c.card ≤ ∑ i : Fin t, ∑ j : Fin t, (B_c_ij i j).card := sorry
   sorry
 
-def cast_iso
-    {σ : FlagType T} {G : LabeledGraph σ V} {F F₁ F₂ : LabeledSubgraph σ G}
-    (h_eq : F₁ = F₂) (h_iso : F₁.coe ≃f F.coe) : F₂.coe ≃f F.coe :=
-  by
-  rw [h_eq] at h_iso
-  exact h_iso
-
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
     [Fintype V] [Fintype U] [DecidableEq V] [DecidableEq U]
@@ -102,7 +95,6 @@ theorem flagListDensity₂_prod_approx
     simp only [Set.mem_setOf_eq, Ω] at h_in_Ω
     simp only [inter_eq_right, Set.toFinset_subset]
     exact ⟨h_in_Ω.1.2, h_in_Ω.2.2⟩
-
   let A : Finset Ω := { v | by
     obtain ⟨⟨v₁, v₂⟩, h⟩ := v
     exact Nonempty ((inducedLabeledSubgraph Grep v₁ h.1.2).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v₂ h.2.2).coe ≃f F'rep) }
@@ -246,28 +238,86 @@ theorem flagListDensity₂_prod_approx
         use ⟨((l 0).subgraph.verts.toFinset, (l 1).subgraph.verts.toFinset), by
           simp only [Fin.isValue, Set.mem_setOf_eq, Set.toFinset_card, Fintype.card_ofFinset,
             Set.coe_toFinset, Ω]
-          sorry⟩
+          simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
+            predDisjointLabeledSubgraphList, ne_eq, Set.coe_setOf, Set.toFinset_setOf, mem_filter,
+            mem_univ, true_and] at hl
+          obtain ⟨hl_ind, hl_iso, hl_disj⟩ := hl
+          constructor <;> constructor
+          · have : ((l 0).subgraph.verts.toFinset).card = Frep.size := by
+              rw [← labeledGraphIso_size_eq (l 0).coe Frep (Classical.choice (hl_iso 0))]
+              simp only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
+            simp_all only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset]
+          · exact labeledSubgraph_contain_type_verts Grep (l 0)
+          · have : ((l 1).subgraph.verts.toFinset).card = F'rep.size := by
+              rw [← labeledGraphIso_size_eq (l 1).coe F'rep (Classical.choice (hl_iso 1))]
+              simp only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
+            simp_all only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset]
+          · exact labeledSubgraph_contain_type_verts Grep (l 1)⟩
         simp only [Fin.isValue, mem_inter, mem_filter, mem_univ, true_and, A, B]
-        simp only [setOfLabeledSubgraphListIsoHl, predIsoLabeledHl, labeledGraphPairToList, LabeledSubgraphList.IsInduced,
-          Set.coe_setOf, Set.toFinset_setOf, mem_filter, mem_univ, true_and] at hl
+        simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
+          labeledGraphPairToList, predDisjointLabeledSubgraphList, ne_eq, Set.coe_setOf,
+          Set.toFinset_setOf, mem_filter, mem_univ, true_and] at hl
         obtain ⟨hl_ind, hl_iso, hl_disj⟩ := hl
         constructor <;> try constructor
-        · specialize hl_iso 0
-          simp only [Fin.isValue] at hl_iso
-          obtain ⟨h_iso₀⟩ := hl_iso
-          apply Nonempty.intro
-          have := inducedLabeledSubgraph_eq (hl_ind 0)
-          -- rw [← this]
-          -- apply cast_iso
-          sorry
-        · sorry
-        · sorry
+        · apply Nonempty.intro
+          let h_iso₀ := Classical.choice (hl_iso 0)
+          rw [inducedLabeledSubgraph_eq (hl_ind 0)] at h_iso₀
+          simp only [Fin.isValue] at h_iso₀
+          refine LabeledGraphIso.labeledSubgraphIso_cast ?_ h_iso₀
+          simp only [Fin.isValue, Set.coe_toFinset]
+        · apply Nonempty.intro
+          let h_iso₁ := Classical.choice (hl_iso 1)
+          rw [inducedLabeledSubgraph_eq (hl_ind 1)] at h_iso₁
+          simp only [Fin.isValue] at h_iso₁
+          refine LabeledGraphIso.labeledSubgraphIso_cast ?_ h_iso₁
+          simp only [Fin.isValue, Set.coe_toFinset]
+        · have := hl_disj 0 1 Fin.zero_ne_one
+          rwa [← Set.toFinset_diff, ← Set.toFinset_diff, ← Set.toFinset_inter, Set.toFinset_eq_empty]
       · constructor
-        · intro x y h_eq
-          simp at h_eq
-          sorry
-        · intro ⟨x, hx⟩
-          sorry
+        · intro ⟨l, hl⟩ ⟨l', hl'⟩ h_eq
+          simp only [Subtype.mk.injEq]
+          simp only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq, Set.toFinset_inj] at h_eq
+          simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
+            predDisjointLabeledSubgraphList, ne_eq, Set.coe_setOf, Set.toFinset_setOf, mem_filter,
+            mem_univ, true_and] at hl hl'
+          obtain ⟨hl_ind, _⟩ := hl
+          obtain ⟨hl'_ind, _⟩ := hl'
+          funext i
+          rw [inducedLabeledSubgraph_eq (hl_ind i), inducedLabeledSubgraph_eq (hl'_ind i)]
+          congr
+          by_cases hi : i = 0
+          · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue]
+          · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue,
+            Fin.eq_one_of_ne_zero i hi, one_ne_zero, not_false_eq_true]
+        · intro ⟨⟨(w₁, w₂), hw_in_Ω⟩, hw_in_AB⟩
+          simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω
+          simp only [mem_inter, mem_filter, mem_univ, true_and, A, B] at hw_in_AB
+          obtain ⟨⟨hw₁_iso_F, hw₂_iso_F'⟩, hw_disj⟩ := hw_in_AB
+          let l : LabeledSubgraphList σ 2 Grep := fun i ↦
+            (match i with
+              | 0 => inducedLabeledSubgraph Grep w₁ hw_in_Ω.1.2
+              | 1 => inducedLabeledSubgraph Grep w₂ hw_in_Ω.2.2)
+          use ⟨l, by
+            simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced,
+              predIsoLabeledHl, predDisjointLabeledSubgraphList, ne_eq, Set.coe_setOf,
+              Set.toFinset_setOf, mem_filter, mem_univ, true_and]
+            constructor <;> try constructor
+            · intro i
+              simp only [l]
+              split <;> simp_all only [inducedLabeledSubgraph_isInduced]
+            · intro i
+              simp only [l]
+              split <;> simp_all only [labeledGraphPairToList]
+            · intro i j hij
+              by_cases hi : i = 0 <;> by_cases hj : j = 0
+              · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue, not_true_eq_false]
+              · simp only [hi, Fin.isValue, inducedLabeledSubgraph_verts, Fin.eq_one_of_ne_zero j hj, l]
+                rwa [← Set.toFinset_eq_empty, Set.toFinset_inter, Set.toFinset_diff, Set.toFinset_diff, toFinset_coe, toFinset_coe]
+              · simp only [hj, Fin.isValue, inducedLabeledSubgraph_verts, Fin.eq_one_of_ne_zero i hi, l]
+                rw [Finset.inter_comm] at hw_disj
+                rwa [← Set.toFinset_eq_empty, Set.toFinset_inter, Set.toFinset_diff, Set.toFinset_diff, toFinset_coe, toFinset_coe]
+              · simp_all only [Fin.eq_one_of_ne_zero i hi, Fin.eq_one_of_ne_zero j hj, not_true_eq_false] ⟩
+          simp only [Fin.isValue, inducedLabeledSubgraph_verts, toFinset_coe, l]
     · simp only [labeledGraphPairToList]
       let r_list : Fin 2 → ℕ := fun i ↦
         (match i with
@@ -388,7 +438,12 @@ theorem flagListDensity₂_prod_approx
 
   rw [P₁, P₂]
 
-  have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by sorry
+  have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
+    rw [abs_le]
+    constructor
+    · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
+      sorry
+    · sorry
 
   have calc₂ : 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ ((2 : ℚ) * ↑Frep.size * ↑F'rep.size) / ↑Grep.size := by
     sorry
@@ -405,3 +460,14 @@ theorem flagListDensity₂_prod_approx
       exact calc₄
 
   exact (calc₁.trans calc₂).trans calc₃
+
+lemma condisional_probability_prop
+    {a b a_b ab: ℚ} (h₁ : a_b = ab / b)
+    : |a - a_b| ≤ 1 - b
+  := by
+  rw [abs_le]
+  constructor
+  · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
+    sorry
+  · rw [h₁]
+    sorry
