@@ -6,6 +6,7 @@ import Mathlib.Algebra.Module.Submodule.Basic
 import Mathlib.Data.Countable.Basic
 import Mathlib.Data.Nat.Lattice
 import Mathlib.LinearAlgebra.Span.Defs
+import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
 open FlagAlgebras
 open Finset
@@ -145,8 +146,7 @@ theorem unitVector_apply_other
     (F F' : FinFlag σ) (hF : F ≠ F')
     : (unitVector F) F' = 0
   := by
-  dsimp only [unitVector]
-  rw [Finsupp.single_eq_of_ne hF]
+ simp [unitVector, hF]
 
 theorem unitVector_apply_other_size
     (F F' : FinFlag σ) (hF : F.1 ≠ F'.1)
@@ -309,36 +309,17 @@ theorem zeroElement_in_zeroSpace
   apply Submodule.mem_span.mpr fun p a ↦ a ?_
   simp; use F; use ℓ
 
-set_option linter.unusedVariables false in
 theorem zeroSpace_eq_sum_spanElement
     (k : FlagVector σ) (h_zero : k ∈ ZeroSpace σ)
-    : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → FlagVector σ),
+    : ∃ (I : Type) (_ : Fintype I) (c : I → ℝ) (v : I → FlagVector σ),
       (∀ i, v i ∈ zeroSet σ) ∧ (k = ∑ i, c i • v i)
   := by
-  revert h_zero
-  apply Submodule.span_induction
-  · intro k h_zero
-    use Unit, inferInstance, fun _ ↦ 1, fun _ ↦ k
-    rcases h_zero with ⟨f, ℓ, hf⟩
-    simp only [forall_const, univ_unique, one_smul, sum_const, card_singleton, and_true]
-    use f, ℓ
-  · use Empty, inferInstance, fun _ ↦ 0, fun _ ↦ 0
-    simp only [mem_zeroSet, IsEmpty.forall_iff, univ_eq_empty, smul_zero, sum_const_zero, and_self]
-  · intro x hx y hy hx_ind hy_ind
-    rcases hx_ind with ⟨I, hI, c, v, hv, rfl⟩
-    rcases hy_ind with ⟨J, hJ, d, w, hw, rfl⟩
-    use Sum I J, inferInstance, Sum.elim c d, Sum.elim v w
-    simp_all only [mem_zeroSet, Sum.forall, Sum.elim_inl, implies_true, Sum.elim_inr, and_self,
-      Fintype.sum_sum_type]
-  · intro r x hx hx_ind
-    rcases hx_ind with ⟨I, hI, c, v, hv, rfl⟩
-    use I, hI, fun i ↦ r * c i, v
-    constructor
-    · intro i
-      simp_all only [mem_zeroSet]
-    · rw [smul_sum]
-      refine sum_congr rfl fun _ _ ↦ ?_
-      rw [smul_smul]
+  rcases Submodule.mem_span_set'.mp h_zero with ⟨n, c, v', h⟩
+  let v := fun i ↦ (v' i).val
+  have hv : ∀ i, v i ∈ zeroSet σ := by intro i; simp [v, (v' i).property]
+  use Fin n, inferInstance, c, v
+  simp only [hv, implies_true, true_and, h.symm]
+  rfl
 
 theorem zeroSpace_closed_under_add
     (f f' : FlagVector σ) (f_zero : f ∈ ZeroSpace σ) (f'_zero : f' ∈ ZeroSpace σ)
@@ -346,6 +327,11 @@ theorem zeroSpace_closed_under_add
   := by
   apply Submodule.add_mem <;> assumption
 
+theorem zeroSpace_closed_under_sub
+    (f f' : FlagVector σ) (f_zero : f ∈ ZeroSpace σ) (f'_zero : f' ∈ ZeroSpace σ)
+    : f - f' ∈ ZeroSpace σ := by
+  apply Submodule.sub_mem <;> assumption
+ 
 theorem zeroSpace_closed_under_sum
     (S : Finset α) (v : α → FlagVector σ) (h_zero : ∀ s ∈ S, v s ∈ ZeroSpace σ)
     : ∑ s ∈ S, v s ∈ ZeroSpace σ
@@ -367,9 +353,8 @@ infixl:50 " ∼v " => flagVectorEqv
 theorem unitVector_eqv_densityFlagSum
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : unitVector F ∼v densityFlagSum F ℓ
-  := by
-  show zeroElement F ℓ ∈ ZeroSpace σ
-  exact zeroElement_in_zeroSpace hℓ
+  :=
+  zeroElement_in_zeroSpace hℓ
 
 theorem one_vector_eqv_densityFlagSum
     (ℓ : ℕ) (hℓ : n₀ ≤ ℓ)

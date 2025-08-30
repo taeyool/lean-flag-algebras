@@ -391,8 +391,8 @@ def Flag (σ : FlagType T) (V : Type) : Type :=
 
 noncomputable instance FlagFintype (σ : FlagType T) (V : Type) [Fintype V] [DecidableEq V]
     : Fintype (Flag σ V)
-  := by
-  exact Quotient.fintype (labeledGraphSetoid σ V)
+  :=
+  Quotient.fintype (labeledGraphSetoid σ V)
 
 theorem Flag.type_eq
     {T : Type} {σ : FlagType T} {Vl Vl' : Fin t → Type} (h_Vl_eq : Vl' = Vl) (i : Fin t)
