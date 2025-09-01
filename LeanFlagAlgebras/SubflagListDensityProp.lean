@@ -63,6 +63,24 @@ theorem flagListDensity₂_prod_approx
   dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
   rw [hFrep₂, hF'rep₂, hGrep₂]
 
+  by_cases hG_nonempty : Grep.size = 0
+  · rw [hG_nonempty]
+    simp only [labeledSubgraphListDensity, labeledSubgraphDensity, ge_iff_le]
+    simp only [CharP.cast_eq_zero, div_zero, abs_nonpos_iff]
+    by_cases h_nonempty : Frep.size = 0 ∧ F'rep.size = 0
+    · sorry -- Maybe |1-1|=0
+    · push_neg at h_nonempty
+      by_cases hF_nonempty : Frep.size = 0
+      · have hF'_nonempty := h_nonempty hF_nonempty
+        have list_zero : (labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep) = 0 := by sorry
+        have F'_zero : (labeledSubgraphCount F'rep Grep) = 0 := by sorry
+        rw [list_zero, F'_zero]
+        simp only [CharP.cast_eq_zero, zero_div, mul_zero, sub_self]
+      · have list_zero : (labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep) = 0 := by sorry
+        have F_zero : (labeledSubgraphCount Frep Grep) = 0 := by sorry
+        rw [list_zero, F_zero]
+        simp only [CharP.cast_eq_zero, zero_div, zero_mul, sub_self]
+
   let freeG := Finset.univ \ Grep.type_verts.toFinset
   have h_freeG : freeG.card = Grep.size - σ.size := by
     simp_all only [freeG]
@@ -437,17 +455,34 @@ theorem flagListDensity₂_prod_approx
       simp only [r_list]; rfl
 
   rw [P₁, P₂]
-  have : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
-    sorry
-
-  have calc₁' : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / ((@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card : ℚ)| ≤ 1 - (B.card : ℚ) / ((@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card : ℚ) := by sorry
+  have Ω_card : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
+    simp only [card_univ, Fintype.card_ofFinset, Set.toFinset_card]
 
   have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
+    by_cases h : B.card = 0 ∨ Ω.toFinset.card = 0
+    · obtain h | h := h <;> rw [h]
+      · simp only [CharP.cast_eq_zero, div_zero, Set.toFinset_card, Fintype.card_ofFinset, zero_sub, abs_neg, zero_div, sub_zero]
+        rw [abs_of_nonneg]
+        refine div_le_one_of_le₀ ?_ ?_
+        · rw [Nat.cast_le]
+          simp only [Set.toFinset_card, Fintype.card_ofFinset] at Ω_card
+          rw [← Ω_card]
+          exact Finset.card_le_card (Finset.subset_univ A)
+        · simp only [Nat.cast_nonneg]
+        apply Rat.div_nonneg <;> simp only [Nat.cast_nonneg]
+      · simp only [CharP.cast_eq_zero, div_zero, sub_zero]
+        rw [abs_of_nonneg]
+        refine div_le_one_of_le₀ ?_ ?_
+        · rw [Nat.cast_le]
+          apply Finset.card_le_card inter_subset_right
+        · simp only [Nat.cast_nonneg]
+        apply Rat.div_nonneg <;> simp only [Nat.cast_nonneg]
+    simp only [not_or] at h
+    obtain ⟨hB_nonzero, hΩ_nonzero⟩ := h
     rw [abs_le]
     constructor
     · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
       have hA_card : A.card = (A ∩ B).card + (A.toSet ∩ B.toSetᶜ).toFinset.card := by
-        -- Convert the set equality to a finset equality and use Finset.card_union_eq
         have hA_split : A = (A ∩ B) ∪ (A.toSet ∩ B.toSetᶜ).toFinset := by
           ext x; constructor
           · intro hx
@@ -472,27 +507,29 @@ theorem flagListDensity₂_prod_approx
       have add_le : (@Nat.cast ℚ _ (#(A.toSet ∩ (B.toSet)ᶜ).toFinset)) / ↑(#Ω.toFinset) + (↑(#(A ∩ B)) / ↑(#Ω.toFinset) - ↑(#(A ∩ B)) / ↑(#B))
         ≤ ↑(#(A.toSet ∩ (B.toSet)ᶜ).toFinset) / ↑(#Ω.toFinset) := by
           rw [add_le_iff_nonpos_right, sub_nonpos]
-
           refine (div_le_div_iff₀ ?_ ?_).mpr ?_
-          · sorry -- |Ω| > 0
-          · sorry -- |B| > 0
+          · simp only [Nat.cast_pos]
+            exact Nat.zero_lt_of_ne_zero hΩ_nonzero
+          · simp only [Nat.cast_pos]
+            exact Nat.zero_lt_of_ne_zero hB_nonzero
           · rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le]
             apply Nat.mul_le_mul_left
-            -- B is a subset of Ω.toFinset by construction
-
-            have := Finset.subset_univ B
-
-
-            sorry
+            rw [← Ω_card]
+            exact Finset.card_le_card (Finset.subset_univ B)
       have cap_le : (@Nat.cast ℚ _ (A.toSet ∩ (B.toSet)ᶜ).toFinset.card) / ↑(#Ω.toFinset) ≤ ↑(B.toSet)ᶜ.toFinset.card / ↑(#Ω.toFinset) := by
         rw [div_le_div_iff_of_pos_right]
         simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, Nat.cast_le]
         · refine card_le_card ?_
           exact inter_subset_right
-        · sorry -- |Ω| > 0
-      have : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by sorry
-      rw [this] at cap_le
-
+        · simp only [Nat.cast_pos]
+          exact Nat.zero_lt_of_ne_zero hΩ_nonzero
+      have compl_card : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
+        rw [← Ω_card]
+        simp only [Set.compl_eq_univ_diff B.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
+        rw [card_sdiff (by exact Finset.subset_univ B)]
+        rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B))]
+        rw [sub_div, div_self (by rwa [Ω_card, ne_eq, Rat.natCast_eq_zero])]
+      rw [compl_card] at cap_le
       exact add_le.trans cap_le
     · sorry
 
@@ -506,26 +543,15 @@ theorem flagListDensity₂_prod_approx
 
   have calc₃ : ((2 : ℚ) * ↑Frep.size * ↑F'rep.size) / ↑Grep.size ≤ ((↑Frep.size + ↑F'rep.size) ^ 2) / ↑Grep.size := by
     refine (div_le_div_iff_of_pos_right ?_).mpr ?_
-    · sorry -- Grep.size > 0
+    · simp only [Nat.cast_pos]
+      exact Nat.zero_lt_of_ne_zero hG_nonempty
     · simp only [Nat.cast_mul, Nat.cast_ofNat, Nat.cast_pow, Nat.cast_add] at calc₄
       exact calc₄
 
   exact (calc₁.trans calc₂).trans calc₃
 
-example {E : Type} (A B : Finset E) (hB : B = ∅) : (A ∩ B).card ≤ B.card := by
-  refine card_le_card ?_
-  sorry
+example {E : Type} (A B : Set E) (hB : B = ∅) : Bᶜ = Set.univ \ B := by
+  exact Set.compl_eq_univ_diff B
 
-example (A B C : ℕ) (hB : A ≤ B) : C * A ≤ C * B := by
-  exact Nat.mul_le_mul_left C hB
-
-lemma condisional_probability_prop
-    {a b a_b ab: ℚ} (h₁ : a_b = ab / b)
-    : |a - a_b| ≤ 1 - b
-  := by
-  rw [abs_le]
-  constructor
-  · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
-    sorry
-  · rw [h₁]
-    sorry
+example (A B C : ℕ) (hB : ¬A = 0) : 0 < A := by
+  exact Nat.zero_lt_of_ne_zero hB
