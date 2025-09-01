@@ -165,6 +165,51 @@ noncomputable def funFromLabeledSubgraphToFlagDensitySpace
       · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
   }
 
+noncomputable def FinFlag.toPMF'
+    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : PMF (FlagDensitySpace σ)
+  := by
+  let L := labelExtensions F.2 σ
+  have L_card_ne_zero : L.card ≠ 0 := by sorry
+  let f : FlagWithSize σ F.1 → FlagDensitySpace σ :=
+    fun F' ↦ {
+      val := fun G' ↦ flagDensity₁ G'.2 F'
+      property := by
+        intro G' _
+        simp only [Set.mem_Icc]
+        rw [← Rat.cast_one]
+        simp only [Rat.cast_nonneg, Rat.cast_le]
+        constructor
+        · exact flagListDensity₁_ge_zero G'.snd F'
+        · exact flagListDensity₁_le_one G'.snd F'
+    }
+  let S : Finset (FlagDensitySpace σ) := (f '' L).toFinset
+  let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S
+    then ENNReal.ofReal ({F' ∈ L | f F' = a}.card / L.card : ℝ)
+    else 0
+  have g_nonneg : ∀ a ∈ S, 0 ≤ ({F' ∈ L | f F' = a}.card / L.card : ℝ) := by
+    intro a ha
+    apply div_nonneg <;> linarith
+  have g_sum : ∑ a ∈ S, g a = 1 := by
+    dsimp only [g]
+    rw [← ENNReal.toReal_eq_one_iff]
+    simp only [Finset.sum_ite_mem, Finset.inter_self]
+    have : (∑ a ∈ S, ENNReal.ofReal ({F' ∈ L | f F' = a}.card / L.card : ℝ)).toReal =
+            ∑ a ∈ S, ({F' ∈ L | f F' = a}.card / L.card : ℝ) := by
+      rw [ENNReal.toReal_sum (fun _ _ ↦ ENNReal.ofReal_ne_top)]
+      apply Finset.sum_congr rfl
+      intro a ha
+      rw [ENNReal.toReal_ofReal (g_nonneg a ha)]
+    rw [this]
+    rw [← Finset.sum_div, div_eq_iff (Nat.cast_ne_zero.mpr L_card_ne_zero), one_mul]
+    rw [← Nat.cast_sum, Nat.cast_inj]
+    dsimp only [S]
+    rw [Finset.card_eq_sum_card_image f L, Set.toFinset_image, Finset.toFinset_coe]
+  have g_other : ∀ a ∉ S, g a = 0 := by
+    intro a ha
+    simp only [g, if_neg ha]
+  exact PMF.ofFinset g S g_sum g_other
+
 noncomputable def FinFlag.toPMF
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
@@ -262,33 +307,14 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     lhs; rhs; ext a; lhs; lhs
     rw [ENNReal.toReal_ofReal (by apply div_nonneg <;> linarith)]
   simp only [ENNReal.toReal_zero, ite_mul, zero_mul]
-
-  -- let acm_ℝ : AddCommMonoid ℝ := @ENormedAddCommMonoid.toAddCommMonoid ℝ (@PseudoMetricSpace.toUniformSpace ℝ NormedAddCommGroup.toSeminormedAddCommGroup.toPseudoMetricSpace).toTopologicalSpace NormedAddCommGroup.toENormedAddCommMonoid
-  -- let tpl_ℝ : TopologicalSpace ℝ := (@PseudoMetricSpace.toUniformSpace ℝ NormedAddCommGroup.toSeminormedAddCommGroup.toPseudoMetricSpace).toTopologicalSpace
-  let f : FlagDensitySpace σ → ℝ := fun a ↦ ({F' ∈ G.typeSubgraphSet σ | funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
-      (G.typeSubgraphSet σ).toFinset.card : ℝ) * a F
-  have := @tsum_ite_eq_sum (FlagDensitySpace σ) ℝ
-    _ _ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset f
-  dsimp only [f] at this
-  let R := (∑' (a : ↑(FlagDensitySpace σ)),
-    if a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset then
-      ↑{F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
-          ↑(G.typeSubgraphSet σ).toFinset.card *
-        a F
-    else 0)
   calc
-    _ = R := by
+    _ = ∑ a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset,
+        {F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card / (G.typeSubgraphSet σ).toFinset.card * a F := by
+      rw [← tsum_ite_eq_sum]
       congr!
-    R = ∑ a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset,
-    ↑{F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
-        ↑(G.typeSubgraphSet σ).toFinset.card *
-      a F := by
-      rw [← this]
-      dsimp [R]
-      congr!
-    _ = _ := sorry
-  -- rw [@tsum_eq_sum _ _ _ _ _ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset (fun a ha ↦ by simp_all only [reduceIte])]
-  -- sorry
+    _ = _ := ?_
+
+  sorry
 
 noncomputable def integralFlagDensitySpaceSeq
     (s : FlagSeq ∅ₜ) (F : FinFlag σ)
