@@ -437,12 +437,63 @@ theorem flagListDensity₂_prod_approx
       simp only [r_list]; rfl
 
   rw [P₁, P₂]
+  have : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
+    sorry
+
+  have calc₁' : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / ((@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card : ℚ)| ≤ 1 - (B.card : ℚ) / ((@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card : ℚ) := by sorry
 
   have calc₁ : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
     rw [abs_le]
     constructor
     · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
-      sorry
+      have hA_card : A.card = (A ∩ B).card + (A.toSet ∩ B.toSetᶜ).toFinset.card := by
+        -- Convert the set equality to a finset equality and use Finset.card_union_eq
+        have hA_split : A = (A ∩ B) ∪ (A.toSet ∩ B.toSetᶜ).toFinset := by
+          ext x; constructor
+          · intro hx
+            by_cases h_in_B : x ∈ B
+            · apply mem_union_left
+              exact mem_inter.mpr ⟨hx, h_in_B⟩
+            · apply mem_union_right
+              simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, mem_inter, mem_compl]
+              exact ⟨hx, h_in_B⟩
+          · intro hx
+            simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, mem_union, mem_inter, mem_compl] at hx
+            obtain hx | hx := hx <;> exact hx.1
+        nth_rw 1 [hA_split, Finset.card_union]
+        have : #(A ∩ B ∩ (A.toSet ∩ (B.toSet)ᶜ).toFinset) = 0 := by
+          rw [card_eq_zero]
+          ext x
+          simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, inter_assoc, mem_inter,
+            mem_compl, notMem_empty, iff_false, not_and, Decidable.not_not]
+          exact fun _ hx _ ↦ hx
+        rw [this, tsub_zero]
+      rw [hA_card, Nat.cast_add, add_div, add_comm, add_sub_assoc]
+      have add_le : (@Nat.cast ℚ _ (#(A.toSet ∩ (B.toSet)ᶜ).toFinset)) / ↑(#Ω.toFinset) + (↑(#(A ∩ B)) / ↑(#Ω.toFinset) - ↑(#(A ∩ B)) / ↑(#B))
+        ≤ ↑(#(A.toSet ∩ (B.toSet)ᶜ).toFinset) / ↑(#Ω.toFinset) := by
+          rw [add_le_iff_nonpos_right, sub_nonpos]
+
+          refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+          · sorry -- |Ω| > 0
+          · sorry -- |B| > 0
+          · rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le]
+            apply Nat.mul_le_mul_left
+            -- B is a subset of Ω.toFinset by construction
+
+            have := Finset.subset_univ B
+
+
+            sorry
+      have cap_le : (@Nat.cast ℚ _ (A.toSet ∩ (B.toSet)ᶜ).toFinset.card) / ↑(#Ω.toFinset) ≤ ↑(B.toSet)ᶜ.toFinset.card / ↑(#Ω.toFinset) := by
+        rw [div_le_div_iff_of_pos_right]
+        simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, Nat.cast_le]
+        · refine card_le_card ?_
+          exact inter_subset_right
+        · sorry -- |Ω| > 0
+      have : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by sorry
+      rw [this] at cap_le
+
+      exact add_le.trans cap_le
     · sorry
 
   have calc₂ : 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ ((2 : ℚ) * ↑Frep.size * ↑F'rep.size) / ↑Grep.size := by
@@ -455,11 +506,18 @@ theorem flagListDensity₂_prod_approx
 
   have calc₃ : ((2 : ℚ) * ↑Frep.size * ↑F'rep.size) / ↑Grep.size ≤ ((↑Frep.size + ↑F'rep.size) ^ 2) / ↑Grep.size := by
     refine (div_le_div_iff_of_pos_right ?_).mpr ?_
-    · sorry
+    · sorry -- Grep.size > 0
     · simp only [Nat.cast_mul, Nat.cast_ofNat, Nat.cast_pow, Nat.cast_add] at calc₄
       exact calc₄
 
   exact (calc₁.trans calc₂).trans calc₃
+
+example {E : Type} (A B : Finset E) (hB : B = ∅) : (A ∩ B).card ≤ B.card := by
+  refine card_le_card ?_
+  sorry
+
+example (A B C : ℕ) (hB : A ≤ B) : C * A ≤ C * B := by
+  exact Nat.mul_le_mul_left C hB
 
 lemma condisional_probability_prop
     {a b a_b ab: ℚ} (h₁ : a_b = ab / b)
