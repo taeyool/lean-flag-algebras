@@ -224,7 +224,7 @@ open Filter
 open scoped Topology
 
 lemma tsum_ite_eq_sum
-    {α : Type} (S : Finset α) (f : α → ℝ)
+    {α R : Type} [AddCommMonoid R] [TopologicalSpace R] (S : Finset α) (f : α → R)
     : (∑' a, if a ∈ S then f a else 0) = ∑ a ∈ S, f a
   := by
   rw [@tsum_eq_sum _ _ _ _ _ S]
@@ -262,14 +262,33 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     lhs; rhs; ext a; lhs; lhs
     rw [ENNReal.toReal_ofReal (by apply div_nonneg <;> linarith)]
   simp only [ENNReal.toReal_zero, ite_mul, zero_mul]
+
+  -- let acm_ℝ : AddCommMonoid ℝ := @ENormedAddCommMonoid.toAddCommMonoid ℝ (@PseudoMetricSpace.toUniformSpace ℝ NormedAddCommGroup.toSeminormedAddCommGroup.toPseudoMetricSpace).toTopologicalSpace NormedAddCommGroup.toENormedAddCommMonoid
+  -- let tpl_ℝ : TopologicalSpace ℝ := (@PseudoMetricSpace.toUniformSpace ℝ NormedAddCommGroup.toSeminormedAddCommGroup.toPseudoMetricSpace).toTopologicalSpace
   let f : FlagDensitySpace σ → ℝ := fun a ↦ ({F' ∈ G.typeSubgraphSet σ | funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
       (G.typeSubgraphSet σ).toFinset.card : ℝ) * a F
-  have := @tsum_ite_eq_sum (FlagDensitySpace σ) (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset f
+  have := @tsum_ite_eq_sum (FlagDensitySpace σ) ℝ
+    _ _ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset f
   dsimp only [f] at this
-  -- rw [this]
-
-  rw [@tsum_eq_sum _ _ _ _ _ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset (fun a ha ↦ by simp_all only [reduceIte])]
-  sorry
+  let R := (∑' (a : ↑(FlagDensitySpace σ)),
+    if a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset then
+      ↑{F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
+          ↑(G.typeSubgraphSet σ).toFinset.card *
+        a F
+    else 0)
+  calc
+    _ = R := by
+      congr!
+    R = ∑ a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset,
+    ↑{F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card /
+        ↑(G.typeSubgraphSet σ).toFinset.card *
+      a F := by
+      rw [← this]
+      dsimp [R]
+      congr!
+    _ = _ := sorry
+  -- rw [@tsum_eq_sum _ _ _ _ _ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset (fun a ha ↦ by simp_all only [reduceIte])]
+  -- sorry
 
 noncomputable def integralFlagDensitySpaceSeq
     (s : FlagSeq ∅ₜ) (F : FinFlag σ)
