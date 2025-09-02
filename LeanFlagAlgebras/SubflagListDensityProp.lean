@@ -73,7 +73,12 @@ theorem flagListDensity₂_prod_approx
       by_cases hF_nonempty : Frep.size = 0
       · have hF'_nonempty := h_nonempty hF_nonempty
         have list_zero : (labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep) = 0 := by sorry
-        have F'_zero : (labeledSubgraphCount F'rep Grep) = 0 := by sorry
+        have F'_zero : (labeledSubgraphCount F'rep Grep) = 0 := by
+          have : F'rep.size > Grep.size := by
+            rw [hG_nonempty]
+            exact Nat.zero_lt_of_ne_zero (h_nonempty hF_nonempty)
+
+          sorry
         rw [list_zero, F'_zero]
         simp only [CharP.cast_eq_zero, zero_div, mul_zero, sub_self]
       · have list_zero : (labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep) = 0 := by sorry
@@ -553,5 +558,6 @@ theorem flagListDensity₂_prod_approx
 example {E : Type} (A B : Set E) (hB : B = ∅) : Bᶜ = Set.univ \ B := by
   exact Set.compl_eq_univ_diff B
 
-example (A B C : ℕ) (hB : ¬A = 0) : 0 < A := by
-  exact Nat.zero_lt_of_ne_zero hB
+example (A B C : ℚ) (hB : ¬A = 0) (hA : ¬ A < 0) : 0 < A := by
+  -- aesop
+  sorry

@@ -1323,6 +1323,15 @@ theorem flagListDensity₁_le_one
   := by
   apply flagListDensity_le_one
 
+omit [DecidableEq T] in
+theorem flagDensity_le_card_contra
+    {F : Flag σ V} {G : Flag σ W}
+    : Fintype.card V > Fintype.card W → flagDensity₁ F G = 0
+  := by
+  contrapose!
+  intro h
+  exact flagDensity_le_card (lt_of_le_of_ne (flagListDensity₁_ge_zero F G) (id (Ne.symm h)))
+
 /- Chain rules -/
 
 variable {ℓ₀ : ℕ} {σ : FlagType (Fin ℓ₀)}
