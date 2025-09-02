@@ -30,10 +30,12 @@ theorem ext {φ₁ φ₂ : PositiveHom σ} (h : ∀ f : FlagAlgebra σ, φ₁ f 
 
 namespace PositiveHom
 
+@[simp]
 theorem map_zero (φ : PositiveHom σ) : φ 0 = 0
   :=
   RingHom.map_zero (φ.val : FlagAlgebra σ →+* ℝ)
 
+@[simp]
 theorem map_one (φ : PositiveHom σ) : φ 1 = 1
   :=
   RingHom.map_one (φ.val : FlagAlgebra σ →+* ℝ)
@@ -130,10 +132,7 @@ theorem flag_sub_nonneg
   simp only [le_def, sub_zero]
 
 instance : Preorder (FlagAlgebra σ) where
-  le_refl f := by
-    simp [semanticCone]
-    intro φ
-    rw [PositiveHom.map_zero φ]
+  le_refl f := by simp [semanticCone]
   le_trans f g h := by
     intro hfg hgh
     simp [semanticCone] at *
