@@ -371,11 +371,23 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     rw [ENNReal.toReal_ofReal (by apply div_nonneg <;> linarith)]
   simp only [ENNReal.toReal_zero, ite_mul, zero_mul]
   let L := labelExtensions G.2 σ
-  let f := funFromFlagWithSizeToFlagDensitySpace σ G.1
+  let g := funFromFlagWithSizeToFlagDensitySpace σ G.1
   calc
-    _ = ∑ a ∈ (f '' L).toFinset, {F' ∈ L | f F' = a}.card / L.card * a F := by
-      rw [← tsum_ite_eq_sum]
-      congr!
+    _ = ∑ a ∈ (g '' L).toFinset, {G' ∈ L | g G' = a}.card / L.card * a F := by
+      -- rw [← tsum_ite_eq_sum]
+      -- congr!
+      sorry
+    _ = ∑ G' ∈ L, (g G') F / L.card := by
+      rw [Set.toFinset_image, Finset.toFinset_coe]
+      apply Finset.sum_image'
+      intro G' hG'
+      rw [mul_comm, mul_div, ← Finset.sum_div]
+      congr
+      rw [Finset.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, Finset.mul_sum, mul_one]
+      apply Finset.sum_congr rfl
+      intro G'' hG''
+      simp only [Finset.mem_filter] at hG''
+      rw [hG''.2]
     _ = _ := ?_
   sorry
 
