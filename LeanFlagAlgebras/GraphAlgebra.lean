@@ -82,7 +82,7 @@ lemma basisElementFromGraph_support
 
 lemma graphVector_eq_sum_basisElement
     (g : GraphVector)
-    : g = ∑ G in g.support, g G • basisElementFromGraph G
+    : g = ∑ G ∈ g.support, g G • basisElementFromGraph G
   := by
   dsimp [basisElementFromGraph]
   rw [← Finsupp.sum_single g]
@@ -158,7 +158,7 @@ noncomputable def densityGraphSum
     (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ F in ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ, F⟩
+  ∑ F ∈ ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ, F⟩
 
 noncomputable def zeroElement
     (G : IsoSimpleGraph) (ℓ : ℕ)
@@ -195,7 +195,7 @@ lemma zeroElement_in_zeroSet
 
 lemma zeroSet_eq_sum_spanElement
     {k : GraphVector} (h_zero : k ∈ ZeroSet)
-    : ∃ (I : Type) (hI : Fintype I) (c : I → ℝ) (v : I → GraphVector),
+    : ∃ (I : Type) (_ : Fintype I) (c : I → ℝ) (v : I → GraphVector),
     (∀ i, v i ∈ zeroSpanSet) ∧ (k = ∑ i, c i • v i)
   := by
   revert h_zero
@@ -337,7 +337,7 @@ noncomputable def graphMulWithSize
     (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
-  ∑ G in ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
+  ∑ G ∈ ℓ_graphs, (quotSubgraphPairDensity H₁.2 H₂.2 G) • basisElementFromGraph ⟨ℓ, G⟩
 
 lemma graphMulWithSize_comm
     (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : graphMulWithSize H₁ H₂ ℓ = graphMulWithSize H₂ H₁ ℓ
@@ -348,7 +348,7 @@ lemma graphMulWithSize_comm
   simp [quotSubgraphPairDensity_comm]
 
 lemma sum_smul
-    (s : Finset ι) (f : ι → ℝ) (g : GraphVector) : (∑ i in s, f i) • g = ∑ i in s, f i • g
+    (s : Finset ι) (f : ι → ℝ) (g : GraphVector) : (∑ i ∈ s, f i) • g = ∑ i ∈ s, f i • g
   := by
   refine Finset.induction_on s ?_ ?_
   · simp
@@ -401,27 +401,25 @@ lemma graphMul_comm
   simp [graphMul, add_comm, graphMulWithSize_comm]
 
 noncomputable instance : Mul GraphVector where
-  mul g h := ∑ G in g.support, ∑ H in h.support, ((g G) * (h H)) • graphMul G H
+  mul g h := ∑ G ∈ g.support, ∑ H ∈ h.support, ((g G) * (h H)) • graphMul G H
 
 lemma graphVector_mul_comm
     (g h : GraphVector) : g * h = h * g
   := by
-  show ∑ G in g.support, ∑ H in h.support, _ = ∑ H in h.support, ∑ G in g.support, _
+  show ∑ G ∈ g.support, ∑ H ∈ h.support, _ = ∑ H ∈ h.support, ∑ G ∈ g.support, _
   rw [sum_comm]
-  apply sum_congr
-  · rfl
-  · intros
-    apply sum_congr
-    · rfl
-    · intros
-      rw [mul_comm, graphMul_comm]
+  apply sum_congr rfl
+  intros
+  apply sum_congr rfl
+  intros
+  rw [mul_comm, graphMul_comm]
 
 noncomputable instance : CommMagma GraphVector where
   mul_comm := graphVector_mul_comm
 
 instance : IsScalarTower ℝ GraphVector GraphVector where
   smul_assoc r g h := by
-    show ∑ G in (r • g).support, _ = r • ∑ G in g.support, _
+    show ∑ G ∈ (r • g).support, _ = r • ∑ G ∈ g.support, _
     by_cases hr : r = 0
     · simp [hr]
     · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
@@ -432,7 +430,7 @@ instance : IsScalarTower ℝ GraphVector GraphVector where
 lemma graphVector_neg_mul
     (g h : GraphVector) : -g * h = -(g * h)
   := by
-  show ∑ G in (-g).support, ∑ H in h.support, _ = -∑ G in g.support, ∑ H in h.support, _
+  show ∑ G ∈ (-g).support, ∑ H ∈ h.support, _ = -∑ G ∈ g.support, ∑ H ∈ h.support, _
   rw [Finsupp.support_neg g]
   simp_all only [Finsupp.coe_neg, Pi.neg_apply, neg_mul, neg_smul, sum_neg_distrib]
 
@@ -494,7 +492,7 @@ lemma graphVector_add_support
 lemma graphVector_left_distrib
     (f g h : GraphVector) : f * (g + h) = f * g + f * h
   := by
-  show ∑ F in f.support, ∑ K in (g + h).support, _ = ∑ F in f.support, ∑ G in g.support, _ + ∑ F in f.support, ∑ H in h.support, _
+  show ∑ F ∈ f.support, ∑ K ∈ (g + h).support, _ = ∑ F ∈ f.support, ∑ G ∈ g.support, _ + ∑ F ∈ f.support, ∑ H ∈ h.support, _
   simp [← sum_add_distrib]
   apply sum_congr rfl
   intro F _
@@ -522,7 +520,7 @@ lemma graphVector_right_distrib
 lemma graphVector_zero_mul
     (f : GraphVector) : 0 * f = 0
   := by
-  show ∑ G in (0 : GraphVector).support, ∑ H in f.support, _ = 0
+  show ∑ G ∈ (0 : GraphVector).support, ∑ H ∈ f.support, _ = 0
   simp
 
 lemma graphVector_mul_sum
@@ -555,7 +553,7 @@ lemma graph_mul_zeroElement
   := by
   dsimp [zeroElement]
   rw [mul_sub]
-  show graph_algebra_eqv (∑ G' in _, ∑ H' in _, _) _
+  show graph_algebra_eqv (∑ G' ∈ _, ∑ H' ∈ _, _) _
   simp; dsimp [densityGraphSum]
   rw [mul_sum]
   let L := G.1 + H.1 + ℓ
@@ -666,7 +664,7 @@ lemma graphVector_smul_mul_smul_comm
     · simp [hb, mul_zero, zero_smul]
   · have ha : a ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
     have hb : b ≠ 0 := by simp_all only [not_or, ne_eq, not_false_eq_true]
-    show ∑ G in (a • g).support, ∑ H in (b • h).support, _ = (a * b) • ∑ G in _, ∑ H in _, _
+    show ∑ G ∈ (a • g).support, ∑ H ∈ (b • h).support, _ = (a * b) • ∑ G ∈ _, ∑ H ∈ _, _
     rw [Finsupp.support_smul_eq ha, Finsupp.support_smul_eq hb]
     repeat (rw [smul_sum]; apply sum_congr (by rfl); intros)
     simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
@@ -678,7 +676,7 @@ lemma graph_mul_mul_eqv_sum_tripleDensity
       (basisElementFromGraph G₁ * basisElementFromGraph G₂ * basisElementFromGraph G₃)
       (∑ (F : IsoSimpleGraphWithSize ℓ), (quotSubgraphTripleDensity G₁.2 G₂.2 G₃.2 F) • basisElementFromGraph ⟨ℓ, F⟩)
   := by
-  show (∑ G in _, ∑ G' in _, _) * _ - _ ∈ ZeroSet
+  show (∑ G ∈ _, ∑ G' ∈ _, _) * _ - _ ∈ ZeroSet
   simp; dsimp [graphMul, graphMulWithSize]
   rw [graphVector_sum_mul]
   let ℓ' := G₁.1 + G₂.1
@@ -692,7 +690,7 @@ lemma graph_mul_mul_eqv_sum_tripleDensity
     intro F' _
     rw [← smul_sum, smul_mul_assoc, ← smul_sub]
     apply zeroSet_closed_under_smul
-    show ∑ F in _, _ - _ ∈ ZeroSet
+    show ∑ F ∈ _, _ - _ ∈ ZeroSet
     simp
     apply graph_algebra_eqv.trans
     · apply graphMul_indep_on_size hℓ
@@ -909,7 +907,7 @@ instance : NeZero (1 : GraphAlgebra) where
     let L := Finset.sup (univ : Finset I) ℓ
     let F := (default : IsoSimpleGraphWithSize L)
     let φ : GraphVector → ℝ
-      := fun g => ∑ G in g.support, (g G) * quotSubgraphDensity G.2 F
+      := fun g => ∑ G ∈ g.support, (g G) * quotSubgraphDensity G.2 F
     have φ_add : ∀ (g h : GraphVector), φ (g + h) = φ g + φ h := by
       intro g h
       simp [φ, add_mul]
@@ -928,7 +926,7 @@ instance : NeZero (1 : GraphAlgebra) where
       rw [graphVector_add_support g h ψ hψ1 hψ2]
     have φ_smul : ∀ (r : ℝ) (g : GraphVector), φ (r • g) = r * φ g := by
       intro r g
-      show ∑ G in _, _ = _ * ∑ G in _, _
+      show ∑ G ∈ _, _ = _ * ∑ G ∈ _, _
       by_cases hr : r = 0
       · simp [hr]
       · have hg_supp : (r • g).support = g.support := Finsupp.support_smul_eq hr
@@ -936,7 +934,7 @@ instance : NeZero (1 : GraphAlgebra) where
         apply sum_congr (by rfl)
         intro x _
         simp [mul_assoc]
-    have φ_sum : ∀ (s : Finset I) (f : I → GraphVector), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+    have φ_sum : ∀ (s : Finset I) (f : I → GraphVector), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
       intro s f
       refine Finset.induction_on s ?_ ?_
       · simp [φ]
@@ -948,7 +946,7 @@ instance : NeZero (1 : GraphAlgebra) where
       let iG := G i
       have ⟨hℓ', hG2⟩ : iG.fst ≤ ℓ i ∧ v i = zeroElement iG (ℓ i) := by apply hG
       have hℓ : ℓ i ≤ L := by apply Finset.le_sup; simp
-      have φ_sum' : ∀ (s : Finset (IsoSimpleGraphWithSize (ℓ i))) (f : IsoSimpleGraphWithSize (ℓ i) → GraphVector), φ (∑ i in s, f i) = ∑ i in s, φ (f i) := by
+      have φ_sum' : ∀ (s : Finset (IsoSimpleGraphWithSize (ℓ i))) (f : IsoSimpleGraphWithSize (ℓ i) → GraphVector), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) := by
         intro s f
         refine Finset.induction_on s ?_ ?_
         · simp [φ]
@@ -977,7 +975,7 @@ instance : NeZero (1 : GraphAlgebra) where
           dsimp [φ]
           simp
     have h_φ_1 : φ 1 = 1 := by
-      show ∑ G in (basisElementFromGraph 1).support, _ = 1
+      show ∑ G ∈ (basisElementFromGraph 1).support, _ = 1
       simp [sum_singleton, quotSubgraphDensity_one]
     have h_φ_sum : φ (∑ i, c i • v i) = 0 := by
       simp_all only [mul_zero, sum_const_zero, zero_ne_one]
