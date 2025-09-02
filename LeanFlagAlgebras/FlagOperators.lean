@@ -165,8 +165,21 @@ theorem unlabeledGraph_iso
     type_preserve := List.ofFn_inj.mp rfl
   }
 
-noncomputable def unlabel {V : Type} (F : Flag σ V) : Flag ∅ₜ V :=
-  ⟦unlabeledGraph F.out⟧
+def unlabeledGraphQuot {V : Type} (G : LabeledGraph σ V) : Flag ∅ₜ V :=
+  ⟦unlabeledGraph G⟧
+
+theorem unlabeledGraphQuot_respect_eqv
+    {G G' : LabeledGraph σ V} (h : G ∼f G')
+    : unlabeledGraphQuot G = unlabeledGraphQuot G'
+  :=
+  Quotient.sound (unlabeledGraph_iso G G' h)
+
+noncomputable def unlabel {V : Type}
+    : Flag σ V → Flag ∅ₜ V
+  := by
+  apply Quot.lift (fun G : LabeledGraph σ V => unlabeledGraphQuot G)
+  intro G G' G_eqv
+  exact unlabeledGraphQuot_respect_eqv G_eqv
 
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
@@ -453,7 +466,7 @@ lemma downwardFlagVectorQuot_smul
   rw [downwardFlagVector_smul]
 
 lemma downwardFlagVectorQuot_respect_eqv
-    (f f' : FlagVector σ) (h : f ∼v f')
+    {f f' : FlagVector σ} (h : f ∼v f')
     : downwardFlagVectorQuot f = downwardFlagVectorQuot f'
   := by
   apply Quotient.sound
@@ -466,7 +479,7 @@ noncomputable def downward
   := by
   apply Quot.lift (fun g : FlagVector σ => downwardFlagVectorQuot g)
   intro f f' f_eqv
-  exact downwardFlagVectorQuot_respect_eqv f f' f_eqv
+  exact downwardFlagVectorQuot_respect_eqv f_eqv
 
 notation "⟦" f "⟧₀" => (downward f)
 

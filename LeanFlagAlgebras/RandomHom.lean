@@ -19,22 +19,11 @@ def SimpleGraph.toEmptyTypeFlag
 
 theorem flagType_asEmptyTypeFlag_eq
     (σ : FlagType (Fin n₀))
-    : σ.toEmptyTypeFlag = unlabel (1 : FinFlag σ).2
+    : σ.toEmptyTypeFlag = unlabel (emptyFlag σ)
   := by
   apply Quotient.sound
   apply Nonempty.intro
-  exact {
-    graph_iso := by
-      show σ ≃g ⟦emptyLabeledGraph σ⟧.out.graph
-      have : σ = (emptyLabeledGraph σ).graph := rfl
-      nth_rw 1 [this]
-      apply LabeledGraphIso.graph_iso
-      symm
-      apply Classical.choice
-      show ⟦emptyLabeledGraph σ⟧.out ≈ emptyLabeledGraph σ
-      apply Quotient.mk_out
-    type_preserve := List.ofFn_inj.mp rfl
-  }
+  rfl
 
 noncomputable def flagType_asEmptyTypeAlgebra
     (σ : FlagType (Fin n₀))
@@ -53,17 +42,15 @@ theorem one_downward_eq
   dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, downwardFlag, Quotient.lift_mk]
   rw [linearExtension_unitVector, rat_smul_eq_real_smul, smul_quot]
   congr
-  rw [flagType_asEmptyTypeFlag_eq]
-  rfl
 
 theorem flagDensity₁_flagType_asEmptyType_pos
     (F : FinFlag σ)
     : flagDensity₁ σ.toEmptyTypeFlag (unlabel F.2) > 0
   := by
   dsimp only [flagDensity₁]
-  rw [← subflagDensity_eq_flagListDensity]
-  dsimp only [SimpleGraph.toEmptyTypeFlag, unlabel, subflagDensity, labeledSubgraphDensityLifted,
-    labeledSubgraphDensity, Quotient.lift_mk]
+  rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2]
+  dsimp [SimpleGraph.toEmptyTypeFlag, unlabel, subflagDensity, labeledSubgraphDensityLifted,
+    labeledSubgraphDensity, unlabeledGraphQuot, Quotient.lift_mk]
   apply div_pos
   · simp only [Nat.cast_pos, labeledSubgraphCount]
     rw [Finset.card_pos]
@@ -166,11 +153,11 @@ theorem flagDensity₁_flagType_asEmptyType_pos
 --   }
 
 theorem labelExtensions_nonempty
-    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
-    : (labelExtensions F.2 σ).Nonempty
+    {ℓ : ℕ} {F : FlagWithSize ∅ₜ ℓ} (hF : flagDensity₁ σ.toEmptyTypeFlag F > 0)
+    : (labelExtensions F σ).Nonempty
   := by
   dsimp only [flagDensity₁] at hF
-  rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2] at hF
+  rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F] at hF
   dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledSubgraphDensityLifted,
     labeledSubgraphDensity, Quotient.lift_mk] at hF
   rw [gt_iff_lt, div_pos_iff] at hF
@@ -181,8 +168,8 @@ theorem labelExtensions_nonempty
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'
     obtain ⟨hG'_ind, ⟨hG'_iso⟩⟩ := hG'
     dsimp only [labelExtensions]
-    let G : LabeledGraph σ (Fin F.1) := {
-      graph := F.2.out.graph
+    let G : LabeledGraph σ (Fin ℓ) := {
+      graph := F.out.graph
       type_embed := {
         toFun i := (hG'_iso.graph_iso.invFun i).val
         inj' := by
@@ -205,14 +192,13 @@ theorem labelExtensions_nonempty
     }
     use ⟦G⟧
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    rw [← Quotient.out_eq F.2]
+    rw [← Quotient.out_eq F]
     apply Quotient.sound
     calc
       _ ∼f unlabeledGraph G := by
         apply unlabeledGraph_iso
-        show ⟦G⟧.out ≈ G
-        exact Quotient.eq_mk_iff_out.mp rfl
-      _ ∼f F.2.out := by
+        exact flagEqv.refl G
+      _ ∼f F.out := by
         apply Nonempty.intro
         dsimp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe, unlabeledGraph, G]
         exact {
@@ -236,15 +222,20 @@ noncomputable def funFromFlagWithSizeToFlagDensitySpace
       · exact flagListDensity₁_le_one G'.snd F'
   }
 
+theorem labelExtensions_card_nonzero
+    {ℓ : ℕ} {F : FlagWithSize ∅ₜ ℓ} (hF : flagDensity₁ σ.toEmptyTypeFlag F > 0)
+    : (labelExtensions F σ).card ≠ 0
+  := by
+  simp only [ne_eq, Finset.card_eq_zero]
+  apply Finset.Nonempty.ne_empty
+  exact labelExtensions_nonempty hF
+
 noncomputable def FinFlag.toPMF
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
   := by
   let L := labelExtensions F.2 σ
-  have L_card_ne_zero : L.card ≠ 0 := by
-    simp only [ne_eq, Finset.card_eq_zero]
-    apply Finset.Nonempty.ne_empty
-    exact labelExtensions_nonempty hF
+  have L_card_ne_zero : L.card ≠ 0 := labelExtensions_card_nonzero hF
   let f := funFromFlagWithSizeToFlagDensitySpace σ F.1
   let S : Finset (FlagDensitySpace σ) := (f '' L).toFinset
   let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S
@@ -374,9 +365,8 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   let g := funFromFlagWithSizeToFlagDensitySpace σ G.1
   calc
     _ = ∑ a ∈ (g '' L).toFinset, {G' ∈ L | g G' = a}.card / L.card * a F := by
-      -- rw [← tsum_ite_eq_sum]
-      -- congr!
-      sorry
+      rw [← tsum_ite_eq_sum]
+      congr!
     _ = ∑ G' ∈ L, (g G') F / L.card := by
       rw [Set.toFinset_image, Finset.toFinset_coe]
       apply Finset.sum_image'
@@ -389,6 +379,27 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
       simp only [Finset.mem_filter] at hG''
       rw [hG''.2]
     _ = _ := ?_
+  rw [← Rat.cast_mul, mul_comm]
+  rw [flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions _ _ (le_of_max_le_left hG_size)]
+  simp only [Rat.cast_sum, Rat.cast_mul]
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl
+  intro G' hG'
+  have h_nonzero₁ : (L.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (labelExtensions_card_nonzero hG)
+  have h_nonzero₂ : (downwardNormalizingFactor (emptyFlag σ) : ℝ) * (flagDensity₁ (SimpleGraph.toEmptyTypeFlag σ) G.2 : ℝ) ≠ 0 := by
+    simp only [ne_eq, mul_eq_zero, Rat.cast_eq_zero, not_or]
+    constructor
+    · exact ne_of_gt downwardNormalizingFactor_emptyFlag_pos
+    · exact ne_of_gt hG
+  have : g G' F = flagDensity₁ F.2 G' := rfl
+  rw [this, div_eq_div_iff h_nonzero₁ h_nonzero₂, mul_assoc]
+  congr 1
+  rw [← Rat.cast_mul, mul_comm, flagType_asEmptyTypeFlag_eq]
+  rw [flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions _ _ (le_of_max_le_right hG_size)]
+  rw [Rat.cast_sum, Finset.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro G'' hG''
+  rw [flagDensity_empty, one_mul, mul_one, Rat.cast_inj]
   sorry
 
 noncomputable def integralFlagDensitySpaceSeq
