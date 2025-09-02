@@ -1421,6 +1421,17 @@ noncomputable def
   let ℓ_other := (ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)
   let ℓ'_other := (ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀)
 
+  let Hl_size (i : Fin 3) : ℕ :=
+    match i with
+    | 0 => ℓ₁
+    | 1 => ℓ₂
+    | 2 => ℓ₃
+  let Hl (i : Fin 3) : LabeledGraph σ (Fin (Hl_size i)) :=
+    match i with
+    | 0 => H₁
+    | 1 => H₂
+    | 2 => H₃
+
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
   let RHS := (G' : Flag σ (Fin ℓ'))
@@ -1432,6 +1443,20 @@ noncomputable def
                 | X.card = ℓ'_other
                 ∧ Gl'.IsInduced
                 ∧ predIsoLabeledHl G [H₁, H₂, H₃]ᵍ Gl' }
+  let S₁ := { ⟨X, Vl⟩ : Finset (Fin ℓ_other) × (Fin 3 → Set (Fin ℓ))
+                | X.card = ℓ'_other
+                ∧ (∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀)
+                ∧ (∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)))
+                ∧ (∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅)
+                ∧ Set.univ.PairwiseDisjoint Vl }
+  let S₂ := { ⟨V, Vl⟩ : Set (Fin ℓ) × (Fin 3 → Set (Fin ℓ))
+                | V.toFinset.card = ℓ'_other
+                ∧ (∀ i : Fin 3, V ∩ (Vl i) = ∅)
+                ∧ V ∩ G.type_verts = ∅
+                ∧ (∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀)
+                ∧ (∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)))
+                ∧ (∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅)
+                ∧ Set.univ.PairwiseDisjoint Vl }
 
   let f_LHS_S₀ : LHS ≃ S₀ :=
     let f_LHS_S₀_fwd : LHS → S₀ := by
@@ -1467,29 +1492,10 @@ noncomputable def
 
     Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
 
-  let Hl_size (i : Fin 3) : ℕ :=
-    match i with
-    | 0 => ℓ₁
-    | 1 => ℓ₂
-    | 2 => ℓ₃
-  let Hl (i : Fin 3) : LabeledGraph σ (Fin (Hl_size i)) :=
-    match i with
-    | 0 => H₁
-    | 1 => H₂
-    | 2 => H₃
-  let S₁ := { ⟨X, Vl⟩ : Finset (Fin ℓ_other) × (Fin 3 → Set (Fin ℓ))
-                | X.card = ℓ'_other
-                ∧ (∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀)
-                ∧ (∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)))
-                ∧ (∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅)
-                ∧ Set.univ.PairwiseDisjoint Vl }
-
   let f_S₀_S₁ : S₀ ≃ S₁ :=
     let f_S₀_S₁_fwd : S₀ → S₁ := by
       intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
-
       let Vl (i : Fin 3) := (Gl' i).subgraph.verts \ G.type_verts
-
       let ⟨h_Gl'_other_iso', h_Gl'_other_disj⟩ := h_Gl'_other
       have h_Gl'_other_iso : ∀ i : Fin 3, Nonempty ((Gl' i).coe ≃f Hl i) := by
         intro i
@@ -1498,7 +1504,6 @@ noncomputable def
           dsimp [labeledGraphTripleToList, Hl]
           split <;> (simp only [Fin.isValue]; exact LabeledGraphIso.refl)
         exact Nonempty.intro (f_iso₁.trans f_iso₂)
-
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
         intro i
         exact labeledSubgraph_card_from_iso G (Gl' i) (Hl i) (h_Gl'_other_iso i)
@@ -1512,8 +1517,9 @@ noncomputable def
       have h_Vl_disj_pairwise : Set.univ.PairwiseDisjoint Vl := by
         intro i _ j _ h_ij_neq
         exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl'_other_disj i j h_ij_neq)
-
-      exact ⟨⟨X, Vl⟩, h_X_card, (by intro i; rw [←h_Vl_card i]; congr!), h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+      exact ⟨⟨X, Vl⟩,
+        h_X_card, (by intro i; rw [←h_Vl_card i]; congr!),
+        h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
 
     have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
       intro ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
@@ -1545,7 +1551,6 @@ noncomputable def
 
     have h_f_S₀_S₁_surj : Function.Surjective f_S₀_S₁_fwd := by
       intro ⟨⟨X, Vl⟩, h_X_card, h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
-
       let Gl (i : Fin 3) := inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right
       have h_Gl_ind : ∀ i : Fin 3, (Gl i).IsInduced := by
         intro i
@@ -1566,7 +1571,6 @@ noncomputable def
         rw [←Set.diff_inter_distrib_right G.type_verts (Vl i) (Vl j)]
         suffices Vl i ∩ Vl j = ∅ by simp only [this, Set.empty_diff]
         exact Disjoint.inter_eq (h_Vl_disj_pairwise trivial trivial h_neq)
-
       use ⟨⟨X, Gl⟩, h_X_card, h_Gl_ind, ⟨h_Gl_other_iso, h_Gl_other_disj⟩⟩
       dsimp [f_S₀_S₁_fwd]
       simp_all only [Subtype.mk.injEq, Prod.mk.injEq, true_and]
@@ -1576,8 +1580,12 @@ noncomputable def
       simp only [h_Vl_disj_G_type_verts i, subset_refl]
 
     Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
-/-
-      let unionVl := ⋃ (i : Fin 3), Vl i
+
+  let f_S₁_S₂ : S₁ ≃ S₂ :=
+    let f_S₁_S₂_fwd : S₁ → S₂ := by
+      intro ⟨⟨X, Vl⟩, h_X_card, h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+
+      let unionVl := ⋃ i, Vl i
       have h_unionVl_disj : unionVl ∩ G.type_verts = ∅ := by
         rw [Set.iUnion_inter G.type_verts Vl]
         rw [Set.iUnion_congr h_Vl_disj_G_type_verts]
@@ -1599,6 +1607,7 @@ noncomputable def
                 exact h_Vl_card i
           _ = (ℓ₁ - ℓ₀) + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀) := by
                 simp only [Fin.sum_univ_three, Hl_size]
+
       let V_other := (Set.iUnion Vl ∪ G.type_verts)ᶜ
       have h_V_other_card : V_other.toFinset.card = ℓ_other :=
         calc
@@ -1640,8 +1649,8 @@ noncomputable def
             _ = ∅ := Set.compl_inter_self (Vl i)
         rw [this]
         exact Set.inter_empty _
-
       let f_V_other : Fin ℓ_other ≃ V_other := isoFromFinToFiniteSet V_other (by rw [←h_V_other_card]; congr!)
+
       let V : Set (Fin ℓ) := Subtype.val '' (f_V_other '' X.toSet)
       have h_V_subset_V_other : V ⊆ V_other := by
         dsimp [V]
@@ -1653,18 +1662,38 @@ noncomputable def
         rw [Finset.card_image_of_injective _ (Equiv.injective _)]
         rw [Finset.toFinset_coe]
         exact h_X_card
-      have h_V_disj_G_type_verts : V ∩ G.type_verts = ∅ := by
-        suffices V ∩ G.type_verts ⊆ ∅ by exact Set.subset_eq_empty this rfl
-        rw [←h_V_other_disj_G_type_verts]
-        exact Set.inter_subset_inter_left G.type_verts h_V_subset_V_other
       have h_V_disj_Vl : ∀ (i : Fin 3), V ∩ Vl i = ∅ := by
         intro i
         suffices V ∩ Vl i ⊆ ∅ by exact Set.subset_eq_empty this rfl
         rw [←h_V_other_disj_Vl i]
         exact Set.inter_subset_inter_left (Vl i) h_V_subset_V_other
-      sorry
--/
+      have h_V_disj_G_type_verts : V ∩ G.type_verts = ∅ := by
+        suffices V ∩ G.type_verts ⊆ ∅ by exact Set.subset_eq_empty this rfl
+        rw [←h_V_other_disj_G_type_verts]
+        exact Set.inter_subset_inter_left G.type_verts h_V_subset_V_other
 
+      exact ⟨⟨V, Vl⟩,
+        (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
+        h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+
+    let h_f_S₁_S₂_inj : Function.Injective f_S₁_S₂_fwd := by
+      intro ⟨⟨X₁, Vl₁⟩, h_X₁_card, h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
+      intro ⟨⟨X₂, Vl₂⟩, h_X₂_card, h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
+      intro h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq, f_S₁_S₂_fwd] at h_eq
+      have ⟨h_eq_X, h_eq_Vl⟩ := h_eq
+      subst h_eq_Vl
+      simp only [Set.image_val_inj, Equiv.image_eq_iff_eq, Finset.coe_inj] at h_eq_X
+      subst h_eq_X
+      rfl
+
+    let h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by
+      intro ⟨⟨V, Vl⟩,
+        h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
+        h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+      sorry
+
+    Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
 
   let S₁ := { ⟨V₁, V₂, V₃, V⟩ : Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ) × Set (Fin ℓ)
                 | V₁.toFinset.card = ℓ₁ - ℓ₀
