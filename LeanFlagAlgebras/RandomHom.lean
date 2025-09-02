@@ -165,12 +165,68 @@ noncomputable def funFromLabeledSubgraphToFlagDensitySpace
       · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
   }
 
-noncomputable def FinFlag.toPMF'
+theorem labelExtensions_nonempty
+    {F : FinFlag ∅ₜ} (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : (labelExtensions F.2 σ).Nonempty
+  := by
+  dsimp only [flagDensity₁] at hF
+  rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2] at hF
+  dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledSubgraphDensityLifted,
+    labeledSubgraphDensity, Quotient.lift_mk] at hF
+  rw [gt_iff_lt, div_pos_iff] at hF
+  rcases hF with ⟨hF_num, hF_den⟩ | ⟨hF_num, hF_den⟩
+  · dsimp only [labeledSubgraphCount] at hF_num
+    simp only [Set.toFinset_setOf, Nat.cast_pos, Finset.card_pos] at hF_num
+    obtain ⟨G', hG'⟩ := hF_num
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'
+    obtain ⟨hG'_ind, ⟨hG'_iso⟩⟩ := hG'
+    dsimp only [labelExtensions]
+    let G : LabeledGraph σ (Fin F.1) := {
+      graph := F.2.out.graph
+      type_embed := {
+        toFun i := (hG'_iso.graph_iso.invFun i).val
+        inj' := by
+          intro i j hij
+          simp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe] at hij
+          apply SetCoe.ext at hij
+          exact RelIso.injective hG'_iso.graph_iso.symm hij
+        map_rel_iff' := by
+          intro i j
+          simp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe, Function.Embedding.coeFn_mk]
+          constructor <;> intro h
+          · rw [← RelIso.apply_symm_apply hG'_iso.graph_iso i, ← RelIso.apply_symm_apply hG'_iso.graph_iso j]
+            rw [RelIso.map_rel_iff hG'_iso.graph_iso, LabeledSubgraph.coe_adj_iff]
+            exact (SimpleGraph.Subgraph.IsInduced.adj hG'_ind).mpr h
+          · apply SimpleGraph.Subgraph.Adj.adj_sub'
+            rw [← LabeledSubgraph.coe_adj_iff, ← RelIso.map_rel_iff hG'_iso.graph_iso]
+            rw [← RelIso.apply_symm_apply hG'_iso.graph_iso i, ← RelIso.apply_symm_apply hG'_iso.graph_iso j] at h
+            exact h
+      }
+    }
+    use ⟦G⟧
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    rw [← Quotient.out_eq F.2]
+    apply Quotient.sound
+    calc
+      _ ∼f unlabeledGraph G := sorry
+      _ ∼f F.2.out := by
+        apply Nonempty.intro
+        dsimp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe, unlabeledGraph, G]
+        exact {
+          graph_iso := SimpleGraph.Iso.refl
+          type_preserve := List.ofFn_inj.mp rfl
+        }
+  · linarith
+
+noncomputable def FinFlag.toPMF
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
   := by
   let L := labelExtensions F.2 σ
-  have L_card_ne_zero : L.card ≠ 0 := by sorry
+  have L_card_ne_zero : L.card ≠ 0 := by
+    simp only [ne_eq, Finset.card_eq_zero]
+    apply Finset.Nonempty.ne_empty
+    exact labelExtensions_nonempty hF
   let f : FlagWithSize σ F.1 → FlagDensitySpace σ :=
     fun F' ↦ {
       val := fun G' ↦ flagDensity₁ G'.2 F'
@@ -210,7 +266,7 @@ noncomputable def FinFlag.toPMF'
     simp only [g, if_neg ha]
   exact PMF.ofFinset g S g_sum g_other
 
-noncomputable def FinFlag.toPMF
+noncomputable def FinFlag.toPMF'
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
   := by
@@ -311,7 +367,8 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     _ = ∑ a ∈ (funFromLabeledSubgraphToFlagDensitySpace G σ '' G.typeSubgraphSet σ).toFinset,
         {F' | F' ∈ G.typeSubgraphSet σ ∧ funFromLabeledSubgraphToFlagDensitySpace G σ F' = a}.toFinset.card / (G.typeSubgraphSet σ).toFinset.card * a F := by
       rw [← tsum_ite_eq_sum]
-      congr!
+      -- congr!
+      sorry
     _ = _ := ?_
 
   sorry
