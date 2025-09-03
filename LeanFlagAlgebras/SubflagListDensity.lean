@@ -1932,7 +1932,6 @@ noncomputable def
     use ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
 
   let f_T₀_RHS := Equiv.ofBijective f_T₀_RHS_fwd ⟨h_f_T₀_RHS_inj, h_f_T₀_RHS_surj⟩
-  let f_LHS_RHS := (f_LHS_S₀.trans f_S₀_S₁).trans (f_S₁_S₂.trans (f_S₂_T₀.trans f_T₀_RHS))
 sorry
 
 lemma labeledGraphTripleCount_eq_sum_density_prods'
