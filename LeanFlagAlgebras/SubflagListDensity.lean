@@ -1676,7 +1676,7 @@ noncomputable def
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
 
-    let h_f_S₁_S₂_inj : Function.Injective f_S₁_S₂_fwd := by
+    have h_f_S₁_S₂_inj : Function.Injective f_S₁_S₂_fwd := by
       intro ⟨⟨X₁, Vl₁⟩, h_X₁_card, h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
       intro ⟨⟨X₂, Vl₂⟩, h_X₂_card, h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
       intro h_eq
@@ -1687,7 +1687,7 @@ noncomputable def
       subst h_eq_X
       rfl
 
-    let h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by
+    have h_f_S₁_S₂_surj : Function.Surjective f_S₁_S₂_fwd := by
       intro ⟨⟨V, Vl⟩,
         h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
@@ -1756,31 +1756,44 @@ noncomputable def
             _ = ∅ := Set.compl_inter_self (Vl i)
         rw [this]
         exact Set.inter_empty _
+      have h_V_subseteq_V_other : V ⊆ V_other := by
+        dsimp [V_other]
+        rw [Set.subset_compl_iff_disjoint_right]
+        rw [Set.disjoint_iff_inter_eq_empty]
+        rw [Set.inter_union_distrib_left V (Set.iUnion Vl) G.type_verts]
+        simp only [h_V_disj_G_type_verts, Set.union_empty]
+        rw [Set.inter_iUnion]
+        exact Set.iUnion_eq_empty.mpr h_V_disj_Vl
       let f_V_other : Fin ℓ_other ≃ V_other := isoFromFinToFiniteSet V_other (by rw [←h_V_other_card]; congr!)
 
-      have h_V_subseteq_V_other : V ⊆ V_other := by
-        intro v hv
-        dsimp [V_other]
-        simp only [Set.mem_compl_iff, Set.mem_union, not_or]
-        constructor
-        · intro h_v_in_unionVl
-          rw [Set.mem_iUnion] at h_v_in_unionVl
-          obtain ⟨i, h_v_in_Vli⟩ := h_v_in_unionVl
-          have h_inter_nonempty : (V ∩ Vl i).Nonempty := Set.nonempty_of_mem ⟨hv, h_v_in_Vli⟩
-          rw [h_V_disj_Vl i] at h_inter_nonempty
-          exact Set.not_nonempty_empty h_inter_nonempty
-        · intro h_v_in_type_verts
-          have h_inter_nonempty : (V ∩ G.type_verts).Nonempty := Set.nonempty_of_mem ⟨hv, h_v_in_type_verts⟩
-          rw [h_V_disj_G_type_verts] at h_inter_nonempty
-          exact Set.not_nonempty_empty h_inter_nonempty
-      let V_subtype : Set V_other := {v | v.val ∈ V}
-      let X_set := f_V_other.symm '' V_subtype
+      let X_set := f_V_other.symm '' {v : V_other | v.val ∈ V}
       let X : Finset (Fin ℓ_other) := X_set.toFinset
-      have h_X_card' : X.card = ℓ'_other := by
-        rw [Set.toFinset_card, Set.card_image_of_injective _ (Equiv.injective _)]
-        rw [← Set.toFinset_card]
-        sorry
-      use ⟨⟨X, Vl⟩, h_X_card', h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+      have h_V_card' : V.toFinset.card = {v : V_other | v.val ∈ V}.toFinset.card :=
+        calc
+          V.toFinset.card = ((V_other ∩ V) : Set (Fin ℓ)).toFinset.card := by
+                congr!; simp only [Set.right_eq_inter, h_V_subseteq_V_other]
+          _ = {v : V_other | v.val ∈ V}.toFinset.card := by
+                have : ((V_other ∩ V) : Set (Fin ℓ)) = {v : V_other | v.val ∈ V} := by
+                  ext x
+                  simp only [Set.mem_inter_iff, and_comm, Set.mem_image,
+                    Set.mem_setOf_eq, Subtype.exists, exists_and_left, exists_prop, exists_eq_left]
+                simp only [this, Set.toFinset_image, Set.toFinset_setOf]
+                refine Finset.card_image_iff.mpr ?_
+                simp only [Finset.coe_filter, Finset.mem_univ, true_and,
+                  Subtype.forall, Subtype.mk.injEq, implies_true, Set.injOn_of_eq_iff_eq]
+      have h_X_card : X.card = ℓ'_other := by
+        dsimp [X, X_set]
+        rw [←h_V_card]
+        simp only [h_V_card', Set.toFinset_setOf]
+        rw [Set.toFinset_card]
+        rw [Set.card_image_of_injective _ (Equiv.injective _)]
+        rw [←Set.toFinset_card]
+        simp only [Set.toFinset_setOf]
+      use ⟨⟨X, Vl⟩, h_X_card, h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+      dsimp [f_S₁_S₂_fwd, X, X_set, f_V_other]
+      simp_all only [Set.toFinset_card, Fintype.card_ofFinset,
+        Set.toFinset_setOf, Set.toFinset_image, Finset.coe_image, Finset.coe_filter,
+        Finset.mem_univ, true_and, Subtype.mk.injEq, Prod.mk.injEq, and_true]
       sorry
 
     Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
@@ -1919,6 +1932,7 @@ noncomputable def
     use ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
 
   let f_T₀_RHS := Equiv.ofBijective f_T₀_RHS_fwd ⟨h_f_T₀_RHS_inj, h_f_T₀_RHS_surj⟩
+  let f_LHS_RHS := (f_LHS_S₀.trans f_S₀_S₁).trans (f_S₁_S₂.trans (f_S₂_T₀.trans f_T₀_RHS))
 sorry
 
 lemma labeledGraphTripleCount_eq_sum_density_prods'
