@@ -27,6 +27,7 @@ variable {σ : FlagType T} {t : ℕ}
 variable {Vl  : Fin t → Type} [FintypeList Vl]  [DecidableEqList Vl]
 variable {Fl : FlagList σ t Vl}
 
+set_option maxHeartbeats 500000
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
     [Fintype V] [Fintype U] [DecidableEq V] [DecidableEq U]
@@ -623,13 +624,25 @@ theorem flagListDensity₂_prod_approx
   rw [← compl_card]
   let D : Finset Ω := { w | by
     obtain ⟨⟨w₁, w₂⟩, h⟩ := w
-    exact Grep.type_verts.toFinset ⊆ w₁ ∩ w₂ }
+    exact Grep.type_verts.toFinset ⊂ w₁ ∩ w₂ }
   have Bc_sub_D : B.toSetᶜ.toFinset ⊆ D := by
     simp only [Set.toFinset_compl, toFinset_coe]
     intro ⟨w, hw_in_Ω⟩ hw_in_Bc
+    simp only [mem_filter, mem_univ, true_and, D]
     simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω
-    simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff, mem_filter, mem_univ, true_and, D]
-    exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩
+    simp only [compl_filter, mem_filter, mem_univ, true_and, B] at hw_in_Bc
+    refine (ssubset_iff_of_subset ?_).mpr ?_
+    · simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff]
+      exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩
+    · rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hw_in_Bc
+      obtain ⟨x, hx⟩ := hw_in_Bc
+      use x
+      simp only [mem_inter, mem_sdiff, Set.mem_toFinset] at hx
+      obtain ⟨⟨hx_in_w₁, hx_not_in_Bc⟩, ⟨hx_in_w₂, _⟩⟩ := hx
+      constructor
+      · exact mem_inter.mpr ⟨hx_in_w₁, hx_in_w₂⟩
+      · simp only [Set.mem_toFinset]
+        exact hx_not_in_Bc
   suffices (@Nat.cast ℚ _ D.card) / Ω.toFinset.card ≤ ↑Frep.size * ↑F'rep.size / (↑Grep.size * ↑Grep.size) by
     suffices card_le : (@Nat.cast ℚ _ (#(B.toSet)ᶜ.toFinset)) / ↑(#Ω.toFinset) ≤ D.card / Ω.toFinset.card by
       exact card_le.trans this
@@ -640,35 +653,14 @@ theorem flagListDensity₂_prod_approx
       exact card_le_card Bc_sub_D
   clear hB_nonzero compl_card Bc_sub_D B
 
-  have D_eq_Ω : D.card = Ω.toFinset.card := by
-    apply Finset.card_eq_of_equiv
-    refine Equiv.ofBijective ?_ ?_
-    · intro ⟨⟨w, hw_in_Ω⟩, _⟩
-      use w
-      rwa [Set.mem_toFinset]
-    · constructor
-      · intro ⟨w, _⟩ ⟨w', _⟩ h_eq
-        simp only [Subtype.mk.injEq] at h_eq
-        simp only [Subtype.mk.injEq]
-        exact Subtype.ext h_eq
-      · intro ⟨w, hw_in_Ω⟩
-        rw [Set.mem_toFinset] at hw_in_Ω
-        use ⟨⟨w, hw_in_Ω⟩, by
-          simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff, mem_filter, mem_univ, true_and, D]
-          exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩⟩
-  rw [D_eq_Ω, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; exact hΩ_nonzero)]
 
   sorry
 
-example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : B = ∅ := by
-  -- apply?
-  subst hB
-  ext a : 1
-  simp_all only [notMem_empty, iff_false]
-  obtain ⟨val, property⟩ := a
-  apply Aesop.BuiltinRules.not_intro
-  intro a
-  exact property
+example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : A ≠ B := by
+  refine ne_of_lt ?_
+  simp only [lt_eq_subset]
+  -- refine (ssubset_iff_of_subset ?_).mpr ?_
+  sorry
   -- exact inter_subset_left
 
 example (A B C : ℕ) : A / C ≤ B / C := by
