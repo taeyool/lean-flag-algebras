@@ -137,6 +137,31 @@ noncomputable def downwardNormalizingFactor
   intro G G' G_eqv
   exact downwardNormalizingFactor_labeledGraph_respect_eqv G_eqv
 
+theorem downwardNormalizingFactor_pos
+    (F : Flag σ (Fin n))
+    : downwardNormalizingFactor F > 0
+  := by
+  rw [← Quotient.out_eq F]
+  dsimp only [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph, Quotient.lift_mk]
+  apply div_pos
+  · simp only [Nat.cast_pos]
+    dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph]
+    rw [Finset.card_pos]
+    use F.out
+    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+    apply flagEqv.refl
+  · simp only [Nat.cast_pos, Nat.div_pos_iff]
+    constructor
+    · exact Nat.factorial_pos (n - n₀)
+    · apply Nat.factorial_le
+      exact Nat.sub_le n n₀
+
+theorem downwardNormalizingFactor_nonneg
+    (F : Flag σ (Fin n))
+    : downwardNormalizingFactor F ≥ 0
+  :=
+  le_of_lt (downwardNormalizingFactor_pos F)
+
 theorem downwardNormalizingFactor_emptyFlag_pos
     : downwardNormalizingFactor (emptyFlag σ) > 0
   := by

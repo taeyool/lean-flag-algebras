@@ -111,47 +111,6 @@ theorem flagDensity₁_flagType_asEmptyType_pos
     have : F.1 ≥ n₀ := finFlag_size_ge_n₀ F
     exact Nat.choose_pos this
 
--- instance : BorelSpace (FlagDensitySpace σ) :=
---   Subtype.borelSpace fun x ↦ x ∈ FlagDensitySpace σ
-
--- def FinFlag.typeSubgraphSet
---     (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
---     : Set (LabeledSubgraph ∅ₜ F.2.out)
---   :=
---   { F' | F'.IsInduced ∧ Nonempty (F'.coe.graph ≃g σ) }
-
--- theorem FinFlag.typeSubgraphSet_nonempty
---     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
---     : (F.typeSubgraphSet σ).Nonempty
---   := by
---   dsimp only [flagDensity₁] at hF
---   rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2] at hF
---   dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledSubgraphDensityLifted,
---     labeledSubgraphDensity, Quotient.lift_mk] at hF
---   rw [gt_iff_lt, div_pos_iff] at hF
---   rcases hF with ⟨hF_num, hF_den⟩ | ⟨hF_num, hF_den⟩
---   · dsimp only [labeledSubgraphCount] at hF_num
---     simp only [Set.toFinset_setOf, Nat.cast_pos, Finset.card_pos] at hF_num
---     obtain ⟨F', hF'⟩ := hF_num
---     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hF'
---     exact ⟨F', hF'.1, Nonempty.intro hF'.2.some.graph_iso⟩
---   · linarith
-
--- noncomputable def funFromLabeledSubgraphToFlagDensitySpace
---     (F : FinFlag ∅ₜ) (σ : FlagType (Fin n₀))
---     : LabeledSubgraph ∅ₜ F.2.out → FlagDensitySpace σ
---   := fun F' ↦ {
---     val := fun G ↦ flagDensity₁ (unlabel G.2) ⟦F'.coe⟧
---     property := by
---       intro G _
---       simp only [Set.mem_Icc]
---       rw [← Rat.cast_one]
---       simp only [Rat.cast_nonneg, Rat.cast_le]
---       constructor
---       · exact flagListDensity₁_ge_zero (unlabel G.snd) ⟦F'.coe⟧
---       · exact flagListDensity₁_le_one (unlabel G.snd) ⟦F'.coe⟧
---   }
-
 theorem labelExtensions_nonempty
     {ℓ : ℕ} {F : FlagWithSize ∅ₜ ℓ} (hF : flagDensity₁ σ.toEmptyTypeFlag F > 0)
     : (labelExtensions F σ).Nonempty
@@ -222,88 +181,61 @@ noncomputable def funFromFlagWithSizeToFlagDensitySpace
       · exact flagListDensity₁_le_one G'.snd F'
   }
 
-theorem labelExtensions_card_nonzero
-    {ℓ : ℕ} {F : FlagWithSize ∅ₜ ℓ} (hF : flagDensity₁ σ.toEmptyTypeFlag F > 0)
-    : (labelExtensions F σ).card ≠ 0
-  := by
-  simp only [ne_eq, Finset.card_eq_zero]
-  apply Finset.Nonempty.ne_empty
-  exact labelExtensions_nonempty hF
-
 noncomputable def FinFlag.toPMF
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
   := by
   let L := labelExtensions F.2 σ
-  have L_card_ne_zero : L.card ≠ 0 := labelExtensions_card_nonzero hF
   let f := funFromFlagWithSizeToFlagDensitySpace σ F.1
   let S : Finset (FlagDensitySpace σ) := (f '' L).toFinset
+  let dnf_sum := fun a ↦ ∑ F' ∈ L with f F' = a, (downwardNormalizingFactor F' : ℝ)
+  let dnf_total := ∑ F' ∈ L, (downwardNormalizingFactor F' : ℝ)
   let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S
-    then ENNReal.ofReal ({F' ∈ L | f F' = a}.card / L.card : ℝ)
+    then ENNReal.ofReal (dnf_sum a / dnf_total)
     else 0
-  have g_nonneg : ∀ a ∈ S, 0 ≤ ({F' ∈ L | f F' = a}.card / L.card : ℝ) := by
+  have dnf_total_ne_zero : dnf_total ≠ 0 := by
+    apply ne_of_gt
+    apply Finset.sum_pos
+    · intro F' hF'
+      simp only [Rat.cast_pos]
+      exact downwardNormalizingFactor_pos F'
+    · exact labelExtensions_nonempty hF
+  have g_nonneg : ∀ a ∈ S, 0 ≤ dnf_sum a / dnf_total := by
     intro a ha
-    apply div_nonneg <;> linarith
+    apply div_nonneg
+    all_goals {
+      apply Finset.sum_nonneg
+      intros
+      rw [Rat.cast_nonneg]
+      exact downwardNormalizingFactor_nonneg _
+    }
   have g_sum : ∑ a ∈ S, g a = 1 := by
     dsimp only [g]
     rw [← ENNReal.toReal_eq_one_iff]
     simp only [Finset.sum_ite_mem, Finset.inter_self]
-    have : (∑ a ∈ S, ENNReal.ofReal ({F' ∈ L | f F' = a}.card / L.card : ℝ)).toReal =
-            ∑ a ∈ S, ({F' ∈ L | f F' = a}.card / L.card : ℝ) := by
+    have : (∑ a ∈ S, ENNReal.ofReal (dnf_sum a / dnf_total)).toReal =
+            ∑ a ∈ S, dnf_sum a / dnf_total := by
       rw [ENNReal.toReal_sum (fun _ _ ↦ ENNReal.ofReal_ne_top)]
       apply Finset.sum_congr rfl
       intro a ha
       rw [ENNReal.toReal_ofReal (g_nonneg a ha)]
     rw [this]
-    rw [← Finset.sum_div, div_eq_iff (Nat.cast_ne_zero.mpr L_card_ne_zero), one_mul]
-    rw [← Nat.cast_sum, Nat.cast_inj]
-    dsimp only [S]
-    rw [Finset.card_eq_sum_card_image f L, Set.toFinset_image, Finset.toFinset_coe]
+    rw [← Finset.sum_div, div_eq_iff dnf_total_ne_zero, one_mul]
+    dsimp only [S, dnf_sum, dnf_total]
+    rw [Finset.sum_fiberwise_eq_sum_filter]
+    congr 1
+    ext F'
+    constructor <;> intro hF'
+    · simp only [Finset.mem_filter] at hF'
+      exact hF'.1
+    · simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.mem_image, Finset.mem_filter]
+      constructor
+      · exact hF'
+      · use F'
   have g_other : ∀ a ∉ S, g a = 0 := by
     intro a ha
     simp only [g, if_neg ha]
   exact PMF.ofFinset g S g_sum g_other
-
--- noncomputable def FinFlag.toPMF'
---     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
---     : PMF (FlagDensitySpace σ)
---   := by
---   let T := F.typeSubgraphSet σ
---   have T_card_ne_zero : T.toFinset.card ≠ 0 := by
---     simp only [ne_eq, Finset.card_eq_zero]
---     apply Finset.Nonempty.ne_empty
---     rw [Set.toFinset_nonempty]
---     exact F.typeSubgraphSet_nonempty hF
---   let f := funFromLabeledSubgraphToFlagDensitySpace F σ
---   let S : Finset (FlagDensitySpace σ) := (f '' T).toFinset
---   let g : FlagDensitySpace σ → ENNReal := fun a ↦ if a ∈ S
---     then ENNReal.ofReal ({F' ∈ T | f F' = a}.toFinset.card / T.toFinset.card : ℝ)
---     else 0
---   have g_nonneg : ∀ a ∈ S, 0 ≤ ({F' ∈ T | f F' = a}.toFinset.card / T.toFinset.card : ℝ) := by
---     intro a ha
---     apply div_nonneg <;> linarith
---   have g_sum : ∑ a ∈ S, g a = 1 := by
---     dsimp only [g]
---     rw [← ENNReal.toReal_eq_one_iff]
---     simp only [Finset.sum_ite_mem, Finset.inter_self]
---     have : (∑ a ∈ S, ENNReal.ofReal ({F' ∈ T | f F' = a}.toFinset.card / T.toFinset.card : ℝ)).toReal =
---             ∑ a ∈ S, ({F' ∈ T | f F' = a}.toFinset.card / T.toFinset.card : ℝ) := by
---       rw [ENNReal.toReal_sum (fun _ _ ↦ ENNReal.ofReal_ne_top)]
---       apply Finset.sum_congr rfl
---       intro a ha
---       rw [ENNReal.toReal_ofReal (g_nonneg a ha)]
---     rw [this]
---     rw [← Finset.sum_div, div_eq_iff (Nat.cast_ne_zero.mpr T_card_ne_zero), one_mul]
---     rw [← Nat.cast_sum, Nat.cast_inj]
---     rw [Finset.card_eq_sum_card_image f T.toFinset, ← Set.toFinset_image]
---     apply Finset.sum_congr rfl
---     intro a ha
---     congr
---     exact Set.toFinset_ofFinset _ _
---   have g_other : ∀ a ∉ S, g a = 0 := by
---     intro a ha
---     simp only [g, if_neg ha]
---   exact PMF.ofFinset g S g_sum g_other
 
 noncomputable def FinFlag.toMeasure
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
@@ -359,21 +291,28 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   simp_rw [apply_ite ENNReal.toReal]
   conv =>
     lhs; rhs; ext a; lhs; lhs
-    rw [ENNReal.toReal_ofReal (by apply div_nonneg <;> linarith)]
+    rw [ENNReal.toReal_ofReal (by apply div_nonneg; all_goals {
+      apply Finset.sum_nonneg
+      intros
+      rw [Rat.cast_nonneg]
+      exact downwardNormalizingFactor_nonneg _
+    })]
   simp only [ENNReal.toReal_zero, ite_mul, zero_mul]
   let L := labelExtensions G.2 σ
   let g := funFromFlagWithSizeToFlagDensitySpace σ G.1
+  let dnf_sum := fun a ↦ ∑ G' ∈ L with g G' = a, (downwardNormalizingFactor G' : ℝ)
+  let dnf_total := ∑ F' ∈ L, (downwardNormalizingFactor F' : ℝ)
   calc
-    _ = ∑ a ∈ (g '' L).toFinset, {G' ∈ L | g G' = a}.card / L.card * a F := by
-      rw [← tsum_ite_eq_sum]
+    _ = ∑ a ∈ (g '' L).toFinset, dnf_sum a / dnf_total * a F := by
+      nth_rw 2 [← tsum_ite_eq_sum]
       congr!
-    _ = ∑ G' ∈ L, (g G') F / L.card := by
+    _ = ∑ G' ∈ L, (downwardNormalizingFactor G' : ℝ) * (g G') F / dnf_total := by
       rw [Set.toFinset_image, Finset.toFinset_coe]
       apply Finset.sum_image'
       intro G' hG'
       rw [mul_comm, mul_div, ← Finset.sum_div]
       congr
-      rw [Finset.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, Finset.mul_sum, mul_one]
+      rw [mul_comm, Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro G'' hG''
       simp only [Finset.mem_filter] at hG''
@@ -385,22 +324,26 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   rw [Finset.sum_div]
   apply Finset.sum_congr rfl
   intro G' hG'
-  have h_nonzero₁ : (L.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (labelExtensions_card_nonzero hG)
+  have h_nonzero₁ : dnf_total ≠ 0 := by
+    apply ne_of_gt
+    apply Finset.sum_pos
+    · intro G'' hG''
+      simp only [Rat.cast_pos]
+      exact downwardNormalizingFactor_pos G''
+    · exact labelExtensions_nonempty hG
   have h_nonzero₂ : (downwardNormalizingFactor (emptyFlag σ) : ℝ) * (flagDensity₁ (SimpleGraph.toEmptyTypeFlag σ) G.2 : ℝ) ≠ 0 := by
     simp only [ne_eq, mul_eq_zero, Rat.cast_eq_zero, not_or]
     constructor
     · exact ne_of_gt downwardNormalizingFactor_emptyFlag_pos
     · exact ne_of_gt hG
   have : g G' F = flagDensity₁ F.2 G' := rfl
-  rw [this, div_eq_div_iff h_nonzero₁ h_nonzero₂, mul_assoc]
+  rw [this, div_eq_div_iff h_nonzero₁ h_nonzero₂]
   congr 1
-  rw [← Rat.cast_mul, mul_comm, flagType_asEmptyTypeFlag_eq]
-  rw [flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions _ _ (le_of_max_le_right hG_size)]
-  rw [Rat.cast_sum, Finset.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro G'' hG''
-  rw [flagDensity_empty, one_mul, mul_one, Rat.cast_inj]
-  sorry
+  · rw [mul_comm]
+  · rw [← Rat.cast_mul, mul_comm, flagType_asEmptyTypeFlag_eq]
+    rw [flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions _ _ (le_of_max_le_right hG_size)]
+    simp_rw [Rat.cast_sum, flagDensity_empty, one_mul]
+    rfl
 
 noncomputable def integralFlagDensitySpaceSeq
     (s : FlagSeq ∅ₜ) (F : FinFlag σ)
