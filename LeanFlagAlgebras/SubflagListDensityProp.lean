@@ -43,7 +43,7 @@ theorem flagListDensity₂_prod_approx
   let ⟨F'rep, hF'rep₁⟩ := Quotient.exists_rep F'
   have hF'rep₂ : (⟦F'rep⟧ : Quotient (labeledGraphSetoid σ U)).out.size = F'rep.size := rfl
   by_cases hG_size : Grep.size = 0
-  · by_cases h_nonempty : Frep.size = 0 ∧ F'rep.size = 0
+  · by_cases h_nonempty : Frep.size = 0 ∧  F'rep.size = 0
     · by_cases hσ_size : σ.size = 0
       · dsimp only [flagDensity₁]
         rw [← subflagDensity_eq_flagListDensity F G, ← subflagDensity_eq_flagListDensity F' G]
@@ -476,11 +476,22 @@ theorem flagListDensity₂_prod_approx
   have Ω_card : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
     simp only [card_univ, Fintype.card_ofFinset, Set.toFinset_card]
   by_cases h : B.card = 0 ∨ Ω.toFinset.card = 0
-  · obtain h | h := h <;> rw [h]
-    · simp only [CharP.cast_eq_zero, div_zero, zero_sub, abs_neg, ge_iff_le]
+  · obtain hB | hΩ := h
+    · rw [hB]
+      simp only [CharP.cast_eq_zero, div_zero, zero_sub, abs_neg, ge_iff_le]
       sorry
-    · simp only [CharP.cast_eq_zero, div_zero, sub_zero, ge_iff_le]
-      sorry
+    · rw [hΩ]
+      simp only [CharP.cast_eq_zero, div_zero, sub_zero, ge_iff_le]
+      rw [card_eq_zero, Set.toFinset_eq_empty] at hΩ
+      have hB : B.card = 0 := by
+        rw [card_eq_zero]
+        by_contra hB_nonempty
+        rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hB_nonempty
+        obtain ⟨⟨_, hx_in_Ω⟩, _⟩ := hB_nonempty
+        rwa [hΩ, Set.mem_empty_iff_false] at hx_in_Ω
+      rw [hB]
+      simp only [CharP.cast_eq_zero, div_zero, abs_zero, ge_iff_le]
+      apply div_nonneg <;> simp only [sq_nonneg, Nat.cast_nonneg]
 
   simp only [not_or] at h
   obtain ⟨hB_nonzero, hΩ_nonzero⟩ := h
@@ -609,15 +620,24 @@ theorem flagListDensity₂_prod_approx
   simp only [coe_filter, mem_univ, true_and, Set.toFinset_compl, Set.toFinset_setOf, compl_filter, B]
   sorry
 
-example {E : Type} (A B : Finset E) (hB : B = ∅) : A ∩ B ⊆ A := by
-  exact inter_subset_left
+example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : B = ∅ := by
+  -- apply?
+  subst hB
+  ext a : 1
+  simp_all only [notMem_empty, iff_false]
+  obtain ⟨val, property⟩ := a
+  apply Aesop.BuiltinRules.not_intro
+  intro a
+  exact property
+  -- exact inter_subset_left
 
 example (A B : ℕ) : A ≤ 2 * A := by
   refine Nat.le_mul_of_pos_left A ?_
   -- exact Nat.le_mul_self A
   sorry
 
-example (A B C D : ℚ) : 0 ≤ A / B := by
+example (A B C D : ℚ) : 0 ≤ A ^ 2 := by
+  -- exact sq_nonneg A
   -- refine div_nonneg ?_ ?_
   -- exact le_mul_of_one_le_left hA rfl
   -- exact mul_le_mul_of_nonneg_right rfl hA
