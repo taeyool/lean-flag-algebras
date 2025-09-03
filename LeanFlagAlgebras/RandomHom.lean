@@ -363,6 +363,7 @@ theorem eventually_flagDensity_pos_of_converge_flagSeq
   dsimp [flagDensitySeq] at h_lim
   simp_all only [Rat.cast_pos]
 
+/- Lemma 3.11 -/
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
     : ∀ (F : FinFlag σ), Tendsto (integralFlagDensitySpaceSeq s F) atTop
@@ -401,6 +402,7 @@ theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
       apply ne_of_gt downwardNormalizingFactor_emptyFlag_pos
     · exact (ne_of_lt hσ).symm
 
+/- Theorem 3.5, existence -/
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
