@@ -98,6 +98,7 @@ theorem flagListDensity₂_prod_approx
   rw [← hFrep₁, ← hF'rep₁, ← hGrep₁, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
   dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
   rw [hFrep₂, hF'rep₂, hGrep₂]
+  clear hFrep₁ hF'rep₁ hGrep₁ hFrep₂ hF'rep₂ hGrep₂
 
   let freeG := Finset.univ \ Grep.type_verts.toFinset
   have h_freeG : freeG.card = Grep.size - σ.size := by
@@ -472,6 +473,7 @@ theorem flagListDensity₂_prod_approx
       rw [hB, h_freeG]
       simp only [r_list]; rfl
   rw [P₁, P₂]
+  clear h_freeG h_sub_freeG freeG h_freeF freeF h_freeF' freeF' P₁ P₂
 
   have Ω_card : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
     simp only [card_univ, Fintype.card_ofFinset, Set.toFinset_card]
@@ -581,6 +583,7 @@ theorem flagListDensity₂_prod_approx
         rw [div_le_div_iff_of_pos_right (by rw [Nat.cast_pos]; exact Nat.zero_lt_of_ne_zero hΩ_nonzero), Nat.cast_le]
         exact Nat.le_of_lt hAB
   suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ (↑Frep.size + ↑F'rep.size) ^ 2 / ↑Grep.size by exact cond_bound.trans this
+  clear cond_bound A
 
   have simp_calc₁ : (@Nat.cast ℚ _ Frep.size) * F'rep.size / (Grep.size * Grep.size) ≤ 2 * (Frep.size * F'rep.size / (Grep.size * Grep.size)) := by
     apply le_mul_of_one_le_left ?_ rfl
@@ -615,9 +618,46 @@ theorem flagListDensity₂_prod_approx
     ring_nf
     apply Nat.le_add_right_of_le (Nat.le_add_right_of_le (le_refl _))
   suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ Frep.size * F'rep.size / (Grep.size * Grep.size) by exact this.trans (simp_calc₁.trans simp_calc₂)
+  clear simp_calc₁ simp_calc₂
 
   rw [← compl_card]
-  simp only [coe_filter, mem_univ, true_and, Set.toFinset_compl, Set.toFinset_setOf, compl_filter, B]
+  let D : Finset Ω := { w | by
+    obtain ⟨⟨w₁, w₂⟩, h⟩ := w
+    exact Grep.type_verts.toFinset ⊆ w₁ ∩ w₂ }
+  have Bc_sub_D : B.toSetᶜ.toFinset ⊆ D := by
+    simp only [Set.toFinset_compl, toFinset_coe]
+    intro ⟨w, hw_in_Ω⟩ hw_in_Bc
+    simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω
+    simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff, mem_filter, mem_univ, true_and, D]
+    exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩
+  suffices (@Nat.cast ℚ _ D.card) / Ω.toFinset.card ≤ ↑Frep.size * ↑F'rep.size / (↑Grep.size * ↑Grep.size) by
+    suffices card_le : (@Nat.cast ℚ _ (#(B.toSet)ᶜ.toFinset)) / ↑(#Ω.toFinset) ≤ D.card / Ω.toFinset.card by
+      exact card_le.trans this
+    refine (div_le_div_iff_of_pos_right ?_).mpr ?_
+    · simp only [Nat.cast_pos]
+      exact Nat.zero_lt_of_ne_zero hΩ_nonzero
+    · simp only [Nat.cast_le]
+      exact card_le_card Bc_sub_D
+  clear hB_nonzero compl_card Bc_sub_D B
+
+  have D_eq_Ω : D.card = Ω.toFinset.card := by
+    apply Finset.card_eq_of_equiv
+    refine Equiv.ofBijective ?_ ?_
+    · intro ⟨⟨w, hw_in_Ω⟩, _⟩
+      use w
+      rwa [Set.mem_toFinset]
+    · constructor
+      · intro ⟨w, _⟩ ⟨w', _⟩ h_eq
+        simp only [Subtype.mk.injEq] at h_eq
+        simp only [Subtype.mk.injEq]
+        exact Subtype.ext h_eq
+      · intro ⟨w, hw_in_Ω⟩
+        rw [Set.mem_toFinset] at hw_in_Ω
+        use ⟨⟨w, hw_in_Ω⟩, by
+          simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff, mem_filter, mem_univ, true_and, D]
+          exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩⟩
+  rw [D_eq_Ω, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; exact hΩ_nonzero)]
+
   sorry
 
 example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : B = ∅ := by
@@ -631,8 +671,9 @@ example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : B = ∅ := by
   exact property
   -- exact inter_subset_left
 
-example (A B : ℕ) : A ≤ 2 * A := by
-  refine Nat.le_mul_of_pos_left A ?_
+example (A B C : ℕ) : A / C ≤ B / C := by
+  refine Nat.div_le_div_right ?_
+  -- refine Nat.le_mul_of_pos_left A ?_
   -- exact Nat.le_mul_self A
   sorry
 
