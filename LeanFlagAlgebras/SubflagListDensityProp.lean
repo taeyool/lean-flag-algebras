@@ -80,20 +80,22 @@ theorem flagListDensity₂_prod_approx
       push_neg at h_nonempty
       by_cases hF_nonempty : Frep.size = 0
       · have hF'_nonempty := h_nonempty hF_nonempty
-        have list_zero : flagDensity₂ F F' G = 0 := by sorry
-        have F'_zero : flagDensity₁ F' G = 0 := by
-          have : F'rep.size > Grep.size := by
-            rw [hG_size]
-            exact Nat.zero_lt_of_ne_zero (h_nonempty hF_nonempty)
-          exact @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F' G this
+        have : F'rep.size > Grep.size := by
+          rw [hG_size]
+          exact Nat.zero_lt_of_ne_zero (h_nonempty hF_nonempty)
+        have list_zero : flagDensity₂ F F' G = 0 := by
+          apply flagDensity_le_card_contra'
+          right; exact this
+        have F'_zero : flagDensity₁ F' G = 0 := @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F' G this
         rw [list_zero, F'_zero]
         simp only [mul_zero, sub_self]
-      · have list_zero : flagDensity₂ F F' G = 0 := by sorry
-        have F_zero : flagDensity₁ F G = 0 := by
-          have : Frep.size > Grep.size := by
-            rw [hG_size]
-            exact Nat.zero_lt_of_ne_zero hF_nonempty
-          exact @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F G this
+      · have : Frep.size > Grep.size := by
+          rw [hG_size]
+          exact Nat.zero_lt_of_ne_zero hF_nonempty
+        have list_zero : flagDensity₂ F F' G = 0 := by
+          apply flagDensity_le_card_contra'
+          left; exact this
+        have F_zero : flagDensity₁ F G = 0 := @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F G this
         rw [list_zero, F_zero]
         simp only [zero_mul, sub_self]
 

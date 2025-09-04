@@ -519,6 +519,37 @@ theorem flagDensity_le_card
   rw [h_G_sub_Frep] at this
   exact this
 
+theorem flagDensity_le_card'
+    {F : Flag σ V} {F' : Flag σ U} {G : Flag σ W} (h : flagDensity₂ F F' G > 0)
+    : Fintype.card V ≤ Fintype.card W ∧ Fintype.card U ≤ Fintype.card W
+  := by
+  obtain ⟨Grep, hGrep⟩ := Quotient.exists_rep G
+  obtain ⟨Frep, hFrep⟩ := Quotient.exists_rep F
+  obtain ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
+  rw [← hFrep, ← hF'rep, ← hGrep, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep] at h
+  dsimp [labeledSubgraphListDensity] at h
+  have h_count_pos : 0 < labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep := by
+    apply Nat.pos_of_ne_zero
+    intro h_zero
+    rw [h_zero] at h
+    simp only [Nat.cast_zero, zero_div, gt_iff_lt, lt_self_iff_false] at h
+  simp only [labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl, Set.toFinset_card] at h_count_pos
+  have ⟨⟨Gl, hGl⟩, _⟩ := Finset.card_pos.mp h_count_pos
+  simp only [predIsoLabeledHl, Set.mem_setOf_eq] at hGl
+  let h_iso := (hGl.2.1 0).some
+  let h_iso' := (hGl.2.1 1).some
+  have h_Gl_Frep : (Gl 0).size = Frep.size := labeledGraphIso_size_eq (Gl 0).coe Frep h_iso
+  have h_Gl_F'rep : (Gl 1).size = F'rep.size := labeledGraphIso_size_eq (Gl 1).coe F'rep h_iso'
+  have h_Gl0_le_Grep : (Gl 0).size ≤ Grep.size := by
+    simp only [size, Fintype.card_ofFinset, LabeledGraph.size]
+    exact Finset.card_le_univ (Finset.filter (Membership.mem (Gl 0).subgraph.verts) Finset.univ)
+  have h_Gl1_le_Grep : (Gl 1).size ≤ Grep.size := by
+    simp only [size, Fintype.card_ofFinset, LabeledGraph.size]
+    exact Finset.card_le_univ (Finset.filter (Membership.mem (Gl 1).subgraph.verts) Finset.univ)
+  rw [h_Gl_Frep] at h_Gl0_le_Grep
+  rw [h_Gl_F'rep] at h_Gl1_le_Grep
+  exact ⟨h_Gl0_le_Grep, h_Gl1_le_Grep⟩
+
 lemma sum_perm_eq
     (f : Fin t → ℕ) (π : Perm t)
     : ∑ i : Fin t, f i = ∑ i : Fin t, f (π i)
@@ -1324,13 +1355,35 @@ theorem flagListDensity₁_le_one
   apply flagListDensity_le_one
 
 omit [DecidableEq T] in
+theorem flagListDensity₂_ge_zero
+    (F : Flag σ V) (F' : Flag σ U) (G : Flag σ W)
+    : 0 ≤ flagDensity₂ F F' G
+  := by
+  apply flagListDensity_ge_zero
+
+omit [DecidableEq T] in
+theorem flagListDensity₂_le_one
+    (F : Flag σ V) (F' : Flag σ U) (G : Flag σ W)
+    : flagDensity₂ F F' G ≤ 1
+  := by
+  apply flagListDensity_le_one
+
+omit [DecidableEq T] in
 theorem flagDensity_le_card_contra
     {F : Flag σ V} {G : Flag σ W}
     : Fintype.card V > Fintype.card W → flagDensity₁ F G = 0
   := by
   contrapose!
   intro h
-  exact flagDensity_le_card (lt_of_le_of_ne (flagListDensity₁_ge_zero F G) (id (Ne.symm h)))
+  exact flagDensity_le_card (lt_of_le_of_ne (flagListDensity₁_ge_zero F G) (Ne.symm h))
+
+theorem flagDensity_le_card_contra'
+    {F : Flag σ V} {F' : Flag σ U} {G : Flag σ W}
+    : Fintype.card V > Fintype.card W ∨ Fintype.card U > Fintype.card W → flagDensity₂ F F' G = 0
+  := by
+  contrapose!
+  intro h
+  exact flagDensity_le_card' (lt_of_le_of_ne (flagListDensity₂_ge_zero F F' G) (Ne.symm h))
 
 /- Chain rules -/
 
