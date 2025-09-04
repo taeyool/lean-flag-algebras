@@ -395,11 +395,42 @@ theorem eventually_flagDensity_pos_of_converge_flagSeq
   dsimp [flagDensitySeq] at h_lim
   simp_all only [Rat.cast_pos]
 
+lemma tendsto_comp_of_strictMono
+    {r : ℝ} {s : ℕ → ℝ} {ϕ : ℕ → ℕ} (hϕ : StrictMono ϕ) (h_lim : Tendsto s atTop (𝓝 r))
+    : Tendsto (s ∘ ϕ) atTop (𝓝 r)
+  := by
+  rw [← tendsto_map'_iff]
+  calc
+    _ ≤ map s atTop := by
+      apply GCongr.Filter.map_le_map
+      exact StrictMono.tendsto_atTop hϕ
+    _ ≤ 𝓝 r := h_lim
+
 theorem exists_converge_flagSeq_with_flagDensity_pos
     {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     : ∃ (s : FlagSeq ∅ₜ), ConvergesTo s φ.coe ∧ ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
   := by
-  sorry
+  obtain ⟨s, hs_conv⟩ := positiveHom_as_flagSeq_limit φ
+  have h_eventually := eventually_flagDensity_pos_of_converge_flagSeq hσ hs_conv
+  rw [eventually_atTop] at h_eventually
+  obtain ⟨N, hN⟩ := h_eventually
+  let ϕ : ℕ → ℕ := fun n ↦ N + n
+  have hϕ : StrictMono ϕ := by
+    apply strictMono_nat_of_lt_succ
+    intro n
+    exact Nat.lt_add_one (N + n)
+  use s ∘ ϕ
+  constructor
+  · rw [flagSeq_convergesTo_iff] at *
+    obtain ⟨h_inc, h_lim⟩ := hs_conv
+    constructor
+    · apply strictMono_nat_of_lt_succ
+      intro n
+      exact h_inc (Nat.lt_add_one (N + n))
+    · intro F
+      exact tendsto_comp_of_strictMono hϕ (h_lim F)
+  · intro n
+    exact hN (N + n) (Nat.le_add_right N n)
 
 -- theorem temp
 --     {s : FlagSeq σ} {a : FinFlag σ → ℝ} (hs_conv : ConvergesTo s a)
