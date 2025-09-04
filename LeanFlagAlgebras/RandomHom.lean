@@ -346,45 +346,28 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     rfl
 
 noncomputable def integralFlagDensitySpaceSeq
-    (s : FlagSeq ∅ₜ) (F : FinFlag σ)
+    {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0) (F : FinFlag σ)
     : ℕ → ℝ
   :=
-  fun n ↦ if h : flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
-  then ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure h)
-  else 0
-
-theorem eventually_flagDensity_pos_of_converge_flagSeq
-    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
-    : ∀ᶠ n in atTop, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
-  := by
-  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
-  specialize h_lim ⟨n₀, σ.toEmptyTypeFlag⟩
-  apply Tendsto.eventually_const_lt hσ at h_lim
-  dsimp [flagDensitySeq] at h_lim
-  simp_all only [Rat.cast_pos]
+  fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure (hs n))
 
 /- Lemma 3.11 -/
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
-    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
-    : ∀ (F : FinFlag σ), Tendsto (integralFlagDensitySpaceSeq s F) atTop
+    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
+    (hs_conv : ConvergesTo s φ.coe) (hs_den : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    : ∀ (F : FinFlag σ), Tendsto (integralFlagDensitySpaceSeq hs_den F) atTop
       (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
   intro F
-  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
+  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp hs_conv
   let f : ℕ → ℝ := fun n ↦ (downwardNormalizingFactor F.2 * flagDensity₁ (unlabel F.2) (s n).2) /
     (downwardNormalizingFactor (emptyFlag σ) * flagDensity₁ σ.toEmptyTypeFlag (s n).2)
-  have h_eventually_eq : ∀ᶠ n in atTop, integralFlagDensitySpaceSeq s F n = f n := by
-    have h_den_pos := eventually_flagDensity_pos_of_converge_flagSeq hσ h
-    rw [eventually_atTop] at h_den_pos
-    obtain ⟨M, hM⟩ := h_den_pos
+  have h_eventually_eq : ∀ᶠ n in atTop, integralFlagDensitySpaceSeq hs_den F n = f n := by
     rw [eventually_atTop]
     obtain ⟨N, hN⟩ := h_inc.eventually_ge (max F.1 n₀)
-    use max M N
+    use N
     intro n hn
-    dsimp [integralFlagDensitySpaceSeq]
-    specialize hM n (le_of_max_le_left hn)
-    simp_all only [reduceDIte]
-    exact integral_flagDensitySpace_eq_flagVectorDensity_div hM (hN n (le_of_max_le_right hn))
+    exact integral_flagDensitySpace_eq_flagVectorDensity_div (hs_den n) (hN n hn)
   rw [tendsto_congr' h_eventually_eq]
   apply Tendsto.div
   · dsimp only [downward, downwardFlagVectorQuot, Quotient.lift_mk]
@@ -402,13 +385,34 @@ theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
       apply ne_of_gt downwardNormalizingFactor_emptyFlag_pos
     · exact (ne_of_lt hσ).symm
 
+theorem eventually_flagDensity_pos_of_converge_flagSeq
+    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0) (h : ConvergesTo s φ.coe)
+    : ∀ᶠ n in atTop, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
+  := by
+  obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
+  specialize h_lim ⟨n₀, σ.toEmptyTypeFlag⟩
+  apply Tendsto.eventually_const_lt hσ at h_lim
+  dsimp [flagDensitySeq] at h_lim
+  simp_all only [Rat.cast_pos]
+
+theorem exists_converge_flagSeq_with_flagDensity_pos
+    {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
+    : ∃ (s : FlagSeq ∅ₜ), ConvergesTo s φ.coe ∧ ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
+  := by
+  sorry
+
+-- theorem temp
+--     {s : FlagSeq σ} {a : FinFlag σ → ℝ} (hs_conv : ConvergesTo s a)
+--     : ∃ (ℙ : Measure (FlagDensitySpace σ)), IsProbabilityMeasure ℙ ∧
+--       Tendsto
+
 /- Theorem 3.5, existence -/
 theorem exists_prob_measure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
       ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
-  obtain ⟨s, hs⟩ := positiveHom_as_flagSeq_limit φ₀
+  obtain ⟨s, hs_conv, hs_den⟩ := exists_converge_flagSeq_with_flagDensity_pos hσ
   sorry
 
 end
