@@ -1339,3 +1339,95 @@ lemma K_1_3_is_Sidorenko
 --     : x_01234 ≥ 4 * log_2_2EG - 3 * log_2_VG
   -- := by
   -- linarith
+
+
+/- Minimal constraints:
+
+lemma P4_is_Sidorenko
+    {log_2_VG log_2_2EG : ℝ}
+    (h_1 : x_1 ≤ 1 * log_2_VG)
+    (h_4 : x_2 ≤ 1 * log_2_VG)
+    (h_79 : x_23 = x_2 + x_3_2)
+    (h_90 : x_123 = x_1 + x_23_1)
+    (h_94 : x_123 = x_12 + x_3_12)
+    (h_109 : x_0123 = x_01 + x_23_01)
+    (h_135 : x_01 = log_2_2EG)
+    (h_136 : x_12 = log_2_2EG)
+    (h_137 : x_23 = log_2_2EG)
+    (h_147 : x_3_12 = x_3_2)
+    (h_149 : x_23_01 = x_23_1)
+    : x_0123 ≥ 3 * log_2_2EG - 2 * log_2_VG
+  := by linarith
+
+lemma P4_is_Sidorenko'
+    {log_2_VG log_2_2EG : ℝ}
+    (h_1 : x_1 <= 1 * log_2_VG)
+    (h_4 : x_2 <= 1 * log_2_VG)
+    (h_68 : x_23 = x_2 + x_3_2)
+    (h_79 : x_123 = x_1 + x_23_1)
+    (h_83 : x_123 = x_12 + x_3_12)
+    (h_96 : x_0123 = x_01 + x_23_01)
+    (h_120 : x_01 = log_2_2EG)
+    (h_121 : x_12 = log_2_2EG)
+    (h_122 : x_23 = log_2_2EG)
+    (h_132 : x_3_12 = x_3_2)
+    (h_134 : x_23_01 = x_23_1)
+    : x_0123 ≥ 3 * log_2_2EG - 2 * log_2_VG
+  := by linarith
+
+lemma K2_2_is_Sidorenko
+    {log_2_VG log_2_2EG : ℝ}
+    (h_0 : x_0 <= 1 * log_2_VG)
+    (h_7 : x_12 <= 2 * log_2_VG)
+    (h_42 : x_02 = x_0 + x_2_0)
+    (h_50 : x_012 = x_01 + x_2_01)
+    (h_54 : x_012 = x_12 + x_0_12)
+    (h_104 : x_0123 = x_12 + x_03_12)
+    (h_120 : x_01 = log_2_2EG)
+    (h_121 : x_02 = log_2_2EG)
+    (h_124 : x_2_01 = x_2_0)
+    (h_126 : x_0_12 = x_3_12)
+    (h_127 : x_03_12 = x_0_12 + x_3_12)
+    : x_0123 ≥ 4 * log_2_2EG - 4 * log_2_VG
+  := by linarith
+
+
+lemma K_1_3_is_Sidorenko
+    {log_2_VG log_2_2EG : ℝ}
+    (h_0 : x_0 <= 1 * log_2_VG)
+    (h_66 : x_03 = x_0 + x_3_0)
+    (h_81 : x_023 = x_0 + x_23_0)
+    (h_85 : x_023 = x_02 + x_3_02)
+    (h_109 : x_0123 = x_01 + x_23_01)
+    (h_135 : x_01 = log_2_2EG)
+    (h_136 : x_02 = log_2_2EG)
+    (h_137 : x_03 = log_2_2EG)
+    (h_145 : x_3_02 = x_3_0)
+    (h_147 : x_23_01 = x_23_0)
+    : x_0123 ≥ 3 * log_2_2EG - 2 * log_2_VG
+  := by linarith
+
+set_option maxHeartbeats 0 in
+lemma P5_is_Sidorenko
+    {log_2_VG log_2_2EG : ℝ}
+    (h_1 : x_1 <= 1 * log_2_VG)
+    (h_4 : x_2 <= 1 * log_2_VG)
+    (h_14 : x_3 <= 1 * log_2_VG)
+    (h_355 : x_34 = x_3 + x_4_3)
+    (h_411 : x_234 = x_2 + x_34_2)
+    (h_415 : x_234 = x_23 + x_4_23)
+    (h_456 : x_1234 = x_1 + x_234_1)
+    (h_466 : x_1234 = x_12 + x_34_12)
+    (h_522 : x_01234 = x_01 + x_234_01)
+    (h_642 : x_01 = log_2_2EG)
+    (h_643 : x_12 = log_2_2EG)
+    (h_644 : x_23 = log_2_2EG)
+    (h_645 : x_34 = log_2_2EG)
+    (h_692 : x_4_23 = x_4_3)
+    (h_702 : x_34_12 = x_34_2)
+    (h_710 : x_234_01 = x_234_1)
+    : x_01234 ≥ 4 * log_2_2EG - 3 * log_2_VG
+  := by
+  linarith
+
+-/
