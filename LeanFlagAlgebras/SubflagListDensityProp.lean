@@ -27,15 +27,15 @@ variable {σ : FlagType T} {t : ℕ}
 variable {Vl  : Fin t → Type} [FintypeList Vl]  [DecidableEqList Vl]
 variable {Fl : FlagList σ t Vl}
 
-set_option maxHeartbeats 500000
-theorem flagListDensity₂_prod_approx
+theorem flagListDensity₂_prod_approx'
     (F : Flag σ V) (F' : Flag σ U)
     [Fintype V] [Fintype U] [DecidableEq V] [DecidableEq U]
     : ∃ c ≥ 0, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
     |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ c / G.out.size
   := by
-  use (F.out.size + F'.out.size) ^ 2
-  constructor; (apply sq_nonneg)
+  let c := max ((F.out.size + F'.out.size) ^ 2) (2 * σ.size)
+  use c
+  constructor; (sorry)
   intro W _ _ G
   let ⟨Grep, hGrep₁⟩ := Quotient.exists_rep G
   have hGrep₂ : (⟦Grep⟧ : Quotient (labeledGraphSetoid σ W)).out.size = Grep.size := rfl
@@ -43,77 +43,12 @@ theorem flagListDensity₂_prod_approx
   have hFrep₂ : (⟦Frep⟧ : Quotient (labeledGraphSetoid σ V)).out.size = Frep.size := rfl
   let ⟨F'rep, hF'rep₁⟩ := Quotient.exists_rep F'
   have hF'rep₂ : (⟦F'rep⟧ : Quotient (labeledGraphSetoid σ U)).out.size = F'rep.size := rfl
-  by_cases hG_size : Grep.size = 0
-
-  /- case where Grep.size = 0 -/
-  · by_cases h_nonempty : Frep.size = 0 ∧  F'rep.size = 0
-    · by_cases hσ_size : σ.size = 0
-      · dsimp only [flagDensity₁]
-        rw [← subflagDensity_eq_flagListDensity F G, ← subflagDensity_eq_flagListDensity F' G]
-        rw [← hFrep₁, ← hF'rep₁, ← hGrep₁, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
-        dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
-        rw [hFrep₂, hF'rep₂, hGrep₂, hG_size]
-        simp only [CharP.cast_eq_zero, div_zero, abs_nonpos_iff]
-        dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
-        rw [hσ_size, tsub_zero, tsub_zero, tsub_zero, tsub_zero]
-        have List_count : labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep = 1 := by sorry
-        have Frep_count : labeledSubgraphCount Frep Grep = 1 := by
-          dsimp [labeledSubgraphCount]
-          simp only [Set.toFinset_setOf]
-          apply Finset.card_eq_one.mpr
-          use Grep.bottom
-          refine eq_singleton_iff_unique_mem.mpr ?_
-          constructor
-          · simp only [mem_filter, mem_univ, true_and]
-            constructor; exact Grep.bottom_isInduced
-            apply Nonempty.intro
-            sorry
-          · sorry
-        have F'rep_count : labeledSubgraphCount F'rep Grep = 1 := by
-          sorry
-        rw [List_count, Frep_count, F'rep_count]
-        have denom₁ : Grep.size.choose Frep.size = 1 := by rw [hG_size, h_nonempty.1, Nat.choose_self]
-        have denom₂ : Grep.size.choose F'rep.size = 1 := by rw [hG_size, h_nonempty.2, Nat.choose_self]
-        simp only [Nat.cast_one, tsub_zero, one_div, sub_eq_zero]
-        rw [← mul_inv, inv_inj, ← Nat.cast_mul, Nat.cast_inj]
-        sorry
-      · exfalso
-        apply hσ_size
-        rw [← nonpos_iff_eq_zero, ← hG_size, ← Grep.type_verts_card_eq]
-        simp only [LabeledGraph.size]
-        exact set_fintype_card_le_univ Grep.type_verts
-    · nth_rw 4 [← hGrep₁]
-      rw [hGrep₂, hG_size]
-      simp only [CharP.cast_eq_zero, div_zero, abs_nonpos_iff]
-      push_neg at h_nonempty
-      by_cases hF_nonempty : Frep.size = 0
-      · have hF'_nonempty := h_nonempty hF_nonempty
-        have : F'rep.size > Grep.size := by
-          rw [hG_size]
-          exact Nat.zero_lt_of_ne_zero (h_nonempty hF_nonempty)
-        have list_zero : flagDensity₂ F F' G = 0 := by
-          apply flagDensity_le_card_contra'
-          right; exact this
-        have F'_zero : flagDensity₁ F' G = 0 := @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F' G this
-        rw [list_zero, F'_zero]
-        simp only [mul_zero, sub_self]
-      · have : Frep.size > Grep.size := by
-          rw [hG_size]
-          exact Nat.zero_lt_of_ne_zero hF_nonempty
-        have list_zero : flagDensity₂ F F' G = 0 := by
-          apply flagDensity_le_card_contra'
-          left; exact this
-        have F_zero : flagDensity₁ F G = 0 := @flagDensity_le_card_contra _ _ _ _ _ _ _ _ _ F G this
-        rw [list_zero, F_zero]
-        simp only [zero_mul, sub_self]
-
-  /- case where Grep.size ≠ 0 -/
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity F G, ← subflagDensity_eq_flagListDensity F' G]
-  rw [← hFrep₁, ← hF'rep₁, ← hGrep₁, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
+  rw [← hFrep₁, ← hF'rep₁, ← hGrep₁, hGrep₂, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
   dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
-  rw [hFrep₂, hF'rep₂, hGrep₂]
-  clear hFrep₁ hF'rep₁ hGrep₁ hFrep₂ hF'rep₂ hGrep₂
+  -- rw [hFrep₂, hF'rep₂, hGrep₂]
+  -- clear hFrep₁ hF'rep₁ hGrep₁ hFrep₂ hF'rep₂ hGrep₂
 
   let freeG := Finset.univ \ Grep.type_verts.toFinset
   have hfreeG_size : freeG.card = Grep.size - σ.size := by
@@ -137,7 +72,6 @@ theorem flagListDensity₂_prod_approx
     simp_all only [freeF']
     rw [← F'rep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
     simp only [card_univ, Set.toFinset_card]; rfl
-
   let Ω := { (w₁, w₂) : Finset W × Finset W | (w₁.card = Frep.size ∧ Grep.type_verts ⊆ w₁) ∧ (w₂.card = F'rep.size ∧ Grep.type_verts ⊆ w₂)}
   have hΩ_size : Ω.toFinset.card = (freeG.card).choose freeF.card * (freeG.card).choose freeF'.card := by
     rw [← comb_card freeG freeF.card, ← comb_card freeG freeF'.card, ← Finset.card_product, eq_comm]
@@ -517,7 +451,7 @@ theorem flagListDensity₂_prod_approx
         rwa [hΩ, Set.mem_empty_iff_false] at hx_in_Ω
       rw [hB]
       simp only [CharP.cast_eq_zero, div_zero, abs_zero, ge_iff_le]
-      apply div_nonneg <;> simp only [sq_nonneg, Nat.cast_nonneg]
+      apply div_nonneg <;> simp only [Nat.cast_nonneg]
 
   /- case where B.card ≠ 0 ∧ Ω.toFinset.card ≠ 0 -/
   simp only [not_or] at h
@@ -607,93 +541,71 @@ theorem flagListDensity₂_prod_approx
         simp only [not_le] at hAB
         rw [div_le_div_iff_of_pos_right (by rw [Nat.cast_pos]; exact Nat.zero_lt_of_ne_zero hΩ_nonzero), Nat.cast_le]
         exact Nat.le_of_lt hAB
-  suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ (↑Frep.size + ↑F'rep.size) ^ 2 / ↑Grep.size by exact cond_bound.trans this
+  suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ (c : ℚ) / (Grep.size : ℚ) by exact cond_bound.trans this
   clear cond_bound A
 
-  have simp_calc₁ : (@Nat.cast ℚ _ Frep.size) * F'rep.size / (Grep.size * Grep.size) ≤ 2 * (Frep.size * F'rep.size / (Grep.size * Grep.size)) := by
-    apply le_mul_of_one_le_left ?_ rfl
-    apply div_nonneg <;> rw [← Nat.cast_mul]
-    · exact Nat.cast_nonneg' (Frep.size * F'rep.size)
-    · exact Nat.cast_nonneg' (Grep.size * Grep.size)
-  have simp_calc₂ : 2 * ((@Nat.cast ℚ _ Frep.size) * ↑F'rep.size / (↑Grep.size * ↑Grep.size)) ≤ (Frep.size + F'rep.size) ^ 2 / Grep.size := by
-    suffices 2 * ((@Nat.cast ℚ _ Frep.size) * ↑F'rep.size / ↑Grep.size) ≤ (Frep.size + F'rep.size) ^ 2 / Grep.size by
-      have div_larger_le : 2 * ((@Nat.cast ℚ _ Frep.size) * ↑F'rep.size / (↑Grep.size * ↑Grep.size)) ≤ 2 * (↑Frep.size * ↑F'rep.size / ↑Grep.size) := by
-        rw [mul_comm]
-        nth_rw 4 [mul_comm]
-        refine mul_le_mul_of_nonneg_right ?_ rfl
-        refine (div_le_div_iff₀ ?_ ?_).mpr ?_
-        · simp only [mul_self_pos, ne_eq, Rat.natCast_eq_zero]
-          exact hG_size
+  by_cases hG_size : Grep.size ≤ 2 * σ.size
+  · suffices 1 ≤ (c : ℚ) / (Grep.size : ℚ) by
+      have prob_prop : 1- (@Nat.cast ℚ _ (B.card)) / Ω.toFinset.card ≤ 1 := by
+        simp only [Set.toFinset_card, Fintype.card_ofFinset, tsub_le_iff_right, le_add_iff_nonneg_right]
+        apply div_nonneg <;> simp only [Nat.cast_nonneg]
+      exact prob_prop.trans this
+    refine (one_le_div₀ ?_).mpr ?_
+    · by_contra hG_zero
+      simp only [Nat.cast_pos, not_lt, nonpos_iff_eq_zero] at hG_zero
+      have : Ω.toFinset.card = 0 := by sorry
+      exact hΩ_nonzero this
+    · simp only [Nat.cast_max, Nat.cast_pow, Nat.cast_add, le_sup_iff, Nat.cast_le, c]
+      right; exact hG_size
+  · have hG_nzero : ¬Grep.size = 0 := by
+      intro hG_zero
+      rw [hG_zero] at hG_size
+      simp only [zero_le, not_true_eq_false] at hG_size
+    have hG_size' : σ.size < Grep.size := by
+      sorry
+    suffices 1 - (@Nat.cast ℚ _ B.card) / Ω.toFinset.card ≤ (Frep.size + F'rep.size) ^ 2 / (Grep.size) by
+      have hc_ge : (@Nat.cast ℚ _ Frep.size + F'rep.size) ^ 2 / (Grep.size) ≤ c / Grep.size := by
+        refine (div_le_div_iff_of_pos_right ?_).mpr ?_
         · simp only [Nat.cast_pos]
-          exact Nat.zero_lt_of_ne_zero hG_size
-        · refine mul_le_mul_of_nonneg_left ?_ ?_
-          · rw [← Nat.cast_mul, Nat.cast_le]
-            simp only [Nat.le_mul_self]
-          · rw [← Nat.cast_mul]
-            exact Nat.cast_nonneg' (Frep.size * F'rep.size)
-      exact div_larger_le.trans this
-    suffices 2 * Frep.size * F'rep.size ≤ (Frep.size + F'rep.size) ^ 2 by
-      rw [← Nat.cast_le (α := ℚ)] at this
-      rw [mul_div_assoc, ← mul_assoc, ← mul_div_assoc]
-      refine (div_le_div_iff_of_pos_right ?_).mpr ?_
-      · simp only [Nat.cast_pos]
-        exact Nat.zero_lt_of_ne_zero hG_size
-      · simp only [Nat.cast_mul, Nat.cast_ofNat, Nat.cast_pow, Nat.cast_add] at this
-        exact this
-    ring_nf
-    apply Nat.le_add_right_of_le (Nat.le_add_right_of_le (le_refl _))
-  suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ Frep.size * F'rep.size / (Grep.size * Grep.size) by exact this.trans (simp_calc₁.trans simp_calc₂)
-  clear simp_calc₁ simp_calc₂
-
-  rw [← compl_card]
-  let D : Finset Ω := { w | by
-    obtain ⟨⟨w₁, w₂⟩, h⟩ := w
-    exact Grep.type_verts.toFinset ⊂ w₁ ∩ w₂ }
-  have hD_size : D.card = ∑ i : Fin (min freeF.card freeF'.card), freeG.card.choose (freeF.card - (i.val + 1)) * freeG.card.choose (freeF'.card - (i.val + 1)) := by sorry
-  have Bc_sub_D : B.toSetᶜ.toFinset ⊆ D := by
-    simp only [Set.toFinset_compl, toFinset_coe]
-    intro ⟨w, hw_in_Ω⟩ hw_in_Bc
-    simp only [mem_filter, mem_univ, true_and, D]
-    simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω
-    simp only [compl_filter, mem_filter, mem_univ, true_and, B] at hw_in_Bc
-    refine (ssubset_iff_of_subset ?_).mpr ?_
-    · simp only [Set.toFinset_subset, coe_inter, Set.subset_inter_iff]
-      exact ⟨hw_in_Ω.1.2, hw_in_Ω.2.2⟩
-    · rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hw_in_Bc
-      obtain ⟨x, hx⟩ := hw_in_Bc
-      use x
-      simp only [mem_inter, mem_sdiff, Set.mem_toFinset] at hx
-      obtain ⟨⟨hx_in_w₁, hx_not_in_Bc⟩, ⟨hx_in_w₂, _⟩⟩ := hx
-      constructor
-      · exact mem_inter.mpr ⟨hx_in_w₁, hx_in_w₂⟩
-      · simp only [Set.mem_toFinset]
-        exact hx_not_in_Bc
-  suffices (@Nat.cast ℚ _ D.card) / Ω.toFinset.card ≤ ↑Frep.size * ↑F'rep.size / (↑Grep.size * ↑Grep.size) by
-    suffices card_le : (@Nat.cast ℚ _ (#(B.toSet)ᶜ.toFinset)) / ↑(#Ω.toFinset) ≤ D.card / Ω.toFinset.card by
-      exact card_le.trans this
-    refine (div_le_div_iff_of_pos_right ?_).mpr ?_
-    · simp only [Nat.cast_pos]
-      exact Nat.zero_lt_of_ne_zero hΩ_nonzero
-    · simp only [Nat.cast_le]
-      exact card_le_card Bc_sub_D
-  clear hB_nonzero compl_card Bc_sub_D B
-  rw [hΩ_size, hD_size]
-  have simp_calc₃ : (freeG.card.choose freeF.card) * (freeG.card.choose freeF'.card)
-                    = (#freeG).factorial * (#freeG).factorial / ((#freeF).factorial * (#freeG - #freeF).factorial * ((#freeF').factorial * (#freeG - #freeF').factorial)) := by
-    rw [Nat.choose_eq_factorial_div_factorial (by sorry), Nat.choose_eq_factorial_div_factorial (by sorry)]
-    rw [← Nat.mul_div_assoc, Nat.div_mul_right_comm, Nat.div_div_eq_div_mul]
-    · sorry
-    · sorry
-  rw [simp_calc₃]
-  have simp_calc₄ : ∑ i : Fin (min freeF.card freeF'.card), freeG.card.choose (freeF.card - (i.val + 1)) * freeG.card.choose (freeF'.card - (i.val + 1))
-                    = ∑ i : Fin (min freeF.card freeF'.card), (#freeG).factorial * (#freeG).factorial
-                      / ((#freeF - (i.val + 1)).factorial * (#freeG - (#freeF - (i.val + 1))).factorial
-                      * ((#freeF' - (i.val + 1)).factorial * (#freeG - (#freeF' - (i.val + 1))).factorial)) := by sorry
-  rw [simp_calc₄]
-
-
-
-  sorry
+          exact Nat.zero_lt_of_ne_zero hG_nzero
+        · simp only [Nat.cast_max, Nat.cast_pow, Nat.cast_add, le_sup_iff, c]
+          left; rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
+      exact this.trans hc_ge
+    rw [← compl_card]
+    suffices (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / Ω.toFinset.card ≤ ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by
+      have simp_calc : ((@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) ≤ (Frep.size + F'rep.size) ^ 2 / (Grep.size) := by
+        have calc₁ : (@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2 ≤ (Frep.size + F'rep.size) ^ 2 := by
+          have hFrep_size : σ.size ≤ Frep.size := by
+            rw [← Frep.type_verts_card_eq]
+            simp [LabeledGraph.size]
+            exact set_fintype_card_le_univ Frep.type_verts
+          have hF'rep_size : σ.size ≤ F'rep.size := by
+            rw [← F'rep.type_verts_card_eq]
+            simp [LabeledGraph.size]
+            exact set_fintype_card_le_univ F'rep.type_verts
+          rw [← Nat.cast_sub hFrep_size, ← Nat.cast_sub hF'rep_size]
+          rw [← Nat.cast_mul, ← Nat.cast_pow, ← Nat.cast_add]
+          rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
+          calc
+            (Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2
+                = Frep.size * F'rep.size - σ.size * Frep.size - σ.size * F'rep.size + σ.size ^ 2 + F'rep.size ^ 2 - 2 * σ.size * F'rep.size + σ.size ^ 2 := by sorry
+            _ ≤ Frep.size * F'rep.size + σ.size ^ 2 +  F'rep.size ^ 2 + σ.size ^ 2 := by
+              sorry
+            _ ≤ (Frep.size + F'rep.size) ^ 2 := by
+              sorry
+        suffices (@Nat.cast ℚ _ Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size) ≤ (Frep.size + F'rep.size) ^ 2 / (Grep.size) by
+          have calc₂ : ((@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) ≤ (Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size) := by
+            refine (div_le_div_iff_of_pos_right ?_).mpr calc₁
+            simp_all only [sub_pos, Nat.cast_lt, not_le]
+          exact calc₂.trans this
+        refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+        · simp only [sub_pos, Nat.cast_lt]
+          exact hG_size'
+        · simp only [Nat.cast_pos]
+          exact Nat.zero_lt_of_ne_zero hG_nzero
+        · sorry
+      exact this.trans simp_calc
+    sorry
 
 example {E : Type} (W : Set E) (A B : Finset W) (hB : W = ∅) : A ≠ B := by
   refine ne_of_lt ?_
@@ -712,7 +624,9 @@ example (A B C : ℕ) : A / B / C = A / (B * C) := by
   -- exact Nat.le_mul_self A
   sorry
 
-example (A B C D : ℚ) : A⁻¹ = B⁻¹ ↔ A = B := by
+example (A B C D : ℚ) (h : 2 * A ≤ B) : A ≤ B := by
+  refine (Rat.le_iff_sub_nonneg A B).mpr ?_
+  -- refine (one_le_div₀ ?_).mpr ?_
   -- exact inv_inj
   -- exact Eq.symm (mul_inv A B)
   -- exact sub_eq_zero
