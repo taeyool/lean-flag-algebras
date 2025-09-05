@@ -249,6 +249,12 @@ instance FinFlag.toMeasure_isProbabilityMeasure
   :=
   PMF.toMeasure.isProbabilityMeasure (F.toPMF hF)
 
+noncomputable def FinFlag.toProbMeasure
+    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : ProbabilityMeasure (FlagDensitySpace σ)
+  :=
+  ⟨F.toMeasure hF, FinFlag.toMeasure_isProbabilityMeasure F hF⟩
+
 section
 
 open Filter
@@ -432,18 +438,40 @@ theorem exists_converge_flagSeq_with_flagDensity_pos
   · intro n
     exact hN (N + n) (Nat.le_add_right N n)
 
--- theorem temp
---     {s : FlagSeq σ} {a : FinFlag σ → ℝ} (hs_conv : ConvergesTo s a)
---     : ∃ (ℙ : Measure (FlagDensitySpace σ)), IsProbabilityMeasure ℙ ∧
---       Tendsto
+instance : TopologicalSpace (Measure (FlagDensitySpace σ))
+  :=
+  Preorder.topology (Measure (FlagDensitySpace σ))
+
+noncomputable def FlagSeq.toProbMeasureSeq
+    (s : FlagSeq ∅ₜ) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    : ℕ → ProbabilityMeasure (FlagDensitySpace σ)
+  :=
+  fun n ↦ (s n).toProbMeasure (hs n)
+
+theorem exists_convergent_subseq_probMeasure_of_flagSeq
+    {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    : ∃ (ϕ : ℕ → ℕ) (ℙ : ProbabilityMeasure (FlagDensitySpace σ)),
+      StrictMono ϕ ∧ Tendsto (s.toProbMeasureSeq hs ∘ ϕ) atTop (𝓝 ℙ)
+  := by
+  sorry
+
+theorem flagSeq_limit_measure_support_positiveHomSpace
+    {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
+    : ℙ (PositiveHomSpace σ) = 1
+  := by
+  sorry
 
 /- Theorem 3.5, existence -/
-theorem exists_prob_measure_extend_emptyType_positiveHom
+theorem exists_probMeasure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
-    : ∃ (ℙ : Measure (PositiveHomSpace σ)), IsProbabilityMeasure ℙ ∧
+    : ∃ (ℙ : ProbabilityMeasure (PositiveHomSpace σ)),
       ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
   obtain ⟨s, hs_conv, hs_den⟩ := exists_converge_flagSeq_with_flagDensity_pos hσ
+  obtain ⟨ϕ, ℙ, hϕ, hℙ⟩ := exists_convergent_subseq_probMeasure_of_flagSeq hs_den
+  rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hℙ
+  have := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den
   sorry
 
 end
@@ -480,7 +508,7 @@ theorem downward_preserve_semanticCone
       apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType_pos F)
       exact Eq.symm hφ₀
     exact le_of_eq (Eq.symm this)
-  · obtain ⟨ℙ, _, hℙ⟩ := exists_prob_measure_extend_emptyType_positiveHom hφ₀
+  · obtain ⟨ℙ, hℙ⟩ := exists_probMeasure_extend_emptyType_positiveHom hφ₀
     specialize hℙ f
     have hφ₀' : φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := positiveHom_one_downward_pos hφ₀
     rw [eq_div_iff (ne_of_gt hφ₀')] at hℙ
