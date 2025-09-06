@@ -98,6 +98,13 @@ lemma multinomialCoefficient_pos
   next h_not_sum_lt_n =>
     exact False.elim (h_not_sum_lt_n h_n)
 
+lemma multinomialCoefficient_zero
+    (r_list : Fin t → ℕ) (n : ℕ)
+    : multinomialCoefficient r_list n = 0 → n < ∑ i : Fin t, r_list i
+  := by
+  contrapose!
+  intro h
+  exact Nat.ne_zero_of_lt (multinomialCoefficient_pos r_list n h)
 
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
