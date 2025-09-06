@@ -412,6 +412,21 @@ lemma tendsto_comp_of_strictMono
       exact StrictMono.tendsto_atTop hϕ
     _ ≤ 𝓝 r := h_lim
 
+lemma convergesTo_comp_of_strictMono
+    {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} {ϕ : ℕ → ℕ} (hϕ : StrictMono ϕ)
+    (h : ConvergesTo s φ.coe)
+    : ConvergesTo (s ∘ ϕ) φ.coe
+  := by
+  rw [flagSeq_convergesTo_iff] at *
+  obtain ⟨h_inc, h_lim⟩ := h
+  constructor
+  · apply strictMono_nat_of_lt_succ
+    intro n
+    apply h_inc
+    exact hϕ (lt_add_one n)
+  · intro F
+    exact tendsto_comp_of_strictMono hϕ (h_lim F)
+
 theorem exists_converge_flagSeq_with_flagDensity_pos
     {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     : ∃ (s : FlagSeq ∅ₜ), ConvergesTo s φ.coe ∧ ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
@@ -427,14 +442,7 @@ theorem exists_converge_flagSeq_with_flagDensity_pos
     exact Nat.lt_add_one (N + n)
   use s ∘ ϕ
   constructor
-  · rw [flagSeq_convergesTo_iff] at *
-    obtain ⟨h_inc, h_lim⟩ := hs_conv
-    constructor
-    · apply strictMono_nat_of_lt_succ
-      intro n
-      exact h_inc (Nat.lt_add_one (N + n))
-    · intro F
-      exact tendsto_comp_of_strictMono hϕ (h_lim F)
+  · exact convergesTo_comp_of_strictMono hϕ hs_conv
   · intro n
     exact hN (N + n) (Nat.le_add_right N n)
 
@@ -455,6 +463,19 @@ theorem exists_convergent_subseq_probMeasure_of_flagSeq
   := by
   sorry
 
+theorem exists_converge_flagSeq_and_probMeasure_tendsto
+    {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
+    : ∃ (s : FlagSeq ∅ₜ) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+      (ℙ : ProbabilityMeasure (FlagDensitySpace σ)),
+      ConvergesTo s φ.coe ∧ Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ)
+  := by
+  obtain ⟨s, hs_conv, hs_den⟩ := exists_converge_flagSeq_with_flagDensity_pos hσ
+  obtain ⟨ϕ, ℙ, hϕ, hℙ⟩ := exists_convergent_subseq_probMeasure_of_flagSeq hs_den
+  use s ∘ ϕ, fun n ↦ hs_den (ϕ n), ℙ
+  constructor
+  · exact convergesTo_comp_of_strictMono hϕ hs_conv
+  · exact hℙ
+
 theorem flagSeq_limit_measure_support_positiveHomSpace
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
@@ -468,10 +489,38 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
     : ∃ (ℙ : ProbabilityMeasure (PositiveHomSpace σ)),
       ∀ (f : FlagAlgebra σ), ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂ℙ = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   := by
-  obtain ⟨s, hs_conv, hs_den⟩ := exists_converge_flagSeq_with_flagDensity_pos hσ
-  obtain ⟨ϕ, ℙ, hϕ, hℙ⟩ := exists_convergent_subseq_probMeasure_of_flagSeq hs_den
+  obtain ⟨s, hs_den, ℙ, hs_conv, hℙ⟩ := exists_converge_flagSeq_and_probMeasure_tendsto hσ
+  let ℙ' : ProbabilityMeasure (PositiveHomSpace σ) := {
+    val := Measure.comap Subtype.val ℙ
+    property := {
+      measure_univ := by
+        rw [Measure.comap_apply]
+        · have : (1 : ENNReal) = ((1 : NNReal) : ENNReal) := rfl
+          rw [this, ← flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ]
+          simp only [Set.image_univ, Subtype.range_coe_subtype, Set.setOf_mem_eq,
+            ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
+        · exact Subtype.val_injective
+        · intro S hS
+          refine MeasurableSet.subtype_image ?_ hS
+          sorry
+        · exact MeasurableSet.univ
+    }
+  }
+  use ℙ'
+  intro f
+  rcases Quotient.exists_rep f with ⟨frep, rfl⟩
+  rw [flagVector_eq_sum_unitVector frep]
+  simp_rw [sum_quot, downward_sum, PositiveHom.map_sum, Finset.sum_div]
+  have : ∀ F ∈ frep.support, Integrable (fun φ ↦ (PositiveHomSpace.toPosHom φ) ⟦frep F • unitVector F⟧) ℙ' := by
+    intro F hF
+    sorry
+  rw [integral_finset_sum frep.support this]
+  apply Finset.sum_congr rfl
+  intro F hF
+  simp_rw [smul_quot, downward_smul, PositiveHom.map_smul, ← mul_div, integral_const_mul]
+  congr
   rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hℙ
-  have := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den
+  have := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den F
   sorry
 
 end
