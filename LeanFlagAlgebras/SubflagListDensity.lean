@@ -103,8 +103,8 @@ lemma multinomialCoefficient_zero
     : multinomialCoefficient r_list n = 0 → n < ∑ i : Fin t, r_list i
   := by
   contrapose!
-  intro h
-  exact Nat.ne_zero_of_lt (multinomialCoefficient_pos r_list n h)
+  exact fun h ↦ Nat.ne_zero_of_lt (multinomialCoefficient_pos r_list n h)
+
 
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
