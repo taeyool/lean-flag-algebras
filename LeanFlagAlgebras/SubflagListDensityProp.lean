@@ -733,9 +733,85 @@ theorem flagListDensity₂_prod_approx
             apply sq_nonneg
       exact this.trans simp_calc
     let Ω' := { (w₁, w₂) : Finset W × Finset W | (w₁.card = freeF.card ∧ w₁ ⊆ freeG) ∧ (w₂.card = freeF'.card ∧ w₂ ⊆ freeG)}
-    have hΩ'_size : Ω'.toFinset.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card) (freeF'.card) := by
-      sorry
-    have h_Ω_Ω' : Ω.toFinset.card = Ω'.toFinset.card := by sorry
+    have h_Ω_Ω' : Ω.toFinset.card = Ω'.toFinset.card := by
+      apply Finset.card_eq_of_equiv
+      refine Equiv.ofBijective ?_ ?_
+      · intro ⟨⟨w₁, w₂⟩, hw_in_Ω⟩
+        use ⟨w₁ \ Grep.type_verts.toFinset, w₂ \ Grep.type_verts.toFinset⟩
+        simp_all only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω, Ω']
+        constructor <;> constructor
+        · rw [card_sdiff (by simp_all only [Set.toFinset_subset])]
+          rw [hw_in_Ω.1.1, ← Grep.type_verts_card_eq]
+          simp only [Set.toFinset_card]
+        · simp only [freeG]
+          refine subset_sdiff.mpr ?_
+          simp only [subset_univ, true_and]
+          refine disjoint_iff_inter_eq_empty.mpr ?_
+          exact sdiff_inter_self Grep.type_verts.toFinset w₁
+        · rw [card_sdiff (by simp_all only [Set.toFinset_subset])]
+          rw [hw_in_Ω.2.1, ← Grep.type_verts_card_eq]
+          simp only [Set.toFinset_card]
+        · simp only [freeG]
+          refine subset_sdiff.mpr ?_
+          simp only [subset_univ, true_and]
+          refine disjoint_iff_inter_eq_empty.mpr ?_
+          exact sdiff_inter_self Grep.type_verts.toFinset w₂
+      · constructor
+        · intro ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ ⟨⟨w'₁, w'₂⟩, hw'_in_Ω⟩ h_eq
+          simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
+          simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω hw'_in_Ω
+          rw [← sdiff_union_inter w₁ Grep.type_verts.toFinset, ← sdiff_union_inter w'₁ Grep.type_verts.toFinset]
+          rw [← sdiff_union_inter w₂ Grep.type_verts.toFinset, ← sdiff_union_inter w'₂ Grep.type_verts.toFinset]
+          rw [h_eq.1, h_eq.2]
+          have hw₁ : w₁ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
+            simp only [inter_eq_right, Set.toFinset_subset]
+            exact hw_in_Ω.1.2
+          have hw₂ : w₂ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
+            simp only [inter_eq_right, Set.toFinset_subset]
+            exact hw_in_Ω.2.2
+          have hw'₁ : w'₁ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
+            simp only [inter_eq_right, Set.toFinset_subset]
+            exact hw'_in_Ω.1.2
+          have hw'₂ : w'₂ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
+            simp only [inter_eq_right, Set.toFinset_subset]
+            exact hw'_in_Ω.2.2
+          rw [hw₁, hw₂, hw'₁, hw'₂]
+          constructor <;> rfl
+        · intro ⟨⟨w₁, w₂⟩, hw_in_Ω'⟩
+          simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω', freeG] at hw_in_Ω'
+          have hw₁ : Disjoint w₁ Grep.type_verts.toFinset := by
+            refine disjoint_iff_inter_eq_empty.mpr ?_
+            ext x; simp only [mem_inter, Set.mem_toFinset, notMem_empty, iff_false, not_and]
+            intro hx
+            have hx := hw_in_Ω'.1.2 hx
+            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true]
+          have hw₂ : Disjoint w₂ Grep.type_verts.toFinset := by
+            refine disjoint_iff_inter_eq_empty.mpr ?_
+            ext x; simp only [mem_inter, Set.mem_toFinset, notMem_empty, iff_false, not_and]
+            intro hx
+            have hx := hw_in_Ω'.2.2 hx
+            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true]
+          use ⟨⟨w₁ ∪ Grep.type_verts.toFinset, w₂ ∪ Grep.type_verts.toFinset⟩, by
+            simp only [Set.toFinset_setOf, mem_filter, mem_univ, coe_union, Set.coe_toFinset, Set.subset_union_right, and_true, true_and, Ω]
+            constructor
+            · rw [card_union_eq_card_add_card.mpr hw₁]
+              rw [hw_in_Ω'.1.1, hfreeF_size, ← Grep.type_verts_card_eq]
+              simp only [Set.toFinset_card]
+              apply Nat.sub_add_cancel
+              rw [Grep.type_verts_card_eq, ← Frep.type_verts_card_eq]
+              simp only [LabeledGraph.size]
+              exact set_fintype_card_le_univ Frep.type_verts
+            · rw [card_union_eq_card_add_card.mpr hw₂]
+              rw [hw_in_Ω'.2.1, hfreeF'_size, ← Grep.type_verts_card_eq]
+              simp only [Set.toFinset_card]
+              apply Nat.sub_add_cancel
+              rw [Grep.type_verts_card_eq, ← F'rep.type_verts_card_eq]
+              simp only [LabeledGraph.size]
+              exact set_fintype_card_le_univ F'rep.type_verts⟩
+          simp only [Subtype.mk.injEq, Prod.mk.injEq]
+          rw [union_sdiff_right, union_sdiff_right]
+          rw [sdiff_eq_self_of_disjoint hw₁, sdiff_eq_self_of_disjoint hw₂]
+          constructor <;> rfl
     let B' : Finset Ω := { w | by
       obtain ⟨⟨w₁, w₂⟩, h⟩ := w
       exact w₁ ∩ w₂ = ∅ }
@@ -753,7 +829,7 @@ theorem flagListDensity₂_prod_approx
     rw [h_Ω_Ω', h_Bc_B'c]
     suffices @Nat.cast ℚ _ B'.card / Ω'.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by
       rwa [compl_card', tsub_le_iff_tsub_le]
-    rw [hΩ'_size, hB'_size]
+    rw [← h_Ω_Ω', hΩ_size, hB'_size]
     rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
     rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
     rw [Nat.choose_eq_factorial_div_factorial (by sorry), mul_comm]
@@ -762,11 +838,17 @@ theorem flagListDensity₂_prod_approx
 
 
 
-example {E : Type} [Fintype E] (W : Set E) (A B : Finset W) (hB : W.toFinset.card = 1) : A.card = 1 := by
+example {E : Type} [Fintype E] (W : Set E) (A B C : Finset W) (hB : W.toFinset.card = 1) : Disjoint (A \ B) B := by
+  -- refine disjoint_iff_inter_eq_empty.mpr ?_
+  -- exact sdiff_inter_self B A
+  -- refine subset_sdiff.mpr ?_
+  -- refine disjoint_iff_inter_eq_empty.mpr ?_
+  -- apply?
   sorry
 
-example (A B C : ℕ) : 0 < A + B → A ≠ 0 ∨ B ≠ 0 := by
-  intro h
+example (A B C : ℕ) : A - B + B = A := by
+  -- refine Nat.sub_add_cancel ?_
+
   -- refine add_ne_zero.mp ?_
   -- exact Nat.ne_zero_of_lt h
   -- refine Nat.sub_lt_sub_iff_right ?_
