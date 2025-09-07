@@ -204,6 +204,14 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
+theorem PositiveHomSpace.toPosHom_unitVector
+    (φ : PositiveHomSpace σ) (F : FinFlag σ)
+    : (toPosHom φ) ⟦unitVector F⟧ = φ.val F
+  := by
+  rw [← PositiveHom.coe_flag]
+  congr
+  exact Classical.choose_spec φ.property
+
 instance : Nonempty (FlagDensitySpace σ) :=
   .intro ⟨fun _ ↦ 0, by simp [FlagDensitySpace]; exact fun _ ↦ zero_le_one⟩
 

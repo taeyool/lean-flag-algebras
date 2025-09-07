@@ -483,6 +483,24 @@ theorem flagSeq_limit_measure_support_positiveHomSpace
   := by
   sorry
 
+def FinFlag.toBoundedContinuousFun
+    (F : FinFlag σ)
+    : BoundedContinuousFunction (FlagDensitySpace σ) ℝ
+  := {
+    toFun := fun a ↦ a F
+    continuous_toFun := by
+      rw [continuous_iff_seqContinuous]
+      intro s a hs_lim
+      rw [tendsto_subtype_rng, tendsto_pi_nhds] at hs_lim
+      exact hs_lim F
+    map_bounded' := by
+      use 1
+      intro a b
+      apply Real.dist_le_of_mem_Icc_01
+      · exact flagDensitySpace_mem_Icc_zero_one a F
+      · exact flagDensitySpace_mem_Icc_zero_one b F
+  }
+
 /- Theorem 3.5, existence -/
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
@@ -519,9 +537,23 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   intro F hF
   simp_rw [smul_quot, downward_smul, PositiveHom.map_smul, ← mul_div, integral_const_mul]
   congr
-  rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hℙ
-  have := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den F
-  sorry
+  have hℙF := ProbabilityMeasure.tendsto_iff_forall_integral_tendsto.mp hℙ F.toBoundedContinuousFun
+  have h' := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den F
+  rw [← tendsto_nhds_unique hℙF h']
+  have := @integral_subtype_comap ℝ _ _ _ _ ℙ (PositiveHomSpace σ) (by sorry) (fun a ↦ a F)
+  simp_rw [PositiveHomSpace.toPosHom_unitVector]
+  dsimp [ℙ']
+  rw [this]
+  apply setIntegral_eq_integral_of_ae_compl_eq_zero
+  dsimp [Filter.Eventually]
+  simp_rw [← Decidable.or_iff_not_imp_left]
+  rw [mem_ae_iff_prob_eq_one₀ sorry]
+  rw [← ENNReal.toNNReal_eq_one_iff]
+  show ℙ {x | x ∈ PositiveHomSpace σ ∨ x F = 0} = 1
+  apply le_antisymm
+  · exact ProbabilityMeasure.apply_le_one ℙ _
+  · rw [← flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ]
+    exact ProbabilityMeasure.apply_mono ℙ Set.subset_union_left
 
 end
 
