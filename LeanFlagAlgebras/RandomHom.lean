@@ -501,9 +501,6 @@ def FinFlag.toBoundedContinuousFun
       · exact flagDensitySpace_mem_Icc_zero_one b F
   }
 
-example (p q : α → Prop) : {a | p a ∨ q a}ᶜ = {a | p a}ᶜ ∩ {a | q a}ᶜ := by
-  sorry
-
 /- Theorem 3.5, existence -/
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
@@ -572,7 +569,11 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   rw [mem_ae_iff_prob_eq_one₀ (by
     apply NullMeasurableSet.of_compl
     apply NullMeasurableSet.of_null
-    sorry
+    rw [Set.setOf_or, Set.compl_union]
+    apply measure_inter_null_of_null_left
+    apply (prob_compl_eq_zero_iff positiveHomSpace_measurable).mpr
+    rw [← ENNReal.toNNReal_eq_one_iff]
+    exact flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ
   )]
   rw [← ENNReal.toNNReal_eq_one_iff]
   show ℙ {x | x ∈ PositiveHomSpace σ ∨ x F = 0} = 1
