@@ -28,9 +28,9 @@ variable {Vl  : Fin t → Type} [FintypeList Vl]  [DecidableEqList Vl]
 variable {Fl : FlagList σ t Vl}
 
 set_option maxHeartbeats 500000
+omit [DecidableEq T] in
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
-    [Fintype V] [Fintype U] [DecidableEq V] [DecidableEq U]
     : ∃ c ≥ 0, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
     |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ c / G.out.size
   := by
@@ -743,7 +743,15 @@ theorem flagListDensity₂_prod_approx
       rw [Nat.div_mul_div (by apply Nat.dvd_div_of_mul_dvd; apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
       rw [mul_assoc, Nat.div_div_eq_div_mul, ← hfreeF_size, ← hfreeF'_size, Nat.sub_sub]
     rw [hΩ_size, hB_size']
-    rw [← Nat.cast_sub (by sorry), ← Nat.cast_sub (by sorry), ← Nat.cast_sub (by omega), ← hfreeG_size, ← hfreeF_size, ← hfreeF'_size]
+    rw [← Nat.cast_sub (by
+      simp only [LabeledGraph.size]
+      rw [← Frep.type_verts_card_eq]
+      exact set_fintype_card_le_univ Frep.type_verts),
+      ← Nat.cast_sub (by
+      simp only [LabeledGraph.size]
+      rw [← F'rep.type_verts_card_eq]
+      exact set_fintype_card_le_univ F'rep.type_verts),
+      ← Nat.cast_sub (by omega), ← hfreeG_size, ← hfreeF_size, ← hfreeF'_size]
     rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
     rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
     rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, ge_iff_le]
@@ -761,49 +769,41 @@ theorem flagListDensity₂_prod_approx
     · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
       rw [mul_comm, ← Nat.div_div_eq_div_mul]
       rw [mul_comm, ← Nat.div_div_eq_div_mul]
-      rw [Nat.cast_div (by sorry) (by sorry)]
-      nth_rw 2 [Nat.cast_div (by sorry) (by sorry)]
-      rw [div_div_div_cancel_right₀ (by sorry)]
-      rw [Nat.cast_div (by sorry) (by sorry)]
-      rw [Nat.cast_div (by sorry) (by sorry)]
+      rw [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd; rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
+        Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+      nth_rw 2 [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd;rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
+        Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+      rw [div_div_div_cancel_right₀ (by
+        simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+      rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+      rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
       refine (div_le_div_iff₀ ?_ ?_).mpr ?_
       · refine pow_pos ?_ _
         simp only [Nat.cast_pos]; omega
       · apply div_pos <;> simp only [Nat.cast_pos, Nat.factorial_pos]
       · refine mul_le_mul_of_nonneg ?_ ?_ ?_ ?_
-        · sorry
-        · sorry
-        · sorry
-        · sorry
-
-example (A B C D: ℚ) (N M : ℕ) : 0 < N.factorial := by
-  -- exact Nat.factorial_pos N
-  -- refine div_pos ?_ ?_
-  -- refine pow_pos ?_ N
-  sorry
-
-example (A B C D : ℕ) (h : A ≤ B) (h' : C ≤ D) : A * C ≤ B * D := by
-  exact Nat.mul_le_mul h h'
-
-example (A B C D: ℚ) (h : A ≤ B) (h' : C ≤ D) : A / D ≤ B / C := by
-  refine (div_le_div_iff₀ ?_ ?_).mpr ?_
-  · sorry
-  · sorry
-  · refine mul_le_mul_of_nonneg h h' ?_ ?_
-    sorry
-    sorry
+        · rw [sub_sub, ← Nat.cast_add, ← Nat.cast_sub (by omega), ← Nat.cast_pow]
+          rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true]), Nat.cast_le, Nat.sub_sub]
+          refine (Nat.le_div_iff_mul_le ?_).mpr ?_
+          · simp only [Nat.factorial_pos]
+          · rw [mul_comm]
+            have hnm : freeG.card - (freeF.card + freeF'.card) ≤ freeG.card - freeF.card := by omega
+            have : freeG.card - freeF.card - (freeG.card - (freeF.card + freeF'.card)) = freeF'.card := by omega
+            nth_rw 3 [← this]
+            exact Nat.factorial_mul_pow_sub_le_factorial hnm
+        · rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+          rw [← Nat.cast_pow, Nat.cast_le]
+          have h : freeF'.card ≤ freeG.card := by omega
+          rw [← Nat.descFactorial_eq_div h]
+          apply Nat.descFactorial_le_pow
+        · refine pow_nonneg ?_ _
+          simp only [le_sub_iff_add_le]
+          rw [zero_add, ← Nat.cast_add, Nat.cast_le]; omega
+        · refine pow_nonneg ?_ _
+          simp only [Nat.cast_nonneg]
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
 --     : ∃ k, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
 --     |flagListDensity Fl G - ∏ i ∈ Finset.univ, flagDensity₁ (Fl i) G| ≤ (∑ i ∈ Finset.univ, (Fl i).out.size) ^ k / G.out.size
---   := by
---   use 2
---   intro W _ _ G
---   let Vs := Fin t → Finset W
---   let Ω : Finset Vs := { Vs : Vs | ∀ i , (Vs i).card = (Fl i).out.size ∧ ∀ i, G.out.type_verts ⊆ (Vs i).toSet }
---   let B : Finset Vs := { Vs : Vs | ∀ i j, i ≠ j → Disjoint (Vs i) (Vs j) }
---   let B_c : Finset Vs := { Vs : Vs | ¬(∀ i j, i ≠ j → Disjoint (Vs i) (Vs j)) }
---   let B_c_ij : Fin t → Fin t → Finset Vs := fun i j => { Vs : Vs | ¬ Disjoint (Vs i) (Vs j) }
---   have : B_c.card ≤ ∑ i : Fin t, ∑ j : Fin t, (B_c_ij i j).card := sorry
---   sorry
+--   := by sorry
