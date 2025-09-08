@@ -748,21 +748,50 @@ theorem flagListDensity₂_prod_approx
     rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
     rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, ge_iff_le]
     refine Preorder.le_trans _ ?_ _ ?_ ?_
-    · exact (freeG.card - freeF.card - freeF'.card) ^ freeF.card / freeG.card ^ freeF.card
+    · exact (freeG.card - freeF.card - freeF'.card) ^ freeF'.card / freeG.card ^ freeF'.card
     · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
       rw [sub_eq_add_neg, sub_eq_add_neg, ← Nat.cast_add, neg_mul_eq_mul_neg]
-      let a := -(@Nat.cast ℚ _ (#freeF + #freeF') / ↑(#freeG))
-      have : -2 ≤ a := by sorry
-      have := one_add_mul_le_pow this
-      dsimp [a] at this
-      sorry
-    · sorry
+      have : -2 ≤ -(@Nat.cast ℚ _ (#freeF + #freeF') / ↑(#freeG)) := by
+        simp only [Nat.cast_add, neg_le_neg_iff]
+        refine Preorder.le_trans _ 1 _ ?_ (by simp only [Nat.one_le_ofNat])
+        refine div_le_one_of_le₀ ?_ ?_
+        · rw [← Nat.cast_add ,Nat.cast_le]; omega
+        · simp only [Nat.cast_nonneg]
+      exact one_add_mul_le_pow this freeF'.card
+    · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
+      rw [mul_comm, ← Nat.div_div_eq_div_mul]
+      rw [mul_comm, ← Nat.div_div_eq_div_mul]
+      rw [Nat.cast_div (by sorry) (by sorry)]
+      nth_rw 2 [Nat.cast_div (by sorry) (by sorry)]
+      rw [div_div_div_cancel_right₀ (by sorry)]
+      rw [Nat.cast_div (by sorry) (by sorry)]
+      rw [Nat.cast_div (by sorry) (by sorry)]
+      refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+      · refine pow_pos ?_ _
+        simp only [Nat.cast_pos]; omega
+      · apply div_pos <;> simp only [Nat.cast_pos, Nat.factorial_pos]
+      · refine mul_le_mul_of_nonneg ?_ ?_ ?_ ?_
+        · sorry
+        · sorry
+        · sorry
+        · sorry
 
-example (A B : ℚ) : - (A * B) = A * (- B) := by
-
-  -- exact neg_mul_eq_mul_neg A B
-  -- exact neg_mul_comm A B
+example (A B C D: ℚ) (N M : ℕ) : 0 < N.factorial := by
+  -- exact Nat.factorial_pos N
+  -- refine div_pos ?_ ?_
+  -- refine pow_pos ?_ N
   sorry
+
+example (A B C D : ℕ) (h : A ≤ B) (h' : C ≤ D) : A * C ≤ B * D := by
+  exact Nat.mul_le_mul h h'
+
+example (A B C D: ℚ) (h : A ≤ B) (h' : C ≤ D) : A / D ≤ B / C := by
+  refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+  · sorry
+  · sorry
+  · refine mul_le_mul_of_nonneg h h' ?_ ?_
+    sorry
+    sorry
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
