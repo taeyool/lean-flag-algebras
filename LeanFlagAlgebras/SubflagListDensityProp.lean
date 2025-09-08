@@ -674,7 +674,6 @@ theorem flagListDensity₂_prod_approx
           Nat.cast_pow, Nat.cast_add, Nat.ofNat_pos, mul_le_mul_left, le_sup_iff, c]
           left; rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
       exact this.trans hc_ge
-
     rw [← compl_card]
     suffices (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / Ω.toFinset.card ≤ ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by
       have simp_calc : ((@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) ≤ 2 * (Frep.size + F'rep.size) ^ 2 / (Grep.size) := by
