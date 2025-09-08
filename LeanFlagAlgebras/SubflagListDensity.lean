@@ -1035,25 +1035,19 @@ theorem partition_card
               simp only [combinations, Finset.mem_filter, Finset.mem_powerset]
               simp only [partitions, ne_eq, Finset.biUnion_subset_iff_forall_subset, Finset.mem_univ, forall_const, Finset.mem_filter, true_and] at hp
               obtain ⟨hp₁, hp₂, hp₃⟩ := hp
-              constructor
-              · intro x hx₁
-                refine Finset.mem_sdiff.mpr ?_
-                constructor
-                · exact hp₃ (Fin.last t) hx₁
-                · simp only [p', Finset.mem_biUnion, Finset.mem_univ, true_and, not_exists]
-                  intro i
-                  have hi : i.castSucc ≠ Fin.last t := by
-                    simp only [ne_eq, Fin.castSucc_ne_last, not_false_eq_true]
-                  specialize hp₂ i.castSucc (Fin.last t) hi
-                  by_contra hx₂
-                  dsimp [r] at hx₁
-                  simp only [disjoint_iff, Finset.inf_eq_inter, Finset.bot_eq_empty] at hp₂
-                  have : x ∈ p i.castSucc ∩ p (Fin.last t) := by
-                    simp only [Finset.mem_inter]
-                    exact ⟨hx₂, hx₁⟩
-                  rw [hp₂] at this
-                  exact Finset.notMem_empty x this
-              · exact (hp₁ (Fin.last t)).2
+              refine ⟨fun x hx₁ ↦ Finset.mem_sdiff.mpr ⟨hp₃ (Fin.last t) hx₁, ?_⟩, (hp₁ (Fin.last t)).2⟩
+              simp only [p', Finset.mem_biUnion, Finset.mem_univ, true_and, not_exists]
+              intro i
+              have hi : i.castSucc ≠ Fin.last t := by
+                simp only [ne_eq, Fin.castSucc_ne_last, not_false_eq_true]
+              specialize hp₂ i.castSucc (Fin.last t) hi
+              by_contra hx₂
+              dsimp [r] at hx₁
+              simp only [disjoint_iff, Finset.inf_eq_inter, Finset.bot_eq_empty] at hp₂
+              have : x ∈ p i.castSucc ∩ p (Fin.last t) := by
+                simp only [Finset.mem_inter]
+                exact ⟨hx₂, hx₁⟩
+              exact Finset.notMem_empty x <| hp₂ ▸ this
             use ⟨⟨p', hp'⟩, ⟨r, hr⟩⟩
             simp only [Finset.mem_univ]
           have f_inj : Function.Injective f := by
@@ -1222,19 +1216,17 @@ theorem labeledGraphListDensity_le_one
       simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and,
         Set.mem_setOf_eq] at hGl
       obtain ⟨_, hGl_iso, hGl_disj⟩ := hGl
-      constructor <;> try constructor
-      · intro i; constructor
-        · refine Finset.sdiff_subset_sdiff ?h.hf.right.left.left.hst fun ⦃a⦄ a ↦ a
-          simp_all only [Finset.subset_univ]
-        · have : G.type_verts.toFinset ⊆ (Gl i).subgraph.verts.toFinset := by
-            simp only [Set.subset_toFinset, Set.coe_toFinset]
-            exact labeledSubgraph_contain_type_verts G (Gl i)
-          rw [Finset.card_sdiff this, Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
-          dsimp only [r_list]
-          congr!
-          exact labeledGraphIso_size_eq (Gl i).coe (Fl i) (Classical.choice (hGl_iso i))
-      · intro i j hij
-        rw [Finset.disjoint_left]
+      refine ⟨fun i ↦ ⟨?_, ?_⟩, fun i j hij ↦ ?_, fun i ↦ ?_⟩
+      · refine Finset.sdiff_subset_sdiff ?h.hf.right.left.left.hst fun ⦃a⦄ a ↦ a
+        simp_all only [Finset.subset_univ]
+      · have : G.type_verts.toFinset ⊆ (Gl i).subgraph.verts.toFinset := by
+          simp only [Set.subset_toFinset, Set.coe_toFinset]
+          exact labeledSubgraph_contain_type_verts G (Gl i)
+        rw [Finset.card_sdiff this, Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
+        dsimp only [r_list]
+        congr!
+        exact labeledGraphIso_size_eq (Gl i).coe (Fl i) (Classical.choice (hGl_iso i))
+      · rw [Finset.disjoint_left]
         intro w h_wi h_wj
         rw [Finset.mem_sdiff] at h_wi h_wj
         obtain ⟨h_w_mem_i, h_w_not_type⟩ := h_wi
@@ -1245,10 +1237,7 @@ theorem labeledGraphListDensity_le_one
           exact ⟨⟨h_w_mem_i, h_w_not_type⟩, ⟨h_w_mem_j, h_w_not_type⟩⟩
         rw [hGl_disj i j hij] at h_w_in_inter
         exact h_w_in_inter
-      · intro i
-        dsimp only [VG]
-        refine Finset.sdiff_subset_sdiff ?h.hf.right.intro.intro.right.right.hst fun ⦃a⦄ a ↦ a
-        simp_all only [Finset.subset_univ]
+      · exact Finset.sdiff_subset_sdiff (Finset.subset_univ _) fun ⦃a⦄ ↦ id
     · intro Gl₁ hGl₁ Gl₂ hGl₂ h_eq
       rw [funext_iff] at h_eq
       dsimp [f] at h_eq
@@ -1396,14 +1385,11 @@ lemma inducedLabeledSubgraph_iso_from_iso
                 ≃f H₁)
   := by
   let V₁ := G₁.subgraph.verts \ G.type_verts
+  have type_verts_subset_subgraph_verts := labeledSubgraph_contain_type_verts G G₁
   have h_G₁_verts : G₁.subgraph.verts = V₁ ∪ G.type_verts := by
-    have : G₁.subgraph.verts = G₁.subgraph.verts ∪ ∅ := Eq.symm (Set.union_empty G₁.subgraph.verts)
-    rw [this]
-    have : V₁ ∪ G.type_verts = G₁.subgraph.verts ∪ G.type_verts := by dsimp [V₁]; exact Set.diff_union_self
-    rw [this]
-    have := labeledSubgraph_contain_type_verts G G₁
-    exact Set.union_congr_left (by exact Set.empty_subset _) (by simp only [Set.union_empty, this])
-  let G₁' := inducedLabeledSubgraph G G₁.subgraph.verts (labeledSubgraph_contain_type_verts G G₁)
+    rw [G₁.subgraph.verts.union_empty.symm, Set.diff_union_self, Set.union_empty,
+      Set.union_eq_self_of_subset_right type_verts_subset_subgraph_verts]
+  let G₁' := inducedLabeledSubgraph G G₁.subgraph.verts type_verts_subset_subgraph_verts
   let G₁'' := inducedLabeledSubgraph G (V₁ ∪ G.type_verts) Set.subset_union_right
   have h_eq₀ : G₁ = G₁' := inducedLabeledSubgraph_eq h_ind
   have h_eq₁ : G₁' = G₁'' := by dsimp [G₁', G₁'']; congr!
@@ -2063,7 +2049,7 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
          = multinomialCoefficient
              (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
              (ℓ - ℓ₀)
-           * (Nat.choose (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃) (ℓ' + ℓ₀ - ℓ₁ - ℓ₂))
+           * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).choose (ℓ' + ℓ₀ - ℓ₁ - ℓ₂)
     := by
     dsimp [multinomialCoefficient]
     have h_leq_choose :  (ℓ' + ℓ₀ - ℓ₁ - ℓ₂) ≤ (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃) := by omega
@@ -2097,7 +2083,7 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
         exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
       have h₁ : (ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial
                 ∣ (ℓ' + ℓ₃ - 2 * ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial :=
-        Nat.mul_dvd_mul h₀ (by simp)
+        Nat.mul_dvd_mul h₀ dvd_rfl
       have h₂ : (ℓ' + ℓ₃ - 2 * ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial ∣ (ℓ - ℓ₀).factorial := by
         have : ℓ - ℓ' + ℓ₀ - ℓ₃  = (ℓ - ℓ₀) - (ℓ' + ℓ₃ - 2 * ℓ₀) := by omega
         rw [this]
@@ -2114,8 +2100,7 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
         exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
       have h₃ : (ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial  * (ℓ₃ - ℓ₀).factorial * (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial
                 ∣ (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀).factorial * (ℓ + ℓ₀ - ℓ₁ - ℓ₂).factorial := by
-        have := mul_assoc ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial) (ℓ₃ - ℓ₀).factorial (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial
-        rw [this]
+        nth_rw 1 [mul_assoc]
         exact Nat.mul_dvd_mul h₀ h₁
       have h₄ : (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀).factorial * (ℓ + ℓ₀ - ℓ₁ - ℓ₂).factorial ∣ (ℓ - ℓ₀).factorial := by
         have : ℓ + ℓ₀ - ℓ₁ - ℓ₂ = ℓ - ℓ₀ - (ℓ₁ - ℓ₀ + ℓ₂ - ℓ₀) := by omega
@@ -2126,23 +2111,17 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
       rw [←h_rw₃]
       exact Nat.factorial_mul_factorial_dvd_factorial (by omega)
     calc
-      (ℓ' - ℓ₀).factorial / ((ℓ₁ - ℓ₀).factorial *
-                             (ℓ₂ - ℓ₀).factorial *
-                             (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial)
-      * ((ℓ - ℓ₀).factorial / ((ℓ' - ℓ₀).factorial *
-                               (ℓ₃ - ℓ₀).factorial *
-                               (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial))
       _ = ((ℓ' - ℓ₀).factorial * (ℓ - ℓ₀).factorial)
           / (((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial) *
-             ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
-                  rw [Nat.div_mul_div_comm h_dvd₀ h_dvd₁]
+             ((ℓ' - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) :=
+                  Nat.div_mul_div_comm h_dvd₀ h_dvd₁
       _ = ((ℓ' - ℓ₀).factorial * (ℓ - ℓ₀).factorial)
           / ((ℓ' - ℓ₀).factorial *
              ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
                   ring_nf
       _ = (ℓ - ℓ₀).factorial
-          / ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) := by
-                  rw [Nat.mul_div_mul_left _ _ (Nat.factorial_pos (ℓ' - ℓ₀))]
+          / ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial) :=
+                  Nat.mul_div_mul_left _ _ (Nat.factorial_pos (ℓ' - ℓ₀))
       _ = ((ℓ + 2*ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial * (ℓ - ℓ₀).factorial)
           / ((ℓ + 2*ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃).factorial *
              ((ℓ₁ - ℓ₀).factorial * (ℓ₂ - ℓ₀).factorial * (ℓ₃ - ℓ₀).factorial * (ℓ' + ℓ₀ - ℓ₁ - ℓ₂).factorial * (ℓ - ℓ' + ℓ₀ - ℓ₃).factorial)) := by
@@ -2267,11 +2246,9 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
       := by
       dsimp [labeledSubgraphListDensity]
       congr
-      · dsimp [labeledGraphTripleToList, LabeledGraph.size]
-        rw [h_σ_size, ← h_fintype_three]
+      · rw [h_σ_size, ← h_fintype_three]
         rfl
-      · dsimp [LabeledGraph.size]
-        exact Fintype.card_fin ℓ
+      · exact Fintype.card_fin ℓ
     rw [triple_density_eq_count_over_coeff]
     calc
       (C : ℚ) * (↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / ↑C_lhs)
