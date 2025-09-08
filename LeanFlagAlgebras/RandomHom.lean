@@ -501,6 +501,9 @@ def FinFlag.toBoundedContinuousFun
       · exact flagDensitySpace_mem_Icc_zero_one b F
   }
 
+example (p q : α → Prop) : {a | p a ∨ q a}ᶜ = {a | p a}ᶜ ∩ {a | q a}ᶜ := by
+  sorry
+
 /- Theorem 3.5, existence -/
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
@@ -519,8 +522,7 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
             ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
         · exact Subtype.val_injective
         · intro S hS
-          refine MeasurableSet.subtype_image ?_ hS
-          sorry
+          exact MeasurableSet.subtype_image positiveHomSpace_measurable hS
         · exact MeasurableSet.univ
     }
   }
@@ -531,7 +533,28 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   simp_rw [sum_quot, downward_sum, PositiveHom.map_sum, Finset.sum_div]
   have : ∀ F ∈ frep.support, Integrable (fun φ ↦ (PositiveHomSpace.toPosHom φ) ⟦frep F • unitVector F⟧) ℙ' := by
     intro F hF
-    sorry
+    constructor
+    · apply Measurable.aestronglyMeasurable
+      apply Measurable.eval
+      rw [measurable_pi_iff]
+      intro g
+      rcases Quotient.exists_rep g with ⟨grep, rfl⟩
+      rw [flagVector_eq_sum_unitVector grep]
+      simp_rw [sum_quot, PositiveHom.map_sum]
+      apply Finset.measurable_sum grep.support
+      intro G hG
+      simp_rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+      measurability
+    · apply @HasFiniteIntegral.of_bounded _ _ _ _ _ _ _ (abs (frep F))
+      apply Eventually.of_forall
+      intro φ
+      rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector, mul_comm]
+      simp only [norm_mul, Real.norm_eq_abs]
+      apply mul_le_of_le_one_left (abs_nonneg (frep F))
+      have hφ := flagDensitySpace_mem_Icc_zero_one φ F
+      simp only [Set.mem_Icc] at hφ
+      rw [abs_le]
+      constructor <;> linarith
   rw [integral_finset_sum frep.support this]
   apply Finset.sum_congr rfl
   intro F hF
@@ -540,14 +563,17 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   have hℙF := ProbabilityMeasure.tendsto_iff_forall_integral_tendsto.mp hℙ F.toBoundedContinuousFun
   have h' := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den F
   rw [← tendsto_nhds_unique hℙF h']
-  have := @integral_subtype_comap ℝ _ _ _ _ ℙ (PositiveHomSpace σ) (by sorry) (fun a ↦ a F)
   simp_rw [PositiveHomSpace.toPosHom_unitVector]
-  dsimp [ℙ']
-  rw [this]
+  dsimp only [ProbabilityMeasure.coe_mk, ℙ']
+  rw [integral_subtype_comap (@positiveHomSpace_measurable _ σ) (fun a ↦ a F)]
   apply setIntegral_eq_integral_of_ae_compl_eq_zero
-  dsimp [Filter.Eventually]
+  dsimp only [Filter.Eventually]
   simp_rw [← Decidable.or_iff_not_imp_left]
-  rw [mem_ae_iff_prob_eq_one₀ sorry]
+  rw [mem_ae_iff_prob_eq_one₀ (by
+    apply NullMeasurableSet.of_compl
+    apply NullMeasurableSet.of_null
+    sorry
+  )]
   rw [← ENNReal.toNNReal_eq_one_iff]
   show ℙ {x | x ∈ PositiveHomSpace σ ∨ x F = 0} = 1
   apply le_antisymm
