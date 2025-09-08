@@ -751,35 +751,9 @@ theorem flagListDensity₂_prod_approx
     refine Preorder.le_trans _ ?_ _ ?_ ?_
     · exact (freeG.card - freeF.card - freeF'.card) ^ freeF.card / freeG.card ^ freeF.card
     · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
+      #check one_add_mul_le_pow
       sorry
     · sorry
-
-example (A B C : ℕ) : A = B := by
-  -- refine Nat.div_mul_div ?_ ?_
-  -- refine Nat.sub_add_cancel ?_
-
-  -- refine add_ne_zero.mp ?_
-  -- exact Nat.ne_zero_of_lt h
-  -- refine Nat.sub_lt_sub_iff_right ?_
-  -- refine Eq.symm (Nat.sub_add_comm ?_)
-  -- exact Nat.le_of_succ_le hA
-  -- refine Nat.le_pow ?_
-  -- refine Nat.le_mul_of_pos_left A ?_
-  -- simp only [Nat.ofNat_pos]
-  sorry
-
-example (B : ℕ) (A C D : ℚ) : 1 - B * (A + B / C) ≤ (1 - (A + B) / C) ^ B := by
-  -- apply?
-  -- exact sub_div A B C
-  -- exact Eq.symm (div_pow A C B)
-  -- refine mul_div_mul_left B C ?_
-  -- refine div_le_one_of_le₀ ?_ ?_
-  -- exact div_mul_eq_div_div A B C
-  -- exact one_div_mul_eq_div B A
-  -- exact div_div A B C
-  -- exact Eq.symm (div_mul A B C)
-  -- exact tsub_le_iff_tsub_le
-  sorry
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
