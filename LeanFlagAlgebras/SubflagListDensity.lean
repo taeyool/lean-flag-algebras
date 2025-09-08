@@ -1942,7 +1942,49 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
       exact Set.empty_diff G.type_verts
     exact ⟨⟨G', Gl', Gl''⟩, h_Gl'_ind, h_Gl'_other, h_Gl''_ind, h_Gl''_other⟩
 
-  have h_f_T₁_T₀_inj : Function.Injective f_T₁_T₀_fwd := sorry
+  have h_f_T₁_T₀_inj : Function.Injective f_T₁_T₀_fwd := by
+    intro ⟨⟨G'₁, Vl'₁, Vl''₁⟩, h_Vl'₁_disj_G'₁_type_verts, h_Vl''₁_disj_G_type_verts, _, _, _, _⟩
+    intro ⟨⟨G'₂, Vl'₂, Vl''₂⟩, h_Vl'₂_disj_G'₂_type_verts, h_Vl''₂_disj_G_type_verts, _, _, _, _⟩
+    intro h_eq
+    dsimp [f_T₁_T₀_fwd] at h_eq
+    simp only [Subtype.mk.injEq, Sigma.mk.injEq] at h_eq
+    obtain ⟨h_eq_G', h_eq_other⟩ := h_eq
+    subst h_eq_G'
+    simp only [heq_eq_eq, Prod.mk.injEq] at h_eq_other
+    obtain ⟨h_eq_Vl', h_eq_Vl''⟩ := h_eq_other
+    simp only [Subtype.mk.injEq, Prod.mk.injEq, true_and]
+    constructor
+    . funext i
+      calc
+        Vl'₁ i
+        _ = (Vl'₁ i ∪ G'₁.out.type_verts) \ G'₁.out.type_verts :=
+                  Eq.symm (Set.union_diff_cancel_right (by simp only [h_Vl'₁_disj_G'₁_type_verts i, subset_refl]))
+        _ = (inducedLabeledSubgraph G'₁.out (Vl'₁ i ∪ G'₁.out.type_verts) Set.subset_union_right).subgraph.verts
+              \ G'₁.out.type_verts := by
+                  rw [inducedLabeledSubgraph_verts G'₁.out (Vl'₁ i ∪ G'₁.out.type_verts) Set.subset_union_right]
+        _ = (inducedLabeledSubgraph G'₁.out (Vl'₂ i ∪ G'₁.out.type_verts) Set.subset_union_right).subgraph.verts
+              \ G'₁.out.type_verts := by
+                  rw [funext_iff.mp h_eq_Vl' i]
+        _ = (Vl'₂ i ∪ G'₁.out.type_verts) \ G'₁.out.type_verts := by
+                  rw [inducedLabeledSubgraph_verts G'₁.out (Vl'₂ i ∪ G'₁.out.type_verts) Set.subset_union_right]
+        _ = Vl'₂ i :=
+                  Set.union_diff_cancel_right (by simp only [h_Vl'₂_disj_G'₂_type_verts i, subset_refl])
+    . funext i
+      calc
+        Vl''₁ i
+        _ = (Vl''₁ i ∪ G.type_verts) \ G.type_verts :=
+                  Eq.symm (Set.union_diff_cancel_right (by simp only [h_Vl''₁_disj_G_type_verts i, subset_refl]))
+        _ = (inducedLabeledSubgraph G (Vl''₁ i ∪ G.type_verts) Set.subset_union_right).subgraph.verts
+              \ G.type_verts := by
+                  rw [inducedLabeledSubgraph_verts G (Vl''₁ i ∪ G.type_verts) Set.subset_union_right]
+        _ = (inducedLabeledSubgraph G (Vl''₂ i ∪ G.type_verts) Set.subset_union_right).subgraph.verts
+              \ G.type_verts := by
+                  rw [funext_iff.mp h_eq_Vl'' i]
+        _ = (Vl''₂ i ∪ G.type_verts) \ G.type_verts := by
+                  rw [inducedLabeledSubgraph_verts G (Vl''₂ i ∪ G.type_verts) Set.subset_union_right]
+        _ = Vl''₂ i :=
+                  Set.union_diff_cancel_right (by simp only [h_Vl''₂_disj_G_type_verts i, subset_refl])
+
   have h_f_T₁_T₀_surj : Function.Surjective f_T₁_T₀_fwd := sorry
   Equiv.ofBijective f_T₁_T₀_fwd ⟨h_f_T₁_T₀_inj, h_f_T₁_T₀_surj⟩
 sorry
