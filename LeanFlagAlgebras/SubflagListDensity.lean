@@ -1990,6 +1990,7 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
     dsimp [predIsoLabeledHl, predDisjointLabeledSubgraphList] at h_Gl'_other h_Gl''_other
     obtain ⟨h_Gl'_iso, h_Gl'_pairwise_disj⟩ := h_Gl'_other
     obtain ⟨h_Gl''_iso, h_Gl''_pairwise_disj⟩ := h_Gl''_other
+
     let Vl' : Fin 2 → Set (Fin ℓ') := fun i ↦ (Gl' i).subgraph.verts \ G'.out.type_verts
     let Vl'' : Fin 2 → Set (Fin ℓ) := fun i ↦ (Gl'' i).subgraph.verts \ G.type_verts
     have h_Vl'_disj_G'_type_verts : ∀ i : Fin 2, (Vl' i) ∩ G'.out.type_verts = ∅ := by
@@ -2006,8 +2007,21 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
       exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl''_pairwise_disj i j h_neq)
     have h_Vl'_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe ≃f [H₁, H₂]ᵍ i) := by
       intro i
-      dsimp [Vl']
-    sorry
+      sorry
+    have h_Vl''_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe ≃f [G'.out, H₃]ᵍ i) := by
+      intro i
+      sorry
+
+    use ⟨⟨G', Vl', Vl''⟩,
+      h_Vl'_disj_G'_type_verts, h_Vl''_disj_G_type_verts,
+      h_Vl'_disj_pairwise, h_Vl''_disj_pairwise, h_Vl'_iso, h_Vl''_iso⟩
+    dsimp [f_T₁_T₀_fwd]
+    simp_all only [Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, Prod.mk.injEq, true_and]
+    constructor
+    . funext i
+      sorry
+    . funext i
+      sorry
 
   Equiv.ofBijective f_T₁_T₀_fwd ⟨h_f_T₁_T₀_inj, h_f_T₁_T₀_surj⟩
 sorry
