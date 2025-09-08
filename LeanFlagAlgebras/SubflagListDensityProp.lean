@@ -734,19 +734,28 @@ theorem flagListDensity₂_prod_approx
             apply sq_nonneg
       exact this.trans simp_calc
     rw [compl_card]
-    suffices @Nat.cast ℚ _ B.card / Ω.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by
-      rwa [tsub_le_iff_tsub_le]
+    suffices @Nat.cast ℚ _ B.card / Ω.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by rwa [tsub_le_iff_tsub_le]
     have hB_size' : B.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card - freeF.card) (freeF'.card) := by
       rw [hB_size]
-      sorry
+      have : Frep.size - σ.size + (F'rep.size - σ.size) ≤ freeG.card := by omega
+      simp only [multinomialCoefficient, Fin.sum_univ_two, ge_iff_le, this, ↓reduceDIte, Fin.prod_univ_two, r_list]
+      rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
+      nth_rw 2 [← Nat.div_div_eq_div_mul]
+      rw [Nat.div_mul_div (by apply Nat.dvd_div_of_mul_dvd; apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
+      rw [mul_assoc, Nat.div_div_eq_div_mul, ← hfreeF_size, ← hfreeF'_size, Nat.sub_sub]
     rw [hΩ_size, hB_size']
-    -- rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
-    -- rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
-    -- rw [Nat.choose_eq_factorial_div_factorial (by sorry), mul_comm]
-    -- rw [div_mul_eq_div_div]
-    sorry
+    rw [← Nat.cast_sub (by sorry), ← Nat.cast_sub (by sorry), ← Nat.cast_sub (by omega), ← hfreeG_size, ← hfreeF_size, ← hfreeF'_size]
+    rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
+    rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
+    rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, ge_iff_le]
+    refine Preorder.le_trans _ ?_ _ ?_ ?_
+    · exact (freeG.card - freeF.card - freeF'.card) ^ freeF.card / freeG.card ^ freeF.card
+    · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
+      sorry
+    · sorry
 
-example (A B C : ℕ) : A - B + B = A := by
+example (A B C : ℕ) : A = B := by
+  -- refine Nat.div_mul_div ?_ ?_
   -- refine Nat.sub_add_cancel ?_
 
   -- refine add_ne_zero.mp ?_
@@ -759,7 +768,11 @@ example (A B C : ℕ) : A - B + B = A := by
   -- simp only [Nat.ofNat_pos]
   sorry
 
-example (A B C D : ℚ) : A / B ≤ 1 := by
+example (B : ℕ) (A C D : ℚ) : 1 - B * (A + B / C) ≤ (1 - (A + B) / C) ^ B := by
+  -- apply?
+  -- exact sub_div A B C
+  -- exact Eq.symm (div_pow A C B)
+  -- refine mul_div_mul_left B C ?_
   -- refine div_le_one_of_le₀ ?_ ?_
   -- exact div_mul_eq_div_div A B C
   -- exact one_div_mul_eq_div B A
