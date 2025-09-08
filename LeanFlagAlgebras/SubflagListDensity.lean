@@ -1956,6 +1956,13 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
 
     let Vl' : Fin 2 → Set (Fin ℓ') := fun i ↦ (Gl' i).subgraph.verts \ G'.out.type_verts
     let Vl'' : Fin 2 → Set (Fin ℓ) := fun i ↦ (Gl'' i).subgraph.verts \ G.type_verts
+
+    have h_Vl'_Gl'_verts : ∀ i : Fin 2, (Vl' i) ∪ G'.out.type_verts = (Gl' i).subgraph.verts := by
+      intro i
+      exact Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G'.out (Gl' i))
+    have h_Vl''_Gl''_verts : ∀ i : Fin 2, (Vl'' i) ∪ G.type_verts = (Gl'' i).subgraph.verts := by
+      intro i
+      exact Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl'' i))
     have h_Vl'_disj_G'_type_verts : ∀ i : Fin 2, (Vl' i) ∩ G'.out.type_verts = ∅ := by
       intro i
       exact Set.diff_inter_self
@@ -1970,10 +1977,32 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
       exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl''_pairwise_disj i j h_neq)
     have h_Vl'_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe ≃f [H₁, H₂]ᵍ i) := by
       intro i
-      sorry
+      have h' : inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right
+                = inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))  := by
+        congr!
+        exact h_Vl'_Gl'_verts i
+      let g₁ : (inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe
+                ≃f (inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))).coe := by
+        rw [h']
+      let g₂ : (inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))).coe
+                ≃f [H₁, H₂]ᵍ i := by
+        rw [←inducedLabeledSubgraph_eq (h_Gl'_ind i)]
+        exact (h_Gl'_iso i).some
+      exact Nonempty.intro (g₁.trans g₂)
     have h_Vl''_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe ≃f [G'.out, H₃]ᵍ i) := by
       intro i
-      sorry
+      have h' : inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right
+                = inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i)) := by
+        congr!
+        exact h_Vl''_Gl''_verts i
+      let g₁ : (inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe
+                ≃f (inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i))).coe := by
+        rw [h']
+      let g₂ : (inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i))).coe
+                ≃f [G'.out, H₃]ᵍ i := by
+        rw [←inducedLabeledSubgraph_eq (h_Gl''_ind i)]
+        exact (h_Gl''_iso i).some
+      exact Nonempty.intro (g₁.trans g₂)
 
     use ⟨⟨G', Vl', Vl''⟩,
       h_Vl'_disj_G'_type_verts, h_Vl''_disj_G_type_verts,
@@ -1982,9 +2011,9 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
     simp_all only [Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, Prod.mk.injEq, true_and]
     constructor
     . funext i
-      sorry
+      exact Eq.symm (inducedLabeledSubgraph_eq (h_Gl'_ind i))
     . funext i
-      sorry
+      exact Eq.symm (inducedLabeledSubgraph_eq (h_Gl''_ind i))
 
   Equiv.ofBijective f_T₁_T₀_fwd ⟨h_f_T₁_T₀_inj, h_f_T₁_T₀_surj⟩
 sorry
