@@ -236,6 +236,11 @@ instance : CompactSpace (PositiveHomSpace σ)
   :=
   isCompact_iff_compactSpace.mp (positiveHomSpace_isClosed.isCompact)
 
+theorem positiveHomSpace_measurable
+    : MeasurableSet (PositiveHomSpace σ)
+  :=
+  IsClosed.measurableSet positiveHomSpace_isClosed
+
 lemma tendsto_sum
     {ι : Type} [Fintype ι] (s : ι → ℕ → ℝ) (a : ι → ℝ)
     (h : ∀ i, Tendsto (s i) atTop (𝓝 (a i)))
