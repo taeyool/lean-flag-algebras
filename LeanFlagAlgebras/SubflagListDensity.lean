@@ -893,46 +893,9 @@ theorem flagDensity_insert_empty
     have : Vl (i'.coe hi') = listTypeInsert Vl T i' := listTypeInsert_eq' hi'
     congr!
   have h_coeff : Z₀ = Z₁ := by
-    simp only [Z₀, Z₁, multinomialCoefficient, ge_iff_le]
-    have sum_sizes_perm_eq : ∑ i : Fin t, ((Fl i).out.size - σ.size)
-                             = ∑ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size)
-      := by
-      symm
-      calc
-        ∑ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size)
-        _ = (∑ i : Fin t, ((Fl.insert (emptyFlag σ) i.castSucc).out.size - σ.size))
-            + ((Fl.insert (emptyFlag σ) (Fin.last t)).out.size - σ.size)
-              := by
-              rw [sum_eq_sum_plus_last]
-        _ = ∑ i : Fin t, ((Fl.insert (emptyFlag σ) i.castSucc).out.size - σ.size)
-              := by
-              rw [← h_eq]
-              simp only [le_refl, tsub_eq_zero_of_le, add_zero]
-        _ = ∑ i : Fin t, ((Fl i).out.size - σ.size)
-              := by
-              congr
-              ext i
-              rw [h_eq' i]
-    have prod_factorials_perm_eq : ∏ i : Fin t, ((Fl i).out.size - σ.size).factorial
-                                   = ∏ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial
-      := by
-      symm
-      calc
-        ∏ i : Fin (t + 1), ((Fl.insert (emptyFlag σ) i).out.size - σ.size).factorial
-        _ = (∏ i : Fin t, ((Fl.insert (emptyFlag σ) i.castSucc).out.size - σ.size).factorial)
-            * ((Fl.insert (emptyFlag σ) (Fin.last t)).out.size - σ.size).factorial
-              := by
-              rw [prod_eq_prod_mul_last]
-        _ = ∏ i : Fin t, ((Fl.insert (emptyFlag σ) i.castSucc).out.size - σ.size).factorial
-              := by
-              rw [← h_eq]
-              simp only [le_refl, tsub_eq_zero_of_le, Nat.factorial_zero, mul_one]
-        _ = ∏ i : Fin t, ((Fl i).out.size - σ.size).factorial
-              := by
-              congr
-              ext i
-              rw [h_eq' i]
-    rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
+    simp only [Z₀, Z₁, multinomialCoefficient]
+    simp_rw [sum_eq_sum_plus_last, ← h_eq, tsub_self, add_zero, dite_eq_ite, h_eq',
+      prod_eq_prod_mul_last, ← h_eq, tsub_self, Nat.factorial_zero, mul_one]
   rw [h_count, h_coeff]
 
 theorem flagPairDensity_empty
