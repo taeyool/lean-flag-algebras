@@ -78,25 +78,21 @@ lemma multinomialCoefficient_pos
     multinomialCoefficient r_list n > 0
   := by
   dsimp [multinomialCoefficient]
-  split
-  next h_sum_le_n =>
-    let r_sum := ∑ i : Fin t, r_list i
-    let C₀ := ∏ i : Fin t, (r_list i).factorial
-    let C₁ := (n - r_sum).factorial
-    let C := C₀ * C₁
-    show n.factorial / C > 0
-    have h_n_factorial_pos : n.factorial > 0 := Nat.factorial_pos n
-    have h_dvd : C ∣ n.factorial := by
-      have h₀ : C₀ ∣ r_sum.factorial := by
-        dsimp [C₀, r_sum]
-        exact Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list
-      have h₁ : C ∣ r_sum.factorial * C₁ := Nat.mul_dvd_mul_right h₀ C₁
-      have h₂ : r_sum.factorial * C₁ ∣ n.factorial :=
-        Nat.factorial_mul_factorial_dvd_factorial h_sum_le_n
-      exact dvd_trans h₁ h₂
-    exact (Nat.lt_div_iff_mul_lt' h_dvd 0).mpr h_n_factorial_pos
-  next h_not_sum_lt_n =>
-    exact False.elim (h_not_sum_lt_n h_n)
+  simp only [h_n]
+  let r_sum := ∑ i : Fin t, r_list i
+  let C₀ := ∏ i : Fin t, (r_list i).factorial
+  let C₁ := (n - r_sum).factorial
+  let C := C₀ * C₁
+  show n.factorial / C > 0
+  have h_n_factorial_pos : n.factorial > 0 := Nat.factorial_pos n
+  have h_dvd : C ∣ n.factorial := by
+    have h₀ : C₀ ∣ r_sum.factorial :=
+      Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list
+    have h₁ : C ∣ r_sum.factorial * C₁ := Nat.mul_dvd_mul_right h₀ C₁
+    have h₂ : r_sum.factorial * C₁ ∣ n.factorial :=
+      Nat.factorial_mul_factorial_dvd_factorial h_n
+    exact dvd_trans h₁ h₂
+  exact (Nat.lt_div_iff_mul_lt' h_dvd 0).mpr h_n_factorial_pos
 
 lemma multinomialCoefficient_zero
     (r_list : Fin t → ℕ) (n : ℕ)
@@ -240,7 +236,7 @@ lemma Hl_eq_reverseinduced_induced_Hl
   funext i
   exact H_eq_reverseinduced_induced_H φ (Hl₀ i) (h_ind₀ i)
 
-noncomputable def isoSetOfInducedLabeledSubgraphList
+def isoSetOfInducedLabeledSubgraphList
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraphList σ t G₀ → Prop) (p₁ : LabeledSubgraphList σ t G₁ → Prop)
     (h_rel : relOfPredOnLabeledSubgraphList φ p₀ p₁)
@@ -265,21 +261,17 @@ noncomputable def isoSetOfInducedLabeledSubgraphList
     have : relOfLabeledSubgraphList φ Hl₀ Hl₁ := relOfLabeledSubgraphList_symm this
     have h_p₀ : p₀ Hl₀ := (h_rel Hl₀ Hl₁ this).mpr h_p₁
     exact ⟨Hl₀, ⟨h_ind₀, h_p₀⟩⟩
-  let f_bij : Function.Bijective f := by
-    have h_leftinv : Function.LeftInverse f_inv f := by
-      rintro ⟨Hl₀, ⟨h_ind₀, h_p₀⟩⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]
-      symm
-      exact Hl_eq_reverseinduced_induced_Hl φ Hl₀ h_ind₀
-    have h_rightinv : Function.RightInverse f_inv f := by
-      rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]
-      symm
-      exact Hl_eq_reverseinduced_induced_Hl φ.symm Hl₁ h_ind₁
-    exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
-  Equiv.ofBijective f f_bij
+  have h_leftinv : Function.LeftInverse f_inv f := by
+    rintro ⟨Hl₀, ⟨h_ind₀, h_p₀⟩⟩
+    dsimp [f, f_inv]
+    simp only [Subtype.mk.injEq]
+    exact (Hl_eq_reverseinduced_induced_Hl φ Hl₀ h_ind₀).symm
+  have h_rightinv : Function.RightInverse f_inv f := by
+    rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
+    dsimp [f, f_inv]
+    simp only [Subtype.mk.injEq]
+    exact (Hl_eq_reverseinduced_induced_Hl φ.symm Hl₁ h_ind₁).symm
+  ⟨f, f_inv, h_leftinv, h_rightinv⟩
 
 noncomputable def isoSetOfInducedLabeledSubgraphListFromIsoGHl
     {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (φ : G ≃f G')
@@ -620,11 +612,9 @@ noncomputable def setOfLabeledSubgraphListIsoHl_permute
       constructor
       · intro i
         dsimp [Hl₀]
-        have : Nonempty ((Hl₀ i).coe ≃f (Hl i)) := by
-          have h_eq : π (π.invFun i) = i := by apply Equiv.apply_symm_apply
-          have : Nonempty ((Hl₁ (π.invFun i)).coe ≃f (Hl (π (π.invFun i)))) := h_p₁.1 (π.invFun i)
-          rw [h_eq] at this
-          exact this
+        have h_eq : π (π.invFun i) = i := π.apply_symm_apply _
+        have : Nonempty ((Hl₁ (π.invFun i)).coe ≃f (Hl (π (π.invFun i)))) := h_p₁.1 (π.invFun i)
+        rw [h_eq] at this
         exact this
       · intro i j h_ij
         simp_all only [predIsoLabeledHl, predDisjointLabeledSubgraphList,
@@ -655,19 +645,15 @@ theorem flagDensity_permute
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size)
                  = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size)
     := by
-    dsimp [multinomialCoefficient]; simp only [ge_iff_le]
+    dsimp [multinomialCoefficient]
     have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size)
                              = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size)
-      := by
-      dsimp [FlagList.permute]
-      let g : Fin t → ℕ := fun i ↦ ((Quotient.out (Fl i)).size - σ.size)
-      exact sum_perm_eq g π
+      :=
+      sum_perm_eq _ _
     have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial
                                    = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial
-      := by
-      dsimp [FlagList.permute]
-      let g : Fin t → ℕ := fun i ↦ ((Quotient.out (Fl i)).size - σ.size).factorial
-      exact prod_perm_eq g π
+      :=
+      prod_perm_eq _ _
     rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
   dsimp [labeledSubgraphListDensity]
   rw [h_count, h_coeff]
@@ -742,7 +728,7 @@ theorem flagTripleDensity_comm
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
 
-noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
+def setOfLabeledSubgraphListIsoHl_insert_empty
     (G : LabeledGraph σ V) (Fl : FlagList σ t Vl)
     : setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl i))
       ≃ setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl.insert (emptyFlag σ) i))
@@ -822,35 +808,31 @@ noncomputable def setOfLabeledSubgraphListIsoHl_insert_empty
         refine h_p₁.2 i.castSucc j.castSucc ?h_ij'
         simp only [ne_eq, Fin.castSucc_inj, h_ij, not_false_eq_true]
     exact ⟨Hl₀, h_ind₀, h_p₀⟩
-  let f_bij : Function.Bijective f := by
-    have h_leftinv : Function.LeftInverse f_inv f := by
-      intro ⟨Hl₀, h_ind₀, h_p₀⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]
-      funext i
-      simp only [Fin.is_lt]
+  have h_leftinv : Function.LeftInverse f_inv f := by
+    intro ⟨Hl₀, h_ind₀, h_p₀⟩
+    dsimp [f, f_inv]
+    simp only [Subtype.mk.injEq, Fin.is_lt]
+    rfl
+  have h_rightinv : Function.RightInverse f_inv f := by
+    rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
+    dsimp [f, f_inv]
+    simp only [Subtype.mk.injEq]
+    funext i
+    split
+    next _ =>
       rfl
-    have h_rightinv : Function.RightInverse f_inv f := by
-      rintro ⟨Hl₁, ⟨h_ind₁, h_p₁⟩⟩
-      dsimp [f, f_inv]
-      simp only [Subtype.mk.injEq]
-      funext i
-      split
-      next _ =>
-        simp only
-      next hi =>
-        have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
-        have iso_exist := Classical.choice (h_p₁.1 i)
-        dsimp [FlagList.insert] at iso_exist
-        have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
-          simp_all only [↓reduceDIte]
-        rw [h_Fl] at iso_exist
-        have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
-        have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
-        have h_iso := Hl₁_iso.symm.trans quotient_iso
-        symm; apply (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G (Hl₁ i)).mpr (Nonempty.intro h_iso)
-    exact Function.bijective_iff_has_inverse.mpr ⟨f_inv, h_leftinv, h_rightinv⟩
-  Equiv.ofBijective f f_bij
+    next hi =>
+      have hi : ↑i = t := Nat.eq_of_lt_succ_of_not_lt i.isLt hi
+      have iso_exist := Classical.choice (h_p₁.1 i)
+      dsimp [FlagList.insert] at iso_exist
+      have h_Fl : (if hi : ↑i = t then cast (flag_listTypeInsert_eq hi) (emptyFlag σ) else cast (flag_listTypeInsert_eq' hi) (Fl (i.coe hi))) = cast (flag_listTypeInsert_eq hi) (emptyFlag σ) := by
+        simp_all only [↓reduceDIte]
+      rw [h_Fl] at iso_exist
+      have Hl₁_iso : Quotient.out (emptyFlag σ) ≃f (Hl₁ i).coe := (iso_exist.trans (Classical.choice (insert_new_flag_cast_iso Fl (emptyFlag σ) hi)).symm).symm
+      have quotient_iso : Quotient.out (emptyFlag σ) ≃f emptyLabeledGraph σ := Classical.choice (Quotient.mk_out (emptyLabeledGraph σ))
+      have h_iso := Hl₁_iso.symm.trans quotient_iso
+      symm; apply (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G (Hl₁ i)).mpr (Nonempty.intro h_iso)
+  ⟨f, f_inv, h_leftinv, h_rightinv⟩
 
 
 lemma sum_eq_sum_plus_last
@@ -894,8 +876,8 @@ theorem flagDensity_insert_empty
     congr!
   have h_coeff : Z₀ = Z₁ := by
     simp only [Z₀, Z₁, multinomialCoefficient]
-    simp_rw [sum_eq_sum_plus_last, ← h_eq, tsub_self, add_zero, dite_eq_ite, h_eq',
-      prod_eq_prod_mul_last, ← h_eq, tsub_self, Nat.factorial_zero, mul_one]
+    simp_rw [sum_eq_sum_plus_last, prod_eq_prod_mul_last, ← h_eq, tsub_self,
+      add_zero, dite_eq_ite, h_eq', Nat.factorial_zero, mul_one]
   rw [h_count, h_coeff]
 
 theorem flagPairDensity_empty
@@ -1024,12 +1006,9 @@ theorem partition_card
               obtain ⟨hp₁, hp₂, hp₃⟩ := hp
               simp only [partitions, Finset.biUnion_subset_iff_forall_subset, Finset.mem_univ, forall_const, Finset.mem_filter,
                 true_and, p', r_list']
-              constructor <;> try constructor
-              · exact fun i ↦ hp₁ i.castSucc
-              · intro i j hij
-                rw [ne_eq, ← Fin.castSucc_inj] at hij
-                exact hp₂ i.castSucc j.castSucc hij
-              · exact fun i ↦ hp₃ i.castSucc
+              refine ⟨fun i ↦ hp₁ i.castSucc, fun i j hij ↦ ?_, fun i ↦ hp₃ i.castSucc⟩
+              rw [ne_eq, ← Fin.castSucc_inj] at hij
+              exact hp₂ i.castSucc j.castSucc hij
             let r := p (Fin.last t)
             have hr : r ∈ combinations (rest_part p') (r_list (Fin.last t)) := by
               simp only [combinations, Finset.mem_filter, Finset.mem_powerset]
@@ -1942,6 +1921,13 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
 
     let Vl' : Fin 2 → Set (Fin ℓ') := fun i ↦ (Gl' i).subgraph.verts \ G'.out.type_verts
     let Vl'' : Fin 2 → Set (Fin ℓ) := fun i ↦ (Gl'' i).subgraph.verts \ G.type_verts
+
+    have h_Vl'_Gl'_verts : ∀ i : Fin 2, (Vl' i) ∪ G'.out.type_verts = (Gl' i).subgraph.verts := by
+      intro i
+      exact Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G'.out (Gl' i))
+    have h_Vl''_Gl''_verts : ∀ i : Fin 2, (Vl'' i) ∪ G.type_verts = (Gl'' i).subgraph.verts := by
+      intro i
+      exact Set.diff_union_of_subset (labeledSubgraph_contain_type_verts G (Gl'' i))
     have h_Vl'_disj_G'_type_verts : ∀ i : Fin 2, (Vl' i) ∩ G'.out.type_verts = ∅ := by
       intro i
       exact Set.diff_inter_self
@@ -1956,10 +1942,32 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
       exact Set.disjoint_iff_inter_eq_empty.mpr (h_Gl''_pairwise_disj i j h_neq)
     have h_Vl'_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe ≃f [H₁, H₂]ᵍ i) := by
       intro i
-      sorry
+      have h' : inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right
+                = inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))  := by
+        congr!
+        exact h_Vl'_Gl'_verts i
+      let g₁ : (inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe
+                ≃f (inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))).coe := by
+        rw [h']
+      let g₂ : (inducedLabeledSubgraph G'.out (Gl' i).subgraph.verts (labeledSubgraph_contain_type_verts G'.out (Gl' i))).coe
+                ≃f [H₁, H₂]ᵍ i := by
+        rw [←inducedLabeledSubgraph_eq (h_Gl'_ind i)]
+        exact (h_Gl'_iso i).some
+      exact Nonempty.intro (g₁.trans g₂)
     have h_Vl''_iso : ∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe ≃f [G'.out, H₃]ᵍ i) := by
       intro i
-      sorry
+      have h' : inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right
+                = inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i)) := by
+        congr!
+        exact h_Vl''_Gl''_verts i
+      let g₁ : (inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe
+                ≃f (inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i))).coe := by
+        rw [h']
+      let g₂ : (inducedLabeledSubgraph G (Gl'' i).subgraph.verts (labeledSubgraph_contain_type_verts G (Gl'' i))).coe
+                ≃f [G'.out, H₃]ᵍ i := by
+        rw [←inducedLabeledSubgraph_eq (h_Gl''_ind i)]
+        exact (h_Gl''_iso i).some
+      exact Nonempty.intro (g₁.trans g₂)
 
     use ⟨⟨G', Vl', Vl''⟩,
       h_Vl'_disj_G'_type_verts, h_Vl''_disj_G_type_verts,
@@ -1968,9 +1976,9 @@ let f_T₁_T₀ : T₁ ≃ T₀ :=
     simp_all only [Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, Prod.mk.injEq, true_and]
     constructor
     . funext i
-      sorry
+      exact (inducedLabeledSubgraph_eq (h_Gl'_ind i)).symm
     . funext i
-      sorry
+      exact (inducedLabeledSubgraph_eq (h_Gl''_ind i)).symm
 
   Equiv.ofBijective f_T₁_T₀_fwd ⟨h_f_T₁_T₀_inj, h_f_T₁_T₀_surj⟩
 sorry

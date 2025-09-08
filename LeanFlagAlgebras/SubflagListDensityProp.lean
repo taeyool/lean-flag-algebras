@@ -732,141 +732,27 @@ theorem flagListDensity₂_prod_approx
           · rw [← Nat.cast_add]
             apply sq_nonneg
       exact this.trans simp_calc
-    let Ω' := { (w₁, w₂) : Finset W × Finset W | (w₁.card = freeF.card ∧ w₁ ⊆ freeG) ∧ (w₂.card = freeF'.card ∧ w₂ ⊆ freeG)}
-    have h_Ω_Ω' : Ω.toFinset.card = Ω'.toFinset.card := by
-      apply Finset.card_eq_of_equiv
-      refine Equiv.ofBijective ?_ ?_
-      · intro ⟨⟨w₁, w₂⟩, hw_in_Ω⟩
-        use ⟨w₁ \ Grep.type_verts.toFinset, w₂ \ Grep.type_verts.toFinset⟩
-        simp_all only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω, Ω']
-        constructor <;> constructor
-        · rw [card_sdiff (by simp_all only [Set.toFinset_subset])]
-          rw [hw_in_Ω.1.1, ← Grep.type_verts_card_eq]
-          simp only [Set.toFinset_card]
-        · simp only [freeG]
-          refine subset_sdiff.mpr ?_
-          simp only [subset_univ, true_and]
-          refine disjoint_iff_inter_eq_empty.mpr ?_
-          exact sdiff_inter_self Grep.type_verts.toFinset w₁
-        · rw [card_sdiff (by simp_all only [Set.toFinset_subset])]
-          rw [hw_in_Ω.2.1, ← Grep.type_verts_card_eq]
-          simp only [Set.toFinset_card]
-        · simp only [freeG]
-          refine subset_sdiff.mpr ?_
-          simp only [subset_univ, true_and]
-          refine disjoint_iff_inter_eq_empty.mpr ?_
-          exact sdiff_inter_self Grep.type_verts.toFinset w₂
-      · constructor
-        · intro ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ ⟨⟨w'₁, w'₂⟩, hw'_in_Ω⟩ h_eq
-          simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
-          simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω hw'_in_Ω
-          rw [← sdiff_union_inter w₁ Grep.type_verts.toFinset, ← sdiff_union_inter w'₁ Grep.type_verts.toFinset]
-          rw [← sdiff_union_inter w₂ Grep.type_verts.toFinset, ← sdiff_union_inter w'₂ Grep.type_verts.toFinset]
-          rw [h_eq.1, h_eq.2]
-          have hw₁ : w₁ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
-            simp only [inter_eq_right, Set.toFinset_subset]
-            exact hw_in_Ω.1.2
-          have hw₂ : w₂ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
-            simp only [inter_eq_right, Set.toFinset_subset]
-            exact hw_in_Ω.2.2
-          have hw'₁ : w'₁ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
-            simp only [inter_eq_right, Set.toFinset_subset]
-            exact hw'_in_Ω.1.2
-          have hw'₂ : w'₂ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
-            simp only [inter_eq_right, Set.toFinset_subset]
-            exact hw'_in_Ω.2.2
-          rw [hw₁, hw₂, hw'₁, hw'₂]
-          constructor <;> rfl
-        · intro ⟨⟨w₁, w₂⟩, hw_in_Ω'⟩
-          simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω', freeG] at hw_in_Ω'
-          have hw₁ : Disjoint w₁ Grep.type_verts.toFinset := by
-            refine disjoint_iff_inter_eq_empty.mpr ?_
-            ext x; simp only [mem_inter, Set.mem_toFinset, notMem_empty, iff_false, not_and]
-            intro hx
-            have hx := hw_in_Ω'.1.2 hx
-            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true]
-          have hw₂ : Disjoint w₂ Grep.type_verts.toFinset := by
-            refine disjoint_iff_inter_eq_empty.mpr ?_
-            ext x; simp only [mem_inter, Set.mem_toFinset, notMem_empty, iff_false, not_and]
-            intro hx
-            have hx := hw_in_Ω'.2.2 hx
-            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true]
-          use ⟨⟨w₁ ∪ Grep.type_verts.toFinset, w₂ ∪ Grep.type_verts.toFinset⟩, by
-            simp only [Set.toFinset_setOf, mem_filter, mem_univ, coe_union, Set.coe_toFinset, Set.subset_union_right, and_true, true_and, Ω]
-            constructor
-            · rw [card_union_eq_card_add_card.mpr hw₁]
-              rw [hw_in_Ω'.1.1, hfreeF_size, ← Grep.type_verts_card_eq]
-              simp only [Set.toFinset_card]
-              apply Nat.sub_add_cancel
-              rw [Grep.type_verts_card_eq, ← Frep.type_verts_card_eq]
-              simp only [LabeledGraph.size]
-              exact set_fintype_card_le_univ Frep.type_verts
-            · rw [card_union_eq_card_add_card.mpr hw₂]
-              rw [hw_in_Ω'.2.1, hfreeF'_size, ← Grep.type_verts_card_eq]
-              simp only [Set.toFinset_card]
-              apply Nat.sub_add_cancel
-              rw [Grep.type_verts_card_eq, ← F'rep.type_verts_card_eq]
-              simp only [LabeledGraph.size]
-              exact set_fintype_card_le_univ F'rep.type_verts⟩
-          simp only [Subtype.mk.injEq, Prod.mk.injEq]
-          rw [union_sdiff_right, union_sdiff_right]
-          rw [sdiff_eq_self_of_disjoint hw₁, sdiff_eq_self_of_disjoint hw₂]
-          constructor <;> rfl
-    let B' : Finset Ω := { w | by
-      obtain ⟨⟨w₁, w₂⟩, h⟩ := w
-      exact w₁ ∩ w₂ = ∅ }
-    have hB'_size : B'.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card - freeF.card) (freeF'.card) := by
-      sorry
-    have h_Bc_B'c : (B.toSet)ᶜ.toFinset.card = (B'.toSet)ᶜ.toFinset.card := by sorry
-
-    have compl_card' : (@Nat.cast ℚ _ (B'.toSet)ᶜ.toFinset.card) / ↑Ω'.toFinset.card = 1 - ↑(B'.card) / ↑(Ω'.toFinset.card) := by
-      rw [← h_Ω_Ω', ← Ω_card]
-      simp only [Set.compl_eq_univ_diff B'.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
-      rw [card_sdiff (by exact Finset.subset_univ B')]
-      rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B'))]
-      rw [sub_div, div_self (by rwa [Ω_card, ne_eq, Rat.natCast_eq_zero])]
-
-    rw [h_Ω_Ω', h_Bc_B'c]
-    suffices @Nat.cast ℚ _ B'.card / Ω'.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by
-      rwa [compl_card', tsub_le_iff_tsub_le]
-    rw [← h_Ω_Ω', hΩ_size, hB'_size]
+    rw [compl_card]
+    suffices @Nat.cast ℚ _ B.card / Ω.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by rwa [tsub_le_iff_tsub_le]
+    have hB_size' : B.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card - freeF.card) (freeF'.card) := by
+      rw [hB_size]
+      have : Frep.size - σ.size + (F'rep.size - σ.size) ≤ freeG.card := by omega
+      simp only [multinomialCoefficient, Fin.sum_univ_two, ge_iff_le, this, ↓reduceDIte, Fin.prod_univ_two, r_list]
+      rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
+      nth_rw 2 [← Nat.div_div_eq_div_mul]
+      rw [Nat.div_mul_div (by apply Nat.dvd_div_of_mul_dvd; apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
+      rw [mul_assoc, Nat.div_div_eq_div_mul, ← hfreeF_size, ← hfreeF'_size, Nat.sub_sub]
+    rw [hΩ_size, hB_size']
+    rw [← Nat.cast_sub (by sorry), ← Nat.cast_sub (by sorry), ← Nat.cast_sub (by omega), ← hfreeG_size, ← hfreeF_size, ← hfreeF'_size]
     rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
     rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
-    rw [Nat.choose_eq_factorial_div_factorial (by sorry), mul_comm]
-    -- rw [div_mul_eq_div_div]
-    sorry
-
-
-
-example {E : Type} [Fintype E] (W : Set E) (A B C : Finset W) (hB : W.toFinset.card = 1) : Disjoint (A \ B) B := by
-  -- refine disjoint_iff_inter_eq_empty.mpr ?_
-  -- exact sdiff_inter_self B A
-  -- refine subset_sdiff.mpr ?_
-  -- refine disjoint_iff_inter_eq_empty.mpr ?_
-  -- apply?
-  sorry
-
-example (A B C : ℕ) : A - B + B = A := by
-  -- refine Nat.sub_add_cancel ?_
-
-  -- refine add_ne_zero.mp ?_
-  -- exact Nat.ne_zero_of_lt h
-  -- refine Nat.sub_lt_sub_iff_right ?_
-  -- refine Eq.symm (Nat.sub_add_comm ?_)
-  -- exact Nat.le_of_succ_le hA
-  -- refine Nat.le_pow ?_
-  -- refine Nat.le_mul_of_pos_left A ?_
-  -- simp only [Nat.ofNat_pos]
-  sorry
-
-example (A B C D : ℚ) : A / B ≤ 1 := by
-  -- refine div_le_one_of_le₀ ?_ ?_
-  -- exact div_mul_eq_div_div A B C
-  -- exact one_div_mul_eq_div B A
-  -- exact div_div A B C
-  -- exact Eq.symm (div_mul A B C)
-  -- exact tsub_le_iff_tsub_le
-  sorry
+    rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, ge_iff_le]
+    refine Preorder.le_trans _ ?_ _ ?_ ?_
+    · exact (freeG.card - freeF.card - freeF'.card) ^ freeF.card / freeG.card ^ freeF.card
+    · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
+      #check one_add_mul_le_pow
+      sorry
+    · sorry
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
