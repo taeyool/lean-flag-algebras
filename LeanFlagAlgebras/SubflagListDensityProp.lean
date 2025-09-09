@@ -71,6 +71,7 @@ theorem flagListDensity₂_prod_approx
     simp_all only [freeF']
     rw [← F'rep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
     simp only [card_univ, Set.toFinset_card]; rfl
+
   let Ω := { (w₁, w₂) : Finset W × Finset W | (w₁.card = Frep.size ∧ Grep.type_verts ⊆ w₁) ∧ (w₂.card = F'rep.size ∧ Grep.type_verts ⊆ w₂)}
   have hΩ_size : Ω.toFinset.card = (freeG.card).choose freeF.card * (freeG.card).choose freeF'.card := by
     rw [← comb_card freeG freeF.card, ← comb_card freeG freeF'.card, ← Finset.card_product, eq_comm]
@@ -83,31 +84,20 @@ theorem flagListDensity₂_prod_approx
       simp only [combinations, mem_product, mem_filter, mem_powerset] at hw
       obtain ⟨⟨hw₁_free, hw₁_size⟩, ⟨hw₂_free, hw₂_size⟩⟩ := hw
       constructor
-      · rw [Finset.card_union, hw₁_size, hfreeF_size, ← Grep.type_verts_card_eq, Set.toFinset_card]
-        have hw₁_sub : (w₁ ∩ Grep.type_verts.toFinset).card = 0 := by
-          rw [card_eq_zero]
-          apply disjoint_iff_inter_eq_empty.mp (hfreeG_sub w₁ hw₁_free)
-        rw [hw₁_sub, tsub_zero]
-        apply Nat.sub_add_cancel
-        rw [Grep.type_verts_card_eq, ← Frep.type_verts_card_eq, LabeledGraph.size]
-        exact set_fintype_card_le_univ Frep.type_verts
-      · rw [Finset.card_union, hw₂_size, hfreeF'_size, ← Grep.type_verts_card_eq, Set.toFinset_card]
-        have hw₂_sub : (w₂ ∩ Grep.type_verts.toFinset).card = 0 := by
-          rw [card_eq_zero]
-          apply disjoint_iff_inter_eq_empty.mp (hfreeG_sub w₂ hw₂_free)
-        rw [hw₂_sub, tsub_zero]
-        apply Nat.sub_add_cancel
-        rw [Grep.type_verts_card_eq, ← F'rep.type_verts_card_eq, LabeledGraph.size]
-        exact set_fintype_card_le_univ F'rep.type_verts
+      · rw [card_union_eq_card_add_card.mpr (hfreeG_sub w₁ hw₁_free), hw₁_size, hfreeF_size]
+        rw [Set.toFinset_card, Grep.type_verts_card_eq]
+        exact Nat.sub_add_cancel Frep.type_size_le_size
+      · rw [card_union_eq_card_add_card.mpr (hfreeG_sub w₂ hw₂_free), hw₂_size, hfreeF'_size]
+        rw [Set.toFinset_card, Grep.type_verts_card_eq]
+        exact Nat.sub_add_cancel F'rep.type_size_le_size
     · constructor
-      · intro ⟨⟨w₁, w₂⟩, hw⟩ ⟨⟨w'₁, w'₂⟩, hw'⟩ h
+      · intro ⟨⟨w₁, w₂⟩, hw⟩ ⟨⟨w'₁, w'₂⟩, hw'⟩ h_eq
         simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
         simp only [combinations, mem_product, mem_filter, mem_powerset] at hw hw'
-        obtain ⟨h₁, h₂⟩ := h
         obtain ⟨⟨hw₁_free, _⟩, ⟨hw₂_free, _⟩⟩ := hw
         obtain ⟨⟨hw'₁_free, _⟩, ⟨hw'₂_free, _⟩⟩ := hw'
-        rw [← union_sdiff_cancel_right (hfreeG_sub w₁ hw₁_free), ← union_sdiff_cancel_right (hfreeG_sub w'₁ hw'₁_free), h₁]
-        rw [← union_sdiff_cancel_right (hfreeG_sub w₂ hw₂_free), ← union_sdiff_cancel_right (hfreeG_sub w'₂ hw'₂_free), h₂]
+        rw [← union_sdiff_cancel_right (hfreeG_sub w₁ hw₁_free), ← union_sdiff_cancel_right (hfreeG_sub w'₁ hw'₁_free), h_eq.1]
+        rw [← union_sdiff_cancel_right (hfreeG_sub w₂ hw₂_free), ← union_sdiff_cancel_right (hfreeG_sub w'₂ hw'₂_free), h_eq.2]
         simp only [and_self]
       · intro ⟨⟨w₁, w₂⟩, hw⟩
         simp only [mem_filter, mem_univ, Set.mem_setOf_eq, true_and, Ω] at hw
@@ -120,17 +110,14 @@ theorem flagListDensity₂_prod_approx
             exact subset_univ w₁
           · rw [Finset.card_sdiff, Set.toFinset_card]
             · rw [hw₁_size, hfreeF_size, ← Grep.type_verts_card_eq]
-            · simp only [Set.toFinset_subset]
-              exact hw₁_tverts
+            · rwa [Set.toFinset_subset]
           · refine sdiff_subset_sdiff ?_ fun ⦃a⦄ a ↦ a
             exact subset_univ w₂
           · rw [Finset.card_sdiff, Set.toFinset_card]
             · rw [hw₂_size, hfreeF'_size, ← Grep.type_verts_card_eq]
-            · simp only [Set.toFinset_subset]
-              exact hw₂_tverts
+            · rwa [Set.toFinset_subset]
         use ⟨w, hw⟩
-        simp only [sdiff_union_self_eq_union, Subtype.mk.injEq, Prod.mk.injEq, union_eq_left, Set.toFinset_subset, w]
-        exact ⟨hw₁_tverts, hw₂_tverts⟩
+        simp_all only [sdiff_union_self_eq_union, Subtype.mk.injEq, Prod.mk.injEq, union_eq_left, Set.toFinset_subset, and_self, w]
   let A : Finset Ω := { v | by
     obtain ⟨⟨v₁, v₂⟩, h⟩ := v
     exact Nonempty ((inducedLabeledSubgraph Grep v₁ h.1.2).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v₂ h.2.2).coe ≃f F'rep) }
@@ -156,48 +143,37 @@ theorem flagListDensity₂_prod_approx
       simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and]
       constructor <;> try constructor
       · intro i
-        by_cases h : i = 0
-        · simp only [h, Fin.isValue, r, r_list]
+        by_cases hi : i = 0
+        · simp only [hi, Fin.isValue, r, r_list]
           constructor
           · intro x hx
-            simp only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, freeG]
-            simp only [mem_sdiff, Set.mem_toFinset] at hx
-            exact Set.notMem_of_mem_diff hx
+            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
           · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.1.2)]
-            rw [h_in_Ω.1.1, ← Grep.type_verts_card_eq, Set.toFinset_card]
-        · simp only [Fin.eq_one_of_ne_zero i h, Fin.isValue, r, r_list]
+            rw [h_in_Ω.1.1, Set.toFinset_card, Grep.type_verts_card_eq]
+        · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, r, r_list]
           constructor
           · intro x hx
-            simp only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, freeG]
-            simp only [mem_sdiff, Set.mem_toFinset] at hx
-            exact Set.notMem_of_mem_diff hx
+            simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
           · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.2.2)]
-            rw [h_in_Ω.2.1, ← Grep.type_verts_card_eq, Set.toFinset_card]
+            rw [h_in_Ω.2.1, Set.toFinset_card, Grep.type_verts_card_eq]
       · intro i j hij
         by_cases hi : i = 0 <;> by_cases hj : j = 0
         · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue, not_true_eq_false]
-        · simp only [hi, Fin.isValue, Fin.eq_one_of_ne_zero j hj, r]
-          exact disjoint_iff_inter_eq_empty.mpr h_in_B
-        · simp only [hj, Fin.isValue, Fin.eq_one_of_ne_zero i hi, r]
-          rw [Finset.inter_comm] at h_in_B
-          exact disjoint_iff_inter_eq_empty.mpr h_in_B
+        · simp_all only [Fin.isValue, Fin.eq_one_of_ne_zero j hj, disjoint_iff_inter_eq_empty, r]
+        · rw [Finset.inter_comm] at h_in_B
+          simp_all only [Fin.isValue, Fin.eq_one_of_ne_zero i hi, disjoint_iff_inter_eq_empty, r]
         · simp_all only [Fin.eq_one_of_ne_zero i hi, Fin.eq_one_of_ne_zero j hj, not_true_eq_false]
       · intro i
         by_cases h : i = 0
         · simp only [h, Fin.isValue, r]
           intro x hx
-          simp only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, freeG]
-          simp only [mem_sdiff, Set.mem_toFinset] at hx
-          exact Set.notMem_of_mem_diff hx
+          simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
         · simp only [Fin.eq_one_of_ne_zero i h, Fin.isValue, r]
           intro x hx
-          simp only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, freeG]
-          simp only [mem_sdiff, Set.mem_toFinset] at hx
-          exact Set.notMem_of_mem_diff hx
+          simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
     · constructor
-      · intro ⟨⟨⟨w₁, w₂⟩, hw_in_Ω⟩, hw_in_B⟩ ⟨⟨⟨w'₁, w'₂⟩, hw'_in_Ω⟩, hw'_in_B⟩ h_eq
-        simp only [Subtype.mk.injEq] at h_eq
-        simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      · intro ⟨⟨⟨w₁, w₂⟩, hw_in_Ω⟩, _⟩ ⟨⟨⟨w'₁, w'₂⟩, hw'_in_Ω⟩, _⟩ h_eq
+        simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
         simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω hw'_in_Ω
         have hw₁ : w₁ ∩ Grep.type_verts.toFinset = Grep.type_verts.toFinset := by
           simp only [inter_eq_right, Set.toFinset_subset]
@@ -214,55 +190,42 @@ theorem flagListDensity₂_prod_approx
         have h₁ := congrFun h_eq 0
         have h₂ := congrFun h_eq 1
         simp only at h₁ h₂
-
         rw [← sdiff_union_inter w₁ Grep.type_verts.toFinset, ← sdiff_union_inter w'₁ Grep.type_verts.toFinset, h₁, hw₁, hw'₁]
         rw [← sdiff_union_inter w₂ Grep.type_verts.toFinset, ← sdiff_union_inter w'₂ Grep.type_verts.toFinset, h₂, hw₂, hw'₂]
         simp only [sdiff_union_self_eq_union, and_self]
       · intro ⟨l, hl⟩
         simp only [partitions, ne_eq, biUnion_subset_iff_forall_subset, mem_univ, forall_const, mem_filter, true_and] at hl
+        obtain ⟨hl, hl_disj, _⟩ := hl
         let w := (l 0 ∪ Grep.type_verts.toFinset, l 1 ∪ Grep.type_verts.toFinset)
         have hw_in_Ω : w ∈ Ω := by
           simp only [Fin.isValue, Set.mem_setOf_eq, coe_union, Set.coe_toFinset, Set.subset_union_right, and_true, Ω, w]
           constructor
-          · have hl0_sub : ((l 0) ∩ Grep.type_verts.toFinset).card = 0 := by
-              rw [card_eq_zero]
-              apply disjoint_iff_inter_eq_empty.mp (hfreeG_sub (l 0) (hl.1 0).1)
-            rw [card_union, (hl.1 0).2, hl0_sub, tsub_zero]
+          · rw [card_union_eq_card_add_card.mpr (hfreeG_sub (l 0) (hl 0).1), (hl 0).2]
             simp only [Fin.isValue, Set.toFinset_card, r_list]
-            rw [← Grep.type_verts_card_eq]
-            refine Nat.sub_add_cancel ?_
-            rw [Grep.type_verts_card_eq, ← Frep.type_verts_card_eq, LabeledGraph.size]
-            exact set_fintype_card_le_univ Frep.type_verts
-          · have hl1_sub : ((l 1) ∩ Grep.type_verts.toFinset).card = 0 := by
-              rw [card_eq_zero]
-              apply disjoint_iff_inter_eq_empty.mp (hfreeG_sub (l 1) (hl.1 1).1)
-            rw [card_union, (hl.1 1).2, hl1_sub, tsub_zero]
+            rw [Grep.type_verts_card_eq]
+            exact Nat.sub_add_cancel Frep.type_size_le_size
+          · rw [card_union_eq_card_add_card.mpr (hfreeG_sub (l 1) (hl 1).1), (hl 1).2]
             simp only [Fin.isValue, Set.toFinset_card, r_list]
-            rw [← Grep.type_verts_card_eq]
-            refine Nat.sub_add_cancel ?_
-            rw [Grep.type_verts_card_eq, ← F'rep.type_verts_card_eq, LabeledGraph.size]
-            exact set_fintype_card_le_univ F'rep.type_verts
+            rw [Grep.type_verts_card_eq]
+            exact Nat.sub_add_cancel F'rep.type_size_le_size
         have hw_in_B : ⟨w, hw_in_Ω⟩ ∈ B := by
           simp only [Fin.isValue, mem_filter, mem_univ, true_and, B, w]
           have hl0 : (l 0 ∪ Grep.type_verts.toFinset) \ Grep.type_verts.toFinset = l 0 := by
             refine union_sdiff_cancel_right ?_
-            exact hfreeG_sub (l 0) (hl.1 0).1
+            exact hfreeG_sub (l 0) (hl 0).1
           have hl1 : (l 1 ∪ Grep.type_verts.toFinset) \ Grep.type_verts.toFinset = l 1 := by
             refine union_sdiff_cancel_right ?_
-            exact hfreeG_sub (l 1) (hl.1 1).1
+            exact hfreeG_sub (l 1) (hl 1).1
           rw [hl0, hl1, ← disjoint_iff_inter_eq_empty]
-          apply hl.2.1 0 1
-          simp only [Fin.isValue, zero_ne_one, not_false_eq_true]
+          exact hl_disj 0 1 (by simp only [Fin.isValue, zero_ne_one, not_false_eq_true])
         use ⟨⟨w, hw_in_Ω⟩, hw_in_B⟩
         simp only [Subtype.mk.injEq]
         funext i
         by_cases h : i = 0
         · simp only [h, Fin.isValue, w]
-          refine union_sdiff_cancel_right ?_
-          exact hfreeG_sub (l 0) (hl.1 0).1
+          exact union_sdiff_cancel_right (hfreeG_sub (l 0) (hl 0).1)
         · simp only [Fin.eq_one_of_ne_zero i h, Fin.isValue, w]
-          refine union_sdiff_cancel_right ?_
-          exact hfreeG_sub (l 1) (hl.1 1).1
+          exact union_sdiff_cancel_right (hfreeG_sub (l 1) (hl 1).1)
 
   have P₁ : labeledSubgraphDensity Frep Grep * labeledSubgraphDensity F'rep Grep = A.card / Ω.toFinset.card := by
     dsimp only [labeledSubgraphDensity]

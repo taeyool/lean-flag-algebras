@@ -89,6 +89,12 @@ noncomputable def LabeledGraph.size
   :=
   Fintype.card V
 
+lemma LabeledGraph.type_size_le_size {σ : FlagType T} {V : Type} [Fintype V] (G : LabeledGraph σ V)
+    : σ.size ≤ G.size
+  := by
+  rw [← G.type_verts_card_eq]
+  exact set_fintype_card_le_univ G.type_verts
+
 omit [Fintype T] in
 theorem type_embed_Adj_iff
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : T)
