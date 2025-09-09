@@ -118,12 +118,13 @@ theorem flagListDensity₂_prod_approx
             · rwa [Set.toFinset_subset]
         use ⟨w, hw⟩
         simp_all only [sdiff_union_self_eq_union, Subtype.mk.injEq, Prod.mk.injEq, union_eq_left, Set.toFinset_subset, and_self, w]
-  let A : Finset Ω := { v | by
-    obtain ⟨⟨v₁, v₂⟩, h⟩ := v
-    exact Nonempty ((inducedLabeledSubgraph Grep v₁ h.1.2).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep v₂ h.2.2).coe ≃f F'rep) }
-  let B : Finset Ω := { v | by
-    obtain ⟨⟨v₁, v₂⟩, h⟩ := v
-    exact (v₁ \ Grep.type_verts.toFinset) ∩ (v₂ \ Grep.type_verts.toFinset) = ∅ }
+  have hΩ_card_eq : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by simp only [card_univ, Fintype.card_ofFinset, Set.toFinset_card]
+  let A : Finset Ω := { w | by
+    obtain ⟨⟨w₁, w₂⟩, h⟩ := w
+    exact Nonempty ((inducedLabeledSubgraph Grep w₁ h.1.2).coe ≃f Frep) ∧ Nonempty ((inducedLabeledSubgraph Grep w₂ h.2.2).coe ≃f F'rep) }
+  let B : Finset Ω := { w | by
+    obtain ⟨⟨w₁, w₂⟩, h⟩ := w
+    exact (w₁ \ Grep.type_verts.toFinset) ∩ (w₂ \ Grep.type_verts.toFinset) = ∅ }
   let r_list : Fin 2 → ℕ := fun i ↦
     (match i with
       | 0 => Frep.size - σ.size
@@ -146,13 +147,13 @@ theorem flagListDensity₂_prod_approx
         by_cases hi : i = 0
         · simp only [hi, Fin.isValue, r, r_list]
           constructor
-          · intro x hx
+          · intro w hw
             simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
           · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.1.2)]
             rw [h_in_Ω.1.1, Set.toFinset_card, Grep.type_verts_card_eq]
         · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, r, r_list]
           constructor
-          · intro x hx
+          · intro w hw
             simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
           · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.2.2)]
             rw [h_in_Ω.2.1, Set.toFinset_card, Grep.type_verts_card_eq]
@@ -164,11 +165,11 @@ theorem flagListDensity₂_prod_approx
           simp_all only [Fin.isValue, Fin.eq_one_of_ne_zero i hi, disjoint_iff_inter_eq_empty, r]
         · simp_all only [Fin.eq_one_of_ne_zero i hi, Fin.eq_one_of_ne_zero j hj, not_true_eq_false]
       · intro i
-        by_cases h : i = 0
-        · simp only [h, Fin.isValue, r]
+        by_cases hi : i = 0
+        · simp only [hi, Fin.isValue, r]
           intro x hx
           simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
-        · simp only [Fin.eq_one_of_ne_zero i h, Fin.isValue, r]
+        · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, r]
           intro x hx
           simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
     · constructor
@@ -217,84 +218,73 @@ theorem flagListDensity₂_prod_approx
             refine union_sdiff_cancel_right ?_
             exact hfreeG_sub (l 1) (hl 1).1
           rw [hl0, hl1, ← disjoint_iff_inter_eq_empty]
-          exact hl_disj 0 1 (by simp only [Fin.isValue, zero_ne_one, not_false_eq_true])
+          exact hl_disj 0 1 Fin.zero_ne_one
         use ⟨⟨w, hw_in_Ω⟩, hw_in_B⟩
         simp only [Subtype.mk.injEq]
         funext i
-        by_cases h : i = 0
-        · simp only [h, Fin.isValue, w]
+        by_cases hi : i = 0
+        · simp only [hi, Fin.isValue, w]
           exact union_sdiff_cancel_right (hfreeG_sub (l 0) (hl 0).1)
-        · simp only [Fin.eq_one_of_ne_zero i h, Fin.isValue, w]
+        · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, w]
           exact union_sdiff_cancel_right (hfreeG_sub (l 1) (hl 1).1)
 
   have P₁ : labeledSubgraphDensity Frep Grep * labeledSubgraphDensity F'rep Grep = A.card / Ω.toFinset.card := by
     dsimp only [labeledSubgraphDensity]
-    field_simp
-    congr
+    field_simp; congr
     · dsimp only [labeledSubgraphCount]
       rw [← Nat.cast_mul, Nat.cast_inj, ← Finset.card_product]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
       · intro ⟨⟨G₁, G₂⟩, hG⟩
-        let V_G₁G₂ : Finset W × Finset W := (G₁.subgraph.verts.toFinset, G₂.subgraph.verts.toFinset)
-        have h_V_G₁G₂_in_Ω : V_G₁G₂ ∈ Ω := by
-          simp only [Set.mem_setOf_eq, Ω, V_G₁G₂]
+        let W_G₁G₂ : Finset W × Finset W := (G₁.subgraph.verts.toFinset, G₂.subgraph.verts.toFinset)
+        have hW_G₁G₂_in_Ω : W_G₁G₂ ∈ Ω := by
+          simp only [Set.mem_setOf_eq, Ω, W_G₁G₂]
           simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and] at hG
           obtain ⟨⟨_, hG₁_iso⟩, ⟨_, hG₂_iso⟩⟩ := hG
-          constructor
-          · constructor
-            · rw [← labeledGraphIso_size_eq G₁.coe Frep (Classical.choice hG₁_iso)]
-              simp only [Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
-            · simp only [Set.coe_toFinset]
-              exact labeledSubgraph_contain_type_verts Grep G₁
-          · constructor
-            · rw [← labeledGraphIso_size_eq G₂.coe F'rep (Classical.choice hG₂_iso)]
-              simp only [Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
-            · simp only [Set.coe_toFinset]
-              exact labeledSubgraph_contain_type_verts Grep G₂
-        use ⟨V_G₁G₂, h_V_G₁G₂_in_Ω⟩
+          constructor <;> constructor
+          · rw [← labeledGraphIso_size_eq G₁.coe Frep (Classical.choice hG₁_iso)]
+            simp only [Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
+          · simp only [Set.coe_toFinset]
+            exact labeledSubgraph_contain_type_verts Grep G₁
+          · rw [← labeledGraphIso_size_eq G₂.coe F'rep (Classical.choice hG₂_iso)]
+            simp only [Set.toFinset_card, Fintype.card_ofFinset, LabeledGraph.size]
+          · simp only [Set.coe_toFinset]
+            exact labeledSubgraph_contain_type_verts Grep G₂
+        use ⟨W_G₁G₂, hW_G₁G₂_in_Ω⟩
         simp_all only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and, Set.coe_setOf, Set.mem_setOf_eq, Ω, A]
         obtain ⟨⟨hG₁_ind, hG₁_iso⟩, ⟨hG₂_ind, hG₂_iso⟩⟩ := hG
-        obtain ⟨⟨hG₁_size, hG₁_tverts⟩, ⟨hG₂_size, hG₂_tverts⟩⟩ := h_V_G₁G₂_in_Ω
+        obtain ⟨⟨hG₁_size, hG₁_tverts⟩, ⟨hG₂_size, hG₂_tverts⟩⟩ := hW_G₁G₂_in_Ω
         constructor <;> apply Nonempty.intro
-        · have iso_G₁_G₁' : G₁.coe ≃f (inducedLabeledSubgraph Grep V_G₁G₂.1 hG₁_tverts).coe := by
+        · have iso_G₁_G₁' : G₁.coe ≃f (inducedLabeledSubgraph Grep W_G₁G₂.1 hG₁_tverts).coe := by
             rw [inducedLabeledSubgraph_eq hG₁_ind]
             apply LabeledGraphIso.labeledSubgraphIso_eq
             congr!
-            simp only [Set.coe_toFinset, V_G₁G₂]
+            simp only [Set.coe_toFinset, W_G₁G₂]
           exact iso_G₁_G₁'.symm.trans (Classical.choice hG₁_iso)
-        · have iso_G₂_G₂' : G₂.coe ≃f (inducedLabeledSubgraph Grep V_G₁G₂.2 hG₂_tverts).coe := by
+        · have iso_G₂_G₂' : G₂.coe ≃f (inducedLabeledSubgraph Grep W_G₁G₂.2 hG₂_tverts).coe := by
             rw [inducedLabeledSubgraph_eq hG₂_ind]
             apply LabeledGraphIso.labeledSubgraphIso_eq
             congr!
-            simp only [Set.coe_toFinset, V_G₁G₂]
+            simp only [Set.coe_toFinset, W_G₁G₂]
           exact iso_G₂_G₂'.symm.trans (Classical.choice hG₂_iso)
       · constructor
-        · intro ⟨⟨G₁, G₂⟩, hG⟩ ⟨⟨G'₁, G'₂⟩, hG'⟩ h
+        · intro ⟨⟨G₁, G₂⟩, hG⟩ ⟨⟨G'₁, G'₂⟩, hG'⟩ h_eq
           simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Set.toFinset_inj]
           simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, true_and] at hG hG'
-          obtain ⟨h₁, h₂⟩ := h
           obtain ⟨⟨hG₁_ind, _⟩, ⟨hG₂_ind, _⟩⟩ := hG
           obtain ⟨⟨hG'₁_ind, _⟩, ⟨hG'₂_ind, _⟩⟩ := hG'
-          constructor
-          · exact labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₁_ind hG'₁_ind h₁)
-          · exact labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₂_ind hG'₂_ind h₂)
+          exact ⟨labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₁_ind hG'₁_ind h_eq.1),
+                labeledSubgraph_eq_from_subgraph_eq (inducedSubgraph_eq_verts hG₂_ind hG'₂_ind h_eq.2)⟩
         · intro ⟨⟨⟨w₁, w₂⟩, h_in_Ω⟩, h_in_A⟩
           obtain ⟨⟨_, h_w₁_tverts⟩, ⟨_, h_w₂_tverts⟩⟩ := h_in_Ω
           simp only [mem_filter, mem_univ, true_and, A] at h_in_A
           let G₁ := inducedLabeledSubgraph Grep w₁ h_w₁_tverts
           let G₂ := inducedLabeledSubgraph Grep w₂ h_w₂_tverts
-          use ⟨(G₁, G₂), by
-            simp only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, inducedLabeledSubgraph_isInduced, true_and, G₁, G₂]
-            exact h_in_A⟩
+          use ⟨(G₁, G₂), by simp_all only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, inducedLabeledSubgraph_isInduced, true_and, G₁, G₂]⟩
           simp only [inducedLabeledSubgraph_verts, toFinset_coe, G₁, G₂]
     · rw [← Nat.cast_mul, Nat.cast_inj]
-      calc
-        (Grep.size - σ.size).choose (Frep.size - σ.size) * (Grep.size - σ.size).choose (F'rep.size - σ.size)
-          = (freeG.card).choose (freeF.card) * (freeG.card).choose (freeF'.card) := by rw [hfreeG_size, hfreeF_size, hfreeF'_size]
-        _ = (freeG.card).choose (freeF.card) * (freeG.card).choose (freeF'.card) := rfl
-      rw [← hΩ_size]
-      simp only [Set.toFinset_card, Fintype.card_ofFinset]
+      rw [hfreeG_size, hfreeF_size, hfreeF'_size, Set.toFinset_card, Fintype.card_ofFinset] at hΩ_size
+      rw [hΩ_size]; rfl
 
   have P₂ : labeledSubgraphListDensity (labeledGraphPairToList Frep F'rep) Grep = (A ∩ B).card / B.card := by
     dsimp only [labeledSubgraphListDensity]
@@ -303,7 +293,7 @@ theorem flagListDensity₂_prod_approx
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
       · intro ⟨l, hl⟩
-        simp [LabeledSubgraphList] at l
+        simp only [LabeledSubgraphList] at l
         use ⟨((l 0).subgraph.verts.toFinset, (l 1).subgraph.verts.toFinset), by
           simp only [Fin.isValue, Set.mem_setOf_eq, Set.toFinset_card, Fintype.card_ofFinset,
             Set.coe_toFinset, Ω]
@@ -344,8 +334,7 @@ theorem flagListDensity₂_prod_approx
           rwa [← Set.toFinset_diff, ← Set.toFinset_diff, ← Set.toFinset_inter, Set.toFinset_eq_empty]
       · constructor
         · intro ⟨l, hl⟩ ⟨l', hl'⟩ h_eq
-          simp only [Subtype.mk.injEq]
-          simp only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq, Set.toFinset_inj] at h_eq
+          simp_all only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq, Set.toFinset_inj]
           simp only [setOfLabeledSubgraphListIsoHl, LabeledSubgraphList.IsInduced, predIsoLabeledHl,
             predDisjointLabeledSubgraphList, ne_eq, Set.coe_setOf, Set.toFinset_setOf, mem_filter,
             mem_univ, true_and] at hl hl'
@@ -372,11 +361,9 @@ theorem flagListDensity₂_prod_approx
               Set.toFinset_setOf, mem_filter, mem_univ, true_and]
             constructor <;> try constructor
             · intro i
-              simp only [l]
-              split <;> simp_all only [inducedLabeledSubgraph_isInduced]
+              simp only [l]; split <;> simp_all only [inducedLabeledSubgraph_isInduced]
             · intro i
-              simp only [l]
-              split <;> simp_all only [labeledGraphPairToList]
+              simp only [l]; split <;> simp_all only [labeledGraphPairToList]
             · intro i j hij
               by_cases hi : i = 0 <;> by_cases hj : j = 0
               · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue, not_true_eq_false]
@@ -387,89 +374,79 @@ theorem flagListDensity₂_prod_approx
                 rwa [← Set.toFinset_eq_empty, Set.toFinset_inter, Set.toFinset_diff, Set.toFinset_diff, toFinset_coe, toFinset_coe]
               · simp_all only [Fin.eq_one_of_ne_zero i hi, Fin.eq_one_of_ne_zero j hj, not_true_eq_false] ⟩
           simp only [Fin.isValue, inducedLabeledSubgraph_verts, toFinset_coe, l]
-    · simp only [labeledGraphPairToList]
-      rw [hB_size, hfreeG_size]
+    · rw [hB_size, hfreeG_size]
       simp only [r_list]; rfl
-  rw [P₁, P₂]
-  clear P₁ P₂
+  rw [P₁, P₂]; clear P₁ P₂
 
-  have Ω_card : (@univ (↑Ω) (Subtype.fintype (Membership.mem Ω))).card = Ω.toFinset.card := by
-    simp only [card_univ, Fintype.card_ofFinset, Set.toFinset_card]
-  by_cases h : B.card = 0 ∨ Ω.toFinset.card = 0
-  /- case where B.card = 0 ∨ Ω.toFinset.card = 0 -/
-  · obtain hB | hΩ := h
-    · rw [hB]
-      simp only [CharP.cast_eq_zero, div_zero, zero_sub, abs_neg, ge_iff_le]
-      by_cases hΩ : Ω.toFinset.card = 0
-      · rw [hΩ]
-        simp only [CharP.cast_eq_zero, div_zero, abs_zero]
-        apply div_nonneg <;> simp only [Nat.cast_nonneg]
-      rw [hB_size] at hB
-      have hG_size₁ := multinomialCoefficient_zero r_list freeG.card hB
-      rw [hfreeG_size] at hG_size₁
-      simp only [Fin.sum_univ_two, r_list] at hG_size₁
-      by_cases hG_zero : Grep.size = 0
-      · exfalso
-        rw [card_eq_zero, ← ne_eq, ← Finset.nonempty_iff_ne_empty] at hΩ
-        obtain ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ := hΩ
-        simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω
-        have : Grep.size < Frep.size + F'rep.size := by omega
-        rw [hG_zero] at this
-        simp only [LabeledGraph.size] at hG_zero
-        have hF := add_ne_zero.mp (Nat.ne_zero_of_lt this)
-        obtain hF | hF' := hF
-        · have hw₁_gt_zero : w₁.card > 0 := by
-            rw [hw_in_Ω.1.1]
-            exact Nat.zero_lt_of_ne_zero hF
-          have hw₁_le_zero : w₁.card ≤ Fintype.card W := card_le_univ w₁
-          simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-        · have hw₂_gt_zero : w₂.card > 0 := by
-            rw [hw_in_Ω.2.1]
-            exact Nat.zero_lt_of_ne_zero hF'
-          have hw₂_le_zero : w₂.card ≤ Fintype.card W := card_le_univ w₂
-          simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-      have hG_size₂ : Grep.size ≤ Frep.size + F'rep.size := by omega
-      refine Preorder.le_trans _ 1 _ ?_ ?_
-      · rw [← sq_le_one_iff_abs_le_one]
-        refine (sq_le_one_iff₀ ?_).mpr ?_
-        · apply div_nonneg <;> simp only [Nat.cast_nonneg]
-        · refine div_le_one_of_le₀ ?_ ?_
-          · rw [Nat.cast_le, ← Ω_card]
-            exact Finset.card_le_card (Finset.subset_univ A)
-          · simp only [Nat.cast_nonneg]
-      · refine (one_le_div₀ ?_).mpr ?_
-        · simp only [Nat.cast_pos]
-          exact Nat.zero_lt_of_ne_zero hG_zero
-        · simp only [Nat.cast_le]
-          refine Preorder.le_trans _ (Frep.size + F'rep.size) _ hG_size₂ ?_
-          refine Preorder.le_trans _ (2 * (F.out.size + F'.out.size) ^ 2) _ ?_ ?_
-          · rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
-            refine Preorder.le_trans _ ((Frep.size + F'rep.size) ^ 2) _ ?_ ?_
-            · apply Nat.le_pow Nat.ofNat_pos
-            · apply Nat.le_mul_of_pos_left ((Frep.size + F'rep.size) ^ 2) Nat.ofNat_pos
-          · simp only [Nat.le_max_left, c]
-    · rw [hΩ]
-      simp only [CharP.cast_eq_zero, div_zero, sub_zero, ge_iff_le]
-      rw [card_eq_zero, Set.toFinset_eq_empty] at hΩ
-      have hB : B.card = 0 := by
-        rw [card_eq_zero]
-        by_contra hB_nonempty
-        rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hB_nonempty
-        obtain ⟨⟨_, hx_in_Ω⟩, _⟩ := hB_nonempty
-        rwa [hΩ, Set.mem_empty_iff_false] at hx_in_Ω
-      rw [hB]
-      simp only [CharP.cast_eq_zero, div_zero, abs_zero, ge_iff_le]
-      apply div_nonneg <;> simp only [Nat.cast_nonneg]
+  by_cases hΩ_nonzero : Ω.toFinset.card = 0
+  · rw [hΩ_nonzero]
+    simp only [CharP.cast_eq_zero, div_zero, sub_zero, ge_iff_le]
+    rw [card_eq_zero, Set.toFinset_eq_empty] at hΩ_nonzero
+    have hB : B.card = 0 := by
+      rw [card_eq_zero]
+      by_contra hB_nonempty
+      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hB_nonempty
+      obtain ⟨⟨_, hx_in_Ω⟩, _⟩ := hB_nonempty
+      rwa [hΩ_nonzero, Set.mem_empty_iff_false] at hx_in_Ω
+    rw [hB]
+    simp only [CharP.cast_eq_zero, div_zero, abs_zero, ge_iff_le]
+    apply div_nonneg <;> simp only [Nat.cast_nonneg]
+
+  by_cases hB_nonzero : B.card = 0
+  · rw [hB_nonzero]
+    simp only [CharP.cast_eq_zero, div_zero, zero_sub, abs_neg, ge_iff_le]
+    rw [hB_size] at hB_nonzero
+    have hG_size₁ := multinomialCoefficient_zero r_list freeG.card hB_nonzero
+    rw [hfreeG_size] at hG_size₁
+    simp only [Fin.sum_univ_two, r_list] at hG_size₁
+    by_cases hG_zero : Grep.size = 0
+    · exfalso
+      rw [card_eq_zero, ← ne_eq, ← Finset.nonempty_iff_ne_empty] at hΩ_nonzero
+      obtain ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ := hΩ_nonzero
+      simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω
+      have : Grep.size < Frep.size + F'rep.size := by omega
+      rw [hG_zero] at this
+      simp only [LabeledGraph.size] at hG_zero
+      have hF := add_ne_zero.mp (Nat.ne_zero_of_lt this)
+      obtain hF | hF' := hF
+      · have hw₁_gt_zero : w₁.card > 0 := by
+          rw [hw_in_Ω.1.1]
+          exact Nat.zero_lt_of_ne_zero hF
+        have hw₁_le_zero : w₁.card ≤ Fintype.card W := card_le_univ w₁
+        simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
+      · have hw₂_gt_zero : w₂.card > 0 := by
+          rw [hw_in_Ω.2.1]
+          exact Nat.zero_lt_of_ne_zero hF'
+        have hw₂_le_zero : w₂.card ≤ Fintype.card W := card_le_univ w₂
+        simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
+    have hG_size₂ : Grep.size ≤ Frep.size + F'rep.size := by omega
+    refine Preorder.le_trans _ 1 _ ?_ ?_
+    · rw [← sq_le_one_iff_abs_le_one]
+      refine (sq_le_one_iff₀ ?_).mpr ?_
+      · apply div_nonneg <;> simp only [Nat.cast_nonneg]
+      · refine div_le_one_of_le₀ ?_ ?_
+        · rw [Nat.cast_le, ← hΩ_card_eq]
+          exact Finset.card_le_card (Finset.subset_univ A)
+        · simp only [Nat.cast_nonneg]
+    · refine (one_le_div₀ ?_).mpr ?_
+      · simp only [Nat.cast_pos]
+        exact Nat.zero_lt_of_ne_zero hG_zero
+      · simp only [Nat.cast_le]
+        refine Preorder.le_trans _ (Frep.size + F'rep.size) _ hG_size₂ ?_
+        refine Preorder.le_trans _ (2 * (F.out.size + F'.out.size) ^ 2) _ ?_ ?_
+        · rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
+          refine Preorder.le_trans _ ((Frep.size + F'rep.size) ^ 2) _ ?_ ?_
+          · apply Nat.le_pow Nat.ofNat_pos
+          · apply Nat.le_mul_of_pos_left ((Frep.size + F'rep.size) ^ 2) Nat.ofNat_pos
+        · simp only [Nat.le_max_left, c]
 
   /- case where B.card ≠ 0 ∧ Ω.toFinset.card ≠ 0 -/
-  simp only [not_or] at h
-  obtain ⟨hB_nonzero, hΩ_nonzero⟩ := h
   have compl_card : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
-    rw [← Ω_card]
+    rw [← hΩ_card_eq]
     simp only [Set.compl_eq_univ_diff B.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
     rw [card_sdiff (by exact Finset.subset_univ B)]
     rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B))]
-    rw [sub_div, div_self (by rwa [Ω_card, ne_eq, Rat.natCast_eq_zero])]
+    rw [sub_div, div_self (by rwa [hΩ_card_eq, ne_eq, Rat.natCast_eq_zero])]
 
   have cond_bound : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
     rw [abs_le]
@@ -506,7 +483,7 @@ theorem flagListDensity₂_prod_approx
             exact Nat.zero_lt_of_ne_zero hB_nonzero
           · rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le]
             apply Nat.mul_le_mul_left
-            rw [← Ω_card]
+            rw [← hΩ_card_eq]
             exact Finset.card_le_card (Finset.subset_univ B)
       have cap_le : (@Nat.cast ℚ _ (A.toSet ∩ (B.toSet)ᶜ).toFinset.card) / ↑(#Ω.toFinset) ≤ ↑(B.toSet)ᶜ.toFinset.card / ↑(#Ω.toFinset) := by
         rw [div_le_div_iff_of_pos_right]
@@ -537,12 +514,10 @@ theorem flagListDensity₂_prod_approx
           rw [neg_mul_comm, neg_sub, div_div_eq_mul_div, mul_sub, mul_one, mul_div]
         rw [this, mul_comm, ← add_mul]
         refine Rat.mul_nonneg ?_ ?_
-        · simp only [le_add_neg_iff_add_le, zero_add, Nat.cast_le]
-          exact hAB
+        · simp_all only [le_add_neg_iff_add_le, zero_add, Nat.cast_le]
         · simp only [sub_nonneg]
           rw [div_le_iff₀ (by rw [Nat.cast_pos]; exact Nat.zero_lt_of_ne_zero hΩ_nonzero), one_mul, Nat.cast_le]
-          rw [← Ω_card]
-          exact Finset.card_le_card (Finset.subset_univ B)
+          rw [← hΩ_card_eq]; exact Finset.card_le_card (Finset.subset_univ B)
       · right
         rw [mul_comm, le_mul_iff_one_le_right (by rw [Nat.cast_pos]; exact Nat.zero_lt_of_ne_zero hB_nonzero)]
         rw [sub_add_eq_add_sub, add_sub_assoc, le_add_iff_nonneg_right, sub_nonneg]
@@ -565,7 +540,7 @@ theorem flagListDensity₂_prod_approx
       simp only [Nat.choose_zero_right, mul_one]
     have hB : B.card = 1 := by
       have : B.card ≤ Ω.toFinset.card := by
-        rw [← Ω_card]
+        rw [← hΩ_card_eq]
         exact Finset.card_le_card (Finset.subset_univ B)
       rw [hΩ] at this
       refine Eq.symm (Nat.le_antisymm ?_ this)
@@ -573,6 +548,7 @@ theorem flagListDensity₂_prod_approx
     rw [hB, hΩ]
     simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true, div_self, sub_self, ge_iff_le]
     apply div_nonneg <;> simp only [Nat.cast_nonneg]
+
   by_cases hG_size : Grep.size ≤ 2 * σ.size
   · suffices 1 ≤ (c : ℚ) / (Grep.size : ℚ) by
       have prob_prop : 1- (@Nat.cast ℚ _ (B.card)) / Ω.toFinset.card ≤ 1 := by
@@ -601,16 +577,8 @@ theorem flagListDensity₂_prod_approx
         simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
     · simp only [Nat.cast_max, le_sup_iff, Nat.cast_le, c]
       right; exact hG_size
-  · have hG_nzero : ¬Grep.size = 0 := by
-      intro hG_zero
-      rw [hG_zero] at hG_size
-      simp only [zero_le, not_true_eq_false] at hG_size
-    have hG_size' : σ.size < Grep.size := by
-      have : σ.size ≤ 2 * σ.size := by
-        apply Nat.le_mul_of_pos_left
-        simp only [Nat.ofNat_pos]
-      simp only [not_le] at hG_size
-      exact lt_of_le_of_lt this hG_size
+  · have hG_nzero : ¬Grep.size = 0 := by omega
+    have hG_size' : σ.size < Grep.size := by omega
     by_cases hG_size'' : Grep.size ≤ Frep.size + F'rep.size
     · refine Preorder.le_trans _ ?_ _ ?_ ?_
       · exact 1
