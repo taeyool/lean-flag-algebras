@@ -1989,14 +1989,31 @@ noncomputable def
         h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
 
-      let V' := V ∪ Vl 0 ∪ Vl 1
+      let V' := Vl 0 ∪ Vl 1 ∪ V
       let V'_type_verts := V' ∪ G.type_verts
-      have h_V'_type_verts_card : V'_type_verts.toFinset.card = ℓ' := sorry
+      have h_V'_type_verts_card : V'_type_verts.toFinset.card = ℓ' :=
+        calc
+          V'_type_verts.toFinset.card
+          _ = ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset ∪ G.type_verts.toFinset).card := by
+                  rw [Set.toFinset_union]
+                  rw [Set.toFinset_union]
+                  rw [Set.toFinset_union]
+          _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
+                  sorry
+          _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
+                  rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
+                  simp only [Fin.isValue, Set.toFinset_card, G.type_verts_card_eq, Nat.add_left_cancel_iff]
+                  simp only [FlagType.size, Fintype.card_fin]
+          _ = ℓ' := by
+                  dsimp [Hl_size]; omega
       let g : Fin ℓ' ≃ V'_type_verts := isoFromFinToFiniteSet V'_type_verts (by rw [←h_V'_type_verts_card]; congr!)
+      let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
+      let G' : Flag σ (Fin ℓ') := ⟦labeledGraphFromVertexIso G₀.coe g.symm⟧
 
       let Vl' (i : Fin 2) := g.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ }
       let Vl'' (i : Fin 2) := match i with | 0 => V' | 1 => Vl 2
-      sorry
+
+      exact ⟨⟨G', Vl', Vl''⟩, sorry, sorry, sorry, sorry, sorry, sorry⟩
 
     have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := sorry
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := sorry

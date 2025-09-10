@@ -349,6 +349,20 @@ def labeledSubgraphIso_eq
 
 end LabeledGraphIso
 
+def labeledGraphFromVertexIso
+  (G : LabeledGraph σ V) (f_iso : V ≃ W) : LabeledGraph σ W
+  := {
+    graph := SimpleGraph.map f_iso.toEmbedding G.graph
+    type_embed := G.type_embed.trans (SimpleGraph.Iso.map f_iso G.graph)
+  }
+
+noncomputable def labeledGraphFromVertexIso_iso
+  (G : LabeledGraph σ V) (f_iso : V ≃ W) : G ≃f labeledGraphFromVertexIso G f_iso
+  := {
+    graph_iso := SimpleGraph.Iso.map f_iso G.graph
+    type_preserve := by rfl
+  }
+
 /-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
   :=
