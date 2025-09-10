@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagSequence
+import Mathlib.MeasureTheory.Measure.LevyProkhorovMetric
 
 open FlagAlgebras
 open Classical
@@ -455,6 +456,18 @@ noncomputable def FlagSeq.toProbMeasureSeq
     : ℕ → ProbabilityMeasure (FlagDensitySpace σ)
   :=
   fun n ↦ (s n).toProbMeasure (hs n)
+
+instance : TopologicalSpace.SeparableSpace (FlagDensitySpace σ)
+  :=
+  TopologicalSpace.SecondCountableTopology.to_separableSpace
+
+#check MeasureTheory.homeomorph_probabilityMeasure_levyProkhorov
+
+example : SeqCompactSpace (ProbabilityMeasure (FlagDensitySpace σ)) := by
+  refine { isSeqCompact_univ := ?_ }
+  intro s _
+
+  sorry
 
 theorem exists_convergent_subseq_probMeasure_of_flagSeq
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
