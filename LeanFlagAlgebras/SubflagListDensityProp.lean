@@ -644,51 +644,30 @@ theorem flagListDensity₂_prod_approx
           rw [zero_add, ← Nat.cast_add, Nat.cast_le]; omega
         · refine pow_nonneg ?_ _
           simp only [Nat.cast_nonneg]
-  · have simp_calc : ((@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) ≤ 2 * (Frep.size + F'rep.size) ^ 2 / (Grep.size) := by
-      have calc₁ : (@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2 ≤ (Frep.size + F'rep.size) ^ 2 := by
-        have hFrep_size : σ.size ≤ Frep.size := by
-          rw [← Frep.type_verts_card_eq]
-          simp [LabeledGraph.size]
-          exact set_fintype_card_le_univ Frep.type_verts
-        have hF'rep_size : σ.size ≤ F'rep.size := by
-          rw [← F'rep.type_verts_card_eq]
-          simp [LabeledGraph.size]
-          exact set_fintype_card_le_univ F'rep.type_verts
-        rw [sub_mul, mul_sub, mul_sub, sub_sub, sub_add_eq_add_sub]
-        suffices @Nat.cast ℚ _ Frep.size * ↑F'rep.size + (↑F'rep.size - ↑σ.size) ^ 2 -
-  (↑Frep.size * ↑σ.size + (↑σ.size * ↑F'rep.size - ↑σ.size * ↑σ.size)) ≤ ↑Frep.size * ↑F'rep.size + (↑F'rep.size - ↑σ.size) ^ 2 by
-          have le_sq : @Nat.cast ℚ _ Frep.size * ↑F'rep.size + (↑F'rep.size - ↑σ.size) ^ 2 ≤ (Frep.size + F'rep.size) ^ 2 := by
-            rw [pow_two, sub_mul, mul_sub, mul_sub, sub_sub, ← add_sub_assoc]
-            refine Preorder.le_trans _ ?_ _ ?_ ?_
-            · exact ↑Frep.size * ↑F'rep.size + ↑F'rep.size * ↑F'rep.size
-            · apply sub_le_self
-              refine add_nonneg ?_ ?_
-              · rw [← Nat.cast_mul]
-                apply Nat.cast_nonneg
-              · rw [sub_nonneg]
-                refine mul_le_mul_of_nonneg_left ?_ ?_
-                · rwa [Nat.cast_le]
-                · apply Nat.cast_nonneg
-            · rw [← Nat.cast_mul, ← Nat.cast_mul, ← Nat.cast_add]
-              rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
-              rw [Nat.pow_two, Nat.add_mul, Nat.mul_add, Nat.mul_add]
-              omega
-          exact this.trans le_sq
-        apply sub_le_self
-        refine add_nonneg ?_ ?_
-        · rw [← Nat.cast_mul]
-          apply Nat.cast_nonneg
-        · rw [sub_nonneg]
-          refine mul_le_mul_of_nonneg_left ?_ ?_
-          · rwa [Nat.cast_le]
-          · apply Nat.cast_nonneg
-      suffices (@Nat.cast ℚ _ Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size) ≤ 2 * (Frep.size + F'rep.size) ^ 2 / (Grep.size) by
-        have calc₃ : ((@Nat.cast ℚ _ Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) ≤ (Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size) := by
-          refine (div_le_div_iff_of_pos_right ?_).mpr calc₁
-          simp_all only [sub_pos, Nat.cast_lt, not_le]
-        have := calc₃.trans this
-        exact this
-      refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+  · refine Preorder.le_trans _ ?_ _ ?_ ?_
+    · exact (Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size)
+    · apply (div_le_div_iff_of_pos_right (by simp_all only [sub_pos, Nat.cast_lt])).mpr
+      rw [sub_mul, mul_sub, mul_sub, sub_sub, sub_add_eq_add_sub]
+      rw [sub_le_iff_le_add']
+      refine le_add_of_nonneg_of_le ?_ ?_
+      · rw [← add_sub_assoc]
+        sorry
+      · rw [pow_two, sub_mul, mul_sub, mul_sub, sub_sub, ← add_sub_assoc]
+        refine Preorder.le_trans _ ?_ _ ?_ ?_
+        · exact ↑Frep.size * ↑F'rep.size + ↑F'rep.size * ↑F'rep.size
+        · apply sub_le_self
+          refine add_nonneg ?_ ?_
+          · rw [← Nat.cast_mul]
+            apply Nat.cast_nonneg
+          · rw [sub_nonneg]
+            refine mul_le_mul_of_nonneg_left ?_ ?_
+            · rw [Nat.cast_le]; exact F'rep.type_size_le_size
+            · apply Nat.cast_nonneg
+        · rw [← Nat.cast_mul, ← Nat.cast_mul, ← Nat.cast_add]
+          rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
+          rw [Nat.pow_two, Nat.add_mul, Nat.mul_add, Nat.mul_add]
+          omega
+    · refine (div_le_div_iff₀ ?_ ?_).mpr ?_
       · simp only [sub_pos, Nat.cast_lt]
         exact hG_size'
       · simp only [Nat.cast_pos]
@@ -697,9 +676,12 @@ theorem flagListDensity₂_prod_approx
         refine mul_le_mul_of_nonneg_left ?_ ?_
         · rw [← Nat.cast_sub (Nat.le_of_succ_le hG_size'), ← Nat.cast_ofNat, ← Nat.cast_mul, Nat.cast_le]
           omega
-        · rw [← Nat.cast_add]
-          apply sq_nonneg
-    exact simp_calc
+        · rw [← Nat.cast_add]; apply sq_nonneg
+
+example (A B C : ℚ) (h : A ≤ C) (h' : B ≥ 0) : A - B ≤ C := by
+  rw [sub_le_iff_le_add']
+  -- exact le_add_of_nonneg_of_le h' h
+  sorry
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)

@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagDef
+import «LeanFlagAlgebras».MultinomialCoefficient
 import «LeanFlagAlgebras».SubflagDensity
 import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Algebra.BigOperators.Fin
@@ -59,47 +60,6 @@ noncomputable def labeledSubgraphListCount
   :=
   have : Fintype (setOfLabeledSubgraphListIsoHl G Hl) := Fintype.ofFinite _
   (setOfLabeledSubgraphListIsoHl G Hl).toFinset.card
-
-def multinomialCoefficient
-    (r_list : Fin t → ℕ) (n : ℕ) : ℕ
-  :=
-  let r_sum := ∑ i : Fin t, r_list i
-  if _ : n ≥ r_sum then
-    Nat.factorial n / ((∏ i : Fin t, Nat.factorial (r_list i)) * Nat.factorial (n - r_sum))
-  else 0
-
-lemma multinomialCoefficient_eq
-    {r_list₁ r_list₂ : Fin t → ℕ} (n : ℕ) (heq : r_list₁ = r_list₂)
-    : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
-  := by subst heq; rfl
-
-lemma multinomialCoefficient_pos
-    (r_list : Fin t → ℕ) (n : ℕ) (h_n : n ≥ ∑ i : Fin t, r_list i) :
-    multinomialCoefficient r_list n > 0
-  := by
-  dsimp [multinomialCoefficient]
-  simp only [h_n]
-  let r_sum := ∑ i : Fin t, r_list i
-  let C₀ := ∏ i : Fin t, (r_list i).factorial
-  let C₁ := (n - r_sum).factorial
-  let C := C₀ * C₁
-  show n.factorial / C > 0
-  have h_n_factorial_pos : n.factorial > 0 := Nat.factorial_pos n
-  have h_dvd : C ∣ n.factorial := by
-    have h₀ : C₀ ∣ r_sum.factorial :=
-      Nat.prod_factorial_dvd_factorial_sum Finset.univ r_list
-    have h₁ : C ∣ r_sum.factorial * C₁ := Nat.mul_dvd_mul_right h₀ C₁
-    have h₂ : r_sum.factorial * C₁ ∣ n.factorial :=
-      Nat.factorial_mul_factorial_dvd_factorial h_n
-    exact dvd_trans h₁ h₂
-  exact (Nat.lt_div_iff_mul_lt' h_dvd 0).mpr h_n_factorial_pos
-
-lemma multinomialCoefficient_zero
-    (r_list : Fin t → ℕ) (n : ℕ)
-    : multinomialCoefficient r_list n = 0 → n < ∑ i : Fin t, r_list i
-  := by
-  contrapose!
-  exact fun h ↦ Nat.ne_zero_of_lt (multinomialCoefficient_pos r_list n h)
 
 
 noncomputable def labeledSubgraphListDensity
@@ -644,17 +604,7 @@ theorem flagDensity_permute
     simp_all only [Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size)
                  = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size)
-    := by
-    dsimp [multinomialCoefficient]
-    have sum_sizes_perm_eq : ∑ i : Fin t, ((Quotient.out (Fl i)).size - σ.size)
-                             = ∑ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size)
-      :=
-      sum_perm_eq _ _
-    have prod_factorials_perm_eq : ∏ i : Fin t, ((Quotient.out (Fl i)).size - σ.size).factorial
-                                   = ∏ i : Fin t, ((Quotient.out (Fl.permute π i)).size - σ.size).factorial
-      :=
-      prod_perm_eq _ _
-    rw [sum_sizes_perm_eq, prod_factorials_perm_eq]
+    := (multinomialCoefficient_eq_of_perm (Grep.size - σ.size) rfl).symm
   dsimp [labeledSubgraphListDensity]
   rw [h_count, h_coeff]
 
@@ -875,9 +825,9 @@ theorem flagDensity_insert_empty
     have : Vl (i'.coe hi') = listTypeInsert Vl T i' := listTypeInsert_eq' hi'
     congr!
   have h_coeff : Z₀ = Z₁ := by
-    simp only [Z₀, Z₁, multinomialCoefficient]
+    simp only [Z₀, Z₁, multinomialCoefficient, dite_eq_ite]
     simp_rw [sum_eq_sum_plus_last, prod_eq_prod_mul_last, ← h_eq, tsub_self,
-      add_zero, dite_eq_ite, h_eq', Nat.factorial_zero, mul_one]
+      add_zero, h_eq', Nat.factorial_zero, mul_one]
   rw [h_count, h_coeff]
 
 theorem flagPairDensity_empty
