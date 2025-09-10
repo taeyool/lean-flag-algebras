@@ -16,10 +16,9 @@ lemma multinomialCoefficient_eq
   := by subst heq; rfl
 
 lemma multinomialCoefficient_eq_of_perm
-    {r_list₁ r_list₂ : Fin t → ℕ} (n : ℕ) {π : Equiv.Perm (Fin t)} (heq_perm : r_list₁ = r_list₂ ∘ π)
-    : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
+    {r_list : Fin t → ℕ} (n : ℕ) {π : Equiv.Perm (Fin t)}
+    : multinomialCoefficient (r_list ∘ π) n = multinomialCoefficient r_list n
   := by
-  rw [heq_perm]
   simp [multinomialCoefficient, Equiv.Perm.sum_comp]
   congr 3
   exact Fintype.prod_equiv π _ _ (congrFun rfl)
@@ -51,3 +50,31 @@ lemma multinomialCoefficient_zero
   := by
   contrapose!
   exact fun h ↦ Nat.ne_zero_of_lt (multinomialCoefficient_pos r_list n h)
+
+@[simp]
+lemma multinomialCoefficient_fin_zero
+    {r_list : Fin 0 → ℕ} (n : ℕ)
+    : multinomialCoefficient r_list n = 1 := by
+  simp [multinomialCoefficient]; exact Nat.div_self n.factorial_pos
+
+lemma multinomialCoefficient_fin_one_of_le
+    {r_list : Fin 1 → ℕ} {n : ℕ} (h : r_list 0 ≤ n)
+    : multinomialCoefficient r_list n =
+      n.factorial / ((r_list 0).factorial * (n - r_list 0).factorial)
+  := by
+  simp [multinomialCoefficient, h]
+
+lemma multinomialCoefficient_fin_one_of_lt
+    {r_list : Fin 1 → ℕ} {n : ℕ} (h : n < r_list 0)
+    : multinomialCoefficient r_list n = 0
+  := by
+  simp [multinomialCoefficient, h]
+
+@[simp]
+lemma multinomialCoefficient_fin_one
+    {r_list : Fin 1 → ℕ} {n : ℕ}
+    : multinomialCoefficient r_list n = n.choose (r_list 0) := by
+  by_cases h : r_list 0 ≤ n
+  · simp only [multinomialCoefficient_fin_one_of_le h, Nat.choose_eq_factorial_div_factorial h]
+  · rw [not_le] at h
+    simp only [multinomialCoefficient_fin_one_of_lt h, Nat.choose_eq_zero_of_lt h]

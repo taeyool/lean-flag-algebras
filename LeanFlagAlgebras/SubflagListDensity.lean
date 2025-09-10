@@ -355,13 +355,7 @@ theorem subflagDensity_eq_flagListDensity
       rfl
     _ = labeledSubgraphListDensity (fun (_ : Fin 1) => Frep) Grep := by
       dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
-      rw [← h_count]
-      congr
-      dsimp [multinomialCoefficient]
-      rw [Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Finset.prod_singleton]
-      split <;> rename_i h
-      · exact Nat.choose_eq_factorial_div_factorial h
-      · exact Nat.choose_eq_zero_of_lt (Nat.lt_of_not_ge h)
+      rw [← h_count, multinomialCoefficient_fin_one]; congr
     _ = quotLabeledSubgraphListDensity [F]ᶠ.coe G := by
       have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
         dsimp [eqv_QuotLabeledGraphList_FlagList]
@@ -604,7 +598,7 @@ theorem flagDensity_permute
     simp_all only [Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size)
                  = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size)
-    := (multinomialCoefficient_eq_of_perm (Grep.size - σ.size) rfl).symm
+    := (multinomialCoefficient_eq_of_perm (Grep.size - σ.size)).symm
   dsimp [labeledSubgraphListDensity]
   rw [h_count, h_coeff]
 
