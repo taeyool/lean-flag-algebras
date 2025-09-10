@@ -73,6 +73,16 @@ lemma multinomialCoefficient_eq
     : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
   := by subst heq; rfl
 
+lemma multinomialCoefficient_eq_of_perm
+    {r_list₁ r_list₂ : Fin t → ℕ} (n : ℕ) {π : Equiv.Perm (Fin t)} (heq_perm : r_list₁ = r_list₂ ∘ π)
+    : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
+  := by
+  rw [heq_perm]
+  simp [multinomialCoefficient, Equiv.Perm.sum_comp]
+  congr 3
+  exact Fintype.prod_equiv π (fun x ↦ (r_list₂ (π x)).factorial) (fun x ↦ (r_list₂ x).factorial)
+    <| congrFun rfl
+
 lemma multinomialCoefficient_pos
     (r_list : Fin t → ℕ) (n : ℕ) (h_n : n ≥ ∑ i : Fin t, r_list i) :
     multinomialCoefficient r_list n > 0
