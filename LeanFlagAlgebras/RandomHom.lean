@@ -1,5 +1,5 @@
 import «LeanFlagAlgebras».FlagSequence
-import Mathlib.MeasureTheory.Measure.LevyProkhorovMetric
+import Mathlib.MeasureTheory.Measure.Tight
 
 open FlagAlgebras
 open Classical
@@ -457,24 +457,35 @@ noncomputable def FlagSeq.toProbMeasureSeq
   :=
   fun n ↦ (s n).toProbMeasure (hs n)
 
-instance : TopologicalSpace.SeparableSpace (FlagDensitySpace σ)
-  :=
-  TopologicalSpace.SecondCountableTopology.to_separableSpace
-
-#check MeasureTheory.homeomorph_probabilityMeasure_levyProkhorov
-
-example : SeqCompactSpace (ProbabilityMeasure (FlagDensitySpace σ)) := by
-  refine { isSeqCompact_univ := ?_ }
-  intro s _
-
+/-- **Prokhorov's theorem**, adapted from Rémy Degenne's repository -/
+lemma isSeqCompact_closure_of_isTightMeasureSet
+    {E : Type*} {mE : MeasurableSpace E} [MetricSpace E] [BorelSpace E] [TopologicalSpace.SeparableSpace E]
+    {S : Set (ProbabilityMeasure E)}
+    (hS : IsTightMeasureSet {((μ : ProbabilityMeasure E) : Measure E) | μ ∈ S})
+    : IsSeqCompact (closure S)
+  := by
   sorry
+
+theorem flagDensitySpace_probMeasure_isSeqCompact
+    : IsSeqCompact (Set.univ : Set (ProbabilityMeasure (FlagDensitySpace σ)))
+  := by
+  let S : Set (ProbabilityMeasure (FlagDensitySpace σ)) := Set.univ
+  show IsSeqCompact S
+  have hS_closure : S = closure S := by
+    simp only [isClosed_univ, IsClosed.closure_eq, S]
+  rw [hS_closure]
+  apply isSeqCompact_closure_of_isTightMeasureSet
+  exact IsTightMeasureSet.of_compactSpace
 
 theorem exists_convergent_subseq_probMeasure_of_flagSeq
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     : ∃ (ϕ : ℕ → ℕ) (ℙ : ProbabilityMeasure (FlagDensitySpace σ)),
       StrictMono ϕ ∧ Tendsto (s.toProbMeasureSeq hs ∘ ϕ) atTop (𝓝 ℙ)
   := by
-  sorry
+  have := @flagDensitySpace_probMeasure_isSeqCompact _ σ
+  specialize @this (s.toProbMeasureSeq hs) (fun n ↦ trivial)
+  obtain ⟨ℙ, _, ϕ, _⟩ := this
+  use ϕ, ℙ
 
 theorem exists_converge_flagSeq_and_probMeasure_tendsto
     {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
