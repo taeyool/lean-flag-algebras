@@ -468,8 +468,10 @@ theorem flagListDensity₂_prod_approx
           · rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
             apply Nat.le_pow Nat.ofNat_pos
           · exact le_mul_of_one_le_left (by simp only [sq_nonneg]) rfl
-  · simp at hG_size
-    /- zero_lt_of_lt -/
+  · simp only [not_le] at hG_size
+    have hG_pos : 0 < Grep.size := Nat.zero_lt_of_lt hG_size
+    have hfG_pos : 0 < freeG.card := by
+      sorry
     have hΩ_pos : 0 < (Ω.toFinset.card : ℚ) := by
       rw [Nat.cast_pos, hΩ_size]
       apply Nat.mul_pos
