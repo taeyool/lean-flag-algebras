@@ -28,15 +28,13 @@ variable {Vl  : Fin t → Type} [FintypeList Vl]  [DecidableEqList Vl]
 variable {Fl : FlagList σ t Vl}
 
 set_option maxHeartbeats 500000
-omit [DecidableEq T] in
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
     : ∃ c ≥ 0, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),
     |flagDensity₂ F F' G - flagDensity₁ F G * flagDensity₁ F' G| ≤ c / G.out.size
   := by
-  let c := max (2 * (F.out.size + F'.out.size) ^ 2) (2 * σ.size)
-  use c
-  constructor; (simp only [Nat.cast_nonneg])
+  use 2 * (F.out.size + F'.out.size) ^ 2
+  constructor; (simp only [ge_iff_le, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, sq_nonneg])
   intro W _ _ G
   let ⟨Grep, hGrep₁⟩ := Quotient.exists_rep G
   have hGrep₂ : (⟦Grep⟧ : Quotient (labeledGraphSetoid σ W)).out.size = Grep.size := rfl
@@ -46,7 +44,7 @@ theorem flagListDensity₂_prod_approx
   have hF'rep₂ : (⟦F'rep⟧ : Quotient (labeledGraphSetoid σ U)).out.size = F'rep.size := rfl
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity F G, ← subflagDensity_eq_flagListDensity F' G]
-  rw [← hFrep₁, ← hF'rep₁, ← hGrep₁, hGrep₂, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
+  rw [← hFrep₁, hFrep₂, ← hF'rep₁, hF'rep₂, ← hGrep₁, hGrep₂, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
   dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
 
   let freeG := Finset.univ \ Grep.type_verts.toFinset
@@ -378,308 +376,275 @@ theorem flagListDensity₂_prod_approx
       simp only [r_list]; rfl
   rw [P₁, P₂]; clear P₁ P₂
 
-  by_cases hΩ_nonzero : Ω.toFinset.card = 0
-  · rw [hΩ_nonzero]
-    simp only [CharP.cast_eq_zero, div_zero, sub_zero, ge_iff_le]
-    rw [card_eq_zero, Set.toFinset_eq_empty] at hΩ_nonzero
-    have hB : B.card = 0 := by
-      rw [card_eq_zero]
-      by_contra hB_nonempty
-      rw [← ne_eq, ← Finset.nonempty_iff_ne_empty] at hB_nonempty
-      obtain ⟨⟨_, hx_in_Ω⟩, _⟩ := hB_nonempty
-      rwa [hΩ_nonzero, Set.mem_empty_iff_false] at hx_in_Ω
-    rw [hB]
-    simp only [CharP.cast_eq_zero, div_zero, abs_zero, ge_iff_le]
-    apply div_nonneg <;> simp only [Nat.cast_nonneg]
-
-  by_cases hB_nonzero : B.card = 0
-  · rw [hB_nonzero]
-    simp only [CharP.cast_eq_zero, div_zero, zero_sub, abs_neg, ge_iff_le]
-    rw [hB_size] at hB_nonzero
-    have hG_size₁ := multinomialCoefficient_zero r_list freeG.card hB_nonzero
-    rw [hfreeG_size] at hG_size₁
-    simp only [Fin.sum_univ_two, r_list] at hG_size₁
-    by_cases hG_zero : Grep.size = 0
-    · exfalso
-      rw [card_eq_zero, ← ne_eq, ← Finset.nonempty_iff_ne_empty] at hΩ_nonzero
-      obtain ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ := hΩ_nonzero
-      simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω
-      have : Grep.size < Frep.size + F'rep.size := by omega
-      rw [hG_zero] at this
-      simp only [LabeledGraph.size] at hG_zero
-      have hF := add_ne_zero.mp (Nat.ne_zero_of_lt this)
-      obtain hF | hF' := hF
-      · have hw₁_gt_zero : w₁.card > 0 := by
-          rw [hw_in_Ω.1.1]
-          exact Nat.zero_lt_of_ne_zero hF
-        have hw₁_le_zero : w₁.card ≤ Fintype.card W := card_le_univ w₁
-        simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-      · have hw₂_gt_zero : w₂.card > 0 := by
-          rw [hw_in_Ω.2.1]
-          exact Nat.zero_lt_of_ne_zero hF'
-        have hw₂_le_zero : w₂.card ≤ Fintype.card W := card_le_univ w₂
-        simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-    have hG_size₂ : Grep.size ≤ Frep.size + F'rep.size := by omega
-    refine Preorder.le_trans _ 1 _ ?_ ?_
-    · rw [← sq_le_one_iff_abs_le_one]
-      refine (sq_le_one_iff₀ ?_).mpr ?_
-      · apply div_nonneg <;> simp only [Nat.cast_nonneg]
-      · refine div_le_one_of_le₀ ?_ ?_
-        · rw [Nat.cast_le, ← hΩ_card_eq]
-          exact Finset.card_le_card (Finset.subset_univ A)
-        · simp only [Nat.cast_nonneg]
-    · refine (one_le_div₀ ?_).mpr ?_
-      · simp only [Nat.cast_pos]
-        exact Nat.zero_lt_of_ne_zero hG_zero
-      · simp only [Nat.cast_le]
-        refine Preorder.le_trans _ (Frep.size + F'rep.size) _ hG_size₂ ?_
-        refine Preorder.le_trans _ (2 * (F.out.size + F'.out.size) ^ 2) _ ?_ ?_
-        · rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
-          refine Preorder.le_trans _ ((Frep.size + F'rep.size) ^ 2) _ ?_ ?_
-          · apply Nat.le_pow Nat.ofNat_pos
-          · apply Nat.le_mul_of_pos_left ((Frep.size + F'rep.size) ^ 2) Nat.ofNat_pos
-        · simp only [Nat.le_max_left, c]
-
-  /- case where B.card ≠ 0 ∧ Ω.toFinset.card ≠ 0 -/
-  have hΩ_pos : 0 < (Ω.toFinset.card : ℚ) := by
-    simp only [Nat.cast_pos]
-    exact Nat.zero_lt_of_ne_zero hΩ_nonzero
-  have hB_pos : 0 < (B.card : ℚ) := by
-    simp only [Nat.cast_pos]
-    exact Nat.zero_lt_of_ne_zero hB_nonzero
-  have compl_card : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
-    rw [← hΩ_card_eq]
-    simp only [Set.compl_eq_univ_diff B.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
-    rw [card_sdiff (by exact Finset.subset_univ B)]
-    rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B))]
-    rw [sub_div, div_self (by rwa [hΩ_card_eq, ne_eq, Rat.natCast_eq_zero])]
-
-  have cond_bound : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
-    rw [abs_le]
-    constructor
-    · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
-      have hA_card : A.card = (A ∩ B).card + (A.toSet ∩ B.toSetᶜ).toFinset.card := by
-        have hA_union := Set.toFinset_congr (Set.inter_union_compl A.toSet B.toSet)
-        simp only [toFinset_coe] at hA_union
-        nth_rw 1 [← hA_union, Set.toFinset_union]
-        rw [card_union_eq_card_add_card.mpr (by
-          rw [disjoint_iff_inter_eq_empty, ← Set.toFinset_inter, Set.toFinset_eq_empty, ← Set.inter_inter_distrib_left]
-          simp only [Set.inter_compl_self, Set.inter_empty])]
-        simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl]
-      rw [hA_card, Nat.cast_add, add_div, add_comm, add_sub_assoc]
-      refine Preorder.le_trans _ ?_ _ ?_ ?_
-      · exact ↑(#(A.toSet ∩ (B.toSet)ᶜ).toFinset) / ↑(#Ω.toFinset)
-      · rw [add_le_iff_nonpos_right, sub_nonpos, div_le_div_iff₀ hΩ_pos hB_pos]
-        rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le, ← hΩ_card_eq]
-        apply Nat.mul_le_mul_left
-        exact Finset.card_le_card (Finset.subset_univ B)
-      · rw [← compl_card, div_le_div_iff_of_pos_right hΩ_pos]
-        simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, Nat.cast_le]
-        exact card_le_card inter_subset_right
-    · suffices (((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card ≤ (1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card by
-        rwa [mul_le_mul_right hB_pos] at this
-      rw [sub_mul, tsub_le_iff_right, ← add_mul]
-      rw [div_mul, div_self (by simp_all only [ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), div_one]
-      suffices @Nat.cast ℚ _ (min A.card B.card) ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) by
-        calc
-          @Nat.cast ℚ _ (A ∩ B).card ≤ @Nat.cast ℚ _ (min A.card B.card) := by
-            rw [Nat.cast_le, Nat.le_min]
-            constructor <;> apply card_le_card
-            · exact inter_subset_left
-            · exact inter_subset_right
-          _ ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) := by exact this
-      simp only [Nat.cast_min, inf_le_iff]
-      by_cases hAB : A.card ≤ B.card
-      · left
-        rw [Rat.le_iff_sub_nonneg, add_mul, div_mul, add_sub_assoc]
-        have : (@Nat.cast ℚ _ (#A)) / (↑(#Ω.toFinset) / ↑(#B)) - ↑(#A) = - ↑(#A) * (1 - ↑(#B) / ↑(#Ω.toFinset)) := by
-          rw [neg_mul_comm, neg_sub, div_div_eq_mul_div, mul_sub, mul_one, mul_div]
-        rw [this, mul_comm, ← add_mul]
-        refine Rat.mul_nonneg ?_ ?_
-        · simp_all only [le_add_neg_iff_add_le, zero_add, Nat.cast_le]
-        · rw [sub_nonneg, div_le_iff₀ hΩ_pos, one_mul, Nat.cast_le, ← hΩ_card_eq]
-          exact Finset.card_le_card (Finset.subset_univ B)
-      · right
-        rw [mul_comm, le_mul_iff_one_le_right hB_pos]
-        rw [sub_add_eq_add_sub, add_sub_assoc, le_add_iff_nonneg_right, sub_nonneg]
-        simp only [not_le] at hAB
-        rw [div_le_div_iff_of_pos_right hΩ_pos, Nat.cast_le]
-        exact Nat.le_of_lt hAB
-  suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ (c : ℚ) / (Grep.size : ℚ) by exact cond_bound.trans this
-  clear cond_bound A
-
-  by_cases hF_size : Frep.size = 0 ∧ F'rep.size = 0
-  · have hΩ : Ω.toFinset.card = 1 := by
-      rw [hΩ_size, hfreeF_size, hF_size.1, hfreeF'_size, hF_size.2, zero_tsub]
-      simp only [Nat.choose_zero_right, mul_one]
-    have hB : B.card = 1 := by
-      have : B.card ≤ 1 := by
-        rw [← hΩ, ← hΩ_card_eq]
-        exact Finset.card_le_card (Finset.subset_univ B)
-      refine Nat.le_antisymm this (Nat.one_le_iff_ne_zero.mpr hB_nonzero)
-    rw [hB, hΩ]
-    simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true, div_self, sub_self, ge_iff_le]
-    apply div_nonneg <;> simp only [Nat.cast_nonneg]
-
-  have hG_nzero : ¬Grep.size = 0 := by
-    intro hG_zero
-    rw [card_eq_zero, ← ne_eq, ← Finset.nonempty_iff_ne_empty] at hΩ_nonzero
-    obtain ⟨⟨w₁, w₂⟩, hw_in_Ω⟩ := hΩ_nonzero
-    simp only [Set.toFinset_setOf, mem_filter, mem_univ, true_and, Ω] at hw_in_Ω
-    simp only [not_and] at hF_size
-    simp only [LabeledGraph.size] at hG_zero
-    by_cases hF_nonzero : Frep.size = 0
-    · have hF'_nonzero := hF_size hF_nonzero
-      have hw₂_gt_zero : w₂.card > 0 := by
-        rw [hw_in_Ω.2.1]
-        exact Nat.zero_lt_of_ne_zero hF'_nonzero
-      have hw₂_le_zero : w₂.card ≤ Fintype.card W := card_le_univ w₂
-      simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-    · have hw₁_gt_zero : w₁.card > 0 := by
-        rw [hw_in_Ω.1.1]
-        exact Nat.zero_lt_of_ne_zero hF_nonzero
-      have hw₁_le_zero : w₁.card ≤ Fintype.card W := card_le_univ w₁
-      simp_all only [gt_iff_lt, nonpos_iff_eq_zero]
-
   by_cases hG_size : Grep.size ≤ Frep.size + F'rep.size
-  · refine Preorder.le_trans _ 1 _ ?_ ?_Preorder
-    · simp only [tsub_le_iff_right, le_add_iff_nonneg_right]
-      apply div_nonneg <;> simp only [Nat.cast_nonneg]
-    · refine (one_le_div₀ ?_).mpr ?_
-      · simp only [Nat.cast_pos]
-        exact Nat.zero_lt_of_ne_zero hG_nzero
-      · simp only [Nat.cast_le]
-        refine Preorder.le_trans _ (Frep.size + F'rep.size) _ hG_size ?_
-        refine Preorder.le_trans _ (2 * (F.out.size + F'.out.size) ^ 2) _ ?_ ?_
-        · rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
-          refine Preorder.le_trans _ ((Frep.size + F'rep.size) ^ 2) _ ?_ ?_
-          · apply Nat.le_pow Nat.ofNat_pos
-          · apply Nat.le_mul_of_pos_left ((Frep.size + F'rep.size) ^ 2) Nat.ofNat_pos
-        · simp only [Nat.le_max_left, c]
+  · by_cases hG_zero : Grep.size = 0
+    · rw [hG_zero]
+      simp only [CharP.cast_eq_zero, div_zero, abs_nonpos_iff, sub_eq_zero]
+      by_cases hF_size : ¬Frep.size = 0 ∨ ¬F'rep.size = 0
+      · obtain (hF_zero | hF'_zero) := hF_size
+        · have fG_lt_fF : Grep.size - σ.size < Frep.size - σ.size := by
+            apply Nat.sub_lt_sub_right (by exact Grep.type_size_le_size)
+            rw [hG_zero]; exact Nat.zero_lt_of_ne_zero hF_zero
+          have hΩ_zero : Ω.toFinset.card = 0 := by
+            rw [hΩ_size]; apply mul_eq_zero_of_left
+            rw [Nat.choose_eq_zero_iff, hfreeG_size, hfreeF_size]
+            exact fG_lt_fF
+          have hB_zero : B.card = 0 := by
+            rw [hB_size]
+            dsimp [multinomialCoefficient]
+            apply if_neg; simp only [Fin.sum_univ_two, ge_iff_le, not_le, r_list]
+            apply Nat.lt_add_right; rw [hfreeG_size]
+            exact fG_lt_fF
+          rw [hΩ_zero, hB_zero]
+          simp only [CharP.cast_eq_zero, div_zero]
+        · have fG_lt_fF' : Grep.size - σ.size < F'rep.size - σ.size := by
+            apply Nat.sub_lt_sub_right (by exact Grep.type_size_le_size)
+            rw [hG_zero]; exact Nat.zero_lt_of_ne_zero hF'_zero
+          have hΩ_zero : Ω.toFinset.card = 0 := by
+            rw [hΩ_size]; apply mul_eq_zero_of_right
+            rw [Nat.choose_eq_zero_iff, hfreeG_size, hfreeF'_size]
+            exact fG_lt_fF'
+          have hB_zero : B.card = 0 := by
+            rw [hB_size]
+            dsimp [multinomialCoefficient]
+            apply if_neg; simp only [Fin.sum_univ_two, ge_iff_le, not_le, r_list]
+            apply Nat.lt_add_left; rw [hfreeG_size]
+            exact fG_lt_fF'
+          rw [hΩ_zero, hB_zero]
+          simp only [CharP.cast_eq_zero, div_zero]
+      · simp at hF_size
+        have hΩ_one : Ω.toFinset.card = 1 := by
+          rw [hΩ_size, hfreeF_size, hF_size.1, hfreeF'_size, hF_size.2, zero_tsub]
+          simp only [Nat.choose_zero_right, mul_one]
+        have hB_one : B.card = 1 := by
+          rw [hB_size]
+          dsimp only [multinomialCoefficient]
+          split
+          next h =>
+            simp only [Fin.prod_univ_two, Fin.sum_univ_two, r_list]
+            have fG_fac : freeG.card.factorial = 1 := by
+              rw [Nat.factorial_eq_one, hfreeG_size, hG_zero, zero_tsub]
+              simp only [zero_le]
+            have fF_fac : (Frep.size - σ.size).factorial = 1 := by
+              rw [Nat.factorial_eq_one, hF_size.1, zero_tsub]
+              simp only [zero_le]
+            have fF'_fac : (F'rep.size - σ.size).factorial = 1 := by
+              rw [Nat.factorial_eq_one, hF_size.2, zero_tsub]
+              simp only [zero_le]
+            have f_fac : (#freeG - (Frep.size - σ.size + (F'rep.size - σ.size))).factorial = 1 := by
+              rw [Nat.factorial_eq_one, hfreeG_size, hG_zero, hF_size.1, hF_size.2, zero_tsub, zero_tsub]
+              simp only [zero_le]
+            rw [fG_fac, fF_fac, fF'_fac, f_fac, mul_one, one_mul]
+          next h =>
+            exfalso
+            simp only [Fin.sum_univ_two, ge_iff_le, not_le, r_list] at h
+            rw [hfreeG_size, hG_zero, hF_size.1, hF_size.2, zero_tsub, add_zero] at h
+            exact Nat.not_lt_zero _ h
+        rw [hΩ_one, hB_one, Nat.cast_one, div_one, div_one, Nat.cast_inj]
+        have hAUB_one : (A ∪ B).card = 1 := by
+          apply Nat.le_antisymm
+          · refine Preorder.le_trans _ Ω.toFinset.card _ ?_ ?_
+            · rw [← hΩ_card_eq]
+              exact card_le_card (Finset.subset_univ (A ∪ B))
+            · rw [hΩ_one]
+          · rw [← card_sdiff_add_card, hB_one]
+            simp only [le_add_iff_nonneg_left, zero_le]
+        rw [card_inter, hB_one, hAUB_one, add_tsub_cancel_right]
+    · refine Preorder.le_trans _ 1 _ ?_ ?_
+      · refine abs_sub_le_of_nonneg_of_le ?_ ?_ ?_ ?_
+        · apply div_nonneg <;> simp only [Nat.cast_nonneg]
+        · apply div_le_one_of_le₀
+          · rw [Nat.cast_le]; exact card_le_card inter_subset_right
+          · simp only [Nat.cast_nonneg]
+        · apply div_nonneg <;> simp only [Nat.cast_nonneg]
+        · apply div_le_one_of_le₀
+          · rw [Nat.cast_le, ← hΩ_card_eq]; exact card_le_card (Finset.subset_univ A)
+          · simp only [Nat.cast_nonneg]
+      · refine (one_le_div₀ ?_).mpr ?_
+        · rw [Nat.cast_pos]
+          exact Nat.zero_lt_of_ne_zero hG_zero
+        · refine Preorder.le_trans _ (Frep.size + F'rep.size : ℚ) _ (by rwa [← Nat.cast_add, Nat.cast_le]) ?_
+          refine Preorder.le_trans _ ((Frep.size + F'rep.size) ^ 2 : ℚ) _ ?_ ?_
+          · rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
+            apply Nat.le_pow Nat.ofNat_pos
+          · exact le_mul_of_one_le_left (by simp only [sq_nonneg]) rfl
+  · simp at hG_size
+    /- zero_lt_of_lt -/
+    have hΩ_pos : 0 < (Ω.toFinset.card : ℚ) := by
+      rw [Nat.cast_pos, hΩ_size]
+      apply Nat.mul_pos
+      · apply Nat.choose_pos
+        rw [hfreeG_size, hfreeF_size]
+        refine (@Nat.sub_le_sub_iff_right _ _ Frep.size (Grep.type_size_le_size)).mpr ?_
+        exact Nat.le_of_add_right_le (Nat.le_of_succ_le hG_size)
+      · apply Nat.choose_pos
+        rw [hfreeG_size, hfreeF'_size]
+        refine (@Nat.sub_le_sub_iff_right _ _ F'rep.size (Grep.type_size_le_size)).mpr ?_
+        exact Nat.le_of_add_left_le (Nat.le_of_succ_le hG_size)
+    have hB_pos : 0 < (B.card : ℚ) := by
+      rw [Nat.cast_pos, hB_size]
+      apply multinomialCoefficient_pos
+      simp only [Fin.sum_univ_two, ge_iff_le, r_list]
+      omega
+    have compl_card : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
+      rw [← hΩ_card_eq]
+      simp only [Set.compl_eq_univ_diff B.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
+      rw [card_sdiff (by exact Finset.subset_univ B)]
+      rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B))]
+      rw [sub_div, div_self (by rw [hΩ_card_eq, ne_eq, Rat.natCast_eq_zero]; sorry)]
 
-  simp only [not_le] at hG_size
-  have hG_size'' : 2 * σ.size < Grep.size := by
-    refine @Nat.lt_of_le_of_lt _ (Frep.size + F'rep.size) _ ?_ hG_size
-    rw [Nat.two_mul]
-    exact Nat.add_le_add (Frep.type_size_le_size) (F'rep.type_size_le_size)
-  have hG_size' : σ.size < Grep.size := by exact Nat.lt_of_le_of_lt (Nat.le_mul_of_pos_left σ.size Nat.zero_lt_two) hG_size''
-
-  suffices 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) ≤ 2 * (Frep.size + F'rep.size) ^ 2 / (Grep.size : ℚ) by
-    have simp_calc : 2 * (Frep.size + F'rep.size) ^ 2 / (Grep.size : ℚ) ≤ (c : ℚ) / (Grep.size : ℚ) := by
-      refine (div_le_div_iff_of_pos_right ?_).mpr ?_
-      · simp only [Nat.cast_pos]
-        exact Nat.zero_lt_of_ne_zero hG_nzero
-      · simp only [Nat.mul_max_mul_left, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_max,
-        Nat.cast_pow, Nat.cast_add, Nat.ofNat_pos, mul_le_mul_left, le_sup_iff, c]
-        left; rw [← hFrep₁, hFrep₂, ← hF'rep₁,  hF'rep₂]
-    exact this.trans simp_calc
-
-  refine Preorder.le_trans _ ?_ _ ?_ ?_
-  · exact ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size)
-  · suffices @Nat.cast ℚ _ B.card / Ω.toFinset.card ≥ 1 - ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size) by rwa [tsub_le_iff_tsub_le]
-    have hB_size' : B.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card - freeF.card) (freeF'.card) := by
-      rw [hB_size]
-      have : Frep.size - σ.size + (F'rep.size - σ.size) ≤ freeG.card := by omega
-      simp only [multinomialCoefficient, Fin.sum_univ_two, ge_iff_le, this, ↓reduceDIte, Fin.prod_univ_two, r_list]
-      rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
-      nth_rw 2 [← Nat.div_div_eq_div_mul]
-      rw [Nat.div_mul_div (by apply Nat.dvd_div_of_mul_dvd; apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
-      rw [mul_assoc, Nat.div_div_eq_div_mul, ← hfreeF_size, ← hfreeF'_size, Nat.sub_sub]
-    rw [hΩ_size, hB_size']
-    rw [← Nat.cast_sub (by
-      simp only [LabeledGraph.size]
-      rw [← Frep.type_verts_card_eq]
-      exact set_fintype_card_le_univ Frep.type_verts),
-      ← Nat.cast_sub (by
-      simp only [LabeledGraph.size]
-      rw [← F'rep.type_verts_card_eq]
-      exact set_fintype_card_le_univ F'rep.type_verts),
-      ← Nat.cast_sub (by omega), ← hfreeG_size, ← hfreeF_size, ← hfreeF'_size]
-    rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
-    rw [← div_div, div_self (by simp_all only [mul_eq_zero, not_or, ne_eq, Rat.natCast_eq_zero, not_false_eq_true]), one_div_mul_eq_div]
-    rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, ge_iff_le]
-    refine Preorder.le_trans _ ?_ _ ?_ ?_
-    · exact (freeG.card - freeF.card - freeF'.card) ^ freeF'.card / freeG.card ^ freeF'.card
-    · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
-      rw [sub_eq_add_neg, sub_eq_add_neg, ← Nat.cast_add, neg_mul_eq_mul_neg]
-      have : -2 ≤ -(@Nat.cast ℚ _ (#freeF + #freeF') / ↑(#freeG)) := by
-        simp only [Nat.cast_add, neg_le_neg_iff]
-        refine Preorder.le_trans _ 1 _ ?_ (by simp only [Nat.one_le_ofNat])
-        refine div_le_one_of_le₀ ?_ ?_
-        · rw [← Nat.cast_add ,Nat.cast_le]; omega
-        · simp only [Nat.cast_nonneg]
-      exact one_add_mul_le_pow this freeF'.card
-    · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
-      rw [mul_comm, ← Nat.div_div_eq_div_mul]
-      rw [mul_comm, ← Nat.div_div_eq_div_mul]
-      rw [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd; rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
-        Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-      nth_rw 2 [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd;rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
-        Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-      rw [div_div_div_cancel_right₀ (by
-        simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-      rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-      rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-      refine (div_le_div_iff₀ ?_ ?_).mpr ?_
-      · refine pow_pos ?_ _
-        simp only [Nat.cast_pos]; omega
-      · apply div_pos <;> simp only [Nat.cast_pos, Nat.factorial_pos]
-      · refine mul_le_mul_of_nonneg ?_ ?_ ?_ ?_
-        · rw [sub_sub, ← Nat.cast_add, ← Nat.cast_sub (by omega), ← Nat.cast_pow]
-          rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true]), Nat.cast_le, Nat.sub_sub]
-          refine (Nat.le_div_iff_mul_le ?_).mpr ?_
-          · simp only [Nat.factorial_pos]
-          · rw [mul_comm]
-            have hnm : freeG.card - (freeF.card + freeF'.card) ≤ freeG.card - freeF.card := by omega
-            have : freeG.card - freeF.card - (freeG.card - (freeF.card + freeF'.card)) = freeF'.card := by omega
-            nth_rw 3 [← this]
-            exact Nat.factorial_mul_pow_sub_le_factorial hnm
-        · rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-          rw [← Nat.cast_pow, Nat.cast_le]
-          have h : freeF'.card ≤ freeG.card := by omega
-          rw [← Nat.descFactorial_eq_div h]
-          apply Nat.descFactorial_le_pow
-        · refine pow_nonneg ?_ _
-          simp only [le_sub_iff_add_le]
-          rw [zero_add, ← Nat.cast_add, Nat.cast_le]; omega
-        · refine pow_nonneg ?_ _
-          simp only [Nat.cast_nonneg]
-  · refine Preorder.le_trans _ ?_ _ ?_ ?_
-    · exact (Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size)
-    · apply (div_le_div_iff_of_pos_right (by simp_all only [sub_pos, Nat.cast_lt])).mpr
-      rw [sub_mul, mul_sub, mul_sub, sub_sub, sub_add_eq_add_sub]
-      rw [sub_le_iff_le_add']
-      refine le_add_of_nonneg_of_le ?_ ?_
-      · rw [← add_sub_assoc, mul_comm, ← mul_add]
-        apply sub_nonneg_of_le
-        refine mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _)
-        rw [← Nat.cast_add, Nat.cast_le]
-        exact Nat.le_add_right_of_le (Frep.type_size_le_size)
-      · rw [pow_two, sub_mul, mul_sub, mul_sub, sub_sub, ← add_sub_assoc]
+    have cond_bound : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
+      rw [abs_le]; constructor
+      · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
+        have hA_card : A.card = (A ∩ B).card + (A.toSet ∩ B.toSetᶜ).toFinset.card := by
+          have hA_union := Set.toFinset_congr (Set.inter_union_compl A.toSet B.toSet)
+          simp only [toFinset_coe] at hA_union
+          nth_rw 1 [← hA_union, Set.toFinset_union]
+          rw [card_union_eq_card_add_card.mpr (by
+            rw [disjoint_iff_inter_eq_empty, ← Set.toFinset_inter, Set.toFinset_eq_empty, ← Set.inter_inter_distrib_left]
+            simp only [Set.inter_compl_self, Set.inter_empty])]
+          simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl]
+        rw [hA_card, Nat.cast_add, add_div, add_comm, add_sub_assoc]
         refine Preorder.le_trans _ ?_ _ ?_ ?_
-        · exact ↑Frep.size * ↑F'rep.size + ↑F'rep.size * ↑F'rep.size
-        · apply sub_le_self
-          refine add_nonneg ?_ ?_
-          · rw [← Nat.cast_mul]
-            apply Nat.cast_nonneg
-          · rw [sub_nonneg]
-            refine mul_le_mul_of_nonneg_left ?_ ?_
-            · rw [Nat.cast_le]; exact F'rep.type_size_le_size
-            · apply Nat.cast_nonneg
-        · rw [← Nat.cast_mul, ← Nat.cast_mul, ← Nat.cast_add]
-          rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
-          rw [Nat.pow_two, Nat.add_mul, Nat.mul_add, Nat.mul_add]
-          omega
-    · refine (div_le_div_iff₀ ?_ ?_).mpr ?_
-      · simp only [sub_pos, Nat.cast_lt]
-        exact hG_size'
-      · simp only [Nat.cast_pos]
-        exact Nat.zero_lt_of_ne_zero hG_nzero
-      · rw [mul_assoc]; nth_rw 2 [mul_comm]; rw [mul_assoc]
-        refine mul_le_mul_of_nonneg_left ?_ ?_
-        · rw [← Nat.cast_sub (Nat.le_of_succ_le hG_size'), ← Nat.cast_ofNat, ← Nat.cast_mul, Nat.cast_le]
-          omega
-        · rw [← Nat.cast_add]; apply sq_nonneg
+        · exact ↑(#(A.toSet ∩ (B.toSet)ᶜ).toFinset) / ↑(#Ω.toFinset)
+        · rw [add_le_iff_nonpos_right, sub_nonpos, div_le_div_iff₀ hΩ_pos hB_pos]
+          rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le, ← hΩ_card_eq]
+          apply Nat.mul_le_mul_left
+          exact Finset.card_le_card (Finset.subset_univ B)
+        · rw [← compl_card, div_le_div_iff_of_pos_right hΩ_pos]
+          simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, Nat.cast_le]
+          exact card_le_card inter_subset_right
+      · suffices (((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card ≤ (1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card by
+          rwa [mul_le_mul_right hB_pos] at this
+        rw [sub_mul, tsub_le_iff_right, ← add_mul]
+        rw [div_mul, div_self (by sorry), div_one]
+        suffices @Nat.cast ℚ _ (min A.card B.card) ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) by
+          calc
+            @Nat.cast ℚ _ (A ∩ B).card ≤ @Nat.cast ℚ _ (min A.card B.card) := by
+              rw [Nat.cast_le, Nat.le_min]
+              constructor <;> apply card_le_card
+              · exact inter_subset_left
+              · exact inter_subset_right
+            _ ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) := by exact this
+        simp only [Nat.cast_min, inf_le_iff]
+        by_cases hAB : A.card ≤ B.card
+        · left
+          rw [Rat.le_iff_sub_nonneg, add_mul, div_mul, add_sub_assoc]
+          have : (@Nat.cast ℚ _ (#A)) / (↑(#Ω.toFinset) / ↑(#B)) - ↑(#A) = - ↑(#A) * (1 - ↑(#B) / ↑(#Ω.toFinset)) := by
+            rw [neg_mul_comm, neg_sub, div_div_eq_mul_div, mul_sub, mul_one, mul_div]
+          rw [this, mul_comm, ← add_mul]
+          refine Rat.mul_nonneg ?_ ?_
+          · simp_all only [le_add_neg_iff_add_le, zero_add, Nat.cast_le]
+          · rw [sub_nonneg, div_le_iff₀ hΩ_pos, one_mul, Nat.cast_le, ← hΩ_card_eq]
+            exact Finset.card_le_card (Finset.subset_univ B)
+        · right
+          rw [mul_comm, le_mul_iff_one_le_right hB_pos]
+          rw [sub_add_eq_add_sub, add_sub_assoc, le_add_iff_nonneg_right, sub_nonneg]
+          simp only [not_le] at hAB
+          rw [div_le_div_iff_of_pos_right hΩ_pos, Nat.cast_le]
+          exact Nat.le_of_lt hAB
+    refine Preorder.le_trans ?_ (1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ)) _ (by exact cond_bound) ?_
+
+    refine Preorder.le_trans _ ?_ _ ?_ ?_
+    · exact ((Frep.size - σ.size) * (F'rep.size - σ.size) + (F'rep.size - σ.size) ^ 2) / (Grep.size - σ.size)
+    · have hB_size' : B.card = Nat.choose (freeG.card) (freeF.card) * Nat.choose (freeG.card - freeF.card) (freeF'.card) := by
+        rw [hB_size]
+        have : Frep.size - σ.size + (F'rep.size - σ.size) ≤ freeG.card := by omega
+        simp only [multinomialCoefficient, Fin.sum_univ_two, ge_iff_le, this, ↓reduceDIte, Fin.prod_univ_two, r_list]
+        rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
+        nth_rw 2 [← Nat.div_div_eq_div_mul]
+        rw [Nat.div_mul_div (by apply Nat.dvd_div_of_mul_dvd; apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
+        rw [mul_assoc, Nat.div_div_eq_div_mul, ← hfreeF_size, ← hfreeF'_size, Nat.sub_sub]
+      rw [hΩ_size, hB_size']
+      rw [← Nat.cast_sub (by exact Frep.type_size_le_size), ← hfreeF_size]
+      rw [← Nat.cast_sub (by exact F'rep.type_size_le_size), ← hfreeF'_size]
+      rw [← Nat.cast_sub (by exact Grep.type_size_le_size), ← hfreeG_size]
+      rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
+      rw [← div_div, div_self (by sorry), one_div_mul_eq_div]
+      rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, tsub_le_iff_tsub_le]
+      refine Preorder.le_trans _ ?_ _ ?_ ?_
+      · exact (freeG.card - freeF.card - freeF'.card) ^ freeF'.card / freeG.card ^ freeF'.card
+      · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; sorry)]
+        rw [sub_eq_add_neg, sub_eq_add_neg, ← Nat.cast_add, neg_mul_eq_mul_neg]
+        have : -2 ≤ -(@Nat.cast ℚ _ (#freeF + #freeF') / ↑(#freeG)) := by
+          simp only [Nat.cast_add, neg_le_neg_iff]
+          refine Preorder.le_trans _ 1 _ ?_ (by simp only [Nat.one_le_ofNat])
+          refine div_le_one_of_le₀ ?_ ?_
+          · rw [← Nat.cast_add ,Nat.cast_le]; omega
+          · simp only [Nat.cast_nonneg]
+        exact one_add_mul_le_pow this freeF'.card
+      · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.choose_eq_factorial_div_factorial (by omega)]
+        rw [mul_comm, ← Nat.div_div_eq_div_mul]
+        rw [mul_comm, ← Nat.div_div_eq_div_mul]
+        rw [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd; rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
+          Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        nth_rw 2 [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd;rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
+          Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        rw [div_div_div_cancel_right₀ (by
+          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+        · refine pow_pos ?_ _
+          simp only [Nat.cast_pos]; sorry
+        · apply div_pos <;> simp only [Nat.cast_pos, Nat.factorial_pos]
+        · refine mul_le_mul_of_nonneg ?_ ?_ ?_ ?_
+          · rw [sub_sub, ← Nat.cast_add, ← Nat.cast_sub (by omega), ← Nat.cast_pow]
+            rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true]), Nat.cast_le, Nat.sub_sub]
+            refine (Nat.le_div_iff_mul_le ?_).mpr ?_
+            · simp only [Nat.factorial_pos]
+            · rw [mul_comm]
+              have hnm : freeG.card - (freeF.card + freeF'.card) ≤ freeG.card - freeF.card := by sorry
+              have : freeG.card - freeF.card - (freeG.card - (freeF.card + freeF'.card)) = freeF'.card := by sorry
+              nth_rw 3 [← this]
+              exact Nat.factorial_mul_pow_sub_le_factorial hnm
+          · rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; sorry) (by sorry)]
+            rw [← Nat.cast_pow, Nat.cast_le]
+            have h : freeF'.card ≤ freeG.card := by sorry
+            rw [← Nat.descFactorial_eq_div h]
+            apply Nat.descFactorial_le_pow
+          · refine pow_nonneg ?_ _
+            simp only [le_sub_iff_add_le]
+            rw [zero_add, ← Nat.cast_add]
+            sorry
+          · apply pow_nonneg
+            sorry
+    · refine Preorder.le_trans _ ?_ _ ?_ ?_
+      · exact (Frep.size + F'rep.size) ^ 2 / (Grep.size - σ.size)
+      · apply (div_le_div_iff_of_pos_right (by sorry)).mpr
+        rw [sub_mul, mul_sub, mul_sub, sub_sub, sub_add_eq_add_sub]
+        rw [sub_le_iff_le_add']
+        refine le_add_of_nonneg_of_le ?_ ?_
+        · rw [← add_sub_assoc, mul_comm, ← mul_add]
+          apply sub_nonneg_of_le
+          refine mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _)
+          rw [← Nat.cast_add, Nat.cast_le]
+          exact Nat.le_add_right_of_le (Frep.type_size_le_size)
+        · rw [pow_two, sub_mul, mul_sub, mul_sub, sub_sub, ← add_sub_assoc]
+          refine Preorder.le_trans _ ?_ _ ?_ ?_
+          · exact ↑Frep.size * ↑F'rep.size + ↑F'rep.size * ↑F'rep.size
+          · apply sub_le_self
+            refine add_nonneg ?_ ?_
+            · rw [← Nat.cast_mul]
+              apply Nat.cast_nonneg
+            · rw [sub_nonneg]
+              refine mul_le_mul_of_nonneg_left ?_ ?_
+              · rw [Nat.cast_le]; exact F'rep.type_size_le_size
+              · apply Nat.cast_nonneg
+          · rw [← Nat.cast_mul, ← Nat.cast_mul, ← Nat.cast_add]
+            rw [← Nat.cast_add, ← Nat.cast_pow, Nat.cast_le]
+            rw [Nat.pow_two, Nat.add_mul, Nat.mul_add, Nat.mul_add]
+            omega
+      · refine (div_le_div_iff₀ ?_ ?_).mpr ?_
+        · simp only [sub_pos, Nat.cast_lt]
+          sorry
+        · simp only [Nat.cast_pos]
+          exact Nat.zero_lt_of_ne_zero (by sorry)
+        · rw [mul_assoc]; nth_rw 2 [mul_comm]; rw [mul_assoc]
+          refine mul_le_mul_of_nonneg_left ?_ ?_
+          · rw [← Nat.cast_sub (by exact Grep.type_size_le_size), ← Nat.cast_ofNat, ← Nat.cast_mul, Nat.cast_le]
+            sorry
+          · rw [← Nat.cast_add]; apply sq_nonneg
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
