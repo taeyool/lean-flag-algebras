@@ -650,8 +650,11 @@ theorem flagListDensity₂_prod_approx
       rw [sub_mul, mul_sub, mul_sub, sub_sub, sub_add_eq_add_sub]
       rw [sub_le_iff_le_add']
       refine le_add_of_nonneg_of_le ?_ ?_
-      · rw [← add_sub_assoc]
-        sorry
+      · rw [← add_sub_assoc, mul_comm, ← mul_add]
+        apply sub_nonneg_of_le
+        refine mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _)
+        rw [← Nat.cast_add, Nat.cast_le]
+        exact Nat.le_add_right_of_le (Frep.type_size_le_size)
       · rw [pow_two, sub_mul, mul_sub, mul_sub, sub_sub, ← add_sub_assoc]
         refine Preorder.le_trans _ ?_ _ ?_ ?_
         · exact ↑Frep.size * ↑F'rep.size + ↑F'rep.size * ↑F'rep.size
@@ -677,11 +680,6 @@ theorem flagListDensity₂_prod_approx
         · rw [← Nat.cast_sub (Nat.le_of_succ_le hG_size'), ← Nat.cast_ofNat, ← Nat.cast_mul, Nat.cast_le]
           omega
         · rw [← Nat.cast_add]; apply sq_nonneg
-
-example (A B C : ℚ) (h : A ≤ C) (h' : B ≥ 0) : A - B ≤ C := by
-  rw [sub_le_iff_le_add']
-  -- exact le_add_of_nonneg_of_le h' h
-  sorry
 
 -- theorem flagListDensity_prod_approx
 --     (Fl : FlagList σ t Vl)
