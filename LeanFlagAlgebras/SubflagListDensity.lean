@@ -1943,7 +1943,12 @@ noncomputable def
                   rw [Set.toFinset_union]
                   rw [Set.toFinset_union]
           _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
-                  sorry
+                  have h_disj_0_1 : Disjoint (Vl 0).toFinset (Vl 1).toFinset := sorry
+                  have h_disj_01_V : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset) V.toFinset := sorry
+                  have h_disj_01V_G : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset) G.type_verts.toFinset := sorry
+                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_0_1]
+                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01_V]
+                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01V_G]
           _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
                   rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
                   simp only [Fin.isValue, Set.toFinset_card, G.type_verts_card_eq, Nat.add_left_cancel_iff]
