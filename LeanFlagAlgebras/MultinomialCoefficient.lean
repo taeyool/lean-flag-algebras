@@ -1,4 +1,6 @@
 import Mathlib.Data.Nat.Factorial.BigOperators
+import Mathlib.Data.Fintype.Sum
+import Mathlib.Logic.Equiv.Fin.Basic
 
 variable {t : ℕ}
 
@@ -78,3 +80,26 @@ lemma multinomialCoefficient_fin_one
   · simp only [multinomialCoefficient_fin_one_of_le h, Nat.choose_eq_factorial_div_factorial h]
   · rw [not_le] at h
     simp only [multinomialCoefficient_fin_one_of_lt h, Nat.choose_eq_zero_of_lt h]
+
+lemma sum_eq_sum_add_sum
+    {n m : ℕ} {r_list : Fin (n + m) → ℕ} :
+    ∑ x, r_list x = ∑ x : Fin n, r_list ⟨x, by omega⟩ + ∑ x : Fin m, r_list ⟨x + n, by omega⟩
+  := by
+  rw [← Finset.sum_sumElim, Finset.univ_disjSum_univ]
+  rw [Fintype.sum_equiv finSumFinEquiv _ r_list]
+  rintro (x | x) <;> simp <;> congr 1
+  ext; simp [add_comm]
+
+lemma multinomialCoefficient_eq_choose_mul_multinomialCoefficient
+    {r_list : Fin (t + 1) → ℕ} {n : ℕ}
+    : multinomialCoefficient r_list n = n.choose (r_list (.last _)) *
+      multinomialCoefficient (fun i : Fin t ↦ r_list i.castSucc) (n - r_list (.last _))
+  := by
+  by_cases h₁ : ∑ x, r_list x ≤ n
+  · sorry
+  · simp [h₁, multinomialCoefficient]
+    intro h₂; rw [not_le] at h₁
+    simp_rw [or_assoc]
+    by_cases h₃ : n.choose (r_list (.last _)) = 0 <;> try tauto
+    simp [h₃]; simp [Nat.choose_ne_zero_iff] at h₃
+    sorry
