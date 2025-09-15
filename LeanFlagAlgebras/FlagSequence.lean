@@ -369,7 +369,9 @@ theorem positiveHomSpace_eq
     · intro F₁ F₂
       simp only [PositiveHom.coe_flag]
       rw [← PositiveHom.map_mul φ, ← mul_quot, flagVector_mul_eq_nested_sum]
-      sorry
+      simp only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, mul_one, one_smul]
+      dsimp only [flagMul, flagMulWithSize, rat_smul_eq_real_smul]
+      simp_rw [sum_quot, smul_quot, PositiveHom.map_sum, PositiveHom.map_smul]
   · intro ⟨h₀, h₁, h₂⟩
     use positiveHomFromZeroSpaceMulProp a h₀ h₁ h₂
     ext F
