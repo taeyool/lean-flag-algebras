@@ -212,6 +212,142 @@ theorem PositiveHomSpace.toPosHom_unitVector
   congr
   exact Classical.choose_spec φ.property
 
+def zeroSpaceProp
+    (a : FinFlag σ → ℝ) : Prop
+  := ∀ (F : FinFlag σ) (ℓ : ℕ), F.1 ≤ ℓ →
+    a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩
+
+def mulProp
+    (a : FinFlag σ → ℝ) : Prop
+  := ∀ (F₁ F₂ : FinFlag σ) (ℓ' : ℕ), F₁.1 + F₂.1 ≤ ℓ' + n₀ →
+    a F₁ * a F₂ = ∑ G : FlagWithSize σ ℓ', flagDensity₂ F₁.2 F₂.2 G * a ⟨ℓ', G⟩
+
+theorem zeroSpaceProp_linearExtension_respect_eqv
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a)
+    {f f' : FlagVector σ} (hf : f ∼v f')
+    : linearExtension a f = linearExtension a f'
+  := by
+  rw [← sub_eq_zero, ← linearExtension_sub]
+  apply zeroSpace_eq_sum_spanElement _ at hf
+  rcases hf with ⟨I, hI, c, v, hv, hk_sum⟩
+  rw [hk_sum, linearExtension_sum]
+  apply Finset.sum_eq_zero
+  intro i _
+  rw [linearExtension_smul]
+  simp only [smul_eq_mul, mul_eq_zero]; right
+  rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
+  dsimp [zeroElement, densityFlagSum] at hvi
+  rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
+  simp_rw [linearExtension_smul, linearExtension_unitVector]
+  exact h F ℓ hℓ
+
+noncomputable def homFunFromZeroSpaceMulProp
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a)
+    : FlagAlgebra σ → ℝ
+  := by
+  apply Quot.lift (linearExtension a)
+  intro f f' f_eqv
+  exact zeroSpaceProp_linearExtension_respect_eqv h f_eqv
+
+theorem homFunFromZeroSpaceMulProp_map_zero
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a)
+    : homFunFromZeroSpaceMulProp h 0 = 0
+  :=
+  rfl
+
+theorem homFunFromZeroSpaceMulProp_map_one
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a)
+    : homFunFromZeroSpaceMulProp h 1 = 1
+  := by
+  show linearExtension a (unitVector 1) = 1
+  sorry
+
+theorem homFunFromZeroSpaceMulProp_map_add
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a) (f g : FlagAlgebra σ)
+    : homFunFromZeroSpaceMulProp h (f + g) = homFunFromZeroSpaceMulProp h f + homFunFromZeroSpaceMulProp h g
+  := by
+  rcases Quotient.exists_rep f with ⟨F, hF⟩
+  rcases Quotient.exists_rep g with ⟨G, hG⟩
+  rw [← hF, ← hG, ← add_quot]
+  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  exact linearExtension_add a F G
+
+theorem homFunFromZeroSpaceMulProp_map_mul
+    {a : FlagDensitySpace σ} (h₁ : zeroSpaceProp a) (h₂ : mulProp a) (f g : FlagAlgebra σ)
+    : homFunFromZeroSpaceMulProp h₁ (f * g) = homFunFromZeroSpaceMulProp h₁ f * homFunFromZeroSpaceMulProp h₁ g
+  := by
+  rcases Quotient.exists_rep f with ⟨frep, h_frep⟩
+  rcases Quotient.exists_rep g with ⟨grep, h_grep⟩
+  rw [← h_frep, ← h_grep, ← mul_quot]
+  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  rw [flagVector_mul_eq_nested_sum]
+  nth_rw 3 [flagVector_eq_sum_unitVector frep, flagVector_eq_sum_unitVector grep]
+  simp_rw [linearExtension_sum]
+  rw [Finset.sum_mul_sum]
+  apply Finset.sum_congr rfl
+  intro F _
+  apply Finset.sum_congr rfl
+  intro G _
+  simp_rw [linearExtension_smul]
+  rw [smul_mul_smul_comm]
+  congr
+  simp only [linearExtension_unitVector]
+  -- exact h₂ F G (F.1 + G.1 - n₀) (by omega)
+  sorry
+
+theorem homFunFromZeroSpaceMulProp_map_smul
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a) (r : ℝ) (f : FlagAlgebra σ)
+    : homFunFromZeroSpaceMulProp h (r • f) = r * homFunFromZeroSpaceMulProp h f
+  := by
+  rcases Quotient.exists_rep f with ⟨F, hF⟩
+  rw [← hF, ← smul_quot]
+  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  exact linearExtension_smul a r F
+
+theorem homFunFromZeroSpaceMulProp_commutes
+    {a : FlagDensitySpace σ} (h : zeroSpaceProp a) (r : ℝ)
+    : homFunFromZeroSpaceMulProp h (Algebra.cast r) = r
+  := by
+  show homFunFromZeroSpaceMulProp h (r • 1) = r
+  rw [homFunFromZeroSpaceMulProp_map_smul, homFunFromZeroSpaceMulProp_map_one, mul_one]
+
+noncomputable def homFromZeroSpaceMulProp
+    {a : FlagDensitySpace σ} (h₁ : zeroSpaceProp a) (h₂ : mulProp a)
+    : Hom σ
+  := {
+    toFun := homFunFromZeroSpaceMulProp h₁
+    map_zero' := homFunFromZeroSpaceMulProp_map_zero h₁
+    map_one' := homFunFromZeroSpaceMulProp_map_one h₁
+    map_add' := homFunFromZeroSpaceMulProp_map_add h₁
+    map_mul' := homFunFromZeroSpaceMulProp_map_mul h₁ h₂
+    commutes' := homFunFromZeroSpaceMulProp_commutes h₁
+  }
+
+noncomputable def positiveHomFromZeroSpaceMulProp
+    (a : FlagDensitySpace σ) (h₁ : zeroSpaceProp a) (h₂ : mulProp a)
+    : PositiveHom σ
+  := {
+    val := homFromZeroSpaceMulProp h₁ h₂
+    property := sorry
+  }
+
+theorem positiveHomSpace_eq
+    : PositiveHomSpace σ =
+    { φ : FlagDensitySpace σ | zeroSpaceProp φ ∧ mulProp φ }
+  := by
+  ext φ
+  simp only [Set.mem_setOf_eq]
+  constructor
+  · intro hφ
+    constructor
+    · intro F ℓ hℓ
+      sorry
+    · intro F₁ F₂ ℓ' hℓ'
+      sorry
+  · intro ⟨h₁, h₂⟩
+    simp only [PositiveHomSpace, Set.mem_range]
+    sorry
+
 instance : Nonempty (FlagDensitySpace σ) :=
   .intro ⟨fun _ ↦ 0, by simp [FlagDensitySpace]; exact fun _ ↦ zero_le_one⟩
 
@@ -289,18 +425,8 @@ theorem flagSeq_limit_linearExtension_respect_eqv
     {f f' : FlagVector σ} (h : f ∼v f')
     : linearExtension a f = linearExtension a f'
   := by
-  rw [← sub_eq_zero, ← linearExtension_sub]
-  apply zeroSpace_eq_sum_spanElement _ at h
-  rcases h with ⟨I, hI, c, v, hv, hk_sum⟩
-  rw [hk_sum, linearExtension_sum]
-  apply Finset.sum_eq_zero
-  intro i _
-  rw [linearExtension_smul]
-  simp only [smul_eq_mul, mul_eq_zero]; right
-  rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
-  dsimp [zeroElement, densityFlagSum] at hvi
-  rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
-  simp_rw [linearExtension_smul, linearExtension_unitVector]
+  apply zeroSpaceProp_linearExtension_respect_eqv ?_ h
+  intro F ℓ hℓ
   exact flagSeq_limit_chain_rule hs_conv hℓ
 
 noncomputable def homFunFromFlagSeqLimit
