@@ -267,6 +267,44 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
       ∑ G ∈ labelExtensions F' σ, flagDensity₁ F G * downwardNormalizingFactor G
   := by
+  let ⟨Frep, hFrep⟩ := Quotient.exists_rep F
+  have hFrep_size : Frep.size = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let ⟨Furep, hFurep⟩ := Quotient.exists_rep (unlabel F)
+  have hFurep_size : Furep.size = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
+  have hF'rep_size : F'rep.size = ℓ' := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let Ω := { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') | Function.Injective θ ∧ w.toFinset.card = ℓ ∧ (Set.image θ Set.univ) ⊆ w }
+  let A : Finset Ω := { w | by
+    obtain ⟨⟨w, θ⟩, hw⟩ := w
+    let G : SimpleGraph (Fin ℓ') := {
+        Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'rep.graph.Adj a b
+        symm := fun a b ⟨ha, hb, hab⟩ => ⟨hb, ha, hab.symm⟩
+      }
+    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
+          then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hw.1⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
+          else false }
+  dsimp only [flagDensity₁, downwardNormalizingFactor]
+  rw [← subflagDensity_eq_flagListDensity (unlabel F) F']
+  nth_rw 1 [← hFurep, ← hFrep, ← hF'rep]
+  dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
+  have P₁ : labeledSubgraphDensity Furep F'rep * downwardNormalizingFactor_labeledGraph Frep = A.card / Ω.toFinset.card := by
+    dsimp [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
+    rw [div_mul_div_comm]
+    have : (((F'rep.size - ∅ₜ.size).choose (Furep.size - ∅ₜ.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial)) = 1 := by
+      simp only [emptyType_size, tsub_zero]
+      rw [hFurep_size, hF'rep_size, Nat.choose_eq_factorial_div_factorial hℓ]
+      sorry
+    sorry
+  rw [P₁]
+
+  sorry
+
+example (A B C : ℚ) (h : B = C) : A / B = A / C := by
+  -- rw [h]
+  -- exact congrArg (HDiv.hDiv A) h
   sorry
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
