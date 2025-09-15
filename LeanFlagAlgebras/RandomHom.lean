@@ -500,11 +500,27 @@ theorem exists_converge_flagSeq_and_probMeasure_tendsto
   · exact convergesTo_comp_of_strictMono hϕ hs_conv
   · exact hℙ
 
+example {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α} (A : Set α) (hA : ℙ A = 1)
+    : ℙ Aᶜ = 0
+  := by
+  rw [ProbabilityMeasure.null_iff_toMeasure_null]
+  refine (prob_compl_eq_zero_iff ?_).mpr ?_
+  · sorry
+  · sorry
+
+example {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α} (A B : Set α)
+    (hA : ℙ A = 1) (hB : ℙ B = 1)
+    : ℙ (A ∩ B) = 1
+  := by
+  have h_inter : (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ := Set.compl_inter A B
+  sorry
+
 theorem flagSeq_limit_measure_support_positiveHomSpace
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
     : ℙ (PositiveHomSpace σ) = 1
   := by
+  rw [positiveHomSpace_eq]
   sorry
 
 def FinFlag.toBoundedContinuousFun
