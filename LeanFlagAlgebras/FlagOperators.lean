@@ -293,16 +293,56 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   have P₁ : labeledSubgraphDensity Furep F'rep * downwardNormalizingFactor_labeledGraph Frep = A.card / Ω.toFinset.card := by
     dsimp [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
     rw [div_mul_div_comm]
-    have : (((F'rep.size - ∅ₜ.size).choose (Furep.size - ∅ₜ.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial)) = 1 := by
+    have tmp : labeledSubgraphCount Furep F'rep = A.card := by
+      dsimp only [labeledSubgraphCount]
+      apply Finset.card_eq_of_equiv
+      refine Equiv.ofBijective ?_ ?_
+      · intro ⟨x, hx⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hx
+        let iso_x_F : Fin ℓ → Fin ℓ' := fun i => hx.2.some.symm.graph_iso.toFun i
+        use ⟨(x.subgraph.verts, iso_x_F ∘ Frep.type_embed.toFun), by
+          simp [Ω]
+          sorry⟩
+        sorry
+      · constructor
+        · intro a b h_eq
+          simp at h_eq
+          sorry
+        · intro ⟨a, ha⟩
+          sorry
+    suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
+      rw [← this]
+      refine congrArg (HDiv.hDiv _) ?_
       simp only [emptyType_size, tsub_zero]
-      rw [hFurep_size, hF'rep_size, Nat.choose_eq_factorial_div_factorial hℓ]
-      sorry
+      calc
+        (@Nat.cast ℚ _ (F'rep.size.choose Furep.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ℓ'.choose ℓ * ↑(ℓ.factorial / (ℓ - n₀).factorial) := by congr
+        _ = ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial) := by
+          rw [Nat.choose_eq_factorial_div_factorial hℓ, ← Nat.cast_mul]
+          nth_rw 2 [mul_comm]
+          rw [← Nat.mul_div_assoc ]
+          rw [← Nat.div_div_eq_div_mul]
+          rw [Nat.div_mul_cancel (by sorry)]
+          rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.cast_mul]
+          refine Rat.natCast_div ℓ'.factorial ((ℓ - n₀).factorial * (ℓ' - ℓ).factorial) ?_
+          sorry
+          · sorry
+
+    /- Maynbe (labeledSubgraphCount Furep F'rep) = A.card
+    -/
+
     sorry
   rw [P₁]
 
   sorry
 
-example (A B C : ℚ) (h : B = C) : A / B = A / C := by
+example (A B C D : ℚ) (h : B = C) : A / B = A / C := by
+  -- exact congrArg (HDiv.hDiv A) h
+  sorry
+
+example (A B C D : ℕ) (h : B = C) : (A / B) * C = A / (B / C) := by
+
+  -- refine Eq.symm (Nat.mul_div_assoc (A / B) ?_)
+  -- refine div_mul_div_cancel₀ ?_
   -- rw [h]
   -- exact congrArg (HDiv.hDiv A) h
   sorry
