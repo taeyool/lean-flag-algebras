@@ -1980,9 +1980,7 @@ noncomputable def
         calc
           V'_type_verts.toFinset.card
           _ = ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset ∪ G.type_verts.toFinset).card := by
-                  rw [Set.toFinset_union]
-                  rw [Set.toFinset_union]
-                  rw [Set.toFinset_union]
+                 repeat rw [Set.toFinset_union]
           _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
                   have h_disj_0_1 : Disjoint (Vl 0).toFinset (Vl 1).toFinset :=
                     Set.disjoint_toFinset.mpr
