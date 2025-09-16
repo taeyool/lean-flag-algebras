@@ -1,6 +1,8 @@
 import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Data.Fintype.Sum
 import Mathlib.Logic.Equiv.Fin.Basic
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib
 
 variable {t : ℕ}
 
@@ -90,16 +92,15 @@ lemma sum_eq_sum_add_sum
   rintro (x | x) <;> simp <;> congr 1
   ext; simp [add_comm]
 
-lemma multinomialCoefficient_eq_choose_mul_multinomialCoefficient
-    {r_list : Fin (t + 1) → ℕ} {n : ℕ}
-    : multinomialCoefficient r_list n = n.choose (r_list (.last _)) *
-      multinomialCoefficient (fun i : Fin t ↦ r_list i.castSucc) (n - r_list (.last _))
+lemma multinomialCoefficient_eq_multinomial_of_sum_le
+    {n : ℕ} {r_list : Fin t → ℕ} (h : ∑ x, r_list x ≤ n)
+    : multinomialCoefficient r_list n = n.choose (∑ x, r_list x) * Nat.multinomial .univ r_list
   := by
-  by_cases h₁ : ∑ x, r_list x ≤ n
-  · sorry
-  · simp [h₁, multinomialCoefficient]
-    intro h₂; rw [not_le] at h₁
-    simp_rw [or_assoc]
-    by_cases h₃ : n.choose (r_list (.last _)) = 0 <;> try tauto
-    simp [h₃]; simp [Nat.choose_ne_zero_iff] at h₃
-    sorry
+  induction t generalizing n
+  case zero => simp
+  case succ t ih =>
+  simp [multinomialCoefficient, Nat.multinomial, h, Nat.choose_eq_factorial_div_factorial]
+  rw [Nat.div_mul_right_comm (Nat.factorial_mul_factorial_dvd_factorial h),
+    ← Nat.mul_div_assoc _ (Nat.prod_factorial_dvd_factorial_sum .univ r_list), Nat.div_div_eq_div_mul,
+    mul_comm (∑ x, r_list x).factorial, ← mul_assoc, Nat.mul_div_mul_right]
+  positivity
