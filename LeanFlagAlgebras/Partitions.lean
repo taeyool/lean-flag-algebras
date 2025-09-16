@@ -76,13 +76,23 @@ lemma partitions_eq_partitions'_of_zero
     {V : Finset α} {r_list : Fin t → ℕ}
     : partitions V r_list = partitions' V r_list
   := by
-  ext a; simp [partitions, partitions']
+  ext f; simp [partitions, partitions']
   induction t generalizing V
   case zero => simp!; exact Finset.insert_eq_self.mp rfl
   case succ t ih =>
   simp [partitions'.inner]
   constructor <;> intro h₁
-  · sorry
+  · obtain ⟨h₁, h₃⟩ := h₁; obtain h₂ := (h₁ · |>.2); obtain h₁ := (h₁ · |>.1)
+    use f (.last _); simp only [h₁, h₂, true_and]
+    use (f ·.castSucc); constructor
+    · rw [← ih];
+      refine ⟨fun i ↦ ⟨fun a h₄ ↦ ?_, ?_⟩, fun i j h₄ ↦ h₃ i.castSucc j.castSucc (by simp [h₄])⟩
+      · refine Finset.mem_sdiff.mpr ⟨h₁ _ h₄, (h₃ _ _ ?_).notMem_of_mem_left_finset h₄⟩
+        simp only [Fin.castSucc_ne_last, not_false_eq_true]
+      · tauto
+    · simp; ext; split
+      · rfl
+      · exact Fin.last_le_iff.mp (not_lt.mp (by assumption)) ▸ .rfl
   · obtain ⟨s₁, ⟨h₁, h₂⟩, f, h₃, rfl⟩ := h₁
     simp only
     obtain ⟨h₄, h₆⟩ := (ih f).mpr h₃; obtain h₅ := (h₄ · |>.2); obtain h₄ := (h₄ · |>.1)
