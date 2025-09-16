@@ -85,26 +85,24 @@ lemma partitions_eq_partitions'_of_zero
   · sorry
   · obtain ⟨s₁, ⟨h₁, h₂⟩, f, h₃, rfl⟩ := h₁
     simp only
-    obtain ⟨h₄, h₆⟩ := (ih f).mpr h₃
-    obtain h₅ := (h₄ · |>.2)
-    obtain h₄ := (h₄ · |>.1)
+    obtain ⟨h₄, h₆⟩ := (ih f).mpr h₃; obtain h₅ := (h₄ · |>.2); obtain h₄ := (h₄ · |>.1)
     refine ⟨fun i ↦ ⟨?_, ?_⟩, fun i j h₇ ↦ ?_⟩
     · split
-      case _ _ => intro _ h; exact Finset.mem_sdiff.mp (h₄ _ h) |>.1
-      case _ _ => exact h₁
+      · intro _ h; exact Finset.mem_sdiff.mp (h₄ _ h) |>.1
+      · exact h₁
     · split
-      case _ _ => exact h₅ _
-      case _ h => rw [not_lt] at h; exact h₂ ▸ Fin.last_le_iff.mp h ▸ rfl
+      · exact h₅ _
+      · exact h₂ ▸ Fin.last_le_iff.mp (not_lt.mp (by assumption)) ▸ rfl
     · split
-      · case _ hi =>
-          intro s₂ h₈ h₉; simp at h₈ h₉ ⊢; split at h₉
-          · case _ hj =>
-              refine Finset.subset_empty.mp (h₆ _ _ (fun h ↦ h₇ ?_) h₈ h₉)
-              rw [Fin.mk.injEq] at h; exact Fin.eq_of_val_eq h
-          · case _ _ =>
-              exact Finset.subset_empty.mp <|
-                Finset.disjoint_of_subset_left (h₄ _) Finset.sdiff_disjoint h₈ h₉
-      · case _ hi => sorry
+      · intro _ h₈ h₉; simp at h₈ h₉ ⊢; split at h₉
+        · refine Finset.subset_empty.mp (h₆ _ _ (fun h ↦ h₇ ?_) h₈ h₉)
+          rw [Fin.mk.injEq] at h; exact Fin.eq_of_val_eq h
+        · exact Finset.subset_empty.mp <|
+            Finset.disjoint_of_subset_left (h₄ _) Finset.sdiff_disjoint h₈ h₉
+      · simp [Disjoint]; intro _ h₈ h₉; split at h₉
+        · exact Finset.subset_empty.mp <|
+            Finset.disjoint_of_subset_right (h₄ _) Finset.disjoint_sdiff h₈ h₉
+        · omega
 
 lemma partitions_card_eq_choose_mul_multinomial
     {V : Finset α} {r_list : Fin t → ℕ}
