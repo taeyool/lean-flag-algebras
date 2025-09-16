@@ -297,15 +297,36 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       dsimp only [labeledSubgraphCount]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
-      · intro ⟨x, hx⟩
-        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hx
-        let iso_x_F : Fin ℓ → Fin ℓ' := fun i => hx.2.some.symm.graph_iso.toFun i
-        use ⟨(x.subgraph.verts, iso_x_F ∘ Frep.type_embed.toFun), by
-          simp [Ω]
-          sorry⟩
+      · intro ⟨sF', hsF'⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hsF'
+        let iso_sF'_Furep := (Classical.choice hsF'.2).symm
+        let iso_sF'_Furep' : Fin ℓ → Fin ℓ' := fun i => iso_sF'_Furep.graph_iso.toFun i
+        have iso_sF'_Furep'_inj : Function.Injective iso_sF'_Furep' := by
+          simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+            iso_sF'_Furep']
+          intro u v h_eq
+          simp only at h_eq
+          exact iso_sF'_Furep.graph_iso.injective (SetCoe.ext h_eq)
+        use ⟨(sF'.subgraph.verts, iso_sF'_Furep' ∘ Frep.type_embed.toFun), by
+          simp only [Set.image_univ,
+            Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, Set.mem_setOf_eq, Ω]
+          constructor <;> try constructor
+          · intro u v h_eq
+            simp only [Function.comp_apply] at h_eq
+            exact Frep.type_embed.inj' (iso_sF'_Furep'_inj h_eq)
+          · have : sF'.size = ℓ := by
+              rw [← hFurep_size]
+              exact labeledGraphIso_size_eq _ _ iso_sF'_Furep.symm
+            simp_all only [Set.toFinset_card, Fintype.card_ofFinset, LabeledSubgraph.size]
+          · intro w hw
+            obtain ⟨w', hw'⟩ := hw
+            subst hw'
+            simp only [Function.comp_apply, Subtype.coe_prop, iso_sF'_Furep']⟩
+        simp only [Bool.false_eq_true, dite_else_false, Function.Embedding.toFun_eq_coe,
+          RelEmbedding.coe_toEmbedding, Finset.mem_filter, Finset.mem_univ, Function.comp_apply, true_and, A]
         sorry
       · constructor
-        · intro a b h_eq
+        · intro ⟨G, hG⟩ ⟨G', hG'⟩ h_eq
           simp at h_eq
           sorry
         · intro ⟨a, ha⟩

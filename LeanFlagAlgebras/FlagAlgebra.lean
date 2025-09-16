@@ -331,7 +331,7 @@ theorem zeroSpace_closed_under_sub
     (f f' : FlagVector σ) (f_zero : f ∈ ZeroSpace σ) (f'_zero : f' ∈ ZeroSpace σ)
     : f - f' ∈ ZeroSpace σ := by
   apply Submodule.sub_mem <;> assumption
- 
+
 theorem zeroSpace_closed_under_sum
     (S : Finset α) (v : α → FlagVector σ) (h_zero : ∀ s ∈ S, v s ∈ ZeroSpace σ)
     : ∑ s ∈ S, v s ∈ ZeroSpace σ
