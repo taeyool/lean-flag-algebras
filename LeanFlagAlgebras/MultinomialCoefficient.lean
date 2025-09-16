@@ -2,7 +2,6 @@ import Mathlib.Data.Nat.Factorial.BigOperators
 import Mathlib.Data.Fintype.Sum
 import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Data.Nat.Choose.Multinomial
-import Mathlib
 
 variable {t : ℕ}
 

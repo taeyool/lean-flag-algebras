@@ -248,7 +248,7 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
   simp_rw [linearExtension_smul, linearExtension_unitVector]
   exact h₀ F ℓ hℓ
 
-noncomputable def homFunFromZeroSpaceMulProp
+noncomputable def homFunFromZeroSpaceProp
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a)
     : FlagAlgebra σ → ℝ
   := by
@@ -256,38 +256,38 @@ noncomputable def homFunFromZeroSpaceMulProp
   intro f f' f_eqv
   exact zeroSpaceProp_linearExtension_respect_eqv h₀ f_eqv
 
-theorem homFunFromZeroSpaceMulProp_map_zero
+theorem homFunFromZeroSpaceProp_map_zero
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a)
-    : homFunFromZeroSpaceMulProp h₀ 0 = 0
+    : homFunFromZeroSpaceProp h₀ 0 = 0
   :=
   rfl
 
-theorem homFunFromZeroSpaceMulProp_map_one
+theorem homFunFromZeroSpaceProp_with_oneProp_map_one
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₁ : oneProp a)
-    : homFunFromZeroSpaceMulProp h₀ 1 = 1
+    : homFunFromZeroSpaceProp h₀ 1 = 1
   := by
   show linearExtension a (unitVector 1) = 1
   rw [linearExtension_unitVector]
   exact h₁
 
-theorem homFunFromZeroSpaceMulProp_map_add
+theorem homFunFromZeroSpaceProp_map_add
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (f g : FlagAlgebra σ)
-    : homFunFromZeroSpaceMulProp h₀ (f + g) = homFunFromZeroSpaceMulProp h₀ f + homFunFromZeroSpaceMulProp h₀ g
+    : homFunFromZeroSpaceProp h₀ (f + g) = homFunFromZeroSpaceProp h₀ f + homFunFromZeroSpaceProp h₀ g
   := by
   rcases Quotient.exists_rep f with ⟨F, hF⟩
   rcases Quotient.exists_rep g with ⟨G, hG⟩
   rw [← hF, ← hG, ← add_quot]
-  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  simp only [homFunFromZeroSpaceProp, Quotient.lift_mk]
   exact linearExtension_add a F G
 
-theorem homFunFromZeroSpaceMulProp_map_mul
+theorem homFunFromZeroSpaceProp_with_mulProp_map_mul
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₂ : mulProp a) (f g : FlagAlgebra σ)
-    : homFunFromZeroSpaceMulProp h₀ (f * g) = homFunFromZeroSpaceMulProp h₀ f * homFunFromZeroSpaceMulProp h₀ g
+    : homFunFromZeroSpaceProp h₀ (f * g) = homFunFromZeroSpaceProp h₀ f * homFunFromZeroSpaceProp h₀ g
   := by
   rcases Quotient.exists_rep f with ⟨frep, h_frep⟩
   rcases Quotient.exists_rep g with ⟨grep, h_grep⟩
   rw [← h_frep, ← h_grep, ← mul_quot]
-  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  simp only [homFunFromZeroSpaceProp, Quotient.lift_mk]
   rw [flagVector_mul_eq_nested_sum]
   nth_rw 3 [flagVector_eq_sum_unitVector frep, flagVector_eq_sum_unitVector grep]
   simp_rw [linearExtension_sum]
@@ -309,42 +309,42 @@ theorem homFunFromZeroSpaceMulProp_map_mul
   rw [linearExtension_smul, linearExtension_unitVector]
   rfl
 
-theorem homFunFromZeroSpaceMulProp_map_smul
+theorem homFunFromZeroSpaceProp_map_smul
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (r : ℝ) (f : FlagAlgebra σ)
-    : homFunFromZeroSpaceMulProp h₀ (r • f) = r * homFunFromZeroSpaceMulProp h₀ f
+    : homFunFromZeroSpaceProp h₀ (r • f) = r * homFunFromZeroSpaceProp h₀ f
   := by
   rcases Quotient.exists_rep f with ⟨F, hF⟩
   rw [← hF, ← smul_quot]
-  simp only [homFunFromZeroSpaceMulProp, Quotient.lift_mk]
+  simp only [homFunFromZeroSpaceProp, Quotient.lift_mk]
   exact linearExtension_smul a r F
 
-theorem homFunFromZeroSpaceMulProp_commutes
+theorem homFunFromZeroSpaceProp_with_oneProp_commutes
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₁ : oneProp a) (r : ℝ)
-    : homFunFromZeroSpaceMulProp h₀ (Algebra.cast r) = r
+    : homFunFromZeroSpaceProp h₀ (Algebra.cast r) = r
   := by
-  show homFunFromZeroSpaceMulProp h₀ (r • 1) = r
-  rw [homFunFromZeroSpaceMulProp_map_smul, homFunFromZeroSpaceMulProp_map_one h₀ h₁, mul_one]
+  show homFunFromZeroSpaceProp h₀ (r • 1) = r
+  rw [homFunFromZeroSpaceProp_map_smul, homFunFromZeroSpaceProp_with_oneProp_map_one h₀ h₁, mul_one]
 
-noncomputable def homFromZeroSpaceMulProp
+noncomputable def homFromZeroSpaceOneMulProp
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₁ : oneProp a) (h₂ : mulProp a)
     : Hom σ
   := {
-    toFun := homFunFromZeroSpaceMulProp h₀
-    map_zero' := homFunFromZeroSpaceMulProp_map_zero h₀
-    map_one' := homFunFromZeroSpaceMulProp_map_one h₀ h₁
-    map_add' := homFunFromZeroSpaceMulProp_map_add h₀
-    map_mul' := homFunFromZeroSpaceMulProp_map_mul h₀ h₂
-    commutes' := homFunFromZeroSpaceMulProp_commutes h₀ h₁
+    toFun := homFunFromZeroSpaceProp h₀
+    map_zero' := homFunFromZeroSpaceProp_map_zero h₀
+    map_one' := homFunFromZeroSpaceProp_with_oneProp_map_one h₀ h₁
+    map_add' := homFunFromZeroSpaceProp_map_add h₀
+    map_mul' := homFunFromZeroSpaceProp_with_mulProp_map_mul h₀ h₂
+    commutes' := homFunFromZeroSpaceProp_with_oneProp_commutes h₀ h₁
   }
 
-noncomputable def positiveHomFromZeroSpaceMulProp
+noncomputable def positiveHomFromZeroSpaceOneMulProp
     (a : FlagDensitySpace σ) (h₀ : zeroSpaceProp a) (h₁ : oneProp a) (h₂ : mulProp a)
     : PositiveHom σ
   := {
-    val := homFromZeroSpaceMulProp h₀ h₁ h₂
+    val := homFromZeroSpaceOneMulProp h₀ h₁ h₂
     property := by
       intro F
-      simp only [homFromZeroSpaceMulProp, homFunFromZeroSpaceMulProp, AlgHom.coe_mk, RingHom.coe_mk,
+      simp only [homFromZeroSpaceOneMulProp, homFunFromZeroSpaceProp, AlgHom.coe_mk, RingHom.coe_mk,
         MonoidHom.coe_mk, OneHom.coe_mk, Quotient.lift_mk, linearExtension, unitVector_support,
         Finset.sum_singleton, unitVector_apply_self, one_smul, ge_iff_le]
       exact (flagDensitySpace_mem_Icc_zero_one a F).1
@@ -373,7 +373,7 @@ theorem positiveHomSpace_eq
       dsimp only [flagMul, flagMulWithSize, rat_smul_eq_real_smul]
       simp_rw [sum_quot, smul_quot, PositiveHom.map_sum, PositiveHom.map_smul]
   · intro ⟨h₀, h₁, h₂⟩
-    use positiveHomFromZeroSpaceMulProp a h₀ h₁ h₂
+    use positiveHomFromZeroSpaceOneMulProp a h₀ h₁ h₂
     ext F
     show linearExtension a (unitVector F) = a F
     exact linearExtension_unitVector a F
@@ -533,7 +533,7 @@ noncomputable def positiveHomFromFlagSeqLimit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : PositiveHom σ
   :=
-  positiveHomFromZeroSpaceMulProp a (zeroSpaceProp_of_flagSeq_limit hs_conv)
+  positiveHomFromZeroSpaceOneMulProp a (zeroSpaceProp_of_flagSeq_limit hs_conv)
   (oneProp_of_flagSeq_limit hs_conv) (mulProp_of_flagSeq_limit hs_conv)
 
 /- Theorem 3.3 (a) -/
