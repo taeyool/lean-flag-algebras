@@ -267,6 +267,84 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
       ∑ G ∈ labelExtensions F' σ, flagDensity₁ F G * downwardNormalizingFactor G
   := by
+  let ⟨Frep, hFrep⟩ := Quotient.exists_rep F
+  have hFrep_size : Frep.size = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let ⟨Furep, hFurep⟩ := Quotient.exists_rep (unlabel F)
+  have hFurep_size : Furep.size = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
+  have hF'rep_size : F'rep.size = ℓ' := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let Ω := { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') | Function.Injective θ ∧ w.toFinset.card = ℓ ∧ (Set.image θ Set.univ) ⊆ w }
+  let A : Finset Ω := { w | by
+    obtain ⟨⟨w, θ⟩, hw⟩ := w
+    let G : SimpleGraph (Fin ℓ') := {
+        Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'rep.graph.Adj a b
+        symm := fun a b ⟨ha, hb, hab⟩ => ⟨hb, ha, hab.symm⟩
+      }
+    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
+          then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hw.1⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
+          else false }
+  dsimp only [flagDensity₁, downwardNormalizingFactor]
+  rw [← subflagDensity_eq_flagListDensity (unlabel F) F']
+  nth_rw 1 [← hFurep, ← hFrep, ← hF'rep]
+  dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
+  have P₁ : labeledSubgraphDensity Furep F'rep * downwardNormalizingFactor_labeledGraph Frep = A.card / Ω.toFinset.card := by
+    dsimp [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
+    rw [div_mul_div_comm]
+    have tmp : labeledSubgraphCount Furep F'rep = A.card := by
+      dsimp only [labeledSubgraphCount]
+      apply Finset.card_eq_of_equiv
+      refine Equiv.ofBijective ?_ ?_
+      · intro ⟨x, hx⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hx
+        let iso_x_F : Fin ℓ → Fin ℓ' := fun i => hx.2.some.symm.graph_iso.toFun i
+        use ⟨(x.subgraph.verts, iso_x_F ∘ Frep.type_embed.toFun), by
+          simp [Ω]
+          sorry⟩
+        sorry
+      · constructor
+        · intro a b h_eq
+          simp at h_eq
+          sorry
+        · intro ⟨a, ha⟩
+          sorry
+    suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
+      rw [← this]
+      refine congrArg (HDiv.hDiv _) ?_
+      simp only [emptyType_size, tsub_zero]
+      calc
+        (@Nat.cast ℚ _ (F'rep.size.choose Furep.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ℓ'.choose ℓ * ↑(ℓ.factorial / (ℓ - n₀).factorial) := by congr
+        _ = ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial) := by
+          rw [Nat.choose_eq_factorial_div_factorial hℓ, ← Nat.cast_mul]
+          nth_rw 2 [mul_comm]
+          rw [← Nat.mul_div_assoc ]
+          rw [← Nat.div_div_eq_div_mul]
+          rw [Nat.div_mul_cancel (by sorry)]
+          rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.cast_mul]
+          refine Rat.natCast_div ℓ'.factorial ((ℓ - n₀).factorial * (ℓ' - ℓ).factorial) ?_
+          sorry
+          · sorry
+
+    /- Maynbe (labeledSubgraphCount Furep F'rep) = A.card
+    -/
+
+    sorry
+  rw [P₁]
+
+  sorry
+
+example (A B C D : ℚ) (h : B = C) : A / B = A / C := by
+  -- exact congrArg (HDiv.hDiv A) h
+  sorry
+
+example (A B C D : ℕ) (h : B = C) : (A / B) * C = A / (B / C) := by
+
+  -- refine Eq.symm (Nat.mul_div_assoc (A / B) ?_)
+  -- refine div_mul_div_cancel₀ ?_
+  -- rw [h]
+  -- exact congrArg (HDiv.hDiv A) h
   sorry
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
