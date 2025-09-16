@@ -62,52 +62,51 @@ theorem flagDensity₁_flagType_asEmptyType_pos
           Set.empty_subset]
       )
     use G
-    constructor
-    · apply LabeledSubgraph.inducedLabeledSubgraph_isInduced
-    · apply Nonempty.intro
-      simp only [unlabeledGraph, LabeledSubgraph.inducedLabeledSubgraph, LabeledGraph.type_verts, inducedSubgraph, LabeledSubgraph.coe, G]
-      exact {
-        graph_iso := {
-            toFun v := by
-              have : ∃ i, F.2.out.type_embed i = v := by
-                obtain ⟨val, property⟩ := v
-                simp only
-                simp_all only [Set.image_univ, Set.mem_range]
-              exact this.choose
-            invFun v := by
-              simp only [Set.image_univ]
-              exact Set.rangeFactorization F.2.out.type_embed v
-            left_inv := by
-              intro ⟨v, hv⟩
-              simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe]
-              obtain ⟨i, hi⟩ : ∃ i, F.2.out.type_embed i = v := by
-                obtain ⟨val, property⟩ := v
-                simp_all only [Set.image_univ, Set.mem_range]
-              subst hi
-              simp only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
-            right_inv := by
-              intro ⟨i, hi⟩
-              simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
-            map_rel_iff' := by
-              intro ⟨v, hv⟩ ⟨w, hw⟩
-              simp only [Set.image_univ, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
+    refine ⟨LabeledSubgraph.inducedLabeledSubgraph_isInduced _ _ _, Nonempty.intro ?_⟩
+    simp only [unlabeledGraph, LabeledSubgraph.inducedLabeledSubgraph, LabeledGraph.type_verts,
+      inducedSubgraph, LabeledSubgraph.coe, G]
+    exact {
+      graph_iso := {
+          toFun v := by
+            have : ∃ i, F.2.out.type_embed i = v := by
+              obtain ⟨val, property⟩ := v
+              simp only
+              simp_all only [Set.image_univ, Set.mem_range]
+            exact this.choose
+          invFun v := by
+            simp only [Set.image_univ]
+            exact Set.rangeFactorization F.2.out.type_embed v
+          left_inv := by
+            intro ⟨v, hv⟩
+            simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe]
+            obtain ⟨i, hi⟩ : ∃ i, F.2.out.type_embed i = v := by
+              obtain ⟨val, property⟩ := v
+              simp_all only [Set.image_univ, Set.mem_range]
+            subst hi
+            simp only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+          right_inv := by
+            intro ⟨i, hi⟩
+            simp only [eq_mpr_eq_cast, Set.image_univ, set_coe_cast, Set.rangeFactorization_coe, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+          map_rel_iff' := by
+            intro ⟨v, hv⟩ ⟨w, hw⟩
+            simp only [Set.image_univ, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
+            constructor
+            · intro h
               constructor
-              · intro h
-                constructor
-                · simp only [Set.image_univ, Set.mem_range] at hv hw
-                  obtain ⟨vi, hvi⟩ := hv
-                  obtain ⟨wi, hwi⟩ := hw
-                  subst hvi hwi
-                  simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff]
-                · constructor
-                  · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hv
-                  · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hw
-              · intro ⟨h, ⟨vi, hvi⟩, ⟨wi, hwi⟩⟩
+              · simp only [Set.image_univ, Set.mem_range] at hv hw
+                obtain ⟨vi, hvi⟩ := hv
+                obtain ⟨wi, hwi⟩ := hw
                 subst hvi hwi
-                simp_all only [SimpleGraph.Embedding.map_adj_iff, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
-          }
-        type_preserve := List.ofFn_inj.mp rfl
-      }
+                simp_all only [EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq, SimpleGraph.Embedding.map_adj_iff]
+              · constructor
+                · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hv
+                · exact Set.mem_range_of_mem_image F.2.out.type_embed Set.univ hw
+            · intro ⟨h, ⟨vi, hvi⟩, ⟨wi, hwi⟩⟩
+              subst hvi hwi
+              simp_all only [SimpleGraph.Embedding.map_adj_iff, EmbeddingLike.apply_eq_iff_eq, Classical.choose_eq]
+        }
+      type_preserve := List.ofFn_inj.mp rfl
+    }
   · simp only [emptyType_size, tsub_zero, Nat.cast_pos, LabeledGraph.size, Fintype.card_fin]
     have : F.1 ≥ n₀ := finFlag_size_ge_n₀ F
     exact Nat.choose_pos this
@@ -332,17 +331,15 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   apply Finset.sum_congr rfl
   intro G' hG'
   have h_nonzero₁ : dnf_total ≠ 0 := by
-    apply ne_of_gt
-    apply Finset.sum_pos
-    · intro G'' hG''
-      simp only [Rat.cast_pos]
-      exact downwardNormalizingFactor_pos G''
-    · exact labelExtensions_nonempty hG
+    apply ne_of_gt <| Finset.sum_pos _ (labelExtensions_nonempty hG)
+    intro G'' hG''
+    simp only [Rat.cast_pos]
+    exact downwardNormalizingFactor_pos G''
   have h_nonzero₂ : (downwardNormalizingFactor (emptyFlag σ) : ℝ) * (flagDensity₁ (SimpleGraph.toEmptyTypeFlag σ) G.2 : ℝ) ≠ 0 := by
     simp only [ne_eq, mul_eq_zero, Rat.cast_eq_zero, not_or]
-    constructor
-    · exact ne_of_gt downwardNormalizingFactor_emptyFlag_pos
-    · exact ne_of_gt hG
+    constructor <;> apply ne_of_gt
+    · exact downwardNormalizingFactor_emptyFlag_pos
+    · exact hG
   have : g G' F = flagDensity₁ F.2 G' := rfl
   rw [this, div_eq_div_iff h_nonzero₁ h_nonzero₂]
   congr 1

@@ -429,6 +429,26 @@ def emptyFlag (σ : FlagType T) : Flag σ T
   :=
   ⟦emptyLabeledGraph σ⟧
 
+noncomputable def getCanonicalFlag
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+    (G : LabeledGraph σ V) (h_V_size : Fintype.card V = ℓ)
+    : (F : Flag σ (Fin ℓ)) × (F.out ≃f G)
+  :=
+  let ⟨Q, iso⟩ := getCanonicalQuotSimpleGraph G.graph h_V_size
+  let G' : LabeledGraph σ (Fin ℓ) := {
+    graph := Q.out
+    type_embed := G.type_embed.trans iso.symm
+  }
+  let φ : G' ≃f G := {
+    graph_iso := iso
+    type_preserve := by
+      dsimp [G']
+      funext x
+      simp only [Function.comp_apply, RelIso.apply_symm_apply iso]
+  }
+  let φ' : ⟦G'⟧.out ≃f G' := Nonempty.some ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl)
+  ⟨⟦G'⟧, φ'.trans φ⟩
+
 /- FlagList -/
 
 class FintypeList {t : ℕ} (Vl : Fin t → Type) where
