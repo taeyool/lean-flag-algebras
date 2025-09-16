@@ -2007,13 +2007,17 @@ noncomputable def
                   dsimp [Hl_size]; omega
       let g : Fin ℓ' ≃ V'_type_verts := isoFromFinToFiniteSet V'_type_verts (by rw [←h_V'_type_verts_card]; congr!)
       let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
-      let G' : Flag σ (Fin ℓ') := ⟦labeledGraphFromVertexIso G₀.coe g.symm⟧
-
+      let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) := by
+        apply getCanonicalFlag G₀.coe
+        rw [←h_V'_type_verts_card]
+        rw [inducedLabeledSubgraph_verts G V'_type_verts Set.subset_union_right]
+        rw [Set.toFinset_card V'_type_verts]
+        congr!
 
       let Vl' (i : Fin 2) := g.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ }
       let Vl'' (i : Fin 2) := match i with | 0 => V' | 1 => Vl 2
 
-      exact ⟨⟨G', Vl', Vl''⟩, sorry, sorry, sorry, sorry, sorry, sorry⟩
+      exact ⟨⟨F, Vl', Vl''⟩, sorry, sorry, sorry, sorry, sorry, sorry⟩
 
     have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := sorry
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := sorry
