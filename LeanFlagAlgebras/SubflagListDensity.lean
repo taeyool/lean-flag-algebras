@@ -2005,7 +2005,6 @@ noncomputable def
                   simp only [FlagType.size, Fintype.card_fin]
           _ = ℓ' := by
                   dsimp [Hl_size]; omega
-      let g : Fin ℓ' ≃ V'_type_verts := isoFromFinToFiniteSet V'_type_verts (by rw [←h_V'_type_verts_card]; congr!)
       let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
       let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) := by
         apply getCanonicalFlag G₀.coe
@@ -2014,10 +2013,28 @@ noncomputable def
         rw [Set.toFinset_card V'_type_verts]
         congr!
 
-      let Vl' (i : Fin 2) := g.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ }
+      let Vl' (i : Fin 2) := iso.graph_iso.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ }
       let Vl'' (i : Fin 2) := match i with | 0 => V' | 1 => Vl 2
 
-      exact ⟨⟨F, Vl', Vl''⟩, sorry, sorry, sorry, sorry, sorry, sorry⟩
+      have h_Vl'_disj_type_verts : ∀ i : Fin 2, (Vl' i) ∩ F.out.type_verts = ∅ := by
+        intro i
+        calc
+          (Vl' i) ∩ F.out.type_verts
+          _ = (iso.graph_iso.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ })
+              ∩ F.out.type_verts := by rfl
+          _ = (iso.graph_iso.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ })
+              ∩ (iso.graph_iso.symm '' (iso.graph_iso '' F.out.type_verts)) := by
+                  have : iso.graph_iso.symm '' (iso.graph_iso '' F.out.type_verts) = F.out.type_verts := by
+                    exact Equiv.symm_image_image _ F.out.type_verts
+                  rw [this]
+          _ = iso.graph_iso.symm '' ({ v | v.val ∈ Vl ⟨i.val, by omega⟩ } ∩ (iso.graph_iso '' F.out.type_verts)) := by
+                  rw [Set.image_inter iso.graph_iso.symm.injective]
+          _ = iso.graph_iso.symm '' ((Vl ⟨i.val, by omega⟩) ∩ (iso.graph_iso '' F.out.type_verts)) := by sorry
+          _ = iso.graph_iso.symm '' (Vl ⟨i.val, by omega⟩ ∩ G.type_verts) := by sorry
+          _ = iso.graph_iso.symm '' ∅ := by sorry
+          _ = ∅ := by sorry
+
+      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, sorry, sorry, sorry, sorry, sorry⟩
 
     have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := sorry
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := sorry
