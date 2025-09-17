@@ -336,10 +336,19 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           · intro h_adj
             sorry
         use h_model
-        sorry
+        apply Nonempty.intro
+        refine { graph_iso := ?_ , type_preserve := ?_ }
+        · let f : Fin ℓ' → Fin ℓ := by sorry
+          sorry
+        · sorry
       · constructor
         · intro ⟨G, hG⟩ ⟨G', hG'⟩ h_eq
-          simp at h_eq
+          simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG hG'
+          apply labeledSubgraph_eq_from_subgraph_eq
+          refine inducedSubgraph_eq_verts ?_ ?_ ?_
+          sorry
+          sorry
           sorry
         · intro ⟨a, ha⟩
           sorry
