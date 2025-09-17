@@ -324,6 +324,18 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
             simp only [Function.comp_apply, Subtype.coe_prop, iso_sF'_Furep']⟩
         simp only [Bool.false_eq_true, dite_else_false, Function.Embedding.toFun_eq_coe,
           RelEmbedding.coe_toEmbedding, Finset.mem_filter, Finset.mem_univ, Function.comp_apply, true_and, A]
+        have h_model : ∀ {a b : Fin n₀},
+          iso_sF'_Furep' (Frep.type_embed a) ∈ sF'.subgraph.verts ∧
+          iso_sF'_Furep' (Frep.type_embed b) ∈ sF'.subgraph.verts ∧
+          F'rep.graph.Adj (iso_sF'_Furep' (Frep.type_embed a)) (iso_sF'_Furep' (Frep.type_embed b))
+          ↔ σ.Adj a b := by
+          intro u v
+          constructor
+          · intro ⟨hu, hv, h_adj⟩
+            sorry
+          · intro h_adj
+            sorry
+        use h_model
         sorry
       · constructor
         · intro ⟨G, hG⟩ ⟨G', hG'⟩ h_eq
