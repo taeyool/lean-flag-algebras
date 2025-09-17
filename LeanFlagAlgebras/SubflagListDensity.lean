@@ -2029,10 +2029,15 @@ noncomputable def
                   rw [this]
           _ = iso.graph_iso.symm '' ({ v | v.val ∈ Vl ⟨i.val, by omega⟩ } ∩ (iso.graph_iso '' F.out.type_verts)) := by
                   rw [Set.image_inter iso.graph_iso.symm.injective]
-          _ = iso.graph_iso.symm '' ((Vl ⟨i.val, by omega⟩) ∩ (iso.graph_iso '' F.out.type_verts)) := by sorry
-          _ = iso.graph_iso.symm '' (Vl ⟨i.val, by omega⟩ ∩ G.type_verts) := by sorry
-          _ = iso.graph_iso.symm '' ∅ := by sorry
-          _ = ∅ := by sorry
+          _ = iso.graph_iso.symm '' ({ v | v.val ∈ Vl ⟨i.val, by omega⟩ } ∩ { v | v.val ∈ G.type_verts }) := by
+                  -- have := labeledGraphIso_preserve_type_verts iso
+                  sorry
+          _ = iso.graph_iso.symm '' {v | v.val ∈ Vl ⟨i.val, by omega⟩ ∩ G.type_verts} :=
+                  rfl
+          _ = iso.graph_iso.symm '' ∅ := by
+                  rw [h_Vl_disj_G_type_verts ⟨i.val, by omega⟩]
+                  simp only [coe_graph, Set.mem_empty_iff_false, Set.setOf_false, Set.image_empty]
+          _ = ∅ := Set.image_empty _
 
       exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, sorry, sorry, sorry, sorry, sorry⟩
 

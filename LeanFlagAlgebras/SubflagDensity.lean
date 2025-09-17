@@ -132,21 +132,6 @@ lemma predIsoLabeledH_related_ind
   have h_u'_v' : G₀.graph.Adj u' v' := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_uv
   exact (h_adj u' v').mpr (h_ind₀ h_u' h_v' h_u'_v')
 
-omit [Fintype T] [Fintype V] [Fintype W] in
-lemma labeledGraphIso_preserve_type_verts
-    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
-    : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
-  := by
-  intro t
-  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range, Set.mem_image, forall_exists_index]
-  intro u h_u
-  use G₀.type_embed u
-  constructor
-  · rw [← H₀.embed_eq u]
-    simp only [Subtype.coe_prop]
-  · rw [←h_u, ← φ.type_preserve]
-    simp only [Function.comp_apply]
-
 def inducedLabeledSubgraphByIso
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W}
     (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)

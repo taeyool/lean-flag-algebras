@@ -363,6 +363,21 @@ noncomputable def labeledGraphFromVertexIso_iso
     type_preserve := by rfl
   }
 
+omit [Fintype T] in
+lemma labeledGraphIso_preserve_type_verts
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
+    : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
+  := by
+  intro t
+  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range, Set.mem_image, forall_exists_index]
+  intro u h_u
+  use G₀.type_embed u
+  constructor
+  · rw [← H₀.embed_eq u]
+    simp only [Subtype.coe_prop]
+  · rw [←h_u, ← φ.type_preserve]
+    simp only [Function.comp_apply]
+
 /-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
   :=
