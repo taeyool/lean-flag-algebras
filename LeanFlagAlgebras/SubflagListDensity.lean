@@ -2030,8 +2030,13 @@ noncomputable def
           _ = iso.graph_iso.symm '' ({ v | v.val ∈ Vl ⟨i.val, by omega⟩ } ∩ (iso.graph_iso '' F.out.type_verts)) := by
                   rw [Set.image_inter iso.graph_iso.symm.injective]
           _ = iso.graph_iso.symm '' ({ v | v.val ∈ Vl ⟨i.val, by omega⟩ } ∩ { v | v.val ∈ G.type_verts }) := by
-                  -- have := labeledGraphIso_preserve_type_verts iso
-                  sorry
+                  rw [←labeledGraphIso_preserve_type_verts_strict iso]
+                  have : G₀.coe.type_verts = {v : G₀.subgraph.verts | ↑v ∈ G.type_verts } := by
+                    rw [←G₀.coe_type_verts_eq]
+                    ext u
+                    simp only [Set.mem_image, Subtype.exists, exists_and_right, exists_eq_right,
+                      Subtype.coe_eta, Subtype.coe_prop, exists_const, Set.setOf_mem_eq]
+                  rw [this]
           _ = iso.graph_iso.symm '' {v | v.val ∈ Vl ⟨i.val, by omega⟩ ∩ G.type_verts} :=
                   rfl
           _ = iso.graph_iso.symm '' ∅ := by

@@ -197,6 +197,10 @@ theorem coe_adj_iff
   :=
   rfl.to_iff
 
+lemma coe_type_verts_eq
+    {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)
+    : H.coe.type_verts = G.type_verts := by sorry
+
 noncomputable instance labeledSubgraphFintype
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (G : LabeledGraph σ V)
     : Fintype (LabeledSubgraph σ G)
@@ -377,6 +381,11 @@ lemma labeledGraphIso_preserve_type_verts
     simp only [Subtype.coe_prop]
   · rw [←h_u, ← φ.type_preserve]
     simp only [Function.comp_apply]
+
+lemma labeledGraphIso_preserve_type_verts_strict
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    : G₁.type_verts = ⇑φ.graph_iso '' G₀.type_verts
+  := by sorry
 
 /-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
