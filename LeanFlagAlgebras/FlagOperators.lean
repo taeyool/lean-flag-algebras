@@ -276,6 +276,44 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
   have hF'rep_size : F'rep.size = ℓ' := by
     simp only [LabeledGraph.size, Fintype.card_fin]
+  have : Frep.graph = Furep.graph := by
+    rw [← hFrep] at hFurep
+    simp only [unlabel, Quotient.lift_mk, unlabeledGraphQuot] at hFurep
+
+
+
+
+    have iso_Ft_F := (Classical.choice (@top_labeledSubgraph_iso_G _ _ _ Frep))
+    have iso_Fut_Fu := (Classical.choice (@top_labeledSubgraph_iso_G _ _ _ Furep))
+    obtain ⟨φ⟩ := Quotient.exact hFurep
+    have iso : Furep.graph ≃g (unlabeledGraph Frep).graph := φ.graph_iso
+    simp only [unlabeledGraph] at iso iso_Fut_Fu
+    have : Frep.top.coe.graph ≃g Furep.top.coe.graph := (iso_Ft_F.graph_iso.trans iso.symm).trans iso_Fut_Fu.symm.graph_iso
+    have F_eq : Frep.top.coe.graph = Frep.graph.induce Frep.top.subgraph.verts := rfl
+    have Fu_eq : Furep.top.coe.graph = Furep.graph.induce Furep.top.subgraph.verts := rfl
+    rw [F_eq, Fu_eq] at this
+    have tmp : Frep.top.subgraph.verts = Furep.top.subgraph.verts := rfl
+    rw [tmp] at this
+
+    have verts_card : Frep.top.subgraph.verts.toFinset.card = ℓ := by
+      have : Frep.size = Frep.top.coe.size := by
+        exact labeledGraphIso_size_eq Frep Frep.top.coe (id iso_Ft_F.symm)
+      simp_all only [LabeledGraph.size, Fintype.card_fin, Quotient.eq, LabeledSubgraph.coe_graph,
+        Fintype.card_ofFinset, Set.toFinset_card]
+    have verts_equiv : Frep.top.subgraph.verts ≃ Fin ℓ := by
+      apply Fintype.equivOfCardEq
+      simp_all only [Quotient.eq, LabeledSubgraph.coe_graph, Set.toFinset_card,
+        Fintype.card_ofFinset, Fintype.card_fin]
+    have type_eq : (Frep.top.subgraph.verts.Elem : Type) = (Fin ℓ : Type):= by
+      sorry
+    have : Frep.graph = (SimpleGraph.induce Frep.top.subgraph.verts Frep.graph).comap verts_equiv.symm.toEmbedding := by
+      simp
+
+      sorry
+
+    -- refine SimpleGraph.edgeFinset_inj.mp ?_
+    -- have edgeSet_equiv := SimpleGraph.Iso.mapEdgeSet iso
+    sorry
   let Ω := { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') | Function.Injective θ ∧ w.toFinset.card = ℓ ∧ (Set.image θ Set.univ) ⊆ w }
   let A : Finset Ω := { w | by
     obtain ⟨⟨w, θ⟩, hw⟩ := w
@@ -297,43 +335,51 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       dsimp only [labeledSubgraphCount]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
-      · intro ⟨sF', hsF'⟩
-        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hsF'
-        let iso_sF'_Furep := (Classical.choice hsF'.2).symm
-        let iso_sF'_Furep' : Fin ℓ → Fin ℓ' := fun i => iso_sF'_Furep.graph_iso.toFun i
-        have iso_sF'_Furep'_inj : Function.Injective iso_sF'_Furep' := by
+      · intro ⟨G, hG⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+        let iso_G_Furep := (Classical.choice hG.2).symm
+        let iso_G_Furep_toFun : Fin ℓ → Fin ℓ' := fun i => iso_G_Furep.graph_iso.toFun i
+        have iso_G_Furep'_inj : Function.Injective iso_G_Furep_toFun := by
           simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-            iso_sF'_Furep']
+            iso_G_Furep_toFun]
           intro u v h_eq
           simp only at h_eq
-          exact iso_sF'_Furep.graph_iso.injective (SetCoe.ext h_eq)
-        use ⟨(sF'.subgraph.verts, iso_sF'_Furep' ∘ Frep.type_embed.toFun), by
+          exact iso_G_Furep.graph_iso.injective (SetCoe.ext h_eq)
+        use ⟨(G.subgraph.verts, iso_G_Furep_toFun ∘ Frep.type_embed.toFun), by
           simp only [Set.image_univ,
             Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, Set.mem_setOf_eq, Ω]
           constructor <;> try constructor
           · intro u v h_eq
             simp only [Function.comp_apply] at h_eq
-            exact Frep.type_embed.inj' (iso_sF'_Furep'_inj h_eq)
-          · have : sF'.size = ℓ := by
+            exact Frep.type_embed.inj' (iso_G_Furep'_inj h_eq)
+          · have : G.size = ℓ := by
               rw [← hFurep_size]
-              exact labeledGraphIso_size_eq _ _ iso_sF'_Furep.symm
+              exact labeledGraphIso_size_eq _ _ iso_G_Furep.symm
             simp_all only [Set.toFinset_card, Fintype.card_ofFinset, LabeledSubgraph.size]
           · intro w hw
             obtain ⟨w', hw'⟩ := hw
             subst hw'
-            simp only [Function.comp_apply, Subtype.coe_prop, iso_sF'_Furep']⟩
+            simp only [Function.comp_apply, Subtype.coe_prop, iso_G_Furep_toFun]⟩
         simp only [Bool.false_eq_true, dite_else_false, Function.Embedding.toFun_eq_coe,
           RelEmbedding.coe_toEmbedding, Finset.mem_filter, Finset.mem_univ, Function.comp_apply, true_and, A]
+        -- have := @induced_full_labeledSubgraph_eq_top hG
         have h_model : ∀ {a b : Fin n₀},
-          iso_sF'_Furep' (Frep.type_embed a) ∈ sF'.subgraph.verts ∧
-          iso_sF'_Furep' (Frep.type_embed b) ∈ sF'.subgraph.verts ∧
-          F'rep.graph.Adj (iso_sF'_Furep' (Frep.type_embed a)) (iso_sF'_Furep' (Frep.type_embed b))
+          iso_G_Furep_toFun (Frep.type_embed a) ∈ G.subgraph.verts ∧
+          iso_G_Furep_toFun (Frep.type_embed b) ∈ G.subgraph.verts ∧
+          F'rep.graph.Adj (iso_G_Furep_toFun (Frep.type_embed a)) (iso_G_Furep_toFun (Frep.type_embed b))
           ↔ σ.Adj a b := by
           intro u v
           constructor
           · intro ⟨hu, hv, h_adj⟩
+            rw [type_embed_Adj_iff Frep u v]
+            have := iso_G_Furep.graph_iso
+            have : ∀ a b, Frep.graph.Adj a b ↔ Furep.graph.Adj a b := by sorry
+            rw [this]
+            have := @iso_G_Furep.graph_iso.map_adj_iff _ _ _ _ (Frep.type_embed u) (Frep.type_embed v)
+            rw [← this]
             sorry
           · intro h_adj
+            simp_all only [Subtype.coe_prop, iso_G_Furep_toFun, true_and]
             sorry
         use h_model
         apply Nonempty.intro
