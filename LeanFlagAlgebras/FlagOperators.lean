@@ -372,12 +372,12 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           constructor
           · intro ⟨hu, hv, h_adj⟩
             rw [type_embed_Adj_iff Frep u v]
-            have := iso_G_Furep.graph_iso
             have : ∀ a b, Frep.graph.Adj a b ↔ Furep.graph.Adj a b := by sorry
             rw [this]
-            have := @iso_G_Furep.graph_iso.map_adj_iff _ _ _ _ (Frep.type_embed u) (Frep.type_embed v)
-            rw [← this]
-            sorry
+            rw [← @iso_G_Furep.graph_iso.map_adj_iff _ _ _ _ (Frep.type_embed u) (Frep.type_embed v)]
+            have hG_v₁ : (iso_G_Furep.graph_iso (Frep.type_embed u)).val ∈ G.subgraph.verts := by sorry
+            have hG_v₂ : (iso_G_Furep.graph_iso (Frep.type_embed v)).val ∈ G.subgraph.verts := by sorry
+            exact hG.1 hG_v₁ hG_v₂ h_adj
           · intro h_adj
             simp_all only [Subtype.coe_prop, iso_G_Furep_toFun, true_and]
             sorry
@@ -392,12 +392,31 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
           simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG hG'
           apply labeledSubgraph_eq_from_subgraph_eq
-          refine inducedSubgraph_eq_verts ?_ ?_ ?_
-          sorry
-          sorry
-          sorry
-        · intro ⟨a, ha⟩
-          sorry
+          exact inducedSubgraph_eq_verts hG.1 hG'.1 h_eq.1
+        · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
+          simp only [Set.image_univ, Set.mem_setOf_eq, Ω] at hΩ
+          obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
+          simp only [Bool.false_eq_true, dite_else_false, Finset.mem_filter, Finset.mem_univ,
+            true_and, A] at hA
+          obtain ⟨hθ, h_iso⟩ := hA
+          have hw_type_verts : F'rep.type_verts ⊆ w := by
+            intro x hx
+            simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty,
+              Set.mem_empty_iff_false] at hx
+          let G := LabeledSubgraph.inducedLabeledSubgraph F'rep w hw_type_verts
+          use ⟨G, by
+            simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+            constructor
+            · simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
+            . sorry⟩
+          simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+            Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding, Subtype.mk.injEq,
+            Prod.mk.injEq]
+          constructor
+          · simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, G]
+          · ext k
+            simp only [Function.comp_apply]
+            sorry
     suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
       rw [← this]
       refine congrArg (HDiv.hDiv _) ?_
