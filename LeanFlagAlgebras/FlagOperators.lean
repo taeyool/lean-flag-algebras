@@ -399,16 +399,20 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
               · let G' := labeledGraphIso_extract_graph iso
                 have : G.coe.graph ≃g G'.graph := by
                   dsimp [G, G', labeledGraphIso_extract_graph, LabeledSubgraph.inducedLabeledSubgraph]
-                  dsimp [inducedSubgraph]
-                  sorry
+                  have G_rfl : (inducedSubgraph F'rep.graph w).coe = SimpleGraph.induce w F'rep.graph := by
+                    ext u v
+                    simp only [SimpleGraph.Subgraph.coe_adj, inducedSubgraph_isInduced,
+                      SimpleGraph.Subgraph.IsInduced.adj, SimpleGraph.comap_adj,
+                      Function.Embedding.subtype_apply]
+                  rw [G_rfl]
                 exact (this.trans iso.graph_iso).trans iso_Fu_F.symm
-              · sorry⟩
+              · ext k
+                exact Fin.elim0 k⟩
           simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
             Subtype.mk.injEq, Prod.mk.injEq]
           constructor
           · simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, G]
           · ext k
-
             sorry
     suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
       rw [← this]
