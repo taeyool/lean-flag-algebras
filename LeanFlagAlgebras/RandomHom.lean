@@ -497,20 +497,70 @@ theorem exists_converge_flagSeq_and_probMeasure_tendsto
   · exact convergesTo_comp_of_strictMono hϕ hs_conv
   · exact hℙ
 
-example {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α} (A : Set α) (hA : ℙ A = 1)
-    : ℙ Aᶜ = 0
+lemma flagDensitySpace_eval_measurable
+    (F : FinFlag σ)
+    : Measurable fun a : FlagDensitySpace σ ↦ a F
   := by
-  rw [ProbabilityMeasure.null_iff_toMeasure_null]
-  refine (prob_compl_eq_zero_iff ?_).mpr ?_
-  · sorry
-  · sorry
+  apply Measurable.eval
+  exact Measurable.of_comap_le fun s a ↦ a
 
-example {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α} (A B : Set α)
+lemma zeroSpaceProp_measurableSet
+    : MeasurableSet {a : FlagDensitySpace σ | zeroSpaceProp ⇑a}
+  := by
+  have : {a : FlagDensitySpace σ | zeroSpaceProp ⇑a} =
+      ⋂ (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ),
+      {a : FlagDensitySpace σ | a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩} := by
+    ext a
+    simp only [Set.mem_setOf_eq, Set.mem_iInter]
+    rfl
+  rw [this]
+  iterate 3 (apply MeasurableSet.iInter; intro)
+  apply measurableSet_eq_fun
+  · exact flagDensitySpace_eval_measurable _
+  · apply Finset.measurable_sum Finset.univ
+    intro G _
+    apply Measurable.mul
+    · exact measurable_const
+    · exact flagDensitySpace_eval_measurable _
+
+lemma oneProp_measurableSet
+    : MeasurableSet {a : FlagDensitySpace σ | oneProp ⇑a}
+  := by
+  apply measurableSet_eq_fun
+  · exact flagDensitySpace_eval_measurable _
+  · exact measurable_const
+
+lemma mulProp_measurableSet
+    : MeasurableSet {a : FlagDensitySpace σ | mulProp ⇑a}
+  := by
+  have : {a : FlagDensitySpace σ | mulProp ⇑a} =
+      ⋂ (F₁ : FinFlag σ) (F₂ : FinFlag σ),
+      {a : FlagDensitySpace σ | a F₁ * a F₂ = ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩} := by
+    ext a
+    simp only [Set.mem_setOf_eq, Set.mem_iInter]
+    rfl
+  rw [this]
+  iterate 2 (apply MeasurableSet.iInter; intro)
+  apply measurableSet_eq_fun
+  · apply Measurable.mul <;> exact flagDensitySpace_eval_measurable _
+  · apply Finset.measurable_sum Finset.univ
+    intro G _
+    apply Measurable.mul
+    · exact measurable_const
+    · exact flagDensitySpace_eval_measurable _
+
+lemma prob_inter_eq_one_of_prob_eq_one
+    {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α} {A B : Set α}
+    (hA_measurable : MeasurableSet A) (hB_measurable : MeasurableSet B)
     (hA : ℙ A = 1) (hB : ℙ B = 1)
     : ℙ (A ∩ B) = 1
   := by
-  have h_inter : (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ := Set.compl_inter A B
-  sorry
+  obtain ⟨μ, hμ⟩ := ℙ
+  simp_all only [ProbabilityMeasure.mk_apply, ENNReal.toNNReal_eq_one_iff]
+  rw [← prob_compl_eq_zero_iff (by measurability), Set.compl_inter]
+  apply measure_union_null
+  · exact (prob_compl_eq_zero_iff hA_measurable).mpr hA
+  · exact (prob_compl_eq_zero_iff hB_measurable).mpr hB
 
 theorem flagSeq_limit_measure_support_positiveHomSpace
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -518,7 +568,20 @@ theorem flagSeq_limit_measure_support_positiveHomSpace
     : ℙ (PositiveHomSpace σ) = 1
   := by
   rw [positiveHomSpace_eq]
-  sorry
+  apply prob_inter_eq_one_of_prob_eq_one
+  · exact zeroSpaceProp_measurableSet
+  · apply MeasurableSet.inter
+    · exact oneProp_measurableSet
+    · exact mulProp_measurableSet
+  · show ℙ {a | zeroSpaceProp ⇑a} = 1
+    sorry
+  · apply prob_inter_eq_one_of_prob_eq_one
+    · exact oneProp_measurableSet
+    · exact mulProp_measurableSet
+    · show ℙ {a | oneProp ⇑a} = 1
+      sorry
+    · show ℙ {a | mulProp ⇑a} = 1
+      sorry
 
 def FinFlag.toBoundedContinuousFun
     (F : FinFlag σ)
