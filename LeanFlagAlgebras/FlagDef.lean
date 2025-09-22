@@ -311,6 +311,10 @@ structure LabeledGraphIso {σ : FlagType T} {V W : Type}
 
 infixl:50 " ≃f " => LabeledGraphIso
 
+def labeledGraphIso_extract_graph
+    {σ : FlagType T} {V W : Type} {G : LabeledGraph σ V} {G' : LabeledGraph σ W}
+    (_ : G ≃f G') : LabeledGraph σ V := G
+
 omit [Fintype T] in
 theorem labeledGraphIso_size_eq
     {σ : FlagType T} {V W : Type} [Fintype V] [Fintype W] [DecidableEq V] [DecidableEq W]

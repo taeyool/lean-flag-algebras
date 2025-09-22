@@ -262,6 +262,7 @@ noncomputable def labelExtensions
   :=
   { G : FlagWithSize σ ℓ | unlabel G = F }
 
+set_option maxHeartbeats 200000 in
 lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
@@ -286,16 +287,20 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let A : Finset Ω := { w | by
     obtain ⟨⟨w, θ⟩, hw⟩ := w
     let G' := (F'rep.graph.induce w)
-    have : Fin ℓ' = w.Elem := by
-      simp [Set.Elem]
-      sorry
-    let G : SimpleGraph (Fin ℓ') := {
-        Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'rep.graph.Adj a b
-        symm := fun a b ⟨ha, hb, hab⟩ => ⟨hb, ha, hab.symm⟩
-      }
-    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
-          then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hw.1⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
-          else false }
+    let θ' : Fin n₀ → w := fun i ↦ ⟨θ i, by
+      have : θ i ∈ Set.image θ Set.univ := ⟨i, Set.mem_univ i, rfl⟩
+      exact hw.2.2 this⟩
+    exact if hθ_model : ∀ {a b : Fin n₀}, G'.Adj (θ' a) (θ' b) ↔ σ.Adj a b
+          then Nonempty (⟨G', by exact { toEmbedding := ⟨θ', sorry⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
+          else false
+    -- let G : SimpleGraph (Fin ℓ') := {
+    --     Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'rep.graph.Adj a b
+    --     symm := fun a b ⟨ha, hb, hab⟩ => ⟨hb, ha, hab.symm⟩
+    --   }
+    -- exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
+    --       then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hw.1⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
+    --       else false
+          }
   dsimp only [flagDensity₁, downwardNormalizingFactor]
   rw [← subflagDensity_eq_flagListDensity (unlabel F) F']
   nth_rw 1 [← hFurep, ← hFrep, ← hF'rep]
@@ -331,7 +336,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
             simp only [Subtype.coe_prop]⟩
         simp only [Bool.false_eq_true, dite_else_false, LabeledSubgraph.coe_graph,
           Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Finset.mem_filter, Finset.mem_univ,
-          Subtype.coe_prop, true_and, A, θ]
+          true_and, A, θ]
         have hθ_model : ∀ {a b : Fin n₀}, F'rep.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
           intro a b
           rw [type_embed_Adj_iff Frep, ← iso_Fu_F.symm.map_adj_iff, ← iso_Fu_G.graph_iso.map_adj_iff]
@@ -352,17 +357,24 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
         refine { graph_iso := ?_ , type_preserve := ?_ }
         · simp only
           refine { toEquiv := ?_, map_rel_iff' := ?_ }
-          · have := iso_Fu_G.graph_iso.symm.toEquiv.trans iso_Fu_F.toEquiv
-            have : Fin ℓ' ≃ G.subgraph.verts := by
-              refine isoFromFinToFiniteSet G.subgraph.verts ?_
-
-              sorry
-            sorry
-          · sorry
-        · sorry
+          · exact iso_Fu_G.graph_iso.symm.toEquiv.trans iso_Fu_F.toEquiv
+          · intro ⟨u, hu⟩ ⟨v, hv⟩
+            simp only [LabeledSubgraph.coe_graph, Equiv.trans_apply, RelIso.coe_fn_toEquiv,
+              SimpleGraph.comap_adj, Function.Embedding.subtype_apply]
+            rw [iso_Fu_F.map_adj_iff, iso_Fu_G.graph_iso.symm.map_adj_iff]
+            simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj]
+            constructor
+            · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
+            · exact fun h ↦ hG.1 hu hv h
+        · ext _
+          simp only [LabeledSubgraph.coe_graph, id_eq, RelIso.coe_fn_mk, Equiv.coe_trans,
+            RelIso.coe_fn_toEquiv, Subtype.coe_eta, RelEmbedding.coe_mk,
+            Function.Embedding.coeFn_mk, Function.comp_apply, RelIso.symm_apply_apply,
+            RelIso.apply_symm_apply]
       · constructor
         · intro ⟨G, hG⟩ ⟨G', hG'⟩ h_eq
-          simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
+          simp only [Subtype.mk.injEq]
+          simp only [Subtype.mk.injEq, Prod.mk.injEq] at h_eq
           simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG hG'
           apply labeledSubgraph_eq_from_subgraph_eq
           exact inducedSubgraph_eq_verts hG.1 hG'.1 h_eq.1
@@ -372,6 +384,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           simp only [Bool.false_eq_true, dite_else_false, Finset.mem_filter, Finset.mem_univ,
             true_and, A] at hA
           obtain ⟨hθ, h_iso⟩ := hA
+          let iso := Classical.choice h_iso
           have hw_type_verts : F'rep.type_verts ⊆ w := by
             intro x hx
             simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty,
@@ -381,11 +394,21 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
             simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
             constructor
             · simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
-            . sorry⟩
-          simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Subtype.mk.injEq, Prod.mk.injEq]
+            . apply Nonempty.intro
+              refine { graph_iso := ?_, type_preserve := ?_ }
+              · let G' := labeledGraphIso_extract_graph iso
+                have : G.coe.graph ≃g G'.graph := by
+                  dsimp [G, G', labeledGraphIso_extract_graph, LabeledSubgraph.inducedLabeledSubgraph]
+                  dsimp [inducedSubgraph]
+                  sorry
+                exact (this.trans iso.graph_iso).trans iso_Fu_F.symm
+              · sorry⟩
+          simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+            Subtype.mk.injEq, Prod.mk.injEq]
           constructor
           · simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, G]
           · ext k
+
             sorry
     suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
       rw [← this]
