@@ -279,13 +279,10 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   dsimp only [FinFlag.toMeasure]
   have ha_integrable : Integrable (fun a ↦ a F) (G.toPMF hG).toMeasure := by
     have ha_bdd : ∀ᵐ (a : FlagDensitySpace σ) ∂(G.toPMF hG).toMeasure, ‖a F‖ ≤ 1 := by
-      refine ae_of_all (G.toPMF hG).toMeasure ?_
+      apply ae_of_all (G.toPMF hG).toMeasure
       intro a
       simp only [Real.norm_eq_abs]
-      rw [abs_le]
-      have := flagDensitySpace_mem_Icc_zero_one a F
-      simp only [Set.mem_Icc] at this
-      constructor <;> linarith
+      exact flagDensitySpace_abs_le_one a F
     apply Integrable.of_bound
     · apply Measurable.aestronglyMeasurable
       apply Measurable.eval
@@ -523,17 +520,21 @@ theorem mulPropSet_eq_iInter
   simp only [Set.mem_setOf_eq, Set.mem_iInter]
   rfl
 
+lemma flagDensitySpace_sum_measurable
+    {F : FinFlag σ} {ℓ : ℕ}
+    : Measurable fun (a : FlagDensitySpace σ) ↦ ∑ G, ↑(flagDensity₁ F.2 G) * a ⟨ℓ, G⟩
+  := by
+  apply Finset.measurable_sum Finset.univ
+  intro G _
+  apply Measurable.mul
+  · exact measurable_const
+  · exact flagDensitySpace_eval_measurable _
+
 lemma flagDensitySpace_eq_sum_measurableSet
     {F : FinFlag σ} {ℓ : ℕ}
     : MeasurableSet {a : FlagDensitySpace σ | a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩}
-  := by
-  apply measurableSet_eq_fun
-  · exact flagDensitySpace_eval_measurable _
-  · apply Finset.measurable_sum Finset.univ
-    intro G _
-    apply Measurable.mul
-    · exact measurable_const
-    · exact flagDensitySpace_eval_measurable _
+  :=
+  measurableSet_eq_fun (flagDensitySpace_eval_measurable _) flagDensitySpace_sum_measurable
 
 lemma zeroSpaceProp_measurableSet
     : MeasurableSet {a : FlagDensitySpace σ | zeroSpaceProp ⇑a}
@@ -593,6 +594,73 @@ lemma prob_iInter_eq_one_of_all_prob_eq_one
   intro i
   exact (prob_compl_eq_zero_iff (hA_measurable i)).mpr (hA i)
 
+lemma ae_zero_of_integral_eq_zero
+    {α : Type} [MeasurableSpace α] {ℙ : ProbabilityMeasure α}
+    {f : α → ℝ} (fpos : ∀ a, 0 ≤ f a) (hf_measurable : Measurable f)
+    (hf_integrable : Integrable f ℙ) (hf : ∫ a, f a ∂ℙ = 0)
+    : ℙ {a | f a = 0} = 1
+  := by
+  obtain ⟨μ, hμ⟩ := ℙ
+  simp_all only [ProbabilityMeasure.coe_mk, ProbabilityMeasure.mk_apply]
+  rw [ENNReal.toNNReal_eq_one_iff, ← mem_ae_iff_prob_eq_one]
+  show f =ᶠ[ae μ] 0
+  rw [← integral_eq_zero_iff_of_nonneg fpos hf_integrable]
+  · exact hf
+  · exact measurableSet_eq_fun hf_measurable measurable_const
+
+lemma abs_measurable
+    {α : Type} [MeasurableSpace α] {f : α → ℝ}
+    (hf_measurable : Measurable f)
+    : Measurable fun a ↦ |f a|
+  :=
+  Measurable.sup hf_measurable (Measurable.neg hf_measurable)
+
+lemma flagDensitySpace_sub_sum_abs_measurable
+    {F : FinFlag σ} {ℓ : ℕ}
+    : Measurable fun (a : FlagDensitySpace σ) ↦ |a F - ∑ G, ↑(flagDensity₁ F.2 G) * a ⟨ℓ, G⟩|
+  := by
+  apply abs_measurable
+  exact Measurable.sub (flagDensitySpace_eval_measurable _) flagDensitySpace_sum_measurable
+
+lemma flagDensitySpace_sub_sum_abs_integrable
+    {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} {F : FinFlag σ} {ℓ : ℕ}
+    : Integrable (fun (a : FlagDensitySpace σ) ↦ |a F - ∑ G, (flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩|) ℙ
+  := by
+  have h_bound : ∀ᵐ (a : FlagDensitySpace σ) ∂ℙ.val,
+      ‖|a F - ∑ G, (flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩|‖ ≤ 1 + Fintype.card (FlagWithSize σ ℓ) := by
+    simp only [Real.norm_eq_abs, abs_abs, ProbabilityMeasure.val_eq_to_measure]
+    apply ae_of_all ℙ.val
+    intro a
+    calc
+      _ ≤ |a F| + |∑ G, (flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩| := abs_sub _ _
+      _ ≤ 1 + Fintype.card (FlagWithSize σ ℓ) := by
+        apply add_le_add (flagDensitySpace_abs_le_one a F)
+        calc
+          _ ≤ ∑ (G : FlagWithSize σ ℓ), |(flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩| :=
+            Finset.abs_sum_le_sum_abs _ _
+          _ ≤ ∑ (G : FlagWithSize σ ℓ), 1 := by
+            apply Finset.sum_le_sum
+            intro G _
+            rw [abs_mul, ← one_mul 1]
+            apply mul_le_mul _ _ (abs_nonneg _) (by norm_num)
+            · rw [abs_le]
+              constructor
+              · calc
+                  -1 ≤ 0 := by norm_num
+                  _ ≤ (flagDensity₁ F.2 G : ℝ) := by
+                    rw [Rat.cast_nonneg]
+                    exact flagListDensity₁_ge_zero F.2 G
+              · rw [← Rat.cast_one, Rat.cast_le]
+                exact flagListDensity₁_le_one F.2 G
+            · exact flagDensitySpace_abs_le_one a ⟨ℓ, G⟩
+          _ = Fintype.card (FlagWithSize σ ℓ) := by
+            simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+  have : IsFiniteMeasure ℙ.val := by
+    obtain ⟨μ, hμ⟩ := ℙ
+    simp_all only [Real.norm_eq_abs, abs_abs]
+    exact CompactSpace.isFiniteMeasure
+  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_sub_sum_abs_measurable) h_bound
+
 theorem zeroSpacePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
@@ -607,6 +675,10 @@ theorem zeroSpacePropSet_prob_eq_one
     · rw [Set.iInter_setOf]
       by_cases hℓ : F.1 ≤ ℓ
       · simp_all only [forall_const]
+        conv =>
+          lhs; rhs; rhs; ext a
+          rw [← sub_eq_zero, ← abs_eq_zero]
+        apply ae_zero_of_integral_eq_zero (fun a ↦ abs_nonneg _) flagDensitySpace_sub_sum_abs_measurable flagDensitySpace_sub_sum_abs_integrable
         sorry
       · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
         ProbabilityMeasure.coeFn_univ]

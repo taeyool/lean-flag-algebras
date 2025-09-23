@@ -102,6 +102,15 @@ theorem flagDensitySpace_mem_Icc_zero_one
   simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc] at property
   exact ⟨property.1 F, property.2 F⟩
 
+theorem flagDensitySpace_abs_le_one
+    (a : FlagDensitySpace σ) (F : FinFlag σ)
+    : |a F| ≤ 1
+  := by
+  rw [abs_le]
+  have := flagDensitySpace_mem_Icc_zero_one a F
+  simp only [Set.mem_Icc] at this
+  constructor <;> linarith
+
 theorem flagDensitySpace_compact
     : IsCompact (FlagDensitySpace σ)
   := by
