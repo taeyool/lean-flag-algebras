@@ -685,9 +685,7 @@ def FinFlag.toBoundedContinuousFun
       · exact flagDensitySpace_mem_Icc_zero_one b F
   }
 
-example {α : Type} {F : Filter α} {f g : α → ℝ} (h : f = g) : f =ᶠ[F] g := by
-  exact Eq.eventuallyEq h
-
+set_option maxHeartbeats 1000000 in
 theorem zeroSpacePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
@@ -738,9 +736,19 @@ theorem zeroSpacePropSet_prob_eq_one
             simp only [one_div, measureReal_univ_eq_one, smul_eq_mul, one_mul]
           rw [this]
           apply integral_mono_of_nonneg
-          · sorry
+          · apply Eventually.of_forall
+            intro a
+            simp only [Pi.zero_apply, DFunLike.coe, abs_nonneg, f]
           · exact integrable_const _
-          · sorry
+          · dsimp only [FlagSeq.toProbMeasureSeq, FinFlag.toProbMeasure, FinFlag.toMeasure,
+              ProbabilityMeasure.coe_mk, EventuallyLE, Filter.Eventually]
+            simp_rw [mem_ae_iff, Set.compl_setOf, not_le]
+            refine (PMF.toMeasure_apply_eq_zero_iff ((s n).toPMF (hs n)) ?_).mpr ?_
+            · sorry
+            · refine Set.disjoint_left.mpr ?_
+              intro a ha_support
+              simp only [Set.mem_setOf_eq, not_lt]
+              sorry
       · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
         ProbabilityMeasure.coeFn_univ]
 
