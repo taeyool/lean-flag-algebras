@@ -243,11 +243,33 @@ theorem FinFlag.toPMF_support
   := by
   dsimp only [FinFlag.toPMF, PMF.support, PMF.ofFinset]
   ext a
-  simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.mem_image,
-    Function.mem_support, Finset.coe_image, Set.mem_image, Finset.mem_coe]
-  constructor <;> intro h
-  · sorry
-  · sorry
+  simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.mem_image, DFunLike.coe,
+    Function.mem_support, Finset.coe_image, Set.mem_image, Finset.mem_coe, ite_eq_right_iff,
+    ne_eq, ENNReal.ofReal_eq_zero, forall_exists_index, and_imp, not_forall, not_le]
+  constructor
+  · intro ⟨G, hG₁, hG₂, _⟩
+    use G, hG₁, hG₂
+  · intro ⟨G, hG₁, hG₂⟩
+    use G, hG₁, hG₂
+    apply div_pos
+    · apply Finset.sum_pos'
+      · intro G' hG'
+        rw [Rat.cast_nonneg]
+        exact downwardNormalizingFactor_nonneg G'
+      · use G
+        constructor
+        · simp only [Finset.mem_filter, hG₁, hG₂, and_self]
+        · rw [Rat.cast_pos]
+          exact downwardNormalizingFactor_pos G
+    · apply Finset.sum_pos'
+      · intro G' hG'
+        rw [Rat.cast_nonneg]
+        exact downwardNormalizingFactor_nonneg G'
+      · use G
+        constructor
+        · exact hG₁
+        · rw [Rat.cast_pos]
+          exact downwardNormalizingFactor_pos G
 
 noncomputable def FinFlag.toMeasure
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
@@ -679,6 +701,67 @@ lemma flagDensitySpace_sub_sum_abs_integrable
     exact CompactSpace.isFiniteMeasure
   exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_sub_sum_abs_measurable) h_bound
 
+lemma flagDensitySpace_mul_sub_sum_abs_measurable
+    {F₁ F₂ : FinFlag σ}
+    : Measurable fun (a : FlagDensitySpace σ) ↦
+      |a F₁ * a F₂ - ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩|
+  := by
+  apply abs_measurable
+  exact Measurable.sub
+    (Measurable.mul (flagDensitySpace_eval_measurable _) (flagDensitySpace_eval_measurable _))
+    (Finset.measurable_sum Finset.univ fun G _ ↦
+      Measurable.mul measurable_const (flagDensitySpace_eval_measurable _))
+
+lemma flagDensitySpace_mul_sub_sum_abs_bounded
+    (a : FlagDensitySpace σ) (F₁ F₂ : FinFlag σ)
+    : |a F₁ * a F₂ - ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩| ≤
+      1 + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀))
+  := by
+  calc
+    _ ≤ |a F₁ * a F₂| + |∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩| := abs_sub _ _
+    _ ≤ 1 + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀)) := by
+      apply add_le_add
+      · rw [abs_mul, ← one_mul 1]
+        exact mul_le_mul (flagDensitySpace_abs_le_one a F₁) (flagDensitySpace_abs_le_one a F₂) (abs_nonneg _) (by norm_num)
+      calc
+        _ ≤ ∑ (G : FlagWithSize σ (F₁.1 + F₂.1 - n₀)), |flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩| :=
+          Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ (G : FlagWithSize σ (F₁.1 + F₂.1 - n₀)), 1 := by
+          apply Finset.sum_le_sum
+          intro G _
+          rw [abs_mul, ← one_mul 1]
+          apply mul_le_mul _ _ (abs_nonneg _) (by norm_num)
+          · rw [abs_le]
+            constructor
+            · calc
+                -1 ≤ 0 := by norm_num
+                _ ≤ (flagDensity₂ F₁.2 F₂.2 G : ℝ) := by
+                  rw [Rat.cast_nonneg]
+                  exact flagListDensity₂_ge_zero F₁.2 F₂.2 G
+            · rw [← Rat.cast_one, Rat.cast_le]
+              exact flagListDensity₂_le_one F₁.2 F₂.2 G
+          · exact flagDensitySpace_abs_le_one a ⟨F₁.1 + F₂.1 - n₀, G⟩
+        _ = Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀)) := by
+          simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+
+lemma flagDensitySpace_mul_sub_sum_abs_integrable
+    {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} {F₁ F₂ : FinFlag σ}
+    : Integrable (fun (a : FlagDensitySpace σ) ↦
+      |a F₁ * a F₂ - ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩|) ℙ
+  := by
+  have h_bound : ∀ᵐ (a : FlagDensitySpace σ) ∂ℙ.val,
+      ‖|a F₁ * a F₂ - ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩|‖ ≤
+      1 + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀)) := by
+    simp only [Real.norm_eq_abs, abs_abs, ProbabilityMeasure.val_eq_to_measure]
+    apply ae_of_all ℙ.val
+    intro a
+    exact flagDensitySpace_mul_sub_sum_abs_bounded a F₁ F₂
+  have : IsFiniteMeasure ℙ.val := by
+    obtain ⟨μ, hμ⟩ := ℙ
+    simp_all only [Real.norm_eq_abs, abs_abs]
+    exact CompactSpace.isFiniteMeasure
+  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_mul_sub_sum_abs_measurable) h_bound
+
 def FinFlag.toBoundedContinuousFun
     (F : FinFlag σ)
     : BoundedContinuousFunction (FlagDensitySpace σ) ℝ
@@ -706,63 +789,63 @@ theorem zeroSpacePropSet_prob_eq_one
   apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro F
   · exact MeasurableSet.iInter fun _ ↦ MeasurableSet.iInter fun _ ↦
     flagDensitySpace_eq_sum_measurableSet
-  · apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro ℓ
-    · exact MeasurableSet.iInter fun _ ↦ flagDensitySpace_eq_sum_measurableSet
-    · rw [Set.iInter_setOf]
-      by_cases hℓ : F.1 ≤ ℓ
-      · simp_all only [forall_const]
-        conv =>
-          lhs; rhs; rhs; ext a
-          rw [← sub_eq_zero, ← abs_eq_zero]
-        apply ae_zero_of_integral_eq_zero (fun a ↦ abs_nonneg _) flagDensitySpace_sub_sum_abs_measurable flagDensitySpace_sub_sum_abs_integrable
-        rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hs_tendsto
-        let f : BoundedContinuousFunction (FlagDensitySpace σ) ℝ := {
-          toFun := fun a ↦ |a F - ∑ G, (flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩|
-          continuous_toFun := by
-            apply Continuous.comp' continuous_abs
-            apply Continuous.sub F.toBoundedContinuousFun.continuous_toFun
-            apply continuous_finset_sum Finset.univ
-            intro G _
-            apply Continuous.mul continuous_const
-            exact (FinFlag.toBoundedContinuousFun ⟨ℓ, G⟩).continuous_toFun
-          map_bounded' := by
-            use 1 + Fintype.card (FlagWithSize σ ℓ)
-            intro a b
-            rw [← sub_zero (1 + Fintype.card (FlagWithSize σ ℓ) : ℝ)]
-            apply Real.dist_le_of_mem_Icc <;> simp only [Set.mem_Icc, abs_nonneg, true_and]
-            · exact flagDensitySpace_sub_sum_abs_bounded a F ℓ
-            · exact flagDensitySpace_sub_sum_abs_bounded b F ℓ
-        }
-        specialize hs_tendsto f
-        apply tendsto_nhds_unique hs_tendsto
-        have h₀ : Tendsto (fun (n : ℕ) ↦ (0 : ℝ)) atTop (𝓝 0) := tendsto_const_nhds
-        have h₁ : Tendsto (fun (n : ℕ) ↦ (1 / n : ℝ)) atTop (𝓝 0) := by
-          exact tendsto_one_div_atTop_nhds_zero_nat
-        apply Tendsto.squeeze h₀ h₁ <;> (intro n; simp only)
-        · apply integral_nonneg
-          intro n
-          simp only [Pi.zero_apply, DFunLike.coe, abs_nonneg, f]
-        · have : (1 / n : ℝ) = ∫ (a : FlagDensitySpace σ), (1 / n : ℝ) ∂((s n).toProbMeasure (hs n)) := by
-            rw [MeasureTheory.integral_const]
-            simp only [one_div, measureReal_univ_eq_one, smul_eq_mul, one_mul]
-          rw [this]
-          apply integral_mono_of_nonneg
-          · apply Eventually.of_forall
-            intro a
-            simp only [Pi.zero_apply, DFunLike.coe, abs_nonneg, f]
-          · exact integrable_const _
-          · dsimp only [FlagSeq.toProbMeasureSeq, FinFlag.toProbMeasure, FinFlag.toMeasure,
-              ProbabilityMeasure.coe_mk, EventuallyLE, Filter.Eventually]
-            simp_rw [mem_ae_iff, Set.compl_setOf, not_le]
-            rw [PMF.toMeasure_apply_eq_zero_iff _ (by
-              exact measurableSet_lt measurable_const flagDensitySpace_sub_sum_abs_measurable
-            )]
-            rw [Set.disjoint_left]
-            intro a ha_support
-            simp only [Set.mem_setOf_eq, not_lt]
-            sorry
-      · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
-        ProbabilityMeasure.coeFn_univ]
+  apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro ℓ
+  · exact MeasurableSet.iInter fun _ ↦ flagDensitySpace_eq_sum_measurableSet
+  rw [Set.iInter_setOf]
+  by_cases hℓ : F.1 ≤ ℓ
+  · simp_all only [forall_const]
+    conv =>
+      lhs; rhs; rhs; ext a
+      rw [← sub_eq_zero, ← abs_eq_zero]
+    apply ae_zero_of_integral_eq_zero (fun a ↦ abs_nonneg _) flagDensitySpace_sub_sum_abs_measurable flagDensitySpace_sub_sum_abs_integrable
+    rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hs_tendsto
+    let f : BoundedContinuousFunction (FlagDensitySpace σ) ℝ := {
+      toFun := fun a ↦ |a F - ∑ G, (flagDensity₁ F.2 G : ℝ) * a ⟨ℓ, G⟩|
+      continuous_toFun := by
+        apply Continuous.comp' continuous_abs
+        apply Continuous.sub F.toBoundedContinuousFun.continuous_toFun
+        apply continuous_finset_sum Finset.univ
+        intro G _
+        apply Continuous.mul continuous_const
+        exact (FinFlag.toBoundedContinuousFun ⟨ℓ, G⟩).continuous_toFun
+      map_bounded' := by
+        use 1 + Fintype.card (FlagWithSize σ ℓ)
+        intro a b
+        rw [← sub_zero (1 + Fintype.card (FlagWithSize σ ℓ) : ℝ)]
+        apply Real.dist_le_of_mem_Icc <;> simp only [Set.mem_Icc, abs_nonneg, true_and]
+        · exact flagDensitySpace_sub_sum_abs_bounded a F ℓ
+        · exact flagDensitySpace_sub_sum_abs_bounded b F ℓ
+    }
+    specialize hs_tendsto f
+    apply tendsto_nhds_unique hs_tendsto
+    apply @tendsto_atTop_of_eventually_const _ _ _ _ _ _ 0
+    intro n _
+    have fpos : 0 ≤ f := fun a ↦ abs_nonneg _
+    have hf_integrable : Integrable f (s.toProbMeasureSeq hs n) :=
+      BoundedContinuousFunction.integrable _ f
+    rw [integral_eq_zero_iff_of_nonneg (by exact fpos) hf_integrable]
+    dsimp only [FlagSeq.toProbMeasureSeq, FinFlag.toProbMeasure, FinFlag.toMeasure,
+      ProbabilityMeasure.coe_mk, EventuallyEq, Filter.Eventually]
+    simp_rw [mem_ae_iff]
+    rw [PMF.toMeasure_apply_eq_zero_iff _ (by
+      exact MeasurableSet.compl (measurableSet_eq_fun flagDensitySpace_sub_sum_abs_measurable measurable_zero)
+    )]
+    rw [Set.disjoint_left]
+    intro a ha_support
+    simp only [Set.compl_setOf, Pi.zero_apply, Set.mem_setOf_eq, Decidable.not_not]
+    rw [FinFlag.toPMF_support] at ha_support
+    simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.coe_image,
+      Set.mem_image, Finset.mem_coe] at ha_support
+    obtain ⟨G, _, hG⟩ := ha_support
+    subst hG
+    dsimp only [DFunLike.coe, funFromFlagWithSizeToFlagDensitySpace, f]
+    simp only [← Rat.cast_mul, ← Rat.cast_sum, ← Rat.cast_sub, ← Rat.cast_abs, Rat.cast_eq_zero]
+    rw [abs_eq_zero, sub_eq_zero]
+    refine density_chain_rule₁₁ ℓ F.snd G ?_ hℓ ?_
+    · sorry
+    · sorry
+  · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
+    ProbabilityMeasure.coeFn_univ]
 
 theorem onePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -772,15 +855,98 @@ theorem onePropSet_prob_eq_one
   sorry
 
 theorem mulPropSet_prob_eq_one
-    {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    {s : FlagSeq ∅ₜ}
+    (hs_inc : Increases s) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
     : ℙ {a | mulProp a} = 1
   := by
-  sorry
+  rw [mulPropSet_eq_iInter]
+  apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro F₁
+  · apply MeasurableSet.iInter; intro F₂
+    exact flagDensitySpace_mul_eq_sum_measurableSet
+  apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro F₂
+  · exact flagDensitySpace_mul_eq_sum_measurableSet
+  conv =>
+    lhs; rhs; rhs; ext a
+    rw [← sub_eq_zero, ← abs_eq_zero]
+  apply ae_zero_of_integral_eq_zero (fun a ↦ abs_nonneg _) flagDensitySpace_mul_sub_sum_abs_measurable flagDensitySpace_mul_sub_sum_abs_integrable
+  rw [ProbabilityMeasure.tendsto_iff_forall_integral_tendsto] at hs_tendsto
+  let f : BoundedContinuousFunction (FlagDensitySpace σ) ℝ := {
+    toFun := fun a ↦ |a F₁ * a F₂ - ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩|
+    continuous_toFun := by
+      apply Continuous.comp' continuous_abs
+      apply Continuous.sub
+      · apply Continuous.mul
+        · exact (FinFlag.toBoundedContinuousFun F₁).continuous_toFun
+        · exact (FinFlag.toBoundedContinuousFun F₂).continuous_toFun
+      · apply continuous_finset_sum Finset.univ
+        intro G _
+        apply Continuous.mul continuous_const
+        exact (FinFlag.toBoundedContinuousFun ⟨F₁.1 + F₂.1 - n₀, G⟩).continuous_toFun
+    map_bounded' := by
+      use 1 + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀))
+      intro a b
+      rw [← sub_zero (1 + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀)) : ℝ)]
+      apply Real.dist_le_of_mem_Icc <;> simp only [Set.mem_Icc, abs_nonneg, true_and]
+      · exact flagDensitySpace_mul_sub_sum_abs_bounded a F₁ F₂
+      · exact flagDensitySpace_mul_sub_sum_abs_bounded b F₁ F₂
+  }
+  specialize hs_tendsto f
+  apply tendsto_nhds_unique hs_tendsto
+  obtain ⟨c, cpos, hc⟩ := flagListDensity₂_prod_approx F₁.2 F₂.2
+  have h₀ : Tendsto (fun (n : ℕ) ↦ (0 : ℝ)) atTop (𝓝 0) := tendsto_const_nhds
+  have h₁ : Tendsto (fun (n : ℕ) ↦ (c / n : ℝ)) atTop (𝓝 0) :=
+    tendsto_const_div_atTop_nhds_zero_nat c
+  apply Tendsto.squeeze' h₀ h₁
+  · apply Eventually.of_forall
+    intro n
+    apply integral_nonneg
+    intro n
+    simp only [Pi.zero_apply, DFunLike.coe, abs_nonneg, f]
+  · rw [eventually_atTop]
+    have ⟨N, hN⟩ := Increases.eventually_ge hs_inc (F₁.1 + F₂.1 - n₀)
+    use max N 1
+    intro n hn
+    have : (c / n : ℝ) = ∫ (a : FlagDensitySpace σ), (c / n : ℝ) ∂((s n).toProbMeasure (hs n)) := by
+      rw [MeasureTheory.integral_const]
+      simp only [measureReal_univ_eq_one, smul_eq_mul, one_mul]
+    rw [this]
+    apply integral_mono_of_nonneg
+    · apply Eventually.of_forall
+      intro a
+      simp only [Pi.zero_apply, DFunLike.coe, abs_nonneg, f]
+    · exact integrable_const _
+    dsimp only [FlagSeq.toProbMeasureSeq, FinFlag.toProbMeasure, FinFlag.toMeasure,
+      ProbabilityMeasure.coe_mk, EventuallyLE, Filter.Eventually]
+    simp_rw [mem_ae_iff, Set.compl_setOf, not_le]
+    rw [PMF.toMeasure_apply_eq_zero_iff _ (by
+      exact measurableSet_lt measurable_const flagDensitySpace_mul_sub_sum_abs_measurable
+    )]
+    rw [Set.disjoint_left]
+    intro a ha_support
+    simp only [Set.mem_setOf_eq, not_lt]
+    rw [FinFlag.toPMF_support] at ha_support
+    simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.coe_image,
+      Set.mem_image, Finset.mem_coe] at ha_support
+    obtain ⟨G, _, hG⟩ := ha_support
+    subst hG
+    dsimp only [DFunLike.coe, funFromFlagWithSizeToFlagDensitySpace, f]
+    simp only [← Rat.cast_mul, ← Rat.cast_sum, ← Rat.cast_sub, ← Rat.cast_abs]
+    have : (n : ℝ) = ((n : ℚ) : ℝ) := rfl
+    rw [this, ← Rat.cast_div, Rat.cast_le, abs_sub_comm]
+    rw [← density_chain_rule₂₁ _ _ _ _ (finFlag_size_ge_n₀ F₁) (finFlag_size_ge_n₀ F₂) le_tsub_add (hN n (le_of_max_le_left hn))]
+    calc
+      _ ≤ c / G.out.size := hc G
+      _ ≤ c / n := by
+        apply div_le_div₀ cpos (by rfl) (Nat.cast_pos'.mpr (le_of_max_le_right hn))
+        simp only [LabeledGraph.size, Fintype.card_fin]
+        rw [Nat.cast_le]
+        exact hs_inc.id_le n
 
 theorem flagSeq_limit_measure_support_positiveHomSpace
-    {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
-    {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
+    {s : FlagSeq ∅ₜ}
+    (hs_inc : Increases s) (hs_den : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
+    {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs_den) atTop (𝓝 ℙ))
     : ℙ (PositiveHomSpace σ) = 1
   := by
   rw [positiveHomSpace_eq]
@@ -789,12 +955,12 @@ theorem flagSeq_limit_measure_support_positiveHomSpace
   · apply MeasurableSet.inter
     · exact oneProp_measurableSet
     · exact mulProp_measurableSet
-  · exact zeroSpacePropSet_prob_eq_one hs hs_tendsto
+  · exact zeroSpacePropSet_prob_eq_one hs_den hs_tendsto
   · apply prob_inter_eq_one_of_prob_eq_one
     · exact oneProp_measurableSet
     · exact mulProp_measurableSet
-    · exact onePropSet_prob_eq_one hs hs_tendsto
-    · exact mulPropSet_prob_eq_one hs hs_tendsto
+    · exact onePropSet_prob_eq_one hs_den hs_tendsto
+    · exact mulPropSet_prob_eq_one hs_inc hs_den hs_tendsto
 
 /- Theorem 3.5, existence -/
 theorem exists_probMeasure_extend_emptyType_positiveHom
@@ -809,7 +975,7 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
       measure_univ := by
         rw [Measure.comap_apply]
         · have : (1 : ENNReal) = ((1 : NNReal) : ENNReal) := rfl
-          rw [this, ← flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ]
+          rw [this, ← flagSeq_limit_measure_support_positiveHomSpace hs_conv.1 hs_den hℙ]
           simp only [Set.image_univ, Subtype.range_coe_subtype, Set.setOf_mem_eq,
             ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
         · exact Subtype.val_injective
@@ -868,13 +1034,13 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
     apply measure_inter_null_of_null_left
     apply (prob_compl_eq_zero_iff positiveHomSpace_measurable).mpr
     rw [← ENNReal.toNNReal_eq_one_iff]
-    exact flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ
+    exact flagSeq_limit_measure_support_positiveHomSpace hs_conv.1 hs_den hℙ
   )]
   rw [← ENNReal.toNNReal_eq_one_iff]
   show ℙ {x | x ∈ PositiveHomSpace σ ∨ x F = 0} = 1
   apply le_antisymm
   · exact ProbabilityMeasure.apply_le_one ℙ _
-  · rw [← flagSeq_limit_measure_support_positiveHomSpace hs_den hℙ]
+  · rw [← flagSeq_limit_measure_support_positiveHomSpace hs_conv.1 hs_den hℙ]
     exact ProbabilityMeasure.apply_mono ℙ Set.subset_union_left
 
 end
