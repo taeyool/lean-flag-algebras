@@ -312,7 +312,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   have P₁ : labeledSubgraphDensity Furep F'rep * downwardNormalizingFactor_labeledGraph Frep = A.card / Ω.toFinset.card := by
     dsimp [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
     rw [div_mul_div_comm]
-    have tmp : labeledSubgraphCount Furep F'rep = A.card := by
+    have this_is_wrong_statement : labeledSubgraphCount Furep F'rep = A.card := by
       dsimp only [labeledSubgraphCount]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
@@ -418,29 +418,39 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
             apply Fin.val_eq_of_eq
             have := congrFun (Classical.choice iso_G_F).symm.type_preserve k
             sorry
-    suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
-      rw [← this]
-      refine congrArg (HDiv.hDiv _) ?_
-      simp only [emptyType_size, tsub_zero]
-      calc
-        (@Nat.cast ℚ _ (F'rep.size.choose Furep.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ℓ'.choose ℓ * ↑(ℓ.factorial / (ℓ - n₀).factorial) := by congr
-        _ = ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial) := by
-          rw [Nat.choose_eq_factorial_div_factorial hℓ, ← Nat.cast_mul]
-          nth_rw 2 [mul_comm]
-          rw [← Nat.mul_div_assoc ]
-          rw [← Nat.div_div_eq_div_mul]
-          · rw [Nat.div_mul_cancel (by
-              apply Nat.dvd_div_of_mul_dvd; rw [mul_comm]
-              apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
-            rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.cast_mul]
-            refine Rat.natCast_div ℓ'.factorial ((ℓ - n₀).factorial * (ℓ' - ℓ).factorial) ?_
-            sorry
-          · apply Nat.factorial_dvd_factorial; omega
-    rw [tmp, mul_div_assoc]
     congr
+    · sorry
+    · simp only [emptyType_size, tsub_zero]
+      suffices (@Nat.cast ℚ _ (ℓ'.choose ℓ)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ↑Ω.toFinset.card by rw [← this]; congr
+      let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}
+      have inj_map_card : inj_map.toFinset.card = ℓ'.factorial / (ℓ - n₀).factorial := by
+        sorry
+      let lest_vtx (θ : Fin n₀ → Fin ℓ') : Finset (Finset (Fin ℓ')) := by
+        let left := (Finset.univ : Finset (Fin ℓ')) \ (Set.image θ Set.univ).toFinset
+        exact combinations left (ℓ - n₀)
+      -- have card_eq : Ω.toFinset.card = inj_map.toFinset.card * lest_vtx.card := by sorry
 
+      sorry
 
-    sorry
+    -- suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
+    --   rw [← this]
+    --   refine congrArg (HDiv.hDiv _) ?_
+    --   simp only [emptyType_size, tsub_zero]
+    --   calc
+    --     (@Nat.cast ℚ _ (F'rep.size.choose Furep.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ℓ'.choose ℓ * ↑(ℓ.factorial / (ℓ - n₀).factorial) := by congr
+    --     _ = ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial) := by
+    --       rw [Nat.choose_eq_factorial_div_factorial hℓ, ← Nat.cast_mul]
+    --       nth_rw 2 [mul_comm]
+    --       rw [← Nat.mul_div_assoc ]
+    --       rw [← Nat.div_div_eq_div_mul]
+    --       · rw [Nat.div_mul_cancel (by
+    --           apply Nat.dvd_div_of_mul_dvd; rw [mul_comm]
+    --           apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
+    --         rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.cast_mul]
+    --         refine Rat.natCast_div ℓ'.factorial ((ℓ - n₀).factorial * (ℓ' - ℓ).factorial) ?_
+    --         sorry
+    --       · apply Nat.factorial_dvd_factorial; omega
+
   rw [P₁]
 
   sorry
