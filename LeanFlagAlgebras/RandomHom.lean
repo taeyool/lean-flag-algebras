@@ -237,6 +237,18 @@ noncomputable def FinFlag.toPMF
     simp only [g, if_neg ha]
   exact PMF.ofFinset g S g_sum g_other
 
+theorem FinFlag.toPMF_support
+    (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
+    : (F.toPMF hF).support = (funFromFlagWithSizeToFlagDensitySpace σ F.1 '' labelExtensions F.2 σ).toFinset
+  := by
+  dsimp only [FinFlag.toPMF, PMF.support, PMF.ofFinset]
+  ext a
+  simp only [Set.toFinset_image, Finset.toFinset_coe, Finset.mem_image,
+    Function.mem_support, Finset.coe_image, Set.mem_image, Finset.mem_coe]
+  constructor <;> intro h
+  · sorry
+  · sorry
+
 noncomputable def FinFlag.toMeasure
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : Measure (FlagDensitySpace σ)
@@ -685,11 +697,10 @@ def FinFlag.toBoundedContinuousFun
       · exact flagDensitySpace_mem_Icc_zero_one b F
   }
 
-set_option maxHeartbeats 1000000 in
 theorem zeroSpacePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
-    : ℙ {a | zeroSpaceProp ⇑a} = 1
+    : ℙ {a | zeroSpaceProp a} = 1
   := by
   rw [zeroSpacePropSet_eq_iInter]
   apply prob_iInter_eq_one_of_all_prob_eq_one <;> intro F
@@ -756,14 +767,14 @@ theorem zeroSpacePropSet_prob_eq_one
 theorem onePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
-    : ℙ {a | oneProp ⇑a} = 1
+    : ℙ {a | oneProp a} = 1
   := by
   sorry
 
 theorem mulPropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
-    : ℙ {a | mulProp ⇑a} = 1
+    : ℙ {a | mulProp a} = 1
   := by
   sorry
 
