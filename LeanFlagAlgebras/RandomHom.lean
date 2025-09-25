@@ -743,12 +743,13 @@ theorem zeroSpacePropSet_prob_eq_one
           · dsimp only [FlagSeq.toProbMeasureSeq, FinFlag.toProbMeasure, FinFlag.toMeasure,
               ProbabilityMeasure.coe_mk, EventuallyLE, Filter.Eventually]
             simp_rw [mem_ae_iff, Set.compl_setOf, not_le]
-            refine (PMF.toMeasure_apply_eq_zero_iff ((s n).toPMF (hs n)) ?_).mpr ?_
-            · sorry
-            · refine Set.disjoint_left.mpr ?_
-              intro a ha_support
-              simp only [Set.mem_setOf_eq, not_lt]
-              sorry
+            rw [PMF.toMeasure_apply_eq_zero_iff _ (by
+              exact measurableSet_lt measurable_const flagDensitySpace_sub_sum_abs_measurable
+            )]
+            rw [Set.disjoint_left]
+            intro a ha_support
+            simp only [Set.mem_setOf_eq, not_lt]
+            sorry
       · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
         ProbabilityMeasure.coeFn_univ]
 
