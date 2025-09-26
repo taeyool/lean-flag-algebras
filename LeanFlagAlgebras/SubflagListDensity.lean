@@ -2044,10 +2044,20 @@ noncomputable def
                   simp only [coe_graph, Set.mem_empty_iff_false, Set.setOf_false, Set.image_empty]
           _ = ∅ := Set.image_empty _
 
-      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, sorry, sorry, sorry, sorry, sorry⟩
+      have h_Vl''_disj_type_verts : ∀ i : Fin 2, (Vl'' i) ∩ G.type_verts = ∅ := by
+        intro i
+        dsimp [Vl'']
+        split
+        · dsimp [V']
+          rw [Set.union_inter_distrib_right, Set.union_inter_distrib_right]
+          rw [h_Vl_disj_G_type_verts 0, h_Vl_disj_G_type_verts 1, h_V_disj_G_type_verts]
+          simp only [Set.union_empty]
+        · exact h_Vl_disj_G_type_verts 2
 
-    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := sorry
-    have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := sorry
+      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, h_Vl''_disj_type_verts, sorry, sorry, sorry, sorry⟩
+
+    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by sorry
+    have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by sorry
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
 
   let f_LHS_S₂ := (f_LHS_S₀.trans f_S₀_S₁).trans f_S₁_S₂
