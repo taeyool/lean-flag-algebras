@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagAlgebra
+import Mathlib.Data.Fintype.CardEmbedding
 
 open FlagAlgebras
 open Classical
@@ -262,7 +263,7 @@ noncomputable def labelExtensions
   :=
   { G : FlagWithSize σ ℓ | unlabel G = F }
 
-set_option maxHeartbeats 200000 in
+set_option maxHeartbeats 300000 in
 lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
@@ -422,35 +423,114 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     · sorry
     · simp only [emptyType_size, tsub_zero]
       suffices (@Nat.cast ℚ _ (ℓ'.choose ℓ)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ↑Ω.toFinset.card by rw [← this]; congr
-      let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}
-      have inj_map_card : inj_map.toFinset.card = ℓ'.factorial / (ℓ - n₀).factorial := by
+      let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
+      have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
+        simp only [Set.toFinset_card, inj_map]
+        have := @Fintype.card_embedding_eq (Fin n₀) (Fin ℓ') _ _ _
+        simp only [Fintype.card_fin] at this
+        have n₀_le_ℓ' : n₀ ≤ ℓ' := by
+          have := Frep.type_size_le_size
+          simp only [FlagType.size, Fintype.card_fin, LabeledGraph.size] at this
+          omega
+        rw [Nat.descFactorial_eq_div n₀_le_ℓ'] at this
+        rw [← this]
+        apply Finset.card_eq_of_equiv
+        refine Equiv.ofBijective ?_ ?_
+        · intro ⟨⟨θ, hθ⟩, _⟩
+          use ⟨θ, hθ⟩
+          simp only [Finset.mem_univ]
+        · constructor
+          · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
+            simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
+              Function.Embedding.mk.injEq, Set.coe_setOf, Set.mem_setOf_eq]
+          · intro ⟨⟨θ, hθ⟩, _⟩
+            use ⟨⟨θ, by simp only [Set.mem_setOf_eq]; exact hθ⟩, by simp only [Set.coe_setOf, Set.mem_setOf_eq, Finset.mem_univ]⟩
+      let left_vtx (θ : Fin n₀ → Fin ℓ') := (Finset.univ : Finset (Fin ℓ')) \ (Set.image θ Set.univ).toFinset
+      have card_eq₁ : Ω.toFinset.card = Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) := by
+        apply Finset.card_eq_of_equiv
+        refine Equiv.ofBijective ?_ ?_
+        · intro ⟨⟨w, θ⟩, hΩ⟩
+          simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ
+          have hθ : θ ∈ inj_map := by
+            simp_all only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map]
+          have hw : w.toFinset \ (Set.image θ Set.univ).toFinset ∈ combinations (left_vtx θ) (ℓ - n₀) := by
+            simp only [combinations, Set.image_univ, Set.toFinset_range, Finset.mem_filter,
+              Finset.mem_powerset, left_vtx]
+            constructor
+            · apply Finset.sdiff_subset_sdiff <;> simp only [Finset.subset_univ, subset_refl]
+            · rw [Finset.card_sdiff (by simp_all only [Set.subset_toFinset, Finset.coe_image, Finset.coe_univ, Set.image_univ])]
+              rw [hΩ.2.1, Finset.card_image_of_injective (Finset.univ) hΩ.1]
+              simp only [Finset.card_univ, Fintype.card_fin]
+          use ⟨⟨θ, hθ⟩, ⟨w.toFinset \ (Set.image θ Set.univ).toFinset, hw⟩⟩
+          simp only [Finset.mem_univ]
+        · constructor
+          · intro ⟨⟨w, θ⟩, hΩ⟩ ⟨⟨w', θ'⟩, hΩ'⟩ h_eq
+            simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Sigma.mk.injEq]
+            obtain ⟨hθ, hw⟩ := h_eq
+            simp only [and_true]
+            have : w.toFinset = w'.toFinset := by
+              apply eq_of_heq
+              subst hθ
+              simp_all only [heq_eq_eq, Subtype.mk.injEq]
+              simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ hΩ'
+              rw [← Finset.sdiff_union_inter w.toFinset (θ '' Set.univ).toFinset, ← Finset.sdiff_union_inter w'.toFinset (θ '' Set.univ).toFinset, hw]
+              have hw : w.toFinset ∩ (θ '' Set.univ).toFinset = (θ '' Set.univ).toFinset := by
+                simp_all only [ Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+              have hw' : w'.toFinset ∩ (θ '' Set.univ).toFinset = (θ '' Set.univ).toFinset := by
+                simp_all only [ Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+              rw [hw, hw']
+            exact Set.toFinset_inj.mp this
+          · intro ⟨⟨⟨θ, hθ⟩, ⟨w, hw⟩⟩, h⟩
+            simp only [combinations, Finset.mem_filter, Finset.mem_powerset] at hw
+            have w_disj : Disjoint w (Finset.image θ Finset.univ) := by
+              simp only [Set.image_univ, Set.toFinset_range, left_vtx] at hw
+              rw [Finset.disjoint_left]
+              intro x hx
+              exact (Finset.mem_sdiff.mp (hw.1 hx)).2
+            use ⟨⟨w.toSet ∪ (Set.image θ Set.univ), θ⟩, by
+              simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω]
+              simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+              constructor <;> try constructor
+              · exact hθ
+              · simp only [Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range]
+                rw [Finset.card_union_of_disjoint w_disj]
+                rw [hw.2, Finset.card_image_of_injective (Finset.univ) hθ, Finset.card_univ, Fintype.card_fin]
+                apply Nat.sub_add_cancel
+                have := Frep.type_size_le_size
+                simp_all only [LabeledGraph.size, Fintype.card_fin, Finset.mem_univ, FlagType.size]
+              · simp only [Set.subset_union_right]⟩
+            simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
+              Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
+            exact Finset.union_sdiff_cancel_right w_disj
+      have card_eq₂ : Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) = inj_map.card * (ℓ' - n₀).choose (ℓ - n₀) := by
+        rw [Fintype.card_sigma]
+        have : ∀ θ : inj_map, (combinations (left_vtx θ) (ℓ - n₀)).card = (ℓ' - n₀).choose (ℓ - n₀) := by
+          intro ⟨θ, hθ⟩
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+          rw [comb_card]; congr
+          rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]; congr
+          have := Finset.card_image_of_injective (Finset.univ) hθ
+          simp_all only [Set.image_univ, Set.toFinset_range, Finset.card_univ, Fintype.card_fin]
+        simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
+      rw [card_eq₁, card_eq₂, inj_map_card, ← Nat.cast_mul, Nat.cast_inj]
+      rw [← Nat.mul_div_assoc, Nat.div_mul_right_comm]
+      have lhs : ℓ'.choose ℓ * ℓ.factorial / (ℓ - n₀).factorial = ℓ'.factorial / (ℓ' - ℓ).factorial / (ℓ - n₀).factorial := by
+        rw [Nat.choose_eq_factorial_div_factorial hℓ]
+        nth_rw 2 [mul_comm]
+        rw [← Nat.div_div_eq_div_mul]
+        refine (Nat.div_left_inj ?_ ?_).mpr ?_
+        · sorry
+        · sorry
+        · apply Nat.div_mul_cancel
+          apply Nat.dvd_div_of_mul_dvd
+          rw [mul_comm]
+          exact Nat.factorial_mul_factorial_dvd_factorial hℓ
+      have rhs : ℓ'.factorial * (ℓ' - n₀).choose (ℓ - n₀) / (ℓ' - n₀).factorial = ℓ'.factorial / (ℓ' - ℓ).factorial / (ℓ - n₀).factorial := by
+        rw [Nat.choose_eq_factorial_div_factorial (by omega)]
         sorry
-      let lest_vtx (θ : Fin n₀ → Fin ℓ') : Finset (Finset (Fin ℓ')) := by
-        let left := (Finset.univ : Finset (Fin ℓ')) \ (Set.image θ Set.univ).toFinset
-        exact combinations left (ℓ - n₀)
-      -- have card_eq : Ω.toFinset.card = inj_map.toFinset.card * lest_vtx.card := by sorry
-
-      sorry
-
-    -- suffices (@Nat.cast ℚ _ (labeledSubgraphCount Furep F'rep)) * ↑(isomorphismCount Frep) / (ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial)) = A.card / Ω.toFinset.card by
-    --   rw [← this]
-    --   refine congrArg (HDiv.hDiv _) ?_
-    --   simp only [emptyType_size, tsub_zero]
-    --   calc
-    --     (@Nat.cast ℚ _ (F'rep.size.choose Furep.size)) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = ℓ'.choose ℓ * ↑(ℓ.factorial / (ℓ - n₀).factorial) := by congr
-    --     _ = ℓ'.factorial / ((ℓ - n₀).factorial * (ℓ'- ℓ).factorial) := by
-    --       rw [Nat.choose_eq_factorial_div_factorial hℓ, ← Nat.cast_mul]
-    --       nth_rw 2 [mul_comm]
-    --       rw [← Nat.mul_div_assoc ]
-    --       rw [← Nat.div_div_eq_div_mul]
-    --       · rw [Nat.div_mul_cancel (by
-    --           apply Nat.dvd_div_of_mul_dvd; rw [mul_comm]
-    --           apply Nat.factorial_mul_factorial_dvd_factorial; omega)]
-    --         rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.cast_mul]
-    --         refine Rat.natCast_div ℓ'.factorial ((ℓ - n₀).factorial * (ℓ' - ℓ).factorial) ?_
-    --         sorry
-    --       · apply Nat.factorial_dvd_factorial; omega
-
+      rw [lhs, rhs]
+      · apply Nat.factorial_dvd_factorial; omega
+      · apply Nat.factorial_dvd_factorial; omega
   rw [P₁]
 
   sorry
@@ -459,13 +539,11 @@ example (A B C D : ℚ) (h : B = C) : A / B = A / C := by
   -- exact congrArg (HDiv.hDiv A) h
   sorry
 
-example (A B C D : ℕ) (h : B = C) : (A / B) * C = A / (B / C) := by
-
-  -- refine Eq.symm (Nat.mul_div_assoc (A / B) ?_)
-  -- refine div_mul_div_cancel₀ ?_
-  -- rw [h]
-  -- exact congrArg (HDiv.hDiv A) h
+example (A B C D : ℕ) : A / B * B / C = A / C := by
+  -- refine (Nat.div_left_inj ?_ ?_).mpr ?_
   sorry
+
+
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
