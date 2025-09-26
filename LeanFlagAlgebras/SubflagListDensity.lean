@@ -2054,7 +2054,10 @@ noncomputable def
           simp only [Set.union_empty]
         · exact h_Vl_disj_G_type_verts 2
 
-      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, h_Vl''_disj_type_verts, sorry, sorry, sorry, sorry⟩
+      have h_Vl'_disj_pairwise : Set.univ.PairwiseDisjoint Vl' := by
+        sorry
+
+      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, h_Vl''_disj_type_verts, h_Vl'_disj_pairwise, sorry, sorry, sorry⟩
 
     have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by sorry
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by sorry
