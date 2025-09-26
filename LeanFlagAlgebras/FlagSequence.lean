@@ -387,6 +387,64 @@ theorem positiveHomSpace_eq
     show linearExtension a (unitVector F) = a F
     exact linearExtension_unitVector a F
 
+theorem zeroSpacePropSet_eq_iInter
+    : {a : FlagDensitySpace σ | zeroSpaceProp a} =
+    ⋂ (F : FinFlag σ) (ℓ : ℕ) (_ : F.1 ≤ ℓ),
+    {a : FlagDensitySpace σ | a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩}
+  := by
+  ext a
+  simp only [Set.mem_setOf_eq, Set.mem_iInter]
+  rfl
+
+theorem mulPropSet_eq_iInter
+    : {a : FlagDensitySpace σ | mulProp a} =
+    ⋂ (F₁ : FinFlag σ) (F₂ : FinFlag σ),
+    {a : FlagDensitySpace σ | a F₁ * a F₂ =
+      ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩}
+  := by
+  ext a
+  simp only [Set.mem_setOf_eq, Set.mem_iInter]
+  rfl
+
+theorem FinFlag.continuous
+    (F : FinFlag σ)
+    : Continuous (fun a : FlagDensitySpace σ ↦ a F)
+  := by
+  sorry
+
+theorem positiveHomSpace_isClosed'
+    : IsClosed (PositiveHomSpace σ)
+  := by
+  rw [positiveHomSpace_eq]
+  apply IsClosed.inter
+  · show IsClosed {a : FlagDensitySpace σ | zeroSpaceProp a}
+    rw [zeroSpacePropSet_eq_iInter]
+    apply isClosed_iInter; intro F
+    apply isClosed_iInter; intro ℓ
+    apply isClosed_iInter; intro hℓ
+    apply isClosed_eq
+    · exact F.continuous
+    · apply continuous_finset_sum Finset.univ
+      intro G _
+      exact Continuous.mul continuous_const (FinFlag.continuous ⟨ℓ, G⟩)
+  apply IsClosed.inter
+  · exact isClosed_eq (FinFlag.continuous 1) continuous_const
+  · show IsClosed {a : FlagDensitySpace σ | mulProp a}
+    rw [mulPropSet_eq_iInter]
+    apply isClosed_iInter; intro F₁
+    apply isClosed_iInter; intro F₂
+    apply isClosed_eq
+    · exact Continuous.mul F₁.continuous F₂.continuous
+    · apply continuous_finset_sum Finset.univ
+      intro G _
+      exact Continuous.mul continuous_const (FinFlag.continuous ⟨F₁.1 + F₂.1 - n₀, G⟩)
+
+example {α : Type} [TopologicalSpace α] (A B : Set α)
+    (hA : IsClosed A) (hB : IsClosed B)
+    : IsClosed (A ∩ B)
+  := by
+  exact IsClosed.inter hA hB
+
 instance : Nonempty (FlagDensitySpace σ) :=
   .intro ⟨fun _ ↦ 0, by simp [FlagDensitySpace]; exact fun _ ↦ zero_le_one⟩
 

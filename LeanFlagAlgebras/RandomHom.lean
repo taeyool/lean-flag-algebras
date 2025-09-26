@@ -535,25 +535,6 @@ lemma flagDensitySpace_eval_measurable
   apply Measurable.eval
   exact Measurable.of_comap_le fun s a ↦ a
 
-theorem zeroSpacePropSet_eq_iInter
-    : {a : FlagDensitySpace σ | zeroSpaceProp a} =
-    ⋂ (F : FinFlag σ) (ℓ : ℕ) (_ : F.1 ≤ ℓ),
-    {a : FlagDensitySpace σ | a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩}
-  := by
-  ext a
-  simp only [Set.mem_setOf_eq, Set.mem_iInter]
-  rfl
-
-theorem mulPropSet_eq_iInter
-    : {a : FlagDensitySpace σ | mulProp a} =
-    ⋂ (F₁ : FinFlag σ) (F₂ : FinFlag σ),
-    {a : FlagDensitySpace σ | a F₁ * a F₂ =
-      ∑ G : FlagWithSize σ (F₁.1 + F₂.1 - n₀), flagDensity₂ F₁.2 F₂.2 G * a ⟨F₁.1 + F₂.1 - n₀, G⟩}
-  := by
-  ext a
-  simp only [Set.mem_setOf_eq, Set.mem_iInter]
-  rfl
-
 lemma flagDensitySpace_sum_measurable
     {F : FinFlag σ} {ℓ : ℕ}
     : Measurable fun (a : FlagDensitySpace σ) ↦ ∑ G, ↑(flagDensity₁ F.2 G) * a ⟨ℓ, G⟩
