@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».FlagAlgebra
 import Mathlib.Data.Fintype.CardEmbedding
+import Mathlib.Data.Nat.Cast.Field
 
 open FlagAlgebras
 open Classical
@@ -278,6 +279,10 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
   have hF'rep_size : F'rep.size = ℓ' := by
     simp only [LabeledGraph.size, Fintype.card_fin]
+  have n₀_le_ℓ : n₀ ≤ ℓ := by
+    have := Frep.type_size_le_size
+    simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
+  have n₀_le_ℓ' : n₀ ≤ ℓ' := by omega
   have h_Fu_F := hFurep
   rw [← hFrep] at h_Fu_F
   simp only [unlabel, unlabeledGraphQuot, Quotient.lift_mk, unlabeledGraph, Quotient.eq] at h_Fu_F
@@ -428,10 +433,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
         simp only [Set.toFinset_card, inj_map]
         have := @Fintype.card_embedding_eq (Fin n₀) (Fin ℓ') _ _ _
         simp only [Fintype.card_fin] at this
-        have n₀_le_ℓ' : n₀ ≤ ℓ' := by
-          have := Frep.type_size_le_size
-          simp only [FlagType.size, Fintype.card_fin, LabeledGraph.size] at this
-          omega
+
         rw [Nat.descFactorial_eq_div n₀_le_ℓ'] at this
         rw [← this]
         apply Finset.card_eq_of_equiv
@@ -512,38 +514,33 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           have := Finset.card_image_of_injective (Finset.univ) hθ
           simp_all only [Set.image_univ, Set.toFinset_range, Finset.card_univ, Fintype.card_fin]
         simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
-      rw [card_eq₁, card_eq₂, inj_map_card, ← Nat.cast_mul, Nat.cast_inj]
-      rw [← Nat.mul_div_assoc, Nat.div_mul_right_comm]
-      have lhs : ℓ'.choose ℓ * ℓ.factorial / (ℓ - n₀).factorial = ℓ'.factorial / (ℓ' - ℓ).factorial / (ℓ - n₀).factorial := by
+      rw [card_eq₁, card_eq₂, inj_map_card]
+      have lsh : ↑(ℓ'.choose ℓ) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
         rw [Nat.choose_eq_factorial_div_factorial hℓ]
-        nth_rw 2 [mul_comm]
-        rw [← Nat.div_div_eq_div_mul]
-        refine (Nat.div_left_inj ?_ ?_).mpr ?_
-        · sorry
-        · sorry
-        · apply Nat.div_mul_cancel
-          apply Nat.dvd_div_of_mul_dvd
-          rw [mul_comm]
-          exact Nat.factorial_mul_factorial_dvd_factorial hℓ
-      have rhs : ℓ'.factorial * (ℓ' - n₀).choose (ℓ - n₀) / (ℓ' - n₀).factorial = ℓ'.factorial / (ℓ' - ℓ).factorial / (ℓ - n₀).factorial := by
+        rw [Nat.cast_div (Nat.factorial_mul_factorial_dvd_factorial hℓ) (by
+          simp only [Nat.cast_mul, ne_eq, mul_eq_zero, Rat.natCast_eq_zero, not_or]
+          constructor <;> simp only [Nat.factorial_ne_zero, not_false_eq_true]),
+          Nat.cast_mul]
+        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by
+          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+        field_simp
+        rw [mul_assoc, mul_assoc]
+      have rhs : ↑(ℓ'.factorial / (ℓ' - n₀).factorial * (ℓ' - n₀).choose (ℓ - n₀)) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
+        rw [Nat.cast_mul, Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by
+          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
         rw [Nat.choose_eq_factorial_div_factorial (by omega)]
-        sorry
-      rw [lhs, rhs]
-      · apply Nat.factorial_dvd_factorial; omega
-      · apply Nat.factorial_dvd_factorial; omega
+        rw [Nat.sub_sub, Nat.add_sub_of_le n₀_le_ℓ]
+        rw [Nat.cast_div (by
+          have div := @Nat.factorial_mul_factorial_dvd_factorial (ℓ'-n₀) (ℓ' - ℓ) (by omega)
+          have : (ℓ' - n₀ - (ℓ' - ℓ)) = ℓ - n₀ := by omega
+          rwa [mul_comm, this] at div) (by
+          simp only [Nat.cast_mul, ne_eq, mul_eq_zero, Rat.natCast_eq_zero, not_or]
+          constructor <;> simp only [Nat.factorial_ne_zero, not_false_eq_true])]
+        field_simp; left
+        rw [mul_comm]
+      rw [lsh, rhs]
   rw [P₁]
-
   sorry
-
-example (A B C D : ℚ) (h : B = C) : A / B = A / C := by
-  -- exact congrArg (HDiv.hDiv A) h
-  sorry
-
-example (A B C D : ℕ) : A / B * B / C = A / C := by
-  -- refine (Nat.div_left_inj ?_ ?_).mpr ?_
-  sorry
-
-
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
