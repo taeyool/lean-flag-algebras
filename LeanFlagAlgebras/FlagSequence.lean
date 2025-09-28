@@ -410,9 +410,13 @@ theorem FinFlag.continuous
     (F : FinFlag σ)
     : Continuous (fun a : FlagDensitySpace σ ↦ a F)
   := by
-  sorry
+  rw [continuous_iff_continuousAt]
+  intro a
+  apply Tendsto.apply_nhds _ F
+  apply Continuous.tendsto _ (a : FlagDensitySpace σ)
+  exact continuous_iff_le_induced.mpr fun U a ↦ a
 
-theorem positiveHomSpace_isClosed'
+theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
   rw [positiveHomSpace_eq]
@@ -438,32 +442,6 @@ theorem positiveHomSpace_isClosed'
     · apply continuous_finset_sum Finset.univ
       intro G _
       exact Continuous.mul continuous_const (FinFlag.continuous ⟨F₁.1 + F₂.1 - n₀, G⟩)
-
-example {α : Type} [TopologicalSpace α] (A B : Set α)
-    (hA : IsClosed A) (hB : IsClosed B)
-    : IsClosed (A ∩ B)
-  := by
-  exact IsClosed.inter hA hB
-
-instance : Nonempty (FlagDensitySpace σ) :=
-  .intro ⟨fun _ ↦ 0, by simp [FlagDensitySpace]; exact fun _ ↦ zero_le_one⟩
-
-theorem PositiveHom.isClosedMap_coe : IsClosedMap (@PositiveHom.coe _ σ) := by
-  intro s h₁
-  simp only [PositiveHom.coe, isClosed_induced_iff]
-  sorry
-
-theorem positiveHomSpace_isClosed
-    : IsClosed (PositiveHomSpace σ)
-  := by
-  rw [isClosed_induced_iff]
-  use PositiveHomSpace σ
-  simp only [Subtype.val_injective, Set.preimage_image_eq, and_true]
-  refine (Topology.IsClosedEmbedding.isClosed_iff_image_isClosed ?_).mp
-    <| IsClosedMap.isClosed_range PositiveHom.isClosedMap_coe
-  simp only [FlagDensitySpace, Topology.isClosedEmbedding_iff, Topology.IsEmbedding.subtypeVal,
-    Subtype.range_coe_subtype, Set.pi_univ_Icc, true_and]
-  exact isClosed_Icc
 
 instance : CompactSpace (PositiveHomSpace σ)
   :=
