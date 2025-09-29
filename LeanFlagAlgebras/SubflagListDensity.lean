@@ -2055,9 +2055,48 @@ noncomputable def
         · exact h_Vl_disj_G_type_verts 2
 
       have h_Vl'_disj_pairwise : Set.univ.PairwiseDisjoint Vl' := by
-        sorry
+        intro i _ j _ h_neq_ij
+        simp only [Set.disjoint_iff_inter_eq_empty]
+        dsimp [Vl']
+        rw [←Set.image_inter iso.graph_iso.symm.injective]
+        rw [Set.image_eq_empty]
+        have h_Vl_ij : Vl ⟨i.val, by omega⟩ ∩ Vl ⟨j.val, by omega⟩ = ∅ :=
+          Set.disjoint_iff_inter_eq_empty.mp
+            (h_Vl_disj_pairwise
+              (Set.mem_univ ⟨i.val, _⟩)
+              (Set.mem_univ ⟨j.val, _⟩)
+              (by simp only [ne_eq, Fin.mk.injEq]; omega))
+        rw [←Set.subset_empty_iff]
+        intro v h_v
+        simp only [Set.mem_inter_iff, Set.mem_setOf_eq] at h_v
+        rw [←Set.mem_inter_iff _ _ _] at h_v
+        rw [h_Vl_ij] at h_v
+        simp_all only [Set.toFinset_card,
+          Fintype.card_ofFinset, Fin.isValue, Set.mem_univ,
+          ne_eq, Set.mem_empty_iff_false]
 
-      exact ⟨⟨F, Vl', Vl''⟩, h_Vl'_disj_type_verts, h_Vl''_disj_type_verts, h_Vl'_disj_pairwise, sorry, sorry, sorry⟩
+      have h_Vl''_disj_pairwise : Set.univ.PairwiseDisjoint Vl'' := by
+        intro i _ j _ h_neq_ij
+        simp only [Set.disjoint_iff_inter_eq_empty]
+        dsimp [Vl'', V']
+        have h_disj : (Vl 0 ∪ Vl 1 ∪ V) ∩ (Vl 2) = ∅ := by
+          rw [Set.union_inter_distrib_right, Set.union_inter_distrib_right]
+          simp only [h_V_disj_Vl 2]
+          simp only [Set.disjoint_iff_inter_eq_empty.mp
+                       (h_Vl_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 2) (by omega))]
+          simp only [Set.disjoint_iff_inter_eq_empty.mp
+                       (h_Vl_disj_pairwise (Set.mem_univ 1) (Set.mem_univ 2) (by omega))]
+          simp only [Set.union_self]
+        have h_disj_symm : (Vl 2) ∩ (Vl 0 ∪ Vl 1 ∪ V) = ∅ := by
+          rw [Set.inter_comm]; exact h_disj
+        split <;> split
+              <;> simp_all only [Set.toFinset_card, Fintype.card_ofFinset,
+                    Fin.isValue, Set.mem_univ, ne_eq, Fin.zero_eq_one_iff,
+                    OfNat.ofNat_ne_one, not_false_eq_true]
+
+      exact ⟨⟨F, Vl', Vl''⟩,
+        h_Vl'_disj_type_verts, h_Vl''_disj_type_verts,
+        h_Vl'_disj_pairwise, h_Vl''_disj_pairwise, sorry, sorry⟩
 
     have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by sorry
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by sorry
