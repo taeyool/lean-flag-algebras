@@ -375,6 +375,14 @@ noncomputable def labeledGraphFromVertexIso_iso
     type_preserve := by rfl
   }
 
+def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
+    {σ : FlagType T} {V W : Type}
+    {H : LabeledGraph σ V} {G : LabeledGraph σ W} {G₀ : LabeledSubgraph σ G}
+    (φ : H ≃f G₀.coe) (V₀ : Set V) (W₀ : Set W) (h : ⇑φ.graph_iso '' V₀ = W₀)
+    : (LabeledSubgraph.inducedLabeledSubgraph H (V₀ ∪ H.type_verts) Set.subset_union_right).coe
+      ≃f (LabeledSubgraph.inducedLabeledSubgraph G (W₀ ∪ G.type_verts) Set.subset_union_right).coe
+  := by sorry
+
 omit [Fintype T] in
 lemma labeledGraphIso_preserve_type_verts
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
