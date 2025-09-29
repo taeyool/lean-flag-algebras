@@ -264,7 +264,7 @@ noncomputable def labelExtensions
   :=
   { G : FlagWithSize σ ℓ | unlabel G = F }
 
-set_option maxHeartbeats 300000 in
+set_option maxHeartbeats 500000 in
 lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
@@ -276,6 +276,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let Fu := unlabeledGraph F
   have hFu_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) Fu = ℓ := by
     simp only [LabeledGraph.size, Fintype.card_fin]
+  have graph_eq_Fu_F : Fu.graph = F.graph := by simp only [unlabeledGraph, Fu]
   obtain ⟨F', rfl⟩ := Quotient.exists_rep F'
   have hF'_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F' = ℓ' := by
         simp only [LabeledGraph.size, Fintype.card_fin]
@@ -291,226 +292,231 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
 
   let Ω := { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') | Function.Injective θ ∧ w.toFinset.card = ℓ ∧ Set.range θ ⊆ w }
-  let A : Finset Ω := { w | by
-    exact True
-    -- obtain ⟨⟨w, θ⟩, h₁, h₂, h₃⟩ := w
-    -- let G' := F'.graph.induce w
-    -- let θ' : Fin n₀ → w := fun i ↦ ⟨θ i, h₃ (Set.mem_range_self i)⟩
-    -- have hθ_inj : Function.Injective θ' := by
-    --   intro a b h_eq
-    --   simp only [Subtype.mk.injEq, θ'] at h_eq
-    --   exact h₁ h_eq
-    -- exact if hθ_model : ∀ {a b : Fin n₀}, G'.Adj (θ' a) (θ' b) ↔ σ.Adj a b
-    --       then Nonempty (⟨G', by exact { toEmbedding := ⟨θ', hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
-    --       else false
+  let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
+  have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
+    simp only [Set.toFinset_card, inj_map]
+    have := @Fintype.card_embedding_eq (Fin n₀) (Fin ℓ') _ _ _
+    simp only [Fintype.card_fin] at this
+    rw [Nat.descFactorial_eq_div n₀_le_ℓ'] at this
+    rw [← this]
+    apply Finset.card_eq_of_equiv
+    refine Equiv.ofBijective ?_ ?_
+    · intro ⟨⟨θ, hθ⟩, _⟩
+      use ⟨θ, hθ⟩
+      simp only [Finset.mem_univ]
+    · constructor
+      · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
+        simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
+          Function.Embedding.mk.injEq, Set.coe_setOf, Set.mem_setOf_eq]
+      · intro ⟨⟨θ, hθ⟩, _⟩
+        use ⟨⟨θ, by simp only [Set.mem_setOf_eq]; exact hθ⟩, by simp only [Set.coe_setOf, Set.mem_setOf_eq, Finset.mem_univ]⟩
+  let left_vtx (θ : Fin n₀ → Fin ℓ') := Finset.univ \ (Set.range θ).toFinset
+  have card_eq : Ω.toFinset.card = Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) := by
+    apply Finset.card_eq_of_equiv
+    apply Equiv.ofBijective _ _
+    · intro ⟨⟨w, θ⟩, hΩ⟩
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ
+      have hθ : θ ∈ inj_map := by
+        simp_all only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map]
+      have hw : w.toFinset \ (Set.range θ).toFinset ∈ combinations (left_vtx θ) (ℓ - n₀) := by
+        simp only [combinations, Set.toFinset_range, Finset.mem_filter,
+          Finset.mem_powerset, left_vtx]
+        constructor
+        · apply Finset.sdiff_subset_sdiff <;> simp only [Finset.subset_univ, subset_refl]
+        · rw [Finset.card_sdiff (by simp_all only [Set.subset_toFinset, Finset.coe_image, Finset.coe_univ, Set.image_univ])]
+          rw [hΩ.2.1, Finset.card_image_of_injective (Finset.univ) hΩ.1]
+          simp only [Finset.card_univ, Fintype.card_fin]
+      use ⟨⟨θ, hθ⟩, ⟨w.toFinset \ (Set.range θ).toFinset, hw⟩⟩
+      simp only [Finset.mem_univ]
+    · constructor
+      · intro ⟨⟨w, θ⟩, hΩ⟩ ⟨⟨w', θ'⟩, hΩ'⟩ h_eq
+        simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Sigma.mk.injEq]
+        obtain ⟨hθ, hw⟩ := h_eq
+        simp only [and_true]
+        have : w.toFinset = w'.toFinset := by
+          apply eq_of_heq
+          subst hθ
+          simp_all only [heq_eq_eq, Subtype.mk.injEq]
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ hΩ'
+          rw [← Finset.sdiff_union_inter w.toFinset (Set.range θ).toFinset, ← Finset.sdiff_union_inter w'.toFinset (Set.range θ).toFinset, hw]
+          have hw : w.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
+            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+          have hw' : w'.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
+            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+          rw [hw, hw']
+        exact Set.toFinset_inj.mp this
+      · intro ⟨⟨⟨θ, hθ⟩, ⟨w, hw⟩⟩, h⟩
+        simp only [combinations, Finset.mem_filter, Finset.mem_powerset] at hw
+        have w_disj : Disjoint w (Finset.image θ Finset.univ) := by
+          simp only [Set.toFinset_range, left_vtx] at hw
+          rw [Finset.disjoint_left]
+          intro x hx
+          exact (Finset.mem_sdiff.mp (hw.1 hx)).2
+        use ⟨⟨w.toSet ∪ (Set.image θ Set.univ), θ⟩, by
+          simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω]
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+          constructor <;> try constructor
+          · exact hθ
+          · simp only [Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range]
+            rw [Finset.card_union_of_disjoint w_disj]
+            rw [hw.2, Finset.card_image_of_injective (Finset.univ) hθ, Finset.card_univ, Fintype.card_fin]
+            apply Nat.sub_add_cancel
+            simp_all only [LabeledGraph.size, Fintype.card_fin, Finset.mem_univ]
+          · simp only [Set.subset_union_right]⟩
+        simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
+          Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
+        exact Finset.union_sdiff_cancel_right w_disj
+  have hΩ_card : Ω.toFinset.card = inj_map.card * (ℓ' - n₀).choose (ℓ - n₀) := by
+    rw [card_eq, Fintype.card_sigma]
+    have : ∀ θ : inj_map, (combinations (left_vtx θ) (ℓ - n₀)).card = (ℓ' - n₀).choose (ℓ - n₀) := by
+      intro ⟨θ, hθ⟩
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+      rw [comb_card]; congr
+      rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]; congr
+      have := Finset.card_image_of_injective (Finset.univ) hθ
+      simp_all only [Set.toFinset_range, Finset.card_univ, Fintype.card_fin]
+    simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
+  rw [inj_map_card] at hΩ_card
 
+  let A : Finset Ω := { w | by
+    obtain ⟨⟨w, θ⟩, h⟩ := w
+    let G := (F'.graph.induce w)
+    let θ : Fin n₀ → w := fun i ↦ ⟨θ i, h.2.2 (Set.mem_range_self i)⟩
+    have hθ_inj : Function.Injective θ := by
+      intro a b h_eq
+      simp only [Subtype.mk.injEq, θ] at h_eq
+      exact h.1 h_eq
+    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
+      then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
+      else false
     -- let G : SimpleGraph (Fin ℓ') := {
-    --     Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'rep.graph.Adj a b
+    --     Adj := fun a b => a ∈ w ∧ b ∈ w ∧ F'.graph.Adj a b
     --     symm := fun a b ⟨ha, hb, hab⟩ => ⟨hb, ha, hab.symm⟩
     --   }
     -- exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
-    --       then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hw.1⟩, map_rel_iff' := hθ_model }⟩ ≃f Frep)
+    --       then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, h.1⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
     --       else false
-          }
+    }
 
   have P₁ : labeledSubgraphDensity Fu F' * downwardNormalizingFactor_labeledGraph F = A.card / Ω.toFinset.card := by
     dsimp only [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
     rw [div_mul_div_comm]
-    -- have this_is_wrong_statement : labeledSubgraphCount Furep F'rep = A.card := by
-    --   dsimp only [labeledSubgraphCount]
-    --   apply Finset.card_eq_of_equiv
-    --   refine Equiv.ofBijective ?_ ?_
-    --   · intro ⟨G, hG⟩
-    --     simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG
-    --     let iso_Fu_G := (Classical.choice hG.2).symm
-    --     let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (iso_Fu_F.symm (Frep.type_embed i))
-    --     use ⟨(G.subgraph.verts, θ), by
-    --       simp only [Set.toFinset_card, Fintype.card_ofFinset, Set.image_univ,
-    --         LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Set.mem_setOf_eq,
-    --         Ω, θ]
-    --       constructor <;> try constructor
-    --       · intro u v h_eq
-    --         simp only at h_eq
-    --         apply Subtype.ext at h_eq
-    --         simp only [EmbeddingLike.apply_eq_iff_eq] at h_eq
-    --         exact h_eq
-    --       · have : G.size = ℓ := by
-    --           rw [← hFurep_size, Eq.comm]
-    --           exact labeledGraphIso_size_eq _ _ iso_Fu_G
-    --         simp_all only [Fintype.card_ofFinset, LabeledSubgraph.size]
-    --       · intro w hw
-    --         obtain ⟨w', hw'⟩ := hw
-    --         subst hw'
-    --         simp only [Subtype.coe_prop]⟩
-    --     simp only [Bool.false_eq_true, dite_else_false, LabeledSubgraph.coe_graph,
-    --       Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Finset.mem_filter, Finset.mem_univ,
-    --       true_and, A, θ]
-    --     have hθ_model : ∀ {a b : Fin n₀}, F'rep.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
-    --       intro a b
-    --       rw [type_embed_Adj_iff Frep, ← iso_Fu_F.symm.map_adj_iff, ← iso_Fu_G.graph_iso.map_adj_iff]
-    --       have ha : θ a ∈ G.subgraph.verts := by
-    --         simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-    --           Subtype.coe_prop, θ]
-    --       have hb : θ b ∈ G.subgraph.verts := by
-    --         simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-    --           Subtype.coe_prop, θ]
-    --       constructor
-    --       · exact fun h ↦ hG.1 ha hb h
-    --       · exact fun h ↦
-    --           SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
-    --             (iso_Fu_G.graph_iso.toFun (iso_Fu_F.symm (Frep.type_embed a)))
-    --             (iso_Fu_G.graph_iso.toFun (iso_Fu_F.symm (Frep.type_embed b))) h
-    --     use hθ_model
-    --     apply Nonempty.intro
-    --     refine { graph_iso := ?_ , type_preserve := ?_ }
-    --     · simp only
-    --       refine { toEquiv := ?_, map_rel_iff' := ?_ }
-    --       · exact iso_Fu_G.graph_iso.symm.toEquiv.trans iso_Fu_F.toEquiv
-    --       · intro ⟨u, hu⟩ ⟨v, hv⟩
-    --         simp only [LabeledSubgraph.coe_graph, Equiv.trans_apply, RelIso.coe_fn_toEquiv,
-    --           SimpleGraph.comap_adj, Function.Embedding.subtype_apply]
-    --         rw [iso_Fu_F.map_adj_iff, iso_Fu_G.graph_iso.symm.map_adj_iff]
-    --         simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj]
-    --         constructor
-    --         · exact fun a ↦ SimpleGraph.Subgraph.Adj.adj_sub a
-    --         · exact fun h ↦ hG.1 hu hv h
-    --     · ext _
-    --       simp only [LabeledSubgraph.coe_graph, id_eq, RelIso.coe_fn_mk, Equiv.coe_trans,
-    --         RelIso.coe_fn_toEquiv, Subtype.coe_eta, RelEmbedding.coe_mk,
-    --         Function.Embedding.coeFn_mk, Function.comp_apply, RelIso.symm_apply_apply,
-    --         RelIso.apply_symm_apply]
-    --   · constructor
-    --     · intro ⟨G, hG⟩ ⟨G', hG'⟩ h_eq
-    --       simp only [Subtype.mk.injEq]
-    --       simp only [Subtype.mk.injEq, Prod.mk.injEq] at h_eq
-    --       simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG hG'
-    --       apply labeledSubgraph_eq_from_subgraph_eq
-    --       exact inducedSubgraph_eq_verts hG.1 hG'.1 h_eq.1
-    --     · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
-    --       simp only [Set.image_univ, Set.mem_setOf_eq, Ω] at hΩ
-    --       obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
-    --       simp only [Bool.false_eq_true, dite_else_false, Finset.mem_filter, Finset.mem_univ,
-    --         true_and, A] at hA
-    --       obtain ⟨hθ, iso_G_F⟩ := hA
-    --       let G := LabeledSubgraph.inducedLabeledSubgraph F'rep w (by
-    --         intro x hx
-    --         simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty, Set.mem_empty_iff_false] at hx)
-    --       have hG_ind : G.IsInduced := by simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
-    --       let iso_G_Fu : G.coe ≃f Furep := by
-    --         refine { graph_iso := ?_, type_preserve := ?_ }
-    --         · simp only [LabeledSubgraph.coe_graph, G]
-    --           have : G.coe.graph ≃g (labeledGraphIso_extract_graph (Classical.choice iso_G_F)).graph := by
-    --             dsimp only [LabeledSubgraph.inducedLabeledSubgraph, LabeledSubgraph.coe_graph,
-    --               labeledGraphIso_extract_graph, G]
-    --             have G_rfl : (inducedSubgraph F'rep.graph w).coe = SimpleGraph.induce w F'rep.graph := by
-    --               ext u v
-    --               simp only [SimpleGraph.Subgraph.coe_adj, inducedSubgraph_isInduced,
-    --                 SimpleGraph.Subgraph.IsInduced.adj, SimpleGraph.comap_adj,
-    --                 Function.Embedding.subtype_apply]
-    --             rw [G_rfl]
-    --           exact (this.trans (Classical.choice iso_G_F).graph_iso).trans iso_Fu_F.symm
-    --         · ext k
-    --           exact Fin.elim0 k
-    --       use ⟨G, by
-    --         simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
-    --         exact ⟨hG_ind, Nonempty.intro iso_G_Fu⟩⟩
-    --       simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-    --         Subtype.mk.injEq, Prod.mk.injEq]
-    --       constructor
-    --       · simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, G]
-    --       · ext k
-    --         apply Fin.val_eq_of_eq
-    --         have := congrFun (Classical.choice iso_G_F).symm.type_preserve k
-    --         sorry
     congr
-    · sorry
-    · simp only [emptyType_size, tsub_zero]
-      rw [hF'_size, hFu_size]
-      let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
-      have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
-        simp only [Set.toFinset_card, inj_map]
-        have := @Fintype.card_embedding_eq (Fin n₀) (Fin ℓ') _ _ _
-        simp only [Fintype.card_fin] at this
-        rw [Nat.descFactorial_eq_div n₀_le_ℓ'] at this
-        rw [← this]
-        apply Finset.card_eq_of_equiv
-        refine Equiv.ofBijective ?_ ?_
-        · intro ⟨⟨θ, hθ⟩, _⟩
-          use ⟨θ, hθ⟩
-          simp only [Finset.mem_univ]
-        · constructor
-          · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
-            simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
-              Function.Embedding.mk.injEq, Set.coe_setOf, Set.mem_setOf_eq]
-          · intro ⟨⟨θ, hθ⟩, _⟩
-            use ⟨⟨θ, by simp only [Set.mem_setOf_eq]; exact hθ⟩, by simp only [Set.coe_setOf, Set.mem_setOf_eq, Finset.mem_univ]⟩
-      let left_vtx (θ : Fin n₀ → Fin ℓ') := Finset.univ \ (Set.range θ).toFinset
-      have card_eq₁ : Ω.toFinset.card = Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) := by
-        apply Finset.card_eq_of_equiv
-        apply Equiv.ofBijective _ _
-        · intro ⟨⟨w, θ⟩, hΩ⟩
-          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ
-          have hθ : θ ∈ inj_map := by
-            simp_all only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map]
-          have hw : w.toFinset \ (Set.range θ).toFinset ∈ combinations (left_vtx θ) (ℓ - n₀) := by
-            simp only [combinations, Set.toFinset_range, Finset.mem_filter,
-              Finset.mem_powerset, left_vtx]
+    · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
+      dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, labeledSubgraphCount]
+      rw [← Finset.card_product]
+      apply Finset.card_eq_of_equiv
+      apply Equiv.ofBijective _ _
+      · intro ⟨⟨H, G⟩, h⟩
+        simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h
+        let iso_Fu_G := (Classical.choice h.2.2).symm
+        let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (H.type_embed.toFun i)
+        use ⟨⟨G.subgraph.verts, θ⟩, by
+          simp only [Set.mem_setOf_eq, Ω]
+          constructor <;> try constructor
+          · intro u v h_eq
+            simp [θ] at h_eq
+            apply Subtype.ext at h_eq
+            simp_all only [EmbeddingLike.apply_eq_iff_eq]
+          · have : G.size = ℓ := by
+              rw [← hFu_size, Eq.comm]
+              have := @labeledGraphIso_size_eq _ _ _ _ _ _ _ _ _ _ iso_Fu_G
+              exact this
+            simp_all only [Set.toFinset_card, Fintype.card_ofFinset, LabeledSubgraph.size]
+          · intro w hw
+            obtain ⟨w', hw'⟩ := hw
+            subst hw'
+            simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
+              RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+              Subtype.coe_prop, θ]⟩
+        simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
+          dite_else_false, Finset.mem_filter, Finset.mem_univ, true_and, A]
+        obtain ⟨⟨graph_eq_F_H, iso_F_H⟩, G_ind, iso_G_Fu⟩ := h
+        have : F = H := by
+          apply LabeledGraph.ext graph_eq_F_H _
+          sorry
+        subst this
+        simp only [flagEqv] at iso_F_H
+        let iso_F_H := Classical.choice iso_F_H
+        let iso_G_Fu := Classical.choice iso_G_Fu
+        have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
+          intro a b
+          rw [type_embed_Adj_iff F]
+          have : ∀ u v : Fin ℓ, Fu.graph.Adj u v ↔ F.graph.Adj u v := by
+            exact fun u v ↦ SimpleGraph.adj_congr_of_sym2 Fu.graph rfl
+          rw [← this, ← iso_Fu_G.graph_iso.map_adj_iff]
+          have ha : θ a ∈ G.subgraph.verts := by
+            simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+              Subtype.coe_prop, θ]
+          have hb : θ b ∈ G.subgraph.verts := by
+            simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+              Subtype.coe_prop, θ]
+          constructor
+          · intro hF'_adj
+            have := G_ind ha hb hF'_adj
+            simp_all only [Set.toFinset_card, Fintype.card_ofFinset, implies_true,
+              LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
+              RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+              Subtype.coe_prop, SimpleGraph.Subgraph.coe_adj, θ]
+          · intro hG_adj
+            exact
+              SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
+                (iso_Fu_G.graph_iso.toFun (F.type_embed.toFun a))
+                (iso_Fu_G.graph_iso.toFun (F.type_embed.toFun b)) hG_adj
+        use hθ_model
+        apply Nonempty.intro
+        refine { graph_iso := ?_, type_preserve := ?_ }
+        · simp only
+          have : G.coe.graph = SimpleGraph.induce G.subgraph.verts F'.graph := by
+            ext u v
+            simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj,
+              SimpleGraph.comap_adj, Function.Embedding.subtype_apply]
             constructor
-            · apply Finset.sdiff_subset_sdiff <;> simp only [Finset.subset_univ, subset_refl]
-            · rw [Finset.card_sdiff (by simp_all only [Set.subset_toFinset, Finset.coe_image, Finset.coe_univ, Set.image_univ])]
-              rw [hΩ.2.1, Finset.card_image_of_injective (Finset.univ) hΩ.1]
-              simp only [Finset.card_univ, Fintype.card_fin]
-          use ⟨⟨θ, hθ⟩, ⟨w.toFinset \ (Set.range θ).toFinset, hw⟩⟩
-          simp only [Finset.mem_univ]
-        · constructor
-          · intro ⟨⟨w, θ⟩, hΩ⟩ ⟨⟨w', θ'⟩, hΩ'⟩ h_eq
-            simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Sigma.mk.injEq]
-            obtain ⟨hθ, hw⟩ := h_eq
-            simp only [and_true]
-            have : w.toFinset = w'.toFinset := by
-              apply eq_of_heq
-              subst hθ
-              simp_all only [heq_eq_eq, Subtype.mk.injEq]
-              simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ hΩ'
-              rw [← Finset.sdiff_union_inter w.toFinset (Set.range θ).toFinset, ← Finset.sdiff_union_inter w'.toFinset (Set.range θ).toFinset, hw]
-              have hw : w.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
-                simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
-              have hw' : w'.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
-                simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
-              rw [hw, hw']
-            exact Set.toFinset_inj.mp this
-          · intro ⟨⟨⟨θ, hθ⟩, ⟨w, hw⟩⟩, h⟩
-            simp only [combinations, Finset.mem_filter, Finset.mem_powerset] at hw
-            have w_disj : Disjoint w (Finset.image θ Finset.univ) := by
-              simp only [Set.toFinset_range, left_vtx] at hw
-              rw [Finset.disjoint_left]
-              intro x hx
-              exact (Finset.mem_sdiff.mp (hw.1 hx)).2
-            use ⟨⟨w.toSet ∪ (Set.image θ Set.univ), θ⟩, by
-              simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω]
-              simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
-              constructor <;> try constructor
-              · exact hθ
-              · simp only [Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range]
-                rw [Finset.card_union_of_disjoint w_disj]
-                rw [hw.2, Finset.card_image_of_injective (Finset.univ) hθ, Finset.card_univ, Fintype.card_fin]
-                apply Nat.sub_add_cancel
-                simp_all only [LabeledGraph.size, Fintype.card_fin, Finset.mem_univ]
-              · simp only [Set.subset_union_right]⟩
-            simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
-              Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
-            exact Finset.union_sdiff_cancel_right w_disj
-      have card_eq₂ : Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) = inj_map.card * (ℓ' - n₀).choose (ℓ - n₀) := by
-        rw [Fintype.card_sigma]
-        have : ∀ θ : inj_map, (combinations (left_vtx θ) (ℓ - n₀)).card = (ℓ' - n₀).choose (ℓ - n₀) := by
-          intro ⟨θ, hθ⟩
-          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
-          rw [comb_card]; congr
-          rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]; congr
-          have := Finset.card_image_of_injective (Finset.univ) hθ
-          simp_all only [Set.toFinset_range, Finset.card_univ, Fintype.card_fin]
-        simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
-      rw [card_eq₁, card_eq₂, inj_map_card]
+            · exact fun h_adj ↦ SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph u v h_adj
+            · exact fun h_adj ↦ (SimpleGraph.Subgraph.IsInduced.adj G_ind).mpr h_adj
+          rw [← this, ← graph_eq_Fu_F]
+          exact iso_G_Fu.graph_iso
+        · ext k
+          simp only [LabeledSubgraph.coe_graph, eq_mpr_eq_cast, cast_eq, id_eq, RelEmbedding.coe_mk,
+            Function.Embedding.coeFn_mk, Function.comp_apply]
+          sorry
+      · constructor
+        · intro ⟨⟨H, G⟩, h⟩  ⟨⟨H', G'⟩, h'⟩ h_eq
+          simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h h'
+          simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
+          constructor
+          · apply LabeledGraph.ext _ _
+            · sorry
+            · sorry
+          · apply labeledSubgraph_eq_from_subgraph_eq
+            exact inducedSubgraph_eq_verts h.2.1 h'.2.1 h_eq.1
+        · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
+          simp only [Set.mem_setOf_eq, Ω] at hΩ
+          obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
+          simp only [Bool.false_eq_true, dite_else_false, Finset.mem_filter, Finset.mem_univ, true_and, A] at hA
+          obtain ⟨hθ, iso_H_F⟩ := hA
+          let iso_H_F := Classical.choice iso_H_F
+          let w_equiv : w ≃ Fin ℓ := by exact (isoFromFinToFiniteSet w hw_card).symm
+          let H := labeledGraphIso_extract_graph iso_H_F
+          let G := LabeledSubgraph.inducedLabeledSubgraph F' w (by
+            intro x hx
+            simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty, Set.mem_empty_iff_false] at hx)
+          use ⟨⟨sorry, G⟩, by
+            simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and]
+            constructor <;> constructor
+            · sorry
+            · sorry
+            · simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
+            · apply Nonempty.intro
+              refine { graph_iso := ?_, type_preserve := ?_ }
+              · simp only [LabeledSubgraph.coe_graph, G]
+                sorry
+              · ext k
+                exact Fin.elim0 k⟩
+          simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, Subtype.mk.injEq, Prod.mk.injEq, true_and, G]
+          sorry
+    · simp only [emptyType_size, tsub_zero]
+      rw [hF'_size, hFu_size, hΩ_card]
       have lhs : ↑(ℓ'.choose ℓ) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
         rw [Nat.choose_eq_factorial_div_factorial hℓ]
         rw [Nat.cast_div (Nat.factorial_mul_factorial_dvd_factorial hℓ) (by
@@ -536,6 +542,27 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
         rw [mul_comm]
       rw [lhs, rhs]
   rw [P₁]
+
+  have : ∀ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = 1 / Ω.toFinset.card := by
+    intro G hG
+    obtain ⟨G, rfl⟩ := Quotient.exists_rep G
+    have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
+      simp only [LabeledGraph.size, Fintype.card_fin]
+    dsimp only [flagDensity₁, downwardNormalizingFactor]
+    rw [← subflagDensity_eq_flagListDensity]
+    dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
+    simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
+    rw [hG_size, hF_size]
+    field_simp
+    rw [mul_comm] at hΩ_card
+    rw [← Nat.cast_mul, ← Nat.cast_mul, ← hΩ_card]
+    simp only [Nat.cast_mul, Set.toFinset_card, Fintype.card_ofFinset]
+    congr
+    simp [labelExtensions, unlabel, unlabeledGraphQuot] at hG
+    sorry
+  have : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (labelExtensions ⟦F'⟧ σ).card * (1 / Ω.toFinset.card) := by
+    simp_all only [Finset.sum_const]
+    simp only [Nat.cast_mul, one_div, mul_inv_rev, nsmul_eq_mul]
   sorry
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
