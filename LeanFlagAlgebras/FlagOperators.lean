@@ -545,26 +545,43 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       rw [lhs, rhs]
   rw [P₁]
 
-  have : ∀ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = 1 / Ω.toFinset.card := by
-    intro G hG
-    obtain ⟨G, rfl⟩ := Quotient.exists_rep G
-    have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
-      simp only [LabeledGraph.size, Fintype.card_fin]
-    dsimp only [flagDensity₁, downwardNormalizingFactor]
-    rw [← subflagDensity_eq_flagListDensity]
-    dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
-    simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
-    rw [hG_size, hF_size]
-    field_simp
-    rw [mul_comm] at hΩ_card
-    rw [← Nat.cast_mul, ← Nat.cast_mul, ← hΩ_card]
-    simp only [Nat.cast_mul, Set.toFinset_card, Fintype.card_ofFinset]
-    congr
-    simp [labelExtensions, unlabel, unlabeledGraphQuot] at hG
-    sorry
-  have : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (labelExtensions ⟦F'⟧ σ).card * (1 / Ω.toFinset.card) := by
-    simp_all only [Finset.sum_const]
-    simp only [Nat.cast_mul, one_div, mul_inv_rev, nsmul_eq_mul]
+  let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
+  have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.toFinset.card := by
+    rw [Nat.cast_sum, Finset.sum_div]
+    apply Finset.sum_bij
+            (fun G _ ↦ G.out)
+            (by simp only [Finset.mem_image, Quotient.out_inj, exists_eq_right, imp_self, implies_true, Gs])
+            (by simp only [Quotient.out_inj, imp_self, implies_true])
+    · intro G' hG'
+      simp [Gs] at hG'
+      obtain ⟨G, hG⟩ := hG'
+      use G
+    · intro G hG
+      obtain ⟨G, rfl⟩ := Quotient.exists_rep G
+      have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
+        simp only [LabeledGraph.size, Fintype.card_fin]
+      dsimp only [flagDensity₁, downwardNormalizingFactor]
+      rw [← subflagDensity_eq_flagListDensity]
+      dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
+      simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
+      field_simp
+      rw [mul_comm] at hΩ_card
+      rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, ← hΩ_card]
+      simp only [Nat.cast_mul, Set.toFinset_card, Fintype.card_ofFinset]
+      have density_eq :  labeledSubgraphCount F G = labeledSubgraphCount F (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+        have : G ≃f (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+          dsimp [Quotient.mk, labeledGraphSetoid, flagEqv]
+          -- rw [Quotient.out_eq]
+          -- exact flagEqv.refl
+          sorry
+
+        sorry
+      have iso_eq : isomorphismCount G = isomorphismCount (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+        sorry
+      rw [density_eq, iso_eq]
+  rw [sum_eq]
+  congr
+
   sorry
 
 lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
