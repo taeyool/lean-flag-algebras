@@ -264,6 +264,111 @@ noncomputable def labelExtensions
   :=
   { G : FlagWithSize σ ℓ | unlabel G = F }
 
+def injectiveMapSet
+    (n₀ ℓ ℓ' : ℕ)
+    : Set ((Set (Fin ℓ')) × (Fin n₀ → Fin ℓ'))
+  :=
+  { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') |
+    Function.Injective θ ∧ w.toFinset.card = ℓ ∧ Set.range θ ⊆ w }
+
+def isoInjectiveMapSet
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
+    : Set (injectiveMapSet n₀ ℓ ℓ')
+  :=
+  { w | by
+    obtain ⟨⟨w, θ⟩, h⟩ := w
+    let G := (F'.graph.induce w)
+    let θ : Fin n₀ → w := fun i ↦ ⟨θ i, h.2.2 (Set.mem_range_self i)⟩
+    have hθ_inj : Function.Injective θ := by
+      intro a b h_eq
+      simp only [Subtype.mk.injEq, θ] at h_eq
+      exact h.1 h_eq
+    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
+      then Nonempty (⟨G, { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
+      else false
+  }
+
+theorem injectiveMapSet_card
+    {n₀ ℓ ℓ' : ℕ} (hℓ : n₀ ≤ ℓ) (hℓ' : ℓ ≤ ℓ')
+    : (injectiveMapSet n₀ ℓ ℓ').toFinset.card = ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial)
+  := by
+  let Ω := injectiveMapSet n₀ ℓ ℓ'
+  have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans hℓ hℓ'
+  let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
+  have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
+    simp only [Set.toFinset_card, inj_map]
+    have : Fintype.card (Fin n₀ ↪ Fin ℓ') = ℓ'.factorial / (ℓ' - n₀).factorial := by
+      simp only [Fintype.card_embedding_eq, Fintype.card_fin]
+      exact Nat.descFactorial_eq_div n₀_le_ℓ'
+    rw [← this]
+    apply Finset.card_eq_of_equiv
+    apply Equiv.ofBijective _ _
+    · exact fun ⟨⟨θ, hθ⟩, _⟩ ↦ ⟨⟨θ, hθ⟩, by simp only [Finset.mem_univ]⟩
+    · constructor
+      · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
+        simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
+          Function.Embedding.mk.injEq, Set.coe_setOf, Set.mem_setOf_eq]
+      · intro ⟨⟨θ, hθ⟩, _⟩
+        use ⟨⟨θ, by simp only [Set.mem_setOf_eq]; exact hθ⟩, by simp only [Set.coe_setOf, Set.mem_setOf_eq, Finset.mem_univ]⟩
+  let left_vtx (θ : Fin n₀ → Fin ℓ') := Finset.univ \ (Set.range θ).toFinset
+  have Ω_card : Ω.toFinset.card = Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) := by
+    apply Finset.card_eq_of_equiv
+    apply Equiv.ofBijective _ _
+    · intro ⟨⟨w, θ⟩, hΩ⟩
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω, injectiveMapSet] at hΩ
+      have hθ : θ ∈ inj_map := by
+        simp_all only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map]
+      have hw : w.toFinset \ (Set.range θ).toFinset ∈ combinations (left_vtx θ) (ℓ - n₀) := by
+        simp only [combinations, Set.toFinset_range, Finset.mem_filter,
+          Finset.mem_powerset, left_vtx]
+        constructor
+        · apply Finset.sdiff_subset_sdiff <;> simp only [Finset.subset_univ, subset_refl]
+        · rw [Finset.card_sdiff (by simp_all only [Set.subset_toFinset, Finset.coe_image, Finset.coe_univ, Set.image_univ])]
+          rw [hΩ.2.1, Finset.card_image_of_injective (Finset.univ) hΩ.1]
+          simp only [Finset.card_univ, Fintype.card_fin]
+      use ⟨⟨θ, hθ⟩, ⟨w.toFinset \ (Set.range θ).toFinset, hw⟩⟩
+      simp only [Finset.mem_univ]
+    · constructor
+      · intro ⟨⟨w, θ⟩, hΩ⟩ ⟨⟨w', θ'⟩, hΩ'⟩ h_eq
+        simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Sigma.mk.injEq]
+        obtain ⟨hθ, hw⟩ := h_eq
+        simp only [and_true]
+        have : w.toFinset = w'.toFinset := by
+          apply eq_of_heq
+          subst hθ
+          simp_all only [heq_eq_eq, Subtype.mk.injEq]
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω, injectiveMapSet] at hΩ hΩ'
+          rw [← Finset.sdiff_union_inter w.toFinset (Set.range θ).toFinset, ← Finset.sdiff_union_inter w'.toFinset (Set.range θ).toFinset, hw]
+          have hw : w.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
+            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+          have hw' : w'.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
+            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
+          rw [hw, hw']
+        exact Set.toFinset_inj.mp this
+      · intro ⟨⟨⟨θ, hθ⟩, ⟨w, hw⟩⟩, h⟩
+        simp only [combinations, Finset.mem_filter, Finset.mem_powerset] at hw
+        have w_disj : Disjoint w (Finset.image θ Finset.univ) := by
+          simp only [Set.toFinset_range, left_vtx] at hw
+          rw [Finset.disjoint_left]
+          intro x hx
+          exact (Finset.mem_sdiff.mp (hw.1 hx)).2
+        use ⟨⟨w.toSet ∪ (Set.image θ Set.univ), θ⟩, by
+          simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω, injectiveMapSet]
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+          constructor <;> try constructor
+          · exact hθ
+          · simp only [Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range]
+            rw [Finset.card_union_of_disjoint w_disj]
+            rw [hw.2, Finset.card_image_of_injective (Finset.univ) hθ, Finset.card_univ, Fintype.card_fin]
+            apply Nat.sub_add_cancel
+            simp_all only [Finset.mem_univ]
+          · simp only [Set.subset_union_right]⟩
+        simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
+          Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
+        exact Finset.union_sdiff_cancel_right w_disj
+  rw [Ω_card]
+  sorry
+
 set_option maxHeartbeats 500000 in
 lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
@@ -295,15 +400,13 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
   have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
     simp only [Set.toFinset_card, inj_map]
-    have := @Fintype.card_embedding_eq (Fin n₀) (Fin ℓ') _ _ _
-    simp only [Fintype.card_fin] at this
-    rw [Nat.descFactorial_eq_div n₀_le_ℓ'] at this
+    have : Fintype.card (Fin n₀ ↪ Fin ℓ') = ℓ'.factorial / (ℓ' - n₀).factorial := by
+      simp only [Fintype.card_embedding_eq, Fintype.card_fin]
+      exact Nat.descFactorial_eq_div n₀_le_ℓ'
     rw [← this]
     apply Finset.card_eq_of_equiv
-    refine Equiv.ofBijective ?_ ?_
-    · intro ⟨⟨θ, hθ⟩, _⟩
-      use ⟨θ, hθ⟩
-      simp only [Finset.mem_univ]
+    apply Equiv.ofBijective _ _
+    · exact fun ⟨⟨θ, hθ⟩, _⟩ ↦ ⟨⟨θ, hθ⟩, by simp only [Finset.mem_univ]⟩
     · constructor
       · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
         simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
