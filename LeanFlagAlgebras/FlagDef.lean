@@ -378,7 +378,7 @@ noncomputable def labeledGraphFromVertexIso_iso
 def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
     {σ : FlagType T} {V W : Type}
     {H : LabeledGraph σ V} {G : LabeledGraph σ W} {G₀ : LabeledSubgraph σ G}
-    (φ : H ≃f G₀.coe) (V₀ : Set V) (W₀ : Set W) (h : ⇑φ.graph_iso '' V₀ = W₀)
+    (h_G₀_ind : G₀.IsInduced) (φ : H ≃f G₀.coe) (V₀ : Set V) (W₀ : Set W) (h : ⇑φ.graph_iso '' V₀ = W₀)
     : (LabeledSubgraph.inducedLabeledSubgraph H (V₀ ∪ H.type_verts) Set.subset_union_right).coe
       ≃f (LabeledSubgraph.inducedLabeledSubgraph G (W₀ ∪ G.type_verts) Set.subset_union_right).coe
   :=
@@ -410,7 +410,8 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
       intro u
       simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
         Subtype.coe_eta, Equiv.invFun_as_coe]
-      sorry
+      suffices φ.graph_iso.symm (φ.graph_iso ↑u) = u.val by exact SetCoe.ext this
+      simp only [LabeledSubgraph.coe_graph, RelIso.symm_apply_apply]
     right_inv := by
       intro v
       simp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe, Equiv.toFun_as_coe,
@@ -419,9 +420,30 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
       intros u v
       simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
         Equiv.invFun_as_coe, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
-      sorry
+      dsimp [G',H',LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph]
+      have := @φ.graph_iso.map_rel_iff _ _ _ _ u.val v.val
+      rw [←this, ←h_iso]
+      simp only [LabeledSubgraph.coe_graph, Set.mem_image, Set.mem_union,
+        exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj,
+        Subtype.coe_prop, and_self, and_true]
+      constructor
+      . intro ⟨h_adj, _, _⟩
+        rw [h_G₀_ind.adj]
+        exact h_adj
+      . intro h_adj
+        exact ⟨by simp_all only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj, true_iff, G₀.subgraph.adj_sub],
+          ⟨↑u, by show ↑u ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩,
+          ⟨↑v, by show ↑v ∈ V₀ ∪ H.type_verts; rw [←h_H'_verts]; simp only [Subtype.coe_prop], by rfl⟩⟩
   }
-  have h_type_preserve : graph_iso ∘ H'.coe.type_embed = G'.coe.type_embed := by sorry
+  have h_type_preserve : graph_iso ∘ H'.coe.type_embed = G'.coe.type_embed := by
+    ext u
+    dsimp [graph_iso]
+    rw [H'.embed_eq u, G'.embed_eq]
+    calc
+      ↑(φ.graph_iso (H.type_embed u))
+      _  = ↑((φ.graph_iso ∘ H.type_embed) u) := by simp only [LabeledSubgraph.coe_graph, Function.comp_apply]
+      _  = ↑(G.type_embed u) := by rw [φ.type_preserve]; simp only [LabeledSubgraph.coe_graph, LabeledSubgraph.coe_type_embed, G₀.embed_eq]
+      _ = G.type_embed u := by rfl
 
   { graph_iso := graph_iso, type_preserve := h_type_preserve }
 

@@ -1986,6 +1986,7 @@ noncomputable def
           _ = ℓ' := by
                   dsimp [Hl_size]; omega
       let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
+      let h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G V'_type_verts Set.subset_union_right
       let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) := by
         apply getCanonicalFlag G₀.coe
         rw [←h_V'_type_verts_card]
@@ -2087,7 +2088,7 @@ noncomputable def
             _ = Vl i' := sorry
         let f_iso₁ : (inducedLabeledSubgraph F.out (Vl' i ∪ F.out.type_verts) Set.subset_union_right).coe
                      ≃f (inducedLabeledSubgraph G (Vl i' ∪ G.type_verts) Set.subset_union_right).coe
-          := labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding iso (Vl' i) (Vl i') h_Vl'_Vl_verts
+          := labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding h_G₀_ind iso (Vl' i) (Vl i') h_Vl'_Vl_verts
         let f_iso₂ : (inducedLabeledSubgraph G (Vl i' ∪ G.type_verts) Set.subset_union_right).coe
                      ≃f Hl i'
           := (h_Vl_iso i').some
