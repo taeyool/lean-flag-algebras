@@ -381,7 +381,49 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
     (φ : H ≃f G₀.coe) (V₀ : Set V) (W₀ : Set W) (h : ⇑φ.graph_iso '' V₀ = W₀)
     : (LabeledSubgraph.inducedLabeledSubgraph H (V₀ ∪ H.type_verts) Set.subset_union_right).coe
       ≃f (LabeledSubgraph.inducedLabeledSubgraph G (W₀ ∪ G.type_verts) Set.subset_union_right).coe
-  := by sorry
+  :=
+  let H' := LabeledSubgraph.inducedLabeledSubgraph H (V₀ ∪ H.type_verts) Set.subset_union_right
+  let G' := LabeledSubgraph.inducedLabeledSubgraph G (W₀ ∪ G.type_verts) Set.subset_union_right
+  have h_H'_verts : H'.subgraph.verts = V₀ ∪ H.type_verts :=
+    LabeledSubgraph.inducedLabeledSubgraph_verts H (V₀ ∪ H.type_verts) Set.subset_union_right
+  have h_G'_verts : G'.subgraph.verts = W₀ ∪ G.type_verts :=
+    LabeledSubgraph.inducedLabeledSubgraph_verts G (W₀ ∪ G.type_verts) Set.subset_union_right
+  have h_iso : ⇑φ.graph_iso '' (V₀ ∪ H.type_verts) = W₀ ∪ G.type_verts := by
+    sorry
+
+  let graph_iso : H'.coe.graph ≃g G'.coe.graph := {
+    toFun := fun u : ↑H'.subgraph.verts =>
+      have h_φ_u : ↑(φ.graph_iso.toFun ↑u) ∈ G'.subgraph.verts := by
+        rw [h_G'_verts, ←h_iso]
+        simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+            Set.mem_image, Set.mem_union, exists_exists_and_eq_and]
+        use ↑u
+        suffices ↑u ∈ V₀ ∪ H.type_verts by simp only [and_true]; exact this
+        rw [←h_H'_verts]
+        simp_all only [LabeledSubgraph.coe_graph, Subtype.coe_prop]
+      ⟨φ.graph_iso.toFun u.val, h_φ_u⟩
+    invFun := fun v : ↑G'.subgraph.verts =>
+      have h_v : ↑v ∈ G₀.subgraph.verts := sorry
+      have h_φ_inv_v : φ.graph_iso.invFun ⟨↑v, h_v⟩ ∈ H'.subgraph.verts := sorry
+      ⟨φ.graph_iso.invFun ⟨v.val, h_v⟩, h_φ_inv_v⟩
+    left_inv := by
+      intro u
+      simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+        Subtype.coe_eta, Equiv.invFun_as_coe]
+      sorry
+    right_inv := by
+      intro v
+      simp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe, Equiv.toFun_as_coe,
+        Equiv.apply_symm_apply, Subtype.coe_eta]
+    map_rel_iff' := by
+      intros u v
+      simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+        Equiv.invFun_as_coe, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
+      sorry
+  }
+  have h_type_preserve : graph_iso ∘ H'.coe.type_embed = G'.coe.type_embed := by sorry
+
+  { graph_iso := graph_iso, type_preserve := h_type_preserve }
 
 omit [Fintype T] in
 lemma labeledGraphIso_preserve_type_verts
