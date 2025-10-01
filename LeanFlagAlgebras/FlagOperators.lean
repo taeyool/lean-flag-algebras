@@ -385,6 +385,149 @@ theorem injectiveMapSet_card
     · exact Nat.factorial_dvd_factorial (by omega)
   rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
+theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
+    : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
+  := by
+  have hF_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let Fu := unlabeledGraph F
+  have hFu_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) Fu = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  have graph_eq_Fu_F : Fu.graph = F.graph := by simp only [unlabeledGraph, Fu]
+  have hF'_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F' = ℓ' := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  have n₀_le_ℓ : n₀ ≤ ℓ := by
+    have := F.type_size_le_size
+    simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
+  have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans n₀_le_ℓ hℓ
+
+  symm
+  dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, labeledSubgraphCount]
+  rw [← Finset.card_product]
+  apply Finset.card_eq_of_equiv
+  apply Equiv.ofBijective _ _
+  · intro ⟨⟨H, G⟩, h⟩
+    simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h
+    let iso_Fu_G := (Classical.choice h.2.2).symm
+    have iso_F_H := h.1.2
+    simp only [flagEqv] at iso_F_H
+    let iso_H_F := (Classical.choice iso_F_H).symm
+    let iso_G_Fu := Classical.choice h.2.2
+    -- let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (iso_H_F.graph_iso.toFun (H.type_embed.toFun i))
+    let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (F.type_embed.toFun i)
+    use ⟨⟨G.subgraph.verts, θ⟩, by
+      simp only [injectiveMapSet, Set.mem_setOf_eq]
+      constructor <;> try constructor
+      · intro u v h_eq
+        simp [θ] at h_eq
+        apply Subtype.ext at h_eq
+        simp_all only [EmbeddingLike.apply_eq_iff_eq]
+      · have : G.size = ℓ := by
+          rw [← hFu_size, Eq.comm]
+          have := @labeledGraphIso_size_eq _ _ _ _ _ _ _ _ _ _ iso_Fu_G
+          exact this
+        simp_all only [Set.toFinset_card, Fintype.card_ofFinset, LabeledSubgraph.size]
+      · intro w hw
+        obtain ⟨w', hw'⟩ := hw
+        subst hw'
+        simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
+          RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+          Subtype.coe_prop, θ]⟩
+    simp only [isoInjectiveMapSet, SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
+      dite_else_false]
+    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+    have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
+      intro a b
+      have ha := congrFun iso_H_F.type_preserve a
+      have hb := congrFun iso_H_F.type_preserve b
+      simp only [Function.comp_apply] at ha hb
+      rw [type_embed_Adj_iff F]
+      have : ∀ u v : Fin ℓ, Fu.graph.Adj u v ↔ F.graph.Adj u v := by
+        exact fun u v ↦ SimpleGraph.adj_congr_of_sym2 Fu.graph rfl
+      rw [← this, ← iso_Fu_G.graph_iso.map_adj_iff]
+      have ha_in_G : θ a ∈ G.subgraph.verts := by
+        simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+          Subtype.coe_prop, θ]
+      have hb_in_G : θ b ∈ G.subgraph.verts := by
+        simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
+          Subtype.coe_prop, θ]
+      constructor
+      · intro hF'_adj
+        have := h.2.1 ha_in_G hb_in_G hF'_adj
+        simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
+          RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, θ] at this
+        simp_all only [LabeledSubgraph.coe_graph, Subtype.coe_prop, SimpleGraph.Subgraph.coe_adj, θ]
+      · intro hG_adj
+        simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
+          RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, θ]
+        exact
+          SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
+            (iso_Fu_G.graph_iso (F.type_embed a))
+            (iso_Fu_G.graph_iso (F.type_embed b)) hG_adj
+        -- rw [ha, hb]
+        -- exact
+        --   SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
+        --     (iso_Fu_G.graph_iso (F.type_embed a))
+        --     (iso_Fu_G.graph_iso (F.type_embed b)) hG_adj
+    use hθ_model
+    apply Nonempty.intro
+    refine { graph_iso := ?_, type_preserve := ?_ }
+    · simp only
+      -- sorry
+      have : G.coe.graph = SimpleGraph.induce G.subgraph.verts F'.graph := by
+        ext u v
+        simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj,
+          SimpleGraph.comap_adj, Function.Embedding.subtype_apply]
+        constructor
+        · exact fun h_adj ↦ SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph u v h_adj
+        · exact fun h_adj ↦ (SimpleGraph.Subgraph.IsInduced.adj h.2.1).mpr h_adj
+      rw [← this, ← graph_eq_Fu_F]
+      exact iso_G_Fu.graph_iso
+    · ext k
+      simp only [LabeledSubgraph.coe_graph, eq_mpr_eq_cast, cast_eq, id_eq, RelEmbedding.coe_mk,
+        Function.Embedding.coeFn_mk, Function.comp_apply]
+      sorry
+  · constructor
+    · intro ⟨⟨H, G⟩, h⟩  ⟨⟨H', G'⟩, h'⟩ h_eq
+      simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h h'
+      simp at h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      constructor
+      · apply LabeledGraph.ext _ _
+        · sorry
+        · sorry
+      · apply labeledSubgraph_eq_from_subgraph_eq
+        exact inducedSubgraph_eq_verts h.2.1 h'.2.1 h_eq.1
+    · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
+      simp only [injectiveMapSet, Set.mem_setOf_eq] at hΩ
+      obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
+      simp only [isoInjectiveMapSet, Bool.false_eq_true, dite_else_false] at hA
+      simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Set.toFinset_setOf,
+        Finset.mem_filter, Finset.mem_univ, true_and] at hA
+      obtain ⟨hθ, iso_H_F⟩ := hA
+      let iso_H_F := Classical.choice iso_H_F
+      let w_equiv : w ≃ Fin ℓ := by exact (isoFromFinToFiniteSet w hw_card).symm
+      let H := labeledGraphFromVertexIso (labeledGraphIso_extract_graph iso_H_F) w_equiv
+      let G := LabeledSubgraph.inducedLabeledSubgraph F' w (by
+        intro x hx
+        simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty, Set.mem_empty_iff_false] at hx)
+      use ⟨⟨H, G⟩, by
+        simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and]
+        constructor <;> constructor
+        · dsimp [H, labeledGraphFromVertexIso]
+          sorry
+        · sorry
+        · simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
+        · apply Nonempty.intro
+          refine { graph_iso := ?_, type_preserve := ?_ }
+          · simp only [LabeledSubgraph.coe_graph, G]
+            sorry
+          · ext k
+            exact Fin.elim0 k⟩
+      simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, Subtype.mk.injEq, Prod.mk.injEq, true_and, G]
+      sorry
+
 set_option maxHeartbeats 500000 in
 theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
@@ -421,130 +564,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     rw [div_mul_div_comm]
     congr
     · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
-      dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, labeledSubgraphCount]
-      rw [← Finset.card_product]
-      apply Finset.card_eq_of_equiv
-      apply Equiv.ofBijective _ _
-      · intro ⟨⟨H, G⟩, h⟩
-        simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h
-        let iso_Fu_G := (Classical.choice h.2.2).symm
-        have iso_F_H := h.1.2
-        simp only [flagEqv] at iso_F_H
-        let iso_H_F := (Classical.choice iso_F_H).symm
-        let iso_G_Fu := Classical.choice h.2.2
-        -- let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (iso_H_F.graph_iso.toFun (H.type_embed.toFun i))
-        let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (F.type_embed.toFun i)
-        use ⟨⟨G.subgraph.verts, θ⟩, by
-          simp only [injectiveMapSet, Set.mem_setOf_eq]
-          constructor <;> try constructor
-          · intro u v h_eq
-            simp [θ] at h_eq
-            apply Subtype.ext at h_eq
-            simp_all only [EmbeddingLike.apply_eq_iff_eq]
-          · have : G.size = ℓ := by
-              rw [← hFu_size, Eq.comm]
-              have := @labeledGraphIso_size_eq _ _ _ _ _ _ _ _ _ _ iso_Fu_G
-              exact this
-            simp_all only [Set.toFinset_card, Fintype.card_ofFinset, LabeledSubgraph.size]
-          · intro w hw
-            obtain ⟨w', hw'⟩ := hw
-            subst hw'
-            simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
-              RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-              Subtype.coe_prop, θ]⟩
-        simp only [isoInjectiveMapSet, SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
-          dite_else_false, A]
-        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
-        have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
-          intro a b
-          have ha := congrFun iso_H_F.type_preserve a
-          have hb := congrFun iso_H_F.type_preserve b
-          simp only [Function.comp_apply] at ha hb
-          rw [type_embed_Adj_iff F]
-          have : ∀ u v : Fin ℓ, Fu.graph.Adj u v ↔ F.graph.Adj u v := by
-            exact fun u v ↦ SimpleGraph.adj_congr_of_sym2 Fu.graph rfl
-          rw [← this, ← iso_Fu_G.graph_iso.map_adj_iff]
-          have ha_in_G : θ a ∈ G.subgraph.verts := by
-            simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-              Subtype.coe_prop, θ]
-          have hb_in_G : θ b ∈ G.subgraph.verts := by
-            simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
-              Subtype.coe_prop, θ]
-          constructor
-          · intro hF'_adj
-            have := h.2.1 ha_in_G hb_in_G hF'_adj
-            simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
-              RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, θ] at this
-            simp_all only [LabeledSubgraph.coe_graph, Subtype.coe_prop, SimpleGraph.Subgraph.coe_adj, θ]
-          · intro hG_adj
-            simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
-              RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, θ]
-            exact
-              SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
-                (iso_Fu_G.graph_iso (F.type_embed a))
-                (iso_Fu_G.graph_iso (F.type_embed b)) hG_adj
-            -- rw [ha, hb]
-            -- exact
-            --   SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph
-            --     (iso_Fu_G.graph_iso (F.type_embed a))
-            --     (iso_Fu_G.graph_iso (F.type_embed b)) hG_adj
-        use hθ_model
-        apply Nonempty.intro
-        refine { graph_iso := ?_, type_preserve := ?_ }
-        · simp only
-          -- sorry
-          have : G.coe.graph = SimpleGraph.induce G.subgraph.verts F'.graph := by
-            ext u v
-            simp only [LabeledSubgraph.coe_graph, SimpleGraph.Subgraph.coe_adj,
-              SimpleGraph.comap_adj, Function.Embedding.subtype_apply]
-            constructor
-            · exact fun h_adj ↦ SimpleGraph.Subgraph.Adj.adj_sub' G.subgraph u v h_adj
-            · exact fun h_adj ↦ (SimpleGraph.Subgraph.IsInduced.adj h.2.1).mpr h_adj
-          rw [← this, ← graph_eq_Fu_F]
-          exact iso_G_Fu.graph_iso
-        · ext k
-          simp only [LabeledSubgraph.coe_graph, eq_mpr_eq_cast, cast_eq, id_eq, RelEmbedding.coe_mk,
-            Function.Embedding.coeFn_mk, Function.comp_apply]
-          sorry
-      · constructor
-        · intro ⟨⟨H, G⟩, h⟩  ⟨⟨H', G'⟩, h'⟩ h_eq
-          simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and] at h h'
-          simp at h_eq
-          simp only [Subtype.mk.injEq, Prod.mk.injEq]
-          constructor
-          · apply LabeledGraph.ext _ _
-            · sorry
-            · sorry
-          · apply labeledSubgraph_eq_from_subgraph_eq
-            exact inducedSubgraph_eq_verts h.2.1 h'.2.1 h_eq.1
-        · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
-          simp only [injectiveMapSet, Set.mem_setOf_eq] at hΩ
-          obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
-          simp only [isoInjectiveMapSet, Bool.false_eq_true, dite_else_false, A] at hA
-          simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Set.toFinset_setOf,
-            Finset.mem_filter, Finset.mem_univ, true_and] at hA
-          obtain ⟨hθ, iso_H_F⟩ := hA
-          let iso_H_F := Classical.choice iso_H_F
-          let w_equiv : w ≃ Fin ℓ := by exact (isoFromFinToFiniteSet w hw_card).symm
-          let H := labeledGraphFromVertexIso (labeledGraphIso_extract_graph iso_H_F) w_equiv
-          let G := LabeledSubgraph.inducedLabeledSubgraph F' w (by
-            intro x hx
-            simp only [LabeledGraph.type_verts, Set.image_univ, Matrix.range_empty, Set.mem_empty_iff_false] at hx)
-          use ⟨⟨H, G⟩, by
-            simp only [Set.toFinset_setOf, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and]
-            constructor <;> constructor
-            · dsimp [H, labeledGraphFromVertexIso]
-              sorry
-            · sorry
-            · simp only [LabeledSubgraph.inducedLabeledSubgraph_isInduced, G]
-            · apply Nonempty.intro
-              refine { graph_iso := ?_, type_preserve := ?_ }
-              · simp only [LabeledSubgraph.coe_graph, G]
-                sorry
-              · ext k
-                exact Fin.elim0 k⟩
-          simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, Subtype.mk.injEq, Prod.mk.injEq, true_and, G]
-          sorry
+      rw [isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount F F' hℓ]
     · simp only [emptyType_size, tsub_zero]
       rw [hF'_size, hFu_size, hΩ_card]
       have lhs : ↑(ℓ'.choose ℓ) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
