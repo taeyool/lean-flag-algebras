@@ -388,13 +388,13 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
     LabeledSubgraph.inducedLabeledSubgraph_verts H (V₀ ∪ H.type_verts) Set.subset_union_right
   have h_G'_verts : G'.subgraph.verts = W₀ ∪ G.type_verts :=
     LabeledSubgraph.inducedLabeledSubgraph_verts G (W₀ ∪ G.type_verts) Set.subset_union_right
-  have h_iso : ⇑φ.graph_iso '' (V₀ ∪ H.type_verts) = W₀ ∪ G.type_verts := by
-    sorry
+  have h_image_V₀_type_verts_eq_W₀_type_verts : ⇑φ.graph_iso '' (V₀ ∪ H.type_verts) = W₀ ∪ G.type_verts := by sorry
+  have h_W₀_type_verts_subseteq_G₀_verts : W₀ ∪ G.type_verts ⊆ G₀.subgraph.verts := by sorry
 
   let graph_iso : H'.coe.graph ≃g G'.coe.graph := {
     toFun := fun u : ↑H'.subgraph.verts =>
       have h_φ_u : ↑(φ.graph_iso.toFun ↑u) ∈ G'.subgraph.verts := by
-        rw [h_G'_verts, ←h_iso]
+        rw [h_G'_verts, ←h_image_V₀_type_verts_eq_W₀_type_verts]
         simp only [LabeledSubgraph.coe_graph, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
             Set.mem_image, Set.mem_union, exists_exists_and_eq_and]
         use ↑u
@@ -403,8 +403,26 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
         simp_all only [LabeledSubgraph.coe_graph, Subtype.coe_prop]
       ⟨φ.graph_iso.toFun u.val, h_φ_u⟩
     invFun := fun v : ↑G'.subgraph.verts =>
-      have h_v : ↑v ∈ G₀.subgraph.verts := sorry
-      have h_φ_inv_v : φ.graph_iso.invFun ⟨↑v, h_v⟩ ∈ H'.subgraph.verts := sorry
+      have h_v : ↑v ∈ G₀.subgraph.verts := by
+        have : ↑v ∈ W₀ ∪ G.type_verts := by simp only [Subtype.coe_prop]
+        exact h_W₀_type_verts_subseteq_G₀_verts this
+      have h_φ_inv_v : φ.graph_iso.invFun ⟨↑v, h_v⟩ ∈ H'.subgraph.verts := by
+        rw [h_H'_verts]
+        simp only [LabeledSubgraph.coe_graph, Equiv.invFun_as_coe]
+        rw [←Set.mem_image_equiv]
+        suffices (Subtype.val ⟨↑v, h_v⟩) ∈ Subtype.val '' (⇑φ.graph_iso.toEquiv '' (V₀ ∪ H.type_verts)) by {
+          have h' := @Set.InjOn.mem_image_iff _ _
+                        Set.univ
+                        (⇑φ.graph_iso.toEquiv '' (V₀ ∪ H.type_verts))
+                        (Subtype.val : ↑G₀.subgraph.verts → W) ⟨↑v, h_v⟩
+                        (by simp only [Subtype.forall, Subtype.mk.injEq, implies_true, Set.injOn_of_eq_iff_eq])
+                        (by simp only [LabeledSubgraph.coe_graph, RelIso.coe_fn_toEquiv, Set.subset_univ])
+                        (by simp only [Set.mem_univ])
+          rw [←h']
+          exact this
+        }
+        simp only [LabeledSubgraph.coe_graph, RelIso.coe_fn_toEquiv,
+          h_image_V₀_type_verts_eq_W₀_type_verts, Subtype.coe_prop]
       ⟨φ.graph_iso.invFun ⟨v.val, h_v⟩, h_φ_inv_v⟩
     left_inv := by
       intro u
@@ -422,7 +440,7 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
         Equiv.invFun_as_coe, Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj]
       dsimp [G',H',LabeledSubgraph.inducedLabeledSubgraph, inducedSubgraph]
       have := @φ.graph_iso.map_rel_iff _ _ _ _ u.val v.val
-      rw [←this, ←h_iso]
+      rw [←this, ←h_image_V₀_type_verts_eq_W₀_type_verts]
       simp only [LabeledSubgraph.coe_graph, Set.mem_image, Set.mem_union,
         exists_exists_and_eq_and, SimpleGraph.Subgraph.coe_adj,
         Subtype.coe_prop, and_self, and_true]
