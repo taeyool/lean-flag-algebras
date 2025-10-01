@@ -429,8 +429,17 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
           rw [←LabeledSubgraph.coe_type_verts_eq G₀]
           suffices (⇑φ.graph_iso '' H.type_verts) = G₀.coe.type_verts by rw [this]
           rw [labeledGraphIso_preserve_type_verts_strict φ]
-  have h_W₀_type_verts_subseteq_G₀_verts : W₀ ∪ G.type_verts ⊆ G₀.subgraph.verts := by sorry
-
+  have h_W₀_type_verts_subseteq_G₀_verts : W₀ ∪ G.type_verts ⊆ G₀.subgraph.verts := by
+    have h_G_type_verts_subseteq_G₀_type_verts : G.type_verts ⊆ G₀.subgraph.verts :=
+      LabeledSubgraph.labeledSubgraph_contain_type_verts G G₀
+    have h_W₀_subseteq_G₀_verts : W₀ ⊆ G₀.subgraph.verts := by
+      rw [←h]
+      suffices ⇑φ.graph_iso '' V₀ ⊆ (Set.univ : Set ↑G₀.subgraph.verts) by {
+        simp only [LabeledSubgraph.coe_graph, Set.image_subset_iff, Subtype.coe_preimage_self, this]
+      }
+      simp only [LabeledSubgraph.coe_graph, Set.subset_univ]
+    simp only [Set.union_subset_iff, and_self,
+      h_W₀_subseteq_G₀_verts, h_G_type_verts_subseteq_G₀_type_verts]
   let graph_iso : H'.coe.graph ≃g G'.coe.graph := {
     toFun := fun u : ↑H'.subgraph.verts =>
       have h_φ_u : ↑(φ.graph_iso.toFun ↑u) ∈ G'.subgraph.verts := by
