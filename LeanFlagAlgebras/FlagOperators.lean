@@ -565,36 +565,17 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     congr
     · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
       rw [isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount F F' hℓ]
-    · simp only [emptyType_size, tsub_zero]
-      rw [hF'_size, hFu_size, hΩ_card]
-      have lhs : ↑(ℓ'.choose ℓ) * ↑(ℓ.factorial / (ℓ - n₀).factorial) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
-        rw [Nat.choose_eq_factorial_div_factorial hℓ]
-        rw [Nat.cast_div (Nat.factorial_mul_factorial_dvd_factorial hℓ) (by
-          simp only [Nat.cast_mul, ne_eq, mul_eq_zero, Rat.natCast_eq_zero, not_or]
-          constructor <;> simp only [Nat.factorial_ne_zero, not_false_eq_true]),
-          Nat.cast_mul]
-        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by
-          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-        field_simp
-        rw [mul_assoc, mul_assoc]
-      have rhs : ↑(ℓ'.factorial / (ℓ' - n₀).factorial * (ℓ' - n₀).choose (ℓ - n₀)) = (ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) : ℚ) := by
-        rw [Nat.cast_mul, Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by
-          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-        rw [Nat.choose_eq_factorial_div_factorial (by omega)]
-        rw [Nat.sub_sub, Nat.add_sub_of_le n₀_le_ℓ]
-        rw [Nat.cast_div (by
-          have div := @Nat.factorial_mul_factorial_dvd_factorial (ℓ'-n₀) (ℓ' - ℓ) (by omega)
-          have : (ℓ' - n₀ - (ℓ' - ℓ)) = ℓ - n₀ := by omega
-          rwa [mul_comm, this] at div) (by
-          simp only [Nat.cast_mul, ne_eq, mul_eq_zero, Rat.natCast_eq_zero, not_or]
-          constructor <;> simp only [Nat.factorial_ne_zero, not_false_eq_true])]
-        field_simp; left
-        rw [mul_comm]
-      -- rw [lhs, rhs]
-      sorry
+    · simp only [emptyType_size, tsub_zero, ← Nat.cast_mul, Nat.cast_inj]
+      rw [hF'_size, hFu_size, hΩ_card, Nat.choose_eq_factorial_div_factorial hℓ]
+      have : ℓ.factorial ∣ ℓ'.factorial / (ℓ' - ℓ).factorial := by
+        rw [← Nat.descFactorial_eq_div hℓ]
+        exact Nat.factorial_dvd_descFactorial ℓ' ℓ
+      rw [mul_comm ℓ.factorial, ← Nat.div_div_eq_div_mul, ← Nat.mul_div_assoc _ (Nat.factorial_dvd_factorial (Nat.sub_le ℓ n₀)), Nat.div_mul_cancel this, Nat.div_div_eq_div_mul]
   rw [P₁]
 
   let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
+  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G = F'}
+
   have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
     rw [Nat.cast_sum, Finset.sum_div]
     apply Finset.sum_bij
