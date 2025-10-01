@@ -366,8 +366,24 @@ theorem injectiveMapSet_card
         simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
           Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
         exact Finset.union_sdiff_cancel_right w_disj
-  rw [Ω_card]
-  sorry
+  rw [Ω_card, Fintype.card_sigma]
+  have inj_comb_card : ∀ θ : inj_map, (combinations (left_vtx θ) (ℓ - n₀)).card = (ℓ' - n₀).choose (ℓ - n₀) := by
+    intro ⟨θ, hθ⟩
+    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
+    rw [comb_card]; congr
+    rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]; congr
+    simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fintype.card_sigma,
+      Finset.univ_eq_attach, Fintype.card_coe, Finset.card_univ, Fintype.card_fin]
+    simp_all only [Set.toFinset_range, Finset.card_image_of_injective, Finset.card_univ, Fintype.card_fin]
+  simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
+  rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.sub_sub_sub_cancel_right hℓ]
+  have : (ℓ - n₀).factorial * (ℓ' - ℓ).factorial ∣ (ℓ' - n₀).factorial := by
+    rw [← Nat.dvd_div_iff_mul_dvd]
+    · have : ℓ - n₀ = (ℓ' - n₀) - (ℓ' - ℓ) := by omega
+      rw [this, ← Nat.descFactorial_eq_div (by omega)]
+      exact Nat.factorial_dvd_descFactorial (ℓ' - n₀) (ℓ' - ℓ)
+    · exact Nat.factorial_dvd_factorial (by omega)
+  rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
 set_option maxHeartbeats 500000 in
 lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
@@ -390,111 +406,17 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
   have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans n₀_le_ℓ hℓ
 
+  let Ω := (injectiveMapSet n₀ ℓ ℓ').toFinset
+  let A := (isoInjectiveMapSet F F').toFinset
+  have hΩ_card : Ω.card = ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) := injectiveMapSet_card n₀_le_ℓ hℓ
+
   conv =>
     lhs
     dsimp only [flagDensity₁, downwardNormalizingFactor]
     rw [← subflagDensity_eq_flagListDensity]
     dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
 
-  let Ω := { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') | Function.Injective θ ∧ w.toFinset.card = ℓ ∧ Set.range θ ⊆ w }
-  let inj_map := {θ : Fin n₀ → Fin ℓ' | Function.Injective θ}.toFinset
-  have inj_map_card : inj_map.card = ℓ'.factorial / (ℓ' - n₀).factorial := by
-    simp only [Set.toFinset_card, inj_map]
-    have : Fintype.card (Fin n₀ ↪ Fin ℓ') = ℓ'.factorial / (ℓ' - n₀).factorial := by
-      simp only [Fintype.card_embedding_eq, Fintype.card_fin]
-      exact Nat.descFactorial_eq_div n₀_le_ℓ'
-    rw [← this]
-    apply Finset.card_eq_of_equiv
-    apply Equiv.ofBijective _ _
-    · exact fun ⟨⟨θ, hθ⟩, _⟩ ↦ ⟨⟨θ, hθ⟩, by simp only [Finset.mem_univ]⟩
-    · constructor
-      · intro ⟨⟨θ, hθ⟩, _⟩ ⟨⟨θ', hθ'⟩, _⟩ h_eq
-        simp_all only [Fintype.card_embedding_eq, Fintype.card_fin, Subtype.mk.injEq,
-          Function.Embedding.mk.injEq, Set.coe_setOf, Set.mem_setOf_eq]
-      · intro ⟨⟨θ, hθ⟩, _⟩
-        use ⟨⟨θ, by simp only [Set.mem_setOf_eq]; exact hθ⟩, by simp only [Set.coe_setOf, Set.mem_setOf_eq, Finset.mem_univ]⟩
-  let left_vtx (θ : Fin n₀ → Fin ℓ') := Finset.univ \ (Set.range θ).toFinset
-  have card_eq : Ω.toFinset.card = Fintype.card (Σ θ : inj_map, combinations (left_vtx θ) (ℓ - n₀)) := by
-    apply Finset.card_eq_of_equiv
-    apply Equiv.ofBijective _ _
-    · intro ⟨⟨w, θ⟩, hΩ⟩
-      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ
-      have hθ : θ ∈ inj_map := by
-        simp_all only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map]
-      have hw : w.toFinset \ (Set.range θ).toFinset ∈ combinations (left_vtx θ) (ℓ - n₀) := by
-        simp only [combinations, Set.toFinset_range, Finset.mem_filter,
-          Finset.mem_powerset, left_vtx]
-        constructor
-        · apply Finset.sdiff_subset_sdiff <;> simp only [Finset.subset_univ, subset_refl]
-        · rw [Finset.card_sdiff (by simp_all only [Set.subset_toFinset, Finset.coe_image, Finset.coe_univ, Set.image_univ])]
-          rw [hΩ.2.1, Finset.card_image_of_injective (Finset.univ) hΩ.1]
-          simp only [Finset.card_univ, Fintype.card_fin]
-      use ⟨⟨θ, hθ⟩, ⟨w.toFinset \ (Set.range θ).toFinset, hw⟩⟩
-      simp only [Finset.mem_univ]
-    · constructor
-      · intro ⟨⟨w, θ⟩, hΩ⟩ ⟨⟨w', θ'⟩, hΩ'⟩ h_eq
-        simp_all only [Subtype.mk.injEq, Prod.mk.injEq, Sigma.mk.injEq]
-        obtain ⟨hθ, hw⟩ := h_eq
-        simp only [and_true]
-        have : w.toFinset = w'.toFinset := by
-          apply eq_of_heq
-          subst hθ
-          simp_all only [heq_eq_eq, Subtype.mk.injEq]
-          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω] at hΩ hΩ'
-          rw [← Finset.sdiff_union_inter w.toFinset (Set.range θ).toFinset, ← Finset.sdiff_union_inter w'.toFinset (Set.range θ).toFinset, hw]
-          have hw : w.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
-            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
-          have hw' : w'.toFinset ∩ (Set.range θ).toFinset = (Set.range θ).toFinset := by
-            simp_all only [Set.image_univ, Set.toFinset_range, Finset.inter_eq_right, Set.subset_toFinset, Finset.coe_image, Finset.coe_univ]
-          rw [hw, hw']
-        exact Set.toFinset_inj.mp this
-      · intro ⟨⟨⟨θ, hθ⟩, ⟨w, hw⟩⟩, h⟩
-        simp only [combinations, Finset.mem_filter, Finset.mem_powerset] at hw
-        have w_disj : Disjoint w (Finset.image θ Finset.univ) := by
-          simp only [Set.toFinset_range, left_vtx] at hw
-          rw [Finset.disjoint_left]
-          intro x hx
-          exact (Finset.mem_sdiff.mp (hw.1 hx)).2
-        use ⟨⟨w.toSet ∪ (Set.image θ Set.univ), θ⟩, by
-          simp only [Set.image_univ, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, Ω]
-          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
-          constructor <;> try constructor
-          · exact hθ
-          · simp only [Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range]
-            rw [Finset.card_union_of_disjoint w_disj]
-            rw [hw.2, Finset.card_image_of_injective (Finset.univ) hθ, Finset.card_univ, Fintype.card_fin]
-            apply Nat.sub_add_cancel
-            simp_all only [LabeledGraph.size, Fintype.card_fin, Finset.mem_univ]
-          · simp only [Set.subset_union_right]⟩
-        simp only [Set.image_univ, Set.toFinset_union, Finset.toFinset_coe, Set.toFinset_range,
-          Subtype.mk.injEq, Sigma.mk.injEq, heq_eq_eq, true_and]
-        exact Finset.union_sdiff_cancel_right w_disj
-  have hΩ_card : Ω.toFinset.card = inj_map.card * (ℓ' - n₀).choose (ℓ - n₀) := by
-    rw [card_eq, Fintype.card_sigma]
-    have : ∀ θ : inj_map, (combinations (left_vtx θ) (ℓ - n₀)).card = (ℓ' - n₀).choose (ℓ - n₀) := by
-      intro ⟨θ, hθ⟩
-      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, inj_map] at hθ
-      rw [comb_card]; congr
-      rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]; congr
-      have := Finset.card_image_of_injective (Finset.univ) hθ
-      simp_all only [Set.toFinset_range, Finset.card_univ, Fintype.card_fin]
-    simp_all only [Fintype.card_coe, Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
-  rw [inj_map_card] at hΩ_card
-
-  let A : Finset Ω := { w | by
-    obtain ⟨⟨w, θ⟩, h⟩ := w
-    let G := (F'.graph.induce w)
-    let θ : Fin n₀ → w := fun i ↦ ⟨θ i, h.2.2 (Set.mem_range_self i)⟩
-    have hθ_inj : Function.Injective θ := by
-      intro a b h_eq
-      simp only [Subtype.mk.injEq, θ] at h_eq
-      exact h.1 h_eq
-    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
-      then Nonempty (⟨G, by exact { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
-      else false
-    }
-
-  have P₁ : labeledSubgraphDensity Fu F' * downwardNormalizingFactor_labeledGraph F = A.card / Ω.toFinset.card := by
+  have P₁ : labeledSubgraphDensity Fu F' * downwardNormalizingFactor_labeledGraph F = A.card / Ω.card := by
     dsimp only [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
     rw [div_mul_div_comm]
     congr
@@ -513,7 +435,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
         -- let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (iso_H_F.graph_iso.toFun (H.type_embed.toFun i))
         let θ : Fin n₀ → Fin ℓ' := fun i ↦ iso_Fu_G.graph_iso.toFun (F.type_embed.toFun i)
         use ⟨⟨G.subgraph.verts, θ⟩, by
-          simp only [Set.mem_setOf_eq, Ω]
+          simp only [injectiveMapSet, Set.mem_setOf_eq]
           constructor <;> try constructor
           · intro u v h_eq
             simp [θ] at h_eq
@@ -530,8 +452,9 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
             simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
               RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
               Subtype.coe_prop, θ]⟩
-        simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
-          dite_else_false, Finset.mem_filter, Finset.mem_univ, true_and, A]
+        simp only [isoInjectiveMapSet, SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
+          dite_else_false, A]
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
         have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
           intro a b
           have ha := congrFun iso_H_F.type_preserve a
@@ -595,9 +518,11 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           · apply labeledSubgraph_eq_from_subgraph_eq
             exact inducedSubgraph_eq_verts h.2.1 h'.2.1 h_eq.1
         · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
-          simp only [Set.mem_setOf_eq, Ω] at hΩ
+          simp only [injectiveMapSet, Set.mem_setOf_eq] at hΩ
           obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
-          simp only [Bool.false_eq_true, dite_else_false, Finset.mem_filter, Finset.mem_univ, true_and, A] at hA
+          simp only [isoInjectiveMapSet, Bool.false_eq_true, dite_else_false, A] at hA
+          simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Set.toFinset_setOf,
+            Finset.mem_filter, Finset.mem_univ, true_and] at hA
           obtain ⟨hθ, iso_H_F⟩ := hA
           let iso_H_F := Classical.choice iso_H_F
           let w_equiv : w ≃ Fin ℓ := by exact (isoFromFinToFiniteSet w hw_card).symm
@@ -645,11 +570,12 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           constructor <;> simp only [Nat.factorial_ne_zero, not_false_eq_true])]
         field_simp; left
         rw [mul_comm]
-      rw [lhs, rhs]
+      -- rw [lhs, rhs]
+      sorry
   rw [P₁]
 
   let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
-  have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.toFinset.card := by
+  have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
     rw [Nat.cast_sum, Finset.sum_div]
     apply Finset.sum_bij
             (fun G _ ↦ G.out)
@@ -668,8 +594,8 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
       simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
       field_simp
-      rw [mul_comm] at hΩ_card
-      rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, ← hΩ_card]
+      -- rw [mul_comm] at hΩ_card
+      rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, hΩ_card]
       simp only [Nat.cast_mul, Set.toFinset_card, Fintype.card_ofFinset]
       have density_eq :  labeledSubgraphCount F G = labeledSubgraphCount F (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
         have : G ≃f (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
@@ -682,6 +608,7 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       have iso_eq : isomorphismCount G = isomorphismCount (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
         sorry
       rw [density_eq, iso_eq]
+      sorry
   rw [sum_eq]
   congr
 
