@@ -386,7 +386,7 @@ theorem injectiveMapSet_card
   rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
 set_option maxHeartbeats 500000 in
-lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
+theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
       ∑ G ∈ labelExtensions F' σ, flagDensity₁ F G * downwardNormalizingFactor G
