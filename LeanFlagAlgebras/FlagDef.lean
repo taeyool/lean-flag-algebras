@@ -375,6 +375,37 @@ noncomputable def labeledGraphFromVertexIso_iso
     type_preserve := by rfl
   }
 
+omit [Fintype T] in
+lemma labeledGraphIso_preserve_type_verts
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
+    : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
+  := by
+  intro t
+  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range, Set.mem_image, forall_exists_index]
+  intro u h_u
+  use G₀.type_embed u
+  constructor
+  · rw [← H₀.embed_eq u]
+    simp only [Subtype.coe_prop]
+  · rw [←h_u, ← φ.type_preserve]
+    simp only [Function.comp_apply]
+
+omit [Fintype T] in
+lemma labeledGraphIso_preserve_type_verts_strict
+    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
+    : G₁.type_verts = ⇑φ.graph_iso '' G₀.type_verts
+  := by
+  dsimp [LabeledGraph.type_verts]
+  ext u
+  simp only [Set.image_univ, Set.mem_range, Set.mem_image, exists_exists_eq_and]
+  constructor <;> {
+    intro ⟨t, h⟩
+    use t
+    have := (funext_iff.mp φ.type_preserve) t
+    simp only [Function.comp_apply] at this
+    exact this ▸ h
+  }
+
 def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
     {σ : FlagType T} {V W : Type}
     {H : LabeledGraph σ V} {G : LabeledGraph σ W} {G₀ : LabeledSubgraph σ G}
@@ -388,7 +419,16 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
     LabeledSubgraph.inducedLabeledSubgraph_verts H (V₀ ∪ H.type_verts) Set.subset_union_right
   have h_G'_verts : G'.subgraph.verts = W₀ ∪ G.type_verts :=
     LabeledSubgraph.inducedLabeledSubgraph_verts G (W₀ ∪ G.type_verts) Set.subset_union_right
-  have h_image_V₀_type_verts_eq_W₀_type_verts : ⇑φ.graph_iso '' (V₀ ∪ H.type_verts) = W₀ ∪ G.type_verts := by sorry
+  have h_image_V₀_type_verts_eq_W₀_type_verts : ⇑φ.graph_iso '' (V₀ ∪ H.type_verts) = W₀ ∪ G.type_verts := by
+    calc
+      Subtype.val '' (⇑φ.graph_iso '' (V₀ ∪ H.type_verts))
+        = (Subtype.val '' (⇑φ.graph_iso '' V₀)) ∪ (Subtype.val '' (⇑φ.graph_iso '' H.type_verts)) := by
+          simp only [LabeledSubgraph.coe_graph, Set.image_union]
+      _ = W₀ ∪ G.type_verts := by
+          rw [h]
+          rw [←LabeledSubgraph.coe_type_verts_eq G₀]
+          suffices (⇑φ.graph_iso '' H.type_verts) = G₀.coe.type_verts by rw [this]
+          rw [labeledGraphIso_preserve_type_verts_strict φ]
   have h_W₀_type_verts_subseteq_G₀_verts : W₀ ∪ G.type_verts ⊆ G₀.subgraph.verts := by sorry
 
   let graph_iso : H'.coe.graph ≃g G'.coe.graph := {
@@ -464,37 +504,6 @@ def labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
       _ = G.type_embed u := by rfl
 
   { graph_iso := graph_iso, type_preserve := h_type_preserve }
-
-omit [Fintype T] in
-lemma labeledGraphIso_preserve_type_verts
-    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
-    : G₁.type_verts ⊆ ⇑φ.graph_iso '' H₀.subgraph.verts
-  := by
-  intro t
-  simp only [LabeledGraph.type_verts, Set.image_univ, Set.mem_range, Set.mem_image, forall_exists_index]
-  intro u h_u
-  use G₀.type_embed u
-  constructor
-  · rw [← H₀.embed_eq u]
-    simp only [Subtype.coe_prop]
-  · rw [←h_u, ← φ.type_preserve]
-    simp only [Function.comp_apply]
-
-omit [Fintype T] in
-lemma labeledGraphIso_preserve_type_verts_strict
-    {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
-    : G₁.type_verts = ⇑φ.graph_iso '' G₀.type_verts
-  := by
-  dsimp [LabeledGraph.type_verts]
-  ext u
-  simp only [Set.image_univ, Set.mem_range, Set.mem_image, exists_exists_eq_and]
-  constructor <;> {
-    intro ⟨t, h⟩
-    use t
-    have := (funext_iff.mp φ.type_preserve) t
-    simp only [Function.comp_apply] at this
-    exact this ▸ h
-  }
 
 /-- Suggestion: Use `Inhabited` instead of `Nonempty`. -/
 def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
