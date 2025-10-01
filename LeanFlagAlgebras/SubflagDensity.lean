@@ -160,6 +160,41 @@ lemma inducedLabeledSubgraph_related
   inducedSubgraph_related φ.graph_iso H₀.subgraph h_ind₀
 
 omit [Fintype T] [Fintype V] in
+theorem embed_heq_of_graph_eq
+    {σ : FlagType T} {G₀ G₁ : SimpleGraph V}
+    {G₀_emb : σ ↪g G₀} {G₁_emb : σ ↪g G₁}
+    (h : G₀ = G₁) (h_fun_eq : ∀ t : T, (G₀_emb t : V) = (G₁_emb t : V))
+    : HEq G₀_emb G₁_emb
+  := by
+  subst h
+  apply heq_of_eq
+  ext t
+  exact h_fun_eq t
+
+omit [Fintype T] [Fintype V] in
+theorem type_embed_heq_of_graph_eq
+    {σ : FlagType T} {G₀ G₁ : LabeledGraph σ V}
+    (h : G₀.graph = G₁.graph) (h': G₀ ≃f G₁)
+    : HEq G₀.type_embed G₁.type_embed
+  := by
+  have h_fun_eq : ∀ t : T, (G₀.type_embed t : V) = (G₁.type_embed t : V) := by
+    intro t
+    have type_preserve := congrFun h'.type_preserve t
+    have : h'.graph_iso.toFun = id := by
+      ext v
+      simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, id_eq]
+      sorry
+    simp_all only [Function.comp_apply, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, id_eq]
+  exact embed_heq_of_graph_eq h h_fun_eq
+
+omit [Fintype T] [Fintype V] in
+lemma labeledGraph_eq_from_graph_eq
+    {σ : FlagType T} {G₀ G₁ : LabeledGraph σ V}
+    (h : G₀.graph = G₁.graph) (h' : G₀ ≃f G₁) : G₀ = G₁
+  :=
+  LabeledGraph.ext h (type_embed_heq_of_graph_eq h h')
+
+omit [Fintype T] [Fintype V] in
 theorem embed_heq_of_subgraph_eq
     {σ : FlagType T} {G : SimpleGraph V}
     {H H' : G.Subgraph} {H_emb : σ ↪g H.coe} {H'_emb : σ ↪g H'.coe}

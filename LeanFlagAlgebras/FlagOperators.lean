@@ -532,6 +532,9 @@ lemma flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
               Subtype.coe_prop, θ]⟩
         simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
           dite_else_false, Finset.mem_filter, Finset.mem_univ, true_and, A]
+        have : ∀ i : Fin n₀, F.type_embed i = H.type_embed i := by
+          intro i
+          sorry
         have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
           intro a b
           have ha := congrFun iso_H_F.type_preserve a
