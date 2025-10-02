@@ -182,7 +182,7 @@ def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V wh
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.graph.Adj
 
 theorem unlabeledGraph_iso
-    (G G' : LabeledGraph σ V) (h : G ∼f G')
+    {G G' : LabeledGraph σ V} (h : G ∼f G')
     : unlabeledGraph G ∼f unlabeledGraph G'
   := by
   let φ : G ≃f G' := h.some
@@ -199,7 +199,7 @@ theorem unlabeledGraphQuot_respect_eqv
     {G G' : LabeledGraph σ V} (h : G ∼f G')
     : unlabeledGraphQuot G = unlabeledGraphQuot G'
   :=
-  Quotient.sound (unlabeledGraph_iso G G' h)
+  Quotient.sound (unlabeledGraph_iso h)
 
 noncomputable def unlabel {V : Type}
     : Flag σ V → Flag ∅ₜ V
@@ -207,6 +207,13 @@ noncomputable def unlabel {V : Type}
   apply Quot.lift (fun G : LabeledGraph σ V => unlabeledGraphQuot G)
   intro G G' G_eqv
   exact unlabeledGraphQuot_respect_eqv G_eqv
+
+theorem unlabeledGraph_eqv_of_unlabel_eq
+    {F : LabeledGraph σ V} {G : LabeledGraph ∅ₜ V} (h : unlabel ⟦F⟧ = ⟦G⟧)
+    : unlabeledGraph F ∼f G
+  := by
+  simp only [unlabel, unlabeledGraphQuot, Quotient.lift_mk] at h
+  exact Quotient.exact h
 
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
@@ -506,7 +513,7 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
     Equiv.ofBijective f_LHS_S₀_fwd ⟨f_LHS_S₀_inj, f_LHS_S₀_surj⟩
   sorry
 
-theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount
+theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
   := by
@@ -685,7 +692,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     rw [div_mul_div_comm]
     congr
     · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
-      rw [isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount F F' hℓ]
+      rw [isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount F F' hℓ]
     · simp only [emptyType_size, tsub_zero, ← Nat.cast_mul, Nat.cast_inj]
       rw [hF'_size, hFu_size, hΩ_card, Nat.choose_eq_factorial_div_factorial hℓ]
       have : ℓ.factorial ∣ ℓ'.factorial / (ℓ' - ℓ).factorial := by
@@ -695,7 +702,27 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   rw [P₁]
 
   let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
-  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G = F'}
+  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G ∼f F'}
+
+  have sum_eq' : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
+      (∑ G with unlabeledGraph G ∼f F', isomorphismCount G * labeledSubgraphCount F G) / Ω.card := by
+    rw [Nat.cast_sum, Finset.sum_div]
+    apply Finset.sum_nbij (fun G ↦ G.out) -- maybe use Finset.sum_bij to prove surjectivity
+    · intro G hG
+      rcases Quotient.exists_rep G with ⟨G, rfl⟩
+      simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      calc
+        _ ∼f unlabeledGraph G := unlabeledGraph_iso (Quotient.mk_out G)
+        _ ∼f F' := unlabeledGraph_eqv_of_unlabel_eq hG
+    · intro G _ G' _ h_eq
+      simp only [Quotient.out_inj] at h_eq
+      exact h_eq
+    · intro G hG
+      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hG
+      simp only [Set.mem_image, Finset.mem_coe]
+      sorry
+    · sorry
 
   have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
     rw [Nat.cast_sum, Finset.sum_div]
