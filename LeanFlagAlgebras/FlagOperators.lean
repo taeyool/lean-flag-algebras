@@ -385,6 +385,117 @@ theorem injectiveMapSet_card
     · exact Nat.factorial_dvd_factorial (by omega)
   rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
+def embedding_set {V : Type} (G G': LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
+  { φ : G.graph ↪g G'.graph | ∀ {a b : Fin n₀}, G.graph.Adj (G.type_embed a) (G.type_embed b) ↔ G'.graph.Adj (φ (G.type_embed a)) (φ (G.type_embed b)) }
+
+theorem isomorphismCount_card
+    {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
+    : (isomorphismCount F) = (embedding_set F F).toFinset.card
+  := by
+  symm
+  dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
+  apply Finset.card_eq_of_equiv
+  apply Equiv.ofBijective _ _
+  · intro ⟨φ, hφ⟩
+    let H : LabeledGraph σ (Fin ℓ) := {
+      graph := F.graph
+      type_embed := {
+        toFun := φ ∘ F.type_embed
+        inj' := by
+          simp only [EmbeddingLike.comp_injective]
+          exact RelEmbedding.injective F.type_embed
+        map_rel_iff' := by
+          simp only [Function.Embedding.coeFn_mk, Function.comp_apply,
+            SimpleGraph.Embedding.map_adj_iff, implies_true]
+      }
+    }
+    use H
+    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, H]
+    sorry
+  · constructor
+    · intro ⟨φ₁, hφ₁⟩ ⟨φ₂, hφ₂⟩ h_eq
+      simp at h_eq
+      simp only [Subtype.mk.injEq]
+      by_contra h
+      sorry
+    · intro ⟨H, hH⟩
+      simp at hH
+      let f := Classical.choice hH.2
+      let φ : Fin ℓ ↪ Fin ℓ := f.graph_iso
+      use ⟨⟨φ, by sorry⟩, by sorry⟩
+      simp only [RelEmbedding.coe_mk, Subtype.mk.injEq]
+      refine LabeledGraph.ext ?_ ?_
+      · simp_all only
+      · have adj_eq : ∀ u v : Fin ℓ, F.graph.Adj u v ↔ H.graph.Adj u v := by
+          intro u v
+          rw [hH.1]
+        have H_adj' : ∀ {a b : Fin n₀}, F.graph.Adj (H.type_embed a) (H.type_embed b) ↔ σ.Adj a b := by
+          intro a b
+          rw [adj_eq (H.type_embed a) (H.type_embed b)]
+          exact SimpleGraph.Embedding.map_adj_iff H.type_embed
+        have heq : HEq H.type_embed ({ toEmbedding := H.type_embed.toEmbedding, map_rel_iff' := H_adj' } : RelEmbedding σ.Adj F.graph.Adj) := by
+          simp only
+          sorry
+        refine HEq.trans ?_ heq.symm
+        simp only [heq_eq_eq, RelEmbedding.mk.injEq]
+        ext t
+        simp only [Equiv.coe_toEmbedding, EquivLike.coe_coe, Function.Embedding.coeFn_mk,
+          Function.comp_apply, RelEmbedding.coe_toEmbedding, φ]
+        exact congrArg Fin.val (congrFun f.type_preserve t)
+
+theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
+    : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
+  := by
+  have hF_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  let Fu := unlabeledGraph F
+  have hFu_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) Fu = ℓ := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  have graph_eq_Fu_F : Fu.graph = F.graph := by simp only [unlabeledGraph, Fu]
+  have hF'_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F' = ℓ' := by
+    simp only [LabeledGraph.size, Fintype.card_fin]
+  have n₀_le_ℓ : n₀ ≤ ℓ := by
+    have := F.type_size_le_size
+    simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
+  have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans n₀_le_ℓ hℓ
+
+  symm
+  let ℓ'_other := ℓ' - 0 - ℓ
+  let ℓ_other := ℓ - n₀
+  -- let LHS := (Finset.univ : Finset (Fin ℓ'_other)).powersetCard ℓ_other ×
+  let LHS := (isoLabeledGraphSetWithSameGraph F).toFinset ×   {G' :  LabeledSubgraph ∅ₜ F' | G'.IsInduced ∧ Nonempty (G'.coe ≃f unlabeledGraph F)}.toFinset
+  let S₀ := {⟨X, G⟩ : Finset (Fin ℓ') × LabeledSubgraph ∅ₜ F'
+                | X.card = ℓ
+                ∧ G.IsInduced
+                ∧ Nonempty (G.coe ≃f Fu) }
+  let f_LHS_S₀ : LHS ≃ S₀ :=
+    let f_LHS_S₀_fwd : LHS → S₀ := by
+      dsimp only [Set.coe_setOf, LHS, S₀]
+      intro ⟨⟨H, hH⟩, ⟨G, hG⟩⟩
+      -- let X : Finset (Fin ℓ') := (Finset.univ : Finset (Fin ℓ')).filter (fun v ↦ v ∈ G.subgraph.verts)
+      use ⟨⟨G.subgraph.verts.toFinset.val, G.subgraph.verts.toFinset.nodup⟩, G⟩
+      simp only [Finset.card_mk, Finset.card_val]
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+      simp only [isoLabeledGraphSetWithSameGraph, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH
+      constructor <;> try constructor
+      · sorry
+      · sorry
+      · sorry
+    let f_LHS_S₀_inj : Function.Injective f_LHS_S₀_fwd := by
+      intro ⟨⟨H₁, hH₁⟩, ⟨G₁, hG₁⟩⟩ ⟨⟨H₂, hH₂⟩, ⟨G₂, hG₂⟩⟩ h_eq
+      simp [f_LHS_S₀_fwd] at h_eq
+      rw [Prod.mk_inj]
+      simp only [Subtype.mk.injEq]
+      constructor
+      · sorry
+      · exact h_eq.2
+    let f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
+      intro ⟨⟨w, G⟩, hw, hG⟩
+      sorry
+    Equiv.ofBijective f_LHS_S₀_fwd ⟨f_LHS_S₀_inj, f_LHS_S₀_surj⟩
+  sorry
+
 theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
