@@ -707,7 +707,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   have sum_eq' : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
       (∑ G with unlabeledGraph G ∼f F', isomorphismCount G * labeledSubgraphCount F G) / Ω.card := by
     rw [Nat.cast_sum, Finset.sum_div]
-    apply Finset.sum_nbij (fun G ↦ G.out) -- maybe use Finset.sum_bij to prove surjectivity
+    apply Finset.sum_bij (fun G _ ↦ G.out) -- we need to define this function more carefully to prove surjectivity
     · intro G hG
       rcases Quotient.exists_rep G with ⟨G, rfl⟩
       simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and] at hG
@@ -719,8 +719,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       simp only [Quotient.out_inj] at h_eq
       exact h_eq
     · intro G hG
-      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hG
-      simp only [Set.mem_image, Finset.mem_coe]
+      simp only [exists_prop]
       sorry
     · sorry
 
