@@ -414,26 +414,36 @@ theorem isomorphismCount_card
     sorry
   · constructor
     · intro ⟨φ₁, hφ₁⟩ ⟨φ₂, hφ₂⟩ h_eq
-      simp at h_eq
+      simp only [Subtype.mk.injEq, LabeledGraph.mk.injEq, heq_eq_eq, RelEmbedding.mk.injEq,
+        Function.Embedding.mk.injEq, true_and] at h_eq
       simp only [Subtype.mk.injEq]
-      by_contra h
+      ext x
+      have comp_eq : φ₁ ∘ F.type_embed = φ₂ ∘ F.type_embed := h_eq
+      have inj : Function.Injective F.type_embed := RelEmbedding.injective F.type_embed
+      -- exact Function.Injective.left_iff inj |>.mp comp_eq x
       sorry
     · intro ⟨H, hH⟩
       simp at hH
+      have adj_eq : ∀ u v : Fin ℓ, F.graph.Adj u v ↔ H.graph.Adj u v := by
+        intro u v
+        rw [hH.1]
+      have H_adj' : ∀ {a b : Fin n₀}, F.graph.Adj (H.type_embed a) (H.type_embed b) ↔ σ.Adj a b := by
+        intro a b
+        rw [adj_eq (H.type_embed a) (H.type_embed b)]
+        exact SimpleGraph.Embedding.map_adj_iff H.type_embed
       let f := Classical.choice hH.2
       let φ : Fin ℓ ↪ Fin ℓ := f.graph_iso
-      use ⟨⟨φ, by sorry⟩, by sorry⟩
+      have hφ :  ∀ {a b : Fin ℓ}, F.graph.Adj (φ a) (φ b) ↔ F.graph.Adj a b := by
+        intro u v
+        rw [adj_eq]
+        exact SimpleGraph.Iso.map_adj_iff f.graph_iso
+      use ⟨⟨φ, hφ⟩, by
+          simp only [embedding_set, SimpleGraph.Embedding.map_adj_iff, implies_true, Set.setOf_true,
+            Set.toFinset_univ, Finset.mem_univ]⟩
       simp only [RelEmbedding.coe_mk, Subtype.mk.injEq]
       refine LabeledGraph.ext ?_ ?_
       · simp_all only
-      · have adj_eq : ∀ u v : Fin ℓ, F.graph.Adj u v ↔ H.graph.Adj u v := by
-          intro u v
-          rw [hH.1]
-        have H_adj' : ∀ {a b : Fin n₀}, F.graph.Adj (H.type_embed a) (H.type_embed b) ↔ σ.Adj a b := by
-          intro a b
-          rw [adj_eq (H.type_embed a) (H.type_embed b)]
-          exact SimpleGraph.Embedding.map_adj_iff H.type_embed
-        have heq : HEq H.type_embed ({ toEmbedding := H.type_embed.toEmbedding, map_rel_iff' := H_adj' } : RelEmbedding σ.Adj F.graph.Adj) := by
+      · have heq : HEq H.type_embed ({ toEmbedding := H.type_embed.toEmbedding, map_rel_iff' := H_adj' } : RelEmbedding σ.Adj F.graph.Adj) := by
           simp only
           sorry
         refine HEq.trans ?_ heq.symm
