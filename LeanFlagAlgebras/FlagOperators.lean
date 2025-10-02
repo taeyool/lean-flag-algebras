@@ -182,7 +182,7 @@ def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V wh
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.graph.Adj
 
 theorem unlabeledGraph_iso
-    (G G' : LabeledGraph σ V) (h : G ∼f G')
+    {G G' : LabeledGraph σ V} (h : G ∼f G')
     : unlabeledGraph G ∼f unlabeledGraph G'
   := by
   let φ : G ≃f G' := h.some
@@ -199,7 +199,7 @@ theorem unlabeledGraphQuot_respect_eqv
     {G G' : LabeledGraph σ V} (h : G ∼f G')
     : unlabeledGraphQuot G = unlabeledGraphQuot G'
   :=
-  Quotient.sound (unlabeledGraph_iso G G' h)
+  Quotient.sound (unlabeledGraph_iso h)
 
 noncomputable def unlabel {V : Type}
     : Flag σ V → Flag ∅ₜ V
@@ -207,6 +207,13 @@ noncomputable def unlabel {V : Type}
   apply Quot.lift (fun G : LabeledGraph σ V => unlabeledGraphQuot G)
   intro G G' G_eqv
   exact unlabeledGraphQuot_respect_eqv G_eqv
+
+theorem unlabeledGraph_eqv_of_unlabel_eq
+    {F : LabeledGraph σ V} {G : LabeledGraph ∅ₜ V} (h : unlabel ⟦F⟧ = ⟦G⟧)
+    : unlabeledGraph F ∼f G
+  := by
+  simp only [unlabel, unlabeledGraphQuot, Quotient.lift_mk] at h
+  exact Quotient.exact h
 
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
@@ -414,26 +421,36 @@ theorem isomorphismCount_card
     sorry
   · constructor
     · intro ⟨φ₁, hφ₁⟩ ⟨φ₂, hφ₂⟩ h_eq
-      simp at h_eq
+      simp only [Subtype.mk.injEq, LabeledGraph.mk.injEq, heq_eq_eq, RelEmbedding.mk.injEq,
+        Function.Embedding.mk.injEq, true_and] at h_eq
       simp only [Subtype.mk.injEq]
-      by_contra h
+      ext x
+      have comp_eq : φ₁ ∘ F.type_embed = φ₂ ∘ F.type_embed := h_eq
+      have inj : Function.Injective F.type_embed := RelEmbedding.injective F.type_embed
+      -- exact Function.Injective.left_iff inj |>.mp comp_eq x
       sorry
     · intro ⟨H, hH⟩
       simp at hH
+      have adj_eq : ∀ u v : Fin ℓ, F.graph.Adj u v ↔ H.graph.Adj u v := by
+        intro u v
+        rw [hH.1]
+      have H_adj' : ∀ {a b : Fin n₀}, F.graph.Adj (H.type_embed a) (H.type_embed b) ↔ σ.Adj a b := by
+        intro a b
+        rw [adj_eq (H.type_embed a) (H.type_embed b)]
+        exact SimpleGraph.Embedding.map_adj_iff H.type_embed
       let f := Classical.choice hH.2
       let φ : Fin ℓ ↪ Fin ℓ := f.graph_iso
-      use ⟨⟨φ, by sorry⟩, by sorry⟩
+      have hφ :  ∀ {a b : Fin ℓ}, F.graph.Adj (φ a) (φ b) ↔ F.graph.Adj a b := by
+        intro u v
+        rw [adj_eq]
+        exact SimpleGraph.Iso.map_adj_iff f.graph_iso
+      use ⟨⟨φ, hφ⟩, by
+          simp only [embedding_set, SimpleGraph.Embedding.map_adj_iff, implies_true, Set.setOf_true,
+            Set.toFinset_univ, Finset.mem_univ]⟩
       simp only [RelEmbedding.coe_mk, Subtype.mk.injEq]
       refine LabeledGraph.ext ?_ ?_
       · simp_all only
-      · have adj_eq : ∀ u v : Fin ℓ, F.graph.Adj u v ↔ H.graph.Adj u v := by
-          intro u v
-          rw [hH.1]
-        have H_adj' : ∀ {a b : Fin n₀}, F.graph.Adj (H.type_embed a) (H.type_embed b) ↔ σ.Adj a b := by
-          intro a b
-          rw [adj_eq (H.type_embed a) (H.type_embed b)]
-          exact SimpleGraph.Embedding.map_adj_iff H.type_embed
-        have heq : HEq H.type_embed ({ toEmbedding := H.type_embed.toEmbedding, map_rel_iff' := H_adj' } : RelEmbedding σ.Adj F.graph.Adj) := by
+      · have heq : HEq H.type_embed ({ toEmbedding := H.type_embed.toEmbedding, map_rel_iff' := H_adj' } : RelEmbedding σ.Adj F.graph.Adj) := by
           simp only
           sorry
         refine HEq.trans ?_ heq.symm
@@ -496,7 +513,7 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
     Equiv.ofBijective f_LHS_S₀_fwd ⟨f_LHS_S₀_inj, f_LHS_S₀_surj⟩
   sorry
 
-theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount
+theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
   := by
@@ -675,7 +692,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     rw [div_mul_div_comm]
     congr
     · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
-      rw [isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount F F' hℓ]
+      rw [isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount F F' hℓ]
     · simp only [emptyType_size, tsub_zero, ← Nat.cast_mul, Nat.cast_inj]
       rw [hF'_size, hFu_size, hΩ_card, Nat.choose_eq_factorial_div_factorial hℓ]
       have : ℓ.factorial ∣ ℓ'.factorial / (ℓ' - ℓ).factorial := by
@@ -685,7 +702,26 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   rw [P₁]
 
   let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
-  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G = F'}
+  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G ∼f F'}
+
+  have sum_eq' : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
+      (∑ G with unlabeledGraph G ∼f F', isomorphismCount G * labeledSubgraphCount F G) / Ω.card := by
+    rw [Nat.cast_sum, Finset.sum_div]
+    apply Finset.sum_bij (fun G _ ↦ G.out) -- we need to define this function more carefully to prove surjectivity
+    · intro G hG
+      rcases Quotient.exists_rep G with ⟨G, rfl⟩
+      simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+      calc
+        _ ∼f unlabeledGraph G := unlabeledGraph_iso (Quotient.mk_out G)
+        _ ∼f F' := unlabeledGraph_eqv_of_unlabel_eq hG
+    · intro G _ G' _ h_eq
+      simp only [Quotient.out_inj] at h_eq
+      exact h_eq
+    · intro G hG
+      simp only [exists_prop]
+      sorry
+    · sorry
 
   have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
     rw [Nat.cast_sum, Finset.sum_div]
