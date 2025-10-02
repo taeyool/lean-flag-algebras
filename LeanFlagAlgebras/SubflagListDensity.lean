@@ -1987,6 +1987,8 @@ noncomputable def
                   dsimp [Hl_size]; omega
       let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
       let h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G V'_type_verts Set.subset_union_right
+      have h_G₀_verts : G₀.subgraph.verts = V'_type_verts :=
+        inducedLabeledSubgraph_verts G V'_type_verts Set.subset_union_right
       let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) := by
         apply getCanonicalFlag G₀.coe
         rw [←h_V'_type_verts_card]
@@ -2084,8 +2086,25 @@ noncomputable def
           calc
             Subtype.val '' (⇑iso.graph_iso '' (Vl' i))
             _ = Subtype.val '' (⇑iso.graph_iso '' (iso.graph_iso.symm '' { v | v.val ∈ Vl i' })) := by rfl
-            _ = Subtype.val '' { v : ↑G₀.subgraph.verts | v.val ∈ Vl i' } := by sorry
-            _ = Vl i' := sorry
+            _ = Subtype.val '' { v : ↑G₀.subgraph.verts | v.val ∈ Vl i' } := by apply congrArg _ (Equiv.image_symm_image _ _)
+            _ = Vl i' := by
+                  ext v
+                  simp only [Set.mem_image, Set.mem_setOf_eq, Subtype.exists, h_G₀_verts,
+                    Fin.isValue, Set.mem_union, exists_and_left, exists_prop, exists_eq_right_right,
+                    and_iff_left_iff_imp, V'_type_verts, V']
+                  dsimp [i']
+                  have : i = 0 ∨ i = 1 := by omega
+                  cases this with
+                  | inl h_i₀ =>
+                      rw [h_i₀]
+                      intro h_v
+                      simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h_v
+                      simp only [Fin.isValue, h_v, true_or]
+                  | inr h_i₁ =>
+                      rw [h_i₁]
+                      intro h_v
+                      simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.mod_succ, Fin.mk_one] at h_v
+                      simp only [Fin.isValue, h_v, or_true, true_or]
         let f_iso₁ : (inducedLabeledSubgraph F.out (Vl' i ∪ F.out.type_verts) Set.subset_union_right).coe
                      ≃f (inducedLabeledSubgraph G (Vl i' ∪ G.type_verts) Set.subset_union_right).coe
           := labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding h_G₀_ind iso (Vl' i) (Vl i') h_Vl'_Vl_verts
