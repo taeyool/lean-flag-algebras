@@ -247,19 +247,26 @@ def isoSetOfInducedLabeledSubgraphFromIsoGH
     (predIsoLabeledH H₁ G₁)
     (predIsoLabeledH_related φ ψ)
 
+omit [Fintype W] [Fintype Z] in
+lemma labeledSubgraphCount_respect_eqv
+    {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
+    {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
+    : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁
+  := by
+  let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
+  let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoGH φ ψ
+  show S₀.toFinset.card = S₁.toFinset.card
+  have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  simp_all only [Set.toFinset_card]
+
 lemma labeledSubgraphDensity_respect_eqv
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
     : labeledSubgraphDensity H₀ G₀ = labeledSubgraphDensity H₁ G₁
   := by
   dsimp only [labeledSubgraphDensity]
-  let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
-  let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphFromIsoGH φ ψ
-  have h_count : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁ := by
-    show S₀.toFinset.card = S₁.toFinset.card
-    have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-    simp_all only [Set.toFinset_card]
+  have h_count : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁ := labeledSubgraphCount_respect_eqv φ ψ
   have h_H_size : H₀.size = H₁.size := labeledGraphIso_size_eq H₀ H₁ ψ
   have h_G_size : G₀.size = G₁.size := labeledGraphIso_size_eq G₀ G₁ φ
   rw [h_count, h_H_size, h_G_size]
