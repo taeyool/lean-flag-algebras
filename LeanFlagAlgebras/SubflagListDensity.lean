@@ -2119,7 +2119,15 @@ noncomputable def
       have h_Vl''_iso :
           ∀ i : Fin 2,
             Nonempty ((inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe ≃f [F.out, H₃]ᵍ i)
-        := sorry
+        := by
+        intro i
+        match i with
+        | 0 =>
+          dsimp [Vl'',labeledGraphPairToList]
+          exact Nonempty.intro iso.symm
+        | 1 =>
+          dsimp [Vl'', labeledGraphPairToList]
+          exact h_Vl_iso 2
 
       exact ⟨⟨F, Vl', Vl''⟩,
         h_Vl'_disj_type_verts, h_Vl''_disj_type_verts,
