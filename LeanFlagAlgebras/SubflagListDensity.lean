@@ -1989,12 +1989,13 @@ noncomputable def
       let h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G V'_type_verts Set.subset_union_right
       have h_G₀_verts : G₀.subgraph.verts = V'_type_verts :=
         inducedLabeledSubgraph_verts G V'_type_verts Set.subset_union_right
-      let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) := by
-        apply getCanonicalFlag G₀.coe
-        rw [←h_V'_type_verts_card]
-        rw [inducedLabeledSubgraph_verts G V'_type_verts Set.subset_union_right]
-        rw [Set.toFinset_card V'_type_verts]
-        congr!
+      let ⟨F, iso⟩ : (F : Flag σ (Fin ℓ')) × (F.out ≃f G₀.coe) :=
+        have : Fintype.card ↑G₀.subgraph.verts = ℓ' := by
+          rw [←h_V'_type_verts_card]
+          rw [inducedLabeledSubgraph_verts G V'_type_verts Set.subset_union_right]
+          rw [Set.toFinset_card V'_type_verts]
+          congr!
+        ⟨getCanonicalFlag G₀.coe this, getCanonicalFlag_iso G₀.coe this⟩
 
       let Vl' (i : Fin 2) := iso.graph_iso.symm '' { v | v.val ∈ Vl ⟨i.val, by omega⟩ }
       let Vl'' (i : Fin 2) := match i with | 0 => V' | 1 => Vl 2
@@ -2134,7 +2135,40 @@ noncomputable def
         h_Vl'_disj_pairwise, h_Vl''_disj_pairwise,
         h_Vl'_iso, h_Vl''_iso⟩
 
-    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by sorry
+    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by
+      intro ⟨⟨V₁, Vl₁⟩,
+        h_V₁_card, h_V₁_disj_Vl₁, h_V₁_disj_G_type_verts,
+        h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
+      intro ⟨⟨V₂, Vl₂⟩,
+        h_V₂_card, h_V₂_disj_Vl₂, h_V₂_disj_G_type_verts,
+        h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
+      intro h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      dsimp [f_S₂_T₁_fwd] at h_eq
+      simp only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
+      obtain ⟨h_eq_F, h_eq_Vl', h_eq_Vl''⟩ := h_eq
+
+      have h_Vl_01_V_eq : Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ = Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ :=
+        congr_fun h_eq_Vl'' 0
+      have h_ind_eq : inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
+                      = inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right := by
+        rw [h_Vl_01_V_eq]
+
+      have h_Vl_0_eq : Vl₁ 0 = Vl₂ 0 := by
+        have h₀ := congr_fun h_eq_Vl' 0
+        simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₀
+        have h₁ : ↑(inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).subgraph.verts = ↑(Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) := by
+          rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
+        sorry
+      have h_Vl_1_eq : Vl₁ 1 = Vl₂ 1 := by
+        have h₁ := congr_fun h_eq_Vl' 1
+        simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₁
+        sorry
+      have h_Vl_2_eq : Vl₁ 2 = Vl₂ 2 :=
+        congr_fun h_eq_Vl'' 1
+
+      sorry
+
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by sorry
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
   /-
