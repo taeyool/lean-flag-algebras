@@ -2162,7 +2162,7 @@ noncomputable def
         sorry
       have h_Vl_1_eq : Vl₁ 1 = Vl₂ 1 := by
         have h₁ := congr_fun h_eq_Vl' 1
-        simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₁
+        simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.mod_succ, Fin.mk_one] at h₁
         sorry
       have h_Vl_2_eq : Vl₁ 2 = Vl₂ 2 :=
         congr_fun h_eq_Vl'' 1
