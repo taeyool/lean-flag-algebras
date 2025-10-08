@@ -2152,19 +2152,30 @@ noncomputable def
         congr_fun h_eq_Vl'' 0
       let H₁ := inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
       let H₂ := inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right
+      have h_H₁_size : Fintype.card ↑H₁.subgraph.verts = ℓ' := by sorry
+      have h_H₂_size : Fintype.card ↑H₂.subgraph.verts = ℓ' := by sorry
       have h_H₁_eq_H₂ : H₁ = H₂ := by dsimp [H₁,H₂]; rw [h_Vl_01_V_eq]
 
       have h_Vl_0_eq : Vl₁ 0 = Vl₂ 0 := by
         have h₀ := congr_fun h_eq_Vl' 0
         simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₀
-        have h₁ : ↑(inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).subgraph.verts = ↑(Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) := by
+        have h_Vl₁_0 : Vl₁ 0 ⊆ H₁.subgraph.verts := by
           rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
-        simp_all
-        sorry
+          exact subset_trans Set.subset_union_left (subset_trans Set.subset_union_left Set.subset_union_left)
+        have h_Vl₂_0 : Vl₂ 0 ⊆ H₂.subgraph.verts := by
+          rw [inducedLabeledSubgraph_verts G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right]
+          exact subset_trans Set.subset_union_left (subset_trans Set.subset_union_left Set.subset_union_left)
+        exact cancel_getCanonicalFlag_iso H₁ H₂ (Vl₁ 0) (Vl₂ 0) h_H₁_size h_H₂_size h_Vl₁_0 h_Vl₂_0 h_H₁_eq_H₂ h₀
       have h_Vl_1_eq : Vl₁ 1 = Vl₂ 1 := by
         have h₁ := congr_fun h_eq_Vl' 1
         simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.mod_succ, Fin.mk_one] at h₁
-        sorry
+        have h_Vl₁_1 : Vl₁ 1 ⊆ H₁.subgraph.verts := by
+          rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
+          exact subset_trans Set.subset_union_right (subset_trans Set.subset_union_left Set.subset_union_left)
+        have h_Vl₂_1 : Vl₂ 1 ⊆ H₂.subgraph.verts := by
+          rw [inducedLabeledSubgraph_verts G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right]
+          exact subset_trans Set.subset_union_right (subset_trans Set.subset_union_left Set.subset_union_left)
+        exact cancel_getCanonicalFlag_iso H₁ H₂ (Vl₁ 1) (Vl₂ 1) h_H₁_size h_H₂_size h_Vl₁_1 h_Vl₂_1 h_H₁_eq_H₂ h₁
       have h_Vl_2_eq : Vl₁ 2 = Vl₂ 2 :=
         congr_fun h_eq_Vl'' 1
 

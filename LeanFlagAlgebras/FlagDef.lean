@@ -613,6 +613,7 @@ noncomputable def getCanonicalFlag_iso
   let φ' : ⟦G'⟧.out ≃f G' := Nonempty.some ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl)
   exact φ'.trans φ
 
+omit [Fintype T] in
 lemma cancel_getCanonicalFlag_iso'
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
     {G : LabeledGraph σ V} (G₀ G₁ : LabeledSubgraph σ G) (U₀ U₁ : Set V)
@@ -638,6 +639,7 @@ lemma cancel_getCanonicalFlag_iso'
   rw [this]
   exact h_x₁_in_U₁
 
+omit [Fintype T] in
 lemma cancel_getCanonicalFlag_iso
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
     {G : LabeledGraph σ V} (G₀ G₁ : LabeledSubgraph σ G) (U₀ U₁ : Set V)
