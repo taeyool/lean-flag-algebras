@@ -2148,8 +2148,7 @@ noncomputable def
       simp only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
       obtain ⟨h_eq_F, h_eq_Vl', h_eq_Vl''⟩ := h_eq
 
-      have h_Vl_01_V_eq : Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ = Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ :=
-        congr_fun h_eq_Vl'' 0
+      have h_Vl_01_V_eq : Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ = Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ := congr_fun h_eq_Vl'' 0
       let H₁ := inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
       let H₂ := inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right
       have h_H₁_size : Fintype.card ↑H₁.subgraph.verts = ℓ' := by sorry
@@ -2178,8 +2177,39 @@ noncomputable def
         exact cancel_getCanonicalFlag_iso H₁ H₂ (Vl₁ 1) (Vl₂ 1) h_H₁_size h_H₂_size h_Vl₁_1 h_Vl₂_1 h_H₁_eq_H₂ h₁
       have h_Vl_2_eq : Vl₁ 2 = Vl₂ 2 :=
         congr_fun h_eq_Vl'' 1
-
-      sorry
+      have h_V_eq : V₁ = V₂ :=
+        have h_V₁_disj_Vl₁_01 : V₁ ∩ (Vl₁ 0 ∪ Vl₁ 1) ⊆ ∅ := by
+          suffices V₁ ∩ Vl₁ 0 = ∅ ∧ V₁ ∩ Vl₁ 1 = ∅ by {
+            obtain ⟨h₀, h₁⟩ := this
+            rw [Set.inter_union_distrib_left V₁ (Vl₁ 0) (Vl₁ 1), h₀, h₁]
+            simp only [Set.union_self, subset_refl]
+          }
+          simp [h_V₁_disj_Vl₁ 0, h_V₁_disj_Vl₁ 1]
+        have h_V₂_disj_Vl₂_01 : V₂ ∩ (Vl₂ 0 ∪ Vl₂ 1) ⊆ ∅ := by
+          suffices V₂ ∩ Vl₂ 0 = ∅ ∧ V₂ ∩ Vl₂ 1 = ∅ by {
+            obtain ⟨h₀, h₁⟩ := this
+            rw [Set.inter_union_distrib_left V₂ (Vl₂ 0) (Vl₂ 1), h₀, h₁]
+            simp only [Set.union_self, subset_refl]
+          }
+          simp [h_V₂_disj_Vl₂ 0, h_V₂_disj_Vl₂ 1]
+        calc V₁ = (V₁ ∪ (Vl₁ 0 ∪ Vl₁ 1)) \ (Vl₁ 0 ∪ Vl₁ 1) := by
+                  rw [Set.union_diff_cancel_right h_V₁_disj_Vl₁_01]
+              _ = ((Vl₁ 0 ∪ Vl₁ 1) ∪ V₁) \ (Vl₁ 0 ∪ Vl₁ 1) := by
+                  simp only [Set.union_comm]
+              _ = ((Vl₂ 0 ∪ Vl₂ 1) ∪ V₂) \ (Vl₂ 0 ∪ Vl₂ 1) := by
+                  rw [h_Vl_01_V_eq]
+                  rw [h_Vl_0_eq, h_Vl_1_eq]
+              _ = (V₂ ∪ (Vl₂ 0 ∪ Vl₂ 1)) \ (Vl₂ 0 ∪ Vl₂ 1) := by
+                  simp only [Set.union_comm]
+              _ = V₂ := by
+                  rw [Set.union_diff_cancel_right h_V₂_disj_Vl₂_01]
+      have h_Vl_eq : Vl₁ = Vl₂ := by
+        ext i v
+        match i with
+        | 0 => rw [h_Vl_0_eq]
+        | 1 => rw [h_Vl_1_eq]
+        | 2 => rw [h_Vl_2_eq]
+      exact ⟨h_V_eq, h_Vl_eq⟩
 
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by sorry
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
