@@ -1949,6 +1949,42 @@ noncomputable def
   let f_RHS_T₁ : RHS ≃ T₁ := sigma_setOfLabeledSubgraphListIsoHl_iso ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
 
   have f_S₂_T₁ : S₂ ≃ T₁ :=
+    have h_card_Vl_01_V_type_vert_eq_ℓ' :
+        ∀ s : S₂, (s.1.2 0 ∪ s.1.2 1 ∪ s.1.1 ∪ G.type_verts).toFinset.card = ℓ'
+      := by
+      intro ⟨⟨V, Vl⟩,
+        h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
+        h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+
+      calc
+        (Vl 0 ∪ Vl 1 ∪ V ∪ G.type_verts).toFinset.card
+        _ = ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset ∪ G.type_verts.toFinset).card := by
+                repeat rw [Set.toFinset_union]
+        _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
+                have h_disj_0_1 : Disjoint (Vl 0).toFinset (Vl 1).toFinset :=
+                  Set.disjoint_toFinset.mpr
+                    (h_Vl_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1)
+                      (by simp only [Fin.isValue, ne_eq, Fin.zero_eq_one_iff, OfNat.ofNat_ne_one, not_false_eq_true]))
+                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_0_1]
+                have h_disj_01_V : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset) V.toFinset := by
+                  rw [Finset.disjoint_union_left]
+                  constructor <;> {
+                    rw [Set.disjoint_toFinset, Set.disjoint_iff, Set.inter_comm]
+                    simp only [Fin.isValue, h_V_disj_Vl, subset_refl] }
+                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01_V]
+                have h_disj_01V_G : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset) G.type_verts.toFinset := by
+                  repeat rw [Finset.disjoint_union_left]
+                  (repeat constructor) <;> {
+                    rw [Set.disjoint_toFinset, Set.disjoint_iff]
+                    simp only [Fin.isValue, h_Vl_disj_G_type_verts, h_V_disj_G_type_verts, subset_refl] }
+                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01V_G]
+        _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
+                rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
+                simp only [Fin.isValue, Set.toFinset_card, G.type_verts_card_eq, Nat.add_left_cancel_iff]
+                simp only [FlagType.size, Fintype.card_fin]
+        _ = ℓ' := by
+                dsimp [Hl_size]; omega
+
     let f_S₂_T₁_fwd : S₂ → T₁ := by
       intro ⟨⟨V, Vl⟩,
         h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
@@ -1957,34 +1993,10 @@ noncomputable def
       let V' := Vl 0 ∪ Vl 1 ∪ V
       let V'_type_verts := V' ∪ G.type_verts
       have h_V'_type_verts_card : V'_type_verts.toFinset.card = ℓ' :=
-        calc
-          V'_type_verts.toFinset.card
-          _ = ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset ∪ G.type_verts.toFinset).card := by
-                 repeat rw [Set.toFinset_union]
-          _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
-                  have h_disj_0_1 : Disjoint (Vl 0).toFinset (Vl 1).toFinset :=
-                    Set.disjoint_toFinset.mpr
-                      (h_Vl_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1)
-                        (by simp only [Fin.isValue, ne_eq, Fin.zero_eq_one_iff, OfNat.ofNat_ne_one, not_false_eq_true]))
-                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_0_1]
-                  have h_disj_01_V : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset) V.toFinset := by
-                    rw [Finset.disjoint_union_left]
-                    constructor <;> {
-                      rw [Set.disjoint_toFinset, Set.disjoint_iff, Set.inter_comm]
-                      simp only [Fin.isValue, h_V_disj_Vl, subset_refl] }
-                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01_V]
-                  have h_disj_01V_G : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset) G.type_verts.toFinset := by
-                    repeat rw [Finset.disjoint_union_left]
-                    (repeat constructor) <;> {
-                      rw [Set.disjoint_toFinset, Set.disjoint_iff]
-                      simp only [Fin.isValue, h_Vl_disj_G_type_verts, h_V_disj_G_type_verts, subset_refl] }
-                  rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01V_G]
-          _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
-                  rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
-                  simp only [Fin.isValue, Set.toFinset_card, G.type_verts_card_eq, Nat.add_left_cancel_iff]
-                  simp only [FlagType.size, Fintype.card_fin]
-          _ = ℓ' := by
-                  dsimp [Hl_size]; omega
+        h_card_Vl_01_V_type_vert_eq_ℓ' ⟨⟨V, Vl⟩,
+          h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
+          h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+
       let G₀ := inducedLabeledSubgraph G V'_type_verts Set.subset_union_right
       let h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G V'_type_verts Set.subset_union_right
       have h_G₀_verts : G₀.subgraph.verts = V'_type_verts :=
@@ -2151,8 +2163,20 @@ noncomputable def
       have h_Vl_01_V_eq : Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ = Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ := congr_fun h_eq_Vl'' 0
       let H₁ := inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
       let H₂ := inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right
-      have h_H₁_size : Fintype.card ↑H₁.subgraph.verts = ℓ' := by sorry
-      have h_H₂_size : Fintype.card ↑H₂.subgraph.verts = ℓ' := by sorry
+      have h_H₁_size : Fintype.card ↑H₁.subgraph.verts = ℓ' := by
+        rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
+        have := h_card_Vl_01_V_type_vert_eq_ℓ' ⟨⟨V₁, Vl₁⟩,
+                  h_V₁_card, h_V₁_disj_Vl₁, h_V₁_disj_G_type_verts,
+                  h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
+        rw [←this]
+        simp only [Set.toFinset_union, Fintype.card_ofFinset, Set.filter_mem_univ_eq_toFinset]
+      have h_H₂_size : Fintype.card ↑H₂.subgraph.verts = ℓ' := by
+        rw [inducedLabeledSubgraph_verts G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right]
+        have := h_card_Vl_01_V_type_vert_eq_ℓ' ⟨⟨V₂, Vl₂⟩,
+                  h_V₂_card, h_V₂_disj_Vl₂, h_V₂_disj_G_type_verts,
+                  h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
+        rw [←this]
+        simp only [Set.toFinset_union, Fintype.card_ofFinset, Set.filter_mem_univ_eq_toFinset]
       have h_H₁_eq_H₂ : H₁ = H₂ := by dsimp [H₁,H₂]; rw [h_Vl_01_V_eq]
 
       have h_Vl_0_eq : Vl₁ 0 = Vl₂ 0 := by
