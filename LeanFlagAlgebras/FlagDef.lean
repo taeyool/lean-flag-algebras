@@ -613,6 +613,17 @@ noncomputable def getCanonicalFlag_iso
   let φ' : ⟦G'⟧.out ≃f G' := Nonempty.some ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl)
   exact φ'.trans φ
 
+lemma cancel_getCanonicalFlag_iso
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+    {G : LabeledGraph σ V} (G₀ G₁ : LabeledSubgraph σ G) (U₀ U₁ : Set V)
+    (h_V_size₀ : Fintype.card ↑G₀.subgraph.verts = ℓ) (h_V_size₁ : Fintype.card ↑G₁.subgraph.verts = ℓ)
+    (h_U₀ : U₀ ⊆ G₀.subgraph.verts) (h_U₁ : U₁ ⊆ G₁.subgraph.verts)
+    (h_G₀_eq_G₁ : G₀ = G₁)
+    (h_image₀_eq_image₁ : ⇑(getCanonicalFlag_iso G₀.coe h_V_size₀).graph_iso.symm '' {x : G₀.subgraph.verts | ↑x ∈ U₀}
+                          =
+                          ⇑(getCanonicalFlag_iso G₁.coe h_V_size₁).graph_iso.symm '' {x : G₁.subgraph.verts | ↑x ∈ U₁})
+    : U₀ = U₁ := by sorry
+
 /- FlagList -/
 
 class FintypeList {t : ℕ} (Vl : Fin t → Type) where

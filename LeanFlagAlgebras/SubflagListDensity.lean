@@ -2150,8 +2150,12 @@ noncomputable def
 
       have h_Vl_01_V_eq : Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ = Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ :=
         congr_fun h_eq_Vl'' 0
-      have h_ind_eq : inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
-                      = inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right := by
+      have h_ind_ty_eq : LabeledGraph σ ↑(inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).subgraph.verts
+                         = LabeledGraph σ ↑(inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right).subgraph.verts := by
+        rw [h_Vl_01_V_eq]
+      have h_ind_eq : (inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).coe
+                      = cast (Eq.symm h_ind_ty_eq) (inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right).coe := by
+        refine eq_cast_iff_heq.mpr ?_
         rw [h_Vl_01_V_eq]
 
       have h_Vl_0_eq : Vl₁ 0 = Vl₂ 0 := by
@@ -2159,6 +2163,7 @@ noncomputable def
         simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₀
         have h₁ : ↑(inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).subgraph.verts = ↑(Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) := by
           rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
+        simp_all
         sorry
       have h_Vl_1_eq : Vl₁ 1 = Vl₂ 1 := by
         have h₁ := congr_fun h_eq_Vl' 1
