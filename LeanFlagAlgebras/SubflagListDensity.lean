@@ -2152,12 +2152,11 @@ noncomputable def
         congr_fun h_eq_Vl'' 0
       let H₁ := inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right
       let H₂ := inducedLabeledSubgraph G (Vl₂ 0 ∪ Vl₂ 1 ∪ V₂ ∪ G.type_verts) Set.subset_union_right
-      have h_H₁_eq_H₂ : H₁ = H₂ := by rw [h_Vl_01_V_eq]
+      have h_H₁_eq_H₂ : H₁ = H₂ := by dsimp [H₁,H₂]; rw [h_Vl_01_V_eq]
 
       have h_Vl_0_eq : Vl₁ 0 = Vl₂ 0 := by
         have h₀ := congr_fun h_eq_Vl' 0
         simp only [Fin.isValue, Fin.coe_ofNat_eq_mod, Nat.zero_mod, Fin.zero_eta] at h₀
-        simp [h_ind_eq] at h₀
         have h₁ : ↑(inducedLabeledSubgraph G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right).subgraph.verts = ↑(Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) := by
           rw [inducedLabeledSubgraph_verts G (Vl₁ 0 ∪ Vl₁ 1 ∪ V₁ ∪ G.type_verts) Set.subset_union_right]
         simp_all
