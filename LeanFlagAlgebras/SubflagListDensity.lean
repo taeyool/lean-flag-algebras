@@ -2288,7 +2288,8 @@ noncomputable def
       dsimp [f_S₂_T₁_fwd, V, Vl]
       simp_all only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq]
       constructor
-      . simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff]; sorry
+      . simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff]
+        sorry
       . constructor
         . funext i
           dsimp [iso₀]
