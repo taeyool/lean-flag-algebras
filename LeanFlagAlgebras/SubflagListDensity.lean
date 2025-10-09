@@ -2247,14 +2247,31 @@ noncomputable def
         h_Vl'_disj_pairwise, h_Vl''_disj_pairwise,
         h_Vl'_iso, h_Vl''_iso⟩
 
+      have h_Vl''_0_union_type_G_verts_card : Fintype.card ↑(Vl'' 0 ∪ G.type_verts) = ℓ' := by sorry
       let G₀ := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
-      let g₀ : F.out ≃f G₀.coe := (h_Vl''_iso 0).some.symm
+      have h_G₀_card : Fintype.card ↑G₀.subgraph.verts = ℓ' := by
+          rw [inducedLabeledSubgraph_verts G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right]
+          rw [←h_Vl''_0_union_type_G_verts_card]
+          congr!
+      let F₀ : Flag σ (Fin ℓ') := getCanonicalFlag G₀.coe h_G₀_card
+      let iso₀ : F₀.out ≃f G₀.coe := getCanonicalFlag_iso G₀.coe h_G₀_card
 
-      let V := (Vl'' 0) \ (Subtype.val '' (g₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (g₀.graph_iso '' (Vl' 1)) ∪ G.type_verts)
+      have h_Vl'_subseteq_Vl''_0 : ∀ i : Fin 2, Subtype.val '' (iso₀.graph_iso '' (Vl' i)) ⊆ Vl'' 0 := by sorry
+
+      have h_F_eq_F₀ : F = F₀ := by
+        have h_F : ⟦F.out⟧ = F := Quotient.out_eq F
+        have h_F₀ : ⟦F₀.out⟧ = F₀ := Quotient.out_eq F₀
+        rw [←h_F, ←h_F₀]
+        let f_F₀_out_iso_F_out := iso₀.trans (h_Vl''_iso 0).some
+        dsimp [labeledGraphPairToList] at f_F₀_out_iso_F_out
+        exact Quotient.sound (Nonempty.intro f_F₀_out_iso_F_out.symm)
+      subst h_F_eq_F₀
+
+      let V := (Vl'' 0) \ (Subtype.val '' (iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (iso₀.graph_iso '' (Vl' 1)) ∪ G.type_verts)
       let Vl (i : Fin 3) : Set (Fin ℓ) :=
         match i with
-        | 0 => Subtype.val '' (g₀.graph_iso '' (Vl' 0))
-        | 1 => Subtype.val '' (g₀.graph_iso '' (Vl' 1))
+        | 0 => Subtype.val '' (iso₀.graph_iso '' (Vl' 0))
+        | 1 => Subtype.val '' (iso₀.graph_iso '' (Vl' 1))
         | 2 => Vl'' 1
 
       have h_V_card : V.toFinset.card = ℓ'_other := by sorry
@@ -2271,12 +2288,19 @@ noncomputable def
       dsimp [f_S₂_T₁_fwd, V, Vl]
       simp_all only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq]
       constructor
-      . sorry
+      . simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff]; sorry
       . constructor
         . funext i
+          dsimp [iso₀]
           match i with
-          | 0 => simp_all; sorry
-          | 1 => simp_all; sorry
+          | 0 =>
+              simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff,
+                Set.mem_image, exists_exists_and_eq_and]
+              sorry
+          | 1 =>
+              simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff,
+                Set.mem_image, exists_exists_and_eq_and]
+              sorry
         . funext i
           match i with
           | 0 =>
@@ -2287,7 +2311,8 @@ noncomputable def
                 rw [disjoint_comm]
                 exact disjoint_iff.mpr (h_Vl''_disj_type_verts 0)
               rw [this]
-              sorry
+              simp only [Fin.isValue, Set.union_eq_right, Set.union_subset_iff,
+                h_Vl'_subseteq_Vl''_0 0, h_Vl'_subseteq_Vl''_0 1, and_self]
           | 1 => simp only [Fin.isValue]
 
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
