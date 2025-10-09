@@ -2270,7 +2270,25 @@ noncomputable def
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
       dsimp [f_S₂_T₁_fwd, V, Vl]
       simp_all only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq]
-      sorry
+      constructor
+      . sorry
+      . constructor
+        . funext i
+          match i with
+          | 0 => simp_all; sorry
+          | 1 => simp_all; sorry
+        . funext i
+          match i with
+          | 0 =>
+              simp only [Fin.isValue]
+              rw [Set.union_comm _ G.type_verts, ←Set.diff_diff, Set.union_diff_self]
+              have : Vl'' 0 \ G.type_verts = Vl'' 0 := by
+                apply sdiff_eq_self_iff_disjoint.mpr
+                rw [disjoint_comm]
+                exact disjoint_iff.mpr (h_Vl''_disj_type_verts 0)
+              rw [this]
+              sorry
+          | 1 => simp only [Fin.isValue]
 
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
   /-
