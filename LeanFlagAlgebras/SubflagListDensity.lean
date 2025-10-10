@@ -2266,62 +2266,46 @@ noncomputable def
         exact Quotient.sound (Nonempty.intro f_F₀_out_iso_F_out.symm)
       subst h_F_eq_F₀
 
-      let U₀ := Subtype.val '' (iso₀.graph_iso '' Vl' 0)
-                ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1)
-                ∪ Vl'' 0 \ (Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
+      have h_disj_F₀_type_verts_implies_subseteq_Vl''_0 :
+          ∀ W : Set (Fin ℓ'), W ∩ F₀.out.type_verts = ∅ → Subtype.val '' (iso₀.graph_iso '' W) ⊆ Vl'' 0
+        := by
+        intro W h_W_disj_type_verts u h_u
+        simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.mem_image, exists_exists_and_eq_and]
+        obtain ⟨w, h_w, h_w_u⟩ := h_u
+        rw [←h_w_u]
+        have h₀ : ↑(iso₀.graph_iso w) ∈ Vl'' 0 ∪ G.type_verts := by
+          simp only [coe_graph, Subtype.coe_prop]
+        have h₁ : ↑(iso₀.graph_iso w) ∉ G.type_verts := by
+          rw [labeledSubgraph_preserve_type_verts G G₀]
+          rw [labeledGraphIso_preserve_type_verts_strict iso₀]
+          intro h'
+          have h_w_not_in : w ∉ F₀.out.type_verts := by
+            intro h''
+            have : w ∈ W ∩ F₀.out.type_verts := ⟨h_w, h''⟩
+            simp_all only [Fin.isValue, coe_graph, Set.mem_union, Set.mem_image,
+              exists_exists_and_eq_and, Set.mem_empty_iff_false]
+          have h_w_in : w ∈ F₀.out.type_verts := by
+            simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
+            obtain ⟨a, h_a, h_a_w⟩ := h'
+            have : a = w := by
+              rw [Subtype.val_inj] at h_a_w
+              exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a_w
+            rw [←this]
+            exact h_a
+          exact h_w_not_in h_w_in
+        rw [Set.mem_union] at h₀
+        simp only [Fin.isValue, coe_graph, h₁, or_false] at h₀
+        exact h₀
       have h_Vl'_01_subseteq_Vl''_0 :
           Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ⊆ Vl'' 0
         := by
-        intro w h_w
-        simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.mem_union, Set.mem_image,
-          exists_exists_and_eq_and]
-        cases h_w with
-        | inl h_Vl'_0 =>
-            obtain ⟨u₀, h_u₀, h_u₀_w⟩ := h_Vl'_0
-            rw [←h_u₀_w]
-            have h₀ : ↑(iso₀.graph_iso u₀) ∈ Vl'' 0 ∪ G.type_verts := by
-              simp only [coe_graph, Subtype.coe_prop]
-            have h₁ : ↑(iso₀.graph_iso u₀) ∉ G.type_verts := by
-              rw [labeledSubgraph_preserve_type_verts G G₀]
-              rw [labeledGraphIso_preserve_type_verts_strict iso₀]
-              intro h'
-              have h_u₀_not_in : u₀ ∉ F₀.out.type_verts := by
-                sorry
-              have h_u₀_in : u₀ ∈ F₀.out.type_verts := by
-                simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
-                obtain ⟨a₀, h_a₀, h_a₀_u₀⟩ := h'
-                have : a₀ = u₀ := by
-                  rw [Subtype.val_inj] at h_a₀_u₀
-                  exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a₀_u₀
-                rw [←this]
-                exact h_a₀
-              exact h_u₀_not_in h_u₀_in
-            rw [Set.mem_union] at h₀
-            simp only [Fin.isValue, coe_graph, h₁, or_false] at h₀
-            exact h₀
-        | inr h_Vl'_1 =>
-            obtain ⟨u₁, h_u₁, h_u₁_w⟩ := h_Vl'_1
-            rw [←h_u₁_w]
-            have h₀ : ↑(iso₀.graph_iso u₁) ∈ Vl'' 0 ∪ G.type_verts := by
-              simp only [coe_graph, Subtype.coe_prop]
-            have h₁ : ↑(iso₀.graph_iso u₁) ∉ G.type_verts := by
-              rw [labeledSubgraph_preserve_type_verts G G₀]
-              rw [labeledGraphIso_preserve_type_verts_strict iso₀]
-              intro h'
-              have h_u₁_not_in : u₁ ∉ F₀.out.type_verts := by
-                sorry
-              have h_u₁_in : u₁ ∈ F₀.out.type_verts := by
-                simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
-                obtain ⟨a₁, h_a₁, h_a₁_u₁⟩ := h'
-                have : a₁ = u₁ := by
-                  rw [Subtype.val_inj] at h_a₁_u₁
-                  exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a₁_u₁
-                rw [←this]
-                exact h_a₁
-              exact h_u₁_not_in h_u₁_in
-            rw [Set.mem_union] at h₀
-            simp only [Fin.isValue, coe_graph, h₁, or_false] at h₀
-            exact h₀
+        rw [Set.union_subset_iff]
+        constructor
+        . exact h_disj_F₀_type_verts_implies_subseteq_Vl''_0 (Vl' 0) (h_Vl'_disj_type_verts 0)
+        . exact h_disj_F₀_type_verts_implies_subseteq_Vl''_0 (Vl' 1) (h_Vl'_disj_type_verts 1)
+      let U₀ := Subtype.val '' (iso₀.graph_iso '' Vl' 0)
+                ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1)
+                ∪ Vl'' 0 \ (Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
       have h_U₀_eq_Vl''_0 : U₀ = Vl'' 0 := by
         dsimp [U₀]
         rw [Set.union_comm _ G.type_verts, ←Set.diff_diff]
