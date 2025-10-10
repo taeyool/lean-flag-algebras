@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».MultinomialCoefficient
 import «LeanFlagAlgebras».SubflagDensity
+import Batteries.Logic
 import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
@@ -2256,8 +2257,6 @@ noncomputable def
       let F₀ : Flag σ (Fin ℓ') := getCanonicalFlag G₀.coe h_G₀_card
       let iso₀ : F₀.out ≃f G₀.coe := getCanonicalFlag_iso G₀.coe h_G₀_card
 
-      have h_Vl'_subseteq_Vl''_0 : ∀ i : Fin 2, Subtype.val '' (iso₀.graph_iso '' (Vl' i)) ⊆ Vl'' 0 := by sorry
-
       have h_F_eq_F₀ : F = F₀ := by
         have h_F : ⟦F.out⟧ = F := Quotient.out_eq F
         have h_F₀ : ⟦F₀.out⟧ = F₀ := Quotient.out_eq F₀
@@ -2266,6 +2265,14 @@ noncomputable def
         dsimp [labeledGraphPairToList] at f_F₀_out_iso_F_out
         exact Quotient.sound (Nonempty.intro f_F₀_out_iso_F_out.symm)
       subst h_F_eq_F₀
+
+      let U₀ := Subtype.val '' (iso₀.graph_iso '' Vl' 0)
+                ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1)
+                ∪ Vl'' 0 \ (Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
+      have h_U₀_eq_Vl''_0 : U₀ = Vl'' 0 := by sorry
+      have h_ind_U₀_eq_G₀ : inducedLabeledSubgraph G (U₀ ∪ G.type_verts) Set.subset_union_right = G₀ := by sorry
+      have h_iso₀_symm_comp_iso₀_eq_id :
+        ∀ W : Set (Fin ℓ'), ⇑(getCanonicalFlag_iso G₀.coe h_G₀_card).graph_iso.symm '' {v : ↑G₀.subgraph.verts | ∃ a ∈ W, ↑(iso₀.graph_iso a) = ↑v} = W := by sorry
 
       let V := (Vl'' 0) \ (Subtype.val '' (iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (iso₀.graph_iso '' (Vl' 1)) ∪ G.type_verts)
       let Vl (i : Fin 3) : Set (Fin ℓ) :=
@@ -2286,34 +2293,35 @@ noncomputable def
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
       dsimp [f_S₂_T₁_fwd, V, Vl]
-      simp_all only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq]
+      simp_all only [Fin.isValue, Fintype.card_ofFinset, Subtype.mk.injEq, Prod.mk.injEq]
       constructor
-      . simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff]
-        sorry
+      . simp_all only [Fin.isValue]; dsimp [F₀]; congr!
       . constructor
         . funext i
-          dsimp [iso₀]
           match i with
           | 0 =>
-              simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff,
-                Set.mem_image, exists_exists_and_eq_and]
-              sorry
+              simp_all only [Fin.isValue, coe_graph, Set.mem_image, exists_exists_and_eq_and]
+              refine Eq.trans ?_ (h_iso₀_symm_comp_iso₀_eq_id (Vl' 0))
+              congr!
+              rename_i h_ty_eq u u' h_u_heq_u' v
+              have : u.val = u'.val := by congr!
+              rw [this]
+              constructor
+              . intro h'; exact SetCoe.ext h'
+              . intro h'; rw [h']
           | 1 =>
-              simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.image_subset_iff,
-                Set.mem_image, exists_exists_and_eq_and]
-              sorry
+              simp_all only [Fin.isValue, coe_graph, Set.mem_image, exists_exists_and_eq_and]
+              refine Eq.trans ?_ (h_iso₀_symm_comp_iso₀_eq_id (Vl' 1))
+              congr!
+              rename_i h_ty_eq u u' h_u_heq_u' v
+              have : u.val = u'.val := by congr!
+              rw [this]
+              constructor
+              . intro h'; exact SetCoe.ext h'
+              . intro h'; rw [h']
         . funext i
           match i with
-          | 0 =>
-              simp only [Fin.isValue]
-              rw [Set.union_comm _ G.type_verts, ←Set.diff_diff, Set.union_diff_self]
-              have : Vl'' 0 \ G.type_verts = Vl'' 0 := by
-                apply sdiff_eq_self_iff_disjoint.mpr
-                rw [disjoint_comm]
-                exact disjoint_iff.mpr (h_Vl''_disj_type_verts 0)
-              rw [this]
-              simp only [Fin.isValue, Set.union_eq_right, Set.union_subset_iff,
-                h_Vl'_subseteq_Vl''_0 0, h_Vl'_subseteq_Vl''_0 1, and_self]
+          | 0 => simp only [Fin.isValue]; refine Eq.trans ?_ h_U₀_eq_Vl''_0; rfl
           | 1 => simp only [Fin.isValue]
 
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
