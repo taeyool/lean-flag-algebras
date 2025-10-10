@@ -2333,7 +2333,43 @@ noncomputable def
         | 2 => Vl'' 1
 
       have h_V_card : V.toFinset.card = ℓ'_other := by sorry
-      have h_V_disj_Vl : ∀ i : Fin 3, V ∩ (Vl i) = ∅ := by sorry
+
+      have h_V_disj_Vl : ∀ i : Fin 3, V ∩ (Vl i) = ∅ := by
+        dsimp [V, Vl]
+        intro i
+        apply Set.eq_empty_of_subset_empty
+        match i with
+        | 0 =>
+            simp only [Fin.isValue]
+            calc
+              (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts))
+                  ∩ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0)
+              _ ⊆
+              (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts))
+                  ∩ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
+                    := Set.inter_subset_inter_right _ (by rw [Set.union_assoc _ _ _]; exact Set.subset_union_left)
+              _ = ∅
+                    := Set.diff_inter_self
+        | 1 =>
+            simp only [Fin.isValue]
+            calc
+              (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts))
+                  ∩ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1)
+              _ ⊆
+              (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts))
+                  ∩ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
+                    := Set.inter_subset_inter_right _
+                         (by rw [Set.union_comm (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0)) _, Set.union_assoc _ _ _]
+                             exact Set.subset_union_left)
+              _ = ∅
+                    := Set.diff_inter_self
+        | 2 =>
+            simp only [Fin.isValue]
+            calc
+              (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (⇑iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)) ∩ Vl'' 1
+              _ ⊆ (Vl'' 0) ∩ (Vl'' 1) := Set.inter_subset_inter_left _ Set.diff_subset
+              _ = ∅ := disjoint_iff.mp (h_Vl''_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega))
+
       have h_V_disj_G_type_verts : V ∩ G.type_verts = ∅ := by sorry
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by sorry
       have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by sorry
