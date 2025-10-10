@@ -2266,35 +2266,31 @@ noncomputable def
         exact Quotient.sound (Nonempty.intro f_F₀_out_iso_F_out.symm)
       subst h_F_eq_F₀
 
+      have h_disj_implies_disj :
+          ∀ W W' : Set (Fin ℓ'),
+            W ∩ W' = ∅ → (Subtype.val '' (iso₀.graph_iso '' W)) ∩ (Subtype.val '' (iso₀.graph_iso '' W')) = ∅
+        := by
+        intro W W' h_W_W'_disj
+        rw [←Set.image_inter Subtype.val_injective]
+        rw [←Set.image_inter iso₀.graph_iso.injective]
+        rw [h_W_W'_disj]
+        rw [Set.image_empty iso₀.graph_iso]
+        rw [Set.image_empty Subtype.val]
+
+      have h_image_F₀_type_verts_eq_G_type_verts :
+          Subtype.val '' (iso₀.graph_iso '' F₀.out.type_verts) = G.type_verts
+        := by
+        rw [←labeledGraphIso_preserve_type_verts_strict iso₀]
+        rw [coe_type_verts_eq G₀]
+
       have h_disj_F₀_type_verts_implies_disj_G_type_verts :
-          ∀ W : Set (Fin ℓ'), W ∩ F₀.out.type_verts = ∅ → (Subtype.val '' (iso₀.graph_iso '' W)) ∩ G.type_verts = ∅
+          ∀ W : Set (Fin ℓ'),
+            W ∩ F₀.out.type_verts = ∅ → (Subtype.val '' (iso₀.graph_iso '' W)) ∩ G.type_verts = ∅
         := by
         intro W h_W_disj_type_verts
-        apply Set.eq_empty_of_subset_empty
-        intro u h_u
-        simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.mem_inter_iff,
-          Set.mem_image, exists_exists_and_eq_and, Set.mem_empty_iff_false]
-        obtain ⟨⟨w, h_w, h_w_u⟩, h_u_in⟩ := h_u
-        have h_u_not_in : u ∉ G.type_verts := by
-          rw [←h_w_u]
-          rw [←coe_type_verts_eq G₀]
-          rw [labeledGraphIso_preserve_type_verts_strict iso₀]
-          intro h'
-          have h_w_not_in : w ∉ F₀.out.type_verts := by
-            intro h''
-            have : w ∈ W ∩ F₀.out.type_verts := ⟨h_w, h''⟩
-            simp_all only [Fin.isValue, coe_graph, Set.mem_image, exists_exists_and_eq_and,
-              Set.mem_empty_iff_false]
-          have h_w_in : w ∈ F₀.out.type_verts := by
-            simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
-            obtain ⟨a, h_a, h_a_w⟩ := h'
-            have : a = w := by
-              rw [Subtype.val_inj] at h_a_w
-              exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a_w
-            rw [←this]
-            exact h_a
-          exact h_w_not_in h_w_in
-        exact h_u_not_in h_u_in
+        have := h_disj_implies_disj W F₀.out.type_verts h_W_disj_type_verts
+        rw [←this]
+        rw [h_image_F₀_type_verts_eq_G_type_verts]
 
       have h_disj_F₀_type_verts_implies_subseteq_Vl''_0 :
           ∀ W : Set (Fin ℓ'), W ∩ F₀.out.type_verts = ∅ → Subtype.val '' (iso₀.graph_iso '' W) ⊆ Vl'' 0
@@ -2317,13 +2313,14 @@ noncomputable def
         rw [←h_w_u]
         simp only [Fin.isValue, Subtype.coe_prop]
 
-      have h_Vl'_01_subseteq_Vl''_0 :
+      have h_image_Vl'_01_subseteq_Vl''_0 :
           Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ⊆ Vl'' 0
         := by
         rw [Set.union_subset_iff]
         constructor
         . exact h_disj_F₀_type_verts_implies_subseteq_Vl''_0 (Vl' 0) (h_Vl'_disj_type_verts 0)
         . exact h_disj_F₀_type_verts_implies_subseteq_Vl''_0 (Vl' 1) (h_Vl'_disj_type_verts 1)
+
       let U₀ := Subtype.val '' (iso₀.graph_iso '' Vl' 0)
                 ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1)
                 ∪ Vl'' 0 \ (Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
@@ -2332,7 +2329,7 @@ noncomputable def
         rw [Set.union_comm _ G.type_verts, ←Set.diff_diff]
         rw [sdiff_eq_self_iff_disjoint.mpr (disjoint_comm.mp (disjoint_iff.mpr (h_Vl''_disj_type_verts 0)))]
         rw [Set.union_diff_self]
-        exact Set.union_eq_right.mpr h_Vl'_01_subseteq_Vl''_0
+        exact Set.union_eq_right.mpr h_image_Vl'_01_subseteq_Vl''_0
       have h_ind_U₀_eq_G₀ : inducedLabeledSubgraph G (U₀ ∪ G.type_verts) Set.subset_union_right = G₀ := by
         rw [h_U₀_eq_Vl''_0]
       have h_iso₀_symm_comp_iso₀_eq_id :
@@ -2352,6 +2349,18 @@ noncomputable def
         | 0 => Subtype.val '' (iso₀.graph_iso '' (Vl' 0))
         | 1 => Subtype.val '' (iso₀.graph_iso '' (Vl' 1))
         | 2 => Vl'' 1
+
+      have h_image_Vl'_disj_Vl''_1 : ∀ i : Fin 2, Subtype.val '' (iso₀.graph_iso '' Vl' i) ∩ Vl'' 1 = ∅
+        := by
+        intro i
+        apply Set.eq_empty_of_subset_empty
+        calc
+          (Subtype.val '' (iso₀.graph_iso '' Vl' i)) ∩ Vl'' 1
+          _ ⊆ (Vl'' 0) ∩ Vl'' 1 := Set.inter_subset_inter_left _
+                                     (Set.Subset.trans
+                                       (match i with | 0 => Set.subset_union_left | 1 => Set.subset_union_right)
+                                       h_image_Vl'_01_subseteq_Vl''_0)
+          _ = ∅ := disjoint_iff.mp (h_Vl''_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega))
 
       have h_V_disj_Vl : ∀ i : Fin 3, V ∩ (Vl i) = ∅ := by
         dsimp [V, Vl]
@@ -2420,12 +2429,14 @@ noncomputable def
         apply disjoint_iff.mpr
         simp only [Fin.isValue, Set.inf_eq_inter, Set.bot_eq_empty]
         split <;> split <;> try contradiction
-        . sorry
-        . sorry
-        . sorry
-        . sorry
-        . sorry
-        . sorry
+        . exact h_disj_implies_disj (Vl' 0) (Vl' 1)
+                  (disjoint_iff.mp (h_Vl'_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega)))
+        . exact (h_image_Vl'_disj_Vl''_1 0)
+        . exact h_disj_implies_disj (Vl' 1) (Vl' 0)
+                  (disjoint_iff.mp (h_Vl'_disj_pairwise (Set.mem_univ 1) (Set.mem_univ 0) (by omega)))
+        . exact (h_image_Vl'_disj_Vl''_1 1)
+        . rw [Set.inter_comm _ _]; exact (h_image_Vl'_disj_Vl''_1 0)
+        . rw [Set.inter_comm _ _]; exact (h_image_Vl'_disj_Vl''_1 1)
 
       have h_V_card : V.toFinset.card = ℓ'_other := by sorry
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by sorry
@@ -2434,6 +2445,7 @@ noncomputable def
       use ⟨⟨V, Vl⟩,
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
         h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+
       dsimp [f_S₂_T₁_fwd, V, Vl]
       simp_all only [Fin.isValue, Fintype.card_ofFinset, Subtype.mk.injEq, Prod.mk.injEq]
       constructor
