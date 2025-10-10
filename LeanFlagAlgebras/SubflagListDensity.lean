@@ -2269,11 +2269,78 @@ noncomputable def
       let U₀ := Subtype.val '' (iso₀.graph_iso '' Vl' 0)
                 ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1)
                 ∪ Vl'' 0 \ (Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ∪ G.type_verts)
-      have h_U₀_eq_Vl''_0 : U₀ = Vl'' 0 := by sorry
-      have h_ind_U₀_eq_G₀ : inducedLabeledSubgraph G (U₀ ∪ G.type_verts) Set.subset_union_right = G₀ := by sorry
+      have h_Vl'_01_subseteq_Vl''_0 :
+          Subtype.val '' (iso₀.graph_iso '' Vl' 0) ∪ Subtype.val '' (iso₀.graph_iso '' Vl' 1) ⊆ Vl'' 0
+        := by
+        intro w h_w
+        simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.mem_union, Set.mem_image,
+          exists_exists_and_eq_and]
+        cases h_w with
+        | inl h_Vl'_0 =>
+            obtain ⟨u₀, h_u₀, h_u₀_w⟩ := h_Vl'_0
+            rw [←h_u₀_w]
+            have h₀ : ↑(iso₀.graph_iso u₀) ∈ Vl'' 0 ∪ G.type_verts := by
+              simp only [coe_graph, Subtype.coe_prop]
+            have h₁ : ↑(iso₀.graph_iso u₀) ∉ G.type_verts := by
+              rw [labeledSubgraph_preserve_type_verts G G₀]
+              rw [labeledGraphIso_preserve_type_verts_strict iso₀]
+              intro h'
+              have h_u₀_not_in : u₀ ∉ F₀.out.type_verts := by
+                sorry
+              have h_u₀_in : u₀ ∈ F₀.out.type_verts := by
+                simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
+                obtain ⟨a₀, h_a₀, h_a₀_u₀⟩ := h'
+                have : a₀ = u₀ := by
+                  rw [Subtype.val_inj] at h_a₀_u₀
+                  exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a₀_u₀
+                rw [←this]
+                exact h_a₀
+              exact h_u₀_not_in h_u₀_in
+            rw [Set.mem_union] at h₀
+            simp only [Fin.isValue, coe_graph, h₁, or_false] at h₀
+            exact h₀
+        | inr h_Vl'_1 =>
+            obtain ⟨u₁, h_u₁, h_u₁_w⟩ := h_Vl'_1
+            rw [←h_u₁_w]
+            have h₀ : ↑(iso₀.graph_iso u₁) ∈ Vl'' 0 ∪ G.type_verts := by
+              simp only [coe_graph, Subtype.coe_prop]
+            have h₁ : ↑(iso₀.graph_iso u₁) ∉ G.type_verts := by
+              rw [labeledSubgraph_preserve_type_verts G G₀]
+              rw [labeledGraphIso_preserve_type_verts_strict iso₀]
+              intro h'
+              have h_u₁_not_in : u₁ ∉ F₀.out.type_verts := by
+                sorry
+              have h_u₁_in : u₁ ∈ F₀.out.type_verts := by
+                simp only [coe_graph, Set.mem_image, exists_exists_and_eq_and] at h'
+                obtain ⟨a₁, h_a₁, h_a₁_u₁⟩ := h'
+                have : a₁ = u₁ := by
+                  rw [Subtype.val_inj] at h_a₁_u₁
+                  exact (RelIso.eq_iff_eq iso₀.graph_iso).mp h_a₁_u₁
+                rw [←this]
+                exact h_a₁
+              exact h_u₁_not_in h_u₁_in
+            rw [Set.mem_union] at h₀
+            simp only [Fin.isValue, coe_graph, h₁, or_false] at h₀
+            exact h₀
+      have h_U₀_eq_Vl''_0 : U₀ = Vl'' 0 := by
+        dsimp [U₀]
+        rw [Set.union_comm _ G.type_verts, ←Set.diff_diff]
+        rw [sdiff_eq_self_iff_disjoint.mpr (disjoint_comm.mp (disjoint_iff.mpr (h_Vl''_disj_type_verts 0)))]
+        rw [Set.union_diff_self]
+        exact Set.union_eq_right.mpr h_Vl'_01_subseteq_Vl''_0
+      have h_ind_U₀_eq_G₀ : inducedLabeledSubgraph G (U₀ ∪ G.type_verts) Set.subset_union_right = G₀ := by
+        rw [h_U₀_eq_Vl''_0]
       have h_iso₀_symm_comp_iso₀_eq_id :
-        ∀ W : Set (Fin ℓ'), ⇑(getCanonicalFlag_iso G₀.coe h_G₀_card).graph_iso.symm '' {v : ↑G₀.subgraph.verts | ∃ a ∈ W, ↑(iso₀.graph_iso a) = ↑v} = W := by sorry
-
+          ∀ W : Set (Fin ℓ'),
+            ⇑(getCanonicalFlag_iso G₀.coe h_G₀_card).graph_iso.symm '' {v : ↑G₀.subgraph.verts | ∃ a ∈ W, ↑(iso₀.graph_iso a) = ↑v} = W
+          := by
+          intro W
+          have : getCanonicalFlag_iso G₀.coe h_G₀_card = iso₀ := by rfl
+          rw [this]
+          ext w
+          simp_all only [Fin.isValue, Fintype.card_ofFinset, coe_graph, Set.union_subset_iff,
+            Set.image_subset_iff, Set.mem_image, Set.mem_setOf_eq, exists_exists_and_eq_and,
+            RelIso.symm_apply_apply, exists_eq_right]
       let V := (Vl'' 0) \ (Subtype.val '' (iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (iso₀.graph_iso '' (Vl' 1)) ∪ G.type_verts)
       let Vl (i : Fin 3) : Set (Fin ℓ) :=
         match i with

@@ -227,6 +227,11 @@ theorem labeledSubgraph_contain_type_verts
   obtain ⟨t, rfl⟩ := LabeledGraph.mem_type_verts.mp hv
   exact H.embed_eq t ▸ Subtype.coe_prop _
 
+theorem labeledSubgraph_preserve_type_verts
+    {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (H : LabeledSubgraph σ G)
+    : G.type_verts = H.coe.type_verts
+  := by sorry
+
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : LabeledSubgraph σ G where
