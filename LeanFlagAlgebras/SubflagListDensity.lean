@@ -2276,7 +2276,7 @@ noncomputable def
         have h₀ : ↑(iso₀.graph_iso w) ∈ Vl'' 0 ∪ G.type_verts := by
           simp only [coe_graph, Subtype.coe_prop]
         have h₁ : ↑(iso₀.graph_iso w) ∉ G.type_verts := by
-          rw [labeledSubgraph_preserve_type_verts G G₀]
+          rw [←coe_type_verts_eq G₀]
           rw [labeledGraphIso_preserve_type_verts_strict iso₀]
           intro h'
           have h_w_not_in : w ∉ F₀.out.type_verts := by
