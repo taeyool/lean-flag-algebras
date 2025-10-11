@@ -2440,7 +2440,13 @@ noncomputable def
 
       have h_V_card : V.toFinset.card = ℓ'_other := by sorry
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by sorry
-      have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by sorry
+      have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by
+        intro i
+        dsimp [Vl]
+        match i with
+        | 0 => simp only [Fin.isValue]; sorry
+        | 1 => simp only [Fin.isValue]; sorry
+        | 2 => simp only [Fin.isValue]; exact (h_Vl''_iso 1)
 
       use ⟨⟨V, Vl⟩,
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
