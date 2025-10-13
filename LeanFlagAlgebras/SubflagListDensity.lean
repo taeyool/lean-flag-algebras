@@ -2451,18 +2451,6 @@ noncomputable def
         | 1 => simp only [Fin.isValue]; exact Nonempty.intro ((g 1).symm.trans (h_Vl'_iso 1).some)
         | 2 => simp only [Fin.isValue]; exact (h_Vl''_iso 1)
 
-      have h_V_card : V.toFinset.card = ℓ'_other := by
-        dsimp [V, ℓ'_other]
-        calc
-          (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1)))).toFinset.card
-          _ = ((Vl'' 0).toFinset \ (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset).card := by
-                    rw [Set.toFinset_diff _ _]
-          _ = (Vl'' 0).toFinset.card - (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card := by
-                    sorry
-          _ = (Vl'' 0).toFinset.card - (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0))).toFinset.card
-                                     - (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card := by sorry
-          _ = ℓ' - ℓ₀ - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) := by sorry
-
       have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
         intro i
         suffices (Vl i ∪ G.type_verts).toFinset.card = Hl_size i by {
@@ -2483,6 +2471,38 @@ noncomputable def
         rw [←h_K_size_eq_Hl_i_size]
         rw [Set.toFinset_card]
         congr!
+
+      have h_Vl''_0_card : (Vl'' 0).toFinset.card = ℓ' - ℓ₀ := sorry
+
+      have h_V_card : V.toFinset.card = ℓ'_other := by
+        dsimp [V, ℓ'_other]
+        calc
+          (Vl'' 0 \ (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1)))).toFinset.card
+          _ = ((Vl'' 0).toFinset \ (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset).card := by
+                    rw [Set.toFinset_diff _ _]
+          _ = (Vl'' 0).toFinset.card - (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card :=
+                    Finset.card_sdiff (Set.toFinset_mono h_image_Vl'_01_subseteq_Vl''_0)
+          _ = (Vl'' 0).toFinset.card - ((Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0))).toFinset.card
+                                        + (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card) := by
+                    rw [Set.toFinset_union _ _]
+                    have h' := disjoint_iff.mpr
+                                 (h_disj_implies_disj (Vl' 0) (Vl' 1)
+                                   (disjoint_iff.mp (h_Vl'_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega))))
+                    rw [Finset.card_union_eq_card_add_card.mpr (Set.disjoint_toFinset.mpr h')]
+          _ = ℓ' - ℓ₀ - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) := by
+                    rw [h_Vl''_0_card]
+                    have h₀ : (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0))).toFinset.card = ℓ₁ - ℓ₀ := by
+                      have h' := h_Vl_card 0
+                      dsimp [Vl, Hl_size] at h'
+                      rw [←h']
+                      congr!
+                    have h₁ : (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card = ℓ₂ - ℓ₀ := by
+                      have h' := h_Vl_card 1
+                      dsimp [Vl, Hl_size] at h'
+                      rw [←h']
+                      congr!
+                    rw [h₀,h₁]
+                    omega
 
       use ⟨⟨V, Vl⟩,
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
