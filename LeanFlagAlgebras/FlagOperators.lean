@@ -612,6 +612,26 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
     Equiv.ofBijective f_LHS_S₀_fwd ⟨f_LHS_S₀_inj, f_LHS_S₀_surj⟩
   sorry
 
+lemma fun_eq_of_comp_eq_left
+    {α β γ : Type} {g g' : α → β} {f : β → γ} (hf : Function.Injective f) (h : f ∘ g = f ∘ g')
+    : g = g'
+  := by
+  funext x
+  have : f (g x) = f (g' x) := by
+    show (f ∘ g) x = (f ∘ g') x
+    rw [h]
+  exact hf this
+
+-- lemma fun_eq_of_comp_eq_right
+--     {α β γ : Type} {g : α → β} {f f' : β → γ} (hf : Function.Surjective g) (h : f ∘ g = f' ∘ g)
+--     : f = f'
+--   := by
+--   funext x
+--   obtain ⟨y, hy⟩ := hf x
+--   rw [← hy]
+--   show (f ∘ g) y = (f' ∘ g) y
+--   rw [h]
+
 theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
@@ -877,11 +897,37 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
                   ext v
                   simp only [eq_mpr_eq_cast, id_eq, SimpleGraph.Iso.coe_comp, Function.comp_apply,
                     RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
-                  apply Fin.val_eq_of_eq
-                  refine (RelIso.symm_apply_eq φGG').mp ?_
-                  sorry
+                  congr 3
+                  · exact hH.1.symm
+                  · rw [hH.1]
+                  · exact cast_heq _ _
               }
-            · sorry
+            · constructor
+              · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
+                simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH₁ hH₂
+                have hH_graph_eq : H₁.graph = H₂.graph := by rw [← hH₁.1, hH₂.1]
+                simp only [eq_mpr_eq_cast, cast_inj, Subtype.mk.injEq, LabeledGraph.mk.injEq,
+                  heq_eq_eq, RelEmbedding.mk.injEq, Function.Embedding.mk.injEq, true_and] at h_eq
+                apply fun_eq_of_comp_eq_left (RelIso.injective _) at h_eq
+                have hGG'_type_preserve := hGG'_iso.some.symm.type_preserve
+                dsimp only [LabeledGraphIso.symm] at hGG'_type_preserve
+                rw [hGG'_type_preserve] at h_eq
+                rw [hH₁.2.some.type_preserve, hH₂.2.some.type_preserve] at h_eq
+                simp only [Subtype.mk.injEq]
+                ext a b
+                · rw [hH_graph_eq]
+                · apply heq_of_cast_eq ?_ ?_
+                  · rw [hH_graph_eq]
+                  · ext v
+                    congr 1
+                    calc
+                      _ = H₁.type_embed v := by
+                        congr
+                        · rw [hH_graph_eq]
+                        · rw [hH_graph_eq]
+                        · exact cast_heq _ _
+                      _ = H₂.type_embed v := by rw [h_eq]
+              · sorry
           _ = {H ∈ S_F' | ⟦H⟧ = ⟦G⟧}.card := by
             congr
             ext H
