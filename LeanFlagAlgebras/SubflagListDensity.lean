@@ -1579,6 +1579,7 @@ noncomputable def
 
   f_T₀_T.symm.trans f_T₁_T₀.symm
 
+set_option maxHeartbeats 400000 in
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -1603,6 +1604,11 @@ noncomputable def
     | 0 => H₁
     | 1 => H₂
     | 2 => H₃
+
+  have h_G_type_verts_card_eq_ℓ₀ : Fintype.card ↑G.type_verts = ℓ₀ := by
+    simp only [G.type_verts_card_eq]
+    dsimp [FlagType.size]
+    exact Fintype.card_fin ℓ₀
 
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
@@ -1681,8 +1687,7 @@ noncomputable def
 
     Equiv.ofBijective f_LHS_S₀_fwd ⟨h_f_LHS_S₀_inj, h_f_LHS_S₀_surj⟩
 
-  let f_S₀_S₁ : S₀ ≃ S₁ := sorry
-  /-
+  let f_S₀_S₁ : S₀ ≃ S₁ :=
     let f_S₀_S₁_fwd : S₀ → S₁ := by
       intro ⟨⟨X, Gl'⟩, h_X_card, h_Gl'_ind, h_Gl'_other⟩
       let Vl (i : Fin 3) := (Gl' i).subgraph.verts \ G.type_verts
@@ -1770,10 +1775,8 @@ noncomputable def
       simp only [h_Vl_disj_G_type_verts i, subset_refl]
 
     Equiv.ofBijective f_S₀_S₁_fwd ⟨h_f_S₀_S₁_inj, h_f_S₀_S₁_surj⟩
-  -/
 
-  let f_S₁_S₂ : S₁ ≃ S₂ := sorry
-  /-
+  let f_S₁_S₂ : S₁ ≃ S₂ :=
     have h_V_other_properties :
         ∀ (Vl : Fin 3 → Set (Fin ℓ)),
         ∀ (V_other : Set (Fin ℓ)),
@@ -1825,9 +1828,7 @@ noncomputable def
           _ = ℓ - ((ℓ₁ - ℓ₀) + (ℓ₂ - ℓ₀) + (ℓ₃ - ℓ₀) + ℓ₀) := by
                   rw [h_unionVl_card]
                   rw [Set.toFinset_card G.type_verts]
-                  rw [G.type_verts_card_eq]
-                  dsimp [FlagType.size]
-                  rw [Fintype.card_fin ℓ₀]
+                  rw [h_G_type_verts_card_eq_ℓ₀]
           _ = ℓ_other := by
                   omega
       have h_V_other_disj_G_type_verts : V_other ∩ G.type_verts = ∅ := by
@@ -1949,7 +1950,6 @@ noncomputable def
       exact Subtype.coe_image_of_subset h_V_subseteq_V_other
 
     Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
-  -/
 
   let f_RHS_T₁ : RHS ≃ T₁ := sigma_setOfLabeledSubgraphListIsoHl_iso ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
 
@@ -1985,8 +1985,8 @@ noncomputable def
                 rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01V_G]
         _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
                 rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
-                simp only [Fin.isValue, Set.toFinset_card, G.type_verts_card_eq, Nat.add_left_cancel_iff]
-                simp only [FlagType.size, Fintype.card_fin]
+                simp only [Fin.isValue, Set.toFinset_card, Nat.add_left_cancel_iff]
+                exact h_G_type_verts_card_eq_ℓ₀
         _ = ℓ' := by
                 dsimp [Hl_size]; omega
 
@@ -2152,8 +2152,7 @@ noncomputable def
         h_Vl'_disj_pairwise, h_Vl''_disj_pairwise,
         h_Vl'_iso, h_Vl''_iso⟩
 
-    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by sorry
-    /-
+    have h_f_S₂_T₁_inj : Function.Injective f_S₂_T₁_fwd := by
       intro ⟨⟨V₁, Vl₁⟩,
         h_V₁_card, h_V₁_disj_Vl₁, h_V₁_disj_G_type_verts,
         h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
@@ -2240,7 +2239,6 @@ noncomputable def
         | 1 => rw [h_Vl_1_eq]
         | 2 => rw [h_Vl_2_eq]
       exact ⟨h_V_eq, h_Vl_eq⟩
-    -/
 
     have h_f_S₂_T₁_surj : Function.Surjective f_S₂_T₁_fwd := by
       intro ⟨⟨F, Vl', Vl''⟩,
@@ -2248,17 +2246,23 @@ noncomputable def
         h_Vl'_disj_pairwise, h_Vl''_disj_pairwise,
         h_Vl'_iso, h_Vl''_iso⟩
 
-      have h_Vl''_0_card : (Vl'' 0).toFinset.card = ℓ' - ℓ₀ := by sorry
       have h_Vl''_0_union_type_G_verts_card : Fintype.card ↑(Vl'' 0 ∪ G.type_verts) = ℓ' := by
+        let K := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
+        have iso : K.coe ≃f F.out := (h_Vl''_iso 0).some
+        have h_K_size_eq_F_out_size := labeledGraphIso_size_eq K.coe F.out iso
+        dsimp [LabeledGraph.size] at h_K_size_eq_F_out_size
+        rw [inducedLabeledSubgraph_verts G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right] at h_K_size_eq_F_out_size
+        rw [Fintype.card_fin ℓ'] at h_K_size_eq_F_out_size
+        rw [←h_K_size_eq_F_out_size]
+        congr!
+      have h_Vl''_0_card : (Vl'' 0).toFinset.card = ℓ' - ℓ₀ := by
+        rw [←h_Vl''_0_union_type_G_verts_card]
         rw [Fintype.card_ofFinset]
         have : Disjoint (Vl'' 0).toFinset G.type_verts.toFinset :=
           Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl''_disj_type_verts 0))
         rw [Finset.card_union_eq_card_add_card.mpr this]
-        rw [h_Vl''_0_card]
-        simp only [Set.toFinset_card, G.type_verts_card_eq]
-        dsimp [FlagType.size]
-        rw [Fintype.card_fin ℓ₀]
-        omega
+        simp only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset,
+          h_G_type_verts_card_eq_ℓ₀, add_tsub_cancel_right]
 
       let G₀ := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
       have h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
@@ -2469,9 +2473,7 @@ noncomputable def
            rw [Finset.card_union_eq_card_add_card.mpr
                  (Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl_disj_G_type_verts i)))] at this
            rw [←this]
-           have h' : Fintype.card ↑G.type_verts = ℓ₀ := by
-             rw [G.type_verts_card_eq]; dsimp [FlagType.size]; exact Fintype.card_fin ℓ₀
-           simp only [Set.toFinset_card, Fintype.card_ofFinset, h', add_tsub_cancel_right]
+           simp only [Set.toFinset_card, Fintype.card_ofFinset, h_G_type_verts_card_eq_ℓ₀, add_tsub_cancel_right]
         }
         let K := inducedLabeledSubgraph G (Vl i ∪ G.type_verts) Set.subset_union_right
         have iso : K.coe ≃f Hl i := (h_Vl_iso i).some
@@ -2552,26 +2554,7 @@ noncomputable def
           | 1 => simp only [Fin.isValue]
 
     Equiv.ofBijective f_S₂_T₁_fwd ⟨h_f_S₂_T₁_inj, h_f_S₂_T₁_surj⟩
-  /-
-  let S₂ := { ⟨V, Vl⟩ : Set (Fin ℓ) × (Fin 3 → Set (Fin ℓ))
-                | V.toFinset.card = ℓ'_other
-                ∧ (∀ i : Fin 3, V ∩ (Vl i) = ∅)
-                ∧ V ∩ G.type_verts = ∅
-                ∧ (∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀)
-                ∧ (∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)))
-                ∧ (∀ i : Fin 3, (Vl i) ∩ G.type_verts = ∅)
-                ∧ Set.univ.PairwiseDisjoint Vl }
 
-  let T₁ := { ⟨G', Vl', Vl''⟩ : Flag σ (Fin ℓ')
-                                × (Fin 2 → Set (Fin ℓ'))
-                                × (Fin 2 → Set (Fin ℓ))
-                | (∀ i : Fin 2, (Vl' i) ∩ G'.out.type_verts = ∅)
-                ∧ (∀ i : Fin 2, (Vl'' i) ∩ G.type_verts = ∅)
-                ∧ Set.univ.PairwiseDisjoint Vl'
-                ∧ Set.univ.PairwiseDisjoint Vl''
-                ∧ (∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G'.out (Vl' i ∪ G'.out.type_verts) Set.subset_union_right).coe ≃f [H₁, H₂]ᵍ i))
-                ∧ (∀ i : Fin 2, Nonempty ((inducedLabeledSubgraph G (Vl'' i ∪ G.type_verts) Set.subset_union_right).coe ≃f [G'.out, H₃]ᵍ i)) }
-  -/
   let f_LHS_S₂ := (f_LHS_S₀.trans f_S₀_S₁).trans f_S₁_S₂
   let f_T₁_RHS := f_RHS_T₁.symm
 
