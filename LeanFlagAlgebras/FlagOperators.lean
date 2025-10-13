@@ -410,10 +410,49 @@ theorem isomorphismCount_card
     {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
     : (isomorphismCount F) = (embedding_set F F).toFinset.card
   := by
+  let tmp := {H : LabeledSubgraph σ F | H.IsInduced ∧ Nonempty (H.coe ≃f F)}
+  have : tmp.toFinset.card = (isomorphismCount F) := by
+    dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
+    apply Finset.card_eq_of_equiv
+    apply Equiv.ofBijective _ _
+    · intro ⟨H, hH⟩
+      simp [tmp] at hH
+      -- have := induced_full_labeledSubgraph_eq_top hH
+      use F
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+      exact Nonempty.intro LabeledGraphIso.refl
+    · constructor
+      · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
+        simp_all only [Subtype.mk.injEq]
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, tmp] at hH₁ hH₂
+        have hH₁' := induced_full_labeledSubgraph_eq_top hH₁
+        have hH₂' := induced_full_labeledSubgraph_eq_top hH₂
+        rw [hH₁', hH₂']
+      · intro ⟨H, hH⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH
+        use ⟨F.top, by
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, tmp]
+          exact ⟨F.top_isInduced, top_labeledSubgraph_iso_G⟩⟩
+        simp only [Subtype.mk.injEq]
+        apply LabeledGraph.ext hH.1
+        let iso_F_H := Classical.choice hH.2
+        obtain ⟨φ, hφ⟩ := iso_F_H
+        let tmp1 := F.top.type_embed
+        have : F.top.subgraph = H.top.subgraph.map (SimpleGraph.Hom.ofLE (le_of_eq hH.1.symm)) := by
+          refine SimpleGraph.Subgraph.ext ?_ ?_
+          · simp only [SimpleGraph.Subgraph.map_verts, SimpleGraph.Hom.coe_ofLE, id_eq, Set.image_id']
+            sorry
+          · have : F.graph.Adj = H.graph.Adj := by sorry
+
+            sorry
+        sorry
+
   let S₀ := { ⟨X, G⟩ : Finset (Fin ℓ) × LabeledGraph σ (Fin ℓ)
                 | X.card = ℓ - n₀
-                ∧ G.graph = F.graph
-                ∧ Nonempty (F ≃f G) }
+                ∧ X ∩ G.type_verts.toFinset = ∅
+                ∧ F.graph = G.graph
+                ∧ Nonempty (F ≃f G)
+                 }
   have : (isomorphismCount F) = S₀.toFinset.card := by
     dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
     apply Finset.card_eq_of_equiv
@@ -421,21 +460,43 @@ theorem isomorphismCount_card
     · intro ⟨H, hH⟩
       simp at hH
       use ⟨Finset.univ \ H.type_verts.toFinset, H⟩
-      simp [S₀]
-      sorry
+      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, Finset.sdiff_inter_self,
+        true_and, S₀]
+      constructor
+      · rw [Finset.card_sdiff (by simp only [Finset.subset_univ])]
+        simp only [Finset.card_univ, Fintype.card_fin, Set.toFinset_card, LabeledGraph.type_verts_card_eq, FlagType.size]
+      · exact hH
     · constructor
       · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
-        simp at h_eq
-        simp
-        sorry
+        simp_all only [Subtype.mk.injEq, Prod.mk.injEq]
       · intro ⟨⟨X, G⟩, h⟩
         simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, S₀] at h
         simp only [Subtype.mk.injEq, Prod.mk.injEq, Subtype.exists, Set.toFinset_setOf,
           Finset.mem_filter, Finset.mem_univ, true_and, exists_and_left, exists_prop,
           exists_eq_right_right]
+        constructor
+        · ext x
+          simp only [Finset.mem_sdiff, Finset.mem_univ, Set.mem_toFinset, true_and]
+          constructor
+          · intro hx
+            by_contra hx'
+            have : X.card < ℓ - n₀ := by
+              let X' := Finset.univ \ (G.type_verts.toFinset ∪ {x})
+              have hX'_card : X'.card = ℓ - n₀ - 1 := by
+                rw [Finset.card_sdiff (by simp only [Finset.subset_univ]), Finset.card_union_of_disjoint]
+                · sorry
+                · sorry
+              have : X ⊆ X' := by sorry
+              have : X.card ≤ X'.card := Finset.card_le_card this
+              rw [hX'_card] at this
+              refine Nat.add_one_le_iff.mp ?_
 
-
-        sorry
+              sorry
+            omega
+          · intro hxX
+            have := Finset.disjoint_left.mp (Finset.disjoint_iff_inter_eq_empty.mpr h.2.1) hxX
+            simp_all only [Set.mem_toFinset, not_false_eq_true]
+        · exact h.2.2
 
   symm
   dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
