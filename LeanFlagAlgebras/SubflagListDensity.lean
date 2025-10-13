@@ -2250,6 +2250,7 @@ noncomputable def
 
       have h_Vl''_0_union_type_G_verts_card : Fintype.card ↑(Vl'' 0 ∪ G.type_verts) = ℓ' := by sorry
       let G₀ := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
+      have h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
       have h_G₀_card : Fintype.card ↑G₀.subgraph.verts = ℓ' := by
           rw [inducedLabeledSubgraph_verts G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right]
           rw [←h_Vl''_0_union_type_G_verts_card]
@@ -2451,9 +2452,20 @@ noncomputable def
       have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by
         intro i
         dsimp [Vl]
+        let K (i : Fin 2) := inducedLabeledSubgraph G
+                               (Subtype.val '' (iso₀.graph_iso '' (Vl' i)) ∪ G.type_verts)
+                               Set.subset_union_right
+        have h_K_ind : ∀ i : Fin 2, (K i).IsInduced := by
+          intro i
+          exact inducedLabeledSubgraph_isInduced G
+                  (Subtype.val '' (iso₀.graph_iso '' (Vl' i)) ∪ G.type_verts)
+                  Set.subset_union_right
+        let g (i : Fin 2) : (inducedLabeledSubgraph F₀.out (Vl' i ∪ F₀.out.type_verts) Set.subset_union_right).coe ≃f (K i).coe
+          := labeledGraphIso_inducedLabeledSubgraph_from_labeledGraphEmbedding
+               h_G₀_ind iso₀ (Vl' i) (Subtype.val '' (iso₀.graph_iso '' (Vl' i))) (by rfl)
         match i with
-        | 0 => simp only [Fin.isValue]; sorry
-        | 1 => simp only [Fin.isValue]; sorry
+        | 0 => simp only [Fin.isValue]; exact Nonempty.intro ((g 0).symm.trans (h_Vl'_iso 0).some)
+        | 1 => simp only [Fin.isValue]; exact Nonempty.intro ((g 1).symm.trans (h_Vl'_iso 1).some)
         | 2 => simp only [Fin.isValue]; exact (h_Vl''_iso 1)
 
       use ⟨⟨V, Vl⟩,
