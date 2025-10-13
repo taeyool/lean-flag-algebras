@@ -2439,16 +2439,6 @@ noncomputable def
         . rw [Set.inter_comm _ _]; exact (h_image_Vl'_disj_Vl''_1 0)
         . rw [Set.inter_comm _ _]; exact (h_image_Vl'_disj_Vl''_1 1)
 
-      have h_V_card : V.toFinset.card = ℓ'_other := by sorry
-
-      have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
-        intro i
-        dsimp [Vl]
-        match i with
-        | 0 => simp only [Fin.isValue]; sorry
-        | 1 => simp only [Fin.isValue]; sorry
-        | 2 => simp only [Fin.isValue]; sorry
-
       have h_Vl_iso : ∀ i : Fin 3, Nonempty ((inducedLabeledSubgraph G ((Vl i) ∪ G.type_verts) Set.subset_union_right).coe ≃f (Hl i)) := by
         intro i
         dsimp [Vl]
@@ -2467,6 +2457,26 @@ noncomputable def
         | 0 => simp only [Fin.isValue]; exact Nonempty.intro ((g 0).symm.trans (h_Vl'_iso 0).some)
         | 1 => simp only [Fin.isValue]; exact Nonempty.intro ((g 1).symm.trans (h_Vl'_iso 1).some)
         | 2 => simp only [Fin.isValue]; exact (h_Vl''_iso 1)
+
+      have h_V_card : V.toFinset.card = ℓ'_other := by sorry
+
+      have h_Vl_card : ∀ i : Fin 3, (Vl i).toFinset.card = Hl_size i - ℓ₀ := by
+        intro i
+        suffices (Vl i ∪ G.type_verts).toFinset.card = Hl_size i by {
+           rw [Set.toFinset_union] at this
+           rw [Finset.card_union_eq_card_add_card.mpr
+                 (Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl_disj_G_type_verts i)))] at this
+           rw [←this]
+           have h' : Fintype.card ↑G.type_verts = ℓ₀ := by
+             rw [G.type_verts_card_eq]; dsimp [FlagType.size]; exact Fintype.card_fin ℓ₀
+           simp only [Set.toFinset_card, Fintype.card_ofFinset, h', add_tsub_cancel_right]
+        }
+        dsimp [Hl_size]
+        match i with
+        | 0 => simp only [Fin.isValue]; sorry
+        | 1 => simp only [Fin.isValue]; sorry
+        | 2 => simp only [Fin.isValue]; sorry
+
 
       use ⟨⟨V, Vl⟩,
         (by rw [←h_V_card]; congr!), h_V_disj_Vl, h_V_disj_G_type_verts,
