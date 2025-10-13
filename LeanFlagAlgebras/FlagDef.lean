@@ -583,8 +583,21 @@ def emptyFlag (σ : FlagType T) : Flag σ T
 noncomputable def getCanonicalFlag
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
     (G : LabeledGraph σ V) (h_V_size : Fintype.card V = ℓ)
-    : (F : Flag σ (Fin ℓ)) × (F.out ≃f G)
+    : Flag σ (Fin ℓ)
   :=
+  let ⟨Q, iso⟩ := getCanonicalQuotSimpleGraph G.graph h_V_size
+  let G' : LabeledGraph σ (Fin ℓ) := {
+    graph := Q.out
+    type_embed := G.type_embed.trans iso.symm
+  }
+  ⟦G'⟧
+
+noncomputable def getCanonicalFlag_iso
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+    (G : LabeledGraph σ V) (h_V_size : Fintype.card V = ℓ)
+    : (getCanonicalFlag G h_V_size).out ≃f G
+  := by
+  dsimp [getCanonicalFlag]
   let ⟨Q, iso⟩ := getCanonicalQuotSimpleGraph G.graph h_V_size
   let G' : LabeledGraph σ (Fin ℓ) := {
     graph := Q.out
@@ -598,7 +611,50 @@ noncomputable def getCanonicalFlag
       simp only [Function.comp_apply, RelIso.apply_symm_apply iso]
   }
   let φ' : ⟦G'⟧.out ≃f G' := Nonempty.some ((@Quotient.eq_mk_iff_out _ _ ⟦G'⟧ G').mp rfl)
-  ⟨⟦G'⟧, φ'.trans φ⟩
+  exact φ'.trans φ
+
+omit [Fintype T] in
+lemma cancel_getCanonicalFlag_iso'
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+    {G : LabeledGraph σ V} (G₀ G₁ : LabeledSubgraph σ G) (U₀ U₁ : Set V)
+    (h_V_size₀ : Fintype.card ↑G₀.subgraph.verts = ℓ) (h_V_size₁ : Fintype.card ↑G₁.subgraph.verts = ℓ)
+    (h_U₀ : U₀ ⊆ G₀.subgraph.verts) (h_U₁ : U₁ ⊆ G₁.subgraph.verts)
+    (h_G₀_eq_G₁ : G₀ = G₁)
+    (h_image₀_eq_image₁ : ⇑(getCanonicalFlag_iso G₀.coe h_V_size₀).graph_iso.symm '' {x : G₀.subgraph.verts | ↑x ∈ U₀}
+                          =
+                          ⇑(getCanonicalFlag_iso G₁.coe h_V_size₁).graph_iso.symm '' {x : G₁.subgraph.verts | ↑x ∈ U₁})
+    : U₀ ⊆ U₁ := by
+  intro x₀ h_x₀_in_U₀
+  have h_x₀_in_G₀ : x₀ ∈ G₀.subgraph.verts := h_U₀ h_x₀_in_U₀
+  let y := (getCanonicalFlag_iso G₀.coe h_V_size₀).graph_iso.symm ⟨x₀, h_x₀_in_G₀⟩
+  have h₀ : y ∈ ⇑(getCanonicalFlag_iso G₁.coe h_V_size₁).graph_iso.symm '' {x : G₁.subgraph.verts | ↑x ∈ U₁} := by
+    rw [←h_image₀_eq_image₁]
+    dsimp [y]
+    simp only [Set.mem_image, Set.mem_setOf_eq, EmbeddingLike.apply_eq_iff_eq, exists_eq_right, h_x₀_in_U₀]
+  simp only [LabeledSubgraph.coe_graph, Set.mem_image, Set.mem_setOf_eq, Subtype.exists, exists_and_left] at h₀
+  obtain ⟨x₁, h_x₁_in_U₁, _, h_y_eq⟩ := h₀
+  have : x₀ = x₁ := by
+    subst h_G₀_eq_G₁
+    simp_all only [EmbeddingLike.apply_eq_iff_eq, Subtype.mk.injEq, y]
+  rw [this]
+  exact h_x₁_in_U₁
+
+omit [Fintype T] in
+lemma cancel_getCanonicalFlag_iso
+    {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
+    {G : LabeledGraph σ V} (G₀ G₁ : LabeledSubgraph σ G) (U₀ U₁ : Set V)
+    (h_V_size₀ : Fintype.card ↑G₀.subgraph.verts = ℓ) (h_V_size₁ : Fintype.card ↑G₁.subgraph.verts = ℓ)
+    (h_U₀ : U₀ ⊆ G₀.subgraph.verts) (h_U₁ : U₁ ⊆ G₁.subgraph.verts)
+    (h_G₀_eq_G₁ : G₀ = G₁)
+    (h_image₀_eq_image₁ : ⇑(getCanonicalFlag_iso G₀.coe h_V_size₀).graph_iso.symm '' {x : G₀.subgraph.verts | ↑x ∈ U₀}
+                          =
+                          ⇑(getCanonicalFlag_iso G₁.coe h_V_size₁).graph_iso.symm '' {x : G₁.subgraph.verts | ↑x ∈ U₁})
+    : U₀ = U₁ :=
+  have h_subset₀ : U₀ ⊆ U₁ :=
+    cancel_getCanonicalFlag_iso' G₀ G₁ U₀ U₁ h_V_size₀ h_V_size₁ h_U₀ h_U₁ h_G₀_eq_G₁ h_image₀_eq_image₁
+  have h_subset₁ : U₁ ⊆ U₀ :=
+    cancel_getCanonicalFlag_iso' G₁ G₀ U₁ U₀ h_V_size₁ h_V_size₀ h_U₁ h_U₀ (Eq.symm h_G₀_eq_G₁) (Eq.symm h_image₀_eq_image₁)
+  Set.Subset.antisymm h_subset₀ h_subset₁
 
 /- FlagList -/
 

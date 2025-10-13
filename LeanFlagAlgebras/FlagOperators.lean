@@ -32,6 +32,12 @@ noncomputable def isomorphismCount
   :=
   (isoLabeledGraphSetWithSameGraph G).toFinset.card
 
+theorem isomorphismCount_eq_of_iso
+    {G G' : LabeledGraph σ (Fin n)} (φ : G ≃f G')
+    : isomorphismCount G = isomorphismCount G'
+  := by
+  sorry
+
 noncomputable def downwardNormalizingFactor_labeledGraph
     (G : LabeledGraph σ (Fin n)) : ℚ
   :=
@@ -208,12 +214,14 @@ noncomputable def unlabel {V : Type}
   intro G G' G_eqv
   exact unlabeledGraphQuot_respect_eqv G_eqv
 
-theorem unlabeledGraph_eqv_of_unlabel_eq
-    {F : LabeledGraph σ V} {G : LabeledGraph ∅ₜ V} (h : unlabel ⟦F⟧ = ⟦G⟧)
-    : unlabeledGraph F ∼f G
+theorem unlabel_eq_iff_unlabeledGraph_eqv
+    {F : LabeledGraph σ V} {G : LabeledGraph ∅ₜ V}
+    : unlabel ⟦F⟧ = ⟦G⟧ ↔ unlabeledGraph F ∼f G
   := by
-  simp only [unlabel, unlabeledGraphQuot, Quotient.lift_mk] at h
-  exact Quotient.exact h
+  constructor <;> intro h
+  · simp only [unlabel, unlabeledGraphQuot, Quotient.lift_mk] at h
+    exact Quotient.exact h
+  · exact Quotient.sound h
 
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
@@ -731,64 +739,180 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       rw [mul_comm ℓ.factorial, ← Nat.div_div_eq_div_mul, ← Nat.mul_div_assoc _ (Nat.factorial_dvd_factorial (Nat.sub_le ℓ n₀)), Nat.div_mul_cancel this, Nat.div_div_eq_div_mul]
   rw [P₁]
 
-  let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ by exact G.out)
-  let Gs' : Finset (LabeledGraph σ (Fin ℓ')) := {G | unlabeledGraph G ∼f F'}
+  let Gs : Finset (LabeledGraph σ (Fin ℓ')) := (labelExtensions ⟦F'⟧ σ).image (fun G ↦ G.out)
+  let S_F' : Finset (LabeledGraph σ (Fin ℓ')) := {G | G.graph = F'.graph}.toFinset
 
-  have sum_eq' : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
-      (∑ G with unlabeledGraph G ∼f F', isomorphismCount G * labeledSubgraphCount F G) / Ω.card := by
-    rw [Nat.cast_sum, Finset.sum_div]
-    apply Finset.sum_bij (fun G _ ↦ G.out) -- we need to define this function more carefully to prove surjectivity
-    · intro G hG
-      rcases Quotient.exists_rep G with ⟨G, rfl⟩
-      simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and] at hG
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      calc
-        _ ∼f unlabeledGraph G := unlabeledGraph_iso (Quotient.mk_out G)
-        _ ∼f F' := unlabeledGraph_eqv_of_unlabel_eq hG
-    · intro G _ G' _ h_eq
-      simp only [Quotient.out_inj] at h_eq
-      exact h_eq
-    · intro G hG
-      simp only [exists_prop]
-      sorry
-    · sorry
+  have hh : ∑ G ∈ labelExtensions ⟦F'⟧ σ, isomorphismCount G.out * labeledSubgraphCount F G.out =
+      ∑ G ∈ S_F', labeledSubgraphCount F G := by
+    calc
+      _ = ∑ G ∈ labelExtensions ⟦F'⟧ σ, {G' ∈ S_F' | ⟦G'⟧ = G}.card * labeledSubgraphCount F G.out := by
+        apply Finset.sum_congr rfl
+        intro G hG
+        rcases Quotient.exists_rep G with ⟨G, rfl⟩
+        dsimp only [labelExtensions] at hG
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG
+        rw [unlabel_eq_iff_unlabeledGraph_eqv] at hG
+        congr
+        have hG_iso : (⟦G⟧ : FlagWithSize σ ℓ').out ∼f G := by
+          show ⟦G⟧.out ≈ G
+          exact Quotient.eq_mk_iff_out.mp rfl
+        rw [isomorphismCount_eq_of_iso hG_iso.some]
+        dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph]
+        apply Finset.card_eq_of_equiv
+        apply Equiv.ofBijective _ _
+        · intro ⟨G', hG'⟩
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG'
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, S_F']
+          let φ_GF' := hG.some.graph_iso
+          let φ_G'G := (Classical.choice hG'.2).symm.graph_iso
+          use {
+            graph := F'.graph
+            type_embed := {
+              toFun := φ_GF' ∘ φ_G'G ∘ G'.type_embed
+              inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+              map_rel_iff' := by
+                intro a b
+                simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
+                rw [SimpleGraph.Iso.map_adj_iff φ_GF']
+                simp only [unlabeledGraph]
+                rw [SimpleGraph.Iso.map_adj_iff φ_G'G]
+                exact SimpleGraph.Embedding.map_adj_iff G'.type_embed
+            }
+          }
+          simp only [Quotient.eq, true_and]
+          apply Nonempty.intro
+          exact {
+            graph_iso := φ_GF'.symm
+            type_preserve := by
+              dsimp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+              rw [← Function.comp_assoc, RelIso.symm_comp_self, Function.id_comp]
+              exact (choice hG'.right).symm.type_preserve
+          }
+        · constructor
+          · intro ⟨H, hH⟩ ⟨H', hH'⟩ h_eq
+            simp only [eq_mpr_eq_cast, cast_inj, Subtype.mk.injEq, LabeledGraph.mk.injEq,
+              heq_eq_eq, RelEmbedding.mk.injEq, Function.Embedding.mk.injEq, true_and] at h_eq
+            simp only [Subtype.mk.injEq]
+            simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH hH'
+            have h_graph_eq : H.graph = H'.graph := by rw [← hH.1, hH'.1]
+            have h_iso : H ≃f H' := (hH.2.symm.trans hH'.2).some
+            ext
+            · rw [h_graph_eq]
+            · sorry
+          · sorry
+      _ = ∑ G ∈ labelExtensions ⟦F'⟧ σ, ∑ G' ∈ S_F' with ⟦G'⟧ = G, labeledSubgraphCount F (⟦G'⟧ : FlagWithSize σ ℓ').out := by
+        apply Finset.sum_congr rfl
+        intro G _
+        rw [Finset.card_eq_sum_ones, Finset.sum_mul, one_mul]
+        apply Finset.sum_congr rfl
+        intro G' hG'
+        simp only [Finset.mem_filter] at hG'
+        rw [hG'.2]
+      _ = ∑ G ∈ S_F', labeledSubgraphCount F (⟦G⟧ : FlagWithSize σ ℓ').out := by
+        have h_quot_labelExt : ∀ G ∈ S_F', ⟦G⟧ ∈ labelExtensions ⟦F'⟧ σ := by
+          intro G hG
+          simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, S_F'] at hG
+          simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and]
+          rw [unlabel_eq_iff_unlabeledGraph_eqv]
+          apply Nonempty.intro
+          exact {
+            graph_iso := by
+              dsimp only [unlabeledGraph]
+              rw [hG]
+            type_preserve := List.ofFn_inj.mp rfl
+          }
+        have := @Finset.sum_fiberwise_of_maps_to _ _ _ _ _ _ _ (fun G ↦ ⟦G⟧) h_quot_labelExt (fun G ↦ labeledSubgraphCount F (⟦G⟧ : FlagWithSize σ ℓ').out)
+        rw [← this]
+        congr!
+      _ = ∑ G ∈ S_F', labeledSubgraphCount F G := by
+        apply Finset.sum_congr rfl
+        intro G _
+        apply labeledSubgraphCount_respect_eqv
+        · apply Classical.choice
+          show ⟦G⟧.out ≈ G
+          exact Quotient.eq_mk_iff_out.mp rfl
+        · exact LabeledGraphIso.refl
 
-  have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
-    rw [Nat.cast_sum, Finset.sum_div]
-    apply Finset.sum_bij
-            (fun G _ ↦ G.out)
-            (by simp only [Finset.mem_image, Quotient.out_inj, exists_eq_right, imp_self, implies_true, Gs])
-            (by simp only [Quotient.out_inj, imp_self, implies_true])
-    · intro G' hG'
-      simp [Gs] at hG'
-      obtain ⟨G, hG⟩ := hG'
-      use G
-    · intro G hG
-      obtain ⟨G, rfl⟩ := Quotient.exists_rep G
-      have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
-        simp only [LabeledGraph.size, Fintype.card_fin]
-      dsimp only [flagDensity₁, downwardNormalizingFactor]
-      rw [← subflagDensity_eq_flagListDensity]
-      dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
-      simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
-      field_simp
-      -- rw [mul_comm] at hΩ_card
-      rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, hΩ_card]
-      simp only [Nat.cast_mul, Set.toFinset_card, Fintype.card_ofFinset]
-      have density_eq :  labeledSubgraphCount F G = labeledSubgraphCount F (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
-        have : G ≃f (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
-          dsimp [Quotient.mk, labeledGraphSetoid, flagEqv]
-          -- rw [Quotient.out_eq]
-          -- exact flagEqv.refl
-          sorry
+  -- have sum_eq' : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
+  --     (∑ G with G.graph = F'.graph, isomorphismCount G * labeledSubgraphCount F G) / Ω.card := by
+  --   rw [Nat.cast_sum, Finset.sum_div]
+  --   symm
+  --   apply Finset.sum_bij (fun G _ ↦ ⟦G⟧)
+  --   · intro G hG
+  --     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG
+  --     simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and]
+  --     rw [unlabel_eq_iff_unlabeledGraph_eqv]
+  --     sorry
+  --   · intro G hG G' hG' h_eq
+  --     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG hG'
+  --     sorry
+  --   · intro G hG
+  --     rcases Quotient.exists_rep G with ⟨G, rfl⟩
+  --     simp only [labelExtensions, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+  --     rw [unlabel_eq_iff_unlabeledGraph_eqv] at hG
+  --     let φ := hG.some.graph_iso
+  --     dsimp only [unlabeledGraph] at φ
+  --     simp only [exists_prop]
+  --     let G' : LabeledGraph σ (Fin ℓ') := {
+  --       graph := F'.graph
+  --       type_embed := {
+  --         toFun := φ ∘ G.type_embed
+  --         inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+  --         map_rel_iff' := by
+  --           intro a b
+  --           simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
+  --           rw [SimpleGraph.Iso.map_adj_iff φ]
+  --           exact SimpleGraph.Embedding.map_adj_iff G.type_embed
+  --       }
+  --     }
+  --     use G'
+  --     constructor
+  --     · simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  --       rfl
+  --     · simp only [Quotient.eq]
+  --       apply Nonempty.intro
+  --       exact {
+  --         graph_iso := φ.symm
+  --         type_preserve := by
+  --           dsimp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk, G']
+  --           rw [← Function.comp_assoc, RelIso.symm_comp_self, Function.id_comp]
+  --       }
+  --   · intro G hG
+  --     sorry
 
-        sorry
-      have iso_eq : isomorphismCount G = isomorphismCount (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
-        sorry
-      rw [density_eq, iso_eq]
-      sorry
-  rw [sum_eq]
-  congr
+  -- have sum_eq : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G =
+  --     (∑ G' ∈ Gs, (labeledSubgraphCount F G' * isomorphismCount G')) / Ω.card := by
+  --   rw [Nat.cast_sum, Finset.sum_div]
+  --   apply Finset.sum_bij (fun G _ ↦ G.out)
+  --     (by simp only [Finset.mem_image, Quotient.out_inj, exists_eq_right, imp_self, implies_true, Gs])
+  --     (by simp only [Quotient.out_inj, imp_self, implies_true])
+  --   · intro G' hG'
+  --     simp only [Finset.mem_image, Gs] at hG'
+  --     obtain ⟨G, hG⟩ := hG'
+  --     use G
+  --   · intro G hG
+  --     obtain ⟨G, rfl⟩ := Quotient.exists_rep G
+  --     have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
+  --       simp only [LabeledGraph.size, Fintype.card_fin]
+  --     dsimp only [flagDensity₁, downwardNormalizingFactor]
+  --     rw [← subflagDensity_eq_flagListDensity]
+  --     dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
+  --     simp only [labeledSubgraphDensity, FlagType.size, Fintype.card_fin, downwardNormalizingFactor_labeledGraph]
+  --     field_simp
+  --     rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, hΩ_card]
+  --     simp only [Nat.cast_mul]
+  --     have density_eq :  labeledSubgraphCount F G = labeledSubgraphCount F (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+  --       have : G ≃f (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+  --         dsimp [Quotient.mk, labeledGraphSetoid, flagEqv]
+  --         sorry
+
+  --       sorry
+  --     have iso_eq : isomorphismCount G = isomorphismCount (@Quotient.mk (LabeledGraph σ (Fin ℓ')) (labeledGraphSetoid σ (Fin ℓ')) G).out := by
+  --       sorry
+  --     rw [density_eq, iso_eq]
+  --     sorry
+  -- rw [sum_eq]
+  -- congr
 
   sorry
 
