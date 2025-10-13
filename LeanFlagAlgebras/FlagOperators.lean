@@ -622,16 +622,6 @@ lemma fun_eq_of_comp_eq_left
     rw [h]
   exact hf this
 
--- lemma fun_eq_of_comp_eq_right
---     {α β γ : Type} {g : α → β} {f f' : β → γ} (hf : Function.Surjective g) (h : f ∘ g = f' ∘ g)
---     : f = f'
---   := by
---   funext x
---   obtain ⟨y, hy⟩ := hf x
---   rw [← hy]
---   show (f ∘ g) y = (f' ∘ g) y
---   rw [h]
-
 theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
