@@ -834,10 +834,54 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           }
         }
         have hGG'_iso : G ∼f G' := by
-          sorry
+          apply Nonempty.intro
+          exact {
+            graph_iso := by
+              dsimp only [G']
+              exact hGF'.some.graph_iso
+            type_preserve := by
+              simp only [id_eq, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk, G']
+          }
         calc
           _ = {H | G'.graph = H.graph ∧ G' ∼f H}.toFinset.card := by
-            sorry
+            apply Finset.card_eq_of_equiv
+            apply Equiv.ofBijective _ _
+            · intro ⟨H, hH⟩
+              simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at *
+              let φGG' := hGG'_iso.some.graph_iso
+              let φGH := hH.2.some.graph_iso
+              use {
+                graph := G'.graph
+                type_embed := {
+                  toFun := φGG' ∘ φGH ∘ φGG'.symm ∘ G'.type_embed
+                  inj' := by
+                    simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+                  map_rel_iff' := by
+                    intro a b
+                    simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
+                    rw [SimpleGraph.Iso.map_adj_iff φGG']
+                    simp_rw [hH.1]
+                    rw [SimpleGraph.Iso.map_adj_iff φGH, SimpleGraph.Iso.map_adj_iff φGG'.symm]
+                    exact SimpleGraph.Embedding.map_adj_iff G'.type_embed
+                }
+              }
+              simp only [true_and]
+              apply Nonempty.intro
+              exact {
+                graph_iso := by
+                  apply φGG'.symm.trans
+                  apply φGH.trans
+                  simp_rw [← hH.1]
+                  exact φGG'
+                type_preserve := by
+                  ext v
+                  simp only [eq_mpr_eq_cast, id_eq, SimpleGraph.Iso.coe_comp, Function.comp_apply,
+                    RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+                  apply Fin.val_eq_of_eq
+                  refine (RelIso.symm_apply_eq φGG').mp ?_
+                  sorry
+              }
+            · sorry
           _ = {H ∈ S_F' | ⟦H⟧ = ⟦G⟧}.card := by
             congr
             ext H
@@ -848,7 +892,12 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
               rw [h_graph_eq]
               simp only [Quotient.eq, true_and]
               exact h_iso.symm.trans hGG'_iso.symm
-            · sorry
+            · intro ⟨h_graph_eq, h_iso⟩
+              simp only [Quotient.eq] at h_iso
+              constructor
+              · dsimp only [G']
+                rw [h_graph_eq]
+              · exact hGG'_iso.symm.trans h_iso.symm
         -- apply Finset.card_eq_of_equiv
         -- apply Equiv.ofBijective _ _
         -- · intro ⟨G', hG'⟩
