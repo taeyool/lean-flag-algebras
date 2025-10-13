@@ -395,10 +395,40 @@ theorem injectiveMapSet_card
 def embedding_set {V : Type} (G G': LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
   { φ : G.graph ↪g G'.graph | ∀ {a b : Fin n₀}, G.graph.Adj (G.type_embed a) (G.type_embed b) ↔ G'.graph.Adj (φ (G.type_embed a)) (φ (G.type_embed b)) }
 
+def automorphism_set {V : Type} (G G' : LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
+  { φ : G.graph ↪g G'.graph | ∀ {u v : V}, G.graph.Adj u v ↔ G'.graph.Adj (φ u) (φ v) }
+
 theorem isomorphismCount_card
     {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
     : (isomorphismCount F) = (embedding_set F F).toFinset.card
   := by
+  let S₀ := { ⟨X, G⟩ : Finset (Fin ℓ) × LabeledGraph σ (Fin ℓ)
+                | X.card = ℓ - n₀
+                ∧ G.graph = F.graph
+                ∧ Nonempty (F ≃f G) }
+  have : (isomorphismCount F) = S₀.toFinset.card := by
+    dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
+    apply Finset.card_eq_of_equiv
+    apply Equiv.ofBijective _ _
+    · intro ⟨H, hH⟩
+      simp at hH
+      use ⟨Finset.univ \ H.type_verts.toFinset, H⟩
+      simp [S₀]
+      sorry
+    · constructor
+      · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
+        simp at h_eq
+        simp
+        sorry
+      · intro ⟨⟨X, G⟩, h⟩
+        simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, S₀] at h
+        simp only [Subtype.mk.injEq, Prod.mk.injEq, Subtype.exists, Set.toFinset_setOf,
+          Finset.mem_filter, Finset.mem_univ, true_and, exists_and_left, exists_prop,
+          exists_eq_right_right]
+
+
+        sorry
+
   symm
   dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv]
   apply Finset.card_eq_of_equiv
@@ -481,7 +511,7 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
   let ℓ'_other := ℓ' - 0 - ℓ
   let ℓ_other := ℓ - n₀
   -- let LHS := (Finset.univ : Finset (Fin ℓ'_other)).powersetCard ℓ_other ×
-  let LHS := (isoLabeledGraphSetWithSameGraph F).toFinset ×   {G' :  LabeledSubgraph ∅ₜ F' | G'.IsInduced ∧ Nonempty (G'.coe ≃f unlabeledGraph F)}.toFinset
+  let LHS := (isoLabeledGraphSetWithSameGraph F).toFinset × {G' :  LabeledSubgraph ∅ₜ F' | G'.IsInduced ∧ Nonempty (G'.coe ≃f unlabeledGraph F)}.toFinset
   let S₀ := {⟨X, G⟩ : Finset (Fin ℓ') × LabeledSubgraph ∅ₜ F'
                 | X.card = ℓ
                 ∧ G.IsInduced
