@@ -400,15 +400,15 @@ theorem injectiveMapSet_card
     · exact Nat.factorial_dvd_factorial (by omega)
   rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
-def embedding_set {V : Type} (G G': LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
+def embeddingSet {V : Type} (G G': LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
   { φ : G.graph ↪g G'.graph | ∀ {a b : Fin n₀}, G.graph.Adj (G.type_embed a) (G.type_embed b) ↔ G'.graph.Adj (φ (G.type_embed a)) (φ (G.type_embed b)) }
 
-def automorphism_set {V : Type} (G G' : LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
+def automorphismSet {V : Type} (G G' : LabeledGraph σ V) : Set (G.graph ↪g G'.graph) :=
   { φ : G.graph ↪g G'.graph | ∀ {u v : V}, G.graph.Adj u v ↔ G'.graph.Adj (φ u) (φ v) }
 
 theorem isomorphismCount_card
     {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
-    : (isomorphismCount F) = (embedding_set F F).toFinset.card
+    : (isomorphismCount F) = (embeddingSet F F).toFinset.card
   := by
   let tmp := {H : LabeledSubgraph σ F | H.IsInduced ∧ Nonempty (H.coe ≃f F)}
   have : tmp.toFinset.card = (isomorphismCount F) := by
@@ -544,7 +544,7 @@ theorem isomorphismCount_card
         rw [adj_eq]
         exact SimpleGraph.Iso.map_adj_iff f.graph_iso
       use ⟨⟨φ, hφ⟩, by
-          simp only [embedding_set, SimpleGraph.Embedding.map_adj_iff, implies_true, Set.setOf_true,
+          simp only [embeddingSet, SimpleGraph.Embedding.map_adj_iff, implies_true, Set.setOf_true,
             Set.toFinset_univ, Finset.mem_univ]⟩
       simp only [RelEmbedding.coe_mk, Subtype.mk.injEq]
       refine LabeledGraph.ext ?_ ?_
