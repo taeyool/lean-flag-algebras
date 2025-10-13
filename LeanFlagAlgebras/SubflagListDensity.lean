@@ -2248,7 +2248,18 @@ noncomputable def
         h_Vl'_disj_pairwise, h_Vl''_disj_pairwise,
         h_Vl'_iso, h_Vl''_iso⟩
 
-      have h_Vl''_0_union_type_G_verts_card : Fintype.card ↑(Vl'' 0 ∪ G.type_verts) = ℓ' := by sorry
+      have h_Vl''_0_card : (Vl'' 0).toFinset.card = ℓ' - ℓ₀ := by sorry
+      have h_Vl''_0_union_type_G_verts_card : Fintype.card ↑(Vl'' 0 ∪ G.type_verts) = ℓ' := by
+        rw [Fintype.card_ofFinset]
+        have : Disjoint (Vl'' 0).toFinset G.type_verts.toFinset :=
+          Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl''_disj_type_verts 0))
+        rw [Finset.card_union_eq_card_add_card.mpr this]
+        rw [h_Vl''_0_card]
+        simp only [Set.toFinset_card, G.type_verts_card_eq]
+        dsimp [FlagType.size]
+        rw [Fintype.card_fin ℓ₀]
+        omega
+
       let G₀ := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
       have h_G₀_ind : G₀.IsInduced := inducedLabeledSubgraph_isInduced G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
       have h_G₀_card : Fintype.card ↑G₀.subgraph.verts = ℓ' := by
@@ -2471,8 +2482,6 @@ noncomputable def
         rw [←h_K_size_eq_Hl_i_size]
         rw [Set.toFinset_card]
         congr!
-
-      have h_Vl''_0_card : (Vl'' 0).toFinset.card = ℓ' - ℓ₀ := sorry
 
       have h_V_card : V.toFinset.card = ℓ'_other := by
         dsimp [V, ℓ'_other]
