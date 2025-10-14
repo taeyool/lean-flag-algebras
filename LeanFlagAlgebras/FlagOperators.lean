@@ -536,8 +536,10 @@ theorem isomorphismCount_card
         exact ⟨⟨iso_G_F.graph_iso ∘ G.type_embed,
           by simp only [EmbeddingLike.comp_injective]; exact RelEmbedding.injective G.type_embed⟩,
           by
+          intro a b
           simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
-          sorry⟩
+          rw [type_embed_Adj_iff G a b]
+          exact SimpleGraph.Iso.map_adj_iff iso_G_F.graph_iso⟩
       use θ
       use Finset.univ
       use ⟨by simp only [Finset.card_univ, Fintype.card_fin] ,
