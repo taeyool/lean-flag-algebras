@@ -817,9 +817,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
           graph := F'.graph
           type_embed := {
             toFun := hGF'.some.graph_iso ∘ G.type_embed
-            inj' := by
-              rw [EmbeddingLike.comp_injective _ hGF'.some.graph_iso]
-              exact RelEmbedding.injective G.type_embed
+            inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
             map_rel_iff' := by
               intro a b
               simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
@@ -848,8 +846,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
                 graph := G'.graph
                 type_embed := {
                   toFun := φGG' ∘ φGH ∘ φGG'.symm ∘ G'.type_embed
-                  inj' := by
-                    simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+                  inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
                   map_rel_iff' := by
                     intro a b
                     simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
@@ -901,7 +898,64 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
                         · rw [hH_graph_eq]
                         · exact cast_heq _ _
                       _ = H₂.type_embed v := by rw [h_eq]
-              · sorry
+              · intro ⟨H', hH'⟩
+                simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH'
+                rcases hH' with ⟨hH'_graph_eq, hH'_iso⟩
+                simp only [eq_mpr_eq_cast, Subtype.exists, Set.toFinset_setOf, Finset.mem_filter,
+                  Finset.mem_univ, true_and]
+                let φGG' := hGG'_iso.some.graph_iso
+                let φG'H' := hH'_iso.some.graph_iso
+                let H : LabeledGraph σ (Fin ℓ') := {
+                  graph := G.graph
+                  type_embed := {
+                    toFun := φGG'.symm ∘ H'.type_embed
+                    inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
+                    map_rel_iff' := by
+                      intro a b
+                      simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
+                      rw [type_embed_Adj_iff H']
+                      simp_rw [← hH'_graph_eq]
+                      rw [SimpleGraph.Iso.map_adj_iff φGG'.symm]
+                  }
+                }
+                have hH_graph_eq : G.graph = H.graph := by dsimp only [H]
+                let φGH : G ≃f H := {
+                  graph_iso := by
+                    apply φGG'.trans
+                    apply φG'H'.trans
+                    simp_rw [← hH'_graph_eq]
+                    exact φGG'.symm
+                  type_preserve := by
+                    simp only [H, eq_mpr_eq_cast, SimpleGraph.Iso.coe_comp,
+                      RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
+                    ext v
+                    simp only [Function.comp_apply]
+                    congr 2
+                    · rw [hH'_graph_eq]
+                    · rw [hH'_graph_eq]
+                    · exact cast_heq _ _
+                    · rw [← hH'_iso.some.type_preserve, ← hGG'_iso.some.type_preserve]
+                      rfl
+                }
+                use H, ⟨hH_graph_eq, Nonempty.intro φGH⟩
+                rw [cast_eq_iff_heq]
+                refine (Subtype.heq_iff_coe_eq ?_).mpr ?_
+                · intro
+                  simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+                · ext a b
+                  · simp only [hH'_graph_eq]
+                  · simp only
+                    apply heq_of_cast_eq ?_ ?_
+                    · rw [hH'_graph_eq]
+                    · ext v
+                      congr 1
+                      simp_rw [← hH'_iso.some.type_preserve]
+                      have : φG'H' = φGG' ∘ φGH.graph_iso ∘ φGG'.symm := by
+                        dsimp [φGH]
+                        sorry
+                      rw [this]
+                      simp only [Function.comp_assoc]
+                      sorry
           _ = {H ∈ S_F' | ⟦H⟧ = ⟦G⟧}.card := by
             congr
             ext H
@@ -918,52 +972,6 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
               · dsimp only [G']
                 rw [h_graph_eq]
               · exact hGG'_iso.symm.trans h_iso.symm
-        -- apply Finset.card_eq_of_equiv
-        -- apply Equiv.ofBijective _ _
-        -- · intro ⟨G', hG'⟩
-        --   simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG'
-        --   simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and, S_F']
-        --   let φ_GF' := hGF'.some.graph_iso
-        --   let φ_G'G := (Classical.choice hG'.2).symm.graph_iso
-        --   use {
-        --     graph := F'.graph
-        --     type_embed := {
-        --       toFun := φ_GF' ∘ φ_G'G ∘ G'.type_embed
-        --       inj' := by simp only [EmbeddingLike.comp_injective, RelEmbedding.injective]
-        --       map_rel_iff' := by
-        --         intro a b
-        --         simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
-        --         rw [SimpleGraph.Iso.map_adj_iff φ_GF']
-        --         simp only [unlabeledGraph]
-        --         rw [SimpleGraph.Iso.map_adj_iff φ_G'G]
-        --         exact SimpleGraph.Embedding.map_adj_iff G'.type_embed
-        --     }
-        --   }
-        --   simp only [Quotient.eq, true_and]
-        --   apply Nonempty.intro
-        --   exact {
-        --     graph_iso := φ_GF'.symm
-        --     type_preserve := by
-        --       dsimp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk]
-        --       rw [← Function.comp_assoc, RelIso.symm_comp_self, Function.id_comp]
-        --       exact (choice hG'.right).symm.type_preserve
-        --   }
-        -- · constructor
-        --   · intro ⟨H, hH⟩ ⟨H', hH'⟩ h_eq
-        --     simp only [eq_mpr_eq_cast, cast_inj, Subtype.mk.injEq, LabeledGraph.mk.injEq,
-        --       heq_eq_eq, RelEmbedding.mk.injEq, Function.Embedding.mk.injEq, true_and] at h_eq
-        --     simp only [Subtype.mk.injEq]
-        --     simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH hH'
-        --     have h_graph_eq : H.graph = H'.graph := by rw [← hH.1, hH'.1]
-        --     have h_iso : H ≃f H' := (hH.2.symm.trans hH'.2).some
-        --     ext
-        --     · rw [h_graph_eq]
-        --     · refine heq_of_cast_eq (congrArg (SimpleGraph.Embedding σ) h_graph_eq) ?_
-        --       ext v
-        --       rw [← h_iso.type_preserve]
-        --       refine Fin.val_eq_of_eq ?_
-        --       sorry
-        --   · sorry
       _ = ∑ G ∈ labelExtensions ⟦F'⟧ σ, ∑ G' ∈ S_F' with ⟦G'⟧ = G, labeledSubgraphCount F (⟦G'⟧ : FlagWithSize σ ℓ').out := by
         apply Finset.sum_congr rfl
         intro G _
