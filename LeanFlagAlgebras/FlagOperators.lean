@@ -400,76 +400,162 @@ theorem injectiveMapSet_card
     · exact Nat.factorial_dvd_factorial (by omega)
   rw [← Nat.mul_div_assoc _ this, Nat.div_mul_cancel (Nat.factorial_dvd_factorial (Nat.sub_le ℓ' n₀)), mul_comm]
 
-def topSet {V : Type} (F : LabeledGraph σ V) : Set (LabeledSubgraph σ F) :=
-  { H : LabeledSubgraph σ F | H.IsInduced ∧ Nonempty (H.coe ≃f F) }
+-- def topSet {V : Type} (F : LabeledGraph σ V) : Set (LabeledSubgraph σ F) :=
+--   { H : LabeledSubgraph σ F | H.IsInduced ∧ Nonempty (H.coe ≃f F) }
+
+-- theorem isomorphismCount_card
+--     {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
+--     : isomorphismCount F = (topSet F).toFinset.card
+--   := by
+--   dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv, topSet]
+--   apply Finset.card_eq_of_equiv
+--   let T := isoLabeledGraphSetWithSameGraph F
+--   let T₀ := topSet F
+--   let f_T₀_T :=
+--     let f_T₀_T_fwd : T₀ → T := by
+--       intro ⟨H, hH⟩
+--       simp [T, isoLabeledGraphSetWithSameGraph]
+--       simp [T₀, topSet] at hH
+--       have top_eq := induced_full_labeledSubgraph_eq_top hH
+--       have : H.subgraph = F.top.subgraph := congrArg LabeledSubgraph.subgraph top_eq
+--       use {
+--         graph := F.graph
+--         type_embed := F.type_embed
+--       }
+--       constructor
+--       · simp only
+--       · apply Nonempty.intro
+--         exact {
+--           graph_iso := SimpleGraph.Iso.refl
+--           type_preserve := by rfl
+--         }
+--     have f_T₀_T_inj : Function.Injective f_T₀_T_fwd := by
+--       intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
+--       simp [T₀, topSet] at hH₁ hH₂
+--       simp only [Subtype.mk.injEq]
+--       have top_eq₁ := induced_full_labeledSubgraph_eq_top hH₁
+--       have top_eq₂ := induced_full_labeledSubgraph_eq_top hH₂
+--       rw [top_eq₁, top_eq₂]
+--     have f_T₀_T_surj : Function.Surjective f_T₀_T_fwd := by
+--       intro ⟨G, hG⟩
+--       simp only [Subtype.exists]
+--       use F.top
+--       use ⟨F.top_isInduced, top_labeledSubgraph_iso_G⟩
+--       simp [f_T₀_T_fwd]
+--       simp only [isoLabeledGraphSetWithSameGraph, Set.mem_setOf_eq, T] at hG
+--       apply LabeledGraph.ext ?_ ?_
+--       · simp_all only
+--       · simp [flagEqv] at hG
+--         let iso_F_G := hG.2.some
+--         sorry
+--     Equiv.ofBijective f_T₀_T_fwd ⟨f_T₀_T_inj, f_T₀_T_surj⟩
+
+--   apply Equiv.ofBijective _ _
+--   · intro ⟨G, hG⟩
+--     simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG
+--     let iso_G_F := (Classical.choice hG.2).symm
+--     use inducedLabeledSubgraphByIso iso_G_F G.top
+--     simp only [Set.mem_setOf_eq, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
+--     constructor
+--     . exact inducedLabeledSubgraphByIso_isInduced iso_G_F G.top
+--     · have := inducedLabeledSubgraph_related iso_G_F G.top G.top_isInduced
+--       simp [relOfLabeledSubgraph, relOfSubgraph] at this
+--       apply Nonempty.intro
+--       sorry
+--   · constructor
+--     · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
+--       simp at h_eq
+--       simp only [Subtype.mk.injEq]
+--       simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH₁ hH₂
+--       sorry
+--     · intro ⟨H, hH⟩
+--       simp only [Set.mem_setOf_eq, Subtype.mk.injEq, Subtype.exists, Set.toFinset_setOf,
+--         Finset.mem_filter, Finset.mem_univ, true_and]
+--       sorry
+
+def modelSet {σ : FlagType (Fin n₀)} (F : LabeledGraph σ (Fin ℓ)) : Set (σ ↪g F.graph × Finset (Fin ℓ)) :=
+  { ⟨θ, w⟩ | w.card = ℓ ∧ Set.range θ ⊆ w ∧ ⇑(@SimpleGraph.Iso.refl _ F.graph) ∘ ⇑F.type_embed = ⇑θ}
 
 theorem isomorphismCount_card
     {ℓ : ℕ} (F : LabeledGraph σ (Fin ℓ))
-    : isomorphismCount F = (topSet F).toFinset.card
+    : isomorphismCount F = (modelSet F).toFinset.card
   := by
-  dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv, topSet]
+  dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, flagEqv, modelSet]
   apply Finset.card_eq_of_equiv
   let T := isoLabeledGraphSetWithSameGraph F
-  let T₀ := topSet F
+  let T₀ := modelSet F
   let f_T₀_T :=
     let f_T₀_T_fwd : T₀ → T := by
-      intro ⟨H, hH⟩
+      intro ⟨⟨θ, w⟩, h⟩
       simp [T, isoLabeledGraphSetWithSameGraph]
-      simp [T₀, topSet] at hH
-      have top_eq := induced_full_labeledSubgraph_eq_top hH
+      simp [T₀, modelSet] at h
+      let H := F.graph.induce w
+      have : w = Finset.univ := by
+        apply Finset.eq_of_subset_of_card_le
+        · simp only [Finset.subset_univ]
+        · rw [Finset.card_univ, Fintype.card_fin, h.1]
       use {
-        graph := F.graph
-        type_embed := by sorry
+        graph := {
+          Adj := fun a b ↦ H.Adj ⟨a, by rw [this]; simp only [Finset.coe_univ, Set.mem_univ]⟩ ⟨b, by rw [this]; simp only [Finset.coe_univ, Set.mem_univ]⟩
+          symm := fun _ _ a ↦ (SimpleGraph.adj_symm H a)
+        }
+        type_embed := by exact θ
       }
       constructor
-      · simp only
+      · simp only [Finset.coe_sort_coe]
+        exact rfl
       · apply Nonempty.intro
         exact {
           graph_iso := SimpleGraph.Iso.refl
-          type_preserve := by sorry
+          type_preserve := by simp_all only [Finset.coe_sort_coe]
         }
-    have f_T₀_T_inj : Function.Injective f_T₀_T_fwd := by
-      intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
-      simp [T₀, topSet] at hH₁ hH₂
-      simp only [Subtype.mk.injEq]
-      have top_eq₁ := induced_full_labeledSubgraph_eq_top hH₁
-      have top_eq₂ := induced_full_labeledSubgraph_eq_top hH₂
-      rw [top_eq₁, top_eq₂]
-    have f_T₀_T_surj : Function.Surjective f_T₀_T_fwd := by
+    have h_f_T₀_T_inj : Function.Injective f_T₀_T_fwd := by
+      intro ⟨⟨θ₁, w₁⟩, h₁⟩ ⟨⟨θ₂, w₂⟩, h₂⟩ h_eq
+      simp only [Finset.coe_sort_coe, id_eq, Subtype.mk.injEq, LabeledGraph.mk.injEq,
+        SimpleGraph.comap_adj, SimpleGraph.mk.injEq, heq_eq_eq, f_T₀_T_fwd] at h_eq
+      simp only [Subtype.mk.injEq, Prod.mk.injEq]
+      simp only [modelSet, Set.mem_setOf_eq, T₀] at h₁ h₂
+      constructor
+      · exact h_eq.2
+      · have hw₁ : w₁ = Finset.univ := by
+          apply Finset.eq_of_subset_of_card_le
+          · simp only [Finset.subset_univ]
+          · rw [Finset.card_univ, Fintype.card_fin, h₁.1]
+        have hw₂ : w₂ = Finset.univ := by
+          apply Finset.eq_of_subset_of_card_le
+          · simp only [Finset.subset_univ]
+          · rw [Finset.card_univ, Fintype.card_fin, h₂.1]
+        rw [hw₁, hw₂]
+    have h_f_T₀_T_surj : Function.Surjective f_T₀_T_fwd := by
       intro ⟨G, hG⟩
-      simp only [Subtype.exists]
-      use F.top
-      use ⟨F.top_isInduced, top_labeledSubgraph_iso_G⟩
-      simp [f_T₀_T_fwd]
-      simp only [isoLabeledGraphSetWithSameGraph, Set.mem_setOf_eq, T] at hG
-      apply LabeledGraph.ext ?_ ?_
-      · simp_all only
+      simp [T, isoLabeledGraphSetWithSameGraph] at hG
+      simp only [Subtype.exists, Prod.exists]
+      let iso_G_F := hG.2.some.symm
+      let := iso_G_F.graph_iso ∘ G.type_embed
+      let θ : σ ↪g F.graph := by
+        exact ⟨⟨iso_G_F.graph_iso ∘ G.type_embed,
+          by simp only [EmbeddingLike.comp_injective]; exact RelEmbedding.injective G.type_embed⟩,
+          by
+          simp only [Function.Embedding.coeFn_mk, Function.comp_apply]
+          sorry⟩
+      use θ
+      use Finset.univ
+      use ⟨by simp only [Finset.card_univ, Fintype.card_fin] ,
+          by simp only [Finset.coe_univ, Set.subset_univ],
+          by
+          ext t
+          simp only [Function.comp_apply, RelIso.refl_apply, Fin.val_eq_val, θ]
+          exact congrFun (id (Eq.symm iso_G_F.type_preserve)) t⟩
+      simp only [Finset.coe_sort_coe, id_eq, Subtype.mk.injEq, f_T₀_T_fwd]
+      refine LabeledGraph.ext ?_ ?_
+      · simp_all only [T₀, T, SimpleGraph.comap_adj, Finset.coe_sort_coe]
+        rfl
       · simp only
+        simp [θ]
+        have := iso_G_F.type_preserve
         sorry
-    Equiv.ofBijective f_T₀_T_fwd ⟨f_T₀_T_inj, f_T₀_T_surj⟩
-
-  apply Equiv.ofBijective _ _
-  · intro ⟨G, hG⟩
-    simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hG
-    let iso_G_F := (Classical.choice hG.2).symm
-    use inducedLabeledSubgraphByIso iso_G_F G.top
-    simp only [Set.mem_setOf_eq, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    . exact inducedLabeledSubgraphByIso_isInduced iso_G_F G.top
-    · have := inducedLabeledSubgraph_related iso_G_F G.top G.top_isInduced
-      simp [relOfLabeledSubgraph, relOfSubgraph] at this
-      apply Nonempty.intro
-      sorry
-  · constructor
-    · intro ⟨H₁, hH₁⟩ ⟨H₂, hH₂⟩ h_eq
-      simp at h_eq
-      simp only [Subtype.mk.injEq]
-      simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH₁ hH₂
-      sorry
-    · intro ⟨H, hH⟩
-      simp only [Set.mem_setOf_eq, Subtype.mk.injEq, Subtype.exists, Set.toFinset_setOf,
-        Finset.mem_filter, Finset.mem_univ, true_and]
-      sorry
+    Equiv.ofBijective f_T₀_T_fwd ⟨h_f_T₀_T_inj, h_f_T₀_T_surj⟩
+  sorry
 
 theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
