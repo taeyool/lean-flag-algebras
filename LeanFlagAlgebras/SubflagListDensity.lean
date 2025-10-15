@@ -1610,6 +1610,23 @@ noncomputable def
     dsimp [FlagType.size]
     exact Fintype.card_fin ℓ₀
 
+  have h_G_vert_subset_card_from_iso :
+    ∀ ℓ'' : ℕ,
+    ℓ₀ ≤ ℓ'' → ∀ F : LabeledGraph σ (Fin ℓ''), ∀ (V₀ : Set (Fin ℓ)),
+                 (Nonempty ((inducedLabeledSubgraph G (V₀ ∪ G.type_verts) Set.subset_union_right).coe ≃f F))
+                 → (V₀ ∪ G.type_verts).toFinset.card = ℓ''
+    := sorry
+    /-
+        let K := inducedLabeledSubgraph G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right
+        have iso : K.coe ≃f F.out := (h_Vl''_iso 0).some
+        have h_K_size_eq_F_out_size := labeledGraphIso_size_eq K.coe F.out iso
+        dsimp [LabeledGraph.size] at h_K_size_eq_F_out_size
+        rw [inducedLabeledSubgraph_verts G (Vl'' 0 ∪ G.type_verts) Set.subset_union_right] at h_K_size_eq_F_out_size
+        rw [Fintype.card_fin ℓ'] at h_K_size_eq_F_out_size
+        rw [←h_K_size_eq_F_out_size]
+        congr!
+  -/
+
   let LHS := (Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other
              × (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset
   let RHS := (G' : Flag σ (Fin ℓ'))
