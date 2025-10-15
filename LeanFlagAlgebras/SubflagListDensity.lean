@@ -1959,7 +1959,7 @@ noncomputable def
       := by
       intro ⟨⟨V, Vl⟩,
         h_V_card, h_V_disj_Vl, h_V_disj_G_type_verts,
-        h_Vl_card, h_Vl_iso, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
+        h_Vl_card, _, h_Vl_disj_G_type_verts, h_Vl_disj_pairwise⟩
 
       calc
         (Vl 0 ∪ Vl 1 ∪ V ∪ G.type_verts).toFinset.card
@@ -1968,21 +1968,20 @@ noncomputable def
         _ = (Vl 0).toFinset.card + (Vl 1).toFinset.card + V.toFinset.card + G.type_verts.toFinset.card := by
                 have h_disj_0_1 : Disjoint (Vl 0).toFinset (Vl 1).toFinset :=
                   Set.disjoint_toFinset.mpr
-                    (h_Vl_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1)
-                      (by simp only [Fin.isValue, ne_eq, Fin.zero_eq_one_iff, OfNat.ofNat_ne_one, not_false_eq_true]))
-                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_0_1]
+                    (h_Vl_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega))
+                rw [←Finset.card_union_of_disjoint h_disj_0_1]
                 have h_disj_01_V : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset) V.toFinset := by
                   rw [Finset.disjoint_union_left]
                   constructor <;> {
                     rw [Set.disjoint_toFinset, Set.disjoint_iff, Set.inter_comm]
                     simp only [Fin.isValue, h_V_disj_Vl, subset_refl] }
-                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01_V]
+                rw [←Finset.card_union_of_disjoint h_disj_01_V]
                 have h_disj_01V_G : Disjoint ((Vl 0).toFinset ∪ (Vl 1).toFinset ∪ V.toFinset) G.type_verts.toFinset := by
                   repeat rw [Finset.disjoint_union_left]
                   (repeat constructor) <;> {
                     rw [Set.disjoint_toFinset, Set.disjoint_iff]
                     simp only [Fin.isValue, h_Vl_disj_G_type_verts, h_V_disj_G_type_verts, subset_refl] }
-                rw [←Finset.card_union_eq_card_add_card.mpr h_disj_01V_G]
+                rw [←Finset.card_union_of_disjoint h_disj_01V_G]
         _ = (Hl_size 0 - ℓ₀) + (Hl_size 1 - ℓ₀) + ℓ'_other + ℓ₀ := by
                 rw [h_V_card, h_Vl_card 0, h_Vl_card 1]
                 simp only [Fin.isValue, Set.toFinset_card, Nat.add_left_cancel_iff]
@@ -2260,7 +2259,7 @@ noncomputable def
         rw [Fintype.card_ofFinset]
         have : Disjoint (Vl'' 0).toFinset G.type_verts.toFinset :=
           Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl''_disj_type_verts 0))
-        rw [Finset.card_union_eq_card_add_card.mpr this]
+        rw [Finset.card_union_of_disjoint this]
         simp only [Fin.isValue, Set.toFinset_card, Fintype.card_ofFinset,
           h_G_type_verts_card_eq_ℓ₀, add_tsub_cancel_right]
 
@@ -2470,7 +2469,7 @@ noncomputable def
         intro i
         suffices (Vl i ∪ G.type_verts).toFinset.card = Hl_size i by {
            rw [Set.toFinset_union] at this
-           rw [Finset.card_union_eq_card_add_card.mpr
+           rw [Finset.card_union_of_disjoint
                  (Set.disjoint_toFinset.mpr (disjoint_iff.mpr (h_Vl_disj_G_type_verts i)))] at this
            rw [←this]
            simp only [Set.toFinset_card, Fintype.card_ofFinset, h_G_type_verts_card_eq_ℓ₀, add_tsub_cancel_right]
@@ -2499,7 +2498,7 @@ noncomputable def
                     have h' := disjoint_iff.mpr
                                  (h_disj_implies_disj (Vl' 0) (Vl' 1)
                                    (disjoint_iff.mp (h_Vl'_disj_pairwise (Set.mem_univ 0) (Set.mem_univ 1) (by omega))))
-                    rw [Finset.card_union_eq_card_add_card.mpr (Set.disjoint_toFinset.mpr h')]
+                    rw [Finset.card_union_of_disjoint (Set.disjoint_toFinset.mpr h')]
           _ = ℓ' - ℓ₀ - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) := by
                     rw [h_Vl''_0_card]
                     have h₀ : (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0))).toFinset.card = ℓ₁ - ℓ₀ := by
