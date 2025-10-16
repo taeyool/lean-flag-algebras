@@ -1026,19 +1026,16 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
   let Fu := unlabeledGraph F
   have hFu_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) Fu = ℓ := by
     simp only [LabeledGraph.size, Fintype.card_fin]
-  have graph_eq_Fu_F : Fu.graph = F.graph := by simp only [unlabeledGraph, Fu]
   obtain ⟨F', rfl⟩ := Quotient.exists_rep F'
   have hF'_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F' = ℓ' := by
         simp only [LabeledGraph.size, Fintype.card_fin]
   have n₀_le_ℓ : n₀ ≤ ℓ := by
     have := F.type_size_le_size
     simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
-  have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans n₀_le_ℓ hℓ
 
   let Ω := (injectiveMapSet n₀ ℓ ℓ').toFinset
   let A := (isoInjectiveMapSet F F').toFinset
   have hΩ_card : Ω.card = ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) := injectiveMapSet_card n₀_le_ℓ hℓ
-
   conv =>
     lhs
     dsimp only [flagDensity₁, downwardNormalizingFactor]
@@ -1076,9 +1073,13 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, hΩ_card]
     congr
     · rw [Nat.cast_mul, mul_comm]
+      let φG : G ≃f ⟦G⟧.out := by
+        apply Classical.choice
+        show G ≈ ⟦G⟧.out
+        exact Quotient.mk_eq_iff_out.mp rfl
       congr 1 <;> simp only [Rat.natCast_inj]
-      · sorry
-      · sorry
+      · exact isomorphismCount_eq_of_iso φG
+      · exact labeledSubgraphCount_respect_eqv φG LabeledGraphIso.refl
     · sorry
 
   rw [lhs, rhs]
