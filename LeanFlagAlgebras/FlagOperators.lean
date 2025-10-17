@@ -445,7 +445,7 @@ def isoInjectiveMapSet
   :=
   { w | by
     obtain ⟨⟨w, θ⟩, h⟩ := w
-    let G := (F'.graph.induce w)
+    let G := F'.graph.induce w
     let θ : Fin n₀ → w := fun i ↦ ⟨θ i, h.2.2 (Set.mem_range_self i)⟩
     have hθ_inj : Function.Injective θ := by
       intro a b h_eq
@@ -455,6 +455,23 @@ def isoInjectiveMapSet
       then Nonempty (⟨G, { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
       else false
   }
+
+def isoInjectiveMapSet''
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
+    : Set (Σ (W : Set (Fin ℓ')), (Fin n₀ → W))
+  :=
+  { ⟨W, θ⟩ | Function.Injective θ ∧ W.toFinset.card = ℓ ∧
+    ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b ∧
+    ∃ (φ : F'.graph.induce W ≃g F.graph), φ ∘ θ = F.type_embed }
+
+def isoInjectiveMapSet'''
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
+    : Set (Σ (W : Set (Fin ℓ')), (Fin n₀ → W))
+  :=
+  { ⟨W, θ⟩ | W.toFinset.card = ℓ ∧
+    ∃ (hθ_inj : Function.Injective θ),
+    ∃ (hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b),
+    Nonempty (⟨F'.graph.induce W, { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F) }
 
 def isoInjectiveMapSet'
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
@@ -473,6 +490,7 @@ def isoInjectiveMapSet'
       else false
   }
 
+-- Not needed anymore
 theorem injectiveMapSet_card
     {n₀ ℓ ℓ' : ℕ} (hℓ : n₀ ≤ ℓ) (hℓ' : ℓ ≤ ℓ')
     : (injectiveMapSet n₀ ℓ ℓ').toFinset.card = ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial)
@@ -978,6 +996,7 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = ∑ G with G.graph = F'.graph, labeledSubgraphCount F G
   := by
+  -- isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
   sorry
 
 theorem isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount
@@ -1097,29 +1116,28 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     have := F.type_size_le_size
     simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
 
-  let Ω := (injectiveMapSet n₀ ℓ ℓ').toFinset
   let A := (isoInjectiveMapSet F F').toFinset
-  have hΩ_card : Ω.card = ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial) := injectiveMapSet_card n₀_le_ℓ hℓ
+  let ω := ℓ'.factorial / ((ℓ' - ℓ).factorial * (ℓ - n₀).factorial)
   conv =>
     lhs
     dsimp only [flagDensity₁, downwardNormalizingFactor]
     rw [← subflagDensity_eq_flagListDensity]
     dsimp only [subflagDensity, unlabel, unlabeledGraphQuot, labeledSubgraphDensityLifted, Quotient.lift_mk]
 
-  have lhs : labeledSubgraphDensity Fu F' * downwardNormalizingFactor_labeledGraph F = A.card / Ω.card := by
+  have lhs : labeledSubgraphDensity Fu F' * downwardNormalizingFactor_labeledGraph F = A.card / ω := by
     dsimp only [labeledSubgraphDensity, downwardNormalizingFactor_labeledGraph]
     rw [div_mul_div_comm]
     congr
     · rw [← Nat.cast_mul, Nat.cast_inj, mul_comm]
       rw [isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount F F' hℓ]
     · simp only [emptyType_size, tsub_zero, ← Nat.cast_mul, Nat.cast_inj]
-      rw [hF'_size, hFu_size, hΩ_card, Nat.choose_eq_factorial_div_factorial hℓ]
+      rw [hF'_size, hFu_size, Nat.choose_eq_factorial_div_factorial hℓ]
       have : ℓ.factorial ∣ ℓ'.factorial / (ℓ' - ℓ).factorial := by
         rw [← Nat.descFactorial_eq_div hℓ]
         exact Nat.factorial_dvd_descFactorial ℓ' ℓ
       rw [mul_comm ℓ.factorial, ← Nat.div_div_eq_div_mul, ← Nat.mul_div_assoc _ (Nat.factorial_dvd_factorial (Nat.sub_le ℓ n₀)), Nat.div_mul_cancel this, Nat.div_div_eq_div_mul]
 
-  have rhs : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = A.card / Ω.card := by
+  have rhs : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = A.card / ω := by
     rw [isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount F F' hℓ]
     rw [Nat.cast_sum, Finset.sum_div]
     apply Finset.sum_congr rfl
@@ -1134,7 +1152,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     field_simp
     have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
       simp only [LabeledGraph.size, Fintype.card_fin]
-    rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul, hΩ_card]
+    rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul]
     congr
     · rw [Nat.cast_mul, mul_comm]
       let φG : G ≃f ⟦G⟧.out := by
