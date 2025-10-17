@@ -824,6 +824,7 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
         simp only [LabeledSubgraph.coe_graph, Function.comp_apply, eq_mpr_eq_cast, cast_eq, id_eq,
           Subtype.coe_eta, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk, θ]
         congr!
+        rw [← heq_eq_eq]
         sorry
     }
   · constructor
