@@ -1140,7 +1140,15 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       congr 1 <;> simp only [Rat.natCast_inj]
       · exact isomorphismCount_eq_of_iso φG
       · exact labeledSubgraphCount_respect_eqv φG LabeledGraphIso.refl
-    · sorry
+    · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.sub_sub_sub_cancel_right n₀_le_ℓ]
+      have h₁ : (ℓ - n₀).factorial * (ℓ' - ℓ).factorial ∣ (ℓ' - n₀).factorial := by
+        rw [← Nat.dvd_div_iff_mul_dvd]
+        · have : ℓ - n₀ = (ℓ' - n₀) - (ℓ' - ℓ) := by omega
+          rw [this, ← Nat.descFactorial_eq_div (by omega)]
+          exact Nat.factorial_dvd_descFactorial (ℓ' - n₀) (ℓ' - ℓ)
+        · exact Nat.factorial_dvd_factorial (by omega)
+      have h₂ : (ℓ' - n₀).factorial ∣ ℓ'.factorial := Nat.factorial_dvd_factorial (by omega)
+      rw [← Nat.mul_div_right_comm h₁, Nat.mul_div_cancel' h₂, Nat.mul_comm]
 
   rw [lhs, rhs]
 
