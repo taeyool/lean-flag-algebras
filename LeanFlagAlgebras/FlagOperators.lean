@@ -1082,16 +1082,45 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
           simp only [coe_graph, eq_mpr_eq_cast, φG_ind_inv, φG_ind, Function.comp_apply, id_eq, Fin.val_eq_val]
           calc
             _ = hG_ind_iso.some.graph_iso (hG_ind_iso.some.symm.graph_iso v) := by
+              have : (inducedSubgraph F'.graph W).coe = (inducedLabeledSubgraph G W hW).coe.graph := by
+                rw [← hG_graph_eq]
+                simp only [inducedLabeledSubgraph, coe_graph]
               congr 2
-              · sorry
-              · sorry
+              · rw [this]
               · exact cast_heq _ _
             _ = v := by simp only [coe_graph, LabeledGraphIso.symm, RelIso.apply_symm_apply]
         use hθ_range, φG_ind_inv
         simp only [coe_graph, Subtype.coe_eta, θ]
         show (φG_ind_inv ∘ φG_ind) ∘ F.type_embed = F.type_embed
         rw [h_φG_ind_inv_comp, Function.id_comp]
-    have h_f_S₃_S₄_inj : Function.Injective f_S₃_S₄ := by sorry
+    have h_f_S₃_S₄_inj : Function.Injective f_S₃_S₄ := by
+      intro ⟨⟨G₁, W₁⟩, hG₁_graph_eq, hW₁, hG₁_iso⟩ ⟨⟨G₂, W₂⟩, hG₂_graph_eq, hW₂, hG₂_iso⟩ h_eq
+      simp only [coe_graph, Subtype.mk.injEq, Prod.mk.injEq, f_S₃_S₄] at h_eq
+      obtain ⟨hW_eq, hθ_eq⟩ := h_eq
+      have hG_graph_eq : G₁.graph = G₂.graph := by rw [hG₁_graph_eq, ← hG₂_graph_eq]
+      simp only [hW_eq, Subtype.mk.injEq, Prod.mk.injEq, and_true]
+      ext a b
+      · rw [hG_graph_eq]
+      · apply heq_of_cast_eq ?_ ?_
+        · rw [hG_graph_eq]
+        · ext v
+          rw [Fin.val_eq_val]
+          calc
+            _ = G₁.type_embed v := by
+              congr
+              · rw [hG_graph_eq]
+              · rw [hG_graph_eq]
+              · exact cast_heq _ _
+            _ = (inducedLabeledSubgraph G₁ W₁ hW₁).coe.type_embed v := by congr
+            _ = hG₁_iso.some.symm.graph_iso (F.type_embed v) := by
+              rw [← hG₁_iso.some.symm.type_preserve]
+              congr
+            _ = (fun i ↦ ↑(hG₁_iso.some.symm.graph_iso (F.type_embed i))) v := rfl
+            _ = hG₂_iso.some.symm.graph_iso (F.type_embed v) := by rw [hθ_eq]
+            _ = (inducedLabeledSubgraph G₂ W₂ hW₂).coe.type_embed v := by
+              rw [← hG₂_iso.some.symm.type_preserve]
+              congr
+            _ = G₂.type_embed v := by congr
     have h_f_S₃_S₄_surj : Function.Surjective f_S₃_S₄ := by sorry
     Equiv.ofBijective f_S₃_S₄ ⟨h_f_S₃_S₄_inj, h_f_S₃_S₄_surj⟩
   -- apply Finset.card_eq_of_equiv
