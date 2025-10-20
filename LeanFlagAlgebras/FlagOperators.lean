@@ -1121,13 +1121,28 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
               rw [← hG₂_iso.some.symm.type_preserve]
               congr
             _ = G₂.type_embed v := by congr
-    have h_f_S₃_S₄_surj : Function.Surjective f_S₃_S₄ := by sorry
+    have h_f_S₃_S₄_surj : Function.Surjective f_S₃_S₄ := by
+      intro ⟨⟨W, θ⟩, hθ_inj, hW_card, hθ_adj_iff, hθ_range, hW_ind_iso, hθ_comp_eq⟩
+      let G : LabeledGraph σ (Fin ℓ') := {
+        graph := F'.graph
+        type_embed := { toFun := θ, inj' := hθ_inj, map_rel_iff' := hθ_adj_iff }
+      }
+      refine ⟨⟨(G, W), ?_⟩, ?_⟩
+      · simp only [Set.mem_setOf_eq, S₃]
+        constructor
+        · simp only [G]
+        · refine ⟨?_, ?_⟩
+          · simp only [LabeledGraph.type_verts, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk,
+            Set.image_univ, hθ_range, G]
+          · exact Nonempty.intro { graph_iso := hW_ind_iso, type_preserve := hθ_comp_eq }
+      · simp only [coe_graph, f_S₃_S₄]
+        split
+        rename_i hGW G' W' hG'_graph_eq hW' h_eq
+        simp
+        sorry
     Equiv.ofBijective f_S₃_S₄ ⟨h_f_S₃_S₄_inj, h_f_S₃_S₄_surj⟩
   -- apply Finset.card_eq_of_equiv
   sorry
-
-example (F : SimpleGraph V) (G : SimpleGraph W) [Fintype V] [Fintype W] (h : F ≃g G) : Fintype.card V = Fintype.card W := by
-  exact SimpleGraph.Iso.card_eq h
 
 theorem isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
