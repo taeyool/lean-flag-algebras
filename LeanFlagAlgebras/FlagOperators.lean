@@ -440,7 +440,7 @@ def injectiveMapSet
   { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') |
     Function.Injective θ ∧ w.toFinset.card = ℓ ∧ Set.range θ ⊆ w }
 
-def isoInjectiveMapSet
+def isoInjectiveMapSet'''
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : Set (injectiveMapSet n₀ ℓ ℓ')
   :=
@@ -465,7 +465,7 @@ def isoInjectiveMapSet''
     ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b ∧
     ∃ (φ : (inducedSubgraph F'.graph W).coe ≃g F.graph), φ ∘ θ = F.type_embed }
 
-def isoInjectiveMapSet'''
+def isoInjectiveMapSet
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : Set ((Set (Fin ℓ')) × (Fin n₀ → Fin ℓ'))
   :=
@@ -753,7 +753,7 @@ theorem isomorphismCount_card
 
 theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
-    : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
+    : (isoInjectiveMapSet''' F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
   := by
   have hF_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) F = ℓ := by
     simp only [LabeledGraph.size, Fintype.card_fin]
@@ -794,7 +794,7 @@ theorem isoInjectiveMapSet_card_eq_labeledSubgraphCount_mul_isomorphismCount'
         obtain ⟨w', hw'⟩ := hw
         subst hw'
         simp only [LabeledSubgraph.coe_graph, Function.comp_apply, Subtype.coe_prop, θ]⟩
-    simp only [isoInjectiveMapSet, SimpleGraph.comap_adj, Function.Embedding.subtype_apply,
+    simp only [isoInjectiveMapSet''', SimpleGraph.comap_adj, Function.Embedding.subtype_apply,
       Bool.false_eq_true, dite_else_false, Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ,
       true_and]
     have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
@@ -868,6 +868,9 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     simp_all only [FlagType.size, Fintype.card_fin, LabeledGraph.size]
   have n₀_le_ℓ' : n₀ ≤ ℓ' := Nat.le_trans n₀_le_ℓ hℓ
 
+  have tttttttttttt : (isoInjectiveMapSet F F').toFinset.card = (isoInjectiveMapSet''' F F').toFinset.card := sorry
+  rw [tttttttttttt]
+
   symm
   dsimp only [isomorphismCount, isoLabeledGraphSetWithSameGraph, labeledSubgraphCount]
   rw [← Finset.card_product]
@@ -900,7 +903,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
         simp only [LabeledSubgraph.coe_graph, Function.Embedding.toFun_eq_coe,
           RelEmbedding.coe_toEmbedding, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv,
           Subtype.coe_prop, θ]⟩
-    simp only [isoInjectiveMapSet, SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
+    simp only [isoInjectiveMapSet''', SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Bool.false_eq_true,
       dite_else_false]
     simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and]
     have hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b := by
@@ -968,7 +971,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     · intro ⟨⟨⟨w, θ⟩, hΩ⟩, hA⟩
       simp only [injectiveMapSet, Set.mem_setOf_eq] at hΩ
       obtain ⟨hθ_inj, hw_card, hw⟩ := hΩ
-      simp only [isoInjectiveMapSet, Bool.false_eq_true, dite_else_false] at hA
+      simp only [isoInjectiveMapSet''', Bool.false_eq_true, dite_else_false] at hA
       simp only [SimpleGraph.comap_adj, Function.Embedding.subtype_apply, Set.toFinset_setOf,
         Finset.mem_filter, Finset.mem_univ, true_and] at hA
       obtain ⟨hθ, iso_H_F⟩ := hA
@@ -995,7 +998,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
       sorry
 
 theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
-    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : (isoInjectiveMapSet F F').toFinset.card = ∑ G with G.graph = F'.graph, labeledSubgraphCount F G
   := by
   dsimp only [labeledSubgraphCount]
@@ -1005,15 +1008,15 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
     ({G | G.graph = F'.graph}.sigma fun G ↦ {G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f F)}.toFinset)
   let S₂ : Set ((G : LabeledGraph σ (Fin ℓ')) × LabeledSubgraph σ G) :=
     { ⟨G, G'⟩ | G.graph = F'.graph ∧ G'.IsInduced ∧ Nonempty (G'.coe ≃f F) }
+  let S₃ : Set (LabeledGraph σ (Fin ℓ') × Set (Fin ℓ')) :=
+    { ⟨G, W⟩ | G.graph = F'.graph ∧
+      ∃ (h : G.type_verts ⊆ W), Nonempty ((inducedLabeledSubgraph G W h).coe ≃f F) }
+  let S₄ : Set (Set (Fin ℓ') × (Fin n₀ → Fin ℓ')) := isoInjectiveMapSet F F'
 
   have h_S₁_eq_S₂ : S₁ = S₂ := by
     ext ⟨G, G'⟩
     simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and,
       Set.mem_sigma_iff, Set.mem_setOf_eq, S₁, S₂]
-
-  let S₃ : Set (LabeledGraph σ (Fin ℓ') × Set (Fin ℓ')) :=
-    { ⟨G, W⟩ | G.graph = F'.graph ∧
-      ∃ (h : G.type_verts ⊆ W), Nonempty ((inducedLabeledSubgraph G W h).coe ≃f F) }
 
   have h_S₂_iso_S₃ : S₂ ≃ S₃ :=
     let f_S₂_S₃ : S₂ → S₃ := by
@@ -1037,8 +1040,6 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
       use ⟨⟨G, inducedLabeledSubgraph G W hW⟩, hG_graph_eq, inducedLabeledSubgraph_isInduced G W hW, hG_ind_iso⟩
       simp only [inducedLabeledSubgraph_verts, f_S₂_S₃]
     Equiv.ofBijective f_S₂_S₃ ⟨h_f_S₂_S₃_inj, h_f_S₂_S₃_surj⟩
-
-  let S₄ : Set (Set (Fin ℓ') × (Fin n₀ → Fin ℓ')) := isoInjectiveMapSet''' F F'
 
   have h_S₃_iso_S₄ : S₃ ≃ S₄ :=
     let f_S₃_S₄ : S₃ → S₄ := by
@@ -1138,18 +1139,37 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
       · simp only [coe_graph, f_S₃_S₄]
         split
         rename_i hGW G' W' hG'_graph_eq hW' h_eq
-        simp
-        sorry
+        obtain ⟨hW, hW_iso⟩ := hW'
+        simp only [Set.mem_setOf_eq, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
+        obtain ⟨hG_eq, hW_eq⟩ := h_eq
+        subst hG_eq hW_eq
+        simp only [Subtype.mk.injEq, Prod.mk.injEq, true_and]
+        ext v
+        rw [Fin.val_eq_val]
+        show (hW_iso.some.symm.graph_iso ∘ F.type_embed) v = θ v
+        rw [hW_iso.some.symm.type_preserve]
+        simp only [inducedLabeledSubgraph, RelEmbedding.coe_mk, Function.Embedding.coeFn_mk,
+          coe_graph, coe_type_embed, G]
     Equiv.ofBijective f_S₃_S₄ ⟨h_f_S₃_S₄_inj, h_f_S₃_S₄_surj⟩
-  -- apply Finset.card_eq_of_equiv
-  sorry
+
+  have h_S₁_iso_S₄ : S₁ ≃ S₄ := by
+    calc
+      S₁ ≃ S₂ := by rw [h_S₁_eq_S₂]
+      _ ≃ S₃ := h_S₂_iso_S₃
+      _ ≃ S₄ := h_S₃_iso_S₄
+  apply Finset.card_eq_of_equiv
+  simp only [Set.mem_toFinset, Set.toFinset_setOf, Finset.mem_sigma, Finset.mem_filter,
+    Finset.mem_univ, true_and]
+  simp only [Set.toFinset_setOf, Finset.coe_filter, Finset.mem_univ, true_and, S₁,
+    S₄] at h_S₁_iso_S₄
+  exact h_S₁_iso_S₄.symm
 
 theorem isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount
-    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
+    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : (isoInjectiveMapSet F F').toFinset.card = ∑ G ∈ labelExtensions ⟦F'⟧ σ, isomorphismCount G.out * labeledSubgraphCount F G.out
   := by
   let S_F' : Finset (LabeledGraph σ (Fin ℓ')) := {G | G.graph = F'.graph}.toFinset
-  rw [isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph F F' hℓ]
+  rw [isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph F F']
   symm
   calc
     _ = ∑ G ∈ labelExtensions ⟦F'⟧ σ, {H ∈ S_F' | ⟦H⟧ = G}.card * labeledSubgraphCount F G.out := by
@@ -1283,7 +1303,7 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
       rw [mul_comm ℓ.factorial, ← Nat.div_div_eq_div_mul, ← Nat.mul_div_assoc _ (Nat.factorial_dvd_factorial (Nat.sub_le ℓ n₀)), Nat.div_mul_cancel this, Nat.div_div_eq_div_mul]
 
   have rhs : ∑ G ∈ labelExtensions ⟦F'⟧ σ, flagDensity₁ ⟦F⟧ G * downwardNormalizingFactor G = A.card / ω := by
-    rw [isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount F F' hℓ]
+    rw [isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount F F']
     rw [Nat.cast_sum, Finset.sum_div]
     apply Finset.sum_congr rfl
     intro G hG
