@@ -736,6 +736,16 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
       simp only [LabeledSubgraph.inducedLabeledSubgraph_verts, Subtype.mk.injEq, Prod.mk.injEq, true_and, G]
       sorry
 
+theorem unlabeledGraphEq
+    {ℓ : ℕ} {G₁ G₂ : LabeledGraph σ (Fin ℓ)} (h : G₁.graph = G₂.graph)
+    : unlabeledGraph G₁ = unlabeledGraph G₂
+  := by
+  simp only [unlabeledGraph, LabeledGraph.mk.injEq, h, true_and]
+  refine heq_of_eq_cast ?_ ?_
+  · rw [h]
+  . ext t
+    exact Fin.elim0 t
+
 theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ')) (hℓ : ℓ ≤ ℓ')
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
@@ -839,6 +849,10 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
       simp only [Subtype.mk.injEq, Prod.mk.injEq, f_S₂_S₄] at h_eq
       obtain ⟨hW_eq, hθ_eq⟩ := h_eq
       have hW₁ := hG₁W.1
+      have hF'_ind_G := hG₁W.2.some
+      have := unlabeledGraphEq hG₁_graph_eq
+      rw [← this] at hF'_ind_G
+
       have hW₂ := hG₂W.1
       simp only [hW_eq, Subtype.mk.injEq, Prod.mk.injEq, and_true]
       ext a b
@@ -846,6 +860,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
       · apply heq_of_cast_eq ?_ ?_
         · rw [hG₁_graph_eq, hG₂_graph_eq]
         · ext v
+
           have hv_eq := congrFun hθ_eq v
 
           have hG₁_v := congrFun hG₁_iso_F.some.type_preserve v
@@ -923,6 +938,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
         obtain ⟨hG_eq, hW_eq⟩ := h_eq
         simp only [hW_eq, Subtype.mk.injEq, Prod.mk.injEq, true_and]
         ext v
+
         have : G.type_embed v = G'.type_embed v := by
           rw [hG_eq]
         dsimp [G] at this
