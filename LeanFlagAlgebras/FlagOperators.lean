@@ -755,6 +755,9 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
   let S₂ : Set ((LabeledGraph σ (Fin ℓ)) × Set (Fin ℓ')) :=
     { (G, W) | G.graph = F.graph ∧ Nonempty (F ≃f G) ∧
        Nonempty ((inducedSubgraph F'.graph W).coe ≃g F.graph) }
+  let S₂' : Set ((LabeledGraph σ (Fin ℓ)) × Set (Fin ℓ')) :=
+    { (G, W) | G.graph = F.graph ∧ Nonempty (F ≃f G) ∧
+       Nonempty ((inducedSubgraph F'.graph W).coe ≃g G.graph) }
   let S₃ : Set (Set (Fin ℓ') × (Fin n₀ → Fin ℓ')) := isoInjectiveMapSet F F'
 
   have h_S₁_iso_S₂ : S₁ ≃ S₂ :=
@@ -953,23 +956,52 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount'
         subst hW_eq hG_eq
         simp only [Subtype.mk.injEq, Prod.mk.injEq, true_and]
         ext t
+        have ht : θ t ∈ (inducedSubgraph F'.graph W).verts := by
+          simp only [inducedSubgraph]
+          exact hθ_range (Set.mem_range_self t)
         rw [Fin.val_eq_val]
 
-        simp only [RelEmbedding.coe_mk, Function.Embedding.coeFn_mk, G]
-
-        let ψ := hF'_ind_iso_G.some
-        show ψ.symm (G.type_embed t) = θ t
-        have F_eq_G : F = G := by
-          ext a b
-          · rw [hG_eq_F]
-          · refine heq_of_eq ?_
-            simp only [G]
-            exact RelEmbedding.ext_iff.mpr (congrFun (id (Eq.symm hθ_comp_eq)))
-        rw [F_eq_G] at hF_iso_G
-
         let φ := hF_iso_G.some.graph_iso
+        let ψ := hF'_ind_iso_G.some
+        let ψ' : (inducedSubgraph F'.graph W).coe ≃g F.graph := {
+          toFun := fun x ↦ φ.symm.toFun (ψ.toFun x)
+          invFun := fun x ↦ ψ.symm.toFun (φ.toFun x)
+          left_inv := by
+            intro _
+            simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, RelIso.apply_symm_apply,
+              RelIso.symm_apply_apply]
+          right_inv := by
+            intro _
+            simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, RelIso.apply_symm_apply,
+              RelIso.symm_apply_apply]
+          map_rel_iff' := by
+            intro a b
+            simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Equiv.coe_fn_mk,
+              SimpleGraph.Subgraph.coe_adj, inducedSubgraph_isInduced,
+              SimpleGraph.Subgraph.IsInduced.adj]
+            calc
+              _ ↔ F.graph.Adj (ψ a) (ψ b) := by
+                constructor
+                · intro hF_adj
+                  have := (SimpleGraph.Iso.map_adj_iff φ).mpr hF_adj
+                  simp_all only [RelIso.apply_symm_apply]
+                · intro hG_adj
+                  exact (SimpleGraph.Iso.map_adj_iff φ.symm).mpr hG_adj
+              _ ↔ F'.graph.Adj ↑a ↑b := by
+                constructor
+                · intro hF_adj
+                  have := (SimpleGraph.Iso.map_adj_iff ψ).mp hF_adj
+                  exact SimpleGraph.Subgraph.Adj.adj_sub' (inducedSubgraph F'.graph W) a b this
+                · intro hF'_adj
+                  refine (SimpleGraph.Iso.map_adj_iff ψ).mpr ?_
+                  simp_all only [SimpleGraph.Subgraph.coe_adj, inducedSubgraph_isInduced,
+                    SimpleGraph.Subgraph.IsInduced.adj]
+        }
+        have : hW_ind_iso = ψ' := by
+          ext x
+          simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, RelIso.coe_fn_mk, Equiv.coe_fn_mk, ψ']
+          sorry
         sorry
-
 
         -- simp only [Subtype.mk.injEq, Prod.mk.injEq, true_and]
         -- ext t
