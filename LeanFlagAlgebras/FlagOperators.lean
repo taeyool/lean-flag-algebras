@@ -440,31 +440,6 @@ def injectiveMapSet
   { (w, θ) : (Set (Fin ℓ')) × (Fin n₀ → Fin ℓ') |
     Function.Injective θ ∧ w.toFinset.card = ℓ ∧ Set.range θ ⊆ w }
 
-def isoInjectiveMapSet'''
-    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
-    : Set (injectiveMapSet n₀ ℓ ℓ')
-  :=
-  { w | by
-    obtain ⟨⟨w, θ⟩, h⟩ := w
-    let G := F'.graph.induce w
-    let θ : Fin n₀ → w := fun i ↦ ⟨θ i, h.2.2 (Set.mem_range_self i)⟩
-    have hθ_inj : Function.Injective θ := by
-      intro a b h_eq
-      simp only [Subtype.mk.injEq, θ] at h_eq
-      exact h.1 h_eq
-    exact if hθ_model : ∀ {a b : Fin n₀}, G.Adj (θ a) (θ b) ↔ σ.Adj a b
-      then Nonempty (⟨G, { toEmbedding := ⟨θ, hθ_inj⟩, map_rel_iff' := hθ_model }⟩ ≃f F)
-      else false
-  }
-
-def isoInjectiveMapSet''
-    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
-    : Set (Σ (W : Set (Fin ℓ')), (Fin n₀ → W))
-  :=
-  { ⟨W, θ⟩ | Function.Injective θ ∧ W.toFinset.card = ℓ ∧
-    ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b ∧
-    ∃ (φ : (inducedSubgraph F'.graph W).coe ≃g F.graph), φ ∘ θ = F.type_embed }
-
 def isoInjectiveMapSet
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : Set ((Set (Fin ℓ')) × (Fin n₀ → Fin ℓ'))
@@ -474,23 +449,6 @@ def isoInjectiveMapSet
     (∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b) ∧
     (∃ (h_range : Set.range θ ⊆ W) (φ : (inducedSubgraph F'.graph W).coe ≃g F.graph),
       φ ∘ (fun i ↦ ⟨θ i, h_range (Set.mem_range_self i)⟩) = F.type_embed) }
-
-def isoInjectiveMapSet'
-    {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
-    : Set (injectiveMapSet n₀ ℓ ℓ')
-  :=
-  { w | by
-    obtain ⟨⟨w, θ⟩, h⟩ := w
-    simp [injectiveMapSet] at h
-    exact if hθ_model : ∀ {a b : Fin n₀}, F'.graph.Adj (θ a) (θ b) ↔ σ.Adj a b
-      then Nonempty (⟨(F'.graph.induce w : SimpleGraph w),
-                      { toEmbedding := ⟨fun i => ⟨θ i, h.2.2 (Set.mem_range_self i)⟩,
-                                        by intro a b h_eq;
-                                           simp only [Subtype.mk.injEq] at h_eq;
-                                           exact h.1 h_eq⟩,
-                        map_rel_iff' := hθ_model }⟩ ≃f F)
-      else false
-  }
 
 -- Not needed anymore
 theorem injectiveMapSet_card
