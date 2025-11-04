@@ -50,8 +50,8 @@ theorem flagDensity₁_flagType_asEmptyType_pos
   := by
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2]
-  dsimp [SimpleGraph.toEmptyTypeFlag, unlabel, subflagDensity, labeledSubgraphDensityLifted,
-    labeledSubgraphDensity, unlabeledGraphQuot, Quotient.lift_mk]
+  dsimp only [SimpleGraph.toEmptyTypeFlag, unlabel, unlabeledGraphQuot, Quotient.lift_mk,
+    subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
   apply div_pos
   · simp only [Nat.cast_pos, labeledSubgraphCount]
     rw [Finset.card_pos]
@@ -427,7 +427,7 @@ theorem eventually_flagDensity_pos_of_converge_flagSeq
   obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp h
   specialize h_lim ⟨n₀, σ.toEmptyTypeFlag⟩
   apply Tendsto.eventually_const_lt hσ at h_lim
-  dsimp [flagDensitySeq] at h_lim
+  dsimp only [flagDensitySeq] at h_lim
   simp_all only [Rat.cast_pos]
 
 lemma tendsto_comp_of_strictMono

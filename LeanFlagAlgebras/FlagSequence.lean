@@ -114,7 +114,7 @@ theorem flagDensitySpace_abs_le_one
 theorem flagDensitySpace_compact
     : IsCompact (FlagDensitySpace σ)
   := by
-  dsimp [FlagDensitySpace, Set.pi]
+  dsimp only [FlagDensitySpace, Set.pi]
   simp only [Set.mem_univ, forall_true_left]
   apply isCompact_pi_infinite
   intro _
@@ -252,7 +252,7 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
   rw [linearExtension_smul]
   simp only [smul_eq_mul, mul_eq_zero]; right
   rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
-  dsimp [zeroElement, densityFlagSum] at hvi
+  dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul] at hvi
   rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
   simp_rw [linearExtension_smul, linearExtension_unitVector]
   exact h₀ F ℓ hℓ
@@ -517,7 +517,7 @@ theorem zeroSpaceProp_of_flagSeq_limit
   obtain ⟨h_inc, h_lim⟩ := hs_conv
   apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq s n F) atTop
   · exact h_lim F
-  · dsimp [flagDensitySeq]
+  · dsimp only [flagDensitySeq]
     have h_eventually_sum : ∀ᶠ (n : ℕ) in atTop, (flagDensity₁ F.2 (s n).2 : ℝ)
       = ∑ G : FlagWithSize σ ℓ, (flagDensity₁ F.2 G : ℝ) * flagDensity₁ G (s n).2 := by
       rw [eventually_atTop]
@@ -636,7 +636,7 @@ theorem randomDensity_expectation
     (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
     : (φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ))[randomDensity F ℓ] = φ.coe F
   := by
-  dsimp [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
+  dsimp only [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
   rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
   rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ, PositiveHom.map_sum]
   apply Finset.sum_congr rfl
@@ -651,7 +651,7 @@ theorem randomDensity_second_moment
     : ∫ G, (randomDensity F ℓ G) ^ 2 ∂(φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ)) =
       ∑ G : FlagWithSize σ ℓ, (flagDensity₁ F.2 G) ^ 2 * φ.coe ⟨ℓ, G⟩
   := by
-  dsimp [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
+  dsimp only [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
   simp_rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
   apply Finset.sum_congr rfl
   intro G _
@@ -728,7 +728,7 @@ instance flagSeqMeasure_isProbabilityMeasure
     (φ : PositiveHom σ)
     : IsProbabilityMeasure (flagSeqMeasure φ)
   := by
-  dsimp [flagSeqMeasure]
+  dsimp only [flagSeqMeasure]
   infer_instance
 
 notation "μ{" φ "}" => (flagSeqMeasure φ)
@@ -749,7 +749,7 @@ theorem flagDensityErrorSet_flagSeqMeasure
     simp only [Finset.coe_singleton, Set.singleton_pi, Set.preimage_setOf_eq, Function.eval]
     rfl
   rw [this]
-  dsimp [flagSeqMeasure]
+  dsimp only [flagSeqMeasure]
   rw [Measure.infinitePi_pi _ (by measurability)]
   simp only [Finset.prod_singleton]
 
@@ -950,7 +950,7 @@ theorem positiveHom_as_flagSeq_limit
     · rw [← Set.univ_eq_true_false]
       simp only [Set.preimage_univ, MeasurableSet.univ]
   have hS_measure : μ{φ} S = 1 := by
-    dsimp [flagSeqMeasure]
+    dsimp only [flagSeqMeasure]
     rw [← prob_compl_eq_zero_iff hS_measurable, Set.forall_compl]
     apply MeasureTheory.measure_exists_zero
     intro F
@@ -976,7 +976,7 @@ theorem positiveHom_as_flagSeq_limit
     simp only [ne_eq, not_not] at hS_measure
     rw [hS_measure]
     simp only [measure_empty, zero_ne_one, not_false_eq_true]
-  dsimp [S] at hs
+  dsimp only [Set.mem_setOf_eq, S] at hs
   use fun n ↦ ⟨n ^ 2 + n₀, s n⟩
   rw [flagSeq_convergesTo_iff]
   constructor

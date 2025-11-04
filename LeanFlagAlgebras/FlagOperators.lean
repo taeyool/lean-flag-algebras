@@ -16,7 +16,7 @@ notation "∅ₜ" => emptyType
 
 @[simp]
 theorem emptyType_size : ∅ₜ.size = 0 := by
-  dsimp [emptyType, FlagType.size]
+  dsimp only [emptyType, SimpleGraph.emptyGraph_eq_bot, FlagType.size]
   simp only [Fintype.card_eq_zero]
 
 def isoLabeledGraphSetWithSameGraph
@@ -82,7 +82,7 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
             _ = ⇑φ.graph_iso ∘ ⇑ψ.graph_iso ∘ ⇑G.type_embed := by
               congr! 1
               show φH.toFun = φ.graph_iso
-              dsimp [φH]
+              dsimp only [eq_mpr_eq_cast, cast_eq, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, φH]
               funext x
               congr
               · rw [hGH_graph]
@@ -123,14 +123,14 @@ lemma isomorphismCount_respect_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
     : isomorphismCount G = isomorphismCount G'
   := by
-  dsimp [isomorphismCount]
+  dsimp only [isomorphismCount]
   simp only [Set.toFinset_card, Fintype.card_congr (isoSetOfIsoLabeledGraphWithSameGraph h.some)]
 
 lemma downwardNormalizingFactor_labeledGraph_respect_eqv
     {G G' : LabeledGraph σ (Fin n)} (h : G ∼f G')
     : downwardNormalizingFactor_labeledGraph G = downwardNormalizingFactor_labeledGraph G'
   := by
-  dsimp [downwardNormalizingFactor_labeledGraph]
+  dsimp only [downwardNormalizingFactor_labeledGraph]
   rw [isomorphismCount_respect_eqv h]
 
 noncomputable def downwardNormalizingFactor
@@ -938,7 +938,7 @@ lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
       apply flagVectorEqv_sum
       intro G' hG'
       iterate 2 (apply flagVectorEqv_smul)
-      dsimp [labelExtensions] at hG'
+      dsimp only [labelExtensions] at hG'
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'
       rw [hG']
     _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardNormalizingFactor G • unitVector ⟨ℓ, unlabel G⟩ := by
@@ -952,19 +952,19 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : downwardFlagVector (zeroElement F ℓ) ∈ ZeroSpace ∅ₜ
   := by
-  dsimp [downwardFlagVector]
+  dsimp only [downwardFlagVector]
   let S : Finset (FinFlag σ) := (Finset.univ : Finset (FlagWithSize σ ℓ)).map {
     toFun := fun F' => ⟨ℓ, F'⟩
     inj' := fun F₁' F₂' h => by injection h
   }
   have h_supp : (zeroElement F ℓ).support ⊆ S ∪ {F} := by
-    dsimp [zeroElement]
+    dsimp only [zeroElement]
     calc
       _ ⊆ (unitVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
       _ ⊆ S ∪ {F} := by
         rw [Finset.union_comm]
         apply Finset.union_subset_union
-        · dsimp [densityFlagSum]
+        · dsimp only [densityFlagSum, rat_smul_eq_real_smul]
           apply Finset.Subset.trans Finsupp.support_finset_sum
           apply Finset.biUnion_subset.mpr
           intro G _
@@ -1012,7 +1012,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       simp only [heq_eq_eq, true_and] at hG'
       exact hG'
   have h₂ : (zeroElement F ℓ) F = if F ∈ S then 0 else 1 := by
-    dsimp [zeroElement, densityFlagSum]
+    dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul, Finsupp.coe_sub, Pi.sub_apply]
     simp only [unitVector_apply_self]
     rw [Finset.sum_apply']
     split
