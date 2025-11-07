@@ -72,6 +72,7 @@ structure LabeledGraph {T : Type*} (σ : SimpleGraph T) (V : Type*) where
   type_embed : σ ↪g graph
 
 /-- Isomorphism between `LabeledGraph`s. -/
+@[ext]
 structure LabeledGraphIso
     {T : Type*} {σ : SimpleGraph T}
     {V : Type*} (G : LabeledGraph σ V)
@@ -89,7 +90,7 @@ instance
     {W : Type*} {G' : LabeledGraph σ W} :
     FunLike (G ≃f G') V W where
   coe e := e.graph_iso
-  coe_injective' := sorry
+  coe_injective' _ _ h := LabeledGraphIso.ext <| DFunLike.coe_fn_eq.mp h
 
 instance
     {T : Type*} [Fintype T] {σ : SimpleGraph T}
@@ -106,13 +107,13 @@ instance
     use e.graph_iso, e.type_preserve
 
 instance
-    {T : Type*} [DecidableEq T] {σ : SimpleGraph T}
-    {V : Type*} [DecidableEq V] [Fintype V] {G : LabeledGraph σ V}
+    {T : Type*} {σ : SimpleGraph T}
+    {V : Type*} [Fintype V] {G : LabeledGraph σ V}
     {W : Type*} [DecidableEq W] {G' : LabeledGraph σ W} :
     DecidableEq (G ≃f G') := fun e f ↦
-  if h : ∀ v, e v = f v
-  then .isTrue (sorry)
-  else .isFalse sorry
+  if h : e.graph_iso = f.graph_iso
+  then .isTrue <| LabeledGraphIso.ext h
+  else .isFalse (h <| · ▸ rfl)
 
 /-- A flag. -/
 structure Flag {T : Type*} (σ : SimpleGraph T) (V : Type*) where
@@ -124,9 +125,60 @@ structure Flag {T : Type*} (σ : SimpleGraph T) (V : Type*) where
   flagPartition_complete {G : LabeledGraph σ V} (hG : G ∈ flagPartition) :
     ∀ ⦃G' : LabeledGraph σ V⦄, G' ∈ flagPartition ↔ Nonempty (G ≃f G')
 
+/-- A `FlagList`. -/
 abbrev FlagList
     {T : Type*} (σ : SimpleGraph T) {t : ℕ} (Vl : Fin t → Type*) :=
     (i : Fin t) → Flag σ (Vl i)
+
+/-- A `LabeledGraphList`. -/
+abbrev LabeledGraphList
+    {T : Type*} (σ : SimpleGraph T) {t : ℕ} (Vl : Fin t → Type*) :=
+  (i : Fin t) → LabeledGraph σ (Vl i)
+
+/-- A `LabeledGraphToList`. -/
+def labeledGraphToList {T : Type*} {σ : SimpleGraph T} {V : Type*} (G : LabeledGraph σ V) :
+    LabeledGraphList σ fun _ : Fin 1 ↦ V :=
+  fun _ ↦ G
+
+@[ext]
+structure LabeledSubgraph
+    {T : Type*} (σ : SimpleGraph T)
+    {V : Type*} (G : LabeledGraph σ V) where
+  subgraph : G.graph.Subgraph
+  type_embed : σ ↪g subgraph.coe
+  embed_eq : ∀ (t : T), type_embed t = G.type_embed t
+
+instance
+    {T : Type*} [Fintype T] {σ : SimpleGraph T}
+    {V : Type*} [DecidableEq V] [Fintype V] {G : LabeledGraph σ V} [DecidableRel G.graph.Adj] :
+    Fintype (LabeledSubgraph σ G) :=
+  haveI {H : G.graph.Subgraph} : Fintype (σ ↪g H.coe) := sorry
+  sorry
+
+abbrev LabeledSubgraphList (σ : SimpleGraph T) (t : ℕ) (G : LabeledGraph σ U)
+  := Fin t → LabeledSubgraph σ G
+
+def LabeledSubgraph.IsInduced {σ : SimpleGraph T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
+  :=
+  H.subgraph.IsInduced
+
+def LabeledSubgraphList.IsInduced
+    {σ : SimpleGraph T} {t : ℕ} {G : LabeledGraph σ U} (Hl : LabeledSubgraphList σ t G) : Prop
+  := ∀ (i : Fin t), (Hl i).IsInduced
+
+-- def predDisjointLabeledSubgraphList
+--     {σ : SimpleGraph T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList σ t G) : Prop
+--   :=
+--   ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
+-- 
+-- def predIsoLabeledHl
+--     {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
+--     : LabeledSubgraphList σ t G → Prop
+--   := fun Gl ↦
+--       (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
+--       ∧ predDisjointLabeledSubgraphList Gl
+-- 
+-- 
 
 -- abbrev FlagType := SimpleGraph
 -- def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop := Nonempty (G ≃f G')
@@ -138,4 +190,4 @@ abbrev FlagList
 end Compute
 
 #min_imports
-#lint
+-- #lint
