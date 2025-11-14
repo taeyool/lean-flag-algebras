@@ -52,6 +52,14 @@ instance
 instance
     {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
+    DecidableEq (G₁ ↪g G₂) := fun e f ↦
+  if h : ∀ g, e g = f g
+  then .isTrue (by ext; exact h _)
+  else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
+
+instance
+    {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
+    {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
     Fintype (G₁ ≃g G₂) where
   elems := ((@Finset.univ (V ≃ W)).filterMap fun e ↦
       if h : ∀ u v, G₂.Adj (e u) (e v) ↔ G₁.Adj u v
@@ -61,6 +69,14 @@ instance
     simp only [Finset.mem_filterMap, Finset.mem_univ, Option.dite_none_right_eq_some,
       Option.some.injEq, true_and]
     use e.toEquiv, fun _ _ ↦ e.map_rel_iff
+
+instance
+    {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
+    {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
+    DecidableEq (G₁ ≃g G₂) := fun e f ↦
+  if h : ∀ g, e g = f g
+  then .isTrue (by ext; exact h _)
+  else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
 
 example : (@Finset.univ ((SimpleGraph.completeGraph (Fin 3)) ≃g (SimpleGraph.completeGraph (Fin 3)))).card = 6 := by decide
 
@@ -151,9 +167,12 @@ structure LabeledSubgraph
 instance
     {T : Type*} [Fintype T] {σ : SimpleGraph T}
     {V : Type*} [DecidableEq V] [Fintype V] {G : LabeledGraph σ V} [DecidableRel G.graph.Adj] :
-    Fintype (LabeledSubgraph σ G) :=
-  haveI {H : G.graph.Subgraph} : Fintype (σ ↪g H.coe) := sorry
-  sorry
+    Fintype (LabeledSubgraph σ G) where
+  elems :=
+    let subgraphs := (@Finset.univ G.graph.Subgraph _)
+    let embeddings := subgraphs.biUnion fun x ↦ (@Finset.univ (σ ↪g x) _)
+    sorry
+  complete := sorry
 
 abbrev LabeledSubgraphList (σ : SimpleGraph T) (t : ℕ) (G : LabeledGraph σ U)
   := Fin t → LabeledSubgraph σ G
