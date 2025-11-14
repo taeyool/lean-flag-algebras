@@ -15,7 +15,8 @@
 -- LabeledGraphIso : (G : LabeledGraph σ V) → (G' : LabeledGraph σ W) → LabeledGraphIso G G' @ FlagDef.lean L307
 -- FlagType := SimpleGraph @ FlagDef.lean L13
 
-import Mathlib
+import Mathlib.Combinatorics.SimpleGraph.Subgraph
+import Mathlib.Data.Fintype.Perm
 
 /-!
 This file along with other files in the `Compute` directory will work on computable version of flag algebra.
@@ -209,4 +210,3 @@ def LabeledSubgraphList.IsInduced
 end Compute
 
 #min_imports
--- #lint
