@@ -165,12 +165,12 @@ lemma set_02_neq_12
 
 /- single flag densities -/
 
-lemma labeledSubgraphListSet_K2_O3
-    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) O3_labeledGraph = ∅
+lemma setOfLabeledSubgraphListIsoHl_K2_O3
+    : setOfLabeledSubgraphListIsoHl O3_labeledGraph (labeledGraphToList K2_labeledGraph) = ∅
   := by
-  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  dsimp only [setOfLabeledSubgraphListIsoHl, predIsoLabeledHl, labeledGraphToList]
   ext Hl
-  simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, Classical.not_imp]
+  simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
   push_neg
   intro h_ind h_iso
   specialize @h_ind 0
@@ -196,8 +196,8 @@ lemma labeledSubgraphListSet_K2_O3
 lemma labeledSubgraphListCount_K2_O3
     : labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) O3_labeledGraph = 0
   := by
-  dsimp [labeledSubgraphListCount]
-  simp only [labeledSubgraphListSet_K2_O3, Set.toFinset_empty, Finset.card_empty]
+  dsimp only [labeledSubgraphListCount]
+  simp only [setOfLabeledSubgraphListIsoHl_K2_O3, Set.toFinset_empty, Finset.card_empty]
 
 @[simp]
 theorem flagDensity_K2_O3
@@ -215,17 +215,17 @@ theorem flagDensity_K2_O3
     simp [labeledGraphToList]
     rfl
   rw [h₁, h₂]
-  rfl
+  simp only [Nat.cast_zero, Nat.cast_ofNat, zero_div]
 
 def labeledSubgraph_K2_E3 : LabeledSubgraph ∅ₜ E3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType E3_labeledGraph {0, 1}
 
-lemma labeledSubgraphListSet_K2_E3
-    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) E3_labeledGraph =
+lemma setOfLabeledSubgraphListIsoHl_K2_E3
+    : setOfLabeledSubgraphListIsoHl E3_labeledGraph (labeledGraphToList K2_labeledGraph) =
       {fun _ => labeledSubgraph_K2_E3}
   := by
-  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  dsimp only [setOfLabeledSubgraphListIsoHl, predIsoLabeledHl, labeledGraphToList]
   ext Hl
   simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
   constructor
@@ -289,13 +289,13 @@ lemma labeledSubgraphListSet_K2_E3
       }
     · intro i j
       rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-      simp only [not_true_eq_false, false_implies]
+      simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
 
 lemma labeledSubgraphListCount_K2_E3
     : labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) E3_labeledGraph = 1
   := by
-  dsimp [labeledSubgraphListCount, labeledGraphToList]
-  simp only [labeledSubgraphListSet_K2_E3, Set.toFinset_singleton, Finset.card_singleton]
+  dsimp only [labeledSubgraphListCount]
+  simp only [setOfLabeledSubgraphListIsoHl_K2_E3, Set.toFinset_singleton, Finset.card_singleton]
 
 @[simp]
 theorem flagDensity_K2_E3
@@ -323,13 +323,13 @@ def labeledSubgraph_K2_P3' : LabeledSubgraph ∅ₜ P3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType P3_labeledGraph {0, 2}
 
-lemma labeledSubgraphListSet_K2_P3
-    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) P3_labeledGraph =
+lemma setOfLabeledSubgraphListIsoHl_K2_P3
+    : setOfLabeledSubgraphListIsoHl P3_labeledGraph (labeledGraphToList K2_labeledGraph) =
       {fun _ => labeledSubgraph_K2_P3, fun _ => labeledSubgraph_K2_P3'}
   := by
-  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  dsimp only [setOfLabeledSubgraphListIsoHl, predIsoLabeledHl, labeledGraphToList]
   ext Hl
-  simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+  simp only [Set.mem_setOf_eq]
   constructor
   · intro ⟨h_ind, h_iso, _⟩
     specialize @h_ind 0
@@ -387,7 +387,7 @@ lemma labeledSubgraphListSet_K2_P3
         }
       · intro i j
         rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-        simp only [not_true_eq_false, false_implies]
+        simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
     · repeat' constructor
       · intro i
         rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_P3']
@@ -416,19 +416,19 @@ lemma labeledSubgraphListSet_K2_P3
         }
       · intro i j
         rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-        simp only [not_true_eq_false, false_implies]
+        simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
 
 lemma labeledSubgraphListCount_K2_P3
     : labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) P3_labeledGraph = 2
   := by
-  dsimp [labeledSubgraphListCount]
+  dsimp only [labeledSubgraphListCount]
   refine Finset.card_eq_two.mpr ?_
   use fun _ => labeledSubgraph_K2_P3, fun _ => labeledSubgraph_K2_P3'
   constructor
   · refine Function.ne_iff.mpr ⟨0, ?_⟩
     apply labeledSubgraph_emptyType_neq
     exact set_01_neq_02
-  · simp only [labeledSubgraphListSet_K2_P3, Set.toFinset_insert, Set.toFinset_singleton]
+  · simp only [setOfLabeledSubgraphListIsoHl_K2_P3, Set.toFinset_insert, Set.toFinset_singleton]
 
 @[simp]
 theorem flagDensity_K2_P3
@@ -460,13 +460,13 @@ def labeledSubgraph_K2_K3'' : LabeledSubgraph ∅ₜ K3_labeledGraph
   :=
   inducedLabeledSubgraph_emptyType K3_labeledGraph {1, 2}
 
-lemma labeledSubgraphListSet_K2_K3
-    : labeledSubgraphListSet (labeledGraphToList K2_labeledGraph) K3_labeledGraph =
+lemma setOfLabeledSubgraphListIsoHl_K2_K3
+    : setOfLabeledSubgraphListIsoHl K3_labeledGraph (labeledGraphToList K2_labeledGraph) =
       {fun _ => labeledSubgraph_K2_K3, fun _ => labeledSubgraph_K2_K3', fun _ => labeledSubgraph_K2_K3''}
   := by
-  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  dsimp only [setOfLabeledSubgraphListIsoHl, predIsoLabeledHl, labeledGraphToList]
   ext Hl
-  simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+  simp only [Set.mem_setOf_eq]
   constructor
   · intro ⟨h_ind, h_iso, _⟩
     specialize @h_ind 0
@@ -518,7 +518,7 @@ lemma labeledSubgraphListSet_K2_K3
         }
       · intro i j
         rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-        simp only [not_true_eq_false, false_implies]
+        simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
     · repeat' constructor
       · intro i
         rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3']
@@ -547,7 +547,7 @@ lemma labeledSubgraphListSet_K2_K3
         }
       · intro i j
         rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-        simp only [not_true_eq_false, false_implies]
+        simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
     · repeat' constructor
       · intro i
         rw [Fin.fin_one_eq_zero i, h₀, labeledSubgraph_K2_K3'']
@@ -576,12 +576,12 @@ lemma labeledSubgraphListSet_K2_K3
         }
       · intro i j
         rw [Fin.fin_one_eq_zero i, Fin.fin_one_eq_zero j]
-        simp only [not_true_eq_false, false_implies]
+        simp only [Fin.isValue, ne_eq, not_true_eq_false, Set.inter_self, IsEmpty.forall_iff]
 
 lemma labeledSubgraphListCount_K2_K3
     : labeledSubgraphListCount (labeledGraphToList K2_labeledGraph) K3_labeledGraph = 3
   := by
-  dsimp [labeledSubgraphListCount]
+  dsimp only [labeledSubgraphListCount]
   refine Finset.card_eq_three.mpr ?_
   use fun _ => labeledSubgraph_K2_K3, fun _ => labeledSubgraph_K2_K3', fun _ => labeledSubgraph_K2_K3''
   repeat' constructor
@@ -594,7 +594,7 @@ lemma labeledSubgraphListCount_K2_K3
   · refine Function.ne_iff.mpr ⟨0, ?_⟩
     apply labeledSubgraph_emptyType_neq
     exact set_02_neq_12
-  · simp only [labeledSubgraphListSet_K2_K3, Set.toFinset_insert, Set.toFinset_singleton]
+  · simp only [setOfLabeledSubgraphListIsoHl_K2_K3, Set.toFinset_insert, Set.toFinset_singleton]
 
 @[simp]
 theorem flagDensity_K2_K3
@@ -612,7 +612,7 @@ theorem flagDensity_K2_K3
     simp [labeledGraphToList]
     rfl
   rw [h₁, h₂]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 
 /- flag pair densities -/
