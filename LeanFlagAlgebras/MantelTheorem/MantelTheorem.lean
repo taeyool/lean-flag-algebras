@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».PositiveHom
+import «LeanFlagAlgebras».RandomHom
 import «LeanFlagAlgebras».MantelTheorem.Downward
 import «LeanFlagAlgebras».MantelTheorem.FlagMuls
 
@@ -75,7 +75,7 @@ theorem mantel_theorem
       0 ≤ (1 / 2 : ℝ) • (O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3) := by
           apply nonneg_smul_nonneg_geq_zero (by simp)
           rw [← O2₁_minus_K2₁_square_downward]
-          apply square_downward_geq_zero
+          apply square_downward_nonneg
       _ = _ := by
           simp only [smul_add, smul_sub, smul_smul]
           norm_num

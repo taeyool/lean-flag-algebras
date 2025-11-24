@@ -48,7 +48,7 @@ lemma unlabel_O3₁
   calc
     _ ∼f unlabeledGraph (O3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (O3₁_labeledGraph 0)
+      exact flagEqv.refl (O3₁_labeledGraph 0)
     _ ∼f O3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -161,7 +161,7 @@ lemma downwardNormalizingFactor_O3₁
   dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, O3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_O3₁_card, this]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 lemma downwardFlagVectorQuot_O3₁
     : downwardFlagVector (unitVector ⟨3, O3₁_flag⟩) = unitVector ⟨3, O3_flag⟩
@@ -185,7 +185,7 @@ lemma unlabel_E3₁
   calc
     _ ∼f unlabeledGraph (E3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (E3₁_labeledGraph 0)
+      exact flagEqv.refl (E3₁_labeledGraph 0)
     _ ∼f E3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -320,7 +320,7 @@ lemma unlabel_E3₁'
   calc
     _ ∼f unlabeledGraph (E3₁_labeledGraph 2) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (E3₁_labeledGraph 2)
+      exact flagEqv.refl (E3₁_labeledGraph 2)
     _ ∼f E3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -414,7 +414,7 @@ lemma unlabel_P3₁
   calc
     _ ∼f unlabeledGraph (P3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (P3₁_labeledGraph 0)
+      exact flagEqv.refl (P3₁_labeledGraph 0)
     _ ∼f P3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -537,7 +537,7 @@ lemma unlabel_P3₁'
   calc
     _ ∼f unlabeledGraph (P3₁_labeledGraph 1) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (P3₁_labeledGraph 1)
+      exact flagEqv.refl (P3₁_labeledGraph 1)
     _ ∼f P3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -643,7 +643,7 @@ lemma unlabel_K3₁
   calc
     _ ∼f unlabeledGraph (K3₁_labeledGraph 0) := by
       apply unlabeledGraph_iso
-      exact Quotient.mk_out (K3₁_labeledGraph 0)
+      exact flagEqv.refl (K3₁_labeledGraph 0)
     _ ∼f K3_labeledGraph := by
       dsimp [unlabeledGraph]
       apply flagEqv.refl
@@ -764,7 +764,7 @@ lemma downwardNormalizingFactor_K3₁
   dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, K3₁_flag]
   have : Nat.factorial 3 / 2 = 3 := rfl
   rw [isoLabeledGraphSetWithSameGraph_K3₁_card, this]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 lemma downwardFlagVectorQuot_K3₁
     : downwardFlagVector (unitVector ⟨3, K3₁_flag⟩) = unitVector ⟨3, K3_flag⟩
