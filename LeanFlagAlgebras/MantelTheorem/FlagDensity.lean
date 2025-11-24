@@ -628,13 +628,11 @@ def labeledSubgraph_O2₁_O2₁_O3₁' : LabeledSubgraph Sₜ (O3₁_labeledGrap
 lemma labeledSubgraph_O2₁_O2₁_O3₁_isInduced
     : labeledSubgraph_O2₁_O2₁_O3₁.IsInduced
   := by
-  dsimp [labeledSubgraph_O2₁_O2₁_O3₁]
   apply inducedLabeledSubgraph_singletonType_isInduced
 
 lemma labeledSubgraph_O2₁_O2₁_O3₁'_isInduced
     : labeledSubgraph_O2₁_O2₁_O3₁'.IsInduced
   := by
-  dsimp [labeledSubgraph_O2₁_O2₁_O3₁']
   apply inducedLabeledSubgraph_singletonType_isInduced
 
 def labeledSubgraph_O2₁_O2₁_O3₁_iso_O2₁_labeledGraph_0
@@ -644,25 +642,22 @@ def labeledSubgraph_O2₁_O2₁_O3₁_iso_O2₁_labeledGraph_0
     inducedSubgraph, LabeledSubgraph.coe, O3₁_labeledGraph, O2₁_labeledGraph]
   exact {
     graph_iso := {
-      toFun := fun i => i
-      invFun := fun i => {
-        val := i.val
-        property := by match i with | 0 => simp | 1 => simp; rfl
-      }
-      left_inv := by simp [Function.LeftInverse]; rfl
-      right_inv := by simp [Function.RightInverse, Function.LeftInverse]
+      toFun := fun ⟨i, _⟩ => if i = 0 then 0 else 1
+      invFun := fun i => if i = 0 then ⟨0, by simp⟩ else ⟨1, by simp⟩
+      left_inv := by grind
+      right_inv := by grind
       map_rel_iff' := by
         intro i j
         simp only [Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj, Subtype.coe_prop, and_true]
         rcases i with ⟨i, hi⟩; rcases j with ⟨j, hj⟩
         rcases hi with hi | hi <;> rcases hj with hj | hj
         <;> subst hi hj
-        · simp only [Fin.val_zero, SimpleGraph.irrefl]
-        · simp only [Fin.val_zero, Fin.val_one, O3_graph_01, iff_false]
+        · simp only [SimpleGraph.irrefl]
+        · simp only [O3_graph_01, iff_false]
           exact fun x => x
-        · simp only [Fin.val_one, Fin.val_zero, O3_graph_10, iff_false]
+        · simp only [O3_graph_10, iff_false]
           exact fun x => x
-        · simp only [Fin.val_one, SimpleGraph.irrefl]
+        · simp only [SimpleGraph.irrefl]
     }
     type_preserve := rfl
   }
@@ -679,30 +674,20 @@ def labeledSubgraph_O2₁_O2₁_O3₁'_iso_O2₁_labeledGraph_0
         val := if i = 0 then 0 else 2
         property := by simp; exact eq_or_ne i 0
       }
-      left_inv := by
-        simp [Function.LeftInverse]
-        intro i hi
-        cases hi with
-        | inl hi => subst hi; rfl
-        | inr hi => subst hi; rfl
-      right_inv := by
-        simp [Function.RightInverse, Function.LeftInverse]
-        intro i
-        match i with
-        | 0 => rfl
-        | 1 => rfl
+      left_inv := by grind
+      right_inv := by grind
       map_rel_iff' := by
         intro i j
         simp only [Equiv.coe_fn_mk, SimpleGraph.Subgraph.coe_adj, Subtype.coe_prop, and_true]
         rcases i with ⟨i, hi⟩; rcases j with ⟨j, hj⟩
         rcases hi with hi | hi <;> rcases hj with hj | hj
         <;> subst hi hj
-        · simp only [Fin.val_zero, SimpleGraph.irrefl]
+        · simp only [SimpleGraph.irrefl]
         · simp only [O3_graph_02, iff_false]
           exact fun x => x
         · simp only [O3_graph_20, iff_false]
           exact fun x => x
-        · simp only [Fin.val_one, SimpleGraph.irrefl]
+        · simp only [SimpleGraph.irrefl]
     }
     type_preserve := rfl
   }
@@ -715,14 +700,14 @@ lemma labeledSubgraph_O2₁_O2₁_O3₁_O3₁'_disjoint
   simp only [Set.image_univ, Set.range_const, Set.mem_singleton_iff, Set.insert_diff_of_mem,
     not_false_eq_true, Set.diff_singleton_eq_self, Fin.reduceEq, Set.inter_singleton_eq_empty]
 
-lemma labeledSubgraphListSet_O2₁_O2₁_O3₁
-    : labeledSubgraphListSet (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) (O3₁_labeledGraph 0) =
+lemma setOfLabeledSubgraphListIsoHl_O2₁_O2₁_O3₁
+    : setOfLabeledSubgraphListIsoHl (O3₁_labeledGraph 0) (labeledGraphPairToList (O2₁_labeledGraph 0) (O2₁_labeledGraph 0)) =
       {fun i => match i with | 0 => labeledSubgraph_O2₁_O2₁_O3₁ | 1 => labeledSubgraph_O2₁_O2₁_O3₁',
        fun i => match i with | 0 => labeledSubgraph_O2₁_O2₁_O3₁' | 1 => labeledSubgraph_O2₁_O2₁_O3₁}
   := by
-  dsimp [labeledSubgraphListSet, labeledGraphToList]
+  dsimp only [Fin.isValue, setOfLabeledSubgraphListIsoHl]
   ext Hl
-  simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+  simp only [Set.mem_setOf_eq]
   constructor
   · intro ⟨h_ind, h_iso, h_verts⟩
     let φ₀ := (h_iso 0).some
@@ -730,14 +715,15 @@ lemma labeledSubgraphListSet_O2₁_O2₁_O3₁
     dsimp [labeledGraphPairToList] at φ₀
     dsimp [labeledGraphPairToList] at φ₁
     specialize h_verts 0 1
-    simp only [Fin.zero_eq_one_iff, OfNat.ofNat_ne_one, not_false_eq_true, true_implies] at h_verts
+    simp only [ne_eq, Fin.zero_eq_one_iff, OfNat.ofNat_ne_one, not_false_eq_true,
+      forall_const] at h_verts
     dsimp [O3₁_labeledGraph, LabeledGraph.type_verts] at h_verts
     have : @Set.univ (Fin 1) = {0} := by
       ext i
       simp only [Set.mem_univ, Set.mem_singleton_iff, true_iff]
       rw [Fin.fin_one_eq_zero i]
     rw [this] at h_verts
-    simp only [Set.image_singleton, Set.singleton_subset_iff] at h_verts
+    simp only [Set.image_singleton] at h_verts
     have h_size_0 : (Hl 0).size = 2 := by
       calc
         _ = (O2₁_labeledGraph 0).size := labeledGraphIso_size_eq (Hl 0).coe (O2₁_labeledGraph 0) φ₀
@@ -762,14 +748,15 @@ lemma labeledSubgraphListSet_O2₁_O2₁_O3₁
         simp only [inducedLabeledSubgraph_singletonType_verts] at h_verts
         simp_all
     )
-    · exact False.elim ((Ne.symm (Set.ne_insert_of_not_mem {2} id)) h_verts)
+    · exact False.elim ((Ne.symm (Set.ne_insert_of_notMem {2} id)) h_verts)
   · intro h
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at h
     rcases h with hl | hl
     · have h₀ : Hl 0 = labeledSubgraph_O2₁_O2₁_O3₁ := by rw [hl]
       have h₁ : Hl 1 = labeledSubgraph_O2₁_O2₁_O3₁' := by rw [hl]
       repeat' constructor
-      · rw [Fin.forall_fin_two, h₀, h₁]
+      · simp only [LabeledSubgraphList.IsInduced]
+        rw [Fin.forall_fin_two, h₀, h₁]
         simp only [labeledSubgraph_O2₁_O2₁_O3₁_isInduced, labeledSubgraph_O2₁_O2₁_O3₁'_isInduced, and_self]
       · rw [Fin.forall_fin_two, h₀, h₁]
         constructor <;> apply Nonempty.intro
@@ -784,7 +771,8 @@ lemma labeledSubgraphListSet_O2₁_O2₁_O3₁
     · have h₀ : Hl 0 = labeledSubgraph_O2₁_O2₁_O3₁' := by rw [hl]
       have h₁ : Hl 1 = labeledSubgraph_O2₁_O2₁_O3₁ := by rw [hl]
       repeat' constructor
-      · rw [Fin.forall_fin_two, h₀, h₁]
+      · simp only [LabeledSubgraphList.IsInduced]
+        rw [Fin.forall_fin_two, h₀, h₁]
         simp only [labeledSubgraph_O2₁_O2₁_O3₁_isInduced, labeledSubgraph_O2₁_O2₁_O3₁'_isInduced, and_self]
       · rw [Fin.forall_fin_two, h₀, h₁]
         constructor <;> apply Nonempty.intro
@@ -808,7 +796,7 @@ lemma labeledSubgraphListCount_O2₁_O2₁_O3₁
   · refine Function.ne_iff.mpr ⟨0, ?_⟩
     apply labeledSubgraph_singletonType_neq
     exact set_01_neq_02
-  · simp only [labeledSubgraphListSet_O2₁_O2₁_O3₁, Set.toFinset_insert, Set.toFinset_singleton]
+  · simp only [setOfLabeledSubgraphListIsoHl_O2₁_O2₁_O3₁, Set.toFinset_insert, Set.toFinset_singleton]
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_O3₁
@@ -823,7 +811,7 @@ theorem flagDensity_O2₁_O2₁_O3₁
   simp [labeledGraphPairToList]
   show (num : ℚ) / 2 = 1
   rw [h_num]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_O3₁
@@ -908,10 +896,10 @@ theorem flagDensity_O2₁_O2₁_E3₁'
   have h_num : num = 2 := by
     sorry
   dsimp [multinomialCoefficient]
-  simp [labeledGraphPairToList, ← one_div]
+  simp [labeledGraphPairToList]
   show (num : ℚ) / 2 = 1
   rw [h_num]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 @[simp]
 theorem flagDensity_O2₁_K2₁_E3₁'
@@ -980,10 +968,10 @@ theorem flagDensity_K2₁_K2₁_P3₁
   have h_num : num = 2 := by
     sorry
   dsimp [multinomialCoefficient]
-  simp [labeledGraphPairToList, ← one_div]
+  simp [labeledGraphPairToList]
   show (num : ℚ) / 2 = 1
   rw [h_num]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 @[simp]
 theorem flagDensity_O2₁_O2₁_P3₁'
@@ -1068,9 +1056,9 @@ theorem flagDensity_K2₁_K2₁_K3₁
   have h_num : num = 2 := by
     sorry
   dsimp [multinomialCoefficient]
-  simp [labeledGraphPairToList, ← one_div]
+  simp [labeledGraphPairToList]
   show (num : ℚ) / 2 = 1
   rw [h_num]
-  rfl
+  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
 end MantelTheorem
