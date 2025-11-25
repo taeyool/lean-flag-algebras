@@ -159,8 +159,8 @@ theorem LabeledGraph.LabeledSubgraph.ext
   grind only
 
 instance
-    {V : Type*} [Fintype V] [DecidableEq V]
-    {G : SimpleGraph V} [DecidableRel G.Adj]
+    {V : Type*} [Fintype V]
+    {G : SimpleGraph V}
     [∀ H : G.Subgraph, DecidableRel H.Adj]          -- Hongseok : I am worried about this assumption
     [∀ H : G.Subgraph, DecidablePred (· ∈ H.verts)] -- Hongseok : I am also worried about this assumption
     : DecidableEq (G.Subgraph) :=
@@ -170,30 +170,12 @@ instance
   else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
 
 instance
-    {T V : Type*} [Fintype T] [Fintype V] [DecidableEq T] [DecidableEq V]
-    {σ : SimpleGraph T} [DecidableRel σ.Adj]
-    {G : LabeledGraph σ V} [DecidableRel G.graph.Adj]
-    [∀ H : G.graph.Subgraph, DecidableRel H.Adj]          -- Hongseok : I am worried about this assumption
-    [∀ H : G.graph.Subgraph, DecidablePred (· ∈ H.verts)] -- Hongseok : I am also worried about this assumption
-    : DecidableEq (G.LabeledSubgraph σ) :=
-  fun H₁ H₂ ↦
-     if h₁ : H₁.subgraph = H₂.subgraph ∧ ∀ u : T, (H₁.type_embed u : V) = H₂.type_embed u
-     then .isTrue (by ext <;> simp only [h₁])
-     else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
-
-instance
-    {T V : Type*} [Fintype T] [Fintype V] [DecidableEq T] [DecidableEq V]
-    {σ : SimpleGraph T} [DecidableRel σ.Adj]
-    {G : LabeledGraph σ V} [∀ H : G.graph.Subgraph, Fintype H.verts]
-    [∀ H : G.graph.Subgraph, DecidablePred (· ∈ H.verts)] [DecidableRel G.graph.Adj] :
-    DecidableEq (G.LabeledSubgraph σ) :=
-  sorry
-  -- if h₁ : g₁.subgraph = g₂.subgraph
-  -- then
-  --   if h₂ : ∀ ⦃x⦄, (g₁.type_embed x : V) = g₂.type_embed x
-  --   then sorry
-  --   else sorry
-  -- else sorry
+    {T V : Type*} [Fintype T] [DecidableEq V] {σ : SimpleGraph T}
+    {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] :
+    DecidableEq (G.LabeledSubgraph σ) := fun g₁ g₂ ↦
+  if h₁ : g₁.subgraph = g₂.subgraph ∧ ∀ ⦃x⦄, (g₁.type_embed x : V) = g₂.type_embed x
+  then .isTrue (by ext <;> simp_all only)
+  else .isFalse (by rintro rfl; simp_all)
 
 instance
     {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] {σ : SimpleGraph T} [DecidableRel σ.Adj] {G : LabeledGraph σ V} [DecidableRel G.graph.Adj] :
@@ -381,5 +363,3 @@ def finsetOfLabeledSubgraphListIsoHl
 -- def flagListDensity (fl : FlagList σ t Vl) (f : Flag σ W) : ℚ := sorry
 
 end Compute
-
-#min_imports
