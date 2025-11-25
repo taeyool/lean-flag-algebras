@@ -144,12 +144,17 @@ theorem emptyType_size : ∅ₜ.size = 0 := by
 
 variable {n₀ n : ℕ} {σ : FlagType (Fin n₀)}
 
-instance :
+instance
+    [DecidableRel σ.Adj] [∀ (G : SimpleGraph (Fin n)), DecidableRel G.Adj] :
     Fintype (LabeledGraph σ (Fin n)) where
-  elems := ((@Finset.univ (SimpleGraph (Fin n))).sigma (fun G ↦ (@Finset.univ (σ ↪g G) _))).map
-      (fun ⟨G, e⟩ ↦ { graph := G, type_embed := e }) (by grind)
+  elems :=
+    -- let A := { G : SimpleGraph (Fin n) | DecidableRel G.Adj }
+    let S := (@Finset.univ (SimpleGraph (Fin n)) _).sigma (fun G ↦ (@Finset.univ (σ ↪g G) _))
+    S.filterMap (fun ⟨G, emb⟩ ↦ Option.some ⟨G, emb⟩) (by grind)
   complete e := by
-    sorry
+    simp only [Finset.univ_sigma_univ, Finset.mem_filterMap, Finset.mem_univ,
+      Option.some.injEq, true_and, Sigma.exists]
+    grind only
 
 instance
     (G : LabeledGraph σ (Fin n)) :
