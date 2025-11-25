@@ -37,7 +37,7 @@ instance
       Option.some.injEq, true_and]
     use e.toFun, e.inj'
 
-instance
+instance instGraphEmbeddingFintype
     {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
     Fintype (G₁ ↪g G₂) where
@@ -142,7 +142,7 @@ instance
   else .isFalse (h <| · ▸ rfl)
 
 structure LabeledGraph.LabeledSubgraph
-    {T : Type*} (σ : SimpleGraph T) {V : Type*} (G : LabeledGraph σ V) where
+    {T : Type*} {σ : SimpleGraph T} {V : Type*} (G : LabeledGraph σ V) where
   subgraph : G.graph.Subgraph
   type_embed : σ ↪g subgraph.coe
   embed_eq : ∀ (t : T), type_embed t = G.type_embed t
@@ -150,7 +150,7 @@ structure LabeledGraph.LabeledSubgraph
 @[ext]
 theorem LabeledGraph.LabeledSubgraph.ext
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V}
-    (H₁ H₂ : G.LabeledSubgraph σ) (h₁ : H₁.subgraph = H₂.subgraph) (h₂ : ∀ ⦃x⦄, (H₁.type_embed x : V) = H₂.type_embed x) :
+    (H₁ H₂ : G.LabeledSubgraph) (h₁ : H₁.subgraph = H₂.subgraph) (h₂ : ∀ x, (H₁.type_embed x : V) = H₂.type_embed x) :
     H₁ = H₂ := by
   rcases H₁; rcases H₂; rcases h₁
   simp_all only [LabeledGraph.LabeledSubgraph.mk.injEq, true_and]
@@ -172,19 +172,30 @@ instance
 instance
     {T V : Type*} [Fintype T] [DecidableEq V] {σ : SimpleGraph T}
     {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] :
-    DecidableEq (G.LabeledSubgraph σ) := fun g₁ g₂ ↦
-  if h₁ : g₁.subgraph = g₂.subgraph ∧ ∀ ⦃x⦄, (g₁.type_embed x : V) = g₂.type_embed x
+    DecidableEq (G.LabeledSubgraph) := fun H₁ H₂ ↦
+  if h₁ : H₁.subgraph = H₂.subgraph ∧ ∀ ⦃x⦄, (H₁.type_embed x : V) = H₂.type_embed x
   then .isTrue (by ext <;> simp_all only)
   else .isFalse (by rintro rfl; simp_all)
 
 instance
-    {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V] {σ : SimpleGraph T} [DecidableRel σ.Adj] {G : LabeledGraph σ V} [DecidableRel G.graph.Adj] :
-    Fintype (G.LabeledSubgraph σ) where
-  elems := (Finset.univ (α := G.graph.Subgraph)).biUnion fun H ↦ sorry
-  complete e := sorry
+    {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V]
+    {σ : SimpleGraph T} [DecidableRel σ.Adj]
+    {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] [DecidableRel G.graph.Adj]
+    [∀ H : G.graph.Subgraph, Fintype H.verts] [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
+    Fintype (G.LabeledSubgraph) where
+  elems := (Finset.univ (α := G.graph.Subgraph)).biUnion fun H ↦
+    ((@Finset.univ (σ ↪g H.coe) instGraphEmbeddingFintype).filterMap fun e ↦
+      if h : ∀ x, e x = G.type_embed x
+      then .some ⟨H, e, h⟩
+      else .none) (by grind)
+  complete e := by
+    simp only [Finset.mem_biUnion, Finset.mem_univ, Finset.mem_filterMap,
+      Option.dite_none_right_eq_some, Option.some.injEq, true_and]
+    use e.subgraph, e.type_embed
+    simp only [exists_prop, and_true, e.embed_eq, implies_true]
 
 def LabeledGraph.LabeledSubgraph.coe
-    {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph σ) :
+    {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph) :
     LabeledGraph σ H.subgraph.verts where
   graph := H.subgraph.coe
   type_embed := H.type_embed
@@ -196,7 +207,7 @@ instance {V : Type*} {G : SimpleGraph V} {H : G.Subgraph} [DecidableRel H.Adj] :
 instance
     {T : Type*} [Fintype T] {σ : SimpleGraph T}
     {V : Type*} [DecidableEq V] {G : LabeledGraph σ V}
-    {H : G.LabeledSubgraph σ} [Fintype H.subgraph.verts] [DecidableRel H.subgraph.Adj]
+    {H : G.LabeledSubgraph} [Fintype H.subgraph.verts] [DecidableRel H.subgraph.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] {G' : LabeledGraph σ W} [DecidableRel G'.graph.Adj] :
     Fintype (H.coe ≃f G') where
   elems := ((@Finset.univ (H.subgraph.coe ≃g G'.graph)).filterMap fun e ↦
@@ -263,7 +274,7 @@ theorem LabeledGraph.mem_typeVerts_iff_mem_typeVerts'
 
 abbrev LabeledGraph.LabeledSubgraphList
     {T U : Type*} (σ : SimpleGraph T) (t : ℕ) (G : LabeledGraph σ U)
-  := Fin t → G.LabeledSubgraph σ
+  := Fin t → G.LabeledSubgraph
 
 -- instance {T U : Type*} [Fintype T] [Fintype U] [DecidableEq T] [DecidableEq U] {σ : SimpleGraph T} {t : ℕ} {G : LabeledGraph σ U} :
 --     Fintype (G.LabeledSubgraphList σ t) :=
@@ -271,7 +282,7 @@ abbrev LabeledGraph.LabeledSubgraphList
 
 def LabeledGraph.LabeledSubgraph.IsInduced
     {T : Type*} {σ : SimpleGraph T}
-    {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph σ) : Prop :=
+    {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph) : Prop :=
   H.subgraph.IsInduced
 
 -- instance
