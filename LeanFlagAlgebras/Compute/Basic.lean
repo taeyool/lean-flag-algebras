@@ -11,7 +11,7 @@
 -- Flag : FlagType T → Type → Type @ FlagDef.lean L560
 -- labeledGraphSetoid : (σ : FlagType T) → (V : Type) → Setoid (LabeledGraph σ V) @ FlagDef.lean L550
 -- LabeledGraph : (σ : FlagType T) → (V : Type) → LabeledGraph σ V @ FlagDef.lean L20
--- flagEqv : LabeledGraph σ V → LabeledGraph σ V → Prop @ FlagDef.lean L518 
+-- flagEqv : LabeledGraph σ V → LabeledGraph σ V → Prop @ FlagDef.lean L518
 -- LabeledGraphIso : (G : LabeledGraph σ V) → (G' : LabeledGraph σ W) → LabeledGraphIso G G' @ FlagDef.lean L307
 -- FlagType := SimpleGraph @ FlagDef.lean L13
 
@@ -159,6 +159,29 @@ theorem LabeledGraph.LabeledSubgraph.ext
   grind only
 
 instance
+    {V : Type*} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    [∀ H : G.Subgraph, DecidableRel H.Adj]          -- Hongseok : I am worried about this assumption
+    [∀ H : G.Subgraph, DecidablePred (· ∈ H.verts)] -- Hongseok : I am also worried about this assumption
+    : DecidableEq (G.Subgraph) :=
+  fun H₁ H₂ ↦
+  if h₁ : (∀ v : V, v ∈ H₁.verts ↔ v ∈ H₂.verts) ∧ (∀ u v, H₁.Adj u v ↔ H₂.Adj u v)
+  then .isTrue (by ext <;> simp only [h₁])
+  else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
+
+instance
+    {T V : Type*} [Fintype T] [Fintype V] [DecidableEq T] [DecidableEq V]
+    {σ : SimpleGraph T} [DecidableRel σ.Adj]
+    {G : LabeledGraph σ V} [DecidableRel G.graph.Adj]
+    [∀ H : G.graph.Subgraph, DecidableRel H.Adj]          -- Hongseok : I am worried about this assumption
+    [∀ H : G.graph.Subgraph, DecidablePred (· ∈ H.verts)] -- Hongseok : I am also worried about this assumption
+    : DecidableEq (G.LabeledSubgraph σ) :=
+  fun H₁ H₂ ↦
+     if h₁ : H₁.subgraph = H₂.subgraph ∧ ∀ u : T, (H₁.type_embed u : V) = H₂.type_embed u
+     then .isTrue (by ext <;> simp only [h₁])
+     else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
+
+instance
     {T V : Type*} [Fintype T] [Fintype V] [DecidableEq T] [DecidableEq V]
     {σ : SimpleGraph T} [DecidableRel σ.Adj]
     {G : LabeledGraph σ V} [∀ H : G.graph.Subgraph, Fintype H.verts]
@@ -275,7 +298,7 @@ def LabeledGraph.LabeledSubgraph.IsInduced
 --     Decidable H.IsInduced :=
 --   if h : ∀ ⦃v⦄, v ∈ H.verts → ∀ ⦃w⦄, w ∈ H.verts → G.Adj v w → H.Adj v w
 --   then .isTrue h else .isFalse h
--- 
+--
 -- instance
 --     {T : Type*} {σ : SimpleGraph T} {V : Type*} [Fintype V]
 --     {G : LabeledGraph σ V} [DecidableRel G.graph.Adj]
@@ -346,9 +369,9 @@ def finsetOfLabeledSubgraphListIsoHl
 --     {σ : SimpleGraph T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList σ t G) : Prop
 --   :=
 --   ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
--- 
--- 
--- 
+--
+--
+--
 
 -- abbrev FlagType := SimpleGraph
 -- def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop := Nonempty (G ≃f G')
