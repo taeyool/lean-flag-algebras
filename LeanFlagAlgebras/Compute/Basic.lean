@@ -131,7 +131,8 @@ structure LabeledGraph.LabeledSubgraph
 @[ext]
 theorem LabeledGraph.LabeledSubgraph.ext
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V}
-    (H₁ H₂ : G.LabeledSubgraph) (h₁ : H₁.subgraph = H₂.subgraph) (h₂ : ∀ x, (H₁.type_embed x : V) = H₂.type_embed x) :
+    {H₁ H₂ : G.LabeledSubgraph} (h₁ : H₁.subgraph = H₂.subgraph)
+    (h₂ : ∀ x, (H₁.type_embed x : V) = H₂.type_embed x) :
     H₁ = H₂ := by
   rcases H₁; rcases H₂; rcases h₁
   simp_all only [LabeledGraph.LabeledSubgraph.mk.injEq, true_and]
@@ -162,7 +163,8 @@ instance
     {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V]
     {σ : SimpleGraph T} [DecidableRel σ.Adj]
     {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] [DecidableRel G.graph.Adj]
-    [∀ H : G.graph.Subgraph, Fintype H.verts] [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
+    [∀ H : G.graph.Subgraph, Fintype H.verts]
+    [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
     Fintype G.LabeledSubgraph where
   elems := (Finset.univ (α := G.graph.Subgraph)).biUnion fun H ↦
     ((@Finset.univ (σ ↪g H.coe) instGraphEmbeddingFintype).filterMap fun e ↦
@@ -333,7 +335,7 @@ def finsetOfLabeledSubgraphListIsoHl
     [∀ Gl : G.LabeledSubgraphList t, Decidable Gl.IsInduced]
     [∀ Gl : G.LabeledSubgraphList t, Decidable (predIsoLabeledHl Hl Gl)] :
     Finset (G.LabeledSubgraphList t) :=
-  (Finset.univ (α := G.LabeledSubgraphList t)).filter fun Gl ↦
+  (@Finset.univ (G.LabeledSubgraphList t) sorry).filter fun Gl ↦
     Gl.IsInduced ∧ predIsoLabeledHl Hl Gl
 
 -- def predDisjointLabeledSubgraphList
