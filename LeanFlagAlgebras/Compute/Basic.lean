@@ -153,12 +153,12 @@ instance
 instance
     {T V : Type*} [Fintype T] [DecidableEq V] {σ : SimpleGraph T}
     {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] :
-    DecidableEq (G.LabeledSubgraph) := fun H₁ H₂ ↦
+    DecidableEq G.LabeledSubgraph := fun H₁ H₂ ↦
   if h₁ : H₁.subgraph = H₂.subgraph ∧ ∀ ⦃x⦄, (H₁.type_embed x : V) = H₂.type_embed x
   then .isTrue (by ext <;> simp_all only)
   else .isFalse (by rintro rfl; simp_all)
 
--- SimpleGraph.Subgraph.instFintypeOfDecidableEqOfDecidableRelAdj
+/-
 instance
     {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V]
     {σ : SimpleGraph T} [DecidableRel σ.Adj]
@@ -176,6 +176,7 @@ instance
       Option.dite_none_right_eq_some, Option.some.injEq, true_and]
     use e.subgraph, e.type_embed
     simp only [exists_prop, and_true, e.embed_eq, implies_true]
+-/
 
 def LabeledGraph.LabeledSubgraph.coe
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph) :
@@ -188,8 +189,7 @@ instance {V : Type*} {G : SimpleGraph V} {H : G.Subgraph} [DecidableRel H.Adj] :
   if h : H.Adj u.val v.val then .isTrue h else .isFalse h
 
 instance
-    {T : Type*} [Fintype T] {σ : SimpleGraph T}
-    {V : Type*} [DecidableEq V] {G : LabeledGraph σ V}
+    {T : Type*} [Fintype T] {σ : SimpleGraph T} {V : Type*} [DecidableEq V] {G : LabeledGraph σ V}
     {H : G.LabeledSubgraph} [Fintype H.subgraph.verts] [DecidableRel H.subgraph.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] {G' : LabeledGraph σ W} [DecidableRel G'.graph.Adj] :
     Fintype (H.coe ≃f G') where
@@ -201,6 +201,23 @@ instance
     simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Finset.mem_filterMap, Finset.mem_univ,
       Option.dite_none_right_eq_some, Option.some.injEq, true_and]
     use e.graph_iso, e.type_preserve
+
+def importantFunction
+    {T U V : Type*} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V]
+    {σ : SimpleGraph T} [DecidableRel σ.Adj]
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (l : ι → (LabeledGraph σ U)) [∀ i, DecidableRel (l i).graph.Adj] (G : SimpleGraph V) [DecidableRel G.Adj] :
+    ℕ :=
+  let embeddings : Finset (σ ↪g G) := .univ
+  embeddings.fold (· + ·) 0 fun e ↦
+    let s := Finset.univ.image e.toFun
+    let maps₁ : Finset (ι → Finset V) := Finset.univ.filter fun f ↦ ∀ i, Disjoint (f i) s
+    have hmaps₁ : ∀ f ∈ maps₁, ∀ i, Disjoint (f i) s := by grind
+    let maps₂ : Finset (ι → Finset V) := maps₁.filter fun f ↦ ∀ {i j}, i ≠ j → Disjoint (f i) (f j)
+    have hmaps₂ : ∀ f ∈ maps₂, ∀ i, Disjoint (f i) s := by grind
+    let maps₃ : Finset (ι → Finset V) := maps₂.filter fun f ↦ ∀ i, ∃ emb : (l i).graph ↪g G,
+      (∀ x, emb ((l i).type_embed x) = e x) ∧ Finset.univ.image emb = s ∪ f i
+    maps₃.card
 
 /-- A flag. -/
 structure Flag {T : Type*} (σ : SimpleGraph T) (V : Type*) where
