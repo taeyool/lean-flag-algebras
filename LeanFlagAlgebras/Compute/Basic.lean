@@ -1,20 +1,3 @@
--- flagDensity₁ : Flag σ U → Flag σ W → ℚ @ SubflagListDensity.lean L371
--- flagListDensity : FlagList σ t Vl → Flag σ W → ℚ @ SubflagListDensity.lean L304
--- quotLabeledSubgraphListDensity : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ @ SubflagListDensity.lean L289
--- labledSubgraphListDensityLifted : LabeledGraphList σ t Vl → Flag σ W → ℚ @ SubflagListDensity.lean L271
--- labeledSubgraphListCount : LabeledGraphList σ t Vl → LabeledGraph σ W → ℕ @ SubflagListDensity.lean L59
--- setOfLabeledSubgraphListIsoHl : (G : LabeledGraph σ U) → LabeledGraphList σ t Vl → Set (LabeledSubgraphList σ t G) @ SubflagListDensity.lean L54
--- predIsoLabeledHl : LabeledGraph σ V → LabeledGraphList σ t Vl → LabeledSubgraphList σ t G → Prop @ SubflagListDensity.lean L47
--- predDisjointLabeledSubgraphList : LabeledSubgraphList σ t G → Prop @ SubflagListDensity.lean L42
--- FlagList : (Vl : Fin t → Type) → ∀ i, Flag σ (Vl i) @ FlagDef.lean L739
--- flagToList : Flag σ V → FlagList σ 1 (fun _ ↦ V) @ FlagDef.lean L758
--- Flag : FlagType T → Type → Type @ FlagDef.lean L560
--- labeledGraphSetoid : (σ : FlagType T) → (V : Type) → Setoid (LabeledGraph σ V) @ FlagDef.lean L550
--- LabeledGraph : (σ : FlagType T) → (V : Type) → LabeledGraph σ V @ FlagDef.lean L20
--- flagEqv : LabeledGraph σ V → LabeledGraph σ V → Prop @ FlagDef.lean L518
--- LabeledGraphIso : (G : LabeledGraph σ V) → (G' : LabeledGraph σ W) → LabeledGraphIso G G' @ FlagDef.lean L307
--- FlagType := SimpleGraph @ FlagDef.lean L13
-
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
@@ -78,8 +61,6 @@ instance
   if h : ∀ g, e g = f g
   then .isTrue (by ext; exact h _)
   else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
-
-#check SimpleGraph.Subgraph.instFintypeOfDecidableEqOfDecidableRelAdj
 
 example : (@Finset.univ ((SimpleGraph.completeGraph (Fin 3)) ≃g (SimpleGraph.completeGraph (Fin 3)))).card = 6 := by decide
 
@@ -161,10 +142,9 @@ theorem LabeledGraph.LabeledSubgraph.ext
 instance
     {V : Type*} [Fintype V]
     {G : SimpleGraph V}
-    [∀ H : G.Subgraph, DecidableRel H.Adj]          -- Hongseok : I am worried about this assumption
-    [∀ H : G.Subgraph, DecidablePred (· ∈ H.verts)] -- Hongseok : I am also worried about this assumption
-    : DecidableEq (G.Subgraph) :=
-  fun H₁ H₂ ↦
+    {H₁ : G.Subgraph} [DecidableRel H₁.Adj] [DecidablePred (· ∈ H₁.verts)]
+    {H₂ : G.Subgraph} [DecidableRel H₂.Adj] [DecidablePred (· ∈ H₂.verts)] :
+    Decidable (H₁ = H₂) :=
   if h₁ : (∀ v : V, v ∈ H₁.verts ↔ v ∈ H₂.verts) ∧ (∀ u v, H₁.Adj u v ↔ H₂.Adj u v)
   then .isTrue (by ext <;> simp only [h₁])
   else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
@@ -177,12 +157,13 @@ instance
   then .isTrue (by ext <;> simp_all only)
   else .isFalse (by rintro rfl; simp_all)
 
+-- SimpleGraph.Subgraph.instFintypeOfDecidableEqOfDecidableRelAdj
 instance
     {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V]
     {σ : SimpleGraph T} [DecidableRel σ.Adj]
     {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] [DecidableRel G.graph.Adj]
     [∀ H : G.graph.Subgraph, Fintype H.verts] [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
-    Fintype (G.LabeledSubgraph) where
+    Fintype G.LabeledSubgraph where
   elems := (Finset.univ (α := G.graph.Subgraph)).biUnion fun H ↦
     ((@Finset.univ (σ ↪g H.coe) instGraphEmbeddingFintype).filterMap fun e ↦
       if h : ∀ x, e x = G.type_embed x
@@ -265,19 +246,16 @@ theorem LabeledGraph.mem_typeVerts_iff_mem_typeVerts'
     v ∈ G.typeVerts ↔ v ∈ G.typeVerts' := by
   simp [typeVerts, typeVerts']
 
--- instance
---     {T : Type*} [Fintype T] {σ : SimpleGraph T}
---     {V : Type*} [DecidableEq V] [Fintype V] {G : LabeledGraph σ V} [DecidableRel G.graph.Adj] :
---     Fintype (LabeledSubgraph σ G) where
---   elems := sorry
---   complete := sorry
-
 abbrev LabeledGraph.LabeledSubgraphList
-    {T U : Type*} (σ : SimpleGraph T) (t : ℕ) (G : LabeledGraph σ U)
+    {T U : Type*} {σ : SimpleGraph T} (t : ℕ) (G : LabeledGraph σ U)
   := Fin t → G.LabeledSubgraph
 
--- instance {T U : Type*} [Fintype T] [Fintype U] [DecidableEq T] [DecidableEq U] {σ : SimpleGraph T} {t : ℕ} {G : LabeledGraph σ U} :
---     Fintype (G.LabeledSubgraphList σ t) :=
+-- instance
+--     {T U : Type*} [Fintype T] [Fintype U] [DecidableEq T] [DecidableEq U]
+--     {σ : SimpleGraph T} [DecidableRel σ.Adj]
+--     {t : ℕ} {G : LabeledGraph σ U} [DecidableEq G.graph.Subgraph] [DecidableRel G.graph.Adj]
+--     [∀ H : G.graph.Subgraph, Fintype H.verts] [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
+--     Fintype (G.LabeledSubgraphList t) :=
 --   inferInstance
 
 def LabeledGraph.LabeledSubgraph.IsInduced
@@ -301,18 +279,18 @@ def LabeledGraph.LabeledSubgraph.IsInduced
 
 def LabeledGraph.LabeledSubgraphList.IsInduced
     {T : Type*} {σ : SimpleGraph T} {t : ℕ} {U : Type*}
-    {G : LabeledGraph σ U} (Hl : G.LabeledSubgraphList σ t) : Prop :=
+    {G : LabeledGraph σ U} (Hl : G.LabeledSubgraphList t) : Prop :=
   ∀ (i : Fin t), (Hl i).IsInduced
 
 def predDisjointLabeledSubgraphList
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V}
-    {t : ℕ} (Gl : G.LabeledSubgraphList σ t) : Prop :=
+    {t : ℕ} (Gl : G.LabeledSubgraphList t) : Prop :=
   ∀ (i j : Fin t), i ≠ j → (Gl i).subgraph.verts ∩ (Gl j).subgraph.verts ⊆ G.typeVerts
 
 def predIsoLabeledHl
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V}
     {t : ℕ} {Vl : Fin t → Type*} (Hl : LabeledGraphList σ Vl) :
-    G.LabeledSubgraphList σ t → Prop := fun Gl ↦
+    G.LabeledSubgraphList t → Prop := fun Gl ↦
     (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i)) ∧ predDisjointLabeledSubgraphList Gl
 
 instance
@@ -320,7 +298,7 @@ instance
     {G : LabeledGraph σ V} [DecidablePred (· ∈ G.typeVerts)]
     {t : ℕ} {Vl : Fin t → Type*} [∀ i, Fintype (Vl i)] [∀ i, DecidableEq (Vl i)]
     {Hl : LabeledGraphList σ Vl} [∀ i, DecidableRel (Hl i).graph.Adj]
-    {Gl : G.LabeledSubgraphList σ t} [∀ i, DecidablePred (· ∈ (Gl i).subgraph.verts)]
+    {Gl : G.LabeledSubgraphList t} [∀ i, DecidablePred (· ∈ (Gl i).subgraph.verts)]
     [∀ i, Fintype (Gl i).subgraph.verts] [∀ i, DecidableRel (Gl i).subgraph.Adj] :
     Decidable (predIsoLabeledHl Hl Gl) :=
   if h₁ : ∀ i, (Finset.univ (α := (Gl i).coe ≃f Hl i)).Nonempty
@@ -343,7 +321,7 @@ instance
 def setOfLabeledSubgraphListIsoHl
     {T : Type*} {σ : SimpleGraph T} {U : Type*} (G : LabeledGraph σ U)
     {t : ℕ} {Vl : Fin t → Type*} (Hl : LabeledGraphList σ Vl) :
-    Set (G.LabeledSubgraphList σ t) :=
+    Set (G.LabeledSubgraphList t) :=
   { Gl | Gl.IsInduced ∧ predIsoLabeledHl Hl Gl }
 
 /-- TODO: Check if instance cleanup is required. -/
@@ -352,14 +330,14 @@ def finsetOfLabeledSubgraphListIsoHl
     {U : Type*} [Fintype U] [DecidableEq U] (G : LabeledGraph σ U) [DecidableRel G.graph.Adj]
     {t : ℕ} {Vl : Fin t → Type*} [∀ i, Fintype (Vl i)]
     (Hl : LabeledGraphList σ Vl) [∀ i, DecidableRel (Hl i).graph.Adj]
-    [∀ Gl : G.LabeledSubgraphList σ t, Decidable Gl.IsInduced]
-    [∀ Gl : G.LabeledSubgraphList σ t, Decidable (predIsoLabeledHl Hl Gl)] :
-    Finset (G.LabeledSubgraphList σ t) :=
-  (Finset.univ (α := G.LabeledSubgraphList σ t)).filter fun Gl ↦
+    [∀ Gl : G.LabeledSubgraphList t, Decidable Gl.IsInduced]
+    [∀ Gl : G.LabeledSubgraphList t, Decidable (predIsoLabeledHl Hl Gl)] :
+    Finset (G.LabeledSubgraphList t) :=
+  (Finset.univ (α := G.LabeledSubgraphList t)).filter fun Gl ↦
     Gl.IsInduced ∧ predIsoLabeledHl Hl Gl
 
 -- def predDisjointLabeledSubgraphList
---     {σ : SimpleGraph T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList σ t G) : Prop
+--     {σ : SimpleGraph T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList t G) : Prop
 --   :=
 --   ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
 --
