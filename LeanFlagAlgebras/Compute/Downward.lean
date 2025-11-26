@@ -142,6 +142,44 @@ theorem emptyType_size : ∅ₜ.size = 0 := by
   dsimp only [emptyType, SimpleGraph.emptyGraph_eq_bot, FlagType.size]
   simp only [Fintype.card_eq_zero]
 
+def allValidEdges (n : ℕ) : Finset (Sym2 (Fin n)) :=
+  (Finset.univ : Finset (Sym2 (Fin n))).filter (fun e ↦ ¬e.IsDiag)
+
+def allSimpleGraphEdgeSets (n : ℕ) : Finset (Finset (Sym2 (Fin n))) :=
+  (allValidEdges n).powerset
+
+def edgeSetToSimpleGraph {n : ℕ} (s : Finset (Sym2 (Fin n))) : SimpleGraph (Fin n) :=
+  SimpleGraph.fromEdgeSet s
+
+-- def simpleGraph_iso_allSimpleGraphEdgeSets {n : ℕ} :
+--     SimpleGraph (Fin n) ≃ allSimpleGraphEdgeSets n where
+--   toFun G := SimpleGraph.edgeFinset G
+--   invFun s := edgeSetToSimpleGraph s
+--   left_inv G := by sorry
+--   right_inv s := by sorry
+
+structure LabeledSym2Graph {T : Type*} (σ : SimpleGraph T) (n : ℕ) where
+  edges : allSimpleGraphEdgeSets n
+  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.val.toSet)
+
+def LabeledSym2Graph.toLabeledGraph
+    {T : Type*} {σ : SimpleGraph T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n) :=
+  ⟨SimpleGraph.fromEdgeSet G.edges.val.toSet, G.type_embed⟩
+
+instance
+    {T : Type*} {σ : SimpleGraph T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
+    Fintype (LabeledSym2Graph σ n) where
+  elems :=
+    let S := (allSimpleGraphEdgeSets n).sigma (fun E ↦ (@Finset.univ (σ ↪g SimpleGraph.fromEdgeSet E.toSet) _))
+    S.filterMap (fun ⟨E, emb⟩ ↦
+      if hE : E ∈ allSimpleGraphEdgeSets n
+      then .some ⟨⟨E, hE⟩, emb⟩
+      else .none) (by grind)
+  complete e := by
+    rcases e with ⟨E, emb⟩
+    simp
+
 variable {n₀ n : ℕ} {σ : FlagType (Fin n₀)}
 
 instance
