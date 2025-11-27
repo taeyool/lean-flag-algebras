@@ -1,7 +1,10 @@
+import «LeanFlagAlgebras».FlagOperators
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
 namespace Compute
+
+open FlagAlgebras
 
 instance
     {V : Type*} [DecidableEq V] [Fintype V]
@@ -29,180 +32,93 @@ instance
       Option.some.injEq, true_and]
     use e.toEmbedding, fun _ _ ↦ e.map_rel_iff
 
-instance
-    {V : Type*} [Fintype V] {G₁ : SimpleGraph V}
-    {W : Type*} [DecidableEq W] {G₂ : SimpleGraph W} :
-    DecidableEq (G₁ ↪g G₂) := fun e f ↦
-  if h : ∀ g, e g = f g
-  then .isTrue (by ext; exact h _)
-  else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
-
-instance
-    {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
-    {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
-    Fintype (G₁ ≃g G₂) where
-  elems := ((@Finset.univ (V ≃ W)).filterMap fun e ↦
-      if h : ∀ u v, G₂.Adj (e u) (e v) ↔ G₁.Adj u v
-      then Option.some ⟨e, h _ _⟩
-      else Option.none) (by grind)
-  complete e := by
-    simp only [Finset.mem_filterMap, Finset.mem_univ, Option.dite_none_right_eq_some,
-      Option.some.injEq, true_and]
-    use e.toEquiv, fun _ _ ↦ e.map_rel_iff
-
-instance
-    {V : Type*} [Fintype V] {G₁ : SimpleGraph V}
-    {W : Type*} [DecidableEq W] {G₂ : SimpleGraph W} :
-    DecidableEq (G₁ ≃g G₂) := fun e f ↦
-  if h : ∀ g, e g = f g
-  then .isTrue (by ext; exact h _)
-  else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
-
-#check SimpleGraph.Subgraph.instFintypeOfDecidableEqOfDecidableRelAdj
-
-example : (@Finset.univ ((SimpleGraph.completeGraph (Fin 3)) ≃g (SimpleGraph.completeGraph (Fin 3)))).card = 6 := by decide
-
-/-- A labeled graph is a `SimpleGraph` with a homomorphism from `σ`. -/
-structure LabeledGraph {T : Type*} (σ : SimpleGraph T) (V : Type*) where
-  /-- The underlying graph. -/
-  graph : SimpleGraph V
-  /-- The homomorphism from `σ` to `graph`. -/
-  type_embed : σ ↪g graph
-
-/-- Isomorphism between `LabeledGraph`s. -/
-@[ext]
-structure LabeledGraphIso
-    {T : Type*} {σ : SimpleGraph T}
-    {V : Type*} (G : LabeledGraph σ V)
-    {W : Type*} (G' : LabeledGraph σ W) where
-  /-- Isomorphism of `LabeledGraph`s are isomorphisms of underlying graphs. -/
-  graph_iso : G.graph ≃g G'.graph
-  /-- Isomorphism of `LabeledGraph`s preserves flag types up to given graph isomorphism. -/
-  type_preserve : graph_iso ∘ G.type_embed = G'.type_embed
-
-@[inherit_doc] infix:50 " ≃f " => LabeledGraphIso
-
-instance
-    {T : Type*} {σ : SimpleGraph T}
-    {V : Type*} {G : LabeledGraph σ V}
-    {W : Type*} {G' : LabeledGraph σ W} :
-    FunLike (G ≃f G') V W where
-  coe e := e.graph_iso
-  coe_injective' _ _ h := LabeledGraphIso.ext <| DFunLike.coe_fn_eq.mp h
-
-@[symm]
-def LabeledGraphIso.symm
-    {T V W : Type*} {σ : SimpleGraph T} {G : LabeledGraph σ V} {H : LabeledGraph σ W} (h : G ≃f H) :
-    H ≃f G where
-  graph_iso := h.graph_iso.symm
-  type_preserve := by funext; simp [← h.type_preserve]
-
-instance
-    {T : Type*} [Fintype T] {σ : SimpleGraph T}
-    {V : Type*} [DecidableEq V] [Fintype V] (G : LabeledGraph σ V) [DecidableRel G.graph.Adj]
-    {W : Type*} [DecidableEq W] [Fintype W] (G' : LabeledGraph σ W) [DecidableRel G'.graph.Adj] :
-    Fintype (G ≃f G') where
-  elems := ((@Finset.univ (G.graph ≃g G'.graph)).filterMap fun e ↦
-    if h : e.toFun ∘ G.type_embed = G'.type_embed
-    then Option.some ⟨e, h⟩
-    else Option.none) (by grind)
-  complete e := by
-    simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Finset.mem_filterMap, Finset.mem_univ,
-      Option.dite_none_right_eq_some, Option.some.injEq, true_and]
-    use e.graph_iso, e.type_preserve
-
-instance
-    {T : Type*} {σ : SimpleGraph T}
-    {V : Type*} [Fintype V] {G : LabeledGraph σ V}
-    {W : Type*} [DecidableEq W] {G' : LabeledGraph σ W} :
-    DecidableEq (G ≃f G') := fun e f ↦
-  if h : e.graph_iso = f.graph_iso
-  then .isTrue <| LabeledGraphIso.ext h
-  else .isFalse (h <| · ▸ rfl)
-
-/- -------------------------------------------------------------- -/
-
-abbrev FlagType := SimpleGraph
-
-noncomputable def FlagType.size {T : Type*} [Fintype T] (_ : FlagType T) : ℕ
-  :=
-  Fintype.card T
-
-def flagEqv {σ : FlagType T} (G G' : LabeledGraph σ V) : Prop
-  :=
-  Nonempty (G ≃f G')
-
-infixl:50 " ∼f " => flagEqv
-
-def emptyType : FlagType (Fin 0) := SimpleGraph.emptyGraph (Fin 0)
-
-notation "∅ₜ" => emptyType
-
-theorem emptyType_size : ∅ₜ.size = 0 := by
-  dsimp only [emptyType, SimpleGraph.emptyGraph_eq_bot, FlagType.size]
-  simp only [Fintype.card_eq_zero]
-
-def allValidEdges (n : ℕ) : Finset (Sym2 (Fin n)) :=
-  (Finset.univ : Finset (Sym2 (Fin n))).filter (fun e ↦ ¬e.IsDiag)
-
-def allSimpleGraphEdgeSets (n : ℕ) : Finset (Finset (Sym2 (Fin n))) :=
-  (allValidEdges n).powerset
-
-def edgeSetToSimpleGraph {n : ℕ} (s : Finset (Sym2 (Fin n))) : SimpleGraph (Fin n) :=
-  SimpleGraph.fromEdgeSet s
-
--- def simpleGraph_iso_allSimpleGraphEdgeSets {n : ℕ} :
---     SimpleGraph (Fin n) ≃ allSimpleGraphEdgeSets n where
---   toFun G := SimpleGraph.edgeFinset G
---   invFun s := edgeSetToSimpleGraph s
---   left_inv G := by sorry
---   right_inv s := by sorry
-
-structure LabeledSym2Graph {T : Type*} (σ : SimpleGraph T) (n : ℕ) where
-  edges : allSimpleGraphEdgeSets n
-  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.val.toSet)
+structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
+  edges : Finset (Sym2 (Fin n))
+  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.toSet)
 
 def LabeledSym2Graph.toLabeledGraph
-    {T : Type*} {σ : SimpleGraph T} {n : ℕ}
-    (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n) :=
-  ⟨SimpleGraph.fromEdgeSet G.edges.val.toSet, G.type_embed⟩
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
+  :=
+  ⟨SimpleGraph.fromEdgeSet G.edges.toSet, G.type_embed⟩
 
 instance
-    {T : Type*} {σ : SimpleGraph T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
     Fintype (LabeledSym2Graph σ n) where
   elems :=
-    let S := (allSimpleGraphEdgeSets n).sigma (fun E ↦ (@Finset.univ (σ ↪g SimpleGraph.fromEdgeSet E.toSet) _))
+    let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ (σ ↪g SimpleGraph.fromEdgeSet E.toSet) _))
     S.filterMap (fun ⟨E, emb⟩ ↦
-      if hE : E ∈ allSimpleGraphEdgeSets n
-      then .some ⟨⟨E, hE⟩, emb⟩
+      if hE : ∀ e ∈ E, ¬e.IsDiag
+      then .some ⟨E, hE, emb⟩
       else .none) (by grind)
   complete e := by
-    rcases e with ⟨E, emb⟩
-    simp
+    rcases e with ⟨E, hE, emb⟩
+    simp_all
 
-variable {n₀ n : ℕ} {σ : FlagType (Fin n₀)}
+#eval (@Finset.univ (Perm 3)).card
 
-instance
-    [DecidableRel σ.Adj] [∀ (G : SimpleGraph (Fin n)), DecidableRel G.Adj] :
-    Fintype (LabeledGraph σ (Fin n)) where
-  elems :=
-    -- let A := { G : SimpleGraph (Fin n) | DecidableRel G.Adj }
-    let S := (@Finset.univ (SimpleGraph (Fin n)) _).sigma (fun G ↦ (@Finset.univ (σ ↪g G) _))
-    S.filterMap (fun ⟨G, emb⟩ ↦ Option.some ⟨G, emb⟩) (by grind)
-  complete e := by
-    simp only [Finset.univ_sigma_univ, Finset.mem_filterMap, Finset.mem_univ,
-      Option.some.injEq, true_and, Sigma.exists]
-    grind only
-
-instance
-    (G : LabeledGraph σ (Fin n)) :
-    DecidablePred fun (H : LabeledGraph σ (Fin n)) ↦ G.graph = H.graph ∧ G ∼f H
+theorem LabeledSym2Graph_eqv_iff
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G G' : LabeledSym2Graph σ n) :
+    (G.toLabeledGraph ∼f G'.toLabeledGraph) ↔
+    ∃ (φ : Perm n), G.edges.image (Sym2.map φ) = G'.edges ∧ φ ∘ G.type_embed = G'.type_embed
   := by
   sorry
 
-def isoLabeledGraphSetWithSameGraph
-    (G : LabeledGraph σ (Fin n)) : Finset (LabeledGraph σ (Fin n))
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    DecidablePred fun (H : LabeledSym2Graph σ n) ↦ G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph
+  := by
+  intro H
+  simp only
+  refine @instDecidableAnd _ _ _ ?_
+  rw [LabeledSym2Graph_eqv_iff]
+  exact Fintype.decidableExistsFintype
+
+def isoLabeledSym2GraphSetWithSameGraph
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) : Finset (LabeledSym2Graph σ n)
   :=
-  { H : LabeledGraph σ (Fin n) | G.graph = H.graph ∧ G ∼f H }
+  { H : LabeledSym2Graph σ n | G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph }
+
+def isomorphismCount'
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) : ℕ
+  :=
+  (isoLabeledSym2GraphSetWithSameGraph G).card
+
+theorem isomorphismCount_eq
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    isomorphismCount G.toLabeledGraph = isomorphismCount' G
+  := by
+  sorry
+
+def singletonType : FlagType (Fin 1) := SimpleGraph.emptyGraph (Fin 1)
+
+alias Sₜ := singletonType
+
+instance : DecidableRel Sₜ.Adj := by
+  simp [DecidableRel]
+  intro a b
+  exact .isFalse (by aesop)
+
+def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
+  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+#eval! isomorphismCount' K3₁_labeledSym2Graph
 
 end Compute
