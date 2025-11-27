@@ -64,7 +64,69 @@ theorem LabeledSym2Graph_eqv_iff
     (G.toLabeledGraph ∼f G'.toLabeledGraph) ↔
     ∃ (φ : Perm n), G.edges.image (Sym2.map φ) = G'.edges ∧ φ ∘ G.type_embed = G'.type_embed
   := by
-  sorry
+  constructor <;> intro h
+  · rcases h with ⟨φ, hφ⟩
+    use φ
+    constructor
+    · ext e'
+      constructor <;> intro he'
+      · simp only [EquivLike.coe_coe, Finset.mem_image] at he'
+        rcases he' with ⟨e, he, heq⟩
+        subst heq
+        have he_vaild : ¬e.IsDiag := G.edges_valid e he
+        rcases e with ⟨u, v⟩
+        simp_all only [Sym2.isDiag_iff_proj_eq, Sym2.map_pair_eq]
+        have hG_uv : G.toLabeledGraph.graph.Adj u v := by
+          simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet]
+          exact ⟨he, he_vaild⟩
+        have hG'_uv : G'.toLabeledGraph.graph.Adj (φ u) (φ v) :=
+          (SimpleGraph.Iso.map_adj_iff φ).mpr hG_uv
+        simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet] at hG'_uv
+        exact hG'_uv.1
+      · simp only [EquivLike.coe_coe, Finset.mem_image]
+        rcases e' with ⟨u', v'⟩
+        have hG'_u'v' : G'.toLabeledGraph.graph.Adj u' v' := by
+          simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet]
+          exact ⟨he', G'.edges_valid _ he'⟩
+        have hG_uv : G.toLabeledGraph.graph.Adj (φ.symm u') (φ.symm v') :=
+          (SimpleGraph.Iso.map_adj_iff φ.symm).mpr hG'_u'v'
+        simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet] at hG_uv
+        use Sym2.mk (φ.symm u', φ.symm v')
+        simp_all only [Sym2.map_pair_eq, RelIso.apply_symm_apply, and_self]
+    · exact hφ
+  · obtain ⟨φ, h_edges, h_type_embed⟩ := h
+    apply Nonempty.intro
+    exact {
+      graph_iso := {
+        toFun := φ
+        invFun := φ.symm
+        left_inv := Equiv.leftInverse_symm φ
+        right_inv := Equiv.rightInverse_symm φ
+        map_rel_iff' := by
+          intro a b
+          simp only [Equiv.coe_fn_mk]
+          constructor <;> intro h
+          · simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet] at *
+            obtain ⟨he, hab_neq⟩ := h
+            rw [← h_edges] at he
+            simp only [Finset.mem_image] at he
+            rcases he with ⟨e, he, heq⟩
+            have he_ab : e = Sym2.mk (a, b) := by
+              rcases e with ⟨u, v⟩
+              aesop
+            subst he_ab
+            exact ⟨he, hab_neq⟩
+          · simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet] at *
+            obtain ⟨he, hab_neq⟩ := h
+            rw [← h_edges]
+            simp only [Finset.mem_image]
+            constructor
+            · use Sym2.mk (a, b)
+              simp only [he, Sym2.map_pair_eq, and_self]
+            · exact hab_neq
+      }
+      type_preserve := h_type_embed
+    }
 
 instance
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
@@ -119,6 +181,6 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
       aesop
   }
 
-#eval! isomorphismCount' K3₁_labeledSym2Graph
+#eval isomorphismCount' K3₁_labeledSym2Graph
 
 end Compute
