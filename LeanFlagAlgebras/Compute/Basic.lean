@@ -158,26 +158,6 @@ instance
   then .isTrue (by ext <;> simp_all only)
   else .isFalse (by rintro rfl; simp_all)
 
-/-
-instance
-    {T V : Type*} [Fintype T] [DecidableEq T] [Fintype V] [DecidableEq V]
-    {σ : SimpleGraph T} [DecidableRel σ.Adj]
-    {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] [DecidableRel G.graph.Adj]
-    [∀ H : G.graph.Subgraph, Fintype H.verts]
-    [∀ H : G.graph.Subgraph, DecidableRel H.Adj] :
-    Fintype G.LabeledSubgraph where
-  elems := (Finset.univ (α := G.graph.Subgraph)).biUnion fun H ↦
-    ((@Finset.univ (σ ↪g H.coe) instGraphEmbeddingFintype).filterMap fun e ↦
-      if h : ∀ x, e x = G.type_embed x
-      then .some ⟨H, e, h⟩
-      else .none) (by grind)
-  complete e := by
-    simp only [Finset.mem_biUnion, Finset.mem_univ, Finset.mem_filterMap,
-      Option.dite_none_right_eq_some, Option.some.injEq, true_and]
-    use e.subgraph, e.type_embed
-    simp only [exists_prop, and_true, e.embed_eq, implies_true]
--/
-
 def LabeledGraph.LabeledSubgraph.coe
     {T : Type*} {σ : SimpleGraph T} {V : Type*} {G : LabeledGraph σ V} (H : G.LabeledSubgraph) :
     LabeledGraph σ H.subgraph.verts where
@@ -201,23 +181,6 @@ instance
     simp only [Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, Finset.mem_filterMap, Finset.mem_univ,
       Option.dite_none_right_eq_some, Option.some.injEq, true_and]
     use e.graph_iso, e.type_preserve
-
-def importantFunction
-    {T U V : Type*} [Fintype T] [DecidableEq T] [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V]
-    {σ : SimpleGraph T} [DecidableRel σ.Adj]
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (l : ι → (LabeledGraph σ U)) [∀ i, DecidableRel (l i).graph.Adj] (G : SimpleGraph V) [DecidableRel G.Adj] :
-    ℕ :=
-  let embeddings : Finset (σ ↪g G) := .univ
-  embeddings.fold (· + ·) 0 fun e ↦
-    let s := Finset.univ.image e.toFun
-    let maps₁ : Finset (ι → Finset V) := Finset.univ.filter fun f ↦ ∀ i, Disjoint (f i) s
-    have hmaps₁ : ∀ f ∈ maps₁, ∀ i, Disjoint (f i) s := by grind
-    let maps₂ : Finset (ι → Finset V) := maps₁.filter fun f ↦ ∀ {i j}, i ≠ j → Disjoint (f i) (f j)
-    have hmaps₂ : ∀ f ∈ maps₂, ∀ i, Disjoint (f i) s := by grind
-    let maps₃ : Finset (ι → Finset V) := maps₂.filter fun f ↦ ∀ i, ∃ emb : (l i).graph ↪g G,
-      (∀ x, emb ((l i).type_embed x) = e x) ∧ Finset.univ.image emb = s ∪ f i
-    maps₃.card
 
 /-- A flag. -/
 structure Flag {T : Type*} (σ : SimpleGraph T) (V : Type*) where
