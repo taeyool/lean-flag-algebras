@@ -32,6 +32,7 @@ instance
       Option.some.injEq, true_and]
     use e.toEmbedding, fun _ _ ↦ e.map_rel_iff
 
+@[ext]
 structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
@@ -42,6 +43,66 @@ def LabeledSym2Graph.toLabeledGraph
     (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
   :=
   ⟨SimpleGraph.fromEdgeSet G.edges.toSet, G.type_embed⟩
+
+theorem LabeledSym2Graph.toLabeledGraph_injective
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G₁ G₂ : LabeledSym2Graph σ n)
+    (h : G₁.toLabeledGraph = G₂.toLabeledGraph) :
+    G₁ = G₂
+  := by
+  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.mk.injEq] at h
+  obtain ⟨h_graph, h_type_embed⟩ := h
+  ext e
+  · simp [SimpleGraph.fromEdgeSet] at h_graph
+    sorry
+  · exact h_type_embed
+
+end Compute
+
+namespace FlagAlgebras
+open Compute
+
+noncomputable def LabeledGraph.toLabeledSym2Graph
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledGraph σ (Fin n)) : LabeledSym2Graph σ n where
+  edges := by
+    have : Fintype G.graph.edgeSet := Fintype.ofFinite G.graph.edgeSet
+    exact (SimpleGraph.edgeSet G.graph).toFinset
+  edges_valid := by
+    intro e he
+    simp only [Set.mem_toFinset] at he
+    exact SimpleGraph.not_isDiag_of_mem_edgeSet G.graph he
+  type_embed := by
+    simp only [Set.coe_toFinset, SimpleGraph.fromEdgeSet_edgeSet]
+    exact G.type_embed
+
+theorem LabeledGraph.toLabeledSym2Graph_toLabeledGraph_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledGraph σ (Fin n)) :
+    G.toLabeledSym2Graph.toLabeledGraph = G
+  := by
+  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
+  congr
+  · simp only [Set.coe_toFinset, SimpleGraph.fromEdgeSet_edgeSet]
+  · simp only [eq_mpr_eq_cast, cast_heq]
+
+end FlagAlgebras
+
+namespace Compute
+open FlagAlgebras
+
+theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    G.toLabeledGraph.toLabeledSym2Graph = G
+  := by
+  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
+  congr
+  · simp only [SimpleGraph.edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe,
+    Set.toFinset_setOf, sdiff_eq_left]
+    sorry
+  · exact proof_irrel_heq _ _
+  · simp only [eq_mpr_eq_cast, cast_heq]
 
 instance
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
@@ -156,7 +217,32 @@ theorem isomorphismCount_eq
     (G : LabeledSym2Graph σ n) :
     isomorphismCount G.toLabeledGraph = isomorphismCount' G
   := by
-  sorry
+  dsimp only [isomorphismCount, isomorphismCount']
+  symm
+  apply Finset.card_nbij LabeledSym2Graph.toLabeledGraph
+  · intro G' hG'
+    simp [isoLabeledSym2GraphSetWithSameGraph] at hG'
+    obtain ⟨h_edges, h_iso⟩ := hG'
+    simp only [isoLabeledGraphSetWithSameGraph, Set.coe_toFinset, Set.mem_setOf_eq]
+    constructor
+    · simp only [LabeledSym2Graph.toLabeledGraph, h_edges]
+    · exact h_iso
+  · intro G₁ _ G₂ _ h_eq
+    exact LabeledSym2Graph.toLabeledGraph_injective G₁ G₂ h_eq
+  · intro G' hG'
+    simp only [isoLabeledGraphSetWithSameGraph, Set.coe_toFinset, Set.mem_setOf_eq] at hG'
+    obtain ⟨h_graph, h_iso⟩ := hG'
+    simp [isoLabeledSym2GraphSetWithSameGraph]
+    use G'.toLabeledSym2Graph
+    rw [LabeledGraph.toLabeledSym2Graph_toLabeledGraph_eq G']
+    simp only [and_true, h_iso]
+    simp only [LabeledGraph.toLabeledSym2Graph, Lean.Elab.WF.paramLet, eq_mpr_eq_cast]
+    simp [LabeledSym2Graph.toLabeledGraph] at h_graph
+    ext e
+    simp only [Set.mem_toFinset]
+    rw [← h_graph]
+    simp
+    exact fun h ↦ G.edges_valid e h
 
 def singletonType : FlagType (Fin 1) := SimpleGraph.emptyGraph (Fin 1)
 
@@ -182,5 +268,8 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 #eval isomorphismCount' K3₁_labeledSym2Graph
+
+example : isomorphismCount' K3₁_labeledSym2Graph = 3 := by
+  native_decide
 
 end Compute
