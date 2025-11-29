@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».FlagOperators
+import «LeanFlagAlgebras».MantelTheorem.FlagDefs
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
@@ -53,8 +54,21 @@ theorem LabeledSym2Graph.toLabeledGraph_injective
   simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.mk.injEq] at h
   obtain ⟨h_graph, h_type_embed⟩ := h
   ext e
-  · simp [SimpleGraph.fromEdgeSet] at h_graph
-    sorry
+  · have h : (SimpleGraph.fromEdgeSet G₁.edges).edgeSet = G₁.edges.toSet := by
+      simp only [SimpleGraph.edgeSet_fromEdgeSet, sdiff_eq_left]
+      refine Set.disjoint_left.mpr ?_
+      intro e' he'
+      simp only [Set.mem_setOf_eq]
+      exact G₁.edges_valid e' he'
+    simp only [h_graph, SimpleGraph.edgeSet_fromEdgeSet] at h
+    have h_edges : G₁.edges.toSet = G₂.edges.toSet := by
+      rw [← h]
+      simp only [sdiff_eq_left]
+      refine Set.disjoint_left.mpr ?_
+      intro e' he'
+      simp only [Set.mem_setOf_eq]
+      exact G₂.edges_valid e' he'
+    exact Eq.to_iff (congrFun h_edges e)
   · exact h_type_embed
 
 end Compute
@@ -100,7 +114,10 @@ theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
   congr
   · simp only [SimpleGraph.edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe,
     Set.toFinset_setOf, sdiff_eq_left]
-    sorry
+    refine Finset.disjoint_left.mpr ?_
+    intro e he
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    exact G.edges_valid e he
   · exact proof_irrel_heq _ _
   · simp only [eq_mpr_eq_cast, cast_heq]
 
@@ -206,18 +223,25 @@ def isoLabeledSym2GraphSetWithSameGraph
   :=
   { H : LabeledSym2Graph σ n | G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph }
 
-def isomorphismCount'
+def isomorphismCount_labeledSym2Graph
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
     (G : LabeledSym2Graph σ n) : ℕ
   :=
   (isoLabeledSym2GraphSetWithSameGraph G).card
 
+def downwardNormalizingFactor_labeledSym2Graph
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) : ℚ
+  :=
+  let num_of_all_injections := n.factorial / (n - n₀).factorial
+  isomorphismCount_labeledSym2Graph G / num_of_all_injections
+
 theorem isomorphismCount_eq
     {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
     (G : LabeledSym2Graph σ n) :
-    isomorphismCount G.toLabeledGraph = isomorphismCount' G
+    isomorphismCount G.toLabeledGraph = isomorphismCount_labeledSym2Graph G
   := by
-  dsimp only [isomorphismCount, isomorphismCount']
+  dsimp only [isomorphismCount, isomorphismCount_labeledSym2Graph]
   symm
   apply Finset.card_nbij LabeledSym2Graph.toLabeledGraph
   · intro G' hG'
@@ -244,12 +268,22 @@ theorem isomorphismCount_eq
     simp
     exact fun h ↦ G.edges_valid e h
 
-def singletonType : FlagType (Fin 1) := SimpleGraph.emptyGraph (Fin 1)
+theorem downwardNormalizingFactor_labeledGraph_eq
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    downwardNormalizingFactor_labeledGraph G.toLabeledGraph = downwardNormalizingFactor_labeledSym2Graph G
+  := by
+  dsimp only [downwardNormalizingFactor_labeledGraph, downwardNormalizingFactor_labeledSym2Graph]
+  congr
+  exact isomorphismCount_eq G
 
-alias Sₜ := singletonType
+/- Example -/
+
+section
+
+open MantelTheorem
 
 instance : DecidableRel Sₜ.Adj := by
-  simp [DecidableRel]
   intro a b
   exact .isFalse (by aesop)
 
@@ -267,9 +301,18 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
       aesop
   }
 
-#eval isomorphismCount' K3₁_labeledSym2Graph
+#eval isomorphismCount_labeledSym2Graph K3₁_labeledSym2Graph
 
-example : isomorphismCount' K3₁_labeledSym2Graph = 3 := by
+example : isomorphismCount K3₁_labeledSym2Graph.toLabeledGraph = 3 := by
+  rw [isomorphismCount_eq]
   native_decide
+
+#eval downwardNormalizingFactor_labeledSym2Graph K3₁_labeledSym2Graph
+
+example : downwardNormalizingFactor_labeledGraph K3₁_labeledSym2Graph.toLabeledGraph = 1 := by
+  rw [downwardNormalizingFactor_labeledGraph_eq]
+  native_decide
+
+end
 
 end Compute
