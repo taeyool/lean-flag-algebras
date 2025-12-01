@@ -14,22 +14,22 @@ def K2_graph := completeGraph (Fin 2)
 def O3_graph := emptyGraph (Fin 3)
 
 @[simp]
-theorem O3_graph_01 : ¬ O3_graph.Adj 0 1 := by rintro (_ | _ | _)
+theorem O3_graph_01 : ¬ O3_graph.Adj 0 1 := by rintro (_ | _)
 
 @[simp]
-theorem O3_graph_10 : ¬ O3_graph.Adj 1 0 := by rintro (_ | _ | _)
+theorem O3_graph_10 : ¬ O3_graph.Adj 1 0 := by rintro (_ | _)
 
 @[simp]
-theorem O3_graph_02 : ¬ O3_graph.Adj 0 2 := by rintro (_ | _ | _)
+theorem O3_graph_02 : ¬ O3_graph.Adj 0 2 := by rintro (_ | _)
 
 @[simp]
-theorem O3_graph_20 : ¬ O3_graph.Adj 2 0 := by rintro (_ | _ | _)
+theorem O3_graph_20 : ¬ O3_graph.Adj 2 0 := by rintro (_ | _)
 
 @[simp]
-theorem O3_graph_12 : ¬ O3_graph.Adj 1 2 := by rintro (_ | _ | _)
+theorem O3_graph_12 : ¬ O3_graph.Adj 1 2 := by rintro (_ | _)
 
 @[simp]
-theorem O3_graph_21 : ¬ O3_graph.Adj 2 1 := by rintro (_ | _ | _)
+theorem O3_graph_21 : ¬ O3_graph.Adj 2 1 := by rintro (_ | _)
 
 inductive E3_edge : Fin 3 → Fin 3 → Prop
   | e01 : E3_edge 0 1
@@ -38,10 +38,10 @@ inductive E3_edge : Fin 3 → Fin 3 → Prop
 def E3_graph : SimpleGraph (Fin 3) where
   Adj := E3_edge
   symm := by
-    rintro (_ | _ | _) (_ | _ | _) (_ | _ | _)
+    rintro (_ | _ | _) (_ | _ | _) (_ | _)
     repeat' constructor
   loopless := by
-    rintro (_ | _ | _) (_ | _ | _)
+    rintro (_ | _ | _) (_ | _)
 
 @[simp]
 theorem E3_graph_01 : E3_graph.Adj 0 1 := E3_edge.e01
@@ -50,16 +50,16 @@ theorem E3_graph_01 : E3_graph.Adj 0 1 := E3_edge.e01
 theorem E3_graph_10 : E3_graph.Adj 1 0 := E3_edge.e10
 
 @[simp]
-theorem E3_graph_02 : ¬ E3_graph.Adj 0 2 := by rintro (_ | _ | _)
+theorem E3_graph_02 : ¬ E3_graph.Adj 0 2 := by rintro (_ | _)
 
 @[simp]
-theorem E3_graph_20 : ¬ E3_graph.Adj 2 0 := by rintro (_ | _ | _)
+theorem E3_graph_20 : ¬ E3_graph.Adj 2 0 := by rintro (_ | _)
 
 @[simp]
-theorem E3_graph_12 : ¬ E3_graph.Adj 1 2 := by rintro (_ | _ | _)
+theorem E3_graph_12 : ¬ E3_graph.Adj 1 2 := by rintro (_ | _)
 
 @[simp]
-theorem E3_graph_21 : ¬ E3_graph.Adj 2 1 := by rintro (_ | _ | _)
+theorem E3_graph_21 : ¬ E3_graph.Adj 2 1 := by rintro (_ | _)
 
 inductive P3_edge : Fin 3 → Fin 3 → Prop
   | e01 : P3_edge 0 1
@@ -70,10 +70,10 @@ inductive P3_edge : Fin 3 → Fin 3 → Prop
 def P3_graph : SimpleGraph (Fin 3) where
   Adj := P3_edge
   symm := by
-    rintro (_ | _ | _) (_ | _ | _) (_ | _ | _)
+    rintro (_ | _ | _) (_ | _ | _) (_ | _)
     repeat' constructor
   loopless := by
-    rintro (_ | _ | _) (_ | _ | _)
+    rintro (_ | _ | _) (_ | _)
 
 @[simp]
 theorem P3_graph_01 : P3_graph.Adj 0 1 := P3_edge.e01
@@ -88,30 +88,30 @@ theorem P3_graph_02 : P3_graph.Adj 0 2 := P3_edge.e02
 theorem P3_graph_20 : P3_graph.Adj 2 0 := P3_edge.e20
 
 @[simp]
-theorem P3_graph_12 : ¬ P3_graph.Adj 1 2 := by rintro (_ | _ | _)
+theorem P3_graph_12 : ¬ P3_graph.Adj 1 2 := by rintro (_ | _)
 
 @[simp]
-theorem P3_graph_21 : ¬ P3_graph.Adj 2 1 := by rintro (_ | _ | _)
+theorem P3_graph_21 : ¬ P3_graph.Adj 2 1 := by rintro (_ | _)
 
 def K3_graph := completeGraph (Fin 3)
 
 @[simp]
-theorem K3_graph_01 : K3_graph.Adj 0 1 := by rintro (_ | _ | _)
+theorem K3_graph_01 : K3_graph.Adj 0 1 := by rintro (_ | _)
 
 @[simp]
-theorem K3_graph_10 : K3_graph.Adj 1 0 := by rintro (_ | _ | _)
+theorem K3_graph_10 : K3_graph.Adj 1 0 := by rintro (_ | _)
 
 @[simp]
-theorem K3_graph_02 : K3_graph.Adj 0 2 := by rintro (_ | _ | _)
+theorem K3_graph_02 : K3_graph.Adj 0 2 := by rintro (_ | _)
 
 @[simp]
-theorem K3_graph_20 : K3_graph.Adj 2 0 := by rintro (_ | _ | _)
+theorem K3_graph_20 : K3_graph.Adj 2 0 := by rintro (_ | _)
 
 @[simp]
-theorem K3_graph_12 : K3_graph.Adj 1 2 := by rintro (_ | _ | _)
+theorem K3_graph_12 : K3_graph.Adj 1 2 := by rintro (_ | _)
 
 @[simp]
-theorem K3_graph_21 : K3_graph.Adj 2 1 := by rintro (_ | _ | _)
+theorem K3_graph_21 : K3_graph.Adj 2 1 := by rintro (_ | _)
 
 def O2_labeledGraph : LabeledGraph ∅ₜ (Fin 2) where
   graph := O2_graph
@@ -204,16 +204,14 @@ def singletonType : FlagType (Fin 1) := emptyGraph (Fin 1)
 alias Sₜ := singletonType
 
 @[simp]
-theorem singletonType_size : Sₜ.size = 1 := by
-  dsimp [emptyType, FlagType.size]
-  rfl
+theorem singletonType_size : Sₜ.size = 1 := Fintype.card_fin 1
 
 def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   graph := O2_graph
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
@@ -221,7 +219,7 @@ def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
@@ -229,7 +227,7 @@ def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
@@ -237,7 +235,7 @@ def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
@@ -245,7 +243,7 @@ def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
@@ -253,7 +251,7 @@ def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
   type_embed := {
       toFun := fun _ => label_idx
       inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp; exact id
+      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
     }
 
 @[simp]
