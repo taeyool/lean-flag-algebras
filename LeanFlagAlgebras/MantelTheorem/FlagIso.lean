@@ -4,6 +4,40 @@ open FlagAlgebras
 
 namespace MantelTheorem
 
+noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.edgeSet := by
+  classical
+  exact Fintype.ofFinite G.edgeSet
+
+lemma cards_of_edge_sets_of_iso_graphs_eq {V W : Type} [Fintype V] [Fintype W]
+    (G₁ : SimpleGraph V) (G₂ : SimpleGraph W) (φ : G₁ ≃g G₂)
+    : Fintype.card (G₁.edgeSet) = Fintype.card (G₂.edgeSet)
+  := by
+  apply Fintype.card_congr
+  exact SimpleGraph.Iso.mapEdgeSet φ
+
+@[simp]
+theorem O3_graph_edge_card : Fintype.card (O3_graph.edgeSet) = 0 := by
+  classical
+  simp only [O3_graph, SimpleGraph.emptyGraph_eq_bot, SimpleGraph.edgeSet_bot, Fintype.card_eq_zero]
+
+@[simp]
+theorem E3_graph_edge_card : Fintype.card (E3_graph.edgeSet) = 1 := by
+  classical
+  simp [E3_graph]
+  sorry
+
+@[simp]
+theorem P3_graph_edge_card : Fintype.card (P3_graph.edgeSet) = 2 := by
+  classical
+  simp [P3_graph]
+  sorry
+
+@[simp]
+theorem K3_graph_edge_card : Fintype.card (K3_graph.edgeSet) = 3 := by
+  classical
+  simp [K3_graph]
+  sorry
+
 lemma all_isomorphism_on_Fin3
     (φ : Fin 3 ≃ Fin 3)
     : (φ 0 = 0 ∧ φ 1 = 1 ∧ φ 2 = 2) ∨
