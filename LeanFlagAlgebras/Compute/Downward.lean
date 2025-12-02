@@ -301,6 +301,15 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
       aesop
   }
 
+lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
+  simp [K3₁_labeledGraph, K3_graph, K3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  constructor
+  · ext u v; simp; revert u v; decide
+  · congr
+    · ext u v; simp; revert u v; decide
+    · aesop
+    · exact proof_irrel_heq _ _
+
 #eval isomorphismCount_labeledSym2Graph K3₁_labeledSym2Graph
 
 example : isomorphismCount K3₁_labeledSym2Graph.toLabeledGraph = 3 := by
