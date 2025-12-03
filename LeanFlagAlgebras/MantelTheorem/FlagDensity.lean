@@ -813,6 +813,25 @@ theorem flagDensity_O2₁_O2₁_O3₁
   rw [h_num]
   simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
 
+lemma labeledSubgraphListCount_O2₁_K2₁_O3₁
+    : labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (O3₁_labeledGraph 0) = 0
+  := by
+  dsimp [labeledSubgraphListCount]
+  rw [Finset.card_eq_zero.mpr]
+  by_contra h
+  push_neg at h
+  rw [← Finset.nonempty_iff_ne_empty] at h
+  dsimp [Finset.Nonempty] at h
+  rcases h with ⟨Hl, hHl⟩
+  dsimp [LabeledSubgraphList] at Hl
+  simp only [Fin.isValue, setOfLabeledSubgraphListIsoHl, Set.coe_setOf, Set.toFinset_setOf,
+    Finset.mem_filter, Finset.mem_univ, true_and] at hHl
+  rcases hHl with ⟨h_ind, h_iso, h_verts⟩
+  let witness := Hl 1
+  have : O3_graph.edgeSet ≠ ∅ := by sorry
+  simp only [O3_graph, SimpleGraph.emptyGraph_eq_bot, SimpleGraph.edgeSet_bot, ne_eq,
+    not_true_eq_false] at this
+
 @[simp]
 theorem flagDensity_O2₁_K2₁_O3₁
     : flagDensity₂ O2₁_flag K2₁_flag O3₁_flag = 0
@@ -821,8 +840,7 @@ theorem flagDensity_O2₁_K2₁_O3₁
   rw [← labeledSubgraphListDensity_eq_flagDensity₂]
   dsimp [labeledSubgraphListDensity]
   let num := labeledSubgraphListCount (labeledGraphPairToList (O2₁_labeledGraph 0) (K2₁_labeledGraph 0)) (O3₁_labeledGraph 0)
-  have h_num : num = 0 := by
-    sorry
+  have h_num : num = 0 := labeledSubgraphListCount_O2₁_K2₁_O3₁
   dsimp [multinomialCoefficient]
   simp [labeledGraphPairToList]
   exact h_num
