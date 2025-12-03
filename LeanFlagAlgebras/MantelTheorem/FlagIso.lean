@@ -9,34 +9,71 @@ noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.ed
   exact Fintype.ofFinite G.edgeSet
 
 lemma cards_of_edge_sets_of_iso_graphs_eq {V W : Type} [Fintype V] [Fintype W]
-    (G₁ : SimpleGraph V) (G₂ : SimpleGraph W) (φ : G₁ ≃g G₂)
+    {G₁ : SimpleGraph V} {G₂ : SimpleGraph W} (h : Nonempty (G₁ ≃g G₂))
     : Fintype.card (G₁.edgeSet) = Fintype.card (G₂.edgeSet)
   := by
   apply Fintype.card_congr
-  exact SimpleGraph.Iso.mapEdgeSet φ
+  exact SimpleGraph.Iso.mapEdgeSet h.some
+
+@[simp]
+theorem O2_graph_edge_card : Fintype.card (O2_graph.edgeSet) = 0 := by
+  simp [O2_graph]
+
+@[simp]
+theorem K2_graph_edge_card : Fintype.card (K2_graph.edgeSet) = 1 := by
+  have : K2_graph.edgeSet = { Sym2.mk (0, 1) } := by
+    ext e
+    simp [K2_graph]
+    revert e
+    decide
+  simp [this]
 
 @[simp]
 theorem O3_graph_edge_card : Fintype.card (O3_graph.edgeSet) = 0 := by
-  classical
-  simp only [O3_graph, SimpleGraph.emptyGraph_eq_bot, SimpleGraph.edgeSet_bot, Fintype.card_eq_zero]
+  simp [O3_graph]
 
 @[simp]
 theorem E3_graph_edge_card : Fintype.card (E3_graph.edgeSet) = 1 := by
-  classical
-  simp [E3_graph]
-  sorry
+  have : E3_graph.edgeSet = { Sym2.mk (0, 1) } := by
+    ext e
+    obtain ⟨⟨u, v⟩, h_eq⟩ := Quot.exists_rep e
+    rw [←h_eq]
+    simp [E3_graph]
+    constructor
+    · intro h
+      rcases h with (_ | _) <;> simp
+    · intro h
+      rcases h with (_ | _)
+      . simp_all; exact E3_edge.e01
+      . simp_all; exact E3_edge.e10
+  simp [this]
 
 @[simp]
 theorem P3_graph_edge_card : Fintype.card (P3_graph.edgeSet) = 2 := by
-  classical
-  simp [P3_graph]
-  sorry
+  have : P3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2) } := by
+    ext e
+    obtain ⟨⟨u, v⟩, h_eq⟩ := Quot.exists_rep e
+    rw [←h_eq]
+    simp [P3_graph]
+    constructor
+    · intro h
+      rcases h with (_ | _) <;> simp
+    · intro h
+      rcases h with ((_ | _) | (_ | _))
+      . simp_all; exact P3_edge.e01
+      . simp_all; exact P3_edge.e10
+      . simp_all; exact P3_edge.e02
+      . simp_all; exact P3_edge.e20
+  simp [this]
 
 @[simp]
 theorem K3_graph_edge_card : Fintype.card (K3_graph.edgeSet) = 3 := by
-  classical
-  simp [K3_graph]
-  sorry
+  have : K3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } := by
+    ext e
+    simp [K3_graph]
+    revert e
+    decide
+  simp [this]
 
 lemma all_isomorphism_on_Fin3
     (φ : Fin 3 ≃ Fin 3)
@@ -108,127 +145,49 @@ lemma O3_E3_graph_not_iso
     : ¬ Nonempty (O3_graph ≃g E3_graph)
   := by
   intro h
-  let ψ := h.some.symm
-  have h_adj_O3 : O3_graph.Adj (ψ 0) (ψ 1) := by
-    rw [SimpleGraph.Iso.map_adj_iff ψ]
-    simp only [Fin.isValue, E3_graph_01]
-  exact h_adj_O3
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [O3_graph_edge_card, E3_graph_edge_card] at this
+  simp_all
 
 lemma O3_P3_graph_not_iso
     : ¬ Nonempty (O3_graph ≃g P3_graph)
   := by
   intro h
-  let ψ := h.some.symm
-  have h_adj_O3 : O3_graph.Adj (ψ 0) (ψ 1) := by
-    rw [SimpleGraph.Iso.map_adj_iff ψ]
-    simp only [Fin.isValue, P3_graph_01]
-  exact h_adj_O3
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [O3_graph_edge_card, P3_graph_edge_card] at this
+  simp_all
 
 lemma O3_K3_graph_not_iso
     : ¬ Nonempty (O3_graph ≃g K3_graph)
   := by
   intro h
-  let ψ := h.some.symm
-  have h_adj_O3 : O3_graph.Adj (ψ 0) (ψ 1) := by
-    rw [SimpleGraph.Iso.map_adj_iff ψ]
-    simp only [Fin.isValue, K3_graph_01]
-  exact h_adj_O3
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [O3_graph_edge_card, K3_graph_edge_card] at this
+  simp_all
 
 lemma E3_P3_graph_not_iso
     : ¬ Nonempty (E3_graph ≃g P3_graph)
   := by
   intro h
-  let φ := h.some
-  rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-  <;> simp at h₀ h₁ h₂
-  · have : E3_graph.Adj 0 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 0 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [E3_graph_edge_card, P3_graph_edge_card] at this
+  simp_all
 
 lemma E3_K3_graph_not_iso
     : ¬ Nonempty (E3_graph ≃g K3_graph)
   := by
   intro h
-  let φ := h.some
-  rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-  <;> simp at h₀ h₁ h₂
-  · have : E3_graph.Adj 0 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 0 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : E3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [E3_graph_edge_card, K3_graph_edge_card] at this
+  simp_all
 
 lemma P3_K3_graph_not_iso
     : ¬ Nonempty (P3_graph ≃g K3_graph)
   := by
   intro h
-  let φ := h.some
-  rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-  <;> simp at h₀ h₁ h₂
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
-  · have : P3_graph.Adj 1 2 := by
-      rw [← SimpleGraph.Iso.map_adj_iff φ, h₁, h₂]
-      simp
-    contradiction
+  have := cards_of_edge_sets_of_iso_graphs_eq h
+  rw [P3_graph_edge_card, K3_graph_edge_card] at this
+  simp_all
 
 lemma threeVertexGraph_iso
     (G : SimpleGraph (Fin 3))
