@@ -287,6 +287,106 @@ instance : DecidableRel Sₜ.Adj := by
   intro a b
   exact .isFalse (by aesop)
 
+def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
+  edges := ∅
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
+  simp [O2₁_labeledGraph, O2_graph, O2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
+  · ext u v; simp
+  · aesop
+  · exact proof_irrel_heq _ _
+
+def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
+  edges := { Sym2.mk (0, 1) }
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
+  simp [K2₁_labeledGraph, K2_graph, K2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  constructor
+  . ext u v; simp; revert u v; decide
+  . congr
+    · ext u v; simp; revert u v; decide
+    · aesop
+    · exact proof_irrel_heq _ _
+
+def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
+  edges := ∅
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
+  simp [O3₁_labeledGraph, O3_graph, O3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
+  · ext u v; simp
+  · aesop
+  · exact proof_irrel_heq _ _
+
+def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
+  edges := { Sym2.mk (0, 1) }
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 := by
+  simp [E3₁_labeledGraph, E3_graph, E3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  constructor
+  · ext u v
+    simp
+    constructor
+    . rintro ⟨(h₁ | h₂), _⟩
+      . simp_all; exact E3_edge.e01
+      . simp_all; exact E3_edge.e10
+    . rintro (_ | _) <;> decide
+  · congr
+    · ext u v
+      simp
+      constructor
+      . rintro ⟨(h₁ | h₂), _⟩
+        . simp_all; exact E3_edge.e01
+        . simp_all; exact E3_edge.e10
+      . rintro (_ | _) <;> decide
+    · aesop
+    · exact proof_irrel_heq _ _
+
 def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
   edges_valid := by aesop
