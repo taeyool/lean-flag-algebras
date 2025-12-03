@@ -387,6 +387,45 @@ lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 :=
     · aesop
     · exact proof_irrel_heq _ _
 
+def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
+  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
+  edges_valid := by aesop
+  type_embed := {
+    toFun := fun x ↦ match x with
+      | 0 => 0
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
+lemma P3₁_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 := by
+  simp [P3₁_labeledGraph, P3_graph, P3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  constructor
+  · ext u v
+    simp
+    constructor
+    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩
+      . simp_all; exact P3_edge.e01
+      . simp_all; exact P3_edge.e10
+      . simp_all; exact P3_edge.e02
+      . simp_all; exact P3_edge.e20
+    . rintro (_ | _ | _ | _) <;> decide
+  · congr
+    · ext u v
+      simp
+      constructor
+      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩
+        . simp_all; exact P3_edge.e01
+        . simp_all; exact P3_edge.e10
+        . simp_all; exact P3_edge.e02
+        . simp_all; exact P3_edge.e20
+      . rintro (_ | _ | _ | _) <;> decide
+    · aesop
+    · exact proof_irrel_heq _ _
+
 def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
   edges_valid := by aesop
