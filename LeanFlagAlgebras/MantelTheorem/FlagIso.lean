@@ -497,6 +497,33 @@ def singletonTypeThreeVertexFlagSet : Finset (FlagWithSize Sₜ 3) where
     · exact P3₁_K3₁_not_iso (Quotient.exact h)
     · exact P3₁'_K3₁_not_iso (Quotient.exact h)
 
+syntax "prove_singletonType_O3_equiv_with" term "and" term : tactic
+
+macro_rules
+| `(tactic| prove_singletonType_O3_equiv_with $map1 and $map2) => `(tactic|
+    {
+      exact {
+        graph_iso := {
+          toFun := $map1
+          invFun := $map2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [O3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | simp at h)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [O3₁_labeledGraph]
+          funext i
+          simp [Fin.fin_one_eq_zero i]
+          simp_all
+      }
+    })
+
 lemma singletonType_O3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g O3_graph)
     : G ∼f O3₁_labeledGraph 0
@@ -507,66 +534,15 @@ lemma singletonType_O3_eqv
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   apply Nonempty.intro
   match ht : G.type_embed 0 with
-  | 0 => exact {
-      graph_iso := {
-        toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-        invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-        left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        map_rel_iff' := by
-          dsimp [O3₁_labeledGraph]
-          intros; constructor
-          · split <;> (intro h; split at h) <;>
-            (first | assumption | simp at h)
-          · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
-      }
-      type_preserve := by
-        simp [O3₁_labeledGraph]
-        funext i
-        simp [Fin.fin_one_eq_zero i]
-        rw [ht]
-    }
-  | 1 => exact {
-      graph_iso := {
-        toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-        invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-        left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        map_rel_iff' := by
-          dsimp [O3₁_labeledGraph]
-          intros; constructor
-          · split <;> (intro h; split at h) <;>
-            (first | assumption | simp at h)
-          · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
-      }
-      type_preserve := by
-        simp [O3₁_labeledGraph]
-        funext i
-        simp [Fin.fin_one_eq_zero i]
-        rw [ht]
-    }
-  | 2 => exact {
-      graph_iso := {
-        toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-        invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-        left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-        map_rel_iff' := by
-          dsimp [O3₁_labeledGraph]
-          intros; constructor
-          · split <;> (intro h; split at h) <;>
-            (first | assumption | simp at h)
-          · split <;> (intro h; split) <;>
-            (first | contradiction | symm at h; contradiction | simp at *)
-      }
-      type_preserve := by
-        simp [O3₁_labeledGraph]
-        funext i
-        simp [Fin.fin_one_eq_zero i]
-        rw [ht]
-    }
+  | 0 => prove_singletonType_O3_equiv_with
+             (fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2)
+             and (fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2)
+  | 1 => prove_singletonType_O3_equiv_with
+              (fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2)
+              and (fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2)
+  | 2 => prove_singletonType_O3_equiv_with
+              (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
+              and (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_E3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g E3_graph)
