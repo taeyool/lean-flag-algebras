@@ -540,6 +540,33 @@ lemma singletonType_O3_eqv
   | 2 => prove_singletonType_O3_equiv_with
            (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
+syntax "prove_singletonType_E3_equiv_with" term "and" term : tactic
+
+macro_rules
+| `(tactic| prove_singletonType_E3_equiv_with $map1 and $map2) => `(tactic|
+    {
+      apply Nonempty.intro
+      exact {
+        graph_iso := {
+          toFun := $map1
+          invFun := $map2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [E3₁_labeledGraph]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | symm; assumption | simp at *)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [E3₁_labeledGraph]
+          funext i
+          simp_all [Fin.fin_one_eq_zero i]
+      }
+    })
+
 lemma singletonType_E3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g E3_graph)
     : G ∼f E3₁_labeledGraph 0 ∨ G ∼f E3₁_labeledGraph 2
@@ -553,213 +580,33 @@ lemma singletonType_E3_eqv
   · match ht : G.type_embed 0 with
     | 0 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with  (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
     | 1 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-          invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with  (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
     | 2 =>
       right
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
   · match ht : G.type_embed 0 with
     | 0 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
     | 1 =>
       right
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
     | 2 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
-          invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 1 | 1 => 2 | 2 => 0) and (fun | 0 => 2 | 1 => 0 | 2 => 1)
   · match ht : G.type_embed 0 with
     | 0 =>
       right
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
     | 1 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
-          invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
     | 2 =>
       left
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3₁_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [E3₁_labeledGraph]
-          funext i
-          simp [Fin.fin_one_eq_zero i]
-          rw [ht]
-      }
+      prove_singletonType_E3_equiv_with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_P3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g P3_graph)
