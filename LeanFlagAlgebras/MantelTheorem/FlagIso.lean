@@ -208,10 +208,10 @@ lemma P3_K3_graph_not_iso
   simp_all
 
 
-syntax "prove_graph_iso" term "and" term ("using" term "and" term)? : tactic
+syntax "prove_threeVertexGraph_iso" term "and" term ("using" term "and" term)? : tactic
 
 macro_rules
-| `(tactic| prove_graph_iso $source and $target) => `(tactic|
+| `(tactic| prove_threeVertexGraph_iso $source and $target) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
         apply Nonempty.intro
@@ -223,7 +223,7 @@ macro_rules
         rw [this]
       simp [this]
     })
-| `(tactic| prove_graph_iso $source and $target using $map1 and $map2) => `(tactic|
+| `(tactic| prove_threeVertexGraph_iso $source and $target using $map1 and $map2) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
         apply Nonempty.intro
@@ -247,32 +247,31 @@ lemma threeVertexGraph_iso
   <;> rcases (Classical.em (G.Adj 1 2)) with h₁₂ | h₁₂
 
   -- 1. K3 Case
-  · prove_graph_iso G and K3_graph
+  · prove_threeVertexGraph_iso G and K3_graph
 
   -- 2. P3 Case
-  . prove_graph_iso G and P3_graph
+  . prove_threeVertexGraph_iso G and P3_graph
 
   -- 3. P3 Case
-  . prove_graph_iso G and P3_graph
-      using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
+  . prove_threeVertexGraph_iso G and P3_graph
+      using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 4. E3 Case
-  . prove_graph_iso G and E3_graph
+  . prove_threeVertexGraph_iso G and E3_graph
 
   -- 5. P3 Case
-  . prove_graph_iso G and P3_graph
-      using (fun i => match i with | 0 => 2 | 2 => 0 | 1 => 1) and (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
+  . prove_threeVertexGraph_iso G and P3_graph
+      using (fun | 0 => 2 | 2 => 0 | 1 => 1) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
   -- 6. E3 Case
-  . prove_graph_iso G and E3_graph
-      using (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1) and (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1)
-
+  . prove_threeVertexGraph_iso G and E3_graph
+      using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
   -- 7. E3 Case
-  . prove_graph_iso G and E3_graph
-      using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
+  . prove_threeVertexGraph_iso G and E3_graph
+      using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 8. O3 Case
-  . prove_graph_iso G and O3_graph
+  . prove_threeVertexGraph_iso G and O3_graph
 
 /- flags with empty type -/
 
@@ -331,10 +330,10 @@ def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
     · exact P3_K3_not_iso (Quotient.exact h)
 
 
-syntax "prove_labeled_graph_iso" term "and" term "using" term : tactic
+syntax "prove_emptyTypeThreeVertexLabeledGraph_eqv" term "and" term "using" term : tactic
 
 macro_rules
-| `(tactic| prove_labeled_graph_iso $source and $target using $map) => `(tactic|
+| `(tactic| prove_emptyTypeThreeVertexLabeledGraph_eqv $source and $target using $map) => `(tactic|
     {
       have : $source ∼f $target := by
         apply Nonempty.intro
@@ -352,10 +351,10 @@ lemma emptyTypeThreeVertexLabeledGraph_eqv
     : G ∼f O3_labeledGraph ∨ G ∼f E3_labeledGraph ∨ G ∼f P3_labeledGraph ∨ G ∼f K3_labeledGraph
   := by
   rcases (threeVertexGraph_iso G.graph) with h | h | h | h
-  · prove_labeled_graph_iso G and O3_labeledGraph using h.some
-  · prove_labeled_graph_iso G and E3_labeledGraph using h.some
-  · prove_labeled_graph_iso G and P3_labeledGraph using h.some
-  · prove_labeled_graph_iso G and K3_labeledGraph using h.some
+  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and O3_labeledGraph using h.some
+  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and E3_labeledGraph using h.some
+  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and P3_labeledGraph using h.some
+  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and K3_labeledGraph using h.some
 
 theorem emptyTypeThreeVertexFlagSet_eq_univ
     : emptyTypeThreeVertexFlagSet = Finset.univ
@@ -535,14 +534,11 @@ lemma singletonType_O3_eqv
   apply Nonempty.intro
   match ht : G.type_embed 0 with
   | 0 => prove_singletonType_O3_equiv_with
-             (fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2)
-             and (fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2)
+           (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
   | 1 => prove_singletonType_O3_equiv_with
-              (fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2)
-              and (fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2)
+           (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
   | 2 => prove_singletonType_O3_equiv_with
-              (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
-              and (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
+           (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_E3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g E3_graph)
