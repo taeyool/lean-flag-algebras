@@ -207,10 +207,10 @@ lemma P3_K3_graph_not_iso
   simp_all
 
 
-syntax "prove_iso" term "and" term ("using" term "and" term)? : tactic
+syntax "prove_graph_iso" term "and" term ("using" term "and" term)? : tactic
 
 macro_rules
-| `(tactic| prove_iso $source and $target) => `(tactic|
+| `(tactic| prove_graph_iso $source and $target) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
         apply Nonempty.intro
@@ -222,7 +222,7 @@ macro_rules
         rw [this]
       simp [this]
     })
-| `(tactic| prove_iso $source and $target using $map1 and $map2) => `(tactic|
+| `(tactic| prove_graph_iso $source and $target using $map1 and $map2) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
         apply Nonempty.intro
@@ -246,32 +246,32 @@ lemma threeVertexGraph_iso
   <;> rcases (Classical.em (G.Adj 1 2)) with h₁₂ | h₁₂
 
   -- 1. K3 Case
-  · prove_iso G and K3_graph
+  · prove_graph_iso G and K3_graph
 
   -- 2. P3 Case
-  . prove_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
 
   -- 3. P3 Case
-  . prove_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
       using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 4. E3 Case
-  . prove_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
 
   -- 5. P3 Case
-  . prove_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
       using (fun i => match i with | 0 => 2 | 2 => 0 | 1 => 1) and (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
 
   -- 6. E3 Case
-  . prove_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
       using (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1) and (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1)
 
   -- 7. E3 Case
-  . prove_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
       using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 8. O3 Case
-  . prove_iso G and O3_graph
+  . prove_graph_iso G and O3_graph
 
 /- flags with empty type -/
 
@@ -329,44 +329,32 @@ def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
     · exact E3_K3_not_iso (Quotient.exact h)
     · exact P3_K3_not_iso (Quotient.exact h)
 
+
+syntax "prove_labeled_graph_iso" term "and" term "using" term : tactic
+
+macro_rules
+| `(tactic| prove_labeled_graph_iso $source and $target using $map) => `(tactic|
+    {
+      have : $source ∼f $target := by
+        apply Nonempty.intro
+        exact {
+          graph_iso := $map
+          type_preserve := by
+            funext i
+            exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+        }
+      simp [this]
+    })
+
 lemma emptyTypeThreeVertexLabeledGraph_eqv
     (G : LabeledGraph ∅ₜ (Fin 3))
     : G ∼f O3_labeledGraph ∨ G ∼f E3_labeledGraph ∨ G ∼f P3_labeledGraph ∨ G ∼f K3_labeledGraph
   := by
   rcases (threeVertexGraph_iso G.graph) with h | h | h | h
-  <;> have φ := h.some
-  · left
-    apply Nonempty.intro
-    exact {
-      graph_iso := φ
-      type_preserve := by
-        funext i
-        exact False.elim (Nat.not_succ_le_zero i.1 i.2)
-    }
-  · right; left
-    apply Nonempty.intro
-    exact {
-      graph_iso := φ
-      type_preserve := by
-        funext i
-        exact False.elim (Nat.not_succ_le_zero i.1 i.2)
-    }
-  · right; right; left
-    apply Nonempty.intro
-    exact {
-      graph_iso := φ
-      type_preserve := by
-        funext i
-        exact False.elim (Nat.not_succ_le_zero i.1 i.2)
-    }
-  · right; right; right
-    apply Nonempty.intro
-    exact {
-      graph_iso := φ
-      type_preserve := by
-        funext i
-        exact False.elim (Nat.not_succ_le_zero i.1 i.2)
-    }
+  · prove_labeled_graph_iso G and O3_labeledGraph using h.some
+  · prove_labeled_graph_iso G and E3_labeledGraph using h.some
+  · prove_labeled_graph_iso G and P3_labeledGraph using h.some
+  · prove_labeled_graph_iso G and K3_labeledGraph using h.some
 
 theorem emptyTypeThreeVertexFlagSet_eq_univ
     : emptyTypeThreeVertexFlagSet = Finset.univ
