@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagDefs
 
+
 open FlagAlgebras
 
 namespace MantelTheorem
@@ -88,7 +89,7 @@ theorem K3_graph_edgeSet : K3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2), 
   decide
 
 @[simp]
-theorem K3_graph_edge_card : Fintype.card (K3_graph.edgeSet) = 3 := by
+theorem K3_graph_edgeSet_card : Fintype.card (K3_graph.edgeSet) = 3 := by
   simp
 
 lemma all_isomorphism_on_Fin3
@@ -162,7 +163,7 @@ lemma O3_E3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edge_card, E3_graph_edge_card] at this
+  rw [O3_graph_edgeSet_card, E3_graph_edgeSet_card] at this
   simp_all
 
 lemma O3_P3_graph_not_iso
@@ -170,7 +171,7 @@ lemma O3_P3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edge_card, P3_graph_edge_card] at this
+  rw [O3_graph_edgeSet_card, P3_graph_edgeSet_card] at this
   simp_all
 
 lemma O3_K3_graph_not_iso
@@ -178,7 +179,7 @@ lemma O3_K3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edge_card, K3_graph_edge_card] at this
+  rw [O3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
   simp_all
 
 lemma E3_P3_graph_not_iso
@@ -186,7 +187,7 @@ lemma E3_P3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [E3_graph_edge_card, P3_graph_edge_card] at this
+  rw [E3_graph_edgeSet_card, P3_graph_edgeSet_card] at this
   simp_all
 
 lemma E3_K3_graph_not_iso
@@ -194,7 +195,7 @@ lemma E3_K3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [E3_graph_edge_card, K3_graph_edge_card] at this
+  rw [E3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
   simp_all
 
 lemma P3_K3_graph_not_iso
@@ -202,146 +203,75 @@ lemma P3_K3_graph_not_iso
   := by
   intro h
   have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [P3_graph_edge_card, K3_graph_edge_card] at this
+  rw [P3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
   simp_all
+
+
+syntax "prove_iso" term "and" term ("using" term "and" term)? : tactic
+
+macro_rules
+| `(tactic| prove_iso $source and $target) => `(tactic|
+    {
+      have : Nonempty ($source ≃g $target) := by
+        apply Nonempty.intro
+        have : $source = $target := by
+          ext u v
+          match u, v with
+          | 0, 1 | 1, 0 | 2, 0 | 0, 2 | 1, 2 | 2, 1 | 0, 0 | 1, 1 | 2, 2
+          => simp_all [SimpleGraph.adj_comm $source]
+        rw [this]
+      simp [this]
+    })
+| `(tactic| prove_iso $source and $target using $map1 and $map2) => `(tactic|
+    {
+      have : Nonempty ($source ≃g $target) := by
+        apply Nonempty.intro
+        exact {
+          toFun := $map1
+          invFun := $map2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+          map_rel_iff' := by
+            intros; simp; constructor <;> split <;> split <;> (intro h; simp_all [SimpleGraph.adj_comm $source])
+        }
+      simp [this]
+    })
 
 lemma threeVertexGraph_iso
     (G : SimpleGraph (Fin 3))
     : Nonempty (G ≃g O3_graph) ∨ Nonempty (G ≃g E3_graph) ∨ Nonempty (G ≃g P3_graph) ∨ Nonempty (G ≃g K3_graph)
   := by
-  if h₀₁ : G.Adj 0 1 then
-    if h₀₂ : G.Adj 0 2 then
-      if h₁₂ : G.Adj 1 2 then -- K3 case
-        right; right; right
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [K3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro; split) <;> simp at *
-        }
-      else -- P3 case
-        right; right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [P3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-    else
-      if h₁₂ : G.Adj 1 2 then -- P3 case
-        right; right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-          invFun := fun i => match i with | 0 => 1 | 1 => 0 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [P3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-      else -- E3 case
-        right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-  else
-    if h₀₂ : G.Adj 0 2 then
-      if h₁₂ : G.Adj 1 2 then -- P3 case
-        right; right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [P3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-      else -- E3 case
-        right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          invFun := fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-    else
-      if h₁₂ : G.Adj 1 2 then -- E3 case
-        right; left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          invFun := fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [E3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at h)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-      else -- O3 case
-        left
-        apply Nonempty.intro
-        exact {
-          toFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          invFun := fun i => match i with | 0 => 0 | 1 => 1 | 2 => 2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          map_rel_iff' := by
-            dsimp [O3_labeledGraph]
-            intros; constructor
-            · split <;> (intro h; split at h) <;> contradiction
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at h)
-        }
+  rcases (Classical.em (G.Adj 0 1)) with h₀₁ | h₀₁
+  <;> rcases (Classical.em (G.Adj 0 2)) with h₀₂ | h₀₂
+  <;> rcases (Classical.em (G.Adj 1 2)) with h₁₂ | h₁₂
 
+  -- 1. K3 Case
+  · prove_iso G and K3_graph
+
+  -- 2. P3 Case
+  . prove_iso G and P3_graph
+
+  -- 3. P3 Case
+  . prove_iso G and P3_graph
+      using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
+
+  -- 4. E3 Case
+  . prove_iso G and E3_graph
+
+  -- 5. P3 Case
+  . prove_iso G and P3_graph
+      using (fun i => match i with | 0 => 2 | 2 => 0 | 1 => 1) and (fun i => match i with | 0 => 2 | 1 => 1 | 2 => 0)
+
+  -- 6. E3 Case
+  . prove_iso G and E3_graph
+      using (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1) and (fun i => match i with | 0 => 0 | 1 => 2 | 2 => 1)
+
+  -- 7. E3 Case
+  . prove_iso G and E3_graph
+      using (fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1) and (fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0)
+
+  -- 8. O3 Case
+  . prove_iso G and O3_graph
 
 /- flags with empty type -/
 
