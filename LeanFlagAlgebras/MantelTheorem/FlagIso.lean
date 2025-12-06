@@ -208,21 +208,9 @@ lemma P3_K3_graph_not_iso
   simp_all
 
 
-syntax "prove_threeVertexGraph_iso" term "and" term ("using" term "and" term)? : tactic
+syntax "prove_threeVertexGraph_iso" term "and" term "using" term "and" term : tactic
 
 macro_rules
-| `(tactic| prove_threeVertexGraph_iso $source and $target) => `(tactic|
-    {
-      have : Nonempty ($source ≃g $target) := by
-        apply Nonempty.intro
-        have : $source = $target := by
-          ext u v
-          match u, v with
-          | 0, 1 | 1, 0 | 2, 0 | 0, 2 | 1, 2 | 2, 1 | 0, 0 | 1, 1 | 2, 2
-          => simp_all [SimpleGraph.adj_comm $source]
-        rw [this]
-      simp [this]
-    })
 | `(tactic| prove_threeVertexGraph_iso $source and $target using $map1 and $map2) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
@@ -248,9 +236,11 @@ lemma threeVertexGraph_iso
 
   -- 1. K3 Case
   · prove_threeVertexGraph_iso G and K3_graph
+      using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 2. P3 Case
   . prove_threeVertexGraph_iso G and P3_graph
+      using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 3. P3 Case
   . prove_threeVertexGraph_iso G and P3_graph
@@ -258,6 +248,7 @@ lemma threeVertexGraph_iso
 
   -- 4. E3 Case
   . prove_threeVertexGraph_iso G and E3_graph
+      using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 5. P3 Case
   . prove_threeVertexGraph_iso G and P3_graph
@@ -266,12 +257,14 @@ lemma threeVertexGraph_iso
   -- 6. E3 Case
   . prove_threeVertexGraph_iso G and E3_graph
       using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
+
   -- 7. E3 Case
   . prove_threeVertexGraph_iso G and E3_graph
       using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 8. O3 Case
   . prove_threeVertexGraph_iso G and O3_graph
+      using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
 /- flags with empty type -/
 
@@ -506,8 +499,8 @@ macro_rules
         graph_iso := {
           toFun := $map1
           invFun := $map2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
           map_rel_iff' := by
             dsimp [$labeled_graph:term]
             intros; constructor
