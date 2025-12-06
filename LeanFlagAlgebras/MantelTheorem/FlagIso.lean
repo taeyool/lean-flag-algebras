@@ -496,6 +496,32 @@ def singletonTypeThreeVertexFlagSet : Finset (FlagWithSize Sₜ 3) where
     · exact P3₁_K3₁_not_iso (Quotient.exact h)
     · exact P3₁'_K3₁_not_iso (Quotient.exact h)
 
+syntax "prove_labeledGraph_equiv_on" term "with" term "and" term : tactic
+
+macro_rules
+| `(tactic| prove_labeledGraph_equiv_on $labeled_graph with $map1 and $map2) => `(tactic|
+    {
+      exact {
+        graph_iso := {
+          toFun := $map1
+          invFun := $map2
+          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
+          map_rel_iff' := by
+            dsimp [$labeled_graph:term]
+            intros; constructor
+            · split <;> (intro h; split at h) <;>
+              (first | assumption | simp at h)
+            · split <;> (intro h; split) <;>
+              (first | contradiction | symm at h; contradiction | simp at *)
+        }
+        type_preserve := by
+          simp [$labeled_graph:term]
+          funext i
+          simp_all [Fin.fin_one_eq_zero i]
+      }
+    })
+
 syntax "prove_singletonType_O3_equiv_with" term "and" term : tactic
 
 macro_rules
@@ -518,8 +544,7 @@ macro_rules
         type_preserve := by
           simp [O3₁_labeledGraph]
           funext i
-          simp [Fin.fin_one_eq_zero i]
-          simp_all
+          simp_all [Fin.fin_one_eq_zero i]
       }
     })
 
@@ -533,12 +558,12 @@ lemma singletonType_O3_eqv
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   apply Nonempty.intro
   match ht : G.type_embed 0 with
-  | 0 => prove_singletonType_O3_equiv_with
-           (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
-  | 1 => prove_singletonType_O3_equiv_with
-           (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
-  | 2 => prove_singletonType_O3_equiv_with
-           (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+  | 0 => prove_labeledGraph_equiv_on O3₁_labeledGraph
+           with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+  | 1 => prove_labeledGraph_equiv_on O3₁_labeledGraph
+           with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+  | 2 => prove_labeledGraph_equiv_on O3₁_labeledGraph
+           with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 syntax "prove_singletonType_E3_equiv_with" term "and" term : tactic
 
