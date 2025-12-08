@@ -1,33 +1,14 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagIso
+import «LeanFlagAlgebras».Compute.Downward
 import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
 open Classical
+open Compute
 
 namespace MantelTheorem
 
 /- downward operations -/
-
-lemma fun_Fin1_Fin3
-    (f : Fin 1 → Fin 3)
-    : f = (fun _ => 0) ∨ f = (fun _ => 1) ∨ f = (fun _ => 2)
-  := by
-  match h_f0 : f 0 with
-  | 0 =>
-    left
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
-  | 1 =>
-    right; left
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
-  | 2 =>
-    right; right
-    apply funext
-    intro
-    simp_all only [Fin.fin_one_eq_zero, Fin.isValue]
 
 lemma type_embed_HEq
     {T V : Type} {σ : FlagType T} {G G' : SimpleGraph V} {f : σ ↪g G} {f' : σ ↪g G'}
@@ -53,115 +34,17 @@ lemma unlabel_O3₁
       dsimp [unlabeledGraph]
       apply flagEqv.refl
 
-def isoSet_O3₁
-    : Set (LabeledGraph Sₜ (Fin 3))
-  :=
-  {O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2}
-
-lemma isoSet_O3₁_card
-    : isoSet_O3₁.toFinset.card = 3
+lemma downwardNormalizingFactor_O3₁_labeledGraph
+    : downwardNormalizingFactor_labeledGraph (O3₁_labeledGraph 0) = 1
   := by
-  classical
-  refine Finset.card_eq_three.mpr ?_
-  use O3₁_labeledGraph 0, O3₁_labeledGraph 1, O3₁_labeledGraph 2
-  have : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 1 := by
-    simp [O3₁_labeledGraph]
-    exact ne_of_beq_false rfl
-  have : O3₁_labeledGraph 0 ≠ O3₁_labeledGraph 2 := by
-    simp [O3₁_labeledGraph]
-    exact ne_of_beq_false rfl
-  have : O3₁_labeledGraph 1 ≠ O3₁_labeledGraph 2 := by
-    simp [O3₁_labeledGraph]
-    exact ne_of_beq_false rfl
-  repeat' constructor <;> try assumption
-  simp [isoSet_O3₁]
-
-def O3₁_labeledGraph_0_1_iso
-    : O3₁_labeledGraph 0 ≃f O3₁_labeledGraph 1 where
-  graph_iso := {
-    toFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
-    invFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
-    left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-    right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-    map_rel_iff' := by intros; simp; rfl
-  }
-  type_preserve := by simp; rfl
-
-def O3₁_labeledGraph_0_2_iso
-    : O3₁_labeledGraph 0 ≃f O3₁_labeledGraph 2 where
-  graph_iso := {
-    toFun := fun i => match i with | 0 => 2 | 1 => 0 | 2 => 1
-    invFun := fun i => match i with | 0 => 1 | 1 => 2 | 2 => 0
-    left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-    right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp at *
-    map_rel_iff' := by intros; simp; rfl
-  }
-  type_preserve := by simp; rfl
-
-lemma isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card
-    : isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0) = isoSet_O3₁
-  := by
-  dsimp [isoLabeledGraphSetWithSameGraph, isoSet_O3₁]
-  ext H; constructor
-  · intro h
-    simp; simp [O3₁_labeledGraph] at h
-    obtain ⟨h_graph, _⟩ := h
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
-    · left
-      ext1
-      · simp [O3₁_labeledGraph, h_graph]
-      · apply type_embed_HEq
-        · dsimp [O3₁_labeledGraph]
-          rw [h_graph]
-        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
-          rfl
-    · right; left
-      ext1
-      · simp [O3₁_labeledGraph, h_graph]
-      · apply type_embed_HEq
-        · dsimp [O3₁_labeledGraph]
-          rw [h_graph]
-        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
-          rfl
-    · right; right
-      ext1
-      · simp [O3₁_labeledGraph, h_graph]
-      · apply type_embed_HEq
-        · dsimp [O3₁_labeledGraph]
-          rw [h_graph]
-        · simp_all only [Function.Embedding.toFun_eq_coe, RelEmbedding.coe_toEmbedding]
-          rfl
-  · intro h
-    rcases h with h₀ | (h₁ | h₂)
-    · subst h₀
-      simp
-      exact flagEqv.refl (O3₁_labeledGraph 0)
-    · subst h₁
-      simp; constructor
-      · dsimp [O3₁_labeledGraph]
-      · exact Nonempty.intro O3₁_labeledGraph_0_1_iso
-    · subst h₂
-      simp; constructor
-      · dsimp [O3₁_labeledGraph]
-      · exact Nonempty.intro O3₁_labeledGraph_0_2_iso
-
-lemma isoLabeledGraphSetWithSameGraph_O3₁_card
-    : (isoLabeledGraphSetWithSameGraph (O3₁_labeledGraph 0)).toFinset.card = 3
-  := by
-  calc
-    _ = isoSet_O3₁.toFinset.card := by
-      simp only [Set.toFinset_card]
-      apply Fintype.card_congr
-      rw [isoLabeledGraphSetWithSameGraph_O3₁_eq_isoSet_O3₁_card]
-    _ = 3 := isoSet_O3₁_card
+  rw [← O3₁_eq, downwardNormalizingFactor_labeledGraph_eq]
+  native_decide
 
 lemma downwardNormalizingFactor_O3₁
     : downwardNormalizingFactor O3₁_flag = 1
   := by
-  dsimp [downwardNormalizingFactor, isomorphismCount, downwardNormalizingFactor_labeledGraph, O3₁_flag]
-  have : Nat.factorial 3 / 2 = 3 := rfl
-  rw [isoLabeledGraphSetWithSameGraph_O3₁_card, this]
-  simp only [Nat.cast_ofNat, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, div_self]
+  dsimp [downwardNormalizingFactor, O3₁_flag]
+  exact downwardNormalizingFactor_O3₁_labeledGraph
 
 lemma downwardFlagVectorQuot_O3₁
     : downwardFlagVector (unitVector ⟨3, O3₁_flag⟩) = unitVector ⟨3, O3_flag⟩
@@ -245,7 +128,7 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁_eq_isoSet_E3₁_card
     simp
     obtain ⟨h_graph, h_iso⟩ := h
     simp [E3₁_labeledGraph] at h_graph
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    rcases all_fun_from_Fin1_to_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · left
       ext1
       · simp [E3₁_labeledGraph, h_graph]
@@ -346,7 +229,7 @@ lemma isoLabeledGraphSetWithSameGraph_E3₁'_eq_isoSet_E3₁'_card
     simp
     obtain ⟨h_graph, h_iso⟩ := h
     simp [E3₁_labeledGraph] at h_graph
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    rcases all_fun_from_Fin1_to_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · have hH : H = E3₁_labeledGraph 0 := by
         ext1
         · simp [E3₁_labeledGraph, h_graph]
@@ -469,7 +352,7 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁_eq_isoSet_P3₁_card
     simp
     obtain ⟨h_graph, h_iso⟩ := h
     simp [P3₁_labeledGraph] at h_graph
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    rcases all_fun_from_Fin1_to_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · ext1
       · simp [P3₁_labeledGraph, h_graph]
       · apply type_embed_HEq
@@ -568,7 +451,7 @@ lemma isoLabeledGraphSetWithSameGraph_P3₁'_eq_isoSet_P3₁'_card
     simp
     obtain ⟨h_graph, h_iso⟩ := h
     simp [P3₁_labeledGraph] at h_graph
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    rcases all_fun_from_Fin1_to_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · have hH : H = P3₁_labeledGraph 0 := by
         ext1
         · simp [P3₁_labeledGraph, h_graph]
@@ -709,7 +592,7 @@ lemma isoLabeledGraphSetWithSameGraph_K3₁_eq_isoSet_K3₁_card
   · intro h
     simp; simp [K3₁_labeledGraph] at h
     obtain ⟨h_graph, _⟩ := h
-    rcases fun_Fin1_Fin3 H.type_embed with h₀ | (h₁ | h₂)
+    rcases all_fun_from_Fin1_to_Fin3 H.type_embed with h₀ | (h₁ | h₂)
     · left
       ext1
       · simp [K3₁_labeledGraph, h_graph]
