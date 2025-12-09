@@ -325,16 +325,24 @@ noncomputable def K3₁ : FlagAlgebra Sₜ :=
 
 open Compute
 
+syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term : tactic
+
+macro_rules
+| `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
+    {
+      simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
+      congr
+      · ext u v; simp; try (revert u v; decide)
+      · ext u v; simp; try (revert u v; decide)
+    })
+
 def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
   edges := ∅
   edges_valid := by aesop
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma O2_eq : O2_labeledSym2Graph.toLabeledGraph = O2_labeledGraph := by
-  simp [O2_labeledGraph, O2_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · rfl
-  · congr; aesop
+  prove_labeledGraph_eq_labeledSym2Graph O2_labeledGraph and O2_labeledSym2Graph on O2_graph
 
 def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
   edges := { Sym2.mk (0, 1) }
@@ -342,11 +350,7 @@ def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma K2_eq : K2_labeledSym2Graph.toLabeledGraph = K2_labeledGraph := by
-  simp [K2_labeledGraph, K2_graph, K2_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v; simp; revert u v; decide
-  · congr
-    ext u v; simp; revert u v; decide
+  prove_labeledGraph_eq_labeledSym2Graph K2_labeledGraph and K2_labeledSym2Graph on K2_graph
 
 def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   edges := ∅
@@ -354,10 +358,7 @@ def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma O3_eq : O3_labeledSym2Graph.toLabeledGraph = O3_labeledGraph := by
-  simp [O3_labeledGraph, O3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · rfl
-  · congr; aesop
+  prove_labeledGraph_eq_labeledSym2Graph O3_labeledGraph and O3_labeledSym2Graph on O3_graph
 
 def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   edges := { Sym2.mk (0, 1) }
@@ -365,22 +366,17 @@ def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma E3_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
-  simp [E3_labeledGraph, E3_graph, E3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
+  simp only [E3_labeledGraph, E3_graph, E3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
   · ext u v
     simp
     constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all
-      · exact E3_edge.e01
-      · exact E3_edge.e10
+    . rintro ⟨_ | _, _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
-  · congr
-    ext u v
+  · ext u v
     simp
     constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all
-      · exact E3_edge.e01
-      · exact E3_edge.e10
+    . rintro ⟨_ | _, _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
 
 def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
@@ -389,26 +385,17 @@ def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma P3_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
-  simp [P3_labeledGraph, P3_graph, P3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
+  simp only [P3_labeledGraph, P3_graph, P3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
   · ext u v
     simp
     constructor
-    . rintro ⟨(⟨h₁ | h₂⟩ | h₃ | h₄), _⟩ <;> simp_all
-      · exact P3_edge.e01
-      · exact P3_edge.e10
-      · exact P3_edge.e02
-      · exact P3_edge.e20
+    . rintro ⟨(_ | _) | _ | _, _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _) <;> decide
-  · congr
-    ext u v
+  · ext u v
     simp
     constructor
-    . rintro ⟨(⟨h₁ | h₂⟩ | h₃ | h₄), _⟩ <;> simp_all
-      · exact P3_edge.e01
-      · exact P3_edge.e10
-      · exact P3_edge.e02
-      · exact P3_edge.e20
+    . rintro ⟨(_ | _) | _ | _, _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _) <;> decide
 
 def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
@@ -417,11 +404,7 @@ def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma K3_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph := by
-  simp [K3_labeledGraph, K3_graph, K3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v; simp; revert u v; decide
-  · congr
-    ext u v; simp; revert u v; decide
+  prove_labeledGraph_eq_labeledSym2Graph K3_labeledGraph and K3_labeledSym2Graph on K3_graph
 
 instance : DecidableRel Sₜ.Adj := by
   intro a b
