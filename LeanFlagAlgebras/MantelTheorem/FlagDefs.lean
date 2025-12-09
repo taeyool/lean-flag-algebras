@@ -672,16 +672,4 @@ lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 :=
     · ext u v; simp; revert u v; decide
     · aesop
 
-#eval isomorphismCount_labeledSym2Graph K3₁_labeledSym2Graph
-
-example : isomorphismCount K3₁_labeledSym2Graph.toLabeledGraph = 3 := by
-  rw [isomorphismCount_eq]
-  native_decide
-
-#eval downwardNormalizingFactor_labeledSym2Graph K3₁_labeledSym2Graph
-
-example : downwardNormalizingFactor_labeledGraph K3₁_labeledSym2Graph.toLabeledGraph = 1 := by
-  rw [downwardNormalizingFactor_labeledGraph_eq]
-  native_decide
-
 end MantelTheorem
