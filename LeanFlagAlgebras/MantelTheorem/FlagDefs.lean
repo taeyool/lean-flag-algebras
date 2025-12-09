@@ -207,53 +207,32 @@ alias Sₜ := singletonType
 @[simp]
 theorem singletonType_size : Sₜ.size = 1 := Fintype.card_fin 1
 
-def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
-  graph := O2_graph
+@[simp]
+def create_Sₜ_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx : Fin ℓ) : LabeledGraph Sₜ (Fin ℓ) where
+  graph := G
   type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+    toFun := fun _ => label_idx
+    inj' := Function.injective_of_subsingleton fun _ => label_idx
+    map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
+  }
 
-def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) where
-  graph := K2_graph
-  type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) :=
+  create_Sₜ_labeledGraph O2_graph label_idx
 
-def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
-  graph := O3_graph
-  type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) :=
+  create_Sₜ_labeledGraph K2_graph label_idx
 
-def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
-  graph := E3_graph
-  type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
+  create_Sₜ_labeledGraph O3_graph label_idx
 
-def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
-  graph := P3_graph
-  type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
+  create_Sₜ_labeledGraph E3_graph label_idx
 
-def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) where
-  graph := K3_graph
-  type_embed := {
-      toFun := fun _ => label_idx
-      inj' := Function.injective_of_subsingleton fun _ => label_idx
-      map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
-    }
+def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
+  create_Sₜ_labeledGraph P3_graph label_idx
+
+def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
+  create_Sₜ_labeledGraph K3_graph label_idx
 
 @[simp]
 theorem O2₁_labeledGraph_size (label_idx : Fin 2)
