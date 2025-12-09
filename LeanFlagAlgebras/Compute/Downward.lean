@@ -38,6 +38,12 @@ structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
   type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.toSet)
 
+def LabeledSym2Graph.verts
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) : Finset (Fin n)
+  := by
+  sorry
+
 def LabeledSym2Graph.toLabeledGraph
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
@@ -273,5 +279,20 @@ theorem downwardNormalizingFactor_labeledGraph_eq
   dsimp only [downwardNormalizingFactor_labeledGraph, downwardNormalizingFactor_labeledSym2Graph]
   congr
   exact isomorphismCount_eq G
+
+@[ext]
+structure LabeledSym2Subgraph {T : Type} {σ : FlagType T} {n : ℕ} (G : LabeledSym2Graph σ n) where
+  edges : Finset (Sym2 (Fin n))
+  edges_subset : edges ⊆ G.edges
+  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.toSet)
+
+def LabeledSym2Subgraph.IsInduced {T : Type} {σ : FlagType T} {n : ℕ} {G : LabeledSym2Graph σ n}
+    (H : LabeledSym2Subgraph G) : Prop
+  :=
+  sorry
+
+abbrev LabeledSym2SubgraphList
+    (t : ℕ) {T : Type} {σ : FlagType T} {n : ℕ} (G : LabeledSym2Graph σ n)
+  := Fin t → LabeledSym2Subgraph G
 
 end Compute
