@@ -133,8 +133,6 @@ instance
     rcases e with ⟨E, hE, emb⟩
     simp_all
 
-#eval (@Finset.univ (Perm 3)).card
-
 theorem LabeledSym2Graph_eqv_iff
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G G' : LabeledSym2Graph σ n) :
