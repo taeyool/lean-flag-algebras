@@ -325,7 +325,7 @@ noncomputable def K3₁ : FlagAlgebra Sₜ :=
 
 open Compute
 
-syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term : tactic
+syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term: tactic
 
 macro_rules
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
@@ -371,12 +371,14 @@ lemma E3_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
   · ext u v
     simp
     constructor
-    . rintro ⟨_ | _, _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
+    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+      <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
   · ext u v
     simp
     constructor
-    . rintro ⟨_ | _, _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
+    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+      <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
 
 def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
@@ -390,12 +392,14 @@ lemma P3_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
   · ext u v
     simp
     constructor
-    . rintro ⟨(_ | _) | _ | _, _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
+    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+      <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _) <;> decide
   · ext u v
     simp
     constructor
-    . rintro ⟨(_ | _) | _ | _, _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
+    . intro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+      <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _) <;> decide
 
 def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
