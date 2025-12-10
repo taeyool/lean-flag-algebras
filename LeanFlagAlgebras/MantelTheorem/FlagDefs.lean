@@ -332,8 +332,8 @@ macro_rules
     {
       simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
       congr
-      · ext u v; simp; try (revert u v; decide)
-      · ext u v; simp; try (revert u v; decide)
+      . ext u v; simp; try (revert u v; decide)
+      . ext u v; simp; try (revert u v; decide)
     })
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G using [ $[$edge:term],* ]) => `(tactic|
     {
@@ -351,6 +351,7 @@ macro_rules
         . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
           <;> simp_all [$[$edge:term],*]
         . rintro (_ | _) <;> decide
+      try (exact proof_irrel_heq _ _)
     })
 
 def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
@@ -441,13 +442,12 @@ def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
   }
 
 lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
-  simp [K2₁_labeledGraph, K2_graph, K2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
+  simp only [K2₁_labeledGraph, K2_graph, K2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
   . ext u v; simp; revert u v; decide
-  . congr
-    · ext u v; simp; revert u v; decide
-    · aesop
-    · exact proof_irrel_heq _ _
+  . ext u v; simp; revert u v; decide
+  . aesop
+  try exact proof_irrel_heq _ _
 
 def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := ∅
@@ -463,10 +463,12 @@ def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
-  simp [O3₁_labeledGraph, O3_graph, O3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  simp only [O3₁_labeledGraph, O3_graph, O3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
   congr
-  · ext u v; simp
-  · aesop
+  . ext u v; simp
+  . ext u v; simp
+  . aesop
+  try exact proof_irrel_heq _ _
 
 def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1) }
@@ -482,20 +484,8 @@ def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 := by
-  simp [E3₁_labeledGraph, E3_graph, E3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
-    . rintro (_ | _) <;> decide
-  · congr
-    · ext u v
-      simp
-      constructor
-      . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
-      . rintro (_ | _) <;> decide
-    · exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁_labeledSym2Graph on E3_graph
+    using [E3_edge.e01, E3_edge.e10]
 
 def E3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1) }
@@ -511,20 +501,8 @@ def E3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma E3₁'_eq : E3₁'_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 2 := by
-  simp [E3₁_labeledGraph, E3_graph, E3₁'_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
-    . rintro (_ | _) <;> decide
-  · congr
-    · ext u v
-      simp
-      constructor
-      . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
-      . rintro (_ | _) <;> decide
-    · exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁'_labeledSym2Graph on E3_graph
+    using [E3_edge.e01, E3_edge.e10]
 
 def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
@@ -540,20 +518,8 @@ def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma P3₁_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 := by
-  simp [P3₁_labeledGraph, P3_graph, P3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-    . rintro (_ | _ | _ | _) <;> decide
-  · congr
-    · ext u v
-      simp
-      constructor
-      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-      . rintro (_ | _ | _ | _) <;> decide
-    · exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁_labeledSym2Graph on P3_graph
+    using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def P3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
@@ -569,20 +535,8 @@ def P3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma P3₁'_eq : P3₁'_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 1 := by
-  simp [P3₁_labeledGraph, P3_graph, P3₁'_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-    . rintro (_ | _ | _ | _) <;> decide
-  · congr
-    · ext u v
-      simp
-      constructor
-      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-      . rintro (_ | _ | _ | _) <;> decide
-    · exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁'_labeledSym2Graph on P3_graph
+    using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
@@ -598,11 +552,11 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
-  simp [K3₁_labeledGraph, K3_graph, K3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  constructor
+  simp only [K3₁_labeledGraph, K3_graph, K3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
+  congr
   · ext u v; simp; revert u v; decide
-  · congr
-    · ext u v; simp; revert u v; decide
-    · aesop
+  · ext u v; simp; revert u v; decide
+  · aesop
+  try exact proof_irrel_heq _ _
 
 end MantelTheorem
