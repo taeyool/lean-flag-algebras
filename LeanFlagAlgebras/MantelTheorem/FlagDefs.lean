@@ -156,23 +156,17 @@ theorem P3_labeledGraph_size : P3_labeledGraph.size = 3 := Fintype.card_fin 3
 @[simp]
 theorem K3_labeledGraph_size : K3_labeledGraph.size = 3 := Fintype.card_fin 3
 
-def O2_flag : Flag ∅ₜ (Fin 2) :=
-  ⟦O2_labeledGraph⟧
+def O2_flag : Flag ∅ₜ (Fin 2) := ⟦O2_labeledGraph⟧
 
-def K2_flag : Flag ∅ₜ (Fin 2) :=
-  ⟦K2_labeledGraph⟧
+def K2_flag : Flag ∅ₜ (Fin 2) := ⟦K2_labeledGraph⟧
 
-def O3_flag : Flag ∅ₜ (Fin 3) :=
-  ⟦O3_labeledGraph⟧
+def O3_flag : Flag ∅ₜ (Fin 3) := ⟦O3_labeledGraph⟧
 
-def E3_flag : Flag ∅ₜ (Fin 3) :=
-  ⟦E3_labeledGraph⟧
+def E3_flag : Flag ∅ₜ (Fin 3) := ⟦E3_labeledGraph⟧
 
-def P3_flag : Flag ∅ₜ (Fin 3) :=
-  ⟦P3_labeledGraph⟧
+def P3_flag : Flag ∅ₜ (Fin 3) := ⟦P3_labeledGraph⟧
 
-def K3_flag : Flag ∅ₜ (Fin 3) :=
-  ⟦K3_labeledGraph⟧
+def K3_flag : Flag ∅ₜ (Fin 3) := ⟦K3_labeledGraph⟧
 
 /-- a non-edge -/
 noncomputable def O2 : FlagAlgebra ∅ₜ :=
@@ -328,13 +322,18 @@ open Compute
 syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term ("using" "[" term,* "]")?: tactic
 
 macro_rules
+-- prove $labeledSym_G.toLabeledGraph = $labeled_G
+--   when both represent $G with the same labeling
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
     {
       simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
       congr
-      . ext u v; simp; try (revert u v; decide)
-      . ext u v; simp; try (revert u v; decide)
+      <;> (first | ext u v; simp; revert u v; decide | aesop | exact proof_irrel_heq _ _)
     })
+
+-- prove $labeledSym_G.toLabeledGraph = $labeled_G
+--   when both represent $G with the same labeling
+--      and $G's edges are given by the list ($[$edge:term],*)
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G using [ $[$edge:term],* ]) => `(tactic|
     {
       simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
@@ -408,11 +407,14 @@ instance : DecidableRel Sₜ.Adj := by
   intro a b
   exact .isFalse (by aesop)
 
-def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
-  edges := ∅
-  edges_valid := by aesop
+@[simp]
+def create_Sₜ_labeledSym2Graph {ℓ : ℕ}
+      (edges : Finset (Sym2 (Fin ℓ))) (h : ∀ e ∈ edges, ¬e.IsDiag) (label_idx : Fin ℓ)
+      : LabeledSym2Graph Sₜ ℓ where
+  edges := edges
+  edges_valid := h
   type_embed := {
-    toFun := fun _ ↦ 0
+    toFun := fun _ ↦ label_idx
     inj' := by
       intro a b h
       aesop
@@ -420,6 +422,9 @@ def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
       intro a b
       aesop
   }
+
+def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
+  create_Sₜ_labeledSym2Graph {} (by aesop) 0
 
 lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
   simp [O2₁_labeledGraph, O2_graph, O2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
@@ -431,8 +436,7 @@ def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
   edges := { Sym2.mk (0, 1) }
   edges_valid := by aesop
   type_embed := {
-    toFun := fun x ↦ match x with
-      | 0 => 0
+    toFun := fun _ ↦ 0
     inj' := by
       intro a b h
       aesop
@@ -447,7 +451,6 @@ lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 :=
   . ext u v; simp; revert u v; decide
   . ext u v; simp; revert u v; decide
   . aesop
-  try exact proof_irrel_heq _ _
 
 def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := ∅
@@ -463,12 +466,7 @@ def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
-  simp only [O3₁_labeledGraph, O3_graph, O3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  . ext u v; simp
-  . ext u v; simp
-  . aesop
-  try exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph O3₁_labeledGraph and O3₁_labeledSym2Graph on O3_graph
 
 def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   edges := { Sym2.mk (0, 1) }
@@ -552,11 +550,6 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
   }
 
 lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
-  simp only [K3₁_labeledGraph, K3_graph, K3₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  · ext u v; simp; revert u v; decide
-  · ext u v; simp; revert u v; decide
-  · aesop
-  try exact proof_irrel_heq _ _
+  prove_labeledGraph_eq_labeledSym2Graph K3₁_labeledGraph and K3₁_labeledSym2Graph on K3_graph
 
 end MantelTheorem
