@@ -304,6 +304,7 @@ theorem isInduced_exist_induce_set
 
 end LabeledSubgraph
 
+@[ext]
 structure LabeledGraphIso {σ : FlagType T} {V W : Type}
   (G : LabeledGraph σ V) (G' : LabeledGraph σ W) where
   graph_iso : G.graph ≃g G'.graph
