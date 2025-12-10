@@ -411,8 +411,7 @@ def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
   edges := ∅
   edges_valid := by aesop
   type_embed := {
-    toFun := fun x ↦ match x with
-      | 0 => 0
+    toFun := fun _ ↦ 0
     inj' := by
       intro a b h
       aesop
@@ -426,7 +425,6 @@ lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 :=
   congr
   · ext u v; simp
   · aesop
-  · exact proof_irrel_heq _ _
 
 def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
   edges := { Sym2.mk (0, 1) }
@@ -489,17 +487,13 @@ lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 :=
   · ext u v
     simp
     constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all
-      . exact E3_edge.e01
-      . exact E3_edge.e10
+    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
   · congr
     · ext u v
       simp
       constructor
-      . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all
-        . exact E3_edge.e01
-        . exact E3_edge.e10
+      . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
       . rintro (_ | _) <;> decide
     · exact proof_irrel_heq _ _
 
@@ -522,17 +516,13 @@ lemma E3₁'_eq : E3₁'_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 2 
   · ext u v
     simp
     constructor
-    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all
-      . exact E3_edge.e01
-      . exact E3_edge.e10
+    . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
     . rintro (_ | _) <;> decide
   · congr
     · ext u v
       simp
       constructor
-      . rintro ⟨(h₁ | h₂), _⟩
-        . simp_all; exact E3_edge.e01
-        . simp_all; exact E3_edge.e10
+      . rintro ⟨(h₁ | h₂), _⟩ <;> simp_all [E3_edge.e01, E3_edge.e10]
       . rintro (_ | _) <;> decide
     · exact proof_irrel_heq _ _
 
@@ -555,21 +545,13 @@ lemma P3₁_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 :=
   · ext u v
     simp
     constructor
-    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all
-      . exact P3_edge.e01
-      . exact P3_edge.e10
-      . exact P3_edge.e02
-      . exact P3_edge.e20
+    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _ | _ | _) <;> decide
   · congr
     · ext u v
       simp
       constructor
-      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all
-        . exact P3_edge.e01
-        . exact P3_edge.e10
-        . exact P3_edge.e02
-        . exact P3_edge.e20
+      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
       . rintro (_ | _ | _ | _) <;> decide
     · exact proof_irrel_heq _ _
 
@@ -592,21 +574,13 @@ lemma P3₁'_eq : P3₁'_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 1 
   · ext u v
     simp
     constructor
-    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all
-      . exact P3_edge.e01
-      . exact P3_edge.e10
-      . exact P3_edge.e02
-      . exact P3_edge.e20
+    . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
     . rintro (_ | _ | _ | _) <;> decide
   · congr
     · ext u v
       simp
       constructor
-      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all
-        . exact P3_edge.e01
-        . exact P3_edge.e10
-        . exact P3_edge.e02
-        . exact P3_edge.e20
+      . rintro ⟨((h₁ | h₂) | (h₃ | h₄)), _⟩ <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
       . rintro (_ | _ | _ | _) <;> decide
     · exact proof_irrel_heq _ _
 
@@ -631,43 +605,4 @@ lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 :=
     · ext u v; simp; revert u v; decide
     · aesop
 
-syntax (name := rfl_if_equal) "rfl_if_equal" : tactic
-
-macro_rules
-  | `(tactic| rfl_if_equal) =>
-    `(tactic|
-      first
-      | rfl
-      | fail "rfl_if_equal failed: The left-hand side and right-hand side of the goal are not structurally equal. Try a different tactic."
-    )
-
-section ExampleProofs
-
-variable (a b c : Nat)
-
--- **Successful Use Case (Goal is structurally identical)**
-example : a + b = a + b := by
-  -- `rfl` succeeds because `a + b` is identical to `a + b`
-  rfl_if_equal
-
--- **Failed Use Case (Goal is mathematically equal but NOT structurally identical)**
-example : a + b + c = a + (b + c) := by
-  -- The tactic fails because:
-  -- LHS: `(a + b) + c`
-  -- RHS: `a + (b + c)`
-  -- are structurally different due to associativity of `+`.
-  -- rfl_if_equal -- Uncommenting this will produce the custom error message.
-
-  -- The proof must continue with other tactics like `simp`
-  omega
-
--- Define the syntax for our custom tactic
-syntax "my_simp_tactic" "[" term,* "]" : tactic
-
--- Define the macro expansion
-macro_rules
-  | `(tactic| my_simp_tactic [ $ts,* ]) =>
-      `(tactic| simp_all only [ $[$ts:term],* ])
-
-end ExampleProofs
 end MantelTheorem
