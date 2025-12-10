@@ -49,6 +49,13 @@ def LabeledSym2Graph.type_verts
   have : Fintype (G.type_embed '' Set.univ) := setFintype _
   exact (G.type_embed '' Set.univ).toFinset
 
+theorem LabeledSym2Graph.mem_type_verts
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n) (t : T) :
+    G.type_embed t ∈ G.type_verts
+  := by
+  simp [type_verts]
+
 def LabeledSym2Graph.toLabeledGraph
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
@@ -289,35 +296,52 @@ abbrev LabeledSym2GraphList
     {T : Type} (σ : FlagType T) (t : ℕ) (Vl : Fin t → ℕ)
   := ∀ (i : Fin t), LabeledSym2Graph σ (Vl i)
 
+def LabeledSym2GraphList.toLabeledGraphList
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {t : ℕ} {Vl : Fin t → ℕ}
+    (Hl : LabeledSym2GraphList σ t Vl) : LabeledGraphList σ t (fun i ↦ Fin (Vl i))
+  :=
+  fun i ↦ (Hl i).toLabeledGraph
+
 @[ext]
-structure LabeledSym2Subgraph {T : Type} {σ : FlagType T} {n : ℕ} (G : LabeledSym2Graph σ n) where
-  edges : Finset (Sym2 (Fin n))
-  edges_subset : edges ⊆ G.edges
-  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.toSet)
+structure LabeledSym2InducedSubgraph
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} (G : LabeledSym2Graph σ n) where
+  verts : Finset (Fin n)
+  verts_subset : G.type_verts ⊆ verts
 
-def LabeledSym2Subgraph.verts
-    {T : Type} {σ : FlagType T} {n : ℕ} {G : LabeledSym2Graph σ n}
-    (H : LabeledSym2Subgraph G) : Finset (Fin n)
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    Fintype (LabeledSym2InducedSubgraph G) where
+  elems := sorry
+  complete e := sorry
+
+def LabeledSym2InducedSubgraph.edges
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) : Finset (Sym2 (Fin n))
   :=
-  Finset.univ.filter (fun v ↦ ∃ e ∈ H.edges, v ∈ e)
+  G.edges.filter (fun e ↦ ∀ v ∈ e, v ∈ H.verts)
 
-theorem LabeledSym2Subgraph.type_embed_verts_mem
-    {T : Type} {σ : FlagType T} {n : ℕ} {G : LabeledSym2Graph σ n}
-    (H : LabeledSym2Subgraph G) :
-    ∀ t : T, H.type_embed t ∈ H.verts
+theorem LabeledSym2InducedSubgraph.edges_valid
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    ∀ e ∈ H.edges, ¬e.IsDiag
   := by
-  intro t
-  simp [verts]
-  sorry
+  intro e he
+  simp only [edges, Finset.mem_filter] at he
+  exact G.edges_valid e he.1
 
-def LabeledSym2Subgraph.IsInduced {T : Type} {σ : FlagType T} {n : ℕ} {G : LabeledSym2Graph σ n}
-    (H : LabeledSym2Subgraph G) : Prop
-  :=
-  ∀ e ∈ G.edges, (∀ v ∈ e, v ∈ H.verts) → e ∈ H.edges
+theorem LabeledSym2InducedSubgraph.edges_subset
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    H.edges ⊆ G.edges
+  := by
+  intro e he
+  simp only [edges, Finset.mem_filter] at he
+  exact he.1
 
-def LabeledSym2Subgraph.toLabeledSubgraph
-    {T : Type} {σ : FlagType T} {n : ℕ} {G : LabeledSym2Graph σ n}
-    (H : LabeledSym2Subgraph G) : LabeledSubgraph σ G.toLabeledGraph where
+def LabeledSym2InducedSubgraph.toLabeledSubraph
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) : LabeledSubgraph σ G.toLabeledGraph where
   subgraph := {
     verts := H.verts
     Adj := fun u v ↦ Sym2.mk (u, v) ∈ H.edges
@@ -326,15 +350,11 @@ def LabeledSym2Subgraph.toLabeledSubgraph
       simp [LabeledSym2Graph.toLabeledGraph]
       constructor
       · exact H.edges_subset huv
-      · intro h_diag
-        subst h_diag
-        have := G.edges_valid (Sym2.mk (u, u)) (H.edges_subset huv)
-        contradiction
+      · exact G.edges_valid (Sym2.mk (u, v)) (H.edges_subset huv)
     edge_vert := by
       intro u v huv
-      simp [verts]
-      use Sym2.mk (u, v)
-      simp_all only [Sym2.mem_iff, true_or, and_self]
+      simp [edges] at huv
+      exact huv.2.1
     symm := by
       intro u v huv
       rw [Sym2.eq_swap]
@@ -343,36 +363,121 @@ def LabeledSym2Subgraph.toLabeledSubgraph
   type_embed := {
     toFun := by
       simp only [Finset.coe_sort_coe]
-      intro t
-      use H.type_embed t
-      simp [verts]
-      sorry
-    inj' := sorry
-    map_rel_iff' := sorry
+      intro i
+      exact ⟨G.type_embed i, H.verts_subset (G.mem_type_verts i)⟩
+    inj' := by
+      intro a b hab
+      simp at hab
+      exact hab
+    map_rel_iff' := by
+      intro a b
+      simp [edges]
+      constructor
+      · intro ⟨h, _, _⟩
+        rw [← G.type_embed.map_rel_iff]
+        simp
+        refine ⟨h, ?_⟩
+        intro hab
+        apply G.edges_valid (Sym2.mk (G.type_embed a, G.type_embed b)) h
+        exact Sym2.mk_isDiag_iff.mpr (congrArg (G.type_embed) hab)
+      · intro h
+        constructor
+        · rw [← G.type_embed.map_rel_iff] at h
+          simp at h
+          exact h.1
+        · exact ⟨H.verts_subset (G.mem_type_verts a), H.verts_subset (G.mem_type_verts b)⟩
   }
-  embed_eq := sorry
+  embed_eq := by simp [LabeledSym2Graph.toLabeledGraph]
 
-abbrev LabeledSym2SubgraphList
-    (t : ℕ) {T : Type} {σ : FlagType T} {n : ℕ} (G : LabeledSym2Graph σ n)
-  := Fin t → LabeledSym2Subgraph G
+theorem LabeledSym2InducedSubgraph.toLabeledSubraph_isInduced
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    H.toLabeledSubraph.IsInduced
+  := by
+  intro u hu v hv h_adj
+  simp [toLabeledSubraph, edges, LabeledSym2Graph.toLabeledGraph] at *
+  exact ⟨h_adj.1, hu, hv⟩
 
-def LabeledSym2SubgraphList.IsInduced
-    {t : ℕ} {T : Type} {σ : FlagType T} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (Hl : LabeledSym2SubgraphList t G) : Prop
-  := ∀ (i : Fin t), (Hl i).IsInduced
+abbrev LabeledSym2InducedSubgraphList
+    (t : ℕ) {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n)
+  := Fin t → LabeledSym2InducedSubgraph G
 
-def predDisjointLabeledSym2SubgraphList
+def predDisjointLabeledSym2InducedSubgraphList
     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
-    {G : LabeledSym2Graph σ n} (Hl : LabeledSym2SubgraphList t G) : Prop
+    {G : LabeledSym2Graph σ n} (Hl : LabeledSym2InducedSubgraphList t G) : Prop
   :=
   ∀ (i j : Fin t), i ≠ j → ((Hl i).verts \ G.type_verts) ∩ ((Hl j).verts \ G.type_verts) = ∅
 
--- def predIsoLabeledSym2Hl
---     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
---     {G : LabeledSym2Graph σ n} (Hl : LabeledSym2GraphList σ t G)
---     : LabeledSym2SubgraphList t G → Prop
---   := fun Gl ↦
---       (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
---       ∧ predDisjointLabeledSym2SubgraphList Gl
+def predIsoLabeledSym2Hl
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl)
+    : LabeledSym2InducedSubgraphList t G → Prop
+  := fun Gl ↦
+      (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubraph.coe ≃f (Hl i).toLabeledGraph))
+      ∧ predDisjointLabeledSym2InducedSubgraphList Gl
+
+instance
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    {G : LabeledSym2Graph σ n} {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl) :
+    DecidablePred (fun (Gl : LabeledSym2InducedSubgraphList t G) ↦ predIsoLabeledSym2Hl Hl Gl)
+  := fun Gl ↦
+  sorry
+
+def finsetOfLabeledSym2InducedSubgraphListIsoHl
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n) {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl)
+    : Finset (LabeledSym2InducedSubgraphList t G)
+  :=
+  { Gl | predIsoLabeledSym2Hl Hl Gl }
+
+def labeledSym2InducedSubgraphListCount
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
+    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) : ℕ
+  :=
+  (finsetOfLabeledSym2InducedSubgraphListIsoHl G Hl).card
+
+theorem labeledSubgraphListCount_eq
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
+    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) :
+    labeledSubgraphListCount Hl.toLabeledGraphList G.toLabeledGraph =
+    labeledSym2InducedSubgraphListCount Hl G
+  := by
+  sorry
+
+def labeledSym2InducedSubgraphListDensity
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
+    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) : ℚ
+  :=
+  let r_list (i : Fin t) := Vl i - Fintype.card T
+  labeledSym2InducedSubgraphListCount Hl G / multinomialCoefficient r_list (n - Fintype.card T)
+
+instance
+    {t : ℕ} {Vl  : Fin t → ℕ} :
+    FintypeList fun i ↦ Fin (Vl i)
+  := by
+  refine { fintype_all := ?_ }
+  intro i
+  exact Fin.fintype (Vl i)
+
+instance
+    {t : ℕ} {Vl  : Fin t → ℕ} :
+    DecidableEqList fun i ↦ Fin (Vl i)
+  := by
+  refine { decidable_eq_all := ?_ }
+  intro i
+  exact instDecidableEqFin (Vl i)
+
+theorem labeledSubgraphListDensity_eq
+    {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
+    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) :
+    labeledSubgraphListDensity Hl.toLabeledGraphList G.toLabeledGraph =
+    labeledSym2InducedSubgraphListDensity Hl G
+  := by
+  dsimp only [labeledSubgraphListDensity, labeledSym2InducedSubgraphListDensity]
+  congr!
+  · exact labeledSubgraphListCount_eq Hl G
+  · simp only [LabeledGraph.size, Fintype.card_fin]
+  · simp only [LabeledGraph.size, Fintype.card_fin]
 
 end Compute
