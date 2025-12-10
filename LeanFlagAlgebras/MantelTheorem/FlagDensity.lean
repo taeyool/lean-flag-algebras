@@ -1,9 +1,11 @@
 import «LeanFlagAlgebras».SubflagListDensity
 import «LeanFlagAlgebras».MantelTheorem.FlagIso
+import «LeanFlagAlgebras».Compute.Downward
 
 open FlagAlgebras
 open LabeledSubgraph
 open Classical
+open Compute
 
 namespace MantelTheorem
 
@@ -296,6 +298,16 @@ lemma labeledSubgraphListCount_K2_E3
   := by
   dsimp only [labeledSubgraphListCount]
   simp only [setOfLabeledSubgraphListIsoHl_K2_E3, Set.toFinset_singleton, Finset.card_singleton]
+
+/- test ----------------------------/
+
+theorem labeledSubgraphListDensity_K2_E3
+    : labeledSubgraphListDensity (labeledGraphToList K2_labeledGraph) E3_labeledGraph = 1 / 3
+  := by
+  rw [← K2_eq, ← E3_eq, labeledGraphToList_toLabeledGraphList_eq, labeledSubgraphListDensity_eq]
+  native_decide
+
+/- ---------------------------------/
 
 @[simp]
 theorem flagDensity_K2_E3

@@ -276,11 +276,46 @@ abbrev LabeledSym2GraphList
     {T : Type} (σ : FlagType T) (t : ℕ) (Vl : Fin t → ℕ)
   := ∀ (i : Fin t), LabeledSym2Graph σ (Vl i)
 
+def labeledSym2GraphToList
+    {T : Type} {σ : FlagType T} {n : ℕ} (G : LabeledSym2Graph σ n)
+    : LabeledSym2GraphList σ 1 (fun _ ↦ n)
+  :=
+  fun _ ↦ G
+
+def labeledSym2GraphPairToList
+    {T : Type} {σ : FlagType T} {n₀ n₁ : ℕ} (G₀ : LabeledSym2Graph σ n₀) (G₁ : LabeledSym2Graph σ n₁)
+    : LabeledSym2GraphList σ 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
+  :=
+  fun i ↦ match i with | 0 => G₀ | 1 => G₁
+
 def LabeledSym2GraphList.toLabeledGraphList
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {t : ℕ} {Vl : Fin t → ℕ}
     (Hl : LabeledSym2GraphList σ t Vl) : LabeledGraphList σ t (fun i ↦ Fin (Vl i))
   :=
   fun i ↦ (Hl i).toLabeledGraph
+
+theorem labeledGraphToList_toLabeledGraphList_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n)
+    : labeledGraphToList G.toLabeledGraph = (labeledSym2GraphToList G).toLabeledGraphList
+  :=
+  rfl
+
+lemma labeledGraphList_fin2_type_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n₀ n₁ : ℕ} :
+    LabeledGraphList σ 2 (fun (i : Fin 2) ↦ Fin (match i with | 0 => n₀ | 1 => n₁))
+    = LabeledGraphList σ 2 (fun (i : Fin 2) ↦ match i with | 0 => Fin n₀ | 1 => Fin n₁)
+  := by
+  congr
+  exact List.ofFn_inj.mp rfl
+
+theorem labeledGraphPairToList_toLabeledGraphList_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n₀ n₁ : ℕ}
+    (G₀ : LabeledSym2Graph σ n₀) (G₁ : LabeledSym2Graph σ n₁)
+    : labeledGraphPairToList G₀.toLabeledGraph G₁.toLabeledGraph
+      = cast labeledGraphList_fin2_type_eq (labeledSym2GraphPairToList G₀ G₁).toLabeledGraphList
+  := by
+  sorry
 
 @[ext]
 structure LabeledSym2InducedSubgraph
