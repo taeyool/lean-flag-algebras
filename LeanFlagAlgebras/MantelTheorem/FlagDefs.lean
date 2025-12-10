@@ -325,7 +325,7 @@ noncomputable def K3₁ : FlagAlgebra Sₜ :=
 
 open Compute
 
-syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term: tactic
+syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term ("using" "[" term,* "]")?: tactic
 
 macro_rules
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
@@ -334,6 +334,23 @@ macro_rules
       congr
       · ext u v; simp; try (revert u v; decide)
       · ext u v; simp; try (revert u v; decide)
+    })
+| `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G using [ $[$edge:term],* ]) => `(tactic|
+    {
+      simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
+      congr
+      · ext u v
+        simp
+        constructor
+        . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+          <;> simp_all [$[$edge:term],*]
+        . rintro (_ | _) <;> decide
+      · ext u v
+        simp
+        constructor
+        . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+          <;> simp_all [$[$edge:term],*]
+        . rintro (_ | _) <;> decide
     })
 
 def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
@@ -366,20 +383,8 @@ def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma E3_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
-  simp only [E3_labeledGraph, E3_graph, E3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-      <;> simp_all [E3_edge.e01, E3_edge.e10]
-    . rintro (_ | _) <;> decide
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-      <;> simp_all [E3_edge.e01, E3_edge.e10]
-    . rintro (_ | _) <;> decide
+  prove_labeledGraph_eq_labeledSym2Graph E3_labeledGraph and E3_labeledSym2Graph on E3_graph
+    using [E3_edge.e01, E3_edge.e10]
 
 def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
@@ -387,20 +392,8 @@ def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   type_embed := RelEmbedding.ofIsEmpty _ _
 
 lemma P3_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
-  simp only [P3_labeledGraph, P3_graph, P3_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  · ext u v
-    simp
-    constructor
-    . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-      <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-    . rintro (_ | _) <;> decide
-  · ext u v
-    simp
-    constructor
-    . intro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-      <;> simp_all [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
-    . rintro (_ | _) <;> decide
+  prove_labeledGraph_eq_labeledSym2Graph P3_labeledGraph and P3_labeledSym2Graph on P3_graph
+    using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
   edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
@@ -638,4 +631,43 @@ lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 :=
     · ext u v; simp; revert u v; decide
     · aesop
 
+syntax (name := rfl_if_equal) "rfl_if_equal" : tactic
+
+macro_rules
+  | `(tactic| rfl_if_equal) =>
+    `(tactic|
+      first
+      | rfl
+      | fail "rfl_if_equal failed: The left-hand side and right-hand side of the goal are not structurally equal. Try a different tactic."
+    )
+
+section ExampleProofs
+
+variable (a b c : Nat)
+
+-- **Successful Use Case (Goal is structurally identical)**
+example : a + b = a + b := by
+  -- `rfl` succeeds because `a + b` is identical to `a + b`
+  rfl_if_equal
+
+-- **Failed Use Case (Goal is mathematically equal but NOT structurally identical)**
+example : a + b + c = a + (b + c) := by
+  -- The tactic fails because:
+  -- LHS: `(a + b) + c`
+  -- RHS: `a + (b + c)`
+  -- are structurally different due to associativity of `+`.
+  -- rfl_if_equal -- Uncommenting this will produce the custom error message.
+
+  -- The proof must continue with other tactics like `simp`
+  omega
+
+-- Define the syntax for our custom tactic
+syntax "my_simp_tactic" "[" term,* "]" : tactic
+
+-- Define the macro expansion
+macro_rules
+  | `(tactic| my_simp_tactic [ $ts,* ]) =>
+      `(tactic| simp_all only [ $[$ts:term],* ])
+
+end ExampleProofs
 end MantelTheorem
