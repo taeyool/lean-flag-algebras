@@ -59,7 +59,7 @@ instance
       Option.dite_none_right_eq_some, Option.some.injEq, true_and]
     use e.graph_iso, e.type_preserve
 
-instance aaaa
+instance
     {T : Type} [Fintype T] {σ : SimpleGraph T}
     {V : Type} [DecidableEq V] [Fintype V] (G : LabeledGraph σ V) [DecidableRel G.graph.Adj]
     {W : Type} [DecidableEq W] [Fintype W] (G' : LabeledGraph σ W) [DecidableRel G'.graph.Adj] :
@@ -202,15 +202,16 @@ instance
     DecidablePred fun (H : LabeledSym2Graph σ n) ↦ G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph
   := by
   intro H
-  simp only
-  refine @instDecidableAnd _ _ _ ?_
-  refine @aaaa T _ σ (Fin n) _ _ _ ?_ (Fin n) _ _ _ ?_
-  · intro a b
+  simp only [flagEqv]
+  have : DecidableRel G.toLabeledGraph.graph.Adj := by
+    intro a b
     rw [LabeledSym2Graph.toLabeledGraph_adj_iff]
     exact Finset.decidableMem s(a, b) G.edges
-  · intro a b
+  have : DecidableRel H.toLabeledGraph.graph.Adj := by
+    intro a b
     rw [LabeledSym2Graph.toLabeledGraph_adj_iff]
     exact Finset.decidableMem s(a, b) H.edges
+  infer_instance
 
 def isoLabeledSym2GraphSetWithSameGraph
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
