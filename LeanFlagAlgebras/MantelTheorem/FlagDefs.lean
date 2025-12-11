@@ -6,6 +6,7 @@ open SimpleGraph
 
 namespace MantelTheorem
 
+
 /- flags with empty type -/
 
 def O2_graph := emptyGraph (Fin 2)
@@ -201,6 +202,10 @@ alias Sₜ := singletonType
 @[simp]
 theorem singletonType_size : Sₜ.size = 1 := Fintype.card_fin 1
 
+instance : DecidableRel Sₜ.Adj := by
+  intro a b
+  exact .isFalse (by aesop)
+
 @[simp]
 def create_Sₜ_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx : Fin ℓ) : LabeledGraph Sₜ (Fin ℓ) where
   graph := G
@@ -319,24 +324,50 @@ noncomputable def K3₁ : FlagAlgebra Sₜ :=
 
 open Compute
 
+@[simp]
+def create_emptyType_labeledSym2Graph {ℓ : ℕ}
+      (edges : Finset (Sym2 (Fin ℓ))) (h : ∀ e ∈ edges, ¬e.IsDiag)
+      : LabeledSym2Graph ∅ₜ ℓ where
+  edges := edges
+  edges_valid := h
+  type_embed := RelEmbedding.ofIsEmpty _ _
+
+@[simp]
+def create_singletonType_labeledSym2Graph {ℓ : ℕ}
+      (edges : Finset (Sym2 (Fin ℓ))) (h : ∀ e ∈ edges, ¬e.IsDiag) (label_idx : Fin ℓ)
+      : LabeledSym2Graph Sₜ ℓ where
+  edges := edges
+  edges_valid := h
+  type_embed := {
+    toFun := fun _ ↦ label_idx
+    inj' := by
+      intro a b h
+      aesop
+    map_rel_iff' := by
+      intro a b
+      aesop
+  }
+
 syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term ("using" "[" term,* "]")?: tactic
 
 macro_rules
 -- prove $labeledSym_G.toLabeledGraph = $labeled_G
---   when both represent $G with the same labeling
+-- when both represent $G with the same labeling
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
     {
-      simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
+      simp only [$labeled_G:term, $G:term, $labeledSym_G:term,
+        LabeledSym2Graph.toLabeledGraph, create_emptyType_labeledSym2Graph, create_singletonType_labeledSym2Graph]
       congr
       <;> (first | ext u v; simp; revert u v; decide | aesop | exact proof_irrel_heq _ _)
     })
 
 -- prove $labeledSym_G.toLabeledGraph = $labeled_G
---   when both represent $G with the same labeling
+-- when both represent $G with the same labeling
 --      and $G's edges are given by the list ($[$edge:term],*)
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G using [ $[$edge:term],* ]) => `(tactic|
     {
-      simp only [$labeled_G:term, $G:term, $labeledSym_G:term, LabeledSym2Graph.toLabeledGraph]
+      simp only [$labeled_G:term, $G:term, $labeledSym_G:term,
+        LabeledSym2Graph.toLabeledGraph, create_emptyType_labeledSym2Graph, create_singletonType_labeledSym2Graph]
       congr
       · ext u v
         simp
@@ -353,201 +384,92 @@ macro_rules
       try (exact proof_irrel_heq _ _)
     })
 
-def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
-  edges := ∅
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
+  create_emptyType_labeledSym2Graph ∅ (by aesop)
 
 lemma O2_eq : O2_labeledSym2Graph.toLabeledGraph = O2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O2_labeledGraph and O2_labeledSym2Graph on O2_graph
 
-def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 where
-  edges := { Sym2.mk (0, 1) }
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
+  create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
 
 lemma K2_eq : K2_labeledSym2Graph.toLabeledGraph = K2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K2_labeledGraph and K2_labeledSym2Graph on K2_graph
 
-def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
-  edges := ∅
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
+  create_emptyType_labeledSym2Graph ∅ (by aesop)
 
 lemma O3_eq : O3_labeledSym2Graph.toLabeledGraph = O3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O3_labeledGraph and O3_labeledSym2Graph on O3_graph
 
-def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
-  edges := { Sym2.mk (0, 1) }
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
+  create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
 
 lemma E3_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph E3_labeledGraph and E3_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
-def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
-  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
+  create_emptyType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop)
 
 lemma P3_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph P3_labeledGraph and P3_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
-def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 where
-  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
-  edges_valid := by aesop
-  type_embed := RelEmbedding.ofIsEmpty _ _
+def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
+  create_emptyType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } (by aesop)
 
 lemma K3_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K3_labeledGraph and K3_labeledSym2Graph on K3_graph
 
-instance : DecidableRel Sₜ.Adj := by
-  intro a b
-  exact .isFalse (by aesop)
-
-@[simp]
-def create_Sₜ_labeledSym2Graph {ℓ : ℕ}
-      (edges : Finset (Sym2 (Fin ℓ))) (h : ∀ e ∈ edges, ¬e.IsDiag) (label_idx : Fin ℓ)
-      : LabeledSym2Graph Sₜ ℓ where
-  edges := edges
-  edges_valid := h
-  type_embed := {
-    toFun := fun _ ↦ label_idx
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
-
 def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
-  create_Sₜ_labeledSym2Graph {} (by aesop) 0
+  create_singletonType_labeledSym2Graph {} (by aesop) 0
 
 lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
-  simp [O2₁_labeledGraph, O2_graph, O2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  · ext u v; simp
-  · aesop
+  prove_labeledGraph_eq_labeledSym2Graph O2₁_labeledGraph and O2₁_labeledSym2Graph on O2_graph
 
-def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 where
-  edges := { Sym2.mk (0, 1) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 0
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
 
 lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
-  simp only [K2₁_labeledGraph, K2_graph, K2₁_labeledSym2Graph, LabeledSym2Graph.toLabeledGraph]
-  congr
-  . ext u v; simp; revert u v; decide
-  . ext u v; simp; revert u v; decide
-  . aesop
+  prove_labeledGraph_eq_labeledSym2Graph K2₁_labeledGraph and K2₁_labeledSym2Graph on K2_graph
 
-def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := ∅
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 0
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph {} (by aesop) 0
 
 lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph O3₁_labeledGraph and O3₁_labeledSym2Graph on O3_graph
 
-def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := { Sym2.mk (0, 1) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 0
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
 
 lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
-def E3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := { Sym2.mk (0, 1) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 2
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def E3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 2
 
 lemma E3₁'_eq : E3₁'_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 2 := by
   prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁'_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
-def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 0
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop) 0
 
 lemma P3₁_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
-def P3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 1
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def P3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop) 1
 
 lemma P3₁'_eq : P3₁'_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 1 := by
   prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁'_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
-def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 where
-  edges := { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) }
-  edges_valid := by aesop
-  type_embed := {
-    toFun := fun _ ↦ 0
-    inj' := by
-      intro a b h
-      aesop
-    map_rel_iff' := by
-      intro a b
-      aesop
-  }
+def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
+  create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } (by aesop) 0
 
 lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph K3₁_labeledGraph and K3₁_labeledSym2Graph on K3_graph
