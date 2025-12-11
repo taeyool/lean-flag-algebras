@@ -207,7 +207,7 @@ instance : DecidableRel Sₜ.Adj := by
   exact .isFalse (by aesop)
 
 @[simp]
-def create_Sₜ_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx : Fin ℓ) : LabeledGraph Sₜ (Fin ℓ) where
+def create_singletonType_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx : Fin ℓ) : LabeledGraph Sₜ (Fin ℓ) where
   graph := G
   type_embed := {
     toFun := fun _ => label_idx
@@ -216,22 +216,22 @@ def create_Sₜ_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx 
   }
 
 def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) :=
-  create_Sₜ_labeledGraph O2_graph label_idx
+  create_singletonType_labeledGraph O2_graph label_idx
 
 def K2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) :=
-  create_Sₜ_labeledGraph K2_graph label_idx
+  create_singletonType_labeledGraph K2_graph label_idx
 
 def O3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
-  create_Sₜ_labeledGraph O3_graph label_idx
+  create_singletonType_labeledGraph O3_graph label_idx
 
 def E3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
-  create_Sₜ_labeledGraph E3_graph label_idx
+  create_singletonType_labeledGraph E3_graph label_idx
 
 def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
-  create_Sₜ_labeledGraph P3_graph label_idx
+  create_singletonType_labeledGraph P3_graph label_idx
 
 def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
-  create_Sₜ_labeledGraph K3_graph label_idx
+  create_singletonType_labeledGraph K3_graph label_idx
 
 @[simp]
 theorem O2₁_labeledGraph_size (label_idx : Fin 2)
