@@ -304,7 +304,7 @@ lemma labeledSubgraphListCount_K2_E3
 theorem labeledSubgraphListDensity_K2_E3
     : labeledSubgraphListDensity (labeledGraphToList K2_labeledGraph) E3_labeledGraph = 1 / 3
   := by
-  rw [← K2_eq, ← E3_eq, labeledGraphToList_toLabeledGraphList_eq, labeledSubgraphListDensity_eq]
+  rw [← K2_eq, ← E3_eq, labeledSubgraphListDensity_labeledGraphToList_eq]
   native_decide
 
 /- ---------------------------------/

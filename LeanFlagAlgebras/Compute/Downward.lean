@@ -295,29 +295,6 @@ def LabeledSym2GraphList.toLabeledGraphList
   :=
   fun i ↦ (Hl i).toLabeledGraph
 
-theorem labeledGraphToList_toLabeledGraphList_eq
-    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
-    (G : LabeledSym2Graph σ n)
-    : labeledGraphToList G.toLabeledGraph = (labeledSym2GraphToList G).toLabeledGraphList
-  :=
-  rfl
-
-lemma labeledGraphList_fin2_type_eq
-    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n₀ n₁ : ℕ} :
-    LabeledGraphList σ 2 (fun (i : Fin 2) ↦ Fin (match i with | 0 => n₀ | 1 => n₁))
-    = LabeledGraphList σ 2 (fun (i : Fin 2) ↦ match i with | 0 => Fin n₀ | 1 => Fin n₁)
-  := by
-  congr
-  exact List.ofFn_inj.mp rfl
-
-theorem labeledGraphPairToList_toLabeledGraphList_eq
-    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n₀ n₁ : ℕ}
-    (G₀ : LabeledSym2Graph σ n₀) (G₁ : LabeledSym2Graph σ n₁)
-    : labeledGraphPairToList G₀.toLabeledGraph G₁.toLabeledGraph
-      = cast labeledGraphList_fin2_type_eq (labeledSym2GraphPairToList G₀ G₁).toLabeledGraphList
-  := by
-  sorry
-
 @[ext]
 structure LabeledSym2InducedSubgraph
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} (G : LabeledSym2Graph σ n) where
@@ -523,5 +500,34 @@ theorem labeledSubgraphListDensity_eq
   · exact labeledSubgraphListCount_eq Hl G
   · simp only [LabeledGraph.size, Fintype.card_fin]
   · simp only [LabeledGraph.size, Fintype.card_fin]
+
+theorem labeledSubgraphListDensity_labeledGraphToList_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    (H : LabeledSym2Graph σ m) (G : LabeledSym2Graph σ n) :
+    labeledSubgraphListDensity (labeledGraphToList H.toLabeledGraph) G.toLabeledGraph =
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList H) G
+  :=
+  labeledSubgraphListDensity_eq (labeledSym2GraphToList H) G
+
+theorem labeledSubgraphListDensity_labeledGraphPairToList_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    (H₀ : LabeledSym2Graph σ m₀) (H₁ : LabeledSym2Graph σ m₁) (G : LabeledSym2Graph σ n) :
+    labeledSubgraphListDensity (labeledGraphPairToList H₀.toLabeledGraph H₁.toLabeledGraph) G.toLabeledGraph =
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList H₀ H₁) G
+  := by
+  rw [← labeledSubgraphListDensity_eq]
+  simp only [labeledSubgraphListDensity]
+  congr!
+  · grind
+  · refine Function.hfunext rfl ?_
+    intro a b hab
+    simp only [heq_eq_eq] at hab
+    match a, b with
+    | 0, 0 => simp [labeledGraphPairToList, labeledSym2GraphPairToList, LabeledSym2GraphList.toLabeledGraphList]
+    | 1, 1 => simp [labeledGraphPairToList, labeledSym2GraphPairToList, LabeledSym2GraphList.toLabeledGraphList]
+  · simp [LabeledGraph.size]
+    split
+    · exact Fintype.card_fin m₀
+    · exact Fintype.card_fin m₁
 
 end Compute
