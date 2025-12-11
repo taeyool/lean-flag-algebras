@@ -348,22 +348,12 @@ def create_singletonType_labeledSym2Graph {ℓ : ℕ}
       aesop
   }
 
-syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term ("using" "[" term,* "]")?: tactic
-
-macro_rules
--- prove $labeledSym_G.toLabeledGraph = $labeled_G
--- when both represent $G with the same labeling
-| `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G) => `(tactic|
-    {
-      simp only [$labeled_G:term, $G:term, $labeledSym_G:term,
-        LabeledSym2Graph.toLabeledGraph, create_emptyType_labeledSym2Graph, create_singletonType_labeledSym2Graph]
-      congr
-      <;> (first | ext u v; simp; revert u v; decide | aesop | exact proof_irrel_heq _ _)
-    })
+syntax "prove_labeledGraph_eq_labeledSym2Graph" term "and" term "on" term "using" "[" term,* "]": tactic
 
 -- prove $labeledSym_G.toLabeledGraph = $labeled_G
 -- when both represent $G with the same labeling
 --      and $G's edges are given by the list ($[$edge:term],*)
+macro_rules
 | `(tactic| prove_labeledGraph_eq_labeledSym2Graph $labeled_G and $labeledSym_G on $G using [ $[$edge:term],* ]) => `(tactic|
     {
       simp only [$labeled_G:term, $G:term, $labeledSym_G:term,
@@ -371,16 +361,26 @@ macro_rules
       congr
       · ext u v
         simp
-        constructor
-        . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-          <;> simp_all [$[$edge:term],*]
-        . rintro (_ | _) <;> decide
+        try {
+          first
+          | { revert u v; decide }
+          | { aesop }
+          | { constructor
+              . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+                <;> simp_all [$[$edge:term],*]
+              . rintro (_ | _) <;> decide }
+        }
       · ext u v
         simp
-        constructor
-        . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
-          <;> simp_all [$[$edge:term],*]
-        . rintro (_ | _) <;> decide
+        try {
+          first
+          | { revert u v; decide }
+          | { aesop }
+          | { constructor
+              . rintro ⟨h, _⟩; (rcases h <;> try (rename_i h; rcases h))
+                <;> simp_all [$[$edge:term],*]
+              . rintro (_ | _) <;> decide }
+        }
       try (exact proof_irrel_heq _ _)
     })
 
@@ -389,18 +389,21 @@ def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
 
 lemma O2_eq : O2_labeledSym2Graph.toLabeledGraph = O2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O2_labeledGraph and O2_labeledSym2Graph on O2_graph
+    using []
 
 def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
 
 lemma K2_eq : K2_labeledSym2Graph.toLabeledGraph = K2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K2_labeledGraph and K2_labeledSym2Graph on K2_graph
+    using []
 
 def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph ∅ (by aesop)
 
 lemma O3_eq : O3_labeledSym2Graph.toLabeledGraph = O3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O3_labeledGraph and O3_labeledSym2Graph on O3_graph
+    using []
 
 def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
@@ -421,24 +424,28 @@ def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
 
 lemma K3_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K3_labeledGraph and K3_labeledSym2Graph on K3_graph
+    using []
 
 def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
   create_singletonType_labeledSym2Graph {} (by aesop) 0
 
 lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph O2₁_labeledGraph and O2₁_labeledSym2Graph on O2_graph
+    using []
 
 def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
 
 lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph K2₁_labeledGraph and K2₁_labeledSym2Graph on K2_graph
+    using []
 
 def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph {} (by aesop) 0
 
 lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph O3₁_labeledGraph and O3₁_labeledSym2Graph on O3_graph
+    using []
 
 def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
@@ -473,5 +480,6 @@ def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
 
 lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph K3₁_labeledGraph and K3₁_labeledSym2Graph on K3_graph
+    using []
 
 end MantelTheorem
