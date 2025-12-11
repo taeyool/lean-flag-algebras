@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagDefs
 import Mathlib.Tactic.FinCases
 
+
 open FlagAlgebras
 
 namespace MantelTheorem
