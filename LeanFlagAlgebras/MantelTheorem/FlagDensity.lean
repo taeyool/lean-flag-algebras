@@ -1,6 +1,4 @@
-import «LeanFlagAlgebras».SubflagListDensity
-import «LeanFlagAlgebras».MantelTheorem.FlagIso
-import «LeanFlagAlgebras».Compute.Downward
+import «LeanFlagAlgebras».MantelTheorem.FlagDefs
 
 open FlagAlgebras
 open LabeledSubgraph
