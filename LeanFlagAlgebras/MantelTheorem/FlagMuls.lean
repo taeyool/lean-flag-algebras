@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».FlagAlgebra
 import «LeanFlagAlgebras».MantelTheorem.FlagDensity
+import «LeanFlagAlgebras».MantelTheorem.FlagIso
 
 open FlagAlgebras
 

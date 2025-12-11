@@ -1,5 +1,4 @@
-import «LeanFlagAlgebras».MantelTheorem.FlagIso
-import «LeanFlagAlgebras».Compute.Downward
+import «LeanFlagAlgebras».MantelTheorem.FlagDefs
 import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
