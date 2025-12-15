@@ -17,9 +17,32 @@ lemma cards_of_edge_sets_of_iso_graphs_eq {V W : Type} [Fintype V] [Fintype W]
   apply Fintype.card_congr
   exact SimpleGraph.Iso.mapEdgeSet h.some
 
+syntax "prove_edgeSet_of" term "eq" term "using" "[" term,* "]": tactic
+
+macro_rules
+| `(tactic| prove_edgeSet_of $graph eq $target using [ $[$edge:term],* ]) => `(tactic|
+    {
+      show (SimpleGraph.edgeSet $graph) = $target
+      dsimp [$graph:term]
+      ext e
+      { first
+        | { simp; try { revert e; decide } }
+        | { obtain ⟨⟨u, v⟩, h_eq⟩ := Quot.exists_rep e
+            rw [←h_eq]
+            simp
+            constructor <;> {
+              first
+              | rintro (_ | _) <;> decide
+              | rintro h; (rcases h <;> try (rename_i h; rcases h))
+              <;> simp_all [$[$edge:term],*]
+            }
+          }
+      }
+    })
+
 @[simp]
 theorem O2_graph_edgeSet : O2_graph.edgeSet = ∅ := by
-  simp [O2_graph]
+  prove_edgeSet_of O2_graph eq ∅ using []
 
 @[simp]
 theorem O2_graph_edgeSet_card : Fintype.card (O2_graph.edgeSet) = 0 := by
@@ -27,10 +50,7 @@ theorem O2_graph_edgeSet_card : Fintype.card (O2_graph.edgeSet) = 0 := by
 
 @[simp]
 theorem K2_graph_edgeSet : K2_graph.edgeSet = { Sym2.mk (0, 1) } := by
-  ext e
-  simp [K2_graph]
-  revert e
-  decide
+  prove_edgeSet_of K2_graph eq { Sym2.mk (0, 1) } using []
 
 @[simp]
 theorem K2_graph_edgeSet_card : Fintype.card (K2_graph.edgeSet) = 1 := by
@@ -38,7 +58,7 @@ theorem K2_graph_edgeSet_card : Fintype.card (K2_graph.edgeSet) = 1 := by
 
 @[simp]
 theorem O3_graph_edgeSet : O3_graph.edgeSet = ∅ := by
-  simp [O3_graph]
+  prove_edgeSet_of O3_graph eq ∅ using []
 
 @[simp]
 theorem O3_graph_edgeSet_card : Fintype.card (O3_graph.edgeSet) = 0 := by
@@ -46,17 +66,7 @@ theorem O3_graph_edgeSet_card : Fintype.card (O3_graph.edgeSet) = 0 := by
 
 @[simp]
 theorem E3_graph_edgeSet : E3_graph.edgeSet = { Sym2.mk (0, 1) } := by
-  ext e
-  obtain ⟨⟨u, v⟩, h_eq⟩ := Quot.exists_rep e
-  rw [←h_eq]
-  simp [E3_graph]
-  constructor
-  · intro h
-    rcases h with (_ | _) <;> simp
-  · intro h
-    rcases h with (_ | _)
-    . simp_all; exact E3_edge.e01
-    . simp_all; exact E3_edge.e10
+  prove_edgeSet_of E3_graph eq { Sym2.mk (0, 1) } using [E3_edge.e01, E3_edge.e10]
 
 @[simp]
 theorem E3_graph_edgeSet_card : Fintype.card (E3_graph.edgeSet) = 1 := by
@@ -64,19 +74,7 @@ theorem E3_graph_edgeSet_card : Fintype.card (E3_graph.edgeSet) = 1 := by
 
 @[simp]
 theorem P3_graph_edgeSet : P3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2) } := by
-  ext e
-  obtain ⟨⟨u, v⟩, h_eq⟩ := Quot.exists_rep e
-  rw [←h_eq]
-  simp [P3_graph]
-  constructor
-  · intro h
-    rcases h with (_ | _) <;> simp
-  · intro h
-    rcases h with ((_ | _) | (_ | _))
-    . simp_all; exact P3_edge.e01
-    . simp_all; exact P3_edge.e10
-    . simp_all; exact P3_edge.e02
-    . simp_all; exact P3_edge.e20
+  prove_edgeSet_of P3_graph eq { Sym2.mk (0, 1), Sym2.mk (0, 2) } using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 @[simp]
 theorem P3_graph_edgeSet_card : Fintype.card (P3_graph.edgeSet) = 2 := by
@@ -84,10 +82,7 @@ theorem P3_graph_edgeSet_card : Fintype.card (P3_graph.edgeSet) = 2 := by
 
 @[simp]
 theorem K3_graph_edgeSet : K3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } := by
-  ext e
-  simp [K3_graph]
-  revert e
-  decide
+  prove_edgeSet_of K3_graph eq { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } using []
 
 @[simp]
 theorem K3_graph_edgeSet_card : Fintype.card (K3_graph.edgeSet) = 3 := by
