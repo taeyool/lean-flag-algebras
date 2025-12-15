@@ -5,6 +5,7 @@ import Mathlib.Data.Fintype.Perm
 namespace Compute
 
 open FlagAlgebras
+open SimpleGraph
 
 instance
     {V : Type*} [DecidableEq V] [Fintype V]
@@ -72,7 +73,7 @@ instance
 structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
-  type_embed : σ ↪g (SimpleGraph.fromEdgeSet edges.toSet)
+  type_embed : σ ↪g (fromEdgeSet edges.toSet)
 
 def LabeledSym2Graph.type_verts
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
@@ -96,7 +97,21 @@ def LabeledSym2Graph.toLabeledGraph
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
   :=
-  ⟨SimpleGraph.fromEdgeSet G.edges.toSet, G.type_embed⟩
+  ⟨fromEdgeSet G.edges.toSet, G.type_embed⟩
+
+theorem LabeledSym2Graph.toLabeledGraph_type_embed_eq
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) (t : T) :
+    G.toLabeledGraph.type_embed t = G.type_embed t
+  := by
+  simp [LabeledSym2Graph.toLabeledGraph]
+
+theorem LabeledSym2Graph.toLabeledGraph_type_verts_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    G.toLabeledGraph.type_verts = G.type_verts
+  := by
+  simp [LabeledSym2Graph.toLabeledGraph, LabeledGraph.type_verts, LabeledSym2Graph.type_verts]
 
 theorem LabeledSym2Graph.toLabeledGraph_injective
     {T : Type} {σ : FlagType T} {n : ℕ}
@@ -107,13 +122,13 @@ theorem LabeledSym2Graph.toLabeledGraph_injective
   simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.mk.injEq] at h
   obtain ⟨h_graph, h_type_embed⟩ := h
   ext e
-  · have h : (SimpleGraph.fromEdgeSet G₁.edges).edgeSet = G₁.edges.toSet := by
-      simp only [SimpleGraph.edgeSet_fromEdgeSet, sdiff_eq_left]
+  · have h : (fromEdgeSet G₁.edges).edgeSet = G₁.edges.toSet := by
+      simp only [edgeSet_fromEdgeSet, sdiff_eq_left]
       refine Set.disjoint_left.mpr ?_
       intro e' he'
       simp only [Set.mem_setOf_eq]
       exact G₁.edges_valid e' he'
-    simp only [h_graph, SimpleGraph.edgeSet_fromEdgeSet] at h
+    simp only [h_graph, edgeSet_fromEdgeSet] at h
     have h_edges : G₁.edges.toSet = G₂.edges.toSet := by
       rw [← h]
       simp only [sdiff_eq_left]
@@ -129,7 +144,7 @@ theorem LabeledSym2Graph.toLabeledGraph_adj_iff
     (G : LabeledSym2Graph σ n) (u v : Fin n) :
     G.toLabeledGraph.graph.Adj u v ↔ Sym2.mk (u, v) ∈ G.edges
   := by
-  simp [LabeledSym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet]
+  simp [LabeledSym2Graph.toLabeledGraph, fromEdgeSet]
   intro h
   exact G.edges_valid (Sym2.mk (u, v)) h
 
@@ -166,6 +181,7 @@ end FlagAlgebras
 
 namespace Compute
 open FlagAlgebras
+open SimpleGraph
 
 theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
@@ -174,7 +190,7 @@ theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
   := by
   simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
   congr
-  · simp only [SimpleGraph.edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe,
+  · simp only [edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe,
     Set.toFinset_setOf, sdiff_eq_left]
     refine Finset.disjoint_left.mpr ?_
     intro e he
@@ -187,7 +203,7 @@ instance
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
     Fintype (LabeledSym2Graph σ n) where
   elems :=
-    let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ (σ ↪g SimpleGraph.fromEdgeSet E.toSet) _))
+    let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ (σ ↪g fromEdgeSet E.toSet) _))
     S.filterMap (fun ⟨E, emb⟩ ↦
       if hE : ∀ e ∈ E, ¬e.IsDiag
       then .some ⟨E, hE, emb⟩
@@ -430,7 +446,7 @@ instance
       simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
       exact (Gl i).verts.fintypeCoeSort
     have : DecidableRel (Gl i).toLabeledSubraph.coe.graph.Adj := by
-      simp [LabeledSym2InducedSubgraph.toLabeledSubraph, SimpleGraph.Subgraph.coe]
+      simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
       intro ⟨a, ha⟩ ⟨b, hb⟩
       exact Finset.decidableMem s(a, b) (Gl i).edges
     have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
@@ -464,7 +480,119 @@ theorem labeledSubgraphListCount_eq
     labeledSubgraphListCount Hl.toLabeledGraphList G.toLabeledGraph =
     labeledSym2InducedSubgraphListCount Hl G
   := by
-  sorry
+  dsimp [labeledSubgraphListCount, labeledSym2InducedSubgraphListCount,
+    setOfLabeledSubgraphListIsoHl, finsetOfLabeledSym2InducedSubgraphListIsoHl]
+  apply Finset.card_nbij (fun Hl i ↦ {
+    verts := @Set.toFinset _ (Hl i).subgraph.verts (Fintype.ofFinite _)
+    verts_subset := by
+      have h := LabeledSubgraph.labeledSubgraph_contain_type_verts G.toLabeledGraph (Hl i)
+      rw [G.toLabeledGraph_type_verts_eq] at h
+      simp only [Set.subset_toFinset]
+      exact h
+  })
+  · intro Gl hGl
+    simp [predIsoLabeledHl] at hGl
+    obtain ⟨h_ind, h_iso, h_disj⟩:= hGl
+    simp [predIsoLabeledSym2Hl]
+    constructor
+    · intro i
+      let φ := (h_iso i).some.graph_iso
+      have hφ : φ ∘ (Gl i).coe.type_embed = (Hl.toLabeledGraphList i).type_embed :=
+        (h_iso i).some.type_preserve
+      simp [LabeledSubgraph.coe] at φ
+      exact Nonempty.intro {
+        graph_iso := {
+          toFun := by
+            intro v
+            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe] at v
+            exact φ v
+          invFun := by
+            intro w
+            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
+            exact φ.symm w
+          left_inv := by
+            intro ⟨v, hv⟩
+            simp
+            rw [cast_eq_iff_heq]
+            congr
+            · funext w
+              simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+            · exact proof_irrel_heq _ _
+          right_inv := by
+            intro w
+            simp
+          map_rel_iff' := by
+            intro ⟨v, hv⟩ ⟨v', hv'⟩
+            simp [LabeledSym2InducedSubgraph.toLabeledSubraph] at hv hv'
+            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, LabeledSym2InducedSubgraph.edges, LabeledSym2Graph.toLabeledGraph]
+            rw [← LabeledSym2Graph.toLabeledGraph_adj_iff, ← LabeledSym2Graph.toLabeledGraph_adj_iff]
+            simp_all
+            constructor
+            · intro ⟨h_adj, hvv'_ne⟩
+              have h : (Hl.toLabeledGraphList i).graph.Adj (φ ⟨v, hv⟩) (φ ⟨v', hv'⟩) := by
+                simp [LabeledSym2GraphList.toLabeledGraphList]
+                convert h_adj
+                · have : v = (Subtype.mk v hv).val := rfl
+                  nth_rw 1 [this]
+                  congr 1; symm
+                  rw [cast_eq_iff_heq]
+                  congr
+                  · funext w
+                    simp
+                  · exact proof_irrel_heq _ _
+                · have : v' = (Subtype.mk v' hv').val := rfl
+                  nth_rw 1 [this]
+                  congr 1; symm
+                  rw [cast_eq_iff_heq]
+                  congr
+                  · funext w
+                    simp
+                  · exact proof_irrel_heq _ _
+              rw [φ.map_rel_iff] at h
+              exact Subgraph.Adj.adj_sub h
+            · intro h_adj
+              constructor
+              · have h : (Hl.toLabeledGraphList i).graph.Adj (φ ⟨v, hv⟩) (φ ⟨v', hv'⟩) := by
+                  rw [φ.map_rel_iff]
+                  exact h_ind i hv hv' h_adj
+                simp [LabeledSym2GraphList.toLabeledGraphList] at h
+                convert h
+                · have : v = (Subtype.mk v hv).val := rfl
+                  nth_rw 2 [this]
+                  congr 1
+                  rw [cast_eq_iff_heq]
+                  congr
+                  · funext w
+                    simp
+                  · exact proof_irrel_heq _ _
+                · have : v' = (Subtype.mk v' hv').val := rfl
+                  nth_rw 2 [this]
+                  congr 1
+                  rw [cast_eq_iff_heq]
+                  congr
+                  · funext w
+                    simp
+                  · exact proof_irrel_heq _ _
+              · exact Adj.ne' (adj_symm G.toLabeledGraph.graph h_adj)
+        }
+        type_preserve := by
+          funext u
+          simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+          have hu := congrFun hφ u
+          simp [LabeledSym2GraphList.toLabeledGraphList] at hu
+          rw [← hu]
+          congr
+          rw [cast_eq_iff_heq]
+          congr
+          · funext w
+            simp
+          · rw [← G.toLabeledGraph_type_embed_eq, ← (Gl i).embed_eq u]
+            rfl
+          · exact proof_irrel_heq _ _
+      }
+    · sorry
+  · sorry
+  · sorry
 
 def labeledSym2InducedSubgraphListDensity
     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
