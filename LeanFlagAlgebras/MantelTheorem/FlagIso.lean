@@ -10,10 +10,12 @@ noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.ed
   classical
   exact Fintype.ofFinite G.edgeSet
 
-lemma cards_of_edge_sets_of_iso_graphs_eq {V W : Type} [Fintype V] [Fintype W]
-    {G₁ : SimpleGraph V} {G₂ : SimpleGraph W} (h : Nonempty (G₁ ≃g G₂))
-    : Fintype.card (G₁.edgeSet) = Fintype.card (G₂.edgeSet)
+lemma diff_cards_of_edge_sets_imply_non_iso {V W : Type} [Fintype V] [Fintype W]
+    (G₁ : SimpleGraph V) (G₂ : SimpleGraph W)
+    : Fintype.card (G₁.edgeSet) ≠ Fintype.card (G₂.edgeSet) → ¬ Nonempty (G₁ ≃g G₂)
   := by
+  contrapose!
+  intro h
   apply Fintype.card_congr
   exact SimpleGraph.Iso.mapEdgeSet h.some
 
@@ -119,54 +121,23 @@ lemma all_fun_from_Fin1_to_Fin3
 
 /- graphs -/
 
-lemma O3_E3_graph_not_iso
-    : ¬ Nonempty (O3_graph ≃g E3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edgeSet_card, E3_graph_edgeSet_card] at this
-  simp_all
+lemma O3_E3_graph_not_iso : ¬ Nonempty (O3_graph ≃g E3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso O3_graph E3_graph (by simp)
 
-lemma O3_P3_graph_not_iso
-    : ¬ Nonempty (O3_graph ≃g P3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edgeSet_card, P3_graph_edgeSet_card] at this
-  simp_all
+lemma O3_P3_graph_not_iso : ¬ Nonempty (O3_graph ≃g P3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso O3_graph P3_graph (by simp)
 
-lemma O3_K3_graph_not_iso
-    : ¬ Nonempty (O3_graph ≃g K3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [O3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
-  simp_all
+lemma O3_K3_graph_not_iso : ¬ Nonempty (O3_graph ≃g K3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso O3_graph K3_graph (by simp)
 
-lemma E3_P3_graph_not_iso
-    : ¬ Nonempty (E3_graph ≃g P3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [E3_graph_edgeSet_card, P3_graph_edgeSet_card] at this
-  simp_all
+lemma E3_P3_graph_not_iso : ¬ Nonempty (E3_graph ≃g P3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso E3_graph P3_graph (by simp)
 
-lemma E3_K3_graph_not_iso
-    : ¬ Nonempty (E3_graph ≃g K3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [E3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
-  simp_all
+lemma E3_K3_graph_not_iso : ¬ Nonempty (E3_graph ≃g K3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso E3_graph K3_graph (by simp)
 
-lemma P3_K3_graph_not_iso
-    : ¬ Nonempty (P3_graph ≃g K3_graph)
-  := by
-  intro h
-  have := cards_of_edge_sets_of_iso_graphs_eq h
-  rw [P3_graph_edgeSet_card, K3_graph_edgeSet_card] at this
-  simp_all
-
+lemma P3_K3_graph_not_iso : ¬ Nonempty (P3_graph ≃g K3_graph)
+  := diff_cards_of_edge_sets_imply_non_iso P3_graph K3_graph (by simp)
 
 syntax "prove_threeVertexGraph_iso" term "and" term "using" term "and" term : tactic
 
