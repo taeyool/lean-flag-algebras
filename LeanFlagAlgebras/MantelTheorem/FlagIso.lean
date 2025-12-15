@@ -108,20 +108,14 @@ lemma all_fun_from_Fin1_to_Fin3
     (f : Fin 1 → Fin 3)
     : f = (fun _ => 0) ∨ f = (fun _ => 1) ∨ f = (fun _ => 2)
   := by
-  match h_f0 : f 0 with
-  | 0 =>
-    left
+  have h_const : f = (fun x => f 0) := by
     funext x
-    rwa [Fin.fin_one_eq_zero x]
-  | 1 =>
-    right; left
-    funext x
-    rwa [Fin.fin_one_eq_zero x]
-  | 2 =>
-    right; right
-    funext x
-    rwa [Fin.fin_one_eq_zero x]
-
+    rw [Fin.fin_one_eq_zero x]
+  rw [h_const]
+  match f 0 with
+  | 0 => left; rfl
+  | 1 => right; left; rfl
+  | 2 => right; right; rfl
 
 /- graphs -/
 
