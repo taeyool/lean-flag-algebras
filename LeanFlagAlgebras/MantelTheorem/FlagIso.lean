@@ -97,41 +97,12 @@ lemma all_isomorphism_on_Fin3
       (φ 0 = 2 ∧ φ 1 = 0 ∧ φ 2 = 1) ∨
       (φ 0 = 2 ∧ φ 1 = 1 ∧ φ 2 = 0)
   := by
-  have inj_φ := Equiv.injective φ
-  match h₀ : φ 0 with
-  | 0 =>
-    match h₁ : φ 1 with
-    | 0 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
-    | 1 => match h₂ : φ 2 with
-      | 0 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-      | 1 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-      | 2 => left; simp only [Fin.isValue, and_self]
-    | 2 => match h₂ : φ 2 with
-      | 0 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-      | 1 => right; left; simp only [Fin.isValue, and_self]
-      | 2 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-  | 1 =>
-    match h₁ : φ 1 with
-    | 0 => match h₂ : φ 2 with
-      | 0 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-      | 1 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-      | 2 => right; right; left; simp only [Fin.isValue, and_self]
-    | 1 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
-    | 2 => match h₂ : φ 2 with
-      | 0 => right; right; right; left; simp only [Fin.isValue, and_self]
-      | 1 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-      | 2 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-  | 2 =>
-    match h₁ : φ 1 with
-    | 0 => match h₂ : φ 2 with
-      | 0 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-      | 1 => right; right; right; right; left; simp only [Fin.isValue, and_self]
-      | 2 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-    | 1 => match h₂ : φ 2 with
-      | 0 => right; right; right; right; right; simp only [Fin.isValue, and_self]
-      | 1 => have := @inj_φ 1 2 (Eq.trans h₁ h₂.symm); contradiction
-      | 2 => have := @inj_φ 0 2 (Eq.trans h₀ h₂.symm); contradiction
-    | 2 => have := @inj_φ 0 1 (Eq.trans h₀ h₁.symm); contradiction
+  have h : ∀ i j : Fin 3, i ≠ j → φ i ≠ φ j :=
+    fun i j h_ij h_eq ↦ h_ij (Equiv.injective φ h_eq)
+  have h₀₁ := h 0 1 (by decide)
+  have h₀₂ := h 0 2 (by decide)
+  have h₁₂ := h 1 2 (by decide)
+  omega
 
 lemma all_fun_from_Fin1_to_Fin3
     (f : Fin 1 → Fin 3)
