@@ -139,10 +139,10 @@ lemma E3_K3_graph_not_iso : ¬ Nonempty (E3_graph ≃g K3_graph)
 lemma P3_K3_graph_not_iso : ¬ Nonempty (P3_graph ≃g K3_graph)
   := diff_cards_of_edge_sets_imply_non_iso P3_graph K3_graph (by simp)
 
-syntax "prove_threeVertexGraph_iso" term "and" term "using" term "and" term : tactic
+syntax "prove_graph_iso" term "and" term "using" term "and" term : tactic
 
 macro_rules
-| `(tactic| prove_threeVertexGraph_iso $source and $target using $map1 and $map2) => `(tactic|
+| `(tactic| prove_graph_iso $source and $target using $map1 and $map2) => `(tactic|
     {
       have : Nonempty ($source ≃g $target) := by
         apply Nonempty.intro
@@ -166,35 +166,35 @@ lemma threeVertexGraph_iso
   <;> rcases (Classical.em (G.Adj 1 2)) with _ | _
 
   -- 1. K3 Case
-  · prove_threeVertexGraph_iso G and K3_graph
+  · prove_graph_iso G and K3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 2. P3 Case
-  . prove_threeVertexGraph_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 3. P3 Case
-  . prove_threeVertexGraph_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
       using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 4. E3 Case
-  . prove_threeVertexGraph_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
   -- 5. P3 Case
-  . prove_threeVertexGraph_iso G and P3_graph
+  . prove_graph_iso G and P3_graph
       using (fun | 0 => 2 | 2 => 0 | 1 => 1) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
   -- 6. E3 Case
-  . prove_threeVertexGraph_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
       using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
 
   -- 7. E3 Case
-  . prove_threeVertexGraph_iso G and E3_graph
+  . prove_graph_iso G and E3_graph
       using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
 
   -- 8. O3 Case
-  . prove_threeVertexGraph_iso G and O3_graph
+  . prove_graph_iso G and O3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
 /- flags with empty type -/
@@ -236,19 +236,16 @@ def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
   val := [O3_flag, E3_flag, P3_flag, K3_flag]
   nodup := by
     simp
-    (repeat' constructor) <;> intro h
-    · exact O3_E3_not_iso (Quotient.exact h)
-    · exact O3_P3_not_iso (Quotient.exact h)
-    · exact O3_K3_not_iso (Quotient.exact h)
-    · exact E3_P3_not_iso (Quotient.exact h)
-    · exact E3_K3_not_iso (Quotient.exact h)
-    · exact P3_K3_not_iso (Quotient.exact h)
+    (repeat' constructor) <;> {
+      intro h
+      have : _ ∼f _ := Quotient.exact h
+      simp_all
+    }
 
-
-syntax "prove_emptyTypeThreeVertexLabeledGraph_eqv" term "and" term "using" term : tactic
+syntax "prove_labeledGraph_iso_emptyType" term "and" term "using" term : tactic
 
 macro_rules
-| `(tactic| prove_emptyTypeThreeVertexLabeledGraph_eqv $source and $target using $map) => `(tactic|
+| `(tactic| prove_labeledGraph_iso_emptyType $source and $target using $map) => `(tactic|
     {
       have : $source ∼f $target := by
         apply Nonempty.intro
@@ -256,20 +253,52 @@ macro_rules
           graph_iso := $map
           type_preserve := by
             funext i
-            exact False.elim (Nat.not_succ_le_zero i.1 i.2)
+            apply False.elim (Nat.not_succ_le_zero i.1 i.2)
         }
-      simp [this]
+      simp_all [this]
     })
+
+syntax "prove_labeledGraph_iso_singletonType" term "and" term "on" term "using" term "and" term : tactic
+
+macro_rules
+| `(tactic| prove_labeledGraph_iso_singletonType $source and $target on $labeled_graph using $map1 and $map2) => `(tactic|
+    {
+      have : $source ∼f $target := by
+        apply Nonempty.intro
+        exact {
+          graph_iso := by
+            dsimp [$labeled_graph:term]
+            exact {
+            toFun := $map1
+            invFun := $map2
+            left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+            right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+            map_rel_iff' := by
+              dsimp [$labeled_graph:term]
+              intros; constructor
+              · split <;> (intro h; split at h) <;>
+                (first | assumption | symm; assumption | simp at *)
+              · split <;> (intro h; split) <;>
+                (first | contradiction | symm at h; contradiction | simp at *)
+            }
+          type_preserve := by
+            dsimp [$labeled_graph:term]
+            funext i
+            simp_all [Fin.fin_one_eq_zero i]
+        }
+      simp_all [this]
+    })
+
 
 lemma emptyTypeThreeVertexLabeledGraph_eqv
     (G : LabeledGraph ∅ₜ (Fin 3))
     : G ∼f O3_labeledGraph ∨ G ∼f E3_labeledGraph ∨ G ∼f P3_labeledGraph ∨ G ∼f K3_labeledGraph
   := by
   rcases (threeVertexGraph_iso G.graph) with h | h | h | h
-  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and O3_labeledGraph using h.some
-  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and E3_labeledGraph using h.some
-  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and P3_labeledGraph using h.some
-  · prove_emptyTypeThreeVertexLabeledGraph_eqv G and K3_labeledGraph using h.some
+  · prove_labeledGraph_iso_emptyType G and O3_labeledGraph using h.some
+  · prove_labeledGraph_iso_emptyType G and E3_labeledGraph using h.some
+  · prove_labeledGraph_iso_emptyType G and P3_labeledGraph using h.some
+  · prove_labeledGraph_iso_emptyType G and K3_labeledGraph using h.some
 
 theorem emptyTypeThreeVertexFlagSet_eq_univ
     : emptyTypeThreeVertexFlagSet = Finset.univ
@@ -296,21 +325,27 @@ theorem emptyTypeThreeVertexFlagSet_eq_univ
 
 /- flags with singleton type -/
 
+@[simp]
 lemma O3₁_E3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
 
+@[simp]
 lemma O3₁_E3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
   := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
 
+@[simp]
 lemma O3₁_P3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso O3_P3_graph_not_iso
 
+@[simp]
 lemma O3₁_P3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
   := labeledGraph_not_iso_from_graph_not_iso O3_P3_graph_not_iso
 
+@[simp]
 lemma O3₁_K3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso O3_K3_graph_not_iso
 
+@[simp]
 lemma E3₁_E3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
   := by
   intro h
@@ -325,26 +360,32 @@ lemma E3₁_E3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
   have : E3_graph.Adj 2 (φG 1) := by rw [←h₀]; exact (SimpleGraph.Iso.map_adj_iff φG).mpr E3_graph_01
   match h₁ : φG 1 with | 0 | 1 | 2 => rw [h₁] at this; simp_all
 
+@[simp]
 lemma E3₁_P3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
 
+@[simp]
 lemma E3₁_P3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
   := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
 
+@[simp]
 lemma E3₁_K3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso E3_K3_graph_not_iso
 
+@[simp]
 lemma E3₁'_P3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
 
+@[simp]
 lemma E3₁'_P3₁'_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 1
   := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
 
+@[simp]
 lemma E3₁'_K3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso E3_K3_graph_not_iso
 
-lemma P3₁_P3₁'_not_iso
-    : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
+@[simp]
+lemma P3₁_P3₁'_not_iso : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
   := by
   intro h
   let φ := h.some.symm
@@ -365,9 +406,11 @@ lemma P3₁_P3₁'_not_iso
   have := (SimpleGraph.Iso.map_adj_iff φG).mp this
   simp_all [P3₁_labeledGraph]
 
+@[simp]
 lemma P3₁_K3₁_not_iso : ¬ P3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
 
+@[simp]
 lemma P3₁'_K3₁_not_iso : ¬ P3₁_labeledGraph 1 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
 
@@ -375,49 +418,11 @@ def singletonTypeThreeVertexFlagSet : Finset (FlagWithSize Sₜ 3) where
   val := [O3₁_flag, E3₁_flag, E3₁'_flag, P3₁_flag, P3₁'_flag, K3₁_flag]
   nodup := by
     simp
-    (repeat' constructor) <;> intro h
-    · exact O3₁_E3₁_not_iso (Quotient.exact h)
-    · exact O3₁_E3₁'_not_iso (Quotient.exact h)
-    · exact O3₁_P3₁_not_iso (Quotient.exact h)
-    · exact O3₁_P3₁'_not_iso (Quotient.exact h)
-    · exact O3₁_K3₁_not_iso (Quotient.exact h)
-    · exact E3₁_E3₁'_not_iso (Quotient.exact h)
-    · exact E3₁_P3₁_not_iso (Quotient.exact h)
-    · exact E3₁_P3₁'_not_iso (Quotient.exact h)
-    · exact E3₁_K3₁_not_iso (Quotient.exact h)
-    · exact E3₁'_P3₁_not_iso (Quotient.exact h)
-    · exact E3₁'_P3₁'_not_iso (Quotient.exact h)
-    · exact E3₁'_K3₁_not_iso (Quotient.exact h)
-    · exact P3₁_P3₁'_not_iso (Quotient.exact h)
-    · exact P3₁_K3₁_not_iso (Quotient.exact h)
-    · exact P3₁'_K3₁_not_iso (Quotient.exact h)
-
-syntax "prove_labeledGraph_equiv_on" term "with" term "and" term : tactic
-
-macro_rules
-| `(tactic| prove_labeledGraph_equiv_on $labeled_graph with $map1 and $map2) => `(tactic|
-    {
-      apply Nonempty.intro
-      exact {
-        graph_iso := {
-          toFun := $map1
-          invFun := $map2
-          left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
-          right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
-          map_rel_iff' := by
-            dsimp [$labeled_graph:term]
-            intros; constructor
-            · split <;> (intro h; split at h) <;>
-              (first | assumption | symm; assumption | simp at *)
-            · split <;> (intro h; split) <;>
-              (first | contradiction | symm at h; contradiction | simp at *)
-        }
-        type_preserve := by
-          simp [$labeled_graph:term]
-          funext i
-          simp_all [Fin.fin_one_eq_zero i]
-      }
-    })
+    (repeat' constructor) <;> {
+      intro h
+      have : _ ∼f _ := Quotient.exact h
+      simp_all
+    }
 
 lemma singletonType_O3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g O3_graph)
@@ -428,12 +433,12 @@ lemma singletonType_O3_eqv
     <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   match ht : G.type_embed 0 with
-  | 0 => prove_labeledGraph_equiv_on O3₁_labeledGraph
-           with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
-  | 1 => prove_labeledGraph_equiv_on O3₁_labeledGraph
-           with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
-  | 2 => prove_labeledGraph_equiv_on O3₁_labeledGraph
-           with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+  | 0 => prove_labeledGraph_iso_singletonType G and (O3₁_labeledGraph 0) on O3₁_labeledGraph
+           using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+  | 1 => prove_labeledGraph_iso_singletonType G and (O3₁_labeledGraph 0) on O3₁_labeledGraph
+           using (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+  | 2 => prove_labeledGraph_iso_singletonType G and (O3₁_labeledGraph 0) on O3₁_labeledGraph
+           using (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_E3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g E3_graph)
@@ -447,43 +452,34 @@ lemma singletonType_E3_eqv
   rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
   · match ht : G.type_embed 0 with
     | 0 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
     | 1 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
     | 2 =>
-      right
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 2) on E3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
   · match ht : G.type_embed 0 with
     | 0 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
     | 1 =>
-      right
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 2) on E3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
     | 2 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 2 | 2 => 0) and (fun | 0 => 2 | 1 => 0 | 2 => 1)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 2 | 2 => 0) and (fun | 0 => 2 | 1 => 0 | 2 => 1)
   · match ht : G.type_embed 0 with
     | 0 =>
-      right
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 2) on E3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
     | 1 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
     | 2 =>
-      left
-      prove_labeledGraph_equiv_on E3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_P3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g P3_graph)
@@ -497,43 +493,34 @@ lemma singletonType_P3_eqv
   rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
   · match ht : G.type_embed 0 with
     | 0 =>
-      left
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 0) on P3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
     | 1 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
     | 2 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 2 | 2 => 1) and (fun | 0 => 0 | 1 => 2 | 2 => 1)
   · match ht : G.type_embed 0 with
     | 0 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
     | 1 =>
-      left
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 0) on P3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
     | 2 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 0 | 2 => 1) and (fun | 0 => 1 | 1 => 2 | 2 => 0)
   · match ht : G.type_embed 0 with
     | 0 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 2 | 2 => 0) and (fun | 0 => 2 | 1 => 0 | 2 => 1)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 2 | 2 => 0) and (fun | 0 => 2 | 1 => 0 | 2 => 1)
     | 1 =>
-      right
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 1) on P3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
     | 2 =>
-      left
-      prove_labeledGraph_equiv_on P3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (P3₁_labeledGraph 0) on P3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonType_K3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g K3_graph)
@@ -545,14 +532,14 @@ lemma singletonType_K3_eqv
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   match ht : G.type_embed 0 with
   | 0 =>
-      prove_labeledGraph_equiv_on K3₁_labeledGraph
-        with (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (K3₁_labeledGraph 0) on K3₁_labeledGraph
+        using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
   | 1 =>
-      prove_labeledGraph_equiv_on K3₁_labeledGraph
-        with (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
+      prove_labeledGraph_iso_singletonType G and (K3₁_labeledGraph 0) on K3₁_labeledGraph
+        using (fun | 0 => 1 | 1 => 0 | 2 => 2) and (fun | 0 => 1 | 1 => 0 | 2 => 2)
   | 2 =>
-      prove_labeledGraph_equiv_on K3₁_labeledGraph
-        with (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
+      prove_labeledGraph_iso_singletonType G and (K3₁_labeledGraph 0) on K3₁_labeledGraph
+        using (fun | 0 => 2 | 1 => 1 | 2 => 0) and (fun | 0 => 2 | 1 => 1 | 2 => 0)
 
 lemma singletonTypeThreeVertexLabeledGraph_eqv
     (G : LabeledGraph Sₜ (Fin 3))
