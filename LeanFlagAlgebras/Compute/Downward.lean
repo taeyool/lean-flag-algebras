@@ -474,6 +474,24 @@ def labeledSym2InducedSubgraphListCount
   :=
   (finsetOfLabeledSym2InducedSubgraphListIsoHl G Hl).card
 
+lemma induced_subgraph_adj_iff
+    {V : Type} {G : SimpleGraph V} {H : Subgraph G} (h_ind : H.IsInduced)
+    {u v : V} (hu : u ∈ H.verts) (hv : v ∈ H.verts) :
+    H.Adj u v ↔ G.Adj u v
+  := by
+  constructor <;> intro h
+  · exact Subgraph.Adj.adj_sub h
+  · exact h_ind hu hv h
+
+lemma subgraph_not_adj
+    {V : Type} {G : SimpleGraph V} {H : Subgraph G}
+    {u v : V} (hu : u ∉ H.verts) :
+    ¬H.Adj u v
+  := by
+  intro h_adj
+  apply H.edge_vert at h_adj
+  exact hu h_adj
+
 theorem labeledSubgraphListCount_eq
     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
     (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) :
@@ -590,8 +608,60 @@ theorem labeledSubgraphListCount_eq
             rfl
           · exact proof_irrel_heq _ _
       }
-    · sorry
-  · sorry
+    · intro i j hij_ne
+      simp only
+      specialize h_disj i j hij_ne
+      rw [G.toLabeledGraph_type_verts_eq] at h_disj
+      rw [← Finset.coe_inj]
+      simp [h_disj]
+  · intro Gl hGl Gl' hGl' h_eq
+    simp [predIsoLabeledHl] at hGl hGl'
+    obtain ⟨hGl_ind, hGl_iso, hGl_disj⟩ := hGl
+    obtain ⟨hGl'_ind, hGl'_iso, hGl'_disj⟩ := hGl'
+    have h_iso : ∀ (i : Fin t), Nonempty ((Gl i).coe ≃f (Gl' i).coe) :=
+      fun i ↦ Nonempty.intro ((hGl_iso i).some.trans (hGl'_iso i).some.symm)
+    clear hGl_iso hGl'_iso
+    have h_verts_eq : ∀ (i : Fin t), (Gl i).subgraph.verts = (Gl' i).subgraph.verts := by
+      intro i
+      have h := congrFun h_eq i
+      simp at h
+      rw [h]
+    ext u v w
+    · rw [h_verts_eq u]
+    · specialize hGl_ind u
+      specialize hGl'_ind u
+      specialize h_verts_eq u
+      dsimp [LabeledSubgraph.IsInduced] at hGl_ind
+      by_cases h : v ∈ (Gl u).subgraph.verts ∧ w ∈ (Gl u).subgraph.verts
+      · obtain ⟨hv, hw⟩ := h
+        rw [induced_subgraph_adj_iff hGl_ind hv hw]
+        rw [h_verts_eq] at hv hw
+        rw [induced_subgraph_adj_iff hGl'_ind hv hw]
+      · have h' : v ∉ (Gl u).subgraph.verts ∨ w ∉ (Gl u).subgraph.verts :=
+          Classical.not_and_iff_not_or_not.mp h
+        rcases h' with hv | hw
+        · have : ¬(Gl u).subgraph.Adj v w := by
+            intro h_adj
+            apply (Gl u).subgraph.edge_vert at h_adj
+            exact hv h_adj
+          simp only [this, false_iff]
+          intro h_adj
+          apply (Gl' u).subgraph.edge_vert at h_adj
+          rw [← h_verts_eq] at h_adj
+          exact hv h_adj
+        · have : ¬(Gl u).subgraph.Adj v w := by
+            rw [Subgraph.adj_comm]
+            intro h_adj
+            apply (Gl u).subgraph.edge_vert at h_adj
+            exact hw h_adj
+          simp only [this, false_iff]
+          intro h_adj
+          rw [Subgraph.adj_comm] at h_adj
+          apply (Gl' u).subgraph.edge_vert at h_adj
+          rw [← h_verts_eq] at h_adj
+          exact hw h_adj
+    · refine type_embed_heq_of_subgraph_eq ?_
+      sorry
   · sorry
 
 def labeledSym2InducedSubgraphListDensity
@@ -602,7 +672,7 @@ def labeledSym2InducedSubgraphListDensity
   labeledSym2InducedSubgraphListCount Hl G / multinomialCoefficient r_list (n - Fintype.card T)
 
 instance
-    {t : ℕ} {Vl  : Fin t → ℕ} :
+    {t : ℕ} {Vl : Fin t → ℕ} :
     FintypeList fun i ↦ Fin (Vl i)
   := by
   refine { fintype_all := ?_ }
