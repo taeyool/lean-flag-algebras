@@ -300,28 +300,18 @@ lemma emptyTypeThreeVertexLabeledGraph_eqv
   · prove_labeledGraph_iso_emptyType G and P3_labeledGraph using h.some
   · prove_labeledGraph_iso_emptyType G and K3_labeledGraph using h.some
 
-theorem emptyTypeThreeVertexFlagSet_eq_univ
-    : emptyTypeThreeVertexFlagSet = Finset.univ
+theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Finset.univ
   := by
+  dsimp [emptyTypeThreeVertexFlagSet]
   ext F; constructor
   · intro _
     exact Finset.mem_univ F
   · intro _
-    simp [emptyTypeThreeVertexFlagSet]
     rcases (emptyTypeThreeVertexLabeledGraph_eqv F.out) with h | h | h | h
-    · left
-      rw [← F.out_eq]
-      exact Quotient.sound h
-    · right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h
-    · right; right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h
-    · right; right; right
-      rw [← F.out_eq]
-      exact Quotient.sound h
-
+    <;> {
+      have : (_ : FlagAlgebras.Flag ∅ₜ (Fin 3)) = _ := Quotient.sound h
+      simp_all [E3_flag, K3_flag, O3_flag, P3_flag]
+    }
 
 /- flags with singleton type -/
 
