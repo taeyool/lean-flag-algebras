@@ -300,18 +300,32 @@ lemma emptyTypeThreeVertexLabeledGraph_eqv
   · prove_labeledGraph_iso_emptyType G and P3_labeledGraph using h.some
   · prove_labeledGraph_iso_emptyType G and K3_labeledGraph using h.some
 
+
+syntax "prove_flagSet_eq_univ" term "on" term "using" term "and" "[" term,* "]" : tactic
+
+macro_rules
+| `(tactic| prove_flagSet_eq_univ $flag_set on $flag_type using $get_cases and [ $[$flag:term],* ]) => `(tactic|
+    {
+      dsimp [$flag_set:term]
+      ext F; constructor
+      · intro _
+        exact Finset.mem_univ F
+      · intro _
+        (first
+         | (rcases ($get_cases F.out) with h | h | h | h) <;> {
+              have : (_ : $flag_type) = _ := Quotient.sound h
+              simp_all [$[$flag:term],*]
+           }
+         | (rcases ($get_cases F.out) with h | h | h | h | h | h) <;> {
+              have : (_ : $flag_type) = _ := Quotient.sound h
+              simp_all [$[$flag:term],*]
+           })
+    })
+
 theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Finset.univ
   := by
-  dsimp [emptyTypeThreeVertexFlagSet]
-  ext F; constructor
-  · intro _
-    exact Finset.mem_univ F
-  · intro _
-    rcases (emptyTypeThreeVertexLabeledGraph_eqv F.out) with h | h | h | h
-    <;> {
-      have : (_ : FlagAlgebras.Flag ∅ₜ (Fin 3)) = _ := Quotient.sound h
-      simp_all [E3_flag, K3_flag, O3_flag, P3_flag]
-    }
+  prove_flagSet_eq_univ emptyTypeThreeVertexFlagSet on FlagAlgebras.Flag ∅ₜ (Fin 3)
+    using emptyTypeThreeVertexLabeledGraph_eqv and [O3_flag, E3_flag, P3_flag, K3_flag]
 
 /- flags with singleton type -/
 
@@ -538,47 +552,14 @@ lemma singletonTypeThreeVertexLabeledGraph_eqv
   := by
   rcases (threeVertexGraph_iso G.graph) with h | h | h | h
   <;> have φ := h.some
-  · left
-    exact singletonType_O3_eqv G φ
-  · rcases (singletonType_E3_eqv G φ) with h₀ | h₁
-    · right; left
-      exact h₀
-    · right; right; left
-      exact h₁
-  · rcases (singletonType_P3_eqv G φ) with h₀ | h₁
-    · right; right; right; left
-      exact h₀
-    · right; right; right; right; left
-      exact h₁
-  · right; right; right; right; right
-    exact singletonType_K3_eqv G φ
+  · simp [singletonType_O3_eqv G φ]
+  · rcases (singletonType_E3_eqv G φ) with h' | h' <;> simp [h']
+  · rcases (singletonType_P3_eqv G φ) with h' | h' <;> simp [h']
+  · simp [singletonType_K3_eqv G φ]
 
-lemma singletonTypeThreeVertexFlagSet_eq_univ
-    : singletonTypeThreeVertexFlagSet = Finset.univ
+lemma singletonTypeThreeVertexFlagSet_eq_univ : singletonTypeThreeVertexFlagSet = Finset.univ
   := by
-  ext F; constructor
-  · intro _
-    simp only [Finset.mem_univ]
-  · intro _
-    simp [singletonTypeThreeVertexFlagSet]
-    rcases (singletonTypeThreeVertexLabeledGraph_eqv F.out) with h₀ | h₁ | h₂ | h₃ | h₄ | h₅
-    · left
-      rw [← F.out_eq]
-      exact Quotient.sound h₀
-    · right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h₁
-    · right; right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h₂
-    · right; right; right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h₃
-    · right; right; right; right; left
-      rw [← F.out_eq]
-      exact Quotient.sound h₄
-    · right; right; right; right; right
-      rw [← F.out_eq]
-      exact Quotient.sound h₅
+  prove_flagSet_eq_univ singletonTypeThreeVertexFlagSet on FlagAlgebras.Flag Sₜ (Fin 3)
+    using singletonTypeThreeVertexLabeledGraph_eqv and [E3₁'_flag, E3₁_flag, K3₁_flag, O3₁_flag, P3₁'_flag, P3₁_flag]
 
 end MantelTheorem
