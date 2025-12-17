@@ -392,6 +392,15 @@ lemma P3₁_K3₁_not_iso : ¬ P3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
 lemma P3₁'_K3₁_not_iso : ¬ P3₁_labeledGraph 1 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
 
+syntax "get_Adj_from_graph_iso_on_Fin3" term : tactic
+
+macro_rules
+| `(tactic| get_Adj_from_graph_iso_on_Fin3 $graph_iso:term) => `(tactic|
+    {
+      rcases (all_isomorphism_on_Fin3 $graph_iso) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
+      <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff $graph_iso, h₀, h₁, h₂])
+    })
+
 syntax "prove_labeledGraph_iso_singletonType" term "and" term "on" term "using" term "and" term : tactic
 
 macro_rules
@@ -427,9 +436,7 @@ lemma singletonType_O3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g O3_graph)
     : G ∼f O3₁_labeledGraph 0
   := by
-  have h : ¬ G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2 := by
-    rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-    <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
+  have h : ¬ G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2 := by get_Adj_from_graph_iso_on_Fin3 φ
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   match ht : G.type_embed 0 with
   | 0 => prove_labeledGraph_iso_singletonType G and (O3₁_labeledGraph 0) on O3₁_labeledGraph
@@ -445,11 +452,9 @@ lemma singletonType_E3_eqv
   := by
   have h : (G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2) ∨
       (¬ G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2) ∨
-      (¬ G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by
-    rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-    <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
+      (¬ G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by get_Adj_from_graph_iso_on_Fin3 φ
   rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
-  · match ht : G.type_embed 0 with
+  match ht : G.type_embed 0 with
     | 0 =>
       prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
         using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
@@ -486,9 +491,7 @@ lemma singletonType_P3_eqv
   := by
   have h : (G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2) ∨
       (G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) ∨
-      (¬ G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by
-    rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-    <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
+      (¬ G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by get_Adj_from_graph_iso_on_Fin3 φ
   rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
   · match ht : G.type_embed 0 with
     | 0 =>
@@ -525,9 +528,7 @@ lemma singletonType_K3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g K3_graph)
     : G ∼f K3₁_labeledGraph 0
   := by
-  have h : G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2 := by
-    rcases (all_isomorphism_on_Fin3 φ) with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-    <;> (simp at h₀ h₁ h₂; simp [← SimpleGraph.Iso.map_adj_iff φ, h₀, h₁, h₂])
+  have h : G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2 := by get_Adj_from_graph_iso_on_Fin3 φ
   obtain ⟨h₀₁, h₀₂, h₁₂⟩ := h
   match ht : G.type_embed 0 with
   | 0 =>
