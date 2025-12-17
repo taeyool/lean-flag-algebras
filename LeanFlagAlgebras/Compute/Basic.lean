@@ -69,6 +69,15 @@ instance
   rw [← exists_true_iff_nonempty]
   exact Fintype.decidableExistsFintype
 
+instance
+    {T : Type} [Fintype T] {σ : SimpleGraph T}
+    {V : Type} [DecidableEq V] [Fintype V]
+    (G G' : LabeledGraph σ V) [DecidableRel G.graph.Adj] [DecidableRel G'.graph.Adj] :
+    Decidable (G ∼f G')
+  := by
+  rw [flagEqv]
+  infer_instance
+
 @[ext]
 structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
@@ -160,6 +169,15 @@ theorem LabeledSym2Graph.toLabeledGraph_adj_iff
   simp [LabeledSym2Graph.toLabeledGraph, fromEdgeSet]
   intro h
   exact G.edges_valid (Sym2.mk (u, v)) h
+
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    DecidableRel G.toLabeledGraph.graph.Adj
+  := by
+  intro a b
+  rw [G.toLabeledGraph_adj_iff]
+  exact Finset.decidableMem s(a, b) G.edges
 
 end Compute
 

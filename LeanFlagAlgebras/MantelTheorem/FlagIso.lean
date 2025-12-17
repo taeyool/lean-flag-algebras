@@ -35,9 +35,8 @@ lemma all_fun_from_Fin1_to_Fin3
   | 1 => right; left; rfl
   | 2 => right; right; rfl
 
-noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.edgeSet := by
-  classical
-  exact Fintype.ofFinite G.edgeSet
+noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.edgeSet :=
+  Fintype.ofFinite G.edgeSet
 
 syntax "prove_edgeSet_of" term "eq" term "using" "[" term,* "]": tactic
 
@@ -208,6 +207,7 @@ lemma labeledGraph_not_iso_from_graph_not_iso
   intro h_G
   exact h (Nonempty.intro h_G.some.graph_iso)
 
+/-
 @[simp]
 lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph
   := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
@@ -231,6 +231,38 @@ lemma E3_K3_not_iso : ¬ E3_labeledGraph ∼f K3_labeledGraph
 @[simp]
 lemma P3_K3_not_iso : ¬ P3_labeledGraph ∼f K3_labeledGraph
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
+-/
+
+-- Gyeongwon: non-isomorphism can also be automatically proved by native_decide
+@[simp]
+lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph := by
+  rw [← O3_eq, ← E3_eq]
+  native_decide
+
+@[simp]
+lemma O3_P3_not_iso : ¬ O3_labeledGraph ∼f P3_labeledGraph := by
+  rw [← O3_eq, ← P3_eq]
+  native_decide
+
+@[simp]
+lemma O3_K3_not_iso : ¬ O3_labeledGraph ∼f K3_labeledGraph := by
+  rw [← O3_eq, ← K3_eq]
+  native_decide
+
+@[simp]
+lemma E3_P3_not_iso : ¬ E3_labeledGraph ∼f P3_labeledGraph := by
+  rw [← E3_eq, ← P3_eq]
+  native_decide
+
+@[simp]
+lemma E3_K3_not_iso : ¬ E3_labeledGraph ∼f K3_labeledGraph := by
+  rw [← E3_eq, ← K3_eq]
+  native_decide
+
+@[simp]
+lemma P3_K3_not_iso : ¬ P3_labeledGraph ∼f K3_labeledGraph := by
+  rw [← P3_eq, ← K3_eq]
+  native_decide
 
 syntax "prove_labeledGraph_iso_emptyType" term "and" term "using" term : tactic
 

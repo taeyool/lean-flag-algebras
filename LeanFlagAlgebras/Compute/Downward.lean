@@ -5,23 +5,6 @@ namespace Compute
 open FlagAlgebras
 open SimpleGraph
 
-instance
-    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
-    DecidablePred fun (H : LabeledSym2Graph σ n) ↦ G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph
-  := by
-  intro H
-  simp only [flagEqv]
-  have : DecidableRel G.toLabeledGraph.graph.Adj := by
-    intro a b
-    rw [LabeledSym2Graph.toLabeledGraph_adj_iff]
-    exact Finset.decidableMem s(a, b) G.edges
-  have : DecidableRel H.toLabeledGraph.graph.Adj := by
-    intro a b
-    rw [LabeledSym2Graph.toLabeledGraph_adj_iff]
-    exact Finset.decidableMem s(a, b) H.edges
-  infer_instance
-
 def isoLabeledSym2GraphSetWithSameGraph
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
     (G : LabeledSym2Graph σ n) : Finset (LabeledSym2Graph σ n)
