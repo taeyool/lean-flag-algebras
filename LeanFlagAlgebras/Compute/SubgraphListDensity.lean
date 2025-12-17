@@ -452,4 +452,30 @@ theorem labeledSubgraphListDensity_labeledGraphPairToList_eq
     · exact Fintype.card_fin m₀
     · exact Fintype.card_fin m₁
 
+-- theorem labeledSym2InducedSubgraphListDensity_respect_eqv
+--     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
+--     {Hl₁ Hl₂ : LabeledSym2GraphList σ t Vl}
+--     (h_eqv : Hl₁ ≈ Hl₂) (G : LabeledSym2Graph σ n) :
+--     labeledSym2InducedSubgraphListDensity Hl₁ G =
+--     labeledSym2InducedSubgraphListDensity Hl₂ G
+--   := by
+--   rw [labeledSym2InducedSubgraphListDensity, labeledSym2InducedSubgraphListDensity]
+--   congr
+--   exact labeledSubgraphListCount_respect_eqv h_eqv G.toLabeledGraph
+
+noncomputable def sym2FlagDensity₁
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    (F : Sym2Flag σ m) (G : Sym2Flag σ n) : ℚ
+  :=
+  labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F.out) G.out
+
+-- theorem flagDensity₁_eq
+--     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+--     (F : Sym2Flag σ m) (G : Sym2Flag σ n) :
+--     flagDensity₁ F.toFlag G.toFlag =
+--     labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList H) G
+--   := by
+--   rw [flagDensity₁_eq_labeledSubgraphListDensity]
+--   exact labeledSubgraphListDensity_labeledGraphToList_eq H G
+
 end Compute
