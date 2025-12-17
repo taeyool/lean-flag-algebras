@@ -230,4 +230,138 @@ theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
   · exact proof_irrel_heq _ _
   · simp only [eq_mpr_eq_cast, cast_heq]
 
+def labeledSym2GraphEqv
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G G' : LabeledSym2Graph σ n) : Prop
+  :=
+  G.toLabeledGraph ∼f G'.toLabeledGraph
+
+infixl:50 " ∼sf " => labeledSym2GraphEqv
+
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (G G' : LabeledSym2Graph σ n) :
+    Decidable (G ∼sf G')
+  := by
+  dsimp [labeledSym2GraphEqv]
+  infer_instance
+
+theorem labeledSym2GraphEqv.refl
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) :
+    G ∼sf G
+  :=
+  flagEqv.refl _
+
+theorem labeledSym2GraphEqv.symm
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    {G G' : LabeledSym2Graph σ n}
+    (h : G ∼sf G') :
+    G' ∼sf G
+  :=
+  flagEqv.symm h
+
+theorem labeledSym2GraphEqv.trans
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    {G G' G'' : LabeledSym2Graph σ n}
+    (h₁ : G ∼sf G') (h₂ : G' ∼sf G'') :
+    G ∼sf G''
+  :=
+  flagEqv.trans h₁ h₂
+
+instance labeledSym2GraphSetoid
+    {T : Type} (σ : FlagType T) (n : ℕ) :
+    Setoid (LabeledSym2Graph σ n)
+  where
+    r     := labeledSym2GraphEqv
+    iseqv := {
+      refl  := labeledSym2GraphEqv.refl,
+      symm  := labeledSym2GraphEqv.symm,
+      trans := labeledSym2GraphEqv.trans
+    }
+
+def Sym2Flag {T : Type} (σ : FlagType T) (n : ℕ) : Type :=
+  Quotient (labeledSym2GraphSetoid σ n)
+
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
+    Fintype (Sym2Flag σ n)
+  := by
+  refine @Quotient.fintype _ _ (labeledSym2GraphSetoid σ n) ?_
+  intro G G'
+  show Decidable (G ∼sf G')
+  infer_instance
+
+def LabeledSym2Graph.toFlag
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G : LabeledSym2Graph σ n) : Flag σ (Fin n)
+  :=
+  ⟦G.toLabeledGraph⟧
+
+theorem LabeledSym2Graph.toFlag_respect_eqv
+    {T : Type} {σ : FlagType T} {n : ℕ}
+    (G G' : LabeledSym2Graph σ n) (h : G ∼sf G') :
+    G.toFlag = G'.toFlag
+  :=
+  Quotient.sound h
+
+def Sym2Flag.toFlag
+    {T : Type} {σ : FlagType T} {n : ℕ} (G : Sym2Flag σ n) :
+    Flag σ (Fin n)
+  :=
+  Quotient.lift LabeledSym2Graph.toFlag LabeledSym2Graph.toFlag_respect_eqv G
+
+end Compute
+
+namespace FlagAlgebras
+open Compute
+
+noncomputable def LabeledGraph.toSym2Flag
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G : LabeledGraph σ (Fin n)) : Sym2Flag σ n
+  :=
+  ⟦G.toLabeledSym2Graph⟧
+
+theorem LabeledGraph.toSym2Flag_respect_eqv
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ}
+    (G G' : LabeledGraph σ (Fin n)) (h : G ∼f G') :
+    G.toSym2Flag = G'.toSym2Flag
+  := by
+  dsimp only [toSym2Flag]
+  apply Quotient.sound
+  show G.toLabeledSym2Graph ∼sf G'.toLabeledSym2Graph
+  dsimp only [labeledSym2GraphEqv]
+  rw [G.toLabeledSym2Graph_toLabeledGraph_eq, G'.toLabeledSym2Graph_toLabeledGraph_eq]
+  exact h
+
+noncomputable def Flag.toSym2Flag
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (F : Flag σ (Fin n)) : Sym2Flag σ n
+  :=
+  Quotient.lift LabeledGraph.toSym2Flag LabeledGraph.toSym2Flag_respect_eqv F
+
+theorem Flag.toSym2Flag_toFlag_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (F : Flag σ (Fin n)) :
+    F.toSym2Flag.toFlag = F
+  := by
+  rcases Quotient.exists_rep F with ⟨F, rfl⟩
+  apply Quotient.sound
+  rw [F.toLabeledSym2Graph_toLabeledGraph_eq]
+
+end FlagAlgebras
+
+namespace Compute
+open FlagAlgebras
+open SimpleGraph
+
+theorem Sym2Flag.toFlag_toSym2Flag_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (F : Sym2Flag σ n) :
+    F.toFlag.toSym2Flag = F
+  := by
+  rcases Quotient.exists_rep F with ⟨F, rfl⟩
+  apply Quotient.sound
+  rw [F.toLabeledGraph_toLabeledSym2Graph_eq]
+
 end Compute
