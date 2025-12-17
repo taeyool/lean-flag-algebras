@@ -387,99 +387,193 @@ macro_rules
 def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
   create_emptyType_labeledSym2Graph ∅ (by aesop)
 
-lemma O2_eq : O2_labeledSym2Graph.toLabeledGraph = O2_labeledGraph := by
+lemma O2_labeledGraph_eq : O2_labeledSym2Graph.toLabeledGraph = O2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O2_labeledGraph and O2_labeledSym2Graph on O2_graph
     using []
 
 def K2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
 
-lemma K2_eq : K2_labeledSym2Graph.toLabeledGraph = K2_labeledGraph := by
+lemma K2_labeledGraph_eq : K2_labeledSym2Graph.toLabeledGraph = K2_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K2_labeledGraph and K2_labeledSym2Graph on K2_graph
     using []
 
 def O3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph ∅ (by aesop)
 
-lemma O3_eq : O3_labeledSym2Graph.toLabeledGraph = O3_labeledGraph := by
+lemma O3_labeledGraph_eq : O3_labeledSym2Graph.toLabeledGraph = O3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph O3_labeledGraph and O3_labeledSym2Graph on O3_graph
     using []
 
 def E3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop)
 
-lemma E3_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
+lemma E3_labeledGraph_eq : E3_labeledSym2Graph.toLabeledGraph = E3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph E3_labeledGraph and E3_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
 def P3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop)
 
-lemma P3_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
+lemma P3_labeledGraph_eq : P3_labeledSym2Graph.toLabeledGraph = P3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph P3_labeledGraph and P3_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def K3_labeledSym2Graph : LabeledSym2Graph ∅ₜ 3 :=
   create_emptyType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } (by aesop)
 
-lemma K3_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph := by
+lemma K3_labeledGraph_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph := by
   prove_labeledGraph_eq_labeledSym2Graph K3_labeledGraph and K3_labeledSym2Graph on K3_graph
     using []
 
 def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
   create_singletonType_labeledSym2Graph {} (by aesop) 0
 
-lemma O2₁_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
+lemma O2₁_labeledGraph_eq : O2₁_labeledSym2Graph.toLabeledGraph = O2₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph O2₁_labeledGraph and O2₁_labeledSym2Graph on O2_graph
     using []
 
 def K2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
 
-lemma K2₁_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
+lemma K2₁_labeledGraph_eq : K2₁_labeledSym2Graph.toLabeledGraph = K2₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph K2₁_labeledGraph and K2₁_labeledSym2Graph on K2_graph
     using []
 
 def O3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph {} (by aesop) 0
 
-lemma O3₁_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
+lemma O3₁_labeledGraph_eq : O3₁_labeledSym2Graph.toLabeledGraph = O3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph O3₁_labeledGraph and O3₁_labeledSym2Graph on O3_graph
     using []
 
 def E3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 0
 
-lemma E3₁_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 := by
+lemma E3₁_labeledGraph_eq : E3₁_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
 def E3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1) } (by aesop) 2
 
-lemma E3₁'_eq : E3₁'_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 2 := by
+lemma E3₁'_labeledGraph_eq : E3₁'_labeledSym2Graph.toLabeledGraph = E3₁_labeledGraph 2 := by
   prove_labeledGraph_eq_labeledSym2Graph E3₁_labeledGraph and E3₁'_labeledSym2Graph on E3_graph
     using [E3_edge.e01, E3_edge.e10]
 
 def P3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop) 0
 
-lemma P3₁_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 := by
+lemma P3₁_labeledGraph_eq : P3₁_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def P3₁'_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2) } (by aesop) 1
 
-lemma P3₁'_eq : P3₁'_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 1 := by
+lemma P3₁'_labeledGraph_eq : P3₁'_labeledSym2Graph.toLabeledGraph = P3₁_labeledGraph 1 := by
   prove_labeledGraph_eq_labeledSym2Graph P3₁_labeledGraph and P3₁'_labeledSym2Graph on P3_graph
     using [P3_edge.e01, P3_edge.e10, P3_edge.e02, P3_edge.e20]
 
 def K3₁_labeledSym2Graph : LabeledSym2Graph Sₜ 3 :=
   create_singletonType_labeledSym2Graph { Sym2.mk (0, 1), Sym2.mk (0, 2), Sym2.mk (1, 2) } (by aesop) 0
 
-lemma K3₁_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
+lemma K3₁_labeledGraph_eq : K3₁_labeledSym2Graph.toLabeledGraph = K3₁_labeledGraph 0 := by
   prove_labeledGraph_eq_labeledSym2Graph K3₁_labeledGraph and K3₁_labeledSym2Graph on K3_graph
     using []
+
+syntax "prove_flag_eq_sym2Flag" term "using" term: tactic
+
+macro_rules
+| `(tactic| prove_flag_eq_sym2Flag $Sym2F using $labeled_eq) => `(tactic|
+    {
+      dsimp [$Sym2F:term, Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+      rw [$labeled_eq:term]
+      rfl
+    })
+
+def O2_Sym2Flag : Sym2Flag ∅ₜ 2 :=
+  ⟦O2_labeledSym2Graph⟧
+
+lemma O2_eq : O2_Sym2Flag.toFlag = O2_flag := by
+  prove_flag_eq_sym2Flag O2_Sym2Flag using O2_labeledGraph_eq
+
+def K2_Sym2Flag : Sym2Flag ∅ₜ 2 :=
+  ⟦K2_labeledSym2Graph⟧
+
+lemma K2_eq : K2_Sym2Flag.toFlag = K2_flag := by
+  prove_flag_eq_sym2Flag K2_Sym2Flag using K2_labeledGraph_eq
+
+def O3_Sym2Flag : Sym2Flag ∅ₜ 3 :=
+  ⟦O3_labeledSym2Graph⟧
+
+lemma O3_eq : O3_Sym2Flag.toFlag = O3_flag := by
+  prove_flag_eq_sym2Flag O3_Sym2Flag using O3_labeledGraph_eq
+
+def E3_Sym2Flag : Sym2Flag ∅ₜ 3 :=
+  ⟦E3_labeledSym2Graph⟧
+
+lemma E3_eq : E3_Sym2Flag.toFlag = E3_flag := by
+  prove_flag_eq_sym2Flag E3_Sym2Flag using E3_labeledGraph_eq
+
+def P3_Sym2Flag : Sym2Flag ∅ₜ 3 :=
+  ⟦P3_labeledSym2Graph⟧
+
+lemma P3_eq : P3_Sym2Flag.toFlag = P3_flag := by
+  prove_flag_eq_sym2Flag P3_Sym2Flag using P3_labeledGraph_eq
+
+def K3_Sym2Flag : Sym2Flag ∅ₜ 3 :=
+  ⟦K3_labeledSym2Graph⟧
+
+lemma K3_eq : K3_Sym2Flag.toFlag = K3_flag := by
+  prove_flag_eq_sym2Flag K3_Sym2Flag using K3_labeledGraph_eq
+
+def O2₁_Sym2Flag : Sym2Flag Sₜ 2 :=
+  ⟦O2₁_labeledSym2Graph⟧
+
+lemma O2₁_eq : O2₁_Sym2Flag.toFlag = O2₁_flag := by
+  prove_flag_eq_sym2Flag O2₁_Sym2Flag using O2₁_labeledGraph_eq
+
+def K2₁_Sym2Flag : Sym2Flag Sₜ 2 :=
+  ⟦K2₁_labeledSym2Graph⟧
+
+lemma K2₁_eq : K2₁_Sym2Flag.toFlag = K2₁_flag := by
+  prove_flag_eq_sym2Flag K2₁_Sym2Flag using K2₁_labeledGraph_eq
+
+def O3₁_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦O3₁_labeledSym2Graph⟧
+
+lemma O3₁_eq : O3₁_Sym2Flag.toFlag = O3₁_flag := by
+  prove_flag_eq_sym2Flag O3₁_Sym2Flag using O3₁_labeledGraph_eq
+
+def E3₁_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦E3₁_labeledSym2Graph⟧
+
+lemma E3₁_eq : E3₁_Sym2Flag.toFlag = E3₁_flag := by
+  prove_flag_eq_sym2Flag E3₁_Sym2Flag using E3₁_labeledGraph_eq
+
+def E3₁'_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦E3₁'_labeledSym2Graph⟧
+
+lemma E3₁'_eq : E3₁'_Sym2Flag.toFlag = E3₁'_flag := by
+  prove_flag_eq_sym2Flag E3₁'_Sym2Flag using E3₁'_labeledGraph_eq
+
+def P3₁_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦P3₁_labeledSym2Graph⟧
+
+lemma P3₁_eq : P3₁_Sym2Flag.toFlag = P3₁_flag := by
+  prove_flag_eq_sym2Flag P3₁_Sym2Flag using P3₁_labeledGraph_eq
+
+def P3₁'_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦P3₁'_labeledSym2Graph⟧
+
+lemma P3₁'_eq : P3₁'_Sym2Flag.toFlag = P3₁'_flag := by
+  prove_flag_eq_sym2Flag P3₁'_Sym2Flag using P3₁'_labeledGraph_eq
+
+def K3₁_Sym2Flag : Sym2Flag Sₜ 3 :=
+  ⟦K3₁_labeledSym2Graph⟧
+
+lemma K3₁_eq : K3₁_Sym2Flag.toFlag = K3₁_flag := by
+  prove_flag_eq_sym2Flag K3₁_Sym2Flag using K3₁_labeledGraph_eq
 
 end MantelTheorem

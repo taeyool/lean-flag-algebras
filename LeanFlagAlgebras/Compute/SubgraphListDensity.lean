@@ -452,30 +452,133 @@ theorem labeledSubgraphListDensity_labeledGraphPairToList_eq
     · exact Fintype.card_fin m₀
     · exact Fintype.card_fin m₁
 
--- theorem labeledSym2InducedSubgraphListDensity_respect_eqv
---     {t : ℕ} {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {n : ℕ} {Vl  : Fin t → ℕ}
---     {Hl₁ Hl₂ : LabeledSym2GraphList σ t Vl}
---     (h_eqv : Hl₁ ≈ Hl₂) (G : LabeledSym2Graph σ n) :
---     labeledSym2InducedSubgraphListDensity Hl₁ G =
---     labeledSym2InducedSubgraphListDensity Hl₂ G
---   := by
---   rw [labeledSym2InducedSubgraphListDensity, labeledSym2InducedSubgraphListDensity]
---   congr
---   exact labeledSubgraphListCount_respect_eqv h_eqv G.toLabeledGraph
+theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    {F F' : LabeledSym2Graph σ m} (hF_eqv : F ∼sf F')
+    {G G' : LabeledSym2Graph σ n} (hG_eqv : G ∼sf G') :
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) G =
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F') G'
+  := by
+  rw [← labeledSubgraphListDensity_eq, ← labeledSubgraphListDensity_eq]
+  apply labeledSubgraphListDensity_respect_eqv
+  · intro i
+    match i with
+    | 0 => exact hF_eqv.some
+  · exact hG_eqv.some
 
-noncomputable def sym2FlagDensity₁
+def labeledSym2InducedSubgraphListDensityLifted₁
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    (F : LabeledSym2Graph σ m) (G : Sym2Flag σ n) : ℚ
+  := by
+  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) H) ?_ G
+  intro _ _ h_eqv
+  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv (labeledSym2GraphEqv.refl F) h_eqv
+
+theorem labeledSym2InducedSubgraphListDensityLifted₁_respect_eqv
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    {F F' : LabeledSym2Graph σ m} (hF_eqv : F ∼sf F')
+    (G : Sym2Flag σ n) :
+    labeledSym2InducedSubgraphListDensityLifted₁ F G =
+    labeledSym2InducedSubgraphListDensityLifted₁ F' G
+  := by
+  dsimp [labeledSym2InducedSubgraphListDensityLifted₁]
+  congr
+  funext H
+  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv hF_eqv (labeledSym2GraphEqv.refl H)
+
+def sym2FlagDensity₁
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
     (F : Sym2Flag σ m) (G : Sym2Flag σ n) : ℚ
-  :=
-  labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F.out) G.out
+  := by
+  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensityLifted₁ H G) ?_ F
+  intro _ _ h_eqv
+  exact labeledSym2InducedSubgraphListDensityLifted₁_respect_eqv h_eqv G
 
--- theorem flagDensity₁_eq
---     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
---     (F : Sym2Flag σ m) (G : Sym2Flag σ n) :
---     flagDensity₁ F.toFlag G.toFlag =
---     labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList H) G
---   := by
---   rw [flagDensity₁_eq_labeledSubgraphListDensity]
---   exact labeledSubgraphListDensity_labeledGraphToList_eq H G
+theorem labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₁
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    (F : LabeledSym2Graph σ m) (G : LabeledSym2Graph σ n) :
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) G = sym2FlagDensity₁ ⟦F⟧ ⟦G⟧
+  := by
+  dsimp [sym2FlagDensity₁, labeledSym2InducedSubgraphListDensityLifted₁]
+
+theorem flagDensity₁_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
+    (F : Sym2Flag σ m) (G : Sym2Flag σ n) :
+    flagDensity₁ F.toFlag G.toFlag = sym2FlagDensity₁ F G
+  := by
+  rcases Quotient.exists_rep F with ⟨F, rfl⟩
+  rcases Quotient.exists_rep G with ⟨G, rfl⟩
+  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₁,
+    ← labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₁]
+  exact labeledSubgraphListDensity_labeledGraphToList_eq F G
+
+theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    {F₀ F₀' : LabeledSym2Graph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
+    {F₁ F₁' : LabeledSym2Graph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
+    {G G' : LabeledSym2Graph σ n} (hG_eqv : G ∼sf G') :
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) G =
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀' F₁') G'
+  := by
+  rw [← labeledSubgraphListDensity_eq, ← labeledSubgraphListDensity_eq]
+  apply labeledSubgraphListDensity_respect_eqv
+  · intro i
+    match i with
+    | 0 => exact hF₀_eqv.some
+    | 1 => exact hF₁_eqv.some
+  · exact hG_eqv.some
+
+def labeledSym2InducedSubgraphListDensityLifted₂
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    (F₀ : LabeledSym2Graph σ m₀) (F₁ : LabeledSym2Graph σ m₁) (G : Sym2Flag σ n) : ℚ
+  := by
+  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) H) ?_ G
+  intro _ _ h_eqv
+  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
+    (labeledSym2GraphEqv.refl F₀) (labeledSym2GraphEqv.refl F₁) h_eqv
+
+theorem labeledSym2InducedSubgraphListDensityLifted₂_respect_eqv
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    {F₀ F₀' : LabeledSym2Graph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
+    {F₁ F₁' : LabeledSym2Graph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
+    (G : Sym2Flag σ n) :
+    labeledSym2InducedSubgraphListDensityLifted₂ F₀ F₁ G =
+    labeledSym2InducedSubgraphListDensityLifted₂ F₀' F₁' G
+  := by
+  dsimp [labeledSym2InducedSubgraphListDensityLifted₂]
+  congr
+  funext H
+  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
+    hF₀_eqv hF₁_eqv (labeledSym2GraphEqv.refl H)
+
+def sym2FlagDensity₂
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) : ℚ
+  := by
+  refine Quotient.lift₂ (fun H₀ H₁ ↦ labeledSym2InducedSubgraphListDensityLifted₂ H₀ H₁ G) ?_ F₀ F₁
+  intro _ _ _ _ h_eqv h_eqv'
+  exact labeledSym2InducedSubgraphListDensityLifted₂_respect_eqv h_eqv h_eqv' G
+
+theorem labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₂
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    (F₀ : LabeledSym2Graph σ m₀) (F₁ : LabeledSym2Graph σ m₁) (G : LabeledSym2Graph σ n) :
+    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) G =
+    sym2FlagDensity₂ ⟦F₀⟧ ⟦F₁⟧ ⟦G⟧
+  := by
+  dsimp [sym2FlagDensity₂, labeledSym2InducedSubgraphListDensityLifted₂]
+
+theorem flagDensity₂_eq
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
+    (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) :
+    flagDensity₂ F₀.toFlag F₁.toFlag G.toFlag = sym2FlagDensity₂ F₀ F₁ G
+  := by
+  rcases Quotient.exists_rep F₀ with ⟨F₀, rfl⟩
+  rcases Quotient.exists_rep F₁ with ⟨F₁, rfl⟩
+  rcases Quotient.exists_rep G with ⟨G, rfl⟩
+  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+  rw [← labeledSubgraphListDensity_eq_flagDensity₂,
+    ← labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₂]
+  exact labeledSubgraphListDensity_labeledGraphPairToList_eq F₀ F₁ G
 
 end Compute
