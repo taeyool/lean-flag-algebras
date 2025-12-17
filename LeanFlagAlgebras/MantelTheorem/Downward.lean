@@ -7,17 +7,6 @@ open Compute
 
 namespace MantelTheorem
 
-/- downward operations -/
-
-lemma type_embed_HEq
-    {T V : Type} {σ : FlagType T} {G G' : SimpleGraph V} {f : σ ↪g G} {f' : σ ↪g G'}
-    (hG : G = G') (hf : f.toFun = f'.toFun)
-    : HEq f f'
-  := by
-  subst hG
-  simp
-  exact RelEmbedding.ext_iff.mpr (congrFun hf)
-
 /-- downward of O3₁ -/
 
 lemma unlabel_O3₁
