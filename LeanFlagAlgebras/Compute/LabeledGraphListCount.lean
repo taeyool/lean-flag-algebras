@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.Compute.Basic
+import LeanFlagAlgebras.Compute.Basic_
 import LeanFlagAlgebras.SubflagListDensity
 /-!
 # ImportantFunction
@@ -30,7 +30,7 @@ def labeledGraphListCount
     -- Among those, choose only those which `f i` and `f j` are disjoint whenever `i ≠ j`.
     let maps₂ : Finset (ι → Finset V) := maps₁.filter fun f ↦ ∀ {i j}, i ≠ j → Disjoint (f i) (f j)
     have hmaps₂ : ∀ f ∈ maps₂, ∀ i, Disjoint (f i) s := by grind
-    -- Among those, choose 
+    -- Among those, choose
     let maps₃ : Finset (ι → Finset V) := maps₂.filter fun f ↦ ∀ i, ∃ emb : (l i).graph ↪g G,
       (∀ x, emb ((l i).type_embed x) = e x) ∧ Finset.univ.image emb = s ∪ f i
     maps₃.card

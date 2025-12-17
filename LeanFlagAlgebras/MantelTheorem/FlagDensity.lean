@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagDefs
+import «LeanFlagAlgebras».Compute.SubgraphListDensity
 
 open FlagAlgebras
 open LabeledSubgraph

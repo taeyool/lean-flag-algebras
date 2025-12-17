@@ -1,5 +1,5 @@
 import «LeanFlagAlgebras».FlagOperators
-import «LeanFlagAlgebras».Compute.Downward
+import «LeanFlagAlgebras».Compute.Basic
 
 open FlagAlgebras
 open SimpleGraph
