@@ -232,16 +232,6 @@ lemma E3_K3_not_iso : ¬ E3_labeledGraph ∼f K3_labeledGraph
 lemma P3_K3_not_iso : ¬ P3_labeledGraph ∼f K3_labeledGraph
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
 
-def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
-  val := [O3_flag, E3_flag, P3_flag, K3_flag]
-  nodup := by
-    simp
-    (repeat' constructor) <;> {
-      intro h
-      have : _ ∼f _ := Quotient.exact h
-      simp_all
-    }
-
 syntax "prove_labeledGraph_iso_emptyType" term "and" term "using" term : tactic
 
 macro_rules
@@ -258,38 +248,6 @@ macro_rules
       simp_all [this]
     })
 
-syntax "prove_labeledGraph_iso_singletonType" term "and" term "on" term "using" term "and" term : tactic
-
-macro_rules
-| `(tactic| prove_labeledGraph_iso_singletonType $source and $target on $labeled_graph using $map1 and $map2) => `(tactic|
-    {
-      have : $source ∼f $target := by
-        apply Nonempty.intro
-        exact {
-          graph_iso := by
-            dsimp [$labeled_graph:term]
-            exact {
-            toFun := $map1
-            invFun := $map2
-            left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
-            right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
-            map_rel_iff' := by
-              dsimp [$labeled_graph:term]
-              intros; constructor
-              · split <;> (intro h; split at h) <;>
-                (first | assumption | symm; assumption | simp at *)
-              · split <;> (intro h; split) <;>
-                (first | contradiction | symm at h; contradiction | simp at *)
-            }
-          type_preserve := by
-            dsimp [$labeled_graph:term]
-            funext i
-            simp_all [Fin.fin_one_eq_zero i]
-        }
-      simp_all [this]
-    })
-
-
 lemma emptyTypeThreeVertexLabeledGraph_eqv
     (G : LabeledGraph ∅ₜ (Fin 3))
     : G ∼f O3_labeledGraph ∨ G ∼f E3_labeledGraph ∨ G ∼f P3_labeledGraph ∨ G ∼f K3_labeledGraph
@@ -300,6 +258,18 @@ lemma emptyTypeThreeVertexLabeledGraph_eqv
   · prove_labeledGraph_iso_emptyType G and P3_labeledGraph using h.some
   · prove_labeledGraph_iso_emptyType G and K3_labeledGraph using h.some
 
+syntax "prove_nodup_of_flagSet" : tactic
+
+macro_rules
+| `(tactic| prove_nodup_of_flagSet) => `(tactic|
+    {
+        simp
+        (repeat' constructor) <;> {
+          intro h
+          have : _ ∼f _ := Quotient.exact h
+          simp_all
+        }
+    })
 
 syntax "prove_flagSet_eq_univ" term "on" term "using" term "and" "[" term,* "]" : tactic
 
@@ -321,6 +291,10 @@ macro_rules
               simp_all [$[$flag:term],*]
            })
     })
+
+def emptyTypeThreeVertexFlagSet : Finset (FlagWithSize ∅ₜ 3) where
+  val := [O3_flag, E3_flag, P3_flag, K3_flag]
+  nodup := by prove_nodup_of_flagSet
 
 theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Finset.univ
   := by
@@ -418,15 +392,36 @@ lemma P3₁_K3₁_not_iso : ¬ P3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
 lemma P3₁'_K3₁_not_iso : ¬ P3₁_labeledGraph 1 ∼f K3₁_labeledGraph 0
   := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
 
-def singletonTypeThreeVertexFlagSet : Finset (FlagWithSize Sₜ 3) where
-  val := [O3₁_flag, E3₁_flag, E3₁'_flag, P3₁_flag, P3₁'_flag, K3₁_flag]
-  nodup := by
-    simp
-    (repeat' constructor) <;> {
-      intro h
-      have : _ ∼f _ := Quotient.exact h
-      simp_all
-    }
+syntax "prove_labeledGraph_iso_singletonType" term "and" term "on" term "using" term "and" term : tactic
+
+macro_rules
+| `(tactic| prove_labeledGraph_iso_singletonType $source and $target on $labeled_graph using $map1 and $map2) => `(tactic|
+    {
+      have : $source ∼f $target := by
+        apply Nonempty.intro
+        exact {
+          graph_iso := by
+            dsimp [$labeled_graph:term]
+            exact {
+            toFun := $map1
+            invFun := $map2
+            left_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+            right_inv := by intro; simp; split <;> (rename_i h; split at h) <;> simp_all
+            map_rel_iff' := by
+              dsimp [$labeled_graph:term]
+              intros; constructor
+              · split <;> (intro h; split at h) <;>
+                (first | assumption | symm; assumption | simp at *)
+              · split <;> (intro h; split) <;>
+                (first | contradiction | symm at h; contradiction | simp at *)
+            }
+          type_preserve := by
+            dsimp [$labeled_graph:term]
+            funext i
+            simp_all [Fin.fin_one_eq_zero i]
+        }
+      simp_all [this]
+    })
 
 lemma singletonType_O3_eqv
     (G : LabeledGraph Sₜ (Fin 3)) (φ : G.graph ≃g O3_graph)
@@ -556,6 +551,10 @@ lemma singletonTypeThreeVertexLabeledGraph_eqv
   · rcases (singletonType_E3_eqv G φ) with h' | h' <;> simp [h']
   · rcases (singletonType_P3_eqv G φ) with h' | h' <;> simp [h']
   · simp [singletonType_K3_eqv G φ]
+
+def singletonTypeThreeVertexFlagSet : Finset (FlagWithSize Sₜ 3) where
+  val := [O3₁_flag, E3₁_flag, E3₁'_flag, P3₁_flag, P3₁'_flag, K3₁_flag]
+  nodup := by prove_nodup_of_flagSet
 
 lemma singletonTypeThreeVertexFlagSet_eq_univ : singletonTypeThreeVertexFlagSet = Finset.univ
   := by
