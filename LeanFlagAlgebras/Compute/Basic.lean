@@ -292,6 +292,15 @@ instance
   show Decidable (G ∼sf G')
   infer_instance
 
+instance
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
+    DecidableEq (Sym2Flag σ n)
+  := by
+  refine @Quotient.decidableEq _ _ ?_
+  intro G G'
+  show Decidable (G ∼sf G')
+  infer_instance
+
 def LabeledSym2Graph.toFlag
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G : LabeledSym2Graph σ n) : Flag σ (Fin n)
@@ -310,6 +319,18 @@ def Sym2Flag.toFlag
     Flag σ (Fin n)
   :=
   Quotient.lift LabeledSym2Graph.toFlag LabeledSym2Graph.toFlag_respect_eqv G
+
+theorem Sym2Flag.toFlag_injective
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ}
+    (F F' : Sym2Flag σ n) (h : F.toFlag = F'.toFlag) :
+    F = F'
+  := by
+  rcases Quotient.exists_rep F with ⟨G, rfl⟩
+  rcases Quotient.exists_rep F' with ⟨G', rfl⟩
+  apply Quotient.sound
+  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag] at h
+  have h' : G.toLabeledGraph ∼f G'.toLabeledGraph := Quotient.exact h
+  exact h'
 
 end Compute
 

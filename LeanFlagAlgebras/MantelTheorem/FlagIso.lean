@@ -3,6 +3,7 @@ import Mathlib.Tactic.FinCases
 
 
 open FlagAlgebras
+open Compute
 
 namespace MantelTheorem
 
@@ -293,6 +294,17 @@ theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Fins
   := by
   prove_flagSet_eq_univ emptyTypeThreeVertexFlagSet on FlagAlgebras.Flag ∅ₜ (Fin 3)
     using emptyTypeThreeVertexLabeledGraph_eqv and [O3_flag, E3_flag, P3_flag, K3_flag]
+
+def emptyTypeThreeVertexSym2FlagSet : Finset (Sym2Flag ∅ₜ 3) where
+  val := [O3_Sym2Flag, E3_Sym2Flag, P3_Sym2Flag, K3_Sym2Flag]
+  nodup := by native_decide
+
+theorem emptyTypeThreeVertexSym2FlagSet_eq_univ : emptyTypeThreeVertexSym2FlagSet = Finset.univ
+  := by
+  native_decide
+
+def emptyTypeThreeVertexFlagSet' : Finset (FlagWithSize ∅ₜ 3) :=
+  Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } emptyTypeThreeVertexSym2FlagSet
 
 /- labeledGraphs with singleton type -/
 

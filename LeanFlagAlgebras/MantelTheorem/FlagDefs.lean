@@ -115,6 +115,10 @@ theorem K3_graph_12 : K3_graph.Adj 1 2 := by rintro (_ | _)
 @[simp]
 theorem K3_graph_21 : K3_graph.Adj 2 1 := by rintro (_ | _)
 
+instance : DecidableRel ∅ₜ.Adj := by
+  intro a b
+  exact .isFalse (by aesop)
+
 def O2_labeledGraph : LabeledGraph ∅ₜ (Fin 2) where
   graph := O2_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj O2_graph.Adj
