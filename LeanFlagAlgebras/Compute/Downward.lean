@@ -65,4 +65,28 @@ theorem downwardNormalizingFactor_labeledGraph_eq
   congr
   exact isomorphismCount_eq G
 
+theorem downwardNormalizingFactor_labeledSym2Graph_respect_eqv
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
+    {G G' : LabeledSym2Graph σ n} (h_eqv : G ∼sf G') :
+    downwardNormalizingFactor_labeledSym2Graph G = downwardNormalizingFactor_labeledSym2Graph G'
+  := by
+  rw [← downwardNormalizingFactor_labeledGraph_eq, ← downwardNormalizingFactor_labeledGraph_eq]
+  exact downwardNormalizingFactor_labeledGraph_respect_eqv h_eqv
+
+def downwardNormalizingFactor_Sym2Flag
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ} (F : Sym2Flag σ n) : ℚ
+  := by
+  refine Quotient.lift (fun (G : LabeledSym2Graph σ n) ↦ downwardNormalizingFactor_labeledSym2Graph G) ?_ F
+  intro G G' h_eqv
+  exact downwardNormalizingFactor_labeledSym2Graph_respect_eqv h_eqv
+
+theorem downwardNormalizingFactor_eq
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} [DecidableRel σ.Adj] {n : ℕ}
+    (F : Sym2Flag σ n) :
+    downwardNormalizingFactor F.toFlag = downwardNormalizingFactor_Sym2Flag F
+  := by
+  rcases Quotient.exists_rep F with ⟨G, rfl⟩
+  dsimp [downwardNormalizingFactor, downwardNormalizingFactor_Sym2Flag, Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+  exact downwardNormalizingFactor_labeledGraph_eq G
+
 end Compute
