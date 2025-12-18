@@ -30,10 +30,9 @@ lemma all_fun_from_Fin1_to_Fin3
     funext x
     rw [Fin.fin_one_eq_zero x]
   rw [h_const]
-  match f 0 with
-  | 0 => left; rfl
-  | 1 => right; left; rfl
-  | 2 => right; right; rfl
+  match f 0 with | 0 | 1 | 2 => simp only [Fin.isValue, true_or, or_true]
+
+/- graphs -/
 
 noncomputable instance {V : Type} [Fintype V] (G : SimpleGraph V) : Fintype G.edgeSet :=
   Fintype.ofFinite G.edgeSet
@@ -108,8 +107,6 @@ theorem K3_graph_edgeSet : K3_graph.edgeSet = { Sym2.mk (0, 1), Sym2.mk (0, 2), 
 @[simp]
 theorem K3_graph_edgeSet_card : Fintype.card (K3_graph.edgeSet) = 3 := by
   simp
-
-/- graphs -/
 
 lemma diff_cards_of_edge_sets_imply_non_iso {V W : Type} [Fintype V] [Fintype W]
     (G₁ : SimpleGraph V) (G₂ : SimpleGraph W)
@@ -196,7 +193,7 @@ lemma threeVertexGraph_iso
   . prove_graph_iso G and O3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
-/- labeledGraph with empty type -/
+/- labeledGraphs with empty type -/
 
 @[simp]
 lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph := by
@@ -297,7 +294,7 @@ theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Fins
   prove_flagSet_eq_univ emptyTypeThreeVertexFlagSet on FlagAlgebras.Flag ∅ₜ (Fin 3)
     using emptyTypeThreeVertexLabeledGraph_eqv and [O3_flag, E3_flag, P3_flag, K3_flag]
 
-/- labeledGraph with singleton type -/
+/- labeledGraphs with singleton type -/
 
 @[simp]
 lemma O3₁_E3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 0 := by
