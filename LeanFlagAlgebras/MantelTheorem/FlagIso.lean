@@ -196,7 +196,7 @@ lemma threeVertexGraph_iso
   . prove_graph_iso G and O3_graph
       using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
 
-/- flags with empty type -/
+/- labeledGraph with empty type -/
 
 @[simp]
 lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph := by
@@ -297,7 +297,7 @@ theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Fins
   prove_flagSet_eq_univ emptyTypeThreeVertexFlagSet on FlagAlgebras.Flag ∅ₜ (Fin 3)
     using emptyTypeThreeVertexLabeledGraph_eqv and [O3_flag, E3_flag, P3_flag, K3_flag]
 
-/- flags with singleton type -/
+/- labeledGraph with singleton type -/
 
 @[simp]
 lemma O3₁_E3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 0 := by
@@ -436,7 +436,7 @@ lemma singletonType_E3_eqv
       (¬ G.graph.Adj 0 1 ∧ G.graph.Adj 0 2 ∧ ¬ G.graph.Adj 1 2) ∨
       (¬ G.graph.Adj 0 1 ∧ ¬ G.graph.Adj 0 2 ∧ G.graph.Adj 1 2) := by get_Adj_from_graph_iso_on_Fin3 φ
   rcases h with ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩ | ⟨h₀₁, h₀₂, h₁₂⟩
-  match ht : G.type_embed 0 with
+  . match ht : G.type_embed 0 with
     | 0 =>
       prove_labeledGraph_iso_singletonType G and (E3₁_labeledGraph 0) on E3₁_labeledGraph
         using (fun | 0 => 0 | 1 => 1 | 2 => 2) and (fun | 0 => 0 | 1 => 1 | 2 => 2)
