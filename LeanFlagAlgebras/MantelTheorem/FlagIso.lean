@@ -198,70 +198,34 @@ lemma threeVertexGraph_iso
 
 /- flags with empty type -/
 
-lemma labeledGraph_not_iso_from_graph_not_iso
-    {ℓ : ℕ} {σ : FlagType (Fin ℓ)} {V : Type} [Fintype V]
-    {G₁ : LabeledGraph σ V} {G₂ : LabeledGraph σ V}
-    (h : ¬ Nonempty (G₁.graph ≃g G₂.graph))
-    : ¬ (G₁ ∼f G₂)
-  := by
-  intro h_G
-  exact h (Nonempty.intro h_G.some.graph_iso)
-
-/-
-@[simp]
-lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
-
-@[simp]
-lemma O3_P3_not_iso : ¬ O3_labeledGraph ∼f P3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso O3_P3_graph_not_iso
-
-@[simp]
-lemma O3_K3_not_iso : ¬ O3_labeledGraph ∼f K3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso O3_K3_graph_not_iso
-
-@[simp]
-lemma E3_P3_not_iso : ¬ E3_labeledGraph ∼f P3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
-
-@[simp]
-lemma E3_K3_not_iso : ¬ E3_labeledGraph ∼f K3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso E3_K3_graph_not_iso
-
-@[simp]
-lemma P3_K3_not_iso : ¬ P3_labeledGraph ∼f K3_labeledGraph
-  := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
--/
-
--- Gyeongwon: non-isomorphism can also be automatically proved by native_decide
 @[simp]
 lemma O3_E3_not_iso : ¬ O3_labeledGraph ∼f E3_labeledGraph := by
-  rw [← O3_eq, ← E3_eq]
+  rw [← O3_labeledGraph_eq, ← E3_labeledGraph_eq]
   native_decide
 
 @[simp]
 lemma O3_P3_not_iso : ¬ O3_labeledGraph ∼f P3_labeledGraph := by
-  rw [← O3_eq, ← P3_eq]
+  rw [← O3_labeledGraph_eq, ← P3_labeledGraph_eq]
   native_decide
 
 @[simp]
 lemma O3_K3_not_iso : ¬ O3_labeledGraph ∼f K3_labeledGraph := by
-  rw [← O3_eq, ← K3_eq]
+  rw [← O3_labeledGraph_eq, ← K3_labeledGraph_eq]
   native_decide
 
 @[simp]
 lemma E3_P3_not_iso : ¬ E3_labeledGraph ∼f P3_labeledGraph := by
-  rw [← E3_eq, ← P3_eq]
+  rw [← E3_labeledGraph_eq, ← P3_labeledGraph_eq]
   native_decide
 
 @[simp]
 lemma E3_K3_not_iso : ¬ E3_labeledGraph ∼f K3_labeledGraph := by
-  rw [← E3_eq, ← K3_eq]
+  rw [← E3_labeledGraph_eq, ← K3_labeledGraph_eq]
   native_decide
 
 @[simp]
 lemma P3_K3_not_iso : ¬ P3_labeledGraph ∼f K3_labeledGraph := by
-  rw [← P3_eq, ← K3_eq]
+  rw [← P3_labeledGraph_eq, ← K3_labeledGraph_eq]
   native_decide
 
 syntax "prove_labeledGraph_iso_emptyType" term "and" term "using" term : tactic
@@ -336,93 +300,79 @@ theorem emptyTypeThreeVertexFlagSet_eq_univ : emptyTypeThreeVertexFlagSet = Fins
 /- flags with singleton type -/
 
 @[simp]
-lemma O3₁_E3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
+lemma O3₁_E3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 0 := by
+  rw [← O3₁_labeledGraph_eq, ← E3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma O3₁_E3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
-  := labeledGraph_not_iso_from_graph_not_iso O3_E3_graph_not_iso
+lemma O3₁_E3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2 := by
+  rw [← O3₁_labeledGraph_eq, ← E3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma O3₁_P3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso O3_P3_graph_not_iso
+lemma O3₁_P3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0 := by
+  rw [← O3₁_labeledGraph_eq, ← P3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma O3₁_P3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
-  := labeledGraph_not_iso_from_graph_not_iso O3_P3_graph_not_iso
+lemma O3₁_P3₁'_not_iso : ¬ O3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1 := by
+  rw [← O3₁_labeledGraph_eq, ← P3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma O3₁_K3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso O3_K3_graph_not_iso
+lemma O3₁_K3₁_not_iso : ¬ O3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0 := by
+  rw [← O3₁_labeledGraph_eq, ← K3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁_E3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2
-  := by
-  intro h
-  let φ := h.some
-  let φG := φ.graph_iso
-  have h₀ : φG 0 = 2 := by
-    calc
-      _ = φG ((E3₁_labeledGraph 0).type_embed 0) := rfl
-      _ = (φG ∘ (E3₁_labeledGraph 0).type_embed) 0 := rfl
-      _ = (E3₁_labeledGraph 2).type_embed 0 := by rw [φ.type_preserve]
-      _ = 2 := rfl
-  have : E3_graph.Adj 2 (φG 1) := by rw [←h₀]; exact (SimpleGraph.Iso.map_adj_iff φG).mpr E3_graph_01
-  match h₁ : φG 1 with | 0 | 1 | 2 => rw [h₁] at this; simp_all
+lemma E3₁_E3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f E3₁_labeledGraph 2 := by
+  rw [← E3₁_labeledGraph_eq, ← E3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁_P3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
+lemma E3₁_P3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 0 := by
+  rw [← E3₁_labeledGraph_eq, ← P3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁_P3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
-  := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
+lemma E3₁_P3₁'_not_iso : ¬ E3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1 := by
+  rw [← E3₁_labeledGraph_eq, ← P3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁_K3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso E3_K3_graph_not_iso
+lemma E3₁_K3₁_not_iso : ¬ E3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0 := by
+  rw [← E3₁_labeledGraph_eq, ← K3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁'_P3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
+lemma E3₁'_P3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 0 := by
+  rw [← E3₁'_labeledGraph_eq, ← P3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁'_P3₁'_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 1
-  := labeledGraph_not_iso_from_graph_not_iso E3_P3_graph_not_iso
+lemma E3₁'_P3₁'_not_iso : ¬ E3₁_labeledGraph 2 ∼f P3₁_labeledGraph 1 := by
+  rw [← E3₁'_labeledGraph_eq, ← P3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma E3₁'_K3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f K3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso E3_K3_graph_not_iso
+lemma E3₁'_K3₁_not_iso : ¬ E3₁_labeledGraph 2 ∼f K3₁_labeledGraph 0 := by
+  rw [← E3₁'_labeledGraph_eq, ← K3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma P3₁_P3₁'_not_iso : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1
-  := by
-  intro h
-  let φ := h.some.symm
-  let φG := φ.graph_iso
-  have h₀ : φG 1 = 0 := by
-    calc
-      _ = φG ((P3₁_labeledGraph 1).type_embed 0) := rfl
-      _ = (φG ∘ (P3₁_labeledGraph 1).type_embed) 0 := rfl
-      _ = (P3₁_labeledGraph 0).type_embed 0 := by rw [φ.type_preserve]
-      _ = 0 := rfl
-  have : P3_graph.Adj (φG 1) (φG 2) := by
-    match h₂ : φG 2 with
-    | 0 =>
-        have : φG 1 = φG 2 := by rw [h₀, h₂]
-        have := φG.injective this
-        contradiction
-    | 1 | 2 => rw [h₀]; simp_all
-  have := (SimpleGraph.Iso.map_adj_iff φG).mp this
-  simp_all [P3₁_labeledGraph]
+lemma P3₁_P3₁'_not_iso : ¬ P3₁_labeledGraph 0 ∼f P3₁_labeledGraph 1 := by
+  rw [← P3₁_labeledGraph_eq, ← P3₁'_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma P3₁_K3₁_not_iso : ¬ P3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
+lemma P3₁_K3₁_not_iso : ¬ P3₁_labeledGraph 0 ∼f K3₁_labeledGraph 0 := by
+  rw [← P3₁_labeledGraph_eq, ← K3₁_labeledGraph_eq]
+  native_decide
 
 @[simp]
-lemma P3₁'_K3₁_not_iso : ¬ P3₁_labeledGraph 1 ∼f K3₁_labeledGraph 0
-  := labeledGraph_not_iso_from_graph_not_iso P3_K3_graph_not_iso
+lemma P3₁'_K3₁_not_iso : ¬ P3₁_labeledGraph 1 ∼f K3₁_labeledGraph 0 := by
+  rw [← P3₁'_labeledGraph_eq, ← K3₁_labeledGraph_eq]
+  native_decide
 
 syntax "get_Adj_from_graph_iso_on_Fin3" term : tactic
 
