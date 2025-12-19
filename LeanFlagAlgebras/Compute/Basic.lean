@@ -385,4 +385,14 @@ theorem Sym2Flag.toFlag_toSym2Flag_eq
   apply Quotient.sound
   rw [F.toLabeledGraph_toLabeledSym2Graph_eq]
 
+theorem Sym2Flag.toFlag_univ_eq_univ
+    {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
+    Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } (Finset.univ : Finset (Sym2Flag σ n))
+    = (Finset.univ : Finset (Flag σ (Fin n)))
+  := by
+  ext F
+  simp only [Finset.mem_map, Finset.mem_univ, Function.Embedding.coeFn_mk, true_and, iff_true]
+  use F.toSym2Flag
+  exact Flag.toSym2Flag_toFlag_eq F
+
 end Compute

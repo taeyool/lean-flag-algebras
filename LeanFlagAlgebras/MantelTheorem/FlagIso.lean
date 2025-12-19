@@ -306,6 +306,17 @@ theorem emptyTypeThreeVertexSym2FlagSet_eq_univ : emptyTypeThreeVertexSym2FlagSe
 def emptyTypeThreeVertexFlagSet' : Finset (FlagWithSize ∅ₜ 3) :=
   Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } emptyTypeThreeVertexSym2FlagSet
 
+lemma emptyTypeThreeVertexFlagSet_eq : emptyTypeThreeVertexFlagSet = emptyTypeThreeVertexFlagSet' := by
+  ext F
+  simp [emptyTypeThreeVertexFlagSet, emptyTypeThreeVertexFlagSet', emptyTypeThreeVertexSym2FlagSet]
+  rw [O3_eq, E3_eq, P3_eq, K3_eq]
+  grind
+
+theorem emptyTypeThreeVertexFlagSet_eq_univ' : emptyTypeThreeVertexFlagSet = Finset.univ
+  := by
+  rw [emptyTypeThreeVertexFlagSet_eq, emptyTypeThreeVertexFlagSet', emptyTypeThreeVertexSym2FlagSet_eq_univ]
+  exact Sym2Flag.toFlag_univ_eq_univ
+
 /- labeledGraphs with singleton type -/
 
 @[simp]
@@ -552,5 +563,27 @@ lemma singletonTypeThreeVertexFlagSet_eq_univ : singletonTypeThreeVertexFlagSet 
   := by
   prove_flagSet_eq_univ singletonTypeThreeVertexFlagSet on FlagAlgebras.Flag Sₜ (Fin 3)
     using singletonTypeThreeVertexLabeledGraph_eqv and [E3₁'_flag, E3₁_flag, K3₁_flag, O3₁_flag, P3₁'_flag, P3₁_flag]
+
+def singletonTypeThreeVertexSym2FlagSet : Finset (Sym2Flag Sₜ 3) where
+  val := [O3₁_Sym2Flag, E3₁_Sym2Flag, E3₁'_Sym2Flag, P3₁_Sym2Flag, P3₁'_Sym2Flag, K3₁_Sym2Flag]
+  nodup := by native_decide
+
+theorem singletonTypeThreeVertexSym2FlagSet_eq_univ : singletonTypeThreeVertexSym2FlagSet = Finset.univ
+  := by
+  native_decide
+
+def singletonTypeThreeVertexFlagSet' : Finset (FlagWithSize Sₜ 3) :=
+  Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } singletonTypeThreeVertexSym2FlagSet
+
+lemma singletonTypeThreeVertexFlagSet_eq : singletonTypeThreeVertexFlagSet = singletonTypeThreeVertexFlagSet' := by
+  ext F
+  simp [singletonTypeThreeVertexFlagSet, singletonTypeThreeVertexFlagSet', singletonTypeThreeVertexSym2FlagSet]
+  rw [O3₁_eq, E3₁_eq, E3₁'_eq, P3₁_eq, P3₁'_eq, K3₁_eq]
+  grind
+
+theorem singletonTypeThreeVertexFlagSet_eq_univ' : singletonTypeThreeVertexFlagSet = Finset.univ
+  := by
+  rw [singletonTypeThreeVertexFlagSet_eq, singletonTypeThreeVertexFlagSet', singletonTypeThreeVertexSym2FlagSet_eq_univ]
+  exact Sym2Flag.toFlag_univ_eq_univ
 
 end MantelTheorem
