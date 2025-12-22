@@ -5,6 +5,7 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{dsfont}
+\usepackage{stmaryrd}
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{cor}[thm]{Corollary}
@@ -15,6 +16,14 @@
 \newtheorem{example}[thm]{Example}
 
 \newcommand*{\defeq}{\stackrel{\textrm{def}}{=}}
+
+\newcommand*{\lfalse}{\mathbf{false}}
+\newcommand*{\ltrue}{\mathbf{true}}
+
+\newcommand*{\sfalse}{\textit{false}}
+\newcommand*{\strue}{\textit{true}}
+
+\newcommand*{\db}[1]{\llbracket #1 \rrbracket}
 
 \title{Yet Another Survey on Razborov's Flag Algebras}
 \author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
@@ -33,6 +42,84 @@
 \item Variants. Lovasz-Szegedy's approach. Other variant. 
 \item Opportunities for future research.
 \end{itemize}
+
+Throughout the paper, we refer to finite simple graphs simply as graphs. For a graph $G$, we let $V(G)$ 
+and $E(G)$ be the vertex set and the edge set of $G$, respectively, and write $v(G)$ and $e(G)$ 
+for their cardinalities, i.e., the number of vertices and that of edges. Also, for a set $U \subseteq V(G)$, we define $G[U]$ to be the subgraph of $G$ induced by $U$. 
+
+\section{Flag Algebras Logically}
+
+Induced homomorphism density:
+\[
+p(H, G) \defeq \Pr(G[U] \simeq H)
+\]
+where $U$ is a uniformly random $v(H)$-subset of $V(G)$.
+
+A sequence of graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$, and it is \emph{convergent} if the sequence is increasing and the limit $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. 
+A function $\phi$ from the set of all graphs to $[0,1]$ is a \emph{limiting density map} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. Let 
+$\Phi$ be the set of all limiting density maps.
+
+Syntax:
+\begin{align*}
+E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
+\\
+A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, A \,\mid\, A \lor A 
+\end{align*}
+where $G$ is a graph, and $r \in \mathbb{R}$.
+
+Semantics:
+\[
+\db{E} : \Phi \to \mathbb{R}, 
+\qquad
+\db{A} : \Phi \to \{\strue,\sfalse\}
+\]
+\begin{align*}
+\db{0}\phi & \defeq 0,
+&
+\db{1}\phi & \defeq 1,
+\\
+\db{H}\phi & \defeq \phi(H),
+&
+\db{r \cdot E}\phi & \defeq r \cdot
+\db{E}\phi,
+\\
+\db{E_1 + E_2}\phi & \defeq
+\db{E_1}\phi + \db{E_2}\phi,
+&
+\db{E_1 \times E_2}\phi & \defeq
+\db{E_1}\phi \cdot \db{E_2}\phi.
+\end{align*}
+Also,
+\begin{align*}
+\db{\lfalse}\phi & \defeq \sfalse,
+&
+\db{\ltrue}\phi & \defeq \strue,
+\\
+\db{E_1 \geq E_2}\phi & \defeq
+\begin{cases}
+    \strue & \text{if } \db{E_1}\phi \geq \db{E_2}\phi, 
+    \\ 
+    \sfalse & \text{otherwise},
+\end{cases}
+&
+\db{\neg A}\phi & \defeq
+\begin{cases}
+    \strue & \text{if } \db{A}\phi = \sfalse, 
+    \\ 
+    \sfalse & \text{otherwise},\end{cases}
+\\
+\db{A_1 \lor A_2}\phi & \defeq 
+\begin{cases}
+    \strue & \text{if } \db{A_1}\phi = \strue \text{ or } \db{A_2}\phi = \strue, 
+    \\ 
+    \sfalse & \text{otherwise}.
+\end{cases}
+\end{align*}
+
+Graphons.
+
+More general cases.
+\section{Reasoning with Flag Algebras}
 
 
 \end{document}
