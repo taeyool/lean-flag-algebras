@@ -76,8 +76,12 @@ in $[0,1]^{\mathcal{G}}$. The reader might be worried that this definition of co
 A function $\phi$ from the set of all graphs to $[0,1]$ is a \emph{limiting density map} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. We write 
 $\Phi$ for the set of all limiting density maps. A good mental picture (which can be formalised in terms of graphons) is that a limiting density map $\phi$ comes from an undirected graph with a continuum number of vertices, and $\phi(H)$ is the density of $H$ in this graph. Note that every convergent sequence $(G_n)_n$ induces a unique limiting density map $\phi$, but a limiting density map $\phi$ can be induced by multiple convergent sequences.
 
+\hy{Some example extremal problems in terms of limiting density maps.}
+
+A main message of this survey is that the flag algebra framework is a logic for reasoning about limiting density maps in $\Phi$. In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
+
 \section{Syntax and Semantics of Flag Algebra}
-Syntax:
+The syntax of flag algebra consists of two types of expressions: \emph{arithmetic expressions} $E$ and \emph{assertions} $A$. Arithmetic expressions denote real numbers obtained from the densities of pattern graphs in a limiting density map, while assertions denote truth values obtained from comparisons between arithmetic expressions. Formally, the syntax is defined as follows.
 \begin{align*}
 E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
 \\
