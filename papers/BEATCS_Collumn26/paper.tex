@@ -31,7 +31,7 @@
 \newcommand{\hy}[1]{\cmt{HY}{#1}{red}}
 \newcommand{\shp}[1]{\cmt{SP}{#1}{purple}}
 
-\title{Yet Another Survey on Razborov's Flag Algebras}
+\title{Yet Another Survey on Razborov's Flag Algebra}
 \author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
 \date{\today}
 
@@ -40,38 +40,41 @@
 
 \section{Introduction}
 
-\hy{Space filler. To be expanded later.}
+\hy{Space filler. To be expanded later. Make sure that we do not assume too much background knowledge on extremal graph theory. Also showcasing the use of flag algebra in solving some problem in extremal graph theory would be useful.}
 
-Razborov's flag algebras \cite{Razborov2007} is a powerful framework for
+Razborov's flag algebra \cite{Razborov2007} is a powerful framework for
 reasoning about asymptotic densities in combinatorial structures, especially
 in extremal graph theory. Since its introduction, it has been successfully
 applied to solve several longstanding open problems, such as the minimum triangle density
-problem under a fixed edge density \cite{Razborov2008} and the minimum pentagon density problem under the same constraint \hy{Citation}. Moreover, the flag algebra method has been
+problem \cite{Razborov2008} and the minimum pentagon density problem \hy{Citation}. Moreover, the flag algebra framework has been
 implemented in computer programs, enabling researchers to obtain numerical
-bounds for various extremal problems, some of which resolve open conjectures \hy{Citation}.
+bounds for various extremal problems, some of which even resolved open conjectures \hy{Citation}.
 
-This is a yet another survey on Razborov's flag algebras, which is intended to be more accessible to
+This is a survey on Razborov's flag algebra targetted at
 readers with a background in theoretical computer science, particularly those
 interested in programming languages and formal methods. While most articles on flag algebras emphasise
-the algebraic aspect of the flag-algebra framework, we focus on its logic aspect and present the syntax, semantics, and reasoning principles of flag algebras in a manner similar to formal logic systems.
+the algebraic aspect of the flag algebra framework, we focus on its logic aspect and present the syntax, semantics, and reasoning principles of the framework in a manner similar to formal logic systems.
 
-Throughout the paper, we refer to finite simple graphs simply as graphs. For a graph $G$, we let $V(G)$ 
-and $E(G)$ be the vertex set and the edge set of $G$, respectively, and write $v(G)$ and $e(G)$ 
-for their cardinalities, i.e., the number of vertices and that of edges. Also, for a set $U \subseteq V(G)$, we define $G[U]$ to be the subgraph of $G$ induced by $U$. 
+Throughout the paper, we are concerned with finite simple graphs $G$ whose vertex set is a subset of $\mathbb{N}$, and call them simply as graphs. For a graph $G$, we let $V(G)$ and $E(G)$ be the vertex set and the edge set of $G$, respectively, and write $v(G)$ and $e(G)$ 
+for their cardinalities. Also, for a set $U \subseteq V(G)$, we define $G[U]$ to be the subgraph of $G$ induced by $U$. Finally, we use $\mathcal{G}$ to mean the set of all graphs.
 
+\section{Induced Subgraph Density and Limiting Density Maps}
 
-\section{Flag Algebras Logically}
-
-Induced homomorphism density:
+For graphs $H$ and $G$, the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$ is defined as
 \[
 p(H, G) \defeq \Pr(G[U] \simeq H)
 \]
-where $U$ is a uniformly random $v(H)$-subset of $V(G)$.
+where $U$ is a uniformly random subset of $V(G)$ with size $v(H)$, and $\simeq$ denotes the graph isomorphism. 
 
-A sequence of graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$, and it is \emph{convergent} if the sequence is increasing and the limit $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. 
+The density function $p$ provides two new ways of viewing graphs. First, a graph $G$ can be understood as a feature vector $p(\_,G)$ residing in an infinite-dimensional space indexed by all graphs in $\mathcal{G}$. \hy{Perhaps this feature reprentation has nice properties, like injectivity. Check this.} Second, the partially applied function $p(H, \_)$ for a given graph $H$ can be seen as a statistic measuring how frequently $H$ appears as an induced subgraph in other graphs. 
+
+Let $(G_n)_{n \in \mathbb{N}}$ be a sequence of graphs. The sequence is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if the sequence is increasing and the limit $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. 
+
 A function $\phi$ from the set of all graphs to $[0,1]$ is a \emph{limiting density map} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. Let 
 $\Phi$ be the set of all limiting density maps.
 
+
+\section{Syntax and Semantics of Flag Algebra}
 Syntax:
 \begin{align*}
 E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
