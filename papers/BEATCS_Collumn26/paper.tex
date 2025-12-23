@@ -81,11 +81,11 @@ $\Phi$ for the set of all limiting density maps. A good mental picture (which ca
 A main message of this survey is that the flag algebra framework is a logic for reasoning about limiting density maps in $\Phi$. In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
 
 \section{Syntax and Semantics of Flag Algebra}
-The syntax of flag algebra consists of two types of expressions: \emph{arithmetic expressions} $E$ and \emph{assertions} $A$. Arithmetic expressions denote real numbers obtained from the densities of pattern graphs in a limiting density map, while assertions denote truth values obtained from comparisons between arithmetic expressions. Formally, the syntax is defined as follows.
+The syntax of flag algebra consists of two types of expressions: \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions denote real numbers obtained from the densities of pattern graphs in a limiting density map, while assertions denote truth values obtained from comparisons between density expressions. Formally, the syntax is defined as follows.
 \begin{align*}
-E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
+\text{Density Expressions}\quad E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
 \\
-A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, A \,\mid\, A \lor A 
+\text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, A \,\mid\, A \lor A 
 \end{align*}
 where $G$ is a graph, and $r \in \mathbb{R}$.
 
