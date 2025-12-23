@@ -6,6 +6,7 @@
 \usepackage{amsthm}
 \usepackage{dsfont}
 \usepackage{stmaryrd}
+\usepackage{xcolor}
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{cor}[thm]{Corollary}
@@ -25,6 +26,11 @@
 
 \newcommand*{\db}[1]{\llbracket #1 \rrbracket}
 
+\newcommand{\cmt}[3]{{{\color{#3}{\bf [}{\bf #1:} {\it #2}{\bf ]}}}}
+\newcommand{\gj}[1]{\cmt{GJ}{#1}{blue}}
+\newcommand{\hy}[1]{\cmt{HY}{#1}{red}}
+\newcommand{\shp}[1]{\cmt{SP}{#1}{purple}}
+
 \title{Yet Another Survey on Razborov's Flag Algebras}
 \author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
 \date{\today}
@@ -34,18 +40,25 @@
 
 \section{Introduction}
 
-\begin{itemize}
-\item Brief intro to Flag Algebras. Success stories. 
-\item Why do we need another survey? More for the audience of the trace B of theory. In particular,programming-language friendly.
-\item Syntax and semantics. Examples.
-\item Reasoning principles. 
-\item Variants. Lovasz-Szegedy's approach. Other variant. 
-\item Opportunities for future research.
-\end{itemize}
+\hy{Space filler. To be expanded later.}
+
+Razborov's flag algebras \cite{Razborov2007} is a powerful framework for
+reasoning about asymptotic densities in combinatorial structures, especially
+in extremal graph theory. Since its introduction, it has been successfully
+applied to solve several longstanding open problems, such as the minimum triangle density
+problem under a fixed edge density \cite{Razborov2008} and the minimum pentagon density problem under the same constraint \hy{Citation}. Moreover, the flag algebra method has been
+implemented in computer programs, enabling researchers to obtain numerical
+bounds for various extremal problems, some of which resolve open conjectures \hy{Citation}.
+
+This is a yet another survey on Razborov's flag algebras, which is intended to be more accessible to
+readers with a background in theoretical computer science, particularly those
+interested in programming languages and formal methods. While most articles on flag algebras emphasise
+the algebraic aspect of the flag-algebra framework, we focus on its logic aspect and present the syntax, semantics, and reasoning principles of flag algebras in a manner similar to formal logic systems.
 
 Throughout the paper, we refer to finite simple graphs simply as graphs. For a graph $G$, we let $V(G)$ 
 and $E(G)$ be the vertex set and the edge set of $G$, respectively, and write $v(G)$ and $e(G)$ 
 for their cardinalities, i.e., the number of vertices and that of edges. Also, for a set $U \subseteq V(G)$, we define $G[U]$ to be the subgraph of $G$ induced by $U$. 
+
 
 \section{Flag Algebras Logically}
 
@@ -121,5 +134,18 @@ Graphons.
 More general cases.
 \section{Reasoning with Flag Algebras}
 
+\section{Plan}
+\begin{itemize}
+\item Brief intro to Flag Algebras. Success stories. 
+\item Why do we need another survey? More for the audience of the trace B of theory. In particular,programming-language friendly.
+\item Syntax and semantics. Examples.
+\item Reasoning principles. 
+\item Variants. Lovasz-Szegedy's approach. Other variant. 
+\item Opportunities for future research.
+\end{itemize}
+
+
+\bibliographystyle{plain} % Styles: plain, abbrv, alpha, unsrt
+\bibliography{references}
 
 \end{document}
