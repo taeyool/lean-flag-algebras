@@ -95,6 +95,12 @@ A \land A' \defeq \neg (\neg A \lor \neg A')
 \qquad\text{and}\qquad
 A \Rightarrow A' \defeq \neg A \lor A'.
 \]
+We also note that we can define other comparison operators such as $=$, $>$, $\leq$, and $<$ using $\geq$ and the logical connectives. For instance,
+\[
+(E_1 = E_1) \defeq (E_1 \geq E_2) \land (E_2 \geq E_1)
+\quad\text{and}\quad
+(E_1 < E_2) \defeq \neg (E_1 \geq E_2).
+\]
 
 The formal semantics of density expressions $E$ and assertions $A$ has the following form, where $E$ denotes a function $\db{E}$ from limiting graphs to real numbers, and $A$ denotes a function $\db{A}$ from limiting graphs to booleans:
 \[
@@ -145,14 +151,29 @@ Also,
     \sfalse & \text{otherwise}.
 \end{cases}
 \end{align*}
+We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
+and it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
-Using this logic, we can express various properties of limiting graphs. For instance, we can express that if a limiting graph $\phi$ is triangle-free, then the edge density of $\phi$ is at most $1/2$ as follows:
+Using this logic, we can express various properties of limiting graphs. For instance, we can express that if a limiting graph $\phi$ is triangle-free, then the edge density of $\phi$ is at most $1/2$ as the validity of the following assertion:
 \[
 K_3 = 0 \Rightarrow K_2 \leq \tfrac{1}{2}.
 \]
-This is a version of the well-known Mantel's theorem for limiting graphs \hy{Citation}.
+This property is a version of the well-known Mantel's theorem for limiting graphs \hy{Citation}.
 \hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
+
+Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
+\begin{lem}
+    The assertion $H = H'$ is valid if $H$ is isomorphic to $H'$.
+\end{lem}
+\begin{lem}
+    The rules of commutative rings and real vector spaces form valid equations for density expressions.
+\end{lem}
+\begin{lem}
+    The assertion $H \geq 0$ is valid for every graph $H$.
+\end{lem}
+\hy{A few more facts, such as normalisation and the elimination of products.}
 \section{Reasoning with Flag Algebras}
+
 
 \section{Plan}
 \begin{itemize}
