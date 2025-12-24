@@ -58,7 +58,7 @@ the algebraic aspect of the flag algebra framework, we focus on its logic aspect
 Before starting, we fix some notation and terminology used throughout the paper.
 For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1, 2, \ldots, n\}$. Throughout the paper, we are concerned with finite simple undirected graphs $G$ whose vertex set is a subset of $\mathbb{N}$, and call them simply as graphs. We use $\mathcal{G}$ to mean the set of all such graphs. For a graph $G$, we let $V(G)$ and $E(G)$ be the vertex set and the edge set of $G$, respectively, and write $v(G)$ and $e(G)$ for their cardinalities. For a set $U \subseteq V(G)$, we define $G[U]$ to be the subgraph of $G$ induced by $U$. We use the standard notation for well-known graphs. We write $K_n$ for the complete graph with the vertex set $[n]$, and $K_{n,m}$ for the complete bipartite graph that has the vertex partition $(\{1,2,\ldots,n\},\{n+1,\ldots,n+m\})$. The $C_n$ means the cycle graph with $n$ vertices, i.e., $V(C_n) = [n]$ and $E(C_n) = \{\{i,i+1\} \mid i \in [n-1]\} \cup \{\{1,n\}\}$, and the $P_n$ is the path graph with $n$ vertices, i.e., $V(P_n) = [n]$ and $E(P_n) = \{\{i,i+1\} \mid i \in [n-1]\}$.
 
-\section{Induced Subgraph Density and Limiting Density Maps}
+\section{Induced Subgraph Density and Limiting Graph}
 
 Let $H$ and $G$ be graphs. The most important concept in flag algebra is the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$. It is defined as
 \[
@@ -73,21 +73,21 @@ Note that the density function $p$ induces the representation of a graph $G$ as 
 Let $(G_n)_{n \in \mathbb{N}}$ be a sequence of graphs. The sequence is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if the sequence is increasing and $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. Note that the latter condition means that the sequence of vector representations $(p(\_,G_n))_n$ of $(G_n)_n$ converges pointwise 
 in $[0,1]^{\mathcal{G}}$. The reader might be worried that this definition of convergence is too strong, as it requires the existence of the limit for every graph $H$, and only few increasing graph sequences converge. We reassure such a reader by pointing out that every increasing sequence of graphs has a convergent subsequence, because the topology behind the pointwise convergence of vector representations is compact by Tychonoff's theorem.
 
-A function $\phi$ from the set of all graphs to $[0,1]$ is a \emph{limiting density map} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. We write 
-$\Phi$ for the set of all limiting density maps. A good mental picture (which can be formalised in terms of graphons) is that a limiting density map $\phi$ comes from an undirected graph with a continuum number of vertices, and $\phi(H)$ is the density of $H$ in this graph. Note that every convergent sequence $(G_n)_n$ induces a unique limiting density map $\phi$, but a limiting density map $\phi$ can be induced by multiple convergent sequences.
+We call a function $\phi$ from the set of all graphs to $[0,1]$ a \emph{limiting graph} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. We write 
+$\Phi$ for the set of all limiting graphs. A good mental picture (which can be formalised in terms of graphons) is that a limiting graph $\phi$ is the infinite-dimensional vector representing an undirected graph with a continuum number of vertices, where the component of $\phi$ at a pattern graph $H$ is the density of $H$ in this infinitely-large host graph. We point out that every convergent sequence $(G_n)_n$ induces a unique limiting graph $\phi$, but a limiting graph $\phi$ can be induced by multiple convergent sequences.
 
 \hy{Some example extremal problems in terms of limiting density maps.}
 
-A main message of this survey is that the flag algebra framework is a logic for reasoning about limiting density maps in $\Phi$. In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
+A main message of this survey is that the flag algebra framework is a logic for reasoning about limiting graphs in $\Phi$. In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
 
 \section{Syntax and Semantics of Flag Algebra}
-The syntax of flag algebra consists of two types of expressions: \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions denote real numbers obtained from the densities of pattern graphs in a limiting density map, while assertions denote truth values obtained from comparisons between density expressions. Formally, the syntax is defined as follows.
+The syntax of flag algebra consists of two types of expressions: \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions describe the generalisation of pattern graphs, and define feature maps from limiting graphs to real numbers. Assertions state properties of limiting graphs using density expressions. Formally, the syntax is defined as follows.
 \begin{align*}
-\text{Density Expressions}\quad E & ::= 0 \,\mid\, 1 \,\mid\, H \,\mid\, r \cdot E \,\mid\, E + E \,\mid\, E \times E
+\text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \times E
 \\
-\text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, A \,\mid\, A \lor A 
+\text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A 
 \end{align*}
-where $G$ is a graph, and $r \in \mathbb{R}$.
+where $G$ is a graph, and $r \in \mathbb{R}$. Denity expressions are built from pattern graphs using real scalar multiplication, addition, multiplication, and the constants $0$ and $1$. Assertions are built from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction have the usual meanings in classical logic. As a result, they induce other logical connectives such as conjunction and implication in the standard way.
 
 Semantics:
 \[
