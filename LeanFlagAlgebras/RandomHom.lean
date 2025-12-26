@@ -485,13 +485,20 @@ noncomputable def FlagSeq.toProbMeasureSeq
   :=
   fun n ↦ (s n).toProbMeasure (hs n)
 
-/-- **Prokhorov's theorem**, adapted from Rémy Degenne's repository -/
-lemma isSeqCompact_closure_of_isTightMeasureSet
-    {E : Type*} {mE : MeasurableSpace E} [MetricSpace E] [BorelSpace E] [TopologicalSpace.SeparableSpace E]
+/-- **Prokhorov's theorem** -/
+theorem isCompact_closure_of_isTightMeasureSet
+    {E : Type u_1} [MeasurableSpace E] [TopologicalSpace E] [T2Space E] [BorelSpace E]
     {S : Set (ProbabilityMeasure E)}
-    (hS : IsTightMeasureSet {((μ : ProbabilityMeasure E) : Measure E) | μ ∈ S})
-    : IsSeqCompact (closure S)
+    (hS : IsTightMeasureSet {x : MeasureTheory.Measure E | ∃ μ ∈ S, ↑μ = x})
+    : IsCompact (closure S)
   := by
+  sorry
+
+instance : FirstCountableTopology (ProbabilityMeasure (FlagDensitySpace σ))
+  := by
+  refine { nhds_generated_countable := ?_ }
+  intro μ
+  constructor
   sorry
 
 theorem flagDensitySpace_probMeasure_isSeqCompact
@@ -502,8 +509,8 @@ theorem flagDensitySpace_probMeasure_isSeqCompact
   have hS_closure : S = closure S := by
     simp only [isClosed_univ, IsClosed.closure_eq, S]
   rw [hS_closure]
-  apply isSeqCompact_closure_of_isTightMeasureSet
-  exact IsTightMeasureSet.of_compactSpace
+  apply IsCompact.isSeqCompact
+  exact isCompact_closure_of_isTightMeasureSet IsTightMeasureSet.of_compactSpace
 
 theorem exists_convergent_subseq_probMeasure_of_flagSeq
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
