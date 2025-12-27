@@ -77,7 +77,7 @@ in $[0,1]^{\mathcal{G}}$. The reader might be worried that this definition of co
 We call a function $\phi$ from the set of all graphs to $[0,1]$ a \emph{limiting graph} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. We write 
 $\Phi$ for the set of all limiting graphs. A good mental picture (which can be formalised in terms of graphons) is that a limiting graph $\phi$ is the infinite-dimensional vector representing an undirected graph with a continuum number of vertices, where the component of $\phi$ at a pattern graph $H$ is the density of $H$ in this infinitely-large host graph. We point out that every convergent sequence $(G_n)_n$ induces a unique limiting graph $\phi$, but a limiting graph $\phi$ can be induced by multiple convergent sequences.
 
-Using limiting graphs, we can express asymptotic extremal graph theory problems in a clean manner. A representative example is an asymptotic induced version of the Tur\'an-type problem where we want to determine the maximum possible density of a graph $H$ in large host graphs that avoid certain forbidden graphs in $\mathcal{F}$. More formally, for a graph $H$ and a finite set of graphs $\mathcal{F}$, the problem asks for the solution of the following asymptotic optimisation problem:
+Using limiting graphs, we can express asymptotic extremal graph theory problems in a clean manner. A representative example is an asymptotic and induced-graph version of the Tur\'an-type problem where we want to determine the maximum possible density of a graph $H$ in large host graphs that avoid certain forbidden graphs in $\mathcal{F}$. More formally, for a graph $H$ and a finite set of graphs $\mathcal{F}$, the problem asks for the solution of the following asymptotic optimisation problem:
 \[
 T(H, \mathcal{F}) \defeq
 \lim_{n \to \infty} \max \{ p(H, G) \,\mid\, v(G) = n \text{ and } p(F,G) = 0 \text{ for all } F \in \mathcal{F} \}.
@@ -122,7 +122,7 @@ where $H$ is a graph, and $r \in \mathbb{R}$. Note that density expressions are 
 \[
 A \land A' \defeq \neg (\neg A \lor \neg A')
 \qquad\text{and}\qquad
-A \Rightarrow A' \defeq \neg A \lor A'.
+A \implies A' \defeq \neg A \lor A'.
 \]
 We also note that usual comparison operators between density expressions such as $=$, $>$, $\leq$, and $<$ can be defined using $\geq$ and the logical connectives in the standard way. For instance,
 \[
@@ -184,10 +184,12 @@ and
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
 and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
-Note that the semantics is remarkably similar to that of expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. What distinguishes flag algebra from first-order logic is that values at different graphs (or variables) are not set independently, but have strong correlation; they all come from the same limiting graph. As a result, two syntactically different density expressions or assertions can be semantically equivalent, if their
-difference lies only in the use of different isomorphic graphs in density expressions. Also, the sum of all non-isomophic graphs on a fixed vertex set is semantically equal to the constant density expression $1$, since this normalisation property is enjoyed by all limiting graphs. We formalise these observations in the next two lemmas. Finally, every graph is non-negative.
+Note that the semantics is remarkably similar to that of expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. Despite this similarity, flag algebra differs from first-order logic in that variables (i.e., graphs $H$) cannot be set arbitrarily, but the values must come from have a limiting graph. As a result, two different variables representing isomorphic graphs have the same value, and each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ up to isomorphism without duplications. We formalise these observations in the next lemmas. 
 \begin{lem}
     If graphs $H$ and $H'$ are isomorphic, the assertion $H = H'$ is valid.
+\end{lem}
+\begin{lem}
+    The assertion $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \begin{lem}
     Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
@@ -197,27 +199,32 @@ difference lies only in the use of different isomorphic graphs in density expres
     \] 
     is valid.
 \end{lem}
-\begin{lem}
-    The assertion $H \geq 0$ is valid for every graph $H$.
-\end{lem}
 
-
-Using this logic, we can express various properties of limiting graphs. For instance, we can express that if a limiting graph $\phi$ is triangle-free, then the edge density of $\phi$ is at most $1/2$ as the validity of the following assertion:
+Using this flag-algebra logic, we can express asymptotic extremal problems mentioned in the previous section. For a graph $H$ and a finite set of graphs $\mathcal{F}$, the 
+Tur\'an-type problem is to find $c \in \mathbb{R}$ such that the assertion
 \[
-K_3 = 0 \Rightarrow K_2 \leq \tfrac{1}{2}.
+\left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c.
 \]
-This property is a version of the well-known Mantel's theorem for limiting graphs \hy{Citation}.
+is valid. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
+Regarding the Ramsey multiplicity problem, we are given integers $s,t \geq 2$, and asked to find $c' \in \mathbb{R}$ such that the assertion
+\[
+I_s + K_t \geq c'
+\]
+is valid. We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
+
 \hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
+
+
+We illustrate the reasoning in this flag-algebra logic using the simplest case of the Tur\'an-type problem where the forbidden graph set $\mathcal{F}$ is $\{K_3\}$ and the graph $H$ is $K_2$. That is, we want to find $c$ such that
+\[
+K_3 = 0 \implies K_2 \leq c.
+\]
+The optimal $c$ here is known to be $1/2$ by Mantel's theorem. Using the flag-algebra logic, we can prove the bound as follows.
+\hy{I am here.}
 
 Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
 \begin{lem}
-    The assertion $H = H'$ is valid if $H$ is isomorphic to $H'$.
-\end{lem}
-\begin{lem}
     The rules of commutative rings and real vector spaces form valid equations for density expressions.
-\end{lem}
-\begin{lem}
-    The assertion $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \hy{A few more facts, such as normalisation and the elimination of products.}
 
