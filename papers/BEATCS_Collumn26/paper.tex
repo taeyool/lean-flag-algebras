@@ -36,7 +36,7 @@
 
 % --- Common Style Settings ---
 \tikzset{
-    inline/.style={baseline=-0.5ex, scale=0.3},
+    inline/.style={scale=0.15},
     vertex/.style={circle, fill=black, inner sep=0pt, minimum size=3pt}
 }
 
@@ -280,9 +280,32 @@ We illustrate the reasoning in this flag-algebra logic using the simplest case o
 \[
 K_3 = 0 \implies K_2 \leq c.
 \]
-The optimal $c$ here is known to be $1/2$ by Mantel's theorem. Using the flag-algebra logic, we can prove the bound as follows.
+The optimal $c$ here is known to be $1/2$ by Mantel's theorem. We prove the bound in the flag-algebra logic as follows. We start by noting that the next bound holds:
+\[
+0 \leq \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
++ \tfrac{3}{2} \cdot \Kthree
+\]
+Using the inequality and the assumption $K_3 = 0$, we prove the desired inequality
+as follows: 
 \begin{align*}
-  K_2 & = 0 \cdot \Ithree + \frac{1}{3} \cdot \Ethree + \frac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
+  K_2 
+  & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
+  \\
+  & \leq \left(0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree \right) 
+  + 
+  \left(
+  \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
++ \tfrac{3}{2} \cdot \Kthree\right)
+  \\
+  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{5}{2} \cdot \Kthree
+  \\
+  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree 
+  \\
+  & \leq \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{2} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{1}{2} \cdot \Kthree
+  \\
+  & \leq \tfrac{1}{2} \cdot \left(\Ithree + \Ethree + \Pthree + \Kthree\right)
+  \\
+  & = \tfrac{1}{2} \cdot 1 = \tfrac{1}{2}.
 \end{align*}
 
 Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
