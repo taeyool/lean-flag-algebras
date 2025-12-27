@@ -7,6 +7,8 @@
 \usepackage{dsfont}
 \usepackage{stmaryrd}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric} % For the triangle
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{cor}[thm]{Corollary}
@@ -30,6 +32,65 @@
 \newcommand{\gj}[1]{\cmt{GJ}{#1}{blue}}
 \newcommand{\hy}[1]{\cmt{HY}{#1}{red}}
 \newcommand{\shp}[1]{\cmt{SP}{#1}{purple}}
+
+
+% --- Common Style Settings ---
+\tikzset{
+    inline/.style={baseline=-0.5ex, scale=0.3},
+    vertex/.style={circle, fill=black, inner sep=0pt, minimum size=3pt}
+}
+
+% 1. Three vertices, Zero edges (Independent Set / Empty Graph)
+\newcommand{\Ithree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \node[vertex] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 2. Three vertices, One edge
+\newcommand{\Ethree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (c); % The single edge
+    \node[vertex] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 3. Three vertices, Two edges (Path P3 or Cherry)
+\newcommand{\Pthree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (a) -- (c); % The two edges connecting at the top
+    \node[vertex] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% Define a command for a small Triangle (K3)
+\newcommand{\Kthree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (a) -- (c) -- (b); % The two edges connecting at the top
+    \node[vertex] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
 
 \title{Yet Another Survey on Razborov's Flag Algebra}
 \author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
@@ -220,7 +281,9 @@ We illustrate the reasoning in this flag-algebra logic using the simplest case o
 K_3 = 0 \implies K_2 \leq c.
 \]
 The optimal $c$ here is known to be $1/2$ by Mantel's theorem. Using the flag-algebra logic, we can prove the bound as follows.
-\hy{I am here.}
+\begin{align*}
+  K_2 & = 0 \cdot \Ithree + \frac{1}{3} \cdot \Ethree + \frac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
+\end{align*}
 
 Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
 \begin{lem}
