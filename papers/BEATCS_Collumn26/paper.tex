@@ -110,34 +110,35 @@ and rules for proving the above bounds, some of which can even be automated.
 In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
 
 \section{Syntax and Semantics of Flag Algebra}
-The syntax of flag algebra consists of two types of expressions: \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions describe the generalisation of pattern graphs, and define feature maps from limiting graphs to real numbers. Assertions state properties of limiting graphs using density expressions. 
+The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions generalise pattern graphs $H$, and define maps from limiting graphs to real numbers. Such maps correspond to features in machine learning, and describe properties of limiting graphs quantitatively. Assertions express qualitiative properties of limiting graphs using density expressions and logical connectives.
 
-Formally, the syntax is defined as follows.
+Formally, the syntax is defined as follows:
 \begin{align*}
 \text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \times E
 \\
 \text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A 
 \end{align*}
-where $H$ is a graph, and $r \in \mathbb{R}$. Density expressions are built from pattern graphs using real scalar multiplication, addition, multiplication, and the constants $0$ and $1$. Assertions are built from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction have the usual meanings from classical logic. As a result, they induce other logical connectives such as conjunction and implication in the standard way:
+where $H$ is a graph, and $r \in \mathbb{R}$. Note that density expressions are built from pattern graphs using real scalar multiplication, addition, multiplication, and the constants $0$ and $1$. Assertions are constructed from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction here have the usual meanings from classical logic. As a result, they induce other logical connectives of classical logic such as conjunction and implication in the standard way:
 \[
 A \land A' \defeq \neg (\neg A \lor \neg A')
 \qquad\text{and}\qquad
 A \Rightarrow A' \defeq \neg A \lor A'.
 \]
-We also note that we can define other comparison operators such as $=$, $>$, $\leq$, and $<$ using $\geq$ and the logical connectives. For instance,
+We also note that usual comparison operators between density expressions such as $=$, $>$, $\leq$, and $<$ can be defined using $\geq$ and the logical connectives in the standard way. For instance,
 \[
 (E_1 = E_1) \defeq (E_1 \geq E_2) \land (E_2 \geq E_1)
 \quad\text{and}\quad
 (E_1 < E_2) \defeq \neg (E_1 \geq E_2).
 \]
 
-The formal semantics of density expressions $E$ and assertions $A$ has the following form, where $E$ denotes a function $\db{E}$ from limiting graphs to real numbers, and $A$ denotes a function $\db{A}$ from limiting graphs to booleans:
+The formal semantics of density expressions $E$ and assertions $A$ has the form:
 \[
 \db{E} : \Phi \to \mathbb{R} 
 \qquad\text{and}\qquad
-\db{A} : \Phi \to \{\strue,\sfalse\}.
+\db{A} : \Phi \to \mathbb{B}
 \]
-The definitions of these functions are by induction on the structure of $E$ and $A$ as follows. For a limiting graph $\phi \in \Phi$,
+where $\mathbb{B}$ is the set of boolean values $\{\strue,\sfalse\}$.
+It is defined by induction on the structure of $E$ and $A$ using the ordered commutative algebra structure of $\mathbb{R}$ and the boolean algebra structure of $\mathbb{B}$: for a limiting graph $\phi \in \Phi$,
 \begin{align*}
 \db{H}\phi & \defeq \phi(H),
 &
@@ -152,9 +153,9 @@ The definitions of these functions are by induction on the structure of $E$ and 
 \db{1}\phi & \defeq 1,
 &
 \db{E_1 \times E_2}\phi & \defeq
-\db{E_1}\phi \cdot \db{E_2}\phi.
+\db{E_1}\phi \cdot \db{E_2}\phi,
 \end{align*}
-Also,
+and
 \begin{align*}
 \db{\lfalse}\phi & \defeq \sfalse,
 &
@@ -181,7 +182,7 @@ Also,
 \end{cases}
 \end{align*}
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
-and it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
+and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
 Using this logic, we can express various properties of limiting graphs. For instance, we can express that if a limiting graph $\phi$ is triangle-free, then the edge density of $\phi$ is at most $1/2$ as the validity of the following assertion:
 \[
