@@ -184,6 +184,24 @@ and
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
 and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
+Note that the semantics is remarkably similar to that of expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. What distinguishes flag algebra from first-order logic is that values at different graphs (or variables) are not set independently, but have strong correlation; they all come from the same limiting graph. As a result, two syntactically different density expressions or assertions can be semantically equivalent, if their
+difference lies only in the use of different isomorphic graphs in density expressions. Also, the sum of all non-isomophic graphs on a fixed vertex set is semantically equal to the constant density expression $1$, since this normalisation property is enjoyed by all limiting graphs. We formalise these observations in the next two lemmas. Finally, every graph is non-negative.
+\begin{lem}
+    If graphs $H$ and $H'$ are isomorphic, the assertion $H = H'$ is valid.
+\end{lem}
+\begin{lem}
+    Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
+    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the assertion 
+    \[
+    \sum_{H \in \mathcal{H}_n} H = 1
+    \] 
+    is valid.
+\end{lem}
+\begin{lem}
+    The assertion $H \geq 0$ is valid for every graph $H$.
+\end{lem}
+
+
 Using this logic, we can express various properties of limiting graphs. For instance, we can express that if a limiting graph $\phi$ is triangle-free, then the edge density of $\phi$ is at most $1/2$ as the validity of the following assertion:
 \[
 K_3 = 0 \Rightarrow K_2 \leq \tfrac{1}{2}.
