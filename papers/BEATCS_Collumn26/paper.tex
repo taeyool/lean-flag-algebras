@@ -8,6 +8,7 @@
 \usepackage{stmaryrd}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage{cleveref}
 \usetikzlibrary{shapes.geometric} % For the triangle
 
 \newtheorem{thm}{Theorem}[section]
@@ -245,80 +246,139 @@ and
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
 and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
-Note that the semantics is remarkably similar to that of expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. Despite this similarity, flag algebra differs from first-order logic in that variables (i.e., graphs $H$) cannot be set arbitrarily, but the values must come from have a limiting graph. As a result, two different variables representing isomorphic graphs have the same value, and each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ up to isomorphism without duplications. We formalise these observations in the next lemmas. 
+Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. As a result, many reasoning principles from first-order logic carry over to flag algebra directly.
 \begin{lem}
-    If graphs $H$ and $H'$ are isomorphic, the assertion $H = H'$ is valid.
+  \label{lem:basic-algebra}
+    The rules of ordered commutative algebras form valid equations for density expressions. Also, the rules for boolean algebras are valid assertions in flag algebra.
+\end{lem}
+
+What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from have a limiting graph. Because of this fact, two different variables representing isomorphic graphs always have the same value, and each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ uniquely up to isomorphism. Furthermore, any variable representing a graph $G$ with $v(G) \leq n$ is equal to a linear combination of the variables in $\mathcal{H}_n$. We formalise these observations in the next lemmas. 
+\begin{lem}
+    If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
 \begin{lem}
-    The assertion $H \geq 0$ is valid for every graph $H$.
+  \label{lem:non-negativity}
+    The inequality $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \begin{lem}
+  \label{lem:decomposition}
     Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
-    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the assertion 
+    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the equation 
     \[
     \sum_{H \in \mathcal{H}_n} H = 1
     \] 
+    is valid. Also, for every graph $G$ with $v(G) \leq n$, there exist real numbers $(r_H)_{H \in \mathcal{H}_n}$ such that the equation
+    \[
+    G = \sum_{H \in \mathcal{H}_n} r_H \cdot H
+    \]
     is valid.
 \end{lem}
 
-Using flag algebra, we can express asymptotic extremal problems mentioned in the previous section. For a graph $H$ and a finite set of graphs $\mathcal{F}$, the 
-Tur\'an-type problem is to find $c \in \mathbb{R}$ such that the assertion
-\[
+Using flag algebra, we can express asymptotic extremal problems mentioned in the previous section. The 
+Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find a tightest $c \in \mathbb{R}$ such that the implication
+\begin{equation}
+  \label{eqn:turan-assertion}
 \left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c.
-\]
-holds, i.e., it is valid. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
-Regarding the Ramsey multiplicity problem, we are given integers $s,t \geq 2$, and asked to find $c' \in \mathbb{R}$ such that the assertion
-\[
+\end{equation}
+holds for all limiting graphs $\phi$ in flag algebra. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all the forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
+Regarding the Ramsey multiplicity problem, we are given integers $s,t \geq 2$, and asked to find a tightest $c' \in \mathbb{R}$ that makes the following inequality valid:
+\begin{equation}
+  \label{eqn:ramsey-assertion}
 I_s + K_t \geq c'
-\]
-holds. We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
+\end{equation}
+We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
 
 \hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
 
-Before moving on to reasoning principles of flag algebras, we present two examples of expressing and proving extremal graph theory problems using the syntax and semantics introduced so far. The first example is concerned with a Tur\'an-type problem that asks us to find a tightest upper bound on the asymptotic edge density in triangle-free graphs. In terms of flag algebra, this problem asks us to find a tightest $c$ that makes the below assertion valid:
+How does flag algebra help us in solving the problems of finding tightest $c$ and $c'$ in \Cref{eqn:turan-assertion,eqn:ramsey-assertion}? The answer lies in reasoning principles of flag algebra that allow us to derive valid assertions. We give a glimpse of this aspect of flag algebra with two examples here and elaborate it in the next section.
+Consider the Tur\'an-type problem with $H = K_2$ and $\mathcal{F} = \{K_3\}$, which intuitively asks us to find the best upper bound on the asymptotic edge density of triangle-free graphs. In terms of flag algebra, the problem asks us to find a tightest $c$ that makes the below implication hold for all limiting graphs:
 \[
 K_3 = 0 \implies K_2 \leq c
 \]
-The answer to this problem is well-known to be $1/2$ by  Mantel's theorem \hy{Citation}. We prove this optimal bound in flag algebra as follows. We start by noting the following key inequality:
-\begin{equation}
+The tightest $c$ is $1/2$, a well-known result called Mantel's theorem \hy{Citation}. We prove the validity of the above implication for $c = 1/2$. We start by noting the validity of the following two assertions:
+\begin{align}
+  K_2 & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree,
+  \label{eqn:mantel-density-decomposition}
+  \\[2ex]
+  0 & \leq 1 \cdot \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + 1 \cdot \Kthree.
   \label{eqn:mantel-key-inequality}
-0 \leq \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
-+ \tfrac{1}{2} \cdot \Kthree
-\end{equation}
-How to prove the validity of this inequality will be explained later in the next section where we go deeper into reasoning principles of flag algebras. For now, we just accept this inequality as valid, and use it to derive the desired upper bound on $K_2$ under the assumption $K_3 = 0$. The derivation is given below: 
+\end{align}
+The first assertion is a consequence of \Cref{lem:decomposition}, and the second can be proved using reasoning principles of flag algebra explained in the next section. Using these assertions and the assumption $K_3 = 0$, we derive the upper bound $1/2$ on $K_2$. The derivation is given below, where each step holds for all limiting graphs $\phi \in \Phi$ satisfying $\phi(K_3) = 0$:
 \begin{align*}
   K_2 
   & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
+  && \text{by \Cref{eqn:mantel-density-decomposition}}
   \\
   & \leq \left(0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree \right) 
   + 
   \left(
   \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
 + \tfrac{1}{2} \cdot \Kthree\right)
+  && \text{by \Cref{eqn:mantel-key-inequality}}
   \\
   & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{3}{2} \cdot \Kthree
+  && \text{by \Cref{lem:basic-algebra}}
   \\
-  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree 
+  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree
+  && \text{since } K_3 = 0 
   \\
   & \leq \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{2} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{1}{2} \cdot \Kthree
+  && 
+  \text{by \Cref{lem:non-negativity}}
   \\
   & \leq \tfrac{1}{2} \cdot \left(\Ithree + \Ethree + \Pthree + \Kthree\right)
+  && 
+  \text{by \Cref{lem:basic-algebra}}
   \\
-  & = \tfrac{1}{2} \cdot 1 = \tfrac{1}{2}.
+  & = \tfrac{1}{2} \cdot 1 
+  && \text{by \Cref{lem:decomposition}}
+  \\
+  & = \tfrac{1}{2}.
 \end{align*}
-The first equality holds 
+The next example is for the Ramsey multiplicity problem with $s = t = 3$, which asks us to find a tightest $c'$ that makes the following inequality valid for all limiting graphs:
+\[I_3 + K_3 \geq c'.
+\]
+The tightest $c'$ is known to be $1/4$ by Goodman's result \hy{Citation}. We prove the validity of the above inequality for $c' = 1/4$ as follows:
+\begin{align*}
+  I_3 + K_3 
+  & = 1 \cdot \Ithree + 0 \cdot \Ethree + 0 \cdot \Pthree + 1 \cdot \Kthree
+  && \text{by \Cref{eqn:mantel-density-decomposition}}
+  \\
+  & \geq \left(1 \cdot \Ithree + 0 \cdot \Ethree + 0 \cdot \Pthree + 1 \cdot \Kthree\right)
+  -
+  \left(
+  \tfrac{3}{4} \cdot \Ithree - \tfrac{1}{4} \cdot \Ethree - \tfrac{1}{4} \cdot \Pthree + \tfrac{3}{4} \cdot \Kthree
+  \right)
+  && \text{by \Cref{eqn:mantel-key-inequality}}
+  \\
+  & = \tfrac{1}{4} \cdot \Ithree + \tfrac{1}{4} \cdot \Ethree + \tfrac{1}{4} \cdot \Pthree + \tfrac{1}{4} \cdot \Kthree
+  && \text{by \Cref{lem:basic-algebra}}
+  \\
+  & = \tfrac{1}{4} \cdot (\Ithree + \Ethree + \Pthree + \Kthree)
+  && 
+  \text{by \Cref{lem:basic-algebra}}
+  \\
+  & = \tfrac{1}{4} \cdot 1 
+  && \text{by \Cref{lem:decomposition}}
+  \\
+  & = \tfrac{1}{4}.
+\end{align*}
 
-Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
-\begin{lem}
-    The rules of commutative rings and real vector spaces form valid equations for density expressions.
-\end{lem}
-\hy{A few more facts, such as normalisation and the elimination of products.}
+\hy{Explain the notation. Real constants mean real constants multiplied by the density expression $1$. It might be better to change the order of these two examples.}
 
 \section{Reasoning with Flag Algebras}
 
-\hy{Reasoning example for Mantel.}
+The previous section illustrated how to reason about limiting graphs using flag algebra with two examples. In this section, we explain the reasoning principles of flag algebra that enable such reasoning. 
 
-A \emph{type} is a graph $\sigma$ with the vertex set $[k]$ for some $k \in \mathbb{N}$. We call $k$ the \emph{size} of $\sigma$. A \emph{$\sigma$-labeled graph} is a pair $(G, \theta)$ of a graph $G$ and an injective map $\theta : [k] \to V(G)$ such that the map $\theta$ is a graph isomorphism from $\sigma$ to the induced subgraph $G[\theta([k])]$. We call $\sigma$ the \emph{type} of $(G,\theta)$. For a type $\sigma$, we write $\mathcal{G}^\sigma$ for the set of all $\sigma$-labeled graphs. 
+A \emph{type} is a graph $\tau$ with the vertex set $[k]$ for some $k \in \mathbb{N}$. We call $k$ the \emph{size} of $\tau$. A \emph{$\tau$-labeled graph} is a pair $(G, \theta)$ of a graph $G$ and an injective map $\theta : [k] \to V(G)$ such that the map $\theta$ is a graph isomorphism from $\tau$ to the induced subgraph $G[\theta([k])]$. We call $\tau$ the \emph{type} of $(G,\theta)$. For a type $\tau$, we write $\mathcal{G}^\tau$ for the set of all $\tau$-labeled graphs. 
+
+Consider types $\tau,\sigma$, and a function $\gamma$ from $\mathcal{G}^\tau$ to $\Pr(\mathcal{G}^{\sigma})$ where we regard $\mathcal{G}^{\sigma}$ as a measurable space with the discrete sigma algebra. Then, 
+\[
+p(\alpha(H), G) = p(H, \gamma(G)).
+\]
+where $p$ is ...
+
+We say that $\alpha$ is a \emph{homomorphism} from $\tau$-labeled graphs to $\tau'$-labeled graphs if for every $\tau$-labeled graph $(G,\theta)$, the following conditions hold:
 
 Let $\sigma$ be a type. The definitions in the previous sections can be generalised from graphs to $\sigma$-labeled graphs in a standard way. For instance, for $\sigma$-labeled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{induced labeled subgraph density} of $H$ in $G$ or simply \emph{labeled $H$-density} in $G$ is defined as ... 
 
