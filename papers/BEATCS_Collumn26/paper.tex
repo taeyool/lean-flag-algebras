@@ -261,32 +261,31 @@ Note that the semantics is remarkably similar to that of expressions and asserti
     is valid.
 \end{lem}
 
-Using this flag-algebra logic, we can express asymptotic extremal problems mentioned in the previous section. For a graph $H$ and a finite set of graphs $\mathcal{F}$, the 
+Using flag algebra, we can express asymptotic extremal problems mentioned in the previous section. For a graph $H$ and a finite set of graphs $\mathcal{F}$, the 
 Tur\'an-type problem is to find $c \in \mathbb{R}$ such that the assertion
 \[
 \left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c.
 \]
-is valid. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
+holds, i.e., it is valid. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
 Regarding the Ramsey multiplicity problem, we are given integers $s,t \geq 2$, and asked to find $c' \in \mathbb{R}$ such that the assertion
 \[
 I_s + K_t \geq c'
 \]
-is valid. We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
+holds. We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
 
 \hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
 
-
-We illustrate the reasoning in this flag-algebra logic using the simplest case of the Tur\'an-type problem where the forbidden graph set $\mathcal{F}$ is $\{K_3\}$ and the graph $H$ is $K_2$. That is, we want to find $c$ such that
+Before moving on to reasoning principles of flag algebras, we present two examples of expressing and proving extremal graph theory problems using the syntax and semantics introduced so far. The first example is concerned with a Tur\'an-type problem that asks us to find a tightest upper bound on the asymptotic edge density in triangle-free graphs. In terms of flag algebra, this problem asks us to find a tightest $c$ that makes the below assertion valid:
 \[
-K_3 = 0 \implies K_2 \leq c.
+K_3 = 0 \implies K_2 \leq c
 \]
-The optimal $c$ here is known to be $1/2$ by Mantel's theorem. We prove the bound in the flag-algebra logic as follows. We start by noting that the next bound holds:
-\[
+The answer to this problem is well-known to be $1/2$ by  Mantel's theorem \hy{Citation}. We prove this optimal bound in flag algebra as follows. We start by noting the following key inequality:
+\begin{equation}
+  \label{eqn:mantel-key-inequality}
 0 \leq \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
-+ \tfrac{3}{2} \cdot \Kthree
-\]
-Using the inequality and the assumption $K_3 = 0$, we prove the desired inequality
-as follows: 
++ \tfrac{1}{2} \cdot \Kthree
+\end{equation}
+How to prove the validity of this inequality will be explained later in the next section where we go deeper into reasoning principles of flag algebras. For now, we just accept this inequality as valid, and use it to derive the desired upper bound on $K_2$ under the assumption $K_3 = 0$. The derivation is given below: 
 \begin{align*}
   K_2 
   & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
@@ -295,9 +294,9 @@ as follows:
   + 
   \left(
   \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
-+ \tfrac{3}{2} \cdot \Kthree\right)
++ \tfrac{1}{2} \cdot \Kthree\right)
   \\
-  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{5}{2} \cdot \Kthree
+  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{3}{2} \cdot \Kthree
   \\
   & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree 
   \\
@@ -307,6 +306,7 @@ as follows:
   \\
   & = \tfrac{1}{2} \cdot 1 = \tfrac{1}{2}.
 \end{align*}
+The first equality holds 
 
 Before moving on, we note basic properties of density expressions and assertions, which will be useful later.
 \begin{lem}
