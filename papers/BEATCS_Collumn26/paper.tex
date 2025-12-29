@@ -383,7 +383,7 @@ For $\tau$-labeled graphs $H = (H',\theta)$ and $G = (G',\theta')$, a function $
 \[
 p_\tau(H,G) = \Pr(G[\theta'([k]) \cup \mathbf{U}] \simeq_\tau H)
 \]
-where $\mathbf{U}$ is a uniformly random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$.
+where $\mathbf{U}$ is a uniformly random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$. \hy{Explain $\tau$-labeled limiting graphs.}
 
 Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \mathrm{FinMea}(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \mathrm{FinMea}(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\mathrm{FinMea}(\mathcal{G})$ for the set of all finite measures on $\mathcal{G}$. Then, we say that $\alpha$ is a \emph{left adjoint} of $\gamma$ 
 or $\gamma$ is a \emph{right adjoint} of $\alpha$ if 
@@ -397,6 +397,7 @@ where
   \qquad\text{and}\qquad
   p(H, \gamma(G)) \defeq \int p(H, G') \, \gamma(G)(dG').
 \end{align*}
+The map $\gamma$ is \emph{limit preserving} if there is a function $\gamma_\infty : \Phi \to \mathrm{FinMea}(\Phi^\tau)$ such that for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ \hy{I am here.}
 
 \hy{Limit preservation. Positivity preservation.}
 We say that $\alpha$ is a \emph{homomorphism} from $\tau$-labeled graphs to $\tau'$-labeled graphs if for every $\tau$-labeled graph $(G,\theta)$, the following conditions hold:
