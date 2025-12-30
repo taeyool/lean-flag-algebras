@@ -368,22 +368,25 @@ The tightest $c'$ is known to be $1/4$ by Goodman's result \hy{Citation}. We pro
 
 \section{Reasoning with Flag Algebra}
 
-The previous section illustrated how to reason about limiting graphs using flag algebra with two examples. The most non-trivial part in both cases is the inequality in \Cref{eqn:mantel-key-inequality}, which we repeat here for convenience:
+The previous section illustrated how to reason about limiting graphs using flag algebra with two examples. But both examples include a step not justified yet, namely, the inequality in \Cref{eqn:mantel-key-inequality} which is recalled below:
 \[
 0 \leq 1 \cdot \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + 1 \cdot \Kthree.
 \]
-In this section, we present the reasoning principle of flag algebra that enables us to prove such inequalities. 
+The purpose of this section is to explain a reasoning principle of flag algebra which allows us to prove such inequalities.
 
-At a high level, the reasoning principle is based on the idea of defining a collection of variants of flag algebra and establishing, for each variant, a mechanism for transferring valid inequalities in the variant to valid inequalities in the original flag algebra. Each variant is designed to make certain inequalities easier to prove. The variants we consider here are based on graphs with some vertices labeled with integers. For instance, the inequality in \Cref{eqn:mantel-key-inequality} is obtained from an easily-provable inequality in a variant that considers graphs with one vertex labelled with $1$.
+At a high level, the reasoning principle is based on the idea of defining a collection of variants of flag algebra and establishing, for each variant, a mechanism for transferring valid inequalities in the variant to valid inequalities in the original flag algebra. Each variant is designed to make certain inequalities easier to prove. An intended use case is to prove such easy inequalities in some variants, and transfer them to the original flag algebra using the mechanism. The variants we consider here are obtained by repeating the construction of flag algebra so far but with vertex-labelled graphs, instead of unlabelled graphs. For instance, the inequality in \Cref{eqn:mantel-key-inequality} is derived from an easily-provable inequality in a variant that considers graphs with one vertex labelled with~$1$.
 
 To express this principle formally, we need some additional definitions.
-A \emph{type} is a graph $\tau$ with the vertex set $[k]$ for some $k \in \mathbb{N}$. We call $k$ the \emph{size} of $\tau$. A \emph{$\tau$-labeled graph} is a pair $G = (G', \theta)$ of a graph $G'$ and an injective map $\theta : [k] \to V(G')$ such that the map $\theta$ is a graph isomorphism from $\tau$ to the induced subgraph $G'[\theta([k])]$. We call $\tau$ the \emph{type} of $G$. For a type $\tau$, we write $\mathcal{G}^\tau$ for the set of all $\tau$-labeled graphs. 
+A \emph{type} $\tau$ is a graph on the vertex set $[k]$ for some $k \in \mathbb{N}$. We call $k$ the \emph{size} of $\tau$. A \emph{$\tau$-labelled graph} is a pair $G = (G', \theta)$ of a graph $G'$ and an injective map $\theta : [k] \to V(G')$ that preserves both edges and non-edges of $\tau$. We call $\tau$ the \emph{type} of $G$. For a type $\tau$, we write $\mathcal{G}^\tau$ for the set of all $\tau$-labelled graphs. 
 
-For $\tau$-labeled graphs $H = (H',\theta)$ and $G = (G',\theta')$, a function $h : V(H') \to V(G')$ is a \emph{$\tau$-homomorphism} if it is a homomorphism from $H'$ to $G'$ and satisfies $h(\theta(i)) = \theta'(i)$ for all $i \in [k]$. We say that $H$ and $G$ are \emph{$\tau$-isomorphic}, denoted by $H \simeq_\tau G$, if there exists a bijective $\tau$-homomorphism from $H$ to $G$ such that its inverse is a $\tau$-homomorphism from $G$ to $H$. For $\tau$-labeled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{induced labeled subgraph density} of $H$ in $G$ or simply \emph{labeled $H$-density} in $G$ is defined as
+We now repeat the concepts introduced in the previous sections but for $\tau$-labelled graphs instead of unlabelled graphs.
+For $\tau$-labelled graphs $H = (H',\theta)$ and $G = (G',\theta')$, a function $h : V(H') \to V(G')$ is a \emph{$\tau$-homomorphism} if it is a homomorphism from $H'$ to $G'$ and satisfies $h(\theta(i)) = \theta'(i)$ for all $i \in [k]$. We say that $H$ and $G$ are \emph{$\tau$-isomorphic}, denoted by $H \simeq_\tau G$, if there exists a bijective $\tau$-homomorphism from $H$ to $G$ such that its inverse is also a $\tau$-homomorphism from $G$ to $H$. 
+
+For $\tau$-labelled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{induced labelled-subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$ is defined as
 \[
-p_\tau(H,G) = \Pr(G[\theta'([k]) \cup \mathbf{U}] \simeq_\tau H)
+p_\tau(H,G) = \mathbb{P}\Big[G'\big[\theta'([k]) \cup \mathbf{U}\big] \simeq_\tau H\Big]
 \]
-where $\mathbf{U}$ is a uniformly random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$. \hy{Explain $\tau$-labeled limiting graphs.}
+where $\mathbf{U}$ is a uniform random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$. \hy{Explain $\tau$-labeled limiting graphs.}
 
 Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \mathrm{FinMea}(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \mathrm{FinMea}(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\mathrm{FinMea}(\mathcal{G})$ for the set of all finite measures on $\mathcal{G}$. Then, we say that $\alpha$ is a \emph{left adjoint} of $\gamma$ 
 or $\gamma$ is a \emph{right adjoint} of $\alpha$ if 
