@@ -27,7 +27,7 @@
 \newcommand*{\sfalse}{\textit{false}}
 \newcommand*{\strue}{\textit{true}}
 
-\newcommand*{\db}[1]{\llbracket #1 \rrbracket}
+\newcommand*{\db}[1]{\left\llbracket #1 \right\rrbracket}
 
 \newcommand*{\Expr}{\mathsf{Expr}}
 \newcommand*{\Assn}{\mathsf{Assn}}
@@ -422,11 +422,15 @@ where
 \end{align*}
 
 The downward operator for a type $\tau$ is derived from a particular kind of adjoint pairs $(\alpha,\gamma)$ for $\tau$ where $\alpha$ and $\gamma$ satisfy additional conditions. The condition for $\gamma$ is about the extendability of $\gamma$ to limiting graphs, and that for $\alpha$ is about the finiteness of the support of $\alpha$.
-We say that the map $\gamma$ is \emph{extendable to limiting graphs} if there is a function $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ such that for every convergent sequence of $\tau$-labelled graphs $(G^\tau_n)_{n \in \mathbb{N}}$ and every $H^\tau \in \mathcal{G}^\tau$, 
-\[
-\lim_{n \to \infty} p_\tau(H^\tau, G^\tau_n) = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big),
-\] 
-where we regard $\Phi^\tau$ as a measurable space with the sigma algebra induced by the product topology on $[0,1]^{\mathcal{G}^\tau}$. We say that the map $\alpha$ has \emph{finite support} if for every $H^\tau \in \mathcal{G}^\tau$, the support set
+We say that the map $\gamma$ is \emph{extendable to limiting graphs} if there is a function $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ such that for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$, and every limiting graph $\phi \in \Phi$
+\begin{multline*}
+\lim_{n \to \infty} p(H, G_n) = \phi(H) \ \text{ for all } H \in \mathcal{G}
+\\
+{} \implies
+\lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n)) = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+\ \text{ for all } H^\tau \in \mathcal{G}^\tau.
+\end{multline*}
+Here we regard $\Phi^\tau$ as a measurable space with the sigma algebra induced by the product topology on $[0,1]^{\mathcal{G}^\tau}$. We say that the map $\alpha$ has \emph{finite support} if for every $H^\tau \in \mathcal{G}^\tau$, the support set
 of $\alpha(H^\tau)$, i.e.,
 \[
 \support(\alpha(H^\tau)) \defeq
@@ -451,28 +455,96 @@ is finite. This finite-support condition enables us to generalise $\alpha$ to an
     Let $\phi \in \Phi$ be an arbitrary limiting graph. We need to show that $\db{\alpha^\dagger(E^\tau)}\phi \geq 0$. 
     Using structural induction on $E^\tau$, we will show that 
     \begin{equation}
-    \label{eq:lem:adjoint-transfer0}
-    \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+      \label{eq:lem:adjoint-transfer0}
+      \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
     \end{equation}
     The desired conclusion then follows from this equation because $E^\tau \geq 0$ is valid in the $\tau$-labelled variant
     and so the integrand $\db{E^\tau}\phi^\tau$ is non-negative for every $\phi^\tau \in \Phi^\tau$.
-    
-    By the assumption that $E^\tau \geq 0$ is valid in the $\tau$-labelled variant, we have $\db{E^\tau}\phi^\tau \geq 0$ for every $\phi^\tau \in \Phi^\tau$. Using this fact and the extendability of $\gamma$, we derive the desired inequality as follows:
+
+    Assume that $E^\tau$ is a $\tau$-labelled graph $H^\tau$. By the definition of the limiting graph, there exists a convergent sequence of graphs $(G_n)_n$ such that 
+    \begin{equation}
+      \label{eq:lem:adjoint-transfer1}
+      \phi(H) = \lim_{n \to \infty} p(H, G_n)  \quad\text{for all } H \in \mathcal{G}.
+    \end{equation}
+    Using this, we derive the target equation \Cref{eq:lem:adjoint-transfer0} as follows:
+    \begin{align*}
+      & \db{\alpha^\dagger(H^\tau)}\phi 
+      \\
+      & \quad {} = \db{\sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H}\phi
+      && \text{by the definition of } \alpha^\dagger
+      \\
+      & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \phi(H)
+      && \text{by the definition of } \db{-}
+      \\
+      & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \lim_{n \to \infty} p(H, G_n)
+      && \text{by \Cref{eq:lem:adjoint-transfer1}}
+      \\
+      & \quad {} = \lim_{n \to \infty} \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot p(H, G_n)
+      && \text{by the finiteness of } \support(\alpha(H^\tau))
+      \\
+      & \quad {} = \lim_{n \to \infty} p(\alpha(H^\tau), G_n)
+      && \text{by the definition of } p(\alpha(H^\tau), G_n)
+      \\
+      & \quad {} = \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n))
+      && \text{by the adjointness of } (\alpha,\gamma) \text{ and \Cref{eq:lem:adjoint-transfer1}}
+      \\
+      & \quad {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      && \text{by the extendability of } \gamma,
+      \\
+      & \quad {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      && \text{by the definition of } \db{-}.
+    \end{align*}
+
+    Next consider the case that $E^\tau = 0$. Then, 
+    \begin{align*}
+      \db{\alpha^\dagger(0)}\phi 
+      = \db{0}\phi
+      = 0 
+      = \int_{\Phi^\tau} 0 \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      = \int_{\Phi^\tau} \db{0}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+    \end{align*}
+
+    The remaining cases can be proved by induction hypothesis and the linearity of integration. We first derive the target equation for $E^\tau = r \cdot F^\tau$:
+    \begin{align*}
+      \db{\alpha^\dagger(r \cdot F^\tau)}\phi 
+      & = \db{r \cdot \alpha^\dagger(F^\tau)}\phi
+      && \text{by the definition of } \alpha^\dagger
+      \\
+      & = r \cdot \left(\db{\alpha^\dagger(F^\tau)}\phi\right)
+      && \text{by the definition of } \db{-}
+      \\
+      & = r \cdot \int_{\Phi^\tau} \db{F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      && \text{by induction hypothesis}
+      \\
+      & = \int_{\Phi^\tau} r \cdot \left(\db{F^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      && \text{by the linearity of integration}
+      \\
+      & = \int_{\Phi^\tau} \db{r \cdot F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+      && \text{by the definition of } \db{-}.
+    \end{align*}
+    Next, we handle the case that $E^\tau = E_1^\tau + E_2^\tau$:
+    \begin{align*}
+        & \db{\alpha^\dagger(E_1^\tau + E_2^\tau)}\phi 
+        \\
+        & \quad {} = \db{\alpha^\dagger(E_1^\tau) + \alpha^\dagger(E_2^\tau)}\phi
+        && \text{by the definition of } \alpha^\dagger
+        \\
+        & \quad {} = \db{\alpha^\dagger(E_1^\tau)}\phi + \db{\alpha^\dagger(E_2^\tau)}\phi
+        && \text{by the definition of } \db{-}
+        \\
+        & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+        + \int_{\Phi^\tau} \db{E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+        && \text{by induction hypothesis}
+        \\
+        & \quad {} = \int_{\Phi^\tau} \left(\db{E_1^\tau}\phi^\tau + \db{E_2^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+        && \text{by the linearity of integration}
+        \\
+        & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau + E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+        && \text{by the definition of } \db{-}.     
+    \end{align*}
 \end{proof}
-\hy{Multiplication elimination. Differentiation operation.}
+\hy{Sum of square. Multiplication elimination. Differentiation operation. Concrete instantiation.}
 
-\hy{Limit preservation. Positivity preservation.}
-We say that $\alpha$ is a \emph{homomorphism} from $\tau$-labeled graphs to $\tau'$-labeled graphs if for every $\tau$-labeled graph $(G,\theta)$, the following conditions hold:
-
-Let $\sigma$ be a type. The definitions in the previous sections can be generalised from graphs to $\sigma$-labeled graphs in a standard way. For instance, for $\sigma$-labeled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{induced labeled subgraph density} of $H$ in $G$ or simply \emph{labeled $H$-density} in $G$ is defined as ... 
-
-\[
-\Phi^\sigma \subseteq [0,1]^{\mathcal{G}^\sigma}
-\]
-For a limiting graph $\phi \in \Phi$, there exists a probability measure $\mu_\phi$ on $\Phi^\sigma$ such that
-\[
-\phi(H') = \int_{\Phi^\sigma} \psi(H) \, d\mu_\phi(\psi)
-\]
 \section{Plan}
 \begin{itemize}
 \item Brief intro to Flag Algebras. Success stories. 
