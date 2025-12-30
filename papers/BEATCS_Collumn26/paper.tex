@@ -33,6 +33,7 @@
 \newcommand*{\Assn}{\mathsf{Assn}}
 
 \newcommand*{\FinMea}{\mathrm{FinMea}}
+\newcommand*{\support}{\mathrm{supp}}
 
 
 \newcommand{\cmt}[3]{{{\color{#3}{\bf [}{\bf #1:} {\it #2}{\bf ]}}}}
@@ -393,8 +394,8 @@ For $\tau$-labelled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{i
 p_\tau(H,G) = \mathbb{P}\Big[G'\big[\theta'([k]) \cup \mathbf{U}\big] \simeq_\tau H\Big]
 \]
 where $\mathbf{U}$ is a uniform random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$. A sequence of 
-$\tau$-labelled graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n) < v(G_{n+1})$. Such an increasing sequence
-\emph{converges} if $\lim_{n \to \infty} p_\tau(H, G_n)$ exists for every $\tau$-labelled graph $H$. A function $\phi : \mathcal{G}^\tau \to [0,1]$ is a \emph{$\tau$-labelled limiting graph} if there exists a convergent sequence of $\tau$-labeled graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p_\tau(H, G_n)$ for every $\tau$-labelled graph $H$. We write $\Phi^\tau$ for the set of all $\tau$-labelled limiting graphs.
+$\tau$-labelled graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n) < v(G_{n+1})$. Such a sequence
+\emph{converges} if it is increasing and $\lim_{n \to \infty} p_\tau(H, G_n)$ exists for every $\tau$-labelled graph $H$. A function $\phi : \mathcal{G}^\tau \to [0,1]$ is a \emph{$\tau$-labelled limiting graph} if there exists a convergent sequence of $\tau$-labeled graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p_\tau(H, G_n)$ for every $\tau$-labelled graph $H$. We write $\Phi^\tau$ for the set of all $\tau$-labelled limiting graphs.
 
 The variant of flag algebra for $\tau$-labelled graphs is defined in the same way as the original flag algebra but by replacing graphs, induced subgraph densities, convergent sequences, and limiting graphs with $\tau$-labelled graphs, induced labelled-subgraph densities, convergent sequences of $\tau$-labelled graphs, and $\tau$-labelled limiting graphs, respectively. Also, its syntax consists of density expressions and assertions built from $\tau$-labelled graphs, and its semantics interprets density expressions and assertions over $\tau$-labeled limiting graphs in $\Phi^\tau$. The syntax is recalled below for the reader's convenience:
 \begin{align*}
@@ -408,18 +409,57 @@ Note that the original flag algebra is the special case of the $\tau$-labelled v
 
 The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called \emph{downward operator}. It is defined by following the general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next, and then instantiate it to define the downward operator. 
 
-Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \FinMea(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \FinMea(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\FinMea(\mathcal{G})$ and $\FinMea(\mathcal{G}^\tau)$ for the sets of finite measures on $\mathcal{G}$ and $\mathcal{G}^\tau$, respectively. Intuitively, for $G \in \mathcal{G}$ and $H^\tau \in \mathcal{G}^\tau$, $\alpha(G)$ defines an unnormalised probability distribution over $\mathcal{G}^\tau$, and $\gamma(H)$ defines an unnormalised probability distribution over $\mathcal{G}$. Then, we say that $(\alpha,\gamma)$ is an \emph{adjoint pair} if 
+Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \FinMea(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \FinMea(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\FinMea(\mathcal{G})$ and $\FinMea(\mathcal{G}^\tau)$ for the sets of finite measures on $\mathcal{G}$ and $\mathcal{G}^\tau$, respectively. Intuitively, for $G \in \mathcal{G}$ and $H^\tau \in \mathcal{G}^\tau$, $\alpha(G)$ defines an unnormalised probability distribution over $\mathcal{G}^\tau$, and $\gamma(H^\tau)$ defines an unnormalised probability distribution over $\mathcal{G}$. We say that $(\alpha,\gamma)$ is an \emph{adjoint pair} if 
 for all $H^\tau \in \mathcal{G}^\tau$ and $G \in \mathcal{G}$, 
 \[
 p(\alpha(H^\tau), G) = p_\tau(H^\tau, \gamma(G)).
 \]
 where
 \begin{align*}
-  p(\alpha(H^\tau), G) \defeq \int p(H, G) \, \Big(\alpha(H^\tau)(dH)\Big)
+  p(\alpha(H^\tau), G) \defeq \int_{\mathcal{G}} p(H, G) \, \Big(\alpha(H^\tau)(dH)\Big)
   \quad\text{and}\quad
-  p_\tau(H^\tau, \gamma(G)) \defeq \int p(H^\tau, G^\tau) \, \Big(\gamma(G)(dG^\tau)\Big).
+  p_\tau(H^\tau, \gamma(G)) \defeq \int_{\mathcal{G}^\tau} p(H^\tau, G^\tau) \, \Big(\gamma(G)(dG^\tau)\Big).
 \end{align*}
-The map $\gamma$ is \emph{limit preserving} if there is a function $\gamma_\infty : \Phi \to \mathrm{FinMea}(\Phi^\tau)$ such that for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ \hy{I am here.}
+
+The downward operator for a type $\tau$ is derived from a particular kind of adjoint pairs $(\alpha,\gamma)$ for $\tau$ where $\alpha$ and $\gamma$ satisfy additional conditions. The condition for $\gamma$ is about the extendability of $\gamma$ to limiting graphs, and that for $\alpha$ is about the finiteness of the support of $\alpha$.
+We say that the map $\gamma$ is \emph{extendable to limiting graphs} if there is a function $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ such that for every convergent sequence of $\tau$-labelled graphs $(G^\tau_n)_{n \in \mathbb{N}}$ and every $H^\tau \in \mathcal{G}^\tau$, 
+\[
+\lim_{n \to \infty} p_\tau(H^\tau, G^\tau_n) = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big),
+\] 
+where we regard $\Phi^\tau$ as a measurable space with the sigma algebra induced by the product topology on $[0,1]^{\mathcal{G}^\tau}$. We say that the map $\alpha$ has \emph{finite support} if for every $H^\tau \in \mathcal{G}^\tau$, the support set
+of $\alpha(H^\tau)$, i.e.,
+\[
+\support(\alpha(H^\tau)) \defeq
+\{ H \,\mid\, \alpha(H^\tau)(\{H\}) > 0\}
+\]
+is finite. This finite-support condition enables us to generalise $\alpha$ to any density multiplication-free expressions in $\Expr^\tau$ using linearity.
+\begin{align*}
+  \alpha^\dagger(H^\tau) & \defeq \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H,
+  &
+  \alpha^\dagger(r \cdot E^\tau) & \defeq r \cdot \alpha^\dagger(E^\tau),
+  \\
+  \alpha^\dagger(0) & \defeq 0,
+  &
+  \alpha^\dagger(E_1^\tau + E_2^\tau) & \defeq \alpha^\dagger(E_1^\tau) + \alpha^\dagger(E_2^\tau).
+\end{align*}
+\begin{lem}
+  \label{lem:adjoint-transfer}
+    Let $(\alpha,\gamma)$ be an adjoint pair for a type $\tau$. Assume that $\gamma$ is extendable to limiting graphs and has $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ as a witness of this extendability. Also, assume that $\alpha(H^\tau)$
+    has finite support, and let $\alpha^\dagger$ be the generalisation of $\alpha$ to multiplication-free expressions. Then, for every valid inequality $E^\tau \geq 0$ in the $\tau$-labelled variant such that $E^\tau$ is multiplication-free, the inequality $\alpha(E^\tau) \geq 0$ is valid in the original flag algebra.
+\end{lem}
+\begin{proof}
+    Let $\phi \in \Phi$ be an arbitrary limiting graph. We need to show that $\db{\alpha^\dagger(E^\tau)}\phi \geq 0$. 
+    Using structural induction on $E^\tau$, we will show that 
+    \begin{equation}
+    \label{eq:lem:adjoint-transfer0}
+    \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+    \end{equation}
+    The desired conclusion then follows from this equation because $E^\tau \geq 0$ is valid in the $\tau$-labelled variant
+    and so the integrand $\db{E^\tau}\phi^\tau$ is non-negative for every $\phi^\tau \in \Phi^\tau$.
+    
+    By the assumption that $E^\tau \geq 0$ is valid in the $\tau$-labelled variant, we have $\db{E^\tau}\phi^\tau \geq 0$ for every $\phi^\tau \in \Phi^\tau$. Using this fact and the extendability of $\gamma$, we derive the desired inequality as follows:
+\end{proof}
+\hy{Multiplication elimination. Differentiation operation.}
 
 \hy{Limit preservation. Positivity preservation.}
 We say that $\alpha$ is a \emph{homomorphism} from $\tau$-labeled graphs to $\tau'$-labeled graphs if for every $\tau$-labeled graph $(G,\theta)$, the following conditions hold:
