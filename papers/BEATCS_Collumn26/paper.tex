@@ -398,25 +398,26 @@ $\tau$-labelled graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n
 
 The variant of flag algebra for $\tau$-labelled graphs is defined in the same way as the original flag algebra but by replacing graphs, induced subgraph densities, convergent sequences, and limiting graphs with $\tau$-labelled graphs, induced labelled-subgraph densities, convergent sequences of $\tau$-labelled graphs, and $\tau$-labelled limiting graphs, respectively. Also, its syntax consists of density expressions and assertions built from $\tau$-labelled graphs, and its semantics interprets density expressions and assertions over $\tau$-labeled limiting graphs in $\Phi^\tau$. The syntax is recalled below for the reader's convenience:
 \begin{align*}
-\text{Density Expressions}\quad E^\tau & ::= H \,\mid\, r \cdot E^\tau \,\mid\, 0 \,\mid\, E^\tau + E^\tau \,\mid\, 1 \,\mid\, E^\tau \times E^\tau
+\text{Density Expressions}\quad E^\tau & ::= H^\tau \,\mid\, r \cdot E^\tau \,\mid\, 0 \,\mid\, E^\tau + E^\tau \,\mid\, 1 \,\mid\, E^\tau \times E^\tau
 \\
 \text{Assertions}\quad A^\tau & ::= \lfalse \,\mid\, \ltrue \,\mid\, E^\tau \geq E^\tau \,\mid\, \neg A^\tau \,\mid\, A^\tau \lor A^\tau 
 \end{align*}
-where $H$ is a $\tau$-labelled graph, and $r \in \mathbb{R}$. We denote the set of all density expressions in this variant by $\Expr^\tau$, and that of assertions in the variant by $\Assn^\tau$. 
+where $H^\tau$ is a $\tau$-labelled graph, and $r \in \mathbb{R}$. We denote the set of all density expressions in this variant by $\Expr^\tau$, and that of assertions in the variant by $\Assn^\tau$. 
 
-\hy{Explain $\tau$-labeled limiting graphs.}
+Note that the original flag algebra is the special case of the $\tau$-labelled variant when $\tau$ is the empty graph on the empty vertex set. We denote the empty graph with $\emptyset$. So, $\Expr = \Expr^\emptyset$ and $\Assn = \Assn^\emptyset$.
 
-Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \mathrm{FinMea}(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \mathrm{FinMea}(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\mathrm{FinMea}(\mathcal{G})$ for the set of all finite measures on $\mathcal{G}$. Then, we say that $\alpha$ is a \emph{left adjoint} of $\gamma$ 
-or $\gamma$ is a \emph{right adjoint} of $\alpha$ if 
-for all $H \in \mathcal{G}^\tau$ and $G \in \mathcal{G}$, the following equation holds:
+The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called \emph{downward operator}. It is defined by following the general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next, and then instantiate it to define the downward operator. 
+
+Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \FinMea(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \FinMea(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\FinMea(\mathcal{G})$ and $\FinMea(\mathcal{G}^\tau)$ for the sets of finite measures on $\mathcal{G}$ and $\mathcal{G}^\tau$, respectively. Intuitively, for $G \in \mathcal{G}$ and $H^\tau \in \mathcal{G}^\tau$, $\alpha(G)$ defines an unnormalised probability distribution over $\mathcal{G}^\tau$, and $\gamma(H)$ defines an unnormalised probability distribution over $\mathcal{G}$. Then, we say that $(\alpha,\gamma)$ is an \emph{adjoint pair} if 
+for all $H^\tau \in \mathcal{G}^\tau$ and $G \in \mathcal{G}$, 
 \[
-p_\tau(\alpha(H), G) = p(H, \gamma(G)).
+p(\alpha(H^\tau), G) = p_\tau(H^\tau, \gamma(G)).
 \]
 where
 \begin{align*}
-  p_\tau(\alpha(H), G) \defeq \int p_\tau(H', G) \, \alpha(H)(dH')
-  \qquad\text{and}\qquad
-  p(H, \gamma(G)) \defeq \int p(H, G') \, \gamma(G)(dG').
+  p(\alpha(H^\tau), G) \defeq \int p(H, G) \, \Big(\alpha(H^\tau)(dH)\Big)
+  \quad\text{and}\quad
+  p_\tau(H^\tau, \gamma(G)) \defeq \int p(H^\tau, G^\tau) \, \Big(\gamma(G)(dG^\tau)\Big).
 \end{align*}
 The map $\gamma$ is \emph{limit preserving} if there is a function $\gamma_\infty : \Phi \to \mathrm{FinMea}(\Phi^\tau)$ such that for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ \hy{I am here.}
 
