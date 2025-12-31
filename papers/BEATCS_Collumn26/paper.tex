@@ -545,6 +545,21 @@ is finite. This finite-support condition enables us to generalise $\alpha$ to an
 \end{proof}
 \hy{Sum of square. Multiplication elimination. Differentiation operation. Concrete instantiation.}
 
+We are ready to define the downward operator for each type $\tau$. The operator is the $\alpha^\dagger$ in \Cref{lem:adjoint-transfer} for a particular adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$. The function $\gamma_d$ in this adjoint pair is defined as follows. For a graph $G \in \mathcal{G}$, we define the measure $\gamma(G) \in \FinMea(\mathcal{G}^\tau)$ by
+\[
+c_G \defeq \frac{|\mathrm{Aut}(\tau)| \cdot p(\tau,G)}{v(\tau)!},
+\quad 
+Z_G \defeq |\{G^\tau \in \mathcal{G}^\tau \,\mid\, |G^\tau| = G\}|,
+\quad
+\gamma(G)(\{G^\tau\}) \defeq 
+\begin{cases}
+\frac{c_G}{Z_G} & \text{if } |G^\tau| = G
+\\
+0 & \text{otherwise}.
+\end{cases}
+\]
+On the other hand, if there is no $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, we define the measure $\gamma(G)$ to be the zero measure, i.e., $\gamma(G)(\{G^\tau\}) \defeq 0$ for every $G^\tau \in \mathcal{G}^\tau$. The function $\alpha_d$ in this adjoint pair is defined as follows. \hy{I am here.}
+
 \section{Plan}
 \begin{itemize}
 \item Brief intro to Flag Algebras. Success stories. 
