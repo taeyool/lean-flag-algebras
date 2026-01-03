@@ -267,14 +267,25 @@ For instance, the following assertions hold for all limiting graphs $\phi \in \P
     The rules of ordered commutative algebras form valid equations for density expressions. Also, the rules for boolean algebras are valid assertions in flag algebra.
 \end{lem}
 
-What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from have a limiting graph. Because of this fact, two different variables representing isomorphic graphs always have the same value, and each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ uniquely up to isomorphism. Furthermore, any variable representing a graph $G$ with $v(G) \leq n$ is equal to a linear combination of the variables in $\mathcal{H}_n$. We formalise these observations in the next lemmas. 
+What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph so that they are correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
 \begin{lem}
     If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
+The next consequences are related to the definition of limiting graph $\phi$. For each graph $H$, $\phi(H)$ intuitively refers to the probability that if we choose a size-$v(H)$ subset of vertices in the infinite graph represented by $\phi$ uniformly at random, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we can see that $\phi(H)$ has a value in $[0,1]$, and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ is equal to $1$. These observations are formalised in the next two lemmas.
 \begin{lem}
   \label{lem:non-negativity}
     The inequality $H \geq 0$ is valid for every graph $H$.
 \end{lem}
+\begin{lem}
+  \label{lem:sum-to-one}
+    Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
+    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the equation 
+    \[
+    \sum_{H \in \mathcal{H}_n} H = 1
+    \] 
+    is valid.
+\end{lem}
+each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ uniquely up to isomorphism. Furthermore, any variable representing a graph $G$ with $v(G) \leq n$ is equal to a linear combination of the variables in $\mathcal{H}_n$. We formalise these observations in the next lemmas. 
 \begin{lem}
   \label{lem:decomposition}
     Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
