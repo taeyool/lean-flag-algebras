@@ -19,6 +19,8 @@
 \newtheorem{remark}[thm]{Remark}
 \newtheorem{example}[thm]{Example}
 
+\newcommand*{\emptygraph}{\emptyset}
+
 \newcommand*{\defeq}{\stackrel{\textrm{def}}{=}}
 
 \newcommand*{\lfalse}{\mathbf{false}}
@@ -286,7 +288,7 @@ we restate the above observations formally in the following lemmas.
     \] 
     is valid.
 \end{lem}
-Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplication in density expressions can be elimiated. 
+Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplication in density expressions and the multiplicative unit $1$ can be elimiated. 
 \begin{lem}
   \label{lem:decomposition}
     Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
@@ -303,7 +305,10 @@ Finally, we note two further consequences, which are heavily used in the applica
     \[
     H_1 \cdot H_2 = \sum_{H \in \mathcal{H}_V} r_H \cdot H
     \]
-    is valid.
+    is valid. Also, if $\emptygraph$ is the graph with the empty vertex set, then
+    \[ 
+    1 = \emptygraph.
+    \]
 \end{lem}
 
 We now illustrate the syntax and semantics of flag algebra by expressing asymptotic extremal problems mentioned in the previous section. The 
@@ -398,70 +403,66 @@ The tightest $c'$ is known to be $1/4$ by Goodman's result \hy{Citation}. We pro
 
 \hy{Explain the notation. Real constants mean real constants multiplied by the density expression $1$. It might be better to change the order of these two examples.}
 
-\section{Reasoning with Flag Algebra}
+\section{Reasoning with Downward Operator}
 
 The previous section illustrated how to reason about limiting graphs using flag algebra with two examples. But both examples include a step not justified yet, namely, the inequality in \Cref{eqn:mantel-key-inequality} which is recalled below:
 \[
 0 \leq 1 \cdot \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + 1 \cdot \Kthree.
 \]
-The purpose of this section is to explain a reasoning principle of flag algebra which allows us to prove such inequalities.
+The purpose of this section is to explain a reasoning principle of flag algebra which allows us to prove such inequalities, and also downward operator, a key tool for applying this reasoning principle.
 
-At a high level, the reasoning principle is based on the idea of defining a collection of variants of flag algebra and establishing, for each variant, a mechanism for transferring valid inequalities in the variant to valid inequalities in the original flag algebra. Each variant is designed to make certain inequalities easier to prove. An intended use case is to prove such easy inequalities in some variants, and transfer them to the original flag algebra using the mechanism. The variants we consider here are obtained by repeating the construction of flag algebra so far but with vertex-labelled graphs, instead of unlabelled graphs. For instance, the inequality in \Cref{eqn:mantel-key-inequality} is derived from an easily-provable inequality in a variant that considers graphs with one vertex labelled with~$1$.
+At a high level, the reasoning principle is based on the idea of defining a collection of variants of flag algebra and establishing, for each variant, a mechanism for transferring valid inequalities in the variant to valid inequalities in the original flag algebra. Each variant is designed to make certain inequalities easier to prove. An intended use case is to prove such easy inequalities in some variants, and transfer them to the original flag algebra using the mechanism. The variants we consider here are obtained by repeating the construction of flag algebra so far but with partially vertex-labelled graphs, instead of unlabelled graphs. For instance, when we derive the inequality in \Cref{eqn:mantel-key-inequality}, we use a variant that considers graphs with one vertex labelled with~$1$.
 
 To express this principle formally, we need some additional definitions.
-A \emph{type} $\tau$ is a graph on the vertex set $[k]$ for some $k \in \mathbb{N}$. We call $k$ the \emph{size} of $\tau$. A \emph{$\tau$-labelled graph} is a pair $G = (G', \theta)$ of a graph $G'$ and an injective map $\theta : [k] \to V(G')$ that preserves both edges and non-edges of $\tau$. We call $\tau$ the \emph{type} of $G$, and write $V(G)$ and $E(G)$ for the vertex set and edge set of $G'$, respectively, and also $v(G)$ and $e(G)$ for their cardinalities. For a type $\tau$, we write $\mathcal{G}^\tau$ for the set of all $\tau$-labelled graphs. 
+A \emph{type} $\tau$ is a graph on the vertex set $[k]$ for some $k \in \mathbb{N}$; we call $k$ the \emph{size} of $\tau$. A \emph{$\tau$-labelled graph} is a pair $G^\tau = (G, \theta)$ consisting of a graph $G$ and an injective map $\theta : [k] \to V(G)$ such that $\theta$ is an \emph{embedding} from $\tau$ into $G$, i.e., for every $i,j \in [k]$, we have $\{i,j\} \in E(\tau)$ if and only if $\{\theta(i), \theta(j)\} \in E(G)$. We call $\tau$ the \emph{type} of $G^\tau$, and write $\lvert G^\tau \rvert$ for $G$, and also $V(G^\tau)$ and $E(G^\tau)$ for $V(G)$ and $E(G)$, respectively. For a type $\tau$, we write $\mathcal{G}^\tau$ for the set of all $\tau$-labelled graphs.
 
 We now repeat the concepts introduced in the previous sections but for $\tau$-labelled graphs instead of unlabelled graphs.
-For $\tau$-labelled graphs $H = (H',\theta)$ and $G = (G',\theta')$, a function $h : V(H') \to V(G')$ is a \emph{$\tau$-homomorphism} if it is a homomorphism from $H'$ to $G'$ and satisfies $h(\theta(i)) = \theta'(i)$ for all $i \in [k]$. We say that $H$ and $G$ are \emph{$\tau$-isomorphic}, denoted by $H \simeq_\tau G$, if there exists a bijective $\tau$-homomorphism from $H$ to $G$ such that its inverse is also a $\tau$-homomorphism from $G$ to $H$. 
+For $\tau$-labelled graphs $H^\tau = (H,\iota)$ and $G^\tau = (G,\theta)$, a function $h : V(H) \to V(G)$ is a \emph{$\tau$-homomorphism} if it is a homomorphism from $H$ to $G$ and satisfies $h(\iota(i)) = \theta(i)$ for all $i \in [k]$. We say that $H^\tau$ and $G^\tau$ are \emph{$\tau$-isomorphic}, denoted by $H^\tau \simeq_\tau G^\tau$, if there exists a bijective $\tau$-homomorphism from $H^\tau$ to $G^\tau$ such that its inverse is also a $\tau$-homomorphism from $G^\tau$ to $H^\tau$. 
 
-For $\tau$-labelled graphs $H = (H',\theta)$ and $G = (G',\theta')$, the \emph{induced labelled-subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$ is defined as
+For $\tau$-labelled graphs $H^\tau = (H,\iota)$ and $G^\tau = (G,\theta)$, the \emph{induced labelled-subgraph density} of $H^\tau$ in $G^\tau$, or simply \emph{$H^\tau$-density} in $G^\tau$, is defined as
 \[
-p_\tau(H,G) = \mathbb{P}\Big[G'\big[\theta'([k]) \cup \mathbf{U}\big] \simeq_\tau H\Big]
+p_\tau(H^\tau,G^\tau) = \mathbb{P}\Big[\Big(G\big[\theta([k]) \cup \mathbf{U}\big],\,\theta\Big) \simeq_\tau H^\tau\Big]
 \]
-where $\mathbf{U}$ is a uniform random subset of $V(G') \setminus \theta'([k])$ with size $v(H') - k$. A sequence of 
-$\tau$-labelled graphs $(G_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $v(G_n) < v(G_{n+1})$. Such a sequence
-\emph{converges} if it is increasing and $\lim_{n \to \infty} p_\tau(H, G_n)$ exists for every $\tau$-labelled graph $H$. A function $\phi : \mathcal{G}^\tau \to [0,1]$ is a \emph{$\tau$-labelled limiting graph} if there exists a convergent sequence of $\tau$-labeled graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p_\tau(H, G_n)$ for every $\tau$-labelled graph $H$. We write $\Phi^\tau$ for the set of all $\tau$-labelled limiting graphs.
+where $\mathbf{U}$ is a uniform random subset of $V(G) \setminus \theta([k])$ with size $|V(H^\tau)| - k$. A sequence of 
+$\tau$-labelled graphs $(G^\tau_n)_{n \in \mathbb{N}}$ is \emph{increasing} if $|V(G^\tau_n)| < |V(G^\tau_{n+1})|$. Such a sequence
+\emph{converges} if it is increasing and $\lim_{n \to \infty} p_\tau(H^\tau, G^\tau_n)$ exists for every $\tau$-labelled graph $H^\tau$. A function $\phi : \mathcal{G}^\tau \to [0,1]$ is a \emph{$\tau$-labelled limiting graph} if there exists a convergent sequence of $\tau$-labelled graphs $(G^\tau_n)_{n \in \mathbb{N}}$ such that $\phi(H^\tau) = \lim_{n \to \infty} p_\tau(H^\tau, G^\tau_n)$ for every $\tau$-labelled graph $H^\tau$. As in the original flag algebra, $\phi$ represents an infinite undirected graph with a continuum number of vertices, but unlike the original case, the $k$ vertices of this infinite graph are assumed to be labelled with $1,\ldots,k$, and this label defines an embedding from $\tau$ into the infinite graph. The component of $\phi$ at a pattern $\tau$-labelled graph $H^\tau$ is the density of $H^\tau$ in this infinitely large host graph. We write $\Phi^\tau$ for the set of all $\tau$-labelled limiting graphs. \hy{Check that the above explanation is also included in the unlabelled case.}
 
-The variant of flag algebra for $\tau$-labelled graphs is defined in the same way as the original flag algebra but by replacing graphs, induced subgraph densities, convergent sequences, and limiting graphs with $\tau$-labelled graphs, induced labelled-subgraph densities, convergent sequences of $\tau$-labelled graphs, and $\tau$-labelled limiting graphs, respectively. Also, its syntax consists of density expressions and assertions built from $\tau$-labelled graphs, and its semantics interprets density expressions and assertions over $\tau$-labeled limiting graphs in $\Phi^\tau$. The syntax is recalled below for the reader's convenience:
+The variant of flag algebra for $\tau$-labelled graphs is defined analogously to the original one, replacing graphs, induced subgraph densities, convergent graph sequences, and limiting graphs by $\tau$-labelled graphs, induced labelled-subgraph densities, convergent sequences of $\tau$-labelled graphs, and $\tau$-labelled limiting graphs, respectively. Its syntax consists of density expressions and assertions built from $\tau$-labelled graphs and is interpreted over $\tau$-labelled limiting graphs in $\Phi^\tau$. For convenience, the syntax is recalled below:
 \begin{align*}
-\text{Density Expressions}\quad E^\tau & ::= H^\tau \,\mid\, r \cdot E^\tau \,\mid\, 0 \,\mid\, E^\tau + E^\tau \,\mid\, 1 \,\mid\, E^\tau \times E^\tau
+\text{Density Expressions}\quad E^\tau & ::= H^\tau \,\mid\, r \cdot E^\tau \,\mid\, 0 \,\mid\, E^\tau + E^\tau \,\mid\, 1 \,\mid\, E^\tau \cdot E^\tau
 \\
 \text{Assertions}\quad A^\tau & ::= \lfalse \,\mid\, \ltrue \,\mid\, E^\tau \geq E^\tau \,\mid\, \neg A^\tau \,\mid\, A^\tau \lor A^\tau 
 \end{align*}
-where $H^\tau$ is a $\tau$-labelled graph, and $r \in \mathbb{R}$. We denote the set of all density expressions in this variant by $\Expr^\tau$, and that of assertions in the variant by $\Assn^\tau$. 
+where $H^\tau$ is a $\tau$-labelled graph and $r \in \mathbb{R}$. We write $\Expr^\tau$ for the density expressions in this variant and $\Assn^\tau$ for its assertions.
 
-Note that the original flag algebra is the special case of the $\tau$-labelled variant when $\tau$ is the empty graph on the empty vertex set. We denote the empty graph with $\emptyset$. So, $\Expr = \Expr^\emptyset$ and $\Assn = \Assn^\emptyset$.
 
-The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called \emph{downward operator}. It is defined by following the general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next, and then instantiate it to define the downward operator. 
+The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called the \emph{downward operator}. It is defined by following a general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next and then instantiate it to define the downward operator. 
 
-Consider a type $\tau$,  a function $\gamma : \mathcal{G} \to \FinMea(\mathcal{G}^\tau)$, and another function $\alpha : \mathcal{G}^\tau \to \FinMea(\mathcal{G})$, where we regard $\mathcal{G}$ and $\mathcal{G}^{\sigma}$ as measurable spaces with the discrete sigma algebra and write $\FinMea(\mathcal{G})$ and $\FinMea(\mathcal{G}^\tau)$ for the sets of finite measures on $\mathcal{G}$ and $\mathcal{G}^\tau$, respectively. Intuitively, for $G \in \mathcal{G}$ and $H^\tau \in \mathcal{G}^\tau$, $\alpha(G)$ defines an unnormalised probability distribution over $\mathcal{G}^\tau$, and $\gamma(H^\tau)$ defines an unnormalised probability distribution over $\mathcal{G}$. We say that $(\alpha,\gamma)$ is an \emph{adjoint pair} if 
-for all $H^\tau \in \mathcal{G}^\tau$ and $G \in \mathcal{G}$, 
-\[
-p(\alpha(H^\tau), G) = p_\tau(H^\tau, \gamma(G)).
-\]
+Consider a type $\tau$, and functions $\gamma : \mathcal{G} \to \FinMea(\mathcal{G}^\tau)$ and $\alpha : \mathcal{G}^\tau \to \FinMea(\mathcal{G})$. Here we regard $\mathcal{G}$ and $\mathcal{G}^\tau$ as measurable spaces with the discrete $\sigma$-algebras and write $\FinMea(\mathcal{G})$ and $\FinMea(\mathcal{G}^\tau)$ for the sets of finite measures on $\mathcal{G}$ and $\mathcal{G}^\tau$, respectively. Intuitively, for $G \in \mathcal{G}$, $\gamma(G)$ defines an unnormalised probability distribution over $\mathcal{G}^\tau$, and for $H^\tau \in \mathcal{G}^\tau$, $\alpha(H^\tau)$ defines an unnormalised probability distribution over $\mathcal{G}$. We say that $(\alpha,\gamma)$ is an \emph{adjoint pair} if for all $H^\tau \in \mathcal{G}^\tau$ and $G \in \mathcal{G}$,
+\begin{equation}
+\label{eq:adjoint-pair}
+p(\alpha(H^\tau), G) = p_\tau(H^\tau, \gamma(G)),
+\end{equation}
 where
 \begin{align*}
   p(\alpha(H^\tau), G) \defeq \int_{\mathcal{G}} p(H, G) \, \Big(\alpha(H^\tau)(dH)\Big)
   \quad\text{and}\quad
-  p_\tau(H^\tau, \gamma(G)) \defeq \int_{\mathcal{G}^\tau} p(H^\tau, G^\tau) \, \Big(\gamma(G)(dG^\tau)\Big).
+  p_\tau(H^\tau, \gamma(G)) \defeq \int_{\mathcal{G}^\tau} p_\tau(H^\tau, G^\tau) \, \Big(\gamma(G)(dG^\tau)\Big).
 \end{align*}
 
-The downward operator for a type $\tau$ is derived from a particular kind of adjoint pairs $(\alpha,\gamma)$ for $\tau$ where $\alpha$ and $\gamma$ satisfy additional conditions. The condition for $\gamma$ is about the extendability of $\gamma$ to limiting graphs, and that for $\alpha$ is about the finiteness of the support of $\alpha$.
-We say that the map $\gamma$ is \emph{extendable to limiting graphs} if there is a function $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ such that for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$, and every limiting graph $\phi \in \Phi$
+
+The downward operator for a type $\tau$ is obtained from an adjoint pair $(\alpha,\gamma)$ for $\tau$ that satisfies two additional conditions. The first requires that $\gamma$ be extendable to limiting graphs; the second requires that $\alpha$ have finite support. We say that $\gamma$ is \emph{extendable to limiting graphs} if there exists a function $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ such that, for every convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ and every limiting graph $\phi \in \Phi$,
 \begin{multline*}
-\lim_{n \to \infty} p(H, G_n) = \phi(H) \ \text{ for all } H \in \mathcal{G}
+\Bigl(\forall H \in \mathcal{G},\ \lim_{n \to \infty} p(H, G_n) = \phi(H)\Bigr)
 \\
-{} \implies
-\lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n)) = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-\ \text{ for all } H^\tau \in \mathcal{G}^\tau.
+\implies
+\Bigl(\forall H^\tau \in \mathcal{G}^\tau,\ \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n)) = \int_{\Phi^\tau} \phi^\tau(H^\tau) \,\bigl(\gamma_\infty(\phi)(d\phi^\tau)\bigr)\Bigr).
 \end{multline*}
-Here we regard $\Phi^\tau$ as a measurable space with the sigma algebra induced by the product topology on $[0,1]^{\mathcal{G}^\tau}$. We say that the map $\alpha$ has \emph{finite support} if for every $H^\tau \in \mathcal{G}^\tau$, the support set
-of $\alpha(H^\tau)$, i.e.,
+Here, $\Phi^\tau$ is equipped with the $\sigma$-algebra induced by the product topology on $[0,1]^{\mathcal{G}^\tau}$, making it a measurable space. We say that $\alpha$ has \emph{finite support} if, for every $H^\tau \in \mathcal{G}^\tau$, the support
 \[
-\support(\alpha(H^\tau)) \defeq
-\{ H \,\mid\, \alpha(H^\tau)(\{H\}) > 0\}
+\support(\alpha(H^\tau)) \defeq \{ H \mid \alpha(H^\tau)(\{H\}) > 0 \}
 \]
-is finite. This finite-support condition enables us to generalise $\alpha$ to any density multiplication-free expressions in $\Expr^\tau$ using linearity.
+is finite. This finite-support condition lets us extend $\alpha$ linearly to any multiplication-free density expression in $\Expr^\tau$ that does not contain $1$:
 \begin{align*}
   \alpha^\dagger(H^\tau) & \defeq \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H,
   &
@@ -473,100 +474,102 @@ is finite. This finite-support condition enables us to generalise $\alpha$ to an
 \end{align*}
 \begin{lem}
   \label{lem:adjoint-transfer}
-    Let $(\alpha,\gamma)$ be an adjoint pair for a type $\tau$. Assume that $\gamma$ is extendable to limiting graphs and has $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ as a witness of this extendability. Also, assume that $\alpha(H^\tau)$
-    has finite support, and let $\alpha^\dagger$ be the generalisation of $\alpha$ to multiplication-free expressions. Then, for every valid inequality $E^\tau \geq 0$ in the $\tau$-labelled variant such that $E^\tau$ is multiplication-free, the inequality $\alpha(E^\tau) \geq 0$ is valid in the original flag algebra.
+  Let $(\alpha,\gamma)$ be an adjoint pair for a type $\tau$. Assume that $\gamma$ is extendable to limiting graphs. Also, assume that $\alpha(H^\tau)$
+  has finite support, and let $\alpha^\dagger$ be the generalisation of $\alpha$ to multiplication-free expressions that do not contain $1$. Then, for every valid inequality $E^\tau \geq 0$ in the $\tau$-labelled variant such that $E^\tau$ is multiplication-free and $1$-free, the inequality $\alpha^\dagger(E^\tau) \geq 0$ is valid in the original flag algebra.
 \end{lem}
 \begin{proof}
-    Let $\phi \in \Phi$ be an arbitrary limiting graph. We need to show that $\db{\alpha^\dagger(E^\tau)}\phi \geq 0$. 
-    Using structural induction on $E^\tau$, we will show that 
-    \begin{equation}
-      \label{eq:lem:adjoint-transfer0}
-      \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
-    \end{equation}
-    The desired conclusion then follows from this equation because $E^\tau \geq 0$ is valid in the $\tau$-labelled variant
-    and so the integrand $\db{E^\tau}\phi^\tau$ is non-negative for every $\phi^\tau \in \Phi^\tau$.
+  Let $\gamma_\infty : \Phi \to \FinMea(\Phi^\tau)$ be a witness of the extendability 
+  of $\gamma$ to limiting graphs.
+  Consider an arbitrary limiting graph $\phi \in \Phi$. We need to show that $\db{\alpha^\dagger(E^\tau)}\phi \geq 0$. 
+  Using structural induction on $E^\tau$, we will show that 
+  \begin{equation}
+    \label{eq:lem:adjoint-transfer0}
+    \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+  \end{equation}
+  The desired conclusion then follows from this equation because $E^\tau \geq 0$ is valid in the $\tau$-labelled variant
+  and so the integrand $\db{E^\tau}\phi^\tau$ is non-negative for every $\phi^\tau \in \Phi^\tau$.
 
-    Assume that $E^\tau$ is a $\tau$-labelled graph $H^\tau$. By the definition of the limiting graph, there exists a convergent sequence of graphs $(G_n)_n$ such that 
-    \begin{equation}
-      \label{eq:lem:adjoint-transfer1}
-      \phi(H) = \lim_{n \to \infty} p(H, G_n)  \quad\text{for all } H \in \mathcal{G}.
-    \end{equation}
-    Using this, we derive the target equation \Cref{eq:lem:adjoint-transfer0} as follows:
-    \begin{align*}
-      & \db{\alpha^\dagger(H^\tau)}\phi 
-      \\
-      & \quad {} = \db{\sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H}\phi
-      && \text{by the definition of } \alpha^\dagger
-      \\
-      & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \phi(H)
-      && \text{by the definition of } \db{-}
-      \\
-      & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \lim_{n \to \infty} p(H, G_n)
-      && \text{by \Cref{eq:lem:adjoint-transfer1}}
-      \\
-      & \quad {} = \lim_{n \to \infty} \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot p(H, G_n)
-      && \text{by the finiteness of } \support(\alpha(H^\tau))
-      \\
-      & \quad {} = \lim_{n \to \infty} p(\alpha(H^\tau), G_n)
-      && \text{by the definition of } p(\alpha(H^\tau), G_n)
-      \\
-      & \quad {} = \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n))
-      && \text{by the adjointness of } (\alpha,\gamma) \text{ and \Cref{eq:lem:adjoint-transfer1}}
-      \\
-      & \quad {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      && \text{by the extendability of } \gamma,
-      \\
-      & \quad {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      && \text{by the definition of } \db{-}.
-    \end{align*}
+  Assume that $E^\tau$ is a $\tau$-labelled graph $H^\tau$. By the definition of a limiting graph, there exists a convergent sequence of graphs $(G_n)_n$ such that 
+  \begin{equation}
+    \label{eq:lem:adjoint-transfer1}
+    \phi(H) = \lim_{n \to \infty} p(H, G_n)  \quad\text{for all } H \in \mathcal{G}.
+  \end{equation}
+  Using this, we derive \Cref{eq:lem:adjoint-transfer0} as follows:
+  \begin{align*}
+    & \db{\alpha^\dagger(H^\tau)}\phi 
+    \\
+    & \quad {} = \db{\sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H}\phi
+    && \text{by the definition of } \alpha^\dagger
+    \\
+    & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \phi(H)
+    && \text{by the definition of } \db{-}
+    \\
+    & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \lim_{n \to \infty} p(H, G_n)
+    && \text{by \Cref{eq:lem:adjoint-transfer1}}
+    \\
+    & \quad {} = \lim_{n \to \infty} \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot p(H, G_n)
+    && \text{by the finiteness of } \support(\alpha(H^\tau))
+    \\
+    & \quad {} = \lim_{n \to \infty} p(\alpha(H^\tau), G_n)
+    && \text{by the definition of } p(\alpha(H^\tau), G_n)
+    \\
+    & \quad {} = \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n))
+    && \text{by the adjointness of } (\alpha,\gamma)
+    \\
+    & \quad {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the extendability of } \gamma,
+    \\
+    & \quad {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the definition of } \db{-}.
+  \end{align*}
 
-    Next consider the case that $E^\tau = 0$. Then, 
-    \begin{align*}
-      \db{\alpha^\dagger(0)}\phi 
-      = \db{0}\phi
-      = 0 
-      = \int_{\Phi^\tau} 0 \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      = \int_{\Phi^\tau} \db{0}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
-    \end{align*}
+  Next consider the case that $E^\tau = 0$. Then, 
+  \begin{align*}
+    \db{\alpha^\dagger(0)}\phi 
+    = \db{0}\phi
+    = 0 
+    = \int_{\Phi^\tau} 0 \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    = \int_{\Phi^\tau} \db{0}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+  \end{align*}
 
-    The remaining cases can be proved by induction hypothesis and the linearity of integration. We first derive the target equation for $E^\tau = r \cdot F^\tau$:
-    \begin{align*}
-      \db{\alpha^\dagger(r \cdot F^\tau)}\phi 
-      & = \db{r \cdot \alpha^\dagger(F^\tau)}\phi
-      && \text{by the definition of } \alpha^\dagger
-      \\
-      & = r \cdot \left(\db{\alpha^\dagger(F^\tau)}\phi\right)
-      && \text{by the definition of } \db{-}
-      \\
-      & = r \cdot \int_{\Phi^\tau} \db{F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      && \text{by induction hypothesis}
-      \\
-      & = \int_{\Phi^\tau} r \cdot \left(\db{F^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      && \text{by the linearity of integration}
-      \\
-      & = \int_{\Phi^\tau} \db{r \cdot F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-      && \text{by the definition of } \db{-}.
-    \end{align*}
-    Next, we handle the case that $E^\tau = E_1^\tau + E_2^\tau$:
-    \begin{align*}
-        & \db{\alpha^\dagger(E_1^\tau + E_2^\tau)}\phi 
-        \\
-        & \quad {} = \db{\alpha^\dagger(E_1^\tau) + \alpha^\dagger(E_2^\tau)}\phi
-        && \text{by the definition of } \alpha^\dagger
-        \\
-        & \quad {} = \db{\alpha^\dagger(E_1^\tau)}\phi + \db{\alpha^\dagger(E_2^\tau)}\phi
-        && \text{by the definition of } \db{-}
-        \\
-        & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-        + \int_{\Phi^\tau} \db{E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-        && \text{by induction hypothesis}
-        \\
-        & \quad {} = \int_{\Phi^\tau} \left(\db{E_1^\tau}\phi^\tau + \db{E_2^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-        && \text{by the linearity of integration}
-        \\
-        & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau + E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-        && \text{by the definition of } \db{-}.     
-    \end{align*}
+  The remaining cases can be proved by the induction hypothesis and the linearity of integration. We first derive the target equation for $E^\tau = r \cdot F^\tau$:
+  \begin{align*}
+    \db{\alpha^\dagger(r \cdot F^\tau)}\phi 
+    & = \db{r \cdot \alpha^\dagger(F^\tau)}\phi
+    && \text{by the definition of } \alpha^\dagger
+    \\
+    & = r \cdot \left(\db{\alpha^\dagger(F^\tau)}\phi\right)
+    && \text{by the definition of } \db{-}
+    \\
+    & = r \cdot \int_{\Phi^\tau} \db{F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the induction hypothesis}
+    \\
+    & = \int_{\Phi^\tau} r \cdot \left(\db{F^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the linearity of integration}
+    \\
+    & = \int_{\Phi^\tau} \db{r \cdot F^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the definition of } \db{-}.
+  \end{align*}
+  Next, we handle the case that $E^\tau = E_1^\tau + E_2^\tau$:
+  \begin{align*}
+    & \db{\alpha^\dagger(E_1^\tau + E_2^\tau)}\phi 
+    \\
+    & \quad {} = \db{\alpha^\dagger(E_1^\tau) + \alpha^\dagger(E_2^\tau)}\phi
+    && \text{by the definition of } \alpha^\dagger
+    \\
+    & \quad {} = \db{\alpha^\dagger(E_1^\tau)}\phi + \db{\alpha^\dagger(E_2^\tau)}\phi
+    && \text{by the definition of } \db{-}
+    \\
+    & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    + \int_{\Phi^\tau} \db{E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the induction hypothesis}
+    \\
+    & \quad {} = \int_{\Phi^\tau} \left(\db{E_1^\tau}\phi^\tau + \db{E_2^\tau}\phi^\tau\right) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the linearity of integration}
+    \\
+    & \quad {} = \int_{\Phi^\tau} \db{E_1^\tau + E_2^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    && \text{by the definition of } \db{-}.     
+  \end{align*}
 \end{proof}
 \hy{Sum of square. Multiplication elimination. Differentiation operation. Concrete instantiation.}
 
