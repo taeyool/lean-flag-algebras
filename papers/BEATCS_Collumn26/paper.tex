@@ -183,7 +183,7 @@ The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{
 
 Formally, the syntax is defined as follows:
 \begin{align*}
-\text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \times E
+\text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \cdot E
 \\
 \text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A 
 \end{align*}
@@ -199,6 +199,7 @@ We also note that usual comparison operators between density expressions such as
 \quad\text{and}\quad
 (E_1 < E_2) \defeq \neg (E_1 \geq E_2).
 \]
+Finally, we write $-E$ for $(-1) \cdot E$ and $E_1 - E_2$ for $E_1 + (-E_2)$.
 
 The formal semantics of density expressions $E$ and assertions $A$ has the form:
 \[
@@ -221,7 +222,7 @@ It is defined by induction on the structure of $E$ and $A$ using the ordered com
 \\
 \db{1}\phi & \defeq 1,
 &
-\db{E_1 \times E_2}\phi & \defeq
+\db{E_1 \cdot E_2}\phi & \defeq
 \db{E_1}\phi \cdot \db{E_2}\phi,
 \end{align*}
 and
@@ -254,6 +255,13 @@ We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every 
 and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
 Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. As a result, many reasoning principles from first-order logic carry over to flag algebra directly.
+For instance, the following assertions hold for all limiting graphs $\phi \in \Phi$:
+\begin{align*}
+  & H_1 \cdot (H_3 + H_2) + (4 \cdot H_1) \cdot H_3 = H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3), 
+  \\
+  & (H_1 + H_2 \geq 0) \wedge (0 \geq H_2 - H_3) \implies H_1 + H_3 \geq 0.
+\end{align*}
+
 \begin{lem}
   \label{lem:basic-algebra}
     The rules of ordered commutative algebras form valid equations for density expressions. Also, the rules for boolean algebras are valid assertions in flag algebra.
