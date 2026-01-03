@@ -271,36 +271,42 @@ What is then special about flag algebra in comparison with first-order logic? Th
 \begin{lem}
     If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
-The next consequences are related to the definition of limiting graph $\phi$. For each graph $H$, $\phi(H)$ intuitively refers to the probability that if we choose a size-$v(H)$ subset of vertices in the infinite graph represented by $\phi$ uniformly at random, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we can see that $\phi(H)$ has a value in $[0,1]$, and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ is equal to $1$. These observations are formalised in the next two lemmas.
+The next useful consequences follow from the connection between a limiting graph $\phi$ and probability theory. For each graph $H$, the value $\phi(H)$ intuitively denotes the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
+we restate the above observations formally in the following lemmas.
 \begin{lem}
   \label{lem:non-negativity}
     The inequality $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \begin{lem}
   \label{lem:sum-to-one}
-    Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
-    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the equation 
+    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
+    on $V$. Then,  
     \[
-    \sum_{H \in \mathcal{H}_n} H = 1
+    \sum_{H \in \mathcal{H}_V} H = 1
     \] 
     is valid.
 \end{lem}
-each variable has a value in $[0,1]$. Also, the sum of a collection of variables $\mathcal{H}_n$ is semantically equal to the constant density expression $1$, if those variables represent all the graphs on the vertex set $[n]$ uniquely up to isomorphism. Furthermore, any variable representing a graph $G$ with $v(G) \leq n$ is equal to a linear combination of the variables in $\mathcal{H}_n$. We formalise these observations in the next lemmas. 
+Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplication in density expressions can be elimiated. 
 \begin{lem}
   \label{lem:decomposition}
-    Consider a non-negative integer $n$. Let $\mathcal{H}_n$ be the set of graphs 
-    on the vertex set $[n]$ such that every graph on the vertex set $[n]$ is isomorphic to exactly one graph in $\mathcal{H}_n$. Then, the equation 
+    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
+    on $V$. Then, for every graph $G$ with $v(G) \leq |V|$, 
     \[
-    \sum_{H \in \mathcal{H}_n} H = 1
-    \] 
-    is valid. Also, for every graph $G$ with $v(G) \leq n$, there exist real numbers $(r_H)_{H \in \mathcal{H}_n}$ such that the equation
+    G = \sum_{H \in \mathcal{H}_V} p(G,H) \cdot H
+    \]
+    is valid.
+\end{lem}
+\begin{lem}
+  \label{lem:eliminate-multiplication}
+    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
+    on $V$. Then, for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, there exist $r_H$ for each $H \in \mathcal{H}_V$ such that
     \[
-    G = \sum_{H \in \mathcal{H}_n} r_H \cdot H
+    H_1 \cdot H_2 = \sum_{H \in \mathcal{H}_V} r_H \cdot H
     \]
     is valid.
 \end{lem}
 
-Using flag algebra, we can express asymptotic extremal problems mentioned in the previous section. The 
+We now illustrate the syntax and semantics of flag algebra by expressing asymptotic extremal problems mentioned in the previous section. The 
 Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find a tightest $c \in \mathbb{R}$ such that the implication
 \begin{equation}
   \label{eqn:turan-assertion}
