@@ -271,6 +271,7 @@ For instance, the following assertions hold for all limiting graphs $\phi \in \P
 
 What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph so that they are correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
 \begin{lem}
+  \label{lem:isomorphism}
     If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
 The next useful consequences follow from the connection between a limiting graph $\phi$ and probability theory. For each graph $H$, the value $\phi(H)$ intuitively denotes the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
@@ -435,6 +436,27 @@ The variant of flag algebra for $\tau$-labelled graphs is defined analogously to
 \end{align*}
 where $H^\tau$ is a $\tau$-labelled graph and $r \in \mathbb{R}$. We write $\Expr^\tau$ for the density expressions in this variant and $\Assn^\tau$ for its assertions.
 
+All of \Cref{lem:basic-algebra,lem:isomorphism,lem:non-negativity,lem:sum-to-one,lem:decomposition,lem:eliminate-multiplication} hold in this $\tau$-labelled variant as well, with the obvious modifications replacing graphs by $\tau$-labelled graphs and induced subgraph densities by induced labelled-subgraph densities. We spell out one immediate consequence of \Cref{lem:basic-algebra} and the modified version of \Cref{lem:eliminate-multiplication} here for later use.
+\begin{cor}
+  \label{cor:basic-algebra-tau:sos}
+    Let $\tau$ be a type of size $k$. Then, for every expression $E^\tau$ in $\Expr^\tau$,
+    \[
+    (E^\tau) \cdot (E^\tau) \geq 0
+    \]
+    is a valid assertion in the $\tau$-labelled variant of flag algebra.
+\end{cor}
+\begin{lem}
+  \label{lem:eliminate-multiplication-tau}
+    Let $\tau$ be a type of size $k$, and $V$ be a finite subset of $\mathbb{N}$ with $|V| \geq k$. Also, let $\mathcal{H}^\tau_V$ be a set of $\tau$-labelled graphs on $V$ such that every $\tau$-labelled graph is $\tau$-isomorphic to exactly one element of $\mathcal{H}^\tau_V$. Then, for every pair of $\tau$-labelled graphs $H_1^\tau$ and $H_2^\tau$ with $v(H_1^\tau) + v(H_2^\tau) - k \leq |V|$, there exist $r_{H^\tau}$ for each $H^\tau \in \mathcal{H}^\tau_V$ such that
+    \[
+    H_1^\tau \cdot H_2^\tau = \sum_{H^\tau \in \mathcal{H}^\tau_V} r_{H^\tau} \cdot H^\tau
+    \]
+    is a valid equation in the $\tau$-labelled variant of flag algebra. Also,
+    \[ 
+    1 = (\tau,\mathrm{id}_{[k]})
+    \]
+    is a valid equation in the $\tau$-labelled variant of flag algebra.
+\end{lem}
 
 The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called the \emph{downward operator}. It is defined by following a general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next and then instantiate it to define the downward operator. 
 
