@@ -19,6 +19,23 @@
 \newtheorem{remark}[thm]{Remark}
 \newtheorem{example}[thm]{Example}
 
+\crefname{thm}{Theorem}{Theorems}
+\crefname{lem}{Lemma}{Lemmas}
+\crefname{cor}{Corollary}{Corollaries}
+\crefname{prop}{Proposition}{Propositions}
+\crefname{defi}{Definition}{Definitions}
+\crefname{remark}{Remark}{Remarks}
+\crefname{example}{Example}{Examples}
+
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{figure}{Fig{.}}{Figs{.}}%{Figures}
+\crefname{table}{Table}{Tables}
+\crefname{problem}{Problem}{Problems}
+\crefname{fact}{Fact}{Facts}
+\crefname{conjecture}{Conjecture}{Conjectures}
+\crefname{condition}{Condition}{Conditions}
+\crefname{requirement}{Requirement}{Requirements}
+
 \newcommand*{\emptygraph}{\emptyset}
 
 \newcommand*{\defeq}{\stackrel{\textrm{def}}{=}}
@@ -265,23 +282,23 @@ For instance, the following assertions hold for all limiting graphs $\phi \in \P
 \end{align*}
 
 \begin{lem}
-  \label{lem:basic-algebra}
+  \label{lemma:basic-algebra}
     The rules of ordered commutative algebras form valid equations for density expressions. Also, the rules for boolean algebras are valid assertions in flag algebra.
 \end{lem}
 
 What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph so that they are correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
 \begin{lem}
-  \label{lem:isomorphism}
+  \label{lemma:isomorphism}
     If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
 The next useful consequences follow from the connection between a limiting graph $\phi$ and probability theory. For each graph $H$, the value $\phi(H)$ intuitively denotes the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
 we restate the above observations formally in the following lemmas.
 \begin{lem}
-  \label{lem:non-negativity}
+  \label{lemma:non-negativity}
     The inequality $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \begin{lem}
-  \label{lem:sum-to-one}
+  \label{lemma:sum-to-one}
     Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
     on $V$. Then,  
     \[
@@ -291,7 +308,7 @@ we restate the above observations formally in the following lemmas.
 \end{lem}
 Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplication in density expressions and the multiplicative unit $1$ can be elimiated. 
 \begin{lem}
-  \label{lem:decomposition}
+  \label{lemma:decomposition}
     Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
     on $V$. Then, for every graph $G$ with $v(G) \leq |V|$, 
     \[
@@ -300,7 +317,7 @@ Finally, we note two further consequences, which are heavily used in the applica
     is valid.
 \end{lem}
 \begin{lem}
-  \label{lem:eliminate-multiplication}
+  \label{lemma:eliminate-multiplication}
     Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
     on $V$. Then, for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, there exist $r_H$ for each $H \in \mathcal{H}_V$ such that
     \[
@@ -341,7 +358,7 @@ The tightest $c$ is $1/2$, a well-known result called Mantel's theorem \hy{Citat
   0 & \leq 1 \cdot \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + 1 \cdot \Kthree.
   \label{eqn:mantel-key-inequality}
 \end{align}
-The first assertion is a consequence of \Cref{lem:decomposition}, and the second can be proved using reasoning principles of flag algebra explained in the next section. Using these assertions and the assumption $K_3 = 0$, we derive the upper bound $1/2$ on $K_2$. The derivation is given below, where each step holds for all limiting graphs $\phi \in \Phi$ satisfying $\phi(K_3) = 0$:
+The first assertion is a consequence of \Cref{lemma:decomposition}, and the second can be proved using reasoning principles of flag algebra explained in the next section. Using these assertions and the assumption $K_3 = 0$, we derive the upper bound $1/2$ on $K_2$. The derivation is given below, where each step holds for all limiting graphs $\phi \in \Phi$ satisfying $\phi(K_3) = 0$:
 \begin{align*}
   K_2 
   & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
@@ -355,21 +372,21 @@ The first assertion is a consequence of \Cref{lem:decomposition}, and the second
   && \text{by \Cref{eqn:mantel-key-inequality}}
   \\
   & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{3}{2} \cdot \Kthree
-  && \text{by \Cref{lem:basic-algebra}}
+  && \text{by \Cref{lemma:basic-algebra}}
   \\
   & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree
   && \text{since } K_3 = 0 
   \\
   & \leq \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{2} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{1}{2} \cdot \Kthree
   && 
-  \text{by \Cref{lem:non-negativity}}
+  \text{by \Cref{lemma:non-negativity}}
   \\
   & \leq \tfrac{1}{2} \cdot \left(\Ithree + \Ethree + \Pthree + \Kthree\right)
   && 
-  \text{by \Cref{lem:basic-algebra}}
+  \text{by \Cref{lemma:basic-algebra}}
   \\
   & = \tfrac{1}{2} \cdot 1 
-  && \text{by \Cref{lem:decomposition}}
+  && \text{by \Cref{lemma:decomposition}}
   \\
   & = \tfrac{1}{2}.
 \end{align*}
@@ -390,14 +407,14 @@ The tightest $c'$ is known to be $1/4$ by Goodman's result \hy{Citation}. We pro
   && \text{by \Cref{eqn:mantel-key-inequality}}
   \\
   & = \tfrac{1}{4} \cdot \Ithree + \tfrac{1}{4} \cdot \Ethree + \tfrac{1}{4} \cdot \Pthree + \tfrac{1}{4} \cdot \Kthree
-  && \text{by \Cref{lem:basic-algebra}}
+  && \text{by \Cref{lemma:basic-algebra}}
   \\
   & = \tfrac{1}{4} \cdot (\Ithree + \Ethree + \Pthree + \Kthree)
   && 
-  \text{by \Cref{lem:basic-algebra}}
+  \text{by \Cref{lemma:basic-algebra}}
   \\
   & = \tfrac{1}{4} \cdot 1 
-  && \text{by \Cref{lem:decomposition}}
+  && \text{by \Cref{lemma:decomposition}}
   \\
   & = \tfrac{1}{4}.
 \end{align*}
@@ -436,26 +453,26 @@ The variant of flag algebra for $\tau$-labelled graphs is defined analogously to
 \end{align*}
 where $H^\tau$ is a $\tau$-labelled graph and $r \in \mathbb{R}$. We write $\Expr^\tau$ for the density expressions in this variant and $\Assn^\tau$ for its assertions.
 
-All of \Cref{lem:basic-algebra,lem:isomorphism,lem:non-negativity,lem:sum-to-one,lem:decomposition,lem:eliminate-multiplication} hold in this $\tau$-labelled variant as well, with the obvious modifications replacing graphs by $\tau$-labelled graphs and induced subgraph densities by induced labelled-subgraph densities. We spell out one immediate consequence of \Cref{lem:basic-algebra} and the modified version of \Cref{lem:eliminate-multiplication} here for later use.
+All of \Cref{lemma:basic-algebra,lemma:isomorphism,lemma:non-negativity,lemma:sum-to-one,lemma:decomposition,lemma:eliminate-multiplication} hold in this $\tau$-labelled variant as well, with the obvious modifications replacing graphs by $\tau$-labelled graphs and induced subgraph densities by induced labelled-subgraph densities. We spell out one immediate consequence of \Cref{lemma:basic-algebra} and the labelled analogue of \Cref{lemma:eliminate-multiplication} for later use.
 \begin{cor}
   \label{cor:basic-algebra-tau:sos}
-    Let $\tau$ be a type of size $k$. Then, for every expression $E^\tau$ in $\Expr^\tau$,
-    \[
-    (E^\tau) \cdot (E^\tau) \geq 0
-    \]
-    is a valid assertion in the $\tau$-labelled variant of flag algebra.
+  Let $\tau$ be a type of size $k$. Then, for all expressions $E_1^\tau,\ldots,E_m^\tau$ in $\Expr^\tau$,
+  \[
+    \Big(\sum_{i \in [m]} E_i^\tau \cdot E_i^\tau\Big) \geq 0
+  \]
+  is a valid assertion in the $\tau$-labelled variant of flag algebra.
 \end{cor}
 \begin{lem}
-  \label{lem:eliminate-multiplication-tau}
-    Let $\tau$ be a type of size $k$, and $V$ be a finite subset of $\mathbb{N}$ with $|V| \geq k$. Also, let $\mathcal{H}^\tau_V$ be a set of $\tau$-labelled graphs on $V$ such that every $\tau$-labelled graph is $\tau$-isomorphic to exactly one element of $\mathcal{H}^\tau_V$. Then, for every pair of $\tau$-labelled graphs $H_1^\tau$ and $H_2^\tau$ with $v(H_1^\tau) + v(H_2^\tau) - k \leq |V|$, there exist $r_{H^\tau}$ for each $H^\tau \in \mathcal{H}^\tau_V$ such that
-    \[
+  \label{lemma:eliminate-multiplication-tau}
+  Let $\tau$ be a type of size $k$, and $V$ a finite subset of $\mathbb{N}$ with $|V| \geq k$. Also, let $\mathcal{H}^\tau_V$ be a set of $\tau$-labelled graphs on $V$ such that every $\tau$-labelled graph is $\tau$-isomorphic to exactly one element of $\mathcal{H}^\tau_V$. Then, for every pair of $\tau$-labelled graphs $H_1^\tau$ and $H_2^\tau$ with $v(H_1^\tau) + v(H_2^\tau) - k \leq |V|$, there exist coefficients $r_{H^\tau}$ for each $H^\tau \in \mathcal{H}^\tau_V$ such that
+  \[
     H_1^\tau \cdot H_2^\tau = \sum_{H^\tau \in \mathcal{H}^\tau_V} r_{H^\tau} \cdot H^\tau
-    \]
-    is a valid equation in the $\tau$-labelled variant of flag algebra. Also,
-    \[ 
+  \]
+  is a valid equation in the $\tau$-labelled variant of flag algebra. Also,
+  \[
     1 = (\tau,\mathrm{id}_{[k]})
-    \]
-    is a valid equation in the $\tau$-labelled variant of flag algebra.
+  \]
+  is a valid equation in the $\tau$-labelled variant of flag algebra.
 \end{lem}
 
 The mechanism for transferring valid inequalities in the $\tau$-labelled variant to valid inequalities in the original flag algebra is called the \emph{downward operator}. It is defined by following a general recipe for relating the variant and the original flag algebras using what we call an adjoint pair of functions. We explain this recipe next and then instantiate it to define the downward operator. 
@@ -495,7 +512,7 @@ is finite. This finite-support condition lets us extend $\alpha$ linearly to any
   \alpha^\dagger(E_1^\tau + E_2^\tau) & \defeq \alpha^\dagger(E_1^\tau) + \alpha^\dagger(E_2^\tau).
 \end{align*}
 \begin{lem}
-  \label{lem:adjoint-transfer}
+  \label{lemma:adjoint-transfer}
   Let $(\alpha,\gamma)$ be an adjoint pair for a type $\tau$. Assume that $\gamma$ is extendable to limiting graphs. Also, assume that $\alpha(H^\tau)$
   has finite support, and let $\alpha^\dagger$ be the generalisation of $\alpha$ to multiplication-free expressions that do not contain $1$. Then, for every valid inequality $E^\tau \geq 0$ in the $\tau$-labelled variant such that $E^\tau$ is multiplication-free and $1$-free, the inequality $\alpha^\dagger(E^\tau) \geq 0$ is valid in the original flag algebra.
 \end{lem}
@@ -593,9 +610,10 @@ is finite. This finite-support condition lets us extend $\alpha$ linearly to any
     && \text{by the definition of } \db{-}.     
   \end{align*}
 \end{proof}
-\hy{Sum of square. Multiplication elimination. Differentiation operation. Concrete instantiation.}
 
-We are ready to define the downward operator for each type $\tau$. The operator is the $\alpha^\dagger$ in \Cref{lem:adjoint-transfer} for a particular adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$. The function $\gamma_d$ in this adjoint pair is defined as follows. For a graph $G \in \mathcal{G}$, we define the measure $\gamma(G) \in \FinMea(\mathcal{G}^\tau)$ by
+We are ready to define the downward operator for each type $\tau$. Given an expression $E^\tau$ in $\Expr^\tau$, we first eliminate all multiplications and occurrences of the constant $1$ in $E^\tau$ using \Cref{lemma:eliminate-multiplication-tau}, obtaining a multiplication-free, $1$-free expression $E'^\tau$ that is equal to $E^\tau$ in the $\tau$-labelled variant of flag algebra. Although this elimination step is underspecified, it is typically performed from the innermost subexpression outward. The downward operator then maps $E'^\tau$ to $\alpha_d^\dagger(E'^\tau)$, where $\alpha_d$ is part of a specific adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$ defined below. This adjoint pair satisfies the conditions in \Cref{lemma:adjoint-transfer}. Consequently, if $E^\tau \geq 0$ is a valid inequality in the $\tau$-labelled variant, then $\alpha_d^\dagger(E'^\tau) \geq 0$ is valid in the original flag algebra.
+
+To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. We define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamma(G) \in \FinMea(\mathcal{G}^\tau)$ as follows:
 \[
 c_G \defeq \frac{|\mathrm{Aut}(\tau)| \cdot p(\tau,G)}{v(\tau)!},
 \quad 
@@ -609,6 +627,8 @@ Z_G \defeq |\{G^\tau \in \mathcal{G}^\tau \,\mid\, |G^\tau| = G\}|,
 \end{cases}
 \]
 On the other hand, if there is no $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, we define the measure $\gamma(G)$ to be the zero measure, i.e., $\gamma(G)(\{G^\tau\}) \defeq 0$ for every $G^\tau \in \mathcal{G}^\tau$. The function $\alpha_d$ in this adjoint pair is defined as follows. \hy{I am here.}
+
+\hy{Sum of square. Differentiation operation. Concrete instantiation.}
 
 \section{Plan}
 \begin{itemize}
