@@ -674,13 +674,11 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
 
   \hy{Should be revised. Not correct event.}
   Let $k = |V(\tau)|$, $m = |V(H^\tau)|$, and $n = |V(G)|$. Define 
-  $\mathbf{U}$ to be a uniform random subset of $V(G)$ of size $m$, and 
-  $\boldsymbol{\theta}$ be a uniform random injection from $[k]$ to $V(G)$. Let $E$ be
-  the event that the image of $\boldsymbol{\theta}$ is included in $\mathbf{U}$, and
-  write $\mathbf{U} | E$ and $\boldsymbol{\theta} | E$ for the random variables $\mathbf{U}$ and $\boldsymbol{\theta}$ conditioned on $E$, respectively. Define $E_0$ be
-  the event on these conditioned random variables that 
-  $\boldsymbol{\theta} | E$ is an embedding from $\tau$ to $G$, and 
-  $(G[\mathbf{U} | E],\boldsymbol{\theta} | E)$ is $\tau$-isomorphic to $H^\tau$. 
+  $\boldsymbol{\theta}$ be the uniform random injection from $[k]$ to $V(G)$,
+  and $\mathbf{U}|\boldsymbol{\theta}$ be the uniform random subset of $V(G) \setminus \boldsymbol{\theta}([k])$ that has the size $m-k$. Define $E$ be
+  the event on these random variables that 
+  $\boldsymbol{\theta}$ is an embedding from $\tau$ to $G$, and 
+  $(G[(\mathbf{U} | \boldsymbol{\theta}) \cup \boldsymbol{\theta}([k])],\boldsymbol{\theta})$ is $\tau$-isomorphic to $H^\tau$. 
   
   The equation \Cref{eq:downward-adjoint:target-eq} holds because both compute the probability 
   of $E_0$. The left-hand side of \Cref{eq:downward-adjoint:target-eq} comes from the
