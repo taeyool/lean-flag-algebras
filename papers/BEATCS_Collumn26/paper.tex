@@ -150,7 +150,7 @@ For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1, 2, \ldots, n\}$. F
 
 Let $H$ and $G$ be graphs. The most important concept in flag algebra is the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$. It is defined as
 \[
-p(H, G) \defeq \Pr(G[\mathbf{U}] \simeq H)
+p(H, G) \defeq \mathbb{P}\Big[G[\mathbf{U}] \simeq H\Big]
 \]
 where $\mathbf{U}$ is a uniformly random subset of $V(G)$ with size $v(H)$, and $\simeq$ denotes the graph isomorphism. For instance, if $H = K_2$ and $G = K_3$, then $p(H,G) = 1$ since every induced subgraph of $G$ with two vertices is isomorphic to $H$. As another example, if $H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$ since there are three induced subgraphs of $G$ with two vertices, two of which are isomorphic to $H$.
 
@@ -613,19 +613,28 @@ is finite. This finite-support condition lets us extend $\alpha$ linearly to any
 
 We are ready to define the downward operator for each type $\tau$. Given an expression $E^\tau$ in $\Expr^\tau$, we first eliminate all multiplications and occurrences of the constant $1$ in $E^\tau$ using \Cref{lemma:eliminate-multiplication-tau}, obtaining a multiplication-free, $1$-free expression $F^\tau$ that is equal to $E^\tau$ in the $\tau$-labelled variant of flag algebra. Although this elimination step is underspecified, it is typically performed from the innermost subexpression outward. The downward operator then maps $F^\tau$ to $\alpha_d^\dagger(F^\tau)$, where $\alpha_d$ is part of a specific adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$ defined below. This adjoint pair satisfies the conditions in \Cref{lemma:adjoint-transfer}. Consequently, if $E^\tau \geq 0$ is a valid inequality in the $\tau$-labelled variant, then $\alpha_d^\dagger(F^\tau) \geq 0$ is valid in the original flag algebra.
 
-To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. We define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamma(G) \in \FinMea(\mathcal{G}^\tau)$ as follows:
-\[
-c_G \defeq \frac{|\mathrm{Aut}(\tau)| \cdot p(\tau,G)}{v(\tau)!},
-\quad 
-Z_G \defeq |\{G^\tau \in \mathcal{G}^\tau \,\mid\, |G^\tau| = G\}|,
-\quad
-\gamma(G)(\{G^\tau\}) \defeq 
-\begin{cases}
-\frac{c_G}{Z_G} & \text{if } |G^\tau| = G
-\\
-0 & \text{otherwise}.
-\end{cases}
-\]
+To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. Let $\boldsymbol{\theta}$ be the uniform random injection from $[k]$ to $V(H^\tau)$. We define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamma_d(G) \in \FinMea(\mathcal{G}^\tau)$ as follows:
+\begin{align*}
+  p_{H^\tau} & \defeq \mathbb{P}\Big[\boldsymbol{\theta} \text{ is an embedding from $\tau$ to $|H^\tau|$ and $(|H^\tau|,\boldsymbol{\theta}) \simeq_\tau H^\tau$}\Big],
+  \\
+  \alpha_d(H^\tau)(\{H\}) & \defeq 
+  \begin{cases}
+  & \text{if } |H^\tau| = H
+  \\
+  0 & \text{otherwise},
+  \end{cases}
+  \\
+  c_G & \defeq \frac{|\mathrm{Aut}(\tau)| \cdot p(\tau,G)}{v(\tau)!},
+  &
+  Z_G & \defeq |\{G^\tau \in \mathcal{G}^\tau \,\mid\, |G^\tau| = G\}|,
+  &
+  \gamma_d(G)(\{G^\tau\}) & \defeq 
+  \begin{cases}
+  \frac{c_G}{Z_G} & \text{if } |G^\tau| = G
+  \\
+  0 & \text{otherwise}.
+  \end{cases}
+\end{align*}
 On the other hand, if there is no $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, we define the measure $\gamma(G)$ to be the zero measure, i.e., $\gamma(G)(\{G^\tau\}) \defeq 0$ for every $G^\tau \in \mathcal{G}^\tau$. The function $\alpha_d$ in this adjoint pair is defined as follows. \hy{I am here.}
 
 \hy{Sum of square. Differentiation operation. Concrete instantiation.}
