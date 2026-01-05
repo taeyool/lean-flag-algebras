@@ -667,12 +667,27 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
     & = \frac{q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)}{Z_G} \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} p_\tau(H^\tau, G^\tau).
   \end{align*}
   To complete the proof, it suffices to show that
-  \[
+  \begin{equation}
+    \label{eq:downward-adjoint:target-eq}
     q_{H^\tau} \cdot p(|H^\tau|, G) = \Big(q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)\Big) \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} \frac{1}{Z_G} \cdot p_\tau(H^\tau, G^\tau).
-  \]
-Let $k = |V(\tau)|$ and $m = |V(H^\tau)|$. Define 
-$\mathbf{S}$ to be a uniform random subset of $V(G)$ of size $m$, and 
-$\boldsymbol{\theta}$ be a uniform random injection from $[k]$ to $V(G)$.
+  \end{equation}
+
+  Let $k = |V(\tau)|$, $m = |V(H^\tau)|$, and $n = |V(G)|$. Define 
+  $\mathbf{U}$ to be a uniform random subset of $V(G)$ of size $m$, and 
+  $\boldsymbol{\theta}$ be a uniform random injection from $[k]$ to $V(G)$. Let $E$ be
+  the event that the image of $\boldsymbol{\theta}$ is included in $\mathbf{U}$, and
+  write $\mathbf{U} | E$ and $\boldsymbol{\theta} | E$ for the random variables $\mathbf{U}$ and $\boldsymbol{\theta}$ conditioned on $E$, respectively. Define $E_0$ be
+  the event on these conditioned random variables that 
+  $\boldsymbol{\theta} | E$ is an embedding from $\tau$ to $G$, and 
+  $(G[\mathbf{U} | E],\boldsymbol{\theta} | E)$ is $\tau$-isomorphic to $H^\tau$. 
+  
+  The equation \Cref{eq:downward-adjoint:target-eq} holds because both compute the probability 
+  of $E_0$. The left-hand side of \Cref{eq:downward-adjoint:target-eq} comes from the
+  fact that the event $E_0$ is equivalent to the event $E_1$ that 
+  $(\boldsymbol{\theta} | E)$ is an embedding from $\tau$ to $|H^\tau|$
+  and $G[(\mathbf{U} | E)]$ is isomorphic to $|H^\tau|$. 
+  
+  can be shown by considering the following two probabilistic processes that generate a set $S$ of size $m$ and an injection from $[k]$ to $S$ such that the resulting labelled graph is $\tau$-isomorphic to $H^\tau$.
 
 \hy{I am here.}
 
