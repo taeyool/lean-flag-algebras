@@ -653,7 +653,7 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
     && \text{by the definition of } \alpha_d(H^\tau).
   \end{align*}
   Let $Z_G \defeq \big|\{G^\tau \in \mathcal{G}^\tau \,:\ |G^\tau| = G\}\big|$.
-  If there does not exists a $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, the right-hand side of the target equation is zero by the definition of $\gamma_d(G)$. In this case, we also have that $p(|H^\tau|, G) = 0$; otherwise, there would be a subset $V_0$ of $V(G)$ such that $\tau$ is isomorphic to $G[V_0]$ and the pair of $G$ and this ismorphism forms $G^\tau$ with $|G^\tau| = G$, which contradicts to the assumption that no such $G^\tau$ exists. Thus, in the case, the left-hand side of the target equation is also zero, and the equation follows.
+  If there does not exist a $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, the right-hand side of the target equation is zero by the definition of $\gamma_d(G)$. In this case, we also have that $p(|H^\tau|, G) = 0$; otherwise, there would be a subset $V_0$ of $V(G)$ such that $\tau$ is isomorphic to $G[V_0]$ and the pair of $G$ and this ismorphism forms $G^\tau$ with $|G^\tau| = G$, which contradicts to the assumption that no such $G^\tau$ exists. Thus, in the case, the left-hand side of the target equation is also zero, and the equation follows.
   
   Now assume that there exists a $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$. Under this assumption, we simplify the right-hand side of the target equation as follows:
   \begin{align*}
@@ -672,25 +672,17 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
     q_{H^\tau} \cdot p(|H^\tau|, G) = \Big(q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)\Big) \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} \frac{1}{Z_G} \cdot p_\tau(H^\tau, G^\tau).
   \end{equation}
 
-  Let $k = |V(\tau)|$, $m = |V(H^\tau)|$, and $n = |V(G)|$. Define 
-  $\boldsymbol{\theta}$ be the uniform random injection from $[k]$ to $V(H^\tau)$,
-  and $\boldsymbol{\theta}'$ be the uniform random injection from $[k]$ to $V(G)$.
-  Also, let $\mathbf{U}$ be the uniform random subset of $V(G)$ with size $m$, and 
-  let $\mathbf{U}'$ be the uniform random subset of $V(G) \setminus \boldsymbol{\theta}'([k])$ that has the size $m-k$. Using these random variables, we define two events $E, E'$ as follows:
-  \begin{itemize}
-    \item $E$ says that $\boldsymbol{\theta}$ is an embedding from $\tau$ to $|H^\tau|$,  
-      $(|H^\tau|, \boldsymbol{\theta})$ is $\tau$-isomorphic to $H^\tau$, and 
-      $G[\mathbf{U}]$ is isomorphic to $|H^\tau|$. 
-    \item $E'$ says that $\boldsymbol{\theta}'$ is an embedding from $\tau$ to $G$, and 
-      $(G[\mathbf{U}' \cup \boldsymbol{\theta}'([k])],\boldsymbol{\theta}')$ is $\tau$-isomorphic to $H^\tau$.
-  \end{itemize} 
+  Let $k = v(\tau)$, $m = v(H^\tau)$, and $n = v(G)$. Define $\boldsymbol{\theta}$ as a uniform random injection from $[k]$ to $V(H^\tau)$, and  $\boldsymbol{\theta}'$ as a uniform random injection from $[k]$ to $V(G)$. Also, let $\mathbf{U}$ be a uniform random subset of $V(G)$ of size $m$, and $\mathbf{U}'$ be a uniform random subset of $V(G) \setminus \boldsymbol{\theta}'([k])$ of size $m-k$. Using these random variables, we define two events $E$ and $E'$ as follows:
+    \begin{itemize}
+      \item $E$ is the event that $\boldsymbol{\theta}$ is an embedding of $\tau$ into $|H^\tau|$, the $\tau$-labelled graph $(|H^\tau|, \boldsymbol{\theta})$ is $\tau$-isomorphic to $H^\tau$, and the induced subgraph $G[\mathbf{U}]$ is isomorphic to $|H^\tau|$.
+      \item $E'$ is the event that $\boldsymbol{\theta}'$ is an embedding of $\tau$ into $G$, and the $\tau$-labelled subgraph induced by $\mathbf{U}' \cup \boldsymbol{\theta}'([k])$ and labelled by $\boldsymbol{\theta}'$, denoted as $(G[\mathbf{U}' \cup \boldsymbol{\theta}'([k])],\boldsymbol{\theta}')$, is $\tau$-isomorphic to $H^\tau$.
+    \end{itemize}
 
-  The left-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E$. The random variables $\boldsymbol{\theta}$ and $\mathbf{U}$ are independent and $q_{H^\tau}$ and $p(|H^\tau|,G)$ are the probabilities of the properties of $\boldsymbol{\theta}$ and $\mathbf{U}$, respectively, in the event $E$. Also, the right-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E'$. The factor $q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)$ in the right-hand side is the probability of the event $E''$ that $\boldsymbol{\theta}'$ is an embedding from $\tau$ to $G$, and the remaining factor computes the conditional probability $\mathbb{P}[E' \mid E'']$.  
+  The left-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E$. The random variables $\boldsymbol{\theta}$ and $\mathbf{U}$ are independent, and $q_{H^\tau}$ and $p(|H^\tau|,G)$ are the probabilities that $\boldsymbol{\theta}$ and $\mathbf{U}$ satistfy their respective conditions in the event $E$. Similarly, the right-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E'$. The factor $q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)$ in the right-hand side is the probability of the event $E''$ that $\boldsymbol{\theta}'$ is an embedding of $\tau$ into $G$, and the remaining factor equals the conditional probability $\mathbb{P}[E' \mid E'']$.  
   
-  Thus, it suffices to show that $\mathbb{P}[E] = \mathbb{P}[E']$. We note that the joint distribution of $(\boldsymbol{\theta}, \mathbf{U})$ is the uniform distribution over all pairs $(\theta, U)$ where $\theta$ is an injection from $[k]$ to $V(H^\tau)$ and $U$ is a subset of $V(G)$ with size $m$. Similarly, the joint distribution of $(\boldsymbol{\theta}', \mathbf{U}')$ is the uniform distribution over all pairs $(\theta', U')$ where $\theta'$ is an injection from $[k]$ to $V(G)$ and $U'$ is a subset of $V(G) \setminus \theta'([k])$ with size $m-k$. Furthermore, for all such $(\theta, U)$ and $(\theta', U')$, we have
+  Thus, it suffices to show that $\mathbb{P}[E] = \mathbb{P}[E']$. We note that the joint distribution of $(\boldsymbol{\theta}, \mathbf{U})$ is the uniform distribution over the set of all pairs $(\theta, U)$ where $\theta$ is an injection from $[k]$ to $V(H^\tau)$ and $U$ is a subset of $V(G)$ with size $m$. Similarly, the joint distribution of $(\boldsymbol{\theta}', \mathbf{U}')$ is the uniform distribution over the set of all pairs $(\theta', U')$ where $\theta'$ is an injection from $[k]$ to $V(G)$ and $U'$ is a subset of $V(G) \setminus \theta'([k])$ with size $m-k$. Elementary counting confirms that these two sample spaces have the same cardinality $n! / ((n-m)! (m-k)!)$. As a result, for such $(U,\theta)$ and $(U',\theta')$, we have
   \[
-  \mathbb{P}\big[(\boldsymbol{\theta}, \mathbf{U}) = (\theta, U)\big] = \frac{(n-m)!(m-k)!}{n!} 
-  = \mathbb{P}\big[(\boldsymbol{\theta}', \mathbf{U}') = (\theta', U')\big].
+  \mathbb{P}\big[(\boldsymbol{\theta},\mathbf{U}) = (\theta, U)\big] = \mathbb{P}\big[(\boldsymbol{\theta}',\mathbf{U}') = (\theta', U')\big] = \frac{(n-m)! (m-k)!}{n!}.
   \]
   Therefore, to show that $\mathbb{P}[E] = \mathbb{P}[E']$, we just need to construct a bijection between the set of those $(\theta, U)$ satisfying $E$ and the set of those $(\theta', U')$ satisfying $E'$. For each 
   $U_0 \subseteq V(G)$ with size $m$ such that $G[U_0]$ is isomorphic to $|H^\tau|$, we fix one isomorphism $f_{U_0} : V(H^\tau) \to U_0$ from $|H^\tau|$ to $G[U_0]$. Using this, we construct the desired bijection as follows.
