@@ -118,6 +118,103 @@
   \end{tikzpicture}%
 }
 
+% 1. Labelled & two vertices case -- No edge
+\newcommand{\LItwo}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (330:1);
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+  \end{tikzpicture}%
+}
+
+% 2. Labelled & two vertices case -- Edge
+\newcommand{\LEtwo}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (330:1);
+    \draw (a) -- (b); % The single edge
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+  \end{tikzpicture}%
+}
+
+% 1. Labelled & three vertices case -- No edges
+\newcommand{\LIthree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 2. Labelled & three vertices case -- One edge & isolated vertex labelled
+\newcommand{\LEthreeC}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (c); % The single edge
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 3. Labelled & three vertices case -- One edge & endpoint labelled
+\newcommand{\LEthreeB}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (a) -- (c); % The single edge
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 4. Labelled & three vertices case -- Two edges & centre vertex labelled
+\newcommand{\LPthreeC}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (a) -- (c); % The two edges connecting at the top
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 5. Labelled & three vertices case -- Two edges & boundary vertex labelled
+\newcommand{\LPthreeB}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (a) -- (c) -- (b); % The two edges connecting at the top
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
+
+% 6. Labelled & three vertices case -- Three edges
+\newcommand{\LKthree}{%
+  \begin{tikzpicture}[inline]
+    \coordinate (a) at (90:1);
+    \coordinate (b) at (210:1);
+    \coordinate (c) at (330:1);
+    \draw (b) -- (a) -- (c) -- (b); 
+    \node[vertex,fill=white,circle,draw] at (a) {};
+    \node[vertex] at (b) {};
+    \node[vertex] at (c) {};
+  \end{tikzpicture}%
+}
 
 \title{Yet Another Survey on Razborov's Flag Algebra}
 \author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
@@ -691,9 +788,36 @@ Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to 
   Given a pair $(\theta, U)$ satisfying $E$, we define the corresponding pair $(\theta', U')$ satisfying $E'$ as follows. By the definition of $E$, $G[U]$ is isomorphic to $|H^\tau|$. So, we have the isomorphism $f_U$ 
   from $|H^\tau|$ to $G[U]$. We define $\theta' : [k] \to V(G)$ by $\theta' \defeq f_U \circ \theta$, and also define $U' \defeq U \setminus \theta'([k])$. Then, $(\theta', U')$ satisfies the event $E'$. Furthermore, this construction is invertible: given a pair $(\theta', U')$ satisfying $E'$, we can recover the corresponding pair $(\theta, U)$ satisfying $E$ by letting $U \defeq U' \cup \theta'([k])$ and $\theta \defeq f_U^{-1} \circ \theta'$. This completes the proof of \Cref{eq:downward-adjoint:target-eq} and thus of the lemma.
 \end{proof}
-On the other hand, if there is no $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, we define the measure $\gamma(G)$ to be the zero measure, i.e., $\gamma(G)(\{G^\tau\}) \defeq 0$ for every $G^\tau \in \mathcal{G}^\tau$. The function $\alpha_d$ in this adjoint pair is defined as follows. \hy{I am here.}
 
-\hy{Sum of square. Differentiation operation. Concrete instantiation.}
+We illustrate the downward operator by deriving \Cref{eqn:mantel-key-inequality} with it. Consider the type $\tau$ with size $1$. That is, $\tau$ is the graph with a single vertex and no edges. By \Cref{cor:basic-algebra-tau:sos}, we have
+\[
+\left(\LItwo - \LEtwo\right) \cdot \left(\LItwo - \LEtwo\right) \geq 0
+\]
+in the $\tau$-labelled variant of flag algebra. Then, we eliminate the multiplication using \Cref{lemma:eliminate-multiplication-tau}:
+\begin{align*}
+\left(\LItwo - \LEtwo\right) \cdot \left(\LItwo - \LEtwo\right) 
+& {} = \LItwo \cdot \LItwo - 2 \cdot \left(\LItwo \cdot \LEtwo\right) + \LEtwo \cdot \LEtwo
+\\
+& {} = \left(\LIthree + \LEthreeC\right) - 2 \cdot \left(\tfrac{1}{2} \cdot \LEthreeB + \tfrac{1}{2} \cdot \LPthreeB\right) + 
+\left(\LPthreeC + \LKthree\right)
+\\
+& {} = \LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree.
+\end{align*}
+Thus, by \Cref{lemma:adjoint-transfer}, we have
+\[
+\alpha^\dagger_d\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right) \geq 0
+\]
+in the original flag algebra. We now compute the expression inside the downward operator and derive \Cref{eqn:mantel-key-inequality}.
+\begin{align*}
+\alpha^\dagger_d\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right)
+& =\alpha_d\left(\LIthree\right) + \alpha_d\left(\LEthreeC\right) - \alpha_d\left(\LEthreeB\right) - \alpha_d\left(\LPthreeB\right) + \alpha_d\left(\LPthreeC\right) + \alpha_d\left(\LKthree\right)
+\\
+& = \Ithree + \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Pthree + \tfrac{1}{3} \cdot \Pthree + \Kthree
+\\
+& = \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Pthree + \Kthree.
+\end{align*}
+
+\hy{Check whether the whole paper reads well. Add details. Open problems. PL issues. Differentiation operation.}
 
 \section{Plan}
 \begin{itemize}
