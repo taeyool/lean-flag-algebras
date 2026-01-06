@@ -635,11 +635,13 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
   0 & \text{otherwise}.
   \end{cases}
 \end{align*}
+Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to see that $\alpha_d(H^\tau)$ has finite support for every $H^\tau \in \mathcal{G}^\tau$. Also, it can be shown that $\gamma_d$ is extendable to limiting graphs, although the proof is involved. See \hy{Results in Razborov's paper} for details. Finally, the following lemma establishes the adjointness of $(\alpha_d,\gamma_d)$.
 \begin{lem}
   \label{lemma:downward-adjoint}
   The pair $(\alpha_d,\gamma_d)$ defined above is an adjoint pair for the type $\tau$.
 \end{lem}
 \begin{proof}
+  \hy{Say how the proof here is related to Razborov's proof.}
   Consider an arbitrary $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an arbitrary unlabelled graph $G \in \mathcal{G}$. We need to show that
   \[
     p(\alpha_d(H^\tau), G) = p_\tau(H^\tau, \gamma_d(G)).
