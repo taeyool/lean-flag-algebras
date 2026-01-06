@@ -456,7 +456,7 @@ where $H^\tau$ is a $\tau$-labelled graph and $r \in \mathbb{R}$. We write $\Exp
 All of \Cref{lemma:basic-algebra,lemma:isomorphism,lemma:non-negativity,lemma:sum-to-one,lemma:decomposition,lemma:eliminate-multiplication} hold in this $\tau$-labelled variant as well, with the obvious modifications replacing graphs by $\tau$-labelled graphs and induced subgraph densities by induced labelled-subgraph densities. We spell out one immediate consequence of \Cref{lemma:basic-algebra} and the labelled analogue of \Cref{lemma:eliminate-multiplication} for later use.
 \begin{cor}
   \label{cor:basic-algebra-tau:sos}
-  Let $\tau$ be a type of size $k$. Then, for all expressions $E_1^\tau,\ldots,E_m^\tau$ in $\Expr^\tau$,
+  Let $\tau$ be a type with size $k$. Then, for all expressions $E_1^\tau,\ldots,E_m^\tau$ in $\Expr^\tau$,
   \[
     \Big(\sum_{i \in [m]} E_i^\tau \cdot E_i^\tau\Big) \geq 0
   \]
@@ -464,7 +464,7 @@ All of \Cref{lemma:basic-algebra,lemma:isomorphism,lemma:non-negativity,lemma:su
 \end{cor}
 \begin{lem}
   \label{lemma:eliminate-multiplication-tau}
-  Let $\tau$ be a type of size $k$, and $V$ a finite subset of $\mathbb{N}$ with $|V| \geq k$. Also, let $\mathcal{H}^\tau_V$ be a set of $\tau$-labelled graphs on $V$ such that every $\tau$-labelled graph is $\tau$-isomorphic to exactly one element of $\mathcal{H}^\tau_V$. Then, for every pair of $\tau$-labelled graphs $H_1^\tau$ and $H_2^\tau$ with $v(H_1^\tau) + v(H_2^\tau) - k \leq |V|$, there exist coefficients $r_{H^\tau}$ for each $H^\tau \in \mathcal{H}^\tau_V$ such that
+  Let $\tau$ be a type with size $k$, and $V$ a finite subset of $\mathbb{N}$ with $|V| \geq k$. Also, let $\mathcal{H}^\tau_V$ be a set of $\tau$-labelled graphs on $V$ such that every $\tau$-labelled graph is $\tau$-isomorphic to exactly one element of $\mathcal{H}^\tau_V$. Then, for every pair of $\tau$-labelled graphs $H_1^\tau$ and $H_2^\tau$ with $v(H_1^\tau) + v(H_2^\tau) - k \leq |V|$, there exist coefficients $r_{H^\tau}$ for each $H^\tau \in \mathcal{H}^\tau_V$ such that
   \[
     H_1^\tau \cdot H_2^\tau = \sum_{H^\tau \in \mathcal{H}^\tau_V} r_{H^\tau} \cdot H^\tau
   \]
@@ -672,10 +672,10 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
     q_{H^\tau} \cdot p(|H^\tau|, G) = \Big(q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)\Big) \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} \frac{1}{Z_G} \cdot p_\tau(H^\tau, G^\tau).
   \end{equation}
 
-  Let $k = |V(\tau)|$ and $m = |V(H^\tau)|$. Define 
+  Let $k = |V(\tau)|$, $m = |V(H^\tau)|$, and $n = |V(G)|$. Define 
   $\boldsymbol{\theta}$ be the uniform random injection from $[k]$ to $V(H^\tau)$,
   and $\boldsymbol{\theta}'$ be the uniform random injection from $[k]$ to $V(G)$.
-  Also, let $\mathbf{U}$ be the uniform random subset of $V(G)$ of size $m$, and 
+  Also, let $\mathbf{U}$ be the uniform random subset of $V(G)$ with size $m$, and 
   let $\mathbf{U}'$ be the uniform random subset of $V(G) \setminus \boldsymbol{\theta}'([k])$ that has the size $m-k$. Using these random variables, we define two events $E, E'$ as follows:
   \begin{itemize}
     \item $E$ says that $\boldsymbol{\theta}$ is an embedding from $\tau$ to $|H^\tau|$,  
@@ -687,7 +687,15 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
 
   The left-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E$. The random variables $\boldsymbol{\theta}$ and $\mathbf{U}$ are independent and $q_{H^\tau}$ and $p(|H^\tau|,G)$ are the probabilities of the properties of $\boldsymbol{\theta}$ and $\mathbf{U}$, respectively, in the event $E$. Also, the right-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E'$. The factor $q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)$ in the right-hand side is the probability of the event $E''$ that $\boldsymbol{\theta}'$ is an embedding from $\tau$ to $G$, and the remaining factor computes the conditional probability $\mathbb{P}[E' \mid E'']$.  
   
-  Thus, it suffices to show that $\mathbb{P}[E] = \mathbb{P}[E']$. To see this, we construct a bijection between the outcomes of the random experiments defining $E$ and $E'$. Given an outcome $(\theta, U)$ of the random experiment for $E$, we define an outcome $(\theta', U')$ of the random experiment for $E'$ as follows. Since $G[U]$ is isomorphic to $|H^\tau|$, there exists an isomorphism $f : V(H^\tau) \to U$ from $|H^\tau|$ to $G[U]$. We define $\theta' : [k] \to V(G)$ by $\theta' = f \circ \theta$, and also define $U' = U \setminus \theta'([k])$. It is straightforward to check that $(\theta', U')$ satisfies the event $E'$. The converse direction is similar. This construction defines a bijection between the outcomes of the two random experiments that preserves the probabilities of the outcomes because both $\boldsymbol{\theta}$ and $\boldsymbol{\theta}'$ are uniformly random injections and both $\mathbf{U}$ and $\mathbf{U}'$ are uniformly random subsets of the same size. Therefore, we have $\mathbb{P}[E] = \mathbb{P}[E']$, completing the proof.
+  Thus, it suffices to show that $\mathbb{P}[E] = \mathbb{P}[E']$. We note that the joint distribution of $(\boldsymbol{\theta}, \mathbf{U})$ is the uniform distribution over all pairs $(\theta, U)$ where $\theta$ is an injection from $[k]$ to $V(H^\tau)$ and $U$ is a subset of $V(G)$ with size $m$. Similarly, the joint distribution of $(\boldsymbol{\theta}', \mathbf{U}')$ is the uniform distribution over all pairs $(\theta', U')$ where $\theta'$ is an injection from $[k]$ to $V(G)$ and $U'$ is a subset of $V(G) \setminus \theta'([k])$ with size $m-k$. Furthermore, for all such $(\theta, U)$ and $(\theta', U')$, we have
+  \[
+  \mathbb{P}\big[(\boldsymbol{\theta}, \mathbf{U}) = (\theta, U)\big] = \frac{(n-m)!(m-k)!}{n!} 
+  = \mathbb{P}\big[(\boldsymbol{\theta}', \mathbf{U}') = (\theta', U')\big].
+  \]
+  Therefore, to show that $\mathbb{P}[E] = \mathbb{P}[E']$, we just need to construct a bijection between the set of those $(\theta, U)$ satisfying $E$ and the set of those $(\theta', U')$ satisfying $E'$. For each 
+  $U_0 \subseteq V(G)$ with size $m$ such that $G[U_0]$ is isomorphic to $|H^\tau|$, we fix one isomorphism $f_{U_0} : V(H^\tau) \to U_0$ from $|H^\tau|$ to $G[U_0]$. Using this, we construct the desired bijection as follows.
+  Given a pair $(\theta, U)$ satisfying $E$, we define the corresponding pair $(\theta', U')$ satisfying $E'$ as follows. By the definition of $E$, $G[U]$ is isomorphic to $|H^\tau|$. So, we have the isomorphism $f_U$ 
+  from $|H^\tau|$ to $G[U]$. We define $\theta' : [k] \to V(G)$ by $\theta' \defeq f_U \circ \theta$, and also define $U' \defeq U \setminus \theta'([k])$. Then, $(\theta', U')$ satisfies the event $E'$. Furthermore, this construction is invertible: given a pair $(\theta', U')$ satisfying $E'$, we can recover the corresponding pair $(\theta, U)$ satisfying $E$ by letting $U \defeq U' \cup \theta'([k])$ and $\theta \defeq f_U^{-1} \circ \theta'$. This completes the proof of \Cref{eq:downward-adjoint:target-eq} and thus of the lemma.
 \end{proof}
 On the other hand, if there is no $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, we define the measure $\gamma(G)$ to be the zero measure, i.e., $\gamma(G)(\{G^\tau\}) \defeq 0$ for every $G^\tau \in \mathcal{G}^\tau$. The function $\alpha_d$ in this adjoint pair is defined as follows. \hy{I am here.}
 
