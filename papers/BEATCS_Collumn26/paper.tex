@@ -217,7 +217,6 @@
 }
 
 \title{A Gentle Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}
-\author{Gyeongon Jung \and Seonghun Park \and Hongseok Yang}
 \date{\today}
 
 \begin{document}
@@ -225,18 +224,19 @@
 
 \section{Introduction}
 
-Razborov's flag algebra~\cite{Razborov2007} is a powerful framework for
-reasoning about asymptotic properties of combinatorial structures, especially
-those arising in extremal graph theory. Since its introduction, it has been successfully
-applied to solve or make notable progress on several open problems, such as the minimum triangle density
+Razborov's flag algebra~\cite{Razborov2007} is a powerful framework for reasoning about
+asymptotic properties of combinatorial structures, including graphs, hypergraphs, and
+permutations. Since its introduction, it has led to solutions of, and substantial progress on,
+several central problems in extremal graph theory, such as the minimum triangle density
 problem~\cite{Razborov2008}, Erd\H{o}s's pentagon problem~\cite{HatamiHKNR13,Grzesik12},
-the induced 5-cycle density problem~\cite{BaloghHLP16}, Tur\'an's tetrahedron problem~\cite{Razborov10,BaberT12}, the rainbow-triangle density problem~\cite{BaloghHLPVY17}, and
-the minimum quasirandom-forcing permutation-set problem~\cite{Crudele2023six}.
- Moreover, powerful reasoning strategies in the flag algebra framework have been
-automated and implemented in tools. In particular, the
-{\sc Flagmatic} tool \cite{Falgas-RavryV13,PikhurkoST19} is behind many successful applications of flag algebra, including those just mentioned.
+the induced $5$-cycle density problem~\cite{BaloghHLP16}, Tur\'an's tetrahedron
+problem~\cite{Razborov10,BaberT12}, and the rainbow-triangle density
+problem~\cite{BaloghHLPVY17}. Many key proof steps in the framework can also be automated:
+{\sc Flagmatic}~\cite{Falgas-RavryV13,PikhurkoST19} is a widely used tool that underpins
+several of these results.
 
-This article is a survey of Razborov's flag algebra targeted at readers with a background in theoretical computer science, particularly those working in logic, programming languages, and formal methods. While there are already excellent survey articles on the flag algebra framework~\cite{Razborov13,SilvaFS16}, they tend to be written for mathematicians and focus on explaining how typical mathematical arguments based on, for instance, the Cauchy-Schwarz inequality and double-counting are carried out symbolically inside the framework. They also place great emphasis on the algebraic aspects of the framework. In contrast, we focus on its logical aspects and present the syntax, semantics, and reasoning principles of the framework in a manner similar to formal logic systems.
+This article surveys the flag algebra framework for readers with a theoretical computer science background, particularly those working in logic, programming languages, and formal methods. Although several excellent surveys of the framework exist~\cite{Razborov13,SilvaFS16,Grzesik15thesis}, they are written primarily for mathematicians and focus on how standard arguments (e.g., applications of the Cauchy--Schwarz inequality and double counting) can be carried out symbolically within the framework. They also emphasise the algebraic viewpoint. By contrast, we take a logical perspective and present the framework in terms of its syntax, semantics, and proof principles, in a style closer to formal logic. We further highlight that several reasoning principles in flag algebras can be understood via ideas akin to Galois connection and, more generally, categorical adjunction, which play an important role in programming languages. Our goal is to make the framework more accessible to theoretical computer scientists and to suggest opportunities for applying techniques from logic, programming languages, and formal methods.
+
 
 \hy{Space filler. To be expanded later. Make sure that we do not assume too much background knowledge on extremal graph theory. Also showcasing the use of flag algebra in solving some problem in extremal graph theory would be useful.}
 
