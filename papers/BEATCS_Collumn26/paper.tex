@@ -293,7 +293,7 @@ two vertices, exactly two are isomorphic to $H$.
 Many asymptotic extremal problems can be phrased in terms of induced subgraph densities.
 A representative example is an asymptotic induced version of a Tur\'an-type problem: given a graph $H$
 and a family of forbidden graphs $\mathcal{F}$, determine the maximum possible density of $H$ in large
-graphs that avoid every graph in $\mathcal{F}$. Formally, define
+graphs that avoid every graph in $\mathcal{F}$. Formally, the problem asks for the value of
 \[
 T(H, \mathcal{F}) \defeq
 \limsup_{n \to \infty} \max \{ p(H, G) \,:\, v(G) = n \text{ and } p(F,G) = 0 \text{ for all } F \in \mathcal{F} \}.
@@ -304,17 +304,19 @@ More generally, when $H = K_2$ and $\mathcal{F} = \{K_{r+1}\}$ for an integer $r
 theorem gives $T(H,\mathcal{F}) = 1 - \frac{1}{r}$~\cite{Turan1941}.
 
 Another example is the Ramsey multiplicity problem, a counting analogue of the classical Ramsey
-number problem. For integers $s,t \geq 2$, define
+number problem. Formally, for integers $s,t \geq 2$, the problem asks for the value of
 \[
 M(s,t) \defeq
 \liminf_{n \to \infty} \min \{ p(K_s, G) + p(K_t, \overline{G}) \,:\, v(G) = n \},
 \]
 where $\overline{G}$ is the complement of $G$ (i.e., $V(\overline{G}) = V(G)$ and
-$E(\overline{G}) = \binom{V(G)}{2} \setminus E(G)$). It is known that $M(3,3) = \frac{1}{4}$ by
-Goodman's result~\cite{Goodman1959}, but the problem remains widely open for many other pairs $(s,t)$.
-We remark that the flag algebra framework has been used to determine some cases (e.g., $M(3,4)$ and
-$M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds for others (e.g., $M(4,4)$,
-$M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
+$E(\overline{G}) = \binom{V(G)}{2} \setminus E(G)$). Intuitively, $G$ and $\overline{G}$ correspond
+to a $2$-colouring of the edges of $K_n$ (say, blue and red), and $p(K_s, G) + p(K_t, \overline{G})$
+denotes the combined density of blue copies of $K_s$ and red copies of $K_t$. It is known that
+$M(3,3) = \frac{1}{4}$ by Goodman's result~\cite{Goodman1959}, but the problem remains open for many
+other pairs $(s,t)$. The flag algebra framework has been used to determine exact values in some
+cases (e.g., $M(3,4)$ and $M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds in
+others (e.g., $M(4,4)$, $M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
 
 \hy{I am here. In the middle of revising the paper.}
 
