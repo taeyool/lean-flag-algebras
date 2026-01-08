@@ -275,14 +275,16 @@ $V(C_n)=[n]$ and $E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$, and the 
 denotes the path on $n$ vertices, i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$.
 
 
-\section{Induced Subgraph Density, Limiting Graphs, and Extremal Problems}
+\section{Induced Subgraph Density and Limiting Graphs}
 \label{sec:induced-subgraph-density}
 
-Let $H$ and $G$ be graphs. The most important concept in flag algebra is the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$. It is defined as
+Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The most important notion in this article is the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$. It is defined as
 \[
-p(H, G) \defeq \mathbb{P}\Big[G[\mathbf{U}] \simeq H\Big]
+p(H, G) \defeq \mathbb{P}\big[G[\mathbf{U}] \simeq H\big]
 \]
-where $\mathbf{U}$ is a uniformly random subset of $V(G)$ with size $v(H)$, and $\simeq$ denotes the graph isomorphism. For instance, if $H = K_2$ and $G = K_3$, then $p(H,G) = 1$ since every induced subgraph of $G$ with two vertices is isomorphic to $H$. As another example, if $H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$ since there are three induced subgraphs of $G$ with two vertices, two of which are isomorphic to $H$.
+where $\mathbf{U}$ is a uniform random subset of $V(G)$ with size $v(H)$, and $\simeq$ denotes the graph isomorphism. In words, $p(H,G)$ refers to probability that a randomly chosen subset of vertices of $G$ of size $v(H)$ induces a subgraph isomorphic to $H$. For instance, if $H = K_2$ and $G = K_3$, then $p(H,G) = 1$ since every induced subgraph of $G$ with two vertices is isomorphic to $H$. As another example, if $H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$ since there are three induced subgraphs of $G$ with two vertices, two of which are isomorphic to $H$.
+
+
 
 In flag algebra, we analyse the properties of graphs using the density function $p$. The target graph $G$ of this analysis goes to the second parameter of $p$, which we call 
 \emph{host graph}. The first parameter $H$ of $p$, on the other hand, is a part of property speficiation, and describes a pattern to be searched for in $G$. We call $H$ \emph{pattern graph}. Usually, $G$ is large, $H$ is small, and $p(H,G)$ describes a local property of $G$.
