@@ -278,16 +278,49 @@ denotes the path on $n$ vertices, i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i
 \section{Induced Subgraph Density and Limiting Graphs}
 \label{sec:induced-subgraph-density}
 
-Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The most important notion in this article is the \emph{induced subgraph density} of $H$ in $G$ or simply \emph{$H$-density} in $G$. It is defined as
+Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The central notion in this article is the
+\emph{induced subgraph density} of $H$ in $G$, or simply the \emph{$H$-density} in $G$, defined by
 \[
-p(H, G) \defeq \mathbb{P}\big[G[\mathbf{U}] \simeq H\big]
+p(H, G) \defeq \mathbb{P}\big[G[\mathbf{U}] \simeq H\big],
 \]
-where $\mathbf{U}$ is a uniform random subset of $V(G)$ with size $v(H)$, and $\simeq$ denotes the graph isomorphism. In words, $p(H,G)$ refers to probability that a randomly chosen subset of vertices of $G$ of size $v(H)$ induces a subgraph isomorphic to $H$. For instance, if $H = K_2$ and $G = K_3$, then $p(H,G) = 1$ since every induced subgraph of $G$ with two vertices is isomorphic to $H$. As another example, if $H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$ since there are three induced subgraphs of $G$ with two vertices, two of which are isomorphic to $H$.
+where $\mathbf{U}$ is a uniformly random subset of $V(G)$ of size $v(H)$, and $\simeq$ denotes graph
+isomorphism. In words, $p(H,G)$ is the probability that a uniformly random set of $v(H)$ vertices of
+$G$ induces a subgraph isomorphic to $H$. For instance, if $H = K_2$ and $G = K_3$, then $p(H,G) = 1$,
+since every induced subgraph of $G$ on two vertices is isomorphic to $H$. As another example, if
+$H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$, since among the three induced subgraphs of $G$ on
+two vertices, exactly two are isomorphic to $H$.
 
+Many asymptotic extremal problems can be phrased in terms of induced subgraph densities.
+A representative example is an asymptotic induced version of a Tur\'an-type problem: given a graph $H$
+and a family of forbidden graphs $\mathcal{F}$, determine the maximum possible density of $H$ in large
+graphs that avoid every graph in $\mathcal{F}$. Formally, define
+\[
+T(H, \mathcal{F}) \defeq
+\limsup_{n \to \infty} \max \{ p(H, G) \,:\, v(G) = n \text{ and } p(F,G) = 0 \text{ for all } F \in \mathcal{F} \}.
+\]
+When $H = K_2$ and $\mathcal{F} = \{K_3\}$, $T(H,\mathcal{F})$ is the asymptotic maximum edge density
+of triangle-free graphs, and Mantel's theorem states that $T(H,\mathcal{F}) = 1/2$~\cite{Mantel1907}.
+More generally, when $H = K_2$ and $\mathcal{F} = \{K_{r+1}\}$ for an integer $r \geq 2$, Tur\'an's
+theorem gives $T(H,\mathcal{F}) = 1 - \frac{1}{r}$~\cite{Turan1941}.
 
+Another example is the Ramsey multiplicity problem, a counting analogue of the classical Ramsey
+number problem. For integers $s,t \geq 2$, define
+\[
+M(s,t) \defeq
+\liminf_{n \to \infty} \min \{ p(K_s, G) + p(K_t, \overline{G}) \,:\, v(G) = n \},
+\]
+where $\overline{G}$ is the complement of $G$ (i.e., $V(\overline{G}) = V(G)$ and
+$E(\overline{G}) = \binom{V(G)}{2} \setminus E(G)$). It is known that $M(3,3) = \frac{1}{4}$ by
+Goodman's result~\cite{Goodman1959}, but the problem remains widely open for many other pairs $(s,t)$.
+We remark that the flag algebra framework has been used to determine some cases (e.g., $M(3,4)$ and
+$M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds for others (e.g., $M(4,4)$,
+$M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
+
+\hy{I am here. In the middle of revising the paper.}
 
 In flag algebra, we analyse the properties of graphs using the density function $p$. The target graph $G$ of this analysis goes to the second parameter of $p$, which we call 
 \emph{host graph}. The first parameter $H$ of $p$, on the other hand, is a part of property speficiation, and describes a pattern to be searched for in $G$. We call $H$ \emph{pattern graph}. Usually, $G$ is large, $H$ is small, and $p(H,G)$ describes a local property of $G$.
+
 
 Note that the density function $p$ induces the representation of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, because $p(\_,G) = p(\_,G')$ is equivalent to $G \simeq G'$. It also lets us use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
 
