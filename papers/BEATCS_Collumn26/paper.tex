@@ -241,7 +241,7 @@ problem~\cite{BaloghHLPVY17}. Many key proof steps in the framework can also be 
 {\sc Flagmatic}~\cite{Falgas-RavryV13,PikhurkoST19} is a widely used tool that underpins
 several of these results.
 
-This article surveys flag algebra for readers with a theoretical computer science background,
+This article surveys flag algebra for readers with a computer science background,
 particularly those working in logic, programming languages, automated verification, and formal
 methods. Although several excellent surveys exist~\cite{Razborov13,SilvaFS16,Grzesik15thesis},
 they are written primarily for mathematicians and typically emphasise the algebraic viewpoint,
@@ -253,7 +253,7 @@ labelled and unlabelled settings) can be understood via ideas reminiscent of Gal
 and, more generally, categorical adjunctions---concepts that frequently appear in programming
 languages and automated verification.
 
-The paper is organised as follows. In \Cref{sec:induced-subgraph-density}, we review the notions of induced subgraph density and limiting graphs, which form the basis of flag algebra, and we formulate representative asymptotic problems in extremal graph theory using these notions. Then, in \Cref{sec:syntax-semantics}, we present flag algebra as a logical system consisting of two kinds of terms---density expressions and assertions---together with a formal semantics in terms of limiting graphs. We also illustrate how standard extremal arguments can be rendered as derivations in this system. Key steps in these derivations rely on a nontrivial inequality. In \Cref{sec:downward-operator}, we explain a strategy for proving such inequalities using labelled variants of flag algebra and a principle for transferring inequalities from these variants to the unlabelled setting via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities for theoretical computer scientists related to flag algebra.
+The paper is organised as follows. In \Cref{sec:induced-subgraph-density}, we review induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which provide a concise language for these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs; we also illustrate, through two examples, how standard extremal arguments can be rendered as derivations in this system. The key steps in both examples rely on a nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a principle for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities for computer scientists related to flag algebra.
 
 Before we begin, we fix some notation and terminology used throughout the paper.
 For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1,2,\ldots,n\}$.
@@ -320,12 +320,12 @@ other pairs $(s,t)$. The flag algebra framework has been used to determine exact
 cases (e.g., $M(3,4)$ and $M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds in
 others (e.g., $M(4,4)$, $M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
 
-Note that in both examples, the two arguments of the density function $p$ play different roles. The second argument $G$ represents the graph under study, whereas the first argument $H$ is part of the specification and describes the pattern whose density is being measured. This convention is standard in extremal graph theory and in typical applications of flag algebra. We call $G$ the \emph{host graph} and $H$ the \emph{pattern graph}. Typically, $G$ is large, $H$ is small, and $p(H,G)$ captures a local quantitative property of $G$.
+Note that in both examples the two arguments of the density function $p$ play different roles: the second argument $G$ is the graph under study, whereas the first argument $H$ is part of the specification and denotes the pattern whose density is being measured. This convention is commonly adopted in extremal graph theory, and it is assumed in most of the applications of flag algebras. We therefore call $G$ the \emph{host graph} and $H$ the \emph{pattern graph}. Typically, $G$ is large, $H$ is small, and $p(H,G)$ captures a local quantitative property of $G$.
 
 Another point is that the density function $p$ induces an embedding of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, since $p(\_,G) = p(\_,G')$ holds if and only if $G \simeq G'$. It also allows us to use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
 
-
 \section{Limiting Graphs}
+\label{sec:limiting-graphs}
 \hy{I am here. In the middle of revising the paper.}
 
 Note that the density function $p$ induces the representation of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, because $p(\_,G) = p(\_,G')$ is equivalent to $G \simeq G'$. It also lets us use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
