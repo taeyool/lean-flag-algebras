@@ -456,15 +456,16 @@ For instance, the following assertions hold for all limiting graphs $\phi \in \P
 
 \begin{lem}
   \label{lemma:basic-algebra}
-    The rules of ordered commutative algebras and the rules for boolean algebras are valid assertions in flag algebra.
+    The rules of ordered commutative algebras are valid for density expressions in flag algebra. Also, the rules for boolean algebras are valid assertions in flag algebra.
 \end{lem}
 
-What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph so that they are correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
+What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph and be correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
 \begin{lem}
   \label{lemma:isomorphism}
     If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
 \end{lem}
-The next useful consequences follow from the connection between a limiting graph $\phi$ and probability theory. For each graph $H$, the value $\phi(H)$ intuitively denotes the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
+
+The next useful consequences follow from the connection between  limiting graphs and probability theory. For each graph $H$ and limiting graph $\phi$, the value $\phi(H)$ intuitively means the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all non-isomorphic graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
 we restate the above observations formally in the following lemmas.
 \begin{lem}
   \label{lemma:non-negativity}
@@ -479,28 +480,34 @@ we restate the above observations formally in the following lemmas.
     \] 
     is valid.
 \end{lem}
-Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplication in density expressions and the multiplicative unit $1$ can be elimiated. 
+Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplicative unit $1$  and the multiplication in density expressions can be elimiated. In the lemmas below, let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs on $V$.
 \begin{lem}
   \label{lemma:decomposition}
-    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
-    on $V$. Then, for every graph $G$ with $v(G) \leq |V|$, 
+    For every graph $G$ with $v(G) \leq |V|$, 
     \[
     G = \sum_{H \in \mathcal{H}_V} p(G,H) \cdot H
     \]
     is valid.
 \end{lem}
 \begin{lem}
-  \label{lemma:eliminate-multiplication}
-    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
-    on $V$. Then, for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, there exist $r_H$ for each $H \in \mathcal{H}_V$ such that
+  \label{lemma:eliminate-multiplication} 
+    If $\emptygraph$ is the graph with the empty vertex set, then
+    \[ 
+    1 = \emptygraph
+    \]
+    is valid. Also,
+    for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, we have the valid assertion     
     \[
     H_1 \cdot H_2 = \sum_{H \in \mathcal{H}_V} r_H \cdot H
     \]
-    is valid. Also, if $\emptygraph$ is the graph with the empty vertex set, then
-    \[ 
-    1 = \emptygraph.
+    where 
+    \[
+    r_H \defeq \mathbb{P}\Big[H[\mathbf{U}_1] \simeq H_1\ \ \mathrm{and}\ \ H[\mathbf{U}_2] \simeq H_2\Big],
     \]
+    with $\mathbf{U}_1$ and $\mathbf{U}_2$ being uniformly random disjoint subsets of $V(H)$ of sizes $v(H_1)$ and $v(H_2)$, respectively. 
 \end{lem}
+
+\hy{I am here. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper.}
 
 We now illustrate the syntax and semantics of flag algebra by expressing asymptotic extremal problems mentioned in the previous section. The 
 Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find a tightest $c \in \mathbb{R}$ such that the implication
