@@ -262,7 +262,7 @@ subset of $\mathbb{N}$. Here, \emph{simple} means that $G$ has neither loops (i.
 from a vertex to itself) nor multiple edges (i.e., more than one edge between the same pair of
 vertices). Thus, such a graph $G$ is formally a pair consisting of a finite set $V \subseteq \mathbb{N}$
 and a set $E \subseteq \binom{V}{2}$. We refer to these simply as \emph{graphs}, and write
-$\mathcal{G}$ for the set of all graphs.
+$\mathcal{G}$ for the set of all graphs. Note that $\mathcal{G}$ is countably infinite.
 For a graph $G$, we write $V(G)$ and $E(G)$ for its vertex set and edge set, respectively, and
 $v(G) \defeq |V(G)|$ and $e(G) \defeq |E(G)|$ for their cardinalities.
 For $U \subseteq V(G)$, we write $G[U]$ for the subgraph of $G$ induced by $U$, i.e., the graph with
@@ -330,18 +330,17 @@ $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if it 
 $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. Equivalently, the sequence of vector
 representations $(p(\_,G_n))_n$ mentioned at the end of the previous section converges pointwise in
 $[0,1]^{\mathcal{G}}$.
-
-Although this definition may appear strong---since it requires the existence of the limit for every
+Although this definition may appear restrictive---since it requires the limit to exist for every
 graph $H$---convergence is in fact common: every increasing sequence of graphs has a convergent
-subsequence. Indeed, the set $\mathcal{G}$ of finite graphs is countable, so the product space
-$[0,1]^{\mathcal{G}}$ (equipped with the product topology) is compact and metrizable; hence it is
-sequentially compact, and every sequence admits a convergent subsequence.
+subsequence. Indeed, the set $\mathcal{G}$ of graphs is countable\footnote{Recall that by a graph we mean a finite
+simple graph $G$ with $V(G) \subseteq \mathbb{N}$.}, so the product space $[0,1]^{\mathcal{G}}$,
+equipped with the product topology, is compact and metrizable. Hence it is sequentially compact,
+and the sequence of vectors $(p(\_,G_n))_{n\in\mathbb{N}}$ admits a convergent subsequence.
 
-A function $\phi : \mathcal{G} \to [0,1]$ is a \emph{limiting graph} if there exists a convergent
-sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that
+A function $\phi : \mathcal{G} \to [0,1]$ is a \emph{limiting graph}\footnote{In~\cite{Razborov2007}, such a function is called a \emph{positive homomorphism}. We avoid this terminology because it can be opaque outside the algebraic setting, and we want to emphasise the interpretation of $\phi$ as a limit object representing an infinite graph.} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that
 \[
 \phi(H) = \lim_{n \to \infty} p(H, G_n)
-\qquad\text{for every graph } H.
+\qquad\text{for every graph } H \in \mathcal{G}.
 \]
 Let $\Phi$ denote the set of all limiting graphs. A useful mental picture (formalised, for example,
 via graphons~\cite{Lovasz2012GraphonBook}) is that a limiting graph represents an ``infinitely large''
@@ -372,8 +371,6 @@ for $c,c' \in \mathbb{R}$, together with a semantics parameterised by limiting g
 \section{Syntax and Semantics of Flag Algebra}
 \label{sec:syntax-semantics}
 
-\hy{I am here.}
-
 The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions generalise pattern graphs $H$, and define maps from limiting graphs to real numbers. Such maps correspond to features in machine learning, and describe properties of limiting graphs quantitatively. Assertions express qualitiative properties of limiting graphs using density expressions and logical connectives.
 
 Formally, the syntax is defined as follows:
@@ -382,11 +379,11 @@ Formally, the syntax is defined as follows:
 \\
 \text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A 
 \end{align*}
-where $H$ is a graph, and $r \in \mathbb{R}$. We denote the set of all density expressions by $\Expr$, and that of assertions by $\Assn$.  Note that density expressions are built from pattern graphs using real scalar multiplication, addition, multiplication, and the constants $0$ and $1$. Assertions are constructed from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction here have the usual meanings from classical logic. As a result, they induce other logical connectives of classical logic such as conjunction and implication in the standard way:
+where $H$ is a graph, and $r \in \mathbb{R}$. We denote the set of all density expressions by $\Expr$, and that of assertions by $\Assn$.  Note that density expressions are built from pattern graphs and the constants $0$ and $1$ using scalar multiplication, addition, and multiplication. Assertions are constructed from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction here have the usual meanings from classical logic. As a result, they induce other logical connectives of classical logic such as conjunction and implication in the standard way:
 \[
 A \land A' \defeq \neg (\neg A \lor \neg A')
 \qquad\text{and}\qquad
-A \implies A' \defeq \neg A \lor A'.
+(A \implies A') \defeq \neg A \lor A'.
 \]
 We also note that usual comparison operators between density expressions such as $=$, $>$, $\leq$, and $<$ can be defined using $\geq$ and the logical connectives in the standard way. For instance,
 \[
@@ -449,17 +446,17 @@ and
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
 and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
-Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and assertions (or formulas) in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to logical formulas over these arithmetic expressions. As a result, many reasoning principles from first-order logic carry over to flag algebra directly.
+Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and formulas in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to formulas over these arithmetic expressions. As a result, many proof principles from first-order logic carry over to flag algebra directly.
 For instance, the following assertions hold for all limiting graphs $\phi \in \Phi$:
 \begin{align*}
-  & H_1 \cdot (H_3 + H_2) + (4 \cdot H_1) \cdot H_3 = H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3), 
+  & \Big(H_1 \cdot (H_3 + H_2) + (4 \cdot H_3) \cdot H_1\Big) = \Big(H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3)\Big), 
   \\
-  & (H_1 + H_2 \geq 0) \wedge (0 \geq H_2 - H_3) \implies H_1 + H_3 \geq 0.
+  & \Big((H_1 + H_2 \geq 0) \wedge (0 \geq H_2 - H_3)\Big) \implies H_1 + H_3 \geq 0.
 \end{align*}
 
 \begin{lem}
   \label{lemma:basic-algebra}
-    The rules of ordered commutative algebras form valid equations for density expressions. Also, the rules for boolean algebras are valid assertions in flag algebra.
+    The rules of ordered commutative algebras and the rules for boolean algebras are valid assertions in flag algebra.
 \end{lem}
 
 What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph so that they are correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
