@@ -230,30 +230,28 @@ In extremal graph theory, many problems ask for the maximum or minimum possible 
 of a fixed finite pattern (such as an edge, a triangle, or an induced cycle) among all large
 graphs satisfying certain constraints (such as forbidding a subgraph).  Flag algebra turns
 such questions into optimisation problems over a compact space of limit objects, and provides
-a symbolic calculus for deriving valid inequalities between subgraph densities.
+a symbolic calculus for deriving valid inequalities between densities of those finite patterns.
 
 Since its introduction, the flag algebra framework has led to solutions of, and substantial progress on,
 several central problems in extremal graph theory, including the minimum triangle density
 problem~\cite{Razborov2008}, Erd\H{o}s's pentagon problem~\cite{HatamiHKNR13,Grzesik12},
 the induced $5$-cycle density problem~\cite{BaloghHLP16}, Tur\'an's tetrahedron
 problem~\cite{Razborov10,BaberT12}, and the rainbow-triangle density
-problem~\cite{BaloghHLPVY17}. Many key proof steps in the framework can also be automated:
+problem~\cite{BaloghHLPVY17}. Many key proof steps in the framework have also been automated:
 {\sc Flagmatic}~\cite{Falgas-RavryV13,PikhurkoST19} is a widely used tool that underpins
-several of these results.
+several of these results in extremal graph theory.
 
-This article surveys flag algebra for readers with a computer science background,
-particularly those working in logic, programming languages, automated verification, and formal
-methods. Although several excellent surveys exist~\cite{Razborov13,SilvaFS16,Grzesik15thesis},
-they are written primarily for mathematicians and typically emphasise the algebraic viewpoint,
-presenting the method as a symbolic calculus for familiar arguments (e.g., double counting and
-applications of Cauchy--Schwarz).  By contrast, we take a \emph{logical} perspective and present
+This article surveys flag algebra for computer scientists working in logic, programming languages, automated verification, and formal
+methods. Although several excellent surveys on flag algebra exist~\cite{Razborov13,SilvaFS16,Grzesik15thesis},
+they are written primarily for mathematicians,
+presenting flag algebra as a symbolic calculus for familiar arguments (e.g., double counting and
+applications of Cauchy--Schwarz). They also emphasise the algebraic viewpoint of flag algebra. By contrast, we take a \emph{logical} perspective and present
 flag algebra in terms of syntax, semantics, and proof principles, in a style closer to formal
 logic. We also highlight that some core constructions (notably the so called downward operator that relates
 labelled and unlabelled settings) can be understood via ideas reminiscent of Galois connections
-and, more generally, categorical adjunctions---concepts that frequently appear in programming
-languages and automated verification.
+and, more generally, categorical adjunctions---concepts that frequently appear in automated verification and programming languages.
 
-The paper is organised as follows. In \Cref{sec:induced-subgraph-density}, we review induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which provide a concise language for these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs; we also illustrate, through two examples, how standard extremal arguments can be rendered as derivations in this system. The key steps in both examples rely on a nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a principle for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities for computer scientists related to flag algebra.
+The paper is organised as follows. In \Cref{sec:induced-subgraph-density}, we review the notion of induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which enable a concise description of these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs. We also illustrate, through two examples, how standard extremal arguments can be rendered as derivations in this system. The key steps in both examples rely on one nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a principle for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities for computer scientists related to flag algebra.
 
 Before we begin, we fix some notation and terminology used throughout the paper.
 For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1,2,\ldots,n\}$.
