@@ -271,7 +271,7 @@ We use standard notation for common graphs. The complete graph on vertex set $[n
 (so $E(K_n) = \binom{[n]}{2}$), the cycle on $n$ vertices by $C_n$ (i.e., $V(C_n)=[n]$ and
 $E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$), and the path on $n$ vertices by $P_n$
 (i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$).
-Finally, $K_{n,m}$ denotes the complete bipartite graph with parts $\{1,\ldots,n\}$ and $\{n+1,\ldots,n+m\}$
+Finally, $I_n$ denotes the edgeless graph with $n$ vertices (i.e., $V(I_n) = [n]$ and $E(I_n) = \emptyset$) and $K_{n,m}$ the complete bipartite graph with parts $\{1,\ldots,n\}$ and $\{n+1,\ldots,n+m\}$
 (i.e., $V(K_{n,m})=[n+m]$ and $E(K_{n,m})=\{\{i,j\} : i \in [n],\ j \in \{n+1,\ldots,n+m\}\}$).
 
 
@@ -325,46 +325,54 @@ Moreover, the density function $p$ induces a representation of a graph $G$ as an
 \section{Limiting Graphs}
 \label{sec:limiting-graphs}
 
-Let $(G_n)_{n \in \mathbb{N}}$ be a sequence of graphs. The sequence is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if the sequence is increasing and $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. Note that the latter condition means that the sequence of vector representations $(p(\_,G_n))_n$ of $(G_n)_n$ converges pointwise 
-in $[0,1]^{\mathcal{G}}$. The reader might be worried that this definition of convergence is too strong, as it requires the existence of the limit for every graph $H$, so that only a handful of increasing graph sequences converge. We reassure such a reader that convergence actually occurs commonly; every increasing sequence of graphs has a convergent subsequence. The reason for this is that the pointwise convergence of vector representations of graphs comes from the product topology on $[0,1]^{\mathcal{G}}$ that is compact by Tychonoff's theorem.
+Let $(G_n)_{n \in \mathbb{N}}$ be a sequence of graphs. The sequence is \emph{increasing} if
+$v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if it is increasing and
+$\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. Equivalently, the sequence of vector
+representations $(p(\_,G_n))_n$ mentioned at the end of the previous section converges pointwise in
+$[0,1]^{\mathcal{G}}$.
 
-We call a function $\phi$ from the set of all graphs to $[0,1]$ a \emph{limiting graph} if there exists a convergent sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that $\phi(H) = \lim_{n \to \infty} p(H, G_n)$ for every graph $H$. We write 
-$\Phi$ for the set of all limiting graphs. A good mental picture (which can be formalised in terms of graphons) is that a limiting graph $\phi$ is the infinite-dimensional vector representing an undirected graph with a continuum number of vertices, where the component of $\phi$ at a pattern graph $H$ is the density of $H$ in this infinitely-large host graph. We point out that every convergent sequence $(G_n)_n$ induces a unique limiting graph $\phi$, but a limiting graph $\phi$ can be induced by multiple convergent sequences.
+Although this definition may appear strong---since it requires the existence of the limit for every
+graph $H$---convergence is in fact common: every increasing sequence of graphs has a convergent
+subsequence. Indeed, the set $\mathcal{G}$ of finite graphs is countable, so the product space
+$[0,1]^{\mathcal{G}}$ (equipped with the product topology) is compact and metrizable; hence it is
+sequentially compact, and every sequence admits a convergent subsequence.
 
-Using limiting graphs, we can express asymptotic extremal graph theory problems in a clean manner. A representative example is an asymptotic and induced-graph version of the Tur\'an-type problem where we want to determine the maximum possible density of a graph $H$ in large host graphs that avoid certain forbidden graphs in $\mathcal{F}$. More formally, for a graph $H$ and a finite set of graphs $\mathcal{F}$, the problem asks for the solution of the following asymptotic optimisation problem:
+A function $\phi : \mathcal{G} \to [0,1]$ is a \emph{limiting graph} if there exists a convergent
+sequence of graphs $(G_n)_{n \in \mathbb{N}}$ such that
 \[
-T(H, \mathcal{F}) \defeq
-\lim_{n \to \infty} \max \{ p(H, G) \,:\, v(G) = n \text{ and } p(F,G) = 0 \text{ for all } F \in \mathcal{F} \}.
+\phi(H) = \lim_{n \to \infty} p(H, G_n)
+\qquad\text{for every graph } H.
 \]
-The solution $T(H,\mathcal{F})$ can be reformulated in terms of limiting graphs as follows:
+Let $\Phi$ denote the set of all limiting graphs. A useful mental picture (formalised, for example,
+via graphons~\cite{Lovasz2012GraphonBook}) is that a limiting graph represents an ``infinitely large''
+host graph, and $\phi(H)$ gives the induced subgraph density of the pattern $H$ in this limit object.
+Every convergent sequence $(G_n)_n$ determines a unique limiting graph $\phi$, but the same limiting
+graph may arise from multiple sequences.
+
+Using limiting graphs, we can restate the extremal problems from the previous section cleanly. The
+asymptotic induced-subgraph Tur\'an-type problem becomes the optimisation problem
 \[
-T(H, \mathcal{F}) =
-\max \{ \phi(H) \,:\, \phi \in \Phi \text{ and } \phi(F) = 0 \text{ for all } F \in \mathcal{F} \}.
+T(H, \mathcal{F}) \defeq \max \{ \phi(H) \,:\, \phi \in \Phi \text{ and } \phi(F) = 0 \text{ for all } F \in \mathcal{F} \}.
 \]
-When $H = K_2$ and $\mathcal{F} = \{K_3\}$, the answer is known to $1/2$ by the famous Mantel's theorem \hy{Citation}. More generally, when $H = K_2$ and $\mathcal{F} = \{K_{r+1}\}$ for an integer $r \geq 2$, the answer is known to be $1 - \frac{1}{r}$ by the well-known Tur\'an's theorem \hy{Citation}. 
-Another example is the Ramsey multiplicity problem, which is a counting version of the famous problem on Ramsey numbers $R(s,t)$. For integers $s,t \geq 2$, the problem is to answer the next asymptotic optimisation problem: 
+Similarly, since $p(K_t,\overline{G}) = p(I_t,G)$ (where $I_t$ is the edgeless graph on $t$ vertices),
+the Ramsey multiplicity problem can be written as
 \[
-R(s,t) \defeq
-\lim_{n \to \infty} \min \{ p(K_s, G) + p(K_t, \overline{G}) \,:\, v(G) = n \},
-\]
-where $\overline{G}$ is the complement graph of $G$ (i.e., $V(\overline(G)) = V(G)$ and $E(\overline{G}) = \binom{V(G)}{2} \setminus E(G)$). Using limiting graphs, we can reformulate this problem as the next optimising problem over limiting graphs:
-\[
-R(s,t) =
-\min \{ \phi(K_s) + \phi(\overline{K_t}) \,:\, \phi \in \Phi \}.
+M(s,t) \defeq
+\min \{ \phi(K_s) + \phi(I_t) \,:\, \phi \in \Phi \}.
 \]
 
-A main message of this survey is that the flag algebra framework is a logic for reasoning about limiting graphs in $\Phi$, in particular, the one designed for answering questions on asymptotic extremal problems. For instance, the framework provides a syntax for expressing  bounds 
+A main message of this survey is that flag algebra provides a logical framework for reasoning about limiting graphs in $\Phi$, and in particular for establishing bounds in asymptotic extremal problems. For example, it offers a syntax for expressing bounds such as
 \[
 T(H, \mathcal{F}) \leq c
 \qquad\text{and}\qquad
-R(s,t) \geq c'
+M(s,t) \geq c'
 \]
-for some $c,c' \in \mathbb{R}$ (which require reasoning about all limiting graphs in $\Phi$),
-and rules for proving the above bounds, some of which can even be automated.
-In the next two sections, we elaborate this message by presenting the syntax and semantics of this logic, and the reasoning principles it supports.
+for $c,c' \in \mathbb{R}$, together with a semantics parameterised by limiting graphs in $\Phi$. In this way, such bounds become statements about limiting graphs. Flag algebra also provides proof principles for deriving these bounds, some of which can be automated. In the next two sections, we present the syntax and semantics of this logic, and the proof principles it supports.
 
 \section{Syntax and Semantics of Flag Algebra}
 \label{sec:syntax-semantics}
+
+\hy{I am here.}
 
 The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions generalise pattern graphs $H$, and define maps from limiting graphs to real numbers. Such maps correspond to features in machine learning, and describe properties of limiting graphs quantitatively. Assertions express qualitiative properties of limiting graphs using density expressions and logical connectives.
 
