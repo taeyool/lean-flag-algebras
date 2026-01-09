@@ -253,26 +253,26 @@ and, more generally, categorical adjunctions---concepts that frequently appear i
 
 The paper is organised as follows. In \Cref{sec:induced-subgraph-density}, we review the notion of induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which enable a concise description of these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs. We also illustrate, through two examples, how standard extremal arguments can be rendered as derivations in this system. The key steps in both examples rely on one nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a principle for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities for computer scientists related to flag algebra.
 
-Before we begin, we fix some notation and terminology used throughout the paper.
+Before we begin, we fix some notation and terminology.
 For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1,2,\ldots,n\}$.
 For a set $X$ and a nonnegative integer $n$, we write $\binom{X}{n}$ for the set of all
 $n$-element subsets of $X$.
-Throughout the paper, we consider finite simple undirected graphs $G$ whose vertex set is a
-subset of $\mathbb{N}$. Here simplicity means that the graph has neither loops (i.e., edges
+Throughout the paper, we consider finite, simple, undirected graphs $G$ whose vertex set is a
+subset of $\mathbb{N}$. Here, \emph{simple} means that $G$ has neither loops (i.e., edges
 from a vertex to itself) nor multiple edges (i.e., more than one edge between the same pair of
-vertices). Thus, such a graph $G$ is formally a pair of a finite subset $V \subseteq \mathbb{N}$
-and a subset $E$ of $\binom{V}{2}$. We refer to these simply as \emph{graphs}, and write
+vertices). Thus, such a graph $G$ is formally a pair consisting of a finite set $V \subseteq \mathbb{N}$
+and a set $E \subseteq \binom{V}{2}$. We refer to these simply as \emph{graphs}, and write
 $\mathcal{G}$ for the set of all graphs.
-For a graph $G$, we use $V(G)$ and $E(G)$ to denote its vertex set and edge set,
-respectively, and $v(G)$ and $e(G)$ to mean their cardinalities.
-For $U \subseteq V(G)$, we write $G[U]$ for the subgraph of $G$ induced by $U$, i.e., the
-graph with vertex set $U$ and edge set $E(G) \cap \binom{U}{2}$.
-We use standard notation for common graphs. The $K_n$ denotes the complete graph on vertex
-set $[n]$ (so $E(K_n) = \binom{[n]}{2}$), the $C_n$ means the cycle on $n$ vertices (i.e.,
-$V(C_n)=[n]$ and $E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$), the $P_n$
-refers to the path on $n$ vertices (i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$), 
-and the $K_{n,m}$ is the complete bipartite graph with parts $\{1,\ldots,n\}$ and $\{n+1,\ldots,n+m\}$ 
-(i.e., $V(K_{n,m})=[n+m]$ and $E(K_{n,m})=\{\{i,j\} : i \in [n], j \in \{n+1,\ldots,n+m\}\}$).
+For a graph $G$, we write $V(G)$ and $E(G)$ for its vertex set and edge set, respectively, and
+$v(G) \defeq |V(G)|$ and $e(G) \defeq |E(G)|$ for their cardinalities.
+For $U \subseteq V(G)$, we write $G[U]$ for the subgraph of $G$ induced by $U$, i.e., the graph with
+vertex set $U$ and edge set $E(G) \cap \binom{U}{2}$.
+We use standard notation for common graphs. The complete graph on vertex set $[n]$ is denoted by $K_n$
+(so $E(K_n) = \binom{[n]}{2}$), the cycle on $n$ vertices by $C_n$ (i.e., $V(C_n)=[n]$ and
+$E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$), and the path on $n$ vertices by $P_n$
+(i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$).
+Finally, $K_{n,m}$ denotes the complete bipartite graph with parts $\{1,\ldots,n\}$ and $\{n+1,\ldots,n+m\}$
+(i.e., $V(K_{n,m})=[n+m]$ and $E(K_{n,m})=\{\{i,j\} : i \in [n],\ j \in \{n+1,\ldots,n+m\}\}$).
 
 
 \section{Induced Subgraph Density}
@@ -291,8 +291,8 @@ $H = K_2$ and $G = P_3$, then $p(H,G) = \frac{2}{3}$, since among the three indu
 two vertices, exactly two are isomorphic to $H$.
 
 Many asymptotic extremal problems can be phrased in terms of induced subgraph densities.
-A representative example is an asymptotic induced version of a Tur\'an-type problem: given a graph $H$
-and a family of forbidden graphs $\mathcal{F}$, determine the maximum possible density of $H$ in large
+A representative example is an asymptotic induced-subgraph version of a Tur\'an-type problem: given a graph $H$
+and a family of forbidden graphs $\mathcal{F}$, determine the maximum possible $H$-density in large
 graphs that avoid every graph in $\mathcal{F}$. Formally, the problem asks for the value of
 \[
 T(H, \mathcal{F}) \defeq
@@ -318,15 +318,12 @@ other pairs $(s,t)$. The flag algebra framework has been used to determine exact
 cases (e.g., $M(3,4)$ and $M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds in
 others (e.g., $M(4,4)$, $M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
 
-Note that in both examples the two arguments of the density function $p$ play different roles: the second argument $G$ is the graph under study, whereas the first argument $H$ is part of the specification and denotes the pattern whose density is being measured. This convention is commonly adopted in extremal graph theory, and it is assumed in most of the applications of flag algebras. We therefore call $G$ the \emph{host graph} and $H$ the \emph{pattern graph}. Typically, $G$ is large, $H$ is small, and $p(H,G)$ captures a local quantitative property of $G$.
+In both examples, the two arguments of the density function $p$ play different roles: the second argument $G$ is the graph under study, whereas the first argument $H$ is part of the specification and denotes the pattern whose density is being measured. This convention is commonly used in extremal graph theory and is assumed in most applications of flag algebra. Accordingly, we call $G$ the \emph{host graph} and $H$ the \emph{pattern graph}. Typically, $G$ is large and $H$ is small, and $p(H,G)$ captures a local quantitative property of $G$.
 
-Another point is that the density function $p$ induces an embedding of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, since $p(\_,G) = p(\_,G')$ holds if and only if $G \simeq G'$. It also allows us to use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
+Moreover, the density function $p$ induces a representation of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism: $p(\_,G)=p(\_,G')$ if and only if $G \simeq G'$. It also lets us use the product topology on $[0,1]^{\mathcal{G}}$ to study asymptotic properties of graph sequences, as we explain next.
 
 \section{Limiting Graphs}
 \label{sec:limiting-graphs}
-\hy{I am here. In the middle of revising the paper.}
-
-Note that the density function $p$ induces the representation of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, because $p(\_,G) = p(\_,G')$ is equivalent to $G \simeq G'$. It also lets us use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
 
 Let $(G_n)_{n \in \mathbb{N}}$ be a sequence of graphs. The sequence is \emph{increasing} if $v(G_n) < v(G_{n+1})$ for all $n \in \mathbb{N}$. It is \emph{convergent} if the sequence is increasing and $\lim_{n \to \infty} p(H, G_n)$ exists for every graph $H$. Note that the latter condition means that the sequence of vector representations $(p(\_,G_n))_n$ of $(G_n)_n$ converges pointwise 
 in $[0,1]^{\mathcal{G}}$. The reader might be worried that this definition of convergence is too strong, as it requires the existence of the limit for every graph $H$, so that only a handful of increasing graph sequences converge. We reassure such a reader that convergence actually occurs commonly; every increasing sequence of graphs has a convergent subsequence. The reason for this is that the pointwise convergence of vector representations of graphs comes from the product topology on $[0,1]^{\mathcal{G}}$ that is compact by Tychonoff's theorem.
