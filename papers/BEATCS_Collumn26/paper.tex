@@ -270,12 +270,14 @@ respectively, and $v(G)$ and $e(G)$ to mean their cardinalities.
 For $U \subseteq V(G)$, we write $G[U]$ for the subgraph of $G$ induced by $U$, i.e., the
 graph with vertex set $U$ and edge set $E(G) \cap \binom{U}{2}$.
 We use standard notation for common graphs. The $K_n$ denotes the complete graph on vertex
-set $[n]$ (so $E(K_n) = \binom{[n]}{2}$), the $C_n$ means the cycle on $n$ vertices, i.e.,
-$V(C_n)=[n]$ and $E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$, and the $P_n$
-denotes the path on $n$ vertices, i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$.
+set $[n]$ (so $E(K_n) = \binom{[n]}{2}$), the $C_n$ means the cycle on $n$ vertices (i.e.,
+$V(C_n)=[n]$ and $E(C_n)=\{\{i,i+1\} : i \in [n-1]\} \cup \{\{1,n\}\}$), the $P_n$
+refers to the path on $n$ vertices (i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$), 
+and the $K_{n,m}$ is the complete bipartite graph with parts $\{1,\ldots,n\}$ and $\{n+1,\ldots,n+m\}$ 
+(i.e., $V(K_{n,m})=[n+m]$ and $E(K_{n,m})=\{\{i,j\} : i \in [n], j \in \{n+1,\ldots,n+m\}\}$).
 
 
-\section{Induced Subgraph Density and Limiting Graphs}
+\section{Induced Subgraph Density}
 \label{sec:induced-subgraph-density}
 
 Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The central notion in this article is the
@@ -318,11 +320,13 @@ other pairs $(s,t)$. The flag algebra framework has been used to determine exact
 cases (e.g., $M(3,4)$ and $M(3,5)$~\cite{Parczyk2025new}) and to obtain improved lower bounds in
 others (e.g., $M(4,4)$, $M(4,5)$, and $M(5,5)$~\cite{Grzesik22tripartite,Parczyk2025new}).
 
+Note that in both examples, the two arguments of the density function $p$ play different roles. The second argument $G$ represents the graph under study, whereas the first argument $H$ is part of the specification and describes the pattern whose density is being measured. This convention is standard in extremal graph theory and in typical applications of flag algebra. We call $G$ the \emph{host graph} and $H$ the \emph{pattern graph}. Typically, $G$ is large, $H$ is small, and $p(H,G)$ captures a local quantitative property of $G$.
+
+Another point is that the density function $p$ induces an embedding of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, since $p(\_,G) = p(\_,G')$ holds if and only if $G \simeq G'$. It also allows us to use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
+
+
+\section{Limiting Graphs}
 \hy{I am here. In the middle of revising the paper.}
-
-In flag algebra, we analyse the properties of graphs using the density function $p$. The target graph $G$ of this analysis goes to the second parameter of $p$, which we call 
-\emph{host graph}. The first parameter $H$ of $p$, on the other hand, is a part of property speficiation, and describes a pattern to be searched for in $G$. We call $H$ \emph{pattern graph}. Usually, $G$ is large, $H$ is small, and $p(H,G)$ describes a local property of $G$.
-
 
 Note that the density function $p$ induces the representation of a graph $G$ as an infinite-dimensional vector in $[0,1]^{\mathcal{G}}$ indexed by all graphs in $\mathcal{G}$. This representation is injective up to graph isomorphism, because $p(\_,G) = p(\_,G')$ is equivalent to $G \simeq G'$. It also lets us use the product topology on $[0,1]^{\mathcal{G}}$ to reason about asymptotic properties of graph sequences, as we explain next.
 
