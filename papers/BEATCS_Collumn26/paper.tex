@@ -246,7 +246,7 @@ methods. Although several excellent surveys on flag algebra exist~\cite{Razborov
 they are written primarily for mathematicians,
 presenting flag algebra as a symbolic calculus for familiar arguments (e.g., double counting and
 applications of Cauchy--Schwarz). They also emphasise the algebraic viewpoint of flag algebra. By contrast, we take a \emph{logical} perspective and present
-flag algebra in terms of syntax, semantics, and proof principles, in a style closer to formal
+flag algebra in terms of syntax, semantics, and proof strategies, in a style closer to formal
 logic. We also highlight that some core constructions (notably the so called downward operator that relates
 labelled and unlabelled settings) can be understood via ideas reminiscent of Galois connections
 and, more generally, categorical adjunctions---concepts that frequently appear in automated verification and programming languages.
@@ -366,7 +366,7 @@ T(H, \mathcal{F}) \leq c
 \qquad\text{and}\qquad
 M(s,t) \geq c'
 \]
-for $c,c' \in \mathbb{R}$, together with a semantics parameterised by limiting graphs in $\Phi$. In this way, such bounds become statements about limiting graphs. Flag algebra also provides proof principles for deriving these bounds, some of which can be automated. In the next two sections, we present the syntax and semantics of this logic, and the proof principles it supports.
+for $c,c' \in \mathbb{R}$, together with a semantics parameterised by limiting graphs in $\Phi$. In this way, such bounds become statements about limiting graphs. Flag algebra also comes with strategies for proving these bounds, some of which can be automated. In the next two sections, we present the syntax and semantics of this logic, and a popular proof strategy for it.
 
 \section{Syntax and Semantics of Flag Algebra}
 \label{sec:syntax-semantics}
@@ -398,7 +398,7 @@ For instance,
 \quad\text{and}\quad
 (E_1 < E_2) \defeq \neg (E_1 \geq E_2).
 \]
-Finally, we write $-E$ for $(-1)\cdot E$ and $E_1 - E_2$ for $E_1 + (-E_2)$.
+Finally, we use the abbreviations $-E \defeq (-1)\cdot E$ and $E_1 - E_2 \defeq E_1 + (-E_2)$, and we identify real constants $r \in \mathbb{R}$ with the density expressions $r \cdot 1$.
 
 The semantics of density expressions $E$ and assertions $A$ has the form
 \[
@@ -450,8 +450,7 @@ and
 \end{cases}
 \end{align*}
 We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$, and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
-
-Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and formulas in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to formulas over these arithmetic expressions. As a result, many proof principles from first-order logic carry over to flag algebra directly.
+Note that the syntax and semantics of flag algebra coincide with those of arithmetic expressions and formulas in the quantifier-free fragment of standard first-order logic over the reals. Graphs $H$ in density expressions play the role of real-valued variables, density expressions are arithmetic expressions over these variables, and assertions are formulas over these arithmetic expressions. As a result, many standard reasoning principles from first-order logic apply to flag algebra directly.
 For instance, the following assertions hold for all limiting graphs $\phi \in \Phi$:
 \begin{align*}
   & \Big(H_1 \cdot (H_3 + H_2) + (4 \cdot H_3) \cdot H_1\Big) = \Big(H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3)\Big),
@@ -521,6 +520,7 @@ The Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\
 \left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c
 \end{equation}
 is valid in flag algebra, i.e., it holds for all limiting graphs $\phi$.
+Here, $c$ is an abbreviation of the density expression $c \cdot 1$.
 The antecedent $\bigwedge_{F \in \mathcal{F}} F = 0$ expresses that $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the consequent $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
 
 For the Ramsey multiplicity problem, given integers $s,t \geq 2$, we seek the largest $c' \in \mathbb{R}$ such that the following inequality is valid in flag algebra:
@@ -531,8 +531,8 @@ K_s + I_t \geq c'.
 Here, $I_t$ denotes the edgeless graph with $t$ vertices.
 
 How does flag algebra help us to solve the problems of finding such optimal constants $c$ and $c'$ in \Cref{eqn:turan-assertion,eqn:ramsey-assertion}?
-The answer lies in proof principles for deriving valid assertions in flag algebra. 
-We give a glimpse of this aspect with two examples here, and elaborate in the next section.
+The answer lies in reasoning principles for deriving valid assertions in flag algebra. 
+We give a glimpse of this aspect with two examples here.
 
 Consider the Tur\'an-type problem with $H = K_2$ and $\mathcal{F} = \{K_3\}$, which asks for the best upper bound on the asymptotic edge density of triangle-free graphs.
 In the language of flag algebra, this asks for the smallest $c$ such that the implication
@@ -552,7 +552,7 @@ We use the following two valid assertions:
   0 & \leq \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree.
   \label{eqn:mantel-key-inequality}
 \end{align}
-The first is an instance of \Cref{lemma:decomposition}; the second can be proved using the proof principle explained in the next section.
+The first is an instance of \Cref{lemma:decomposition}; the second can be proved using the reasoning principle explained in the next section.
 Assuming $K_3 = 0$, we derive the desired bound as follows (each step holds for all $\phi \in \Phi$ with $\phi(K_3)=0$):
 \begin{align*}
   K_2
@@ -623,16 +623,12 @@ We prove validity for $c' = 1/4$ as follows:
 \end{align*}
 
 Both examples use a step that has not yet been justified, namely the inequality in \Cref{eqn:mantel-key-inequality}.
-The next section explains a proof principle of flag algebra that allows one to derive such inequalities, as well as the downward operator, a key tool for applying this principle.
+The next section explains a reasoning principle of flag algebra that allows one to derive such inequalities, as well as the downward operator, a key tool for applying this principle.
 
-\hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
-
-\hy{I am here. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper.}
-
-\hy{Explain the notation. Real constants mean real constants multiplied by the density expression $1$. It might be better to change the order of these two examples.}
-
-\section{Reasoning with Downward Operator}
+\section{Deriving Inequalities with Downward Operator}
 \label{sec:downward-operator}
+
+\hy{I am here.}
 
 The previous section illustrated how to reason about limiting graphs using flag algebra with two examples. But both examples include a step not justified yet, namely, the inequality in \Cref{eqn:mantel-key-inequality} which is recalled below:
 \[
@@ -930,6 +926,10 @@ in the original flag algebra. We now compute the expression inside the downward 
 \\
 & = \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Pthree + \Kthree.
 \end{align*}
+
+\hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
+
+\hy{I am here. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper.}
 
 \hy{Check whether the whole paper reads well. Add details. Open problems. PL issues. Differentiation operation.}
 
