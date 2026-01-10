@@ -348,17 +348,17 @@ host graph, and $\phi(H)$ gives the induced subgraph density of the pattern $H$ 
 Every convergent sequence $(G_n)_n$ determines a unique limiting graph $\phi$, but the same limiting
 graph may arise from multiple sequences.
 
-Using limiting graphs, we can restate the extremal problems from the previous section cleanly. The
-asymptotic induced-subgraph Tur\'an-type problem becomes the optimisation problem
+Using limiting graphs, we can restate the extremal problems from \Cref{sec:induced-subgraph-density} more cleanly. The
+asymptotic induced-subgraph Tur\'an-type problem can be formulated as the optimisation problem
 \[
-T(H, \mathcal{F}) \defeq \max \{ \phi(H) \,:\, \phi \in \Phi \text{ and } \phi(F) = 0 \text{ for all } F \in \mathcal{F} \}.
+T(H, \mathcal{F}) \defeq \sup\ \{ \phi(H) \,:\, \phi \in \Phi \text{ and } \phi(F) = 0 \text{ for all } F \in \mathcal{F} \}.
 \]
-Similarly, since $p(K_t,\overline{G}) = p(I_t,G)$ (where $I_t$ is the edgeless graph on $t$ vertices),
-the Ramsey multiplicity problem can be written as
+Similarly, since $p(K_t,\overline{G}) = p(I_t,G)$, the Ramsey multiplicity problem can be written as
 \[
 M(s,t) \defeq
-\min \{ \phi(K_s) + \phi(I_t) \,:\, \phi \in \Phi \}.
+\inf\ \{ \phi(K_s) + \phi(I_t) \,:\, \phi \in \Phi \}.
 \]
+Here, $I_t$ denotes the edgeless graph on $t$ vertices.
 
 A main message of this survey is that flag algebra provides a logical framework for reasoning about limiting graphs in $\Phi$, and in particular for establishing bounds in asymptotic extremal problems. For example, it offers a syntax for expressing bounds such as
 \[
@@ -371,51 +371,56 @@ for $c,c' \in \mathbb{R}$, together with a semantics parameterised by limiting g
 \section{Syntax and Semantics of Flag Algebra}
 \label{sec:syntax-semantics}
 
-The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{assertions} $A$. Density expressions generalise pattern graphs $H$, and define maps from limiting graphs to real numbers. Such maps correspond to features in machine learning, and describe properties of limiting graphs quantitatively. Assertions express qualitiative properties of limiting graphs using density expressions and logical connectives.
+The syntax of flag algebra consists of \emph{density expressions} $E$ and \emph{assertions} $A$.
+Density expressions generalise pattern graphs $H$ and denote real-valued functions on limiting graphs.
+Assertions express qualitative properties of limiting graphs using density expressions and logical connectives.
 
 Formally, the syntax is defined as follows:
 \begin{align*}
-\text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \cdot E
+\text{Density Expressions}\quad E & ::= H \,\mid\, r \cdot E \,\mid\, 0 \,\mid\, E + E \,\mid\, 1 \,\mid\, E \cdot E,
 \\
-\text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A 
+\text{Assertions}\quad A & ::= \lfalse \,\mid\, \ltrue \,\mid\, E \geq E \,\mid\, \neg A \,\mid\, A \lor A,
 \end{align*}
-where $H$ is a graph, and $r \in \mathbb{R}$. We denote the set of all density expressions by $\Expr$, and that of assertions by $\Assn$.  Note that density expressions are built from pattern graphs and the constants $0$ and $1$ using scalar multiplication, addition, and multiplication. Assertions are constructed from the boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction. The negation and disjunction here have the usual meanings from classical logic. As a result, they induce other logical connectives of classical logic such as conjunction and implication in the standard way:
+where $H$ ranges over graphs and $r$ over real numbers. We denote the set of all density expressions by $\Expr$ and that of assertions by $\Assn$.
+Density expressions are built from pattern graphs and the constants $0$ and $1$ using scalar multiplication, addition, and multiplication.
+Assertions are constructed from the Boolean constants $\lfalse$ and $\ltrue$, comparisons between density expressions, negation, and disjunction.
+
+Negation and disjunction have their usual meanings from classical logic, and induce other connectives (e.g., conjunction and implication) in the standard way:
 \[
-A \land A' \defeq \neg (\neg A \lor \neg A')
+A \land A' \defeq \neg(\neg A \lor \neg A')
 \qquad\text{and}\qquad
 (A \implies A') \defeq \neg A \lor A'.
 \]
-We also note that usual comparison operators between density expressions such as $=$, $>$, $\leq$, and $<$ can be defined using $\geq$ and the logical connectives in the standard way. For instance,
+Similarly, other comparison operators between density expressions (such as $=$, $>$, $\leq$, and $<$) can be defined using $\geq$ and the logical connectives.
+For instance,
 \[
-(E_1 = E_1) \defeq (E_1 \geq E_2) \land (E_2 \geq E_1)
+(E_1 = E_2) \defeq (E_1 \geq E_2) \land (E_2 \geq E_1)
 \quad\text{and}\quad
 (E_1 < E_2) \defeq \neg (E_1 \geq E_2).
 \]
-Finally, we write $-E$ for $(-1) \cdot E$ and $E_1 - E_2$ for $E_1 + (-E_2)$.
+Finally, we write $-E$ for $(-1)\cdot E$ and $E_1 - E_2$ for $E_1 + (-E_2)$.
 
-The formal semantics of density expressions $E$ and assertions $A$ has the form:
+The semantics of density expressions $E$ and assertions $A$ has the form
 \[
-\db{E} : \Phi \to \mathbb{R} 
+\db{E} : \Phi \to \mathbb{R}
 \qquad\text{and}\qquad
-\db{A} : \Phi \to \mathbb{B}
+\db{A} : \Phi \to \mathbb{B},
 \]
-where $\mathbb{B}$ is the set of boolean values $\{\strue,\sfalse\}$.
-It is defined by induction on the structure of $E$ and $A$ using the ordered commutative algebra structure of $\mathbb{R}$ and the boolean algebra structure of $\mathbb{B}$: for a limiting graph $\phi \in \Phi$,
+where $\mathbb{B} \defeq \{\strue,\sfalse\}$.
+It is defined by induction on the structure of $E$ and $A$ using the ordered commutative algebra structure of $\mathbb{R}$ and the Boolean algebra structure of $\mathbb{B}$.
+For a limiting graph $\phi \in \Phi$,
 \begin{align*}
 \db{H}\phi & \defeq \phi(H),
 &
-\db{r \cdot E}\phi & \defeq r \cdot
-\db{E}\phi,
+\db{r \cdot E}\phi & \defeq r \cdot \db{E}\phi,
 \\
 \db{0}\phi & \defeq 0,
 &
-\db{E_1 + E_2}\phi & \defeq
-\db{E_1}\phi + \db{E_2}\phi,
+\db{E_1 + E_2}\phi & \defeq \db{E_1}\phi + \db{E_2}\phi,
 \\
 \db{1}\phi & \defeq 1,
 &
-\db{E_1 \cdot E_2}\phi & \defeq
-\db{E_1}\phi \cdot \db{E_2}\phi,
+\db{E_1 \cdot E_2}\phi & \defeq \db{E_1}\phi \cdot \db{E_2}\phi,
 \end{align*}
 and
 \begin{align*}
@@ -425,179 +430,204 @@ and
 \\
 \db{E_1 \geq E_2}\phi & \defeq
 \begin{cases}
-    \strue & \text{if } \db{E_1}\phi \geq \db{E_2}\phi, 
-    \\ 
-    \sfalse & \text{otherwise},
+  \strue & \text{if } \db{E_1}\phi \geq \db{E_2}\phi,
+  \\
+  \sfalse & \text{otherwise},
 \end{cases}
 &
 \db{\neg A}\phi & \defeq
 \begin{cases}
-    \strue & \text{if } \db{A}\phi = \sfalse, 
-    \\ 
-    \sfalse & \text{otherwise},\end{cases}
+  \strue & \text{if } \db{A}\phi = \sfalse,
+  \\
+  \sfalse & \text{otherwise},
+\end{cases}
 \\
-\db{A_1 \lor A_2}\phi & \defeq 
+\db{A_1 \lor A_2}\phi & \defeq
 \begin{cases}
-    \strue & \text{if } \db{A_1}\phi = \strue \text{ or } \db{A_2}\phi = \strue, 
-    \\ 
-    \sfalse & \text{otherwise}.
+  \strue & \text{if } \db{A_1}\phi = \strue \text{ or } \db{A_2}\phi = \strue,
+  \\
+  \sfalse & \text{otherwise}.
 \end{cases}
 \end{align*}
-We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$,
-and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
+We say that an assertion $A$ is \emph{valid} if $\db{A}\phi = \strue$ for every limiting graph $\phi \in \Phi$, and that it is \emph{satisfiable} if $\db{A}\phi = \strue$ for some limiting graph $\phi \in \Phi$.
 
 Note that the syntax and semantics of flag algebra are just those of arithmetic expressions and formulas in the quantifier-free fragment of standard first-order logic. Graphs $H$ in density expressions correspond to real-valued variables, density expressions to arithmetic expressions over these variables, and assertions to formulas over these arithmetic expressions. As a result, many proof principles from first-order logic carry over to flag algebra directly.
 For instance, the following assertions hold for all limiting graphs $\phi \in \Phi$:
 \begin{align*}
-  & \Big(H_1 \cdot (H_3 + H_2) + (4 \cdot H_3) \cdot H_1\Big) = \Big(H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3)\Big), 
+  & \Big(H_1 \cdot (H_3 + H_2) + (4 \cdot H_3) \cdot H_1\Big) = \Big(H_1 \cdot H_2 + 5 \cdot (H_1 \cdot H_3)\Big),
   \\
   & \Big((H_1 + H_2 \geq 0) \wedge (0 \geq H_2 - H_3)\Big) \implies H_1 + H_3 \geq 0.
 \end{align*}
 
 \begin{lem}
   \label{lemma:basic-algebra}
-    The rules of ordered commutative algebras are valid for density expressions in flag algebra. Also, the rules for boolean algebras are valid assertions in flag algebra.
+  The rules of ordered commutative algebras are valid for density expressions in flag algebra. Also, the rules of Boolean algebras are valid assertions in flag algebra.
 \end{lem}
 
-What is then special about flag algebra in comparison with first-order logic? The answer comes from the fact that variables (i.e., graphs $H$) in flag algebra cannot be set arbitrarily, but their values must come from a single limiting graph and be correlated. One simple consequence of this fact is that two different variables representing isomorphic graphs always have the same value.
+What is special about flag algebra, compared with ordinary first-order logic over reals, is that the ``variables'' (i.e., graphs $H$) cannot be assigned arbitrary real values: their values must arise simultaneously from a single limiting graph $\phi$, and are therefore correlated.
+One simple consequence is that two variables representing isomorphic graphs always have the same value.
 \begin{lem}
   \label{lemma:isomorphism}
-    If graphs $H$ and $H'$ are isomorphic, the equation $H = H'$ is valid.
+  If graphs $H$ and $H'$ are isomorphic, then the equation $H = H'$ is valid.
 \end{lem}
 
 The next useful consequences follow from the connection between  limiting graphs and probability theory. For each graph $H$ and limiting graph $\phi$, the value $\phi(H)$ intuitively means the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all non-isomorphic graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
 we restate the above observations formally in the following lemmas.
 \begin{lem}
   \label{lemma:non-negativity}
-    The inequality $H \geq 0$ is valid for every graph $H$.
+  The inequality $H \geq 0$ is valid for every graph $H$.
 \end{lem}
 \begin{lem}
   \label{lemma:sum-to-one}
-    Let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs 
-    on $V$. Then,  
-    \[
-    \sum_{H \in \mathcal{H}_V} H = 1
-    \] 
-    is valid.
+  Let $V$ be a finite subset of $\mathbb{N}$, and let $\mathcal{H}_V$ be a complete set of graphs on $V$. Then
+  \[
+  \sum_{H \in \mathcal{H}_V} H = 1
+  \]
+  is valid.
 \end{lem}
-Finally, we note two further consequences, which are heavily used in the applications of flag algebra. They say that the density expression $H$ for a graph $H$ can be written as a linear combination of larger graphs, and that the multiplicative unit $1$  and the multiplication in density expressions can be elimiated. In the lemmas below, let $V$ be a finite subset of $\mathbb{N}$, and $\mathcal{H}_V$ be a complete set of graphs on $V$.
+
+We also note two further consequences that are heavily used in applications of flag algebra.
+They say that the density expression $G$ for a graph $G$ can be written as a linear combination of larger graphs, and that the multiplicative unit $1$ and the multiplication in density expressions can be eliminated.
+In the lemmas below, let $V$ be a finite subset of $\mathbb{N}$, and let $\mathcal{H}_V$ be a complete set of graphs on $V$.
 \begin{lem}
   \label{lemma:decomposition}
-    For every graph $G$ with $v(G) \leq |V|$, 
-    \[
-    G = \sum_{H \in \mathcal{H}_V} p(G,H) \cdot H
-    \]
-    is valid.
+  For every graph $H$ with $v(H) \leq |V|$,
+  \[
+  H = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot H'
+  \]
+  is valid.
 \end{lem}
 \begin{lem}
-  \label{lemma:eliminate-multiplication} 
-    If $\emptygraph$ is the graph with the empty vertex set, then
-    \[ 
-    1 = \emptygraph
-    \]
-    is valid. Also,
-    for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, we have the valid assertion     
-    \[
-    H_1 \cdot H_2 = \sum_{H \in \mathcal{H}_V} r_H \cdot H
-    \]
-    where 
-    \[
-    r_H \defeq \mathbb{P}\Big[H[\mathbf{U}_1] \simeq H_1\ \ \mathrm{and}\ \ H[\mathbf{U}_2] \simeq H_2\Big],
-    \]
-    with $\mathbf{U}_1$ and $\mathbf{U}_2$ being uniformly random disjoint subsets of $V(H)$ of sizes $v(H_1)$ and $v(H_2)$, respectively. 
+  \label{lemma:eliminate-multiplication}
+  If $\emptygraph$ is the graph with the empty vertex set, then
+  \[
+  1 = \emptygraph
+  \]
+  is valid. Also, for every pair of graphs $H_1$ and $H_2$ with $v(H_1) + v(H_2) \leq |V|$, we have the valid equation
+  \[
+  H_1 \cdot H_2 = \sum_{H \in \mathcal{H}_V} r_H \cdot H,
+  \]
+  where
+  \[
+  r_H \defeq \mathbb{P}\Big[H[\mathbf{U}_1] \simeq H_1\ \ \mathrm{and}\ \ H[\mathbf{U}_2] \simeq H_2\Big],
+  \]
+  with $\mathbf{U}_1$ and $\mathbf{U}_2$ being uniformly random disjoint subsets of $V(H)$ of sizes $v(H_1)$ and $v(H_2)$, respectively.
 \end{lem}
 
-\hy{I am here. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper.}
-
-We now illustrate the syntax and semantics of flag algebra by expressing asymptotic extremal problems mentioned in the previous section. The 
-Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find a tightest $c \in \mathbb{R}$ such that the implication
+We now illustrate the syntax and semantics of flag algebra by expressing the asymptotic extremal problems from \Cref{sec:induced-subgraph-density}.
+The Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find the smallest $c \in \mathbb{R}$ such that the implication
 \begin{equation}
   \label{eqn:turan-assertion}
-\left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c.
+\left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c
 \end{equation}
-holds for all limiting graphs $\phi$ in flag algebra. The condition $\bigwedge_{F \in \mathcal{F}} F = 0$ here expresses that a limiting graph $\phi$ avoids all the forbidden graphs in $\mathcal{F}$, and the conclusion $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
-Regarding the Ramsey multiplicity problem, we are given integers $s,t \geq 2$, and asked to find a tightest $c' \in \mathbb{R}$ that makes the following inequality valid:
+is valid in flag algebra, i.e., it holds for all limiting graphs $\phi$.
+The antecedent $\bigwedge_{F \in \mathcal{F}} F = 0$ expresses that $\phi$ avoids all forbidden graphs in $\mathcal{F}$, and the consequent $H \leq c$ states that the density of $H$ in $\phi$ is at most $c$.
+
+For the Ramsey multiplicity problem, given integers $s,t \geq 2$, we seek the largest $c' \in \mathbb{R}$ such that the following inequality is valid in flag algebra:
 \begin{equation}
   \label{eqn:ramsey-assertion}
-I_s + K_t \geq c'
+K_s + I_t \geq c'.
 \end{equation}
-We remind the reader that $I_s$ here is the edgeless graph with $s$ vertices.
+Here, $I_t$ denotes the edgeless graph with $t$ vertices.
 
-\hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
+How does flag algebra help us to solve the problems of finding such optimal constants $c$ and $c'$ in \Cref{eqn:turan-assertion,eqn:ramsey-assertion}?
+The answer lies in proof principles for deriving valid assertions in flag algebra. 
+We give a glimpse of this aspect with two examples here, and elaborate in the next section.
 
-How does flag algebra help us in solving the problems of finding tightest $c$ and $c'$ in \Cref{eqn:turan-assertion,eqn:ramsey-assertion}? The answer lies in reasoning principles of flag algebra that allow us to derive valid assertions. We give a glimpse of this aspect of flag algebra with two examples here and elaborate it in the next section.
-Consider the Tur\'an-type problem with $H = K_2$ and $\mathcal{F} = \{K_3\}$, which intuitively asks us to find the best upper bound on the asymptotic edge density of triangle-free graphs. In terms of flag algebra, the problem asks us to find a tightest $c$ that makes the below implication hold for all limiting graphs:
+Consider the Tur\'an-type problem with $H = K_2$ and $\mathcal{F} = \{K_3\}$, which asks for the best upper bound on the asymptotic edge density of triangle-free graphs.
+In the language of flag algebra, this asks for the smallest $c$ such that the implication
 \[
 K_3 = 0 \implies K_2 \leq c
 \]
-The tightest $c$ is $1/2$, a well-known result called Mantel's theorem \hy{Citation}. We prove the validity of the above implication for $c = 1/2$. We start by noting the validity of the following two assertions:
+is valid.
+By Mantel's theorem~\cite{Mantel1907}, the optimal constant is $c = 1/2$.
+We prove validity for $c = 1/2$.
+
+Write $\Ithree$, $\Ethree$, $\Pthree$, and $\Kthree$ for the edgeless graph, the single-edge graph, the two-edge graph, and the complete graph $K_3$ on the vertex set $[3]$, respectively.\footnote{The exact correspondence between the dots in these notations and the labels $1,2,3$ is immaterial; any fixed choice yields isomorphic graphs.}
+We use the following two valid assertions:
 \begin{align}
   K_2 & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree,
   \label{eqn:mantel-density-decomposition}
   \\[2ex]
-  0 & \leq 1 \cdot \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + 1 \cdot \Kthree.
+  0 & \leq \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree.
   \label{eqn:mantel-key-inequality}
 \end{align}
-The first assertion is a consequence of \Cref{lemma:decomposition}, and the second can be proved using reasoning principles of flag algebra explained in the next section. Using these assertions and the assumption $K_3 = 0$, we derive the upper bound $1/2$ on $K_2$. The derivation is given below, where each step holds for all limiting graphs $\phi \in \Phi$ satisfying $\phi(K_3) = 0$:
+The first is an instance of \Cref{lemma:decomposition}; the second can be proved using the proof principle explained in the next section.
+Assuming $K_3 = 0$, we derive the desired bound as follows (each step holds for all $\phi \in \Phi$ with $\phi(K_3)=0$):
 \begin{align*}
-  K_2 
+  K_2
   & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree
   && \text{by \Cref{eqn:mantel-density-decomposition}}
   \\
-  & \leq \left(0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree \right) 
-  + 
+  & \leq
+  \begin{aligned}[t]
+  & \left(0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree \right)
+  \\
+  & {} + \tfrac{1}{2} \cdot
   \left(
-  \tfrac{1}{2} \cdot \Ithree - \tfrac{1}{6} \cdot \Ethree - \tfrac{1}{6} \cdot \Pthree
-+ \tfrac{1}{2} \cdot \Kthree\right)
-  && \text{by \Cref{eqn:mantel-key-inequality}}
+  \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree\right)
+  \end{aligned}
+  && \text{by \Cref{eqn:mantel-key-inequality,lemma:basic-algebra}}
   \\
   & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{3}{2} \cdot \Kthree
   && \text{by \Cref{lemma:basic-algebra}}
   \\
-  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree  + \tfrac{1}{2} \cdot \Kthree
-  && \text{since } K_3 = 0 
+  & = \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{6} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{1}{2} \cdot \Kthree
+  && \text{since } \Kthree = K_3 = 0
   \\
   & \leq \tfrac{1}{2} \cdot \Ithree + \tfrac{1}{2} \cdot \Ethree + \tfrac{1}{2} \cdot \Pthree + \tfrac{1}{2} \cdot \Kthree
-  && 
-  \text{by \Cref{lemma:non-negativity}}
+  && \text{by \Cref{lemma:non-negativity,lemma:basic-algebra}}
   \\
-  & \leq \tfrac{1}{2} \cdot \left(\Ithree + \Ethree + \Pthree + \Kthree\right)
-  && 
-  \text{by \Cref{lemma:basic-algebra}}
+  & = \tfrac{1}{2} \cdot \left(\Ithree + \Ethree + \Pthree + \Kthree\right)
+  && \text{by \Cref{lemma:basic-algebra}}
   \\
-  & = \tfrac{1}{2} \cdot 1 
-  && \text{by \Cref{lemma:decomposition}}
+  & = \tfrac{1}{2} \cdot 1
+  && \text{by \Cref{lemma:sum-to-one}}
   \\
   & = \tfrac{1}{2}.
 \end{align*}
-The next example is for the Ramsey multiplicity problem with $s = t = 3$, which asks us to find a tightest $c'$ that makes the following inequality valid for all limiting graphs:
-\[I_3 + K_3 \geq c'.
+
+As a second example, consider the Ramsey multiplicity problem with $s=t=3$, which asks for the largest $c'$ such that
+\[
+I_3 + K_3 \geq c'
 \]
-The tightest $c'$ is known to be $1/4$ by Goodman's result \hy{Citation}. We prove the validity of the above inequality for $c' = 1/4$ as follows:
+is valid in flag algebra.
+By Goodman's result~\cite{Goodman1959}, the optimal constant is $c' = 1/4$.
+We prove validity for $c' = 1/4$ as follows:
 \begin{align*}
-  I_3 + K_3 
+  I_3 + K_3
   & = 1 \cdot \Ithree + 0 \cdot \Ethree + 0 \cdot \Pthree + 1 \cdot \Kthree
-  && \text{by \Cref{eqn:mantel-density-decomposition}}
   \\
-  & \geq \left(1 \cdot \Ithree + 0 \cdot \Ethree + 0 \cdot \Pthree + 1 \cdot \Kthree\right)
-  -
+  & \geq
+  \begin{aligned}[t]
+  & \left(1 \cdot \Ithree + 0 \cdot \Ethree + 0 \cdot \Pthree + 1 \cdot \Kthree\right)
+  \\
+  & {} -
+  \tfrac{3}{4} \cdot
   \left(
-  \tfrac{3}{4} \cdot \Ithree - \tfrac{1}{4} \cdot \Ethree - \tfrac{1}{4} \cdot \Pthree + \tfrac{3}{4} \cdot \Kthree
+  \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree
   \right)
-  && \text{by \Cref{eqn:mantel-key-inequality}}
+  \end{aligned}
+  && \text{by \Cref{eqn:mantel-key-inequality,lemma:basic-algebra}}
   \\
   & = \tfrac{1}{4} \cdot \Ithree + \tfrac{1}{4} \cdot \Ethree + \tfrac{1}{4} \cdot \Pthree + \tfrac{1}{4} \cdot \Kthree
   && \text{by \Cref{lemma:basic-algebra}}
   \\
   & = \tfrac{1}{4} \cdot (\Ithree + \Ethree + \Pthree + \Kthree)
-  && 
-  \text{by \Cref{lemma:basic-algebra}}
+  && \text{by \Cref{lemma:basic-algebra}}
   \\
-  & = \tfrac{1}{4} \cdot 1 
-  && \text{by \Cref{lemma:decomposition}}
+  & = \tfrac{1}{4} \cdot 1
+  && \text{by \Cref{lemma:sum-to-one}}
   \\
   & = \tfrac{1}{4}.
 \end{align*}
+
+Both examples use a step that has not yet been justified, namely the inequality in \Cref{eqn:mantel-key-inequality}.
+The next section explains a proof principle of flag algebra that allows one to derive such inequalities, as well as the downward operator, a key tool for applying this principle.
+
+\hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
+
+\hy{I am here. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper.}
 
 \hy{Explain the notation. Real constants mean real constants multiplied by the density expression $1$. It might be better to change the order of these two examples.}
 
