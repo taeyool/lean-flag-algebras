@@ -545,10 +545,10 @@ We prove validity for $c = 1/2$.
 Write $\Ithree$, $\Ethree$, $\Pthree$, and $\Kthree$ for the edgeless graph, the single-edge graph, the two-edge graph, and the complete graph $K_3$ on the vertex set $[3]$, respectively.\footnote{The exact correspondence between the dots in these notations and the labels $1,2,3$ is immaterial; any fixed choice yields isomorphic graphs.}
 We use the following two valid assertions:
 \begin{align}
-  K_2 & = 0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree,
+  & K_2 = \Big(0 \cdot \Ithree + \tfrac{1}{3} \cdot \Ethree + \tfrac{2}{3} \cdot \Pthree + 1 \cdot \Kthree\Big),
   \label{eqn:mantel-density-decomposition}
   \\[2ex]
-  0 & \leq \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree.
+  & \Big(\Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree\Big) \,\geq\, 0.
   \label{eqn:mantel-key-inequality}
 \end{align}
 The first is an instance of \Cref{lemma:decomposition}; the second can be proved using the reasoning principle explained in the next section.
@@ -758,7 +758,7 @@ The next lemma states that if $\alpha$ has finite support and $\gamma$ is extend
     \label{eq:lem:adjoint-transfer0}
     \db{\alpha^\dagger(E^\tau)}\phi = \int_{\Phi^\tau} \db{E^\tau}\phi^\tau \,\Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
   \end{equation}
-  The desired conclusion then follows from this equation because $E^\tau \geq 0$ is valid in the $\tau$-labelled variant
+  The desired conclusion then follows from this equation because $E^\tau \geq 0^\tau$ is valid in the $\tau$-labelled variant
   and so the integrand $\db{E^\tau}\phi^\tau$ is non-negative for every $\phi^\tau \in \Phi^\tau$.
 
   Assume that $E^\tau$ is a $\tau$-labelled graph $H^\tau$. By the definition of a limiting graph, there exists a convergent sequence of graphs $(G_n)_n$ such that 
@@ -789,19 +789,19 @@ The next lemma states that if $\alpha$ has finite support and $\gamma$ is extend
     && \text{by the adjointness of } (\alpha,\gamma)
     \\
     & \quad {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-    && \text{by the extendability of } \gamma,
+    && \text{by the extendability of } \gamma
     \\
     & \quad {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
     && \text{by the definition of } \db{-}.
   \end{align*}
 
-  Next consider the case that $E^\tau = 0$. Then, 
+  Next consider the case that $E^\tau = 0^\tau$. Then, 
   \begin{align*}
-    \db{\alpha^\dagger(0)}\phi 
+    \db{\alpha^\dagger(0^\tau)}\phi 
     = \db{0}\phi
     = 0 
     = \int_{\Phi^\tau} 0 \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
-    = \int_{\Phi^\tau} \db{0}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
+    = \int_{\Phi^\tau} \db{0^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big).
   \end{align*}
 
   The remaining cases can be proved by the induction hypothesis and the linearity of integration. We first derive the target equation for $E^\tau = r \cdot F^\tau$:
@@ -844,14 +844,14 @@ The next lemma states that if $\alpha$ has finite support and $\gamma$ is extend
   \end{align*}
 \end{proof}
 
-We are ready to define the downward operator for each type $\tau$. Given an expression $E^\tau$ in $\Expr^\tau$, we first eliminate all multiplications and occurrences of the constant $1$ in $E^\tau$ using \Cref{lemma:eliminate-multiplication-tau}, obtaining a multiplication-free, $1$-free expression $F^\tau$ that is equal to $E^\tau$ in the $\tau$-labelled variant of flag algebra. Although this elimination step is underspecified, it is typically performed from the innermost subexpression outward. The downward operator then maps $F^\tau$ to $\alpha_d^\dagger(F^\tau)$, where $\alpha_d$ is part of a specific adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$ defined below. This adjoint pair satisfies the conditions in \Cref{lemma:adjoint-transfer}. Consequently, if $E^\tau \geq 0$ is a valid inequality in the $\tau$-labelled variant, then $\alpha_d^\dagger(F^\tau) \geq 0$ is valid in the original flag algebra.
+We are ready to define the downward operator for each type $\tau$. Given an expression $E^\tau$ in $\Expr^\tau$, we first eliminate all multiplications and occurrences of the constant $1^\tau$ in $E^\tau$ using \Cref{lemma:eliminate-multiplication-tau}, obtaining a multiplication-free, $1$-free expression $F^\tau$ that is equal to $E^\tau$ in the $\tau$-labelled variant of flag algebra. Although this elimination step is underspecified, it is typically performed from the innermost subexpression outward. The downward operator then maps $F^\tau$ to $\alpha_d^\dagger(F^\tau)$, where $\alpha_d$ is part of a specific adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$ defined below. This adjoint pair satisfies the conditions in \Cref{lemma:adjoint-transfer}. Consequently, if $E^\tau \geq 0^\tau$ is a valid inequality in the $\tau$-labelled variant, then $\alpha_d^\dagger(F^\tau) \geq 0$ is valid in the original flag algebra.
 
 To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. For each $G^\tau \in \mathcal{G}^\tau$, let $\boldsymbol{\theta}_{G^\tau}$ be the uniform random injection from $[k]$ to $V(G^\tau)$, and also let
 \[
   q_{G^\tau} \defeq \mathbb{P}\Big[\boldsymbol{\theta}_{G^\tau} \text{ is an embedding from $\tau$ to $|G^\tau|$ and $(|G^\tau|,\boldsymbol{\theta}_{G^\tau}) \simeq_\tau G^\tau$}\Big].
 \]
 Note that $(\tau,\mathrm{id}_{[k]})$ is a $\tau$-labelled graph whose underlying graph is $\tau$ itself, 
-and that $q_{(\tau,\mathrm{id})} = |\mathrm{Aut}(\tau)| / v(\tau)!$ where $\mathrm{Aut}(\tau)$ is the set of all automorphisms on $\tau$. Using this notation,
+and that $q_{(\tau,\mathrm{id}_{[k]})} = |\mathrm{Aut}(\tau)| / v(\tau)!$ where $\mathrm{Aut}(\tau)$ is the set of all automorphisms on $\tau$. Using this notation,
 we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamma_d(G) \in \FinMea(\mathcal{G}^\tau)$ as follows:
 \begin{align*}
   \alpha_d(H^\tau)(\{H\}) & \defeq 
@@ -925,32 +925,62 @@ Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to 
   from $|H^\tau|$ to $G[U]$. We define $\theta' : [k] \to V(G)$ by $\theta' \defeq f_U \circ \theta$, and also define $U' \defeq U \setminus \theta'([k])$. Then, $(\theta', U')$ satisfies the event $E'$. Furthermore, this construction is invertible: given a pair $(\theta', U')$ satisfying $E'$, we can recover the corresponding pair $(\theta, U)$ satisfying $E$ by letting $U \defeq U' \cup \theta'([k])$ and $\theta \defeq f_U^{-1} \circ \theta'$. This completes the proof of \Cref{eq:downward-adjoint:target-eq} and thus of the lemma.
 \end{proof}
 
-We illustrate the downward operator by deriving \Cref{eqn:mantel-key-inequality} with it. Consider the type $\tau$ with size $1$. That is, $\tau$ is the graph with a single vertex and no edges. By \Cref{cor:basic-algebra-tau:sos}, we have
+We illustrate the downward operator by using it to derive \Cref{eqn:mantel-key-inequality}.
+Let $\tau$ be the unique type of size $1$, i.e., the graph with a single vertex and no edges.
+A $\tau$-labelled graph $(G,\theta)$ can be equivalently viewed as a graph $G$ with one distinguished
+vertex (namely $\theta(1)$); we adopt this viewpoint below.
+By \Cref{cor:basic-algebra-tau:sos}, the inequality
 \[
-\left(\LItwo - \LEtwo\right) \cdot \left(\LItwo - \LEtwo\right) \geq 0
+\left(\LItwo - \LEtwo\right)\cdot\left(\LItwo - \LEtwo\right) \geq 0^\tau
 \]
-in the $\tau$-labelled variant of flag algebra. Then, we eliminate the multiplication using \Cref{lemma:eliminate-multiplication-tau}:
+is valid in the $\tau$-labelled variant of flag algebra.
+Here, $\LItwo$ and $\LEtwo$ are the $\tau$-labelled edgeless graph and the $\tau$-labelled single-edge
+graph on vertex set $[2]$, respectively; the distinguished vertex is depicted as an empty circle.
+
+We expand the product and then eliminate all multiplications using valid equalities:
 \begin{align*}
-\left(\LItwo - \LEtwo\right) \cdot \left(\LItwo - \LEtwo\right) 
-& {} = \LItwo \cdot \LItwo - 2 \cdot \left(\LItwo \cdot \LEtwo\right) + \LEtwo \cdot \LEtwo
-\\
-& {} = \left(\LIthree + \LEthreeC\right) - 2 \cdot \left(\tfrac{1}{2} \cdot \LEthreeB + \tfrac{1}{2} \cdot \LPthreeB\right) + 
-\left(\LPthreeC + \LKthree\right)
-\\
-& {} = \LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree.
+  & \left(\LItwo - \LEtwo\right)\cdot\left(\LItwo - \LEtwo\right)
+  \\
+  & \qquad {} = \LItwo \cdot \LItwo - 2 \cdot \left(\LItwo \cdot \LEtwo\right) + \LEtwo \cdot \LEtwo
+  && \text{by the $\tau$-labelled version of \Cref{lemma:basic-algebra}}
+  \\
+  & \qquad {} = \left(\LIthree + \LEthreeC\right)
+  - 2 \cdot \left(\tfrac{1}{2} \cdot \LEthreeB + \tfrac{1}{2} \cdot \LPthreeB\right)
+  + \left(\LPthreeC + \LKthree\right)
+  && \text{by \Cref{lemma:eliminate-multiplication-tau}}
+  \\
+  & \qquad {} = \LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree
+  && \text{by the $\tau$-labelled version of \Cref{lemma:basic-algebra}}.
 \end{align*}
-Thus, by \Cref{lemma:adjoint-transfer}, we have
+Here, $\LIthree$, $\LEthreeB$, $\LEthreeC$, $\LPthreeB$, $\LPthreeC$, and $\LKthree$ are the six
+$\tau$-labelled graphs on vertex set $[3]$ with the obvious edge sets; as above, the distinguished
+vertex is shown as an empty circle.
+
+Therefore, by \Cref{lemma:adjoint-transfer},
 \[
-\alpha^\dagger_d\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right) \geq 0
+\alpha^\dagger_d\!\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right) \geq 0
 \]
-in the original flag algebra. We now compute the expression inside the downward operator and derive \Cref{eqn:mantel-key-inequality}.
+is a valid inequality
+in the original flag algebra. This inequiality implies the one in  \Cref{eqn:mantel-key-inequality} because the left-hand side of the former is equal to that of the latter as shown by a series of valid equations below:
 \begin{align*}
-\alpha^\dagger_d\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right)
-& =\alpha_d\left(\LIthree\right) + \alpha_d\left(\LEthreeC\right) - \alpha_d\left(\LEthreeB\right) - \alpha_d\left(\LPthreeB\right) + \alpha_d\left(\LPthreeC\right) + \alpha_d\left(\LKthree\right)
-\\
-& = \Ithree + \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Pthree + \tfrac{1}{3} \cdot \Pthree + \Kthree
-\\
-& = \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Pthree + \Kthree.
+  & \alpha^\dagger_d\!\left(\LIthree + \LEthreeC - \LEthreeB - \LPthreeB + \LPthreeC + \LKthree\right)
+  \\
+  & \qquad {} =
+  \begin{aligned}[t]
+    \alpha_d\left(\LIthree\right) & + \alpha_d\left(\LEthreeC\right)
+    - \alpha_d\left(\LEthreeB\right)
+    \\
+    & {} - \alpha_d\left(\LPthreeB\right) + \alpha_d\left(\LPthreeC\right) + \alpha_d\left(\LKthree\right)
+  \end{aligned}
+  && \text{by the definition of } \alpha_d^\dagger
+  \\
+  & \qquad {} =
+  \Ithree + \tfrac{1}{3} \cdot \Ethree - \tfrac{2}{3} \cdot \Ethree
+  - \tfrac{2}{3} \cdot \Pthree + \tfrac{1}{3} \cdot \Pthree + \Kthree
+  && \text{by the definition of } \alpha_d
+  \\
+  & \qquad {} = \Ithree - \tfrac{1}{3} \cdot \Ethree - \tfrac{1}{3} \cdot \Pthree + \Kthree
+  && \text{by the $\tau$-labelled version of \Cref{lemma:basic-algebra}}.
 \end{align*}
 
 \hy{Include other examples. Ideally, we want examples that showcase the expressiveness of the logic, e.g., involving complex density expressions or assertions with multiple logical connectives.}
