@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass{article}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -219,7 +219,8 @@
 }
 
 \title{An Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}
-\date{\today}
+%\date{\today}
+\date{}
 
 \author[1]{Gyeongwon Jeong}
 \affil[1]{School of Computing, KAIST, South Korea,
@@ -235,6 +236,10 @@
 
 \begin{document}
 \maketitle
+
+\begin{abstract}
+Razborov's flag algebra is a powerful framework for deriving asymptotic inequalities between induced subgraph densities, underpinning many recent advances in extremal graph theory and enabling substantial automation via semidefinite programming. This survey introduces flag algebra for computer scientists from a logical perspective: we present a concrete syntax of density expressions and assertions, a semantics in terms of limiting graphs, and proof patterns that mirror familiar reasoning in program logics. We explain the labelled variants of the calculus and the downward operator that transfers inequalities back to the unlabelled setting, highlighting its interpretation via an adjoint-pair construction reminiscent of Galois connections. Along the way, we work through representative examples (including Mantel's theorem and Goodman's bound) to illustrate how extremal arguments can be expressed and mechanised within this proof system.
+\end{abstract}
 
 \section{Introduction}
 
@@ -263,9 +268,9 @@ applications of Cauchy--Schwarz). They also emphasise the algebraic viewpoint of
 flag algebra in terms of syntax, semantics, and proof strategies, in a style closer to formal
 logic. We also highlight that some core constructions (notably the so called downward operator that relates
 labelled and unlabelled settings) can be understood via ideas reminiscent of Galois connections
-and, more generally, categorical adjunctions---concepts that frequently appear in automated verification and programming languages. The results explained in this article, such as lemmas and their proofs, are from Razborov's original paper on flag algebra~\cite{Razborov2007}, although they are presented here in a slightly different style to emphasise the logical perspective and fit the overall narrative.
+and, more generally, categorical adjunctions---concepts that frequently appear in automated verification and programming languages. The results explained in this survey article, such as lemmas and their proofs, are from Razborov's original paper on flag algebra~\cite{Razborov2007}, although they are presented here in a slightly different style to emphasise the logical perspective and fit the overall narrative.
 
-The rest of the paper is organised as follows. In the remainder of this introduction, we fix some notation and terminology used throughout the paper. In \Cref{sec:induced-subgraph-density}, we review the notion of induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which enable a concise description of these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs. We also illustrate, through two examples, how standard extremal arguments can be expressed as derivations in this system. The key steps in both examples rely on a nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a mechanism for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss flag-algebra-related research opportunities for computer scientists working in logic, programming languages, automated verification, and formal methods.
+The rest of the paper is organised as follows. In the remainder of this introduction, we fix some notation and terminology used throughout the paper. In \Cref{sec:induced-subgraph-density}, we review the notion of induced subgraph density and use it to formulate representative asymptotic problems in extremal graph theory. In \Cref{sec:limiting-graphs}, we introduce limiting graphs, which enable a concise description of these problems and form the semantic basis of flag algebra. In \Cref{sec:syntax-semantics}, we present flag algebra as a logical system with two kinds of terms---density expressions and assertions---together with a semantics in terms of limiting graphs. We also illustrate, through two examples, how standard extremal arguments can be expressed as derivations in this system. The key steps in both examples rely on a nontrivial inequality. In \Cref{sec:downward-operator}, we describe a strategy for proving such inequalities using labelled variants of flag algebra together with a mechanism for transferring inequalities from the labelled setting to the unlabelled one via the so-called downward operator. Finally, in \Cref{sec:conclusion}, we discuss research opportunities in flag algebra for computer scientists working in logic, programming languages, automated verification, and formal methods.
 
 Before we begin, we fix some notation and terminology.
 For each $n \in \mathbb{N}$, we write $[n]$ for the set $\{1,2,\ldots,n\}$.
@@ -290,7 +295,7 @@ and the edgeless graph with $n$ vertices by $I_n$ (i.e., $V(I_n) = [n]$ and $E(I
 \section{Induced Subgraph Density}
 \label{sec:induced-subgraph-density}
 
-Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The central notion in this article is the
+Let $H$ and $G$ be graphs with $v(H) \leq v(G)$. The central notion in this survey article is the
 \emph{induced subgraph density} of $H$ in $G$, or simply the \emph{$H$-density} in $G$, defined by
 \[
 p(H, G) \defeq \mathbb{P}\big[G[\mathbf{U}] \simeq H\big],
@@ -761,7 +766,7 @@ A \emph{$\tau$-labelled graph} is a pair $G^\tau = (G, \theta)$ consisting of a 
 We call $\tau$ the \emph{type} of $G^\tau$, and write $\lvert G^\tau \rvert$ for the underlying unlabelled graph $G$.
 We also write $V(G^\tau)$, $E(G^\tau)$, $v(G^\tau)$, and $e(G^\tau)$ for $V(G)$, $E(G)$, $v(G)$, and $e(G)$, respectively.
 For a fixed type $\tau$, we denote the set of all $\tau$-labelled graphs by $\mathcal{G}^\tau$.
-Note that $\mathcal{G}^\tau$ is countably infinite, since every graph considered in this article has a finite vertex set contained in $\mathbb{N}$.
+Note that $\mathcal{G}^\tau$ is countably infinite, since every graph considered in this survey article has a finite vertex set contained in $\mathbb{N}$.
 
 We now repeat the concepts from the previous sections for $\tau$-labelled graphs.
 For $\tau$-labelled graphs $H^\tau = (H,\iota)$ and $G^\tau = (G,\theta)$, a function $h : V(H) \to V(G)$ is a \emph{$\tau$-homomorphism} if it is a homomorphism from $H$ to $G$ and satisfies $h(\iota(i)) = \theta(i)$ for all $i \in [k]$.
@@ -1104,10 +1109,11 @@ in the original flag algebra. This inequiality implies the one in  \Cref{eqn:man
   \\
   & \qquad {} =
   \begin{aligned}[t]
-    \alpha_d\left(\LIthree\right) & + \alpha_d\left(\LEthreeC\right)
-    - \alpha_d\left(\LEthreeB\right)
+    \alpha_d\left(\LIthree\right) + \alpha_d\left(\LEthreeC\right)
+    & - \alpha_d\left(\LEthreeB\right)
+    - \alpha_d\left(\LPthreeB\right) 
     \\
-    & {} - \alpha_d\left(\LPthreeB\right) + \alpha_d\left(\LPthreeC\right) + \alpha_d\left(\LKthree\right)
+    & {} + \alpha_d\left(\LPthreeC\right) + \alpha_d\left(\LKthree\right)
   \end{aligned}
   && \text{by the definition of } \alpha_d^\dagger
   \\
@@ -1120,11 +1126,17 @@ in the original flag algebra. This inequiality implies the one in  \Cref{eqn:man
   && \text{by the $\tau$-labelled version of \Cref{lemma:basic-algebra}}.
 \end{align*}
 
-
-\section{Research Opportunities}
+\section{Final Remarks}
 \label{sec:conclusion}
 
-\hy{I am here. Finally, mention SOS and automation. Hatami-Nori. Blakely-Roy inequality. Differentiation. Proof System. Decidable fragments. New proof strategies that can be automated. Abstract. Ack.}
+We have presented flag algebra from the perspective of computer scientists working in logic, programming languages, automated verification, and formal methods. Our presentation emphasises that flag algebra forms a logical system for establishing asymptotic inequalities in extremal graph theory, with a well-defined syntax, semantics, and proof strategies. We described in detail one common proof strategy: proving inequalities in a labelled variant of the calculus---often starting from manifestly valid sum-of-squares inequalities---and then transferring them to the unlabelled setting using the downward operator. We also highlighted that this transfer mechanism relies on the notion of an adjoint pair, reminiscent of Galois connections and categorical adjunctions. Just as these notions relate different interpretations of programming languages or logics, adjoint pairs relate different variants of flag algebra.
+
+This perspective suggests several research directions for logic and formal-methods researchers. First, it would be interesting to develop a proof theory for flag algebra. The strength and limitations of the downward-operator-based strategy have been analysed in the literature. For example, when the strategy is restricted to start from the sum-of-squares inequalities in \Cref{cor:basic-algebra-tau:sos}, it is known to be incomplete~\cite{Hatami2011undecidability,Blekherman2020simple}. Similar analyses for other proof strategies in Razborov's original development~\cite{Razborov2007}---such as those based on the upward operator or graph differentiation---would be valuable. More broadly, designing proof systems for flag algebra with good proof-theoretic properties while remaining effective in practice is an appealing direction.
+
+Second, it would be interesting to develop more effective automation and software tools for constructing proofs in flag algebra and for solving the resulting optimisation problems. As noted in the introduction, {\sc Flagmatic} has been highly successful for many extremal problems, but it largely relies on the downward-operator approach with sum-of-squares starting inequalities, and it does not scale well to medium-sized pattern graphs. Developing scalable automation that goes beyond the downward-operator/sum-of-squares paradigm is therefore an important challenge.
+
+\section*{Acknowledgements}
+We would like to thank Joonkyun Lee, Sangil Oum, and Hyunwoo Lee for helping us to understand Razborov's flag algebra. This work was supported by the National Research Foundation of Korea(NRF) grant funded by the Korean Government(MSIT) (No. RS-2023-00279680).
 
 
 \bibliographystyle{plain} % Styles: plain, abbrv, alpha, unsrt
