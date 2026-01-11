@@ -1,6 +1,5 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 
-\usepackage{a4wide}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
@@ -9,6 +8,9 @@
 \usepackage{xcolor}
 \usepackage{tikz}
 \usepackage{cleveref}
+\usepackage{fullpage}
+\usepackage{authblk}
+
 \usetikzlibrary{shapes.geometric} % For the triangle
 
 \newtheorem{thm}{Theorem}[section]
@@ -216,8 +218,20 @@
   \end{tikzpicture}%
 }
 
-\title{A Gentle Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}
+\title{An Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}
 \date{\today}
+
+\author[1]{Gyeongwon Jeong}
+\affil[1]{School of Computing, KAIST, South Korea,
+  \texttt{jgyw0910@kaist.ac.kr}}
+
+\author[2]{Seonghun Park}
+\affil[2]{School of Computing, KAIST, South Korea,
+  \texttt{hun57@kaist.ac.kr}}
+
+\author[3]{Hongseok Yang}
+\affil[3]{School of Computing, KAIST, South Korea,
+  \texttt{hongseok00@gmail.com}}
 
 \begin{document}
 \maketitle
@@ -846,7 +860,7 @@ The next lemma states that if $\alpha$ has finite support and $\gamma$ is extend
 
 We are ready to define the downward operator for each type $\tau$. Given an expression $E^\tau$ in $\Expr^\tau$, we first eliminate all multiplications and occurrences of the constant $1^\tau$ in $E^\tau$ using \Cref{lemma:eliminate-multiplication-tau}, obtaining a multiplication-free, $1$-free expression $F^\tau$ that is equal to $E^\tau$ in the $\tau$-labelled variant of flag algebra. Although this elimination step is underspecified, it is typically performed from the innermost subexpression outward. The downward operator then maps $F^\tau$ to $\alpha_d^\dagger(F^\tau)$, where $\alpha_d$ is part of a specific adjoint pair $(\alpha_d,\gamma_d)$ for the type $\tau$ defined below. This adjoint pair satisfies the conditions in \Cref{lemma:adjoint-transfer}. Consequently, if $E^\tau \geq 0^\tau$ is a valid inequality in the $\tau$-labelled variant, then $\alpha_d^\dagger(F^\tau) \geq 0$ is valid in the original flag algebra.
 
-To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. For each $G^\tau \in \mathcal{G}^\tau$, let $\boldsymbol{\theta}_{G^\tau}$ be the uniform random injection from $[k]$ to $V(G^\tau)$, and also let
+To define the adjoint pair $(\alpha_d,\gamma_d)$ mentioned above, consider a $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an unlabelled graph $G \in \mathcal{G}$. For each $G^\tau \in \mathcal{G}^\tau$, let $\boldsymbol{\theta}_{G^\tau}$ be the uniformly random injection from $[k]$ to $V(G^\tau)$, and also let
 \[
   q_{G^\tau} \defeq \mathbb{P}\Big[\boldsymbol{\theta}_{G^\tau} \text{ is an embedding from $\tau$ to $|G^\tau|$ and $(|G^\tau|,\boldsymbol{\theta}_{G^\tau}) \simeq_\tau G^\tau$}\Big].
 \]
@@ -868,49 +882,68 @@ we define finite measures $\alpha_d(H^\tau) \in \FinMea(\mathcal{G})$ and $\gamm
   0 & \text{otherwise}.
   \end{cases}
 \end{align*}
-Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to see that $\alpha_d(H^\tau)$ has finite support for every $H^\tau \in \mathcal{G}^\tau$. Also, it can be shown that $\gamma_d$ is extendable to limiting graphs, although the proof is involved. See \hy{Results in Razborov's paper} for details. Finally, the following lemma establishes the adjointness of $(\alpha_d,\gamma_d)$.
+Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to see that $\alpha_d(H^\tau)$ has finite support for every $H^\tau \in \mathcal{G}^\tau$. Also, it can be shown that $\gamma_d$ is extendable to limiting graphs, although the proof is involved. See the proof of Theorem 3.5 in \cite{Razborov2007} for details. Finally, the following lemma establishes the adjointness of $(\alpha_d,\gamma_d)$.
 \begin{lem}
   \label{lemma:downward-adjoint}
   The pair $(\alpha_d,\gamma_d)$ defined above is an adjoint pair for the type $\tau$.
 \end{lem}
 \begin{proof}
-  \hy{Say how the proof here is related to Razborov's proof.}
-  Consider an arbitrary $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an arbitrary unlabelled graph $G \in \mathcal{G}$. We need to show that
+  We prove the lemma by substantially expanding the argument in the proof of Lemma 3.11 in \cite{Razborov2007} and adjusting the expanded version to our setting.
+
+  Fix an arbitrary $\tau$-labelled graph $H^\tau \in \mathcal{G}^\tau$ and an arbitrary unlabelled
+  graph $G \in \mathcal{G}$. We prove that
   \[
     p(\alpha_d(H^\tau), G) = p_\tau(H^\tau, \gamma_d(G)).
   \]
-  We start by simplifying the left-hand side of the above equation:
+
+  We first simplify the left-hand side:
   \begin{align*}
     p(\alpha_d(H^\tau), G)
-    & = \int_{\mathcal{G}} p(H, G) \, \Big(\alpha_d(H^\tau)(dH)\Big)
+    & = \int_{\mathcal{G}} p(H, G) \, \big(\alpha_d(H^\tau)(dH)\big)
     \\
     & = q_{H^\tau} \cdot p(|H^\tau|, G)
     && \text{by the definition of } \alpha_d(H^\tau).
   \end{align*}
-  Let $Z_G \defeq \big|\{G^\tau \in \mathcal{G}^\tau \,:\ |G^\tau| = G\}\big|$.
-  If there does not exist a $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$, the right-hand side of the target equation is zero by the definition of $\gamma_d(G)$. In this case, we also have that $p(|H^\tau|, G) = 0$; otherwise, there would be a subset $V_0$ of $V(G)$ such that $\tau$ is isomorphic to $G[V_0]$ and the pair of $G$ and this ismorphism forms $G^\tau$ with $|G^\tau| = G$, which contradicts to the assumption that no such $G^\tau$ exists. Thus, in the case, the left-hand side of the target equation is also zero, and the equation follows.
-  
-  Now assume that there exists a $\tau$-labelled graph $G^\tau$ with $|G^\tau| = G$. Under this assumption, we simplify the right-hand side of the target equation as follows:
+
+  Let
+  \[
+    Z_G \defeq \big|\{G^\tau \in \mathcal{G}^\tau \,:\ |G^\tau| = G\}\big|.
+  \]
+  If $Z_G = 0$, then $p(\tau,G)=0$ (there is no embedding of $\tau$ into $G$), hence $\gamma_d(G)$ is
+  the zero measure and therefore $p_\tau(H^\tau,\gamma_d(G))=0$.
+  Moreover, since $H^\tau$ contains $\tau$ on the labelled vertices, an induced copy of $|H^\tau|$ in
+  $G$ would in particular contain an induced copy of $\tau$, contradicting $p(\tau,G)=0$; hence
+  $p(|H^\tau|,G)=0$ and so the left-hand side is also $0$.
+  Thus, we may assume $Z_G>0$.
+
+  Under this assumption, we simplify the right-hand side:
   \begin{align*}
     p_\tau(H^\tau, \gamma_d(G))
-    & = \int_{\mathcal{G}^\tau} p_\tau(H^\tau, G^\tau) \, \Big(\gamma_d(G)(dG^\tau)\Big)
+    & = \int_{\mathcal{G}^\tau} p_\tau(H^\tau, G^\tau) \, \big(\gamma_d(G)(dG^\tau)\big)
     \\
-    & = \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} p_\tau(H^\tau, G^\tau) \cdot 
-    \big(q_{(\tau,\mathrm{id})} \cdot p(\tau,G)\big) \div Z_G
+    & = \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}}
+    p_\tau(H^\tau, G^\tau)\cdot \frac{q_{(\tau,\mathrm{id})}\cdot p(\tau,G)}{Z_G}
     && \text{by the definition of } \gamma_d(G)
     \\
-    & = \frac{q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)}{Z_G} \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} p_\tau(H^\tau, G^\tau).
+    & = \big(q_{(\tau,\mathrm{id})}\cdot p(\tau,G)\big)\cdot
+    \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}}
+    \frac{1}{Z_G}\,p_\tau(H^\tau, G^\tau).
   \end{align*}
-  To complete the proof, it suffices to show that
+
+  Therefore, it suffices to show that
   \begin{equation}
     \label{eq:downward-adjoint:target-eq}
-    q_{H^\tau} \cdot p(|H^\tau|, G) = \Big(q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)\Big) \cdot \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}} \frac{1}{Z_G} \cdot p_\tau(H^\tau, G^\tau).
+    q_{H^\tau} \cdot p(|H^\tau|, G)
+    =
+    \big(q_{(\tau,\mathrm{id})} \cdot p(\tau,G)\big)\cdot
+    \sum_{\substack{G^\tau \in \mathcal{G}^\tau \\ |G^\tau| = G}}
+    \frac{1}{Z_G}\,p_\tau(H^\tau, G^\tau).
   \end{equation}
 
-  Let $k = v(\tau)$, $m = v(H^\tau)$, and $n = v(G)$. Define $\boldsymbol{\theta}$ as a uniform random injection from $[k]$ to $V(H^\tau)$, and  $\boldsymbol{\theta}'$ as a uniform random injection from $[k]$ to $V(G)$. Also, let $\mathbf{U}$ be a uniform random subset of $V(G)$ of size $m$, and $\mathbf{U}'$ be a uniform random subset of $V(G) \setminus \boldsymbol{\theta}'([k])$ of size $m-k$. Using these random variables, we define two events $E$ and $E'$ as follows:
+  Let $k = v(\tau)$, $m = v(H^\tau)$, and $n = v(G)$. Define $\boldsymbol{\theta}$ as a uniformly random injection from $[k]$ to $V(H^\tau)$, and  $\boldsymbol{\theta}'$ as a uniformly random injection from $[k]$ to $V(G)$. Also, let $\mathbf{U}$ be a uniformly random subset of $V(G)$ of size $m$, and $\mathbf{U}'$ be a uniformly random subset of $V(G) \setminus \boldsymbol{\theta}'([k])$ of size $m-k$. Using these random variables, we define two events $E$ and $E'$ as follows:
     \begin{itemize}
       \item $E$ is the event that $\boldsymbol{\theta}$ is an embedding of $\tau$ into $|H^\tau|$, the $\tau$-labelled graph $(|H^\tau|, \boldsymbol{\theta})$ is $\tau$-isomorphic to $H^\tau$, and the induced subgraph $G[\mathbf{U}]$ is isomorphic to $|H^\tau|$.
-      \item $E'$ is the event that $\boldsymbol{\theta}'$ is an embedding of $\tau$ into $G$, and the $\tau$-labelled subgraph induced by $\mathbf{U}' \cup \boldsymbol{\theta}'([k])$ and labelled by $\boldsymbol{\theta}'$, denoted as $(G[\mathbf{U}' \cup \boldsymbol{\theta}'([k])],\boldsymbol{\theta}')$, is $\tau$-isomorphic to $H^\tau$.
+      \item $E'$ is the event that $\boldsymbol{\theta}'$ is an embedding of $\tau$ into $G$, and the $\tau$-labelled graph $(G[\mathbf{U}' \cup \boldsymbol{\theta}'([k])],\boldsymbol{\theta}')$ is $\tau$-isomorphic to $H^\tau$.
     \end{itemize}
 
   The left-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E$. The random variables $\boldsymbol{\theta}$ and $\mathbf{U}$ are independent, and $q_{H^\tau}$ and $p(|H^\tau|,G)$ are the probabilities that $\boldsymbol{\theta}$ and $\mathbf{U}$ satistfy their respective conditions in the event $E$. Similarly, the right-hand side of \Cref{eq:downward-adjoint:target-eq} is equal to the probability of $E'$. The factor $q_{(\tau ,\mathrm{id})} \cdot p(\tau,G)$ in the right-hand side is the probability of the event $E''$ that $\boldsymbol{\theta}'$ is an embedding of $\tau$ into $G$, and the remaining factor equals the conditional probability $\mathbb{P}[E' \mid E'']$.  
@@ -920,7 +953,7 @@ Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to 
   \mathbb{P}\big[(\boldsymbol{\theta},\mathbf{U}) = (\theta, U)\big] = \mathbb{P}\big[(\boldsymbol{\theta}',\mathbf{U}') = (\theta', U')\big] = \frac{(n-m)! (m-k)!}{n!}.
   \]
   Therefore, to show that $\mathbb{P}[E] = \mathbb{P}[E']$, we just need to construct a bijection between the set of those $(\theta, U)$ satisfying $E$ and the set of those $(\theta', U')$ satisfying $E'$. For each 
-  $U_0 \subseteq V(G)$ with size $m$ such that $G[U_0]$ is isomorphic to $|H^\tau|$, we fix one isomorphism $f_{U_0} : V(H^\tau) \to U_0$ from $|H^\tau|$ to $G[U_0]$. Using this, we construct the desired bijection as follows.
+  $U_0 \subseteq V(G)$ with size $m$ such that $G[U_0]$ is isomorphic to $|H^\tau|$, we fix one isomorphism $f_{U_0} : V(H^\tau) \to U_0$ from $|H^\tau|$ to $G[U_0]$. Using this, we construct the desired bijection.
   Given a pair $(\theta, U)$ satisfying $E$, we define the corresponding pair $(\theta', U')$ satisfying $E'$ as follows. By the definition of $E$, $G[U]$ is isomorphic to $|H^\tau|$. So, we have the isomorphism $f_U$ 
   from $|H^\tau|$ to $G[U]$. We define $\theta' : [k] \to V(G)$ by $\theta' \defeq f_U \circ \theta$, and also define $U' \defeq U \setminus \theta'([k])$. Then, $(\theta', U')$ satisfies the event $E'$. Furthermore, this construction is invertible: given a pair $(\theta', U')$ satisfying $E'$, we can recover the corresponding pair $(\theta, U)$ satisfying $E$ by letting $U \defeq U' \cup \theta'([k])$ and $\theta \defeq f_U^{-1} \circ \theta'$. This completes the proof of \Cref{eq:downward-adjoint:target-eq} and thus of the lemma.
 \end{proof}
@@ -983,12 +1016,12 @@ in the original flag algebra. This inequiality implies the one in  \Cref{eqn:man
   && \text{by the $\tau$-labelled version of \Cref{lemma:basic-algebra}}.
 \end{align*}
 
-\hy{I am here. Check the proof of the last lemma. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper. Also, the extendibility condition needs to be justified. Comment on the proof of the last lemma related to Razborov's proof. Finally, mention SOS and automation.}
-
-\hy{Check whether the whole paper reads well. Add details. Open problems. PL issues. Differentiation operation.}
 
 \section{Research Opportunities}
 \label{sec:conclusion}
+
+\hy{I am here. Check the proof of the last lemma. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper. Finally, mention SOS and automation. Hatami-Nori. Blakely-Roy inequality. Differentiation. Proof System. Decidable fragments. New proof strategies that can be automated.}
+
 
 \section{Plan}
 \begin{itemize}
