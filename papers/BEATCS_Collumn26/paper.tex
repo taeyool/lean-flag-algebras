@@ -482,13 +482,29 @@ One simple consequence is that two variables representing isomorphic graphs alwa
   \label{lemma:isomorphism}
   If graphs $H$ and $H'$ are isomorphic, then the equation $H = H'$ is valid.
 \end{lem}
+\begin{proof}
+  Let $\phi$ be an arbitrary limiting graph. Then, there exists 
+  a converging sequence $(G_n)_{n \in \mathbb{N}}$ of graphs such that 
+  $\lim_{n \to \infty} p(F,G_n) = \phi(F)$ for all graphs $F \in \mathcal{G}$. Since $H$ and $H'$ are isomorphic, we have $p(H,G_n) = p(H',G_n)$ for all $n \in \mathbb{N}$. Therefore, $\phi(H) = \lim_{n \to \infty} p(H,G_n) = \lim_{n \to \infty} p(H',G_n) = \phi(H')$. Since $\phi$ was arbitrary, the equation $H = H'$ is valid.
+\end{proof}
 
 The next useful consequences follow from the connection between  limiting graphs and probability theory. For each graph $H$ and limiting graph $\phi$, the value $\phi(H)$ intuitively means the probability that, if we choose a subset of $v(H)$ vertices uniformly at random in the infinite graph represented by $\phi$, the induced subgraph on the chosen vertices is isomorphic to $H$. From this intuition, we see that $\phi(H) \in [0,1]$ and that the sum of $\phi(H')$ over all non-isomorphic graphs $H'$ on a fixed vertex set $[n]$ equals $1$. For a finite subset $V$ of $\mathbb{N}$, we say that a set of graphs $\mathcal{H}_V$ is a \emph{complete set of graphs on $V$} if every graph on the vertex set $V$ is isomorphic to exactly one graph in $\mathcal{H}_V$. Using this terminology, 
 we restate the above observations formally in the following lemmas.
 \begin{lem}
   \label{lemma:non-negativity}
-  The inequality $H \geq 0$ is valid for every graph $H$.
+  The assertion $1 \geq H \wedge H \geq 0$ is valid for every graph $H$.
 \end{lem}
+\begin{proof}
+  Consider an arbitrary limiting graph $\phi$. Then, there exists 
+  a converging sequence $(G_n)_{n \in \mathbb{N}}$ of graphs such that 
+  $\lim_{n \to \infty} p(F,G_n) = \phi(F)$ for all graphs $F \in \mathcal{G}$. Since $1 \geq p(H,G_n) \geq 0$ for all $n \in \mathbb{N}$, we have
+  \begin{align*}
+  & \db{1}\phi = 1 \geq \lim_{n \to \infty} p(H,G_n) = \phi(H) = \db{H}\phi, \text{ and}
+  \\
+  & \db{H}\phi = \phi(H) = \lim_{n \to \infty} p(H,G_n) \geq 0 = \db{0}\phi.
+  \end{align*}
+  Since $\phi$ was arbitrary, the assertion $1 \geq H \wedge H \geq 0$ is valid.
+\end{proof}
 \begin{lem}
   \label{lemma:sum-to-one}
   Let $V$ be a finite subset of $\mathbb{N}$, and let $\mathcal{H}_V$ be a complete set of graphs on $V$. Then
@@ -497,6 +513,20 @@ we restate the above observations formally in the following lemmas.
   \]
   is valid.
 \end{lem}
+\begin{proof}
+  Let $\phi$ be an arbitrary limiting graph. Then, there exists 
+  a converging sequence $(G_n)_{n \in \mathbb{N}}$ of graphs such that 
+  $\lim_{n \to \infty} p(F,G_n) = \phi(F)$ for all graphs $F \in \mathcal{G}$. Since $\mathcal{H}_V$ is a complete set of graphs on $V$, we have
+  \[
+  \sum_{H \in \mathcal{H}_V} p(H,G_n) = 1
+  \]
+  for all $n \in \mathbb{N}$. Therefore,
+  \[
+  \db{\sum_{H \in \mathcal{H}_V} H}\phi =
+  \sum_{H \in \mathcal{H}_V} \phi(H) = \sum_{H \in \mathcal{H}_V} \lim_{n \to \infty} p(H,G_n) = \lim_{n \to \infty} \sum_{H \in \mathcal{H}_V} p(H,G_n) = 1 = \db{1}\phi.
+  \]
+  Since $\phi$ was arbitrary, the equation $\sum_{H \in \mathcal{H}_V} H = 1$ is valid.
+\end{proof}
 
 We also note two further consequences that are heavily used in applications of flag algebra.
 They say that the density expression $G$ for a graph $G$ can be written as a linear combination of larger graphs, and that the multiplicative unit $1$ and the multiplication in density expressions can be eliminated.
@@ -509,6 +539,33 @@ In the lemmas below, let $V$ be a finite subset of $\mathbb{N}$, and let $\mathc
   \]
   is valid.
 \end{lem}
+\begin{proof}
+  We use Lemma 2.2 from~\cite{Razborov2007} in the proof. 
+
+  Let $\phi$ be an arbitrary limiting graph. Then, there exists 
+  a converging sequence $(G_n)_{n \in \mathbb{N}}$ of graphs such that 
+  $\lim_{n \to \infty} p(F,G_n) = \phi(F)$ for all graphs $F \in \mathcal{G}$. Pick $n_0 \in \mathbb{N}$ such that $v(G_{n_0}) \geq |V|$. Then, since $\mathcal{H}_V$ is a complete set of graphs on $V$, 
+  by Lemma 2.2 from~\cite{Razborov2007}, we have
+  \[
+  p(H,G_n) = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot p(H',G_n)
+  \]
+  for all $n \in n_0$. Therefore,
+  \begin{align*}
+  \db{H}\phi = \phi(H) & = \lim_{n \to \infty} p(H,G_n)
+  \\
+  & = \lim_{n \to \infty} \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot p(H',G_n)
+  \\
+  & = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot \lim_{n \to \infty} p(H',G_n)
+  \\
+  & = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot \phi(H')
+  \\
+  & = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot \db{H'}\phi
+  = \db{\sum_{H' \in \mathcal{H}_V} p(H,H') \cdot H'}\phi.
+  \end{align*}
+  Since $\phi$ was arbitrary, the equation
+  $H = \sum_{H' \in \mathcal{H}_V} p(H,H') \cdot H'$
+  is valid.
+\end{proof}
 \begin{lem}
   \label{lemma:eliminate-multiplication}
   If $\emptygraph$ is the graph with the empty vertex set, then
