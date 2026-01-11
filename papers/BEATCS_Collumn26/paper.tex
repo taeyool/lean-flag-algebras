@@ -218,8 +218,10 @@
   \end{tikzpicture}%
 }
 
+% Helps reduce minor overfull \hbox warnings.
+\usepackage{microtype}
+
 \title{An Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}
-%\date{\today}
 \date{}
 
 \author[1]{Gyeongwon Jeong}
@@ -238,13 +240,13 @@
 \maketitle
 
 \begin{abstract}
-Razborov's flag algebra is a powerful framework for deriving asymptotic inequalities between induced subgraph densities, underpinning many advances in extremal graph theory. This survey introduces flag algebra for computer scientists working in logic, programming languages, automated verification, and formal methods. We take a logical perspective on flag algebra and present it in terms of syntax, semantics, and proof strategies, in a style closer to formal logic. One popular proof strategy in flag algebra derives valid inequalities by first proving inequalities in a labelled variant of flag algebra and then transferring them to the original unlabelled setting using the so-called downward operator. We explain this strategy in detail and highlight that its transfer mechanism relies on the notion of what we call an adjoint pair, reminiscent of Galois connections and categorical adjunctions. Along the way, we work through representative examples, including Mantel's theorem and Goodman's bound on Ramsey multiplicity, to illustrate how extremal arguments can be carried out formally in the flag algebra framework.
+Razborov's flag algebra forms a powerful framework for deriving asymptotic inequalities between induced subgraph densities, underpinning many advances in extremal graph theory. This survey introduces flag algebra to computer scientists working in logic, programming languages, automated verification, and formal methods. We take a logical perspective on flag algebra and present it in terms of syntax, semantics, and proof strategies, in a style closer to formal logic. One popular proof strategy derives valid inequalities by first proving inequalities in a labelled variant of flag algebra and then transferring them to the original unlabelled setting using the so-called downward operator. We explain this strategy in detail and highlight that its transfer mechanism relies on the notion of what we call an adjoint pair, reminiscent of Galois connections and categorical adjunctions, which appear frequently in work on automated verification and programming languages. Along the way, we work through representative examples, including Mantel's theorem and Goodman's bound on Ramsey multiplicity, to illustrate how mathematical arguments can be carried out symbolically in the flag algebra framework.
 \end{abstract}
 
 \section{Introduction}
 
 Razborov's flag algebra~\cite{Razborov2007} is a framework for reasoning about
-\emph{asymptotic} (i.e., large size) properties of combinatorial structures.
+\emph{asymptotic} (i.e., large-size) properties of combinatorial structures.
 In extremal graph theory, many problems ask for the maximum or minimum possible density
 of a fixed finite pattern (such as an edge, a triangle, or an induced cycle) among all large
 graphs satisfying certain constraints (such as forbidding a subgraph).  Flag algebra turns
@@ -266,7 +268,7 @@ they are written primarily for mathematicians,
 presenting flag algebra as a symbolic calculus for familiar arguments (e.g., double counting and
 applications of Cauchy--Schwarz). They also emphasise the algebraic viewpoint of flag algebra. By contrast, we take a \emph{logical} perspective and present
 flag algebra in terms of syntax, semantics, and proof strategies, in a style closer to formal
-logic. We also highlight that some core constructions (notably the so called downward operator that relates
+logic. We also highlight that some core constructions (notably the so-called downward operator that relates
 labelled and unlabelled settings) can be understood via ideas reminiscent of Galois connections
 and, more generally, categorical adjunctions---concepts that frequently appear in automated verification and programming languages. The results explained in this survey article, such as lemmas and their proofs, are from Razborov's original paper on flag algebra~\cite{Razborov2007}, although they are presented here in a slightly different style to emphasise the logical perspective and fit the overall narrative.
 
@@ -288,8 +290,8 @@ For $U \subseteq V(G)$, we write $G[U]$ for the subgraph of $G$ induced by $U$, 
 vertex set $U$ and edge set $E(G) \cap \binom{U}{2}$.
 We use standard notation for common graphs. The complete graph on vertex set $[n]$ is denoted by $K_n$
 (so $E(K_n) = \binom{[n]}{2}$),
-and the path on $n$ vertices by $P_n$
-(i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$).
+%the path on $n$ vertices by $P_n$
+%(i.e., $V(P_n)=[n]$ and $E(P_n)=\{\{i,i+1\} : i \in [n-1]\}$),
 and the edgeless graph with $n$ vertices by $I_n$ (i.e., $V(I_n) = [n]$ and $E(I_n) = \emptyset$).  
 
 \section{Induced Subgraph Density}
@@ -360,7 +362,7 @@ A function $\phi : \mathcal{G} \to [0,1]$ is a \emph{limiting graph}\footnote{In
 \qquad\text{for every graph } H \in \mathcal{G}.
 \]
 Let $\Phi$ denote the set of all limiting graphs. A useful mental picture (formalised, for example,
-via graphons~\cite{Lovasz2012GraphonBook}) is that a limiting graph represents a random infinite undirected graph with a continuum number of vertices, and $\phi(H)$ gives the average induced subgraph density of the pattern $H$ in this infinte host graph.
+via graphons~\cite{Lovasz2012GraphonBook}) is that a limiting graph represents a random infinite undirected graph with a continuum number of vertices, and $\phi(H)$ gives the average induced subgraph density of the pattern $H$ in this infinite host graph.
 Every convergent sequence $(G_n)_n$ determines a unique limiting graph $\phi$, but the same limiting
 graph may arise from multiple sequences.
 
