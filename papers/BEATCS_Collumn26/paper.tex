@@ -306,7 +306,7 @@ two vertices, exactly two are isomorphic to $H$.
 
 Many asymptotic extremal problems can be phrased in terms of induced subgraph densities.
 A representative example is an asymptotic induced-subgraph version of a Tur\'an-type problem: given a graph $H$
-and a family of forbidden graphs $\mathcal{F}$, determine the maximum possible $H$-density in large
+and a finite set of forbidden graphs $\mathcal{F}$ such that there exists at least one graph avoiding every graph in $\mathcal{F}$, determine the maximum possible $H$-density in large
 graphs that avoid every graph in $\mathcal{F}$. Formally, the problem asks for the value of
 \[
 T(H, \mathcal{F}) \defeq
@@ -361,7 +361,7 @@ via graphons~\cite{Lovasz2012GraphonBook}) is that a limiting graph represents a
 Every convergent sequence $(G_n)_n$ determines a unique limiting graph $\phi$, but the same limiting
 graph may arise from multiple sequences.
 
-Using limiting graphs, we can restate the extremal problems from \Cref{sec:induced-subgraph-density} more cleanly. The
+Using limiting graphs, we can restate the extremal problems from \Cref{sec:induced-subgraph-density} more cleanly.\footnote{The correctness of this restatement follows from Corollary 3.4 of \cite{Razborov2007} and the fact that the asymptotic induced-subgraph Tur\'an-type problem can be rephrased in terms of unconstrained optimisation.} The
 asymptotic induced-subgraph Tur\'an-type problem can be formulated as the optimisation problem
 \[
 T(H, \mathcal{F}) \defeq \sup\ \{ \phi(H) \,:\, \phi \in \Phi \text{ and } \phi(F) = 0 \text{ for all } F \in \mathcal{F} \}.
@@ -527,7 +527,7 @@ In the lemmas below, let $V$ be a finite subset of $\mathbb{N}$, and let $\mathc
 \end{lem}
 
 We now illustrate the syntax and semantics of flag algebra by expressing the asymptotic extremal problems from \Cref{sec:induced-subgraph-density}.
-The Tur\'an-type problem for a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ is to find the smallest $c \in \mathbb{R}$ such that the implication
+For a graph $H$ and a finite set of forbidden graphs $\mathcal{F}$ such that there exists at least one graph avoiding every graph in $\mathcal{F}$, the Tur\'an-type problem is to find the smallest $c \in \mathbb{R}$ such that the implication
 \begin{equation}
   \label{eqn:turan-assertion}
 \left(\bigwedge_{F \in \mathcal{F}} F = 0 \right) \implies H \leq c
@@ -782,30 +782,29 @@ The next lemma states that if $\alpha$ has finite support and $\gamma$ is extend
   \end{equation}
   Using this, we derive \Cref{eq:lem:adjoint-transfer0} as follows:
   \begin{align*}
-    & \db{\alpha^\dagger(H^\tau)}\phi 
-    \\
-    & \quad {} = \db{\sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H}\phi
+    \db{\alpha^\dagger(H^\tau)}\phi 
+    & {} = \db{\sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot H}\phi
     && \text{by the definition of } \alpha^\dagger
     \\
-    & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \phi(H)
+    & {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \phi(H)
     && \text{by the definition of } \db{-}
     \\
-    & \quad {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \lim_{n \to \infty} p(H, G_n)
+    & {} = \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot \lim_{n \to \infty} p(H, G_n)
     && \text{by \Cref{eq:lem:adjoint-transfer1}}
     \\
-    & \quad {} = \lim_{n \to \infty} \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot p(H, G_n)
+    & {} = \lim_{n \to \infty} \sum_{H \in \support(\alpha(H^\tau))} \alpha(H^\tau)(\{H\}) \cdot p(H, G_n)
     && \text{by the finiteness of } \support(\alpha(H^\tau))
     \\
-    & \quad {} = \lim_{n \to \infty} p(\alpha(H^\tau), G_n)
+    & {} = \lim_{n \to \infty} p(\alpha(H^\tau), G_n)
     && \text{by the definition of } p(\alpha(H^\tau), G_n)
     \\
-    & \quad {} = \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n))
+    & {} = \lim_{n \to \infty} p_\tau(H^\tau, \gamma(G_n))
     && \text{by the adjointness of } (\alpha,\gamma)
     \\
-    & \quad {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    & {} = \int_{\Phi^\tau} \phi^\tau(H^\tau) \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
     && \text{by the extendability of } \gamma
     \\
-    & \quad {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
+    & {} = \int_{\Phi^\tau} \db{H^\tau}\phi^\tau \, \Big(\gamma_\infty(\phi)(d\phi^\tau)\Big)
     && \text{by the definition of } \db{-}.
   \end{align*}
 
@@ -900,8 +899,7 @@ Among the conditions in \Cref{lemma:adjoint-transfer}, it is straightforward to 
   \begin{align*}
     p(\alpha_d(H^\tau), G)
     & = \int_{\mathcal{G}} p(H, G) \, \big(\alpha_d(H^\tau)(dH)\big)
-    \\
-    & = q_{H^\tau} \cdot p(|H^\tau|, G)
+    = q_{H^\tau} \cdot p(|H^\tau|, G)
     && \text{by the definition of } \alpha_d(H^\tau).
   \end{align*}
 
@@ -1020,7 +1018,7 @@ in the original flag algebra. This inequiality implies the one in  \Cref{eqn:man
 \section{Research Opportunities}
 \label{sec:conclusion}
 
-\hy{I am here. Check the proof of the last lemma. Extremal problems in terms of limiting graphs and lemmas need to be justified via Razborov's paper. Finally, mention SOS and automation. Hatami-Nori. Blakely-Roy inequality. Differentiation. Proof System. Decidable fragments. New proof strategies that can be automated.}
+\hy{I am here. Lemmas need to be justified via Razborov's paper. Finally, mention SOS and automation. Hatami-Nori. Blakely-Roy inequality. Differentiation. Proof System. Decidable fragments. New proof strategies that can be automated. Abstract. Ack.}
 
 
 \section{Plan}
