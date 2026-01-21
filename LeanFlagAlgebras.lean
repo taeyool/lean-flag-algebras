@@ -1,8 +1,14 @@
--- import LeanFlagAlgebras.BoolAlgebra
--- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample1
--- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample2
--- import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample3
--- import LeanFlagAlgebras.DefinitionImpactOnProofs
+import LeanFlagAlgebras.BoolAlgebra
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample1
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample2
+import LeanFlagAlgebras.BuzzardGraphExample.BuzzardGraphExample3
+import LeanFlagAlgebras.Combinations
+import LeanFlagAlgebras.Compute.Basic
+import LeanFlagAlgebras.Compute.Basic_
+import LeanFlagAlgebras.Compute.Downward
+import LeanFlagAlgebras.Compute.FlagDensity
+import LeanFlagAlgebras.Compute.LabeledGraphListCount
+import LeanFlagAlgebras.DefinitionImpactOnProofs
 import LeanFlagAlgebras.FlagAlgebra
 import LeanFlagAlgebras.FlagDef
 import LeanFlagAlgebras.FlagOperators
@@ -13,10 +19,14 @@ import LeanFlagAlgebras.MantelTheorem.Downward
 import LeanFlagAlgebras.MantelTheorem.FlagDefs
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.MantelTheorem.FlagIso
+import LeanFlagAlgebras.MantelTheorem.FlagIso_old
 import LeanFlagAlgebras.MantelTheorem.FlagMuls
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
+import LeanFlagAlgebras.MultinomialCoefficient
+import LeanFlagAlgebras.Partitions
 import LeanFlagAlgebras.PositiveHom
 import LeanFlagAlgebras.QuotientGraph
+import LeanFlagAlgebras.RandomHom
 import LeanFlagAlgebras.SubflagDensity
 import LeanFlagAlgebras.SubflagListDensity
 import LeanFlagAlgebras.SubflagListDensityProp

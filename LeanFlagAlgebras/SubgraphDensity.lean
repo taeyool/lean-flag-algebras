@@ -332,7 +332,7 @@ lemma subgraphCount_other
     have f_iso_G₀_G' : G₀ ≃g G'.coe := h_iso_G'.some.symm
     have f_iso_G'_G₁ : G'.coe ≃g G₁ := by
       have : G' = ⊤ := induced_full_subgraph_eq_top ⟨h_ind_G', h_iso_G'⟩
-      let g : (⊤ : Subgraph G₁).coe ≃g G₁ := SimpleGraph.Subgraph.topEquiv
+      let g : (⊤ : Subgraph G₁).coe ≃g G₁ := SimpleGraph.Subgraph.topIso
       rw [←this] at g
       exact g
     have f_iso_G₀_G₁ : G₀ ≃g G₁ := Iso.comp f_iso_G'_G₁ f_iso_G₀_G'
@@ -561,7 +561,7 @@ lemma card_eq_imply_set_eq
   apply (compl_eq_empty_iff (A ∪ B)).mp (Finset.card_eq_zero.mp _)
   calc
     (univ \ (A ∪ B)).card
-    _ = (univ : Finset (Fin ℓ)).card - (A ∪ B).card := Finset.card_sdiff (subset_univ (A ∪ B))
+    _ = (univ : Finset (Fin ℓ)).card - (A ∪ B).card := card_sdiff_of_subset (subset_univ (A ∪ B))
     _ = ℓ - (A ∪ B).card := by rw [card_univ, Fintype.card_fin]
     _ = ℓ - ℓ := by rw [h_card_A_union_B]
     _ = 0 := ℓ.sub_self
@@ -633,8 +633,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   have h_inj_S₀'_S₁' : Function.Injective f_S₀'_S₁'_fwd := by
     intro ⟨⟨G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃⟩
-    intro ⟨⟨G₁', G₂', G₃'⟩, h_G₁'_ind, h_G₁'_H₁, h_G₂'_ind, h_G₂'_H₂, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂', h_G₁'_G₂'_G₃'⟩
-    intro h_eq
+      ⟨⟨G₁', G₂', G₃'⟩, h_G₁'_ind, h_G₁'_H₁, h_G₂'_ind, h_G₂'_H₂, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂', h_G₁'_G₂'_G₃'⟩
+      h_eq
     simp only [← Subtype.val_inj, Prod.mk_inj, f_S₀'_S₁'_fwd] at h_eq ⊢
     tauto
 
@@ -681,8 +681,8 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
 
   have h_inj_S₁'_S₂' : Function.Injective f_S₁'_S₂'_fwd := by
     intro ⟨⟨F, G₁, G₂, G₃⟩, h_G₁_ind, h_G₁_H₁, h_G₂_ind, h_G₂_H₂, h_G₃_ind, h_G₃_card, h_G₁_G₂, h_G₁_G₂_G₃, h_G₃_F⟩
-    intro ⟨⟨F', G₁', G₂', G₃'⟩, h_G₁'_ind, h_G₁'_H₁, h_G₂'_ind, h_G₂'_H₂, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂', h_G₁'_G₂'_G₃', h_G₃'_F⟩
-    intro h_eq
+      ⟨⟨F', G₁', G₂', G₃'⟩, h_G₁'_ind, h_G₁'_H₁, h_G₂'_ind, h_G₂'_H₂, h_G₃'_ind, h_G₃'_card, h_G₁'_G₂', h_G₁'_G₂'_G₃', h_G₃'_F⟩
+      h_eq
     simp [f_S₁'_S₂'_fwd, subgraphFromIso, subgraphFromOrder] at h_eq
     obtain ⟨rfl, h_eq'⟩ := h_eq
     simp only [heq_eq_eq, Prod.mk.injEq, Subgraph.mk.injEq, Subtype.mk.injEq, true_and] at h_eq' ⊢
@@ -768,9 +768,9 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   have h_inj_S₂'_S₃' : Function.Injective f_S₂'_S₃'_fwd := by
     intro ⟨⟨F, K₁, K₂, G₃⟩,
           h_K₁_ind, h_iso_K₁_H₁, h_K₂_ind, h_iso_K₂_H₂, h_G₃_ind, h_G₃_card, h_K₁_K₂_disj, h_iso_G₃_Fout⟩
-    intro ⟨⟨F', K₁', K₂', G₃'⟩,
+      ⟨⟨F', K₁', K₂', G₃'⟩,
           h_K₁'_ind, h_iso_K₁'_H₁, h_K₂'_ind, h_iso_K₂'_H₂, h_G₃'_ind, h_G₃'_card, h_K₁'_K₂'_disj, h_iso_G₃'_Fout⟩
-    intro h_eq
+      h_eq
     dsimp only [f_S₂'_S₃'_fwd] at h_eq
     rcases h_eq with ⟨h_F_F', h_eq'⟩
     rfl
@@ -870,8 +870,8 @@ lemma subgraphPairCount_eq_sum_count_prods
 
   have h_inj_S₀_S₁ : Function.Injective f_S₀_S₁_fwd := by
     intro ⟨⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-    intro ⟨⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
-    intro h_eq
+      ⟨⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
+      h_eq
     simp [f_S₀_S₁_fwd] at h_eq
     obtain ⟨⟨rfl, rfl⟩, h_ind_ind'⟩ := h_eq
     congr
@@ -905,7 +905,7 @@ lemma subgraphPairCount_eq_sum_count_prods
         _ = (G₃.verts.toFinset \ (G₁.verts ∪ G₂.verts).toFinset).card := by
               simp
         _ = G₃.verts.toFinset.card - (G₁.verts ∪ G₂.verts).toFinset.card := by
-              apply Finset.card_sdiff
+              apply Finset.card_sdiff_of_subset
               exact Set.toFinset_subset_toFinset.mpr h_G₁_G₂_G₃
         _ = ℓ₃ - (ℓ₁ + ℓ₂) := by
               rw [subgraphPairSet_card_union_Finset h_G₁_G₂]
@@ -964,8 +964,8 @@ lemma subgraphPairCount_eq_sum_count_prods
           ⟨G₃.verts.toFinset, h_G₃_verts_S'⟩
         have h_S_S'_inj : Function.Injective f_S_S'_fwd := by
           intro ⟨G₃, h_G₃_ind, h_G₃_card, h_G₁_G₂_G₃⟩
-          intro ⟨G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
-          intro h_eq
+            ⟨G₃', h_G₃'_ind, h_G₃'_card, h_G₁'_G₂'_G₃'⟩
+            h_eq
           simp only [← Subtype.val_inj, Set.toFinset_inj, f_S_S'_fwd] at h_eq ⊢
           exact inducedSubgraph_eq_verts h_G₃_ind h_G₃'_ind h_eq
         have h_S_S'_surj : Function.Surjective f_S_S'_fwd := by
@@ -1047,11 +1047,11 @@ lemma subgraphPairDensity_eq_sum_density_prods
               rw [mul_assoc, mul_assoc]
               have h₀ : (ℓ₃ - ℓ₁) ≤ (ℓ - ℓ₁) := by apply Nat.sub_le_sub_right hℓ₃_ub
               have h₁ : ℓ₂ ≤ ℓ₃ - ℓ₁ := Nat.le_sub_of_add_le' hℓ₃_lb
-              rw [Nat.choose_mul h₀ h₁]
+              rw [← Nat.choose_mul h₁]
       _ = (↑(ℓ.choose ℓ₃ * ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂) : ℚ) := by
               have h₀ : ℓ₃ ≤ ℓ := hℓ₃_ub
               have h₁ : ℓ₁ ≤ ℓ₃ := by omega
-              rw [Nat.choose_mul h₀ h₁]
+              rw [Nat.choose_mul h₁]
       _ = ((ℓ₃.choose ℓ₁ * (ℓ₃ - ℓ₁).choose ℓ₂ * ℓ.choose ℓ₃) : ℚ) := by
               simp only [mul_assoc, Nat.cast_mul, mul_comm]
   calc
@@ -1512,11 +1512,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_F₁_ind, h_F₁_H₁, h_F₂_ind, h_F₂_H₂, h_F₁_disj_F₂,
             h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₃, h_G₁_disj_G₂,
             h_X_card, h_X_F₁_F₂⟩
-    intro ⟨⟨F', F₁', F₂', G₁', G₂', X'⟩,
+      ⟨⟨F', F₁', F₂', G₁', G₂', X'⟩,
             h_F₁'_ind, h_F₁'_H₁, h_F₂'_ind, h_F₂'_H₂, h_F₁'_disj_F₂',
             h_G₁'_ind, h_G₁'_Fout', h_G₂'_ind, h_G₂'_H₃, h_G₁'_disj_G₂',
             h_X'_card, h_X'_F₁'_F₂'⟩
-    intro h_eq
+      h_eq
     simp [f_S₁_S₂_fwd] at h_eq
     obtain ⟨h_X₁_eq_X₁', h_X₂_eq_X₂', h_X₃_eq_X₃', h_X₄_eq_X₄', h_X₅_eq_X₅'⟩ := h_eq
     simp only [Subtype.mk.injEq, Sigma.mk.inj_iff]
@@ -1546,15 +1546,15 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               ∪ ((Subtype.val ∘ h_G₁_Fout.some.symm) '' X)
               ∪ ((Subtype.val ∘ h_G₁_Fout.some.symm) '' (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ ∩ Xᶜ))) := by
                 simp only [Set.image_union (Subtype.val ∘ h_G₁_Fout.some.symm)]
-        _ = (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₁.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₂.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) X).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ ∩ Xᶜ))).toSet := by
+        _ = SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₁.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₂.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) X)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ ∩ Xᶜ))) := by
                 simp only [Function.comp_apply, Set.coe_toFinset, coe_image, coe_inter, coe_compl]
-        _ = (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₁'.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₂'.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) X').toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) (F₁'.verts.toFinsetᶜ ∩ (F₂'.verts.toFinsetᶜ ∩ X'ᶜ))).toSet := by
+        _ = SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₁'.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₂'.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) X')
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) (F₁'.verts.toFinsetᶜ ∩ (F₂'.verts.toFinsetᶜ ∩ X'ᶜ))) := by
                 rw [h_X₁_eq_X₁', h_X₂_eq_X₂', h_X₄_eq_X₄', h_X₅_eq_X₅']
         _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts.toFinset)
               ∪ ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts.toFinset)
@@ -1600,9 +1600,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       intro X₀ X₀' h_X₀_eq_X₀'
       have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X₀' := by
         calc
-          (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X₀).toSet := by
+          (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = SetLike.coe (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X₀) := by
                 simp only [Function.comp_apply, coe_image]
-          _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X₀').toSet := by
+          _ = SetLike.coe (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X₀') := by
                 simp only [h_X₀_eq_X₀', coe_image]
           _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X₀' := by
                 simp only [coe_image, Function.comp_apply]
@@ -2220,11 +2220,11 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
             h_F₁_ind, h_F₁_H₂, h_F₂_ind, h_F₂_H₃, h_F₁_disj_F₂,
             h_G₁_ind, h_G₁_Fout, h_G₂_ind, h_G₂_H₁, h_G₁_disj_G₂,
             h_X_card, h_X_G₁_G₂⟩
-    intro ⟨⟨F', F₁', F₂', G₁', G₂', X'⟩,
+      ⟨⟨F', F₁', F₂', G₁', G₂', X'⟩,
             h_F₁'_ind, h_F₁'_H₂, h_F₂'_ind, h_F₂'_H₃, h_F₁'_disj_F₂',
             h_G₁'_ind, h_G₁'_Fout', h_G₂'_ind, h_G₂'_H₁, h_G₁'_disj_G₂',
             h_X'_card, h_X'_G₁'_G₂'⟩
-    intro h_eq
+      h_eq
     simp [f_S₃_S₂_fwd] at h_eq
     obtain ⟨h_X₁_eq_X₁', h_X₂_eq_X₂', h_X₃_eq_X₃', h_X₄_eq_X₄', h_X₅_eq_X₅'⟩ := h_eq
     simp only [Subtype.mk.injEq, Sigma.mk.inj_iff]
@@ -2253,13 +2253,13 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
               ∪ ((Subtype.val ∘ h_G₁_Fout.some.symm) '' F₂.verts.toFinset)
               ∪ ((Subtype.val ∘ h_G₁_Fout.some.symm) '' (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ))) := by
                 simp only [Set.image_union (Subtype.val ∘ h_G₁_Fout.some.symm)]
-        _ = (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₁.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₂.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ))).toSet := by
+        _ = SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₁.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) F₂.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁_Fout.some.symm a)) (F₁.verts.toFinsetᶜ ∩ (F₂.verts.toFinsetᶜ))) := by
                 simp only [Function.comp_apply, Set.coe_toFinset, coe_image, coe_inter, coe_compl]
-        _ = (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₁'.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₂'.verts.toFinset).toSet
-              ∪ (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) (F₁'.verts.toFinsetᶜ ∩ (F₂'.verts.toFinsetᶜ))).toSet := by
+        _ = SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₁'.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) F₂'.verts.toFinset)
+              ∪ SetLike.coe (image (fun a ↦ Subtype.val (h_G₁'_Fout'.some.symm a)) (F₁'.verts.toFinsetᶜ ∩ (F₂'.verts.toFinsetᶜ))) := by
                 rw [h_X₂_eq_X₂', h_X₃_eq_X₃', h_X₄_eq_X₄']
         _ = ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₁'.verts.toFinset)
               ∪ ((Subtype.val ∘ h_G₁'_Fout'.some.symm) '' F₂'.verts.toFinset)
@@ -2304,9 +2304,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
       intro X₀ X₀' h_X₀_eq_X₀'
       have : (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X₀' := by
         calc
-          (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X₀).toSet := by
+          (Subtype.val ∘ h_G₁_Fout.some.symm) '' X₀ = SetLike.coe (image (fun a ↦ ↑(h_G₁_Fout.some.symm a)) X₀) := by
                 simp only [Function.comp_apply, coe_image]
-          _ = (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X₀').toSet := by
+          _ = SetLike.coe (image (fun a ↦ ↑(h_G₁'_Fout'.some.symm a)) X₀') := by
                 simp only [h_X₀_eq_X₀', coe_image]
           _ = (Subtype.val ∘ h_G₁'_Fout'.some.symm) '' X₀' := by
                 simp only [coe_image, Function.comp_apply]
@@ -2654,8 +2654,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
   have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
     intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
-    intro ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
-    intro h_eq
+      ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
+      h_eq
     simp only [Subtype.mk.injEq, Sigma.mk.inj_iff, f_S₀_S₁_fwd] at h_eq
     obtain ⟨rfl, h_eq_rest⟩ := h_eq
     simp only [heq_eq_eq, Prod.mk.injEq] at h_eq_rest
@@ -2701,8 +2701,8 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
 
   have h_f_S₄_S₃_inj : Function.Injective f_S₄_S₃_fwd := by
     intro ⟨F, ⟨⟨F₁, F₂⟩, h_F₁_F₂⟩, ⟨⟨G₁, G₂⟩, h_G₁_G₂⟩, ⟨X, h_X⟩⟩
-    intro ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
-    intro h_eq
+      ⟨F', ⟨⟨F₁', F₂'⟩, h_F₁'_F₂'⟩, ⟨⟨G₁', G₂'⟩, h_G₁'_G₂'⟩, ⟨X', h_X'⟩⟩
+      h_eq
     simp only [Subtype.mk.injEq, Sigma.mk.inj_iff, f_S₄_S₃_fwd] at h_eq
     obtain ⟨rfl, h_eq_rest⟩ := h_eq
     simp only [heq_eq_eq, Prod.mk.injEq] at h_eq_rest

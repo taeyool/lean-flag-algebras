@@ -461,7 +461,7 @@ lemma induced_subgraph_iso_G_iff_eq_top
   · intro h
     constructor
     · subst h; intro; simp
-    · rw [h]; exact Nonempty.intro SimpleGraph.Subgraph.topEquiv
+    · rw [h]; exact Nonempty.intro SimpleGraph.Subgraph.topIso
 
 omit [Fintype V] [Fintype W] [Fintype X] in
 lemma subgraph_to_eqv_graph_iff
