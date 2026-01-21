@@ -84,7 +84,7 @@ def funBetweenIsoLabeledGraphSetWithSameGraph
               show φH.toFun = φ.graph_iso
               dsimp only [eq_mpr_eq_cast, cast_eq, Equiv.toFun_as_coe, RelIso.coe_fn_toEquiv, φH]
               funext x
-              congr
+              congr 1
               · rw [hGH_graph]
               · rw [hGH_graph]
               · simp only [cast_heq]
@@ -413,7 +413,7 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
           rw [Fin.val_eq_val]
           calc
             _ = G₁.type_embed v := by
-              congr
+              congr 1
               · rw [hG₁_graph_eq, hG₂_graph_eq]
               · rw [hG₁_graph_eq, hG₂_graph_eq]
               · exact cast_heq _ _
@@ -644,7 +644,7 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
           rw [Fin.val_eq_val]
           calc
             _ = G₁.type_embed v := by
-              congr
+              congr 1
               · rw [hG_graph_eq]
               · rw [hG_graph_eq]
               · exact cast_heq _ _
@@ -854,13 +854,13 @@ theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     have hG_size : @LabeledGraph.size _ _ _ _ (fun a b ↦ propDecidable (a = b)) G = ℓ' := by
       simp only [LabeledGraph.size, Fintype.card_fin]
     rw [hG_size, hF_size, ← Nat.cast_mul, ← Nat.cast_mul]
-    congr
-    · rw [Nat.cast_mul, mul_comm]
+    congr 1
+    · rw [mul_comm]
       let φG : G ≃f ⟦G⟧.out := by
         apply Classical.choice
         show G ≈ ⟦G⟧.out
         exact Quotient.mk_eq_iff_out.mp rfl
-      congr 1 <;> simp only [Rat.natCast_inj]
+      congr 2
       · exact isomorphismCount_respect_eqv (Nonempty.intro φG)
       · exact labeledSubgraphCount_respect_eqv φG LabeledGraphIso.refl
     · rw [Nat.choose_eq_factorial_div_factorial (by omega), Nat.sub_sub_sub_cancel_right n₀_le_ℓ]
