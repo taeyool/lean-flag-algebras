@@ -82,13 +82,13 @@ instance
 structure LabeledSym2Graph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
-  type_embed : σ ↪g (fromEdgeSet edges.toSet)
+  type_embed : σ ↪g (fromEdgeSet (SetLike.coe edges))
 
 instance
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] [DecidableRel σ.Adj] {n : ℕ} :
     Fintype (LabeledSym2Graph σ n) where
   elems :=
-    let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ (σ ↪g fromEdgeSet E.toSet) _))
+    let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ (σ ↪g fromEdgeSet (SetLike.coe E)) _))
     S.filterMap (fun ⟨E, emb⟩ ↦
       if hE : ∀ e ∈ E, ¬e.IsDiag
       then .some ⟨E, hE, emb⟩
@@ -119,7 +119,7 @@ def LabeledSym2Graph.toLabeledGraph
     {T : Type} {σ : FlagType T} {n : ℕ}
     (G : LabeledSym2Graph σ n) : LabeledGraph σ (Fin n)
   :=
-  ⟨fromEdgeSet G.edges.toSet, G.type_embed⟩
+  ⟨fromEdgeSet (SetLike.coe G.edges), G.type_embed⟩
 
 theorem LabeledSym2Graph.toLabeledGraph_type_embed_eq
     {T : Type} {σ : FlagType T} {n : ℕ}
@@ -144,19 +144,19 @@ theorem LabeledSym2Graph.toLabeledGraph_injective
   simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.mk.injEq] at h
   obtain ⟨h_graph, h_type_embed⟩ := h
   ext e
-  · have h : (fromEdgeSet G₁.edges).edgeSet = G₁.edges.toSet := by
+  · have h : (fromEdgeSet G₁.edges).edgeSet = SetLike.coe G₁.edges := by
       simp only [edgeSet_fromEdgeSet, sdiff_eq_left]
       refine Set.disjoint_left.mpr ?_
       intro e' he'
-      simp only [Set.mem_setOf_eq]
+      simp only [Sym2.mem_diagSet_iff_isDiag]
       exact G₁.edges_valid e' he'
     simp only [h_graph, edgeSet_fromEdgeSet] at h
-    have h_edges : G₁.edges.toSet = G₂.edges.toSet := by
+    have h_edges : SetLike.coe G₁.edges = SetLike.coe G₂.edges := by
       rw [← h]
       simp only [sdiff_eq_left]
       refine Set.disjoint_left.mpr ?_
       intro e' he'
-      simp only [Set.mem_setOf_eq]
+      simp only [Sym2.mem_diagSet_iff_isDiag]
       exact G₂.edges_valid e' he'
     exact Eq.to_iff (congrFun h_edges e)
   · exact h_type_embed
@@ -221,11 +221,10 @@ theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
   := by
   simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
   congr
-  · simp only [edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe,
-    Set.toFinset_setOf, sdiff_eq_left]
+  · simp only [edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe, sdiff_eq_left]
     refine Finset.disjoint_left.mpr ?_
     intro e he
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp only [Set.mem_toFinset, Sym2.mem_diagSet_iff_isDiag]
     exact G.edges_valid e he
   · exact proof_irrel_heq _ _
   · simp only [eq_mpr_eq_cast, cast_heq]
