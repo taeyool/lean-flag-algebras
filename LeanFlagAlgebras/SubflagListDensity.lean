@@ -889,7 +889,7 @@ theorem labeledGraphListDensity_le_one
     apply div_le_one_of_le₀ <;> try simp only [Nat.cast_nonneg]
     let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
     have h_VG : VG.card = G.size - σ.size := by
-      simp only [VG, LabeledGraph.size, Finset.card_sdiff (Finset.subset_univ _)]
+      simp only [VG, LabeledGraph.size, Finset.card_sdiff_of_subset (Finset.subset_univ _)]
       rw [Set.toFinset_card, Finset.card_univ, LabeledGraph.type_verts_card_eq]
     let r_list : Fin t → ℕ := fun i => (Fl i).size - σ.size
     rw [← h_VG, ← partition_card VG (r_list), Nat.cast_le]
@@ -908,7 +908,7 @@ theorem labeledGraphListDensity_le_one
       · have : G.type_verts.toFinset ⊆ (Gl i).subgraph.verts.toFinset := by
           simp only [Set.subset_toFinset, Set.coe_toFinset]
           exact labeledSubgraph_contain_type_verts G (Gl i)
-        rw [Finset.card_sdiff this, Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
+        rw [Finset.card_sdiff_of_subset this, Set.toFinset_card, Set.toFinset_card, LabeledGraph.type_verts_card_eq]
         dsimp only [r_list]
         congr!
         exact labeledGraphIso_size_eq (Gl i).coe (Fl i) (Classical.choice (hGl_iso i))
@@ -1055,7 +1055,7 @@ lemma labeledSubgraph_card_from_iso
       V'.toFinset.card = (G'.subgraph.verts.toFinset \ G.type_verts.toFinset).card := by
             dsimp [V']; simp only [Set.toFinset_diff]
       _ = G'.subgraph.verts.toFinset.card - G.type_verts.toFinset.card :=
-            Finset.card_sdiff (by simp only [Set.subset_toFinset, Set.coe_toFinset, h_G_type_verts_subset_G'_verts])
+            Finset.card_sdiff_of_subset (by simp only [Set.subset_toFinset, Set.coe_toFinset, h_G_type_verts_subset_G'_verts])
       _ = Fintype.card G'.subgraph.verts - Fintype.card G.type_verts := by
             simp only [Set.toFinset_card, Fintype.card_ofFinset]
       _ = ℓ₁ - ℓ₀ := by
@@ -1176,7 +1176,7 @@ noncomputable def
       intro ⟨⟨X₁, Gl₁⟩, h₁⟩ ⟨⟨X₂, Gl₂⟩, h₂⟩ h_eq
       simp only [Subtype.mk.injEq, Prod.mk.injEq, f_LHS_S₀_fwd] at h_eq
       let ⟨h_eq_X, h_eq_h'⟩ := h_eq
-      have h_eq_h : h₁ = h₂ := Subtype.eq h_eq_h'
+      have h_eq_h : h₁ = h₂ := Subtype.ext h_eq_h'
       simp only [h_eq_X, h_eq_h]
 
     have h_f_LHS_S₀_surj : Function.Surjective f_LHS_S₀_fwd := by
@@ -1220,8 +1220,8 @@ noncomputable def
 
     have h_f_S₀_S₁_inj : Function.Injective f_S₀_S₁_fwd := by
       intro ⟨⟨X₀, Gl'₀⟩, h_X₀_card, h_Gl'₀_ind, h_Gl'₀_other⟩
-      intro ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
-      intro h_eq
+        ⟨⟨X₁, Gl'₁⟩, h_X₁_card, h_Gl'₁_ind, h_Gl'₁_other⟩
+        h_eq
       dsimp [f_S₀_S₁_fwd] at h_eq
       split at h_eq
       split at h_eq
@@ -1407,7 +1407,7 @@ noncomputable def
     have h_V_other_disj_Vl : ∀ (i : Fin 3), V_other ∩ Vl i = ∅ := h_V_other.2.2
     let f_V_other : Fin ℓ_other ≃ V_other := isoFromFinToFiniteSet V_other (by rw [←h_V_other_card]; congr!)
 
-    let V : Set (Fin ℓ) := Subtype.val '' (f_V_other '' X.toSet)
+    let V : Set (Fin ℓ) := Subtype.val '' (f_V_other '' SetLike.coe X)
     have h_V_subset_V_other : V ⊆ V_other := by
       dsimp [V]
       simp only [Set.image_subset_iff, Subtype.coe_preimage_self, Set.subset_univ]
@@ -1434,8 +1434,8 @@ noncomputable def
 
   have h_f_LHS_RHS_inj : Function.Injective f_LHS_RHS_fwd := by
     intro ⟨⟨X₁, Vl₁⟩, h_X₁_card, h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
-    intro ⟨⟨X₂, Vl₂⟩, h_X₂_card, h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
-    intro h_eq
+      ⟨⟨X₂, Vl₂⟩, h_X₂_card, h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
+      h_eq
     simp only [Subtype.mk.injEq, Prod.mk.injEq, f_LHS_RHS_fwd] at h_eq
     have ⟨h_eq_X, h_eq_Vl⟩ := h_eq
     subst h_eq_Vl
@@ -1762,10 +1762,10 @@ noncomputable def
     intro ⟨⟨V₁, Vl₁⟩,
       h_V₁_card, h_V₁_disj_Vl₁, h_V₁_disj_G_type_verts,
       h_Vl₁_card, h_Vl₁_iso, h_Vl₁_disj_G_type_verts, h_Vl₁_disj_pairwise⟩
-    intro ⟨⟨V₂, Vl₂⟩,
+      ⟨⟨V₂, Vl₂⟩,
       h_V₂_card, h_V₂_disj_Vl₂, h_V₂_disj_G_type_verts,
       h_Vl₂_card, h_Vl₂_iso, h_Vl₂_disj_G_type_verts, h_Vl₂_disj_pairwise⟩
-    intro h_eq
+      h_eq
     simp only [Subtype.mk.injEq, Prod.mk.injEq]
     dsimp [f_LHS_RHS_fwd] at h_eq
     simp only [Fin.isValue, Subtype.mk.injEq, Prod.mk.injEq] at h_eq
@@ -2099,7 +2099,7 @@ noncomputable def
         _ = ((Vl'' 0).toFinset \ (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset).card := by
                   rw [Set.toFinset_diff _ _]
         _ = (Vl'' 0).toFinset.card - (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0)) ∪ Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card :=
-                  Finset.card_sdiff (Set.toFinset_mono h_image_Vl'_01_subseteq_Vl''_0)
+                  Finset.card_sdiff_of_subset (Set.toFinset_mono h_image_Vl'_01_subseteq_Vl''_0)
         _ = (Vl'' 0).toFinset.card - ((Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 0))).toFinset.card
                                       + (Subtype.val '' (⇑iso₀.graph_iso '' (Vl' 1))).toFinset.card) := by
                   rw [Set.toFinset_union _ _]
@@ -2164,6 +2164,7 @@ noncomputable def
 
   Equiv.ofBijective f_LHS_RHS_fwd ⟨h_f_LHS_RHS_inj, h_f_LHS_RHS_surj⟩
 
+set_option linter.unusedVariables false in
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl_step3
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -2292,8 +2293,8 @@ noncomputable def
 
     have h_f_T₁_T₀_inj : Function.Injective f_T₁_T₀_fwd := by
       intro ⟨⟨G'₁, Vl'₁, Vl''₁⟩, h_Vl'₁_disj_G'₁_type_verts, h_Vl''₁_disj_G_type_verts, _, _, _, _⟩
-      intro ⟨⟨G'₂, Vl'₂, Vl''₂⟩, h_Vl'₂_disj_G'₂_type_verts, h_Vl''₂_disj_G_type_verts, _, _, _, _⟩
-      intro h_eq
+        ⟨⟨G'₂, Vl'₂, Vl''₂⟩, h_Vl'₂_disj_G'₂_type_verts, h_Vl''₂_disj_G_type_verts, _, _, _, _⟩
+        h_eq
       dsimp [f_T₁_T₀_fwd] at h_eq
       simp only [Subtype.mk.injEq, Sigma.mk.injEq] at h_eq
       obtain ⟨h_eq_G', h_eq_other⟩ := h_eq

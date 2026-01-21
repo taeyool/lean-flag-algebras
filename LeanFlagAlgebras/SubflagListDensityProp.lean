@@ -1,5 +1,3 @@
-import «LeanFlagAlgebras».SubgraphUtil
-import «LeanFlagAlgebras».FlagDef
 import «LeanFlagAlgebras».SubflagListDensity
 
 import Mathlib.Probability.Independence.Basic
@@ -52,7 +50,7 @@ theorem flagListDensity₂_prod_approx
   have hfreeG_size : freeG.card = Grep.size - σ.size := by
     simp_all only [freeG]
     rw [← Grep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
-    simp only [card_univ, Set.toFinset_card]; rfl
+    simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
   let hfreeG_sub (w : Finset W) : w ⊆ freeG → Disjoint w Grep.type_verts.toFinset := by
     intro h_sub
     refine disjoint_iff_inter_eq_empty.mpr ?_
@@ -64,12 +62,12 @@ theorem flagListDensity₂_prod_approx
   have hfreeF_size : freeF.card = Frep.size - σ.size := by
     simp_all only [freeF]
     rw [← Frep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
-    simp only [card_univ, Set.toFinset_card]; rfl
+    simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
   let freeF' := Finset.univ \ F'rep.type_verts.toFinset
   have hfreeF'_size : freeF'.card = F'rep.size - σ.size := by
     simp_all only [freeF']
     rw [← F'rep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
-    simp only [card_univ, Set.toFinset_card]; rfl
+    simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
 
   let Ω := { (w₁, w₂) : Finset W × Finset W | (w₁.card = Frep.size ∧ Grep.type_verts ⊆ w₁) ∧ (w₂.card = F'rep.size ∧ Grep.type_verts ⊆ w₂)}
   have hΩ_size : Ω.toFinset.card = (freeG.card).choose freeF.card * (freeG.card).choose freeF'.card := by
@@ -107,12 +105,12 @@ theorem flagListDensity₂_prod_approx
           constructor <;> constructor
           · refine sdiff_subset_sdiff ?_ fun ⦃a⦄ a ↦ a
             exact subset_univ w₁
-          · rw [Finset.card_sdiff, Set.toFinset_card]
+          · rw [Finset.card_sdiff_of_subset, Set.toFinset_card]
             · rw [hw₁_size, hfreeF_size, ← Grep.type_verts_card_eq]
             · rwa [Set.toFinset_subset]
           · refine sdiff_subset_sdiff ?_ fun ⦃a⦄ a ↦ a
             exact subset_univ w₂
-          · rw [Finset.card_sdiff, Set.toFinset_card]
+          · rw [Finset.card_sdiff_of_subset, Set.toFinset_card]
             · rw [hw₂_size, hfreeF'_size, ← Grep.type_verts_card_eq]
             · rwa [Set.toFinset_subset]
         use ⟨w, hw⟩
@@ -148,13 +146,13 @@ theorem flagListDensity₂_prod_approx
           constructor
           · intro w hw
             simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
-          · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.1.2)]
+          · rw [Finset.card_sdiff_of_subset (by simp only [Set.toFinset_subset]; exact h_in_Ω.1.2)]
             rw [h_in_Ω.1.1, Set.toFinset_card, Grep.type_verts_card_eq]
         · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, r, r_list]
           constructor
           · intro w hw
             simp_all only [mem_sdiff, mem_univ, Set.mem_toFinset, true_and, not_false_eq_true, freeG]
-          · rw [Finset.card_sdiff (by simp only [Set.toFinset_subset]; exact h_in_Ω.2.2)]
+          · rw [Finset.card_sdiff_of_subset (by simp only [Set.toFinset_subset]; exact h_in_Ω.2.2)]
             rw [h_in_Ω.2.1, Set.toFinset_card, Grep.type_verts_card_eq]
       · intro i j hij
         by_cases hi : i = 0 <;> by_cases hj : j = 0
@@ -282,7 +280,7 @@ theorem flagListDensity₂_prod_approx
           use ⟨(G₁, G₂), by simp_all only [Set.toFinset_setOf, mem_product, mem_filter, mem_univ, inducedLabeledSubgraph_isInduced, true_and, G₁, G₂]⟩
           simp only [inducedLabeledSubgraph_verts, toFinset_coe, G₁, G₂]
     · rw [← Nat.cast_mul, Nat.cast_inj]
-      rw [hfreeG_size, hfreeF_size, hfreeF'_size, Set.toFinset_card, Fintype.card_ofFinset] at hΩ_size
+      rw [hfreeG_size, hfreeF_size, hfreeF'_size] at hΩ_size
       rw [hΩ_size]; rfl
 
   have P₂ : labeledSubgraphListDensity (labeledGraphPairToList Frep F'rep) Grep = (A ∩ B).card / B.card := by
@@ -490,18 +488,18 @@ theorem flagListDensity₂_prod_approx
       simp only [Fin.sum_univ_two, ge_iff_le, r_list]
       omega
     have hB_pos : 0 < (B.card : ℚ) := Nat.cast_pos.mpr (Nat.zero_lt_of_ne_zero hB_nonzero)
-    have compl_card : (@Nat.cast ℚ _ (B.toSet)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
+    have compl_card : (@Nat.cast ℚ _ (SetLike.coe B)ᶜ.toFinset.card) / ↑Ω.toFinset.card = 1 - ↑(B.card) / ↑(Ω.toFinset.card) := by
       rw [← hΩ_card_eq]
-      simp only [Set.compl_eq_univ_diff B.toSet, Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
-      rw [card_sdiff (by exact Finset.subset_univ B)]
+      simp only [Set.compl_eq_univ_diff (SetLike.coe B), Set.toFinset_diff, Set.toFinset_univ, toFinset_coe]
+      rw [card_sdiff_of_subset (by exact Finset.subset_univ B)]
       rw [Nat.cast_sub (by exact Finset.card_le_card (Finset.subset_univ B))]
-      rw [sub_div, div_self (by rwa [hΩ_card_eq, ne_eq, Rat.natCast_eq_zero])]
+      rw [sub_div, div_self (by rwa [hΩ_card_eq, ne_eq, Rat.natCast_eq_zero_iff])]
 
     have cond_bound : |((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)| ≤ 1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ) := by
       rw [abs_le]; constructor
       · rw [neg_le_sub_iff_le_add', ← tsub_le_iff_right]
-        have hA_card : A.card = (A ∩ B).card + (A.toSet ∩ B.toSetᶜ).toFinset.card := by
-          have hA_union := Set.toFinset_congr (Set.inter_union_compl A.toSet B.toSet)
+        have hA_card : A.card = (A ∩ B).card + ((SetLike.coe A) ∩ (SetLike.coe B)ᶜ).toFinset.card := by
+          have hA_union := Set.toFinset_congr (Set.inter_union_compl (SetLike.coe A) (SetLike.coe B))
           simp only [toFinset_coe] at hA_union
           nth_rw 1 [← hA_union, Set.toFinset_union]
           rw [card_union_eq_card_add_card.mpr (by
@@ -510,7 +508,7 @@ theorem flagListDensity₂_prod_approx
           simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl]
         rw [hA_card, Nat.cast_add, add_div, add_comm, add_sub_assoc]
         refine Preorder.le_trans _ ?_ _ ?_ ?_
-        · exact ↑(#(A.toSet ∩ (B.toSet)ᶜ).toFinset) / ↑(#Ω.toFinset)
+        · exact ↑(#((SetLike.coe A) ∩ (SetLike.coe B)ᶜ).toFinset) / ↑(#Ω.toFinset)
         · rw [add_le_iff_nonpos_right, sub_nonpos, div_le_div_iff₀ hΩ_pos hB_pos]
           rw [← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le, ← hΩ_card_eq]
           apply Nat.mul_le_mul_left
@@ -521,7 +519,7 @@ theorem flagListDensity₂_prod_approx
       · suffices (((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card ≤ (1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card by
           rwa [mul_le_mul_right hB_pos] at this
         rw [sub_mul, tsub_le_iff_right, ← add_mul]
-        rw [div_mul, div_self (by rwa [ne_eq, Rat.natCast_eq_zero]), div_one]
+        rw [div_mul, div_self (by rwa [ne_eq, Rat.natCast_eq_zero_iff]), div_one]
         suffices @Nat.cast ℚ _ (min A.card B.card) ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) by
           calc
             @Nat.cast ℚ _ (A ∩ B).card ≤ @Nat.cast ℚ _ (min A.card B.card) := by
@@ -564,11 +562,11 @@ theorem flagListDensity₂_prod_approx
       rw [← Nat.cast_sub (by exact F'rep.type_size_le_size), ← hfreeF'_size]
       rw [← Nat.cast_sub (by exact Grep.type_size_le_size), ← hfreeG_size]
       rw [Nat.cast_mul, Nat.cast_mul, ← div_div_eq_mul_div, ← div_mul]
-      rw [← div_div, div_self (by rw [ne_eq, Rat.natCast_eq_zero, ← ne_eq]; exact Nat.choose_ne_zero (by omega)), one_div_mul_eq_div]
+      rw [← div_div, div_self (by rw [ne_eq, Rat.natCast_eq_zero_iff, ← ne_eq]; exact Nat.choose_ne_zero (by omega)), one_div_mul_eq_div]
       rw [pow_two, ← add_mul, mul_comm, mul_div_assoc, tsub_le_iff_tsub_le]
       refine Preorder.le_trans _ ?_ _ ?_ ?_
       · exact (freeG.card - freeF.card - freeF'.card) ^ freeF'.card / freeG.card ^ freeF'.card
-      · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero]; rw [hfreeG_size]; omega)]
+      · rw [← div_pow, sub_sub, sub_div, div_self (by simp only [ne_eq, Rat.natCast_eq_zero_iff]; rw [hfreeG_size]; omega)]
         rw [sub_eq_add_neg, sub_eq_add_neg, ← Nat.cast_add, neg_mul_eq_mul_neg]
         have : -2 ≤ -(@Nat.cast ℚ _ (#freeF + #freeF') / ↑(#freeG)) := by
           simp only [Nat.cast_add, neg_le_neg_iff]
@@ -581,20 +579,20 @@ theorem flagListDensity₂_prod_approx
         rw [mul_comm, ← Nat.div_div_eq_div_mul]
         rw [mul_comm, ← Nat.div_div_eq_div_mul]
         rw [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd; rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
-          Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+          Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true])]
         nth_rw 2 [Nat.cast_div (by apply Nat.dvd_div_of_mul_dvd;rw [mul_comm];apply Nat.factorial_mul_factorial_dvd_factorial; omega) (by simp only [ne_eq,
-          Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+          Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true])]
         rw [div_div_div_cancel_right₀ (by
-          simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
-        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true])]
+          simp only [ne_eq, Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true])]
+        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true])]
+        rw [Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true])]
         refine (div_le_div_iff₀ ?_ ?_).mpr ?_
         · refine pow_pos ?_ _
           exact Nat.cast_pos.mpr hfG_pos
         · apply div_pos <;> simp only [Nat.cast_pos, Nat.factorial_pos]
         · refine mul_le_mul_of_nonneg ?_ ?_ ?_ ?_
           · rw [sub_sub, ← Nat.cast_add, ← Nat.cast_sub (by omega), ← Nat.cast_pow]
-            rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero, Nat.factorial_ne_zero, not_false_eq_true]), Nat.cast_le, Nat.sub_sub]
+            rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by simp only [ne_eq, Rat.natCast_eq_zero_iff, Nat.factorial_ne_zero, not_false_eq_true]), Nat.cast_le, Nat.sub_sub]
             refine (Nat.le_div_iff_mul_le ?_).mpr ?_
             · simp only [Nat.factorial_pos]
             · rw [mul_comm]
@@ -603,7 +601,7 @@ theorem flagListDensity₂_prod_approx
               nth_rw 3 [← this]
               exact Nat.factorial_mul_pow_sub_le_factorial hnm
           · rw [← Nat.cast_div (by apply Nat.factorial_dvd_factorial; omega) (by
-              rw [ne_eq, Rat.natCast_eq_zero, ← ne_eq]
+              rw [ne_eq, Rat.natCast_eq_zero_iff, ← ne_eq]
               apply Nat.factorial_ne_zero)]
             rw [← Nat.cast_pow, Nat.cast_le]
             have h : freeF'.card ≤ freeG.card := by omega

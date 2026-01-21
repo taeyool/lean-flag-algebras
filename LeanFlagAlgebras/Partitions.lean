@@ -44,22 +44,17 @@ lemma partitions'_one_eq_biUnion_filter_eq_card
     partitions' V r_list = (V.powerset.filter (·.card = r_list 0)).biUnion ({fun _ ↦ ·})
   := by
   ext f; simp [partitions']; constructor <;> intro h₁
-  · obtain ⟨h₁, h₂⟩ := h₁.1 0
-    use f 0, ⟨h₁, h₂⟩
+  · use f 0, h₁
     funext; congr; exact Fin.fin_one_eq_zero _
-  · obtain ⟨f, ⟨h₁, h₂⟩, rfl⟩ := h₁; simp [h₁, h₂, Fin.fin_one_eq_zero]
+  · obtain ⟨f, ⟨h₁, h₂⟩, rfl⟩ := h₁; simp [h₁, h₂]
 
 lemma partitions'_one_card_eq_filter_eq_card
     {V : Finset α} {r_list : Fin 1 → ℕ} :
     (partitions' V r_list).card = (V.powerset.filter (·.card = r_list 0)).card
   := by
   rw [partitions'_one_eq_biUnion_filter_eq_card, Finset.card_biUnion] <;> simp
-  intro s hs t ht h₁ u h₂ h₃
-  simp at hs ht h₂ h₃ ⊢
-  rcases h₂ with h₂ | h₂ <;> rcases h₃ with h₃ | h₃ <;> try tauto
-  subst h₂; exfalso; apply h₁
-  rw [Finset.singleton_inj] at h₃
-  apply congrFun at h₃; exact h₃ 0
+  intro s hs t ht h₁
+  grind only
 
 /-- Alternative definition of `partitions'`. -/
 def partitions'' (V : Finset α) (r_list : Fin t → ℕ) : Finset (Fin t → Finset α) :=
@@ -156,7 +151,7 @@ lemma extend_r_list.sum
     : ∑ i : Fin (t + 1), extend_r_list n r_list i = n
   := by
   rw [sum_eq_sum_plus_last]
-  simp only [extend_r_list, Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, Fin.val_last,
+  simp only [extend_r_list, Fin.val_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, Fin.val_last,
     lt_self_iff_false]
   exact Nat.add_sub_of_le h_r_list
 
@@ -165,7 +160,7 @@ lemma extend_r_list.factorial_prod
     : ∏ i, ((extend_r_list n r_list) i).factorial = (∏ i, (r_list i).factorial) * (n - ∑ j : Fin t, r_list j).factorial
   := by
   rw [prod_eq_prod_mul_last]
-  simp only [extend_r_list, Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, Fin.val_last,
+  simp only [extend_r_list, Fin.val_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, Fin.val_last,
     lt_self_iff_false]
 
 theorem partition_card
@@ -178,7 +173,7 @@ theorem partition_card
     | zero =>
         simp only [partitions, IsEmpty.forall_iff, ne_eq, Finset.univ_eq_empty,
           Finset.biUnion_empty, Finset.empty_subset, and_self, Finset.univ_unique,
-          Finset.filter_True, Finset.card_singleton, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
+          Finset.filter_true, Finset.card_singleton, Finset.prod_empty, Finset.sum_empty, tsub_zero, one_mul]
         rw [Nat.div_self (Nat.factorial_pos V.card)]
     | succ t ih =>
         let r_list' : Fin t → ℕ := fun i => r_list i.castSucc
@@ -289,7 +284,7 @@ theorem partition_card
             · funext i
               simp [x, i.2]
             · congr! with _ i
-              · simp only [Fin.coe_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, x]
+              · simp only [Fin.val_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, x]
               · simp only [Fin.val_last, lt_self_iff_false, ↓reduceDIte, x]
           exact Equiv.ofBijective f ⟨f_inj, f_surj⟩
         let parts := (V.card - ∑ j : Fin t, r_list' j).choose (r_list (Fin.last t))
@@ -312,7 +307,7 @@ theorem partition_card
                 · simp only [Finset.coe_univ]
                   intro i hi j hj hij
                   exact hp₂ i j hij
-              rw [Finset.card_sdiff h_bp₁, h_bp₂]
+              rw [Finset.card_sdiff_of_subset h_bp₁, h_bp₂]
             rw [← card_eq]
             exact comb_card (rest_part p) (r_list (Fin.last t))
           simp_all only [Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
