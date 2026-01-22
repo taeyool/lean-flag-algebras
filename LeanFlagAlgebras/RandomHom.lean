@@ -298,10 +298,11 @@ lemma tsum_ite_eq_sum
     {α R : Type} [AddCommMonoid R] [TopologicalSpace R] (S : Finset α) (f : α → R)
     : (∑' a, if a ∈ S then f a else 0) = ∑ a ∈ S, f a
   := by
-  rw [@tsum_eq_sum _ _ _ _ _ S]
-  · simp_all only [reduceIte]
-  · intro a ha
-    simp_all only [reduceIte]
+  classical
+  have h : ∀ a ∉ S, (if a ∈ S then f a else 0) = 0 := by
+    intro a ha
+    simp [ha]
+  simpa using (tsum_eq_sum (s:=S) (f:=fun a => if a ∈ S then f a else 0) h)
 
 theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     {F : FinFlag σ} {G : FinFlag ∅ₜ}
@@ -434,12 +435,7 @@ lemma tendsto_comp_of_strictMono
     {r : ℝ} {s : ℕ → ℝ} {ϕ : ℕ → ℕ} (hϕ : StrictMono ϕ) (h_lim : Tendsto s atTop (𝓝 r))
     : Tendsto (s ∘ ϕ) atTop (𝓝 r)
   := by
-  rw [← tendsto_map'_iff]
-  calc
-    _ ≤ map s atTop := by
-      apply GCongr.Filter.map_le_map
-      exact StrictMono.tendsto_atTop hϕ
-    _ ≤ 𝓝 r := h_lim
+  exact h_lim.comp (StrictMono.tendsto_atTop hϕ)
 
 lemma convergesTo_comp_of_strictMono
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} {ϕ : ℕ → ℕ} (hϕ : StrictMono ϕ)
@@ -687,7 +683,8 @@ lemma flagDensitySpace_sub_sum_abs_integrable
     obtain ⟨μ, hμ⟩ := ℙ
     simp_all only [Real.norm_eq_abs, abs_abs]
     exact CompactSpace.isFiniteMeasure
-  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_sub_sum_abs_measurable) h_bound
+  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_sub_sum_abs_measurable)
+    ((1 : ℝ) + Fintype.card (FlagWithSize σ ℓ)) h_bound
 
 lemma flagDensitySpace_one_sub_one_measurable
     : Measurable fun (a : FlagDensitySpace σ) ↦ |a 1 - 1|
@@ -719,7 +716,8 @@ lemma flagDensitySpace_one_sub_one_integrable
     obtain ⟨μ, hμ⟩ := ℙ
     simp_all only [Real.norm_eq_abs, abs_abs]
     exact CompactSpace.isFiniteMeasure
-  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_one_sub_one_measurable) h_bound
+  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_one_sub_one_measurable)
+    (2 : ℝ) h_bound
 
 lemma flagDensitySpace_mul_sub_sum_abs_measurable
     {F₁ F₂ : FinFlag σ}
@@ -780,7 +778,8 @@ lemma flagDensitySpace_mul_sub_sum_abs_integrable
     obtain ⟨μ, hμ⟩ := ℙ
     simp_all only [Real.norm_eq_abs, abs_abs]
     exact CompactSpace.isFiniteMeasure
-  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_mul_sub_sum_abs_measurable) h_bound
+  exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_mul_sub_sum_abs_measurable)
+    ((1 : ℝ) + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀))) h_bound
 
 def FinFlag.toBoundedContinuousFun
     (F : FinFlag σ)
@@ -963,8 +962,8 @@ theorem mulPropSet_prob_eq_one
   apply tendsto_nhds_unique hs_tendsto
   obtain ⟨c, cpos, hc⟩ := flagListDensity₂_prod_approx F₁.2 F₂.2
   have h₀ : Tendsto (fun (n : ℕ) ↦ (0 : ℝ)) atTop (𝓝 0) := tendsto_const_nhds
-  have h₁ : Tendsto (fun (n : ℕ) ↦ (c / n : ℝ)) atTop (𝓝 0) :=
-    tendsto_const_div_atTop_nhds_zero_nat c
+  have h₁ : Tendsto (fun (n : ℕ) ↦ ((c : ℝ) / n)) atTop (𝓝 0) := by
+    simpa using (tendsto_const_div_atTop_nhds_zero_nat (c : ℝ))
   apply Tendsto.squeeze' h₀ h₁
   · apply Eventually.of_forall
     intro n
@@ -977,7 +976,7 @@ theorem mulPropSet_prob_eq_one
     intro n hn
     have : (c / n : ℝ) = ∫ (a : FlagDensitySpace σ), (c / n : ℝ) ∂((s n).toProbMeasure (hs n)) := by
       rw [MeasureTheory.integral_const]
-      simp only [measureReal_univ_eq_one, smul_eq_mul, one_mul]
+      simp only [probReal_univ, smul_eq_mul, one_mul]
     rw [this]
     apply integral_mono_of_nonneg
     · apply Eventually.of_forall
