@@ -61,12 +61,12 @@ theorem flagListDensity₂_prod_approx
   let freeF := Finset.univ \ Frep.type_verts.toFinset
   have hfreeF_size : freeF.card = Frep.size - σ.size := by
     simp_all only [freeF]
-    rw [← Frep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
+    rw [← Frep.type_verts_card_eq, Finset.card_sdiff]; try simp only [subset_univ]
     simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
   let freeF' := Finset.univ \ F'rep.type_verts.toFinset
   have hfreeF'_size : freeF'.card = F'rep.size - σ.size := by
     simp_all only [freeF']
-    rw [← F'rep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
+    rw [← F'rep.type_verts_card_eq, Finset.card_sdiff]; try simp only [subset_univ]
     simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
 
   let Ω := { (w₁, w₂) : Finset W × Finset W | (w₁.card = Frep.size ∧ Grep.type_verts ⊆ w₁) ∧ (w₂.card = F'rep.size ∧ Grep.type_verts ⊆ w₂)}
