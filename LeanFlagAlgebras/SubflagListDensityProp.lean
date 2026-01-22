@@ -338,7 +338,6 @@ theorem flagListDensity₂_prod_approx
           obtain ⟨hl_ind, _⟩ := hl
           obtain ⟨hl'_ind, _⟩ := hl'
           funext i
-          congr
           by_cases hi : i = 0
           · rw [inducedLabeledSubgraph_eq (hl_ind i), inducedLabeledSubgraph_eq (hl'_ind i)]
             simp_all
