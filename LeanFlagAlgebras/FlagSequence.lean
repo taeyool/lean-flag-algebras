@@ -973,7 +973,6 @@ theorem positiveHom_as_flagSeq_limit
   obtain ⟨s, hs⟩ : ∃ s, s ∈ S := by
     rw [← Set.nonempty_def, Set.nonempty_iff_ne_empty]
     contrapose hS_measure
-    simp only [ne_eq, not_not] at hS_measure
     rw [hS_measure]
     simp only [measure_empty, zero_ne_one, not_false_eq_true]
   dsimp only [Set.mem_setOf_eq, S] at hs
