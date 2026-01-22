@@ -49,7 +49,7 @@ theorem flagListDensity₂_prod_approx
   let freeG := Finset.univ \ Grep.type_verts.toFinset
   have hfreeG_size : freeG.card = Grep.size - σ.size := by
     simp_all only [freeG]
-    rw [← Grep.type_verts_card_eq, Finset.card_sdiff] <;> try simp only [subset_univ]
+    rw [← Grep.type_verts_card_eq, Finset.card_sdiff]; try simp only [subset_univ]
     simp only [card_univ, inter_univ, Set.toFinset_card, LabeledGraph.size]
   let hfreeG_sub (w : Finset W) : w ⊆ freeG → Disjoint w Grep.type_verts.toFinset := by
     intro h_sub
@@ -338,12 +338,12 @@ theorem flagListDensity₂_prod_approx
           obtain ⟨hl_ind, _⟩ := hl
           obtain ⟨hl'_ind, _⟩ := hl'
           funext i
-          rw [inducedLabeledSubgraph_eq (hl_ind i), inducedLabeledSubgraph_eq (hl'_ind i)]
           congr
           by_cases hi : i = 0
-          · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue]
-          · simp_all only [Set.toFinset_card, Fintype.card_ofFinset, Fin.isValue,
-            Fin.eq_one_of_ne_zero i hi, one_ne_zero, not_false_eq_true]
+          · rw [inducedLabeledSubgraph_eq (hl_ind i), inducedLabeledSubgraph_eq (hl'_ind i)]
+            simp_all
+          · rw [inducedLabeledSubgraph_eq (hl_ind i), inducedLabeledSubgraph_eq (hl'_ind i)]
+            simp_all [Fin.eq_one_of_ne_zero i hi]
         · intro ⟨⟨(w₁, w₂), hw_in_Ω⟩, hw_in_AB⟩
           simp only [Set.mem_setOf_eq, Ω] at hw_in_Ω
           simp only [mem_inter, mem_filter, mem_univ, true_and, A, B] at hw_in_AB
@@ -517,7 +517,7 @@ theorem flagListDensity₂_prod_approx
           simp only [Set.toFinset_inter, toFinset_coe, Set.toFinset_compl, Nat.cast_le]
           exact card_le_card inter_subset_right
       · suffices (((A ∩ B).card : ℚ) / (B.card : ℚ) - (A.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card ≤ (1 - (B.card : ℚ) / (Ω.toFinset.card : ℚ)) * B.card by
-          rwa [mul_le_mul_right hB_pos] at this
+          exact le_of_mul_le_mul_right this hB_pos
         rw [sub_mul, tsub_le_iff_right, ← add_mul]
         rw [div_mul, div_self (by rwa [ne_eq, Rat.natCast_eq_zero_iff]), div_one]
         suffices @Nat.cast ℚ _ (min A.card B.card) ≤ (1 - ↑(B.card) / ↑(Ω.toFinset.card) + ↑(A.card) / ↑(Ω.toFinset.card)) * ↑(B.card) by
