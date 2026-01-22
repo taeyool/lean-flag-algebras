@@ -1,5 +1,5 @@
 import «LeanFlagAlgebras».FlagSequence
-import Mathlib.MeasureTheory.Measure.Tight
+import Mathlib.MeasureTheory.Measure.Prokhorov
 
 open FlagAlgebras
 open Classical
@@ -481,21 +481,8 @@ noncomputable def FlagSeq.toProbMeasureSeq
   :=
   fun n ↦ (s n).toProbMeasure (hs n)
 
-/-- **Prokhorov's theorem** -/
-theorem isCompact_closure_of_isTightMeasureSet
-    {E : Type u_1} [MeasurableSpace E] [TopologicalSpace E] [T2Space E] [BorelSpace E]
-    {S : Set (ProbabilityMeasure E)}
-    (hS : IsTightMeasureSet {x : MeasureTheory.Measure E | ∃ μ ∈ S, ↑μ = x})
-    : IsCompact (closure S)
-  := by
-  sorry
-
-instance : FirstCountableTopology (ProbabilityMeasure (FlagDensitySpace σ))
-  := by
-  refine { nhds_generated_countable := ?_ }
-  intro μ
-  constructor
-  sorry
+noncomputable instance : MetricSpace (ProbabilityMeasure (FlagDensitySpace σ)) :=
+  TopologicalSpace.metrizableSpaceMetric (ProbabilityMeasure ↑(FlagDensitySpace σ))
 
 theorem flagDensitySpace_probMeasure_isSeqCompact
     : IsSeqCompact (Set.univ : Set (ProbabilityMeasure (FlagDensitySpace σ)))
