@@ -328,7 +328,7 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
   simp only [PMF.ofFinset_apply, smul_eq_mul]
   simp_rw [apply_ite ENNReal.toReal]
   conv =>
-    lhs; rhs; ext a; lhs; lhs
+    lhs; congr; ext a; lhs; arg 2
     rw [ENNReal.toReal_ofReal (by apply div_nonneg; all_goals {
       apply Finset.sum_nonneg
       intros
@@ -1069,7 +1069,8 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
       apply Finset.measurable_sum grep.support
       intro G hG
       simp_rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
-      measurability
+      apply Measurable.const_mul
+      apply Measurable.comp (flagDensitySpace_eval_measurable G) measurable_subtype_coe
     · apply @HasFiniteIntegral.of_bounded _ _ _ _ _ _ _ (abs (frep F))
       apply Eventually.of_forall
       intro φ
