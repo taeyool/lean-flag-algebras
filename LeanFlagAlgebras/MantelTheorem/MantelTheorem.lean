@@ -40,8 +40,7 @@ lemma O2₁_minus_K2₁_square_downward
     : ⟦(O2₁ - K2₁) * (O2₁ - K2₁)⟧₀ = O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3
   := by
   calc
-    _ = ⟦O2₁ * O2₁ - (O2₁ * K2₁ + O2₁ * K2₁) + K2₁ * K2₁⟧₀ := by congr; ring
-    _ = ⟦O2₁ * O2₁ - 2 • (O2₁ * K2₁) + K2₁ * K2₁⟧₀ := by congr; ring
+    _ = ⟦O2₁ * O2₁ - 2 • (O2₁ * K2₁) + K2₁ * K2₁⟧₀ := by congr; rw [two_smul]; ring
     _ = ⟦O2₁ * O2₁ - (2 : ℝ) • (O2₁ * K2₁) + K2₁ * K2₁⟧₀ := rfl
     _ = ⟦O3₁ + E3₁' - E3₁ - P3₁' + P3₁ + K3₁⟧₀ := by
         congr 1
@@ -60,9 +59,8 @@ theorem mantel_theorem
     : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
   have h₁ : K2 ≤ (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3 := by rw [expand_K2_on_3_vertex_graphs]
-  have h₂ : 0 ≤ (1 / 3 : ℝ) • E3 := by
-    apply nonneg_smul_nonneg_geq_zero (by simp)
-    apply flag_geq_zero
+  have h₂ : 0 ≤ (1 / 3 : ℝ) • E3 :=
+    nonneg_smul_nonneg_geq_zero (by linarith) (flag_geq_zero _)
   have h₃ : 0 ≤ (1 / 2 : ℝ) • O3 - (1 / 6 : ℝ) • E3 - (1 / 6 : ℝ) • P3 + (1 / 2 : ℝ) • K3 := by
     calc
       0 ≤ (1 / 2 : ℝ) • (O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3) := by
