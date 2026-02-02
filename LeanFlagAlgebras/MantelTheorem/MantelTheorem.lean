@@ -8,10 +8,13 @@ namespace MantelTheorem
 
 /- proof of Mantel's theorem -/
 
+#check densityFlagSum ⟨2, K2_flag⟩ 3
+
 lemma expand_K2_on_3_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
   apply Quotient.sound
+  ring_nf
   apply flagVectorEqv.trans (unitVector_eqv_densityFlagSum ⟨2, K2_flag⟩ 3 (by simp))
   dsimp [densityFlagSum]
   rw [Finset.sum_eq_multiset_sum, ← emptyTypeThreeVertexFlagSet_eq_univ]
@@ -82,6 +85,38 @@ theorem mantel_theorem
         + (1 / 2 : ℝ) • K3 + K3 := by simp only [add_smul, sub_smul]; ring
     _ = (1 / 2 : ℝ) • O3 + (1 / 2 : ℝ) • E3 + (1 / 2 : ℝ) • P3 + (1 / 2 : ℝ) • K3 + K3 := by norm_num
     _ = (1 / 2 : ℝ) • 1 + K3 := by
+        rw [expand_1_on_3_vertex_graphs]
+        norm_num
+
+instance {ℓ} (σ : FlagType (Fin ℓ)) : AddLeftMono (FlagAlgebra σ) :=
+  ⟨fun _ _ _ h => flag_add_le_add (le_refl _) h⟩
+
+theorem goodman_theorem
+    : O3 + K3 ≥ (1 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+  := by
+  have h₀ : 0 ≤ (3 / 4 : ℝ) • O3 - (1 / 4 : ℝ) • E3 - (1 / 4 : ℝ) • P3 + (3 / 4 : ℝ) • K3 := by
+    calc
+      0 ≤ (3 / 4 : ℝ) • (O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3) := by
+          apply nonneg_smul_nonneg_geq_zero (by grind)
+          rw [← O2₁_minus_K2₁_square_downward]
+          apply square_downward_nonneg
+      _ = _ := by
+          simp only [smul_add, smul_sub, smul_smul]
+          norm_num
+  calc
+    _ ≥ (O3 + K3)
+      - ((3 / 4 : ℝ) • O3 - (1 / 4 : ℝ) • E3 - (1 / 4 : ℝ) • P3 + (3 / 4 : ℝ) • K3) := by
+      apply sub_le_self
+      exact h₀
+    _ = ((1 : ℝ) - (3 / 4 : ℝ)) • O3
+        + (1 / 4 : ℝ) • E3
+        + (1 / 4 : ℝ) • P3
+        + ((1 : ℝ) - (3 / 4 : ℝ)) • K3 := by
+        simp only [one_div, sub_smul, one_smul]
+        ring
+    _ = (1 / 4 : ℝ) • O3 + (1 / 4 : ℝ) • E3 + (1 / 4 : ℝ) • P3 + (1 / 4 : ℝ) • K3 := by
+        norm_num
+    _ = (1 / 4 : ℝ) • 1 := by
         rw [expand_1_on_3_vertex_graphs]
         norm_num
 
