@@ -8,8 +8,6 @@ namespace MantelTheorem
 
 /- proof of Mantel's theorem -/
 
-#check densityFlagSum ⟨2, K2_flag⟩ 3
-
 lemma expand_K2_on_3_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
@@ -91,7 +89,7 @@ theorem mantel_theorem
 instance {ℓ} (σ : FlagType (Fin ℓ)) : AddLeftMono (FlagAlgebra σ) :=
   ⟨fun _ _ _ h => flag_add_le_add (le_refl _) h⟩
 
-theorem goodman_theorem
+theorem Goodman_theorem_on_Ramsey_multiplicity
     : O3 + K3 ≥ (1 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have h₀ : 0 ≤ (3 / 4 : ℝ) • O3 - (1 / 4 : ℝ) • E3 - (1 / 4 : ℝ) • P3 + (3 / 4 : ℝ) • K3 := by
@@ -119,5 +117,38 @@ theorem goodman_theorem
     _ = (1 / 4 : ℝ) • 1 := by
         rw [expand_1_on_3_vertex_graphs]
         norm_num
+
+theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlgebra σ)
+    : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
+  := by sorry
+
+theorem Cauchy_Schwarz_inequality_unit (f : FlagAlgebra Sₜ)
+    : ⟦f * f⟧₀ ≥ ⟦f⟧₀ * ⟦f⟧₀
+  := by sorry
+
+theorem Goodman_bound_on_triangle_density
+    : K3 ≥ K2 * (2 • K2 - 1)
+  := by
+  suffices h : K3 + K2 ≥ 2 • (K2 * K2) by {
+    have : K2 * (2 • K2 - 1) = 2 • (K2 * K2) - K2 := by ring
+    rw [this]
+    exact (OrderedSub.tsub_le_iff_right (2 • (K2 * K2)) K2 K3).mpr h
+  }
+  have h₁ : K3 + K2 = (1 / 3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by sorry
+  have h₂ : (1 / 3 : ℝ) • E3 ≥ 0 := by
+    apply nonneg_smul_nonneg_geq_zero
+    linarith
+    apply flag_geq_zero _
+  have h₃ : 2 • ⟦K2₁ * K2₁⟧₀ ≥ 2 • (K2 * K2) := by
+    calc
+      _ ≥ 2 • (⟦K2₁⟧₀ * ⟦K2₁⟧₀) := nsmul_le_nsmul_right (Cauchy_Schwarz_inequality_unit K2₁) 2
+      _ = 2 • (K2 * K2) := by sorry -- simp only [downward_K2₁]
+  calc
+    _ = (1 /3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by
+        rw [h₁]
+    _ ≥ 0 + 2 • (K2 * K2) := by
+        apply flag_add_le_add h₂ h₃
+    _ = 2 • (K2 * K2) := by
+        simp only [nsmul_eq_mul, Nat.cast_ofNat, zero_add]
 
 end MantelTheorem

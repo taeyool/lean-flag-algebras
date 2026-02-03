@@ -7,6 +7,31 @@ open Compute
 
 namespace MantelTheorem
 
+/-- downward of K2₁ -/
+
+lemma unlabel_K2₁
+    : unlabel K2₁_flag = K2_flag
+  :=
+  Quotient.sound (flagEqv.refl _)
+
+lemma downwardNormalizingFactor_K2₁
+    : downwardNormalizingFactor K2₁_flag = 1
+  := by
+  rw [← K2₁_eq, downwardNormalizingFactor_eq]
+  native_decide
+
+lemma downwardFlagVectorQuot_K2₁
+    : downwardFlagVector (unitVector ⟨2, K2₁_flag⟩) = unitVector ⟨2, K2_flag⟩
+  := by
+  simp [downwardFlagVector, downwardFlag, linearExtension]
+  simp [unlabel_K2₁, downwardNormalizingFactor_K2₁]
+
+theorem downward_K2₁
+    : ⟦K2₁⟧₀ = K2
+  := by
+  dsimp [K2₁, downward, K2, downwardFlagVectorQuot]
+  rw [downwardFlagVectorQuot_K2₁]
+
 /-- downward of O3₁ -/
 
 lemma unlabel_O3₁
