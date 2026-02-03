@@ -134,7 +134,25 @@ theorem Goodman_bound_on_triangle_density
     rw [this]
     exact (OrderedSub.tsub_le_iff_right (2 • (K2 * K2)) K2 K3).mpr h
   }
-  have h₁ : K3 + K2 = (1 / 3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by sorry
+  have h₁ : K3 + K2 = (1 / 3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by
+    have hdown : ⟦K2₁ * K2₁⟧₀ = (1 / 3 : ℝ) • P3 + K3 := by
+      simp only [mul_K2₁_K2₁, downward_add, downward_P3₁, downward_K3₁]
+    calc
+      K3 + K2 = K3 + ((1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3) := by
+        rw [expand_K2_on_3_vertex_graphs]
+      _ = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + 2 • K3 := by
+        ring
+      _ = (1 / 3 : ℝ) • E3 + (2 * (1 / 3 : ℝ)) • P3 + 2 • K3 := by
+        congr 1; congr 1
+        norm_num
+      _ = (1 / 3 : ℝ) • E3 + 2 • (1 / 3 : ℝ) • P3 + 2 • K3 := by
+        congr 1; congr 1
+        rw [←smul_smul]
+        rfl
+      _ = (1 / 3 : ℝ) • E3 + 2 • ((1 / 3 : ℝ) • P3 + K3) := by
+        ring
+      _ = (1 / 3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by
+        simp [hdown]
   have h₂ : (1 / 3 : ℝ) • E3 ≥ 0 := by
     apply nonneg_smul_nonneg_geq_zero
     linarith
@@ -142,7 +160,7 @@ theorem Goodman_bound_on_triangle_density
   have h₃ : 2 • ⟦K2₁ * K2₁⟧₀ ≥ 2 • (K2 * K2) := by
     calc
       _ ≥ 2 • (⟦K2₁⟧₀ * ⟦K2₁⟧₀) := nsmul_le_nsmul_right (Cauchy_Schwarz_inequality_unit K2₁) 2
-      _ = 2 • (K2 * K2) := by sorry -- simp only [downward_K2₁]
+      _ = 2 • (K2 * K2) := by simp only [downward_K2₁]
   calc
     _ = (1 /3 : ℝ) • E3 + 2 • ⟦K2₁ * K2₁⟧₀ := by
         rw [h₁]
