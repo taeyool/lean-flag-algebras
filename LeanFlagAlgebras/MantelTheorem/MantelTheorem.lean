@@ -134,6 +134,26 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
   := by sorry
 
+lemma one₁_eq_K1₁
+    : (1 : FlagAlgebra Sₜ) = K1₁
+  := by
+  apply Quotient.sound
+  have : (1 : FlagVector Sₜ) = unitVector ⟨1, (default : Flag Sₜ (Fin 1))⟩ := by rfl
+  rw [this]
+  congr!
+  apply Quotient.sound
+  have h_eq_bot_top : (⊥ : SimpleGraph (Fin 1)) = (⊤ : SimpleGraph (Fin 1)) := by
+    ext x y
+    simp only [SimpleGraph.bot_adj, SimpleGraph.top_adj, ne_eq]
+    exact iff_of_false not_false (fun h => h (Subsingleton.elim x y))
+  have : emptyLabeledGraph Sₜ = K1₁_labeledGraph := by
+    simp [emptyLabeledGraph, Sₜ, singletonType, K1₁_labeledGraph, K1_graph]
+    constructor
+    . exact h_eq_bot_top
+    . congr!
+  rw [this]
+
+
 theorem Cauchy_Schwarz_inequality_unit (f : FlagAlgebra Sₜ)
     : ⟦f * f⟧₀ ≥ ⟦f⟧₀ * ⟦f⟧₀
   := by
@@ -141,7 +161,8 @@ theorem Cauchy_Schwarz_inequality_unit (f : FlagAlgebra Sₜ)
     have := Cauchy_Schwarz_inequality f 1
     rwa [mul_one f, mul_one 1] at this
   have h₂ : ⟦(1 : FlagAlgebra Sₜ)⟧₀ = 1 := by
-    rw [downward_one₁]
+    rw [one₁_eq_K1₁]
+    rw [downward_K1₁]
     rw [expand_1_on_one_vertex_graphs]
   rwa [h₂, mul_one] at h₁
 

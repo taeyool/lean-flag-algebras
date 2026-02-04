@@ -7,29 +7,30 @@ open Compute
 
 namespace MantelTheorem
 
-/-- downward of (1 : FlagAlgebra Sₜ) -/
+/-- downward of K1₁ -/
 
-lemma unlabel_one₁
-    : unlabel (default : Flag Sₜ (Fin 1)) = K1_flag
+lemma unlabel_K1₁
+    : unlabel K1₁_flag = K1_flag
   :=
-  Quotient.sound sorry
+  Quotient.sound (flagEqv.refl _)
 
-lemma downwardNormalizingFactor_one₁
-    : downwardNormalizingFactor (default : Flag Sₜ (Fin 1)) = 1
+lemma downwardNormalizingFactor_K1₁
+    : downwardNormalizingFactor K1₁_flag = 1
   := by
-  sorry
+  rw [← K1₁_eq, downwardNormalizingFactor_eq]
+  native_decide
 
-lemma downwardFlagVectorQuot_one₁
-    : downwardFlagVector (unitVector ⟨1, (default : Flag Sₜ (Fin 1))⟩) = unitVector ⟨1, K1_flag⟩
+lemma downwardFlagVectorQuot_K1₁
+    : downwardFlagVector (unitVector ⟨1, K1₁_flag⟩) = unitVector ⟨1, K1_flag⟩
   := by
   simp [downwardFlagVector, downwardFlag, linearExtension]
-  simp [unlabel_one₁, downwardNormalizingFactor_one₁]
+  simp [unlabel_K1₁, downwardNormalizingFactor_K1₁]
 
-theorem downward_one₁
-    : ⟦(1 : FlagAlgebra Sₜ)⟧₀ = K1
+theorem downward_K1₁
+    : ⟦K1₁⟧₀ = K1
   := by
-  simp [downward, downwardFlagVectorQuot]
-  sorry
+  dsimp [K1₁, downward, K1, downwardFlagVectorQuot]
+  rw [downwardFlagVectorQuot_K1₁]
 
 /-- downward of K2₁ -/
 

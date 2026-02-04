@@ -234,6 +234,9 @@ def create_singletonType_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (l
     map_rel_iff' := by intros; simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl, false_iff]; exact id
   }
 
+def K1₁_labeledGraph : LabeledGraph Sₜ (Fin 1) :=
+  create_singletonType_labeledGraph K1_graph 0
+
 def O2₁_labeledGraph (label_idx : Fin 2) : LabeledGraph Sₜ (Fin 2) :=
   create_singletonType_labeledGraph O2_graph label_idx
 
@@ -251,6 +254,11 @@ def P3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
 
 def K3₁_labeledGraph (label_idx : Fin 3) : LabeledGraph Sₜ (Fin 3) :=
   create_singletonType_labeledGraph K3_graph label_idx
+
+@[simp]
+theorem K1₁_labeledGraph_size
+    : K1₁_labeledGraph.size = 1
+  := Fintype.card_fin 1
 
 @[simp]
 theorem O2₁_labeledGraph_size (label_idx : Fin 2)
@@ -282,6 +290,9 @@ theorem K3₁_labeledGraph_size (label_idx : Fin 3)
     : (K3₁_labeledGraph label_idx).size = 3
   := Fintype.card_fin 3
 
+def K1₁_flag : Flag Sₜ (Fin 1) :=
+  ⟦K1₁_labeledGraph⟧
+
 def O2₁_flag : Flag Sₜ (Fin 2) :=
   ⟦O2₁_labeledGraph 0⟧
 
@@ -305,6 +316,10 @@ def P3₁'_flag : Flag Sₜ (Fin 3) :=
 
 def K3₁_flag : Flag Sₜ (Fin 3) :=
   ⟦K3₁_labeledGraph 0⟧
+
+/-- one vertex graph with the vertex labeled -/
+noncomputable def K1₁ : FlagAlgebra Sₜ :=
+  ⟦unitVector ⟨1, K1₁_flag⟩⟧
 
 /-- a non-edge with one labeled vertex -/
 noncomputable def O2₁ : FlagAlgebra Sₜ :=
@@ -452,6 +467,13 @@ lemma K3_labeledGraph_eq : K3_labeledSym2Graph.toLabeledGraph = K3_labeledGraph 
   prove_labeledGraph_eq_labeledSym2Graph K3_labeledGraph and K3_labeledSym2Graph on K3_graph
     using []
 
+def K1₁_labeledSym2Graph : LabeledSym2Graph Sₜ 1 :=
+  create_singletonType_labeledSym2Graph {} (by aesop) 0
+
+lemma K1₁_labeledGraph_eq : K1₁_labeledSym2Graph.toLabeledGraph = K1₁_labeledGraph := by
+  prove_labeledGraph_eq_labeledSym2Graph K1₁_labeledGraph and K1₁_labeledSym2Graph on K1_graph
+    using []
+
 def O2₁_labeledSym2Graph : LabeledSym2Graph Sₜ 2 :=
   create_singletonType_labeledSym2Graph {} (by aesop) 0
 
@@ -559,6 +581,12 @@ def K3_Sym2Flag : Sym2Flag ∅ₜ 3 :=
 
 lemma K3_eq : K3_Sym2Flag.toFlag = K3_flag := by
   prove_flag_eq_sym2Flag K3_Sym2Flag using K3_labeledGraph_eq
+
+def K1₁_Sym2Flag : Sym2Flag Sₜ 1 :=
+  ⟦K1₁_labeledSym2Graph⟧
+
+lemma K1₁_eq : K1₁_Sym2Flag.toFlag = K1₁_flag := by
+  prove_flag_eq_sym2Flag K1₁_Sym2Flag using K1₁_labeledGraph_eq
 
 def O2₁_Sym2Flag : Sym2Flag Sₜ 2 :=
   ⟦O2₁_labeledSym2Graph⟧
