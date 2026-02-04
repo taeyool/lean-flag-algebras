@@ -7,6 +7,32 @@ open Compute
 
 namespace MantelTheorem
 
+def emptyTypeOneVertexSym2FlagSet : Finset (Sym2Flag ∅ₜ 1) where
+  val := [K1_Sym2Flag]
+  nodup := by native_decide
+
+theorem emptyTypeOneVertexSym2FlagSet_eq_univ : emptyTypeOneVertexSym2FlagSet = Finset.univ
+  := by
+  native_decide
+
+def emptyTypeOneVertexFlagSet : Finset (FlagWithSize ∅ₜ 1) :=
+  Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } emptyTypeOneVertexSym2FlagSet
+
+theorem emptyTypeOneVertexFlagSet_val_eq :
+    emptyTypeOneVertexFlagSet.val = [K1_flag]
+  := by
+  simp [emptyTypeOneVertexFlagSet, emptyTypeOneVertexSym2FlagSet]
+  rw [K1_eq]
+
+theorem emptyTypeOneVertexFlagSet_eq_univ : emptyTypeOneVertexFlagSet = Finset.univ
+  := by
+  dsimp only [emptyTypeOneVertexFlagSet]
+  rw [emptyTypeOneVertexSym2FlagSet_eq_univ]
+  ext F
+  simp
+  exact ⟨F.toSym2Flag, Flag.toSym2Flag_toFlag_eq F⟩
+
+
 def emptyTypeThreeVertexSym2FlagSet : Finset (Sym2Flag ∅ₜ 3) where
   val := [O3_Sym2Flag, E3_Sym2Flag, P3_Sym2Flag, K3_Sym2Flag]
   nodup := by native_decide
