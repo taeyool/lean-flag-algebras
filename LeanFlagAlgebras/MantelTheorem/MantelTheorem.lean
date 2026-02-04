@@ -124,7 +124,15 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
 
 theorem Cauchy_Schwarz_inequality_unit (f : FlagAlgebra Sₜ)
     : ⟦f * f⟧₀ ≥ ⟦f⟧₀ * ⟦f⟧₀
-  := by sorry
+  := by
+  have h₁ : ⟦f * f⟧₀ * ⟦(1 : FlagAlgebra Sₜ)⟧₀ ≥ ⟦f⟧₀ * ⟦f⟧₀ := by
+    have := Cauchy_Schwarz_inequality f 1
+    rwa [mul_one f, mul_one 1] at this
+  have h₂ : ⟦(1 : FlagAlgebra Sₜ)⟧₀ = 1 := by
+    rw [downward_one₁]
+    sorry
+  rwa [h₂, mul_one] at h₁
+
 
 theorem Goodman_bound_on_triangle_density
     : K3 ≥ K2 * (2 • K2 - 1)

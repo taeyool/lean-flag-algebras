@@ -9,6 +9,8 @@ namespace MantelTheorem
 
 /- flags with empty type -/
 
+def K1_graph := completeGraph (Fin 1)
+
 def O2_graph := emptyGraph (Fin 2)
 
 def K2_graph := completeGraph (Fin 2)
@@ -119,6 +121,10 @@ instance : DecidableRel ∅ₜ.Adj := by
   intro a b
   exact .isFalse (by aesop)
 
+def K1_labeledGraph : LabeledGraph ∅ₜ (Fin 1) where
+  graph := K1_graph
+  type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K1_graph.Adj
+
 def O2_labeledGraph : LabeledGraph ∅ₜ (Fin 2) where
   graph := O2_graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj O2_graph.Adj
@@ -144,6 +150,9 @@ def K3_labeledGraph : LabeledGraph ∅ₜ (Fin 3) where
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj K3_graph.Adj
 
 @[simp]
+theorem K1_labeledGraph_size : K1_labeledGraph.size = 1 := Fintype.card_fin 1
+
+@[simp]
 theorem O2_labeledGraph_size : O2_labeledGraph.size = 2 := Fintype.card_fin 2
 
 @[simp]
@@ -161,6 +170,8 @@ theorem P3_labeledGraph_size : P3_labeledGraph.size = 3 := Fintype.card_fin 3
 @[simp]
 theorem K3_labeledGraph_size : K3_labeledGraph.size = 3 := Fintype.card_fin 3
 
+def K1_flag : Flag ∅ₜ (Fin 1) := ⟦K1_labeledGraph⟧
+
 def O2_flag : Flag ∅ₜ (Fin 2) := ⟦O2_labeledGraph⟧
 
 def K2_flag : Flag ∅ₜ (Fin 2) := ⟦K2_labeledGraph⟧
@@ -172,6 +183,10 @@ def E3_flag : Flag ∅ₜ (Fin 3) := ⟦E3_labeledGraph⟧
 def P3_flag : Flag ∅ₜ (Fin 3) := ⟦P3_labeledGraph⟧
 
 def K3_flag : Flag ∅ₜ (Fin 3) := ⟦K3_labeledGraph⟧
+
+/-- a single-vertex graph -/
+noncomputable def K1 : FlagAlgebra ∅ₜ :=
+  ⟦unitVector ⟨1, K1_flag⟩⟧
 
 /-- a non-edge -/
 noncomputable def O2 : FlagAlgebra ∅ₜ :=
@@ -388,6 +403,13 @@ macro_rules
       try (exact proof_irrel_heq _ _)
     })
 
+def K1_labeledSym2Graph : LabeledSym2Graph ∅ₜ 1 :=
+  create_emptyType_labeledSym2Graph ∅ (by aesop)
+
+lemma K1_labeledGraph_eq : K1_labeledSym2Graph.toLabeledGraph = K1_labeledGraph := by
+  prove_labeledGraph_eq_labeledSym2Graph K1_labeledGraph and K1_labeledSym2Graph on K1_graph
+    using []
+
 def O2_labeledSym2Graph : LabeledSym2Graph ∅ₜ 2 :=
   create_emptyType_labeledSym2Graph ∅ (by aesop)
 
@@ -495,6 +517,12 @@ macro_rules
       rw [$labeled_eq:term]
       rfl
     })
+
+def K1_Sym2Flag : Sym2Flag ∅ₜ 1 :=
+  ⟦K1_labeledSym2Graph⟧
+
+lemma K1_eq : K1_Sym2Flag.toFlag = K1_flag := by
+  prove_flag_eq_sym2Flag K1_Sym2Flag using K1_labeledGraph_eq
 
 def O2_Sym2Flag : Sym2Flag ∅ₜ 2 :=
   ⟦O2_labeledSym2Graph⟧
