@@ -37,6 +37,18 @@ lemma expand_1_on_3_vertex_graphs
       apply flagVector_eq_eqv
       simp only [add_assoc]
 
+lemma expand_1_on_one_vertex_graphs
+    : 1 = K1
+  := by
+  apply Quotient.sound
+  apply flagVectorEqv.trans (one_vector_eqv_densityFlagSum 1 (by simp))
+  dsimp [densityFlagSum]
+  rw [Finset.sum_eq_multiset_sum, ← emptyTypeOneVertexFlagSet_eq_univ]
+  simp [emptyTypeOneVertexFlagSet_val_eq]
+  rw [finFlag_one_snd, flagDensity_empty]
+  simp only [Rat.cast_one, one_smul]
+  rfl
+
 lemma O2₁_minus_K2₁_square_downward
     : ⟦(O2₁ - K2₁) * (O2₁ - K2₁)⟧₀ = O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3
   := by
@@ -130,7 +142,7 @@ theorem Cauchy_Schwarz_inequality_unit (f : FlagAlgebra Sₜ)
     rwa [mul_one f, mul_one 1] at this
   have h₂ : ⟦(1 : FlagAlgebra Sₜ)⟧₀ = 1 := by
     rw [downward_one₁]
-    sorry
+    rw [expand_1_on_one_vertex_graphs]
   rwa [h₂, mul_one] at h₁
 
 
