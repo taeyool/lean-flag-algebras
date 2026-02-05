@@ -1,3 +1,4 @@
+import «LeanFlagAlgebras».PositiveHom
 import «LeanFlagAlgebras».RandomHom
 import «LeanFlagAlgebras».MantelTheorem.Downward
 import «LeanFlagAlgebras».MantelTheorem.FlagMuls
@@ -132,7 +133,44 @@ theorem Goodman_theorem_on_Ramsey_multiplicity
 
 theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlgebra σ)
     : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
-  := by sorry
+  := by
+  intro φ
+  rw [PositiveHom.map_sub φ _ _, PositiveHom.map_mul φ _ _, PositiveHom.map_mul φ _ _]
+  have : φ ⟨σ⟩₀ ≥ 0 := positiveHom_unitVector_ge_zero φ _
+  rcases eq_or_lt_of_le this with hφ | hφ
+  · have hφ_zero : ∀ k : FlagAlgebra σ, φ ⟦k⟧₀ = 0 := by
+      intro k
+      rw [← Quotient.out_eq k, flagVector_eq_sum_unitVector k.out]
+      rw [sum_quot, downward_sum, PositiveHom.map_sum]
+      apply Finset.sum_eq_zero
+      intro F _
+      rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
+      right
+      dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
+      rw [linearExtension_unitVector]
+      dsimp only [downwardFlag]
+      rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
+      right
+      apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
+      exact Eq.symm hφ
+    rw [hφ_zero (f * f), hφ_zero (g * g), hφ_zero (f * g)]
+    simp only [mul_zero, sub_self, ge_iff_le, le_refl]
+  . obtain ⟨ℙ, hℙ⟩ := exists_probMeasure_extend_emptyType_positiveHom hφ
+    let hℙ₁ := hℙ (f * f)
+    let hℙ₂ := hℙ (g * g)
+    let hℙ₃ := hℙ (f * g)
+    have hφ' : φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := positiveHom_one_downward_pos hφ
+    rw [eq_div_iff (ne_of_gt hφ')] at hℙ₁ hℙ₂ hℙ₃
+    rw [← hℙ₁, ← hℙ₂, ← hℙ₃]
+    rw [←mul_assoc _ _ (φ (downward 1)), ← mul_assoc _ _ (φ (downward 1))]
+    rw [mul_assoc _ (φ (downward 1)) _, mul_assoc _ (φ (downward 1)) _]
+    rw [mul_comm (φ (downward 1)) _, mul_comm (φ (downward 1)) _]
+    rw [←mul_assoc _ _ (φ (downward 1)), ←mul_assoc _ _ (φ (downward 1))]
+    rw [mul_assoc _ _ (φ (downward 1)), mul_assoc _ _ (φ (downward 1))]
+    rw [←sub_mul]
+    have hφ'' : φ ⟦(1 : FlagAlgebra σ)⟧₀ * φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := by
+      simp_all only [ge_iff_le, gt_iff_lt, mul_pos_iff_of_pos_left]
+    sorry
 
 lemma one₁_eq_K1₁
     : (1 : FlagAlgebra Sₜ) = K1₁
