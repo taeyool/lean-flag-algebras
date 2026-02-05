@@ -1110,6 +1110,25 @@ theorem positiveHom_one_downward_pos
     exact downwardNormalizingFactor_emptyFlag_pos
   · exact hσ
 
+theorem downward_zero_at_hom
+    (φ : PositiveHom ∅ₜ) (hφ : φ ⟨σ⟩₀ = 0)
+    : ∀ f : FlagAlgebra σ, φ ⟦f⟧₀ = 0
+  := by
+  intro f
+  rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
+  rw [sum_quot, downward_sum, PositiveHom.map_sum]
+  apply Finset.sum_eq_zero
+  intro F _
+  rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
+  right
+  dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
+  rw [linearExtension_unitVector]
+  dsimp only [downwardFlag]
+  rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
+  right
+  apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
+  exact hφ
+
 theorem downward_preserve_semanticCone
     (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
     : ⟦f⟧₀ ∈ semanticCone ∅ₜ
@@ -1117,20 +1136,7 @@ theorem downward_preserve_semanticCone
   intro φ₀
   have : φ₀ ⟨σ⟩₀ ≥ 0 := positiveHom_unitVector_ge_zero φ₀ _
   rcases eq_or_lt_of_le this with hφ₀ | hφ₀
-  · have : φ₀ ⟦f⟧₀ = 0 := by
-      rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
-      rw [sum_quot, downward_sum, PositiveHom.map_sum]
-      apply Finset.sum_eq_zero
-      intro F _
-      rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
-      right
-      dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
-      rw [linearExtension_unitVector]
-      dsimp only [downwardFlag]
-      rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
-      right
-      apply positiveHom_unitVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType_pos F)
-      exact Eq.symm hφ₀
+  · have : φ₀ ⟦f⟧₀ = 0 := downward_zero_at_hom φ₀ (Eq.symm hφ₀) f
     exact le_of_eq (Eq.symm this)
   · obtain ⟨ℙ, hℙ⟩ := exists_probMeasure_extend_emptyType_positiveHom hφ₀
     specialize hℙ f

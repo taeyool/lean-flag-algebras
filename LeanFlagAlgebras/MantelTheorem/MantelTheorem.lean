@@ -131,6 +131,26 @@ theorem Goodman_theorem_on_Ramsey_multiplicity
         rw [expand_1_on_3_vertex_graphs]
         norm_num
 
+theorem downward_zero_case {ℓ} {σ : FlagType (Fin ℓ)}
+    (φ : PositiveHom ∅ₜ) (hφ : φ ⟨σ⟩₀ = 0)
+    : ∀ f : FlagAlgebra σ, φ ⟦f⟧₀ = 0
+  := by
+  intro f
+  rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
+  rw [sum_quot, downward_sum, PositiveHom.map_sum]
+  apply Finset.sum_eq_zero
+  intro F _
+  rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
+  right
+  dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
+  rw [linearExtension_unitVector]
+  dsimp only [downwardFlag]
+  rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
+  right
+  apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
+  exact hφ
+
+
 theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlgebra σ)
     : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
   := by
@@ -138,21 +158,7 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
   rw [PositiveHom.map_sub φ _ _, PositiveHom.map_mul φ _ _, PositiveHom.map_mul φ _ _]
   have : φ ⟨σ⟩₀ ≥ 0 := positiveHom_unitVector_ge_zero φ _
   rcases eq_or_lt_of_le this with hφ | hφ
-  · have hφ_zero : ∀ k : FlagAlgebra σ, φ ⟦k⟧₀ = 0 := by
-      intro k
-      rw [← Quotient.out_eq k, flagVector_eq_sum_unitVector k.out]
-      rw [sum_quot, downward_sum, PositiveHom.map_sum]
-      apply Finset.sum_eq_zero
-      intro F _
-      rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
-      right
-      dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
-      rw [linearExtension_unitVector]
-      dsimp only [downwardFlag]
-      rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
-      right
-      apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
-      exact Eq.symm hφ
+  · have hφ_zero : ∀ k : FlagAlgebra σ, φ ⟦k⟧₀ = 0 := downward_zero_case φ (Eq.symm hφ)
     rw [hφ_zero (f * f), hφ_zero (g * g), hφ_zero (f * g)]
     simp only [mul_zero, sub_self, ge_iff_le, le_refl]
   . obtain ⟨ℙ, hℙ⟩ := exists_probMeasure_extend_emptyType_positiveHom hφ
@@ -161,7 +167,7 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     let hℙ₃ := hℙ (f * g)
     have hφ' : φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := positiveHom_one_downward_pos hφ
     rw [eq_div_iff (ne_of_gt hφ')] at hℙ₁ hℙ₂ hℙ₃
-    rw [← hℙ₁, ← hℙ₂, ← hℙ₃]
+    rw [← hℙ₁, ← hℙ₂, ← hℙ₃, ge_iff_le]
     rw [←mul_assoc _ _ (φ (downward 1)), ← mul_assoc _ _ (φ (downward 1))]
     rw [mul_assoc _ (φ (downward 1)) _, mul_assoc _ (φ (downward 1)) _]
     rw [mul_comm (φ (downward 1)) _, mul_comm (φ (downward 1)) _]
@@ -170,7 +176,9 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     rw [←sub_mul]
     have hφ'' : φ ⟦(1 : FlagAlgebra σ)⟧₀ * φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := by
       simp_all only [ge_iff_le, gt_iff_lt, mul_pos_iff_of_pos_left]
+    rw [mul_nonneg_iff_of_pos_right hφ'']
     sorry
+
 
 lemma one₁_eq_K1₁
     : (1 : FlagAlgebra Sₜ) = K1₁
