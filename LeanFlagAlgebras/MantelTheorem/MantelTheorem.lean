@@ -2,8 +2,12 @@ import «LeanFlagAlgebras».PositiveHom
 import «LeanFlagAlgebras».RandomHom
 import «LeanFlagAlgebras».MantelTheorem.Downward
 import «LeanFlagAlgebras».MantelTheorem.FlagMuls
+import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+import Mathlib.Data.Real.ConjExponents
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.MeanInequalities
 
-open FlagAlgebras
+open FlagAlgebras MeasureTheory
 
 namespace MantelTheorem
 
@@ -166,6 +170,7 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     let hℙ₂ := hℙ (g * g)
     let hℙ₃ := hℙ (f * g)
     have hφ' : φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := positiveHom_one_downward_pos hφ
+
     rw [eq_div_iff (ne_of_gt hφ')] at hℙ₁ hℙ₂ hℙ₃
     rw [← hℙ₁, ← hℙ₂, ← hℙ₃, ge_iff_le]
     rw [←mul_assoc _ _ (φ (downward 1)), ← mul_assoc _ _ (φ (downward 1))]
@@ -174,11 +179,89 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     rw [←mul_assoc _ _ (φ (downward 1)), ←mul_assoc _ _ (φ (downward 1))]
     rw [mul_assoc _ _ (φ (downward 1)), mul_assoc _ _ (φ (downward 1))]
     rw [←sub_mul]
+
     have hφ'' : φ ⟦(1 : FlagAlgebra σ)⟧₀ * φ ⟦(1 : FlagAlgebra σ)⟧₀ > 0 := by
       simp_all only [ge_iff_le, gt_iff_lt, mul_pos_iff_of_pos_left]
     rw [mul_nonneg_iff_of_pos_right hφ'']
-    sorry
+    rw [sub_nonneg]
 
+    let F_func := fun (x : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom x) f
+    let G_func := fun (x : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom x) g
+
+    have hF_sq : ∀ x, F_func x ^ 2 = (PositiveHomSpace.toPosHom x) (f * f) := fun x ↦ by
+      simp only [F_func, sq, PositiveHom.map_mul]
+    have hG_sq : ∀ x, G_func x ^ 2 = (PositiveHomSpace.toPosHom x) (g * g) := fun x ↦ by
+      simp only [G_func, sq, PositiveHom.map_mul]
+    have hFG : ∀ x, F_func x * G_func x = (PositiveHomSpace.toPosHom x) (f * g) := fun x ↦ by
+      simp only [F_func, G_func, PositiveHom.map_mul]
+
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hF_sq x).symm)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hG_sq x).symm)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hFG x).symm)]
+
+    have h_cont_F : Continuous F_func := (continuous_apply f).comp sorry
+    have h_cont_G : Continuous G_func := (continuous_apply g).comp sorry
+
+    have h_mem_F : MemLp F_func (ENNReal.ofReal 2) ℙ := by
+      have : ∃ C, ∀ x, ‖F_func x‖ ≤ C := sorry
+        -- Metric.isBounded_range_iff.mp (isCompact_range h_cont_F).isBounded
+      obtain ⟨C, hC⟩ := this
+      exact MemLp.of_bound h_cont_F.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
+
+    have h_mem_G : MemLp G_func (ENNReal.ofReal 2) ℙ := by
+      have : ∃ C, ∀ x, ‖G_func x‖ ≤ C := sorry
+        -- Metric.isBounded_range_iff.mp (isCompact_range h_cont_G).isBounded
+      obtain ⟨C, hC⟩ := this
+      exact MemLp.of_bound h_cont_G.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
+
+    have h_CS := integral_mul_norm_le_Lp_mul_Lq Real.HolderConjugate.two_two h_mem_F h_mem_G
+    simp only [Real.norm_eq_abs] at h_CS
+
+    calc
+      _ = (∫ x, F_func x * G_func x ∂ℙ)^2 :=
+            Eq.symm (pow_two (∫ (x : ↑(PositiveHomSpace σ)), F_func x * G_func x ∂↑ℙ))
+      _ = |∫ x, F_func x * G_func x ∂ℙ|^2 :=
+            (sq_abs _).symm
+      _ ≤ (∫ x, |F_func x * G_func x| ∂ℙ)^2 :=
+            pow_le_pow_left₀
+              (abs_nonneg _)
+              (abs_integral_le_integral_abs (f := fun x => F_func x * G_func x) (μ := ℙ)) 2
+      _ = (∫ x, |F_func x| * |G_func x| ∂ℙ)^2 := by
+            simp only [abs_mul]
+      _ ≤ ((∫ x, |F_func x|^2 ∂ℙ)^((1:ℝ) / 2) * (∫ x, |G_func x|^2 ∂ℙ)^((1:ℝ)/2))^2 := by
+            apply pow_le_pow_left₀
+            . exact integral_nonneg (fun x => mul_nonneg (abs_nonneg _) (abs_nonneg _))
+            . simpa [Real.rpow_two] using h_CS
+      _ = ((∫ x, |F_func x|^2 ∂ℙ)^((1:ℝ)/2))^2 * ((∫ x, |G_func x|^2 ∂ℙ)^((1:ℝ)/2))^2 := by
+            rw [mul_pow]
+      _ = (∫ x, |F_func x|^2 ∂ℙ) * (∫ x, |G_func x|^2 ∂ℙ) := by
+            have hF_nonneg : 0 ≤ ∫ x, |F_func x|^2 ∂ℙ := by
+              exact integral_nonneg (fun x => sq_nonneg _)
+            have hG_nonneg : 0 ≤ ∫ x, |G_func x|^2 ∂ℙ := by
+              exact integral_nonneg (fun x => sq_nonneg _)
+            have hF : ((∫ x, |F_func x|^2 ∂ℙ)^((1:ℝ)/2))^2 = ∫ x, |F_func x|^2 ∂ℙ := by
+              calc
+                _ = (∫ x, |F_func x|^2 ∂ℙ) ^ (((1:ℝ)/2) * (2:ℝ)) := by
+                        simpa using (Real.rpow_mul hF_nonneg ((1:ℝ)/2) (2:ℝ)).symm
+                _ = (∫ x, |F_func x|^2 ∂ℙ) ^ (1:ℝ) := by
+                        norm_num
+                _ = ∫ x, |F_func x|^2 ∂ℙ := by
+                        simp only [sq_abs, Real.rpow_one]
+            have hG : ((∫ x, |G_func x|^2 ∂ℙ)^((1:ℝ)/2))^2 = ∫ x, |G_func x|^2 ∂ℙ := by
+              calc
+                _ = (∫ x, |G_func x|^2 ∂ℙ) ^ (((1:ℝ)/2) * (2:ℝ)) := by
+                        simpa using (Real.rpow_mul hG_nonneg ((1:ℝ)/2) (2:ℝ)).symm
+                _ = (∫ x, |G_func x|^2 ∂ℙ) ^ (1:ℝ) := by
+                        norm_num
+                _ = ∫ x, |G_func x|^2 ∂ℙ := by
+                        simp
+            have hF' : ((∫ x, F_func x ^ 2 ∂ℙ) ^ (2⁻¹:ℝ)) ^ 2 = ∫ x, F_func x ^ 2 ∂ℙ := by
+              simpa [sq_abs, one_div] using hF
+            have hG' : ((∫ x, G_func x ^ 2 ∂ℙ) ^ (2⁻¹:ℝ)) ^ 2 = ∫ x, G_func x ^ 2 ∂ℙ := by
+              simpa [sq_abs, one_div] using hG
+            simp only [sq_abs, one_div, hF', hG']
+      _ = _ := by
+            simp only [sq_abs]
 
 lemma one₁_eq_K1₁
     : (1 : FlagAlgebra Sₜ) = K1₁
