@@ -199,18 +199,36 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hG_sq x).symm)]
     rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hFG x).symm)]
 
-    have h_cont_F : Continuous F_func := (continuous_apply f).comp sorry
-    have h_cont_G : Continuous G_func := (continuous_apply g).comp sorry
+    have h_cont_toPosHom : Continuous (fun (x : PositiveHomSpace σ) => (PositiveHomSpace.toPosHom x : FlagAlgebra σ → ℝ)) := by
+      classical
+      refine continuous_pi ?_
+      intro f
+      have h_eval :
+          (fun x : PositiveHomSpace σ => (PositiveHomSpace.toPosHom x) f)
+            = (fun x => ∑ F ∈ f.out.support, f.out F * x.val F) := by
+        funext x
+        conv_lhs =>
+          rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
+          rw [sum_quot, PositiveHom.map_sum]
+          simp only [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+      have h_cont_sum :
+          Continuous (fun x : PositiveHomSpace σ => ∑ F ∈ f.out.support, f.out F * x.val F) := by
+        apply continuous_finset_sum
+        intro F hF
+        exact Continuous.mul continuous_const ((FinFlag.continuous F).comp continuous_subtype_val)
+      simpa [h_eval] using h_cont_sum
+    have h_cont_F : Continuous F_func := (continuous_apply f).comp h_cont_toPosHom
+    have h_cont_G : Continuous G_func := (continuous_apply g).comp h_cont_toPosHom
 
     have h_mem_F : MemLp F_func (ENNReal.ofReal 2) ℙ := by
-      have : ∃ C, ∀ x, ‖F_func x‖ ≤ C := sorry
-        -- Metric.isBounded_range_iff.mp (isCompact_range h_cont_F).isBounded
+      have : ∃ C, ∀ x, ‖F_func x‖ ≤ C := by sorry
+        -- simpa using (Metric.isBounded_range_iff.mp (isCompact_range h_cont_F).isBounded)
       obtain ⟨C, hC⟩ := this
       exact MemLp.of_bound h_cont_F.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
 
     have h_mem_G : MemLp G_func (ENNReal.ofReal 2) ℙ := by
-      have : ∃ C, ∀ x, ‖G_func x‖ ≤ C := sorry
-        -- Metric.isBounded_range_iff.mp (isCompact_range h_cont_G).isBounded
+      have : ∃ C, ∀ x, ‖G_func x‖ ≤ C := by sorry
+        -- simpa using (Metric.isBounded_range_iff.mp (isCompact_range h_cont_G).isBounded)
       obtain ⟨C, hC⟩ := this
       exact MemLp.of_bound h_cont_G.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
 
