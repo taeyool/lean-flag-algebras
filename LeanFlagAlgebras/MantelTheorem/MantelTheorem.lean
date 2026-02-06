@@ -185,50 +185,84 @@ theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlg
     rw [mul_nonneg_iff_of_pos_right hφ'']
     rw [sub_nonneg]
 
-    let F_func := fun (x : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom x) f
-    let G_func := fun (x : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom x) g
+    let F_func := fun (ψ : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom ψ) f
+    let G_func := fun (ψ : PositiveHomSpace σ) ↦ (PositiveHomSpace.toPosHom ψ) g
 
-    have hF_sq : ∀ x, F_func x ^ 2 = (PositiveHomSpace.toPosHom x) (f * f) := fun x ↦ by
+    have hF_sq : ∀ ψ, F_func ψ ^ 2 = (PositiveHomSpace.toPosHom ψ) (f * f) := by
+      intro ψ
       simp only [F_func, sq, PositiveHom.map_mul]
-    have hG_sq : ∀ x, G_func x ^ 2 = (PositiveHomSpace.toPosHom x) (g * g) := fun x ↦ by
+    have hG_sq : ∀ ψ, G_func ψ ^ 2 = (PositiveHomSpace.toPosHom ψ) (g * g) := by
+      intro ψ
       simp only [G_func, sq, PositiveHom.map_mul]
-    have hFG : ∀ x, F_func x * G_func x = (PositiveHomSpace.toPosHom x) (f * g) := fun x ↦ by
+    have hFG : ∀ ψ, F_func ψ * G_func ψ = (PositiveHomSpace.toPosHom ψ) (f * g) := by
+      intro ψ
       simp only [F_func, G_func, PositiveHom.map_mul]
 
-    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hF_sq x).symm)]
-    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hG_sq x).symm)]
-    rw [integral_congr_ae (Filter.Eventually.of_forall fun x => (hFG x).symm)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun ψ => (hF_sq ψ).symm)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun ψ => (hG_sq ψ).symm)]
+    rw [integral_congr_ae (Filter.Eventually.of_forall fun ψ => (hFG ψ).symm)]
 
-    have h_cont_toPosHom : Continuous (fun (x : PositiveHomSpace σ) => (PositiveHomSpace.toPosHom x : FlagAlgebra σ → ℝ)) := by
-      classical
-      refine continuous_pi ?_
-      intro f
-      have h_eval :
-          (fun x : PositiveHomSpace σ => (PositiveHomSpace.toPosHom x) f)
-            = (fun x => ∑ F ∈ f.out.support, f.out F * x.val F) := by
-        funext x
-        conv_lhs =>
-          rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
-          rw [sum_quot, PositiveHom.map_sum]
-          simp only [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
-      have h_cont_sum :
-          Continuous (fun x : PositiveHomSpace σ => ∑ F ∈ f.out.support, f.out F * x.val F) := by
+    have h_eval_eq : ∀ k : FlagAlgebra σ,
+                       (fun ψ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom ψ) k)
+                       = (fun ψ => ∑ F ∈ k.out.support, k.out F * ψ.val F) := by
+      intro k
+      funext ψ
+      conv_lhs =>
+        rw [← Quotient.out_eq k, flagVector_eq_sum_unitVector k.out]
+        rw [sum_quot, PositiveHom.map_sum]
+        simp only [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+    have h_F_eq : F_func = (fun ψ => ∑ F ∈ f.out.support, f.out F * ψ.val F) := by
+      dsimp [F_func]
+      exact h_eval_eq f
+    have h_G_eq : G_func = (fun ψ => ∑ F ∈ g.out.support, g.out F * ψ.val F) := by
+      dsimp [G_func]
+      exact h_eval_eq g
+
+    have h_cont_toPosHom : Continuous (fun (ψ : PositiveHomSpace σ)
+                                        => (PositiveHomSpace.toPosHom ψ : FlagAlgebra σ → ℝ)) := by
+      apply continuous_pi
+      intro k
+      have h_cont_sum : Continuous (fun ψ : PositiveHomSpace σ => ∑ F ∈ k.out.support, k.out F * ψ.val F) := by
         apply continuous_finset_sum
         intro F hF
         exact Continuous.mul continuous_const ((FinFlag.continuous F).comp continuous_subtype_val)
-      simpa [h_eval] using h_cont_sum
+      simpa [h_eval_eq] using h_cont_sum
+
     have h_cont_F : Continuous F_func := (continuous_apply f).comp h_cont_toPosHom
     have h_cont_G : Continuous G_func := (continuous_apply g).comp h_cont_toPosHom
 
+    have h_eval_bdd (k : FlagAlgebra σ) :
+            ∃ C, ∀ ψ, |(fun ψ' : PositiveHomSpace σ => (PositiveHomSpace.toPosHom ψ') k) ψ| ≤ C := by
+      rw [h_eval_eq k]
+      refine ⟨∑ F : k.out.support, |k.out F|, ?_⟩
+      intro ψ
+      have hψ_abs : ∀ F, |ψ.val F| ≤ 1 := fun F => flagDensitySpace_abs_le_one ψ.val F
+      simp only [Finset.univ_eq_attach, ge_iff_le]
+      calc
+        |∑ F ∈ k.out.support, k.out F * ψ.val F|
+        _  ≤ ∑ F ∈ k.out.support, |k.out F * ψ.val F| :=
+                Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ F ∈ k.out.support, |k.out F| * |ψ.val F| := by
+                simp [abs_mul]
+        _ ≤ ∑ F ∈ k.out.support, |k.out F| * 1 := by
+                apply Finset.sum_le_sum
+                intro F hF
+                have := hψ_abs F
+                exact mul_le_mul_of_nonneg_left this (by simp)
+        _ = ∑ F ∈ k.out.support, |k.out F| := by
+                simp only [mul_one]
+        _ = _ := by
+                rw [Finset.sum_attach (s := k.out.support) (f := fun F => |k.out F|)]
     have h_mem_F : MemLp F_func (ENNReal.ofReal 2) ℙ := by
-      have : ∃ C, ∀ x, ‖F_func x‖ ≤ C := by sorry
-        -- simpa using (Metric.isBounded_range_iff.mp (isCompact_range h_cont_F).isBounded)
+      have : ∃ C, ∀ ψ, ‖F_func ψ‖ ≤ C := by
+        dsimp [F_func]
+        exact h_eval_bdd f
       obtain ⟨C, hC⟩ := this
       exact MemLp.of_bound h_cont_F.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
-
     have h_mem_G : MemLp G_func (ENNReal.ofReal 2) ℙ := by
-      have : ∃ C, ∀ x, ‖G_func x‖ ≤ C := by sorry
-        -- simpa using (Metric.isBounded_range_iff.mp (isCompact_range h_cont_G).isBounded)
+      have : ∃ C, ∀ ψ, ‖G_func ψ‖ ≤ C := by
+        dsimp [G_func]
+        exact h_eval_bdd g
       obtain ⟨C, hC⟩ := this
       exact MemLp.of_bound h_cont_G.aestronglyMeasurable C (Filter.Eventually.of_forall hC)
 
