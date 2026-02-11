@@ -30,15 +30,15 @@ def O5_graph := emptyGraph (Fin 5)
 
 def K5_graph := completeGraph (Fin 5)
 
-/- Macro for generating non-adjacency theorems for empty graphs
- - (i) The generated theorems are called `<empty_graph_name>_<i><j>` for distinct vertices `i`, `j`
- - (ii) These theorems are used by the simp tactic.
+/- Macro for generating non-adjacency lemmas for empty graphs
+ - (i) The generated lemmas are called `<empty_graph_name>_<i><j>` for distinct vertices `i`, `j`
+ - (ii) These lemmas are used by the simp tactic.
  -/
 
-syntax (name := mkEmptyAdjLemmas) "mk_empty_adj_lemmas" ident num : command
+syntax (name := mkNonAdjLemmasForEmptyGraph) "mk_non_adj_lemmas_for_empty_graph" ident num : command
 
-@[command_elab mkEmptyAdjLemmas]
-def elabMkEmptyAdjLemmas : CommandElab := fun stx => do
+@[command_elab mkNonAdjLemmasForEmptyGraph]
+def elabMkNonAdjLemmasForEmptyGraph : CommandElab := fun stx => do
   let graphName := stx[1].getId
   let n ← match stx[2].isNatLit? with
     | some n => pure n
@@ -52,19 +52,18 @@ def elabMkEmptyAdjLemmas : CommandElab := fun stx => do
         let iLit := Syntax.mkNumLit (toString i)
         let jLit := Syntax.mkNumLit (toString j)
         elabCommand <| ← `(
-          @[simp] theorem $thmName : ¬ SimpleGraph.Adj $graphTerm $iLit $jLit := by rintro (_ | _)
+          @[simp] lemma $thmName : ¬ SimpleGraph.Adj $graphTerm $iLit $jLit := by rintro (_ | _)
         )
 
-/- Instantiation of the macro on O2_graph, O3_graph, O4_graph, O5_graph -/
+/- Instantiations of `<mk_non_adj_lemmas_for_empty_graph>` with O2_graph, O3_graph, O4_graph, O5_graph -/
 
-mk_empty_adj_lemmas O2_graph 2
+mk_non_adj_lemmas_for_empty_graph O2_graph 2
 
-mk_empty_adj_lemmas O3_graph 3
+mk_non_adj_lemmas_for_empty_graph O3_graph 3
 
-mk_empty_adj_lemmas O4_graph 4
+mk_non_adj_lemmas_for_empty_graph O4_graph 4
 
-mk_empty_adj_lemmas O5_graph 5
-
+mk_non_adj_lemmas_for_empty_graph O5_graph 5
 
 
 inductive E3_edge : Fin 3 → Fin 3 → Prop
@@ -79,6 +78,30 @@ def E3_graph : SimpleGraph (Fin 3) where
   loopless := by
     rintro (_ | _ | _) (_ | _)
 
+inductive E4_edge : Fin 4 → Fin 4 → Prop
+  | e01 : E4_edge 0 1
+  | e10 : E4_edge 1 0
+
+def E4_graph : SimpleGraph (Fin 4) where
+  Adj := E4_edge
+  symm := by
+    rintro (_ | _ | _ | _) (_ | _ | _ | _) (_ | _ | _ | _)
+    repeat' constructor
+  loopless := by
+    rintro (_ | _ | _ | _) (_ | _ | _ | _)
+
+inductive E5_edge : Fin 5 → Fin 5 → Prop
+  | e01 : E5_edge 0 1
+  | e10 : E5_edge 1 0
+
+def E5_graph : SimpleGraph (Fin 5) where
+  Adj := E5_edge
+  symm := by
+    rintro (_ | _ | _ | _ | _) (_ | _ | _ | _ | _) (_ | _ | _ | _ | _)
+    repeat' constructor
+  loopless := by
+    rintro (_ | _ | _ | _ | _) (_ | _ | _ | _ | _)
+
 @[simp]
 theorem E3_graph_01 : E3_graph.Adj 0 1 := E3_edge.e01
 
@@ -86,16 +109,50 @@ theorem E3_graph_01 : E3_graph.Adj 0 1 := E3_edge.e01
 theorem E3_graph_10 : E3_graph.Adj 1 0 := E3_edge.e10
 
 @[simp]
-theorem E3_graph_02 : ¬ E3_graph.Adj 0 2 := by rintro (_ | _)
+theorem E4_graph_01 : E4_graph.Adj 0 1 := E4_edge.e01
 
 @[simp]
-theorem E3_graph_20 : ¬ E3_graph.Adj 2 0 := by rintro (_ | _)
+theorem E4_graph_10 : E4_graph.Adj 1 0 := E4_edge.e10
 
 @[simp]
-theorem E3_graph_12 : ¬ E3_graph.Adj 1 2 := by rintro (_ | _)
+theorem E5_graph_01 : E5_graph.Adj 0 1 := E5_edge.e01
 
 @[simp]
-theorem E3_graph_21 : ¬ E3_graph.Adj 2 1 := by rintro (_ | _)
+theorem E5_graph_10 : E5_graph.Adj 1 0 := E5_edge.e10
+
+/- Macro for generating non-adjacency lemmas for one-edge graphs
+ - (i) The generated lemmas are called `<one_edge_graph_name>_<i><j>` for distinct vertices `i`, `j`
+ - (ii) These lemmas are used by the simp tactic.
+ -/
+
+syntax (name := mkNonAdjLemmasForOneEdgeGraph) "mk_non_adj_lemmas_for_one_edge_graph" ident num : command
+
+@[command_elab mkNonAdjLemmasForOneEdgeGraph]
+def elabMkNonAdjLemmasForOneEdgeGraph : CommandElab := fun stx => do
+  let graphName := stx[1].getId
+  let n ← match stx[2].isNatLit? with
+    | some n => pure n
+    | none => throwErrorAt stx[2] "expected a natural number literal"
+  let graphTerm : TSyntax `term := mkIdent graphName
+  let graphNameStr := graphName.toString
+  for i in [0:n] do
+    for j in [0:n] do
+      if i ≠ j ∧ ¬((i = 0 ∧ j = 1) ∨ (i = 1 ∧ j = 0)) then
+        let thmName := mkIdent (Name.mkSimple s!"{graphNameStr}_{i}{j}")
+        let iLit := Syntax.mkNumLit (toString i)
+        let jLit := Syntax.mkNumLit (toString j)
+        elabCommand <| ← `(
+          @[simp] lemma $thmName : ¬ SimpleGraph.Adj $graphTerm $iLit $jLit := by rintro (_ | _)
+        )
+
+/- Instantiations of `<mk_non_adj_lemmas_for_one_edge_graph>` with E3_graph, E4_graph, E5_graph -/
+
+mk_non_adj_lemmas_for_one_edge_graph E3_graph 3
+
+mk_non_adj_lemmas_for_one_edge_graph E4_graph 4
+
+mk_non_adj_lemmas_for_one_edge_graph E5_graph 5
+
 
 inductive P3_edge : Fin 3 → Fin 3 → Prop
   | e01 : P3_edge 0 1
