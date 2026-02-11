@@ -1,9 +1,12 @@
 import «LeanFlagAlgebras».FlagOperators
 import «LeanFlagAlgebras».Compute.Basic
 
+open Lean
+open Elab
+open Command
+
 open FlagAlgebras
 open SimpleGraph
-
 namespace MantelTheorem
 
 
@@ -17,23 +20,52 @@ def K2_graph := completeGraph (Fin 2)
 
 def O3_graph := emptyGraph (Fin 3)
 
-@[simp]
-theorem O3_graph_01 : ¬ O3_graph.Adj 0 1 := by rintro (_ | _)
+def K3_graph := completeGraph (Fin 3)
 
-@[simp]
-theorem O3_graph_10 : ¬ O3_graph.Adj 1 0 := by rintro (_ | _)
+def O4_graph := emptyGraph (Fin 4)
 
-@[simp]
-theorem O3_graph_02 : ¬ O3_graph.Adj 0 2 := by rintro (_ | _)
+def K4_graph := completeGraph (Fin 4)
 
-@[simp]
-theorem O3_graph_20 : ¬ O3_graph.Adj 2 0 := by rintro (_ | _)
+def O5_graph := emptyGraph (Fin 5)
 
-@[simp]
-theorem O3_graph_12 : ¬ O3_graph.Adj 1 2 := by rintro (_ | _)
+def K5_graph := completeGraph (Fin 5)
 
-@[simp]
-theorem O3_graph_21 : ¬ O3_graph.Adj 2 1 := by rintro (_ | _)
+/- Macro for generating non-adjacency theorems for empty graphs
+ - (i) The generated theorems are called `<empty_graph_name>_<i><j>` for distinct vertices `i`, `j`
+ - (ii) These theorems are used by the simp tactic.
+ -/
+
+syntax (name := mkEmptyAdjLemmas) "mk_empty_adj_lemmas" ident num : command
+
+@[command_elab mkEmptyAdjLemmas]
+def elabMkEmptyAdjLemmas : CommandElab := fun stx => do
+  let graphName := stx[1].getId
+  let n ← match stx[2].isNatLit? with
+    | some n => pure n
+    | none => throwErrorAt stx[2] "expected a natural number literal"
+  let graphTerm : TSyntax `term := mkIdent graphName
+  let graphNameStr := graphName.toString
+  for i in [0:n] do
+    for j in [0:n] do
+      if i != j then
+        let thmName := mkIdent (Name.mkSimple s!"{graphNameStr}_{i}{j}")
+        let iLit := Syntax.mkNumLit (toString i)
+        let jLit := Syntax.mkNumLit (toString j)
+        elabCommand <| ← `(
+          @[simp] theorem $thmName : ¬ SimpleGraph.Adj $graphTerm $iLit $jLit := by rintro (_ | _)
+        )
+
+/- Instantiation of the macro on O2_graph, O3_graph, O4_graph, O5_graph -/
+
+mk_empty_adj_lemmas O2_graph 2
+
+mk_empty_adj_lemmas O3_graph 3
+
+mk_empty_adj_lemmas O4_graph 4
+
+mk_empty_adj_lemmas O5_graph 5
+
+
 
 inductive E3_edge : Fin 3 → Fin 3 → Prop
   | e01 : E3_edge 0 1
@@ -96,8 +128,6 @@ theorem P3_graph_12 : ¬ P3_graph.Adj 1 2 := by rintro (_ | _)
 
 @[simp]
 theorem P3_graph_21 : ¬ P3_graph.Adj 2 1 := by rintro (_ | _)
-
-def K3_graph := completeGraph (Fin 3)
 
 @[simp]
 theorem K3_graph_01 : K3_graph.Adj 0 1 := by rintro (_ | _)
