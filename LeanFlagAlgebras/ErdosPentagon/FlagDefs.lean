@@ -125,7 +125,8 @@ instance : DecidableRel ∅ₜ.Adj := by
   exact .isFalse (by aesop)
 
 def Sym2FlagSet_5_0_0 : Finset (Sym2Flag ∅ₜ 5) where
-  val := [Sym2Flag_5_0_0_1, Sym2Flag_5_0_0_2, Sym2Flag_5_0_0_3, Sym2Flag_5_0_0_4,
+  val := [Sym2Flag_5_0_0_1, Sym2Flag_5_0_0_2,
+          Sym2Flag_5_0_0_3, Sym2Flag_5_0_0_4,
           Sym2Flag_5_0_0_5, Sym2Flag_5_0_0_6, Sym2Flag_5_0_0_7, Sym2Flag_5_0_0_8,
           Sym2Flag_5_0_0_9, Sym2Flag_5_0_0_10, Sym2Flag_5_0_0_11, Sym2Flag_5_0_0_12,
           Sym2Flag_5_0_0_13, Sym2Flag_5_0_0_14, Sym2Flag_5_0_0_15, Sym2Flag_5_0_0_16,
