@@ -111,7 +111,7 @@ elab "load_graph_atlas" filename:str : command => do
 -- Trigger the loading process.
 -- This will generate `LabeledSym2Graph_5_0_0_1` through `LabeledSym2Graph_5_0_0_34`.
 -- It also generates `Sym2Flag_5_0_0_1` through `Sym2Flag_5_0_0_34`.
-load_graph_atlas "LeanFlagAlgebras/ErdosPentagon/graphs_5.json"
+load_graph_atlas "LeanFlagAlgebras/Flags/graphs_5.json"
 
 -- Verification: Check the type of the first and last generated graph
 #check LabeledSym2Graph_5_0_0_1
