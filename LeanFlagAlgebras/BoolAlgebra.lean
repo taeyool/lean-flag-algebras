@@ -2,9 +2,13 @@ import Mathlib.Data.Bool.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.List.Basic
-import MathLib.Algebra.MvPolynomial.Degrees
+import Mathlib.Algebra.MvPolynomial.CommRing
+import Mathlib.Algebra.MvPolynomial.Degrees
+import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
+import Mathlib.Algebra.MvPolynomial.Polynomial
+import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.Tactic.FieldSimp
-import Mathlib.LinearAlgebra.Quotient
+import Mathlib.Tactic.Ring
 
 inductive pmone : Type where
 | p1 : pmone -- False
@@ -50,7 +54,7 @@ instance :
     all_goals cases bv 1
     all_goals simp [pmone.to_rat]
     all_goals field_simp
-    ring
+    all_goals ring
 
 def maj3 : BoolFunction 3 :=
   fun v =>
@@ -135,13 +139,10 @@ theorem quad_collapse_eq_on_pmone (p : BoolPolyBase n) (g : Fin n → ℚ) :
             simp
           ·
             rw [hga]
-            -- i a = (i a % 2) + (i a / 2) * 2
-            rw [<- Nat.div_add_mod' (i a) 2]
-            simp
-            rw [Nat.add_mod]
-            simp
+            -- i a = (i a / 2) * 2 + i a % 2
+            rw [<- Nat.div_add_mod (i a) 2]
             rw [pow_add]
-            simp
+            simp [pow_mul]
       have h''f :
         (fun a => g a ^ deg_quad_collapse i a) = (fun a => g a ^ i a) := by
           ext
@@ -154,6 +155,98 @@ theorem quad_collapse_eq_on_pmone (p : BoolPolyBase n) (g : Fin n → ℚ) :
         apply h'
     rw [h'f]
 
+lemma deg_quad_collapse_le_one (m : Fin n →₀ ℕ) (i : Fin n) :
+  deg_quad_collapse m i ≤ 1 := by
+  unfold deg_quad_collapse
+  simp
+  exact Nat.lt_succ_iff.mp (Nat.mod_lt _ (by decide : 0 < 2))
+
+lemma degreeOf_quad_collapse_le_one (p : BoolPolyBase n) (i : Fin n) :
+  degreeOf i (quad_collapse p) ≤ 1 := by
+  unfold quad_collapse
+  refine le_trans (degreeOf_sum_le i p.support (fun m => monomial (deg_quad_collapse m) (p.coeff m))) ?_
+  refine Finset.sup_le ?_
+  intro m hm
+  by_cases hcoeff : p.coeff m = 0
+  · simp [hcoeff]
+  · rw [degreeOf_monomial_eq (deg_quad_collapse m) i hcoeff]
+    exact deg_quad_collapse_le_one m i
+
+private theorem multilinear_eq_zero_of_eval_pmone_eq_zero :
+    ∀ {n : ℕ} (p : BoolPolyBase n),
+      (∀ i, degreeOf i p ≤ 1) →
+      (∀ g : Fin n → ℚ, (∀ i : Fin n, g i = 1 ∨ g i = -1) → eval g p = 0) →
+      p = 0
+  | 0, p, _hdeg, heval => by
+      apply (MvPolynomial.isEmptyRingEquiv ℚ (Fin 0)).injective
+      rw [map_zero]
+      have h0 := heval (fun i : Fin 0 => Fin.elim0 i) (by intro i; exact Fin.elim0 i)
+      simpa using h0
+  | n + 1, p, hdeg, heval => by
+      let p' : Polynomial (BoolPolyBase n) := finSuccEquiv ℚ n p
+      have hpdeg : p'.natDegree ≤ 1 := by
+        simpa [p', natDegree_finSuccEquiv] using hdeg 0
+      let sA : Finset (BoolPolyBase n) := {MvPolynomial.C (-1 : ℚ), MvPolynomial.C (1 : ℚ)}
+      have h_eval_at_roots : ∀ b ∈ sA, Polynomial.eval b p' = 0 := by
+        intro b hb
+        apply multilinear_eq_zero_of_eval_pmone_eq_zero (n := n) (Polynomial.eval b p')
+        · intro j
+          have hcoeff0 : degreeOf j (Polynomial.coeff p' 0) ≤ 1 := by
+            exact le_trans (degreeOf_coeff_finSuccEquiv p j 0) (hdeg j.succ)
+          have hcoeff1 : degreeOf j (Polynomial.coeff p' 1) ≤ 1 := by
+            exact le_trans (degreeOf_coeff_finSuccEquiv p j 1) (hdeg j.succ)
+          have hbdeg : degreeOf j b = 0 := by
+            rcases Finset.mem_insert.mp hb with hb | hb
+            · subst hb
+              simp
+            · have hb' : b = MvPolynomial.C (1 : ℚ) := by simpa using hb
+              subst hb'
+              simp
+          have h_eval_expand : Polynomial.eval b p' = (Polynomial.coeff p' 1) * b + Polynomial.coeff p' 0 := by
+            rw [Polynomial.eq_X_add_C_of_natDegree_le_one hpdeg]
+            simp [Polynomial.eval_add, Polynomial.eval_mul]
+          rw [h_eval_expand]
+          refine le_trans (degreeOf_add_le j _ _) ?_
+          refine max_le ?_ hcoeff0
+          refine le_trans (degreeOf_mul_le j _ _) ?_
+          simpa [hbdeg] using add_le_add hcoeff1 (le_refl 0)
+        · intro x hx
+          have hx0 : eval x b = 1 ∨ eval x b = -1 := by
+            rcases Finset.mem_insert.mp hb with hb | hb
+            · subst hb
+              right
+              simp
+            · have hb' : b = MvPolynomial.C (1 : ℚ) := by simpa using hb
+              subst hb'
+              left
+              simp
+          let g : Fin (n + 1) → ℚ := fun i => Fin.cases (eval x b) x i
+          have hxall : ∀ i : Fin (n + 1), g i = 1 ∨ g i = -1 := by
+            intro i
+            rcases Fin.eq_zero_or_eq_succ i with rfl | ⟨j, rfl⟩
+            · simpa [g] using hx0
+            · simpa [g] using hx j
+          have h_main := heval g hxall
+          have h_rewrite : eval x (Polynomial.eval b p') = eval (Fin.cases (eval x b) x) p := by
+            simpa [p'] using (eval_polynomial_eval_finSuccEquiv (R := ℚ) (n := n) (f := p) (x := x) (q := b))
+          exact h_rewrite.trans h_main
+      have hp'zero : p' = 0 := by
+        have hne : (MvPolynomial.C (-1 : ℚ) : BoolPolyBase n) ≠ MvPolynomial.C (1 : ℚ) := by
+          intro h
+          have : (-1 : ℚ) = 1 := by
+            simpa using congrArg MvPolynomial.constantCoeff h
+          norm_num at this
+        have hs_card : sA.card = 2 := by
+          simpa [sA] using (Finset.card_pair hne)
+        apply Polynomial.eq_zero_of_natDegree_lt_card_of_eval_eq_zero' (p := p') (s := sA)
+        · intro b hb
+          exact h_eval_at_roots b hb
+        · calc
+            p'.natDegree ≤ 1 := hpdeg
+            _ < 2 := by decide
+            _ = sA.card := by simp [hs_card]
+      exact (finSuccEquiv ℚ n).injective (by simpa [p'] using hp'zero)
+
 theorem bool_eq_quad_eq (p q : BoolPolyBase n) :
   bool_eq p q ↔ quad_eq p q
   := by
@@ -161,10 +254,16 @@ theorem bool_eq_quad_eq (p q : BoolPolyBase n) :
     · -- bool_eq then quad_eq
       intro h_bool_eq
       unfold quad_eq
-      unfold bool_eq at h_bool_eq
-      unfold quad_collapse
-      --
-      sorry
+      apply eq_of_sub_eq_zero
+      apply multilinear_eq_zero_of_eval_pmone_eq_zero (n := n) (quad_collapse p - quad_collapse q)
+      · intro i
+        refine le_trans (degreeOf_sub_le i (quad_collapse p) (quad_collapse q)) ?_
+        exact max_le (degreeOf_quad_collapse_le_one p i) (degreeOf_quad_collapse_le_one q i)
+      · intro g hgi
+        rw [eval_sub]
+        rw [quad_collapse_eq_on_pmone p g hgi]
+        rw [quad_collapse_eq_on_pmone q g hgi]
+        exact sub_eq_zero.mpr (h_bool_eq g hgi)
     · -- quad_eq then bool_eq
       intro h
       unfold quad_eq at h
