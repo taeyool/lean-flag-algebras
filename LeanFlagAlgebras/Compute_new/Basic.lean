@@ -1,5 +1,4 @@
 import «LeanFlagAlgebras».FlagOperators
-import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
 namespace Compute
@@ -82,6 +81,18 @@ instance
 structure Sym2FlagType (k : ℕ) where
   edges : Finset (Sym2 (Fin k))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+
+def Sym2FlagType.toFlagType {k : ℕ} (σ : Sym2FlagType k) : FlagType (Fin k)
+  :=
+  fromEdgeSet (SetLike.coe σ.edges)
+
+theorem Sym2FlagType.toFlagType_adj_iff
+  {k : ℕ} (σ : Sym2FlagType k) (u v : Fin k) :
+  σ.toFlagType.Adj u v ↔ Sym2.mk (u, v) ∈ σ.edges
+  := by
+  simp [Sym2FlagType.toFlagType]
+  intro h
+  exact σ.edges_valid (Sym2.mk (u, v)) h
 
 @[ext]
 structure LabeledSym2Graph {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) where
