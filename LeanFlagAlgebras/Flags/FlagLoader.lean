@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».Compute.Basic
+import «LeanFlagAlgebras».Compute_new.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
 
@@ -40,9 +40,9 @@ def jsonEdgesToTerm (num_verts : ℕ) (edgesJson : Json) : CommandElabM (TSyntax
 
 /--
   Reads a JSON file to automatically generate the Type graph and all associated Flags.
-  Usage: load_flags_with_type "filename.json" prefix
+  Usage: load_flags_with_type "filename.json"
 -/
-elab "load_flags_with_type" filename:str prefix_name:ident : command => do
+elab "load_flags_with_type" filename:str : command => do
   let path := filename.getString
   let fileContent ← liftIO $ IO.FS.readFile path
   let json ← match Json.parse fileContent with
@@ -74,6 +74,9 @@ elab "load_flags_with_type" filename:str prefix_name:ident : command => do
     | Except.ok val => pure val
     | _ => throwError "Failed to parse 'type_edges'"
 
+  let .arr typeEdgeArr := typeEdgesJson | throwError "Expected 'type_edges' to be an array"
+  let typeEdgeCount := typeEdgeArr.size
+
   let flagsJson ← match json.getObjVal? "flags" with
     | Except.ok (.arr val) => pure val
     | _ => throwError "Failed to parse 'flags'"
@@ -81,48 +84,89 @@ elab "load_flags_with_type" filename:str prefix_name:ident : command => do
   if ¬ (k ≤ n) then
     throwError s!"Expected k ≤ n, but got k={k} and n={n}"
 
-  -- 1. Create the Type graph (Name: prefix_type)
-  let typeName := mkIdent (Name.mkSimple s!"{prefix_name.getId}_type")
+  -- 1. Create the Type definition
+  let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{typeEdgeCount}")
   let typeEdgesTerm ← jsonEdgesToTerm k typeEdgesJson
 
   elabCommand (← `(
-    def $typeName : FlagAlgebras.FlagType (Fin $(Quote.quote k)) :=
-      create_type_graph (mkEdgeFinset $(Quote.quote k) $typeEdgesTerm)
+    def $typeName : Sym2FlagType $(Quote.quote k) where
+      edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
+      edges_valid := by decide
   ))
 
-  -- 2. Create each Flag (Name: prefix_0, prefix_1 ...)
+  -- 2. Create each Flag
   for i in [0:flagsJson.size] do
     let flagEdges := flagsJson[i]!
-    let labeledName := mkIdent (Name.mkSimple s!"{prefix_name.getId}_{i}_labeled")
-    let flagName    := mkIdent (Name.mkSimple s!"{prefix_name.getId}_{i}")
+    let labeledName := mkIdent (Name.mkSimple s!"LabeledSym2Graph_{n}_{k}_{typeEdgeCount}_{i}")
+    let flagName    := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}")
 
     let edgesTerm ← jsonEdgesToTerm n flagEdges
 
     -- Define LabeledSym2Graph
-    -- (The proof for `type_embed` is left as `sorry` to be filled with your custom tactic later)
     elabCommand (← `(
-      noncomputable def $labeledName : LabeledSym2Graph $typeName $(Quote.quote n) where
+      def $labeledName : LabeledSym2Graph $typeName $(Quote.quote n) where
         edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
         edges_valid := by decide
-        type_embed := by sorry
+        type_embed := by
+          let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
+            ⟨
+              (fun i => ⟨i.1, Nat.lt_of_lt_of_le i.2 (by decide)⟩),
+              by
+                intro a b h
+                have h' : a.1 = b.1 := by
+                  simpa using congrArg (fun x : Fin $(Quote.quote n) => x.1) h
+                exact Fin.ext h'
+            ⟩
+          have hmap : ∀ u v,
+              (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
+              ↔
+              (SimpleGraph.fromEdgeSet ((($typeName).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
+            intro u v
+            fin_cases u <;> fin_cases v <;> decide
+          refine ⟨e, ?_⟩
+          exact hmap _ _
     ))
 
     -- Define Sym2Flag (Quotient)
     elabCommand (← `(
-      noncomputable def $flagName : Sym2Flag $typeName $(Quote.quote n) :=
+      def $flagName : Sym2Flag $typeName $(Quote.quote n) :=
         Quotient.mk (labeledSym2GraphSetoid $typeName $(Quote.quote n)) $labeledName
     ))
 
-  logInfo s!"Loaded type graph `{typeName.getId}` and {flagsJson.size} flags as `{prefix_name.getId}_N`."
+  -- 3. Create Finset of all generated Sym2Flags + univ theorem
+  let setName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}")
+  let setEqUnivName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}_eq_univ")
+  let flagTerms : Array (TSyntax `term) :=
+    (List.range flagsJson.size).toArray.map (fun i =>
+      (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}") : TSyntax `term))
+
+  elabCommand (← `(
+    def $setName : Finset (Sym2Flag $typeName $(Quote.quote n)) :=
+      ([ $flagTerms,* ] : List (Sym2Flag $typeName $(Quote.quote n))).toFinset
+  ))
+
+  elabCommand (← `(
+    theorem $setEqUnivName : $setName = Finset.univ := by
+      native_decide
+  ))
+
+  logInfo s!"Loaded `{typeName.getId}` and {flagsJson.size} flags as `Sym2Flag_{n}_{k}_{typeEdgeCount}_i`."
 
 ------------------------------------------------------------------
 -- 3. Execution Example
 ------------------------------------------------------------------
 
 -- Passing just the JSON file will define everything automatically.
-load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json" flag_4_2_1
+load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
 
 -- Verification
-#check flag_4_2_1_type       -- FlagType (Fin 2)
-#check flag_4_2_1_0_labeled  -- LabeledSym2Graph flag_4_2_1_type 4
-#check flag_4_2_1_0          -- Sym2Flag flag_4_2_1_type 4
+#check Sym2FlagType_2_1         -- Sym2FlagType 2
+#check LabeledSym2Graph_4_2_1_0 -- LabeledSym2Graph Sym2FlagType_2_1 4
+#check Sym2Flag_4_2_1_0         -- Sym2Flag Sym2FlagType_2_1 4
+#check Sym2FlagSet_4_2_1        -- Finset (Sym2Flag Sym2FlagType_2_1 4)
+#check Sym2FlagSet_4_2_1_eq_univ
+
+load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
+
+#print Sym2FlagSet_5_3_1
+#check Sym2FlagSet_5_3_1_eq_univ
