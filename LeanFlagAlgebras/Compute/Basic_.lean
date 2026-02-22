@@ -7,7 +7,7 @@ This file along with other files in the `Compute` directory will work on computa
 
 namespace Compute
 
-instance
+instance instEmbeddingFintype
     {V : Type*} [DecidableEq V] [Fintype V]
     {W : Type*} [DecidableEq W] [Fintype W] :
     Fintype (V ↪ W) where
@@ -33,7 +33,7 @@ instance instGraphEmbeddingFintype
       Option.some.injEq, true_and]
     use e.toEmbedding, fun _ _ ↦ e.map_rel_iff
 
-instance
+instance instGraphEmbeddingDecidableEq
     {V : Type*} [Fintype V] {G₁ : SimpleGraph V}
     {W : Type*} [DecidableEq W] {G₂ : SimpleGraph W} :
     DecidableEq (G₁ ↪g G₂) := fun e f ↦
@@ -41,7 +41,7 @@ instance
   then .isTrue (by ext; exact h _)
   else .isFalse (by rintro rfl; exact h (fun _ ↦ rfl))
 
-instance
+instance instGraphIsomorphismFintype
     {V : Type*} [DecidableEq V] [Fintype V] {G₁ : SimpleGraph V} [DecidableRel G₁.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] {G₂ : SimpleGraph W} [DecidableRel G₂.Adj] :
     Fintype (G₁ ≃g G₂) where
@@ -54,7 +54,7 @@ instance
       Option.some.injEq, true_and]
     use e.toEquiv, fun _ _ ↦ e.map_rel_iff
 
-instance
+instance instGraphIsomorphismDecidableEq
     {V : Type*} [Fintype V] {G₁ : SimpleGraph V}
     {W : Type*} [DecidableEq W] {G₂ : SimpleGraph W} :
     DecidableEq (G₁ ≃g G₂) := fun e f ↦
@@ -84,7 +84,7 @@ structure LabeledGraphIso
 
 @[inherit_doc] infix:50 " ≃f " => LabeledGraphIso
 
-instance
+instance instLabeledGraphIsoFunLike
     {T : Type*} {σ : SimpleGraph T}
     {V : Type*} {G : LabeledGraph σ V}
     {W : Type*} {G' : LabeledGraph σ W} :
@@ -99,7 +99,7 @@ def LabeledGraphIso.symm
   graph_iso := h.graph_iso.symm
   type_preserve := by funext; simp [← h.type_preserve]
 
-instance
+instance instLabeledGraphIsoFintype
     {T : Type*} [Fintype T] {σ : SimpleGraph T}
     {V : Type*} [DecidableEq V] [Fintype V] (G : LabeledGraph σ V) [DecidableRel G.graph.Adj]
     {W : Type*} [DecidableEq W] [Fintype W] (G' : LabeledGraph σ W) [DecidableRel G'.graph.Adj] :
@@ -113,7 +113,7 @@ instance
       Option.dite_none_right_eq_some, Option.some.injEq, true_and]
     use e.graph_iso, e.type_preserve
 
-instance
+instance instLabeledGraphIsoDecidableEq
     {T : Type*} {σ : SimpleGraph T}
     {V : Type*} [Fintype V] {G : LabeledGraph σ V}
     {W : Type*} [DecidableEq W] {G' : LabeledGraph σ W} :
@@ -140,7 +140,7 @@ theorem LabeledGraph.LabeledSubgraph.ext
   ext
   grind only
 
-instance
+instance instSubgraphDecidable
     {V : Type*} [Fintype V]
     {G : SimpleGraph V}
     {H₁ : G.Subgraph} [DecidableRel H₁.Adj] [DecidablePred (· ∈ H₁.verts)]
@@ -150,7 +150,7 @@ instance
   then .isTrue (by ext <;> simp only [h₁])
   else .isFalse (by rintro rfl; simp_all only [implies_true, and_self, not_true_eq_false])
 
-instance
+instance instLabeledSubgraphDecidableEq
     {T V : Type*} [Fintype T] [DecidableEq V] {σ : SimpleGraph T}
     {G : LabeledGraph σ V} [DecidableEq G.graph.Subgraph] :
     DecidableEq G.LabeledSubgraph := fun H₁ H₂ ↦
@@ -306,17 +306,17 @@ def setOfLabeledSubgraphListIsoHl
     Set (G.LabeledSubgraphList t) :=
   { Gl | Gl.IsInduced ∧ predIsoLabeledHl Hl Gl }
 
-/-- TODO: Check if instance cleanup is required. -/
-def finsetOfLabeledSubgraphListIsoHl
-    {T : Type*} [Fintype T] [DecidableEq T] {σ : SimpleGraph T} [DecidableRel σ.Adj]
-    {U : Type*} [Fintype U] [DecidableEq U] (G : LabeledGraph σ U) [DecidableRel G.graph.Adj]
-    {t : ℕ} {Vl : Fin t → Type*} [∀ i, Fintype (Vl i)]
-    (Hl : LabeledGraphList σ Vl) [∀ i, DecidableRel (Hl i).graph.Adj]
-    [∀ Gl : G.LabeledSubgraphList t, Decidable Gl.IsInduced]
-    [∀ Gl : G.LabeledSubgraphList t, Decidable (predIsoLabeledHl Hl Gl)] :
-    Finset (G.LabeledSubgraphList t) :=
-  (@Finset.univ (G.LabeledSubgraphList t) sorry).filter fun Gl ↦
-    Gl.IsInduced ∧ predIsoLabeledHl Hl Gl
+-- /-- TODO: Check if instance cleanup is required. -/
+-- def finsetOfLabeledSubgraphListIsoHl
+--     {T : Type*} [Fintype T] [DecidableEq T] {σ : SimpleGraph T} [DecidableRel σ.Adj]
+--     {U : Type*} [Fintype U] [DecidableEq U] (G : LabeledGraph σ U) [DecidableRel G.graph.Adj]
+--     {t : ℕ} {Vl : Fin t → Type*} [∀ i, Fintype (Vl i)]
+--     (Hl : LabeledGraphList σ Vl) [∀ i, DecidableRel (Hl i).graph.Adj]
+--     [∀ Gl : G.LabeledSubgraphList t, Decidable Gl.IsInduced]
+--     [∀ Gl : G.LabeledSubgraphList t, Decidable (predIsoLabeledHl Hl Gl)] :
+--     Finset (G.LabeledSubgraphList t) :=
+--   (@Finset.univ (G.LabeledSubgraphList t) sorry).filter fun Gl ↦
+--     Gl.IsInduced ∧ predIsoLabeledHl Hl Gl
 
 -- def predDisjointLabeledSubgraphList
 --     {σ : SimpleGraph T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList t G) : Prop

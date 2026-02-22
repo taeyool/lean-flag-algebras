@@ -10,6 +10,8 @@ open Finset
 open SimpleGraph
 open Classical
 
+namespace GraphAlg
+
 -- set of all graphs (up to isomorphism) on n vertices
 abbrev IsoSimpleGraphWithSize (n : ℕ) : Type
   := QuotSimpleGraph (Fin n)
@@ -1014,3 +1016,5 @@ noncomputable instance : Algebra ℝ GraphAlgebra where
   commutes' := by
     intros; simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
     rw [mul_comm]
+
+end GraphAlg

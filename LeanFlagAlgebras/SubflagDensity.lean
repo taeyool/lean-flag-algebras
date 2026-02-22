@@ -447,7 +447,7 @@ lemma subflagDensity_self
   rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
   exact labeledSubgraphDensity_self Grep
 
-lemma subgraphCount_other
+lemma labeledSubgraphCount_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
     : labeledSubgraphCount G₀ G₁ = 0
   := by
@@ -467,7 +467,7 @@ lemma labeledSubgraphDensity_other
     : labeledSubgraphDensity G₀ G₁ = 0
   := by
   dsimp only [labeledSubgraphDensity]
-  rw [subgraphCount_other h_not_iso]
+  rw [labeledSubgraphCount_other h_not_iso]
   simp only [Nat.cast_zero, zero_div]
 
 lemma subflagDensity_other

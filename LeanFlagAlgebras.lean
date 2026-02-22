@@ -16,7 +16,8 @@ import LeanFlagAlgebras.MantelTheorem.Downward
 import LeanFlagAlgebras.MantelTheorem.FlagDefs
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.MantelTheorem.FlagIso
-import LeanFlagAlgebras.MantelTheorem.FlagIso_old
+-- import LeanFlagAlgebras.MantelTheorem.FlagIso_old  
+-- superseded by FlagIso; duplicate names clash
 import LeanFlagAlgebras.MantelTheorem.FlagMuls
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MultinomialCoefficient
