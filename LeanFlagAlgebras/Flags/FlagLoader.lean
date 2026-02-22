@@ -1,9 +1,9 @@
-import «LeanFlagAlgebras».Compute_new.Basic
+import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
 
 open Sym2 Lean Elab Command Json
-open Compute
+open FlagAlgebras.Compute
 
 ------------------------------------------------------------------
 -- 1. Helpers for Type Inference and Graph Creation
@@ -166,7 +166,7 @@ load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
 #check Sym2FlagSet_4_2_1        -- Finset (Sym2Flag Sym2FlagType_2_1 4)
 #check Sym2FlagSet_4_2_1_eq_univ
 
-load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
+-- load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
 
-#print Sym2FlagSet_5_3_1
-#check Sym2FlagSet_5_3_1_eq_univ
+-- #print Sym2FlagSet_5_3_1
+-- #check Sym2FlagSet_5_3_1_eq_univ
