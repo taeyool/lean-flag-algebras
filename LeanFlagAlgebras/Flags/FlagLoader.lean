@@ -5,6 +5,13 @@ import Mathlib.Tactic
 open Sym2 Lean Elab Command Json
 open FlagAlgebras.Compute
 
+structure FlagJsonData where
+  n : ℕ
+  k : ℕ
+  typeEdgesJson : Json
+  typeEdgeCount : Nat
+  flagsJson : Array Json
+
 ------------------------------------------------------------------
 -- 1. Helpers for Type Inference and Graph Creation
 ------------------------------------------------------------------
@@ -12,10 +19,6 @@ open FlagAlgebras.Compute
 -- Helper to convert a List to a Finset for easier type inference
 def mkEdgeFinset (n : ℕ) (l : List (Sym2 (Fin n))) : Finset (Sym2 (Fin n)) :=
   l.toFinset
-
--- Helper to create the type graph (SimpleGraph) from a Finset of edges
-def create_type_graph {k : ℕ} (edges : Finset (Sym2 (Fin k))) : SimpleGraph (Fin k) :=
-  SimpleGraph.fromEdgeSet (edges : Set (Sym2 (Fin k)))
 
 ------------------------------------------------------------------
 -- 2. Metaprogramming (JSON Parsing & Auto-Generation)
@@ -38,12 +41,7 @@ def jsonEdgesToTerm (num_verts : ℕ) (edgesJson : Json) : CommandElabM (TSyntax
     `(Sym2.mk (($(Quote.quote uNat) : Fin $(Quote.quote num_verts)), ($(Quote.quote vNat) : Fin $(Quote.quote num_verts))))
   `([ $terms,* ])
 
-/--
-  Reads a JSON file to automatically generate the Type graph and all associated Flags.
-  Usage: load_flags_with_type "filename.json"
--/
-elab "load_flags_with_type" filename:str : command => do
-  let path := filename.getString
+def parseFlagJsonFile (path : System.FilePath) : CommandElabM FlagJsonData := do
   let fileContent ← liftIO $ IO.FS.readFile path
   let json ← match Json.parse fileContent with
     | .ok j => pure j
@@ -55,7 +53,6 @@ elab "load_flags_with_type" filename:str : command => do
     else
       none
 
-  -- Extract data from the JSON dictionary
   let n ← match json.getObjVal? "n" with
     | Except.ok (.num val) =>
         match jsonNumberToNat? val with
@@ -84,15 +81,40 @@ elab "load_flags_with_type" filename:str : command => do
   if ¬ (k ≤ n) then
     throwError s!"Expected k ≤ n, but got k={k} and n={n}"
 
-  -- 1. Create the Type definition
-  let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{typeEdgeCount}")
-  let typeEdgesTerm ← jsonEdgesToTerm k typeEdgesJson
+  pure {
+    n := n
+    k := k
+    typeEdgesJson := typeEdgesJson
+    typeEdgeCount := typeEdgeCount
+    flagsJson := flagsJson
+  }
 
-  elabCommand (← `(
-    def $typeName : Sym2FlagType $(Quote.quote k) where
-      edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
-      edges_valid := by decide
-  ))
+/--
+  Reads a JSON file to generate flags, assuming the corresponding type is already defined.
+  Usage: load_flags_with_type "filename.json"
+-/
+elab "load_flags" filename:str : command => do
+  let path := filename.getString
+  let data ← parseFlagJsonFile path
+
+  let n := data.n
+  let k := data.k
+  let typeEdgesJson := data.typeEdgesJson
+  let typeEdgeCount := data.typeEdgeCount
+  let flagsJson := data.flagsJson
+
+  let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{typeEdgeCount}")
+  let typeTerm ← `(($typeName : Sym2FlagType $(Quote.quote k)))
+
+  -- 1. Create the Type definition only if it does not already exist.
+  let env ← getEnv
+  if ¬ env.contains typeName.getId then
+    let typeEdgesTerm ← jsonEdgesToTerm k typeEdgesJson
+    elabCommand (← `(
+      def $typeName : Sym2FlagType $(Quote.quote k) where
+        edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
+        edges_valid := by decide
+    ))
 
   -- 2. Create each Flag
   for i in [0:flagsJson.size] do
@@ -104,7 +126,7 @@ elab "load_flags_with_type" filename:str : command => do
 
     -- Define LabeledSym2Graph
     elabCommand (← `(
-      def $labeledName : LabeledSym2Graph $typeName $(Quote.quote n) where
+      def $labeledName : LabeledSym2Graph $typeTerm $(Quote.quote n) where
         edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
         edges_valid := by decide
         type_embed := by
@@ -120,7 +142,7 @@ elab "load_flags_with_type" filename:str : command => do
           have hmap : ∀ u v,
               (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
               ↔
-              (SimpleGraph.fromEdgeSet ((($typeName).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
+              (SimpleGraph.fromEdgeSet ((($typeTerm).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
             intro u v
             fin_cases u <;> fin_cases v <;> decide
           refine ⟨e, ?_⟩
@@ -129,8 +151,8 @@ elab "load_flags_with_type" filename:str : command => do
 
     -- Define Sym2Flag (Quotient)
     elabCommand (← `(
-      def $flagName : Sym2Flag $typeName $(Quote.quote n) :=
-        Quotient.mk (labeledSym2GraphSetoid $typeName $(Quote.quote n)) $labeledName
+      def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
+        Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) $labeledName
     ))
 
   -- 3. Create Finset of all generated Sym2Flags + univ theorem
@@ -141,8 +163,8 @@ elab "load_flags_with_type" filename:str : command => do
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}") : TSyntax `term))
 
   elabCommand (← `(
-    def $setName : Finset (Sym2Flag $typeName $(Quote.quote n)) :=
-      ([ $flagTerms,* ] : List (Sym2Flag $typeName $(Quote.quote n))).toFinset
+    def $setName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
+      ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
   ))
 
   elabCommand (← `(
@@ -157,16 +179,16 @@ elab "load_flags_with_type" filename:str : command => do
 ------------------------------------------------------------------
 
 -- Passing just the JSON file will define everything automatically.
-load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
+-- load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
 
 -- Verification
-#check Sym2FlagType_2_1         -- Sym2FlagType 2
-#check LabeledSym2Graph_4_2_1_0 -- LabeledSym2Graph Sym2FlagType_2_1 4
-#check Sym2Flag_4_2_1_0         -- Sym2Flag Sym2FlagType_2_1 4
-#check Sym2FlagSet_4_2_1        -- Finset (Sym2Flag Sym2FlagType_2_1 4)
-#check Sym2FlagSet_4_2_1_eq_univ
+-- #check Sym2FlagType_2_1         -- Sym2FlagType 2
+-- #check LabeledSym2Graph_4_2_1_0 -- LabeledSym2Graph Sym2FlagType_2_1 4
+-- #check Sym2Flag_4_2_1_0         -- Sym2Flag Sym2FlagType_2_1 4
+-- #check Sym2FlagSet_4_2_1        -- Finset (Sym2Flag Sym2FlagType_2_1 4)
+-- #check Sym2FlagSet_4_2_1_eq_univ
 
--- load_flags_with_type "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
+-- load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
 
 -- #print Sym2FlagSet_5_3_1
 -- #check Sym2FlagSet_5_3_1_eq_univ

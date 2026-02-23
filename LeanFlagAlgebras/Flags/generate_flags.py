@@ -119,4 +119,4 @@ def generate_flags_with_type(n, k, type_index):
 
 if __name__ == "__main__":
     # Example usage:
-    generate_flags_with_type(n=5, k=3, type_index=1)
+    generate_flags_with_type(n=3, k=1, type_index=0)

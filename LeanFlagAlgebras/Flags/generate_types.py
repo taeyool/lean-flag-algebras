@@ -75,5 +75,4 @@ def generate_type_json(n):
     print(f"Saved {count} canonical graphs to '{filename}'")
 
 if __name__ == "__main__":
-    for n in range(1, 6):
-        generate_type_json(n)
+    generate_type_json(0)
