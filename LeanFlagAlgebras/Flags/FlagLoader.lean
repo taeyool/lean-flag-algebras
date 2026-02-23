@@ -116,6 +116,13 @@ elab "load_flags" filename:str : command => do
         edges_valid := by decide
     ))
 
+  let flagTypeName := mkIdent (Name.mkSimple s!"FlagType_{k}_{typeEdgeCount}")
+  let env ← getEnv
+  if ¬ env.contains flagTypeName.getId then
+    elabCommand (← `(
+      def $flagTypeName := ($typeTerm).toFlagType
+    ))
+
   -- 2. Create each Flag
   for i in [0:flagsJson.size] do
     let flagEdges := flagsJson[i]!
@@ -154,6 +161,22 @@ elab "load_flags" filename:str : command => do
       def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
         Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) $labeledName
     ))
+
+    -- Define Flag / FlagAlgebra bridge definitions
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{typeEdgeCount}_{i}")
+    let env ← getEnv
+    if ¬ env.contains flagBridgeName.getId then
+      elabCommand (← `(
+        def $flagBridgeName := ($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag
+      ))
+
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{typeEdgeCount}_{i}")
+    let env ← getEnv
+    if ¬ env.contains flagAlgebraName.getId then
+      elabCommand (← `(
+        noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
+          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+      ))
 
   -- 3. Create Finset of all generated Sym2Flags + univ theorem
   let setName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}")
