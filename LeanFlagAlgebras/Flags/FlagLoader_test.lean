@@ -169,31 +169,31 @@ elab "load_flags" filename:str : command => do
 
   -- begin {modified_part}
 
-  let allFlagsName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}_all_flags")
+  -- let allFlagsName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}_all_flags")
 
-  elabCommand (← `(
-    theorem $allFlagsName (f : Sym2Flag $typeTerm $(Quote.quote n)) : f ∈ $setName := by
-      have hall : ∀ g : LabeledSym2Graph $typeTerm $(Quote.quote n),
-          Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) g ∈ $setName := by
-        -- intro g
-        native_decide
-      refine Quotient.inductionOn f (fun g => ?_)
-      exact hall g
-  ))
-
-  elabCommand (← `(
-    theorem $setEqUnivName : $setName = Finset.univ := by
-      ext f
-      simp only [Finset.mem_univ, iff_true]
-      exact $allFlagsName f
-  ))
-
-  -- end {modified_part}
+  -- elabCommand (← `(
+  --   theorem $allFlagsName (f : Sym2Flag $typeTerm $(Quote.quote n)) : f ∈ $setName := by
+  --     have hall : ∀ g : LabeledSym2Graph $typeTerm $(Quote.quote n),
+  --         Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) g ∈ $setName := by
+  --       -- intro g
+  --       native_decide
+  --     refine Quotient.inductionOn f (fun g => ?_)
+  --     exact hall g
+  -- ))
 
   -- elabCommand (← `(
   --   theorem $setEqUnivName : $setName = Finset.univ := by
-  --     native_decide
+  --     ext f
+  --     simp only [Finset.mem_univ, iff_true]
+  --     exact $allFlagsName f
   -- ))
+
+  -- end {modified_part}
+
+  elabCommand (← `(
+    theorem $setEqUnivName : $setName = Finset.univ := by
+      native_decide
+  ))
 
   logInfo s!"Loaded `{typeName.getId}` and {flagsJson.size} flags as `Sym2Flag_{n}_{k}_{typeEdgeCount}_i`."
 
@@ -201,12 +201,15 @@ elab "load_flags" filename:str : command => do
 -- 3. Execution Example
 ------------------------------------------------------------------
 
--- set_option profiler true
--- load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
+set_option profiler true
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
 
--- elaboration took 765ms
+-- Original version
+-- elaboration took 674ms
 -- type checking took 569ms
 -- linting took 258ms
+
+-- Modified version
 
 -- #print Sym2FlagSet_5_3_1
 -- #check Sym2FlagSet_5_3_1_eq_univ
