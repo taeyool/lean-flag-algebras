@@ -4,38 +4,38 @@ namespace FlagAlgebras.Compute
 
 open SimpleGraph
 
-abbrev LabeledSym2GraphList
+abbrev Sym2LabeledGraphList
     {k : ℕ} (σ : Sym2FlagType k) (t : ℕ) (Vl : Fin t → ℕ)
-  := ∀ (i : Fin t), LabeledSym2Graph σ (Vl i)
+  := ∀ (i : Fin t), Sym2LabeledGraph σ (Vl i)
 
-def labeledSym2GraphToList
-    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : LabeledSym2Graph σ n)
-    : LabeledSym2GraphList σ 1 (fun _ ↦ n)
+def sym2LabeledGraphToList
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n)
+    : Sym2LabeledGraphList σ 1 (fun _ ↦ n)
   :=
   fun _ ↦ G
 
-def labeledSym2GraphPairToList
-    {k : ℕ} {σ : Sym2FlagType k} {n₀ n₁ : ℕ} (G₀ : LabeledSym2Graph σ n₀) (G₁ : LabeledSym2Graph σ n₁)
-    : LabeledSym2GraphList σ 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
+def sym2LabeledGraphPairToList
+    {k : ℕ} {σ : Sym2FlagType k} {n₀ n₁ : ℕ} (G₀ : Sym2LabeledGraph σ n₀) (G₁ : Sym2LabeledGraph σ n₁)
+    : Sym2LabeledGraphList σ 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
   :=
   fun i ↦ match i with | 0 => G₀ | 1 => G₁
 
-def LabeledSym2GraphList.toLabeledGraphList
+def Sym2LabeledGraphList.toLabeledGraphList
     {k : ℕ} {σ : Sym2FlagType k} {t : ℕ} {Vl : Fin t → ℕ}
-    (Hl : LabeledSym2GraphList σ t Vl) : LabeledGraphList σ.toFlagType t (fun i ↦ Fin (Vl i))
+    (Hl : Sym2LabeledGraphList σ t Vl) : LabeledGraphList σ.toFlagType t (fun i ↦ Fin (Vl i))
   :=
   fun i ↦ (Hl i).toLabeledGraph
 
 @[ext]
-structure LabeledSym2InducedSubgraph
-    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : LabeledSym2Graph σ n) where
+structure Sym2LabeledInducedSubgraph
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n) where
   verts : Finset (Fin n)
   verts_subset : G.type_verts ⊆ verts
 
 instance
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
-    Fintype (LabeledSym2InducedSubgraph G) where
+    (G : Sym2LabeledGraph σ n) :
+    Fintype (Sym2LabeledInducedSubgraph G) where
   elems := (@Finset.univ (Finset (Fin n))).filterMap (fun V ↦
     if hV : G.type_verts ⊆ V
     then .some ⟨V, hV⟩
@@ -46,39 +46,39 @@ instance
     simp only [exists_prop, and_true]
     exact H.verts_subset
 
-def LabeledSym2InducedSubgraph.edges
+def Sym2LabeledInducedSubgraph.edges
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) : Finset (Sym2 (Fin n))
+    {G : Sym2LabeledGraph σ n} (H : Sym2LabeledInducedSubgraph G) : Finset (Sym2 (Fin n))
   :=
   G.edges.filter (fun e ↦ ∀ v ∈ e, v ∈ H.verts)
 
-theorem LabeledSym2InducedSubgraph.edges_valid
+theorem Sym2LabeledInducedSubgraph.edges_valid
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    {G : Sym2LabeledGraph σ n} (H : Sym2LabeledInducedSubgraph G) :
     ∀ e ∈ H.edges, ¬e.IsDiag
   := by
   intro e he
   simp only [edges, Finset.mem_filter] at he
   exact G.edges_valid e he.1
 
-theorem LabeledSym2InducedSubgraph.edges_subset
+theorem Sym2LabeledInducedSubgraph.edges_subset
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    {G : Sym2LabeledGraph σ n} (H : Sym2LabeledInducedSubgraph G) :
     H.edges ⊆ G.edges
   := by
   intro e he
   simp only [edges, Finset.mem_filter] at he
   exact he.1
 
-def LabeledSym2InducedSubgraph.toLabeledSubraph
+def Sym2LabeledInducedSubgraph.toLabeledSubraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) : LabeledSubgraph σ.toFlagType G.toLabeledGraph where
+    {G : Sym2LabeledGraph σ n} (H : Sym2LabeledInducedSubgraph G) : LabeledSubgraph σ.toFlagType G.toLabeledGraph where
   subgraph := {
     verts := H.verts
     Adj := fun u v ↦ Sym2.mk (u, v) ∈ H.edges
     adj_sub := by
       intro u v huv
-      simp [LabeledSym2Graph.toLabeledGraph]
+      simp [Sym2LabeledGraph.toLabeledGraph]
       constructor
       · exact H.edges_subset huv
       · exact G.edges_valid (Sym2.mk (u, v)) (H.edges_subset huv)
@@ -121,76 +121,76 @@ def LabeledSym2InducedSubgraph.toLabeledSubraph
           exact h'.1
         · exact ⟨H.verts_subset (G.mem_type_verts a), H.verts_subset (G.mem_type_verts b)⟩
   }
-  embed_eq := by simp [LabeledSym2Graph.toLabeledGraph]
+  embed_eq := by simp [Sym2LabeledGraph.toLabeledGraph]
 
-theorem LabeledSym2InducedSubgraph.toLabeledSubraph_isInduced
+theorem Sym2LabeledInducedSubgraph.toLabeledSubraph_isInduced
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (H : LabeledSym2InducedSubgraph G) :
+    {G : Sym2LabeledGraph σ n} (H : Sym2LabeledInducedSubgraph G) :
     H.toLabeledSubraph.IsInduced
   := by
   intro u hu v hv h_adj
-  simp [toLabeledSubraph, edges, LabeledSym2Graph.toLabeledGraph] at *
+  simp [toLabeledSubraph, edges, Sym2LabeledGraph.toLabeledGraph] at *
   exact ⟨h_adj.1, hu, hv⟩
 
-abbrev LabeledSym2InducedSubgraphList
+abbrev Sym2LabeledInducedSubgraphList
     (t : ℕ) {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n)
-  := Fin t → LabeledSym2InducedSubgraph G
+    (G : Sym2LabeledGraph σ n)
+  := Fin t → Sym2LabeledInducedSubgraph G
 
-def predDisjointLabeledSym2InducedSubgraphList
+def predDisjointSym2LabeledInducedSubgraphList
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} (Hl : LabeledSym2InducedSubgraphList t G) : Prop
+    {G : Sym2LabeledGraph σ n} (Hl : Sym2LabeledInducedSubgraphList t G) : Prop
   :=
   ∀ (i j : Fin t), i ≠ j → ((Hl i).verts \ G.type_verts) ∩ ((Hl j).verts \ G.type_verts) = ∅
 
-def predIsoLabeledSym2Hl
+def predIsoSym2LabeledHl
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl)
-    : LabeledSym2InducedSubgraphList t G → Prop
+    {G : Sym2LabeledGraph σ n} {Vl  : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl)
+    : Sym2LabeledInducedSubgraphList t G → Prop
   := fun Gl ↦
       (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubraph.coe ≃f (Hl i).toLabeledGraph))
-      ∧ predDisjointLabeledSym2InducedSubgraphList Gl
+      ∧ predDisjointSym2LabeledInducedSubgraphList Gl
 
 instance
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G : LabeledSym2Graph σ n} {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl) :
-    DecidablePred (fun (Gl : LabeledSym2InducedSubgraphList t G) ↦ predIsoLabeledSym2Hl Hl Gl)
+    {G : Sym2LabeledGraph σ n} {Vl  : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl) :
+    DecidablePred (fun (Gl : Sym2LabeledInducedSubgraphList t G) ↦ predIsoSym2LabeledHl Hl Gl)
   := fun Gl ↦ by
   refine @instDecidableAnd _ _ ?_ ?_
   · refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro i
     simp only
     have : Fintype (Gl i).toLabeledSubraph.subgraph.verts := by
-      simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+      simp [Sym2LabeledInducedSubgraph.toLabeledSubraph]
       exact (Gl i).verts.fintypeCoeSort
     have : DecidableRel (Gl i).toLabeledSubraph.coe.graph.Adj := by
-      simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
+      simp [Sym2LabeledInducedSubgraph.toLabeledSubraph, Subgraph.coe]
       intro ⟨a, ha⟩ ⟨b, hb⟩
       exact Finset.decidableMem s(a, b) (Gl i).edges
     have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
       intro a b
-      simp [LabeledSym2Graph.toLabeledGraph]
+      simp [Sym2LabeledGraph.toLabeledGraph]
       exact instDecidableAnd
     infer_instance
-  · simp [predDisjointLabeledSym2InducedSubgraphList]
+  · simp [predDisjointSym2LabeledInducedSubgraphList]
     refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro i
     refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro j
     exact instDecidableForall
 
-def finsetOfLabeledSym2InducedSubgraphListIsoHl
+def finsetOfSym2LabeledInducedSubgraphListIsoHl
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) {Vl  : Fin t → ℕ} (Hl : LabeledSym2GraphList σ t Vl)
-    : Finset (LabeledSym2InducedSubgraphList t G)
+    (G : Sym2LabeledGraph σ n) {Vl  : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl)
+    : Finset (Sym2LabeledInducedSubgraphList t G)
   :=
-  { Gl | predIsoLabeledSym2Hl Hl Gl }
+  { Gl | predIsoSym2LabeledHl Hl Gl }
 
-def labeledSym2InducedSubgraphListCount
+def sym2LabeledInducedSubgraphListCount
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl  : Fin t → ℕ}
-    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) : ℕ
+    (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) : ℕ
   :=
-  (finsetOfLabeledSym2InducedSubgraphListIsoHl G Hl).card
+  (finsetOfSym2LabeledInducedSubgraphListIsoHl G Hl).card
 
 lemma induced_subgraph_adj_iff
     {V : Type} {G : SimpleGraph V} {H : Subgraph G} (h_ind : H.IsInduced)
@@ -212,12 +212,12 @@ lemma subgraph_not_adj
 
 theorem labeledSubgraphListCount_eq
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl  : Fin t → ℕ}
-    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) :
+    (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) :
     labeledSubgraphListCount Hl.toLabeledGraphList G.toLabeledGraph =
-    labeledSym2InducedSubgraphListCount Hl G
+    sym2LabeledInducedSubgraphListCount Hl G
   := by
-  dsimp [labeledSubgraphListCount, labeledSym2InducedSubgraphListCount,
-    setOfLabeledSubgraphListIsoHl, finsetOfLabeledSym2InducedSubgraphListIsoHl]
+  dsimp [labeledSubgraphListCount, sym2LabeledInducedSubgraphListCount,
+    setOfLabeledSubgraphListIsoHl, finsetOfSym2LabeledInducedSubgraphListIsoHl]
   apply Finset.card_nbij (fun Hl i ↦ {
     verts := @Set.toFinset _ (Hl i).subgraph.verts (Fintype.ofFinite _)
     verts_subset := by
@@ -229,7 +229,7 @@ theorem labeledSubgraphListCount_eq
   · intro Gl hGl
     simp [predIsoLabeledHl] at hGl
     obtain ⟨h_ind, h_iso, h_disj⟩:= hGl
-    simp [predIsoLabeledSym2Hl]
+    simp [predIsoSym2LabeledHl]
     constructor
     · intro i
       let φ := (h_iso i).some.graph_iso
@@ -240,11 +240,11 @@ theorem labeledSubgraphListCount_eq
         graph_iso := {
           toFun := by
             intro v
-            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe] at v
+            simp [Sym2LabeledInducedSubgraph.toLabeledSubraph, Subgraph.coe] at v
             exact φ v
           invFun := by
             intro w
-            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
+            simp [Sym2LabeledInducedSubgraph.toLabeledSubraph, Subgraph.coe]
             exact φ.symm w
           left_inv := by
             intro ⟨v, hv⟩
@@ -252,21 +252,21 @@ theorem labeledSubgraphListCount_eq
             rw [cast_eq_iff_heq]
             congr
             · funext w
-              simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+              simp [Sym2LabeledInducedSubgraph.toLabeledSubraph]
             · exact proof_irrel_heq _ _
           right_inv := by
             intro w
             simp
           map_rel_iff' := by
             intro ⟨v, hv⟩ ⟨v', hv'⟩
-            simp [LabeledSym2InducedSubgraph.toLabeledSubraph] at hv hv'
-            simp [LabeledSym2InducedSubgraph.toLabeledSubraph, LabeledSym2InducedSubgraph.edges, LabeledSym2Graph.toLabeledGraph]
-            rw [← LabeledSym2Graph.toLabeledGraph_adj_iff, ← LabeledSym2Graph.toLabeledGraph_adj_iff]
+            simp [Sym2LabeledInducedSubgraph.toLabeledSubraph] at hv hv'
+            simp [Sym2LabeledInducedSubgraph.toLabeledSubraph, Sym2LabeledInducedSubgraph.edges, Sym2LabeledGraph.toLabeledGraph]
+            rw [← Sym2LabeledGraph.toLabeledGraph_adj_iff, ← Sym2LabeledGraph.toLabeledGraph_adj_iff]
             simp_all
             constructor
             · intro ⟨h_adj, hvv'_ne⟩
               have h : (Hl.toLabeledGraphList i).graph.Adj (φ ⟨v, hv⟩) (φ ⟨v', hv'⟩) := by
-                simp [LabeledSym2GraphList.toLabeledGraphList]
+                simp [Sym2LabeledGraphList.toLabeledGraphList]
                 convert h_adj
                 · have : v = (Subtype.mk v hv).val := rfl
                   nth_rw 1 [this]
@@ -291,7 +291,7 @@ theorem labeledSubgraphListCount_eq
               · have h : (Hl.toLabeledGraphList i).graph.Adj (φ ⟨v, hv⟩) (φ ⟨v', hv'⟩) := by
                   rw [φ.map_rel_iff]
                   exact h_ind i hv hv' h_adj
-                simp [LabeledSym2GraphList.toLabeledGraphList] at h
+                simp [Sym2LabeledGraphList.toLabeledGraphList] at h
                 convert h
                 · have : v = (Subtype.mk v hv).val := rfl
                   nth_rw 2 [this]
@@ -313,9 +313,9 @@ theorem labeledSubgraphListCount_eq
         }
         type_preserve := by
           funext u
-          simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+          simp [Sym2LabeledInducedSubgraph.toLabeledSubraph]
           have hu := congrFun hφ u
-          simp [LabeledSym2GraphList.toLabeledGraphList] at hu
+          simp [Sym2LabeledGraphList.toLabeledGraphList] at hu
           rw [← hu]
           congr
           rw [cast_eq_iff_heq]
@@ -373,7 +373,7 @@ theorem labeledSubgraphListCount_eq
       · rw [h_verts_eq]
       · exact h_adj_iff u v w
   · intro Gl hGl
-    simp [predIsoLabeledSym2Hl] at hGl
+    simp [predIsoSym2LabeledHl] at hGl
     obtain ⟨h_iso, h_disj⟩ := hGl
     simp only [Set.coe_toFinset, Set.mem_image, Set.mem_setOf_eq]
     use fun i ↦ (Gl i).toLabeledSubraph
@@ -383,19 +383,19 @@ theorem labeledSubgraphListCount_eq
     · exact h_iso
     · intro i j hij_ne
       specialize h_disj i j hij_ne
-      simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+      simp [Sym2LabeledInducedSubgraph.toLabeledSubraph]
       rw [G.toLabeledGraph_type_verts_eq, ← Finset.coe_empty, ← h_disj]
       simp only [Finset.coe_inter, Finset.coe_sdiff]
     · funext i
       ext v
-      simp [LabeledSym2InducedSubgraph.toLabeledSubraph]
+      simp [Sym2LabeledInducedSubgraph.toLabeledSubraph]
 
-def labeledSym2InducedSubgraphListDensity
+def sym2LabeledInducedSubgraphListDensity
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl  : Fin t → ℕ}
-    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) : ℚ
+    (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) : ℚ
   :=
   let r_list (i : Fin t) := Vl i - k
-  labeledSym2InducedSubgraphListCount Hl G / multinomialCoefficient r_list (n - k)
+  sym2LabeledInducedSubgraphListCount Hl G / multinomialCoefficient r_list (n - k)
 
 instance
     {t : ℕ} {Vl : Fin t → ℕ} :
@@ -415,11 +415,11 @@ instance
 
 theorem labeledSubgraphListDensity_eq
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl  : Fin t → ℕ}
-    (Hl : LabeledSym2GraphList σ t Vl) (G : LabeledSym2Graph σ n) :
+    (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) :
     labeledSubgraphListDensity Hl.toLabeledGraphList G.toLabeledGraph =
-    labeledSym2InducedSubgraphListDensity Hl G
+    sym2LabeledInducedSubgraphListDensity Hl G
   := by
-  dsimp [labeledSubgraphListDensity, labeledSym2InducedSubgraphListDensity]
+  dsimp [labeledSubgraphListDensity, sym2LabeledInducedSubgraphListDensity]
   have hk : σ.toFlagType.size = k := by
     change Fintype.card (Fin k) = k
     exact Fintype.card_fin k
@@ -432,17 +432,17 @@ theorem labeledSubgraphListDensity_eq
 
 theorem labeledSubgraphListDensity_labeledGraphToList_eq
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
-    (H : LabeledSym2Graph σ m) (G : LabeledSym2Graph σ n) :
+    (H : Sym2LabeledGraph σ m) (G : Sym2LabeledGraph σ n) :
     labeledSubgraphListDensity (labeledGraphToList H.toLabeledGraph) G.toLabeledGraph =
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList H) G
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphToList H) G
   :=
-  labeledSubgraphListDensity_eq (labeledSym2GraphToList H) G
+  labeledSubgraphListDensity_eq (sym2LabeledGraphToList H) G
 
 theorem labeledSubgraphListDensity_labeledGraphPairToList_eq
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
-    (H₀ : LabeledSym2Graph σ m₀) (H₁ : LabeledSym2Graph σ m₁) (G : LabeledSym2Graph σ n) :
+    (H₀ : Sym2LabeledGraph σ m₀) (H₁ : Sym2LabeledGraph σ m₁) (G : Sym2LabeledGraph σ n) :
     labeledSubgraphListDensity (labeledGraphPairToList H₀.toLabeledGraph H₁.toLabeledGraph) G.toLabeledGraph =
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList H₀ H₁) G
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphPairToList H₀ H₁) G
   := by
   rw [← labeledSubgraphListDensity_eq]
   simp only [labeledSubgraphListDensity]
@@ -452,19 +452,19 @@ theorem labeledSubgraphListDensity_labeledGraphPairToList_eq
     intro a b hab
     simp only [heq_eq_eq] at hab
     match a, b with
-    | 0, 0 => simp [labeledGraphPairToList, labeledSym2GraphPairToList, LabeledSym2GraphList.toLabeledGraphList]
-    | 1, 1 => simp [labeledGraphPairToList, labeledSym2GraphPairToList, LabeledSym2GraphList.toLabeledGraphList]
+    | 0, 0 => simp [labeledGraphPairToList, sym2LabeledGraphPairToList, Sym2LabeledGraphList.toLabeledGraphList]
+    | 1, 1 => simp [labeledGraphPairToList, sym2LabeledGraphPairToList, Sym2LabeledGraphList.toLabeledGraphList]
   · simp [LabeledGraph.size]
     split
     · exact Fintype.card_fin m₀
     · exact Fintype.card_fin m₁
 
-theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv
+theorem sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphToList_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
-    {F F' : LabeledSym2Graph σ m} (hF_eqv : F ∼sf F')
-    {G G' : LabeledSym2Graph σ n} (hG_eqv : G ∼sf G') :
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) G =
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F') G'
+    {F F' : Sym2LabeledGraph σ m} (hF_eqv : F ∼sf F')
+    {G G' : Sym2LabeledGraph σ n} (hG_eqv : G ∼sf G') :
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphToList F) G =
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphToList F') G'
   := by
   rw [← labeledSubgraphListDensity_eq, ← labeledSubgraphListDensity_eq]
   apply labeledSubgraphListDensity_respect_eqv
@@ -473,40 +473,40 @@ theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv
     | 0 => exact hF_eqv.some
   · exact hG_eqv.some
 
-def labeledSym2InducedSubgraphListDensityLifted₁
+def sym2LabeledInducedSubgraphListDensityLifted₁
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
-    (F : LabeledSym2Graph σ m) (G : Sym2Flag σ n) : ℚ
+    (F : Sym2LabeledGraph σ m) (G : Sym2Flag σ n) : ℚ
   := by
-  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) H) ?_ G
+  refine Quotient.lift (fun H ↦ sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphToList F) H) ?_ G
   intro _ _ h_eqv
-  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv (labeledSym2GraphEqv.refl F) h_eqv
+  exact sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphToList_respect_eqv (sym2LabeledGraphEqv.refl F) h_eqv
 
-theorem labeledSym2InducedSubgraphListDensityLifted₁_respect_eqv
+theorem sym2LabeledInducedSubgraphListDensityLifted₁_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
-    {F F' : LabeledSym2Graph σ m} (hF_eqv : F ∼sf F')
+    {F F' : Sym2LabeledGraph σ m} (hF_eqv : F ∼sf F')
     (G : Sym2Flag σ n) :
-    labeledSym2InducedSubgraphListDensityLifted₁ F G =
-    labeledSym2InducedSubgraphListDensityLifted₁ F' G
+    sym2LabeledInducedSubgraphListDensityLifted₁ F G =
+    sym2LabeledInducedSubgraphListDensityLifted₁ F' G
   := by
-  dsimp [labeledSym2InducedSubgraphListDensityLifted₁]
+  dsimp [sym2LabeledInducedSubgraphListDensityLifted₁]
   congr
   funext H
-  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphToList_respect_eqv hF_eqv (labeledSym2GraphEqv.refl H)
+  exact sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphToList_respect_eqv hF_eqv (sym2LabeledGraphEqv.refl H)
 
 def sym2FlagDensity₁
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
     (F : Sym2Flag σ m) (G : Sym2Flag σ n) : ℚ
   := by
-  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensityLifted₁ H G) ?_ F
+  refine Quotient.lift (fun H ↦ sym2LabeledInducedSubgraphListDensityLifted₁ H G) ?_ F
   intro _ _ h_eqv
-  exact labeledSym2InducedSubgraphListDensityLifted₁_respect_eqv h_eqv G
+  exact sym2LabeledInducedSubgraphListDensityLifted₁_respect_eqv h_eqv G
 
-theorem labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₁
+theorem sym2LabeledInducedSubgraphListDensity_eq_sym2FlagDensity₁
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
-    (F : LabeledSym2Graph σ m) (G : LabeledSym2Graph σ n) :
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphToList F) G = sym2FlagDensity₁ ⟦F⟧ ⟦G⟧
+    (F : Sym2LabeledGraph σ m) (G : Sym2LabeledGraph σ n) :
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphToList F) G = sym2FlagDensity₁ ⟦F⟧ ⟦G⟧
   := by
-  dsimp [sym2FlagDensity₁, labeledSym2InducedSubgraphListDensityLifted₁]
+  dsimp [sym2FlagDensity₁, sym2LabeledInducedSubgraphListDensityLifted₁]
 
 theorem flagDensity₁_eq
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
@@ -515,18 +515,18 @@ theorem flagDensity₁_eq
   := by
   rcases Quotient.exists_rep F with ⟨F, rfl⟩
   rcases Quotient.exists_rep G with ⟨G, rfl⟩
-  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+  dsimp [Sym2Flag.toFlag, Sym2LabeledGraph.toFlag]
   rw [← labeledSubgraphListDensity_eq_flagDensity₁,
-    ← labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₁]
+    ← sym2LabeledInducedSubgraphListDensity_eq_sym2FlagDensity₁]
   exact labeledSubgraphListDensity_labeledGraphToList_eq F G
 
-theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
+theorem sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphPairToList_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
-    {F₀ F₀' : LabeledSym2Graph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
-    {F₁ F₁' : LabeledSym2Graph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
-    {G G' : LabeledSym2Graph σ n} (hG_eqv : G ∼sf G') :
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) G =
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀' F₁') G'
+    {F₀ F₀' : Sym2LabeledGraph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
+    {F₁ F₁' : Sym2LabeledGraph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
+    {G G' : Sym2LabeledGraph σ n} (hG_eqv : G ∼sf G') :
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphPairToList F₀ F₁) G =
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphPairToList F₀' F₁') G'
   := by
   rw [← labeledSubgraphListDensity_eq, ← labeledSubgraphListDensity_eq]
   apply labeledSubgraphListDensity_respect_eqv
@@ -536,44 +536,44 @@ theorem labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect
     | 1 => exact hF₁_eqv.some
   · exact hG_eqv.some
 
-def labeledSym2InducedSubgraphListDensityLifted₂
+def sym2LabeledInducedSubgraphListDensityLifted₂
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
-    (F₀ : LabeledSym2Graph σ m₀) (F₁ : LabeledSym2Graph σ m₁) (G : Sym2Flag σ n) : ℚ
+    (F₀ : Sym2LabeledGraph σ m₀) (F₁ : Sym2LabeledGraph σ m₁) (G : Sym2Flag σ n) : ℚ
   := by
-  refine Quotient.lift (fun H ↦ labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) H) ?_ G
+  refine Quotient.lift (fun H ↦ sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphPairToList F₀ F₁) H) ?_ G
   intro _ _ h_eqv
-  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
-    (labeledSym2GraphEqv.refl F₀) (labeledSym2GraphEqv.refl F₁) h_eqv
+  exact sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphPairToList_respect_eqv
+    (sym2LabeledGraphEqv.refl F₀) (sym2LabeledGraphEqv.refl F₁) h_eqv
 
-theorem labeledSym2InducedSubgraphListDensityLifted₂_respect_eqv
+theorem sym2LabeledInducedSubgraphListDensityLifted₂_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
-    {F₀ F₀' : LabeledSym2Graph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
-    {F₁ F₁' : LabeledSym2Graph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
+    {F₀ F₀' : Sym2LabeledGraph σ m₀} (hF₀_eqv : F₀ ∼sf F₀')
+    {F₁ F₁' : Sym2LabeledGraph σ m₁} (hF₁_eqv : F₁ ∼sf F₁')
     (G : Sym2Flag σ n) :
-    labeledSym2InducedSubgraphListDensityLifted₂ F₀ F₁ G =
-    labeledSym2InducedSubgraphListDensityLifted₂ F₀' F₁' G
+    sym2LabeledInducedSubgraphListDensityLifted₂ F₀ F₁ G =
+    sym2LabeledInducedSubgraphListDensityLifted₂ F₀' F₁' G
   := by
-  dsimp [labeledSym2InducedSubgraphListDensityLifted₂]
+  dsimp [sym2LabeledInducedSubgraphListDensityLifted₂]
   congr
   funext H
-  exact labeledSym2InducedSubgraphListDensity_labeledSym2GraphPairToList_respect_eqv
-    hF₀_eqv hF₁_eqv (labeledSym2GraphEqv.refl H)
+  exact sym2LabeledInducedSubgraphListDensity_sym2LabeledGraphPairToList_respect_eqv
+    hF₀_eqv hF₁_eqv (sym2LabeledGraphEqv.refl H)
 
 def sym2FlagDensity₂
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
     (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) : ℚ
   := by
-  refine Quotient.lift₂ (fun H₀ H₁ ↦ labeledSym2InducedSubgraphListDensityLifted₂ H₀ H₁ G) ?_ F₀ F₁
+  refine Quotient.lift₂ (fun H₀ H₁ ↦ sym2LabeledInducedSubgraphListDensityLifted₂ H₀ H₁ G) ?_ F₀ F₁
   intro _ _ _ _ h_eqv h_eqv'
-  exact labeledSym2InducedSubgraphListDensityLifted₂_respect_eqv h_eqv h_eqv' G
+  exact sym2LabeledInducedSubgraphListDensityLifted₂_respect_eqv h_eqv h_eqv' G
 
-theorem labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₂
+theorem sym2LabeledInducedSubgraphListDensity_eq_sym2FlagDensity₂
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
-    (F₀ : LabeledSym2Graph σ m₀) (F₁ : LabeledSym2Graph σ m₁) (G : LabeledSym2Graph σ n) :
-    labeledSym2InducedSubgraphListDensity (labeledSym2GraphPairToList F₀ F₁) G =
+    (F₀ : Sym2LabeledGraph σ m₀) (F₁ : Sym2LabeledGraph σ m₁) (G : Sym2LabeledGraph σ n) :
+    sym2LabeledInducedSubgraphListDensity (sym2LabeledGraphPairToList F₀ F₁) G =
     sym2FlagDensity₂ ⟦F₀⟧ ⟦F₁⟧ ⟦G⟧
   := by
-  dsimp [sym2FlagDensity₂, labeledSym2InducedSubgraphListDensityLifted₂]
+  dsimp [sym2FlagDensity₂, sym2LabeledInducedSubgraphListDensityLifted₂]
 
 theorem flagDensity₂_eq
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
@@ -583,9 +583,9 @@ theorem flagDensity₂_eq
   rcases Quotient.exists_rep F₀ with ⟨F₀, rfl⟩
   rcases Quotient.exists_rep F₁ with ⟨F₁, rfl⟩
   rcases Quotient.exists_rep G with ⟨G, rfl⟩
-  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag]
+  dsimp [Sym2Flag.toFlag, Sym2LabeledGraph.toFlag]
   rw [← labeledSubgraphListDensity_eq_flagDensity₂,
-    ← labeledSym2InducedSubgraphListDensity_eq_sym2FlagDensity₂]
+    ← sym2LabeledInducedSubgraphListDensity_eq_sym2FlagDensity₂]
   exact labeledSubgraphListDensity_labeledGraphPairToList_eq F₀ F₁ G
 
 end FlagAlgebras.Compute
