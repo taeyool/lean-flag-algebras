@@ -77,6 +77,16 @@ instance
   infer_instance
 
 @[ext]
+structure Sym2Graph (n : ℕ) where
+  edges : Finset (Sym2 (Fin n))
+  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+
+def Sym2Graph.toLabeledGraph
+    {n : ℕ} (G : Sym2Graph n) : LabeledGraph ∅ₜ (Fin n)
+  :=
+  ⟨fromEdgeSet (SetLike.coe G.edges), RelEmbedding.ofIsEmpty _ _⟩
+
+@[ext]
 structure Sym2FlagType (k : ℕ) where
   edges : Finset (Sym2 (Fin k))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
