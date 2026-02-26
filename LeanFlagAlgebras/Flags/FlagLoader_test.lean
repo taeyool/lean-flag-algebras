@@ -119,14 +119,14 @@ elab "load_flags" filename:str : command => do
   -- 2. Create each Flag
   for i in [0:flagsJson.size] do
     let flagEdges := flagsJson[i]!
-    let labeledName := mkIdent (Name.mkSimple s!"LabeledSym2Graph_{n}_{k}_{typeEdgeCount}_{i}")
+    let labeledName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{typeEdgeCount}_{i}")
     let flagName    := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}")
 
     let edgesTerm ← jsonEdgesToTerm n flagEdges
 
-    -- Define LabeledSym2Graph
+    -- Define Sym2LabeledGraph
     elabCommand (← `(
-      def $labeledName : LabeledSym2Graph $typeTerm $(Quote.quote n) where
+      def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
         edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
         edges_valid := by decide
         type_embed := by
@@ -152,7 +152,7 @@ elab "load_flags" filename:str : command => do
     -- Define Sym2Flag (Quotient)
     elabCommand (← `(
       def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
-        Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) $labeledName
+        Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName
     ))
 
   -- 3. Create Finset of all generated Sym2Flags + univ theorem
@@ -173,8 +173,8 @@ elab "load_flags" filename:str : command => do
 
   elabCommand (← `(
     theorem $allFlagsName (f : Sym2Flag $typeTerm $(Quote.quote n)) : f ∈ $setName := by
-      have hall : ∀ g : LabeledSym2Graph $typeTerm $(Quote.quote n),
-          Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) g ∈ $setName := by
+      have hall : ∀ g : Sym2LabeledGraph $typeTerm $(Quote.quote n),
+          Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) g ∈ $setName := by
         -- intro g
         native_decide
       refine Quotient.inductionOn f (fun g => ?_)

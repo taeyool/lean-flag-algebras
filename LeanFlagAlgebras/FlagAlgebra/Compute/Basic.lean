@@ -94,14 +94,14 @@ theorem Sym2FlagType.toFlagType_adj_iff
   exact σ.edges_valid (Sym2.mk (u, v)) h
 
 @[ext]
-structure LabeledSym2Graph {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) where
+structure Sym2LabeledGraph {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
   type_embed : (fromEdgeSet (SetLike.coe σ.edges)) ↪g (fromEdgeSet (SetLike.coe edges))
 
 instance
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
-    Fintype (LabeledSym2Graph σ n) where
+    Fintype (Sym2LabeledGraph σ n) where
   elems :=
     let S := (@Finset.univ (Finset (Sym2 (Fin n)))).sigma (fun E ↦ (@Finset.univ ((fromEdgeSet (SetLike.coe σ.edges)) ↪g fromEdgeSet (SetLike.coe E)) _))
     S.filterMap (fun ⟨E, emb⟩ ↦
@@ -112,9 +112,9 @@ instance
     rcases e with ⟨E, hE, emb⟩
     simp_all
 
-def LabeledSym2Graph.type_verts
+def Sym2LabeledGraph.type_verts
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) : Finset (Fin n)
+    (G : Sym2LabeledGraph σ n) : Finset (Fin n)
   := by
   have : DecidablePred (Membership.mem (G.type_embed '' Set.univ)) := by
     intro i
@@ -123,40 +123,40 @@ def LabeledSym2Graph.type_verts
   have : Fintype (G.type_embed '' Set.univ) := setFintype _
   exact (G.type_embed '' Set.univ).toFinset
 
-theorem LabeledSym2Graph.mem_type_verts
+theorem Sym2LabeledGraph.mem_type_verts
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) (t : Fin k) :
+    (G : Sym2LabeledGraph σ n) (t : Fin k) :
     G.type_embed t ∈ G.type_verts
   := by
   simp [type_verts]
 
-def LabeledSym2Graph.toLabeledGraph
+def Sym2LabeledGraph.toLabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) : LabeledGraph (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
+    (G : Sym2LabeledGraph σ n) : LabeledGraph (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
   :=
   ⟨fromEdgeSet (SetLike.coe G.edges), G.type_embed⟩
 
-theorem LabeledSym2Graph.toLabeledGraph_type_embed_eq
+theorem Sym2LabeledGraph.toLabeledGraph_type_embed_eq
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) (t : Fin k) :
+    (G : Sym2LabeledGraph σ n) (t : Fin k) :
     G.toLabeledGraph.type_embed t = G.type_embed t
   := by
-  simp [LabeledSym2Graph.toLabeledGraph]
+  simp [Sym2LabeledGraph.toLabeledGraph]
 
-theorem LabeledSym2Graph.toLabeledGraph_type_verts_eq
+theorem Sym2LabeledGraph.toLabeledGraph_type_verts_eq
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
+    (G : Sym2LabeledGraph σ n) :
     G.toLabeledGraph.type_verts = G.type_verts
   := by
-  simp [LabeledSym2Graph.toLabeledGraph, LabeledGraph.type_verts, LabeledSym2Graph.type_verts]
+  simp [Sym2LabeledGraph.toLabeledGraph, LabeledGraph.type_verts, Sym2LabeledGraph.type_verts]
 
-theorem LabeledSym2Graph.toLabeledGraph_injective
+theorem Sym2LabeledGraph.toLabeledGraph_injective
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G₁ G₂ : LabeledSym2Graph σ n)
+    (G₁ G₂ : Sym2LabeledGraph σ n)
     (h : G₁.toLabeledGraph = G₂.toLabeledGraph) :
     G₁ = G₂
   := by
-  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.mk.injEq] at h
+  simp only [Sym2LabeledGraph.toLabeledGraph, LabeledGraph.mk.injEq] at h
   obtain ⟨h_graph, h_type_embed⟩ := h
   ext e
   · have h : (fromEdgeSet G₁.edges).edgeSet = SetLike.coe G₁.edges := by
@@ -176,27 +176,27 @@ theorem LabeledSym2Graph.toLabeledGraph_injective
     exact Eq.to_iff (congrFun h_edges e)
   · exact h_type_embed
 
-theorem LabeledSym2Graph.toLabeledGraph_adj_iff
+theorem Sym2LabeledGraph.toLabeledGraph_adj_iff
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) (u v : Fin n) :
+    (G : Sym2LabeledGraph σ n) (u v : Fin n) :
     G.toLabeledGraph.graph.Adj u v ↔ Sym2.mk (u, v) ∈ G.edges
   := by
-  simp [LabeledSym2Graph.toLabeledGraph, fromEdgeSet]
+  simp [Sym2LabeledGraph.toLabeledGraph, fromEdgeSet]
   intro h
   exact G.edges_valid (Sym2.mk (u, v)) h
 
 instance
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
+    (G : Sym2LabeledGraph σ n) :
     DecidableRel G.toLabeledGraph.graph.Adj
   := by
   intro a b
   rw [G.toLabeledGraph_adj_iff]
   exact Finset.decidableMem s(a, b) G.edges
 
-noncomputable def _root_.FlagAlgebras.LabeledGraph.toLabeledSym2Graph
+noncomputable def _root_.FlagAlgebras.LabeledGraph.toSym2LabeledGraph
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-  (G : LabeledGraph (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) : LabeledSym2Graph σ n where
+  (G : LabeledGraph (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) : Sym2LabeledGraph σ n where
   edges := by
     have : Fintype G.graph.edgeSet := Fintype.ofFinite G.graph.edgeSet
     exact (SimpleGraph.edgeSet G.graph).toFinset
@@ -208,22 +208,22 @@ noncomputable def _root_.FlagAlgebras.LabeledGraph.toLabeledSym2Graph
     simp
     exact G.type_embed
 
-theorem _root_.FlagAlgebras.LabeledGraph.toLabeledSym2Graph_toLabeledGraph_eq
+theorem _root_.FlagAlgebras.LabeledGraph.toSym2LabeledGraph_toLabeledGraph_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
   (G : LabeledGraph (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) :
-    G.toLabeledSym2Graph.toLabeledGraph = G
+    G.toSym2LabeledGraph.toLabeledGraph = G
   := by
-  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
+  simp only [Sym2LabeledGraph.toLabeledGraph, LabeledGraph.toSym2LabeledGraph]
   congr
   · simp only [Set.coe_toFinset, SimpleGraph.fromEdgeSet_edgeSet]
   · simp only [eq_mpr_eq_cast, cast_heq]
 
-theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
+theorem Sym2LabeledGraph.toLabeledGraph_toSym2LabeledGraph_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
-    G.toLabeledGraph.toLabeledSym2Graph = G
+    (G : Sym2LabeledGraph σ n) :
+    G.toLabeledGraph.toSym2LabeledGraph = G
   := by
-  simp only [LabeledSym2Graph.toLabeledGraph, LabeledGraph.toLabeledSym2Graph]
+  simp only [Sym2LabeledGraph.toLabeledGraph, LabeledGraph.toSym2LabeledGraph]
   congr
   · simp only [edgeSet_fromEdgeSet, Set.toFinset_diff, Finset.toFinset_coe, sdiff_eq_left]
     refine Finset.disjoint_left.mpr ?_
@@ -233,64 +233,64 @@ theorem LabeledSym2Graph.toLabeledGraph_toLabeledSym2Graph_eq
   · exact proof_irrel_heq _ _
   · simp only [eq_mpr_eq_cast, cast_heq]
 
-def labeledSym2GraphEqv
+def sym2LabeledGraphEqv
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G G' : LabeledSym2Graph σ n) : Prop
+    (G G' : Sym2LabeledGraph σ n) : Prop
   :=
   G.toLabeledGraph ∼f G'.toLabeledGraph
 
-infixl:50 " ∼sf " => labeledSym2GraphEqv
+infixl:50 " ∼sf " => sym2LabeledGraphEqv
 
 instance
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G G' : LabeledSym2Graph σ n) :
+    (G G' : Sym2LabeledGraph σ n) :
     Decidable (G ∼sf G')
   := by
-  dsimp [labeledSym2GraphEqv]
+  dsimp [sym2LabeledGraphEqv]
   infer_instance
 
-theorem labeledSym2GraphEqv.refl
+theorem sym2LabeledGraphEqv.refl
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) :
+    (G : Sym2LabeledGraph σ n) :
     G ∼sf G
   :=
   flagEqv.refl _
 
-theorem labeledSym2GraphEqv.symm
+theorem sym2LabeledGraphEqv.symm
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G G' : LabeledSym2Graph σ n}
+    {G G' : Sym2LabeledGraph σ n}
     (h : G ∼sf G') :
     G' ∼sf G
   :=
   flagEqv.symm h
 
-theorem labeledSym2GraphEqv.trans
+theorem sym2LabeledGraphEqv.trans
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    {G G' G'' : LabeledSym2Graph σ n}
+    {G G' G'' : Sym2LabeledGraph σ n}
     (h₁ : G ∼sf G') (h₂ : G' ∼sf G'') :
     G ∼sf G''
   :=
   flagEqv.trans h₁ h₂
 
-instance labeledSym2GraphSetoid
+instance sym2LabeledGraphSetoid
   {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
-    Setoid (LabeledSym2Graph σ n)
+    Setoid (Sym2LabeledGraph σ n)
   where
-    r     := labeledSym2GraphEqv
+    r     := sym2LabeledGraphEqv
     iseqv := {
-      refl  := labeledSym2GraphEqv.refl,
-      symm  := labeledSym2GraphEqv.symm,
-      trans := labeledSym2GraphEqv.trans
+      refl  := sym2LabeledGraphEqv.refl,
+      symm  := sym2LabeledGraphEqv.symm,
+      trans := sym2LabeledGraphEqv.trans
     }
 
 def Sym2Flag {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : Type :=
-  Quotient (labeledSym2GraphSetoid σ n)
+  Quotient (sym2LabeledGraphSetoid σ n)
 
 instance
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
     Fintype (Sym2Flag σ n)
   := by
-  refine @Quotient.fintype _ _ (labeledSym2GraphSetoid σ n) ?_
+  refine @Quotient.fintype _ _ (sym2LabeledGraphSetoid σ n) ?_
   intro G G'
   show Decidable (G ∼sf G')
   infer_instance
@@ -304,15 +304,15 @@ instance
   show Decidable (G ∼sf G')
   infer_instance
 
-def LabeledSym2Graph.toFlag
+def Sym2LabeledGraph.toFlag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G : LabeledSym2Graph σ n) : Flag (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
+    (G : Sym2LabeledGraph σ n) : Flag (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
   :=
   ⟦G.toLabeledGraph⟧
 
-theorem LabeledSym2Graph.toFlag_respect_eqv
+theorem Sym2LabeledGraph.toFlag_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
-    (G G' : LabeledSym2Graph σ n) (h : G ∼sf G') :
+    (G G' : Sym2LabeledGraph σ n) (h : G ∼sf G') :
     G.toFlag = G'.toFlag
   :=
   Quotient.sound h
@@ -321,7 +321,7 @@ def Sym2Flag.toFlag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2Flag σ n) :
     Flag (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
   :=
-  Quotient.lift LabeledSym2Graph.toFlag LabeledSym2Graph.toFlag_respect_eqv G
+  Quotient.lift Sym2LabeledGraph.toFlag Sym2LabeledGraph.toFlag_respect_eqv G
 
 theorem Sym2Flag.toFlag_injective
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
@@ -331,7 +331,7 @@ theorem Sym2Flag.toFlag_injective
   rcases Quotient.exists_rep F with ⟨G, rfl⟩
   rcases Quotient.exists_rep F' with ⟨G', rfl⟩
   apply Quotient.sound
-  dsimp [Sym2Flag.toFlag, LabeledSym2Graph.toFlag] at h
+  dsimp [Sym2Flag.toFlag, Sym2LabeledGraph.toFlag] at h
   have h' : G.toLabeledGraph ∼f G'.toLabeledGraph := Quotient.exact h
   exact h'
 
@@ -339,7 +339,7 @@ noncomputable def _root_.FlagAlgebras.LabeledGraph.toSym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : LabeledGraph (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) : Sym2Flag σ n
   :=
-  ⟦G.toLabeledSym2Graph⟧
+  ⟦G.toSym2LabeledGraph⟧
 
 theorem _root_.FlagAlgebras.LabeledGraph.toSym2Flag_respect_eqv
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
@@ -348,9 +348,9 @@ theorem _root_.FlagAlgebras.LabeledGraph.toSym2Flag_respect_eqv
   := by
   dsimp only [LabeledGraph.toSym2Flag]
   apply Quotient.sound
-  show G.toLabeledSym2Graph ∼sf G'.toLabeledSym2Graph
-  dsimp only [labeledSym2GraphEqv]
-  rw [G.toLabeledSym2Graph_toLabeledGraph_eq, G'.toLabeledSym2Graph_toLabeledGraph_eq]
+  show G.toSym2LabeledGraph ∼sf G'.toSym2LabeledGraph
+  dsimp only [sym2LabeledGraphEqv]
+  rw [G.toSym2LabeledGraph_toLabeledGraph_eq, G'.toSym2LabeledGraph_toLabeledGraph_eq]
   exact h
 
 noncomputable def _root_.FlagAlgebras.Flag.toSym2Flag
@@ -366,7 +366,7 @@ theorem _root_.FlagAlgebras.Flag.toSym2Flag_toFlag_eq
   := by
   rcases Quotient.exists_rep F with ⟨F, rfl⟩
   apply Quotient.sound
-  rw [F.toLabeledSym2Graph_toLabeledGraph_eq]
+  rw [F.toSym2LabeledGraph_toLabeledGraph_eq]
 
 theorem Sym2Flag.toFlag_toSym2Flag_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
@@ -375,7 +375,7 @@ theorem Sym2Flag.toFlag_toSym2Flag_eq
   := by
   rcases Quotient.exists_rep F with ⟨F, rfl⟩
   apply Quotient.sound
-  rw [F.toLabeledGraph_toLabeledSym2Graph_eq]
+  rw [F.toLabeledGraph_toSym2LabeledGraph_eq]
 
 theorem Sym2Flag.toFlag_univ_eq_univ
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :

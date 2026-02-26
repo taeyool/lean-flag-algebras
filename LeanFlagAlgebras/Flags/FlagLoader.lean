@@ -126,14 +126,14 @@ elab "load_flags" filename:str : command => do
   -- 2. Create each Flag
   for i in [0:flagsJson.size] do
     let flagEdges := flagsJson[i]!
-    let labeledName := mkIdent (Name.mkSimple s!"LabeledSym2Graph_{n}_{k}_{typeEdgeCount}_{i}")
+    let labeledName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{typeEdgeCount}_{i}")
     let flagName    := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}")
 
     let edgesTerm ← jsonEdgesToTerm n flagEdges
 
-    -- Define LabeledSym2Graph
+    -- Define Sym2LabeledGraph
     elabCommand (← `(
-      def $labeledName : LabeledSym2Graph $typeTerm $(Quote.quote n) where
+      def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
         edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
         edges_valid := by decide
         type_embed := by
@@ -159,7 +159,7 @@ elab "load_flags" filename:str : command => do
     -- Define Sym2Flag (Quotient)
     elabCommand (← `(
       def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
-        Quotient.mk (labeledSym2GraphSetoid $typeTerm $(Quote.quote n)) $labeledName
+        Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName
     ))
 
     -- Define Flag / FlagAlgebra bridge definitions
@@ -206,7 +206,7 @@ elab "load_flags" filename:str : command => do
 
 -- Verification
 -- #check Sym2FlagType_2_1         -- Sym2FlagType 2
--- #check LabeledSym2Graph_4_2_1_0 -- LabeledSym2Graph Sym2FlagType_2_1 4
+-- #check Sym2LabeledGraph_4_2_1_0 -- Sym2LabeledGraph Sym2FlagType_2_1 4
 -- #check Sym2Flag_4_2_1_0         -- Sym2Flag Sym2FlagType_2_1 4
 -- #check Sym2FlagSet_4_2_1        -- Finset (Sym2Flag Sym2FlagType_2_1 4)
 -- #check Sym2FlagSet_4_2_1_eq_univ
