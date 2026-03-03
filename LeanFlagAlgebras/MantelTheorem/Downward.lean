@@ -99,7 +99,6 @@ lemma unlabel_E3₁'
   congr
   ext u v
   · dsimp [unlabeledGraph]
-
     sorry
   -- Quotient.sound (flagEqv.refl _)
   · simp [unlabeledGraph]

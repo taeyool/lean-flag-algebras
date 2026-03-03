@@ -211,7 +211,6 @@ elab "load_flags" filename:str : command => do
     (List.range flagsJson.size).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}") : TSyntax `term))
 
-  -- probably once we remove the sorries in the flag definitions, we can use native_decide to automatically prove the univ theorem without needing to distinguish the k=0 case
   if k = 0 then
     elabCommand (← `(
       def $setName : Finset (Sym2EmptyTypedFlag $(Quote.quote n)) :=
@@ -223,13 +222,10 @@ elab "load_flags" filename:str : command => do
         ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
     ))
 
-  if k = 0 then
-    pure ()
-  else
-    elabCommand (← `(
-      theorem $setEqUnivName : $setName = Finset.univ := by
-        native_decide
-    ))
+  elabCommand (← `(
+    theorem $setEqUnivName : $setName = Finset.univ := by
+      native_decide
+  ))
 
   logInfo s!"Loaded `{typeName.getId}` and {flagsJson.size} flags as `Sym2Flag_{n}_{k}_{typeEdgeCount}_i`."
 
