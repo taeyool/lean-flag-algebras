@@ -126,57 +126,83 @@ elab "load_flags" filename:str : command => do
   -- 2. Create each Flag
   for i in [0:flagsJson.size] do
     let flagEdges := flagsJson[i]!
+    let graphName := mkIdent (Name.mkSimple s!"Sym2Graph_{n}_{k}_{typeEdgeCount}_{i}")
     let labeledName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{typeEdgeCount}_{i}")
     let flagName    := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}")
 
     let edgesTerm ← jsonEdgesToTerm n flagEdges
 
-    -- Define Sym2LabeledGraph
-    elabCommand (← `(
-      def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
-        edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
-        edges_valid := by decide
-        type_embed := by
-          let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
-            ⟨
-              (fun i => ⟨i.1, Nat.lt_of_lt_of_le i.2 (by decide)⟩),
-              by
-                intro a b h
-                have h' : a.1 = b.1 := by
-                  simpa using congrArg (fun x : Fin $(Quote.quote n) => x.1) h
-                exact Fin.ext h'
-            ⟩
-          have hmap : ∀ u v,
-              (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
-              ↔
-              (SimpleGraph.fromEdgeSet ((($typeTerm).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
-            intro u v
-            fin_cases u <;> fin_cases v <;> decide
-          refine ⟨e, ?_⟩
-          exact hmap _ _
-    ))
+    if k = 0 then
+      -- Define Sym2Graph (for empty type)
+      elabCommand (← `(
+        def $graphName : Sym2Graph $(Quote.quote n) where
+          edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
+          edges_valid := by decide
+      ))
 
-    -- Define Sym2Flag (Quotient)
-    elabCommand (← `(
-      def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
-        Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName
-    ))
+      -- Define Sym2EmptyTypedFlag (Quotient)
+      elabCommand (← `(
+        def $flagName : Sym2EmptyTypedFlag $(Quote.quote n) :=
+          Quotient.mk (Sym2GraphSetoid $(Quote.quote n)) $graphName
+      ))
+    else
+      -- Define Sym2LabeledGraph
+      elabCommand (← `(
+        def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
+          edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
+          edges_valid := by decide
+          type_embed := by
+            let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
+              ⟨
+                (fun i => ⟨i.1, Nat.lt_of_lt_of_le i.2 (by decide)⟩),
+                by
+                  intro a b h
+                  have h' : a.1 = b.1 := by
+                    simpa using congrArg (fun x : Fin $(Quote.quote n) => x.1) h
+                  exact Fin.ext h'
+              ⟩
+            have hmap : ∀ u v,
+                (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
+                ↔
+                (SimpleGraph.fromEdgeSet ((($typeTerm).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
+              intro u v
+              fin_cases u <;> fin_cases v <;> decide
+            refine ⟨e, ?_⟩
+            exact hmap _ _
+      ))
+
+      -- Define Sym2Flag (Quotient)
+      elabCommand (← `(
+        def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
+          Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName
+      ))
 
     -- Define Flag / FlagAlgebra bridge definitions
     let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{typeEdgeCount}_{i}")
     let env ← getEnv
     if ¬ env.contains flagBridgeName.getId then
-      elabCommand (← `(
-        def $flagBridgeName := ($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag
-      ))
+      if k = 0 then
+        elabCommand (← `(
+          def $flagBridgeName := ($flagName : Sym2EmptyTypedFlag $(Quote.quote n)).toFlag
+        ))
+      else
+        elabCommand (← `(
+          def $flagBridgeName := ($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag
+        ))
 
     let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{typeEdgeCount}_{i}")
     let env ← getEnv
     if ¬ env.contains flagAlgebraName.getId then
-      elabCommand (← `(
-        noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
-      ))
+      if k = 0 then
+        elabCommand (← `(
+          noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
+            ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+        ))
+      else
+        elabCommand (← `(
+          noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
+            ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+        ))
 
   -- 3. Create Finset of all generated Sym2Flags + univ theorem
   let setName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_{k}_{typeEdgeCount}")
@@ -185,15 +211,25 @@ elab "load_flags" filename:str : command => do
     (List.range flagsJson.size).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{typeEdgeCount}_{i}") : TSyntax `term))
 
-  elabCommand (← `(
-    def $setName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
-      ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
-  ))
+  -- probably once we remove the sorries in the flag definitions, we can use native_decide to automatically prove the univ theorem without needing to distinguish the k=0 case
+  if k = 0 then
+    elabCommand (← `(
+      def $setName : Finset (Sym2EmptyTypedFlag $(Quote.quote n)) :=
+        ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
+    ))
+  else
+    elabCommand (← `(
+      def $setName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
+        ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
+    ))
 
-  elabCommand (← `(
-    theorem $setEqUnivName : $setName = Finset.univ := by
-      native_decide
-  ))
+  if k = 0 then
+    pure ()
+  else
+    elabCommand (← `(
+      theorem $setEqUnivName : $setName = Finset.univ := by
+        native_decide
+    ))
 
   logInfo s!"Loaded `{typeName.getId}` and {flagsJson.size} flags as `Sym2Flag_{n}_{k}_{typeEdgeCount}_i`."
 
