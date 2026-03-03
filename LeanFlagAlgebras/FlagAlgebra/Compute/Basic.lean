@@ -123,8 +123,14 @@ theorem Sym2Graph.toLabeledGraph_adj_iff
 instance
     {n : ℕ} :
     Fintype (Sym2Graph n) where
-  elems := sorry
-  complete e := by sorry
+  elems := ((@Finset.univ (Finset (Sym2 (Fin n)))).filterMap fun edges ↦
+    if h : ∀ e ∈ edges, ¬e.IsDiag
+    then Option.some ⟨edges, h⟩
+    else Option.none) (by grind)
+  complete e := by
+    simp only [Finset.mem_filterMap, Finset.mem_univ, Option.dite_none_right_eq_some,
+      Option.some.injEq, true_and]
+    use e.edges, e.edges_valid
 
 instance
   {n : ℕ} (G : Sym2Graph n) :
@@ -149,9 +155,12 @@ theorem _root_.FlagAlgebras.LabeledGraph.toSym2Graph_toLabeledGraph_eq
     G.toSym2Graph.toLabeledGraph = G
   := by
   simp only [Sym2Graph.toLabeledGraph, LabeledGraph.toSym2Graph]
-  congr
+  congr!
   · simp only [Set.coe_toFinset, SimpleGraph.fromEdgeSet_edgeSet]
-  · sorry
+  · rename_i h
+    rw [h, heq_eq_eq]
+    ext v
+    exact Fin.elim0 v
 
 theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq
   {n : ℕ} (G : Sym2Graph n) :
