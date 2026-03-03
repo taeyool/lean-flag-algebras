@@ -4,19 +4,43 @@ namespace FlagAlgebras.Compute
 
 open SimpleGraph
 
+/- Empty-typed flags --/
+
+abbrev Sym2GraphList
+    (t : ℕ) (Vl : Fin t → ℕ)
+  := ∀ (i : Fin t), Sym2Graph (Vl i)
+
+def sym2GraphToList
+    {n : ℕ} (G : Sym2Graph n) : Sym2GraphList 1 (fun _ ↦ n)
+  :=
+  fun _ ↦ G
+
+def sym2GraphPairToList
+    {n₀ n₁ : ℕ} (G₀ : Sym2Graph n₀) (G₁ : Sym2Graph n₁) :
+    Sym2GraphList 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
+  :=
+  fun i ↦ match i with | 0 => G₀ | 1 => G₁
+
+def Sym2GraphList.toLabeledGraphList
+    {t : ℕ} {Vl : Fin t → ℕ}
+    (Hl : Sym2GraphList t Vl) : LabeledGraphList ∅ₜ t (fun i ↦ Fin (Vl i))
+  :=
+  fun i ↦ (Hl i).toLabeledGraph
+
+/- Non-empty-typed flags --/
+
 abbrev Sym2LabeledGraphList
     {k : ℕ} (σ : Sym2FlagType k) (t : ℕ) (Vl : Fin t → ℕ)
   := ∀ (i : Fin t), Sym2LabeledGraph σ (Vl i)
 
 def sym2LabeledGraphToList
-    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n)
-    : Sym2LabeledGraphList σ 1 (fun _ ↦ n)
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n) :
+    Sym2LabeledGraphList σ 1 (fun _ ↦ n)
   :=
   fun _ ↦ G
 
 def sym2LabeledGraphPairToList
-    {k : ℕ} {σ : Sym2FlagType k} {n₀ n₁ : ℕ} (G₀ : Sym2LabeledGraph σ n₀) (G₁ : Sym2LabeledGraph σ n₁)
-    : Sym2LabeledGraphList σ 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
+    {k : ℕ} {σ : Sym2FlagType k} {n₀ n₁ : ℕ} (G₀ : Sym2LabeledGraph σ n₀) (G₁ : Sym2LabeledGraph σ n₁) : Sym2LabeledGraphList σ 2 (fun i ↦ match i with | 0 => n₀ | 1 => n₁)
   :=
   fun i ↦ match i with | 0 => G₀ | 1 => G₁
 
