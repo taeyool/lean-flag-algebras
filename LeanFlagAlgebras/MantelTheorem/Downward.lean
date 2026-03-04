@@ -1,5 +1,6 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagDef
 import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
+import Mathlib.Tactic.FinCases
 
 open FlagAlgebras
 open FlagAlgebras.Compute
@@ -95,15 +96,20 @@ lemma unlabel_E3₁'
     : unlabel E3₁'_flag = E3_flag
   := by
   apply Quotient.sound
-  refine Quotient.exact ?_
-  congr
-  ext u v
-  · dsimp [unlabeledGraph]
-    sorry
-  -- Quotient.sound (flagEqv.refl _)
-  · simp [unlabeledGraph]
-
-    sorry
+  apply Nonempty.intro
+  exact {
+    graph_iso := {
+      toEquiv := (Equiv.swap (0 : Fin 3) 2) * (Equiv.swap 1 2)
+      map_rel_iff' := by
+        intro u v
+        simp [unlabeledGraph, Sym2LabeledGraph_3_1_0_2, Sym2LabeledGraph.toLabeledGraph,
+          Sym2Graph_3_0_0_1, Sym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet]
+        fin_cases u <;> fin_cases v <;> decide
+    }
+    type_preserve := by
+      ext a
+      exact Fin.elim0 a
+  }
 
 lemma downwardNormalizingFactor_E3₁'
     : downwardNormalizingFactor E3₁'_flag = 1 / 3
@@ -156,9 +162,22 @@ theorem downward_P3₁
 
 lemma unlabel_P3₁'
     : unlabel P3₁'_flag = P3_flag
-  :=
-  -- Quotient.sound (flagEqv.refl _)
-  sorry
+  := by
+  apply Quotient.sound
+  apply Nonempty.intro
+  refine {
+    graph_iso := {
+      toEquiv := Equiv.swap (0 : Fin 3) 1
+      map_rel_iff' := by
+        intro u v
+        simp [unlabeledGraph, Sym2LabeledGraph_3_1_0_4, Sym2LabeledGraph.toLabeledGraph,
+          Sym2Graph_3_0_0_2, Sym2Graph.toLabeledGraph, SimpleGraph.fromEdgeSet]
+        fin_cases u <;> fin_cases v <;> decide
+    }
+    type_preserve := by
+      ext a
+      exact Fin.elim0 a
+  }
 
 lemma downwardNormalizingFactor_P3₁'
     : downwardNormalizingFactor P3₁'_flag = 2 / 3
