@@ -1,122 +1,181 @@
-import json
+import argparse
 import itertools
-import os
+import json
+from fractions import Fraction
+from pathlib import Path
+from typing import Dict, Iterable, List, Sequence, Set, Tuple
 
 
-def get_canonical_flag(edges, n, k):
-    """
-    Fixes the type vertices (0 to k-1) and permutes only the remaining
-    non-type vertices (k to n-1) to return the lexicographically
-    smallest (canonical) edge list representation.
-    """
-    non_type_vertices = list(range(k, n))
-    best_edges = None
-
-    # Iterate through all permutations of the non-type vertices
-    for p in itertools.permutations(non_type_vertices):
-        # Create a mapping: type vertices map to themselves
-        mapping = {v: v for v in range(k)}
-        for idx, v in enumerate(non_type_vertices):
-            mapping[v] = p[idx]
-
-        # Generate the new edge list based on the current permutation
-        new_edges = []
-        for u, v in edges:
-            nu, nv = mapping[u], mapping[v]
-            # Ensure each edge is represented as (smaller, larger)
-            if nu > nv:
-                nu, nv = nv, nu
-            new_edges.append((nu, nv))
-
-        # Sort the edges to compare them lexicographically
-        new_edges.sort()
-        new_edges_tuple = tuple(new_edges)
-
-        # Keep track of the lexicographically smallest edge list
-        if best_edges is None or new_edges_tuple < best_edges:
-            best_edges = new_edges_tuple
-
-    return best_edges
+Edge = Tuple[int, int]
+Embedding = Tuple[int, ...]
 
 
-def generate_flags_with_type(n, k, type_index):
-    """
-    Generates all non-isomorphic n-vertex flags for a given type of size k,
-    and saves the results along with the type's structural information into a JSON file.
+def normalize_edges(edges: Iterable[Sequence[int]]) -> Tuple[Edge, ...]:
+	normalized: List[Edge] = []
+	for u_raw, v_raw in edges:
+		u = int(u_raw)
+		v = int(v_raw)
+		if u == v:
+			raise ValueError(f"Self-loop ({u}, {v}) is not allowed.")
+		if u > v:
+			u, v = v, u
+		normalized.append((u, v))
+	normalized.sort()
+	return tuple(normalized)
 
-    Args:
-        n (int): Total number of vertices in the flag.
-        k (int): Number of vertices in the base type.
-        type_index (int): The index of the graph in type_{k}.json to be used as the type.
-    """
-    if n < k:
-        raise ValueError(
-            "The number of vertices 'n' in the flag must be greater than or equal to 'k'."
-        )
 
-    type_filename = f"LeanFlagAlgebras/Flags/Types/types_{k}.json"
-    if not os.path.exists(type_filename):
-        raise FileNotFoundError(f"The file {type_filename} does not exist.")
+def relabel_edges(edges: Tuple[Edge, ...], perm: Sequence[int]) -> Tuple[Edge, ...]:
+	relabeled: List[Edge] = []
+	for u, v in edges:
+		nu = perm[u]
+		nv = perm[v]
+		if nu > nv:
+			nu, nv = nv, nu
+		relabeled.append((nu, nv))
+	relabeled.sort()
+	return tuple(relabeled)
 
-    # Load the base graphs for the type
-    with open(type_filename, "r", encoding="utf-8") as f:
-        types = json.load(f)
 
-    if type_index >= len(types):
-        raise IndexError(f"Index {type_index} is out of bounds for {type_filename}.")
+def induced_edges_on_embedding(graph_edges_set: Set[Edge], embedding: Embedding) -> Tuple[Edge, ...]:
+	k = len(embedding)
+	induced: List[Edge] = []
+	for i in range(k):
+		for j in range(i + 1, k):
+			a = embedding[i]
+			b = embedding[j]
+			edge = (a, b) if a < b else (b, a)
+			if edge in graph_edges_set:
+				induced.append((i, j))
+	induced.sort()
+	return tuple(induced)
 
-    sigma_edges = types[type_index]
-    sigma_edges_tuples = [tuple(e) for e in sigma_edges]
 
-    type_vertices = list(range(k))
-    non_type_vertices = list(range(k, n))
-    potential_edges = []
+def find_automorphisms(edges: Tuple[Edge, ...], n: int) -> List[Tuple[int, ...]]:
+	automorphisms: List[Tuple[int, ...]] = []
+	for perm in itertools.permutations(range(n)):
+		if relabel_edges(edges, perm) == edges:
+			automorphisms.append(tuple(perm))
+	return automorphisms
 
-    # 1. Potential edges between type vertices and non-type vertices
-    for u in type_vertices:
-        for v in non_type_vertices:
-            potential_edges.append((u, v))
 
-    # 2. Potential edges strictly among non-type vertices
-    for u, v in itertools.combinations(non_type_vertices, 2):
-        potential_edges.append((u, v))
+def find_valid_embeddings(
+	graph_edges: Tuple[Edge, ...], sigma_edges: Tuple[Edge, ...], n: int, k: int
+) -> Set[Embedding]:
+	graph_edges_set = set(graph_edges)
+	valid: Set[Embedding] = set()
+	for emb in itertools.permutations(range(n), k):
+		if induced_edges_on_embedding(graph_edges_set, emb) == sigma_edges:
+			valid.add(tuple(emb))
+	return valid
 
-    unique_flags = set()
 
-    # Generate the power set of all potential edges
-    for r in range(len(potential_edges) + 1):
-        for new_edges in itertools.combinations(potential_edges, r):
-            # Combine the type's edges with the newly selected edges
-            current_edges = sigma_edges_tuples + list(new_edges)
+def orbit_of_embedding(
+	embedding: Embedding, automorphisms: Sequence[Tuple[int, ...]], valid_embeddings: Set[Embedding]
+) -> Set[Embedding]:
+	orbit: Set[Embedding] = set()
+	for perm in automorphisms:
+		moved = tuple(perm[v] for v in embedding)
+		if moved in valid_embeddings:
+			orbit.add(moved)
+	return orbit
 
-            # Find the canonical representation to filter out isomorphic flags
-            canonical_edges = get_canonical_flag(current_edges, n, k)
-            unique_flags.add(canonical_edges)
 
-    # Sort the unique flags: first by number of edges, then lexicographically
-    sorted_flags = sorted(list(unique_flags), key=lambda x: (len(x), x))
-    flags_list = [list(edges) for edges in sorted_flags]
+def to_fraction_string(value: Fraction) -> str:
+	if value.denominator == 1:
+		return str(value.numerator)
+	return f"{value.numerator}/{value.denominator}"
 
-    # [Modified] Construct a dictionary containing n, k, and type information
-    # This structure allows Lean to easily read and reconstruct the type graph.
-    output_data = {
-        "n": n,
-        "k": k,
-        "type_index": type_index,
-        "type_edges": sigma_edges,  # Used by Lean to create the Type graph
-        "flags": flags_list,
-    }
 
-    # Save to JSON
-    output_filename = f"LeanFlagAlgebras/Flags/Flags/flags_{n}_{k}_{type_index}.json"
-    with open(output_filename, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, indent=2)
+def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
+	if n < k:
+		raise ValueError("n must be greater than or equal to k.")
 
-    print(
-        f"[{output_filename}] Saved successfully: Contains type info and {len(flags_list)} non-isomorphic flags."
-    )
+	base_dir = Path(__file__).resolve().parent
+	types_dir = base_dir / "Graphs"
+	flags_dir = base_dir / "Flags"
+	flags_dir.mkdir(parents=True, exist_ok=True)
+
+	type_k_file = types_dir / f"graphs_{k}.json"
+	type_n_file = types_dir / f"graphs_{n}.json"
+
+	if not type_k_file.exists():
+		raise FileNotFoundError(f"Missing file: {type_k_file}")
+	if not type_n_file.exists():
+		raise FileNotFoundError(f"Missing file: {type_n_file}")
+
+	with type_k_file.open("r", encoding="utf-8") as f:
+		types_k_raw = json.load(f)
+	with type_n_file.open("r", encoding="utf-8") as f:
+		types_n_raw = json.load(f)
+
+	if type_num < 0 or type_num >= len(types_k_raw):
+		raise IndexError(f"type_num={type_num} out of range for {type_k_file.name}")
+
+	sigma_edges = normalize_edges(types_k_raw[type_num])
+	all_n_graphs = [normalize_edges(g_edges) for g_edges in types_n_raw]
+
+	all_injections = Fraction(1, 1)
+	for t in range(k):
+		all_injections *= (n - t)
+
+	flags: List[Dict] = []
+
+	for underlying_graph_num, graph_edges in enumerate(all_n_graphs):
+		valid_embeddings = find_valid_embeddings(graph_edges, sigma_edges, n, k)
+		if not valid_embeddings:
+			continue
+
+		automorphisms = find_automorphisms(graph_edges, n)
+
+		remaining = set(valid_embeddings)
+		while remaining:
+			seed = min(remaining)
+			orbit = orbit_of_embedding(seed, automorphisms, valid_embeddings)
+			if not orbit:
+				orbit = {seed}
+
+			representative = min(orbit)
+			coeff = Fraction(len(orbit), 1) / all_injections
+
+			flags.append(
+				{
+					"underlying_graph_num": underlying_graph_num,
+					"edges": [list(e) for e in graph_edges],
+					"type_indices": list(representative),
+					"downward_coeff": to_fraction_string(coeff),
+				}
+			)
+
+			remaining.difference_update(orbit)
+
+	flags.sort(key=lambda x: (x["underlying_graph_num"], x["type_indices"]))
+
+	return {
+		"n": n,
+		"k": k,
+		"type_num": type_num,
+		"type_edges": [list(e) for e in sigma_edges],
+		"flags": flags,
+	}
+
+
+def main() -> None:
+	parser = argparse.ArgumentParser(
+		description="Generate enriched flag JSON from Graphs/graphs_k.json and Graphs/graphs_n.json"
+	)
+	parser.add_argument("n", type=int, help="Total number of vertices")
+	parser.add_argument("k", type=int, help="Type size (number of labeled vertices)")
+	parser.add_argument("type_num", type=int, help="Index in Graphs/graphs_k.json")
+	args = parser.parse_args()
+
+	output = generate_flag_json(args.n, args.k, args.type_num)
+
+	out_path = Path(__file__).resolve().parent / "Flags" / f"flags_{args.n}_{args.k}_{args.type_num}.json"
+	with out_path.open("w", encoding="utf-8") as f:
+		json.dump(output, f, indent=2)
+
+	print(f"Saved {len(output['flags'])} flags to {out_path}")
 
 
 if __name__ == "__main__":
-    # Example usage:
-    generate_flags_with_type(n=3, k=1, type_index=0)
+	main()
