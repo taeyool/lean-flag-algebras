@@ -7,10 +7,6 @@ open FlagAlgebras.Compute
 
 namespace MantelTheorem
 
-example : Sym2FlagType_0_0.toFlagType = ∅ₜ := by
-  ext a _
-  exact Fin.elim0 a
-
 /-- downward of K2₁ -/
 
 lemma unlabel_K2₁
