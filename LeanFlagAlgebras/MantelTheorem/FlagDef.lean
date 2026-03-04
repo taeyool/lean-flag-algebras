@@ -4,32 +4,16 @@ set_option linter.unnecessarySimpa false
 
 load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_2.json"
 load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_3.json"
--- load_flags "LeanFlagAlgebras/Flags/Flags/flags_2_0_0.json"
--- load_flags "LeanFlagAlgebras/Flags/Flags/flags_3_0_0.json"
 
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_2_1_0.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_3_1_0.json"
 
 #print Sym2LabeledGraph_3_1_0_2
-#print downward_3_1_0_2
+#check downward_3_1_0_2
+#check flagSet_3_0_0_eq_univ
+#check flagSet_3_1_0_val_eq
 
 namespace MantelTheorem
-
--- abbrev O2_Sym2Flag := Sym2Flag_2_0_0_0
--- abbrev K2_Sym2Flag := Sym2Flag_2_0_0_1
--- abbrev O3_Sym2Flag := Sym2Flag_3_0_0_0
--- abbrev E3_Sym2Flag := Sym2Flag_3_0_0_1
--- abbrev P3_Sym2Flag := Sym2Flag_3_0_0_2
--- abbrev K3_Sym2Flag := Sym2Flag_3_0_0_3
-
--- abbrev O2₁_Sym2Flag := Sym2Flag_2_1_0_0
--- abbrev K2₁_Sym2Flag := Sym2Flag_2_1_0_1
--- abbrev O3₁_Sym2Flag := Sym2Flag_3_1_0_0
--- abbrev E3₁_Sym2Flag := Sym2Flag_3_1_0_1
--- abbrev E3₁'_Sym2Flag := Sym2Flag_3_1_0_2
--- abbrev P3₁_Sym2Flag := Sym2Flag_3_1_0_3
--- abbrev P3₁'_Sym2Flag := Sym2Flag_3_1_0_4
--- abbrev K3₁_Sym2Flag := Sym2Flag_3_1_0_5
 
 noncomputable abbrev O2_flag := Flag_2_0_0_0
 noncomputable abbrev K2_flag := Flag_2_0_0_1

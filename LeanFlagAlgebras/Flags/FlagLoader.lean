@@ -262,6 +262,60 @@ elab "load_empty_typed_flags" filename:str : command => do
         native_decide
     ))
 
+  let flagSetName := mkIdent (Name.mkSimple s!"flagSet_{n}_0_0")
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSet_{n}_0_0_val_eq")
+  let flagSetEqUnivName := mkIdent (Name.mkSimple s!"flagSet_{n}_0_0_eq_univ")
+  let flagBridgeTerms : Array (TSyntax `term) :=
+    (List.range graphsJson.size).toArray.map (fun i =>
+      (mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}") : TSyntax `term))
+
+  let env ← getEnv
+  if ¬ env.contains flagSetName.getId then
+    elabCommand (← `(
+      def $flagSetName :=
+        Finset.map { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective } $setName
+    ))
+
+  let env ← getEnv
+  if ¬ env.contains flagSetValEqName.getId then
+    elabCommand (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val =
+            [ $flagBridgeTerms,* ]) := by
+        have hnodup :
+            ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
+          native_decide
+        have hdedup :
+            ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
+              = ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) := by
+          exact List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2EmptyTypedFlag.toFlag ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))))
+              = [ $flagBridgeTerms,* ] := by
+          rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2EmptyTypedFlag.toFlag
+              (([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup)
+                = [ $flagBridgeTerms,* ] := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
+  let env ← getEnv
+  if ¬ env.contains flagSetEqUnivName.getId then
+    elabCommand (← `(
+      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
+        change
+          Finset.map { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective } $setName
+            = Finset.univ
+        have hs : $setName = Finset.univ := $setEqUnivName
+        rw [hs]
+        ext F
+        simp
+        exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩
+    ))
+
   logInfo s!"Loaded {graphsJson.size} empty-typed flags as `Sym2Flag_{n}_0_0_i`."
 
 elab "load_flags" filename:str : command => do
