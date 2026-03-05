@@ -1,3 +1,4 @@
+-- Utils
 import LeanFlagAlgebras.Utils.Combinations
 import LeanFlagAlgebras.Utils.LinExtension
 import LeanFlagAlgebras.Utils.MultinomialCoefficient
@@ -6,9 +7,11 @@ import LeanFlagAlgebras.Utils.QuotientGraph
 import LeanFlagAlgebras.Utils.SubgraphUtil
 import LeanFlagAlgebras.Utils.TacticChoose
 
+-- GraphAlgebra
 import LeanFlagAlgebras.GraphAlgebra.SubgraphDensity
 import LeanFlagAlgebras.GraphAlgebra.GraphAlgebra
 
+-- FlagAlgebra
 import LeanFlagAlgebras.FlagAlgebra.FlagDef
 import LeanFlagAlgebras.FlagAlgebra.SubflagDensity
 import LeanFlagAlgebras.FlagAlgebra.SubflagListDensity
@@ -18,12 +21,21 @@ import LeanFlagAlgebras.FlagAlgebra.FlagOperators
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 import LeanFlagAlgebras.FlagAlgebra.FlagSequence
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
-
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
+-- Flags
 import LeanFlagAlgebras.Flags.FlagLoader
+
+-- MantelTheorem
+import LeanFlagAlgebras.MantelTheorem.FlagDef
+import LeanFlagAlgebras.MantelTheorem.FlagDensity
+import LeanFlagAlgebras.MantelTheorem.FlagMul
+import LeanFlagAlgebras.MantelTheorem.Lemmas
+import LeanFlagAlgebras.MantelTheorem.MantelTheorem
+import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey
+import LeanFlagAlgebras.MantelTheorem.GoodmanBound
 
 -- Archive imports
 -- import LeanFlagAlgebras.Archive.BoolAlgebra
