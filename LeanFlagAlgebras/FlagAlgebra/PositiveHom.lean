@@ -1,6 +1,7 @@
 import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
 import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensityProp
 import Mathlib.Algebra.Algebra.Hom
+import Mathlib.Algebra.Order.Monoid.Defs
 
 namespace FlagAlgebras
 
@@ -163,6 +164,24 @@ theorem flag_add_le_add
   rw [this]
   rw [PositiveHom.map_add φ]
   exact add_nonneg (hf φ) (hg φ)
+
+theorem flag_add_le_add_left
+    {f g : FlagAlgebra σ} (h : f ≤ g) (a : FlagAlgebra σ)
+    : a + f ≤ a + g
+  :=
+  flag_add_le_add (le_refl a) h
+
+theorem flag_add_le_add_right
+    {f g : FlagAlgebra σ} (h : f ≤ g) (a : FlagAlgebra σ)
+    : f + a ≤ g + a
+  := by
+  simpa [add_comm] using flag_add_le_add h (le_refl a)
+
+instance : AddLeftMono (FlagAlgebra σ) where
+  elim := fun a _ _ h ↦ flag_add_le_add_left h a
+
+instance : AddRightMono (FlagAlgebra σ) where
+  elim := fun a _ _ h ↦ flag_add_le_add_right h a
 
 theorem nonneg_smul_nonneg_geq_zero
     {r : ℝ} {f : FlagAlgebra σ} (hr : r ≥ 0) (hf : f ≥ 0)
