@@ -311,9 +311,11 @@ elab "load_empty_typed_flags" filename:str : command => do
             = Finset.univ
         have hs : $setName = Finset.univ := $setEqUnivName
         rw [hs]
-        ext F
-        simp
-        exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩
+        exact Finset.map_univ_of_surjective (f :=
+          { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective })
+          (by
+            intro F
+            exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩)
     ))
 
   logInfo s!"Loaded {graphsJson.size} empty-typed flags as `Sym2Flag_{n}_0_0_i`."
@@ -421,6 +423,7 @@ elab "load_flags" filename:str : command => do
     let env ← getEnv
     if ¬ env.contains downwardThmName.getId then
       elabCommand (← `(
+        @[simp]
         theorem $downwardThmName
             : ⟦$flagAlgebraName⟧₀ = $coeffR • $baseFlagAlgebraName
           := by
@@ -507,9 +510,11 @@ elab "load_flags" filename:str : command => do
             = Finset.univ
         have hs : $setName = Finset.univ := $setEqUnivName
         rw [hs]
-        ext F
-        simp
-        exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩
+        exact Finset.map_univ_of_surjective (f :=
+          { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective })
+          (by
+            intro F
+            exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩)
     ))
 
   logInfo s!"Loaded `{typeName.getId}` and {flags.size} flags as `Sym2Flag_{n}_{k}_{m}_i`."

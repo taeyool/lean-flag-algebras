@@ -1,10 +1,10 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagMul
 
-open FlagAlgebras
+open FlagAlgebras Compute
 
 namespace MantelTheorem
 
-lemma expand_K2_on_3_vertex_graphs
+lemma expand_K2_on_three_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
   apply Quotient.sound
@@ -15,7 +15,19 @@ lemma expand_K2_on_3_vertex_graphs
   simp [flagSet_3_0_0_val_eq]
   rw [add_assoc]
 
-lemma expand_1_on_3_vertex_graphs
+lemma expand_1_on_one_vertex_graphs
+    : 1 = K1
+  := by
+  apply Quotient.sound
+  apply flagVectorEqv.trans (one_vector_eqv_densityFlagSum 1 (by simp))
+  dsimp [densityFlagSum]
+  rw [Finset.sum_eq_multiset_sum, ← flagSet_1_0_0_eq_univ]
+  simp [flagSet_1_0_0_val_eq]
+  rw [finFlag_one_snd, flagDensity_empty]
+  simp only [Rat.cast_one, one_smul]
+  rfl
+
+lemma expand_1_on_three_vertex_graphs
     : 1 = O3 + E3 + P3 + K3
   := by
   apply Quotient.sound
@@ -33,6 +45,19 @@ lemma expand_1_on_3_vertex_graphs
       apply flagVector_eq_eqv
       simp only [add_assoc]
 
+lemma one₁_eq_K1₁
+    : (1 : FlagAlgebra FlagType_1_0) = K1₁
+  := by
+  apply Quotient.sound
+  have : (1 : FlagVector FlagType_1_0) = unitVector ⟨1, (default : Flag FlagType_1_0 (Fin 1))⟩ := by rfl
+  rw [this]
+  congr!
+  apply Quotient.sound
+  simp only [emptyLabeledGraph, Sym2LabeledGraph.toLabeledGraph]
+  congr!
+  ext x
+  simp only [RelEmbedding.refl_apply, Fin.val_eq_zero]
+
 lemma O2₁_minus_K2₁_square_downward
     : ⟦(O2₁ - K2₁) * (O2₁ - K2₁)⟧₀ = O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3
   := by
@@ -45,8 +70,7 @@ lemma O2₁_minus_K2₁_square_downward
         ring
     _ = ⟦O3₁⟧₀ + ⟦E3₁'⟧₀ - ⟦E3₁⟧₀ - ⟦P3₁'⟧₀ + ⟦P3₁⟧₀ + ⟦K3₁⟧₀ := by simp only [downward_add, downward_sub]
     _ = O3 - ((2 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • E3) - ((2 / 3 : ℝ) • P3 - (1 / 3 : ℝ) • P3) + K3 := by
-        simp [downward_3_1_0_0, downward_3_1_0_1, downward_3_1_0_2, downward_3_1_0_3, downward_3_1_0_4, downward_3_1_0_5]
-        ring
+        simp; ring
     _ = O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3 := by
         simp only [← sub_smul]
         norm_num

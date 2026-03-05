@@ -31,7 +31,7 @@ theorem Goodman_theorem_on_Ramsey_multiplicity
     _ = (1 / 4 : ℝ) • O3 + (1 / 4 : ℝ) • E3 + (1 / 4 : ℝ) • P3 + (1 / 4 : ℝ) • K3 := by
         norm_num
     _ = (1 / 4 : ℝ) • 1 := by
-        rw [expand_1_on_3_vertex_graphs]
+        rw [expand_1_on_three_vertex_graphs]
         norm_num
 
 end MantelTheorem

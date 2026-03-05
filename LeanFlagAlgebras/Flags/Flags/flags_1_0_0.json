@@ -1,0 +1,14 @@
+{
+  "n": 1,
+  "k": 0,
+  "type_num": 0,
+  "type_edges": [],
+  "flags": [
+    {
+      "underlying_graph_num": 0,
+      "edges": [],
+      "type_indices": [],
+      "downward_coeff": "1"
+    }
+  ]
+}

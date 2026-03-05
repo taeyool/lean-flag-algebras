@@ -8,7 +8,7 @@ namespace MantelTheorem
 theorem Mantel_theorem
     : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
-  have h₁ : K2 ≤ (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3 := by rw [expand_K2_on_3_vertex_graphs]
+  have h₁ : K2 ≤ (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3 := by rw [expand_K2_on_three_vertex_graphs]
   have h₂ : 0 ≤ (1 / 3 : ℝ) • E3 :=
     nonneg_smul_nonneg_geq_zero (by linarith) (flag_geq_zero _)
   have h₃ : 0 ≤ (1 / 2 : ℝ) • O3 - (1 / 6 : ℝ) • E3 - (1 / 6 : ℝ) • P3 + (1 / 2 : ℝ) • K3 := by
@@ -32,7 +32,7 @@ theorem Mantel_theorem
         + (1 / 2 : ℝ) • K3 + K3 := by simp only [add_smul, sub_smul]; ring
     _ = (1 / 2 : ℝ) • O3 + (1 / 2 : ℝ) • E3 + (1 / 2 : ℝ) • P3 + (1 / 2 : ℝ) • K3 + K3 := by norm_num
     _ = (1 / 2 : ℝ) • 1 + K3 := by
-        rw [expand_1_on_3_vertex_graphs]
+        rw [expand_1_on_three_vertex_graphs]
         norm_num
 
 end MantelTheorem
