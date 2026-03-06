@@ -87,6 +87,8 @@ lemma dQ_nonneg (i : Fin 6) : 0 ≤ dQ i := by
 lemma Q_eq_LDL : Q = LQ * Matrix.diagonal dQ * LQᵀ := by
   native_decide
 
+theorem Q_posSemidef : Q.PosSemidef := by
+  exact posSemidef_of_eq_mul_diagonal_mul_transpose dQ_nonneg Q_eq_LDL
 
 -- LDLᵀ generated for R, size=5, diagonal nonnegative=True
 def R : Matrix (Fin 5) (Fin 5) ℚ :=
@@ -111,3 +113,6 @@ lemma dR_nonneg (i : Fin 5) : 0 ≤ dR i := by
 
 lemma R_eq_LDL : R = LR * Matrix.diagonal dR * LRᵀ := by
   native_decide
+
+theorem R_posSemidef : R.PosSemidef := by
+  exact posSemidef_of_eq_mul_diagonal_mul_transpose dR_nonneg R_eq_LDL

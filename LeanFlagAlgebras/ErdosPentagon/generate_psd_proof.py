@@ -92,7 +92,15 @@ def matrix_to_lean_bang(mat: Sequence[Sequence[Fraction]]) -> str:
     return "!![" + ";\n   ".join(rows) + "]"
 
 
-def emit_lean_block(mat_name: str, l_name: str, d_name: str, mat: List[List[Fraction]], l: List[List[Fraction]], d: List[Fraction]) -> str:
+def emit_lean_block(
+    mat_name: str,
+    l_name: str,
+    d_name: str,
+    mat: List[List[Fraction]],
+    l: List[List[Fraction]],
+    d: List[Fraction],
+    psd_helper_name: str,
+) -> str:
     n = len(mat)
 
     lines = []
@@ -114,6 +122,10 @@ def emit_lean_block(mat_name: str, l_name: str, d_name: str, mat: List[List[Frac
 
     lines.append(f"lemma {mat_name}_eq_LDL : {mat_name} = {l_name} * Matrix.diagonal {d_name} * {l_name}ᵀ := by")
     lines.append("  native_decide")
+    lines.append("")
+
+    lines.append(f"theorem {mat_name}_posSemidef : {mat_name}.PosSemidef := by")
+    lines.append(f"  exact {psd_helper_name} {d_name}_nonneg {mat_name}_eq_LDL")
 
     return "\n".join(lines)
 
@@ -133,6 +145,12 @@ def main() -> None:
     parser.add_argument("--matrix", type=str, help="JSON matrix string, e.g. '[[\"1/2\",\"0\"],[\"0\",\"3/2\"]]'")
     parser.add_argument("--input", type=str, help="Path to JSON file containing matrix as list of lists")
     parser.add_argument("--name", type=str, default="P", help="Lean matrix name prefix (default: P)")
+    parser.add_argument(
+        "--psd-helper",
+        type=str,
+        default="posSemidef_of_eq_mul_diagonal_mul_transpose",
+        help="Lean theorem name used to conclude PosSemidef from (d_nonneg, eq_LDL)",
+    )
     parser.add_argument("--out", type=str, help="Output Lean file path. If omitted, prints to stdout")
     parser.add_argument(
         "--write-mode",
@@ -162,7 +180,7 @@ def main() -> None:
         raise SystemExit("Internal check failed: reconstructed matrix does not match input" )
 
     name = args.name
-    lean = emit_lean_block(name, f"L{name}", f"d{name}", mat, l, d)
+    lean = emit_lean_block(name, f"L{name}", f"d{name}", mat, l, d, args.psd_helper)
 
     nonneg = all(x >= 0 for x in d)
     header = f"-- LDLᵀ generated for {name}, size={len(mat)}, diagonal nonnegative={nonneg}"
