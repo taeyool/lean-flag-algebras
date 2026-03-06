@@ -35,4 +35,10 @@ theorem Mantel_theorem
         rw [expand_1_on_three_vertex_graphs]
         norm_num
 
+theorem Mantel_theorem'
+    : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 ≤ 1 / 2
+  := by
+  intro φ h
+  simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_theorem φ
+
 end MantelTheorem
