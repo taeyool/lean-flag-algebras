@@ -25,6 +25,10 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
+-- Logic
+import LeanFlagAlgebras.Logic.Defs
+import LeanFlagAlgebras.Logic.Lemmas
+
 -- Flags
 import LeanFlagAlgebras.Flags.FlagLoader
 
