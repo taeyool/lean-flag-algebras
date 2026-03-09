@@ -1,5 +1,4 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagMul
-import «LeanFlagAlgebras».MantelTheorem.FlagExpandTactic
 
 open FlagAlgebras Compute
 
@@ -9,16 +8,16 @@ lemma expand_K2_on_three_vertex_graphs
     : K2 = (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3
   := by
   dsimp only [K2, E3, P3, K3]
-  flag_unit_expand 3
+  prove_flag_expand 3
 
 example : FlagAlgebra_2_0_0_1 = (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + (1 : ℝ) • FlagAlgebra_3_0_0_3 + (0 : ℝ) • FlagAlgebra_3_0_0_0 + (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
   := by
-  flag_unit_expand 3
+  prove_flag_expand 3
 
 example : K2₁ = (1 / 2 : ℝ) • E3₁ + P3₁ + (1 / 2 : ℝ) • P3₁' + K3₁
   := by
   dsimp only [K2₁, E3₁, P3₁, P3₁', K3₁]
-  flag_unit_expand 3
+  prove_flag_expand 3
 
 lemma K0_eq_one
     : K0 = 1
@@ -33,14 +32,14 @@ lemma expand_1_on_one_vertex_graphs
   := by
   rw [← K0_eq_one]
   dsimp only [K0]
-  flag_unit_expand 1
+  prove_flag_expand 1
 
 lemma expand_1_on_three_vertex_graphs
     : 1 = O3 + E3 + P3 + K3
   := by
   rw [← K0_eq_one]
   dsimp only [K0, O3, E3, P3, K3]
-  flag_unit_expand 3
+  prove_flag_expand 3
 
 lemma K1₁_eq_one
     : K1₁ = 1

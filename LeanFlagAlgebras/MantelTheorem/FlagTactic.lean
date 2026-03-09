@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.MantelTheorem.FlagDef
+import LeanFlagAlgebras.MantelTheorem.FlagDensity
 
 open Lean Elab Tactic Meta
 
@@ -40,8 +41,25 @@ def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := 
   let i ← String.toNat? iStr
   pure (n, k, m, i)
 
+/-- Collect all constants containing `FlagAlgebra_...` in an expression tree. -/
+partial def collectFlagAlgebraConsts (e : Expr) (acc : Array Name := #[]) : Array Name :=
+  match e with
+  | .const nm _ =>
+      if nm.toString.contains "FlagAlgebra_" then acc.push nm else acc
+  | .app f x =>
+      let acc' := collectFlagAlgebraConsts f acc
+      collectFlagAlgebraConsts x acc'
+  | .lam _ _ b _ => collectFlagAlgebraConsts b acc
+  | .forallE _ _ b _ => collectFlagAlgebraConsts b acc
+  | .letE _ _ v b _ =>
+      let acc' := collectFlagAlgebraConsts v acc
+      collectFlagAlgebraConsts b acc'
+  | .mdata _ b => collectFlagAlgebraConsts b acc
+  | .proj _ _ b => collectFlagAlgebraConsts b acc
+  | _ => acc
+
 /--
-`flag_unit_expand N` proves goals of the form
+`prove_flag_expand N` proves goals of the form
 `(one loaded flag algebra basis element) = (its size N expansion)`.
 
 It automatically:
@@ -51,7 +69,7 @@ It automatically:
 4) rewrites using generated `flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`,
 5) closes by normalization (`ring_nf`), so RHS add-order differences are tolerated.
 -/
-syntax (name := flagUnitExpandTac) "flag_unit_expand " term : tactic
+syntax (name := flagUnitExpandTac) "prove_flag_expand " term : tactic
 
 syntax (name := flagLinearUnitStartCompatTac)
   "flag_linear_unit_start " term " at " term : tactic
@@ -60,7 +78,7 @@ syntax (name := flagLinearOneStartCompatTac)
   "flag_linear_one_start " term : tactic
 
 elab_rules : tactic
-  | `(tactic| flag_unit_expand $N) => do
+  | `(tactic| prove_flag_expand $N) => do
       withMainContext do
         if (← getGoals).isEmpty then
           pure ()
@@ -71,7 +89,7 @@ elab_rules : tactic
 
         let nExpr ← elabTerm N (some (mkConst ``Nat))
         let some nVal ← (Meta.evalNat nExpr).run
-          | throwError "Could not evaluate N to a natural number in `flag_unit_expand`."
+          | throwError "Could not evaluate N to a natural number in `prove_flag_expand`."
 
         let goalTy ← (← getMainGoal).getType
         let some (_, lhs, _) := goalTy.eq?
@@ -114,6 +132,67 @@ elab_rules : tactic
           pure ()
         try
           runIfGoals (← `(tactic| apply FlagAlgebras.flagVector_eq_eqv; simp [add_assoc, add_left_comm, add_comm]))
+        catch _ =>
+          pure ()
+
+/--
+`prove_flag_mul` proves goals of the shape
+`(flag) * (flag) = (linear combination of flags)`.
+
+It unfolds flag multiplication to a finite sum, rewrites by
+`flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`, and closes by
+algebraic normalization. The RHS add-order is handled up to associativity and
+commutativity.
+-/
+syntax (name := flagMulTac) "prove_flag_mul" : tactic
+
+elab_rules : tactic
+  | `(tactic| prove_flag_mul) => do
+      withMainContext do
+        evalTactic (← `(tactic| try dsimp))
+        let goal ← getMainGoal
+        let goalTy ← goal.getType
+        let some (_, lhs, rhs) := goalTy.eq?
+          | throwError "Goal must be an equality."
+
+        let lhsConsts := collectFlagAlgebraConsts lhs
+        let rhsConsts := collectFlagAlgebraConsts rhs
+
+        let some lhsConst := lhsConsts[0]?
+          | throwError "Could not find a `FlagAlgebra_*` constant on the LHS."
+        let some (_, kVal, mVal, _) := parseFlagAlgebraIndices? lhsConst
+          | throwError m!"Could not parse indices from LHS constant `{lhsConst}`."
+
+        let rhsNs := rhsConsts.toList.filterMap (fun nm =>
+          match parseFlagAlgebraIndices? nm with
+          | some (n, _, _, _) => some n
+          | none => none)
+        if rhsNs.isEmpty then
+          throwError "Could not infer target size `N` from RHS `FlagAlgebra_*` constants."
+        let nVal := rhsNs.foldl Nat.max 0
+
+        let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
+        let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
+        let eqUnivId : TSyntax `ident := mkIdent eqUnivName
+        let valEqId : TSyntax `ident := mkIdent valEqName
+
+        evalTactic (← `(tactic| apply Quotient.sound))
+        evalTactic (← `(tactic| dsimp))
+        evalTactic (← `(tactic| simp [FlagAlgebras.flagVector_mul_eq_nested_sum, FlagAlgebras.flagMul, FlagAlgebras.flagMulWithSize]))
+        evalTactic (← `(tactic| have h_eq_univ := $eqUnivId))
+        evalTactic (← `(tactic| have h_val_eq := $valEqId))
+        evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum, ← h_eq_univ]))
+        evalTactic (← `(tactic| simp [h_val_eq]))
+        try
+          evalTactic (← `(tactic| ring_nf))
+        catch _ =>
+          pure ()
+        try
+          evalTactic (← `(tactic| apply flagVector_eq_eqv; ring_nf))
+        catch _ =>
+          pure ()
+        try
+          evalTactic (← `(tactic| apply flagVector_eq_eqv; simp [add_assoc, add_left_comm, add_comm]))
         catch _ =>
           pure ()
 

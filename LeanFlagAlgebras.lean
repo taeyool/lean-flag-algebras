@@ -36,7 +36,7 @@ import LeanFlagAlgebras.Flags.FlagLoader
 import LeanFlagAlgebras.MantelTheorem.FlagDef
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.MantelTheorem.FlagMul
-import LeanFlagAlgebras.MantelTheorem.FlagExpandTactic
+import LeanFlagAlgebras.MantelTheorem.FlagTactic
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey
