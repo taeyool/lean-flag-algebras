@@ -39,7 +39,7 @@ theorem Goodman_bound_on_triangle_density
   have h₃ : 2 • ⟦K2₁ * K2₁⟧₀ ≥ 2 • (K2 * K2) := by
     calc
       _ = 2 • ⟦K2₁ * K2₁⟧₀ * ⟦(1 : FlagAlgebra FlagType_1_0)⟧₀ := by
-        simp [one₁_eq_K1₁, ← expand_1_on_one_vertex_graphs]
+        simp [← K1₁_eq_one, ← expand_1_on_one_vertex_graphs]
       _ ≥ 2 • (⟦K2₁⟧₀ * ⟦K2₁⟧₀) := by
         simpa [mul_assoc] using (nsmul_le_nsmul_right (Cauchy_Schwarz_inequality_unit K2₁) 2)
       _ = 2 • (K2 * K2) := by simp

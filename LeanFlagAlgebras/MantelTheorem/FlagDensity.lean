@@ -9,6 +9,46 @@ namespace MantelTheorem
 /- single flag densities -/
 
 @[simp]
+theorem flagDensity_K0_K1
+    : flagDensity₁ K0_flag K1_flag = 1
+  := by
+  dsimp [K0_flag, K1_flag, Flag_0_0_0_0, Flag_1_0_0_0]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K0_O3
+    : flagDensity₁ K0_flag O3_flag = 1
+  := by
+  dsimp [K0_flag, O3_flag, Flag_0_0_0_0, Flag_3_0_0_0]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K0_E3
+    : flagDensity₁ K0_flag E3_flag = 1
+  := by
+  dsimp [K0_flag, E3_flag, Flag_0_0_0_0, Flag_3_0_0_1]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K0_P3
+    : flagDensity₁ K0_flag P3_flag = 1
+  := by
+  dsimp [K0_flag, P3_flag, Flag_0_0_0_0, Flag_3_0_0_2]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K0_K3
+    : flagDensity₁ K0_flag K3_flag = 1
+  := by
+  dsimp [K0_flag, K3_flag, Flag_0_0_0_0, Flag_3_0_0_3]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
 theorem flagDensity_K2_O3
     : flagDensity₁ K2_flag O3_flag = 0
   := by
@@ -38,6 +78,54 @@ theorem flagDensity_K2_K3
   := by
   dsimp [K2_flag, K3_flag, Flag_2_0_0_1, Flag_3_0_0_3]
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_O3₁
+    : flagDensity₁ K2₁_flag O3₁_flag = 0
+  := by
+  dsimp [K2₁_flag, O3₁_flag, Flag_2_1_0_1, Flag_3_1_0_0]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_E3₁
+    : flagDensity₁ K2₁_flag E3₁_flag = 1 / 2
+  := by
+  dsimp [K2₁_flag, E3₁_flag, Flag_2_1_0_1, Flag_3_1_0_1]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_E3₁'
+    : flagDensity₁ K2₁_flag E3₁'_flag = 0
+  := by
+  dsimp [K2₁_flag, E3₁'_flag, Flag_2_1_0_1, Flag_3_1_0_2]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_P3₁
+    : flagDensity₁ K2₁_flag P3₁_flag = 1
+  := by
+  dsimp [K2₁_flag, P3₁_flag, Flag_2_1_0_1, Flag_3_1_0_3]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_P3₁'
+    : flagDensity₁ K2₁_flag P3₁'_flag = 1 / 2
+  := by
+  dsimp [K2₁_flag, P3₁'_flag, Flag_2_1_0_1, Flag_3_1_0_4]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
+  native_decide
+
+@[simp]
+theorem flagDensity_K2₁_K3₁
+    : flagDensity₁ K2₁_flag K3₁_flag = 1
+  := by
+  dsimp [K2₁_flag, K3₁_flag, Flag_2_1_0_1, Flag_3_1_0_5]
+  rw [flagDensity₁_eq_sym2FlagDensity₁]
   native_decide
 
 
