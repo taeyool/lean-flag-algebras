@@ -1,7 +1,9 @@
 import «LeanFlagAlgebras».FlagAlgebra.RandomHom
 import «LeanFlagAlgebras».MantelTheorem.Lemmas
+import Mathlib.Combinatorics.SimpleGraph.Extremal.TuranDensity
 
-open FlagAlgebras
+open FlagAlgebras Compute
+open SimpleGraph
 
 namespace MantelTheorem
 
@@ -40,5 +42,27 @@ theorem Mantel_theorem'
   := by
   intro φ h
   simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_theorem φ
+
+example : Sym2Graph_3_0_0_3.toLabeledGraph.graph = completeGraph (Fin 3) := by
+  ext v w
+  simp [Sym2Graph.toLabeledGraph]
+  fin_cases v <;> fin_cases w <;> decide
+
+def SimpleGraph.blow_up
+    {V : Type} (G : SimpleGraph V) (n : ℕ)
+    : SimpleGraph (Fin n × V) where
+  Adj x y := G.Adj x.2 y.2
+  symm := by
+    intro x y hxy
+    exact hxy.symm
+  loopless := by
+    intro x hxx
+    exact G.loopless x.2 hxx
+
+theorem Turan_density_K3
+    : turanDensity (completeGraph (Fin 3)) = 1 / 2
+  := by
+  dsimp [turanDensity]
+  sorry
 
 end MantelTheorem
