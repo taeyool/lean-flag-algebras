@@ -71,12 +71,6 @@ It automatically:
 -/
 syntax (name := flagUnitExpandTac) "prove_flag_expand " term : tactic
 
-syntax (name := flagLinearUnitStartCompatTac)
-  "flag_linear_unit_start " term " at " term : tactic
-
-syntax (name := flagLinearOneStartCompatTac)
-  "flag_linear_one_start " term : tactic
-
 elab_rules : tactic
   | `(tactic| prove_flag_expand $N) => do
       withMainContext do
