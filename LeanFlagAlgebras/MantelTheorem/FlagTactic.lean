@@ -1,6 +1,7 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.MantelTheorem.FlagDef
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
+import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
 open Lean Elab Tactic Meta
 
@@ -40,6 +41,108 @@ def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := 
   let m ← String.toNat? mStr
   let i ← String.toNat? iStr
   pure (n, k, m, i)
+
+/-- Find a constant name containing `Flag_...` in an expression. -/
+partial def findFlagConst? (e : Expr) : Option Name :=
+  match e with
+  | .const nm _ =>
+    if nm.toString.contains "Flag_" then some nm else none
+  | .app f x =>
+    match findFlagConst? f with
+    | some nm => some nm
+    | none => findFlagConst? x
+  | .lam _ _ b _ => findFlagConst? b
+  | .forallE _ _ b _ => findFlagConst? b
+  | .letE _ _ v b _ =>
+    match findFlagConst? v with
+    | some nm => some nm
+    | none => findFlagConst? b
+  | .mdata _ b => findFlagConst? b
+  | .proj _ _ b => findFlagConst? b
+  | _ => none
+
+/-- Parse `(n,k,m,i)` from names like `...Flag_n_k_m_i`. -/
+def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
+  let s := nm.toString
+  let tail ← match s.splitOn "Flag_" with
+    | _ :: t :: _ => some t
+    | _ => none
+  let parts := tail.splitOn "_"
+  let (nStr, kStr, mStr, iStr) ← match parts with
+    | nStr :: kStr :: mStr :: iStr :: _ => some (nStr, kStr, mStr, iStr)
+    | _ => none
+  let n ← String.toNat? nStr
+  let k ← String.toNat? kStr
+  let m ← String.toNat? mStr
+  let i ← String.toNat? iStr
+  pure (n, k, m, i)
+
+/-
+`prove_flag_expand_with_restriction N` proves goals of the form
+`∀ (φ : PositiveHom σ), φ F_forbidden = 0 → φ F = (size N expansion of F without F_forbidden)`.
+
+It introduces `φ` and the restriction hypothesis, expands `F` with
+`unitVector_quot_eq_sum_density_mul_flagWithSize`, maps by `φ`, rewrites the
+size-`N` flag universe, and then substitutes the forbidden term using the
+hypothesis.
+-/
+syntax (name := flagExpandWithRestrictionTac) "prove_flag_expand_with_restriction " term : tactic
+
+def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
+  withMainContext do
+    let nExpr ← elabTerm N (some (mkConst ``Nat))
+    let some nVal ← (Meta.evalNat nExpr).run
+      | throwError "Could not evaluate N to a natural number in `prove_flag_expand_with_restriction`."
+
+    evalTactic (← `(tactic| intro φ h))
+
+    let goalTy ← (← getMainGoal).getType
+    let some (_, lhs, _) := goalTy.eq?
+      | throwError "Goal after intro must be an equality."
+
+    let parsed : Option (Nat × Nat × Nat × Nat) :=
+      match findFlagConst? lhs with
+      | some flagConst => parseFlagIndices? flagConst
+      | none =>
+          match findFlagAlgebraConst? lhs with
+          | some lhsConst => parseFlagAlgebraIndices? lhsConst
+          | none => none
+    let some (lhsN, kVal, mVal, iVal) := parsed
+      | throwError "Could not find/parse `Flag_*` (or `FlagAlgebra_*`) indices in the target equality."
+
+    let flagName : Name := Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}"
+    let flagId : TSyntax `term := mkIdent flagName
+    let lhsNStx : TSyntax `term := Syntax.mkNumLit (toString lhsN)
+    let finFlagTerm ← `(term| ⟨$lhsNStx, $flagId⟩)
+    let sigmaTerm : TSyntax `term ←
+      if kVal = 0 && mVal = 0 then
+        `(term| ∅ₜ)
+      else
+        pure <| mkIdent (Name.mkSimple s!"FlagType_{kVal}_{mVal}")
+
+    let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
+    let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
+    let eqUnivId : TSyntax `ident := mkIdent eqUnivName
+    let valEqId : TSyntax `ident := mkIdent valEqName
+
+    evalTactic (← `(tactic|
+      have hExp := FlagAlgebras.unitVector_quot_eq_sum_density_mul_flagWithSize (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
+    evalTactic (← `(tactic| have hφ := congrArg φ hExp))
+    evalTactic (← `(tactic| rw [FlagAlgebras.PositiveHom.map_sum] at hφ))
+    evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum] at hφ))
+    evalTactic (← `(tactic| have h_eq_univ := $eqUnivId))
+    evalTactic (← `(tactic| have h_val_eq := $valEqId))
+    evalTactic (← `(tactic| rw [← h_eq_univ, h_val_eq] at hφ))
+    evalTactic (← `(tactic| simp only [Multiset.map_coe, List.map_cons, List.map_nil,
+      Multiset.sum_coe, List.sum_cons, List.sum_nil] at hφ))
+    evalTactic (← `(tactic| simp only [FlagAlgebras.PositiveHom.map_smul] at hφ))
+    evalTactic (← `(tactic| rw [h] at hφ))
+    evalTactic (← `(tactic| simp at hφ))
+    evalTactic (← `(tactic| simpa [one_div, add_assoc] using hφ))
+
+elab_rules : tactic
+  | `(tactic| prove_flag_expand_with_restriction $N) =>
+      runFlagExpandWithRestriction N
 
 /-- Collect all constants containing `FlagAlgebra_...` in an expression tree. -/
 partial def collectFlagAlgebraConsts (e : Expr) (acc : Array Name := #[]) : Array Name :=

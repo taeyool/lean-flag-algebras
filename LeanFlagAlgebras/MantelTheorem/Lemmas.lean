@@ -1,4 +1,5 @@
 import «LeanFlagAlgebras».MantelTheorem.FlagMul
+import «LeanFlagAlgebras».FlagAlgebra.RandomHom
 
 open FlagAlgebras Compute
 
@@ -10,6 +11,13 @@ lemma expand_K2_on_three_vertex_graphs
   dsimp only [K2, E3, P3, K3]
   prove_flag_expand 3
 
+lemma expand_K2_on_three_vertex_without_K3
+    : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 = (1 / 3 : ℝ) • φ E3 + (2 / 3 : ℝ) • φ P3
+  := by
+  dsimp only [K2, E3, P3, K3]
+  dsimp [FlagAlgebra_3_0_0_3, FlagAlgebra_2_0_0_1, FlagAlgebra_3_0_0_1, FlagAlgebra_3_0_0_2]
+  prove_flag_expand_with_restriction 3
+
 example : FlagAlgebra_2_0_0_1 = (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + (1 : ℝ) • FlagAlgebra_3_0_0_3 + (0 : ℝ) • FlagAlgebra_3_0_0_0 + (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
   := by
   prove_flag_expand 3
@@ -18,6 +26,13 @@ example : K2₁ = (1 / 2 : ℝ) • E3₁ + P3₁ + (1 / 2 : ℝ) • P3₁' + K
   := by
   dsimp only [K2₁, E3₁, P3₁, P3₁', K3₁]
   prove_flag_expand 3
+
+lemma expand_K2₁_on_three_vertex_without_K3
+    : ∀ (φ : FlagAlgebras.PositiveHom FlagType_1_0), φ K3₁ = 0 → φ K2₁ = (1 / 2 : ℝ) • φ E3₁ + φ P3₁ + (1 / 2 : ℝ) • φ P3₁'
+  := by
+  dsimp only [K2₁, E3₁, P3₁, P3₁', K3₁]
+  dsimp only [FlagAlgebra_2_1_0_1, FlagAlgebra_3_1_0_1, FlagAlgebra_3_1_0_3, FlagAlgebra_3_1_0_4, FlagAlgebra_3_1_0_5]
+  prove_flag_expand_with_restriction 3
 
 lemma K0_eq_one
     : K0 = 1
@@ -40,6 +55,14 @@ lemma expand_1_on_three_vertex_graphs
   rw [← K0_eq_one]
   dsimp only [K0, O3, E3, P3, K3]
   prove_flag_expand 3
+
+lemma expand_1_on_three_vertex_graphs_without_K3
+    : ∀ (φ : FlagAlgebras.PositiveHom ∅ₜ), φ K3 = 0 → φ 1 = φ O3 + φ E3 + φ P3
+  := by
+  rw [← K0_eq_one]
+  dsimp only [K0, O3, E3, P3, K3]
+  dsimp only [FlagAlgebra_0_0_0_0, FlagAlgebra_3_0_0_0, FlagAlgebra_3_0_0_1, FlagAlgebra_3_0_0_2, FlagAlgebra_3_0_0_3]
+  prove_flag_expand_with_restriction 3
 
 lemma K1₁_eq_one
     : K1₁ = 1
