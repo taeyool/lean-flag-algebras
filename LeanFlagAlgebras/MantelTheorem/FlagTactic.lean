@@ -77,6 +77,23 @@ def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
   let i ← String.toNat? iStr
   pure (n, k, m, i)
 
+partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name :=
+  let rec collectAux (e : Expr) (acc : Array Name) : Array Name :=
+    match e with
+    | .const n _ =>
+      if n.toString.startsWith prefixStr && !acc.contains n then
+        acc.push n
+      else
+        acc
+    | .app f a => collectAux a (collectAux f acc)
+    | .lam _ t b _ => collectAux b (collectAux t acc)
+    | .forallE _ t b _ => collectAux b (collectAux t acc)
+    | .letE _ t v b _ => collectAux b (collectAux v (collectAux t acc))
+    | .mdata _ expr => collectAux expr acc
+    | .proj _ _ expr => collectAux expr acc
+    | _ => acc
+  collectAux e #[]
+
 /-
 `prove_flag_expand_with_restriction N` proves goals of the form
 `∀ (φ : PositiveHom σ), φ F_forbidden = 0 → φ F = (size N expansion of F without F_forbidden)`.
@@ -93,6 +110,13 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
     let nExpr ← elabTerm N (some (mkConst ``Nat))
     let some nVal ← (Meta.evalNat nExpr).run
       | throwError "Could not evaluate N to a natural number in `prove_flag_expand_with_restriction`."
+
+    let target ← getMainTarget
+    let flags := collectPrefixConstants "FlagAlgebra_" target
+    if flags.isEmpty then pure ()
+    else
+      let idents := flags.map mkIdent
+      evalTactic (← `(tactic| dsimp [$[$idents:ident],*]))
 
     evalTactic (← `(tactic| intro φ h))
 
