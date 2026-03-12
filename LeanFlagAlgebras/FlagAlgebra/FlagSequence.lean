@@ -36,6 +36,12 @@ def Increases (s : FlagSeq σ) : Prop
   :=
   StrictMono (fun n => (s n).1)
 
+theorem increases_of_consecutive_lt
+    {s : FlagSeq σ} (h : ∀ n, (s n).1 < (s (n + 1)).1)
+    : Increases s
+  :=
+  strictMono_nat_of_lt_succ h
+
 theorem Increases.eventually_gt
     {s : FlagSeq σ} (h_inc : Increases s) (ℓ : ℕ)
     : ∃ N, ∀ n ≥ N, (s n).1 > ℓ
