@@ -1,5 +1,4 @@
 import Mathlib.Tactic
-import LeanFlagAlgebras.MantelTheorem.FlagDef
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
