@@ -1,5 +1,4 @@
-import «LeanFlagAlgebras».FlagAlgebra.RandomHom
-import «LeanFlagAlgebras».MantelTheorem.Lemmas
+import LeanFlagAlgebras.MantelTheorem.Lemmas
 import Mathlib.Combinatorics.SimpleGraph.Extremal.TuranDensity
 import Mathlib.Combinatorics.SimpleGraph.Clique
 import Mathlib.Combinatorics.SimpleGraph.Coloring
@@ -12,44 +11,56 @@ open Filter
 namespace MantelTheorem
 
 theorem Mantel_theorem
-    : K2 ≤ (1 / 2 : ℝ) • 1 + K3
+  : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
-  have h₁ : K2 ≤ (1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3 := by rw [expand_K2_on_three_vertex_graphs]
-  have h₂ : 0 ≤ (1 / 3 : ℝ) • E3 :=
+  dsimp only [K2, K3]
+  have h₁ : FlagAlgebra_2_0_0_1 ≤ (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
+      + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + FlagAlgebra_3_0_0_3 := by
+    rw [expand_K2_on_three_vertex_graphs]
+  have h₂ : 0 ≤ (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 :=
     nonneg_smul_nonneg_geq_zero (by linarith) (flag_geq_zero _)
-  have h₃ : 0 ≤ (1 / 2 : ℝ) • O3 - (1 / 6 : ℝ) • E3 - (1 / 6 : ℝ) • P3 + (1 / 2 : ℝ) • K3 := by
+  have h₃ : 0 ≤ (1 / 2 : ℝ) • FlagAlgebra_3_0_0_0
+      - (1 / 6 : ℝ) • FlagAlgebra_3_0_0_1 - (1 / 6 : ℝ) • FlagAlgebra_3_0_0_2
+      + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_3 := by
     calc
-      0 ≤ (1 / 2 : ℝ) • (O3 - (1 / 3 : ℝ) • E3 - (1 / 3 : ℝ) • P3 + K3) := by
+      0 ≤ (1 / 2 : ℝ) • (FlagAlgebra_3_0_0_0 - (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
+          - (1 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + FlagAlgebra_3_0_0_3) := by
           apply nonneg_smul_nonneg_geq_zero (by simp)
-          rw [← O2₁_minus_K2₁_square_downward]
+          rw [← FlagAlgebra_2_1_0_0_minus_FlagAlgebra_2_1_0_1_square_downward]
           apply square_downward_nonneg
       _ = _ := by
           simp only [smul_add, smul_sub, smul_smul]
           norm_num
   calc
-    _ = K2 + 0 + 0 := by simp only [add_zero]
-    _ ≤ ((1 / 3 : ℝ) • E3 + (2 / 3 : ℝ) • P3 + K3)
-        + (1 / 3 : ℝ) • E3
-        + ((1 / 2 : ℝ) • O3 - (1 / 6 : ℝ) • E3 - (1 / 6 : ℝ) • P3 + (1 / 2 : ℝ) • K3) :=
+    _ = FlagAlgebra_2_0_0_1 + 0 + 0 := by simp only [add_zero]
+    _ ≤ ((1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+        + FlagAlgebra_3_0_0_3)
+      + (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1
+      + ((1 / 2 : ℝ) • FlagAlgebra_3_0_0_0 - (1 / 6 : ℝ) • FlagAlgebra_3_0_0_1
+        - (1 / 6 : ℝ) • FlagAlgebra_3_0_0_2 + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_3) :=
         flag_add_le_add (flag_add_le_add h₁ h₂) h₃
-    _ = (1 / 2 : ℝ) • O3
-        + ((1 / 3 : ℝ) + (1 / 3 : ℝ) - (1 / 6 : ℝ)) • E3
-        + ((2 / 3 : ℝ) - (1 / 6 : ℝ)) • P3
-        + (1 / 2 : ℝ) • K3 + K3 := by simp only [add_smul, sub_smul]; ring
-    _ = (1 / 2 : ℝ) • O3 + (1 / 2 : ℝ) • E3 + (1 / 2 : ℝ) • P3 + (1 / 2 : ℝ) • K3 + K3 := by norm_num
-    _ = (1 / 2 : ℝ) • 1 + K3 := by
+    _ = (1 / 2 : ℝ) • FlagAlgebra_3_0_0_0
+      + ((1 / 3 : ℝ) + (1 / 3 : ℝ) - (1 / 6 : ℝ)) • FlagAlgebra_3_0_0_1
+      + ((2 / 3 : ℝ) - (1 / 6 : ℝ)) • FlagAlgebra_3_0_0_2
+      + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_3 + FlagAlgebra_3_0_0_3 := by
+        simp only [add_smul, sub_smul]
+        ring
+    _ = (1 / 2 : ℝ) • FlagAlgebra_3_0_0_0 + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_1
+      + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_2 + (1 / 2 : ℝ) • FlagAlgebra_3_0_0_3
+      + FlagAlgebra_3_0_0_3 := by norm_num
+    _ = (1 / 2 : ℝ) • 1 + FlagAlgebra_3_0_0_3 := by
         rw [expand_1_on_three_vertex_graphs]
         norm_num
 
 theorem Mantel_theorem'
-    : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 ≤ 1 / 2
+  : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 ≤ 1 / 2
   := by
   intro φ h
   simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_theorem φ
 
-lemma K3_flag_eq
-    : K3_flag = ⟦{ graph := completeGraph (Fin 3), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
-  simp [K3_flag, Flag_3_0_0_3, Sym2EmptyTypedFlag.toFlag, Sym2Flag_3_0_0_3, Sym2Graph.toFlag]
+lemma Flag_3_0_0_3_eq
+    : Flag_3_0_0_3 = ⟦{ graph := completeGraph (Fin 3), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
+  simp [Flag_3_0_0_3, Sym2EmptyTypedFlag.toFlag, Sym2Flag_3_0_0_3, Sym2Graph.toFlag]
   refine Quotient.sound (Nonempty.intro ?_)
   have hgraph : Sym2Graph_3_0_0_3.toLabeledGraph.graph = completeGraph (Fin 3) := by
     ext v w
@@ -63,9 +74,9 @@ lemma K3_flag_eq
     type_preserve := List.ofFn_inj.mp rfl
   }
 
-lemma K2_flag_eq
-    : K2_flag = ⟦{ graph := completeGraph (Fin 2), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
-  simp [K2_flag, Flag_2_0_0_1, Sym2EmptyTypedFlag.toFlag, Sym2Flag_2_0_0_1, Sym2Graph.toFlag]
+lemma Flag_2_0_0_1_eq
+    : Flag_2_0_0_1 = ⟦{ graph := completeGraph (Fin 2), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
+  simp [Flag_2_0_0_1, Sym2EmptyTypedFlag.toFlag, Sym2Flag_2_0_0_1, Sym2Graph.toFlag]
   refine Quotient.sound (Nonempty.intro ?_)
   have hgraph : Sym2Graph_2_0_0_1.toLabeledGraph.graph = completeGraph (Fin 2) := by
     ext v w
@@ -213,10 +224,10 @@ theorem Turan_density_K3
   }
   let F (k : ℕ) : Flag ∅ₜ (Fin (n k)) := ⟦lG k⟧
   have hF_free : ∀ (k : ℕ),
-      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ K3_flag (F k) = 0 := by
+      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ Flag_3_0_0_3 (F k) = 0 := by
     intro k
     dsimp only [flagDensity₁]
-    rw [← @subflagDensity_eq_flagListDensity, K3_flag_eq]
+    rw [← @subflagDensity_eq_flagListDensity, Flag_3_0_0_3_eq]
     simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity, F, lG]
     left
     simp [labeledSubgraphCount]
@@ -231,11 +242,11 @@ theorem Turan_density_K3
       IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨φ.graph_iso.symm⟩⟩
     exact False.elim ((hG_free k) hcontains)
   have hF_edge : ∀ (k : ℕ),
-      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ K2_flag (F k) =
+      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ Flag_2_0_0_1 (F k) =
         ((G k).edgeFinset.card : ℝ) / (n k).choose 2 := by
     intro k
     dsimp only [flagDensity₁]
-    rw [← @subflagDensity_eq_flagListDensity, K2_flag_eq]
+    rw [← @subflagDensity_eq_flagListDensity, Flag_2_0_0_1_eq]
     simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity, F, lG]
     congr!
     · simp [labeledSubgraphCount]
@@ -341,7 +352,7 @@ theorem Turan_density_K3
         simpa [a, hverts] using h_induced
     · simp only [LabeledGraph.size, Fintype.card_fin]
   have hF_edge_ge : ∀ (k : ℕ),
-      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ K2_flag (F k) ≥ 1 / 2 + ε := by
+      @flagDensity₁ _ _ _ (Fin.fintype (n k)) (instDecidableEqFin (n k)) _ _ _ _ Flag_2_0_0_1 (F k) ≥ 1 / 2 + ε := by
     intro k
     rw [hF_edge k]
     exact hG_edge_ge k
@@ -355,42 +366,45 @@ theorem Turan_density_K3
   obtain ⟨φ, hφ⟩ := flagSeq_limit_mem_positiveHom (s ∘ ϕ) hϕ_conv
   obtain ⟨_, hϕ_conv⟩ := flagSeq_convergesTo_iff.mp hϕ_conv
 
-  have hφ_K3 : φ K3 = 0 := by
-    have h_eval_K3 : a ⟨3, K3_flag⟩ = φ ⟦unitVector ⟨3, K3_flag⟩⟧ := by
+  have hφ_K3 : φ FlagAlgebra_3_0_0_3 = 0 := by
+    have h_eval_K3 : a ⟨3, Flag_3_0_0_3⟩ = φ ⟦unitVector ⟨3, Flag_3_0_0_3⟩⟧ := by
       have hφ_val : (φ.coe : FinFlag ∅ₜ → ℝ) = (a : FinFlag ∅ₜ → ℝ) := congrArg Subtype.val hφ
-      have hφ_eval : φ.coe ⟨3, K3_flag⟩ = a ⟨3, K3_flag⟩ := by simpa using congrFun hφ_val ⟨3, K3_flag⟩
+      have hφ_eval : φ.coe ⟨3, Flag_3_0_0_3⟩ = a ⟨3, Flag_3_0_0_3⟩ := by
+        simpa using congrFun hφ_val ⟨3, Flag_3_0_0_3⟩
       calc
-        a ⟨3, K3_flag⟩ = φ.coe ⟨3, K3_flag⟩ := by simpa using hφ_eval.symm
-        _ = φ ⟦unitVector ⟨3, K3_flag⟩⟧ := by simpa using (PositiveHom.coe_flag φ ⟨3, K3_flag⟩)
-    apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨3, K3_flag⟩) atTop
-    · simpa [h_eval_K3] using (hϕ_conv ⟨3, K3_flag⟩)
-    · have hK3_zero : ∀ n, flagDensitySeq (s ∘ ϕ) n ⟨3, K3_flag⟩ = 0 := by
+        a ⟨3, Flag_3_0_0_3⟩ = φ.coe ⟨3, Flag_3_0_0_3⟩ := by simpa using hφ_eval.symm
+        _ = φ ⟦unitVector ⟨3, Flag_3_0_0_3⟩⟧ := by
+              simpa using (PositiveHom.coe_flag φ ⟨3, Flag_3_0_0_3⟩)
+    apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨3, Flag_3_0_0_3⟩) atTop
+    · simpa [h_eval_K3] using (hϕ_conv ⟨3, Flag_3_0_0_3⟩)
+    · have hK3_zero : ∀ n, flagDensitySeq (s ∘ ϕ) n ⟨3, Flag_3_0_0_3⟩ = 0 := by
         intro n
         simpa [flagDensitySeq, s] using congrArg (fun x : ℚ ↦ (x : ℝ)) (hF_free (ϕ n))
       rw [tendsto_congr hK3_zero, tendsto_const_nhds_iff]
 
-  have hφ_K2_le : φ K2 ≤ 1 / 2 := Mantel_theorem' φ hφ_K3
+  have hφ_K2_le : φ FlagAlgebra_2_0_0_1 ≤ 1 / 2 := Mantel_theorem' φ hφ_K3
   have hφ_K2_tendsto :
-      Tendsto (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨2, K2_flag⟩) atTop (nhds (φ K2)) := by
-    have h_eval_K2 : a ⟨2, K2_flag⟩ = φ ⟦unitVector ⟨2, K2_flag⟩⟧ := by
+      Tendsto (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨2, Flag_2_0_0_1⟩) atTop (nhds (φ FlagAlgebra_2_0_0_1)) := by
+    have h_eval_K2 : a ⟨2, Flag_2_0_0_1⟩ = φ ⟦unitVector ⟨2, Flag_2_0_0_1⟩⟧ := by
       have hφ_val : (φ.coe : FinFlag ∅ₜ → ℝ) = (a : FinFlag ∅ₜ → ℝ) := by
         exact congrArg Subtype.val hφ
-      have hφ_eval : φ.coe ⟨2, K2_flag⟩ = a ⟨2, K2_flag⟩ := by
-        simpa using congrFun hφ_val (⟨2, K2_flag⟩ : FinFlag ∅ₜ)
+      have hφ_eval : φ.coe ⟨2, Flag_2_0_0_1⟩ = a ⟨2, Flag_2_0_0_1⟩ := by
+        simpa using congrFun hφ_val (⟨2, Flag_2_0_0_1⟩ : FinFlag ∅ₜ)
       calc
-        a ⟨2, K2_flag⟩ = φ.coe ⟨2, K2_flag⟩ := by simpa using hφ_eval.symm
-        _ = φ ⟦unitVector ⟨2, K2_flag⟩⟧ := by simpa using (PositiveHom.coe_flag φ ⟨2, K2_flag⟩)
-    simpa [h_eval_K2] using (hϕ_conv ⟨2, K2_flag⟩)
+        a ⟨2, Flag_2_0_0_1⟩ = φ.coe ⟨2, Flag_2_0_0_1⟩ := by simpa using hφ_eval.symm
+        _ = φ ⟦unitVector ⟨2, Flag_2_0_0_1⟩⟧ := by
+              simpa using (PositiveHom.coe_flag φ ⟨2, Flag_2_0_0_1⟩)
+    simpa [h_eval_K2] using (hϕ_conv ⟨2, Flag_2_0_0_1⟩)
   rw [Metric.tendsto_atTop'] at hφ_K2_tendsto
   obtain ⟨N, hN⟩ := hφ_K2_tendsto (ε / 2) (by linarith [hε])
-  let x : ℝ := flagDensitySeq (s ∘ ϕ) (N + 1) ⟨2, K2_flag⟩
+  let x : ℝ := flagDensitySeq (s ∘ ϕ) (N + 1) ⟨2, Flag_2_0_0_1⟩
   have hx_ge : x ≥ 1 / 2 + ε := by
     dsimp [x]
     simpa [flagDensitySeq, s] using hF_edge_ge (ϕ (N + 1))
-  have hdist_lt : dist x (φ K2) < ε / 2 := by
+  have hdist_lt : dist x (φ FlagAlgebra_2_0_0_1) < ε / 2 := by
     simpa [x] using hN (N + 1) (Nat.lt_add_one N)
-  have hdist_ge : dist x (φ K2) ≥ ε := by
-    have hxφ_nonneg : 0 ≤ x - φ K2 := by linarith
+  have hdist_ge : dist x (φ FlagAlgebra_2_0_0_1) ≥ ε := by
+    have hxφ_nonneg : 0 ≤ x - φ FlagAlgebra_2_0_0_1 := by linarith
     rw [Real.dist_eq, abs_of_nonneg hxφ_nonneg]
     linarith
   linarith

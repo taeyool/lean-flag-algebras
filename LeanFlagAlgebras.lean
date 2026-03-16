@@ -31,6 +31,7 @@ import LeanFlagAlgebras.Logic.MantelTheorem
 
 -- Flags
 import LeanFlagAlgebras.Flags.FlagLoader
+import LeanFlagAlgebras.Flags.FlagDef
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef

@@ -1,22 +1,26 @@
-import «LeanFlagAlgebras».MantelTheorem.FlagTactic
+import LeanFlagAlgebras.MantelTheorem.FlagTactic
 
 open FlagAlgebras
 
 namespace MantelTheorem
 
-theorem mul_O2₁_O2₁ : O2₁ * O2₁ = O3₁ + E3₁'
+/- O2₁ * O2₁ = O3₁ + E3₁' -/
+theorem mul_FlagAlgebra_2_1_0_0_FlagAlgebra_2_1_0_0
+    : FlagAlgebra_2_1_0_0 * FlagAlgebra_2_1_0_0 = FlagAlgebra_3_1_0_0 + FlagAlgebra_3_1_0_2
   := by
-  dsimp only [O2₁, O3₁, E3₁']
   prove_flag_mul
 
-theorem mul_O2₁_K2₁ : O2₁ * K2₁ = (1 / 2 : ℝ) • E3₁ + (1 / 2 : ℝ) • P3₁'
+/- O2₁ * K2₁ = (1 / 2) • E3₁ + (1 / 2) • P3₁' -/
+theorem mul_FlagAlgebra_2_1_0_0_FlagAlgebra_2_1_0_1
+    : FlagAlgebra_2_1_0_0 * FlagAlgebra_2_1_0_1
+        = (1 / 2 : ℝ) • FlagAlgebra_3_1_0_1 + (1 / 2 : ℝ) • FlagAlgebra_3_1_0_4
   := by
-  dsimp only [O2₁, K2₁, E3₁', P3₁']
   prove_flag_mul
 
-theorem mul_K2₁_K2₁ : K2₁ * K2₁ = P3₁ + K3₁
+/- K2₁ * K2₁ = P3₁ + K3₁ -/
+theorem mul_FlagAlgebra_2_1_0_1_FlagAlgebra_2_1_0_1
+    : FlagAlgebra_2_1_0_1 * FlagAlgebra_2_1_0_1 = FlagAlgebra_3_1_0_3 + FlagAlgebra_3_1_0_5
   := by
-  dsimp only [K2₁, P3₁, K3₁]
   prove_flag_mul
 
 end MantelTheorem

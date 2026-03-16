@@ -18,6 +18,7 @@ example : FlagAlgebra_3_0_0_3 =ₐ (0 : FlagAlgebra ∅ₜ)
 theorem Mantel_theorem
     : K3 =ₐ (0 : FlagAlgebra ∅ₜ) ⊢ₐ K2 ≤ₐ (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
+  dsimp only [K2, K3]
   intro φ h
   simp only [Assert.eval_le, Assert.eval_eq] at *
   rw [PositiveHom.map_smul, PositiveHom.map_one, mul_one]
