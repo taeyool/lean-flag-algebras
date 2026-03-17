@@ -1,5 +1,4 @@
 import Mathlib.Tactic
-import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
 open Lean Elab Tactic Meta

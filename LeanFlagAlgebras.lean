@@ -27,6 +27,7 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
 -- Logic
 import LeanFlagAlgebras.Logic.Defs
+import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Logic.MantelTheorem
 
 -- Flags
