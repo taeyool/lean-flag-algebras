@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Users\\lhj08\\miniconda3\\python.exe",
+  "python.condaPath": "C:\\Users\\lhj08\\miniconda3\\Scripts\\conda.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.analysis.autoImportCompletions": true
+}

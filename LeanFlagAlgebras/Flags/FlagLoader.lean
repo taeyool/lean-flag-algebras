@@ -380,7 +380,7 @@ elab "load_flags" filename:str : command => do
                     fin_cases i <;> decide⟩),
                 by
                   intro a b h
-                  fin_cases a <;> fin_cases b <;> decide
+                  fin_cases a <;> fin_cases b <;> simp at h ⊢
               ⟩
             have hmap : ∀ u v,
                 (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
