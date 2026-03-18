@@ -1,0 +1,181 @@
+{
+  "n": 4,
+  "k": 3,
+  "type_num": 1,
+  "type_edges": [
+    [
+      0,
+      1
+    ]
+  ],
+  "flags": [
+    {
+      "underlying_graph_num": 1,
+      "edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "type_indices": [
+        0,
+        1,
+        2
+      ],
+      "downward_coeff": "1/6"
+    },
+    {
+      "underlying_graph_num": 2,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "type_indices": [
+        0,
+        1,
+        3
+      ],
+      "downward_coeff": "1/12"
+    },
+    {
+      "underlying_graph_num": 2,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "type_indices": [
+        1,
+        0,
+        3
+      ],
+      "downward_coeff": "1/12"
+    },
+    {
+      "underlying_graph_num": 3,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "type_indices": [
+        0,
+        1,
+        2
+      ],
+      "downward_coeff": "1/3"
+    },
+    {
+      "underlying_graph_num": 5,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "type_indices": [
+        0,
+        1,
+        3
+      ],
+      "downward_coeff": "1/4"
+    },
+    {
+      "underlying_graph_num": 6,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "type_indices": [
+        0,
+        2,
+        3
+      ],
+      "downward_coeff": "1/12"
+    },
+    {
+      "underlying_graph_num": 6,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "type_indices": [
+        2,
+        0,
+        3
+      ],
+      "downward_coeff": "1/12"
+    },
+    {
+      "underlying_graph_num": 7,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "type_indices": [
+        1,
+        2,
+        3
+      ],
+      "downward_coeff": "1/12"
+    }
+  ]
+}
