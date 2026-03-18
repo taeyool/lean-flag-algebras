@@ -156,7 +156,52 @@ def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
     evalTactic (← `(tactic| simp only [FlagAlgebras.PositiveHom.map_smul] at hφ))
     evalTactic (← `(tactic| rw [h] at hφ))
     evalTactic (← `(tactic| simp at hφ))
-    evalTactic (← `(tactic| simpa [one_div, add_assoc] using hφ))
+    evalTactic (← `(tactic| rw [hφ]))
+    evalTactic (← `(tactic| ring_nf))
+
+def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :=
+  withMainContext do
+    let nExpr ← elabTerm N (some (mkConst ``Nat))
+    let some nVal ← (Meta.evalNat nExpr).run
+      | throwError "Could not evaluate N to a natural number in `prove_flag_mul_with_forbidden_flag`."
+
+    let target ← getMainTarget
+    let flags := collectPrefixConstants "FlagAlgebra_" target
+    if flags.size >= 3 then
+      let f1Parsed := parseFlagAlgebraIndices? flags[1]!
+      let f2Parsed := parseFlagAlgebraIndices? flags[2]!
+      if let (some (_, _, _, i1), some (_, _, _, i2)) := (f1Parsed, f2Parsed) then
+        if i1 > i2 then
+          evalTactic (← `(tactic| rw [mul_comm]))
+
+    evalTactic (← `(tactic| intro φ h))
+    evalTactic (← `(tactic| simp only [Assert.eval_eq, FlagAlgebras.PositiveHom.map_zero] at h))
+    evalTactic (← `(tactic|
+      simp only [Assert.eval_eq, FlagAlgebras.PositiveHom.map_smul, FlagAlgebras.PositiveHom.map_add,
+        FlagAlgebras.PositiveHom.map_sub]))
+
+    if !flags.isEmpty then
+      let idents := flags.map mkIdent
+      evalTactic (← `(tactic| dsimp [$[$idents:ident],*] at *))
+
+    evalTactic (← `(tactic| rw [FlagAlgebras.unitVector_quot_mul_eq_flagMul_quot]))
+    evalTactic (← `(tactic| dsimp [FlagAlgebras.flagMul, FlagAlgebras.flagMulWithSize]))
+
+    -- Figure out the sigma indices from nVal to construct flagSet_N_k_m_eq_univ
+    -- Wait, we need kVal and mVal! We can get it from f1Parsed.
+    let some (_, kVal, mVal, _) := parseFlagAlgebraIndices? flags[1]!
+      | throwError "Could not parse FlagAlgebra indices from {flags[1]!}"
+
+    let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
+    let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
+    let eqUnivId : TSyntax `ident := mkIdent eqUnivName
+    let valEqId : TSyntax `ident := mkIdent valEqName
+
+    evalTactic (← `(tactic| have h_eq_univ := $eqUnivId))
+    evalTactic (← `(tactic| have h_val_eq := $valEqId))
+    evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum, ← h_eq_univ, h_val_eq]))
+    evalTactic (← `(tactic| simp [FlagAlgebras.add_quot, FlagAlgebras.smul_quot, FlagAlgebras.PositiveHom.map_add, FlagAlgebras.PositiveHom.map_smul, h]))
+    evalTactic (← `(tactic| try ring_nf))
 
 /-
 `prove_flag_expand_with_forbidden_flag N` proves goals of the form
@@ -168,5 +213,16 @@ syntax (name := flagExpandWithForbiddenFlagTac)
 elab_rules : tactic
   | `(tactic| prove_flag_expand_with_forbidden_flag $N) =>
       runForbiddenFlagExpansion N
+
+/-
+`prove_flag_mul_with_forbidden_flag N` proves goals of the form
+`F_forbidden =ₐ 0 ⊢ₐ F1 * F2 =ₐ (linear combination of size N flags)`.
+-/
+syntax (name := flagMulWithForbiddenFlagTac)
+  "prove_flag_mul_with_forbidden_flag " term : tactic
+
+elab_rules : tactic
+  | `(tactic| prove_flag_mul_with_forbidden_flag $N) =>
+      runForbiddenFlagMul N
 
 end FlagLogic
