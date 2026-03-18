@@ -829,6 +829,14 @@ theorem sum_flagWithSize_eq_one
   rw [flagDensity_one F]
   simp only [Rat.cast_one, one_smul]
 
+theorem unitVector_quot_mul_eq_flagMul_quot
+    (F G : FinFlag σ)
+    : (⟦unitVector F⟧ * ⟦unitVector G⟧ : FlagAlgebra σ) = ⟦flagMul F G⟧
+  := by
+  apply Quotient.sound
+  simp only [flagVector_mul_eq_nested_sum, unitVector_support, sum_singleton, unitVector_apply_self,
+    mul_one, one_smul, Setoid.refl]
+
 theorem linearExtension_unitVector
     {R : Type} [AddCommGroup R] [Module ℝ R] (f : FinFlag σ → R) (F : FinFlag σ)
     : linearExtension f (unitVector F) = f F
