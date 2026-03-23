@@ -22,6 +22,7 @@ import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 import LeanFlagAlgebras.FlagAlgebra.FlagSequence
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+import LeanFlagAlgebras.FlagAlgebra.Compute.FastIso
 import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 

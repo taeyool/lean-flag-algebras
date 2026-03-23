@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
+import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
 
 namespace FlagAlgebras.Compute
 

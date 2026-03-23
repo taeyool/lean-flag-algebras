@@ -1,4 +1,4 @@
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
+import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
 
 namespace FlagAlgebras.Compute
 
@@ -8,7 +8,19 @@ def isoSym2LabeledGraphSetWithSameGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : Finset (Sym2LabeledGraph σ n)
   :=
-  { H : Sym2LabeledGraph σ n | G.edges = H.edges ∧ G.toLabeledGraph ∼f H.toLabeledGraph }
+  { H : Sym2LabeledGraph σ n | G.edges = H.edges ∧ G ∼sf H }
+
+def isoSym2TypeEmbeddingSetWithSameGraph
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n)
+    : Finset ((fromEdgeSet (SetLike.coe σ.edges)) ↪g (fromEdgeSet (SetLike.coe G.edges)))
+  :=
+  { θ | let H : Sym2LabeledGraph σ n := {
+          edges := G.edges,
+          edges_valid := G.edges_valid,
+          type_embed := θ
+        };
+        G ∼sf H }
 
 def isomorphismCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
@@ -16,14 +28,59 @@ def isomorphismCount_sym2LabeledGraph
   :=
   (isoSym2LabeledGraphSetWithSameGraph G).card
 
+def isoEmbeddingCount_sym2LabeledGraph
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) : ℕ
+  :=
+  (isoSym2TypeEmbeddingSetWithSameGraph G).card
+
+theorem isomorphismCount_sym2LabeledGraph_eq_isoEmbeddingCount_sym2LabeledGraph
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) :
+    isomorphismCount_sym2LabeledGraph G = isoEmbeddingCount_sym2LabeledGraph G
+  := by
+  dsimp only [isomorphismCount_sym2LabeledGraph, isoEmbeddingCount_sym2LabeledGraph]
+  apply Finset.card_bij (fun H hH => cast (by
+    have h_mem : G.edges = H.edges ∧ G ∼sf H := by
+      simpa [isoSym2LabeledGraphSetWithSameGraph] using hH
+    have h_edges : G.edges = H.edges := h_mem.1
+    rw [h_edges]) H.type_embed)
+  · intro H hH
+    have h_mem : G.edges = H.edges ∧ G ∼sf H := by
+      simpa [isoSym2LabeledGraphSetWithSameGraph] using hH
+    have h_edges : G.edges = H.edges := h_mem.1
+    have h_iso : G ∼sf H := h_mem.2
+    rcases H with ⟨edges, edges_valid, type_embed⟩
+    dsimp at h_edges h_iso ⊢
+    subst h_edges
+    simpa [isoSym2TypeEmbeddingSetWithSameGraph] using h_iso
+  · intro H1 hH1 H2 hH2 hEq
+    have h_mem1 : G.edges = H1.edges ∧ G ∼sf H1 := by
+      simpa [isoSym2LabeledGraphSetWithSameGraph] using hH1
+    have h_mem2 : G.edges = H2.edges ∧ G ∼sf H2 := by
+      simpa [isoSym2LabeledGraphSetWithSameGraph] using hH2
+    have h1 : G.edges = H1.edges := h_mem1.1
+    have h2 : G.edges = H2.edges := h_mem2.1
+    rcases H1 with ⟨edges1, edges_valid1, type_embed1⟩
+    rcases H2 with ⟨edges2, edges_valid2, type_embed2⟩
+    dsimp at h1 h2 hEq ⊢
+    subst h1 h2
+    simp at hEq
+    ext e
+    · rfl
+    · simpa using hEq
+  · intro θ hθ
+    refine ⟨⟨G.edges, G.edges_valid, θ⟩, ?_, rfl⟩
+    simpa [isoSym2LabeledGraphSetWithSameGraph, isoSym2TypeEmbeddingSetWithSameGraph] using hθ
+
 def downwardNormalizingFactor_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : ℚ
   :=
   let num_of_all_injections := n.factorial / (n - k).factorial
-  isomorphismCount_sym2LabeledGraph G / num_of_all_injections
+  isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
 
-theorem isomorphismCount_eq
+theorem isomorphismCount_eq_isomorphismCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
     isomorphismCount G.toLabeledGraph = isomorphismCount_sym2LabeledGraph G
@@ -43,7 +100,7 @@ theorem isomorphismCount_eq
   · intro G' hG'
     simp only [isoLabeledGraphSetWithSameGraph, Set.coe_toFinset, Set.mem_setOf_eq] at hG'
     obtain ⟨h_graph, h_iso⟩ := hG'
-    simp [isoSym2LabeledGraphSetWithSameGraph]
+    simp [isoSym2LabeledGraphSetWithSameGraph, sym2LabeledGraphEqv]
     use G'.toSym2LabeledGraph
     rw [LabeledGraph.toSym2LabeledGraph_toLabeledGraph_eq G']
     simp only [and_true, h_iso]
@@ -54,6 +111,13 @@ theorem isomorphismCount_eq
     rw [← h_graph]
     simp
     exact fun h ↦ G.edges_valid e h
+
+theorem isomorphismCount_eq
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) :
+    isomorphismCount G.toLabeledGraph = isoEmbeddingCount_sym2LabeledGraph G
+  := by
+  rw [isomorphismCount_eq_isomorphismCount_sym2LabeledGraph, isomorphismCount_sym2LabeledGraph_eq_isoEmbeddingCount_sym2LabeledGraph]
 
 theorem downwardNormalizingFactor_labeledGraph_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}

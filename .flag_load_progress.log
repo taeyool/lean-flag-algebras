@@ -1,16 +1,5 @@
 [load_flags] start n=5, k=3, m=2, total=72
-[load_flags] flag 1/72
-[load_flags] flag 7/72
-[load_flags] flag 14/72
-[load_flags] flag 21/72
-[load_flags] flag 28/72
-[load_flags] flag 35/72
-[load_flags] flag 42/72
-[load_flags] flag 49/72
-[load_flags] flag 56/72
-[load_flags] flag 63/72
-[load_flags] flag 70/72
-[load_flags] flag 72/72
-[load_flags] proving sym2FlagSet eq_univ (native_decide)
-[load_flags] proving flagSet val_eq (native_decide for Nodup)
-Loaded `Sym2FlagType_3_2` and 72 flags as `Sym2Flag_5_3_2_i`.
+[load_flags] flag 1/72 (864 ms)
+[load_flags] flag 7/72 (872 ms)
+[load_flags] flag 14/72 (928 ms)
+[load_flags] flag 21/72 (827 ms)

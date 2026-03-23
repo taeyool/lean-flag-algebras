@@ -227,11 +227,11 @@ elab "load_empty_typed_flags" filename:str : command => do
 
   liftIO <| IO.FS.writeFile progressLogPath ""
 
+  let mut lastTime ← IO.monoMsNow
   emitProgress s!"[load_empty_typed_flags] start n={n}, total={graphsJson.size}"
 
   for i in [0:graphsJson.size] do
-    if shouldLogProgress i graphsJson.size then
-      emitProgress s!"[load_empty_typed_flags] graph {i + 1}/{graphsJson.size}"
+    let iterStartTime ← IO.monoMsNow
     let graphEdgesJson := graphsJson[i]!
     let graphName := mkIdent (Name.mkSimple s!"Sym2Graph_{n}_0_0_{i}")
     let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}")
@@ -267,6 +267,11 @@ elab "load_empty_typed_flags" filename:str : command => do
           ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
+    if shouldLogProgress i graphsJson.size then
+      let currentTime ← IO.monoMsNow
+      let delta := currentTime - iterStartTime
+      emitProgress s!"[load_empty_typed_flags] graph {i + 1}/{graphsJson.size} ({delta} ms)"
+
   let setName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_0_0")
   let setEqUnivName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_0_0_eq_univ")
   let flagTerms : Array (TSyntax `term) :=
@@ -282,11 +287,14 @@ elab "load_empty_typed_flags" filename:str : command => do
 
   let env ← getEnv
   if ¬ env.contains setEqUnivName.getId then
-    emitProgress s!"[load_empty_typed_flags] proving Sym2FlagSet eq_univ (native_decide)"
+    let startTime ← IO.monoMsNow
     elabCommand (← `(
-      theorem $setEqUnivName : $setName = Finset.univ := by
+      def $setEqUnivName : $setName = Finset.univ := by
         native_decide
     ))
+    let currentTime ← IO.monoMsNow
+    let delta := currentTime - startTime
+    emitProgress s!"[load_empty_typed_flags] proving Sym2FlagSet eq_univ (native_decide) ({delta} ms)"
 
   let flagSetName := mkIdent (Name.mkSimple s!"flagSet_{n}_0_0")
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSet_{n}_0_0_val_eq")
@@ -304,9 +312,9 @@ elab "load_empty_typed_flags" filename:str : command => do
 
   let env ← getEnv
   if ¬ env.contains flagSetValEqName.getId then
-    emitProgress s!"[load_empty_typed_flags] proving flagSet val_eq (native_decide for Nodup)"
+    let startTime ← IO.monoMsNow
     elabCommand (← `(
-      theorem $flagSetValEqName :
+      def $flagSetValEqName :
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val =
             [ $flagBridgeTerms,* ]) := by
         have hnodup :
@@ -328,11 +336,14 @@ elab "load_empty_typed_flags" filename:str : command => do
           simpa [hdedup] using hright
         exact heq ▸ List.Perm.refl _
     ))
+    let currentTime ← IO.monoMsNow
+    let delta := currentTime - startTime
+    emitProgress s!"[load_empty_typed_flags] proving flagSet val_eq (native_decide for Nodup) ({delta} ms)"
 
   let env ← getEnv
   if ¬ env.contains flagSetEqUnivName.getId then
     elabCommand (← `(
-      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
+      def $flagSetEqUnivName : $flagSetName = Finset.univ := by
         change
           Finset.map { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective } $setName
             = Finset.univ
@@ -345,7 +356,9 @@ elab "load_empty_typed_flags" filename:str : command => do
             exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩)
     ))
 
-  emitProgress s!"Loaded {graphsJson.size} empty-typed flags as `Sym2Flag_{n}_0_0_i`."
+  let currentTime ← IO.monoMsNow
+  let delta := currentTime - lastTime
+  emitProgress s!"Loaded {graphsJson.size} empty-typed flags as `Sym2Flag_{n}_0_0_i`. ({delta} ms)"
 
 elab "load_flags" filename:str : command => do
   let path := System.FilePath.mk filename.getString
@@ -359,6 +372,7 @@ elab "load_flags" filename:str : command => do
 
   liftIO <| IO.FS.writeFile progressLogPath ""
 
+  let mut lastTime ← IO.monoMsNow
   emitProgress s!"[load_flags] start n={n}, k={k}, m={m}, total={flags.size}"
 
   let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{m}")
@@ -382,8 +396,7 @@ elab "load_flags" filename:str : command => do
   let typeTerm ← `(($typeName : Sym2FlagType $(Quote.quote k)))
 
   for i in [0:flags.size] do
-    if shouldLogProgress i flags.size then
-      emitProgress s!"[load_flags] flag {i + 1}/{flags.size}"
+    let iterStartTime ← IO.monoMsNow
     let entry := flags[i]!
     let graphEdges := entry.edgesJson
     let underlyingIdx := entry.underlyingGraphNum
@@ -457,7 +470,7 @@ elab "load_flags" filename:str : command => do
     if ¬ env.contains downwardThmName.getId then
       elabCommand (← `(
         @[simp]
-        theorem $downwardThmName
+        def $downwardThmName
             : ⟦$flagAlgebraName⟧₀ = $coeffR • $baseFlagAlgebraName
           := by
           have hunlabel : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName :=
@@ -474,6 +487,11 @@ elab "load_flags" filename:str : command => do
           simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hunlabel, hdnf]
       ))
 
+    if shouldLogProgress i flags.size then
+      let currentTime ← IO.monoMsNow
+      let delta := currentTime - iterStartTime
+      emitProgress s!"[load_flags] flag {i + 1}/{flags.size} ({delta} ms)"
+
   let setName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_{k}_{m}")
   let setEqUnivName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_{k}_{m}_eq_univ")
   let flagTerms : Array (TSyntax `term) :=
@@ -489,11 +507,14 @@ elab "load_flags" filename:str : command => do
 
   let env ← getEnv
   if ¬ env.contains setEqUnivName.getId then
-    emitProgress s!"[load_flags] proving sym2FlagSet eq_univ (native_decide)"
+    let startTime ← IO.monoMsNow
     elabCommand (← `(
-      theorem $setEqUnivName : $setName = Finset.univ := by
+      def $setEqUnivName : $setName = Finset.univ := by
         native_decide
     ))
+    let currentTime ← IO.monoMsNow
+    let delta := currentTime - startTime
+    emitProgress s!"[load_flags] proving sym2FlagSet eq_univ (native_decide) ({delta} ms)"
 
   let flagSetName := mkIdent (Name.mkSimple s!"flagSet_{n}_{k}_{m}")
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSet_{n}_{k}_{m}_val_eq")
@@ -511,9 +532,9 @@ elab "load_flags" filename:str : command => do
 
   let env ← getEnv
   if ¬ env.contains flagSetValEqName.getId then
-    emitProgress s!"[load_flags] proving flagSet val_eq (native_decide for Nodup)"
+    let startTime ← IO.monoMsNow
     elabCommand (← `(
-      theorem $flagSetValEqName :
+      def $flagSetValEqName :
           (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val =
             [ $flagBridgeTerms,* ]) := by
         have hnodup :
@@ -535,11 +556,14 @@ elab "load_flags" filename:str : command => do
           simpa [hdedup] using hright
         exact heq ▸ List.Perm.refl _
     ))
+    let currentTime ← IO.monoMsNow
+    let delta := currentTime - startTime
+    emitProgress s!"[load_flags] proving flagSet val_eq (native_decide for Nodup) ({delta} ms)"
 
   let env ← getEnv
   if ¬ env.contains flagSetEqUnivName.getId then
     elabCommand (← `(
-      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
+      def $flagSetEqUnivName : $flagSetName = Finset.univ := by
         change
           Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } $setName
             = Finset.univ
@@ -552,7 +576,9 @@ elab "load_flags" filename:str : command => do
             exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩)
     ))
 
-  emitProgress s!"Loaded `{typeName.getId}` and {flags.size} flags as `Sym2Flag_{n}_{k}_{m}_i`."
+  let currentTime ← IO.monoMsNow
+  let delta := currentTime - lastTime
+  emitProgress s!"Loaded `{typeName.getId}` and {flags.size} flags as `Sym2Flag_{n}_{k}_{m}_i`. ({delta} ms)"
 
 load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_5.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_2.json"
