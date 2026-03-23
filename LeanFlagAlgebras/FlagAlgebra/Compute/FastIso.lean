@@ -32,23 +32,40 @@ def getNonTypeVerts (n k : Nat) (embed : Fin k → Fin n) : List (Fin n) :=
     (List.finRange k).all fun i => v.val != (embed i).val
 
 /-- A computable fast isomorphism check for two Sym2Graphs (empty typed) -/
-def isEmptyIsoFast_bool {n : Nat} (G1 G2 : Sym2Graph n) : Bool :=
-  if G1.edges.card != G2.edges.card then false
+def isEmptyIsoFast_bool {n : Nat} (G₁ G₂ : Sym2Graph n) : Bool :=
+  if G₁.edges.card != G₂.edges.card then false
   else
     let perms := (List.finRange n).permutations
     let edges := allEdges n
     perms.any fun perm =>
       edges.all fun e =>
-        let e1_in := decide (e ∈ G1.edges)
-        let e2_in := decide ((applyPermEdge perm e) ∈ G2.edges)
+        let e1_in := decide (e ∈ G₁.edges)
+        let e2_in := decide ((applyPermEdge perm e) ∈ G₂.edges)
         e1_in == e2_in
 
+theorem isEmptyIsoFast_bool_true_correct
+    {n : ℕ} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = true)
+    : G₁ ∼sf G₂
+  := by
+  simp [isEmptyIsoFast_bool] at h
+  obtain ⟨_, π, hπ, h⟩ := h
+  apply Nonempty.intro
+  refine { graph_iso := ?_, type_preserve := ?_ }
+  · simp [Sym2Graph.toLabeledGraph]
+    sorry
+  · sorry
+
+theorem isEmptyIsoFast_bool_false_correct
+    {n : Nat} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = false)
+    : ¬ (G₁ ∼sf G₂)
+  := sorry
+
 instance (priority := high) fastDecidableSym2GraphEqv
-    {n : Nat} (G1 G2 : Sym2Graph n) : Decidable (G1 ∼sf G2) :=
-  if h : isEmptyIsoFast_bool G1 G2 = true then
-    isTrue sorry
+    {n : Nat} (G₁ G₂ : Sym2Graph n) : Decidable (G₁ ∼sf G₂) :=
+  if h : isEmptyIsoFast_bool G₁ G₂ = true then
+    isTrue (isEmptyIsoFast_bool_true_correct h)
   else
-    isFalse sorry
+    isFalse (isEmptyIsoFast_bool_false_correct (eq_false_of_ne_true h))
 
 instance (priority := high) fastFintypeSym2EmptyTypedFlag
     {n : ℕ} : Fintype (Sym2EmptyTypedFlag n)
@@ -65,22 +82,22 @@ instance (priority := high) fastDecidableSym2EmptyTypedFlagEqv
   exact fastDecidableSym2GraphEqv G G'
 
 /-- A computable fast isomorphism check for two Sym2LabeledGraphs -/
-def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G1 G2 : Sym2LabeledGraph σ n) : Bool :=
-  if G1.edges.card != G2.edges.card then false
+def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Bool :=
+  if G₁.edges.card != G₂.edges.card then false
   else
-    let nonType1 := getNonTypeVerts n k G1.type_embed
-    let nonType2 := getNonTypeVerts n k G2.type_embed
+    let nonType1 := getNonTypeVerts n k G₁.type_embed
+    let nonType2 := getNonTypeVerts n k G₂.type_embed
     let L2_perms := nonType2.permutations
     let edges := allEdges n
     L2_perms.any fun p2 =>
-      let fullMap := buildFullMap n k G1.type_embed G2.type_embed nonType1 p2
+      let fullMap := buildFullMap n k G₁.type_embed G₂.type_embed nonType1 p2
       edges.all fun e =>
-        let e1_in := decide (e ∈ G1.edges)
-        let e2_in := decide ((applyPermEdge fullMap e) ∈ G2.edges)
+        let e1_in := decide (e ∈ G₁.edges)
+        let e2_in := decide ((applyPermEdge fullMap e) ∈ G₂.edges)
         e1_in == e2_in
 
-instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G1 G2 : Sym2LabeledGraph σ n) : Decidable (G1 ∼sf G2) :=
-  if h : isIsoFast_bool G1 G2 = true then
+instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Decidable (G₁ ∼sf G₂) :=
+  if h : isIsoFast_bool G₁ G₂ = true then
     isTrue sorry
   else
     isFalse sorry
