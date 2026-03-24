@@ -487,6 +487,39 @@ instance
   dsimp [sym2LabeledGraphEqv]
   infer_instance
 
+theorem sym2LabeledGraph_card_edges_eq_of_eqv
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    {G G' : Sym2LabeledGraph σ n} (h : G ∼sf G') :
+    G.edges.card = G'.edges.card
+  := by
+  simp [sym2LabeledGraphEqv, Sym2LabeledGraph.toLabeledGraph] at h
+  have φ := h.some.graph_iso
+  simp at φ
+  have hG : (fromEdgeSet (SetLike.coe G.edges)).edgeFinset = G.edges := by
+    ext e
+    simp only [edgeFinset, edgeSet_fromEdgeSet, Set.mem_toFinset]
+    constructor
+    · intro he
+      exact he.1
+    · intro he
+      exact ⟨he, by
+        intro hdiag
+        exact (G.edges_valid e he) (by simpa [Sym2.mem_diagSet_iff_isDiag] using hdiag)⟩
+  have hG' : (fromEdgeSet (SetLike.coe G'.edges)).edgeFinset = G'.edges := by
+    ext e
+    simp only [edgeFinset, edgeSet_fromEdgeSet, Set.mem_toFinset]
+    constructor
+    · intro he
+      exact he.1
+    · intro he
+      exact ⟨he, by
+        intro hdiag
+        exact (G'.edges_valid e he) (by simpa [Sym2.mem_diagSet_iff_isDiag] using hdiag)⟩
+  calc
+    G.edges.card = (fromEdgeSet (SetLike.coe G.edges)).edgeFinset.card := by rw [hG]
+    _ = (fromEdgeSet (SetLike.coe G'.edges)).edgeFinset.card := φ.card_edgeFinset_eq
+    _ = G'.edges.card := by rw [hG']
+
 theorem sym2LabeledGraphEqv.refl
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
