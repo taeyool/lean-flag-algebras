@@ -180,11 +180,43 @@ def Sym2GraphEqv {n : ℕ} (G G' : Sym2Graph n) : Prop :=
 infixl:50 " ∼sf " => Sym2GraphEqv
 
 instance
-  {n : ℕ} (G G' : Sym2Graph n) :
+    {n : ℕ} (G G' : Sym2Graph n) :
     Decidable (G ∼sf G')
   := by
   rw [Sym2GraphEqv]
   infer_instance
+
+theorem sym2Graph_card_edges_eq_of_eqv
+    {n : ℕ} {G G' : Sym2Graph n} (h : G ∼sf G') :
+    G.edges.card = G'.edges.card
+  := by
+  simp [Sym2GraphEqv, Sym2Graph.toLabeledGraph] at h
+  have φ := h.some.graph_iso
+  simp at φ
+  have hG : (fromEdgeSet (SetLike.coe G.edges)).edgeFinset = G.edges := by
+    ext e
+    simp only [edgeFinset, edgeSet_fromEdgeSet, Set.mem_toFinset]
+    constructor
+    · intro he
+      exact he.1
+    · intro he
+      exact ⟨he, by
+        intro hdiag
+        exact (G.edges_valid e he) (by simpa [Sym2.mem_diagSet_iff_isDiag] using hdiag)⟩
+  have hG' : (fromEdgeSet (SetLike.coe G'.edges)).edgeFinset = G'.edges := by
+    ext e
+    simp only [edgeFinset, edgeSet_fromEdgeSet, Set.mem_toFinset]
+    constructor
+    · intro he
+      exact he.1
+    · intro he
+      exact ⟨he, by
+        intro hdiag
+        exact (G'.edges_valid e he) (by simpa [Sym2.mem_diagSet_iff_isDiag] using hdiag)⟩
+  calc
+    G.edges.card = (fromEdgeSet (SetLike.coe G.edges)).edgeFinset.card := by rw [hG]
+    _ = (fromEdgeSet (SetLike.coe G'.edges)).edgeFinset.card := φ.card_edgeFinset_eq
+    _ = G'.edges.card := by rw [hG']
 
 theorem Sym2GraphEqv.refl (G : Sym2Graph n) : G ∼sf G :=
   flagEqv.refl _
