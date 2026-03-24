@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Permutation
 
 namespace FlagAlgebras.Compute
 
@@ -49,16 +50,65 @@ theorem isEmptyIsoFast_bool_true_correct
   := by
   simp [isEmptyIsoFast_bool] at h
   obtain ⟨_, π, hπ, h⟩ := h
+  have hlen : π.length = n := by
+    simpa using hπ.length_eq
+  have hnodup : π.Nodup :=
+    hπ.nodup_iff.mpr (List.nodup_finRange n)
   apply Nonempty.intro
   refine { graph_iso := ?_, type_preserve := ?_ }
   · simp [Sym2Graph.toLabeledGraph]
-    sorry
-  · sorry
+    refine graphEmbedIso ?_
+    let f : Fin n → Fin n := fun v => (π[v.val]?).getD v
+    have hf : Function.Injective f := by
+      intro a b h_eq
+      -- I'm not sure if it needs to be taken out separately as lemma.
+      have h_getD_eq_get (v : Fin n) :
+          (π[v.val]?).getD v = π.get ⟨v.val, by rw [hlen]; exact v.isLt⟩ := by
+        have hv : v.val < π.length := by
+          rw [hlen]
+          exact v.isLt
+        rw [List.getElem?_eq_getElem hv]
+        simp [List.get_eq_getElem]
+      dsimp [f] at h_eq
+      rw [h_getD_eq_get, h_getD_eq_get, List.Nodup.get_inj_iff hnodup] at h_eq
+      simp only [Fin.mk.injEq] at h_eq
+      exact Fin.eq_of_val_eq h_eq
+    refine ⟨⟨f, hf⟩, ?_⟩
+    intro u v
+    by_cases u_neq_v : u = v
+    · rw [u_neq_v]
+      simp only [Function.Embedding.coeFn_mk, SimpleGraph.irrefl]
+    let e := s(u, v)
+    have he : e ∈ allEdges n := by
+      simp [e, allEdges]
+      by_cases huv : u.val < v.val
+      · use u
+        use v
+        simp_all only [Fin.val_fin_lt, and_self, true_or, f]
+      · use v
+        use u
+        simp_all only [Fin.val_fin_lt, not_lt, and_self, or_true, and_true, f]
+        exact Std.lt_of_le_of_ne huv (id (Ne.symm u_neq_v))
+    simp only [Function.Embedding.coeFn_mk, SimpleGraph.fromEdgeSet_adj, SetLike.mem_coe, ne_eq]
+    constructor
+    · intro ⟨h₁, h₂⟩
+      constructor
+      · exact (h e he).mpr h₁
+      · exact Ne.intro fun a ↦ h₂ (congrArg f a)
+    · intro ⟨h₁, h₂⟩
+      constructor
+      · exact (h e he).mp h₁
+      · exact Ne.intro fun a ↦ h₂ (hf a)
+  · ext z
+    exact Fin.elim0 z
 
 theorem isEmptyIsoFast_bool_false_correct
     {n : Nat} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = false)
     : ¬ (G₁ ∼sf G₂)
-  := sorry
+  := by
+  simp [isEmptyIsoFast_bool] at h
+
+  sorry
 
 instance (priority := high) fastDecidableSym2GraphEqv
     {n : Nat} (G₁ G₂ : Sym2Graph n) : Decidable (G₁ ∼sf G₂) :=
