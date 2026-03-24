@@ -130,11 +130,23 @@ def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGra
         let e2_in := decide ((applyPermEdge fullMap e) ∈ G₂.edges)
         e1_in == e2_in
 
+theorem isIsoFast_bool_true_correct
+    {k n : ℕ} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : isIsoFast_bool G₁ G₂ = true) : G₁ ∼sf G₂
+  := by
+  sorry
+
+theorem isIsoFast_bool_false_correct
+    {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : isIsoFast_bool G₁ G₂ = false) : ¬ (G₁ ∼sf G₂)
+  := by
+  sorry
+
 instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Decidable (G₁ ∼sf G₂) :=
   if h : isIsoFast_bool G₁ G₂ = true then
-    isTrue sorry
+    isTrue (isIsoFast_bool_true_correct h)
   else
-    isFalse sorry
+    isFalse (isIsoFast_bool_false_correct (eq_false_of_ne_true h))
 
 instance (priority := high) fastFintypeSym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
