@@ -33,6 +33,23 @@ def getNonTypeVerts (n k : Nat) (embed : Fin k → Fin n) : List (Fin n) :=
   (List.finRange n).filter fun v =>
     (List.finRange k).all fun i => v.val != (embed i).val
 
+lemma getNonTypeVerts_nodup {n k : Nat} (embed : Fin k → Fin n) :
+    (getNonTypeVerts n k embed).Nodup := by
+  simpa [getNonTypeVerts] using (List.nodup_finRange n).filter
+    (fun v : Fin n => (List.finRange k).all fun i => v.val != (embed i).val)
+
+lemma perm_length_of_mem_getNonTypeVerts_permutations
+    {n k : Nat} {embed : Fin k → Fin n} {π : List (Fin n)}
+    (hπ : π ∈ (getNonTypeVerts n k embed).permutations) :
+    π.length = (getNonTypeVerts n k embed).length := by
+  exact (List.mem_permutations.mp hπ).length_eq
+
+lemma perm_nodup_of_mem_getNonTypeVerts_permutations
+    {n k : Nat} {embed : Fin k → Fin n} {π : List (Fin n)}
+    (hπ : π ∈ (getNonTypeVerts n k embed).permutations) :
+    π.Nodup := by
+  exact (List.mem_permutations.mp hπ).nodup_iff.mpr (getNonTypeVerts_nodup embed)
+
 /-- A computable fast isomorphism check for two Sym2Graphs (empty typed) -/
 def isEmptyIsoFast_bool {n : Nat} (G₁ G₂ : Sym2Graph n) : Bool :=
   if G₁.edges.card != G₂.edges.card then false
@@ -180,7 +197,83 @@ theorem isIsoFast_bool_true_correct
     {k n : ℕ} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : isIsoFast_bool G₁ G₂ = true) : G₁ ∼sf G₂
   := by
-  sorry
+  simp [isIsoFast_bool] at h
+  obtain ⟨_, π, hπ, h⟩ := h
+  let nonType1 := getNonTypeVerts n k G₁.type_embed
+  let fullMap := buildFullMap n k G₁.type_embed G₂.type_embed nonType1 π
+  apply Nonempty.intro
+  refine { graph_iso := ?_, type_preserve := ?_ }
+  · refine graphEmbedIso ?_
+    let f : Fin n → Fin n := fun v => (fullMap[v.val]?).getD v
+    have hf : Function.Injective f := by
+      intro a b h_eq
+      dsimp [f, fullMap, buildFullMap] at h_eq
+      set ta := List.find? (fun i => a.val == (G₁.type_embed i).val) (List.finRange k) with hta
+      set tb := List.find? (fun i => b.val == (G₁.type_embed i).val) (List.finRange k) with htb
+      cases hta' : ta <;> cases htb' : tb
+      · -- ta = none, tb = none
+        set ia := myIndexOf a nonType1 0 with hia
+        set ib := myIndexOf b nonType1 0 with hib
+        cases hia' : ia <;> cases hib' : ib
+        · -- ia = none, ib = none
+          simp only [List.length_map, List.length_finRange, Fin.is_lt, getElem?_pos,
+            List.getElem_map, List.getElem_finRange, Fin.cast_mk, Fin.eta, hta', hia',
+            Option.getD_some, htb', hib', tb, ib, ta, ia] at h_eq
+          exact h_eq
+        · -- ia = none, ib = some _
+          simp only [List.length_map, List.length_finRange, Fin.is_lt, getElem?_pos,
+            List.getElem_map, List.getElem_finRange, Fin.cast_mk, Fin.eta, hta', hia',
+            Option.getD_some, htb', hib', tb, ib, ta, ia] at h_eq
+
+          sorry
+        · -- ia = some _, ib = none
+          simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
+          sorry
+        · -- ia = some _, ib = some _
+          simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
+          sorry
+      · -- ta = none, tb = some _
+        simp [ta, tb, hta', htb'] at h_eq
+        sorry
+      · -- ta = some _, tb = none
+        simp [ta, tb, hta', htb'] at h_eq
+        sorry
+      · -- ta = some _, tb = some _
+        simp [ta, tb, hta', htb'] at h_eq
+        sorry
+    refine ⟨⟨f, hf⟩, ?_⟩
+    simp [Sym2LabeledGraph.toLabeledGraph]
+    intro u v
+    by_cases u_neq_v : u = v
+    · rw [u_neq_v]
+      simp only [not_true_eq_false, and_false]
+    let e := s(u, v)
+    have he : e ∈ allEdges n := by
+      simp [e, allEdges]
+      by_cases huv : u.val < v.val
+      · use u
+        use v
+        simp_all only [Fin.val_fin_lt, and_self, true_or, f]
+      · use v
+        use u
+        simp_all only [Fin.val_fin_lt, not_lt, and_self, or_true, and_true, f]
+        exact Std.lt_of_le_of_ne huv (id (Ne.symm u_neq_v))
+    constructor
+    · intro ⟨h₁, h₂⟩
+      constructor
+      · sorry
+      · exact Ne.intro u_neq_v
+    · intro ⟨h₁, h₂⟩
+      constructor
+      · exact (h e he).mp h₁
+      · exact Ne.intro fun a ↦ u_neq_v (hf a)
+  · ext t
+    simp only [Function.comp_apply]
+    dsimp [fullMap]
+    -- by definition of buildFullMap, lhs should be G2.type_embed t.
+
+
+    sorry
 
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
