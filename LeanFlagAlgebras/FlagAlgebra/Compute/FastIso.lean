@@ -1,6 +1,7 @@
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Permutation
+import Mathlib.Data.List.FinRange
 
 namespace FlagAlgebras.Compute
 
@@ -106,9 +107,38 @@ theorem isEmptyIsoFast_bool_false_correct
     {n : Nat} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = false)
     : ¬ (G₁ ∼sf G₂)
   := by
-  simp [isEmptyIsoFast_bool] at h
-
-  sorry
+  contrapose h
+  have φ := h.some.graph_iso
+  simp [isEmptyIsoFast_bool]
+  refine ⟨sym2Graph_card_edges_eq_of_eqv h, ?_⟩
+  simp [Sym2Graph.toLabeledGraph] at φ
+  refine ⟨(List.finRange n).map φ.toEquiv, ?_, ?_⟩
+  · simpa using (Equiv.Perm.map_finRange_perm φ.toEquiv)
+  · intro e he
+    have hEdge :
+        e ∈ G₁.edges ↔ e.map φ.toEquiv ∈ G₂.edges := by
+      constructor
+      · intro he1
+        have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
+          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+            (And.intro he1 (G₁.edges_valid e he1))
+        have he2' : e.map φ.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
+          (φ.map_mem_edgeSet_iff).2 he1'
+        exact (by
+          have : e.map φ.toEquiv ∈ G₂.edges ∧ ¬(e.map φ.toEquiv).IsDiag := by
+            simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he2'
+          exact this.1)
+      · intro he2
+        have he2' : e.map φ.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
+          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+            (And.intro he2 (G₂.edges_valid (e.map φ.toEquiv) he2))
+        have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
+          (φ.map_mem_edgeSet_iff).1 he2'
+        exact (by
+          have : e ∈ G₁.edges ∧ ¬e.IsDiag := by
+            simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he1'
+          exact this.1)
+    simpa [applyPermEdge] using hEdge
 
 instance (priority := high) fastDecidableSym2GraphEqv
     {n : Nat} (G₁ G₂ : Sym2Graph n) : Decidable (G₁ ∼sf G₂) :=
@@ -146,11 +176,23 @@ def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGra
         let e2_in := decide ((applyPermEdge fullMap e) ∈ G₂.edges)
         e1_in == e2_in
 
+theorem isIsoFast_bool_true_correct
+    {k n : ℕ} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : isIsoFast_bool G₁ G₂ = true) : G₁ ∼sf G₂
+  := by
+  sorry
+
+theorem isIsoFast_bool_false_correct
+    {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : isIsoFast_bool G₁ G₂ = false) : ¬ (G₁ ∼sf G₂)
+  := by
+  sorry
+
 instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Decidable (G₁ ∼sf G₂) :=
   if h : isIsoFast_bool G₁ G₂ = true then
-    isTrue sorry
+    isTrue (isIsoFast_bool_true_correct h)
   else
-    isFalse sorry
+    isFalse (isIsoFast_bool_false_correct (eq_false_of_ne_true h))
 
 instance (priority := high) fastFintypeSym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
