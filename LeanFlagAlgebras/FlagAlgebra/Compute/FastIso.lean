@@ -136,11 +136,125 @@ theorem isIsoFast_bool_true_correct
   := by
   sorry
 
+lemma nonType_perm_witness_of_eqv
+    {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : G₁ ∼sf G₂) :
+    ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso).Perm
+      (getNonTypeVerts n k G₂.type_embed) := by
+  have hnod1 : ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso).Nodup := by
+    have hnodNT1 : (getNonTypeVerts n k G₁.type_embed).Nodup := by
+      dsimp [getNonTypeVerts]
+      exact (List.nodup_finRange n).filter _
+    exact hnodNT1.map h.some.graph_iso.injective
+  have hnod2 : (getNonTypeVerts n k G₂.type_embed).Nodup := by
+    dsimp [getNonTypeVerts]
+    exact (List.nodup_finRange n).filter _
+  rw [List.perm_ext_iff_of_nodup hnod1 hnod2]
+  intro v
+  constructor
+  · intro hv
+    simp only [getNonTypeVerts, List.mem_filter, List.mem_finRange, true_and]
+    rcases List.mem_map.mp hv with ⟨u, hu, rfl⟩
+    have hu' : ∀ i : Fin k, (u.val != (G₁.type_embed i).val) = true := by
+      have huAll : ((List.finRange k).all fun i => u.val != (G₁.type_embed i).val) = true :=
+        (List.mem_filter.mp hu).2
+      intro i
+      exact (List.all_eq_true.mp huAll) i (by simp)
+    refine List.all_eq_true.mpr ?_
+    intro i
+    have hti : h.some.graph_iso (G₁.type_embed i) = G₂.type_embed i := by
+      simpa [Function.comp_apply, Sym2LabeledGraph.toLabeledGraph] using congrFun h.some.type_preserve i
+    by_contra hEq
+    have huEq : h.some.graph_iso u = h.some.graph_iso (G₁.type_embed i) := by
+      apply Fin.ext
+      simpa [hti] using hEq
+    have uEq : u = G₁.type_embed i := h.some.graph_iso.injective huEq
+    have : (u.val != (G₁.type_embed i).val) = true := hu' i
+    simp [uEq] at this
+  · intro hv
+    simp only [getNonTypeVerts, List.mem_filter, List.mem_finRange, true_and] at hv
+    let u : Fin n := h.some.graph_iso.symm v
+    have hu_nonType : ∀ i : Fin k, u.val ≠ (G₁.type_embed i).val := by
+      intro i hEq
+      have hti : h.some.graph_iso (G₁.type_embed i) = G₂.type_embed i := by
+        simpa [Function.comp_apply, Sym2LabeledGraph.toLabeledGraph] using congrFun h.some.type_preserve i
+      have hvEq : v = G₂.type_embed i := by
+        calc
+          v = h.some.graph_iso u := by simp [u]
+          _ = h.some.graph_iso (G₁.type_embed i) := by
+                apply congrArg h.some.graph_iso
+                exact Fin.ext hEq
+          _ = G₂.type_embed i := hti
+      have hv' : ∀ j : Fin k, (v.val != (G₂.type_embed j).val) = true := by
+        intro j
+        exact (List.all_eq_true.mp hv) j (by simp)
+      have : (v.val != (G₂.type_embed i).val) = true := hv' i
+      simp [hvEq] at this
+    have hu_mem : u ∈ getNonTypeVerts n k G₁.type_embed := by
+      simp [getNonTypeVerts, hu_nonType]
+    have hmap : h.some.graph_iso u = v := by simp [u]
+    exact List.mem_map.mpr ⟨u, hu_mem, hmap⟩
+
+lemma buildFullMap_edge_witness_of_eqv
+    {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
+    (h : G₁ ∼sf G₂) :
+    ∀ e ∈ allEdges n,
+      e ∈ G₁.edges ↔
+        applyPermEdge
+          (buildFullMap n k G₁.type_embed G₂.type_embed
+            (getNonTypeVerts n k G₁.type_embed)
+            ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e ∈ G₂.edges := by
+  intro e he
+  have hEdge : e ∈ G₁.edges ↔ e.map h.some.graph_iso ∈ G₂.edges := by
+    constructor
+    · intro he1
+      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
+        simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+          (And.intro he1 (G₁.edges_valid e he1))
+      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
+        (h.some.graph_iso.map_mem_edgeSet_iff).2 he1'
+      exact (by
+        have : e.map h.some.graph_iso.toEquiv ∈ G₂.edges ∧ ¬(e.map h.some.graph_iso.toEquiv).IsDiag := by
+          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he2'
+        exact this.1)
+    · intro he2
+      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
+        simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+          (And.intro he2 (G₂.edges_valid (e.map h.some.graph_iso.toEquiv) he2))
+      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
+        (h.some.graph_iso.map_mem_edgeSet_iff).1 he2'
+      exact (by
+        have : e ∈ G₁.edges ∧ ¬e.IsDiag := by
+          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he1'
+        exact this.1)
+  have hfull : ∀ v : Fin n,
+      ((buildFullMap n k G₁.type_embed G₂.type_embed
+        (getNonTypeVerts n k G₁.type_embed)
+        ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso))[v.val]?).getD v
+      = h.some.graph_iso v := by
+    intro v
+    simp [buildFullMap]
+    sorry
+  have hMapEq :
+      applyPermEdge
+        (buildFullMap n k G₁.type_embed G₂.type_embed
+          (getNonTypeVerts n k G₁.type_embed)
+          ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e
+      = e.map h.some.graph_iso.toEquiv := by
+    simp [applyPermEdge, hfull]
+  simpa [hMapEq] using hEdge
+
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : isIsoFast_bool G₁ G₂ = false) : ¬ (G₁ ∼sf G₂)
   := by
-  sorry
+  contrapose h
+  have φ := h.some
+  have φg := φ.graph_iso
+  simp [isIsoFast_bool]
+  refine ⟨sym2LabeledGraph_card_edges_eq_of_eqv h, ?_⟩
+  use (getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso
+  exact ⟨nonType_perm_witness_of_eqv h, buildFullMap_edge_witness_of_eqv h⟩
 
 instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Decidable (G₁ ∼sf G₂) :=
   if h : isIsoFast_bool G₁ G₂ = true then
