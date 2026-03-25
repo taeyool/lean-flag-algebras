@@ -407,45 +407,35 @@ lemma buildFullMap_edge_witness_of_eqv
           (buildFullMap n k G₁.type_embed G₂.type_embed
             (getNonTypeVerts n k G₁.type_embed)
             ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e ∈ G₂.edges := by
-  intro e he
-  have hEdge : e ∈ G₁.edges ↔ e.map h.some.graph_iso ∈ G₂.edges := by
+  intro e _
+  let φ := h.some.graph_iso
+  have hEdge : e ∈ G₁.edges ↔ e.map φ ∈ G₂.edges := by
     constructor
-    · intro he1
-      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
+    · intro he
+      have he_G₁ : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
         simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
-          (And.intro he1 (G₁.edges_valid e he1))
-      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
-        (h.some.graph_iso.map_mem_edgeSet_iff).2 he1'
-      exact (by
-        have : e.map h.some.graph_iso.toEquiv ∈ G₂.edges ∧ ¬(e.map h.some.graph_iso.toEquiv).IsDiag := by
-          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he2'
-        exact this.1)
-    · intro he2
-      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
+          (And.intro he (G₁.edges_valid e he))
+      have he_G₂ : e.map φ ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
+        (φ.map_mem_edgeSet_iff).2 he_G₁
+      simp [SimpleGraph.edgeSet_fromEdgeSet] at he_G₂
+      exact he_G₂.1
+    · intro he
+      have he_G₂ : e.map φ ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
         simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
-          (And.intro he2 (G₂.edges_valid (e.map h.some.graph_iso.toEquiv) he2))
-      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
-        (h.some.graph_iso.map_mem_edgeSet_iff).1 he2'
-      exact (by
-        have : e ∈ G₁.edges ∧ ¬e.IsDiag := by
-          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he1'
-        exact this.1)
-  have hfull : ∀ v : Fin n,
-      ((buildFullMap n k G₁.type_embed G₂.type_embed
-        (getNonTypeVerts n k G₁.type_embed)
-        ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso))[v.val]?).getD v
-      = h.some.graph_iso v := by
-    intro v
-    simp [buildFullMap]
-    sorry
+          (And.intro he (G₂.edges_valid (e.map φ) he))
+      have he_G₁ : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
+        (φ.map_mem_edgeSet_iff).1 he_G₂
+      simp [SimpleGraph.edgeSet_fromEdgeSet] at he_G₁
+      exact he_G₁.1
   have hMapEq :
       applyPermEdge
         (buildFullMap n k G₁.type_embed G₂.type_embed
           (getNonTypeVerts n k G₁.type_embed)
-          ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e
-      = e.map h.some.graph_iso.toEquiv := by
-    simp [applyPermEdge, hfull]
-  simpa [hMapEq] using hEdge
+          ((getNonTypeVerts n k G₁.type_embed).map φ)) e
+      = e.map φ := by
+    sorry
+  simp only [hEdge, ← hMapEq, φ]
+
 
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
