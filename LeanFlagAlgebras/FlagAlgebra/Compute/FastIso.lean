@@ -47,6 +47,33 @@ lemma myIndexOf_ne_none_of_mem
   rw [hnone] at hidx
   cases hidx
 
+lemma myIndexOf_get?_gen {n : Nat} (a : Fin n) (l : List (Fin n)) (i idx : Nat)
+    (h : myIndexOf a l i = some idx) :
+    i ≤ idx ∧ l[idx - i]? = some a := by
+  induction l generalizing i with
+  | nil =>
+    cases h
+  | cons x xs ih =>
+    unfold myIndexOf at h
+    split at h
+    · next heq =>
+      simp only [Option.some.injEq] at h
+      subst h
+      have hxa : x = a := by simpa [beq_iff_eq] using heq
+      exact ⟨Nat.le_refl _, by simp [hxa]⟩
+    · next hneq =>
+      have ⟨hle, hget⟩ := ih (i + 1) h
+      refine ⟨Nat.le_trans (Nat.le_succ _) hle, ?_⟩
+      have hsub : idx - i = idx - (i + 1) + 1 := by omega
+      rw [hsub]
+      exact hget
+
+lemma myIndexOf_get_zero {n : Nat} (a : Fin n) (l : List (Fin n)) (idx : Nat)
+    (h : myIndexOf a l 0 = some idx) :
+    l[idx]? = some a := by
+  have ⟨_, hget⟩ := myIndexOf_get?_gen a l 0 idx h
+  rwa [Nat.sub_zero] at hget
+
 def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
     (nonType1 p2 : List (Fin n)) : List (Fin n) :=
   (List.finRange n).map fun v =>
@@ -398,6 +425,53 @@ lemma nonType_perm_witness_of_eqv
     have hmap : h.some.graph_iso u = v := by simp [u]
     exact List.mem_map.mpr ⟨u, hu_mem, hmap⟩
 
+lemma my_find_some {α} (l : List α) (p : α → Bool) (x : α)
+    (hx : x ∈ l) (hp : p x) (huniq : ∀ y ∈ l, p y → y = x) : List.find? p l = some x := by
+  induction l with
+  | nil =>
+    cases hx
+  | cons a as ih =>
+    cases hx with
+    | head _ =>
+      simp [List.find?, hp]
+    | tail _ hx_tail =>
+      simp [List.find?]
+      cases hpa : p a
+      · simp [ih hx_tail (fun y hy hpy => huniq y (List.Mem.tail _ hy) hpy)]
+      · have : a = x := huniq a (List.Mem.head _) hpa
+        rw [this]
+
+lemma find_eq_some {k n : Nat} {σ : Sym2FlagType k} (G₁ : Sym2LabeledGraph σ n)
+    (v : Fin n) (i : Fin k) (hi : v = G₁.type_embed i) :
+    List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = some i := by
+  have h1 : (fun j : Fin k => v.val == (G₁.type_embed j).val) i = true := by
+    simp [hi]
+  have h2 : ∀ j ∈ List.finRange k, (fun j : Fin k => v.val == (G₁.type_embed j).val) j = true → j = i := by
+    intro j _ hj
+    simp only [beq_iff_eq] at hj
+    have hj' : v = G₁.type_embed j := Fin.ext hj
+    rw [hi] at hj'
+    exact G₁.type_embed.injective hj'.symm
+  exact my_find_some _ _ _ (List.mem_finRange _) h1 h2
+
+lemma find_eq_none {k n : Nat} {σ : Sym2FlagType k} (G₁ : Sym2LabeledGraph σ n)
+    (v : Fin n) (hn : ∀ i, v ≠ G₁.type_embed i) :
+    List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = none := by
+  apply List.find?_eq_none.mpr
+  intro x _
+  have h_neq := hn x
+  simp only [beq_iff_eq]
+  intro h_eq
+  apply h_neq
+  apply Fin.ext
+  exact h_eq
+
+lemma mem_getNonTypeVerts_comp {n k : Nat} {embed : Fin k → Fin n} (v : Fin n)
+    (hn : ∀ i, v ≠ embed i) : v ∈ getNonTypeVerts n k embed := by
+  simp [getNonTypeVerts, List.mem_filter]
+  intro i
+  exact Fin.val_ne_of_ne (hn i)
+
 lemma buildFullMap_edge_witness_of_eqv
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : G₁ ∼sf G₂) :
@@ -433,9 +507,42 @@ lemma buildFullMap_edge_witness_of_eqv
           (getNonTypeVerts n k G₁.type_embed)
           ((getNonTypeVerts n k G₁.type_embed).map φ)) e
       = e.map φ := by
-    sorry
+    dsimp [applyPermEdge]
+    congr 1
+    ext v
+    simp [buildFullMap]
+    have h_cases : (∃ i, v = G₁.type_embed i) ∨ (¬ ∃ i, v = G₁.type_embed i) := by
+      exact Classical.em _
+    rcases h_cases with ⟨i, hi⟩ | hn
+    · -- v = G₁.type_embed i
+      have h_find : List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = some i := by
+        exact find_eq_some G₁ v i hi
+      simp [h_find]
+      have h_type_eq : G₂.type_embed i = φ (G₁.type_embed i) := by
+        have ht := h.some.type_preserve
+        have ht' := congr_fun ht i
+        exact ht'.symm
+      rw [hi]
+      rw [h_type_eq]
+    · -- v ≠ G₁.type_embed i
+      have hn' : ∀ i, v ≠ G₁.type_embed i := by
+        intro i hi
+        exact hn ⟨i, hi⟩
+      have h_find : List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = none := by
+        exact find_eq_none G₁ v hn'
+      simp [h_find]
+      have h_mem : v ∈ getNonTypeVerts n k G₁.type_embed := by
+        exact mem_getNonTypeVerts_comp v hn'
+      have ⟨idx, hidx⟩ : ∃ idx, myIndexOf v (getNonTypeVerts n k G₁.type_embed) 0 = some idx := by
+        have h_idx_neq := myIndexOf_ne_none_of_mem v (getNonTypeVerts n k G₁.type_embed) 0 h_mem
+        cases hidx_case : myIndexOf v (getNonTypeVerts n k G₁.type_embed) 0
+        · contradiction
+        · exact ⟨_, rfl⟩
+      simp [hidx]
+      have h_getElem : (getNonTypeVerts n k G₁.type_embed)[idx]? = some v :=
+        myIndexOf_get_zero v (getNonTypeVerts n k G₁.type_embed) idx hidx
+      simp [h_getElem]
   simp only [hEdge, ← hMapEq, φ]
-
 
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
