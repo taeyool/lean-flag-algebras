@@ -7,7 +7,7 @@ abbrev FlagAlgebraVec {n₀ : ℕ} (σ : FlagType (Fin n₀)) (n : ℕ)
   := Fin n → FlagAlgebra σ
 
 noncomputable def flagQuadraticForm
-    {σ : FlagType (Fin n₀)} {n : ℕ}
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} {n : ℕ}
     (M : Matrix (Fin n) (Fin n) ℝ) (v : FlagAlgebraVec σ n)
     : FlagAlgebra σ
   :=
