@@ -21,6 +21,7 @@ import LeanFlagAlgebras.FlagAlgebra.FlagOperators
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 import LeanFlagAlgebras.FlagAlgebra.FlagSequence
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
+import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import LeanFlagAlgebras.FlagAlgebra.Compute.FastIso
 import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
@@ -44,6 +45,11 @@ import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey
 import LeanFlagAlgebras.MantelTheorem.GoodmanBound
+
+ -- ErdosPentagon
+import LeanFlagAlgebras.ErdosPentagon.FlagDef
+import LeanFlagAlgebras.ErdosPentagon.FlagDensity
+import LeanFlagAlgebras.ErdosPentagon.DensityLoader
 
 -- Archive imports
 -- import LeanFlagAlgebras.Archive.BoolAlgebra

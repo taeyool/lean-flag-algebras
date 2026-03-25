@@ -1,4 +1,4 @@
-﻿import LeanFlagAlgebras.FlagAlgebra.RandomHom
+import LeanFlagAlgebras.FlagAlgebra.RandomHom
 import Mathlib.LinearAlgebra.Matrix.PosDef
 
 namespace FlagAlgebras
