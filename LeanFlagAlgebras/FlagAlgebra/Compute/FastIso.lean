@@ -2,6 +2,7 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Permutation
 import Mathlib.Data.List.FinRange
+import Init.Data.List.Find
 
 namespace FlagAlgebras.Compute
 
@@ -17,6 +18,34 @@ def applyPermEdge {n : Nat} (perm : List (Fin n)) (e : Sym2 (Fin n)) : Sym2 (Fin
 def myIndexOf {α : Type} [BEq α] (a : α) : List α → Nat → Option Nat
   | [], _ => none
   | x::xs, i => if x == a then some i else myIndexOf a xs (i+1)
+
+lemma myIndexOf_some_of_mem_from
+    {n : Nat} (a : Fin n) :
+    (l : List (Fin n)) → (i : Nat) → a ∈ l → ∃ idx, myIndexOf a l i = some idx
+  | [], _, h => by cases h
+  | x :: xs, i, hmem => by
+      by_cases hxa : x = a
+      · refine ⟨i, ?_⟩
+        simp [myIndexOf, hxa]
+      · have hmem_xs : a ∈ xs := by
+          have hm : a = x ∨ a ∈ xs := List.mem_cons.mp hmem
+          cases hm with
+          | inl hx =>
+              exfalso
+              exact hxa hx.symm
+          | inr hx =>
+              exact hx
+        rcases myIndexOf_some_of_mem_from a xs (i + 1) hmem_xs with ⟨idx, hidx⟩
+        refine ⟨idx, ?_⟩
+        simp [myIndexOf, hxa, hidx]
+
+lemma myIndexOf_ne_none_of_mem
+    {n : Nat} (a : Fin n) (l : List (Fin n)) (i : Nat) (hmem : a ∈ l) :
+    myIndexOf a l i ≠ none := by
+  rcases myIndexOf_some_of_mem_from a l i hmem with ⟨idx, hidx⟩
+  intro hnone
+  rw [hnone] at hidx
+  cases hidx
 
 def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
     (nonType1 p2 : List (Fin n)) : List (Fin n) :=
@@ -221,26 +250,61 @@ theorem isIsoFast_bool_true_correct
             Option.getD_some, htb', hib', tb, ib, ta, ia] at h_eq
           exact h_eq
         · -- ia = none, ib = some _
-          simp only [List.length_map, List.length_finRange, Fin.is_lt, getElem?_pos,
-            List.getElem_map, List.getElem_finRange, Fin.cast_mk, Fin.eta, hta', hia',
-            Option.getD_some, htb', hib', tb, ib, ta, ia] at h_eq
-
-          sorry
+          exfalso
+          symm at hta
+          rw [hta'] at hta
+          have ha_mem : a ∈ nonType1 := by
+            dsimp [nonType1, getNonTypeVerts]
+            refine List.mem_filter.mpr ?_
+            constructor
+            · simp only [List.mem_finRange]
+            · rw [List.all_eq_true]
+              intro i hi
+              have hnone := (List.find?_eq_none.mp hta) i hi
+              simpa [beq_iff_eq] using hnone
+          have hidx_ne_none : myIndexOf a nonType1 0 ≠ none :=
+            myIndexOf_ne_none_of_mem a nonType1 0 ha_mem
+          have hidx_none : myIndexOf a nonType1 0 = none := by
+            simpa [ia] using hia'
+          exact hidx_ne_none hidx_none
         · -- ia = some _, ib = none
-          simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
-          sorry
+          exfalso
+          symm at htb
+          rw [htb'] at htb
+          have hb_mem : b ∈ nonType1 := by
+            dsimp [nonType1, getNonTypeVerts]
+            refine List.mem_filter.mpr ?_
+            constructor
+            · simp only [List.mem_finRange]
+            · rw [List.all_eq_true]
+              intro i hi
+              have hnone := (List.find?_eq_none.mp htb) i hi
+              simpa [beq_iff_eq] using hnone
+          have hidx_ne_none : myIndexOf b nonType1 0 ≠ none :=
+            myIndexOf_ne_none_of_mem b nonType1 0 hb_mem
+          have hidx_none : myIndexOf b nonType1 0 = none := by
+            simpa [ib] using hib'
+          exact hidx_ne_none hidx_none
         · -- ia = some _, ib = some _
           simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
+          rename_i i j
           sorry
       · -- ta = none, tb = some _
         simp [ta, tb, hta', htb'] at h_eq
         sorry
       · -- ta = some _, tb = none
         simp [ta, tb, hta', htb'] at h_eq
+        rename_i i
         sorry
       · -- ta = some _, tb = some _
         simp [ta, tb, hta', htb'] at h_eq
-        sorry
+        symm at hta htb
+        rw [hta', List.find?_eq_some_iff_append] at hta
+        rw [htb', List.find?_eq_some_iff_append] at htb
+        have ha := hta.1
+        have hb := htb.1
+        simp only [beq_iff_eq, Fin.val_eq_val] at ha hb
+        rw [ha, hb, h_eq]
     refine ⟨⟨f, hf⟩, ?_⟩
     simp [Sym2LabeledGraph.toLabeledGraph]
     intro u v
