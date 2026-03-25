@@ -47,6 +47,91 @@ lemma myIndexOf_ne_none_of_mem
   rw [hnone] at hidx
   cases hidx
 
+lemma myIndexOf_eq_some_implies_mem
+    {n : Nat} (a : Fin n) :
+    (l : List (Fin n)) → (i idx : Nat) → myIndexOf a l i = some idx → a ∈ l
+  | [], _, _, h => by
+      simp [myIndexOf] at h
+  | x :: xs, i, idx, h => by
+      by_cases hxa : x = a
+      · simp [hxa]
+      · simp [myIndexOf, hxa] at h
+        exact List.mem_cons_of_mem _ (myIndexOf_eq_some_implies_mem a xs (i + 1) idx h)
+
+lemma myIndexOf_eq_some_implies_lt_from
+    {n : Nat} (a : Fin n) :
+    (l : List (Fin n)) → (i idx : Nat) → myIndexOf a l i = some idx → idx < i + l.length
+  | [], _, _, h => by
+      simp [myIndexOf] at h
+  | x :: xs, i, idx, h => by
+      by_cases hxa : x == a
+      · simp [myIndexOf, hxa] at h
+        cases h
+        simp
+      · simp [myIndexOf, hxa] at h
+        have hlt := myIndexOf_eq_some_implies_lt_from a xs (i + 1) idx h
+        simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hlt
+
+lemma myIndexOf_eq_some_implies_lt_length
+    {n : Nat} (a : Fin n) (l : List (Fin n)) (idx : Nat)
+    (hidx : myIndexOf a l 0 = some idx) :
+    idx < l.length := by
+  simpa using myIndexOf_eq_some_implies_lt_from a l 0 idx hidx
+
+lemma myIndexOf_eq_some_implies_ge_from
+    {n : Nat} (a : Fin n) :
+    (l : List (Fin n)) → (i idx : Nat) → myIndexOf a l i = some idx → i ≤ idx
+  | [], _, _, h => by
+      simp [myIndexOf] at h
+  | x :: xs, i, idx, h => by
+      by_cases hxa : x == a
+      · simp [myIndexOf, hxa] at h
+        cases h
+        exact Nat.le_refl i
+      · simp [myIndexOf, hxa] at h
+        have hge : i + 1 ≤ idx := myIndexOf_eq_some_implies_ge_from a xs (i + 1) idx h
+        exact Nat.le_trans (Nat.le_succ i) hge
+
+lemma myIndexOf_eq_some_same_index_implies_eq_from
+    {n : Nat} (l : List (Fin n)) (i idx : Nat) {a b : Fin n}
+    (hnodup : l.Nodup)
+    (ha : myIndexOf a l i = some idx)
+    (hb : myIndexOf b l i = some idx) :
+    a = b := by
+  induction l generalizing i idx a b with
+  | nil =>
+      simp [myIndexOf] at ha
+  | cons x xs ih =>
+      cases hnodup with
+      | @cons _ _ hx_notmem hxs_nodup =>
+          by_cases hxa : x == a
+          · by_cases hxb : x == b
+            · simp [myIndexOf, hxa, hxb] at ha hb
+              cases ha
+              cases hb
+              have hxa' : x = a := by simpa [beq_iff_eq] using hxa
+              have hxb' : x = b := by simpa [beq_iff_eq] using hxb
+              exact hxa'.symm.trans hxb'
+            · simp [myIndexOf, hxa, hxb] at ha hb
+              cases ha
+              have hge : i + 1 ≤ i := myIndexOf_eq_some_implies_ge_from b xs (i + 1) i hb
+              exact False.elim ((Nat.not_succ_le_self i) hge)
+          · by_cases hxb : x == b
+            · simp [myIndexOf, hxa, hxb] at ha hb
+              cases hb
+              have hge : i + 1 ≤ i := myIndexOf_eq_some_implies_ge_from a xs (i + 1) i ha
+              exact False.elim ((Nat.not_succ_le_self i) hge)
+            · simp [myIndexOf, hxa, hxb] at ha hb
+              exact ih (i := i + 1) (idx := idx) (a := a) (b := b) hxs_nodup ha hb
+
+lemma myIndexOf_eq_some_same_index_implies_eq
+    {n : Nat} (l : List (Fin n)) (idx : Nat) {a b : Fin n}
+    (hnodup : l.Nodup)
+    (ha : myIndexOf a l 0 = some idx)
+    (hb : myIndexOf b l 0 = some idx) :
+    a = b :=
+  myIndexOf_eq_some_same_index_implies_eq_from l 0 idx hnodup ha hb
+
 def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
     (nonType1 p2 : List (Fin n)) : List (Fin n) :=
   (List.finRange n).map fun v =>
@@ -62,10 +147,77 @@ def getNonTypeVerts (n k : Nat) (embed : Fin k → Fin n) : List (Fin n) :=
   (List.finRange n).filter fun v =>
     (List.finRange k).all fun i => v.val != (embed i).val
 
+lemma mem_getNonTypeVerts_of_find_eq_none
+    {n k : Nat} (embed : Fin k → Fin n) (v : Fin n)
+    (hfind : List.find? (fun i => v.val == (embed i).val) (List.finRange k) = none) :
+    v ∈ getNonTypeVerts n k embed := by
+  dsimp [getNonTypeVerts]
+  refine List.mem_filter.mpr ?_
+  constructor
+  · simp only [List.mem_finRange]
+  · rw [List.all_eq_true]
+    intro i hi
+    have hnone := (List.find?_eq_none.mp hfind) i hi
+    simpa [beq_iff_eq] using hnone
+
 lemma getNonTypeVerts_nodup {n k : Nat} (embed : Fin k → Fin n) :
     (getNonTypeVerts n k embed).Nodup := by
   simpa [getNonTypeVerts] using (List.nodup_finRange n).filter
     (fun v : Fin n => (List.finRange k).all fun i => v.val != (embed i).val)
+
+lemma mem_getNonTypeVerts_iff_vals
+    {n k : Nat} (embed : Fin k → Fin n) (v : Fin n) :
+    v ∈ getNonTypeVerts n k embed ↔ ∀ i : Fin k, v.val ≠ (embed i).val := by
+  constructor
+  · intro hv i hEq
+    have hall : ((List.finRange k).all fun j => v.val != (embed j).val) = true :=
+      (List.mem_filter.mp hv).2
+    have hi : (v.val != (embed i).val) = true :=
+      (List.all_eq_true.mp hall) i (by simp)
+    simp [hEq] at hi
+  · intro hv
+    refine List.mem_filter.mpr ?_
+    constructor
+    · simp [List.mem_finRange]
+    · refine List.all_eq_true.mpr ?_
+      intro i hi
+      by_cases hEq : v.val = (embed i).val
+      · exact False.elim (hv i hEq)
+      · simp [hEq]
+
+lemma getNonTypeVerts_length
+    {n k : Nat} (embed : Fin k → Fin n) (hinj : Function.Injective embed) :
+    (getNonTypeVerts n k embed).length = n - k := by
+  have hnod : (getNonTypeVerts n k embed).Nodup := getNonTypeVerts_nodup embed
+  rw [← List.toFinset_card_of_nodup hnod]
+  have hset :
+      (getNonTypeVerts n k embed).toFinset
+        = (Finset.univ \ Finset.image embed (Finset.univ : Finset (Fin k))) := by
+    ext v
+    constructor
+    · intro hv
+      refine Finset.mem_sdiff.mpr ?_
+      constructor
+      · simp
+      · intro himg
+        rcases Finset.mem_image.mp himg with ⟨i, _, hi⟩
+        have hvals := (mem_getNonTypeVerts_iff_vals embed v).1 (List.mem_toFinset.mp hv)
+        exact hvals i (by simpa using (congrArg Fin.val hi).symm)
+    · intro hv
+      have hnotimg : v ∉ Finset.image embed (Finset.univ : Finset (Fin k)) :=
+        (Finset.mem_sdiff.mp hv).2
+      have hvals : ∀ i : Fin k, v.val ≠ (embed i).val := by
+        intro i hEq
+        apply hnotimg
+        refine Finset.mem_image.mpr ⟨i, by simp, ?_⟩
+        exact (Fin.ext hEq).symm
+      exact List.mem_toFinset.mpr ((mem_getNonTypeVerts_iff_vals embed v).2 hvals)
+  rw [hset, Finset.card_sdiff]
+  have himage :
+      (Finset.image embed (Finset.univ : Finset (Fin k))).card = k := by
+    simpa using Finset.card_image_of_injective
+      (s := (Finset.univ : Finset (Fin k))) hinj
+  simp [himage]
 
 lemma perm_length_of_mem_getNonTypeVerts_permutations
     {n k : Nat} {embed : Fin k → Fin n} {π : List (Fin n)}
@@ -228,8 +380,8 @@ theorem isIsoFast_bool_true_correct
   := by
   simp [isIsoFast_bool] at h
   obtain ⟨_, π, hπ, h⟩ := h
-  let nonType1 := getNonTypeVerts n k G₁.type_embed
-  let fullMap := buildFullMap n k G₁.type_embed G₂.type_embed nonType1 π
+  let nonType := getNonTypeVerts n k G₁.type_embed
+  let fullMap := buildFullMap n k G₁.type_embed G₂.type_embed nonType π
   apply Nonempty.intro
   refine { graph_iso := ?_, type_preserve := ?_ }
   · refine graphEmbedIso ?_
@@ -241,8 +393,8 @@ theorem isIsoFast_bool_true_correct
       set tb := List.find? (fun i => b.val == (G₁.type_embed i).val) (List.finRange k) with htb
       cases hta' : ta <;> cases htb' : tb
       · -- ta = none, tb = none
-        set ia := myIndexOf a nonType1 0 with hia
-        set ib := myIndexOf b nonType1 0 with hib
+        set ia := myIndexOf a nonType 0 with hia
+        set ib := myIndexOf b nonType 0 with hib
         cases hia' : ia <;> cases hib' : ib
         · -- ia = none, ib = none
           simp only [List.length_map, List.length_finRange, Fin.is_lt, getElem?_pos,
@@ -253,8 +405,8 @@ theorem isIsoFast_bool_true_correct
           exfalso
           symm at hta
           rw [hta'] at hta
-          have ha_mem : a ∈ nonType1 := by
-            dsimp [nonType1, getNonTypeVerts]
+          have ha_mem : a ∈ nonType := by
+            dsimp [nonType, getNonTypeVerts]
             refine List.mem_filter.mpr ?_
             constructor
             · simp only [List.mem_finRange]
@@ -262,17 +414,17 @@ theorem isIsoFast_bool_true_correct
               intro i hi
               have hnone := (List.find?_eq_none.mp hta) i hi
               simpa [beq_iff_eq] using hnone
-          have hidx_ne_none : myIndexOf a nonType1 0 ≠ none :=
-            myIndexOf_ne_none_of_mem a nonType1 0 ha_mem
-          have hidx_none : myIndexOf a nonType1 0 = none := by
+          have hidx_ne_none : myIndexOf a nonType 0 ≠ none :=
+            myIndexOf_ne_none_of_mem a nonType 0 ha_mem
+          have hidx_none : myIndexOf a nonType 0 = none := by
             simpa [ia] using hia'
           exact hidx_ne_none hidx_none
         · -- ia = some _, ib = none
           exfalso
           symm at htb
           rw [htb'] at htb
-          have hb_mem : b ∈ nonType1 := by
-            dsimp [nonType1, getNonTypeVerts]
+          have hb_mem : b ∈ nonType := by
+            dsimp [nonType, getNonTypeVerts]
             refine List.mem_filter.mpr ?_
             constructor
             · simp only [List.mem_finRange]
@@ -280,22 +432,89 @@ theorem isIsoFast_bool_true_correct
               intro i hi
               have hnone := (List.find?_eq_none.mp htb) i hi
               simpa [beq_iff_eq] using hnone
-          have hidx_ne_none : myIndexOf b nonType1 0 ≠ none :=
-            myIndexOf_ne_none_of_mem b nonType1 0 hb_mem
-          have hidx_none : myIndexOf b nonType1 0 = none := by
+          have hidx_ne_none : myIndexOf b nonType 0 ≠ none :=
+            myIndexOf_ne_none_of_mem b nonType 0 hb_mem
+          have hidx_none : myIndexOf b nonType 0 = none := by
             simpa [ib] using hib'
           exact hidx_ne_none hidx_none
         · -- ia = some _, ib = some _
-          simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
           rename_i i j
-          sorry
+          simp [ta, tb, ia, ib, hta', htb', hia', hib'] at h_eq
+          symm at hia hib
+          rw [hia'] at hia
+          rw [hib'] at hib
+          have hlen_pi : π.length = n - k := by
+            rw [hπ.length_eq]
+            exact getNonTypeVerts_length G₂.type_embed G₂.type_embed.injective
+          have hi : i < π.length := by
+            rw [hlen_pi, ← getNonTypeVerts_length G₁.type_embed G₁.type_embed.injective]
+            exact myIndexOf_eq_some_implies_lt_length a nonType i hia
+          have hj : j < π.length := by
+            rw [hlen_pi, ← getNonTypeVerts_length G₁.type_embed G₁.type_embed.injective]
+            exact myIndexOf_eq_some_implies_lt_length b nonType j hib
+          rw [List.getElem?_eq_getElem hi, List.getElem?_eq_getElem hj] at h_eq
+          have hget : π.get ⟨i, hi⟩ = π.get ⟨j, hj⟩ := by simpa only [List.get_eq_getElem]
+          have hij_fin : (⟨i, hi⟩ : Fin π.length) = ⟨j, hj⟩ :=
+            (List.Nodup.get_inj_iff (hπ.nodup_iff.mpr (getNonTypeVerts_nodup G₂.type_embed))).1 hget
+          rw [← Fin.mk.inj_iff.mp hij_fin] at hib
+          exact myIndexOf_eq_some_same_index_implies_eq nonType i (getNonTypeVerts_nodup G₁.type_embed) hia hib
       · -- ta = none, tb = some _
-        simp [ta, tb, hta', htb'] at h_eq
-        sorry
+        rename_i j
+        exfalso
+        have ha_mem : a ∈ nonType := by
+          dsimp [nonType, getNonTypeVerts]
+          refine List.mem_filter.mpr ?_
+          constructor
+          · simp [List.mem_finRange]
+          · rw [List.all_eq_true]
+            intro i hi
+            have hnone := (List.find?_eq_none.mp hta') i hi
+            simpa [beq_iff_eq] using hnone
+        have hidx_ne_none : myIndexOf a nonType 0 ≠ none := myIndexOf_ne_none_of_mem a nonType 0 ha_mem
+        cases hidx : myIndexOf a nonType 0 with
+        | none =>
+            exact hidx_ne_none hidx
+        | some idx =>
+            have hlen_pi : π.length = n - k := by
+              rw [hπ.length_eq]
+              exact getNonTypeVerts_length G₂.type_embed G₂.type_embed.injective
+            have hidx_lt_pi : idx < π.length := by
+              rw [hlen_pi, ← getNonTypeVerts_length G₁.type_embed G₁.type_embed.injective]
+              exact myIndexOf_eq_some_implies_lt_length a nonType idx hidx
+            simp [ta, tb, hta', htb', hidx] at h_eq
+            have hget : π.get ⟨idx, hidx_lt_pi⟩ = G₂.type_embed j := by
+              rw [List.getElem?_eq_getElem hidx_lt_pi] at h_eq
+              exact Fin.eq_of_val_eq (congrArg Fin.val h_eq)
+            exact (mem_getNonTypeVerts_iff_vals G₂.type_embed (G₂.type_embed j)).1 ((hπ.mem_iff).1 (List.mem_of_getElem hget)) j rfl
       · -- ta = some _, tb = none
-        simp [ta, tb, hta', htb'] at h_eq
         rename_i i
-        sorry
+        exfalso
+        have hb_mem : b ∈ nonType := by
+          dsimp [nonType, getNonTypeVerts]
+          refine List.mem_filter.mpr ?_
+          constructor
+          · simp [List.mem_finRange]
+          · rw [List.all_eq_true]
+            intro t ht
+            have hnone := (List.find?_eq_none.mp htb') t ht
+            simpa [beq_iff_eq] using hnone
+        have hidx_ne_none : myIndexOf b nonType 0 ≠ none :=
+          myIndexOf_ne_none_of_mem b nonType 0 hb_mem
+        cases hidx : myIndexOf b nonType 0 with
+        | none =>
+            exact hidx_ne_none hidx
+        | some idx =>
+            have hlen_pi : π.length = n - k := by
+              rw [hπ.length_eq]
+              exact getNonTypeVerts_length G₂.type_embed G₂.type_embed.injective
+            have hidx_lt_pi : idx < π.length := by
+              rw [hlen_pi, ← getNonTypeVerts_length G₁.type_embed G₁.type_embed.injective]
+              exact myIndexOf_eq_some_implies_lt_length b nonType idx hidx
+            simp [ta, tb, hta', htb', hidx] at h_eq
+            have hget : π.get ⟨idx, hidx_lt_pi⟩ = G₂.type_embed i := by
+              rw [List.getElem?_eq_getElem hidx_lt_pi, ] at h_eq
+              exact Fin.eq_of_val_eq (congrArg Fin.val (id (Eq.symm h_eq)))
+            exact (mem_getNonTypeVerts_iff_vals G₂.type_embed (G₂.type_embed i)).1 ((hπ.mem_iff).1 (List.mem_of_getElem hget)) i rfl
       · -- ta = some _, tb = some _
         simp [ta, tb, hta', htb'] at h_eq
         symm at hta htb
@@ -325,19 +544,37 @@ theorem isIsoFast_bool_true_correct
     constructor
     · intro ⟨h₁, h₂⟩
       constructor
-      · sorry
+      · exact (h e he).mpr h₁
       · exact Ne.intro u_neq_v
     · intro ⟨h₁, h₂⟩
       constructor
       · exact (h e he).mp h₁
       · exact Ne.intro fun a ↦ u_neq_v (hf a)
   · ext t
-    simp only [Function.comp_apply]
-    dsimp [fullMap]
-    -- by definition of buildFullMap, lhs should be G2.type_embed t.
-
-
-    sorry
+    have hfind :
+      List.find? (fun i => (G₁.type_embed t).val == (G₁.type_embed i).val) (List.finRange k) = some t := by
+      rw [List.find?_eq_some_iff_append]
+      constructor
+      · simp only [BEq.rfl]
+      · use (List.finRange k).take t.val
+        use (List.finRange k).drop (t.val + 1)
+        constructor
+        · nth_rw 1 [← List.take_append_drop t (List.finRange k)]
+          rw [List.drop_eq_getElem_cons (by simp only [List.length_finRange, Fin.is_lt])]
+          simp only [List.getElem_finRange, Fin.cast_mk, Fin.eta]
+        · intro i hi
+          simp only [Bool.not_eq_eq_eq_not, Bool.not_true, beq_eq_false_iff_ne, ne_eq, Fin.val_eq_val]
+          intro h
+          have t_lt_i : i < t := by
+            rw [List.mem_iff_getElem] at hi
+            obtain ⟨j, ⟨h1, h2⟩⟩ := hi
+            simp only [List.length_take, List.length_finRange, Fin.is_le', inf_of_le_left,
+              List.getElem_take, List.getElem_finRange, Fin.cast_mk] at h1 h2
+            subst h2
+            simp_all only [EmbeddingLike.apply_eq_iff_eq, lt_self_iff_false]
+          rw [G₁.type_embed.injective h] at t_lt_i
+          exact (lt_self_iff_false i).mp t_lt_i
+    simp [fullMap, buildFullMap, hfind, graphEmbedIso, Sym2LabeledGraph.toLabeledGraph]
 
 lemma nonType_perm_witness_of_eqv
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
