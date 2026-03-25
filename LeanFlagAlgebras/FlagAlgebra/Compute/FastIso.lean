@@ -131,6 +131,32 @@ lemma myIndexOf_eq_some_same_index_implies_eq
     (hb : myIndexOf b l 0 = some idx) :
     a = b :=
   myIndexOf_eq_some_same_index_implies_eq_from l 0 idx hnodup ha hb
+lemma myIndexOf_get?_gen {n : Nat} (a : Fin n) (l : List (Fin n)) (i idx : Nat)
+    (h : myIndexOf a l i = some idx) :
+    i ≤ idx ∧ l[idx - i]? = some a := by
+  induction l generalizing i with
+  | nil =>
+    cases h
+  | cons x xs ih =>
+    unfold myIndexOf at h
+    split at h
+    · next heq =>
+      simp only [Option.some.injEq] at h
+      subst h
+      have hxa : x = a := by simpa [beq_iff_eq] using heq
+      exact ⟨Nat.le_refl _, by simp [hxa]⟩
+    · next hneq =>
+      have ⟨hle, hget⟩ := ih (i + 1) h
+      refine ⟨Nat.le_trans (Nat.le_succ _) hle, ?_⟩
+      have hsub : idx - i = idx - (i + 1) + 1 := by omega
+      rw [hsub]
+      exact hget
+
+lemma myIndexOf_get_zero {n : Nat} (a : Fin n) (l : List (Fin n)) (idx : Nat)
+    (h : myIndexOf a l 0 = some idx) :
+    l[idx]? = some a := by
+  have ⟨_, hget⟩ := myIndexOf_get?_gen a l 0 idx h
+  rwa [Nat.sub_zero] at hget
 
 def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
     (nonType1 p2 : List (Fin n)) : List (Fin n) :=
@@ -635,6 +661,53 @@ lemma nonType_perm_witness_of_eqv
     have hmap : h.some.graph_iso u = v := by simp [u]
     exact List.mem_map.mpr ⟨u, hu_mem, hmap⟩
 
+lemma my_find_some {α} (l : List α) (p : α → Bool) (x : α)
+    (hx : x ∈ l) (hp : p x) (huniq : ∀ y ∈ l, p y → y = x) : List.find? p l = some x := by
+  induction l with
+  | nil =>
+    cases hx
+  | cons a as ih =>
+    cases hx with
+    | head _ =>
+      simp [List.find?, hp]
+    | tail _ hx_tail =>
+      simp [List.find?]
+      cases hpa : p a
+      · simp [ih hx_tail (fun y hy hpy => huniq y (List.Mem.tail _ hy) hpy)]
+      · have : a = x := huniq a (List.Mem.head _) hpa
+        rw [this]
+
+lemma find_eq_some {k n : Nat} {σ : Sym2FlagType k} (G₁ : Sym2LabeledGraph σ n)
+    (v : Fin n) (i : Fin k) (hi : v = G₁.type_embed i) :
+    List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = some i := by
+  have h1 : (fun j : Fin k => v.val == (G₁.type_embed j).val) i = true := by
+    simp [hi]
+  have h2 : ∀ j ∈ List.finRange k, (fun j : Fin k => v.val == (G₁.type_embed j).val) j = true → j = i := by
+    intro j _ hj
+    simp only [beq_iff_eq] at hj
+    have hj' : v = G₁.type_embed j := Fin.ext hj
+    rw [hi] at hj'
+    exact G₁.type_embed.injective hj'.symm
+  exact my_find_some _ _ _ (List.mem_finRange _) h1 h2
+
+lemma find_eq_none {k n : Nat} {σ : Sym2FlagType k} (G₁ : Sym2LabeledGraph σ n)
+    (v : Fin n) (hn : ∀ i, v ≠ G₁.type_embed i) :
+    List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = none := by
+  apply List.find?_eq_none.mpr
+  intro x _
+  have h_neq := hn x
+  simp only [beq_iff_eq]
+  intro h_eq
+  apply h_neq
+  apply Fin.ext
+  exact h_eq
+
+lemma mem_getNonTypeVerts_comp {n k : Nat} {embed : Fin k → Fin n} (v : Fin n)
+    (hn : ∀ i, v ≠ embed i) : v ∈ getNonTypeVerts n k embed := by
+  simp [getNonTypeVerts, List.mem_filter]
+  intro i
+  exact Fin.val_ne_of_ne (hn i)
+
 lemma buildFullMap_edge_witness_of_eqv
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : G₁ ∼sf G₂) :
@@ -644,45 +717,68 @@ lemma buildFullMap_edge_witness_of_eqv
           (buildFullMap n k G₁.type_embed G₂.type_embed
             (getNonTypeVerts n k G₁.type_embed)
             ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e ∈ G₂.edges := by
-  intro e he
-  have hEdge : e ∈ G₁.edges ↔ e.map h.some.graph_iso ∈ G₂.edges := by
+  intro e _
+  let φ := h.some.graph_iso
+  have hEdge : e ∈ G₁.edges ↔ e.map φ ∈ G₂.edges := by
     constructor
-    · intro he1
-      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
+    · intro he
+      have he_G₁ : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet := by
         simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
-          (And.intro he1 (G₁.edges_valid e he1))
-      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
-        (h.some.graph_iso.map_mem_edgeSet_iff).2 he1'
-      exact (by
-        have : e.map h.some.graph_iso.toEquiv ∈ G₂.edges ∧ ¬(e.map h.some.graph_iso.toEquiv).IsDiag := by
-          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he2'
-        exact this.1)
-    · intro he2
-      have he2' : e.map h.some.graph_iso.toEquiv ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
+          (And.intro he (G₁.edges_valid e he))
+      have he_G₂ : e.map φ ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet :=
+        (φ.map_mem_edgeSet_iff).2 he_G₁
+      simp [SimpleGraph.edgeSet_fromEdgeSet] at he_G₂
+      exact he_G₂.1
+    · intro he
+      have he_G₂ : e.map φ ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₂.edges)).edgeSet := by
         simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
-          (And.intro he2 (G₂.edges_valid (e.map h.some.graph_iso.toEquiv) he2))
-      have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
-        (h.some.graph_iso.map_mem_edgeSet_iff).1 he2'
-      exact (by
-        have : e ∈ G₁.edges ∧ ¬e.IsDiag := by
-          simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he1'
-        exact this.1)
-  have hfull : ∀ v : Fin n,
-      ((buildFullMap n k G₁.type_embed G₂.type_embed
-        (getNonTypeVerts n k G₁.type_embed)
-        ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso))[v.val]?).getD v
-      = h.some.graph_iso v := by
-    intro v
-    simp [buildFullMap]
-    sorry
+          (And.intro he (G₂.edges_valid (e.map φ) he))
+      have he_G₁ : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G₁.edges)).edgeSet :=
+        (φ.map_mem_edgeSet_iff).1 he_G₂
+      simp [SimpleGraph.edgeSet_fromEdgeSet] at he_G₁
+      exact he_G₁.1
   have hMapEq :
       applyPermEdge
         (buildFullMap n k G₁.type_embed G₂.type_embed
           (getNonTypeVerts n k G₁.type_embed)
-          ((getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso)) e
-      = e.map h.some.graph_iso.toEquiv := by
-    simp [applyPermEdge, hfull]
-  simpa [hMapEq] using hEdge
+          ((getNonTypeVerts n k G₁.type_embed).map φ)) e
+      = e.map φ := by
+    dsimp [applyPermEdge]
+    congr 1
+    ext v
+    simp [buildFullMap]
+    have h_cases : (∃ i, v = G₁.type_embed i) ∨ (¬ ∃ i, v = G₁.type_embed i) := by
+      exact Classical.em _
+    rcases h_cases with ⟨i, hi⟩ | hn
+    · -- v = G₁.type_embed i
+      have h_find : List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = some i := by
+        exact find_eq_some G₁ v i hi
+      simp [h_find]
+      have h_type_eq : G₂.type_embed i = φ (G₁.type_embed i) := by
+        have ht := h.some.type_preserve
+        have ht' := congr_fun ht i
+        exact ht'.symm
+      rw [hi]
+      rw [h_type_eq]
+    · -- v ≠ G₁.type_embed i
+      have hn' : ∀ i, v ≠ G₁.type_embed i := by
+        intro i hi
+        exact hn ⟨i, hi⟩
+      have h_find : List.find? (fun i => v.val == (G₁.type_embed i).val) (List.finRange k) = none := by
+        exact find_eq_none G₁ v hn'
+      simp [h_find]
+      have h_mem : v ∈ getNonTypeVerts n k G₁.type_embed := by
+        exact mem_getNonTypeVerts_comp v hn'
+      have ⟨idx, hidx⟩ : ∃ idx, myIndexOf v (getNonTypeVerts n k G₁.type_embed) 0 = some idx := by
+        have h_idx_neq := myIndexOf_ne_none_of_mem v (getNonTypeVerts n k G₁.type_embed) 0 h_mem
+        cases hidx_case : myIndexOf v (getNonTypeVerts n k G₁.type_embed) 0
+        · contradiction
+        · exact ⟨_, rfl⟩
+      simp [hidx]
+      have h_getElem : (getNonTypeVerts n k G₁.type_embed)[idx]? = some v :=
+        myIndexOf_get_zero v (getNonTypeVerts n k G₁.type_embed) idx hidx
+      simp [h_getElem]
+  simp only [hEdge, ← hMapEq, φ]
 
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
