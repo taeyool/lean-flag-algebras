@@ -219,6 +219,9 @@ noncomputable def PositiveHomSpace.toPosHom
   :=
   Classical.choose φ.property
 
+noncomputable instance : CoeFun (PositiveHomSpace σ) (fun _ => FlagAlgebra σ → ℝ) where
+  coe φ := PositiveHomSpace.toPosHom φ
+
 theorem PositiveHomSpace.toPosHom_unitVector
     (φ : PositiveHomSpace σ) (F : FinFlag σ)
     : (toPosHom φ) ⟦unitVector F⟧ = φ.val F

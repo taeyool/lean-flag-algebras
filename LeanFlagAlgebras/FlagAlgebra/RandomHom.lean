@@ -1105,17 +1105,13 @@ noncomputable def probMeasure_extend_emptyType_positiveHom
   :=
   Classical.choose (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
 
-syntax "ℙ[" term "]" : term
-
-macro_rules
-  | `(ℙ[$φ₀]) =>
-      `(probMeasure_extend_emptyType_positiveHom (σ := σ) $φ₀ (by assumption))
+notation "ℙ[" φ₀ "]" =>
+  probMeasure_extend_emptyType_positiveHom φ₀ (by assumption)
 
 theorem probMeasure_extend_emptyType_positiveHom_spec
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∀ (f : FlagAlgebra σ),
-        ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂(ℙ[φ₀])
-        = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
+  ∫ (φ : PositiveHomSpace σ), φ f ∂(ℙ[φ₀]) = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
   :=
   Classical.choose_spec (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
 
