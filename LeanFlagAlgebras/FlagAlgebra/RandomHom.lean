@@ -1099,6 +1099,26 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   · rw [← flagSeq_limit_measure_support_positiveHomSpace hs_conv.1 hs_den hℙ]
     exact ProbabilityMeasure.apply_mono ℙ Set.subset_union_left
 
+noncomputable def probMeasure_extend_emptyType_positiveHom
+    (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
+    : ProbabilityMeasure (PositiveHomSpace σ)
+  :=
+  Classical.choose (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
+
+syntax "ℙ[" term "]" : term
+
+macro_rules
+  | `(ℙ[$φ₀]) =>
+      `(probMeasure_extend_emptyType_positiveHom (σ := σ) $φ₀ (by assumption))
+
+theorem probMeasure_extend_emptyType_positiveHom_spec
+    {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
+    : ∀ (f : FlagAlgebra σ),
+        ∫ φ, (PositiveHomSpace.toPosHom φ) f ∂(ℙ[φ₀])
+        = (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)
+  :=
+  Classical.choose_spec (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
+
 end
 
 theorem positiveHom_one_downward_pos
