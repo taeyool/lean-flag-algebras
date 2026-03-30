@@ -11,14 +11,14 @@ def forbidEq
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), (hσ : φ₀ ⟨σ⟩₀ > 0)
-    → φ₀ ⟦unitVector F_forbid⟧ > 0
+    → φ₀ ⟦unitVector F_forbid⟧ = 0
     → ℙ[φ₀] {φ | φ f = φ g} = 1
 
 def forbidLE
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), (hσ : φ₀ ⟨σ⟩₀ > 0)
-    → φ₀ ⟦unitVector F_forbid⟧ > 0
+    → φ₀ ⟦unitVector F_forbid⟧ = 0
     → ℙ[φ₀] {φ | φ f ≤ φ g} = 1
 
 notation f "=[" F_forbid "]" g => forbidEq F_forbid f g
@@ -287,9 +287,174 @@ theorem forbidLE_smul_nonneg
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ (c • f) ≤ φ (c • g)} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-example (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+theorem unitVector_forbidEq_zero
+    (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (hF : flagDensity₁ F_forbid.2 (unlabel F.2) > 0)
+    : ⟦unitVector F⟧ =[F_forbid] 0
+  := by
+  intro φ₀ hσ hF_forbid
+  have h_nonneg : ∀ φ : PositiveHomSpace σ, 0 ≤ (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ := by
+    intro φ
+    exact positiveHom_unitVector_ge_zero (PositiveHomSpace.toPosHom φ) F
+  have h_measurable :
+      Measurable (fun φ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧) := by
+    simpa using
+      (positiveHomSpace_eval_continuous (σ := σ) (⟦unitVector F⟧ : FlagAlgebra σ)).measurable
+  have h_integrable :
+      Integrable
+        (fun φ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧)
+        ((ℙ[φ₀] : Measure (PositiveHomSpace σ))) := by
+    have h_bound :
+        ∀ᵐ (φ : PositiveHomSpace σ) ∂((ℙ[φ₀] : Measure (PositiveHomSpace σ))),
+          ‖(PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧‖ ≤ 1 := by
+      exact Filter.Eventually.of_forall (fun φ => by
+        simp only [Real.norm_eq_abs]
+        simpa [PositiveHomSpace.toPosHom_unitVector] using flagDensitySpace_abs_le_one φ F)
+    apply Integrable.of_bound
+    · exact Measurable.aestronglyMeasurable h_measurable
+    · exact h_bound
+  have h_integral_zero :
+      ∫ φ : PositiveHomSpace σ, (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ ∂(ℙ[φ₀]) = 0 := by
+    rw [probMeasure_extend_emptyType_positiveHom_spec]
+    simp; left
+    simp [downward, downwardFlagVectorQuot, downwardFlagVector_unitVector, downwardFlag]
+    simp [smul_quot, PositiveHom.map_smul]
+    right
+    exact positiveHom_unitVector_eq_zero φ₀ hF hF_forbid
+  have h_prob_zero :
+      ℙ[φ₀] {φ : PositiveHomSpace σ | (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ = 0} = 1 :=
+    ae_zero_of_integral_eq_zero h_nonneg h_measurable (by simpa using h_integrable) h_integral_zero
+  simpa [PositiveHomSpace.toPosHom_unitVector] using h_prob_zero
+
+theorem unitVector_quot_forbidEq_sum_density_mul_flagWithSize
+    (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦unitVector F⟧ =[F_forbid] ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') > 0, (flagDensity₁ F.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
   := by
   sorry
+
+/-
+example (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : ⟦unitVector F⟧ =[F_forbid] ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') > 0, (flagDensity₁ F.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
+  := by
+  intro φ₀ hσ hF_forbid
+  rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ]
+  simp [PositiveHom.map_sum, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+  let t : PositiveHomSpace σ → FlagWithSize σ ℓ → ℝ :=
+    fun φ x => (flagDensity₁ F.2 x : ℝ) * (φ.val ⟨ℓ, x⟩)
+  let p : FlagWithSize σ ℓ → Prop :=
+    fun x => 0 < flagDensity₁ F_forbid.2 (unlabel x)
+  have hpred : ∀ x : FlagWithSize σ ℓ,
+      (¬ p x) ↔ (flagDensity₁ F_forbid.2 (unlabel x) = 0) := by
+    intro x
+    constructor
+    · intro hx
+      exact le_antisymm
+        (le_of_not_gt (by simpa [p] using hx))
+        (flagListDensity₁_ge_zero F_forbid.2 (unlabel x))
+    · intro hx
+      simp [p, hx]
+  have hcancel_set :
+      {φ : PositiveHomSpace σ | ∑ x, t φ x = ∑ x with p x, t φ x}
+      =
+      {φ : PositiveHomSpace σ |
+        ∑ x with flagDensity₁ F_forbid.2 (unlabel x) = 0, t φ x = 0} := by
+    ext φ
+    constructor
+    · intro hEq
+      have hsplit : (∑ x, t φ x) = (∑ x with p x, t φ x) + (∑ x with ¬ p x, t φ x) := by
+        symm
+        simpa [p] using
+          (Finset.sum_filter_add_sum_filter_not
+            (s := (Finset.univ : Finset (FlagWithSize σ ℓ)))
+            (p := fun x => p x)
+            (f := fun x => t φ x))
+      have hEq' : (∑ x with p x, t φ x) + (∑ x with ¬ p x, t φ x) = (∑ x with p x, t φ x) := by
+        simpa [hsplit] using hEq
+      have hzero_not_pos : (∑ x with ¬ p x, t φ x) = 0 := by
+        linarith
+      simpa [hpred] using hzero_not_pos
+    · intro hZero
+      have hsplit : (∑ x, t φ x) = (∑ x with p x, t φ x) + (∑ x with ¬ p x, t φ x) := by
+        symm
+        simpa [p] using
+          (Finset.sum_filter_add_sum_filter_not
+            (s := (Finset.univ : Finset (FlagWithSize σ ℓ)))
+            (p := fun x => p x)
+            (f := fun x => t φ x))
+      have hzero_not_pos : (∑ x with ¬ p x, t φ x) = 0 := by
+        simpa [hpred] using hZero
+      calc
+        (∑ x, t φ x) = (∑ x with p x, t φ x) + (∑ x with ¬ p x, t φ x) := hsplit
+        _ = (∑ x with p x, t φ x) + 0 := by rw [hzero_not_pos]
+        _ = (∑ x with p x, t φ x) := by simp
+  change (ℙ[φ₀]) {φ : PositiveHomSpace σ | ∑ x, t φ x = ∑ x with p x, t φ x} = 1
+  rw [hcancel_set]
+  let q : FlagWithSize σ ℓ → Prop :=
+    fun x => flagDensity₁ F_forbid.2 (unlabel x) = 0
+  change (ℙ[φ₀]) {φ : PositiveHomSpace σ | ∑ x with q x, t φ x = 0} = 1
+  have hsum_zero_iff_forall :
+      {φ : PositiveHomSpace σ | ∑ x with q x, t φ x = 0}
+      =
+      {φ : PositiveHomSpace σ | ∀ x : FlagWithSize σ ℓ, q x → t φ x = 0} := by
+    ext φ
+    constructor
+    · intro hsum x hx
+      have hnonneg :
+          ∀ y ∈ (Finset.univ.filter fun z : FlagWithSize σ ℓ => q z),
+            0 ≤ t φ y := by
+        intro y hy
+        dsimp [t]
+        apply mul_nonneg
+        · exact Rat.cast_nonneg.mpr (flagListDensity₁_ge_zero F.2 y)
+        · simpa [PositiveHomSpace.toPosHom_unitVector] using
+            positiveHom_unitVector_ge_zero (PositiveHomSpace.toPosHom φ) ⟨ℓ, y⟩
+      have hall :
+          ∀ y ∈ (Finset.univ.filter fun z : FlagWithSize σ ℓ => q z),
+            t φ y = 0 :=
+        (Finset.sum_eq_zero_iff_of_nonneg hnonneg).1 (by simpa using hsum)
+      exact hall x (by simp [q, hx])
+    · intro hall
+      apply Finset.sum_eq_zero
+      intro x hx
+      exact hall x (by simpa [Finset.mem_filter] using hx)
+  rw [hsum_zero_iff_forall]
+  let A : FlagWithSize σ ℓ → Set (PositiveHomSpace σ) :=
+    fun x => {φ : PositiveHomSpace σ | t φ x = 0}
+  have hforall_iInter :
+      {φ : PositiveHomSpace σ | ∀ x : FlagWithSize σ ℓ, q x → t φ x = 0}
+      =
+      ⋂ x : FlagWithSize σ ℓ, ⋂ _ : q x, A x := by
+    ext φ
+    simp [A]
+  rw [hforall_iInter]
+  have hA_measurable : ∀ x : FlagWithSize σ ℓ, MeasurableSet (A x) := by
+    intro x
+    change MeasurableSet {φ : PositiveHomSpace σ | t φ x = 0}
+    have hmeas_eval : Measurable fun φ : PositiveHomSpace σ => φ.val ⟨ℓ, x⟩ := by
+      simpa [PositiveHomSpace.toPosHom_unitVector] using
+        (positiveHomSpace_eval_continuous (σ := σ) (⟦unitVector ⟨ℓ, x⟩⟧ : FlagAlgebra σ)).measurable
+    have hmeas_t : Measurable fun φ : PositiveHomSpace σ => t φ x := by
+      dsimp [t]
+      exact Measurable.mul measurable_const hmeas_eval
+    simpa using
+      (measurableSet_eq_fun
+        (f := fun φ : PositiveHomSpace σ => t φ x)
+        (g := fun _ : PositiveHomSpace σ => (0 : ℝ))
+        hmeas_t measurable_const)
+  let B : FlagWithSize σ ℓ → Set (PositiveHomSpace σ) := fun x => ⋂ _ : q x, A x
+  have hB_measurable : ∀ x : FlagWithSize σ ℓ, MeasurableSet (B x) := by
+    intro x
+    dsimp [B]
+    apply MeasurableSet.iInter
+    intro _
+    exact hA_measurable x
+  change (ℙ[φ₀]) (⋂ x : FlagWithSize σ ℓ, B x) = 1
+  apply prob_iInter_eq_one_of_all_prob_eq_one hB_measurable
+  intro G
+  by_cases hG : q G
+  · simp [B, hG, A, t]
+    simp [q] at hG
+    sorry
+  · simp [B, hG]
+-/
 
 end Forbid
