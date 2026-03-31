@@ -194,7 +194,7 @@ theorem flagMulWithSize_comm
   := by
   dsimp [flagMulWithSize]
   apply sum_congr rfl
-  rintro _ -
+  rintro _
   simp [flagPairDensity_comm]
 
 theorem flagMulWithSize_one
@@ -810,7 +810,7 @@ theorem sum_quot
   intro i s his ih
   simp only [Finset.sum_insert his, add_quot, ih]
 
-theorem unitVector_quot_eq_sum_density_mul_flagWithSize
+theorem unitVector_quot_eq_sum
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦unitVector F⟧ = ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F' : ℝ) • (⟦unitVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ)
   := by
@@ -823,19 +823,28 @@ theorem sum_flagWithSize_eq_one
     : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
   := by
   show _ = ⟦unitVector 1⟧
-  rw [unitVector_quot_eq_sum_density_mul_flagWithSize 1 ℓ hℓ]
+  rw [unitVector_quot_eq_sum 1 ℓ hℓ]
   apply Finset.sum_congr rfl
   rintro F -
   rw [flagDensity_one F]
   simp only [Rat.cast_one, one_smul]
 
+theorem unitVector_quot_mul_eq_flagMulWithSize_quot
+    (F G : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 + G.1 ≤ ℓ + n₀)
+    : (⟦unitVector F⟧ * ⟦unitVector G⟧ : FlagAlgebra σ) = ⟦flagMulWithSize F G ℓ⟧
+  := by
+  apply Quotient.sound
+  simp only [flagVector_mul_eq_nested_sum, unitVector_support, sum_singleton, unitVector_apply_self,
+    mul_one, one_smul]
+  exact flagMul_indep_on_size hℓ
+
 theorem unitVector_quot_mul_eq_flagMul_quot
     (F G : FinFlag σ)
     : (⟦unitVector F⟧ * ⟦unitVector G⟧ : FlagAlgebra σ) = ⟦flagMul F G⟧
   := by
+  rw [unitVector_quot_mul_eq_flagMulWithSize_quot F G (F.1 + G.1 - n₀) (by omega)]
   apply Quotient.sound
-  simp only [flagVector_mul_eq_nested_sum, unitVector_support, sum_singleton, unitVector_apply_self,
-    mul_one, one_smul, Setoid.refl]
+  exact flagMul_indep_on_size (by omega)
 
 theorem linearExtension_unitVector
     {R : Type} [AddCommGroup R] [Module ℝ R] (f : FinFlag σ → R) (F : FinFlag σ)

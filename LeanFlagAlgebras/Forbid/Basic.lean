@@ -358,11 +358,13 @@ theorem unitVector_forbidEq_zero
     ae_zero_of_integral_eq_zero h_nonneg h_measurable (by simpa using h_integrable) h_integral_zero
   simpa [PositiveHomSpace.toPosHom_unitVector] using h_prob_zero
 
-theorem unitVector_quot_forbidEq_sum_density_mul_flagWithSize
+theorem unitVector_quot_forbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
-    : ⟦unitVector F⟧ =[F_forbid] ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') = 0, (flagDensity₁ F.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
+    : ⟦unitVector F⟧ =[F_forbid]
+      ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') = 0,
+        (flagDensity₁ F.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
   := by
-  rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ]
+  rw [unitVector_quot_eq_sum F ℓ hℓ]
   let p : FlagWithSize σ ℓ → Prop :=
     fun x => 0 < flagDensity₁ F_forbid.2 (unlabel x)
   have hpred : ∀ x : FlagWithSize σ ℓ,
@@ -395,5 +397,14 @@ theorem unitVector_quot_forbidEq_sum_density_mul_flagWithSize
     apply forbidEq_smul_zero
     exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
   · apply forbidEq_refl
+
+theorem unitVector_quot_mul_forbidEq_sum
+    (F_forbid : FinFlag ∅ₜ) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
+    : (⟦unitVector F₁⟧ * ⟦unitVector F₂⟧ : FlagAlgebra σ) =[F_forbid]
+      ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') = 0,
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
+  := by
+  rw [unitVector_quot_mul_eq_flagMulWithSize_quot F₁ F₂ ℓ hℓ]
+  sorry
 
 end Forbid

@@ -102,7 +102,7 @@ theorem positiveHom_unitVector_eq_zero
   have hℓ : ℓ ≤ ℓ' := by
     have := flagDensity_le_card h
     simp_all only [gt_iff_lt, Fintype.card_fin]
-  rw [unitVector_quot_eq_sum_density_mul_flagWithSize ⟨ℓ, F⟩ ℓ' hℓ] at hF
+  rw [unitVector_quot_eq_sum ⟨ℓ, F⟩ ℓ' hℓ] at hF
   simp_rw [PositiveHom.map_sum, PositiveHom.map_smul] at hF
   rw [Finset.sum_eq_zero_iff_of_nonneg] at hF
   · specialize hF G (Finset.mem_univ G)

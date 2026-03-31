@@ -380,7 +380,7 @@ theorem positiveHomSpace_eq
     repeat' constructor
     · intro F ℓ hℓ
       simp only [PositiveHom.coe_flag]
-      rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ]
+      rw [unitVector_quot_eq_sum F ℓ hℓ]
       simp_rw [PositiveHom.map_sum, PositiveHom.map_smul]
     · simp only [oneProp, PositiveHom.coe_flag]
       exact PositiveHom.map_one φ
@@ -647,7 +647,7 @@ theorem randomDensity_expectation
   := by
   dsimp only [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
   rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
-  rw [unitVector_quot_eq_sum_density_mul_flagWithSize F ℓ hℓ, PositiveHom.map_sum]
+  rw [unitVector_quot_eq_sum F ℓ hℓ, PositiveHom.map_sum]
   apply Finset.sum_congr rfl
   intro G _
   rw [PositiveHom.map_smul, mul_comm]

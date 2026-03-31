@@ -46,6 +46,9 @@ import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey
 import LeanFlagAlgebras.MantelTheorem.GoodmanBound
 
+-- Forbid
+import LeanFlagAlgebras.Forbid.Basic
+
  -- ErdosPentagon
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagDensity

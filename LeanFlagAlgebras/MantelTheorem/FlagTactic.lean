@@ -97,7 +97,7 @@ partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name 
 `∀ (φ : PositiveHom σ), φ F_forbidden = 0 → φ F = (size N expansion of F without F_forbidden)`.
 
 It introduces `φ` and the restriction hypothesis, expands `F` with
-`unitVector_quot_eq_sum_density_mul_flagWithSize`, maps by `φ`, rewrites the
+`unitVector_quot_eq_sum`, maps by `φ`, rewrites the
 size-`N` flag universe, and then substitutes the forbidden term using the
 hypothesis.
 -/
@@ -148,7 +148,7 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
     let valEqId : TSyntax `ident := mkIdent valEqName
 
     evalTactic (← `(tactic|
-      have hExp := FlagAlgebras.unitVector_quot_eq_sum_density_mul_flagWithSize (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
+      have hExp := FlagAlgebras.unitVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
     evalTactic (← `(tactic| have hφ := congrArg φ hExp))
     evalTactic (← `(tactic| rw [FlagAlgebras.PositiveHom.map_sum] at hφ))
     evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum] at hφ))

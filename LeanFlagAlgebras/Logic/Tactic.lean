@@ -144,7 +144,7 @@ def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
     let valEqId : TSyntax `ident := mkIdent valEqName
 
     evalTactic (← `(tactic|
-      have hExp := FlagAlgebras.unitVector_quot_eq_sum_density_mul_flagWithSize (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
+      have hExp := FlagAlgebras.unitVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
     evalTactic (← `(tactic| have hφ := congrArg φ hExp))
     evalTactic (← `(tactic| rw [FlagAlgebras.PositiveHom.map_sum] at hφ))
     evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum] at hφ))
