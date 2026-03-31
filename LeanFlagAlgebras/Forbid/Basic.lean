@@ -405,6 +405,38 @@ theorem unitVector_quot_mul_forbidEq_sum
         (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦unitVector ⟨ℓ, F'⟩⟧
   := by
   rw [unitVector_quot_mul_eq_flagMulWithSize_quot F₁ F₂ ℓ hℓ]
-  sorry
+  simp [flagMulWithSize, sum_quot, smul_quot]
+  let p : FlagWithSize σ ℓ → Prop :=
+    fun x => 0 < flagDensity₁ F_forbid.2 (unlabel x)
+  have hpred : ∀ x : FlagWithSize σ ℓ,
+      (¬ p x) ↔ (flagDensity₁ F_forbid.2 (unlabel x) = 0) := by
+    intro x
+    constructor
+    · intro hx
+      exact le_antisymm
+        (le_of_not_gt (by simpa [p] using hx))
+        (flagListDensity₁_ge_zero F_forbid.2 (unlabel x))
+    · intro hx
+      simp [p, hx]
+  have hsplit :
+      (∑ x : FlagWithSize σ ℓ,
+        (flagDensity₂ F₁.2 F₂.2 x : ℝ) • (⟦unitVector ⟨ℓ, x⟩⟧ : FlagAlgebra σ))
+        =
+      (∑ x : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel x) > 0,
+        (flagDensity₂ F₁.2 F₂.2 x : ℝ) • (⟦unitVector ⟨ℓ, x⟩⟧ : FlagAlgebra σ))
+        +
+      (∑ x : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel x) = 0,
+        (flagDensity₂ F₁.2 F₂.2 x : ℝ) • (⟦unitVector ⟨ℓ, x⟩⟧ : FlagAlgebra σ)) := by
+    rw [← Finset.sum_filter_add_sum_filter_not (p := fun x => p x)]
+    simp_rw [hpred]
+    rfl
+  rw [hsplit]
+  nth_rw 2 [← zero_add (∑ F' with flagDensity₁ F_forbid.2 (unlabel F') = 0, _)]
+  apply forbidEq_add
+  · apply forbidEq_sum_filter_eq_zero
+    intro x _ hx
+    apply forbidEq_smul_zero
+    exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
+  · apply forbidEq_refl
 
 end Forbid
