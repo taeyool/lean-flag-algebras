@@ -550,9 +550,75 @@ theorem forbidLE_emptyType_iff_forbidLE
   := by
   constructor
   · intro hfg φ₀ hσ hF_forbid
-    specialize hfg φ₀ hF_forbid
-    sorry
-  · sorry
+    let x0 : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
+    let S : Set (PositiveHomSpace ∅ₜ) := ({x0} : Set (PositiveHomSpace ∅ₜ))
+    let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f ≤ φ g}
+    have hx0_toPosHom : PositiveHomSpace.toPosHom x0 = φ₀ := by
+      apply PositiveHom.coe_injective
+      calc
+        PositiveHom.coe (PositiveHomSpace.toPosHom x0) = x0 := Classical.choose_spec x0.property
+        _ = PositiveHom.coe φ₀ := by rfl
+    have hx0A : x0 ∈ A := by
+      have hx0A' : x0 f ≤ x0 g := by
+        simpa [hx0_toPosHom] using (hfg φ₀ hF_forbid)
+      simpa [A] using hx0A'
+    have hsubset : S ⊆ A := by
+      intro φ hφ
+      have hEq : φ = x0 := by simpa [S] using hφ
+      subst hEq
+      exact hx0A
+    have hsingle : ℙ[φ₀] S = 1 := by
+      simpa [S, x0, Set.setOf_eq_eq_singleton] using
+        probMeasure_extend_emptyType_positiveHom_singleton_eq_one φ₀
+    apply le_antisymm
+    · exact ProbabilityMeasure.apply_le_one (ℙ[φ₀]) A
+    · calc
+        1 = ℙ[φ₀] S := by simpa using hsingle.symm
+        _ ≤ ℙ[φ₀] A := ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
+  · intro hfg φ₀ hF_forbid
+    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by
+      have h1 : φ₀ ⟨∅ₜ⟩₀ = 1 := positiveHom_emptyType_eval_one φ₀
+      nlinarith [h1]
+    let x0 : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
+    let S : Set (PositiveHomSpace ∅ₜ) := ({x0} : Set (PositiveHomSpace ∅ₜ))
+    let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f ≤ φ g}
+    have hx0_toPosHom : PositiveHomSpace.toPosHom x0 = φ₀ := by
+      apply PositiveHom.coe_injective
+      calc
+        PositiveHom.coe (PositiveHomSpace.toPosHom x0) = x0 := Classical.choose_spec x0.property
+        _ = PositiveHom.coe φ₀ := by rfl
+    have hA : ℙ[φ₀] A = 1 := hfg φ₀ hσ hF_forbid
+    have hsingle : ℙ[φ₀] S = 1 := by
+      simpa [S, x0, Set.setOf_eq_eq_singleton] using
+        probMeasure_extend_emptyType_positiveHom_singleton_eq_one φ₀
+    have hinter : ℙ[φ₀] (S ∩ A) = 1 := by
+      apply prob_inter_eq_one_of_prob_eq_one
+      · simp [S]
+      · exact (forbidLE_set_measurable (σ := ∅ₜ) f g)
+      · exact hsingle
+      · exact hA
+    have hx0A : x0 ∈ A := by
+      by_contra hx0A
+      have hempty : (S ∩ A : Set (PositiveHomSpace ∅ₜ)) = ∅ := by
+        ext φ
+        constructor
+        · intro hφ
+          rcases hφ with ⟨hS, hAφ⟩
+          have hEq : φ = x0 := by simpa [S] using hS
+          subst hEq
+          exact (hx0A hAφ).elim
+        · intro hφ
+          exact False.elim hφ
+      have hzero : ℙ[φ₀] (S ∩ A) = 0 := by
+        simp [hempty]
+      have : (1 : NNReal) = 0 := by
+        calc
+          (1 : NNReal) = ℙ[φ₀] (S ∩ A) := by simpa using hinter.symm
+          _ = 0 := hzero
+      exact one_ne_zero this
+    have hx0A' : x0 f ≤ x0 g := by
+      simpa [A] using hx0A
+    simpa [hx0_toPosHom] using hx0A'
 
 theorem downward_forbidLE_nonneg_emptyType
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
