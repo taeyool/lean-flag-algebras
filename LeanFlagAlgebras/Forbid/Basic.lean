@@ -439,4 +439,55 @@ theorem unitVector_quot_mul_forbidEq_sum
     exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
   · apply forbidEq_refl
 
+theorem downward_forbidLE_nonneg
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
+    : 0 ≤[F_forbid] ⟦f⟧₀
+  := by
+  sorry
+
+theorem positiveHom_emptyType_eval_one
+    (φ₀ : PositiveHom ∅ₜ)
+    : φ₀ ⟨∅ₜ⟩₀ = 1
+  := by
+  sorry
+
+lemma probMeasure_extend_emptyType_positiveHom_singleton_eq_one
+    (φ₀ : PositiveHom ∅ₜ)
+    : probMeasure_extend_emptyType_positiveHom (σ := ∅ₜ) φ₀
+        (by
+          have h1 : φ₀ ⟨∅ₜ⟩₀ = 1 := positiveHom_emptyType_eval_one φ₀
+          nlinarith)
+        {φ : PositiveHomSpace ∅ₜ | φ = (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)} = 1
+  := by
+  sorry
+
+def forbidEq_emptyType
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
+  :=
+  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦unitVector F_forbid⟧ = 0 → φ₀ f = φ₀ g
+
+def forbidLE_emptyType
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
+  :=
+  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦unitVector F_forbid⟧ = 0 → φ₀ f ≤ φ₀ g
+
+notation f "=[" F_forbid "]₀" g => forbidEq_emptyType F_forbid f g
+notation f "≤[" F_forbid "]₀" g => forbidLE_emptyType F_forbid f g
+
+theorem forbidEq_emptyType_iff_forbidEq
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
+    : (f =[F_forbid]₀ g) ↔ (f =[F_forbid] g)
+  := by
+  sorry
+
+theorem forbidLE_emptyType_iff_forbidLE
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
+    : (f ≤[F_forbid]₀ g) ↔ (f ≤[F_forbid] g)
+  := by
+  constructor
+  · intro hfg φ₀ hσ hF_forbid
+    specialize hfg φ₀ hF_forbid
+    sorry
+  · sorry
+
 end Forbid
