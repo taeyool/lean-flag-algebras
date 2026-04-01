@@ -358,6 +358,57 @@ theorem unitVector_forbidEq_zero
     ae_zero_of_integral_eq_zero h_nonneg h_measurable (by simpa using h_integrable) h_integral_zero
   simpa [PositiveHomSpace.toPosHom_unitVector] using h_prob_zero
 
+theorem flagDensity₁_pos_of_unitVector_forbidEq_zero
+    (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (hF_forbid : ⟦unitVector F⟧ =[F_forbid] 0)
+    : flagDensity₁ F_forbid.2 (unlabel F.2) > 0
+  := by
+  contrapose! hF_forbid
+  simp [forbidEq]
+  sorry
+
+theorem all_unitVector_forbidEq_zero_of_sum_forbidEq_zero
+    {I : Type} [Fintype I]
+    {c : I → ℝ} (hc : ∀ i, c i ≠ 0) {v : I → FinFlag σ} (hv : ∀ i j, i ≠ j → v i ≠ v j)
+    {F_forbid : FinFlag ∅ₜ} (hf : (∑ i, c i • ⟦unitVector (v i)⟧) =[F_forbid] 0)
+    : ∀ i, ⟦unitVector (v i)⟧ =[F_forbid] 0
+  := by
+  sorry
+
+theorem flagAlgebra_eq_sum_unitVector_quot
+    (f : FlagAlgebra σ)
+    : ∃ (I : Type) (_ : Fintype I)
+         (c : I → ℝ) (_ : ∀ i, c i ≠ 0) (v : I → FinFlag σ) (_ : ∀ i j, i ≠ j → v i ≠ v j),
+      f = ∑ i, c i • ⟦unitVector (v i)⟧
+  := by
+  rcases Quot.exists_rep f with ⟨f, rfl⟩
+  rw [flagVector_eq_sum_unitVector f]
+  use (↑f.support : Type), inferInstance, (fun i => f i), ?_, (fun i => (i : FinFlag σ)), ?_
+  · simp_rw [← smul_quot, ← sum_quot]
+    apply Quotient.sound
+    apply flagVector_eq_eqv
+    simpa using
+      (Finset.sum_attach (s := f.support)
+        (f := fun F : FinFlag σ => f F • unitVector F)).symm
+  · intro ⟨i, hi⟩
+    simp only [ne_eq]
+    simp_all only [Finsupp.mem_support_iff, ne_eq, not_false_eq_true]
+  · simp only [ne_eq, SetLike.coe_eq_coe, imp_self, implies_true]
+
+theorem downward_forbidEq_zero
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
+    : ⟦f⟧₀ =[F_forbid] 0
+  := by
+  obtain ⟨I, _, c, hc, v, hv, hf⟩ := flagAlgebra_eq_sum_unitVector_quot f
+  subst hf
+  apply all_unitVector_forbidEq_zero_of_sum_forbidEq_zero hc hv at hf
+  simp_rw [downward_sum, downward_smul]
+  apply forbidEq_sum_eq_zero
+  intro i _
+  apply forbidEq_smul_zero
+  simp [downward, downwardFlagVectorQuot, downwardFlagVector_unitVector, downwardFlag, smul_quot]
+  apply forbidEq_smul_zero
+  sorry
+
 theorem unitVector_quot_forbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦unitVector F⟧ =[F_forbid]
