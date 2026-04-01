@@ -439,12 +439,6 @@ theorem unitVector_quot_mul_forbidEq_sum
     exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
   · apply forbidEq_refl
 
-theorem downward_forbidLE_nonneg
-    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
-    : 0 ≤[F_forbid] ⟦f⟧₀
-  := by
-  sorry
-
 theorem positiveHom_emptyType_eval_one
     (φ₀ : PositiveHom ∅ₜ)
     : φ₀ ⟨∅ₜ⟩₀ = 1
@@ -489,5 +483,66 @@ theorem forbidLE_emptyType_iff_forbidLE
     specialize hfg φ₀ hF_forbid
     sorry
   · sorry
+
+theorem downward_forbidLE_nonneg_emptyType
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
+    : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀
+  := by
+  intro φ₀ hF_forbid
+  have h_nonneg_eval : 0 ≤ φ₀ ⟦f⟧₀ := by
+    have hσ_nonneg : 0 ≤ φ₀ ⟨σ⟩₀ := positiveHom_unitVector_ge_zero φ₀ _
+    rcases eq_or_lt_of_le hσ_nonneg with hσ_zero | hσ_pos
+    · have hzero : φ₀ ⟦f⟧₀ = 0 := downward_zero_at_hom (σ := σ) φ₀ hσ_zero.symm f
+      simp only [hzero, le_refl]
+    · have hprob : ℙ[φ₀] {φ : PositiveHomSpace σ | 0 ≤ φ f} = 1 := by
+        simpa using (hf φ₀ hσ_pos hF_forbid)
+      have hprob_zero :
+          ℙ[φ₀] {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f} = 1 := by
+        simpa [PositiveHom.map_zero] using hprob
+      have hprob_zero_measure :
+          ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+            {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}) = 1 := by
+        have hprob_zero_toNNReal :
+            (((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+              {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}).toNNReal) = 1 := by
+          simpa [ProbabilityMeasure.mk_apply] using hprob_zero
+        rw [ENNReal.toNNReal_eq_one_iff] at hprob_zero_toNNReal
+        exact hprob_zero_toNNReal
+      have hcompl_zero :
+          ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+            ({φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}ᶜ)) = 0 := by
+        exact (prob_compl_eq_zero_iff
+          (μ := (ℙ[φ₀] : Measure (PositiveHomSpace σ)))
+          (forbidLE_set_measurable (σ := σ) (0 : FlagAlgebra σ) f)).mpr hprob_zero_measure
+      have h_ae_zero :
+          ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)),
+            φ (0 : FlagAlgebra σ) ≤ φ f := by
+        exact (mem_ae_iff).2 hcompl_zero
+      have h_ae : ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)), 0 ≤ φ f := by
+        filter_upwards [h_ae_zero] with φ hφ
+        simpa [PositiveHom.map_zero] using hφ
+      have hint_nonneg : 0 ≤ ∫ φ : PositiveHomSpace σ, φ f ∂(ℙ[φ₀]) := by
+        exact integral_nonneg_of_ae h_ae
+      have hspec := probMeasure_extend_emptyType_positiveHom_spec (σ := σ) (φ₀ := φ₀) hσ_pos f
+      have hden_pos : 0 < φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ := positiveHom_one_downward_pos hσ_pos
+      have hfrac_nonneg : 0 ≤ (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
+        simpa [hspec] using hint_nonneg
+      have hmul_nonneg :
+          0 ≤ ((φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)) * (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
+        exact mul_nonneg hfrac_nonneg (le_of_lt hden_pos)
+      have : 0 ≤ φ₀ ⟦f⟧₀ := by
+        have hden_ne : (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) ≠ 0 := ne_of_gt hden_pos
+        simpa [hden_ne] using hmul_nonneg
+      exact this
+  simpa using h_nonneg_eval
+
+theorem downward_forbidLE_nonneg
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
+    : 0 ≤[F_forbid] ⟦f⟧₀
+  := by
+  have h0 : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀ :=
+    downward_forbidLE_nonneg_emptyType (σ := σ) hf
+  exact (forbidLE_emptyType_iff_forbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
+
 
 end Forbid
