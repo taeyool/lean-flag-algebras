@@ -439,18 +439,22 @@ theorem unitVector_quot_mul_forbidEq_sum
     exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
   · apply forbidEq_refl
 
-theorem positiveHom_emptyType_eval_one
-    (φ₀ : PositiveHom ∅ₜ)
-    : φ₀ ⟨∅ₜ⟩₀ = 1
+lemma flagType_asEmptyTypeAlgebra_emptyType_eq_one
+    : ⟨∅ₜ⟩₀ = 1
   := by
-  sorry
+  show _ = ⟦unitVector ⟨0, default⟩⟧
+  simp [flagType_asEmptyTypeAlgebra]
+  congr
+  apply Quotient.sound
+  exact Nonempty.intro {
+    graph_iso := SimpleGraph.Iso.refl
+    type_preserve := List.ofFn_inj.mp rfl
+  }
 
 lemma probMeasure_extend_emptyType_positiveHom_singleton_eq_one
     (φ₀ : PositiveHom ∅ₜ)
     : probMeasure_extend_emptyType_positiveHom (σ := ∅ₜ) φ₀
-        (by
-          have h1 : φ₀ ⟨∅ₜ⟩₀ = 1 := positiveHom_emptyType_eval_one φ₀
-          nlinarith)
+        (by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one])
         {φ : PositiveHomSpace ∅ₜ | φ = (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)} = 1
   := by
   sorry
@@ -500,9 +504,7 @@ theorem forbidEq_emptyType_iff_forbidEq
         1 = ℙ[φ₀] S := by simpa using hsingle.symm
         _ ≤ ℙ[φ₀] A := ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
   · intro hfg φ₀ hF_forbid
-    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by
-      have h1 : φ₀ ⟨∅ₜ⟩₀ = 1 := positiveHom_emptyType_eval_one φ₀
-      nlinarith [h1]
+    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one]
     let x0 : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
     let S : Set (PositiveHomSpace ∅ₜ) := ({x0} : Set (PositiveHomSpace ∅ₜ))
     let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f = φ g}
@@ -576,9 +578,7 @@ theorem forbidLE_emptyType_iff_forbidLE
         1 = ℙ[φ₀] S := by simpa using hsingle.symm
         _ ≤ ℙ[φ₀] A := ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
   · intro hfg φ₀ hF_forbid
-    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by
-      have h1 : φ₀ ⟨∅ₜ⟩₀ = 1 := positiveHom_emptyType_eval_one φ₀
-      nlinarith [h1]
+    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one]
     let x0 : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
     let S : Set (PositiveHomSpace ∅ₜ) := ({x0} : Set (PositiveHomSpace ∅ₜ))
     let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f ≤ φ g}
