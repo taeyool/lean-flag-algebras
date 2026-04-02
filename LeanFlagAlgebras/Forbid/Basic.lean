@@ -329,16 +329,16 @@ theorem unitVector_forbidEq_zero
     : ⟦unitVector F⟧ =[F_forbid] 0
   := by
   intro φ₀ hσ hF_forbid
-  have h_nonneg : ∀ φ : PositiveHomSpace σ, 0 ≤ (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ := by
+  have h_nonneg : ∀ φ : PositiveHomSpace σ, 0 ≤ φ ⟦unitVector F⟧ := by
     intro φ
     exact positiveHom_unitVector_ge_zero (PositiveHomSpace.toPosHom φ) F
   have h_measurable :
-      Measurable (fun φ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧) := by
+      Measurable (fun φ : PositiveHomSpace σ => φ ⟦unitVector F⟧) := by
     simpa using
       (positiveHomSpace_eval_continuous (σ := σ) (⟦unitVector F⟧ : FlagAlgebra σ)).measurable
   have h_integrable :
       Integrable
-        (fun φ : PositiveHomSpace σ => (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧)
+        (fun φ : PositiveHomSpace σ => φ ⟦unitVector F⟧)
         ((ℙ[φ₀] : Measure (PositiveHomSpace σ))) := by
     apply Integrable.of_bound
     · exact Measurable.aestronglyMeasurable h_measurable
@@ -346,7 +346,7 @@ theorem unitVector_forbidEq_zero
         simp only [Real.norm_eq_abs]
         simpa [PositiveHomSpace.toPosHom_unitVector] using flagDensitySpace_abs_le_one φ F)
   have h_integral_zero :
-      ∫ φ : PositiveHomSpace σ, (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ ∂(ℙ[φ₀]) = 0 := by
+      ∫ φ : PositiveHomSpace σ, φ ⟦unitVector F⟧ ∂(ℙ[φ₀]) = 0 := by
     rw [probMeasure_extend_emptyType_positiveHom_spec]
     simp; left
     simp [downward, downwardFlagVectorQuot, downwardFlagVector_unitVector, downwardFlag]
@@ -354,60 +354,81 @@ theorem unitVector_forbidEq_zero
     right
     exact positiveHom_unitVector_eq_zero φ₀ hF hF_forbid
   have h_prob_zero :
-      ℙ[φ₀] {φ : PositiveHomSpace σ | (PositiveHomSpace.toPosHom φ) ⟦unitVector F⟧ = 0} = 1 :=
+      ℙ[φ₀] {φ | φ ⟦unitVector F⟧ = 0} = 1 :=
     ae_zero_of_integral_eq_zero h_nonneg h_measurable (by simpa using h_integrable) h_integral_zero
   simpa [PositiveHomSpace.toPosHom_unitVector] using h_prob_zero
 
-theorem flagDensity₁_pos_of_unitVector_forbidEq_zero
-    (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (hF_forbid : ⟦unitVector F⟧ =[F_forbid] 0)
-    : flagDensity₁ F_forbid.2 (unlabel F.2) > 0
-  := by
-  contrapose! hF_forbid
-  simp [forbidEq]
-  sorry
+-- theorem flagDensity₁_pos_of_unitVector_forbidEq_zero
+--     {F_forbid : FinFlag ∅ₜ} {F : FinFlag σ} (hF_forbid : ⟦unitVector F⟧ =[F_forbid] 0)
+--     : flagDensity₁ F_forbid.2 (unlabel F.2) > 0
+--   := by
+--   contrapose! hF_forbid
+--   simp [forbidEq]
+--   sorry
 
-theorem all_unitVector_forbidEq_zero_of_sum_forbidEq_zero
-    {I : Type} [Fintype I]
-    {c : I → ℝ} (hc : ∀ i, c i ≠ 0) {v : I → FinFlag σ} (hv : ∀ i j, i ≠ j → v i ≠ v j)
-    {F_forbid : FinFlag ∅ₜ} (hf : (∑ i, c i • ⟦unitVector (v i)⟧) =[F_forbid] 0)
-    : ∀ i, ⟦unitVector (v i)⟧ =[F_forbid] 0
-  := by
-  sorry
+-- theorem forbidEq_zero_iff
+--     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
+--     : ∃ (I : Type) (_ : Fintype I) (c : I → ℝ) (v : I → FinFlag σ),
+--       f = ∑ i, c i • ⟦unitVector (v i)⟧ ∧ (∀ i, flagDensity₁ F_forbid.2 (unlabel (v i).2) > 0)
+--   := by
+--   dsimp [forbidEq] at hf
+--   sorry
 
-theorem flagAlgebra_eq_sum_unitVector_quot
-    (f : FlagAlgebra σ)
-    : ∃ (I : Type) (_ : Fintype I)
-         (c : I → ℝ) (_ : ∀ i, c i ≠ 0) (v : I → FinFlag σ) (_ : ∀ i j, i ≠ j → v i ≠ v j),
-      f = ∑ i, c i • ⟦unitVector (v i)⟧
-  := by
-  rcases Quot.exists_rep f with ⟨f, rfl⟩
-  rw [flagVector_eq_sum_unitVector f]
-  use (↑f.support : Type), inferInstance, (fun i => f i), ?_, (fun i => (i : FinFlag σ)), ?_
-  · simp_rw [← smul_quot, ← sum_quot]
-    apply Quotient.sound
-    apply flagVector_eq_eqv
-    simpa using
-      (Finset.sum_attach (s := f.support)
-        (f := fun F : FinFlag σ => f F • unitVector F)).symm
-  · intro ⟨i, hi⟩
-    simp only [ne_eq]
-    simp_all only [Finsupp.mem_support_iff, ne_eq, not_false_eq_true]
-  · simp only [ne_eq, SetLike.coe_eq_coe, imp_self, implies_true]
+-- theorem all_unitVector_forbidEq_zero_of_sum_forbidEq_zero
+--     {I : Type} [Fintype I]
+--     {c : I → ℝ} (hc : ∀ i, c i ≠ 0) {v : I → FinFlag σ} (hv : ∀ i j, i ≠ j → v i ≠ v j)
+--     {F_forbid : FinFlag ∅ₜ} (hf : (∑ i, c i • ⟦unitVector (v i)⟧) =[F_forbid] 0)
+--     : ∀ i, ⟦unitVector (v i)⟧ =[F_forbid] 0
+--   := by
+--   intro i
+--   apply unitVector_forbidEq_zero
+--   sorry
 
-theorem downward_forbidEq_zero
-    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
-    : ⟦f⟧₀ =[F_forbid] 0
-  := by
-  obtain ⟨I, _, c, hc, v, hv, hf⟩ := flagAlgebra_eq_sum_unitVector_quot f
-  subst hf
-  apply all_unitVector_forbidEq_zero_of_sum_forbidEq_zero hc hv at hf
-  simp_rw [downward_sum, downward_smul]
-  apply forbidEq_sum_eq_zero
-  intro i _
-  apply forbidEq_smul_zero
-  simp [downward, downwardFlagVectorQuot, downwardFlagVector_unitVector, downwardFlag, smul_quot]
-  apply forbidEq_smul_zero
-  sorry
+-- theorem flagAlgebra_eq_sum_unitVector_quot
+--     (f : FlagAlgebra σ)
+--     : ∃ (I : Type) (_ : Fintype I)
+--          (c : I → ℝ) (_ : ∀ i, c i ≠ 0) (v : I → FinFlag σ) (_ : ∀ i j, i ≠ j → v i ≠ v j),
+--       f = ∑ i, c i • ⟦unitVector (v i)⟧
+--   := by
+--   rcases Quot.exists_rep f with ⟨f, rfl⟩
+--   rw [flagVector_eq_sum_unitVector f]
+--   use (↑f.support : Type), inferInstance, (fun i => f i), ?_, (fun i => (i : FinFlag σ)), ?_
+--   · simp_rw [← smul_quot, ← sum_quot]
+--     apply Quotient.sound
+--     apply flagVector_eq_eqv
+--     simpa using
+--       (Finset.sum_attach (s := f.support)
+--         (f := fun F : FinFlag σ => f F • unitVector F)).symm
+--   · intro ⟨i, hi⟩
+--     simp only [ne_eq]
+--     simp_all only [Finsupp.mem_support_iff, ne_eq, not_false_eq_true]
+--   · simp only [ne_eq, SetLike.coe_eq_coe, imp_self, implies_true]
+
+-- theorem unlabel_unlabel
+--     {V : Type} (F : Flag σ V)
+--     : unlabel (unlabel F) = unlabel F
+--   := by
+--   refine Quot.inductionOn F ?_
+--   intro G
+--   simp [unlabel, unlabeledGraphQuot, unlabeledGraph]
+
+-- theorem downward_forbidEq_zero
+--     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
+--     : ⟦f⟧₀ =[F_forbid] 0
+--   := by
+--   obtain ⟨I, _, c, hc, v, hv, hf⟩ := flagAlgebra_eq_sum_unitVector_quot f
+--   subst hf
+--   apply all_unitVector_forbidEq_zero_of_sum_forbidEq_zero hc hv at hf
+--   simp_rw [downward_sum, downward_smul]
+--   apply forbidEq_sum_eq_zero
+--   intro i _
+--   apply forbidEq_smul_zero
+--   simp [downward, downwardFlagVectorQuot, downwardFlagVector_unitVector, downwardFlag, smul_quot]
+--   apply forbidEq_smul_zero
+--   apply unitVector_forbidEq_zero
+--   simp [unlabel_unlabel]
+--   apply flagDensity₁_pos_of_unitVector_forbidEq_zero
+--   exact hf i
 
 theorem unitVector_quot_forbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
@@ -502,13 +523,196 @@ lemma flagType_asEmptyTypeAlgebra_emptyType_eq_one
     type_preserve := List.ofFn_inj.mp rfl
   }
 
+theorem unlabel_emptyType
+    {V : Type} (F : Flag ∅ₜ V)
+    : unlabel F = F
+  := by
+  rcases Quot.exists_rep F with ⟨F, rfl⟩
+  apply Quotient.sound
+  simp [unlabeledGraph]
+  exact Nonempty.intro {
+    graph_iso := SimpleGraph.Iso.refl
+    type_preserve := List.ofFn_inj.mp rfl
+  }
+
+theorem isomorphismCount_emptyType
+    (G : LabeledGraph ∅ₜ (Fin n₀))
+    : isomorphismCount G = 1
+  := by
+  simp [isomorphismCount]
+  refine Fintype.card_eq_one_iff.mpr ?_
+  refine ⟨⟨G, by exact ⟨rfl, ⟨LabeledGraphIso.refl⟩⟩⟩, ?_⟩
+  rintro ⟨H, hH⟩
+  rcases hH with ⟨hGraph, hIso⟩
+  congr
+  rcases G with ⟨Ggraph, Gembed⟩
+  rcases H with ⟨Hgraph, Hembed⟩
+  subst hGraph
+  simp
+  ext t
+  exact Fin.elim0 t
+
+theorem downwardNormalizingFactor_emptyType
+    (F : FlagWithSize ∅ₜ n₀)
+    : downwardNormalizingFactor F = 1
+  := by
+  rcases Quot.exists_rep F with ⟨F, rfl⟩
+  simp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
+  rw [div_self (by simp [Nat.cast_eq_zero, Nat.factorial_ne_zero]), div_one, Rat.natCast_eq_one_iff]
+  exact isomorphismCount_emptyType F
+
+theorem downward_emptyType
+    (f : FlagAlgebra ∅ₜ) : ⟦f⟧₀ = f
+  := by
+  rcases Quot.exists_rep f with ⟨f, rfl⟩
+  apply Quotient.sound
+  rw [flagVector_eq_sum_unitVector f]
+  simp [downwardFlagVector_sum, downwardFlagVector_smul, downwardFlagVector_unitVector]
+  apply flagVector_eq_eqv
+  congr!
+  simp [downwardFlag, unlabel_emptyType, downwardNormalizingFactor_emptyType]
+
 lemma probMeasure_extend_emptyType_positiveHom_singleton_eq_one
     (φ₀ : PositiveHom ∅ₜ)
     : probMeasure_extend_emptyType_positiveHom (σ := ∅ₜ) φ₀
         (by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one])
-        {φ : PositiveHomSpace ∅ₜ | φ = (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)} = 1
+        {⟨φ₀.coe, ⟨φ₀, rfl⟩⟩} = 1
   := by
-  sorry
+  have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one]
+  let ℙ : ProbabilityMeasure (PositiveHomSpace ∅ₜ) :=
+    probMeasure_extend_emptyType_positiveHom (σ := ∅ₜ) φ₀ hσ
+  let x0 : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
+  have hspec := probMeasure_extend_emptyType_positiveHom_spec (σ := ∅ₜ) (φ₀ := φ₀) hσ
+  have hspec' : ∀ f : FlagAlgebra ∅ₜ, ∫ φ : PositiveHomSpace ∅ₜ, φ f ∂ℙ = φ₀ f := by
+    intro f
+    have h := hspec f
+    simpa [ℙ, downward_emptyType, div_one] using h
+  have h_int_var : ∀ f : FlagAlgebra ∅ₜ,
+      ∫ φ : PositiveHomSpace ∅ₜ, ((φ f) - (φ₀ f))^2 ∂ℙ = 0 := by
+    intro f
+    let q : FlagAlgebra ∅ₜ :=
+      (f - (φ₀ f) • (1 : FlagAlgebra ∅ₜ)) * (f - (φ₀ f) • (1 : FlagAlgebra ∅ₜ))
+    have hq : ∫ φ : PositiveHomSpace ∅ₜ, φ q ∂ℙ = φ₀ q := hspec' q
+    calc
+      ∫ φ : PositiveHomSpace ∅ₜ, ((φ f) - (φ₀ f))^2 ∂ℙ
+          = ∫ φ : PositiveHomSpace ∅ₜ, φ q ∂ℙ := by
+              apply integral_congr_ae
+              filter_upwards with φ
+              rw [pow_two]
+              simp [q, PositiveHom.map_mul, PositiveHom.map_sub,
+                PositiveHom.map_smul, PositiveHom.map_one]
+      _ = φ₀ q := hq
+      _ = 0 := by
+            simp [q, PositiveHom.map_mul, PositiveHom.map_sub,
+              PositiveHom.map_smul, PositiveHom.map_one]
+  have h_unit_ae : ∀ F : FinFlag ∅ₜ,
+      ℙ {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧} = 1 := by
+    intro F
+    let g : PositiveHomSpace ∅ₜ → ℝ :=
+      fun φ => ((φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧))^2
+    have hg_nonneg : ∀ φ : PositiveHomSpace ∅ₜ, 0 ≤ g φ := by
+      intro φ
+      positivity
+    have hg_measurable : Measurable g := by
+      dsimp [g]
+      have hsub : Measurable (fun φ : PositiveHomSpace ∅ₜ =>
+          (φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧)) :=
+        Measurable.sub
+          ((positiveHomSpace_eval_continuous (σ := ∅ₜ)
+            (⟦unitVector F⟧ : FlagAlgebra ∅ₜ)).measurable)
+          measurable_const
+      simpa [pow_two] using Measurable.mul hsub hsub
+    have hg_integrable : Integrable g ℙ := by
+      apply Integrable.of_bound
+      · exact Measurable.aestronglyMeasurable hg_measurable
+      · exact Filter.Eventually.of_forall (fun φ => by
+          dsimp [g]
+          have hφ_abs : |φ ⟦unitVector F⟧| ≤ 1 := by
+            simpa [PositiveHomSpace.toPosHom_unitVector] using flagDensitySpace_abs_le_one φ F
+          have hφ₀_abs : |φ₀ ⟦unitVector F⟧| ≤ 1 := by
+            rw [abs_le]
+            constructor
+            · linarith [positiveHom_unitVector_ge_zero φ₀ F]
+            · exact positiveHom_unitVector_le_one φ₀ F
+          have hsub_abs : |(φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧)| ≤ 2 := by
+            calc
+              |(φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧)|
+                  ≤ |φ ⟦unitVector F⟧| + |φ₀ ⟦unitVector F⟧| := abs_sub _ _
+              _ ≤ 1 + 1 := add_le_add hφ_abs hφ₀_abs
+              _ = 2 := by norm_num
+          have hsub_nonneg : 0 ≤ |(φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧)| := abs_nonneg _
+          have hsq_le : |(φ ⟦unitVector F⟧ - φ₀ ⟦unitVector F⟧)| ^ 2 ≤ 4 := by
+            nlinarith [hsub_abs, hsub_nonneg]
+          have hnorm_eq : ‖((φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧))^2‖
+              = |(φ ⟦unitVector F⟧ - φ₀ ⟦unitVector F⟧)| ^ 2 := by
+            simp [Real.norm_eq_abs, pow_two]
+          simpa [hnorm_eq] using hsq_le)
+    have hg_int_zero : ∫ φ : PositiveHomSpace ∅ₜ, g φ ∂ℙ = 0 := by
+      simpa [g] using h_int_var (⟦unitVector F⟧ : FlagAlgebra ∅ₜ)
+    have h_sq_zero :
+        ℙ {φ : PositiveHomSpace ∅ₜ |
+          ((φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧))^2 = 0} = 1 := by
+      exact ae_zero_of_integral_eq_zero hg_nonneg hg_measurable hg_integrable hg_int_zero
+    have h_sub_eq :
+        {φ : PositiveHomSpace ∅ₜ |
+          (φ ⟦unitVector F⟧) - (φ₀ ⟦unitVector F⟧) = 0}
+        = {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧} := by
+      ext φ
+      constructor
+      · intro hφ
+        exact sub_eq_zero.mp hφ
+      · intro hφ
+        exact sub_eq_zero.mpr hφ
+    simpa [h_sub_eq] using h_sq_zero
+  have h_all_unit_ae :
+      ℙ (⋂ F : FinFlag ∅ₜ,
+        {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧}) = 1 := by
+    have h_meas : ∀ F : FinFlag ∅ₜ,
+        MeasurableSet {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧} := by
+      intro F
+      simpa [PositiveHom.map_smul, PositiveHom.map_one] using
+        (forbidEq_set_measurable (σ := ∅ₜ)
+          (⟦unitVector F⟧ : FlagAlgebra ∅ₜ)
+          ((φ₀ ⟦unitVector F⟧) • (1 : FlagAlgebra ∅ₜ)))
+    exact prob_iInter_eq_one_of_all_prob_eq_one h_meas h_unit_ae
+  have hsubset_singleton :
+      (⋂ F : FinFlag ∅ₜ,
+        {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧}) ⊆ ({x0} : Set (PositiveHomSpace ∅ₜ)) := by
+    intro φ hφ
+    have hx0_toPosHom : PositiveHomSpace.toPosHom x0 = φ₀ := by
+      apply PositiveHom.coe_injective
+      calc
+        PositiveHom.coe (PositiveHomSpace.toPosHom x0) = x0 := Classical.choose_spec x0.property
+        _ = PositiveHom.coe φ₀ := by rfl
+    have hval_eq : φ.val = x0.val := by
+      ext F
+      have hF : φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧ := (Set.mem_iInter.mp hφ) F
+      calc
+        φ.val F = φ ⟦unitVector F⟧ := by
+          symm
+          simpa using (PositiveHomSpace.toPosHom_unitVector φ F)
+        _ = φ₀ ⟦unitVector F⟧ := hF
+        _ = (PositiveHomSpace.toPosHom x0) ⟦unitVector F⟧ := by simp [hx0_toPosHom]
+        _ = x0.val F := by simpa using (PositiveHomSpace.toPosHom_unitVector x0 F)
+    have hφx0 : φ = x0 := by
+      apply Subtype.ext
+      exact hval_eq
+    simpa [Set.mem_singleton_iff] using hφx0
+  have hsingle :
+      probMeasure_extend_emptyType_positiveHom (σ := ∅ₜ) φ₀
+        (by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one])
+        {⟨φ₀.coe, ⟨φ₀, rfl⟩⟩} = 1 := by
+    have hsingle' : ℙ ({x0} : Set (PositiveHomSpace ∅ₜ)) = 1 := by
+      apply le_antisymm
+      · exact ProbabilityMeasure.apply_le_one ℙ _
+      · calc
+          1 = ℙ (⋂ F : FinFlag ∅ₜ,
+                {φ : PositiveHomSpace ∅ₜ | φ ⟦unitVector F⟧ = φ₀ ⟦unitVector F⟧}) := by
+                  simpa using h_all_unit_ae.symm
+          _ ≤ ℙ ({x0} : Set (PositiveHomSpace ∅ₜ)) :=
+            ProbabilityMeasure.apply_mono ℙ hsubset_singleton
+    simpa [ℙ, x0, Set.setOf_eq_eq_singleton] using hsingle'
+  exact hsingle
 
 def forbidEq_emptyType
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
@@ -676,52 +880,51 @@ theorem downward_forbidLE_nonneg_emptyType
     : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀
   := by
   intro φ₀ hF_forbid
-  have h_nonneg_eval : 0 ≤ φ₀ ⟦f⟧₀ := by
-    have hσ_nonneg : 0 ≤ φ₀ ⟨σ⟩₀ := positiveHom_unitVector_ge_zero φ₀ _
-    rcases eq_or_lt_of_le hσ_nonneg with hσ_zero | hσ_pos
-    · have hzero : φ₀ ⟦f⟧₀ = 0 := downward_zero_at_hom (σ := σ) φ₀ hσ_zero.symm f
-      simp only [hzero, le_refl]
-    · have hprob : ℙ[φ₀] {φ : PositiveHomSpace σ | 0 ≤ φ f} = 1 := by
-        simpa using (hf φ₀ hσ_pos hF_forbid)
-      have hprob_zero :
-          ℙ[φ₀] {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f} = 1 := by
-        simpa [PositiveHom.map_zero] using hprob
-      have hprob_zero_measure :
-          ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
-            {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}) = 1 := by
-        have hprob_zero_toNNReal :
-            (((ℙ[φ₀] : Measure (PositiveHomSpace σ))
-              {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}).toNNReal) = 1 := by
-          simpa [ProbabilityMeasure.mk_apply] using hprob_zero
-        rw [ENNReal.toNNReal_eq_one_iff] at hprob_zero_toNNReal
-        exact hprob_zero_toNNReal
-      have hcompl_zero :
-          ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
-            ({φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}ᶜ)) = 0 := by
-        exact (prob_compl_eq_zero_iff
-          (μ := (ℙ[φ₀] : Measure (PositiveHomSpace σ)))
-          (forbidLE_set_measurable (σ := σ) (0 : FlagAlgebra σ) f)).mpr hprob_zero_measure
-      have h_ae_zero :
-          ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)),
-            φ (0 : FlagAlgebra σ) ≤ φ f := by
-        exact (mem_ae_iff).2 hcompl_zero
-      have h_ae : ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)), 0 ≤ φ f := by
-        filter_upwards [h_ae_zero] with φ hφ
-        simpa [PositiveHom.map_zero] using hφ
-      have hint_nonneg : 0 ≤ ∫ φ : PositiveHomSpace σ, φ f ∂(ℙ[φ₀]) := by
-        exact integral_nonneg_of_ae h_ae
-      have hspec := probMeasure_extend_emptyType_positiveHom_spec (σ := σ) (φ₀ := φ₀) hσ_pos f
-      have hden_pos : 0 < φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ := positiveHom_one_downward_pos hσ_pos
-      have hfrac_nonneg : 0 ≤ (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
-        simpa [hspec] using hint_nonneg
-      have hmul_nonneg :
-          0 ≤ ((φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)) * (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
-        exact mul_nonneg hfrac_nonneg (le_of_lt hden_pos)
-      have : 0 ≤ φ₀ ⟦f⟧₀ := by
-        have hden_ne : (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) ≠ 0 := ne_of_gt hden_pos
-        simpa [hden_ne] using hmul_nonneg
-      exact this
-  simpa using h_nonneg_eval
+  simp only [PositiveHom.map_zero]
+  have hσ_nonneg : 0 ≤ φ₀ ⟨σ⟩₀ := positiveHom_unitVector_ge_zero φ₀ _
+  rcases eq_or_lt_of_le hσ_nonneg with hσ_zero | hσ_pos
+  · have hzero : φ₀ ⟦f⟧₀ = 0 := downward_zero_at_hom (σ := σ) φ₀ hσ_zero.symm f
+    simp only [hzero, le_refl]
+  · have hprob : ℙ[φ₀] {φ : PositiveHomSpace σ | 0 ≤ φ f} = 1 := by
+      simpa using (hf φ₀ hσ_pos hF_forbid)
+    have hprob_zero :
+        ℙ[φ₀] {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f} = 1 := by
+      simpa [PositiveHom.map_zero] using hprob
+    have hprob_zero_measure :
+        ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+          {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}) = 1 := by
+      have hprob_zero_toNNReal :
+          (((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+            {φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}).toNNReal) = 1 := by
+        simpa [ProbabilityMeasure.mk_apply] using hprob_zero
+      rw [ENNReal.toNNReal_eq_one_iff] at hprob_zero_toNNReal
+      exact hprob_zero_toNNReal
+    have hcompl_zero :
+        ((ℙ[φ₀] : Measure (PositiveHomSpace σ))
+          ({φ : PositiveHomSpace σ | φ (0 : FlagAlgebra σ) ≤ φ f}ᶜ)) = 0 := by
+      exact (prob_compl_eq_zero_iff
+        (μ := (ℙ[φ₀] : Measure (PositiveHomSpace σ)))
+        (forbidLE_set_measurable (σ := σ) (0 : FlagAlgebra σ) f)).mpr hprob_zero_measure
+    have h_ae_zero :
+        ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)),
+          φ (0 : FlagAlgebra σ) ≤ φ f := by
+      exact (mem_ae_iff).2 hcompl_zero
+    have h_ae : ∀ᵐ φ : PositiveHomSpace σ ∂(ℙ[φ₀] : Measure (PositiveHomSpace σ)), 0 ≤ φ f := by
+      filter_upwards [h_ae_zero] with φ hφ
+      simpa [PositiveHom.map_zero] using hφ
+    have hint_nonneg : 0 ≤ ∫ φ : PositiveHomSpace σ, φ f ∂(ℙ[φ₀]) := by
+      exact integral_nonneg_of_ae h_ae
+    have hspec := probMeasure_extend_emptyType_positiveHom_spec (σ := σ) (φ₀ := φ₀) hσ_pos f
+    have hden_pos : 0 < φ₀ ⟦(1 : FlagAlgebra σ)⟧₀ := positiveHom_one_downward_pos hσ_pos
+    have hfrac_nonneg : 0 ≤ (φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
+      simpa [hspec] using hint_nonneg
+    have hmul_nonneg :
+        0 ≤ ((φ₀ ⟦f⟧₀) / (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀)) * (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) := by
+      exact mul_nonneg hfrac_nonneg (le_of_lt hden_pos)
+    have : 0 ≤ φ₀ ⟦f⟧₀ := by
+      have hden_ne : (φ₀ ⟦(1 : FlagAlgebra σ)⟧₀) ≠ 0 := ne_of_gt hden_pos
+      simpa [hden_ne] using hmul_nonneg
+    exact this
 
 theorem downward_forbidLE_nonneg
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
