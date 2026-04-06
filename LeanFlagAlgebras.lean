@@ -52,7 +52,7 @@ import LeanFlagAlgebras.Forbid.Basic
  -- ErdosPentagon
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagDensity
-import LeanFlagAlgebras.ErdosPentagon.DensityLoader
+import LeanFlagAlgebras.ErdosPentagon.Densities.DensityLoader
 
 -- Archive imports
 -- import LeanFlagAlgebras.Archive.BoolAlgebra
