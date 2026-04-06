@@ -1157,4 +1157,53 @@ theorem downward_smul
   rw [← Quotient.out_eq f, ← smul_quot]
   apply downwardFlagVectorQuot_smul
 
+theorem unlabel_emptyType
+    {V : Type} (F : Flag ∅ₜ V)
+    : unlabel F = F
+  := by
+  rcases Quot.exists_rep F with ⟨F, rfl⟩
+  apply Quotient.sound
+  simp [unlabeledGraph]
+  exact Nonempty.intro {
+    graph_iso := SimpleGraph.Iso.refl
+    type_preserve := List.ofFn_inj.mp rfl
+  }
+
+theorem isomorphismCount_emptyType
+    (G : LabeledGraph ∅ₜ (Fin n₀))
+    : isomorphismCount G = 1
+  := by
+  simp [isomorphismCount]
+  refine Fintype.card_eq_one_iff.mpr ?_
+  refine ⟨⟨G, by exact ⟨rfl, ⟨LabeledGraphIso.refl⟩⟩⟩, ?_⟩
+  rintro ⟨H, hH⟩
+  rcases hH with ⟨hGraph, hIso⟩
+  congr
+  rcases G with ⟨Ggraph, Gembed⟩
+  rcases H with ⟨Hgraph, Hembed⟩
+  subst hGraph
+  simp
+  ext t
+  exact Fin.elim0 t
+
+theorem downwardNormalizingFactor_emptyType
+    (F : FlagWithSize ∅ₜ n₀)
+    : downwardNormalizingFactor F = 1
+  := by
+  rcases Quot.exists_rep F with ⟨F, rfl⟩
+  simp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
+  rw [div_self (by simp [Nat.cast_eq_zero, Nat.factorial_ne_zero]), div_one, Rat.natCast_eq_one_iff]
+  exact isomorphismCount_emptyType F
+
+theorem downward_emptyType
+    (f : FlagAlgebra ∅ₜ) : ⟦f⟧₀ = f
+  := by
+  rcases Quot.exists_rep f with ⟨f, rfl⟩
+  apply Quotient.sound
+  rw [flagVector_eq_sum_unitVector f]
+  simp [downwardFlagVector_sum, downwardFlagVector_smul, downwardFlagVector_unitVector]
+  apply flagVector_eq_eqv
+  congr!
+  simp [downwardFlag, unlabel_emptyType, downwardNormalizingFactor_emptyType]
+
 end FlagAlgebras
