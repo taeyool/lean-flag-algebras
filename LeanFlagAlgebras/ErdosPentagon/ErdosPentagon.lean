@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.ErdosPentagon.FlagDensity
+import LeanFlagAlgebras.ErdosPentagon.FlagMul
 
 open FlagAlgebras
 
