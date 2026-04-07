@@ -24,7 +24,7 @@ noncomputable def v₁ : FlagAlgebraVec σ₁ 6 := ![
 ]
 
 noncomputable def v₂ : FlagAlgebraVec σ₂ 5 := ![
-  FlagAlgebra_4_3_2_0, FlagAlgebra_4_3_2_1, FlagAlgebra_4_3_2_2, FlagAlgebra_4_3_2_3, FlagAlgebra_4_3_2_6
+  FlagAlgebra_4_3_2_0, FlagAlgebra_4_3_2_2, FlagAlgebra_4_3_2_1, FlagAlgebra_4_3_2_3, FlagAlgebra_4_3_2_6
 ]
 
 end ErdosPentagon

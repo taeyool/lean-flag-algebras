@@ -17,4 +17,6 @@ load_density_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_f
 load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
 load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
 
+#print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
+
 end ErdosPentagon

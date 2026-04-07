@@ -1,7 +1,9 @@
 import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
+import Mathlib.Tactic
 
 open FlagAlgebras
 open MeasureTheory
+open Lean Elab Tactic
 
 namespace Forbid
 
@@ -88,6 +90,14 @@ theorem forbidEq_symm
   intro φ₀ hσ hF_forbid
   simpa [eq_comm] using hfg φ₀ hσ hF_forbid
 
+theorem forbidEq_of_eq
+    {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
+    (hfg : f = g)
+    : f =[F_forbid] g
+  := by
+  subst hfg
+  exact forbidEq_refl F_forbid f
+
 theorem forbidEq_implies_forbidLE
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f =[F_forbid] g)
@@ -131,6 +141,28 @@ theorem forbidEq_trans
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f = φ h} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
+theorem forbidEq_rw_left
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (f =[F_forbid] h) ↔ (g =[F_forbid] h)
+  := by
+  constructor
+  · intro hfh
+    exact forbidEq_trans (forbidEq_symm hfg) hfh
+  · intro hgh
+    exact forbidEq_trans hfg hgh
+
+theorem forbidEq_rw_right
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (h =[F_forbid] f) ↔ (h =[F_forbid] g)
+  := by
+  constructor
+  · intro hhf
+    exact forbidEq_trans hhf hfg
+  · intro hhg
+    exact forbidEq_trans hhg (forbidEq_symm hfg)
+
 theorem forbidLE_trans
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
     (hfg : f ≤[F_forbid] g) (hgh : g ≤[F_forbid] h)
@@ -154,6 +186,28 @@ theorem forbidLE_trans
       1 = ℙ[φ₀] (A ∩ B) := by simp [hAB]
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ h} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
+
+theorem forbidLE_rw_left
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (f ≤[F_forbid] h) ↔ (g ≤[F_forbid] h)
+  := by
+  constructor
+  · intro hfh
+    exact forbidLE_trans (forbidEq_implies_forbidLE (forbidEq_symm hfg)) hfh
+  · intro hgh
+    exact forbidLE_trans (forbidEq_implies_forbidLE hfg) hgh
+
+theorem forbidLE_rw_right
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (h ≤[F_forbid] f) ↔ (h ≤[F_forbid] g)
+  := by
+  constructor
+  · intro hhf
+    exact forbidLE_trans hhf (forbidEq_implies_forbidLE hfg)
+  · intro hhg
+    exact forbidLE_trans hhg (forbidEq_implies_forbidLE (forbidEq_symm hfg))
 
 theorem forbidLE_antisymm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
@@ -281,6 +335,130 @@ theorem forbidEq_smul_zero
   := by
   have := forbidEq_smul (c := c) hfg
   simpa using this
+
+theorem forbidEq_rw_left_add_right
+    {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : ((f + h) =[F_forbid] k) ↔ ((g + h) =[F_forbid] k)
+  :=
+  forbidEq_rw_left (forbidEq_add_right hfg)
+
+theorem forbidEq_rw_left_add_left
+    {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : ((h + f) =[F_forbid] k) ↔ ((h + g) =[F_forbid] k)
+  :=
+  forbidEq_rw_left (forbidEq_add_left hfg)
+
+theorem forbidEq_rw_right_add_right
+    {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (k =[F_forbid] (f + h)) ↔ (k =[F_forbid] (g + h))
+  :=
+  forbidEq_rw_right (forbidEq_add_right hfg)
+
+theorem forbidEq_rw_right_add_left
+    {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : (k =[F_forbid] (h + f)) ↔ (k =[F_forbid] (h + g))
+  :=
+  forbidEq_rw_right (forbidEq_add_left hfg)
+
+theorem forbidEq_rw_left_smul
+    {F_forbid : FinFlag ∅ₜ} {f g k : FlagAlgebra σ} {c : ℝ}
+    (hfg : f =[F_forbid] g)
+    : ((c • f) =[F_forbid] k) ↔ ((c • g) =[F_forbid] k)
+  :=
+  forbidEq_rw_left (forbidEq_smul (c := c) hfg)
+
+theorem forbidEq_rw_right_smul
+    {F_forbid : FinFlag ∅ₜ} {f g k : FlagAlgebra σ} {c : ℝ}
+    (hfg : f =[F_forbid] g)
+    : (k =[F_forbid] (c • f)) ↔ (k =[F_forbid] (c • g))
+  :=
+  forbidEq_rw_right (forbidEq_smul (c := c) hfg)
+
+theorem forbidEq_move_add_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
+    : ((a + b) =[F_forbid] c) ↔ (b =[F_forbid] (c - a))
+  := by
+  constructor
+  · intro habc
+    have h1 := forbidEq_add_right (h := -a) habc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+  · intro hbc
+    have h1 := forbidEq_add_left (h := a) hbc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+
+theorem forbidEq_move_add_left
+    {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
+    (habc : (a + b) =[F_forbid] c)
+    : b =[F_forbid] (c - a)
+  :=
+  (forbidEq_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
+
+theorem forbidEq_collect_smul_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
+    : ((a • x + b • x) =[F_forbid] y) ↔ (((a + b) • x) =[F_forbid] y)
+  := by
+  constructor
+  · intro h
+    simpa [add_smul] using h
+  · intro h
+    simpa [add_smul] using h
+
+theorem forbidEq_collect_smul_right_iff
+    {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
+    : (y =[F_forbid] (a • x + b • x)) ↔ (y =[F_forbid] ((a + b) • x))
+  := by
+  constructor
+  · intro h
+    simpa [add_smul] using h
+  · intro h
+    simpa [add_smul] using h
+
+theorem forbidEq_collect_sub_smul_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
+    : ((a • x - b • x) =[F_forbid] y) ↔ (((a - b) • x) =[F_forbid] y)
+  := by
+  constructor
+  · intro h
+    simpa [sub_eq_add_neg, add_smul] using h
+  · intro h
+    simpa [sub_eq_add_neg, add_smul] using h
+
+theorem forbidEq_collect_sub_smul_right_iff
+    {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
+    : (y =[F_forbid] (a • x - b • x)) ↔ (y =[F_forbid] ((a - b) • x))
+  := by
+  constructor
+  · intro h
+    simpa [sub_eq_add_neg, add_smul] using h
+  · intro h
+    simpa [sub_eq_add_neg, add_smul] using h
+
+theorem forbidEq_move_term_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
+    : (a =[F_forbid] c) ↔ ((0 : FlagAlgebra σ) =[F_forbid] (c - a))
+  := by
+  constructor
+  · intro hac
+    have hsum : (a + (0 : FlagAlgebra σ)) =[F_forbid] c := by
+      simpa using (forbidEq_add_right (h := (0 : FlagAlgebra σ)) hac)
+    exact (forbidEq_move_add_left_iff (F_forbid := F_forbid)
+      (a := a) (b := (0 : FlagAlgebra σ)) (c := c)).1 hsum
+  · intro hzero
+    have hsum : (a + (0 : FlagAlgebra σ)) =[F_forbid] c :=
+      (forbidEq_move_add_left_iff (F_forbid := F_forbid)
+        (a := a) (b := (0 : FlagAlgebra σ)) (c := c)).2 hzero
+    simpa using hsum
+
+theorem forbidEq_move_term_left
+    {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
+    (hac : a =[F_forbid] c)
+    : (0 : FlagAlgebra σ) =[F_forbid] (c - a)
+  :=
+  (forbidEq_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
 
 theorem forbidLE_add
     {F_forbid : FinFlag ∅ₜ} {f g f' g' : FlagAlgebra σ}
@@ -863,3 +1041,15 @@ theorem downward_forbidLE_nonneg
   exact (forbidLE_emptyType_iff_forbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
 
 end Forbid
+
+syntax (name := forbidRwTac) "frw " "[" term,* "]" : tactic
+
+elab_rules : tactic
+  | `(tactic| frw [$[$hs:term],*]) => do
+      for h in hs do
+        evalTactic (← `(tactic|
+          first
+          | rw [Forbid.forbidEq_rw_left $h]
+          | rw [Forbid.forbidEq_rw_right $h]
+          | rw [Forbid.forbidLE_rw_left $h]
+          | rw [Forbid.forbidLE_rw_right $h]))
