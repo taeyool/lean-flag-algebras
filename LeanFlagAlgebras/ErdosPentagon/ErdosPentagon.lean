@@ -5,12 +5,12 @@ open FlagAlgebras
 namespace ErdosPentagon
 
 example
-    : flagQuadraticForm R_real Vᵣ ≥ 0
+    : flagQuadraticForm R_real v₂ ≥ 0
   :=
-  flagQuadraticForm_nonneg R_real R_real_posSemidef Vᵣ
+  flagQuadraticForm_nonneg R_real R_real_posSemidef v₂
 
 example
-    : flagQuadraticForm R_real Vᵣ =[K3] sorry
+    : flagQuadraticForm R_real v₂ =[K3] sorry
   := by
   sorry
 

@@ -5,6 +5,14 @@ open FlagAlgebras.Compute
 
 namespace ErdosPentagon
 
+load_density_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_0_from_4_3_0.json"
+load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_0_from_4_3_0.json"
+-- load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_0_from_4_3_0.json"
+
+load_density_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_1_from_4_3_1.json"
+load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_1_from_4_3_1.json"
+-- load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_1_from_4_3_1.json"
+
 load_density_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
 load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
 load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
