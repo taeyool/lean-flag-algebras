@@ -248,6 +248,8 @@ elab "load_mul_relations" filename:str : command => do
       let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{j}")
       let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{data.patternTag}_{iOrd}")
       let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{data.patternTag}_{jOrd}")
+      let flagSetEqUniv := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_eq_univ")
+      let flagSetValEq := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_val_eq")
       let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{data.patternTag}_{i}_FlagAlgebra_{data.patternTag}_{j}")
 
       let env <- getEnv
@@ -272,8 +274,9 @@ elab "load_mul_relations" filename:str : command => do
                   ⟨$(Quote.quote patternSize), $flagOrd2⟩
                   $(Quote.quote hostSize)
                   (by rfl))
-              rw [Finset.sum_eq_multiset_sum, ← flagSet_5_3_2_eq_univ]
-              simp [flagSet_5_3_2_val_eq]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
               exact forbidEq_refl K3 _
           ))
         else
@@ -288,8 +291,9 @@ elab "load_mul_relations" filename:str : command => do
                   ⟨$(Quote.quote patternSize), $flagOrd2⟩
                   $(Quote.quote hostSize)
                   (by rfl))
-              rw [Finset.sum_eq_multiset_sum, ← flagSet_5_3_2_eq_univ]
-              simp [flagSet_5_3_2_val_eq]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
               exact forbidEq_refl K3 _
           ))
         generated := generated + 1
