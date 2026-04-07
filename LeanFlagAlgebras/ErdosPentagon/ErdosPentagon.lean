@@ -10,7 +10,7 @@ example
   flagQuadraticForm_nonneg R_real R_real_posSemidef v₂
 
 example
-    : flagQuadraticForm R_real Vᵣ =[K3]
+    : flagQuadraticForm R_real v₂ =[K3]
         (1512 / 625 : ℝ) • FlagAlgebra_5_3_2_0
         - (380 / 625 : ℝ) • FlagAlgebra_5_3_2_1
         + (568 / 625 : ℝ) • FlagAlgebra_5_3_2_2
