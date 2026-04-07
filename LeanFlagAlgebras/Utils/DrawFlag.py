@@ -92,6 +92,7 @@ def draw_flag(
 	edges: List[List[int]] = flag.get("edges", [])
 	type_indices: List[int] = flag.get("type_indices", [])
 	root_type_edges: List[List[int]] = data.get("type_edges", [])
+	type_order_by_vertex = {vertex: i for i, vertex in enumerate(type_indices)}
 
 	pos = circular_layout(n)
 
@@ -116,6 +117,12 @@ def draw_flag(
 	for node in range(n):
 		x, y = pos[node]
 		is_type_vertex = node in type_indices
+		label_text = str(node)
+		label_color = "#111827"
+		if is_type_vertex:
+			type_order = type_order_by_vertex[node]
+			label_text = str(type_order)
+			label_color = "#d62828"
 		ax.scatter(
 			[x],
 			[y],
@@ -128,12 +135,12 @@ def draw_flag(
 		ax.text(
 			x,
 			y,
-			str(node),
+			label_text,
 			ha="center",
 			va="center",
-			fontsize=12,
+			fontsize=11,
 			fontweight="bold",
-			color="#111827",
+			color=label_color,
 			zorder=3,
 		)
 
@@ -141,7 +148,7 @@ def draw_flag(
 	ax.set_title(title, fontsize=12, pad=16)
 
 	# Legend proxies to explain the color coding.
-	type_proxy = plt.Line2D([0], [0], marker="o", color="w", label="Type vertex", markerfacecolor="#ffffff", markeredgecolor="#d62828", markeredgewidth=1.9, markersize=8)
+	type_proxy = plt.Line2D([0], [0], marker="o", color="w", label="Type vertex (order label: 0,1,...)", markerfacecolor="#ffffff", markeredgecolor="#d62828", markeredgewidth=1.9, markersize=8)
 	other_proxy = plt.Line2D([0], [0], marker="o", color="w", label="Other vertex", markerfacecolor="#ffffff", markeredgecolor="#111827", markeredgewidth=1.7, markersize=8)
 	type_edge_proxy = plt.Line2D([0], [0], color="#d62828", lw=2.2, label="Type edge")
 	other_edge_proxy = plt.Line2D([0], [0], color="#111827", lw=1.8, label="Other edge")
