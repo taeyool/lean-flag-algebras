@@ -6,6 +6,7 @@ import Mathlib.Tactic
 
 open Lean Elab Command Json
 open FlagAlgebras Forbid
+open FlagAlgebras.Compute
 
 namespace ErdosPentagon
 
@@ -131,6 +132,27 @@ def collectHostFlagIndices (hostTag : String) (searchLimit : Nat := 200) : Comma
       indices := indices.push h
   pure indices
 
+private def peelForall (e : Expr) : Expr :=
+  match e with
+  | .forallE _ _ body _ => peelForall body
+  | _ => e
+
+private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax `ident) := do
+  let env <- getEnv
+  let some ci := env.find? thmName
+    | throwError s!"Missing theorem: {thmName}"
+  let ty := peelForall ci.type.consumeMData
+  let fn := ty.getAppFn.consumeMData
+  let args := ty.getAppArgs
+  unless fn.isConstOf ``Eq && args.size = 3 do
+    throwError s!"Theorem {thmName} does not have an equality type"
+  let rhs := args[2]!.consumeMData.getAppFn.consumeMData
+  match rhs with
+  | .const rhsName _ =>
+      pure (mkIdent rhsName)
+  | _ =>
+      throwError s!"Could not extract RHS constant name from theorem: {thmName}"
+
 elab "load_triangle_free_classification" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path
@@ -144,6 +166,9 @@ elab "load_triangle_free_classification" filename:str : command => do
 
   for h in hostIndices do
     let flagName := mkIdent (Name.mkSimple s!"Flag_{data.hostTag}_{h}")
+    let unlabelThm := Name.mkSimple s!"unlabel_{data.hostTag}_{h}"
+    let unlabelThmName := mkIdent unlabelThm
+    let unlabelRhsIdent <- unlabelRhsIdentFromTheorem unlabelThm
     let isTriangleFree := natArrayContains data.hostTriangleFreeIndices h
 
     let env <- getEnv
@@ -154,7 +179,11 @@ elab "load_triangle_free_classification" filename:str : command => do
           @[simp] theorem $thmName
               : flagDensity₁ K3.2 (unlabel $flagName) = 0
             := by
-            sorry
+            have hunlabel := $unlabelThmName
+            simp [K3, hunlabel, Flag_3_0_0_3]
+            unfold $unlabelRhsIdent
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
         ))
         generatedEqZero := generatedEqZero + 1
     else
@@ -164,7 +193,11 @@ elab "load_triangle_free_classification" filename:str : command => do
           @[simp] theorem $thmName
               : ¬ flagDensity₁ K3.2 (unlabel $flagName) = 0
             := by
-            sorry
+            have hunlabel := $unlabelThmName
+            simp [K3, hunlabel, Flag_3_0_0_3]
+            unfold $unlabelRhsIdent
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
         ))
         generatedPos := generatedPos + 1
 
@@ -265,5 +298,19 @@ elab "load_mul_relations" filename:str : command => do
 
 load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
 load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
+
+example
+    : flagDensity₁ K3.2 (unlabel Flag_4_3_2_0) = 0
+  := by
+  simp [K3, unlabel_4_3_2_0, Flag_3_0_0_3, Flag_4_0_0_2]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+
+example
+    : ¬ flagDensity₁ K3.2 (unlabel Flag_4_3_2_4) = 0
+  := by
+  simp [K3, unlabel_4_3_2_4, Flag_3_0_0_3, Flag_4_0_0_7]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
 
 end ErdosPentagon
