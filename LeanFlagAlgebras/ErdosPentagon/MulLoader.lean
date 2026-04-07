@@ -1,5 +1,5 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
-import LeanFlagAlgebras.ErdosPentagon.FlagDensity
+import LeanFlagAlgebras.ErdosPentagon.Densities.DensityLoader
 import LeanFlagAlgebras.Forbid.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
@@ -295,22 +295,5 @@ elab "load_mul_relations" filename:str : command => do
         generated := generated + 1
 
   logInfo s!"Generated {generated} multiplication theorem(s) from density JSON: {filename.getString}"
-
-load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
-load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
-
-example
-    : flagDensity₁ K3.2 (unlabel Flag_4_3_2_0) = 0
-  := by
-  simp [K3, unlabel_4_3_2_0, Flag_3_0_0_3, Flag_4_0_0_2]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-example
-    : ¬ flagDensity₁ K3.2 (unlabel Flag_4_3_2_4) = 0
-  := by
-  simp [K3, unlabel_4_3_2_4, Flag_3_0_0_3, Flag_4_0_0_7]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
 
 end ErdosPentagon

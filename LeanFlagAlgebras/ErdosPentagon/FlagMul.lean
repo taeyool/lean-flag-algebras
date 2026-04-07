@@ -1,0 +1,12 @@
+import LeanFlagAlgebras.ErdosPentagon.MulLoader
+
+open FlagAlgebras
+open FlagAlgebras.Compute
+
+namespace ErdosPentagon
+
+load_density_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
+load_triangle_free_classification "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
+load_mul_relations "LeanFlagAlgebras/ErdosPentagon/Densities/density_5_3_2_from_4_3_2.json"
+
+end ErdosPentagon
