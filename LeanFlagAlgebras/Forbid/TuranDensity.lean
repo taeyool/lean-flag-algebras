@@ -5,8 +5,6 @@ import Mathlib.Data.Nat.Choose.Cast
 
 open Asymptotics Filter Finset Fintype Topology
 
-namespace SimpleGraph
-
 variable {U W : Type} [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W]
 
 /--
@@ -67,5 +65,3 @@ theorem tendsto_generalizedTuranDensity
     intro n ⟨_, hn⟩
     rw [← hn]
     positivity
-
-end SimpleGraph

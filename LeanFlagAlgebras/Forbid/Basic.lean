@@ -1041,15 +1041,3 @@ theorem downward_forbidLE_nonneg
   exact (forbidLE_emptyType_iff_forbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
 
 end Forbid
-
-syntax (name := forbidRwTac) "frw " "[" term,* "]" : tactic
-
-elab_rules : tactic
-  | `(tactic| frw [$[$hs:term],*]) => do
-      for h in hs do
-        evalTactic (← `(tactic|
-          first
-          | rw [Forbid.forbidEq_rw_left $h]
-          | rw [Forbid.forbidEq_rw_right $h]
-          | rw [Forbid.forbidLE_rw_left $h]
-          | rw [Forbid.forbidLE_rw_right $h]))

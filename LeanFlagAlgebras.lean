@@ -49,6 +49,7 @@ import LeanFlagAlgebras.MantelTheorem.GoodmanBound
 -- Forbid
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Forbid.TuranDensity
+import LeanFlagAlgebras.Forbid.TuranDensityBound
 
  -- ErdosPentagon
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
