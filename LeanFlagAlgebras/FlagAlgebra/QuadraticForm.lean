@@ -59,7 +59,7 @@ theorem flagQuadraticForm_nonneg
 
 theorem flagQuadraticForm_downward_nonneg
     {n₀ : ℕ} {σ : FlagType (Fin n₀)} {n : ℕ}
-    (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
+    {M : Matrix (Fin n) (Fin n) ℝ} (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
     : ⟦flagQuadraticForm M v⟧₀ ≥ 0
   := by
   simp only [ge_iff_le, le_def, sub_zero]

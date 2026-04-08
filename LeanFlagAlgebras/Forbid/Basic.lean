@@ -98,6 +98,29 @@ theorem forbidEq_of_eq
   subst hfg
   exact forbidEq_refl F_forbid f
 
+theorem forbidLE_of_le
+    {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
+    (hfg : f ≤ g)
+    : f ≤[F_forbid] g
+  := by
+  intro φ₀ hσ hF_forbid
+  have hsubset : (Set.univ : Set (PositiveHomSpace σ)) ⊆
+      {φ : PositiveHomSpace σ | φ f ≤ φ g} := by
+    intro φ _
+    have hcone : g - f ∈ semanticCone σ := (le_def f g).1 hfg
+    have hnonneg : 0 ≤ (PositiveHomSpace.toPosHom φ) (g - f) := hcone (PositiveHomSpace.toPosHom φ)
+    have hsub : (PositiveHomSpace.toPosHom φ) (g - f) = φ g - φ f := by
+      simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using
+        (PositiveHom.map_sub (PositiveHomSpace.toPosHom φ) g f)
+    have hsub' : 0 ≤ φ g - φ f := by simpa [hsub] using hnonneg
+    exact sub_nonneg.mp hsub'
+  apply le_antisymm
+  · exact ProbabilityMeasure.apply_le_one (ℙ[φ₀]) _
+  · calc
+      1 = ℙ[φ₀] (Set.univ : Set (PositiveHomSpace σ)) := by simp
+      _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} :=
+        ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
+
 theorem forbidEq_implies_forbidLE
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f =[F_forbid] g)
@@ -186,6 +209,20 @@ theorem forbidLE_trans
       1 = ℙ[φ₀] (A ∩ B) := by simp [hAB]
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ h} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
+
+theorem forbidLE_trans_forbidEq_left
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g) (hgh : g ≤[F_forbid] h)
+    : f ≤[F_forbid] h
+  :=
+  forbidLE_trans (forbidEq_implies_forbidLE hfg) hgh
+
+theorem forbidLE_trans_forbidEq_right
+    {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
+    (hfg : f ≤[F_forbid] g) (hgh : g =[F_forbid] h)
+    : f ≤[F_forbid] h
+  :=
+  forbidLE_trans hfg (forbidEq_implies_forbidLE hgh)
 
 theorem forbidLE_rw_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
