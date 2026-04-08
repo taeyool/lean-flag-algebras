@@ -16,7 +16,7 @@ def σ₁ : FlagType (Fin 3) := FlagType_3_1
 def σ₂ : FlagType (Fin 3) := FlagType_3_2
 
 noncomputable def v₀ : FlagAlgebraVec σ₀ 8 := ![
-  FlagAlgebra_4_3_0_0, FlagAlgebra_4_3_0_1, FlagAlgebra_4_3_0_2, FlagAlgebra_4_3_0_3, FlagAlgebra_4_3_0_4, FlagAlgebra_4_3_0_5, FlagAlgebra_4_3_0_6, FlagAlgebra_4_3_0_7
+  FlagAlgebra_4_3_0_0, FlagAlgebra_4_3_0_1, FlagAlgebra_4_3_0_2, FlagAlgebra_4_3_0_4, FlagAlgebra_4_3_0_3, FlagAlgebra_4_3_0_5, FlagAlgebra_4_3_0_6, FlagAlgebra_4_3_0_7
 ]
 
 noncomputable def v₁ : FlagAlgebraVec σ₁ 6 := ![

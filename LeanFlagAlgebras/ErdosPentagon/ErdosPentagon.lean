@@ -179,6 +179,123 @@ private partial def runReduceFlagMul (fuel : Nat := 256) (steps : Nat := 0) : Ta
 elab "reduce_flagmul" : tactic =>
   runReduceFlagMul
 
+set_option maxHeartbeats 0
+lemma flagQuadraticForm_P_v₀_forbidEq
+    : flagQuadraticForm P_real v₀ =[K3]
+        (24 / 625 : ℝ) • FlagAlgebra_5_3_0_0
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_1
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_2
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_3
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_4
+        + (277 / 625 : ℝ) • FlagAlgebra_5_3_0_5
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_6
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_7
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_8
+        + (277 / 625 : ℝ) • FlagAlgebra_5_3_0_9
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_10
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_11
+        + (277 / 625 : ℝ) • FlagAlgebra_5_3_0_12
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_13
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_14
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_15
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_16
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_17
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_18
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_19
+        + (24 / 625 : ℝ) • FlagAlgebra_5_3_0_20
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_24
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_25
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_26
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_27
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_28
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_29
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_30
+        - (79 / 625 : ℝ) • FlagAlgebra_5_3_0_31
+        + (97 / 625 : ℝ) • FlagAlgebra_5_3_0_32
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_33
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_34
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_35
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_36
+        + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_43
+        + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_44
+        + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_45
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_46
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_47
+        - (259 / 625 : ℝ) • FlagAlgebra_5_3_0_48
+        + (247 / 625 : ℝ) • FlagAlgebra_5_3_0_49
+        + (247 / 625 : ℝ) • FlagAlgebra_5_3_0_50
+        + (247 / 625 : ℝ) • FlagAlgebra_5_3_0_51
+        + (67 / 625 : ℝ) • FlagAlgebra_5_3_0_52
+        + (67 / 625 : ℝ) • FlagAlgebra_5_3_0_53
+        + (67 / 625 : ℝ) • FlagAlgebra_5_3_0_54
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_64
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_65
+        - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_66
+        + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_70
+  := by
+  simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
+  reduce_flagmul
+  apply Forbid.forbidEq_of_eq
+  norm_num
+  ring_nf
+  simp [add_assoc]
+  have : (2 : FlagAlgebra FlagType_3_0) = ((2 : ℝ) • (1 : FlagAlgebra FlagType_3_0)) := by
+    rw [two_smul]
+    norm_num
+  repeat rw [this]
+  repeat rw [mul_smul_comm]
+  simp [smul_smul]
+  ring_nf
+
+lemma flagQuadraticForm_Q_v₁_forbidEq
+    : flagQuadraticForm Q_real v₁ =[K3]
+          (432 / 625 : ℝ) • FlagAlgebra_5_3_1_0
+        - (1551 / 2500 : ℝ) • FlagAlgebra_5_3_1_1
+        - (1551 / 2500 : ℝ) • FlagAlgebra_5_3_1_2
+        - (327 / 625 : ℝ) • FlagAlgebra_5_3_1_3
+        + (432 / 625 : ℝ) • FlagAlgebra_5_3_1_4
+        + (584 / 625 : ℝ) • FlagAlgebra_5_3_1_5
+        + (584 / 625 : ℝ) • FlagAlgebra_5_3_1_6
+        + (371 / 1250 : ℝ) • FlagAlgebra_5_3_1_8
+        + (687 / 2500 : ℝ) • FlagAlgebra_5_3_1_9
+        - (1551 / 2500 : ℝ) • FlagAlgebra_5_3_1_10
+        + (687 / 2500 : ℝ) • FlagAlgebra_5_3_1_11
+        - (1551 / 2500 : ℝ) • FlagAlgebra_5_3_1_12
+        + (227 / 625 : ℝ) • FlagAlgebra_5_3_1_13
+        + (227 / 625 : ℝ) • FlagAlgebra_5_3_1_14
+        + (432 / 625 : ℝ) • FlagAlgebra_5_3_1_15
+        - (327 / 625 : ℝ) • FlagAlgebra_5_3_1_16
+        + (2557 / 2500 : ℝ) • FlagAlgebra_5_3_1_23
+        + (687 / 2500 : ℝ) • FlagAlgebra_5_3_1_24
+        + (2557 / 2500 : ℝ) • FlagAlgebra_5_3_1_25
+        + (687 / 2500 : ℝ) • FlagAlgebra_5_3_1_26
+        + (371 / 1250 : ℝ) • FlagAlgebra_5_3_1_29
+        - (1021 / 625 : ℝ) • FlagAlgebra_5_3_1_30
+        - (1021 / 625 : ℝ) • FlagAlgebra_5_3_1_31
+        - (127 / 1250 : ℝ) • FlagAlgebra_5_3_1_32
+        + (227 / 625 : ℝ) • FlagAlgebra_5_3_1_33
+        - (127 / 1250 : ℝ) • FlagAlgebra_5_3_1_34
+        + (227 / 625 : ℝ) • FlagAlgebra_5_3_1_35
+        + (3816 / 625 : ℝ) • FlagAlgebra_5_3_1_50
+        - (1021 / 625 : ℝ) • FlagAlgebra_5_3_1_51
+        + (3816 / 625 : ℝ) • FlagAlgebra_5_3_1_52
+        - (1021 / 625 : ℝ) • FlagAlgebra_5_3_1_53
+        - (3606 / 625 : ℝ) • FlagAlgebra_5_3_1_54
+  := by
+  simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
+  reduce_flagmul
+  apply Forbid.forbidEq_of_eq
+  norm_num
+  ring_nf
+  simp [add_assoc]
+  have : (2 : FlagAlgebra FlagType_3_1) = ((2 : ℝ) • (1 : FlagAlgebra FlagType_3_1)) := by
+    rw [two_smul]
+    norm_num
+  repeat rw [this]
+  repeat rw [mul_smul_comm]
+  simp [smul_smul]
+  ring_nf
+
 lemma flagQuadraticForm_R_v₂_forbidEq
     : flagQuadraticForm R_real v₂ =[K3]
         (1512 / 625 : ℝ) • FlagAlgebra_5_3_2_0
