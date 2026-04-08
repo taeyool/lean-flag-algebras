@@ -424,6 +424,7 @@ elab "load_flags" filename:str : command => do
     let env ← getEnv
     if ¬ env.contains unlabelThmName.getId then
       elabCommand (← `(
+        @[simp]
         theorem $unlabelThmName : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName := by
           exact Quotient.sound (FlagAlgebras.flagEqv.refl _)
       ))
@@ -435,8 +436,6 @@ elab "load_flags" filename:str : command => do
         theorem $downwardThmName
             : ⟦$flagAlgebraName⟧₀ = $coeffR • $baseFlagAlgebraName
           := by
-          have hunlabel : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName := by
-            exact $unlabelThmName
           have hdnf : FlagAlgebras.downwardNormalizingFactor $flagBridgeName = $coeffQ := by
             change FlagAlgebras.downwardNormalizingFactor (($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag) = $coeffQ
             rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
@@ -446,7 +445,7 @@ elab "load_flags" filename:str : command => do
               =
             $coeffR • (⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
           apply Quotient.sound
-          simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hunlabel, hdnf]
+          simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hdnf]
       ))
 
   let setName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_{k}_{m}")
