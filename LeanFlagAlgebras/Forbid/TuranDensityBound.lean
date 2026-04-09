@@ -109,7 +109,4 @@ theorem generalizedTuranDensity_le_of_forbidLE
   · simp [PositiveHom.map_smul]
     sorry
 
-example (a b c : ℝ) (H : c < a / b) (hb : b > 0) : c * b < a := by
-  exact (lt_div_iff₀ hb).mp H
-
 end Forbid
