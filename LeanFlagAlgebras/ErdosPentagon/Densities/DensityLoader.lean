@@ -14,6 +14,10 @@ structure DensityJsonData where
   patternTag : String
   densities : Array Json
 
+structure TriangleFreeIndexJsonData where
+  totalGraphs : Nat
+  triangleFreeGraphIndices : Array Nat
+
 def jsonNumberToNat? (x : JsonNumber) : Option Nat :=
   if x.exponent = 0 then
     x.mantissa.toNat?
@@ -25,6 +29,15 @@ def parseNatFromJson (j : Json) (fieldName : String) : CommandElabM Nat := do
   let some n := jsonNumberToNat? v
     | throwError s!"Expected natural number for {fieldName}"
   pure n
+
+def parseNatArrayFromJson (j : Json) (fieldName : String) : CommandElabM (Array Nat) := do
+  let arr ← match j with
+    | .arr a => pure a
+    | _ => throwError s!"Expected array for {fieldName}"
+  arr.mapM fun x => parseNatFromJson x fieldName
+
+def natArrayContains (arr : Array Nat) (x : Nat) : Bool :=
+  arr.any fun y => y == x
 
 def parseDensityString (s : String) : CommandElabM (Nat × Nat) := do
   let parts := (s.trimAscii.toString).splitOn "/"
@@ -71,13 +84,53 @@ def parseDensityJsonFile (path : System.FilePath) : CommandElabM DensityJsonData
     densities := densities
   }
 
+def parseNFromTriangleFreePath (path : System.FilePath) : CommandElabM Nat := do
+  let some fileName := path.fileName
+    | throwError s!"Could not extract filename from path: {path}"
+  let suffix := "_triangle_free_indices.json"
+
+  let nSlice? : Option String :=
+    if fileName.startsWith "graphs_" && fileName.endsWith suffix then
+      some <| ((fileName.drop 7).dropEnd suffix.length).toString
+    else if fileName.startsWith "graph_" && fileName.endsWith suffix then
+      some <| ((fileName.drop 6).dropEnd suffix.length).toString
+    else
+      none
+
+  let some nSlice := nSlice?
+    | throwError s!"Expected filename of the form graph_n_triangle_free_indices.json or graphs_n_triangle_free_indices.json, but got: {fileName}"
+  let some n := nSlice.toNat?
+    | throwError s!"Failed to parse n from filename: {fileName}"
+  pure n
+
+def parseTriangleFreeIndexJsonFile (path : System.FilePath) : CommandElabM TriangleFreeIndexJsonData := do
+  let content ← liftIO <| IO.FS.readFile path
+  let json ← match Json.parse content with
+    | .ok j => pure j
+    | .error err => throwError s!"JSON parse error: {err}"
+
+  let totalGraphsJson ← match json.getObjVal? "total_graphs" with
+    | Except.ok v => pure v
+    | _ => throwError "Missing or invalid field 'total_graphs'"
+  let totalGraphs ← parseNatFromJson totalGraphsJson "total_graphs"
+
+  let triangleFreeJson ← match json.getObjVal? "triangle_free_graph_indices" with
+    | Except.ok v => pure v
+    | _ => throwError "Missing or invalid field 'triangle_free_graph_indices'"
+  let triangleFreeGraphIndices ← parseNatArrayFromJson triangleFreeJson "triangle_free_graph_indices"
+
+  pure {
+    totalGraphs := totalGraphs
+    triangleFreeGraphIndices := triangleFreeGraphIndices
+  }
+
 def densityValueToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `($(Quote.quote num))
   else
     `((($(Quote.quote num) : Rat) / ($(Quote.quote den) : Rat)))
 
-elab "load_density_relations" filename:str : command => do
+elab "load_flag_pair_density_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data ← parseDensityJsonFile path
 
@@ -125,5 +178,56 @@ elab "load_density_relations" filename:str : command => do
       generated := generated + 1
 
   logInfo s!"Generated {generated} theorem(s) from density JSON: {filename.getString}"
+
+elab "load_triangle_density_theorems" filename:str : command => do
+  let path := System.FilePath.mk filename.getString
+  let n ← parseNFromTriangleFreePath path
+  let data ← parseTriangleFreeIndexJsonFile path
+
+  for i in data.triangleFreeGraphIndices do
+    if i >= data.totalGraphs then
+      throwError s!"triangle_free_graph_indices contains out-of-range index {i} (total_graphs = {data.totalGraphs})"
+
+  let mut generatedEqZero : Nat := 0
+  let mut generatedNeZero : Nat := 0
+
+  for i in [0:data.totalGraphs] do
+    let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
+    let isTriangleFree := natArrayContains data.triangleFreeGraphIndices i
+
+    let env := (← getEnv)
+    if ¬ env.contains flagName.getId then
+      throwError s!"Missing definition: {flagName.getId}"
+
+    if isTriangleFree then
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K3_Flag_{n}_0_0_{i}_eq_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : flagDensity₁ K3.2 $flagName = 0
+            := by
+            unfold $flagName
+            simp [K3, Flag_3_0_0_3]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedEqZero := generatedEqZero + 1
+    else
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K3_Flag_{n}_0_0_{i}_ne_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : ¬ flagDensity₁ K3.2 $flagName = 0
+            := by
+            unfold $flagName
+            simp [K3, Flag_3_0_0_3]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedNeZero := generatedNeZero + 1
+
+  logInfo s!"Generated triangle density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
 
 end ErdosPentagon

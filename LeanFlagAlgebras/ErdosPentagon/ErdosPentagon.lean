@@ -77,6 +77,13 @@ private def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
     | .app f x => some (f, x)
     | _ => none
 
+private def getSmulArgsStrict? (e : Expr) : Option (Expr × Expr) :=
+  let fn := e.getAppFn
+  let args := e.getAppArgs
+  if (fn.isConstOf ``HSMul.hSMul || fn.isConstOf ``SMul.smul) && args.size >= 2 then
+    some (args[args.size - 2]!, args[args.size - 1]! )
+  else
+    none
 private def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
@@ -84,6 +91,14 @@ private def getMulArgs? (e : Expr) : Option (Expr × Expr) :=
     some (args[args.size - 2]!, args[args.size - 1]!)
   else
     getBinAppArgs? e
+
+private def getSubArgs? (e : Expr) : Option (Expr × Expr) :=
+  let fn := e.getAppFn
+  let args := e.getAppArgs
+  if (fn.isConstOf ``HSub.hSub || fn.isConstOf ``Sub.sub) && args.size >= 2 then
+    some (args[args.size - 2]!, args[args.size - 1]!)
+  else
+    none
 
 private def flagToFlagAlgebraLastPart (s : String) : String :=
   if s.startsWith "Flag_" then
@@ -178,6 +193,111 @@ private partial def runReduceFlagMul (fuel : Nat := 256) (steps : Nat := 0) : Ta
 
 elab "reduce_flagmul" : tactic =>
   runReduceFlagMul
+
+/-- Linear term represented as `(base, coeff)` meaning `coeff • base`. -/
+abbrev LinTerm := Expr × Expr
+
+private partial def flattenLinearTerms (oneCoeff : Expr) (e : Expr) : MetaM (Array LinTerm) := do
+  let e := e.consumeMData
+  if let some (a, b) := getAddArgs? e then
+    return (← flattenLinearTerms oneCoeff a) ++ (← flattenLinearTerms oneCoeff b)
+  if let some (a, b) := getSubArgs? e then
+    let left ← flattenLinearTerms oneCoeff a
+    let right ← flattenLinearTerms oneCoeff b
+    let rightNeg ← right.mapM fun (base, coeff) => do
+      let negCoeff ← mkAppM ``Neg.neg #[coeff]
+      pure (base, negCoeff)
+    return left ++ rightNeg
+  if let some (coeff, base) := getSmulArgsStrict? e then
+    return #[(base, coeff)]
+  -- Fallback: treat bare term as `1 • term`
+  return #[(e, oneCoeff)]
+
+private def findBaseIndex (acc : Array LinTerm) (base : Expr) : Option Nat :=
+  let rec go (i : Nat) : Option Nat :=
+    if h : i < acc.size then
+      let (b, _) := acc[i]
+      if b == base then some i else go (i + 1)
+    else
+      none
+  go 0
+
+private def groupLinearTerms (terms : Array LinTerm) : MetaM (Array LinTerm) := do
+  let mut acc : Array LinTerm := #[]
+  for (base, coeff) in terms do
+    match findBaseIndex acc base with
+    | some i =>
+        let (_, oldCoeff) := acc[i]!
+        let newCoeff ← mkAppM ``HAdd.hAdd #[oldCoeff, coeff]
+        acc := acc.set! i (base, newCoeff)
+    | none =>
+        acc := acc.push (base, coeff)
+  pure acc
+
+private def sortLinearTermsByBase (terms : Array LinTerm) : MetaM (Array LinTerm) := do
+  let keyed ← terms.mapM fun (base, coeff) => do
+    let kb ← ppExpr base
+    pure (kb.pretty, base, coeff)
+  let mut sorted : Array (String × Expr × Expr) := #[]
+  for item in keyed do
+    let mut inserted := false
+    let mut next : Array (String × Expr × Expr) := #[]
+    for old in sorted do
+      if !inserted && item.1 < old.1 then
+        next := next.push item
+        inserted := true
+      next := next.push old
+    if !inserted then
+      next := next.push item
+    sorted := next
+  pure <| (sorted.map fun (_, base, coeff) => (base, coeff))
+
+private def rebuildLinearExpr (terms : Array LinTerm) : MetaM Expr := do
+  let smulTerms ← terms.mapM fun (base, coeff) => mkAppM ``HSMul.hSMul #[coeff, base]
+  match smulTerms.toList with
+  | [] => throwError "rebuildLinearExpr: empty term list"
+  | t :: ts => ts.foldlM (fun acc nxt => mkAppM ``HAdd.hAdd #[acc, nxt]) t
+
+private def normalizeLinearExpr (oneCoeff : Expr) (e : Expr) : MetaM Expr := do
+  let flat ← flattenLinearTerms oneCoeff e
+  let grouped ← groupLinearTerms flat
+  let sorted ← sortLinearTermsByBase grouped
+  rebuildLinearExpr sorted
+
+elab "preview_flagalgebra_linear_normal_form" : tactic =>
+  withMainContext do
+    let goal ← getMainGoal
+    let target ← goal.getType
+    let args := target.getAppArgs
+    if args.size < 2 then
+      throwError "preview_flagalgebra_linear_normal_form: target is not binary relation"
+    let lhs := args[args.size - 2]!
+    let rhs := args[args.size - 1]!
+    let oneCoeff ← Lean.Elab.Term.elabTerm (← `(term| (1 : ℝ))) none
+    let lhsNorm ← normalizeLinearExpr oneCoeff lhs
+    let rhsNorm ← normalizeLinearExpr oneCoeff rhs
+    logInfo m!"[linear-normalize] LHS normalized: {lhsNorm}"
+    logInfo m!"[linear-normalize] RHS normalized: {rhsNorm}"
+
+elab "normalize_flagalgebra_linear" : tactic =>
+  do
+    evalTactic (← `(tactic|
+      repeat'
+        (first
+          | conv_lhs => simp [sub_eq_add_neg, ← neg_smul]
+          | conv_rhs => simp [sub_eq_add_neg, ← neg_smul]
+          | conv_lhs => rw [← add_assoc]
+          | conv_rhs => rw [← add_assoc]
+          | conv_lhs => rw [collect_smul_same_deep_right]
+          | conv_rhs => rw [collect_smul_same_deep_right]
+          | conv_lhs => rw [collect_smul_same_mid_left]
+          | conv_rhs => rw [collect_smul_same_mid_left]
+          | conv_lhs => rw [collect_smul_same_mid]
+          | conv_rhs => rw [collect_smul_same_mid]
+          | conv_lhs => rw [collect_smul_same_head]
+          | conv_rhs => rw [collect_smul_same_head]
+          | conv_lhs => rw [collect_smul_same]
+          | conv_rhs => rw [collect_smul_same])))
 
 set_option maxHeartbeats 0
 
@@ -398,8 +518,9 @@ lemma one_forbidEq_one_size_five_expand
   apply forbidEq_trans h
   simp [default, flagDensity_empty]
   rw [Finset.sum_eq_multiset_sum, ← flagSet_5_0_0_eq_univ]
-  simp [flagSet_5_0_0_val_eq, unlabel_emptyType]
-  sorry
+  simp [flagSet_5_0_0_val_eq, unlabel_emptyType, ← add_assoc]
+  apply forbidEq_of_eq
+  rfl
 
 theorem ErdosPentagon
     : C5 ≤[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
@@ -417,12 +538,16 @@ theorem ErdosPentagon
   have h₂ : (C5 + ⟦flagQuadraticForm_P_v₀_expand⟧₀
                 + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
                 + ⟦flagQuadraticForm_R_v₂_expand⟧₀)
-            ≤[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+            ≤ (24 / 625 : ℝ) • one_size_five_expand
     := by
-    dsimp [C5, flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand]
-    simp [downward_add, downward_smul, smul_smul, sub_eq_add_neg, ← neg_smul]
-    ring_nf
+    dsimp [C5, flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
+    simp [downward_add, downward_sub, downward_smul, smul_smul]
+    norm_num
+    simp [sub_eq_add_neg, ← neg_smul, add_assoc]
     sorry
-  exact forbidLE_trans h₁ h₂
+  have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    :=
+    forbidEq_smul (forbidEq_symm one_forbidEq_one_size_five_expand)
+  exact forbidLE_trans h₁ (forbidLE_trans (forbidLE_of_le h₂) (forbidLE_of_forbidEq h₃))
 
 end ErdosPentagon

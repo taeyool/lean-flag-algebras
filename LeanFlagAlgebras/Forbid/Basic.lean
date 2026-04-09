@@ -121,7 +121,7 @@ theorem forbidLE_of_le
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidEq_implies_forbidLE
+theorem forbidLE_of_forbidEq
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f =[F_forbid] g)
     : f ≤[F_forbid] g
@@ -215,14 +215,14 @@ theorem forbidLE_trans_forbidEq_left
     (hfg : f =[F_forbid] g) (hgh : g ≤[F_forbid] h)
     : f ≤[F_forbid] h
   :=
-  forbidLE_trans (forbidEq_implies_forbidLE hfg) hgh
+  forbidLE_trans (forbidLE_of_forbidEq hfg) hgh
 
 theorem forbidLE_trans_forbidEq_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
     (hfg : f ≤[F_forbid] g) (hgh : g =[F_forbid] h)
     : f ≤[F_forbid] h
   :=
-  forbidLE_trans hfg (forbidEq_implies_forbidLE hgh)
+  forbidLE_trans hfg (forbidLE_of_forbidEq hgh)
 
 theorem forbidLE_rw_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
@@ -231,9 +231,9 @@ theorem forbidLE_rw_left
   := by
   constructor
   · intro hfh
-    exact forbidLE_trans (forbidEq_implies_forbidLE (forbidEq_symm hfg)) hfh
+    exact forbidLE_trans (forbidLE_of_forbidEq (forbidEq_symm hfg)) hfh
   · intro hgh
-    exact forbidLE_trans (forbidEq_implies_forbidLE hfg) hgh
+    exact forbidLE_trans (forbidLE_of_forbidEq hfg) hgh
 
 theorem forbidLE_rw_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
@@ -242,9 +242,9 @@ theorem forbidLE_rw_right
   := by
   constructor
   · intro hhf
-    exact forbidLE_trans hhf (forbidEq_implies_forbidLE hfg)
+    exact forbidLE_trans hhf (forbidLE_of_forbidEq hfg)
   · intro hhg
-    exact forbidLE_trans hhg (forbidEq_implies_forbidLE (forbidEq_symm hfg))
+    exact forbidLE_trans hhg (forbidLE_of_forbidEq (forbidEq_symm hfg))
 
 theorem forbidLE_antisymm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
@@ -1015,8 +1015,8 @@ theorem forbidEq_emptyType_iff_forbidEq
     · exact forbidEq_emptyType_implies_forbidLE_emptyType (forbidEq_emptyType_symm hfg)
   · intro hfg
     apply forbidLE_emptyType_antisymm <;> rw [forbidLE_emptyType_iff_forbidLE]
-    · exact forbidEq_implies_forbidLE hfg
-    · exact forbidEq_implies_forbidLE (forbidEq_symm hfg)
+    · exact forbidLE_of_forbidEq hfg
+    · exact forbidLE_of_forbidEq (forbidEq_symm hfg)
 
 theorem downward_forbidLE_nonneg_emptyType
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)

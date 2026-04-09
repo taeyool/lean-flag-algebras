@@ -83,9 +83,6 @@ def parseTagTriple (tag : String) : CommandElabM (Nat × Nat × Nat) := do
   | _ =>
       throwError s!"Invalid tag format (expected a_b_c): {tag}"
 
-def natArrayContains (arr : Array Nat) (x : Nat) : Bool :=
-  arr.any (fun y => y == x)
-
 def coeffToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `((($(Quote.quote num) : Nat) : ℝ))
@@ -203,7 +200,7 @@ elab "load_triangle_free_classification" filename:str : command => do
 
   logInfo s!"Generated triangle-free classification from {filename.getString}: eq_zero={generatedEqZero}, pos={generatedPos}"
 
-elab "load_mul_relations" filename:str : command => do
+elab "load_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path
   let patternTriple <- parseTagTriple data.patternTag
