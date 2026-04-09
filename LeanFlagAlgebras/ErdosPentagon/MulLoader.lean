@@ -150,56 +150,6 @@ private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax 
   | _ =>
       throwError s!"Could not extract RHS constant name from theorem: {thmName}"
 
-elab "load_triangle_free_classification" filename:str : command => do
-  let path := System.FilePath.mk filename.getString
-  let data <- parseMulJsonFile path
-  let hostIndices <- collectHostFlagIndices data.hostTag
-
-  if hostIndices.isEmpty then
-    throwError s!"No host flags found for tag {data.hostTag}. Increase search limit if needed."
-
-  let mut generatedEqZero : Nat := 0
-  let mut generatedPos : Nat := 0
-
-  for h in hostIndices do
-    let flagName := mkIdent (Name.mkSimple s!"Flag_{data.hostTag}_{h}")
-    let unlabelThm := Name.mkSimple s!"unlabel_{data.hostTag}_{h}"
-    let unlabelThmName := mkIdent unlabelThm
-    let unlabelRhsIdent <- unlabelRhsIdentFromTheorem unlabelThm
-    let isTriangleFree := natArrayContains data.hostTriangleFreeIndices h
-
-    let env <- getEnv
-    if isTriangleFree then
-      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K3_unlabel_Flag_{data.hostTag}_{h}_eq_zero")
-      if !(env.contains thmName.getId) then
-        elabCommand (← `(
-          @[simp] theorem $thmName
-              : flagDensity₁ K3.2 (unlabel $flagName) = 0
-            := by
-            have hunlabel := $unlabelThmName
-            simp [K3, hunlabel, Flag_3_0_0_3]
-            unfold $unlabelRhsIdent
-            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
-        ))
-        generatedEqZero := generatedEqZero + 1
-    else
-      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K3_unlabel_Flag_{data.hostTag}_{h}_pos")
-      if !(env.contains thmName.getId) then
-        elabCommand (← `(
-          @[simp] theorem $thmName
-              : ¬ flagDensity₁ K3.2 (unlabel $flagName) = 0
-            := by
-            have hunlabel := $unlabelThmName
-            simp [K3, hunlabel, Flag_3_0_0_3]
-            unfold $unlabelRhsIdent
-            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-            native_decide
-        ))
-        generatedPos := generatedPos + 1
-
-  logInfo s!"Generated triangle-free classification from {filename.getString}: eq_zero={generatedEqZero}, pos={generatedPos}"
-
 elab "load_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path
