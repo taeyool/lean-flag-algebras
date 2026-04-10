@@ -60,6 +60,29 @@ lemma exists_graphSeq_of_densityLowerBound
   choose Gseq hG_free hG_gt using hGk
   exact ⟨Gseq, hG_free, hG_gt⟩
 
+lemma flagDensitySeq_eq_zero_of_free
+    {n : ℕ} (H : SimpleGraph (Fin n))
+    {a : ℕ → ℕ} (Gseq : (k : ℕ) → SimpleGraph (Fin (a k)))
+    (hG_free : ∀ k : ℕ, H.Free (Gseq k))
+    (ϕ : ℕ → ℕ)
+    : ∀ i, flagDensitySeq ((fun k ↦ (Gseq k).toFinFlag) ∘ ϕ) i H.toFinFlag = 0 := by
+  intro i
+  dsimp only [flagDensitySeq, toFinFlag, flagDensity₁]
+  rw [← @subflagDensity_eq_flagListDensity]
+  simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  left
+  simp [labeledSubgraphCount]
+  rw [@Fintype.card_eq_zero_iff]
+  apply Subtype.isEmpty_of_false
+  simp
+  intro G' hG'_ind
+  rw [← Set.univ_eq_empty_iff]
+  ext ψ
+  simp at ψ
+  have hcontains : H ⊑ Gseq (ϕ i) :=
+    IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨ψ.graph_iso.symm⟩⟩
+  exact False.elim ((hG_free (ϕ i)) hcontains)
+
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : ℕ} (H : SimpleGraph (Fin n)) (F : SimpleGraph (Fin m))
   {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
@@ -105,7 +128,18 @@ theorem generalizedTuranDensity_le_of_forbidLE
 
   use φ
   constructor
-  · sorry
+  · have h_eval_H : x H.toFinFlag = φ ⟦unitVector H.toFinFlag⟧ := by
+      have hφ_eval : φ.coe H.toFinFlag = x H.toFinFlag := by
+        simpa using congrFun (congrArg Subtype.val hφ) H.toFinFlag
+      calc
+        x H.toFinFlag = φ.coe H.toFinFlag := by simpa using hφ_eval.symm
+        _ = φ ⟦unitVector H.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
+    apply @tendsto_nhds_unique _ _ _ _
+      (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag) atTop
+    · simpa [h_eval_H] using (hϕ_conv H.toFinFlag)
+    · have hH_den_zero : ∀ n, flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag = 0 := by
+        simpa [gseq] using flagDensitySeq_eq_zero_of_free H Gseq hG_free ϕ
+      rw [tendsto_congr hH_den_zero, tendsto_const_nhds_iff]
   · simp [PositiveHom.map_smul]
     sorry
 
