@@ -224,42 +224,17 @@ example :
     ((191 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
     (-(192 / 3125 : ℝ) • FlagAlgebra_5_0_0_8 +
     (10 : ℝ) • FlagAlgebra_5_0_0_11)))))))))))))) =
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_0 +
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_1 +
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_2 +
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_3 +
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_4 +
-        (24 / 625 : ℝ) • FlagAlgebra_5_0_0_6 +
-        (25 / 625 : ℝ) • FlagAlgebra_5_0_0_7 +
-        (-(72 / 3125) : ℝ) • FlagAlgebra_5_0_0_8 +
-        (1007 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
-        (10 : ℝ) • FlagAlgebra_5_0_0_11
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_0 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_1 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_2 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_3 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_4 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_6 +
+      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_7 +
+      (-(72 / 3125) : ℝ) • FlagAlgebra_5_0_0_8 +
+      (1007 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
+      (10 : ℝ) • FlagAlgebra_5_0_0_11
   := by
   sort_flagsum_lhs
-
-  simp only [add_assoc]
-  try
-    simp [← neg_smul]
-    rw [← add_smul]
-    norm_num
-  try
-    simp [← neg_smul]
-    rw [← add_smul]
-    norm_num
-  try
-    simp [← neg_smul]
-    rw [← add_smul]
-    norm_num
-  try
-    simp [← neg_smul]
-    rw [← add_smul]
-    norm_num
-  try
-    simp [← neg_smul]
-    rw [← add_smul]
-    norm_num
-
-  simp only [← add_assoc, add_left_inj]
-
-
-  sorry
+  simp only [add_assoc, ← add_smul]
+  norm_num
