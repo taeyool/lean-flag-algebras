@@ -27,21 +27,22 @@ lemma exists_graphSeq_of_densityLowerBound
     (ha_gt : ∀ k : ℕ, c < (generalizedExtremalNumber (a k) H F / (a k).choose m : ℝ)) :
     ∃ Gseq : (k : ℕ) → SimpleGraph (Fin (a k)),
       (∀ k : ℕ, H.Free (Gseq k)) ∧
-      (∀ k : ℕ, c * (a k).choose m
-          < GraphAlgebras.subgraphCount F (Gseq k)) := by
+      (∀ k : ℕ, c < GraphAlgebras.subgraphDensity F (Gseq k))
+  := by
+  have hden_pos : ∀ k, (0 : ℝ) < ((a k).choose m : ℝ) := by
+    intro k
+    exact_mod_cast Nat.choose_pos (hm_le_a k)
   have ha_gt_mul : ∀ k : ℕ,
       c * (a k).choose m < generalizedExtremalNumber (a k) H F := by
     intro k
-    have hden_pos : (0 : ℝ) < ((a k).choose m : ℝ) := by
-      exact_mod_cast Nat.choose_pos (hm_le_a k)
-    exact (lt_div_iff₀ hden_pos).mp (ha_gt k)
+    exact (lt_div_iff₀ (hden_pos k)).mp (ha_gt k)
   have hnonneg : ∀ k : ℕ, 0 ≤ c * ((a k).choose m : ℝ) := by
     intro k
     exact mul_nonneg hc (by exact_mod_cast Nat.zero_le ((a k).choose m))
-  have hGk : ∀ k : ℕ,
+  have hG : ∀ k : ℕ,
       ∃ G : SimpleGraph (Fin (a k)),
         H.Free G ∧
-        c * ((a k).choose m : ℝ) < (GraphAlgebras.subgraphCount F G : ℝ) := by
+        c < GraphAlgebras.subgraphDensity F G := by
     intro k
     let x : ℝ := c * ((a k).choose m : ℝ)
     have hx_floor_lt : Nat.floor x < generalizedExtremalNumber (a k) H F := by
@@ -55,10 +56,45 @@ lemma exists_graphSeq_of_densityLowerBound
     have hfloor_succ_le_count :
         (Nat.floor x : ℝ) + 1 ≤ (GraphAlgebras.subgraphCount F G : ℝ) := by
       exact_mod_cast Nat.succ_le_of_lt hG_lt
-    exact by
-      simpa [x] using lt_of_lt_of_le hx_lt_floor_succ hfloor_succ_le_count
-  choose Gseq hG_free hG_gt using hGk
+    simp [GraphAlgebras.subgraphDensity]
+    rw [lt_div_iff₀ (hden_pos k)]
+    simpa [x] using lt_of_lt_of_le hx_lt_floor_succ hfloor_succ_le_count
+  choose Gseq hG_free hG_gt using hG
   exact ⟨Gseq, hG_free, hG_gt⟩
+
+lemma flagDensitySeq_eq_zero_of_free
+    {n : ℕ} (H : SimpleGraph (Fin n))
+    {a : ℕ → ℕ} (Gseq : (k : ℕ) → SimpleGraph (Fin (a k)))
+    (hG_free : ∀ k : ℕ, H.Free (Gseq k))
+    (ϕ : ℕ → ℕ)
+    : ∀ i, flagDensitySeq ((fun k ↦ (Gseq k).toFinFlag) ∘ ϕ) i H.toFinFlag = 0 := by
+  intro i
+  dsimp only [flagDensitySeq, toFinFlag, flagDensity₁]
+  rw [← @subflagDensity_eq_flagListDensity]
+  simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  left
+  simp [labeledSubgraphCount]
+  rw [@Fintype.card_eq_zero_iff]
+  apply Subtype.isEmpty_of_false
+  simp
+  intro G' hG'_ind
+  rw [← Set.univ_eq_empty_iff]
+  ext ψ
+  simp at ψ
+  have hcontains : H ⊑ Gseq (ϕ i) :=
+    IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨ψ.graph_iso.symm⟩⟩
+  exact False.elim ((hG_free (ϕ i)) hcontains)
+
+lemma flagDensitySpace_eval_toFlagAlgebra
+    {a : FlagDensitySpace ∅ₜ} {φ : PositiveHom ∅ₜ}
+    (hφ : φ.coe = a) {n : ℕ} (G : SimpleGraph (Fin n))
+    : a G.toFinFlag = φ G.toFlagAlgebra := by
+  have hφ_eval : φ.coe G.toFinFlag = a G.toFinFlag := by
+    simpa using congrFun (congrArg Subtype.val hφ) G.toFinFlag
+  calc
+    a G.toFinFlag = φ.coe G.toFinFlag := by simpa using hφ_eval.symm
+    _ = φ ⟦unitVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
+    _ = φ G.toFlagAlgebra := by rfl
 
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : ℕ} (H : SimpleGraph (Fin n)) (F : SimpleGraph (Fin m))
@@ -92,7 +128,7 @@ theorem generalizedTuranDensity_le_of_forbidLE
   clear hε ha₀_inc ha_gt₀
 
   have hcε : 0 ≤ c + ε := add_nonneg hc (le_of_lt hε_pos)
-  obtain ⟨Gseq, hG_free, hG_gt⟩ := exists_graphSeq_of_densityLowerBound H F hcε a hm_le_a ha_gt
+  obtain ⟨Gseq, hG_free, hG_den⟩ := exists_graphSeq_of_densityLowerBound H F hcε a hm_le_a ha_gt
   let gseq : FlagSeq ∅ₜ := fun k ↦ (Gseq k).toFinFlag
   have hgseq_inc : Increases gseq := by
     intro k l hkl
@@ -105,8 +141,24 @@ theorem generalizedTuranDensity_le_of_forbidLE
 
   use φ
   constructor
-  · sorry
+  · apply @tendsto_nhds_unique _ _ _ _
+      (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag) atTop
+    · simpa [flagDensitySpace_eval_toFlagAlgebra hφ H] using (hϕ_conv H.toFinFlag)
+    · have hH_den_zero : ∀ n, flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag = 0 := by
+        simpa [gseq] using flagDensitySeq_eq_zero_of_free H Gseq hG_free ϕ
+      rw [tendsto_congr hH_den_zero, tendsto_const_nhds_iff]
   · simp [PositiveHom.map_smul]
-    sorry
+    calc
+      c < c + ε := lt_add_of_pos_right c hε_pos
+      _ ≤ φ F.toFlagAlgebra := by
+        have hF_tendsto :
+            Tendsto (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n F.toFinFlag)
+              atTop (nhds (φ F.toFlagAlgebra)) := by
+          simpa [flagDensitySpace_eval_toFlagAlgebra hφ F] using (hϕ_conv F.toFinFlag)
+        apply le_of_tendsto_of_tendsto'
+          (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ c + ε) atTop (𝓝 (c + ε))) hF_tendsto
+        intro k
+        specialize hG_den (ϕ k)
+        sorry
 
 end Forbid
