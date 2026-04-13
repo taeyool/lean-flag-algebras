@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
 import LeanFlagAlgebras.Forbid.Basic
+import LeanFlagAlgebras.ErdosPentagon.Playground
 import Mathlib.Tactic
 
 open FlagAlgebras Forbid
@@ -543,7 +544,49 @@ theorem ErdosPentagon
     dsimp [C5, flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
     simp [downward_add, downward_sub, downward_smul, smul_smul]
     norm_num
-    simp [sub_eq_add_neg, ← neg_smul, add_assoc]
+
+    conv =>
+      arg 2
+      arg 2
+      arg 1
+      arg 1
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      arg 2
+      arg 1
+      arg 2
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      arg 2
+      arg 2
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      arg 2
+      arg 1
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      arg 2
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      ring_nf
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+      rw [← add_assoc, ← add_smul]
+      norm_num
+
     sorry
   have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
     :=

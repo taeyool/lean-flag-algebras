@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
+import Mathlib.Tactic.Conv
 
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
@@ -48,7 +49,22 @@ private def getSmulArgs? (e : Expr) : Option (Expr × Expr) :=
   | some ab => some ab
   | none => getBinaryOpArgs? ``SMul.smul e
 
-private partial def flattenLinearTerms (e : Expr) : MetaM (Array LinTerm) := do
+private def getUnaryOpArg? (opName : Name) (e : Expr) : Option Expr :=
+  let e := e.consumeMData
+  let fn := e.getAppFn.consumeMData
+  if !fn.isConstOf opName then
+    none
+  else
+    let args := e.getAppArgs
+    if args.isEmpty then none else some args[args.size - 1]!
+
+private def getNegArg? (e : Expr) : Option Expr :=
+  getUnaryOpArg? ``Neg.neg e
+
+private def mkOneCoeffForBase (_base : Expr) : TacticM Expr := do
+  Lean.Elab.Term.elabTerm (← `(term| (1 : ℝ))) none
+
+private partial def flattenLinearTerms (e : Expr) : TacticM (Array LinTerm) := do
   let e0 := e.consumeMData
   let e ←
     match e0 with
@@ -66,9 +82,15 @@ private partial def flattenLinearTerms (e : Expr) : MetaM (Array LinTerm) := do
       let negCoeff ← mkAppM ``Neg.neg #[coeff]
       pure (base, negCoeff)
     return left ++ rightNeg
+  if let some a := getNegArg? e then
+    let terms ← flattenLinearTerms a
+    let negTerms ← terms.mapM fun (base, coeff) => do
+      let negCoeff ← mkAppM ``Neg.neg #[coeff]
+      pure (base, negCoeff)
+    return negTerms
   if let some (coeff, base) := getSmulArgs? e then
     return #[(base, coeff)]
-  throwError m!"flattenLinearTerms: expected a linear combination of smul terms, got: {e}"
+  return #[(e, (← mkOneCoeffForBase e))]
 
 private structure KeyedTerm where
   idx : Nat
@@ -93,7 +115,7 @@ private def insertSortedByKey
       next := next.push item
     return next
 
-private def sortLinearTermsByIndex (terms : Array LinTerm) : MetaM (Array LinTerm) := do
+private def sortLinearTermsByIndex (terms : Array LinTerm) : TacticM (Array LinTerm) := do
   let keyed ← terms.mapM fun (base, coeff) => do
     let (idx, key) ← baseIndexKey base
     pure ({ idx := idx, key := key, base := base, coeff := coeff } : KeyedTerm)
@@ -102,13 +124,13 @@ private def sortLinearTermsByIndex (terms : Array LinTerm) : MetaM (Array LinTer
     sorted := insertSortedByKey item sorted
   pure <| sorted.map fun t => (t.base, t.coeff)
 
-private def rebuildLinearExpr (terms : Array LinTerm) : MetaM Expr := do
+private def rebuildLinearExpr (terms : Array LinTerm) : TacticM Expr := do
   let smulTerms ← terms.mapM fun (base, coeff) => mkAppM ``HSMul.hSMul #[coeff, base]
   match smulTerms.toList with
   | [] => throwError "rebuildLinearExpr: empty term list"
   | t :: ts => ts.foldlM (fun acc nxt => mkAppM ``HAdd.hAdd #[acc, nxt]) t
 
-private def normalizeLinearExpr (e : Expr) : MetaM Expr := do
+private def normalizeLinearExpr (e : Expr) : TacticM Expr := do
   let flat ← flattenLinearTerms e
   let sorted ← sortLinearTermsByIndex flat
   rebuildLinearExpr sorted
@@ -130,11 +152,16 @@ private def proveEqByAC (lhs rhs : Expr) : TacticM Expr := do
   | _ => pure ()
   evalTactic (← `(tactic|
     (try dsimp;
-     try (simp [sub_eq_add_neg, rat_smul_eq_real_smul, smul_eq_mul, add_assoc, add_left_comm, add_comm]);
-     try ring_nf)))
+     try (simp [sub_eq_add_neg, rat_smul_eq_real_smul, smul_eq_mul,
+                one_smul, neg_one_smul, neg_smul,
+                add_assoc, add_left_comm, add_comm]);
+     first
+      | ac_rfl
+      | try abel_nf
+      | try ring_nf)))
   let remaining ← getGoals
   if !remaining.isEmpty then
-    throwError "proveEqByAC: failed to close normalization side-goal"
+    throwError m!"proveEqByAC: failed to close normalization side-goal\noriginal lhs: {lhs}\nnormalized: {rhs}"
   setGoals savedGoals
   instantiateMVars mvar
 
@@ -206,35 +233,134 @@ elab "sort_flagsum" : tactic =>
   do
     evalTactic (← `(tactic| sort_flagsum_lhs; sort_flagsum_rhs))
 
+private partial def flattenAddTerms (e : Expr) : Array Expr :=
+  let e := e.consumeMData
+  match getAddArgs? e with
+  | some (a, b) => (flattenAddTerms a) ++ (flattenAddTerms b)
+  | none => #[e]
+
+private def addTermKey (e : Expr) : MetaM (Nat × String) := do
+  let e := e.consumeMData
+  match getSmulArgs? e with
+  | some (_, base) => baseIndexKey base
+  | none => baseIndexKey e
+
+private def sortAddTermsByKey (terms : Array Expr) : MetaM (Array Expr) := do
+  let keyed ← terms.mapM fun t => do
+    let (idx, key) ← addTermKey t
+    pure (idx, key, t)
+  let mut sorted : Array (Nat × String × Expr) := #[]
+  for item in keyed do
+    let mut inserted := false
+    let mut next : Array (Nat × String × Expr) := #[]
+    for old in sorted do
+      let itemIdx := item.1
+      let itemKey := item.2.1
+      let oldIdx := old.1
+      let oldKey := old.2.1
+      let goesBefore : Bool :=
+        if itemIdx < oldIdx ∨ (itemIdx = oldIdx ∧ itemKey < oldKey) then true else false
+      if !inserted && goesBefore then
+        next := next.push item
+        inserted := true
+      next := next.push old
+    if !inserted then
+      next := next.push item
+    sorted := next
+  pure <| sorted.map fun (_, _, t) => t
+
+private partial def mkRightAssocAdd (terms : List Expr) : MetaM Expr := do
+  match terms with
+  | [] => throwError "mkRightAssocAdd: empty term list"
+  | [t] => pure t
+  | t :: ts => do
+      let rest ← mkRightAssocAdd ts
+      mkAppM ``HAdd.hAdd #[t, rest]
+
+private def rebuildAddExprRightAssoc (terms : Array Expr) : MetaM Expr :=
+  mkRightAssocAdd terms.toList
+
+private def normalizeByAddPermutation (e : Expr) : MetaM Expr := do
+  let terms := flattenAddTerms e
+  let sorted ← sortAddTermsByKey terms
+  rebuildAddExprRightAssoc sorted
+
+private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
+  let goalType ← mkEq lhs rhs
+  let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
+  let savedGoals ← getGoals
+  setGoals [mvar.mvarId!]
+  evalTactic (← `(tactic| first | ac_rfl | simp [add_assoc, add_left_comm, add_comm]))
+  let remaining ← getGoals
+  if !remaining.isEmpty then
+    throwError m!"proveEqByAddAC: failed to close side-goal\noriginal lhs: {lhs}\nsorted lhs: {rhs}"
+  setGoals savedGoals
+  instantiateMVars mvar
+
+/--
+Sort additive terms on the LHS by key using only add-commutativity/associativity
+rewrites (`ac_rfl`), without coefficient algebra normalization.
+-/
+elab "sort_flagsum_lhs_by_swaps" : tactic =>
+  withMainContext do
+    let goal ← getMainGoal
+    let target ← goal.getType
+    let (lhs, rhs) ← getEqSides target
+    let lhsSorted ← normalizeByAddPermutation lhs
+    let hLhs ← proveEqByAddAC lhs lhsSorted
+
+    let newGoalType ← mkEq lhsSorted rhs
+    let newGoal ← mkFreshExprSyntheticOpaqueMVar newGoalType
+    let proof ← mkEqTrans hLhs newGoal
+    goal.assign proof
+    replaceMainGoal [newGoal.mvarId!]
+
+/-- `conv` entry for `sort_flagsum_lhs_by_swaps`. -/
+elab "sort_flagsum_by_swaps_at" : conv =>
+  do
+    evalTactic (← `(tactic| sort_flagsum_lhs_by_swaps))
+
+/-- Backward-compatible typo alias for `sort_flagsum_by_swaps_at`. -/
+elab "sort_flaghsum_by_swaps_at" : conv =>
+  do
+    evalTactic (← `(conv| sort_flagsum_by_swaps_at))
+
+/--
+`conv`-mode entry for `sort_flagsum_lhs`.
+
+After navigating to a target subexpression with `conv`, run this to sort the
+current focused expression by flag index.
+-/
+elab "sort_flagsum_at" : conv =>
+  do
+    evalTactic (← `(tactic| sort_flagsum_lhs))
+
+/-- Backward-compatible alias for a common typo of `sort_flagsum_at`. -/
+elab "sort_flaghsum_at" : conv =>
+  do
+    evalTactic (← `(conv| sort_flagsum_at))
+
 set_option maxHeartbeats 0
-example :
-    (24 / 625 : ℝ) • FlagAlgebra_5_0_0_0 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_1 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_2 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_3 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_4 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_6 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_7 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_8 +
-    ((24 / 625 : ℝ) • FlagAlgebra_5_0_0_10 +
-    (-(19 / 1500 : ℝ) • FlagAlgebra_5_0_0_10 +
-    (-(19 / 1500 : ℝ) • FlagAlgebra_5_0_0_10 +
-    ((38 / 1875 : ℝ) • FlagAlgebra_5_0_0_10 +
-    ((191 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
-    ((191 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
-    (-(192 / 3125 : ℝ) • FlagAlgebra_5_0_0_8 +
-    (10 : ℝ) • FlagAlgebra_5_0_0_11)))))))))))))) =
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_0 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_1 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_2 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_3 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_4 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_6 +
-      (24 / 625 : ℝ) • FlagAlgebra_5_0_0_7 +
-      (-(72 / 3125) : ℝ) • FlagAlgebra_5_0_0_8 +
-      (1007 / 18750 : ℝ) • FlagAlgebra_5_0_0_10 +
-      (10 : ℝ) • FlagAlgebra_5_0_0_11
-  := by
-  sort_flagsum_lhs
-  simp only [add_assoc, ← add_smul]
-  norm_num
+
+/--
+Collect adjacent like terms in a right-associated linear sum.
+
+Use this inside `conv` via `collect_adjacent_flagsum` after focusing
+on the subexpression you want to normalize.
+-/
+syntax "collect_adjacent_flagsum" : conv
+
+macro_rules
+  | `(conv| collect_adjacent_flagsum) =>
+      `(conv|
+        repeat
+          (simp only [← add_assoc]
+           try
+             (simp only [← neg_smul, ← add_smul]
+              norm_num)
+           simp only [add_assoc]
+           arg 2))
+
+-- NOTE:
+-- A previous exploratory example using these tactics has been removed to keep
+-- this module free of `sorry` so downstream imports can elaborate tactics.
