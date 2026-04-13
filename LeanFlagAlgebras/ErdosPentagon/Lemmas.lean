@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
+import LeanFlagAlgebras.ErdosPentagon.Playground
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
@@ -545,8 +546,46 @@ theorem ErdosPentagon_flagAlgebra
     dsimp [flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
     simp [downward_add, downward_sub, downward_smul, smul_smul]
     norm_num
-    simp [sub_eq_add_neg, ← neg_smul, add_assoc]
-    sorry
+
+    conv =>
+      arg 2; arg 2; arg 1; arg 1
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2; arg 2; arg 1; arg 2
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2; arg 2; arg 2
+      simp only [sub_eq_add_neg, ← neg_smul]
+      collect_adjacent_flagsum
+    conv =>
+      arg 2; arg 2; arg 1
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+    conv =>
+      arg 2; arg 2
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+    conv =>
+      arg 2
+      ring_nf
+      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
+      sort_flagsum_by_swaps_at
+      collect_adjacent_flagsum
+      rw [← add_assoc, ← add_smul]
+      norm_num
+
+    simp only [add_zero]
+    intro φ
+    simp only [PositiveHom.map_add, ge_iff_le]
+    apply add_nonneg <;> try apply add_nonneg
+    all_goals {
+      simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
+      apply positiveHom_unitVector_ge_zero
+    }
   have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3.toFinFlag]
             (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
     :=
