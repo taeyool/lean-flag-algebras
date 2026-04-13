@@ -39,7 +39,8 @@ theorem antitoneOn_generalizedExtremalNumber_div_choose
     (H : SimpleGraph U) (F : SimpleGraph W) :
     AntitoneOn
       (fun n ↦ (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : ℝ))
-      (Set.Ici (Fintype.card W)) := by
+      (Set.Ici (Fintype.card W))
+  := by
   sorry
 
 omit [Fintype U] [DecidableEq U] [DecidableEq W] in
