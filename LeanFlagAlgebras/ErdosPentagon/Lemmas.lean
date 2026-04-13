@@ -550,7 +550,8 @@ theorem ErdosPentagon_flagAlgebra
     conv =>
       arg 2; arg 2; arg 1; arg 1
       simp only [sub_eq_add_neg, ← neg_smul]
-      collect_adjacent_flagsum
+      -- collect_adjacent_sorted_flagsum_at_timer --7469
+      collect_adjacent_flagsum_timer -- 7453
     conv =>
       arg 2; arg 2; arg 1; arg 2
       simp only [sub_eq_add_neg, ← neg_smul]

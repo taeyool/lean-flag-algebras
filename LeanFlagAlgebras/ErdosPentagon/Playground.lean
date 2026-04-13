@@ -239,6 +239,34 @@ private partial def flattenAddTerms (e : Expr) : Array Expr :=
   | some (a, b) => (flattenAddTerms a) ++ (flattenAddTerms b)
   | none => #[e]
 
+private def splitSmulTerm? (e : Expr) : Option (Expr × Expr) :=
+  let e := e.consumeMData
+  match getSmulArgs? e with
+  | some (coeff, base) => some (coeff.consumeMData, base.consumeMData)
+  | none => none
+
+private def mkSmulTerm (coeff base : Expr) : MetaM Expr :=
+  mkAppM ``HSMul.hSMul #[coeff, base]
+
+private def collectAdjacentSortedTerms (terms : Array Expr) : MetaM (Array Expr) := do
+  let mut out : Array Expr := #[]
+  for t in terms do
+    if out.isEmpty then
+      out := out.push t
+    else
+      let last := out[out.size - 1]!
+      match splitSmulTerm? last, splitSmulTerm? t with
+      | some (c₁, b₁), some (c₂, b₂) =>
+          if b₁ == b₂ then
+            let c ← mkAppM ``HAdd.hAdd #[c₁, c₂]
+            let merged ← mkSmulTerm c b₁
+            out := out.set! (out.size - 1) merged
+          else
+            out := out.push t
+      | _, _ =>
+          out := out.push t
+  pure out
+
 private def addTermKey (e : Expr) : MetaM (Nat × String) := do
   let e := e.consumeMData
   match getSmulArgs? e with
@@ -285,6 +313,11 @@ private def normalizeByAddPermutation (e : Expr) : MetaM Expr := do
   let sorted ← sortAddTermsByKey terms
   rebuildAddExprRightAssoc sorted
 
+private def normalizeBySortedAdjacentCollection (e : Expr) : MetaM Expr := do
+  let terms := flattenAddTerms e
+  let collected ← collectAdjacentSortedTerms terms
+  rebuildAddExprRightAssoc collected
+
 private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
   let goalType ← mkEq lhs rhs
   let mvar ← mkFreshExprSyntheticOpaqueMVar goalType
@@ -315,10 +348,56 @@ elab "sort_flagsum_lhs_by_swaps" : tactic =>
     goal.assign proof
     replaceMainGoal [newGoal.mvarId!]
 
+/--
+Collect adjacent like terms with a fast-path + legacy fallback.
+
+Assumes additive terms are already sorted so equal bases are adjacent.
+The fast-path tries direct head merging first, then falls back to the
+same local rewrite pattern used by `collect_adjacent_flagsum`.
+-/
+syntax "collect_adjacent_sorted_flagsum_fast" : conv
+
+macro_rules
+  | `(conv| collect_adjacent_sorted_flagsum_fast) =>
+      `(conv|
+        repeat
+          (first
+            | (rw [collect_smul_same_head]; try norm_num)
+            | (simp only [← add_assoc]
+               try
+                 (simp only [← neg_smul, ← add_smul]
+                  norm_num)
+               simp only [add_assoc]
+               arg 2)))
+
+/-- Tactic-mode wrapper: collect adjacent like terms on the goal LHS. -/
+elab "collect_adjacent_sorted_flagsum_lhs" : tactic =>
+  do
+    evalTactic (← `(tactic| conv_lhs => collect_adjacent_sorted_flagsum_fast))
+
 /-- `conv` entry for `sort_flagsum_lhs_by_swaps`. -/
 elab "sort_flagsum_by_swaps_at" : conv =>
   do
     evalTactic (← `(tactic| sort_flagsum_lhs_by_swaps))
+
+/-- Timed `conv` entry for `sort_flagsum_by_swaps_at` (logs elapsed ms). -/
+elab "sort_flagsum_by_swaps_at_timer" : conv => do
+  let t0 ← IO.monoMsNow
+  evalTactic (← `(tactic| sort_flagsum_lhs_by_swaps))
+  let t1 ← IO.monoMsNow
+  logInfo m!"[timer] sort_flagsum_by_swaps_at: {t1 - t0} ms"
+
+/-- `conv` entry for `collect_adjacent_sorted_flagsum_lhs`. -/
+elab "collect_adjacent_sorted_flagsum_at" : conv =>
+  do
+    evalTactic (← `(conv| collect_adjacent_sorted_flagsum_fast))
+
+/-- Timed `conv` entry for `collect_adjacent_sorted_flagsum_at` (logs elapsed ms). -/
+elab "collect_adjacent_sorted_flagsum_at_timer" : conv => do
+  let t0 ← IO.monoMsNow
+  evalTactic (← `(conv| collect_adjacent_sorted_flagsum_fast))
+  let t1 ← IO.monoMsNow
+  logInfo m!"[timer] collect_adjacent_sorted_flagsum_at: {t1 - t0} ms"
 
 /-- Backward-compatible typo alias for `sort_flagsum_by_swaps_at`. -/
 elab "sort_flaghsum_by_swaps_at" : conv =>
@@ -360,6 +439,13 @@ macro_rules
               norm_num)
            simp only [add_assoc]
            arg 2))
+
+/-- Timed `conv` entry for `collect_adjacent_flagsum` (logs elapsed ms). -/
+elab "collect_adjacent_flagsum_timer" : conv => do
+  let t0 ← IO.monoMsNow
+  evalTactic (← `(conv| collect_adjacent_flagsum))
+  let t1 ← IO.monoMsNow
+  logInfo m!"[timer] collect_adjacent_flagsum: {t1 - t0} ms"
 
 -- NOTE:
 -- A previous exploratory example using these tactics has been removed to keep
