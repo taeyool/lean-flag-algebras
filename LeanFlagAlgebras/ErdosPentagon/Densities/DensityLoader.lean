@@ -205,10 +205,11 @@ elab "load_triangle_density_theorems" filename:str : command => do
         elabCommand (← `(
           @[simp]
           theorem $thmName
-              : flagDensity₁ K3.2 $flagName = 0
+              : flagDensity₁ K3.toFinFlag.2 $flagName = 0
             := by
+            rw [K3_toFinFlag_eq]
             unfold $flagName
-            simp [K3, Flag_3_0_0_3]
+            simp [Flag_3_0_0_3]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
             native_decide
         ))
@@ -219,10 +220,11 @@ elab "load_triangle_density_theorems" filename:str : command => do
         elabCommand (← `(
           @[simp]
           theorem $thmName
-              : ¬ flagDensity₁ K3.2 $flagName = 0
+              : ¬ flagDensity₁ K3.toFinFlag.2 $flagName = 0
             := by
+            rw [K3_toFinFlag_eq]
             unfold $flagName
-            simp [K3, Flag_3_0_0_3]
+            simp [Flag_3_0_0_3]
             rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
             native_decide
         ))

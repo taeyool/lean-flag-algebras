@@ -355,7 +355,7 @@ noncomputable def flagQuadraticForm_P_v₀_expand
   + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_70
 
 lemma flagQuadraticForm_P_v₀_forbidEq
-    : flagQuadraticForm P_real v₀ =[K3] flagQuadraticForm_P_v₀_expand
+    : flagQuadraticForm P_real v₀ =[K3.toFinFlag] flagQuadraticForm_P_v₀_expand
   := by
   dsimp [flagQuadraticForm_P_v₀_expand]
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
@@ -408,7 +408,7 @@ noncomputable def flagQuadraticForm_Q_v₁_expand
   - (3606 / 625 : ℝ) • FlagAlgebra_5_3_1_54
 
 lemma flagQuadraticForm_Q_v₁_forbidEq
-    : flagQuadraticForm Q_real v₁ =[K3] flagQuadraticForm_Q_v₁_expand
+    : flagQuadraticForm Q_real v₁ =[K3.toFinFlag] flagQuadraticForm_Q_v₁_expand
   := by
   dsimp [flagQuadraticForm_Q_v₁_expand]
   simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
@@ -451,7 +451,7 @@ noncomputable def flagQuadraticForm_R_v₂_expand
   + (190 / 625 : ℝ) • FlagAlgebra_5_3_2_54
 
 lemma flagQuadraticForm_R_v₂_forbidEq
-    : flagQuadraticForm R_real v₂ =[K3] flagQuadraticForm_R_v₂_expand
+    : flagQuadraticForm R_real v₂ =[K3.toFinFlag] flagQuadraticForm_R_v₂_expand
   := by
   dsimp [flagQuadraticForm_R_v₂_expand]
   simp [flagQuadraticForm, v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
@@ -469,7 +469,7 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   ring_nf
 
 lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3] ⟦flagQuadraticForm_P_v₀_expand⟧₀
+    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
   := by
   apply downward_forbidLE_nonneg
   apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_P_v₀_forbidEq
@@ -477,7 +477,7 @@ lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
   exact flagQuadraticForm_nonneg P_real P_real_posSemidef v₀
 
 lemma flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3] ⟦flagQuadraticForm_Q_v₁_expand⟧₀
+    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_Q_v₁_expand⟧₀
   := by
   apply downward_forbidLE_nonneg
   apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_Q_v₁_forbidEq
@@ -485,7 +485,7 @@ lemma flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
   exact flagQuadraticForm_nonneg Q_real Q_real_posSemidef v₁
 
 lemma flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3] ⟦flagQuadraticForm_R_v₂_expand⟧₀
+    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_R_v₂_expand⟧₀
   := by
   apply downward_forbidLE_nonneg
   apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_R_v₂_forbidEq
@@ -510,11 +510,11 @@ noncomputable def one_size_five_expand
   + FlagAlgebra_5_0_0_25
 
 lemma one_forbidEq_one_size_five_expand
-    : 1 =[K3] one_size_five_expand
+    : 1 =[K3.toFinFlag] one_size_five_expand
   := by
   have : (1 : FlagAlgebra ∅ₜ) = ⟦unitVector ⟨0, default⟩⟧ := rfl
   rw [this]
-  have h := unitVector_quot_forbidEq_sum K3 (⟨0, default⟩ : FinFlag ∅ₜ) 5 (by simp)
+  have h := unitVector_quot_forbidEq_sum K3.toFinFlag (⟨0, default⟩ : FinFlag ∅ₜ) 5 (by simp)
   apply forbidEq_trans h
   simp [default, flagDensity_empty]
   rw [Finset.sum_eq_multiset_sum, ← flagSet_5_0_0_eq_univ]
@@ -522,30 +522,33 @@ lemma one_forbidEq_one_size_five_expand
   apply forbidEq_of_eq
   rfl
 
-theorem ErdosPentagon
-    : C5 ≤[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+theorem ErdosPentagon_flagAlgebra
+    : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have h₁ : C5 ≤[K3] C5 + ⟦flagQuadraticForm_P_v₀_expand⟧₀
-                        + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
-                        + ⟦flagQuadraticForm_R_v₂_expand⟧₀
+  have h₁ : C5.toFlagAlgebra ≤[K3.toFinFlag]
+            C5.toFlagAlgebra + ⟦flagQuadraticForm_P_v₀_expand⟧₀
+                             + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
+                             + ⟦flagQuadraticForm_R_v₂_expand⟧₀
     := by
-    have : C5 = C5 + 0 + 0 + 0 := by simp only [add_zero]
+    have : C5.toFlagAlgebra = C5.toFlagAlgebra + 0 + 0 + 0 := by simp only [add_zero]
     nth_rw 1 [this]
     apply forbidLE_add _ flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
     apply forbidLE_add _ flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
     apply forbidLE_add _ flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
-    exact forbidLE_refl K3 C5
-  have h₂ : (C5 + ⟦flagQuadraticForm_P_v₀_expand⟧₀
-                + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
-                + ⟦flagQuadraticForm_R_v₂_expand⟧₀)
+    exact forbidLE_refl K3.toFinFlag C5.toFlagAlgebra
+  have h₂ : (C5.toFlagAlgebra + ⟦flagQuadraticForm_P_v₀_expand⟧₀
+                              + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
+                              + ⟦flagQuadraticForm_R_v₂_expand⟧₀)
             ≤ (24 / 625 : ℝ) • one_size_five_expand
     := by
-    dsimp [C5, flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
+    rw [C5_toFlagAlgebra_eq]
+    dsimp [flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
     simp [downward_add, downward_sub, downward_smul, smul_smul]
     norm_num
     simp [sub_eq_add_neg, ← neg_smul, add_assoc]
     sorry
-  have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+  have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3.toFinFlag]
+            (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
     :=
     forbidEq_smul (forbidEq_symm one_forbidEq_one_size_five_expand)
   exact forbidLE_trans h₁ (forbidLE_trans (forbidLE_of_le h₂) (forbidLE_of_forbidEq h₃))

@@ -213,10 +213,10 @@ elab "load_mul_theorems" filename:str : command => do
         if i <= j then
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3.toFinFlag] $rhs
               := by
               apply forbidEq_trans
-                (unitVector_quot_mul_forbidEq_sum K3
+                (unitVector_quot_mul_forbidEq_sum K3.toFinFlag
                   ⟨$(Quote.quote patternSize), $flagOrd1⟩
                   ⟨$(Quote.quote patternSize), $flagOrd2⟩
                   $(Quote.quote hostSize)
@@ -224,16 +224,16 @@ elab "load_mul_theorems" filename:str : command => do
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq
               simp [hsetval]
-              exact forbidEq_refl K3 _
+              exact forbidEq_refl K3.toFinFlag _
           ))
         else
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3.toFinFlag] $rhs
               := by
               rw [mul_comm]
               apply forbidEq_trans
-                (unitVector_quot_mul_forbidEq_sum K3
+                (unitVector_quot_mul_forbidEq_sum K3.toFinFlag
                   ⟨$(Quote.quote patternSize), $flagOrd1⟩
                   ⟨$(Quote.quote patternSize), $flagOrd2⟩
                   $(Quote.quote hostSize)
@@ -241,7 +241,7 @@ elab "load_mul_theorems" filename:str : command => do
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq
               simp [hsetval]
-              exact forbidEq_refl K3 _
+              exact forbidEq_refl K3.toFinFlag _
           ))
         generated := generated + 1
 
