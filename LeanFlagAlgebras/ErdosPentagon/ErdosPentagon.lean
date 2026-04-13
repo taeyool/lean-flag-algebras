@@ -9,6 +9,94 @@ theorem ErdosPentagon_Turan_upperBound
   :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num) ErdosPentagon_flagAlgebra
 
+lemma K3_free_C5
+    : K3.Free C5
+  := by
+  sorry
+
+def blowUp
+    {V : Type} [Fintype V] (G : SimpleGraph V) (n : ℕ)
+    : SimpleGraph (V × Fin n)
+  := {
+    Adj v w := G.Adj v.1 w.1
+    symm v w := by apply G.symm
+  }
+
+theorem blowUp_adj_iff
+    {V : Type} [Fintype V] (G : SimpleGraph V) (n : ℕ)
+    (v w : V × Fin n)
+    : (blowUp G n).Adj v w ↔ G.Adj v.1 w.1
+  := by
+  simp only [blowUp]
+
+theorem blowUp_K3_free
+    {m : ℕ} {G : SimpleGraph (Fin m)}
+    (n : ℕ) (hfree : K3.Free G)
+    : K3.Free (blowUp G n)
+  := by
+  contrapose hfree
+  rcases hfree with ⟨C⟩
+  apply Nonempty.intro
+  exact {
+    toHom := {
+      toFun := fun i => (C i).1
+      map_rel' := by
+        intro i j hAdj
+        rw [← blowUp_adj_iff]
+        exact C.toHom.map_rel' hAdj
+    }
+    injective' := by
+      intro i j hij
+      by_contra hne
+      have hK3 : K3.Adj i j := by simpa [K3] using hne
+      have hBlow : (blowUp G n).Adj (C i) (C j) := C.toHom.map_rel' hK3
+      have hGadj : G.Adj (C i).1 (C j).1 := (blowUp_adj_iff G n (C i) (C j)).1 hBlow
+      have hij' : (C i).1 = (C j).1 := by simpa using hij
+      exact (G.loopless (C i).1) (by simp [hij'] at hGadj)
+  }
+
+theorem free_of_iso
+    {U V W : Type} [Fintype U] [Fintype V] [Fintype W]
+    {F : SimpleGraph U} {G : SimpleGraph V} {G' : SimpleGraph W}
+    (h_iso : G ≃g G') (hfree : F.Free G)
+    : F.Free G'
+  := by
+  contrapose hfree
+  rcases hfree with ⟨C⟩
+  refine ⟨SimpleGraph.Copy.mk (h_iso.symm.toHom.comp C.toHom) ?_⟩
+  intro i j hij
+  apply C.injective'
+  apply h_iso.symm.injective
+  simpa using hij
+
+lemma fin_div_lt
+    {m n : ℕ} (i : Fin (m * n))
+    : i / n < m
+  := by
+  apply Nat.div_lt_of_lt_mul
+  simp_rw [Nat.mul_comm]
+  exact i.isLt
+
+def blowUp_fin
+    {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ)
+    : SimpleGraph (Fin (m * n))
+  := {
+    Adj i j := G.Adj i.divNat j.divNat
+    symm i j := by
+      intro h
+      exact G.symm h
+  }
+
+def blowUp_fin_iso
+    {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ)
+    : blowUp_fin G n ≃g blowUp G n
+  := {
+    toEquiv := (finProdFinEquiv (m := m) (n := n)).symm
+    map_rel_iff' := by
+      intro i j
+      simp [blowUp_fin, blowUp_adj_iff]
+  }
+
 theorem generalizedExtremalNumber_K3_C5_ge
     (n : ℕ)
     : generalizedExtremalNumber (5 * n) K3 C5 ≥ n ^ 5
@@ -17,8 +105,11 @@ theorem generalizedExtremalNumber_K3_C5_ge
     rcases hWit with ⟨G, hGfree, hGcount⟩
     refine le_trans hGcount (Finset.le_sup ?_)
     simpa [Finset.mem_filter] using hGfree
-
-  sorry
+  use blowUp_fin C5 n
+  constructor
+  · apply free_of_iso (blowUp_fin_iso C5 n).symm
+    exact blowUp_K3_free n K3_free_C5
+  · sorry
 
 theorem generalizedExtremalNumber_K3_C5_div_choose_ge
     (n : ℕ) (hn : 0 < n)
