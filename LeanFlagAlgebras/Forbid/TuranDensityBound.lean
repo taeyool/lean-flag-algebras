@@ -174,7 +174,7 @@ lemma subgraphDensity_eq_flagDensity₁
     LabeledGraph.size]
 
 theorem generalizedTuranDensity_le_of_forbidLE
-    {n m : ℕ} (H : SimpleGraph (Fin n)) (F : SimpleGraph (Fin m))
+    {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
   {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
     : generalizedTuranDensity H F ≤ c
   := by
