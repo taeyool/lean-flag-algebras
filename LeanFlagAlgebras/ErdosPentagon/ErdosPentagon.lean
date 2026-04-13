@@ -1,6 +1,6 @@
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 
-open FlagAlgebras Forbid Filter Topology
+open FlagAlgebras GraphAlgebras Forbid Filter Topology
 
 namespace ErdosPentagon
 
@@ -8,11 +8,6 @@ theorem ErdosPentagon_Turan_upperBound
     : generalizedTuranDensity K3 C5 ≤ 24 / 625
   :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num) ErdosPentagon_flagAlgebra
-
-lemma K3_free_C5
-    : K3.Free C5
-  := by
-  sorry
 
 def blowUp
     {V : Type} [Fintype V] (G : SimpleGraph V) (n : ℕ)
@@ -97,6 +92,42 @@ def blowUp_fin_iso
       simp [blowUp_fin, blowUp_adj_iff]
   }
 
+set_option maxHeartbeats 0 in
+lemma K3_free_C5
+    : K3.Free C5
+  := by
+  intro hcont
+  rcases hcont with ⟨f⟩
+  have h01 : C5.Adj (f 0) (f 1) := f.toHom.map_adj (by simp [K3])
+  have h12 : C5.Adj (f 1) (f 2) := f.toHom.map_adj (by simp [K3])
+  have h20 : C5.Adj (f 2) (f 0) := f.toHom.map_adj (by simp [K3])
+  have hne01 : f 0 ≠ f 1 := by
+    intro h
+    have : (0 : Fin 3) = 1 := f.injective h
+    contradiction
+  have hne12 : f 1 ≠ f 2 := by
+    intro h
+    have : (1 : Fin 3) = 2 := f.injective h
+    contradiction
+  have hne20 : f 2 ≠ f 0 := by
+    intro h
+    have : (2 : Fin 3) = 0 := f.injective h
+    contradiction
+  generalize ha : f 0 = a at h01 h20 hne01 hne20
+  generalize hb : f 1 = b at h01 h12 hne01 hne12
+  generalize hc : f 2 = c at h12 h20 hne12 hne20
+  fin_cases a <;>
+  fin_cases b <;>
+  fin_cases c <;>
+  simp [C5] at h01 h12 h20 hne01 hne12 hne20
+
+lemma subgraphCount_blowUp_C5_ge
+    (n : ℕ)
+    : subgraphCount C5 (blowUp C5 n) ≥ n ^ 5
+  := by
+  dsimp [subgraphCount, subgraphSet]
+  sorry
+
 theorem generalizedExtremalNumber_K3_C5_ge
     (n : ℕ)
     : generalizedExtremalNumber (5 * n) K3 C5 ≥ n ^ 5
@@ -109,7 +140,8 @@ theorem generalizedExtremalNumber_K3_C5_ge
   constructor
   · apply free_of_iso (blowUp_fin_iso C5 n).symm
     exact blowUp_K3_free n K3_free_C5
-  · sorry
+  · rw [subgraphCount_eq_of_iso C5 (blowUp_fin_iso C5 n)]
+    exact subgraphCount_blowUp_C5_ge n
 
 theorem generalizedExtremalNumber_K3_C5_div_choose_ge
     (n : ℕ) (hn : 0 < n)

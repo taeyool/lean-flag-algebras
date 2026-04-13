@@ -202,21 +202,29 @@ theorem subgraphDensity_le_1
   . norm_num
 
 
+omit [Fintype V] [DecidableEq V] [DecidableEq W] [DecidableEq U] in
+lemma subgraphCount_eq_of_iso
+    (H : SimpleGraph V) {G₀ : SimpleGraph W} {G₁ : SimpleGraph U}
+    (h_iso : G₀ ≃g G₁)
+    : subgraphCount H G₀ = subgraphCount H G₁
+  := by
+  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
+  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphIsoH h_iso H
+  have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
+  dsimp only [subgraphCount, subgraphSet]
+  simp only [Set.toFinset_card, Set.coe_setOf]
+  exact this
+
+
 omit [DecidableEq V] [DecidableEq W] in
 lemma subgraphDensity_respects_eqv_on_G
     (H : SimpleGraph V) {G₀ G₁ : SimpleGraph W} (h_eqv : graph_eqv G₀ G₁)
     : subgraphDensity H G₀ = subgraphDensity H G₁
   := by
   dsimp only [subgraphDensity]
-  let φ : G₀ ≃g G₁ := Classical.choice h_eqv
-  let S₀ := { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let S₁ := { G' : Subgraph G₁ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
-  let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedSubgraphIsoH φ H
   congr 2
-  dsimp only [subgraphCount, subgraphSet]
-  have : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
-  simp only [Set.toFinset_card, Set.coe_setOf]
-  exact this
+  exact subgraphCount_eq_of_iso H h_eqv.some
 
 
 noncomputable def subgraphDensityLifted

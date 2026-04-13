@@ -57,6 +57,8 @@ import LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef
 import LeanFlagAlgebras.ErdosPentagon.Densities.DensityLoader
 import LeanFlagAlgebras.ErdosPentagon.MulLoader
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
+import LeanFlagAlgebras.ErdosPentagon.Playground
+import LeanFlagAlgebras.ErdosPentagon.Lemmas
 import LeanFlagAlgebras.ErdosPentagon.ErdosPentagon
 
 -- Archive imports
