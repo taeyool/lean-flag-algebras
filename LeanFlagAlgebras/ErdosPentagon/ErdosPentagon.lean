@@ -1,6 +1,7 @@
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 
-open FlagAlgebras GraphAlgebras Forbid Filter Topology
+open FlagAlgebras GraphAlgebras Forbid
+open Filter Topology SimpleGraph
 
 namespace ErdosPentagon
 
@@ -126,7 +127,72 @@ lemma subgraphCount_blowUp_C5_ge
     : subgraphCount C5 (blowUp C5 n) ≥ n ^ 5
   := by
   dsimp [subgraphCount, subgraphSet]
-  sorry
+  let f : (Fin 5 → Fin n) ↪ (blowUp C5 n).Subgraph := {
+    toFun g :=
+      let ϕ : Fin 5 ↪ Fin 5 × Fin n := {
+        toFun i := (i, g i)
+        inj' := by
+          intro i j hij
+          simp_all only [Prod.mk.injEq]
+      }
+      inducedSubgraph (blowUp C5 n) (Finset.univ.map ϕ)
+    inj' := by
+      intro g g' hgg'
+      ext i
+      simp at hgg'
+      have hmem : (i, g i) ∈ (inducedSubgraph (blowUp C5 n)
+          (Set.range (fun j ↦ (j, g' j)))).verts := by
+        simp [← hgg']
+      have hi : g' i = g i := by
+        simpa [inducedSubgraph] using hmem
+      simpa using congrArg Fin.val hi.symm
+  }
+  let S : Set (blowUp C5 n).Subgraph := (Set.univ : Set (Fin 5 → Fin n)).toFinset.map f
+  have hS_card : S.toFinset.card = n ^ 5 := by simp [S]
+  rw [← hS_card]
+  apply Finset.card_le_card
+  apply Set.toFinset_mono
+  intro H hH
+  simp [S] at hH
+  rcases hH with ⟨g, hg⟩
+  subst hg
+  constructor
+  · simp [f]
+  · exact Nonempty.intro {
+      toEquiv := {
+        toFun := fun v => v.1.1
+        invFun := fun i => ⟨(i, g i), by simp [f]⟩
+        left_inv := by
+          intro v
+          rcases v with ⟨⟨i, x⟩, hx⟩
+          have hx' : ∃ y, (y, g y) = (i, x) := by
+            simpa [f] using hx
+          rcases hx' with ⟨j, hj⟩
+          have hj1 : j = i := by simpa using congrArg Prod.fst hj
+          have hj2 : g j = x := by simpa using congrArg Prod.snd hj
+          have hxg : x = g i := by simpa [hj1] using hj2.symm
+          apply Subtype.ext
+          simp [hxg]
+        right_inv := by
+          intro i
+          rfl
+      }
+      map_rel_iff' := by
+        intro u v
+        have hu' : ∃ y, (y, g y) = u.1 := by
+          simpa [f] using u.2
+        have hv' : ∃ y, (y, g y) = v.1 := by
+          simpa [f] using v.2
+        constructor
+        · intro huv
+          have : C5.Adj u.1.1 v.1.1 ∧ (∃ y, (y, g y) = u.1) ∧ ∃ y, (y, g y) = v.1 :=
+            ⟨huv, hu', hv'⟩
+          simpa [f, Subgraph.coe, inducedSubgraph, blowUp_adj_iff] using this
+        · intro huv
+          have huv' : C5.Adj u.1.1 v.1.1 ∧ (∃ y, (y, g y) = u.1) ∧ ∃ y, (y, g y) = v.1 := by
+            simpa [f, Subgraph.coe, inducedSubgraph, blowUp_adj_iff] using huv
+          exact huv'.1
+    }
 
 theorem generalizedExtremalNumber_K3_C5_ge
     (n : ℕ)
