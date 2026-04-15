@@ -44,7 +44,9 @@ def is_symmetric(mat: Sequence[Sequence[Fraction]]) -> bool:
     return True
 
 
-def ldlt_decompose(mat: List[List[Fraction]]) -> tuple[List[List[Fraction]], List[Fraction]]:
+def ldlt_decompose(
+    mat: List[List[Fraction]],
+) -> tuple[List[List[Fraction]], List[Fraction]]:
     n = len(mat)
     l = [[Fraction(1 if i == j else 0, 1) for j in range(n)] for i in range(n)]
     d = [Fraction(0, 1) for _ in range(n)]
@@ -65,7 +67,9 @@ def ldlt_decompose(mat: List[List[Fraction]]) -> tuple[List[List[Fraction]], Lis
     return l, d
 
 
-def reconstruct(ld: tuple[List[List[Fraction]], List[Fraction]]) -> List[List[Fraction]]:
+def reconstruct(
+    ld: tuple[List[List[Fraction]], List[Fraction]],
+) -> List[List[Fraction]]:
     l, d = ld
     n = len(l)
     out = [[Fraction(0, 1) for _ in range(n)] for _ in range(n)]
@@ -120,8 +124,10 @@ def emit_lean_block(
     lines.append(f"  fin_cases i <;> norm_num [{d_name}]")
     lines.append("")
 
-    lines.append(f"lemma {mat_name}_eq_LDL : {mat_name} = {l_name} * Matrix.diagonal {d_name} * {l_name}ᵀ := by")
-    lines.append("  native_decide")
+    lines.append(
+        f"lemma {mat_name}_eq_LDL : {mat_name} = {l_name} * Matrix.diagonal {d_name} * {l_name}ᵀ := by"
+    )
+    lines.append("  decide +kernel")
     lines.append("")
 
     lines.append(f"theorem {mat_name}_posSemidef : {mat_name}.PosSemidef := by")
@@ -142,16 +148,26 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate Lean LDLᵀ certificate (d, L) from a symmetric rational matrix list."
     )
-    parser.add_argument("--matrix", type=str, help="JSON matrix string, e.g. '[[\"1/2\",\"0\"],[\"0\",\"3/2\"]]'")
-    parser.add_argument("--input", type=str, help="Path to JSON file containing matrix as list of lists")
-    parser.add_argument("--name", type=str, default="P", help="Lean matrix name prefix (default: P)")
+    parser.add_argument(
+        "--matrix",
+        type=str,
+        help='JSON matrix string, e.g. \'[["1/2","0"],["0","3/2"]]\'',
+    )
+    parser.add_argument(
+        "--input", type=str, help="Path to JSON file containing matrix as list of lists"
+    )
+    parser.add_argument(
+        "--name", type=str, default="P", help="Lean matrix name prefix (default: P)"
+    )
     parser.add_argument(
         "--psd-helper",
         type=str,
         default="posSemidef_of_eq_mul_diagonal_mul_transpose",
         help="Lean theorem name used to conclude PosSemidef from (d_nonneg, eq_LDL)",
     )
-    parser.add_argument("--out", type=str, help="Output Lean file path. If omitted, prints to stdout")
+    parser.add_argument(
+        "--out", type=str, help="Output Lean file path. If omitted, prints to stdout"
+    )
     parser.add_argument(
         "--write-mode",
         choices=["append", "overwrite"],
@@ -172,18 +188,24 @@ def main() -> None:
 
     mat = parse_matrix(raw)
     if not is_symmetric(mat):
-        raise SystemExit("Input matrix is not symmetric, so LDLᵀ (symmetric form) is not applicable")
+        raise SystemExit(
+            "Input matrix is not symmetric, so LDLᵀ (symmetric form) is not applicable"
+        )
 
     l, d = ldlt_decompose(mat)
     rec = reconstruct((l, d))
     if rec != mat:
-        raise SystemExit("Internal check failed: reconstructed matrix does not match input" )
+        raise SystemExit(
+            "Internal check failed: reconstructed matrix does not match input"
+        )
 
     name = args.name
     lean = emit_lean_block(name, f"L{name}", f"d{name}", mat, l, d, args.psd_helper)
 
     nonneg = all(x >= 0 for x in d)
-    header = f"-- LDLᵀ generated for {name}, size={len(mat)}, diagonal nonnegative={nonneg}"
+    header = (
+        f"-- LDLᵀ generated for {name}, size={len(mat)}, diagonal nonnegative={nonneg}"
+    )
 
     if args.out:
         out_path = resolve_local_path(args.out)
@@ -202,7 +224,6 @@ def main() -> None:
 
 
 # After saving the desired matrix in matrix.json, run the script with the target file and matrix name as follows:
-# --input matrix.json --out PosSemiDef.lean --name P 
+# --input matrix.json --out PosSemiDef.lean --name P
 if __name__ == "__main__":
     main()
-

@@ -87,7 +87,7 @@ lemma dP_nonneg (i : Fin 8) : 0 ≤ dP i := by
   fin_cases i <;> norm_num [dP]
 
 lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
-  native_decide
+  decide +kernel
 
 theorem P_posSemidef : P.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dP_nonneg P_eq_LDL
@@ -134,7 +134,7 @@ lemma dQ_nonneg (i : Fin 6) : 0 ≤ dQ i := by
   fin_cases i <;> norm_num [dQ]
 
 lemma Q_eq_LDL : Q = LQ * Matrix.diagonal dQ * LQᵀ := by
-  native_decide
+  decide +kernel
 
 theorem Q_posSemidef : Q.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dQ_nonneg Q_eq_LDL
@@ -178,7 +178,7 @@ lemma dR_nonneg (i : Fin 5) : 0 ≤ dR i := by
   fin_cases i <;> norm_num [dR]
 
 lemma R_eq_LDL : R = LR * Matrix.diagonal dR * LRᵀ := by
-  native_decide
+  decide +kernel
 
 theorem R_posSemidef : R.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dR_nonneg R_eq_LDL
