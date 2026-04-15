@@ -1,5 +1,5 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.ErdosPentagon.Playground
+import LeanFlagAlgebras.ErdosPentagon.SortTactic
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
@@ -301,6 +301,7 @@ elab "normalize_flagalgebra_linear" : tactic =>
           | conv_rhs => rw [collect_smul_same])))
 
 set_option maxHeartbeats 0
+set_option maxRecDepth 1000
 
 noncomputable def flagQuadraticForm_P_v₀_expand
   :=
@@ -363,15 +364,10 @@ lemma flagQuadraticForm_P_v₀_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   norm_num
-  ring_nf
-  simp [add_assoc]
-  have : (2 : FlagAlgebra FlagType_3_0) = ((2 : ℝ) • (1 : FlagAlgebra FlagType_3_0)) := by
-    rw [two_smul]
-    norm_num
-  repeat rw [this]
-  repeat rw [mul_smul_comm]
-  simp [smul_smul]
-  ring_nf
+  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
+  ac_sort
+  simp only [← add_assoc, ← add_smul]
+  norm_num
 
 noncomputable def flagQuadraticForm_Q_v₁_expand
   :=
@@ -416,15 +412,10 @@ lemma flagQuadraticForm_Q_v₁_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   norm_num
-  ring_nf
-  simp [add_assoc]
-  have : (2 : FlagAlgebra FlagType_3_1) = ((2 : ℝ) • (1 : FlagAlgebra FlagType_3_1)) := by
-    rw [two_smul]
-    norm_num
-  repeat rw [this]
-  repeat rw [mul_smul_comm]
-  simp [smul_smul]
-  ring_nf
+  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
+  ac_sort
+  simp only [← add_assoc, ← add_smul]
+  norm_num
 
 noncomputable def flagQuadraticForm_R_v₂_expand
   :=
@@ -459,15 +450,10 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   norm_num
-  ring_nf
-  simp [add_assoc]
-  have : (2 : FlagAlgebra FlagType_3_2) = ((2 : ℝ) • (1 : FlagAlgebra FlagType_3_2)) := by
-    rw [two_smul]
-    norm_num
-  repeat rw [this]
-  repeat rw [mul_smul_comm]
-  simp [smul_smul]
-  ring_nf
+  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
+  ac_sort
+  simp only [← add_assoc, ← add_smul]
+  norm_num
 
 lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
@@ -543,43 +529,18 @@ theorem ErdosPentagon_flagAlgebra
             ≤ (24 / 625 : ℝ) • one_size_five_expand
     := by
     rw [C5_toFlagAlgebra_eq]
-    dsimp [flagQuadraticForm_P_v₀_expand, flagQuadraticForm_Q_v₁_expand, flagQuadraticForm_R_v₂_expand, one_size_five_expand]
+    unfold flagQuadraticForm_P_v₀_expand flagQuadraticForm_Q_v₁_expand flagQuadraticForm_R_v₂_expand one_size_five_expand
     simp [downward_add, downward_sub, downward_smul, smul_smul]
     norm_num
 
-    conv =>
-      arg 2; arg 2; arg 1; arg 1
-      simp only [sub_eq_add_neg, ← neg_smul]
-      -- collect_adjacent_sorted_flagsum_at_timer --7469
-      collect_adjacent_flagsum_timer -- 7453
-    conv =>
-      arg 2; arg 2; arg 1; arg 2
-      simp only [sub_eq_add_neg, ← neg_smul]
-      collect_adjacent_flagsum
-    conv =>
-      arg 2; arg 2; arg 2
-      simp only [sub_eq_add_neg, ← neg_smul]
-      collect_adjacent_flagsum
-    conv =>
-      arg 2; arg 2; arg 1
-      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
-      sort_flagsum_by_swaps_at
-      collect_adjacent_flagsum
-    conv =>
-      arg 2; arg 2
-      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
-      sort_flagsum_by_swaps_at
-      collect_adjacent_flagsum
+    simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc]
     conv =>
       arg 2
-      ring_nf
-      simp only [sub_eq_add_neg, ← neg_smul, add_assoc]
-      sort_flagsum_by_swaps_at
-      collect_adjacent_flagsum
-      rw [← add_assoc, ← add_smul]
-      norm_num
+      ac_sort_at -- 257 ms
+      -- sort_at_timer -- takes more than 10 minutes
+    simp only [← add_assoc, ← add_smul]
+    norm_num
 
-    simp only [add_zero]
     intro φ
     simp only [PositiveHom.map_add, ge_iff_le]
     apply add_nonneg <;> try apply add_nonneg
