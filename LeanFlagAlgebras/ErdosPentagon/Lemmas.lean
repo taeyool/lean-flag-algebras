@@ -363,11 +363,7 @@ lemma flagQuadraticForm_P_v₀_forbidEq
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
-  norm_num
-  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
-  ac_sort
-  simp only [← add_assoc, ← add_smul]
-  norm_num
+  ac_sort_pipeline
 
 noncomputable def flagQuadraticForm_Q_v₁_expand
   :=
@@ -411,11 +407,7 @@ lemma flagQuadraticForm_Q_v₁_forbidEq
   simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
-  norm_num
-  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
-  ac_sort
-  simp only [← add_assoc, ← add_smul]
-  norm_num
+  ac_sort_pipeline
 
 noncomputable def flagQuadraticForm_R_v₂_expand
   :=
@@ -449,11 +441,7 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   simp [flagQuadraticForm, v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
-  norm_num
-  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]
-  ac_sort
-  simp only [← add_assoc, ← add_smul]
-  norm_num
+  ac_sort_pipeline
 
 lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
@@ -532,15 +520,10 @@ theorem ErdosPentagon_flagAlgebra
     unfold flagQuadraticForm_P_v₀_expand flagQuadraticForm_Q_v₁_expand flagQuadraticForm_R_v₂_expand one_size_five_expand
     simp [downward_add, downward_sub, downward_smul, smul_smul]
     norm_num
-
-    simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc]
     conv =>
       arg 2
-      ac_sort_at -- 257 ms
-      -- sort_at_timer -- takes more than 10 minutes
-    simp only [← add_assoc, ← add_smul]
-    norm_num
-
+      ac_sort_at_pipeline
+      -- sort_at -- takes more than 10 minutes
     intro φ
     simp only [PositiveHom.map_add, ge_iff_le]
     apply add_nonneg <;> try apply add_nonneg

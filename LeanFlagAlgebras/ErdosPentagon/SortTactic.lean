@@ -346,3 +346,48 @@ elab "ac_sort_at" : conv =>
 elab "ac_sort_at_timer" : conv => do
   withTimer "ac_sort_at" <|
     evalTactic (← `(tactic| ac_sort_lhs))
+
+/--
+Utility `conv` entry around `ac_sort_at`:
+`norm_num; simp; ac_sort_at; simp only [← add_assoc, ← add_smul]; norm_num`.
+
+Use this inside `conv` when you want to normalize arithmetic first and then
+perform add-AC sorting on the focused expression.
+-/
+elab "ac_sort_at_pipeline" : conv =>
+  do
+    evalTactic (← `(tactic|
+      (try norm_num;
+       try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]);
+       ac_sort_lhs;
+       try (simp only [← add_assoc, ← add_smul]);
+       try norm_num)))
+
+/--
+Run the common pipeline on the left side of an equality goal:
+`conv_lhs => ac_sort_at_pipeline`.
+-/
+elab "ac_sort_lhs_pipeline" : tactic =>
+  do
+    evalTactic (← `(tactic|
+      (conv_lhs =>
+         ac_sort_at_pipeline)))
+
+/--
+Run the common pipeline on the right side of an equality goal:
+`conv_rhs => ac_sort_at_pipeline`.
+-/
+elab "ac_sort_rhs_pipeline" : tactic =>
+  do
+    evalTactic (← `(tactic|
+      (conv_rhs =>
+         ac_sort_at_pipeline)))
+
+/--
+Run the common pipeline on both sides of an equality goal.
+-/
+elab "ac_sort_pipeline" : tactic =>
+  do
+    evalTactic (← `(tactic|
+      ac_sort_lhs_pipeline;
+      ac_sort_rhs_pipeline))
