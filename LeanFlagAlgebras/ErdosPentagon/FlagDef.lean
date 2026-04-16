@@ -1,5 +1,5 @@
 import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.Forbid.TuranDensityBound
+import LeanFlagAlgebras.Forbid.TuranDensity
 import LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef
 
 open FlagAlgebras SimpleGraph Compute

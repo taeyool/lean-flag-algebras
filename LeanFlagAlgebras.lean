@@ -27,11 +27,6 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FastIso
 import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
--- Logic
-import LeanFlagAlgebras.Logic.Defs
-import LeanFlagAlgebras.Logic.Tactic
-import LeanFlagAlgebras.Logic.MantelTheorem
-
 -- Flags
 import LeanFlagAlgebras.Flags.FlagLoader
 import LeanFlagAlgebras.Flags.FlagDef
@@ -46,10 +41,12 @@ import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey
 import LeanFlagAlgebras.MantelTheorem.GoodmanBound
 
+-- Turan
+import LeanFlagAlgebras.Turan.GeneralizedTuran
+
 -- Forbid
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Forbid.TuranDensity
-import LeanFlagAlgebras.Forbid.TuranDensityBound
 
  -- ErdosPentagon
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
@@ -60,6 +57,11 @@ import LeanFlagAlgebras.ErdosPentagon.FlagMul
 import LeanFlagAlgebras.ErdosPentagon.SortTactic
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 import LeanFlagAlgebras.ErdosPentagon.ErdosPentagon
+
+-- Logic
+import LeanFlagAlgebras.Logic.Defs
+import LeanFlagAlgebras.Logic.Tactic
+import LeanFlagAlgebras.Logic.MantelTheorem
 
 -- Archive imports
 -- import LeanFlagAlgebras.Archive.BoolAlgebra

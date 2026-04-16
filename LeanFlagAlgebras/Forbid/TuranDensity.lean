@@ -1,263 +1,245 @@
-import LeanFlagAlgebras.GraphAlgebra.SubgraphDensity
-import Mathlib.Analysis.Asymptotics.AsymptoticEquivalent
-import Mathlib.Combinatorics.Enumerative.DoubleCounting
-import Mathlib.Combinatorics.SimpleGraph.Extremal.Basic
-import Mathlib.Data.Nat.Choose.Cast
+import LeanFlagAlgebras.Forbid.Basic
+import LeanFlagAlgebras.Turan.GeneralizedTuran
 
-open GraphAlgebras
-open Asymptotics Filter Finset Fintype Topology SimpleGraph
+open FlagAlgebras GraphAlgebras Filter Topology SimpleGraph
 
-variable {U V W : Type}
-  [Fintype U] [DecidableEq U]
-  [Fintype V] [DecidableEq V]
-  [Fintype W] [DecidableEq W]
+namespace Forbid
 
-/--
-`generalizedExtremalNumber n H F` is the maximum number of induced copies of `F`
-among all `H`-free graphs on `n` vertices.
+def _root_.SimpleGraph.toFinFlag
+    {n : ℕ} (G : SimpleGraph (Fin n)) : FinFlag ∅ₜ
+  :=
+  let F : FlagWithSize ∅ₜ n := ⟦{
+    graph := G,
+    type_embed := RelEmbedding.ofIsEmpty _ _
+  }⟧
+  ⟨n, F⟩
 
-This generalizes `extremalNumber n H`, where the optimized statistic is the edge count.
--/
-noncomputable def generalizedExtremalNumber (n : ℕ) (H : SimpleGraph U) (F : SimpleGraph W) : ℕ
+noncomputable def _root_.SimpleGraph.toFlagAlgebra
+    {n : ℕ} (G : SimpleGraph (Fin n)) : FlagAlgebra ∅ₜ
+  :=
+  ⟦unitVector G.toFinFlag⟧
+
+lemma exists_graphSeq_of_densityLowerBound
+    {n m : ℕ} (H : SimpleGraph (Fin n)) (F : SimpleGraph (Fin m))
+    {c : ℝ} (hc : 0 ≤ c)
+    (a : ℕ → ℕ)
+    (hm_le_a : ∀ k : ℕ, m ≤ a k)
+    (ha_gt : ∀ k : ℕ, c < (generalizedExtremalNumber (a k) H F / (a k).choose m : ℝ)) :
+    ∃ Gseq : (k : ℕ) → SimpleGraph (Fin (a k)),
+      (∀ k : ℕ, H.Free (Gseq k)) ∧
+      (∀ k : ℕ, c < GraphAlgebras.subgraphDensity F (Gseq k))
   := by
+  have hden_pos : ∀ k, (0 : ℝ) < ((a k).choose m : ℝ) := by
+    intro k
+    exact_mod_cast Nat.choose_pos (hm_le_a k)
+  have ha_gt_mul : ∀ k : ℕ,
+      c * (a k).choose m < generalizedExtremalNumber (a k) H F := by
+    intro k
+    exact (lt_div_iff₀ (hden_pos k)).mp (ha_gt k)
+  have hnonneg : ∀ k : ℕ, 0 ≤ c * ((a k).choose m : ℝ) := by
+    intro k
+    exact mul_nonneg hc (by exact_mod_cast Nat.zero_le ((a k).choose m))
+  have hG : ∀ k : ℕ,
+      ∃ G : SimpleGraph (Fin (a k)),
+        H.Free G ∧
+        c < GraphAlgebras.subgraphDensity F G := by
+    intro k
+    let x : ℝ := c * ((a k).choose m : ℝ)
+    have hx_floor_lt : Nat.floor x < generalizedExtremalNumber (a k) H F := by
+      exact (Nat.floor_lt (hnonneg k)).2 (by simpa [x] using ha_gt_mul k)
+    rw [generalizedExtremalNumber] at hx_floor_lt
+    rcases Finset.lt_sup_iff.mp hx_floor_lt with ⟨G, hG_mem, hG_lt⟩
+    have hG_free : H.Free G := by
+      simpa [Finset.mem_filter] using hG_mem
+    refine ⟨G, hG_free, ?_⟩
+    have hx_lt_floor_succ : x < (Nat.floor x : ℝ) + 1 := Nat.lt_floor_add_one x
+    have hfloor_succ_le_count :
+        (Nat.floor x : ℝ) + 1 ≤ (GraphAlgebras.subgraphCount F G : ℝ) := by
+      exact_mod_cast Nat.succ_le_of_lt hG_lt
+    simp [GraphAlgebras.subgraphDensity]
+    rw [lt_div_iff₀ (hden_pos k)]
+    simpa [x] using lt_of_lt_of_le hx_lt_floor_succ hfloor_succ_le_count
+  choose Gseq hG_free hG_gt using hG
+  exact ⟨Gseq, hG_free, hG_gt⟩
+
+lemma flagDensitySeq_eq_zero_of_free
+    {n : ℕ} (H : SimpleGraph (Fin n))
+    {a : ℕ → ℕ} (Gseq : (k : ℕ) → SimpleGraph (Fin (a k)))
+    (hG_free : ∀ k : ℕ, H.Free (Gseq k))
+    (ϕ : ℕ → ℕ)
+    : ∀ i, flagDensitySeq ((fun k ↦ (Gseq k).toFinFlag) ∘ ϕ) i H.toFinFlag = 0 := by
+  intro i
+  dsimp only [flagDensitySeq, toFinFlag, flagDensity₁]
+  rw [← @subflagDensity_eq_flagListDensity]
+  simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  left
+  simp [labeledSubgraphCount]
+  rw [@Fintype.card_eq_zero_iff]
+  apply Subtype.isEmpty_of_false
+  simp
+  intro G' hG'_ind
+  rw [← Set.univ_eq_empty_iff]
+  ext ψ
+  simp at ψ
+  have hcontains : H ⊑ Gseq (ϕ i) :=
+    IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨ψ.graph_iso.symm⟩⟩
+  exact False.elim ((hG_free (ϕ i)) hcontains)
+
+lemma flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra
+    {a : FlagDensitySpace ∅ₜ} {φ : PositiveHom ∅ₜ}
+    (hφ : φ.coe = a) {n : ℕ} (G : SimpleGraph (Fin n))
+    : a G.toFinFlag = φ G.toFlagAlgebra := by
+  have hφ_eval : φ.coe G.toFinFlag = a G.toFinFlag := by
+    simpa using congrFun (congrArg Subtype.val hφ) G.toFinFlag
+  calc
+    a G.toFinFlag = φ.coe G.toFinFlag := by simpa using hφ_eval.symm
+    _ = φ ⟦unitVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
+    _ = φ G.toFlagAlgebra := by rfl
+
+lemma labeledSubgraphCount_emptyType_eq_subgraphCount
+    {n m : ℕ} (F : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
+    : labeledSubgraphCount
+        { graph := F, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj F.Adj }
+        { graph := G, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.Adj }
+      = subgraphCount F G := by
   classical
-  exact sup { G : SimpleGraph (Fin n) | H.Free G }
-    (fun (G : SimpleGraph (Fin n)) ↦ GraphAlgebras.subgraphCount F G)
-
-omit [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W] in
-/--
-`generalizedExtremalNumber n H F` is at most `m` if and only if every `H`-free graph on `n`
-vertices has at most `m` induced copies of `F`.
--/
-theorem generalizedExtremalNumber_le_iff
-  (n : ℕ) (H : SimpleGraph U) (F : SimpleGraph W) (m : ℕ) :
-    generalizedExtremalNumber n H F ≤ m ↔
-    ∀ ⦃G : SimpleGraph (Fin n)⦄,
-        H.Free G → GraphAlgebras.subgraphCount F G ≤ m
-  := by
-  simp [generalizedExtremalNumber]
-
-omit [Fintype U] [DecidableEq U] [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W] in
-open Classical in
-theorem generalizedExtremalNumber_of_fintypeCard_eq
-    {n : ℕ} {X : Type} [Fintype X] [DecidableEq X]
-    (H : SimpleGraph U) (F : SimpleGraph W) (hc : card X = n) :
-    generalizedExtremalNumber n H F =
-      sup { G : SimpleGraph X | H.Free G } (fun G => subgraphCount F G) := by
-  let e := Fintype.equivFinOfCardEq hc
-  rw [generalizedExtremalNumber, le_antisymm_iff]
-  and_intros
-  on_goal 1 =>
-    replace e := e.symm
-  all_goals
-    rw [Finset.sup_le_iff]
-    intro G h
-    let G' := G.map e.toEmbedding
-    have h' : G' ∈ univ.filter (H.Free ·) := by
-      rw [mem_filter, ← free_congr .refl (.map e G)]
-      simpa using h
-    rw [subgraphCount_eq_of_iso F (.map e G)]
-    convert @le_sup _ _ _ _ { G | H.Free G } (fun G => subgraphCount F G) G' h'
-
-omit [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W] in
-/-- If `G` is `H`-free, then `G` has at most `generalizedExtremalNumber (card V) H F`
-induced copies of `F`. -/
-theorem subgraphCount_le_generalizedExtremalNumber
-    {H : SimpleGraph U} {F : SimpleGraph W} {G : SimpleGraph V} (h : H.Free G) :
-    subgraphCount F G ≤ generalizedExtremalNumber (card V) H F := by
-  rw [generalizedExtremalNumber_of_fintypeCard_eq H F rfl]
-  convert @le_sup _ _ _ _ { G : SimpleGraph V | H.Free G } (fun G => subgraphCount F G) G
-    (by simpa using h)
-
-omit [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W] in
-@[inherit_doc generalizedExtremalNumber_le_iff]
-theorem generalizedExtremalNumber_le_iff_of_nonneg
-    (n : ℕ) (H : SimpleGraph U) (F : SimpleGraph W) {m : ℝ} (h : 0 ≤ m) :
-    generalizedExtremalNumber n H F ≤ m ↔
-    ∀ ⦃G : SimpleGraph (Fin n)⦄,
-        H.Free G → (subgraphCount F G : ℝ) ≤ m
-  := by
-  simp_rw [← Nat.le_floor_iff h]
-  exact generalizedExtremalNumber_le_iff n H F ⌊m⌋₊
-
-/--
-The generalized Turán density associated to a forbidden graph `H` and a target graph `F`.
-
-It is defined as the limit of
-`generalizedExtremalNumber n H F / n.choose (Fintype.card W)` as `n → ∞`.
--/
-noncomputable def generalizedTuranDensity (H : SimpleGraph U) (F : SimpleGraph W) : ℝ :=
-  limUnder atTop fun n ↦
-    (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : ℝ)
-
-lemma choose_succ_div_choose
-    {n m : ℕ} (h : m ≤ n) :
-    ((n + 1).choose m / n.choose m : ℝ) = ((n + 1 : ℕ) / (n - m + 1 : ℕ) : ℝ)
-  := by
-  rw [Nat.cast_choose ℝ (by linarith), Nat.cast_choose ℝ (by linarith)]
-  simp only [← div_mul, ← div_div]
-  rw [mul_assoc, mul_comm]
-  simp only [mul_div]
-  rw [mul_assoc, mul_comm, ← mul_div, div_self (by positivity), mul_one]
-  rw [mul_comm, ← mul_div, Nat.sub_add_comm h, Nat.factorial_succ (n - m), mul_comm (n - m + 1),
-    Nat.cast_mul, ← div_div, div_self (by positivity), mul_div, mul_one]
-  rw [div_div, mul_comm, ← div_div, Nat.factorial_succ n, Nat.cast_mul, ← mul_div,
-    div_self (by positivity), mul_one]
-
-omit [Fintype W] [DecidableEq W] in
-open Classical in
-lemma card_subgraphSet_filter_notMem_eq_subgraphCount_induce_compl
-    {n : ℕ} (F : SimpleGraph W) (G : SimpleGraph (Fin (n + 1))) (v : Fin (n + 1)) :
-    #{E ∈ subgraphSet F G | v ∉ E.verts} = subgraphCount F (G.induce {v}ᶜ)
-  := by
-  let emb : G.induce {v}ᶜ ↪g G := {
-      toEmbedding := Function.Embedding.subtype ({v}ᶜ : Set (Fin (n + 1)))
-      map_rel_iff' := by intros; rfl
-  }
-  symm
-  refine Finset.card_bij (fun E _ => E.map emb.toHom) ?_ ?_ ?_
-  · intro E hE
-    rcases (mem_subgraphSet_iff.mp hE) with ⟨hE_ind, hE_iso⟩
-    rw [Finset.mem_filter]
+  let Flab : LabeledGraph ∅ₜ (Fin n) :=
+    { graph := F, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj F.Adj }
+  let Glab : LabeledGraph ∅ₜ (Fin m) :=
+    { graph := G, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.Adj }
+  let e : LabeledSubgraph ∅ₜ Glab ≃ Subgraph G :=
+    {
+      toFun := fun H => H.subgraph
+      invFun := fun H =>
+        { subgraph := H
+          type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj H.coe.Adj
+          embed_eq := by
+            intro t
+            exact Fin.elim0 t }
+      left_inv := by
+        intro H
+        exact labeledSubgraph_eq_from_subgraph_eq rfl
+      right_inv := by
+        intro H
+        rfl }
+  have hpred : ∀ H : LabeledSubgraph ∅ₜ Glab,
+      (H.IsInduced ∧ Nonempty (H.coe ≃f Flab)) ↔
+      ((e H).IsInduced ∧ Nonempty (Subgraph.coe (e H) ≃g F)) := by
+    intro H
     constructor
-    · rw [mem_subgraphSet_iff]
-      constructor
-      · rintro x ⟨x', hx', rfl⟩ y ⟨y', hy', rfl⟩ hxy
-        refine ⟨x', y', ?_, rfl, rfl⟩
-        exact hE_ind hx' hy' ((emb.map_rel_iff).1 hxy)
-      · exact ⟨(emb.toCopy.isoSubgraphMap E).symm.trans hE_iso.some⟩
-    · rintro ⟨x, hx, hxeq⟩
-      exact x.2 (by simpa using hxeq)
-  · intro E₁ hE₁ E₂ hE₂ hEq
-    have hle_of_map_eq :
-        ∀ {A B : Subgraph (G.induce {v}ᶜ)},
-          A.map emb.toHom = B.map emb.toHom → A ≤ B := by
-      intro A B hAB
-      constructor
-      · intro x hx
-        have hxmap : emb x ∈ (A.map emb.toHom).verts := ⟨x, hx, rfl⟩
-        have hxmap' : emb x ∈ (B.map emb.toHom).verts := by simpa [hAB] using hxmap
-        rcases hxmap' with ⟨x', hx', hx'eq⟩
-        simpa [emb.injective hx'eq] using hx'
-      · intro x y hxy
-        have hxyMap : (A.map emb.toHom).Adj (emb x) (emb y) := ⟨x, y, hxy, rfl, rfl⟩
-        have hxyMap' : (B.map emb.toHom).Adj (emb x) (emb y) := by simpa [hAB] using hxyMap
-        rcases hxyMap' with ⟨x', y', hxy', hx'eq, hy'eq⟩
-        have hx' : x' = x := emb.injective (by simpa using hx'eq)
-        have hy' : y' = y := emb.injective (by simpa using hy'eq)
-        simpa [hx', hy'] using hxy'
-    exact le_antisymm (hle_of_map_eq hEq) (hle_of_map_eq hEq.symm)
-  · intro E hE
-    rcases Finset.mem_filter.mp hE with ⟨hE_sub, hE_notv⟩
-    let A : Subgraph (G.induce {v}ᶜ) := E.comap emb.toHom
-    have hmap : A.map emb.toHom = E := by
-      apply le_antisymm
-      · constructor
-        · rintro x ⟨u, hu, rfl⟩
-          exact hu
-        · rintro x y ⟨u, w, huw, rfl, rfl⟩
-          exact huw.2
-      · constructor
-        · intro x hx
-          refine ⟨⟨x, ?_⟩, hx, rfl⟩
-          simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-          intro h
-          exact hE_notv (h ▸ hx)
-        · intro x y hxy
-          refine ⟨⟨x, ?_⟩, ⟨y, ?_⟩, ?_, rfl, rfl⟩
-          · simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-            intro h
-            exact hE_notv (h ▸ E.edge_vert hxy)
-          · simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-            intro h
-            exact hE_notv (h ▸ E.edge_vert hxy.symm)
-          · refine ⟨(emb.map_rel_iff).2 (E.adj_sub hxy), hxy⟩
-    have hA_mem : A ∈ subgraphSet F (G.induce {v}ᶜ) := by
-      rcases (mem_subgraphSet_iff.mp hE_sub) with ⟨hE_ind, hE_iso⟩
-      rw [mem_subgraphSet_iff]
-      constructor
-      · intro x hx y hy hxy
-        refine ⟨hxy, ?_⟩
-        exact hE_ind hx hy ((emb.map_rel_iff).1 hxy)
-      · have hE_iso_map : Nonempty ((A.map emb.toHom).coe ≃g F) := hmap ▸ hE_iso
-        exact ⟨(emb.toCopy.isoSubgraphMap A).trans hE_iso_map.some⟩
-    refine ⟨A, hA_mem, ?_⟩
-    simpa [A] using hmap
+    · rintro ⟨hInd, hIso⟩
+      refine ⟨hInd, ?_⟩
+      rcases hIso with ⟨φ⟩
+      exact ⟨φ.graph_iso⟩
+    · rintro ⟨hInd, hIso⟩
+      refine ⟨hInd, ?_⟩
+      rcases hIso with ⟨φ⟩
+      refine ⟨{ graph_iso := φ, type_preserve := ?_ }⟩
+      ext t
+      exact Fin.elim0 t
+  let S0 := {H : LabeledSubgraph ∅ₜ Glab | H.IsInduced ∧ Nonempty (H.coe ≃f Flab)}
+  let S1 := {H : Subgraph G | H.IsInduced ∧ Nonempty (Subgraph.coe H ≃g F)}
+  let eSet : S0 ≃ S1 :=
+    {
+      toFun := fun H => ⟨e H.1, (hpred H.1).1 H.2⟩
+      invFun := by
+        intro H
+        rcases H with ⟨H, hH⟩
+        refine ⟨e.symm H, (hpred (e.symm H)).2 ?_⟩
+        simpa using hH
+      left_inv := by
+        intro H
+        apply Subtype.ext
+        simp
+      right_inv := by
+        intro H
+        apply Subtype.ext
+        simp }
+  show S0.toFinset.card = S1.toFinset.card
+  have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr eSet
+  simp_all only [Set.toFinset_card]
 
-omit [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W] in
-lemma subgraphCount_induce_compl_le_generalizedExtremalNumber
-    {n : ℕ} {H : SimpleGraph U} {F : SimpleGraph W}
-    {G : SimpleGraph (Fin (n + 1))} (hG_free : H.Free G) (v : Fin (n + 1)) :
-    subgraphCount F (G.induce {v}ᶜ) ≤ generalizedExtremalNumber n H F
+lemma subgraphDensity_eq_flagDensity₁
+    {n m : ℕ} (F : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
+    : subgraphDensity F G = flagDensity₁ F.toFinFlag.2 G.toFinFlag.2
   := by
-  have h_ind_free : H.Free (G.induce {v}ᶜ) := by
-    contrapose! hG_free
-    exact hG_free.trans ⟨Copy.induce G ({v}ᶜ : Set (Fin (n + 1)))⟩
-  have h_card : card ({v}ᶜ : Set (Fin (n + 1))) = n := by
-    rw [card_ofFinset, Set.filter_mem_univ_eq_toFinset]
-    simp [card_compl, Fintype.card_fin, card_singleton]
-  simp_rw [← h_card]
-  exact subgraphCount_le_generalizedExtremalNumber h_ind_free
+  dsimp [flagDensity₁]
+  rw [← @subflagDensity_eq_flagListDensity]
+  simp [toFinFlag]
+  change subgraphDensity F G =
+    labeledSubgraphDensity
+      { graph := F, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj F.Adj }
+      { graph := G, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.Adj }
+  simp [subgraphDensity, labeledSubgraphDensity, labeledSubgraphCount_emptyType_eq_subgraphCount,
+    LabeledGraph.size]
 
-omit [Fintype U] [DecidableEq U] [DecidableEq W] in
-theorem antitoneOn_generalizedExtremalNumber_div_choose
-    (H : SimpleGraph U) (F : SimpleGraph W) :
-    AntitoneOn
-      (fun n ↦ (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : ℝ))
-      (Set.Ici (Fintype.card W))
+theorem generalizedTuranDensity_le_of_forbidLE
+    {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
+  {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
+    : generalizedTuranDensity H F ≤ c
   := by
-  classical
-  let m := Fintype.card W
-  show AntitoneOn (fun n ↦ (generalizedExtremalNumber n H F / n.choose m : ℝ)) (Set.Ici m)
-  apply antitoneOn_nat_Ici_of_succ_le
-  intro n hn
-  rw [div_le_iff₀ (mod_cast Nat.choose_pos (by linarith)),
-    generalizedExtremalNumber_le_iff_of_nonneg (n + 1) H F (by positivity)]
-  intro G hG_free
-  rw [mul_comm, mul_div, mul_comm, ← mul_div, choose_succ_div_choose hn, mul_div, mul_comm,
-    le_div_iff₀ (by positivity), ← Nat.cast_mul, ← Nat.cast_mul, Nat.cast_le]
-  suffices hdc :
-      #(GraphAlgebras.subgraphSet F G) • (n - m + 1)
-        ≤ #(Finset.univ : Finset (Fin (n + 1))) • generalizedExtremalNumber n H F by
-    simpa [GraphAlgebras.subgraphCount, nsmul_eq_mul, Nat.mul_comm] using hdc
-  apply (card_nsmul_le_card_nsmul' (r := fun v H' => v ∉ H'.verts))
-  · intro E hE
-    simp [subgraphSet] at hE
-    rcases hE with ⟨hE_ind, ⟨φ⟩⟩
-    have hcardE : Fintype.card E.verts = m := by
-      simpa [m] using Fintype.card_congr φ.toEquiv
-    have hcard_filter :
-        #(Finset.filter (Membership.mem E.verts) (Finset.univ : Finset (Fin (n + 1)))) = m := by
-      rw [← hcardE]
-      simp only [card_ofFinset]
-    simp [bipartiteBelow, filter_not]
-    rw [← Finset.compl_eq_univ_sdiff, Finset.card_compl, hcard_filter, Fintype.card_fin]
-    omega
-  · intro v hv
-    simp [bipartiteAbove]
-    rw [card_subgraphSet_filter_notMem_eq_subgraphCount_induce_compl]
-    exact subgraphCount_induce_compl_le_generalizedExtremalNumber hG_free v
+  rw [← forbidLE_emptyType_iff_forbidLE] at h
+  dsimp [forbidLE_emptyType] at h
 
-/--
-The generalized Turán density is well-defined as the limit of the normalized generalized
-extremal numbers.
--/
-theorem tendsto_generalizedTuranDensity
-  {U W : Type} [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W]
-  (H : SimpleGraph U) (F : SimpleGraph W) :
-    Tendsto
-      (fun n ↦ (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : ℝ))
-      atTop (𝓝 (generalizedTuranDensity H F)) := by
-  have hmono := antitoneOn_generalizedExtremalNumber_div_choose H F
-  let f := fun n ↦ (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : ℝ)
-  suffices h : ∃ x, Tendsto (fun n ↦ f (n + Fintype.card W)) atTop (𝓝 x) by
-    obtain ⟨_, h⟩ := by simpa [tendsto_add_atTop_iff_nat (Fintype.card W)] using h
-    simpa [generalizedTuranDensity, f, ← Tendsto.limUnder_eq h] using h
-  use ⨅ n, f (n + Fintype.card W)
-  apply tendsto_atTop_ciInf
-  · rw [antitone_add_nat_iff_antitoneOn_nat_Ici]
-    simpa [f] using hmono
-  · use 0
-    intro n ⟨_, hn⟩
-    rw [← hn]
-    positivity
+  let f_den : ℕ → ℝ := fun k ↦ (generalizedExtremalNumber k H F / k.choose m : ℝ)
+  suffices hε : ∀ ε > 0, ∀ᶠ k in atTop, f_den k ≤ c + ε by
+    refine le_iff_forall_pos_le_add.mpr ?_
+    intro ε hε_pos
+    refine le_of_tendsto_of_tendsto ?_ (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ c + ε) atTop (𝓝 (c + ε))) (hε ε hε_pos)
+    simpa [f_den] using (tendsto_generalizedTuranDensity H F)
+
+  contrapose h
+  push_neg at h ⊢
+  obtain ⟨ε, hε_pos, hε⟩ := h
+  obtain ⟨a₀, ha₀_inc, ha_gt₀⟩ := extraction_of_frequently_atTop hε
+  let a : ℕ → ℕ := fun k ↦ a₀ (k + m)
+  have ha_inc : StrictMono a := by
+    intro k l hkl
+    exact ha₀_inc (Nat.add_lt_add_right hkl m)
+  have ha_gt : ∀ k : ℕ, c + ε < f_den (a k) := by
+    intro k
+    simpa [a] using (ha_gt₀ (k + m))
+  have hm_le_a : ∀ k : ℕ, m ≤ a k := by
+    intro k
+    exact le_trans (Nat.le_add_left m k) (ha₀_inc.id_le (k + m))
+  clear hε ha₀_inc ha_gt₀
+
+  have hcε : 0 ≤ c + ε := add_nonneg hc (le_of_lt hε_pos)
+  obtain ⟨Gseq, hG_free, hG_den⟩ := exists_graphSeq_of_densityLowerBound H F hcε a hm_le_a ha_gt
+  let gseq : FlagSeq ∅ₜ := fun k ↦ (Gseq k).toFinFlag
+  have hgseq_inc : Increases gseq := by
+    intro k l hkl
+    simp [gseq, toFinFlag]
+    exact Nat.lt_of_succ_le (ha_inc hkl)
+  obtain ⟨x, ϕ, hϕ_mono, hϕ_conv'⟩ := increasing_flagSeq_contain_convergent_subseq gseq hgseq_inc
+  obtain ⟨φ, hφ⟩ := flagSeq_limit_mem_positiveHom (gseq ∘ ϕ) hϕ_conv'
+  obtain ⟨hϕ_inc, hϕ_conv⟩ := flagSeq_convergesTo_iff.mp hϕ_conv'
+  clear hcε hgseq_inc hϕ_inc hϕ_conv'
+
+  use φ
+  constructor
+  · apply @tendsto_nhds_unique _ _ _ _
+      (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag) atTop
+    · simpa [flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra hφ H]
+        using (hϕ_conv H.toFinFlag)
+    · have hH_den_zero : ∀ n, flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag = 0 := by
+        simpa [gseq] using flagDensitySeq_eq_zero_of_free H Gseq hG_free ϕ
+      rw [tendsto_congr hH_den_zero, tendsto_const_nhds_iff]
+  · simp [PositiveHom.map_smul]
+    calc
+      c < c + ε := lt_add_of_pos_right c hε_pos
+      _ ≤ φ F.toFlagAlgebra := by
+        have hF_tendsto :
+            Tendsto (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n F.toFinFlag)
+              atTop (nhds (φ F.toFlagAlgebra)) := by
+          simpa [flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra hφ F]
+            using (hϕ_conv F.toFinFlag)
+        apply le_of_tendsto_of_tendsto'
+          (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ c + ε) atTop (𝓝 (c + ε))) hF_tendsto
+        intro k
+        specialize hG_den (ϕ k)
+        dsimp [flagDensitySeq]
+        rw [← subgraphDensity_eq_flagDensity₁]
+        exact le_of_lt hG_den
+
+end Forbid
