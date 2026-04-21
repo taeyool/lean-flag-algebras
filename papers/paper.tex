@@ -39,25 +39,89 @@ TODO: Write an abstract.
 
 \section{Introduction}
 
-\section{Recommended Papers for Reference}
+\section{Recommended Papers}
 
 Lean formalization papers recommended by Gemini from \url{https://leanprover-community.github.io/papers.html}.
 
+\subsection{\href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol237-itp2022/LIPIcs.ITP.2022.9/LIPIcs.ITP.2022.9.pdf}{\textbf{Formalising Szemerédi's Regularity Lemma in Lean}} (Yaël Dillies and Bhavik Mehta, 2022)}
+
+\subsubsection{Contributions of the Paper}
 \begin{itemize}
-    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol237-itp2022/LIPIcs.ITP.2022.9/LIPIcs.ITP.2022.9.pdf}{\textbf{Formalising Szemerédi's Regularity Lemma in Lean}} (Yaël Dillies and Bhavik Mehta, 2022) \\
-    An excellent example of formalizing a core lemma in extremal graph theory. Useful for seeing how to describe $\epsilon$-$\delta$ arguments related to density in a formalization paper.
-    
-    \item \href{https://link.springer.com/chapter/10.1007/978-3-031-16681-5_5}{\textbf{Formalising the Kruskal-Katona Theorem in Lean}} (Bhavik Mehta, 2022) \\
-    A great reference for learning how to clearly explain the technical details of combinatorial boundary problems in an academic paper.
-    
-    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol141-itp2019/LIPIcs.ITP.2019.15/LIPIcs.ITP.2019.15.pdf}{\textbf{Formalizing the Solution to the Cap Set Problem}} (Sander Dahmen, Johannes Hölzl, and Robert Lewis, 2019) \\
-    An example of formalizing modern combinatorial results. It shows how to highlight the differences between traditional paper proofs and formalized proofs, as well as newly discovered structures.
-    
-    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol309-itp2024/LIPIcs.ITP.2024.35/LIPIcs.ITP.2024.35.pdf}{\textbf{Formal Verification of the Empty Hexagon Number}} (Bernardo Subercaseaux et al., 2024) \\
-    A Lean 4-based study that provides a modern guide on how to verify and describe the results of external solvers or computational tools when solving combinatorial geometry problems.
-    
-    \item \href{https://arxiv.org/abs/2101.00127}{\textbf{Formalizing Hall's Marriage Theorem in Lean}} (Alena Gusakov, Bhavik Mehta, and Kyle Miller, 2021) \\
-    Serves as a clean, standard template for graph theory formalization papers. It is especially useful for seeing how to define basic structures like adjacency matrices.
+    \item \textbf{Equitable Regularity Lemma:} Formalized a stronger, previously unattempted version of the lemma requiring parts of approximately equal size.
+    \item \textbf{Explicit Upper Bound:} Derived a rigorous, explicit upper bound for the number of partitions directly within the Lean code.
+    \item \textbf{Theorem Applications:} Applied the lemma to successfully formalize the Triangle Counting Lemma, Triangle Removal Lemma, Roth's theorem, and the Corners theorem.
 \end{itemize}
+
+\subsubsection{Structure of the Paper}
+\begin{itemize}
+    \item \textbf{Section 1 \& 2 (Background \& Math):} Introduces the mathematical context and provides pen-and-paper proof sketches before introducing code.
+    \item \textbf{Section 3 \& 4 (Core Formalization):} Details the Lean implementation of the Regularity Lemma and Triangle lemmas, covering definitions, witness handling, and bounds calculations.
+    \item \textbf{Section 5 (Extensions):} Explains the construction of tripartite graphs and definitional workarounds needed for the Corners theorem and Roth's theorem.
+    \item \textbf{Section 6 (Discussion):} Compares the methodology with a concurrent Isabelle/HOL study and outlines future applications.
+\end{itemize}
+
+\subsubsection{Key Takeaways for Writing Formalization Papers}
+\begin{itemize}
+    \item \textbf{Structure by Abstraction:} Presenting mathematical proof sketches before technical code significantly reduces reader fatigue.
+    \item \textbf{Defend Design Choices:} Clearly articulate the rationale behind creating custom definitions (e.g., \texttt{finpartition}) instead of relying solely on existing library structures.
+    \item \textbf{Transparent Limitations:} Openly acknowledge the theorem prover's constraints (e.g., limitations with natural number subtraction or non-linear arithmetic) and explain the specific workarounds used.
+    \item \textbf{Technical Benchmarking:} Compare related formalization work using precise technical metrics (e.g., differing definitions of uniformity) rather than general claims of novelty.
+\end{itemize}
+
+\subsection{\href{https://link.springer.com/chapter/10.1007/978-3-031-16681-5_5}{\textbf{Formalising the Kruskal-Katona Theorem in Lean}} (Bhavik Mehta, 2022)}
+
+\subsubsection{Contributions of the Paper}
+\begin{itemize}
+    \item \textbf{Core Combinatorial Theorems:} Successfully formalized the Kruskal-Katona theorem, along with Sperner's theorem, the LYM inequalities, and the Erd\H{o}s-Ko-Rado theorem.
+    \item \textbf{Computable Operators:} Implemented a computable version of the 'shadow' operator for finite sets, allowing for direct evaluation and automated testing within the prover.
+    \item \textbf{Foundational Structures:} Formalized the colexicographic ordering on finite sets and the mathematical technique of UV-compressions.
+\end{itemize}
+
+\subsubsection{Structure of the Paper}
+\begin{itemize}
+    \item \textbf{Sections 1 \& 2 (Context):} Introduces the history of extremal combinatorics and discusses related formalization efforts in Isabelle and Lean.
+    \item \textbf{Section 3 (Mathematical Background):} Provides informal, pen-and-paper proof sketches for the LYM inequalities, Kruskal-Katona, and Erd\H{o}s-Ko-Rado theorems to ground the reader.
+    \item \textbf{Section 4 (Formalizing the Shadow):} Details the Lean definitions for set families and shadows, followed by the formal proofs of the local and general LYM inequalities.
+    \item \textbf{Section 5 (Kruskal-Katona):} Explains the implementation of colexicographic ordering, the complex manual set calculations required for compressions, and the main theorem via strong induction.
+    \item \textbf{Section 6 (Discussion):} Concludes by highlighting the wider applicability of compression techniques in extremal combinatorics.
+\end{itemize}
+
+\subsubsection{Key Takeaways for Writing Formalization Papers}
+\begin{itemize}
+    \item \textbf{Highlight Computability:} Designing definitions to be explicitly computable (e.g., using \texttt{finset.bind} and \texttt{image}) allows for direct sanity checks via \texttt{\#eval}. Showcasing this bridges the gap between abstract math and software engineering.
+    \item \textbf{Strategic Generalization:} Start by defining concepts over general, arbitrary finite types, and specialize to specific sets (like \texttt{fin n}) only when absolute metrics (like family measure) are required.
+    \item \textbf{Document Automation Gaps:} Transparently discuss where theorem prover automation falls short (e.g., handling lengthy set equality calculations involving singletons) and explain the manual chains of elementary lemmas required as workarounds.
+    \item \textbf{Adapt Mathematical Proofs:} Demonstrate how traditional textbook proofs (like double-counting on pairs) are translated into structures better suited for the prover, such as forming two exact sets and demonstrating subset relations.
+\end{itemize}
+
+\subsection{\href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol309-itp2024/LIPIcs.ITP.2024.35/LIPIcs.ITP.2024.35.pdf}{\textbf{Formal Verification of the Empty Hexagon Number}} (Bernardo Subercaseaux et al., 2024)}
+
+\subsubsection{Contributions of the Paper}
+\begin{itemize}
+    \item \textbf{Formal Verification of the SAT Reduction:} Rigorously verified in Lean the process of converting the theorem (that any set of 30 points contains an empty convex hexagon, $h(6) \le 30$) into a SAT problem.
+    \item \textbf{Equivalence between Geometry and Combinatorics:} Mathematically proved that continuous geometric definitions (e.g., convex hulls, points in triangles) are equivalent to discrete combinatorial abstractions (Triple Orientations).
+    \item \textbf{Verification of Symmetry Breaking:} Formally proved that transforming the point sets into a 'canonical position' to reduce the search space does not result in a loss of generality.
+\end{itemize}
+
+\subsubsection{Structure of the Paper}
+\begin{itemize}
+    \item \textbf{Sections 1 \& 2 (Background \& Overview):} Introduces the history of the Erd\H{o}s-Szekeres problem and the overall pipeline of the SAT-based proof.
+    \item \textbf{Sections 3 \& 4 (Geometry \& Discretization):} Covers the process of discretizing the continuous problem space using geometric definitions from \texttt{mathlib} and determinant-based triple orientations.
+    \item \textbf{Sections 5 \& 6 (Symmetry Breaking \& SAT Encoding):} Explains the search space reduction techniques via canonical position transformations, the construction of the CNF formula, and the actual execution results of the SAT solver and proof checker (\texttt{cake\_lpr}).
+    \item \textbf{Sections 7 \& 8 (Related Work \& Conclusion):} Concludes by providing a concrete comparison of encoding sizes and performance metrics against prior Isabelle-based $g(6)$ verification studies.
+\end{itemize}
+
+\subsubsection{Key Takeaways for Writing Formalization Papers}
+\begin{itemize}
+    \item \textbf{Connect to Established Libraries:} Rather than axiomatizing new concepts from scratch, link them to the foundational definitions of standard libraries (such as \texttt{mathlib}'s convex hulls and determinants) to increase the overall trustworthiness of the system.
+    \item \textbf{Verify the Reduction Gap:} When combinatorially encoding a complex mathematical problem so that external computing tools (like SAT solvers) can solve it, clearly document how the validity of the translation logic itself was secured within the theorem prover.
+    \item \textbf{Clear Methodological Comparison:} When comparing against prior work, do not simply state that a different tool was used. Prove superiority by providing explicit metrics, such as the encoding formula size ($O(n^4)$ vs. $O(n^6)$) and actual verification time (e.g., CPU hours).
+    \item \textbf{Modular Trust Story:} For proofs requiring massive computation, it is crucial to clearly explain the "trust structure"—detailing how the theorem prover (Lean), high-performance solver (CaDiCaL), and external checker (\texttt{cake\_lpr}) are separated and integrated so that the entire pipeline operates without logical flaws.
+\end{itemize}
+
+\subsection{\href{https://arxiv.org/abs/2101.00127}{\textbf{Formalizing Hall's Marriage Theorem in Lean}} (Alena Gusakov, Bhavik Mehta, and Kyle Miller, 2021)}
+
+\subsection{\href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol141-itp2019/LIPIcs.ITP.2019.15/LIPIcs.ITP.2019.15.pdf}{\textbf{Formalizing the Solution to the Cap Set Problem}} (Sander Dahmen, Johannes Hölzl, and Robert Lewis, 2019)}
+
 
 \end{document}
