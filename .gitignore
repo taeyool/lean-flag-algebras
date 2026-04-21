@@ -2,3 +2,22 @@
 docbuild/.lake
 docbuild/lake-manifest.json
 docbuild/lean-toolchain
+
+# LaTeX build artifacts (keep .tex sources tracked)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.pdf
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.xdv

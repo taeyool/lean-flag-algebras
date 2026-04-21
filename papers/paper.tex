@@ -1,0 +1,63 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{dsfont}
+\usepackage{stmaryrd}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{cleveref}
+\usepackage{fullpage}
+\usepackage{authblk}
+
+% Helps reduce minor overfull \hbox warnings.
+\usepackage{microtype}
+
+\title{Formalizing Flag Algebra in Lean}
+\date{}
+
+\author[1]{Gyeongwon Jeong}
+\affil[1]{School of Computing, KAIST, South Korea,
+  \texttt{jgyw0910@kaist.ac.kr}}
+
+\author[2]{Seonghun Park}
+\affil[2]{School of Computing, KAIST, South Korea,
+  \texttt{hun57@kaist.ac.kr}}
+
+\author[3]{Hongseok Yang}
+\affil[3]{School of Computing, KAIST, South Korea,
+  \texttt{hongseok00@gmail.com}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+TODO: Write an abstract.
+\end{abstract}
+
+\section{Introduction}
+
+\section{Recommended Papers for Reference}
+
+Lean formalization papers recommended by Gemini from \url{https://leanprover-community.github.io/papers.html}.
+
+\begin{itemize}
+    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol237-itp2022/LIPIcs.ITP.2022.9/LIPIcs.ITP.2022.9.pdf}{\textbf{Formalising Szemerédi's Regularity Lemma in Lean}} (Yaël Dillies and Bhavik Mehta, 2022) \\
+    An excellent example of formalizing a core lemma in extremal graph theory. Useful for seeing how to describe $\epsilon$-$\delta$ arguments related to density in a formalization paper.
+    
+    \item \href{https://link.springer.com/chapter/10.1007/978-3-031-16681-5_5}{\textbf{Formalising the Kruskal-Katona Theorem in Lean}} (Bhavik Mehta, 2022) \\
+    A great reference for learning how to clearly explain the technical details of combinatorial boundary problems in an academic paper.
+    
+    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol141-itp2019/LIPIcs.ITP.2019.15/LIPIcs.ITP.2019.15.pdf}{\textbf{Formalizing the Solution to the Cap Set Problem}} (Sander Dahmen, Johannes Hölzl, and Robert Lewis, 2019) \\
+    An example of formalizing modern combinatorial results. It shows how to highlight the differences between traditional paper proofs and formalized proofs, as well as newly discovered structures.
+    
+    \item \href{https://drops.dagstuhl.de/storage/00lipics/lipics-vol309-itp2024/LIPIcs.ITP.2024.35/LIPIcs.ITP.2024.35.pdf}{\textbf{Formal Verification of the Empty Hexagon Number}} (Bernardo Subercaseaux et al., 2024) \\
+    A Lean 4-based study that provides a modern guide on how to verify and describe the results of external solvers or computational tools when solving combinatorial geometry problems.
+    
+    \item \href{https://arxiv.org/abs/2101.00127}{\textbf{Formalizing Hall's Marriage Theorem in Lean}} (Alena Gusakov, Bhavik Mehta, and Kyle Miller, 2021) \\
+    Serves as a clean, standard template for graph theory formalization papers. It is especially useful for seeing how to define basic structures like adjacency matrices.
+\end{itemize}
+
+\end{document}
