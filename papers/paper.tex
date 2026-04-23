@@ -2,6 +2,7 @@
 
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{dsfont}
@@ -14,6 +15,10 @@
 
 % Helps reduce minor overfull \hbox warnings.
 \usepackage{microtype}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Gyeongwon}[1]{\textcolor{red}{[Gyeongwon: #1]}}
 
 \title{Formalizing Flag Algebra in Lean}
 \date{}
@@ -47,15 +52,29 @@ TODO: Write an abstract.
     \item We formally verify the flag algebra proof of the Erdős pentagon problem using our framework.
 \end{itemize}
 
-\section{Background on flag algebra}
+\section{Background on Flag Algebra}
 
-\section{Computable definition of flags}
+We begin with basic notation used throughout the paper. For $n \in \N$, we write $[n] \coloneqq \{1,2,\dots,n\}$. All graphs considered in this work are finite simple graphs. For a graph $G$, we denote its vertex set and edge set by $V(G)$ and $E(G)$, respectively, and define $v(G) \coloneqq |V(G)|$ and $e(G) \coloneqq |E(G)|$. For a subset $U \subseteq V(G)$, the \emph{induced subgraph} on $U$, denoted $G[U]$, is the graph with vertex set $U$ and edge set $\{\{u,v\} \in E(G) : u,v \in U\}$.
+\Gyeongwon{Need to decide where to discuss forbidden graphs.}
+
+A \emph{type} of size $k$ is a graph $\sigma$ with $V(\sigma)=[k]$. For a graph $G$, an \emph{embedding} of $\sigma$ into $G$ is an injective map $\theta : [k] \to V(G)$ such that $\sigma$ is isomorphic to the induced subgraph $G[\operatorname{Im}\theta]$. A \emph{$\sigma$-flag} is a pair $G^{\sigma}=(G,\theta)$ consisting of a graph $G$ and an embedding $\theta$ of $\sigma$ into $G$. For $G^{\sigma}=(G,\theta)$, we define $V(G^{\sigma}) \coloneqq V(G)$, $E(G^{\sigma}) \coloneqq E(G)$, $v(G^{\sigma}) \coloneqq v(G)$, and $e(G^{\sigma}) \coloneqq e(G)$. We call $v(G^{\sigma})$ the \emph{size} of $G^{\sigma}$.
+
+We say that two $\sigma$-flags $G^{\sigma}_1=(G_1,\theta_1)$ and $G^{\sigma}_2=(G_2,\theta_2)$ are \emph{isomorphic}, denoted $G^{\sigma}_1 \simeq G^{\sigma}_2$, if there exists a graph isomorphism $f : V(G_1) \to V(G_2)$ such that $f \circ \theta_1 = \theta_2$. For $n \ge v(\sigma)$, let $\mathcal{F}_n^{\sigma}$ denote the set of all $\sigma$-flags of size $n$ up to isomorphism, and let $\mathcal{F}^{\sigma}$ denote the set of all $\sigma$-flags up to isomorphism.
+
+\subsection{Subflag Density}
+
+\subsection{Flag Algebra}
+
+\subsection{Downward Operator}
+
+
+\section{Computable Definition of Flags}
 
 \section{Application}
 
-\subsection{Mantel's theorem}
+\subsection{Mantel's Theorem}
 
-\subsection{Erdős pentagon problem}
+\subsection{Erdős Pentagon Problem}
 
 \section{Conclusion}
 
