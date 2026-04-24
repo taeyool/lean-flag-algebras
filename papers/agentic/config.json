@@ -1,0 +1,171 @@
+{
+    "project_name": "Formalizing Flag Algebra in Lean",
+    "paper_tex": "papers/paper.tex",
+    "contribution_source_tex": "papers/paper.tex",
+    "draft_tex_output": "papers/agentic/out/paper_draft_from_contributions.tex",
+    "considerations_file": "papers/agentic/considerations.md",
+    "author_notes_file": "papers/agentic/author_notes.md",
+    "output_dir": "papers/agentic/out",
+    "default_sections": [
+        "Introduction",
+        "Background on Flag Algebra",
+        "Formalization of Flag Algebra",
+        "Computable Definition of Flags",
+        "Application",
+        "Conclusion",
+        "Abstract"
+    ],
+    "section_sources": {
+        "Introduction": [
+            "README.md",
+            "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+            "LeanFlagAlgebras/Logic/Defs.lean",
+            "LeanFlagAlgebras/Logic/Tactic.lean"
+        ],
+        "Background on Flag Algebra": [
+            "LeanFlagAlgebras/Flags/FlagDef.lean",
+            "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+            "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+            "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+            "papers/BEATCS_Collumn26/paper.tex"
+        ],
+        "Formalization of Flag Algebra": [
+            "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+            "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+            "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+            "LeanFlagAlgebras/FlagAlgebra/QuadraticForm.lean",
+            "LeanFlagAlgebras/Logic/Defs.lean",
+            "LeanFlagAlgebras/Logic/Tactic.lean"
+        ],
+        "Computable Definition of Flags": [
+            "LeanFlagAlgebras/Flags/FlagLoader.lean",
+            "LeanFlagAlgebras/Flags/generate_flags.py",
+            "LeanFlagAlgebras/Flags/generate_graphs.py",
+            "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+            "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean"
+        ],
+        "Application": [
+            "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+            "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+            "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+            "LeanFlagAlgebras/ErdosPentagon/Matrix/generate_psd_proof.py"
+        ],
+        "Conclusion": [
+            "README.md",
+            "LeanFlagAlgebras.lean"
+        ],
+        "Abstract": [
+            "papers/paper.tex"
+        ]
+    },
+    "retrieval": {
+        "max_files_per_section": 8,
+        "max_lines_per_file": 250,
+        "lean_keywords": [
+            "theorem",
+            "lemma",
+            "def",
+            "structure",
+            "class"
+        ]
+    },
+    "section_instructions": {
+        "Background on Flag Algebra": [
+            "When drafting this section, prioritize conceptual grounding from papers/References/Razborov07.pdf, papers/References/GrzesikThesis14.pdf, and papers/BEATCS_Collumn26/paper.tex.",
+            "Explain definitions and motivation in a way suitable for a broad mathematical audience, then connect to this repository's Lean formalization.",
+            "Do not claim details from external papers unless they are actually checked from those sources."
+        ],
+        "Formalization of Flag Algebra": [
+            "Describe the formal architecture of the Lean development (core definitions, algebraic operators, logic layer, and tactics) before implementation details.",
+            "Clarify which components encode mathematical semantics and which components exist for computability/automation.",
+            "Use concrete file-level evidence when stating what was formalized."
+        ]
+    },
+    "global_instructions": [
+        "The current paper structure is a helpful draft, not a hard constraint.",
+        "If clarity improves, you may split, merge, reorder, or rename sections/subsections while preserving technical correctness.",
+        "When proposing structural changes, include a brief rationale and maintain consistency with abstract/introduction/conclusion claims."
+    ],
+    "llm": {
+        "api_url": "https://api.openai.com/v1/chat/completions",
+        "api_key_env": "OPENAI_API_KEY",
+        "model": "gpt-4.1",
+        "temperature": 0.2,
+        "max_tokens": 2500,
+        "timeout_sec": 120
+    },
+    "executor": {
+        "run_log_dir": "papers/agentic/out/agent_runs",
+        "max_evidence_per_section": 120,
+        "selected_evidence_limit": 24,
+        "max_verifier_retries": 1
+    },
+    "quality_profile": {
+        "formalization_examples_dir": "papers/References/Formalization",
+        "quality_requirements": [
+            "Write section bodies with publication-grade depth, not short summaries.",
+            "Use explicit motivation -> method -> formalization detail -> implication flow.",
+            "Explain design choices and trade-offs, not only what was implemented.",
+            "Keep claims tightly grounded in evidence and avoid generic hype language.",
+            "Ensure each section can stand alone for a mathematical reader unfamiliar with the codebase."
+        ],
+        "equation_reference_pdfs": [
+            "papers/References/Razborov07.pdf",
+            "papers/References/GrzesikThesis14.pdf"
+        ]
+    },
+    "section_blueprints": {
+        "Background on Flag Algebra": {
+            "min_subsections": 3,
+            "min_paragraphs": 8,
+            "min_equations": 6,
+            "must_define_symbols": [
+                "type",
+                "flag",
+                "subflag density",
+                "flag product",
+                "downward operator"
+            ],
+            "must_use_equation_sources": [
+                "papers/References/Razborov07.pdf",
+                "papers/References/GrzesikThesis14.pdf"
+            ]
+        },
+        "Formalization of Flag Algebra": {
+            "min_subsections": 3,
+            "min_paragraphs": 7,
+            "min_code_references": 10,
+            "required_repo_files": [
+                "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+                "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+                "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+                "LeanFlagAlgebras/FlagAlgebra/QuadraticForm.lean",
+                "LeanFlagAlgebras/Logic/Defs.lean",
+                "LeanFlagAlgebras/Logic/Tactic.lean"
+            ]
+        },
+        "Computable Definition of Flags": {
+            "min_subsections": 3,
+            "min_paragraphs": 6,
+            "min_code_references": 8,
+            "required_repo_files": [
+                "LeanFlagAlgebras/Flags/FlagLoader.lean",
+                "LeanFlagAlgebras/Flags/generate_flags.py",
+                "LeanFlagAlgebras/Flags/generate_graphs.py",
+                "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+                "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean"
+            ]
+        },
+        "Application": {
+            "min_subsections": 4,
+            "min_paragraphs": 8,
+            "min_code_references": 10,
+            "required_repo_files": [
+                "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+                "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+                "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+                "LeanFlagAlgebras/ErdosPentagon/Matrix/generate_psd_proof.py"
+            ]
+        }
+    }
+}

@@ -1,0 +1,207 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{stmaryrd}
+
+\title{Formalizing Flag Algebra in Lean}
+\author{Gyeongwon Jeong \and Seonghun Park \and Hongseok Yang}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Flag algebras are one of the most effective frameworks for asymptotic extremal graph inequalities, but practical proofs often combine nontrivial symbolic reasoning with large external computations. This makes it difficult to separate trusted mathematical arguments from computational heuristics. We present a Lean 4 formalization of graph flag algebra that is both semantic and computable: the semantic layer formalizes core objects and operators (flags, products, downward transport, positive homomorphisms, and validity/entailment), while the computable layer validates generated data and connects scripts to formal theorems. A central methodological contribution is a reusable forbidden-subgraph reasoning rule that works inside a single ambient theory of simple graphs rather than problem-specific axiomatizations. As an application, we formalize a full proof pipeline for the Erd\H{o}s pentagon problem, including integration of density and matrix artifacts. The resulting architecture is intended to support reproducible, reusable formalization workflows for future extremal combinatorics projects.
+\end{abstract}
+
+\section{Introduction}
+
+Flag algebra has become a standard method for deriving inequalities on subgraph densities in extremal combinatorics. At the same time, many state-of-the-art arguments rely on mixed pipelines: abstract combinatorial identities, computer-generated candidates, and linear or semidefinite constraints extracted from large intermediate data. This mixed nature is powerful but makes trust accounting difficult: which steps are purely mathematical, which are computationally suggestive, and which are fully certified?
+
+The purpose of this work is to formalize that pipeline in Lean 4 in a way that preserves both mathematical meaning and practical computability. We do not treat ``formalization'' as only a library of definitions. Instead, we aim for an architecture where semantic statements, executable constructions, and application-specific certificates are linked by explicit compatibility theorems.
+
+Our guiding design principle is to separate concerns.
+First, semantic objects should match the mathematical literature closely enough that theorem statements are recognizable.
+Second, executable objects should support data ingestion and verification without collapsing semantic abstraction.
+Third, problem-specific assumptions (especially forbidden subgraphs) should be expressible through reusable logical rules rather than ad hoc axiom stacks.
+
+\subsection{Contributions}
+\begin{itemize}
+    \item We formalize Alexander Razborov’s flag algebra for graphs in Lean 4.
+    \item We define a computable version of flags so that computations of flag algebra operations can be verified within Lean.
+    \item In Razborov’s original paper, forbidding a specific subgraph structure requires adding an axiom to the underlying theory at the outset. In contrast, we develop a reasoning rule that allows us to forbid arbitrary subgraph structures within a single theory containing only the axioms of simple graphs.
+    \item We formally verify the flag algebra proof of the Erdős pentagon problem using our framework.
+\end{itemize}
+
+\subsection{Scope and Reader Model}
+The paper is written for readers who may know extremal graph theory but have not previously worked with Lean code. For that reason, we keep a mathematical narrative in the background section, then map each concept to concrete files in the repository in the formalization and computable-definition sections. This allows the reader to move between formulas and code-level artifacts without losing logical context.
+
+\subsection{Trust Boundary}
+We treat external generation scripts as producers of candidates, not as producers of final truths. Final claims in this draft are intended to be justified by Lean-side definitions and lemmas. In application-level sections, we explicitly separate (i) generation, (ii) loading/normalization, and (iii) theorem-level discharge.
+
+\section{Background on Flag Algebra}
+
+\subsection{Graphs, Types, and Flags}
+Let $G$ be a finite simple graph with vertex set $V(G)$ and edge set $E(G)$. For a finite set $U \subseteq V(G)$, write $G[U]$ for the induced subgraph on $U$. A \emph{type} $\sigma$ of size $k$ is a labeled graph on label set $[k]=\{1,\dots,k\}$. A \emph{$\sigma$-flag} is a pair $(F,\theta)$ where $F$ is a graph and $\theta:[k]\to V(F)$ is an injective embedding of the type labels.
+
+Two $\sigma$-flags are identified when they are isomorphic by a map that preserves labels. Thus, for each $n\ge k$, we work with the finite set $\mathcal F_n^{\sigma}$ of isomorphism classes of $\sigma$-flags of size $n$.
+
+\subsection{Unlabeled and Labeled Densities}
+For unlabeled graphs $H$ and $G$ with $|V(H)|=h\le |V(G)|=n$, induced density is
+\begin{equation}
+p(H,G)
+=
+\frac{\bigl|\{U\subseteq V(G): |U|=h,\; G[U]\cong H\}\bigr|}{\binom{n}{h}}.
+\end{equation}
+This quantity is a probability: choose a uniform $h$-subset of vertices, then observe which induced graph appears.
+
+For $\sigma$-flags, the same idea applies after fixing the labeled part. If $F^{\sigma}\in\mathcal F_t^{\sigma}$ and $G^{\sigma}\in\mathcal F_n^{\sigma}$ with $n\ge t$, then
+\begin{equation}
+p_{\sigma}(F^{\sigma},G^{\sigma})
+=
+\Pr\bigl[\text{a random valid extension of labels in }G^{\sigma}\text{ induces }F^{\sigma}\bigr].
+\end{equation}
+For products of several flags one needs a disjoint-extension condition; in standard notation this is ensured by
+\begin{equation}
+v(G^{\sigma})-k \ge \sum_{i=1}^m \bigl(v(F_i^{\sigma})-k\bigr).
+\end{equation}
+
+\subsection{Flag Product and Algebraic Linearization}
+Flag algebra replaces combinatorial counting by algebraic identities in a vector space spanned by isomorphism classes of flags. For two $\sigma$-flags $F_1^{\sigma},F_2^{\sigma}$, the product is defined by expansion over larger ambient size:
+\begin{equation}
+F_1^{\sigma}\cdot F_2^{\sigma}
+=
+\sum_{H^{\sigma}\in\mathcal F_n^{\sigma}}
+p_{\sigma}(F_1^{\sigma},F_2^{\sigma};H^{\sigma})\,H^{\sigma},
+\end{equation}
+where $n$ is any admissible size large enough for disjoint extension. A key theorem is that the resulting class is independent of the chosen $n$ in the quotient algebra.
+
+This gives a linear-algebraic language for local pattern interactions. Inequalities can be formed by combining linear identities, products, and positivity constraints under homomorphisms.
+
+\subsection{Downward Operator and Transfer to Unlabeled Statements}
+Many final extremal statements are unlabeled. The downward operator transports a labeled expression into the unlabeled algebra by averaging over label placements with a normalization factor:
+\begin{equation}
+\llbracket F^{\sigma}\rrbracket_{\sigma}=q_{\sigma}(F^{\sigma})\,\underline{F},
+\end{equation}
+where $\underline{F}$ denotes the underlying unlabeled class and $q_{\sigma}$ depends on admissible embeddings. This operator is linear:
+\begin{equation}
+\llbracket aX+bY\rrbracket_{\sigma}=a\llbracket X\rrbracket_{\sigma}+b\llbracket Y\rrbracket_{\sigma}.
+\end{equation}
+
+Together with positivity, downward transport is what turns labeled local calculations into unlabeled global density bounds.
+
+\subsection{Positive Homomorphisms and Validity}
+The semantic interpretation is usually phrased by positive homomorphisms
+\begin{equation}
+\phi:\mathcal A^{\sigma}\to\mathbb R
+\end{equation}
+that preserve sums/products and map basis-like positive elements to nonnegative reals. A statement such as $X\ge 0$ is considered valid when
+\begin{equation}
+\forall\phi\in\mathrm{Hom}^+(\mathcal A^{\sigma},\mathbb R),\quad \phi(X)\ge 0.
+\end{equation}
+This viewpoint is exactly what our Lean logic layer formalizes: validity and entailment are semantic notions over all admissible interpretations, not just syntactic rewrites.
+
+\section{Formalization of Flag Algebra}
+
+\subsection{Semantic Core: Objects and Algebraic Operations}
+The semantic core is implemented around the flag algebra modules in
+\texttt{LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean} and
+\texttt{LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean}.
+At this layer we formalize finite flags, vector-like constructors, multiplication, and downward-style transport theorems. The intent is to keep the theorem graph close to the mathematical structure from Section 2.
+
+Representative components include unit-vector style constructors, multiplication commutativity lemmas, and equations connecting finite expansions with algebraic products. These are not just helper statements: they are the bridge from combinatorial counting interpretations to reusable algebraic proof patterns.
+
+\subsection{Semantic Interpretation: Positive Homomorphisms and Cones}
+The interpretation layer is centered on
+\texttt{LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean}.
+Here, we formalize positivity-preserving homomorphisms and show map laws for algebraic structure (zero, one, add, sub, scalar multiplication, product, finite sums). This makes it possible to express inequality obligations as semantic judgments over all positive homomorphisms.
+
+In addition, cone-style notions (e.g., semantic cone membership) provide a natural target for inequality transport. This supports a robust distinction between ``expression-level equality'' and ``semantically valid nonnegativity,'' which is crucial in flag algebra arguments.
+
+\subsection{Logic Layer: Validity, Entailment, and Rule Reuse}
+The logic abstraction appears in
+\texttt{LeanFlagAlgebras/Logic/Defs.lean} and
+\texttt{LeanFlagAlgebras/Logic/Tactic.lean}.
+We define evaluation, validity, and entailment predicates and prove closure rules (reflexivity/transitivity/symmetry variants, compatibility with algebraic operations, and implication transport).
+
+This layer is where forbidden-subgraph reasoning becomes reusable. Instead of repeatedly redefining problem-specific ambient theories, we express assumptions as assertions and reuse entailment infrastructure to derive downstream consequences. The net result is better modularity: changing an application mostly changes assumptions and target assertions, not foundational rule infrastructure.
+
+\subsection{Design Trade-offs and Why This Structure Matters}
+Two trade-offs guided the design.
+First, we avoid over-specialization of definitions to one theorem so that the same core supports multiple applications.
+Second, we accept some upfront abstraction overhead (e.g., explicit entailment infrastructure) to reduce long-run duplication in proof scripts.
+
+This architecture is consistent with successful patterns in strong formalization papers: abstractions are introduced where they reduce proof maintenance and make trust boundaries explicit, not merely for stylistic generality.
+
+\section{Computable Definition of Flags}
+
+\subsection{Generation and Import Pipeline}
+Computable support is organized around generation scripts and Lean-side loaders, including
+\texttt{LeanFlagAlgebras/Flags/generate\_flags.py},
+\texttt{LeanFlagAlgebras/Flags/generate\_graphs.py}, and
+\texttt{LeanFlagAlgebras/Flags/FlagLoader.lean}.
+Generation scripts enumerate candidates and serialize structures, while Lean loaders reconstruct typed objects and enforce shape invariants required by semantic lemmas.
+
+This separation gives practical scalability without giving up formal guarantees. External code can optimize enumeration strategies; Lean checks that imported artifacts are structurally and semantically admissible for theorem use.
+
+\subsection{Compute Modules and Compatibility Obligations}
+On the Lean side, compute-oriented modules such as
+\texttt{LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean} and
+\texttt{LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean}
+provide executable definitions and theorem bridges to semantic statements. The key requirement is compatibility: a computable constructor is useful only if we can prove it respects the intended equivalence and meaning in the abstract layer.
+
+In practice this means every major ingestion step should be paired with a ``soundness connector'' theorem. This connector is what prevents accidental trust shifts from proof to preprocessing.
+
+\subsection{Why Computability Is Not Just Engineering Convenience}
+In large extremal workflows, purely semantic formalization without executable support is often too slow or too rigid. Conversely, purely script-based approaches obscure proof obligations. Our design attempts to sit in the middle: fast candidate production, formally checked interpretation, and theorem-level discharge in Lean.
+
+This approach is reproducible by construction. If a generation script changes, one reruns import and compatibility checks; successful theorem replay demonstrates that the semantic contract is preserved.
+
+\section{Application}
+
+\subsection{Application Targets and Overall Pipeline}
+The primary target is the Erd\H{o}s pentagon proof pipeline in
+\texttt{LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean},
+with supporting artifacts from density and matrix subdirectories.
+We also keep a Mantel-style path available in
+\texttt{LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean}
+to test modularity of abstractions.
+
+The intended workflow is: (i) choose type/flag families, (ii) generate candidate data, (iii) import and validate data, (iv) compose algebraic identities and positivity constraints, and (v) discharge final entailment goals.
+
+\subsection{Density and Matrix Artifact Integration}
+For Erd\H{o}s pentagon, scripts such as
+\texttt{LeanFlagAlgebras/ErdosPentagon/Densities/calculate\_densities.py}
+and
+\texttt{LeanFlagAlgebras/ErdosPentagon/Matrix/generate\_psd\_proof.py}
+produce structured data used by Lean-side reasoning. The formal side should not trust these outputs blindly; rather, loaders and connector lemmas establish that imported coefficients participate correctly in the relevant algebraic statements.
+
+This is where trust decomposition is operational, not rhetorical: generation can remain external, but semantic acceptance is internal to Lean proofs.
+
+\subsection{Formal Claims vs Computational Assistance}
+An important methodological point is that external computation suggests or instantiates constraints, while formal theorems justify their use. This distinction prevents accidental ``proof by file.'' In our setup, the final inequality statements are expected to depend on proved map/compatibility/entailment theorems rather than opaque preprocessing assumptions.
+
+\subsection{Reusability Across Problems}
+Although the Erd\H{o}s pentagon pipeline is the headline application, the architecture is deliberately reusable. The same semantic and logic layers should support alternative forbidden-pattern problems with limited adaptation in generation scripts and instance-level assumptions.
+
+This reusability goal is one reason we emphasize file-level modularity and explicit interfaces between semantic and compute components.
+
+\section{Conclusion}
+
+\subsection{What Has Been Achieved}
+We have outlined a Lean 4 framework that formalizes core graph flag algebra reasoning while preserving practical computability. The framework integrates semantic foundations, logic-level entailment infrastructure, and artifact-aware computational support. The resulting architecture is better viewed as a reusable proof system template than as a single theorem script.
+
+\subsection{Limitations}
+Two limitations remain important. First, large artifact pipelines still require disciplined engineering around formats and loader assumptions. Second, despite improved automation, substantial manual design is still needed for problem-specific decomposition and certificate structuring.
+
+\subsection{Next Steps}
+Near-term directions include stronger automatic checks for artifact-to-theorem connectors, richer diagnostics for failed entailment goals, and broader application templates beyond current benchmark families. Medium-term goals include better interoperability of formalized extremal workflows across proof assistant ecosystems.
+
+\subsection{Final Remark}
+The main contribution is not only formal correctness of particular inequalities, but a method for making computationally heavy extremal arguments auditable, maintainable, and portable.
+
+\end{document}

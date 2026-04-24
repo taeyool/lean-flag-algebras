@@ -1,0 +1,2690 @@
+[
+  {
+    "section": "Introduction",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 1,
+    "snippet": "# lean-flag-algebras"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 2,
+    "snippet": "The goal of this project is to formalize the results of the paper [Flag Algebras](https://people.cs.uchicago.edu/~razborov/files/flag.pdf) by Alexander A. Razborov."
+  },
+  {
+    "section": "Introduction",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 19,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 26,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake update LeanFlagAlgebras"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 27,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "def",
+    "symbol_name": "FinFlag",
+    "line_number": 63,
+    "snippet": "def FinFlag (σ : FlagType (Fin n₀)) : Type"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_one_fst",
+    "line_number": 73,
+    "snippet": "theorem finFlag_one_fst"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_one_snd",
+    "line_number": 77,
+    "snippet": "theorem finFlag_one_snd"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagDensity_one",
+    "line_number": 81,
+    "snippet": "theorem flagDensity_one"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagPairDensity_one",
+    "line_number": 88,
+    "snippet": "theorem flagPairDensity_one"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_size_ge_n",
+    "line_number": 94,
+    "snippet": "theorem finFlag_size_ge_n₀"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "rat_smul_eq_real_smul",
+    "line_number": 109,
+    "snippet": "lemma rat_smul_eq_real_smul"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_self",
+    "line_number": 132,
+    "snippet": "theorem unitVector_apply_self"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_support",
+    "line_number": 139,
+    "snippet": "theorem unitVector_support"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_other",
+    "line_number": 146,
+    "snippet": "theorem unitVector_apply_other"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_other_size",
+    "line_number": 152,
+    "snippet": "theorem unitVector_apply_other_size"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_eq_sum_unitVector",
+    "line_number": 159,
+    "snippet": "theorem flagVector_eq_sum_unitVector"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_one_support",
+    "line_number": 173,
+    "snippet": "theorem flagVector_one_support"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_one_apply_one",
+    "line_number": 180,
+    "snippet": "theorem flagVector_one_apply_one"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMulWithSize_comm",
+    "line_number": 192,
+    "snippet": "theorem flagMulWithSize_comm"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMulWithSize_one",
+    "line_number": 200,
+    "snippet": "theorem flagMulWithSize_one"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMul_comm",
+    "line_number": 224,
+    "snippet": "theorem flagMul_comm"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMul_one",
+    "line_number": 229,
+    "snippet": "theorem flagMul_one"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_mul_eq_nested_sum",
+    "line_number": 239,
+    "snippet": "theorem flagVector_mul_eq_nested_sum"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_mul_comm",
+    "line_number": 244,
+    "snippet": "theorem flagVector_mul_comm"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "eval",
+    "line_number": 28,
+    "snippet": "def eval (A : Assert σ) (φ : PositiveHom σ) : Prop"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isValid",
+    "line_number": 43,
+    "snippet": "def isValid (A : Assert σ) : Prop :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Entails",
+    "line_number": 46,
+    "snippet": "def Entails (A B : Assert σ) : Prop :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_eq",
+    "line_number": 52,
+    "snippet": "theorem eval_eq (f g : FlagAlgebra σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_eq",
+    "line_number": 57,
+    "snippet": "theorem isValid_eq (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_def",
+    "line_number": 62,
+    "snippet": "theorem entails_def (A B : Assert σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_refl",
+    "line_number": 66,
+    "snippet": "theorem eq_refl (f : FlagAlgebra σ) : isValid (f =ₐ f) := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_symm",
+    "line_number": 70,
+    "snippet": "theorem eq_symm (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_trans",
+    "line_number": 75,
+    "snippet": "theorem eq_trans (f g h : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Eqv",
+    "line_number": 80,
+    "snippet": "def Eqv (f g : FlagAlgebra σ) : Prop :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_iff",
+    "line_number": 86,
+    "snippet": "theorem eqv_iff (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_refl",
+    "line_number": 90,
+    "snippet": "theorem eqv_refl (f : FlagAlgebra σ) : f ≡ₐ f :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_symm",
+    "line_number": 93,
+    "snippet": "theorem eqv_symm {f g : FlagAlgebra σ} (h : f ≡ₐ g) : g ≡ₐ f := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_trans",
+    "line_number": 97,
+    "snippet": "theorem eqv_trans {f g h : FlagAlgebra σ} (hfg : f ≡ₐ g) (hgh : g ≡ₐ h) : f ≡ₐ h := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_add",
+    "line_number": 105,
+    "snippet": "theorem eqv_add {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_sub",
+    "line_number": 115,
+    "snippet": "theorem eqv_sub {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_mul",
+    "line_number": 125,
+    "snippet": "theorem eqv_mul {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_smul",
+    "line_number": 135,
+    "snippet": "theorem eqv_smul (r : ℝ) {f g : FlagAlgebra σ} (hfg : f ≡ₐ g)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_le",
+    "line_number": 145,
+    "snippet": "theorem eval_le (f g : FlagAlgebra σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_le",
+    "line_number": 150,
+    "snippet": "theorem isValid_le (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_implies",
+    "line_number": 155,
+    "snippet": "theorem eval_implies (A B : Assert σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_implies",
+    "line_number": 160,
+    "snippet": "theorem isValid_implies (A B : Assert σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_refl",
+    "line_number": 164,
+    "snippet": "theorem le_refl (f : FlagAlgebra σ) : isValid (f ≤ₐ f) := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_trans",
+    "line_number": 168,
+    "snippet": "theorem le_trans (f g h : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_antisymm_eq",
+    "line_number": 173,
+    "snippet": "theorem le_antisymm_eq (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_implies_le",
+    "line_number": 178,
+    "snippet": "theorem eq_implies_le (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_implies_le'",
+    "line_number": 183,
+    "snippet": "theorem eq_implies_le' (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_add_right",
+    "line_number": 188,
+    "snippet": "theorem le_add_right (f g a : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_add_left",
+    "line_number": 198,
+    "snippet": "theorem le_add_left (f g a : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_smul_nonneg",
+    "line_number": 208,
+    "snippet": "theorem le_smul_nonneg (r : ℝ) (hr : 0 ≤ r) (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "implies_refl",
+    "line_number": 216,
+    "snippet": "theorem implies_refl (A : Assert σ) : isValid (A →ₐ A) := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "implies_trans",
+    "line_number": 220,
+    "snippet": "theorem implies_trans (A B C : Assert σ)"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "modus_ponens",
+    "line_number": 225,
+    "snippet": "theorem modus_ponens {A B : Assert σ}"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_refl",
+    "line_number": 231,
+    "snippet": "theorem entails_refl (A : Assert σ) : A ⊢ₐ A :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_trans",
+    "line_number": 234,
+    "snippet": "theorem entails_trans {A B C : Assert σ} (hAB : A ⊢ₐ B) (hBC : B ⊢ₐ C) : A ⊢ₐ C := by"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_iff_isValid_eq",
+    "line_number": 245,
+    "snippet": "theorem eqv_iff_isValid_eq (f g : FlagAlgebra σ) : (f ≡ₐ g) ↔ isValid (f =ₐ g) :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_iff_isValid_implies",
+    "line_number": 249,
+    "snippet": "theorem entails_iff_isValid_implies (A B : Assert σ) : (A ⊢ₐ B) ↔ isValid (A →ₐ B) :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseFlagAlgebraIndices",
+    "line_number": 28,
+    "snippet": "def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseFlagIndices",
+    "line_number": 63,
+    "snippet": "def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do"
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "runForbiddenFlagExpansion",
+    "line_number": 98,
+    "snippet": "def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :="
+  },
+  {
+    "section": "Introduction",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "runForbiddenFlagMul",
+    "line_number": 162,
+    "snippet": "def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :="
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Fin.coe",
+    "line_number": 5,
+    "snippet": "def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "LabeledGraph",
+    "line_number": 20,
+    "snippet": "structure LabeledGraph (σ : FlagType T) (V : Type) where"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "LabeledGraph.type_verts",
+    "line_number": 24,
+    "snippet": "def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :="
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.mem_type_verts",
+    "line_number": 28,
+    "snippet": "lemma LabeledGraph.mem_type_verts {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} {v : V} :"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.type_verts_card_eq",
+    "line_number": 36,
+    "snippet": "lemma LabeledGraph.type_verts_card_eq {σ : FlagType T} {V : Type} (G : LabeledGraph σ V)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.type_verts_contain",
+    "line_number": 43,
+    "snippet": "lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (t : T)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "iso_type_G_eq_type_embed",
+    "line_number": 69,
+    "snippet": "lemma iso_type_G_eq_type_embed"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.type_size_le_size",
+    "line_number": 92,
+    "snippet": "lemma LabeledGraph.type_size_le_size {σ : FlagType T} {V : Type} [Fintype V] (G : LabeledGraph σ V)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "type_embed_Adj_iff",
+    "line_number": 99,
+    "snippet": "theorem type_embed_Adj_iff"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "iso_type_Adj_iff",
+    "line_number": 106,
+    "snippet": "theorem iso_type_Adj_iff"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "emptyLabeledGraph",
+    "line_number": 117,
+    "snippet": "def emptyLabeledGraph (σ : FlagType T) : LabeledGraph σ T"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "LabeledSubgraph",
+    "line_number": 122,
+    "snippet": "structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "LabeledGraph.top",
+    "line_number": 127,
+    "snippet": "def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :="
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.top_isInduced",
+    "line_number": 146,
+    "snippet": "lemma LabeledGraph.top_isInduced (G : LabeledGraph σ V)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "LabeledGraph.bottom",
+    "line_number": 149,
+    "snippet": "def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :="
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "LabeledGraph.bottom_isInduced",
+    "line_number": 172,
+    "snippet": "lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "IsInduced",
+    "line_number": 177,
+    "snippet": "def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "coe",
+    "line_number": 188,
+    "snippet": "def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "coe_adj_iff",
+    "line_number": 194,
+    "snippet": "theorem coe_adj_iff"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "coe_type_verts_eq",
+    "line_number": 201,
+    "snippet": "lemma coe_type_verts_eq"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "labeledSubgraph_contain_type_verts",
+    "line_number": 222,
+    "snippet": "theorem labeledSubgraph_contain_type_verts"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
+    "symbol_kind": "def",
+    "symbol_name": "inducedLabeledSubgraph",
+    "line_number": 230,
+    "snippet": "def inducedLabeledSubgraph"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "relOfLabeledSubgraph",
+    "line_number": 30,
+    "snippet": "def relOfLabeledSubgraph"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "relOfLabeledSubgraph_symm",
+    "line_number": 37,
+    "snippet": "lemma relOfLabeledSubgraph_symm"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "relOfPredOnLabeledSubgraph",
+    "line_number": 57,
+    "snippet": "def relOfPredOnLabeledSubgraph"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "predIsoLabeledH",
+    "line_number": 64,
+    "snippet": "def predIsoLabeledH"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "predIsoLabeledH_related_support",
+    "line_number": 70,
+    "snippet": "lemma predIsoLabeledH_related_support"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "predIsoLabeledH_related",
+    "line_number": 110,
+    "snippet": "lemma predIsoLabeledH_related"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "predIsoLabeledH_related_ind",
+    "line_number": 121,
+    "snippet": "lemma predIsoLabeledH_related_ind"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "inducedLabeledSubgraphByIso",
+    "line_number": 136,
+    "snippet": "def inducedLabeledSubgraphByIso"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "inducedLabeledSubgraphByIso_isInduced",
+    "line_number": 145,
+    "snippet": "lemma inducedLabeledSubgraphByIso_isInduced"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "inducedLabeledSubgraph_related",
+    "line_number": 156,
+    "snippet": "lemma inducedLabeledSubgraph_related"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "embed_heq_of_subgraph_eq",
+    "line_number": 164,
+    "snippet": "theorem embed_heq_of_subgraph_eq"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "type_embed_heq_of_subgraph_eq",
+    "line_number": 176,
+    "snippet": "theorem type_embed_heq_of_subgraph_eq"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "labeledSubgraph_eq_from_subgraph_eq",
+    "line_number": 187,
+    "snippet": "lemma labeledSubgraph_eq_from_subgraph_eq"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "H_eq_reverseinduced_induced_H",
+    "line_number": 194,
+    "snippet": "lemma H_eq_reverseinduced_induced_H"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isoSetOfInducedLabeledSubgraph",
+    "line_number": 210,
+    "snippet": "def isoSetOfInducedLabeledSubgraph"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isoSetOfInducedLabeledSubgraphFromIsoGH",
+    "line_number": 240,
+    "snippet": "def isoSetOfInducedLabeledSubgraphFromIsoGH"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "LabeledSubgraphList.IsInduced",
+    "line_number": 38,
+    "snippet": "def LabeledSubgraphList.IsInduced"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "predDisjointLabeledSubgraphList",
+    "line_number": 42,
+    "snippet": "def predDisjointLabeledSubgraphList"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "predIsoLabeledHl",
+    "line_number": 47,
+    "snippet": "def predIsoLabeledHl"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "setOfLabeledSubgraphListIsoHl",
+    "line_number": 54,
+    "snippet": "def setOfLabeledSubgraphListIsoHl (G : LabeledGraph σ U) (Hl : LabeledGraphList σ t Vl)"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "relOfLabeledSubgraphList",
+    "line_number": 72,
+    "snippet": "def relOfLabeledSubgraphList"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "relOfLabeledSubgraphList_symm",
+    "line_number": 80,
+    "snippet": "lemma relOfLabeledSubgraphList_symm"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "relOfLabeledSubgraphList_indep",
+    "line_number": 90,
+    "snippet": "lemma relOfLabeledSubgraphList_indep"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "relOfPredOnLabeledSubgraphList",
+    "line_number": 112,
+    "snippet": "def relOfPredOnLabeledSubgraphList"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "predIsoLabeledHl_related",
+    "line_number": 124,
+    "snippet": "lemma predIsoLabeledHl_related"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "inducedLabeledSubgraphList",
+    "line_number": 149,
+    "snippet": "def inducedLabeledSubgraphList"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "inducedLabeledSubgraphList_isInduced",
+    "line_number": 155,
+    "snippet": "lemma inducedLabeledSubgraphList_isInduced"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "inducedLabeledSubgraphListByIso",
+    "line_number": 160,
+    "snippet": "def inducedLabeledSubgraphListByIso"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "inducedLabeledSubgraphListByIso_isInduced",
+    "line_number": 170,
+    "snippet": "lemma inducedLabeledSubgraphListByIso_isInduced"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "inducedLabeledSubgraphList_related",
+    "line_number": 180,
+    "snippet": "lemma inducedLabeledSubgraphList_related"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "Hl_eq_reverseinduced_induced_Hl",
+    "line_number": 192,
+    "snippet": "lemma Hl_eq_reverseinduced_induced_Hl"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isoSetOfInducedLabeledSubgraphList",
+    "line_number": 200,
+    "snippet": "def isoSetOfInducedLabeledSubgraphList"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "labeledSubgraphListDensity_respect_eqv",
+    "line_number": 249,
+    "snippet": "lemma labeledSubgraphListDensity_respect_eqv"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "papers/BEATCS_Collumn26/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 224,
+    "snippet": "\\title{An Introduction to Razborov's Flag Algebra as a Proof System for Extremal Graph Theory}"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "papers/BEATCS_Collumn26/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 243,
+    "snippet": "Razborov's flag algebra forms a powerful framework for deriving asymptotic inequalities between induced subgraph densities, underpinning many advances in extremal graph theory. This survey introduces flag algebra to computer scientists working in logic, programming languages, automated verification, and formal methods. We take a logical perspective on flag algebra and present it in terms of syntax, semantics, and proof strategies, in a style closer to formal logic. One popular proof strategy derives valid inequalities by first proving inequalities in a labelled variant of flag algebra and then transferring them to the original unlabelled setting using the so-called downward operator. We explain this strategy in detail and highlight that its transfer mechanism relies on the notion of what we call an adjoint pair, reminiscent of Galois connections and categorical adjunctions, which appear frequently in work on automated verification and programming languages. Along the way, we work through representative examples, including Mantel's theorem and Goodman's bound on Ramsey multiplicity, to illustrate how mathematical arguments can be carried out symbolically in the flag algebra framework."
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "papers/BEATCS_Collumn26/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 248,
+    "snippet": "Razborov's flag algebra~\\cite{Razborov2007} is a framework for reasoning about"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "source_path": "papers/BEATCS_Collumn26/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 250,
+    "snippet": "In extremal graph theory, many problems ask for the maximum or minimum possible density"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "def",
+    "symbol_name": "FinFlag",
+    "line_number": 63,
+    "snippet": "def FinFlag (σ : FlagType (Fin n₀)) : Type"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_one_fst",
+    "line_number": 73,
+    "snippet": "theorem finFlag_one_fst"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_one_snd",
+    "line_number": 77,
+    "snippet": "theorem finFlag_one_snd"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagDensity_one",
+    "line_number": 81,
+    "snippet": "theorem flagDensity_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagPairDensity_one",
+    "line_number": 88,
+    "snippet": "theorem flagPairDensity_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "finFlag_size_ge_n",
+    "line_number": 94,
+    "snippet": "theorem finFlag_size_ge_n₀"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "rat_smul_eq_real_smul",
+    "line_number": 109,
+    "snippet": "lemma rat_smul_eq_real_smul"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_self",
+    "line_number": 132,
+    "snippet": "theorem unitVector_apply_self"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_support",
+    "line_number": 139,
+    "snippet": "theorem unitVector_support"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_other",
+    "line_number": 146,
+    "snippet": "theorem unitVector_apply_other"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unitVector_apply_other_size",
+    "line_number": 152,
+    "snippet": "theorem unitVector_apply_other_size"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_eq_sum_unitVector",
+    "line_number": 159,
+    "snippet": "theorem flagVector_eq_sum_unitVector"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_one_support",
+    "line_number": 173,
+    "snippet": "theorem flagVector_one_support"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_one_apply_one",
+    "line_number": 180,
+    "snippet": "theorem flagVector_one_apply_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMulWithSize_comm",
+    "line_number": 192,
+    "snippet": "theorem flagMulWithSize_comm"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMulWithSize_one",
+    "line_number": 200,
+    "snippet": "theorem flagMulWithSize_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMul_comm",
+    "line_number": 224,
+    "snippet": "theorem flagMul_comm"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagMul_one",
+    "line_number": 229,
+    "snippet": "theorem flagMul_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_mul_eq_nested_sum",
+    "line_number": 239,
+    "snippet": "theorem flagVector_mul_eq_nested_sum"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagVector_mul_comm",
+    "line_number": 244,
+    "snippet": "theorem flagVector_mul_comm"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "emptyType",
+    "line_number": 14,
+    "snippet": "def emptyType : FlagType (Fin 0) := SimpleGraph.emptyGraph (Fin 0)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "emptyType_size",
+    "line_number": 19,
+    "snippet": "theorem emptyType_size : ∅ₜ.size = 0 := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isoLabeledGraphSetWithSameGraph",
+    "line_number": 23,
+    "snippet": "def isoLabeledGraphSetWithSameGraph"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "funBetweenIsoLabeledGraphSetWithSameGraph",
+    "line_number": 43,
+    "snippet": "def funBetweenIsoLabeledGraphSetWithSameGraph"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "comp_funBetweenIsoLabeledGraphSetWithSameGraph",
+    "line_number": 98,
+    "snippet": "lemma comp_funBetweenIsoLabeledGraphSetWithSameGraph"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isoSetOfIsoLabeledGraphWithSameGraph",
+    "line_number": 115,
+    "snippet": "def isoSetOfIsoLabeledGraphWithSameGraph"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "isomorphismCount_respect_eqv",
+    "line_number": 123,
+    "snippet": "lemma isomorphismCount_respect_eqv"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "downwardNormalizingFactor_labeledGraph_respect_eqv",
+    "line_number": 130,
+    "snippet": "lemma downwardNormalizingFactor_labeledGraph_respect_eqv"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "downwardNormalizingFactor_pos",
+    "line_number": 144,
+    "snippet": "theorem downwardNormalizingFactor_pos"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "downwardNormalizingFactor_nonneg",
+    "line_number": 163,
+    "snippet": "theorem downwardNormalizingFactor_nonneg"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "downwardNormalizingFactor_emptyFlag_pos",
+    "line_number": 169,
+    "snippet": "theorem downwardNormalizingFactor_emptyFlag_pos"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "unlabeledGraph",
+    "line_number": 182,
+    "snippet": "def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V where"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unlabeledGraph_iso",
+    "line_number": 186,
+    "snippet": "theorem unlabeledGraph_iso"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "def",
+    "symbol_name": "unlabeledGraphQuot",
+    "line_number": 197,
+    "snippet": "def unlabeledGraphQuot {V : Type} (G : LabeledGraph σ V) : Flag ∅ₜ V :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unlabeledGraphQuot_respect_eqv",
+    "line_number": 200,
+    "snippet": "theorem unlabeledGraphQuot_respect_eqv"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "unlabel_eq_iff_unlabeledGraph_eqv",
+    "line_number": 213,
+    "snippet": "theorem unlabel_eq_iff_unlabeledGraph_eqv"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "downwardFlagVector_zero",
+    "line_number": 231,
+    "snippet": "lemma downwardFlagVector_zero"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "downwardFlagVector_unitVector",
+    "line_number": 236,
+    "snippet": "lemma downwardFlagVector_unitVector"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "downwardFlagVector_add",
+    "line_number": 242,
+    "snippet": "lemma downwardFlagVector_add"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "downwardFlagVector_sum",
+    "line_number": 248,
+    "snippet": "lemma downwardFlagVector_sum"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "def",
+    "symbol_name": "PositiveHom",
+    "line_number": 14,
+    "snippet": "def PositiveHom (σ : FlagType (Fin n₀)) : Type"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "ext",
+    "line_number": 27,
+    "snippet": "theorem ext {φ₁ φ₂ : PositiveHom σ} (h : ∀ f : FlagAlgebra σ, φ₁ f = φ₂ f) : φ₁ = φ₂"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_zero",
+    "line_number": 35,
+    "snippet": "theorem map_zero (φ : PositiveHom σ) : φ 0 = 0"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_one",
+    "line_number": 40,
+    "snippet": "theorem map_one (φ : PositiveHom σ) : φ 1 = 1"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_add",
+    "line_number": 44,
+    "snippet": "theorem map_add (φ : PositiveHom σ) (f g : FlagAlgebra σ) : φ (f + g) = φ f + φ g"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_sub",
+    "line_number": 48,
+    "snippet": "theorem map_sub (φ : PositiveHom σ) (f g : FlagAlgebra σ) : φ (f - g) = φ f - φ g"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_smul",
+    "line_number": 52,
+    "snippet": "theorem map_smul (φ : PositiveHom σ) (r : ℝ) (f : FlagAlgebra σ) : φ (r • f) = r * φ f"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_mul",
+    "line_number": 59,
+    "snippet": "theorem map_mul (φ : PositiveHom σ) (f g : FlagAlgebra σ) : φ (f * g) = φ f * φ g"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "map_sum",
+    "line_number": 63,
+    "snippet": "theorem map_sum (φ : PositiveHom σ) {ι : Type} (s : Finset ι) (f : ι → FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "positiveHom_unitVector_ge_zero",
+    "line_number": 70,
+    "snippet": "theorem positiveHom_unitVector_ge_zero"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "sum_positiveHom_unitVector_flagWithSize_eq_one",
+    "line_number": 76,
+    "snippet": "theorem sum_positiveHom_unitVector_flagWithSize_eq_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "positiveHom_unitVector_le_one",
+    "line_number": 82,
+    "snippet": "theorem positiveHom_unitVector_le_one"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "positiveHom_unitVector_eq_zero",
+    "line_number": 97,
+    "snippet": "theorem positiveHom_unitVector_eq_zero"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "def",
+    "symbol_name": "semanticCone",
+    "line_number": 119,
+    "snippet": "def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_def",
+    "line_number": 126,
+    "snippet": "theorem le_def (f g : FlagAlgebra σ) : f ≤ g ↔ g - f ∈ semanticCone σ :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flag_sub_nonneg",
+    "line_number": 129,
+    "snippet": "theorem flag_sub_nonneg"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flag_geq_zero",
+    "line_number": 149,
+    "snippet": "theorem flag_geq_zero"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flag_add_le_add",
+    "line_number": 157,
+    "snippet": "theorem flag_add_le_add"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flag_add_le_add_left",
+    "line_number": 168,
+    "snippet": "theorem flag_add_le_add_left"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flag_add_le_add_right",
+    "line_number": 174,
+    "snippet": "theorem flag_add_le_add_right"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "nonneg_smul_nonneg_geq_zero",
+    "line_number": 186,
+    "snippet": "theorem nonneg_smul_nonneg_geq_zero"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/QuadraticForm.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagQuadraticForm_nonneg",
+    "line_number": 16,
+    "snippet": "theorem flagQuadraticForm_nonneg"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/QuadraticForm.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "flagQuadraticForm_downward_nonneg",
+    "line_number": 60,
+    "snippet": "theorem flagQuadraticForm_downward_nonneg"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "eval",
+    "line_number": 28,
+    "snippet": "def eval (A : Assert σ) (φ : PositiveHom σ) : Prop"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "isValid",
+    "line_number": 43,
+    "snippet": "def isValid (A : Assert σ) : Prop :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Entails",
+    "line_number": 46,
+    "snippet": "def Entails (A B : Assert σ) : Prop :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_eq",
+    "line_number": 52,
+    "snippet": "theorem eval_eq (f g : FlagAlgebra σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_eq",
+    "line_number": 57,
+    "snippet": "theorem isValid_eq (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_def",
+    "line_number": 62,
+    "snippet": "theorem entails_def (A B : Assert σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_refl",
+    "line_number": 66,
+    "snippet": "theorem eq_refl (f : FlagAlgebra σ) : isValid (f =ₐ f) := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_symm",
+    "line_number": 70,
+    "snippet": "theorem eq_symm (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_trans",
+    "line_number": 75,
+    "snippet": "theorem eq_trans (f g h : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Eqv",
+    "line_number": 80,
+    "snippet": "def Eqv (f g : FlagAlgebra σ) : Prop :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_iff",
+    "line_number": 86,
+    "snippet": "theorem eqv_iff (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_refl",
+    "line_number": 90,
+    "snippet": "theorem eqv_refl (f : FlagAlgebra σ) : f ≡ₐ f :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_symm",
+    "line_number": 93,
+    "snippet": "theorem eqv_symm {f g : FlagAlgebra σ} (h : f ≡ₐ g) : g ≡ₐ f := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_trans",
+    "line_number": 97,
+    "snippet": "theorem eqv_trans {f g h : FlagAlgebra σ} (hfg : f ≡ₐ g) (hgh : g ≡ₐ h) : f ≡ₐ h := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_add",
+    "line_number": 105,
+    "snippet": "theorem eqv_add {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_sub",
+    "line_number": 115,
+    "snippet": "theorem eqv_sub {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_mul",
+    "line_number": 125,
+    "snippet": "theorem eqv_mul {f f' g g' : FlagAlgebra σ} (hf : f ≡ₐ f') (hg : g ≡ₐ g')"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_smul",
+    "line_number": 135,
+    "snippet": "theorem eqv_smul (r : ℝ) {f g : FlagAlgebra σ} (hfg : f ≡ₐ g)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_le",
+    "line_number": 145,
+    "snippet": "theorem eval_le (f g : FlagAlgebra σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_le",
+    "line_number": 150,
+    "snippet": "theorem isValid_le (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eval_implies",
+    "line_number": 155,
+    "snippet": "theorem eval_implies (A B : Assert σ) (φ : PositiveHom σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "isValid_implies",
+    "line_number": 160,
+    "snippet": "theorem isValid_implies (A B : Assert σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_refl",
+    "line_number": 164,
+    "snippet": "theorem le_refl (f : FlagAlgebra σ) : isValid (f ≤ₐ f) := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_trans",
+    "line_number": 168,
+    "snippet": "theorem le_trans (f g h : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_antisymm_eq",
+    "line_number": 173,
+    "snippet": "theorem le_antisymm_eq (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_implies_le",
+    "line_number": 178,
+    "snippet": "theorem eq_implies_le (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eq_implies_le'",
+    "line_number": 183,
+    "snippet": "theorem eq_implies_le' (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_add_right",
+    "line_number": 188,
+    "snippet": "theorem le_add_right (f g a : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_add_left",
+    "line_number": 198,
+    "snippet": "theorem le_add_left (f g a : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "le_smul_nonneg",
+    "line_number": 208,
+    "snippet": "theorem le_smul_nonneg (r : ℝ) (hr : 0 ≤ r) (f g : FlagAlgebra σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "implies_refl",
+    "line_number": 216,
+    "snippet": "theorem implies_refl (A : Assert σ) : isValid (A →ₐ A) := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "implies_trans",
+    "line_number": 220,
+    "snippet": "theorem implies_trans (A B C : Assert σ)"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "modus_ponens",
+    "line_number": 225,
+    "snippet": "theorem modus_ponens {A B : Assert σ}"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_refl",
+    "line_number": 231,
+    "snippet": "theorem entails_refl (A : Assert σ) : A ⊢ₐ A :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_trans",
+    "line_number": 234,
+    "snippet": "theorem entails_trans {A B C : Assert σ} (hAB : A ⊢ₐ B) (hBC : B ⊢ₐ C) : A ⊢ₐ C := by"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "eqv_iff_isValid_eq",
+    "line_number": 245,
+    "snippet": "theorem eqv_iff_isValid_eq (f g : FlagAlgebra σ) : (f ≡ₐ g) ↔ isValid (f =ₐ g) :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Defs.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "entails_iff_isValid_implies",
+    "line_number": 249,
+    "snippet": "theorem entails_iff_isValid_implies (A B : Assert σ) : (A ⊢ₐ B) ↔ isValid (A →ₐ B) :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseFlagAlgebraIndices",
+    "line_number": 28,
+    "snippet": "def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseFlagIndices",
+    "line_number": 63,
+    "snippet": "def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "runForbiddenFlagExpansion",
+    "line_number": 98,
+    "snippet": "def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :="
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "source_path": "LeanFlagAlgebras/Logic/Tactic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "runForbiddenFlagMul",
+    "line_number": 162,
+    "snippet": "def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "EmptyTypedJsonData",
+    "line_number": 8,
+    "snippet": "structure EmptyTypedJsonData where"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "FlagEntry",
+    "line_number": 12,
+    "snippet": "structure FlagEntry where"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "FlagJsonData",
+    "line_number": 20,
+    "snippet": "structure FlagJsonData where"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "jsonNumberToNat",
+    "line_number": 27,
+    "snippet": "def jsonNumberToNat? (x : JsonNumber) : Option Nat :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "mkEdgeFinset",
+    "line_number": 33,
+    "snippet": "def mkEdgeFinset (n : ℕ) (l : List (Sym2 (Fin n))) : Finset (Sym2 (Fin n)) :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "jsonEdgesToTerm",
+    "line_number": 36,
+    "snippet": "def jsonEdgesToTerm (numVerts : ℕ) (edgesJson : Json) : CommandElabM (TSyntax `term) := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseNFromGraphsPath",
+    "line_number": 45,
+    "snippet": "def parseNFromGraphsPath (path : System.FilePath) : CommandElabM Nat := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseCoeffString",
+    "line_number": 56,
+    "snippet": "def parseCoeffString (s : String) : CommandElabM (Nat × Nat) := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseTypeIndices",
+    "line_number": 76,
+    "snippet": "def parseTypeIndices (j : Json) : CommandElabM (Array Nat) := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "mkTypeIndexNatExpr",
+    "line_number": 89,
+    "snippet": "def mkTypeIndexNatExpr (typeIndices : Array Nat) : CommandElabM (TSyntax `term) := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseEmptyTypedJsonFile",
+    "line_number": 99,
+    "snippet": "def parseEmptyTypedJsonFile (path : System.FilePath) : CommandElabM EmptyTypedJsonData := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "parseFlagJsonFile",
+    "line_number": 108,
+    "snippet": "def parseFlagJsonFile (path : System.FilePath) : CommandElabM FlagJsonData := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/FlagLoader.lean",
+    "symbol_kind": "def",
+    "symbol_name": "coeffQTerm",
+    "line_number": 196,
+    "snippet": "def coeffQTerm (num den : Nat) : CommandElabM (TSyntax `term) := do"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 89,
+    "snippet": "def generate_flag_json(n: int, k: int, type_num: int) -> Dict:"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 95,
+    "snippet": "flags_dir = base_dir / \"Flags\""
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 96,
+    "snippet": "flags_dir.mkdir(parents=True, exist_ok=True)"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 121,
+    "snippet": "flags: List[Dict] = []"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 140,
+    "snippet": "flags.append("
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 151,
+    "snippet": "flags.sort(key=lambda x: (x[\"underlying_graph_num\"], x[\"type_indices\"]))"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 158,
+    "snippet": "\"flags\": flags,"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 164,
+    "snippet": "description=\"Generate enriched flag JSON from Graphs/graphs_k.json and Graphs/graphs_n.json\""
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 171,
+    "snippet": "output = generate_flag_json(args.n, args.k, args.type_num)"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 173,
+    "snippet": "out_path = Path(__file__).resolve().parent / \"Flags\" / f\"flags_{args.n}_{args.k}_{args.type_num}.json\""
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_flags.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 177,
+    "snippet": "print(f\"Saved {len(output['flags'])} flags to {out_path}\")"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/Flags/generate_graphs.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 71,
+    "snippet": "filename=f\"LeanFlagAlgebras/Flags/Graphs/graphs_{n}.json\""
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "Sym2Graph",
+    "line_number": 82,
+    "snippet": "structure Sym2Graph (n : ℕ) where"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2Graph.toLabeledGraph",
+    "line_number": 86,
+    "snippet": "def Sym2Graph.toLabeledGraph"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2Graph.toLabeledGraph_injective",
+    "line_number": 91,
+    "snippet": "theorem Sym2Graph.toLabeledGraph_injective"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2Graph.toLabeledGraph_adj_iff",
+    "line_number": 115,
+    "snippet": "theorem Sym2Graph.toLabeledGraph_adj_iff"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "_root_.FlagAlgebras.LabeledGraph.toSym2Graph_toLabeledGraph_eq",
+    "line_number": 153,
+    "snippet": "theorem _root_.FlagAlgebras.LabeledGraph.toSym2Graph_toLabeledGraph_eq"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2Graph.toLabeledGraph_toSym2Graph_eq",
+    "line_number": 165,
+    "snippet": "theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2GraphEqv",
+    "line_number": 177,
+    "snippet": "def Sym2GraphEqv {n : ℕ} (G G' : Sym2Graph n) : Prop :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "sym2Graph_card_edges_eq_of_eqv",
+    "line_number": 189,
+    "snippet": "theorem sym2Graph_card_edges_eq_of_eqv"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2GraphEqv.refl",
+    "line_number": 221,
+    "snippet": "theorem Sym2GraphEqv.refl (G : Sym2Graph n) : G ∼sf G :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2GraphEqv.symm",
+    "line_number": 224,
+    "snippet": "theorem Sym2GraphEqv.symm {G G' : Sym2Graph n} (h : G ∼sf G') : G' ∼sf G :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2GraphEqv.trans",
+    "line_number": 227,
+    "snippet": "theorem Sym2GraphEqv.trans {G G' G'' : Sym2Graph n} (h₁ : G ∼sf G') (h₂ : G' ∼sf G'') : G ∼sf G'' :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2EmptyTypedFlag",
+    "line_number": 238,
+    "snippet": "def Sym2EmptyTypedFlag (n : ℕ) : Type :="
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "sym2GraphToList",
+    "line_number": 13,
+    "snippet": "def sym2GraphToList"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "sym2GraphPairToList",
+    "line_number": 18,
+    "snippet": "def sym2GraphPairToList"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2GraphList.toLabeledGraphList",
+    "line_number": 24,
+    "snippet": "def Sym2GraphList.toLabeledGraphList"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "structure",
+    "symbol_name": "Sym2InducedSubgraph",
+    "line_number": 31,
+    "snippet": "structure Sym2InducedSubgraph"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2InducedSubgraph.edges",
+    "line_number": 49,
+    "snippet": "def Sym2InducedSubgraph.edges"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2InducedSubgraph.edges_valid",
+    "line_number": 54,
+    "snippet": "theorem Sym2InducedSubgraph.edges_valid"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2InducedSubgraph.edges_subset",
+    "line_number": 62,
+    "snippet": "theorem Sym2InducedSubgraph.edges_subset"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "Sym2InducedSubgraph.toLabeledSubraph",
+    "line_number": 70,
+    "snippet": "def Sym2InducedSubgraph.toLabeledSubraph"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Sym2InducedSubgraph.toLabeledSubraph_isInduced",
+    "line_number": 93,
+    "snippet": "theorem Sym2InducedSubgraph.toLabeledSubraph_isInduced"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "predDisjointSym2InducedSubgraphList",
+    "line_number": 105,
+    "snippet": "def predDisjointSym2InducedSubgraphList"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "predIsoSym2Hl",
+    "line_number": 110,
+    "snippet": "def predIsoSym2Hl"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "finsetOfSym2InducedSubgraphListIsoHl",
+    "line_number": 145,
+    "snippet": "def finsetOfSym2InducedSubgraphListIsoHl"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "def",
+    "symbol_name": "sym2InducedSubgraphListCount",
+    "line_number": 151,
+    "snippet": "def sym2InducedSubgraphListCount"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "induced_subgraph_adj_iff",
+    "line_number": 157,
+    "snippet": "lemma induced_subgraph_adj_iff"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "subgraph_not_adj",
+    "line_number": 166,
+    "snippet": "lemma subgraph_not_adj"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "source_path": "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "labeledSubgraphListCount_eq_sym2InducedSubgraphListCount",
+    "line_number": 175,
+    "snippet": "theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Mantel_theorem",
+    "line_number": 13,
+    "snippet": "theorem Mantel_theorem"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Mantel_theorem'",
+    "line_number": 55,
+    "snippet": "theorem Mantel_theorem'"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "Flag_3_0_0_3_eq",
+    "line_number": 61,
+    "snippet": "lemma Flag_3_0_0_3_eq"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "Flag_2_0_0_1_eq",
+    "line_number": 77,
+    "snippet": "lemma Flag_2_0_0_1_eq"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "extremal_density_K3_ge",
+    "line_number": 93,
+    "snippet": "lemma extremal_density_K3_ge"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "Turan_density_K3",
+    "line_number": 164,
+    "snippet": "theorem Turan_density_K3"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "ErdosPentagon_Turan_upperBound",
+    "line_number": 8,
+    "snippet": "theorem ErdosPentagon_Turan_upperBound"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "def",
+    "symbol_name": "blowUp",
+    "line_number": 13,
+    "snippet": "def blowUp"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "blowUp_adj_iff",
+    "line_number": 21,
+    "snippet": "theorem blowUp_adj_iff"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "blowUp_K3_free",
+    "line_number": 28,
+    "snippet": "theorem blowUp_K3_free"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "free_of_iso",
+    "line_number": 54,
+    "snippet": "theorem free_of_iso"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "fin_div_lt",
+    "line_number": 68,
+    "snippet": "lemma fin_div_lt"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "def",
+    "symbol_name": "blowUp_fin",
+    "line_number": 76,
+    "snippet": "def blowUp_fin"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "def",
+    "symbol_name": "blowUp_fin_iso",
+    "line_number": 86,
+    "snippet": "def blowUp_fin_iso"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "K3_free_C5",
+    "line_number": 97,
+    "snippet": "lemma K3_free_C5"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "lemma",
+    "symbol_name": "subgraphCount_blowUp_C5_ge",
+    "line_number": 125,
+    "snippet": "lemma subgraphCount_blowUp_C5_ge"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "generalizedExtremalNumber_K3_C5_ge",
+    "line_number": 197,
+    "snippet": "theorem generalizedExtremalNumber_K3_C5_ge"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "generalizedExtremalNumber_K3_C5_div_choose_ge",
+    "line_number": 212,
+    "snippet": "theorem generalizedExtremalNumber_K3_C5_div_choose_ge"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "ErdosPentagon_Turan_lowerBound",
+    "line_number": 231,
+    "snippet": "theorem ErdosPentagon_Turan_lowerBound"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+    "symbol_kind": "theorem",
+    "symbol_name": "ErdosPentagon_Turan",
+    "line_number": 250,
+    "snippet": "theorem ErdosPentagon_Turan"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 41,
+    "snippet": "# Supports names like flags_5_3_1.json or graphs_5.json."
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 60,
+    "snippet": "if isinstance(raw, dict) and \"flags\" in raw:"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 64,
+    "snippet": "for idx, item in enumerate(raw[\"flags\"]):"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 85,
+    "snippet": "\"Unsupported JSON format. Expected either list-of-graphs or object with key 'flags'.\""
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 90,
+    "snippet": "# Example: flags_5_3_1.json -> 5_3_1"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 91,
+    "snippet": "m = re.search(r\"flags_(\\d+_\\d+_\\d+)\\.json$\", path.name)"
+  },
+  {
+    "section": "Application",
+    "source_path": "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 185,
+    "snippet": "def density_p_f1_f2_given_g(host: GraphRecord, f1: GraphRecord, f2: GraphRecord) -> Fraction:"
+  },
+  {
+    "section": "Conclusion",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 1,
+    "snippet": "# lean-flag-algebras"
+  },
+  {
+    "section": "Conclusion",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 2,
+    "snippet": "The goal of this project is to formalize the results of the paper [Flag Algebras](https://people.cs.uchicago.edu/~razborov/files/flag.pdf) by Alexander A. Razborov."
+  },
+  {
+    "section": "Conclusion",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 19,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs"
+  },
+  {
+    "section": "Conclusion",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 26,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake update LeanFlagAlgebras"
+  },
+  {
+    "section": "Conclusion",
+    "source_path": "README.md",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 27,
+    "snippet": "MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 23,
+    "snippet": "\\title{Formalizing Flag Algebra in Lean}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 49,
+    "snippet": "\\item We formalize Alexander Razborov’s flag algebra for graphs in Lean 4."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 50,
+    "snippet": "\\item We define a computable version of flags so that computations of flag algebra operations can be verified within Lean."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 52,
+    "snippet": "\\item We formally verify the flag algebra proof of the Erdős pentagon problem using our framework."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 55,
+    "snippet": "\\section{Background on Flag Algebra}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 60,
+    "snippet": "A \\emph{type} of size $k$ is a graph $\\sigma$ with $V(\\sigma)=[k]$. For a graph $G$, an \\emph{embedding} of $\\sigma$ into $G$ is an injective map $\\theta : [k] \\to V(G)$ such that $\\sigma$ is isomorphic to the induced subgraph $G[\\operatorname{Im}\\theta]$. A \\emph{$\\sigma$-flag} is a pair $G^{\\sigma}=(G,\\theta)$ consisting of a graph $G$ and an embedding $\\theta$ of $\\sigma$ into $G$. For $G^{\\sigma}=(G,\\theta)$, we define $V(G^{\\sigma}) \\coloneqq V(G)$, $E(G^{\\sigma}) \\coloneqq E(G)$, $v(G^{\\sigma}) \\coloneqq v(G)$, and $e(G^{\\sigma}) \\coloneqq e(G)$. We call $v(G^{\\sigma})$ the \\emph{size} of $G^{\\sigma}$."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 62,
+    "snippet": "We say that two $\\sigma$-flags $G^{\\sigma}_1=(G_1,\\theta_1)$ and $G^{\\sigma}_2=(G_2,\\theta_2)$ are \\emph{isomorphic}, denoted $G^{\\sigma}_1 \\simeq G^{\\sigma}_2$, if there exists a graph isomorphism $f : V(G_1) \\to V(G_2)$ such that $f \\circ \\theta_1 = \\theta_2$. For $n \\ge v(\\sigma)$, let $\\mathcal{F}_n^{\\sigma}$ denote the set of all $\\sigma$-flags of size $n$ up to isomorphism, and let $\\mathcal{F}^{\\sigma}$ denote the set of all $\\sigma$-flags up to isomorphism."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 64,
+    "snippet": "\\subsection{Subflag Density}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 66,
+    "snippet": "Fix a type $\\sigma$ of size $k$. Let $G^{\\sigma}$, $F^{\\sigma}_1$, ..., $F^{\\sigma}_t$ be $\\sigma$-flags such that"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 71,
+    "snippet": "\\subsection{Flag Algebra}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 75,
+    "snippet": "\\section{Formalization of Flag Algebra}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 77,
+    "snippet": "\\section{Computable Definition of Flags}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 81,
+    "snippet": "\\subsection{Mantel's Theorem}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 83,
+    "snippet": "\\subsection{Erdős Pentagon Problem}"
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 102,
+    "snippet": "\\item \\textbf{Section 1 \\& 2 (Background \\& Math):} Introduces the mathematical context and provides pen-and-paper proof sketches before introducing code."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 110,
+    "snippet": "\\item \\textbf{Structure by Abstraction:} Presenting mathematical proof sketches before technical code significantly reduces reader fatigue."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 128,
+    "snippet": "\\item \\textbf{Section 3 (Mathematical Background):} Provides informal, pen-and-paper proof sketches for the LYM inequalities, Kruskal-Katona, and Erd\\H{o}s-Ko-Rado theorems to ground the reader."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 129,
+    "snippet": "\\item \\textbf{Section 4 (Formalizing the Shadow):} Details the Lean definitions for set families and shadows, followed by the formal proofs of the local and general LYM inequalities."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 139,
+    "snippet": "\\item \\textbf{Adapt Mathematical Proofs:} Demonstrate how traditional textbook proofs (like double-counting on pairs) are translated into structures better suited for the prover, such as forming two exact sets and demonstrating subset relations."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 153,
+    "snippet": "\\item \\textbf{Sections 1 \\& 2 (Background \\& Overview):} Introduces the history of the Erd\\H{o}s-Szekeres problem and the overall pipeline of the SAT-based proof."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 155,
+    "snippet": "\\item \\textbf{Sections 5 \\& 6 (Symmetry Breaking \\& SAT Encoding):} Explains the search space reduction techniques via canonical position transformations, the construction of the CNF formula, and the actual execution results of the SAT solver and proof checker (\\texttt{cake\\_lpr})."
+  },
+  {
+    "section": "Abstract",
+    "source_path": "papers/paper.tex",
+    "symbol_kind": "text",
+    "symbol_name": "line",
+    "line_number": 164,
+    "snippet": "\\item \\textbf{Modular Trust Story:} For proofs requiring massive computation, it is crucial to clearly explain the \"trust structure\"—detailing how the theorem prover (Lean), high-performance solver (CaDiCaL), and external checker (\\texttt{cake\\_lpr}) are separated and integrated so that the entire pipeline operates without logical flaws."
+  }
+]

@@ -1,0 +1,65 @@
+[
+  {
+    "section": "Introduction",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\introduction\\apply_task.md"
+  },
+  {
+    "section": "Background on Flag Algebra",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\background_on_flag_algebra\\apply_task.md"
+  },
+  {
+    "section": "Formalization of Flag Algebra",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\formalization_of_flag_algebra\\apply_task.md"
+  },
+  {
+    "section": "Computable Definition of Flags",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\computable_definition_of_flags\\apply_task.md"
+  },
+  {
+    "section": "Application",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\application\\apply_task.md"
+  },
+  {
+    "section": "Conclusion",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\conclusion\\apply_task.md"
+  },
+  {
+    "section": "Abstract",
+    "task_dir": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract",
+    "planner_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract\\planner_task.md",
+    "retriever_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract\\retriever_task.md",
+    "writer_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract\\writer_task.md",
+    "verifier_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract\\verifier_task.md",
+    "apply_task": "C:\\Users\\Gyeongwon Jeong\\Desktop\\Flag Algebra\\lean-flag-algebras\\papers\\agentic\\out\\agent_runs\\abstract\\apply_task.md"
+  }
+]
