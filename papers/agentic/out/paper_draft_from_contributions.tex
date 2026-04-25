@@ -123,9 +123,14 @@ ordering via positive homomorphisms, and connect flag algebra inequalities to
 combinatorial Turán densities through a measure-theoretic framework.  At the
 computational level, we introduce a concrete, decidably-equal graph
 representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
-the abstract definitions; this allows \lean{native\_decide} and \lean{decide
-+kernel} to discharge over 2{,}800 density and matrix-equality obligations
-automatically.  Structural proof obligations---normalizing linear combinations
+the abstract definitions.  A naive reflective evaluator is still too slow for
+pentagon-sized tables, because it repeatedly invokes quotient equality,
+generic finite-type enumeration, and graph-isomorphism search.  We therefore
+verify optimized Boolean isomorphism procedures that reject impossible cases by
+edge-count invariants, permute only non-type vertices for typed flags, and
+compare adjacency over a fixed finite edge list; these verified optimizations
+make \lean{native\_decide} usable for over 2{,}800 density obligations, while
+\lean{decide +kernel} checks the SDP matrix equalities.  Structural proof obligations---normalizing linear combinations
 of flag terms and applying expansion and multiplication identities---are handled
 by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
 a canonical naming convention for flags as a machine-readable encoding of
@@ -248,12 +253,17 @@ automated discharge of density and SDP certificate obligations.
   \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
     We introduce \lean{Sym2Graph}, a finitely-representable graph type with
     decidable equality, and prove adequacy theorems equating abstract flag
-    densities to computable \lean{Sym2Graph} densities.  We verify SDP
-    certificates via an exact LDL$^\top$ decomposition over $\mathbb{Q}$,
-    checked by \lean{decide +kernel}.  We distinguish a deliberate
-    \emph{trust hierarchy}: \lean{native\_decide} for density tables (trusts
-    the native compiler) and \lean{decide +kernel} for SDP certificates
-    (trusts only the kernel).
+    densities to computable \lean{Sym2Graph} densities.  The contribution is
+    not merely that the definitions are executable: the first executable
+    version was not usable at the scale of the pentagon proof.  The final
+    reflection layer includes verified optimizations for isomorphism checking
+    (edge-cardinality pruning, type-aware permutation of only unlabeled
+    vertices, and edge-list comparison), plus elaboration-time generation of
+    density theorems from JSON tables.  We verify SDP certificates via an exact
+    LDL$^\top$ decomposition over $\mathbb{Q}$, checked by
+    \lean{decide +kernel}.  We distinguish a deliberate \emph{trust hierarchy}:
+    \lean{native\_decide} for density tables (trusts the native compiler) and
+    \lean{decide +kernel} for SDP certificates (trusts only the kernel).
 
   \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
     We implement a suite of custom Lean~4 elaboration tactics that exploit a
@@ -921,19 +931,89 @@ injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
 
-\paragraph{Key challenge.}
-The main difficulty in the reflection layer is making graph isomorphism
-decidable efficiently enough for \lean{native\_decide} to terminate on
-five-vertex graphs in reasonable time.  The naive approach---enumerate all
-$n!$ permutations of the vertex set and check each---runs in $5! = 120$
-steps for size-5 graphs, which is fast enough.  However, the adequacy
-theorems require that the abstract \lean{flagDensity} and the concrete
-\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
-construction and reasoning about representatives, which was the source of most
-of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
-The key insight is that density over the quotient equals the density computed
-on any canonical representative, and the \lean{Sym2Graph} representation
-provides a canonical form via its \lean{Finset} of edges.
+\subsection{From Naive Reflection to Usable Reflection}
+
+The central engineering lesson of the reflection layer is that
+\emph{computable} is not the same as \emph{usable}.  A straightforward
+reflective design would keep the abstract definitions as close as possible to
+the mathematics, make the relevant finite types into \lean{Fintype}s, and ask
+\lean{native\_decide} to evaluate density goals by unfolding
+\lean{flagDensity}.  This works as a proof of concept, but it is not a viable
+compilation strategy for the pentagon proof.  Each density check would then
+repeatedly construct finite sets of abstract subgraphs, compare quotient
+classes by searching for flag isomorphisms, synthesize overlapping
+\lean{Fintype} instances, and carry proof-valued fields through the evaluator.
+The graphs are small, but the proof terms are not: the evaluator is reducing a
+proof-relevant encoding of finite combinatorics, not a simple graph algorithm.
+
+The optimized layer treats reflection more like verified compilation.  The
+abstract quotient definitions remain the specification, while the executable
+programs in \lean{Compute/FastIso.lean} and \lean{Compute/FlagDensity.lean}
+act as compiled code.  The connection between them is established by adequacy
+theorems, so changing the implementation of the Boolean checker does not change
+the mathematical theorem being proved.
+
+\paragraph{Optimization 1: Boolean isomorphism with early pruning.}
+The first bottleneck is flag isomorphism.  The generic \lean{Fintype}-based
+decision procedure enumerates equivalences and then filters by adjacency and
+type preservation.  In contrast, \lean{isEmptyIsoFast\_bool} first checks the
+edge-count invariant; if two graphs have different numbers of edges, it returns
+\lean{false} without enumerating any permutation.  Only after this cheap
+rejection test does it enumerate permutations of \lean{List.finRange n}.  For
+each candidate permutation it compares membership for every possible edge in
+\lean{allEdges n}, using the \lean{Finset} edge representation directly:
+\begin{lstlisting}
+def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
+  if G1.edges.card != G2.edges.card then false
+  else
+    let perms := (List.finRange n).permutations
+    let edges := allEdges n
+    perms.any fun perm =>
+      edges.all fun e =>
+        edgeMembershipAgrees G1 G2 perm e
+\end{lstlisting}
+The displayed code suppresses the low-level \lean{decide} calls, but the
+structure matches \lean{FastIso.lean}: compare graph invariants first, then
+compare all edges under each candidate permutation.
+
+\paragraph{Optimization 2: type-aware permutation.}
+Typed flags admit a stronger optimization.  A $\sigma$-flag isomorphism must
+commute with the type embedding, so the labeled vertices are fixed by the type
+map.  The optimized checker \lean{isIsoFast\_bool} therefore computes the
+non-type vertices using \lean{getNonTypeVerts}, enumerates permutations only of
+those vertices, and reconstructs the full vertex map with \lean{buildFullMap}.
+For the type-3, size-5 flags used in the pentagon proof, this changes the
+search from $5!$ candidate maps to $(5-3)!$ candidate maps before any adjacency
+comparison is performed.  This matters because the density table contains
+thousands of such checks, and each failed isomorphism search appears inside a
+larger density computation.
+
+\paragraph{Optimization 3: verified replacement of generic instances.}
+The optimized Boolean checkers are not trusted oracles.  They come with both
+directions of correctness, for example
+\lean{isEmptyIsoFast\_bool\_true\_correct} and
+\lean{isEmptyIsoFast\_bool\_false\_correct}.  These theorems justify replacing
+the generic quotient equality procedure by high-priority instances:
+\lean{fastDecidableSym2GraphEqv},
+\lean{fastFintypeSym2EmptyTypedFlag}, and
+\lean{fastDecidableSym2EmptyTypedFlagEqv}.  From the perspective of the rest
+of the development, equality on reflected flags still means equality in the
+quotient setoid; only the implementation of the decision procedure has changed.
+This is the same separation of specification and implementation that one
+expects from verified decision procedures in PL, but applied to graph
+isomorphism inside a formalization of extremal combinatorics.
+
+\paragraph{Optimization 4: compute over data, prove equivalence once.}
+The density computation itself is similarly compiled.  Rather than enumerate
+abstract \lean{LabeledSubgraph}s directly, the concrete layer enumerates
+\lean{Sym2InducedSubgraph}s, represented only by a finite vertex set, and
+computes their edge sets by filtering the host graph's \lean{Finset} of edges.
+For typed flags, \lean{Sym2InducedLabeledSubgraph} additionally stores the
+proof that the type vertices are included.  The adequacy theorem
+\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount} proves that
+this data-oriented enumeration has the same cardinality as the abstract
+definition.  Thus the cost of quotient and subgraph reasoning is paid once in
+the proof of adequacy, not thousands of times in the generated density lemmas.
 
 \subsection{Adequacy Theorems}
 
@@ -956,6 +1036,20 @@ The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
+
+For a PL audience, the important point is that the adequacy theorem is a
+refinement theorem: the executable program computes exactly the denotation of
+the abstract specification.  The proof factors through count-level adequacy
+(\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}) and
+density-level adequacy
+(\lean{labeledSubgraphListDensity\_eq\_sym2InducedSubgraphListDensity}).
+Consequently, the generated theorem
+\[
+  \lean{flagDensity2 F0 F1 G = q}
+\]
+is not a certificate that the external JSON table is trusted; it is a kernel
+proof that the reflected evaluator, connected to the abstract definition by
+adequacy, computes the rational number $q$.
 
 \subsection{Elaboration-Time Theorem Generation}
 
@@ -981,6 +1075,17 @@ The three proof steps are: unfold the concrete flag definitions (making their
 \lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
 call \lean{native\_decide} to evaluate the resulting finite computation.
 The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
+
+This design also changes the proof-engineering scale.  The JSON files are not
+used as proof certificates in the logical sense; they are build inputs that
+determine which theorems Lean should attempt to prove and what rational value
+they should state.  If a table entry is wrong, the generated theorem fails at
+\lean{native\_decide}.  If the table entry is right, the theorem is stored as a
+named lemma and later proofs use it by rewriting rather than by recomputing the
+density from scratch.  In effect, the elaborator performs a verified
+specialization pass: it turns a general reflective evaluator into thousands of
+small, reusable theorem constants specialized to the flags that appear in the
+certificate.
 
 \subsection{SDP Certificate Verification via LDL$^\top$}
 \label{sec:sdp}
@@ -1534,17 +1639,25 @@ data-heavy computation, and algebraic bookkeeping), and our framework provides
 reusable infrastructure for all three.
 
 \paragraph{Lessons for proof engineering.}
-Three design choices proved unexpectedly decisive.  First, the \emph{trust
+Four design choices proved unexpectedly decisive.  First, reflection had to be
+treated as a verified optimization problem, not merely as a way to run the
+definition.  The naive executable version of flag density still exposed
+Lean's evaluator to quotient equality, proof-valued fields, generic finite
+enumeration, and repeated graph-isomorphism search.  The usable version
+separates specification from implementation: abstract flag densities remain the
+specification, while \lean{Sym2Graph}, the fast Boolean isomorphism checkers,
+and the concrete induced-subgraph counters are optimized implementations
+connected back to the specification by adequacy theorems.  Second, the \emph{trust
 hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
 for density tables) emerged not from abstract principle but from practical
 necessity: \lean{native\_decide} over rational matrix products exceeds the
 kernel's stack depth, while \lean{decide +kernel} over the same matrix
 terminates in finite (if slow) time.  The hierarchy is thus a response to
 concrete computational constraints, not a prior design commitment.
-Second, \emph{encoding structure in names} rather than type-class attributes
+Third, \emph{encoding structure in names} rather than type-class attributes
 was motivated by a performance observation: attribute lookup during elaboration
 triggers unification, which compounds with the size of flag algebra expressions
-to cause timeouts; name inspection does not.  Third, the \emph{general
+to cause timeouts; name inspection does not.  Fourth, the \emph{general
 forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
 because it required a measure-theoretic construction (the random extension
 measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
