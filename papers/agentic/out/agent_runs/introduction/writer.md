@@ -1,37 +1,133 @@
-[DRY-RUN:Writer]
-Project: Formalizing Flag Algebra in Lean
-Target Section: Introduction
+\label{sec:intro}
 
-Mandatory Considerations:
-# Paper Writing Considerations
+\paragraph{Flag algebras in extremal combinatorics.}
+A central question in extremal graph theory is: among all large graphs on $n$
+vertices that avoid some fixed graph $H$ as a (not necessarily induced) subgraph, what is the
+maximum possible density of copies of another graph $F$?
+The \emph{generalized Turán density} $\tdensity{F}{H}$
+formalizes this question as a limit:
+\[
+  \tdensity{F}{H}
+    \;=\;
+  \lim_{n\to\infty}
+  \frac{1}{\binom{n}{|V(F)|}}
+  \max\bigl\{\#\text{copies of }F \text{ in } G
+             \;\big|\;
+             G \text{ is } H\text{-free},\;|V(G)|=n\bigr\}.
+\]
 
-이 파일은 에이전트가 논문 문장을 생성할 때 반드시 참고하는 제약과 체크리스트입니다.
-항목을 자유롭게 추가/수정하면 다음 실행부터 자동 반영됩니다.
+Razborov's flag algebra method~\cite{razborov2007flag} provides a
+\emph{systematic} framework for deriving upper bounds on such densities.
+It works by constructing a graded, commutative $\mathbb{R}$-algebra---the
+\emph{flag algebra}---whose elements represent linear combinations of
+induced subgraph patterns.  The algebra is equipped with a product encoding
+simultaneous occurrence and a semantic ordering: an element $f$ is
+\emph{non-negative} (lies in the semantic cone) if its value under every
+positive $\mathbb{R}$-algebra homomorphism is $\geq 0$.
+Non-negativity certificates for carefully chosen elements yield upper bounds
+on Turán densities directly.
 
-## 0) Journal Fit Profile (Paraphrased, Agent-Ready)
-아래는 저널 aims/scope의 핵심을 요약한 실행 규칙이다. 원문 복붙 대신 이 요약을 우선 사용한다.
+In practice, these certificates are produced by semidefinite programming:
+one seeks a positive semidefinite matrix $Q$ such that
+$f - c\cdot\mathbf{1} = \sum_{i,j} Q_{ij}\cdot e_i e_j$ holds in the algebra
+(where the $e_i$ are typed flag basis elements and $c$ is the claimed bound).
+An SDP solver finds $Q$ numerically; one must then \emph{verify} that $Q$ is
+genuinely positive semidefinite and that the algebraic identity holds exactly.
 
-### 0.1 핵심 방향
-- 수학 독자를 대상으로 쓰되, Introduction은 비전공자도 따라올 수 있게 접근 가능해야 한다.
-- 논문 주장은 반드시 형식화 산출물(Lean 코드/증명 아티팩트)과 함께 제시되어야 한다.
-- 본문에 긴 코드 블록을 과도하게 넣지 말고, 코드 저장소를 주 근거로 참조한다.
-- 논문 평가는 "수학적 관련성 + 형식화의 품질 + 재현 가능성" 중심으로 맞춘다.
+\paragraph{The formalization challenge.}
+Formalizing a flag algebra proof in a proof assistant requires confronting three
+distinct, non-reducible categories of proof obligation:
 
-### 0.2 평가 축(섹션별로 반영)
-- Formalization novelty: 기존 형식화 대비 무엇이 새로운가?
-- Mathematical significance: 다루는 결과의 수학적 의미가 무엇인가?
-- Insight: 형식화 과정에서 얻은 새로운 통찰이 있는가?
-- Generality: 결과와 기법이 어디까지 일반화되는가?
-- Integration: 기존 라이브러리와 어떻게 연결/통합되는가?
-- Reproducibility: 타 생태계/타 프로젝트에 이전 가능한 교훈이 있는가?
-- Engineering quality: 코드 가독성/문서화/유지보수성은 충분한가?
+\begin{enumerate}
+  \item \textbf{Abstract structure.}  Flags (quotients of labeled graphs under
+    isomorphism), the flag algebra (a quotient module equipped with a commutative
+    ring structure), positive homomorphisms (the semantic ordering),
+    the Turán density (a measure-theoretic limit), and the transfer theorem
+    connecting flag algebra inequalities to density bounds.  These are
+    conceptually non-trivial but finite in number; each requires careful
+    type-theoretic encoding.
 
-### 0.3 Agent Execution Rules (Hard Constraints)
-- MUST: 모든 핵심 주장에 Lean 아티팩트 근거를 붙인다.
-- MUST: "AI가 제안"한 내용이라도 증명 아티팩트가 없으면 기여로 주장하지 않는다.
-- MUST: 코드 블록은 설명에 꼭 필요한 최소량만 사용한다.
-- SHOULD: 각 섹션 말미에 novelty/insight/reproducibility 관점 요약 2~4문장을 둔다.
-- SHOULD: proof assistant 선택(Lean 4)이 결과에 준 영향을 명시한다.
+  \item \textbf{Data-heavy computation.}  For each pair of flags $(F,G)$
+    appearing in the proof, one must certify the exact rational density
+    $\den{F}{G}$.  For the Erd\H{o}s pentagon theorem,
+    this means hundreds of density values over graphs with up to five vertices
+    and flag multiplication tables of similar size.  These values are computed
+    externally and must be imported into the proof and verified against the
+    formal definitions.
 
-### 0.4 운영 팁
-- 저널 원문은 별도 메모(예:
+  \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments involve
+    manipulating linear combinations of hundreds of flag terms: expanding a
+    flag at a larger vertex count, computing products of typed flags, and
+    normalizing sums into a canonical form.  Each individual step is routine
+    but the aggregate is prohibitively tedious to discharge manually.
+\end{enumerate}
+
+These three categories are not merely independent complications; they call for
+\emph{qualitatively different} proof techniques.  The abstract structure
+requires faithful encoding in a dependent type theory.
+The data-heavy computation requires a \emph{reflection} architecture:
+a decidably-computable concrete representation whose connection to the abstract
+definitions is certified by adequacy theorems, allowing Lean's kernel (or native
+evaluator) to check each density value automatically.
+The algebraic bookkeeping requires \emph{proof-by-reflection via custom
+elaboration tactics} that inspect the syntactic structure of the proof state
+and dispatch the right sequence of domain-specific lemmas without manual
+guidance.
+
+\paragraph{This paper.}
+We present a Lean~4 formalization of Razborov's flag algebra method for
+graphs, organized around the two-layer architecture that the challenge analysis
+dictates.  The \emph{abstract layer} encodes the mathematical semantics
+faithfully in Lean~4's dependent type system, including a novel
+\emph{general forbidden-subgraph reasoning rule} that does not require
+problem-specific axiomatization.  The \emph{reflection layer} bridges the
+abstract definitions to a finitely-computable concrete representation, enabling
+automated discharge of density and SDP certificate obligations.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item \textbf{Abstract formalization (\S\ref{sec:abstract}).}
+    We formalize the full abstract structure of Razborov's flag algebra in
+    Lean~4: flags as quotient types of labeled graphs under isomorphism,
+    the flag algebra as a quotient $\mathbb{R}$-module with a commutative ring
+    structure, the semantic ordering via positive homomorphisms, and a
+    measure-theoretic forbidden-subgraph reasoning framework
+    (\lean{forbidLE}, \lean{generalizedTuranDensity\_le\_of\_forbidLE}).
+    The forbidden-subgraph rule is formulated inside a \emph{single} ambient
+    theory of simple graphs and does not require a per-problem axiom.
+
+  \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
+    We introduce \lean{Sym2Graph}, a finitely-representable graph type with
+    decidable equality, and prove adequacy theorems equating abstract flag
+    densities to computable \lean{Sym2Graph} densities.  We verify SDP
+    certificates via an exact LDL$^\top$ decomposition over $\mathbb{Q}$,
+    checked by \lean{decide +kernel}.  We distinguish a deliberate
+    \emph{trust hierarchy}: \lean{native\_decide} for density tables (trusts
+    the native compiler) and \lean{decide +kernel} for SDP certificates
+    (trusts only the kernel).
+
+  \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
+    We implement a suite of custom Lean~4 elaboration tactics that exploit a
+    canonical naming convention for flag constants as a machine-readable
+    encoding: \lean{ac\_sort\_pipeline} for linear normalization (replacing a
+    generic sort that times out on expressions with $\sim\!25$ terms),
+    and \lean{prove\_flag\_expand\_with\_forbidden\_flag} /
+    \lean{prove\_flag\_mul\_with\_forbidden\_flag} for expansion and
+    multiplication identities (each collapsing 15--20 manual steps into one
+    tactic call).
+
+  \item \textbf{Verified results (\S\ref{sec:results}).}
+    We give formally complete proofs of Mantel's theorem and of
+    $\tdensity{K_3}{C_5} = 24/625$ (the Erd\H{o}s pentagon theorem), including
+    the upper bound via a formally verified SDP certificate and the lower bound
+    via an explicit $C_5$-blow-up construction with a formal limit argument.
+    To our knowledge, this is the first formalization of the flag algebra method
+    in any proof assistant.
+\end{itemize}
+
+\paragraph{Paper organization.}
+Section~\ref{sec:background} recalls the mathematical background on flag
+algebras.  Sections~\ref{sec:abstract}--\ref{sec:tactics} describe the two
+formalization layers in detail.  Section~\ref{sec:results} presents the
+verified results.  Section~\ref{sec:related} discusses related work, and
+Section~\ref{sec:conclusion} concludes.

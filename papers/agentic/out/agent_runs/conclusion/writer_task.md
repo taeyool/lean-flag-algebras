@@ -1,6 +1,6 @@
 # Writer Task
 
-Project: Formalizing Flag Algebra in Lean
+Project: Formalizing Flag Algebras in Lean 4 via Computational Reflection
 Target Section: Conclusion
 
 Depth Target:
@@ -14,24 +14,42 @@ Equation Source PDFs (for mathematical formulas):
 - papers/References/GrzesikThesis14.pdf
 
 Exemplar Formalization Papers (quality bar):
-- papers/References/Formalization/A complete formalization of Fermat's Last Theorem for regular primes in Lean.pdf
-- papers/References/Formalization/A formalization of Borel determinacy in Lean.pdf
-- papers/References/Formalization/Derandomization with Pseudorandomness.pdf
-- papers/References/Formalization/Duality theory in linear optimization and its extensions -- formally verified.pdf
-- papers/References/Formalization/Formalising the Bruhat-Tits Tree.pdf
-- papers/References/Formalization/Formalising the local compactness of the adele ring.pdf
-- papers/References/Formalization/Formalization of derived categories in Lean&mathlib.pdf
-- papers/References/Formalization/Formalizing zeta and L-functions in Lean.pdf
+- (no exemplar files found)
 
 Quality Requirements:
-- Write section bodies with publication-grade depth, not short summaries.
-- Use explicit motivation -> method -> formalization detail -> implication flow.
+- Use papers/paper_claude.tex as the quality benchmark — match or exceed its depth and precision.
+- Improve the reference draft rather than rewrite: identify gaps, strengthen weak arguments, add missing technical detail.
+- Use explicit motivation → method → formalization detail → implication flow.
 - Explain design choices and trade-offs, not only what was implemented.
-- Keep claims tightly grounded in evidence and avoid generic hype language.
-- Ensure each section can stand alone for a mathematical reader unfamiliar with the codebase.
+- Keep claims tightly grounded in Lean evidence and avoid generic hype language.
+- Ensure each section can stand alone for a PL researcher unfamiliar with the codebase.
 
 Mandatory Considerations:
 # Paper Writing Considerations
+
+## PRIORITY 0: Reference Draft
+
+**The file `papers/paper_claude.tex` is the high-quality reference draft for this paper.**
+All agents must:
+1. **Read the reference draft section first** (it is provided in the prompt as "Reference Section Draft").
+2. **Improve and refine it** — do not discard it and write from scratch.
+3. **Preserve all accurate technical content** already present in the reference draft.
+4. **Identify gaps and strengthen weak arguments** rather than adding entirely new content.
+
+The reference draft already has a good structure and solid mathematical content. The agent's job is to improve depth, fix imprecision, add missing details, and ensure all Section Blueprint constraints are satisfied.
+
+## PRIORITY 1: English-Only Output
+
+All section bodies must be written in English. The considerations and author notes may contain Korean text for historical reasons, but all agent outputs (planner JSON, writer LaTeX, verifier LaTeX) must be in English.
+
+## PRIORITY 2: POPL Fitness
+
+The paper targets POPL 2027. Key POPL-specific requirements:
+- Separate the mathematical content (what was formalized) from the engineering choices (how it was implemented in Lean 4) in every section.
+- PL researchers care about the type-theoretic encoding choices. Explain WHY quotient types, WHY reflection, WHY custom tactics — not just THAT they were used.
+- Proof assistant papers at POPL are evaluated on: correctness of claims, depth of formalization novelty, generalizability of techniques, and trustworthiness of the proof pipeline.
+
+---
 
 이 파일은 에이전트가 논문 문장을 생성할 때 반드시 참고하는 제약과 체크리스트입니다.
 항목을 자유롭게 추가/수정하면 다음 실행부터 자동 반영됩니다.
@@ -104,35 +122,125 @@ Mandatory Considerations:
 Author Notes:
 # Author Notes for the Agents
 
-이 파일에는 에이전트가 참고해야 하는 프로젝트별 메모를 적습니다.
-예: 타깃 저널 톤, 강조할 기여, 피하고 싶은 표현, 꼭 넣어야 할 그림/표.
+This file contains project-specific notes that agents should follow when writing or improving sections.
+Hard constraints belong in `considerations.md`; this file is for tone, emphasis, and venue-specific guidance.
 
-## Example Template
-- Target venue:
-- Preferred tone:
-- Must-highlight contributions:
-- Claims to avoid unless quantified:
-- Terminology decisions:
-- Open technical caveats:
+---
 
-주의: 이 파일은 자유 메모입니다. 강제 제약은 considerations.md에 작성하세요.
+## Target Venue and Tone
 
-## Project-Specific Notes
-- 논문 본문에 Section "Formalization of Flag Algebra"를 추가했다. 관련 설명은 이 섹션을 기준으로 우선 배치한다.
-- 현재 목차 구조는 초안이며 고정 규칙이 아니다. 필요하면 섹션/소절을 분할, 통합, 재정렬, 리네이밍해도 된다.
-- 단, 구조를 조정할 때는 변경 이유를 1~3문장으로 설명하고, Abstract/Introduction/Conclusion의 핵심 기여 서술과 충돌하지 않게 유지한다.
-- Background 작성 시 우선 참고 소스:
-	- papers/References/Razborov07.pdf
-	- papers/References/GrzesikThesis14.pdf
-	- papers/BEATCS_Collumn26/paper.tex
-- Background 문단은 위 3개 문헌의 문제 맥락, 핵심 정의 관점, 기존 접근의 한계/차이를 먼저 정리한 뒤, 현재 Lean 형식화와 연결한다.
-- Background에서는 코드 세부 구현보다 개념적 흐름과 문헌 대비 기여를 우선한다.
+- **Target venue**: POPL 2027 (Principles of Programming Languages)
+- **Audience**: PL researchers with some background in type theory, proof assistants, and functional programming. Mathematical background in graph theory and combinatorics should not be assumed; motivate it.
+- **Tone**: Precise, technical, argument-driven. Avoid marketing language ("seamlessly", "powerful", "elegant"). Prefer concrete claims with code/theorem evidence.
+- **Length guidance**: Conference paper, roughly 25–30 pages in ACM two-column format.
+
+---
+
+## The Reference Draft
+
+**`papers/paper_claude.tex` is the high-quality reference draft for this paper.**
+Agents must treat it as the primary starting point and *improve* it — not replace it.
+Key properties of the reference draft that must be preserved:
+
+1. **Two-layer architecture framing** (abstract + reflection layers): this is the paper's organizing principle. Do not flatten it.
+2. **Three categories of proof obligation** (abstract structure / data-heavy computation / algebraic bookkeeping): the introduction uses these to motivate the two layers. Keep this framing sharp.
+3. **Section structure**: Introduction → Background: Flag Algebras → Abstract Formalization → The Reflection Layer → The Tactic Layer → Results → Related Work → Conclusion. These exact section names must be used in the output draft.
+4. **Key claimed contributions** (all four must appear in abstract, introduction, and conclusion):
+   - Abstract formalization of flag algebra in Lean 4 (flags as quotient types, flag algebra as quotient module, positive homomorphisms, forbidden-subgraph framework)
+   - Reflection architecture: `Sym2Graph` + adequacy theorems + `native_decide`/`decide+kernel` for density and SDP certificate verification
+   - Tactic automation: `ac_sort_pipeline` for linear normalization, `prove_flag_expand_with_forbidden_flag` and `prove_flag_mul_with_forbidden_flag` for expansion/multiplication identities
+   - Verified results: Mantel's theorem and Erdős pentagon theorem ($\pi(K_3; C_5) = 24/625$, both bounds)
+
+---
+
+## Terminology Decisions
+
+Use these consistently throughout the paper:
+
+| Concept | Preferred term |
+|---|---|
+| Flagmatic-style certificates | "SDP certificates" |
+| The concrete graph type | `Sym2Graph` |
+| Lean's kernel evaluator tactic | `decide +kernel` |
+| Lean's native-code evaluator tactic | `native_decide` |
+| The abstract/semantic ordering | "semantic cone" |
+| The bridge theorem to Turán density | `generalizedTuranDensity_le_of_forbidLE` |
+| The LDL^T decomposition check | "LDL^⊤ decomposition" |
+| The flag naming scheme | "canonical naming convention" |
+
+---
+
+## Must-Highlight Contributions
+
+These are the key technical novelties that reviewers will evaluate. Each must get explicit treatment:
+
+1. **Forbidden-subgraph framework generality**: In Razborov's original formulation, forbidding a subgraph requires axiomatizing a new theory per problem. Our `forbidLE` predicate works inside a single theory and is applied at proof time rather than theory construction time. This is a genuine formalization insight.
+
+2. **Trust hierarchy**: The deliberate use of `native_decide` (faster, trusts native compiler) for density tables vs. `decide +kernel` (slower, only trusts kernel) for SDP matrix equalities is an important architectural decision. Explain the trade-off explicitly.
+
+3. **Performance of `ac_sort_pipeline`**: The comment in `ErdosPentagon.Lemmas` — "sort_at -- takes more than 10 minutes" — is concrete evidence that the custom tactic is not cosmetic. Cite it.
+
+4. **Elaboration-time theorem generation**: The `load_flag_pair_density_theorems` macro generates and immediately proves hundreds of density theorems at compile time. This is unusual in the Lean ecosystem and should be explained carefully.
+
+5. **Lower bound via blow-up**: The lower bound of the Erdős pentagon theorem is proved via an explicit blow-up construction with a formal `Filter.Tendsto` limit argument. This is mathematically non-trivial and should not be summarized in one sentence.
+
+---
+
+## Claims to Avoid Unless Quantified
+
+- Do not say "our formalization is complete" without specifying what is and is not formalized.
+- Do not claim a specific line count or proof size unless you have verified it from the repository.
+- Do not say the framework "handles all flag algebra arguments" — say it "provides reusable infrastructure for the three categories of proof obligation that arise in all known flag algebra arguments."
+- Do not claim `native_decide` is "safe" — clarify its trust boundary (relies on native compiler, not just kernel).
+
+---
+
+## Open Technical Caveats to Acknowledge
+
+- `native_decide` for density tables introduces a dependency on the Lean-to-native compiler (outside the kernel). The paper should acknowledge this is a trust assumption.
+- The SDP certificates are found externally by a numerical solver and then formally verified. The numerical solver itself is not verified.
+- The framework currently handles graphs only; extension to hypergraphs or directed graphs would require generalizing the type-parameter conventions.
+
+---
+
+## Section-Specific Emphasis
+
+### Introduction
+- Open with the extremal combinatorics motivation before introducing the proof assistant.
+- The three-category decomposition of proof obligations is the key insight that motivates the architecture. Spend at least one paragraph on it.
+
+### Background: Flag Algebras
+- For a POPL audience, motivate WHY flag algebras matter before defining them.
+- Give the flag product formula explicitly (not just "there is a product").
+- End with the Erdős pentagon problem as the running example.
+
+### Abstract Formalization
+- The `forbidLE` predicate and `generalizedTuranDensity_le_of_forbidLE` theorem are the most novel part of this section. Give them a full subsection.
+- Explain why quotient types in Lean 4 are the right representation for flags (not just an implementation choice — they encode the mathematical semantics faithfully).
+
+### The Reflection Layer
+- Lead with the general proof-by-reflection pattern before the specifics.
+- Be explicit about what "adequacy" means: the computable function gives the same value as the abstract definition on all inputs.
+- The LDL^⊤ approach for SDP verification is non-standard — explain why it works (no floating point, exact rational arithmetic).
+
+### The Tactic Layer
+- The naming convention is the load-bearing design decision for the whole tactic layer. Explain it before the specific tactics.
+- Include the concrete example of `prove_flag_expand_with_forbidden_flag 3` replacing 15–20 tactic steps.
+
+### Results
+- State the two main theorems prominently at the start.
+- The "no sorry" claim needs the full trust chain: what axioms does `ErdosPentagon_Turan` actually depend on?
+
+### Conclusion
+- The generalizability claim should be precise: "the ~100 known flag algebra results in extremal combinatorics all involve the same three categories of proof obligation."
+- Identify concrete future work (replace `native_decide` with `decide+kernel`; extend to hypergraphs; automate SDP certificate discovery from within Lean).
 
 
 Global Instructions:
-- The current paper structure is a helpful draft, not a hard constraint.
-- If clarity improves, you may split, merge, reorder, or rename sections/subsections while preserving technical correctness.
-- When proposing structural changes, include a brief rationale and maintain consistency with abstract/introduction/conclusion claims.
+- papers/paper_claude.tex is the high-quality reference draft. Use its content as your primary starting point and IMPROVE it rather than write from scratch.
+- The section structure in papers/paper_claude.tex is the correct target. Section names are: Introduction, Background: Flag Algebras, Abstract Formalization, The Reflection Layer, The Tactic Layer, Results, Related Work, Conclusion.
+- The target venue is POPL 2027. Write with PL-community sensibilities: precision, explicitness about proof assistants and formal systems, clear separation of mathematical content from engineering choices.
+- When the reference draft section is provided, treat it as a first draft to improve — identify gaps, strengthen weak arguments, add missing technical detail, and fix any imprecision.
 
 Section-Specific Instructions:
 - (none)
@@ -140,14 +248,126 @@ Section-Specific Instructions:
 Read planner_output.json and retriever_output.json first.
 
 Selected evidence:
-1. [text] line @ README.md:1 :: # lean-flag-algebras
-2. [text] line @ README.md:2 :: The goal of this project is to formalize the results of the paper [Flag Algebras](https://people.cs.uchicago.edu/~razborov/files/flag.pdf) by Alexander A. Razborov.
-3. [text] line @ README.md:19 :: MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs
-4. [text] line @ README.md:26 :: MATHLIB_NO_CACHE_ON_UPDATE=1 lake update LeanFlagAlgebras
-5. [text] line @ README.md:27 :: MATHLIB_NO_CACHE_ON_UPDATE=1 lake build LeanFlagAlgebras:docs
+1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
+2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
+3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
+4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
+5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
+6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
+7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
+11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
+12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
+13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
+14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
+16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
+18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
+19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
+22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
+23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
+24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
 
-Write only LaTeX body for section: Conclusion.
-Write publication-grade prose with explicit transitions, motivation, and technical substance.
+
+Reference Section Draft (your primary starting point — improve and refine this):
+---BEGIN REFERENCE DRAFT---
+\label{sec:conclusion}
+
+We have presented the first formalization of Razborov's flag algebra method in
+a proof assistant, realized in Lean~4.  The formalization is organized around
+a two-layer architecture.  The \emph{reflection layer} connects the abstract
+algebraic definitions to a concrete, decidably-computable graph representation
+via adequacy theorems, enabling \lean{native\_decide} and \lean{decide +kernel}
+to automatically discharge hundreds of density and SDP certificate obligations.
+The \emph{tactic layer} provides custom elaboration tactics---exploiting a
+canonical naming scheme for flag constants---that handle the structural
+bookkeeping (linear normalization, expansion identities, multiplication
+identities) of flag algebra proofs.
+
+The end results are formally complete proofs of Mantel's theorem and the
+Erd\H{o}s pentagon theorem ($\tdensity{K_3}{C_5} = 24/625$).  We believe
+the architecture generalizes: the $\sim 100$ known flag algebra results in
+extremal combinatorics all involve the same three categories of proof
+obligation (abstract structure, data-heavy computation, and algebraic
+bookkeeping), and our framework provides reusable infrastructure for all three.
+
+\paragraph{Future work.}
+Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
+with a formally verified external checker) would eliminate the remaining
+dependency on the native compiler.  Extending the framework beyond graphs---to
+hypergraphs, directed graphs, or other combinatorial structures---would require
+generalizing the type-parameter conventions but no new conceptual machinery.
+Automating the discovery of SDP certificates from within Lean (rather than
+importing them from external solvers) remains a longer-term goal.
+
+% =========================================================================
+\bibliographystyle{plain}
+\begin{thebibliography}{99}
+
+\bibitem{razborov2007flag}
+A.~A. Razborov.
+\newblock Flag algebras.
+\newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{grzesik2012}
+A.~Grzesik.
+\newblock On the maximum number of five-cycles in a triangle-free graph.
+\newblock \textit{Journal of Combinatorial Theory, Series B},
+  102(5):1061--1066, 2012.
+
+\bibitem{hatami2012}
+H.~Hatami, J.~Hladk\'{y}, D.~Kr\'{a}l, S.~Norine, and A.~Razborov.
+\newblock On the number of pentagons in triangle-free graphs.
+\newblock \textit{Journal of Combinatorial Theory, Series A},
+  120(3):722--732, 2013.
+
+\bibitem{dillies2022szemeredi}
+Y.~Dillies and B.~Mehta.
+\newblock Formalising Szemer\'{e}di's regularity lemma in Lean.
+\newblock In \textit{Proc.\ ITP 2022}, LIPIcs~237, 2022.
+
+\bibitem{mehta2022kruskal}
+B.~Mehta.
+\newblock Formalising the Kruskal-Katona theorem in Lean.
+\newblock In \textit{Proc.\ ITP 2022}, 2022.
+
+\bibitem{subercaseaux2024hexagon}
+B.~Subercaseaux, M.~J.~H. Heule, J.~Mackey, J.~Meadows, R.~Tao, and
+  C.~Wu.
+\newblock Formal verification of the empty hexagon number.
+\newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, 2024.
+
+\bibitem{razborov2010flagmatic}
+A.~A. Razborov.
+\newblock On 3-hypergraphs with forbidden 4-vertex configurations.
+\newblock \textit{SIAM Journal on Discrete Mathematics}, 24(3):946--963, 2010.
+
+\bibitem{chlipala2013cpdt}
+A.~Chlipala.
+\newblock \textit{Certified Programming with Dependent Types}.
+\newblock MIT Press, 2013.
+
+\bibitem{ebner2017structured}
+G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de Moura.
+\newblock A metaprogramming framework for formal verification.
+\newblock \textit{Proc.\ ACM Program.\ Lang.}, 1(ICFP):34:1--34:29, 2017.
+
+\bibitem{sozeau2008coq}
+M.~Sozeau and N.~Oury.
+\newblock First-class type classes.
+\newblock In \textit{Proc.\ TPHOLs 2008}, LNCS~5170, 2008.
+
+\end{thebibliography}
+---END REFERENCE DRAFT---
+
+Improve and refine the Reference Draft above for section: Conclusion.
+Identify gaps and weak arguments, add missing technical detail, fix any imprecision.
+Preserve accurate technical content already present. Do not remove verified claims.
 Hard gate: satisfy all Section Blueprint constraints (subsections, equations, code references where required).
 For mathematical formulas, derive and align notation from the listed Equation Source PDFs.
 Do not include \section{...}.

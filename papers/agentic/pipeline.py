@@ -10,6 +10,23 @@ from typing import Iterable
 
 DECL_RE = re.compile(r"^\s*(theorem|lemma|def|structure|class)\s+([A-Za-z0-9_'.]+)")
 
+# Broad keyword set for extracting meaningful lines from .tex and other text files.
+# Covers both mathematical content and Lean-specific terms appearing in paper_claude.tex.
+TEX_KEYWORDS = [
+    "flag", "density", "mantel", "pentagon", "proof", "compute",
+    "theorem", "lemma", "definition", "algebra", "formaliz", "lean",
+    "reflect", "tactic", "quotient", "homomorphism", "semidefinit",
+    "positiv", "isomorphism", "combinatori", "extremal",
+    "concrete", "decidabl", "native_decide", "kernel",
+    "ldl", "sdp", "certificate", "embedding", "induced", "subflag",
+    "graph", "vertex", "edge", "abstract", "section", "turán",
+    "razborov", "erdős", "pentagon", "triangle", "bipartite",
+    "elaborat", "syntax", "ast", "naming", "convention", "sort",
+    "expand", "multipli", "normaliz", "adequacy", "sym2",
+    "forbid", "downward", "measure", "probabil", "convergent",
+    "quotient", "module", "ring", "commutative", "algebra",
+]
+
 
 @dataclass
 class EvidenceUnit:
@@ -148,17 +165,7 @@ def extract_evidence(
             for i, line in enumerate(capped, start=1):
                 if len(line.strip()) < 12:
                     continue
-                if any(
-                    tok in line.lower()
-                    for tok in [
-                        "flag",
-                        "density",
-                        "mantel",
-                        "pentagon",
-                        "proof",
-                        "compute",
-                    ]
-                ):
+                if any(tok in line.lower() for tok in TEX_KEYWORDS):
                     units.append(
                         EvidenceUnit(
                             section=section,
@@ -173,6 +180,30 @@ def extract_evidence(
                     )
 
     return units
+
+
+def extract_section_body_from_tex(tex: str, section_name: str) -> str:
+    """Return the body of a named \\section{} from a TeX string (empty string if not found)."""
+    sec_pat = re.compile(rf"\\section\{{{re.escape(section_name)}\}}")
+    m = sec_pat.search(tex)
+    if not m:
+        return ""
+    body_start = m.end()
+    next_sec = re.search(r"\n\\section\{", tex[body_start:])
+    end_doc = tex.find("\\end{document}")
+    if next_sec:
+        body_end = body_start + next_sec.start()
+    elif end_doc != -1:
+        body_end = end_doc
+    else:
+        body_end = len(tex)
+    return tex[body_start:body_end].strip()
+
+
+def extract_abstract_from_tex(tex: str) -> str:
+    """Return the abstract body from a TeX string (empty string if not found)."""
+    m = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.DOTALL)
+    return m.group(1).strip() if m else ""
 
 
 def build_agent_prompt(
@@ -251,7 +282,8 @@ def main() -> None:
     )
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Keep the existing paper.tex as read-only source and generate a separate draft file.
+    # Determine seed draft: use base_draft_tex if configured, else generate a minimal skeleton.
+    base_draft_tex = config.get("base_draft_tex", "")
     contribution_source_path = root / contribution_source_tex
     draft_output_path = root / draft_tex_output
     source_tex_text = (
@@ -259,10 +291,16 @@ def main() -> None:
     )
     contributions = extract_contributions_from_tex(source_tex_text)
     draft_output_path.parent.mkdir(parents=True, exist_ok=True)
-    draft_output_path.write_text(
-        render_seed_draft_tex(project_name=project_name, contributions=contributions),
-        encoding="utf-8",
-    )
+
+    base_draft_path = root / base_draft_tex if base_draft_tex else None
+    if base_draft_path and base_draft_path.exists():
+        import shutil
+        shutil.copy2(base_draft_path, draft_output_path)
+    else:
+        draft_output_path.write_text(
+            render_seed_draft_tex(project_name=project_name, contributions=contributions),
+            encoding="utf-8",
+        )
 
     all_units: list[EvidenceUnit] = []
 

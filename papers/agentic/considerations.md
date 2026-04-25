@@ -1,5 +1,29 @@
 # Paper Writing Considerations
 
+## PRIORITY 0: Reference Draft
+
+**The file `papers/paper_claude.tex` is the high-quality reference draft for this paper.**
+All agents must:
+1. **Read the reference draft section first** (it is provided in the prompt as "Reference Section Draft").
+2. **Improve and refine it** — do not discard it and write from scratch.
+3. **Preserve all accurate technical content** already present in the reference draft.
+4. **Identify gaps and strengthen weak arguments** rather than adding entirely new content.
+
+The reference draft already has a good structure and solid mathematical content. The agent's job is to improve depth, fix imprecision, add missing details, and ensure all Section Blueprint constraints are satisfied.
+
+## PRIORITY 1: English-Only Output
+
+All section bodies must be written in English. The considerations and author notes may contain Korean text for historical reasons, but all agent outputs (planner JSON, writer LaTeX, verifier LaTeX) must be in English.
+
+## PRIORITY 2: POPL Fitness
+
+The paper targets POPL 2027. Key POPL-specific requirements:
+- Separate the mathematical content (what was formalized) from the engineering choices (how it was implemented in Lean 4) in every section.
+- PL researchers care about the type-theoretic encoding choices. Explain WHY quotient types, WHY reflection, WHY custom tactics — not just THAT they were used.
+- Proof assistant papers at POPL are evaluated on: correctness of claims, depth of formalization novelty, generalizability of techniques, and trustworthiness of the proof pipeline.
+
+---
+
 이 파일은 에이전트가 논문 문장을 생성할 때 반드시 참고하는 제약과 체크리스트입니다.
 항목을 자유롭게 추가/수정하면 다음 실행부터 자동 반영됩니다.
 

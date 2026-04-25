@@ -1,35 +1,41 @@
 {
-    "project_name": "Formalizing Flag Algebra in Lean",
-    "paper_tex": "papers/paper.tex",
-    "contribution_source_tex": "papers/paper.tex",
+    "project_name": "Formalizing Flag Algebras in Lean 4 via Computational Reflection",
+    "paper_tex": "papers/paper_claude.tex",
+    "contribution_source_tex": "papers/paper_claude.tex",
+    "base_draft_tex": "papers/paper_claude.tex",
     "draft_tex_output": "papers/agentic/out/paper_draft_from_contributions.tex",
     "considerations_file": "papers/agentic/considerations.md",
     "author_notes_file": "papers/agentic/author_notes.md",
     "output_dir": "papers/agentic/out",
     "default_sections": [
         "Introduction",
-        "Background on Flag Algebra",
-        "Formalization of Flag Algebra",
-        "Computable Definition of Flags",
-        "Application",
+        "Background: Flag Algebras",
+        "Abstract Formalization",
+        "The Reflection Layer",
+        "The Tactic Layer",
+        "Results",
+        "Related Work",
         "Conclusion",
         "Abstract"
     ],
     "section_sources": {
         "Introduction": [
+            "papers/paper_claude.tex",
             "README.md",
             "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
             "LeanFlagAlgebras/Logic/Defs.lean",
             "LeanFlagAlgebras/Logic/Tactic.lean"
         ],
-        "Background on Flag Algebra": [
+        "Background: Flag Algebras": [
+            "papers/paper_claude.tex",
             "LeanFlagAlgebras/Flags/FlagDef.lean",
             "LeanFlagAlgebras/FlagAlgebra/FlagDef.lean",
             "LeanFlagAlgebras/FlagAlgebra/SubflagDensity.lean",
             "LeanFlagAlgebras/FlagAlgebra/SubflagListDensity.lean",
             "papers/BEATCS_Collumn26/paper.tex"
         ],
-        "Formalization of Flag Algebra": [
+        "Abstract Formalization": [
+            "papers/paper_claude.tex",
             "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
             "LeanFlagAlgebras/FlagAlgebra/FlagOperators.lean",
             "LeanFlagAlgebras/FlagAlgebra/PositiveHom.lean",
@@ -37,30 +43,43 @@
             "LeanFlagAlgebras/Logic/Defs.lean",
             "LeanFlagAlgebras/Logic/Tactic.lean"
         ],
-        "Computable Definition of Flags": [
+        "The Reflection Layer": [
+            "papers/paper_claude.tex",
             "LeanFlagAlgebras/Flags/FlagLoader.lean",
             "LeanFlagAlgebras/Flags/generate_flags.py",
-            "LeanFlagAlgebras/Flags/generate_graphs.py",
             "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
-            "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean"
-        ],
-        "Application": [
-            "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
-            "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+            "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
             "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
             "LeanFlagAlgebras/ErdosPentagon/Matrix/generate_psd_proof.py"
         ],
+        "The Tactic Layer": [
+            "papers/paper_claude.tex",
+            "LeanFlagAlgebras/Logic/Defs.lean",
+            "LeanFlagAlgebras/Logic/Tactic.lean",
+            "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean"
+        ],
+        "Results": [
+            "papers/paper_claude.tex",
+            "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+            "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+            "LeanFlagAlgebras/ErdosPentagon/Matrix/generate_psd_proof.py"
+        ],
+        "Related Work": [
+            "papers/paper_claude.tex",
+            "README.md"
+        ],
         "Conclusion": [
+            "papers/paper_claude.tex",
             "README.md",
             "LeanFlagAlgebras.lean"
         ],
         "Abstract": [
-            "papers/paper.tex"
+            "papers/paper_claude.tex"
         ]
     },
     "retrieval": {
         "max_files_per_section": 8,
-        "max_lines_per_file": 250,
+        "max_lines_per_file": 300,
         "lean_keywords": [
             "theorem",
             "lemma",
@@ -70,9 +89,45 @@
         ]
     },
     "section_instructions": {
+        "Introduction": [
+            "papers/paper_claude.tex already contains a strong introduction draft. Improve its POPL-readiness: sharpen the problem statement, make the three challenge categories (abstract structure, data-heavy computation, algebraic bookkeeping) more concrete, and ensure the contributions paragraph is crisp.",
+            "The three-category framing of proof obligations is the core organizing device of the paper — keep and strengthen it.",
+            "Contributions must explicitly list: (1) abstract formalization of flags/algebra/positivity/forbidden-subgraph framework, (2) reflection architecture via Sym2Graph + adequacy theorems + LDL^T SDP check, (3) tactic automation via ac_sort_pipeline and prove_flag_expand/mul_with_forbidden_flag, (4) verified results for Mantel and Erdős pentagon theorem."
+        ],
+        "Background: Flag Algebras": [
+            "papers/paper_claude.tex already has a concise background section. Improve mathematical depth: expand the flag density definition, make the flag product formula explicit, and add the downward operator definition.",
+            "When drafting this section, also draw on papers/References/Razborov07.pdf and papers/References/GrzesikThesis14.pdf for mathematical precision.",
+            "The section must define: type σ, σ-flag, flag isomorphism, flag density p(F,G), flag product, flag algebra as quotient module, positive homomorphism, semantic cone, and Turán density. End with the Erdős pentagon problem statement.",
+            "Do not claim details from external papers unless they are actually checked from those sources."
+        ],
+        "Abstract Formalization": [
+            "papers/paper_claude.tex already has a detailed formalization section covering: Flags as Quotient Types, Flag Algebra as Quotient Module, Semantic Ordering via Positive Homomorphisms, and the Forbidden-Subgraph Framework.",
+            "Improve by: (1) expanding the explanation of FlagWithSize and FinFlag type hierarchy, (2) clarifying how ZeroSpace encodes the density-expansion relations, (3) giving more detail on the forbidLE predicate and why it is more general than Razborov's original axiom approach.",
+            "The forbidden-subgraph framework (forbidLE, generalizedTuranDensity_le_of_forbidLE) is a key novel contribution — ensure it gets at least one full subsection with the theorem statement shown."
+        ],
+        "The Reflection Layer": [
+            "papers/paper_claude.tex has a detailed reflection layer section. Improve by: (1) expanding the explanation of why Sym2Graph is needed (SimpleGraph uses Prop-valued adjacency, not decidable), (2) elaborating on how the elaboration macro load_flag_pair_density_theorems works end-to-end, (3) strengthening the trust hierarchy discussion.",
+            "The trust hierarchy (native_decide for density tables vs. decide+kernel for SDP matrix equalities) is a key design insight — explain clearly why each decision procedure is used where.",
+            "Include the concrete three-step proof pattern: delta-unfold → rewrite with adequacy theorem → native_decide."
+        ],
+        "The Tactic Layer": [
+            "papers/paper_claude.tex has a tactic layer section covering naming conventions, ac_sort_pipeline, and prove_flag_expand/mul_with_forbidden_flag. Improve by: (1) giving a concrete before/after example showing how many tactic steps are replaced, (2) explaining the AST traversal approach in more detail, (3) making the performance argument (>10 min timeout vs <1 sec) more prominent.",
+            "The naming convention as machine-readable encoding is a design insight that distinguishes this work — explain it clearly and connect it to certified compilation ideas.",
+            "Include the concrete example of prove_flag_expand_with_forbidden_flag usage."
+        ],
+        "Results": [
+            "papers/paper_claude.tex covers Mantel's theorem and the Erdős pentagon theorem (both bounds). Improve by: (1) making the Mantel proof sketch more explicit (show the squared term), (2) expanding the lower bound section with more detail on the blow-up construction and the Filter.Tendsto limit argument, (3) stating clearly that there are no sorry's in the proof path.",
+            "The 'no axioms beyond the kernel' paragraph is important — keep and expand it to explain the trust chain precisely.",
+            "The lower bound via blow-up of C5 is mathematically non-trivial — give it adequate space."
+        ],
+        "Related Work": [
+            "papers/paper_claude.tex covers related work on: formalizations of combinatorics, computer-assisted flag algebra arguments, proof by reflection, and tactic meta-programming.",
+            "Strengthen by: being more precise about how this work differs from Flagmatic (formally verified end-to-end vs informally validated certificates), and noting more explicitly that this is the first formalization of the flag algebra method in any proof assistant.",
+            "Add any related work on Lean 4 formalization of algebraic structures (quotient types, modules) if relevant."
+        ],
         "Background on Flag Algebra": [
             "When drafting this section, prioritize conceptual grounding from papers/References/Razborov07.pdf, papers/References/GrzesikThesis14.pdf, and papers/BEATCS_Collumn26/paper.tex.",
-            "Explain definitions and motivation in a way suitable for a broad mathematical audience, then connect to this repository's Lean formalization.",
+            "Explain definitions and motivation in a way suitable for a broad PL audience, then connect to this repository's Lean formalization.",
             "Do not claim details from external papers unless they are actually checked from those sources."
         ],
         "Formalization of Flag Algebra": [
@@ -82,17 +137,18 @@
         ]
     },
     "global_instructions": [
-        "The current paper structure is a helpful draft, not a hard constraint.",
-        "If clarity improves, you may split, merge, reorder, or rename sections/subsections while preserving technical correctness.",
-        "When proposing structural changes, include a brief rationale and maintain consistency with abstract/introduction/conclusion claims."
+        "papers/paper_claude.tex is the high-quality reference draft. Use its content as your primary starting point and IMPROVE it rather than write from scratch.",
+        "The section structure in papers/paper_claude.tex is the correct target. Section names are: Introduction, Background: Flag Algebras, Abstract Formalization, The Reflection Layer, The Tactic Layer, Results, Related Work, Conclusion.",
+        "The target venue is POPL 2027. Write with PL-community sensibilities: precision, explicitness about proof assistants and formal systems, clear separation of mathematical content from engineering choices.",
+        "When the reference draft section is provided, treat it as a first draft to improve — identify gaps, strengthen weak arguments, add missing technical detail, and fix any imprecision."
     ],
     "llm": {
         "api_url": "https://api.openai.com/v1/chat/completions",
         "api_key_env": "OPENAI_API_KEY",
         "model": "gpt-4.1",
         "temperature": 0.2,
-        "max_tokens": 2500,
-        "timeout_sec": 120
+        "max_tokens": 4000,
+        "timeout_sec": 180
     },
     "executor": {
         "run_log_dir": "papers/agentic/out/agent_runs",
@@ -103,11 +159,12 @@
     "quality_profile": {
         "formalization_examples_dir": "papers/References/Formalization",
         "quality_requirements": [
-            "Write section bodies with publication-grade depth, not short summaries.",
-            "Use explicit motivation -> method -> formalization detail -> implication flow.",
+            "Use papers/paper_claude.tex as the quality benchmark — match or exceed its depth and precision.",
+            "Improve the reference draft rather than rewrite: identify gaps, strengthen weak arguments, add missing technical detail.",
+            "Use explicit motivation → method → formalization detail → implication flow.",
             "Explain design choices and trade-offs, not only what was implemented.",
-            "Keep claims tightly grounded in evidence and avoid generic hype language.",
-            "Ensure each section can stand alone for a mathematical reader unfamiliar with the codebase."
+            "Keep claims tightly grounded in Lean evidence and avoid generic hype language.",
+            "Ensure each section can stand alone for a PL researcher unfamiliar with the codebase."
         ],
         "equation_reference_pdfs": [
             "papers/References/Razborov07.pdf",
@@ -115,25 +172,28 @@
         ]
     },
     "section_blueprints": {
-        "Background on Flag Algebra": {
-            "min_subsections": 3,
+        "Background: Flag Algebras": {
+            "min_subsections": 4,
             "min_paragraphs": 8,
             "min_equations": 6,
             "must_define_symbols": [
-                "type",
-                "flag",
-                "subflag density",
+                "type sigma",
+                "sigma-flag",
+                "flag isomorphism",
+                "induced density p(F,G)",
                 "flag product",
-                "downward operator"
+                "positive homomorphism",
+                "semantic cone",
+                "Turán density pi(F;H)"
             ],
             "must_use_equation_sources": [
                 "papers/References/Razborov07.pdf",
                 "papers/References/GrzesikThesis14.pdf"
             ]
         },
-        "Formalization of Flag Algebra": {
-            "min_subsections": 3,
-            "min_paragraphs": 7,
+        "Abstract Formalization": {
+            "min_subsections": 4,
+            "min_paragraphs": 8,
             "min_code_references": 10,
             "required_repo_files": [
                 "LeanFlagAlgebras/FlagAlgebra/FlagAlgebra.lean",
@@ -144,27 +204,33 @@
                 "LeanFlagAlgebras/Logic/Tactic.lean"
             ]
         },
-        "Computable Definition of Flags": {
-            "min_subsections": 3,
-            "min_paragraphs": 6,
-            "min_code_references": 8,
-            "required_repo_files": [
-                "LeanFlagAlgebras/Flags/FlagLoader.lean",
-                "LeanFlagAlgebras/Flags/generate_flags.py",
-                "LeanFlagAlgebras/Flags/generate_graphs.py",
-                "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
-                "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean"
-            ]
-        },
-        "Application": {
-            "min_subsections": 4,
+        "The Reflection Layer": {
+            "min_subsections": 5,
             "min_paragraphs": 8,
-            "min_code_references": 10,
+            "min_code_references": 12,
             "required_repo_files": [
-                "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
-                "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean",
+                "LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean",
+                "LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean",
                 "LeanFlagAlgebras/ErdosPentagon/Densities/calculate_densities.py",
                 "LeanFlagAlgebras/ErdosPentagon/Matrix/generate_psd_proof.py"
+            ]
+        },
+        "The Tactic Layer": {
+            "min_subsections": 3,
+            "min_paragraphs": 6,
+            "min_code_references": 6,
+            "required_repo_files": [
+                "LeanFlagAlgebras/Logic/Defs.lean",
+                "LeanFlagAlgebras/Logic/Tactic.lean"
+            ]
+        },
+        "Results": {
+            "min_subsections": 2,
+            "min_paragraphs": 6,
+            "min_code_references": 6,
+            "required_repo_files": [
+                "LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean",
+                "LeanFlagAlgebras/ErdosPentagon/ErdosPentagon.lean"
             ]
         }
     }

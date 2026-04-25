@@ -14,8 +14,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from pipeline import (
     EvidenceUnit,
+    extract_abstract_from_tex,
     extract_contributions_from_tex,
     extract_evidence,
+    extract_section_body_from_tex,
     read_text,
     render_seed_draft_tex,
 )
@@ -319,12 +321,35 @@ def generate_copilot_task_pack(
     common_context: str,
     evidence_rendered: str,
     selected_rendered: str,
+    ref_section_body: str = "",
 ) -> None:
+    # Build the reference draft block included in writer and verifier tasks.
+    if ref_section_body:
+        ref_block = (
+            "\nReference Section Draft (your primary starting point — improve and refine this):\n"
+            "---BEGIN REFERENCE DRAFT---\n"
+            + ref_section_body
+            + "\n---END REFERENCE DRAFT---\n\n"
+        )
+        writer_action = (
+            f"Improve and refine the Reference Draft above for section: {section}.\n"
+            "Identify gaps and weak arguments, add missing technical detail, fix any imprecision.\n"
+            "Preserve accurate technical content already present. Do not remove verified claims.\n"
+        )
+    else:
+        ref_block = ""
+        writer_action = (
+            f"Write publication-grade LaTeX body for section: {section}.\n"
+            "Write explicit transitions, motivation, and technical substance.\n"
+        )
+
     planner_task = (
         "# Planner Task\n\n"
         + common_context
         + "\n"
-        + "Produce a publication-grade plan (not a terse outline).\n"
+        + ref_block
+        + "Produce a publication-grade improvement plan (not a terse outline).\n"
+        + ("If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.\n" if ref_section_body else "")
         + "The plan must enforce the same quality bar as exemplar formalization papers.\n\n"
         + "Hard gate: fail the plan if any Section Blueprint item is missing.\n"
         + "For formula-heavy sections, equation choices must be sourced from the listed Equation Source PDFs.\n\n"
@@ -337,6 +362,7 @@ def generate_copilot_task_pack(
         + '  "subsection_plan": ["..."],\n'
         + '  "claim_plan": ["..."],\n'
         + '  "evidence_needs": ["..."],\n'
+        + '  "gaps_in_reference_draft": ["..."],\n'
         + '  "risk_checks": ["..."]\n'
         + "}\n"
     )
@@ -365,8 +391,8 @@ def generate_copilot_task_pack(
         + "Selected evidence:\n"
         + selected_rendered
         + "\n\n"
-        + f"Write only LaTeX body for section: {section}.\n"
-        + "Write publication-grade prose with explicit transitions, motivation, and technical substance.\n"
+        + ref_block
+        + writer_action
         + "Hard gate: satisfy all Section Blueprint constraints (subsections, equations, code references where required).\n"
         + "For mathematical formulas, derive and align notation from the listed Equation Source PDFs.\n"
         + "Do not include \\section{...}.\n"
@@ -381,6 +407,7 @@ def generate_copilot_task_pack(
         + "Selected evidence:\n"
         + selected_rendered
         + "\n\n"
+        + ref_block
         + "Revise to remove unsupported claims and strengthen evidence alignment.\n"
         + "If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.\n"
         + "Hard gate: reject output if Section Blueprint constraints are not satisfied.\n"
@@ -394,7 +421,7 @@ def generate_copilot_task_pack(
         + f"Target draft file: {draft_tex_output}\n"
         + f"Target section: {section}\n\n"
         + "Take verifier_output.md and replace only the body of the target section.\n"
-        + "Do not modify the contribution list and do not edit source papers/paper.tex.\n"
+        + "Do not modify the contribution list and do not edit source papers/paper_claude.tex.\n"
     )
 
     (section_log_dir / "planner_task.md").write_text(planner_task, encoding="utf-8")
@@ -473,15 +500,28 @@ def run() -> None:
 
     contribution_source_path = root / contribution_source_tex
     draft_output_path = root / draft_tex_output
+    draft_output_path.parent.mkdir(parents=True, exist_ok=True)
 
     source_tex_text = (
         read_text(contribution_source_path) if contribution_source_path.exists() else ""
     )
     contributions = extract_contributions_from_tex(source_tex_text)
-    draft_output_path.parent.mkdir(parents=True, exist_ok=True)
-    draft_output_path.write_text(
-        render_seed_draft_tex(config["project_name"], contributions), encoding="utf-8"
-    )
+
+    # Load the reference (base) draft: if base_draft_tex is configured, copy it as the
+    # seed so agents start from a high-quality existing draft rather than a blank skeleton.
+    base_draft_tex_path = config.get("base_draft_tex", "")
+    reference_tex = ""
+    if base_draft_tex_path:
+        ref_path = root / base_draft_tex_path
+        if ref_path.exists():
+            reference_tex = read_text(ref_path)
+
+    if reference_tex:
+        draft_output_path.write_text(reference_tex, encoding="utf-8")
+    else:
+        draft_output_path.write_text(
+            render_seed_draft_tex(config["project_name"], contributions), encoding="utf-8"
+        )
 
     considerations_path = root / config["considerations_file"]
     author_notes_path = root / config.get("author_notes_file", "")
@@ -532,6 +572,15 @@ def run() -> None:
         section_log_dir = run_log_dir / section_safe
         section_log_dir.mkdir(parents=True, exist_ok=True)
 
+        # Extract the existing section body from the reference draft for use in prompts.
+        if reference_tex:
+            if section.lower() == "abstract":
+                ref_section_body = extract_abstract_from_tex(reference_tex)
+            else:
+                ref_section_body = extract_section_body_from_tex(reference_tex, section)
+        else:
+            ref_section_body = ""
+
         evidence_units = extract_evidence(
             section=section,
             root=root,
@@ -562,6 +611,7 @@ def run() -> None:
                 common_context=common_context,
                 evidence_rendered=evidence_rendered,
                 selected_rendered=selected_rendered,
+                ref_section_body=ref_section_body,
             )
             queue_manifest.append(
                 {
@@ -632,6 +682,17 @@ def run() -> None:
             selected_units, selected_evidence_limit
         )
 
+        ref_block_api = ""
+        if ref_section_body:
+            ref_block_api = (
+                "\nReference Section Draft (your primary starting point — improve and refine this):\n"
+                "---BEGIN REFERENCE DRAFT---\n"
+                + ref_section_body
+                + "\n---END REFERENCE DRAFT---\n\n"
+                "Improve and refine the Reference Draft above. Preserve accurate technical content. "
+                "Identify gaps and strengthen weak arguments. "
+            )
+
         writer_user = (
             common_context
             + "\n"
@@ -644,6 +705,7 @@ def run() -> None:
             + "Selected evidence:\n"
             + selected_rendered
             + "\n\n"
+            + ref_block_api
             + "Write LaTeX body for this section only. Do not include \\section{...}."
         )
         writer_out = ask_agent(
@@ -661,7 +723,8 @@ def run() -> None:
             + "Selected evidence:\n"
             + selected_rendered
             + "\n\n"
-            + "Draft section body:\n"
+            + ref_block_api
+            + "Draft section body (writer output to verify):\n"
             + writer_out
             + "\n\n"
             + "Revise the draft to remove unsupported claims and strengthen evidence alignment. "
