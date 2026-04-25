@@ -248,30 +248,30 @@ Section-Specific Instructions:
 Read planner_output.json and retriever_output.json first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
@@ -296,7 +296,7 @@ combinatorial Turán densities through a measure-theoretic framework.  At the
 computational level, we introduce a concrete, decidably-equal graph
 representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
 the abstract definitions; this allows \lean{native\_decide} and \lean{decide
-+kernel} to discharge hundreds of density and matrix-equality obligations
++kernel} to discharge over 2{,}800 density and matrix-equality obligations
 automatically.  Structural proof obligations---normalizing linear combinations
 of flag terms and applying expansion and multiplication identities---are handled
 by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
@@ -304,10 +304,11 @@ a canonical naming convention for flags as a machine-readable encoding of
 mathematical structure.
 
 As results, we give complete formal proofs of Mantel's theorem and of the
-Erd\H{o}s pentagon theorem ($\pi(K_3; C_5) = 24/625$), the latter including
-both the upper bound via a formally verified SDP certificate and the lower
-bound via an explicit blow-up construction.  To our knowledge, this is the
-first formalization of the flag algebra method in any proof assistant.
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
+both the upper bound via a formally verified SDP certificate and the lower bound
+via an explicit blow-up construction.  To our knowledge, this is the first
+formalization of the flag algebra method in any proof assistant.  The
+formalization comprises approximately 25{,}000 lines of Lean~4 code.
 ---END REFERENCE DRAFT---
 
 Improve and refine the Reference Draft above for section: Abstract.

@@ -255,30 +255,30 @@ Section-Specific Instructions:
 Read writer_output.md first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
@@ -306,9 +306,17 @@ determine:
   \item the \emph{flag type parameters} needed to instantiate the appropriate
     adequacy theorem.
 \end{itemize}
-This design is similar to the use of canonical forms in certified compilation:
-the naming scheme is a ``normal form'' that tactics can compute with directly,
-without needing to reduce the mathematical content of the expression.
+
+\paragraph{Why names rather than type-class annotations.}
+An alternative design would encode this information via Lean~4 type-class
+instances or user-defined attributes.  We chose the naming convention instead
+for a performance reason: Lean~4's elaboration monad can inspect a constant's
+\lean{Name} (a syntactic object) without triggering type-checking or
+attribute resolution, which can time out on large expressions.  By encoding
+the flag index in the name, \lean{ac\_sort\_pipeline} computes sort keys
+entirely in the fast elaboration path, without reducing any term in the kernel.
+The approach is similar to the use of canonical normal forms in certified
+compilers: the name is a ``normal form'' that tactics can manipulate directly.
 
 \subsection{Linear Normalization: \lean{ac\_sort\_pipeline}}
 
@@ -340,8 +348,9 @@ combination by:
     the goal with the sorted form.
 \end{enumerate}
 The full pipeline \lean{ac\_sort\_pipeline} additionally runs \lean{norm\_num}
-before and after sorting, and collects like terms with \lean{$\leftarrow$ add\_smul}
-after sorting, so that the resulting expression is fully simplified.
+before and after sorting, and collects like terms with
+\lean{add\_smul} rewriting after sorting, so that the resulting expression is
+fully simplified.
 
 \paragraph{Why this is necessary, not cosmetic.}
 The comment in \lean{ErdosPentagon.Lemmas} is revealing:
@@ -349,7 +358,8 @@ The comment in \lean{ErdosPentagon.Lemmas} is revealing:
 The generic \lean{sort\_at} (which uses \lean{simp} without index guidance)
 times out on expressions with $\sim 25$ flag terms.  The index-guided
 \lean{ac\_sort} completes the same step in under a second, by exploiting domain
-knowledge to bypass combinatorial search.
+knowledge to bypass combinatorial search.  The tactic is not a convenience
+wrapper; it is a correctness-enabling optimization.
 
 \subsection{Flag Expansion and Multiplication Tactics}
 
@@ -397,13 +407,21 @@ The result of these two tactics is that expansion and multiplication identities
 that would individually require 15--20 tactic steps are each proved by a single
 tactic invocation:
 \begin{lstlisting}
-example : FlagAlgebra_3_0_0_3 =ₐ 0
-    ⊢ₐ FlagAlgebra_2_0_0_1 =ₐ (1/3 : ℝ) • FlagAlgebra_3_0_0_1
-                             + (2/3 : ℝ) • FlagAlgebra_3_0_0_2
+example : FlagAlgebra_3_0_0_3 =a 0
+    |-a FlagAlgebra_2_0_0_1 =a (1/3 : R) * FlagAlgebra_3_0_0_1
+                             + (2/3 : R) * FlagAlgebra_3_0_0_2
   := by prove_flag_expand_with_forbidden_flag 3
 \end{lstlisting}
 
-% =========================================================================
+\paragraph{Key challenge.}
+The tactic must be robust to the syntactic variation that Lean's elaborator
+introduces: after unification and implicit argument resolution, the same flag
+term can appear in different syntactic forms (with universe levels, implicit
+arguments, or coercions inserted differently).  We addressed this by defining
+the \lean{collectPrefixConstants} traversal to normalize the expression tree
+before inspecting constant names, and by using \lean{Expr.eqv} rather than
+structural equality when comparing flag terms.  This required significant
+experimentation with Lean~4's metaprogramming API.
 ---END REFERENCE DRAFT---
 
 Revise to remove unsupported claims and strengthen evidence alignment.

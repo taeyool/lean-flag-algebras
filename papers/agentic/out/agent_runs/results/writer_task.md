@@ -255,60 +255,82 @@ Section-Specific Instructions:
 Read planner_output.json and retriever_output.json first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:results}
 
+Using the formalization infrastructure described in the preceding sections,
+we give formally complete proofs of two theorems in extremal combinatorics.
+Both proofs are machine-checked in Lean~4.  The proof paths of the main
+theorems contain no \lean{sorry} placeholders, although some commented
+auxiliary generalization lemmas outside those proof paths remain unfinished
+(see \S\ref{sec:intensional}).
+
 \subsection{Mantel's Theorem}
 
-Mantel's theorem states that in a triangle-free graph on $n$ vertices,
-the number of edges is at most $\lfloor n^2/4 \rfloor$ (achieved by
-the complete bipartite graph $K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$).
-In flag algebra terms, the density of edges is at most $1/2$ whenever the
-density of triangles is $0$:
+Mantel's theorem states that a triangle-free graph on $n$ vertices has at
+most $\lfloor n^2/4 \rfloor$ edges, achieved by the complete bipartite graph
+$K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$.  In flag algebra terms:
 
 \begin{lstlisting}
-theorem Mantel_theorem
-    : K2 ≤ (1/2 : ℝ) • 1 + K3
+theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3
 \end{lstlisting}
 
-Here $K_2$ and $K_3$ denote the elements of \lean{FlagAlgebra $\emptyset_t$}
-corresponding to the single edge and the triangle, respectively.  The proof uses
-an explicit square in the algebra of 1-vertex-typed flags:
+Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra emptyType} representing the
+single edge and the triangle.  The inequality asserts that in every sequence
+of graphs whose triangle density tends to zero, the edge density is at most
+$1/2$.
+
+The proof uses an explicit square in the algebra of 1-vertex-typed flags.
+Let $a = \lean{FlagAlgebra\_2\_1\_0\_0}$ and $b = \lean{FlagAlgebra\_2\_1\_0\_1}$
+be the two typed flags of size 2 with a 1-vertex type (corresponding to
+the two labeled graphs on two vertices with one labeled vertex: one where the
+two vertices are adjacent, one where they are not).
+Then
 \[
-  \bigl\llbracket(\lean{FlagAlgebra\_2\_1\_0\_0} - \lean{FlagAlgebra\_2\_1\_0\_1})^2
-  \bigr\rrbracket \;\geq\; 0,
+  \bigl\llbracket (a - b)^2 \bigr\rrbracket_1
+  \;=\;
+  2 \cdot K_2 - \mathbf{1}
+  \;\geq\; 0
+  \;\;\text{in the semantic cone.}
 \]
-which gives the inequality after expansion and simplification.  The SDP
-certificate here is small enough that it can be written explicitly (no external
-solver needed), making Mantel's theorem a clean illustration of the method
-before the heavier machinery is needed for the pentagon problem.
+This is enough to conclude $K_2 \leq \frac{1}{2} \cdot \mathbf{1}$ in the
+presence of $K_3 = 0$.  The SDP certificate here is small enough to write
+explicitly (no external solver needed), making Mantel's theorem a clean
+end-to-end illustration of the method before the heavier machinery of the
+pentagon proof.
+
+The formal proof in \lean{LeanFlagAlgebras.MantelTheorem.MantelTheorem} uses
+\lean{prove\_flag\_expand\_with\_forbidden\_flag} to establish the expansion
+identity, \lean{ac\_sort\_pipeline} to normalize the resulting linear
+combination, and \lean{flagQuadraticForm\_nonneg} to confirm the semantic
+non-negativity.
 
 \subsection{The Erd\H{o}s Pentagon Theorem}
 
@@ -317,50 +339,108 @@ The main result is:
 theorem ErdosPentagon_Turan
     : generalizedTuranDensity K3 C5 = 24/625
 \end{lstlisting}
-proved as the conjunction of two bounds.
+proved as the conjunction of an upper bound and a lower bound.
 
 \paragraph{Upper bound.}
-The upper bound \lean{ErdosPentagon\_Turan\_upperBound} is proved in one line:
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_upperBound
-    : generalizedTuranDensity K3 C5 ≤ 24/625 :=
+    : generalizedTuranDensity K3 C5 <= 24/625 :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num)
     ErdosPentagon_flagAlgebra
 \end{lstlisting}
 The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag algebra
-inequality $C_5\text{-density} \leq_{[K_3]} \frac{24}{625} \cdot 1$,
-proved by exhibiting three quadratic forms (one per 1-vertex type, with PSD
-matrices $P$, $Q$, $R$) that are non-negative under the $K_3$-free assumption,
-and then verifying that their sum dominates the $C_5$ density element.  The
-PSD check for each matrix uses the LDL$^\top$ approach from \S\ref{sec:sdp}.
+inequality $C_5 \leq_{[K_3]} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
+$C_5$-density is at most $24/625$ under the $K_3$-free assumption.
+The proof exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$
+(one per 1-vertex type, each $8\times 8$) and shows that the sum of the
+corresponding quadratic forms, after downward-averaging, equals
+$\frac{24}{625} \cdot \mathbf{1} - [C_5]$.
+
+Positive semidefiniteness of each matrix is verified via the LDL$^\top$
+approach described in Section~\ref{sec:sdp}.  Once PSD is established, the
+quadratic form non-negativity follows from
+\lean{flagQuadraticForm\_nonneg}.  The equality between the quadratic form
+sum and the claimed bound is verified by the tactic pipeline:
+\lean{prove\_flag\_expand\_with\_forbidden\_flag} and
+\lean{prove\_flag\_mul\_with\_forbidden\_flag} handle the expansion and
+product identities, while \lean{ac\_sort\_pipeline} normalizes the resulting
+expressions.
+
+The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
+\lean{ErdosPentagon\_flagAlgebra} to the combinatorial statement via
+\lean{generalizedTuranDensity\_le\_of\_forbidLE}.
 
 \paragraph{Lower bound.}
-The lower bound \lean{ErdosPentagon\_Turan\_lowerBound} is proved via an
-explicit blow-up construction:
-\begin{lstlisting}
-def blowUp (G : SimpleGraph V) (n : ℕ) : SimpleGraph (V × Fin n) :=
-  { Adj v w := G.Adj v.1 w.1, ... }
-\end{lstlisting}
-The blow-up of $C_5$ by factor $n$ gives a $K_3$-free graph
-(\lean{blowUp\_K3\_free}) on $5n$ vertices containing at least $n^5$ induced
-copies of $C_5$ (\lean{subgraphCount\_blowUp\_C5\_ge}).  Dividing by
-$\binom{5n}{5}$ and taking $n\to\infty$ gives the lower bound:
+The lower bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound
-    : generalizedTuranDensity K3 C5 ≥ 24/625
+    : generalizedTuranDensity K3 C5 >= 24/625
 \end{lstlisting}
-The limit argument uses Lean's \lean{Filter.Tendsto} framework and the fact
-that $n^5 / \binom{5n}{5} \to 24/625$ by an exact algebraic computation
-(\lean{norm\_num}).
+is proved by an explicit construction.
 
-\paragraph{No axioms beyond the kernel.}
-The main theorem \lean{ErdosPentagon\_Turan} depends on \lean{native\_decide}
-for the density table lemmas (which introduces a dependency on the native-code
-compiler) and on \lean{decide +kernel} for the SDP matrix equalities (which
-uses only the kernel).  There are no \lean{sorry}s in the proof path of either
-result.
+\emph{Note on the following code.}  The snippets below are simplified
+schematic Lean illustrating the proof strategy; they are not verbatim
+repository excerpts.  In particular, the \lean{blowUp} definition uses
+informal notation (\lean{x}, \lean{and}, \lean{!=}) for readability, the
+triangle-freeness theorem appears under a different name in the repository,
+and the limit lemma is schematic.  We define the blow-up of a graph
+schematically as:
+\begin{lstlisting}
+-- schematic; see LeanFlagAlgebras/ErdosPentagon/ for the exact definition
+def blowUp (G : SimpleGraph V) (n : Nat) : SimpleGraph (V × Fin n) :=
+  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
+\end{lstlisting}
+The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
+of $n$ vertices and each edge by a complete bipartite graph) is triangle-free.
+The repository proves this as a \lean{CliqueFree 3} lemma for the blow-up
+construction.  It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
+\begin{lstlisting}
+theorem subgraphCount_blowUp_C5_ge (n : Nat) :
+    n^5 ≤ (blowUp C5 n).subgraphCount C5
+\end{lstlisting}
+The lower bound on the Turán density follows from the limit:
+\[
+  \lim_{n\to\infty} \frac{n^5}{\binom{5n}{5}} = \frac{24}{625},
+\]
+which is proved as an exact algebraic identity using \lean{norm\_num} after
+unfolding the definition of $\binom{5n}{5} = \frac{5n(5n-1)(5n-2)(5n-3)(5n-4)}{120}$.
+The limit argument is formalized using Lean's \lean{Filter.Tendsto}
+framework (schematic):
+\begin{lstlisting}
+-- schematic limit statement
+lemma blowUp_density_tendsto :
+    Filter.Tendsto (fun n => n^5 / Nat.choose (5*n) 5)
+                   Filter.atTop (nhds (24/625))
+\end{lstlisting}
 
-% =========================================================================
+\paragraph{Trust hierarchy.}
+The proof of \lean{ErdosPentagon\_Turan} depends on two classes of
+computational verification:
+\begin{itemize}
+  \item \lean{native\_decide} is used for all density table equalities
+    (e.g., $\den{F_1,F_2}{G} = p/q$ for specific flags).  This tactic
+    compiles the goal to native code and evaluates it; it relies on the
+    correctness of the Lean-to-native compiler, which is outside the kernel.
+    We accept this trust assumption because each individual density claim is
+    a simple rational equality, and the native evaluator has been extensively
+    tested in the Lean community.
+
+  \item \lean{decide +kernel} is used for the three SDP matrix equalities
+    $P = L_P D_P L_P^\top$, $Q = L_Q D_Q L_Q^\top$, $R = L_R D_R L_R^\top$.
+    This tactic evaluates inside the Lean kernel using no compiled native
+    code, so it introduces no trust beyond the standard Lean axioms
+    (\lean{propext}, \lean{Quot.sound}, \lean{Classical.choice}).
+    We use \lean{decide +kernel} specifically here because the SDP
+    certificates are the trust-critical component: if a matrix is claimed PSD
+    but is not, the entire upper bound proof collapses.
+\end{itemize}
+In both cases, the external computation (density enumeration scripts
+in \lean{LeanFlagAlgebras/ErdosPentagon/Densities/} and the SDP solver in
+\lean{LeanFlagAlgebras/ErdosPentagon/Matrix/}) is responsible only for
+producing \emph{candidate} values.  The Lean proofs are responsible for
+verifying each candidate against the formal definition.  There are no
+\lean{sorry}s or \lean{axiom}s in the proof paths of either
+\lean{Mantel\_theorem} or \lean{ErdosPentagon\_Turan}.
 ---END REFERENCE DRAFT---
 
 Improve and refine the Reference Draft above for section: Results.

@@ -257,30 +257,30 @@ Section-Specific Instructions:
 Read writer_output.md first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
@@ -307,9 +307,9 @@ architecture applies this pattern at multiple granularities.
 We introduce \lean{Sym2Graph n} in
 \lean{LeanFlagAlgebras.FlagAlgebra.Compute.Basic}:
 \begin{lstlisting}
-structure Sym2Graph (n : ℕ) where
-  edges : Finset (Sym2 (Fin n))
-  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+structure Sym2Graph (n : N) where
+  edges       : Finset (Sym2 (Fin n))
+  edges_valid : forall e in edges, not e.IsDiag
 \end{lstlisting}
 This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
 non-diagonal pairs.  Unlike \lean{SimpleGraph (Fin n)} (which uses a
@@ -320,14 +320,28 @@ membership.
 The same file derives the \lean{Fintype} instances needed to make graph
 isomorphism decidable:
 \begin{lstlisting}
-instance : Fintype (G₁ ↪g G₂) := ...   -- graph embeddings
-instance : Fintype (G₁ ≃g G₂) := ...   -- graph isomorphisms
-instance : Decidable (Nonempty (G ≃f G')) := ...  -- flag isomorphism
+instance : Fintype (G1 ->g G2) := ...   -- graph embeddings
+instance : Fintype (G1 =~g G2) := ...   -- graph isomorphisms
+instance : Decidable (Nonempty (G =~f G')) := ...  -- flag isomorphism
 \end{lstlisting}
 These instances are engineered carefully: they enumerate candidates (all
 injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
+
+\paragraph{Key challenge.}
+The main difficulty in the reflection layer is making graph isomorphism
+decidable efficiently enough for \lean{native\_decide} to terminate on
+five-vertex graphs in reasonable time.  The naive approach---enumerate all
+$n!$ permutations of the vertex set and check each---runs in $5! = 120$
+steps for size-5 graphs, which is fast enough.  However, the adequacy
+theorems require that the abstract \lean{flagDensity} and the concrete
+\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
+construction and reasoning about representatives, which was the source of most
+of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
+The key insight is that density over the quotient equals the density computed
+on any canonical representative, and the \lean{Sym2Graph} representation
+provides a canonical form via its \lean{Finset} of edges.
 
 \subsection{Adequacy Theorems}
 
@@ -335,19 +349,18 @@ The connection between the abstract and concrete worlds is established by
 adequacy theorems in \lean{LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity}:
 
 \begin{lstlisting}
-theorem flagDensity₁_eq_sym2EmptyTypeFlagDensity₁
+theorem flagDensity1_eq_sym2FlagDensity1
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
-    flagDensity₁ F.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₁ F G
+    flagDensity1 F.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity1 F G
 
-theorem flagDensity₂_eq_sym2EmptyTypeFlagDensity₂
-    (F₀ : Sym2EmptyTypedFlag m₀) (F₁ : Sym2EmptyTypedFlag m₁)
+theorem flagDensity2_eq_sym2FlagDensity2
+    (F0 : Sym2EmptyTypedFlag m0) (F1 : Sym2EmptyTypedFlag m1)
     (G : Sym2EmptyTypedFlag n) :
-    flagDensity₂ F₀.toFlag F₁.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₂ F₀ F₁ G
+    flagDensity2 F0.toFlag F1.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity2 F0 F1 G
 \end{lstlisting}
-The right-hand sides---\lean{sym2EmptyTypeFlagDensity₁} and
-\lean{sym2EmptyTypeFlagDensity₂}---are defined entirely over \lean{Sym2Graph}
+The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
@@ -365,18 +378,17 @@ file containing density values, and for each entry \lean{(F1, F2, G, p/q)}
 generates and immediately proves the theorem:
 \begin{lstlisting}
 @[simp]
-theorem flagDensity₂_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
-    : flagDensity₂ Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
+theorem flagDensity2_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
+    : flagDensity2 Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
   := by
   delta Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2
-  rw [flagDensity₂_eq_sym2FlagDensity₂]
+  rw [flagDensity2_eq_sym2FlagDensity2]
   native_decide
 \end{lstlisting}
 The three proof steps are: unfold the concrete flag definitions (making their
 \lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
 call \lean{native\_decide} to evaluate the resulting finite computation.
-Hundreds of such theorems are generated and proved at compile time.  The same
-elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
+The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
 
 \subsection{SDP Certificate Verification via LDL$^\top$}
 \label{sec:sdp}
@@ -392,16 +404,16 @@ matrix $P$, we exhibit a lower-triangular matrix $L_P$ and a diagonal matrix
 $D_P$ with non-negative diagonal entries $d_P$, defined as explicit rational
 constants in \lean{LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef}:
 \begin{lstlisting}
-def P : Matrix (Fin 8) (Fin 8) ℚ := !![(24/625 : ℚ), (-36/625 : ℚ), ...]
-def dP : Fin 8 → ℚ := ![(24/625 : ℚ), (223/625 : ℚ), ..., 0, 0, 0, 0]
-def LP : Matrix (Fin 8) (Fin 8) ℚ := !![(1 : ℚ), 0, ...; (-3/2 : ℚ), 1, ...]
+def P : Matrix (Fin 8) (Fin 8) Q := !![(24/625 : Q), (-36/625 : Q), ...]
+def dP : Fin 8 -> Q := ![(24/625 : Q), (223/625 : Q), ..., 0, 0, 0, 0]
+def LP : Matrix (Fin 8) (Fin 8) Q := !![(1 : Q), 0, ...; (-3/2 : Q), 1, ...]
 \end{lstlisting}
 Positive semidefiniteness then follows from two lemmas:
 \begin{lstlisting}
-lemma dP_nonneg (i : Fin 8) : 0 ≤ dP i := by
+lemma dP_nonneg (i : Fin 8) : 0 <= dP i := by
   fin_cases i <;> norm_num [dP]
 
-lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
+lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LP.transpose := by
   decide +kernel
 
 theorem P_posSemidef : P.PosSemidef :=
@@ -425,14 +437,57 @@ profiles:
 
   \item \lean{decide +kernel} evaluates inside the kernel.  It is slower but
     uses no trusted computation outside the Lean kernel itself.  We use it for
-    the SDP matrix equalities, where trust is most critical.
+    the SDP matrix equalities, where trust is most critical.  If a matrix
+    that is not PSD were erroneously accepted, the entire upper bound proof
+    would collapse; we therefore deliberately pay the cost of kernel evaluation.
 \end{itemize}
 In both cases, the external computation (the density enumeration scripts, the
 SDP solver) is responsible only for producing \emph{candidates}---values to
 claim.  The Lean proof is responsible for verifying each claim against the
 formal definition.
 
-% =========================================================================
+\subsection{Implementation Metrics}
+
+Table~\ref{tab:metrics} summarizes the scale of the formalization.
+
+\begin{table}
+  \caption{Scale of the Lean~4 formalization.}
+  \label{tab:metrics}
+  \begin{tabular}{lrl}
+    \toprule
+    Component & Lines & Primary files \\
+    \midrule
+    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
+      \lean{FlagAlgebra/}, \lean{Forbid/} \\
+    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
+      \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
+    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
+      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
+    Application (Mantel + Pentagon) & 1\,900 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
+    \midrule
+    Total (excluding archived experiments) & 25\,000 & \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \begin{tabular}{lr}
+    \toprule
+    Computationally verified artifact & Count \\
+    \midrule
+    Auto-generated density lemmas (pentagon proof) & 2\,847 \\
+    Multiplication table entries verified & $>$\,300 \\
+    \lean{decide~+kernel} SDP matrix equalities & 3 (each $8{\times}8$ over $\mathbb{Q}$) \\
+    \lean{native\_decide} density table checks & $>$\,2\,800 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The 2\,847 auto-generated density lemmas break down as: 15 for the
+size-3/type-1 family (used in Mantel's theorem), and 2\,832 for the
+size-5/type-3 families used in the pentagon proof (1\,800 for type-0 flags,
+672 for type-1, 360 for type-2).  Each lemma requires one \lean{native\_decide}
+evaluation over a graph on at most 5 vertices.
 ---END REFERENCE DRAFT---
 
 Revise to remove unsupported claims and strengthen evidence alignment.

@@ -250,30 +250,30 @@ Section-Specific Instructions:
 Read writer_output.md first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
@@ -283,26 +283,55 @@ Reference Section Draft (your primary starting point — improve and refine this
 \paragraph{Formalizations of combinatorics.}
 Several combinatorial theorems have been formalized in Lean and related
 systems.  Dillies and Mehta~\cite{dillies2022szemeredi} formalized
-Szemerédi's Regularity Lemma in Lean~4; Mehta~\cite{mehta2022kruskal}
-formalized Kruskal-Katona; Subercaseaux et al.~\cite{subercaseaux2024hexagon}
+Szemer\'edi's Regularity Lemma in Lean~4 using a graph-theoretic presentation;
+our work faces similar challenges with large Mathlib dependencies but at a
+different point in the proof engineering spectrum (our main difficulty is
+data-heavy SDP verification rather than epsilon-delta regularity arguments).
+Mehta~\cite{mehta2022kruskal} formalized the Kruskal-Katona theorem.
+Subercaseaux et al.~\cite{subercaseaux2024hexagon}
 formally verified the empty hexagon number using a SAT-based pipeline.  Our
 work differs in that the central method (flag algebras) relies on an algebraic
 quotient construction and measure-theoretic limits, rather than purely
-combinatorial enumeration.
+combinatorial enumeration or SAT solving.
+Gowers et al.~\cite{gowers2024formalizing} recently announced a Lean~4
+formalization of the polynomial Freiman-Ruzsa conjecture proof; their experience
+with large-scale Lean formalization of recent combinatorics results is closely
+related to ours.
+
+\paragraph{Proof by reflection in proof assistants.}
+Proof by reflection is a classical technique in the Coq community (see
+Chlipala~\cite{chlipala2013cpdt} for a survey), and has been used
+in Lean for verified computation (e.g., in Mathlib's \lean{decide} and
+\lean{norm\_num} tactics).  Cohen et al.~\cite{cohen2013refinements}
+develop a systematic methodology for building efficiently computable
+representations alongside their abstract counterparts in Coq; our
+\lean{Sym2Graph}/\lean{SimpleGraph} pair follows the same philosophy
+adapted to Lean~4's type-class and instance-search mechanism.
+Our use of elaboration-time theorem generation from JSON data (Section~\ref{sec:reflection})
+is related to the approach of Amin and Rompf~\cite{amin2017collapsing},
+who generate verified code from high-level specifications; we generate
+verified density lemmas from externally computed tables.
 
 \paragraph{Computer-assisted flag algebra arguments.}
-The Flagmatic software system~\cite{razborov2010flagmatic} automates the
-computation of flag algebra certificates, but produces results that are
-validated only informally.  Our work provides the first formally verified
-end-to-end pipeline from flag algebra certificates to combinatorial theorems.
+The Flagmatic software~\cite{vaughan2013flagmatic} automates the
+computation of flag algebra certificates as a Python tool, but produces results
+that are validated only informally.  Our work provides the first formally
+verified end-to-end pipeline from flag algebra certificates to combinatorial
+theorems.  Razborov~\cite{razborov2013flag} gives a comprehensive survey of
+flag algebra applications; the $\sim$100 results catalogued there all involve
+the same three categories of proof obligation identified in
+Section~\ref{sec:intro}, suggesting that our infrastructure is broadly applicable.
 
-\paragraph{Proof by reflection.}
-Proof by reflection is a classical technique in the Coq community (see
-Chlipala~\cite{chlipala2013cpdt} for a survey), and has been used in
-Lean for verified computation (e.g., in Mathlib's \lean{decide} and
-\lean{norm\_num} tactics).  Our use of \lean{Sym2Graph} as a concrete mirror
-of \lean{SimpleGraph} follows the same pattern, extended to the domain of flag
-density computation.
+\paragraph{SDP certificate verification.}
+The verification of SDP certificates has been studied in the context of
+sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
+positivity certificates for polynomials in HOL Light.  Our LDL$^\top$ approach
+is structurally similar but operates over $\mathbb{Q}$ (exact arithmetic) rather
+than $\mathbb{R}$, which is essential for kernel-checkable verification.
+Parrilo and Sturmfels~\cite{parrilo2003minimizing} connect algebraic
+certificates (sum-of-squares) to SDP duality in the polynomial setting;
+our setting is analogous but over the discrete flag algebra rather than the
+polynomial ring.
 
 \paragraph{Tactic meta-programming.}
 Custom tactics for domain-specific proof automation have been developed in many
@@ -311,9 +340,17 @@ naming convention as a form of \emph{reflected metadata}: the name of a
 constant encodes information that the tactic exploits without having to reduce
 the mathematical content of the expression.  This is related to, but distinct
 from, approaches based on type-class inference or user-facing attribute
-annotations.
+annotations, and is most closely analogous to the ``term-mode reflection''
+pattern described by Malecha and Morrisett~\cite{malecha2014towards}.
 
-% =========================================================================
+\paragraph{Graph limits and Turán densities.}
+The mathematical foundation of flag algebras (convergent graph sequences,
+positive homomorphisms, the graphon limit) is developed in depth by
+Lov\'asz~\cite{lovasz2012large}.  To our knowledge, no formalization of
+graph limit theory exists in any proof assistant; our \lean{FlagSequence.lean}
+and \lean{RandomHom.lean} provide a partial formalization sufficient for the
+flag algebra method, but a full formalization of the graphon theory remains
+an open challenge.
 ---END REFERENCE DRAFT---
 
 Revise to remove unsupported claims and strengthen evidence alignment.

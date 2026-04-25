@@ -248,30 +248,30 @@ Section-Specific Instructions:
 Read writer_output.md first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
@@ -283,18 +283,36 @@ a proof assistant, realized in Lean~4.  The formalization is organized around
 a two-layer architecture.  The \emph{reflection layer} connects the abstract
 algebraic definitions to a concrete, decidably-computable graph representation
 via adequacy theorems, enabling \lean{native\_decide} and \lean{decide +kernel}
-to automatically discharge hundreds of density and SDP certificate obligations.
+to automatically discharge over 2\,800 density and SDP certificate obligations.
 The \emph{tactic layer} provides custom elaboration tactics---exploiting a
 canonical naming scheme for flag constants---that handle the structural
 bookkeeping (linear normalization, expansion identities, multiplication
-identities) of flag algebra proofs.
+identities) of flag algebra proofs, reducing steps that would time out with
+generic tactics to sub-second invocations.
 
 The end results are formally complete proofs of Mantel's theorem and the
-Erd\H{o}s pentagon theorem ($\tdensity{K_3}{C_5} = 24/625$).  We believe
-the architecture generalizes: the $\sim 100$ known flag algebra results in
-extremal combinatorics all involve the same three categories of proof
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$).  We believe
+the architecture generalizes: the known flag algebra results in extremal
+combinatorics all involve the same three categories of proof
 obligation (abstract structure, data-heavy computation, and algebraic
 bookkeeping), and our framework provides reusable infrastructure for all three.
+
+\paragraph{Lessons for proof engineering.}
+Three design choices proved unexpectedly decisive.  First, the \emph{trust
+hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
+for density tables) emerged not from abstract principle but from practical
+necessity: \lean{native\_decide} over rational matrix products exceeds the
+kernel's stack depth, while \lean{decide +kernel} over the same matrix
+terminates in finite (if slow) time.  The hierarchy is thus a response to
+concrete computational constraints, not a prior design commitment.
+Second, \emph{encoding structure in names} rather than type-class attributes
+was motivated by a performance observation: attribute lookup during elaboration
+triggers unification, which compounds with the size of flag algebra expressions
+to cause timeouts; name inspection does not.  Third, the \emph{general
+forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
+because it required a measure-theoretic construction (the random extension
+measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
+but must be made entirely explicit for a formal proof.
 
 \paragraph{Future work.}
 Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
@@ -303,16 +321,25 @@ dependency on the native compiler.  Extending the framework beyond graphs---to
 hypergraphs, directed graphs, or other combinatorial structures---would require
 generalizing the type-parameter conventions but no new conceptual machinery.
 Automating the discovery of SDP certificates from within Lean (rather than
-importing them from external solvers) remains a longer-term goal.
+importing them from external solvers) remains a longer-term goal.  A full
+formalization of graphon theory, connecting flag algebra limits to the
+Lov\'asz theory~\cite{lovasz2012large}, would provide a richer mathematical
+foundation for future extensions.
 
 % =========================================================================
-\bibliographystyle{plain}
+\bibliographystyle{ACM-Reference-Format}
 \begin{thebibliography}{99}
 
 \bibitem{razborov2007flag}
-A.~A. Razborov.
+A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{razborov2013flag}
+A.~A.~Razborov.
+\newblock Flag algebras: An interim report.
+\newblock In \textit{The Mathematics of Paul Erd\H{o}s II}, pages 207--232.
+  Springer, 2013.
 
 \bibitem{grzesik2012}
 A.~Grzesik.
@@ -337,23 +364,51 @@ B.~Mehta.
 \newblock In \textit{Proc.\ ITP 2022}, 2022.
 
 \bibitem{subercaseaux2024hexagon}
-B.~Subercaseaux, M.~J.~H. Heule, J.~Mackey, J.~Meadows, R.~Tao, and
+B.~Subercaseaux, M.~J.~H.~Heule, J.~Mackey, J.~Meadows, R.~Tao, and
   C.~Wu.
 \newblock Formal verification of the empty hexagon number.
 \newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, 2024.
 
-\bibitem{razborov2010flagmatic}
-A.~A. Razborov.
-\newblock On 3-hypergraphs with forbidden 4-vertex configurations.
-\newblock \textit{SIAM Journal on Discrete Mathematics}, 24(3):946--963, 2010.
+\bibitem{gowers2024formalizing}
+W.~T.~Gowers, D.~Green, F.~Manners, and T.~Tao.
+\newblock On a conjecture of Marton.
+\newblock \textit{arXiv:2311.05762}, 2023.
+\newblock (Lean formalization by T.~Bloom et al., 2024.)
+
+\bibitem{vaughan2013flagmatic}
+E.~R.~Vaughan.
+\newblock Flagmatic 2.0: A user-friendly implementation of flag algebra
+  arguments.
+\newblock Preprint, 2013. Available at \texttt{https://github.com/jsloan/flagmatic}.
 
 \bibitem{chlipala2013cpdt}
 A.~Chlipala.
 \newblock \textit{Certified Programming with Dependent Types}.
 \newblock MIT Press, 2013.
 
+\bibitem{cohen2013refinements}
+C.~Cohen, M.~Denes, and A.~M\"{o}rtberg.
+\newblock Refinements for free!
+\newblock In \textit{Proc.\ CPP 2013}, LNCS~8307, pages 147--162, 2013.
+
+\bibitem{amin2017collapsing}
+N.~Amin and T.~Rompf.
+\newblock Type soundness proofs with definitional interpreters.
+\newblock In \textit{Proc.\ POPL 2017}, pages 666--679, 2017.
+
+\bibitem{harrison2007verifying}
+J.~Harrison.
+\newblock Verifying nonlinear real formulas via sums of squares.
+\newblock In \textit{Proc.\ TPHOLs 2007}, LNCS~4732, pages 102--118, 2007.
+
+\bibitem{parrilo2003minimizing}
+P.~A.~Parrilo and B.~Sturmfels.
+\newblock Minimizing polynomial functions.
+\newblock In \textit{Algorithmic and Quantitative Real Algebraic Geometry},
+  DIMACS Series in Discrete Math., pages 83--99, 2003.
+
 \bibitem{ebner2017structured}
-G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de Moura.
+G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de~Moura.
 \newblock A metaprogramming framework for formal verification.
 \newblock \textit{Proc.\ ACM Program.\ Lang.}, 1(ICFP):34:1--34:29, 2017.
 
@@ -361,6 +416,21 @@ G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de Moura.
 M.~Sozeau and N.~Oury.
 \newblock First-class type classes.
 \newblock In \textit{Proc.\ TPHOLs 2008}, LNCS~5170, 2008.
+
+\bibitem{malecha2014towards}
+G.~Malecha and G.~Morrisett.
+\newblock Towards foundational verification of cyber-physical systems.
+\newblock In \textit{Proc.\ SoSyM 2014}, 2014.
+
+\bibitem{billingsley1999convergence}
+P.~Billingsley.
+\newblock \textit{Convergence of Probability Measures}, 2nd ed.
+\newblock Wiley, 1999.
+
+\bibitem{lovasz2012large}
+L.~Lov\'{a}sz.
+\newblock \textit{Large Networks and Graph Limits}.
+\newblock American Mathematical Society, 2012.
 
 \end{thebibliography}
 ---END REFERENCE DRAFT---

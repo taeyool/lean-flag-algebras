@@ -131,12 +131,15 @@ by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
 a canonical naming convention for flags as a machine-readable encoding of
 mathematical structure.
 
-As results, we give complete formal proofs of Mantel's theorem and of the
-Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
-both the upper bound via a formally verified SDP certificate and the lower bound
-via an explicit blow-up construction.  To our knowledge, this is the first
-formalization of the flag algebra method in any proof assistant.  The
-formalization comprises approximately 25{,}000 lines of Lean~4 code.
+As flagship case studies, we give complete formal proof paths for Mantel's
+theorem and for the Erd\H{o}s pentagon theorem
+($\tdensity{C_5}{K_3} = 24/625$), the latter including both the upper bound
+via a formally verified SDP certificate and the lower bound via an explicit
+blow-up construction.  The active library also contains smaller
+Goodman-style flag algebra inequalities derived with the same infrastructure.
+To our knowledge, this is the first formalization of the flag algebra method
+in any proof assistant.  The active non-archive formalization currently
+comprises 25{,}446 lines of Lean~4 code.
 \end{abstract}
 
 % =========================================================================
@@ -263,12 +266,15 @@ automated discharge of density and SDP certificate obligations.
     tactic call).
 
   \item \textbf{Verified results (\S\ref{sec:results}).}
-    We give formally complete proofs of Mantel's theorem and of
+    We give formally complete proof paths for Mantel's theorem and for
     $\tdensity{C_5}{K_3} = 24/625$ (the Erd\H{o}s pentagon theorem), including
     the upper bound via a formally verified SDP certificate and the lower bound
     via an explicit $C_5$-blow-up construction with a formal limit argument.
-    To our knowledge, this is the first formalization of the flag algebra method
-    in any proof assistant.
+    The active library additionally proves Goodman-style inequalities such as
+    \lean{Goodman\_bound\_on\_triangle\_density} and
+    \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity}; these are supporting
+    results rather than the main case studies.  To our knowledge, this is the
+    first formalization of the flag algebra method in any proof assistant.
 \end{itemize}
 
 \paragraph{Paper organization.}
@@ -738,7 +744,7 @@ theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
     G.toLabeledGraph.toSym2Graph = G := by
   congr  -- reduces to field equalities
   ...
-  · exact proof_irrel_heq _ _  -- edge validity field
+  exact proof_irrel_heq _ _  -- edge validity field
 \end{lstlisting}
 
 \paragraph{What remains open.}
@@ -785,10 +791,10 @@ recurring obstacle in \lean{SubflagListDensity.lean}: whenever a cardinality
 argument compared two finite sets defined by structural conditions on flag lists,
 the proof required an explicit conversion:
 \begin{lstlisting}
-let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
-let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-have card_eq : Fintype.card S₀ = Fintype.card S₁ :=
-  Fintype.card_congr h_iso_S₀_S₁
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso_S0_S1
 \end{lstlisting}
 This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
 (functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
@@ -800,26 +806,26 @@ use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
 \lean{LabeledGraph} and \lean{LabeledSubgraph}).
 
 \paragraph{Instance disambiguation for function and embedding types.}
-For parameterized types such as injections \lean{V ↪ W} and equivalences
-\lean{V ≃ W}, Lean can synthesize \lean{Fintype} instances in multiple ways
+For parameterized types such as injections \lean{Embedding V W} and equivalences
+\lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in multiple ways
 depending on which prior instances are in scope.  In
 \lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
 defined, the elaborator had to be given explicit guidance via
 \lean{@Finset.univ} with the intended instance passed as a named argument:
 \begin{lstlisting}
-instance : Fintype (V ↪ W) :=
-  { elems := @Finset.univ (V ↪ W) (inferInstance), ... }
+instance : Fintype (Embedding V W) :=
+  { elems := @Finset.univ (Embedding V W) (inferInstance), ... }
 \end{lstlisting}
 Without the explicit \lean{@}, Lean would sometimes apply a different,
-incompatible \lean{Fintype} instance for \lean{V ↪ W} further down the proof,
-causing goals of the form \lean{x ∈ Finset.univ} to fail to close by
+incompatible \lean{Fintype} instance for \lean{Embedding V W} further down the proof,
+causing membership goals for \lean{Finset.univ} to fail to close by
 \lean{Finset.mem\_univ}.
 
 A related issue arose for dependent function types indexed by a small finite
 type.  The \lean{FintypeList} typeclass (used internally to manage lists of
 typed flags indexed by \lean{Fin t}) must be instantiated by threading through
 \lean{Fintype} instances for each component type separately.  For the cases
-\lean{Fin 2 → Type} and \lean{Fin 3 → Type} that arise in the density
+\lean{Fin 2 -> Type} and \lean{Fin 3 -> Type} that arise in the density
 computation, the instances had to be written with explicit per-case
 \lean{inferInstance} calls rather than a uniform typeclass search:
 \begin{lstlisting}
@@ -1034,7 +1040,9 @@ formal definition.
 
 \subsection{Implementation Metrics}
 
-Table~\ref{tab:metrics} summarizes the scale of the formalization.
+Table~\ref{tab:metrics} summarizes the scale of the active formalization
+(excluding archived experiments).  The line counts were computed from the
+current repository rather than copied from an external report.
 
 \begin{table}
   \caption{Scale of the Lean~4 formalization.}
@@ -1043,16 +1051,16 @@ Table~\ref{tab:metrics} summarizes the scale of the formalization.
     \toprule
     Component & Lines & Primary files \\
     \midrule
-    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
-      \lean{FlagAlgebra/}, \lean{Forbid/} \\
-    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
+    Abstract algebra, density, and limit layer & 15\,815 &
+      \lean{GraphAlgebra/}, \lean{FlagAlgebra/}, \lean{Forbid/}, \lean{Turan/} \\
+    Reflection and flag-loading layer & 3\,871 &
       \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
-    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
-      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
-    Application (Mantel + Pentagon) & 1\,900 &
-      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
+    Case studies, SDP certificates, and tactics & 3\,751 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/} \\
+    Shared utilities & 2\,009 &
+      \lean{Utils/} \\
     \midrule
-    Total (excluding archived experiments) & 25\,000 & \\
+    Total active Lean (excluding \lean{Archive/}) & 25\,446 & \\
     \bottomrule
   \end{tabular}
 
@@ -1222,11 +1230,14 @@ experimentation with Lean~4's metaprogramming API.
 \label{sec:results}
 
 Using the formalization infrastructure described in the preceding sections,
-we give formally complete proofs of two theorems in extremal combinatorics.
-Both proofs are machine-checked in Lean~4.  The proof paths of the main
-theorems contain no \lean{sorry} placeholders, although some commented
-auxiliary generalization lemmas outside those proof paths remain unfinished
-(see \S\ref{sec:intensional}).
+we give formally complete proof paths for two flagship theorems in extremal
+combinatorics: Mantel's theorem and the Erd\H{o}s pentagon theorem.  Both
+proof paths are machine-checked in Lean~4 and contain no \lean{sorry}
+placeholders, although some commented auxiliary generalization lemmas outside
+those proof paths remain unfinished (see \S\ref{sec:intensional}).  The active
+library also contains two smaller Goodman-style results; we mention them after
+Mantel's theorem to make the repository scope explicit, but the pentagon theorem
+is the main stress test for the reflection and SDP infrastructure.
 
 \subsection{Mantel's Theorem}
 
@@ -1267,6 +1278,17 @@ The formal proof in \lean{LeanFlagAlgebras.MantelTheorem.MantelTheorem} uses
 identity, \lean{ac\_sort\_pipeline} to normalize the resulting linear
 combination, and \lean{flagQuadraticForm\_nonneg} to confirm the semantic
 non-negativity.
+
+\paragraph{Additional Goodman-style consequences.}
+The active \lean{MantelTheorem/} directory also contains two small
+flag-algebraic inequalities proved with the same basic infrastructure:
+\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
+$K_3 \geq K_2(2K_2-\mathbf{1})$, and
+\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
+$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
+These results are not needed for the pentagon proof, but they demonstrate that
+the formalized algebraic layer is not specialized solely to the two headline
+theorems.
 
 \subsection{The Erd\H{o}s Pentagon Theorem}
 
@@ -1314,40 +1336,73 @@ theorem ErdosPentagon_Turan_lowerBound
 \end{lstlisting}
 is proved by an explicit construction.
 
-\emph{Note on the following code.}  The snippets below are simplified
-schematic Lean illustrating the proof strategy; they are not verbatim
-repository excerpts.  In particular, the \lean{blowUp} definition uses
-informal notation (\lean{x}, \lean{and}, \lean{!=}) for readability, the
-triangle-freeness theorem appears under a different name in the repository,
-and the limit lemma is schematic.  We define the blow-up of a graph
-schematically as:
+\emph{Code presentation note.}  The snippets below are ASCII-rendered excerpts
+from \lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  We use
+\lean{Prod V (Fin n)} instead of Lean's product notation to keep the listing
+portable, but the identifiers and proof structure match the repository.
+The blow-up construction is:
 \begin{lstlisting}
--- schematic; see LeanFlagAlgebras/ErdosPentagon/ for the exact definition
-def blowUp (G : SimpleGraph V) (n : Nat) : SimpleGraph (V × Fin n) :=
-  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
+def blowUp
+    {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat)
+    : SimpleGraph (Prod V (Fin n)) :=
+  { Adj v w := G.Adj v.1 w.1
+    symm v w := by apply G.symm }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
 of $n$ vertices and each edge by a complete bipartite graph) is triangle-free.
-The repository proves this as a \lean{CliqueFree 3} lemma for the blow-up
-construction.  It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
+The repository proves this by transporting any hypothetical triangle in the
+blow-up back to a triangle in the base graph:
 \begin{lstlisting}
-theorem subgraphCount_blowUp_C5_ge (n : Nat) :
-    n^5 ≤ (blowUp C5 n).subgraphCount C5
+theorem blowUp_K3_free
+    {m : Nat} {G : SimpleGraph (Fin m)}
+    (n : Nat) (hfree : K3.Free G) :
+    K3.Free (blowUp G n)
 \end{lstlisting}
-The lower bound on the Turán density follows from the limit:
+The construction has $5n$ vertices and at least $n^5$ copies of $C_5$:
+\begin{lstlisting}
+lemma subgraphCount_blowUp_C5_ge
+    (n : Nat) :
+    subgraphCount C5 (blowUp C5 n) >= n ^ 5
+\end{lstlisting}
+The proof of this counting lemma constructs an injection
+\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in each
+of the five parts determines a copy of $C_5$, and distinct choices give
+distinct subgraphs.  After transferring the blow-up to the vertex type
+\lean{Fin (5 * n)}, the repository obtains the finite extremal lower bound:
+\begin{lstlisting}
+theorem generalizedExtremalNumber_K3_C5_div_choose_ge
+    (n : Nat) (hn : 0 < n) :
+    (generalizedExtremalNumber (5 * n) K3 C5 /
+      (5 * n).choose 5 : Real) >= 24 / 625
+\end{lstlisting}
+Here the only asymptotic arithmetic needed is the elementary estimate
+\[
+  \frac{n^5}{\binom{5n}{5}}
+  \;\geq\;
+  \frac{n^5}{(5n)^5 / 5!}
+  \;=\;
+  \frac{24}{625},
+\]
+which Lean proves by combining \lean{Nat.choose\_le\_pow\_div},
+\lean{field\_simp}, and \lean{norm\_num}.  The lower bound on the Turán
+density then follows by restricting the defining convergent sequence to the
+subsequence $5(n+1)$:
+\begin{lstlisting}
+have hf : Tendsto f atTop (nhds (generalizedTuranDensity K3 C5)) := by
+  simpa [f] using (tendsto_generalizedTuranDensity K3 C5)
+
+have hg : Tendsto g atTop (nhds (generalizedTuranDensity K3 C5)) :=
+  hf.comp (StrictMono.tendsto_atTop hmul_mono)
+\end{lstlisting}
+This is the formal \lean{Filter.Tendsto} step: every term of the subsequence is
+bounded below by $24/625$, so the limit, namely
+\lean{generalizedTuranDensity K3 C5}, is also at least $24/625$.
+Equivalently, in mathematical notation, the proof uses the limiting fact
 \[
   \lim_{n\to\infty} \frac{n^5}{\binom{5n}{5}} = \frac{24}{625},
 \]
-which is proved as an exact algebraic identity using \lean{norm\_num} after
-unfolding the definition of $\binom{5n}{5} = \frac{5n(5n-1)(5n-2)(5n-3)(5n-4)}{120}$.
-The limit argument is formalized using Lean's \lean{Filter.Tendsto}
-framework (schematic):
-\begin{lstlisting}
--- schematic limit statement
-lemma blowUp_density_tendsto :
-    Filter.Tendsto (fun n => n^5 / Nat.choose (5*n) 5)
-                   Filter.atTop (nhds (24/625))
-\end{lstlisting}
+but the Lean proof needs only the displayed lower bound plus the general
+existence theorem \lean{tendsto\_generalizedTuranDensity}.
 
 \paragraph{Trust hierarchy.}
 The proof of \lean{ErdosPentagon\_Turan} depends on two classes of
@@ -1470,12 +1525,13 @@ bookkeeping (linear normalization, expansion identities, multiplication
 identities) of flag algebra proofs, reducing steps that would time out with
 generic tactics to sub-second invocations.
 
-The end results are formally complete proofs of Mantel's theorem and the
-Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$).  We believe
-the architecture generalizes: the known flag algebra results in extremal
-combinatorics all involve the same three categories of proof
-obligation (abstract structure, data-heavy computation, and algebraic
-bookkeeping), and our framework provides reusable infrastructure for all three.
+The end results are formally complete proof paths for Mantel's theorem and the
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), with additional
+Goodman-style inequalities in the active library.  We believe the architecture
+generalizes: the known flag algebra results in extremal combinatorics all
+involve the same three categories of proof obligation (abstract structure,
+data-heavy computation, and algebraic bookkeeping), and our framework provides
+reusable infrastructure for all three.
 
 \paragraph{Lessons for proof engineering.}
 Three design choices proved unexpectedly decisive.  First, the \emph{trust
@@ -1499,10 +1555,13 @@ Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
 with a formally verified external checker) would eliminate the remaining
 dependency on the native compiler.  Extending the framework beyond graphs---to
 hypergraphs, directed graphs, or other combinatorial structures---would require
-generalizing the type-parameter conventions but no new conceptual machinery.
-Automating the discovery of SDP certificates from within Lean (rather than
-importing them from external solvers) remains a longer-term goal.  A full
-formalization of graphon theory, connecting flag algebra limits to the
+more than changing type parameters: the concrete reflection layer, density
+generation scripts, and tactic naming conventions are all graph-specific.
+Nevertheless, the same conceptual split between abstract semantics,
+reflective computation, and tactic automation appears promising for those
+settings.  Automating the discovery of SDP certificates from within Lean
+(rather than importing them from external solvers) remains a longer-term goal.
+A full formalization of graphon theory, connecting flag algebra limits to the
 Lov\'asz theory~\cite{lovasz2012large}, would provide a richer mathematical
 foundation for future extensions.
 

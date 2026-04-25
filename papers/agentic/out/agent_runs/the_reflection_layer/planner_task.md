@@ -279,9 +279,9 @@ architecture applies this pattern at multiple granularities.
 We introduce \lean{Sym2Graph n} in
 \lean{LeanFlagAlgebras.FlagAlgebra.Compute.Basic}:
 \begin{lstlisting}
-structure Sym2Graph (n : ℕ) where
-  edges : Finset (Sym2 (Fin n))
-  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+structure Sym2Graph (n : N) where
+  edges       : Finset (Sym2 (Fin n))
+  edges_valid : forall e in edges, not e.IsDiag
 \end{lstlisting}
 This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
 non-diagonal pairs.  Unlike \lean{SimpleGraph (Fin n)} (which uses a
@@ -292,14 +292,28 @@ membership.
 The same file derives the \lean{Fintype} instances needed to make graph
 isomorphism decidable:
 \begin{lstlisting}
-instance : Fintype (G₁ ↪g G₂) := ...   -- graph embeddings
-instance : Fintype (G₁ ≃g G₂) := ...   -- graph isomorphisms
-instance : Decidable (Nonempty (G ≃f G')) := ...  -- flag isomorphism
+instance : Fintype (G1 ->g G2) := ...   -- graph embeddings
+instance : Fintype (G1 =~g G2) := ...   -- graph isomorphisms
+instance : Decidable (Nonempty (G =~f G')) := ...  -- flag isomorphism
 \end{lstlisting}
 These instances are engineered carefully: they enumerate candidates (all
 injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
+
+\paragraph{Key challenge.}
+The main difficulty in the reflection layer is making graph isomorphism
+decidable efficiently enough for \lean{native\_decide} to terminate on
+five-vertex graphs in reasonable time.  The naive approach---enumerate all
+$n!$ permutations of the vertex set and check each---runs in $5! = 120$
+steps for size-5 graphs, which is fast enough.  However, the adequacy
+theorems require that the abstract \lean{flagDensity} and the concrete
+\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
+construction and reasoning about representatives, which was the source of most
+of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
+The key insight is that density over the quotient equals the density computed
+on any canonical representative, and the \lean{Sym2Graph} representation
+provides a canonical form via its \lean{Finset} of edges.
 
 \subsection{Adequacy Theorems}
 
@@ -307,19 +321,18 @@ The connection between the abstract and concrete worlds is established by
 adequacy theorems in \lean{LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity}:
 
 \begin{lstlisting}
-theorem flagDensity₁_eq_sym2EmptyTypeFlagDensity₁
+theorem flagDensity1_eq_sym2FlagDensity1
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
-    flagDensity₁ F.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₁ F G
+    flagDensity1 F.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity1 F G
 
-theorem flagDensity₂_eq_sym2EmptyTypeFlagDensity₂
-    (F₀ : Sym2EmptyTypedFlag m₀) (F₁ : Sym2EmptyTypedFlag m₁)
+theorem flagDensity2_eq_sym2FlagDensity2
+    (F0 : Sym2EmptyTypedFlag m0) (F1 : Sym2EmptyTypedFlag m1)
     (G : Sym2EmptyTypedFlag n) :
-    flagDensity₂ F₀.toFlag F₁.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₂ F₀ F₁ G
+    flagDensity2 F0.toFlag F1.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity2 F0 F1 G
 \end{lstlisting}
-The right-hand sides---\lean{sym2EmptyTypeFlagDensity₁} and
-\lean{sym2EmptyTypeFlagDensity₂}---are defined entirely over \lean{Sym2Graph}
+The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
@@ -337,18 +350,17 @@ file containing density values, and for each entry \lean{(F1, F2, G, p/q)}
 generates and immediately proves the theorem:
 \begin{lstlisting}
 @[simp]
-theorem flagDensity₂_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
-    : flagDensity₂ Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
+theorem flagDensity2_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
+    : flagDensity2 Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
   := by
   delta Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2
-  rw [flagDensity₂_eq_sym2FlagDensity₂]
+  rw [flagDensity2_eq_sym2FlagDensity2]
   native_decide
 \end{lstlisting}
 The three proof steps are: unfold the concrete flag definitions (making their
 \lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
 call \lean{native\_decide} to evaluate the resulting finite computation.
-Hundreds of such theorems are generated and proved at compile time.  The same
-elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
+The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
 
 \subsection{SDP Certificate Verification via LDL$^\top$}
 \label{sec:sdp}
@@ -364,16 +376,16 @@ matrix $P$, we exhibit a lower-triangular matrix $L_P$ and a diagonal matrix
 $D_P$ with non-negative diagonal entries $d_P$, defined as explicit rational
 constants in \lean{LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef}:
 \begin{lstlisting}
-def P : Matrix (Fin 8) (Fin 8) ℚ := !![(24/625 : ℚ), (-36/625 : ℚ), ...]
-def dP : Fin 8 → ℚ := ![(24/625 : ℚ), (223/625 : ℚ), ..., 0, 0, 0, 0]
-def LP : Matrix (Fin 8) (Fin 8) ℚ := !![(1 : ℚ), 0, ...; (-3/2 : ℚ), 1, ...]
+def P : Matrix (Fin 8) (Fin 8) Q := !![(24/625 : Q), (-36/625 : Q), ...]
+def dP : Fin 8 -> Q := ![(24/625 : Q), (223/625 : Q), ..., 0, 0, 0, 0]
+def LP : Matrix (Fin 8) (Fin 8) Q := !![(1 : Q), 0, ...; (-3/2 : Q), 1, ...]
 \end{lstlisting}
 Positive semidefiniteness then follows from two lemmas:
 \begin{lstlisting}
-lemma dP_nonneg (i : Fin 8) : 0 ≤ dP i := by
+lemma dP_nonneg (i : Fin 8) : 0 <= dP i := by
   fin_cases i <;> norm_num [dP]
 
-lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
+lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LP.transpose := by
   decide +kernel
 
 theorem P_posSemidef : P.PosSemidef :=
@@ -397,14 +409,57 @@ profiles:
 
   \item \lean{decide +kernel} evaluates inside the kernel.  It is slower but
     uses no trusted computation outside the Lean kernel itself.  We use it for
-    the SDP matrix equalities, where trust is most critical.
+    the SDP matrix equalities, where trust is most critical.  If a matrix
+    that is not PSD were erroneously accepted, the entire upper bound proof
+    would collapse; we therefore deliberately pay the cost of kernel evaluation.
 \end{itemize}
 In both cases, the external computation (the density enumeration scripts, the
 SDP solver) is responsible only for producing \emph{candidates}---values to
 claim.  The Lean proof is responsible for verifying each claim against the
 formal definition.
 
-% =========================================================================
+\subsection{Implementation Metrics}
+
+Table~\ref{tab:metrics} summarizes the scale of the formalization.
+
+\begin{table}
+  \caption{Scale of the Lean~4 formalization.}
+  \label{tab:metrics}
+  \begin{tabular}{lrl}
+    \toprule
+    Component & Lines & Primary files \\
+    \midrule
+    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
+      \lean{FlagAlgebra/}, \lean{Forbid/} \\
+    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
+      \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
+    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
+      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
+    Application (Mantel + Pentagon) & 1\,900 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
+    \midrule
+    Total (excluding archived experiments) & 25\,000 & \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \begin{tabular}{lr}
+    \toprule
+    Computationally verified artifact & Count \\
+    \midrule
+    Auto-generated density lemmas (pentagon proof) & 2\,847 \\
+    Multiplication table entries verified & $>$\,300 \\
+    \lean{decide~+kernel} SDP matrix equalities & 3 (each $8{\times}8$ over $\mathbb{Q}$) \\
+    \lean{native\_decide} density table checks & $>$\,2\,800 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The 2\,847 auto-generated density lemmas break down as: 15 for the
+size-3/type-1 family (used in Mantel's theorem), and 2\,832 for the
+size-5/type-3 families used in the pentagon proof (1\,800 for type-0 flags,
+672 for type-1, 360 for type-2).  Each lemma requires one \lean{native\_decide}
+evaluation over a graph on at most 5 vertices.
 ---END REFERENCE DRAFT---
 
 Produce a publication-grade improvement plan (not a terse outline).
@@ -415,126 +470,126 @@ Hard gate: fail the plan if any Section Blueprint item is missing.
 For formula-heavy sections, equation choices must be sourced from the listed Equation Source PDFs.
 
 Candidate evidence list:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
-25. [text] line @ papers/paper_claude.tex:99 :: and measure-theoretic reasoning with large external computations: subgraph
-26. [text] line @ papers/paper_claude.tex:100 :: density tables computed by enumeration, and semidefinite programming (SDP)
-27. [text] line @ papers/paper_claude.tex:101 :: certificates found by numerical solvers.  Formalizing such proofs in a proof
-28. [text] line @ papers/paper_claude.tex:102 :: assistant is therefore a challenge on two fronts: the abstract mathematical
-29. [text] line @ papers/paper_claude.tex:105 :: compromise the overall proof's trustworthiness.
-30. [text] line @ papers/paper_claude.tex:107 :: We present a Lean~4 formalization of Razborov's flag algebra method for
-31. [text] line @ papers/paper_claude.tex:108 :: graphs, organized around a \emph{reflection-based} architecture.  At the
-32. [text] line @ papers/paper_claude.tex:109 :: abstract level, we define flags as quotient types under graph isomorphism,
-33. [text] line @ papers/paper_claude.tex:110 :: construct the flag algebra as a quotient module, equip it with a semantic
-34. [text] line @ papers/paper_claude.tex:111 :: ordering via positive homomorphisms, and connect flag algebra inequalities to
-35. [text] line @ papers/paper_claude.tex:112 :: combinatorial Turán densities through a measure-theoretic framework.  At the
-36. [text] line @ papers/paper_claude.tex:113 :: computational level, we introduce a concrete, decidably-equal graph
-37. [text] line @ papers/paper_claude.tex:114 :: representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
-38. [text] line @ papers/paper_claude.tex:115 :: the abstract definitions; this allows \lean{native\_decide} and \lean{decide
-39. [text] line @ papers/paper_claude.tex:116 :: +kernel} to discharge hundreds of density and matrix-equality obligations
-40. [text] line @ papers/paper_claude.tex:117 :: automatically.  Structural proof obligations---normalizing linear combinations
-41. [text] line @ papers/paper_claude.tex:118 :: of flag terms and applying expansion and multiplication identities---are handled
-42. [text] line @ papers/paper_claude.tex:119 :: by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
-43. [text] line @ papers/paper_claude.tex:120 :: a canonical naming convention for flags as a machine-readable encoding of
-44. [text] line @ papers/paper_claude.tex:123 :: As results, we give complete formal proofs of Mantel's theorem and of the
-45. [text] line @ papers/paper_claude.tex:124 :: Erd\H{o}s pentagon theorem ($\pi(K_3; C_5) = 24/625$), the latter including
-46. [text] line @ papers/paper_claude.tex:125 :: both the upper bound via a formally verified SDP certificate and the lower
-47. [text] line @ papers/paper_claude.tex:126 :: bound via an explicit blow-up construction.  To our knowledge, this is the
-48. [text] line @ papers/paper_claude.tex:127 :: first formalization of the flag algebra method in any proof assistant.
-49. [text] line @ papers/paper_claude.tex:128 :: \end{abstract}
-50. [text] line @ papers/paper_claude.tex:131 :: \section{Introduction}
-51. [text] line @ papers/paper_claude.tex:134 :: \paragraph{Flag algebras in extremal combinatorics.}
-52. [text] line @ papers/paper_claude.tex:135 :: In extremal graph theory, one frequently asks: among all large graphs on $n$
-53. [text] line @ papers/paper_claude.tex:136 :: vertices that avoid some fixed graph $H$ as an induced subgraph, what is the
-54. [text] line @ papers/paper_claude.tex:137 :: maximum possible density of another fixed graph $F$?  Such questions are
-55. [text] line @ papers/paper_claude.tex:138 :: captured by the \emph{generalized Turán density} $\tdensity{F}{H}$, which is
-56. [text] line @ papers/paper_claude.tex:139 :: the limit as $n\to\infty$ of the normalized extremal count.
-57. [text] line @ papers/paper_claude.tex:141 :: Razborov's flag algebra method~\cite{razborov2007flag} provides a systematic
-58. [text] line @ papers/paper_claude.tex:143 :: constructing a graded, commutative algebra---the \emph{flag algebra}---whose
-59. [text] line @ papers/paper_claude.tex:144 :: elements represent linear combinations of induced subgraph patterns, with a
-60. [text] line @ papers/paper_claude.tex:146 :: elements of this algebra are guaranteed to be semantically non-negative (their
-61. [text] line @ papers/paper_claude.tex:147 :: value under every ``positive homomorphism'' is $\geq 0$), and a certificate of
-62. [text] line @ papers/paper_claude.tex:149 :: the target density.
-63. [text] line @ papers/paper_claude.tex:151 :: In practice, those non-negativity certificates are produced by semidefinite
-64. [text] line @ papers/paper_claude.tex:152 :: programming: one seeks a positive semidefinite matrix $Q$ such that
-65. [text] line @ papers/paper_claude.tex:153 :: $f - \lambda \cdot 1 = \sum_{i,j} Q_{ij} \cdot e_i e_j$ in the flag algebra
-66. [text] line @ papers/paper_claude.tex:154 :: (where the $e_i$ are flag basis elements).  Solvers find $Q$ numerically, after
-67. [text] line @ papers/paper_claude.tex:155 :: which one must \emph{verify} that $Q$ is indeed positive semidefinite and that
-68. [text] line @ papers/paper_claude.tex:156 :: the algebraic identity holds exactly.
-69. [text] line @ papers/paper_claude.tex:158 :: \paragraph{The formalization challenge.}
-70. [text] line @ papers/paper_claude.tex:159 :: Formalizing a flag algebra proof requires confronting three distinct categories
-71. [text] line @ papers/paper_claude.tex:160 :: of proof obligation:
-72. [text] line @ papers/paper_claude.tex:163 :: \item \textbf{Abstract structure.}  Flags, the flag algebra, positive
-73. [text] line @ papers/paper_claude.tex:164 :: homomorphisms, the semantic cone, the Turán density, and the transfer
-74. [text] line @ papers/paper_claude.tex:165 :: theorems connecting algebra to combinatorics.  These are conceptually
-75. [text] line @ papers/paper_claude.tex:168 :: \item \textbf{Data-heavy computation.}  For each pair of flags $(F, G)$
-76. [text] line @ papers/paper_claude.tex:169 :: needed in the proof, one must certify the exact rational density
-77. [text] line @ papers/paper_claude.tex:170 :: $\den{F}{G}$.  For a theorem like the Erd\H{o}s pentagon problem, this
-78. [text] line @ papers/paper_claude.tex:171 :: means hundreds of density values over graphs with up to 5 vertices, and
-79. [text] line @ papers/paper_claude.tex:172 :: similarly for flag multiplication tables.  These are computed externally
-80. [text] line @ papers/paper_claude.tex:175 :: \item \textbf{Algebraic bookkeeping.}  Flag algebra proofs involve
-81. [text] line @ papers/paper_claude.tex:176 :: manipulating linear combinations of hundreds of flag terms: expanding a
-82. [text] line @ papers/paper_claude.tex:177 :: small flag at a larger size, computing products of typed flags, and
-83. [text] line @ papers/paper_claude.tex:178 :: normalizing sums into a canonical form.  Each step is routine but
-84. [text] line @ papers/paper_claude.tex:182 :: We address each category with a dedicated technique.  The abstract structure is
-85. [text] line @ papers/paper_claude.tex:183 :: encoded directly in Lean~4's dependent type system.  Data-heavy computation is
-86. [text] line @ papers/paper_claude.tex:184 :: handled by a \emph{reflection} architecture: we define a decidably-computable
-87. [text] line @ papers/paper_claude.tex:185 :: concrete representation of graphs, prove adequacy theorems connecting it to the
-88. [text] line @ papers/paper_claude.tex:186 :: abstract definitions, and let \lean{native\_decide}/\lean{decide +kernel}
-89. [text] line @ papers/paper_claude.tex:187 :: evaluate the computation inside the proof.  Algebraic bookkeeping is handled by
-90. [text] line @ papers/paper_claude.tex:188 :: \emph{custom elaboration tactics} that inspect the proof state's AST,
-91. [text] line @ papers/paper_claude.tex:189 :: exploit a canonical naming convention for flag constants, and apply sequences
-92. [text] line @ papers/paper_claude.tex:190 :: of domain-specific lemmas automatically.
-93. [text] line @ papers/paper_claude.tex:192 :: \paragraph{Contributions.}
-94. [text] line @ papers/paper_claude.tex:194 :: \item \textbf{Abstract formalization.}  We formalize the full abstract
-95. [text] line @ papers/paper_claude.tex:195 :: structure of Razborov's flag algebra in Lean~4: flags as quotients of
-96. [text] line @ papers/paper_claude.tex:196 :: labeled graphs under isomorphism (\S\ref{sec:abstract}), the flag algebra as
-97. [text] line @ papers/paper_claude.tex:197 :: a quotient module with a commutative ring structure
-98. [text] line @ papers/paper_claude.tex:198 :: (\S\ref{sec:abstract}), the semantic ordering via positive homomorphisms, and
-99. [text] line @ papers/paper_claude.tex:199 :: a measure-theoretic framework for the forbidden-subgraph condition
-100. [text] line @ papers/paper_claude.tex:200 :: (\S\ref{sec:forbidden}).
-101. [text] line @ papers/paper_claude.tex:202 :: \item \textbf{Reflection architecture for density and SDP.}  We introduce
-102. [text] line @ papers/paper_claude.tex:203 :: \lean{Sym2Graph}, a finitely-representable graph type, and prove adequacy
-103. [text] line @ papers/paper_claude.tex:204 :: theorems equating abstract flag densities to computable \lean{Sym2Graph}
-104. [text] line @ papers/paper_claude.tex:205 :: densities.  We also verify SDP certificates via LDL$^\top$ decomposition
-105. [text] line @ papers/paper_claude.tex:206 :: checked by \lean{decide +kernel} over $\Q$ (\S\ref{sec:reflection}).
-106. [text] line @ papers/paper_claude.tex:208 :: \item \textbf{Tactic automation.}  We implement a suite of custom Lean~4
-107. [text] line @ papers/paper_claude.tex:209 :: elaboration tactics for linear normalization (\lean{ac\_sort\_pipeline})
-108. [text] line @ papers/paper_claude.tex:210 :: and for systematically applying flag expansion and multiplication identities
-109. [text] line @ papers/paper_claude.tex:211 :: (\lean{prove\_flag\_expand\_with\_forbidden\_flag},
-110. [text] line @ papers/paper_claude.tex:212 :: \lean{prove\_flag\_mul\_with\_forbidden\_flag}) (\S\ref{sec:tactics}).
-111. [text] line @ papers/paper_claude.tex:214 :: \item \textbf{Verified results.}  We give formally complete proofs of
-112. [text] line @ papers/paper_claude.tex:215 :: Mantel's theorem and of $\tdensity{K_3}{C_5} = 24/625$ (the Erd\H{o}s
-113. [text] line @ papers/paper_claude.tex:216 :: pentagon theorem), including both bounds (\S\ref{sec:results}).
-114. [text] line @ papers/paper_claude.tex:220 :: \section{Background: Flag Algebras}
-115. [text] line @ papers/paper_claude.tex:223 :: \paragraph{Types and flags.}
-116. [text] line @ papers/paper_claude.tex:224 :: Fix a finite simple graph $\sigma$ on vertex set $[k] = \{1,\ldots,k\}$,
-117. [text] line @ papers/paper_claude.tex:225 :: called a \emph{type} of size $k$.  A \emph{$\sigma$-flag} is a pair
-118. [text] line @ papers/paper_claude.tex:226 :: $(G, \theta)$ where $G$ is a finite simple graph and
-119. [text] line @ papers/paper_claude.tex:227 :: $\theta : [k] \hookrightarrow V(G)$ is an injective graph homomorphism from
-120. [text] line @ papers/paper_claude.tex:228 :: $\sigma$ to $G$ (i.e., an embedding of the type).  Two $\sigma$-flags
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
+25. [text] line @ papers/paper_claude.tex:107 :: Razborov's flag algebra method is one of the most powerful tools in extremal
+26. [text] line @ papers/paper_claude.tex:108 :: combinatorics, having resolved many open problems about asymptotic subgraph
+27. [text] line @ papers/paper_claude.tex:109 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+28. [text] line @ papers/paper_claude.tex:110 :: and measure-theoretic reasoning with large external computations: subgraph
+29. [text] line @ papers/paper_claude.tex:111 :: density tables computed by enumeration, and semidefinite programming (SDP)
+30. [text] line @ papers/paper_claude.tex:112 :: certificates found by numerical solvers.  Formalizing such proofs in a proof
+31. [text] line @ papers/paper_claude.tex:113 :: assistant is therefore a challenge on two fronts: the abstract mathematical
+32. [text] line @ papers/paper_claude.tex:116 :: compromise the overall proof's trustworthiness.
+33. [text] line @ papers/paper_claude.tex:118 :: We present a Lean~4 formalization of Razborov's flag algebra method for
+34. [text] line @ papers/paper_claude.tex:119 :: graphs, organized around a \emph{reflection-based} architecture.  At the
+35. [text] line @ papers/paper_claude.tex:120 :: abstract level, we define flags as quotient types under graph isomorphism,
+36. [text] line @ papers/paper_claude.tex:121 :: construct the flag algebra as a quotient module, equip it with a semantic
+37. [text] line @ papers/paper_claude.tex:122 :: ordering via positive homomorphisms, and connect flag algebra inequalities to
+38. [text] line @ papers/paper_claude.tex:123 :: combinatorial Turán densities through a measure-theoretic framework.  At the
+39. [text] line @ papers/paper_claude.tex:124 :: computational level, we introduce a concrete, decidably-equal graph
+40. [text] line @ papers/paper_claude.tex:125 :: representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
+41. [text] line @ papers/paper_claude.tex:126 :: the abstract definitions; this allows \lean{native\_decide} and \lean{decide
+42. [text] line @ papers/paper_claude.tex:127 :: +kernel} to discharge over 2{,}800 density and matrix-equality obligations
+43. [text] line @ papers/paper_claude.tex:128 :: automatically.  Structural proof obligations---normalizing linear combinations
+44. [text] line @ papers/paper_claude.tex:129 :: of flag terms and applying expansion and multiplication identities---are handled
+45. [text] line @ papers/paper_claude.tex:130 :: by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
+46. [text] line @ papers/paper_claude.tex:131 :: a canonical naming convention for flags as a machine-readable encoding of
+47. [text] line @ papers/paper_claude.tex:134 :: As results, we give complete formal proofs of Mantel's theorem and of the
+48. [text] line @ papers/paper_claude.tex:135 :: Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
+49. [text] line @ papers/paper_claude.tex:136 :: both the upper bound via a formally verified SDP certificate and the lower bound
+50. [text] line @ papers/paper_claude.tex:137 :: via an explicit blow-up construction.  To our knowledge, this is the first
+51. [text] line @ papers/paper_claude.tex:138 :: formalization of the flag algebra method in any proof assistant.  The
+52. [text] line @ papers/paper_claude.tex:139 :: formalization comprises approximately 25{,}000 lines of Lean~4 code.
+53. [text] line @ papers/paper_claude.tex:140 :: \end{abstract}
+54. [text] line @ papers/paper_claude.tex:143 :: \section{Introduction}
+55. [text] line @ papers/paper_claude.tex:146 :: \paragraph{Flag algebras in extremal combinatorics.}
+56. [text] line @ papers/paper_claude.tex:147 :: A central question in extremal graph theory is: among all large graphs on $n$
+57. [text] line @ papers/paper_claude.tex:148 :: vertices that avoid some fixed graph $H$ as a subgraph, what is the
+58. [text] line @ papers/paper_claude.tex:149 :: maximum possible density of copies of another graph $F$?
+59. [text] line @ papers/paper_claude.tex:150 :: The \emph{generalized Turán density} $\tdensity{F}{H}$
+60. [text] line @ papers/paper_claude.tex:151 :: formalizes this question as a limit:
+61. [text] line @ papers/paper_claude.tex:153 :: \tdensity{F}{H}
+62. [text] line @ papers/paper_claude.tex:162 :: Razborov's flag algebra method~\cite{razborov2007flag} provides a
+63. [text] line @ papers/paper_claude.tex:164 :: It works by constructing a graded, commutative $\mathbb{R}$-algebra---the
+64. [text] line @ papers/paper_claude.tex:165 :: \emph{flag algebra}---whose elements represent linear combinations of
+65. [text] line @ papers/paper_claude.tex:166 :: induced subgraph patterns.  The algebra is equipped with a product encoding
+66. [text] line @ papers/paper_claude.tex:167 :: simultaneous occurrence and a semantic ordering: an element $f$ is
+67. [text] line @ papers/paper_claude.tex:169 :: positive $\mathbb{R}$-algebra homomorphism is $\geq 0$.
+68. [text] line @ papers/paper_claude.tex:170 :: Non-negativity certificates for carefully chosen elements yield upper bounds
+69. [text] line @ papers/paper_claude.tex:171 :: on Turán densities directly.
+70. [text] line @ papers/paper_claude.tex:173 :: In practice, these certificates are produced by semidefinite programming:
+71. [text] line @ papers/paper_claude.tex:174 :: one seeks a positive semidefinite matrix $Q$ such that
+72. [text] line @ papers/paper_claude.tex:175 :: $f - c\cdot\mathbf{1} = \sum_{i,j} Q_{ij}\cdot e_i e_j$ holds in the algebra
+73. [text] line @ papers/paper_claude.tex:176 :: (where the $e_i$ are typed flag basis elements and $c$ is the claimed bound).
+74. [text] line @ papers/paper_claude.tex:177 :: An SDP solver finds $Q$ numerically; one must then \emph{verify} that $Q$ is
+75. [text] line @ papers/paper_claude.tex:178 :: genuinely positive semidefinite and that the algebraic identity holds exactly.
+76. [text] line @ papers/paper_claude.tex:180 :: \paragraph{The formalization challenge.}
+77. [text] line @ papers/paper_claude.tex:181 :: Formalizing a flag algebra proof in a proof assistant requires confronting three
+78. [text] line @ papers/paper_claude.tex:182 :: distinct, non-reducible categories of proof obligation:
+79. [text] line @ papers/paper_claude.tex:185 :: \item \textbf{Abstract structure.}  Flags (quotients of labeled graphs under
+80. [text] line @ papers/paper_claude.tex:186 :: isomorphism), the flag algebra (a quotient module equipped with a commutative
+81. [text] line @ papers/paper_claude.tex:187 :: ring structure), positive homomorphisms (the semantic ordering),
+82. [text] line @ papers/paper_claude.tex:188 :: the Turán density (a measure-theoretic limit), and the transfer theorem
+83. [text] line @ papers/paper_claude.tex:189 :: connecting flag algebra inequalities to density bounds.  These are
+84. [text] line @ papers/paper_claude.tex:193 :: \item \textbf{Data-heavy computation.}  For each pair of flags $(F,G)$
+85. [text] line @ papers/paper_claude.tex:194 :: appearing in the proof, one must certify the exact rational density
+86. [text] line @ papers/paper_claude.tex:195 :: $\den{F}{G}$.  For the Erd\H{o}s pentagon theorem,
+87. [text] line @ papers/paper_claude.tex:196 :: this means thousands of density values over graphs with up to five vertices
+88. [text] line @ papers/paper_claude.tex:197 :: and flag multiplication tables of similar size.  These values are computed
+89. [text] line @ papers/paper_claude.tex:198 :: externally and must be imported into the proof and verified against the
+90. [text] line @ papers/paper_claude.tex:199 :: formal definitions.
+91. [text] line @ papers/paper_claude.tex:201 :: \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments involve
+92. [text] line @ papers/paper_claude.tex:202 :: manipulating linear combinations of hundreds of flag terms: expanding a
+93. [text] line @ papers/paper_claude.tex:203 :: flag at a larger vertex count, computing products of typed flags, and
+94. [text] line @ papers/paper_claude.tex:204 :: normalizing sums into a canonical form.  Each individual step is routine
+95. [text] line @ papers/paper_claude.tex:209 :: \emph{qualitatively different} proof techniques.  The abstract structure
+96. [text] line @ papers/paper_claude.tex:211 :: The data-heavy computation requires a \emph{reflection} architecture:
+97. [text] line @ papers/paper_claude.tex:212 :: a decidably-computable concrete representation whose connection to the abstract
+98. [text] line @ papers/paper_claude.tex:213 :: definitions is certified by adequacy theorems, allowing Lean's kernel (or native
+99. [text] line @ papers/paper_claude.tex:214 :: evaluator) to check each density value automatically.
+100. [text] line @ papers/paper_claude.tex:215 :: The algebraic bookkeeping requires \emph{proof-by-reflection via custom
+101. [text] line @ papers/paper_claude.tex:216 :: elaboration tactics} that inspect the syntactic structure of the proof state
+102. [text] line @ papers/paper_claude.tex:217 :: and dispatch the right sequence of domain-specific lemmas without manual
+103. [text] line @ papers/paper_claude.tex:220 :: \paragraph{This paper.}
+104. [text] line @ papers/paper_claude.tex:221 :: We present a Lean~4 formalization of Razborov's flag algebra method for
+105. [text] line @ papers/paper_claude.tex:222 :: graphs, organized around the two-layer architecture that the challenge analysis
+106. [text] line @ papers/paper_claude.tex:223 :: dictates.  The \emph{abstract layer} encodes the mathematical semantics
+107. [text] line @ papers/paper_claude.tex:224 :: faithfully in Lean~4's dependent type system, including a novel
+108. [text] line @ papers/paper_claude.tex:225 :: \emph{general forbidden-subgraph reasoning rule} that does not require
+109. [text] line @ papers/paper_claude.tex:226 :: problem-specific axiomatization.  The \emph{reflection layer} bridges the
+110. [text] line @ papers/paper_claude.tex:227 :: abstract definitions to a finitely-computable concrete representation, enabling
+111. [text] line @ papers/paper_claude.tex:228 :: automated discharge of density and SDP certificate obligations.
+112. [text] line @ papers/paper_claude.tex:230 :: \paragraph{Contributions.}
+113. [text] line @ papers/paper_claude.tex:232 :: \item \textbf{Abstract formalization (\S\ref{sec:abstract}).}
+114. [text] line @ papers/paper_claude.tex:233 :: We formalize the full abstract structure of Razborov's flag algebra in
+115. [text] line @ papers/paper_claude.tex:234 :: Lean~4: flags as quotient types of labeled graphs under isomorphism,
+116. [text] line @ papers/paper_claude.tex:235 :: the flag algebra as a quotient $\mathbb{R}$-module with a commutative ring
+117. [text] line @ papers/paper_claude.tex:236 :: structure, the semantic ordering via positive homomorphisms, and a
+118. [text] line @ papers/paper_claude.tex:237 :: measure-theoretic forbidden-subgraph reasoning framework
+119. [text] line @ papers/paper_claude.tex:238 :: (\lean{forbidLE}, \lean{generalizedTuranDensity\_le\_of\_forbidLE}).
+120. [text] line @ papers/paper_claude.tex:239 :: The forbidden-subgraph rule is formulated inside a \emph{single} ambient
 
 Output format (JSON only):
 {

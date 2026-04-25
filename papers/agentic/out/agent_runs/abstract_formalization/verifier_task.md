@@ -259,139 +259,458 @@ Section-Specific Instructions:
 Read writer_output.md first.
 
 Selected evidence:
-1. [text] line @ papers/paper_claude.tex:18 :: % ---- Theorem environments -----------------------------------------------
-2. [text] line @ papers/paper_claude.tex:19 :: \newtheorem{theorem}{Theorem}[section]
-3. [text] line @ papers/paper_claude.tex:20 :: \newtheorem{lemma}[theorem]{Lemma}
-4. [text] line @ papers/paper_claude.tex:21 :: \newtheorem{definition}[theorem]{Definition}
-5. [text] line @ papers/paper_claude.tex:22 :: \newtheorem{example}[theorem]{Example}
-6. [text] line @ papers/paper_claude.tex:23 :: \newtheorem{remark}[theorem]{Remark}
-7. [text] line @ papers/paper_claude.tex:30 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-8. [text] line @ papers/paper_claude.tex:31 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-9. [text] line @ papers/paper_claude.tex:34 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-10. [text] line @ papers/paper_claude.tex:35 :: \newcommand{\lean}[1]{\texttt{#1}}
-11. [text] line @ papers/paper_claude.tex:36 :: \newcommand{\leanfmt}[1]{\texttt{\small #1}}
-12. [text] line @ papers/paper_claude.tex:38 :: % Lean code style
-13. [text] line @ papers/paper_claude.tex:39 :: \lstdefinelanguage{Lean4}{
-14. [text] line @ papers/paper_claude.tex:40 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-15. [text] line @ papers/paper_claude.tex:42 :: return,do,for,in,noncomputable,abbrev,variable,section,
-16. [text] line @ papers/paper_claude.tex:43 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-17. [text] line @ papers/paper_claude.tex:49 :: stringstyle=\color{orange!80!black},
-18. [text] line @ papers/paper_claude.tex:50 :: morestring=[b]",
-19. [text] line @ papers/paper_claude.tex:68 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-20. [text] line @ papers/paper_claude.tex:72 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-21. [text] line @ papers/paper_claude.tex:95 :: \begin{abstract}
-22. [text] line @ papers/paper_claude.tex:96 :: Razborov's flag algebra method is one of the most powerful tools in extremal
-23. [text] line @ papers/paper_claude.tex:97 :: combinatorics, having resolved many open problems about asymptotic subgraph
-24. [text] line @ papers/paper_claude.tex:98 :: densities.  Applying it in practice, however, requires combining abstract algebraic
+1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
+2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
+4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
+5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
+6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
+7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
+8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
+9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
+10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
+11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
+12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
+13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
+15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
+16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
+17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
+18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
+19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
+20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
+21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
+22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
+23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
 Reference Section Draft (your primary starting point — improve and refine this):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:abstract}
 
+The abstract formalization layer encodes the mathematical content of
+Section~\ref{sec:background} faithfully in Lean~4's dependent type system.
+The design principle is that every mathematical definition has a direct
+Lean~4 counterpart that preserves the mathematical semantics exactly,
+with no hidden invariants or definitional shortcuts.  This section describes
+the four main components: flags as quotient types, the flag algebra as a
+quotient module, the semantic ordering via positive homomorphisms, and a
+general forbidden-subgraph reasoning framework.
+
 \subsection{Flags as Quotient Types}
 
-In Lean~4 we exploit dependent types and quotient types to encode the flag
-algebra faithfully.  The central definitions live in
-\lean{LeanFlagAlgebras.FlagAlgebra.FlagDef}.
-
-A \emph{type graph} of size $k$ is a \lean{SimpleGraph (Fin k)}.  A
+A \emph{type graph} of size $k$ is a \lean{SimpleGraph (Fin k)}, the standard
+Lean~4/Mathlib type for simple graphs on a finite vertex set.  A
 \emph{labeled graph} over type $\sigma$ with vertex set $V$ is a pair
-\lean{(graph : SimpleGraph V, type\_embed : $\sigma$ $\hookrightarrow_g$ graph)},
-where the embedding records a copy of the type inside the host graph.  Two
-labeled graphs over the same type are \emph{flag-isomorphic} (\lean{$\sim$f})
-if they are connected by a graph isomorphism that preserves the type embedding.
-A \emph{flag} is then the quotient:
-
 \begin{lstlisting}
-def Flag (σ : FlagType (Fin n₀)) (V : Type) : Type :=
-  Quotient (labeledGraphSetoid σ V)
+structure LabeledGraph (sigma : FlagType (Fin n0)) (V : Type) where
+  graph     : SimpleGraph V
+  typeEmbed : sigma ->gg graph  -- injective graph homomorphism
 \end{lstlisting}
+where \lean{->gg} denotes a \lean{SimpleGraph} homomorphism that is also
+injective on vertices.  Two labeled graphs over the same type are
+\emph{flag-isomorphic} if they are related by a graph isomorphism that
+commutes with the type embeddings.  The type of flags is then the quotient:
+\begin{lstlisting}
+def Flag (sigma : FlagType (Fin n0)) (V : Type) : Type :=
+  Quotient (labeledGraphSetoid sigma V)
+\end{lstlisting}
+The setoid \lean{labeledGraphSetoid} is defined from flag-isomorphism,
+which is an equivalence relation on labeled graphs.
 
-We write \lean{FlagWithSize $\sigma$ $n$} for \lean{Flag $\sigma$ (Fin $n$)},
-and \lean{FinFlag $\sigma$ := $\Sigma$ ($n$ : $\N$), FlagWithSize $\sigma$ $n$}
-for the disjoint union over all sizes.  These types are automatically finite
-(for each fixed size) and countable (in total), inheriting these properties from
-Lean's standard library.
+\paragraph{Size-indexed families.}
+We write \lean{FlagWithSize sigma n} for \lean{Flag sigma (Fin n)} (flags of size
+$n$) and \lean{FinFlag sigma} for the dependent sum
+$\Sigma\, (n : \mathbb{N}),\, \lean{FlagWithSize}\ \sigma\ n$, which collects
+all flags across all sizes.
+Each \lean{FlagWithSize sigma n} is a \lean{Fintype} (inheriting finiteness from
+the finiteness of \lean{Fin n} and the decidability of flag isomorphism,
+established in Section~\ref{sec:reflection}), while \lean{FinFlag sigma} is
+\lean{Countable} and \lean{Infinite} when the type $\sigma$ is non-trivial.
 
 \subsection{The Flag Algebra as a Quotient Module}
 
-The flag algebra is built in \lean{LeanFlagAlgebras.FlagAlgebra.FlagAlgebra}.
-We form the free $\R$-module of finitely-supported functions:
+The flag algebra is built in
+\lean{LeanFlagAlgebras.FlagAlgebra.FlagAlgebra}.
+Following the mathematical definition, we first form the free
+$\mathbb{R}$-module of finitely-supported functions on flags:
 \begin{lstlisting}
-abbrev FlagVector σ := FinFlag σ →₀ ℝ
+abbrev FlagVector sigma := FinFlag sigma ->0 R  -- Finsupp free module
 \end{lstlisting}
-and define the \emph{zero space} \lean{ZeroSpace $\sigma$} as the submodule
-generated by the density-expansion relations.  The flag algebra is:
+(Here \lean{->0} is Mathlib's \lean{Finsupp} type: functions with finite
+support, forming a free module over $\mathbb{R}$.)
+The \emph{zero space} \lean{ZeroSpace sigma} is defined as the submodule of
+\lean{FlagVector sigma} generated by all elements of the form
+$[\lean{F}] - \sum_{G \in \lean{FlagWithSize}\ \sigma\ n} \den{F}{G} \cdot [G]$,
+for each flag $F$ of size $m$ and each $n \geq m$.
+The flag algebra is the quotient:
 \begin{lstlisting}
-def FlagAlgebra σ := FlagVector σ ⧸ ZeroSpace σ
+def FlagAlgebra sigma := FlagVector sigma / ZeroSpace sigma
 \end{lstlisting}
-We prove that this carries a commutative $\R$-algebra structure, where the
-product $[F] \cdot [F']$ is defined via the flag multiplication
-\lean{flagMulWithSize}.
+We prove that \lean{FlagAlgebra sigma} carries a commutative $\mathbb{R}$-algebra
+structure, with product defined by
+\begin{lstlisting}
+def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
+    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
+  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
+\end{lstlisting}
+and shown to be well-defined on the quotient via the zero-space relations.
+The unit element is the class of the type graph $\sigma$ itself.
 
 \subsection{Semantic Ordering via Positive Homomorphisms}
 
-The ordering on \lean{FlagAlgebra $\sigma$} is semantic: we say $f \leq g$ if
-$g - f$ lies in the \emph{semantic cone}, defined as
+The ordering on \lean{FlagAlgebra sigma} is semantic rather than syntactic.
+We define:
 \begin{lstlisting}
-def semanticCone σ : Set (FlagAlgebra σ) :=
-  {f | ∀ φ : PositiveHom σ, φ f ≥ 0}
+structure PositiveHom (sigma : FlagType (Fin n0)) where
+  toFun  : FlagAlgebra sigma ->a[R] R  -- R-algebra homomorphism
+  nonneg : forall F : FinFlag sigma, 0 <= toFun [[unitVector F]]
 \end{lstlisting}
-where \lean{PositiveHom $\sigma$} is the type of $\R$-algebra homomorphisms
-$\phi : \lean{FlagAlgebra}\ \sigma \to \R$ that map every unit vector
-(flag basis element) to a non-negative real.  Proving that this ordering is a
-preorder compatible with the algebra operations is straightforward from the
-definitions.
+The \emph{semantic cone} and its induced ordering are:
+\begin{lstlisting}
+def semanticCone sigma : Set (FlagAlgebra sigma) :=
+  {f | forall phi : PositiveHom sigma, 0 <= phi.toFun f}
 
-The positive semidefinite quadratic form result is formalized in
-\lean{LeanFlagAlgebras.FlagAlgebra.QuadraticForm}:
+instance : Preorder (FlagAlgebra sigma) :=
+  { le := fun f g => g - f is in semanticCone sigma, ... }
+\end{lstlisting}
+
+The main non-negativity theorem, proved in
+\lean{LeanFlagAlgebras.FlagAlgebra.QuadraticForm}, is the Lean~4 counterpart
+of Theorem~\ref{thm:sdp-nonneg}:
 \begin{lstlisting}
 theorem flagQuadraticForm_nonneg
-    (M : Matrix (Fin r) (Fin r) ℝ) (hM : M.PosSemidef)
-    (v : Fin r → FlagAlgebra σ) :
-    0 ≤ flagQuadraticForm M v
+    (M : Matrix (Fin r) (Fin r) R) (hM : M.PosSemidef)
+    (v : Fin r -> FlagAlgebra sigma) :
+    0 <= [[ sum i j, M i j * (downward (v i * v j)) ]]
 \end{lstlisting}
-This is the key lemma that converts a PSD certificate into a membership in the
-semantic cone.
+This is the key lemma converting a PSD matrix into an element of the semantic
+cone.  Its proof follows from the definition of positive homomorphisms and
+the linearity of the downward operator: for any $\phi$,
+$\phi\bigl(\llbracket \sum_{ij} M_{ij} v_i v_j \rrbracket\bigr)
+= \mathbb{E}_\theta\bigl[\sum_{ij} M_{ij} \phi(v_i^{(\theta)}) \phi(v_j^{(\theta)})\bigr] \geq 0$
+since $M$ is PSD and $\phi$ maps each basis vector to a non-negative real.
 
 \subsection{The Forbidden-Subgraph Framework}
 \label{sec:forbidden}
 
-A novel aspect of our formalization is a \emph{general forbidden-subgraph
-reasoning rule} that works inside the ambient theory of simple graphs rather
-than requiring a problem-specific axiomatization, as in Razborov's original
-presentation.
+\paragraph{Motivation.}
+In Razborov's original presentation~\cite{razborov2007flag}, applying the
+flag algebra method to $H$-free graphs requires working in a modified theory
+that axiomatizes the $H$-freeness condition from the outset.  This
+per-problem axiomatization is pragmatically reasonable for a pen-and-paper
+proof but is an obstacle to formalization: it would require a separate
+verified theory for each forbidden subgraph.
 
-The space of positive homomorphisms $\poshom{\sigma}$ is given a topology (as a
-subspace of $\R^{\lean{FinFlag}\ \sigma}$, which is compact by Tychonoff), and
-each positive homomorphism $\phi_0 : \lean{FlagAlgebra}\ \emptyset \to \R$
-induces a probability measure $\mathbb{P}^{\phi_0}$ on $\poshom{\sigma}$ (the
-``random flag extension'' measure).  This is formalized in
-\lean{LeanFlagAlgebras.FlagAlgebra.FlagSequence} and
-\lean{LeanFlagAlgebras.FlagAlgebra.RandomHom}.
-
-We then define:
+\paragraph{Our approach.}
+We instead develop a \emph{general forbidden-subgraph reasoning rule} that
+works inside the ambient theory of simple graphs.  The key definition
+(in \lean{LeanFlagAlgebras.Forbid.Basic}) is:
 \begin{lstlisting}
-def forbidLE (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop :=
-  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦F_forbid⟧ = 0 →
-    ℙ[φ₀] {φ | φ f ≤ φ g} = 1
+def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
+  forall (phi0 : PositiveHom emptyType), phi0.toFun [[unitVector H]] = 0 ->
+    P[phi0] {phi | phi.toFun f <= phi.toFun g} = 1
 \end{lstlisting}
-The notation $f \leq_{[\mathtt{C5}]} g$ means: almost surely (under the
-measure induced by any positive homomorphism that gives $C_5$ density zero),
-$\phi(f) \leq \phi(g)$.  The key transfer theorem is:
+The notation $f \leq_{[H]} g$ means: almost surely under the measure
+$\mathbb{P}^{\phi_0}$ (the ``random flag extension'' measure induced by any
+positive homomorphism $\phi_0$ that assigns zero density to $H$), the typed
+homomorphism satisfies $\phi(f) \leq \phi(g)$.
+
+The measure $\mathbb{P}^{\phi_0}$ on typed positive homomorphisms is
+constructed in \lean{LeanFlagAlgebras.FlagAlgebra.RandomHom}: the space of
+positive homomorphisms for type $\sigma$ is given a compact topology (as a
+closed subset of $[0,1]^{|\lean{FinFlag}\ \sigma|}$, which is compact by
+Tychonoff's theorem), and $\phi_0$ induces a Borel probability measure on it
+via Prokhorov's theorem~\cite{billingsley1999convergence}
+(Mathlib: \lean{MeasureTheory.Measure.Prokhorov}).
+
+The transfer theorem is:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (h : 0 < c) (hineq : F_target ≤[H_forbid] c • 1) :
-    generalizedTuranDensity F_target H_forbid ≤ c
+    (H : FinFlag emptyType) (F : FinFlag emptyType) (c : R) (hc : 0 < c)
+    (hineq : forbidLE H (unitVector F) (c * 1)) :
+    generalizedTuranDensity H F <= c
 \end{lstlisting}
-This theorem, proved in \lean{LeanFlagAlgebras.Forbid.Basic}, is the bridge
-between the flag algebra world and the combinatorial Turán density.  It is
-completely general: any flag algebra inequality proved under the
-forbidden-subgraph assumption yields a Turán density bound for any forbidden
-graph $H$.
+\emph{Argument-order note.}  The Lean constant takes arguments in the order
+\emph{forbidden graph first, target graph second}: \lean{generalizedTuranDensity H F}
+means the maximum density of $F$ in $H$-free graphs, which the paper
+writes as $\tdensity{F}{H}$ in mathematical notation.
 
-% =========================================================================
+This theorem, grounded in the measure-theoretic framework, is sufficiently
+general for the present applications: any flag algebra inequality of the
+form $f \leq_{[H]} c \cdot \mathbf{1}$ proved in the Lean theory immediately
+yields a Turán density upper bound $\tdensity{F}{H} \leq c$, for any
+forbidden subgraph $H$ and target pattern $F$.  No additional per-problem
+axiomatization is needed.  The framework captures the intended general
+pattern, but some auxiliary generalization lemmas in \lean{Forbid/Basic}
+relating the quotient-level \lean{forbidLE} predicate to individual flag
+representatives remain unfinished; these gaps are described in
+\S\ref{sec:intensional} and do not affect the main results.
+
+\paragraph{What Mathlib provides.}
+This layer builds on substantial Mathlib infrastructure.  For the algebraic
+structure, we use \lean{Mathlib.LinearAlgebra.Finsupp} for free modules and
+\lean{Mathlib.LinearAlgebra.Matrix.PosDef} for positive semidefiniteness.
+For the measure-theoretic layer, we use
+\lean{Mathlib.MeasureTheory.Measure.ProbabilityMeasure},
+\lean{Mathlib.Probability.ProductMeasure}, and critically
+\lean{Mathlib.MeasureTheory.Measure.Prokhorov} for the compactness argument.
+\lean{Mathlib.Combinatorics.SimpleGraph.Subgraph} provides the ambient graph
+infrastructure.  What is \emph{not} in Mathlib and was built from scratch:
+the \lean{LabeledGraph} structure and flag-isomorphism quotient, the
+\lean{FlagAlgebra} quotient module with its ring structure, the \lean{PositiveHom}
+type and semantic cone, the \lean{forbidLE} predicate and
+\lean{generalizedTuranDensity\_le\_of\_forbidLE} (including the random
+extension measure construction in \lean{RandomHom.lean}, $\sim$1\,300 lines).
+
+\paragraph{Key challenge.}
+The hardest single component in the abstract layer was \lean{RandomHom.lean}.
+Constructing $\mathbb{P}^{\phi_0}$ requires showing that the space of positive
+homomorphisms is a compact metric space (so that it admits a Borel probability
+measure structure), and that $\phi_0$ determines a tight family of measures
+on it (so that Prokhorov's theorem applies).  Compactness follows from the
+observation that positive homomorphisms are algebra homomorphisms with
+values in $[0,1]$, hence a closed bounded subset of $\mathbb{R}^{|\lean{FinFlag}\ \sigma|}$;
+Tychonoff gives compactness.  The measure itself is then the pushforward of the
+counting measure on sequences of graphs through the map that sends a graph
+sequence to its induced positive homomorphism (when it exists).  Each of these
+steps has a precise Mathlib counterpart, but threading them together required
+significant care about which topological and measurability assumptions each
+lemma required.
+
+
+\subsection{Type-Theoretic Obstacles from Intensionality}
+\label{sec:intensional}
+
+Lean~4 is based on an \emph{intensional} type theory: definitional equality is
+decidable but strictly weaker than propositional equality.  Two types that are
+provably equal may not be definitionally equal, and the kernel does not
+automatically identify them.  This creates three concrete classes of obstacle
+in a flag algebra formalization, each requiring its own systematic workaround.
+
+\paragraph{Obstacle 1: Quotient types require explicit eliminators.}
+Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
+\emph{from} them or equality \emph{in} them must go through
+\lean{Quotient.lift} or \lean{Quotient.sound}.  \lean{Quotient.lift} requires
+a proof that the function respects the equivalence relation; \lean{Quotient.sound}
+requires producing a witness of the relation for each equality goal.
+
+The adequacy theorems in \S\ref{sec:reflection} illustrate the cost.  To state
+that \lean{Sym2Graph.toFlag} is inverse to \lean{Flag.toSym2EmptyTypedFlag}, one
+cannot write a direct equality between concrete and abstract objects; every step
+must go through the quotient eliminators:
+\begin{lstlisting}
+def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag emptyType (Fin n) :=
+  Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
+\end{lstlisting}
+The \lean{toFlag\_respect\_eqv} proof --- showing that isomorphic \lean{Sym2Graph}
+values map to the same \lean{Flag} --- is not automatic; it required
+\lean{Quotient.sound} applied to a graph isomorphism witness assembled from the
+concrete data.  In an extensional type theory, both directions of this round-trip
+would hold definitionally.
+
+\paragraph{Obstacle 2: Size-changing operations produce dependent-type mismatches.}
+Flag algebra operations change the vertex count of flags: the product of a
+size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.
+In the formalization, the product is computed as a sum over all size-$\ell$ flags:
+\begin{lstlisting}
+def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
+    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
+  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
+\end{lstlisting}
+To show this is well-defined on the quotient (i.e., independent of $\ell$),
+one must relate terms at different sizes --- but \lean{FlagWithSize sigma l}
+and \lean{FlagWithSize sigma l'} are definitionally distinct types.
+
+The same issue arises internally when collecting the flags for the multiplication
+sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with type family $Vl$)
+changes type when a new flag is inserted: the result has type
+\lean{FlagList sigma (t+1) (listTypeInsert Vl W)}.  Because
+\lean{listTypeInsert Vl W} is not definitionally equal to any pre-existing type
+family, relating the old and new lists requires \emph{heterogeneous equality}
+(\lean{HEq}):
+\begin{lstlisting}
+theorem flagList_HEq
+    (h_Vl_eq : Vl' = Vl)
+    (h_Fl_eq : forall i, Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
+    : HEq Fl Fl'
+\end{lstlisting}
+The \lean{cast} calls are explicit coercions through propositional equality proofs;
+they are the formalization's acknowledgment that two types are equal only up to a
+proof, not up to definition.  In an extensional type theory, type equality would
+be reflected into definitional equality, making these casts unnecessary.
+
+Similarly, even if two indices $i$ and $i'$ into a flag list are propositionally
+equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and \lean{Flag sigma (Vl i')}
+are not definitionally equal, forcing the use of heterogeneous equality:
+\begin{lstlisting}
+theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
+    : HEq (Fl i) (Fl i') := by subst h; rfl
+\end{lstlisting}
+This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
+density computation infrastructure: every operation that crosses a size boundary
+must carry explicit propositional equality evidence.
+
+\paragraph{Obstacle 3: Function extensionality and proof-valued fields.}
+In Lean~4's intensional type theory, function extensionality
+($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not definitional but is
+available as an axiom (\lean{funext}).  This creates friction wherever the
+formalization must relate a function-level equality (such as a type embedding)
+to a pointwise equality (the embedding's behavior on individual vertices).
+For example, constructing a labeled-graph isomorphism from a vertex map $\zeta$
+requires reassembling pointwise information back into a function:
+\begin{lstlisting}
+have h_emb : forall t : T, zeta (G0'.type_embed t) = G1'.type_embed t := ...
+let iso : G0'.coe =~f G1'.coe := { ..., type_preserve := funext h_emb }
+\end{lstlisting}
+Without \lean{funext} as an axiom, the \lean{type\_preserve} field could not
+be filled.  Lean~4 accepts \lean{funext} as a consequence of \lean{propext},
+so this is not an unsound assumption, but it does mean that every such step is a
+propositional proof obligation rather than a definitional reduction.
+
+Proof-valued structure fields create a related difficulty.  The \lean{Sym2Graph}
+type carries a field \lean{edges\_valid : forall e in edges, not e.IsDiag}; two
+\lean{Sym2Graph} values with the same edge set but different proof terms for
+\lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
+definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
+theorems therefore requires the \lean{proof\_irrel\_heq} tactic at every
+such field:
+\begin{lstlisting}
+theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
+    G.toLabeledGraph.toSym2Graph = G := by
+  congr  -- reduces to field equalities
+  ...
+  · exact proof_irrel_heq _ _  -- edge validity field
+\end{lstlisting}
+
+\paragraph{What remains open.}
+Not all intensionality obstacles were resolved.  The most significant gap is in
+\lean{LeanFlagAlgebras.Forbid.Basic}: two lemmas relating the quotient-level
+\lean{forbidLE} predicate to the density of individual flag representatives
+were left as comments with \lean{sorry} markers.  Concretely, showing that
+$f \leq_{[H]} 0$ implies the density of $H$ in any flag in the support of $f$
+is positive requires reasoning about which representatives of a quotient class
+can appear under a homomorphism --- a question that reduces to asking how the
+zero-space relations interact with the flag representatives pointwise.  This
+interaction is nontrivial in an intensional setting because the zero-space
+relations hold only propositionally (they are proved as theorems, not built into
+the type definition).  These gaps do not affect the soundness of the main
+results --- \lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan} are proved
+without them --- but they limit the generality of the \lean{forbidLE} framework
+for future applications.
+
+\subsection{Fintype Instance Conflicts}
+\label{sec:fintype}
+
+A second class of proof failures --- distinct from propositional-vs-definitional
+equality issues but equally pervasive --- arose from Lean~4's treatment of
+\lean{Fintype} instances.
+
+\paragraph{Background.}
+In Lean~4's typeclass system, a type may satisfy \lean{Fintype} (the type has a
+computable enumeration) or the weaker \lean{Finite} (the type is merely
+finitely inhabited, non-constructively).  Many Mathlib lemmas about cardinality
+(\lean{Fintype.card}, \lean{Finset.card\_univ}, \lean{Fintype.card\_congr})
+require \lean{Fintype}, not merely \lean{Finite}.  The elaborator infers
+\lean{Fintype} instances automatically, but in a development with multiple
+overlapping constructions (quotient types, embedded subgraphs, partial-function
+spaces), the same type can receive different \lean{Fintype} instances from
+different elaboration paths.  When two instances do not reduce to the same term
+definitionally, the kernel rejects the goal even if the instances are provably
+equal.
+
+\paragraph{The Finite-vs-Fintype gap.}
+Sets defined by set-builder notation $\{x \mid P\ x\}$ have type
+\lean{Set T}, which is \lean{Finite} whenever \lean{T} is a \lean{Fintype},
+but does not automatically carry a \lean{Fintype} instance.  This was a
+recurring obstacle in \lean{SubflagListDensity.lean}: whenever a cardinality
+argument compared two finite sets defined by structural conditions on flag lists,
+the proof required an explicit conversion:
+\begin{lstlisting}
+let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
+let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
+have card_eq : Fintype.card S₀ = Fintype.card S₁ :=
+  Fintype.card_congr h_iso_S₀_S₁
+\end{lstlisting}
+This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
+(functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
+\lean{flagDensity\_insert\_empty}).  Without the explicit \lean{let} bindings,
+Lean synthesizes a \lean{Fintype} for each set via a different path on each
+use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
+\lean{Fintype.ofFinite} fix was needed in \lean{FlagOperators.lean} (for
+\lean{isoLabeledGraphSetWithSameGraph}) and in \lean{FlagDef.lean} (for
+\lean{LabeledGraph} and \lean{LabeledSubgraph}).
+
+\paragraph{Instance disambiguation for function and embedding types.}
+For parameterized types such as injections \lean{V ↪ W} and equivalences
+\lean{V ≃ W}, Lean can synthesize \lean{Fintype} instances in multiple ways
+depending on which prior instances are in scope.  In
+\lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
+defined, the elaborator had to be given explicit guidance via
+\lean{@Finset.univ} with the intended instance passed as a named argument:
+\begin{lstlisting}
+instance : Fintype (V ↪ W) :=
+  { elems := @Finset.univ (V ↪ W) (inferInstance), ... }
+\end{lstlisting}
+Without the explicit \lean{@}, Lean would sometimes apply a different,
+incompatible \lean{Fintype} instance for \lean{V ↪ W} further down the proof,
+causing goals of the form \lean{x ∈ Finset.univ} to fail to close by
+\lean{Finset.mem\_univ}.
+
+A related issue arose for dependent function types indexed by a small finite
+type.  The \lean{FintypeList} typeclass (used internally to manage lists of
+typed flags indexed by \lean{Fin t}) must be instantiated by threading through
+\lean{Fintype} instances for each component type separately.  For the cases
+\lean{Fin 2 → Type} and \lean{Fin 3 → Type} that arise in the density
+computation, the instances had to be written with explicit per-case
+\lean{inferInstance} calls rather than a uniform typeclass search:
+\begin{lstlisting}
+instance {V W : Type} [Fintype V] [Fintype W]
+    : FintypeList (fun (i : Fin 2) => match i with
+        | 0 => V | 1 => W) where
+  fintype_all := fun i => match i with
+    | 0 => inferInstance | 1 => inferInstance
+\end{lstlisting}
+Lean's typeclass search does not look through \lean{match} expressions inside
+type-valued functions, so the uniform instance \lean{fun i => inferInstance}
+fails to elaborate.
+
+\paragraph{Cardinality comparison across paired sets.}
+In \lean{FlagDensity.lean}, computing induced subgraph densities requires
+converting a set of vertices (of type \lean{Set (Fin n)}) to a \lean{Finset}
+for cardinality comparisons.  The standard conversion
+\lean{Set.toFinset} requires a \lean{Fintype} instance for the set, which is
+not automatically synthesized when the set is defined as the vertex set of a
+subgraph:
+\begin{lstlisting}
+verts := @Set.toFinset _ (Hl i).subgraph.verts (Fintype.ofFinite _)
+\end{lstlisting}
+The explicit \lean{Fintype.ofFinite \_} argument prevents the elaborator from
+picking up an incompatible instance from a \lean{DecidablePred} path.
+Similarly, when two goals differ only in which \lean{Fintype} instance was
+used to compute a \lean{Finset}, the \lean{convert} tactic was used to accept
+the goal up to a \lean{Fintype} proof obligation that \lean{Subsingleton}
+then closed:
+\begin{lstlisting}
+convert h_adj   -- goal matches up to Fintype instance
+\end{lstlisting}
+
+\paragraph{Lesson.}
+The root cause in all three cases is the same: Lean~4's typeclass system is
+\emph{globally coherent by convention}, not by enforcement.  When a type has
+a unique \lean{Fintype} instance (e.g., \lean{Fin n}), there is no conflict.
+When a type's \lean{Fintype} instance is assembled from multiple subinstances
+(e.g., a function type, a quotient, or a set defined by a predicate), the
+elaborator can take different paths, and the resulting terms are not
+definitionally equal even if they enumerate the same elements.  The fix in
+every case was the same: make the intended instance explicit at the point of
+synthesis, either by a \lean{let} binding with a type annotation, by passing
+the instance as an explicit argument to \lean{@Finset.univ} or
+\lean{@Set.toFinset}, or by writing the instance by hand when the uniform
+typeclass search fails.  These are low-level engineering burdens that do not
+appear in pen-and-paper mathematics, but are unavoidable in a large-scale
+Lean~4 development that crosses quotient and reflection boundaries.
 ---END REFERENCE DRAFT---
 
 Revise to remove unsupported claims and strengthen evidence alignment.
