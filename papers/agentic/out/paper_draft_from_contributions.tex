@@ -745,6 +745,118 @@ results --- \lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan} are proved
 without them --- but they limit the generality of the \lean{forbidLE} framework
 for future applications.
 
+\subsection{Fintype Instance Conflicts}
+\label{sec:fintype}
+
+A second class of proof failures --- distinct from propositional-vs-definitional
+equality issues but equally pervasive --- arose from Lean~4's treatment of
+\lean{Fintype} instances.
+
+\paragraph{Background.}
+In Lean~4's typeclass system, a type may satisfy \lean{Fintype} (the type has a
+computable enumeration) or the weaker \lean{Finite} (the type is merely
+finitely inhabited, non-constructively).  Many Mathlib lemmas about cardinality
+(\lean{Fintype.card}, \lean{Finset.card\_univ}, \lean{Fintype.card\_congr})
+require \lean{Fintype}, not merely \lean{Finite}.  The elaborator infers
+\lean{Fintype} instances automatically, but in a development with multiple
+overlapping constructions (quotient types, embedded subgraphs, partial-function
+spaces), the same type can receive different \lean{Fintype} instances from
+different elaboration paths.  When two instances do not reduce to the same term
+definitionally, the kernel rejects the goal even if the instances are provably
+equal.
+
+\paragraph{The Finite-vs-Fintype gap.}
+Sets defined by set-builder notation $\{x \mid P\ x\}$ have type
+\lean{Set T}, which is \lean{Finite} whenever \lean{T} is a \lean{Fintype},
+but does not automatically carry a \lean{Fintype} instance.  This was a
+recurring obstacle in \lean{SubflagListDensity.lean}: whenever a cardinality
+argument compared two finite sets defined by structural conditions on flag lists,
+the proof required an explicit conversion:
+\begin{lstlisting}
+let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
+let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
+have card_eq : Fintype.card S₀ = Fintype.card S₁ :=
+  Fintype.card_congr h_iso_S₀_S₁
+\end{lstlisting}
+This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
+(functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
+\lean{flagDensity\_insert\_empty}).  Without the explicit \lean{let} bindings,
+Lean synthesizes a \lean{Fintype} for each set via a different path on each
+use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
+\lean{Fintype.ofFinite} fix was needed in \lean{FlagOperators.lean} (for
+\lean{isoLabeledGraphSetWithSameGraph}) and in \lean{FlagDef.lean} (for
+\lean{LabeledGraph} and \lean{LabeledSubgraph}).
+
+\paragraph{Instance disambiguation for function and embedding types.}
+For parameterized types such as injections \lean{V ↪ W} and equivalences
+\lean{V ≃ W}, Lean can synthesize \lean{Fintype} instances in multiple ways
+depending on which prior instances are in scope.  In
+\lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
+defined, the elaborator had to be given explicit guidance via
+\lean{@Finset.univ} with the intended instance passed as a named argument:
+\begin{lstlisting}
+instance : Fintype (V ↪ W) :=
+  { elems := @Finset.univ (V ↪ W) (inferInstance), ... }
+\end{lstlisting}
+Without the explicit \lean{@}, Lean would sometimes apply a different,
+incompatible \lean{Fintype} instance for \lean{V ↪ W} further down the proof,
+causing goals of the form \lean{x ∈ Finset.univ} to fail to close by
+\lean{Finset.mem\_univ}.
+
+A related issue arose for dependent function types indexed by a small finite
+type.  The \lean{FintypeList} typeclass (used internally to manage lists of
+typed flags indexed by \lean{Fin t}) must be instantiated by threading through
+\lean{Fintype} instances for each component type separately.  For the cases
+\lean{Fin 2 → Type} and \lean{Fin 3 → Type} that arise in the density
+computation, the instances had to be written with explicit per-case
+\lean{inferInstance} calls rather than a uniform typeclass search:
+\begin{lstlisting}
+instance {V W : Type} [Fintype V] [Fintype W]
+    : FintypeList (fun (i : Fin 2) => match i with
+        | 0 => V | 1 => W) where
+  fintype_all := fun i => match i with
+    | 0 => inferInstance | 1 => inferInstance
+\end{lstlisting}
+Lean's typeclass search does not look through \lean{match} expressions inside
+type-valued functions, so the uniform instance \lean{fun i => inferInstance}
+fails to elaborate.
+
+\paragraph{Cardinality comparison across paired sets.}
+In \lean{FlagDensity.lean}, computing induced subgraph densities requires
+converting a set of vertices (of type \lean{Set (Fin n)}) to a \lean{Finset}
+for cardinality comparisons.  The standard conversion
+\lean{Set.toFinset} requires a \lean{Fintype} instance for the set, which is
+not automatically synthesized when the set is defined as the vertex set of a
+subgraph:
+\begin{lstlisting}
+verts := @Set.toFinset _ (Hl i).subgraph.verts (Fintype.ofFinite _)
+\end{lstlisting}
+The explicit \lean{Fintype.ofFinite \_} argument prevents the elaborator from
+picking up an incompatible instance from a \lean{DecidablePred} path.
+Similarly, when two goals differ only in which \lean{Fintype} instance was
+used to compute a \lean{Finset}, the \lean{convert} tactic was used to accept
+the goal up to a \lean{Fintype} proof obligation that \lean{Subsingleton}
+then closed:
+\begin{lstlisting}
+convert h_adj   -- goal matches up to Fintype instance
+\end{lstlisting}
+
+\paragraph{Lesson.}
+The root cause in all three cases is the same: Lean~4's typeclass system is
+\emph{globally coherent by convention}, not by enforcement.  When a type has
+a unique \lean{Fintype} instance (e.g., \lean{Fin n}), there is no conflict.
+When a type's \lean{Fintype} instance is assembled from multiple subinstances
+(e.g., a function type, a quotient, or a set defined by a predicate), the
+elaborator can take different paths, and the resulting terms are not
+definitionally equal even if they enumerate the same elements.  The fix in
+every case was the same: make the intended instance explicit at the point of
+synthesis, either by a \lean{let} binding with a type annotation, by passing
+the instance as an explicit argument to \lean{@Finset.univ} or
+\lean{@Set.toFinset}, or by writing the instance by hand when the uniform
+typeclass search fails.  These are low-level engineering burdens that do not
+appear in pen-and-paper mathematics, but are unavoidable in a large-scale
+Lean~4 development that crosses quotient and reflection boundaries.
+
 
 \section{The Reflection Layer}
 \label{sec:reflection}
