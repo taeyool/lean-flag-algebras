@@ -238,6 +238,9 @@ automated discharge of density and SDP certificate obligations.
     (\lean{forbidLE}, \lean{generalizedTuranDensity\_le\_of\_forbidLE}).
     The forbidden-subgraph rule is formulated inside a \emph{single} ambient
     theory of simple graphs and does not require a per-problem axiom.
+    The framework is sufficient for the current theorems; some auxiliary
+    generalization lemmas in \lean{Forbid/Basic} remain unfinished but do
+    not affect the soundness of the main results (see \S\ref{sec:intensional}).
 
   \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
     We introduce \lean{Sym2Graph}, a finitely-representable graph type with
@@ -584,14 +587,23 @@ The transfer theorem is:
 theorem generalizedTuranDensity_le_of_forbidLE
     (H : FinFlag emptyType) (F : FinFlag emptyType) (c : R) (hc : 0 < c)
     (hineq : forbidLE H (unitVector F) (c * 1)) :
-    generalizedTuranDensity F H <= c
+    generalizedTuranDensity H F <= c
 \end{lstlisting}
-This single theorem, grounded in the measure-theoretic framework, is
-completely general: any flag algebra inequality of the form
-$f \leq_{[H]} c \cdot \mathbf{1}$ proved in the Lean theory immediately
+\emph{Argument-order note.}  The Lean constant takes arguments in the order
+\emph{forbidden graph first, target graph second}: \lean{generalizedTuranDensity H F}
+means the maximum density of $F$ in $H$-free graphs, which the paper
+writes as $\tdensity{F}{H}$ in mathematical notation.
+
+This theorem, grounded in the measure-theoretic framework, is sufficiently
+general for the present applications: any flag algebra inequality of the
+form $f \leq_{[H]} c \cdot \mathbf{1}$ proved in the Lean theory immediately
 yields a Turán density upper bound $\tdensity{F}{H} \leq c$, for any
-forbidden subgraph $H$ and any target pattern $F$.  No additional
-axiomatization is needed per application.
+forbidden subgraph $H$ and target pattern $F$.  No additional per-problem
+axiomatization is needed.  The framework captures the intended general
+pattern, but some auxiliary generalization lemmas in \lean{Forbid/Basic}
+relating the quotient-level \lean{forbidLE} predicate to individual flag
+representatives remain unfinished; these gaps are described in
+\S\ref{sec:intensional} and do not affect the main results.
 
 \paragraph{What Mathlib provides.}
 This layer builds on substantial Mathlib infrastructure.  For the algebraic
@@ -1211,8 +1223,10 @@ experimentation with Lean~4's metaprogramming API.
 
 Using the formalization infrastructure described in the preceding sections,
 we give formally complete proofs of two theorems in extremal combinatorics.
-Both proofs are machine-checked in Lean~4 and contain no \lean{sorry}
-placeholders in their proof paths.
+Both proofs are machine-checked in Lean~4.  The proof paths of the main
+theorems contain no \lean{sorry} placeholders, although some commented
+auxiliary generalization lemmas outside those proof paths remain unfinished
+(see \S\ref{sec:intensional}).
 
 \subsection{Mantel's Theorem}
 
@@ -1259,14 +1273,14 @@ non-negativity.
 The main result is:
 \begin{lstlisting}
 theorem ErdosPentagon_Turan
-    : generalizedTuranDensity C5 K3 = 24/625
+    : generalizedTuranDensity K3 C5 = 24/625
 \end{lstlisting}
 proved as the conjunction of an upper bound and a lower bound.
 
 \paragraph{Upper bound.}
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_upperBound
-    : generalizedTuranDensity C5 K3 <= 24/625 :=
+    : generalizedTuranDensity K3 C5 <= 24/625 :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num)
     ErdosPentagon_flagAlgebra
 \end{lstlisting}
@@ -1296,22 +1310,29 @@ The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
 The lower bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound
-    : generalizedTuranDensity C5 K3 >= 24/625
+    : generalizedTuranDensity K3 C5 >= 24/625
 \end{lstlisting}
-is proved by an explicit construction.  We define the blow-up of a graph:
+is proved by an explicit construction.
+
+\emph{Note on the following code.}  The snippets below are simplified
+schematic Lean illustrating the proof strategy; they are not verbatim
+repository excerpts.  In particular, the \lean{blowUp} definition uses
+informal notation (\lean{x}, \lean{and}, \lean{!=}) for readability, the
+triangle-freeness theorem appears under a different name in the repository,
+and the limit lemma is schematic.  We define the blow-up of a graph
+schematically as:
 \begin{lstlisting}
-def blowUp (G : SimpleGraph V) (n : N) : SimpleGraph (V x Fin n) :=
-  { Adj := fun v w => G.Adj v.1 w.1 and v != w, ... }
+-- schematic; see LeanFlagAlgebras/ErdosPentagon/ for the exact definition
+def blowUp (G : SimpleGraph V) (n : Nat) : SimpleGraph (V × Fin n) :=
+  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
-of $n$ vertices and each edge by a complete bipartite graph) is triangle-free:
+of $n$ vertices and each edge by a complete bipartite graph) is triangle-free.
+The repository proves this as a \lean{CliqueFree 3} lemma for the blow-up
+construction.  It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
 \begin{lstlisting}
-theorem blowUp_K3_free : (blowUp C5 n).CliqueFree 3
-\end{lstlisting}
-It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
-\begin{lstlisting}
-theorem subgraphCount_blowUp_C5_ge (n : N) :
-    n^5 <= (blowUp C5 n).inducedSubgraphCount C5
+theorem subgraphCount_blowUp_C5_ge (n : Nat) :
+    n^5 ≤ (blowUp C5 n).subgraphCount C5
 \end{lstlisting}
 The lower bound on the Turán density follows from the limit:
 \[
@@ -1319,9 +1340,11 @@ The lower bound on the Turán density follows from the limit:
 \]
 which is proved as an exact algebraic identity using \lean{norm\_num} after
 unfolding the definition of $\binom{5n}{5} = \frac{5n(5n-1)(5n-2)(5n-3)(5n-4)}{120}$.
-The limit argument is formalized using Lean's \lean{Filter.Tendsto} framework:
+The limit argument is formalized using Lean's \lean{Filter.Tendsto}
+framework (schematic):
 \begin{lstlisting}
-lemma tendsto_C5_blowUp_density :
+-- schematic limit statement
+lemma blowUp_density_tendsto :
     Filter.Tendsto (fun n => n^5 / Nat.choose (5*n) 5)
                    Filter.atTop (nhds (24/625))
 \end{lstlisting}
