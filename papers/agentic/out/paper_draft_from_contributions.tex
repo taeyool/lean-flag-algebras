@@ -625,6 +625,127 @@ significant care about which topological and measurability assumptions each
 lemma required.
 
 
+\subsection{Type-Theoretic Obstacles from Intensionality}
+\label{sec:intensional}
+
+Lean~4 is based on an \emph{intensional} type theory: definitional equality is
+decidable but strictly weaker than propositional equality.  Two types that are
+provably equal may not be definitionally equal, and the kernel does not
+automatically identify them.  This creates three concrete classes of obstacle
+in a flag algebra formalization, each requiring its own systematic workaround.
+
+\paragraph{Obstacle 1: Quotient types require explicit eliminators.}
+Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
+\emph{from} them or equality \emph{in} them must go through
+\lean{Quotient.lift} or \lean{Quotient.sound}.  \lean{Quotient.lift} requires
+a proof that the function respects the equivalence relation; \lean{Quotient.sound}
+requires producing a witness of the relation for each equality goal.
+
+The adequacy theorems in \S\ref{sec:reflection} illustrate the cost.  To state
+that \lean{Sym2Graph.toFlag} is inverse to \lean{Flag.toSym2EmptyTypedFlag}, one
+cannot write a direct equality between concrete and abstract objects; every step
+must go through the quotient eliminators:
+\begin{lstlisting}
+def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag emptyType (Fin n) :=
+  Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
+\end{lstlisting}
+The \lean{toFlag\_respect\_eqv} proof --- showing that isomorphic \lean{Sym2Graph}
+values map to the same \lean{Flag} --- is not automatic; it required
+\lean{Quotient.sound} applied to a graph isomorphism witness assembled from the
+concrete data.  In an extensional type theory, both directions of this round-trip
+would hold definitionally.
+
+\paragraph{Obstacle 2: Size-changing operations produce dependent-type mismatches.}
+Flag algebra operations change the vertex count of flags: the product of a
+size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.
+In the formalization, the product is computed as a sum over all size-$\ell$ flags:
+\begin{lstlisting}
+def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
+    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
+  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
+\end{lstlisting}
+To show this is well-defined on the quotient (i.e., independent of $\ell$),
+one must relate terms at different sizes --- but \lean{FlagWithSize sigma l}
+and \lean{FlagWithSize sigma l'} are definitionally distinct types.
+
+The same issue arises internally when collecting the flags for the multiplication
+sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with type family $Vl$)
+changes type when a new flag is inserted: the result has type
+\lean{FlagList sigma (t+1) (listTypeInsert Vl W)}.  Because
+\lean{listTypeInsert Vl W} is not definitionally equal to any pre-existing type
+family, relating the old and new lists requires \emph{heterogeneous equality}
+(\lean{HEq}):
+\begin{lstlisting}
+theorem flagList_HEq
+    (h_Vl_eq : Vl' = Vl)
+    (h_Fl_eq : forall i, Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
+    : HEq Fl Fl'
+\end{lstlisting}
+The \lean{cast} calls are explicit coercions through propositional equality proofs;
+they are the formalization's acknowledgment that two types are equal only up to a
+proof, not up to definition.  In an extensional type theory, type equality would
+be reflected into definitional equality, making these casts unnecessary.
+
+Similarly, even if two indices $i$ and $i'$ into a flag list are propositionally
+equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and \lean{Flag sigma (Vl i')}
+are not definitionally equal, forcing the use of heterogeneous equality:
+\begin{lstlisting}
+theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
+    : HEq (Fl i) (Fl i') := by subst h; rfl
+\end{lstlisting}
+This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
+density computation infrastructure: every operation that crosses a size boundary
+must carry explicit propositional equality evidence.
+
+\paragraph{Obstacle 3: Function extensionality and proof-valued fields.}
+In Lean~4's intensional type theory, function extensionality
+($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not definitional but is
+available as an axiom (\lean{funext}).  This creates friction wherever the
+formalization must relate a function-level equality (such as a type embedding)
+to a pointwise equality (the embedding's behavior on individual vertices).
+For example, constructing a labeled-graph isomorphism from a vertex map $\zeta$
+requires reassembling pointwise information back into a function:
+\begin{lstlisting}
+have h_emb : forall t : T, zeta (G0'.type_embed t) = G1'.type_embed t := ...
+let iso : G0'.coe =~f G1'.coe := { ..., type_preserve := funext h_emb }
+\end{lstlisting}
+Without \lean{funext} as an axiom, the \lean{type\_preserve} field could not
+be filled.  Lean~4 accepts \lean{funext} as a consequence of \lean{propext},
+so this is not an unsound assumption, but it does mean that every such step is a
+propositional proof obligation rather than a definitional reduction.
+
+Proof-valued structure fields create a related difficulty.  The \lean{Sym2Graph}
+type carries a field \lean{edges\_valid : forall e in edges, not e.IsDiag}; two
+\lean{Sym2Graph} values with the same edge set but different proof terms for
+\lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
+definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
+theorems therefore requires the \lean{proof\_irrel\_heq} tactic at every
+such field:
+\begin{lstlisting}
+theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
+    G.toLabeledGraph.toSym2Graph = G := by
+  congr  -- reduces to field equalities
+  ...
+  · exact proof_irrel_heq _ _  -- edge validity field
+\end{lstlisting}
+
+\paragraph{What remains open.}
+Not all intensionality obstacles were resolved.  The most significant gap is in
+\lean{LeanFlagAlgebras.Forbid.Basic}: two lemmas relating the quotient-level
+\lean{forbidLE} predicate to the density of individual flag representatives
+were left as comments with \lean{sorry} markers.  Concretely, showing that
+$f \leq_{[H]} 0$ implies the density of $H$ in any flag in the support of $f$
+is positive requires reasoning about which representatives of a quotient class
+can appear under a homomorphism --- a question that reduces to asking how the
+zero-space relations interact with the flag representatives pointwise.  This
+interaction is nontrivial in an intensional setting because the zero-space
+relations hold only propositionally (they are proved as theorems, not built into
+the type definition).  These gaps do not affect the soundness of the main
+results --- \lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan} are proved
+without them --- but they limit the generality of the \lean{forbidLE} framework
+for future applications.
+
+
 \section{The Reflection Layer}
 \label{sec:reflection}
 
