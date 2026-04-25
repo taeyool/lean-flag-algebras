@@ -1,6 +1,24 @@
+% =========================================================================
+% DRAFT: uses \documentclass{article} for local compilation.
+% For POPL 2027 submission switch to:
+%   \documentclass[acmsmall,review,anonymous]{acmart}
+% with the ACM CCS/keywords block below uncommented.
+%
+% ACM metadata for final submission:
+%   \acmJournal{PACMPL} \acmVolume{0} \acmNumber{POPL}
+%   \acmYear{2027} \acmMonth{1} \setcopyright{none}
+%
+% CCS:
+%   Theory of computation~Proof theory        [500]
+%   Theory of computation~Logic and verification [300]
+%   Theory of computation~Type theory         [300]
+%
+% Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
+%   programming, Turan density, interactive theorem proving,
+%   tactic metaprogramming, extremal combinatorics
+% =========================================================================
 \documentclass{article}
 
-% lualatex handles UTF-8 natively; remove inputenc/fontenc for pdflatex compatibility
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{mathtools}
@@ -10,6 +28,7 @@
 \usepackage{stmaryrd}
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{booktabs}
 \usepackage{microtype}
 \usepackage{fullpage}
 \usepackage{authblk}
@@ -33,7 +52,6 @@
 \newcommand{\den}[2]{p(#1,\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
-\newcommand{\leanfmt}[1]{\texttt{\small #1}}
 
 % Lean code style
 \lstdefinelanguage{Lean4}{
@@ -73,25 +91,18 @@
 \date{}
 
 \author[1]{Gyeongwon Jeong}
+\author[1]{Seonghun Park}
+\author[1]{Jihoon Hyun}
+\author[2]{Sang-il Oum}
+\author[3]{Hongseok Yang}
 \affil[1]{School of Computing, KAIST, South Korea}
-
-\author[2]{Seonghun Park}
-\affil[2]{School of Computing, KAIST, South Korea}
-
-\author[3]{Jihoon Hyun}
-\affil[3]{School of Computing, KAIST, South Korea}
-
-\author[4]{Sang-il Oum}
-\affil[4]{Discrete Mathematics Group, Institute for Basic Science (IBS), South Korea}
-
-\author[5]{Hongseok Yang}
-\affil[5]{School of Computational Sciences, Korea Institute for Advanced Study (KIAS), South Korea}
+\affil[2]{Discrete Mathematics Group, Institute for Basic Science (IBS), South Korea}
+\affil[3]{School of Computational Sciences, Korea Institute for Advanced Study (KIAS), South Korea}
 
 % =========================================================================
 \begin{document}
 \maketitle
 
-% =========================================================================
 \begin{abstract}
 Razborov's flag algebra method is one of the most powerful tools in extremal
 combinatorics, having resolved many open problems about asymptotic subgraph
@@ -113,7 +124,7 @@ combinatorial Turán densities through a measure-theoretic framework.  At the
 computational level, we introduce a concrete, decidably-equal graph
 representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
 the abstract definitions; this allows \lean{native\_decide} and \lean{decide
-+kernel} to discharge hundreds of density and matrix-equality obligations
++kernel} to discharge over 2{,}800 density and matrix-equality obligations
 automatically.  Structural proof obligations---normalizing linear combinations
 of flag terms and applying expansion and multiplication identities---are handled
 by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
@@ -121,10 +132,11 @@ a canonical naming convention for flags as a machine-readable encoding of
 mathematical structure.
 
 As results, we give complete formal proofs of Mantel's theorem and of the
-Erd\H{o}s pentagon theorem ($\pi(K_3; C_5) = 24/625$), the latter including
-both the upper bound via a formally verified SDP certificate and the lower
-bound via an explicit blow-up construction.  To our knowledge, this is the
-first formalization of the flag algebra method in any proof assistant.
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
+both the upper bound via a formally verified SDP certificate and the lower bound
+via an explicit blow-up construction.  To our knowledge, this is the first
+formalization of the flag algebra method in any proof assistant.  The
+formalization comprises approximately 25{,}000 lines of Lean~4 code.
 \end{abstract}
 
 % =========================================================================
@@ -133,7 +145,7 @@ first formalization of the flag algebra method in any proof assistant.
 
 \paragraph{Flag algebras in extremal combinatorics.}
 A central question in extremal graph theory is: among all large graphs on $n$
-vertices that avoid some fixed graph $H$ as a (not necessarily induced) subgraph, what is the
+vertices that avoid some fixed graph $H$ as a subgraph, what is the
 maximum possible density of copies of another graph $F$?
 The \emph{generalized Turán density} $\tdensity{F}{H}$
 formalizes this question as a limit:
@@ -181,7 +193,7 @@ distinct, non-reducible categories of proof obligation:
   \item \textbf{Data-heavy computation.}  For each pair of flags $(F,G)$
     appearing in the proof, one must certify the exact rational density
     $\den{F}{G}$.  For the Erd\H{o}s pentagon theorem,
-    this means hundreds of density values over graphs with up to five vertices
+    this means thousands of density values over graphs with up to five vertices
     and flag multiplication tables of similar size.  These values are computed
     externally and must be imported into the proof and verified against the
     formal definitions.
@@ -249,7 +261,7 @@ automated discharge of density and SDP certificate obligations.
 
   \item \textbf{Verified results (\S\ref{sec:results}).}
     We give formally complete proofs of Mantel's theorem and of
-    $\tdensity{K_3}{C_5} = 24/625$ (the Erd\H{o}s pentagon theorem), including
+    $\tdensity{C_5}{K_3} = 24/625$ (the Erd\H{o}s pentagon theorem), including
     the upper bound via a formally verified SDP certificate and the lower bound
     via an explicit $C_5$-blow-up construction with a formal limit argument.
     To our knowledge, this is the first formalization of the flag algebra method
@@ -424,7 +436,7 @@ Norine, and Razborov~\cite{hatami2012}.  It is achieved by the blow-up of
 $C_5$ (partition $n$ vertices into five nearly-equal groups and add all edges
 between consecutive groups in the cycle).  We use this theorem as the main
 case study throughout the paper, as it involves all three categories of proof
-obligation: abstract structure, data-heavy density computation (hundreds of
+obligation: abstract structure, data-heavy density computation (thousands of
 rational values over 5-vertex graphs), and heavy algebraic bookkeeping.
 
 
@@ -446,29 +458,29 @@ A \emph{type graph} of size $k$ is a \lean{SimpleGraph (Fin k)}, the standard
 Lean~4/Mathlib type for simple graphs on a finite vertex set.  A
 \emph{labeled graph} over type $\sigma$ with vertex set $V$ is a pair
 \begin{lstlisting}
-structure LabeledGraph (σ : FlagType (Fin n₀)) (V : Type) where
+structure LabeledGraph (sigma : FlagType (Fin n0)) (V : Type) where
   graph     : SimpleGraph V
-  typeEmbed : σ →gg graph    -- graph homomorphism embedding the type
+  typeEmbed : sigma ->gg graph  -- injective graph homomorphism
 \end{lstlisting}
-where \lean{→gg} denotes a \lean{SimpleGraph} homomorphism that is also
+where \lean{->gg} denotes a \lean{SimpleGraph} homomorphism that is also
 injective on vertices.  Two labeled graphs over the same type are
 \emph{flag-isomorphic} if they are related by a graph isomorphism that
 commutes with the type embeddings.  The type of flags is then the quotient:
 \begin{lstlisting}
-def Flag (σ : FlagType (Fin n₀)) (V : Type) : Type :=
-  Quotient (labeledGraphSetoid σ V)
+def Flag (sigma : FlagType (Fin n0)) (V : Type) : Type :=
+  Quotient (labeledGraphSetoid sigma V)
 \end{lstlisting}
 The setoid \lean{labeledGraphSetoid} is defined from flag-isomorphism,
 which is an equivalence relation on labeled graphs.
 
 \paragraph{Size-indexed families.}
-We write \lean{FlagWithSize σ n} for \lean{Flag σ (Fin n)} (flags of size
-$n$) and \lean{FinFlag σ} for the dependent sum
+We write \lean{FlagWithSize sigma n} for \lean{Flag sigma (Fin n)} (flags of size
+$n$) and \lean{FinFlag sigma} for the dependent sum
 $\Sigma\, (n : \mathbb{N}),\, \lean{FlagWithSize}\ \sigma\ n$, which collects
 all flags across all sizes.
-Each \lean{FlagWithSize σ n} is a \lean{Fintype} (inheriting finiteness from
+Each \lean{FlagWithSize sigma n} is a \lean{Fintype} (inheriting finiteness from
 the finiteness of \lean{Fin n} and the decidability of flag isomorphism,
-established in Section~\ref{sec:reflection}), while \lean{FinFlag σ} is
+established in Section~\ref{sec:reflection}), while \lean{FinFlag sigma} is
 \lean{Countable} and \lean{Infinite} when the type $\sigma$ is non-trivial.
 
 \subsection{The Flag Algebra as a Quotient Module}
@@ -478,44 +490,44 @@ The flag algebra is built in
 Following the mathematical definition, we first form the free
 $\mathbb{R}$-module of finitely-supported functions on flags:
 \begin{lstlisting}
-abbrev FlagVector σ := FinFlag σ →₀ ℝ
+abbrev FlagVector sigma := FinFlag sigma ->0 R  -- Finsupp free module
 \end{lstlisting}
-(Here \lean{→₀} is Mathlib's \lean{Finsupp} type: functions with finite
-support, forming a free module.)
-The \emph{zero space} \lean{ZeroSpace σ} is defined as the submodule of
-\lean{FlagVector σ} generated by all elements of the form
+(Here \lean{->0} is Mathlib's \lean{Finsupp} type: functions with finite
+support, forming a free module over $\mathbb{R}$.)
+The \emph{zero space} \lean{ZeroSpace sigma} is defined as the submodule of
+\lean{FlagVector sigma} generated by all elements of the form
 $[\lean{F}] - \sum_{G \in \lean{FlagWithSize}\ \sigma\ n} \den{F}{G} \cdot [G]$,
 for each flag $F$ of size $m$ and each $n \geq m$.
 The flag algebra is the quotient:
 \begin{lstlisting}
-def FlagAlgebra σ := FlagVector σ ⧸ ZeroSpace σ
+def FlagAlgebra sigma := FlagVector sigma / ZeroSpace sigma
 \end{lstlisting}
-We prove that \lean{FlagAlgebra σ} carries a commutative $\mathbb{R}$-algebra
+We prove that \lean{FlagAlgebra sigma} carries a commutative $\mathbb{R}$-algebra
 structure, with product defined by
 \begin{lstlisting}
-def flagMulWithSize (F₁ : FlagWithSize σ m₁) (F₂ : FlagWithSize σ m₂)
-    (ℓ : ℕ) (h : m₁ + m₂ - typeSize σ ≤ ℓ) : FlagVector σ :=
-  ∑ G : FlagWithSize σ ℓ, flagDensity₂ F₁ F₂ G • unitVector G
+def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
+    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
+  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
 \end{lstlisting}
 and shown to be well-defined on the quotient via the zero-space relations.
 The unit element is the class of the type graph $\sigma$ itself.
 
 \subsection{Semantic Ordering via Positive Homomorphisms}
 
-The ordering on \lean{FlagAlgebra σ} is semantic rather than syntactic.
+The ordering on \lean{FlagAlgebra sigma} is semantic rather than syntactic.
 We define:
 \begin{lstlisting}
-structure PositiveHom (σ : FlagType (Fin n₀)) where
-  toFun       : FlagAlgebra σ →ₐ[ℝ] ℝ   -- R-algebra homomorphism
-  nonneg      : ∀ F : FinFlag σ, 0 ≤ toFun ⟦unitVector F⟧
+structure PositiveHom (sigma : FlagType (Fin n0)) where
+  toFun  : FlagAlgebra sigma ->a[R] R  -- R-algebra homomorphism
+  nonneg : forall F : FinFlag sigma, 0 <= toFun [[unitVector F]]
 \end{lstlisting}
 The \emph{semantic cone} and its induced ordering are:
 \begin{lstlisting}
-def semanticCone σ : Set (FlagAlgebra σ) :=
-  {f | ∀ φ : PositiveHom σ, 0 ≤ φ.toFun f}
+def semanticCone sigma : Set (FlagAlgebra sigma) :=
+  {f | forall phi : PositiveHom sigma, 0 <= phi.toFun f}
 
-instance : Preorder (FlagAlgebra σ) :=
-  { le := fun f g => g - f ∈ semanticCone σ, ... }
+instance : Preorder (FlagAlgebra sigma) :=
+  { le := fun f g => g - f is in semanticCone sigma, ... }
 \end{lstlisting}
 
 The main non-negativity theorem, proved in
@@ -523,9 +535,9 @@ The main non-negativity theorem, proved in
 of Theorem~\ref{thm:sdp-nonneg}:
 \begin{lstlisting}
 theorem flagQuadraticForm_nonneg
-    (M : Matrix (Fin r) (Fin r) ℝ) (hM : M.PosSemidef)
-    (v : Fin r → FlagAlgebra σ) :
-    0 ≤ ⟦ ∑ i j, M i j • (downward (v i * v j)) ⟧
+    (M : Matrix (Fin r) (Fin r) R) (hM : M.PosSemidef)
+    (v : Fin r -> FlagAlgebra sigma) :
+    0 <= [[ sum i j, M i j * (downward (v i * v j)) ]]
 \end{lstlisting}
 This is the key lemma converting a PSD matrix into an element of the semantic
 cone.  Its proof follows from the definition of positive homomorphisms and
@@ -550,9 +562,9 @@ We instead develop a \emph{general forbidden-subgraph reasoning rule} that
 works inside the ambient theory of simple graphs.  The key definition
 (in \lean{LeanFlagAlgebras.Forbid.Basic}) is:
 \begin{lstlisting}
-def forbidLE (H : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop :=
-  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀.toFun ⟦unitVector H⟧ = 0 →
-    ℙ[φ₀] {φ | φ.toFun f ≤ φ.toFun g} = 1
+def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
+  forall (phi0 : PositiveHom emptyType), phi0.toFun [[unitVector H]] = 0 ->
+    P[phi0] {phi | phi.toFun f <= phi.toFun g} = 1
 \end{lstlisting}
 The notation $f \leq_{[H]} g$ means: almost surely under the measure
 $\mathbb{P}^{\phi_0}$ (the ``random flag extension'' measure induced by any
@@ -562,15 +574,17 @@ homomorphism satisfies $\phi(f) \leq \phi(g)$.
 The measure $\mathbb{P}^{\phi_0}$ on typed positive homomorphisms is
 constructed in \lean{LeanFlagAlgebras.FlagAlgebra.RandomHom}: the space of
 positive homomorphisms for type $\sigma$ is given a compact topology (as a
-closed subset of $\mathbb{R}^{\lean{FinFlag}\ \sigma}$, which is compact by
-Tychonoff's theorem), and $\phi_0$ induces a Borel probability measure on it.
+closed subset of $[0,1]^{|\lean{FinFlag}\ \sigma|}$, which is compact by
+Tychonoff's theorem), and $\phi_0$ induces a Borel probability measure on it
+via Prokhorov's theorem~\cite{billingsley1999convergence}
+(Mathlib: \lean{MeasureTheory.Measure.Prokhorov}).
 
 The transfer theorem is:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (H : FinFlag ∅ₜ) (F : FinFlag ∅ₜ) (c : ℝ) (hc : 0 < c)
-    (hineq : forbidLE H (unitVector F) (c • 1)) :
-    generalizedTuranDensity F H ≤ c
+    (H : FinFlag emptyType) (F : FinFlag emptyType) (c : R) (hc : 0 < c)
+    (hineq : forbidLE H (unitVector F) (c * 1)) :
+    generalizedTuranDensity F H <= c
 \end{lstlisting}
 This single theorem, grounded in the measure-theoretic framework, is
 completely general: any flag algebra inequality of the form
@@ -579,15 +593,36 @@ yields a Turán density upper bound $\tdensity{F}{H} \leq c$, for any
 forbidden subgraph $H$ and any target pattern $F$.  No additional
 axiomatization is needed per application.
 
-\paragraph{Design significance.}
-This generality is a genuine formalization contribution, not a routine
-consequence of the mathematical definitions.  The key technical work is
-constructing the measure-theoretic framework (the random extension measure
-$\mathbb{P}^{\phi_0}$), proving that it is well-defined as a probability
-measure on the compact space of positive homomorphisms, and connecting it to
-the combinatorial Turán density via a limit argument.  The result is
-reusable: every future flag algebra proof in the library can use
-\lean{generalizedTuranDensity\_le\_of\_forbidLE} as a black box.
+\paragraph{What Mathlib provides.}
+This layer builds on substantial Mathlib infrastructure.  For the algebraic
+structure, we use \lean{Mathlib.LinearAlgebra.Finsupp} for free modules and
+\lean{Mathlib.LinearAlgebra.Matrix.PosDef} for positive semidefiniteness.
+For the measure-theoretic layer, we use
+\lean{Mathlib.MeasureTheory.Measure.ProbabilityMeasure},
+\lean{Mathlib.Probability.ProductMeasure}, and critically
+\lean{Mathlib.MeasureTheory.Measure.Prokhorov} for the compactness argument.
+\lean{Mathlib.Combinatorics.SimpleGraph.Subgraph} provides the ambient graph
+infrastructure.  What is \emph{not} in Mathlib and was built from scratch:
+the \lean{LabeledGraph} structure and flag-isomorphism quotient, the
+\lean{FlagAlgebra} quotient module with its ring structure, the \lean{PositiveHom}
+type and semantic cone, the \lean{forbidLE} predicate and
+\lean{generalizedTuranDensity\_le\_of\_forbidLE} (including the random
+extension measure construction in \lean{RandomHom.lean}, $\sim$1\,300 lines).
+
+\paragraph{Key challenge.}
+The hardest single component in the abstract layer was \lean{RandomHom.lean}.
+Constructing $\mathbb{P}^{\phi_0}$ requires showing that the space of positive
+homomorphisms is a compact metric space (so that it admits a Borel probability
+measure structure), and that $\phi_0$ determines a tight family of measures
+on it (so that Prokhorov's theorem applies).  Compactness follows from the
+observation that positive homomorphisms are algebra homomorphisms with
+values in $[0,1]$, hence a closed bounded subset of $\mathbb{R}^{|\lean{FinFlag}\ \sigma|}$;
+Tychonoff gives compactness.  The measure itself is then the pushforward of the
+counting measure on sequences of graphs through the map that sends a graph
+sequence to its induced positive homomorphism (when it exists).  Each of these
+steps has a precise Mathlib counterpart, but threading them together required
+significant care about which topological and measurability assumptions each
+lemma required.
 
 
 \section{The Reflection Layer}
@@ -613,9 +648,9 @@ architecture applies this pattern at multiple granularities.
 We introduce \lean{Sym2Graph n} in
 \lean{LeanFlagAlgebras.FlagAlgebra.Compute.Basic}:
 \begin{lstlisting}
-structure Sym2Graph (n : ℕ) where
-  edges : Finset (Sym2 (Fin n))
-  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+structure Sym2Graph (n : N) where
+  edges       : Finset (Sym2 (Fin n))
+  edges_valid : forall e in edges, not e.IsDiag
 \end{lstlisting}
 This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
 non-diagonal pairs.  Unlike \lean{SimpleGraph (Fin n)} (which uses a
@@ -626,14 +661,28 @@ membership.
 The same file derives the \lean{Fintype} instances needed to make graph
 isomorphism decidable:
 \begin{lstlisting}
-instance : Fintype (G₁ ↪g G₂) := ...   -- graph embeddings
-instance : Fintype (G₁ ≃g G₂) := ...   -- graph isomorphisms
-instance : Decidable (Nonempty (G ≃f G')) := ...  -- flag isomorphism
+instance : Fintype (G1 ->g G2) := ...   -- graph embeddings
+instance : Fintype (G1 =~g G2) := ...   -- graph isomorphisms
+instance : Decidable (Nonempty (G =~f G')) := ...  -- flag isomorphism
 \end{lstlisting}
 These instances are engineered carefully: they enumerate candidates (all
 injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
+
+\paragraph{Key challenge.}
+The main difficulty in the reflection layer is making graph isomorphism
+decidable efficiently enough for \lean{native\_decide} to terminate on
+five-vertex graphs in reasonable time.  The naive approach---enumerate all
+$n!$ permutations of the vertex set and check each---runs in $5! = 120$
+steps for size-5 graphs, which is fast enough.  However, the adequacy
+theorems require that the abstract \lean{flagDensity} and the concrete
+\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
+construction and reasoning about representatives, which was the source of most
+of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
+The key insight is that density over the quotient equals the density computed
+on any canonical representative, and the \lean{Sym2Graph} representation
+provides a canonical form via its \lean{Finset} of edges.
 
 \subsection{Adequacy Theorems}
 
@@ -641,19 +690,18 @@ The connection between the abstract and concrete worlds is established by
 adequacy theorems in \lean{LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity}:
 
 \begin{lstlisting}
-theorem flagDensity₁_eq_sym2EmptyTypeFlagDensity₁
+theorem flagDensity1_eq_sym2FlagDensity1
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
-    flagDensity₁ F.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₁ F G
+    flagDensity1 F.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity1 F G
 
-theorem flagDensity₂_eq_sym2EmptyTypeFlagDensity₂
-    (F₀ : Sym2EmptyTypedFlag m₀) (F₁ : Sym2EmptyTypedFlag m₁)
+theorem flagDensity2_eq_sym2FlagDensity2
+    (F0 : Sym2EmptyTypedFlag m0) (F1 : Sym2EmptyTypedFlag m1)
     (G : Sym2EmptyTypedFlag n) :
-    flagDensity₂ F₀.toFlag F₁.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity₂ F₀ F₁ G
+    flagDensity2 F0.toFlag F1.toFlag G.toFlag =
+    sym2EmptyTypeFlagDensity2 F0 F1 G
 \end{lstlisting}
-The right-hand sides---\lean{sym2EmptyTypeFlagDensity₁} and
-\lean{sym2EmptyTypeFlagDensity₂}---are defined entirely over \lean{Sym2Graph}
+The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
@@ -671,18 +719,17 @@ file containing density values, and for each entry \lean{(F1, F2, G, p/q)}
 generates and immediately proves the theorem:
 \begin{lstlisting}
 @[simp]
-theorem flagDensity₂_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
-    : flagDensity₂ Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
+theorem flagDensity2_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
+    : flagDensity2 Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
   := by
   delta Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2
-  rw [flagDensity₂_eq_sym2FlagDensity₂]
+  rw [flagDensity2_eq_sym2FlagDensity2]
   native_decide
 \end{lstlisting}
 The three proof steps are: unfold the concrete flag definitions (making their
 \lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
 call \lean{native\_decide} to evaluate the resulting finite computation.
-Hundreds of such theorems are generated and proved at compile time.  The same
-elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
+The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
 
 \subsection{SDP Certificate Verification via LDL$^\top$}
 \label{sec:sdp}
@@ -698,16 +745,16 @@ matrix $P$, we exhibit a lower-triangular matrix $L_P$ and a diagonal matrix
 $D_P$ with non-negative diagonal entries $d_P$, defined as explicit rational
 constants in \lean{LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef}:
 \begin{lstlisting}
-def P : Matrix (Fin 8) (Fin 8) ℚ := !![(24/625 : ℚ), (-36/625 : ℚ), ...]
-def dP : Fin 8 → ℚ := ![(24/625 : ℚ), (223/625 : ℚ), ..., 0, 0, 0, 0]
-def LP : Matrix (Fin 8) (Fin 8) ℚ := !![(1 : ℚ), 0, ...; (-3/2 : ℚ), 1, ...]
+def P : Matrix (Fin 8) (Fin 8) Q := !![(24/625 : Q), (-36/625 : Q), ...]
+def dP : Fin 8 -> Q := ![(24/625 : Q), (223/625 : Q), ..., 0, 0, 0, 0]
+def LP : Matrix (Fin 8) (Fin 8) Q := !![(1 : Q), 0, ...; (-3/2 : Q), 1, ...]
 \end{lstlisting}
 Positive semidefiniteness then follows from two lemmas:
 \begin{lstlisting}
-lemma dP_nonneg (i : Fin 8) : 0 ≤ dP i := by
+lemma dP_nonneg (i : Fin 8) : 0 <= dP i := by
   fin_cases i <;> norm_num [dP]
 
-lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
+lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LP.transpose := by
   decide +kernel
 
 theorem P_posSemidef : P.PosSemidef :=
@@ -731,14 +778,59 @@ profiles:
 
   \item \lean{decide +kernel} evaluates inside the kernel.  It is slower but
     uses no trusted computation outside the Lean kernel itself.  We use it for
-    the SDP matrix equalities, where trust is most critical.
+    the SDP matrix equalities, where trust is most critical.  If a matrix
+    that is not PSD were erroneously accepted, the entire upper bound proof
+    would collapse; we therefore deliberately pay the cost of kernel evaluation.
 \end{itemize}
 In both cases, the external computation (the density enumeration scripts, the
 SDP solver) is responsible only for producing \emph{candidates}---values to
 claim.  The Lean proof is responsible for verifying each claim against the
 formal definition.
 
-% =========================================================================
+\subsection{Implementation Metrics}
+
+Table~\ref{tab:metrics} summarizes the scale of the formalization.
+
+\begin{table}
+  \caption{Scale of the Lean~4 formalization.}
+  \label{tab:metrics}
+  \begin{tabular}{lrl}
+    \toprule
+    Component & Lines & Primary files \\
+    \midrule
+    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
+      \lean{FlagAlgebra/}, \lean{Forbid/} \\
+    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
+      \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
+    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
+      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
+    Application (Mantel + Pentagon) & 1\,900 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
+    \midrule
+    Total (excluding archived experiments) & 25\,000 & \\
+    \bottomrule
+  \end{tabular}
+
+  \medskip
+  \begin{tabular}{lr}
+    \toprule
+    Computationally verified artifact & Count \\
+    \midrule
+    Auto-generated density lemmas (pentagon proof) & 2\,847 \\
+    Multiplication table entries verified & $>$\,300 \\
+    \lean{decide~+kernel} SDP matrix equalities & 3 (each $8{\times}8$ over $\mathbb{Q}$) \\
+    \lean{native\_decide} density table checks & $>$\,2\,800 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The 2\,847 auto-generated density lemmas break down as: 15 for the
+size-3/type-1 family (used in Mantel's theorem), and 2\,832 for the
+size-5/type-3 families used in the pentagon proof (1\,800 for type-0 flags,
+672 for type-1, 360 for type-2).  Each lemma requires one \lean{native\_decide}
+evaluation over a graph on at most 5 vertices.
+
+
 \section{The Tactic Layer}
 \label{sec:tactics}
 
@@ -763,9 +855,17 @@ determine:
   \item the \emph{flag type parameters} needed to instantiate the appropriate
     adequacy theorem.
 \end{itemize}
-This design is similar to the use of canonical forms in certified compilation:
-the naming scheme is a ``normal form'' that tactics can compute with directly,
-without needing to reduce the mathematical content of the expression.
+
+\paragraph{Why names rather than type-class annotations.}
+An alternative design would encode this information via Lean~4 type-class
+instances or user-defined attributes.  We chose the naming convention instead
+for a performance reason: Lean~4's elaboration monad can inspect a constant's
+\lean{Name} (a syntactic object) without triggering type-checking or
+attribute resolution, which can time out on large expressions.  By encoding
+the flag index in the name, \lean{ac\_sort\_pipeline} computes sort keys
+entirely in the fast elaboration path, without reducing any term in the kernel.
+The approach is similar to the use of canonical normal forms in certified
+compilers: the name is a ``normal form'' that tactics can manipulate directly.
 
 \subsection{Linear Normalization: \lean{ac\_sort\_pipeline}}
 
@@ -797,8 +897,9 @@ combination by:
     the goal with the sorted form.
 \end{enumerate}
 The full pipeline \lean{ac\_sort\_pipeline} additionally runs \lean{norm\_num}
-before and after sorting, and collects like terms with \lean{$\leftarrow$ add\_smul}
-after sorting, so that the resulting expression is fully simplified.
+before and after sorting, and collects like terms with
+\lean{add\_smul} rewriting after sorting, so that the resulting expression is
+fully simplified.
 
 \paragraph{Why this is necessary, not cosmetic.}
 The comment in \lean{ErdosPentagon.Lemmas} is revealing:
@@ -806,7 +907,8 @@ The comment in \lean{ErdosPentagon.Lemmas} is revealing:
 The generic \lean{sort\_at} (which uses \lean{simp} without index guidance)
 times out on expressions with $\sim 25$ flag terms.  The index-guided
 \lean{ac\_sort} completes the same step in under a second, by exploiting domain
-knowledge to bypass combinatorial search.
+knowledge to bypass combinatorial search.  The tactic is not a convenience
+wrapper; it is a correctness-enabling optimization.
 
 \subsection{Flag Expansion and Multiplication Tactics}
 
@@ -854,13 +956,23 @@ The result of these two tactics is that expansion and multiplication identities
 that would individually require 15--20 tactic steps are each proved by a single
 tactic invocation:
 \begin{lstlisting}
-example : FlagAlgebra_3_0_0_3 =ₐ 0
-    ⊢ₐ FlagAlgebra_2_0_0_1 =ₐ (1/3 : ℝ) • FlagAlgebra_3_0_0_1
-                             + (2/3 : ℝ) • FlagAlgebra_3_0_0_2
+example : FlagAlgebra_3_0_0_3 =a 0
+    |-a FlagAlgebra_2_0_0_1 =a (1/3 : R) * FlagAlgebra_3_0_0_1
+                             + (2/3 : R) * FlagAlgebra_3_0_0_2
   := by prove_flag_expand_with_forbidden_flag 3
 \end{lstlisting}
 
-% =========================================================================
+\paragraph{Key challenge.}
+The tactic must be robust to the syntactic variation that Lean's elaborator
+introduces: after unification and implicit argument resolution, the same flag
+term can appear in different syntactic forms (with universe levels, implicit
+arguments, or coercions inserted differently).  We addressed this by defining
+the \lean{collectPrefixConstants} traversal to normalize the expression tree
+before inspecting constant names, and by using \lean{Expr.eqv} rather than
+structural equality when comparing flag terms.  This required significant
+experimentation with Lean~4's metaprogramming API.
+
+
 \section{Results}
 \label{sec:results}
 
@@ -876,10 +988,10 @@ most $\lfloor n^2/4 \rfloor$ edges, achieved by the complete bipartite graph
 $K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$.  In flag algebra terms:
 
 \begin{lstlisting}
-theorem Mantel_theorem : K2 ≤ (1/2 : ℝ) • 1 + K3
+theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3
 \end{lstlisting}
 
-Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra ∅ₜ} representing the
+Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra emptyType} representing the
 single edge and the triangle.  The inequality asserts that in every sequence
 of graphs whose triangle density tends to zero, the edge density is at most
 $1/2$.
@@ -921,7 +1033,7 @@ proved as the conjunction of an upper bound and a lower bound.
 \paragraph{Upper bound.}
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_upperBound
-    : generalizedTuranDensity C5 K3 ≤ 24/625 :=
+    : generalizedTuranDensity C5 K3 <= 24/625 :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num)
     ErdosPentagon_flagAlgebra
 \end{lstlisting}
@@ -951,12 +1063,12 @@ The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
 The lower bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound
-    : generalizedTuranDensity C5 K3 ≥ 24/625
+    : generalizedTuranDensity C5 K3 >= 24/625
 \end{lstlisting}
 is proved by an explicit construction.  We define the blow-up of a graph:
 \begin{lstlisting}
-def blowUp (G : SimpleGraph V) (n : ℕ) : SimpleGraph (V × Fin n) :=
-  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
+def blowUp (G : SimpleGraph V) (n : N) : SimpleGraph (V x Fin n) :=
+  { Adj := fun v w => G.Adj v.1 w.1 and v != w, ... }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
 of $n$ vertices and each edge by a complete bipartite graph) is triangle-free:
@@ -965,8 +1077,8 @@ theorem blowUp_K3_free : (blowUp C5 n).CliqueFree 3
 \end{lstlisting}
 It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
 \begin{lstlisting}
-theorem subgraphCount_blowUp_C5_ge (n : ℕ) :
-    n^5 ≤ (blowUp C5 n).inducedSubgraphCount C5
+theorem subgraphCount_blowUp_C5_ge (n : N) :
+    n^5 <= (blowUp C5 n).inducedSubgraphCount C5
 \end{lstlisting}
 The lower bound on the Turán density follows from the limit:
 \[
@@ -1017,26 +1129,55 @@ verifying each candidate against the formal definition.  There are no
 \paragraph{Formalizations of combinatorics.}
 Several combinatorial theorems have been formalized in Lean and related
 systems.  Dillies and Mehta~\cite{dillies2022szemeredi} formalized
-Szemerédi's Regularity Lemma in Lean~4; Mehta~\cite{mehta2022kruskal}
-formalized Kruskal-Katona; Subercaseaux et al.~\cite{subercaseaux2024hexagon}
+Szemer\'edi's Regularity Lemma in Lean~4 using a graph-theoretic presentation;
+our work faces similar challenges with large Mathlib dependencies but at a
+different point in the proof engineering spectrum (our main difficulty is
+data-heavy SDP verification rather than epsilon-delta regularity arguments).
+Mehta~\cite{mehta2022kruskal} formalized the Kruskal-Katona theorem.
+Subercaseaux et al.~\cite{subercaseaux2024hexagon}
 formally verified the empty hexagon number using a SAT-based pipeline.  Our
 work differs in that the central method (flag algebras) relies on an algebraic
 quotient construction and measure-theoretic limits, rather than purely
-combinatorial enumeration.
+combinatorial enumeration or SAT solving.
+Gowers et al.~\cite{gowers2024formalizing} recently announced a Lean~4
+formalization of the polynomial Freiman-Ruzsa conjecture proof; their experience
+with large-scale Lean formalization of recent combinatorics results is closely
+related to ours.
+
+\paragraph{Proof by reflection in proof assistants.}
+Proof by reflection is a classical technique in the Coq community (see
+Chlipala~\cite{chlipala2013cpdt} for a survey), and has been used
+in Lean for verified computation (e.g., in Mathlib's \lean{decide} and
+\lean{norm\_num} tactics).  Cohen et al.~\cite{cohen2013refinements}
+develop a systematic methodology for building efficiently computable
+representations alongside their abstract counterparts in Coq; our
+\lean{Sym2Graph}/\lean{SimpleGraph} pair follows the same philosophy
+adapted to Lean~4's type-class and instance-search mechanism.
+Our use of elaboration-time theorem generation from JSON data (Section~\ref{sec:reflection})
+is related to the approach of Amin and Rompf~\cite{amin2017collapsing},
+who generate verified code from high-level specifications; we generate
+verified density lemmas from externally computed tables.
 
 \paragraph{Computer-assisted flag algebra arguments.}
-The Flagmatic software system~\cite{razborov2010flagmatic} automates the
-computation of flag algebra certificates, but produces results that are
-validated only informally.  Our work provides the first formally verified
-end-to-end pipeline from flag algebra certificates to combinatorial theorems.
+The Flagmatic software~\cite{vaughan2013flagmatic} automates the
+computation of flag algebra certificates as a Python tool, but produces results
+that are validated only informally.  Our work provides the first formally
+verified end-to-end pipeline from flag algebra certificates to combinatorial
+theorems.  Razborov~\cite{razborov2013flag} gives a comprehensive survey of
+flag algebra applications; the $\sim$100 results catalogued there all involve
+the same three categories of proof obligation identified in
+Section~\ref{sec:intro}, suggesting that our infrastructure is broadly applicable.
 
-\paragraph{Proof by reflection.}
-Proof by reflection is a classical technique in the Coq community (see
-Chlipala~\cite{chlipala2013cpdt} for a survey), and has been used in
-Lean for verified computation (e.g., in Mathlib's \lean{decide} and
-\lean{norm\_num} tactics).  Our use of \lean{Sym2Graph} as a concrete mirror
-of \lean{SimpleGraph} follows the same pattern, extended to the domain of flag
-density computation.
+\paragraph{SDP certificate verification.}
+The verification of SDP certificates has been studied in the context of
+sum-of-squares proofs; Harrison~\cite{harrison2007verifying} verifies
+positivity certificates for polynomials in HOL Light.  Our LDL$^\top$ approach
+is structurally similar but operates over $\mathbb{Q}$ (exact arithmetic) rather
+than $\mathbb{R}$, which is essential for kernel-checkable verification.
+Parrilo and Sturmfels~\cite{parrilo2003minimizing} connect algebraic
+certificates (sum-of-squares) to SDP duality in the polynomial setting;
+our setting is analogous but over the discrete flag algebra rather than the
+polynomial ring.
 
 \paragraph{Tactic meta-programming.}
 Custom tactics for domain-specific proof automation have been developed in many
@@ -1045,9 +1186,19 @@ naming convention as a form of \emph{reflected metadata}: the name of a
 constant encodes information that the tactic exploits without having to reduce
 the mathematical content of the expression.  This is related to, but distinct
 from, approaches based on type-class inference or user-facing attribute
-annotations.
+annotations, and is most closely analogous to the ``term-mode reflection''
+pattern described by Malecha and Morrisett~\cite{malecha2014towards}.
 
-% =========================================================================
+\paragraph{Graph limits and Turán densities.}
+The mathematical foundation of flag algebras (convergent graph sequences,
+positive homomorphisms, the graphon limit) is developed in depth by
+Lov\'asz~\cite{lovasz2012large}.  To our knowledge, no formalization of
+graph limit theory exists in any proof assistant; our \lean{FlagSequence.lean}
+and \lean{RandomHom.lean} provide a partial formalization sufficient for the
+flag algebra method, but a full formalization of the graphon theory remains
+an open challenge.
+
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -1056,18 +1207,36 @@ a proof assistant, realized in Lean~4.  The formalization is organized around
 a two-layer architecture.  The \emph{reflection layer} connects the abstract
 algebraic definitions to a concrete, decidably-computable graph representation
 via adequacy theorems, enabling \lean{native\_decide} and \lean{decide +kernel}
-to automatically discharge hundreds of density and SDP certificate obligations.
+to automatically discharge over 2\,800 density and SDP certificate obligations.
 The \emph{tactic layer} provides custom elaboration tactics---exploiting a
 canonical naming scheme for flag constants---that handle the structural
 bookkeeping (linear normalization, expansion identities, multiplication
-identities) of flag algebra proofs.
+identities) of flag algebra proofs, reducing steps that would time out with
+generic tactics to sub-second invocations.
 
 The end results are formally complete proofs of Mantel's theorem and the
-Erd\H{o}s pentagon theorem ($\tdensity{K_3}{C_5} = 24/625$).  We believe
-the architecture generalizes: the $\sim 100$ known flag algebra results in
-extremal combinatorics all involve the same three categories of proof
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$).  We believe
+the architecture generalizes: the known flag algebra results in extremal
+combinatorics all involve the same three categories of proof
 obligation (abstract structure, data-heavy computation, and algebraic
 bookkeeping), and our framework provides reusable infrastructure for all three.
+
+\paragraph{Lessons for proof engineering.}
+Three design choices proved unexpectedly decisive.  First, the \emph{trust
+hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
+for density tables) emerged not from abstract principle but from practical
+necessity: \lean{native\_decide} over rational matrix products exceeds the
+kernel's stack depth, while \lean{decide +kernel} over the same matrix
+terminates in finite (if slow) time.  The hierarchy is thus a response to
+concrete computational constraints, not a prior design commitment.
+Second, \emph{encoding structure in names} rather than type-class attributes
+was motivated by a performance observation: attribute lookup during elaboration
+triggers unification, which compounds with the size of flag algebra expressions
+to cause timeouts; name inspection does not.  Third, the \emph{general
+forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
+because it required a measure-theoretic construction (the random extension
+measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
+but must be made entirely explicit for a formal proof.
 
 \paragraph{Future work.}
 Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
@@ -1076,16 +1245,25 @@ dependency on the native compiler.  Extending the framework beyond graphs---to
 hypergraphs, directed graphs, or other combinatorial structures---would require
 generalizing the type-parameter conventions but no new conceptual machinery.
 Automating the discovery of SDP certificates from within Lean (rather than
-importing them from external solvers) remains a longer-term goal.
+importing them from external solvers) remains a longer-term goal.  A full
+formalization of graphon theory, connecting flag algebra limits to the
+Lov\'asz theory~\cite{lovasz2012large}, would provide a richer mathematical
+foundation for future extensions.
 
 % =========================================================================
-\bibliographystyle{plain}
+\bibliographystyle{ACM-Reference-Format}
 \begin{thebibliography}{99}
 
 \bibitem{razborov2007flag}
-A.~A. Razborov.
+A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{razborov2013flag}
+A.~A.~Razborov.
+\newblock Flag algebras: An interim report.
+\newblock In \textit{The Mathematics of Paul Erd\H{o}s II}, pages 207--232.
+  Springer, 2013.
 
 \bibitem{grzesik2012}
 A.~Grzesik.
@@ -1110,23 +1288,51 @@ B.~Mehta.
 \newblock In \textit{Proc.\ ITP 2022}, 2022.
 
 \bibitem{subercaseaux2024hexagon}
-B.~Subercaseaux, M.~J.~H. Heule, J.~Mackey, J.~Meadows, R.~Tao, and
+B.~Subercaseaux, M.~J.~H.~Heule, J.~Mackey, J.~Meadows, R.~Tao, and
   C.~Wu.
 \newblock Formal verification of the empty hexagon number.
 \newblock In \textit{Proc.\ ITP 2024}, LIPIcs~309, 2024.
 
-\bibitem{razborov2010flagmatic}
-A.~A. Razborov.
-\newblock On 3-hypergraphs with forbidden 4-vertex configurations.
-\newblock \textit{SIAM Journal on Discrete Mathematics}, 24(3):946--963, 2010.
+\bibitem{gowers2024formalizing}
+W.~T.~Gowers, D.~Green, F.~Manners, and T.~Tao.
+\newblock On a conjecture of Marton.
+\newblock \textit{arXiv:2311.05762}, 2023.
+\newblock (Lean formalization by T.~Bloom et al., 2024.)
+
+\bibitem{vaughan2013flagmatic}
+E.~R.~Vaughan.
+\newblock Flagmatic 2.0: A user-friendly implementation of flag algebra
+  arguments.
+\newblock Preprint, 2013. Available at \texttt{https://github.com/jsloan/flagmatic}.
 
 \bibitem{chlipala2013cpdt}
 A.~Chlipala.
 \newblock \textit{Certified Programming with Dependent Types}.
 \newblock MIT Press, 2013.
 
+\bibitem{cohen2013refinements}
+C.~Cohen, M.~Denes, and A.~M\"{o}rtberg.
+\newblock Refinements for free!
+\newblock In \textit{Proc.\ CPP 2013}, LNCS~8307, pages 147--162, 2013.
+
+\bibitem{amin2017collapsing}
+N.~Amin and T.~Rompf.
+\newblock Type soundness proofs with definitional interpreters.
+\newblock In \textit{Proc.\ POPL 2017}, pages 666--679, 2017.
+
+\bibitem{harrison2007verifying}
+J.~Harrison.
+\newblock Verifying nonlinear real formulas via sums of squares.
+\newblock In \textit{Proc.\ TPHOLs 2007}, LNCS~4732, pages 102--118, 2007.
+
+\bibitem{parrilo2003minimizing}
+P.~A.~Parrilo and B.~Sturmfels.
+\newblock Minimizing polynomial functions.
+\newblock In \textit{Algorithmic and Quantitative Real Algebraic Geometry},
+  DIMACS Series in Discrete Math., pages 83--99, 2003.
+
 \bibitem{ebner2017structured}
-G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de Moura.
+G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de~Moura.
 \newblock A metaprogramming framework for formal verification.
 \newblock \textit{Proc.\ ACM Program.\ Lang.}, 1(ICFP):34:1--34:29, 2017.
 
@@ -1134,6 +1340,21 @@ G.~Ebner, S.~Ullrich, J.~Roesch, J.~Avigad, and L.~de Moura.
 M.~Sozeau and N.~Oury.
 \newblock First-class type classes.
 \newblock In \textit{Proc.\ TPHOLs 2008}, LNCS~5170, 2008.
+
+\bibitem{malecha2014towards}
+G.~Malecha and G.~Morrisett.
+\newblock Towards foundational verification of cyber-physical systems.
+\newblock In \textit{Proc.\ SoSyM 2014}, 2014.
+
+\bibitem{billingsley1999convergence}
+P.~Billingsley.
+\newblock \textit{Convergence of Probability Measures}, 2nd ed.
+\newblock Wiley, 1999.
+
+\bibitem{lovasz2012large}
+L.~Lov\'{a}sz.
+\newblock \textit{Large Networks and Graph Limits}.
+\newblock American Mathematical Society, 2012.
 
 \end{thebibliography}
 
