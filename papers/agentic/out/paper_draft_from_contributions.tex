@@ -345,6 +345,23 @@ induces a copy of $F$ in $G$ compatible with the type.  Explicitly:
 This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
 
+\begin{example}[A rooted pentagon density]
+  Let $\sigma$ be the one-vertex type, and let $E^\bullet$ be the
+  $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
+  the labeled one.  Let $\overline{E}^{\bullet}$ be the corresponding
+  non-edge flag.  Now root a copy of $C_5$ at one of its vertices.  Among the
+  four non-root vertices, exactly two are neighbors of the root.  Hence
+  \[
+    \den{E^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
+    \qquad
+    \den{\overline{E}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
+  \]
+  This tiny example captures the reason flags are useful: a flag remembers
+  the local view from a labeled configuration.  The same unrooted pentagon can
+  be queried from the perspective of a distinguished vertex, and the algebra
+  records those conditional densities as first-class objects.
+\end{example}
+
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
 flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
@@ -383,6 +400,31 @@ their product at size $\ell \geq m_1 + m_2 - k$ is
 This is well-defined on the quotient (independent of $\ell$) and makes
 $\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
 with unit $[\text{type graph } \sigma]$.
+
+\begin{example}[The edge expansion behind Mantel's theorem]
+  The simplest useful zero-space relation expands the untyped edge $K_2$ at
+  size $3$.  There are four unlabeled graphs on three vertices: the empty
+  graph, the one-edge graph, the two-edge path, and the triangle.  If an
+  edge is sampled uniformly from the three possible vertex pairs, its density
+  in these graphs is respectively
+  \[
+    0,\qquad \frac13,\qquad \frac23,\qquad 1.
+  \]
+  Thus the quotient identifies
+  \[
+    K_2
+    \;=\;
+    \frac13\,G_{\text{one-edge}}
+    + \frac23\,G_{\text{path}}
+    + G_{\triangle}
+    \qquad\text{in } \mathcal{A}^{\emptyset}.
+  \]
+  In the Mantel proof, the triangle term is then eliminated under the
+  $K_3$-free hypothesis.  This is exactly the kind of elementary
+  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
+  the coefficients are simple, but there are hundreds of such coefficients
+  and they must all line up syntactically inside Lean.
+\end{example}
 
 \subsection{The Downward Operator and Semantic Non-Negativity}
 
@@ -988,6 +1030,25 @@ comparison is performed.  This matters because the density table contains
 thousands of such checks, and each failed isomorphism search appears inside a
 larger density computation.
 
+\begin{example}[Why typed flags change the search space]
+  Consider a pentagon-proof flag with five vertices and a three-vertex type.
+  A flag isomorphism cannot send a labeled vertex somewhere convenient; it must
+  send the first labeled vertex to the first labeled vertex, the second to the
+  second, and the third to the third, because it must commute with the type
+  embedding.  The only freedom is what to do with the two remaining vertices.
+  The generic graph-isomorphism view still starts from $5! = 120$ possible
+  vertex permutations.  The typed checker starts from the two-element list of
+  non-type vertices and considers only $2! = 2$ permutations.
+
+  This reduction looks small because the graphs have only five vertices, but
+  it is multiplied by the structure of the density calculation: the checker is
+  invoked while enumerating subgraphs, comparing candidate representatives,
+  and proving thousands of generated density lemmas.  A constant-factor
+  improvement at the graph level becomes the difference between an evaluator
+  that feels like a decision procedure and one that feels like a stuck proof
+  search.
+\end{example}
+
 \paragraph{Optimization 3: verified replacement of generic instances.}
 The optimized Boolean checkers are not trusted oracles.  They come with both
 directions of correctness, for example
@@ -1002,6 +1063,19 @@ quotient setoid; only the implementation of the decision procedure has changed.
 This is the same separation of specification and implementation that one
 expects from verified decision procedures in PL, but applied to graph
 isomorphism inside a formalization of extremal combinatorics.
+
+\begin{example}[A failed table entry fails as a theorem]
+  Suppose the JSON table accidentally states that a certain density is
+  $3/10$ when the reflected computation gives $2/5$.  The loader will still
+  generate the theorem statement requested by the table, but after unfolding
+  the relevant flags and rewriting by the adequacy theorem, the goal becomes
+  the decidable proposition $2/5 = 3/10$.  At that point
+  \lean{native\_decide} fails.  The table is therefore not a trusted proof
+  artifact; it is closer to a test vector that Lean checks against the
+  specification.  This is a useful distinction for large computer-assisted
+  proofs: external computation proposes facts, but the proof assistant accepts
+  only those facts that its verified evaluator can reproduce.
+\end{example}
 
 \paragraph{Optimization 4: compute over data, prove equivalence once.}
 The density computation itself is similarly compiled.  Rather than enumerate
@@ -1225,6 +1299,18 @@ entirely in the fast elaboration path, without reducing any term in the kernel.
 The approach is similar to the use of canonical normal forms in certified
 compilers: the name is a ``normal form'' that tactics can manipulate directly.
 
+\begin{example}[A name as a tiny certificate]
+  The name \lean{FlagAlgebra\_3\_0\_0\_2} is not just a human mnemonic.  It says
+  that the term is an untyped flag-algebra basis element (\lean{k = 0}), living
+  at size $3$, with canonical index $2$ among the generated representatives.
+  A tactic that sees this constant already knows where it belongs in the
+  normal order of a sum, which generated expansion lemma to try, and which
+  multiplication-table entry can mention it.  In other words, the name carries
+  the same kind of lightweight metadata that a compiler might attach to an
+  intermediate-language node.  The difference is that here the metadata is
+  available to the Lean elaborator without any type-class search.
+\end{example}
+
 \subsection{Linear Normalization: \lean{ac\_sort\_pipeline}}
 
 \paragraph{The problem.}
@@ -1319,6 +1405,16 @@ example : FlagAlgebra_3_0_0_3 =a 0
                              + (2/3 : R) * FlagAlgebra_3_0_0_2
   := by prove_flag_expand_with_forbidden_flag 3
 \end{lstlisting}
+
+This example is the Mantel expansion above in executable clothing.  The goal
+says: assuming the triangle flag \lean{FlagAlgebra\_3\_0\_0\_3} has value zero,
+prove that the edge flag expands as a weighted sum of the one-edge and
+two-edge three-vertex graphs.  The human proof is a one-line counting argument:
+among the three vertex pairs, the one-edge graph contains one edge and the
+two-edge path contains two.  The Lean proof has to find the right generated
+expansion lemma, instantiate it at size $3$, remove the forbidden triangle
+term, and normalize scalar arithmetic.  The point of the tactic is to make the
+formal proof resemble the human explanation again.
 
 \paragraph{Key challenge.}
 The tactic must be robust to the syntactic variation that Lean's elaborator
