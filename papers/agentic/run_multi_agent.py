@@ -97,6 +97,12 @@ def parse_args() -> argparse.Namespace:
         default="copilot-queue",
         help="copilot-queue: generate task files for Copilot chat workflow, api: run external API calls.",
     )
+    parser.add_argument(
+        "--mode",
+        choices=["draft", "revision"],
+        default="draft",
+        help="draft: generate/improve section drafts. revision: address author feedback on the existing draft.",
+    )
     return parser.parse_args()
 
 
@@ -132,6 +138,38 @@ def parse_json_block(text: str) -> dict[str, Any] | None:
 
 def section_to_filename(section: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "_", section).strip("_").lower()
+
+
+def _strip_markdown_comments(text: str) -> str:
+    """Remove HTML comment blocks (<!-- ... -->) and return remaining text."""
+    return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL).strip()
+
+
+def load_feedback(root: Path, config: dict[str, Any], section: str) -> str:
+    """Load global feedback file + per-section feedback file and merge them.
+
+    HTML comment blocks are stripped so template-only files produce no feedback.
+    """
+    parts: list[str] = []
+
+    global_path_str = config.get("feedback_file", "")
+    if global_path_str:
+        p = root / global_path_str
+        if p.exists():
+            text = _strip_markdown_comments(read_text(p))
+            if text:
+                parts.append(f"## Global Feedback\n{text}")
+
+    feedback_dir_str = config.get("feedback_dir", "")
+    if feedback_dir_str:
+        section_safe = section_to_filename(section)
+        p = root / feedback_dir_str / f"{section_safe}.md"
+        if p.exists():
+            text = _strip_markdown_comments(read_text(p))
+            if text:
+                parts.append(f"## Section-Specific Feedback ({section})\n{text}")
+
+    return "\n\n".join(parts)
 
 
 def render_evidence_list(units: list[EvidenceUnit], limit: int) -> str:
@@ -275,6 +313,7 @@ def build_common_context(
     global_instructions: list[str],
     exemplar_paths: list[str],
     section: str,
+    feedback: str = "",
 ) -> str:
     section_instructions = config.get("section_instructions", {}).get(section, [])
     global_block = "\n".join(f"- {x}" for x in global_instructions) or "- (none)"
@@ -298,7 +337,7 @@ def build_common_context(
     eq_source_block = "\n".join(f"- {x}" for x in eq_sources) or "- (none)"
     blueprint_block = render_section_blueprint(config, section)
 
-    return (
+    base = (
         f"Project: {config['project_name']}\n"
         f"Target Section: {section}\n\n"
         f"Depth Target:\n- {section_depth_target(section)}\n\n"
@@ -311,6 +350,15 @@ def build_common_context(
         f"Global Instructions:\n{global_block}\n\n"
         f"Section-Specific Instructions:\n{section_block}\n"
     )
+    if feedback.strip():
+        base += (
+            "\n=== REVISION MODE: Feedback to Address ===\n"
+            "Each point below MUST be addressed. Do not silently skip any.\n"
+            "Produce a concrete fix for each point, not just an acknowledgement.\n\n"
+            + feedback.strip()
+            + "\n=== END FEEDBACK ===\n"
+        )
+    return base
 
 
 def generate_copilot_task_pack(
@@ -322,6 +370,8 @@ def generate_copilot_task_pack(
     evidence_rendered: str,
     selected_rendered: str,
     ref_section_body: str = "",
+    mode: str = "draft",
+    feedback: str = "",
 ) -> None:
     # Build the reference draft block included in writer and verifier tasks.
     if ref_section_body:
@@ -343,13 +393,41 @@ def generate_copilot_task_pack(
             "Write explicit transitions, motivation, and technical substance.\n"
         )
 
+    if mode == "revision":
+        planner_action = (
+            "Address each feedback point listed in 'Feedback to Address' above.\n"
+            "For each point, state the exact change to make. Do not silently ignore any point.\n"
+            "Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).\n"
+        )
+        planner_json_fields = (
+            '  "writing_goal": "...",\n'
+            '  "subsection_plan": ["..."],\n'
+            '  "claim_plan": ["..."],\n'
+            '  "evidence_needs": ["..."],\n'
+            '  "gaps_in_reference_draft": ["..."],\n'
+            '  "risk_checks": ["..."],\n'
+            '  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}\n'
+        )
+    else:
+        planner_action = (
+            "Produce a publication-grade improvement plan (not a terse outline).\n"
+            + ("If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.\n" if ref_section_body else "")
+        )
+        planner_json_fields = (
+            '  "writing_goal": "...",\n'
+            '  "subsection_plan": ["..."],\n'
+            '  "claim_plan": ["..."],\n'
+            '  "evidence_needs": ["..."],\n'
+            '  "gaps_in_reference_draft": ["..."],\n'
+            '  "risk_checks": ["..."]\n'
+        )
+
     planner_task = (
         "# Planner Task\n\n"
         + common_context
         + "\n"
         + ref_block
-        + "Produce a publication-grade improvement plan (not a terse outline).\n"
-        + ("If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.\n" if ref_section_body else "")
+        + planner_action
         + "The plan must enforce the same quality bar as exemplar formalization papers.\n\n"
         + "Hard gate: fail the plan if any Section Blueprint item is missing.\n"
         + "For formula-heavy sections, equation choices must be sourced from the listed Equation Source PDFs.\n\n"
@@ -358,12 +436,7 @@ def generate_copilot_task_pack(
         + "\n\n"
         + "Output format (JSON only):\n"
         + "{\n"
-        + '  "writing_goal": "...",\n'
-        + '  "subsection_plan": ["..."],\n'
-        + '  "claim_plan": ["..."],\n'
-        + '  "evidence_needs": ["..."],\n'
-        + '  "gaps_in_reference_draft": ["..."],\n'
-        + '  "risk_checks": ["..."]\n'
+        + planner_json_fields
         + "}\n"
     )
 
@@ -399,6 +472,14 @@ def generate_copilot_task_pack(
         + "Save output as writer_output.md.\n"
     )
 
+    verifier_feedback_check = ""
+    if mode == "revision" and feedback.strip():
+        verifier_feedback_check = (
+            "Feedback Checklist (verify BEFORE returning output):\n"
+            "For each feedback point in 'Feedback to Address' above, confirm the revised text addresses it.\n"
+            "If any point is unaddressed, fix it now before returning.\n\n"
+        )
+
     verifier_task = (
         "# Verifier Task\n\n"
         + common_context
@@ -408,6 +489,7 @@ def generate_copilot_task_pack(
         + selected_rendered
         + "\n\n"
         + ref_block
+        + verifier_feedback_check
         + "Revise to remove unsupported claims and strengthen evidence alignment.\n"
         + "If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.\n"
         + "Hard gate: reject output if Section Blueprint constraints are not satisfied.\n"
@@ -429,6 +511,26 @@ def generate_copilot_task_pack(
     (section_log_dir / "writer_task.md").write_text(writer_task, encoding="utf-8")
     (section_log_dir / "verifier_task.md").write_text(verifier_task, encoding="utf-8")
     (section_log_dir / "apply_task.md").write_text(apply_task, encoding="utf-8")
+
+    if mode == "revision" and feedback.strip():
+        revision_judge_task = (
+            "# Revision Judge Task\n\n"
+            + common_context
+            + "\n"
+            + "Read verifier_output.md first.\n\n"
+            + "For EACH feedback point listed in 'Feedback to Address' above:\n"
+            + "1. Was it addressed? (yes/no)\n"
+            + "2. How? (cite the specific change or new sentence added)\n"
+            + "3. If not addressed, what specific revision is still needed?\n\n"
+            + "Output format (JSON only):\n"
+            + "{\n"
+            + '  "feedback_checks": [{"point": "...", "addressed": true, "how": "...", "missing": "..."}],\n'
+            + '  "overall_addressed": true,\n'
+            + '  "retry_required": false,\n'
+            + '  "retry_instructions": "..."\n'
+            + "}\n"
+        )
+        (section_log_dir / "revision_judge_task.md").write_text(revision_judge_task, encoding="utf-8")
 
 
 def judge_verifier_alignment(
@@ -478,6 +580,58 @@ def judge_verifier_alignment(
         "retry_required": False,
         "reason": "Judge output was not valid JSON; fallback to no retry.",
         "focus_points": [],
+    }
+
+
+def judge_revision_feedback(
+    *,
+    feedback_text: str,
+    verifier_out: str,
+    llm_cfg: dict[str, Any],
+    dry_run: bool,
+) -> dict[str, Any]:
+    """Check whether each feedback point was addressed in the verifier output."""
+    if dry_run:
+        return {
+            "overall_addressed": True,
+            "retry_required": False,
+            "reason": "Dry-run mode skips revision judge.",
+            "feedback_checks": [],
+        }
+
+    judge_user = (
+        "Feedback that must be addressed:\n"
+        + feedback_text
+        + "\n\nRevised section (verifier output):\n"
+        + verifier_out
+        + "\n\n"
+        + "For EACH feedback point, check whether it was concretely addressed in the revised text.\n"
+        + "Return strict JSON with keys: "
+        + "feedback_checks (list of {point, addressed (bool), how, missing}), "
+        + "overall_addressed (bool), retry_required (bool), reason (string), retry_instructions (string). "
+        + "Set retry_required=true if any critical feedback point was not addressed."
+    )
+
+    judge_out = ask_agent(
+        role_name="RevisionJudge",
+        system_prompt=(
+            "You are a strict revision judge. "
+            "Check whether each feedback point was concretely addressed in the revised text. "
+            "Unaddressed points must trigger retry_required=true. "
+            "Return only valid JSON."
+        ),
+        user_prompt=judge_user,
+        llm_cfg=llm_cfg,
+        dry_run=dry_run,
+    )
+    parsed = parse_json_block(judge_out)
+    if isinstance(parsed, dict):
+        return parsed
+    return {
+        "overall_addressed": False,
+        "retry_required": False,
+        "reason": "RevisionJudge output was not valid JSON; fallback to no retry.",
+        "feedback_checks": [],
     }
 
 
@@ -565,6 +719,7 @@ def run() -> None:
 
     current_tex = read_text(draft_output_path)
     execution_mode = args.execution_mode
+    mode = args.mode
     queue_manifest: list[dict[str, str]] = []
 
     for section in sections:
@@ -590,6 +745,7 @@ def run() -> None:
         evidence_rendered = render_evidence_list(
             evidence_units, max_evidence_per_section
         )
+        feedback = load_feedback(root, config, section)
         common_context = build_common_context(
             config=config,
             considerations=considerations,
@@ -597,6 +753,7 @@ def run() -> None:
             global_instructions=global_instructions,
             exemplar_paths=exemplar_paths,
             section=section,
+            feedback=feedback,
         )
 
         if execution_mode == "copilot-queue":
@@ -612,26 +769,41 @@ def run() -> None:
                 evidence_rendered=evidence_rendered,
                 selected_rendered=selected_rendered,
                 ref_section_body=ref_section_body,
+                mode=mode,
+                feedback=feedback,
             )
-            queue_manifest.append(
-                {
-                    "section": section,
-                    "task_dir": str(section_log_dir),
-                    "planner_task": str(section_log_dir / "planner_task.md"),
-                    "retriever_task": str(section_log_dir / "retriever_task.md"),
-                    "writer_task": str(section_log_dir / "writer_task.md"),
-                    "verifier_task": str(section_log_dir / "verifier_task.md"),
-                    "apply_task": str(section_log_dir / "apply_task.md"),
-                }
-            )
+            manifest_entry: dict[str, str] = {
+                "section": section,
+                "task_dir": str(section_log_dir),
+                "planner_task": str(section_log_dir / "planner_task.md"),
+                "retriever_task": str(section_log_dir / "retriever_task.md"),
+                "writer_task": str(section_log_dir / "writer_task.md"),
+                "verifier_task": str(section_log_dir / "verifier_task.md"),
+                "apply_task": str(section_log_dir / "apply_task.md"),
+            }
+            if mode == "revision" and feedback.strip():
+                manifest_entry["revision_judge_task"] = str(
+                    section_log_dir / "revision_judge_task.md"
+                )
+            queue_manifest.append(manifest_entry)
             continue
+
+        if mode == "revision":
+            planner_keys = "writing_goal, subsection_plan, claim_plan, evidence_needs, risk_checks, feedback_plan"
+            planner_instruction = (
+                "Address each feedback point in 'Feedback to Address' above. "
+                "For each point, state the exact change to make. Do not draft prose yet."
+            )
+        else:
+            planner_keys = "writing_goal, subsection_plan, claim_plan, evidence_needs, risk_checks"
+            planner_instruction = "Do not draft prose yet."
 
         planner_user = (
             common_context
             + "\n"
-            + "Return JSON with keys: writing_goal, subsection_plan, claim_plan, evidence_needs, risk_checks.\n"
+            + f"Return JSON with keys: {planner_keys}.\n"
             + f"Section: {section}\n"
-            + "Do not draft prose yet."
+            + planner_instruction
         )
         planner_out = ask_agent(
             role_name="Planner",
@@ -806,6 +978,71 @@ def run() -> None:
             )
             retry_required = bool(judge_result.get("retry_required", False))
 
+        if mode == "revision" and feedback.strip():
+            revision_judge_result = judge_revision_feedback(
+                feedback_text=feedback,
+                verifier_out=verifier_out,
+                llm_cfg=llm_cfg,
+                dry_run=args.dry_run,
+            )
+            (section_log_dir / "revision_judge.json").write_text(
+                json.dumps(revision_judge_result, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            rev_retry_required = bool(revision_judge_result.get("retry_required", False))
+            rev_retry_count = 0
+            while rev_retry_required and rev_retry_count < max_verifier_retries:
+                rev_retry_count += 1
+                unaddressed = [
+                    c for c in revision_judge_result.get("feedback_checks", [])
+                    if not c.get("addressed", True)
+                ]
+                unaddressed_block = (
+                    "\n".join(
+                        f"- {c.get('point', '')}: {c.get('missing', '')}"
+                        for c in unaddressed
+                    )
+                    or "- Ensure all feedback points are concretely addressed."
+                )
+                retry_instructions = revision_judge_result.get("retry_instructions", "")
+                verifier_rev_retry_user = (
+                    common_context
+                    + "\n"
+                    + "Selected evidence:\n"
+                    + selected_rendered
+                    + "\n\n"
+                    + "Previous output:\n"
+                    + verifier_out
+                    + "\n\n"
+                    + "Unaddressed feedback points:\n"
+                    + unaddressed_block
+                    + "\n\n"
+                    + (f"Retry instructions: {retry_instructions}\n\n" if retry_instructions else "")
+                    + "Rewrite to address ALL unaddressed feedback points. "
+                    + "Return only final LaTeX section body without markdown fences and without \\section{...}."
+                )
+                verifier_out = ask_agent(
+                    role_name=f"RevisionRetry{rev_retry_count}",
+                    system_prompt=system_prompt,
+                    user_prompt=verifier_rev_retry_user,
+                    llm_cfg=llm_cfg,
+                    dry_run=args.dry_run,
+                )
+                (section_log_dir / f"revision_retry_{rev_retry_count}.md").write_text(
+                    verifier_out, encoding="utf-8"
+                )
+                revision_judge_result = judge_revision_feedback(
+                    feedback_text=feedback,
+                    verifier_out=verifier_out,
+                    llm_cfg=llm_cfg,
+                    dry_run=args.dry_run,
+                )
+                (section_log_dir / f"revision_judge_retry_{rev_retry_count}.json").write_text(
+                    json.dumps(revision_judge_result, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+                rev_retry_required = bool(revision_judge_result.get("retry_required", False))
+
         final_body = strip_fence(verifier_out)
         if args.dry_run and final_body.startswith("[DRY-RUN:"):
             final_body = (
@@ -826,19 +1063,26 @@ def run() -> None:
             json.dumps(queue_manifest, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         guide_path = run_log_dir / "copilot_queue_guide.md"
+        revision_steps = (
+            "5. (revision mode only) Run revision_judge_task.md and save JSON to revision_judge_output.json.\n"
+            "   If retry_required=true, rerun writer/verifier targeting unaddressed points, then re-run judge.\n"
+        ) if mode == "revision" else ""
         guide_path.write_text(
             "# Copilot Queue Guide\n\n"
+            f"Mode: {mode}\n\n"
             "1. For each section directory, run planner_task.md in Copilot chat and save JSON to planner_output.json.\n"
             "2. Run retriever_task.md and save JSON to retriever_output.json.\n"
             "3. Run writer_task.md and save text to writer_output.md.\n"
             "4. Run verifier_task.md and save text to verifier_output.md.\n"
-            "5. Apply verifier_output.md to the target section in draft using apply_task.md.\n"
+            + revision_steps
+            + f"{'6' if mode == 'revision' else '5'}. Apply verifier_output.md to the target section in draft using apply_task.md.\n"
             "\n"
             f"Draft target: {draft_tex_output}\n",
             encoding="utf-8",
         )
 
     print(f"Draft written to: {draft_output_path}")
+    print(f"Mode: {mode}")
     print(f"Sections processed: {len(sections)}")
     print(f"Contributions imported from source: {len(contributions)}")
     print(f"Run logs: {run_log_dir}")

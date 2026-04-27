@@ -6,6 +6,8 @@
     "draft_tex_output": "papers/agentic/out/paper_draft_from_contributions.tex",
     "considerations_file": "papers/agentic/considerations.md",
     "author_notes_file": "papers/agentic/author_notes.md",
+    "feedback_file": "papers/agentic/feedback.md",
+    "feedback_dir": "papers/agentic/feedback",
     "output_dir": "papers/agentic/out",
     "default_sections": [
         "Introduction",
