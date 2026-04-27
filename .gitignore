@@ -3,6 +3,14 @@ docbuild/.lake
 docbuild/lake-manifest.json
 docbuild/lean-toolchain
 
+# Python bytecode cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Claude Code internal files
+.claude/
+
 # LaTeX build artifacts (keep .tex sources tracked)
 *.aux
 *.bbl
