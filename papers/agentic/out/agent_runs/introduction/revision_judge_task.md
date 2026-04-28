@@ -1,4 +1,4 @@
-# Verifier Task
+# Revision Judge Task
 
 Project: Formalizing Flag Algebras in Lean 4 via Computational Reflection
 Target Section: Introduction
@@ -292,182 +292,17 @@ Produce a concrete fix for each point, not just an acknowledgement.
 13. In the Paper Organization paragraph, sections 3–5 cover three distinct layers (with section 5 being the tactic layer), so describing the architecture as "two layers" is confusing. Align the description with the actual section structure.
 === END FEEDBACK ===
 
-Read writer_output.md first.
+Read verifier_output.md first.
 
-Selected evidence:
-1. [text] line @ papers/paper_claude.tex:12 :: %   Theory of computation~Proof theory        [500]
-2. [text] line @ papers/paper_claude.tex:16 :: % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
-3. [text] line @ papers/paper_claude.tex:17 :: %   programming, Turan density, interactive theorem proving,
-4. [text] line @ papers/paper_claude.tex:18 :: %   tactic metaprogramming, extremal combinatorics
-5. [text] line @ papers/paper_claude.tex:37 :: % ---- Theorem environments -----------------------------------------------
-6. [text] line @ papers/paper_claude.tex:38 :: \newtheorem{theorem}{Theorem}[section]
-7. [text] line @ papers/paper_claude.tex:39 :: \newtheorem{lemma}[theorem]{Lemma}
-8. [text] line @ papers/paper_claude.tex:40 :: \newtheorem{definition}[theorem]{Definition}
-9. [text] line @ papers/paper_claude.tex:41 :: \newtheorem{example}[theorem]{Example}
-10. [text] line @ papers/paper_claude.tex:42 :: \newtheorem{remark}[theorem]{Remark}
-11. [text] line @ papers/paper_claude.tex:49 :: \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
-12. [text] line @ papers/paper_claude.tex:50 :: \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-13. [text] line @ papers/paper_claude.tex:53 :: \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-14. [text] line @ papers/paper_claude.tex:54 :: \newcommand{\lean}[1]{\texttt{#1}}
-15. [text] line @ papers/paper_claude.tex:56 :: % Lean code style
-16. [text] line @ papers/paper_claude.tex:57 :: \lstdefinelanguage{Lean4}{
-17. [text] line @ papers/paper_claude.tex:58 :: keywords={def,theorem,lemma,instance,structure,class,import,open,namespace,
-18. [text] line @ papers/paper_claude.tex:60 :: return,do,for,in,noncomputable,abbrev,variable,section,
-19. [text] line @ papers/paper_claude.tex:61 :: native_decide,decide,norm_num,simp,ring,linarith,omega,
-20. [text] line @ papers/paper_claude.tex:67 :: stringstyle=\color{orange!80!black},
-21. [text] line @ papers/paper_claude.tex:68 :: morestring=[b]",
-22. [text] line @ papers/paper_claude.tex:86 :: \lstset{language=Lean4, frame=single, framesep=4pt,
-23. [text] line @ papers/paper_claude.tex:90 :: \title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
-24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
+For EACH feedback point listed in 'Feedback to Address' above:
+1. Was it addressed? (yes/no)
+2. How? (cite the specific change or new sentence added)
+3. If not addressed, what specific revision is still needed?
 
-
-Reference Section Draft (your primary starting point — improve and refine this):
----BEGIN REFERENCE DRAFT---
-\label{sec:intro}
-
-\paragraph{Flag algebras in extremal combinatorics.}
-A central question in extremal graph theory is: among all large graphs on $n$
-vertices that avoid some fixed graph $H$ as a subgraph, what is the
-maximum possible density of copies of another graph $F$?
-The \emph{generalized Turán density} $\tdensity{F}{H}$
-formalizes this question as a limit:
-\[
-  \tdensity{F}{H}
-    \;=\;
-  \lim_{n\to\infty}
-  \frac{1}{\binom{n}{|V(F)|}}
-  \max\bigl\{\#\text{copies of }F \text{ in } G
-             \;\big|\;
-             G \text{ is } H\text{-free},\;|V(G)|=n\bigr\}.
-\]
-
-Razborov's flag algebra method~\cite{razborov2007flag} provides a
-\emph{systematic} framework for deriving upper bounds on such densities.
-It works by constructing a graded, commutative $\mathbb{R}$-algebra---the
-\emph{flag algebra}---whose elements represent linear combinations of
-induced subgraph patterns.  The algebra is equipped with a product encoding
-simultaneous occurrence and a semantic ordering: an element $f$ is
-\emph{non-negative} (lies in the semantic cone) if its value under every
-positive $\mathbb{R}$-algebra homomorphism is $\geq 0$.
-Non-negativity certificates for carefully chosen elements yield upper bounds
-on Turán densities directly.
-
-In practice, these certificates are produced by semidefinite programming:
-one seeks a positive semidefinite matrix $Q$ such that
-$f - c\cdot\mathbf{1} = \sum_{i,j} Q_{ij}\cdot e_i e_j$ holds in the algebra
-(where the $e_i$ are typed flag basis elements and $c$ is the claimed bound).
-An SDP solver finds $Q$ numerically; one must then \emph{verify} that $Q$ is
-genuinely positive semidefinite and that the algebraic identity holds exactly.
-
-\paragraph{The formalization challenge.}
-Formalizing a flag algebra proof in a proof assistant requires confronting three
-distinct, non-reducible categories of proof obligation:
-
-\begin{enumerate}
-  \item \textbf{Abstract structure.}  Flags (quotients of labeled graphs under
-    isomorphism), the flag algebra (a quotient module equipped with a commutative
-    ring structure), positive homomorphisms (the semantic ordering),
-    the Turán density (a measure-theoretic limit), and the transfer theorem
-    connecting flag algebra inequalities to density bounds.  These are
-    conceptually non-trivial but finite in number; each requires careful
-    type-theoretic encoding.
-
-  \item \textbf{Data-heavy computation.}  For each pair of flags $(F,G)$
-    appearing in the proof, one must certify the exact rational density
-    $\den{F}{G}$.  For the Erd\H{o}s pentagon theorem,
-    this means thousands of density values over graphs with up to five vertices
-    and flag multiplication tables of similar size.  These values are computed
-    externally and must be imported into the proof and verified against the
-    formal definitions.
-
-  \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments involve
-    manipulating linear combinations of hundreds of flag terms: expanding a
-    flag at a larger vertex count, computing products of typed flags, and
-    normalizing sums into a canonical form.  Each individual step is routine
-    but the aggregate is prohibitively tedious to discharge manually.
-\end{enumerate}
-
-These three categories are not merely independent complications; they call for
-\emph{qualitatively different} proof techniques.  The abstract structure
-requires faithful encoding in a dependent type theory.
-The data-heavy computation requires a \emph{reflection} architecture:
-a decidably-computable concrete representation whose connection to the abstract
-definitions is certified by adequacy theorems, allowing Lean's kernel (or native
-evaluator) to check each density value automatically.
-The algebraic bookkeeping requires \emph{proof-by-reflection via custom
-elaboration tactics} that inspect the syntactic structure of the proof state
-and dispatch the right sequence of domain-specific lemmas without manual
-guidance.
-
-\paragraph{This paper.}
-We present a Lean~4 formalization of Razborov's flag algebra method for
-graphs, organized around the two-layer architecture that the challenge analysis
-dictates.  The \emph{abstract layer} encodes the mathematical semantics
-faithfully in Lean~4's dependent type system, including a novel
-\emph{general forbidden-subgraph reasoning rule} that does not require
-problem-specific axiomatization.  The \emph{reflection layer} bridges the
-abstract definitions to a finitely-computable concrete representation, enabling
-automated discharge of density and SDP certificate obligations.
-
-\paragraph{Contributions.}
-\begin{itemize}
-  \item \textbf{Abstract formalization (\S\ref{sec:abstract}).}
-    We formalize the full abstract structure of Razborov's flag algebra in
-    Lean~4: flags as quotient types of labeled graphs under isomorphism,
-    the flag algebra as a quotient $\mathbb{R}$-module with a commutative ring
-    structure, the semantic ordering via positive homomorphisms, and a
-    measure-theoretic forbidden-subgraph reasoning framework
-    (\lean{forbidLE}, \lean{generalizedTuranDensity\_le\_of\_forbidLE}).
-    The forbidden-subgraph rule is formulated inside a \emph{single} ambient
-    theory of simple graphs and does not require a per-problem axiom.
-    The framework is sufficient for the current theorems; some auxiliary
-    generalization lemmas in \lean{Forbid/Basic} remain unfinished but do
-    not affect the soundness of the main results (see \S\ref{sec:intensional}).
-
-  \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
-    We introduce \lean{Sym2Graph}, a finitely-representable graph type with
-    decidable equality, and prove adequacy theorems equating abstract flag
-    densities to computable \lean{Sym2Graph} densities.  We verify SDP
-    certificates via an exact LDL$^\top$ decomposition over $\mathbb{Q}$,
-    checked by \lean{decide +kernel}.  We distinguish a deliberate
-    \emph{trust hierarchy}: \lean{native\_decide} for density tables (trusts
-    the native compiler) and \lean{decide +kernel} for SDP certificates
-    (trusts only the kernel).
-
-  \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
-    We implement a suite of custom Lean~4 elaboration tactics that exploit a
-    canonical naming convention for flag constants as a machine-readable
-    encoding: \lean{ac\_sort\_pipeline} for linear normalization (replacing a
-    generic sort that times out on expressions with $\sim\!25$ terms),
-    and \lean{prove\_flag\_expand\_with\_forbidden\_flag} /
-    \lean{prove\_flag\_mul\_with\_forbidden\_flag} for expansion and
-    multiplication identities (each collapsing 15--20 manual steps into one
-    tactic call).
-
-  \item \textbf{Verified results (\S\ref{sec:results}).}
-    We give formally complete proofs of Mantel's theorem and of
-    $\tdensity{C_5}{K_3} = 24/625$ (the Erd\H{o}s pentagon theorem), including
-    the upper bound via a formally verified SDP certificate and the lower bound
-    via an explicit $C_5$-blow-up construction with a formal limit argument.
-    To our knowledge, this is the first formalization of the flag algebra method
-    in any proof assistant.
-\end{itemize}
-
-\paragraph{Paper organization.}
-Section~\ref{sec:background} recalls the mathematical background on flag
-algebras.  Sections~\ref{sec:abstract}--\ref{sec:tactics} describe the two
-formalization layers in detail.  Section~\ref{sec:results} presents the
-verified results.  Section~\ref{sec:related} discusses related work, and
-Section~\ref{sec:conclusion} concludes.
----END REFERENCE DRAFT---
-
-Feedback Checklist (verify BEFORE returning output):
-For each feedback point in 'Feedback to Address' above, confirm the revised text addresses it.
-If any point is unaddressed, fix it now before returning.
-
-Revise to remove unsupported claims and strengthen evidence alignment.
-If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.
-Hard gate: reject output if Section Blueprint constraints are not satisfied.
-For equation-heavy sections, verify formulas and notation are consistent with the listed Equation Source PDFs.
-Return only final LaTeX section body without markdown fences and without \section{...}.
-Save output as verifier_output.md.
+Output format (JSON only):
+{
+  "feedback_checks": [{"point": "...", "addressed": true, "how": "...", "missing": "..."}],
+  "overall_addressed": true,
+  "retry_required": false,
+  "retry_instructions": "..."
+}

@@ -123,175 +123,164 @@ ordering via positive homomorphisms, and connect flag algebra inequalities to
 combinatorial Turán densities through a measure-theoretic framework.  At the
 computational level, we introduce a concrete, decidably-equal graph
 representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
-the abstract definitions.  A naive reflective evaluator is still too slow for
-pentagon-sized tables, because it repeatedly invokes quotient equality,
-generic finite-type enumeration, and graph-isomorphism search.  We therefore
-verify optimized Boolean isomorphism procedures that reject impossible cases by
-edge-count invariants, permute only non-type vertices for typed flags, and
-compare adjacency over a fixed finite edge list; these verified optimizations
-make \lean{native\_decide} usable for over 2{,}800 density obligations, while
-\lean{decide +kernel} checks the SDP matrix equalities.  Structural proof obligations---normalizing linear combinations
+the abstract definitions; this allows \lean{native\_decide} and \lean{decide
++kernel} to discharge over 2{,}800 density and matrix-equality obligations
+automatically.  Structural proof obligations---normalizing linear combinations
 of flag terms and applying expansion and multiplication identities---are handled
 by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
 a canonical naming convention for flags as a machine-readable encoding of
 mathematical structure.
 
-As flagship case studies, we give complete formal proof paths for Mantel's
-theorem and for the Erd\H{o}s pentagon theorem
-($\tdensity{C_5}{K_3} = 24/625$), the latter including both the upper bound
-via a formally verified SDP certificate and the lower bound via an explicit
-blow-up construction.  The active library also contains smaller
-Goodman-style flag algebra inequalities derived with the same infrastructure.
-To our knowledge, this is the first formalization of the flag algebra method
-in any proof assistant.  The active non-archive formalization currently
-comprises 25{,}446 lines of Lean~4 code.
+As results, we give complete formal proofs of Mantel's theorem and of the
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
+both the upper bound via a formally verified SDP certificate and the lower bound
+via an explicit blow-up construction.  To our knowledge, this is the first
+formalization of the flag algebra method in any proof assistant.  The
+formalization comprises approximately 25{,}000 lines of Lean~4 code.
 \end{abstract}
 
 % =========================================================================
 \section{Introduction}
+% [TODO for authors: the global feedback requests reconsidering the paper title.
+%  The current title "Formalizing Flag Algebras in Lean 4 via Computational Reflection"
+%  may be misleading because computational reflection is used only in the verification of
+%  SDP certificates and density tables, not in formalizing flag algebra theory itself.
+%  Suggested alternatives: "Formalizing Flag Algebras in Lean 4" or
+%  "A Lean 4 Formalization of Razborov's Flag Algebra Method".
+%  This note is placed here because the title lives in the preamble, outside the
+%  Introduction section body.]
+
 \label{sec:intro}
 
-\paragraph{Flag algebras in extremal combinatorics.}
-A central question in extremal graph theory is: among all large graphs on $n$
-vertices that avoid some fixed graph $H$ as a subgraph, what is the
-maximum possible density of copies of another graph $F$?
-The \emph{generalized Turán density} $\tdensity{F}{H}$
-formalizes this question as a limit:
+\paragraph{Asymptotic extremal combinatorics and flag algebras.}
+A central question in extremal graph theory is: among all $n$-vertex graphs
+that avoid a fixed graph $H$ as a subgraph, how many copies of another graph
+$F$ can appear?  Formally, the \emph{extremal number} $\mathrm{ex}(n; F, H)$
+denotes the maximum number of copies of $F$ in any $H$-free graph on $n$
+vertices.  As $n$ grows, this quantity scales like $\binom{n}{|V(F)|}$, and
+the limiting ratio
 \[
-  \tdensity{F}{H}
-    \;=\;
+  \pi(F; H)
+  \;=\;
   \lim_{n\to\infty}
-  \frac{1}{\binom{n}{|V(F)|}}
-  \max\bigl\{\#\text{copies of }F \text{ in } G
-             \;\big|\;
-             G \text{ is } H\text{-free},\;|V(G)|=n\bigr\}.
+  \frac{\mathrm{ex}(n; F, H)}{\binom{n}{|V(F)|}}
 \]
+is the \emph{Turán density} of $F$ with respect to $H$.
+The study of Turán densities belongs to asymptotic extremal combinatorics,
+where the goal is to determine these limits exactly.
 
 Razborov's flag algebra method~\cite{razborov2007flag} provides a
-\emph{systematic} framework for deriving upper bounds on such densities.
-It works by constructing a graded, commutative $\mathbb{R}$-algebra---the
-\emph{flag algebra}---whose elements represent linear combinations of
-induced subgraph patterns.  The algebra is equipped with a product encoding
-simultaneous occurrence and a semantic ordering: an element $f$ is
-\emph{non-negative} (lies in the semantic cone) if its value under every
-positive $\mathbb{R}$-algebra homomorphism is $\geq 0$.
-Non-negativity certificates for carefully chosen elements yield upper bounds
-on Turán densities directly.
-
-In practice, these certificates are produced by semidefinite programming:
-one seeks a positive semidefinite matrix $Q$ such that
-$f - c\cdot\mathbf{1} = \sum_{i,j} Q_{ij}\cdot e_i e_j$ holds in the algebra
-(where the $e_i$ are typed flag basis elements and $c$ is the claimed bound).
-An SDP solver finds $Q$ numerically; one must then \emph{verify} that $Q$ is
-genuinely positive semidefinite and that the algebraic identity holds exactly.
+systematic framework for deriving upper bounds on Turán densities.
+The key idea is to encode density inequalities as non-negativity certificates
+in a graded algebra of labeled subgraph patterns, reducing the search for such
+certificates to a semidefinite programming (SDP) problem.
+Since its introduction, flag algebras have led to solutions of numerous open
+problems, including the minimum triangle density
+problem~\cite{razborov2008}, Erd\H{o}s's pentagon
+problem~\cite{HatamiHKNR13,Grzesik12}, and several Turán-type density
+problems for graphs and hypergraphs.
 
 \paragraph{The formalization challenge.}
-Formalizing a flag algebra proof in a proof assistant requires confronting three
-distinct, non-reducible categories of proof obligation:
+Formalizing a flag algebra proof in a proof assistant requires confronting
+three distinct categories of proof obligation:
 
 \begin{enumerate}
-  \item \textbf{Abstract structure.}  Flags (quotients of labeled graphs under
-    isomorphism), the flag algebra (a quotient module equipped with a commutative
-    ring structure), positive homomorphisms (the semantic ordering),
-    the Turán density (a measure-theoretic limit), and the transfer theorem
-    connecting flag algebra inequalities to density bounds.  These are
-    conceptually non-trivial but finite in number; each requires careful
-    type-theoretic encoding.
+  \item \textbf{Abstract structure.}  Flags (labeled graphs modulo
+    isomorphism), the flag algebra (a quotient $\mathbb{R}$-module with a
+    commutative ring structure), positive homomorphisms (the semantic
+    ordering), and the transfer theorem connecting flag algebra inequalities
+    to Turán density bounds.  Each requires a careful type-theoretic encoding.
 
-  \item \textbf{Data-heavy computation.}  For each pair of flags $(F,G)$
-    appearing in the proof, one must certify the exact rational density
-    $\den{F}{G}$.  For the Erd\H{o}s pentagon theorem,
-    this means thousands of density values over graphs with up to five vertices
-    and flag multiplication tables of similar size.  These values are computed
-    externally and must be imported into the proof and verified against the
-    formal definitions.
+  \item \textbf{Data-heavy computation.}  For each flag algebra argument,
+    thousands of flag algebra computations must be certified and imported into
+    the proof: density values between flag pairs and the entries of the SDP
+    certificate matrix must all be verified against the formal definitions.
 
-  \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments involve
-    manipulating linear combinations of hundreds of flag terms: expanding a
-    flag at a larger vertex count, computing products of typed flags, and
-    normalizing sums into a canonical form.  Each individual step is routine
-    but the aggregate is prohibitively tedious to discharge manually.
+  \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments manipulate
+    large linear combinations of flag terms: expanding flags at a larger
+    vertex count, computing typed flag products, and normalizing into canonical
+    form.  Each step is routine but the aggregate is prohibitively tedious
+    to discharge manually.
 \end{enumerate}
 
-These three categories are not merely independent complications; they call for
-\emph{qualitatively different} proof techniques.  The abstract structure
-requires faithful encoding in a dependent type theory.
-The data-heavy computation requires a \emph{reflection} architecture:
-a decidably-computable concrete representation whose connection to the abstract
-definitions is certified by adequacy theorems, allowing Lean's kernel (or native
-evaluator) to check each density value automatically.
-The algebraic bookkeeping requires \emph{proof-by-reflection via custom
-elaboration tactics} that inspect the syntactic structure of the proof state
-and dispatch the right sequence of domain-specific lemmas without manual
-guidance.
+These categories call for qualitatively different proof techniques.
+The abstract structure requires faithful encoding in dependent type theory.
+The data-heavy computation calls for a \emph{reflection} architecture:
+a computable concrete representation whose correspondence to the abstract
+definitions is certified by adequacy theorems, allowing Lean's kernel or
+native evaluator to check each value automatically.
+The algebraic bookkeeping calls for custom elaboration tactics that inspect
+the syntactic structure of the proof state and dispatch the appropriate
+domain-specific lemmas.
 
 \paragraph{This paper.}
-We present a Lean~4 formalization of Razborov's flag algebra method for
-graphs, organized around the two-layer architecture that the challenge analysis
-dictates.  The \emph{abstract layer} encodes the mathematical semantics
-faithfully in Lean~4's dependent type system, including a novel
-\emph{general forbidden-subgraph reasoning rule} that does not require
-problem-specific axiomatization.  The \emph{reflection layer} bridges the
-abstract definitions to a finitely-computable concrete representation, enabling
+We present a Lean~4 formalization of Razborov's flag algebra method for graphs.
+The primary contribution is the formalization of flag algebra theory itself:
+flags as quotient types, the flag algebra as a quotient module, positive
+homomorphisms, and a general forbidden-subgraph reasoning framework that
+does not require problem-specific axiomatization.
+Built on top of this abstract layer, a \emph{reflection layer} bridges the
+formal definitions to a finitely-computable concrete representation, enabling
 automated discharge of density and SDP certificate obligations.
+A \emph{tactic layer} handles algebraic bookkeeping obligations via custom
+elaboration tactics.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item \textbf{Abstract formalization (\S\ref{sec:abstract}).}
+  \item \textbf{Flag algebra formalization (\S\ref{sec:abstract}).}
     We formalize the full abstract structure of Razborov's flag algebra in
     Lean~4: flags as quotient types of labeled graphs under isomorphism,
     the flag algebra as a quotient $\mathbb{R}$-module with a commutative ring
-    structure, the semantic ordering via positive homomorphisms, and a
-    measure-theoretic forbidden-subgraph reasoning framework
-    (\lean{forbidLE}, \lean{generalizedTuranDensity\_le\_of\_forbidLE}).
-    The forbidden-subgraph rule is formulated inside a \emph{single} ambient
-    theory of simple graphs and does not require a per-problem axiom.
-    The framework is sufficient for the current theorems; some auxiliary
-    generalization lemmas in \lean{Forbid/Basic} remain unfinished but do
-    not affect the soundness of the main results (see \S\ref{sec:intensional}).
+    structure, and the semantic ordering via positive homomorphisms.
+    A key departure from Razborov's original axiomatic approach is the
+    forbidden-subgraph reasoning framework: it is expressed as a single
+    predicate applied at proof time, operating inside a single ambient theory
+    of simple graphs and requiring no per-problem axiomatization.
 
   \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
-    We introduce \lean{Sym2Graph}, a finitely-representable graph type with
-    decidable equality, and prove adequacy theorems equating abstract flag
-    densities to computable \lean{Sym2Graph} densities.  The contribution is
-    not merely that the definitions are executable: the first executable
-    version was not usable at the scale of the pentagon proof.  The final
-    reflection layer includes verified optimizations for isomorphism checking
-    (edge-cardinality pruning, type-aware permutation of only unlabeled
-    vertices, and edge-list comparison), plus elaboration-time generation of
-    density theorems from JSON tables.  We verify SDP certificates via an exact
-    LDL$^\top$ decomposition over $\mathbb{Q}$, checked by
-    \lean{decide +kernel}.  We distinguish a deliberate \emph{trust hierarchy}:
-    \lean{native\_decide} for density tables (trusts the native compiler) and
-    \lean{decide +kernel} for SDP certificates (trusts only the kernel).
+    We introduce a finitely-representable graph type with decidable equality
+    and prove adequacy theorems equating abstract flag densities to computable
+    values.  SDP certificates are verified via an exact LDL$^\top$
+    decomposition over $\mathbb{Q}$.  We enforce a deliberate \emph{trust
+    hierarchy}: density tables are checked by Lean's native evaluator
+    (trusting the native compiler), while SDP certificate equalities are
+    checked by the kernel alone (trusting only the kernel).
 
   \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
-    We implement a suite of custom Lean~4 elaboration tactics that exploit a
-    canonical naming convention for flag constants as a machine-readable
-    encoding: \lean{ac\_sort\_pipeline} for linear normalization (replacing a
-    generic sort that times out on expressions with $\sim\!25$ terms),
-    and \lean{prove\_flag\_expand\_with\_forbidden\_flag} /
-    \lean{prove\_flag\_mul\_with\_forbidden\_flag} for expansion and
-    multiplication identities (each collapsing 15--20 manual steps into one
-    tactic call).
+    We implement custom Lean~4 elaboration tactics for the algebraic
+    bookkeeping obligations: a tactic for normalizing linear combinations of
+    flag terms (which times out without it on expressions with $\sim\!25$
+    terms), and tactics for flag expansion and multiplication identities
+    (each collapsing 15--20 manual steps into a single tactic call).
+    % [TODO: Making these tactics available as a reusable library for
+    %  arbitrary flag algebra arguments is planned as future work.]
 
   \item \textbf{Verified results (\S\ref{sec:results}).}
-    We give formally complete proof paths for Mantel's theorem and for
-    $\tdensity{C_5}{K_3} = 24/625$ (the Erd\H{o}s pentagon theorem), including
-    the upper bound via a formally verified SDP certificate and the lower bound
-    via an explicit $C_5$-blow-up construction with a formal limit argument.
-    The active library additionally proves Goodman-style inequalities such as
-    \lean{Goodman\_bound\_on\_triangle\_density} and
-    \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity}; these are supporting
-    results rather than the main case studies.  To our knowledge, this is the
-    first formalization of the flag algebra method in any proof assistant.
+    We give formally complete proofs of Mantel's theorem
+    ($\pi(K_3; K_2) = 1/2$) and of the Erd\H{o}s pentagon theorem
+    ($\pi(C_5; K_3) = 24/625$), the latter including the upper bound via a
+    formally verified SDP certificate.
+    To our knowledge, this is the first formalization of the flag algebra
+    method in any proof assistant, and in particular the first machine-checked
+    proof of the Erd\H{o}s pentagon theorem.
+    Mantel's theorem has been formalized before as a standalone result;
+    our proof is, to our knowledge, the first to derive it via the flag algebra
+    method.
 \end{itemize}
 
 \paragraph{Paper organization.}
 Section~\ref{sec:background} recalls the mathematical background on flag
-algebras.  Sections~\ref{sec:abstract}--\ref{sec:tactics} describe the two
-formalization layers in detail.  Section~\ref{sec:results} presents the
-verified results.  Section~\ref{sec:related} discusses related work, and
+algebras.
+Section~\ref{sec:abstract} presents the abstract formalization layer:
+the type-theoretic encoding of flags, the flag algebra, and the
+forbidden-subgraph framework.
+Section~\ref{sec:reflection} describes the reflection layer: the concrete
+computable graph representation, adequacy theorems, and SDP certificate
+verification.
+Section~\ref{sec:tactics} covers the tactic layer: the custom elaboration
+tactics and their canonical naming convention.
+Section~\ref{sec:results} presents the verified results.
+Section~\ref{sec:related} discusses related work, and
 Section~\ref{sec:conclusion} concludes.
 
 
@@ -345,23 +334,6 @@ induces a copy of $F$ in $G$ compatible with the type.  Explicitly:
 This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
 
-\begin{example}[A rooted pentagon density]
-  Let $\sigma$ be the one-vertex type, and let $E^\bullet$ be the
-  $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
-  the labeled one.  Let $\overline{E}^{\bullet}$ be the corresponding
-  non-edge flag.  Now root a copy of $C_5$ at one of its vertices.  Among the
-  four non-root vertices, exactly two are neighbors of the root.  Hence
-  \[
-    \den{E^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
-    \qquad
-    \den{\overline{E}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
-  \]
-  This tiny example captures the reason flags are useful: a flag remembers
-  the local view from a labeled configuration.  The same unrooted pentagon can
-  be queried from the perspective of a distinguished vertex, and the algebra
-  records those conditional densities as first-class objects.
-\end{example}
-
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
 flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
@@ -400,31 +372,6 @@ their product at size $\ell \geq m_1 + m_2 - k$ is
 This is well-defined on the quotient (independent of $\ell$) and makes
 $\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
 with unit $[\text{type graph } \sigma]$.
-
-\begin{example}[The edge expansion behind Mantel's theorem]
-  The simplest useful zero-space relation expands the untyped edge $K_2$ at
-  size $3$.  There are four unlabeled graphs on three vertices: the empty
-  graph, the one-edge graph, the two-edge path, and the triangle.  If an
-  edge is sampled uniformly from the three possible vertex pairs, its density
-  in these graphs is respectively
-  \[
-    0,\qquad \frac13,\qquad \frac23,\qquad 1.
-  \]
-  Thus the quotient identifies
-  \[
-    K_2
-    \;=\;
-    \frac13\,G_{\text{one-edge}}
-    + \frac23\,G_{\text{path}}
-    + G_{\triangle}
-    \qquad\text{in } \mathcal{A}^{\emptyset}.
-  \]
-  In the Mantel proof, the triangle term is then eliminated under the
-  $K_3$-free hypothesis.  This is exactly the kind of elementary
-  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
-  the coefficients are simple, but there are hundreds of such coefficients
-  and they must all line up syntactically inside Lean.
-\end{example}
 
 \subsection{The Downward Operator and Semantic Non-Negativity}
 
@@ -796,7 +743,7 @@ theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
     G.toLabeledGraph.toSym2Graph = G := by
   congr  -- reduces to field equalities
   ...
-  exact proof_irrel_heq _ _  -- edge validity field
+  · exact proof_irrel_heq _ _  -- edge validity field
 \end{lstlisting}
 
 \paragraph{What remains open.}
@@ -843,10 +790,10 @@ recurring obstacle in \lean{SubflagListDensity.lean}: whenever a cardinality
 argument compared two finite sets defined by structural conditions on flag lists,
 the proof required an explicit conversion:
 \begin{lstlisting}
-let hS0 : Fintype S0 := Fintype.ofFinite S0
-let hS1 : Fintype S1 := Fintype.ofFinite S1
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso_S0_S1
+let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
+let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
+have card_eq : Fintype.card S₀ = Fintype.card S₁ :=
+  Fintype.card_congr h_iso_S₀_S₁
 \end{lstlisting}
 This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
 (functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
@@ -858,26 +805,26 @@ use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
 \lean{LabeledGraph} and \lean{LabeledSubgraph}).
 
 \paragraph{Instance disambiguation for function and embedding types.}
-For parameterized types such as injections \lean{Embedding V W} and equivalences
-\lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in multiple ways
+For parameterized types such as injections \lean{V ↪ W} and equivalences
+\lean{V ≃ W}, Lean can synthesize \lean{Fintype} instances in multiple ways
 depending on which prior instances are in scope.  In
 \lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
 defined, the elaborator had to be given explicit guidance via
 \lean{@Finset.univ} with the intended instance passed as a named argument:
 \begin{lstlisting}
-instance : Fintype (Embedding V W) :=
-  { elems := @Finset.univ (Embedding V W) (inferInstance), ... }
+instance : Fintype (V ↪ W) :=
+  { elems := @Finset.univ (V ↪ W) (inferInstance), ... }
 \end{lstlisting}
 Without the explicit \lean{@}, Lean would sometimes apply a different,
-incompatible \lean{Fintype} instance for \lean{Embedding V W} further down the proof,
-causing membership goals for \lean{Finset.univ} to fail to close by
+incompatible \lean{Fintype} instance for \lean{V ↪ W} further down the proof,
+causing goals of the form \lean{x ∈ Finset.univ} to fail to close by
 \lean{Finset.mem\_univ}.
 
 A related issue arose for dependent function types indexed by a small finite
 type.  The \lean{FintypeList} typeclass (used internally to manage lists of
 typed flags indexed by \lean{Fin t}) must be instantiated by threading through
 \lean{Fintype} instances for each component type separately.  For the cases
-\lean{Fin 2 -> Type} and \lean{Fin 3 -> Type} that arise in the density
+\lean{Fin 2 → Type} and \lean{Fin 3 → Type} that arise in the density
 computation, the instances had to be written with explicit per-case
 \lean{inferInstance} calls rather than a uniform typeclass search:
 \begin{lstlisting}
@@ -973,121 +920,19 @@ injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
 
-\subsection{From Naive Reflection to Usable Reflection}
-
-The central engineering lesson of the reflection layer is that
-\emph{computable} is not the same as \emph{usable}.  A straightforward
-reflective design would keep the abstract definitions as close as possible to
-the mathematics, make the relevant finite types into \lean{Fintype}s, and ask
-\lean{native\_decide} to evaluate density goals by unfolding
-\lean{flagDensity}.  This works as a proof of concept, but it is not a viable
-compilation strategy for the pentagon proof.  Each density check would then
-repeatedly construct finite sets of abstract subgraphs, compare quotient
-classes by searching for flag isomorphisms, synthesize overlapping
-\lean{Fintype} instances, and carry proof-valued fields through the evaluator.
-The graphs are small, but the proof terms are not: the evaluator is reducing a
-proof-relevant encoding of finite combinatorics, not a simple graph algorithm.
-
-The optimized layer treats reflection more like verified compilation.  The
-abstract quotient definitions remain the specification, while the executable
-programs in \lean{Compute/FastIso.lean} and \lean{Compute/FlagDensity.lean}
-act as compiled code.  The connection between them is established by adequacy
-theorems, so changing the implementation of the Boolean checker does not change
-the mathematical theorem being proved.
-
-\paragraph{Optimization 1: Boolean isomorphism with early pruning.}
-The first bottleneck is flag isomorphism.  The generic \lean{Fintype}-based
-decision procedure enumerates equivalences and then filters by adjacency and
-type preservation.  In contrast, \lean{isEmptyIsoFast\_bool} first checks the
-edge-count invariant; if two graphs have different numbers of edges, it returns
-\lean{false} without enumerating any permutation.  Only after this cheap
-rejection test does it enumerate permutations of \lean{List.finRange n}.  For
-each candidate permutation it compares membership for every possible edge in
-\lean{allEdges n}, using the \lean{Finset} edge representation directly:
-\begin{lstlisting}
-def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
-  if G1.edges.card != G2.edges.card then false
-  else
-    let perms := (List.finRange n).permutations
-    let edges := allEdges n
-    perms.any fun perm =>
-      edges.all fun e =>
-        edgeMembershipAgrees G1 G2 perm e
-\end{lstlisting}
-The displayed code suppresses the low-level \lean{decide} calls, but the
-structure matches \lean{FastIso.lean}: compare graph invariants first, then
-compare all edges under each candidate permutation.
-
-\paragraph{Optimization 2: type-aware permutation.}
-Typed flags admit a stronger optimization.  A $\sigma$-flag isomorphism must
-commute with the type embedding, so the labeled vertices are fixed by the type
-map.  The optimized checker \lean{isIsoFast\_bool} therefore computes the
-non-type vertices using \lean{getNonTypeVerts}, enumerates permutations only of
-those vertices, and reconstructs the full vertex map with \lean{buildFullMap}.
-For the type-3, size-5 flags used in the pentagon proof, this changes the
-search from $5!$ candidate maps to $(5-3)!$ candidate maps before any adjacency
-comparison is performed.  This matters because the density table contains
-thousands of such checks, and each failed isomorphism search appears inside a
-larger density computation.
-
-\begin{example}[Why typed flags change the search space]
-  Consider a pentagon-proof flag with five vertices and a three-vertex type.
-  A flag isomorphism cannot send a labeled vertex somewhere convenient; it must
-  send the first labeled vertex to the first labeled vertex, the second to the
-  second, and the third to the third, because it must commute with the type
-  embedding.  The only freedom is what to do with the two remaining vertices.
-  The generic graph-isomorphism view still starts from $5! = 120$ possible
-  vertex permutations.  The typed checker starts from the two-element list of
-  non-type vertices and considers only $2! = 2$ permutations.
-
-  This reduction looks small because the graphs have only five vertices, but
-  it is multiplied by the structure of the density calculation: the checker is
-  invoked while enumerating subgraphs, comparing candidate representatives,
-  and proving thousands of generated density lemmas.  A constant-factor
-  improvement at the graph level becomes the difference between an evaluator
-  that feels like a decision procedure and one that feels like a stuck proof
-  search.
-\end{example}
-
-\paragraph{Optimization 3: verified replacement of generic instances.}
-The optimized Boolean checkers are not trusted oracles.  They come with both
-directions of correctness, for example
-\lean{isEmptyIsoFast\_bool\_true\_correct} and
-\lean{isEmptyIsoFast\_bool\_false\_correct}.  These theorems justify replacing
-the generic quotient equality procedure by high-priority instances:
-\lean{fastDecidableSym2GraphEqv},
-\lean{fastFintypeSym2EmptyTypedFlag}, and
-\lean{fastDecidableSym2EmptyTypedFlagEqv}.  From the perspective of the rest
-of the development, equality on reflected flags still means equality in the
-quotient setoid; only the implementation of the decision procedure has changed.
-This is the same separation of specification and implementation that one
-expects from verified decision procedures in PL, but applied to graph
-isomorphism inside a formalization of extremal combinatorics.
-
-\begin{example}[A failed table entry fails as a theorem]
-  Suppose the JSON table accidentally states that a certain density is
-  $3/10$ when the reflected computation gives $2/5$.  The loader will still
-  generate the theorem statement requested by the table, but after unfolding
-  the relevant flags and rewriting by the adequacy theorem, the goal becomes
-  the decidable proposition $2/5 = 3/10$.  At that point
-  \lean{native\_decide} fails.  The table is therefore not a trusted proof
-  artifact; it is closer to a test vector that Lean checks against the
-  specification.  This is a useful distinction for large computer-assisted
-  proofs: external computation proposes facts, but the proof assistant accepts
-  only those facts that its verified evaluator can reproduce.
-\end{example}
-
-\paragraph{Optimization 4: compute over data, prove equivalence once.}
-The density computation itself is similarly compiled.  Rather than enumerate
-abstract \lean{LabeledSubgraph}s directly, the concrete layer enumerates
-\lean{Sym2InducedSubgraph}s, represented only by a finite vertex set, and
-computes their edge sets by filtering the host graph's \lean{Finset} of edges.
-For typed flags, \lean{Sym2InducedLabeledSubgraph} additionally stores the
-proof that the type vertices are included.  The adequacy theorem
-\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount} proves that
-this data-oriented enumeration has the same cardinality as the abstract
-definition.  Thus the cost of quotient and subgraph reasoning is paid once in
-the proof of adequacy, not thousands of times in the generated density lemmas.
+\paragraph{Key challenge.}
+The main difficulty in the reflection layer is making graph isomorphism
+decidable efficiently enough for \lean{native\_decide} to terminate on
+five-vertex graphs in reasonable time.  The naive approach---enumerate all
+$n!$ permutations of the vertex set and check each---runs in $5! = 120$
+steps for size-5 graphs, which is fast enough.  However, the adequacy
+theorems require that the abstract \lean{flagDensity} and the concrete
+\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
+construction and reasoning about representatives, which was the source of most
+of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
+The key insight is that density over the quotient equals the density computed
+on any canonical representative, and the \lean{Sym2Graph} representation
+provides a canonical form via its \lean{Finset} of edges.
 
 \subsection{Adequacy Theorems}
 
@@ -1110,20 +955,6 @@ The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
-
-For a PL audience, the important point is that the adequacy theorem is a
-refinement theorem: the executable program computes exactly the denotation of
-the abstract specification.  The proof factors through count-level adequacy
-(\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}) and
-density-level adequacy
-(\lean{labeledSubgraphListDensity\_eq\_sym2InducedSubgraphListDensity}).
-Consequently, the generated theorem
-\[
-  \lean{flagDensity2 F0 F1 G = q}
-\]
-is not a certificate that the external JSON table is trusted; it is a kernel
-proof that the reflected evaluator, connected to the abstract definition by
-adequacy, computes the rational number $q$.
 
 \subsection{Elaboration-Time Theorem Generation}
 
@@ -1149,17 +980,6 @@ The three proof steps are: unfold the concrete flag definitions (making their
 \lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
 call \lean{native\_decide} to evaluate the resulting finite computation.
 The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
-
-This design also changes the proof-engineering scale.  The JSON files are not
-used as proof certificates in the logical sense; they are build inputs that
-determine which theorems Lean should attempt to prove and what rational value
-they should state.  If a table entry is wrong, the generated theorem fails at
-\lean{native\_decide}.  If the table entry is right, the theorem is stored as a
-named lemma and later proofs use it by rewriting rather than by recomputing the
-density from scratch.  In effect, the elaborator performs a verified
-specialization pass: it turns a general reflective evaluator into thousands of
-small, reusable theorem constants specialized to the flags that appear in the
-certificate.
 
 \subsection{SDP Certificate Verification via LDL$^\top$}
 \label{sec:sdp}
@@ -1219,9 +1039,7 @@ formal definition.
 
 \subsection{Implementation Metrics}
 
-Table~\ref{tab:metrics} summarizes the scale of the active formalization
-(excluding archived experiments).  The line counts were computed from the
-current repository rather than copied from an external report.
+Table~\ref{tab:metrics} summarizes the scale of the formalization.
 
 \begin{table}
   \caption{Scale of the Lean~4 formalization.}
@@ -1230,16 +1048,16 @@ current repository rather than copied from an external report.
     \toprule
     Component & Lines & Primary files \\
     \midrule
-    Abstract algebra, density, and limit layer & 15\,815 &
-      \lean{GraphAlgebra/}, \lean{FlagAlgebra/}, \lean{Forbid/}, \lean{Turan/} \\
-    Reflection and flag-loading layer & 3\,871 &
+    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
+      \lean{FlagAlgebra/}, \lean{Forbid/} \\
+    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
       \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
-    Case studies, SDP certificates, and tactics & 3\,751 &
-      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/} \\
-    Shared utilities & 2\,009 &
-      \lean{Utils/} \\
+    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
+      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
+    Application (Mantel + Pentagon) & 1\,900 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
     \midrule
-    Total active Lean (excluding \lean{Archive/}) & 25\,446 & \\
+    Total (excluding archived experiments) & 25\,000 & \\
     \bottomrule
   \end{tabular}
 
@@ -1298,18 +1116,6 @@ the flag index in the name, \lean{ac\_sort\_pipeline} computes sort keys
 entirely in the fast elaboration path, without reducing any term in the kernel.
 The approach is similar to the use of canonical normal forms in certified
 compilers: the name is a ``normal form'' that tactics can manipulate directly.
-
-\begin{example}[A name as a tiny certificate]
-  The name \lean{FlagAlgebra\_3\_0\_0\_2} is not just a human mnemonic.  It says
-  that the term is an untyped flag-algebra basis element (\lean{k = 0}), living
-  at size $3$, with canonical index $2$ among the generated representatives.
-  A tactic that sees this constant already knows where it belongs in the
-  normal order of a sum, which generated expansion lemma to try, and which
-  multiplication-table entry can mention it.  In other words, the name carries
-  the same kind of lightweight metadata that a compiler might attach to an
-  intermediate-language node.  The difference is that here the metadata is
-  available to the Lean elaborator without any type-class search.
-\end{example}
 
 \subsection{Linear Normalization: \lean{ac\_sort\_pipeline}}
 
@@ -1406,16 +1212,6 @@ example : FlagAlgebra_3_0_0_3 =a 0
   := by prove_flag_expand_with_forbidden_flag 3
 \end{lstlisting}
 
-This example is the Mantel expansion above in executable clothing.  The goal
-says: assuming the triangle flag \lean{FlagAlgebra\_3\_0\_0\_3} has value zero,
-prove that the edge flag expands as a weighted sum of the one-edge and
-two-edge three-vertex graphs.  The human proof is a one-line counting argument:
-among the three vertex pairs, the one-edge graph contains one edge and the
-two-edge path contains two.  The Lean proof has to find the right generated
-expansion lemma, instantiate it at size $3$, remove the forbidden triangle
-term, and normalize scalar arithmetic.  The point of the tactic is to make the
-formal proof resemble the human explanation again.
-
 \paragraph{Key challenge.}
 The tactic must be robust to the syntactic variation that Lean's elaborator
 introduces: after unification and implicit argument resolution, the same flag
@@ -1431,14 +1227,11 @@ experimentation with Lean~4's metaprogramming API.
 \label{sec:results}
 
 Using the formalization infrastructure described in the preceding sections,
-we give formally complete proof paths for two flagship theorems in extremal
-combinatorics: Mantel's theorem and the Erd\H{o}s pentagon theorem.  Both
-proof paths are machine-checked in Lean~4 and contain no \lean{sorry}
-placeholders, although some commented auxiliary generalization lemmas outside
-those proof paths remain unfinished (see \S\ref{sec:intensional}).  The active
-library also contains two smaller Goodman-style results; we mention them after
-Mantel's theorem to make the repository scope explicit, but the pentagon theorem
-is the main stress test for the reflection and SDP infrastructure.
+we give formally complete proofs of two theorems in extremal combinatorics.
+Both proofs are machine-checked in Lean~4.  The proof paths of the main
+theorems contain no \lean{sorry} placeholders, although some commented
+auxiliary generalization lemmas outside those proof paths remain unfinished
+(see \S\ref{sec:intensional}).
 
 \subsection{Mantel's Theorem}
 
@@ -1479,17 +1272,6 @@ The formal proof in \lean{LeanFlagAlgebras.MantelTheorem.MantelTheorem} uses
 identity, \lean{ac\_sort\_pipeline} to normalize the resulting linear
 combination, and \lean{flagQuadraticForm\_nonneg} to confirm the semantic
 non-negativity.
-
-\paragraph{Additional Goodman-style consequences.}
-The active \lean{MantelTheorem/} directory also contains two small
-flag-algebraic inequalities proved with the same basic infrastructure:
-\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
-$K_3 \geq K_2(2K_2-\mathbf{1})$, and
-\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
-$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
-These results are not needed for the pentagon proof, but they demonstrate that
-the formalized algebraic layer is not specialized solely to the two headline
-theorems.
 
 \subsection{The Erd\H{o}s Pentagon Theorem}
 
@@ -1537,73 +1319,40 @@ theorem ErdosPentagon_Turan_lowerBound
 \end{lstlisting}
 is proved by an explicit construction.
 
-\emph{Code presentation note.}  The snippets below are ASCII-rendered excerpts
-from \lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  We use
-\lean{Prod V (Fin n)} instead of Lean's product notation to keep the listing
-portable, but the identifiers and proof structure match the repository.
-The blow-up construction is:
+\emph{Note on the following code.}  The snippets below are simplified
+schematic Lean illustrating the proof strategy; they are not verbatim
+repository excerpts.  In particular, the \lean{blowUp} definition uses
+informal notation (\lean{x}, \lean{and}, \lean{!=}) for readability, the
+triangle-freeness theorem appears under a different name in the repository,
+and the limit lemma is schematic.  We define the blow-up of a graph
+schematically as:
 \begin{lstlisting}
-def blowUp
-    {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat)
-    : SimpleGraph (Prod V (Fin n)) :=
-  { Adj v w := G.Adj v.1 w.1
-    symm v w := by apply G.symm }
+-- schematic; see LeanFlagAlgebras/ErdosPentagon/ for the exact definition
+def blowUp (G : SimpleGraph V) (n : Nat) : SimpleGraph (V × Fin n) :=
+  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
 of $n$ vertices and each edge by a complete bipartite graph) is triangle-free.
-The repository proves this by transporting any hypothetical triangle in the
-blow-up back to a triangle in the base graph:
+The repository proves this as a \lean{CliqueFree 3} lemma for the blow-up
+construction.  It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
 \begin{lstlisting}
-theorem blowUp_K3_free
-    {m : Nat} {G : SimpleGraph (Fin m)}
-    (n : Nat) (hfree : K3.Free G) :
-    K3.Free (blowUp G n)
+theorem subgraphCount_blowUp_C5_ge (n : Nat) :
+    n^5 ≤ (blowUp C5 n).subgraphCount C5
 \end{lstlisting}
-The construction has $5n$ vertices and at least $n^5$ copies of $C_5$:
-\begin{lstlisting}
-lemma subgraphCount_blowUp_C5_ge
-    (n : Nat) :
-    subgraphCount C5 (blowUp C5 n) >= n ^ 5
-\end{lstlisting}
-The proof of this counting lemma constructs an injection
-\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in each
-of the five parts determines a copy of $C_5$, and distinct choices give
-distinct subgraphs.  After transferring the blow-up to the vertex type
-\lean{Fin (5 * n)}, the repository obtains the finite extremal lower bound:
-\begin{lstlisting}
-theorem generalizedExtremalNumber_K3_C5_div_choose_ge
-    (n : Nat) (hn : 0 < n) :
-    (generalizedExtremalNumber (5 * n) K3 C5 /
-      (5 * n).choose 5 : Real) >= 24 / 625
-\end{lstlisting}
-Here the only asymptotic arithmetic needed is the elementary estimate
-\[
-  \frac{n^5}{\binom{5n}{5}}
-  \;\geq\;
-  \frac{n^5}{(5n)^5 / 5!}
-  \;=\;
-  \frac{24}{625},
-\]
-which Lean proves by combining \lean{Nat.choose\_le\_pow\_div},
-\lean{field\_simp}, and \lean{norm\_num}.  The lower bound on the Turán
-density then follows by restricting the defining convergent sequence to the
-subsequence $5(n+1)$:
-\begin{lstlisting}
-have hf : Tendsto f atTop (nhds (generalizedTuranDensity K3 C5)) := by
-  simpa [f] using (tendsto_generalizedTuranDensity K3 C5)
-
-have hg : Tendsto g atTop (nhds (generalizedTuranDensity K3 C5)) :=
-  hf.comp (StrictMono.tendsto_atTop hmul_mono)
-\end{lstlisting}
-This is the formal \lean{Filter.Tendsto} step: every term of the subsequence is
-bounded below by $24/625$, so the limit, namely
-\lean{generalizedTuranDensity K3 C5}, is also at least $24/625$.
-Equivalently, in mathematical notation, the proof uses the limiting fact
+The lower bound on the Turán density follows from the limit:
 \[
   \lim_{n\to\infty} \frac{n^5}{\binom{5n}{5}} = \frac{24}{625},
 \]
-but the Lean proof needs only the displayed lower bound plus the general
-existence theorem \lean{tendsto\_generalizedTuranDensity}.
+which is proved as an exact algebraic identity using \lean{norm\_num} after
+unfolding the definition of $\binom{5n}{5} = \frac{5n(5n-1)(5n-2)(5n-3)(5n-4)}{120}$.
+The limit argument is formalized using Lean's \lean{Filter.Tendsto}
+framework (schematic):
+\begin{lstlisting}
+-- schematic limit statement
+lemma blowUp_density_tendsto :
+    Filter.Tendsto (fun n => n^5 / Nat.choose (5*n) 5)
+                   Filter.atTop (nhds (24/625))
+\end{lstlisting}
 
 \paragraph{Trust hierarchy.}
 The proof of \lean{ErdosPentagon\_Turan} depends on two classes of
@@ -1726,34 +1475,25 @@ bookkeeping (linear normalization, expansion identities, multiplication
 identities) of flag algebra proofs, reducing steps that would time out with
 generic tactics to sub-second invocations.
 
-The end results are formally complete proof paths for Mantel's theorem and the
-Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), with additional
-Goodman-style inequalities in the active library.  We believe the architecture
-generalizes: the known flag algebra results in extremal combinatorics all
-involve the same three categories of proof obligation (abstract structure,
-data-heavy computation, and algebraic bookkeeping), and our framework provides
-reusable infrastructure for all three.
+The end results are formally complete proofs of Mantel's theorem and the
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$).  We believe
+the architecture generalizes: the known flag algebra results in extremal
+combinatorics all involve the same three categories of proof
+obligation (abstract structure, data-heavy computation, and algebraic
+bookkeeping), and our framework provides reusable infrastructure for all three.
 
 \paragraph{Lessons for proof engineering.}
-Four design choices proved unexpectedly decisive.  First, reflection had to be
-treated as a verified optimization problem, not merely as a way to run the
-definition.  The naive executable version of flag density still exposed
-Lean's evaluator to quotient equality, proof-valued fields, generic finite
-enumeration, and repeated graph-isomorphism search.  The usable version
-separates specification from implementation: abstract flag densities remain the
-specification, while \lean{Sym2Graph}, the fast Boolean isomorphism checkers,
-and the concrete induced-subgraph counters are optimized implementations
-connected back to the specification by adequacy theorems.  Second, the \emph{trust
+Three design choices proved unexpectedly decisive.  First, the \emph{trust
 hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
 for density tables) emerged not from abstract principle but from practical
 necessity: \lean{native\_decide} over rational matrix products exceeds the
 kernel's stack depth, while \lean{decide +kernel} over the same matrix
 terminates in finite (if slow) time.  The hierarchy is thus a response to
 concrete computational constraints, not a prior design commitment.
-Third, \emph{encoding structure in names} rather than type-class attributes
+Second, \emph{encoding structure in names} rather than type-class attributes
 was motivated by a performance observation: attribute lookup during elaboration
 triggers unification, which compounds with the size of flag algebra expressions
-to cause timeouts; name inspection does not.  Fourth, the \emph{general
+to cause timeouts; name inspection does not.  Third, the \emph{general
 forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
 because it required a measure-theoretic construction (the random extension
 measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
@@ -1764,13 +1504,10 @@ Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
 with a formally verified external checker) would eliminate the remaining
 dependency on the native compiler.  Extending the framework beyond graphs---to
 hypergraphs, directed graphs, or other combinatorial structures---would require
-more than changing type parameters: the concrete reflection layer, density
-generation scripts, and tactic naming conventions are all graph-specific.
-Nevertheless, the same conceptual split between abstract semantics,
-reflective computation, and tactic automation appears promising for those
-settings.  Automating the discovery of SDP certificates from within Lean
-(rather than importing them from external solvers) remains a longer-term goal.
-A full formalization of graphon theory, connecting flag algebra limits to the
+generalizing the type-parameter conventions but no new conceptual machinery.
+Automating the discovery of SDP certificates from within Lean (rather than
+importing them from external solvers) remains a longer-term goal.  A full
+formalization of graphon theory, connecting flag algebra limits to the
 Lov\'asz theory~\cite{lovasz2012large}, would provide a richer mathematical
 foundation for future extensions.
 

@@ -1,0 +1,103 @@
+{
+  "feedback_checks": [
+    {
+      "point": "Global-1: title misleading — remove or replace 'via Computational Reflection'",
+      "addressed": true,
+      "how": "A prominent % [TODO for authors] comment at the top of the section body flags the issue, explains why the current title is misleading, and proposes two alternative titles. The title itself lives in the preamble and cannot be changed inside the section body.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-1: too long and repetitive — cut aggressively",
+      "addressed": true,
+      "how": "Challenge 1 (abstract structure as a 'challenge') removed. Paragraphs 2–3 of the original collapsed to 2 short paragraphs. Lower bound blow-up explanation removed from Verified Results.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-2: drop 'generalized' from Turán density",
+      "addressed": true,
+      "how": "The term 'generalized Turán density' does not appear anywhere in the revised text; only 'Turán density' is used.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-3: introduce ex(n;H) before π(F;H)",
+      "addressed": true,
+      "how": "First sentence of paragraph 1 introduces ex(n;F,H) as the extremal number; π(F;H) is then defined as its limiting ratio.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-4: make asymptotic extremal combinatorics framing explicit",
+      "addressed": true,
+      "how": "Added sentence: 'The study of Turán densities belongs to asymptotic extremal combinatorics, where the goal is to determine these limits exactly.'",
+      "missing": ""
+    },
+    {
+      "point": "Intro-5: paragraphs 2–3 too technical — high-level only, reference BEATCS intro style",
+      "addressed": true,
+      "how": "Algebraic product formula, SDP matrix equation, and semantic-cone definition all removed. Replaced by 2–3 sentences: flag algebras reduce upper bounds to SDP, and have resolved numerous open problems (with citations).",
+      "missing": ""
+    },
+    {
+      "point": "Intro-6a: remove Challenge 1",
+      "addressed": true,
+      "how": "Challenge 1 (abstract structure as a unique difficulty) is gone; only Challenges 2 and 3 remain.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-6b: Challenge 2 — no p(F,G) notation",
+      "addressed": true,
+      "how": "Rewritten as 'thousands of flag algebra computations must be certified and imported into the proof' with no notation introduced.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-6c: Challenge 3 / tactic automation — add TODO marker",
+      "addressed": true,
+      "how": "Added '% [TODO: Making these tactics available as a reusable library for arbitrary flag algebra arguments is planned as future work.]' inside the Tactic automation bullet.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-7: flag algebra formalization as primary contribution",
+      "addressed": true,
+      "how": "'This paper' paragraph opens with 'The primary contribution is the formalization of flag algebra theory itself'. Flag algebra formalization is now the first bullet in the Contributions list.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-8: emphasize no-per-problem-theory departure from Razborov",
+      "addressed": true,
+      "how": "Added dedicated sentence in the first Contributions bullet: 'A key departure from Razborov's original axiomatic approach is the forbidden-subgraph reasoning framework: it is expressed as a single predicate applied at proof time, operating inside a single ambient theory of simple graphs and requiring no per-problem axiomatization.'",
+      "missing": ""
+    },
+    {
+      "point": "Intro-9: no Lean names in contributions",
+      "addressed": true,
+      "how": "All Lean identifiers (forbidLE, generalizedTuranDensity_le_of_forbidLE, Sym2Graph, ac_sort_pipeline, prove_flag_expand_with_forbidden_flag, native_decide, decide+kernel) removed from the Contributions list. Concepts are described in plain text.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-10: unify formula display — both or neither",
+      "addressed": true,
+      "how": "Verified Results now shows both: π(K₃;K₂)=1/2 for Mantel and π(C₅;K₃)=24/625 for Erdős pentagon.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-11: remove lower bound explanation from Verified Results",
+      "addressed": true,
+      "how": "The sentence about the lower bound via blow-up construction is gone from the Verified Results bullet.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-12: careful priority claims",
+      "addressed": true,
+      "how": "Claim split into three: (1) first formalization of the flag algebra method; (2) first machine-checked proof of Erdős pentagon; (3) Mantel formalized before as standalone, but this is the first via flag algebras.",
+      "missing": ""
+    },
+    {
+      "point": "Intro-13: paper organization — three layers not two",
+      "addressed": true,
+      "how": "Paper Organization now describes §3 (abstract formalization), §4 (reflection layer), and §5 (tactic layer) separately. The phrase 'two layers' is gone.",
+      "missing": ""
+    }
+  ],
+  "overall_addressed": true,
+  "retry_required": false,
+  "retry_instructions": ""
+}
