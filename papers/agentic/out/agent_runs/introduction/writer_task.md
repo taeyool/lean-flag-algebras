@@ -321,7 +321,7 @@ Selected evidence:
 24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
-Reference Section Draft (your primary starting point — improve and refine this):
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:intro}
 
@@ -427,12 +427,17 @@ automated discharge of density and SDP certificate obligations.
   \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
     We introduce \lean{Sym2Graph}, a finitely-representable graph type with
     decidable equality, and prove adequacy theorems equating abstract flag
-    densities to computable \lean{Sym2Graph} densities.  We verify SDP
-    certificates via an exact LDL$^\top$ decomposition over $\mathbb{Q}$,
-    checked by \lean{decide +kernel}.  We distinguish a deliberate
-    \emph{trust hierarchy}: \lean{native\_decide} for density tables (trusts
-    the native compiler) and \lean{decide +kernel} for SDP certificates
-    (trusts only the kernel).
+    densities to computable \lean{Sym2Graph} densities.  The contribution is
+    not merely that the definitions are executable: the first executable
+    version was not usable at the scale of the pentagon proof.  The final
+    reflection layer includes verified optimizations for isomorphism checking
+    (edge-cardinality pruning, type-aware permutation of only unlabeled
+    vertices, and edge-list comparison), plus elaboration-time generation of
+    density theorems from JSON tables.  We verify SDP certificates via an exact
+    LDL$^\top$ decomposition over $\mathbb{Q}$, checked by
+    \lean{decide +kernel}.  We distinguish a deliberate \emph{trust hierarchy}:
+    \lean{native\_decide} for density tables (trusts the native compiler) and
+    \lean{decide +kernel} for SDP certificates (trusts only the kernel).
 
   \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
     We implement a suite of custom Lean~4 elaboration tactics that exploit a
@@ -445,12 +450,15 @@ automated discharge of density and SDP certificate obligations.
     tactic call).
 
   \item \textbf{Verified results (\S\ref{sec:results}).}
-    We give formally complete proofs of Mantel's theorem and of
+    We give formally complete proof paths for Mantel's theorem and for
     $\tdensity{C_5}{K_3} = 24/625$ (the Erd\H{o}s pentagon theorem), including
     the upper bound via a formally verified SDP certificate and the lower bound
     via an explicit $C_5$-blow-up construction with a formal limit argument.
-    To our knowledge, this is the first formalization of the flag algebra method
-    in any proof assistant.
+    The active library additionally proves Goodman-style inequalities such as
+    \lean{Goodman\_bound\_on\_triangle\_density} and
+    \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity}; these are supporting
+    results rather than the main case studies.  To our knowledge, this is the
+    first formalization of the flag algebra method in any proof assistant.
 \end{itemize}
 
 \paragraph{Paper organization.}
@@ -461,9 +469,10 @@ verified results.  Section~\ref{sec:related} discusses related work, and
 Section~\ref{sec:conclusion} concludes.
 ---END REFERENCE DRAFT---
 
-Improve and refine the Reference Draft above for section: Introduction.
-Identify gaps and weak arguments, add missing technical detail, fix any imprecision.
-Preserve accurate technical content already present. Do not remove verified claims.
+Rewrite the section 'Introduction' to fully address the feedback above.
+You may freely restructure paragraphs, remove outdated content, and add new content.
+Preserve only technically accurate claims that are not targeted by any feedback point.
+Do not feel constrained to follow the Reference Draft's structure.
 Hard gate: satisfy all Section Blueprint constraints (subsections, equations, code references where required).
 For mathematical formulas, derive and align notation from the listed Equation Source PDFs.
 Do not include \section{...}.

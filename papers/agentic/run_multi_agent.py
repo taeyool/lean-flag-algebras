@@ -661,6 +661,7 @@ def judge_revision_feedback(
 
 def run() -> None:
     args = parse_args()
+    mode = args.mode
     root = Path(args.root).resolve()
     config_path = root / args.config
     if not config_path.exists():
@@ -756,7 +757,6 @@ def run() -> None:
 
     current_tex = read_text(draft_output_path)
     execution_mode = args.execution_mode
-    mode = args.mode
     queue_manifest: list[dict[str, str]] = []
 
     for section in sections:
