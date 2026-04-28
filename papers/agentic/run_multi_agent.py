@@ -103,6 +103,15 @@ def parse_args() -> argparse.Namespace:
         default="draft",
         help="draft: generate/improve section drafts. revision: address author feedback on the existing draft.",
     )
+    parser.add_argument(
+        "--rewrite",
+        action="store_true",
+        help=(
+            "Allow the Writer to restructure, remove, or add content freely. "
+            "By default (without --rewrite), the Writer preserves the reference draft structure. "
+            "Only meaningful in revision mode."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -372,20 +381,35 @@ def generate_copilot_task_pack(
     ref_section_body: str = "",
     mode: str = "draft",
     feedback: str = "",
+    rewrite: bool = False,
 ) -> None:
     # Build the reference draft block included in writer and verifier tasks.
     if ref_section_body:
         ref_block = (
-            "\nReference Section Draft (your primary starting point — improve and refine this):\n"
+            "\nReference Section Draft (your primary starting point):\n"
             "---BEGIN REFERENCE DRAFT---\n"
             + ref_section_body
             + "\n---END REFERENCE DRAFT---\n\n"
         )
-        writer_action = (
-            f"Improve and refine the Reference Draft above for section: {section}.\n"
-            "Identify gaps and weak arguments, add missing technical detail, fix any imprecision.\n"
-            "Preserve accurate technical content already present. Do not remove verified claims.\n"
-        )
+        if mode == "revision" and rewrite:
+            writer_action = (
+                f"Rewrite the section '{section}' to fully address the feedback above.\n"
+                "You may freely restructure paragraphs, remove outdated content, and add new content.\n"
+                "Preserve only technically accurate claims that are not targeted by any feedback point.\n"
+                "Do not feel constrained to follow the Reference Draft's structure.\n"
+            )
+        elif mode == "revision":
+            writer_action = (
+                f"Revise the Reference Draft for section '{section}' to address the feedback above.\n"
+                "Make targeted changes: edit, cut, or expand only what the feedback requires.\n"
+                "Preserve structure and content not targeted by any feedback point.\n"
+            )
+        else:
+            writer_action = (
+                f"Improve and refine the Reference Draft above for section: {section}.\n"
+                "Identify gaps and weak arguments, add missing technical detail, fix any imprecision.\n"
+                "Preserve accurate technical content already present. Do not remove verified claims.\n"
+            )
     else:
         ref_block = ""
         writer_action = (
@@ -771,6 +795,7 @@ def run() -> None:
                 ref_section_body=ref_section_body,
                 mode=mode,
                 feedback=feedback,
+                rewrite=args.rewrite,
             )
             manifest_entry: dict[str, str] = {
                 "section": section,
@@ -856,13 +881,28 @@ def run() -> None:
 
         ref_block_api = ""
         if ref_section_body:
+            if mode == "revision" and args.rewrite:
+                ref_instruction_api = (
+                    "Rewrite the section to fully address the feedback. "
+                    "You may freely restructure, remove, or add content. "
+                    "Preserve only technically accurate claims not targeted by feedback. "
+                )
+            elif mode == "revision":
+                ref_instruction_api = (
+                    "Make targeted revisions to address the feedback. "
+                    "Preserve structure and content not targeted by any feedback point. "
+                )
+            else:
+                ref_instruction_api = (
+                    "Improve and refine the Reference Draft above. Preserve accurate technical content. "
+                    "Identify gaps and strengthen weak arguments. "
+                )
             ref_block_api = (
-                "\nReference Section Draft (your primary starting point — improve and refine this):\n"
+                "\nReference Section Draft (your primary starting point):\n"
                 "---BEGIN REFERENCE DRAFT---\n"
                 + ref_section_body
                 + "\n---END REFERENCE DRAFT---\n\n"
-                "Improve and refine the Reference Draft above. Preserve accurate technical content. "
-                "Identify gaps and strengthen weak arguments. "
+                + ref_instruction_api
             )
 
         writer_user = (
