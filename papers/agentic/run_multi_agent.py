@@ -685,21 +685,34 @@ def run() -> None:
     )
     contributions = extract_contributions_from_tex(source_tex_text)
 
-    # Load the reference (base) draft: if base_draft_tex is configured, copy it as the
-    # seed so agents start from a high-quality existing draft rather than a blank skeleton.
+    # Load the reference draft that agents will see as their starting point,
+    # and initialise the output file if needed.
+    #
+    # draft mode  — seed from base_draft_tex (paper_claude.tex) every run so
+    #               the output file always starts from the canonical baseline.
+    # revision mode — use the current working draft (draft_tex_output) so that
+    #                 successive revisions build on each other rather than
+    #                 resetting to the original each time.
     base_draft_tex_path = config.get("base_draft_tex", "")
     reference_tex = ""
-    if base_draft_tex_path:
-        ref_path = root / base_draft_tex_path
-        if ref_path.exists():
-            reference_tex = read_text(ref_path)
 
-    if reference_tex:
-        draft_output_path.write_text(reference_tex, encoding="utf-8")
+    if mode == "revision" and draft_output_path.exists():
+        # Revise in place: the current working draft is the reference.
+        reference_tex = read_text(draft_output_path)
     else:
-        draft_output_path.write_text(
-            render_seed_draft_tex(config["project_name"], contributions), encoding="utf-8"
-        )
+        # Draft mode (or first run before the output file exists): seed from base.
+        if base_draft_tex_path:
+            ref_path = root / base_draft_tex_path
+            if ref_path.exists():
+                reference_tex = read_text(ref_path)
+
+        if reference_tex:
+            draft_output_path.write_text(reference_tex, encoding="utf-8")
+        else:
+            draft_output_path.write_text(
+                render_seed_draft_tex(config["project_name"], contributions),
+                encoding="utf-8",
+            )
 
     considerations_path = root / config["considerations_file"]
     author_notes_path = root / config.get("author_notes_file", "")
