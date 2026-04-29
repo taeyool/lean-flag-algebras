@@ -87,7 +87,7 @@
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
 
 % =========================================================================
-\title{Formalizing Flag Algebras in Lean~4 via Computational Reflection}
+\title{Formalizing Flag Algebras in Lean~4: Quotients, Reflection, and Domain-Specific Automation}
 \date{}
 
 \author[1]{Gyeongwon Jeong}
@@ -106,57 +106,56 @@
 \begin{abstract}
 Razborov's flag algebra method is one of the most powerful tools in extremal
 combinatorics, having resolved many open problems about asymptotic subgraph
-densities.  Applying it in practice, however, requires combining abstract algebraic
-and measure-theoretic reasoning with large external computations: subgraph
-density tables computed by enumeration, and semidefinite programming (SDP)
-certificates found by numerical solvers.  Formalizing such proofs in a proof
-assistant is therefore a challenge on two fronts: the abstract mathematical
-structures must be faithfully encoded in a type theory, and the external
-computational components must be imported and verified in a way that does not
-compromise the overall proof's trustworthiness.
+densities.  Applying it in practice, however, combines quotient-heavy abstract
+algebra, measure-theoretic limit arguments, large tables of enumerated subgraph
+densities, and semidefinite programming (SDP) certificates found by numerical
+solvers.  A proof assistant must therefore do more than check a final
+certificate: it must provide a trustworthy interface between extensional
+mathematics and intensional type theory, and between high-level quotient
+definitions and executable finite combinatorics.
 
-We present a Lean~4 formalization of Razborov's flag algebra method for
-graphs, organized around a \emph{reflection-based} architecture.  At the
-abstract level, we define flags as quotient types under graph isomorphism,
-construct the flag algebra as a quotient module, equip it with a semantic
-ordering via positive homomorphisms, and connect flag algebra inequalities to
-combinatorial Turán densities through a measure-theoretic framework.  At the
-computational level, we introduce a concrete, decidably-equal graph
-representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
-the abstract definitions.  A naive reflective evaluator is still too slow for
-pentagon-sized tables, because it repeatedly invokes quotient equality,
-generic finite-type enumeration, and graph-isomorphism search.  We therefore
-verify optimized Boolean isomorphism procedures that reject impossible cases by
-edge-count invariants, permute only non-type vertices for typed flags, and
-compare adjacency over a fixed finite edge list; these verified optimizations
-make \lean{native\_decide} usable for over 2{,}800 density obligations, while
-\lean{decide +kernel} checks the SDP matrix equalities.  Structural proof obligations---normalizing linear combinations
-of flag terms and applying expansion and multiplication identities---are handled
-by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
-a canonical naming convention for flags as a machine-readable encoding of
-mathematical structure.
+We present a Lean~4 formalization of Razborov's flag algebra method for graphs.
+The formalization is organized around three mutually reinforcing design
+principles.  First, the mathematical specification is kept at the quotient
+level: flags are quotient types under graph isomorphism, the flag algebra is a
+quotient module, and inequalities are interpreted semantically via positive
+homomorphisms.  Second, extensional counting arguments are made explicit in
+Lean: equalities of rational densities are proved by naming the two finite
+sample spaces, constructing an equivalence between them, and then transporting
+cardinality equality through the density formula.  This pattern is pervasive in
+the formalization and prevents routine ``same set up to reindexing'' arguments
+from becoming brittle arithmetic goals.  Third, computation is introduced only
+through proved refinement boundaries: a concrete graph representation
+(\lean{Sym2Graph}), verified Boolean isomorphism procedures, and adequacy
+theorems connect fast executable code to the abstract quotient definitions.
+
+These principles support a proof-engineering architecture for large
+computer-assisted mathematics.  A naive
+reflective evaluator is too slow for pentagon-sized density tables because it
+repeatedly invokes quotient equality, generic finite-type enumeration, and
+graph-isomorphism search.  We instead verify optimized Boolean isomorphism
+procedures that reject impossible cases by edge-count invariants, permute only
+non-type vertices for typed flags, and compare adjacency over a fixed finite
+edge list.  These verified optimizations make \lean{native\_decide} usable for
+over 2{,}800 density obligations, while \lean{decide +kernel} checks the SDP
+matrix equalities.  A complementary tactic layer normalizes linear combinations
+of flag terms and applies expansion and multiplication identities by inspecting
+the Lean AST and exploiting a canonical naming convention for flags as
+machine-readable metadata.
 
 As flagship case studies, we give complete formal proof paths for Mantel's
 theorem and for the Erd\H{o}s pentagon theorem
 ($\tdensity{C_5}{K_3} = 24/625$), the latter including both the upper bound
 via a formally verified SDP certificate and the lower bound via an explicit
-blow-up construction.  The active library also contains smaller
-Goodman-style flag algebra inequalities derived with the same infrastructure.
-To our knowledge, this is the first formalization of the flag algebra method
-in any proof assistant.  The active non-archive formalization currently
-comprises 25{,}446 lines of Lean~4 code.
+blow-up construction.  The active library also contains smaller Goodman-style
+flag algebra inequalities derived with the same infrastructure.  To our
+knowledge, this is the first formalization of the flag algebra method in any
+proof assistant.  The active non-archive formalization currently comprises
+25{,}446 lines of Lean~4 code.
 \end{abstract}
 
 % =========================================================================
 \section{Introduction}
-% [TODO for authors: the global feedback requests reconsidering the paper title.
-%  The current title "Formalizing Flag Algebras in Lean 4 via Computational Reflection"
-%  is misleading because computational reflection is used only in the verification of
-%  SDP certificates and density tables, not in formalizing flag algebra theory itself.
-%  Suggested alternatives: "Formalizing Flag Algebras in Lean 4" or
-%  "A Lean 4 Formalization of Razborov's Flag Algebra Method".
-%  This note is placed here because the title lives in the preamble, outside the
-%  Introduction section body.]
 \label{sec:intro}
 
 \paragraph{Asymptotic extremal combinatorics and flag algebras.}
@@ -181,12 +180,12 @@ density inequalities as a semidefinite programming (SDP) problem, producing
 certificates that can be checked mechanically.  Since its introduction, the
 method has resolved numerous open problems, including the minimum triangle
 density problem~\cite{razborov2008}, the Erd\H{o}s pentagon
-problem~\cite{HatamiHKNR13,Grzesik12}, and several Turán-type problems for
+problem~\cite{hatami2012,grzesik2012}, and several Turán-type problems for
 graphs and hypergraphs.
 
 \paragraph{The formalization challenge.}
 Formalizing a flag algebra proof in a proof assistant requires confronting
-two distinct categories of proof obligation that call for qualitatively
+three distinct categories of proof obligation that call for qualitatively
 different techniques.
 
 \begin{enumerate}
@@ -202,6 +201,17 @@ different techniques.
     vertex count, computing typed flag products, and normalizing into canonical
     form.  Each step is routine but the aggregate is prohibitively tedious
     to discharge by hand.
+
+  \item \textbf{Extensional mathematics in intensional type theory.}  Many
+    textbook steps say that two probabilities are equal because they count
+    ``the same choices'' after a reindexing.  In Lean this is not a slogan:
+    the proof must expose the two finite sample spaces, choose stable
+    \lean{Fintype} instances for them, construct an explicit equivalence
+    between the spaces, use \lean{Fintype.card\_congr}, and then transport
+    the resulting cardinality equality through the rational density formula.
+    Quotients, size-indexed flags, and proof-valued fields make these
+    extensionality arguments a central part of the design rather than a
+    peripheral nuisance.
 \end{enumerate}
 
 The first category calls for a \emph{reflection} architecture: a
@@ -210,7 +220,10 @@ correspondence to the abstract definitions is certified by adequacy theorems,
 allowing Lean's kernel or native evaluator to check each value automatically.
 The second calls for custom elaboration tactics that inspect the syntactic
 structure of the proof state and dispatch the appropriate domain-specific
-lemmas.
+lemmas.  The third calls for a disciplined library of proof patterns for
+quotient-heavy finite counting: cardinality-by-equivalence, explicit instance
+stabilization, and localized transport lemmas for the dependent casts that
+arise when flags change size.
 
 \paragraph{This paper.}
 We present a Lean~4 formalization of Razborov's flag algebra method for graphs.
@@ -223,6 +236,12 @@ A key departure from Razborov's original axiomatic approach is that forbidden
 subgraphs are expressed as a single predicate applied at proof time, operating
 inside a single ambient theory of simple graphs and requiring no
 per-problem axiomatization.
+For a PL and formal-methods audience, the contribution is the proof
+architecture needed to make this formalization reusable: it identifies where
+extensional combinatorial arguments must be reified as equivalences of finite
+witness sets, where reflection is an implementation refinement rather than the
+specification, and where tactic-facing metadata should be represented
+syntactically for performance.
 Built on this abstract layer, a \emph{reflection layer} bridges the abstract
 definitions to a finitely-computable concrete representation, enabling
 automated discharge of density and SDP certificate obligations.
@@ -241,6 +260,16 @@ tactics.
     predicate applied at proof time, operating inside a single ambient theory
     of simple graphs and requiring no per-problem axiomatization.
 
+  \item \textbf{Design principles for quotient-heavy counting
+    (\S\ref{sec:design-principles}).}
+    We distill the proof-engineering patterns that made the formalization
+    scale in Lean~4: proving numerical density equalities via equivalences
+    between finite sample spaces, stabilizing inferred \lean{Fintype}
+    instances at the point where a set is named, localizing \lean{cast}/
+    \lean{HEq} transport around size-changing operations, and choosing
+    representations according to their consumers (quotients for specification,
+    finite data for computation, and canonical names for tactics).
+
   \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
     We introduce a finitely-representable graph type with decidable equality
     and prove adequacy theorems equating abstract flag densities to computable
@@ -256,12 +285,10 @@ tactics.
     flag terms (which times out without it on expressions with $\sim\!25$
     terms), and tactics for flag expansion and multiplication identities
     (each collapsing 15--20 manual steps into a single tactic call).
-    % [TODO: Making these tactics available as a reusable library for
-    %  arbitrary flag algebra arguments is planned as future work.]
 
   \item \textbf{Verified results (\S\ref{sec:results}).}
     We give formally complete proofs of Mantel's theorem
-    ($\pi(K_3;\,K_2) = 1/2$) and of the Erd\H{o}s pentagon theorem
+    ($\pi(K_2;\,K_3) = 1/2$) and of the Erd\H{o}s pentagon theorem
     ($\pi(C_5;\,K_3) = 24/625$), the latter including the upper bound via
     a formally verified SDP certificate.
     To our knowledge, this is the first formalization of the flag algebra
@@ -277,7 +304,8 @@ Section~\ref{sec:background} recalls the mathematical background on flag
 algebras.
 Section~\ref{sec:abstract} presents the abstract formalization layer:
 the type-theoretic encoding of flags, the flag algebra, and the
-forbidden-subgraph framework.
+forbidden-subgraph framework, followed by the main design principles for
+quotient-heavy counting.
 Section~\ref{sec:reflection} describes the reflection layer: the concrete
 computable graph representation, adequacy theorems, and SDP certificate
 verification.
@@ -489,9 +517,10 @@ independently by Grzesik~\cite{grzesik2012} and by Hatami, Hladk\'y, Kr\'al,
 Norine, and Razborov~\cite{hatami2012}.  It is achieved by the blow-up of
 $C_5$ (partition $n$ vertices into five nearly-equal groups and add all edges
 between consecutive groups in the cycle).  We use this theorem as the main
-case study throughout the paper, as it involves all three categories of proof
-obligation: abstract structure, data-heavy density computation (thousands of
-rational values over 5-vertex graphs), and heavy algebraic bookkeeping.
+case study throughout the paper, as it involves the full proof-engineering
+stack: abstract structure, extensional finite counting, data-heavy density
+computation (thousands of rational values over 5-vertex graphs), and heavy
+algebraic bookkeeping.
 
 
 \section{Abstract Formalization}
@@ -688,6 +717,87 @@ significant care about which topological and measurability assumptions each
 lemma required.
 
 
+\subsection{Design Principles for Quotient-Heavy Counting}
+\label{sec:design-principles}
+
+The formalization did not scale merely by translating each mathematical
+definition into Lean.  The reusable content is a set of proof-engineering
+principles for making quotient-heavy finite combinatorics robust in an
+intensional proof assistant.  We describe these principles explicitly because
+they are the part of the development most likely to transfer to other
+computer-assisted extremal-combinatorics arguments.
+
+\paragraph{Principle 1: keep the quotient as the specification boundary.}
+The abstract objects are intentionally close to the mathematics: flags are
+quotients by isomorphism and the flag algebra is a quotient by zero-space
+relations.  We did not build the abstract theory around a canonical
+representative of each isomorphism class.  Canonical representatives are useful
+for computation, but making them part of the specification would force every
+mathematical lemma to carry representation-specific side conditions.  Instead,
+the quotient-level definitions state theorems, while canonical finite data
+structures appear only behind adequacy theorems in the reflection layer.
+
+\paragraph{Principle 2: prove numerical equalities by equivalences of witnesses.}
+The most common informal move in flag algebra calculations is to say that two
+densities are equal because the two sampling procedures count the same objects
+after a reindexing.  In Lean, we make this extensional argument explicit.  The
+proof first names the two sample spaces, fixes the \lean{Fintype} instances
+that will be used to count them, constructs an equivalence between the sample
+spaces, and only then simplifies the resulting rational equality:
+\begin{lstlisting}
+let S0 := setOfLabeledSubgraphListIsoHl G Hl0
+let S1 := setOfLabeledSubgraphListIsoHl G Hl1
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+let h_iso : Equiv S0 S1 := ...
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso
+simp_all only [Set.toFinset_card]
+\end{lstlisting}
+This is the pattern used in \lean{flagDensity\_permute} to show that
+permuting the order of sampled flags does not change density, and in
+\lean{flagDensity\_insert\_empty} to show that inserting an empty flag leaves
+the density unchanged.  It also appears in the adequacy proof that the concrete
+\lean{Sym2InducedSubgraph} enumeration has the same count as the abstract
+\lean{LabeledSubgraph} enumeration.  The point is not the particular code
+above, but the invariant it enforces: a numerical equality is justified by an
+explicit isomorphism between the finite sets being counted.  Arithmetic
+simplification is the last step, not the proof idea.
+
+\paragraph{Principle 3: stabilize finite enumerations where they are introduced.}
+Lean's type-class search may find different \lean{Fintype} instances for the
+same predicate-defined set through different paths.  Those instances enumerate
+the same elements extensionally, but they need not be definitionally equal, so
+cardinality lemmas can fail to apply.  Our rule is to bind the intended
+\lean{Fintype} instance immediately after naming a finite set, as in
+\lean{let hS0 : Fintype S0 := Fintype.ofFinite S0}.  This makes subsequent
+uses of \lean{Fintype.card}, \lean{Set.toFinset}, and
+\lean{Fintype.card\_congr} refer to the same enumeration term.  The pattern is
+low-level, but it is the difference between a proof that is stable under small
+refactorings and one whose success depends on accidental type-class search
+order.
+
+\paragraph{Principle 4: localize dependent transport behind named lemmas.}
+Flag algebra operations change sizes: expansion moves a flag to a larger
+vertex count, multiplication chooses a product size, and inserting an empty
+flag changes the dependent family indexing a flag list.  These operations
+produce unavoidable \lean{cast} and \lean{HEq} obligations.  Rather than
+allowing casts to spread through high-level proofs, we isolate them in lemmas
+such as \lean{flagList\_HEq}, \lean{flaglist\_heq\_of\_idx\_eq}, and
+\lean{flagListDensity\_HEq\_eq}.  The larger algebraic proofs can then invoke
+ordinary-looking invariance statements, while the transport details remain in
+the small layer where they belong.
+
+\paragraph{Principle 5: choose representations by their consumers.}
+No single representation served all parts of the proof.  Quotients are the
+right specification language; \lean{Sym2Graph} is the right evaluator input;
+rational matrices are the right kernel-checkable SDP certificate format; and
+canonical names such as \lean{FlagAlgebra\_5\_1\_0\_3} are the right metadata
+format for elaboration tactics.  Treating these as separate interfaces, linked
+by adequacy and generated lemmas, is what lets the formalization combine
+mathematical faithfulness with executable performance.
+
+
 \subsection{Type-Theoretic Obstacles from Intensionality}
 \label{sec:intensional}
 
@@ -796,7 +906,8 @@ theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
 Not all intensionality obstacles were resolved.  The most significant gap is in
 \lean{LeanFlagAlgebras.Forbid.Basic}: two lemmas relating the quotient-level
 \lean{forbidLE} predicate to the density of individual flag representatives
-were left as comments with \lean{sorry} markers.  Concretely, showing that
+remain as commented proof sketches, not as imported declarations or trusted
+axioms.  Concretely, showing that
 $f \leq_{[H]} 0$ implies the density of $H$ in any flag in the support of $f$
 is positive requires reasoning about which representatives of a quotient class
 can appear under a homomorphism --- a question that reduces to asking how the
@@ -1154,13 +1265,14 @@ specialization pass: it turns a general reflective evaluator into thousands of
 small, reusable theorem constants specialized to the flags that appear in the
 certificate.
 
-\subsection{SDP Certificate Verification via LDL$^\top$}
+\subsection{SDP Certificate Verification via \texorpdfstring{LDL$^\top$}{LDL\string^T}}
 \label{sec:sdp}
 
 The upper bound proof for the Erd\H{o}s pentagon theorem requires showing
 that a sum of three quadratic forms (one for each 1-vertex type) is
-non-negative under the $C_5$-free assumption.  The certificates are three
-positive semidefinite matrices $P$, $Q$, $R$ over $\Q$ (each $8 \times 8$),
+non-negative under the $K_3$-free assumption.  The certificates are three
+positive semidefinite matrices $P$, $Q$, $R$ over $\Q$ (of sizes
+$8 \times 8$, $6 \times 6$, and $5 \times 5$ respectively),
 found externally by an SDP solver.
 
 We verify positive semidefiniteness via an LDL$^\top$ decomposition.  For
@@ -1243,7 +1355,7 @@ current repository rather than copied from an external report.
     \midrule
     Auto-generated density lemmas (pentagon proof) & 2\,847 \\
     Multiplication table entries verified & $>$\,300 \\
-    \lean{decide~+kernel} SDP matrix equalities & 3 (each $8{\times}8$ over $\mathbb{Q}$) \\
+    \lean{decide~+kernel} SDP matrix equalities & 3 (sizes $8{\times}8$, $6{\times}6$, $5{\times}5$ over $\mathbb{Q}$) \\
     \lean{native\_decide} density table checks & $>$\,2\,800 \\
     \bottomrule
   \end{tabular}
@@ -1504,7 +1616,8 @@ The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag algebra
 inequality $C_5 \leq_{[K_3]} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
 $C_5$-density is at most $24/625$ under the $K_3$-free assumption.
 The proof exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$
-(one per 1-vertex type, each $8\times 8$) and shows that the sum of the
+(one per 1-vertex type, of sizes $8\times 8$, $6\times 6$, and $5\times 5$)
+and shows that the sum of the
 corresponding quadratic forms, after downward-averaging, equals
 $\frac{24}{625} \cdot \mathbf{1} - [C_5]$.
 
@@ -1670,8 +1783,10 @@ that are validated only informally.  Our work provides the first formally
 verified end-to-end pipeline from flag algebra certificates to combinatorial
 theorems.  Razborov~\cite{razborov2013flag} gives a comprehensive survey of
 flag algebra applications; the $\sim$100 results catalogued there all involve
-the same three categories of proof obligation identified in
-Section~\ref{sec:intro}, suggesting that our infrastructure is broadly applicable.
+the same recurring concerns identified in Section~\ref{sec:intro}: abstract
+structure, extensional finite counting, data-heavy computation, and algebraic
+bookkeeping.  This common shape suggests that our infrastructure is broadly
+applicable.
 
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
@@ -1709,11 +1824,12 @@ an open challenge.
 
 We have presented the first formalization of Razborov's flag algebra method in
 a proof assistant, realized in Lean~4.  The formalization is organized around
-a two-layer architecture.  The \emph{reflection layer} connects the abstract
-algebraic definitions to a concrete, decidably-computable graph representation
-via adequacy theorems, enabling \lean{native\_decide} and \lean{decide +kernel}
-to automatically discharge over 2\,800 density and SDP certificate obligations.
-The \emph{tactic layer} provides custom elaboration tactics---exploiting a
+quotient-level mathematical specifications, a reflection layer, and a tactic
+layer.  The \emph{reflection layer} connects the abstract algebraic definitions
+to a concrete, decidably-computable graph representation via adequacy theorems,
+enabling \lean{native\_decide} and \lean{decide +kernel} to automatically
+discharge over 2\,800 density and SDP certificate obligations.  The
+\emph{tactic layer} provides custom elaboration tactics---exploiting a
 canonical naming scheme for flag constants---that handle the structural
 bookkeeping (linear normalization, expansion identities, multiplication
 identities) of flag algebra proofs, reducing steps that would time out with
@@ -1723,12 +1839,12 @@ The end results are formally complete proof paths for Mantel's theorem and the
 Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), with additional
 Goodman-style inequalities in the active library.  We believe the architecture
 generalizes: the known flag algebra results in extremal combinatorics all
-involve the same three categories of proof obligation (abstract structure,
-data-heavy computation, and algebraic bookkeeping), and our framework provides
-reusable infrastructure for all three.
+involve the same recurring concerns (abstract structure, extensional finite
+counting, data-heavy computation, and algebraic bookkeeping), and our framework
+provides reusable infrastructure for each.
 
 \paragraph{Lessons for proof engineering.}
-Four design choices proved unexpectedly decisive.  First, reflection had to be
+Five design choices proved unexpectedly decisive.  First, reflection had to be
 treated as a verified optimization problem, not merely as a way to run the
 definition.  The naive executable version of flag density still exposed
 Lean's evaluator to quotient equality, proof-valued fields, generic finite
@@ -1736,17 +1852,22 @@ enumeration, and repeated graph-isomorphism search.  The usable version
 separates specification from implementation: abstract flag densities remain the
 specification, while \lean{Sym2Graph}, the fast Boolean isomorphism checkers,
 and the concrete induced-subgraph counters are optimized implementations
-connected back to the specification by adequacy theorems.  Second, the \emph{trust
-hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
-for density tables) emerged not from abstract principle but from practical
-necessity: \lean{native\_decide} over rational matrix products exceeds the
-kernel's stack depth, while \lean{decide +kernel} over the same matrix
-terminates in finite (if slow) time.  The hierarchy is thus a response to
-concrete computational constraints, not a prior design commitment.
-Third, \emph{encoding structure in names} rather than type-class attributes
+connected back to the specification by adequacy theorems.  Second, numerical
+equalities had to be proved extensionally: when two densities are equal because
+they count the same choices, the Lean proof names the two finite sets,
+constructs an equivalence between them, and derives equality through
+\lean{Fintype.card\_congr}.  This made counting lemmas robust in the presence
+of quotient representatives and overlapping finite-type instances.  Third, the
+\emph{trust hierarchy} (using \lean{decide +kernel} for SDP certificates and
+\lean{native\_decide} for density tables) emerged not from abstract principle
+but from practical necessity: \lean{native\_decide} over rational matrix
+products exceeds the kernel's stack depth, while \lean{decide +kernel} over
+the same matrix terminates in finite (if slow) time.  The hierarchy is thus a
+response to concrete computational constraints, not a prior design commitment.
+Fourth, \emph{encoding structure in names} rather than type-class attributes
 was motivated by a performance observation: attribute lookup during elaboration
 triggers unification, which compounds with the size of flag algebra expressions
-to cause timeouts; name inspection does not.  Fourth, the \emph{general
+to cause timeouts; name inspection does not.  Fifth, the \emph{general
 forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
 because it required a measure-theoretic construction (the random extension
 measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
@@ -1775,6 +1896,12 @@ foundation for future extensions.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{razborov2008}
+A.~A.~Razborov.
+\newblock On the minimal density of triangles in graphs.
+\newblock \textit{Combinatorics, Probability and Computing},
+  17(4):603--618, 2008.
 
 \bibitem{razborov2013flag}
 A.~A.~Razborov.
