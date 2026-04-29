@@ -1077,4 +1077,69 @@ theorem downward_forbidLE_nonneg
     downward_forbidLE_nonneg_emptyType (σ := σ) hf
   exact (forbidLE_emptyType_iff_forbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
 
+theorem forbidLE_move_add_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
+    : ((a + b) ≤[F_forbid] c) ↔ (b ≤[F_forbid] (c - a))
+  := by
+  constructor
+  · intro habc
+    have h1 := forbidLE_add_right (h := -a) habc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+  · intro hbc
+    have h1 := forbidLE_add_left (h := a) hbc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+
+theorem forbidLE_move_add_left
+    {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
+    (habc : (a + b) ≤[F_forbid] c)
+    : b ≤[F_forbid] (c - a)
+  :=
+  (forbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
+
+theorem forbidLE_move_term_left_iff
+    {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
+    : (a ≤[F_forbid] c) ↔ ((0 : FlagAlgebra σ) ≤[F_forbid] (c - a))
+  := by
+  simpa using
+    (forbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := (0 : FlagAlgebra σ)) (c := c))
+
+theorem forbidLE_move_term_left
+    {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
+    (hac : a ≤[F_forbid] c)
+    : (0 : FlagAlgebra σ) ≤[F_forbid] (c - a)
+  :=
+  (forbidLE_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
+
+theorem downward_forbidEq_zero
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
+    : ⟦f⟧₀ =[F_forbid] 0
+  := by
+  refine forbidLE_antisymm ?_ ?_
+  · have hf' : (-1 • f) =[F_forbid] 0 := by
+      refine forbidEq_move_term_left_iff.mpr ?_
+      simp only [Int.reduceNeg, neg_smul, one_smul, sub_neg_eq_add, zero_add]
+      exact forbidEq_symm hf
+    simp only [Int.reduceNeg, neg_smul, one_smul] at hf'
+    rw [forbidLE_move_term_left_iff]
+    simp only [zero_sub, ← downward_neg]
+    exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf'))
+  · exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf))
+
+theorem downward_forbidLE_equal_flags
+    {F_forbid : FinFlag ∅ₜ} {a b : FlagAlgebra σ}
+    (hab : a =[F_forbid] b)
+    : ⟦a⟧₀ =[F_forbid] ⟦b⟧₀
+  := by
+  refine forbidEq_move_term_left_iff.mpr ?_
+  rw [← downward_sub]
+  exact forbidEq_symm (downward_forbidEq_zero ((forbidEq_symm (forbidEq_move_term_left hab))))
+
+theorem forbidLE_rw_left_add_right
+    {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
+    (hfg : f =[F_forbid] g)
+    : ((f + h) ≤[F_forbid] k) ↔ ((g + h) ≤[F_forbid] k)
+  := forbidLE_rw_left (forbidEq_add_right hfg)
+
+
+
 end Forbid
