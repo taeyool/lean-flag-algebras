@@ -51,7 +51,7 @@
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
 \newcommand{\den}[2]{p(#1;\,#2)}
-\newcommand{\tdensity}[2]{\pi(#1;\,#2)}
+\newcommand{\tdensity}[2]{p(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
 
 \tikzset{
@@ -817,7 +817,7 @@ auxiliary size chosen for a calculation.
 
 \subsection{Densities as Sampling Semantics}
 
-The most useful way to read $p(F;G)$ is not as a combinatorial fraction, but as
+The most useful way to read $\den{F}{G}$ is not as a combinatorial fraction, but as
 the denotational semantics of a finite sampling program: keep the type vertices
 fixed, sample the remaining vertices, and observe the induced flag.  That
 reading is what makes flag algebras attractive for certification.  SDP
@@ -858,7 +858,7 @@ def flagDensity2 (F1 : Flag sigma U1) (F2 : Flag sigma U2)
 The Lean source names these constants with subscripted numerals.  We write
 \lean{flagDensity1} and \lean{flagDensity2} here only to keep the typeset code
 portable.  Conceptually, \lean{flagDensity1} is the induced subflag density
-$p(F;G)$, and \lean{flagDensity2} is the joint density needed for products.
+$\den{F}{G}$, and \lean{flagDensity2} is the joint density needed for products.
 
 \subsection{The Algebra as an Equational Theory}
 
@@ -876,7 +876,7 @@ def unitVector (F : FinFlag sigma) : FlagVector sigma :=
   Finsupp.single F 1
 \end{lstlisting}
 Here \lean{->0} is Mathlib's finitely supported function type.  The equations
-we impose are the expansion laws $F = \sum_G p(F;G)G$ at larger sizes:
+we impose are the expansion laws $F = \sum_G \den{F}{G}G$ at larger sizes:
 \begin{lstlisting}
 def densityFlagSum (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
   sum F' : FlagWithSize sigma ell,
