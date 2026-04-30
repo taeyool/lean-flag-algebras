@@ -104,34 +104,51 @@
 \maketitle
 
 \begin{abstract}
-Flag algebras reduce many upper-bound problems in asymptotic extremal graph
-theory to inequalities between densities of finite graph patterns, often proved
-with semidefinite-programming (SDP) certificates.  We present a Lean~4
-formalization of the flag algebra method for simple graphs.  The formalization
-keeps the mathematics at the quotient level: a flag is a labeled graph modulo
-label-preserving graph isomorphism, the flag algebra is a quotient module by
-the standard density-expansion relations, and non-negativity is interpreted by
-positive homomorphisms, i.e. algebra homomorphisms to $\mathbb{R}$ that assign
-non-negative values to every finite flag.  A central design point is the
-forbidden-subgraph framework: instead of constructing a separate axiomatic
-theory for each forbidden graph, the Lean development states the forbidden
-condition as a predicate used at proof time and proves a general theorem
-turning such flag algebra inequalities into Tur\'an-density bounds.  Reflection
-is used only for the finite computational parts of the proof, not as the
-definition of flag algebra itself: a concrete graph representation
-(\lean{Sym2Graph}) is connected to the quotient definitions by adequacy
-theorems, meaning proofs that executable counts agree with the abstract
-density definitions.  Density tables are checked by \lean{native\_decide},
-with the corresponding native-code trust boundary, while SDP certificates are
-verified by exact rational LDL$^\top$ decompositions whose matrix equalities
-are checked by \lean{decide +kernel}.  A separate tactic layer handles the
-syntactic bookkeeping of flag algebra proofs, such as normalizing linear
-combinations and applying expansion and multiplication identities.  As case
-studies, the development proves the flag-algebra derivation of Mantel's
-theorem, $\tdensity{K_2}{K_3}=1/2$, and the Erd\H{o}s pentagon theorem,
-$\tdensity{C_5}{K_3}=24/625$, including the pentagon upper bound from a
-verified SDP certificate and the lower bound from an explicit blow-up
-construction.
+Razborov's flag algebras are a powerful framework for attacking problems in extremal combinatorics.
+Some of the reasoning principles of the framework have been automated in software tools, 
+and such a tool has been used to resolve a range of open problems in extremal combinatorics. 
+In this paper, we present a Lean~4 formalization of the flag
+algebra method for simple graphs.
+
+The core of the formalization is the mathematical theory: flags as quotient
+types modulo label-preserving isomorphism, the flag algebra as a quotient
+$\mathbb{R}$-module by density-expansion identities, positive homomorphisms,
+and the semantic non-negativity cone, together with formal proofs of their
+key properties.  Proving the resulting combinatorial identities required a
+systematic discipline: to establish that two densities are equal, we exhibit
+an explicit bijection between the two finite sets being counted---naming the
+sample spaces, constructing an equivalence, and deriving the cardinality
+equality from it---rather than relying on arithmetic simplification.  This
+bijective-witness strategy recurs throughout the formalization of density
+lemmas, symmetry arguments, and adequacy theorems, and is the dominant
+proof technique of the abstract layer.
+
+Three further components complete the development.  A forbidden-subgraph
+framework encodes the $H$-freeness condition as a proof-time predicate
+inside a single ambient theory of simple graphs, eliminating the need for a
+per-problem axiom system.  A reflection layer connects the abstract
+definitions to a concrete computable graph type (\lean{Sym2Graph}) via
+adequacy theorems; density tables are then certified by \lean{native\_decide}
+and SDP certificates verified by exact rational LDL$^\top$ decompositions
+checked by \lean{decide + kernel}, making explicit which obligations are
+trusted to the native compiler and which are kernel-verified.  A tactic layer
+automates the algebraic bookkeeping of flag-algebra proofs: normalizing linear
+combinations, applying expansion identities, and multiplying under a
+forbidden-subgraph hypothesis.
+
+For programming-languages researchers, the formalization is a case study in
+mechanizing a quotient-heavy combinatorial theory in an intensional type
+theory.  The reusable engineering lessons include the bijective-witness proof
+discipline for finite counting arguments, preventing conflicting typeclass
+enumeration instances from silently breaking cardinality arguments, confining
+the cast and heterogeneous-equality bookkeeping that arises when flag
+operations change vertex counts to small named boundary lemmas, and a
+three-layer separation of abstract specification, executable reflection, and
+syntactic tactic automation.  As case studies, the development
+proves Mantel's theorem ($\tdensity{K_2}{K_3}=1/2$) and the Erd\H{o}s
+pentagon theorem ($\tdensity{C_5}{K_3}=24/625$), including the pentagon
+upper bound from a verified SDP certificate and the lower bound from a formal
+blow-up construction.
 \end{abstract}
 
 % =========================================================================
@@ -225,6 +242,27 @@ LDL$^\top$ decompositions, with the matrix equalities checked by
 expansion, and multiplication steps needed to use the formalized algebra in
 case-study proofs.
 
+\paragraph{Proof-engineering lessons.}
+Two Lean-specific obstacles shaped the proof strategy throughout the
+development.  The first is typeclass ambiguity in finite-set arguments: the
+same set defined by a predicate can be assigned different \lean{Fintype}
+instances through different elaboration paths; those instances agree on which
+elements belong to the set but are not definitionally equal, so cardinality
+lemmas such as \lean{Fintype.card\_congr} fail without an obvious error
+message.  The remedy, applied systematically, is to bind the intended instance
+explicitly at the moment a finite set is named, so that all subsequent uses
+see the same enumeration term.  The second obstacle is size-change bookkeeping:
+flag algebra operations (expansion, multiplication, insertion) change the
+vertex count of flags, and each such change forces explicit cast evidence and
+heterogeneous equality (\lean{HEq}) proofs whenever the same flag is used at
+two different sizes.  If this bookkeeping is left to propagate through
+high-level proofs it makes them unreadable; instead, we isolate each
+size-change obligation in a small named lemma and invoke only the clean
+invariant statement from above.  Both disciplines are described in
+\S\ref{sec:abstract} because they are the part of the development most likely
+to transfer to other formalizations of finite combinatorics in an intensional
+type theory.
+
 \paragraph{Contributions.}
 \begin{itemize}
   \item \textbf{Flag algebra theory in Lean~4 (\S\ref{sec:abstract}).}
@@ -279,7 +317,7 @@ This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.
 For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
-All graphs are finite and simple.
+All graphs are undirected, finite and simple.
 
 \subsection{Types and Flags}
 
@@ -293,8 +331,8 @@ up to isomorphism.
 Fix a type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
-that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ as a labeled
-graph (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
+that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$ 
+(i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
 The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
