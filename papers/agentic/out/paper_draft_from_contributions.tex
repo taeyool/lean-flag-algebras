@@ -352,7 +352,7 @@ All graphs are undirected, finite and simple.
 
 The motivating question has the following shape.  Fix two small graphs:
 a target pattern $F$ and a forbidden pattern $H$.  Among all very large graphs
-that contain no copy of $H$, how often can $F$ appear?  For example, if
+that contain no copy of $H$ as an induced subgraph, how often can $F$ appear as an induced subgraph?  For example, if
 $H=K_3$ is a triangle and $F=C_5$ is a pentagon, the question asks for the
 largest possible pentagon density in triangle-free graphs.  Such questions are
 hard because the graph being optimized over is not fixed: it can have
@@ -386,16 +386,13 @@ The first move in a flag algebra proof is to look at a large graph from the
 perspective of a small labeled configuration.  This is what lets the method use
 conditional information: for example, instead of only asking how many edges a
 triangle-free graph has, we can ask how the graph looks around a distinguished
-vertex or a distinguished edge.  The labels are not cosmetic; they are the
-roots from which local densities are measured.  In PL terms, a type fixes the
-interface of an observation, and a flag is an implementation of that interface
-inside a finite graph.
+vertex or a distinguished edge. Types and flags below enable such local views to be
+used in flag algebra proofs.
 
 \paragraph{Types.}
 A \emph{type} of size $k$ is a graph $\sigma$ with vertex set $[k]$.
 The \emph{empty type} $\emptyset$ (size $k=0$) is the unique graph on the
-empty vertex set; flags over $\emptyset$ are just ordinary finite graphs
-up to isomorphism.
+empty vertex set.
 
 \paragraph{Flags.}
 Fix a type $\sigma$ of size $k$.
@@ -403,14 +400,15 @@ A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
 that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$ 
 (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
-The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.
+The integer $|V(G)|$ is the \emph{size} of $G^\sigma$. Note that 
+flags over the empty type $\emptyset$ are just ordinary finite graphs.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic} if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
+\emph{isomorphic} if there is a graph isomorphism $\phi: V(G_1)\to V(Gß_2)$
 with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
-Each $\mathcal{F}^\sigma_n$ is finite.
+Note that each $\mathcal{F}^\sigma_n$ is finite.
 
 \begin{figure}[t]
   \centering
