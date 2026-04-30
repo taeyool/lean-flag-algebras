@@ -104,60 +104,58 @@
 \maketitle
 
 \begin{abstract}
-Razborov's flag algebras are a powerful framework for attacking problems in extremal combinatorics.
-Some of the reasoning principles of the framework have been automated in software tools, 
-and such a tool has been used to resolve a range of open problems in extremal combinatorics. 
-In this paper, we present a Lean~4 formalization of the flag
-algebra method for simple graphs.
+Flag algebras are one of the most successful proof technologies in extremal
+combinatorics.  They turn asymptotic questions about large graphs into finite
+algebraic inequalities, often found by semidefinite programming, and have been
+used to settle long-standing open problems such as the Erd\H{o}s pentagon
+problem.  Their strength, however, is also a source of trust concerns: a
+published proof may depend on thousands of rational density computations, a
+large SDP certificate, quotient constructions over isomorphism classes of
+graphs, and a semantic argument about all limiting graph sequences.  Checking
+such a proof is therefore not just a matter of checking a matrix; it requires
+connecting executable finite computation to the abstract mathematics that gives
+the certificate its meaning.
 
-The core of the formalization is the mathematical theory: flags as quotient
-types modulo label-preserving isomorphism, the flag algebra as a quotient
-$\mathbb{R}$-module by density-expansion identities, positive homomorphisms,
-and the semantic non-negativity cone, together with formal proofs of their
-key properties.  Proving the resulting combinatorial identities required a
-systematic discipline: to establish that two densities are equal, we exhibit
-an explicit bijection between the two finite sets being counted---naming the
-sample spaces, constructing an equivalence, and deriving the cardinality
-equality from it---rather than relying on arithmetic simplification.  This
-bijective-witness strategy recurs throughout the formalization of density
-lemmas, symmetry arguments, and adequacy theorems, and is the dominant
-proof technique of the abstract layer.
+This paper presents a Lean~4 formalization of the flag algebra method for
+simple graphs.  We formalize flags as quotient types modulo label-preserving
+isomorphism, build the flag algebra as a quotient $\mathbb{R}$-module by
+density-expansion identities, define positive homomorphisms and the semantic
+non-negativity cone, and prove the main soundness principles that turn
+flag-algebra inequalities into Tur\'an-density bounds.  We encode
+forbidden-subgraph assumptions as proof-time predicates inside one ambient
+theory of simple graphs, rather than generating a separate axiomatic theory
+for each extremal problem.
 
-Three further components complete the development.  A forbidden-subgraph
-framework encodes the $H$-freeness condition as a proof-time predicate
-inside a single ambient theory of simple graphs, eliminating the need for a
-per-problem axiom system.  A reflection layer connects the abstract
-definitions to a concrete computable graph type (\lean{Sym2Graph}) via
-adequacy theorems; density tables are then certified by \lean{native\_decide}
-and SDP certificates verified by exact rational LDL$^\top$ decompositions
-checked by \lean{decide + kernel}, making explicit which obligations are
-trusted to the native compiler and which are kernel-verified.  A tactic layer
-automates the algebraic bookkeeping of flag-algebra proofs: normalizing linear
-combinations, applying expansion identities, and multiplying under a
-forbidden-subgraph hypothesis.
+The development is also a programming-languages case study in how to engineer
+a trustworthy domain-specific proof pipeline in an intensional type theory.
+An abstract quotient layer states the mathematics.  A reflection layer connects
+that layer to a concrete computable graph type, \lean{Sym2Graph}, by adequacy
+theorems; density tables are certified by \lean{native\_decide}, while SDP
+positive-semidefiniteness certificates are checked exactly over $\mathbb{Q}$
+using LDL$^\top$ decompositions.  A tactic layer automates the syntactic
+bookkeeping of linear combinations, expansion identities, and multiplication
+under forbidden-subgraph hypotheses.  Along the way, the formalization exposes
+reusable proof-engineering lessons: finite counting arguments are best
+expressed by explicit bijective witnesses, finite-enumeration instances must
+be controlled to avoid silent cardinality mismatches, and the casts and
+heterogeneous equalities caused by size-changing combinatorial operations
+should be confined to small boundary lemmas.
 
-For programming-languages researchers, the formalization is a case study in
-mechanizing a quotient-heavy combinatorial theory in an intensional type
-theory.  The reusable engineering lessons include the bijective-witness proof
-discipline for finite counting arguments, preventing conflicting typeclass
-enumeration instances from silently breaking cardinality arguments, confining
-the cast and heterogeneous-equality bookkeeping that arises when flag
-operations change vertex counts to small named boundary lemmas, and a
-three-layer separation of abstract specification, executable reflection, and
-syntactic tactic automation.  As case studies, the development
-proves Mantel's theorem ($\tdensity{K_2}{K_3}=1/2$) and the Erd\H{o}s
-pentagon theorem ($\tdensity{C_5}{K_3}=24/625$), including the pentagon
-upper bound from a verified SDP certificate and the lower bound from a formal
-blow-up construction.
+As case studies, the development proves Mantel's theorem
+($\tdensity{K_2}{K_3}=1/2$) and the Erd\H{o}s pentagon theorem
+($\tdensity{C_5}{K_3}=24/625$), including the pentagon upper bound from a
+verified SDP certificate and the lower bound from a formal blow-up
+construction.
 \end{abstract}
 
 % =========================================================================
 \section{Introduction}
 \label{sec:intro}
 
-\paragraph{Extremal densities.}
-Extremal graph theory often asks how dense one pattern can be inside graphs
-that avoid another pattern.  Let $F$ and $H$ be finite simple graphs.  We write
+\paragraph{Why flag algebras matter.}
+Many central questions in extremal combinatorics ask how often one finite
+pattern can occur when another pattern is forbidden.  Let $F$ and $H$ be
+finite simple graphs.  We write
 \[
   \mathrm{ex}(n;\,F,H)
   =
@@ -178,45 +176,68 @@ $|V(F)|$-vertex subsets and takes a limit:
 In this notation the counted graph comes first and the forbidden graph second;
 for example, Mantel's theorem is the statement
 $\tdensity{K_2}{K_3}=1/2$, the maximum asymptotic edge density of
-triangle-free graphs.  From this point onward the problem is no longer about a
-single finite graph but about limiting densities over all sufficiently large
-graphs, which is the setting of asymptotic extremal combinatorics.
+triangle-free graphs.  The difficulty is that these are not finite graph
+search problems.  They are statements about all sufficiently large
+$H$-free graphs, or equivalently about all possible limiting density profiles.
 
-Razborov's flag algebra method~\cite{razborov2007flag} is a framework for
-proving upper bounds on such limits.  A flag is a finite graph together with a
-distinguished labeled subgraph; flag algebras organize the densities of these
-finite patterns into an algebraic calculus.  In many applications, including
-the Erd\H{o}s pentagon problem~\cite{hatami2012,grzesik2012}, an upper bound is
-obtained by finding a semidefinite-programming (SDP) certificate: a finite matrix
-certificate whose positive semidefiniteness implies the required density
-inequality.  The solver that finds the certificate is external; the
-mathematical proof still has to justify, exactly, that the certificate proves
-the intended inequality.
+Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
+for exactly this setting.  A flag is a finite graph together with a
+distinguished labeled subgraph.  By treating the densities of such partially
+labeled patterns as algebraic objects, the method turns a global asymptotic
+problem into a finite inequality in a quotient algebra.  Crucially, many
+strong inequalities can be obtained from positive semidefinite matrices: an
+SDP solver searches for a certificate, and the flag algebra theorem explains
+why that finite certificate implies a bound for every large graph.  This
+combination of mathematical abstraction and computer search has been unusually
+effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
+problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
+density of pentagons in triangle-free graphs.
 
-\paragraph{What has to be formalized.}
-A proof assistant cannot treat a flag algebra certificate as just a matrix
-file.  There are three separate objects to formalize.  First, there is the
-mathematical theory: flags modulo label-preserving isomorphism, the quotient
-algebra generated by density-expansion identities, the order given by
-non-negativity under all positive homomorphisms (algebra maps to
-$\mathbb{R}$ that are non-negative on finite flags), and the theorem
-connecting that order to Tur\'an-density bounds.  Second, there is finite
-computation: the proof needs many exact rational density values and exact
-checks of the SDP certificate.  Third, there is algebraic bookkeeping:
-practical proofs contain large linear combinations of flags that must be
-expanded, multiplied, and normalized before a human-readable inequality becomes
-a Lean goal.
+\paragraph{Why formalize it?}
+For a programming-languages audience, flag algebras are interesting not only
+because they solve hard combinatorial problems, but because they are a
+compact example of a modern computer-assisted proof pipeline.  The trusted
+argument spans several semantic levels.  At the top is a quotient-heavy
+mathematical theory: graphs are identified up to isomorphism, flags are
+identified up to label-preserving isomorphism, and the algebra itself is a
+quotient by density-expansion identities.  At the bottom are executable
+finite computations: enumeration of graphs and flags, rational density tables,
+and exact checks of large SDP certificates.  Between them is a layer of
+symbolic algebraic manipulation that expands, multiplies, and normalizes
+linear combinations of flags.
 
-These three objects should not be collapsed into one representation.  Our
-formal specification of flag algebras is quotient-based, matching the
-mathematics rather than the executable data structures used for computation.
-Reflection enters only at a proved boundary: executable graph and flag
-operations are connected to the abstract definitions by adequacy theorems,
-where an adequacy theorem states that the executable value is equal to the
-value specified by the quotient-level definition.  Tactics form a third layer:
-they do not define flag algebras and they do not justify SDP certificates; they
-perform the syntactic normalization needed to apply already-proved expansion
-and multiplication lemmas.
+This separation matters for trust.  A matrix emitted by an SDP solver is not,
+by itself, a theorem about all triangle-free graphs.  It becomes a theorem
+only after one proves that its entries correspond to the intended flags, that
+the finite density computations agree with the quotient-level definitions,
+that the matrix is positive semidefinite in exact arithmetic, and that the
+resulting algebraic inequality is sound for every positive homomorphism, or
+equivalently every limiting graph sequence.  Informal flag algebra proofs
+usually manage these connections by convention, scripts, and mathematical
+expertise.  A proof assistant forces each connection to be named, typed, and
+checked.
+
+Formalizing flag algebras is therefore a useful stress test for proof
+assistants and proof-producing domain-specific automation.  It exercises
+quotients in an intensional type theory, finite combinatorial counting,
+reflection from executable data structures to abstract specifications, exact
+certificate checking, and tactic support for a specialized algebraic language.
+The payoff is twofold: mathematicians get independently checkable
+flag-algebra proofs, and PL researchers get a detailed case study in building
+a verified pipeline whose components have different computational and logical
+trust assumptions.
+
+\paragraph{Our approach.}
+We keep the three semantic levels separate.  The abstract layer follows the
+mathematics: flags are quotient types, the flag algebra is a quotient
+$\mathbb{R}$-module with multiplication, and non-negativity is defined
+semantically by quantifying over positive homomorphisms.  The executable
+layer introduces concrete finite graph representations and connects them to
+the abstract definitions by adequacy theorems: theorems stating that a
+computed value is equal to the value specified at the quotient level.  The
+tactic layer is intentionally syntactic.  It does not define flag algebras
+and it does not justify SDP certificates; it performs the normalization needed
+to apply already-proved expansion and multiplication lemmas.
 
 \paragraph{This paper.}
 We present a Lean~4 formalization of the flag algebra method for simple
