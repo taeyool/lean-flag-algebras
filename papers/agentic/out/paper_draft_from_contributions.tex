@@ -33,6 +33,7 @@
 \usepackage{fullpage}
 \usepackage{authblk}
 \usepackage{cleveref}
+\usepackage{tikz}
 
 % ---- Theorem environments -----------------------------------------------
 \newtheorem{theorem}{Theorem}[section]
@@ -49,9 +50,15 @@
 \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
-\newcommand{\den}[2]{p(#1,\,#2)}
+\newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
+
+\tikzset{
+  graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
+  graph root/.style={circle, draw, fill=black, inner sep=0pt, minimum size=4.5pt},
+  graph edge/.style={line width=0.45pt}
+}
 
 % Lean code style
 \lstdefinelanguage{Lean4}{
@@ -363,34 +370,107 @@ $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite.
 
+\begin{figure}[t]
+  \centering
+  \setlength{\tabcolsep}{1.1em}
+  \renewcommand{\arraystretch}{1.35}
+  \begin{tabular}{cccc}
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.8,0) {};
+      \draw[graph edge] (a) -- (b);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.75,0) {};
+      \node[graph vertex] (c) at (0.375,0.65) {};
+      \draw[graph edge] (a) -- (b);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.75,0) {};
+      \node[graph vertex] (c) at (0.375,0.65) {};
+      \draw[graph edge] (a) -- (b);
+      \draw[graph edge] (b) -- (c);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.75,0) {};
+      \node[graph vertex] (c) at (0.375,0.65) {};
+      \draw[graph edge] (a) -- (b);
+      \draw[graph edge] (b) -- (c);
+      \draw[graph edge] (c) -- (a);
+    \end{tikzpicture}
+    \\
+    $K_2$ & $G_{\text{one-edge}}$ & $G_{\text{path}}$ & $G_{\triangle}$ \\
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph root] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.8,0) {};
+      \draw[graph edge] (a) -- (b);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph root] (a) at (0,0) {};
+      \node[graph vertex] (b) at (0.8,0) {};
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
+      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
+        \node[graph vertex] (v\i) at (\ang:0.65) {};
+      }
+      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
+      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
+        \node[graph vertex] (v\i) at (\ang:0.65) {};
+      }
+      \node[graph root] at (v1) {};
+      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
+    \end{tikzpicture}
+    \\
+    $K_2^\bullet$ & $\overline{K_2}^{\bullet}$ & $C_5$ & $C_5^\bullet$
+  \end{tabular}
+  \caption{Graphs and rooted flags used in the running examples.  Filled
+  vertices are labeled vertices of a flag.}
+  \label{fig:small-graphs}
+\end{figure}
+
 \subsection{Subflag Densities}
 
 \paragraph{Single-flag density.}
 For $\sigma$-flags $F$ of size $m$ and $G$ of size $n \geq m$, the
-\emph{induced density} $\den{F}{G}$ is the probability that a uniformly
-random injective map from $V(F) \setminus \operatorname{Im}(\theta_F)$ to
-$V(G) \setminus \operatorname{Im}(\theta_G)$ (extending the type embedding)
-induces a copy of $F$ in $G$ compatible with the type.  Explicitly:
+\emph{induced subflag density} $\den{F}{G}$ is the probability that a
+uniformly random $(m-k)$-element subset of
+$V(G) \setminus \operatorname{Im}(\theta_G)$, together with the labeled
+vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.  Explicitly:
 \[
   \den{F}{G}
   \;=\;
-  \frac{\bigl|\{\iota : V(F) \hookrightarrow V(G)
-                  \mid \iota \text{ preserves type embedding and induces }F\}\bigr|}
-       {\binom{n-k}{m-k}\,(m-k)!}.
+  \frac{\bigl|\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
+                  \mid |S|=m-k,\;
+                  G[S \cup \operatorname{Im}(\theta_G)]
+                  \text{ is isomorphic to } F
+                  \text{ as a }\sigma\text{-flag}\}\bigr|}
+       {\binom{n-k}{m-k}}.
 \]
 This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
 
 \begin{example}[A rooted pentagon density]
-  Let $\sigma$ be the one-vertex type, and let $E^\bullet$ be the
+  Let $\sigma$ be the one-vertex type, and let $K_2^\bullet$ be the
   $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
-  the labeled one.  Let $\overline{E}^{\bullet}$ be the corresponding
-  non-edge flag.  Now root a copy of $C_5$ at one of its vertices.  Among the
+  the labeled one.  Let $\overline{K_2}^{\bullet}$ be the corresponding
+  non-edge flag.  These flags are shown in \Cref{fig:small-graphs}.  Now root
+  a copy of $C_5$ at one of its vertices.  Among the
   four non-root vertices, exactly two are neighbors of the root.  Hence
   \[
-    \den{E^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
+    \den{K_2^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
     \qquad
-    \den{\overline{E}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
+    \den{\overline{K_2}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
   \]
   This tiny example captures the reason flags are useful: a flag remembers
   the local view from a labeled configuration.  The same unrooted pentagon can
@@ -401,10 +481,10 @@ isomorphism of both $F$ and $G$.
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
 flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
-$\den{F_1,F_2}{G}$ is the probability that two independently and uniformly
-chosen injections from $V(F_i)\setminus [k]$ into $V(G)\setminus [k]$
-(sampled without replacement from the same pool) each induce their
-respective flag, compatible with the shared type embedding.
+$\den{F_1,F_2}{G}$ is the probability that two uniformly chosen disjoint
+subsets $S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G)$, with
+$|S_i|=m_i-k$, each induce $F_i$ together with the labeled vertices of $G$,
+compatible with the shared type embedding.
 
 \subsection{The Flag Algebra}
 
@@ -440,7 +520,8 @@ with unit $[\text{type graph } \sigma]$.
 \begin{example}[The edge expansion behind Mantel's theorem]
   The simplest useful zero-space relation expands the untyped edge $K_2$ at
   size $3$.  There are four unlabeled graphs on three vertices: the empty
-  graph, the one-edge graph, the two-edge path, and the triangle.  If an
+  graph, the one-edge graph, the two-edge path, and the triangle
+  (the latter three are shown in \Cref{fig:small-graphs}).  If an
   edge is sampled uniformly from the three possible vertex pairs, its density
   in these graphs is respectively
   \[
