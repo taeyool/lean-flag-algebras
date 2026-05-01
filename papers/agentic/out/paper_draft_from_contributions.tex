@@ -588,7 +588,8 @@ $\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
 with unit.
 
 \begin{example}[The edge expansion behind Mantel's theorem]
-  The simplest useful zero-space relation expands the untyped edge $K_2$ at
+  The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
+  is thus a $\emptyset$-type flag) at
   size $3$.  There are four unlabeled graphs on three vertices: the empty
   graph, the one-edge graph, the two-edge path, and the triangle
   (the latter three are shown in \Cref{fig:small-graphs}).  If an
@@ -606,11 +607,16 @@ with unit.
     + G_{\triangle}
     \qquad\text{in } \mathcal{A}^{\emptyset}.
   \]
-  In the Mantel proof, the triangle term is then eliminated under the
-  $K_3$-free hypothesis.  This is exactly the kind of elementary
-  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
-  the coefficients are simple, but there are hundreds of such coefficients
-  and they must all line up syntactically inside Lean.
+  Mantel's theorem is the statement that the edge density $K_2$ is at most $1/2$ 
+  in every $K_3$-free graph. In the proof of this theorem in the flag algebra, 
+  we start with the above equation and then eliminate the triangle term 
+  using the $K_3$-free hypothesis.  This style of expansion is common in 
+  a flag algebra proof, but it is exactly the kind of elementary
+  combinatorial bookkeeping that becomes unbearable in the Lean formalisation 
+  of more complex proofs in the flag algebra, including the one 
+  for the pentagon problem.  In that proof, the coefficients of the terms
+  in the expansion are still simple, but there are hundreds of such coefficients
+  and they must all be formally justified inside Lean.
 \end{example}
 
 \subsection{The Downward Operator and Semantic Non-Negativity}
