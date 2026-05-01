@@ -403,7 +403,7 @@ superscript $\sigma$ and simply write $G$.  Note that
 flags over the empty type $\emptyset$ are just ordinary finite graphs.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong (G_2,\theta_2)$,
+\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong_\sigma (G_2,\theta_2)$,
 if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
 with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
@@ -646,15 +646,15 @@ $\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
 number to each algebra expression, respects addition and multiplication, and
 never assigns a negative value to a concrete flag.
 
-In the untyped case $\sigma=\emptyset$, positive homomorphisms are exactly the
-semantic objects represented by convergent graph sequences.  If $(G_n)$ is a
-sequence of finite graphs with $|V(G_n)|\to\infty$ and every density
+In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly the
+semantic objects represented by convergent graph sequences.  That is, if $(G_n)_{n \in \mathbb{N}}$ 
+is a sequence of finite graphs with $|V(G_n)|\to\infty$ and every density
 $\den{F}{G_n}$ has a limit, then
 \[
   [F]\longmapsto \lim_{n\to\infty}\den{F}{G_n}
 \]
 extends to a positive homomorphism on $\mathcal{A}^\emptyset$; conversely,
-every untyped positive homomorphism arises this way in Razborov's
+every positive homomorphism for the empty type arises this way in Razborov's
 semantics~\cite{razborov2007flag}.
 
 \paragraph{Semantic non-negativity and order.}
@@ -663,7 +663,7 @@ For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
   \mathcal{C}^\sigma
   =
   \{f \in \mathcal{A}^\sigma
-    \mid \phi(f) \geq 0
+    \ |\ \phi(f) \geq 0
     \text{ for every positive homomorphism }
     \phi:\mathcal{A}^\sigma\to\mathbb{R}\}.
 \]
@@ -681,8 +681,8 @@ $\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
 $\leq_\emptyset$.
 
 \paragraph{Squares and PSD quadratic forms.}
-A real symmetric matrix $A$ is \emph{positive semidefinite} (PSD) if
-$x^\top A x\geq 0$ for every real vector $x$.  The simplest source of elements
+A real symmetric matrix $M \in \mathbb{R}^{r\times r}$ is \emph{positive semidefinite} (PSD) if
+$v^\top M v\geq 0$ for every real vector $v \in \mathbb{R}^r$.  The simplest source of elements
 of $\mathcal{C}^\sigma$ is a square: if $e\in\mathcal{A}^\sigma$ and $\phi$ is
 a positive homomorphism, then
 \[
@@ -690,13 +690,15 @@ a positive homomorphism, then
 \]
 So $e^2$ is semantically non-negative.  A finite sum
 $\sum_i a_i e_i^2$ with $a_i\geq 0$ is non-negative for the same reason.  More
-generally, if $A$ is PSD and $e_1,\ldots,e_r\in\mathcal{A}^\sigma$, then every
+generally, if $M$ is PSD and $e_1,\ldots,e_r\in\mathcal{A}^\sigma$, then every
 positive homomorphism sends
 \[
-  \sum_{i,j=1}^r A_{ij}\,e_i e_j
+  \sum_{i,j=1}^r M_{ij}\,e_i e_j
 \]
-to the real quadratic form $v^\top A v$, where
-$v=(\phi(e_1),\ldots,\phi(e_r))$.  This is the sense in which flag algebra
+to the real quadratic form $v^\top M v$ for
+$v=(\phi(e_1),\ldots,\phi(e_r))$, which is always non-negative. So, the
+above quadratic expression is in $\mathcal{C}^\sigma$.  
+This is the sense in which flag algebra
 proofs use ``sums of squares'': the proof data is a finite quadratic expression
 whose value is forced to be a non-negative real number by a PSD matrix.
 
