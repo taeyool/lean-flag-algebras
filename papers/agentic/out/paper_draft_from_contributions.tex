@@ -703,26 +703,27 @@ proofs use ``sums of squares'': the proof data is a finite quadratic expression
 whose value is forced to be a non-negative real number by a PSD matrix.
 
 \paragraph{Downward (unlabeling) operator.}
-Labeled algebras often give stronger quadratic expressions because labels
-record local structure.  The final extremal statement, however, is usually
-unlabeled, such as an upper bound on the density of $C_5$ in triangle-free
+Labeled algebras (i.e., $\mathcal{A}^\sigma$ with $\sigma \neq \emptyset$) often give stronger quadratic expressions because labels
+record local structure.  The final extremal statement, however, is usually about
+unlabeled graphs (i.e., flags for the empty type), such as an upper bound on the density of $C_5$ in triangle-free
 graphs.  The downward operator is the averaging map that forgets the labels
 with the correct normalization, converting a labeled algebra expression into
 an unlabeled one.
 
-For a $\sigma$-flag $F=(M,\theta_F)$ of size $m$ (type of size $k$), let
-$F|_\emptyset$ be the underlying untyped graph $M$.  Following Razborov's
+For a $\sigma$-flag $F=(G,\theta)$ of size $m$ (type of size $k$), let
+$F|_\emptyset$ be the underlying graph $G$, which is also a flag for the empty type.  
+Following Razborov's
 definition~\cite{razborov2007flag}, the \emph{downward operator} does not sum
-over all labelings of $M$.  Instead, it forgets the labels and multiplies by
+over all labelings of $G$.  Instead, it forgets the labels and multiplies by
 the probability that a random injection of the type vertices would recover the
 same labeled flag.  More precisely, define
 \[
   q_\sigma(F)
   \;=\;
   \frac{
-    \bigl|\{\theta : [k]\hookrightarrow V(M)
-       \mid \theta \text{ embeds }\sigma\text{ into }M
-       \text{ and } (M,\theta)\cong F\}\bigr|}
+    \bigl|\{\theta' : [k]\hookrightarrow V(G)
+       \mid \theta' \text{ embeds }\sigma\text{ into }G
+       \text{ and } (G,\theta')\cong_\sigma F\}\bigr|}
        {m(m-1)\cdots(m-k+1)}.
 \]
 Then
@@ -732,8 +733,6 @@ Then
   q_\sigma(F)\cdot F|_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
-The downward operator is an $\mathbb{R}$-module map
-$\llbracket\cdot\rrbracket_\sigma : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset$.
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]
   \label{thm:sdp-nonneg}
@@ -745,7 +744,7 @@ $\llbracket\cdot\rrbracket_\sigma : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset
   \]
 \end{theorem}
 
-The conclusion says that every untyped positive homomorphism evaluates the
+The conclusion says that every positive homomorphism for the emtpy type evaluates the
 downward-averaged quadratic expression as a non-negative real number.  This is
 the engine behind flag algebra bounds based on positive semidefinite matrices.
 Given a target element $f_0 \in \mathcal{A}^\emptyset$ and a claimed bound
@@ -757,7 +756,7 @@ $e_i \in \mathcal{A}^\sigma$ such that
   \Bigl\llbracket \sum_{i,j} A_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma,
 \]
 then $c\cdot\mathbf{1}-f_0\in\mathcal{C}$, so
-$\phi(f_0) \leq c$ for every untyped positive homomorphism $\phi$.
+$\phi(f_0) \leq c$ for every positive homomorphism $\phi$ for the empty type.
 
 \subsection{Turán Densities and the Pentagon Problem}
 
