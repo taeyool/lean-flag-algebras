@@ -544,31 +544,34 @@ into algebra.
 \subsection{The Flag Algebra}
 
 The next step is to stop distinguishing between expressions that have the same
-asymptotic meaning.  A small flag $F$ can be counted directly in a large graph,
-or by first sampling a larger intermediate flag $G$ and then counting $F$
-inside $G$.  These two procedures give the same limiting density.  The flag
-algebra builds this averaging identity into the syntax by quotienting it out.
-As a result, a proof can freely replace a pattern by any sufficiently large
-expansion, which is exactly the bookkeeping needed by SDP certificates.  This
+asymptotic meaning.  A small flag $F$ can be counted directly in a large host flag $H$,
+or by first sampling a larger intermediate flag $G$ from the host flag $H$, then 
+counting $F$ inside $G$, and finally taking the average of this sampling process. 
+These two procedures give the same limiting density.  The flag
+algebra builds this identity with the sampling-averaging process into the syntax by quotienting it out.
+As a result, a proof can freely replace a pattern flag by any sufficiently large
+expansion of it implemented by the sampling-averaging process, which is exactly the bookkeeping needed by SDP certificates.  This
 is the same kind of move one makes when quotienting programs by an equational
 theory: the quotient removes representation choices that should not affect the
 observable behavior.
 
 Fix a type $\sigma$.  Let $\mathbb{R}[\mathcal{F}^\sigma]$ be the free
-$\mathbb{R}$-module with basis $\mathcal{F}^\sigma$.
+$\mathbb{R}$-module with basis $\mathcal{F}^\sigma$, i.e., the set of 
+all finite partial functions from $\mathcal{F}^\sigma$ to $\mathbb{R}$ equipped with 
+pointwise addition and multiplication as well as pointwise scalar multiplication.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \[
   F - \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot G,
-  \qquad F \in \mathcal{F}^\sigma_m,\; n \geq m.
+  \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \]
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 The zero-space relations express the combinatorial identity that, in a
-sufficiently large graph, the average density of $F$ over all extensions of
-the type embedding equals $\den{F}{G}$.
+sufficiently large flag $H$, $\den{F}{H}$ equals the average density of $G$ in $H$ 
+over all extensions $G$ of $F$.
 
 \paragraph{Multiplication.}
 For $[F_1] \in \mathcal{A}^\sigma_{m_1}$ and $[F_2] \in \mathcal{A}^\sigma_{m_2}$,
@@ -579,9 +582,10 @@ their product at size $\ell \geq m_1 + m_2 - k$ is
   \sum_{G \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G} \cdot [G]
   \;\in\; \mathcal{A}^\sigma_\ell.
 \]
-This is well-defined on the quotient (independent of $\ell$) and makes
+This is well-defined on the quotient (independent of $\ell$, $F_1$, $F_2$) and 
+has the unit $[(\sigma,\mathrm{id} : \sigma \to \sigma)]$. Thus, it makes
 $\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
-with unit $[\text{type graph } \sigma]$.
+with unit.
 
 \begin{example}[The edge expansion behind Mantel's theorem]
   The simplest useful zero-space relation expands the untyped edge $K_2$ at
