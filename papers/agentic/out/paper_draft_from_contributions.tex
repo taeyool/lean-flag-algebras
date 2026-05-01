@@ -351,8 +351,9 @@ something about all large graphs?
 For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
 All graphs are undirected, finite and simple.
 To keep roles separate, this section uses $P$ for a target graph, $H$ for a
-forbidden graph, $A,B,D$ for generic flags, and $G$ for a host graph or host
-flag.
+forbidden graph, $A,B,D$ for generic flags, $G$ for a host graph or host flag,
+$Q$ for a positive semidefinite matrix, and $\phi$ for a positive
+homomorphism.
 
 The motivating question has the following shape.  Fix two small graphs:
 a target pattern $P$ and a forbidden pattern $H$.  Among all very large graphs
@@ -406,8 +407,8 @@ flags over the empty type $\emptyset$ are just ordinary finite graphs.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
 \emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
-if there is a graph isomorphism $\phi: V(M_1)\to V(M_2)$
-with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
+if there is a graph isomorphism $\alpha: V(M_1)\to V(M_2)$
+with $\alpha \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
@@ -650,16 +651,16 @@ $\phi([A]) \geq 0$ for every $\sigma$-flag $A$.  Thus $\phi$ assigns a real
 number to each algebra expression, respects addition and multiplication, and
 never assigns a negative value to a concrete flag.
 
-In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly the
-semantic objects represented by convergent graph sequences.  That is, if $(G_n)_{n \in \mathbb{N}}$
-is a sequence of finite graphs with $|V(G_n)|\to\infty$ and every density
-$\den{A}{G_n}$ has a limit, then
+In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly
+the semantic objects represented by convergent graph sequences.  That is, if
+$(G_n)_{n \in \mathbb{N}}$ is a sequence of finite graphs with
+$|V(G_n)|\to\infty$ and every density $\den{A}{G_n}$ has a limit, then
 \[
   [A]\longmapsto \lim_{n\to\infty}\den{A}{G_n}
 \]
 extends to a positive homomorphism on $\mathcal{A}^\emptyset$; conversely,
-every positive homomorphism for the empty type arises this way in Razborov's
-semantics~\cite{razborov2007flag}.
+every positive homomorphism on $\mathcal{A}^\emptyset$ arises this way in
+Razborov's semantics~\cite{razborov2007flag}.
 
 \paragraph{Semantic non-negativity and order.}
 For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
@@ -667,7 +668,7 @@ For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
   \mathcal{C}^\sigma
   =
   \{f \in \mathcal{A}^\sigma
-    \ |\ \phi(f) \geq 0
+    \mid \phi(f) \geq 0
     \text{ for every positive homomorphism }
     \phi:\mathcal{A}^\sigma\to\mathbb{R}\}.
 \]
@@ -685,10 +686,11 @@ $\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
 $\leq_\emptyset$.
 
 \paragraph{Squares and PSD quadratic forms.}
-A real symmetric matrix $Q \in \mathbb{R}^{r\times r}$ is \emph{positive semidefinite} (PSD) if
-$v^\top Q v\geq 0$ for every real vector $v \in \mathbb{R}^r$.  The simplest source of elements
-of $\mathcal{C}^\sigma$ is a square: if $e\in\mathcal{A}^\sigma$ and $\phi$ is
-a positive homomorphism, then
+A real symmetric matrix $Q \in \mathbb{R}^{r\times r}$ is \emph{positive
+semidefinite} (PSD) if $v^\top Q v\geq 0$ for every real vector
+$v \in \mathbb{R}^r$.  The simplest source of elements of
+$\mathcal{C}^\sigma$ is a square: if $e\in\mathcal{A}^\sigma$ and $\phi$ is a
+positive homomorphism, then
 \[
   \phi(e^2)=\phi(e)^2\geq 0.
 \]
@@ -707,20 +709,21 @@ proofs use ``sums of squares'': the proof data is a finite quadratic expression
 whose value is forced to be a non-negative real number by a PSD matrix.
 
 \paragraph{Downward (unlabeling) operator.}
-Labeled algebras (i.e., $\mathcal{A}^\sigma$ with $\sigma \neq \emptyset$) often give stronger quadratic expressions because labels
-record local structure.  The final extremal statement, however, is usually about
-unlabeled graphs (i.e., flags for the empty type), such as an upper bound on the density of $C_5$ in triangle-free
-graphs.  The downward operator is the averaging map that forgets the labels
-with the correct normalization, converting a labeled algebra expression into
-an unlabeled one.
+Labeled algebras (i.e., $\mathcal{A}^\sigma$ with
+$\sigma \neq \emptyset$) often give stronger quadratic expressions because
+labels record local structure.  The final extremal statement, however, is
+usually about unlabeled graphs (i.e., flags for the empty type), such as an
+upper bound on the density of $C_5$ in triangle-free graphs.  The downward
+operator is the averaging map that forgets the labels with the correct
+normalization, converting a labeled algebra expression into an unlabeled one.
 
 For a $\sigma$-flag $A=(M,\theta_A)$ of size $m$ (type of size $k$), let
-$A|_\emptyset$ be the underlying graph $M$, which is also a flag for the empty type.
-Following Razborov's
-definition~\cite{razborov2007flag}, the \emph{downward operator} does not sum
-over all labelings of $M$.  Instead, it forgets the labels and multiplies by
-the probability that a random injection of the type vertices would recover the
-same labeled flag.  More precisely, define
+$A|_\emptyset$ be the underlying graph $M$, which is also a flag for the empty
+type.  Following Razborov's definition~\cite{razborov2007flag}, the
+\emph{downward operator} does not sum over all labelings of $M$.  Instead, it
+forgets the labels and multiplies by the probability that a random injection
+of the type vertices would recover the same labeled flag.  More precisely,
+define
 \[
   q_\sigma(A)
   \;=\;
@@ -748,19 +751,21 @@ extended linearly to all of $\mathcal{A}^\sigma$.
   \]
 \end{theorem}
 
-The conclusion says that every positive homomorphism for the empty type evaluates the
-downward-averaged quadratic expression as a non-negative real number.  This is
-the engine behind flag algebra bounds based on positive semidefinite matrices.
-Given a target element $x_0 \in \mathcal{A}^\emptyset$ and a claimed bound
-$c \in \mathbb{R}$, if one exhibits a PSD matrix $Q$ and elements
-$e_i \in \mathcal{A}^\sigma$ such that
+The conclusion says that every positive homomorphism on
+$\mathcal{A}^\emptyset$ evaluates the downward-averaged quadratic expression
+as a non-negative real number.  This is the engine behind flag algebra bounds
+based on positive semidefinite matrices.  Given a target element
+$x_0 \in \mathcal{A}^\emptyset$ and a claimed bound $c \in \mathbb{R}$, if
+one exhibits a PSD matrix $Q$ and elements $e_i \in \mathcal{A}^\sigma$ such
+that
 \[
   c \cdot \mathbf{1} - x_0
   \;=\;
   \Bigl\llbracket \sum_{i,j} Q_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma,
 \]
 then $c\cdot\mathbf{1}-x_0\in\mathcal{C}$, so
-$\phi(x_0) \leq c$ for every positive homomorphism $\phi$ for the empty type.
+$\phi(x_0) \leq c$ for every positive homomorphism
+$\phi:\mathcal{A}^\emptyset\to\mathbb{R}$.
 
 \subsection{Turán Densities and the Pentagon Problem}
 
@@ -770,27 +775,31 @@ graph.  The finite graphs being optimized over are $H$-free, meaning that they
 contain no copy of $H$ as a subgraph, and the target statistic is the induced
 density of $P$.
 
-In the algebraic certificate, the forbidden-graph assumption is represented as
-a condition on positive homomorphisms.  View $H$ as the basis element $[H]$ of
-$\mathcal{A}^\emptyset$.  We restrict attention to empty-type positive
-homomorphisms $\phi$ satisfying
+In the algebraic certificate used in this paper, the forbidden-graph
+assumption is represented as a condition on positive homomorphisms.  When the
+forbidden graph $H$ is complete, as it is in the main case $H=K_3$, being
+$H$-free is the same as having zero induced density of $H$.  View $H$ as the
+basis element $[H]$ of $\mathcal{A}^\emptyset$.  We restrict attention to
+positive homomorphisms $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$ satisfying
 \[
   \phi([H])=0.
 \]
-Every convergent sequence of $H$-free graphs gives such a homomorphism, because
-the induced density of $H$ is zero in each graph in the sequence.  For the main
-case study $H=K_3$, the condition says precisely that the limiting triangle
-density is zero, which is the closure of triangle-freeness used by the
-extremal argument.
+Every convergent sequence of $H$-free graphs gives such a homomorphism.  For
+$H=K_3$, the condition says precisely that the limiting triangle density is
+zero.  If one wanted to forbid a non-complete graph by subgraph containment,
+one would instead set to zero the finite sum of induced graphs on $|V(H)|$
+vertices that contain $H$ as a subgraph; that extra bookkeeping is not needed
+for the triangle-free problem studied here.
 
 For $f,g\in\mathcal{A}^\emptyset$, write
 \[
   f \leq_{[H]} g
 \]
-when $\phi(f)\leq\phi(g)$ for every empty-type positive homomorphism $\phi$
-satisfying $\phi([H])=0$.
-Equivalently, $g-f$ evaluates to a non-negative real number in every
-empty-type positive homomorphism satisfying the forbidden-graph condition $\phi([H])=0$.
+when $\phi(f)\leq\phi(g)$ for every positive homomorphism
+$\phi:\mathcal{A}^\emptyset\to\mathbb{R}$ satisfying
+$\phi([H])=0$.  Equivalently, $g-f$ evaluates to a non-negative real number in
+every positive homomorphism satisfying the forbidden-graph condition
+$\phi([H])=0$.
 Thus an upper-bound proof for the target graph $P$ aims to establish
 \[
   [P] \leq_{[H]} c\cdot\mathbf{1}.
@@ -811,9 +820,8 @@ For an unlabeled target graph $P$ and an unlabeled forbidden graph $H$, the
     {\max\Bigl\{|\text{induced copies of }P\text{ in }G|
                    ~\Big|~ |V(G)|=n \text{ and } G \text{ is }H\text{-free}\Bigr\}}.
 \]
-Using the same letter $P$ for the graph and its class $[P]$ in
-$\mathcal{A}^\emptyset$, the semantic inequality
-$P \leq_{[H]} c\cdot\mathbf{1}$ implies
+For the complete forbidden graph used in the certificate, the semantic
+inequality $[P] \leq_{[H]} c\cdot\mathbf{1}$ implies
 $\tdensity{P}{H}\leq c$.  A matching construction gives the reverse
 inequality when the claimed value is sharp.
 
