@@ -84,7 +84,6 @@
     {<=}{{$\leq$}}1
     {>=}{{$\geq$}}1
     {alpha}{{$\alpha$}}1
-    {sigma}{{$\sigma$}}1
     {forall}{{$\forall$}}1
     {exists}{{$\exists$}}1
     {phi}{{$\phi$}}1
@@ -873,48 +872,60 @@ into a generalized Turán-density bound.  Code snippets are lightly rendered in
 ASCII when the Lean source uses Unicode notation; the names and fields match
 the implementation.
 
-\subsection{Contexts as Quotient Interfaces}
+\subsection{Types and Flags in Lean}
 
-The first useful viewpoint is that a flag type is a \emph{context}.  It fixes
-the vertices that an observation is allowed to remember, much as a typing
-context fixes the variables that a term may mention.  In the implementation
-this context is intentionally ordinary:
+Section~\ref{sec:background} defined a type $\sigma$ of size $k$ as a graph on
+$[k]$, and wrote $\mathcal{F}^\sigma_n$ for the set of isomorphism classes of
+$\sigma$-flags on $n$ vertices.  The Lean implementation follows this
+definition directly.  The finite set $[k]$ is represented by \lean{Fin k}, and
+Mathlib's \lean{SimpleGraph V} is the type of simple graphs whose vertices are
+the elements of the type \lean{V}.  Thus a flag type of size $k$ is a value of
+type \lean{FlagType (Fin k)}, where \lean{FlagType} is only an abbreviation:
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
 \end{lstlisting}
-There is no special-purpose ``flag type'' graph structure hidden below the
-mathematics.  The abbreviation in \lean{FlagAlgebra/FlagDef.lean} reuses
-Mathlib's \lean{SimpleGraph}, while the size of a type is recovered from the
-finite vertex type, usually \lean{Fin n0}.  This choice keeps the ambient graph
-theory shared with the rest of Mathlib instead of forking a parallel graph
-library.
+There is no special-purpose graph structure hidden below the flag-algebra
+interface.  The size of a flag type is recovered from the cardinality of its
+vertex type, so a type over \lean{Fin k} has size $k$.  In the generic
+declarations below, \lean{T} is the finite vertex type of $\sigma$; in the
+size-indexed flag algebra, \lean{T} is usually \lean{Fin n0}.
 
-A flag is then a graph equipped with an embedding of the context:
+Before quotienting by isomorphism, a $\sigma$-flag is represented by a concrete
+labeled graph:
 \begin{lstlisting}
 structure LabeledGraph (sigma : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : sigma ->g graph
 \end{lstlisting}
-The field \lean{type\_embed} is the hook that makes the analogy with typed
-terms precise.  The labels are not colors or annotations attached after the
-fact; they are an injective graph embedding of the context into the observation.
-Everything outside the image of this embedding is locally sampled structure.
+Here \lean{V} is the ambient vertex type, and \lean{graph} is the underlying
+graph of a labeled graph on those vertices.  The notation \lean{->g} denotes
+Mathlib's graph embedding type (written with a hooked arrow in the Lean
+source): an injective vertex map that preserves and reflects adjacency, so its
+image is an induced copy of the domain graph.  Thus \lean{type\_embed} is the
+Lean version of the labeling map $\theta_A$ in a flag $A=(M,\theta_A)$.
 
-The second design choice is more consequential: flags are quotients, not
-canonical representatives.
+The mathematical object, however, is not a chosen representative
+$(M,\theta_A)$ but its isomorphism class.  The implementation therefore forms
+a quotient:
 \begin{lstlisting}
 def Flag (sigma : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid sigma V)
 \end{lstlisting}
-This is a familiar move in mathematics and a hostile one for automation: every
-operation must prove that it respects isomorphism.  We nevertheless keep the
-quotient at the specification boundary because it states the right theorem.
-The abstract algebra cannot depend on whether a path is represented on
-vertices $\{0,1,2\}$ or $\{2,0,1\}$.  Canonical representatives appear later,
-in the reflection layer, only as an implementation of finite computation.
+In Lean, \lean{Quotient R} is the type obtained by identifying representatives
+related by the equivalence relation \lean{R}.  A Lean \lean{Setoid} is such an
+equivalence relation packaged for quotienting.  Here
+\lean{labeledGraphSetoid sigma V} says that two concrete labeled graphs on
+the vertex type \lean{V} are
+equivalent when there is a graph isomorphism between their ambient graphs that
+commutes with the two embeddings of $\sigma$.  Consequently, \lean{Flag sigma V}
+is exactly the type of $\sigma$-flags with ambient vertex type \lean{V}, modulo
+label-preserving isomorphism.  This choice is mathematically natural but
+proof-engineering heavy: every operation initially defined on concrete
+representatives must be proved invariant under this setoid before it descends
+to \lean{Flag}.
 
-The size-indexed families used in the algebra are thin wrappers around this
-quotient interface:
+The fixed-size and all-size flag families from Section~\ref{sec:background}
+are then implemented as thin wrappers around this quotient type:
 \begin{lstlisting}
 abbrev FlagWithSize (sigma : FlagType (Fin n0)) (n : N) :=
   Flag sigma (Fin n)
@@ -922,11 +933,18 @@ abbrev FlagWithSize (sigma : FlagType (Fin n0)) (n : N) :=
 def FinFlag (sigma : FlagType (Fin n0)) : Type :=
   Sigma (fun n : N => FlagWithSize sigma n)
 \end{lstlisting}
-Thus \lean{FlagWithSize sigma n} is the finite search space used by expansion
-lemmas, and \lean{FinFlag sigma} is the countable basis of the eventual algebra.
-This small separation between ``fixed size'' and ``all finite sizes'' becomes
-crucial when we prove that products and expansions are independent of the
-auxiliary size chosen for a calculation.
+Thus, for $\sigma : \lean{FlagType (Fin n0)}$, the type
+\lean{FlagWithSize sigma n} implements $\mathcal{F}^\sigma_n$: flags of type
+$\sigma$ on the standard $n$-element vertex type \lean{Fin n}, modulo
+isomorphism.  The dependent sum \lean{FinFlag sigma} implements the disjoint
+union over all valid sizes, i.e. the basis set
+$\mathcal{F}^\sigma = \bigcup_{n \geq n_0} \mathcal{F}^\sigma_n$ used by the
+free vector space in Section~\ref{sec:background}.  The definition ranges over
+all natural numbers, but a flag can exist only when the ambient vertex type has
+room for the embedded type; the library proves this size condition separately.
+Keeping the size as an explicit first component is useful later: expansion
+identities and products quantify over a chosen auxiliary size, and the quotient
+algebra then proves that the resulting element is independent of that choice.
 
 \subsection{Densities as Sampling Semantics}
 
