@@ -33,7 +33,6 @@
 \usepackage{fullpage}
 \usepackage{authblk}
 \usepackage{cleveref}
-\usepackage{tikz}
 
 % ---- Theorem environments -----------------------------------------------
 \newtheorem{theorem}{Theorem}[section]
@@ -50,15 +49,9 @@
 \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
-\newcommand{\den}[2]{p(#1;\,#2)}
-\newcommand{\tdensity}[2]{p(#1;\,#2)}
+\newcommand{\den}[2]{p(#1,\,#2)}
+\newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
-
-\tikzset{
-  graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
-  graph root/.style={circle, draw, fill=black, inner sep=0pt, minimum size=4.5pt},
-  graph edge/.style={line width=0.45pt}
-}
 
 % Lean code style
 \lstdefinelanguage{Lean4}{
@@ -111,214 +104,199 @@
 \maketitle
 
 \begin{abstract}
-Flag algebras are one of the most successful proof technologies in extremal
-combinatorics.  They turn asymptotic questions about large graphs into finite
-algebraic inequalities, often found by semidefinite programming, and have been
-used to settle long-standing open problems such as the Erd\H{o}s pentagon
-problem.  Their strength, however, is also a source of trust concerns: a
-published proof may depend on thousands of rational density computations, a
-large SDP certificate, quotient constructions over isomorphism classes of
-graphs, and a semantic argument about all limiting graph sequences.  Checking
-such a proof is therefore not just a matter of checking a matrix; it requires
-connecting executable finite computation to the abstract mathematics that gives
-the certificate its meaning.
+Razborov's flag algebra method is one of the most powerful tools in extremal
+combinatorics, having resolved many open problems about asymptotic subgraph
+densities.  Applying it in practice, however, combines quotient-heavy abstract
+algebra, measure-theoretic limit arguments, large tables of enumerated subgraph
+densities, and semidefinite programming (SDP) certificates found by numerical
+solvers.  A proof assistant must therefore do more than check a final
+certificate: it must provide a trustworthy interface between extensional
+mathematics and intensional type theory, and between high-level quotient
+definitions and executable finite combinatorics.
 
-This paper presents a Lean~4 formalization of the flag algebra method for
-simple graphs.  We formalize flags as quotient types modulo label-preserving
-isomorphism, build the flag algebra as a quotient $\mathbb{R}$-module by
-density-expansion identities, define positive homomorphisms and the semantic
-non-negativity cone, and prove the main soundness principles that turn
-flag-algebra inequalities into Tur\'an-density bounds.  We encode
-forbidden-subgraph assumptions as proof-time predicates inside one ambient
-theory of simple graphs, rather than generating a separate axiomatic theory
-for each extremal problem.
+We present a Lean~4 formalization of Razborov's flag algebra method for graphs.
+The formalization is organized around three mutually reinforcing design
+principles.  First, the mathematical specification is kept at the quotient
+level: flags are quotient types under graph isomorphism, the flag algebra is a
+quotient module, and inequalities are interpreted semantically via positive
+homomorphisms.  Second, extensional counting arguments are made explicit in
+Lean: equalities of rational densities are proved by naming the two finite
+sample spaces, constructing an equivalence between them, and then transporting
+cardinality equality through the density formula.  This pattern is pervasive in
+the formalization and prevents routine ``same set up to reindexing'' arguments
+from becoming brittle arithmetic goals.  Third, computation is introduced only
+through proved refinement boundaries: a concrete graph representation
+(\lean{Sym2Graph}), verified Boolean isomorphism procedures, and adequacy
+theorems connect fast executable code to the abstract quotient definitions.
 
-The development is also a programming-languages case study in how to engineer
-a trustworthy domain-specific proof pipeline in an intensional type theory.
-An abstract quotient layer states the mathematics.  A reflection layer connects
-that layer to a concrete computable graph type, \lean{Sym2Graph}, by adequacy
-theorems; density tables are certified by \lean{native\_decide}, while SDP
-positive-semidefiniteness certificates are checked exactly over $\mathbb{Q}$
-using LDL$^\top$ decompositions.  A tactic layer automates the syntactic
-bookkeeping of linear combinations, expansion identities, and multiplication
-under forbidden-subgraph hypotheses.  Along the way, the formalization exposes
-reusable proof-engineering lessons: finite counting arguments are best
-expressed by explicit bijective witnesses, finite-enumeration instances must
-be controlled to avoid silent cardinality mismatches, and the casts and
-heterogeneous equalities caused by size-changing combinatorial operations
-should be confined to small boundary lemmas.
+These principles support a proof-engineering architecture for large
+computer-assisted mathematics.  A naive
+reflective evaluator is too slow for pentagon-sized density tables because it
+repeatedly invokes quotient equality, generic finite-type enumeration, and
+graph-isomorphism search.  We instead verify optimized Boolean isomorphism
+procedures that reject impossible cases by edge-count invariants, permute only
+non-type vertices for typed flags, and compare adjacency over a fixed finite
+edge list.  These verified optimizations make \lean{native\_decide} usable for
+over 2{,}800 density obligations, while \lean{decide +kernel} checks the SDP
+matrix equalities.  A complementary tactic layer normalizes linear combinations
+of flag terms and applies expansion and multiplication identities by inspecting
+the Lean AST and exploiting a canonical naming convention for flags as
+machine-readable metadata.
 
-As case studies, the development proves Mantel's theorem
-($\tdensity{K_2}{K_3}=1/2$) and the Erd\H{o}s pentagon theorem
-($\tdensity{C_5}{K_3}=24/625$), including the pentagon upper bound from a
-verified SDP certificate and the lower bound from a formal blow-up
-construction.
+As flagship case studies, we give complete formal proof paths for Mantel's
+theorem and for the Erd\H{o}s pentagon theorem
+($\tdensity{C_5}{K_3} = 24/625$), the latter including both the upper bound
+via a formally verified SDP certificate and the lower bound via an explicit
+blow-up construction.  The active library also contains smaller Goodman-style
+flag algebra inequalities derived with the same infrastructure.  To our
+knowledge, this is the first formalization of the flag algebra method in any
+proof assistant.  The active non-archive formalization currently comprises
+25{,}446 lines of Lean~4 code.
 \end{abstract}
 
 % =========================================================================
 \section{Introduction}
 \label{sec:intro}
 
-\paragraph{Why flag algebras matter.}
-Many central questions in extremal combinatorics ask how often one finite
-pattern can occur when another pattern is forbidden.  Let $F$ and $H$ be
-finite simple graphs.  We write
+\paragraph{Asymptotic extremal combinatorics and flag algebras.}
+A central question in extremal combinatorics is: among all $n$-vertex graphs
+that avoid a fixed graph $H$ as a subgraph, how many copies of another graph
+$F$ can appear?  Formally, $\mathrm{ex}(n;\,F,H)$ denotes the maximum number
+of copies of $F$ in any $H$-free graph on $n$ vertices.  As $n$ grows, this
+quantity scales like $\binom{n}{|V(F)|}$, and the limiting ratio
 \[
-  \mathrm{ex}(n;\,F,H)
-  =
-  \max\bigl\{
-    \#\text{copies of }F\text{ in }G
-    \mid |V(G)|=n,\; G\text{ is }H\text{-free}
-  \bigr\},
-\]
-where $H$-free means that $G$ contains no copy of $H$ as a subgraph.  The
-corresponding asymptotic question normalizes by the number of possible
-$|V(F)|$-vertex subsets and takes a limit:
-\[
-  \tdensity{F}{H}
-  =
+  \pi(F;\,H)
+  \;=\;
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n;\,F,H)}{\binom{n}{|V(F)|}}.
+  \frac{\mathrm{ex}(n;\,F,H)}{\binom{n}{|V(F)|}}
 \]
-In this notation the counted graph comes first and the forbidden graph second;
-for example, Mantel's theorem is the statement
-$\tdensity{K_2}{K_3}=1/2$, the maximum asymptotic edge density of
-triangle-free graphs.  The difficulty is that these are not finite graph
-search problems.  They are statements about all sufficiently large
-$H$-free graphs, or equivalently about all possible limiting density profiles.
+is the \emph{Turán density} of $F$ with respect to $H$.
+Determining these limits exactly is the central goal of asymptotic extremal
+combinatorics.
 
-Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
-for exactly this setting.  A flag is a finite graph together with a
-distinguished labeled subgraph.  By treating the densities of such partially
-labeled patterns as algebraic objects, the method turns a global asymptotic
-problem into a finite inequality in a quotient algebra.  Crucially, many
-strong inequalities can be obtained from positive semidefinite matrices: an
-SDP solver searches for a certificate, and the flag algebra theorem explains
-why that finite certificate implies a bound for every large graph.  This
-combination of mathematical abstraction and computer search has been unusually
-effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
-problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
-density of pentagons in triangle-free graphs.
+Razborov's flag algebra method~\cite{razborov2007flag} provides a systematic
+algebraic framework for deriving upper bounds on Turán densities: it encodes
+density inequalities as a semidefinite programming (SDP) problem, producing
+certificates that can be checked mechanically.  Since its introduction, the
+method has resolved numerous open problems, including the minimum triangle
+density problem~\cite{razborov2008}, the Erd\H{o}s pentagon
+problem~\cite{hatami2012,grzesik2012}, and several Turán-type problems for
+graphs and hypergraphs.
 
-\paragraph{Why formalize it?}
-For a programming-languages audience, flag algebras are interesting not only
-because they solve hard combinatorial problems, but because they are a
-compact example of a modern computer-assisted proof pipeline.  The trusted
-argument spans several semantic levels.  At the top is a quotient-heavy
-mathematical theory: graphs are identified up to isomorphism, flags are
-identified up to label-preserving isomorphism, and the algebra itself is a
-quotient by density-expansion identities.  At the bottom are executable
-finite computations: enumeration of graphs and flags, rational density tables,
-and exact checks of large SDP certificates.  Between them is a layer of
-symbolic algebraic manipulation that expands, multiplies, and normalizes
-linear combinations of flags.
+\paragraph{The formalization challenge.}
+Formalizing a flag algebra proof in a proof assistant requires confronting
+three distinct categories of proof obligation that call for qualitatively
+different techniques.
 
-This separation matters for trust.  A matrix emitted by an SDP solver is not,
-by itself, a theorem about all triangle-free graphs.  It becomes a theorem
-only after one proves that its entries correspond to the intended flags, that
-the finite density computations agree with the quotient-level definitions,
-that the matrix is positive semidefinite in exact arithmetic, and that the
-resulting algebraic inequality is sound for every positive homomorphism, or
-equivalently every limiting graph sequence.  Informal flag algebra proofs
-usually manage these connections by convention, scripts, and mathematical
-expertise.  A proof assistant forces each connection to be named, typed, and
-checked.
+\begin{enumerate}
+  \item \textbf{Data-heavy computation.}  For each flag algebra argument,
+    thousands of flag algebra computations must be certified and imported into
+    the proof: subgraph density values between flag pairs and the entries of
+    the SDP certificate matrix must all be verified against the formal
+    definitions.  Manual verification is infeasible; the proof assistant must
+    be made to check these values automatically.
 
-Formalizing flag algebras is therefore a useful stress test for proof
-assistants and proof-producing domain-specific automation.  It exercises
-quotients in an intensional type theory, finite combinatorial counting,
-reflection from executable data structures to abstract specifications, exact
-certificate checking, and tactic support for a specialized algebraic language.
-The payoff is twofold: mathematicians get independently checkable
-flag-algebra proofs, and PL researchers get a detailed case study in building
-a verified pipeline whose components have different computational and logical
-trust assumptions.
+  \item \textbf{Algebraic bookkeeping.}  Flag algebra arguments manipulate
+    large linear combinations of flag terms: expanding flags at a larger
+    vertex count, computing typed flag products, and normalizing into canonical
+    form.  Each step is routine but the aggregate is prohibitively tedious
+    to discharge by hand.
 
-\paragraph{Our approach.}
-We keep the three semantic levels separate.  The abstract layer follows the
-mathematics: flags are quotient types, the flag algebra is a quotient
-$\mathbb{R}$-module with multiplication, and non-negativity is defined
-semantically by quantifying over positive homomorphisms.  The executable
-layer introduces concrete finite graph representations and connects them to
-the abstract definitions by adequacy theorems: theorems stating that a
-computed value is equal to the value specified at the quotient level.  The
-tactic layer is intentionally syntactic.  It does not define flag algebras
-and it does not justify SDP certificates; it performs the normalization needed
-to apply already-proved expansion and multiplication lemmas.
+  \item \textbf{Extensional mathematics in intensional type theory.}  Many
+    textbook steps say that two probabilities are equal because they count
+    ``the same choices'' after a reindexing.  In Lean this is not a slogan:
+    the proof must expose the two finite sample spaces, choose stable
+    \lean{Fintype} instances for them, construct an explicit equivalence
+    between the spaces, use \lean{Fintype.card\_congr}, and then transport
+    the resulting cardinality equality through the rational density formula.
+    Quotients, size-indexed flags, and proof-valued fields make these
+    extensionality arguments a central part of the design rather than a
+    peripheral nuisance.
+\end{enumerate}
+
+The first category calls for a \emph{reflection} architecture: a
+finitely-computable concrete representation of graphs and flags whose
+correspondence to the abstract definitions is certified by adequacy theorems,
+allowing Lean's kernel or native evaluator to check each value automatically.
+The second calls for custom elaboration tactics that inspect the syntactic
+structure of the proof state and dispatch the appropriate domain-specific
+lemmas.  The third calls for a disciplined library of proof patterns for
+quotient-heavy finite counting: cardinality-by-equivalence, explicit instance
+stabilization, and localized transport lemmas for the dependent casts that
+arise when flags change size.
 
 \paragraph{This paper.}
-We present a Lean~4 formalization of the flag algebra method for simple
-graphs.  The primary contribution is the formalization of the method itself:
-flags as quotient types, the flag algebra as a quotient $\mathbb{R}$-module
-with multiplication, positive homomorphisms, the semantic cone of elements
-that are non-negative under all positive homomorphisms, and a
-forbidden-subgraph framework for turning flag algebra inequalities into
-ordinary extremal graph statements.  The framework differs from Razborov's
-original presentation in a way that matters for formalization: forbidding a
-graph is expressed as a predicate used at proof time inside one ambient theory
-of simple graphs, rather than by constructing a separate axiomatic theory for
-each forbidden graph.
-
-The rest of the development is organized around the separation above.  A
-reflection layer introduces the concrete graph type \lean{Sym2Graph} and proves
-that its executable density computations agree with the abstract density
-definitions.  The density-table obligations are checked with
-\lean{native\_decide}, which trusts Lean's native compiler; the SDP
-positive-semidefiniteness certificates are checked over $\mathbb{Q}$ using
-LDL$^\top$ decompositions, with the matrix equalities checked by
-\lean{decide +kernel}.  A tactic layer automates the recurring normalization,
-expansion, and multiplication steps needed to use the formalized algebra in
-case-study proofs.
-
-\paragraph{Proof-engineering lessons.}
-Two Lean-specific obstacles shaped the proof strategy throughout the
-development.  The first is typeclass ambiguity in finite-set arguments: the
-same set defined by a predicate can be assigned different \lean{Fintype}
-instances through different elaboration paths; those instances agree on which
-elements belong to the set but are not definitionally equal, so cardinality
-lemmas such as \lean{Fintype.card\_congr} fail without an obvious error
-message.  The remedy, applied systematically, is to bind the intended instance
-explicitly at the moment a finite set is named, so that all subsequent uses
-see the same enumeration term.  The second obstacle is size-change bookkeeping:
-flag algebra operations (expansion, multiplication, insertion) change the
-vertex count of flags, and each such change forces explicit cast evidence and
-heterogeneous equality (\lean{HEq}) proofs whenever the same flag is used at
-two different sizes.  If this bookkeeping is left to propagate through
-high-level proofs it makes them unreadable; instead, we isolate each
-size-change obligation in a small named lemma and invoke only the clean
-invariant statement from above.  Both disciplines are described in
-\S\ref{sec:abstract} because they are the part of the development most likely
-to transfer to other formalizations of finite combinatorics in an intensional
-type theory.
+We present a Lean~4 formalization of Razborov's flag algebra method for graphs.
+The primary contribution is the formalization of flag algebra theory itself:
+flags as quotient types of labeled graphs under isomorphism, the flag algebra
+as a quotient $\mathbb{R}$-module with a commutative ring structure, positive
+homomorphisms as the semantic ordering, and a general
+forbidden-subgraph reasoning framework.
+A key departure from Razborov's original axiomatic approach is that forbidden
+subgraphs are expressed as a single predicate applied at proof time, operating
+inside a single ambient theory of simple graphs and requiring no
+per-problem axiomatization.
+For a PL and formal-methods audience, the contribution is the proof
+architecture needed to make this formalization reusable: it identifies where
+extensional combinatorial arguments must be reified as equivalences of finite
+witness sets, where reflection is an implementation refinement rather than the
+specification, and where tactic-facing metadata should be represented
+syntactically for performance.
+Built on this abstract layer, a \emph{reflection layer} bridges the abstract
+definitions to a finitely-computable concrete representation, enabling
+automated discharge of density and SDP certificate obligations.
+A \emph{tactic layer} handles algebraic bookkeeping via custom elaboration
+tactics.
 
 \paragraph{Contributions.}
 \begin{itemize}
-  \item \textbf{Flag algebra theory in Lean~4 (\S\ref{sec:abstract}).}
-    We formalize flags, flag densities, the quotient flag algebra, positive
-    homomorphisms, and the semantic order used by flag algebra proofs.  The
-    formalization includes a proof-time forbidden-subgraph framework, so the
-    same ambient theory of simple graphs can be reused across different
-    extremal problems.
+  \item \textbf{Flag algebra formalization (\S\ref{sec:abstract}).}
+    We formalize the full abstract structure of Razborov's flag algebra in
+    Lean~4: flags as quotient types of labeled graphs under isomorphism,
+    the flag algebra as a quotient $\mathbb{R}$-module with a commutative ring
+    structure, and the semantic ordering via positive homomorphisms.
+    A key departure from Razborov's original axiomatic approach is the
+    forbidden-subgraph reasoning framework: it is expressed as a single
+    predicate applied at proof time, operating inside a single ambient theory
+    of simple graphs and requiring no per-problem axiomatization.
 
-  \item \textbf{A checked computation boundary (\S\ref{sec:reflection}).}
-    We introduce concrete graph data structures for finite computation and
-    prove adequacy theorems connecting their executable density computations
-    to the abstract quotient definitions.  We also verify SDP certificates by
-    exact rational LDL$^\top$ decompositions, making explicit which obligations
-    rely on native evaluation and which are checked by the kernel.
+  \item \textbf{Design principles for quotient-heavy counting
+    (\S\ref{sec:design-principles}).}
+    We distill the proof-engineering patterns that made the formalization
+    scale in Lean~4: proving numerical density equalities via equivalences
+    between finite sample spaces, stabilizing inferred \lean{Fintype}
+    instances at the point where a set is named, localizing \lean{cast}/
+    \lean{HEq} transport around size-changing operations, and choosing
+    representations according to their consumers (quotients for specification,
+    finite data for computation, and canonical names for tactics).
 
-  \item \textbf{Domain-specific proof automation (\S\ref{sec:tactics}).}
-    We implement Lean~4 tactics for the recurring algebraic work in flag
-    algebra proofs: sorting and normalizing linear combinations, applying
-    expansion identities, and applying multiplication identities under a
-    forbidden-subgraph hypothesis.
+  \item \textbf{Reflection architecture (\S\ref{sec:reflection}).}
+    We introduce a finitely-representable graph type with decidable equality
+    and prove adequacy theorems equating abstract flag densities to computable
+    values.  SDP certificates are verified via an exact LDL$^\top$
+    decomposition over $\mathbb{Q}$.  We enforce a deliberate \emph{trust
+    hierarchy}: density tables are checked by Lean's native evaluator
+    (trusting the native compiler), while SDP certificate equalities are
+    checked by the kernel alone (trusting only the kernel).
 
-  \item \textbf{Case studies (\S\ref{sec:results}).}
-    The development proves the flag-algebra form of Mantel's theorem,
-    $\tdensity{K_2}{K_3}=1/2$, and the Erd\H{o}s pentagon theorem,
-    $\tdensity{C_5}{K_3}=24/625$.  The pentagon theorem includes both the
-    upper bound from a verified SDP certificate and the lower bound from a
-    formal blow-up construction.
+  \item \textbf{Tactic automation (\S\ref{sec:tactics}).}
+    We implement custom Lean~4 elaboration tactics for the algebraic
+    bookkeeping obligations: a tactic for normalizing linear combinations of
+    flag terms (which times out without it on expressions with $\sim\!25$
+    terms), and tactics for flag expansion and multiplication identities
+    (each collapsing 15--20 manual steps into a single tactic call).
+
+  \item \textbf{Verified results (\S\ref{sec:results}).}
+    We give formally complete proofs of Mantel's theorem
+    ($\pi(K_2;\,K_3) = 1/2$) and of the Erd\H{o}s pentagon theorem
+    ($\pi(C_5;\,K_3) = 24/625$), the latter including the upper bound via
+    a formally verified SDP certificate.
+    To our knowledge, this is the first formalization of the flag algebra
+    method in any proof assistant, and in particular the first machine-checked
+    proof of the Erd\H{o}s pentagon theorem.
+    Mantel's theorem has been formalized before as a standalone result;
+    our proof is, to our knowledge, the first to derive it via the flag
+    algebra method.
 \end{itemize}
 
 \paragraph{Paper organization.}
@@ -343,270 +321,111 @@ Section~\ref{sec:conclusion} concludes.
 
 This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and sets up the notation used
-throughout the paper.  No background in flag algebras or extremal
-combinatorics is assumed.  The goal is to make the proof pattern legible:
-what are the terms, what do they mean, and why can a finite certificate say
-something about all large graphs?
-
+throughout the paper.
 For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
-All graphs are undirected, finite and simple.
-
-The motivating question has the following shape.  Fix two small graphs:
-a target pattern $F$ and a forbidden pattern $H$.  Among all very large graphs
-that contain no copy of $H$ as a subgraph, how often can $F$ appear as an
-induced subgraph?  We call graphs with no copy of $H$ \emph{$H$-free}.  For
-example, if $H=K_3$ is a triangle and $F=C_5$ is a pentagon, the question asks
-for the largest possible pentagon density in triangle-free graphs.  Such
-questions are hard because the graph being optimized over is not fixed: it can
-have arbitrarily many vertices.
-
-Flag algebras are useful because they turn this infinite family of finite
-optimization problems into a finite certificate-checking problem.  One can
-read the method as a small domain-specific proof language:
-\emph{terms} are linear combinations of small graph patterns,
-\emph{equations} come from exact finite counting identities, and
-\emph{non-negativity proofs} come from finite quadratic certificates.  Once
-the definitions below are in place, a successful certificate will imply that
-every limiting $H$-free graph has target density at most the claimed constant.
-
-The rest of the section introduces this language one construct at a time.
-Types and flags are its syntax for local, rooted graph observations.  Densities
-give those observations a probabilistic meaning.  The quotient algebra installs
-the counting identities as definitional equalities of the proof language.
-We then introduce positive homomorphisms, which define what it means for one
-algebra expression to be non-negative or bounded above by another.  Finally,
-an unlabeling map transports labeled local reasoning back to ordinary
-unlabeled graph statements.
+All graphs are finite and simple.
 
 \subsection{Types and Flags}
-
-The first move in a flag algebra proof is to look at a large graph from the
-perspective of a small labeled configuration.  This is what lets the method use
-conditional information: for example, instead of only asking how many edges a
-triangle-free graph has, we can ask how the graph looks around a distinguished
-vertex or a distinguished edge.  Types and flags are the notation for these
-local views.
 
 \paragraph{Types.}
 A \emph{type} of size $k$ is a graph $\sigma$ with vertex set $[k]$.
 The \emph{empty type} $\emptyset$ (size $k=0$) is the unique graph on the
-empty vertex set.
+empty vertex set; flags over $\emptyset$ are just ordinary finite graphs
+up to isomorphism.
 
 \paragraph{Flags.}
 Fix a type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
-that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$
-(i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
-The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.  We often omit the
-superscript $\sigma$ and simply write $G$.  Note that
-flags over the empty type $\emptyset$ are just ordinary finite graphs.
+that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ as a labeled
+graph (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
+The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong_\sigma (G_2,\theta_2)$,
-if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
+\emph{isomorphic} if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
 with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
-Each $\mathcal{F}^\sigma_n$ is finite, although
-$\mathcal{F}^\sigma$ itself is infinite.
-
-\begin{figure}[t]
-  \centering
-  \setlength{\tabcolsep}{1.1em}
-  \renewcommand{\arraystretch}{1.35}
-  \begin{tabular}{cccc}
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.8,0) {};
-      \draw[graph edge] (a) -- (b);
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
-      \draw[graph edge] (a) -- (b);
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
-      \draw[graph edge] (a) -- (b);
-      \draw[graph edge] (b) -- (c);
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
-      \draw[graph edge] (a) -- (b);
-      \draw[graph edge] (b) -- (c);
-      \draw[graph edge] (c) -- (a);
-    \end{tikzpicture}
-    \\
-    $K_2$ & $G_{\text{one-edge}}$ & $G_{\text{path}}$ & $G_{\triangle}$ \\
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.8,0) {};
-      \draw[graph edge] (a) -- (b);
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.8,0) {};
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
-      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
-        \node[graph vertex] (v\i) at (\ang:0.65) {};
-      }
-      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
-    \end{tikzpicture}
-    &
-    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
-      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
-        \node[graph vertex] (v\i) at (\ang:0.65) {};
-      }
-      \node[graph root] at (v1) {};
-      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
-    \end{tikzpicture}
-    \\
-    $K_2^\bullet$ & $\overline{K_2}^{\bullet}$ & $C_5$ & $C_5^\bullet$
-  \end{tabular}
-  \caption{Graphs and rooted flags used in the running examples.  Filled
-  vertices are labeled vertices of a flag.}
-  \label{fig:small-graphs}
-\end{figure}
+Each $\mathcal{F}^\sigma_n$ is finite.
 
 \subsection{Subflag Densities}
 
-Once pattern flags have been named, the basic question is simple: if we sample
-a few extra vertices in a larger host flag, what smaller flag do we see?
-The resulting densities are the bridge between finite host flags and
-asymptotic limits.  Along a convergent sequence of larger and larger flags,
-each fixed finite pattern has a limiting density.  Flag algebra manipulates
-those limiting densities symbolically, but every coefficient comes from the
-finite probability definitions below.  This is why the method is well suited
-to machine checking: the coefficients in a certificate are not analytic
-guesses, but rational numbers obtained by finite enumeration.
-
 \paragraph{Single-flag density.}
-Let $\sigma$ be a type of size $k$.  For $\sigma$-flags $F$ of size $m$ and
-$G$ of size $n \geq m$, the \emph{induced subflag density} $\den{F}{G}$ is
-the probability that a uniformly random $(m-k)$-element subset of
-$V(G) \setminus \operatorname{Im}(\theta_G)$, together with the labeled
-vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.  Explicitly:
+For $\sigma$-flags $F$ of size $m$ and $G$ of size $n \geq m$, the
+\emph{induced density} $\den{F}{G}$ is the probability that a uniformly
+random injective map from $V(F) \setminus \operatorname{Im}(\theta_F)$ to
+$V(G) \setminus \operatorname{Im}(\theta_G)$ (extending the type embedding)
+induces a copy of $F$ in $G$ compatible with the type.  Explicitly:
 \[
   \den{F}{G}
   \;=\;
-  \frac{1}{\binom{n-k}{m-k}}
-    \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
-                  ~\Big|~ |S|=m-k,\;
-                  G[S \cup \operatorname{Im}(\theta_G)]
-                  \text{ is isomorphic to } F
-                  \text{ as a }\sigma\text{-flag}\Big\}\Bigr|}.
+  \frac{\bigl|\{\iota : V(F) \hookrightarrow V(G)
+                  \mid \iota \text{ preserves type embedding and induces }F\}\bigr|}
+       {\binom{n-k}{m-k}\,(m-k)!}.
 \]
-This value lies in $[0,1]$ and is invariant under
+This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
 
 \begin{example}[A rooted pentagon density]
-  Let $\sigma$ be the one-vertex type, and let $K_2^\bullet$ be the
+  Let $\sigma$ be the one-vertex type, and let $E^\bullet$ be the
   $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
-  the labeled one.  Let $\overline{K_2}^{\bullet}$ be the corresponding
-  non-edge flag.  These flags are shown in \Cref{fig:small-graphs}.  Now root
-  a copy of $C_5$ at one of its vertices.  Among the
+  the labeled one.  Let $\overline{E}^{\bullet}$ be the corresponding
+  non-edge flag.  Now root a copy of $C_5$ at one of its vertices.  Among the
   four non-root vertices, exactly two are neighbors of the root.  Hence
   \[
-    \den{K_2^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
+    \den{E^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
     \qquad
-    \den{\overline{K_2}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
+    \den{\overline{E}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
   \]
   This tiny example captures the reason flags are useful: a flag remembers
   the local view from a labeled configuration.  The same unrooted pentagon can
   be queried from the perspective of a distinguished vertex, and the algebra
-  keeps those conditional densities as named algebraic coordinates rather than
-  side comments in prose.
+  records those conditional densities as first-class objects.
 \end{example}
 
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
-$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
-$\den{F_1,F_2}{G}$ is the probability, over a uniformly chosen ordered pair
-of disjoint subsets
-\[
-  S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G),
-  \qquad |S_i|=m_i-k,
-\]
-that $S_i$ together with the labeled vertices of $G$ induces a
-$\sigma$-flag isomorphic to $F_i$, for $i=1,2$.
-Joint densities are what make multiplication possible: the product of two
-pattern flags is interpreted as the probability that two disjoint samples occur
-simultaneously in the same host.  This turns combinatorial double counting
-into algebra.
+flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
+$\den{F_1,F_2}{G}$ is the probability that two independently and uniformly
+chosen injections from $V(F_i)\setminus [k]$ into $V(G)\setminus [k]$
+(sampled without replacement from the same pool) each induce their
+respective flag, compatible with the shared type embedding.
 
 \subsection{The Flag Algebra}
 
-The next step is to stop distinguishing between expressions that have the same
-asymptotic meaning.  A small flag $F$ can be counted directly in a large host
-flag $K$.  Equally, one can first sample a larger intermediate flag $G$ inside
-$K$, then count $F$ inside $G$, and finally average over the choice of $G$.
-These two sampling procedures give the same limiting density.  The flag
-algebra builds this sampling-averaging identity into the syntax by quotienting
-it out.  As a result, a proof can replace a pattern flag by any sufficiently
-large expansion of it, which is exactly the bookkeeping needed by flag algebra
-certificates.  This is the same kind of move one makes when quotienting
-programs by an equational theory: the quotient removes representation choices
-that should not affect observable behavior.
-
-Fix a type $\sigma$ of size $k$.  Let
-$\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
-$\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  We also write $F$ for the basis vector
-corresponding to a flag $F$.
+Fix a type $\sigma$.  Let $\mathbb{R}[\mathcal{F}^\sigma]$ be the free
+$\mathbb{R}$-module with basis $\mathcal{F}^\sigma$.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \[
   F - \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot G,
-  \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
+  \qquad F \in \mathcal{F}^\sigma_m,\; n \geq m.
 \]
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 The zero-space relations express the combinatorial identity that, in a
-sufficiently large host flag $K$,
-\[
-  \den{F}{K}
-  =
-  \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G}\,\den{G}{K}.
-\]
-That is, counting $F$ directly agrees with counting through an intermediate
-sample of size $n$.
+sufficiently large graph, the average density of $F$ over all extensions of
+the type embedding equals $\den{F}{G}$.
 
 \paragraph{Multiplication.}
-For flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
-$F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
-$\ell \geq m_1 + m_2 - k$ and set
+For $[F_1] \in \mathcal{A}^\sigma_{m_1}$ and $[F_2] \in \mathcal{A}^\sigma_{m_2}$,
+their product at size $\ell \geq m_1 + m_2 - k$ is
 \[
   [F_1] \cdot [F_2]
   \;=\;
   \sum_{G \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G} \cdot [G]
-  \qquad\text{in } \mathcal{A}^\sigma.
+  \;\in\; \mathcal{A}^\sigma_\ell.
 \]
-The zero-space quotient is what makes this formula independent of the
-auxiliary size $\ell$; it also respects isomorphism classes of the input flags.
-Extending bilinearly gives a commutative, associative $\mathbb{R}$-algebra.
-The unit is the type flag consisting only of the labeled vertices; we write it
-as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when $\sigma=\emptyset$.
+This is well-defined on the quotient (independent of $\ell$) and makes
+$\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
+with unit $[\text{type graph } \sigma]$.
 
 \begin{example}[The edge expansion behind Mantel's theorem]
-  The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
-  is thus a $\emptyset$-type flag) at
+  The simplest useful zero-space relation expands the untyped edge $K_2$ at
   size $3$.  There are four unlabeled graphs on three vertices: the empty
-  graph, the one-edge graph, the two-edge path, and the triangle
-  (the latter three are shown in \Cref{fig:small-graphs}).  If an
+  graph, the one-edge graph, the two-edge path, and the triangle.  If an
   edge is sampled uniformly from the three possible vertex pairs, its density
   in these graphs is respectively
   \[
@@ -621,122 +440,44 @@ as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when $\sigma=\emptyset$.
     + G_{\triangle}
     \qquad\text{in } \mathcal{A}^{\emptyset}.
   \]
-  Mantel's theorem is the statement that the asymptotic edge density $K_2$ is
-  at most $1/2$ in every $K_3$-free graph.  In the flag algebra proof,
-  we start with the above equation and then eliminate the triangle term
-  using the $K_3$-free hypothesis.  This style of expansion is common in
-  flag algebra proofs.  It is also exactly the kind of elementary
-  combinatorial bookkeeping that becomes unwieldy in the Lean formalization of
-  more complex arguments, including the pentagon proof.  There the coefficients
-  are still rational numbers from finite sampling, but there are hundreds of
-  them, and every one must be justified inside Lean.
+  In the Mantel proof, the triangle term is then eliminated under the
+  $K_3$-free hypothesis.  This is exactly the kind of elementary
+  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
+  the coefficients are simple, but there are hundreds of such coefficients
+  and they must all line up syntactically inside Lean.
 \end{example}
 
-\subsection{Positive Homomorphisms, Semantic Order, and Unlabeling}
-
-The quotient algebra is syntax for density expressions.  To use such an
-expression in an extremal argument, we need to say how it is evaluated in a
-limiting graph sequence.  That role is played by positive homomorphisms.
-
-\paragraph{Positive homomorphisms.}
-Fix a type $\sigma$.  A \emph{positive homomorphism} on
-$\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
-$\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
-number to each algebra expression, respects addition and multiplication, and
-never assigns a negative value to a concrete flag.
-
-In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly the
-semantic objects represented by convergent graph sequences.  That is, if $(G_n)_{n \in \mathbb{N}}$ 
-is a sequence of finite graphs with $|V(G_n)|\to\infty$ and every density
-$\den{F}{G_n}$ has a limit, then
-\[
-  [F]\longmapsto \lim_{n\to\infty}\den{F}{G_n}
-\]
-extends to a positive homomorphism on $\mathcal{A}^\emptyset$; conversely,
-every positive homomorphism for the empty type arises this way in Razborov's
-semantics~\cite{razborov2007flag}.
-
-\paragraph{Semantic non-negativity and order.}
-For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
-\[
-  \mathcal{C}^\sigma
-  =
-  \{f \in \mathcal{A}^\sigma
-    \ |\ \phi(f) \geq 0
-    \text{ for every positive homomorphism }
-    \phi:\mathcal{A}^\sigma\to\mathbb{R}\}.
-\]
-An element of $\mathcal{C}^\sigma$ is non-negative under every positive
-homomorphism of the $\sigma$-flag algebra.  We write
-\[
-  f \leq_\sigma g
-  \qquad\text{when}\qquad
-  g-f \in \mathcal{C}^\sigma.
-\]
-Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every positive homomorphism
-$\phi:\mathcal{A}^\sigma\to\mathbb{R}$.  When $\sigma=\emptyset$, we write
-$\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
-$\leq_\emptyset$.
-
-\paragraph{Squares and PSD quadratic forms.}
-A real symmetric matrix $M \in \mathbb{R}^{r\times r}$ is \emph{positive semidefinite} (PSD) if
-$v^\top M v\geq 0$ for every real vector $v \in \mathbb{R}^r$.  The simplest source of elements
-of $\mathcal{C}^\sigma$ is a square: if $e\in\mathcal{A}^\sigma$ and $\phi$ is
-a positive homomorphism, then
-\[
-  \phi(e^2)=\phi(e)^2\geq 0.
-\]
-So $e^2$ is semantically non-negative.  A finite sum
-$\sum_i a_i e_i^2$ with $a_i\geq 0$ is non-negative for the same reason.  More
-generally, if $M$ is PSD and $e_1,\ldots,e_r\in\mathcal{A}^\sigma$, then every
-positive homomorphism sends
-\[
-  \sum_{i,j=1}^r M_{ij}\,e_i e_j
-\]
-to the real quadratic form $v^\top M v$ for
-$v=(\phi(e_1),\ldots,\phi(e_r))$, which is always non-negative. So, the
-above quadratic expression is in $\mathcal{C}^\sigma$.  
-This is the sense in which flag algebra
-proofs use ``sums of squares'': the proof data is a finite quadratic expression
-whose value is forced to be a non-negative real number by a PSD matrix.
+\subsection{The Downward Operator and Semantic Non-Negativity}
 
 \paragraph{Downward (unlabeling) operator.}
-Labeled algebras (i.e., $\mathcal{A}^\sigma$ with $\sigma \neq \emptyset$) often give stronger quadratic expressions because labels
-record local structure.  The final extremal statement, however, is usually about
-unlabeled graphs (i.e., flags for the empty type), such as an upper bound on the density of $C_5$ in triangle-free
-graphs.  The downward operator is the averaging map that forgets the labels
-with the correct normalization, converting a labeled algebra expression into
-an unlabeled one.
-
-For a $\sigma$-flag $F=(G,\theta)$ of size $m$ (type of size $k$), let
-$F|_\emptyset$ be the underlying graph $G$, which is also a flag for the empty type.  
-Following Razborov's
-definition~\cite{razborov2007flag}, the \emph{downward operator} does not sum
-over all labelings of $G$.  Instead, it forgets the labels and multiplies by
-the probability that a random injection of the type vertices would recover the
-same labeled flag.  More precisely, define
-\[
-  q_\sigma(F)
-  \;=\;
-  \frac{
-    \bigl|\{\theta' : [k]\hookrightarrow V(G)
-       \mid \theta' \text{ embeds }\sigma\text{ into }G
-       \text{ and } (G,\theta')\cong_\sigma F\}\bigr|}
-       {m(m-1)\cdots(m-k+1)}.
-\]
-Then
+For a $\sigma$-flag $F$ of size $m$ (type of size $k$), the \emph{downward
+operator} $\llbracket F \rrbracket_\sigma$ averages over all ways to embed
+the type $\sigma$ into $F$, producing an element of the untyped algebra:
 \[
   \llbracket F \rrbracket_\sigma
   \;=\;
-  q_\sigma(F)\cdot F|_\emptyset,
+  \frac{k!\,(m-k)!}{m!}
+  \sum_{\theta: [k]\hookrightarrow V(F)}
+  \bigl[(F, \theta)\bigr]_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
+The downward operator is an $\mathbb{R}$-module map
+$\llbracket\cdot\rrbracket_\sigma : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset$.
+
+\paragraph{Positive homomorphisms.}
+A \emph{positive homomorphism} is an $\mathbb{R}$-algebra homomorphism
+$\phi: \mathcal{A}^\emptyset \to \mathbb{R}$ satisfying $\phi([G]) \geq 0$
+for every graph $G$.
+Positive homomorphisms correspond bijectively to convergent graph sequences:
+every sequence $(G_n)$ with $|V(G_n)|\to\infty$ such that all flag densities
+have limits determines a unique positive homomorphism~\cite{razborov2007flag}.
+
+The \emph{semantic cone} is
+$\mathcal{C} = \{f \in \mathcal{A}^\emptyset \mid \phi(f) \geq 0\ \forall \phi\}$.
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]
   \label{thm:sdp-nonneg}
-  For any type $\sigma$, elements $e_1,\ldots,e_r \in \mathcal{A}^\sigma$,
+  For any type $\sigma$, flags $e_1,\ldots,e_r \in \mathcal{A}^\sigma$,
   and positive semidefinite matrix $A \in \mathbb{R}^{r\times r}$,
   \[
     \Bigl\llbracket \sum_{i,j=1}^r A_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma
@@ -744,57 +485,19 @@ extended linearly to all of $\mathcal{A}^\sigma$.
   \]
 \end{theorem}
 
-The conclusion says that every positive homomorphism for the emtpy type evaluates the
-downward-averaged quadratic expression as a non-negative real number.  This is
-the engine behind flag algebra bounds based on positive semidefinite matrices.
+This theorem is the engine behind all SDP-based flag algebra bounds.
 Given a target element $f_0 \in \mathcal{A}^\emptyset$ and a claimed bound
-$c \in \mathbb{R}$, if one exhibits a PSD matrix $A$ and elements
-$e_i \in \mathcal{A}^\sigma$ such that
+$c \in \mathbb{R}$, if one exhibits a PSD matrix $A$ and typed flags $e_i$ such
+that
 \[
   c \cdot \mathbf{1} - f_0
   \;=\;
   \Bigl\llbracket \sum_{i,j} A_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma,
 \]
-then $c\cdot\mathbf{1}-f_0\in\mathcal{C}$, so
-$\phi(f_0) \leq c$ for every positive homomorphism $\phi$ for the empty type.
+then $\phi(f_0) \leq c$ for all positive homomorphisms $\phi$, yielding an
+upper bound on the Turán density of the corresponding graph pattern.
 
 \subsection{Turán Densities and the Pentagon Problem}
-
-We can now connect the algebra back to the combinatorial problems that motivate
-it.  Here $H$ is an unlabeled forbidden graph and $F$ is an unlabeled target
-graph.  The finite graphs being optimized over are $H$-free, meaning that they
-contain no copy of $H$ as a subgraph, and the target statistic is the induced
-density of $F$.
-
-In the algebraic certificate, the forbidden-graph assumption is represented as
-a condition on positive homomorphisms.  View $H$ as the basis element $[H]$ of
-$\mathcal{A}^\emptyset$.  We restrict attention to empty-type positive
-homomorphisms $\phi$ satisfying
-\[
-  \phi([H])=0.
-\]
-Every convergent sequence of $H$-free graphs gives such a homomorphism, because
-the induced density of $H$ is zero in each graph in the sequence.  For the main
-case study $H=K_3$, the condition says precisely that the limiting triangle
-density is zero, which is the closure of triangle-freeness used by the
-extremal argument.
-
-For $f,g\in\mathcal{A}^\emptyset$, write
-\[
-  f \leq_{[H]} g
-\]
-when $\phi(f)\leq\phi(g)$ for every empty-type positive homomorphism $\phi$
-satisfying $\phi([H])=0$.
-Equivalently, $g-f$ evaluates to a non-negative real number in every
-empty-type positive homomorphism satisfying the forbidden-graph condition $\phi([H])=0$.
-Thus an upper-bound proof for a target graph $F$ aims to establish
-\[
-  [F] \leq_{[H]} c\cdot\mathbf{1}.
-\]
-The finite proof data usually combines three ingredients already defined
-above: zero-space relations expand expressions to a common size, PSD quadratic
-forms provide semantically non-negative terms, and the downward operator turns
-labeled quadratic terms into unlabeled ones.
 
 \paragraph{Generalized Turán density.}
 For unlabeled graphs $F$ and $H$, the \emph{generalized Turán density} is
@@ -802,15 +505,10 @@ For unlabeled graphs $F$ and $H$, the \emph{generalized Turán density} is
   \tdensity{F}{H}
   \;=\;
   \lim_{n\to\infty}
-  \frac{1}{\binom{n}{|V(F)|}} \cdot 
-    {\max\Bigl\{|\text{induced copies of }F\text{ in }G|
-                   ~\Big|~ |V(G)|=n \text{ and } G \text{ is }H\text{-free}\Bigr\}}.
+  \frac{\max\bigl\{|\text{copies of }F\text{ in }G|
+                   \mid |V(G)|=n,\; G \text{ is }H\text{-free}\bigr\}}
+       {\binom{n}{|V(F)|}}.
 \]
-Using the same letter $F$ for the graph and its class $[F]$ in
-$\mathcal{A}^\emptyset$, the semantic inequality
-$F \leq_{[H]} c\cdot\mathbf{1}$ implies
-$\tdensity{F}{H}\leq c$.  A matching construction gives the reverse
-inequality when the claimed value is sharp.
 
 \paragraph{The Erd\H{o}s pentagon problem.}
 The problem asks for $\tdensity{C_5}{K_3}$: the maximum density of
@@ -828,295 +526,195 @@ algebraic bookkeeping.
 \section{Abstract Formalization}
 \label{sec:abstract}
 
-The main formalization problem is not that flag algebras contain many
-definitions.  It is that their definitions deliberately blur several levels of
-meaning.  A finite graph is a concrete object; a flag is an observation made
-inside a typed context; a density is a finite sampling experiment; an algebraic
-identity is an equality of all sufficiently large samplings; and a positive
-homomorphism is an asymptotic model.  Informal flag-algebra proofs move between
-these levels fluently.  A proof assistant does not.
+The abstract formalization layer encodes the mathematical content of
+Section~\ref{sec:background} faithfully in Lean~4's dependent type system.
+The design principle is that every mathematical definition has a direct
+Lean~4 counterpart that preserves the mathematical semantics exactly,
+with no hidden invariants or definitional shortcuts.  This section describes
+the four main components: flags as quotient types, the flag algebra as a
+quotient module, the semantic ordering via positive homomorphisms, and a
+general forbidden-subgraph reasoning framework.
 
-Our abstract layer is therefore organized around one principle: make each
-level transition explicit, but expose it through the same proof language that
-mathematicians use.  The resulting Lean development is not just a transcription
-of Razborov's definitions.  It is a typed interface between finite counting,
-quotient reasoning, semantic validity, and machine-generated SDP certificates.
-The rest of this section follows that interface from local observations to
-global extremal bounds.  Code snippets are lightly rendered in ASCII when the
-Lean source uses Unicode notation; the names and fields match the
-implementation.
+\subsection{Flags as Quotient Types}
 
-\subsection{Contexts as Quotient Interfaces}
-
-The first useful viewpoint is that a flag type is a \emph{context}.  It fixes
-the vertices that an observation is allowed to remember, much as a typing
-context fixes the variables that a term may mention.  In the implementation
-this context is intentionally ordinary:
+A \emph{type graph} of size $k$ is a \lean{SimpleGraph (Fin k)}, the standard
+Lean~4/Mathlib type for simple graphs on a finite vertex set.  A
+\emph{labeled graph} over type $\sigma$ with vertex set $V$ is a pair
 \begin{lstlisting}
-abbrev FlagType := SimpleGraph
+structure LabeledGraph (sigma : FlagType (Fin n0)) (V : Type) where
+  graph     : SimpleGraph V
+  typeEmbed : sigma ->gg graph  -- injective graph homomorphism
 \end{lstlisting}
-There is no special-purpose ``flag type'' graph structure hidden below the
-mathematics.  The abbreviation in \lean{FlagAlgebra/FlagDef.lean} reuses
-Mathlib's \lean{SimpleGraph}, while the size of a type is recovered from the
-finite vertex type, usually \lean{Fin n0}.  This choice keeps the ambient graph
-theory shared with the rest of Mathlib instead of forking a parallel graph
-library.
-
-A flag is then a graph equipped with an embedding of the context:
+where \lean{->gg} denotes a \lean{SimpleGraph} homomorphism that is also
+injective on vertices.  Two labeled graphs over the same type are
+\emph{flag-isomorphic} if they are related by a graph isomorphism that
+commutes with the type embeddings.  The type of flags is then the quotient:
 \begin{lstlisting}
-structure LabeledGraph (sigma : FlagType T) (V : Type) where
-  graph      : SimpleGraph V
-  type_embed : sigma ->g graph
-\end{lstlisting}
-The field \lean{type\_embed} is the hook that makes the analogy with typed
-terms precise.  The labels are not colors or annotations attached after the
-fact; they are an injective graph embedding of the context into the observation.
-Everything outside the image of this embedding is locally sampled structure.
-
-The second design choice is more consequential: flags are quotients, not
-canonical representatives.
-\begin{lstlisting}
-def Flag (sigma : FlagType T) (V : Type) : Type :=
+def Flag (sigma : FlagType (Fin n0)) (V : Type) : Type :=
   Quotient (labeledGraphSetoid sigma V)
 \end{lstlisting}
-This is a familiar move in mathematics and a hostile one for automation: every
-operation must prove that it respects isomorphism.  We nevertheless keep the
-quotient at the specification boundary because it states the right theorem.
-The abstract algebra cannot depend on whether a path is represented on
-vertices $\{0,1,2\}$ or $\{2,0,1\}$.  Canonical representatives appear later,
-in the reflection layer, only as an implementation of finite computation.
+The setoid \lean{labeledGraphSetoid} is defined from flag-isomorphism,
+which is an equivalence relation on labeled graphs.
 
-The size-indexed families used in the algebra are thin wrappers around this
-quotient interface:
+\paragraph{Size-indexed families.}
+We write \lean{FlagWithSize sigma n} for \lean{Flag sigma (Fin n)} (flags of size
+$n$) and \lean{FinFlag sigma} for the dependent sum
+$\Sigma\, (n : \mathbb{N}),\, \lean{FlagWithSize}\ \sigma\ n$, which collects
+all flags across all sizes.
+Each \lean{FlagWithSize sigma n} is a \lean{Fintype} (inheriting finiteness from
+the finiteness of \lean{Fin n} and the decidability of flag isomorphism,
+established in Section~\ref{sec:reflection}), while \lean{FinFlag sigma} is
+\lean{Countable} and \lean{Infinite} when the type $\sigma$ is non-trivial.
+
+\subsection{The Flag Algebra as a Quotient Module}
+
+The flag algebra is built in
+\lean{LeanFlagAlgebras.FlagAlgebra.FlagAlgebra}.
+Following the mathematical definition, we first form the free
+$\mathbb{R}$-module of finitely-supported functions on flags:
 \begin{lstlisting}
-abbrev FlagWithSize (sigma : FlagType (Fin n0)) (n : N) :=
-  Flag sigma (Fin n)
-
-def FinFlag (sigma : FlagType (Fin n0)) : Type :=
-  Sigma (fun n : N => FlagWithSize sigma n)
+abbrev FlagVector sigma := FinFlag sigma ->0 R  -- Finsupp free module
 \end{lstlisting}
-Thus \lean{FlagWithSize sigma n} is the finite search space used by expansion
-lemmas, and \lean{FinFlag sigma} is the countable basis of the eventual algebra.
-This small separation between ``fixed size'' and ``all finite sizes'' becomes
-crucial when we prove that products and expansions are independent of the
-auxiliary size chosen for a calculation.
-
-\subsection{Densities as Sampling Semantics}
-
-The most useful way to read $\den{F}{G}$ is not as a combinatorial fraction, but as
-the denotational semantics of a finite sampling program: keep the type vertices
-fixed, sample the remaining vertices, and observe the induced flag.  That
-reading is what makes flag algebras attractive for certification.  SDP
-software manipulates density expressions, but Lean can reduce each expression
-to a finite population and a finite count.
-
-The implementation in \lean{FlagAlgebra/SubflagListDensity.lean} therefore
-defines densities once, for lists of requested flags, rather than separately
-for every arity.  At the representative level, \lean{LabeledSubgraphList}
-records the sampled subgraphs of a host.  Three predicates identify the
-well-formed samples:
+(Here \lean{->0} is Mathlib's \lean{Finsupp} type: functions with finite
+support, forming a free module over $\mathbb{R}$.)
+The \emph{zero space} \lean{ZeroSpace sigma} is defined as the submodule of
+\lean{FlagVector sigma} generated by all elements of the form
+$[\lean{F}] - \sum_{G \in \lean{FlagWithSize}\ \sigma\ n} \den{F}{G} \cdot [G]$,
+for each flag $F$ of size $m$ and each $n \geq m$.
+The flag algebra is the quotient:
 \begin{lstlisting}
-LabeledSubgraphList.IsInduced
-predDisjointLabeledSubgraphList
-predIsoLabeledHl
+def FlagAlgebra sigma := FlagVector sigma / ZeroSpace sigma
 \end{lstlisting}
-They say, respectively, that each sample is induced, that independently
-sampled flags overlap only in the shared type vertices, and that the observed
-subgraphs have the requested flag-isomorphism type.  The density is then the
-rational semantics of this sampling experiment:
+We prove that \lean{FlagAlgebra sigma} carries a commutative $\mathbb{R}$-algebra
+structure, with product defined by
 \begin{lstlisting}
-def labeledSubgraphListDensity (Hl : LabeledGraphList sigma t Vl)
-    (G : LabeledGraph sigma W) : Q :=
-  labeledSubgraphListCount Hl G /
-    multinomialCoefficient r_list (G.size - sigma.size)
+def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
+    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
+  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
 \end{lstlisting}
-The denominator is not a bookkeeping detail; it is the formal sample space for
-the additional, unlabeled vertices.  The single- and two-flag densities used by
-the algebra are just arity-specialized views of the same semantics:
-\begin{lstlisting}
-def flagDensity1 (F : Flag sigma U) (G : Flag sigma W) : Q :=
-  flagListDensity [F] G
+and shown to be well-defined on the quotient via the zero-space relations.
+The unit element is the class of the type graph $\sigma$ itself.
 
-def flagDensity2 (F1 : Flag sigma U1) (F2 : Flag sigma U2)
-    (G : Flag sigma W) : Q :=
-  flagListDensity [F1, F2] G
+\subsection{Semantic Ordering via Positive Homomorphisms}
+
+The ordering on \lean{FlagAlgebra sigma} is semantic rather than syntactic.
+We define:
+\begin{lstlisting}
+structure PositiveHom (sigma : FlagType (Fin n0)) where
+  toFun  : FlagAlgebra sigma ->a[R] R  -- R-algebra homomorphism
+  nonneg : forall F : FinFlag sigma, 0 <= toFun [[unitVector F]]
 \end{lstlisting}
-The Lean source names these constants with subscripted numerals.  We write
-\lean{flagDensity1} and \lean{flagDensity2} here only to keep the typeset code
-portable.  Conceptually, \lean{flagDensity1} is the induced subflag density
-$\den{F}{G}$, and \lean{flagDensity2} is the joint density needed for products.
-
-\subsection{The Algebra as an Equational Theory}
-
-Flag algebra multiplication is easy to state on paper because one silently
-identifies a small flag with its expected expansion inside any larger graph.
-This is exactly the kind of extensional equality that must become explicit in
-Lean.  The algebra is therefore built as an equational theory: start with the
-free real vector space on finite flags, then quotient by the laws saying that
-expansion preserves meaning.
+The \emph{semantic cone} and its induced ordering are:
 \begin{lstlisting}
-abbrev FlagVector (sigma : FlagType (Fin n0)) : Type :=
-  FinFlag sigma ->0 R
+def semanticCone sigma : Set (FlagAlgebra sigma) :=
+  {f | forall phi : PositiveHom sigma, 0 <= phi.toFun f}
 
-def unitVector (F : FinFlag sigma) : FlagVector sigma :=
-  Finsupp.single F 1
+instance : Preorder (FlagAlgebra sigma) :=
+  { le := fun f g => g - f is in semanticCone sigma, ... }
 \end{lstlisting}
-Here \lean{->0} is Mathlib's finitely supported function type.  The equations
-we impose are the expansion laws $F = \sum_G \den{F}{G}G$ at larger sizes:
+
+The main non-negativity theorem, proved in
+\lean{LeanFlagAlgebras.FlagAlgebra.QuadraticForm}, is the Lean~4 counterpart
+of Theorem~\ref{thm:sdp-nonneg}:
 \begin{lstlisting}
-def densityFlagSum (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
-  sum F' : FlagWithSize sigma ell,
-    flagDensity1 F.2 F' * unitVector <ell, F'>
-
-def zeroElement (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
-  unitVector F - densityFlagSum F ell
-
-def ZeroSpace (sigma : FlagType (Fin n0)) : Submodule R (FlagVector sigma) :=
-  Submodule.span R (zeroSet sigma)
-\end{lstlisting}
-The quotient says that two formal linear combinations are equal when their
-difference is generated by these expansion laws:
-\begin{lstlisting}
-def flagVectorEqv (f g : FlagVector sigma) : Prop :=
-  f - g in ZeroSpace sigma
-
-abbrev FlagAlgebra (sigma : FlagType (Fin n0)) : Type :=
-  Quotient (flagVectorSetoid sigma)
-\end{lstlisting}
-This quotient is the formal analogue of a program equivalence: two density
-expressions are identified when every sufficiently large finite experiment
-gives the same value.  The product is defined by joint sampling at an
-auxiliary output size,
-\begin{lstlisting}
-def flagMulWithSize (F F' : FinFlag sigma) (ell : N) : FlagVector sigma :=
-  sum G : FlagWithSize sigma ell,
-    flagDensity2 F.2 F'.2 G * unitVector <ell, G>
-\end{lstlisting}
-and the zero-space quotient is what makes the auxiliary size disappear from
-the final algebra.  The proofs of commutativity, associativity, unit laws, and
-quotient compatibility are not routine algebraic boilerplate; they are the
-place where the sampling semantics is shown to support the symbolic calculus
-used by flag-algebra certificates.
-
-\subsection{Positive Homomorphisms as Models}
-
-The next level shift is from finite sampling to asymptotic truth.  Positive
-homomorphisms play the role of models of the equational theory: they assign a
-real value to every flag expression, preserve the algebraic operations, and
-send every concrete flag to a non-negative number.  In
-\lean{FlagAlgebra/PositiveHom.lean} this is a subtype of real algebra
-homomorphisms:
-\begin{lstlisting}
-abbrev Hom (sigma : FlagType (Fin n0)) :=
-  FlagAlgebra sigma ->a[R] R
-
-def PositiveHom (sigma : FlagType (Fin n0)) : Type :=
-  { phi : Hom sigma // forall F : FinFlag sigma,
-      phi [[unitVector F]] >= 0 }
-\end{lstlisting}
-The semantic cone is the set of expressions true in all such models:
-\begin{lstlisting}
-def semanticCone (sigma : FlagType (Fin n0)) : Set (FlagAlgebra sigma) :=
-  { f | forall phi : PositiveHom sigma, phi f >= 0 }
-\end{lstlisting}
-Thus the order on \lean{FlagAlgebra sigma} is a semantic validity relation, not
-a syntactic simplifier.  An inequality $f\leq g$ means that every asymptotic
-graph model satisfying the flag-algebra laws also satisfies $f\leq g$.
-
-The downward operator, implemented in \lean{FlagAlgebra/FlagOperators.lean},
-is the bridge between typed and untyped models:
-\begin{lstlisting}
-def downward : FlagAlgebra sigma -> FlagAlgebra emptyType := ...
-
-notation "[[" f "]]0" => downward f
-\end{lstlisting}
-It is not merely ``forget the labels.''  Razborov's normalizing factor is built
-into \lean{downwardFlag}, and the lift to the quotient proves that averaging
-over label placements respects the expansion equations.  This is one of the
-places where formalization exposes a real mathematical invariant that can be
-easy to hide in prose.
-
-Finally, SDP certificates enter through a small semantic theorem:
-\begin{lstlisting}
-def flagQuadraticForm (M : Matrix (Fin n) (Fin n) R)
-    (v : Fin n -> FlagAlgebra sigma) : FlagAlgebra sigma :=
-  sum i, sum j, M i j * (v i * v j)
-
 theorem flagQuadraticForm_nonneg
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef)
-    (v : Fin n -> FlagAlgebra sigma) :
-    flagQuadraticForm M v >= 0
-
-theorem flagQuadraticForm_downward_nonneg
-    (hM : M.PosSemidef) (v : Fin n -> FlagAlgebra sigma) :
-    [[flagQuadraticForm M v]]0 >= 0
+    (M : Matrix (Fin r) (Fin r) R) (hM : M.PosSemidef)
+    (v : Fin r -> FlagAlgebra sigma) :
+    0 <= [[ sum i j, M i j * (downward (v i * v j)) ]]
 \end{lstlisting}
-This theorem is the abstraction barrier that makes external search safe.  The
-solver may discover a PSD matrix by numerical means, but the verified artifact
-is a statement in the semantic preorder: every positive homomorphism evaluates
-the corresponding quadratic form non-negatively.
+This is the key lemma converting a PSD matrix into an element of the semantic
+cone.  Its proof follows from the definition of positive homomorphisms and
+the linearity of the downward operator: for any $\phi$,
+$\phi\bigl(\llbracket \sum_{ij} M_{ij} v_i v_j \rrbracket\bigr)
+= \mathbb{E}_\theta\bigl[\sum_{ij} M_{ij} \phi(v_i^{(\theta)}) \phi(v_j^{(\theta)})\bigr] \geq 0$
+since $M$ is PSD and $\phi$ maps each basis vector to a non-negative real.
 
-\subsection{Forbidden Graphs as Assumptions, Not New Theories}
+\subsection{The Forbidden-Subgraph Framework}
 \label{sec:forbidden}
 
-The last design decision is about modularity.  In pen-and-paper flag algebra
-proofs, one often works in a theory specialized to $H$-free graphs: the density
-of $H$ is set to zero from the beginning.  That is convenient on paper but
-unappealing as a formal interface, because it would create a different
-algebraic theory for every forbidden graph.  We instead keep one ambient theory
-and internalize ``$H$ has density zero'' as an assumption on models.
+\paragraph{Motivation.}
+In Razborov's original presentation~\cite{razborov2007flag}, applying the
+flag algebra method to $H$-free graphs requires working in a modified theory
+that axiomatizes the $H$-freeness condition from the outset.  This
+per-problem axiomatization is pragmatically reasonable for a pen-and-paper
+proof but is an obstacle to formalization: it would require a separate
+verified theory for each forbidden subgraph.
 
-The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
+\paragraph{Our approach.}
+We instead develop a \emph{general forbidden-subgraph reasoning rule} that
+works inside the ambient theory of simple graphs.  The key definition
+(in \lean{LeanFlagAlgebras.Forbid.Basic}) is:
 \begin{lstlisting}
 def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
-  forall (phi0 : PositiveHom emptyType), phi0 <sigma>0 > 0 ->
-    phi0 [[unitVector H]] = 0 ->
-    P[phi0] {phi | phi f <= phi g} = 1
+  forall (phi0 : PositiveHom emptyType), phi0.toFun [[unitVector H]] = 0 ->
+    P[phi0] {phi | phi.toFun f <= phi.toFun g} = 1
 \end{lstlisting}
-The notation $f \leq_{[H]} g$ says: in every untyped positive homomorphism
-$\phi_0$ where $H$ has density zero, almost every random $\sigma$-extension of
-$\phi_0$ satisfies $\phi(f)\leq\phi(g)$.  The side condition
-\lean{phi0 <sigma>0 > 0} records that the type $\sigma$ can actually be
-sampled.
+The notation $f \leq_{[H]} g$ means: almost surely under the measure
+$\mathbb{P}^{\phi_0}$ (the ``random flag extension'' measure induced by any
+positive homomorphism $\phi_0$ that assigns zero density to $H$), the typed
+homomorphism satisfies $\phi(f) \leq \phi(g)$.
 
-The probability measure $\mathbb{P}^{\phi_0}$ used in this definition is
-the most analytic part of the abstract layer.  In
-\lean{FlagAlgebra/RandomHom.lean}, the code follows Razborov's random-extension
-theorem: approximate $\phi_0$ by growing untyped flag sequences, pass to a
-subsequential limit of probability measures on the typed density space using
-Mathlib's Prokhorov infrastructure, prove that the limit is supported on
-positive homomorphisms, and then view it as a probability measure on
-\lean{PositiveHomSpace sigma}.  The resulting theorem is:
-\begin{lstlisting}
-theorem exists_probMeasure_extend_emptyType_positiveHom
-    (h_sigma : phi0 <sigma>0 > 0) :
-  exists P : ProbabilityMeasure (PositiveHomSpace sigma),
-    forall f : FlagAlgebra sigma,
-      integral (fun phi => phi f) P =
-        phi0 [[f]]0 / phi0 [[(1 : FlagAlgebra sigma)]]0
-\end{lstlisting}
-This theorem explains why the formalization needs measure theory at all.  The
-downward operator is the expectation of typed random extensions, so the
-forbidden-subgraph rule must quantify over almost-sure typed extensions of an
-untyped model.
+The measure $\mathbb{P}^{\phi_0}$ on typed positive homomorphisms is
+constructed in \lean{LeanFlagAlgebras.FlagAlgebra.RandomHom}: the space of
+positive homomorphisms for type $\sigma$ is given a compact topology (as a
+closed subset of $[0,1]^{|\lean{FinFlag}\ \sigma|}$, which is compact by
+Tychonoff's theorem), and $\phi_0$ induces a Borel probability measure on it
+via Prokhorov's theorem~\cite{billingsley1999convergence}
+(Mathlib: \lean{MeasureTheory.Measure.Prokhorov}).
 
-The final transfer theorem, in \lean{Forbid/TuranDensity.lean}, has the shape
-needed by certificate proofs:
+The transfer theorem is:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c * 1) :
+    (H : FinFlag emptyType) (F : FinFlag emptyType) (c : R) (hc : 0 < c)
+    (hineq : forbidLE H (unitVector F) (c * 1)) :
     generalizedTuranDensity H F <= c
 \end{lstlisting}
-The Lean constant takes the forbidden graph first and the target graph
-second: \lean{generalizedTuranDensity H F} is the maximum density of $F$ in
-$H$-free graphs, written mathematically in this paper as $\tdensity{F}{H}$.
-Thus the certificate layer has one clean target:
-$F.\lean{toFlagAlgebra} \leq_{[H]} c\mathbf{1}$.  Once that semantic inequality
-is checked, the asymptotic extremal bound follows.  This is the main conceptual
-payoff of the abstract formalization: it factors a computer-assisted extremal
-proof into finite counting, algebraic non-negativity, and a reusable semantic
-transfer theorem, rather than baking the extremal problem into the algebra
-itself.
+\emph{Argument-order note.}  The Lean constant takes arguments in the order
+\emph{forbidden graph first, target graph second}: \lean{generalizedTuranDensity H F}
+means the maximum density of $F$ in $H$-free graphs, which the paper
+writes as $\tdensity{F}{H}$ in mathematical notation.
+
+This theorem, grounded in the measure-theoretic framework, is sufficiently
+general for the present applications: any flag algebra inequality of the
+form $f \leq_{[H]} c \cdot \mathbf{1}$ proved in the Lean theory immediately
+yields a Turán density upper bound $\tdensity{F}{H} \leq c$, for any
+forbidden subgraph $H$ and target pattern $F$.  No additional per-problem
+axiomatization is needed.  The framework captures the intended general
+pattern, but some auxiliary generalization lemmas in \lean{Forbid/Basic}
+relating the quotient-level \lean{forbidLE} predicate to individual flag
+representatives remain unfinished; these gaps are described in
+\S\ref{sec:intensional} and do not affect the main results.
+
+\paragraph{What Mathlib provides.}
+This layer builds on substantial Mathlib infrastructure.  For the algebraic
+structure, we use \lean{Mathlib.LinearAlgebra.Finsupp} for free modules and
+\lean{Mathlib.LinearAlgebra.Matrix.PosDef} for positive semidefiniteness.
+For the measure-theoretic layer, we use
+\lean{Mathlib.MeasureTheory.Measure.ProbabilityMeasure},
+\lean{Mathlib.Probability.ProductMeasure}, and critically
+\lean{Mathlib.MeasureTheory.Measure.Prokhorov} for the compactness argument.
+\lean{Mathlib.Combinatorics.SimpleGraph.Subgraph} provides the ambient graph
+infrastructure.  What is \emph{not} in Mathlib and was built from scratch:
+the \lean{LabeledGraph} structure and flag-isomorphism quotient, the
+\lean{FlagAlgebra} quotient module with its ring structure, the \lean{PositiveHom}
+type and semantic cone, the \lean{forbidLE} predicate and
+\lean{generalizedTuranDensity\_le\_of\_forbidLE} (including the random
+extension measure construction in \lean{RandomHom.lean}, $\sim$1\,300 lines).
+
+\paragraph{Key challenge.}
+The hardest single component in the abstract layer was \lean{RandomHom.lean}.
+Constructing $\mathbb{P}^{\phi_0}$ requires showing that the space of positive
+homomorphisms is a compact metric space (so that it admits a Borel probability
+measure structure), and that $\phi_0$ determines a tight family of measures
+on it (so that Prokhorov's theorem applies).  Compactness follows from the
+observation that positive homomorphisms are algebra homomorphisms with
+values in $[0,1]$, hence a closed bounded subset of $\mathbb{R}^{|\lean{FinFlag}\ \sigma|}$;
+Tychonoff gives compactness.  The measure itself is then the pushforward of the
+counting measure on sequences of graphs through the map that sends a graph
+sequence to its induced positive homomorphism (when it exists).  Each of these
+steps has a precise Mathlib counterpart, but threading them together required
+significant care about which topological and measurability assumptions each
+lemma required.
 
 
 \subsection{Design Principles for Quotient-Heavy Counting}
@@ -2224,25 +1822,26 @@ an open challenge.
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have presented a Lean~4 formalization of Razborov's flag algebra method for
-simple graphs.  The main point of the development is the quotient-level
-formalization of the mathematical theory: flags modulo isomorphism, the
-quotient algebra of density-expansion relations, positive homomorphisms and the
-semantic cone, and a proof-time framework for reasoning under a forbidden
-subgraph.  Reflection is used as a checked implementation boundary for the
-finite computations demanded by concrete proofs.  The concrete graph
-representation and density procedures are connected to the abstract
-definitions by adequacy theorems; SDP certificates are verified over
-$\mathbb{Q}$ by exact LDL$^\top$ decompositions.  The tactic layer is separate
-again: it automates normalization, expansion, and multiplication steps but does
-not change the mathematical specification or the certificate trust story.
+We have presented the first formalization of Razborov's flag algebra method in
+a proof assistant, realized in Lean~4.  The formalization is organized around
+quotient-level mathematical specifications, a reflection layer, and a tactic
+layer.  The \emph{reflection layer} connects the abstract algebraic definitions
+to a concrete, decidably-computable graph representation via adequacy theorems,
+enabling \lean{native\_decide} and \lean{decide +kernel} to automatically
+discharge over 2\,800 density and SDP certificate obligations.  The
+\emph{tactic layer} provides custom elaboration tactics---exploiting a
+canonical naming scheme for flag constants---that handle the structural
+bookkeeping (linear normalization, expansion identities, multiplication
+identities) of flag algebra proofs, reducing steps that would time out with
+generic tactics to sub-second invocations.
 
-The case studies prove the flag-algebra form of Mantel's theorem and the
+The end results are formally complete proof paths for Mantel's theorem and the
 Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), with additional
-Goodman-style inequalities in the active library.  We expect the architecture
-to transfer to further graph flag algebra arguments because the same concerns
-recur: quotient-level semantics, exact finite counting, externally generated
-but internally checked certificates, and large-scale algebraic bookkeeping.
+Goodman-style inequalities in the active library.  We believe the architecture
+generalizes: the known flag algebra results in extremal combinatorics all
+involve the same recurring concerns (abstract structure, extensional finite
+counting, data-heavy computation, and algebraic bookkeeping), and our framework
+provides reusable infrastructure for each.
 
 \paragraph{Lessons for proof engineering.}
 Five design choices proved unexpectedly decisive.  First, reflection had to be

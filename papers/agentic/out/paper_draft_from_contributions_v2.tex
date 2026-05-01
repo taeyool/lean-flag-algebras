@@ -51,7 +51,7 @@
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
 \newcommand{\den}[2]{p(#1;\,#2)}
-\newcommand{\tdensity}[2]{p(#1;\,#2)}
+\newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
 
 \tikzset{
@@ -344,39 +344,41 @@ Section~\ref{sec:conclusion} concludes.
 This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.  No background in flag algebras or extremal
-combinatorics is assumed.  The goal is to make the proof pattern legible:
-what are the terms, what do they mean, and why can a finite certificate say
-something about all large graphs?
-
+combinatorics is assumed.  The goal is to explain the proof pattern the
+definitions support, in a way that should feel familiar to readers who think
+about syntax, semantics, and certificates.
 For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
 All graphs are undirected, finite and simple.
 
 The motivating question has the following shape.  Fix two small graphs:
 a target pattern $F$ and a forbidden pattern $H$.  Among all very large graphs
-that contain no copy of $H$ as a subgraph, how often can $F$ appear as an
-induced subgraph?  We call graphs with no copy of $H$ \emph{$H$-free}.  For
-example, if $H=K_3$ is a triangle and $F=C_5$ is a pentagon, the question asks
-for the largest possible pentagon density in triangle-free graphs.  Such
-questions are hard because the graph being optimized over is not fixed: it can
-have arbitrarily many vertices.
+that contain no copy of $H$, how often can $F$ appear?  For example, if
+$H=K_3$ is a triangle and $F=C_5$ is a pentagon, the question asks for the
+largest possible pentagon density in triangle-free graphs.  Such questions are
+hard because the graph being optimized over is not fixed: it can have
+arbitrarily many vertices.
 
 Flag algebras are useful because they turn this infinite family of finite
 optimization problems into a finite certificate-checking problem.  One can
 read the method as a small domain-specific proof language:
 \emph{terms} are linear combinations of small graph patterns,
 \emph{equations} come from exact finite counting identities, and
-\emph{non-negativity proofs} come from finite quadratic certificates.  Once
-the definitions below are in place, a successful certificate will imply that
-every limiting $H$-free graph has target density at most the claimed constant.
+\emph{non-negativity proofs} come from sums of squares or, more generally,
+positive semidefinite matrices.  A successful certificate eventually derives
+an inequality of the form
+\[
+  c\cdot\mathbf{1}-F \geq 0,
+\]
+meaning that every limiting $H$-free graph has target density at most $c$.
 
 The rest of the section introduces this language one construct at a time.
 Types and flags are its syntax for local, rooted graph observations.  Densities
 give those observations a probabilistic meaning.  The quotient algebra installs
-the counting identities as definitional equalities of the proof language.
-We then introduce positive homomorphisms, which define what it means for one
-algebra expression to be non-negative or bounded above by another.  Finally,
-an unlabeling map transports labeled local reasoning back to ordinary
-unlabeled graph statements.
+the counting identities as definitional equalities of the proof language.  The
+downward operator transports labeled local reasoning back to ordinary unlabeled
+graph statements.  Positive homomorphisms are the semantic models, analogous to
+program states or traces: an algebraic assertion is sound when it evaluates
+non-negatively in every such model.
 
 \subsection{Types and Flags}
 
@@ -384,32 +386,31 @@ The first move in a flag algebra proof is to look at a large graph from the
 perspective of a small labeled configuration.  This is what lets the method use
 conditional information: for example, instead of only asking how many edges a
 triangle-free graph has, we can ask how the graph looks around a distinguished
-vertex or a distinguished edge.  Types and flags are the notation for these
-local views.
+vertex or a distinguished edge.  The labels are not cosmetic; they are the
+roots from which local densities are measured.  In PL terms, a type fixes the
+interface of an observation, and a flag is an implementation of that interface
+inside a finite graph.
 
 \paragraph{Types.}
 A \emph{type} of size $k$ is a graph $\sigma$ with vertex set $[k]$.
 The \emph{empty type} $\emptyset$ (size $k=0$) is the unique graph on the
-empty vertex set.
+empty vertex set; flags over $\emptyset$ are just ordinary finite graphs
+up to isomorphism.
 
 \paragraph{Flags.}
 Fix a type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
-that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$
+that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$ 
 (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
-The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.  We often omit the
-superscript $\sigma$ and simply write $G$.  Note that
-flags over the empty type $\emptyset$ are just ordinary finite graphs.
+The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong_\sigma (G_2,\theta_2)$,
-if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
+\emph{isomorphic} if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
 with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
-Each $\mathcal{F}^\sigma_n$ is finite, although
-$\mathcal{F}^\sigma$ itself is infinite.
+Each $\mathcal{F}^\sigma_n$ is finite.
 
 \begin{figure}[t]
   \centering
@@ -482,33 +483,32 @@ $\mathcal{F}^\sigma$ itself is infinite.
 
 \subsection{Subflag Densities}
 
-Once pattern flags have been named, the basic question is simple: if we sample
-a few extra vertices in a larger host flag, what smaller flag do we see?
-The resulting densities are the bridge between finite host flags and
-asymptotic limits.  Along a convergent sequence of larger and larger flags,
+Once patterns have been named, the basic observable is their density inside a
+larger host flag.  These densities are the bridge between finite graphs and
+asymptotic limits: along a convergent sequence of larger and larger graphs,
 each fixed finite pattern has a limiting density.  Flag algebra manipulates
 those limiting densities symbolically, but every coefficient comes from the
-finite probability definitions below.  This is why the method is well suited
-to machine checking: the coefficients in a certificate are not analytic
-guesses, but rational numbers obtained by finite enumeration.
+finite probability definitions below.  This is why the method is well suited to
+machine checking: the coefficients in a certificate are not analytic guesses,
+but rational numbers obtained by finite enumeration.
 
 \paragraph{Single-flag density.}
-Let $\sigma$ be a type of size $k$.  For $\sigma$-flags $F$ of size $m$ and
-$G$ of size $n \geq m$, the \emph{induced subflag density} $\den{F}{G}$ is
-the probability that a uniformly random $(m-k)$-element subset of
+For $\sigma$-flags $F$ of size $m$ and $G$ of size $n \geq m$, the
+\emph{induced subflag density} $\den{F}{G}$ is the probability that a
+uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.  Explicitly:
 \[
   \den{F}{G}
   \;=\;
-  \frac{1}{\binom{n-k}{m-k}}
-    \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
-                  ~\Big|~ |S|=m-k,\;
+  \frac{\bigl|\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
+                  \mid |S|=m-k,\;
                   G[S \cup \operatorname{Im}(\theta_G)]
                   \text{ is isomorphic to } F
-                  \text{ as a }\sigma\text{-flag}\Big\}\Bigr|}.
+                  \text{ as a }\sigma\text{-flag}\}\bigr|}
+       {\binom{n-k}{m-k}}.
 \]
-This value lies in $[0,1]$ and is invariant under
+This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
 
 \begin{example}[A rooted pentagon density]
@@ -526,84 +526,65 @@ isomorphism of both $F$ and $G$.
   This tiny example captures the reason flags are useful: a flag remembers
   the local view from a labeled configuration.  The same unrooted pentagon can
   be queried from the perspective of a distinguished vertex, and the algebra
-  keeps those conditional densities as named algebraic coordinates rather than
-  side comments in prose.
+  records those conditional densities as first-class objects.
 \end{example}
 
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
-$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
-$\den{F_1,F_2}{G}$ is the probability, over a uniformly chosen ordered pair
-of disjoint subsets
-\[
-  S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G),
-  \qquad |S_i|=m_i-k,
-\]
-that $S_i$ together with the labeled vertices of $G$ induces a
-$\sigma$-flag isomorphic to $F_i$, for $i=1,2$.
+flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
+$\den{F_1,F_2}{G}$ is the probability that two uniformly chosen disjoint
+subsets $S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G)$, with
+$|S_i|=m_i-k$, each induce $F_i$ together with the labeled vertices of $G$,
+compatible with the shared type embedding.
 Joint densities are what make multiplication possible: the product of two
-pattern flags is interpreted as the probability that two disjoint samples occur
+patterns is interpreted as the probability that two disjoint samples occur
 simultaneously in the same host.  This turns combinatorial double counting
 into algebra.
 
 \subsection{The Flag Algebra}
 
 The next step is to stop distinguishing between expressions that have the same
-asymptotic meaning.  A small flag $F$ can be counted directly in a large host
-flag $K$.  Equally, one can first sample a larger intermediate flag $G$ inside
-$K$, then count $F$ inside $G$, and finally average over the choice of $G$.
-These two sampling procedures give the same limiting density.  The flag
-algebra builds this sampling-averaging identity into the syntax by quotienting
-it out.  As a result, a proof can replace a pattern flag by any sufficiently
-large expansion of it, which is exactly the bookkeeping needed by flag algebra
-certificates.  This is the same kind of move one makes when quotienting
-programs by an equational theory: the quotient removes representation choices
-that should not affect observable behavior.
+asymptotic meaning.  A small flag $F$ can be counted directly in a large graph,
+or by first sampling a larger intermediate flag $G$ and then counting $F$
+inside $G$.  These two procedures give the same limiting density.  The flag
+algebra builds this averaging identity into the syntax by quotienting it out.
+As a result, a proof can freely replace a pattern by any sufficiently large
+expansion, which is exactly the bookkeeping needed by SDP certificates.  This
+is the same kind of move one makes when quotienting programs by an equational
+theory: the quotient removes representation choices that should not affect the
+observable behavior.
 
-Fix a type $\sigma$ of size $k$.  Let
-$\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
-$\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  We also write $F$ for the basis vector
-corresponding to a flag $F$.
+Fix a type $\sigma$.  Let $\mathbb{R}[\mathcal{F}^\sigma]$ be the free
+$\mathbb{R}$-module with basis $\mathcal{F}^\sigma$.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \[
   F - \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G} \cdot G,
-  \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
+  \qquad F \in \mathcal{F}^\sigma_m,\; n \geq m.
 \]
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 The zero-space relations express the combinatorial identity that, in a
-sufficiently large host flag $K$,
-\[
-  \den{F}{K}
-  =
-  \sum_{G \in \mathcal{F}^\sigma_n} \den{F}{G}\,\den{G}{K}.
-\]
-That is, counting $F$ directly agrees with counting through an intermediate
-sample of size $n$.
+sufficiently large graph, the average density of $F$ over all extensions of
+the type embedding equals $\den{F}{G}$.
 
 \paragraph{Multiplication.}
-For flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
-$F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
-$\ell \geq m_1 + m_2 - k$ and set
+For $[F_1] \in \mathcal{A}^\sigma_{m_1}$ and $[F_2] \in \mathcal{A}^\sigma_{m_2}$,
+their product at size $\ell \geq m_1 + m_2 - k$ is
 \[
   [F_1] \cdot [F_2]
   \;=\;
   \sum_{G \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{G} \cdot [G]
-  \qquad\text{in } \mathcal{A}^\sigma.
+  \;\in\; \mathcal{A}^\sigma_\ell.
 \]
-The zero-space quotient is what makes this formula independent of the
-auxiliary size $\ell$; it also respects isomorphism classes of the input flags.
-Extending bilinearly gives a commutative, associative $\mathbb{R}$-algebra.
-The unit is the type flag consisting only of the labeled vertices; we write it
-as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when $\sigma=\emptyset$.
+This is well-defined on the quotient (independent of $\ell$) and makes
+$\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
+with unit $[\text{type graph } \sigma]$.
 
 \begin{example}[The edge expansion behind Mantel's theorem]
-  The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
-  is thus a $\emptyset$-type flag) at
+  The simplest useful zero-space relation expands the untyped edge $K_2$ at
   size $3$.  There are four unlabeled graphs on three vertices: the empty
   graph, the one-edge graph, the two-edge path, and the triangle
   (the latter three are shown in \Cref{fig:small-graphs}).  If an
@@ -621,109 +602,39 @@ as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when $\sigma=\emptyset$.
     + G_{\triangle}
     \qquad\text{in } \mathcal{A}^{\emptyset}.
   \]
-  Mantel's theorem is the statement that the asymptotic edge density $K_2$ is
-  at most $1/2$ in every $K_3$-free graph.  In the flag algebra proof,
-  we start with the above equation and then eliminate the triangle term
-  using the $K_3$-free hypothesis.  This style of expansion is common in
-  flag algebra proofs.  It is also exactly the kind of elementary
-  combinatorial bookkeeping that becomes unwieldy in the Lean formalization of
-  more complex arguments, including the pentagon proof.  There the coefficients
-  are still rational numbers from finite sampling, but there are hundreds of
-  them, and every one must be justified inside Lean.
+  In the Mantel proof, the triangle term is then eliminated under the
+  $K_3$-free hypothesis.  This is exactly the kind of elementary
+  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
+  the coefficients are simple, but there are hundreds of such coefficients
+  and they must all line up syntactically inside Lean.
 \end{example}
 
-\subsection{Positive Homomorphisms, Semantic Order, and Unlabeling}
+\subsection{The Downward Operator and Semantic Non-Negativity}
 
-The quotient algebra is syntax for density expressions.  To use such an
-expression in an extremal argument, we need to say how it is evaluated in a
-limiting graph sequence.  That role is played by positive homomorphisms.
-
-\paragraph{Positive homomorphisms.}
-Fix a type $\sigma$.  A \emph{positive homomorphism} on
-$\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
-$\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
-number to each algebra expression, respects addition and multiplication, and
-never assigns a negative value to a concrete flag.
-
-In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly the
-semantic objects represented by convergent graph sequences.  That is, if $(G_n)_{n \in \mathbb{N}}$ 
-is a sequence of finite graphs with $|V(G_n)|\to\infty$ and every density
-$\den{F}{G_n}$ has a limit, then
-\[
-  [F]\longmapsto \lim_{n\to\infty}\den{F}{G_n}
-\]
-extends to a positive homomorphism on $\mathcal{A}^\emptyset$; conversely,
-every positive homomorphism for the empty type arises this way in Razborov's
-semantics~\cite{razborov2007flag}.
-
-\paragraph{Semantic non-negativity and order.}
-For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
-\[
-  \mathcal{C}^\sigma
-  =
-  \{f \in \mathcal{A}^\sigma
-    \ |\ \phi(f) \geq 0
-    \text{ for every positive homomorphism }
-    \phi:\mathcal{A}^\sigma\to\mathbb{R}\}.
-\]
-An element of $\mathcal{C}^\sigma$ is non-negative under every positive
-homomorphism of the $\sigma$-flag algebra.  We write
-\[
-  f \leq_\sigma g
-  \qquad\text{when}\qquad
-  g-f \in \mathcal{C}^\sigma.
-\]
-Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every positive homomorphism
-$\phi:\mathcal{A}^\sigma\to\mathbb{R}$.  When $\sigma=\emptyset$, we write
-$\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
-$\leq_\emptyset$.
-
-\paragraph{Squares and PSD quadratic forms.}
-A real symmetric matrix $M \in \mathbb{R}^{r\times r}$ is \emph{positive semidefinite} (PSD) if
-$v^\top M v\geq 0$ for every real vector $v \in \mathbb{R}^r$.  The simplest source of elements
-of $\mathcal{C}^\sigma$ is a square: if $e\in\mathcal{A}^\sigma$ and $\phi$ is
-a positive homomorphism, then
-\[
-  \phi(e^2)=\phi(e)^2\geq 0.
-\]
-So $e^2$ is semantically non-negative.  A finite sum
-$\sum_i a_i e_i^2$ with $a_i\geq 0$ is non-negative for the same reason.  More
-generally, if $M$ is PSD and $e_1,\ldots,e_r\in\mathcal{A}^\sigma$, then every
-positive homomorphism sends
-\[
-  \sum_{i,j=1}^r M_{ij}\,e_i e_j
-\]
-to the real quadratic form $v^\top M v$ for
-$v=(\phi(e_1),\ldots,\phi(e_r))$, which is always non-negative. So, the
-above quadratic expression is in $\mathcal{C}^\sigma$.  
-This is the sense in which flag algebra
-proofs use ``sums of squares'': the proof data is a finite quadratic expression
-whose value is forced to be a non-negative real number by a PSD matrix.
+Most useful inequalities are discovered in a labeled algebra: labels expose
+local structure and make sums of squares strong enough to prove interesting
+bounds.  But the final extremal statement is usually unlabeled, such as an
+upper bound on the density of $C_5$ in triangle-free graphs.  The downward
+operator is the averaging map that forgets the labels with the correct
+normalization, converting a labeled inequality into an unlabeled one.  It is
+helpful to think of this as a change of interface: we prove a stronger local
+fact in a richer, labeled language, then project it back to the public
+unlabeled specification.
 
 \paragraph{Downward (unlabeling) operator.}
-Labeled algebras (i.e., $\mathcal{A}^\sigma$ with $\sigma \neq \emptyset$) often give stronger quadratic expressions because labels
-record local structure.  The final extremal statement, however, is usually about
-unlabeled graphs (i.e., flags for the empty type), such as an upper bound on the density of $C_5$ in triangle-free
-graphs.  The downward operator is the averaging map that forgets the labels
-with the correct normalization, converting a labeled algebra expression into
-an unlabeled one.
-
-For a $\sigma$-flag $F=(G,\theta)$ of size $m$ (type of size $k$), let
-$F|_\emptyset$ be the underlying graph $G$, which is also a flag for the empty type.  
-Following Razborov's
+For a $\sigma$-flag $F=(M,\theta_F)$ of size $m$ (type of size $k$), let
+$F|_\emptyset$ be the underlying untyped graph $M$.  Following Razborov's
 definition~\cite{razborov2007flag}, the \emph{downward operator} does not sum
-over all labelings of $G$.  Instead, it forgets the labels and multiplies by
+over all labelings of $M$.  Instead, it forgets the labels and multiplies by
 the probability that a random injection of the type vertices would recover the
 same labeled flag.  More precisely, define
 \[
   q_\sigma(F)
   \;=\;
   \frac{
-    \bigl|\{\theta' : [k]\hookrightarrow V(G)
-       \mid \theta' \text{ embeds }\sigma\text{ into }G
-       \text{ and } (G,\theta')\cong_\sigma F\}\bigr|}
+    \bigl|\{\theta : [k]\hookrightarrow V(M)
+       \mid \theta \text{ embeds }\sigma\text{ into }M
+       \text{ and } (M,\theta)\cong F\}\bigr|}
        {m(m-1)\cdots(m-k+1)}.
 \]
 Then
@@ -733,6 +644,42 @@ Then
   q_\sigma(F)\cdot F|_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
+The downward operator is an $\mathbb{R}$-module map
+$\llbracket\cdot\rrbracket_\sigma : \mathcal{A}^\sigma \to \mathcal{A}^\emptyset$.
+
+\paragraph{Positive homomorphisms.}
+A \emph{positive homomorphism} on $\mathcal{A}^\sigma$ is an
+$\mathbb{R}$-algebra homomorphism
+$\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
+$\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  In the untyped case
+$\sigma=\emptyset$, this says that $\phi([G]) \geq 0$ for every finite graph
+$G$.
+Positive homomorphisms are the semantic objects represented by convergent graph
+sequences: if $(G_n)$ is a sequence of finite graphs with $|V(G_n)|\to\infty$
+and every density $\den{F}{G_n}$ has a limit, then
+$[F]\mapsto \lim_{n\to\infty}\den{F}{G_n}$ extends to a positive homomorphism
+on $\mathcal{A}^\emptyset$; conversely, every untyped positive homomorphism
+arises this way in Razborov's semantics~\cite{razborov2007flag}.
+
+The \emph{semantic non-negativity cone} in the untyped algebra is
+\[
+  \mathcal{C}
+  =
+  \{f \in \mathcal{A}^\emptyset
+    \mid \phi(f) \geq 0
+    \text{ for every positive homomorphism }
+    \phi:\mathcal{A}^\emptyset\to\mathbb{R}\}.
+\]
+It induces the semantic order $f\leq g$ when $g-f\in\mathcal{C}$.
+A real matrix $A$ is \emph{positive semidefinite} (PSD) if
+$x^\top A x\geq 0$ for every vector $x$.
+
+This semantic viewpoint is the reason flag algebra proofs can certify
+statements about all large graphs using finite algebra.  To show that
+$f\in\mathcal{A}^\emptyset$ is non-negative in every limiting graph sequence,
+it is enough to show that $f$ lies in $\mathcal{C}$.  PSD quadratic forms are
+the main source of such elements, because every positive homomorphism sends
+them to an ordinary non-negative real number.
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]
   \label{thm:sdp-nonneg}
@@ -744,9 +691,7 @@ extended linearly to all of $\mathcal{A}^\sigma$.
   \]
 \end{theorem}
 
-The conclusion says that every positive homomorphism for the emtpy type evaluates the
-downward-averaged quadratic expression as a non-negative real number.  This is
-the engine behind flag algebra bounds based on positive semidefinite matrices.
+This theorem is the engine behind all SDP-based flag algebra bounds.
 Given a target element $f_0 \in \mathcal{A}^\emptyset$ and a claimed bound
 $c \in \mathbb{R}$, if one exhibits a PSD matrix $A$ and elements
 $e_i \in \mathcal{A}^\sigma$ such that
@@ -755,46 +700,20 @@ $e_i \in \mathcal{A}^\sigma$ such that
   \;=\;
   \Bigl\llbracket \sum_{i,j} A_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma,
 \]
-then $c\cdot\mathbf{1}-f_0\in\mathcal{C}$, so
-$\phi(f_0) \leq c$ for every positive homomorphism $\phi$ for the empty type.
+then $\phi(f_0) \leq c$ for all positive homomorphisms $\phi$, yielding an
+upper bound on the Turán density of the corresponding graph pattern.
 
 \subsection{Turán Densities and the Pentagon Problem}
 
 We can now connect the algebra back to the combinatorial problems that motivate
-it.  Here $H$ is an unlabeled forbidden graph and $F$ is an unlabeled target
-graph.  The finite graphs being optimized over are $H$-free, meaning that they
-contain no copy of $H$ as a subgraph, and the target statistic is the induced
-density of $F$.
-
-In the algebraic certificate, the forbidden-graph assumption is represented as
-a condition on positive homomorphisms.  View $H$ as the basis element $[H]$ of
-$\mathcal{A}^\emptyset$.  We restrict attention to empty-type positive
-homomorphisms $\phi$ satisfying
-\[
-  \phi([H])=0.
-\]
-Every convergent sequence of $H$-free graphs gives such a homomorphism, because
-the induced density of $H$ is zero in each graph in the sequence.  For the main
-case study $H=K_3$, the condition says precisely that the limiting triangle
-density is zero, which is the closure of triangle-freeness used by the
-extremal argument.
-
-For $f,g\in\mathcal{A}^\emptyset$, write
-\[
-  f \leq_{[H]} g
-\]
-when $\phi(f)\leq\phi(g)$ for every empty-type positive homomorphism $\phi$
-satisfying $\phi([H])=0$.
-Equivalently, $g-f$ evaluates to a non-negative real number in every
-empty-type positive homomorphism satisfying the forbidden-graph condition $\phi([H])=0$.
-Thus an upper-bound proof for a target graph $F$ aims to establish
-\[
-  [F] \leq_{[H]} c\cdot\mathbf{1}.
-\]
-The finite proof data usually combines three ingredients already defined
-above: zero-space relations expand expressions to a common size, PSD quadratic
-forms provide semantically non-negative terms, and the downward operator turns
-labeled quadratic terms into unlabeled ones.
+it.  Generalized Turán densities ask for the largest possible limiting density
+of one pattern while another pattern is forbidden.  In a flag algebra proof,
+the forbidden pattern is handled by setting its density to zero, expanding all
+relevant expressions to a common finite size, and using PSD non-negativity to
+show that the target pattern cannot exceed the claimed constant.  The appeal of
+the method is that the creative search for the certificate can be delegated to
+software, while the resulting certificate has a precise finite meaning that a
+proof assistant can check.
 
 \paragraph{Generalized Turán density.}
 For unlabeled graphs $F$ and $H$, the \emph{generalized Turán density} is
@@ -802,15 +721,10 @@ For unlabeled graphs $F$ and $H$, the \emph{generalized Turán density} is
   \tdensity{F}{H}
   \;=\;
   \lim_{n\to\infty}
-  \frac{1}{\binom{n}{|V(F)|}} \cdot 
-    {\max\Bigl\{|\text{induced copies of }F\text{ in }G|
-                   ~\Big|~ |V(G)|=n \text{ and } G \text{ is }H\text{-free}\Bigr\}}.
+  \frac{\max\bigl\{|\text{copies of }F\text{ in }G|
+                   \mid |V(G)|=n,\; G \text{ is }H\text{-free}\bigr\}}
+       {\binom{n}{|V(F)|}}.
 \]
-Using the same letter $F$ for the graph and its class $[F]$ in
-$\mathcal{A}^\emptyset$, the semantic inequality
-$F \leq_{[H]} c\cdot\mathbf{1}$ implies
-$\tdensity{F}{H}\leq c$.  A matching construction gives the reverse
-inequality when the claimed value is sharp.
 
 \paragraph{The Erd\H{o}s pentagon problem.}
 The problem asks for $\tdensity{C_5}{K_3}$: the maximum density of
@@ -903,7 +817,7 @@ auxiliary size chosen for a calculation.
 
 \subsection{Densities as Sampling Semantics}
 
-The most useful way to read $\den{F}{G}$ is not as a combinatorial fraction, but as
+The most useful way to read $p(F;G)$ is not as a combinatorial fraction, but as
 the denotational semantics of a finite sampling program: keep the type vertices
 fixed, sample the remaining vertices, and observe the induced flag.  That
 reading is what makes flag algebras attractive for certification.  SDP
@@ -944,7 +858,7 @@ def flagDensity2 (F1 : Flag sigma U1) (F2 : Flag sigma U2)
 The Lean source names these constants with subscripted numerals.  We write
 \lean{flagDensity1} and \lean{flagDensity2} here only to keep the typeset code
 portable.  Conceptually, \lean{flagDensity1} is the induced subflag density
-$\den{F}{G}$, and \lean{flagDensity2} is the joint density needed for products.
+$p(F;G)$, and \lean{flagDensity2} is the joint density needed for products.
 
 \subsection{The Algebra as an Equational Theory}
 
@@ -962,7 +876,7 @@ def unitVector (F : FinFlag sigma) : FlagVector sigma :=
   Finsupp.single F 1
 \end{lstlisting}
 Here \lean{->0} is Mathlib's finitely supported function type.  The equations
-we impose are the expansion laws $F = \sum_G \den{F}{G}G$ at larger sizes:
+we impose are the expansion laws $F = \sum_G p(F;G)G$ at larger sizes:
 \begin{lstlisting}
 def densityFlagSum (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
   sum F' : FlagWithSize sigma ell,
