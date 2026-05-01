@@ -841,23 +841,37 @@ algebraic bookkeeping.
 \section{Abstract Formalization}
 \label{sec:abstract}
 
-The main formalization problem is not that flag algebras contain many
-definitions.  It is that their definitions deliberately blur several levels of
-meaning.  A finite graph is a concrete object; a flag is an observation made
-inside a typed context; a density is a finite sampling experiment; an algebraic
-identity is an equality of all sufficiently large samplings; and a positive
-homomorphism is an asymptotic model.  Informal flag-algebra proofs move between
-these levels fluently.  A proof assistant does not.
+The main formalization problem is not the number of definitions in flag
+algebras, but the number of implicit changes of viewpoint.  In the pentagon
+problem, the same symbol $C_5$ may refer to a concrete graph, its isomorphism
+class as an empty-type flag, the corresponding basis vector in
+$\mathbb{R}[\mathcal{F}^\emptyset]$, its image in the quotient algebra
+$\mathcal{A}^\emptyset$, the finite density $\den{C_5}{G}$ in a host graph
+$G$, or the real number $\phi([C_5])$ assigned by a positive homomorphism.
+Paper proofs rely on context to move among these meanings.  In Lean, each
+passage must be represented by a typed map or theorem, and each such map must
+be proved compatible with isomorphism, quotient relations, and algebraic
+operations.
 
-Our abstract layer is therefore organized around one principle: make each
-level transition explicit, but expose it through the same proof language that
-mathematicians use.  The resulting Lean development is not just a transcription
-of Razborov's definitions.  It is a typed interface between finite counting,
-quotient reasoning, semantic validity, and machine-generated SDP certificates.
-The rest of this section follows that interface from local observations to
-global extremal bounds.  Code snippets are lightly rendered in ASCII when the
-Lean source uses Unicode notation; the names and fields match the
-implementation.
+The abstract layer proves this bookkeeping once and then exposes it through an
+API for certificate proofs.  That API provides the operations used in ordinary
+flag algebra arguments: products of flags, density-expansion identities,
+downward operators, PSD quadratic forms, and semantic inequalities.  For
+example, after finite counting and SDP search produce a certificate, the proof
+can aim at the single semantic inequality
+\[
+  [P] \leq_{[H]} c\cdot\mathbf{1}.
+\]
+This notation already includes the interpretation ``for every positive
+homomorphism $\phi$ with $\phi([H])=0$.''  The certificate writer does not
+reprove that flag products are well-defined on isomorphism classes, that
+density expansion descends to the quotient algebra, or that downward-averaged
+PSD forms are semantically non-negative; those facts are library theorems.
+The rest of this section describes this API, starting with flags as quotient
+interfaces and ending with the transfer theorem that turns such an inequality
+into a generalized Turán-density bound.  Code snippets are lightly rendered in
+ASCII when the Lean source uses Unicode notation; the names and fields match
+the implementation.
 
 \subsection{Contexts as Quotient Interfaces}
 
