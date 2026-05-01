@@ -387,7 +387,7 @@ perspective of a small labeled configuration.  This is what lets the method use
 conditional information: for example, instead of only asking how many edges a
 triangle-free graph has, we can ask how the graph looks around a distinguished
 vertex or a distinguished edge. Types and flags below enable such local views to be
-used in flag algebra proofs.
+used in a flag algebra proof.
 
 \paragraph{Types.}
 A \emph{type} of size $k$ is a graph $\sigma$ with vertex set $[k]$.
@@ -400,15 +400,17 @@ A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
 that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$ 
 (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
-The integer $|V(G)|$ is the \emph{size} of $G^\sigma$. Note that 
+The integer $|V(G)|$ is the \emph{size} of $G^\sigma$. We often omit the
+superscript $\sigma$ and simply write $G$. Note that 
 flags over the empty type $\emptyset$ are just ordinary finite graphs.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic} if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
-with $\phi \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
+\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong (G_2,\theta_2)$, 
+if there is a graph isomorphism $\phi: V(G_1)\to V(G_2)$
+with $\phi \circ \theta_1 = \theta_2$. The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
-Note that each $\mathcal{F}^\sigma_n$ is finite.
+Note that each $\mathcal{F}^\sigma_n$ is finite, although $\mathcal{F}^\sigma$ is infinite.
 
 \begin{figure}[t]
   \centering
@@ -481,9 +483,9 @@ Note that each $\mathcal{F}^\sigma_n$ is finite.
 
 \subsection{Subflag Densities}
 
-Once patterns have been named, the basic observable is their density inside a
-larger host flag.  These densities are the bridge between finite graphs and
-asymptotic limits: along a convergent sequence of larger and larger graphs,
+Once pattern flags have been named, the basic observable is their density inside a
+larger host flag.  These densities are the bridge between finite host flags and
+asymptotic limits: along a convergent sequence of larger and larger flags,
 each fixed finite pattern has a limiting density.  Flag algebra manipulates
 those limiting densities symbolically, but every coefficient comes from the
 finite probability definitions below.  This is why the method is well suited to
@@ -491,7 +493,7 @@ machine checking: the coefficients in a certificate are not analytic guesses,
 but rational numbers obtained by finite enumeration.
 
 \paragraph{Single-flag density.}
-For $\sigma$-flags $F$ of size $m$ and $G$ of size $n \geq m$, the
+Let $\sigma$ be a type of size $k$. For $\sigma$-flags $F$ of size $m$ and $G$ of size $n \geq m$, the
 \emph{induced subflag density} $\den{F}{G}$ is the probability that a
 uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the labeled
@@ -499,14 +501,14 @@ vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.  Explicitly:
 \[
   \den{F}{G}
   \;=\;
-  \frac{\bigl|\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
-                  \mid |S|=m-k,\;
+  \frac{1}{\binom{n-k}{m-k}}
+    \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
+                  ~\Big|~ |S|=m-k,\;
                   G[S \cup \operatorname{Im}(\theta_G)]
                   \text{ is isomorphic to } F
-                  \text{ as a }\sigma\text{-flag}\}\bigr|}
-       {\binom{n-k}{m-k}}.
+                  \text{ as a }\sigma\text{-flag}\Big\}\Bigr|}.
 \]
-This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
+This value lies in $[0,1]$ and is invariant under
 isomorphism of both $F$ and $G$.
 
 \begin{example}[A rooted pentagon density]
@@ -529,13 +531,13 @@ isomorphism of both $F$ and $G$.
 
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
-flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
+$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
 $\den{F_1,F_2}{G}$ is the probability that two uniformly chosen disjoint
 subsets $S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G)$, with
-$|S_i|=m_i-k$, each induce $F_i$ together with the labeled vertices of $G$,
-compatible with the shared type embedding.
+$|S_i|=m_i-k$, and the labeled vertices of $G$ induce $\sigma$-flags 
+isomorphic to $F_1$ and $F_2$.
 Joint densities are what make multiplication possible: the product of two
-patterns is interpreted as the probability that two disjoint samples occur
+pattern flags is interpreted as the probability that two disjoint samples occur
 simultaneously in the same host.  This turns combinatorial double counting
 into algebra.
 
