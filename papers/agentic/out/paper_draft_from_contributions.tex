@@ -868,10 +868,10 @@ non-negative reals to flags and preserving products and other algebra operations
 Razborov's random-extension theorem, formalized using Mathlib's Prokhorov compactness
 theorem, connects the standard empty-typed level with the typed levels: 
 every positive homomorphism $\phi$ on
-the emtpy-typed algebra extends to a probability measure $\mathbb{P}^{\phi}$ on the space 
+the empty-typed algebra extends to a probability measure $\mathbb{P}^{\phi}$ on the space 
 of $\sigma$-typed positive homomorphisms for any $\sigma$.  
 This measure-theoretic result is the foundation on
-which an important part of the abstract layers rests.
+which an important part of the abstract layer rests.
 
 The probability measure $\mathbb{P}^{\phi}$ is also the
 ingredient that enables a principled treatment of forbidden-graph conditions.
@@ -887,9 +887,9 @@ baked into the algebra: one ambient algebraic theory serves every forbidden
 graph, because the forbidden-graph assumption enters only through the semantic
 ordering $\forbLES{\sigma}{H}$, not through a specialized quotient.  The transfer
 theorem \lean{generalizedTuranDensity\_le\_of\_forbidLE} then reduces a Turán
-density bound to a single semantic inequality
+density bound to a single empty-typed semantic inequality
 \[
-  [P] \forbLES{\sigma}{H} c\cdot\mathbf{1}
+  [P] \forbLE{H} c\cdot\mathbf{1}
 \]
 in the ambient algebra.  Any proof of that inequality, however it is assembled,
 immediately yields the bound $\tdensity{P}{H}\leq c$; and all the
@@ -915,35 +915,33 @@ notation; the names and fields match the implementation.
 
 \subsection{Types and Flags in Lean}
 
-Section~\ref{sec:background} defined a type $\sigma$ of size $k$ as a graph on
-$[k]$, and wrote $\mathcal{F}^\sigma_n$ for the set of isomorphism classes of
-$\sigma$-flags on $n$ vertices.  The Lean implementation follows this
-definition directly.  The finite set $[k]$ is represented by \lean{Fin k}, and
-Mathlib's \lean{SimpleGraph V} is the type of simple graphs whose vertices are
-the elements of the type \lean{V}.  Thus a flag type of size $k$ is a value of
-type \lean{FlagType (Fin k)}, where \lean{FlagType} is only an abbreviation:
+The first task is to make the different roles of a flag explicit without
+choosing a representation too early.  Section~\ref{sec:background} defined a
+type $\sigma$ of size $k$ as a graph on $[k]$, and wrote
+$\mathcal{F}^\sigma_n$ for the set of isomorphism classes of $\sigma$-flags on
+$n$ vertices.  The Lean implementation follows this definition closely.  The
+finite set $[k]$ is represented by \lean{Fin k}, and Mathlib's
+\lean{SimpleGraph V} is the type of simple graphs with vertex type \lean{V}.
+Thus a flag type of size $k$ is a value of type \lean{FlagType (Fin k)}, where
+\lean{FlagType} is only an abbreviation:
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
 \end{lstlisting}
-There is no special-purpose graph structure hidden below the flag-algebra
-interface.  The size of a flag type is recovered from the cardinality of its
-vertex type, so a type over \lean{Fin k} has size $k$.  In the generic
-declarations below, \lean{T} is the finite vertex type of $\sigma$; in the
-size-indexed flag algebra, \lean{T} is usually \lean{Fin n0}.
+There is no special-purpose graph structure underneath the mathematical layer:
+we use Mathlib graphs and recover the size of a type from the cardinality of
+its vertex type.
 
-Before quotienting by isomorphism, a $\sigma$-flag is represented by a concrete
-labeled graph:
+Before quotienting by isomorphism, a $\sigma$-flag is a concrete labeled graph:
 \begin{lstlisting}
 structure LabeledGraph (sigma : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : sigma ->g graph
 \end{lstlisting}
-Here \lean{V} is the ambient vertex type, and \lean{graph} is the underlying
-graph of a labeled graph on those vertices.  The notation \lean{->g} denotes
-Mathlib's graph embedding type (written with a hooked arrow in the Lean
-source): an injective vertex map that preserves and reflects adjacency, so its
-image is an induced copy of the domain graph.  Thus \lean{type\_embed} is the
-Lean version of the labeling map $\theta_A$ in a flag $A=(M,\theta_A)$.
+Here \lean{V} is the ambient vertex type.  The field \lean{type\_embed} is a
+Mathlib graph embedding, written with a hooked arrow in the Lean source; it is
+an injective vertex map that preserves and reflects adjacency.  Thus its image
+is an induced copy of $\sigma$, exactly the labeling map $\theta_A$ in a flag
+$A=(M,\theta_A)$.
 
 The mathematical object, however, is not a chosen representative
 $(M,\theta_A)$ but its isomorphism class.  The implementation therefore forms
@@ -952,18 +950,13 @@ a quotient:
 def Flag (sigma : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid sigma V)
 \end{lstlisting}
-In Lean, \lean{Quotient R} is the type obtained by identifying representatives
-related by the equivalence relation \lean{R}.  A Lean \lean{Setoid} is such an
-equivalence relation packaged for quotienting.  Here
-\lean{labeledGraphSetoid sigma V} says that two concrete labeled graphs on
-the vertex type \lean{V} are
-equivalent when there is a graph isomorphism between their ambient graphs that
-commutes with the two embeddings of $\sigma$.  Consequently, \lean{Flag sigma V}
-is exactly the type of $\sigma$-flags with ambient vertex type \lean{V}, modulo
-label-preserving isomorphism.  This choice is mathematically natural but
-proof-engineering heavy: every operation initially defined on concrete
-representatives must be proved invariant under this setoid before it descends
-to \lean{Flag}.
+The setoid identifies two labeled graphs when a graph isomorphism between their
+ambient graphs commutes with the two embeddings of $\sigma$.  Consequently,
+\lean{Flag sigma V} is the type of $\sigma$-flags with ambient vertex type
+\lean{V}, modulo label-preserving isomorphism.  This is the right mathematical
+specification boundary: the abstract theory never depends on a canonical graph
+chosen from an isomorphism class.  The cost is paid once, in compatibility
+proofs showing that densities, products, and operators respect the quotient.
 
 The fixed-size and all-size flag families from Section~\ref{sec:background}
 are then implemented as thin wrappers around this quotient type:
@@ -974,51 +967,52 @@ abbrev FlagWithSize (sigma : FlagType (Fin n0)) (n : N) :=
 def FinFlag (sigma : FlagType (Fin n0)) : Type :=
   Sigma (fun n : N => FlagWithSize sigma n)
 \end{lstlisting}
-Thus, for $\sigma : \lean{FlagType (Fin n0)}$, the type
-\lean{FlagWithSize sigma n} implements $\mathcal{F}^\sigma_n$: flags of type
-$\sigma$ on the standard $n$-element vertex type \lean{Fin n}, modulo
-isomorphism.  The dependent sum \lean{FinFlag sigma} implements the disjoint
-union over all valid sizes, i.e. the basis set
-$\mathcal{F}^\sigma = \bigcup_{n \geq n_0} \mathcal{F}^\sigma_n$ used by the
-free vector space in Section~\ref{sec:background}.  The definition ranges over
-all natural numbers, but a flag can exist only when the ambient vertex type has
-room for the embedded type; the library proves this size condition separately.
-Keeping the size as an explicit first component is useful later: expansion
-identities and products quantify over a chosen auxiliary size, and the quotient
-algebra then proves that the resulting element is independent of that choice.
+Thus \lean{FlagWithSize sigma n} implements $\mathcal{F}^\sigma_n$, and
+\lean{FinFlag sigma} is the all-size basis used by the free vector space.  The
+first component of a \lean{FinFlag} records the ambient size.  This explicit
+size is not just metadata: expansion identities and products quantify over
+auxiliary sizes, and later quotient theorems prove that the final algebraic
+element is independent of those choices.
 
 \subsection{Densities as Sampling Semantics}
 
-The most useful way to read $\den{F}{G}$ is not as a combinatorial fraction, but as
-the denotational semantics of a finite sampling program: keep the type vertices
-fixed, sample the remaining vertices, and observe the induced flag.  That
-reading is what makes flag algebras attractive for certification.  SDP
-software manipulates density expressions, but Lean can reduce each expression
-to a finite population and a finite count.
+The next viewpoint is probabilistic.  A density $\den{F}{G}$ is the value of a
+finite sampling experiment: keep the type vertices fixed, sample the remaining
+vertices of the host graph, and observe the induced flag.  This reading is
+important for certification.  The SDP search manipulates algebraic density
+expressions, while Lean grounds each expression in a finite sample space and a
+finite count.
 
-The implementation in \lean{FlagAlgebra/SubflagListDensity.lean} therefore
-defines densities once, for lists of requested flags, rather than separately
-for every arity.  At the representative level, \lean{LabeledSubgraphList}
-records the sampled subgraphs of a host.  Three predicates identify the
-well-formed samples:
+The implementation in \lean{FlagAlgebra/SubflagListDensity.lean} defines this
+sampling semantics uniformly for lists of requested flags.  This avoids a
+separate theory for one-flag densities, pair densities, and triple densities.
+At the representative level, \lean{LabeledSubgraphList} records the sampled
+subgraphs of a host.  The main well-formedness conditions are:
 \begin{lstlisting}
 LabeledSubgraphList.IsInduced
 predDisjointLabeledSubgraphList
 predIsoLabeledHl
 \end{lstlisting}
-They say, respectively, that each sample is induced, that independently
-sampled flags overlap only in the shared type vertices, and that the observed
-subgraphs have the requested flag-isomorphism type.  The density is then the
-rational semantics of this sampling experiment:
+They say that each sample is induced, that independently sampled flags overlap
+only in the shared type vertices, and that the observed subgraphs have the
+requested flag-isomorphism type.  The density is the rational value of that
+experiment:
 \begin{lstlisting}
 def labeledSubgraphListDensity (Hl : LabeledGraphList sigma t Vl)
     (G : LabeledGraph sigma W) : Q :=
   labeledSubgraphListCount Hl G /
     multinomialCoefficient r_list (G.size - sigma.size)
 \end{lstlisting}
-The denominator is not a bookkeeping detail; it is the formal sample space for
-the additional, unlabeled vertices.  The single- and two-flag densities used by
-the algebra are just arity-specialized views of the same semantics:
+The denominator is the size of the finite sample space for the additional,
+unlabeled vertices.  The quotient lift is justified by
+\lean{labeledSubgraphListDensity\_respect\_eqv}: replacing the requested flags
+or the host by isomorphic labeled graphs gives the same rational number.  This
+is the first recurring pattern of the section: the quotient remains the
+specification, and computations over representatives are admitted only after an
+invariance proof.
+
+The single- and two-flag densities used by the algebra are arity-specialized
+views of this same semantics:
 \begin{lstlisting}
 def flagDensity1 (F : Flag sigma U) (G : Flag sigma W) : Q :=
   flagListDensity [F] G
@@ -1027,19 +1021,19 @@ def flagDensity2 (F1 : Flag sigma U1) (F2 : Flag sigma U2)
     (G : Flag sigma W) : Q :=
   flagListDensity [F1, F2] G
 \end{lstlisting}
-The Lean source names these constants with subscripted numerals.  We write
-\lean{flagDensity1} and \lean{flagDensity2} here only to keep the typeset code
-portable.  Conceptually, \lean{flagDensity1} is the induced subflag density
-$\den{F}{G}$, and \lean{flagDensity2} is the joint density needed for products.
+The Lean source names these constants with Unicode subscripted numerals; the
+displayed code uses ASCII names only for portability.  Conceptually,
+\lean{flagDensity1} is the induced
+subflag density $\den{F}{G}$, while \lean{flagDensity2} is the joint density
+that makes multiplication possible.
 
 \subsection{The Algebra as an Equational Theory}
 
-Flag algebra multiplication is easy to state on paper because one silently
-identifies a small flag with its expected expansion inside any larger graph.
-This is exactly the kind of extensional equality that must become explicit in
-Lean.  The algebra is therefore built as an equational theory: start with the
-free real vector space on finite flags, then quotient by the laws saying that
-expansion preserves meaning.
+The flag algebra itself is the point where finite sampling expressions become
+an equational calculus.  Paper proofs freely replace a small flag by its
+expected expansion in a larger host size.  In Lean this replacement is not a
+simplification rule; it is the defining relation of the quotient algebra.  We
+start with the free real vector space on all finite $\sigma$-flags:
 \begin{lstlisting}
 abbrev FlagVector (sigma : FlagType (Fin n0)) : Type :=
   FinFlag sigma ->0 R
@@ -1047,8 +1041,9 @@ abbrev FlagVector (sigma : FlagType (Fin n0)) : Type :=
 def unitVector (F : FinFlag sigma) : FlagVector sigma :=
   Finsupp.single F 1
 \end{lstlisting}
-Here \lean{->0} is Mathlib's finitely supported function type.  The equations
-we impose are the expansion laws $F = \sum_G \den{F}{G}G$ at larger sizes:
+Here \lean{->0} is Mathlib's type of finitely supported functions.  The
+expansion law identifies a basis flag with its density expansion at any larger
+size:
 \begin{lstlisting}
 def densityFlagSum (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
   sum F' : FlagWithSize sigma ell,
@@ -1060,8 +1055,10 @@ def zeroElement (F : FinFlag sigma) (ell : N) : FlagVector sigma :=
 def ZeroSpace (sigma : FlagType (Fin n0)) : Submodule R (FlagVector sigma) :=
   Submodule.span R (zeroSet sigma)
 \end{lstlisting}
-The quotient says that two formal linear combinations are equal when their
-difference is generated by these expansion laws:
+The \lean{zeroSet} records only size choices satisfying \lean{F.1 <= ell}; the
+snippet suppresses that guard to foreground the algebraic shape.  The quotient
+then says that two formal linear combinations are equal when their difference
+is generated by expansion laws:
 \begin{lstlisting}
 def flagVectorEqv (f g : FlagVector sigma) : Prop :=
   f - g in ZeroSpace sigma
@@ -1069,29 +1066,33 @@ def flagVectorEqv (f g : FlagVector sigma) : Prop :=
 abbrev FlagAlgebra (sigma : FlagType (Fin n0)) : Type :=
   Quotient (flagVectorSetoid sigma)
 \end{lstlisting}
-This quotient is the formal analogue of a program equivalence: two density
-expressions are identified when every sufficiently large finite experiment
-gives the same value.  The product is defined by joint sampling at an
-auxiliary output size,
+This quotient is the semantic bridge from formal linear combinations to
+density expressions: a small flag and its larger-size expansion become the
+same algebra element.
+
+Multiplication is defined by joint sampling.  On basis elements, the product is
+first computed at an auxiliary output size:
 \begin{lstlisting}
 def flagMulWithSize (F F' : FinFlag sigma) (ell : N) : FlagVector sigma :=
   sum G : FlagWithSize sigma ell,
     flagDensity2 F.2 F'.2 G * unitVector <ell, G>
 \end{lstlisting}
-and the zero-space quotient is what makes the auxiliary size disappear from
-the final algebra.  The proofs of commutativity, associativity, unit laws, and
-quotient compatibility are not routine algebraic boilerplate; they are the
-place where the sampling semantics is shown to support the symbolic calculus
-used by flag-algebra certificates.
+The theorem \lean{flagMulWithSize\_indep\_on\_size} proves that any two large
+enough choices of \lean{ell} are equivalent modulo the zero space.  Only after
+that proof do we lift multiplication to \lean{FlagAlgebra sigma} and build its
+commutative ring structure.  The commutativity, associativity, unit laws, and
+quotient-compatibility proofs are therefore part of the mathematical content:
+they show that the finite sampling semantics supports the symbolic calculus
+used by certificates.
 
 \subsection{Positive Homomorphisms as Models}
 
-The next level shift is from finite sampling to asymptotic truth.  Positive
-homomorphisms play the role of models of the equational theory: they assign a
-real value to every flag expression, preserve the algebraic operations, and
-send every concrete flag to a non-negative number.  In
-\lean{FlagAlgebra/PositiveHom.lean} this is a subtype of real algebra
-homomorphisms:
+The next shift is from finite experiments to asymptotic semantics.  Positive
+homomorphisms are the models of the equational theory: they assign a real value
+to every algebra expression, preserve the algebra operations, and send every
+concrete flag to a non-negative number.  In
+\lean{FlagAlgebra/PositiveHom.lean} they are implemented as a subtype of real
+algebra homomorphisms:
 \begin{lstlisting}
 abbrev Hom (sigma : FlagType (Fin n0)) :=
   FlagAlgebra sigma ->a[R] R
@@ -1100,29 +1101,30 @@ def PositiveHom (sigma : FlagType (Fin n0)) : Type :=
   { phi : Hom sigma // forall F : FinFlag sigma,
       phi [[unitVector F]] >= 0 }
 \end{lstlisting}
-The semantic cone is the set of expressions true in all such models:
+The semantic cone is the set of expressions non-negative in all such models:
 \begin{lstlisting}
 def semanticCone (sigma : FlagType (Fin n0)) : Set (FlagAlgebra sigma) :=
   { f | forall phi : PositiveHom sigma, phi f >= 0 }
 \end{lstlisting}
 Thus the order on \lean{FlagAlgebra sigma} is a semantic validity relation, not
-a syntactic simplifier.  An inequality $f\leq g$ means that every asymptotic
-graph model satisfying the flag-algebra laws also satisfies $f\leq g$.
+a syntactic ordering on coefficients.  An inequality $f\leq g$ means that
+every positive homomorphism evaluates $f$ no larger than $g$.
 
 The downward operator, implemented in \lean{FlagAlgebra/FlagOperators.lean},
-is the bridge between typed and untyped models:
+is the bridge from typed algebras back to the empty-typed algebra:
 \begin{lstlisting}
 def downward : FlagAlgebra sigma -> FlagAlgebra emptyType := ...
 
 notation "[[" f "]]0" => downward f
 \end{lstlisting}
-It is not merely ``forget the labels.''  Razborov's normalizing factor is built
-into \lean{downwardFlag}, and the lift to the quotient proves that averaging
-over label placements respects the expansion equations.  This is one of the
-places where formalization exposes a real mathematical invariant that can be
-easy to hide in prose.
+It is not just a forgetful map.  The definition includes Razborov's
+normalizing factor, and the lift to the quotient proves that averaging over
+label placements respects the expansion equations.  This is one of the places
+where the formalization exposes an invariant that paper notation usually hides
+inside the brackets $\llbracket-\rrbracket_\sigma$.
 
-Finally, SDP certificates enter through a small semantic theorem:
+SDP certificates enter through a compact semantic theorem about quadratic
+forms:
 \begin{lstlisting}
 def flagQuadraticForm (M : Matrix (Fin n) (Fin n) R)
     (v : Fin n -> FlagAlgebra sigma) : FlagAlgebra sigma :=
@@ -1137,20 +1139,22 @@ theorem flagQuadraticForm_downward_nonneg
     (hM : M.PosSemidef) (v : Fin n -> FlagAlgebra sigma) :
     [[flagQuadraticForm M v]]0 >= 0
 \end{lstlisting}
-This theorem is the abstraction barrier that makes external search safe.  The
-solver may discover a PSD matrix by numerical means, but the verified artifact
-is a statement in the semantic preorder: every positive homomorphism evaluates
-the corresponding quadratic form non-negatively.
+This is the abstraction barrier for external SDP search.  The search procedure
+may propose a matrix, but the checked artifact is a theorem in the semantic
+preorder: if Lean verifies the matrix is positive semidefinite, then every
+typed positive homomorphism evaluates the corresponding quadratic form
+non-negatively, and every empty-typed positive homomorphism evaluates its
+downward average non-negatively.
 
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
 
 The last design decision is about modularity.  In pen-and-paper flag algebra
-proofs, one often works in a theory specialized to $H$-free graphs: the density
-of $H$ is set to zero from the beginning.  That is convenient on paper but
-unappealing as a formal interface, because it would create a different
-algebraic theory for every forbidden graph.  We instead keep one ambient theory
-and internalize ``$H$ has density zero'' as an assumption on models.
+proofs, one often works as if there were a separate theory of $H$-free graphs,
+with the density of $H$ set to zero from the start.  That is convenient on
+paper but a poor formal interface: every forbidden graph would generate a new
+quotient theory and a new family of compatibility lemmas.  We instead keep one
+ambient flag algebra and put the forbidden condition into the semantic order.
 
 The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
 \begin{lstlisting}
@@ -1159,12 +1163,14 @@ def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
     phi0 [[unitVector H]] = 0 ->
     P[phi0] {phi | phi f <= phi g} = 1
 \end{lstlisting}
-The mathematical relation $f \forbLE{H} g$ is represented in Lean by this
-\lean{forbidLE} predicate.  It says: in every untyped positive homomorphism
-$\phi_0$ where $H$ has density zero, almost every random $\sigma$-extension of
-$\phi_0$ satisfies $\phi(f)\leq\phi(g)$.  The side condition
-\lean{phi0 <sigma>0 > 0} records that the type $\sigma$ can actually be
-sampled.
+For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
+$f \forbLES{\sigma}{H} g$ is represented in Lean by this predicate.  It says:
+for every empty-typed positive homomorphism $\phi_0$ in which $H$ has density
+zero, almost every random $\sigma$-typed extension $\phi$ satisfies
+$\phi(f)\leq\phi(g)$.  The side condition \lean{phi0 <sigma>0 > 0} records
+that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
+reduces to the untyped relation, which we write as $f \forbLE{H} g$ in the
+paper.
 
 The probability measure $\mathbb{P}^{\phi_0}$ used in this definition is
 the most analytic part of the abstract layer.  In
@@ -1182,43 +1188,42 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
       integral (fun phi => phi f) P =
         phi0 [[f]]0 / phi0 [[(1 : FlagAlgebra sigma)]]0
 \end{lstlisting}
-This theorem explains why the formalization needs measure theory at all.  The
-downward operator is the expectation of typed random extensions, so the
-forbidden-subgraph rule must quantify over almost-sure typed extensions of an
-untyped model.
+This theorem explains why the formalization needs measure theory.  The
+downward operator gives the expectation of typed random extensions, so a
+forbidden-subgraph assumption stated at the empty-typed level must be transported
+through almost-sure statements about typed extensions.
 
 The final transfer theorem, in \lean{Forbid/TuranDensity.lean}, has the shape
 needed by certificate proofs:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c * 1) :
+    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\bullet$@*) 1) :
     generalizedTuranDensity H F <= c
 \end{lstlisting}
 The Lean constant takes the forbidden graph first and the target graph
 second: \lean{generalizedTuranDensity H F} is the maximum density of $F$ in
 $H$-free graphs, written mathematically in this paper as $\tdensity{F}{H}$.
-The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the
-\lean{forbidLE} predicate; in the paper's mathematical notation we write
-$\forbLE{H}$ to keep the forbidden-model-class order visually separate from
-$\leq_\sigma$.
-Thus the certificate layer has one clean target:
-$F.\lean{toFlagAlgebra} \forbLE{H} c\mathbf{1}$.  Once that semantic inequality
-is checked, the asymptotic extremal bound follows.  This is the main conceptual
-payoff of the abstract formalization: it factors a computer-assisted extremal
-proof into finite counting, algebraic non-negativity, and a reusable semantic
-transfer theorem, rather than baking the extremal problem into the algebra
-itself.
+Here the inequality is empty-typed, so the paper notation is
+\[
+  F.\lean{toFlagAlgebra} \forbLE{H} c\mathbf{1}.
+\]
+The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the same
+\lean{forbidLE} predicate.  Once this semantic inequality is checked, the
+asymptotic extremal bound follows.  This is the main payoff of the abstract
+formalization: a concrete certificate proof can be assembled from finite
+counting, PSD non-negativity, and algebraic rewriting, while the passage from
+that certificate to a Turán-density theorem is handled once and reused.
 
 
 \subsection{Design Principles for Quotient-Heavy Counting}
 \label{sec:design-principles}
 
-The formalization did not scale merely by translating each mathematical
-definition into Lean.  The reusable content is a set of proof-engineering
-principles for making quotient-heavy finite combinatorics robust in an
-intensional proof assistant.  We describe these principles explicitly because
-they are the part of the development most likely to transfer to other
-computer-assisted extremal-combinatorics arguments.
+The abstract layer also forced several engineering choices that are easy to
+miss if one looks only at the final theorems.  The common theme is that
+finite-combinatorial equalities should be proved at the same level of
+abstraction at which they are stated.  We record the resulting principles
+because they are likely to transfer to other formalized, computer-assisted
+arguments in extremal combinatorics.
 
 \paragraph{Principle 1: keep the quotient as the specification boundary.}
 The abstract objects are intentionally close to the mathematics: flags are
@@ -1228,7 +1233,7 @@ representative of each isomorphism class.  Canonical representatives are useful
 for computation, but making them part of the specification would force every
 mathematical lemma to carry representation-specific side conditions.  Instead,
 the quotient-level definitions state theorems, while canonical finite data
-structures appear only behind adequacy theorems in the reflection layer.
+structures appear behind adequacy theorems in the reflection layer.
 
 \paragraph{Principle 2: prove numerical equalities by equivalences of witnesses.}
 The most common informal move in flag algebra calculations is to say that two
@@ -1236,7 +1241,8 @@ densities are equal because the two sampling procedures count the same objects
 after a reindexing.  In Lean, we make this extensional argument explicit.  The
 proof first names the two sample spaces, fixes the \lean{Fintype} instances
 that will be used to count them, constructs an equivalence between the sample
-spaces, and only then simplifies the resulting rational equality:
+spaces, and only then simplifies the resulting rational equality.  A typical
+proof has the following shape:
 \begin{lstlisting}
 let S0 := setOfLabeledSubgraphListIsoHl G Hl0
 let S1 := setOfLabeledSubgraphListIsoHl G Hl1
@@ -1286,9 +1292,9 @@ No single representation served all parts of the proof.  Quotients are the
 right specification language; \lean{Sym2Graph} is the right evaluator input;
 rational matrices are the right kernel-checkable SDP certificate format; and
 canonical names such as \lean{FlagAlgebra\_5\_1\_0\_3} are the right metadata
-format for elaboration tactics.  Treating these as separate interfaces, linked
-by adequacy and generated lemmas, is what lets the formalization combine
-mathematical faithfulness with executable performance.
+format for elaboration tactics.  Keeping these representations separate, and
+linking them by adequacy and generated lemmas, is what lets the formalization
+combine mathematical faithfulness with executable performance.
 
 
 \subsection{Type-Theoretic Obstacles from Intensionality}
@@ -1297,8 +1303,9 @@ mathematical faithfulness with executable performance.
 Lean~4 is based on an \emph{intensional} type theory: definitional equality is
 decidable but strictly weaker than propositional equality.  Two types that are
 provably equal may not be definitionally equal, and the kernel does not
-automatically identify them.  This creates three concrete classes of obstacle
-in a flag algebra formalization, each requiring its own systematic workaround.
+automatically identify them.  In this development, intensionality showed up
+not as an abstract metatheoretic concern but as recurring proof obligations at
+the boundaries between quotients, sizes, and executable representations.
 
 \paragraph{Obstacle 1: Quotient types require explicit eliminators.}
 Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
@@ -1309,8 +1316,8 @@ requires producing a witness of the relation for each equality goal.
 
 The adequacy theorems in \S\ref{sec:reflection} illustrate the cost.  To state
 that \lean{Sym2Graph.toFlag} is inverse to \lean{Flag.toSym2EmptyTypedFlag}, one
-cannot write a direct equality between concrete and abstract objects; every step
-must go through the quotient eliminators:
+cannot simply compute both sides to the same normal form; the map out of the
+quotient must go through an eliminator:
 \begin{lstlisting}
 def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag emptyType (Fin n) :=
   Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
@@ -1318,21 +1325,26 @@ def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag emptyType (Fin n
 The \lean{toFlag\_respect\_eqv} proof --- showing that isomorphic \lean{Sym2Graph}
 values map to the same \lean{Flag} --- is not automatic; it required
 \lean{Quotient.sound} applied to a graph isomorphism witness assembled from the
-concrete data.  In an extensional type theory, both directions of this round-trip
-would hold definitionally.
+concrete data.  This is exactly the kind of compatibility proof that ordinary
+mathematical notation suppresses.
 
 \paragraph{Obstacle 2: Size-changing operations produce dependent-type mismatches.}
 Flag algebra operations change the vertex count of flags: the product of a
 size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.
-In the formalization, the product is computed as a sum over all size-$\ell$ flags:
+In the formalization, the product of basis elements is computed as a sum over
+all size-$\ell$ flags:
 \begin{lstlisting}
-def flagMulWithSize (F1 : FlagWithSize sigma m1) (F2 : FlagWithSize sigma m2)
-    (l : N) (h : m1 + m2 - typeSize sigma <= l) : FlagVector sigma :=
-  sum G : FlagWithSize sigma l, flagDensity2 F1 F2 G * unitVector G
+def flagMulWithSize (F F' : FinFlag sigma) (ell : N) : FlagVector sigma :=
+  sum G : FlagWithSize sigma ell,
+    flagDensity2 F.2 F'.2 G * unitVector <ell, G>
 \end{lstlisting}
 To show this is well-defined on the quotient (i.e., independent of $\ell$),
-one must relate terms at different sizes --- but \lean{FlagWithSize sigma l}
-and \lean{FlagWithSize sigma l'} are definitionally distinct types.
+one proves the independence theorem for \lean{flagMulWithSize}.  Its
+hypotheses say that both output sizes are large enough, and its proof has to
+relate sums over
+\lean{FlagWithSize sigma ell} and \lean{FlagWithSize sigma ell'}, which are
+definitionally distinct types even when the corresponding mathematical sets are
+connected by expansion.
 
 The same issue arises internally when collecting the flags for the multiplication
 sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with type family $Vl$)
@@ -1349,8 +1361,7 @@ theorem flagList_HEq
 \end{lstlisting}
 The \lean{cast} calls are explicit coercions through propositional equality proofs;
 they are the formalization's acknowledgment that two types are equal only up to a
-proof, not up to definition.  In an extensional type theory, type equality would
-be reflected into definitional equality, making these casts unnecessary.
+proof, not by computation.
 
 Similarly, even if two indices $i$ and $i'$ into a flag list are propositionally
 equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and \lean{Flag sigma (Vl i')}
@@ -1360,8 +1371,8 @@ theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
     : HEq (Fl i) (Fl i') := by subst h; rfl
 \end{lstlisting}
 This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
-density computation infrastructure: every operation that crosses a size boundary
-must carry explicit propositional equality evidence.
+density computation infrastructure: every operation that crosses a size
+boundary must carry explicit propositional equality evidence.
 
 \paragraph{Obstacle 3: Function extensionality and proof-valued fields.}
 In Lean~4's intensional type theory, function extensionality
@@ -1388,7 +1399,7 @@ definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
 theorems therefore requires the \lean{proof\_irrel\_heq} tactic at every
 such field:
 \begin{lstlisting}
-theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
+theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
     G.toLabeledGraph.toSym2Graph = G := by
   congr  -- reduces to field equalities
   ...
@@ -1397,26 +1408,24 @@ theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
 
 \paragraph{What remains open.}
 Not all intensionality obstacles were resolved.  The most significant gap is in
-\lean{LeanFlagAlgebras.Forbid.Basic}: two lemmas relating the quotient-level
-\lean{forbidLE} predicate to the density of individual flag representatives
-remain as commented proof sketches, not as imported declarations or trusted
-axioms.  Concretely, showing that
-$f \forbLE{H} 0$ implies the density of $H$ in any flag in the support of $f$
-is positive requires reasoning about which representatives of a quotient class
-can appear under a homomorphism --- a question that reduces to asking how the
-zero-space relations interact with the flag representatives pointwise.  This
-interaction is nontrivial in an intensional setting because the zero-space
-relations hold only propositionally (they are proved as theorems, not built into
-the type definition).  These gaps do not affect the soundness of the main
-results --- \lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan} are proved
-without them --- but they limit the generality of the \lean{forbidLE} framework
-for future applications.
+\lean{LeanFlagAlgebras.Forbid.Basic}: several strengthening lemmas about
+recovering representative-level information from quotient-level forbidden
+equalities remain as commented proof sketches, not as imported declarations or
+trusted axioms.  For example, one would like a general theorem saying that if a
+basis vector is zero under the forbidden equality relation, then the
+corresponding unlabeled flag has positive density of the forbidden graph.
+Proving such a
+statement requires careful reasoning about how zero-space relations interact
+with individual representatives.  This is not needed for the main case studies
+--- \lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan} are proved without
+those sketches --- but it marks a natural direction for making the
+\lean{forbidLE} framework even more convenient for future applications.
 
 \subsection{Fintype Instance Conflicts}
 \label{sec:fintype}
 
-A second class of proof failures --- distinct from propositional-vs-definitional
-equality issues but equally pervasive --- arose from Lean~4's treatment of
+A second class of failures --- distinct from casts and heterogeneous equality,
+but just as pervasive in the counting layer --- came from Lean~4's treatment of
 \lean{Fintype} instances.
 
 \paragraph{Background.}
@@ -1445,14 +1454,16 @@ let hS1 : Fintype S1 := Fintype.ofFinite S1
 have card_eq : Fintype.card S0 = Fintype.card S1 :=
   Fintype.card_congr h_iso_S0_S1
 \end{lstlisting}
-This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
-(functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
-\lean{flagDensity\_insert\_empty}).  Without the explicit \lean{let} bindings,
-Lean synthesizes a \lean{Fintype} for each set via a different path on each
-use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
-\lean{Fintype.ofFinite} fix was needed in \lean{FlagOperators.lean} (for
-\lean{isoLabeledGraphSetWithSameGraph}) and in \lean{FlagDef.lean} (for
-\lean{LabeledGraph} and \lean{LabeledSubgraph}).
+This pattern appears repeatedly in \lean{SubflagListDensity.lean}: for the
+quotient-respect lemma for list densities, for permutation of sampled flags,
+and for insertion of an empty flag.  Without the explicit \lean{let} bindings,
+Lean can synthesize a \lean{Fintype} for each set through a different path at
+each use, and \lean{Fintype.card\_congr} no longer sees the two cardinalities
+as referring to the same enumeration terms.  A similar explicit
+\lean{Fintype.ofFinite} construction is used in \lean{FlagOperators.lean} for
+the isomorphism set with a fixed underlying graph; explicit finite instances
+for \lean{LabeledGraph} and \lean{LabeledSubgraph} are also part of the
+abstract infrastructure.
 
 \paragraph{Instance disambiguation for function and embedding types.}
 For parameterized types such as injections \lean{Embedding V W} and equivalences
@@ -1460,15 +1471,18 @@ For parameterized types such as injections \lean{Embedding V W} and equivalences
 depending on which prior instances are in scope.  In
 \lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
 defined, the elaborator had to be given explicit guidance via
-\lean{@Finset.univ} with the intended instance passed as a named argument:
+\lean{@Finset.univ}:
 \begin{lstlisting}
 instance : Fintype (Embedding V W) :=
-  { elems := @Finset.univ (Embedding V W) (inferInstance), ... }
+  { elems := (@Finset.univ (V -> W)).filterMap ..., ... }
+
+instance : Fintype (G1 ->g G2) :=
+  { elems := (@Finset.univ (Embedding V W)).filterMap ..., ... }
 \end{lstlisting}
-Without the explicit \lean{@}, Lean would sometimes apply a different,
-incompatible \lean{Fintype} instance for \lean{Embedding V W} further down the proof,
-causing membership goals for \lean{Finset.univ} to fail to close by
-\lean{Finset.mem\_univ}.
+The graph-embedding and graph-isomorphism instances are built by filtering
+finite enumerations of simpler function or equivalence types.  The explicit
+\lean{@Finset.univ} keeps the intended enumeration visible to the elaborator,
+instead of relying on typeclass search to rediscover it in a later goal.
 
 A related issue arose for dependent function types indexed by a small finite
 type.  The \lean{FintypeList} typeclass (used internally to manage lists of
@@ -1489,7 +1503,8 @@ type-valued functions, so the uniform instance \lean{fun i => inferInstance}
 fails to elaborate.
 
 \paragraph{Cardinality comparison across paired sets.}
-In \lean{FlagDensity.lean}, computing induced subgraph densities requires
+In \lean{FlagAlgebra/Compute/FlagDensity.lean}, computing induced subgraph
+densities requires
 converting a set of vertices (of type \lean{Set (Fin n)}) to a \lean{Finset}
 for cardinality comparisons.  The standard conversion
 \lean{Set.toFinset} requires a \lean{Fintype} instance for the set, which is
@@ -1502,8 +1517,7 @@ The explicit \lean{Fintype.ofFinite \_} argument prevents the elaborator from
 picking up an incompatible instance from a \lean{DecidablePred} path.
 Similarly, when two goals differ only in which \lean{Fintype} instance was
 used to compute a \lean{Finset}, the \lean{convert} tactic was used to accept
-the goal up to a \lean{Fintype} proof obligation that \lean{Subsingleton}
-then closed:
+the goal up to the remaining proof-irrelevance obligations:
 \begin{lstlisting}
 convert h_adj   -- goal matches up to Fintype instance
 \end{lstlisting}
@@ -1516,13 +1530,12 @@ When a type's \lean{Fintype} instance is assembled from multiple subinstances
 (e.g., a function type, a quotient, or a set defined by a predicate), the
 elaborator can take different paths, and the resulting terms are not
 definitionally equal even if they enumerate the same elements.  The fix in
-every case was the same: make the intended instance explicit at the point of
-synthesis, either by a \lean{let} binding with a type annotation, by passing
-the instance as an explicit argument to \lean{@Finset.univ} or
-\lean{@Set.toFinset}, or by writing the instance by hand when the uniform
-typeclass search fails.  These are low-level engineering burdens that do not
-appear in pen-and-paper mathematics, but are unavoidable in a large-scale
-Lean~4 development that crosses quotient and reflection boundaries.
+every case was to make the intended instance explicit at the point of
+synthesis: by a \lean{let} binding with a type annotation, by passing the
+instance explicitly to \lean{@Finset.univ} or \lean{@Set.toFinset}, or by
+writing the finite-list instance by hand when uniform typeclass search fails.
+These are low-level engineering burdens, but they protect the reusable theory
+from accidental dependence on elaboration choices.
 
 
 \section{The Reflection Layer}
