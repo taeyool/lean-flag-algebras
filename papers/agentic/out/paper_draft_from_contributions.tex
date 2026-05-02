@@ -52,6 +52,7 @@
 \newcommand{\poshom}[1]{\Phi^{#1}}
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{p(#1;\,#2)}
+\newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
 \newcommand{\lean}[1]{\texttt{#1}}
 
 \tikzset{
@@ -790,9 +791,10 @@ one would instead set to zero the finite sum of induced graphs on $|V(H)|$
 vertices that contain $H$ as a subgraph; that extra bookkeeping is not needed
 for the triangle-free problem studied here.
 
-For $f,g\in\mathcal{A}^\emptyset$, write
+To distinguish this from the type-indexed order $\leq_\sigma$, for
+$f,g\in\mathcal{A}^\emptyset$ write
 \[
-  f \leq_{[H]} g
+  f \forbLE{H} g
 \]
 when $\phi(f)\leq\phi(g)$ for every positive homomorphism
 $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$ satisfying
@@ -801,7 +803,7 @@ every positive homomorphism satisfying the forbidden-graph condition
 $\phi([H])=0$.
 Thus an upper-bound proof for the target graph $P$ aims to establish
 \[
-  [P] \leq_{[H]} c\cdot\mathbf{1}.
+  [P] \forbLE{H} c\cdot\mathbf{1}.
 \]
 The finite proof data usually combines three ingredients already defined
 above: zero-space relations expand expressions to a common size, PSD quadratic
@@ -820,7 +822,7 @@ For an unlabeled target graph $P$ and an unlabeled forbidden graph $H$, the
                    ~\Big|~ |V(G)|=n \text{ and } G \text{ is }H\text{-free}\Bigr\}}.
 \]
 For the complete forbidden graph used in the certificate, the semantic
-inequality $[P] \leq_{[H]} c\cdot\mathbf{1}$ implies
+inequality $[P] \forbLE{H} c\cdot\mathbf{1}$ implies
 $\tdensity{P}{H}\leq c$.  A matching construction gives the reverse
 inequality when the claimed value is sharp.
 
@@ -840,37 +842,59 @@ algebraic bookkeeping.
 \section{Abstract Formalization}
 \label{sec:abstract}
 
-The main formalization problem is not the number of definitions in flag
-algebras, but the number of implicit changes of viewpoint.  In the pentagon
-problem, the same symbol $C_5$ may refer to a concrete graph, its isomorphism
-class as an empty-type flag, the corresponding basis vector in
-$\mathbb{R}[\mathcal{F}^\emptyset]$, its image in the quotient algebra
-$\mathcal{A}^\emptyset$, the finite density $\den{C_5}{G}$ in a host graph
-$G$, or the real number $\phi([C_5])$ assigned by a positive homomorphism.
-Paper proofs rely on context to move among these meanings.  In Lean, each
-passage must be represented by a typed map or theorem, and each such map must
-be proved compatible with isomorphism, quotient relations, and algebraic
-operations.
+The abstract formalization gives flag algebras a typed mathematical foundation
+that is reusable across different extremal problems.  In informal arguments,
+the same symbol freely denotes a concrete graph, its isomorphism class, a
+formal linear combination of flags, an element of the quotient algebra, or a
+real value assigned by a positive homomorphism; the transitions between these
+roles are silent.  In Lean they are explicit: each role is a distinct type,
+and each transition is a map that must be proved compatible with the relevant
+equivalence relations and algebraic operations.  The abstract layer
+of our Lean formalization provides
+those maps and their compatibility theorems once, so that every subsequent
+certificate proof can work at the algebra level without re-establishing the
+soundness of the surrounding framework.
 
-The abstract layer proves this bookkeeping once and then exposes it through an
-API for certificate proofs.  That API provides the operations used in ordinary
-flag algebra arguments: products of flags, density-expansion identities,
-downward operators, PSD quadratic forms, and semantic inequalities.  For
-example, after finite counting and SDP search produce a certificate, the proof
-can aim at the single semantic inequality
+The layer structure follows Razborov's original presentation.  Flags are
+quotients of labeled graphs by isomorphism.  Their densities are formalized as
+a sampling semantics: the probability that a uniformly random induced subgraph
+of a host graph is isomorphic to a given flag.  The flag algebra is a further
+quotient, of the free real vector space on flags, by expansion laws that
+identify a small flag with its expected density expansion to a collection 
+of larger graphs.
+Positive homomorphisms are the models of that equational theory, assigning
+non-negative reals to flags and preserving products and other algebra operations.  
+Razborov's random-extension theorem, formalized using Mathlib's Prokhorov compactness
+theorem, connects the standard empty-typed level with the typed levels: 
+every positive homomorphism on
+the emtpy-typed algebra extends to a probability measure on the space 
+of $\sigma$-typed positive homomorphisms for any $\sigma$.  
+This measure-theoretic result is the foundation on
+which an important part of the abstract layers rests.
+
+That foundation supports the section's main practical payoff: a modular
+treatment of forbidden-graph conditions.  Rather than specializing the flag
+algebra to a particular forbidden graph --- which would produce a different
+algebraic theory for each extremal problem --- the abstract layer introduces a
+semantic predicate \lean{forbidLE} expressing ``$f\leq g$ in every model where
+$H$ has density zero,'' together with a transfer theorem
+\lean{generalizedTuranDensity\_le\_of\_forbidLE} that reduces a Turán density
+bound to a single semantic inequality
 \[
-  [P] \leq_{[H]} c\cdot\mathbf{1}.
+  [P] \forbLE{H} c\cdot\mathbf{1}
 \]
-This notation already includes the interpretation ``for every positive
-homomorphism $\phi$ with $\phi([H])=0$.''  The certificate writer does not
-reprove that flag products are well-defined on isomorphism classes, that
-density expansion descends to the quotient algebra, or that downward-averaged
-PSD forms are semantically non-negative; those facts are library theorems.
-The rest of this section describes this API, starting with flags as quotient
-interfaces and ending with the transfer theorem that turns such an inequality
-into a generalized Turán-density bound.  Code snippets are lightly rendered in
-ASCII when the Lean source uses Unicode notation; the names and fields match
-the implementation.
+in the ambient algebra.  This is the clean interface that the certificate layer
+targets: any proof of that inequality, however it is assembled, immediately
+yields the asymptotic bound $\tdensity{P}{H}\leq c$.  The section also
+identifies the proof-engineering challenges that arise when instantiating this
+design in Lean: intensionality of the type theory forces extensional density
+equalities to be proved via explicit bijections between finite sample spaces,
+and competing \lean{Fintype} instances require careful scoping to avoid
+definitional mismatch.  The rest of the section describes the abstract API in
+detail, from flags and densities to the transfer theorem, and concludes with
+the design principles and type-theoretic obstacles that shaped the development.
+Code snippets are lightly rendered in ASCII when the Lean source uses Unicode
+notation; the names and fields match the implementation.
 
 \subsection{Types and Flags in Lean}
 
@@ -1118,7 +1142,8 @@ def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
     phi0 [[unitVector H]] = 0 ->
     P[phi0] {phi | phi f <= phi g} = 1
 \end{lstlisting}
-The notation $f \leq_{[H]} g$ says: in every untyped positive homomorphism
+The mathematical relation $f \forbLE{H} g$ is represented in Lean by this
+\lean{forbidLE} predicate.  It says: in every untyped positive homomorphism
 $\phi_0$ where $H$ has density zero, almost every random $\sigma$-extension of
 $\phi_0$ satisfies $\phi(f)\leq\phi(g)$.  The side condition
 \lean{phi0 <sigma>0 > 0} records that the type $\sigma$ can actually be
@@ -1155,8 +1180,12 @@ theorem generalizedTuranDensity_le_of_forbidLE
 The Lean constant takes the forbidden graph first and the target graph
 second: \lean{generalizedTuranDensity H F} is the maximum density of $F$ in
 $H$-free graphs, written mathematically in this paper as $\tdensity{F}{H}$.
+The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the
+\lean{forbidLE} predicate; in the paper's mathematical notation we write
+$\forbLE{H}$ to keep the forbidden-model-class order visually separate from
+$\leq_\sigma$.
 Thus the certificate layer has one clean target:
-$F.\lean{toFlagAlgebra} \leq_{[H]} c\mathbf{1}$.  Once that semantic inequality
+$F.\lean{toFlagAlgebra} \forbLE{H} c\mathbf{1}$.  Once that semantic inequality
 is checked, the asymptotic extremal bound follows.  This is the main conceptual
 payoff of the abstract formalization: it factors a computer-assisted extremal
 proof into finite counting, algebraic non-negativity, and a reusable semantic
@@ -1355,7 +1384,7 @@ Not all intensionality obstacles were resolved.  The most significant gap is in
 \lean{forbidLE} predicate to the density of individual flag representatives
 remain as commented proof sketches, not as imported declarations or trusted
 axioms.  Concretely, showing that
-$f \leq_{[H]} 0$ implies the density of $H$ in any flag in the support of $f$
+$f \forbLE{H} 0$ implies the density of $H$ in any flag in the support of $f$
 is positive requires reasoning about which representatives of a quotient class
 can appear under a homomorphism --- a question that reduces to asking how the
 zero-space relations interact with the flag representatives pointwise.  This
@@ -2060,7 +2089,7 @@ theorem ErdosPentagon_Turan_upperBound
     ErdosPentagon_flagAlgebra
 \end{lstlisting}
 The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag algebra
-inequality $C_5 \leq_{[K_3]} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
+inequality $C_5 \forbLE{K_3} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
 $C_5$-density is at most $24/625$ under the $K_3$-free assumption.
 The proof exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$
 (one per 1-vertex type, of sizes $8\times 8$, $6\times 6$, and $5\times 5$)
