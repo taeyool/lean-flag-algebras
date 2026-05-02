@@ -53,6 +53,7 @@
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{p(#1;\,#2)}
 \newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
+\newcommand{\forbLES}[2]{\leq_{#1,\operatorname{Forb}(#2)}}
 \newcommand{\lean}[1]{\texttt{#1}}
 
 \tikzset{
@@ -847,15 +848,15 @@ that is reusable across different extremal problems.  In informal arguments,
 the same symbol freely denotes a concrete graph, its isomorphism class, a
 formal linear combination of flags, an element of the quotient algebra, or a
 real value assigned by a positive homomorphism; the transitions between these
-roles are silent.  In Lean they are explicit: each role is a distinct type,
+roles are implicit.  In Lean they are explicit: each role is a distinct type,
 and each transition is a map that must be proved compatible with the relevant
-equivalence relations and algebraic operations.  The abstract layer
+equivalence relations and algebraic operations.  The abstract layer 
 of our Lean formalization provides
-those maps and their compatibility theorems once, so that every subsequent
+those maps and their compatibility theorems, so that every subsequent
 certificate proof can work at the algebra level without re-establishing the
 soundness of the surrounding framework.
 
-The layer structure follows Razborov's original presentation.  Flags are
+The structure of our formalization follows Razborov's original presentation described in the previous section.  Flags are
 quotients of labeled graphs by isomorphism.  Their densities are formalized as
 a sampling semantics: the probability that a uniformly random induced subgraph
 of a host graph is isomorphic to a given flag.  The flag algebra is a further
@@ -866,31 +867,47 @@ Positive homomorphisms are the models of that equational theory, assigning
 non-negative reals to flags and preserving products and other algebra operations.  
 Razborov's random-extension theorem, formalized using Mathlib's Prokhorov compactness
 theorem, connects the standard empty-typed level with the typed levels: 
-every positive homomorphism on
-the emtpy-typed algebra extends to a probability measure on the space 
+every positive homomorphism $\phi$ on
+the emtpy-typed algebra extends to a probability measure $\mathbb{P}^{\phi}$ on the space 
 of $\sigma$-typed positive homomorphisms for any $\sigma$.  
 This measure-theoretic result is the foundation on
 which an important part of the abstract layers rests.
 
-That foundation supports the section's main practical payoff: a modular
-treatment of forbidden-graph conditions.  Rather than specializing the flag
-algebra to a particular forbidden graph --- which would produce a different
-algebraic theory for each extremal problem --- the abstract layer introduces a
-semantic predicate \lean{forbidLE} expressing ``$f\leq g$ in every model where
-$H$ has density zero,'' together with a transfer theorem
-\lean{generalizedTuranDensity\_le\_of\_forbidLE} that reduces a Turán density
-bound to a single semantic inequality
+The probability measure $\mathbb{P}^{\phi}$ is also the
+ingredient that enables a principled treatment of forbidden-graph conditions.
+Informally, ``work in the theory where $H$ has density zero'' is a standing
+assumption; but for typed flags, the condition $\phi([H])=0$ is a constraint
+on the empty-typed level, and one still needs to quantify over $\sigma$-typed 
+extensions of $\phi$ for nonempty $\sigma$'s.  The measure $\mathbb{P}^{\phi}$ is precisely what makes that
+quantification precise: the predicate $f \forbLES{\sigma}{H} g$ says that for every
+empty-typed $\phi$ with $\phi([H])=0$, the set of $\sigma$-typed
+extensions $\phi'$ satisfying $\phi'(f)\leq\phi'(g)$ has measure one under
+$\mathbb{P}^{\phi}$.  Crucially, $H$ is a parameter to the predicate, not
+baked into the algebra: one ambient algebraic theory serves every forbidden
+graph, because the forbidden-graph assumption enters only through the semantic
+ordering $\forbLES{\sigma}{H}$, not through a specialized quotient.  The transfer
+theorem \lean{generalizedTuranDensity\_le\_of\_forbidLE} then reduces a Turán
+density bound to a single semantic inequality
 \[
-  [P] \forbLE{H} c\cdot\mathbf{1}
+  [P] \forbLES{\sigma}{H} c\cdot\mathbf{1}
 \]
-in the ambient algebra.  This is the clean interface that the certificate layer
-targets: any proof of that inequality, however it is assembled, immediately
-yields the asymptotic bound $\tdensity{P}{H}\leq c$.  The section also
+in the ambient algebra.  Any proof of that inequality, however it is assembled,
+immediately yields the bound $\tdensity{P}{H}\leq c$; and all the
+abstract-layer results about products, quadratic forms, and the downward
+operator carry over to every forbidden graph without reproof.  The section also
 identifies the proof-engineering challenges that arise when instantiating this
-design in Lean: intensionality of the type theory forces extensional density
-equalities to be proved via explicit bijections between finite sample spaces,
-and competing \lean{Fintype} instances require careful scoping to avoid
-definitional mismatch.  The rest of the section describes the abstract API in
+design in Lean.  Because the algebra is built from quotient types and dependent
+families, counting equalities cannot be reduced definitionally; the principled
+approach is to justify each density equality by an explicit bijection between
+the finite sample spaces being counted.  A separate class of obstacles comes
+from intensionality proper: quotient eliminators require explicit compatibility
+proofs, size-changing operations produce \lean{HEq} and \lean{cast}
+obligations because vertex-count-indexed types are definitionally distinct, and
+competing \lean{Fintype} instances for the same predicate-defined set are
+extensionally equal but not definitionally equal, so cardinality lemmas referring to them fail
+to apply unless the intended instance is pinned at the point where the set is
+named.  The rest of the section describes the abstract layer of our
+formalisation in
 detail, from flags and densities to the transfer theorem, and concludes with
 the design principles and type-theoretic obstacles that shaped the development.
 Code snippets are lightly rendered in ASCII when the Lean source uses Unicode
