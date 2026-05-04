@@ -57,6 +57,7 @@ import LeanFlagAlgebras.ErdosPentagon.FlagMul
 import LeanFlagAlgebras.ErdosPentagon.SortTactic
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 import LeanFlagAlgebras.ErdosPentagon.ErdosPentagon
+import LeanFlagAlgebras.ErdosPentagon.API
 
 -- Logic
 import LeanFlagAlgebras.Logic.Defs
