@@ -9,9 +9,6 @@ open Lean Elab Tactic Meta Command
 
 namespace ErdosPentagon
 
-set_option maxHeartbeats 0
-set_option maxRecDepth 1000
-
 noncomputable def one_expand
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : FlagAlgebra ∅ₜ :=
@@ -35,6 +32,18 @@ theorem flagQuadraticForm_downward_forbidLE_nonneg
   (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm M v⟧₀
   := by
+  apply downward_forbidLE_nonneg
+  apply forbidLE_of_le
+  exact flagQuadraticForm_nonneg M hM v
+
+theorem forbidLE_add_QuadraticForm
+    {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
+    (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
+    : (f ≤[F_forbid] g) → f ≤[F_forbid] g + ⟦flagQuadraticForm M v⟧₀
+  := by
+  intro hfg
+  rw [← add_zero f]
+  apply forbidLE_add hfg
   apply downward_forbidLE_nonneg
   apply forbidLE_of_le
   exact flagQuadraticForm_nonneg M hM v
@@ -210,7 +219,18 @@ private def mkFlagMulThmNameLE? (mulTerm : Expr) : MetaM (Option Name) := do
       return some cand
   return none
 
-/-- Perform a single reduction step.  Returns `true` when progress was made. -/
+/-- Returns `true` when `e` contains a `FlagAlgebra_*` or `Flag_*` constant
+(i.e. it is a plain flag term rather than a `downward` wrapper). -/
+private def hasFlagConstLE (e : Expr) : Bool :=
+  (findFlagAlgebraConstLE? e).isSome || (findFlagConstLE? e).isSome
+
+/-- Perform a single reduction step.  Returns `true` when progress was made.
+
+Two kinds of head terms are handled:
+* `downward (c • (A * B))` — look up the `flagMul_*` theorem, rewrite, then move.
+* plain flag term (contains a `FlagAlgebra_*` / `Flag_*` constant but is not
+  wrapped in `downward`) — move directly with `forbidLE_move_add_left_iff` /
+  `forbidLE_move_term_left_iff` without any rewriting. -/
 private def stepReduceDownwardFlagMul : TacticM Bool :=
   withMainContext do
     let goal ← getMainGoal
@@ -221,34 +241,53 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
     let lhs := args[args.size - 2]!.consumeMData
     if let some (head, _rest) := getAddArgsLE? lhs then
       -- non-final case: head is the leftmost summand
-      let some downInner := stripDownwardLE? head.consumeMData | return false
-      let downInner := downInner.consumeMData
-      let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
-      let some thmName ← mkFlagMulThmNameLE? mulTerm
-        | do
-            let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
-            throwError m!"reduce_downward_flagmul: could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
-      let thmId : TSyntax `term := mkIdent thmName
-      evalTactic (← `(tactic|
-        rw [Forbid.forbidLE_rw_left_add_right
-              (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
-            forbidLE_move_add_left_iff]))
-      return true
+      let head := head.consumeMData
+      if let some downInner := stripDownwardLE? head then
+        -- head is `downward (c • (A * B))`
+        let downInner := downInner.consumeMData
+        let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
+        let some thmName ← mkFlagMulThmNameLE? mulTerm
+          | do
+              let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
+              throwError m!"reduce_downward_flagmul: could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
+        let thmId : TSyntax `term := mkIdent thmName
+        evalTactic (← `(tactic|
+          rw [Forbid.forbidLE_rw_left_add_right
+                (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
+              forbidLE_move_add_left_iff]))
+        return true
+      else if hasFlagConstLE head then
+        -- head is a plain flag term: move it directly
+        evalTactic (← `(tactic| rw [forbidLE_move_add_left_iff]))
+        return true
+      else
+        return false
     else
-      -- terminal case: lhs itself is a single `downward (c • (A * B))`
-      let some downInner := stripDownwardLE? lhs | return false
-      let downInner := downInner.consumeMData
-      let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
-      let some thmName ← mkFlagMulThmNameLE? mulTerm
-        | do
-            let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
-            throwError m!"reduce_downward_flagmul: could not find terminal flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
-      let thmId : TSyntax `term := mkIdent thmName
-      evalTactic (← `(tactic|
-        rw [forbidLE_rw_left
-              (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
-            forbidLE_move_term_left_iff]))
-      return true
+      dbg_trace s! "terminal case"
+      -- terminal case: lhs itself is a single term
+      if let some downInner := stripDownwardLE? lhs then
+        dbg_trace s! "alone downward"
+        -- lhs is `downward (c • (A * B))`
+        let downInner := downInner.consumeMData
+        let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
+        let some thmName ← mkFlagMulThmNameLE? mulTerm
+          | do
+              let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
+              throwError m!"reduce_downward_flagmul: could not find terminal flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
+        let thmId : TSyntax `term := mkIdent thmName
+        evalTactic (← `(tactic|
+          rw [forbidLE_rw_left
+                (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
+              forbidLE_move_term_left_iff]))
+        return true
+      else if hasFlagConstLE lhs then
+        -- lhs is a plain flag term: move it directly
+        dbg_trace s! "alone simple"
+        evalTactic (← `(tactic| rw [forbidLE_move_term_left_iff]))
+        return true
+      else
+        dbg_trace s! "why...?"
+        return false
 
 private partial def runReduceDownwardFlagMul
     (fuel : Nat := 256) (steps : Nat := 0) : TacticM Unit := do
@@ -287,61 +326,52 @@ Before iterating, this tactic right-associates the sum with
 `simp only [add_assoc]`, matching the style of the manual proof in the example
 just below. -/
 elab "reduce_downward_flagmul" : tactic => do
-  evalTactic (← `(tactic| try simp only [add_assoc]))
+  evalTactic (← `(tactic| try simp only [downward_add, add_assoc]))
   runReduceDownwardFlagMul
 
 end ReduceDownwardFlagMul
 
-set_option maxRecDepth 1500
 
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_0
-    : ⟦unitVector ⟨5, Flag_5_0_0_0⟩⟧ = FlagAlgebra_5_0_0_0 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_1
-    : ⟦unitVector ⟨5, Flag_5_0_0_1⟩⟧ = FlagAlgebra_5_0_0_1 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_2
-    : ⟦unitVector ⟨5, Flag_5_0_0_2⟩⟧ = FlagAlgebra_5_0_0_2 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_3
-    : ⟦unitVector ⟨5, Flag_5_0_0_3⟩⟧ = FlagAlgebra_5_0_0_3 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_4
-    : ⟦unitVector ⟨5, Flag_5_0_0_4⟩⟧ = FlagAlgebra_5_0_0_4 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_6
-    : ⟦unitVector ⟨5, Flag_5_0_0_6⟩⟧ = FlagAlgebra_5_0_0_6 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_7
-    : ⟦unitVector ⟨5, Flag_5_0_0_7⟩⟧ = FlagAlgebra_5_0_0_7 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_8
-    : ⟦unitVector ⟨5, Flag_5_0_0_8⟩⟧ = FlagAlgebra_5_0_0_8 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_10
-    : ⟦unitVector ⟨5, Flag_5_0_0_10⟩⟧ = FlagAlgebra_5_0_0_10 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_12
-    : ⟦unitVector ⟨5, Flag_5_0_0_12⟩⟧ = FlagAlgebra_5_0_0_12 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_13
-    : ⟦unitVector ⟨5, Flag_5_0_0_13⟩⟧ = FlagAlgebra_5_0_0_13 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_18
-    : ⟦unitVector ⟨5, Flag_5_0_0_18⟩⟧ = FlagAlgebra_5_0_0_18 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_19
-    : ⟦unitVector ⟨5, Flag_5_0_0_19⟩⟧ = FlagAlgebra_5_0_0_19 := Quotient.out_inj.mp rfl
-@[simp]
-lemma unitVector_FlagAlgebra_5_0_0_25
-    : ⟦unitVector ⟨5, Flag_5_0_0_25⟩⟧ = FlagAlgebra_5_0_0_25 := Quotient.out_inj.mp rfl
+
+/-
+  @[simp]
+  lemma unitVector_FlagAlgebra_5_0_0_0
+      : ⟦unitVector ⟨5, Flag_5_0_0_0⟩⟧ = FlagAlgebra_5_0_0_0 := Quotient.out_inj.mp rfl
+  @[simp]
+  lemma unitVector_FlagAlgebra_5_0_0_1
+      : ⟦unitVector ⟨5, Flag_5_0_0_1⟩⟧ = FlagAlgebra_5_0_0_1 := Quotient.out_inj.mp rfl
+  ...
+-/
+
+syntax (name := generateUnitVectorLemmasCmd)
+  "generate_unitVector_lemmas" num num : command
+
+private def generateUnitVectorLemmas (n count : Nat) : CommandElabM Unit := do
+  for idx in [:count] do
+    let lemmaName := mkIdent (Name.mkSimple s!"unitVector_FlagAlgebra_{n}_0_0_{idx}")
+    let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{idx}")
+    let algebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{idx}")
+    elabCommand (← `(
+      @[simp]
+      theorem $lemmaName
+          : ⟦unitVector ⟨$(Syntax.mkNumLit (toString n)), $flagName⟩⟧ = $algebraName := Quotient.out_inj.mp rfl
+    ))
+
+elab_rules : command
+  | `(command| generate_unitVector_lemmas $n:num $count:num) => do
+      generateUnitVectorLemmas n.getNat count.getNat
+
+-- Generate all unitVector lemmas for n=5 with 34 flags
+generate_unitVector_lemmas 5 34
 
 /-
   task 1. Improve reduce_downward_flagmul to handle more cases.
-  task 2. Make tactic to automatically make lemmas like unitVector_FlagAlgebra_5_0_0_0, etc.
+  task 2. Make tactic to automatically make lemmas like unitVector_FlagAlgebra_5_0_0_0, etc. : Done
   task 3. Organize computational processes and speed up
 -/
+
+set_option maxHeartbeats 0
+set_option maxRecDepth 1500
 
 theorem ErdosPentagon_flagAlgebra_API
     : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
@@ -364,9 +394,7 @@ theorem ErdosPentagon_flagAlgebra_API
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   simp [v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   simp [v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
-  simp only [downward_add, add_assoc]
 
-  rw [forbidLE_move_add_left_iff]
   reduce_downward_flagmul
   rw [forbidLE_rw_left (downward_forbidLE_equal_flags (forbidEq_smul flagMul_FlagAlgebra_4_3_2_6_FlagAlgebra_4_3_2_6))]
   rw [forbidLE_move_term_left_iff]
