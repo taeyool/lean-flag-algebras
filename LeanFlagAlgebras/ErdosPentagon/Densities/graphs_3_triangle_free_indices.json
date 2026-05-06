@@ -1,0 +1,9 @@
+{
+  "input_file": "LeanFlagAlgebras\\Flags\\Graphs\\graphs_3.json",
+  "total_graphs": 4,
+  "triangle_free_graph_indices": [
+    0,
+    1,
+    2
+  ]
+}

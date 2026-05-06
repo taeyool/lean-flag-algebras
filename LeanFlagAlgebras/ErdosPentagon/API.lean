@@ -6,6 +6,7 @@ import Mathlib.Tactic
 
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta Command
+open SimpleGraph Matrix
 
 namespace ErdosPentagon
 
@@ -154,7 +155,7 @@ private def getAddArgsLE? (e : Expr) : Option (Expr × Expr) :=
   if (fn.isConstOf ``HAdd.hAdd || fn.isConstOf ``Add.add) && args.size >= 2 then
     some (args[args.size - 2]!, args[args.size - 1]!)
   else
-    getBinAppArgsLE? e
+    none
 
 private def getSmulArgsLE? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
@@ -263,10 +264,8 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
       else
         return false
     else
-      dbg_trace s! "terminal case"
       -- terminal case: lhs itself is a single term
       if let some downInner := stripDownwardLE? lhs then
-        dbg_trace s! "alone downward"
         -- lhs is `downward (c • (A * B))`
         let downInner := downInner.consumeMData
         let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
@@ -282,11 +281,9 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
         return true
       else if hasFlagConstLE lhs then
         -- lhs is a plain flag term: move it directly
-        dbg_trace s! "alone simple"
         evalTactic (← `(tactic| rw [forbidLE_move_term_left_iff]))
         return true
       else
-        dbg_trace s! "why...?"
         return false
 
 private partial def runReduceDownwardFlagMul
@@ -376,28 +373,23 @@ set_option maxRecDepth 1500
 theorem ErdosPentagon_flagAlgebra_API
     : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have h₁ : C5.toFlagAlgebra ≤[K3.toFinFlag]
+  have quadraticForm_trans : C5.toFlagAlgebra ≤[K3.toFinFlag]
             C5.toFlagAlgebra + ⟦flagQuadraticForm P_real v₀⟧₀
                              + ⟦flagQuadraticForm Q_real v₁⟧₀
                              + ⟦flagQuadraticForm R_real v₂⟧₀ := by
-    apply forbidLE_trans_add_nonneg
-    · apply forbidLE_trans_add_nonneg
-      · apply forbidLE_trans_add_nonneg
-        · exact forbidLE_refl K3.toFinFlag C5.toFlagAlgebra
-        · exact flagQuadraticForm_downward_forbidLE_nonneg P_real P_real_posSemidef v₀
-      · exact flagQuadraticForm_downward_forbidLE_nonneg Q_real Q_real_posSemidef v₁
-    · exact flagQuadraticForm_downward_forbidLE_nonneg R_real R_real_posSemidef v₂
-
-  apply forbidLE_trans h₁
+    apply forbidLE_add_QuadraticForm R_real R_real_posSemidef v₂
+    apply forbidLE_add_QuadraticForm Q_real Q_real_posSemidef v₁
+    apply forbidLE_add_QuadraticForm P_real P_real_posSemidef v₀
+    exact forbidLE_refl K3.toFinFlag C5.toFlagAlgebra
+  apply forbidLE_trans quadraticForm_trans
   apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 5)))
+
   rw [C5_toFlagAlgebra_eq]
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   simp [v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   simp [v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
 
   reduce_downward_flagmul
-  rw [forbidLE_rw_left (downward_forbidLE_equal_flags (forbidEq_smul flagMul_FlagAlgebra_4_3_2_6_FlagAlgebra_4_3_2_6))]
-  rw [forbidLE_move_term_left_iff]
 
   dsimp only [one_expand]
   rw [Finset.sum_eq_multiset_sum]
@@ -422,5 +414,91 @@ theorem ErdosPentagon_flagAlgebra_API
     simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
     apply positiveHom_unitVector_ge_zero
   }
+
+section MantelTheorem
+
+-- def K2 : SimpleGraph (Fin 2) := completeGraph (Fin 2)
+-- lemma K2_toFinFlag_eq
+--     : K2.toFinFlag = ⟨2, Flag_2_0_0_1⟩
+--   := by
+--   simp [toFinFlag, K2]
+--   congr
+--   all_goals {
+--     ext i j
+--     fin_cases i <;> fin_cases j <;> simp [Sym2Graph_2_0_0_1, mkEdgeFinset]
+--   }
+-- FlagAlgebra_2_0_0_1 is K2
+
+def M : Matrix (Fin 2) (Fin 2) ℚ :=
+  !![(1 / 2 : ℚ), (-1 / 2: ℚ);
+    (-1 / 2 : ℚ), (1 / 2 : ℚ)]
+noncomputable def M_real : Matrix (Fin 2) (Fin 2) ℝ :=
+  ratMatrixToReal M
+
+def dM : Fin 2 → ℚ :=
+  ![(1 / 2 : ℚ), 0]
+def LM : Matrix (Fin 2) (Fin 2) ℚ :=
+  !![(1 : ℚ), 0;
+   (-1 : ℚ), (1 : ℚ)]
+lemma dM_nonneg (i : Fin 2) : 0 ≤ dM i := by
+  fin_cases i <;> norm_num [dM]
+lemma M_eq_LDL : M = LM * Matrix.diagonal dM * LMᵀ := by
+  decide +kernel
+theorem M_posSemidef : M.PosSemidef := by
+  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM_nonneg M_eq_LDL
+lemma dM_real_nonneg (i : Fin 2) : 0 ≤ (dM i : ℝ) := by
+  exact_mod_cast dM_nonneg i
+lemma M_real_eq_LDL :
+    M_real = (ratMatrixToReal LM * Matrix.diagonal (fun i => (dM i : ℝ))) * (ratMatrixToReal LM)ᵀ := by
+  calc
+    M_real = ratMatrixToReal (LM * Matrix.diagonal dM * LMᵀ) := by
+      simp [M_real, ratMatrixToReal, M_eq_LDL]
+    _ = (ratMatrixToReal LM * Matrix.diagonal (fun i => (dM i : ℝ))) * (ratMatrixToReal LM)ᵀ := by
+      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
+theorem M_real_posSemidef : M_real.PosSemidef := by
+  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM_real_nonneg M_real_eq_LDL
+
+def σ : FlagType (Fin 1) := FlagType_1_0
+noncomputable def v : FlagAlgebraVec σ 2 := ![
+  FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1
+]
+
+load_triangle_density_theorems "LeanFlagAlgebras/ErdosPentagon/Densities/graphs_3_triangle_free_indices.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/ErdosPentagon/Densities/density_3_1_0_from_2_1_0.json"
+load_mul_theorems "LeanFlagAlgebras/ErdosPentagon/Densities/density_3_1_0_from_2_1_0.json"
+
+generate_unitVector_lemmas 3 3
+
+theorem Mantel_flagAlgebra_API
+    : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+  := by
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag]
+            FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M_real v⟧₀
+    := by
+    apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
+    exact forbidLE_refl K3.toFinFlag FlagAlgebra_2_0_0_1
+  apply forbidLE_trans quadraticForm_trans
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 3)))
+
+  simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
+  reduce_downward_flagmul
+
+  dsimp only [one_expand]
+  rw [Finset.sum_eq_multiset_sum]
+  rw [← flagSet_3_0_0_eq_univ]
+  simp [flagSet_3_0_0_val_eq, unlabel_emptyType]
+  simp [default, flagDensity_empty]
+
+  simp [smul_smul, downward_add, downward_smul]
+  norm_num
+  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc]
+  conv =>
+    rhs
+    ac_sort_at
+  simp only [← add_assoc, ← add_smul]
+  norm_num
+  sorry
+
+end MantelTheorem
 
 end ErdosPentagon
