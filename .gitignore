@@ -11,6 +11,9 @@ __pycache__/
 # Claude Code internal files
 .claude/
 
+# Conda environment files
+.conda/
+
 # LaTeX build artifacts (keep .tex sources tracked)
 *.aux
 *.bbl

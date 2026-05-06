@@ -287,20 +287,61 @@ Before iterating, this tactic right-associates the sum with
 `simp only [add_assoc]`, matching the style of the manual proof in the example
 just below. -/
 elab "reduce_downward_flagmul" : tactic => do
-  evalTactic (← `(tactic| simp only [add_assoc]))
+  evalTactic (← `(tactic| try simp only [add_assoc]))
   runReduceDownwardFlagMul
 
 end ReduceDownwardFlagMul
 
 set_option maxRecDepth 1500
 
-example :
-    (downward ((24 / 625 : ℝ) • (FlagAlgebra_4_3_0_0 * FlagAlgebra_4_3_0_0)) +
-    downward ((-36 / 625 : ℝ) • (FlagAlgebra_4_3_0_0 * FlagAlgebra_4_3_0_1)) +
-    (downward ((-36 / 625 : ℝ) • (FlagAlgebra_4_3_0_0 * FlagAlgebra_4_3_0_2)))) ≤[K3.toFinFlag] 0
-  := by
-  reduce_downward_flagmul
-  sorry
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_0
+    : ⟦unitVector ⟨5, Flag_5_0_0_0⟩⟧ = FlagAlgebra_5_0_0_0 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_1
+    : ⟦unitVector ⟨5, Flag_5_0_0_1⟩⟧ = FlagAlgebra_5_0_0_1 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_2
+    : ⟦unitVector ⟨5, Flag_5_0_0_2⟩⟧ = FlagAlgebra_5_0_0_2 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_3
+    : ⟦unitVector ⟨5, Flag_5_0_0_3⟩⟧ = FlagAlgebra_5_0_0_3 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_4
+    : ⟦unitVector ⟨5, Flag_5_0_0_4⟩⟧ = FlagAlgebra_5_0_0_4 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_6
+    : ⟦unitVector ⟨5, Flag_5_0_0_6⟩⟧ = FlagAlgebra_5_0_0_6 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_7
+    : ⟦unitVector ⟨5, Flag_5_0_0_7⟩⟧ = FlagAlgebra_5_0_0_7 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_8
+    : ⟦unitVector ⟨5, Flag_5_0_0_8⟩⟧ = FlagAlgebra_5_0_0_8 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_10
+    : ⟦unitVector ⟨5, Flag_5_0_0_10⟩⟧ = FlagAlgebra_5_0_0_10 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_12
+    : ⟦unitVector ⟨5, Flag_5_0_0_12⟩⟧ = FlagAlgebra_5_0_0_12 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_13
+    : ⟦unitVector ⟨5, Flag_5_0_0_13⟩⟧ = FlagAlgebra_5_0_0_13 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_18
+    : ⟦unitVector ⟨5, Flag_5_0_0_18⟩⟧ = FlagAlgebra_5_0_0_18 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_19
+    : ⟦unitVector ⟨5, Flag_5_0_0_19⟩⟧ = FlagAlgebra_5_0_0_19 := Quotient.out_inj.mp rfl
+@[simp]
+lemma unitVector_FlagAlgebra_5_0_0_25
+    : ⟦unitVector ⟨5, Flag_5_0_0_25⟩⟧ = FlagAlgebra_5_0_0_25 := Quotient.out_inj.mp rfl
+
+/-
+  task 1. Improve reduce_downward_flagmul to handle more cases.
+  task 2. Make tactic to automatically make lemmas like unitVector_FlagAlgebra_5_0_0_0, etc.
+  task 3. Organize computational processes and speed up
+-/
 
 theorem ErdosPentagon_flagAlgebra_API
     : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
@@ -326,26 +367,32 @@ theorem ErdosPentagon_flagAlgebra_API
   simp only [downward_add, add_assoc]
 
   rw [forbidLE_move_add_left_iff]
-  -- rw [Forbid.forbidLE_rw_left_add_right (downward_forbidLE_equal_flags (forbidEq_smul flagMul_FlagAlgebra_4_3_0_0_FlagAlgebra_4_3_0_0))]
-  -- rw [forbidLE_move_add_left_iff]
+  reduce_downward_flagmul
+  rw [forbidLE_rw_left (downward_forbidLE_equal_flags (forbidEq_smul flagMul_FlagAlgebra_4_3_2_6_FlagAlgebra_4_3_2_6))]
+  rw [forbidLE_move_term_left_iff]
 
-  -- dsimp only [one_expand]
-  -- rw [Finset.sum_eq_multiset_sum]
-  -- rw [← flagSet_5_0_0_eq_univ]
-  -- simp [flagSet_5_0_0_val_eq, unlabel_emptyType]
-  -- simp [default, flagDensity_empty]
-  -- reduce_flagmul
-  -- reduce_flagmul_le
-  sorry
+  dsimp only [one_expand]
+  rw [Finset.sum_eq_multiset_sum]
+  rw [← flagSet_5_0_0_eq_univ]
+  simp [flagSet_5_0_0_val_eq, unlabel_emptyType]
+  simp [default, flagDensity_empty]
 
+  simp [smul_smul, downward_add, downward_smul]
+  norm_num
+  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc]
+  conv =>
+    rhs
+    ac_sort_at
+  simp only [← add_assoc, ← add_smul]
+  norm_num
 
-  -- dsimp only [one_expand]
-  -- rw [Finset.sum_eq_multiset_sum]
-  -- rw [← flagSet_5_0_0_eq_univ]
-  -- simp [flagSet_5_0_0_val_eq, unlabel_emptyType]
-
-  -- simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
-  -- simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
-  -- simp [flagQuadraticForm, v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
+  apply forbidLE_of_le
+  intro φ
+  simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
+  apply add_nonneg <;> try apply add_nonneg
+  all_goals {
+    simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
+    apply positiveHom_unitVector_ge_zero
+  }
 
 end ErdosPentagon
