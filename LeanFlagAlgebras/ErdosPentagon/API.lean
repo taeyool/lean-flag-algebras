@@ -83,7 +83,7 @@ corresponding `flagMul_<A>_<B>` theorem from the constants used in the head
 term, and rewrites the head using
 
 ```
-  Forbid.forbidLE_rw_left_add_right (downward_forbidLE_equal_flags
+  Forbid.forbidLE_rw_left_add_right (downward_forbidEq_equal_flags
     (forbidEq_smul flagMul_<A>_<B>))
   forbidLE_move_add_left_iff
 ```
@@ -91,7 +91,7 @@ term, and rewrites the head using
 For the final (right-most) summand it instead uses
 
 ```
-  forbidLE_rw_left (downward_forbidLE_equal_flags (forbidEq_smul flagMul_<A>_<B>))
+  forbidLE_rw_left (downward_forbidEq_equal_flags (forbidEq_smul flagMul_<A>_<B>))
   forbidLE_move_term_left_iff
 ```
 
@@ -254,7 +254,7 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
         let thmId : TSyntax `term := mkIdent thmName
         evalTactic (← `(tactic|
           rw [Forbid.forbidLE_rw_left_add_right
-                (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
+                (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
               forbidLE_move_add_left_iff]))
         return true
       else if hasFlagConstLE head then
@@ -276,7 +276,7 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
         let thmId : TSyntax `term := mkIdent thmName
         evalTactic (← `(tactic|
           rw [forbidLE_rw_left
-                (downward_forbidLE_equal_flags (forbidEq_smul (c := _) $thmId)),
+                (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
               forbidLE_move_term_left_iff]))
         return true
       else if hasFlagConstLE lhs then
@@ -497,6 +497,11 @@ theorem Mantel_flagAlgebra_API
     ac_sort_at
   simp only [← add_assoc, ← add_smul]
   norm_num
+
+  have K2_expand_under_forbid : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+    := by sorry
+
+
   sorry
 
 end MantelTheorem

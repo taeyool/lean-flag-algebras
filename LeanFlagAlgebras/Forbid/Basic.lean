@@ -1125,7 +1125,7 @@ theorem downward_forbidEq_zero
     exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf'))
   · exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf))
 
-theorem downward_forbidLE_equal_flags
+theorem downward_forbidEq_equal_flags
     {F_forbid : FinFlag ∅ₜ} {a b : FlagAlgebra σ}
     (hab : a =[F_forbid] b)
     : ⟦a⟧₀ =[F_forbid] ⟦b⟧₀
