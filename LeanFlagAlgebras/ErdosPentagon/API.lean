@@ -4,6 +4,8 @@ import LeanFlagAlgebras.ErdosPentagon.Lemmas
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
+import LeanFlagAlgebras.MantelTheorem.Lemmas
+
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta Command
 open SimpleGraph Matrix
@@ -469,6 +471,24 @@ load_mul_theorems "LeanFlagAlgebras/ErdosPentagon/Densities/density_3_1_0_from_2
 
 generate_unitVector_lemmas 3 3
 
+lemma K2_expand_under_forbid
+    : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+  := by
+  have h_unit : (FlagAlgebra_3_0_0_3 : FlagAlgebra ∅ₜ) = ⟦unitVector (⟨3, Flag_3_0_0_3⟩ : FinFlag ∅ₜ)⟧
+    := (Quotient.out_inj.mp rfl).symm
+  have hK3_zero : (FlagAlgebra_3_0_0_3 : FlagAlgebra ∅ₜ) =[K3.toFinFlag] 0 := by
+    rw [h_unit]
+    apply unitVector_forbidEq_zero
+    rw [unlabel_emptyType]
+    exact lt_of_le_of_ne
+      (flagListDensity₁_ge_zero K3.toFinFlag.2 Flag_3_0_0_3)
+      (Ne.symm flagDensity1_K3_Flag_3_0_0_3_ne_zero)
+  have h_eq : FlagAlgebra_2_0_0_1 =[K3.toFinFlag]
+      (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + FlagAlgebra_3_0_0_3 :=
+    forbidEq_of_eq MantelTheorem.expand_K2_on_three_vertex_graphs
+  rw [forbidEq_rw_right_add_left hK3_zero, add_zero] at h_eq
+  exact h_eq
+
 theorem Mantel_flagAlgebra_API
     : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
@@ -480,6 +500,7 @@ theorem Mantel_flagAlgebra_API
   apply forbidLE_trans quadraticForm_trans
   apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 3)))
 
+  rw [forbidLE_rw_left_add_right K2_expand_under_forbid]
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
 
@@ -498,11 +519,10 @@ theorem Mantel_flagAlgebra_API
   simp only [← add_assoc, ← add_smul]
   norm_num
 
-  have K2_expand_under_forbid : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
-    := by sorry
-
-
-  sorry
+  apply forbidLE_of_le
+  intro φ
+  simp only [sub_zero, ge_iff_le, one_div, PositiveHom.map_smul, inv_pos, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left]
+  apply positiveHom_unitVector_ge_zero
 
 end MantelTheorem
 
