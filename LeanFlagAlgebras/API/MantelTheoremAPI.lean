@@ -88,11 +88,7 @@ theorem Mantel_flagAlgebra_API
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
 
-  dsimp only [one_expand]
-  rw [Finset.sum_eq_multiset_sum]
-  rw [← flagSet_3_0_0_eq_univ]
-  simp [flagSet_3_0_0_val_eq, unlabel_emptyType]
-  simp [default, flagDensity_empty]
+  expand_one_at 3
 
   simp [smul_smul, downward_add, downward_smul]
   norm_num
@@ -103,9 +99,6 @@ theorem Mantel_flagAlgebra_API
   simp only [← add_assoc, ← add_smul]
   norm_num
 
-  apply forbidLE_of_le
-  intro φ
-  simp only [sub_zero, ge_iff_le, one_div, PositiveHom.map_smul, inv_pos, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left]
-  apply positiveHom_unitVector_ge_zero
+  flag_nonneg
 
 end MantelTheoremAPI

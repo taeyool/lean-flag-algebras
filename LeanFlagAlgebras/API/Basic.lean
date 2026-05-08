@@ -2,7 +2,7 @@ import LeanFlagAlgebras.Forbid.Basic
 
 open FlagAlgebras Forbid
 open SimpleGraph Matrix
-open Lean Elab Command
+open Lean Elab Command Tactic
 
 namespace FlagAlgebras.API
 
@@ -79,5 +79,56 @@ private def generateUnitVectorLemmas (n count : Nat) : CommandElabM Unit := do
 elab_rules : command
   | `(command| generate_unitVector_lemmas $n:num $count:num) => do
       generateUnitVectorLemmas n.getNat count.getNat
+
+/--
+`expand_one_at n` unfolds `one_expand` for a graph of size `n` and reduces
+the resulting Finset sum to a sum over the explicit list of unlabeled flags.
+
+This automates the boilerplate step that appears identically in every flag algebra
+API proof, varying only in `n`:
+
+  dsimp only [one_expand]
+  rw [Finset.sum_eq_multiset_sum]
+  rw [← flagSet_n_0_0_eq_univ]
+  simp [flagSet_n_0_0_val_eq, unlabel_emptyType]
+  simp [default, flagDensity_empty]
+-/
+syntax "expand_one_at" num : tactic
+
+elab_rules : tactic
+  | `(tactic| expand_one_at $n:num) => do
+      let nVal := n.getNat
+      let eq_univ_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSet_{nVal}_0_0_eq_univ")
+      let val_eq_id  : TSyntax `term := mkIdent (Name.mkSimple s!"flagSet_{nVal}_0_0_val_eq")
+      let eq_univ_rw  ← `(Lean.Parser.Tactic.rwRule| ← $eq_univ_id:term)
+      let val_eq_simp ← `(Lean.Parser.Tactic.simpLemma| $val_eq_id:term)
+      evalTactic (← `(tactic| dsimp only [one_expand]))
+      evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum]))
+      evalTactic (← `(tactic| rw [$eq_univ_rw]))
+      evalTactic (← `(tactic| simp [$val_eq_simp, unlabel_emptyType]))
+      evalTactic (← `(tactic| simp [default, flagDensity_empty]))
+
+/--
+`flag_nonneg` closes goals of the form `f ≤[F_forbid] g` when `g - f` is a
+non-negative linear combination of FlagAlgebra unit vectors (of the form `c • ⟦unitVector F⟧`).
+
+It automates the standard closing step in flag algebra API proofs:
+1. Reduces to a semantic inequality via `forbidLE_of_le`
+2. Distributes `φ` over `+` using `PositiveHom.map_add`
+3. Decomposes the sum into individual non-negativity goals using `add_nonneg`
+4. Closes each leaf with `positiveHom_unitVector_ge_zero`
+-/
+macro "flag_nonneg" : tactic =>
+  `(tactic| (
+    apply forbidLE_of_le
+    intro φ
+    simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
+    repeat apply add_nonneg
+    all_goals (
+      simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left,
+                 mul_nonneg_iff_of_pos_left, one_div, inv_pos]
+      apply positiveHom_unitVector_ge_zero
+    )
+  ))
 
 end FlagAlgebras.API

@@ -32,14 +32,9 @@ theorem ErdosPentagon_flagAlgebra_API
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   simp [v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   simp [v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
-
   reduce_downward_flagmul
 
-  dsimp only [one_expand]
-  rw [Finset.sum_eq_multiset_sum]
-  rw [← flagSet_5_0_0_eq_univ]
-  simp [flagSet_5_0_0_val_eq, unlabel_emptyType]
-  simp [default, flagDensity_empty]
+  expand_one_at 5
 
   simp [smul_smul, downward_add, downward_smul]
   norm_num
@@ -50,13 +45,6 @@ theorem ErdosPentagon_flagAlgebra_API
   simp only [← add_assoc, ← add_smul]
   norm_num
 
-  apply forbidLE_of_le
-  intro φ
-  simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
-  apply add_nonneg <;> try apply add_nonneg
-  all_goals {
-    simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
-    apply positiveHom_unitVector_ge_zero
-  }
+  flag_nonneg
 
 end ErdosPentagon
