@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.ErdosPentagon.FlagDef
+import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import Lean.Data.Json
 import Mathlib.Tactic
@@ -7,7 +7,7 @@ open Lean Elab Command Json
 open FlagAlgebras
 open FlagAlgebras.Compute
 
-namespace ErdosPentagon
+namespace Flags.Densities
 
 structure DensityJsonData where
   hostTag : String
@@ -232,4 +232,4 @@ elab "load_triangle_density_theorems" filename:str : command => do
 
   logInfo s!"Generated triangle density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
 
-end ErdosPentagon
+end Flags.Densities

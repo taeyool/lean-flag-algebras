@@ -1,5 +1,5 @@
-import LeanFlagAlgebras.ErdosPentagon.FlagDef
-import LeanFlagAlgebras.ErdosPentagon.Densities.DensityLoader
+import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.Forbid.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
@@ -8,7 +8,7 @@ open Lean Elab Command Json
 open FlagAlgebras Forbid
 open FlagAlgebras.Compute
 
-namespace ErdosPentagon
+namespace Flags.Densities
 
 structure MulJsonData where
   hostTag : String
@@ -247,4 +247,4 @@ elab "load_mul_theorems" filename:str : command => do
 
   logInfo s!"Generated {generated} multiplication theorem(s) from density JSON: {filename.getString}"
 
-end ErdosPentagon
+end Flags.Densities

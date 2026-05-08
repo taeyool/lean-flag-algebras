@@ -1,27 +1,17 @@
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.Forbid.TuranDensity
-import LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef
+import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.ErdosPentagon.MatrixDef
 
 open FlagAlgebras SimpleGraph Compute
 
 namespace ErdosPentagon
 
-def K3 : SimpleGraph (Fin 3) := completeGraph (Fin 3)
 def C5 : SimpleGraph (Fin 5) := {
   Adj i j := match i, j with
     | 0, 1 | 1, 0 | 1, 2 | 2, 1 | 2, 3 | 3, 2 | 3, 4 | 4, 3 | 4, 0 | 0, 4 => true
     | _, _ => false
 }
-
-lemma K3_toFinFlag_eq
-    : K3.toFinFlag = ⟨3, Flag_3_0_0_3⟩
-  := by
-  simp [toFinFlag, K3]
-  congr
-  all_goals {
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_3_0_0_3, mkEdgeFinset]
-  }
 
 lemma C5_toFlagAlgebra_eq
     : C5.toFlagAlgebra = FlagAlgebra_5_0_0_19

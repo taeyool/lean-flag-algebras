@@ -1,7 +1,6 @@
-import LeanFlagAlgebras.ErdosPentagon.FlagMul
+import Mathlib.Tactic
 import Mathlib.Tactic.Conv
 
-open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
 /-- Linear term represented as `(base, coeff)` meaning `coeff • base`. -/
@@ -200,7 +199,7 @@ private def proveEqByAC (lhs rhs : Expr) : TacticM Expr := do
   | _ => pure ()
   evalTactic (← `(tactic|
     (try dsimp;
-     try (simp [sub_eq_add_neg, rat_smul_eq_real_smul, smul_eq_mul,
+     try (simp [sub_eq_add_neg, smul_eq_mul,
                 one_smul, neg_one_smul, neg_smul,
                 add_assoc, add_left_comm, add_comm]);
      first

@@ -1,9 +1,11 @@
 -- Utils
 import LeanFlagAlgebras.Utils.Combinations
 import LeanFlagAlgebras.Utils.LinExtension
+import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
 import LeanFlagAlgebras.Utils.MultinomialCoefficient
 import LeanFlagAlgebras.Utils.Partitions
 import LeanFlagAlgebras.Utils.QuotientGraph
+import LeanFlagAlgebras.Utils.SortTactic
 import LeanFlagAlgebras.Utils.SubgraphUtil
 import LeanFlagAlgebras.Utils.TacticChoose
 
@@ -30,6 +32,14 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 -- Flags
 import LeanFlagAlgebras.Flags.FlagLoader
 import LeanFlagAlgebras.Flags.FlagDef
+import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.MulLoader
+
+-- API
+import LeanFlagAlgebras.API.Basic
+import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.ErdosPentagonAPI
+import LeanFlagAlgebras.API.MantelTheoremAPI
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef
@@ -47,17 +57,14 @@ import LeanFlagAlgebras.Turan.GeneralizedTuran
 -- Forbid
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Forbid.TuranDensity
+import LeanFlagAlgebras.Forbid.CommonGraphs
 
  -- ErdosPentagon
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
-import LeanFlagAlgebras.ErdosPentagon.Matrix.PosSemiDef
-import LeanFlagAlgebras.ErdosPentagon.Densities.DensityLoader
-import LeanFlagAlgebras.ErdosPentagon.MulLoader
+import LeanFlagAlgebras.ErdosPentagon.MatrixDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.ErdosPentagon.SortTactic
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 import LeanFlagAlgebras.ErdosPentagon.ErdosPentagon
-import LeanFlagAlgebras.ErdosPentagon.API
 
 -- Logic
 import LeanFlagAlgebras.Logic.Defs

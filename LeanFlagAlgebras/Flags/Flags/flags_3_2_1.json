@@ -1,0 +1,85 @@
+{
+  "n": 3,
+  "k": 2,
+  "type_num": 1,
+  "type_edges": [
+    [
+      0,
+      1
+    ]
+  ],
+  "flags": [
+    {
+      "underlying_graph_num": 1,
+      "edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "type_indices": [
+        0,
+        1
+      ],
+      "downward_coeff": "1/3"
+    },
+    {
+      "underlying_graph_num": 2,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "type_indices": [
+        0,
+        1
+      ],
+      "downward_coeff": "1/3"
+    },
+    {
+      "underlying_graph_num": 2,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "type_indices": [
+        1,
+        0
+      ],
+      "downward_coeff": "1/3"
+    },
+    {
+      "underlying_graph_num": 3,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "type_indices": [
+        0,
+        1
+      ],
+      "downward_coeff": "1"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
+import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.ErdosPentagon.SortTactic
+import LeanFlagAlgebras.Utils.SortTactic
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
