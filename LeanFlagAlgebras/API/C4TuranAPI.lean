@@ -114,12 +114,7 @@ theorem C4_flagAlgebra_API
   expand_one_at 4
 
   simp [smul_smul, downward_add, downward_smul]
-  norm_num
-  simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc]
-  conv =>
-    rhs
-    ac_sort_at
-  simp only [← add_assoc, ← add_smul]
-  norm_num
+  ac_sort_rhs_pipeline
 
+  apply forbidLE_of_le
   flag_nonneg

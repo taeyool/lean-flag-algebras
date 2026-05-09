@@ -222,40 +222,37 @@ elab "preview_flagsum_nf" : tactic =>
     logInfo m!"[flagsum-nf] LHS: {lhsNorm}"
     logInfo m!"[flagsum-nf] RHS: {rhsNorm}"
 
-/-- Sort only the left side of `lhs = rhs` into `lhs_sorted = rhs`. -/
-elab "sort_lhs" : tactic =>
+/-- Shared implementation: normalizes the current conv focus. -/
+private def sortNormalizeConv : TacticM Unit :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
-    let (lhs, rhs) ← getEqSides target
-    let lhsSorted ← normalizeLinearExpr lhs
-    let hLhs ← proveEqByAC lhs lhsSorted
-    replaceGoalUsingLhsEq goal lhsSorted rhs hLhs
+    let (focus, rhs) ← getEqSides target
+    let focusSorted ← normalizeLinearExpr focus
+    let h ← proveEqByAC focus focusSorted
+    replaceGoalUsingLhsEq goal focusSorted rhs h
 
-/-- Sort only the right side: `lhs = rhs` becomes `lhs = rhs_sorted`. -/
-elab "sort_rhs" : tactic =>
-  withMainContext do
-    let goal ← getMainGoal
-    let target ← goal.getType
-    let (lhs, rhs) ← getEqSides target
-    let rhsSorted ← normalizeLinearExpr rhs
-    let hRhs ← proveEqByAC rhs rhsSorted
-    replaceGoalUsingRhsEq goal lhs rhsSorted hRhs
+/-- Normalize the current conv focus. Use inside `conv_lhs`, `conv_rhs`, or any `conv` block. -/
+elab "sort_here" : conv => sortNormalizeConv
 
-/-- Sort both sides: `lhs = rhs` becomes `lhs_sorted = rhs_sorted`. -/
-elab "sort" : tactic =>
-  do
-    evalTactic (← `(tactic| sort_lhs; sort_rhs))
+/-- Sort only the left side. Works on any relation (=, ≤, <, …). -/
+elab "sort_lhs" : tactic => do
+  evalTactic (← `(tactic| conv_lhs => sort_here))
 
-/-- `conv` entry for `sort_lhs`. -/
-elab "sort_at" : conv =>
-  do
-    evalTactic (← `(tactic| sort_lhs))
+/-- Sort only the right side. Works on any relation (=, ≤, <, …). -/
+elab "sort_rhs" : tactic => do
+  evalTactic (← `(tactic| conv_rhs => sort_here))
+
+/-- Sort both sides. Works on any relation (=, ≤, <, …). -/
+elab "sort" : tactic => do
+  evalTactic (← `(tactic| sort_lhs; sort_rhs))
+
+/-- `conv` entry: normalize the current focus (alias for `sort_here`). -/
+elab "sort_at" : conv => sortNormalizeConv
 
 /-- Timed `conv` entry for `sort_at` (logs elapsed ms). -/
 elab "sort_at_timer" : conv => do
-  withTimer "sort_at" <|
-    evalTactic (← `(tactic| sort_lhs))
+  withTimer "sort_at" sortNormalizeConv
 
 /-! ## 3) Definitions for `ac_sort` and `ac_sort` Implementation -/
 
@@ -311,40 +308,37 @@ private def proveEqByAddAC (lhs rhs : Expr) : TacticM Expr := do
   setGoals savedGoals
   instantiateMVars mvar
 
-/-- Swap-based sort on LHS using only add AC rewrites. -/
-elab "ac_sort_lhs" : tactic =>
+/-- Shared implementation: normalizes the current conv focus using add-AC only. -/
+private def acSortNormalizeConv : TacticM Unit :=
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
-    let (lhs, rhs) ← getEqSides target
-    let lhsSorted ← normalizeByAddPermutation lhs
-    let hLhs ← proveEqByAddAC lhs lhsSorted
-    replaceGoalUsingLhsEq goal lhsSorted rhs hLhs
+    let (focus, rhs) ← getEqSides target
+    let focusSorted ← normalizeByAddPermutation focus
+    let h ← proveEqByAddAC focus focusSorted
+    replaceGoalUsingLhsEq goal focusSorted rhs h
 
-/-- Swap-based sort on RHS using only add AC rewrites. -/
-elab "ac_sort_rhs" : tactic =>
-  withMainContext do
-    let goal ← getMainGoal
-    let target ← goal.getType
-    let (lhs, rhs) ← getEqSides target
-    let rhsSorted ← normalizeByAddPermutation rhs
-    let hRhs ← proveEqByAddAC rhs rhsSorted
-    replaceGoalUsingRhsEq goal lhs rhsSorted hRhs
+/-- Normalize the current conv focus using add-AC. Use inside `conv_lhs`, `conv_rhs`, etc. -/
+elab "ac_sort_here" : conv => acSortNormalizeConv
 
-/-- Swap-based sort on both sides. -/
-elab "ac_sort" : tactic =>
-  do
-    evalTactic (← `(tactic| ac_sort_lhs; ac_sort_rhs))
+/-- Swap-based sort on LHS. Works on any relation (=, ≤, <, …). -/
+elab "ac_sort_lhs" : tactic => do
+  evalTactic (← `(tactic| conv_lhs => ac_sort_here))
 
-/-- `conv` entry for `ac_sort_lhs`. -/
-elab "ac_sort_at" : conv =>
-  do
-    evalTactic (← `(tactic| ac_sort_lhs))
+/-- Swap-based sort on RHS. Works on any relation (=, ≤, <, …). -/
+elab "ac_sort_rhs" : tactic => do
+  evalTactic (← `(tactic| conv_rhs => ac_sort_here))
+
+/-- Swap-based sort on both sides. Works on any relation (=, ≤, <, …). -/
+elab "ac_sort" : tactic => do
+  evalTactic (← `(tactic| ac_sort_lhs; ac_sort_rhs))
+
+/-- `conv` entry: normalize current focus using add-AC (alias for `ac_sort_here`). -/
+elab "ac_sort_at" : conv => acSortNormalizeConv
 
 /-- Timed `conv` entry for `ac_sort_at` (logs elapsed ms). -/
 elab "ac_sort_at_timer" : conv => do
-  withTimer "ac_sort_at" <|
-    evalTactic (← `(tactic| ac_sort_lhs))
+  withTimer "ac_sort_at" acSortNormalizeConv
 
 /--
 Utility `conv` entry around `ac_sort_at`:
@@ -353,14 +347,14 @@ Utility `conv` entry around `ac_sort_at`:
 Use this inside `conv` when you want to normalize arithmetic first and then
 perform add-AC sorting on the focused expression.
 -/
-elab "ac_sort_at_pipeline" : conv =>
-  do
-    evalTactic (← `(tactic|
-      (try norm_num;
-       try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]);
-       ac_sort_lhs;
-       try (simp only [← add_assoc, ← add_smul]);
-       try norm_num)))
+elab "ac_sort_at_pipeline" : conv => do
+  evalTactic (← `(tactic|
+    (try norm_num;
+     try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
+  acSortNormalizeConv
+  evalTactic (← `(tactic|
+    (try (simp only [← add_assoc, ← add_smul]);
+     try norm_num)))
 
 /--
 Run the common pipeline on the left side of an equality goal:

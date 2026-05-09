@@ -120,7 +120,6 @@ It automates the standard closing step in flag algebra API proofs:
 -/
 macro "flag_nonneg" : tactic =>
   `(tactic| (
-    apply forbidLE_of_le
     intro φ
     simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
     repeat apply add_nonneg
