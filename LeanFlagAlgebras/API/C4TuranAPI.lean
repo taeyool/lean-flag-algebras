@@ -10,6 +10,8 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
+namespace C4Turan
+
 def M₁ : Matrix (Fin 4) (Fin 4) ℚ :=
   !![(3 / 8 : ℚ), 0, 0, (-3 / 8: ℚ);
       0, 0, 0, 0;
@@ -75,9 +77,9 @@ theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
 
 load_triangle_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_triangle_free_indices.json"
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
 
 
 
@@ -118,3 +120,5 @@ theorem C4_flagAlgebra_API
 
   apply forbidLE_of_le
   flag_nonneg
+
+end C4Turan

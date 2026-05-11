@@ -40,6 +40,9 @@ import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
 import LeanFlagAlgebras.API.ErdosPentagonAPI
 import LeanFlagAlgebras.API.MantelTheoremAPI
+import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.C4TuranAPI
+import LeanFlagAlgebras.API.K4freeP4
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef

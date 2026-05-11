@@ -8,13 +8,13 @@ namespace ErdosPentagon
 load_triangle_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_5_triangle_free_indices.json"
 
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0.json"
 
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1.json"
 
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2.json"
 
 #print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
 

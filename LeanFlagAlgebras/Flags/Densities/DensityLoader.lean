@@ -18,6 +18,10 @@ structure TriangleFreeIndexJsonData where
   totalGraphs : Nat
   triangleFreeGraphIndices : Array Nat
 
+structure K4FreeIndexJsonData where
+  totalGraphs : Nat
+  k4FreeGraphIndices : Array Nat
+
 def jsonNumberToNat? (x : JsonNumber) : Option Nat :=
   if x.exponent = 0 then
     x.mantissa.toNat?
@@ -122,6 +126,46 @@ def parseTriangleFreeIndexJsonFile (path : System.FilePath) : CommandElabM Trian
   pure {
     totalGraphs := totalGraphs
     triangleFreeGraphIndices := triangleFreeGraphIndices
+  }
+
+def parseNFromK4FreePath (path : System.FilePath) : CommandElabM Nat := do
+  let some fileName := path.fileName
+    | throwError s!"Could not extract filename from path: {path}"
+  let suffix := "_k4_free_indices.json"
+
+  let nSlice? : Option String :=
+    if fileName.startsWith "graphs_" && fileName.endsWith suffix then
+      some <| ((fileName.drop 7).dropEnd suffix.length).toString
+    else if fileName.startsWith "graph_" && fileName.endsWith suffix then
+      some <| ((fileName.drop 6).dropEnd suffix.length).toString
+    else
+      none
+
+  let some nSlice := nSlice?
+    | throwError s!"Expected filename of the form graph_n_k4_free_indices.json or graphs_n_k4_free_indices.json, but got: {fileName}"
+  let some n := nSlice.toNat?
+    | throwError s!"Failed to parse n from filename: {fileName}"
+  pure n
+
+def parseK4FreeIndexJsonFile (path : System.FilePath) : CommandElabM K4FreeIndexJsonData := do
+  let content ← liftIO <| IO.FS.readFile path
+  let json ← match Json.parse content with
+    | .ok j => pure j
+    | .error err => throwError s!"JSON parse error: {err}"
+
+  let totalGraphsJson ← match json.getObjVal? "total_graphs" with
+    | Except.ok v => pure v
+    | _ => throwError "Missing or invalid field 'total_graphs'"
+  let totalGraphs ← parseNatFromJson totalGraphsJson "total_graphs"
+
+  let k4FreeJson ← match json.getObjVal? "k4_free_graph_indices" with
+    | Except.ok v => pure v
+    | _ => throwError "Missing or invalid field 'k4_free_graph_indices'"
+  let k4FreeGraphIndices ← parseNatArrayFromJson k4FreeJson "k4_free_graph_indices"
+
+  pure {
+    totalGraphs := totalGraphs
+    k4FreeGraphIndices := k4FreeGraphIndices
   }
 
 def densityValueToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
@@ -231,5 +275,58 @@ elab "load_triangle_density_theorems" filename:str : command => do
         generatedNeZero := generatedNeZero + 1
 
   logInfo s!"Generated triangle density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
+
+elab "load_k4_density_theorems" filename:str : command => do
+  let path := System.FilePath.mk filename.getString
+  let n ← parseNFromK4FreePath path
+  let data ← parseK4FreeIndexJsonFile path
+
+  for i in data.k4FreeGraphIndices do
+    if i >= data.totalGraphs then
+      throwError s!"k4_free_graph_indices contains out-of-range index {i} (total_graphs = {data.totalGraphs})"
+
+  let mut generatedEqZero : Nat := 0
+  let mut generatedNeZero : Nat := 0
+
+  for i in [0:data.totalGraphs] do
+    let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
+    let isK4Free := natArrayContains data.k4FreeGraphIndices i
+
+    let env := (← getEnv)
+    if ¬ env.contains flagName.getId then
+      throwError s!"Missing definition: {flagName.getId}"
+
+    if isK4Free then
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K4_Flag_{n}_0_0_{i}_eq_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : flagDensity₁ K4.toFinFlag.2 $flagName = 0
+            := by
+            rw [K4_toFinFlag_eq]
+            unfold $flagName
+            simp [Flag_4_0_0_10]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedEqZero := generatedEqZero + 1
+    else
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K4_Flag_{n}_0_0_{i}_ne_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : ¬ flagDensity₁ K4.toFinFlag.2 $flagName = 0
+            := by
+            rw [K4_toFinFlag_eq]
+            unfold $flagName
+            simp [Flag_4_0_0_10]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedNeZero := generatedNeZero + 1
+
+  logInfo s!"Generated K4 density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
 
 end Flags.Densities

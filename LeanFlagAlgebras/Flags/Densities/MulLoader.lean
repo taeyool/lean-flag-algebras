@@ -17,12 +17,52 @@ structure MulJsonData where
   patternTriangleFreeIndices : Array Nat
   densities : Array Json
 
+structure K4FreeMulJsonData where
+  hostTag : String
+  patternTag : String
+  hostK4FreeIndices : Array Nat
+  patternK4FreeIndices : Array Nat
+  densities : Array Json
+
 def parseNatArrayFromField (json : Json) (fieldName : String) : CommandElabM (Array Nat) := do
   let arr <-
     match json.getObjVal? fieldName with
     | Except.ok (.arr a) => pure a
     | _ => throwError s!"Missing or invalid field '{fieldName}'"
   arr.mapM (fun j => parseNatFromJson j fieldName)
+
+def parseK4FreeMulJsonFile (path : System.FilePath) : CommandElabM K4FreeMulJsonData := do
+  let content <- liftIO <| IO.FS.readFile path
+  let json <-
+    match Json.parse content with
+    | .ok j => pure j
+    | .error err => throwError s!"JSON parse error: {err}"
+
+  let hostTag <-
+    match json.getObjVal? "host" with
+    | Except.ok (.str s) => pure s
+    | _ => throwError "Missing or invalid field 'host'"
+
+  let patternTag <-
+    match json.getObjVal? "pattern" with
+    | Except.ok (.str s) => pure s
+    | _ => throwError "Missing or invalid field 'pattern'"
+
+  let hostK4FreeIndices <- parseNatArrayFromField json "host_k4_free_indices"
+  let patternK4FreeIndices <- parseNatArrayFromField json "pattern_k4_free_indices"
+
+  let densities <-
+    match json.getObjVal? "densities" with
+    | Except.ok (.arr a) => pure a
+    | _ => throwError "Missing or invalid field 'densities'"
+
+  pure ({
+    hostTag := hostTag
+    patternTag := patternTag
+    hostK4FreeIndices := hostK4FreeIndices
+    patternK4FreeIndices := patternK4FreeIndices
+    densities := densities
+  } : K4FreeMulJsonData)
 
 def parseMulJsonFile (path : System.FilePath) : CommandElabM MulJsonData := do
   let content <- liftIO <| IO.FS.readFile path
@@ -150,7 +190,7 @@ private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax 
   | _ =>
       throwError s!"Could not extract RHS constant name from theorem: {thmName}"
 
-elab "load_mul_theorems" filename:str : command => do
+elab "load_triangle_free_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path
   let patternTriple <- parseTagTriple data.patternTag
@@ -246,5 +286,104 @@ elab "load_mul_theorems" filename:str : command => do
         generated := generated + 1
 
   logInfo s!"Generated {generated} multiplication theorem(s) from density JSON: {filename.getString}"
+
+elab "load_k4_free_mul_theorems" filename:str : command => do
+  let path := System.FilePath.mk filename.getString
+  let data <- parseK4FreeMulJsonFile path
+  let patternTriple <- parseTagTriple data.patternTag
+  let hostTriple <- parseTagTriple data.hostTag
+  let patternSize := patternTriple.1
+  let patternN0 := patternTriple.2.1
+  let hostSize := hostTriple.1
+  let hostN0 := hostTriple.2.1
+  if patternN0 != hostN0 then
+    throwError s!"Pattern and host tags use different n0: {data.patternTag} vs {data.hostTag}"
+  let patternFlagTypeName <- parseFlagTypeNameFromTag data.patternTag
+  let hostFlagTypeName <- parseFlagTypeNameFromTag data.hostTag
+  if patternFlagTypeName != hostFlagTypeName then
+    throwError s!"Pattern and host tags use different flag types: {data.patternTag} vs {data.hostTag}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let mut generated : Nat := 0
+
+  for i in data.patternK4FreeIndices do
+    for j in data.patternK4FreeIndices do
+      let iOrd := if i <= j then i else j
+      let jOrd := if i <= j then j else i
+      let mut rhsTerms : Array (TSyntax `term) := #[]
+      for row in data.densities do
+        let parsed <- parseDensityRow row
+        let p1 := parsed.1
+        let p2 := parsed.2.1
+        let h := parsed.2.2.1
+        let num := parsed.2.2.2.1
+        let den := parsed.2.2.2.2
+        if p1 = iOrd && p2 = jOrd && natArrayContains data.hostK4FreeIndices h && num != 0 then
+          let hostName := Name.mkSimple s!"FlagAlgebra_{data.hostTag}_{h}"
+          let env <- getEnv
+          if !(env.contains hostName) then
+            throwError s!"Missing definition: {hostName}"
+          let t <- coeffSmulFlagTerm num den hostName
+          rhsTerms := rhsTerms.push t
+
+      let rhs <- sumTerms patternFlagTypeName rhsTerms
+
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{j}")
+      let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{data.patternTag}_{iOrd}")
+      let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{data.patternTag}_{jOrd}")
+      let flagSetEqUniv := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_eq_univ")
+      let flagSetValEq := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_val_eq")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{data.patternTag}_{i}_FlagAlgebra_{data.patternTag}_{j}")
+
+      let env <- getEnv
+      if !(env.contains lhs1.getId) then
+        throwError s!"Missing definition: {lhs1.getId}"
+      if !(env.contains lhs2.getId) then
+        throwError s!"Missing definition: {lhs2.getId}"
+      if !(env.contains flagOrd1.getId) then
+        throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(env.contains flagOrd2.getId) then
+        throwError s!"Missing definition: {flagOrd2.getId}"
+
+      if !(env.contains thmName.getId) then
+        if i <= j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K4.toFinFlag] $rhs
+              := by
+              apply forbidEq_trans
+                (unitVector_quot_mul_forbidEq_sum K4.toFinFlag
+                  ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                  ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                  $(Quote.quote hostSize)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              sorry
+              -- exact forbidEq_refl K4.toFinFlag _
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K4.toFinFlag] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEq_trans
+                (unitVector_quot_mul_forbidEq_sum K4.toFinFlag
+                  ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                  ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                  $(Quote.quote hostSize)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              sorry
+              -- exact forbidEq_refl K4.toFinFlag _
+          ))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} K4-free multiplication theorem(s) from density JSON: {filename.getString}"
 
 end Flags.Densities

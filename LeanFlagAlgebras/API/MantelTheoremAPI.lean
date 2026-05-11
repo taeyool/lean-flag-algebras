@@ -48,7 +48,7 @@ noncomputable def v : FlagAlgebraVec σ 2 := ![
 
 load_triangle_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_triangle_free_indices.json"
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
-load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
+load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
 
 generate_unitVector_lemmas 3 3
 
