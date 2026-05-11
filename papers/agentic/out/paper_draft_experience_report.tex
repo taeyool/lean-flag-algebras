@@ -1799,9 +1799,9 @@ proof into a transitive chain of quadratic-form additions, one per type.
 \paragraph{\lean{reduce\_downward\_flagmul}.}
 The tactic \lean{reduce\_downward\_flagmul}, in
 \lean{API/ReduceFlagMul.lean}, looks at a goal of the form
-\[
-  \lean{downward (c1 * (A1 * B1)) + downward (c2 * (A2 * B2)) + ... <=[F_forbid] rhs}
-\]
+\begin{center}
+\lean{downward (c1 * (A1 * B1)) + downward (c2 * (A2 * B2)) + ... <=[F\_forbid] rhs}
+\end{center}
 and repeatedly rewrites each head summand using the precomputed
 \lean{flagMul\_<A>\_<B>} theorem from the multiplication tables.  The
 implementation parses the head term, locates the appropriate flagMul lemma
