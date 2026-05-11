@@ -252,8 +252,16 @@ Section-Specific Instructions:
 - The naming convention as machine-readable encoding is a design insight that distinguishes this work — explain it clearly and connect it to certified compilation ideas.
 - Include the concrete example of prove_flag_expand_with_forbidden_flag usage.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
 
-Reference Section Draft (your primary starting point — improve and refine this):
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
+
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:tactics}
 
@@ -289,6 +297,18 @@ the flag index in the name, \lean{ac\_sort\_pipeline} computes sort keys
 entirely in the fast elaboration path, without reducing any term in the kernel.
 The approach is similar to the use of canonical normal forms in certified
 compilers: the name is a ``normal form'' that tactics can manipulate directly.
+
+\begin{example}[A name as a tiny certificate]
+  The name \lean{FlagAlgebra\_3\_0\_0\_2} is not just a human mnemonic.  It says
+  that the term is an untyped flag-algebra basis element (\lean{k = 0}), living
+  at size $3$, with canonical index $2$ among the generated representatives.
+  A tactic that sees this constant already knows where it belongs in the
+  normal order of a sum, which generated expansion lemma to try, and which
+  multiplication-table entry can mention it.  In other words, the name carries
+  the same kind of lightweight metadata that a compiler might attach to an
+  intermediate-language node.  The difference is that here the metadata is
+  available to the Lean elaborator without any type-class search.
+\end{example}
 
 \subsection{Linear Normalization: \lean{ac\_sort\_pipeline}}
 
@@ -385,6 +405,16 @@ example : FlagAlgebra_3_0_0_3 =a 0
   := by prove_flag_expand_with_forbidden_flag 3
 \end{lstlisting}
 
+This example is the Mantel expansion above in executable clothing.  The goal
+says: assuming the triangle flag \lean{FlagAlgebra\_3\_0\_0\_3} has value zero,
+prove that the edge flag expands as a weighted sum of the one-edge and
+two-edge three-vertex graphs.  The human proof is a one-line counting argument:
+among the three vertex pairs, the one-edge graph contains one edge and the
+two-edge path contains two.  The Lean proof has to find the right generated
+expansion lemma, instantiate it at size $3$, remove the forbidden triangle
+term, and normalize scalar arithmetic.  The point of the tactic is to make the
+formal proof resemble the human explanation again.
+
 \paragraph{Key challenge.}
 The tactic must be robust to the syntactic variation that Lean's elaborator
 introduces: after unification and implicit argument resolution, the same flag
@@ -396,8 +426,9 @@ structural equality when comparing flag terms.  This required significant
 experimentation with Lean~4's metaprogramming API.
 ---END REFERENCE DRAFT---
 
-Produce a publication-grade improvement plan (not a terse outline).
-If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.
+Address each feedback point listed in 'Feedback to Address' above.
+For each point, state the exact change to make. Do not silently ignore any point.
+Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).
 The plan must enforce the same quality bar as exemplar formalization papers.
 
 Hard gate: fail the plan if any Section Blueprint item is missing.
@@ -532,5 +563,6 @@ Output format (JSON only):
   "claim_plan": ["..."],
   "evidence_needs": ["..."],
   "gaps_in_reference_draft": ["..."],
-  "risk_checks": ["..."]
+  "risk_checks": ["..."],
+  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}
 }

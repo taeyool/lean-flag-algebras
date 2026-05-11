@@ -252,6 +252,14 @@ Section-Specific Instructions:
 - The 'no axioms beyond the kernel' paragraph is important — keep and expand it to explain the trust chain precisely.
 - The lower bound via blow-up of C5 is mathematically non-trivial — give it adequate space.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read writer_output.md first.
 
 Selected evidence:
@@ -281,16 +289,19 @@ Selected evidence:
 24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
-Reference Section Draft (your primary starting point — improve and refine this):
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:results}
 
 Using the formalization infrastructure described in the preceding sections,
-we give formally complete proofs of two theorems in extremal combinatorics.
-Both proofs are machine-checked in Lean~4.  The proof paths of the main
-theorems contain no \lean{sorry} placeholders, although some commented
-auxiliary generalization lemmas outside those proof paths remain unfinished
-(see \S\ref{sec:intensional}).
+we give formally complete proof paths for two flagship theorems in extremal
+combinatorics: Mantel's theorem and the Erd\H{o}s pentagon theorem.  Both
+proof paths are machine-checked in Lean~4 and contain no \lean{sorry}
+placeholders, although some commented auxiliary generalization lemmas outside
+those proof paths remain unfinished (see \S\ref{sec:intensional}).  The active
+library also contains two smaller Goodman-style results; we mention them after
+Mantel's theorem to make the repository scope explicit, but the pentagon theorem
+is the main stress test for the reflection and SDP infrastructure.
 
 \subsection{Mantel's Theorem}
 
@@ -332,6 +343,17 @@ identity, \lean{ac\_sort\_pipeline} to normalize the resulting linear
 combination, and \lean{flagQuadraticForm\_nonneg} to confirm the semantic
 non-negativity.
 
+\paragraph{Additional Goodman-style consequences.}
+The active \lean{MantelTheorem/} directory also contains two small
+flag-algebraic inequalities proved with the same basic infrastructure:
+\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
+$K_3 \geq K_2(2K_2-\mathbf{1})$, and
+\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
+$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
+These results are not needed for the pentagon proof, but they demonstrate that
+the formalized algebraic layer is not specialized solely to the two headline
+theorems.
+
 \subsection{The Erd\H{o}s Pentagon Theorem}
 
 The main result is:
@@ -352,7 +374,8 @@ The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag algebra
 inequality $C_5 \leq_{[K_3]} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
 $C_5$-density is at most $24/625$ under the $K_3$-free assumption.
 The proof exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$
-(one per 1-vertex type, each $8\times 8$) and shows that the sum of the
+(one per 1-vertex type, of sizes $8\times 8$, $6\times 6$, and $5\times 5$)
+and shows that the sum of the
 corresponding quadratic forms, after downward-averaging, equals
 $\frac{24}{625} \cdot \mathbf{1} - [C_5]$.
 
@@ -378,40 +401,73 @@ theorem ErdosPentagon_Turan_lowerBound
 \end{lstlisting}
 is proved by an explicit construction.
 
-\emph{Note on the following code.}  The snippets below are simplified
-schematic Lean illustrating the proof strategy; they are not verbatim
-repository excerpts.  In particular, the \lean{blowUp} definition uses
-informal notation (\lean{x}, \lean{and}, \lean{!=}) for readability, the
-triangle-freeness theorem appears under a different name in the repository,
-and the limit lemma is schematic.  We define the blow-up of a graph
-schematically as:
+\emph{Code presentation note.}  The snippets below are ASCII-rendered excerpts
+from \lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  We use
+\lean{Prod V (Fin n)} instead of Lean's product notation to keep the listing
+portable, but the identifiers and proof structure match the repository.
+The blow-up construction is:
 \begin{lstlisting}
--- schematic; see LeanFlagAlgebras/ErdosPentagon/ for the exact definition
-def blowUp (G : SimpleGraph V) (n : Nat) : SimpleGraph (V × Fin n) :=
-  { Adj := fun v w => G.Adj v.1 w.1 ∧ v ≠ w, ... }
+def blowUp
+    {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat)
+    : SimpleGraph (Prod V (Fin n)) :=
+  { Adj v w := G.Adj v.1 w.1
+    symm v w := by apply G.symm }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
 of $n$ vertices and each edge by a complete bipartite graph) is triangle-free.
-The repository proves this as a \lean{CliqueFree 3} lemma for the blow-up
-construction.  It has $5n$ vertices and at least $n^5$ induced copies of $C_5$:
+The repository proves this by transporting any hypothetical triangle in the
+blow-up back to a triangle in the base graph:
 \begin{lstlisting}
-theorem subgraphCount_blowUp_C5_ge (n : Nat) :
-    n^5 ≤ (blowUp C5 n).subgraphCount C5
+theorem blowUp_K3_free
+    {m : Nat} {G : SimpleGraph (Fin m)}
+    (n : Nat) (hfree : K3.Free G) :
+    K3.Free (blowUp G n)
 \end{lstlisting}
-The lower bound on the Turán density follows from the limit:
+The construction has $5n$ vertices and at least $n^5$ copies of $C_5$:
+\begin{lstlisting}
+lemma subgraphCount_blowUp_C5_ge
+    (n : Nat) :
+    subgraphCount C5 (blowUp C5 n) >= n ^ 5
+\end{lstlisting}
+The proof of this counting lemma constructs an injection
+\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in each
+of the five parts determines a copy of $C_5$, and distinct choices give
+distinct subgraphs.  After transferring the blow-up to the vertex type
+\lean{Fin (5 * n)}, the repository obtains the finite extremal lower bound:
+\begin{lstlisting}
+theorem generalizedExtremalNumber_K3_C5_div_choose_ge
+    (n : Nat) (hn : 0 < n) :
+    (generalizedExtremalNumber (5 * n) K3 C5 /
+      (5 * n).choose 5 : Real) >= 24 / 625
+\end{lstlisting}
+Here the only asymptotic arithmetic needed is the elementary estimate
+\[
+  \frac{n^5}{\binom{5n}{5}}
+  \;\geq\;
+  \frac{n^5}{(5n)^5 / 5!}
+  \;=\;
+  \frac{24}{625},
+\]
+which Lean proves by combining \lean{Nat.choose\_le\_pow\_div},
+\lean{field\_simp}, and \lean{norm\_num}.  The lower bound on the Turán
+density then follows by restricting the defining convergent sequence to the
+subsequence $5(n+1)$:
+\begin{lstlisting}
+have hf : Tendsto f atTop (nhds (generalizedTuranDensity K3 C5)) := by
+  simpa [f] using (tendsto_generalizedTuranDensity K3 C5)
+
+have hg : Tendsto g atTop (nhds (generalizedTuranDensity K3 C5)) :=
+  hf.comp (StrictMono.tendsto_atTop hmul_mono)
+\end{lstlisting}
+This is the formal \lean{Filter.Tendsto} step: every term of the subsequence is
+bounded below by $24/625$, so the limit, namely
+\lean{generalizedTuranDensity K3 C5}, is also at least $24/625$.
+Equivalently, in mathematical notation, the proof uses the limiting fact
 \[
   \lim_{n\to\infty} \frac{n^5}{\binom{5n}{5}} = \frac{24}{625},
 \]
-which is proved as an exact algebraic identity using \lean{norm\_num} after
-unfolding the definition of $\binom{5n}{5} = \frac{5n(5n-1)(5n-2)(5n-3)(5n-4)}{120}$.
-The limit argument is formalized using Lean's \lean{Filter.Tendsto}
-framework (schematic):
-\begin{lstlisting}
--- schematic limit statement
-lemma blowUp_density_tendsto :
-    Filter.Tendsto (fun n => n^5 / Nat.choose (5*n) 5)
-                   Filter.atTop (nhds (24/625))
-\end{lstlisting}
+but the Lean proof needs only the displayed lower bound plus the general
+existence theorem \lean{tendsto\_generalizedTuranDensity}.
 
 \paragraph{Trust hierarchy.}
 The proof of \lean{ErdosPentagon\_Turan} depends on two classes of
@@ -442,6 +498,10 @@ verifying each candidate against the formal definition.  There are no
 \lean{sorry}s or \lean{axiom}s in the proof paths of either
 \lean{Mantel\_theorem} or \lean{ErdosPentagon\_Turan}.
 ---END REFERENCE DRAFT---
+
+Feedback Checklist (verify BEFORE returning output):
+For each feedback point in 'Feedback to Address' above, confirm the revised text addresses it.
+If any point is unaddressed, fix it now before returning.
 
 Revise to remove unsupported claims and strengthen evidence alignment.
 If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.

@@ -256,6 +256,14 @@ Section-Specific Instructions:
 - Improve by: (1) expanding the explanation of FlagWithSize and FinFlag type hierarchy, (2) clarifying how ZeroSpace encodes the density-expansion relations, (3) giving more detail on the forbidLE predicate and why it is more general than Razborov's original axiom approach.
 - The forbidden-subgraph framework (forbidLE, generalizedTuranDensity_le_of_forbidLE) is a key novel contribution — ensure it gets at least one full subsection with the theorem statement shown.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read writer_output.md first.
 
 Selected evidence:
@@ -285,7 +293,7 @@ Selected evidence:
 24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
-Reference Section Draft (your primary starting point — improve and refine this):
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:abstract}
 
@@ -480,6 +488,87 @@ significant care about which topological and measurability assumptions each
 lemma required.
 
 
+\subsection{Design Principles for Quotient-Heavy Counting}
+\label{sec:design-principles}
+
+The formalization did not scale merely by translating each mathematical
+definition into Lean.  The reusable content is a set of proof-engineering
+principles for making quotient-heavy finite combinatorics robust in an
+intensional proof assistant.  We describe these principles explicitly because
+they are the part of the development most likely to transfer to other
+computer-assisted extremal-combinatorics arguments.
+
+\paragraph{Principle 1: keep the quotient as the specification boundary.}
+The abstract objects are intentionally close to the mathematics: flags are
+quotients by isomorphism and the flag algebra is a quotient by zero-space
+relations.  We did not build the abstract theory around a canonical
+representative of each isomorphism class.  Canonical representatives are useful
+for computation, but making them part of the specification would force every
+mathematical lemma to carry representation-specific side conditions.  Instead,
+the quotient-level definitions state theorems, while canonical finite data
+structures appear only behind adequacy theorems in the reflection layer.
+
+\paragraph{Principle 2: prove numerical equalities by equivalences of witnesses.}
+The most common informal move in flag algebra calculations is to say that two
+densities are equal because the two sampling procedures count the same objects
+after a reindexing.  In Lean, we make this extensional argument explicit.  The
+proof first names the two sample spaces, fixes the \lean{Fintype} instances
+that will be used to count them, constructs an equivalence between the sample
+spaces, and only then simplifies the resulting rational equality:
+\begin{lstlisting}
+let S0 := setOfLabeledSubgraphListIsoHl G Hl0
+let S1 := setOfLabeledSubgraphListIsoHl G Hl1
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+let h_iso : Equiv S0 S1 := ...
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso
+simp_all only [Set.toFinset_card]
+\end{lstlisting}
+This is the pattern used in \lean{flagDensity\_permute} to show that
+permuting the order of sampled flags does not change density, and in
+\lean{flagDensity\_insert\_empty} to show that inserting an empty flag leaves
+the density unchanged.  It also appears in the adequacy proof that the concrete
+\lean{Sym2InducedSubgraph} enumeration has the same count as the abstract
+\lean{LabeledSubgraph} enumeration.  The point is not the particular code
+above, but the invariant it enforces: a numerical equality is justified by an
+explicit isomorphism between the finite sets being counted.  Arithmetic
+simplification is the last step, not the proof idea.
+
+\paragraph{Principle 3: stabilize finite enumerations where they are introduced.}
+Lean's type-class search may find different \lean{Fintype} instances for the
+same predicate-defined set through different paths.  Those instances enumerate
+the same elements extensionally, but they need not be definitionally equal, so
+cardinality lemmas can fail to apply.  Our rule is to bind the intended
+\lean{Fintype} instance immediately after naming a finite set, as in
+\lean{let hS0 : Fintype S0 := Fintype.ofFinite S0}.  This makes subsequent
+uses of \lean{Fintype.card}, \lean{Set.toFinset}, and
+\lean{Fintype.card\_congr} refer to the same enumeration term.  The pattern is
+low-level, but it is the difference between a proof that is stable under small
+refactorings and one whose success depends on accidental type-class search
+order.
+
+\paragraph{Principle 4: localize dependent transport behind named lemmas.}
+Flag algebra operations change sizes: expansion moves a flag to a larger
+vertex count, multiplication chooses a product size, and inserting an empty
+flag changes the dependent family indexing a flag list.  These operations
+produce unavoidable \lean{cast} and \lean{HEq} obligations.  Rather than
+allowing casts to spread through high-level proofs, we isolate them in lemmas
+such as \lean{flagList\_HEq}, \lean{flaglist\_heq\_of\_idx\_eq}, and
+\lean{flagListDensity\_HEq\_eq}.  The larger algebraic proofs can then invoke
+ordinary-looking invariance statements, while the transport details remain in
+the small layer where they belong.
+
+\paragraph{Principle 5: choose representations by their consumers.}
+No single representation served all parts of the proof.  Quotients are the
+right specification language; \lean{Sym2Graph} is the right evaluator input;
+rational matrices are the right kernel-checkable SDP certificate format; and
+canonical names such as \lean{FlagAlgebra\_5\_1\_0\_3} are the right metadata
+format for elaboration tactics.  Treating these as separate interfaces, linked
+by adequacy and generated lemmas, is what lets the formalization combine
+mathematical faithfulness with executable performance.
+
+
 \subsection{Type-Theoretic Obstacles from Intensionality}
 \label{sec:intensional}
 
@@ -581,14 +670,15 @@ theorem Sym2Graph.toLabeledGraph.toSym2Graph_eq (G : Sym2Graph n) :
     G.toLabeledGraph.toSym2Graph = G := by
   congr  -- reduces to field equalities
   ...
-  · exact proof_irrel_heq _ _  -- edge validity field
+  exact proof_irrel_heq _ _  -- edge validity field
 \end{lstlisting}
 
 \paragraph{What remains open.}
 Not all intensionality obstacles were resolved.  The most significant gap is in
 \lean{LeanFlagAlgebras.Forbid.Basic}: two lemmas relating the quotient-level
 \lean{forbidLE} predicate to the density of individual flag representatives
-were left as comments with \lean{sorry} markers.  Concretely, showing that
+remain as commented proof sketches, not as imported declarations or trusted
+axioms.  Concretely, showing that
 $f \leq_{[H]} 0$ implies the density of $H$ in any flag in the support of $f$
 is positive requires reasoning about which representatives of a quotient class
 can appear under a homomorphism --- a question that reduces to asking how the
@@ -628,10 +718,10 @@ recurring obstacle in \lean{SubflagListDensity.lean}: whenever a cardinality
 argument compared two finite sets defined by structural conditions on flag lists,
 the proof required an explicit conversion:
 \begin{lstlisting}
-let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
-let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-have card_eq : Fintype.card S₀ = Fintype.card S₁ :=
-  Fintype.card_congr h_iso_S₀_S₁
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso_S0_S1
 \end{lstlisting}
 This pattern appears at three independent sites in \lean{SubflagListDensity.lean}
 (functions \lean{flagDensity\_eq}, \lean{flagDensity\_permute}, and
@@ -643,26 +733,26 @@ use, and \lean{Fintype.card\_congr} cannot unify the instances.  The same
 \lean{LabeledGraph} and \lean{LabeledSubgraph}).
 
 \paragraph{Instance disambiguation for function and embedding types.}
-For parameterized types such as injections \lean{V ↪ W} and equivalences
-\lean{V ≃ W}, Lean can synthesize \lean{Fintype} instances in multiple ways
+For parameterized types such as injections \lean{Embedding V W} and equivalences
+\lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in multiple ways
 depending on which prior instances are in scope.  In
 \lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
 defined, the elaborator had to be given explicit guidance via
 \lean{@Finset.univ} with the intended instance passed as a named argument:
 \begin{lstlisting}
-instance : Fintype (V ↪ W) :=
-  { elems := @Finset.univ (V ↪ W) (inferInstance), ... }
+instance : Fintype (Embedding V W) :=
+  { elems := @Finset.univ (Embedding V W) (inferInstance), ... }
 \end{lstlisting}
 Without the explicit \lean{@}, Lean would sometimes apply a different,
-incompatible \lean{Fintype} instance for \lean{V ↪ W} further down the proof,
-causing goals of the form \lean{x ∈ Finset.univ} to fail to close by
+incompatible \lean{Fintype} instance for \lean{Embedding V W} further down the proof,
+causing membership goals for \lean{Finset.univ} to fail to close by
 \lean{Finset.mem\_univ}.
 
 A related issue arose for dependent function types indexed by a small finite
 type.  The \lean{FintypeList} typeclass (used internally to manage lists of
 typed flags indexed by \lean{Fin t}) must be instantiated by threading through
 \lean{Fintype} instances for each component type separately.  For the cases
-\lean{Fin 2 → Type} and \lean{Fin 3 → Type} that arise in the density
+\lean{Fin 2 -> Type} and \lean{Fin 3 -> Type} that arise in the density
 computation, the instances had to be written with explicit per-case
 \lean{inferInstance} calls rather than a uniform typeclass search:
 \begin{lstlisting}
@@ -712,6 +802,10 @@ typeclass search fails.  These are low-level engineering burdens that do not
 appear in pen-and-paper mathematics, but are unavoidable in a large-scale
 Lean~4 development that crosses quotient and reflection boundaries.
 ---END REFERENCE DRAFT---
+
+Feedback Checklist (verify BEFORE returning output):
+For each feedback point in 'Feedback to Address' above, confirm the revised text addresses it.
+If any point is unaddressed, fix it now before returning.
 
 Revise to remove unsupported claims and strengthen evidence alignment.
 If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.

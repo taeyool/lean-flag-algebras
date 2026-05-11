@@ -245,46 +245,66 @@ Global Instructions:
 Section-Specific Instructions:
 - (none)
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
 
-Reference Section Draft (your primary starting point — improve and refine this):
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
+
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
-Razborov's flag algebra method is one of the most powerful tools in extremal
-combinatorics, having resolved many open problems about asymptotic subgraph
-densities.  Applying it in practice, however, requires combining abstract algebraic
-and measure-theoretic reasoning with large external computations: subgraph
-density tables computed by enumeration, and semidefinite programming (SDP)
-certificates found by numerical solvers.  Formalizing such proofs in a proof
-assistant is therefore a challenge on two fronts: the abstract mathematical
-structures must be faithfully encoded in a type theory, and the external
-computational components must be imported and verified in a way that does not
-compromise the overall proof's trustworthiness.
+Flag algebras turn upper-bound problems in asymptotic extremal graph theory
+into inequalities between finite subgraph densities, often certified by
+semidefinite programming.  We present a Lean~4 formalization of the flag
+algebra method for simple graphs.
 
-We present a Lean~4 formalization of Razborov's flag algebra method for
-graphs, organized around a \emph{reflection-based} architecture.  At the
-abstract level, we define flags as quotient types under graph isomorphism,
-construct the flag algebra as a quotient module, equip it with a semantic
-ordering via positive homomorphisms, and connect flag algebra inequalities to
-combinatorial Turán densities through a measure-theoretic framework.  At the
-computational level, we introduce a concrete, decidably-equal graph
-representation (\lean{Sym2Graph}) and prove adequacy theorems connecting it to
-the abstract definitions; this allows \lean{native\_decide} and \lean{decide
-+kernel} to discharge over 2{,}800 density and matrix-equality obligations
-automatically.  Structural proof obligations---normalizing linear combinations
-of flag terms and applying expansion and multiplication identities---are handled
-by a suite of custom Lean~4 elaboration tactics that inspect the AST and exploit
-a canonical naming convention for flags as a machine-readable encoding of
-mathematical structure.
+The core of the formalization is the mathematical theory: flags as quotient
+types modulo label-preserving isomorphism, the flag algebra as a quotient
+$\mathbb{R}$-module by density-expansion identities, positive homomorphisms,
+and the semantic non-negativity cone, together with formal proofs of their
+key properties.  Proving the resulting combinatorial identities required a
+systematic discipline: to establish that two densities are equal, we exhibit
+an explicit bijection between the two finite sets being counted---naming the
+sample spaces, constructing an equivalence, and deriving the cardinality
+equality from it---rather than relying on arithmetic simplification.  This
+bijective-witness strategy recurs throughout the formalization of density
+lemmas, symmetry arguments, and adequacy theorems, and is the dominant
+proof technique of the abstract layer.
 
-As results, we give complete formal proofs of Mantel's theorem and of the
-Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), the latter including
-both the upper bound via a formally verified SDP certificate and the lower bound
-via an explicit blow-up construction.  To our knowledge, this is the first
-formalization of the flag algebra method in any proof assistant.  The
-formalization comprises approximately 25{,}000 lines of Lean~4 code.
+Three further components complete the development.  A forbidden-subgraph
+framework encodes the $H$-freeness condition as a proof-time predicate
+inside a single ambient theory of simple graphs, eliminating the need for a
+per-problem axiom system.  A reflection layer connects the abstract
+definitions to a concrete computable graph type (\lean{Sym2Graph}) via
+adequacy theorems; density tables are then certified by \lean{native\_decide}
+and SDP certificates verified by exact rational LDL$^\top$ decompositions
+checked by \lean{decide + kernel}, making explicit which obligations are
+trusted to the native compiler and which are kernel-verified.  A tactic layer
+automates the algebraic bookkeeping of flag-algebra proofs: normalizing linear
+combinations, applying expansion identities, and multiplying under a
+forbidden-subgraph hypothesis.
+
+For programming-languages researchers, the formalization is a case study in
+mechanizing a quotient-heavy combinatorial theory in an intensional type
+theory.  The reusable engineering lessons include the bijective-witness proof
+discipline for finite counting arguments, preventing conflicting typeclass
+enumeration instances from silently breaking cardinality arguments, confining
+the cast and heterogeneous-equality bookkeeping that arises when flag
+operations change vertex counts to small named boundary lemmas, and a
+three-layer separation of abstract specification, executable reflection, and
+syntactic tactic automation.  As case studies, the development
+proves Mantel's theorem ($\tdensity{K_2}{K_3}=1/2$) and the Erd\H{o}s
+pentagon theorem ($\tdensity{C_5}{K_3}=24/625$), including the pentagon
+upper bound from a verified SDP certificate and the lower bound from a formal
+blow-up construction.
 ---END REFERENCE DRAFT---
 
-Produce a publication-grade improvement plan (not a terse outline).
-If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.
+Address each feedback point listed in 'Feedback to Address' above.
+For each point, state the exact change to make. Do not silently ignore any point.
+Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).
 The plan must enforce the same quality bar as exemplar formalization papers.
 
 Hard gate: fail the plan if any Section Blueprint item is missing.
@@ -419,5 +439,6 @@ Output format (JSON only):
   "claim_plan": ["..."],
   "evidence_needs": ["..."],
   "gaps_in_reference_draft": ["..."],
-  "risk_checks": ["..."]
+  "risk_checks": ["..."],
+  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}
 }

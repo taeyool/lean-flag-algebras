@@ -247,6 +247,14 @@ Section-Specific Instructions:
 - Strengthen by: being more precise about how this work differs from Flagmatic (formally verified end-to-end vs informally validated certificates), and noting more explicitly that this is the first formalization of the flag algebra method in any proof assistant.
 - Add any related work on Lean 4 formalization of algebraic structures (quotient types, modules) if relevant.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read planner_output.json and retriever_output.json first.
 
 Selected evidence:
@@ -276,7 +284,7 @@ Selected evidence:
 24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
-Reference Section Draft (your primary starting point — improve and refine this):
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:related}
 
@@ -319,8 +327,10 @@ that are validated only informally.  Our work provides the first formally
 verified end-to-end pipeline from flag algebra certificates to combinatorial
 theorems.  Razborov~\cite{razborov2013flag} gives a comprehensive survey of
 flag algebra applications; the $\sim$100 results catalogued there all involve
-the same three categories of proof obligation identified in
-Section~\ref{sec:intro}, suggesting that our infrastructure is broadly applicable.
+the same recurring concerns identified in Section~\ref{sec:intro}: abstract
+structure, extensional finite counting, data-heavy computation, and algebraic
+bookkeeping.  This common shape suggests that our infrastructure is broadly
+applicable.
 
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
@@ -353,9 +363,9 @@ flag algebra method, but a full formalization of the graphon theory remains
 an open challenge.
 ---END REFERENCE DRAFT---
 
-Improve and refine the Reference Draft above for section: Related Work.
-Identify gaps and weak arguments, add missing technical detail, fix any imprecision.
-Preserve accurate technical content already present. Do not remove verified claims.
+Revise the Reference Draft for section 'Related Work' to address the feedback above.
+Make targeted changes: edit, cut, or expand only what the feedback requires.
+Preserve structure and content not targeted by any feedback point.
 Hard gate: satisfy all Section Blueprint constraints (subsections, equations, code references where required).
 For mathematical formulas, derive and align notation from the listed Equation Source PDFs.
 Do not include \section{...}.

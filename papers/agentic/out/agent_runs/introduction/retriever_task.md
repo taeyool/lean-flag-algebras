@@ -14,14 +14,7 @@ Equation Source PDFs (for mathematical formulas):
 - papers/References/GrzesikThesis14.pdf
 
 Exemplar Formalization Papers (quality bar):
-- papers/References/Formalization/A complete formalization of Fermat's Last Theorem for regular primes in Lean.pdf
-- papers/References/Formalization/A formalization of Borel determinacy in Lean.pdf
-- papers/References/Formalization/Derandomization with Pseudorandomness.pdf
-- papers/References/Formalization/Duality theory in linear optimization and its extensions -- formally verified.pdf
-- papers/References/Formalization/Formalising the Bruhat-Tits Tree.pdf
-- papers/References/Formalization/Formalising the local compactness of the adele ring.pdf
-- papers/References/Formalization/Formalization of derived categories in Lean&mathlib.pdf
-- papers/References/Formalization/Formalizing zeta and L-functions in Lean.pdf
+- (no exemplar files found)
 
 Quality Requirements:
 - Use papers/paper_claude.tex as the quality benchmark — match or exceed its depth and precision.
