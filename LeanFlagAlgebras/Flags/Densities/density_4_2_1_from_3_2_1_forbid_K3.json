@@ -1,7 +1,25 @@
 {
   "host": "4_2_1",
   "pattern": "3_2_1",
-  "host_triangle_free_indices": [
+  "forbid": {
+    "tag": "K3",
+    "n": 3,
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "host_free_indices": [
     0,
     1,
     2,
@@ -13,16 +31,10 @@
     9,
     15
   ],
-  "pattern_triangle_free_indices": [
+  "pattern_free_indices": [
     0,
     1,
     2
-  ],
-  "host_k4_free_indices": [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
-  ],
-  "pattern_k4_free_indices": [
-    0, 1, 2, 3
   ],
   "densities": [
     [

@@ -1,7 +1,8 @@
 {
-  "input_file": "LeanFlagAlgebras\\Flags\\Graphs\\graphs_5.json",
+  "n": 5,
   "total_graphs": 34,
-  "triangle_free_graph_indices": [
+  "forbid": {"tag": "K3", "n": 3, "edges": [[0, 1], [0, 2], [1, 2]]},
+  "free_graph_indices": [
     0,
     1,
     2,

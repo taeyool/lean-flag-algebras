@@ -1,0 +1,14 @@
+{
+  "n": 4,
+  "total_graphs": 11,
+  "forbid": {"tag": "K3", "n": 3, "edges": [[0, 1], [0, 2], [1, 2]]},
+  "free_graph_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+  ]
+}

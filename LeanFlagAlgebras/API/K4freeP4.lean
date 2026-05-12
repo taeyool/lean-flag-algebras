@@ -10,14 +10,11 @@ open SimpleGraph
 
 namespace K4freeP4
 
-load_k4_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_k4_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
-load_k4_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
-load_k4_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
-
-#check flagMul_FlagAlgebra_3_2_0_0_FlagAlgebra_3_2_0_1
--- #check flagDensity₂_Flag_3_2_0_0_Flag_3_2_0_1_Flag_4_2_0_11
+load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K4_free_indices.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K4.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K4.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K4.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K4.json"
 
 example : (FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_1 )=[K4.toFinFlag]
     (1 / 2) • FlagAlgebra_4_2_0_1 + (1 / 2) • FlagAlgebra_4_2_0_6

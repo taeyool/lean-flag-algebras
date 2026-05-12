@@ -75,11 +75,11 @@ lemma M₂_real_eq_LDL :
 theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₂_real_nonneg M₂_real_eq_LDL
 
-load_triangle_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_triangle_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
-load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
-load_triangle_free_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1.json"
+load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
 
 
 

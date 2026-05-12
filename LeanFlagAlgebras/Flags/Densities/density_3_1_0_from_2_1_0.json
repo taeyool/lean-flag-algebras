@@ -1,14 +1,15 @@
 {
   "host": "3_1_0",
   "pattern": "2_1_0",
-  "host_triangle_free_indices": [
+  "forbid": {"tag": "K3", "n": 3, "edges": [[0, 1], [0, 2], [1, 2]]},
+  "host_free_indices": [
     0,
     1,
     2,
     3,
     4
   ],
-  "pattern_triangle_free_indices": [
+  "pattern_free_indices": [
     0,
     1
   ],
