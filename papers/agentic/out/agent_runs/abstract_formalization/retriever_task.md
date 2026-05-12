@@ -256,6 +256,14 @@ Section-Specific Instructions:
 - Improve by: (1) expanding the explanation of FlagWithSize and FinFlag type hierarchy, (2) clarifying how ZeroSpace encodes the density-expansion relations, (3) giving more detail on the forbidLE predicate and why it is more general than Razborov's original axiom approach.
 - The forbidden-subgraph framework (forbidLE, generalizedTuranDensity_le_of_forbidLE) is a key novel contribution — ensure it gets at least one full subsection with the theorem statement shown.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read planner_output.json first, then select evidence IDs.
 
 Candidate evidence list:

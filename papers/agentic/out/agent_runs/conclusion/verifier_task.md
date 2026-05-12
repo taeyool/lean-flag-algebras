@@ -245,6 +245,14 @@ Global Instructions:
 Section-Specific Instructions:
 - (none)
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read writer_output.md first.
 
 Selected evidence:
@@ -274,41 +282,55 @@ Selected evidence:
 24. [text] line @ papers/paper_claude.tex:106 :: \begin{abstract}
 
 
-Reference Section Draft (your primary starting point — improve and refine this):
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:conclusion}
 
-We have presented the first formalization of Razborov's flag algebra method in
-a proof assistant, realized in Lean~4.  The formalization is organized around
-a two-layer architecture.  The \emph{reflection layer} connects the abstract
-algebraic definitions to a concrete, decidably-computable graph representation
-via adequacy theorems, enabling \lean{native\_decide} and \lean{decide +kernel}
-to automatically discharge over 2\,800 density and SDP certificate obligations.
-The \emph{tactic layer} provides custom elaboration tactics---exploiting a
-canonical naming scheme for flag constants---that handle the structural
-bookkeeping (linear normalization, expansion identities, multiplication
-identities) of flag algebra proofs, reducing steps that would time out with
-generic tactics to sub-second invocations.
+We have presented a Lean~4 formalization of Razborov's flag algebra method for
+simple graphs.  The main point of the development is the quotient-level
+formalization of the mathematical theory: flags modulo isomorphism, the
+quotient algebra of density-expansion relations, positive homomorphisms and the
+semantic cone, and a proof-time framework for reasoning under a forbidden
+subgraph.  Reflection is used as a checked implementation boundary for the
+finite computations demanded by concrete proofs.  The concrete graph
+representation and density procedures are connected to the abstract
+definitions by adequacy theorems; SDP certificates are verified over
+$\mathbb{Q}$ by exact LDL$^\top$ decompositions.  The tactic layer is separate
+again: it automates normalization, expansion, and multiplication steps but does
+not change the mathematical specification or the certificate trust story.
 
-The end results are formally complete proofs of Mantel's theorem and the
-Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$).  We believe
-the architecture generalizes: the known flag algebra results in extremal
-combinatorics all involve the same three categories of proof
-obligation (abstract structure, data-heavy computation, and algebraic
-bookkeeping), and our framework provides reusable infrastructure for all three.
+The case studies prove the flag-algebra form of Mantel's theorem and the
+Erd\H{o}s pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), with additional
+Goodman-style inequalities in the active library.  We expect the architecture
+to transfer to further graph flag algebra arguments because the same concerns
+recur: quotient-level semantics, exact finite counting, externally generated
+but internally checked certificates, and large-scale algebraic bookkeeping.
 
 \paragraph{Lessons for proof engineering.}
-Three design choices proved unexpectedly decisive.  First, the \emph{trust
-hierarchy} (using \lean{decide +kernel} for SDP certificates and \lean{native\_decide}
-for density tables) emerged not from abstract principle but from practical
-necessity: \lean{native\_decide} over rational matrix products exceeds the
-kernel's stack depth, while \lean{decide +kernel} over the same matrix
-terminates in finite (if slow) time.  The hierarchy is thus a response to
-concrete computational constraints, not a prior design commitment.
-Second, \emph{encoding structure in names} rather than type-class attributes
+Five design choices proved unexpectedly decisive.  First, reflection had to be
+treated as a verified optimization problem, not merely as a way to run the
+definition.  The naive executable version of flag density still exposed
+Lean's evaluator to quotient equality, proof-valued fields, generic finite
+enumeration, and repeated graph-isomorphism search.  The usable version
+separates specification from implementation: abstract flag densities remain the
+specification, while \lean{Sym2Graph}, the fast Boolean isomorphism checkers,
+and the concrete induced-subgraph counters are optimized implementations
+connected back to the specification by adequacy theorems.  Second, numerical
+equalities had to be proved extensionally: when two densities are equal because
+they count the same choices, the Lean proof names the two finite sets,
+constructs an equivalence between them, and derives equality through
+\lean{Fintype.card\_congr}.  This made counting lemmas robust in the presence
+of quotient representatives and overlapping finite-type instances.  Third, the
+\emph{trust hierarchy} (using \lean{decide +kernel} for SDP certificates and
+\lean{native\_decide} for density tables) emerged not from abstract principle
+but from practical necessity: \lean{native\_decide} over rational matrix
+products exceeds the kernel's stack depth, while \lean{decide +kernel} over
+the same matrix terminates in finite (if slow) time.  The hierarchy is thus a
+response to concrete computational constraints, not a prior design commitment.
+Fourth, \emph{encoding structure in names} rather than type-class attributes
 was motivated by a performance observation: attribute lookup during elaboration
 triggers unification, which compounds with the size of flag algebra expressions
-to cause timeouts; name inspection does not.  Third, the \emph{general
+to cause timeouts; name inspection does not.  Fifth, the \emph{general
 forbidden-subgraph rule} (\lean{forbidLE}) was harder to build than anticipated
 because it required a measure-theoretic construction (the random extension
 measure $\mathbb{P}^{\phi_0}$) that is implicit in the mathematical literature
@@ -319,10 +341,13 @@ Replacing \lean{native\_decide} with \lean{decide +kernel} throughout (or
 with a formally verified external checker) would eliminate the remaining
 dependency on the native compiler.  Extending the framework beyond graphs---to
 hypergraphs, directed graphs, or other combinatorial structures---would require
-generalizing the type-parameter conventions but no new conceptual machinery.
-Automating the discovery of SDP certificates from within Lean (rather than
-importing them from external solvers) remains a longer-term goal.  A full
-formalization of graphon theory, connecting flag algebra limits to the
+more than changing type parameters: the concrete reflection layer, density
+generation scripts, and tactic naming conventions are all graph-specific.
+Nevertheless, the same conceptual split between abstract semantics,
+reflective computation, and tactic automation appears promising for those
+settings.  Automating the discovery of SDP certificates from within Lean
+(rather than importing them from external solvers) remains a longer-term goal.
+A full formalization of graphon theory, connecting flag algebra limits to the
 Lov\'asz theory~\cite{lovasz2012large}, would provide a richer mathematical
 foundation for future extensions.
 
@@ -334,6 +359,12 @@ foundation for future extensions.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \textit{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{razborov2008}
+A.~A.~Razborov.
+\newblock On the minimal density of triangles in graphs.
+\newblock \textit{Combinatorics, Probability and Computing},
+  17(4):603--618, 2008.
 
 \bibitem{razborov2013flag}
 A.~A.~Razborov.
@@ -434,6 +465,10 @@ L.~Lov\'{a}sz.
 
 \end{thebibliography}
 ---END REFERENCE DRAFT---
+
+Feedback Checklist (verify BEFORE returning output):
+For each feedback point in 'Feedback to Address' above, confirm the revised text addresses it.
+If any point is unaddressed, fix it now before returning.
 
 Revise to remove unsupported claims and strengthen evidence alignment.
 If the prose is shallow, expand it to match exemplar-paper depth while staying evidence-grounded.

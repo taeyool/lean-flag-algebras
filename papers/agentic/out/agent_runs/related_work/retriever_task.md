@@ -247,6 +247,14 @@ Section-Specific Instructions:
 - Strengthen by: being more precise about how this work differs from Flagmatic (formally verified end-to-end vs informally validated certificates), and noting more explicitly that this is the first formalization of the flag algebra method in any proof assistant.
 - Add any related work on Lean 4 formalization of algebraic structures (quotient types, modules) if relevant.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
+
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
 Read planner_output.json first, then select evidence IDs.
 
 Candidate evidence list:

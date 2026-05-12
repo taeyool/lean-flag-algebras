@@ -262,8 +262,16 @@ Section-Specific Instructions:
 - The section must define: type σ, σ-flag, flag isomorphism, flag density p(F,G), flag product, flag algebra as quotient module, positive homomorphism, semantic cone, and Turán density. End with the Erdős pentagon problem statement.
 - Do not claim details from external papers unless they are actually checked from those sources.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
 
-Reference Section Draft (your primary starting point — improve and refine this):
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
+
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:background}
 
@@ -271,7 +279,7 @@ This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.
 For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
-All graphs are finite and simple.
+All graphs are undirected, finite and simple.
 
 \subsection{Types and Flags}
 
@@ -285,8 +293,8 @@ up to isomorphism.
 Fix a type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $G^\sigma = (G, \theta)$ where $G$ is a
 finite graph and $\theta : [k] \hookrightarrow V(G)$ is an injective map such
-that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ as a labeled
-graph (i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
+that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta)]$ via $\theta$ 
+(i.e., $\theta$ is a graph embedding of $\sigma$ into $G$).
 The integer $|V(G)|$ is the \emph{size} of $G^\sigma$.
 
 Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
@@ -313,6 +321,23 @@ induces a copy of $F$ in $G$ compatible with the type.  Explicitly:
 \]
 This value lies in $[0,1] \cap \mathbb{Q}$ and is invariant under
 isomorphism of both $F$ and $G$.
+
+\begin{example}[A rooted pentagon density]
+  Let $\sigma$ be the one-vertex type, and let $E^\bullet$ be the
+  $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
+  the labeled one.  Let $\overline{E}^{\bullet}$ be the corresponding
+  non-edge flag.  Now root a copy of $C_5$ at one of its vertices.  Among the
+  four non-root vertices, exactly two are neighbors of the root.  Hence
+  \[
+    \den{E^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
+    \qquad
+    \den{\overline{E}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
+  \]
+  This tiny example captures the reason flags are useful: a flag remembers
+  the local view from a labeled configuration.  The same unrooted pentagon can
+  be queried from the perspective of a distinguished vertex, and the algebra
+  records those conditional densities as first-class objects.
+\end{example}
 
 \paragraph{Joint density.}
 For $\sigma$-flags $F_1$ of size $m_1$ and $F_2$ of size $m_2$ and a host
@@ -352,6 +377,31 @@ their product at size $\ell \geq m_1 + m_2 - k$ is
 This is well-defined on the quotient (independent of $\ell$) and makes
 $\mathcal{A}^\sigma$ into a commutative, associative $\mathbb{R}$-algebra
 with unit $[\text{type graph } \sigma]$.
+
+\begin{example}[The edge expansion behind Mantel's theorem]
+  The simplest useful zero-space relation expands the untyped edge $K_2$ at
+  size $3$.  There are four unlabeled graphs on three vertices: the empty
+  graph, the one-edge graph, the two-edge path, and the triangle.  If an
+  edge is sampled uniformly from the three possible vertex pairs, its density
+  in these graphs is respectively
+  \[
+    0,\qquad \frac13,\qquad \frac23,\qquad 1.
+  \]
+  Thus the quotient identifies
+  \[
+    K_2
+    \;=\;
+    \frac13\,G_{\text{one-edge}}
+    + \frac23\,G_{\text{path}}
+    + G_{\triangle}
+    \qquad\text{in } \mathcal{A}^{\emptyset}.
+  \]
+  In the Mantel proof, the triangle term is then eliminated under the
+  $K_3$-free hypothesis.  This is exactly the kind of elementary
+  combinatorial bookkeeping that becomes unbearable in the pentagon proof:
+  the coefficients are simple, but there are hundreds of such coefficients
+  and they must all line up syntactically inside Lean.
+\end{example}
 
 \subsection{The Downward Operator and Semantic Non-Negativity}
 
@@ -423,13 +473,15 @@ independently by Grzesik~\cite{grzesik2012} and by Hatami, Hladk\'y, Kr\'al,
 Norine, and Razborov~\cite{hatami2012}.  It is achieved by the blow-up of
 $C_5$ (partition $n$ vertices into five nearly-equal groups and add all edges
 between consecutive groups in the cycle).  We use this theorem as the main
-case study throughout the paper, as it involves all three categories of proof
-obligation: abstract structure, data-heavy density computation (thousands of
-rational values over 5-vertex graphs), and heavy algebraic bookkeeping.
+case study throughout the paper, as it involves the full proof-engineering
+stack: abstract structure, extensional finite counting, data-heavy density
+computation (thousands of rational values over 5-vertex graphs), and heavy
+algebraic bookkeeping.
 ---END REFERENCE DRAFT---
 
-Produce a publication-grade improvement plan (not a terse outline).
-If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.
+Address each feedback point listed in 'Feedback to Address' above.
+For each point, state the exact change to make. Do not silently ignore any point.
+Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).
 The plan must enforce the same quality bar as exemplar formalization papers.
 
 Hard gate: fail the plan if any Section Blueprint item is missing.
@@ -564,5 +616,6 @@ Output format (JSON only):
   "claim_plan": ["..."],
   "evidence_needs": ["..."],
   "gaps_in_reference_draft": ["..."],
-  "risk_checks": ["..."]
+  "risk_checks": ["..."],
+  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}
 }

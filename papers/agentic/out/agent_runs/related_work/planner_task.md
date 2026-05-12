@@ -247,8 +247,16 @@ Section-Specific Instructions:
 - Strengthen by: being more precise about how this work differs from Flagmatic (formally verified end-to-end vs informally validated certificates), and noting more explicitly that this is the first formalization of the flag algebra method in any proof assistant.
 - Add any related work on Lean 4 formalization of algebraic structures (quotient types, modules) if relevant.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
 
-Reference Section Draft (your primary starting point — improve and refine this):
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
+
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:related}
 
@@ -291,8 +299,10 @@ that are validated only informally.  Our work provides the first formally
 verified end-to-end pipeline from flag algebra certificates to combinatorial
 theorems.  Razborov~\cite{razborov2013flag} gives a comprehensive survey of
 flag algebra applications; the $\sim$100 results catalogued there all involve
-the same three categories of proof obligation identified in
-Section~\ref{sec:intro}, suggesting that our infrastructure is broadly applicable.
+the same recurring concerns identified in Section~\ref{sec:intro}: abstract
+structure, extensional finite counting, data-heavy computation, and algebraic
+bookkeeping.  This common shape suggests that our infrastructure is broadly
+applicable.
 
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
@@ -325,8 +335,9 @@ flag algebra method, but a full formalization of the graphon theory remains
 an open challenge.
 ---END REFERENCE DRAFT---
 
-Produce a publication-grade improvement plan (not a terse outline).
-If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.
+Address each feedback point listed in 'Feedback to Address' above.
+For each point, state the exact change to make. Do not silently ignore any point.
+Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).
 The plan must enforce the same quality bar as exemplar formalization papers.
 
 Hard gate: fail the plan if any Section Blueprint item is missing.
@@ -461,5 +472,6 @@ Output format (JSON only):
   "claim_plan": ["..."],
   "evidence_needs": ["..."],
   "gaps_in_reference_draft": ["..."],
-  "risk_checks": ["..."]
+  "risk_checks": ["..."],
+  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}
 }

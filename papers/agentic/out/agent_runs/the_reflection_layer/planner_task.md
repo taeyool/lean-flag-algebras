@@ -254,8 +254,16 @@ Section-Specific Instructions:
 - The trust hierarchy (native_decide for density tables vs. decide+kernel for SDP matrix equalities) is a key design insight — explain clearly why each decision procedure is used where.
 - Include the concrete three-step proof pattern: delta-unfold → rewrite with adequacy theorem → native_decide.
 
+=== REVISION MODE: Feedback to Address ===
+Each point below MUST be addressed. Do not silently skip any.
+Produce a concrete fix for each point, not just an acknowledgement.
 
-Reference Section Draft (your primary starting point — improve and refine this):
+## Global Feedback
+1. The title "Formalizing Flag Algebras in Lean 4 via Computational Reflection" is misleading: computational reflection is used only for verifying SDP certificates and density tables, not for formalizing flag algebra theory itself. Consider removing "via Computational Reflection" from the title, or replacing it with a phrase that more accurately reflects the overall scope of the work.
+=== END FEEDBACK ===
+
+
+Reference Section Draft (your primary starting point):
 ---BEGIN REFERENCE DRAFT---
 \label{sec:reflection}
 
@@ -301,19 +309,121 @@ injections from $V(G_1)$ to $V(G_2)$, or all bijections) and filter those
 that preserve adjacency and type embeddings.  This reduces the question ``are
 these two labeled graphs isomorphic?'' to a finite, decidable search.
 
-\paragraph{Key challenge.}
-The main difficulty in the reflection layer is making graph isomorphism
-decidable efficiently enough for \lean{native\_decide} to terminate on
-five-vertex graphs in reasonable time.  The naive approach---enumerate all
-$n!$ permutations of the vertex set and check each---runs in $5! = 120$
-steps for size-5 graphs, which is fast enough.  However, the adequacy
-theorems require that the abstract \lean{flagDensity} and the concrete
-\lean{sym2FlagDensity} agree; proving this requires unfolding the quotient
-construction and reasoning about representatives, which was the source of most
-of the complexity in \lean{Compute/FlagDensity.lean} ($\sim$1\,100 lines).
-The key insight is that density over the quotient equals the density computed
-on any canonical representative, and the \lean{Sym2Graph} representation
-provides a canonical form via its \lean{Finset} of edges.
+\subsection{From Naive Reflection to Usable Reflection}
+
+The central engineering lesson of the reflection layer is that
+\emph{computable} is not the same as \emph{usable}.  A straightforward
+reflective design would keep the abstract definitions as close as possible to
+the mathematics, make the relevant finite types into \lean{Fintype}s, and ask
+\lean{native\_decide} to evaluate density goals by unfolding
+\lean{flagDensity}.  This works as a proof of concept, but it is not a viable
+compilation strategy for the pentagon proof.  Each density check would then
+repeatedly construct finite sets of abstract subgraphs, compare quotient
+classes by searching for flag isomorphisms, synthesize overlapping
+\lean{Fintype} instances, and carry proof-valued fields through the evaluator.
+The graphs are small, but the proof terms are not: the evaluator is reducing a
+proof-relevant encoding of finite combinatorics, not a simple graph algorithm.
+
+The optimized layer treats reflection more like verified compilation.  The
+abstract quotient definitions remain the specification, while the executable
+programs in \lean{Compute/FastIso.lean} and \lean{Compute/FlagDensity.lean}
+act as compiled code.  The connection between them is established by adequacy
+theorems, so changing the implementation of the Boolean checker does not change
+the mathematical theorem being proved.
+
+\paragraph{Optimization 1: Boolean isomorphism with early pruning.}
+The first bottleneck is flag isomorphism.  The generic \lean{Fintype}-based
+decision procedure enumerates equivalences and then filters by adjacency and
+type preservation.  In contrast, \lean{isEmptyIsoFast\_bool} first checks the
+edge-count invariant; if two graphs have different numbers of edges, it returns
+\lean{false} without enumerating any permutation.  Only after this cheap
+rejection test does it enumerate permutations of \lean{List.finRange n}.  For
+each candidate permutation it compares membership for every possible edge in
+\lean{allEdges n}, using the \lean{Finset} edge representation directly:
+\begin{lstlisting}
+def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
+  if G1.edges.card != G2.edges.card then false
+  else
+    let perms := (List.finRange n).permutations
+    let edges := allEdges n
+    perms.any fun perm =>
+      edges.all fun e =>
+        edgeMembershipAgrees G1 G2 perm e
+\end{lstlisting}
+The displayed code suppresses the low-level \lean{decide} calls, but the
+structure matches \lean{FastIso.lean}: compare graph invariants first, then
+compare all edges under each candidate permutation.
+
+\paragraph{Optimization 2: type-aware permutation.}
+Typed flags admit a stronger optimization.  A $\sigma$-flag isomorphism must
+commute with the type embedding, so the labeled vertices are fixed by the type
+map.  The optimized checker \lean{isIsoFast\_bool} therefore computes the
+non-type vertices using \lean{getNonTypeVerts}, enumerates permutations only of
+those vertices, and reconstructs the full vertex map with \lean{buildFullMap}.
+For the type-3, size-5 flags used in the pentagon proof, this changes the
+search from $5!$ candidate maps to $(5-3)!$ candidate maps before any adjacency
+comparison is performed.  This matters because the density table contains
+thousands of such checks, and each failed isomorphism search appears inside a
+larger density computation.
+
+\begin{example}[Why typed flags change the search space]
+  Consider a pentagon-proof flag with five vertices and a three-vertex type.
+  A flag isomorphism cannot send a labeled vertex somewhere convenient; it must
+  send the first labeled vertex to the first labeled vertex, the second to the
+  second, and the third to the third, because it must commute with the type
+  embedding.  The only freedom is what to do with the two remaining vertices.
+  The generic graph-isomorphism view still starts from $5! = 120$ possible
+  vertex permutations.  The typed checker starts from the two-element list of
+  non-type vertices and considers only $2! = 2$ permutations.
+
+  This reduction looks small because the graphs have only five vertices, but
+  it is multiplied by the structure of the density calculation: the checker is
+  invoked while enumerating subgraphs, comparing candidate representatives,
+  and proving thousands of generated density lemmas.  A constant-factor
+  improvement at the graph level becomes the difference between an evaluator
+  that feels like a decision procedure and one that feels like a stuck proof
+  search.
+\end{example}
+
+\paragraph{Optimization 3: verified replacement of generic instances.}
+The optimized Boolean checkers are not trusted oracles.  They come with both
+directions of correctness, for example
+\lean{isEmptyIsoFast\_bool\_true\_correct} and
+\lean{isEmptyIsoFast\_bool\_false\_correct}.  These theorems justify replacing
+the generic quotient equality procedure by high-priority instances:
+\lean{fastDecidableSym2GraphEqv},
+\lean{fastFintypeSym2EmptyTypedFlag}, and
+\lean{fastDecidableSym2EmptyTypedFlagEqv}.  From the perspective of the rest
+of the development, equality on reflected flags still means equality in the
+quotient setoid; only the implementation of the decision procedure has changed.
+This is the same separation of specification and implementation that one
+expects from verified decision procedures in PL, but applied to graph
+isomorphism inside a formalization of extremal combinatorics.
+
+\begin{example}[A failed table entry fails as a theorem]
+  Suppose the JSON table accidentally states that a certain density is
+  $3/10$ when the reflected computation gives $2/5$.  The loader will still
+  generate the theorem statement requested by the table, but after unfolding
+  the relevant flags and rewriting by the adequacy theorem, the goal becomes
+  the decidable proposition $2/5 = 3/10$.  At that point
+  \lean{native\_decide} fails.  The table is therefore not a trusted proof
+  artifact; it is closer to a test vector that Lean checks against the
+  specification.  This is a useful distinction for large computer-assisted
+  proofs: external computation proposes facts, but the proof assistant accepts
+  only those facts that its verified evaluator can reproduce.
+\end{example}
+
+\paragraph{Optimization 4: compute over data, prove equivalence once.}
+The density computation itself is similarly compiled.  Rather than enumerate
+abstract \lean{LabeledSubgraph}s directly, the concrete layer enumerates
+\lean{Sym2InducedSubgraph}s, represented only by a finite vertex set, and
+computes their edge sets by filtering the host graph's \lean{Finset} of edges.
+For typed flags, \lean{Sym2InducedLabeledSubgraph} additionally stores the
+proof that the type vertices are included.  The adequacy theorem
+\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount} proves that
+this data-oriented enumeration has the same cardinality as the abstract
+definition.  Thus the cost of quotient and subgraph reasoning is paid once in
+the proof of adequacy, not thousands of times in the generated density lemmas.
 
 \subsection{Adequacy Theorems}
 
@@ -336,6 +446,20 @@ The right-hand sides are defined entirely over \lean{Sym2Graph}
 and are fully computable.  After rewriting a density goal with these theorems,
 the goal becomes a decidable proposition about a finite computation over
 \lean{Finset}, which \lean{native\_decide} can evaluate directly.
+
+For a PL audience, the important point is that the adequacy theorem is a
+refinement theorem: the executable program computes exactly the denotation of
+the abstract specification.  The proof factors through count-level adequacy
+(\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}) and
+density-level adequacy
+(\lean{labeledSubgraphListDensity\_eq\_sym2InducedSubgraphListDensity}).
+Consequently, the generated theorem
+\[
+  \lean{flagDensity2 F0 F1 G = q}
+\]
+is not a certificate that the external JSON table is trusted; it is a kernel
+proof that the reflected evaluator, connected to the abstract definition by
+adequacy, computes the rational number $q$.
 
 \subsection{Elaboration-Time Theorem Generation}
 
@@ -362,13 +486,25 @@ The three proof steps are: unfold the concrete flag definitions (making their
 call \lean{native\_decide} to evaluate the resulting finite computation.
 The same elaboration pattern is used by \lean{MulLoader} for flag multiplication tables.
 
-\subsection{SDP Certificate Verification via LDL$^\top$}
+This design also changes the proof-engineering scale.  The JSON files are not
+used as proof certificates in the logical sense; they are build inputs that
+determine which theorems Lean should attempt to prove and what rational value
+they should state.  If a table entry is wrong, the generated theorem fails at
+\lean{native\_decide}.  If the table entry is right, the theorem is stored as a
+named lemma and later proofs use it by rewriting rather than by recomputing the
+density from scratch.  In effect, the elaborator performs a verified
+specialization pass: it turns a general reflective evaluator into thousands of
+small, reusable theorem constants specialized to the flags that appear in the
+certificate.
+
+\subsection{SDP Certificate Verification via \texorpdfstring{LDL$^\top$}{LDL\string^T}}
 \label{sec:sdp}
 
 The upper bound proof for the Erd\H{o}s pentagon theorem requires showing
 that a sum of three quadratic forms (one for each 1-vertex type) is
-non-negative under the $C_5$-free assumption.  The certificates are three
-positive semidefinite matrices $P$, $Q$, $R$ over $\Q$ (each $8 \times 8$),
+non-negative under the $K_3$-free assumption.  The certificates are three
+positive semidefinite matrices $P$, $Q$, $R$ over $\Q$ (of sizes
+$8 \times 8$, $6 \times 6$, and $5 \times 5$ respectively),
 found externally by an SDP solver.
 
 We verify positive semidefiniteness via an LDL$^\top$ decomposition.  For
@@ -420,7 +556,9 @@ formal definition.
 
 \subsection{Implementation Metrics}
 
-Table~\ref{tab:metrics} summarizes the scale of the formalization.
+Table~\ref{tab:metrics} summarizes the scale of the active formalization
+(excluding archived experiments).  The line counts were computed from the
+current repository rather than copied from an external report.
 
 \begin{table}
   \caption{Scale of the Lean~4 formalization.}
@@ -429,16 +567,16 @@ Table~\ref{tab:metrics} summarizes the scale of the formalization.
     \toprule
     Component & Lines & Primary files \\
     \midrule
-    Abstract layer (\S\ref{sec:abstract}) & 11\,100 &
-      \lean{FlagAlgebra/}, \lean{Forbid/} \\
-    Reflection layer (\S\ref{sec:reflection}) & 3\,800 &
+    Abstract algebra, density, and limit layer & 15\,815 &
+      \lean{GraphAlgebra/}, \lean{FlagAlgebra/}, \lean{Forbid/}, \lean{Turan/} \\
+    Reflection and flag-loading layer & 3\,871 &
       \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
-    Tactic layer (\S\ref{sec:tactics}) & 1\,200 &
-      \lean{ErdosPentagon/SortTactic.lean}, \lean{Logic/Tactic.lean} \\
-    Application (Mantel + Pentagon) & 1\,900 &
-      \lean{MantelTheorem/}, \lean{ErdosPentagon/} \\
+    Case studies, SDP certificates, and tactics & 3\,751 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/} \\
+    Shared utilities & 2\,009 &
+      \lean{Utils/} \\
     \midrule
-    Total (excluding archived experiments) & 25\,000 & \\
+    Total active Lean (excluding \lean{Archive/}) & 25\,446 & \\
     \bottomrule
   \end{tabular}
 
@@ -449,7 +587,7 @@ Table~\ref{tab:metrics} summarizes the scale of the formalization.
     \midrule
     Auto-generated density lemmas (pentagon proof) & 2\,847 \\
     Multiplication table entries verified & $>$\,300 \\
-    \lean{decide~+kernel} SDP matrix equalities & 3 (each $8{\times}8$ over $\mathbb{Q}$) \\
+    \lean{decide~+kernel} SDP matrix equalities & 3 (sizes $8{\times}8$, $6{\times}6$, $5{\times}5$ over $\mathbb{Q}$) \\
     \lean{native\_decide} density table checks & $>$\,2\,800 \\
     \bottomrule
   \end{tabular}
@@ -462,8 +600,9 @@ size-5/type-3 families used in the pentagon proof (1\,800 for type-0 flags,
 evaluation over a graph on at most 5 vertices.
 ---END REFERENCE DRAFT---
 
-Produce a publication-grade improvement plan (not a terse outline).
-If a Reference Draft is provided, identify what is already strong, what is missing or weak, and what should be restructured.
+Address each feedback point listed in 'Feedback to Address' above.
+For each point, state the exact change to make. Do not silently ignore any point.
+Also identify any resulting structural changes needed (subsection moves, new evidence, rewritten claims).
 The plan must enforce the same quality bar as exemplar formalization papers.
 
 Hard gate: fail the plan if any Section Blueprint item is missing.
@@ -598,5 +737,6 @@ Output format (JSON only):
   "claim_plan": ["..."],
   "evidence_needs": ["..."],
   "gaps_in_reference_draft": ["..."],
-  "risk_checks": ["..."]
+  "risk_checks": ["..."],
+  "feedback_plan": {"<feedback_point_summary>": "<proposed_fix>"}
 }
