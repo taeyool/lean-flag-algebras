@@ -17,7 +17,7 @@ load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_
 load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K4.json"
 
 example : (FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_1 )=[K4.toFinFlag]
-    (1 / 2) • FlagAlgebra_4_2_0_1 + (1 / 2) • FlagAlgebra_4_2_0_6
+    (1 / 2 : ℝ) • FlagAlgebra_4_2_0_1 + (1 / 2 : ℝ) • FlagAlgebra_4_2_0_6
   := by
   apply forbidEq_trans
     (unitVector_quot_mul_forbidEq_sum K4.toFinFlag
@@ -28,7 +28,8 @@ example : (FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_1 )=[K4.toFinFlag]
   rw [Finset.sum_eq_multiset_sum, ← flagSet_4_2_0_eq_univ]
   have hsetval := flagSet_4_2_0_val_eq
   simp [hsetval]
-  sorry
+  apply forbidEq_of_eq
+  rfl
 
 noncomputable def P4_density : FlagAlgebra ∅ₜ :=
   1 • FlagAlgebra_4_0_0_0
