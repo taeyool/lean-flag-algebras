@@ -349,8 +349,7 @@ perform add-AC sorting on the focused expression.
 -/
 elab "ac_sort_at_pipeline" : conv => do
   evalTactic (← `(tactic|
-    (try norm_num;
-     try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
+    (try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
   acSortNormalizeConv
   evalTactic (← `(tactic|
     (try (simp only [← add_assoc, ← add_smul]);
