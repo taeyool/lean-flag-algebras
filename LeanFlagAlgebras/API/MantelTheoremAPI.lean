@@ -50,8 +50,6 @@ load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
 load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
 
-generate_unitVector_lemmas 3 3
-
 lemma K2_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by

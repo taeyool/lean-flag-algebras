@@ -81,8 +81,6 @@ load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
 load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
 
-
-
 def σ₁ : FlagType (Fin 2) := FlagType_2_0
 noncomputable def v₁ : FlagAlgebraVec σ₁ 4 := ![
   FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_1, FlagAlgebra_3_2_0_2, FlagAlgebra_3_2_0_3
@@ -91,8 +89,6 @@ def σ₂ : FlagType (Fin 2) := FlagType_2_1
 noncomputable def v₂ : FlagAlgebraVec σ₂ 3 := ![
   FlagAlgebra_3_2_1_0, FlagAlgebra_3_2_1_1, FlagAlgebra_3_2_1_2
 ]
-
-generate_unitVector_lemmas 4 11
 
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500

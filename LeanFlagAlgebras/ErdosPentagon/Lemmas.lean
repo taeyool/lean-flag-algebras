@@ -244,6 +244,7 @@ lemma flagQuadraticForm_P_v₀_forbidEq
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
+  simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
 noncomputable def flagQuadraticForm_Q_v₁_expand
@@ -288,6 +289,7 @@ lemma flagQuadraticForm_Q_v₁_forbidEq
   simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
+  simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
 noncomputable def flagQuadraticForm_R_v₂_expand
@@ -322,6 +324,7 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   simp [flagQuadraticForm, v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
+  simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
 lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
