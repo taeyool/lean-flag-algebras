@@ -49,36 +49,60 @@ theorem forbidLE_add_QuadraticForm
   exact flagQuadraticForm_nonneg M hM v
 
 /-
-Generates a batch of `simp` lemmas of the form
-
-  ⟦unitVector ⟨n, Flag_n_0_0_i⟩⟧ = FlagAlgebra_n_0_0_i
-
-for `i = 0, 1, ..., count - 1`.  The names follow the convention
-`unitVector_FlagAlgebra_<n>_0_0_<i>`.
-
-Example:
-
-  generate_unitVector_lemmas 5 34
-  -- creates `unitVector_FlagAlgebra_5_0_0_0`, ..., `unitVector_FlagAlgebra_5_0_0_33`
+`fold_unit_vectors` scans the current goal for subexpressions of the form
+`⟦unitVector ⟨n, Flag_n_k_m_i⟩⟧` and folds each occurrence into the
+corresponding `FlagAlgebra_n_k_m_i` constant.  No arguments needed.
 -/
 
-syntax (name := generateUnitVectorLemmasCmd)
-  "generate_unitVector_lemmas" num num : command
+private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
+  let e := e.consumeMData
+  let fromChildren : Array Name := match e with
+    | .app f a => collectFlagConstNamesInExpr f ++ collectFlagConstNamesInExpr a
+    | .lam _ t b _ => collectFlagConstNamesInExpr t ++ collectFlagConstNamesInExpr b
+    | .forallE _ t b _ => collectFlagConstNamesInExpr t ++ collectFlagConstNamesInExpr b
+    | .letE _ t v b _ =>
+        collectFlagConstNamesInExpr t ++ collectFlagConstNamesInExpr v ++
+        collectFlagConstNamesInExpr b
+    | _ => #[]
+  match e with
+  | .const nm _ =>
+    if (match nm with | .str _ s => s.startsWith "Flag_" | _ => false) then
+      fromChildren.push nm
+    else fromChildren
+  | _ => fromChildren
 
-private def generateUnitVectorLemmas (n count : Nat) : CommandElabM Unit := do
-  for idx in [:count] do
-    let lemmaName := mkIdent (Name.mkSimple s!"unitVector_FlagAlgebra_{n}_0_0_{idx}")
-    let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{idx}")
-    let algebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{idx}")
-    elabCommand (← `(
-      @[simp]
-      theorem $lemmaName
-          : ⟦unitVector ⟨$(Syntax.mkNumLit (toString n)), $flagName⟩⟧ = $algebraName := Quotient.out_inj.mp rfl
-    ))
+private def flagConstToAlgebraName (nm : Name) : Option Name :=
+  match nm with
+  | .str parent s =>
+    if s.startsWith "Flag_" then some (.str parent ("FlagAlgebra_" ++ s.drop 5))
+    else none
+  | _ => none
 
-elab_rules : command
-  | `(command| generate_unitVector_lemmas $n:num $count:num) => do
-      generateUnitVectorLemmas n.getNat count.getNat
+private def algebraNameToFlagConstName (nm : Name) : Option Name :=
+  match nm with
+  | .str parent s =>
+    if s.startsWith "FlagAlgebra_" then some (.str parent ("Flag_" ++ s.drop 12))
+    else none
+  | _ => none
+
+elab "fold_unit_vectors" : tactic =>
+  withMainContext do
+    let goal ← getMainGoal
+    let target ← goal.getType
+    let flagNames := collectFlagConstNamesInExpr target
+    let env ← getEnv
+    let algebraNames : Array Name :=
+      (flagNames.filterMap flagConstToAlgebraName)
+      |>.foldl (fun acc nm => if acc.contains nm then acc else acc.push nm) #[]
+      |>.filter (fun nm => env.contains nm)
+    if algebraNames.isEmpty then return
+    let rw_rules ← algebraNames.mapM fun algNm => do
+      let some flagNm := algebraNameToFlagConstName algNm
+        | throwError s!"Could not infer flag constant name from {algNm}"
+      let algId := mkIdent algNm
+      let flagId := mkIdent flagNm
+      `(Lean.Parser.Tactic.rwRule| ← (show $algId:term = ⟦unitVector ⟨_, $flagId:term⟩⟧ by rfl))
+    evalTactic (← `(tactic| rw [$rw_rules,*]))
 
 /--
 `expand_one_at n` unfolds `one_expand` for a graph of size `n` and reduces
@@ -107,6 +131,7 @@ elab_rules : tactic
       evalTactic (← `(tactic| rw [$eq_univ_rw]))
       evalTactic (← `(tactic| simp [$val_eq_simp, unlabel_emptyType]))
       evalTactic (← `(tactic| simp [default, flagDensity_empty]))
+      evalTactic (← `(tactic| fold_unit_vectors))
 
 /--
 `flag_nonneg` closes goals of the form `f ≤[F_forbid] g` when `g - f` is a

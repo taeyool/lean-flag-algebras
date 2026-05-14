@@ -9,8 +9,6 @@ open SimpleGraph Matrix
 
 namespace ErdosPentagon
 
-generate_unitVector_lemmas 5 34
-
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 

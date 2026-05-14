@@ -46,8 +46,6 @@ lemma f₃_nonneg : 0 ≤ f₃ := by
   rw [pow_two]
   exact square_downward_nonneg _
 
-generate_unitVector_lemmas 4 11
-
 theorem K4_free_P4_density_upper_bound
     : P4_density ≤[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
