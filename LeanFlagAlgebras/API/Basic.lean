@@ -6,16 +6,16 @@ open Lean Elab Command Tactic
 
 namespace FlagAlgebras.API
 
-noncomputable def one_expand
+noncomputable def forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : FlagAlgebra ∅ₜ :=
   ∑ F' : FlagWithSize ∅ₜ expandSize with flagDensity₁ F_forbid.2 (unlabel F') = 0,
     (flagDensity₁ ((⟨0, default⟩ : FinFlag ∅ₜ).2) F' : ℝ) • ⟦unitVector ⟨expandSize, F'⟩⟧
 
-theorem one_forbidEq_expand
+theorem one_forbidEq_forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
-    : (1 : FlagAlgebra ∅ₜ) =[F_forbid] one_expand F_forbid expandSize := by
-  simpa [one_expand] using
+    : (1 : FlagAlgebra ∅ₜ) =[F_forbid] forbidExpand_one F_forbid expandSize := by
+  simpa [forbidExpand_one] using
     (unitVector_quot_forbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
 lemma forbidLE_trans_add_nonneg
@@ -81,13 +81,13 @@ elab_rules : command
       generateUnitVectorLemmas n.getNat count.getNat
 
 /--
-`expand_one_at n` unfolds `one_expand` for a graph of size `n` and reduces
+`expand_one_at n` unfolds `forbidExpand_one` for a graph of size `n` and reduces
 the resulting Finset sum to a sum over the explicit list of unlabeled flags.
 
 This automates the boilerplate step that appears identically in every flag algebra
 API proof, varying only in `n`:
 
-  dsimp only [one_expand]
+  dsimp only [forbidExpand_one]
   rw [Finset.sum_eq_multiset_sum]
   rw [← flagSet_n_0_0_eq_univ]
   simp [flagSet_n_0_0_val_eq, unlabel_emptyType]
@@ -102,7 +102,7 @@ elab_rules : tactic
       let val_eq_id  : TSyntax `term := mkIdent (Name.mkSimple s!"flagSet_{nVal}_0_0_val_eq")
       let eq_univ_rw  ← `(Lean.Parser.Tactic.rwRule| ← $eq_univ_id:term)
       let val_eq_simp ← `(Lean.Parser.Tactic.simpLemma| $val_eq_id:term)
-      evalTactic (← `(tactic| dsimp only [one_expand]))
+      evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
       evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum]))
       evalTactic (← `(tactic| rw [$eq_univ_rw]))
       evalTactic (← `(tactic| simp [$val_eq_simp, unlabel_emptyType]))

@@ -107,7 +107,7 @@ theorem C4_flagAlgebra_API
     apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
     exact forbidLE_refl K3.toFinFlag FlagAlgebra_4_0_0_8
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 4)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 4)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_three, add_assoc]

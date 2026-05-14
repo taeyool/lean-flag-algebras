@@ -63,7 +63,7 @@ theorem K4_free_P4_density_upper_bound
       _ ≤ P4_density + (8 / 9 : ℝ) • f₁ + (5 : ℝ) • f₂ + (35 / 9 : ℝ) • f₃ := le_add_of_nonneg_right h₃
 
   apply forbidLE_trans h
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K4.toFinFlag 4)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K4.toFinFlag 4)))
 
   dsimp [P4_density, f₁, f₂, f₃]
   simp only [pow_two, add_mul, mul_add, sub_mul, mul_sub, smul_mul_smul_comm]

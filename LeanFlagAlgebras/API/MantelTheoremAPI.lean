@@ -82,7 +82,7 @@ theorem Mantel_flagAlgebra_API
     apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
     exact forbidLE_refl K3.toFinFlag FlagAlgebra_2_0_0_1
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 3)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 3)))
 
   rw [forbidLE_rw_left_add_right K2_expand_under_forbid]
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]

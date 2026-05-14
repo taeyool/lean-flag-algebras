@@ -26,7 +26,7 @@ theorem ErdosPentagon_flagAlgebra_API
     apply forbidLE_add_QuadraticForm P_real P_real_posSemidef v₀
     exact forbidLE_refl K3.toFinFlag C5.toFlagAlgebra
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_expand K3.toFinFlag 5)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 5)))
 
   rw [C5_toFlagAlgebra_eq]
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
