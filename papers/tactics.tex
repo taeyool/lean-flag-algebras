@@ -1,0 +1,655 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{kotex}
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% --- Line-breaking inside \texttt{...} ---------------------------------------
+% \texttt{} 안의 긴 식별자가 줄 끝에서 끊기지 않아 오른쪽 여백을
+% 벗어나는 문제를 피하기 위해, sloppy + emergencystretch로 단락 단위의
+% 신축 여유를 크게 주고, \btt{...}는 underscore마다 line-break을 허용하는
+% texttt 변종으로 정의한다.  본문의 길게 이어지는 식별자에는 \btt를
+% 사용한다.
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+% \btt{a_b_c} 형태에서 underscore마다 break point를 허용
+\newcommand{\btt}[1]{\texttt{\detokenize{#1}}}
+% -----------------------------------------------------------------------------
+
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, syntax, elab, elab_rules, macro,
+    macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+
+\lstset{
+  inputencoding=utf8,
+  language=lean,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=4pt,
+  xrightmargin=4pt
+}
+
+\title{Domain-Specific Tactics in LeanFlagAlgebras}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+The aim of this project is to mechanically verify extremal graph density
+inequalities. In doing so we run into many proof patterns that recur
+across the development; writing them out by hand would mean repeating
+the same \texttt{rw}/\texttt{simp}/\texttt{ring} sequences for tens to
+hundreds of lines at a time. To avoid that, we implemented a number of
+domain-specific tactics using Lean 4's metaprogramming facilities.
+
+\bigskip\noindent
+The tactics fall into three groups, organized below so that each later
+group builds on the names and lemmas introduced by the earlier ones:
+
+\begin{itemize}
+  \item \textbf{Meta-commands.} These read flag definitions, density
+    values, and product expansions from external JSON files and
+    register the corresponding definitions and lemmas in bulk. Their
+    job is to set up the named definitions/theorems that later tactics
+    will look up.
+    \texttt{load\_empty\_typed\_flags},
+    \texttt{load\_flags},
+    \texttt{load\_flag\_pair\_density\_theorems},
+    \texttt{load\_forbid\_density\_theorems},
+    \texttt{load\_forbid\_mul\_theorems}.
+  \item \textbf{Flag-algebra-specific tactics.} These use the naming
+    convention set up by the meta-commands to unfold and rearrange
+    flag algebra expressions in actual proofs.
+    \texttt{expand\_one\_at},
+    \texttt{reduce\_flagmul},
+    \texttt{reduce\_downward\_flagmul},
+    \texttt{prove\_flag\_expand\_with\_forbidden\_flag},
+    \texttt{prove\_flag\_mul\_with\_forbidden\_flag},
+    \texttt{flag\_nonneg}.
+  \item \textbf{Algebraic-normalization tactics.} Used at the closing
+    step to sort summands and discharge equalities up to add-AC.
+    The \texttt{sort}/\texttt{ac\_sort} family.
+\end{itemize}
+
+\section{Meta-commands}
+
+\subsection{\texttt{load\_empty\_typed\_flags "<file>.json"}}
+
+Defined in \texttt{LeanFlagAlgebras/Flags/FlagLoader.lean} (with a
+universe-tuned variant of the same name in
+\texttt{Flags/UnivEffi.lean}). The command reads a JSON file
+\texttt{graphs\_n.json} that enumerates the empty-typed flags of size
+$n$ (i.e.\ unlabeled flags whose type is empty) and registers, in one
+go, the following:
+
+\begin{itemize}
+  \item For each flag $i$, the chain
+    \texttt{Sym2Graph\_n\_0\_0\_i} (the raw \texttt{Sym2Graph n} built
+    from the JSON edge list; \texttt{edges\_valid} closed by
+    \texttt{decide})
+    \texttt{ → Sym2Flag\_n\_0\_0\_i} (its isomorphism class, via
+    \texttt{Quotient.mk})
+    \texttt{ → Flag\_n\_0\_0\_i} (the bridge into the general flag
+    category)
+    \texttt{ → noncomputable def FlagAlgebra\_n\_0\_0\_i}
+    $= \llbracket \mathrm{unitVector}\;\langle n,\mathrm{Flag}\_n\_0\_0\_i\rangle\rrbracket$.
+  \item The finsets \texttt{Sym2FlagSet\_n\_0\_0} and
+    \texttt{flagSet\_n\_0\_0} of all such flags, together with the
+    three lemmas
+    \texttt{Sym2FlagSet\_n\_0\_0\_eq\_univ},
+    \texttt{flagSet\_n\_0\_0\_val\_eq} (whose \texttt{.val} matches
+    the list we wrote down), and
+    \texttt{flagSet\_n\_0\_0\_eq\_univ}, all discharged by
+    \texttt{native\_decide}.
+\end{itemize}
+
+The \texttt{graphs\_n.json} files are not written by hand. A short
+Python script, \texttt{LeanFlagAlgebras/Flags/generate\_graphs.py},
+takes the target size $n$ and emits the canonical edge-list
+enumeration of all isomorphism classes of graphs on $n$ vertices,
+using NetworkX's graph atlas together with a lexicographic-minimal
+relabeling pass to pick a canonical representative for each class.
+Supporting a new size is therefore one script run plus one
+\texttt{load\_empty\_typed\_flags} call. The project loads sizes
+$0,\ldots,5$ together in \texttt{LeanFlagAlgebras/Flags/FlagDef.lean}:
+
+\begin{lstlisting}
+import LeanFlagAlgebras.Flags.FlagLoader
+
+load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_0.json"
+...
+load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_5.json"
+\end{lstlisting}
+
+After this, names like \texttt{Flag\_5\_0\_0\_17} are available
+project-wide, and tactics such as \texttt{expand\_one\_at 5} pick up
+the matching \texttt{flagSet\_5\_0\_0\_eq\_univ} and
+\texttt{flagSet\_5\_0\_0\_val\_eq} produced by this call.
+
+Internally the command reads the JSON via
+\texttt{IO.FS.readFile + Json.parse} and extracts $n$ from the
+filename via \texttt{parseNFromGraphsPath}, forcing
+\texttt{graphs\_5.json} to correspond exactly to size~$5$. Edge
+validity is checked by \texttt{decide} and the completeness statement
+by \texttt{native\_decide}, so both the soundness and completeness of
+the externally generated enumeration are re-verified inside Lean. The
+guard \texttt{env.contains} skips names that are already defined,
+allowing repeated or nested imports without conflict.
+
+\subsection{\texttt{load\_flags "<file>.json"}}
+
+The labeled-flag counterpart of \texttt{load\_empty\_typed\_flags},
+defined in the same files. \texttt{load\_flags} reads a JSON file
+listing all flags of size $n$ on a fixed type of size $k$ with type
+index $m$, and registers:
+
+\begin{itemize}
+  \item The type graph and its bridge:
+    \texttt{Sym2FlagType\_k\_m}, \texttt{FlagType\_k\_m}.
+  \item For each flag $i$, the chain
+    \texttt{Sym2LabeledGraph\_n\_k\_m\_i} (carries both the edge set
+    and the type embedding $\mathrm{Fin}\;k \hookrightarrow
+    \mathrm{Fin}\;n$, synthesized automatically)
+    \texttt{ → Sym2Flag\_n\_k\_m\_i}
+    \texttt{ → Flag\_n\_k\_m\_i}
+    \texttt{ → noncomputable def FlagAlgebra\_n\_k\_m\_i}
+    (analogous to the empty-typed case).
+  \item Two \texttt{@[simp]} lemmas connecting back to the
+    empty-typed flags registered by \texttt{load\_empty\_typed\_flags}:
+    \begin{itemize}
+      \item \texttt{unlabel\_n\_k\_m\_i} ― forgetting the labeling
+        gives the underlying empty-typed flag,
+        \texttt{FlagAlgebras.unlabel Flag\_n\_k\_m\_i =
+        Flag\_n\_0\_0\_{\underline i}}.
+      \item \texttt{downward\_n\_k\_m\_i} ―
+        $\llbracket \mathrm{FlagAlgebra}\_n\_k\_m\_i \rrbracket_0
+        = c_{n,k,m,i}\cdot
+        \mathrm{FlagAlgebra}\_n\_0\_0\_{\underline i}$, where the
+        coefficient $c$ (the ``downward normalizing factor'') is
+        stored as the \texttt{"num/den"} string in the JSON.
+    \end{itemize}
+  \item The finsets \texttt{sym2FlagSet\_n\_k\_m} and
+    \texttt{flagSet\_n\_k\_m} together with the three completeness
+    lemmas
+    \texttt{sym2FlagSet\_n\_k\_m\_eq\_univ},
+    \texttt{flagSet\_n\_k\_m\_val\_eq},
+    \texttt{flagSet\_n\_k\_m\_eq\_univ}.
+\end{itemize}
+
+As with empty-typed flags, the JSON files come from a Python script:
+\texttt{LeanFlagAlgebras/Flags/generate\_flags.py} takes the three
+integers $n$, $k$, $m$ and emits \texttt{flags\_n\_k\_m.json},
+including the type embedding and the downward normalizing factor for
+each flag. The project loads all required $(n,k,m)$ combinations
+together in \texttt{LeanFlagAlgebras/Flags/FlagDef.lean}:
+
+\begin{lstlisting}
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_1_1_0.json"
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_2_1_0.json"
+...
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_2.json"
+\end{lstlisting}
+
+The internals follow the same pattern as
+\texttt{load\_empty\_typed\_flags}, with two extra ingredients. The
+type embedding $\mathrm{Fin}\;k \hookrightarrow \mathrm{Fin}\;n$ is
+synthesized from the \texttt{type\_indices} array by
+\texttt{mkTypeIndexNatExpr} as an if-else ladder, and both injectivity
+and adjacency-preservation are discharged by
+\texttt{fin\_cases <;> decide}. The downward coefficient $c$ is parsed
+from its \texttt{"num/den"} form into a $\mathbb{Q}$ term and the
+theorem body is closed by
+\texttt{downwardNormalizingFactor\_eq} together with
+\texttt{native\_decide}, so the numerical value is re-derived from the
+definition rather than trusted; a miscomputation by the script would
+surface as a compile error. The \texttt{unlabel\_*} and
+\texttt{downward\_*} lemmas are registered with \texttt{@[simp]},
+which lets downstream \texttt{simp} calls handle unlabeling and
+downward conversion automatically.
+
+\subsection{\texttt{load\_flag\_pair\_density\_theorems "<file>.json"}}
+
+This command, defined in
+\texttt{LeanFlagAlgebras/Flags/Densities/DensityLoader.lean}, reads a
+JSON file produced by \texttt{calculate\_densities.py} containing
+pre-computed pair densities $d_2(F_{p_1}, F_{p_2}; F_h)$ for two
+pattern flags and a host flag, and registers them as \texttt{@[simp]}
+lemmas. For each row \texttt{[p1, p2, h, "num/den"]} in the JSON it
+produces:
+
+\begin{itemize}
+  \item \texttt{@[simp] theorem flagDensity₂\_\allowbreak
+    Flag\_<patTag>\_p1\_\allowbreak
+    Flag\_<patTag>\_p2\_\allowbreak
+    Flag\_<hostTag>\_h} ― states
+    $\mathrm{flagDensity}_2\,F_{p_1}\,F_{p_2}\,F_h
+       = \tfrac{\mathrm{num}}{\mathrm{den}}$
+    and is closed by
+    \texttt{flagDensity₂\_eq\_sym2FlagDensity₂} followed by
+    \texttt{native\_decide}.
+\end{itemize}
+
+\texttt{API/C4TuranAPI.lean} and \texttt{ErdosPentagon/FlagMul.lean}
+call this for each relevant $(\text{host},\text{pattern})$ pair, e.g.\
+\texttt{density\_5\_3\_1\_from\_4\_3\_1.json}. One such JSON file
+typically contains hundreds to thousands of density values; once
+registered as \texttt{@[simp]}, downstream \texttt{simp} calls reduce
+any of these density expressions to a rational constant in one step.
+
+\subsection{\texttt{load\_forbid\_density\_theorems "<file>.json"}}
+
+This command, also defined in
+\texttt{LeanFlagAlgebras/Flags/Densities/DensityLoader.lean}, reads a
+JSON file produced by \texttt{gen\_free\_indices.py} which lists the
+indices of size-$n$ empty-typed flags that are $H$-free for a fixed
+forbidden subgraph $H$ ($K_3$, $K_4$, $\ldots$). For each flag $F_i$ it
+registers one of:
+
+\begin{itemize}
+  \item if $F_i$ is $H$-free:
+    \texttt{@[simp] theorem flagDensity1\_H\_Flag\_n\_0\_0\_i\_eq\_zero}
+    ― states \texttt{flagDensity₁ H.toFinFlag.2 Flag\_n\_0\_0\_i = 0};
+  \item otherwise:
+    \texttt{@[simp] theorem flagDensity1\_H\_Flag\_n\_0\_0\_i\_ne\_zero}
+    ― states \texttt{¬ flagDensity₁ H.toFinFlag.2 Flag\_n\_0\_0\_i = 0}.
+\end{itemize}
+
+Each theorem unfolds the forbidden-graph definition, rewrites with
+\texttt{flagDensity₁\_eq\_sym2EmptyTypeFlagDensity₁}, and closes by
+\texttt{native\_decide}.
+
+\texttt{API/C4TuranAPI.lean}, \texttt{ErdosPentagon/FlagMul.lean},
+and \texttt{API/K4freeP4.lean} load the appropriate JSON (e.g.\
+\texttt{graphs\_5\_K3\_free\_indices.json}). The ``is $F_i$
+$H$-free?'' check that recurs throughout the forbid-conditioned
+proofs is thereby precomputed and handed to \texttt{simp}, so
+downstream tactics never need to redo the classification.
+
+\subsection{\texttt{load\_forbid\_mul\_theorems "<file>.json"}}
+
+This command, defined in
+\texttt{LeanFlagAlgebras/Flags/Densities/MulLoader.lean}, consumes the
+\emph{same} JSON file as \texttt{load\_flag\_pair\_density\_theorems}
+(produced by \texttt{calculate\_densities.py}) together with the
+free-index data registered by \texttt{load\_forbid\_density\_theorems},
+and produces ``product expansion'' theorems. For each pair of pattern
+free indices $(i,j)$ with $i \le j$ it registers:
+
+\begin{itemize}
+  \item \texttt{theorem flagMul\_FlagAlgebra\_<patTag>\_i\_FlagAlgebra\_<patTag>\_j}
+    ― states
+    \[
+       F_i \cdot F_j \;=_{H\text{-forbid}}\;
+       \sum_{h \in \text{host\_free}} c_{i,j,h}\;
+       \mathrm{FlagAlgebra}\_{<\!\!\mathrm{hostTag}\!\!>}\_h,
+    \]
+    proved by rewriting with
+    \texttt{unitVector\_quot\_mul\_forbidEq\_sum} and expanding the sum
+    via \texttt{flagSet\_<hostTag>\_eq\_univ} and
+    \texttt{flagSet\_<hostTag>\_val\_eq}, so that forbidden host flags
+    are eliminated by \texttt{simp}. (If the original call had $i > j$,
+    the proof first applies \texttt{rw [mul\_comm]}.)
+\end{itemize}
+
+In practice this command is called in tandem with
+\texttt{load\_flag\_pair\_density\_theorems} on the same density JSON,
+e.g.\ \texttt{density\_5\_3\_2\_from\_4\_3\_2.json}. The generated
+names \texttt{flagMul\_<A>\_<B>} match exactly those later synthesized
+by \texttt{reduce\_flagmul} and \texttt{reduce\_downward\_flagmul}, so
+the producer and the consumer share a single naming convention. What
+would otherwise be tens to hundreds of ``$F_i \cdot F_j = \ldots$''
+lemmas per host size, each with a hand-computed right-hand side, is
+reduced to one JSON file and one command.
+
+\section{Flag-algebra-specific tactics}
+
+These tactics use the names registered by the meta-commands
+(\texttt{Flag\_*}, \texttt{FlagAlgebra\_*}, \texttt{flagSet\_*\_eq\_univ},
+\texttt{flagMul\_*}) inside actual proofs. They are presented in the
+order they typically appear in a proof: expand $\to$ resolve products
+$\to$ use the forbidden assumption $\to$ close by non-negativity.
+
+\subsection{\texttt{expand\_one\_at n}}
+
+Defined in \texttt{LeanFlagAlgebras/API/Basic.lean}. Under a forbid
+condition \texttt{F\_forbid}, the tactic rewrites the unit
+$1 \in \mathrm{FlagAlgebra}$ as the explicit weighted sum of
+empty-typed flags of size $n$ that do not contain \texttt{F\_forbid} as
+a subgraph. The underlying definition is
+\texttt{forbidExpand\_one F\_forbid n}, also in
+\texttt{API/Basic.lean}; \texttt{expand\_one\_at n} unfolds it and
+spells out the sum using the \texttt{flagSet\_n\_0\_0\_*} lemmas
+registered by \texttt{load\_empty\_typed\_flags}.
+
+It is the first step in all four main API proofs
+(\texttt{MantelTheoremAPI}, \texttt{C4TuranAPI}, \texttt{K4freeP4},
+\texttt{ErdosPentagonAPI}); the size argument changes from $3$ to $5$
+across them but the call site looks the same:
+
+\begin{lstlisting}
+expand_one_at 3   -- or 4, or 5 in the other proofs
+\end{lstlisting}
+
+The tactic synthesizes the required theorem names
+(\texttt{flagSet\_\$n\_0\_0\_eq\_univ},
+\texttt{flagSet\_\$n\_0\_0\_val\_eq}) from \texttt{n} and rewrites
+with them, so the same call works at every size.
+
+\subsection{\texttt{reduce\_flagmul}}
+
+Defined in \texttt{LeanFlagAlgebras/ErdosPentagon/Lemmas.lean}. The
+tactic handles equality goals of the form
+\[
+   c_1 (A_1 \cdot B_1) + c_2 (A_2 \cdot B_2) + \cdots + c_n (A_n \cdot B_n)
+   \;=_{F\text{-forbid}}\; \mathrm{RHS},
+\]
+i.e.\ a linear combination of flag-algebra products on the left.
+Starting from the head, it picks the leftmost product $A_i \cdot B_i$,
+looks up the matching \texttt{flagMul\_<A>\_<B>} theorem registered by
+\texttt{load\_forbid\_mul\_theorems} (which expands $A_i \cdot B_i$ as
+a linear combination of base flags
+$\sum_j d_{ij}\,F_j$), uses it to replace the head term, and moves
+$c_i\,\sum_j d_{ij}\,F_j$ onto the right-hand side. The next product
+becomes the new head, and the process repeats until the left-hand
+side is exhausted. The net effect is that every product on the left
+has been resolved and the difference relative to \texttt{RHS} now
+sits entirely on the right.
+
+A representative use is the lemma
+\texttt{flagQuadraticForm\_P\_v0\_forbidEq} in
+\texttt{ErdosPentagon/Lemmas.lean}: $v_0$ is an $8$-dimensional vector,
+so unfolding \texttt{flagQuadraticForm} yields $8^2 = 64$ product
+terms, all dispatched by a single \texttt{reduce\_flagmul} call.
+
+The tactic is essentially a fixed-point loop (fuel $256$): it inspects
+the head term as an \texttt{Expr}, extracts the
+\texttt{FlagAlgebra\_*}/\texttt{Flag\_*} constants from the two
+factors, synthesizes the name \texttt{flagMul\_<A>\_<B>} (trying both
+factor orderings, and both the local namespace and
+\texttt{ErdosPentagon}), and rewrites with the first match.
+
+\subsection{\texttt{reduce\_downward\_flagmul}}
+
+Defined in \texttt{LeanFlagAlgebras/API/ReduceFlagMul.lean}. The
+tactic handles \texttt{forbidLE} goals whose left-hand side is a sum
+in which the products on the upper type are wrapped in
+\texttt{downward}. Concretely, the goal has the form
+\[
+   T_1 + T_2 + \cdots + T_n \;\le_{F\text{-forbid}}\; \mathrm{RHS},
+\]
+where each $T_i$ is one of two shapes:
+\begin{enumerate}
+  \item \texttt{downward(}$c_i \cdot (A_i \cdot B_i)$\texttt{)} ―
+    a product $A_i \cdot B_i$ of two unit flags taken on the upper
+    type and then pushed down to the base ($\emptyset_t$) type. The
+    product itself cannot be expanded into base-type flags directly:
+    it must be expanded on the upper type and only then pushed down.
+  \item A single flag term (e.g.\ $\mathrm{FlagAlgebra}\_n\_0\_0\_k$)
+    that already lives on the base type and just needs to be moved to
+    the right.
+\end{enumerate}
+
+For each leading term $T$ the tactic acts as follows:
+
+\begin{itemize}
+  \item If $T = \texttt{downward}(c \cdot (A \cdot B))$: it looks up the
+    \texttt{flagMul\_<A>\_<B>} lemma registered by
+    \texttt{load\_forbid\_mul\_theorems}, which states
+    $A \cdot B =_{F\text{-forbid}} \sum_j d_j\,F_j$. Combining this
+    with the coefficient $c$ via \texttt{forbidEq\_smul} and then
+    applying \texttt{downward\_forbidEq\_equal\_flags} on both sides
+    yields the base-type equation
+    $\texttt{downward}(c \cdot (A \cdot B))
+       \,=_{F\text{-forbid}}\, \sum_j (c \cdot d_j)\,\texttt{downward}(F_j)$.
+    The term is then moved to the right by
+    \texttt{forbidLE\_rw\_left\_add\_right} together with
+    \texttt{forbidLE\_move\_add\_left\_iff} (or, if it is the last
+    term, the \texttt{\_rw\_left}/\texttt{\_move\_term\_\ldots}
+    variants).
+  \item If $T$ is a single flag term: no rewriting is needed; the
+    tactic just applies
+    \texttt{forbidLE\_move\_add\_left\_iff} (or
+    \texttt{forbidLE\_move\_term\_left\_iff} for the last term) to
+    move it to the right.
+\end{itemize}
+
+This process repeats until the left-hand side has nothing left to
+process, so all \texttt{downward(\ldots)} and single-flag terms end
+up on the right and the left side simplifies to a form ready to be
+closed. Before the loop, a
+\texttt{try simp only [downward\_add, add\_assoc]} distributes
+\texttt{downward(a+b)} as \texttt{downward(a) + downward(b)} and
+right-associates the sum.
+
+The tactic is used in the three main proofs ― Mantel, $C_4$-Tur\'an,
+and Erd\H{o}s pentagon ― always in the same pattern: unfold the
+\texttt{flagQuadraticForm}s with \texttt{simp}, then call
+\texttt{reduce\_downward\_flagmul} once. The Erd\H{o}s pentagon proof
+in \texttt{LeanFlagAlgebras/API/ErdosPentagonAPI.lean} is the largest
+of the three; three quadratic forms with $v_0, v_1, v_2$ of lengths
+$8, 6, 5$ produce $8^2 + 6^2 + 5^2 = 125$ product terms, all
+dispatched by a single call:
+
+\begin{lstlisting}
+theorem ErdosPentagon_flagAlgebra_API
+    : C5.toFlagAlgebra <=[K3.toFinFlag] (24 / 625 : Real) * (1 : FlagAlgebra empty) := by
+  ...
+  simp [flagQuadraticForm, v_0, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
+  simp [v_1, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
+  simp [v_2, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
+  reduce_downward_flagmul
+  expand_one_at 5
+  ...
+\end{lstlisting}
+
+The Mantel proof has one quadratic form of length $2$ ($4$ product
+terms) and $C_4$-Tur\'an has two of lengths $4, 3$ ($25$ terms); in
+both cases the corresponding \texttt{reduce\_downward\_flagmul} call
+is again a single line.
+
+\subsection{\texttt{prove\_flag\_expand\_with\_forbidden\_flag N} and
+\texttt{prove\_flag\_mul\_with\_forbidden\_flag N}}
+
+Both tactics are defined in \texttt{LeanFlagAlgebras/Logic/Tactic.lean}
+and close \texttt{Assert}-level entailment goals of the form
+\[
+   F_{\text{forbidden}} =_\alpha 0 \;\vdash_\alpha\;
+   \mathrm{LHS} =_\alpha \sum_j c_j\,F'_j,
+\]
+where the right-hand side is a linear combination of size-$N$ flags
+that do \emph{not} contain $F_{\text{forbidden}}$. The two tactics
+differ only in the shape of the left-hand side:
+
+\begin{itemize}
+  \item \texttt{prove\_flag\_expand\_with\_forbidden\_flag N} handles
+    $\mathrm{LHS} = F$, a single flag: ``rewriting $F$ as a size-$N$
+    expansion in which all forbidden terms vanish''.
+  \item \texttt{prove\_flag\_mul\_with\_forbidden\_flag N} handles
+    $\mathrm{LHS} = F_1 \cdot F_2$, a product of two flags: ``rewriting
+    the product as a size-$N$ linear combination, again with the
+    forbidden terms removed''.
+\end{itemize}
+
+A representative use from
+\texttt{LeanFlagAlgebras/Logic/MantelTheorem.lean}, with
+$F_{\text{forbidden}} = \mathrm{FlagAlgebra}\_3\_0\_0\_3$ (the size-$3$
+$K_3$ flag) for \texttt{\_expand\_} and
+$\mathrm{FlagAlgebra}\_3\_1\_0\_5$ for \texttt{\_mul\_}:
+
+\begin{lstlisting}
+example : FlagAlgebra_3_0_0_3 =a 0
+    |-a FlagAlgebra_2_0_0_1
+        =a (1 / 3 : Real) * FlagAlgebra_3_0_0_1
+         + (2 / 3 : Real) * FlagAlgebra_3_0_0_2 := by
+  prove_flag_expand_with_forbidden_flag 3
+
+example : FlagAlgebra_3_1_0_5 =a 0
+    |-a FlagAlgebra_2_1_0_0 * FlagAlgebra_2_1_0_0
+        =a FlagAlgebra_3_1_0_2 + FlagAlgebra_3_1_0_0 := by
+  prove_flag_mul_with_forbidden_flag 3
+\end{lstlisting}
+
+Internally both tactics follow the same script: parse
+\texttt{FlagAlgebra\_n\_k\_m\_i} constants in the goal with
+\texttt{parseFlagAlgebraIndices?}, combine the indices with the
+argument \texttt{N} to synthesize the names
+\texttt{flagSet\_N\_k\_m\_eq\_univ} and
+\texttt{flagSet\_N\_k\_m\_val\_eq} (registered by the meta-commands),
+then run a fixed sequence of \texttt{simp}/\texttt{rw} steps:
+\texttt{intro $\varphi$ h}, expand the left-hand side as a sum over
+size-$N$ flags (\texttt{unitVector\_quot\_eq\_sum} for the single-flag
+case, \texttt{unitVector\_quot\_mul\_eq\_flagMul\_quot} for the
+product case), unfold the resulting sum into an explicit list,
+distribute the \texttt{PositiveHom}, substitute the hypothesis
+\texttt{h} to drop the forbidden term, and finish with
+\texttt{ring\_nf}. The \texttt{\_mul\_} variant additionally applies
+\texttt{rw [mul\_comm]} first if the two factor indices are in the
+wrong order, matching the ``smaller index on the left'' convention
+used by \texttt{load\_forbid\_mul\_theorems}. Each of these
+``$F$ vs.\ size-$N$ expansion'' and ``$F_1 \cdot F_2$ vs.\ size-$N$
+expansion'' goals is closed by a single parameterized call instead
+of the same 6--7-line script repeated by hand.
+
+\subsection{\texttt{flag\_nonneg}}
+
+A macro tactic defined in \texttt{LeanFlagAlgebras/API/Basic.lean}. It
+closes goals of the form
+\[
+   0 \;\le\; c_1 \cdot \llbracket\mathrm{unitVector}\,F_1\rrbracket
+   + c_2 \cdot \llbracket\mathrm{unitVector}\,F_2\rrbracket
+   + \cdots + c_k \cdot \llbracket\mathrm{unitVector}\,F_k\rrbracket
+   \qquad (c_i \ge 0),
+\]
+i.e.\ ``the right-hand side is a non-negative combination of unit
+vectors''. This is the final step in all four main API proofs
+(\texttt{API/MantelTheoremAPI.lean}, \texttt{API/C4TuranAPI.lean},
+\texttt{API/K4freeP4.lean}, \texttt{API/ErdosPentagonAPI.lean}): the
+earlier tactics (\texttt{reduce\_downward\_flagmul},
+\texttt{expand\_one\_at}, \texttt{ac\_sort\_rhs\_pipeline}, \ldots)
+move every nontrivial term to the right and reduce the left side to
+$0$, and \texttt{apply forbidLE\_of\_le} drops the forbid qualifier;
+each of the four proofs is concluded by
+
+\begin{lstlisting}
+  ...
+  apply forbidLE_of_le
+  flag_nonneg
+\end{lstlisting}
+
+It introduces an arbitrary positive homomorphism $\varphi$,
+distributes it over the sum with \texttt{PositiveHom.map\_add},
+splits leaf-by-leaf with \texttt{repeat apply add\_nonneg}, and
+discharges each leaf with \texttt{positiveHom\_unitVector\_ge\_zero}.
+\texttt{flag\_nonneg} bundles these four steps into a single macro.
+
+\section{Algebraic normalization tactics}
+
+After the domain-specific tactics resolve all products, the goal typically
+reduces to an equality between two linear combinations sharing the same summands
+in different orders. The \texttt{ac\_sort} family, defined in
+\texttt{LeanFlagAlgebras/Utils/SortTactic.lean}, handles this final step.
+
+An earlier attempt, \texttt{sort}, closed the sorted equality with
+\texttt{ring\_nf} or \texttt{abel\_nf}, which proved too slow for the
+tens-to-hundreds of summands typical in flag algebra goals. \texttt{ac\_sort}
+keeps the sort but restricts the equality proof to add-AC only. The original
+\texttt{sort} variants remain in the file but are unused in practice.
+
+\texttt{ac\_sort} proceeds in four steps. \texttt{flattenAddTerms} flattens the
+expression tree into a summand array $[t_1, \ldots, t_m]$ (e.g.\
+\texttt{c~{\small\textbullet}~FlagAlgebra\_5\_0\_0\_17} or
+\texttt{-~FlagAlgebra\_5\_0\_0\_3}). The sort key for each summand is obtained
+by stripping the scalar with \texttt{getSmulArgs?} and reading the trailing
+index of the base identifier with \texttt{parseTrailingNat?}.
+\texttt{insertSortedBy} stable-sorts the array and \texttt{mkRightAssocAdd}
+reassembles the result into $t_{\pi(1)} + \cdots + t_{\pi(m)}$. The auxiliary
+equality is closed by
+\texttt{first | ac\_rfl | simp [add\_assoc, add\_left\_comm, add\_comm]} and
+rewritten into the goal via \texttt{conv}. Variants \texttt{ac\_sort\_lhs} /
+\texttt{\_rhs} sort one side; \texttt{ac\_sort} sorts both.
+
+The \texttt{ac\_sort\_pipeline} variants (\texttt{\_lhs\_pipeline} /
+\texttt{\_rhs\_pipeline}) add pre- and post-processing around the sort. A
+\texttt{simp only [neg\_add, neg\_neg, sub\_eq\_add\_neg,
+$\leftarrow$~neg\_smul, add\_assoc, smul\_smul]} pass normalizes subtraction
+and flattens nested scalar multiples before sorting; afterwards,
+\texttt{simp only [$\leftarrow$~add\_assoc, $\leftarrow$~add\_smul]} and
+\texttt{norm\_num} merge summands sharing the same base and evaluate
+coefficients.
+
+In the main proofs, \texttt{ac\_sort\_pipeline} (or its \texttt{\_rhs\_}
+variant) closes the goal immediately after \texttt{reduce\_flagmul} or
+\texttt{reduce\_downward\_flagmul}:
+
+\begin{lstlisting}
+  ...
+  reduce_flagmul
+  apply Forbid.forbidEq_of_eq
+  ac_sort_pipeline
+\end{lstlisting}
+
+\section{Summary}
+
+Each main API proof in this project follows the same skeleton. The
+\texttt{load\_*} meta-commands run once at the module level, reading
+externally generated JSON files and registering all flag definitions, density
+values, and product expansion lemmas. Inside the proof body, \texttt{simp}
+unfolds the quadratic form into an explicit sum of products;
+\texttt{reduce\_downward\_flagmul} (or \texttt{reduce\_flagmul} for equality
+goals) resolves every product into a linear combination of base flags;
+\texttt{expand\_one\_at~n} rewrites the remaining $1$ as a weighted sum of
+forbidden-free flags of size $n$; \texttt{ac\_sort\_rhs\_pipeline} normalizes
+the right-hand side; and \texttt{apply~forbidLE\_of\_le} followed by
+\texttt{flag\_nonneg} discharges the non-negativity condition. The Mantel,
+$C_4$-Tur\'an, and Erd\H{o}s pentagon proofs all fit this template, differing
+only in the size argument to \texttt{expand\_one\_at} and the dimensions of
+the quadratic forms involved.
+
+The key design decision is that definition and theorem names carry their
+numeric indices --- \texttt{Flag\_n\_k\_m\_i}, \texttt{FlagAlgebra\_n\_k\_m\_i},
+\texttt{flagMul\_<A>\_<B>}, and so on --- so each tactic can determine which
+lemma to apply by inspecting the goal's \texttt{Expr} and synthesizing the
+corresponding name, with no additional configuration at the call site. The
+meta-commands that register these names and the tactics that consume them share
+a single naming convention, which also makes the system easy to extend:
+supporting a new forbidden graph or a larger host size amounts to generating a
+new JSON file and adding one \texttt{load\_*} call, after which all existing
+tactics continue to work without modification. The Mantel ($K_3$-free),
+$C_4$-Tur\'an, and Erd\H{o}s pentagon ($K_3$-free) proofs already demonstrate
+this: despite targeting different extremal problems, they share the same tactic
+stack.
+
+None of the tactics described here implement a sophisticated algorithm. Their
+value is that the same boilerplate --- unfolding a flag expansion, resolving a
+product, closing a non-negativity goal --- that would otherwise repeat across
+every lemma is replaced by a single parameterized call. The steps that remain
+visible in the proof, \texttt{reduce\_downward\_flagmul},
+\texttt{expand\_one\_at}, and \texttt{flag\_nonneg}, correspond directly to the
+mathematical operations on paper, which keeps the proofs concise and auditable.
+
+\end{document}
