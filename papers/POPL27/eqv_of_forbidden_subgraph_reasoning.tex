@@ -1,0 +1,397 @@
+\documentclass[11pt]{article}
+
+% --- packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+% --- theorem environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
+
+% --- macros ---
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Csem}{\mathcal{C}_{\mathrm{sem}}}
+\newcommand{\Hom}{\mathrm{Hom}}
+\newcommand{\Homp}{\mathrm{Hom}^{+}}
+\newcommand{\RandomExt}{\mathrm{RandomExt}}
+\newcommand{\avg}[2]{\llbracket #1 \rrbracket_{#2}}
+\DeclareMathOperator{\supp}{supp}
+
+\title{Equivalence of Forbidden-Subgraph Reasoning\\
+       and Quotient Semantics in Flag Algebras}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We investigate two natural ways of expressing, within Razborov's flag-algebra
+formalism, the statement that a flag-algebra element is asymptotically
+non-negative under a forbidden-induced-subgraph constraint. The first works in the
+quotient theory $\T' = \T + A$ where $A$ forbids a fixed induced subgraph; the
+second works in the unconstrained theory $\T$ but conditions on root
+homomorphisms that satisfy~$A$, and asks for almost-sure non-negativity along
+ensembles of random homomorphisms (Razborov, Definition~10). We show that for
+$\sigma = \emptyset$ these two formulations are equivalent, with the
+$(\Leftarrow)$ direction relying essentially on the (induced) graph removal
+lemma. We discuss what changes for general types $\sigma$ and identify the
+mappings between homomorphism spaces that mediate the equivalence.
+\end{abstract}
+
+\section{Introduction and Setup}
+
+Let $\T$ denote the theory $\T_{\mathrm{Graph}}$ of simple undirected graphs, and
+let $A$ be a universal axiom that forbids a fixed induced subgraph $H$ (the
+running example is $H = K_3$, in which case $A$ is the assertion
+``$\phi(K_3) = 0$''). Write $\T' \coloneqq \T + A$. Following Razborov's
+construction in~\S2.3.3 of~\cite{Razborov2007}, for each non-degenerate type
+$\sigma$ in $\T'$ there is a canonical algebra homomorphism
+\[
+  \pi^{\sigma} \colon \A^{\sigma}[\T] \twoheadrightarrow \A^{\sigma}[\T']
+\]
+realising $\A^{\sigma}[\T']$ as a quotient of $\A^{\sigma}[\T]$. Concretely,
+$\pi^{\sigma}$ sends a $\sigma$-flag $F$ to itself if its underlying model
+satisfies $A$, and to $0$ otherwise.
+
+We use the notation $\avg{\,\cdot\,}{\sigma}$ for Razborov's downward
+averaging operator (\S2.2) and write $\langle \sigma \rangle \coloneqq
+\avg{1_{\sigma}}{\sigma} \in \A^{\emptyset}[\T]$ for the unlabelled
+counterpart of the identity flag.\footnote{We restrict $\sigma_0 = \emptyset$
+throughout, so $\eta$ is the empty map and may be suppressed from the
+notation.} For $\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ with
+$\phi_0(\langle \sigma \rangle) > 0$ we write $\RandomExt(\phi_0; \sigma)$ for
+the unique probability measure on $\Homp(\A^{\sigma}[\T], \R)$ guaranteed by
+Theorem~3.5 of~\cite{Razborov2007}; a sample from this measure is denoted
+$\phi^{\sigma}$.
+
+\medskip
+
+The central question is whether two natural ways to assert ``non-negativity
+under the constraint $A$'' coincide.
+
+\begin{question}\label{q:main}
+Let $f \in \A^{\sigma}[\T]$. Are the following equivalent?
+\begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.5em]
+  \item\label{cond:quot}
+        \emph{(Quotient semantics.)} For every
+        $\phi \in \Homp(\A^{\sigma}[\T'], \R)$,
+        \[ \phi(\pi^{\sigma}(f)) \;\geq\; 0. \]
+  \item\label{cond:rand}
+        \emph{(Ensemble semantics.)} For every
+        $\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ satisfying $\phi_0 \models A$
+        (e.g.\ $\phi_0(K_3) = 0$) and $\phi_0(\langle \sigma \rangle) > 0$,
+        \[
+          \Prob_{\phi^{\sigma} \sim \RandomExt(\phi_0; \sigma)}
+          \bigl[\phi^{\sigma}(f) \geq 0 \bigr] \;=\; 1.
+        \]
+\end{enumerate}
+\end{question}
+
+The motivation is practical: \ref{cond:rand} expresses ``$f \geq 0$ over
+triangle-free graphs'' entirely within $\T$, never leaving the larger algebra
+$\A^{\sigma}[\T]$. This is convenient when one wants to combine
+forbidden-subgraph reasoning with other techniques that are naturally phrased
+in $\T$.
+
+\section{The Bridge: Mappings Between Homomorphism Spaces}\label{sec:bridge}
+
+Two natural set-theoretic mappings underlie Question~\ref{q:main}.
+
+\paragraph{(a) Lifting $\T'$-homomorphisms to $\T$-homomorphisms.}
+Since $\pi^{\sigma}$ is surjective, every
+$\phi \in \Homp(\A^{\sigma}[\T'], \R)$ pulls back to
+\[
+  \widetilde{\phi} \;\coloneqq\; \phi \circ \pi^{\sigma}
+  \;\in\; \Homp(\A^{\sigma}[\T], \R),
+\]
+and $\widetilde{\phi}$ vanishes on every $\sigma$-flag whose underlying model
+violates $A$. Conversely, any $\psi \in \Homp(\A^{\sigma}[\T], \R)$ with
+$\psi(F) = 0$ for every $A$-violating $F$ descends to a unique homomorphism in
+$\Homp(\A^{\sigma}[\T'], \R)$. Thus the lifting identifies
+\[
+  \Homp(\A^{\sigma}[\T'], \R)
+  \;\cong\;
+  \bigl\{\,\psi \in \Homp(\A^{\sigma}[\T], \R) : \psi \models A \,\bigr\}.
+\]
+
+\paragraph{(b) Forgetting the labelled vertices.}
+For each $\sigma$ there is a ``forgetful'' map
+\[
+  \Phi^{\sigma} \colon
+  \Homp(\A^{\sigma}[\T], \R) \to \Homp(\A^{\emptyset}[\T], \R),
+  \qquad
+  \Phi^{\sigma}(\psi)(g) \coloneqq \psi(\pi^{\sigma}(g))
+  \text{ for } g \in \A^{\emptyset}[\T],
+\]
+where $\pi^{\sigma} \colon \A^{\emptyset}[\T] \to \A^{\sigma}[\T]$ is
+Razborov's \emph{upward} operator from~\S2.3.1 (sending an unlabelled model
+to the sum of all its labellings; see Theorem~2.8 of~\cite{Razborov2007} for
+its key properties).\footnote{We overload the symbol $\pi^{\sigma}$ here: in
+the rest of this note it denotes the quotient map
+$\A^{\sigma}[\T] \to \A^{\sigma}[\T']$ of~\S2.3.3. Both maps are
+algebra homomorphisms and the meaning is always clear from context.}
+Crucially, if $\psi \models A$, then so does $\Phi^{\sigma}(\psi)$ on
+$\A^{\emptyset}[\T]$, because $\pi^{\sigma}(F) = 0$ whenever the unlabelled
+model $F$ violates $A$.
+
+\paragraph{Compatibility with ensembles.}
+The two maps fit together cleanly: given
+$\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ with $\phi_0(\langle \sigma \rangle)
+> 0$, the ensemble $\RandomExt(\phi_0; \sigma)$ is supported on the fibre
+$(\Phi^{\sigma})^{-1}(\phi_0)$, and is the canonical disintegration of $\phi_0$
+along $\Phi^{\sigma}$ (Theorems~3.5 and~3.17 of~\cite{Razborov2007}).
+
+\section{The Equivalence}
+
+\begin{theorem}\label{thm:main}
+Let $\sigma = \emptyset$. Then conditions~\ref{cond:quot}
+and~\ref{cond:rand} of Question~\ref{q:main} are equivalent.
+\end{theorem}
+
+When $\sigma = \emptyset$ the ensemble is degenerate (a Dirac mass at
+$\phi_0$ itself), and the equivalence reduces to the assertion
+\[
+  \pi^{\emptyset}(f) \in \Csem(\F^{\emptyset}[\T'])
+  \iff
+  \bigl(\phi_0 \models A \Rightarrow \phi_0(f) \geq 0\bigr),
+\]
+which is the natural statement of soundness/completeness of quotient
+semantics. We will prove both directions and indicate where the argument
+generalises to $\sigma \neq \emptyset$.
+
+\subsection{Proof of \texorpdfstring{$\ref{cond:quot} \Rightarrow
+\ref{cond:rand}$}{(1) implies (2)}}
+
+This direction works for arbitrary $\sigma$.
+
+\begin{proof}
+Fix $\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ with $\phi_0 \models A$ and
+$\phi_0(\langle \sigma \rangle) > 0$, and let $\phi^{\sigma} \sim
+\RandomExt(\phi_0; \sigma)$. We first show that $\phi^{\sigma}$ almost surely
+satisfies $A$. Let $H$ be the forbidden induced subgraph, viewed as an
+element of $\A^{\emptyset}[\T]$. By Theorem~2.8(a) of~\cite{Razborov2007}
+(applied with $f = H$ and $g = 1_{\sigma}$),
+\[
+  \avg{\pi^{\sigma}(H)}{\sigma} \;=\; H \cdot \langle \sigma \rangle
+  \quad \text{in } \A^{\emptyset}[\T].
+\]
+By the chain rule (Lemma~2.2 of~\cite{Razborov2007}), the product
+$H \cdot \langle\sigma\rangle$ expands as a non-negative combination of
+$\emptyset$-flags each of which contains $H$ as an induced subgraph; hence
+$\phi_0(H) = 0$ forces $\phi_0(H \cdot \langle\sigma\rangle) = 0$. Therefore,
+by Definition~10 of~\cite{Razborov2007},
+\[
+  \E\bigl[\phi^{\sigma}(\pi^{\sigma}(H))\bigr]
+  \;=\;
+  \frac{\phi_0\bigl(\avg{\pi^{\sigma}(H)}{\sigma}\bigr)}{\phi_0(\langle \sigma \rangle)}
+  \;=\;
+  \frac{\phi_0(H \cdot \langle \sigma \rangle)}{\phi_0(\langle\sigma\rangle)}
+  \;=\; 0.
+\]
+Since $\phi^{\sigma}(\pi^{\sigma}(H)) \geq 0$ pointwise,
+\[
+  \Prob\bigl[\phi^{\sigma}(\pi^{\sigma}(H)) = 0\bigr] = 1.
+\]
+By Remark~5 in~\cite{Razborov2007} (the equality version of Theorem~3.18),
+this propagates: $\phi^{\sigma}$ almost surely sends every $\sigma$-flag whose
+underlying model contains $H$ to zero. Equivalently, $\phi^{\sigma}$ almost
+surely satisfies $A$, so almost surely $\phi^{\sigma}$ descends to a member of
+$\Homp(\A^{\sigma}[\T'], \R)$ via the identification of
+Section~\ref{sec:bridge}\,(a).
+
+Hypothesis~\ref{cond:quot} now applies to the descended homomorphism, giving
+$\phi^{\sigma}(f) = \phi^{\sigma}(\pi^{\sigma}(f)) \geq 0$ almost surely (the
+first equality holds whenever $\phi^{\sigma}$ vanishes on $\ker \pi^{\sigma}$,
+i.e.\ almost surely).
+\end{proof}
+
+\subsection{Proof of \texorpdfstring{$\ref{cond:rand} \Rightarrow
+\ref{cond:quot}$}{(2) implies (1)} for $\sigma = \emptyset$}
+
+\begin{proof}
+Let $\phi \in \Homp(\A^{\emptyset}[\T'], \R)$ be arbitrary; we must show
+$\phi(\pi^{\emptyset}(f)) \geq 0$. By Theorem~3.3(b) of~\cite{Razborov2007}
+applied to the theory $\T'$, there exists a convergent sequence
+$\{G_n'\}_{n \in \N}$ of $H$-induced-free graphs with $|V(G_n')| \to \infty$
+such that
+\[
+  \phi \;=\; \lim_{n \to \infty} p^{G_n'} \quad \text{in } \Homp(\A^{\emptyset}[\T'], \R).
+\]
+Viewing each $G_n'$ as a model of $\T$ (i.e.\ forgetting the axiom $A$) yields
+a sequence in $\T$; let $\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ be its
+limit. By construction,
+\[
+  \phi_0(F) \;=\; \lim_{n \to \infty} p(F, G_n') \;=\; \phi(\pi^{\emptyset}(F))
+  \quad \text{for every } F \in \F^{\emptyset}[\T],
+\]
+so $\phi_0$ satisfies $A$ (since each $G_n'$ is $H$-induced-free). For
+$\sigma = \emptyset$ the ensemble $\RandomExt(\phi_0; \emptyset)$ is a Dirac
+mass at $\phi_0$ itself, so~\ref{cond:rand} applied to this $\phi_0$ gives
+$\phi_0(f) \geq 0$. Hence
+\[
+  \phi(\pi^{\emptyset}(f)) \;=\; \phi_0(f) \;\geq\; 0. \qedhere
+\]
+\end{proof}
+
+\begin{remark}
+The proof above only uses the existence of \emph{some} sequence of
+$H$-induced-free graphs converging to $\phi$. It does \emph{not} require the
+graph removal lemma. The removal lemma enters only if one wishes to start
+from an arbitrary sequence in $\T$ with vanishing $H$-density and convert it
+to an $H$-induced-free sequence; see Section~\ref{sec:rl}.
+\end{remark}
+
+\section{The Role of the Removal Lemma}\label{sec:rl}
+
+There is an alternative, more constructive proof of $\ref{cond:rand}
+\Rightarrow \ref{cond:quot}$ that proceeds directly inside $\T$ and never
+appeals to Theorem~3.3(b) for $\T'$. We sketch it because it isolates the
+exact role of the removal lemma and naturally generalises to other forbidden
+configurations.
+
+Let $\phi \in \Homp(\A^{\emptyset}[\T'], \R)$. Pull back to
+$\widetilde{\phi} = \phi \circ \pi^{\emptyset} \in \Homp(\A^{\emptyset}[\T],
+\R)$; this homomorphism satisfies $A$. By Theorem~3.3(b) for $\T$, there is a
+convergent sequence $\{G_n\}$ of $\T$-models (i.e.\ arbitrary graphs) with
+$p^{G_n} \to \widetilde{\phi}$. In particular $p(H, G_n) \to
+\widetilde{\phi}(H) = 0$.
+
+\paragraph{Removal step.} The graph removal lemma for induced subgraphs of
+Alon, Fischer, Krivelevich, and Szegedy~\cite{AFKS2000} yields graphs
+$G_n'$ on the same vertex set as $G_n$ such that:
+\begin{itemize}[leftmargin=2em]
+  \item $G_n'$ is $H$-induced-free, and
+  \item $|E(G_n) \mathbin{\triangle} E(G_n')| = o(n^2)$.
+\end{itemize}
+
+\paragraph{Stability of densities under $o(n^2)$-perturbations.}
+A standard counting argument shows that for any fixed graph $F$ on $\ell$
+vertices,
+\[
+  \bigl|\,p(F, G_n) - p(F, G_n')\,\bigr|
+  \;\leq\;
+  \binom{\ell}{2} \cdot
+  \frac{|E(G_n) \mathbin{\triangle} E(G_n')|}{\binom{n}{2}}
+  \;=\; o(1).
+\]
+Hence $\{G_n'\}$ is a convergent sequence with the same limit
+$\widetilde{\phi}$, and it is $H$-induced-free.
+
+\paragraph{Conclusion.} Apply~\ref{cond:rand} to $\widetilde{\phi}$ (which
+satisfies $A$). Since $\sigma = \emptyset$, the ensemble is the Dirac mass at
+$\widetilde{\phi}$ itself, and we conclude $\widetilde{\phi}(f) \geq 0$,
+i.e.\ $\phi(\pi^{\emptyset}(f)) \geq 0$. \qed
+
+\medskip
+
+The role of the removal lemma is therefore not strictly necessary for the
+equivalence per se---Theorem~3.3(b) applied to $\T'$ already suffices---but it
+becomes essential if one wishes to prove the equivalence by staying inside
+$\T$ throughout, or if one wishes to relate sequences in $\T$ with vanishing
+$H$-density to sequences in $\T'$.
+
+\begin{remark}[Generalisation to arbitrary hereditary properties]
+The same argument works whenever $A$ is the conjunction of forbidding finitely
+many (or even infinitely many) induced subgraphs, provided the corresponding
+induced removal lemma holds. By the theorem of Alon and
+Shapira~\cite{AlonShapira2008}, this holds for every hereditary graph
+property: every such property is \emph{testable}, and in particular every
+sequence with vanishing density of the forbidden configurations can be
+$o(n^2)$-perturbed to a sequence in the constrained class.
+\end{remark}
+
+\section{The Case of General \texorpdfstring{$\sigma$}{sigma}}
+
+For non-trivial $\sigma$, the direction $\ref{cond:quot} \Rightarrow
+\ref{cond:rand}$ remains valid by the argument above. The reverse direction
+is more delicate.
+
+\begin{question}\label{q:gen}
+For $\sigma \neq \emptyset$, does~\ref{cond:rand} imply~\ref{cond:quot}?
+\end{question}
+
+The obstruction is that not every $\psi \in \Homp(\A^{\sigma}[\T'], \R)$ need
+arise (in any precise sense) as a member $\phi^{\sigma}$ of an ensemble
+$\RandomExt(\phi_0; \sigma)$ rooted at some
+$\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ satisfying $A$. The natural candidate
+for such a $\phi_0$ is $\Phi^{\sigma}(\psi \circ \pi^{\sigma})$ from
+Section~\ref{sec:bridge}\,(b), and then Theorem~3.17 of~\cite{Razborov2007}
+identifies $\RandomExt(\phi_0; \sigma)$ as the canonical disintegration of
+$\phi_0$ along $\Phi^{\sigma}$. The question is whether the particular
+homomorphism $\psi$ is in the support of this disintegration; in general it
+need not be, and this gap is the source of the difficulty.
+
+A reasonable conjecture, motivated by the discussion above, is:
+
+\begin{conjecture}
+The equivalence of Question~\ref{q:main} holds for arbitrary $\sigma$ if
+\ref{cond:rand} is strengthened to:
+\begin{enumerate}[label=\textup{(2$'$)}, leftmargin=3em]
+  \item For every $\phi_0 \in \Homp(\A^{\emptyset}[\T], \R)$ satisfying $A$
+        and $\phi_0(\langle \sigma \rangle) > 0$, and for every
+        $\psi$ in the support of $\RandomExt(\phi_0; \sigma)$, we have
+        $\psi(f) \geq 0$.
+\end{enumerate}
+This is in turn equivalent to requiring $\psi(f) \geq 0$ for every
+$\psi \in \Homp(\A^{\sigma}[\T'], \R)$ that lies in the support of some
+ensemble.
+\end{conjecture}
+
+A complete answer to Question~\ref{q:gen} would presumably require a
+clean characterisation of which $\sigma$-homomorphisms of $\T'$ are
+realisable as ensemble members; this is closely related to the open
+questions raised in Razborov's~\S6.
+
+\section*{Acknowledgements}
+
+This note grew out of a series of conversations with an AI assistant about
+Razborov's flag-algebra paper~\cite{Razborov2007}, in particular the role of
+the induced removal lemma in interpreting quotient semantics.
+
+\begin{thebibliography}{9}
+
+\bibitem{Razborov2007}
+A.~A.~Razborov,
+\emph{Flag Algebras},
+Journal of Symbolic Logic \textbf{72} (2007), no.~4, 1239--1282.
+
+\bibitem{AFKS2000}
+N.~Alon, E.~Fischer, M.~Krivelevich, and M.~Szegedy,
+\emph{Efficient testing of large graphs},
+Combinatorica \textbf{20} (2000), no.~4, 451--476.
+
+\bibitem{AlonShapira2008}
+N.~Alon and A.~Shapira,
+\emph{A characterization of the (natural) graph properties testable with
+one-sided error},
+SIAM Journal on Computing \textbf{37} (2008), no.~6, 1703--1727.
+
+\bibitem{LovaszSzegedy2006}
+L.~Lov\'asz and B.~Szegedy,
+\emph{Limits of dense graph sequences},
+Journal of Combinatorial Theory, Series B \textbf{96} (2006), no.~6, 933--957.
+
+\end{thebibliography}
+
+\end{document}
