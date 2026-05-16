@@ -177,7 +177,7 @@ theorem subgraphDensity_le_1
   := by
   dsimp only [subgraphDensity, subgraphCount, subgraphSet]
   apply div_le_one_of_le₀
-  . have := comb_card (univ : Finset W) (univ : Finset V).card
+  . have := combinations_card (univ : Finset W) (univ : Finset V).card
     simp only [card_univ] at this
     rw [←this]
     simp only [Nat.cast_le, ge_iff_le]

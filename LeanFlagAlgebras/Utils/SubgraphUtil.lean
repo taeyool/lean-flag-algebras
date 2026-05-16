@@ -24,7 +24,7 @@ noncomputable instance subgraphFintype (G : SimpleGraph V) : Fintype (Subgraph G
       exact (congrFun h_eq_edges (u, v)).to_iff
   Fintype.ofInjective f f_inj
 
-noncomputable instance qualSubgraphFintype
+noncomputable instance qualifiedSubgraphFintype
     (G : SimpleGraph V) (p : Subgraph G → Prop)
     : Fintype { G₁ : Subgraph G | p G₁ } :=
   have : Fintype (Subgraph G) := subgraphFintype G
@@ -49,7 +49,7 @@ noncomputable instance qualifiedSubgraphPairProdSubgraphFintype
   have : Fintype (Subgraph G) := subgraphFintype G
   inferInstance
 
-noncomputable instance doublyQualiedSubgraphPairProdSubgraphFintype
+noncomputable instance doublyQualifiedSubgraphPairProdSubgraphFintype
     (G : SimpleGraph V) (p : Subgraph G × Subgraph G → Prop) (q : Subgraph G × Subgraph G × Subgraph G → Prop)
     : Fintype {⟨⟨⟨G₁,G₂⟩,_⟩, G₃⟩ : {⟨G',G''⟩ : Subgraph G × Subgraph G | p ⟨G',G''⟩} × Subgraph G | q ⟨G₁,G₂,G₃⟩}
   :=

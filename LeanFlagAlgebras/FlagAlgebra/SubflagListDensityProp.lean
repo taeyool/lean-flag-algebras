@@ -71,7 +71,7 @@ theorem flagListDensity₂_prod_approx
 
   let Ω := { (w₁, w₂) : Finset W × Finset W | (w₁.card = Frep.size ∧ Grep.type_verts ⊆ w₁) ∧ (w₂.card = F'rep.size ∧ Grep.type_verts ⊆ w₂)}
   have hΩ_size : Ω.toFinset.card = (freeG.card).choose freeF.card * (freeG.card).choose freeF'.card := by
-    rw [← comb_card freeG freeF.card, ← comb_card freeG freeF'.card, ← Finset.card_product, eq_comm]
+    rw [← combinations_card freeG freeF.card, ← combinations_card freeG freeF'.card, ← Finset.card_product, eq_comm]
     simp only [Set.toFinset_card, Fintype.card_ofFinset]
     apply Finset.card_eq_of_equiv
     refine Equiv.ofBijective ?_ ?_

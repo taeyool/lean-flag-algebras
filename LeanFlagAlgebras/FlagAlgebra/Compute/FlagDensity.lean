@@ -67,7 +67,7 @@ theorem Sym2InducedSubgraph.edges_subset
   simp only [edges, Finset.mem_filter] at he
   exact he.1
 
-def Sym2InducedSubgraph.toLabeledSubraph
+def Sym2InducedSubgraph.toLabeledSubgraph
     {n : ℕ} {G : Sym2Graph n} (H : Sym2InducedSubgraph G) : LabeledSubgraph ∅ₜ G.toLabeledGraph where
   subgraph := {
     verts := H.verts
@@ -90,12 +90,12 @@ def Sym2InducedSubgraph.toLabeledSubraph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj _
   embed_eq := by simp only [SetLike.coe_sort_coe, IsEmpty.forall_iff]
 
-theorem Sym2InducedSubgraph.toLabeledSubraph_isInduced
+theorem Sym2InducedSubgraph.toLabeledSubgraph_isInduced
     {n : ℕ} {G : Sym2Graph n} (H : Sym2InducedSubgraph G) :
-    H.toLabeledSubraph.IsInduced
+    H.toLabeledSubgraph.IsInduced
   := by
   intro u hu v hv h_adj
-  simp [toLabeledSubraph, edges, Sym2Graph.toLabeledGraph] at *
+  simp [toLabeledSubgraph, edges, Sym2Graph.toLabeledGraph] at *
   exact ⟨h_adj.1, hu, hv⟩
 
 abbrev Sym2InducedSubgraphList
@@ -112,7 +112,7 @@ def predIsoSym2Hl
     : Sym2InducedSubgraphList t G → Prop
   :=
   fun Gl ↦
-    (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubraph.coe ≃f (Hl i).toLabeledGraph))
+    (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
     ∧ predDisjointSym2InducedSubgraphList Gl
 
 instance
@@ -123,11 +123,11 @@ instance
   · refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro i
     simp only
-    have : Fintype (Gl i).toLabeledSubraph.subgraph.verts := by
-      simp [Sym2InducedSubgraph.toLabeledSubraph]
+    have : Fintype (Gl i).toLabeledSubgraph.subgraph.verts := by
+      simp [Sym2InducedSubgraph.toLabeledSubgraph]
       exact (Gl i).verts.fintypeCoeSort
-    have : DecidableRel (Gl i).toLabeledSubraph.coe.graph.Adj := by
-      simp [Sym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
+    have : DecidableRel (Gl i).toLabeledSubgraph.coe.graph.Adj := by
+      simp [Sym2InducedSubgraph.toLabeledSubgraph, Subgraph.coe]
       intro ⟨a, ha⟩ ⟨b, hb⟩
       exact Finset.decidableMem s(a, b) (Gl i).edges
     have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
@@ -195,11 +195,11 @@ theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount
         graph_iso := {
           toFun := by
             intro v
-            simp [Sym2InducedSubgraph.toLabeledSubraph, Subgraph.coe] at v
+            simp [Sym2InducedSubgraph.toLabeledSubgraph, Subgraph.coe] at v
             exact φ v
           invFun := by
             intro w
-            simp [Sym2InducedSubgraph.toLabeledSubraph, Subgraph.coe]
+            simp [Sym2InducedSubgraph.toLabeledSubgraph, Subgraph.coe]
             exact φ.symm w
           left_inv := by
             intro ⟨v, hv⟩
@@ -207,15 +207,15 @@ theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount
             rw [cast_eq_iff_heq]
             congr
             · funext w
-              simp [Sym2InducedSubgraph.toLabeledSubraph]
+              simp [Sym2InducedSubgraph.toLabeledSubgraph]
             · exact proof_irrel_heq _ _
           right_inv := by
             intro w
             simp
           map_rel_iff' := by
             intro ⟨v, hv⟩ ⟨v', hv'⟩
-            simp [Sym2InducedSubgraph.toLabeledSubraph] at hv hv'
-            simp [Sym2InducedSubgraph.toLabeledSubraph, Sym2InducedSubgraph.edges, Sym2Graph.toLabeledGraph]
+            simp [Sym2InducedSubgraph.toLabeledSubgraph] at hv hv'
+            simp [Sym2InducedSubgraph.toLabeledSubgraph, Sym2InducedSubgraph.edges, Sym2Graph.toLabeledGraph]
             rw [← Sym2Graph.toLabeledGraph_adj_iff, ← Sym2Graph.toLabeledGraph_adj_iff]
             simp_all
             constructor
@@ -320,19 +320,19 @@ theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount
     simp [predIsoSym2Hl] at hGl
     obtain ⟨h_iso, h_disj⟩ := hGl
     simp only [Set.coe_toFinset, Set.mem_image, Set.mem_setOf_eq]
-    use fun i ↦ (Gl i).toLabeledSubraph
+    use fun i ↦ (Gl i).toLabeledSubgraph
     repeat' constructor
     · intro i
-      exact (Gl i).toLabeledSubraph_isInduced
+      exact (Gl i).toLabeledSubgraph_isInduced
     · exact h_iso
     · intro i j hij_ne
       specialize h_disj i j hij_ne
-      simp [Sym2InducedSubgraph.toLabeledSubraph, Sym2Graph.toLabeledGraph, LabeledGraph.type_verts]
+      simp [Sym2InducedSubgraph.toLabeledSubgraph, Sym2Graph.toLabeledGraph, LabeledGraph.type_verts]
       rw [← Finset.coe_empty, ← h_disj]
       simp only [Finset.coe_inter]
     · funext i
       ext v
-      simp [Sym2InducedSubgraph.toLabeledSubraph]
+      simp [Sym2InducedSubgraph.toLabeledSubgraph]
 
 def sym2InducedSubgraphListDensity
     {t : ℕ} {n : ℕ} {Vl : Fin t → ℕ}
@@ -596,7 +596,7 @@ theorem Sym2InducedLabeledSubgraph.edges_subset
   simp only [edges, Finset.mem_filter] at he
   exact he.1
 
-def Sym2InducedLabeledSubgraph.toLabeledSubraph
+def Sym2InducedLabeledSubgraph.toLabeledSubgraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} (H : Sym2InducedLabeledSubgraph G) : LabeledSubgraph σ.toFlagType G.toLabeledGraph where
   subgraph := {
@@ -649,13 +649,13 @@ def Sym2InducedLabeledSubgraph.toLabeledSubraph
   }
   embed_eq := by simp [Sym2LabeledGraph.toLabeledGraph]
 
-theorem Sym2InducedLabeledSubgraph.toLabeledSubraph_isInduced
+theorem Sym2InducedLabeledSubgraph.toLabeledSubgraph_isInduced
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} (H : Sym2InducedLabeledSubgraph G) :
-    H.toLabeledSubraph.IsInduced
+    H.toLabeledSubgraph.IsInduced
   := by
   intro u hu v hv h_adj
-  simp [toLabeledSubraph, edges, Sym2LabeledGraph.toLabeledGraph] at *
+  simp [toLabeledSubgraph, edges, Sym2LabeledGraph.toLabeledGraph] at *
   exact ⟨h_adj.1, hu, hv⟩
 
 abbrev Sym2InducedLabeledSubgraphList
@@ -675,7 +675,7 @@ def predIsoSym2LabeledHl
     : Sym2InducedLabeledSubgraphList t G → Prop
   :=
   fun Gl ↦
-    (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubraph.coe ≃f (Hl i).toLabeledGraph))
+    (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
     ∧ predDisjointSym2InducedLabeledSubgraphList Gl
 
 instance
@@ -687,11 +687,11 @@ instance
   · refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro i
     simp only
-    have : Fintype (Gl i).toLabeledSubraph.subgraph.verts := by
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubraph]
+    have : Fintype (Gl i).toLabeledSubgraph.subgraph.verts := by
+      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
       exact (Gl i).verts.fintypeCoeSort
-    have : DecidableRel (Gl i).toLabeledSubraph.coe.graph.Adj := by
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubraph, Subgraph.coe]
+    have : DecidableRel (Gl i).toLabeledSubgraph.coe.graph.Adj := by
+      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph, Subgraph.coe]
       intro ⟨a, ha⟩ ⟨b, hb⟩
       exact Finset.decidableMem s(a, b) (Gl i).edges
     have : DecidableRel (Hl i).toLabeledGraph.graph.Adj := by
@@ -749,11 +749,11 @@ theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
         graph_iso := {
           toFun := by
             intro v
-            simp [Sym2InducedLabeledSubgraph.toLabeledSubraph, Subgraph.coe] at v
+            simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph, Subgraph.coe] at v
             exact φ v
           invFun := by
             intro w
-            simp [Sym2InducedLabeledSubgraph.toLabeledSubraph, Subgraph.coe]
+            simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph, Subgraph.coe]
             exact φ.symm w
           left_inv := by
             intro ⟨v, hv⟩
@@ -761,15 +761,15 @@ theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
             rw [cast_eq_iff_heq]
             congr
             · funext w
-              simp [Sym2InducedLabeledSubgraph.toLabeledSubraph]
+              simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
             · exact proof_irrel_heq _ _
           right_inv := by
             intro w
             simp
           map_rel_iff' := by
             intro ⟨v, hv⟩ ⟨v', hv'⟩
-            simp [Sym2InducedLabeledSubgraph.toLabeledSubraph] at hv hv'
-            simp [Sym2InducedLabeledSubgraph.toLabeledSubraph, Sym2InducedLabeledSubgraph.edges, Sym2LabeledGraph.toLabeledGraph]
+            simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph] at hv hv'
+            simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph, Sym2InducedLabeledSubgraph.edges, Sym2LabeledGraph.toLabeledGraph]
             rw [← Sym2LabeledGraph.toLabeledGraph_adj_iff, ← Sym2LabeledGraph.toLabeledGraph_adj_iff]
             simp_all
             constructor
@@ -822,7 +822,7 @@ theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
         }
         type_preserve := by
           funext u
-          simp [Sym2InducedLabeledSubgraph.toLabeledSubraph]
+          simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
           have hu := congrFun hφ u
           simp [Sym2LabeledGraphList.toLabeledGraphList] at hu
           rw [← hu]
@@ -885,19 +885,19 @@ theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
     simp [predIsoSym2LabeledHl] at hGl
     obtain ⟨h_iso, h_disj⟩ := hGl
     simp only [Set.coe_toFinset, Set.mem_image, Set.mem_setOf_eq]
-    use fun i ↦ (Gl i).toLabeledSubraph
+    use fun i ↦ (Gl i).toLabeledSubgraph
     repeat' constructor
     · intro i
-      exact (Gl i).toLabeledSubraph_isInduced
+      exact (Gl i).toLabeledSubgraph_isInduced
     · exact h_iso
     · intro i j hij_ne
       specialize h_disj i j hij_ne
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubraph]
+      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
       rw [G.toLabeledGraph_type_verts_eq, ← Finset.coe_empty, ← h_disj]
       simp only [Finset.coe_inter, Finset.coe_sdiff]
     · funext i
       ext v
-      simp [Sym2InducedLabeledSubgraph.toLabeledSubraph]
+      simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
 
 def sym2InducedLabeledSubgraphListDensity
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl : Fin t → ℕ}

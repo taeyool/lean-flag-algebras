@@ -68,7 +68,7 @@ where
     possible_subsets.biUnion fun s ↦ -- `s` is the subset of `V` with size `r_list (.last _)`.
       (inner t (V \ s) (r_list ·.castSucc)).image fun f x ↦ if h : x < t then f ⟨x, h⟩ else s
 
-lemma partitions'_eq_partitions''_of_zero
+lemma partitions'_eq_partitions''
     {V : Finset α} {r_list : Fin t → ℕ}
     : partitions' V r_list = partitions'' V r_list
   := by
@@ -309,7 +309,7 @@ theorem partition_card
                   exact hp₂ i j hij
               rw [Finset.card_sdiff_of_subset h_bp₁, h_bp₂]
             rw [← card_eq]
-            exact comb_card (rest_part p) (r_list (Fin.last t))
+            exact combinations_card (rest_part p) (r_list (Fin.last t))
           simp_all only [Finset.univ_eq_attach, Finset.sum_const, Finset.card_attach, smul_eq_mul]
         rw [card_eq₁, card_eq₂, ih]
         have factorial_calc : (∏ i, (r_list i).factorial) * (V.card - ∑ i, r_list i).factorial *

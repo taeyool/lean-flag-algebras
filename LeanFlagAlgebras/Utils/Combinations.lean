@@ -6,7 +6,7 @@ open Finset
 def combinations [DecidableEq α] (V : Finset α) (ℓ : ℕ) : Finset (Finset α)
   := (V.powerset).filter fun W ↦ W.card = ℓ
 
-theorem comb_card_aux
+theorem combinations_card_aux
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) :
     ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ
   := by
@@ -64,7 +64,7 @@ theorem comb_card_aux
       · have hsub : V' ⊆ S := (subset_insert_iff_of_notMem haV').mp hV'
         exact hindS V' hsub
 
-theorem comb_card
+theorem combinations_card
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ
   :=
-  comb_card_aux V ℓ _ subset_rfl
+  combinations_card_aux V ℓ _ subset_rfl
