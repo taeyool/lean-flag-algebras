@@ -1,0 +1,959 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{stmaryrd}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[nameinlink,capitalize]{cleveref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+% theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+% macros
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Homp}{\operatorname{Hom}^{+}}
+\newcommand{\Homalg}{\operatorname{Hom}}
+\newcommand{\Csem}{\mathcal{C}_{\mathrm{sem}}}
+\newcommand{\Ext}{\operatorname{Ext}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\brak}[1]{\left\langle #1\right\rangle}
+\newcommand{\avg}[2]{\left\llbracket #1 \right\rrbracket_{#2}}
+\newcommand{\q}{\mathfrak{q}}
+\newcommand{\bvec}{\mathbf{m}}
+\newcommand{\eps}{\varepsilon}
+
+\title{Forbidden-Subgraph Reasoning via Random Extensions:\\
+       A Blow-Up Equivalence in Flag Algebras}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In Razborov's flag-algebra calculus there are two natural ways to express
+that an algebra element~$f$ is asymptotically non-negative under a forbidden
+subgraph constraint. The first descends to the quotient algebra in which the
+forbidden configurations have been axiomatised away; the second remains in
+the ambient theory, restricts the unlabelled limit homomorphism to be
+supported on the constrained class, and asks for almost-sure non-negativity
+under Razborov's canonical random extension to a labelled type.
+We prove that the two formulations are equivalent for every \emph{hereditary
+class closed under independent blow-ups}.  This includes all clique-free,
+multipartite, and many other natural forbidden families, in both undirected
+graphs and any relational theory admitting an independent blow-up
+construction (digraphs, $r$-uniform hypergraphs, $\ldots$).
+
+The easy direction is a clean consequence of Razborov's support transfer
+through downward averaging.  The hard direction is proved by a
+\emph{planted blow-up} construction: a labelled flag in the constrained
+theory is realised, with positive probability, inside the random extension
+of a weighted independent blow-up whose unlabelled limit is supported on the
+constrained class.  We compare this with the alternative proof in the
+unlabelled case via the (induced) graph removal lemma, and explain
+precisely why each method works in a regime where the other does not.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+\subsection{What this paper is about}
+
+Razborov's flag algebras provide a uniform language for asymptotic
+extremal combinatorics~\cite{Razborov2007}.  At the centre of the
+formalism is a commutative associative algebra $\A^\sigma[\T]$ attached to
+each finite first-order type~$\sigma$ in a universal relational theory~$\T$;
+the elements of $\A^\sigma[\T]$ are formal limits of densities of
+$\sigma$-labelled finite models.  A frequent and useful operation is to
+\emph{forbid} certain induced configurations.  Concretely, if $\K$ is a
+hereditary class of $\T$-models, the constrained theory $\T_\K$ gives rise
+to a quotient algebra
+\[
+  \q_\sigma : \A^\sigma[\T] \twoheadrightarrow \A^\sigma[\T_\K]
+\]
+which kills every flag whose underlying model lies outside~$\K$
+(Razborov~\cite[\S2.3.3]{Razborov2007}).  The natural \emph{quotient
+semantics} declares an element $f\in\A^\sigma[\T]$ to be non-negative
+under the constraint if
+\begin{equation}\label{eq:quotient}
+  \psi(\q_\sigma f)\ge 0
+  \qquad\text{for every }\psi\in\Homp(\A^\sigma[\T_\K],\R).
+\end{equation}
+
+In many calculations it is cleaner to keep working with the ambient
+algebra $\A^\sigma[\T]$, never passing to the quotient.  Then the
+constraint enters only through the choice of the unlabelled root
+homomorphism: one fixes
+$\phi_0\in\Homp(\A^0[\T],\R)$ that is \emph{supported on $\K$}
+(i.e.\ $\phi_0(M)=0$ for every $M\notin\K$), and one looks at the
+\emph{random labelled extension} $\phi^\sigma\sim\Ext_\sigma(\phi_0)$
+guaranteed by Razborov's existence and uniqueness
+theorem~\cite[Theorem~3.5]{Razborov2007}.  This leads to the
+\emph{ensemble semantics}:
+\begin{equation}\label{eq:ensemble}
+  \Prob\bigl[\phi^\sigma(f)\ge 0\bigr]=1
+  \qquad\text{for every $\K$-supported $\phi_0$ with $\phi_0(\brak\sigma)>0$.}
+\end{equation}
+
+Are \eqref{eq:quotient} and \eqref{eq:ensemble} the same statement?
+For the unlabelled type ($\sigma=0$) the answer is essentially trivial:
+the random extension is degenerate, so~\eqref{eq:ensemble} just says
+that the unlabelled root is non-negative on $f$, which is~\eqref{eq:quotient}
+read through the pull-back bijection between $\K$-supported
+unlabelled-root homomorphisms and homomorphisms on the unlabelled
+quotient algebra.  For labelled types, however, the question is
+genuinely subtle: ensemble semantics quantifies only over those
+$\K$-supported homomorphisms on $\A^\sigma[\T]$ that arise as random
+extensions of unlabelled roots, and it is a priori unclear whether
+these exhaust all $\K$-supported homomorphisms.  This sub-collection
+question is in the spirit of the structural problems discussed at the
+end of Razborov's paper~\cite[\S6]{Razborov2007} on the relationship
+between syntactic statements in the calculus and the semantic objects
+(ensembles of random homomorphisms) that test them.
+
+\subsection{Our main result}
+
+We give a clean sufficient condition under which the two semantics
+coincide for every type $\sigma$:
+
+\begin{quote}\em
+  If $\K$ is closed under independent blow-ups, then quotient semantics
+  and ensemble semantics agree for every labelled type and every element
+  of $\A^\sigma[\T]$.
+\end{quote}
+
+This covers all $K_r$-free graph classes, hence in particular triangle-free
+graphs, the setting that motivated this work; more generally it covers
+multipartite classes, oriented graphs of bounded girth, and many other
+natural forbidden families across graphs, digraphs, and hypergraphs.
+
+The hard direction, ensemble~$\Rightarrow$~quotient, is the main
+technical content.  The idea is short and we record it here: given a
+finite labelled flag $F=(G,\theta)$ in the constrained theory $\T_\K$
+that witnesses the failure of~\eqref{eq:quotient}, we build an
+\emph{unlabelled} blow-up $B_N$ of $G$ in which a small but positive
+fraction~$\rho$ of the vertices forms ``labelled clusters'' designed to
+host random copies of the type~$\sigma$.  Each random embedding
+$\widehat\theta:\sigma\to B_N$ that hits the planted clusters produces a
+flag with essentially the same flag densities as $(G,\theta)$
+(planted blow-up lemma).  The clone-closure hypothesis ensures
+$B_N\in\K$, so the unlabelled limit of these blow-ups is $\K$-supported
+and the bad flag lives, with positive measure, in the canonical random
+extension of that limit, contradicting~\eqref{eq:ensemble}.
+
+\subsection{A small example to fix ideas}
+
+Take $\T=\T_{\mathrm{Graph}}$ and the triangle-free class
+$\K=\mathrm{Forb}(K_3)$.  Triangle-free flag-algebra inequalities
+typically take the shape ``$f\ge 0$ for triangle-free graphs'', where
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$ is a labelled algebra element such
+as the rooted edge $e\in\A^1$, the rooted square-degree
+$\avg{e^2}{1}\in\A^0$, or any polynomial expression in these and other
+rooted patterns.
+
+\Cref{thm:main} guarantees two equivalent ways to certify such an
+inequality:
+\begin{itemize}[leftmargin=2em]
+\item[(Q)]
+verify $\psi(\q_\sigma f)\ge 0$ for every
+$\psi\in\Homp(\A^\sigma[\T_\K],\R)$, working inside the quotient
+algebra in which triangle-containing flags have been killed; or
+\item[(E)]
+verify, for every root homomorphism $\phi_0$ that puts mass~$0$ on
+triangles and for almost every random extension
+$\phi^\sigma\sim\Ext_\sigma(\phi_0)$, that $\phi^\sigma(f)\ge 0$,
+working inside the ambient algebra
+$\A^\sigma[\T_{\mathrm{Graph}}]$.
+\end{itemize}
+Form (E) lets one keep the full apparatus of the ambient calculus
+(Cauchy--Schwarz~\cite[Theorem~3.14]{Razborov2007}, the differential
+operators of~\cite[\S4.3]{Razborov2007}, all interpretations between
+graph-theoretic objects, $\ldots$), with the triangle-free constraint
+entering only through the choice of root.  Form (Q) is sometimes more
+natural and lets one read off the inequality directly from the
+quotient algebra structure.  Having both available is useful in
+practice.
+
+\subsection{Comparison with the removal-lemma approach}
+
+There is a second, more analytic route to the equivalence, available
+for the unlabelled type $\sigma=0$ and arbitrary hereditary $\K$:
+every $\K$-supported limit homomorphism is a limit of finite $\K$-models
+because the (induced) graph removal lemma of Alon, Fischer,
+Krivelevich and Szegedy~\cite{AFKS2000}, extended by Alon and
+Shapira~\cite{AlonShapira2008} to arbitrary hereditary properties,
+lets us repair an arbitrary $H$-density-zero sequence into an
+$H$-induced-free sequence with the same limit.  The two approaches are
+complementary:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+   & Removal-lemma route & Blow-up route (this paper)\\
+\midrule
+Hypothesis on $\K$           & Any hereditary class & Closed under blow-ups\\
+Type $\sigma$                & Only $\sigma=0$       & Any non-degenerate $\sigma$\\
+Quantitative ingredient      & Induced removal lemma & Planted blow-up\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Neither method currently delivers the strongest possible joint statement
+(arbitrary hereditary $\K$, arbitrary type $\sigma$); we explain what
+goes wrong in each combination in \Cref{sec:discussion}.
+
+\subsection{Organisation}
+
+\Cref{sec:setup} fixes notation and recalls the flag-algebra facts we
+use as black boxes.  \Cref{sec:blowup} introduces the independent
+blow-up axiomatically and gives the planted blow-up lemma.
+\Cref{sec:proof} proves the main theorem.  \Cref{sec:discussion}
+discusses generalisations, the relation with the removal-lemma route,
+and open questions.
+
+\section{Setup}\label{sec:setup}
+
+\subsection{Theories admitting an independent blow-up}
+
+Throughout, $\T$ is a universal first-order theory in a relational
+language $L$ with equality but without function symbols or constants,
+exactly as in~\cite[\S2]{Razborov2007}.  We assume $\T$ has at least one
+model of every size and that every set of vertices of a model induces a
+model (so the algebra $\A^\sigma[\T]$ is defined for every
+non-degenerate type $\sigma$).  We write $V(M)$ for the vertex set of a
+model~$M$ and $M\vert_S$ for the induced sub-model on $S\subseteq V(M)$.
+
+\begin{definition}[Independent blow-up]\label{def:blow-up}
+Let $M$ be a finite model of $\T$ and $\bvec=(m_v)_{v\in V(M)}$ a tuple
+of positive integers.  An \emph{independent blow-up} of $M$ with
+multiplicities $\bvec$ is a model $M^{\bvec}$ of $\T$ together with a
+partition
+\[
+  V(M^{\bvec})=\bigsqcup_{v\in V(M)} C_v,
+  \qquad |C_v|=m_v,
+\]
+called the \emph{cluster decomposition}, satisfying the
+\emph{independence property}: for every subset
+$S\subseteq V(M^{\bvec})$ containing at most one vertex from each cluster,
+\[
+  M^{\bvec}\bigl\vert_S \;\cong\; M\bigl\vert_{\pi(S)}
+\]
+via the projection $\pi\colon\bigsqcup_v C_v\to V(M)$ sending each
+$w\in C_v$ to $v$.  The theory~$\T$ \emph{admits independent blow-ups} if
+for every finite model~$M$ and every positive multiplicity vector
+$\bvec$, an independent blow-up exists.
+\end{definition}
+
+\begin{example}\label{ex:graphs-and-friends}\hfill
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.5em]
+\item For undirected simple graphs, the independent blow-up is the
+classical construction: replace $v$ by an independent set $C_v$ of
+size $m_v$ and join $C_v$ to $C_w$ by a complete bipartite graph
+whenever $vw\in E(M)$.
+
+\item For digraphs, replace $v$ by an independent set $C_v$ and add
+\emph{all} arcs from $C_u$ to $C_w$ whenever $u\to w$ is an arc of $M$
+(no arcs between different vertices of the same cluster, no arcs from a
+vertex to itself).
+
+\item For $r$-uniform hypergraphs, a set
+$\{w_1,\ldots,w_r\}\subseteq V(M^{\bvec})$ is a hyperedge of $M^{\bvec}$
+exactly when each $w_i$ lies in a distinct cluster $C_{v_i}$ and
+$\{v_1,\ldots,v_r\}$ is a hyperedge of $M$.
+
+\item More generally, for any universal theory in a relational language
+whose axioms involve only distinct arguments, the recipe ``preserve
+inter-cluster relations as in $M$, kill all intra-cluster relations''
+defines an independent blow-up.
+\end{enumerate}
+\end{example}
+
+\begin{definition}[Clone-closed class]\label{def:clone-closed}
+A hereditary class $\K$ of finite $\T$-models is \emph{clone-closed} if
+every independent blow-up of every $M\in\K$ also lies in $\K$.
+\end{definition}
+
+\begin{example}\label{ex:Kr-free-clone-closed}
+For every $r\ge 2$, the class of $K_r$-free graphs is clone-closed.
+Indeed, any clique in an independent blow-up meets each cluster in at
+most one vertex (clusters are independent sets), so its projection is a
+clique of the same size in the base graph.  In particular,
+triangle-free graphs are clone-closed.
+
+More generally:
+\begin{itemize}[leftmargin=2em]
+\item For graphs, the class $\mathrm{Forb}^{\mathrm{ind}}(\mathcal H)$ is
+clone-closed whenever every $H\in\mathcal H$ is \emph{prime}, in the
+sense that no two distinct non-adjacent vertices of $H$ have the same
+neighbourhood inside $H$.  (Equivalently, $H$ has no \emph{false twins}.)
+Any induced copy of such a prime $H$ in a blow-up has at most one vertex
+per cluster (two vertices sharing a cluster would be non-adjacent false
+twins in $H$) and therefore projects to a copy of $H$ in the base.
+\item Multipartite classes ($r$-partite graphs, complete multipartite
+graphs of bounded part count, etc.) are clone-closed, because each
+cluster of a blow-up inherits the part of its base vertex.
+\item For oriented graphs, the class of \emph{oriented graphs of girth
+at least $g$} is clone-closed for every $g\ge 3$.  See
+\Cref{sec:discussion} for the verification.
+\end{itemize}
+\end{example}
+
+\begin{remark}[Why the hypothesis is needed]\label{rmk:why-hypothesis}
+The clone-closure hypothesis fails for some hereditary classes.
+For instance, $\mathrm{Forb}^{\mathrm{ind}}(P_3)$ consists of disjoint
+unions of cliques, but the independent blow-up of $K_2$ with both
+multiplicities equal to~$2$ is the four-cycle~$C_4$, which is not a
+disjoint union of cliques.  The blow-up route in this paper genuinely
+breaks down for such classes; the removal-lemma route still applies, but
+only for the unlabelled type.  See \Cref{sec:discussion} for a
+comparison.
+\end{remark}
+
+\subsection{Flag-algebra background, recalled briefly}
+
+We use freely the syntactic and semantic apparatus of~\cite{Razborov2007}:
+$\sigma$-flags $F=(M,\theta)$, the algebras $\A^\sigma[\T]$ with their
+flag-density product, the homomorphism cone
+$\Homp(\A^\sigma[\T],\R)$, the downward averaging operator
+$\avg{\cdot}{\sigma,\eta}:\A^\sigma\to\A^{\sigma\vert_\eta}$, and the
+constant $q_\sigma(F)\in[0,1]$ that records the labelling redundancy of a
+flag.  When $\eta=0$ we write $\avg{\cdot}{\sigma}$.  We write
+$\brak\sigma:=\avg{1_\sigma}\sigma\in\A^0[\T]$ for the unlabelled
+counterpart of the identity flag, so by~\cite[Theorem~2.5\,(b)]{Razborov2007},
+\[
+  \brak\sigma = q_\sigma(1_\sigma)\cdot\sigma,
+\]
+where on the right we view $\sigma$ as an unlabelled model of $\T$.
+
+The two black boxes we need are:
+
+\begin{theorem}[Razborov's representation and extension theorems]\label{thm:razborov}
+Let $\sigma$ be a non-degenerate type of a universal relational
+theory~$\T$.
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+\item~\cite[Theorem~3.3]{Razborov2007}
+Every convergent sequence of $\sigma$-flags
+$F_n\in\F^\sigma$ with $|V(F_n)|\to\infty$ defines an element of
+$\Homp(\A^\sigma,\R)$, and conversely every element of
+$\Homp(\A^\sigma,\R)$ arises as the limit of such a sequence.
+\item~\cite[Theorems~3.5,~3.12]{Razborov2007}
+For every $\phi_0\in\Homp(\A^0[\T],\R)$ with $\phi_0(\brak\sigma)>0$,
+there exists a unique probability measure $\Ext_\sigma(\phi_0)$ on
+$\Homp(\A^\sigma[\T],\R)$ satisfying, for every $g\in\A^\sigma[\T]$,
+\begin{equation}\label{eq:extension-expectation}
+  \E_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}\bigl[\phi^\sigma(g)\bigr]
+  \;=\;
+  \frac{\phi_0(\avg g\sigma)}{\phi_0(\brak\sigma)}.
+\end{equation}
+Moreover, this measure is the weak limit of the discrete random-root
+distributions $P^\sigma_{M_n}$ obtained by sampling a labelled embedding
+of $\sigma$ into $M_n$, for any sequence of $\T$-models $M_n$ with
+$p^{M_n}\to\phi_0$.
+\end{enumerate}
+\end{theorem}
+
+\subsection{\texorpdfstring{$\K$}{K}-supported homomorphisms}
+
+\begin{definition}[$\K$-support]\label{def:K-support}
+Let $\tau$ be a non-degenerate type realised in $\K$.  A homomorphism
+$\varphi\in\Homp(\A^\tau[\T],\R)$ is \emph{$\K$-supported} if
+$\varphi(F)=0$ for every $\tau$-flag $F$ whose underlying model is
+outside $\K$.  Equivalently, $\varphi$ vanishes on $\ker(\q_\tau)$ and
+hence factors uniquely through $\q_\tau$ to give an element of
+$\Homp(\A^\tau[\T_\K],\R)$.
+\end{definition}
+
+The following two lemmas are routine; the second uses only the
+expectation formula~\eqref{eq:extension-expectation} and not the
+blow-up hypothesis.
+
+\begin{lemma}[Pull-back identifies quotient with supported]\label{lem:quotient-support}
+Composition with $\q_\tau$ is a bijection
+\[
+  \Homp(\A^\tau[\T_\K],\R)\;\xrightarrow{\;\sim\;}\;
+  \bigl\{\,\varphi\in\Homp(\A^\tau[\T],\R)\,:\,\varphi\text{ is }\K\text{-supported}\bigr\}.
+\]
+\end{lemma}
+
+\begin{proof}
+The quotient kernel $\ker(\q_\tau)$ is the ideal generated by the
+$\tau$-flags whose underlying model is outside $\K$.  Therefore every
+homomorphism on the quotient pulls back to a $\K$-supported homomorphism,
+and every $\K$-supported homomorphism vanishes on this kernel and
+descends.
+\end{proof}
+
+\begin{lemma}[Random extensions preserve $\K$-support]\label{lem:support-passes}
+Let $\phi_0\in\Homp(\A^0[\T],\R)$ be $\K$-supported and assume
+$\phi_0(\brak\sigma)>0$.  If $\phi^\sigma\sim\Ext_\sigma(\phi_0)$, then
+$\phi^\sigma$ is $\K$-supported almost surely.
+\end{lemma}
+
+\begin{proof}
+Let $F$ be a $\sigma$-flag whose underlying unlabelled model $G$ is not
+in $\K$.  By the definition of downward averaging
+(\cite[\S2.2]{Razborov2007}),
+\[
+  \avg F \sigma \;=\; q_\sigma(F)\cdot G \;\in\; \A^0[\T],
+\]
+with $q_\sigma(F)\in[0,1]$.  Since $\phi_0$ is $\K$-supported and
+$G\notin\K$, we have $\phi_0(\avg F\sigma)=0$, so by
+\eqref{eq:extension-expectation},
+\(
+  \E[\phi^\sigma(F)]=0.
+\)
+As $\phi^\sigma(F)\ge 0$ pointwise (homomorphisms in $\Homp$ take flags
+to non-negative reals), $\phi^\sigma(F)=0$ almost surely.  There are
+countably many such bad flags, so a countable intersection of
+probability-one events gives almost sure $\K$-support.
+\end{proof}
+
+\subsection{The main result}
+
+\begin{theorem}[Forbidden-subgraph equivalence under blow-up closure]\label{thm:main}
+Let $\T$ be a universal first-order relational theory admitting
+independent blow-ups (\Cref{def:blow-up}).  Let $\K$ be a clone-closed
+hereditary class of $\T$-models (\Cref{def:clone-closed}), and let
+$\sigma$ be a non-degenerate type in $\T_\K$.  For every
+$f\in\A^\sigma[\T]$, the following are equivalent.
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.5em]
+  \item\label{item:quotient}\textup{(Quotient semantics.)}
+  For every $\psi\in\Homp(\A^\sigma[\T_\K],\R)$,
+  \(
+     \psi(\q_\sigma f)\ge 0.
+  \)
+  \item\label{item:ensemble}\textup{(Ensemble semantics.)}
+  For every $\K$-supported $\phi_0\in\Homp(\A^0[\T],\R)$ with
+  $\phi_0(\brak\sigma)>0$ and its canonical random extension
+  $\phi^\sigma\sim\Ext_\sigma(\phi_0)$,
+  \(
+     \Prob[\phi^\sigma(f)\ge 0]=1.
+  \)
+\end{enumerate}
+\end{theorem}
+
+\begin{corollary}[Clone-closed examples]\label{cor:cliques}
+\Cref{thm:main} applies, in particular, to the following hereditary
+classes (whose clone-closure is verified in
+\Cref{ex:Kr-free-clone-closed} and \Cref{sec:discussion}):
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.5em]
+\item undirected graphs forbidding any fixed clique $K_r$ \textup{($r\ge 2$)};
+\item undirected $r$-partite graphs, for any fixed $r$;
+\item undirected graphs $\mathrm{Forb}^{\mathrm{ind}}(\mathcal H)$ for
+any family $\mathcal H$ of prime graphs (no false twins);
+\item $r$-uniform hypergraphs forbidding any fixed complete
+$r$-uniform sub-hypergraph $K_s^{(r)}$;
+\item oriented graphs of girth at least $g$, for any $g\ge 3$.
+\end{enumerate}
+In each case, the equivalence holds for every non-degenerate type
+$\sigma$ in the constrained theory and every $f\in\A^\sigma[\T]$.
+\end{corollary}
+
+\section{The planted blow-up lemma}\label{sec:blowup}
+
+The hard direction of \Cref{thm:main} is driven by a single
+quantitative idea: a labelled flag in a constrained theory can be
+\emph{planted} into an independent blow-up so that, with positive
+probability, the random extension of the unlabelled blow-up reproduces
+the original labelled flag's densities up to arbitrarily small error.
+We make this precise here.
+
+\subsection{Weighted blow-ups}
+
+Fix a $\sigma$-flag $F=(G,\theta)$ with $|\sigma|=k$ and $|V(G)|=n$, where
+$n>k$.  Choose a parameter $0<\rho<1$.  Define weights
+\[
+  w_v=
+  \begin{cases}
+    \dfrac\rho k & \text{if }v=\theta(i)\text{ for some }i\in[k]\text{ and }k\ge 1,\\[1mm]
+    \dfrac{1-\rho}{n-k} & \text{if }v\in V(G)\setminus\im\theta,
+  \end{cases}
+\]
+which satisfy $\sum_v w_v=1$.  For an integer $N$, the
+\emph{$(\rho,N)$-blow-up of $(G,\theta)$} is any independent blow-up
+$B_N=B_N(G,\theta,\rho)$ of $G$ with cluster sizes $|C_v|$ as close to
+$w_v\cdot N$ as the integer constraint allows.  Set
+\[
+  \operatorname{err}_N
+  \;:=\;
+  \sum_{v\in V(G)}\left\lvert\frac{|C_v|}{N}-w_v\right\rvert.
+\]
+A standard greedy rounding makes $\operatorname{err}_N\le n/N$, so
+$\operatorname{err}_N\to 0$ as $N\to\infty$.
+
+When $k=0$ (no labelled vertices to plant), there is no use for $\rho$:
+take uniform weights $w_v=1/n$ and the same rounding.  We keep $\rho$ in
+the notation for uniformity; the bounds below remain trivially true.
+
+The cluster $C_{\theta(i)}$ associated to a labelled vertex is called a
+\emph{labelled cluster}; the others are \emph{unlabelled clusters}.
+
+\subsection{Planting a labelled embedding}
+
+Given an unlabelled blow-up $B_N$, a labelled embedding
+$\widehat\theta\colon[k]\to V(B_N)$ defining a $\sigma$-flag
+$(B_N,\widehat\theta)$ is called \emph{planted} if
+$\widehat\theta(i)\in C_{\theta(i)}$ for every $i\in[k]$.
+By the independence property of the blow-up, any planted choice
+$\widehat\theta$ is automatically a model embedding of $\sigma$ into
+$B_N$: each $\widehat\theta(i)$ projects to $\theta(i)$, and the induced
+sub-model on $\{\widehat\theta(1),\ldots,\widehat\theta(k)\}$ is
+isomorphic to $\sigma$.
+
+\subsection{The two key estimates}
+
+\begin{lemma}[Planted approximation]\label{lem:planted}
+Fix an integer $m\ge k$.  There exists a constant $C_m>0$ (depending only
+on $m$ and the language $L$) such that the following holds.  For every
+$\sigma$-flag $(G,\theta)$ with $|V(G)|=n>k$, every $(\rho,N)$-blow-up
+$B_N=B_N(G,\theta,\rho)$, every planted labelled embedding
+$\widehat\theta\colon[k]\to V(B_N)$, and every $\sigma$-flag $F_0$ with
+at most $m$ vertices,
+\begin{equation}\label{eq:planted-flag-bound}
+  \bigl\lvert p(F_0,(B_N,\widehat\theta))-p(F_0,(G,\theta))\bigr\rvert
+  \;\le\;
+  C_m\!\left(\rho+\frac1{n-k}+\operatorname{err}_N\right).
+\end{equation}
+Consequently, for every finite linear combination $f\in\A^\sigma[\T]$ of
+flags of size at most $m$ there is a constant $C_f>0$ with
+\begin{equation}\label{eq:planted-f-bound}
+  \bigl\lvert p(f,(B_N,\widehat\theta))-p(f,(G,\theta))\bigr\rvert
+  \;\le\;
+  C_f\!\left(\rho+\frac1{n-k}+\operatorname{err}_N\right).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+By linearity, \eqref{eq:planted-f-bound} follows from
+\eqref{eq:planted-flag-bound}; we prove the latter.
+
+Let $\ell=|V(F_0)|$; since $F_0$ is a $\sigma$-flag we automatically
+have $\ell\ge k$, and by hypothesis $\ell\le m$.  Computing
+$p(F_0,(B_N,\widehat\theta))$ amounts to sampling $\ell-k$ additional
+vertices uniformly without replacement from
+$V(B_N)\setminus\im\widehat\theta$ and asking for an isomorphism of
+labelled flags.  Call such a sample \emph{good} if
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item none of the sampled vertices lies in a labelled cluster, and
+  \item no two sampled vertices lie in the same unlabelled cluster.
+\end{enumerate}
+
+We first estimate the probability of failure of each condition.
+The total mass of labelled clusters in
+$V(B_N)\setminus\im\widehat\theta$ is $\rho\pm O(\operatorname{err}_N)$,
+so by a union bound the probability of (i) failing is at most
+$(\ell-k)\bigl(\rho+O(\operatorname{err}_N)\bigr)$.  For each pair of
+sample positions and each unlabelled cluster $C_v$, the probability
+that both positions fall in $C_v$ is at most
+$\bigl((1-\rho)/(n-k)\bigr)^{2}+O(\operatorname{err}_N/(n-k))$; summing
+over $\binom{\ell-k}{2}$ pairs and $n-k$ unlabelled clusters gives
+\[
+  \Prob[\text{(ii) fails}]\;\le\;\frac{\binom{\ell-k}{2}}{n-k}+O_m(\operatorname{err}_N).
+\]
+
+On the good event, the projection
+$\pi\bigl(\{\widehat\theta(1),\ldots,\widehat\theta(k)\}\cup S\bigr)$
+of the sampled set $S$ together with the labelled vertices is, by the
+independence property of the blow-up, an induced sub-model of $G$
+isomorphic via $\pi$ to the corresponding induced sub-model of $B_N$.
+Moreover, conditional on the good event, the projection of $S$ is a
+uniformly random $(\ell-k)$-subset of $V(G)\setminus\im\theta$ up to
+total variation $O_m(\operatorname{err}_N)$ caused by unequal cluster
+sizes.  Hence on the good event the two density-computing
+distributions agree up to total variation $O_m(\operatorname{err}_N)$.
+
+Combining the bad-event mass with the good-event total-variation gap
+gives a total deviation at most
+$C_m\bigl(\rho+1/(n-k)+\operatorname{err}_N\bigr)$ for a constant $C_m$
+depending only on $m$ and the language.
+\end{proof}
+
+\begin{lemma}[Positive mass of the planted event]\label{lem:positive-mass}
+Set
+\[
+  c_{k,\rho}\;:=\;
+  \begin{cases}
+    1, & k=0,\\[1mm]
+    \left(\dfrac{\rho}{2k}\right)^{\!k}, & k\ge 1.
+  \end{cases}
+\]
+For every $\sigma$-flag $(G,\theta)$ and every sufficiently large $N$,
+the discrete random root distribution $P^\sigma_{B_N}$ on
+$\Homp(\A^\sigma,\R)$ (defined in~\cite[Definition~9]{Razborov2007} by
+sampling a uniform labelled embedding $\widehat\theta\colon\sigma\to B_N$)
+assigns probability at least $c_{k,\rho}$ to the event that
+$\widehat\theta$ is planted.
+\end{lemma}
+
+\begin{proof}
+For $k=0$ there is nothing to prove.  Assume $k\ge 1$.  Every ordered
+choice of $\widehat\theta(i)\in C_{\theta(i)}$ is a model embedding of
+$\sigma$ by the independence property.  For $N$ large enough that
+$|C_{\theta(i)}|\ge\rho N/(2k)$ for each~$i$, the number of planted
+ordered embeddings is at least $(\rho/(2k))^k\,N^k$.  The total number
+of ordered injections of $[k]$ into $V(B_N)$, which upper bounds the
+total number of $\sigma$-embeddings, is at most $N^k$.  Dividing gives
+the claim.
+\end{proof}
+
+\section{Proof of the main theorem}\label{sec:proof}
+
+\subsection{Quotient implies ensemble}
+
+Assume~\ref{item:quotient}.  Let $\phi_0\in\Homp(\A^0[\T],\R)$ be
+$\K$-supported with $\phi_0(\brak\sigma)>0$, and sample
+$\phi^\sigma\sim\Ext_\sigma(\phi_0)$.  By \Cref{lem:support-passes},
+$\phi^\sigma$ is $\K$-supported almost surely.  By
+\Cref{lem:quotient-support}, on this almost-sure event $\phi^\sigma$
+descends to $\overline{\phi}{}^\sigma\in\Homp(\A^\sigma[\T_\K],\R)$
+with $\overline{\phi}{}^\sigma\circ\q_\sigma=\phi^\sigma$.
+Applying~\ref{item:quotient} to $\overline{\phi}{}^\sigma$,
+\[
+  \phi^\sigma(f)
+  \;=\;\overline{\phi}{}^\sigma(\q_\sigma f)
+  \;\ge 0
+  \qquad\text{almost surely.}
+\]
+This proves~\ref{item:ensemble}.
+
+\subsection{Ensemble implies quotient}
+
+The case $k=|\sigma|=0$ is the trivial pull-back equivalence
+discussed in \Cref{sec:discussion}, so we assume $k\ge 1$
+throughout this subsection.
+
+Assume~\ref{item:ensemble}; we prove~\ref{item:quotient} by
+contradiction.  Suppose there exists
+$\psi_0\in\Homp(\A^\sigma[\T_\K],\R)$ with $\psi_0(\q_\sigma f)<0$.
+Pull $\psi_0$ back along $\q_\sigma$ and write
+$\psi:=\psi_0\circ\q_\sigma\in\Homp(\A^\sigma[\T],\R)$; then $\psi$ is
+$\K$-supported and $\psi(f)=\psi_0(\q_\sigma f)<0$.  Choose $\alpha>0$
+with
+\begin{equation}\label{eq:negative-margin}
+  \psi(f)\le-4\alpha.
+\end{equation}
+
+\paragraph{Step 1: Approximation in the constrained theory.}
+By \Cref{thm:razborov}(i) applied to the theory $\T_\K$, there is an
+increasing convergent sequence of $\sigma$-flags
+\[
+  F_n=(G_n,\theta_n)\in\F^\sigma[\T_\K],\qquad|V(G_n)|\to\infty,
+\]
+with $p^{F_n}\to\psi$ on $\A^\sigma[\T_\K]$.  By the construction of
+$\q_\sigma$, this same sequence satisfies $p^{F_n}\to\psi$ on
+$\A^\sigma[\T]$ as well, since any $\sigma$-flag whose underlying model
+is outside $\K$ has flag density zero in every $F_n$ and is sent to zero
+by $\psi$.  After passing to a tail,
+\begin{equation}\label{eq:finite-negative}
+  p(f,F_n)\le-3\alpha
+  \qquad\text{for every }n.
+\end{equation}
+
+\paragraph{Step 2: Building $\K$-supported blow-ups.}
+Let $m$ be the maximum size of any flag occurring in a fixed linear
+expansion of $f$, and let $C_f$ be the constant from
+\Cref{lem:planted}.  Choose $0<\rho<1$ with $C_f\rho\le\alpha/2$.  For
+each $n$, choose $N_n$ so large that the rounding error
+$C_f\operatorname{err}_{N_n}<\alpha/4$ in the $(\rho,N_n)$-blow-up
+$B_n:=B_{N_n}(G_n,\theta_n,\rho)$, and so that $|V(B_n)|\to\infty$.
+Since $G_n\in\K$ and $\K$ is clone-closed, each $B_n$ is in $\K$.
+
+By compactness, pass to a subsequence (not relabelled) along which the
+unlabelled graphs $B_n$ converge to some
+$\phi_0\in\Homp(\A^0[\T],\R)$.  Because every $B_n$ is in $\K$ and $\K$
+is hereditary, $p(M,B_n)=0$ for every $M\notin\K$, so taking the limit
+gives $\phi_0(M)=0$; that is, $\phi_0$ is $\K$-supported.
+
+\paragraph{Step 3: The type density is non-trivial.}
+By the proof of \Cref{lem:positive-mass}, the blow-up $B_n$ admits at
+least $(\rho/(2k))^k\cdot|V(B_n)|^k$ ordered model embeddings of
+$\sigma$.  Each induced unlabelled copy of $\sigma$ in $B_n$ supports
+exactly $|\mathrm{Aut}(\sigma)|$ such embeddings, so the unlabelled flag
+density satisfies
+\[
+  p(\sigma, B_n)
+  \;=\; \frac{\#\{\text{ordered embeddings }\sigma\to B_n\}}
+              {|\mathrm{Aut}(\sigma)|\cdot\binom{|V(B_n)|}{k}}
+  \;\ge\; \frac{(\rho/(2k))^k\cdot|V(B_n)|^k}{|\mathrm{Aut}(\sigma)|\cdot\binom{|V(B_n)|}{k}}
+  \;\ge\; \frac{k!}{|\mathrm{Aut}(\sigma)|}\left(\frac{\rho}{2k}\right)^{\!k},
+\]
+where the last inequality uses
+$|V(B_n)|^k/\binom{|V(B_n)|}{k}\ge k!$.  This lower bound is positive and
+independent of $n$.  Hence
+\[
+  \phi_0(\brak\sigma)
+  \;=\; q_\sigma(1_\sigma)\cdot \phi_0(\sigma)
+  \;=\; q_\sigma(1_\sigma)\cdot\lim_n p(\sigma,B_n)
+  \;>\;0,
+\]
+so~\ref{item:ensemble} applies to the random extension
+$\phi^\sigma\sim\Ext_\sigma(\phi_0)$.
+
+\paragraph{Step 4: Locating the contradiction.}
+Let $P_n:=P^\sigma_{B_n}$ be the discrete random-root distribution on
+the compact product space $X_\sigma:=[0,1]^{\F^\sigma}$.  By
+\Cref{lem:positive-mass}, for $n$ large,
+\[
+  P_n\bigl(\bigl\{\widehat\theta\text{ planted}\bigr\}\bigr)
+  \;\ge\; c_{k,\rho}.
+\]
+On the planted event, \Cref{lem:planted} together with
+\eqref{eq:finite-negative} and the choices
+$C_f\rho\le\alpha/2$,
+$C_f\operatorname{err}_{N_n}<\alpha/4$ yield, for all $n$ with
+$|V(G_n)|-k>4C_f/\alpha$,
+\[
+  p(f,(B_n,\widehat\theta))
+  \;\le\; p(f,F_n)+C_f\!\left(\rho+\tfrac1{|V(G_n)|-k}+\operatorname{err}_{N_n}\right)
+  \;\le\; -3\alpha+\tfrac\alpha2+\tfrac\alpha4+\tfrac\alpha4
+  \;=\; -2\alpha.
+\]
+Let
+\[
+  C\;:=\;\{x\in X_\sigma:x(f)\le-2\alpha\}.
+\]
+Since $f$ is a fixed finite linear combination of flags and
+$x\mapsto x(f)$ is a continuous map $X_\sigma\to\R$, the set $C$ is
+closed.  We have just shown $P_n(C)\ge c_{k,\rho}$ for all large $n$.
+
+\paragraph{Step 5: Pass to the limit.}
+By \Cref{thm:razborov}(ii), the measures $P_n$ converge weakly to
+$\Ext_\sigma(\phi_0)$ as a measure on $X_\sigma$.  By the closed-set
+portmanteau theorem,
+\[
+  \Prob_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}\!\bigl[\phi^\sigma\in C\bigr]
+  \;\ge\;\limsup_{n\to\infty}P_n(C)
+  \;\ge\; c_{k,\rho}\;>\;0.
+\]
+Hence $\Prob[\phi^\sigma(f)\le-2\alpha]>0$, contradicting
+\ref{item:ensemble}.  This contradiction
+proves~\ref{item:quotient}, and the theorem.
+\qed
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What clone-closure buys, what it costs}
+
+\Cref{thm:main} should be read as: when $\K$ is closed under blow-ups,
+labelled quotient semantics is no stronger than ensemble semantics
+anchored at a $\K$-supported unlabelled root.  Practically, this means
+any flag-algebra calculation on the constrained theory can be done
+inside the unconstrained algebra $\A^\sigma[\T]$, using the random
+extension formalism, with no loss of information.  The price is the
+hypothesis on $\K$.
+
+For $K_r$-free graphs the hypothesis is automatic and the result is
+clean.  For more exotic hereditary classes one must check
+clone-closure case by case; the criterion in \Cref{ex:Kr-free-clone-closed}
+(forbidden patterns with no false twins) is sufficient but not
+necessary.
+
+\subsection{Comparison with the removal-lemma route}
+
+For the unlabelled type ($\sigma=0$), the equivalence
+\ref{item:quotient}$\,\Leftrightarrow\,$\ref{item:ensemble} holds for
+\emph{every} hereditary $\K$, by a much shorter argument: the random
+extension $\Ext_0(\phi_0)$ degenerates to the Dirac mass at $\phi_0$,
+so~\ref{item:ensemble} becomes the statement that
+$\phi_0(f)\ge 0$ for every $\K$-supported root, which is exactly
+~\ref{item:quotient} pulled back through
+\Cref{lem:quotient-support}.  In other words, the difficulty in the
+present paper is specific to labels.  For $\sigma=0$ the random
+extension is its own root, so the union of all ensembles already
+exhausts the $\K$-supported homomorphisms on $\A^0[\T]$.  For
+$\sigma\neq 0$, \Cref{lem:support-passes} keeps random extensions
+$\K$-supported, but it leaves open whether the union of ensembles
+$\bigcup_{\phi_0}\operatorname{supp}\Ext_\sigma(\phi_0)$ is rich
+enough, as a sub-collection of $\K$-supported homomorphisms on
+$\A^\sigma[\T]$, to detect every asymptotic inequality.  Our theorem
+says: under clone-closure, it is---this collection's closed convex hull
+already contains every $\K$-supported homomorphism (see
+\Cref{cor:image}).
+
+For $\sigma=0$ there is also a more constructive route via the
+\emph{(induced) graph removal lemma}.  Let
+$\psi\in\Homp(\A^0[\T_\K],\R)$ and write
+$\widetilde\psi:=\psi\circ\q_0\in\Homp(\A^0[\T],\R)$ for its
+$\K$-supported pull-back.  By Razborov's representation theorem
+(\Cref{thm:razborov}(i)) applied in $\T$, some $\T$-sequence $\{G_n\}$
+converges to $\widetilde\psi$.  Since $\widetilde\psi(H)=0$ for every
+forbidden $H\in\mathcal H$ (where $\mathcal H$ defines $\K$), the
+induced removal lemma of
+Alon--Fischer--Krivelevich--Szegedy~\cite{AFKS2000} and its hereditary
+generalisation by Alon--Shapira~\cite{AlonShapira2008} repair $G_n$ to
+$G_n'\in\K$ within $o(n^2)$ edges, giving a $\K$-sequence with the same
+limit.  This produces a concrete sequence of $\K$-models with the
+desired limit without invoking Razborov's representation inside
+$\T_\K$.
+
+The blow-up proof of this paper is dual to both: it works for any
+labelled type $\sigma$, at the cost of imposing clone-closure on $\K$.
+The three regimes are summarised in the comparison table of \S1.4.
+Currently no single argument covers the combination
+(arbitrary hereditary $\K$, arbitrary type $\sigma$).
+
+\subsection{What is needed to drop the hypothesis on \texorpdfstring{$\K$}{K}}
+
+\begin{question}\label{q:general}
+Does the equivalence \ref{item:quotient}\,$\Leftrightarrow$\,\ref{item:ensemble}
+of \Cref{thm:main} hold for every hereditary $\K$ and every non-degenerate
+type~$\sigma$ in $\T_\K$?
+\end{question}
+
+The blow-up proof fails because an independent blow-up of a $\K$-model
+need not be in $\K$ (\Cref{rmk:why-hypothesis}).  Any approach replacing
+the blow-up by a less destructive ``host'' construction would have to
+satisfy two competing constraints: it must enlarge a finite labelled
+flag $(G,\theta)\in\F^\sigma[\T_\K]$ into a sequence of unlabelled
+$\K$-models inside which a random extension recovers $(G,\theta)$ with
+positive probability, and it must preserve the densities of the relevant
+flags.  In the unlabelled case, the removal lemma provides exactly such
+a perturbation; what one wants in general is, roughly, a \emph{labelled}
+induced removal lemma that respects a planted labelled embedding.
+
+\subsection{Extensions and corollaries}
+
+The abstract setup of \Cref{thm:main} subsumes several useful special
+cases:
+
+\begin{itemize}[leftmargin=2em]
+\item \emph{Bipartite and multipartite graphs.}  The class of bipartite
+graphs is the same as $\mathrm{Forb}^{\mathrm{ind}}(C_{2k+1}:k\ge 1)$,
+and is clone-closed because an independent blow-up of a bipartite graph
+inherits a bipartition (cluster-wise).  The same is true of the class
+of $r$-partite graphs for every fixed $r$.
+\item \emph{Linear hypergraphs.}  The class of $r$-uniform hypergraphs
+in which every two hyperedges share at most one vertex is clone-closed:
+two hyperedges of $B_N$ sharing two vertices project to two hyperedges
+of $G$ sharing two vertices.
+\item \emph{Sparse oriented graph classes.}  For every $g\ge 3$, the
+class of oriented graphs of girth at least $g$ (i.e.\ with no
+$\overrightarrow C_j$ for any $3\le j<g$) is clone-closed.  Suppose for
+contradiction that a base oriented graph $G$ of girth $\ge g$ admits a
+blow-up $B_N$ containing a $\overrightarrow C_\ell$ with $\ell<g$, and
+take $\ell$ smallest.  The cyclic projection of this $\overrightarrow
+C_\ell$ to $V(G)$ is a closed walk of length $\ell$ in $G$ with
+consecutive vertices distinct (arcs in $B_N$ are inter-cluster).  Such a
+closed walk contains a directed cycle of length between $3$ and $\ell$
+(at most $\ell$, and at least $3$ because $G$ is oriented), contradicting
+$\mathrm{girth}(G)\ge g>\ell$.  This includes the girth conditions
+featured in the Caccetta--H\"aggkvist
+conjecture~\cite[\S5]{Razborov2007}.
+
+\smallskip
+By contrast, ``$\overrightarrow C_k$-free for a single $k$'' is in
+general \emph{not} clone-closed: if $G$ contains an
+$\overrightarrow C_d$ with $d\ge 3$ a proper divisor of $k$, blowing up
+$G$ with clusters of size $\ge 2$ traverses this short cycle $k/d$
+times and produces a $\overrightarrow C_k$ absent from $G$.  Concretely,
+blowing up a single $\overrightarrow C_3$ with all cluster sizes equal
+to $2$ contains a $\overrightarrow C_6$, so the class of
+$\overrightarrow C_6$-free oriented graphs is not clone-closed.  This is
+why we state the result for full girth bounds, not for single
+forbidden lengths.
+\item \emph{Clique-free uniform hypergraphs.}  For every $r$-uniform
+hypergraph theory and every fixed $s\ge r$, the class of hypergraphs
+containing no induced complete $r$-uniform sub-hypergraph on $s$
+vertices is clone-closed (a complete sub-hypergraph in the blow-up uses
+at most one vertex per cluster and projects to one in the base).
+\end{itemize}
+
+\subsection{A clean restatement}
+
+We close with an equivalent, geometric way to phrase \Cref{thm:main}:
+
+\begin{corollary}[Quotient homomorphisms lie in the ensemble convex hull]\label{cor:image}
+Under the hypotheses of \Cref{thm:main}, set
+\[
+  \mathcal{E}_{\K,\sigma}
+  \;:=\;
+  \bigcup_{\substack{\phi_0\ \K\text{-supported}\\\phi_0(\brak\sigma)>0}}
+  \;\operatorname{supp}\Ext_\sigma(\phi_0)
+  \;\subseteq\; \Homp(\A^\sigma[\T],\R).
+\]
+Then every $\psi\in\Homp(\A^\sigma[\T_\K],\R)$, viewed as a $\K$-supported
+element of $\Homp(\A^\sigma[\T],\R)$ via \Cref{lem:quotient-support},
+lies in the closed convex hull of $\mathcal{E}_{\K,\sigma}$ taken in the
+product topology on $\R^{\F^\sigma}$.
+\end{corollary}
+
+\begin{proof}
+Suppose not.  Then $\psi$ is separated from the closed convex hull by a
+continuous linear functional on $\R^{\F^\sigma}$.  Such a functional
+depends on only finitely many coordinates, so it is the evaluation
+$x\mapsto x(g)$ for some $g\in\A^\sigma[\T]$, and the separation gives
+$c\in\R$ with $\psi(g)<c$ while $\phi^\sigma(g)\ge c$ for every
+$\phi^\sigma\in\mathcal{E}_{\K,\sigma}$.  Replacing $g$ by
+$f:=g-c\cdot 1_\sigma$ converts this into
+\[
+  \psi(f)<0,
+  \qquad
+  \phi^\sigma(f)\ge 0\text{ for every }\phi^\sigma\in\mathcal{E}_{\K,\sigma}.
+\]
+The second condition is exactly $\Prob[\phi^\sigma(f)\ge 0]=1$ for every
+ensemble, that is, condition \ref{item:ensemble} of \Cref{thm:main}.
+The theorem therefore gives $\psi'(\q_\sigma f)\ge 0$ for every
+$\psi'\in\Homp(\A^\sigma[\T_\K],\R)$, and applying this to the $\psi'$
+whose pull-back is $\psi$ contradicts $\psi(f)<0$.
+\end{proof}
+
+This may be read as a partial structural answer, for blow-up-closed
+classes, to the family of questions discussed in Razborov's
+\S6~\cite[\S6]{Razborov2007} on the relationship between labelled
+quotient homomorphisms and ensembles of random homomorphisms: under
+clone-closure, every labelled quotient homomorphism is at least a
+weak-limit of convex combinations of ensemble members, even if it need
+not literally appear in the support of any single ensemble.
+
+\begin{thebibliography}{9}
+
+\bibitem{Razborov2007}
+A.~A.~Razborov.
+\newblock Flag algebras.
+\newblock \emph{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{AFKS2000}
+N.~Alon, E.~Fischer, M.~Krivelevich, and M.~Szegedy.
+\newblock Efficient testing of large graphs.
+\newblock \emph{Combinatorica}, 20(4):451--476, 2000.
+
+\bibitem{AlonShapira2008}
+N.~Alon and A.~Shapira.
+\newblock A characterization of the (natural) graph properties testable
+with one-sided error.
+\newblock \emph{SIAM Journal on Computing}, 37(6):1703--1727, 2008.
+
+\end{thebibliography}
+
+\end{document}
