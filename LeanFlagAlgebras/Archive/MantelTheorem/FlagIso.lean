@@ -1,6 +1,17 @@
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import Mathlib.Tactic.FinCases
 
+/-!
+# (Archived) Enumerated flag sets via the `Sym2` representation
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It builds the explicit `Finset`s of
+all non-isomorphic 1- and 3-vertex flags (empty and singleton type) and proves
+each equals `Finset.univ`, going through the `Sym2Flag` representation and
+`native_decide`. It is a later, slicker version of `FlagIso_old.lean` (which
+did the same by hand-built graph isomorphisms); both are superseded by the
+active loader-generated flag sets used in `LeanFlagAlgebras/MantelTheorem/`.
+-/
 
 open FlagAlgebras
 open Archive.Compute

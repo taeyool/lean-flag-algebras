@@ -4,8 +4,22 @@ import Mathlib.Data.List.Permutation
 import Mathlib.Data.List.FinRange
 import Init.Data.List.Find
 
+/-! # Fast graph-isomorphism checking for flags
+
+Computable, decidable isomorphism tests for `Sym2Graph`/`Sym2LabeledGraph`
+representations of flags, used by the Flags loader macros at elaboration time
+to canonicalize and deduplicate flags.
+
+The core idea: search over vertex permutations (respecting the type embedding
+for labeled graphs) and check edge-set agreement, then prove the resulting
+`Bool` test sound and complete against the semantic flag equivalence `∼sf`.
+These proofs feed the high-priority `Decidable`/`DecidableEq`/`Fintype`
+instances that make flag enumeration tractable. -/
+
 namespace FlagAlgebras.Compute
 
+/-- The list of all potential (non-loop) edges on `Fin n`, one `Sym2` per
+unordered pair `i < j`; used to range over candidate edges during iso checks. -/
 def allEdges (n : Nat) : List (Sym2 (Fin n)) :=
   (List.finRange n).flatMap fun i =>
     (List.finRange n).filterMap fun j =>
@@ -15,6 +29,8 @@ def allEdges (n : Nat) : List (Sym2 (Fin n)) :=
 def applyPermEdge {n : Nat} (perm : List (Fin n)) (e : Sym2 (Fin n)) : Sym2 (Fin n) :=
   Sym2.map (fun v => (perm[v.val]?).getD v) e
 
+/-- Computable first-occurrence lookup: returns `some (i + offset)` for the
+position of `a` in the list (counting from the given starting `offset`). -/
 def myIndexOf {α : Type} [BEq α] (a : α) : List α → Nat → Option Nat
   | [], _ => none
   | x::xs, i => if x == a then some i else myIndexOf a xs (i+1)
@@ -158,6 +174,9 @@ lemma myIndexOf_get_zero {n : Nat} (a : Fin n) (l : List (Fin n)) (idx : Nat)
   have ⟨_, hget⟩ := myIndexOf_get?_gen a l 0 idx h
   rwa [Nat.sub_zero] at hget
 
+/-- Assembles a full vertex map on `Fin n` from a chosen permutation `p2` of
+the non-type vertices: type vertices are sent via `embed2 ∘ embed1⁻¹`
+(preserving the type σ), while remaining vertices follow `p2`. -/
 def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
     (nonType1 p2 : List (Fin n)) : List (Fin n) :=
   (List.finRange n).map fun v =>
@@ -169,6 +188,8 @@ def buildFullMap (n k : Nat) (embed1 embed2 : Fin k → Fin n)
       | some idx => (p2[idx]?).getD v
       | none => v
 
+/-- The vertices of `Fin n` not in the image of the type embedding `embed`;
+these are the vertices a flag isomorphism is free to permute. -/
 def getNonTypeVerts (n k : Nat) (embed : Fin k → Fin n) : List (Fin n) :=
   (List.finRange n).filter fun v =>
     (List.finRange k).all fun i => v.val != (embed i).val
@@ -269,6 +290,8 @@ def isEmptyIsoFast_bool {n : Nat} (G₁ G₂ : Sym2Graph n) : Bool :=
         let e2_in := decide ((applyPermEdge perm e) ∈ G₂.edges)
         e1_in == e2_in
 
+/-- Soundness: a `true` result from the empty-typed fast check witnesses a
+genuine flag equivalence `G₁ ∼sf G₂`. -/
 theorem isEmptyIsoFast_bool_true_correct
     {n : ℕ} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = true)
     : G₁ ∼sf G₂
@@ -327,6 +350,8 @@ theorem isEmptyIsoFast_bool_true_correct
   · ext z
     exact Fin.elim0 z
 
+/-- Completeness: a `false` result from the empty-typed fast check rules out
+any flag equivalence `G₁ ∼sf G₂`. -/
 theorem isEmptyIsoFast_bool_false_correct
     {n : Nat} {G₁ G₂ : Sym2Graph n} (h : isEmptyIsoFast_bool G₁ G₂ = false)
     : ¬ (G₁ ∼sf G₂)
@@ -364,6 +389,8 @@ theorem isEmptyIsoFast_bool_false_correct
           exact this.1)
     simpa [applyPermEdge] using hEdge
 
+/-- High-priority decision procedure for empty-typed flag equivalence,
+backed by `isEmptyIsoFast_bool` and its soundness/completeness proofs. -/
 instance (priority := high) fastDecidableSym2GraphEqv
     {n : Nat} (G₁ G₂ : Sym2Graph n) : Decidable (G₁ ∼sf G₂) :=
   if h : isEmptyIsoFast_bool G₁ G₂ = true then
@@ -371,6 +398,8 @@ instance (priority := high) fastDecidableSym2GraphEqv
   else
     isFalse (isEmptyIsoFast_bool_false_correct (eq_false_of_ne_true h))
 
+/-- Finiteness of empty-typed flags, obtained by quotienting `Sym2Graph n`
+under the fast-decidable equivalence; enables flag enumeration. -/
 instance (priority := high) fastFintypeSym2EmptyTypedFlag
     {n : ℕ} : Fintype (Sym2EmptyTypedFlag n)
   := by
@@ -378,6 +407,8 @@ instance (priority := high) fastFintypeSym2EmptyTypedFlag
   intro G G'
   exact fastDecidableSym2GraphEqv G G'
 
+/-- Decidable equality on empty-typed flags via the fast iso check, used to
+deduplicate flags in the loader macros. -/
 instance (priority := high) fastDecidableSym2EmptyTypedFlagEqv
     {n : ℕ} : DecidableEq (Sym2EmptyTypedFlag n)
   := by
@@ -400,6 +431,8 @@ def isIsoFast_bool {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGra
         let e2_in := decide ((applyPermEdge fullMap e) ∈ G₂.edges)
         e1_in == e2_in
 
+/-- Soundness of the typed fast check: a `true` result yields a flag
+equivalence `G₁ ∼sf G₂` whose isomorphism preserves the type embedding. -/
 theorem isIsoFast_bool_true_correct
     {k n : ℕ} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : isIsoFast_bool G₁ G₂ = true) : G₁ ∼sf G₂
@@ -602,6 +635,9 @@ theorem isIsoFast_bool_true_correct
           exact (lt_self_iff_false i).mp t_lt_i
     simp [fullMap, buildFullMap, hfind, graphEmbedIso, Sym2LabeledGraph.toLabeledGraph]
 
+/-- From a flag equivalence, the underlying isomorphism maps `G₁`'s non-type
+vertices onto a permutation of `G₂`'s; supplies the permutation witness for
+the completeness direction of `isIsoFast_bool`. -/
 lemma nonType_perm_witness_of_eqv
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : G₁ ∼sf G₂) :
@@ -708,6 +744,9 @@ lemma mem_getNonTypeVerts_comp {n k : Nat} {embed : Fin k → Fin n} (v : Fin n)
   intro i
   exact Fin.val_ne_of_ne (hn i)
 
+/-- From a flag equivalence, the `buildFullMap` reconstructed from the
+isomorphism agrees with it on edges; supplies the edge-preservation witness
+for the completeness direction of `isIsoFast_bool`. -/
 lemma buildFullMap_edge_witness_of_eqv
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : G₁ ∼sf G₂) :
@@ -780,6 +819,8 @@ lemma buildFullMap_edge_witness_of_eqv
       simp [h_getElem]
   simp only [hEdge, ← hMapEq, φ]
 
+/-- Completeness of the typed fast check: a `false` result rules out any
+type-preserving flag equivalence `G₁ ∼sf G₂`. -/
 theorem isIsoFast_bool_false_correct
     {k n : Nat} {σ : Sym2FlagType k} {G₁ G₂ : Sym2LabeledGraph σ n}
     (h : isIsoFast_bool G₁ G₂ = false) : ¬ (G₁ ∼sf G₂)
@@ -792,12 +833,16 @@ theorem isIsoFast_bool_false_correct
   use (getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso
   exact ⟨nonType_perm_witness_of_eqv h, buildFullMap_edge_witness_of_eqv h⟩
 
+/-- High-priority decision procedure for typed flag equivalence, backed by
+`isIsoFast_bool` and its soundness/completeness proofs. -/
 instance (priority := high) fastDecidableSym2LabeledGraphEqv {k n : Nat} {σ : Sym2FlagType k} (G₁ G₂ : Sym2LabeledGraph σ n) : Decidable (G₁ ∼sf G₂) :=
   if h : isIsoFast_bool G₁ G₂ = true then
     isTrue (isIsoFast_bool_true_correct h)
   else
     isFalse (isIsoFast_bool_false_correct (eq_false_of_ne_true h))
 
+/-- Finiteness of typed flags `Sym2Flag σ n`, obtained by quotienting under
+the fast-decidable equivalence; enables typed flag enumeration. -/
 instance (priority := high) fastFintypeSym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
     Fintype (Sym2Flag σ n)
@@ -806,6 +851,8 @@ instance (priority := high) fastFintypeSym2Flag
   intro G G'
   exact fastDecidableSym2LabeledGraphEqv G G'
 
+/-- Decidable equality on typed flags via the fast iso check, used to
+deduplicate typed flags in the loader macros. -/
 instance (priority := high) fastDecidableSym2FlagEqv
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} :
     DecidableEq (Sym2Flag σ n)

@@ -1,3 +1,36 @@
+"""Multi-agent orchestrator that drafts/revises paper sections automatically.
+
+This is the LLM-driven half of the agentic paper pipeline; it reuses the
+static helpers in pipeline.py (evidence extraction, contribution parsing,
+TeX section/abstract parsing, seed-draft rendering).
+
+Per configured section it runs a four-role agent chain plus judges:
+  - Planner    -> JSON writing plan,
+  - Retriever  -> selects which evidence units to use,
+  - Writer     -> drafts the LaTeX section body,
+  - Verifier   -> revises to keep claims grounded in evidence,
+  - VerifierJudge / RevisionJudge -> gate output and trigger bounded retries.
+The verified body is spliced back into the working draft TeX (abstract or
+\\section), so revision mode builds on the previous run's output.
+
+Two execution modes:
+  - api          : calls an OpenAI-compatible chat endpoint directly,
+  - copilot-queue: emits *_task.md files + a manifest/guide for a human to
+                    run through a Copilot chat workflow (no API calls).
+Modes: --mode draft (improve drafts) or revision (address author feedback,
+optionally with --rewrite to allow free restructuring). --dry-run skips all
+model calls and emits placeholders.
+
+Inputs: --root, --config (config.json), --sections, plus the mode flags.
+Outputs: per-section logs/task files under the configured run_log_dir and
+the updated draft TeX.
+
+Example:
+    python papers/agentic/run_multi_agent.py --root . \\
+        --config papers/agentic/config.json \\
+        --sections "Abstract,Application" --mode draft --dry-run
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -24,6 +57,11 @@ from pipeline import (
 
 
 def list_formalization_exemplars(root: Path, config: dict[str, Any]) -> list[str]:
+    """List repo-relative paths of exemplar formalization papers (.pdf/.tex/.md).
+
+    These set the quality bar shown to the agents. Returns [] if the
+    configured formalization_examples_dir does not exist.
+    """
     quality_cfg = config.get("quality_profile", {})
     rel_dir = quality_cfg.get(
         "formalization_examples_dir", "papers/References/Formalization"
@@ -43,6 +81,7 @@ def list_formalization_exemplars(root: Path, config: dict[str, Any]) -> list[str
 
 
 def section_depth_target(section: str) -> str:
+    """Return a human-readable length/depth requirement string for the given section."""
     s = section.strip().lower()
     if s == "abstract":
         return "1 compact paragraph (5-8 sentences) with problem, method, contributions, and application outcome."
@@ -54,6 +93,7 @@ def section_depth_target(section: str) -> str:
 
 
 def render_section_blueprint(config: dict[str, Any], section: str) -> str:
+    """Render the config's per-section blueprint dict as a bulleted text block."""
     blueprints = config.get("section_blueprints", {})
     bp = blueprints.get(section, {})
     if not isinstance(bp, dict) or not bp:
@@ -74,6 +114,7 @@ def render_section_blueprint(config: dict[str, Any], section: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments (root, config, sections, execution/run modes, flags)."""
     parser = argparse.ArgumentParser(
         description="Run Planner/Retriever/Writer/Verifier to draft sections automatically."
     )
@@ -116,6 +157,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def strip_fence(text: str) -> str:
+    """Strip a single surrounding triple-backtick code fence, if present."""
     s = text.strip()
     if s.startswith("```") and s.endswith("```"):
         lines = s.splitlines()
@@ -125,6 +167,10 @@ def strip_fence(text: str) -> str:
 
 
 def parse_json_block(text: str) -> dict[str, Any] | None:
+    """Parse a JSON object from text, trying the whole string then a ```json fence.
+
+    Returns the dict, or None if no valid JSON object can be extracted.
+    """
     s = text.strip()
     try:
         val = json.loads(s)
@@ -146,6 +192,7 @@ def parse_json_block(text: str) -> dict[str, Any] | None:
 
 
 def section_to_filename(section: str) -> str:
+    """Slugify a section title into a safe lowercase filename stem."""
     return re.sub(r"[^A-Za-z0-9]+", "_", section).strip("_").lower()
 
 
@@ -182,6 +229,7 @@ def load_feedback(root: Path, config: dict[str, Any], section: str) -> str:
 
 
 def render_evidence_list(units: list[EvidenceUnit], limit: int) -> str:
+    """Render up to `limit` evidence units as a numbered list (1-based IDs used for selection)."""
     lines: list[str] = []
     for idx, u in enumerate(units[:limit], start=1):
         lines.append(
@@ -201,6 +249,10 @@ def chat_openai_compat(
     max_tokens: int,
     timeout_sec: int,
 ) -> str:
+    """POST a chat-completion request to an OpenAI-compatible API and return the message text.
+
+    Raises RuntimeError on HTTP/network errors or unexpected response shapes.
+    """
     payload = {
         "model": model,
         "messages": messages,
@@ -240,6 +292,13 @@ def ask_agent(
     llm_cfg: dict[str, Any],
     dry_run: bool,
 ) -> str:
+    """Run one named agent turn against the configured LLM.
+
+    Returns a deterministic "[DRY-RUN:...]" stub when dry_run is set;
+    otherwise resolves API key/model/params from llm_cfg and environment
+    and calls chat_openai_compat. Raises RuntimeError if the API key env
+    var is unset and dry_run is False.
+    """
     if dry_run:
         return f"[DRY-RUN:{role_name}]\n{user_prompt[:1200]}"
 
@@ -272,6 +331,10 @@ def ask_agent(
 
 
 def replace_abstract(tex: str, abstract_body: str) -> str:
+    """Replace the \\begin{abstract}...\\end{abstract} body, or insert one after \\maketitle.
+
+    Returns tex unchanged if there is no abstract block and no \\maketitle.
+    """
     pattern = re.compile(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", re.DOTALL)
     repl = "\\begin{abstract}\n" + abstract_body.strip() + "\n\\end{abstract}"
     if pattern.search(tex):
@@ -286,6 +349,11 @@ def replace_abstract(tex: str, abstract_body: str) -> str:
 
 
 def replace_section_body(tex: str, section_title: str, body: str) -> str:
+    """Replace the body of \\section{section_title} with `body` in tex.
+
+    If the section is absent it is appended before \\end{document} (or at
+    the end of the document). The \\section{...} header itself is preserved.
+    """
     sec_pat = re.compile(rf"\\section\{{{re.escape(section_title)}\}}")
     m = sec_pat.search(tex)
     if not m:
@@ -324,6 +392,13 @@ def build_common_context(
     section: str,
     feedback: str = "",
 ) -> str:
+    """Build the shared context preamble injected into every agent prompt.
+
+    Combines project/section metadata, depth target, section blueprint,
+    equation-source PDFs, exemplar papers, quality requirements,
+    considerations, author notes, and instructions. In revision mode
+    (feedback non-empty) appends a delimited "Feedback to Address" block.
+    """
     section_instructions = config.get("section_instructions", {}).get(section, [])
     global_block = "\n".join(f"- {x}" for x in global_instructions) or "- (none)"
     section_block = "\n".join(f"- {x}" for x in section_instructions) or "- (none)"
@@ -383,6 +458,13 @@ def generate_copilot_task_pack(
     feedback: str = "",
     rewrite: bool = False,
 ) -> None:
+    """Write the copilot-queue task files for one section.
+
+    Emits planner/retriever/writer/verifier/apply task Markdown (and a
+    revision_judge task in revision mode with feedback) into section_log_dir.
+    Task wording adapts to mode ("draft"/"revision") and the rewrite flag.
+    Used only by the copilot-queue execution mode (no LLM calls here).
+    """
     # Build the reference draft block included in writer and verifier tasks.
     if ref_section_body:
         ref_block = (
@@ -660,6 +742,16 @@ def judge_revision_feedback(
 
 
 def run() -> None:
+    """Main orchestration loop: drive the agent chain per section and write the draft.
+
+    Loads config, picks the reference draft (base draft in draft mode, the
+    working draft in revision mode), then for each section extracts evidence
+    and feedback and either emits copilot-queue task files or runs the
+    Planner -> Retriever -> Writer -> Verifier chain (with judge-gated
+    retries). The verified body replaces the section/abstract in the working
+    draft, which is written back along with run logs and (in copilot-queue
+    mode) a queue manifest and guide.
+    """
     args = parse_args()
     mode = args.mode
     root = Path(args.root).resolve()

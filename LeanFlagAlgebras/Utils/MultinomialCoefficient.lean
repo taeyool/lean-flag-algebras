@@ -1,5 +1,13 @@
 import Mathlib.Data.Nat.Choose.Multinomial
 
+/-! # Multinomial coefficient for `Fin t → ℕ`
+
+Shared utility defining `multinomialCoefficient r_list n`, the number of ways to choose disjoint
+groups of sizes `r_list 0, …` from an `n`-element set, with positivity, permutation invariance,
+small-arity (`Fin 0`/`Fin 1`) reductions, and the `choose · multinomial` factorization. Used by
+`Partitions` to count labeled partitions of a vertex set.
+-/
+
 variable {t : ℕ}
 
 /-- Multinomial coefficient specialized for functions of form `Fin t → ℕ`. -/
@@ -16,6 +24,7 @@ lemma multinomialCoefficient_eq
     : multinomialCoefficient r_list₁ n = multinomialCoefficient r_list₂ n
   := by subst heq; rfl
 
+/-- The coefficient is invariant under permuting the group-size list. -/
 lemma multinomialCoefficient_eq_of_perm
     {r_list : Fin t → ℕ} (n : ℕ) {π : Equiv.Perm (Fin t)}
     : multinomialCoefficient (r_list ∘ π) n = multinomialCoefficient r_list n
@@ -24,6 +33,7 @@ lemma multinomialCoefficient_eq_of_perm
   congr 3
   exact Fintype.prod_equiv π _ _ (congrFun rfl)
 
+/-- The coefficient is positive whenever `n` is at least the total `∑ r_list i`. -/
 lemma multinomialCoefficient_pos
     (r_list : Fin t → ℕ) (n : ℕ) (h_n : n ≥ ∑ i : Fin t, r_list i) :
     multinomialCoefficient r_list n > 0
@@ -99,6 +109,8 @@ lemma multinomialCoefficient_eq_choose_mul_multinomial_of_sum_le
     Nat.div_div_eq_div_mul, mul_comm (∑ x, r_list x).factorial, ← mul_assoc, Nat.mul_div_mul_right]
   positivity
 
+/-- Factorization `multinomialCoefficient r_list n = n.choose (∑ r_list) * Nat.multinomial`,
+relating this coefficient to Mathlib's `Nat.multinomial`. -/
 lemma multinomialCoefficient_eq_choose_mul_multinomial
     {n : ℕ} {r_list : Fin t → ℕ}
     : multinomialCoefficient r_list n = n.choose (∑ x, r_list x) * Nat.multinomial .univ r_list

@@ -8,12 +8,26 @@ import Mathlib.Data.Nat.Lattice
 import Mathlib.LinearAlgebra.Span.Defs
 import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
+/-! # The Flag Algebra `A^σ`
+
+This file builds Razborov's flag algebra over the reals. Starting from flags of
+a fixed type `σ` (from `FlagDef.lean`), it forms `FlagVector σ` (finitely
+supported real combinations of size-tagged flags `FinFlag σ`), defines flag
+multiplication via subflag densities (`flagMul`/`flagMulWithSize`), and the
+`ZeroSpace` spanned by Razborov's averaging relations (`zeroElement`). The
+quotient `FlagAlgebra σ = FlagVector σ / ZeroSpace σ` is then equipped with its
+commutative ring and `ℝ`-algebra structure, including `⟦·⟧` quotient lemmas.
+
+Sits above `FlagDef`/`SubflagListDensity` and below the `Forbid`/`API` layers
+that use it to prove extremal density bounds. -/
+
 namespace FlagAlgebras
 
 open Finset
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
+/-- A flag of type `σ` on a fixed `n`-element vertex carrier `Fin n`. -/
 abbrev FlagWithSize (σ : FlagType (Fin n₀)) (n : ℕ) : Type
   := Flag σ (Fin n)
 
@@ -60,6 +74,8 @@ instance : Unique (FlagWithSize σ n₀) where
 noncomputable instance (n : ℕ) : Fintype (FlagWithSize σ n)
   := FlagFintype σ (Fin n)
 
+/-- A flag together with its size: a dependent pair `⟨n, F⟩` of a vertex count
+`n` and a flag on `Fin n`. The basis index of `FlagVector σ`. -/
 def FinFlag (σ : FlagType (Fin n₀)) : Type
   := Σ (n : ℕ), FlagWithSize σ n
 
@@ -67,6 +83,7 @@ instance : Countable (FinFlag σ)
   :=
   instCountableSigma
 
+/-- The unit flag: the empty flag at size `n₀` (the type `σ` itself). -/
 instance : One (FinFlag σ) where
   one := ⟨n₀, (default : FlagWithSize σ n₀)⟩
 
@@ -102,6 +119,8 @@ theorem finFlag_size_ge_n₀
   simp only [Fintype.card_fin] at h_card
   exact h_card
 
+/-- A formal real combination of size-tagged flags: the underlying module of
+the flag algebra, before quotienting by Razborov's relations. -/
 abbrev FlagVector (σ : FlagType (Fin n₀)) : Type
   := FinFlag σ →₀ ℝ
 
@@ -125,6 +144,8 @@ noncomputable instance : AddCommGroup (FlagVector σ)
 noncomputable instance : Module ℝ (FlagVector σ)
   := Finsupp.module (FinFlag σ) ℝ
 
+/-- The basis vector for a single flag `F`: coefficient `1` on `F`, `0`
+elsewhere. -/
 noncomputable def unitVector (F : FinFlag σ) : FlagVector σ
   := Finsupp.single F 1
 
@@ -156,6 +177,8 @@ theorem unitVector_apply_other_size
   apply unitVector_apply_other
   exact fun a ↦ hF (congrArg Sigma.fst a)
 
+/-- Every flag vector expands as the finite sum of its coefficients times the
+corresponding `unitVector`s; the workhorse for reducing to single flags. -/
 theorem flagVector_eq_sum_unitVector
     (f : FlagVector σ)
     : f = ∑ F ∈ f.support, f F • unitVector F
@@ -166,6 +189,7 @@ theorem flagVector_eq_sum_unitVector
   rintro _ -
   simp_rw [Finsupp.sum_single, Finsupp.smul_single, smul_eq_mul, mul_one]
 
+/-- The unit flag vector: the basis vector of the unit flag `1`. -/
 noncomputable instance : One (FlagVector σ) where
   one := unitVector 1
 
@@ -183,6 +207,9 @@ theorem flagVector_one_apply_one
   show (unitVector 1) 1 = 1
   simp
 
+/-- Product of two flags expanded onto flags of a chosen size `ℓ`: the formal
+combination `∑_G d(F, F'; G) • G` over all size-`ℓ` flags `G`, with `d` the
+pair subflag density. Up to `∼v` it is independent of `ℓ` (large enough). -/
 noncomputable def flagMulWithSize
     (F F' : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
@@ -216,6 +243,8 @@ theorem flagMulWithSize_one
       exact fun a ↦ hF' (id (Eq.symm a))
     norm_num [flagDensity_other hF'_ne_F]
 
+/-- The flag product of `F` and `F'`, taken at the minimal size
+`F.1 + F'.1 - n₀` (the natural target size for the pair density). -/
 noncomputable def flagMul
     (F F' : FinFlag σ) : FlagVector σ
   :=
@@ -233,6 +262,7 @@ theorem flagMul_one
   rw [finFlag_one_fst, ← Nat.eq_sub_of_add_eq rfl]
   exact flagMulWithSize_one F
 
+/-- Multiplication on flag vectors: the bilinear extension of `flagMul`. -/
 noncomputable instance : Mul (FlagVector σ) where
   mul := bilinearExtension flagMul
 
@@ -259,6 +289,9 @@ noncomputable instance : HasDistribNeg (FlagVector σ) where
   neg_mul := bilinearExtension_neg_left flagMul
   mul_neg := bilinearExtension_neg_right flagMul
 
+/-- Flag vectors form a non-unital non-associative ring (distributivity and
+absorption come from bilinearity of the product); unitality and associativity
+hold only up to `∼v` and are established on the quotient. -/
 noncomputable instance : NonUnitalNonAssocRing (FlagVector σ) where
   left_distrib := bilinearExtension_add_right flagMul
   right_distrib := bilinearExtension_add_left flagMul
@@ -279,15 +312,20 @@ noncomputable instance : MulOneClass (FlagVector σ) where
     rw [mul_comm, flagVector_mul_one]
   mul_one := flagVector_mul_one
 
+/-- The averaged expansion of a flag `F` onto size-`ℓ` flags:
+`∑_{F'} d(F; F') • F'`. Setting `F` equal to this sum is Razborov's relation. -/
 noncomputable def densityFlagSum
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
   ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F') • unitVector ⟨ℓ, F'⟩
 
+/-- A generating relation of the flag algebra: `F - ∑_{F'} d(F; F') • F'`,
+which is identified with `0` (chain rule / averaging identity). -/
 noncomputable def zeroElement
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   := unitVector F - densityFlagSum F ℓ
 
+/-- The set of all generating relations `zeroElement F ℓ` (with `F.1 ≤ ℓ`). -/
 noncomputable def zeroSet
     (σ : FlagType (Fin n₀)) : Set (FlagVector σ)
   :=
@@ -298,6 +336,8 @@ theorem mem_zeroSet
     {k : FlagVector σ} : k ∈ zeroSet σ ↔ ∃ F ℓ, F.1 ≤ ℓ ∧ k = zeroElement F ℓ
   := Iff.rfl
 
+/-- The submodule spanned by all averaging relations; quotienting by it yields
+the flag algebra. Two vectors are flag-equal iff their difference lies here. -/
 noncomputable def ZeroSpace
     (σ : FlagType (Fin n₀)) : Submodule ℝ (FlagVector σ)
   :=
@@ -345,6 +385,8 @@ theorem zeroSpace_closed_under_smul
   :=
   SMulMemClass.smul_mem _ f_zero
 
+/-- Flag-equality `f ∼v g`: `f` and `g` differ by an element of `ZeroSpace σ`,
+i.e. they represent the same element of the flag algebra. -/
 def flagVectorEqv (f g : FlagVector σ) : Prop
   :=
   f - g ∈ ZeroSpace σ
@@ -415,6 +457,8 @@ theorem flagVectorEqv_smul
   rw [flagVectorEqv, ← smul_sub]
   exact zeroSpace_closed_under_smul _ _ h_eqv
 
+/-- The setoid on flag vectors given by flag-equality `∼v`; its quotient is
+`FlagAlgebra σ`. -/
 instance flagVectorSetoid (σ : FlagType (Fin n₀))
     : Setoid (FlagVector σ) where
   r     := flagVectorEqv
@@ -424,6 +468,8 @@ instance flagVectorSetoid (σ : FlagType (Fin n₀))
     trans := flagVectorEqv.trans
   }
 
+/-- The flag algebra `A^σ`: flag vectors modulo Razborov's averaging relations.
+Carries a commutative `ℝ`-algebra structure (built below). -/
 abbrev FlagAlgebra (σ : FlagType (Fin n₀)) : Type :=
   Quotient (flagVectorSetoid σ)
 
@@ -492,6 +538,8 @@ theorem sum_smul
   · intro r R hr ih
     simp only [sum_insert hr, add_smul, ih]
 
+/-- The size at which a flag product is expanded does not matter modulo `∼v`,
+as long as it is large enough. Justifies the choice in `flagMul`. -/
 theorem flagMulWithSize_indep_on_size
     {F₁ F₂ : FinFlag σ} {ℓ₁ ℓ₂ : ℕ} (hℓ₁ : F₁.1 + F₂.1 ≤ ℓ₁ + n₀) (hℓ₂ : F₁.1 + F₂.1 ≤ ℓ₂ + n₀)
     : flagMulWithSize F₁ F₂ ℓ₁ ∼v flagMulWithSize F₁ F₂ ℓ₂
@@ -573,6 +621,9 @@ theorem flag_mul_zeroElement
       apply flagMul_indep_on_size
       grind
 
+/-- `ZeroSpace σ` is an ideal: multiplying any flag vector by a relation stays
+in `ZeroSpace σ`. This is what makes multiplication well defined on the
+quotient. -/
 theorem flagVector_mul_zeroSpace
    (f : FlagVector σ) {k : FlagVector σ} (hk_zero : k ∈ ZeroSpace σ) : f * k ∈ ZeroSpace σ
   := by
@@ -591,6 +642,8 @@ theorem flagVector_mul_zeroSpace
   simp [mul_comm, hvi]
   exact flag_mul_zeroElement F H ℓ hℓ
 
+/-- Multiplication on the flag algebra, descended from `FlagVector` via the
+ideal property of `ZeroSpace σ`. -/
 noncomputable instance : Mul (FlagAlgebra σ) where
   mul := by
     apply Quotient.map₂ (· * ·)
@@ -647,6 +700,9 @@ theorem flagVector_smul_mul_smul_comm
   show bilinearExtension flagMul (a • f) (b • g) = (a * b) • bilinearExtension flagMul f g
   rw [bilinearExtension_smul_left, bilinearExtension_smul_right, smul_smul]
 
+/-- A product of three single-flag basis vectors equals (mod `∼v`) the sum over
+size-`ℓ` flags weighted by the triple subflag density; the engine behind
+associativity. -/
 theorem three_flag_mul_eqv_sum_tripleDensity
     {F₁ F₂ F₃ : FinFlag σ} {ℓ : ℕ} (hℓ : ℓ = F₁.1 + F₂.1 + F₃.1 - n₀ - n₀)
     : (unitVector F₁ * unitVector F₂ * unitVector F₃) ∼v
@@ -707,6 +763,8 @@ theorem unitVector_mul_assoc
       dsimp only [ℓ]
       ring_nf
 
+/-- Associativity of the flag product holds modulo `∼v` (it fails on the nose
+on `FlagVector`); lifted to genuine associativity on the quotient. -/
 theorem flagVector_mul_assoc
     (f g h : FlagVector σ) : (f * g * h) ∼v (f * (g * h))
   := by
@@ -729,6 +787,8 @@ theorem flagAlgebra_smul_mul_smul_comm
   apply Quotient.sound
   simp only [flagVector_smul_mul_smul_comm, Setoid.refl]
 
+/-- The flag algebra is a ring: all axioms descend from `FlagVector` since the
+defects (unitality, associativity) vanish modulo `ZeroSpace σ`. -/
 noncomputable instance : Ring (FlagAlgebra σ) where
   add_assoc a b c := by
     rw [← Quotient.out_eq a, ← Quotient.out_eq b, ← Quotient.out_eq c]
@@ -792,6 +852,7 @@ noncomputable instance : Ring (FlagAlgebra σ) where
     simp
     rw [← neg_smul, neg_add_rev]
 
+/-- The flag algebra is commutative (flag products are symmetric). -/
 noncomputable instance : CommRing (FlagAlgebra σ) where
   mul_comm := flagAlgebra_mul_comm
 
@@ -810,6 +871,8 @@ theorem sum_quot
   intro i s his ih
   simp only [Finset.sum_insert his, add_quot, ih]
 
+/-- In the flag algebra, a single flag equals its density expansion onto larger
+flags: the averaging relation rendered as an equation on `⟦·⟧`. -/
 theorem unitVector_quot_eq_sum
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦unitVector F⟧ = ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F' : ℝ) • (⟦unitVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ)
@@ -818,6 +881,8 @@ theorem unitVector_quot_eq_sum
   apply Quotient.sound
   exact unitVector_eqv_densityFlagSum _ _ hℓ
 
+/-- The sum of all flags of any fixed size `ℓ ≥ n₀` equals `1` in the flag
+algebra; the basic normalization identity used throughout density proofs. -/
 theorem sum_flagWithSize_eq_one
     (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
     : ∑ F : FlagWithSize σ ℓ, (⟦unitVector ⟨ℓ, F⟩⟧ : FlagAlgebra σ) = (1 : FlagAlgebra σ)
@@ -838,6 +903,8 @@ theorem unitVector_quot_mul_eq_flagMulWithSize_quot
     mul_one, one_smul]
   exact flagMul_indep_on_size hℓ
 
+/-- The product of two flags in the algebra is the quotient of their `flagMul`
+(the density-weighted expansion); links the ring product to subflag densities. -/
 theorem unitVector_quot_mul_eq_flagMul_quot
     (F G : FinFlag σ)
     : (⟦unitVector F⟧ * ⟦unitVector G⟧ : FlagAlgebra σ) = ⟦flagMul F G⟧
@@ -897,9 +964,13 @@ instance : NeZero (1 : FlagAlgebra σ) where
     have zero_eq_one : (0 : ℝ) = (1 : ℝ) := by rw [← h_φ_1, ← h_φ_sum]
     exact zero_ne_one zero_eq_one
 
+/-- The flag algebra is nontrivial: `0 ≠ 1` (its `NeZero (1 : FlagAlgebra σ)`
+witness is proved via a density functional separating `1` from `ZeroSpace σ`). -/
 instance : Nontrivial (FlagAlgebra σ) where
   exists_pair_ne := ⟨0, 1, zero_ne_one⟩
 
+/-- The `ℝ`-algebra structure on the flag algebra, with `algebraMap r = r • 1`;
+this is the final structure used by the density-bound proofs. -/
 noncomputable instance : Algebra ℝ (FlagAlgebra σ) where
   algebraMap := {
     toFun r := r • 1

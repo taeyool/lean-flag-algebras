@@ -1,6 +1,13 @@
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.MantelTheorem.FlagTactic
 
+/-! # Mantel's theorem: flag products
+
+Products in the flag algebra over the one-labelled-vertex type, expressing each
+product of two `2`-vertex flags as a linear combination of `3`-vertex flags.
+These identities feed the square-positivity (`O2₁ - K2₁`) argument used to prove
+Mantel's theorem. Each proof is discharged by the `prove_flag_mul` tactic. -/
+
 open FlagAlgebras
 
 namespace MantelTheorem

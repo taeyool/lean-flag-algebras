@@ -1,11 +1,20 @@
 import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 import Mathlib.Data.Finset.Powerset
 
+/-! # Combinations: `ℓ`-element subsets of a finset
+
+Shared utility providing `combinations V ℓ`, the finset of all `ℓ`-element subsets of `V`,
+together with the cardinality identity `(combinations V ℓ).card = V.card.choose ℓ`. Used
+throughout the flag-algebra development for counting induced/partitioned configurations.
+-/
+
 open Finset
 
+/-- The finset of all subsets of `V` of size exactly `ℓ`. -/
 def combinations [DecidableEq α] (V : Finset α) (ℓ : ℕ) : Finset (Finset α)
   := (V.powerset).filter fun W ↦ W.card = ℓ
 
+/-- Inductive helper for `combinations_card`: counts `ℓ`-subsets of every `V' ⊆ V`. -/
 theorem combinations_card_aux
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) :
     ∀ V' ⊆ V, (combinations V' ℓ).card = V'.card.choose ℓ
@@ -64,6 +73,7 @@ theorem combinations_card_aux
       · have hsub : V' ⊆ S := (subset_insert_iff_of_notMem haV').mp hV'
         exact hindS V' hsub
 
+/-- The number of `ℓ`-element subsets of `V` equals `V.card.choose ℓ`. -/
 theorem combinations_card
     [DecidableEq α] (V : Finset α) (ℓ : ℕ) : (combinations V ℓ).card = V.card.choose ℓ
   :=

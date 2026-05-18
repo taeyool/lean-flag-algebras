@@ -2,9 +2,23 @@ import «LeanFlagAlgebras».FlagAlgebra.Compute.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
 
+/-!
+# (Archived) Early JSON flag-loader macro
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early version of the
+elaboration-time `load_flags` command that reads a JSON file of enumerated
+flags and synthesizes the corresponding Lean type/graph/flag/flag-algebra
+constants and the `… = Finset.univ` lemma. The active, more complete loader
+(supporting empty-typed flags, density/multiplication loaders, etc.) lives in
+`LeanFlagAlgebras/Flags/FlagLoader.lean`.
+-/
+
 open Sym2 Lean Elab Command Json
 open FlagAlgebras.Compute
 
+/-- Parsed contents of a flag JSON file: flag size `n`, type size `k`, the
+type's edges, and the per-flag edge arrays. -/
 structure FlagJsonData where
   n : ℕ
   k : ℕ

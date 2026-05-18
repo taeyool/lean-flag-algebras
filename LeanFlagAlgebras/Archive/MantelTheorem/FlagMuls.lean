@@ -1,6 +1,16 @@
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDensity
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagIso
 
+/-!
+# (Archived) Flag-product identities for the Mantel flags
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It proves the three singleton-typed
+flag-product identities needed for the early Mantel's-theorem proof
+(`O2₁ * O2₁`, `O2₁ * K2₁`, `K2₁ * K2₁`) via a custom tactic. Superseded by the
+active `LeanFlagAlgebras/MantelTheorem/FlagMul.lean`.
+-/
+
 open FlagAlgebras
 
 namespace Archive.MantelTheorem

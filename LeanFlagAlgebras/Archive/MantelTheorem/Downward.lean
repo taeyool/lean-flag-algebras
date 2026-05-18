@@ -1,6 +1,16 @@
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import «LeanFlagAlgebras».Archive.Compute.Downward
 
+/-!
+# (Archived) Downward (unlabeling) of the hand-written Mantel flags
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It computes the downward (unlabel)
+images of the singleton-typed flags `K1₁`, `K2₁`, `O3₁`, `E3₁`, `E3₁'`, `P3₁`,
+`P3₁'`, `K3₁` from `Archive/MantelTheorem/FlagDefs.lean` in the empty-type flag
+algebra. Superseded by the active `LeanFlagAlgebras/MantelTheorem/` development.
+-/
+
 open FlagAlgebras
 open Classical
 open Archive.Compute

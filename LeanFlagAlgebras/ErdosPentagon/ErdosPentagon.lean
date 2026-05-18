@@ -1,15 +1,32 @@
 import LeanFlagAlgebras.ErdosPentagon.Lemmas
 
+/-! # The Erdős pentagon problem
+
+The headline file: the maximum 5-cycle density among triangle-free graphs.
+Combines the flag-algebra upper bound from `Lemmas.lean` with an explicit
+blow-up lower-bound construction to prove:
+
+* `ErdosPentagon_Turan_upperBound` — `generalizedTuranDensity K3 C5 ≤ 24/625`;
+* `ErdosPentagon_Turan_lowerBound` — `generalizedTuranDensity K3 C5 ≥ 24/625`,
+  via the triangle-free `n`-fold blow-up of `C5`;
+* `ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24 / 625` — the
+  solution of the Erdős pentagon problem. -/
+
 open FlagAlgebras GraphAlgebras Forbid
 open Filter Topology SimpleGraph
 
 namespace ErdosPentagon
 
+/-- Upper bound: the `K₃`-free generalized Turán density of the pentagon is at
+most `24/625`, transferred from the flag-algebra bound
+`ErdosPentagon_flagAlgebra`. -/
 theorem ErdosPentagon_Turan_upperBound
     : generalizedTuranDensity K3 C5 ≤ 24 / 625
   :=
   generalizedTuranDensity_le_of_forbidLE (by norm_num) ErdosPentagon_flagAlgebra
 
+/-- The `n`-fold blow-up of `G`: each vertex is replaced by an independent set
+of `n` copies, with edges inherited from `G` on the first coordinate. -/
 def blowUp
     {V : Type} [Fintype V] (G : SimpleGraph V) (n : ℕ)
     : SimpleGraph (V × Fin n)
@@ -18,6 +35,7 @@ def blowUp
     symm v w := by apply G.symm
   }
 
+/-- Adjacency in the blow-up reduces to adjacency in `G` on first coordinates. -/
 theorem blowUp_adj_iff
     {V : Type} [Fintype V] (G : SimpleGraph V) (n : ℕ)
     (v w : V × Fin n)
@@ -25,6 +43,8 @@ theorem blowUp_adj_iff
   := by
   simp only [blowUp]
 
+/-- Blowing up preserves triangle-freeness: if `G` is `K₃`-free then so is its
+blow-up. -/
 theorem blowUp_K3_free
     {m : ℕ} {G : SimpleGraph (Fin m)}
     (n : ℕ) (hfree : K3.Free G)
@@ -51,6 +71,7 @@ theorem blowUp_K3_free
       exact (G.loopless (C i).1) (by simp [hij'] at hGadj)
   }
 
+/-- `F`-freeness transfers across a graph isomorphism. -/
 theorem free_of_iso
     {U V W : Type} [Fintype U] [Fintype V] [Fintype W]
     {F : SimpleGraph U} {G : SimpleGraph V} {G' : SimpleGraph W}
@@ -73,6 +94,8 @@ lemma fin_div_lt
   simp_rw [Nat.mul_comm]
   exact i.isLt
 
+/-- `Fin`-indexed variant of `blowUp`: the `n`-fold blow-up of a graph on
+`Fin m`, realised on `Fin (m * n)`. -/
 def blowUp_fin
     {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ)
     : SimpleGraph (Fin (m * n))
@@ -83,6 +106,7 @@ def blowUp_fin
       exact G.symm h
   }
 
+/-- The two blow-up constructions are isomorphic. -/
 def blowUp_fin_iso
     {m : ℕ} (G : SimpleGraph (Fin m)) (n : ℕ)
     : blowUp_fin G n ≃g blowUp G n
@@ -122,6 +146,8 @@ lemma K3_free_C5
   fin_cases c <;>
   simp [C5] at h01 h12 h20 hne01 hne12 hne20
 
+/-- The `n`-fold blow-up of `C5` contains at least `n^5` copies of `C5` (one
+per choice of a representative in each of the five blown-up classes). -/
 lemma subgraphCount_blowUp_C5_ge
     (n : ℕ)
     : subgraphCount C5 (blowUp C5 n) ≥ n ^ 5
@@ -194,6 +220,8 @@ lemma subgraphCount_blowUp_C5_ge
           exact huv'.1
     }
 
+/-- Lower bound on the generalized extremal number: the triangle-free blow-up
+`blowUp_fin C5 n` on `5n` vertices already realises `≥ n^5` pentagons. -/
 theorem generalizedExtremalNumber_K3_C5_ge
     (n : ℕ)
     : generalizedExtremalNumber (5 * n) K3 C5 ≥ n ^ 5
@@ -209,6 +237,8 @@ theorem generalizedExtremalNumber_K3_C5_ge
   · rw [subgraphCount_eq_of_iso C5 (blowUp_fin_iso C5 n)]
     exact subgraphCount_blowUp_C5_ge n
 
+/-- Normalised lower bound: the blow-up construction gives pentagon density
+`≥ 24/625` along the subsequence of orders `5n`. -/
 theorem generalizedExtremalNumber_K3_C5_div_choose_ge
     (n : ℕ) (hn : 0 < n)
     : (generalizedExtremalNumber (5 * n) K3 C5 / (5 * n).choose 5 : ℝ) ≥ 24 / 625
@@ -228,6 +258,8 @@ theorem generalizedExtremalNumber_K3_C5_div_choose_ge
       field_simp
       norm_num
 
+/-- Lower bound: the `K₃`-free generalized Turán density of the pentagon is at
+least `24/625`, taking the limit of the blow-up construction. -/
 theorem ErdosPentagon_Turan_lowerBound
     : generalizedTuranDensity K3 C5 ≥ 24 / 625
   := by
@@ -247,6 +279,9 @@ theorem ErdosPentagon_Turan_lowerBound
   simpa [g, f, ge_iff_le] using
     (generalizedExtremalNumber_K3_C5_div_choose_ge (n + 1) (Nat.succ_pos n))
 
+/-- **Solution of the Erdős pentagon problem.** The maximum density of the
+5-cycle among triangle-free graphs is exactly `24/625`:
+`generalizedTuranDensity K3 C5 = 24 / 625`. -/
 theorem ErdosPentagon_Turan
     : generalizedTuranDensity K3 C5 = 24 / 625
   := by

@@ -3,6 +3,22 @@ import «LeanFlagAlgebras».Utils.TacticChoose
 import Mathlib.Analysis.Normed.Field.Lemmas
 import Mathlib.Data.Nat.Cast.Field
 
+/-!
+# Subgraph density
+
+This file is the semantic foundation of the GraphAlgebra layer. It defines the
+*subgraph density* `d(H, G)` — the probability that a uniformly random size-`|H|`
+induced subgraph of `G` is isomorphic to `H` — together with its pair and triple
+generalizations, and lifts every notion to isomorphism classes (`QuotSimpleGraph`).
+
+The headline results are the *chain rule* / averaging identities
+(`quotSubgraphDensity_eq_sum_density_prods` and friends, exported as
+`density_chain_rule*`): a density can be re-expanded as a sum over intermediate
+flags. These identities are the combinatorial heart on which the FlagAlgebra
+layer (the quotient algebra A^σ, positive homomorphisms, SOS certificates) is
+built.
+-/
+
 open Finset
 open SimpleGraph
 open Classical
@@ -49,6 +65,7 @@ lemma choose_pair_comm
     simp only [h_size', choose_pair_zero, Nat.add_comm]
 
 
+/-- The finite set of induced subgraphs of `G` that are isomorphic to `H`. -/
 noncomputable def subgraphSet (H : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G)
   :=
   let p (G' : Subgraph G) : Prop := G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H)
@@ -59,11 +76,15 @@ lemma mem_subgraphSet_iff {H : SimpleGraph V} {G : SimpleGraph W} {g : Subgraph 
     g ∈ subgraphSet H G ↔ g.IsInduced ∧ Nonempty (g.coe ≃g H) := by
   simp [subgraphSet]
 
+/-- The number of induced subgraphs of `G` that are isomorphic to `H`. -/
 noncomputable def subgraphCount (H : SimpleGraph V) (G : SimpleGraph W) : ℕ
   :=
   (subgraphSet H G).card
 
 
+/-- The subgraph density `d(H, G)`: the fraction of size-`|H|` induced subgraphs of
+`G` that are isomorphic to `H`, i.e. the probability that a uniformly random
+`|H|`-vertex induced subgraph of `G` is a copy of `H`. -/
 noncomputable def subgraphDensity (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   :=
   let subgraph_cnt := subgraphCount H G
@@ -73,6 +94,8 @@ noncomputable def subgraphDensity (H : SimpleGraph V) (G : SimpleGraph W) : ℚ
   subgraph_cnt / num_of_all_induced_subgraph
 
 
+/-- The set of *disjoint* pairs of induced subgraphs of `G`, one isomorphic to
+`H₁` and the other to `H₂`, whose vertex sets do not overlap. -/
 noncomputable def subgraphPairSet (H₁ : SimpleGraph U) (H₂ : SimpleGraph V) (G : SimpleGraph W) : Finset (Subgraph G × Subgraph G)
   :=
   let p (G₁ G₂ : Subgraph G) : Prop :=
@@ -90,11 +113,15 @@ lemma pair_mem_subgraphPairSet_iff
       g₁.verts ∩ g₂.verts = ∅ := by
   simp only [subgraphPairSet, Set.toFinset_setOf, mem_filter, mem_univ, true_and]
 
+/-- The number of disjoint `(H₁, H₂)`-labelled induced subgraph pairs in `G`. -/
 noncomputable def subgraphPairCount (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℕ
   :=
   (subgraphPairSet H₁ H₂ G).card
 
 
+/-- The pair density: the probability that a uniformly random ordered choice of
+disjoint `|H₁|`- and `|H₂|`-vertex induced subgraphs of `G` yields a copy of `H₁`
+and a copy of `H₂` respectively. -/
 noncomputable def subgraphPairDensity
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) (G : SimpleGraph W) : ℚ
   :=
@@ -152,6 +179,7 @@ lemma subgraphPairSet_card_union_Finset
 
 
 omit [DecidableEq V] [DecidableEq W] in
+/-- Subgraph density is nonnegative. -/
 theorem subgraphDensity_ge_0
     (H : SimpleGraph V) (G : SimpleGraph W)
     : 0 ≤ subgraphDensity H G
@@ -159,6 +187,8 @@ theorem subgraphDensity_ge_0
   apply div_nonneg <;> norm_num
 
 
+/-- From a graph isomorphism between a subgraph `G₀` of `G` and `H`, extract the
+underlying vertex-set bijection `G₀.verts ≃ V`. -/
 noncomputable def vert_iso_from_graph_iso
     (H : SimpleGraph V) (G : SimpleGraph W) (G₀ : G.Subgraph)
     (hG₀_iso : Nonempty (Subgraph.coe G₀ ≃g H))
@@ -171,6 +201,7 @@ noncomputable def vert_iso_from_graph_iso
 
 
 omit [DecidableEq V] [DecidableEq W] in
+/-- Subgraph density is at most `1` (it is a probability). -/
 theorem subgraphDensity_le_1
     (H : SimpleGraph V) (G : SimpleGraph W)
     : subgraphDensity H G ≤ 1
@@ -203,6 +234,7 @@ theorem subgraphDensity_le_1
 
 
 omit [Fintype V] [DecidableEq V] [DecidableEq W] [DecidableEq U] in
+/-- Subgraph counts depend only on the isomorphism class of the host graph. -/
 lemma subgraphCount_eq_of_iso
     (H : SimpleGraph V) {G₀ : SimpleGraph W} {G₁ : SimpleGraph U}
     (h_iso : G₀ ≃g G₁)
@@ -227,6 +259,8 @@ lemma subgraphDensity_respects_eqv_on_G
   exact subgraphCount_eq_of_iso H h_eqv.some
 
 
+/-- `subgraphDensity H` lifted along the host argument to isomorphism classes of
+graphs (`QuotSimpleGraph`). -/
 noncomputable def subgraphDensityLifted
     (H : SimpleGraph V) : QuotSimpleGraph W → ℚ
   := by
@@ -255,6 +289,8 @@ lemma subgraphDensityLifted_respects_eqv
   exact h_count
 
 
+/-- The subgraph density `d(H, G)` as a function of the isomorphism classes of
+both `H` and `G`. This is the canonical density on `QuotSimpleGraph`. -/
 noncomputable def quotSubgraphDensity
     : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
@@ -264,6 +300,8 @@ noncomputable def quotSubgraphDensity
   exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
 
 
+/-- The empty graph on `0` vertices occurs exactly once as an induced subgraph
+(the empty subgraph). -/
 lemma subgraphCount_empty
     (G : SimpleGraph (Fin n))
     : subgraphCount (emptyGraph (Fin 0)) G = 1
@@ -286,6 +324,7 @@ lemma subgraphCount_empty
     _ = 1 := by
         simp only [Set.setOf_eq_eq_singleton, Set.toFinset_singleton, card_singleton, S₁]
 
+/-- The density of the empty `0`-vertex graph is always `1` (the identity flag). -/
 lemma subgraphDensity_empty
     (G : SimpleGraph (Fin n)) : subgraphDensity (emptyGraph (Fin 0)) G = 1
   := by
@@ -301,6 +340,8 @@ lemma quotSubgraphDensity_empty
 
 
 omit [DecidableEq V] in
+/-- A graph occurs exactly once as an induced subgraph of itself (the whole
+graph `⊤`). -/
 lemma subgraphCount_self
     (G : SimpleGraph V) : subgraphCount G G = 1
   := by
@@ -316,6 +357,7 @@ lemma subgraphCount_self
 
 
 omit [DecidableEq V] in
+/-- The density of a graph in itself is `1`. -/
 lemma subgraphDensity_self
     (G : SimpleGraph V) : subgraphDensity G G = 1
   := by
@@ -331,6 +373,8 @@ lemma quotSubgraphDensity_self
 
 
 omit [DecidableEq V] in
+/-- A graph `G₀` on `|V|` vertices not isomorphic to another graph `G₁` on the
+same number of vertices occurs `0` times as an induced subgraph of `G₁`. -/
 lemma subgraphCount_other
     {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphCount G₀ G₁ = 0
   := by
@@ -352,6 +396,7 @@ lemma subgraphCount_other
 
 
 omit [DecidableEq V] in
+/-- Two non-isomorphic graphs on the same vertex count have density `0`. -/
 lemma subgraphDensity_other
     {G₀ G₁ : SimpleGraph V} (h_neq : IsEmpty (G₀ ≃g G₁)) : subgraphDensity G₀ G₁ = 0
   := by
@@ -371,6 +416,7 @@ lemma quotSubgraphDensity_other
   exact subgraphDensity_other h_neq'
 
 
+/-- Quotient-level density is nonnegative. -/
 theorem quotSubgraphDensity_ge_0
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : 0 ≤ quotSubgraphDensity H G
@@ -380,6 +426,7 @@ theorem quotSubgraphDensity_ge_0
   exact subgraphDensity_ge_0 _ _
 
 
+/-- Quotient-level density is at most `1`. -/
 theorem quotSubgraphDensity_le_1
     (H : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : quotSubgraphDensity H G ≤ 1
@@ -411,6 +458,8 @@ lemma subgraphPairDensity_respects_eqv_on_G
   simp only [Set.coe_setOf, Set.toFinset_card]; tauto
 
 
+/-- `subgraphPairDensity H₁ H₂` lifted along the host argument to isomorphism
+classes of graphs. -/
 noncomputable def subgraphPairDensityLifted
     (H₁ : SimpleGraph V) (H₂ : SimpleGraph U) : QuotSimpleGraph W → ℚ
   := by
@@ -446,6 +495,8 @@ lemma subgraphPairDensityLifted_respects_eqv
   simp_all only [Set.coe_setOf, Set.toFinset_card, X₀, X₁]
 
 
+/-- The disjoint-pair density as a function of the isomorphism classes of `H₁`,
+`H₂` and the host `G`. -/
 noncomputable def quotSubgraphPairDensity
     : QuotSimpleGraph U → QuotSimpleGraph V → QuotSimpleGraph W → ℚ
   := by
@@ -484,6 +535,7 @@ lemma subgraphPairCount_comm
 
 
 omit [DecidableEq U] [DecidableEq V] [DecidableEq W] in
+/-- The pair density is symmetric in its two labelled graphs. -/
 lemma subgraphPairDensity_comm
     (H : SimpleGraph U) (H' : SimpleGraph V) (G : SimpleGraph W)
     : subgraphPairDensity H H' G = subgraphPairDensity H' H G
@@ -494,6 +546,7 @@ lemma subgraphPairDensity_comm
   exact congrArg Nat.cast (choose_pair_comm _ _ _)
 
 
+/-- Quotient-level pair density is symmetric in its two labelled graphs. -/
 lemma quotSubgraphPairDensity_comm
     (H₁ : QuotSimpleGraph U) (H₂ : QuotSimpleGraph V) (G : QuotSimpleGraph W)
     : quotSubgraphPairDensity H₁ H₂ G = quotSubgraphPairDensity H₂ H₁ G
@@ -504,6 +557,8 @@ lemma quotSubgraphPairDensity_comm
   exact subgraphPairDensity_comm _ _ _
 
 
+/-- Pairing with the empty `0`-vertex graph degenerates the pair count to the
+ordinary subgraph count. -/
 lemma subgraphPairCount_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairCount (emptyGraph (Fin 0)) H G = subgraphCount H G
@@ -543,6 +598,8 @@ lemma subgraphPairCount_empty
   simp only [h_count]
 
 
+/-- Pairing with the empty `0`-vertex graph degenerates the pair density to the
+ordinary subgraph density. -/
 lemma subgraphPairDensity_empty
     (H : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
     : subgraphPairDensity (emptyGraph (Fin 0)) H G  = subgraphDensity H G
@@ -552,6 +609,8 @@ lemma subgraphPairDensity_empty
     ← subgraphPairCount_empty H G]
 
 
+/-- Quotient-level: pairing with the empty `0`-vertex graph degenerates the pair
+density to the ordinary density. -/
 lemma quotSubgraphPairDensity_empty
     (H : QuotSimpleGraph (Fin n)) (G : QuotSimpleGraph (Fin m))
     : quotSubgraphPairDensity ⟦emptyGraph (Fin 0)⟧ H G = quotSubgraphDensity H G
@@ -576,6 +635,12 @@ lemma card_eq_imply_set_eq
     _ = ℓ - ℓ := by rw [h_card_A_union_B]
     _ = 0 := ℓ.sub_self
 
+/-! ## The chain rule: re-expanding densities over intermediate flags -/
+
+/-- The combinatorial bijection underlying the chain rule: disjoint `(H₁, H₂)`
+subgraph pairs of `G` together with an enclosing `ℓ₃`-vertex induced subgraph `G₃`
+correspond to a choice of an `ℓ₃`-vertex flag `F`, an `(H₁, H₂)` pair inside `F`,
+and an embedding of `F` into `G`. -/
 noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     : { (⟨⟨G₁,G₂⟩, _⟩, G₃) : subgraphPairSet H₁ H₂ G × Subgraph G
@@ -802,10 +867,13 @@ noncomputable def subgraphPairSet_iso_union_quotSimpleGraphSet
   exact (((f_S_S₀'.trans f_S₀'_S₁').trans f_S₁'_S₂').trans f_S₂'_S₃')
 
 
+/-- The number of labelled graphs on `V` isomorphic to `G` (the size of its
+isomorphism class). -/
 noncomputable def isoGraphCount (G : SimpleGraph V) : ℕ
   := { G' : SimpleGraph V | Nonempty (G' ≃g G) }.toFinset.card
 
 
+/-- The number of (labelled) simple graphs on `ℓ` vertices. -/
 noncomputable def graphCount (ℓ : ℕ) : ℕ
   := (.univ : Set (SimpleGraph (Fin ℓ))).toFinset.card
 
@@ -839,6 +907,10 @@ lemma subset_compl_of_inter_empty' {α : Type*} {s t : Set α} (h : s ∩ t = �
     t ⊆ sᶜ := fun e he ↦
   (Set.mem_compl_iff _ _).mpr fun ht ↦ (Set.ext_iff.mp h e).mp ⟨ht, he⟩
 
+/-- Counting form of the chain rule: the pair count of `(H₁, H₂)` in `G`, scaled
+by the number of ways to extend their union to an `ℓ₃`-set, equals the sum over
+`ℓ₃`-vertex flags `F` of the `(H₁, H₂)`-pair count in `F` times the count of `F`
+in `G`. -/
 lemma subgraphPairCount_eq_sum_count_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ)) (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃)
     : subgraphPairCount H₁ H₂ G * (ℓ - (ℓ₁ + ℓ₂)).choose (ℓ₃ - (ℓ₁ + ℓ₂))
@@ -1027,6 +1099,9 @@ lemma subgraphPairCount_eq_sum_count_prods
   rw [←h_S₀_card, ←h_S₂_card, h_S₀_card_eq_S₁_card, h_S₁_card_eq_S₂_card]
 
 
+/-- Density form of the chain rule: the pair density of `(H₁, H₂)` in `G` equals
+the sum over `ℓ₃`-vertex flags `F` of the `(H₁, H₂)`-pair density in `F` times
+the density of `F` in `G`. -/
 lemma subgraphPairDensity_eq_sum_density_prods
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (G : SimpleGraph (Fin ℓ))
     (hℓ₃_lb : ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
@@ -1144,6 +1219,8 @@ lemma subgraphPairDensityLifted_eq_sum_density_prods
   exact subgraphPairDensity_eq_sum_density_prods H₁ H₂ G hℓ₃_lb hℓ₃_ub
 
 
+/-- Chain rule for the quotient-level pair density: expand `d(H₁, H₂; G)` as a
+sum over `ℓ₃`-vertex flags. Exported as `density_chain_rule`. -/
 theorem quotSubgraphPairDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ₃ : ℕ} (hℓ₃_lb: ℓ₁ + ℓ₂ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ ≤ ℓ)
@@ -1157,6 +1234,9 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods
   exact subgraphPairDensityLifted_eq_sum_density_prods H₁rep H₂rep Grep hℓ₃_lb hℓ₃_ub
 
 
+/-- Chain rule for the ordinary quotient density: `d(H₁; G)` expands as a sum
+over `ℓ₂`-vertex flags `F` of `d(H₁; F) · d(F; G)`. Exported as
+`density_chain_rule'''`. -/
 theorem quotSubgraphDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ₂ : ℕ} (hℓ₂_lb: ℓ₁ ≤ ℓ₂) (hℓ₂_ub : ℓ₂ ≤ ℓ)
@@ -1182,6 +1262,9 @@ theorem quotSubgraphDensity_eq_sum_density_prods
 
 
 /- Hongseok: The following definition of the triple density is a hack which would let us proceed but which we should fix at some point. -/
+/-- The density of three pairwise-disjoint labelled graphs `H₁, H₂, H₃` in `G`,
+defined by averaging the pair densities over an intermediate `(ℓ₂+ℓ₃)`-vertex
+flag. -/
 noncomputable def quotSubgraphTripleDensity
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph W)
     : ℚ
@@ -1189,6 +1272,7 @@ noncomputable def quotSubgraphTripleDensity
   ∑ (F : QuotSimpleGraph (Fin (ℓ₂ + ℓ₃))), quotSubgraphPairDensity H₂ H₃ F * quotSubgraphPairDensity H₁ F G
 
 
+/-- Triple density with an empty first slot degenerates to the pair density. -/
 lemma quotSubgraphTripleDensity_empty
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ)) (hℓ : ℓ₁ + ℓ₂ ≤ ℓ)
     : quotSubgraphTripleDensity ⟦emptyGraph (Fin 0)⟧ H₁ H₂ G = quotSubgraphPairDensity H₁ H₂ G
@@ -1208,6 +1292,16 @@ lemma quotSubgraphTripleDensity_empty
 
   exact quotSubgraphPairDensity_eq_sum_density_prods H₁ H₂ G (Nat.le_refl (ℓ₁ + ℓ₂)) hℓ
 
+
+/-! ### Associativity of nested pair densities
+
+The next three definitions (`..._step1`, `..._step2`, and their composite
+`subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet`) build
+the explicit bijection that proves the densities of three labelled graphs may be
+nested in either order. `step1` recoordinates a `((H₁,H₂)-in-flag, H₃-in-G)`
+configuration as five disjoint vertex blocks `X₁..X₅` of `G`; `step2` performs
+the symmetric reverse recoordination for the `(H₂,H₃)`/`H₁` grouping.
+-/
 
 -- set_option maxHeartbeats 4000000 in
 set_option linter.unusedVariables false in
@@ -1955,6 +2049,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   exact Equiv.ofBijective f_S₁_S₂_fwd ⟨h_f_S₁_S₂_inj, h_f_S₁_S₂_surj⟩
 
 
+/-- The second recoordination step: a five-block decomposition `X₁..X₅` of `G`
+corresponds to a `(H₂,H₃)`-in-flag together with an `H₁`-in-`G` configuration
+(the mirror image of `..._step1`). -/
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet_step2
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2575,6 +2672,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   exact f_S₃_S₂.symm
 
 
+/-- The composite bijection (via `step1` and `step2`) witnessing that nesting
+`(H₁,H₂)` then `H₃` is equinumerous to nesting `(H₂,H₃)` then `H₁`; the
+combinatorial core of pair-density associativity. -/
 noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleGraphSet
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2739,6 +2839,9 @@ noncomputable def subgraphPairSet_union_quotSimpleGraphSet_iso_union_quotSimpleG
   exact ((f_S₀_S₁.trans f_S₁_S₂).trans f_S₂_S₃).trans f_S₄_S₃.symm
 
 
+/-- Counting form of pair-density associativity: the two nesting orders of three
+labelled graphs give equal weighted sums of pair counts (proved by the composite
+bijection above). -/
 lemma subgraphPairCount_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -2879,6 +2982,8 @@ lemma subgraphPairCount_sum_assoc
               simp only [h_RHS]
 
 
+/-- The binomial coefficient as a rational quotient of factorials, valid because
+`k! · (n-k)!` divides `n!`. -/
 lemma choose_eq_factorial_div_factorial_rational
     {n k : ℕ} (h_k_n : k ≤ n) :
     (↑(n.choose k) : ℚ) = ((↑n.factorial / (↑k.factorial * ↑(n - k).factorial)) : ℚ)
@@ -2892,6 +2997,9 @@ lemma choose_eq_factorial_div_factorial_rational
           Nat.factorial_mul_factorial_dvd_factorial h_k_n
         simp only [h_dvd, Nat.cast_div_charZero, Nat.cast_mul]
 
+/-- Density form of pair-density associativity: summing `d(H₁,H₂;F)·d(F,H₃;G)`
+over `ℓ₁₂`-flags equals summing `d(H₂,H₃;F)·d(F,H₁;G)` over `ℓ₂₃`-flags. The
+factorial bookkeeping is discharged by the custom `simp_choose_eq` tactic. -/
 lemma subgraphPairDensity_sum_assoc
     (H₁ : SimpleGraph (Fin ℓ₁)) (H₂ : SimpleGraph (Fin ℓ₂)) (H₃ : SimpleGraph (Fin ℓ₃)) (G : SimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -3271,6 +3379,8 @@ lemma quotSubgraphPairDensity_sum_assoc'
   exact subgraphPairDensityLifted_sum_assoc' H₁rep H₂rep H₃rep Grep hℓ₁₂_lb hℓ₁₂_ub hℓ₂₃_lb hℓ₂₃_ub h
 
 
+/-- Quotient-level associativity of pair densities: the value is independent of
+which pair of the three labelled graphs is grouped first. -/
 lemma quotSubgraphPairDensity_sum_assoc
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     (hℓ₁₂_lb : ℓ₁ + ℓ₂ ≤ ℓ₁₂) (hℓ₁₂_ub : ℓ₁₂ + ℓ₃ ≤ ℓ)
@@ -3320,6 +3430,8 @@ lemma quotSubgraphPairDensity_sum_assoc
   }
 
 
+/-- The triple density is invariant under cyclic permutation of its three
+labelled graphs. -/
 lemma quotSubgraphTripleDensity_comm
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     (h : ℓ₁ + ℓ₂ + ℓ₃ ≤ ℓ)
@@ -3357,6 +3469,8 @@ lemma quotSubgraphTripleDensity_comm
   rw [quotSubgraphPairDensity_sum_assoc H₁ H₃ H₂ G hℓ₁₃_lb hℓ₁₃_ub hℓ₃₂_lb hℓ₃₂_ub]
 
 
+/-- Chain rule for the triple density: expand it as a sum over `ℓ₄`-vertex flags
+of `d(H₁,H₂;F)·d(F,H₃;G)`. Exported as `density_chain_rule''`. -/
 theorem quotSubgraphTripleDensity_eq_sum_density_prods
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (H₃ : QuotSimpleGraph (Fin ℓ₃)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ₄ : ℕ} (hℓ₄_lb : ℓ₁ + ℓ₂ ≤ ℓ₄) (hℓ₄_ub : ℓ₄ + ℓ₃ ≤ ℓ)
@@ -3386,6 +3500,9 @@ theorem quotSubgraphTripleDensity_eq_sum_density_prods
   rw [quotSubgraphPairDensity_sum_assoc H₁ H₂ H₃ G hℓ₄_lb hℓ₄_ub hℓ₂₃_lb hℓ₂₃_ub]
 
 
+/-- Variant chain rule: expand the pair density `d(H₁,H₂;G)` by inserting an
+intermediate flag on the `H₁` side, as `d(H₁;F)·d(F,H₂;G)`. Exported as
+`density_chain_rule'`. -/
 theorem quotSubgraphPairDensity_eq_sum_density_prods'
     (H₁ : QuotSimpleGraph (Fin ℓ₁)) (H₂ : QuotSimpleGraph (Fin ℓ₂)) (G : QuotSimpleGraph (Fin ℓ))
     {ℓ₃ : ℕ} (hℓ₃_lb : ℓ₁ ≤ ℓ₃) (hℓ₃_ub : ℓ₃ + ℓ₂ ≤ ℓ)
@@ -3410,6 +3527,11 @@ theorem quotSubgraphPairDensity_eq_sum_density_prods'
 
   exact quotSubgraphTripleDensity_eq_sum_density_prods H₀ H₁ H₂ G h_lb hℓ₃_ub
 
+
+/-! ## Public chain-rule aliases
+
+Short, stable names for the density chain-rule theorems, consumed by the
+FlagAlgebra layer and the end-to-end extremal-bound proofs. -/
 
 alias density_chain_rule := quotSubgraphPairDensity_eq_sum_density_prods
 alias density_chain_rule' := quotSubgraphPairDensity_eq_sum_density_prods'

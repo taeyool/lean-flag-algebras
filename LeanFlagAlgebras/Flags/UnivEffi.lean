@@ -2,13 +2,33 @@ import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
 import Lean.Data.Json
 import Mathlib.Tactic
 
+/-! # Efficient flag loader with progress reporting
+
+This module provides instrumented variants of the `load_empty_typed_flags` /
+`load_flags` loader macros (cf. `FlagLoader.lean`). They read the same JSON data
+produced by the Python pipeline and synthesize the same `_<n>_<k>_<m>_<i>`
+constants and `… = Finset.univ` completeness lemmas, but additionally emit
+elaboration-progress messages (per graph/flag and per `native_decide` proof
+step), printed to stdout and appended to `.flag_load_progress.log`, to make the
+universe/`Fintype` machinery's long elaboration times observable.
+
+The JSON-parsing helpers and `EmptyTypedJsonData`/`FlagJsonData`/`FlagEntry`
+records mirror those in `FlagLoader.lean`; only the progress-logging helpers
+(`progressStep`, `shouldLogProgress`, `emitProgress`, …) and the two demo
+invocations at the end are specific to this file.
+-/
+
 open Sym2 Lean Elab Command Json
 open FlagAlgebras.Compute
 
+/-- Parsed contents of a `graphs_n.json` file: the vertex count `n` and the raw
+JSON array of non-isomorphic `n`-vertex graphs. -/
 structure EmptyTypedJsonData where
   n : ℕ
   graphsJson : Array Json
 
+/-- One flag entry: underlying empty-typed graph index, edge list, type
+embedding indices, and downward-normalizing coefficient (num/den). -/
 structure FlagEntry where
   underlyingGraphNum : Nat
   edgesJson : Json
@@ -17,6 +37,8 @@ structure FlagEntry where
   downwardCoeffDen : Nat
 deriving Inhabited
 
+/-- Parsed contents of a `flags_n_k_m.json` file: `n`, `k`, type index `m`, the
+type's edge list, and the enumerated flags. -/
 structure FlagJsonData where
   n : ℕ
   k : ℕ
@@ -24,15 +46,19 @@ structure FlagJsonData where
   typeEdgesJson : Json
   flags : Array FlagEntry
 
+/-- Convert a JSON number to a `Nat`, succeeding only for non-negative integers. -/
 def jsonNumberToNat? (x : JsonNumber) : Option Nat :=
   if x.exponent = 0 then
     x.mantissa.toNat?
   else
     none
 
+/-- Build a `Finset` of edges from a list of `Sym2 (Fin n)`. -/
 def mkEdgeFinset (n : ℕ) (l : List (Sym2 (Fin n))) : Finset (Sym2 (Fin n)) :=
   l.toFinset
 
+/-- Turn a JSON edge array `[[u,v],…]` into a Lean term `[Sym2.mk (u, v), …]`
+over `Fin numVerts`. -/
 def jsonEdgesToTerm (numVerts : ℕ) (edgesJson : Json) : CommandElabM (TSyntax `term) := do
   let .arr edgeArr := edgesJson | throwError "Edges must be an array"
   let terms ← edgeArr.mapM fun edgeJson => do
@@ -42,6 +68,7 @@ def jsonEdgesToTerm (numVerts : ℕ) (edgesJson : Json) : CommandElabM (TSyntax 
     `(Sym2.mk (($(Quote.quote uNat) : Fin $(Quote.quote numVerts)), ($(Quote.quote vNat) : Fin $(Quote.quote numVerts))))
   `([ $terms,* ])
 
+/-- Extract the vertex count `n` from a `graphs_n.json` filename. -/
 def parseNFromGraphsPath (path : System.FilePath) : CommandElabM Nat := do
   let some fileName := path.fileName
     | throwError s!"Could not extract filename from path: {path}"
@@ -53,6 +80,8 @@ def parseNFromGraphsPath (path : System.FilePath) : CommandElabM Nat := do
     | none => throwError s!"Failed to parse n from filename: {fileName}"
   pure n
 
+/-- Parse a `downward_coeff` string (`"num"` or `"num/den"`) into a
+`(numerator, denominator)` pair. -/
 def parseCoeffString (s : String) : CommandElabM (Nat × Nat) := do
   let parts := (s.trimAscii.toString).splitOn "/"
   match parts with
@@ -73,6 +102,7 @@ def parseCoeffString (s : String) : CommandElabM (Nat × Nat) := do
       pure (num, den)
   | _ => throwError s!"Invalid downward_coeff format: {s}"
 
+/-- Parse the `type_indices` JSON array into an `Array Nat`. -/
 def parseTypeIndices (j : Json) : CommandElabM (Array Nat) := do
   let arr ← match j with
     | .arr a => pure a
@@ -86,6 +116,8 @@ def parseTypeIndices (j : Json) : CommandElabM (Array Nat) := do
       | none => throwError "Each type index must be a natural number"
     pure n
 
+/-- Build the type embedding `i ↦ typeIndices[i]` as a nested
+`if i.1 = j then … else …` chain. -/
 def mkTypeIndexNatExpr (typeIndices : Array Nat) : CommandElabM (TSyntax `term) := do
   if _h : typeIndices.size = 0 then
     throwError "type_indices must be nonempty for load_flags"
@@ -96,6 +128,7 @@ def mkTypeIndexNatExpr (typeIndices : Array Nat) : CommandElabM (TSyntax `term) 
     acc ← `(if i.1 = $(Quote.quote j) then $(Quote.quote idx) else $acc)
   pure acc
 
+/-- Read and parse a `graphs_n.json` file into `EmptyTypedJsonData`. -/
 def parseEmptyTypedJsonFile (path : System.FilePath) : CommandElabM EmptyTypedJsonData := do
   let fileContent ← liftIO <| IO.FS.readFile path
   let json ← match Json.parse fileContent with
@@ -105,6 +138,9 @@ def parseEmptyTypedJsonFile (path : System.FilePath) : CommandElabM EmptyTypedJs
   let n ← parseNFromGraphsPath path
   pure { n := n, graphsJson := graphsJson }
 
+/-- Read and parse a `flags_n_k_m.json` file into `FlagJsonData`, validating
+each flag entry (correct `type_indices` length, in-range and pairwise-distinct
+type indices, and `k ≤ n`). -/
 def parseFlagJsonFile (path : System.FilePath) : CommandElabM FlagJsonData := do
   let fileContent ← liftIO <| IO.FS.readFile path
   let json ← match Json.parse fileContent with
@@ -193,31 +229,41 @@ def parseFlagJsonFile (path : System.FilePath) : CommandElabM FlagJsonData := do
     flags := flags
   }
 
+/-- Build a `Rat` term from a `(numerator, denominator)` coefficient pair. -/
 def coeffQTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `((($(Quote.quote num) : Nat) : Rat))
   else
     `((($(Quote.quote num) : Rat) / ($(Quote.quote den) : Rat)))
 
+/-- Progress-logging stride: log every item if `total ≤ 20`, else roughly every
+10%. -/
 def progressStep (total : Nat) : Nat :=
   if total ≤ 20 then 1 else max 1 (total / 10)
 
+/-- Whether to emit a progress message for the `i`-th of `total` items (always
+for the first and last). -/
 def shouldLogProgress (i total : Nat) : Bool :=
   let done := i + 1
   done = 1 || done = total || done % progressStep total = 0
 
+/-- File the loaders append progress messages to. -/
 def progressLogPath : System.FilePath :=
   System.FilePath.mk ".flag_load_progress.log"
 
+/-- Append one progress line to `progressLogPath`. -/
 def appendProgressToFile (msg : String) : IO Unit := do
   IO.FS.withFile progressLogPath IO.FS.Mode.append fun h =>
     h.putStrLn msg
 
+/-- Emit a progress message to the info log, stdout, and the progress file. -/
 def emitProgress (msg : String) : CommandElabM Unit := do
   logInfo msg
   liftIO <| IO.println msg
   liftIO <| appendProgressToFile msg
 
+-- `load_empty_typed_flags "graphs_n.json"`: same synthesis as in
+-- `FlagLoader.lean`, additionally emitting per-graph and per-proof progress.
 elab "load_empty_typed_flags" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data ← parseEmptyTypedJsonFile path
@@ -360,6 +406,8 @@ elab "load_empty_typed_flags" filename:str : command => do
   let delta := currentTime - lastTime
   emitProgress s!"Loaded {graphsJson.size} empty-typed flags as `Sym2Flag_{n}_0_0_i`. ({delta} ms)"
 
+-- `load_flags "flags_n_k_m.json"`: same synthesis as in `FlagLoader.lean`,
+-- additionally emitting per-flag and per-proof progress.
 elab "load_flags" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data ← parseFlagJsonFile path
@@ -580,5 +628,7 @@ elab "load_flags" filename:str : command => do
   let delta := currentTime - lastTime
   emitProgress s!"Loaded `{typeName.getId}` and {flags.size} flags as `Sym2Flag_{n}_{k}_{m}_i`. ({delta} ms)"
 
+-- Demo: load the 5-vertex graphs and the flags of type `graphs_3[2]` on 5
+-- vertices, exercising the instrumented loaders above.
 load_empty_typed_flags "LeanFlagAlgebras/Flags/Graphs/graphs_5.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_2.json"

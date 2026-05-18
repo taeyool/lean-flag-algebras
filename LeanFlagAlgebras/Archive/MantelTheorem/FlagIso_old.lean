@@ -1,6 +1,17 @@
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import Mathlib.Tactic.FinCases
 
+/-!
+# (Archived, older) Enumerated flag sets via explicit graph isomorphisms
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). This is the *older* approach to
+enumerating the non-isomorphic 3-vertex flags: it classifies every 3-vertex
+graph up to isomorphism by hand (`threeVertexGraph_iso`), builds the explicit
+isomorphisms via custom tactics, and proves the flag sets equal `Finset.univ`.
+It was replaced by the shorter `Sym2`/`native_decide`-based `FlagIso.lean`, and
+both are superseded by the active loader-generated flag sets.
+-/
 
 open FlagAlgebras
 
@@ -153,6 +164,8 @@ macro_rules
       simp [this]
     })
 
+/-- Every 3-vertex graph is isomorphic to exactly one of `O3`, `E3`, `P3`, `K3`
+(the classification underlying the hand-built flag enumeration). -/
 lemma threeVertexGraph_iso
     (G : SimpleGraph (Fin 3))
     : Nonempty (G ≃g O3_graph) ∨ Nonempty (G ≃g E3_graph) ∨ Nonempty (G ≃g P3_graph) ∨ Nonempty (G ≃g K3_graph)

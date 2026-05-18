@@ -1,6 +1,15 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.Logic.Defs
 
+/-! # Proof tactics for the flag-algebra assertion DSL
+
+Proof automation for the `FlagLogic` DSL. It provides metaprogramming helpers to locate
+and parse `Flag_*` / `FlagAlgebra_*` constants, and the two tactics
+`prove_flag_expand_with_forbidden_flag` and `prove_flag_mul_with_forbidden_flag`, which
+discharge entailments expressing a flag (or product of flags) as a linear combination of
+size-`N` flags modulo a forbidden flag.
+-/
+
 open Lean Elab Tactic Meta
 
 namespace FlagLogic
@@ -159,6 +168,9 @@ def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
     evalTactic (← `(tactic| rw [hφ]))
     evalTactic (← `(tactic| ring_nf))
 
+/--
+Executes the core logic for `prove_flag_mul_with_forbidden_flag N`.
+-/
 def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))

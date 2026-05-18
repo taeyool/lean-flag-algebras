@@ -2,12 +2,23 @@ import Mathlib.Algebra.BigOperators.GroupWithZero.Action
 import Mathlib.Data.Finsupp.SMul
 import Mathlib.Data.Real.Basic
 
+/-! # Linear and bilinear extensions of maps on a basis
+
+Shared utility for extending a map `f : α → β` (resp. `f : α → α → β`) to a linear map
+`(α →₀ ℝ) → β` (resp. bilinear `(α →₀ ℝ) → (α →₀ ℝ) → β`) on the free `ℝ`-vector space on `α`,
+plus their additivity / scaling / sum lemmas. Used to turn formal flag combinations into
+their evaluated densities throughout the flag-algebra development.
+-/
+
 open Finset
 
 variable {α β : Type} [AddCommGroup β] [Module ℝ β]
 
 /- Linear Extension -/
 
+/-! ## Linear extension -/
+
+/-- The linear extension of `f : α → β` to `α →₀ ℝ`: `v ↦ ∑ a ∈ v.support, v a • f a`. -/
 def linearExtension
     (f : α → β)
     : (α →₀ ℝ) → β
@@ -30,6 +41,9 @@ theorem linearExtension_single_one
   simp only [↓reduceIte, one_smul]
 
 omit [Module ℝ β] in
+/-- Generic support-splitting lemma underlying `linearExtension_add`: a sum over the support of
+`v + w` of `ψ v a + ψ w a` splits into separate sums over the supports of `v` and `w`,
+given that `ψ` vanishes off-support and is additive where coefficients cancel. -/
 lemma linearExtension_add_support
     (v w : α →₀ ℝ) (ψ : (α →₀ ℝ) → α → β)
     (hψ₁ : ∀ v w a, v a + w a = 0 → ψ v a + ψ w a = 0)
@@ -79,6 +93,7 @@ lemma linearExtension_add_support
         exact sdiff_union_inter v.support w.support
       rw [sum_supp_sdiff_inter v w, inter_comm, sum_supp_sdiff_inter w v]
 
+/-- `linearExtension f` is additive. -/
 theorem linearExtension_add
     (f : α → β) (v w : α →₀ ℝ)
     : linearExtension f (v + w) = linearExtension f v + linearExtension f w := by
@@ -101,6 +116,7 @@ theorem linearExtension_add
     _ = ∑ a ∈ v.support, ψ v a + ∑ a ∈ w.support, ψ w a :=
       linearExtension_add_support v w ψ hψ₁ hψ₂
 
+/-- `linearExtension f` commutes with finite sums. -/
 theorem linearExtension_sum
     (f : α → β) (s : Finset ι) (c : ι → (α →₀ ℝ))
     : linearExtension f (∑ i ∈ s, c i) = ∑ i ∈ s, linearExtension f (c i)
@@ -122,6 +138,7 @@ theorem linearExtension_sub
     : linearExtension f (v - w) = linearExtension f v - linearExtension f w := by
   simp only [sub_eq_add_neg, linearExtension_add, linearExtension_neg]
 
+/-- `linearExtension f` is `ℝ`-homogeneous. -/
 theorem linearExtension_smul
     (f : α → β) (r : ℝ) (v : α →₀ ℝ)
     : linearExtension f (r • v) = r • linearExtension f v := by
@@ -136,18 +153,25 @@ theorem linearExtension_smul
 
 /- Bilinear Extension -/
 
+/-! ## Bilinear extension -/
+
+/-- The bilinear extension of `f : α → α → β`, extending first in the right argument
+then the left. Equal to `bilinearExtension'` (see `bilinearExtension_def_eq`). -/
 def bilinearExtension
     (f : α → α → β)
     : (α →₀ ℝ) → (α →₀ ℝ) → β
   :=
   fun v w => linearExtension (flip (fun a => linearExtension (f a)) w) v
 
+/-- Alternative bilinear extension of `f`, extending first in the left argument
+then the right; provably equal to `bilinearExtension` via `bilinearExtension_def_eq`. -/
 def bilinearExtension'
     (f : α → α → β)
     : (α →₀ ℝ) → (α →₀ ℝ) → β
   :=
   fun v w => linearExtension (fun b => linearExtension (flip f b) v) w
 
+/-- Expands `bilinearExtension f v w` as the double sum `∑ₐ ∑_b (v a * w b) • f a b`. -/
 theorem bilinearExtension_eq_nested_sum
     (f : α → α → β) (v w : α →₀ ℝ)
     : bilinearExtension f v w = ∑ a ∈ v.support, ∑ b ∈ w.support, ((v a) * (w b)) • f a b := by
@@ -171,6 +195,7 @@ theorem bilinearExtension'_eq_nested_sum
   intro a _
   rw [flip, smul_smul, mul_comm]
 
+/-- The two extension orders agree: `bilinearExtension f = bilinearExtension' f`. -/
 theorem bilinearExtension_def_eq
     (f : α → α → β) (v w : α →₀ ℝ)
     : bilinearExtension f v w = bilinearExtension' f v w := by

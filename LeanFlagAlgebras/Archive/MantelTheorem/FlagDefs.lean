@@ -1,6 +1,18 @@
 import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
 import «LeanFlagAlgebras».Archive.Compute.Basic
 
+/-!
+# (Archived) Hand-written small flags for Mantel's theorem
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It hand-defines the small graphs and
+flags (`K1`, `O2`, `K2`, `O3`, `E3`, `P3`, `K3` and their singleton-typed
+variants `O2₁`, `K2₁`, …) used by the early Mantel's-theorem development, plus
+their `Sym2`-encoded mirrors and the `…_eq` bridge lemmas. These hand-written
+flags are superseded by the JSON-loader-generated flags consumed by the active
+`LeanFlagAlgebras/MantelTheorem/` proofs.
+-/
+
 open Lean
 open Elab
 open Command
@@ -312,6 +324,8 @@ instance : DecidableRel Sₜ.Adj := by
   intro a b
   exact .isFalse (by aesop)
 
+/-- Build a singleton-typed labeled graph from a graph `G` by labeling the
+single type vertex with `label_idx`. -/
 @[simp]
 def create_singletonType_labeledGraph {ℓ : ℕ} (G : SimpleGraph (Fin ℓ)) (label_idx : Fin ℓ) : LabeledGraph Sₜ (Fin ℓ) where
   graph := G

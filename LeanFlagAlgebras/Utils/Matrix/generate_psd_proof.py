@@ -1,3 +1,28 @@
+"""Emit a Lean LDLᵀ certificate proving a symmetric rational matrix is PSD.
+
+Given a square symmetric matrix of exact rationals, this script computes an
+exact (Fraction-based) LDLᵀ decomposition M = L · diag(d) · Lᵀ, sanity-checks
+it by reconstruction, and emits Lean 4 code that:
+  - defines the matrix, the L factor, and the diagonal d over ℚ,
+  - proves d is entrywise nonnegative and M = L · diag(d) · Lᵀ,
+  - concludes M.PosSemidef via a configurable helper theorem,
+  - and derives the analogous ℝ-valued statements via `ratMatrixToReal`.
+
+This produces the SOS / PSD certificates that the flag-algebra density
+proofs in this repository depend on. The generated block relies on
+`ratMatrixToReal`, `posSemidef_of_eq_mul_diagonal_mul_transpose`, and
+`posSemidef_of_eq_mul_diagonal_mul_transpose_real` from
+`LeanFlagAlgebras/Utils/Matrix/PosSemiDef.lean`.
+
+Inputs: a JSON matrix passed inline (--matrix) or via a file (--input), as a
+list of rows whose entries are ints/floats/rational strings like "1/2".
+Output: Lean source printed to stdout or appended/written to --out.
+
+Example:
+    python generate_psd_proof.py --input matrix.json --name P \\
+        --out path/to/Output.lean --write-mode append
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -8,6 +33,7 @@ from typing import List, Sequence
 
 
 def parse_number(value) -> Fraction:
+    """Coerce an int, float, or numeric/rational string into an exact Fraction."""
     if isinstance(value, int):
         return Fraction(value, 1)
     if isinstance(value, float):
@@ -18,6 +44,7 @@ def parse_number(value) -> Fraction:
 
 
 def parse_matrix(raw) -> List[List[Fraction]]:
+    """Validate that raw is a non-empty square list-of-lists and return it as Fractions."""
     if not isinstance(raw, list) or len(raw) == 0:
         raise ValueError("Matrix must be a non-empty list of rows")
     mat = []
@@ -36,6 +63,7 @@ def parse_matrix(raw) -> List[List[Fraction]]:
 
 
 def is_symmetric(mat: Sequence[Sequence[Fraction]]) -> bool:
+    """Return True iff mat[i][j] == mat[j][i] for all i, j."""
     n = len(mat)
     for i in range(n):
         for j in range(i + 1, n):
@@ -47,6 +75,13 @@ def is_symmetric(mat: Sequence[Sequence[Fraction]]) -> bool:
 def ldlt_decompose(
     mat: List[List[Fraction]],
 ) -> tuple[List[List[Fraction]], List[Fraction]]:
+    """Compute an exact LDLᵀ decomposition of a symmetric matrix.
+
+    Returns (L, d) where L is unit lower-triangular and d is the diagonal
+    vector such that mat == L · diag(d) · Lᵀ. Zero pivots (d[k] == 0) are
+    handled by leaving the corresponding subcolumn of L at zero, which
+    keeps the factorization exact for PSD inputs with rank deficiency.
+    """
     n = len(mat)
     l = [[Fraction(1 if i == j else 0, 1) for j in range(n)] for i in range(n)]
     d = [Fraction(0, 1) for _ in range(n)]
@@ -70,6 +105,7 @@ def ldlt_decompose(
 def reconstruct(
     ld: tuple[List[List[Fraction]], List[Fraction]],
 ) -> List[List[Fraction]]:
+    """Reconstruct L · diag(d) · Lᵀ from an (L, d) pair (used to verify the decomposition)."""
     l, d = ld
     n = len(l)
     out = [[Fraction(0, 1) for _ in range(n)] for _ in range(n)]
@@ -80,6 +116,7 @@ def reconstruct(
 
 
 def frac_to_lean(q: Fraction) -> str:
+    """Render a Fraction as a Lean ℚ literal, e.g. (3 / 4 : ℚ) or (5 : ℚ)."""
     if q == 0:
         return "0"
     if q.denominator == 1:
@@ -88,10 +125,12 @@ def frac_to_lean(q: Fraction) -> str:
 
 
 def vec_to_lean_bang(vec: Sequence[Fraction]) -> str:
+    """Render a vector as Lean Matrix/Fin `![...]` notation."""
     return "![" + ", ".join(frac_to_lean(x) for x in vec) + "]"
 
 
 def matrix_to_lean_bang(mat: Sequence[Sequence[Fraction]]) -> str:
+    """Render a matrix as Lean `!![row; row; ...]` notation."""
     rows = [", ".join(frac_to_lean(x) for x in row) for row in mat]
     return "!![" + ";\n   ".join(rows) + "]"
 
@@ -106,6 +145,13 @@ def emit_lean_block(
     psd_helper_name: str,
     psd_helper_real_name: str,
 ) -> str:
+    """Build the full Lean proof block for the PSD certificate.
+
+    Emits the ℚ definitions (matrix, L, d), the d-nonneg lemma, the
+    M = L·diag(d)·Lᵀ equality, the `PosSemidef` theorem via psd_helper_name,
+    and the ℝ-valued counterparts derived through `ratMatrixToReal` using
+    psd_helper_real_name. Returns the block as a single newline-joined string.
+    """
     n = len(mat)
 
     real_mat_name = f"{mat_name}_real"
@@ -180,6 +226,7 @@ def emit_lean_block(
 
 
 def main() -> None:
+    """CLI entry point: parse args, decompose the matrix, and emit/write Lean code."""
     script_dir = Path(__file__).resolve().parent
 
     def resolve_local_path(path_str: str) -> Path:

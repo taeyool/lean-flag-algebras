@@ -2,6 +2,17 @@ import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
 /-!
+# (Archived) Even-earlier computable flag scaffolding
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an earlier variant of
+`Archive/Compute/Basic.lean` (note the trailing underscore): a relation-based
+`LabeledGraph`/`Flag` prototype with `Fintype`/`Decidable` instances and the
+labeled-subgraph-list isomorphism predicates. Both are superseded by the active
+`LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean`.
+-/
+
+/-!
 This file along with other files in the `Compute` directory will work on computable version of flag algebra.
 -/
 

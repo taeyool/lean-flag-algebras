@@ -1,7 +1,23 @@
 import «LeanFlagAlgebras».Utils.SubgraphUtil
 
+/-! # Flag Algebra: Core Definitions
+
+This file defines the foundational objects of Razborov's flag algebras: a
+`FlagType` (the type `σ` describing the labeled "root"), a `LabeledGraph`
+(a graph together with an embedding of `σ`), `LabeledSubgraph`, isomorphism of
+labeled graphs (`≃f`), and the resulting `Flag σ V` as the quotient of labeled
+graphs by isomorphism. It also builds list-indexed bundles (`FlagList`,
+`LabeledGraphList`) together with the type-level `insert`/`permute` operations
+needed to talk about tuples of flags.
+
+It sits above `GraphAlgebra`/`SubgraphUtil` (plain subgraph densities) and below
+`FlagAlgebra.lean`, which forms the real algebra `A^σ` out of these flags. -/
+
 open Classical
 
+/-- Demote an index `i : Fin (t + 1)` that is not the last position (`i ≠ t`)
+down to `Fin t`, keeping its underlying value. Used to index into the original
+list when reasoning about `listTypeInsert`. -/
 def Fin.coe {t : ℕ} (i : Fin (t + 1)) (hi : i.val ≠ t) : Fin t
   :=
   ⟨i.val, Nat.lt_of_le_of_ne (Nat.le_of_lt_succ i.is_lt) hi⟩
@@ -10,17 +26,24 @@ namespace FlagAlgebras
 
 variable {T : Type} [Fintype T]
 
+/-- The "type" `σ` of a flag: a simple graph on the label set `T`, identifying
+the distinguished labeled vertices that every flag of type `σ` must carry. -/
 abbrev FlagType := SimpleGraph
 
+/-- The number of labeled vertices in a type `σ`, i.e. `Fintype.card T`. -/
 noncomputable def FlagType.size (_ : FlagType T) : ℕ
   :=
   Fintype.card T
 
+/-- A `σ`-flag carrier: a simple graph on `V` together with an induced-graph
+embedding of the type `σ`, distinguishing the labeled vertices. The basic
+object whose isomorphism classes form `Flag σ V`. -/
 @[ext]
 structure LabeledGraph (σ : FlagType T) (V : Type) where
   graph : SimpleGraph V
   type_embed : σ ↪g graph
 
+/-- The set of labeled vertices of `G`: the image of the type embedding. -/
 def LabeledGraph.type_verts (G : LabeledGraph σ V) : Set V :=
   G.type_embed '' Set.univ
 
@@ -44,6 +67,8 @@ lemma LabeledGraph.type_verts_contain {σ : FlagType T} {V : Type} (G : LabeledG
   : G.type_embed t ∈ G.type_verts :=
   LabeledGraph.mem_type_verts.mpr ⟨t, rfl⟩
 
+/-- The canonical equivalence between the label set `T` and `G`'s labeled
+vertices, induced by the type embedding. -/
 noncomputable def LabeledGraph.iso_type_G
      {σ : FlagType T} (G : LabeledGraph σ V) : T ≃ G.type_verts := by
   let f : T → G.type_verts := by
@@ -84,6 +109,7 @@ noncomputable instance labeledGraphFintype (σ : FlagType T) (V : Type) [Fintype
     exact DFunLike.coe_fn_eq.mp right
   Fintype.ofInjective f f_inj
 
+/-- The number of vertices of a labeled graph, i.e. `Fintype.card V`. -/
 noncomputable def LabeledGraph.size
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V] (_ : LabeledGraph σ V) : ℕ
   :=
@@ -96,6 +122,8 @@ lemma LabeledGraph.type_size_le_size {σ : FlagType T} {V : Type} [Fintype V] (G
   exact set_fintype_card_le_univ G.type_verts
 
 omit [Fintype T] in
+/-- The type embedding is an *induced* embedding: two labels are adjacent in
+`σ` iff their images are adjacent in `G`. -/
 theorem type_embed_Adj_iff
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (u v : T)
     : σ.Adj u v ↔ G.graph.Adj (G.type_embed u) (G.type_embed v)
@@ -114,16 +142,22 @@ theorem iso_type_Adj_iff
   rfl
 
 
+/-- The trivial flag of type `σ`: the graph is `σ` itself on the label set `T`,
+with the identity type embedding. This is the multiplicative unit flag. -/
 def emptyLabeledGraph (σ : FlagType T) : LabeledGraph σ T
   :=
   ⟨σ, SimpleGraph.Embedding.refl⟩
 
+/-- A subgraph of a labeled graph `G` that still contains all of `G`'s labeled
+vertices and embeds `σ` compatibly with `G`'s type embedding. Used to talk
+about sub-flags and induced densities. -/
 @[ext]
 structure LabeledSubgraph (σ : FlagType T) {V : Type} (G : LabeledGraph σ V) where
   subgraph : G.graph.Subgraph
   type_embed : σ ↪g subgraph.coe
   embed_eq : ∀ (t : T), type_embed t = G.type_embed t
 
+/-- The full labeled subgraph of `G` (all vertices and edges of `G`). -/
 def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := ⊤
@@ -146,6 +180,8 @@ def LabeledGraph.top (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
 lemma LabeledGraph.top_isInduced (G : LabeledGraph σ V)
   : G.top.subgraph.IsInduced := fun _ _ _ _ ↦ id
 
+/-- The minimal labeled subgraph of `G`: exactly the labeled vertices and the
+edges of `G` between them. -/
 def LabeledGraph.bottom (G : LabeledGraph σ V) : LabeledSubgraph σ G :=
   {
     subgraph := {
@@ -174,6 +210,8 @@ lemma LabeledGraph.bottom_isInduced (G : LabeledGraph σ V)
 
 namespace LabeledSubgraph
 
+/-- `H` is an induced labeled subgraph: its edges are exactly those of `G`
+between its vertices. -/
 def IsInduced {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G) : Prop
   :=
   H.subgraph.IsInduced
@@ -184,6 +222,8 @@ noncomputable def size
   :=
   Fintype.card H.subgraph.verts
 
+/-- View a labeled subgraph `H` as a `LabeledGraph` in its own right, on the
+vertex type `H.subgraph.verts`. -/
 @[simps]
 def coe {σ : FlagType T} {V : Type} {G : LabeledGraph σ V} (H : LabeledSubgraph σ G)
     : LabeledGraph σ H.subgraph.verts where
@@ -227,6 +267,8 @@ theorem labeledSubgraph_contain_type_verts
   obtain ⟨t, rfl⟩ := LabeledGraph.mem_type_verts.mp hv
   exact H.embed_eq t ▸ Subtype.coe_prop _
 
+/-- The labeled subgraph of `G` induced on a vertex set `S` that contains all
+labeled vertices. The canonical way to cut out a sub-flag on a chosen set. -/
 def inducedLabeledSubgraph
     {σ : FlagType T} {V : Type} (G : LabeledGraph σ V) (S : Set V) (h : G.type_verts ⊆ S)
     : LabeledSubgraph σ G where
@@ -303,12 +345,16 @@ theorem isInduced_exist_induce_set
 
 end LabeledSubgraph
 
+/-- An isomorphism of labeled graphs: a graph isomorphism that maps the labeled
+vertices of `G` to those of `G'` respecting the type embeddings. Written
+`G ≃f G'`. Flags are isomorphism classes under this relation. -/
 @[ext]
 structure LabeledGraphIso {σ : FlagType T} {V W : Type}
   (G : LabeledGraph σ V) (G' : LabeledGraph σ W) where
   graph_iso : G.graph ≃g G'.graph
   type_preserve : graph_iso ∘ G.type_embed = G'.type_embed
 
+-- `G ≃f G'` : `G` and `G'` are isomorphic as labeled graphs.
 infixl:50 " ≃f " => LabeledGraphIso
 
 def labeledGraphIso_extract_graph
@@ -330,11 +376,13 @@ variable {T : Type} [Fintype T] {σ : FlagType T}
 variable {V W U : Type}
 variable {G : LabeledGraph σ V} {G' : LabeledGraph σ W} {G'' : LabeledGraph σ U}
 
+/-- Reflexivity of labeled-graph isomorphism. -/
 @[refl]
 def refl : G ≃f G where
   graph_iso := by rfl
   type_preserve := by ext t; rw [Function.comp_apply, RelIso.refl_apply]
 
+/-- Symmetry of labeled-graph isomorphism. -/
 @[symm]
 def symm (h : G ≃f G') : G' ≃f G where
   graph_iso := h.graph_iso.symm
@@ -343,6 +391,7 @@ def symm (h : G ≃f G') : G' ≃f G where
     rw [←h.type_preserve]
     simp only [Function.comp_apply, RelIso.symm_apply_apply]
 
+/-- Transitivity of labeled-graph isomorphism. -/
 def trans (h : G ≃f G') (h' : G' ≃f G'') : G ≃f G'' where
   graph_iso := RelIso.trans h.graph_iso h'.graph_iso
   type_preserve := by
@@ -361,6 +410,8 @@ def labeledSubgraphIso_eq
 
 end LabeledGraphIso
 
+/-- Transport a labeled graph along a vertex-set bijection `V ≃ W`, yielding an
+isomorphic labeled graph on `W`. -/
 def labeledGraphFromVertexIso
   (G : LabeledGraph σ V) (f_iso : V ≃ W) : LabeledGraph σ W
   := {
@@ -547,6 +598,8 @@ theorem flagEqv.trans {σ : FlagType T}
 instance : Trans (@flagEqv T V σ) (@flagEqv T V σ) (@flagEqv T V σ) where
   trans := flagEqv.trans
 
+/-- The setoid on labeled graphs given by labeled-graph isomorphism `∼f`;
+its quotient is `Flag σ V`. -/
 instance labeledGraphSetoid (σ : FlagType T) (V : Type)
     : Setoid (LabeledGraph σ V)
   where
@@ -557,6 +610,8 @@ instance labeledGraphSetoid (σ : FlagType T) (V : Type)
       trans := flagEqv.trans
     }
 
+/-- A flag of type `σ` on vertex type `V`: an isomorphism class of labeled
+graphs. The basic element from which the flag algebra is built. -/
 def Flag (σ : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid σ V)
 
@@ -571,15 +626,20 @@ theorem Flag.type_eq
   rw [h_Vl_eq]
 
 omit [Fintype T] in
+/-- Isomorphic labeled graphs have equal flag (quotient) representatives. -/
 theorem flagEqv.sound {σ : FlagType T} {V : Type} {G G' : LabeledGraph σ V} (h : G ∼f G')
     : (⟦G⟧ : Flag σ V) = (⟦G'⟧ : Flag σ V)
   :=
   Quotient.sound h
 
+/-- The flag of the trivial labeled graph (the type `σ` itself); the unit. -/
 def emptyFlag (σ : FlagType T) : Flag σ T
   :=
   ⟦emptyLabeledGraph σ⟧
 
+/-- A canonical representative of `G`'s flag on `Fin ℓ` (where `ℓ` is the
+number of vertices), obtained via a canonical graph quotient. Lets flags on
+arbitrary `ℓ`-element vertex types be compared on a fixed carrier. -/
 noncomputable def getCanonicalFlag
     {σ : FlagType T} {V : Type} [Fintype V] [DecidableEq V]
     (G : LabeledGraph σ V) (h_V_size : Fintype.card V = ℓ)
@@ -658,9 +718,17 @@ lemma cancel_getCanonicalFlag_iso
 
 /- FlagList -/
 
+/-! ## Flag lists
+
+Tuples of flags indexed by `Fin t` over a family of vertex types `Vl`, together
+with the per-index `Fintype`/`DecidableEq` bookkeeping and operations to
+`insert`/`permute` entries. Used to state multi-flag densities. -/
+
+/-- Per-index `Fintype` data for a family of vertex types `Vl : Fin t → Type`. -/
 class FintypeList {t : ℕ} (Vl : Fin t → Type) where
   fintype_all : ∀ (i : Fin t), Fintype (Vl i)
 
+/-- Per-index `DecidableEq` data for a family of vertex types `Vl`. -/
 class DecidableEqList {t : ℕ} (Vl : Fin t → Type) where
   decidable_eq_all : ∀ (i : Fin t), DecidableEq (Vl i)
 
@@ -672,6 +740,7 @@ noncomputable instance decidable_eq_V {t : ℕ} (Vl : Fin t → Type) [Decidable
   :=
   DecidableEqList.decidable_eq_all i
 
+/-- A `t`-tuple of labeled graphs, the `i`-th living on vertex type `Vl i`. -/
 abbrev LabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), LabeledGraph σ (Vl i)
 
 def labeledGraphToList
@@ -696,6 +765,8 @@ notation "[" G "]ᵍ" => (labeledGraphToList G)
 notation "[" G₀ "," G₁ "]ᵍ" => (labeledGraphPairToList G₀ G₁)
 notation "[" G₀ "," G₁ "," G₂ "]ᵍ" => (labeledGraphTripleToList G₀ G₁ G₂)
 
+/-- Two labeled-graph lists are equivalent (`∼fl`) when they agree entrywise up
+to labeled-graph isomorphism. -/
 def flagListEqv {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} (Gl Gl' : LabeledGraphList σ t Vl) : Prop
   :=
   ∀ (i : Fin t), Gl i ∼f Gl' i
@@ -723,6 +794,7 @@ theorem flagListEqv.trans {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
 instance : Trans (@flagListEqv T σ t Vl) (@flagListEqv T σ t Vl) (@flagListEqv T σ t Vl) where
   trans := flagListEqv.trans
 
+/-- The setoid on labeled-graph lists given by entrywise isomorphism `∼fl`. -/
 instance labeledGraphListSetoid (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type)
     : Setoid (LabeledGraphList σ t Vl)
   where
@@ -733,9 +805,12 @@ instance labeledGraphListSetoid (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type
       trans := flagListEqv.trans
     }
 
+/-- The quotient of labeled-graph lists by entrywise isomorphism. -/
 def QuotLabeledGraphList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) : Type :=
   Quotient (labeledGraphListSetoid σ t Vl)
 
+/-- A `t`-tuple of flags, the `i`-th on vertex type `Vl i`. Equivalent to
+`QuotLabeledGraphList` (see `eqv_QuotLabeledGraphList_FlagList`). -/
 abbrev FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type) := ∀ (i : Fin t), Flag σ (Vl i)
 
 theorem FlagList.type_eq
@@ -804,6 +879,8 @@ instance decidableEqTripleList {V W U : Type} [DecidableEq V] [DecidableEq W] [D
   :=
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
+/-- The equivalence identifying a quotient of labeled-graph lists with a list
+of flags: quotients commute with the `Fin t`-indexed product. -/
 noncomputable instance eqv_QuotLabeledGraphList_FlagList (σ : FlagType T) (t : ℕ) (Vl : Fin t → Type)
     : QuotLabeledGraphList σ t Vl ≃ FlagList σ t Vl where
   toFun := fun Gl (i : Fin t) => ⟦Gl.out i⟧
@@ -862,6 +939,9 @@ theorem list_quot_eq_quot_list_triple
 
 /- FlagList.insert -/
 
+/-- Extend the vertex-type family `Vl : Fin t → Type` by appending `W` at the
+last index, giving `Fin (t + 1) → Type`. The type-level counterpart of
+`FlagList.insert`. -/
 def listTypeInsert {t : ℕ} (Vl : Fin t → Type) (W : Type)
     : Fin (t + 1) → Type
   :=
@@ -907,6 +987,8 @@ theorem flag_listTypeInsert_eq' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type
   := by
   rw [← listTypeInsert_eq' hi]
 
+/-- Append a flag `F` (on `W`) to the end of a flag list `Fl`, producing a
+list of length `t + 1`. -/
 def FlagList.insert {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type} {W : Type}
     (Fl : FlagList σ t Vl) (F : Flag σ W)
     : FlagList σ (t + 1) (listTypeInsert Vl W)
@@ -980,8 +1062,10 @@ theorem cast_preserves_flag_size' {σ : FlagType T} {t : ℕ} {Vl : Fin t → Ty
 
 /- FlagList.permute -/
 
+/-- A permutation of `t` indices, used to reorder flag lists. -/
 abbrev Perm (t : ℕ) := Fin t ≃ Fin t
 
+/-- Reorder a vertex-type family by a permutation `π`: `i ↦ Vl (π i)`. -/
 def listTypePermute {t : ℕ} (Vl : Fin t → Type) (π : Perm t)
     : Fin t → Type
   :=
@@ -1000,6 +1084,7 @@ noncomputable instance decidableEqListPermute
   decidable_eq_all i := by
     infer_instance
 
+/-- Reorder a flag list by a permutation `π`: `i ↦ Fl (π i)`. -/
 def FlagList.permute {σ : FlagType T} {t : ℕ} {Vl : Fin t → Type}
     (Fl : FlagList σ t Vl) (π : Perm t)
     : FlagList σ t (listTypePermute Vl π)

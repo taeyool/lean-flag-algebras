@@ -1,9 +1,17 @@
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 
+/-! # Goodman's bound on triangle density
+
+Proves Goodman's lower bound relating triangle and edge density in the flag
+algebra: `K3 ≥ K2·(2·K2 - 1)`. The argument expands `K2` on three vertices and
+applies the Cauchy–Schwarz inequality to the labelled edge flag. -/
+
 open FlagAlgebras
 
 namespace MantelTheorem
 
+/-- Goodman's bound on triangle density: the triangle density `K3` is at least
+`K2·(2·K2 - 1)` where `K2` is the edge density. -/
 theorem Goodman_bound_on_triangle_density
     : K3 ≥ K2 * (2 • K2 - 1)
   := by

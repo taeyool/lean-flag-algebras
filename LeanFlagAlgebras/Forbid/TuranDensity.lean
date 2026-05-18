@@ -1,10 +1,21 @@
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.Turan.GeneralizedTuran
 
+/-! # From forbidden-subgraph bounds to Turán densities
+
+This file bridges the `forbidLE` reasoning framework with classical extremal graph
+theory. It converts a `SimpleGraph` into a flag (`toFinFlag`) and a flag-algebra element
+(`toFlagAlgebra`), and proves `generalizedTuranDensity_le_of_forbidLE`: a forbidden
+inequality `F.toFlagAlgebra ≤[H.toFinFlag] c • 1` yields the generalized Turán-density
+bound `generalizedTuranDensity H F ≤ c`.
+-/
+
 open FlagAlgebras GraphAlgebras Filter Topology SimpleGraph
 
 namespace Forbid
 
+/-- The empty-type flag (`FinFlag ∅ₜ`) represented by a finite simple graph `G`,
+obtained by labeling it with the empty type. -/
 def _root_.SimpleGraph.toFinFlag
     {n : ℕ} (G : SimpleGraph (Fin n)) : FinFlag ∅ₜ
   :=
@@ -14,6 +25,8 @@ def _root_.SimpleGraph.toFinFlag
   }⟧
   ⟨n, F⟩
 
+/-- The flag-algebra element `⟦unitVector G.toFinFlag⟧` represented by a finite simple
+graph `G`. -/
 noncomputable def _root_.SimpleGraph.toFlagAlgebra
     {n : ℕ} (G : SimpleGraph (Fin n)) : FlagAlgebra ∅ₜ
   :=
@@ -173,6 +186,9 @@ lemma subgraphDensity_eq_flagDensity₁
   simp [subgraphDensity, labeledSubgraphDensity, labeledSubgraphCount_emptyType_eq_subgraphCount,
     LabeledGraph.size]
 
+/-- Turán-density bridge: a forbidden inequality `F.toFlagAlgebra ≤[H.toFinFlag] c • 1`
+(with `0 ≤ c`) implies the generalized Turán-density bound
+`generalizedTuranDensity H F ≤ c`. -/
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
   {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)

@@ -1,6 +1,17 @@
 import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
 import Mathlib.Tactic
 
+/-! # Forbidden-subgraph reasoning framework
+
+This file defines the relations `f =[F] g` (`forbidEq`) and `f ≤[F] g` (`forbidLE`),
+the statement language for the end-to-end density bounds. They mean that, almost surely
+under random positive homomorphisms `φ` drawn conditioned on the forbidden flag `F`
+having density `0` (`φ₀ ⟦unitVector F⟧ = 0`), one has `φ f = φ g` resp. `φ f ≤ φ g`
+(probability `1`). The file proves the algebraic and order lemmas (refl/symm/trans,
+add/smul, `forbidLE_of_le`, downward monotonicity, …) consumed by the API tactics, as
+well as the empty-type variants and the equivalence between them.
+-/
+
 open FlagAlgebras
 open MeasureTheory
 open Lean Elab Tactic
@@ -9,6 +20,11 @@ namespace Forbid
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
+/-! ## Core relations -/
+
+/-- `f =[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
+assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
+`φ` satisfies `φ f = φ g` almost surely (probability `1`). -/
 def forbidEq
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
   :=
@@ -16,6 +32,9 @@ def forbidEq
     → φ₀ ⟦unitVector F_forbid⟧ = 0
     → ℙ[φ₀] {φ | φ f = φ g} = 1
 
+/-- `f ≤[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
+assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
+`φ` satisfies `φ f ≤ φ g` almost surely (probability `1`). -/
 def forbidLE
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
   :=
@@ -23,6 +42,7 @@ def forbidLE
     → φ₀ ⟦unitVector F_forbid⟧ = 0
     → ℙ[φ₀] {φ | φ f ≤ φ g} = 1
 
+-- Notation: `f =[F] g` for `forbidEq F f g` and `f ≤[F] g` for `forbidLE F f g`.
 notation f "=[" F_forbid "]" g => forbidEq F_forbid f g
 notation f "≤[" F_forbid "]" g => forbidLE F_forbid f g
 
@@ -68,6 +88,8 @@ lemma forbidLE_set_measurable
   (isClosed_le (positiveHomSpace_eval_continuous (σ := σ) f)
     (positiveHomSpace_eval_continuous (σ := σ) g)).measurableSet
 
+/-! ## Reflexivity, symmetry, transitivity and the equality/order bridge -/
+
 theorem forbidEq_refl
     (F_forbid : FinFlag ∅ₜ) (f : FlagAlgebra σ)
     : f =[F_forbid] f
@@ -98,6 +120,8 @@ theorem forbidEq_of_eq
   subst hfg
   exact forbidEq_refl F_forbid f
 
+/-- An unconditional flag-algebra inequality `f ≤ g` lifts to the forbidden relation
+`f ≤[F_forbid] g` for any forbidden flag. -/
 theorem forbidLE_of_le
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f ≤ g)
@@ -121,6 +145,8 @@ theorem forbidLE_of_le
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
+/-- A forbidden equality `f =[F_forbid] g` implies the forbidden inequality
+`f ≤[F_forbid] g`. -/
 theorem forbidLE_of_forbidEq
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f =[F_forbid] g)
@@ -140,6 +166,7 @@ theorem forbidLE_of_forbidEq
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hmono
 
+/-- Transitivity of the forbidden equality relation. -/
 theorem forbidEq_trans
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
     (hfg : f =[F_forbid] g) (hgh : g =[F_forbid] h)
@@ -186,6 +213,7 @@ theorem forbidEq_rw_right
   · intro hhg
     exact forbidEq_trans hhg (forbidEq_symm hfg)
 
+/-- Transitivity of the forbidden inequality relation. -/
 theorem forbidLE_trans
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
     (hfg : f ≤[F_forbid] g) (hgh : g ≤[F_forbid] h)
@@ -270,6 +298,9 @@ theorem forbidLE_antisymm
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f = φ g} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
+/-! ## Compatibility with addition, subtraction, scalar multiplication and sums -/
+
+/-- Forbidden equality is additive: adding two forbidden equalities side by side. -/
 theorem forbidEq_add
     {F_forbid : FinFlag ∅ₜ} {f g f' g' : FlagAlgebra σ}
     (hfg : f =[F_forbid] g) (hf'g' : f' =[F_forbid] g')
@@ -342,6 +373,7 @@ theorem forbidEq_sum_filter_eq_zero
   intro a ha
   exact hzero a (Finset.mem_filter.mp ha).1 (Finset.mem_filter.mp ha).2
 
+/-- Forbidden equality is preserved by scaling both sides by the same real `c`. -/
 theorem forbidEq_smul
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ} {c : ℝ}
     (hfg : f =[F_forbid] g)
@@ -497,6 +529,7 @@ theorem forbidEq_move_term_left
   :=
   (forbidEq_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
 
+/-- Forbidden inequality is additive: adding two forbidden inequalities side by side. -/
 theorem forbidLE_add
     {F_forbid : FinFlag ∅ₜ} {f g f' g' : FlagAlgebra σ}
     (hfg : f ≤[F_forbid] g) (hf'g' : f' ≤[F_forbid] g')
@@ -540,6 +573,7 @@ theorem forbidLE_add_right
   :=
   forbidLE_add hfg (forbidLE_refl F_forbid h)
 
+/-- Scaling a forbidden inequality by a nonnegative real preserves it. -/
 theorem forbidLE_smul_nonneg
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ} {c : ℝ}
     (hc : 0 ≤ c) (hfg : f ≤[F_forbid] g)
@@ -563,6 +597,10 @@ theorem forbidLE_smul_nonneg
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ (c • f) ≤ φ (c • g)} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
+/-! ## Forbidden flags vanish, and flag expansion modulo the forbidden flag -/
+
+/-- A flag `F` whose unlabeled version contains the forbidden flag with positive density
+is forced to density `0` under the conditioning: `⟦unitVector F⟧ =[F_forbid] 0`. -/
 theorem unitVector_forbidEq_zero
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (hF : flagDensity₁ F_forbid.2 (unlabel F.2) > 0)
     : ⟦unitVector F⟧ =[F_forbid] 0
@@ -669,6 +707,8 @@ theorem unitVector_forbidEq_zero
 --   apply flagDensity₁_pos_of_unitVector_forbidEq_zero
 --   exact hf i
 
+/-- Modulo the forbidden flag, a flag `⟦unitVector F⟧` equals its size-`ℓ` expansion
+restricted to flags that avoid `F_forbid` (those with `F_forbid`-density `0`). -/
 theorem unitVector_quot_forbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦unitVector F⟧ =[F_forbid]
@@ -709,6 +749,8 @@ theorem unitVector_quot_forbidEq_sum
     exact unitVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
   · apply forbidEq_refl
 
+/-- Modulo the forbidden flag, a product `⟦unitVector F₁⟧ * ⟦unitVector F₂⟧` equals its
+size-`ℓ` expansion restricted to flags that avoid `F_forbid`. -/
 theorem unitVector_quot_mul_forbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
     : (⟦unitVector F₁⟧ * ⟦unitVector F₂⟧ : FlagAlgebra σ) =[F_forbid]
@@ -893,16 +935,23 @@ lemma probMeasure_extend_emptyType_positiveHom_singleton_eq_one
         _ ≤ ℙ[φ₀] {a₀} := ProbabilityMeasure.apply_mono ℙ[φ₀] hsubset_singleton
   simpa [a₀, Set.setOf_eq_eq_singleton] using hsingle'
 
+/-! ## Empty-type variants and their equivalence with the probabilistic relations -/
+
+/-- Empty-type form of `forbidEq`: for the empty type `∅ₜ`, the deterministic statement
+that every base homomorphism `φ₀` killing `F_forbid` satisfies `φ₀ f = φ₀ g`. -/
 def forbidEq_emptyType
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦unitVector F_forbid⟧ = 0 → φ₀ f = φ₀ g
 
+/-- Empty-type form of `forbidLE`: for the empty type `∅ₜ`, the deterministic statement
+that every base homomorphism `φ₀` killing `F_forbid` satisfies `φ₀ f ≤ φ₀ g`. -/
 def forbidLE_emptyType
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦unitVector F_forbid⟧ = 0 → φ₀ f ≤ φ₀ g
 
+-- Notation: `f =[F]₀ g` / `f ≤[F]₀ g` for the empty-type variants.
 notation f "=[" F_forbid "]₀" g => forbidEq_emptyType F_forbid f g
 notation f "≤[" F_forbid "]₀" g => forbidLE_emptyType F_forbid f g
 
@@ -930,6 +979,8 @@ theorem forbidLE_emptyType_antisymm
   intro φ₀ hF_forbid
   exact le_antisymm (hfg φ₀ hF_forbid) (hgf φ₀ hF_forbid)
 
+/-- For the empty type, the deterministic relation `≤[F]₀` is equivalent to the
+probabilistic relation `≤[F]`. -/
 theorem forbidLE_emptyType_iff_forbidLE
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
     : (f ≤[F_forbid]₀ g) ↔ (f ≤[F_forbid] g)
@@ -1004,6 +1055,8 @@ theorem forbidLE_emptyType_iff_forbidLE
       simpa [A] using ha₀A
     simpa [ha₀_toPosHom] using ha₀A'
 
+/-- For the empty type, the deterministic relation `=[F]₀` is equivalent to the
+probabilistic relation `=[F]`. -/
 theorem forbidEq_emptyType_iff_forbidEq
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
     : (f =[F_forbid]₀ g) ↔ (f =[F_forbid] g)
@@ -1018,6 +1071,10 @@ theorem forbidEq_emptyType_iff_forbidEq
     · exact forbidLE_of_forbidEq hfg
     · exact forbidLE_of_forbidEq (forbidEq_symm hfg)
 
+/-! ## Downward (unlabeling) monotonicity -/
+
+/-- Empty-type form of downward monotonicity: if `0 ≤[F_forbid] f` for a labeled `f`,
+then its unlabeling `⟦f⟧₀` is forbidden-nonnegative. -/
 theorem downward_forbidLE_nonneg_emptyType
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
     : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀
@@ -1069,6 +1126,8 @@ theorem downward_forbidLE_nonneg_emptyType
       simpa [hden_ne] using hmul_nonneg
     exact this
 
+/-- Downward monotonicity: if `0 ≤[F_forbid] f` then the unlabeling `⟦f⟧₀` is
+forbidden-nonnegative. -/
 theorem downward_forbidLE_nonneg
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
     : 0 ≤[F_forbid] ⟦f⟧₀
@@ -1110,6 +1169,7 @@ theorem forbidLE_move_term_left
   :=
   (forbidLE_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
 
+/-- Downward monotonicity for equalities: if `f =[F_forbid] 0` then `⟦f⟧₀ =[F_forbid] 0`. -/
 theorem downward_forbidEq_zero
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
     : ⟦f⟧₀ =[F_forbid] 0
@@ -1125,6 +1185,8 @@ theorem downward_forbidEq_zero
     exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf'))
   · exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf))
 
+/-- Downward monotonicity for equalities: a forbidden equality `a =[F_forbid] b` descends
+to the unlabelings `⟦a⟧₀ =[F_forbid] ⟦b⟧₀`. -/
 theorem downward_forbidEq_equal_flags
     {F_forbid : FinFlag ∅ₜ} {a b : FlagAlgebra σ}
     (hab : a =[F_forbid] b)

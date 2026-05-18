@@ -1,5 +1,15 @@
 import LeanFlagAlgebras.Flags.FlagDef
 
+/-! # Mantel's theorem: flag definitions
+
+This file selects the specific generated flags and flag-algebra basis elements
+used in the Mantel's theorem development (Turán density of `K₃`). Each
+`Flag_n_k_m_i` / `FlagAlgebra_n_k_m_i` constant comes from the generated flag
+library; the commented `abbrev`s document the intended combinatorial name
+(`K`-cliques, `O`-independent sets, `E`/`P` two/three-vertex shapes, subscript
+`₁` = one labelled vertex). Only the abbreviations actually needed downstream
+(`K2`, `O3`, `K3`) are left active. -/
+
 namespace MantelTheorem
 
 -- noncomputable abbrev K0_flag := Flag_0_0_0_0

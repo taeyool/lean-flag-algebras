@@ -3,44 +3,76 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import Lean.Data.Json
 import Mathlib.Tactic
 
+/-! # Density theorem loaders
+
+This module defines elaboration-time macros that consume the JSON produced by
+the Python density pipeline and synthesize the corresponding `simp` theorems
+about flag densities (which the loaded `Flag_*`/`FlagAlgebra_*` constants from
+`FlagDef.lean` must already exist for):
+
+* `load_flag_pair_density_theorems "density_*.json"` reads the
+  `calculate_densities.py` output (host/pattern tags and a list of
+  `[patternIdx1, patternIdx2, hostIdx, value]` rows) and generates, per row, a
+  theorem `flagDensity₂ Flag_… Flag_… Flag_… = value`, proved by reduction to
+  `sym2FlagDensity₂` and `native_decide`.
+* `load_forbid_density_theorems "*_free_indices.json"` reads the
+  `gen_free_indices.py` output (the indices of graphs avoiding a forbidden
+  subgraph) and generates, per `n`-vertex empty-typed flag, a theorem stating
+  its single-flag density of `K3`/`K4` is zero (forbidden-graph-free) or
+  nonzero, again via `native_decide`.
+
+The helper `def`s below parse the two JSON shapes into `DensityJsonData` /
+`FreeIndexJsonData`.
+-/
+
 open Lean Elab Command Json
 open FlagAlgebras
 open FlagAlgebras.Compute
 
 namespace Flags.Densities
 
+/-- Parsed `density_*.json`: the host/pattern file tags and the raw array of
+density rows `[patternIdx1, patternIdx2, hostIdx, value]`. -/
 structure DensityJsonData where
   hostTag : String
   patternTag : String
   densities : Array Json
 
+/-- Parsed `*_free_indices.json`: the graph vertex count, the forbidden-subgraph
+tag, the total number of graphs, and the indices of forbidden-free graphs. -/
 structure FreeIndexJsonData where
   graphN : Nat
   forbidTag : String
   totalGraphs : Nat
   freeGraphIndices : Array Nat
 
+/-- Convert a JSON number to a `Nat`, succeeding only for non-negative integers. -/
 def jsonNumberToNat? (x : JsonNumber) : Option Nat :=
   if x.exponent = 0 then
     x.mantissa.toNat?
   else
     none
 
+/-- Parse a JSON value as a `Nat`, reporting `fieldName` on failure. -/
 def parseNatFromJson (j : Json) (fieldName : String) : CommandElabM Nat := do
   let .num v := j | throwError s!"Expected Nat for {fieldName}"
   let some n := jsonNumberToNat? v
     | throwError s!"Expected natural number for {fieldName}"
   pure n
 
+/-- Parse a JSON array of natural numbers. -/
 def parseNatArrayFromJson (j : Json) (fieldName : String) : CommandElabM (Array Nat) := do
   let arr ← match j with
     | .arr a => pure a
     | _ => throwError s!"Expected array for {fieldName}"
   arr.mapM fun x => parseNatFromJson x fieldName
 
+/-- Membership test on a `Nat` array. -/
 def natArrayContains (arr : Array Nat) (x : Nat) : Bool :=
   arr.any fun y => y == x
 
+/-- Parse a density string (`"num"` or `"num/den"`) into a
+`(numerator, denominator)` pair. -/
 def parseDensityString (s : String) : CommandElabM (Nat × Nat) := do
   let parts := (s.trimAscii.toString).splitOn "/"
   match parts with
@@ -62,6 +94,7 @@ def parseDensityString (s : String) : CommandElabM (Nat × Nat) := do
   | _ =>
       throwError s!"Invalid density format: {s}"
 
+/-- Read and parse a `density_*.json` file into `DensityJsonData`. -/
 def parseDensityJsonFile (path : System.FilePath) : CommandElabM DensityJsonData := do
   let content ← liftIO <| IO.FS.readFile path
   let json ← match Json.parse content with
@@ -86,6 +119,7 @@ def parseDensityJsonFile (path : System.FilePath) : CommandElabM DensityJsonData
     densities := densities
   }
 
+/-- Read and parse a `*_free_indices.json` file into `FreeIndexJsonData`. -/
 def parseFreeIndexJsonFile (path : System.FilePath) : CommandElabM FreeIndexJsonData := do
   let content ← liftIO <| IO.FS.readFile path
   let json ← match Json.parse content with
@@ -120,12 +154,18 @@ def parseFreeIndexJsonFile (path : System.FilePath) : CommandElabM FreeIndexJson
     freeGraphIndices := freeGraphIndices
   }
 
+/-- Build the RHS term of a density theorem from a `(num, den)` value. -/
 def densityValueToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `($(Quote.quote num))
   else
     `((($(Quote.quote num) : Rat) / ($(Quote.quote den) : Rat)))
 
+-- `load_flag_pair_density_theorems "density_*.json"`: per row
+-- `[p1, p2, h, value]`, generate the `simp` theorem
+-- `flagDensity₂ Flag_<pattern>_p1 Flag_<pattern>_p2 Flag_<host>_h = value`,
+-- proved by `flagDensity₂_eq_sym2FlagDensity₂` + `native_decide`. Errors if any
+-- referenced flag constant is missing; skips already-generated theorems.
 elab "load_flag_pair_density_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data ← parseDensityJsonFile path
@@ -175,6 +215,11 @@ elab "load_flag_pair_density_theorems" filename:str : command => do
 
   logInfo s!"Generated {generated} theorem(s) from density JSON: {filename.getString}"
 
+-- `load_forbid_density_theorems "*_free_indices.json"`: for each of the
+-- `total_graphs` empty-typed `n`-vertex flags, generate a `simp` theorem
+-- stating the single-flag density of the forbidden graph (`K3` or `K4`,
+-- selected by `forbid.tag`) is `= 0` when the graph is forbidden-free and
+-- `≠ 0` otherwise, proved via `native_decide`.
 elab "load_forbid_density_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data ← parseFreeIndexJsonFile path

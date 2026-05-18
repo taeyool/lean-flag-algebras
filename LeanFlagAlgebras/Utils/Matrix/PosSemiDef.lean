@@ -6,8 +6,17 @@ import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
 
+/-! # Positive semidefiniteness from an LDLᵀ factorization
+
+Shared utility supplying the criterion `M = L * diagonal d * Lᵀ` with `d ≥ 0 ⟹ M.PosSemidef`,
+over both `ℚ` and `ℝ`, plus a `ℚ → ℝ` matrix cast. Used to discharge the PSD side-condition of
+sum-of-squares (SOS) certificates produced by the flag-algebra solver.
+-/
+
 open Matrix
 
+/-- If `M = L * diagonal d * Lᵀ` with every `d i ≥ 0`, then `M` is positive semidefinite
+(rational entries). -/
 theorem posSemidef_of_eq_mul_diagonal_mul_transpose
     {n : ℕ} {M L : Matrix (Fin n) (Fin n) ℚ} {d : Fin n → ℚ}
     (hd : ∀ i, 0 ≤ d i) (hM : M = L * Matrix.diagonal d * Lᵀ)
@@ -29,6 +38,7 @@ theorem posSemidef_of_eq_mul_diagonal_mul_transpose
     simpa [Matrix.conjTranspose_eq_transpose_of_trivial, mul_assoc] using h
   simpa [hM] using hLDL
 
+/-- Real-entry version of `posSemidef_of_eq_mul_diagonal_mul_transpose`. -/
 theorem posSemidef_of_eq_mul_diagonal_mul_transpose_real
     {n : ℕ} {M L : Matrix (Fin n) (Fin n) ℝ} {d : Fin n → ℝ}
     (hd : ∀ i, 0 ≤ d i) (hM : M = L * Matrix.diagonal d * Lᵀ)
@@ -50,6 +60,7 @@ theorem posSemidef_of_eq_mul_diagonal_mul_transpose_real
     simpa [Matrix.conjTranspose_eq_transpose_of_trivial, mul_assoc] using h
   simpa [hM] using hLDL
 
+/-- Cast a rational matrix to the corresponding real matrix entrywise. -/
 noncomputable def ratMatrixToReal {n : ℕ}
     (M : Matrix (Fin n) (Fin n) ℚ)
     : Matrix (Fin n) (Fin n) ℝ :=

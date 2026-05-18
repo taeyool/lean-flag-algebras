@@ -1,5 +1,16 @@
 import LeanFlagAlgebras.Archive.Compute.Basic_
 import LeanFlagAlgebras.FlagAlgebra.SubflagListDensity
+
+/-!
+# (Archived) Experimental labeled-graph-list count
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is a single experimental
+embedding-based reformulation of `labeledSubgraphListCount` (counting
+disjoint, type-aligned subgraph embeddings). It was a scratch attempt; the
+active counting/density code lives under `LeanFlagAlgebras/FlagAlgebra/`.
+-/
+
 /-!
 # ImportantFunction
 

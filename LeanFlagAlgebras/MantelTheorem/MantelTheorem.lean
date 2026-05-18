@@ -4,12 +4,27 @@ import Mathlib.Combinatorics.SimpleGraph.Clique
 import Mathlib.Combinatorics.SimpleGraph.Coloring
 import Mathlib.Combinatorics.SimpleGraph.CompleteMultipartite
 
+/-! # Mantel's theorem (Turán density of `K₃`)
+
+The headline file of the Mantel's theorem development. It proves, via the
+flag-algebra square-positivity certificate from `Lemmas.lean`:
+
+* `Mantel_theorem` / `Mantel_theorem'` — the flag-algebra density inequality
+  `K2 ≤ (1/2)·1 + K3`, i.e. any triangle-free graph has edge density `≤ 1/2`;
+* `Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2` — the
+  classical Turán-density statement, obtained by transferring the flag-algebra
+  bound to extremal numbers and matching it with the complete-bipartite
+  lower-bound construction (`extremal_density_K3_ge`). -/
+
 open FlagAlgebras Compute
 open SimpleGraph
 open Filter
 
 namespace MantelTheorem
 
+/-- Mantel's theorem in flag-algebra form: the edge-density basis element `K2`
+is bounded by `(1/2)·1 + K3`. Equivalently, the triangle density controls how
+far the edge density can exceed `1/2`. -/
 theorem Mantel_theorem
   : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
@@ -52,12 +67,16 @@ theorem Mantel_theorem
         rw [expand_1_on_three_vertex_graphs]
         norm_num
 
+/-- Pointwise form of Mantel's theorem: for any positive homomorphism `φ`
+killing the triangle (`φ K3 = 0`), the edge density satisfies `φ K2 ≤ 1/2`. -/
 theorem Mantel_theorem'
   : ∀ (φ : PositiveHom ∅ₜ), φ K3 = 0 → φ K2 ≤ 1 / 2
   := by
   intro φ h
   simpa [φ.map_add, φ.map_sub, φ.map_smul, φ.map_one, h] using Mantel_theorem φ
 
+/-- The generated flag `Flag_3_0_0_3` is the triangle `K₃`: it equals the
+empty-typed flag of `completeGraph (Fin 3)`. -/
 lemma Flag_3_0_0_3_eq
     : Flag_3_0_0_3 = ⟦{ graph := completeGraph (Fin 3), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
   simp [Flag_3_0_0_3, Sym2EmptyTypedFlag.toFlag, Sym2Flag_3_0_0_3, Sym2Graph.toFlag]
@@ -74,6 +93,8 @@ lemma Flag_3_0_0_3_eq
     type_preserve := List.ofFn_inj.mp rfl
   }
 
+/-- The generated flag `Flag_2_0_0_1` is the single edge `K₂`: it equals the
+empty-typed flag of `completeGraph (Fin 2)`. -/
 lemma Flag_2_0_0_1_eq
     : Flag_2_0_0_1 = ⟦{ graph := completeGraph (Fin 2), type_embed := RelEmbedding.ofIsEmpty _ _}⟧ := by
   simp [Flag_2_0_0_1, Sym2EmptyTypedFlag.toFlag, Sym2Flag_2_0_0_1, Sym2Graph.toFlag]
@@ -90,6 +111,9 @@ lemma Flag_2_0_0_1_eq
     type_preserve := List.ofFn_inj.mp rfl
   }
 
+/-- Lower bound matching Mantel's theorem: for `n ≥ 2` the maximal edge density
+of a triangle-free graph on `n` vertices is at least `1/2`, witnessed by the
+balanced complete bipartite graph. -/
 lemma extremal_density_K3_ge
     (n : ℕ) (hn2 : n ≥ 2)
     : (extremalNumber n (completeGraph (Fin 3)) / n.choose 2 : ℝ) ≥ 1 / 2
@@ -161,6 +185,9 @@ lemma extremal_density_K3_ge
     have hmono := antitoneOn_extremalNumber_div_choose_two (completeGraph (Fin 3))
     simpa using hmono hn2 hn2_succ
 
+/-- **Mantel's theorem (Turán density form).** The Turán density of the
+triangle `K₃` is `1/2`: the flag-algebra upper bound (`Mantel_theorem'`) meets
+the complete-bipartite lower bound (`extremal_density_K3_ge`). -/
 theorem Turan_density_K3
     : turanDensity (completeGraph (Fin 3)) = 1 / 2
   := by

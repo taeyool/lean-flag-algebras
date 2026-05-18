@@ -9,6 +9,21 @@ import Mathlib.Data.Finset.Powerset
 import Mathlib.Data.Vector.Basic
 import Mathlib.Data.FinEnum
 
+/-! # Asymptotic Independence of Subflag List Densities
+
+This file proves the key probabilistic estimate underlying the
+"product of densities" reasoning in flag algebras: in a large host flag `G`,
+the joint density of finding two disjoint subflags `F`, `F'`
+(`flagDensity₂`) differs from the product of their individual densities
+(`flagDensity₁ F G * flagDensity₁ F' G`) by `O(1 / |G|)`. The single result,
+`flagListDensity₂_prod_approx`, exhibits an explicit constant
+`c = 2 (|F| + |F'|)²` independent of `G`. The proof models the choice of two
+vertex subsets as a finite probability space `Ω`, with events `A` (each
+subset induces a copy of the right flag) and `B` (the subsets are disjoint
+off the type), and bounds the overlap-correction term combinatorially. Uses
+`FlagAlgebra.SubflagListDensity` and `FlagAlgebra.FlagDef`; a commented-out
+generalization to lists of `t` flags is sketched at the end. -/
+
 namespace FlagAlgebras
 
 open LabeledSubgraph
@@ -27,6 +42,11 @@ variable {Fl : FlagList σ t Vl}
 
 set_option maxHeartbeats 500000
 omit [DecidableEq T] in
+/-- Asymptotic independence of two subflag densities: there is a constant
+`c ≥ 0` (here `2 (|F| + |F'|)²`), independent of the host flag `G`, with
+`|flagDensity₂ F F' G − flagDensity₁ F G · flagDensity₁ F' G| ≤ c / |G|`.
+This justifies treating distinct flag densities as asymptotically
+multiplicative in the flag-algebra density-bound arguments. -/
 theorem flagListDensity₂_prod_approx
     (F : Flag σ V) (F' : Flag σ U)
     : ∃ c ≥ 0, ∀ {W : Type} [Fintype W] [DecidableEq W] (G : Flag σ W),

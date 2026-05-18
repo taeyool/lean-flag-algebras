@@ -1,3 +1,6 @@
+-- Lake build configuration: declares the `lean-flag-algebras` package, pins the
+-- mathlib dependency (v4.27.0), and sets the `LeanFlagAlgebras` library (root
+-- import manifest `LeanFlagAlgebras.lean`) as the default build target.
 import Lake
 open Lake DSL
 

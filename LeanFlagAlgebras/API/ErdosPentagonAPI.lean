@@ -4,6 +4,19 @@ import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
 import LeanFlagAlgebras.Utils.SortTactic
 
+/-! # API.ErdosPentagonAPI — the Erdős pentagon problem via the API layer
+
+Per-problem density-bound proof on the API automation layer. The headline
+result `ErdosPentagon_flagAlgebra_API` is the Erdős pentagon bound: in K₃-free
+graphs the density of `C₅` (the 5-cycle) is at most `24/625`:
+
+  `C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)`.
+
+The proof adds three PSD quadratic-form (SOS) certificate terms built from the
+matrices `P_real`, `Q_real`, `R_real` and flag vectors `v₀`, `v₁`, `v₂` (all
+imported from `ErdosPentagon.FlagDef` / `ErdosPentagon.FlagMul`), then discharges
+the goal with the API tactics. -/
+
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
@@ -12,6 +25,9 @@ namespace ErdosPentagon
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 
+/-- **Erdős pentagon bound.** In K₃-free graphs the `C₅` density is at most
+`24/625`. Proved by adding the three PSD quadratic-form (SOS) terms from
+`P_real`/`v₀`, `Q_real`/`v₁`, `R_real`/`v₂` and reducing with the API tactics. -/
 theorem ErdosPentagon_flagAlgebra_API
     : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

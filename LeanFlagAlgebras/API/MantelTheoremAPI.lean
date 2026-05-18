@@ -7,11 +7,27 @@ import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
+/-! # API.MantelTheoremAPI — Mantel's theorem via the API layer
+
+Per-problem density-bound proof on the API automation layer. The headline
+result `Mantel_flagAlgebra_API` is the flag-algebra form of Mantel's theorem:
+in K₃-free graphs the edge density (`FlagAlgebra_2_0_0_1`) is at most `1/2`:
+
+  `FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)`.
+
+The certificate uses a single 2×2 PSD matrix `M` (shown positive semidefinite
+via an explicit LDLᵀ factorization, rational then cast to ℝ) together with the
+auxiliary equality `K2_expand_under_forbid` that rewrites the edge density on
+three vertices, after dropping the K₃ term which vanishes under the forbidden
+subgraph. The goal is then discharged with the API tactics. -/
+
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
 namespace MantelTheoremAPI
 
+/-- The SDP certificate matrix (rational, 2×2); paired with `v` over the
+σ = `FlagType_1_0` type. -/
 def M : Matrix (Fin 2) (Fin 2) ℚ :=
   !![(1 / 2 : ℚ), (-1 / 2: ℚ);
     (-1 / 2 : ℚ), (1 / 2 : ℚ)]
@@ -38,10 +54,13 @@ lemma M_real_eq_LDL :
       simp [M_real, ratMatrixToReal, M_eq_LDL]
     _ = (ratMatrixToReal LM * Matrix.diagonal (fun i => (dM i : ℝ))) * (ratMatrixToReal LM)ᵀ := by
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
+/-- `M_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M_real_posSemidef : M_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM_real_nonneg M_real_eq_LDL
 
+/-- Label type for the quadratic form: the single-vertex type. -/
 def σ : FlagType (Fin 1) := FlagType_1_0
+/-- Flag vector paired with `M` (the two σ-type 2-vertex flags). -/
 noncomputable def v : FlagAlgebraVec σ 2 := ![
   FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1
 ]
@@ -50,6 +69,9 @@ load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
 load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
 
+/-- Under the K₃-forbid relation, the edge density `FlagAlgebra_2_0_0_1` equals
+`(1/3)·FlagAlgebra_3_0_0_1 + (2/3)·FlagAlgebra_3_0_0_2`: the 3-vertex expansion
+of an edge with the K₃ term dropped (it vanishes since K₃ is forbidden). -/
 lemma K2_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
@@ -71,6 +93,10 @@ lemma K2_expand_under_forbid
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 
+/-- **Mantel's theorem (flag-algebra form).** In K₃-free graphs the edge
+density is at most `1/2`. Proved by adding the PSD quadratic-form (SOS) term
+from `M_real`/`v`, expanding the edge density via `K2_expand_under_forbid`, and
+reducing with the API tactics. -/
 theorem Mantel_flagAlgebra_API
     : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

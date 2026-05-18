@@ -1,3 +1,27 @@
+"""Prepare prompt bundles and seeded drafts for the agentic paper pipeline.
+
+This module is the static "preparation" half of the multi-agent paper-drafting
+workflow (the LLM-driven half lives in run_multi_agent.py, which imports several
+helpers from here). It does no model calls itself. Given a config.json it:
+  - extracts the \\subsection{Contributions} itemize list from a source TeX file,
+  - seeds an output draft TeX (either copying base_draft_tex or rendering a
+    minimal skeleton with those contributions),
+  - scans configured per-section source files (.lean/.py/.tex/.md/.json) and
+    harvests "evidence units" — Lean declarations and high-signal text lines,
+  - assembles one Markdown prompt per section plus an evidence_units.json dump.
+
+This pipeline is independent of the Lean formalization itself; it only reads
+repository files as evidence for drafting the project's research paper.
+
+Inputs: --root (repo root) and --config (path to config.json).
+Outputs: prompt_<section>.md files, evidence_units.json, and the seeded
+draft TeX, all under the configured output_dir.
+
+Example:
+    python papers/agentic/pipeline.py --root . \\
+        --config papers/agentic/config.json
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -30,6 +54,12 @@ TEX_KEYWORDS = [
 
 @dataclass
 class EvidenceUnit:
+    """One retrieved piece of source evidence tied to a target paper section.
+
+    Captures where it came from (source_path:line_number), what it is
+    (symbol_kind/symbol_name — e.g. a Lean "theorem"/name, or "text"/"line"),
+    and the raw snippet, so prompts can ground claims in concrete sources.
+    """
     section: str
     source_path: str
     symbol_kind: str
@@ -39,10 +69,16 @@ class EvidenceUnit:
 
 
 def read_text(path: Path) -> str:
+    """Read a file as UTF-8 text, ignoring undecodable bytes."""
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
 def extract_contributions_from_tex(tex: str) -> list[str]:
+    """Parse the \\item entries inside \\subsection{Contributions}'s itemize.
+
+    Returns each contribution bullet as a single flattened string. Returns
+    an empty list if the subsection or its itemize block is absent.
+    """
     lines = tex.splitlines()
     in_contrib_subsection = False
     in_itemize = False
@@ -78,6 +114,7 @@ def extract_contributions_from_tex(tex: str) -> list[str]:
 
 
 def render_seed_draft_tex(project_name: str, contributions: list[str]) -> str:
+    """Return a minimal LaTeX article skeleton with TODO sections and the contributions."""
     contribution_lines = "\n".join(f"    \\item {item}" for item in contributions)
     if not contribution_lines:
         contribution_lines = "    \\item TODO: Add contributions from source paper."
@@ -127,6 +164,7 @@ TODO
 
 
 def iter_source_files(root: Path, source_paths: Iterable[str]) -> Iterable[Path]:
+    """Yield existing files for each repo-relative path in source_paths."""
     for rel in source_paths:
         p = root / rel
         if p.exists() and p.is_file():
@@ -136,6 +174,12 @@ def iter_source_files(root: Path, source_paths: Iterable[str]) -> Iterable[Path]
 def extract_evidence(
     section: str, root: Path, source_paths: list[str], max_lines: int
 ) -> list[EvidenceUnit]:
+    """Harvest EvidenceUnits for a section from its configured source files.
+
+    Reads up to max_lines lines per file. For .lean files it records each
+    declaration (theorem/lemma/def/structure/class) matched by DECL_RE; for
+    other text files it keeps non-trivial lines containing a TEX_KEYWORDS term.
+    """
     units: list[EvidenceUnit] = []
     for file_path in iter_source_files(root, source_paths):
         if file_path.suffix not in {".lean", ".py", ".tex", ".md", ".json"}:
@@ -216,6 +260,12 @@ def build_agent_prompt(
     section_instructions: list[str],
     evidence: list[EvidenceUnit],
 ) -> str:
+    """Assemble the Markdown drafting prompt for one section.
+
+    Combines project/section metadata, mandatory considerations, author
+    notes, global and section-specific instructions, and up to 80 rendered
+    evidence lines into a single prompt string with fixed task instructions.
+    """
     evidence_lines = []
     for u in evidence[:80]:
         evidence_lines.append(
@@ -239,6 +289,7 @@ def build_agent_prompt(
 
 
 def main() -> None:
+    """CLI entry point: load config, seed the draft, and write per-section prompts + evidence."""
     parser = argparse.ArgumentParser(
         description="Generate prompt bundles for an agentic paper-writing workflow."
     )

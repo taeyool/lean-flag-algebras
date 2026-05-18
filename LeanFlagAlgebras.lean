@@ -74,6 +74,30 @@ import LeanFlagAlgebras.Logic.Defs
 import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Logic.MantelTheorem
 
+/-! # LeanFlagAlgebras — top-level import manifest
+
+This file is the root module of the project and the single source of truth for
+what is in the build (the `@[default_target]` library root in `lakefile.lean`).
+It does no work itself: it only `import`s every module so building this file
+builds the whole development.
+
+The imports above are grouped by layer, roughly from foundations upward:
+
+* **Utils** — general-purpose combinatorics, matrices/PSD, partitions, tactics.
+* **GraphAlgebra** — subgraph densities and the graph algebra.
+* **FlagAlgebra** — flag definitions, densities, the flag algebra, positive
+  homomorphisms, random homomorphisms, quadratic forms, and `Compute.*`.
+* **Flags** — the flag/density loaders and generated flag definitions.
+* **API** — the reusable proof-automation layer (`Basic`, `ReduceFlagMul`) and
+  the per-problem density-bound proofs (ErdosPentagon, Mantel, C4 Turán,
+  K4-free P₄).
+* **MantelTheorem / ErdosPentagon / Turan / Forbid / Logic** — the
+  problem-specific developments and the `Forbid` (almost-sure inequality under
+  a forbidden subgraph) foundation they build on.
+
+The `Archive.*` modules are intentionally excluded from the build (kept as
+commented-out imports below for reference only). -/
+
 -- Archive imports
 -- import LeanFlagAlgebras.Archive.BoolAlgebra
 -- import LeanFlagAlgebras.Archive.DefinitionImpactOnProofs

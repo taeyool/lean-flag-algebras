@@ -3,14 +3,29 @@ import «LeanFlagAlgebras».FlagAlgebra.SubflagListDensityProp
 import Mathlib.Algebra.Algebra.Hom
 import Mathlib.Algebra.Order.Monoid.Defs
 
+/-! # Positive algebra homomorphisms and the semantic order
+
+A `PositiveHom σ` is an `ℝ`-algebra homomorphism `FlagAlgebra σ → ℝ` that sends
+every flag (unit vector) to a nonnegative number; these are the semantic
+evaluations of the flag algebra (limits of graph densities). The set of
+elements that every positive homomorphism sends to a nonnegative value is the
+`semanticCone`, which induces the partial preorder `≤` on `FlagAlgebra σ` used
+to state density bounds. This file collects the homomorphism algebra rules and
+the basic monotonicity/positivity facts for that order.
+-/
+
 namespace FlagAlgebras
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
+/-- An `ℝ`-algebra homomorphism from the flag algebra to the reals. -/
 abbrev Hom (σ : FlagType (Fin n₀))
   :=
   FlagAlgebra σ →ₐ[ℝ] ℝ
 
+/-- A *positive* homomorphism: an algebra map `FlagAlgebra σ → ℝ` that is
+nonnegative on every flag. These are exactly the semantic evaluations
+(limits of subgraph densities) of the flag algebra. -/
 def PositiveHom (σ : FlagType (Fin n₀)) : Type
   :=
   { φ : Hom σ // ∀ (F : FinFlag σ), φ ⟦unitVector F⟧ ≥ 0 }
@@ -28,6 +43,8 @@ theorem ext {φ₁ φ₂ : PositiveHom σ} (h : ∀ f : FlagAlgebra σ, φ₁ f 
   := by
   apply Subtype.ext
   exact AlgHom.ext h
+
+/-! ## Algebra-homomorphism rules for positive homomorphisms -/
 
 namespace PositiveHom
 
@@ -67,18 +84,24 @@ theorem map_sum (φ : PositiveHom σ) {ι : Type} (s : Finset ι) (f : ι → Fl
 
 end PositiveHom
 
+/-- A positive homomorphism is nonnegative on every flag (the defining
+property, restated as `0 ≤ …`). -/
 theorem positiveHom_unitVector_ge_zero
     (φ : PositiveHom σ) (F : FinFlag σ)
     : 0 ≤ φ ⟦unitVector F⟧
   :=
   φ.2 F
 
+/-- The φ-values of all flags of a fixed size `ℓ ≥ n₀` sum to `1`
+(a probability-distribution normalization). -/
 theorem sum_positiveHom_unitVector_flagWithSize_eq_one
     (φ : PositiveHom σ) (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
     : ∑ F : FlagWithSize σ ℓ, φ ⟦unitVector ⟨ℓ, F⟩⟧ = 1
   := by
   rw [← PositiveHom.map_sum, sum_flagWithSize_eq_one ℓ hℓ, PositiveHom.map_one]
 
+/-- A positive homomorphism maps every flag into `[0, 1]`: the upper bound,
+since each flag is one summand of a sum-to-one of nonnegatives. -/
 theorem positiveHom_unitVector_le_one
     (φ : PositiveHom σ) (F : FinFlag σ)
     : φ ⟦unitVector F⟧ ≤ 1
@@ -94,6 +117,8 @@ theorem positiveHom_unitVector_le_one
   intro G _
   exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
 
+/-- Vanishing propagates along positive density: if `φ` kills a flag `F` and a
+larger flag `G` contains `F` with positive density, then `φ` kills `G` too. -/
 theorem positiveHom_unitVector_eq_zero
     (φ : PositiveHom σ) {ℓ ℓ' : ℕ} {F : FlagWithSize σ ℓ} {G : FlagWithSize σ ℓ'}
     (h : flagDensity₁ F G > 0) (hF : φ ⟦unitVector ⟨ℓ, F⟩⟧ = 0)
@@ -116,12 +141,19 @@ theorem positiveHom_unitVector_eq_zero
       apply flagListDensity_ge_zero
     · exact positiveHom_unitVector_ge_zero φ ⟨ℓ', G'⟩
 
+/-! ## The semantic cone and the induced order on the flag algebra -/
+
+/-- The semantic cone: flag-algebra elements that *every* positive homomorphism
+sends to a nonnegative value. Membership `0 ≤ f` is exactly an unconditional
+density inequality, so this cone is what density bounds are proved in. -/
 def semanticCone (σ : FlagType (Fin n₀)) : Set (FlagAlgebra σ) :=
   { f : FlagAlgebra σ | ∀ (φ : PositiveHom σ), φ f ≥ 0 }
 
 instance : LE (FlagAlgebra σ) where
   le := fun f g => g - f ∈ semanticCone σ
 
+/-- Unfolds the semantic order: `f ≤ g` means `g - f` lies in the semantic
+cone, i.e. every positive homomorphism agrees `φ f ≤ φ g`. -/
 @[simp]
 theorem le_def (f g : FlagAlgebra σ) : f ≤ g ↔ g - f ∈ semanticCone σ :=
   Iff.rfl
@@ -146,6 +178,7 @@ instance : Preorder (FlagAlgebra σ) where
     rw [this]
     exact add_nonneg hgh hfg
 
+/-- Every flag is nonnegative in the semantic order. -/
 theorem flag_geq_zero
     (F : FinFlag σ)
     : (⟦unitVector F⟧ : FlagAlgebra σ) ≥ 0
@@ -154,6 +187,7 @@ theorem flag_geq_zero
   intro φ
   exact φ.2 F
 
+/-- The semantic order is compatible with addition (add inequalities). -/
 theorem flag_add_le_add
     {f f' g g' : FlagAlgebra σ} (hf : f ≤ f') (hg : g ≤ g')
     : f + g ≤ f' + g'
@@ -183,6 +217,7 @@ instance : AddLeftMono (FlagAlgebra σ) where
 instance : AddRightMono (FlagAlgebra σ) where
   elim := fun a _ _ h ↦ flag_add_le_add_right h a
 
+/-- A nonnegative scalar times a nonnegative element is nonnegative. -/
 theorem nonneg_smul_nonneg_geq_zero
     {r : ℝ} {f : FlagAlgebra σ} (hr : r ≥ 0) (hf : f ≥ 0)
     : r • f ≥ 0

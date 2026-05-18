@@ -6,10 +6,21 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic
 import Mathlib.Algebra.Ring.Nat
 
+/-! # `simp_choose_eq` tactic: clearing binomial coefficients in `ℕ` equalities
+
+Shared custom tactic for goals that equate products of `Nat.choose` terms. It cross-multiplies
+by the product of all `k! * (n-k)!` denominators (proving that product nonzero), reduces each
+`n.choose k` to a factorial identity, and introduces named hypotheses
+`<base>_lhs_i` / `<base>_rhs_i` of the form `n.choose k * k! * (n-k)! = n!` for the caller to
+rewrite with. Used to discharge multinomial/binomial algebraic identities in the development.
+-/
+
 open Lean Elab Tactic Meta
 namespace SimpChooseEqTactic
 
 -- Data structure to hold information about one side of the equality
+/-- Per-side accounting for `simp_choose_eq`: the `(n, k)` pairs of each `choose`, the
+denominator product `∏ k!·(n-k)!`, the current product, and the target factorial product. -/
 structure SideData where
   args : List (Expr × Expr)   -- List of (N, K). To be used to generate and prove K ≤ N later.
   denTerm : Expr              -- Product of (K! * (N-K)!) terms
@@ -17,6 +28,8 @@ structure SideData where
   newTerm : Expr              -- Product of N! terms
 
 -- Recursive helper to gather data from one side of the equality
+/-- Recursively walk a product expression on one side of the goal, collecting its `SideData`
+(treating `Nat.choose n k` factors specially and recursing through `*`). -/
 partial def processSideExpr (e : Expr) : TermElabM SideData := do
   match e with
   | Expr.app (Expr.app (Expr.const ``Nat.choose ..) n) k =>
@@ -67,11 +80,16 @@ partial def processSideExpr (e : Expr) : TermElabM SideData := do
     }
 
 -- Helper to assert an assumption and get the new MVarId and FVarId of the hypothesis.
+/-- Add `proof : type` as a named hypothesis to the goal, returning its `FVarId` and the
+updated goal. -/
 def assertHyp (mvarId : MVarId) (type : Expr) (proof : Expr) (userName : Name) : MetaM (FVarId × MVarId) := do
   let mvarIdNew ← mvarId.assert userName type proof
   let (fvarId, newerMVarId) ← mvarIdNew.intro1P
   return (fvarId, newerMVarId)
 
+/-- `simp_choose_eq `base` reduces a goal that equates products of `Nat.choose` terms to a
+factorial identity, introducing rewrite hypotheses `base_lhs_i` / `base_rhs_i` of the form
+`n.choose k * k! * (n-k)! = n!`. Requires `k ≤ n` for every `choose` term. -/
 elab "simp_choose_eq" baseName:name : tactic =>
   withMainContext do
     let mainGoal ← getMainGoal

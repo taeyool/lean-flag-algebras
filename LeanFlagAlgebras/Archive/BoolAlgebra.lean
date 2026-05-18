@@ -10,6 +10,17 @@ import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Ring
 
+/-!
+# (Archived) Boolean functions and multilinear polynomial collapse
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early, self-contained
+experiment with `{±1}`-valued Boolean functions, their Fourier (multilinear
+polynomial) representations, and the "quadratic collapse" reducing polynomials
+modulo `xᵢ² = 1` on the Boolean cube. It was an exploratory side track and is
+unrelated to the active flag-algebra machinery; no direct replacement exists.
+-/
+
 namespace Archive.BoolAlgebra
 
 inductive pmone : Type where
@@ -106,6 +117,8 @@ noncomputable def deg_quad_collapse (m : Fin n →₀ ℕ) : Fin n →₀ ℕ :=
   m.mapRange (fun i => i % 2) deg_quad_collapse_
 
 -- This function is actually computable, but it looks like
+/-- Reduce a polynomial modulo `xᵢ² = 1` (replace each variable's exponent by its
+parity), giving the multilinear polynomial agreeing with `p` on the Boolean cube. -/
 noncomputable def quad_collapse (p : BoolPolyBase n) : BoolPolyBase n :=
   -- Sum over the monomials
   -- Given monomial m, take the monomial's degree by mod 2
@@ -249,6 +262,8 @@ private theorem multilinear_eq_zero_of_eval_pmone_eq_zero :
             _ = sA.card := by simp [hs_card]
       exact (finSuccEquiv ℚ n).injective (by simpa [p'] using hp'zero)
 
+/-- Two polynomials agree on all `{±1}` points iff they have the same quadratic
+collapse, i.e. agreement on the Boolean cube is decided by the multilinear form. -/
 theorem bool_eq_quad_eq (p q : BoolPolyBase n) :
   bool_eq p q ↔ quad_eq p q
   := by

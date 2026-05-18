@@ -8,6 +8,23 @@ import Mathlib.Probability.Moments.Variance
 import Mathlib.Probability.ProbabilityMassFunction.Integrals
 import Mathlib.NumberTheory.ZetaValues
 
+/-! # Convergent flag sequences and the limit semantics
+
+This file builds the asymptotic semantics of the flag algebra (Razborov's
+Theorem 3.3). A `FlagSeq` is a sequence of flags; `ConvergesTo s a` says its
+subgraph densities converge pointwise to a limit `a` in the compact
+`FlagDensitySpace`. The two directions are:
+
+* `flagSeq_limit_mem_positiveHom` (3.3 a): any convergent density limit is the
+  evaluation `φ.coe` of some `PositiveHom`;
+* `positiveHom_as_flagSeq_limit` (3.3 b): conversely every positive
+  homomorphism arises as such a limit, proved via a random construction and a
+  Borel–Cantelli / Chebyshev second-moment argument.
+
+`PositiveHomSpace` is the (compact, closed) range of `PositiveHom.coe`,
+characterised by the algebraic `zeroSpaceProp`/`oneProp`/`mulProp`.
+-/
+
 namespace FlagAlgebras
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
@@ -18,10 +35,13 @@ open MeasureTheory
 open scoped ENNReal
 open scoped ProbabilityTheory
 
+/-- A sequence of flags, indexed by `ℕ` (typically with growing sizes). -/
 abbrev FlagSeq (σ : FlagType (Fin n₀))
   :=
   ℕ → FinFlag σ
 
+/-- For a flag sequence `s`, the function `n ↦ (F ↦ density of F in sₙ)`: the
+density profile whose limit defines the semantics. -/
 noncomputable def flagDensitySeq (s : FlagSeq σ) : ℕ → FinFlag σ → ℝ
   :=
   fun n F => (flagDensity₁ F.2 (s n).2 : ℝ)
@@ -32,6 +52,7 @@ theorem flagDensitySeq_comp_assoc
   :=
   rfl
 
+/-- A flag sequence whose flag sizes are strictly increasing. -/
 def Increases (s : FlagSeq σ) : Prop
   :=
   StrictMono (fun n => (s n).1)
@@ -60,6 +81,9 @@ theorem Increases.eventually_ge
   use N
   exact fun n hn ↦ Nat.le_of_succ_le (hN n hn)
 
+/-- `s` converges to the density profile `a`: `s` has increasing sizes and its
+density profile tends to `a`. The limit `a` is the semantic object the flag
+sequence represents. -/
 def ConvergesTo (s : FlagSeq σ) (a : FinFlag σ → ℝ) : Prop
   :=
   Increases s ∧
@@ -81,6 +105,9 @@ theorem flagSeq_convergesTo_iff
     rw [nhds_pi, tendsto_pi]
     exact h_lim
 
+/-- The space of density profiles: functions assigning each flag a value in
+`[0, 1]`. It is compact (Tychonoff) and metrizable, which yields convergent
+subsequences for the limit semantics. -/
 def FlagDensitySpace (σ : FlagType (Fin n₀)) : Set (FinFlag σ → ℝ)
   :=
   (Set.univ : Set (FinFlag σ)).pi (fun _ => (Set.Icc 0 1 : Set ℝ))
@@ -117,6 +144,7 @@ theorem flagDensitySpace_abs_le_one
   simp only [Set.mem_Icc] at this
   constructor <;> linarith
 
+/-- The density-profile space is compact (product of compact intervals). -/
 theorem flagDensitySpace_compact
     : IsCompact (FlagDensitySpace σ)
   := by
@@ -159,6 +187,8 @@ lemma flagDensitySpace_mem_nhds
   · exact hA
   · rfl
 
+/-- Every increasing flag sequence has a subsequence whose densities converge
+(by compactness of `FlagDensitySpace`). -/
 theorem increasing_flagSeq_contain_convergent_subseq
     (s : FlagSeq σ) (hs_inc : Increases s)
     : ∃ (a : FlagDensitySpace σ) (ϕ : ℕ → ℕ), StrictMono ϕ ∧ ConvergesTo (s ∘ ϕ) a
@@ -175,6 +205,9 @@ theorem increasing_flagSeq_contain_convergent_subseq
 
 namespace PositiveHom
 
+/-- The density profile of a positive homomorphism: `F ↦ φ ⟦unitVector F⟧`,
+landing in `FlagDensitySpace`. This is the bridge between the algebraic
+`PositiveHom` and the analytic limit semantics. -/
 @[coe]
 protected noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
@@ -192,6 +225,7 @@ theorem coe_flag
   :=
   rfl
 
+/-- A positive homomorphism is determined by its density profile. -/
 @[ext]
 theorem coe_injective
     : Function.Injective (@PositiveHom.coe _ σ)
@@ -209,10 +243,14 @@ theorem coe_injective
 
 end PositiveHom
 
+/-- The set of all density profiles realised by positive homomorphisms, i.e.
+the range of `PositiveHom.coe`. Shown closed/compact and characterised
+algebraically by `positiveHomSpace_eq`. -/
 def PositiveHomSpace (σ : FlagType (Fin n₀))
   :=
   Set.range (@PositiveHom.coe _ σ)
 
+/-- Recover a positive homomorphism witnessing a point of `PositiveHomSpace`. -/
 noncomputable def PositiveHomSpace.toPosHom
     (φ : PositiveHomSpace σ)
     : PositiveHom σ
@@ -230,17 +268,24 @@ theorem PositiveHomSpace.toPosHom_unitVector
   congr
   exact Classical.choose_spec φ.property
 
+/-- Density-profile chain rule: the value on a flag equals the density-weighted
+sum of its values on all larger flags. Together with `oneProp`/`mulProp` this
+characterises which profiles come from a positive homomorphism (vanishing on
+the zero space). -/
 def zeroSpaceProp
     (a : FinFlag σ → ℝ) : Prop
   :=
   ∀ (F : FinFlag σ) (ℓ : ℕ), F.1 ≤ ℓ →
   a F = ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G * a ⟨ℓ, G⟩
 
+/-- Normalization: the profile sends the unit flag to `1`. -/
 def oneProp
     (a : FinFlag σ → ℝ) : Prop
   :=
   a 1 = 1
 
+/-- Multiplicativity: the profile turns the flag-algebra product (pair-density
+sum) into the product of values, so the linear extension is an algebra map. -/
 def mulProp
     (a : FinFlag σ → ℝ) : Prop
   :=
@@ -266,6 +311,9 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
   simp_rw [linearExtension_smul, linearExtension_unitVector]
   exact h₀ F ℓ hℓ
 
+/-- The function `FlagAlgebra σ → ℝ` obtained by linearly extending a profile
+`a` that satisfies `zeroSpaceProp` (well defined on the quotient since the
+profile then vanishes on the zero space). -/
 noncomputable def homFunFromZeroSpaceProp
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a)
     : FlagAlgebra σ → ℝ
@@ -343,6 +391,8 @@ theorem homFunFromZeroSpaceProp_with_oneProp_commutes
   show homFunFromZeroSpaceProp h₀ (r • 1) = r
   rw [homFunFromZeroSpaceProp_map_smul, homFunFromZeroSpaceProp_with_oneProp_map_one h₀ h₁, mul_one]
 
+/-- Assemble an algebra homomorphism `Hom σ` from a density profile satisfying
+all three structural properties. -/
 noncomputable def homFromZeroSpaceOneMulProp
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₁ : oneProp a) (h₂ : mulProp a)
     : Hom σ
@@ -355,6 +405,8 @@ noncomputable def homFromZeroSpaceOneMulProp
     commutes' := homFunFromZeroSpaceProp_with_oneProp_commutes h₀ h₁
   }
 
+/-- A density profile satisfying `zeroSpaceProp`/`oneProp`/`mulProp` yields a
+genuine `PositiveHom` (nonnegativity is automatic since `a F ∈ [0,1]`). -/
 noncomputable def positiveHomFromZeroSpaceOneMulProp
     (a : FlagDensitySpace σ) (h₀ : zeroSpaceProp a) (h₁ : oneProp a) (h₂ : mulProp a)
     : PositiveHom σ
@@ -368,6 +420,9 @@ noncomputable def positiveHomFromZeroSpaceOneMulProp
       exact (flagDensitySpace_mem_Icc_zero_one a F).1
   }
 
+/-- Algebraic characterisation of `PositiveHomSpace`: a density profile is the
+profile of some positive homomorphism iff it satisfies the chain rule,
+normalization and multiplicativity. -/
 theorem positiveHomSpace_eq
     : PositiveHomSpace σ =
     { a : FlagDensitySpace σ | zeroSpaceProp a ∧ oneProp a ∧ mulProp a }
@@ -425,6 +480,8 @@ theorem FinFlag.continuous
   apply Continuous.tendsto _ (a : FlagDensitySpace σ)
   exact continuous_iff_le_induced.mpr fun U a ↦ a
 
+/-- `PositiveHomSpace` is closed (intersection of closed level sets of
+continuous evaluation maps), hence compact in the density-profile space. -/
 theorem positiveHomSpace_isClosed
     : IsClosed (PositiveHomSpace σ)
   := by
@@ -517,6 +574,8 @@ theorem flagPairDensity_tendsto_flagDensity_mul
       exact hc
     _ < ε := hN
 
+/-- The density limit of a convergent flag sequence satisfies the chain rule
+`zeroSpaceProp`. -/
 theorem zeroSpaceProp_of_flagSeq_limit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : zeroSpaceProp a
@@ -543,6 +602,7 @@ theorem zeroSpaceProp_of_flagSeq_limit
     intro G
     exact (h_lim ⟨ℓ, G⟩).const_smul (flagDensity₁ F.2 G)
 
+/-- The density limit of a convergent flag sequence satisfies `oneProp`. -/
 theorem oneProp_of_flagSeq_limit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : oneProp a
@@ -557,6 +617,8 @@ theorem oneProp_of_flagSeq_limit
       rw [flagDensity_one, Rat.cast_one]
     rw [tendsto_congr h_den_one, tendsto_const_nhds_iff]
 
+/-- The density limit of a convergent flag sequence satisfies `mulProp`
+(densities asymptotically multiply). -/
 theorem mulProp_of_flagSeq_limit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : mulProp a
@@ -583,6 +645,8 @@ theorem mulProp_of_flagSeq_limit
     apply Tendsto.const_mul
     exact h_lim ⟨F.1 + G.1 - n₀, H⟩
 
+/-- The positive homomorphism induced by a convergent flag sequence's density
+limit (bundles the three `*_of_flagSeq_limit` facts). -/
 noncomputable def positiveHomFromFlagSeqLimit
     {s : FlagSeq σ} {a : FlagDensitySpace σ} (hs_conv : ConvergesTo s a)
     : PositiveHom σ
@@ -602,6 +666,10 @@ theorem flagSeq_limit_mem_positiveHom
 
 instance {ℓ : ℕ} : MeasurableSpace (FlagWithSize σ ℓ) := ⊤
 
+/-! ## Realising a positive homomorphism as a random flag sequence (Thm 3.3 b) -/
+
+/-- The probability mass function on size-`ℓ` flags given by `φ`'s values;
+the random model used to construct a flag sequence converging to `φ`. -/
 noncomputable def PositiveHom.toPMF
     (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
     : PMF (FlagWithSize σ ℓ)
@@ -617,6 +685,7 @@ noncomputable def PositiveHom.toPMF
       exact h
   }
 
+/-- The probability measure on size-`ℓ` flags associated to `φ.toPMF`. -/
 noncomputable def PositiveHom.toMeasure
     (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
     : Measure (FlagWithSize σ ℓ)
@@ -629,6 +698,8 @@ instance PositiveHom.toMeasure_isProbabilityMeasure
   :=
   PMF.toMeasure.isProbabilityMeasure (φ.toPMF hℓ)
 
+/-- The random variable "density of `F` in a random size-`ℓ` flag `G`", whose
+expectation is `φ.coe F` and whose variance decays like `1/ℓ`. -/
 noncomputable def randomDensity
     (F : FinFlag σ) (ℓ : ℕ)
     : FlagWithSize σ ℓ → ℝ
@@ -641,6 +712,8 @@ theorem randomDensity_L2
   :=
   MemLp.of_discrete
 
+/-- The expected density of `F` under `φ`'s random model is exactly `φ.coe F`.
+-/
 theorem randomDensity_expectation
     (φ : PositiveHom σ) (F : FinFlag σ) {ℓ : ℕ} (hℓ : ℓ ≥ F.1)
     : (φ.toMeasure (le_trans (finFlag_size_ge_n₀ F) hℓ))[randomDensity F ℓ] = φ.coe F
@@ -670,6 +743,8 @@ theorem randomDensity_second_moment
   rw [← ENNReal.toReal_ofReal this]
   congr
 
+/-- The variance of `randomDensity F ℓ` decays as `O(1/ℓ)`; the quantitative
+estimate driving the Chebyshev/Borel–Cantelli concentration argument. -/
 theorem randomDensity_variance_bounded
     (φ : PositiveHom σ) (F : FinFlag σ)
     : ∃ (c : ℝ), c ≥ 0 ∧
@@ -726,6 +801,8 @@ theorem randomDensity_variance_bounded
 example (a b : ℚ) (h : a ≤ b) : (a : ℝ) ≤ (b : ℝ) := by
   simp_all only [Rat.cast_le]
 
+/-- The product probability measure on sequences of flags of sizes `n²+n₀`,
+each component drawn independently from `φ`'s model. Notation `μ{φ}`. -/
 noncomputable def flagSeqMeasure
     (φ : PositiveHom σ)
     : Measure ((n : ℕ) → FlagWithSize σ (n ^ 2 + n₀))
@@ -742,6 +819,8 @@ instance flagSeqMeasure_isProbabilityMeasure
 
 notation "μ{" φ "}" => (flagSeqMeasure φ)
 
+/-- The "bad" event at step `n`: the density of `F` in `sₙ` deviates from
+`φ.coe F` by at least `ε`. Borel–Cantelli over these gives a.s. convergence. -/
 def flagDensityErrorSet
     (φ : PositiveHom σ) (F : FinFlag σ) (ε : ℝ) (n : ℕ)
     : Set (∀ n, FlagWithSize σ (n ^ 2 + n₀))
@@ -762,6 +841,8 @@ theorem flagDensityErrorSet_flagSeqMeasure
   rw [Measure.infinitePi_pi _ (by measurability)]
   simp only [Finset.prod_singleton]
 
+/-- The bad event at step `n` has probability `O(1/n²)` (Chebyshev plus the
+variance bound); since `∑ 1/n²` converges, Borel–Cantelli applies. -/
 theorem measure_flagDensityErrorSet_bounded
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : ∃ (c : ℝ), c ≥ 0 ∧
@@ -844,6 +925,9 @@ lemma tsum_ENNReal_le_tsum_ne_infty
   intro m hm
   exact ENNReal.toReal_le_of_le_ofReal (hg_nonneg m) (hM m hm)
 
+/-- Almost surely the density of `F` is eventually within `ε` of `φ.coe F`:
+the limsup of the bad events has measure zero (Borel–Cantelli, using
+`∑ 1/n² < ∞`). -/
 theorem flagSeqMeasure_error_prob_zero
     (φ : PositiveHom σ) (F : FinFlag σ) {ε : ℝ} (hε : 0 < ε)
     : μ{φ} { s | ∀ N, ∃ n ≥ N, |flagDensity₁ F.2 (s n) - φ.coe F| ≥ ε } = 0

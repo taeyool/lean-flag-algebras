@@ -1,6 +1,14 @@
 import LeanFlagAlgebras.Utils.Combinations
 import LeanFlagAlgebras.Utils.MultinomialCoefficient
 
+/-! # Labeled partitions of a finset
+
+Shared utility for the finset of ways to pick `t` pairwise-disjoint subsets of `V` with
+prescribed sizes `r_list : Fin t → ℕ` (`partitions'`, an equivalent recursive `partitions''`,
+and `partitions`). The headline result `partition_card` evaluates the count as
+`multinomialCoefficient r_list V.card`. Used to count labeled vertex configurations.
+-/
+
 variable {α : Type*} [Fintype α] [DecidableEq α]
 variable {t : ℕ}
 
@@ -68,6 +76,7 @@ where
     possible_subsets.biUnion fun s ↦ -- `s` is the subset of `V` with size `r_list (.last _)`.
       (inner t (V \ s) (r_list ·.castSucc)).image fun f x ↦ if h : x < t then f ⟨x, h⟩ else s
 
+/-- The filter-based `partitions'` and the recursive `partitions''` describe the same finset. -/
 lemma partitions'_eq_partitions''
     {V : Finset α} {r_list : Fin t → ℕ}
     : partitions' V r_list = partitions'' V r_list
@@ -131,6 +140,8 @@ lemma prod_eq_prod_mul_last
   :=
   Fin.prod_univ_castSucc f
 
+/-- Variant of `partitions'` carrying the extra (derivable) hypothesis that the union of the
+parts is contained in `V`, kept explicit for proof convenience. -/
 def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t → ℕ)
     : Finset (Fin t → Finset α)
   := (Finset.univ : Finset (Fin t → Finset α)).filter (fun p =>
@@ -138,6 +149,8 @@ def partitions [Fintype α] [DecidableEq α] (V : Finset α) (r_list : Fin t →
       (∀ i j, i ≠ j → Disjoint (p i) (p j)) ∧
       (Finset.univ : Finset (Fin t)).biUnion p ⊆ V) -- Actually, this can be derived from the first property, but it was included for the convenience of the proof.
 
+/-- Append one entry to `r_list`, set to the leftover `n - ∑ r_list`, so the extended list
+sums to `n` (see `extend_r_list.sum`). -/
 def extend_r_list
     (n : ℕ) (r_list : Fin t → ℕ)
     : Fin (t + 1) → ℕ
@@ -163,6 +176,8 @@ lemma extend_r_list.factorial_prod
   simp only [extend_r_list, Fin.val_castSucc, Fin.is_lt, ↓reduceDIte, Fin.eta, Fin.val_last,
     lt_self_iff_false]
 
+/-- Headline count: the number of labeled disjoint-size partitions of `V` equals
+`multinomialCoefficient r_list V.card`. -/
 theorem partition_card
     (V : Finset α) (r_list : Fin t → ℕ)
     : (partitions V r_list).card = multinomialCoefficient r_list V.card := by

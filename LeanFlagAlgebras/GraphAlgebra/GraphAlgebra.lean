@@ -6,6 +6,19 @@ import Mathlib.Logic.Nonempty
 import Mathlib.Logic.Unique
 import Mathlib.Tactic.Linarith.Frontend
 
+/-! # The Graph Algebra
+
+This file constructs the (commutative) `ℝ`-algebra `GraphAlgebra` that is the
+semantic foundation of the flag-algebra development. We start from the free
+`ℝ`-module `GraphVector` on isomorphism classes of finite simple graphs, equip
+it with a multiplication given by random-overlap subgraph densities
+(`graphMul`, built from `quotSubgraphPairDensity`), and then quotient by
+`ZeroSet`, the subspace forcing a graph to equal its expansion as a density
+combination of larger graphs (the `zeroElement` relations). The resulting
+`GraphAlgebra := Quotient graphVectorSetoid` is shown to be a commutative ring
+and an `ℝ`-algebra; this is the size-free density algebra later refined into
+the typed flag algebra `A^σ`. Densities come from `GraphAlgebra.SubgraphDensity`. -/
+
 open Finset
 open SimpleGraph
 open Classical
@@ -38,6 +51,8 @@ noncomputable instance (n : ℕ) : Fintype (IsoSimpleGraphWithSize n)
   := quotSimpleGraphFintype (Fin n)
 
 -- set of all graphs (up to isomorphism) on a finite vertex set
+/-- An isomorphism class of finite simple graphs, bundled with its vertex
+count `n`; the basis index of the graph algebra. -/
 def IsoSimpleGraph : Type
   := Σ (n : ℕ), IsoSimpleGraphWithSize n
 
@@ -52,6 +67,8 @@ lemma isoSimpleGraph_one_snd
     : (1 : IsoSimpleGraph).2 = ⟦emptyGraph (Fin 0)⟧
   := rfl
 
+/-- The free `ℝ`-module on `IsoSimpleGraph`: formal real combinations of
+graph isomorphism classes, the carrier before quotienting by `ZeroSet`. -/
 abbrev GraphVector : Type
   := IsoSimpleGraph →₀ ℝ
 
@@ -64,6 +81,8 @@ noncomputable instance : AddCommGroup GraphVector
 noncomputable instance : Module ℝ GraphVector
   := Finsupp.module IsoSimpleGraph ℝ
 
+/-- The basis vector of `GraphVector` corresponding to a single graph `G`
+(the indicator finsupp at `G`). -/
 noncomputable def basisElementFromGraph (G : IsoSimpleGraph) : GraphVector
   := Finsupp.single G 1
 
@@ -82,6 +101,8 @@ lemma basisElementFromGraph_support
   dsimp [basisElementFromGraph]
   rw [Finsupp.support_single_ne_zero _ (by simp)]
 
+/-- Every `GraphVector` is its own finite combination of basis elements;
+the standard handle for reducing module proofs to single graphs. -/
 lemma graphVector_eq_sum_basisElement
     (g : GraphVector)
     : g = ∑ G ∈ g.support, g G • basisElementFromGraph G
@@ -121,6 +142,8 @@ lemma graphVector_one_apply_one
   show (basisElementFromGraph 1) 1 = 1
   simp [basisElementFromGraph_apply_self]
 
+/-- `basisElementFromGraph` is an `ℝ`-basis of `GraphVector`, witnessing that
+the module is free on `IsoSimpleGraph`. -/
 noncomputable def finiteGraphModuleBasis
     : Module.Basis IsoSimpleGraph ℝ GraphVector
   :=
@@ -156,17 +179,22 @@ lemma rat_smul_eq_real_smul
     (a : ℚ) (g : GraphVector) : a • g = (a : ℝ) • g
   := rfl
 
+/-- Expansion of `G` at size `ℓ`: the combination `∑_F d(G,F) • F` over all
+graphs `F` on `ℓ` vertices, weighted by the density of `G` inside `F`. -/
 noncomputable def densityGraphSum
     (G : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
   let ℓ_graphs : Finset (IsoSimpleGraphWithSize ℓ) := univ
   ∑ F ∈ ℓ_graphs, (quotSubgraphDensity G.2 F) • basisElementFromGraph ⟨ℓ, F⟩
 
+/-- The defining relation of the algebra: a graph minus its size-`ℓ`
+density expansion. These vectors are quotiented away in `ZeroSet`. -/
 noncomputable def zeroElement
     (G : IsoSimpleGraph) (ℓ : ℕ)
     : GraphVector
   := basisElementFromGraph G - densityGraphSum G ℓ
 
+/-- All `zeroElement G ℓ` with `G.1 ≤ ℓ`; its span is `ZeroSet`. -/
 noncomputable def zeroSpanSet : Set GraphVector
   :=
   {k | ∃ (G : IsoSimpleGraph) (ℓ : ℕ), G.1 ≤ ℓ ∧ k = zeroElement G ℓ}
@@ -184,6 +212,8 @@ lemma zeroSpanSet_exists_zeroElement
   rcases hk with ⟨G, ℓ, hk⟩
   exact ⟨G, ℓ, (by simp_all), (by simp_all)⟩
 
+/-- The submodule of `GraphVector` spanned by the density relations; the
+quotient by `ZeroSet` identifies a graph with its density expansions. -/
 noncomputable def ZeroSet : Submodule ℝ GraphVector
   :=
   Submodule.span ℝ zeroSpanSet
@@ -195,6 +225,8 @@ lemma zeroElement_in_zeroSet
   apply Submodule.mem_span.mpr fun p a ↦ a ?_
   simp; use G; use ℓ
 
+/-- Membership in `ZeroSet` unfolds to an explicit finite linear combination
+of `zeroSpanSet` generators. -/
 lemma zeroSet_eq_sum_spanElement
     {k : GraphVector} (h_zero : k ∈ ZeroSet)
     : ∃ (I : Type) (_ : Fintype I) (c : I → ℝ) (v : I → GraphVector),
@@ -257,6 +289,8 @@ lemma zero_smul_zeroSet
   subst h_zero
   simp_all only [zero_smul, Submodule.zero_mem]
 
+/-- The algebra equivalence: two graph vectors are equal modulo the density
+relations iff their difference lies in `ZeroSet`. -/
 def graph_algebra_eqv (g h : GraphVector) : Prop
   :=
   g - h ∈ ZeroSet
@@ -281,6 +315,8 @@ theorem graph_algebra_eqv.trans
   rw [this]
   exact zeroSet_closed_under_add (f - g) (g - h) hfg hgh
 
+/-- The setoid on `GraphVector` induced by `graph_algebra_eqv`; its
+quotient is `GraphAlgebra`. -/
 instance graphVectorSetoid
     : Setoid GraphVector
   where
@@ -291,6 +327,8 @@ instance graphVectorSetoid
       trans := graph_algebra_eqv.trans
     }
 
+/-- The graph algebra: `GraphVector` quotiented by the density relations.
+Equipped below with a commutative-ring and `ℝ`-algebra structure. -/
 abbrev GraphAlgebra : Type :=
   Quotient graphVectorSetoid
 
@@ -335,6 +373,9 @@ noncomputable instance : One GraphAlgebra where
 noncomputable instance : Neg GraphAlgebra where
   neg := ((-1 : ℝ) • ·)
 
+/-- Product of two graphs computed at a fixed ambient size `ℓ`: expand into
+size-`ℓ` graphs weighted by `quotSubgraphPairDensity` (the density of finding
+disjoint copies of `H₁` and `H₂`). -/
 noncomputable def graphMulWithSize
     (H₁ H₂ : IsoSimpleGraph) (ℓ : ℕ) : GraphVector
   :=
@@ -357,6 +398,9 @@ lemma sum_smul
   · intros r R hr ih
     simp [sum_insert hr, Module.add_smul, ih]
 
+/-- Key well-definedness fact: the size-`ℓ` product is independent of `ℓ`
+modulo the density relations, once `ℓ` is large enough (uses the density
+chain rule). -/
 lemma graphMulWithSize_indep_on_size
     {H₁ H₂ : IsoSimpleGraph} {ℓ₁ ℓ₂ : ℕ} (hℓ₁ : H₁.1 + H₂.1 ≤ ℓ₁) (hℓ₂ : H₁.1 + H₂.1 ≤ ℓ₂)
     : graph_algebra_eqv (graphMulWithSize H₁ H₂ ℓ₁) (graphMulWithSize H₁ H₂ ℓ₂)
@@ -385,6 +429,8 @@ lemma graphMulWithSize_indep_on_size
     show zeroElement ⟨ℓ₁, G₁⟩ ℓ₂ ∈ ZeroSet
     exact zeroElement_in_zeroSet hℓ
 
+/-- The canonical product of two graphs, taken at the minimal ambient size
+`H₁.1 + H₂.1`; the basis-level multiplication of the graph algebra. -/
 noncomputable def graphMul
     (H₁ H₂ : IsoSimpleGraph) : GraphVector
   :=
@@ -402,6 +448,7 @@ lemma graphMul_comm
   := by
   simp [graphMul, add_comm, graphMulWithSize_comm]
 
+/-- Bilinear extension of `graphMul` to all of `GraphVector`. -/
 noncomputable instance : Mul GraphVector where
   mul g h := ∑ G ∈ g.support, ∑ H ∈ h.support, ((g G) * (h H)) • graphMul G H
 
@@ -441,6 +488,9 @@ noncomputable instance : HasDistribNeg GraphVector where
   mul_neg g h := by
     rw [mul_comm g (-h), mul_comm g h, graphVector_neg_mul h g]
 
+/-- General support-bookkeeping lemma: a sum of `ψ g + ψ h` over the support
+of `g + h` splits as the sum over `g`'s support plus the sum over `h`'s,
+provided `ψ` vanishes appropriately. Used to prove distributivity. -/
 lemma graphVector_add_support
     (g h : GraphVector) {α : Type} [AddCommGroup α] (ψ : GraphVector → IsoSimpleGraph → α)
     (hψ1 : ∀ g h x, g x + h x = 0 → ψ g x + ψ h x = 0)
@@ -604,6 +654,9 @@ lemma graph_mul_zeroElement
     rw [this]
     apply graph_algebra_eqv.refl
 
+/-- `ZeroSet` is a two-sided ideal: multiplying any vector by a relation
+stays inside `ZeroSet`. This is what makes multiplication descend to
+`GraphAlgebra`. -/
 lemma graphVector_mul_zeroSet
     (g : GraphVector) {k : GraphVector} (hk : k ∈ ZeroSet) : g * k ∈ ZeroSet
   := by
@@ -672,6 +725,9 @@ lemma graphVector_smul_mul_smul_comm
     simp [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, smul_smul]
     congr 1; ring
 
+/-- The triple product `G₁ * G₂ * G₃` equals, modulo relations, the size-`ℓ`
+expansion weighted by `quotSubgraphTripleDensity`; the workhorse for
+associativity. -/
 lemma graph_mul_mul_eqv_sum_tripleDensity
     {G₁ G₂ G₃ : IsoSimpleGraph} {ℓ : ℕ} (hℓ : G₁.1 + G₂.1 + G₃.1 ≤ ℓ)
     : graph_algebra_eqv
@@ -734,6 +790,8 @@ lemma graph_mul_assoc
   rw [← quotSubgraphTripleDensity_comm _ _ _ _ hℓ]
   simp only [sub_self, zero_mem]
 
+/-- Associativity of the `GraphVector` product modulo the density relations
+(it is only associative after passing to the quotient). -/
 lemma graphVector_mul_assoc
     (f g h : GraphVector) : graph_algebra_eqv (f * g * h) (f * (g * h))
   := by
@@ -747,6 +805,8 @@ lemma graphVector_mul_assoc
   apply zeroSet_closed_under_smul
   apply graph_mul_assoc
 
+/-- Multiplication on `GraphAlgebra`, descended from `GraphVector` using that
+`ZeroSet` is an ideal (`graphVector_mul_zeroSet`). -/
 noncomputable instance : Mul GraphAlgebra where
   mul := by
     apply Quotient.map₂ (· * ·)
@@ -817,6 +877,9 @@ lemma graphAlgebra_smul_mul_smul_comm
   simp
   rw [graphVector_smul_mul_smul_comm]
 
+/-- `GraphAlgebra` is a ring: addition and multiplication descend from
+`GraphVector`, with associativity/distributivity proved modulo the
+relations. -/
 noncomputable instance : Ring GraphAlgebra where
   add := (· + ·)
   add_assoc a b c := by
@@ -892,9 +955,13 @@ noncomputable instance : Ring GraphAlgebra where
     simp
     rw [← neg_smul, neg_add_rev]
 
+/-- `GraphAlgebra` is commutative (subgraph densities are symmetric). -/
 noncomputable instance : CommRing GraphAlgebra where
   mul_comm := graphAlgebra_mul_comm
 
+/-- `1 ≠ 0` in `GraphAlgebra`: the relations do not collapse the algebra.
+Proved via the density evaluation functional `φ`, which sends `1` to `1`
+but every relation to `0`. -/
 instance : NeZero (1 : GraphAlgebra) where
   out := by
     intro one_eq_zero
@@ -988,6 +1055,8 @@ instance : NeZero (1 : GraphAlgebra) where
 instance : Nontrivial GraphAlgebra where
   exists_pair_ne := ⟨0, 1, (by simp)⟩
 
+/-- The `ℝ`-algebra structure on `GraphAlgebra` (scalars act as `r • 1`);
+this is the algebra `A` in which density bounds are expressed. -/
 noncomputable instance : Algebra ℝ GraphAlgebra where
   algebraMap := {
     toFun := fun r => r • 1

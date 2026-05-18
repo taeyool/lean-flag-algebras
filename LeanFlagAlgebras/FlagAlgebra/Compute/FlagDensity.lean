@@ -1,11 +1,27 @@
 import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
 
+/-! # Computable subflag-density and multiplication coefficients
+
+Computable counterparts of the abstract flag-algebra density/multiplication
+operations, defined over the concrete `Sym2Graph`/`Sym2LabeledGraph`
+representations and proved equal to their abstract versions
+(`flagDensity₁`/`flagDensity₂`).
+
+Densities are computed by counting disjoint induced-subgraph placements
+(`sym2InducedSubgraphListCount`) over a multinomial coefficient. The
+loader macros evaluate these definitions at elaboration time and emit the
+resulting rationals as named constants/theorems (e.g. `downward_3_1_0_2`).
+Both empty-typed and σ-typed flags are handled, in single (`₁`) and
+pair/multiplication (`₂`) arities. -/
+
 namespace FlagAlgebras.Compute
 
 open SimpleGraph
 
 /- Empty-typed flags --/
 
+/-- A length-`t` family of empty-typed `Sym2Graph`s, with `Vl i` the vertex
+count of the `i`-th graph; the computable input to a multi-flag density. -/
 abbrev Sym2GraphList
     (t : ℕ) (Vl : Fin t → ℕ)
   := ∀ (i : Fin t), Sym2Graph (Vl i)
@@ -27,6 +43,8 @@ def Sym2GraphList.toLabeledGraphList
   :=
   fun i ↦ (Hl i).toLabeledGraph
 
+/-- An induced subgraph of an empty-typed `Sym2Graph G`, determined solely by
+its chosen vertex set (edges are inherited by induction). -/
 @[ext]
 structure Sym2InducedSubgraph
     {n : ℕ} (G : Sym2Graph n) where
@@ -107,6 +125,9 @@ def predDisjointSym2InducedSubgraphList
   :=
   ∀ (i j : Fin t), i ≠ j → (Hl i).verts ∩ (Hl j).verts = ∅
 
+/-- The predicate selecting placements: a list of induced subgraphs of `G`
+that are pairwise vertex-disjoint and respectively isomorphic to each graph
+in `Hl`. Counting these placements is the heart of the density computation. -/
 def predIsoSym2Hl
     {t : ℕ} {n : ℕ} {G : Sym2Graph n} {Vl : Fin t → ℕ} (Hl : Sym2GraphList t Vl)
     : Sym2InducedSubgraphList t G → Prop
@@ -148,6 +169,8 @@ def finsetOfSym2InducedSubgraphListIsoHl
   :=
   { Gl | predIsoSym2Hl Hl Gl }
 
+/-- The number of disjoint placements of the flag list `Hl` inside `G`; the
+computable numerator of the empty-typed subflag density. -/
 def sym2InducedSubgraphListCount
     {t : ℕ} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2GraphList t Vl) (G : Sym2Graph n) : ℕ
@@ -172,6 +195,8 @@ lemma subgraph_not_adj
   apply H.edge_vert at h_adj
   exact hu h_adj
 
+/-- Bridges the abstract and computable counts: the abstract labeled
+subgraph-list count equals the computable `Sym2`-based count. -/
 theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount
     {t : ℕ} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2GraphList t Vl) (G : Sym2Graph n) :
@@ -334,6 +359,8 @@ theorem labeledSubgraphListCount_eq_sym2InducedSubgraphListCount
       ext v
       simp [Sym2InducedSubgraph.toLabeledSubgraph]
 
+/-- Computable empty-typed subflag density: placement count normalized by the
+multinomial coefficient counting all candidate vertex selections. -/
 def sym2InducedSubgraphListDensity
     {t : ℕ} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2GraphList t Vl) (G : Sym2Graph n) : ℚ
@@ -354,6 +381,8 @@ instance {t : ℕ} {Vl : Fin t → ℕ} :
   intro i
   exact instDecidableEqFin (Vl i)
 
+/-- The abstract labeled subgraph-list density equals the computable
+`Sym2`-based density; reused throughout to transport density facts. -/
 theorem labeledSubgraphListDensity_eq_sym2InducedSubgraphListDensity
     {t : ℕ} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2GraphList t Vl) (G : Sym2Graph n) :
@@ -432,6 +461,8 @@ theorem sym2InducedSubgraphListDensityLifted₁_respect_eqv
   funext H
   exact sym2InducedSubgraphListDensity_sym2GraphToList_respect_eqv hF_eqv (Sym2GraphEqv.refl H)
 
+/-- Computable single-flag density on empty-typed flag quotients, obtained by
+lifting `sym2InducedSubgraphListDensity` through both `∼sf` quotients. -/
 def sym2EmptyTypeFlagDensity₁
     {m n : ℕ}
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) : ℚ
@@ -448,6 +479,8 @@ theorem sym2InducedSubgraphListDensity_eq_sym2EmptyTypeFlagDensity₁
   := by
   dsimp [sym2EmptyTypeFlagDensity₁, sym2InducedSubgraphListDensityLifted₁]
 
+/-- Headline correctness: the abstract single-flag density `flagDensity₁`
+equals the computable `sym2EmptyTypeFlagDensity₁` on empty-typed flags. -/
 theorem flagDensity₁_eq_sym2EmptyTypeFlagDensity₁
     {m n : ℕ}
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
@@ -500,6 +533,8 @@ theorem sym2InducedSubgraphListDensityLifted₂_respect_eqv
   exact sym2InducedSubgraphListDensity_sym2GraphPairToList_respect_eqv
     hF₀_eqv hF₁_eqv (Sym2GraphEqv.refl H)
 
+/-- Computable pair (multiplication) density on empty-typed flag quotients:
+the density of placing `F₀` and `F₁` disjointly inside `G`. -/
 def sym2EmptyTypeFlagDensity₂
     {m₀ m₁ n : ℕ}
     (F₀ : Sym2EmptyTypedFlag m₀) (F₁ : Sym2EmptyTypedFlag m₁) (G : Sym2EmptyTypedFlag n) : ℚ
@@ -516,6 +551,8 @@ theorem sym2InducedSubgraphListDensity_eq_sym2EmptyTypeFlagDensity₂
   := by
   dsimp [sym2EmptyTypeFlagDensity₂, sym2InducedSubgraphListDensityLifted₂]
 
+/-- Headline correctness: the abstract pair density `flagDensity₂` equals the
+computable `sym2EmptyTypeFlagDensity₂` on empty-typed flags. -/
 theorem flagDensity₂_eq_sym2EmptyTypeFlagDensity₂
     {m₀ m₁ n : ℕ}
     (F₀ : Sym2EmptyTypedFlag m₀) (F₁ : Sym2EmptyTypedFlag m₁) (G : Sym2EmptyTypedFlag n) :
@@ -531,6 +568,8 @@ theorem flagDensity₂_eq_sym2EmptyTypeFlagDensity₂
 
 /- Non-empty-typed flags --/
 
+/-- A length-`t` family of σ-typed `Sym2LabeledGraph`s sharing the type σ;
+the computable input to a typed multi-flag density. -/
 abbrev Sym2LabeledGraphList
     {k : ℕ} (σ : Sym2FlagType k) (t : ℕ) (Vl : Fin t → ℕ)
   := ∀ (i : Fin t), Sym2LabeledGraph σ (Vl i)
@@ -552,6 +591,8 @@ def Sym2LabeledGraphList.toLabeledGraphList
   :=
   fun i ↦ (Hl i).toLabeledGraph
 
+/-- An induced subgraph of a σ-typed `Sym2LabeledGraph G` that contains all
+type vertices (so it remains a σ-typed flag), determined by its vertex set. -/
 @[ext]
 structure Sym2InducedLabeledSubgraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2LabeledGraph σ n) where
@@ -669,6 +710,9 @@ def predDisjointSym2InducedLabeledSubgraphList
   :=
   ∀ (i j : Fin t), i ≠ j → ((Hl i).verts \ G.type_verts) ∩ ((Hl j).verts \ G.type_verts) = ∅
 
+/-- Typed analogue of `predIsoSym2Hl`: induced labeled subgraphs of `G`
+respectively isomorphic to each flag in `Hl` and pairwise disjoint away from
+the shared type vertices. -/
 def predIsoSym2LabeledHl
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} {Vl : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl)
@@ -713,12 +757,16 @@ def finsetOfSym2InducedLabeledSubgraphListIsoHl
   :=
   { Gl | predIsoSym2LabeledHl Hl Gl }
 
+/-- Number of disjoint placements of the σ-typed flag list `Hl` inside `G`;
+the computable numerator of the typed subflag density. -/
 def sym2InducedLabeledSubgraphListCount
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) : ℕ
   :=
   (finsetOfSym2InducedLabeledSubgraphListIsoHl G Hl).card
 
+/-- Typed analogue: the abstract labeled subgraph-list count equals the
+computable σ-typed `Sym2`-based count. -/
 theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) :
@@ -899,6 +947,8 @@ theorem labeledSubgraphListCount_eq_sym2InducedLabeledSubgraphListCount
       ext v
       simp [Sym2InducedLabeledSubgraph.toLabeledSubgraph]
 
+/-- Computable σ-typed subflag density: placement count normalized by the
+multinomial coefficient over the `n - k` non-type vertices. -/
 def sym2InducedLabeledSubgraphListDensity
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) : ℚ
@@ -922,6 +972,8 @@ instance
   intro i
   exact instDecidableEqFin (Vl i)
 
+/-- The abstract labeled subgraph-list density equals the computable σ-typed
+`Sym2`-based density; reused to transport typed density facts. -/
 theorem labeledSubgraphListDensity_eq_sym2InducedLabeledSubgraphListDensity
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {Vl : Fin t → ℕ}
     (Hl : Sym2LabeledGraphList σ t Vl) (G : Sym2LabeledGraph σ n) :
@@ -1003,6 +1055,8 @@ theorem sym2InducedLabeledSubgraphListDensityLifted₁_respect_eqv
   funext H
   exact sym2InducedLabeledSubgraphListDensity_sym2LabeledGraphToList_respect_eqv hF_eqv (sym2LabeledGraphEqv.refl H)
 
+/-- Computable single-flag density on σ-typed flag quotients, obtained by
+lifting `sym2InducedLabeledSubgraphListDensity` through both `∼sf` quotients. -/
 def sym2FlagDensity₁
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
     (F : Sym2Flag σ m) (G : Sym2Flag σ n) : ℚ
@@ -1018,6 +1072,8 @@ theorem sym2InducedLabeledSubgraphListDensity_eq_sym2FlagDensity₁
   := by
   dsimp [sym2FlagDensity₁, sym2InducedLabeledSubgraphListDensityLifted₁]
 
+/-- Headline correctness: the abstract single-flag density `flagDensity₁`
+equals the computable `sym2FlagDensity₁` on σ-typed flags. -/
 theorem flagDensity₁_eq_sym2FlagDensity₁
     {k : ℕ} {σ : Sym2FlagType k} {m n : ℕ}
     (F : Sym2Flag σ m) (G : Sym2Flag σ n) :
@@ -1070,6 +1126,9 @@ theorem sym2InducedLabeledSubgraphListDensityLifted₂_respect_eqv
   exact sym2InducedLabeledSubgraphListDensity_sym2LabeledGraphPairToList_respect_eqv
     hF₀_eqv hF₁_eqv (sym2LabeledGraphEqv.refl H)
 
+/-- Computable pair (multiplication) density on σ-typed flag quotients: the
+density of placing `F₀` and `F₁` disjointly inside `G`, the computable
+mirror of flag-algebra multiplication. -/
 def sym2FlagDensity₂
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
     (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) : ℚ
@@ -1086,6 +1145,8 @@ theorem sym2InducedLabeledSubgraphListDensity_eq_sym2FlagDensity₂
   := by
   dsimp [sym2FlagDensity₂, sym2InducedLabeledSubgraphListDensityLifted₂]
 
+/-- Headline correctness: the abstract pair density `flagDensity₂` equals the
+computable `sym2FlagDensity₂` on σ-typed flags. -/
 theorem flagDensity₂_eq_sym2FlagDensity₂
     {k : ℕ} {σ : Sym2FlagType k} {m₀ m₁ n : ℕ}
     (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) :

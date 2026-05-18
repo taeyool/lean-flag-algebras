@@ -1,23 +1,46 @@
 import LeanFlagAlgebras.Forbid.Basic
 
+/-! # API.Basic — core flag-algebra proof automation
+
+This module is the foundation of the API layer that sits on top of `Forbid`.
+It provides the reusable helper lemmas and custom tactics shared by every
+per-problem density-bound proof:
+
+* `forbidExpand_one` / `one_forbidEq_forbidExpand_one` — rewrite the constant
+  `1` as the forbid-conditioned sum of unlabeled flags of a given size.
+* `forbidLE_trans_add_nonneg`, `flagQuadraticForm_downward_forbidLE_nonneg`,
+  `forbidLE_add_QuadraticForm` — combine a known `forbidLE` bound with a
+  non-negative PSD quadratic-form (SOS) certificate term.
+* Custom tactics `fold_unit_vectors`, `expand_one_at n`, and `flag_nonneg`
+  (defined via `elab`/`syntax`/`macro`), automating the boilerplate that is
+  otherwise identical across all flag-algebra API proofs.
+-/
+
 open FlagAlgebras Forbid
 open SimpleGraph Matrix
 open Lean Elab Command Tactic
 
 namespace FlagAlgebras.API
 
+/-- The constant `1`, re-expressed under the forbidden subgraph `F_forbid` as
+the conditioned sum over unlabeled flags of size `expandSize` whose density
+within `F_forbid` is `0`, each weighted by its empty-type density. -/
 noncomputable def forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : FlagAlgebra ∅ₜ :=
   ∑ F' : FlagWithSize ∅ₜ expandSize with flagDensity₁ F_forbid.2 (unlabel F') = 0,
     (flagDensity₁ ((⟨0, default⟩ : FinFlag ∅ₜ).2) F' : ℝ) • ⟦unitVector ⟨expandSize, F'⟩⟧
 
+/-- Under `F_forbid`, the constant `1` equals its `forbidExpand_one` expansion;
+this is the rewrite used to turn the target bound into a sum over explicit
+4- or 5-vertex flags. -/
 theorem one_forbidEq_forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : (1 : FlagAlgebra ∅ₜ) =[F_forbid] forbidExpand_one F_forbid expandSize := by
   simpa [forbidExpand_one] using
     (unitVector_quot_forbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
+/-- If `f ≤[F] g` and `c` is non-negative under `F`, then `f ≤[F] g + c`. -/
 lemma forbidLE_trans_add_nonneg
     {F_forbid : FinFlag ∅ₜ} {f g c : FlagAlgebra ∅ₜ}
     (hfg : f ≤[F_forbid] g) (hc : 0 ≤[F_forbid] c)
@@ -25,6 +48,9 @@ lemma forbidLE_trans_add_nonneg
   rw [← add_zero f]
   exact forbidLE_add hfg hc
 
+/-- The downward projection of a PSD quadratic form in flag vectors is
+non-negative under any forbidden subgraph `F_forbid`; this is the basic SOS
+(sum-of-squares) certificate term. -/
 theorem flagQuadraticForm_downward_forbidLE_nonneg
     {n₀ : ℕ} {σ : FlagType (Fin n₀)}
     (F_forbid : FinFlag ∅ₜ)
@@ -35,6 +61,9 @@ theorem flagQuadraticForm_downward_forbidLE_nonneg
   apply forbidLE_of_le
   exact flagQuadraticForm_nonneg M hM v
 
+/-- Adding a PSD quadratic-form (SOS) term to the right-hand side preserves a
+`forbidLE` bound: from `f ≤[F] g` derive `f ≤[F] g + ⟦flagQuadraticForm M v⟧₀`.
+This is the workhorse for stacking SDP certificate terms. -/
 theorem forbidLE_add_QuadraticForm
     {n₀ : ℕ} {σ : FlagType (Fin n₀)}
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
@@ -54,6 +83,8 @@ theorem forbidLE_add_QuadraticForm
 corresponding `FlagAlgebra_n_k_m_i` constant.  No arguments needed.
 -/
 
+/-- Recursively collect the names of all `Flag_*` constants occurring in `e`
+(helper for `fold_unit_vectors`). -/
 private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
   let e := e.consumeMData
   let fromChildren : Array Name := match e with
@@ -71,6 +102,7 @@ private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
     else fromChildren
   | _ => fromChildren
 
+/-- Map a `Flag_<suffix>` constant name to the matching `FlagAlgebra_<suffix>`. -/
 private def flagConstToAlgebraName (nm : Name) : Option Name :=
   match nm with
   | .str parent s =>
@@ -78,6 +110,8 @@ private def flagConstToAlgebraName (nm : Name) : Option Name :=
     else none
   | _ => none
 
+/-- Inverse of `flagConstToAlgebraName`: map `FlagAlgebra_<suffix>` back to
+`Flag_<suffix>`. -/
 private def algebraNameToFlagConstName (nm : Name) : Option Name :=
   match nm with
   | .str parent s =>

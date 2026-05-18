@@ -1,5 +1,16 @@
 import «LeanFlagAlgebras».Archive.Compute.Basic
 
+/-!
+# (Archived) Computable downward (unlabeling) normalizing factor
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early computable account of
+the downward / unlabeling normalizing factor for the `Sym2`-encoded flags from
+`Archive/Compute/Basic.lean`, with lemmas certifying it agrees with the
+abstract `downwardNormalizingFactor`. The active version lives in
+`LeanFlagAlgebras/FlagAlgebra/Compute/Downward.lean`.
+-/
+
 namespace Archive.Compute
 
 open FlagAlgebras

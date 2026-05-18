@@ -1,5 +1,16 @@
 import «LeanFlagAlgebras».Archive.Compute.Basic
 
+/-!
+# (Archived) Computable flag density for `Sym2`-encoded flags
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early computable
+implementation of induced-labeled-subgraph counting and the single/pair flag
+densities (`sym2FlagDensity₁`, `sym2FlagDensity₂`) for the `Sym2`-encoded flags,
+together with lemmas matching them to the abstract `flagDensity₁/₂`. The active
+version lives in `LeanFlagAlgebras/FlagAlgebra/Compute/FlagDensity.lean`.
+-/
+
 namespace Archive.Compute
 
 open FlagAlgebras
@@ -486,6 +497,8 @@ theorem sym2InducedLabeledSubgraphListDensityLifted₁_respect_eqv
   funext H
   exact sym2InducedLabeledSubgraphListDensity_sym2LabeledGraphToList_respect_eqv hF_eqv (sym2LabeledGraphEqv.refl H)
 
+/-- Single-flag density: density of `Sym2Flag` `F` (size `m`) inside `G` (size
+`n`). Computable counterpart of the abstract `flagDensity₁`. -/
 def sym2FlagDensity₁
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m n : ℕ}
     (F : Sym2Flag σ m) (G : Sym2Flag σ n) : ℚ
@@ -552,6 +565,8 @@ theorem sym2InducedLabeledSubgraphListDensityLifted₂_respect_eqv
   exact sym2InducedLabeledSubgraphListDensity_sym2LabeledGraphPairToList_respect_eqv
     hF₀_eqv hF₁_eqv (sym2LabeledGraphEqv.refl H)
 
+/-- Flag-pair density: joint density of `F₀, F₁` inside `G`. Computable
+counterpart of the abstract `flagDensity₂`. -/
 def sym2FlagDensity₂
     {T : Type} {σ : FlagType T} [Fintype T] [DecidableEq T] {m₀ m₁ n : ℕ}
     (F₀ : Sym2Flag σ m₀) (F₁ : Sym2Flag σ m₁) (G : Sym2Flag σ n) : ℚ

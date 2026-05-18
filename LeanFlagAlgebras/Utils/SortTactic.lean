@@ -1,6 +1,15 @@
 import Mathlib.Tactic
 import Mathlib.Tactic.Conv
 
+/-! # `sort` / `ac_sort` tactics: canonical ordering of additive expressions
+
+Shared custom tactics that reorder the terms of a sum into a canonical order keyed by the
+trailing numeric index of each base atom. `sort`/`sort_lhs`/`sort_rhs`/`sort_here` normalize
+linear combinations (`coeff • base`), while the `ac_sort*` family does add-AC reordering only;
+`*_pipeline` variants bundle arithmetic-normalization simp passes. Used to line up flag sums on
+both sides of (in)equalities so they can be compared term-by-term.
+-/
+
 open Lean Elab Tactic Meta
 
 /-- Linear term represented as `(base, coeff)` meaning `coeff • base`. -/
@@ -212,6 +221,8 @@ private def proveEqByAC (lhs rhs : Expr) : TacticM Expr := do
   setGoals savedGoals
   instantiateMVars mvar
 
+/-- Debug helper: logs the normalized (index-sorted) forms of both sides of an equality
+goal without changing the goal. -/
 elab "preview_flagsum_nf" : tactic =>
   withMainContext do
     let goal ← getMainGoal

@@ -1,9 +1,18 @@
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 
+/-! # Goodman's bound on Ramsey multiplicity
+
+Uses the same square-positivity certificate as Mantel's theorem to prove
+Goodman's lower bound on the combined density of monochromatic triangles:
+`O3 + K3 ≥ (1/4)·1`, i.e. the total number of triangles plus independent
+triples is at least a quarter of all triples. -/
+
 open FlagAlgebras
 
 namespace MantelTheorem
 
+/-- Goodman's theorem on Ramsey multiplicity: the sum of the empty-triple
+density `O3` and the triangle density `K3` is at least `1/4`. -/
 theorem Goodman_theorem_on_Ramsey_multiplicity
     : O3 + K3 ≥ (1 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

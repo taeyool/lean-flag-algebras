@@ -1,6 +1,16 @@
 import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
 import Mathlib.Data.Fintype.Perm
 
+/-! # Computable flag/graph representations
+
+Computable counterparts of the abstract `LabeledGraph`/`Flag` definitions, used by the loader
+macros to build flag data at elaboration time. Graphs are encoded by an explicit edge
+`Finset (Sym2 (Fin n))` (`Sym2Graph`, `Sym2LabeledGraph`) rather than an opaque adjacency
+relation, making `Fintype`/`DecidableEq`/`Decidable` instances and the flag-isomorphism quotient
+(`Sym2EmptyTypedFlag`, `Sym2Flag`) effectively computable. Round-trip lemmas (`toLabeledGraph`
+↔ `toSym2Graph`, `toFlag` ↔ `toSym2Flag`) certify these mirror the abstract types faithfully.
+-/
+
 namespace FlagAlgebras.Compute
 
 open SimpleGraph
@@ -78,11 +88,15 @@ instance
 
 /- Empty-typed flags --/
 
+/-! ## Empty-typed flags -/
+
+/-- Computable encoding of a simple graph on `Fin n`: an explicit set of non-loop edges. -/
 @[ext]
 structure Sym2Graph (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
 
+/-- Decodes a `Sym2Graph` to the abstract empty-type `LabeledGraph`. -/
 def Sym2Graph.toLabeledGraph
     {n : ℕ} (G : Sym2Graph n) : LabeledGraph ∅ₜ (Fin n)
   :=
@@ -140,6 +154,7 @@ instance
   rw [G.toLabeledGraph_adj_iff]
   exact Finset.decidableMem s(a, b) G.edges
 
+/-- Encodes an abstract empty-type `LabeledGraph` back into a computable `Sym2Graph`. -/
 noncomputable def _root_.FlagAlgebras.LabeledGraph.toSym2Graph
   {n : ℕ} (G : LabeledGraph ∅ₜ (Fin n)) : Sym2Graph n where
   edges := by
@@ -174,9 +189,11 @@ theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq
   simp only [Set.mem_toFinset, Sym2.mem_diagSet_iff_isDiag]
   exact G.edges_valid e he
 
+/-- Flag-equivalence of computable graphs: their decoded labeled graphs are flag-isomorphic. -/
 def Sym2GraphEqv {n : ℕ} (G G' : Sym2Graph n) : Prop :=
   G.toLabeledGraph ∼f G'.toLabeledGraph
 
+-- Notation `G ∼sf G'` for computable flag-equivalence of `Sym2Graph`s.
 infixl:50 " ∼sf " => Sym2GraphEqv
 
 instance
@@ -227,6 +244,7 @@ theorem Sym2GraphEqv.symm {G G' : Sym2Graph n} (h : G ∼sf G') : G' ∼sf G :=
 theorem Sym2GraphEqv.trans {G G' G'' : Sym2Graph n} (h₁ : G ∼sf G') (h₂ : G' ∼sf G'') : G ∼sf G'' :=
   flagEqv.trans h₁ h₂
 
+/-- The setoid on `Sym2Graph n` given by computable flag-equivalence. -/
 instance Sym2GraphSetoid (n : ℕ) : Setoid (Sym2Graph n) where
   r     := Sym2GraphEqv
   iseqv := {
@@ -235,6 +253,8 @@ instance Sym2GraphSetoid (n : ℕ) : Setoid (Sym2Graph n) where
     trans := Sym2GraphEqv.trans
   }
 
+/-- Computable counterpart of `Flag ∅ₜ (Fin n)`: the quotient of `Sym2Graph n` by
+flag-equivalence, with effective `Fintype`/`DecidableEq` instances. -/
 def Sym2EmptyTypedFlag (n : ℕ) : Type :=
   Quotient (Sym2GraphSetoid n)
 
@@ -267,6 +287,7 @@ theorem Sym2Graph.toFlag_respect_eqv
   :=
   Quotient.sound h
 
+/-- Decodes a computable empty-typed flag to the abstract `Flag ∅ₜ (Fin n)`. -/
 def Sym2EmptyTypedFlag.toFlag
     {n : ℕ} (F : Sym2EmptyTypedFlag n) : Flag ∅ₜ (Fin n)
   :=
@@ -299,11 +320,13 @@ theorem _root_.FlagAlgebras.LabeledGraph.toSym2EmptyTypedFlag_respect_eqv
   rw [G.toSym2Graph_toLabeledGraph_eq, G'.toSym2Graph_toLabeledGraph_eq]
   exact h
 
+/-- Encodes an abstract `Flag ∅ₜ (Fin n)` into the computable empty-typed flag quotient. -/
 noncomputable def _root_.FlagAlgebras.Flag.toSym2EmptyTypedFlag
     {n : ℕ} (F : Flag ∅ₜ (Fin n)) : Sym2EmptyTypedFlag n
   :=
   Quotient.lift LabeledGraph.toSym2EmptyTypedFlag LabeledGraph.toSym2EmptyTypedFlag_respect_eqv F
 
+/-- Round-trip: encoding then decoding an empty-typed flag is the identity. -/
 theorem _root_.FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq
     {n : ℕ} (F : Flag ∅ₜ (Fin n)) :
     F.toSym2EmptyTypedFlag.toFlag = F
@@ -314,11 +337,15 @@ theorem _root_.FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq
 
 /- Non-empty-typed flags --/
 
+/-! ## Non-empty-typed flags -/
+
+/-- Computable encoding of a flag type `σ` on `Fin k`: its non-loop edge set. -/
 @[ext]
 structure Sym2FlagType (k : ℕ) where
   edges : Finset (Sym2 (Fin k))
   edges_valid : ∀ e ∈ edges, ¬e.IsDiag
 
+/-- Decodes a `Sym2FlagType` to the abstract `FlagType (Fin k)`. -/
 def Sym2FlagType.toFlagType {k : ℕ} (σ : Sym2FlagType k) : FlagType (Fin k)
   :=
   fromEdgeSet (SetLike.coe σ.edges)
@@ -331,6 +358,8 @@ theorem Sym2FlagType.toFlagType_adj_iff
   intro h
   exact σ.edges_valid (Sym2.mk (u, v)) h
 
+/-- Computable encoding of a `σ`-typed labeled graph on `Fin n`: an edge set together with a
+graph embedding of the (decoded) type `σ` into it. -/
 @[ext]
 structure Sym2LabeledGraph {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
@@ -355,6 +384,7 @@ theorem Sym2LabeledGraph.mem_type_verts
   := by
   simp [type_verts]
 
+/-- Decodes a `Sym2LabeledGraph` to the abstract `σ`-typed `LabeledGraph`. -/
 def Sym2LabeledGraph.toLabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : LabeledGraph (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
@@ -432,6 +462,7 @@ instance
   rw [G.toLabeledGraph_adj_iff]
   exact Finset.decidableMem s(a, b) G.edges
 
+/-- Encodes an abstract `σ`-typed `LabeledGraph` back into a computable `Sym2LabeledGraph`. -/
 noncomputable def _root_.FlagAlgebras.LabeledGraph.toSym2LabeledGraph
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
   (G : LabeledGraph (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) : Sym2LabeledGraph σ n where
@@ -471,12 +502,14 @@ theorem Sym2LabeledGraph.toLabeledGraph_toSym2LabeledGraph_eq
   · exact proof_irrel_heq _ _
   · simp only [eq_mpr_eq_cast, cast_heq]
 
+/-- Flag-equivalence of computable `σ`-typed labeled graphs (via their decoded forms). -/
 def sym2LabeledGraphEqv
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G G' : Sym2LabeledGraph σ n) : Prop
   :=
   G.toLabeledGraph ∼f G'.toLabeledGraph
 
+-- Notation `G ∼sf G'` reused for computable flag-equivalence of `Sym2LabeledGraph`s.
 infixl:50 " ∼sf " => sym2LabeledGraphEqv
 
 instance
@@ -543,6 +576,7 @@ theorem sym2LabeledGraphEqv.trans
   :=
   flagEqv.trans h₁ h₂
 
+/-- The setoid on `Sym2LabeledGraph σ n` given by computable flag-equivalence. -/
 instance sym2LabeledGraphSetoid
   {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     Setoid (Sym2LabeledGraph σ n)
@@ -554,6 +588,8 @@ instance sym2LabeledGraphSetoid
       trans := sym2LabeledGraphEqv.trans
     }
 
+/-- Computable counterpart of `Flag σ (Fin n)`: the quotient of `Sym2LabeledGraph σ n` by
+flag-equivalence, with effective `Fintype`/`DecidableEq` instances. -/
 def Sym2Flag {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : Type :=
   Quotient (sym2LabeledGraphSetoid σ n)
 
@@ -588,6 +624,7 @@ theorem Sym2LabeledGraph.toFlag_respect_eqv
   :=
   Quotient.sound h
 
+/-- Decodes a computable `Sym2Flag` to the abstract `Flag σ (Fin n)`. -/
 def Sym2Flag.toFlag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (G : Sym2Flag σ n) :
     Flag (fromEdgeSet (SetLike.coe σ.edges)) (Fin n)
@@ -624,12 +661,14 @@ theorem _root_.FlagAlgebras.LabeledGraph.toSym2Flag_respect_eqv
   rw [G.toSym2LabeledGraph_toLabeledGraph_eq, G'.toSym2LabeledGraph_toLabeledGraph_eq]
   exact h
 
+/-- Encodes an abstract `Flag σ (Fin n)` into the computable `Sym2Flag` quotient. -/
 noncomputable def _root_.FlagAlgebras.Flag.toSym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (F : Flag (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) : Sym2Flag σ n
   :=
   Quotient.lift LabeledGraph.toSym2Flag LabeledGraph.toSym2Flag_respect_eqv F
 
+/-- Round-trip: encoding an abstract `Flag σ` then decoding is the identity. -/
 theorem _root_.FlagAlgebras.Flag.toSym2Flag_toFlag_eq
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (F : Flag (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) (Fin n)) :
@@ -639,6 +678,7 @@ theorem _root_.FlagAlgebras.Flag.toSym2Flag_toFlag_eq
   apply Quotient.sound
   rw [F.toSym2LabeledGraph_toLabeledGraph_eq]
 
+/-- Round-trip: decoding a computable `Sym2Flag` then re-encoding is the identity. -/
 theorem Sym2Flag.toFlag_toSym2Flag_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (F : Sym2Flag σ n) :

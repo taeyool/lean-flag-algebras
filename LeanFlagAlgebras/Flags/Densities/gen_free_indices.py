@@ -1,3 +1,19 @@
+"""List the indices of graphs that avoid a given forbidden subgraph.
+
+Reads a ``graphs_n.json`` file (a top-level list of edge lists), checks each
+graph for the chosen forbidden subgraph (``K3``, ``K4``, or an arbitrary graph
+in flagmatic notation), and writes a JSON file recording ``n``, the forbidden
+graph, the total number of graphs, and ``free_graph_indices`` (the indices of
+graphs that do NOT contain the forbidden subgraph).
+
+Output (``<input_stem>_<tag>_free_indices.json`` by default) is consumed on the
+Lean side by the ``load_forbid_density_theorems`` macro in DensityLoader.lean
+(and indirectly supports the forbidden-subgraph reasoning in MulLoader.lean).
+
+Example:
+    python gen_free_indices.py ../Graphs/graphs_4.json --forbid-K3
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -12,6 +28,7 @@ Edge = Tuple[int, int]
 
 
 def infer_n_from_filename(path: Path) -> int | None:
+    """Infer the vertex count ``n`` from a ``graphs_n.json`` filename."""
     match = re.search(r"graphs_(\d+)\.json$", path.name)
     if match:
         return int(match.group(1))
@@ -88,6 +105,7 @@ def collect_free_indices(
     forbid_n: int,
     n_hint: int | None,
 ) -> list[int]:
+    """Return the indices of graphs that do not contain the forbidden subgraph."""
     indices = []
     for idx, edges in enumerate(graphs):
         host_n = n_hint if n_hint is not None else (
@@ -103,6 +121,7 @@ _K4_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
 
 
 def main() -> None:
+    """CLI: parse the input path and forbid args and write the free-indices JSON."""
     parser = argparse.ArgumentParser(
         description=(
             "Read graphs_n.json and write a JSON file containing the total number "

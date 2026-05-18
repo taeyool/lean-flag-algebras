@@ -3,6 +3,18 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith.Frontend
 import Mathlib.Data.Finset.Basic
 
+/-!
+# (Archived) Comparing two definitions of the labeled-subgraph-list set
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early design-exploration
+note comparing two candidate phrasings of the "disjointness" condition used in
+`labeledSubgraphListSet` (a `\` / `∩ = ∅` form versus an `∩ = type_verts`
+form), and proving they are interchangeable so the choice does not affect later
+proofs. The active subflag-density definitions live in
+`LeanFlagAlgebras/FlagAlgebra/SubflagListDensity*.lean`.
+-/
+
 open FlagAlgebras
 open Classical
 
@@ -18,6 +30,8 @@ variable {t : ℕ} {Vl : Fin t → Type} {Vl' : Fin t → Type}
   {U₂ : Type} [Fintype U₂]
   {U₃ : Type} [Fintype U₃]
 
+/-- Candidate definition v1: disjointness phrased as the non-type parts of any
+two distinct subgraphs having empty intersection. -/
 def labeledSubgraphListSet_ver_1
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
   : Set (∀ (_ : Fin t), LabeledSubgraph σ G) :=
@@ -59,6 +73,8 @@ lemma predIsoLabeledHl_related_indep_ver_1
   have h_w_ij : φ.symm.graph_iso w ∈ ((Hl₀ i).subgraph.verts \ G₀.type_verts) ∩ ((Hl₀ j).subgraph.verts \ G₀.type_verts) := Set.mem_inter h_wi₀ h_wj₀
   simp_all only [Set.mem_empty_iff_false]
 
+/-- Candidate definition v2: disjointness phrased as any two distinct subgraphs
+intersecting in exactly the type vertices. Shown interchangeable with v1. -/
 def labeledSubgraphListSet_ver_2
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
   : Set (∀ (_ : Fin t), LabeledSubgraph σ G) :=

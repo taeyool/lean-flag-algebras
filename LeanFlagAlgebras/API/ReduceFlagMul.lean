@@ -1,5 +1,18 @@
 import LeanFlagAlgebras.Forbid.Basic
 
+/-! # API.ReduceFlagMul — the `reduce_downward_flagmul` tactic
+
+Part of the API automation layer. This module defines the single custom tactic
+`reduce_downward_flagmul`, which iteratively eliminates the
+`downward (c • (A * B))` summands on the left-hand side of a `forbidLE` goal by
+rewriting each flag product `A * B` with its precomputed `flagMul_*` expansion
+theorem and moving the rewritten term onto the right-hand side. Plain flag
+summands (no `downward` wrapper) are moved directly. See the detailed `/-! -/`
+block below for the exact rewrite pattern; the file also contains the private
+`Expr`-traversal helpers that locate `Flag_*` / `FlagAlgebra_*` constants and
+resolve the corresponding `flagMul_*` theorem name.
+-/
+
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
@@ -38,12 +51,14 @@ summands are wrapped in `downward` and uses the corresponding `forbidLE_*`
 lemmas.
 -/
 
+/-- The final component of a `Name`, as a string (helper for name matching). -/
 private def lastNamePartLE (nm : Name) : String :=
   match nm with
   | .anonymous => ""
   | .str _ s => s
   | .num _ n => toString n
 
+/-- Find the first `FlagAlgebra_*` constant name occurring anywhere in `e`. -/
 private partial def findFlagAlgebraConstLE? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
@@ -62,6 +77,7 @@ private partial def findFlagAlgebraConstLE? (e : Expr) : Option Name :=
   | .proj _ _ b => findFlagAlgebraConstLE? b
   | _ => none
 
+/-- Find the first `Flag_*` constant name occurring anywhere in `e`. -/
 private partial def findFlagConstLE? (e : Expr) : Option Name :=
   match e with
   | .const nm _ =>
@@ -80,11 +96,13 @@ private partial def findFlagConstLE? (e : Expr) : Option Name :=
   | .proj _ _ b => findFlagConstLE? b
   | _ => none
 
+/-- Extract the two arguments of a binary application `(.app (.app _ a) b)`. -/
 private def getBinAppArgsLE? (e : Expr) : Option (Expr × Expr) :=
   match e with
   | .app (.app _ a) b => some (a, b)
   | _ => none
 
+/-- If `e` is an addition `x + y`, return its two operands. -/
 private def getAddArgsLE? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
@@ -93,6 +111,7 @@ private def getAddArgsLE? (e : Expr) : Option (Expr × Expr) :=
   else
     none
 
+/-- If `e` is a scalar multiplication `c • x`, return `(c, x)`. -/
 private def getSmulArgsLE? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
@@ -103,6 +122,7 @@ private def getSmulArgsLE? (e : Expr) : Option (Expr × Expr) :=
     | .app f x => some (f, x)
     | _ => none
 
+/-- If `e` is a multiplication `x * y`, return its two operands. -/
 private def getMulArgsLE? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
@@ -233,6 +253,9 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
       else
         return false
 
+/-- Drive `stepReduceDownwardFlagMul` to a fixpoint (bounded by `fuel`). If no
+step ever made progress, fail with a diagnostic describing the goal shape;
+otherwise stop once no further progress is possible. -/
 private partial def runReduceDownwardFlagMul
     (fuel : Nat := 256) (steps : Nat := 0) : TacticM Unit := do
   if fuel = 0 then

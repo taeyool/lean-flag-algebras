@@ -16,6 +16,24 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
 
+/-!
+# Densities of flags relative to a list of subflags
+
+This file generalizes `SubflagDensity` from a single subflag to a finite *list* of
+subflags. It defines `labeledSubgraphListDensity` (the fraction of vertex-class
+arrangements realizing a whole list of disjoint, prescribed flags simultaneously),
+lifts it through the flag quotient to `flagListDensity`, and specializes it to the
+fixed-arity helpers `flagDensity₁` / `flagDensity₂` / `flagDensity₃`.
+
+The technical core proves that `flagDensity₁` agrees with `subflagDensity`, that
+list density is invariant under permutation / empty-flag insertion / isomorphism,
+and culminates in the flag-algebra *chain rules* (`density_chain_rule₁₁` …
+`density_chain_rule₂₂`): a product-flag density expands as a sum over intermediate
+flags of products of densities. These chain rules are the key identities consumed
+by `FlagAlgebra` to manipulate the quotient algebra `Aˢ`.
+-/
+
+
 namespace FlagAlgebras
 
 open LabeledSubgraph
@@ -32,18 +50,24 @@ variable {σ : FlagType T} {t : ℕ}
 variable {Vl  : Fin t → Type} [FintypeList Vl]  [DecidableEqList Vl]
 variable {Vl' : Fin t → Type} [FintypeList Vl'] [DecidableEqList Vl']
 
+/-- A length-`t` list of labeled subgraphs of a common host graph `G`, indexed by `Fin t`. -/
 abbrev LabeledSubgraphList (σ : FlagType T) (t : ℕ) (G : LabeledGraph σ U)
   := Fin t → LabeledSubgraph σ G
 
+/-- A subgraph list is induced when every member is an induced subgraph of `G`. -/
 def LabeledSubgraphList.IsInduced
     {σ : FlagType T} {t : ℕ} {G : LabeledGraph σ U} (Hl : LabeledSubgraphList σ t G) : Prop
   := ∀ (i : Fin t), (Hl i).IsInduced
 
+/-- The members of a subgraph list are pairwise disjoint outside the shared type
+vertices: distinct entries share no non-type vertex. -/
 def predDisjointLabeledSubgraphList
     {σ : FlagType T} {G : LabeledGraph σ V} (Gl : LabeledSubgraphList σ t G) : Prop
   :=
   ∀ (i j : Fin t), i ≠ j → ((Gl i).subgraph.verts \ G.type_verts) ∩ ((Gl j).subgraph.verts \ G.type_verts) = ∅
 
+/-- A subgraph list realizes the prescribed flag list `Hl`: each member is
+isomorphic to the corresponding `Hl i`, and the members are pairwise disjoint. -/
 def predIsoLabeledHl
     {σ : FlagType T} (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl)
     : LabeledSubgraphList σ t G → Prop
@@ -51,11 +75,15 @@ def predIsoLabeledHl
       (∀ (i : Fin t), Nonempty ((Gl i).coe ≃f Hl i))
       ∧ predDisjointLabeledSubgraphList Gl
 
+/-- The set of induced subgraph lists of `G` that realize the prescribed flag list
+`Hl`; its cardinality is the numerator of the list density. -/
 def setOfLabeledSubgraphListIsoHl (G : LabeledGraph σ U) (Hl : LabeledGraphList σ t Vl)
       : Set (LabeledSubgraphList σ t G)
   :=
   { Gl | Gl.IsInduced ∧ predIsoLabeledHl G Hl Gl }
 
+/-- The number of induced subgraph lists of `G` realizing the flag list `Hl`
+(the numerator of the list density). -/
 noncomputable def labeledSubgraphListCount
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
   :=
@@ -63,12 +91,16 @@ noncomputable def labeledSubgraphListCount
   (setOfLabeledSubgraphListIsoHl G Hl).toFinset.card
 
 
+/-- The density of the flag list `Hl` in `G`: the count of realizing subgraph lists
+normalized by the multinomial coefficient counting ways to distribute the non-type
+vertices among the list members. The list generalization of `labeledSubgraphDensity`. -/
 noncomputable def labeledSubgraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
   :=
   let r_list (i : Fin t) := (Hl i).size - σ.size
   labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
+/-- Two subgraph lists correspond entrywise under the host isomorphism `φ`. -/
 def relOfLabeledSubgraphList
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraphList σ t G₀)
@@ -109,6 +141,8 @@ lemma relOfLabeledSubgraphList_indep
   rw [←Set.image_inter φ.graph_iso.injective, h_empty]
   exact Set.image_empty ⇑φ.graph_iso
 
+/-- Predicates `p₀`, `p₁` on subgraph lists correspond under `φ`: they agree on
+every pair of `φ`-related lists. -/
 def relOfPredOnLabeledSubgraphList
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraphList σ t G₀ → Prop) (p₁ : LabeledSubgraphList σ t G₁ → Prop) : Prop
@@ -146,6 +180,8 @@ lemma predIsoLabeledHl_related
       := fun i j h_ij ↦ relOfLabeledSubgraphList_indep h_rel_symm i j (h_2₁ i j h_ij)
     exact ⟨h_1₀, h_2₀⟩
 
+/-- The list of induced subgraphs of `G` cut out by a list of vertex sets `Sl`,
+each containing the type vertices. -/
 def inducedLabeledSubgraphList
     {σ : FlagType T} (G : LabeledGraph σ U) (Sl : Fin t → Set U) (hSl : ∀ i : Fin t, G.type_verts ⊆ Sl i)
     : LabeledSubgraphList σ t G
@@ -157,6 +193,8 @@ lemma inducedLabeledSubgraphList_isInduced
     : (inducedLabeledSubgraphList G Sl hSl).IsInduced
   := fun i ↦ inducedLabeledSubgraph_isInduced G (Sl i) (hSl i)
 
+/-- Transport a subgraph list of `G₀` to `G₁` along the host isomorphism `φ`,
+taking the induced image of each member. -/
 def inducedLabeledSubgraphListByIso
     {σ : FlagType T} {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V}
     (φ : G₀ ≃f G₁) (Hl₀ : LabeledSubgraphList σ t G₀)
@@ -197,6 +235,8 @@ lemma Hl_eq_reverseinduced_induced_Hl
   funext i
   exact H_eq_reverseinduced_induced_H φ (Hl₀ i) (h_ind₀ i)
 
+/-- A host isomorphism `φ` carrying compatible predicates `p₀ ↔ p₁` induces a
+bijection between the corresponding sets of induced subgraph lists. -/
 def isoSetOfInducedLabeledSubgraphList
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraphList σ t G₀ → Prop) (p₁ : LabeledSubgraphList σ t G₁ → Prop)
@@ -234,6 +274,9 @@ def isoSetOfInducedLabeledSubgraphList
     exact (Hl_eq_reverseinduced_induced_Hl φ.symm Hl₁ h_ind₁).symm
   ⟨f, f_inv, h_leftinv, h_rightinv⟩
 
+/-- The instance of `isoSetOfInducedLabeledSubgraphList` for the realization
+predicate `predIsoLabeledHl`, given a host isomorphism and an entrywise
+isomorphism of the prescribed flag lists. -/
 noncomputable def isoSetOfInducedLabeledSubgraphListFromIsoGHl
     {G : LabeledGraph σ V} {G' : LabeledGraph σ W} (φ : G ≃f G')
     {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'} (ψ : ∀ (i : Fin t), Hl i ≃f Hl' i)
@@ -246,6 +289,8 @@ noncomputable def isoSetOfInducedLabeledSubgraphListFromIsoGHl
     (predIsoLabeledHl_related φ ψ)
 
 omit [DecidableEq T] in
+/-- List density is invariant under isomorphism of both the flag list and the host
+graph; this well-definedness is what lets it descend to the flag quotient. -/
 lemma labeledSubgraphListDensity_respect_eqv
     {Hl₀ : LabeledGraphList σ t Vl} {Hl₁ : LabeledGraphList σ t Vl'} (ψ : ∀ (i : Fin t), Hl₀ i ≃f Hl₁ i)
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
@@ -268,6 +313,9 @@ lemma labeledSubgraphListDensity_respect_eqv
     fun i ↦ labeledGraphIso_size_eq (Hl₀ i) (Hl₁ i) (ψ i)
   simp only [h_Hl_sizes]
 
+/-! ## Lifting list density through the flag quotients -/
+
+/-- `labeledSubgraphListDensity Hl` lifted to accept a quotient `Flag σ W` host. -/
 noncomputable def labeledSubgraphListDensityLifted
     (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
   := by
@@ -286,6 +334,8 @@ lemma labeledSubgraphListDensityLifted_respect_eqv
   ext Grep
   exact labeledSubgraphListDensity_respect_eqv ψ LabeledGraphIso.refl
 
+/-- List density with both arguments taken in their respective quotients:
+a quotient flag list and a quotient flag host. -/
 noncomputable def quotLabeledSubgraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
   := by
@@ -301,6 +351,8 @@ lemma quotLabeledSubgraphListDensity_respect_eqv
   :=
   labeledSubgraphListDensityLifted_respect_eqv (fun i ↦ (h i).some) G
 
+/-- The density of a `FlagList` (a list of flags) inside a host flag `G`. This is
+the headline list-density operator consumed downstream by `FlagAlgebra`. -/
 noncomputable def flagListDensity
     : FlagList σ t Vl → Flag σ W → ℚ
   :=
@@ -320,6 +372,8 @@ theorem flagListDensity_HEq_eq
   congr!
 
 omit [DecidableEq T] in
+/-- The single-subflag density agrees with the list density of the singleton list,
+connecting this file to `SubflagDensity`. -/
 theorem subflagDensity_eq_flagListDensity
     {σ : FlagType T} (F : Flag σ U) (G : Flag σ W)
     : subflagDensity F G = flagListDensity (flagToList F) G
@@ -368,19 +422,28 @@ theorem subflagDensity_eq_flagListDensity
       rfl
     _ = flagListDensity [F]ᶠ G := rfl
 
+/-- Density of a single flag `F` in `G` (the list density of `[F]`). -/
 noncomputable def flagDensity₁ (F : Flag σ U) (G : Flag σ W) : ℚ
   :=
   flagListDensity [F]ᶠ G
 
+/-- Joint density of two disjoint flags `F₁, F₂` in `G` (the list density of
+`[F₁, F₂]`); the product appearing on the right-hand side of the chain rules. -/
 noncomputable def flagDensity₂ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W) : ℚ
   :=
   flagListDensity [F₁, F₂]ᶠ G
 
+/-- Joint density of three disjoint flags in `G` (the list density of
+`[F₁, F₂, F₃]`); the most general case driving the chain-rule recursion. -/
 noncomputable def flagDensity₃ (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W) : ℚ
   :=
   flagListDensity [F₁, F₂, F₃]ᶠ G
 
 omit [DecidableEq T] in
+/-! ## Bridging representatives and quotients; basic invariants -/
+
+/-- Computing list density on labeled-graph representatives equals computing
+`flagListDensity` on their quotient images. -/
 theorem labeledSubgraphListDensity_eq_flagListDensity
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity Fl G = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
@@ -422,6 +485,7 @@ theorem labeledSubgraphListDensity_eq_flagDensity₃
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₃]
 
+/-- The empty flag has density `1` in every host. -/
 theorem flagDensity_empty
     (F : Flag σ W) : flagDensity₁ (emptyFlag σ) F = 1
   := by
@@ -430,6 +494,7 @@ theorem flagDensity_empty
   exact subflagDensity_empty F
 
 omit [DecidableEq T] in
+/-- A flag has density `1` in itself. -/
 theorem flagDensity_self
     (F : Flag σ W) : flagDensity₁ F F = 1
   := by
@@ -438,6 +503,7 @@ theorem flagDensity_self
   exact subflagDensity_self F
 
 omit [DecidableEq T] in
+/-- Distinct flags of the same size have density `0` in each other. -/
 theorem flagDensity_other
     {F F' : Flag σ W} (h_neq : F ≠ F') : flagDensity₁ F F' = 0
   := by
@@ -446,6 +512,7 @@ theorem flagDensity_other
   exact subflagDensity_other h_neq
 
 omit [DecidableEq T] in
+/-- Positive density forces the subflag to be no larger than the host. -/
 theorem flagDensity_le_card
     {F : Flag σ V} {G : Flag σ W} (h : flagDensity₁ F G > 0)
     : Fintype.card V ≤ Fintype.card W
@@ -536,6 +603,10 @@ lemma prod_perm_eq
     have : i = π (π.invFun i) := (Equiv.symm_apply_eq π).mp rfl
     rw [←this]
 
+/-! ## Symmetry: permuting and inserting empty flags -/
+
+/-- Permuting the prescribed flag list by `π` bijects the realizing-subgraph-list
+sets, so the count is permutation-invariant. -/
 noncomputable def setOfLabeledSubgraphListIsoHl_permute
     (G : LabeledGraph σ V) (Hl : LabeledGraphList σ t Vl) (π : Perm t)
     : setOfLabeledSubgraphListIsoHl G Hl ≃ setOfLabeledSubgraphListIsoHl G (fun i ↦ Hl (π i))
@@ -579,6 +650,7 @@ noncomputable def setOfLabeledSubgraphListIsoHl_permute
   Equiv.ofBijective f ⟨h_inj_f, h_surj_f⟩
 
 omit [DecidableEq T] in
+/-- List density is invariant under permuting the list of flags. -/
 theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute π) G
@@ -603,6 +675,11 @@ theorem flagDensity_permute
   dsimp [labeledSubgraphListDensity]
   rw [h_count, h_coeff]
 
+/-! ### `FintypeList` / `DecidableEqList` instances for 2- and 3-element type families
+
+Routine type-class plumbing so that pair/triple flag lists (`[F₁, F₂]ᶠ`,
+`[F₁, F₂, F₃]ᶠ`) can be formed and their densities computed. -/
+
 instance {V W : Type} [Fintype V] [Fintype W]
     : FintypeList (fun (i : Fin 2) => match i with | 0 => V | 1 => W)
   :=
@@ -624,6 +701,7 @@ instance {V W U : Type} [DecidableEq V] [DecidableEq W] [DecidableEq U]
   { decidable_eq_all := fun i => match i with | 0 => inferInstance | 1 => inferInstance | 2 => inferInstance }
 
 omit [DecidableEq T] in
+/-- The joint density of two flags is symmetric in the two flags. -/
 theorem flagPairDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
     : flagDensity₂ F₁ F₂ G = flagDensity₂ F₂ F₁ G
@@ -648,6 +726,7 @@ theorem flagPairDensity_comm
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
 omit [DecidableEq T] in
+/-- The joint density of three flags is invariant under cyclic rotation. -/
 theorem flagTripleDensity_comm
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (F₃ : Flag σ U₃) (G : Flag σ W)
     : flagDensity₃ F₁ F₂ F₃ G = flagDensity₃ F₂ F₃ F₁ G
@@ -673,6 +752,8 @@ theorem flagTripleDensity_comm
   exact flagList_HEq h_Vl_eq h_Fl_eq
 
 
+/-- Appending an empty flag to the prescribed list does not change the set of
+realizing subgraph lists (up to a canonical bijection). -/
 def setOfLabeledSubgraphListIsoHl_insert_empty
     (G : LabeledGraph σ V) (Fl : FlagList σ t Vl)
     : setOfLabeledSubgraphListIsoHl G (fun i ↦ Quotient.out (Fl i))
@@ -779,6 +860,8 @@ def setOfLabeledSubgraphListIsoHl_insert_empty
       symm; apply (@labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph T σ V G (Hl₁ i)).mpr (Nonempty.intro h_iso)
   ⟨f, f_inv, h_leftinv, h_rightinv⟩
 
+/-- Inserting an empty flag into the list leaves the list density unchanged.
+Used to reduce fixed-arity densities to each other (e.g. pair to single). -/
 theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
@@ -814,6 +897,7 @@ theorem flagDensity_insert_empty
       add_zero, h_eq', Nat.factorial_zero, mul_one]
   rw [h_count, h_coeff]
 
+/-- Pairing a flag with the empty flag reduces to the single-flag density. -/
 theorem flagPairDensity_empty
     (F : Flag σ U) (G : Flag σ W)
     : flagDensity₂ (emptyFlag σ) F G = flagDensity₁ F G
@@ -843,6 +927,8 @@ theorem flagPairDensity_empty'
   rw [flagPairDensity_comm]
   exact flagPairDensity_empty F G
 
+/-- A triple density with one empty flag reduces to the pair density; used to
+specialize the triple chain rule down to the pair and single chain rules. -/
 theorem flagTripleDensity_empty
     (F₁ : Flag σ U₁) (F₂ : Flag σ U₂) (G : Flag σ W)
     : flagDensity₃ (emptyFlag σ) F₁ F₂ G = flagDensity₂ F₁ F₂ G
@@ -875,6 +961,9 @@ theorem flagTripleDensity_empty'
 
 
 omit [DecidableEq T] in
+/-! ## Density is a probability: bounds in `[0, 1]` -/
+
+/-- List density is nonnegative. -/
 theorem labeledGraphListDensity_ge_zero
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : 0 ≤ labeledSubgraphListDensity Fl G := by
@@ -882,6 +971,8 @@ theorem labeledGraphListDensity_ge_zero
     apply div_nonneg <;> simp only [Nat.cast_nonneg]
 
 omit [DecidableEq T] in
+/-- List density is at most `1` (the realizing lists inject into the partitions of
+the non-type vertices counted by the multinomial normalizer). -/
 theorem labeledGraphListDensity_le_one
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
     : labeledSubgraphListDensity Fl G ≤ 1 := by
@@ -970,6 +1061,7 @@ theorem quotLabeledGraphListDensity_le_one
   apply labeledGraphListDensity_le_one
 
 omit [DecidableEq T] in
+/-- `flagListDensity` is nonnegative. -/
 theorem flagListDensity_ge_zero
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : 0 ≤ flagListDensity Fl G
@@ -978,6 +1070,7 @@ theorem flagListDensity_ge_zero
   apply quotLabeledGraphListDensity_ge_zero
 
 omit [DecidableEq T] in
+/-- `flagListDensity` is at most `1`. -/
 theorem flagListDensity_le_one
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G ≤ 1
@@ -1082,6 +1175,7 @@ lemma inducedLabeledSubgraph_iso_from_iso
   rw [h_eq₀, h_eq₁] at h_iso
   exact h_iso
 
+/-- The list of non-type vertex sets carried by the members of a subgraph list. -/
 def vertexSetListFromLabeledSubgraphList
     {G : LabeledGraph σ (Fin ℓ)} (Gl : LabeledSubgraphList σ t G) : (i : Fin t) → Set (Fin ℓ)
   := fun i ↦(Gl i).subgraph.verts \ G.type_verts
@@ -1094,6 +1188,14 @@ lemma disjointLabeledSubgraphList_induce_disjointVertexSetList
   dsimp [Function.onFun, vertexSetListFromLabeledSubgraphList]
   exact Set.disjoint_iff_inter_eq_empty.mpr (h_disj i j h_ij_neq)
 
+/-! ## The triple chain rule: bijection construction and counting
+
+The next group builds, in four explicit steps (`…_step0` … `…_step3`), a
+bijection identifying choices of a realizing triple in `G` with choices of an
+intermediate flag `G'` together with realizing pairs in `G'` and in `G`. This is
+the combinatorial heart of the chain rule for triple densities. -/
+
+/-- A choice of bijection `Fin ℓ₀ ≃ X₀` from a finite set `X₀` of known size `ℓ₀`. -/
 noncomputable def isoFromFinToFiniteSet
     {ℓ ℓ₀ : ℕ} (X₀ : Set (Fin ℓ)) (h : X₀.toFinset.card = ℓ₀)
     : Fin ℓ₀ ≃ X₀
@@ -1103,6 +1205,9 @@ noncomputable def isoFromFinToFiniteSet
   let f₂ : X₀.toFinset ≃ X₀ := Equiv.subtypeEquivRight (by simp only [Set.mem_toFinset, implies_true])
   (f₀.trans f₁).trans f₂
 
+/-- Chain-rule bijection, step 0: rephrase a powerset choice paired with a
+realizing triple in `G` as a pair of a set and a vertex-set triple satisfying the
+realization/disjointness conditions. -/
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl_step0
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -1278,6 +1383,8 @@ noncomputable def
 
   f_LHS_S₀.trans f_S₀_S₁
 
+/-- Chain-rule bijection, step 1: replace the abstract `Fin ℓ_other` powerset
+choice by an actual subset `V` of the host's leftover vertices. -/
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl_step1
     (ℓ' : ℕ) (G : LabeledGraph σ (Fin ℓ))
@@ -1496,6 +1603,8 @@ noncomputable def
 
   Equiv.ofBijective f_LHS_RHS_fwd ⟨h_f_LHS_RHS_inj, h_f_LHS_RHS_surj⟩
 
+/-- Chain-rule bijection, step 2: assemble the intermediate flag `G'` of size `ℓ'`
+from the chosen vertices and re-split the data as vertex-set pairs in `G'` and `G`. -/
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl_step2
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -2165,6 +2274,8 @@ noncomputable def
   Equiv.ofBijective f_LHS_RHS_fwd ⟨h_f_LHS_RHS_inj, h_f_LHS_RHS_surj⟩
 
 set_option linter.unusedVariables false in
+/-- Chain-rule bijection, step 3: recognize the vertex-set pairs as genuine
+realizing subgraph lists, yielding the Σ-type over the intermediate flag `G'`. -/
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl_step3
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -2405,6 +2516,10 @@ noncomputable def
 
   f_T₁_T₀.trans f_T₀_T
 
+/-- The composite chain-rule bijection (steps 0–3 chained): a powerset choice
+together with a realizing triple list for `[H₁, H₂, H₃]` in `G` corresponds
+bijectively to an intermediate flag `G'` with a realizing pair for `[H₁, H₂]` in
+`G'` and a realizing pair for `[G', H₃]` in `G`. -/
 noncomputable def
   powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
@@ -2500,6 +2615,9 @@ noncomputable def
 
   (((f_LHS_S₁.trans f_S₁_S₂).trans f_S₂_T₁).trans f_T₁_RHS)
 
+/-- Counting form of the chain rule: the binomial-weighted triple count equals the
+sum over intermediate flags `G'` of (pair count in `G'`) · (pair count in `G`),
+obtained by taking cardinalities through the composite bijection. -/
 lemma labeledGraphTripleCount_eq_sum_density_prods'
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -2547,6 +2665,9 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
               congr!
 
 set_option maxHeartbeats 400000 in
+/-- Multinomial-coefficient form of the counting chain rule, repackaging
+`labeledGraphTripleCount_eq_sum_density_prods'` with the normalizers that turn
+counts into densities. -/
 lemma labeledGraphTripleCount_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -2694,6 +2815,9 @@ lemma fintype_card_match_comm_three
   split <;> simp only [Fin.isValue, Fintype.card_fin]
 
 -- set_option pp.all true in
+/-- Density form of the chain rule on labeled-graph representatives: the triple
+density equals the sum over intermediate flags `G'` of the product of the two pair
+densities. The representative-level statement behind the public chain rules. -/
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -2828,6 +2952,8 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
                 field_simp
   }
 
+/-- Chain rule for triple densities (aliased `density_chain_rule₂₂`):
+`d(F₁,F₂,F₃;G) = Σ_{G'} d(F₁,F₂;G') · d(G',F₃;G)` over intermediate flags of size `ℓ'`. -/
 theorem flagTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (F₃ : Flag σ (Fin ℓ₃)) (G : Flag σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
@@ -2847,6 +2973,8 @@ theorem flagTripleDensity_eq_sum_density_prods
   rw [h]
   exact labeledGraphTripleDensity_eq_sum_density_prods ℓ' F₁.out F₂.out F₃.out G.out hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
 
+/-- Chain rule expanding a pair density over a final single flag (aliased
+`density_chain_rule₂₁`): `d(F₁,F₂;G) = Σ_{G'} d(F₁,F₂;G') · d(G';G)`. -/
 theorem flagPairDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (G : Flag σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' ≤ ℓ)
@@ -2858,6 +2986,8 @@ theorem flagPairDensity_eq_sum_density_prods
   intros
   rw [flagPairDensity_empty']
 
+/-- Chain rule expanding a pair density over a leading single flag (aliased
+`density_chain_rule₁₂`): `d(F₁,F₂;G) = Σ_{G'} d(F₁;G') · d(G',F₂;G)`. -/
 theorem flagPairDensity_eq_sum_density_prods'
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (F₂ : Flag σ (Fin ℓ₂)) (G : Flag σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ' : ℓ₁ ≤ ℓ') (hℓ : ℓ' + ℓ₂ ≤ ℓ + ℓ₀)
@@ -2869,6 +2999,8 @@ theorem flagPairDensity_eq_sum_density_prods'
   intros
   rw [flagPairDensity_empty]
 
+/-- The basic flag-algebra chain rule (aliased `density_chain_rule₁₁`):
+`d(F₁;G) = Σ_{G'} d(F₁;G') · d(G';G)` over intermediate flags of size `ℓ'`. -/
 theorem flagDensity_eq_sum_density_prods
     (ℓ' : ℕ) (F₁ : Flag σ (Fin ℓ₁)) (G : Flag σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ' : ℓ₁ ≤ ℓ') (hℓ : ℓ' ≤ ℓ)
@@ -2878,6 +3010,11 @@ theorem flagDensity_eq_sum_density_prods
   apply Finset.sum_congr (by rfl)
   intros
   rw [flagPairDensity_empty]
+
+/-! ## Public chain-rule aliases
+
+Short, uniformly named handles for the four chain rules above (subscripts =
+arities of the two density factors), used by the `Forbid`/`API` tactic layer. -/
 
 alias density_chain_rule₁₁ := flagDensity_eq_sum_density_prods
 alias density_chain_rule₁₂ := flagPairDensity_eq_sum_density_prods'

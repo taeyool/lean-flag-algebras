@@ -1,6 +1,21 @@
 import «LeanFlagAlgebras».FlagAlgebra.FlagSequence
 import Mathlib.MeasureTheory.Measure.Prokhorov
 
+/-! # Random homomorphism ensembles
+
+The measure-theoretic semantics behind the `Forbid` layer's "almost surely" statements.
+Given a base positive homomorphism `φ₀` on the empty-type algebra with `φ₀ ⟨σ⟩₀ > 0`, this
+file constructs a probability measure `ℙ[φ₀]` on the space of positive homomorphisms of the
+typed algebra whose integral recovers the normalized downward operator
+`(φ₀ ⟦f⟧₀) / (φ₀ ⟦1⟧₀)` (Theorem 3.5).
+
+The construction goes through: finite flags → PMFs on `FlagDensitySpace` (`FinFlag.toPMF`)
+→ a sequence of probability measures along a convergent `FlagSeq` → a Prokhorov-compactness
+limit measure whose support lies in the positive-homomorphism space. Downstream this yields
+nonnegativity of squares (the Cauchy–Schwarz inequality for `⟦·⟧₀`), the engine for SDP-style
+density bounds.
+-/
+
 open MeasureTheory
 
 namespace FlagAlgebras
@@ -9,6 +24,7 @@ open Classical
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
+/-- The type graph `σ`, viewed as an untyped (empty-type) flag on its own vertices. -/
 def _root_.SimpleGraph.toEmptyTypeFlag
     (σ : FlagType (Fin n₀))
     : Flag ∅ₜ (Fin n₀)
@@ -27,6 +43,9 @@ theorem flagType_asEmptyTypeFlag_eq
   apply Nonempty.intro
   rfl
 
+/-- The empty-type flag algebra element `⟨σ⟩₀` representing the type graph `σ`; its value
+under a base homomorphism `φ₀` is the density that controls whether the random extension
+is well-defined (`φ₀ ⟨σ⟩₀ > 0`). -/
 noncomputable def flagType_asEmptyTypeAlgebra
     (σ : FlagType (Fin n₀))
     : FlagAlgebra ∅ₜ
@@ -34,6 +53,7 @@ noncomputable def flagType_asEmptyTypeAlgebra
   let σ₀_finFlag : FinFlag ∅ₜ := ⟨n₀, σ.toEmptyTypeFlag⟩
   ⟦unitVector σ₀_finFlag⟧
 
+-- Notation `⟨σ⟩₀` for the empty-type algebra element of the type graph `σ`.
 notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
 
 theorem one_downward_eq
@@ -167,6 +187,15 @@ theorem labelExtensions_nonempty
         }
   · linarith
 
+/-! ## From finite flags to PMFs on `FlagDensitySpace`
+
+A large untyped flag `G` with `flagDensity₁ σ.toEmptyTypeFlag G > 0` is turned into a finite
+probability distribution on `FlagDensitySpace σ`: pick a random labeling extension of `G`
+weighted by its downward normalizing factor, then read off the resulting density vector.
+-/
+
+/-- Maps a sized typed flag to the density-space point recording its `flagDensity₁` against
+every untyped flag. -/
 noncomputable def funFromFlagWithSizeToFlagDensitySpace
     (σ : FlagType (Fin n₀)) (ℓ : ℕ)
     : FlagWithSize σ ℓ → FlagDensitySpace σ
@@ -182,6 +211,9 @@ noncomputable def funFromFlagWithSizeToFlagDensitySpace
       · exact flagListDensity₁_le_one G'.snd F'
   }
 
+/-- The random-labeling distribution on `FlagDensitySpace σ` induced by an untyped finite
+flag `F` of positive `σ`-density: a labeling extension is drawn with probability proportional
+to its downward normalizing factor. -/
 noncomputable def FinFlag.toPMF
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : PMF (FlagDensitySpace σ)
@@ -272,6 +304,7 @@ theorem FinFlag.toPMF_support
         · rw [Rat.cast_pos]
           exact downwardNormalizingFactor_pos G
 
+/-- The probability measure on `FlagDensitySpace σ` associated with `FinFlag.toPMF`. -/
 noncomputable def FinFlag.toMeasure
     (F : FinFlag ∅ₜ) (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0)
     : Measure (FlagDensitySpace σ)
@@ -305,6 +338,9 @@ lemma tsum_ite_eq_sum
     simp [ha]
   simpa using (tsum_eq_sum (s:=S) (f:=fun a => if a ∈ S then f a else 0) h)
 
+/-- Core identity: the expected `F`-density under `G.toMeasure` equals the downward density
+ratio `(dnf F · dens(unlabel F, G)) / (dnf σ · dens(σ, G))`. This is what makes the random
+ensemble compute the normalized downward operator. -/
 theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     {F : FinFlag σ} {G : FinFlag ∅ₜ}
     (hG : flagDensity₁ σ.toEmptyTypeFlag G.2 > 0) (hG_size : G.1 ≥ max F.1 n₀)
@@ -382,6 +418,10 @@ theorem integral_flagDensitySpace_eq_flagVectorDensity_div
     simp_rw [Rat.cast_sum, flagDensity_empty, one_mul]
     rfl
 
+/-! ## Passing to the limit along a convergent flag sequence -/
+
+/-- The sequence `n ↦ 𝔼[ a F ]` of expected `F`-densities along the measures of a flag
+sequence `s`. -/
 noncomputable def integralFlagDensitySpaceSeq
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0) (F : FinFlag σ)
     : ℕ → ℝ
@@ -389,6 +429,8 @@ noncomputable def integralFlagDensitySpaceSeq
   fun n ↦ ∫ (a : FlagDensitySpace σ), a F ∂((s n).toMeasure (hs n))
 
 /- Lemma 3.11 -/
+/-- Lemma 3.11: along a flag sequence converging to `φ`, the expected `F`-densities tend to
+the normalized downward value `(φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦1⟧₀)`. -/
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     (hs_conv : ConvergesTo s φ.coe) (hs_den : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -453,6 +495,8 @@ lemma convergesTo_comp_of_strictMono
   · intro F
     exact tendsto_comp_of_strictMono hϕ (h_lim F)
 
+/-- For any `φ` with `φ ⟨σ⟩₀ > 0`, there is a flag sequence converging to `φ` whose every
+term has positive `σ`-density (so its measures are defined). -/
 theorem exists_converge_flagSeq_with_flagDensity_pos
     {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     : ∃ (s : FlagSeq ∅ₜ), ConvergesTo s φ.coe ∧ ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0
@@ -476,6 +520,9 @@ instance : TopologicalSpace (Measure (FlagDensitySpace σ))
   :=
   Preorder.topology (Measure (FlagDensitySpace σ))
 
+/-! ## Prokhorov compactness and the limit measure -/
+
+/-- The sequence of probability measures on `FlagDensitySpace σ` induced by a flag sequence. -/
 noncomputable def FlagSeq.toProbMeasureSeq
     (s : FlagSeq ∅ₜ) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     : ℕ → ProbabilityMeasure (FlagDensitySpace σ)
@@ -485,6 +532,8 @@ noncomputable def FlagSeq.toProbMeasureSeq
 noncomputable instance : MetricSpace (ProbabilityMeasure (FlagDensitySpace σ)) :=
   TopologicalSpace.metrizableSpaceMetric (ProbabilityMeasure ↑(FlagDensitySpace σ))
 
+/-- Prokhorov tightness: the space of probability measures on the compact `FlagDensitySpace σ`
+is sequentially compact, so every measure sequence has a weakly convergent subsequence. -/
 theorem flagDensitySpace_probMeasure_isSeqCompact
     : IsSeqCompact (Set.univ : Set (ProbabilityMeasure (FlagDensitySpace σ)))
   := by
@@ -506,6 +555,8 @@ theorem exists_convergent_subseq_probMeasure_of_flagSeq
   obtain ⟨ℙ, _, ϕ, _⟩ := this
   use ϕ, ℙ
 
+/-- Combines convergence and tightness: there is a flag sequence converging to `φ` whose
+probability measures weakly converge to some limit measure `ℙ`. -/
 theorem exists_converge_flagSeq_and_probMeasure_tendsto
     {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     : ∃ (s : FlagSeq ∅ₜ) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -519,6 +570,15 @@ theorem exists_converge_flagSeq_and_probMeasure_tendsto
   · exact convergesTo_comp_of_strictMono hϕ hs_conv
   · exact hℙ
 
+/-! ## Measurability and the support of the limit measure
+
+These lemmas establish that the defining relations of a positive homomorphism (linearity
+`zeroSpaceProp`, normalization `oneProp`, multiplicativity `mulProp`) cut out measurable sets,
+and that each holds almost surely under the limit measure — so the limit is supported on the
+positive-homomorphism space.
+-/
+
+/-- Evaluation of a density-space point at a fixed flag `F` is measurable. -/
 lemma flagDensitySpace_eval_measurable
     (F : FinFlag σ)
     : Measurable fun a : FlagDensitySpace σ ↦ a F
@@ -769,6 +829,8 @@ lemma flagDensitySpace_mul_sub_sum_abs_integrable
   exact Integrable.of_bound (Measurable.aestronglyMeasurable flagDensitySpace_mul_sub_sum_abs_measurable)
     ((1 : ℝ) + Fintype.card (FlagWithSize σ (F₁.1 + F₂.1 - n₀))) h_bound
 
+/-- Evaluation at `F` as a bounded continuous function, the test functions used with weak
+convergence of probability measures. -/
 def FinFlag.toBoundedContinuousFun
     (F : FinFlag σ)
     : BoundedContinuousFunction (FlagDensitySpace σ) ℝ
@@ -787,6 +849,8 @@ def FinFlag.toBoundedContinuousFun
       · exact flagDensitySpace_mem_Icc_zero_one b F
   }
 
+/-- The limit measure assigns probability 1 to the set where the linearity relation
+(`zeroSpaceProp`) holds. -/
 theorem zeroSpacePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ}
     (hs_inc : Increases s) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -857,6 +921,8 @@ theorem zeroSpacePropSet_prob_eq_one
   · simp_all only [not_le, isEmpty_Prop, IsEmpty.forall_iff, Set.setOf_true,
     ProbabilityMeasure.coeFn_univ]
 
+/-- The limit measure assigns probability 1 to the set where the normalization relation
+(`oneProp`, `a 1 = 1`) holds. -/
 theorem onePropSet_prob_eq_one
     {s : FlagSeq ∅ₜ} (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     {ℙ : ProbabilityMeasure (FlagDensitySpace σ)} (hs_tendsto : Tendsto (s.toProbMeasureSeq hs) atTop (𝓝 ℙ))
@@ -909,6 +975,8 @@ theorem onePropSet_prob_eq_one
   rw [flagDensity_one]
   norm_num
 
+/-- The limit measure assigns probability 1 to the set where the multiplicativity relation
+(`mulProp`) holds; this is the deep step, using the chain rule and a `c/n` density estimate. -/
 theorem mulPropSet_prob_eq_one
     {s : FlagSeq ∅ₜ}
     (hs_inc : Increases s) (hs : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -998,6 +1066,8 @@ theorem mulPropSet_prob_eq_one
         rw [Nat.cast_le]
         exact hs_inc.id_le n
 
+/-- The limit measure is concentrated on the positive-homomorphism space: combining the three
+defining relations, `ℙ (PositiveHomSpace σ) = 1`. -/
 theorem flagSeq_limit_measure_support_positiveHomSpace
     {s : FlagSeq ∅ₜ}
     (hs_inc : Increases s) (hs_den : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
@@ -1018,6 +1088,9 @@ theorem flagSeq_limit_measure_support_positiveHomSpace
     · exact mulPropSet_prob_eq_one hs_inc hs_den hs_tendsto
 
 /- Theorem 3.5, existence -/
+/-- Theorem 3.5 (existence): for a base homomorphism `φ₀` with `φ₀ ⟨σ⟩₀ > 0`, there is a
+probability measure on `PositiveHomSpace σ` whose expectation of `f` equals the normalized
+downward value `(φ₀ ⟦f⟧₀) / (φ₀ ⟦1⟧₀)`. This is the random extension of `φ₀`. -/
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∃ (ℙ : ProbabilityMeasure (PositiveHomSpace σ)),
@@ -1099,15 +1172,18 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   · rw [← flagSeq_limit_measure_support_positiveHomSpace hs_conv.1 hs_den hℙ]
     exact ProbabilityMeasure.apply_mono ℙ Set.subset_union_left
 
+/-- The chosen random-extension probability measure `ℙ[φ₀]` of a base homomorphism `φ₀`. -/
 noncomputable def probMeasure_extend_emptyType_positiveHom
     (φ₀ : PositiveHom ∅ₜ) (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ProbabilityMeasure (PositiveHomSpace σ)
   :=
   Classical.choose (exists_probMeasure_extend_emptyType_positiveHom (σ := σ) hσ)
 
+-- Notation `ℙ[φ₀]` for the random extension measure of `φ₀` (positivity proved by `assumption`).
 notation "ℙ[" φ₀ "]" =>
   probMeasure_extend_emptyType_positiveHom φ₀ (by assumption)
 
+/-- Defining property of `ℙ[φ₀]`: integrating `φ ↦ φ f` recovers `(φ₀ ⟦f⟧₀) / (φ₀ ⟦1⟧₀)`. -/
 theorem probMeasure_extend_emptyType_positiveHom_spec
     {φ₀ : PositiveHom ∅ₜ} (hσ : φ₀ ⟨σ⟩₀ > 0)
     : ∀ (f : FlagAlgebra σ),
@@ -1146,6 +1222,8 @@ theorem downward_zero_at_hom
   apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
   exact hφ
 
+/-- The downward operator preserves the semantic cone: if `f ≥ 0` semantically in the typed
+algebra then `⟦f⟧₀ ≥ 0` in the empty-type algebra. Proved via the random extension measure. -/
 theorem downward_preserve_semanticCone
     (f : FlagAlgebra σ) (hf : f ∈ semanticCone σ)
     : ⟦f⟧₀ ∈ semanticCone ∅ₜ
@@ -1162,6 +1240,7 @@ theorem downward_preserve_semanticCone
     rw [← hℙ, ge_iff_le, mul_nonneg_iff_left_nonneg_of_pos hφ₀']
     exact integral_nonneg fun φ ↦ hf (PositiveHomSpace.toPosHom φ)
 
+/-- The downward image of a square is nonnegative: `⟦f * f⟧₀ ≥ 0`. -/
 theorem square_downward_nonneg
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ ≥ 0
@@ -1172,6 +1251,8 @@ theorem square_downward_nonneg
   rw [PositiveHom.map_mul]
   exact mul_self_nonneg (φ f)
 
+/-- Cauchy–Schwarz for the downward operator: `⟦f*f⟧₀ · ⟦g*g⟧₀ ≥ ⟦f*g⟧₀ · ⟦f*g⟧₀`. The key
+inequality powering SDP-style flag-algebra density bounds (aliased `Cauchy_Schwarz_inequality`). -/
 theorem square_downward_mul_ge_mul_downward_square
     (f g : FlagAlgebra σ)
     : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
@@ -1335,6 +1416,8 @@ theorem square_downward_mul_ge_mul_downward_square
 
 alias Cauchy_Schwarz_inequality := square_downward_mul_ge_mul_downward_square
 
+/-- Cauchy–Schwarz against the unit: `⟦f*f⟧₀ · ⟦1⟧₀ ≥ ⟦f⟧₀ · ⟦f⟧₀` (aliased
+`Cauchy_Schwarz_inequality_unit`). -/
 theorem square_downward_mul_one_downward_ge_downward_square
     (f : FlagAlgebra σ)
     : ⟦f * f⟧₀ * ⟦(1 : FlagAlgebra σ)⟧₀ ≥ ⟦f⟧₀ * ⟦f⟧₀

@@ -4,12 +4,32 @@ import LeanFlagAlgebras.Forbid.Basic
 import Lean.Data.Json
 import Mathlib.Tactic
 
+/-! # Forbidden-graph multiplication theorem loader
+
+This module defines the `load_forbid_mul_theorems` macro, which consumes the
+`density_*.json` output of `calculate_densities.py` and synthesizes the flag
+multiplication theorems used in forbidden-subgraph flag-algebra arguments.
+
+For every unordered pair `(i, j)` of forbidden-free pattern flags, it generates
+a theorem `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[Kr.toFinFlag] Σ`,
+where the right-hand sum is built from the precomputed density coefficients
+times the forbidden-free host flag algebras, proved via
+`unitVector_quot_mul_forbidEq_sum` and the `flagSet_*_eq_univ` /
+`flagSet_*_val_eq` completeness lemmas. The forbidden graph (`K3` or `K4`) is
+selected by `forbid.tag`. It relies on the `Flag_*`/`FlagAlgebra_*`/`flagSet_*`
+constants synthesized by `FlagDef.lean` and the JSON helpers in
+`DensityLoader.lean`.
+-/
+
 open Lean Elab Command Json
 open FlagAlgebras Forbid
 open FlagAlgebras.Compute
 
 namespace Flags.Densities
 
+/-- Parsed `density_*.json` for the multiplication loader: host/pattern/forbid
+tags, the indices of forbidden-free host and pattern flags, and the raw density
+rows `[patternIdx1, patternIdx2, hostIdx, value]`. -/
 structure MulJsonData where
   hostTag : String
   patternTag : String
@@ -18,6 +38,7 @@ structure MulJsonData where
   patternFreeIndices : Array Nat
   densities : Array Json
 
+/-- Parse the named object field as a JSON array of natural numbers. -/
 def parseNatArrayFromField (json : Json) (fieldName : String) : CommandElabM (Array Nat) := do
   let arr <-
     match json.getObjVal? fieldName with
@@ -25,6 +46,7 @@ def parseNatArrayFromField (json : Json) (fieldName : String) : CommandElabM (Ar
     | _ => throwError s!"Missing or invalid field '{fieldName}'"
   arr.mapM (fun j => parseNatFromJson j fieldName)
 
+/-- Read and parse a `density_*.json` file into `MulJsonData`. -/
 def parseMulJsonFile (path : System.FilePath) : CommandElabM MulJsonData := do
   let content <- liftIO <| IO.FS.readFile path
   let json <-
@@ -66,6 +88,7 @@ def parseMulJsonFile (path : System.FilePath) : CommandElabM MulJsonData := do
     densities := densities
   }
 
+/-- From a `size_n0_type` tag, build the generated `FlagType_<n0>_<type>` name. -/
 def parseFlagTypeNameFromTag (tag : String) : CommandElabM Name := do
   let parts := tag.splitOn "_"
   match parts with
@@ -78,6 +101,7 @@ def parseFlagTypeNameFromTag (tag : String) : CommandElabM Name := do
   | _ =>
       throwError s!"Invalid tag format (expected a_b_c): {tag}"
 
+/-- Parse a `size_n0_type` tag into the numeric triple `(size, n0, typeIdx)`. -/
 def parseTagTriple (tag : String) : CommandElabM (Nat × Nat × Nat) := do
   let parts := tag.splitOn "_"
   match parts with
@@ -92,17 +116,20 @@ def parseTagTriple (tag : String) : CommandElabM (Nat × Nat × Nat) := do
   | _ =>
       throwError s!"Invalid tag format (expected a_b_c): {tag}"
 
+/-- Build a real-number coefficient term from a `(num, den)` pair. -/
 def coeffToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
     `((($(Quote.quote num) : Nat) : ℝ))
   else
     `((($(Quote.quote num) : ℝ) / ($(Quote.quote den) : ℝ)))
 
+/-- Build the term `coeff • flagName`, one summand of the multiplication RHS. -/
 def coeffSmulFlagTerm (num den : Nat) (flagName : Name) : CommandElabM (TSyntax `term) := do
   let coeffTerm <- coeffToTerm num den
   let flagIdent := mkIdent flagName
   `($coeffTerm • $flagIdent)
 
+/-- Left-fold a list of summands into `t₀ + t₁ + …`, or `0` when empty. -/
 def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElabM (TSyntax `term) := do
   let flagTypeIdent := mkIdent flagTypeName
   match terms.toList with
@@ -111,6 +138,8 @@ def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElab
   | t :: ts =>
       ts.foldlM (fun acc nxt => `($acc + $nxt)) t
 
+/-- Parse one density row `[p1, p2, h, "num/den"]` into
+`(p1, p2, h, num, den)`. -/
 def parseDensityRow (row : Json) : CommandElabM (Nat × Nat × Nat × Nat × Nat) := do
   let .arr #[p1Json, p2Json, hJson, valJson] := row
     | throwError "Each density row must be [patternIdx1, patternIdx2, hostIdx, value]"
@@ -129,6 +158,8 @@ def parseDensityRow (row : Json) : CommandElabM (Nat × Nat × Nat × Nat × Nat
   let den := frac.2
   pure (p1, p2, h, num, den)
 
+/-- Scan the environment for existing `Flag_<hostTag>_h` constants and return
+the indices `h` found (up to `searchLimit`). -/
 def collectHostFlagIndices (hostTag : String) (searchLimit : Nat := 200) : CommandElabM (Array Nat) := do
   let mut indices : Array Nat := #[]
   let env <- getEnv
@@ -138,11 +169,14 @@ def collectHostFlagIndices (hostTag : String) (searchLimit : Nat := 200) : Comma
       indices := indices.push h
   pure indices
 
+/-- Strip leading `∀`-binders from an expression, returning its body. -/
 private def peelForall (e : Expr) : Expr :=
   match e with
   | .forallE _ _ body _ => peelForall body
   | _ => e
 
+/-- Given an equality theorem, return the head constant of its RHS as an
+identifier. -/
 private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax `ident) := do
   let env <- getEnv
   let some ci := env.find? thmName
@@ -159,6 +193,13 @@ private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax 
   | _ =>
       throwError s!"Could not extract RHS constant name from theorem: {thmName}"
 
+-- `load_forbid_mul_theorems "density_*.json"`: for every unordered pair
+-- `(i, j)` of forbidden-free pattern flags, generate the theorem
+-- `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[Kr.toFinFlag] Σ`, where
+-- the RHS sum collects `coeff • FlagAlgebra_<host>_h` over density rows with
+-- forbidden-free host `h` and nonzero coefficient. `Kr` is `K3`/`K4` from
+-- `forbid.tag`. Validates the pattern/host tags share a flag type and that all
+-- referenced constants exist; skips already-generated theorems.
 elab "load_forbid_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path

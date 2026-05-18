@@ -1,3 +1,24 @@
+"""Enumerate flags of a given type and emit them as enriched JSON.
+
+Given a total size ``n``, a type size ``k``, and a type index ``type_num``,
+this script reads the precomputed non-isomorphic graphs from
+``Graphs/graphs_k.json`` (the type sigma) and ``Graphs/graphs_n.json`` (the
+candidate underlying graphs). For each ``n``-vertex graph it finds all
+embeddings of the type, groups them into automorphism orbits, and emits one
+flag per orbit together with its ``downward_coeff`` (orbit size divided by the
+number of injections of the ``k`` labels into ``n`` vertices).
+
+Output: ``Flags/flags_<n>_<k>_<type_num>.json`` with fields ``n``, ``k``,
+``type_num``, ``type_edges``, and ``flags`` (each having
+``underlying_graph_num``, ``edges``, ``type_indices``, ``downward_coeff``).
+This file is consumed on the Lean side by the ``load_flags`` macro in
+``FlagLoader.lean`` (invoked from ``Flags/FlagDef.lean``), which synthesizes
+the ``Sym2Flag_n_k_m_i`` / ``Flag_n_k_m_i`` / ``downward_n_k_m_i`` constants.
+
+Example:
+    python generate_flags.py 4 2 0
+"""
+
 import argparse
 import itertools
 import json
@@ -11,6 +32,7 @@ Embedding = Tuple[int, ...]
 
 
 def normalize_edges(edges: Iterable[Sequence[int]]) -> Tuple[Edge, ...]:
+	"""Return edges as a sorted tuple of (u, v) pairs with u < v; reject loops."""
 	normalized: List[Edge] = []
 	for u_raw, v_raw in edges:
 		u = int(u_raw)
@@ -25,6 +47,7 @@ def normalize_edges(edges: Iterable[Sequence[int]]) -> Tuple[Edge, ...]:
 
 
 def relabel_edges(edges: Tuple[Edge, ...], perm: Sequence[int]) -> Tuple[Edge, ...]:
+	"""Apply a vertex permutation to the edges and renormalize."""
 	relabeled: List[Edge] = []
 	for u, v in edges:
 		nu = perm[u]
@@ -37,6 +60,7 @@ def relabel_edges(edges: Tuple[Edge, ...], perm: Sequence[int]) -> Tuple[Edge, .
 
 
 def induced_edges_on_embedding(graph_edges_set: Set[Edge], embedding: Embedding) -> Tuple[Edge, ...]:
+	"""Return the subgraph induced on ``embedding``, re-indexed to 0..k-1."""
 	k = len(embedding)
 	induced: List[Edge] = []
 	for i in range(k):
@@ -51,6 +75,7 @@ def induced_edges_on_embedding(graph_edges_set: Set[Edge], embedding: Embedding)
 
 
 def find_automorphisms(edges: Tuple[Edge, ...], n: int) -> List[Tuple[int, ...]]:
+	"""Return all vertex permutations that fix the graph (its automorphisms)."""
 	automorphisms: List[Tuple[int, ...]] = []
 	for perm in itertools.permutations(range(n)):
 		if relabel_edges(edges, perm) == edges:
@@ -61,6 +86,7 @@ def find_automorphisms(edges: Tuple[Edge, ...], n: int) -> List[Tuple[int, ...]]
 def find_valid_embeddings(
 	graph_edges: Tuple[Edge, ...], sigma_edges: Tuple[Edge, ...], n: int, k: int
 ) -> Set[Embedding]:
+	"""Return all k-vertex orderings whose induced subgraph equals the type."""
 	graph_edges_set = set(graph_edges)
 	valid: Set[Embedding] = set()
 	for emb in itertools.permutations(range(n), k):
@@ -72,6 +98,7 @@ def find_valid_embeddings(
 def orbit_of_embedding(
 	embedding: Embedding, automorphisms: Sequence[Tuple[int, ...]], valid_embeddings: Set[Embedding]
 ) -> Set[Embedding]:
+	"""Return the orbit of ``embedding`` under the graph's automorphism group."""
 	orbit: Set[Embedding] = set()
 	for perm in automorphisms:
 		moved = tuple(perm[v] for v in embedding)
@@ -81,12 +108,18 @@ def orbit_of_embedding(
 
 
 def to_fraction_string(value: Fraction) -> str:
+	"""Format a Fraction as ``"num"`` or ``"num/den"``."""
 	if value.denominator == 1:
 		return str(value.numerator)
 	return f"{value.numerator}/{value.denominator}"
 
 
 def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
+	"""Build the flag JSON for type ``graphs_k[type_num]`` over ``n`` vertices.
+
+	One flag is emitted per automorphism orbit of valid type embeddings, with
+	its downward coefficient = orbit size / (number of label injections).
+	"""
 	if n < k:
 		raise ValueError("n must be greater than or equal to k.")
 
@@ -160,6 +193,7 @@ def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
 
 
 def main() -> None:
+	"""CLI: parse n, k, type_num and write Flags/flags_<n>_<k>_<type_num>.json."""
 	parser = argparse.ArgumentParser(
 		description="Generate enriched flag JSON from Graphs/graphs_k.json and Graphs/graphs_n.json"
 	)

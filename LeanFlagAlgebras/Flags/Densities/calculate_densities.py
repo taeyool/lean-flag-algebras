@@ -1,3 +1,25 @@
+"""Compute pair densities p(F1, F2; G) over forbidden-subgraph-free graphs.
+
+Reads a host graph JSON file and a pattern graph JSON file (each either a
+list-of-edge-lists like ``Graphs/graphs_n.json`` or a flag object like
+``Flags/flags_n_k_m.json``), discards every host/pattern containing the chosen
+forbidden subgraph (``K3``, ``K4``, or an arbitrary graph in flagmatic
+notation), and for each unordered pair (with replacement) of forbidden-free
+patterns and each forbidden-free host computes the subflag-multiplication
+density ``p(F1, F2; G)`` exactly as a Fraction.
+
+Output JSON (``density_<host_tag>_from_<pattern_tag>.json`` by default) has
+fields ``host``, ``pattern``, ``forbid``, ``host_free_indices``,
+``pattern_free_indices``, and ``densities`` (rows ``[patternIdx1, patternIdx2,
+hostIdx, value]``). This file is consumed on the Lean side by
+``load_flag_pair_density_theorems`` (DensityLoader.lean) and
+``load_forbid_mul_theorems`` (MulLoader.lean).
+
+Example:
+    python calculate_densities.py --host ../Flags/flags_4_2_0.json \\
+        --pattern ../Flags/flags_3_2_0.json --forbid-K3
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -15,6 +37,8 @@ Edge = Tuple[int, int]
 
 @dataclass(frozen=True)
 class GraphRecord:
+    """One graph/flag: its index in the source file, edges, vertex count, and
+    the labeled (type) vertex indices."""
     index: int
     edges: Tuple[Edge, ...]
     n: int
@@ -22,6 +46,7 @@ class GraphRecord:
 
 
 def normalize_edges(edges: Iterable[Sequence[int]]) -> Tuple[Edge, ...]:
+    """Return edges as a sorted tuple of (u, v) pairs with u < v; reject loops."""
     normalized: List[Edge] = []
     for pair in edges:
         if len(pair) != 2:
@@ -38,6 +63,7 @@ def normalize_edges(edges: Iterable[Sequence[int]]) -> Tuple[Edge, ...]:
 
 
 def infer_n_from_filename(path: Path) -> int | None:
+    """Infer the vertex count from a ``flags_n_..`` / ``graphs_n`` filename."""
     # Supports names like flags_5_3_1.json or graphs_5.json.
     m = re.search(r"_(\d+)(?:_\d+_\d+)?\.json$", path.name)
     if not m:
@@ -46,12 +72,18 @@ def infer_n_from_filename(path: Path) -> int | None:
 
 
 def infer_n_from_edges(edges: Tuple[Edge, ...]) -> int:
+    """Infer the vertex count as one more than the largest endpoint."""
     if not edges:
         return 0
     return max(max(u, v) for u, v in edges) + 1
 
 
 def parse_graph_records(path: Path) -> Tuple[str, List[GraphRecord]]:
+    """Load a graphs/flags JSON file into a file tag and list of GraphRecords.
+
+    Accepts either a top-level list of edge lists or a flag object with a
+    ``flags`` key (carrying per-flag ``type_indices``).
+    """
     with path.open("r", encoding="utf-8") as f:
         raw = json.load(f)
 
@@ -87,6 +119,7 @@ def parse_graph_records(path: Path) -> Tuple[str, List[GraphRecord]]:
 
 
 def extract_file_tag(path: Path) -> str:
+    """Extract the ``n_k_m`` tag from a ``flags_*.json`` name (else the stem)."""
     # Example: flags_5_3_1.json -> 5_3_1
     m = re.search(r"flags_(\d+_\d+_\d+)\.json$", path.name)
     if m:
@@ -176,6 +209,7 @@ def forbid_free_only(
     forbid_edges: Tuple[Edge, ...],
     forbid_n: int,
 ) -> List[GraphRecord]:
+    """Keep only the records that do not contain the forbidden subgraph."""
     return [
         r for r in records
         if not contains_forbidden_subgraph(r.edges, r.n, forbid_edges, forbid_n)
@@ -183,6 +217,7 @@ def forbid_free_only(
 
 
 def relabel_edges(edges: Tuple[Edge, ...], perm: Sequence[int]) -> Tuple[Edge, ...]:
+    """Apply a vertex permutation to the edges and renormalize."""
     relabeled: List[Edge] = []
     for u, v in edges:
         nu = perm[u]
@@ -195,6 +230,7 @@ def relabel_edges(edges: Tuple[Edge, ...], perm: Sequence[int]) -> Tuple[Edge, .
 
 
 def canonical_form(edges: Tuple[Edge, ...], k: int) -> Tuple[Edge, ...]:
+    """Lexicographically smallest edge list over all relabelings of k vertices."""
     if k <= 1:
         return tuple()
     best = None
@@ -206,6 +242,8 @@ def canonical_form(edges: Tuple[Edge, ...], k: int) -> Tuple[Edge, ...]:
 
 
 def canonical_labeled_form(edges: Tuple[Edge, ...], n: int, labels: Tuple[int, ...]) -> Tuple[Edge, ...]:
+    """Canonical edge list with the labeled vertices fixed as 0..k-1 and the
+    unlabeled tail permuted to its lexicographically smallest form."""
     k = len(labels)
     if len(set(labels)) != k:
         raise ValueError("Label indices must be distinct")
@@ -238,6 +276,7 @@ def canonical_labeled_form(edges: Tuple[Edge, ...], n: int, labels: Tuple[int, .
 
 
 def induced_edges_on_subset(host_edge_set: set[Edge], subset: Tuple[int, ...]) -> Tuple[Edge, ...]:
+    """Return the subgraph induced on ``subset``, re-indexed to 0..k-1."""
     induced: List[Edge] = []
     k = len(subset)
     for i in range(k):
@@ -252,12 +291,19 @@ def induced_edges_on_subset(host_edge_set: set[Edge], subset: Tuple[int, ...]) -
 
 
 def frac_to_str(value: Fraction) -> str:
+    """Format a Fraction as ``"num"`` or ``"num/den"``."""
     if value.denominator == 1:
         return str(value.numerator)
     return f"{value.numerator}/{value.denominator}"
 
 
 def density_p_f1_f2_given_g(host: GraphRecord, f1: GraphRecord, f2: GraphRecord) -> Fraction:
+    """Exact subflag-multiplication density p(F1, F2; G).
+
+    Counts the fraction of ways to split the unlabeled host vertices into two
+    disjoint groups (sizes m1-k and m2-k, sharing the k labeled vertices) whose
+    induced labeled subflags equal F1 and F2 respectively.
+    """
     n_host = host.n
     m1 = f1.n
     m2 = f2.n
@@ -330,6 +376,7 @@ def density_p_f1_f2_given_g(host: GraphRecord, f1: GraphRecord, f2: GraphRecord)
 
 
 def resolve_input_path(path_str: str) -> Path:
+    """Resolve an input path relative to CWD, falling back to the script dir."""
     p = Path(path_str)
     if p.is_absolute():
         return p
@@ -340,6 +387,7 @@ def resolve_input_path(path_str: str) -> Path:
 
 
 def resolve_output_path(path_str: str) -> Path:
+    """Resolve an output path relative to the current working directory."""
     p = Path(path_str)
     if p.is_absolute():
         return p
@@ -352,6 +400,7 @@ _K4_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
 
 
 def main() -> None:
+    """CLI: parse host/pattern/forbid args and write the density JSON file."""
     parser = argparse.ArgumentParser(
         description=(
             "Compute p(F1, F2; G) for all forbidden-graph-free hosts G "

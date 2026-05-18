@@ -1,6 +1,14 @@
 import LeanFlagAlgebras.MantelTheorem.FlagDef
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
+/-! # Mantel's theorem: flag density tables
+
+Pre-computed single-flag densities (`flagDensity₁`) and flag-pair densities
+(`flagDensity₂`) for all the small flags appearing in the Mantel's theorem
+proof. Every theorem is closed by `native_decide` and tagged `@[simp]` so the
+later algebraic arguments can rewrite densities to concrete rational numbers
+automatically. -/
+
 open FlagAlgebras
 open FlagAlgebras.Compute
 

@@ -1,3 +1,19 @@
+"""Enumerate all non-isomorphic graphs on ``n`` vertices as canonical JSON.
+
+Uses NetworkX's graph atlas (supported for ``n <= 7``) to list every
+non-isomorphic ``n``-vertex graph, computes a canonical (lexicographically
+smallest) edge list for each, and writes them sorted to
+``LeanFlagAlgebras/Flags/Graphs/graphs_<n>.json`` as a top-level array of edge
+lists.
+
+This file is consumed on the Lean side by the ``load_empty_typed_flags`` macro
+in ``FlagLoader.lean`` (invoked from ``Flags/FlagDef.lean``), and also serves
+as the type/underlying-graph source for ``generate_flags.py``.
+
+Run via ``python generate_graphs.py`` (the ``n`` is hard-coded in the
+``__main__`` block; edit the ``generate_graphs_json`` argument to change it).
+"""
+
 import networkx as nx
 import json
 import itertools
@@ -51,6 +67,7 @@ def get_canonical_edges(G):
     return best_edges
 
 def generate_graphs_json(n):
+    """Write the canonical edge lists of all n-vertex graphs to graphs_<n>.json."""
     if n > 7:
         raise ValueError("Not supported for n > 7 due to performance")
 

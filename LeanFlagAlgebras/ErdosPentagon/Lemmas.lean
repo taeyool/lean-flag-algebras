@@ -4,6 +4,21 @@ import LeanFlagAlgebras.Utils.SortTactic
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
+/-! # Erdős pentagon problem: certificate lemmas
+
+The analytic heart of the Erdős pentagon upper bound. Provides:
+
+* the `reduce_flagmul` tactic, which repeatedly rewrites flag products on the
+  left of a forbidden-equality goal using the generated `flagMul_*` theorems;
+* the expanded forms (`flagQuadraticForm_*_expand`) of the three PSD quadratic
+  forms `vᵢᵀ Mᵢ vᵢ` as 5-vertex flag combinations, with `*_forbidEq` lemmas
+  proving they equal the matrix quadratic forms modulo the forbidden triangle;
+* the `*_downward_forbidLE_nonneg` lemmas: each square term is `≥ 0` after
+  downward projection, given the matrix is PSD;
+* `one_forbidEq_one_size_five_expand`, the size-5 expansion of `1`;
+* `ErdosPentagon_flagAlgebra`, the flag-algebra density bound
+  `C5 ≤[K3] (24/625)·1` (the pentagon count in triangle-free graphs). -/
+
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
@@ -237,6 +252,8 @@ noncomputable def flagQuadraticForm_P_v₀_expand
   - (36 / 625 : ℝ) • FlagAlgebra_5_3_0_66
   + (54 / 625 : ℝ) • FlagAlgebra_5_3_0_70
 
+/-- The matrix quadratic form `v₀ᵀ P v₀` equals its explicit 5-vertex flag
+expansion `flagQuadraticForm_P_v₀_expand`, modulo the forbidden triangle. -/
 lemma flagQuadraticForm_P_v₀_forbidEq
     : flagQuadraticForm P_real v₀ =[K3.toFinFlag] flagQuadraticForm_P_v₀_expand
   := by
@@ -247,6 +264,7 @@ lemma flagQuadraticForm_P_v₀_forbidEq
   simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
+/-- Explicit 5-vertex flag expansion of the quadratic form `v₁ᵀ Q v₁`. -/
 noncomputable def flagQuadraticForm_Q_v₁_expand
   :=
   (432 / 625 : ℝ) • FlagAlgebra_5_3_1_0
@@ -282,6 +300,8 @@ noncomputable def flagQuadraticForm_Q_v₁_expand
   - (1021 / 625 : ℝ) • FlagAlgebra_5_3_1_53
   - (3606 / 625 : ℝ) • FlagAlgebra_5_3_1_54
 
+/-- The matrix quadratic form `v₁ᵀ Q v₁` equals its explicit 5-vertex flag
+expansion `flagQuadraticForm_Q_v₁_expand`, modulo the forbidden triangle. -/
 lemma flagQuadraticForm_Q_v₁_forbidEq
     : flagQuadraticForm Q_real v₁ =[K3.toFinFlag] flagQuadraticForm_Q_v₁_expand
   := by
@@ -292,6 +312,7 @@ lemma flagQuadraticForm_Q_v₁_forbidEq
   simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
+/-- Explicit 5-vertex flag expansion of the quadratic form `v₂ᵀ R v₂`. -/
 noncomputable def flagQuadraticForm_R_v₂_expand
   :=
   (1512 / 625 : ℝ) • FlagAlgebra_5_3_2_0
@@ -317,6 +338,8 @@ noncomputable def flagQuadraticForm_R_v₂_expand
   - (2 / 625 : ℝ) • FlagAlgebra_5_3_2_53
   + (190 / 625 : ℝ) • FlagAlgebra_5_3_2_54
 
+/-- The matrix quadratic form `v₂ᵀ R v₂` equals its explicit 5-vertex flag
+expansion `flagQuadraticForm_R_v₂_expand`, modulo the forbidden triangle. -/
 lemma flagQuadraticForm_R_v₂_forbidEq
     : flagQuadraticForm R_real v₂ =[K3.toFinFlag] flagQuadraticForm_R_v₂_expand
   := by
@@ -327,6 +350,8 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   simp only [Nat.cast_one, one_smul, smul_add]
   ac_sort_pipeline
 
+/-- The first square term is nonnegative after downward projection (since `P`
+is PSD): `0 ≤[K3] ⟦flagQuadraticForm_P_v₀_expand⟧₀`. -/
 lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
   := by
@@ -335,6 +360,8 @@ lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
   apply forbidLE_of_le
   exact flagQuadraticForm_nonneg P_real P_real_posSemidef v₀
 
+/-- The second square term is nonnegative after downward projection (since `Q`
+is PSD): `0 ≤[K3] ⟦flagQuadraticForm_Q_v₁_expand⟧₀`. -/
 lemma flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_Q_v₁_expand⟧₀
   := by
@@ -343,6 +370,8 @@ lemma flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
   apply forbidLE_of_le
   exact flagQuadraticForm_nonneg Q_real Q_real_posSemidef v₁
 
+/-- The third square term is nonnegative after downward projection (since `R`
+is PSD): `0 ≤[K3] ⟦flagQuadraticForm_R_v₂_expand⟧₀`. -/
 lemma flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
     : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_R_v₂_expand⟧₀
   := by
@@ -351,6 +380,7 @@ lemma flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
   apply forbidLE_of_le
   exact flagQuadraticForm_nonneg R_real R_real_posSemidef v₂
 
+/-- The constant `1` expanded as the sum of all triangle-free 5-vertex flags. -/
 noncomputable def one_size_five_expand
   :=
   FlagAlgebra_5_0_0_0
@@ -368,6 +398,7 @@ noncomputable def one_size_five_expand
   + FlagAlgebra_5_0_0_19
   + FlagAlgebra_5_0_0_25
 
+/-- Modulo the forbidden triangle, `1` equals `one_size_five_expand`. -/
 lemma one_forbidEq_one_size_five_expand
     : 1 =[K3.toFinFlag] one_size_five_expand
   := by
@@ -381,6 +412,10 @@ lemma one_forbidEq_one_size_five_expand
   apply forbidEq_of_eq
   rfl
 
+/-- **Erdős pentagon bound (flag-algebra form).** Modulo the forbidden
+triangle, the pentagon density is at most `24/625`:
+`C5 ≤[K3] (24/625)·1`. Proved by adding the three PSD square terms (each `≥ 0`)
+to `C5` and bounding the result via the size-5 expansion of `1`. -/
 theorem ErdosPentagon_flagAlgebra
     : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

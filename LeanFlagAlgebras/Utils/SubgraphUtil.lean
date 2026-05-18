@@ -3,6 +3,16 @@ import «LeanFlagAlgebras».Utils.QuotientGraph
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Algebra.BigOperators.Field
 
+/-! # Subgraph utilities: induced subgraphs and transport along isomorphisms
+
+Shared utility supplying `Fintype` instances for (qualified) subgraphs, `inducedSubgraph` and its
+characterizations, and machinery to transport subgraphs / induced-subgraph predicates along a
+graph isomorphism (`relOfSubgraph`, `subgraphFromIso`, `subgraphByComposition`,
+`subgraphFromPartialIso`, and the `isoSetOf…` equivalences). Also provides the canonical
+representative `getCanonicalQuotSimpleGraph` for `QuotSimpleGraph`. These underpin the
+isomorphism-invariant subgraph counting used in the flag-algebra density bounds.
+-/
+
 open Finset
 open SimpleGraph
 open Classical
@@ -10,6 +20,9 @@ open Classical
 variable {T U V W X : Type}
 variable [Fintype T] [Fintype U] [Fintype V] [Fintype W] [Fintype X]
 
+/-! ## Finiteness of subgraphs -/
+
+/-- For finite `V`, `Subgraph G` is a `Fintype` (via the injection into vertex/edge sets). -/
 noncomputable instance subgraphFintype (G : SimpleGraph V) : Fintype (Subgraph G)
   :=
   let f : Subgraph G → Set V × Set (V × V) :=
@@ -56,6 +69,10 @@ noncomputable instance doublyQualifiedSubgraphPairProdSubgraphFintype
   have : Fintype ({⟨G₁,G₂⟩ : Subgraph G × Subgraph G | p ⟨G₁,G₂⟩} × Subgraph G) := qualifiedSubgraphPairProdSubgraphFintype G p
   inferInstance
 
+/-! ## Transporting subgraphs and predicates along an isomorphism -/
+
+/-- `relOfSubgraph φ H₀ H₁` holds when `H₁` is the image of `H₀` under the isomorphism `φ`
+(same vertex set image and matching adjacency). -/
 def relOfSubgraph
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (H₁ : Subgraph G₁) : Prop
@@ -63,12 +80,14 @@ def relOfSubgraph
   H₁.verts = φ '' H₀.verts
   ∧ ∀ (u v : V), H₁.Adj (φ u) (φ v) ↔ H₀.Adj u v
 
+/-- `p₀` and `p₁` correspond under `φ`: any pair of `φ`-related subgraphs satisfies `p₀ ↔ p₁`. -/
 def relOfPredOnSubgraph
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop) : Prop
   :=
   ∀ (H₀ : Subgraph G₀) (H₁ : Subgraph G₁), (relOfSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
+/-- Predicate on subgraphs of `G`: "this subgraph is isomorphic to the fixed graph `H`". -/
 def predIsoH
     (H : SimpleGraph U) (G : SimpleGraph V)
     : Subgraph G → Prop
@@ -76,6 +95,7 @@ def predIsoH
   fun G' => Nonempty (Subgraph.coe G' ≃g H)
 
 omit [Fintype V] [Fintype W] [Fintype U] in
+/-- "Isomorphic to `H`" is transported by `φ`: `predIsoH H G₀` and `predIsoH H G₁` correspond. -/
 lemma predIsoH_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : relOfPredOnSubgraph φ (predIsoH H G₀) (predIsoH H G₁)
@@ -131,6 +151,9 @@ lemma predIsoH_related
       simp_all only [Subgraph.coe_adj, Subtype.forall, Set.mem_image, forall_exists_index, f₀]
     exact ⟨Equiv.ofBijective f₀ h_bij₀, h_iso₀⟩
 
+/-! ## Induced subgraphs -/
+
+/-- The subgraph of `G` induced on the vertex set `S`: keep exactly the `G`-edges within `S`. -/
 def inducedSubgraph
     (G : SimpleGraph V) (S : Set V) : G.Subgraph where
   verts := S
@@ -157,6 +180,7 @@ lemma inducedSubgraph_verts
   simp [inducedSubgraph]
 
 omit [Fintype V] in
+/-- If `G₁` is induced and contains `G₀`'s vertices, then `G₀ ≤ G₁`. -/
 lemma inducedSubgraph_mono
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G}
     (h_G₁_ind : G₁.IsInduced) (h_sub : G₀.verts ⊆ G₁.verts)
@@ -170,6 +194,7 @@ lemma inducedSubgraph_mono
     exact h_G₁_ind h_u_G₁ h_v_G₁ <| G₀.adj_sub h_uv_G₀
 
 omit [Fintype V] in
+/-- An induced subgraph equals the subgraph induced on its own vertex set. -/
 lemma inducedSubgraph_eq
     {G : SimpleGraph V} {G₀ : Subgraph G}
     (h_G₀_ind : G₀.IsInduced) : G₀ = (inducedSubgraph G G₀.verts)
@@ -187,6 +212,7 @@ lemma inducedSubgraph_eq
       exact h_G₀_ind h_u_G₀ h_v_G₀ h_uv_G
 
 omit [Fintype V] in
+/-- Two induced subgraphs with the same vertex set are equal. -/
 lemma inducedSubgraph_eq_verts
     {G : SimpleGraph V}
     {G₁ : Subgraph G} (hG₁ : G₁.IsInduced)
@@ -196,6 +222,8 @@ lemma inducedSubgraph_eq_verts
   rw [inducedSubgraph_eq hG₁, inducedSubgraph_eq hG₂, h]
 
 omit [Fintype V] [Fintype W] in
+/-- The image of an induced subgraph `H₀` under `φ` is the subgraph induced on `φ '' H₀.verts`,
+and these two are `relOfSubgraph`-related. -/
 lemma inducedSubgraph_related
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (H₀ : Subgraph G₀) (h_ind₀ : H₀.IsInduced)
@@ -230,6 +258,10 @@ lemma inducedSubgraph_predIsoH_iff
   :=
   inducedSubgraph_pred_iff φ (predIsoH H G₀) (predIsoH H G₁) (predIsoH_related φ H)
 
+/-! ### Equivalences of induced-subgraph sets across an isomorphism -/
+
+/-- An isomorphism `φ` induces an equivalence between the induced subgraphs of `G₀` satisfying
+`p₀` and those of `G₁` satisfying the corresponding `p₁`. -/
 noncomputable def isoSetOfInducedSubgraph
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop)
@@ -288,6 +320,8 @@ lemma induced_disjoint_iff_image_disjoint
     : Disjoint (φ '' G₁.verts) (φ '' G₂.verts) ↔ Disjoint G₁.verts G₂.verts
   := Set.disjoint_image_iff φ.injective
 
+/-- Paired version of `isoSetOfInducedSubgraph`: equivalence between disjoint pairs of induced
+subgraphs satisfying `(p₀, p₂)` and the corresponding pairs satisfying `(p₁, p₃)`. -/
 noncomputable def isoSetOfInducedSubgraphPair
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁)
     (p₀ : Subgraph G₀ → Prop) (p₁ : Subgraph G₁ → Prop)
@@ -359,6 +393,8 @@ noncomputable def isoSetOfInducedSubgraphPair
     all_goals exact ⟨H₁.adj_sub h_uv, H₁.edge_vert h_uv, H₁.edge_vert (H₁.symm h_uv)⟩
   Equiv.ofBijective f f_bij
 
+/-- Specialization of `isoSetOfInducedSubgraph` to the predicate "induced and isomorphic to
+`H`": such subgraphs of `G₀` and `G₁` are equinumerous. -/
 noncomputable def isoSetOfInducedSubgraphIsoH
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H : SimpleGraph U)
     : { G' : Subgraph G₀ | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H) }
@@ -371,6 +407,8 @@ noncomputable def isoSetOfInducedSubgraphIsoH
     (predIsoH_related φ H)
     (predIsoH_related φ.symm H)
 
+/-- Paired specialization: equivalence between disjoint pairs of induced subgraphs isomorphic to
+`H₁`, `H₂` across the isomorphism `φ`. -/
 noncomputable def isoSetOfInducedSubgraphPairIsoH
     {G₀ : SimpleGraph V} {G₁ : SimpleGraph W} (φ : G₀ ≃g G₁) (H₁ : SimpleGraph T) (H₂ : SimpleGraph U)
     : { (G, G') : Subgraph G₀ × Subgraph G₀ |
@@ -393,6 +431,8 @@ noncomputable def isoSetOfInducedSubgraphPairIsoH
     (predIsoH_related φ H₂)
     (predIsoH_related φ.symm H₂)
 
+/-- Within a fixed `G`, replacing the target graph by an isomorphic one (`H₀ ≃g H₁`) does not
+change the set of induced subgraphs matching it. -/
 noncomputable def isoSetOfInducedSubgraphInG
     {H₀ : SimpleGraph V} {H₁ : SimpleGraph W} (φ : H₀ ≃g H₁) (G : SimpleGraph U)
     : { G' : Subgraph G | G'.IsInduced ∧ Nonempty (Subgraph.coe G' ≃g H₀) }
@@ -406,6 +446,9 @@ noncomputable def isoSetOfInducedSubgraphInG
     . exact φ.symm.comp h_iso
   exact Equiv.setCongr <| Set.sep_ext_iff.mpr fun x _ ↦ h x
 
+/-! ### `⊥` / `⊤` subgraph characterizations -/
+
+/-- A subgraph is the empty subgraph iff it is isomorphic to the empty graph on `Fin 0`. -/
 lemma subgraph_eq_empty_subgraph_iff_iso_empty_graph_on_fin_0
     {G : SimpleGraph V} {H : Subgraph G}
     : H = ⊥ ↔ Nonempty (H.coe ≃g (emptyGraph (Fin 0)))
@@ -452,6 +495,7 @@ lemma induced_full_subgraph_eq_top
     . exact G'.adj_sub
     . exact h h_u h_v
 
+/-- An induced subgraph isomorphic to all of `G` must be the top subgraph, and conversely. -/
 lemma induced_subgraph_iso_G_iff_eq_top
     {G : SimpleGraph V} {G' : Subgraph G}
     : G'.IsInduced ∧ Nonempty (G'.coe ≃g G) ↔ G' = ⊤
@@ -506,6 +550,9 @@ noncomputable def isoSetOfInducedSubgraphPairInG
     · exact ⟨h₁, (h_S x.1).mpr h₂, h₃, (h_H x.2).mpr h₄, h₅⟩
   exact this
 
+/-! ## Subgraph constructions transported across isomorphisms / orders -/
+
+/-- Push a subgraph `G₀ ≤ G` forward to `H` along an isomorphism `iso : G ≃g H`. -/
 def subgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ : Subgraph G)
     : Subgraph H
@@ -526,6 +573,7 @@ def subgraphFromIso
       intro u v h_uv_G₀
       exact G₀.symm h_uv_G₀
 
+/-- `G₀` is isomorphic (as a graph) to its pushforward `subgraphFromIso iso G₀`. -/
 def isoToSubgraphFromIso
     {G : SimpleGraph V} {H : SimpleGraph W}
     (iso : G ≃g H) (G₀ : Subgraph G)
@@ -554,6 +602,7 @@ def isoToSubgraphFromIso
   }
 
 omit [Fintype V] [Fintype W] in
+/-- Pushing forward along an isomorphism preserves inducedness. -/
 lemma subgraphFromIso_preserve_inducedness
     {G : SimpleGraph V} {H : SimpleGraph W}
     (iso : G ≃g H) (G₀ : Subgraph G) (h_ind_G₀ : G₀.IsInduced)
@@ -569,6 +618,7 @@ lemma subgraphFromIso_preserve_inducedness
   exact h_ind_G₀ (h h_u_H) (h h_v_H) <| (Iso.map_adj_iff iso.symm).mpr h_uv_H
 
 omit [Fintype V] [Fintype W] in
+/-- Pushing forward along an isomorphism preserves vertex-disjointness. -/
 lemma subgraphFromIso_preserve_disjointedness
     {G : SimpleGraph V} {H : SimpleGraph W} (iso : G ≃g H) (G₀ G₁ : Subgraph G) (h_disj : G₀.verts ∩ G₁.verts = ∅)
     : (subgraphFromIso iso G₀).verts ∩ (subgraphFromIso iso G₁).verts = ∅
@@ -582,6 +632,7 @@ lemma subgraphFromIso_preserve_disjointedness
   have h_iso₁' : iso.symm u ∈ G₁.verts := by rw [← Set.image_comp] at h_iso₁; simp only [Function.comp_apply, RelIso.symm_apply_apply, Set.image_id'] at h_iso₁; exact h_iso₁
   exact (h_disj ▸ Set.mem_inter h_iso₀' h_iso₁').elim
 
+/-- View a subgraph `G₀ ≤ G₁` as a subgraph of the coerced graph `G₁.coe`. -/
 def subgraphFromOrder
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
     : Subgraph G₁.coe
@@ -599,6 +650,7 @@ def subgraphFromOrder
       intro u v h_uv
       exact G₀.symm h_uv
 
+/-- `G₀` is isomorphic to its `subgraphFromOrder` image inside `G₁.coe`. -/
 def isoToSubgraphFromOrder
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
     : Subgraph.coe G₀ ≃g Subgraph.coe (subgraphFromOrder h_order)
@@ -619,6 +671,7 @@ def isoToSubgraphFromOrder
   }
 
 omit [Fintype V] [Fintype W] in
+/-- `subgraphFromOrder` preserves inducedness. -/
 lemma subgraphFromOrder_preserve_inducedness
     {G : SimpleGraph V} {G₀ G₁ : Subgraph G} (h_order : G₀ ≤ G₁)
     : G₀.IsInduced → (subgraphFromOrder h_order).IsInduced
@@ -629,6 +682,7 @@ lemma subgraphFromOrder_preserve_inducedness
   exact h_ind_G₀ h_u_G₀ h_v_G₀ (G₁.adj_sub h_uv_G₁)
 
 omit [Fintype V] [Fintype W] in
+/-- `subgraphFromOrder` preserves vertex-disjointness. -/
 lemma subgraphFromOrder_preserve_disjointedness
     {G : SimpleGraph V} {G₀ G₁ G₂ : Subgraph G}
     (h_order_G₁ : G₁ ≤ G₀) (h_order_G₂ : G₂ ≤ G₀) (h_disj : G₁.verts ∩ G₂.verts = ∅)
@@ -640,12 +694,14 @@ lemma subgraphFromOrder_preserve_disjointedness
   have : u ∈ G₁.verts ∩ G₂.verts := h_u_G₁_G₂
   exact (Set.notMem_empty _ (h_disj ▸ this)).elim
 
+/-- Flatten a subgraph-of-a-subgraph (`G₁ ≤ G₀.coe`) into a subgraph of the ambient `G`. -/
 def subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G₀.coe)
     :  Subgraph G
   :=
   SimpleGraph.Subgraph.coeSubgraph G₁
 
+/-- `G₁` is isomorphic to its flattened image `subgraphByComposition G₀ G₁`. -/
 def isoToSubgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (G₁ : Subgraph G₀.coe)
     :  G₁.coe ≃g (subgraphByComposition G₀ G₁).coe
@@ -671,6 +727,8 @@ lemma subgraphByComposition_le
   :=
   G₀.coeSubgraph_le G₁
 
+/-- For induced `G₀`, inducing `G` on `X₁ ⊆ G₀.verts` equals composing the induced subgraph
+of `G₀.coe` on the corresponding vertices. -/
 lemma inducedSubgraph_eq_subgraphByComposition
     {G : SimpleGraph V} (G₀ : Subgraph G) (h_G₀_ind : G₀.IsInduced)
     (X₁ : Finset V) (h_X₁ : X₁ ⊆ G₀.verts.toFinset)
@@ -696,12 +754,15 @@ lemma inducedSubgraph_eq_subgraphByComposition
         rw [←h_a_u, ←h_b_v]
         exact ⟨G₀.adj_sub h_G₀_adj_a_b, h_a_X₁, h_b_X₁⟩
 
+/-- Transport a subgraph `G₁ ≤ G₀` to a subgraph of `H`, given a partial isomorphism
+`iso : G₀ ≃g H₀.coe` onto a subgraph `H₀` of `H`. -/
 def subgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀) : Subgraph H
   :=
   subgraphByComposition H₀ (subgraphFromIso iso G₁)
 
+/-- `G₁` is isomorphic to its image `subgraphFromPartialIso iso G₁`. -/
 def isoToSubgraphFromPartialIso
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
@@ -713,6 +774,7 @@ def isoToSubgraphFromPartialIso
   h_iso_post.comp h_iso_pre
 
 omit [Fintype V] [Fintype W] in
+/-- The transported subgraph lies inside the target subgraph `H₀`. -/
 lemma subgraphFromPartialIso_le
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
@@ -721,6 +783,7 @@ lemma subgraphFromPartialIso_le
   simp [subgraphFromPartialIso, subgraphByComposition_le]
 
 omit [Fintype V] [Fintype W] in
+/-- `subgraphFromPartialIso` preserves inducedness (given `H₀` and `G₁` induced). -/
 lemma subgraphFromPartialIso_preserve_inducedness
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
@@ -740,6 +803,7 @@ lemma subgraphFromPartialIso_preserve_inducedness
   exact h_ind_G₁ h_u₀_G₁_verts h_v₀_G₁_verts h_u₀v₀_G₀
 
 omit [Fintype V] [Fintype W] in
+/-- `subgraphFromPartialIso` preserves vertex-disjointness. -/
 lemma subgraphFromPartialIso_preserve_disjointedness
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ G₂ : Subgraph G₀) (h_disj : G₁.verts ∩ G₂.verts = ∅)
@@ -762,6 +826,7 @@ lemma subgraphFromPartialIso_preserve_disjointedness
   exact (Set.notMem_empty _ (h_disj ▸ h_u₁_G₁_G₂)).elim
 
 omit [Fintype W] in
+/-- If `G₁`, `G₂` cover `G₀`'s vertices, their transported images cover `H₀`'s vertices. -/
 lemma subgraphFromPartialIso_preserve_cover
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ G₂ : Subgraph G₀)
@@ -782,6 +847,8 @@ lemma subgraphFromPartialIso_preserve_cover
   . rintro (⟨_, _, rfl⟩ | ⟨_, _, rfl⟩) <;> exact Subtype.coe_prop _
 
 omit [Fintype W] in
+/-- When `G₁` and `H₀` are induced, the transported subgraph is exactly the induced subgraph
+of `H` on the image vertex set. -/
 lemma subgraphFromPartialIso_eq_inducedSubgraph
     {G₀ : SimpleGraph V} {H : SimpleGraph W} {H₀ : Subgraph H}
     (iso : G₀ ≃g H₀.coe) (G₁ : Subgraph G₀)
@@ -799,6 +866,10 @@ lemma subgraphFromPartialIso_eq_inducedSubgraph
         subgraphFromPartialIso_preserve_inducedness iso G₁ h_H₀_ind h_G₁_ind
     rw [←h_H₁_vert_eq, ←inducedSubgraph_eq h_H₁_ind]
 
+/-! ## Canonical `QuotSimpleGraph` representative -/
+
+/-- Given `|V| = ℓ`, produce the isomorphism class in `QuotSimpleGraph (Fin ℓ)` of `G`
+together with an isomorphism from its chosen representative `.out` to `G`. -/
 noncomputable def getCanonicalQuotSimpleGraph
       (G : SimpleGraph V) (h_V_size : Fintype.card V = ℓ)
       : (F : QuotSimpleGraph (Fin ℓ)) × (F.out ≃g G)
@@ -829,6 +900,7 @@ lemma getCanonicalQuotSimpleGraph_self
     _  = ⟦F.out⟧  := Quotient.sound <| .intro h_iso
     _  = F := F.out_eq
 
+/-- Isomorphic graphs map to the same canonical class in `QuotSimpleGraph (Fin ℓ)`. -/
 lemma getCanonicalQuotSimpleGraph_iso
     (G₀ : SimpleGraph V) (h_size₀ : Fintype.card V = ℓ)
     (G₁ : SimpleGraph W) (h_size₁ : Fintype.card W = ℓ)
@@ -849,6 +921,8 @@ lemma subgraph_verts_card_from_iso_graph
   :=
   Fintype.card_fin ℓ ▸ Fintype.card_congr h_iso
 
+/-- Builds an isomorphism from the induced subgraph of `G` on the transported vertex set onto
+`H₁`, composing the partial-iso transport with the given `F₁ ≃g H₁`. -/
 noncomputable def isoFromInducedSubgraphByPartialIso
     {F₀ : SimpleGraph U} {F₁ : Subgraph F₀} {G : SimpleGraph V} {G₀ : Subgraph G} {H₁ : SimpleGraph W}
     (iso_G₀_F₀ : Subgraph.coe G₀ ≃g F₀) (iso_F₁_H₁ : Subgraph.coe F₁ ≃g H₁)

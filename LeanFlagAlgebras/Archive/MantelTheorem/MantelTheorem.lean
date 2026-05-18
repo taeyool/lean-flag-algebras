@@ -7,6 +7,18 @@ import Mathlib.Data.Real.ConjExponents
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Integral.MeanInequalities
 
+/-!
+# (Archived) Early Mantel's-theorem proof via the flag algebra
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is the first end-to-end
+flag-algebra proof of Mantel's theorem (`K2 ≤ ½ • 1 + K3`), built on the
+hand-written flags of `Archive/MantelTheorem/FlagDefs.lean`, and also includes
+a Goodman/Ramsey-multiplicity bound and a Cauchy–Schwarz inequality for the
+flag algebra. The active, maintained proof lives in
+`LeanFlagAlgebras/MantelTheorem/MantelTheorem.lean` (and `Logic/MantelTheorem`).
+-/
+
 open FlagAlgebras MeasureTheory
 
 namespace Archive.MantelTheorem
@@ -73,6 +85,8 @@ lemma O2₁_minus_K2₁_square_downward
         simp only [← sub_smul]
         norm_num
 
+/-- Mantel's theorem in flag-algebra form: edge density is at most `½` plus
+triangle density. (Archived early proof.) -/
 theorem mantel_theorem
     : K2 ≤ (1 / 2 : ℝ) • 1 + K3
   := by
@@ -155,6 +169,8 @@ theorem downward_zero_case {ℓ} {σ : FlagType (Fin ℓ)}
   exact hφ
 
 
+/-- Cauchy–Schwarz for the flag algebra: `⟦ff⟧₀ · ⟦gg⟧₀ ≥ ⟦fg⟧₀ · ⟦fg⟧₀`,
+proved by integrating against the probability measures from positive homs. -/
 theorem Cauchy_Schwarz_inequality {ℓ} {σ : FlagType (Fin ℓ)} (f g : FlagAlgebra σ)
     : ⟦f * f⟧₀ * ⟦g * g⟧₀ ≥ ⟦f * g⟧₀ * ⟦f * g⟧₀
   := by

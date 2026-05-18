@@ -33,11 +33,22 @@ def parse_flag_name(flag_name: str) -> Tuple[int, int, int, int]:
 
 
 def get_flags_json_path(n: int, k: int, type_num: int) -> Path:
+	"""Return the path to the flags_<n>_<k>_<type_num>.json file under Flags/Flags/."""
 	base_dir = Path(__file__).resolve().parents[1] / "Flags" / "Flags"
 	return base_dir / f"flags_{n}_{k}_{type_num}.json"
 
 
 def load_flag_data(n: int, k: int, type_num: int, flag_index: int) -> Tuple[Dict, Dict]:
+	"""Load the flags JSON file and return (full_data, selected_flag).
+
+	Args:
+		n, k, type_num: Identify which flags_*.json file to read.
+		flag_index: Index of the flag within that file's "flags" list.
+
+	Returns the parsed top-level JSON dict (containing e.g. "type_edges")
+	and the single flag dict at flag_index. Raises FileNotFoundError if
+	the JSON file is missing and IndexError if flag_index is out of range.
+	"""
 	json_path = get_flags_json_path(n, k, type_num)
 	if not json_path.exists():
 		raise FileNotFoundError(f"Flag data file not found: {json_path}")
@@ -82,6 +93,13 @@ def draw_flag(
 	data: Dict,
 	flag: Dict,
 ) -> None:
+	"""Render the flag as a matplotlib figure on a circular node layout.
+
+	Type vertices and type edges (those induced by the root type) are drawn
+	in red with the type's local order as the label; all other vertices and
+	edges are drawn in black with their graph index. Opens an interactive
+	matplotlib window via plt.show(). Requires matplotlib.
+	"""
 	try:
 		import matplotlib.pyplot as plt
 	except ImportError as ex:

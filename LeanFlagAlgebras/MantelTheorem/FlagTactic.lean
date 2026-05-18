@@ -1,6 +1,21 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
+/-! # Mantel's theorem: problem-specific tactics
+
+Custom proof automation for the Mantel's theorem development. Provides
+expression-walking helpers that locate/parse generated `Flag_n_k_m_i` and
+`FlagAlgebra_n_k_m_i` constants, plus three tactics:
+
+* `prove_flag_expand_with_restriction N` — expand a flag at size `N` under a
+  forbidden-subgraph (density-zero) restriction hypothesis;
+* `prove_flag_expand N` — expand one flag-algebra basis element as its size-`N`
+  flag sum;
+* `prove_flag_mul` — reduce a flag product to a linear combination of flags.
+
+All three rewrite via the generated `flagSet_*_eq_univ` / `flagSet_*_val_eq`
+lemmas and close by algebraic normalization. -/
+
 open Lean Elab Tactic Meta
 
 namespace MantelTheorem
@@ -75,6 +90,7 @@ def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
   let i ← String.toNat? iStr
   pure (n, k, m, i)
 
+/-- Collect every constant whose name starts with `prefixStr` in an expression. -/
 partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name :=
   let rec collectAux (e : Expr) (acc : Array Name) : Array Name :=
     match e with
@@ -103,6 +119,7 @@ hypothesis.
 -/
 syntax (name := flagExpandWithRestrictionTac) "prove_flag_expand_with_restriction " term : tactic
 
+/-- Implementation of the `prove_flag_expand_with_restriction N` tactic. -/
 def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))

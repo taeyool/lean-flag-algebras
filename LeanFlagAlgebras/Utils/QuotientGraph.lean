@@ -1,9 +1,17 @@
 import Mathlib.Combinatorics.SimpleGraph.Maps
 
+/-! # Isomorphism classes of simple graphs
+
+Shared utility defining graph isomorphism as an equivalence relation `graph_eqv`, the induced
+`Setoid`, and the quotient type `QuotSimpleGraph V` of unlabeled graphs (with a `Fintype`
+instance for finite `V`). Used as the index type of "flags" in the flag-algebra development.
+-/
+
 open Classical
 
 variable {V : Type}
 
+/-- Two graphs on `V` are equivalent when there is a graph isomorphism between them. -/
 def graph_eqv (G₀ G₁ : SimpleGraph V) : Prop
   :=
   Nonempty (G₀ ≃g G₁)
@@ -29,6 +37,7 @@ theorem graph_eqv.trans
   :=
   fun ⟨f01, hf01⟩ ⟨f12, hf12⟩ ↦ ⟨f01.trans f12, hf12.trans hf01⟩
 
+/-- The setoid on `SimpleGraph V` whose relation is graph isomorphism (`graph_eqv`). -/
 instance graphSetoid (V : Type) [Fintype V] [DecidableEq V]
     : Setoid (SimpleGraph V)
   where
@@ -39,6 +48,7 @@ instance graphSetoid (V : Type) [Fintype V] [DecidableEq V]
       trans := graph_eqv.trans
     }
 
+/-- The type of isomorphism classes of simple graphs on `V` (unlabeled graphs). -/
 def QuotSimpleGraph (V : Type) [Fintype V] [DecidableEq V] : Type :=
   Quotient (graphSetoid V)
 

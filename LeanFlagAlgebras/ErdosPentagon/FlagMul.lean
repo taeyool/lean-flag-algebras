@@ -1,5 +1,13 @@
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 
+/-! # Erdős pentagon problem: generated flag products
+
+Bulk-loads the pre-generated flag-pair density theorems, forbidden-density
+theorems and flag-product (`flagMul_*`) identities for the 5-vertex,
+triangle-free flags over the three 3-vertex types, from the JSON data files.
+These supply the product expansions consumed by the certificate reduction in
+`Lemmas.lean`. -/
+
 open FlagAlgebras Forbid
 open FlagAlgebras.Compute
 

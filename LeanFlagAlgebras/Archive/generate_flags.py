@@ -1,3 +1,13 @@
+"""ARCHIVED / SUPERSEDED early flag-generation script.
+
+This is **not** part of the active pipeline. It is an early version of the
+flag enumerator: for a given type it brute-forces the power set of all
+potential edges, canonicalizes each candidate by permuting only the non-type
+vertices, and writes the non-isomorphic flags (plus type info) to a JSON file
+consumed by the (old) Lean loader. It is superseded by the maintained
+``LeanFlagAlgebras/Flags/generate_flags.py``.
+"""
+
 import json
 import itertools
 import os

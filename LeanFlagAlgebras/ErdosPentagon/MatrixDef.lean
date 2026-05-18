@@ -1,9 +1,19 @@
 import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
 
+/-! # Erdős pentagon problem: PSD certificate matrices
+
+The three sum-of-squares certificate matrices `P` (8×8), `Q` (6×6) and `R`
+(5×5) over `ℚ`, together with their real liftings (`P_real`/`Q_real`/`R_real`)
+and explicit LDLᵀ factorizations. The `*_posSemidef` / `*_real_posSemidef`
+theorems certify positive semidefiniteness by exhibiting the factorization with
+a nonnegative diagonal, which is the analytic core of the Erdős pentagon
+density upper bound. -/
+
 open Matrix
 
 namespace ErdosPentagon
 
+/-- Rational PSD certificate matrix paired with the flag vector `v₀`. -/
 def P : Matrix (Fin 8) (Fin 8) ℚ :=
   !![(24 / 625 : ℚ), (-36 / 625 : ℚ), (-36 / 625 : ℚ), (24 / 625 : ℚ), (-36 / 625 : ℚ), (24 / 625 : ℚ), (24 / 625 : ℚ), (-36 / 625 : ℚ);
      (-36 / 625 : ℚ), (277 / 625 : ℚ), (97 / 625 : ℚ), (-79 / 625 : ℚ), (97 / 625 : ℚ), (-79 / 625 : ℚ), (-259 / 625 : ℚ), (54 / 625 : ℚ);
@@ -36,6 +46,7 @@ lemma dP_nonneg (i : Fin 8) : 0 ≤ dP i := by
 lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
   decide +kernel
 
+/-- `P` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem P_posSemidef : P.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dP_nonneg P_eq_LDL
 
@@ -50,6 +61,7 @@ lemma P_real_eq_LDL :
     _ = (ratMatrixToReal LP * Matrix.diagonal (fun i => (dP i : ℝ))) * (ratMatrixToReal LP)ᵀ := by
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 
+/-- The real lifting `P_real` is positive semidefinite. -/
 theorem P_real_posSemidef : P_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dP_real_nonneg P_real_eq_LDL
 
@@ -83,6 +95,7 @@ lemma dQ_nonneg (i : Fin 6) : 0 ≤ dQ i := by
 lemma Q_eq_LDL : Q = LQ * Matrix.diagonal dQ * LQᵀ := by
   decide +kernel
 
+/-- `Q` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem Q_posSemidef : Q.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dQ_nonneg Q_eq_LDL
 
@@ -97,6 +110,7 @@ lemma Q_real_eq_LDL :
     _ = (ratMatrixToReal LQ * Matrix.diagonal (fun i => (dQ i : ℝ))) * (ratMatrixToReal LQ)ᵀ := by
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 
+/-- The real lifting `Q_real` is positive semidefinite. -/
 theorem Q_real_posSemidef : Q_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dQ_real_nonneg Q_real_eq_LDL
 
@@ -127,6 +141,7 @@ lemma dR_nonneg (i : Fin 5) : 0 ≤ dR i := by
 lemma R_eq_LDL : R = LR * Matrix.diagonal dR * LRᵀ := by
   decide +kernel
 
+/-- `R` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem R_posSemidef : R.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose dR_nonneg R_eq_LDL
 
@@ -141,6 +156,7 @@ lemma R_real_eq_LDL :
     _ = (ratMatrixToReal LR * Matrix.diagonal (fun i => (dR i : ℝ))) * (ratMatrixToReal LR)ᵀ := by
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 
+/-- The real lifting `R_real` is positive semidefinite. -/
 theorem R_real_posSemidef : R_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dR_real_nonneg R_real_eq_LDL
 

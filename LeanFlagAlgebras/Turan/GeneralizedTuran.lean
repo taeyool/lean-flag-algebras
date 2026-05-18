@@ -4,6 +4,15 @@ import Mathlib.Combinatorics.Enumerative.DoubleCounting
 import Mathlib.Combinatorics.SimpleGraph.Extremal.Basic
 import Mathlib.Data.Nat.Choose.Cast
 
+/-! # Generalized Turán numbers and densities
+
+Generalized Turán-type extremal quantities: `generalizedExtremalNumber n H F` is the
+maximum number of induced copies of `F` over all `H`-free graphs on `n` vertices, and
+`generalizedTuranDensity H F` is the limit of the normalized extremal numbers. The file
+establishes the basic characterizations, monotonicity of the normalized sequence, and
+that the limit defining the density is well-defined (`tendsto_generalizedTuranDensity`).
+-/
+
 open GraphAlgebras
 open Asymptotics Filter Finset Fintype Topology SimpleGraph
 

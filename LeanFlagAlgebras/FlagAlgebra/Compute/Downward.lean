@@ -1,15 +1,28 @@
 import «LeanFlagAlgebras».FlagAlgebra.Compute.FastIso
 
+/-! # Computable downward / averaging coefficients
+
+Computable counterpart of the abstract downward (unlabeling/averaging) machinery, used by the
+loader macros. It defines effective isomorphism counts on `Sym2LabeledGraph`s and the
+`downwardNormalizingFactor` for `Sym2LabeledGraph`/`Sym2Flag`, then proves these agree with the
+abstract `isomorphismCount` / `downwardNormalizingFactor` under the `toLabeledGraph` / `toFlag`
+decoding, so data computed in the `Sym2` representation is provably correct.
+-/
+
 namespace FlagAlgebras.Compute
 
 open SimpleGraph
 
+/-- The flag-equivalent relabelings of `G` that keep the same underlying edge set; their count
+gives the computable isomorphism count. -/
 def isoSym2LabeledGraphSetWithSameGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : Finset (Sym2LabeledGraph σ n)
   :=
   { H : Sym2LabeledGraph σ n | G.edges = H.edges ∧ G ∼sf H }
 
+/-- The type embeddings into `G`'s graph that make it flag-equivalent to `G`; equinumerous
+with `isoSym2LabeledGraphSetWithSameGraph G`. -/
 def isoSym2TypeEmbeddingSetWithSameGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n)
@@ -22,18 +35,21 @@ def isoSym2TypeEmbeddingSetWithSameGraph
         };
         G ∼sf H }
 
+/-- Computable isomorphism count of `G` (number of same-graph flag-equivalent relabelings). -/
 def isomorphismCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : ℕ
   :=
   (isoSym2LabeledGraphSetWithSameGraph G).card
 
+/-- Computable count of type embeddings making `G` flag-equivalent to itself. -/
 def isoEmbeddingCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : ℕ
   :=
   (isoSym2TypeEmbeddingSetWithSameGraph G).card
 
+/-- The two computable counts agree (relabelings ↔ type embeddings). -/
 theorem isomorphismCount_sym2LabeledGraph_eq_isoEmbeddingCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
@@ -73,6 +89,8 @@ theorem isomorphismCount_sym2LabeledGraph_eq_isoEmbeddingCount_sym2LabeledGraph
     refine ⟨⟨G.edges, G.edges_valid, θ⟩, ?_, rfl⟩
     simpa [isoSym2LabeledGraphSetWithSameGraph, isoSym2TypeEmbeddingSetWithSameGraph] using hθ
 
+/-- Computable downward normalizing factor of `G`: its isomorphism-embedding count divided by
+the number of all injections `Fin k ↪ Fin n` (`n! / (n-k)!`). -/
 def downwardNormalizingFactor_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) : ℚ
@@ -80,6 +98,7 @@ def downwardNormalizingFactor_sym2LabeledGraph
   let num_of_all_injections := n.factorial / (n - k).factorial
   isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
 
+/-- The computable count matches the abstract `isomorphismCount` of the decoded graph. -/
 theorem isomorphismCount_eq_isomorphismCount_sym2LabeledGraph
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
@@ -119,6 +138,7 @@ theorem isomorphismCount_eq
   := by
   rw [isomorphismCount_eq_isomorphismCount_sym2LabeledGraph, isomorphismCount_sym2LabeledGraph_eq_isoEmbeddingCount_sym2LabeledGraph]
 
+/-- The computable normalizing factor matches the abstract one on the decoded labeled graph. -/
 theorem downwardNormalizingFactor_labeledGraph_eq
   {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
@@ -136,6 +156,8 @@ theorem downwardNormalizingFactor_sym2LabeledGraph_respect_eqv
   rw [← downwardNormalizingFactor_labeledGraph_eq, ← downwardNormalizingFactor_labeledGraph_eq]
   exact downwardNormalizingFactor_labeledGraph_respect_eqv h_eqv
 
+/-- Computable downward normalizing factor of a `Sym2Flag`, lifted from representatives since
+the factor respects flag-equivalence. -/
 def downwardNormalizingFactor_Sym2Flag
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} (F : Sym2Flag σ n) : ℚ
   := by
@@ -143,6 +165,8 @@ def downwardNormalizingFactor_Sym2Flag
   intro G G' h_eqv
   exact downwardNormalizingFactor_sym2LabeledGraph_respect_eqv h_eqv
 
+/-- The computable `Sym2Flag` factor matches the abstract `downwardNormalizingFactor` on the
+decoded flag; this is the correctness guarantee the loader relies on. -/
 theorem downwardNormalizingFactor_eq
     {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (F : Sym2Flag σ n) :

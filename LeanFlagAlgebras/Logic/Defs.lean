@@ -1,11 +1,23 @@
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
+/-! # An embedded assertion DSL for flag algebras
+
+An experimental embedded logic over flag-algebra elements. `Assert σ` is an inductive of
+atomic equalities (`=ₐ`), inequalities (`≤ₐ`) and implications (`→ₐ`); `eval` interprets
+an assertion at a positive homomorphism, `isValid` means it holds for all homomorphisms,
+and `Entails` (`⊢ₐ`) is validity of an implication. The file also develops the
+equivalence relation `≡ₐ` and the structural/algebraic inference rules of the DSL.
+-/
+
 open FlagAlgebras
 
 namespace FlagLogic
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
+/-- An assertion of the embedded flag-algebra DSL: an atomic equality `eq` (`=ₐ`) or
+inequality `le` (`≤ₐ`) between flag-algebra elements, or an implication `implies`
+(`→ₐ`) between assertions. -/
 inductive Assert (σ : FlagType (Fin n₀)) where
   -- | false_  : Assert σ
   -- | true_   : Assert σ
@@ -21,10 +33,13 @@ inductive Assert (σ : FlagType (Fin n₀)) where
 
 namespace Assert
 
+-- Notation: `f =ₐ g`, `f ≤ₐ g` for atomic assertions and `A →ₐ B` for implication.
 infix:50  " =ₐ " => eq
 infix:50 " ≤ₐ " => le
 infixr:25 " →ₐ " => implies
 
+/-- Interpret an assertion `A` at a positive homomorphism `φ` as a `Prop`: atoms become
+the corresponding `=`/`≤` on `φ`-values, implication becomes `→`. -/
 def eval (A : Assert σ) (φ : PositiveHom σ) : Prop
   :=
   match A with
@@ -40,12 +55,15 @@ def eval (A : Assert σ) (φ : PositiveHom σ) : Prop
   -- | .or A B => A.eval φ ∨ B.eval φ
   | .implies A B => A.eval φ → B.eval φ
 
+/-- An assertion is valid if it evaluates to `True` at every positive homomorphism. -/
 def isValid (A : Assert σ) : Prop :=
   ∀ (φ : PositiveHom σ), A.eval φ
 
+/-- `A` entails `B` when the implication `A →ₐ B` is valid. -/
 def Entails (A B : Assert σ) : Prop :=
   isValid (A →ₐ B)
 
+-- Notation: `A ⊢ₐ B` for `Entails A B`.
 infix:20 " ⊢ₐ " => Entails
 
 @[simp]
@@ -77,9 +95,12 @@ theorem eq_trans (f g h : FlagAlgebra σ)
   intro φ hfg hgh
   exact Eq.trans hfg hgh
 
+/-- `f ≡ₐ g`: the assertion `f =ₐ g` is valid, i.e. `φ f = φ g` for every positive
+homomorphism `φ`. This is the DSL's equivalence relation on flag-algebra elements. -/
 def Eqv (f g : FlagAlgebra σ) : Prop :=
   isValid (f =ₐ g)
 
+-- Notation: `f ≡ₐ g` for `Eqv f g`.
 infix:50 " ≡ₐ " => Eqv
 
 @[simp]

@@ -1,6 +1,16 @@
 import «LeanFlagAlgebras».Archive.MantelTheorem.FlagDefs
 import «LeanFlagAlgebras».Archive.Compute.FlagDensity
 
+/-!
+# (Archived) Precomputed densities of the hand-written Mantel flags
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It records, as `@[simp]` lemmas, the
+single- and pair-flag densities among the hand-written 3-vertex Mantel flags
+(e.g. `flagDensity₂ O2₁ K2₁ E3₁ = 1/2`), each discharged by `native_decide`.
+Superseded by the active `LeanFlagAlgebras/MantelTheorem/` development.
+-/
+
 open FlagAlgebras
 open LabeledSubgraph
 open Classical

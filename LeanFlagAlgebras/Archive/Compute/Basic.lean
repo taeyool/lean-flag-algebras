@@ -2,6 +2,17 @@ import «LeanFlagAlgebras».FlagAlgebra.FlagOperators
 import Mathlib.Combinatorics.SimpleGraph.Subgraph
 import Mathlib.Data.Fintype.Perm
 
+/-!
+# (Archived) Early computable flag/graph representation
+
+ARCHIVED / SUPERSEDED — this file is **not** part of the build (its import is
+commented out in `LeanFlagAlgebras.lean`). It is an early prototype of the
+computable, edge-`Finset`-encoded labeled-graph/flag layer (`Sym2LabeledGraph`,
+`Sym2Flag`, the `∼sf` equivalence, and round-trip lemmas to the abstract
+`LabeledGraph`/`Flag` types). The active, maintained version lives in
+`LeanFlagAlgebras/FlagAlgebra/Compute/Basic.lean`.
+-/
+
 namespace Archive.Compute
 
 open FlagAlgebras
@@ -78,6 +89,8 @@ instance
   rw [flagEqv]
   infer_instance
 
+/-- A labeled graph encoded by an explicit edge `Finset (Sym2 (Fin n))` (rather
+than an opaque adjacency relation), making instances effectively computable. -/
 @[ext]
 structure Sym2LabeledGraph {T : Type} (σ : FlagType T) (n : ℕ) where
   edges : Finset (Sym2 (Fin n))
@@ -279,6 +292,7 @@ instance sym2LabeledGraphSetoid
       trans := sym2LabeledGraphEqv.trans
     }
 
+/-- A flag as the quotient of `Sym2LabeledGraph`s by flag isomorphism `∼sf`. -/
 def Sym2Flag {T : Type} (σ : FlagType T) (n : ℕ) : Type :=
   Quotient (sym2LabeledGraphSetoid σ n)
 

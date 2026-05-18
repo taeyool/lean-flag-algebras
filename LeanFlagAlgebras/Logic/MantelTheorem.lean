@@ -2,6 +2,15 @@ import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 
+/-! # Mantel's theorem inside the assertion DSL
+
+Worked examples and the restatement of Mantel's theorem within the `FlagLogic` DSL,
+exercising the `prove_flag_expand_with_forbidden_flag` /
+`prove_flag_mul_with_forbidden_flag` tactics. The headline result `Mantel_theorem`
+derives the edge-density bound `K2 ≤ₐ (1/2) • 1` from forbidding the triangle `K3`,
+together with a downward-entailment lemma transferring DSL entailments to unlabelings.
+-/
+
 open FlagAlgebras
 open MantelTheorem
 open MeasureTheory
@@ -40,6 +49,8 @@ example : FlagAlgebra_3_1_0_5 =ₐ 0
   := by
   prove_flag_mul_with_forbidden_flag 3
 
+/-- A DSL entailment `⟦unitVector ⟨n, F⟩⟧ =ₐ 0 ⊢ₐ f =ₐ f'` descends to the unlabelings:
+forbidding the unlabeled flag entails the unlabeled equality `⟦f⟧₀ =ₐ ⟦f'⟧₀`. -/
 theorem downward_entails_eq_of_forbid_unlabel_zero
     {n₀ n : ℕ} {σ : FlagType (Fin n₀)} {F : FlagWithSize σ n} {f f' : FlagAlgebra σ}
     (h : ⟦unitVector ⟨n, F⟩⟧ =ₐ 0 ⊢ₐ f =ₐ f')
@@ -72,6 +83,8 @@ theorem downward_entails_eq_of_forbid_unlabel_zero
   intro φ hF
   exact h_down_forbid φ (by simpa [F_untyped] using hF)
 
+/-- Mantel's theorem in the DSL: forbidding the triangle `K3` entails the edge-density
+bound `K2 ≤ₐ (1/2) • 1` over the empty type. -/
 theorem Mantel_theorem
     : K3 =ₐ (0 : FlagAlgebra ∅ₜ) ⊢ₐ K2 ≤ₐ (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

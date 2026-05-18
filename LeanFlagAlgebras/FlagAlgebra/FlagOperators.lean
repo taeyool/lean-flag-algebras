@@ -2,6 +2,20 @@ import «LeanFlagAlgebras».FlagAlgebra.FlagAlgebra
 import Mathlib.Data.Fintype.CardEmbedding
 import Mathlib.Data.Nat.Cast.Field
 
+/-! # The unlabeling (`downward`) operator on the flag algebra
+
+The central construction here is `downward : FlagAlgebra σ → FlagAlgebra ∅ₜ`
+(notation `⟦·⟧₀`), the averaging operator that forgets the `σ`-labelling of a
+flag by averaging over all ways to place the labels. It is built from
+`unlabel` (drop the type embedding of a single flag) together with the
+combinatorial weight `downwardNormalizingFactor`. The bulk of the file proves
+the counting identity relating injective label-placements to subgraph counts
+(`isoInjectiveMapSet_*`), from which `flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions`
+follows; this gives that `downward` is well defined on the zero space and hence
+a linear map, together with its algebra-compatibility lemmas (`downward_add`,
+`downward_smul`, …) and the fact that it is the identity on the empty type.
+-/
+
 namespace FlagAlgebras
 
 open LabeledSubgraph
@@ -11,6 +25,9 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 /- Downward operator from σ-type to the empty type -/
 
+/-- The empty flag type: no labelled vertices. Flags of this type are just
+(unlabelled) graphs, so `FlagAlgebra ∅ₜ` is where density bounds live.
+Notation: `∅ₜ`. -/
 def emptyType : FlagType (Fin 0) := SimpleGraph.emptyGraph (Fin 0)
 
 notation "∅ₜ" => emptyType
@@ -29,11 +46,17 @@ noncomputable instance (G : LabeledGraph σ (Fin n)) : Fintype (isoLabeledGraphS
   :=
   Fintype.ofFinite (isoLabeledGraphSetWithSameGraph G)
 
+/-- The number of labelled graphs on the same underlying graph as `G` that are
+flag-isomorphic to `G`; i.e. how many distinct label placements realise `G`. -/
 noncomputable def isomorphismCount
     (G : LabeledGraph σ (Fin n)) : ℕ
   :=
   (isoLabeledGraphSetWithSameGraph G).toFinset.card
 
+/-- The combinatorial weight of `G` used by the unlabeling operator: the
+fraction of label placements (injections of the `n₀` labels into `n` vertices)
+that realise `G`, i.e. `isomorphismCount G` over the number of all such
+injections. -/
 noncomputable def downwardNormalizingFactor_labeledGraph
     (G : LabeledGraph σ (Fin n)) : ℚ
   :=
@@ -134,6 +157,8 @@ lemma downwardNormalizingFactor_labeledGraph_respect_eqv
   dsimp only [downwardNormalizingFactor_labeledGraph]
   rw [isomorphismCount_respect_eqv h]
 
+/-- The unlabeling weight, lifted to flags (isomorphism classes); the weight by
+which `unlabel F` is scaled when forgetting the labels of the flag `F`. -/
 noncomputable def downwardNormalizingFactor
     : Flag σ (Fin n) → ℚ
   := by
@@ -141,6 +166,7 @@ noncomputable def downwardNormalizingFactor
   intro G G' G_eqv
   exact downwardNormalizingFactor_labeledGraph_respect_eqv G_eqv
 
+/-- The unlabeling weight is strictly positive. -/
 theorem downwardNormalizingFactor_pos
     (F : Flag σ (Fin n))
     : downwardNormalizingFactor F > 0
@@ -179,6 +205,8 @@ theorem downwardNormalizingFactor_emptyFlag_pos
     apply flagEqv.refl
   · exact Nat.factorial_pos n₀
 
+/-- Forget the type embedding of a labelled graph, producing the same
+underlying graph as a `∅ₜ`-labelled (unlabelled) graph. -/
 def unlabeledGraph {V : Type} (G : LabeledGraph σ V) : LabeledGraph ∅ₜ V where
   graph := G.graph
   type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.graph.Adj
@@ -203,6 +231,9 @@ theorem unlabeledGraphQuot_respect_eqv
   :=
   Quotient.sound (unlabeledGraph_iso h)
 
+/-- `unlabel` on flags: forget the `σ`-labelling of a flag, yielding the
+underlying graph as a `∅ₜ`-flag. The single-flag core of the `downward`
+operator. -/
 noncomputable def unlabel {V : Type}
     : Flag σ V → Flag ∅ₜ V
   := by
@@ -219,9 +250,12 @@ theorem unlabel_eq_iff_unlabeledGraph_eqv
     exact Quotient.exact h
   · exact Quotient.sound h
 
+/-- The image of a single flag `F` under unlabeling: the unlabelled flag
+`unlabel F` scaled by its combinatorial weight `downwardNormalizingFactor F`. -/
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
   downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
 
+/-- `downwardFlag` extended linearly to flag vectors. -/
 noncomputable def downwardFlagVector : FlagVector σ → FlagVector ∅ₜ :=
   linearExtension (fun F : FinFlag σ => downwardFlag F.2)
 
@@ -269,12 +303,18 @@ lemma downwardFlagVector_smul
   := by
   simp only [downwardFlagVector, linearExtension_smul]
 
+/-- All `σ`-labelled flags of size `ℓ` whose unlabeling is the given
+unlabelled flag `F`; i.e. the ways to add a `σ`-labelling back onto `F`. -/
 noncomputable def labelExtensions
     {ℓ : ℕ} (F : FlagWithSize ∅ₜ ℓ) (σ : FlagType (Fin n₀))
     : Finset (FlagWithSize σ ℓ)
   :=
   { G : FlagWithSize σ ℓ | unlabel G = F }
 
+/-- Pairs `(W, θ)` of a vertex subset `W` of `F'` and a label assignment
+`θ : Fin n₀ → Fin ℓ'` that embed the labelled flag `F` into the unlabelled flag
+`F'` as an induced subgraph. The common bridge object: its cardinality is
+counted two ways to relate unlabeling weights to subgraph densities. -/
 def isoInjectiveMapSet
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : Set ((Set (Fin ℓ')) × (Fin n₀ → Fin ℓ'))
@@ -285,6 +325,9 @@ def isoInjectiveMapSet
     (∃ (h_range : Set.range θ ⊆ W) (φ : (inducedSubgraph F'.graph W).coe ≃g F.graph),
       φ ∘ (fun i ↦ ⟨θ i, h_range (Set.mem_range_self i)⟩) = F.type_embed) }
 
+/-- First count of the bridge set: `|isoInjectiveMapSet F F'|` equals the number
+of label placements of `F` times the number of induced copies of the
+unlabelled `F` inside `F'`. -/
 theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : (isoInjectiveMapSet F F').toFinset.card = isomorphismCount F * labeledSubgraphCount (unlabeledGraph F) F'
@@ -534,6 +577,8 @@ theorem isoInjectiveMapSet_card_eq_isomorphismCount_mul_labeledSubgraphCount
   simp only [Set.coe_setOf, S₁, S₃] at h_S₁_iso_S₃
   exact h_S₁_iso_S₃.symm
 
+/-- Second count of the bridge set: summing, over all labelled graphs on `F'`'s
+underlying graph, the number of induced copies of `F`. -/
 theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : (isoInjectiveMapSet F F').toFinset.card = ∑ G with G.graph = F'.graph, labeledSubgraphCount F G
@@ -701,6 +746,9 @@ theorem isoInjectiveMapSet_card_eq_sum_labeledSubgraphCount_of_same_graph
     S₄] at h_S₁_iso_S₄
   exact h_S₁_iso_S₄.symm
 
+/-- The bridge-set count grouped by label-extension flag: summing over the
+re-labellings of `F'`, weight by label-placement count times induced-copy
+count of `F`. The form used to compare unlabeling weights and densities. -/
 theorem isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledSubgraphCount
     {ℓ ℓ' : ℕ} (F : LabeledGraph σ (Fin ℓ)) (F' : LabeledGraph ∅ₜ (Fin ℓ'))
     : (isoInjectiveMapSet F F').toFinset.card = ∑ G ∈ labelExtensions ⟦F'⟧ σ, isomorphismCount G.out * labeledSubgraphCount F G.out
@@ -800,6 +848,9 @@ theorem isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labe
     _ = ∑ G with G.graph = F'.graph, labeledSubgraphCount F G := by
       simp only [Set.toFinset_setOf, S_F']
 
+/-- Key identity for `downward`'s well-definedness: the density of `unlabel F`
+in `F'` times `F`'s unlabeling weight equals the sum over all relabellings `G`
+of `F'` of the density of `F` in `G` times `G`'s weight. -/
 theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
     {ℓ ℓ' : ℕ} (F : FlagWithSize σ ℓ) (F' : FlagWithSize ∅ₜ ℓ') (hℓ : ℓ ≤ ℓ')
     : flagDensity₁ (unlabel F) F' * downwardNormalizingFactor F =
@@ -1051,6 +1102,8 @@ lemma downwardFlagVector_zeroElement_zeroSpace
   rw [h₃, h₄]
   exact downwardFlag_eqv_sum_flagDensity_smul_downwardFlag F ℓ hℓ
 
+/-- `downwardFlagVector` maps the zero space into the zero space; this is what
+makes `downward` well defined on the quotient flag algebra. -/
 lemma downwardFlagVector_zeroSpace
     (f : FlagVector σ) (f_zero : f ∈ ZeroSpace σ)
     : downwardFlagVector f ∈ ZeroSpace ∅ₜ
@@ -1106,6 +1159,9 @@ lemma downwardFlagVectorQuot_respect_eqv
   rw [← downwardFlagVector_sub]
   exact downwardFlagVector_zeroSpace (f - f') h
 
+/-- The unlabeling / averaging operator `FlagAlgebra σ → FlagAlgebra ∅ₜ`:
+forget the labels of every flag, averaging by the unlabeling weights. The main
+construction of this file; notation `⟦f⟧₀`. -/
 noncomputable def downward
     : FlagAlgebra σ → FlagAlgebra ∅ₜ
   := by
@@ -1120,6 +1176,7 @@ theorem downward_zero
   := by
   exact downwardFlagVectorQuot_zero
 
+/-- `downward` is additive. -/
 theorem downward_add
     (f f' : FlagAlgebra σ)
     : ⟦f + f'⟧₀ = ⟦f⟧₀ + ⟦f'⟧₀
@@ -1150,6 +1207,8 @@ theorem downward_sub
   := by
   simp only [sub_eq_add_neg, downward_add, downward_neg]
 
+/-- `downward` commutes with scalar multiplication; together with
+`downward_add` this makes it ℝ-linear. -/
 theorem downward_smul
     (f : FlagAlgebra σ) (r : ℝ)
     : ⟦r • f⟧₀ = r • ⟦f⟧₀
@@ -1195,6 +1254,8 @@ theorem downwardNormalizingFactor_emptyType
   rw [div_self (by simp [Nat.cast_eq_zero, Nat.factorial_ne_zero]), div_one, Rat.natCast_eq_one_iff]
   exact isomorphismCount_emptyType F
 
+/-- On the empty type there is nothing to unlabel: `downward` is the identity
+on `FlagAlgebra ∅ₜ`. -/
 theorem downward_emptyType
     (f : FlagAlgebra ∅ₜ) : ⟦f⟧₀ = f
   := by

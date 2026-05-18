@@ -1,6 +1,18 @@
 import «LeanFlagAlgebras».FlagAlgebra.FlagDef
 import Mathlib.Algebra.Order.Field.Rat
 
+/-! # Subflag Density
+
+This file defines the density of a single subflag inside another flag, the
+typed analogue of subgraph density used to build the flag algebra `A^σ`.
+`labeledSubgraphCount`/`labeledSubgraphDensity` count and normalize the
+type-preserving induced copies of `H` inside a labeled graph `G`; these are
+shown invariant under labeled-graph isomorphism and then lifted through the
+`Flag` quotient to `subflagDensity : Flag σ V → Flag σ W → ℚ`. Boundary facts
+(`subflagDensity_empty`, `subflagDensity_self`, `subflagDensity_other`) pin
+down its values on the empty flag, on itself, and on non-isomorphic flags.
+Builds on `FlagAlgebra.FlagDef`; consumed by the list-density development. -/
+
 namespace FlagAlgebras
 
 open LabeledSubgraph
@@ -13,6 +25,8 @@ variable {V : Type} [Fintype V]
 variable {W : Type} [Fintype W]
 variable {Z : Type} [Fintype Z]
 
+/-- Number of induced labeled subgraphs of `G` that are isomorphic (as
+labeled graphs) to `H`; the unnormalized subflag count. -/
 noncomputable def labeledSubgraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
   :=
@@ -20,6 +34,8 @@ noncomputable def labeledSubgraphCount
   let S := { G' : LabeledSubgraph σ G | p G' }
   S.toFinset.card
 
+/-- Density of `H` in `G`: `labeledSubgraphCount` divided by the number of
+ways to choose the non-type vertices of an `H`-sized induced subgraph. -/
 noncomputable def labeledSubgraphDensity
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℚ
   :=
@@ -27,6 +43,8 @@ noncomputable def labeledSubgraphDensity
   let num_of_all_induced_subgraph := (G.size - σ.size).choose (H.size - σ.size)
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
+/-- `H₀` and `H₁` correspond under the labeled-graph isomorphism `φ`
+(same vertex set and adjacency, transported by `φ`). -/
 def relOfLabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (H₀ : LabeledSubgraph σ G₀) (H₁ : LabeledSubgraph σ G₁) : Prop
@@ -54,6 +72,8 @@ lemma relOfLabeledSubgraph_symm
     simp only [RelIso.apply_symm_apply]
   exact ⟨h_vert', h_adj'⟩
 
+/-- `p₀` and `p₁` agree on every pair of subgraphs related by `φ`; the
+hypothesis needed to transport counts across an isomorphism. -/
 def relOfPredOnLabeledSubgraph
     {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
@@ -61,6 +81,8 @@ def relOfPredOnLabeledSubgraph
   ∀ (H₀: LabeledSubgraph σ G₀) (H₁: LabeledSubgraph σ G₁),
     (relOfLabeledSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
+/-- Predicate on subgraphs of `G`: "this subgraph is labeled-isomorphic to
+`H`". The defining property counted by `labeledSubgraphCount`. -/
 def predIsoLabeledH
     (H : LabeledGraph σ U) (G : LabeledGraph σ W)
     : LabeledSubgraph σ G → Prop
@@ -133,6 +155,8 @@ lemma predIsoLabeledH_related_ind
   have h_u'_v' : G₀.graph.Adj u' v' := (SimpleGraph.Iso.map_adj_iff φ.graph_iso).mp h_uv
   exact (h_adj u' v').mpr (h_ind₀ h_u' h_v' h_u'_v')
 
+/-- The image of a subgraph `H₀` of `G₀` under the isomorphism `φ`, taken as
+an induced subgraph of `G₁`; transports subgraphs across `φ`. -/
 def inducedLabeledSubgraphByIso
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W}
     (φ : G₀ ≃f G₁) (H₀ : LabeledSubgraph σ G₀)
@@ -184,6 +208,8 @@ theorem type_embed_heq_of_subgraph_eq
   exact embed_heq_of_subgraph_eq H_eq_H' h_embed_eq
 
 omit [Fintype T] [Fintype U] in
+/-- Two labeled subgraphs are equal once their underlying subgraphs agree
+(the type embedding is then forced). A frequently used extensionality. -/
 lemma labeledSubgraph_eq_from_subgraph_eq
     {σ : FlagType T} {G : LabeledGraph σ U} {H₀ H₁ : LabeledSubgraph σ G}
     (h_subgraph_eq : H₀.subgraph = H₁.subgraph) : H₀ = H₁
@@ -207,6 +233,9 @@ lemma H_eq_reverseinduced_induced_H
     exact inducedSubgraph_eq h_ind₀
   exact labeledSubgraph_eq_from_subgraph_eq h_eq
 
+/-- The bijection between induced subgraphs of `G₀` satisfying `p₀` and those
+of `G₁` satisfying `p₁`, given that `φ` relates `p₀` to `p₁`; the core of the
+isomorphism-invariance of subgraph counts. -/
 def isoSetOfInducedLabeledSubgraph
     {σ : FlagType T} {G₀ : LabeledGraph σ V} {G₁ : LabeledGraph σ W} (φ : G₀ ≃f G₁)
     (p₀ : LabeledSubgraph σ G₀ → Prop) (p₁ : LabeledSubgraph σ G₁ → Prop)
@@ -261,6 +290,8 @@ lemma labeledSubgraphCount_respect_eqv
   have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
   simp_all only [Set.toFinset_card]
 
+/-- Subgraph density is invariant under labeled-graph isomorphism in both
+arguments; the well-definedness fact enabling the `Flag`-quotient lift. -/
 lemma labeledSubgraphDensity_respect_eqv
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
@@ -272,6 +303,8 @@ lemma labeledSubgraphDensity_respect_eqv
   have h_G_size : G₀.size = G₁.size := labeledGraphIso_size_eq G₀ G₁ φ
   rw [h_count, h_H_size, h_G_size]
 
+/-- `labeledSubgraphDensity H` lifted through the `Flag` quotient in its
+second (host) argument. -/
 noncomputable def labeledSubgraphDensityLifted
     (H : LabeledGraph σ V) : Flag σ W → ℚ
   := by
@@ -288,6 +321,9 @@ lemma labeledSubgraphDensityLifted_respect_eqv
   ext
   exact labeledSubgraphDensity_respect_eqv LabeledGraphIso.refl ψ
 
+/-- The density of one flag inside another: `labeledSubgraphDensity` fully
+lifted to the `Flag` quotient in both arguments. This is the headline
+definition of the file. -/
 noncomputable def subflagDensity
     : Flag σ V → Flag σ W → ℚ
   := by
@@ -383,6 +419,7 @@ lemma labeledSubgraphDensity_empty
   simp only [this, le_rfl, tsub_eq_zero_of_le, Nat.choose_zero_right]
   simp only [Nat.cast_one, ne_eq, one_ne_zero, not_false_eq_true]
 
+/-- The empty flag has density `1` in every flag (it always occurs). -/
 lemma subflagDensity_empty
     {σ : FlagType T} (G : Flag σ U)
     : subflagDensity (emptyFlag σ) G = 1
@@ -442,6 +479,7 @@ lemma labeledSubgraphDensity_self
   simp only [labeledSubgraphDensity, Nat.choose_self, Nat.cast_one, div_one, Nat.cast_eq_one]
   exact labeledSubgraphCount_self G
 
+/-- A flag has density `1` in itself. -/
 lemma subflagDensity_self
     (G : Flag σ V) : subflagDensity G G = 1
   := by
@@ -471,6 +509,7 @@ lemma labeledSubgraphDensity_other
   rw [labeledSubgraphCount_other h_not_iso]
   simp only [Nat.cast_zero, zero_div]
 
+/-- Two distinct flags of the same size have density `0` in each other. -/
 lemma subflagDensity_other
     {G₀ G₁ : Flag σ V} (h_neq : G₀ ≠ G₁)
     : subflagDensity G₀ G₁ = 0

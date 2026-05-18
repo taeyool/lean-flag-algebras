@@ -1,6 +1,15 @@
 import LeanFlagAlgebras.MantelTheorem.FlagMul
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
 
+/-! # Mantel's theorem: auxiliary lemmas
+
+Flag-algebra identities used to assemble the Mantel's theorem proof: expansions
+of small flags on 1- and 3-vertex graphs (both unconditionally and conditioned
+on the triangle `K₃` having density `0`), the normalizations `K0 = 1` and
+`K1₁ = 1`, and the key downward-projected square identity
+`⟦(O2₁ - K2₁)²⟧₀ = O3 - (1/3)·E3 - (1/3)·P3 + K3`, which supplies the
+positive-semidefinite certificate for the density bound. -/
+
 open FlagAlgebras Compute
 
 namespace MantelTheorem
