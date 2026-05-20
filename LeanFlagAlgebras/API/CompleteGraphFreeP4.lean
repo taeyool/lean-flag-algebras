@@ -68,6 +68,20 @@ lemma f₃_nonneg (r : ℕ) : 0 ≤ f₃ r := by
   rw [pow_two]
   exact square_downward_nonneg _
 
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_no_forbid.json"
+load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_no_forbid.json"
+
+
+example : FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_3 =
+    (1 / 2 : ℝ) • FlagAlgebra_4_2_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_2_0_10
+  := by
+  dsimp only [FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_3]
+  rw [unitVector_quot_mul_eq_flagMul_quot]
+  simp [flagMul, flagMulWithSize]
+  rw [Finset.sum_eq_multiset_sum, ← flagSet_4_2_0_eq_univ, flagSet_4_2_0_val_eq]
+  simp [add_quot, smul_quot]
+  rfl
+
 -- Expansion of f₁(r) in the basis of 4-vertex graph densities.
 -- Coefficients computed from the flag algebra product structure (σ₁-type averaging).
 lemma f₁_expand (r : ℕ) : f₁ r =
@@ -76,7 +90,13 @@ lemma f₁_expand (r : ℕ) : f₁ r =
     - (((r : ℝ) - 1) / 6) • FlagAlgebra_4_0_0_2
     - (((r : ℝ) - 1) / 2) • FlagAlgebra_4_0_0_4
     + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_8
-    + (1 / 6 : ℝ) • FlagAlgebra_4_0_0_9 := by sorry
+    + (1 / 6 : ℝ) • FlagAlgebra_4_0_0_9
+  := by
+  dsimp only [f₁]
+  simp only [pow_two, mul_sub, sub_mul, smul_mul_smul]
+  simp only [downward_sub, downward_nsmul]
+  simp [downward_add, downward_smul]
+  sorry
 
 -- Expansion of f₂ in the basis of 4-vertex graph densities.
 -- Coefficients computed from the flag algebra product structure (σ₂-type averaging).

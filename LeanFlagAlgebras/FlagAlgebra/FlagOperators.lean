@@ -1216,6 +1216,13 @@ theorem downward_smul
   rw [← Quotient.out_eq f, ← smul_quot]
   apply downwardFlagVectorQuot_smul
 
+theorem downward_nsmul
+    (f : FlagAlgebra σ) (n : ℕ)
+    : ⟦n • f⟧₀ = n • ⟦f⟧₀
+  := by
+  simp only [← Nat.cast_smul_eq_nsmul ℝ]
+  exact downward_smul f n
+
 theorem unlabel_emptyType
     {V : Type} (F : Flag ∅ₜ V)
     : unlabel F = F

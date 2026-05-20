@@ -66,6 +66,7 @@ def parseMulJsonFile (path : System.FilePath) : CommandElabM MulJsonData := do
 
   let forbidTag <-
     match json.getObjVal? "forbid" with
+    | Except.ok .null => pure "none"
     | Except.ok forbidObj => match forbidObj.getObjVal? "tag" with
       | Except.ok (.str s) => pure s
       | _ => throwError "Missing or invalid field 'forbid.tag'"
@@ -333,5 +334,101 @@ elab "load_forbid_mul_theorems" filename:str : command => do
         generated := generated + 1
 
   logInfo s!"Generated {generated} {data.forbidTag}-free multiplication theorem(s) from density JSON: {filename.getString}"
+
+-- `load_mul_theorems "density_*_no_forbid.json"`: for every unordered pair
+-- `(i, j)` of pattern flags, generate the plain-equality theorem
+-- `@[simp] FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j = Σ`
+-- using `unitVector_quot_mul_eq_flagMul_quot` and the `flagSet_*` lemmas.
+-- Intended for JSON files without a forbidden subgraph (`"forbid": null`).
+elab "load_mul_theorems" filename:str : command => do
+  let path := System.FilePath.mk filename.getString
+  let data <- parseMulJsonFile path
+  let patternTriple <- parseTagTriple data.patternTag
+  let hostTriple <- parseTagTriple data.hostTag
+  let patternN0 := patternTriple.2.1
+  let hostN0 := hostTriple.2.1
+  if patternN0 != hostN0 then
+    throwError s!"Pattern and host tags use different n0: {data.patternTag} vs {data.hostTag}"
+  let patternFlagTypeName <- parseFlagTypeNameFromTag data.patternTag
+  let hostFlagTypeName <- parseFlagTypeNameFromTag data.hostTag
+  if patternFlagTypeName != hostFlagTypeName then
+    throwError s!"Pattern and host tags use different flag types: {data.patternTag} vs {data.hostTag}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let flagSetEqUniv := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_eq_univ")
+  let flagSetValEq  := mkIdent (Name.mkSimple s!"flagSet_{data.hostTag}_val_eq")
+
+  let mut generated : Nat := 0
+
+  for i in data.patternFreeIndices do
+    for j in data.patternFreeIndices do
+      let iOrd := if i <= j then i else j
+      let jOrd := if i <= j then j else i
+      let mut rhsTerms : Array (TSyntax `term) := #[]
+      for row in data.densities do
+        let parsed <- parseDensityRow row
+        let p1 := parsed.1
+        let p2 := parsed.2.1
+        let h  := parsed.2.2.1
+        let num := parsed.2.2.2.1
+        let den := parsed.2.2.2.2
+        if p1 = iOrd && p2 = jOrd && natArrayContains data.hostFreeIndices h && num != 0 then
+          let hostName := Name.mkSimple s!"FlagAlgebra_{data.hostTag}_{h}"
+          let env <- getEnv
+          if !(env.contains hostName) then
+            throwError s!"Missing definition: {hostName}"
+          let t <- coeffSmulFlagTerm num den hostName
+          rhsTerms := rhsTerms.push t
+
+      let rhs <- sumTerms patternFlagTypeName rhsTerms
+
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{j}")
+      -- after mul_comm (when i > j), the order becomes iOrd * jOrd
+      let flagAlgOrd1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{iOrd}")
+      let flagAlgOrd2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{data.patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{data.patternTag}_{i}_FlagAlgebra_{data.patternTag}_{j}")
+
+      let env <- getEnv
+      if !(env.contains lhs1.getId) then
+        throwError s!"Missing definition: {lhs1.getId}"
+      if !(env.contains lhs2.getId) then
+        throwError s!"Missing definition: {lhs2.getId}"
+
+      if !(env.contains thmName.getId) then
+        let idsArray : Array (TSyntax `ident) := #[flagAlgOrd1, flagAlgOrd2]
+        if i <= j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) = $rhs
+              := by
+              dsimp only [$[$idsArray:ident],*]
+              rw [unitVector_quot_mul_eq_flagMul_quot]
+              simp [flagMul, flagMulWithSize]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              rw [hsetval]
+              simp [add_quot, smul_quot]
+              rfl
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) = $rhs
+              := by
+              rw [mul_comm]
+              dsimp only [$[$idsArray:ident],*]
+              rw [unitVector_quot_mul_eq_flagMul_quot]
+              simp [flagMul, flagMulWithSize]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              rw [hsetval]
+              simp [add_quot, smul_quot]
+              rfl
+          ))
+        elabCommand (← `(attribute [simp] $thmName))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} plain multiplication theorem(s) from density JSON: {filename.getString}"
 
 end Flags.Densities

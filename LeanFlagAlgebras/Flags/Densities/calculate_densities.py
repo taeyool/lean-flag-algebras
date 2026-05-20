@@ -411,7 +411,7 @@ def main() -> None:
     parser.add_argument("--pattern", required=True, help="Pattern graph JSON path (usually flags_i_j_k.json)")
     parser.add_argument("--out", required=False, help="Output JSON path")
 
-    forbid_group = parser.add_mutually_exclusive_group(required=True)
+    forbid_group = parser.add_mutually_exclusive_group(required=False)
     forbid_group.add_argument(
         "--forbid",
         metavar="NOTATION",
@@ -436,18 +436,22 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Resolve forbidden graph
+    # Resolve forbidden graph (None means no filtering)
     if args.forbid_K3:
-        forbid_n: int = 3
-        forbid_edges: Tuple[Edge, ...] = _K3_EDGES
+        forbid_n: int | None = 3
+        forbid_edges: Tuple[Edge, ...] | None = _K3_EDGES
         forbid_tag: str = "K3"
     elif args.forbid_K4:
         forbid_n = 4
         forbid_edges = _K4_EDGES
         forbid_tag = "K4"
-    else:
+    elif args.forbid:
         forbid_n, forbid_edges = parse_flagmatic_notation(args.forbid)
         forbid_tag = args.forbid  # e.g. "3:122331"
+    else:
+        forbid_n = None
+        forbid_edges = None
+        forbid_tag = "none"
 
     host_path = resolve_input_path(args.host)
     pattern_path = resolve_input_path(args.pattern)
@@ -455,8 +459,12 @@ def main() -> None:
     host_tag, host_all = parse_graph_records(host_path)
     pattern_tag, pattern_all = parse_graph_records(pattern_path)
 
-    host_free = forbid_free_only(host_all, forbid_edges, forbid_n)
-    pattern_free = forbid_free_only(pattern_all, forbid_edges, forbid_n)
+    if forbid_edges is not None:
+        host_free = forbid_free_only(host_all, forbid_edges, forbid_n)
+        pattern_free = forbid_free_only(pattern_all, forbid_edges, forbid_n)
+    else:
+        host_free = list(host_all)
+        pattern_free = list(pattern_all)
 
     density_rows = []
     pattern_pairs = itertools.combinations_with_replacement(pattern_free, 2)
@@ -469,14 +477,20 @@ def main() -> None:
             val = density_p_f1_f2_given_g(g, f1_use, f2_use)
             density_rows.append([i, j, g.index, frac_to_str(val)])
 
-    output = {
-        "host": host_tag,
-        "pattern": pattern_tag,
-        "forbid": {
+    forbid_field = (
+        None
+        if forbid_edges is None
+        else {
             "tag": forbid_tag,
             "n": forbid_n,
             "edges": [list(e) for e in forbid_edges],
-        },
+        }
+    )
+
+    output = {
+        "host": host_tag,
+        "pattern": pattern_tag,
+        "forbid": forbid_field,
         "host_free_indices": [g.index for g in host_free],
         "pattern_free_indices": [f.index for f in pattern_free],
         "densities": density_rows,
@@ -485,16 +499,24 @@ def main() -> None:
     if args.out:
         out_path = resolve_output_path(args.out)
     else:
-        out_name = f"density_{host_tag}_from_{pattern_tag}.json"
+        if forbid_edges is None:
+            out_name = f"density_{host_tag}_from_{pattern_tag}_no_forbid.json"
+        else:
+            out_name = f"density_{host_tag}_from_{pattern_tag}.json"
         out_path = Path(__file__).resolve().parent / out_name
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
 
-    print(f"Forbidden graph: {forbid_tag} (n={forbid_n}, edges={forbid_edges})")
-    print(f"Host graphs total: {len(host_all)}, {forbid_tag}-free: {len(host_free)}")
-    print(f"Pattern graphs total: {len(pattern_all)}, {forbid_tag}-free: {len(pattern_free)}")
+    if forbid_edges is None:
+        print("Forbidden graph: none (all graphs included)")
+        print(f"Host graphs total: {len(host_all)} (all included)")
+        print(f"Pattern graphs total: {len(pattern_all)} (all included)")
+    else:
+        print(f"Forbidden graph: {forbid_tag} (n={forbid_n}, edges={forbid_edges})")
+        print(f"Host graphs total: {len(host_all)}, {forbid_tag}-free: {len(host_free)}")
+        print(f"Pattern graphs total: {len(pattern_all)}, {forbid_tag}-free: {len(pattern_free)}")
     print(f"Saved densities: {len(density_rows)} rows")
     print(f"Output: {out_path}")
 
