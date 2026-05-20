@@ -1,0 +1,402 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\btt}[1]{\texttt{\detokenize{#1}}}
+
+% ---- Lean code listing style -------------------------------------------
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, noncomputable, syntax, elab, elab_rules,
+    macro, macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat, decide, native_decide,
+    fin_cases, norm_num, exact, set_option},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  inputencoding=utf8,
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{gray!6},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=0.8\baselineskip,
+  belowskip=0.8\baselineskip
+}
+% -----------------------------------------------------------------------
+
+\title{Tactics in LeanFlagAlgebras: an Experience Report}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Why we built these tools}
+
+Flag algebras are an active method in extremal combinatorics, but in
+informal conversations with combinatorialists we picked up the impression
+that the output of flag-algebra tools such as flagmatic is not fully
+trusted. We are not aware of a publication that addresses this skepticism
+head-on, and the skepticism itself is less an outright rejection than a
+reasonable hesitation about verification gaps. Its shape is roughly
+threefold: SDP solvers compute in floating point and then round to
+rationals, with the resulting certificate expected to be checked for
+positive semidefiniteness only after the fact and typically by the user;
+the solver pipelines themselves have not been independently verified in
+any systematic way; and even when a certificate is produced, it is a
+large rational matrix that no human can audit by hand. Reconstructing
+the entire certificate inside a proof assistant is one partial response
+to this state of affairs, and that is the response we pursue here.
+
+\section{Hand-proving Mantel}
+
+As the smallest possible case study, we first attempted Mantel's theorem.
+Only graphs on at most three vertices appear in it, so we believed it could
+be carried out by hand, without automation. We did in fact finish that
+attempt, and the result is preserved in
+\texttt{LeanFlagAlgebras/Archive/MantelTheorem/}.
+
+What struck us about that exercise was not the \emph{length} of the code
+but its \emph{shape}. As we wrote out flag definitions, density
+calculations, and the product table by hand, it became clear that nearly
+every lemma had the same skeleton, with only indices varying. For instance,
+the lemma stating ``flag $F_i$ contains $K_3$, hence \texttt{flagDensity} is
+zero (or not)'' is mechanical for every $F_i$; the lemma resolving the
+product $F_i \cdot F_j$ into a linear combination of host flags has a fixed
+form for every pair; the unlabeling and downward lemmas for each unit flag
+differ only in their index ranges. None of this is the kind of work a human
+should spend effort on. The pattern is fixed; what we needed was a way to
+write the pattern down once and have it expanded over the relevant index
+sets automatically.
+
+When the hand proof was finished, we drew two conclusions. First, Mantel can
+be done by hand. Second, theorems such as $C_4$-Tur\'an or the Erd\H{o}s
+pentagon push the host flag size to $5$ and quadratic-form dimensions up to
+$8$; the Erd\H{o}s pentagon proof alone involves $8^2 + 6^2 + 5^2 = 125$
+flag product terms. Spending human time on more of the same mechanical
+repetition is not meaningful. At that point our requirement for the tools
+we wanted to build was clear: given a flagmatic-style certificate, the
+work that should remain in human hands per theorem is \emph{writing down
+one quadratic form} and \emph{a few lines of tactic invocations}.
+
+\section{How a flag algebra proof is written in this framework}
+
+This section follows one concrete proof, \texttt{API/C4TuranAPI.lean}
+(a 4-vertex density bound for $K_3$-free graphs; the answer is $3/8$),
+through every stage. The other main theorems
+(\texttt{MantelTheoremAPI}, \texttt{K4freeP4},
+\texttt{ErdosPentagonAPI}) follow a similar skeleton; the details (number
+of quadratic forms, host sizes, type structure) differ from theorem to
+theorem, but the shape of the file is the same.
+
+\subsection{The overall flow}
+
+An API proof file is laid out in four parts:
+
+\begin{enumerate}
+  \item Declare the \textbf{SDP certificate matrices} and prove that each is
+    positive semidefinite.
+  \item Bulk-load the \textbf{external data} needed for the proof
+    (flag enumerations, density tables, product tables) via the
+    \texttt{load\_*} meta-commands.
+  \item Declare the \textbf{types and flag vectors} that the matrices are
+    paired with.
+  \item State the theorem and discharge it with a \textbf{stereotyped
+    sequence of tactics}.
+\end{enumerate}
+
+Parts~1 and~3 are where the numerical content of the certificate enters
+Lean. Part~2 registers the objects (which flag, which product) that the
+numerical content refers to. Part~4 is the proof body itself.
+
+Both Parts~1 and~2, as we will see, are written by tools rather than by
+hand. The author of a new theorem supplies matrix entries and a small
+amount of metadata as JSON; Python scripts shipped with the repository then
+produce the Lean PSD blocks and the JSON tables that the
+\texttt{load\_*} commands consume.
+
+\subsection{Part 1: SDP certificate matrices and positive semidefiniteness}
+
+The heart of the flag algebra method is the fact that, for a positive
+semidefinite matrix $M$ and a vector $v$ of flags over a type $\sigma$, the
+quadratic form $v^\top M v$ can be added to either side of a density
+inequality without breaking it. For $C_4$-Tur\'an the certificate consists
+of two matrices: $M_1$ ($4 \times 4$, paired with the type $\sigma_1$ of
+two non-adjacent vertices) and $M_2$ ($3 \times 3$, paired with $\sigma_2$
+of two adjacent vertices). The SDP certificates we work with come already
+distilled to exact rationals, so transcribing one of them into Lean looks
+like this:
+
+\begin{lstlisting}
+def M_1 : Matrix (Fin 4) (Fin 4) ℚ :=
+  !![( 3/8 : ℚ),  0, 0, (-3/8 : ℚ);
+       0,         0, 0,   0;
+       0,         0, 0,   0;
+     (-3/8 : ℚ),  0, 0, ( 3/8 : ℚ)]
+noncomputable def M_1_real : Matrix (Fin 4) (Fin 4) ℝ :=
+  ratMatrixToReal M_1
+\end{lstlisting}
+
+We still owe Lean a proof that $M_1$ is positive semidefinite. We discharge
+every such obligation in a uniform way, by exhibiting an explicit
+$\mathrm{LDL}^\top$ decomposition: we produce an $L$ and a non-negative
+diagonal $d$ such that $M = L \cdot \mathrm{diag}(d) \cdot L^\top$, and let
+a general lemma turn this into PSD-ness. For each matrix the resulting Lean
+block has the following shape:
+
+\begin{lstlisting}
+def dM_1 : Fin 4 → ℚ := ![3/8, 0, 0, 0]
+def LM_1 : Matrix (Fin 4) (Fin 4) ℚ :=
+  !![1, 0, 0, 0;
+     0, 1, 0, 0;
+     0, 0, 1, 0;
+    -1, 0, 0, 1]
+lemma dM_1_nonneg (i : Fin 4) : 0 ≤ dM_1 i := by
+  fin_cases i <;> norm_num [dM_1]
+lemma M_1_eq_LDL : M_1 = LM_1 * Matrix.diagonal dM_1 * LM_1ᵀ := by
+  decide +kernel
+theorem M_1_posSemidef : M_1.PosSemidef :=
+  posSemidef_of_eq_mul_diagonal_mul_transpose dM_1_nonneg M_1_eq_LDL
+-- The same decomposition is then lifted over ℝ to obtain M_1_real_posSemidef.
+\end{lstlisting}
+
+\paragraph{Producing this block automatically.}
+The \emph{shape} of this block is the same for every matrix, but finding
+the actual $L$ and $d$ by hand is tedious. For that we provide
+\texttt{LeanFlagAlgebras/Utils/Matrix/generate\_psd\_proof.py}. Given the
+matrix as a JSON array of rational rows (the file shipped alongside the
+script as \texttt{matrix.json}, for instance), the script computes the
+exact-rational $\mathrm{LDL}^\top$ decomposition itself and emits the whole
+Lean block. The usage is a one-liner:
+
+\begin{lstlisting}[language={}]
+python generate_psd_proof.py --input matrix.json --name M_1 \
+       --out C4TuranAPI.lean --write-mode append
+\end{lstlisting}
+
+This produces \texttt{M\_1}, \texttt{dM\_1}, \texttt{LM\_1},
+\texttt{dM\_1\_nonneg}, \texttt{M\_1\_eq\_LDL},
+\texttt{M\_1\_posSemidef}, and the corresponding $\mathbb{R}$-level
+statements, ready to paste.
+
+\paragraph{What ends up in the trusted base.}
+The correctness of the script itself does not. If the script emits a bad
+$L$ or $d$, the call to \texttt{decide +kernel} in
+\texttt{M\_1\_eq\_LDL} fails, the file does not compile, and the
+discrepancy is surfaced. The script merely \emph{searches for} an
+$\mathrm{LDL}^\top$ decomposition; whether the proposed decomposition is
+really one of $M$ is re-checked by the Lean kernel.
+
+\subsection{Part 2: Bulk-loading external data}
+
+Quite apart from the matrix data, the proof needs a number of other
+numerical facts registered in advance: which size-$n$ host flags are
+$K_3$-free, what the pair density of each $\sigma_i$-flag pair is on each
+size-$n$ host flag, and how each such product expands as a linear
+combination of host flags. In this theorem the following five lines take
+care of all of these:
+
+\begin{lstlisting}
+load_forbid_density_theorems
+  "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
+load_flag_pair_density_theorems
+  "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_forbid_mul_theorems
+  "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_flag_pair_density_theorems
+  "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
+load_forbid_mul_theorems
+  "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
+\end{lstlisting}
+
+What each line registers, in brief (see \texttt{tactics.tex} for the
+full specification of each meta-command):
+
+\begin{itemize}
+  \item \texttt{load\_forbid\_density\_theorems} registers, as
+    \texttt{@[simp]} lemmas, the statement ``flag $F_i$ is (or is not)
+    $K_3$-free'' for every size-4 empty-typed flag.
+  \item \texttt{load\_flag\_pair\_density\_theorems} registers, as
+    \texttt{@[simp]} lemmas, the pair density of every $\sigma_i$-flag pair
+    on every size-4 host flag.
+  \item \texttt{load\_forbid\_mul\_theorems} pulls the product table from
+    the same JSON and registers, for every relevant pair $(F_i, F_j)$, the
+    product expansion lemma
+    $F_i \cdot F_j =_{K_3\text{-forbid}}
+       \sum_h c_{ijh}\, F_h$, named \texttt{flagMul\_<A>\_<B>}.
+\end{itemize}
+
+The base definitions referenced by these statements (\texttt{Flag\_*},
+\texttt{FlagAlgebra\_*}) are themselves registered project-wide in
+\texttt{Flags/FlagDef.lean} via \texttt{load\_empty\_typed\_flags} and
+\texttt{load\_flags}, so individual proof files do not have to repeat them.
+
+\paragraph{Producing these JSON files automatically.}
+None of the JSON files referenced above are written by hand. They are
+produced by Python scripts in \texttt{LeanFlagAlgebras/Flags/} and its
+\texttt{Graphs/}, \texttt{Flags/}, and \texttt{Densities/} subfolders:
+
+\begin{itemize}
+  \item \texttt{Flags/generate\_graphs.py} takes a size $n$ and emits
+    \texttt{Graphs/graphs\_n.json}, the canonical enumeration of
+    empty-typed flags of size $n$. This is the input to
+    \texttt{load\_empty\_typed\_flags}.
+  \item \texttt{Flags/generate\_flags.py} takes $(n, k, m)$ and emits
+    \texttt{Flags/flags\_n\_k\_m.json} containing every $\sigma_m$-flag of
+    size $n$ together with its type embedding and downward normalizing
+    factor. This is the input to \texttt{load\_flags}.
+  \item \texttt{Flags/Densities/calculate\_densities.py} takes pattern and
+    host indices and emits the pair-density tables
+    \texttt{density\_*.json}, consumed by both
+    \texttt{load\_flag\_pair\_density\_theorems} and
+    \texttt{load\_forbid\_mul\_theorems}.
+  \item \texttt{Flags/Densities/gen\_free\_indices.py} takes a forbidden
+    subgraph $H$ and emits, for the requested size $n$, the index list of
+    $H$-free flags, consumed by
+    \texttt{load\_forbid\_density\_theorems}.
+\end{itemize}
+
+In other words, supporting a new forbidden subgraph or a larger host size
+amounts to running the relevant script once and adding the corresponding
+\texttt{load\_*} call to the proof file. As before, none of this places
+the scripts in the trusted base: every numerical fact loaded from JSON is
+re-checked by \texttt{decide} or \texttt{native\_decide} inside Lean, and a
+mis-generated JSON shows up as a compile error.
+
+\subsection{Part 3: Declaring types and flag vectors}
+
+We then name the flag vector $v_i$ that each matrix $M_i$ will be paired
+with:
+
+\begin{lstlisting}
+def σ₁ : FlagType (Fin 2) := FlagType_2_0
+noncomputable def v₁ : FlagAlgebraVec σ₁ 4 :=
+  ![FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_1,
+    FlagAlgebra_3_2_0_2, FlagAlgebra_3_2_0_3]
+
+def σ₂ : FlagType (Fin 2) := FlagType_2_1
+noncomputable def v₂ : FlagAlgebraVec σ₂ 3 :=
+  ![FlagAlgebra_3_2_1_0, FlagAlgebra_3_2_1_1, FlagAlgebra_3_2_1_2]
+\end{lstlisting}
+
+Every name appearing here was registered earlier by \texttt{load\_flags}.
+The mapping ``the $i$-th entry of $v_j$ refers to flag $X$'' is mediated
+not by an extra lookup table but by the numeric suffixes $(n,k,m,i)$ in
+the names themselves.
+
+\subsection{Part 4: The proof body}
+
+Now the theorem statement and proof body.
+
+\begin{lstlisting}
+theorem C4_flagAlgebra_API
+    : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+  := by
+  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag]
+        FlagAlgebra_4_0_0_8
+        + ⟦flagQuadraticForm M_1_real v₁⟧₀
+        + ⟦flagQuadraticForm M_2_real v₂⟧₀ := by
+    apply forbidLE_add_QuadraticForm M_2_real M_2_real_posSemidef v₂
+    apply forbidLE_add_QuadraticForm M_1_real M_1_real_posSemidef v₁
+    exact forbidLE_refl K3.toFinFlag FlagAlgebra_4_0_0_8
+  apply forbidLE_trans quadraticForm_trans
+  apply forbidLE_trans_forbidEq_right ?_
+        (forbidEq_smul (forbidEq_symm
+          (one_forbidEq_forbidExpand_one K3.toFinFlag 4)))
+  simp [flagQuadraticForm, v₁, M_1_real, ratMatrixToReal, M_1,
+        Fin.sum_univ_four, add_assoc]
+  simp [v₂, M_2_real, ratMatrixToReal, M_2,
+        Fin.sum_univ_three, add_assoc]
+  reduce_downward_flagmul
+  expand_one_at 4
+  simp [smul_smul, downward_add, downward_smul]
+  ac_sort_rhs_pipeline
+  apply forbidLE_of_le
+  flag_nonneg
+\end{lstlisting}
+
+We walk through what each line does.
+
+\paragraph{\texttt{have quadraticForm\_trans : \ldots}}
+Since each $M_i$ is positive semidefinite, the quadratic form
+$\llbracket v_i^\top M_i v_i \rrbracket_0$ is non-negative under the
+forbid condition, so adding it to the left-hand side of an inequality
+preserves the inequality. Applying this twice extends our left-hand side
+to ``original term $+$ first quadratic form $+$ second quadratic form.''
+The helper lemma \texttt{forbidLE\_add\_QuadraticForm} accepts the matrix,
+its PSD proof, and the flag vector and performs each such step.
+
+\paragraph{\texttt{apply forbidLE\_trans quadraticForm\_trans}}
+Chains the auxiliary inequality just built into the goal's left-hand side.
+The goal becomes ``extended left-hand side
+$\le_{\text{forbid}}$ original right-hand side.''
+
+\paragraph{\texttt{apply forbidLE\_trans\_forbidEq\_right \ldots\,
+one\_forbidEq\_forbidExpand\_one \ldots}}
+Replaces the $1 \in \mathrm{FlagAlgebra}$ on the right-hand side by the
+weighted sum of size-4 $K_3$-free flags it is equal to under the forbid
+condition. The actual expansion happens later, at \texttt{expand\_one\_at
+4}; this step only secures the right to make that replacement.
+
+\paragraph{The two \texttt{simp [flagQuadraticForm, \ldots]} lines}
+Unfold each $\llbracket v_i^\top M_i v_i \rrbracket_0$ into an explicit sum
+of products. \texttt{Fin.sum\_univ\_four} and
+\texttt{Fin.sum\_univ\_three} unfold the index sums $\sum_{i<4}$ and
+$\sum_{i<3}$, and \texttt{add\_assoc} right-associates the result. After
+these two lines the left-hand side is a flat sum of
+``coefficient $\cdot (A \cdot B)$'' product terms.
+
+\paragraph{\texttt{reduce\_downward\_flagmul}}
+Resolves each product $A \cdot B$ using the
+\texttt{flagMul\_<A>\_<B>} lemma loaded in Part~2, turning it into a
+linear combination of base-typed flags; forbidden host flags are dropped by
+\texttt{simp} in the process. A single invocation of this tactic dispatches
+all $4^2 + 3^2 = 25$ product terms in $C_4$-Tur\'an at once.
+
+\paragraph{\texttt{expand\_one\_at 4}}
+Now actually rewrite the $1$ on the right-hand side, whose replacement
+right was reserved earlier, as a weighted sum of size-4 $K_3$-free flags.
+
+\paragraph{\texttt{simp [smul\_smul, downward\_add, downward\_smul]}}
+Distributes scalar multiplication and \texttt{downward} so that every term
+takes the flat shape ``coefficient $\cdot$ \texttt{Flag\_4\_0\_0\_*}''.
+
+\paragraph{\texttt{ac\_sort\_rhs\_pipeline}}
+Sorts the right-hand side by base-flag index and merges coefficients of
+terms sharing the same base. The two sides now match term by term.
+
+\paragraph{\texttt{apply forbidLE\_of\_le}}
+Drops the forbid qualifier and reduces the goal to a plain $\le$ inequality
+in the flag algebra.
+
+\paragraph{\texttt{flag\_nonneg}}
+The remaining goal is of the form ``$0 \le$ non-negative linear combination
+of unit flags,'' which this tactic closes in one line.
+
+\end{document}
