@@ -391,4 +391,61 @@ theorem Kr_plus_1_free_P4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
     exact le_add_of_nonneg_right (leftover_nonneg r hr)
   exact forbidLE_trans step1 step2
 
+
+/-- **Turán r-partite graphon limit — existence and P₄ density value — taken as an explicit
+axiom, NOT proved in this project.**
+
+Stated at the positive-homomorphism (graph-limit) level: for every `r ≥ 2` there
+exists a K_{r+1}-free positive homomorphism `φ` whose `P₄`-density equals
+`12·((r-1)/r)³` exactly (the Turán-graph limit value from Lemma 2.1, Murphy–Nir 2021).
+
+**Proof sketch (outside the flag-SOS machinery).**
+Take the flag sequence `s k = turanGraph (r·k) r`. For each `k`:
+
+* **K_{r+1}-freeness**: `SimpleGraph.turanGraph_cliqueFree` (Mathlib) gives
+  `(turanGraph (r·k) r).CliqueFree (r+1)`, hence
+  `(completeGraph (Fin (r+1))).Free (turanGraph (r·k) r)`.
+
+* **P₄ density**: for `n = r·k`, a direct counting argument gives the number of
+  induced copies of each relevant 4-vertex graph type in `turanGraph n r`:
+    · (induced P₄, atoms 6–7): 0 — the r-partite structure forbids induced P₄;
+    · C₄ (atom 8): C(r,2)·C(k,2)² → density `3(r-1)/r³`;
+    · K₄-e (atom 9): C(r,3)·3·C(k,2)·k² → density `6(r-1)(r-2)/r³`;
+    · K₄ (atom 10): C(r,4)·k⁴ → density `(r-1)(r-2)(r-3)/r³`.
+  The weighted sum in `P4_density = F₆ + 2F₇ + 4F₈ + 6F₉ + 12F₁₀` is therefore
+  `4·3(r-1)/r³ + 6·6(r-1)(r-2)/r³ + 12·(r-1)(r-2)(r-3)/r³ = 12·((r-1)/r)³`.
+
+* **Compactness**: `increasing_flagSeq_contain_convergent_subseq` extracts a convergent
+  subsequence; `flagSeq_limit_mem_positiveHom` produces the positive homomorphism `φ`;
+  `flagDensitySeq_eq_zero_of_free` forces `φ(K_{r+1}) = 0`.
+
+The formal obstacles are (a) the counting lemmas for `turanGraph (r·k) r` (nontrivial
+finset combinatorics), (b) connecting Mathlib's `CliqueFree` to the `Free` predicate
+used in `flagDensitySeq_eq_zero_of_free`, and (c) identifying the induced density
+sequence for each of `F₈`, `F₉`, `F₁₀` along the subsequence.
+
+`#print axioms Kr_plus_1_free_P4_density_achievable` lists this axiom. -/
+axiom Turan_limit_P4_density (r : ℕ) (hr : 2 ≤ r) :
+    ∃ φ : PositiveHom ∅ₜ,
+      φ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
+      φ P4_density = 12 * (((r : ℝ) - 1) / r) ^ 3
+
+/-- **Lower-bound direction of Lemma 2.1** (Murphy–Nir 2021). For `r ≥ 3`, the
+K_{r+1}-free P₄ density upper bound `12·((r-1)/r)³` is **sharp**: there exists a
+K_{r+1}-free positive homomorphism `φ` achieving P₄ density exactly
+`12·((r-1)/r)³`.
+
+The witness is the balanced Turán r-partite graphon limit, whose existence and P₄
+density value are given by the axiom `Turan_limit_P4_density`. Together with
+`Kr_plus_1_free_P4_density_upper_bound` this completes Theorem 1.3(i) of Murphy–Nir
+2021: the optimal K_{r+1}-free P₄ density equals `12·((r-1)/r)³`.
+
+`#print axioms Kr_plus_1_free_P4_density_achievable` lists the two external dependencies:
+`Zykov_K4_density_bound` (for the upper bound) and `Turan_limit_P4_density` (here). -/
+theorem Kr_plus_1_free_P4_density_achievable (r : ℕ) (hr : 3 ≤ r) :
+    ∃ φ : PositiveHom ∅ₜ,
+      φ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
+      φ P4_density = 12 * (((r : ℝ) - 1) / r) ^ 3 :=
+  Turan_limit_P4_density r (by omega)
+
 end CompleteGraphFreeP4
