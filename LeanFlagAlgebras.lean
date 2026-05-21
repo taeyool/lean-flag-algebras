@@ -74,6 +74,10 @@ import LeanFlagAlgebras.Logic.Defs
 import LeanFlagAlgebras.Logic.Tactic
 import LeanFlagAlgebras.Logic.MantelTheorem
 
+-- Flagmatic
+import LeanFlagAlgebras.Flagmatic.Mantel
+import LeanFlagAlgebras.Flagmatic.C4Turan
+
 /-! # LeanFlagAlgebras — top-level import manifest
 
 This file is the root module of the project and the single source of truth for

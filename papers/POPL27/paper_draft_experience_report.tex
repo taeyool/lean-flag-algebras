@@ -50,8 +50,8 @@
 \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
-\newcommand{\den}[2]{p(#1;\,#2)}
-\newcommand{\tdensity}[2]{p(#1;\,#2)}
+\newcommand{\den}[2]{\pi(#1;\,#2)}
+\newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
 \newcommand{\forbLES}[2]{\leq_{#1,\operatorname{Forb}(#2)}}
 \newcommand{\lean}[1]{\texttt{#1}}
@@ -154,31 +154,48 @@ Where a choice was forced by feasibility rather than design, we say so.
 
 \paragraph{Why flag algebras matter.}
 Many central questions in extremal combinatorics ask how often one finite
-pattern can occur when another pattern is forbidden.  Let $F$ and $H$ be
-finite simple graphs.  We write
+pattern can occur when another pattern is forbidden.  Let $F$ be a finite
+simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 \[
-  \mathrm{ex}(n;\,F,H)
+  \mathrm{ex}(n,\,F;\,\mathcal{H})
   =
   \max\bigl\{
-    \#\text{copies of }F\text{ in }G
-    \mid |V(G)|=n,\; G\text{ is }H\text{-free}
+    \text{number of induced copies of }F\text{ in }G
+    \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
   \bigr\},
 \]
-where $H$-free means that $G$ contains no copy of $H$ as a subgraph.  The
-corresponding asymptotic question normalizes by the number of possible
-$|V(F)|$-vertex subsets and takes a limit:
+where an \emph{induced copy} of $F$ in $G$ is a vertex subset
+$S\subseteq V(G)$ with $|S|=|V(F)|$ and $G[S]\cong F$, and
+\emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
+member of $\mathcal{H}$.  The corresponding asymptotic
+question normalizes by the number of possible $|V(F)|$-vertex subsets and
+takes a limit:
 \[
-  \tdensity{F}{H}
+  \tdensity{F}{\mathcal{H}}
   =
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n;\,F,H)}{\binom{n}{|V(F)|}}.
+  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
 \]
-In this notation the counted graph comes first and the forbidden graph second;
-for example, Mantel's theorem is the statement $\tdensity{K_2}{K_3}=1/2$, the
-maximum asymptotic edge density of triangle-free graphs.  The difficulty is
-that these are not finite graph search problems.  They are statements about
-all sufficiently large $H$-free graphs, or equivalently about all possible
-limiting density profiles.
+For example, Mantel's theorem states that a triangle-free graph on $n$
+vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
+$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
+complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
+asymptotic value
+\[
+  \tdensity{K_2}{K_3}
+  = \lim_{n\to\infty}\frac{\lfloor n^2/4\rfloor}{\binom{n}{2}}
+  = \frac{1}{2}
+\]
+records that, in any sufficiently large triangle-free graph, at most half of
+all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
+write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
+
+Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
+about \emph{all} sufficiently large $\mathcal{H}$-free graphs: a valid upper
+bound must certify that the proportion of induced copies of $F$ never exceeds
+the claimed value no matter how large the host graph is.  No finite collection of examples
+suffices, and the extremal graphs achieving the maximum may change
+unpredictably as $n$ grows.
 
 Razborov's flag algebra method~\cite{razborov2007flag} is a proof technology
 for exactly this setting.  A flag is a finite graph together with a
@@ -288,12 +305,13 @@ forbidden graph, $A,B,D$ for generic flags, $G$ for a host graph or host flag,
 $Q$ for a positive semidefinite matrix, and $\phi$ for a positive
 homomorphism.
 
-The motivating question has the following shape.  Fix two small graphs:
-a target pattern $P$ and a forbidden pattern $H$.  Among all very large graphs
-that contain no copy of $H$ as a subgraph, how often can $P$ appear as an
-induced subgraph?  We call graphs with no copy of $H$ \emph{$H$-free}.  For
-example, if $H=K_3$ is a triangle and $P=C_5$ is a pentagon, the question asks
-for the largest possible pentagon density in triangle-free graphs.  Such
+The motivating question has the following shape.  Fix a target pattern $P$
+and a collection $\mathcal{H}$ of forbidden graphs.  Among all very large
+graphs that contain no induced subgraph isomorphic to any member of
+$\mathcal{H}$, how often can $P$ appear as an induced subgraph?  We call such
+graphs \emph{$\mathcal{H}$-free}.  For example, if $\mathcal{H}=\{K_3\}$ is
+the singleton containing the triangle and $P=C_5$ is a pentagon, the question
+asks for the largest possible pentagon density in triangle-free graphs.  Such
 questions are hard because the graph being optimized over is not fixed: it can
 have arbitrarily many vertices.
 
@@ -705,24 +723,20 @@ $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$.
 We can now connect the algebra back to the combinatorial problems that motivate
 it.  Here $H$ is an unlabeled forbidden graph and $P$ is an unlabeled target
 graph.  The finite graphs being optimized over are $H$-free, meaning that they
-contain no copy of $H$ as a subgraph, and the target statistic is the induced
-density of $P$.
+contain no induced subgraph isomorphic to $H$, and the target statistic is the
+induced density of $P$.
 
 In the algebraic certificate used in this paper, the forbidden-graph
-assumption is represented as a condition on positive homomorphisms.  When the
-forbidden graph $H$ is complete, as it is in the main case $H=K_3$, being
-$H$-free is the same as having zero induced density of $H$.  View $H$ as the
-basis element $[H]$ of $\mathcal{A}^\emptyset$.  We restrict attention to
-positive homomorphisms $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$ satisfying
+assumption is represented as a condition on positive homomorphisms.  Being
+$H$-free is equivalent to having zero induced density of $H$, so we restrict
+attention to positive homomorphisms $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$
+satisfying
 \[
   \phi([H])=0.
 \]
 Every convergent sequence of $H$-free graphs gives such a homomorphism.  For
 $H=K_3$, the condition says precisely that the limiting triangle density is
-zero.  If one wanted to forbid a non-complete graph by subgraph containment,
-one would instead set to zero the finite sum of induced graphs on $|V(H)|$
-vertices that contain $H$ as a subgraph; that extra bookkeeping is not needed
-for the triangle-free problem studied here.
+zero.
 
 To distinguish this from the type-indexed order $\leq_\sigma$, for
 $f,g\in\mathcal{A}^\emptyset$ write
