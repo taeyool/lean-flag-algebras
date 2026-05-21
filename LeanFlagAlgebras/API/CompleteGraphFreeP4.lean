@@ -26,10 +26,11 @@ tight on every flag, so the certificate is an *inequality*: the residual
 `P4_density + ∑ pᵢ·fᵢ + leftover = (target)·1`. The multipliers `p₁,p₂,p₃`
 specialize at `r = 3` to `K4freeP4`'s `(8/9, 5, 35/9)`.
 
-Everything here is proved except `K4_density_upper_bound` (Corollary 1.5: the
-K₄ density bound in K_{r+1}-free graphs), which is a classical generalized-Turán
-fact that provably cannot be witnessed by the fixed-size flag-SOS certificate
-used here — see the note on that lemma. The `r = 3` case specializes to
+The development is `sorry`-free. Its one external dependency is the explicit
+`axiom Zykov_K4_density_bound` (Corollary 1.5: the K₄-density bound in K_{r+1}-free
+graphs — Zykov's classical generalized-Turán theorem), which is genuinely outside
+the flag-SOS machinery here; `#print axioms Kr_plus_1_free_P4_density_upper_bound`
+exhibits the dependence. The `r = 3` case specializes to
 `K4freeP4.K4_free_P4_density_upper_bound` with bound `32/9` (there `f₀` is
 unnecessary since K₄ is forbidden). -/
 
@@ -232,49 +233,54 @@ lemma p₀_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₀ r := by
   · positivity
   · linarith
 
-/-- **K₄ density in K_{r+1}-free graphs** is at most `(r-1)(r-2)(r-3)/r³`
-(`= (r³−6r²+11r−6)/r³`), i.e. `0 ≤[K_{r+1}] f₀ r`. This is Corollary 1.5 of
-Murphy–Nir (2021), an instance of the classical generalized-Turán theorem (the
-Turán graph maximizes clique counts; Zykov 1949).
+/-- **Zykov's clique-density theorem (1949), the `K₄` / `K_{r+1}`-free case — taken
+as an explicit axiom, NOT proved in this project.**
 
-NOTE (the sole remaining `sorry`). Unlike everything else in this file, this is
-*not* provable by the 4-vertex flag-SOS certificate: `f₀` carries the negative
-coefficient `c0 − 1 < 0` on the K₄ atom `FlagAlgebra_4_0_0_10`, while every
-σ-type square and every unlabeled flag has a *non-negative* K₄ coefficient (the
-F10-block of each square's Gram matrix is PSD). The bound is forced by the global
-K_{r+1}-free structure, which only constrains graphs on `≥ r+1` vertices — an
-unbounded size for parametric `r` — so no fixed-size flag computation can witness
-it. A faithful proof needs symmetrization/induction (or a cited clique-density
-theorem), which is a separate development from the SOS machinery here.
+Stated at the graph-limit (positive-homomorphism) level, which is exactly the form
+the flag-algebra proof consumes: for every density homomorphism `φ₀` (graph limit)
+that kills `K_{r+1}` (`φ₀ ⟦K_{r+1}⟧ = 0`), the `K₄` density is at most that of the
+Turán graph `T(·, r)`,
 
-We *do* discharge the flag-algebra layer: via `forbidLE_emptyType_iff_forbidLE`
-the goal reduces to the deterministic, recognizable statement about every density
-homomorphism `φ₀` (graph limit) that kills `K_{r+1}` —
+  `φ₀ ⟦K₄⟧ ≤ (r-1)(r-2)(r-3)/r³`
 
-  `key : φ₀ ⟦K₄⟧ ≤ (r-1)(r-2)(r-3)/r³`,
+(here `FlagAlgebra_4_0_0_10` is the `K₄` flag; the RHS is written as
+`(r³−6r²+11r−6)/r³`). This is Corollary 1.5 of Murphy–Nir (2021), an instance of
+Zykov's theorem that the Turán graph maximizes clique counts among `K_{r+1}`-free
+graphs. It is taken as an `axiom` because it is genuinely external to the SOS
+machinery here and is a substantial development on its own:
 
-i.e. *the K₄ density is at most that of the Turán graph T(·, r)*. This `key` is
-the clique-density / generalized-Turán theorem (Zykov 1949). It is not in Mathlib
-(which has only the **edge** Turán theorem, `SimpleGraph.isTuranMaximal_iff_…`)
-nor in this repo. The natural route is induction on the clique size using that a
-vertex neighborhood in a `K_{r+1}`-free graph is `K_r`-free, with Turán's edge
-theorem as the base case — a dedicated combinatorial development. -/
+* It is not in Mathlib (which has only the **edge** Turán theorem,
+  `SimpleGraph.isTuranMaximal_iff_nonempty_iso_turanGraph`) nor in this repo.
+* It cannot be obtained from the fixed-size flag-SOS certificate used elsewhere:
+  `f₀` carries a negative coefficient on the `K₄` atom, while every σ-type square
+  and every flag has a non-negative `K₄` coefficient. The bound is forced by the
+  global `K_{r+1}`-free structure (constraints appear only on `≥ r+1` vertices,
+  unbounded for parametric `r`).
+* There is no density-only shortcut: a brute-force search refutes the natural
+  telescoping inequality `kₛ₊₁·kₛ₋₁·(r-s+1) ≤ kₛ²·(r-s)` (it holds only at the
+  extremal graph), and `k₄` is not even a function of `(k₂,k₃)`. The bound is
+  asymptotic (finite graphs can exceed it), so a proof needs Zykov symmetrization
+  together with a graph-limit argument.
+
+`#print axioms Kr_plus_1_free_P4_density_upper_bound` lists this axiom, making the
+proof's dependence on the unproved result explicit. -/
+axiom Zykov_K4_density_bound (r : ℕ) (hr : 3 ≤ r) (φ₀ : PositiveHom ∅ₜ)
+    (hKfree : φ₀ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0)
+    : φ₀ FlagAlgebra_4_0_0_10 ≤ ((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3
+
+/-- **K₄ density in K_{r+1}-free graphs** is at most `(r-1)(r-2)(r-3)/r³`, i.e.
+`0 ≤[K_{r+1}] f₀ r` (Corollary 1.5, Murphy–Nir 2021). The flag-algebra layer is
+discharged here: via `forbidLE_emptyType_iff_forbidLE` the goal reduces to the
+per-homomorphism `K₄`-density bound, which is exactly the `Zykov_K4_density_bound`
+axiom. -/
 lemma K4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
     : 0 ≤[(completeGraph (Fin (r + 1))).toFinFlag] f₀ r
   := by
   -- Reduce the probabilistic `forbidLE` to the deterministic per-homomorphism form.
   rw [← forbidLE_emptyType_iff_forbidLE]
-  intro φ₀ _hKfree
-  -- The K₄ density of any K_{r+1}-free limit is at most the Turán value (Cor 1.5 / Zykov).
-  -- This `key` is irreducibly global: a brute-force search confirms there is NO density-only
-  -- shortcut. (1) The natural telescoping inequality `kₛ₊₁·kₛ₋₁·(r-s+1) ≤ kₛ²·(r-s)` fails for
-  -- many K_{r+1}-free graphs (holds only at the extremal graph). (2) `k₄` is not a function of
-  -- `(k₂,k₃)` — equal lower clique densities admit different `k₄` — so no local bound
-  -- `k₄ ≤ F(k₂,k₃)` exists. The bound is asymptotic (finite graphs can exceed `c0`); proving it
-  -- needs Zykov symmetrization + a graph-limit argument (a dedicated multi-file development).
-  have key : φ₀ FlagAlgebra_4_0_0_10
-      ≤ ((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3 := by
-    sorry
+  intro φ₀ hKfree
+  -- The K₄ density of any K_{r+1}-free limit is at most the Turán value (Zykov, assumed).
+  have key := Zykov_K4_density_bound r hr φ₀ hKfree
   -- Given `key`, the flag-algebra inequality `0 ≤ φ₀ (f₀ r)` follows by arithmetic.
   have h0 : φ₀ (0 : FlagAlgebra ∅ₜ) = 0 := by simp
   show φ₀ (0 : FlagAlgebra ∅ₜ) ≤ φ₀ (f₀ r)
