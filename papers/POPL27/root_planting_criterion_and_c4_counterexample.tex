@@ -95,7 +95,10 @@ stars---for example $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
 graphs---fails to be root-plantable at the one-vertex type.  The witness is the
 rooted edge flag $e$: its negation $-e$ is non-negative under every ensemble
 extension yet negative on the centre-rooted star homomorphism in the quotient
-theory.
+theory.  Since root-plantability is preserved by complementation, the same failure
+occurs for the dense complement classes; so neither sparsity nor density is
+decisive, and the genuine obstruction is that the rooted edge density is pinned to a
+boundary value across all constrained limits.
 \end{abstract}
 
 \section{Introduction}
@@ -707,17 +710,80 @@ hence is not root-plantable at the one-vertex type:
 \end{enumerate}
 \end{corollary}
 
-\begin{remark}[Degeneracy is essential, and marks the frontier]
-Degeneracy is the crux, not heredity, and not the absence of clone-closure.  Odd
-girth constraints are \emph{not} covered: for $k\ge2$ the class of
-$C_{2k+1}$-subgraph-free graphs is dense---it contains all bipartite graphs, of edge
-density up to $1/2$---so the argument above does not apply.  The $C_5$-free graphs
-are a natural test case: the class is dense yet not clone-closed (the blow-up of a
-triangle into the octahedron $K_{2,2,2}$ contains a $C_5$), and whether it is
-root-plantable is open.  This is precisely the gap between
-Theorem~\ref{thm:clone-root-plantable} (clone-closed $\Rightarrow$ root-plantable)
-and Theorem~\ref{thm:degenerate-obstruction} (degenerate $\Rightarrow$ not
-root-plantable).
+\subsection{Complementation: a dense obstruction}
+
+One might hope that the failures above are an artefact of \emph{sparsity}, and that
+density rescues root-plantability.  It does not.  Root-plantability is preserved by
+complementation, which immediately turns each sparse obstruction into a dense one.
+
+\begin{lemma}[Complementation invariance]\label{lem:complementation}
+For a hereditary graph class $\K$ let $\overline\K=\{\overline G:G\in\K\}$, which is
+again hereditary, and for a type $\sigma$ let $\overline\sigma$ be its complement.
+Then $(\T_{\mathrm{Graph}},\T_\K,\sigma)$ is root-plantable if and only if
+$(\T_{\mathrm{Graph}},\T_{\overline\K},\overline\sigma)$ is.  For the one-vertex type
+$\sigma=1=\overline\sigma$, the class $\K$ is root-plantable at $1$ if and only if
+$\overline\K$ is.
+\end{lemma}
+
+\begin{proof}
+Vertex-wise complementation $G\mapsto\overline G$ is an involution on finite graphs
+that takes induced-subgraph densities to those of the complements, hence extends to
+an isomorphism of flag algebras
+$\A^\sigma[\T_{\mathrm{Graph}}]\cong\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$ carrying
+$\K$-flags to $\overline\K$-flags.  It therefore induces a homeomorphism
+$X_\sigma\cong X_{\overline\sigma}$ taking $Q_\sigma$ for $\K$ onto $Q_{\overline\sigma}$
+for $\overline\K$.  Complementation also commutes with the random root: a uniformly
+random embedding of $\sigma$ into $G$ is the same embedding of $\overline\sigma$ into
+$\overline G$, so it carries each $\Ext_\sigma(\phi_0)$ to the corresponding
+extension for $\overline\K$, and hence $S_\sigma$ for $\K$ onto $S_{\overline\sigma}$
+for $\overline\K$.  Thus $S_\sigma=Q_\sigma$ holds for $\K$ if and only if it holds
+for $\overline\K$.
+\end{proof}
+
+Call $\K$ \emph{co-edge-degenerate} if $\overline\K$ is edge-degenerate; equivalently
+every $\phi_0\in Q_0$ has $\phi_0(\rho)=1$, equivalently every $n$-vertex graph in
+$\K$ has at least $\binom n2-o(n^2)$ edges.  Such classes are as dense as possible,
+with edge density tending to $1$, yet they fail just as the sparse ones do.
+
+\begin{corollary}[A dense obstruction]\label{cor:codegenerate}
+Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
+$\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
+$\sigma=1$, witnessed by $f:=e-1$.  In particular the complements of the classes in
+Corollary~\ref{cor:degenerate-family}---complement-of-$C_4$-free,
+complement-of-$K_{s,t}$-free, complement-of-even-cycle-free, and
+complement-of-planar graphs---are dense hereditary classes that are not
+root-plantable.
+\end{corollary}
+
+\begin{proof}
+By Lemma~\ref{lem:complementation} it suffices that $\overline\K$ be not
+root-plantable at $1$, and this is Theorem~\ref{thm:degenerate-obstruction}:
+$\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
+$-e$ for $\overline\K$ pulls back to $-(1-e)=e-1$ for $\K$.  Directly:
+$\avg{e}{1}=\rho$ gives $\E[\phi^1(e)]=\phi_0(\rho)=1$, and $\phi^1(e)\le1$ forces
+$\phi^1(e)=1$ almost surely, so $e-1$ satisfies ensemble semantics; while the
+co-star rooted at its isolated vertex gives a $\psi\in Q_1$ with $\psi(e)=0$, whence
+$\psi(e-1)=-1<0$ and quotient semantics fails.
+\end{proof}
+
+\begin{remark}[The dichotomy: density is not the dividing line]
+Theorem~\ref{thm:degenerate-obstruction} and Corollary~\ref{cor:codegenerate}
+together show that root-plantability is governed neither by heredity nor by density:
+edge-degenerate classes (rooted edge density pinned to $0$) and co-edge-degenerate
+classes (pinned to $1$) both fail, for the same reason.  What separates a typical
+root from the exceptional one is that the rooted edge density is \emph{pinned} to a
+boundary value of $[0,1]$ across all constrained unlabelled limits, while the
+quotient theory still contains a root attaining the opposite boundary.  The
+governing invariant is this boundary pinning, not sparsity or density.
+
+This refines, rather than closes, the problem of characterising root-plantability.
+The $C_5$-free graphs remain the natural open test case.  Their edge density is
+\emph{not} pinned---the class contains graphs of every density in $[0,\tfrac12]$, so
+no boundary-pinning obstruction applies---yet the class is not clone-closed (the
+blow-up of a triangle into the octahedron $K_{2,2,2}$ contains a $C_5$).  Whether it
+is root-plantable thus tests whether the absence of boundary pinning is by itself
+sufficient, the frontier left open between Theorem~\ref{thm:clone-root-plantable}
+and the two obstructions.
 \end{remark}
 
 \section{What this says about strengthening by another theory \texorpdfstring{$\T'$}{T'}}
@@ -789,12 +855,13 @@ The results suggest three natural next steps.
   homomorphism may live at an exceptional vertex that cannot be made typical.
   Theorem~\ref{thm:degenerate-obstruction} turns this into a general phenomenon---%
   every edge-degenerate hereditary class with stars fails, including
-  $K_{s,t}$-free, even-cycle-free, planar, and bounded-degeneracy classes.  These
-  examples are strong because the classes are already hereditary and universal;
-  non-hereditary constraints are not needed to witness failure.  The complementary
-  question is to chart the frontier between degeneracy (failure) and clone-closure
-  (success); the dense, non-clone-closed class of $C_5$-free graphs is the natural
-  first test.
+  $K_{s,t}$-free, even-cycle-free, planar, and bounded-degeneracy classes---and by
+  complementation (Corollary~\ref{cor:codegenerate}) the same holds for the
+  \emph{dense} co-degenerate classes, so density is not the dividing line.  The
+  governing invariant is boundary pinning of the rooted edge density.  The remaining
+  problem is to characterise root-plantability exactly: is the absence of boundary
+  pinning sufficient?  The dense, non-clone-closed, non-pinned class of $C_5$-free
+  graphs is the natural first test.
 \end{enumerate}
 
 \begin{thebibliography}{9}
