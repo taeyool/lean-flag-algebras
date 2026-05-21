@@ -1,0 +1,726 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{stmaryrd}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+% theorem environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+\usepackage[nameinlink,capitalize]{cleveref}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\crefname{remark}{Remark}{Remarks}
+\Crefname{theorem}{Theorem}{Theorems}
+\Crefname{lemma}{Lemma}{Lemmas}
+\Crefname{proposition}{Proposition}{Propositions}
+\Crefname{corollary}{Corollary}{Corollaries}
+\Crefname{definition}{Definition}{Definitions}
+\Crefname{remark}{Remark}{Remarks}
+
+% macros
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\Sset}{\mathcal{S}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\Homp}{\operatorname{Hom}^{+}}
+\newcommand{\Homalg}{\operatorname{Hom}}
+\newcommand{\Ext}{\operatorname{Ext}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\Forb}{\operatorname{Forb}}
+\newcommand{\brak}[1]{\left\langle #1\right\rangle}
+\newcommand{\avg}[2]{\left\llbracket #1 \right\rrbracket_{#2}}
+\newcommand{\qmap}{\mathfrak q}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\one}{\mathbf 1}
+\DeclareMathOperator{\cl}{cl}
+
+\title{Root Planting, Quotient Semantics, and a Counterexample\\
+       for Forbidden-Subgraph Reasoning in Flag Algebras}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We refine a previous blow-up argument for forbidden-subgraph reasoning in
+Razborov's flag algebras.  The central point is that the equivalence between
+quotient semantics and ensemble semantics is not controlled merely by heredity
+of the constrained class.  It is controlled by a support-surjectivity condition:
+every constrained labelled homomorphism must be approximable by support points of
+random labelled extensions of constrained unlabelled homomorphisms.  We call this
+support-closure condition root-plantability and prove that it is exactly equivalent
+to the quotient/ensemble correspondence for all flag-algebra elements.  The earlier
+clone-closed blow-up theorem is then reinterpreted as a sufficient condition for
+root-plantability.  Finally, we give a clean counterexample: the hereditary class
+of $C_4$-free graphs is not root-plantable.  For the one-vertex type, the element
+$-e$, where $e$ is the rooted edge flag, is non-negative under every ensemble
+extension but is negative on the centre-rooted star homomorphism in the quotient
+$C_4$-free theory.
+\end{abstract}
+
+\section{Purpose of the note}
+
+Let $\T_0$ be a universal first-order theory in a finite relational language,
+and let $\T_1$ be a universal strengthening of $\T_0$ in the same language.  In
+applications one should think of $\T_0$ as the theory of finite simple graphs and
+of $\T_1$ as the theory obtained by imposing a forbidden-subgraph condition.  For
+each non-degenerate type $\sigma$ of $\T_1$, Razborov's construction gives a
+quotient homomorphism
+\[
+  \qmap_\sigma:\A^\sigma[\T_0]\twoheadrightarrow \A^\sigma[\T_1].
+\]
+The quotient semantics of an element $f\in\A^\sigma[\T_0]$ says that
+\[
+  \psi(\qmap_\sigma f)\ge 0
+  \qquad\text{for every }\psi\in\Homp(\A^\sigma[\T_1],\R).
+\]
+The ensemble semantics stays in the ambient theory $\T_0$.  It asks that, for
+every unlabelled $\T_1$-supported homomorphism $\phi_0$, the canonical random
+extension $\phi^\sigma$ of $\phi_0$ to type $\sigma$ satisfies
+\[
+  \phi^\sigma(f)\ge 0
+  \qquad\text{almost surely.}
+\]
+
+The previous note proved the equivalence of these two semantics for hereditary
+graph classes closed under independent blow-ups.  This note explains the exact
+structural reason why that proof worked, gives a general criterion, and records a
+simple counterexample showing that heredity alone is insufficient.
+
+\paragraph{Main message.}
+The right property is not simply heredity.  It is the following support
+condition:
+\[
+  \overline{\bigcup_{\phi_0}\supp(\Ext_\sigma(\phi_0))}
+  =
+  \Homp(\A^\sigma[\T_1],\R),
+\]
+after pulling the right-hand side back into the ambient homomorphism space
+$\Homp(\A^\sigma[\T_0],\R)$.  Informally, every constrained labelled limit must be approximable by
+positive-probability rooted views of constrained unlabelled limits.
+
+\section{Flag-algebra background}
+
+We use Razborov's notation and terminology \cite{Razborov2007}.  For a universal
+theory $\T$ and a type $\sigma$, $\A^\sigma[\T]$ denotes the flag algebra of
+$\sigma$-flags.  The compact space of positive homomorphisms is
+\[
+  \Homp(\A^\sigma[\T],\R).
+\]
+A sequence of finite $\sigma$-flags converges if all flag densities converge; its
+limit is an element of this homomorphism space, and conversely every positive
+homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.
+
+For the empty type we write $\A^0[\T]$.  If $\sigma$ has size $k$, then
+\[
+  \brak{\sigma}:=\avg{1_\sigma}{\sigma}\in\A^0[\T]
+\]
+is the unlabelled density of embeddings of the type $\sigma$.  If
+$\phi_0\in\Homp(\A^0[\T],\R)$ and $\phi_0(\brak\sigma)>0$, Razborov's extension
+theorem gives a unique probability measure on
+$\Homp(\A^\sigma[\T],\R)$, denoted here by
+\[
+  \Ext_\sigma(\phi_0),
+\]
+characterised by
+\begin{equation}\label{eq:extension-expectation}
+  \E_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}[\phi^\sigma(g)]
+  =
+  \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
+  \qquad(g\in\A^\sigma[\T]).
+\end{equation}
+Moreover, if a finite sequence converges to $\phi_0$, then the corresponding
+finite random-root distributions converge weakly to $\Ext_\sigma(\phi_0)$
+\cite[Theorems 3.5 and 3.12]{Razborov2007}.
+
+We will repeatedly use the following elementary consequence of the definition of
+support.
+
+\begin{lemma}[Almost-sure non-negativity and support]\label{lem:support-as}
+Let $P$ be a Borel probability measure on a compact space $X$, and let
+$h:X\to\R$ be continuous.  Then
+\[
+  P[h\ge0]=1
+\]
+if and only if $h(x)\ge0$ for every $x\in\supp(P)$.
+\end{lemma}
+
+\begin{proof}
+If some $x\in\supp(P)$ satisfies $h(x)<0$, then the open set
+$\{y:h(y)<0\}$ contains $x$ and hence has positive $P$-measure, a
+contradiction.  Conversely, a Borel probability measure is concentrated on its
+closed support, so non-negativity on the support implies almost-sure
+non-negativity.
+\end{proof}
+
+\section{Universal strengthenings and supported homomorphisms}
+
+Let $\T_1$ be a universal strengthening of $\T_0$ in the same relational
+language.  For a non-degenerate type $\tau$ of $\T_1$, define
+\[
+  X_\tau:=\Homp(\A^\tau[\T_0],\R).
+\]
+The quotient map
+\[
+  \qmap_\tau:\A^\tau[\T_0]\twoheadrightarrow\A^\tau[\T_1]
+\]
+pulls every homomorphism on $\A^\tau[\T_1]$ back to a homomorphism on
+$\A^\tau[\T_0]$.  We write
+\[
+  Q_\tau
+  :=
+  \{\psi\circ\qmap_\tau:
+      \psi\in\Homp(\A^\tau[\T_1],\R)\}
+  \subseteq X_\tau.
+\]
+Thus $Q_\tau$ is the constrained, or $\T_1$-supported, part of the ambient
+homomorphism space.  It is closed in $X_\tau$: it is cut out by the conditions
+that all forbidden finite $\tau$-flags have value zero.
+
+Equivalently, $\chi\in X_\tau$ lies in $Q_\tau$ iff it vanishes on every
+$\tau$-flag which is a model of $\T_0$ but not a model of $\T_1$.  This
+formulation uses the fact that $\T_1$ is universal: if a finite flag violates
+$\T_1$, then its underlying finite structure is one of the forbidden finite
+models of the quotient theory.
+
+\begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
+Let $\phi_0\in Q_0$ and suppose $\phi_0(\brak\sigma)>0$.  If
+$\phi^\sigma\sim\Ext_\sigma(\phi_0)$ is formed in the ambient theory $\T_0$,
+then
+\[
+  \phi^\sigma\in Q_\sigma
+  \qquad\text{almost surely.}
+\]
+\end{lemma}
+
+\begin{proof}
+Let $F$ be a $\sigma$-flag of $\T_0$ that is not a model of $\T_1$, and let
+$M$ be its underlying unlabelled structure.  Since $\T_1$ is universal, $M$ is
+not a model of $\T_1$.  The downward average $\avg{F}{\sigma}$ is a
+non-negative scalar multiple of $M$ as an element of $\A^0[\T_0]$.  Since
+$\phi_0\in Q_0$, we have $\phi_0(M)=0$, and hence
+$\phi_0(\avg{F}{\sigma})=0$.  By \eqref{eq:extension-expectation},
+\[
+  \E[\phi^\sigma(F)]=0.
+\]
+But $\phi^\sigma(F)\ge0$ pointwise.  Hence $\phi^\sigma(F)=0$ almost surely.
+Intersecting the resulting probability-one events over the countable set of
+forbidden $\sigma$-flags shows that $\phi^\sigma\in Q_\sigma$ almost surely.
+\end{proof}
+
+\section{The support-closure criterion}
+
+The following definition is the main conceptual point of this note.
+
+\begin{definition}[Root-planting set and root-plantability]\label{def:root-planting}
+Fix a non-degenerate type $\sigma$ of $\T_1$.  Define
+\[
+  S_\sigma
+  :=
+  \overline{
+  \bigcup_{\substack{\phi_0\in Q_0\\ \phi_0(\brak\sigma)>0}}
+  \supp(\Ext_\sigma(\phi_0))}
+  \subseteq X_\sigma,
+\]
+where the closure is taken in the compact ambient space
+$X_\sigma=\Homp(\A^\sigma[\T_0],\R)$.
+We say that the triple $(\T_0,\T_1,\sigma)$ is \emph{root-plantable} if
+\[
+  S_\sigma=Q_\sigma.
+\]
+\end{definition}
+
+By Lemma~\ref{lem:support-passes-general}, one always has $S_\sigma\subseteq Q_\sigma$.
+The point of root-plantability is the reverse inclusion: every constrained
+labelled homomorphism should be approximable by support points of random
+extensions from constrained unlabelled homomorphisms.
+
+\begin{theorem}[Support-closure criterion]\label{thm:support-criterion}
+Let $\T_1$ be a universal strengthening of $\T_0$, and let $\sigma$ be a non-degenerate type of $\T_1$.  For $f\in\A^\sigma[\T_0]$, consider the following two
+conditions.
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
+  \item\label{cond:quotient}
+  Quotient semantics:
+  \[
+    \chi(f)\ge0\qquad\text{for every }\chi\in Q_\sigma.
+  \]
+  Equivalently, $\psi(\qmap_\sigma f)\ge0$ for every
+  $\psi\in\Homp(\A^\sigma[\T_1],\R)$.
+  \item\label{cond:ensemble}
+  Ensemble semantics:
+  for every $\phi_0\in Q_0$ with $\phi_0(\brak\sigma)>0$,
+  \[
+    \Prob_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}[\phi^\sigma(f)\ge0]=1.
+  \]
+\end{enumerate}
+Then \ref{cond:quotient} always implies \ref{cond:ensemble}.  Moreover,
+\ref{cond:quotient} and \ref{cond:ensemble} are equivalent for every
+$f\in\A^\sigma[\T_0]$ if and only if $(\T_0,\T_1,\sigma)$ is root-plantable.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:support-passes-general}, every support appearing in the definition
+of $S_\sigma$ is contained in $Q_\sigma$.  Hence non-negativity on $Q_\sigma$
+implies non-negativity on all those supports, and by Lemma~\ref{lem:support-as} this
+is precisely the implication from quotient semantics to ensemble semantics.
+
+For the converse direction, note first that ensemble semantics for a fixed $f$
+is equivalent, again by Lemma~\ref{lem:support-as}, to non-negativity of $f$ on the
+union of the supports in Definition~\ref{def:root-planting}.  Since $f$ is continuous on
+$X_\sigma$, this is equivalent to non-negativity on $S_\sigma$.
+Thus the comparison is simply
+\[
+  f\ge0\text{ on }S_\sigma
+  \qquad\text{versus}\qquad
+  f\ge0\text{ on }Q_\sigma.
+\]
+If $S_\sigma=Q_\sigma$, the two conditions are equivalent for every $f$.
+
+Conversely suppose $S_\sigma\ne Q_\sigma$.  Choose
+$\psi\in Q_\sigma\setminus S_\sigma$.  The compact space $X_\sigma$ is a closed subspace of the product
+$[0,1]^{\F^\sigma}$, hence is compact metrizable and normal.  The closed sets
+$S_\sigma$ and $\{\psi\}$ are disjoint subsets of the closed space $Q_\sigma$.
+By Urysohn's lemma there is a continuous function $h\in C(Q_\sigma)$ such that
+$h=1$ on $S_\sigma$ and $h(\psi)=-1$.  By Tietze's extension theorem, extend
+$h$ to a continuous function $H\in C(X_\sigma)$.  By the Stone-Weierstrass
+theorem in the form used by Razborov \cite[Proposition 3.7]{Razborov2007},
+$\A^\sigma[\T_0]$ is uniformly dense in $C(X_\sigma)$.  Choose
+$f\in\A^\sigma[\T_0]$ with $\|f-H\|_\infty<1/3$.  Then $f>0$ on
+$S_\sigma$, so ensemble semantics holds for $f$, while $f(\psi)<0$, so quotient
+semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
+\end{proof}
+
+\section{Clone-closed graph classes are root-plantable}
+
+We now recover and slightly reorganise the previous blow-up theorem.  Let
+$\T_0=\T_{\mathrm{Graph}}$, and let $\K$ be a hereditary class of finite simple
+graphs.  Equivalently, $\K$ is the class of finite models of the universal theory
+$\T_\K$ obtained from graph theory by forbidding all induced graphs not in $\K$.
+
+\begin{definition}[Independent blow-up]
+Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
+$v\in V(G)$.  The independent blow-up $G^{\mathbf m}$ is obtained by replacing
+each vertex $v$ by an independent clone class $C_v$ of size $m_v$, and by putting
+all edges between $C_v$ and $C_w$ whenever $vw\in E(G)$.
+\end{definition}
+
+\begin{definition}[Clone-closed hereditary class]
+A hereditary graph class $\K$ is \emph{clone-closed} if every independent
+blow-up of every graph in $\K$ again belongs to $\K$.
+\end{definition}
+
+\begin{example}
+For every $r\ge3$, the class of $K_r$-free graphs is clone-closed.  A clique in
+an independent blow-up uses at most one vertex from each clone class, and hence
+projects to a clique of the same size in the original graph.  In particular, the
+triangle-free class is clone-closed.
+\end{example}
+
+\subsection{The planted blow-up estimate}
+
+Let $F=(G,\theta)$ be a $\sigma$-flag with $|\sigma|=k$ and $|G|=n>k$.  Fix a
+parameter $0<\lambda\le 1/2$.  If $k>0$, assign weights
+\[
+  w_{\theta(i)}=\frac{\lambda}{k}\quad(1\le i\le k),
+  \qquad
+  w_v=\frac{1-\lambda}{n-k}\quad(v\notin\operatorname{im}\theta).
+\]
+If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.  For a large integer $N$, let
+$B_N(G,\theta,\lambda)$ be an independent blow-up of $G$ whose clone class
+$C_v$ has size approximately $w_vN$, and put
+\[
+  \operatorname{err}_N
+  :=
+  \sum_{v\in V(G)}\left|\frac{|C_v|}{N}-w_v\right|.
+\]
+The error tends to zero along suitable choices of integer cluster sizes.
+
+\begin{lemma}[Planted blow-up approximation]\label{lem:planted-estimate}
+Let $m\ge k$ be fixed.  There is a constant $C_m$, depending only on $m$, such
+that the following holds for every $0<\lambda\le 1/2$.  Let $F_0$ be any $\sigma$-flag with at most $m$
+vertices, let $(G,\theta)$ be a $\sigma$-flag on $n>k$ vertices, and let
+$B_N=B_N(G,\theta,\lambda)$.  If
+$\widehat\theta:\sigma\to B_N$ satisfies
+$\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
+\begin{equation}\label{eq:planted-estimate}
+  \left|p(F_0,(B_N,\widehat\theta))-p(F_0,(G,\theta))\right|
+  \le
+  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
+\end{equation}
+Consequently, for every fixed $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ there is a
+constant $C_f$ such that
+\begin{equation}\label{eq:planted-linear-estimate}
+  \left|p(f,(B_N,\widehat\theta))-p(f,(G,\theta))\right|
+  \le
+  C_f\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+It suffices to prove \eqref{eq:planted-estimate}; the estimate for $f$ follows
+by linearity because $f$ is a finite linear combination of flags.
+
+Let $\ell=|F_0|\le m$.  To compute $p(F_0,(B_N,\widehat\theta))$, choose
+$\ell-k$ additional unlabelled vertices uniformly from $B_N$, avoiding the
+labelled vertices.  Call the sample good if none of these additional vertices
+lies in a planted labelled clone class $C_{\theta(1)},\ldots,C_{\theta(k)}$ and
+no two of them lie in the same non-labelled clone class.  The probability of
+hitting a planted labelled clone class is at most
+$(\ell-k)\lambda+O_m(\operatorname{err}_N)$.  Conditional on avoiding the planted clone classes, the normalised target weights
+of the non-labelled clone classes are equal, up to $O_m(\operatorname{err}_N)$,
+because the total non-labelled mass is $1-\lambda\ge1/2$.  Therefore the
+probability that two sampled vertices
+fall in the same non-labelled clone class is at most
+$\binom{\ell-k}{2}/(n-k)+O_m(\operatorname{err}_N)$.  Hence the bad probability is
+bounded by the right-hand side of \eqref{eq:planted-estimate}, after enlarging
+$C_m$.
+
+On the good event, projecting every sampled vertex of $B_N$ to its base vertex
+in $G$ gives a uniformly chosen $(\ell-k)$-subset of
+$V(G)\setminus\operatorname{im}\theta$, up to total variation error
+$O_m(\operatorname{err}_N)$.  The induced labelled graph in the blow-up is then
+exactly the induced labelled graph in $(G,\theta)$ on the projected vertices,
+because distinct clone classes have precisely the adjacencies of their base
+vertices.  Thus the two flag probabilities differ only through the bad event and
+rounding error, which proves the claim.
+\end{proof}
+
+\begin{lemma}[Positive probability of the planted root]\label{lem:planted-mass}
+With the notation above, for all sufficiently large $N$, the finite random
+extension of the unlabelled graph $B_N(G,\theta,\lambda)$ to type $\sigma$ gives
+probability at least
+\[
+  c_{k,\lambda}:=
+  \begin{cases}
+    1, & k=0,\\[1mm]
+    \left(\dfrac{\lambda}{2k}\right)^k, & k>0,
+  \end{cases}
+\]
+to the event that the random labelled embedding
+$\widehat\theta:\sigma\to B_N(G,\theta,\lambda)$ satisfies
+$\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
+\end{lemma}
+
+\begin{proof}
+For $k=0$ there is nothing to prove.  Assume $k>0$.  Every ordered choice of
+vertices $\widehat\theta(i)\in C_{\theta(i)}$ is a model embedding of $\sigma$,
+because $\theta$ is a model embedding into $G$ and the blow-up preserves the
+relations between distinct base vertices.  For $N$ sufficiently large,
+$|C_{\theta(i)}|\ge(\lambda/(2k))N$ for all $i$.  Thus the number of planted
+ordered embeddings is at least $(\lambda/(2k))^kN^k$, while the total number of
+ordered embeddings of $\sigma$ into $B_N$ is at most $N^k$.
+\end{proof}
+
+\subsection{Root-plantability theorem}
+
+\begin{theorem}[Clone-closed classes are root-plantable]\label{thm:clone-root-plantable}
+Let $\K$ be a clone-closed hereditary graph class, let
+$\T_1=\T_\K$, and let $\sigma$ be a non-degenerate type of $\T_\K$.  Then
+\[
+  S_\sigma=Q_\sigma.
+\]
+Consequently, quotient semantics and ensemble semantics are equivalent for every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+\end{theorem}
+
+\begin{proof}
+The inclusion $S_\sigma\subseteq Q_\sigma$ is Lemma~\ref{lem:support-passes-general}.
+We prove the reverse inclusion.  Let $\psi\in Q_\sigma$.  We must show that every
+neighbourhood of $\psi$ in $X_\sigma$ intersects the support of some
+$\Ext_\sigma(\phi_0)$ with $\phi_0\in Q_0$ and $\phi_0(\brak\sigma)>0$.
+
+Let a basic neighbourhood of $\psi$ be specified by flags
+$F_1,\ldots,F_s$ and a tolerance $\eps>0$:
+\[
+  U=
+  \{\chi\in X_\sigma:
+    |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
+\]
+By the representation theorem in the constrained theory $\T_\K$, choose a
+convergent sequence of $\sigma$-flags
+$(G_n,\theta_n)$ with $G_n\in\K$, $|G_n|\to\infty$, and
+$p(\cdot,(G_n,\theta_n))\to\psi$.  Let $m=\max_i |F_i|$.
+Choose $0<\lambda\le 1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
+constant from Lemma~\ref{lem:planted-estimate}.  Then choose $n$ so large that
+\[
+  |p(F_i,(G_n,\theta_n))-\psi(F_i)|<\eps/10
+  \quad\text{for all }i,
+  \qquad
+  \frac{C_m}{|G_n|-|\sigma|}<\eps/10.
+\]
+Finally take a sequence $N_j\to\infty$ with rounding errors tending to zero and, for all large $j$, satisfying $C_m\operatorname{err}_{N_j}<\eps/10$; put
+\[
+  B_j:=B_{N_j}(G_n,\theta_n,\lambda).
+\]
+Since $G_n\in\K$ and $\K$ is clone-closed, every $B_j$ lies in $\K$.  Passing to
+a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
+$\phi_0\in Q_0$.  The counting argument in Lemma~\ref{lem:planted-mass} gives a positive lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$; hence $\phi_0(\brak\sigma)>0$.
+
+Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
+$X_\sigma\subseteq Y_\sigma$ is a closed subspace.  Let $P_j$ be the finite
+random-root distribution on $Y_\sigma$ obtained by choosing a random embedding
+of $\sigma$ into $B_j$ and recording all rooted flag densities.  These measures
+converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability measure on
+$Y_\sigma$ concentrated on $X_\sigma$.
+
+Consider the closed cylinder in the ambient product space
+\[
+  \widetilde C=
+  \{x\in Y_\sigma:
+    |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
+\]
+Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
+large $j$, Lemma~\ref{lem:planted-estimate} implies that every planted root lies
+in $\widetilde C$.  By Lemma~\ref{lem:planted-mass},
+\[
+  P_j(\widetilde C)\ge c_{|\sigma|,\lambda}>0
+\]
+for all sufficiently large $j$.  Since $\widetilde C$ is closed in $Y_\sigma$, the
+closed-set form of the Portmanteau theorem gives
+\[
+  \Ext_\sigma(\phi_0)(\widetilde C)
+  \ge
+  \limsup_{j\to\infty} P_j(\widetilde C)
+  \ge c_{|\sigma|,\lambda}>0.
+\]
+Since $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, this says
+$\Ext_\sigma(\phi_0)(C)>0$.  Hence the support of $\Ext_\sigma(\phi_0)$ intersects
+$C\subseteq U$.  Since $U$ was arbitrary, $\psi\in S_\sigma$.
+\end{proof}
+
+\begin{corollary}[Clique-free and triangle-free theories]\label{cor:clique-free}
+For every $r\ge3$, every non-degenerate $K_r$-free type $\sigma$, and every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$, quotient semantics and ensemble semantics
+are equivalent for the $K_r$-free theory.  In particular, the equivalence holds
+for the triangle-free theory.
+\end{corollary}
+
+\section{A hereditary counterexample: \texorpdfstring{$C_4$}{C4}-free graphs}
+
+The clone-closed hypothesis is not merely technical.  The correspondence can
+fail even for a hereditary graph class.  This section gives a compact example.
+
+Let
+\[
+  \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as a not-necessarily-induced subgraph}\}.
+\]
+This is hereditary.  In the induced-subgraph language of flag algebras, it is
+axiomatised by forbidding the three induced four-vertex graphs that contain a
+$C_4$ as a subgraph: $C_4$, $K_4$ minus one edge, and $K_4$.  It is not
+clone-closed: the independent blow-up of $K_2$ with two clone classes of size
+$2$ is $K_{2,2}$, which is a $C_4$.
+
+Let $\sigma=1$ be the one-vertex type in graph theory, and let
+$e\in\A^1[\T_{\mathrm{Graph}}]$ be the rooted edge flag, i.e. the two-vertex flag
+in which the labelled vertex is adjacent to the one unlabelled vertex.
+
+\begin{lemma}[Dense \texorpdfstring{$C_4$}{C4}-free limits have edge density zero]\label{lem:c4-edge-zero}
+If $\phi_0\in Q_0$ for the $C_4$-free theory, then
+\[
+  \phi_0(\rho)=0,
+\]
+where $\rho$ is the unlabelled edge flag.
+\end{lemma}
+
+\begin{proof}
+By the representation theorem in the constrained theory, $\phi_0$ is the limit
+of a convergent sequence of finite $C_4$-free graphs $G_n$ with $|G_n|\to\infty$.
+We show that their edge densities tend to zero.
+
+Let $G$ be a $C_4$-free graph on $N$ vertices, with degrees $d(v)$.  Any two
+vertices have at most one common neighbour; otherwise two common neighbours and
+the two original vertices form a $C_4$.  Therefore
+\[
+  \sum_{v\in V(G)} \binom{d(v)}{2}
+  \le
+  \binom{N}{2}.
+\]
+By convexity,
+\[
+  N\binom{\overline d}{2}
+  \le
+  \binom{N}{2},
+  \qquad
+  \overline d:=\frac1N\sum_v d(v).
+\]
+Thus $\overline d(\overline d-1)\le N-1$, so
+$\overline d\le 1+\sqrt N$.  The edge density is
+$\overline d/(N-1)$, which tends to zero.  Hence
+$\phi_0(\rho)=0$.
+\end{proof}
+
+\begin{theorem}[\texorpdfstring{$C_4$}{C4}-free counterexample]\label{thm:c4-counterexample}
+For the hereditary class $\K_{C_4}$ and the one-vertex type $\sigma=1$, the
+quotient/ensemble correspondence fails.  More precisely, for
+\[
+  f:=-e\in\A^1[\T_{\mathrm{Graph}}],
+\]
+ensemble semantics holds but quotient semantics fails.
+\end{theorem}
+
+\begin{proof}
+First we prove ensemble semantics.  Let $\phi_0\in Q_0$ and let
+$\phi^1\sim\Ext_1(\phi_0)$.  By Lemma~\ref{lem:c4-edge-zero}, $\phi_0(\rho)=0$.  Since
+$\avg{e}{1}=\rho$ and $\brak{1}=1$, \eqref{eq:extension-expectation} gives
+\[
+  \E[\phi^1(e)]=\phi_0(\rho)=0.
+\]
+Because $\phi^1(e)\ge0$ pointwise, we have $\phi^1(e)=0$ almost surely.  Hence
+\[
+  \phi^1(f)=\phi^1(-e)=0
+  \qquad\text{almost surely.}
+\]
+So ensemble semantics holds.
+
+Now we show that quotient semantics fails.  Let $S_N=K_{1,N-1}$ be the star on
+$N$ vertices, rooted at its centre.  Each $S_N$ is $C_4$-free.  By compactness,
+a subsequence of these rooted stars converges to some
+\[
+  \psi\in Q_1.
+\]
+For every $N$,
+\[
+  p(e,S_N)=1,
+\]
+because every unlabelled vertex is adjacent to the labelled centre.  Therefore
+$\psi(e)=1$, and hence
+\[
+  \psi(f)=\psi(-e)=-1<0.
+\]
+Thus quotient semantics fails.
+\end{proof}
+
+\begin{remark}[The obstruction]
+The centre of a star is an exceptional labelled vertex.  Quotient semantics can
+see it because labelled limits may root at exceptional vertices.  Ensemble
+semantics, however, roots a constrained unlabelled dense limit at a typical
+vertex.  In every dense $C_4$-free limit the edge density is zero, so a typical
+vertex has rooted edge density zero.  The centre-rooted star cannot be planted
+with positive probability without creating $C_4$'s: cloning the centre and one
+leaf already creates $K_{2,2}$.
+\end{remark}
+
+\begin{corollary}[Failure of root-plantability for \texorpdfstring{$C_4$}{C4}-free graphs]
+For $\K_{C_4}$ and $\sigma=1$,
+\[
+  S_1\subseteq\{\chi\in Q_1:\chi(e)=0\},
+\]
+but $Q_1$ contains the centre-rooted star homomorphism $\psi$ with $\psi(e)=1$.
+Hence $S_1\ne Q_1$.
+\end{corollary}
+
+\section{What this says about strengthening by another theory \texorpdfstring{$\T'$}{T'}}
+
+The discussion above gives a clean answer to the proposed generalisation from a
+hereditary class $\K$ to a conjunction $\T\wedge\T'$.
+
+\subsection{When \texorpdfstring{$\T'$}{T'} is universal}
+
+If $\T'$ is universal and uses the same relational language as $\T$, then
+$\T_1:=\T\wedge\T'$ is again a universal theory.  The quotient flag algebra
+$\A^\sigma[\T_1]$ is well-defined, and the support-closure criterion
+Theorem~\ref{thm:support-criterion} applies verbatim.  Thus the next theorem in this
+direction should not claim equivalence for all universal strengthenings.  The
+$C_4$-free counterexample shows that this is false.  The correct statement is:
+\[
+  \text{quotient semantics equals ensemble semantics}
+  \quad\Longleftrightarrow\quad
+  \text{root-plantability.}
+\]
+The remaining mathematical work is therefore to find useful, checkable sufficient
+conditions for root-plantability.
+
+Clone-closure is one such sufficient condition for graph classes.  Other possible
+conditions worth investigating are closure under suitable substitutions,
+true-twin or false-twin duplications, or more model-theoretic amalgamation and
+duplication properties.
+
+\subsection{When \texorpdfstring{$\T'$}{T'} is not universal}
+
+If $\T'$ is not universal, then $\T\wedge\T'$ is generally not closed under
+induced submodels.  This breaks the basic starting point of Razborov's flag
+algebra construction, which assumes that every induced substructure of a finite
+model is again a model of the theory.  In this case there may be no canonical
+quotient algebra $\A^\sigma[\T\wedge\T']$ of the usual flag-algebra kind.
+
+One can still study constraints imposed on ambient homomorphisms, for example
+conditions of the form
+\[
+  \phi(g_i)=0,
+  \qquad
+  \phi(h_j)\ge0.
+\]
+But this is better viewed as \emph{relative semantics inside the ambient flag
+algebra}, not as quotient semantics of a new universal theory.  It may be an
+interesting direction, but it should be separated from the quotient/ensemble
+problem considered here.
+
+\section{Recommended next research targets}
+
+The results suggest three natural next steps.
+
+\begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
+  \item \textbf{Develop root-plantability as the main theorem.}
+  The support-closure criterion is exact and abstract.  It should become the
+  organising statement.  Concrete graph-theoretic hypotheses should then be
+  presented as sufficient conditions for root-plantability.
+
+  \item \textbf{Classify duplication operations that imply root-plantability.}
+  Clone-closed hereditary classes are only the first example.  The proof uses
+  independent duplication of labelled vertices into positive-mass clone classes.
+  A broader theorem may allow more general local replacements or substitutions,
+  as long as the labelled finite model can be amplified into positive measure
+  without leaving the constrained class.
+
+  \item \textbf{Use $C_4$-free graphs as the canonical obstruction.}
+  The centre-rooted star shows exactly what goes wrong: a labelled quotient
+  homomorphism may live at an exceptional vertex that cannot be made typical.
+  This example is strong because the class is already hereditary and universal;
+  non-hereditary constraints are not needed to witness failure.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{Razborov2007}
+A.~A.~Razborov.
+\newblock Flag algebras.
+\newblock \emph{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\end{thebibliography}
+
+\end{document}
