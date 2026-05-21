@@ -77,23 +77,38 @@
 \maketitle
 
 \begin{abstract}
-We refine a previous blow-up argument for forbidden-subgraph reasoning in
-Razborov's flag algebras.  The central point is that the equivalence between
-quotient semantics and ensemble semantics is not controlled merely by heredity
-of the constrained class.  It is controlled by a support-surjectivity condition:
-every constrained labelled homomorphism must be approximable by support points of
-random labelled extensions of constrained unlabelled homomorphisms.  We call this
-support-closure condition root-plantability and prove that it is exactly equivalent
-to the quotient/ensemble correspondence for all flag-algebra elements.  The earlier
-clone-closed blow-up theorem is then reinterpreted as a sufficient condition for
-root-plantability.  Finally, we give a clean counterexample: the hereditary class
-of $C_4$-free graphs is not root-plantable.  For the one-vertex type, the element
-$-e$, where $e$ is the rooted edge flag, is non-negative under every ensemble
-extension but is negative on the centre-rooted star homomorphism in the quotient
-$C_4$-free theory.
+Forbidden-subgraph reasoning in Razborov's flag algebras can be carried out in two
+ways: in the \emph{quotient} flag algebra of the constrained theory, or by
+\emph{ensemble} semantics inside the ambient theory, asking that an inequality hold
+almost surely along the random labelled extensions of constrained unlabelled limits.
+When do these two semantics agree?  We show that the answer is not governed merely
+by heredity of the constrained class, but by a support-closure condition: every
+constrained labelled homomorphism must be approximable by support points of random
+labelled extensions of constrained unlabelled homomorphisms.  We call this condition
+\emph{root-plantability} and prove that it is exactly equivalent to the
+quotient/ensemble correspondence for all flag-algebra elements.  Closure under
+independent blow-ups is shown to be a sufficient condition for root-plantability,
+which recovers the correspondence for clique-free and triangle-free theories.
+Finally, we give a clean counterexample showing that heredity alone is not enough:
+the hereditary class of $C_4$-free graphs is not root-plantable.  For the one-vertex
+type, the element $-e$, where $e$ is the rooted edge flag, is non-negative under
+every ensemble extension yet negative on the centre-rooted star homomorphism in the
+quotient $C_4$-free theory.
 \end{abstract}
 
-\section{Purpose of the note}
+\section{Introduction}
+
+A recurring task in extremal combinatorics is to prove a density inequality that
+holds only under a forbidden-subgraph constraint, such as ``in every triangle-free
+graph this combination of subgraph densities is non-negative.''  Razborov's flag
+algebras offer two routes to such statements.  One may pass to the \emph{quotient}
+flag algebra of the constrained theory and ask for non-negativity there
+(\emph{quotient semantics}); or one may stay in the ambient theory of all graphs and
+ask that the inequality hold almost surely along the random labelled extensions of
+constrained limits (\emph{ensemble semantics}).  The first is the algebra one
+actually computes in; the second is what a constrained density bound asserts.  When
+the two agree, a certificate proved in the quotient is a genuine density bound for
+the constrained class.  This paper pins down exactly when they agree.
 
 Let $\T_0$ be a universal first-order theory in a finite relational language,
 and let $\T_1$ be a universal strengthening of $\T_0$ in the same language.  In
@@ -117,10 +132,11 @@ extension $\phi^\sigma$ of $\phi_0$ to type $\sigma$ satisfies
   \qquad\text{almost surely.}
 \]
 
-The previous note proved the equivalence of these two semantics for hereditary
-graph classes closed under independent blow-ups.  This note explains the exact
-structural reason why that proof worked, gives a general criterion, and records a
-simple counterexample showing that heredity alone is insufficient.
+A natural sufficient condition for the equivalence of these two semantics is that
+the constrained class be hereditary and closed under independent blow-ups.  Below we
+isolate the exact structural reason this works, give a general criterion that is both
+necessary and sufficient, and record a simple counterexample showing that heredity
+alone does not suffice.
 
 \paragraph{Main message.}
 The right property is not simply heredity.  It is the following support
@@ -144,13 +160,28 @@ $\sigma$-flags.  The compact space of positive homomorphisms is
 \]
 A sequence of finite $\sigma$-flags converges if all flag densities converge; its
 limit is an element of this homomorphism space, and conversely every positive
-homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.
+homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.  We write
+$\F^\sigma[\T]$ for the (countable) set of finite $\sigma$-flags of $\T$ up to
+isomorphism, abbreviated $\F^\sigma$ when $\T$ is clear.  Since each flag density
+lies in $[0,1]$, evaluating a homomorphism on all flags embeds
+$\Homp(\A^\sigma[\T],\R)$ as a closed subspace of the compact metrizable cube
+$[0,1]^{\F^\sigma[\T]}$.
 
-For the empty type we write $\A^0[\T]$.  If $\sigma$ has size $k$, then
+For the empty type we write $\A^0[\T]$.  The averaging (unlabelling) operator
+\[
+  \avg{\cdot}{\sigma}:\A^\sigma[\T]\to\A^0[\T]
+\]
+forgets the labels of a $\sigma$-flag and averages over the choice of labelling.  The
+only properties we use are that it is linear and that on a single flag $F$ with
+underlying unlabelled structure $M$ it returns a \emph{non-negative scalar multiple}
+of $M$.  Write $1_\sigma\in\A^\sigma[\T]$ for the flag consisting of the type alone
+(the multiplicative unit of $\A^\sigma[\T]$).  If $\sigma$ has size $k$, then
 \[
   \brak{\sigma}:=\avg{1_\sigma}{\sigma}\in\A^0[\T]
 \]
-is the unlabelled density of embeddings of the type $\sigma$.  If
+is the unlabelled density of embeddings of the type $\sigma$.  The type $\sigma$ is
+\emph{non-degenerate} if $\brak\sigma\neq0$, equivalently if some limit assigns it
+positive density.  If
 $\phi_0\in\Homp(\A^0[\T],\R)$ and $\phi_0(\brak\sigma)>0$, Razborov's extension
 theorem gives a unique probability measure on
 $\Homp(\A^\sigma[\T],\R)$, denoted here by
@@ -245,7 +276,7 @@ forbidden $\sigma$-flags shows that $\phi^\sigma\in Q_\sigma$ almost surely.
 
 \section{The support-closure criterion}
 
-The following definition is the main conceptual point of this note.
+The following definition is the main conceptual point of this paper.
 
 \begin{definition}[Root-planting set and root-plantability]\label{def:root-planting}
 Fix a non-degenerate type $\sigma$ of $\T_1$.  Define
@@ -327,7 +358,8 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 
 \section{Clone-closed graph classes are root-plantable}
 
-We now recover and slightly reorganise the previous blow-up theorem.  Let
+We now give a checkable sufficient condition for root-plantability for graph
+classes, built on an independent blow-up construction.  Let
 $\T_0=\T_{\mathrm{Graph}}$, and let $\K$ be a hereditary class of finite simple
 graphs.  Equivalently, $\K$ is the class of finite models of the universal theory
 $\T_\K$ obtained from graph theory by forbidding all induced graphs not in $\K$.
@@ -473,21 +505,21 @@ $F_1,\ldots,F_s$ and a tolerance $\eps>0$:
 \]
 By the representation theorem in the constrained theory $\T_\K$, choose a
 convergent sequence of $\sigma$-flags
-$(G_n,\theta_n)$ with $G_n\in\K$, $|G_n|\to\infty$, and
-$p(\cdot,(G_n,\theta_n))\to\psi$.  Let $m=\max_i |F_i|$.
+$(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
+$p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m=\max_i |F_i|$.
 Choose $0<\lambda\le 1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
-constant from Lemma~\ref{lem:planted-estimate}.  Then choose $n$ so large that
+constant from Lemma~\ref{lem:planted-estimate}.  Then fix one $t$ large enough that
 \[
-  |p(F_i,(G_n,\theta_n))-\psi(F_i)|<\eps/10
+  |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10
   \quad\text{for all }i,
   \qquad
-  \frac{C_m}{|G_n|-|\sigma|}<\eps/10.
+  \frac{C_m}{|G_t|-|\sigma|}<\eps/10.
 \]
 Finally take a sequence $N_j\to\infty$ with rounding errors tending to zero and, for all large $j$, satisfying $C_m\operatorname{err}_{N_j}<\eps/10$; put
 \[
-  B_j:=B_{N_j}(G_n,\theta_n,\lambda).
+  B_j:=B_{N_j}(G_t,\theta_t,\lambda).
 \]
-Since $G_n\in\K$ and $\K$ is clone-closed, every $B_j$ lies in $\K$.  Passing to
+Since $G_t\in\K$ and $\K$ is clone-closed, every $B_j$ lies in $\K$.  Passing to
 a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
 $\phi_0\in Q_0$.  The counting argument in Lemma~\ref{lem:planted-mass} gives a positive lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$; hence $\phi_0(\brak\sigma)>0$.
 
