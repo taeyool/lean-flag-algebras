@@ -97,8 +97,11 @@ rooted edge flag $e$: its negation $-e$ is non-negative under every ensemble
 extension yet negative on the centre-rooted star homomorphism in the quotient
 theory.  Since root-plantability is preserved by complementation, the same failure
 occurs for the dense complement classes; so neither sparsity nor density is
-decisive, and the genuine obstruction is that the rooted edge density is pinned to a
-boundary value across all constrained limits.
+decisive, and the genuine obstruction is that a rooted density is pinned to a
+boundary value across all constrained limits.  We isolate this as a general pinning
+obstruction and conjecture that its absence characterises root-plantability, with
+the $C_5$-free graphs as the critical test case, for which we establish the
+supporting local structure.
 \end{abstract}
 
 \section{Introduction}
@@ -786,6 +789,119 @@ sufficient, the frontier left open between Theorem~\ref{thm:clone-root-plantable
 and the two obstructions.
 \end{remark}
 
+\subsection{The general obstruction and a conjecture}
+
+Both obstructions are instances of one mechanism: a rooted density pinned to a
+boundary of its range.
+
+\begin{theorem}[Pinning obstruction]\label{thm:pinning}
+Let $\sigma$ be a non-degenerate type and let $g$ be a $\sigma$-flag, so that
+$0\le\chi(g)\le1$ for every $\chi\in X_\sigma$.  Suppose the typical density of $g$
+is pinned to an endpoint of $[0,1]$ across all constrained unlabelled limits:
+\begin{itemize}[leftmargin=2.8em]
+  \item[\textup{(0)}] $\phi_0(\avg{g}{\sigma})=0$ for every $\phi_0\in Q_0$ with
+        $\phi_0(\brak\sigma)>0$; or
+  \item[\textup{(1)}] $\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ for every such
+        $\phi_0$.
+\end{itemize}
+If moreover the quotient theory contains a root attaining a different value---some
+$\psi\in Q_\sigma$ with $\psi(g)>0$ in case \textup{(0)}, or $\psi(g)<1$ in case
+\textup{(1)}---then $(\T_0,\T_1,\sigma)$ is not root-plantable, witnessed by $-g$,
+respectively $g-1_\sigma$.
+\end{theorem}
+
+\begin{proof}
+In case \textup{(0)}, \eqref{eq:extension-expectation} gives
+$\E_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}[\phi^\sigma(g)]
+   =\phi_0(\avg{g}{\sigma})/\phi_0(\brak\sigma)=0$ for every admissible $\phi_0$;
+as $\phi^\sigma(g)\ge0$ pointwise, $\phi^\sigma(g)=0$ almost surely, so $-g$ is
+ensemble-nonnegative and, by Lemma~\ref{lem:support-as}, vanishes on $S_\sigma$.
+The root $\psi$ gives $\psi(-g)<0$, so quotient semantics fails.  Case \textup{(1)}
+is identical using $\phi^\sigma(g)\le1$ and the witness $g-1_\sigma$; equivalently it
+is case \textup{(0)} for $\overline\K$ via Lemma~\ref{lem:complementation}.
+\end{proof}
+
+\begin{remark}
+The degeneracy obstruction (Theorem~\ref{thm:degenerate-obstruction}) and its dense
+counterpart (Corollary~\ref{cor:codegenerate}) are the instances $\sigma=1$, $g=e$,
+pinned at $0$ and at $1$.  Larger types and higher flags can in principle pin other
+rooted densities, giving further obstructions.
+\end{remark}
+
+\begin{conjecture}[Characterisation]\label{conj:characterisation}
+$(\T_{\mathrm{Graph}},\T_\K,\sigma)$ is root-plantable if and only if it admits no
+pinning obstruction: for every $\sigma$-flag $g$ whose typical density is pinned to
+an endpoint of $[0,1]$ across all constrained unlabelled limits, the quotient theory
+attains only that endpoint.
+\end{conjecture}
+
+The forward direction is Theorem~\ref{thm:pinning}; the content of the conjecture is
+that the absence of pinning is sufficient.
+
+\section{Toward the \texorpdfstring{$C_5$}{C5}-free case}
+
+Conjecture~\ref{conj:characterisation} predicts that the $C_5$-free graphs---dense,
+not clone-closed, and, as we now confirm, free of any pinning obstruction from the
+edge or triangle---are root-plantable.  We record the structural evidence;
+throughout, $C_5$-free again means containing no $C_5$ as a not-necessarily-induced
+subgraph (the densest such graphs being complete bipartite).
+
+The key fact is a strong local constraint.
+
+\begin{lemma}[Neighbourhoods in $C_5$-free graphs]\label{lem:c5-nbhd}
+If $G$ is $C_5$-free and $v\in V(G)$, then $G[N(v)]$ contains no path on four
+vertices as a subgraph; equivalently, each neighbourhood induces a disjoint union of
+stars and triangles.
+\end{lemma}
+
+\begin{proof}
+A path $a$-$x$-$y$-$b$ inside $N(v)$ together with $v$ forms the $5$-cycle
+$v$-$a$-$x$-$y$-$b$-$v$.  Thus $G[N(v)]$ is $P_4$-subgraph-free, and the connected
+$P_4$-subgraph-free graphs are exactly the stars $K_{1,t}$ and the triangle.
+\end{proof}
+
+\begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
+The $C_5$-free theory has no pinning obstruction at $\sigma=1$ from the edge or the
+rooted-triangle flag.
+\end{corollary}
+
+\begin{proof}
+A disjoint union of stars and triangles on at most $\deg(v)$ vertices has at most
+$\deg(v)$ edges, so the number of triangles through $v$ is at most $\deg(v)\le n$,
+and the rooted-triangle density at every vertex is $O(1/n)$.  Hence the
+rooted-triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
+the quotient attains only $0$, so no obstruction arises.  The edge flag is not
+pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
+(the empty graph and the complete bipartite graphs).
+\end{proof}
+
+Finally, blow-ups detect exactly the triangles.
+
+\begin{lemma}\label{lem:c5-blowup}
+Every independent blow-up of a $C_5$-free graph $G$ is again $C_5$-free if and only
+if $G$ is triangle-free.
+\end{lemma}
+
+\begin{proof}
+A $C_5$ in a blow-up projects to a closed walk of length $5$ in $G$, and conversely
+any closed walk of length $5$ in $G$ lifts to a $C_5$ in a blow-up with classes of
+size $\ge2$.  Since $G$ is $C_5$-free, such a walk---being of odd length $5$, hence
+containing an odd cycle of length $3$ or $5$---exists if and only if $G$ has a
+triangle.
+\end{proof}
+
+Consequently the triangle-free $C_5$-free graphs form a clone-closed class, so by
+Theorem~\ref{thm:clone-root-plantable} every $C_5$-free rooted limit realised by
+triangle-free graphs is root-plantable; and by Lemma~\ref{lem:c5-nbhd} the
+neighbourhood of a positive-degree root is asymptotically independent (its induced
+edges have vanishing density), so dense $C_5$-free roots are locally bipartite.
+These facts leave no candidate obstruction, and we conjecture:
+
+\begin{conjecture}\label{conj:c5}
+The $C_5$-free theory is root-plantable at every non-degenerate type; in particular
+Conjecture~\ref{conj:characterisation} holds for it.
+\end{conjecture}
+
 \section{What this says about strengthening by another theory \texorpdfstring{$\T'$}{T'}}
 
 The discussion above gives a clean answer to the proposed generalisation from a
@@ -857,11 +973,13 @@ The results suggest three natural next steps.
   every edge-degenerate hereditary class with stars fails, including
   $K_{s,t}$-free, even-cycle-free, planar, and bounded-degeneracy classes---and by
   complementation (Corollary~\ref{cor:codegenerate}) the same holds for the
-  \emph{dense} co-degenerate classes, so density is not the dividing line.  The
-  governing invariant is boundary pinning of the rooted edge density.  The remaining
-  problem is to characterise root-plantability exactly: is the absence of boundary
-  pinning sufficient?  The dense, non-clone-closed, non-pinned class of $C_5$-free
-  graphs is the natural first test.
+  \emph{dense} co-degenerate classes, so density is not the dividing line.  Both are
+  instances of the single pinning obstruction (Theorem~\ref{thm:pinning}).  The
+  remaining problem is to settle Conjecture~\ref{conj:characterisation}---that the
+  absence of any pinning obstruction is sufficient---for which $C_5$-free graphs
+  (Conjecture~\ref{conj:c5}) are the natural first test; Lemmas~\ref{lem:c5-nbhd}
+  and~\ref{lem:c5-blowup} reduce that case to planting dense, locally bipartite
+  roots.
 \end{enumerate}
 
 \begin{thebibliography}{9}
