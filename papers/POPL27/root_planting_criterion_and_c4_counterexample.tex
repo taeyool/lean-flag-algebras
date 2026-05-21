@@ -89,11 +89,13 @@ labelled extensions of constrained unlabelled homomorphisms.  We call this condi
 quotient/ensemble correspondence for all flag-algebra elements.  Closure under
 independent blow-ups is shown to be a sufficient condition for root-plantability,
 which recovers the correspondence for clique-free and triangle-free theories.
-Finally, we give a clean counterexample showing that heredity alone is not enough:
-the hereditary class of $C_4$-free graphs is not root-plantable.  For the one-vertex
-type, the element $-e$, where $e$ is the rooted edge flag, is non-negative under
-every ensemble extension yet negative on the centre-rooted star homomorphism in the
-quotient $C_4$-free theory.
+Finally, we show that heredity alone is not enough, via a general degeneracy
+obstruction: every edge-degenerate hereditary class containing arbitrarily large
+stars---for example $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
+graphs---fails to be root-plantable at the one-vertex type.  The witness is the
+rooted edge flag $e$: its negation $-e$ is non-negative under every ensemble
+extension yet negative on the centre-rooted star homomorphism in the quotient
+theory.
 \end{abstract}
 
 \section{Introduction}
@@ -562,31 +564,97 @@ are equivalent for the $K_r$-free theory.  In particular, the equivalence holds
 for the triangle-free theory.
 \end{corollary}
 
-\section{A hereditary counterexample: \texorpdfstring{$C_4$}{C4}-free graphs}
+\section{Degenerate classes are not root-plantable}
 
-The clone-closed hypothesis is not merely technical.  The correspondence can
-fail even for a hereditary graph class.  This section gives a compact example.
+The clone-closed hypothesis is not merely technical: the correspondence fails for
+hereditary classes, and it fails for an entire family, always for the same
+structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
+that its dense limits carry no edges, then a typical root sees an empty
+neighbourhood; yet the quotient theory may still retain an \emph{exceptional}
+high-degree root, such as the centre of a star.  The rooted edge flag separates the
+two.
+
+Throughout this section $\sigma=1$ is the one-vertex type in graph theory,
+$e\in\A^1[\T_{\mathrm{Graph}}]$ is the rooted edge flag (the two-vertex flag in which
+the labelled vertex is adjacent to the one unlabelled vertex), and $\rho\in\A^0$ is
+the unlabelled edge flag; recall $\avg{e}{1}=\rho$ and $\brak1=1$.
+
+\begin{definition}[Edge-degenerate class]\label{def:edge-degenerate}
+A hereditary graph class $\K$ is \emph{edge-degenerate} if every constrained
+unlabelled limit has edge density zero, that is, $\phi_0(\rho)=0$ for all
+$\phi_0\in Q_0$.  Equivalently, the maximum number of edges of an $n$-vertex graph
+in $\K$ is $o(n^2)$.
+\end{definition}
+
+\begin{theorem}[Degeneracy obstruction]\label{thm:degenerate-obstruction}
+Let $\K$ be a hereditary graph class that is edge-degenerate and contains
+arbitrarily large stars.  Then $(\T_{\mathrm{Graph}},\T_\K,\sigma{=}1)$ is not
+root-plantable.  Concretely, $f:=-e\in\A^1[\T_{\mathrm{Graph}}]$ satisfies ensemble
+semantics but not quotient semantics, and in fact
+\[
+  S_1\ \subseteq\ \{\chi\in Q_1:\chi(e)=0\}\ \subsetneq\ Q_1 .
+\]
+\end{theorem}
+
+\begin{proof}
+\emph{Ensemble semantics holds for $-e$.}  Let $\phi_0\in Q_0$.  Since $\brak1=1$ we
+have $\phi_0(\brak1)=1>0$, so $\Ext_1(\phi_0)$ is defined.  As $\avg{e}{1}=\rho$,
+\eqref{eq:extension-expectation} gives
+\[
+  \E_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(e)]
+  =\frac{\phi_0(\rho)}{\phi_0(\brak1)}=\phi_0(\rho)=0,
+\]
+using edge-degeneracy.  Because $\phi^1(e)\ge0$ pointwise, $\phi^1(e)=0$ almost
+surely, hence $\phi^1(-e)=0\ge0$ almost surely; ensemble semantics holds.  Moreover,
+by Lemma~\ref{lem:support-as} every support point $\chi$ of every $\Ext_1(\phi_0)$
+satisfies $\chi(e)=0$, and since $\chi\mapsto\chi(e)$ is continuous this gives the
+inclusion $S_1\subseteq\{\chi\in Q_1:\chi(e)=0\}$.
+
+\emph{Quotient semantics fails for $-e$.}  Let $S_N=K_{1,N-1}$ be the star on $N$
+vertices, rooted at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
+Every unlabelled vertex is adjacent to the centre, so $p(e,S_N)=1$ for all $N$.  By
+compactness a subsequence converges to some $\psi\in Q_1$ with $\psi(e)=1$, whence
+$\psi(-e)=-1<0$.  Thus quotient semantics fails, and $\psi\in Q_1$ witnesses
+$\{\chi\in Q_1:\chi(e)=0\}\subsetneq Q_1$; in particular $\psi\in Q_1\setminus S_1$,
+so $S_1\ne Q_1$.
+\end{proof}
+
+\begin{remark}
+The hypothesis ``contains arbitrarily large stars'' is only used to exhibit a
+quotient root of positive rooted edge density; it may be replaced by the existence
+of any sequence of rooted graphs in $\K$ whose rooted edge density stays bounded
+away from $0$.
+\end{remark}
+
+\begin{remark}[The obstruction]
+The centre of a star is an exceptional labelled vertex.  Quotient semantics can see
+it, because labelled limits may root at exceptional vertices.  Ensemble semantics
+instead roots a constrained unlabelled limit at a \emph{typical} vertex; in a
+degenerate class the edge density is zero, so a typical vertex has rooted edge
+density zero.  The high-degree root cannot be planted with positive probability
+without leaving the class: duplicating the centre and one neighbour already produces
+a $K_{2,2}$, and more generally a denser local structure than a degenerate class can
+sustain.
+\end{remark}
+
+\subsection{Examples}
+
+The hypotheses of Theorem~\ref{thm:degenerate-obstruction} are met by many familiar
+sparse classes.  We first record the original $C_4$-free case, where edge-degeneracy
+is the classical K\H{o}v\'ari--S\'os--Tur\'an bound.
 
 Let
 \[
   \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as a not-necessarily-induced subgraph}\}.
 \]
-This is hereditary.  In the induced-subgraph language of flag algebras, it is
-axiomatised by forbidding the three induced four-vertex graphs that contain a
-$C_4$ as a subgraph: $C_4$, $K_4$ minus one edge, and $K_4$.  It is not
-clone-closed: the independent blow-up of $K_2$ with two clone classes of size
-$2$ is $K_{2,2}$, which is a $C_4$.
-
-Let $\sigma=1$ be the one-vertex type in graph theory, and let
-$e\in\A^1[\T_{\mathrm{Graph}}]$ be the rooted edge flag, i.e. the two-vertex flag
-in which the labelled vertex is adjacent to the one unlabelled vertex.
+This is hereditary; in the induced-subgraph language of flag algebras it is
+axiomatised by forbidding the three four-vertex graphs that contain a $C_4$ as a
+subgraph: $C_4$, $K_4$ minus an edge, and $K_4$.  It is not clone-closed: the
+independent blow-up of $K_2$ into two clone classes of size $2$ is $K_{2,2}=C_4$.
 
 \begin{lemma}[Dense \texorpdfstring{$C_4$}{C4}-free limits have edge density zero]\label{lem:c4-edge-zero}
-If $\phi_0\in Q_0$ for the $C_4$-free theory, then
-\[
-  \phi_0(\rho)=0,
-\]
-where $\rho$ is the unlabelled edge flag.
+$\K_{C_4}$ is edge-degenerate: if $\phi_0\in Q_0$ for the $C_4$-free theory, then
+$\phi_0(\rho)=0$.
 \end{lemma}
 
 \begin{proof}
@@ -616,65 +684,41 @@ $\overline d/(N-1)$, which tends to zero.  Hence
 $\phi_0(\rho)=0$.
 \end{proof}
 
-\begin{theorem}[\texorpdfstring{$C_4$}{C4}-free counterexample]\label{thm:c4-counterexample}
-For the hereditary class $\K_{C_4}$ and the one-vertex type $\sigma=1$, the
-quotient/ensemble correspondence fails.  More precisely, for
-\[
-  f:=-e\in\A^1[\T_{\mathrm{Graph}}],
-\]
-ensemble semantics holds but quotient semantics fails.
-\end{theorem}
-
-\begin{proof}
-First we prove ensemble semantics.  Let $\phi_0\in Q_0$ and let
-$\phi^1\sim\Ext_1(\phi_0)$.  By Lemma~\ref{lem:c4-edge-zero}, $\phi_0(\rho)=0$.  Since
-$\avg{e}{1}=\rho$ and $\brak{1}=1$, \eqref{eq:extension-expectation} gives
-\[
-  \E[\phi^1(e)]=\phi_0(\rho)=0.
-\]
-Because $\phi^1(e)\ge0$ pointwise, we have $\phi^1(e)=0$ almost surely.  Hence
-\[
-  \phi^1(f)=\phi^1(-e)=0
-  \qquad\text{almost surely.}
-\]
-So ensemble semantics holds.
-
-Now we show that quotient semantics fails.  Let $S_N=K_{1,N-1}$ be the star on
-$N$ vertices, rooted at its centre.  Each $S_N$ is $C_4$-free.  By compactness,
-a subsequence of these rooted stars converges to some
-\[
-  \psi\in Q_1.
-\]
-For every $N$,
-\[
-  p(e,S_N)=1,
-\]
-because every unlabelled vertex is adjacent to the labelled centre.  Therefore
-$\psi(e)=1$, and hence
-\[
-  \psi(f)=\psi(-e)=-1<0.
-\]
-Thus quotient semantics fails.
-\end{proof}
-
-\begin{remark}[The obstruction]
-The centre of a star is an exceptional labelled vertex.  Quotient semantics can
-see it because labelled limits may root at exceptional vertices.  Ensemble
-semantics, however, roots a constrained unlabelled dense limit at a typical
-vertex.  In every dense $C_4$-free limit the edge density is zero, so a typical
-vertex has rooted edge density zero.  The centre-rooted star cannot be planted
-with positive probability without creating $C_4$'s: cloning the centre and one
-leaf already creates $K_{2,2}$.
-\end{remark}
-
-\begin{corollary}[Failure of root-plantability for \texorpdfstring{$C_4$}{C4}-free graphs]
-For $\K_{C_4}$ and $\sigma=1$,
-\[
-  S_1\subseteq\{\chi\in Q_1:\chi(e)=0\},
-\]
-but $Q_1$ contains the centre-rooted star homomorphism $\psi$ with $\psi(e)=1$.
-Hence $S_1\ne Q_1$.
+\begin{corollary}[\texorpdfstring{$C_4$}{C4}-free counterexample]\label{cor:c4-counterexample}
+$\K_{C_4}$ is edge-degenerate (Lemma~\ref{lem:c4-edge-zero}) and contains all stars,
+so by Theorem~\ref{thm:degenerate-obstruction} it is not root-plantable at
+$\sigma=1$: the element $-e$ satisfies ensemble semantics but not quotient
+semantics.
 \end{corollary}
+
+\begin{corollary}[A family of degenerate obstructions]\label{cor:degenerate-family}
+Each of the following hereditary classes is edge-degenerate and contains all stars,
+hence is not root-plantable at the one-vertex type:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item $K_{s,t}$-subgraph-free graphs for $2\le s\le t$, edge-degenerate by the
+        K\H{o}v\'ari--S\'os--Tur\'an bound $\mathrm{ex}(n,K_{s,t})=O(n^{2-1/s})$
+        \cite{KovariSosTuran} (a star contains no $K_{2,2}$);
+  \item $C_{2k}$-subgraph-free graphs for $k\ge2$, edge-degenerate by the
+        Bondy--Simonovits bound $\mathrm{ex}(n,C_{2k})=O(n^{1+1/k})$
+        \cite{BondySimonovits};
+  \item forests, and more generally any class of bounded average degree containing
+        all stars ($O(n)$ edges);
+  \item planar graphs ($\le 3n-6$ edges).
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[Degeneracy is essential, and marks the frontier]
+Degeneracy is the crux, not heredity, and not the absence of clone-closure.  Odd
+girth constraints are \emph{not} covered: for $k\ge2$ the class of
+$C_{2k+1}$-subgraph-free graphs is dense---it contains all bipartite graphs, of edge
+density up to $1/2$---so the argument above does not apply.  The $C_5$-free graphs
+are a natural test case: the class is dense yet not clone-closed (the blow-up of a
+triangle into the octahedron $K_{2,2,2}$ contains a $C_5$), and whether it is
+root-plantable is open.  This is precisely the gap between
+Theorem~\ref{thm:clone-root-plantable} (clone-closed $\Rightarrow$ root-plantable)
+and Theorem~\ref{thm:degenerate-obstruction} (degenerate $\Rightarrow$ not
+root-plantable).
+\end{remark}
 
 \section{What this says about strengthening by another theory \texorpdfstring{$\T'$}{T'}}
 
@@ -688,7 +732,8 @@ $\T_1:=\T\wedge\T'$ is again a universal theory.  The quotient flag algebra
 $\A^\sigma[\T_1]$ is well-defined, and the support-closure criterion
 Theorem~\ref{thm:support-criterion} applies verbatim.  Thus the next theorem in this
 direction should not claim equivalence for all universal strengthenings.  The
-$C_4$-free counterexample shows that this is false.  The correct statement is:
+degeneracy obstruction (Theorem~\ref{thm:degenerate-obstruction}), and already the
+$C_4$-free instance, shows that this is false.  The correct statement is:
 \[
   \text{quotient semantics equals ensemble semantics}
   \quad\Longleftrightarrow\quad
@@ -739,11 +784,17 @@ The results suggest three natural next steps.
   as long as the labelled finite model can be amplified into positive measure
   without leaving the constrained class.
 
-  \item \textbf{Use $C_4$-free graphs as the canonical obstruction.}
+  \item \textbf{Use degeneracy as the canonical obstruction.}
   The centre-rooted star shows exactly what goes wrong: a labelled quotient
   homomorphism may live at an exceptional vertex that cannot be made typical.
-  This example is strong because the class is already hereditary and universal;
-  non-hereditary constraints are not needed to witness failure.
+  Theorem~\ref{thm:degenerate-obstruction} turns this into a general phenomenon---%
+  every edge-degenerate hereditary class with stars fails, including
+  $K_{s,t}$-free, even-cycle-free, planar, and bounded-degeneracy classes.  These
+  examples are strong because the classes are already hereditary and universal;
+  non-hereditary constraints are not needed to witness failure.  The complementary
+  question is to chart the frontier between degeneracy (failure) and clone-closure
+  (success); the dense, non-clone-closed class of $C_5$-free graphs is the natural
+  first test.
 \end{enumerate}
 
 \begin{thebibliography}{9}
@@ -752,6 +803,16 @@ The results suggest three natural next steps.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \emph{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{KovariSosTuran}
+T.~K\H{o}v\'ari, V.~T.~S\'os, and P.~Tur\'an.
+\newblock On a problem of K. Zarankiewicz.
+\newblock \emph{Colloquium Mathematicae}, 3:50--57, 1954.
+
+\bibitem{BondySimonovits}
+J.~A.~Bondy and M.~Simonovits.
+\newblock Cycles of even length in graphs.
+\newblock \emph{Journal of Combinatorial Theory, Series B}, 16(2):97--105, 1974.
 
 \end{thebibliography}
 
