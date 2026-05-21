@@ -91,7 +91,7 @@ independent blow-ups is shown to be a sufficient condition for root-plantability
 which recovers the correspondence for clique-free and triangle-free theories.
 Finally, we show that heredity alone is not enough, via a general degeneracy
 obstruction: every edge-degenerate hereditary class containing arbitrarily large
-stars---for example $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
+stars---for example $C_4$-free, $K_{s,t}$-free, $C_{2k}$-free, and planar
 graphs---fails to be root-plantable at the one-vertex type.  The witness is the
 rooted edge flag $e$: its negation $-e$ is non-negative under every ensemble
 extension yet negative on the centre-rooted star homomorphism in the quotient
@@ -117,6 +117,14 @@ constrained limits (\emph{ensemble semantics}).  The first is the algebra one
 actually computes in; the second is what a constrained density bound asserts.  When
 the two agree, a certificate proved in the quotient is a genuine density bound for
 the constrained class.  This paper pins down exactly when they agree.
+
+One direction is automatic.  Quotient semantics always implies ensemble semantics
+(Theorem~\ref{thm:support-criterion}), so a quotient certificate is unconditionally
+\emph{sound}: the validity of forbidden-subgraph flag-algebra reasoning is never in
+question.  The substantive content is the converse---whether \emph{every} true
+constrained density inequality can be certified in the quotient---so our results
+concern the \emph{completeness} of the quotient calculus, and the counterexamples
+below exhibit its \emph{incompleteness} for certain classes.
 
 Let $\T_0$ be a universal first-order theory in a finite relational language,
 and let $\T_1$ be a universal strengthening of $\T_0$ in the same language.  In
@@ -151,12 +159,12 @@ The right property is not simply heredity.  It is the following support
 condition:
 \[
   \overline{\bigcup_{\phi_0}\supp(\Ext_\sigma(\phi_0))}
-  =
-  \Homp(\A^\sigma[\T_1],\R),
+  \;=\;
+  \{\psi\circ\qmap_\sigma:\psi\in\Homp(\A^\sigma[\T_1],\R)\},
 \]
-after pulling the right-hand side back into the ambient homomorphism space
-$\Homp(\A^\sigma[\T_0],\R)$.  Informally, every constrained labelled limit must be approximable by
-positive-probability rooted views of constrained unlabelled limits.
+both sides regarded inside the ambient homomorphism space
+$\Homp(\A^\sigma[\T_0],\R)$.  Informally, every constrained labelled limit must be
+approximable by positive-probability rooted views of constrained unlabelled limits.
 
 \section{Flag-algebra background}
 
@@ -751,7 +759,7 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
-$\sigma=1$, witnessed by $f:=e-1$.  In particular the complements of the classes in
+$\sigma=1$, witnessed by $f:=e-1_1$ (with $1_1$ the unit of $\A^1$).  In particular the complements of the classes in
 Corollary~\ref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-even-cycle-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
@@ -762,11 +770,11 @@ root-plantable.
 By Lemma~\ref{lem:complementation} it suffices that $\overline\K$ be not
 root-plantable at $1$, and this is Theorem~\ref{thm:degenerate-obstruction}:
 $\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
-$-e$ for $\overline\K$ pulls back to $-(1-e)=e-1$ for $\K$.  Directly:
+$-e$ for $\overline\K$ pulls back to $-(1_1-e)=e-1_1$ for $\K$.  Directly:
 $\avg{e}{1}=\rho$ gives $\E[\phi^1(e)]=\phi_0(\rho)=1$, and $\phi^1(e)\le1$ forces
-$\phi^1(e)=1$ almost surely, so $e-1$ satisfies ensemble semantics; while the
+$\phi^1(e)=1$ almost surely, so $e-1_1$ satisfies ensemble semantics; while the
 co-star rooted at its isolated vertex gives a $\psi\in Q_1$ with $\psi(e)=0$, whence
-$\psi(e-1)=-1<0$ and quotient semantics fails.
+$\psi(e-1_1)=-1<0$ and quotient semantics fails.
 \end{proof}
 
 \begin{remark}[The dichotomy: density is not the dividing line]
@@ -791,52 +799,53 @@ and the two obstructions.
 
 \subsection{The general obstruction and a conjecture}
 
-Both obstructions are instances of one mechanism: a rooted density pinned to a
-boundary of its range.
+Both obstructions are instances of one mechanism: a rooted density pinned almost
+surely to a single value across all constrained limits, while the quotient escapes
+it.
 
 \begin{theorem}[Pinning obstruction]\label{thm:pinning}
-Let $\sigma$ be a non-degenerate type and let $g$ be a $\sigma$-flag, so that
-$0\le\chi(g)\le1$ for every $\chi\in X_\sigma$.  Suppose the typical density of $g$
-is pinned to an endpoint of $[0,1]$ across all constrained unlabelled limits:
-\begin{itemize}[leftmargin=2.8em]
-  \item[\textup{(0)}] $\phi_0(\avg{g}{\sigma})=0$ for every $\phi_0\in Q_0$ with
-        $\phi_0(\brak\sigma)>0$; or
-  \item[\textup{(1)}] $\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ for every such
-        $\phi_0$.
-\end{itemize}
-If moreover the quotient theory contains a root attaining a different value---some
-$\psi\in Q_\sigma$ with $\psi(g)>0$ in case \textup{(0)}, or $\psi(g)<1$ in case
-\textup{(1)}---then $(\T_0,\T_1,\sigma)$ is not root-plantable, witnessed by $-g$,
-respectively $g-1_\sigma$.
+Let $\sigma$ be a non-degenerate type, let $g$ be a $\sigma$-flag, and let
+$c\in[0,1]$.  Suppose the rooted density of $g$ is almost surely pinned to $c$ across
+all constrained unlabelled limits: for every $\phi_0\in Q_0$ with
+$\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(g)=c$ almost surely under
+$\Ext_\sigma(\phi_0)$.  If the quotient theory contains a root attaining a different
+value---some $\psi\in Q_\sigma$ with $\psi(g)\ne c$---then $(\T_0,\T_1,\sigma)$ is not
+root-plantable.
 \end{theorem}
 
 \begin{proof}
-In case \textup{(0)}, \eqref{eq:extension-expectation} gives
-$\E_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}[\phi^\sigma(g)]
-   =\phi_0(\avg{g}{\sigma})/\phi_0(\brak\sigma)=0$ for every admissible $\phi_0$;
-as $\phi^\sigma(g)\ge0$ pointwise, $\phi^\sigma(g)=0$ almost surely, so $-g$ is
-ensemble-nonnegative and, by Lemma~\ref{lem:support-as}, vanishes on $S_\sigma$.
-The root $\psi$ gives $\psi(-g)<0$, so quotient semantics fails.  Case \textup{(1)}
-is identical using $\phi^\sigma(g)\le1$ and the witness $g-1_\sigma$; equivalently it
-is case \textup{(0)} for $\overline\K$ via Lemma~\ref{lem:complementation}.
+Both $g-c\,1_\sigma$ and $c\,1_\sigma-g$ have $\phi^\sigma$-value $0$ almost surely
+under every admissible $\Ext_\sigma(\phi_0)$, so each is ensemble-nonnegative and,
+by Lemma~\ref{lem:support-as} and continuity, nonnegative on $S_\sigma$.  Since
+$\psi(g)\ne c$, one of the two is strictly negative at $\psi$; that
+$\psi\in Q_\sigma$ therefore lies outside $S_\sigma$, so $S_\sigma\ne Q_\sigma$.
 \end{proof}
 
-\begin{remark}
-The degeneracy obstruction (Theorem~\ref{thm:degenerate-obstruction}) and its dense
-counterpart (Corollary~\ref{cor:codegenerate}) are the instances $\sigma=1$, $g=e$,
-pinned at $0$ and at $1$.  Larger types and higher flags can in principle pin other
-rooted densities, giving further obstructions.
+\begin{remark}[Endpoints are automatic and checkable]
+At the endpoints $c\in\{0,1\}$ the almost-sure pinning follows from a mere
+expectation condition, since a $[0,1]$-valued random variable with mean $0$
+(respectively $1$) is almost surely $0$ (respectively $1$).  Concretely, by
+\eqref{eq:extension-expectation}, $\phi_0(\avg{g}{\sigma})=0$ for all admissible
+$\phi_0$ gives the case $c=0$ (witness $-g$), and
+$\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-1_\sigma$).  The
+degeneracy obstruction (Theorem~\ref{thm:degenerate-obstruction}) and its dense
+counterpart (Corollary~\ref{cor:codegenerate}) are exactly these, with $\sigma=1$ and
+$g=e$.  An interior value $c\in(0,1)$ instead requires the almost-sure pinning as a
+genuine hypothesis.
 \end{remark}
 
-\begin{conjecture}[Characterisation]\label{conj:characterisation}
+\begin{conjecture}[Characterisation; tentative]\label{conj:characterisation}
 $(\T_{\mathrm{Graph}},\T_\K,\sigma)$ is root-plantable if and only if it admits no
-pinning obstruction: for every $\sigma$-flag $g$ whose typical density is pinned to
-an endpoint of $[0,1]$ across all constrained unlabelled limits, the quotient theory
-attains only that endpoint.
+pinning obstruction: there is no $\sigma$-flag $g$ and constant $c$ with
+$\phi^\sigma(g)=c$ almost surely for all constrained unlabelled limits while some
+$\psi\in Q_\sigma$ has $\psi(g)\ne c$.
 \end{conjecture}
 
-The forward direction is Theorem~\ref{thm:pinning}; the content of the conjecture is
-that the absence of pinning is sufficient.
+The forward implication is Theorem~\ref{thm:pinning}; the conjecture asserts that the
+absence of such single-flag pinning is already sufficient.  It is tentative:
+root-plantability could conceivably fail through a \emph{joint} constraint on several
+flags with no single flag pinned, in which case a richer notion of obstruction would
+be needed.
 
 \section{Toward the \texorpdfstring{$C_5$}{C5}-free case}
 
@@ -892,7 +901,7 @@ triangle.
 
 Consequently the triangle-free $C_5$-free graphs form a clone-closed class, so by
 Theorem~\ref{thm:clone-root-plantable} every $C_5$-free rooted limit realised by
-triangle-free graphs is root-plantable; and by Lemma~\ref{lem:c5-nbhd} the
+triangle-free graphs lies in $S_1$; and by Lemma~\ref{lem:c5-nbhd} the
 neighbourhood of a positive-degree root is asymptotically independent (its induced
 edges have vanishing density), so dense $C_5$-free roots are locally bipartite.
 These facts leave no candidate obstruction, and we conjecture:
