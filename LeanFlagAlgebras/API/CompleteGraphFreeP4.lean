@@ -19,10 +19,19 @@ graphs the `P₄` density is at most `12·((r-1)/r)³`:
 
 The certificate consists of r-parameterized squared terms `f₁ r, f₂, f₃ r`,
 a K₄-density correction term `f₀ r`, and rational-function multipliers
-`p₀..p₃ r`. Several supporting facts (the basis expansions, multiplier
-non-negativity, the `SDP_certificate` identity, and the headline theorem) are
-currently `sorry` placeholders. The `r = 3` case specializes to
-`K4freeP4.K4_free_P4_density_upper_bound` with bound `32/9`. -/
+`p₀..p₃ r` (with common denominator factor `D r = 3r²−11r+9`). The bound is not
+tight on every flag, so the certificate is an *inequality*: the residual
+`leftover r = ∑ⱼ gapⱼ·Fⱼ` is a nonnegative combination of flags, and
+`gap_identity` records the exact algebraic identity
+`P4_density + ∑ pᵢ·fᵢ + leftover = (target)·1`. The multipliers `p₁,p₂,p₃`
+specialize at `r = 3` to `K4freeP4`'s `(8/9, 5, 35/9)`.
+
+Everything here is proved except `K4_density_upper_bound` (Corollary 1.5: the
+K₄ density bound in K_{r+1}-free graphs), which is a classical generalized-Turán
+fact that provably cannot be witnessed by the fixed-size flag-SOS certificate
+used here — see the note on that lemma. The `r = 3` case specializes to
+`K4freeP4.K4_free_P4_density_upper_bound` with bound `32/9` (there `f₀` is
+unnecessary since K₄ is forbidden). -/
 
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph
@@ -38,17 +47,19 @@ noncomputable def P4_density : FlagAlgebra ∅ₜ :=
   + 12 • FlagAlgebra_4_0_0_10
 
 -- σ₁-type (no-edge label) Cauchy-Schwarz squared term; f₁ 3 = K4freeP4.f₁.
+-- Coefficients are real (`(r:ℝ) - 1`), not ℕ-truncated, so `f₁_expand` holds for all r.
 noncomputable def f₁ (r : ℕ) : FlagAlgebra ∅ₜ :=
-  ⟦((r - 1) • FlagAlgebra_3_2_0_0 - 1 • FlagAlgebra_3_2_0_3) ^ 2⟧₀
+  ⟦(((r : ℝ) - 1) • FlagAlgebra_3_2_0_0 - (1 : ℝ) • FlagAlgebra_3_2_0_3) ^ 2⟧₀
 
 -- r-independent σ₂-type (edge-label) Cauchy-Schwarz term; identical to K4freeP4.f₂.
 noncomputable def f₂ : FlagAlgebra ∅ₜ :=
-  ⟦(1 • FlagAlgebra_3_2_1_1 - 1 • FlagAlgebra_3_2_1_2) ^ 2⟧₀
+  ⟦((1 : ℝ) • FlagAlgebra_3_2_1_1 - (1 : ℝ) • FlagAlgebra_3_2_1_2) ^ 2⟧₀
 
 -- σ₂-type Cauchy-Schwarz squared term; f₃ 3 = K4freeP4.f₃.
+-- Coefficients are real (`(r:ℝ) - 2`), not ℕ-truncated, so `f₃_expand` holds for all r.
 noncomputable def f₃ (r : ℕ) : FlagAlgebra ∅ₜ :=
-  ⟦((r - 2) • FlagAlgebra_3_2_1_1 + (r - 2) • FlagAlgebra_3_2_1_2
-    - 2 • FlagAlgebra_3_2_1_3) ^ 2⟧₀
+  ⟦(((r : ℝ) - 2) • FlagAlgebra_3_2_1_1 + ((r : ℝ) - 2) • FlagAlgebra_3_2_1_2
+    - (2 : ℝ) • FlagAlgebra_3_2_1_3) ^ 2⟧₀
 
 /-- `f₁ r` is non-negative (a downward-projected square). -/
 lemma f₁_nonneg (r : ℕ) : 0 ≤ f₁ r := by
@@ -70,6 +81,9 @@ lemma f₃_nonneg (r : ℕ) : 0 ≤ f₃ r := by
 
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_no_forbid.json"
 load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_no_forbid.json"
+-- σ₂-type (edge-label) products, needed for `f₂_expand` / `f₃_expand`.
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_no_forbid.json"
+load_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_no_forbid.json"
 
 
 example : FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_3 =
@@ -93,10 +107,17 @@ lemma f₁_expand (r : ℕ) : f₁ r =
     + (1 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
   dsimp only [f₁]
-  simp only [pow_two, mul_sub, sub_mul, smul_mul_smul]
-  simp only [downward_sub, downward_nsmul]
-  simp [downward_add, downward_smul]
-  sorry
+  rw [pow_two]
+  simp only [sub_mul, mul_sub, smul_mul_smul_comm]
+  simp only [flagMul_FlagAlgebra_3_2_0_0_FlagAlgebra_3_2_0_0,
+             flagMul_FlagAlgebra_3_2_0_0_FlagAlgebra_3_2_0_3,
+             flagMul_FlagAlgebra_3_2_0_3_FlagAlgebra_3_2_0_0,
+             flagMul_FlagAlgebra_3_2_0_3_FlagAlgebra_3_2_0_3]
+  simp only [downward_sub, downward_add, downward_smul, smul_add, smul_smul]
+  simp only [downward_4_2_0_0, downward_4_2_0_3, downward_4_2_0_5,
+             downward_4_2_0_10, downward_4_2_0_18, downward_4_2_0_19]
+  push_cast
+  module
 
 -- Expansion of f₂ in the basis of 4-vertex graph densities.
 -- Coefficients computed from the flag algebra product structure (σ₂-type averaging).
@@ -104,7 +125,19 @@ lemma f₂_expand : f₂ =
     (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4
     - (1 / 6 : ℝ) • FlagAlgebra_4_0_0_6
     + (1 / 6 : ℝ) • FlagAlgebra_4_0_0_7
-    - (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 := by sorry
+    - (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 := by
+  dsimp only [f₂]
+  rw [pow_two]
+  simp only [sub_mul, mul_sub, smul_mul_smul_comm]
+  simp only [flagMul_FlagAlgebra_3_2_1_1_FlagAlgebra_3_2_1_1,
+             flagMul_FlagAlgebra_3_2_1_1_FlagAlgebra_3_2_1_2,
+             flagMul_FlagAlgebra_3_2_1_2_FlagAlgebra_3_2_1_1,
+             flagMul_FlagAlgebra_3_2_1_2_FlagAlgebra_3_2_1_2]
+  simp only [downward_sub, downward_add, downward_smul, smul_add, smul_smul]
+  simp only [downward_4_2_1_4, downward_4_2_1_5, downward_4_2_1_7,
+             downward_4_2_1_11, downward_4_2_1_14, downward_4_2_1_15]
+  push_cast
+  module
 
 -- Expansion of f₃(r) in the basis of 4-vertex graph densities.
 -- Coefficients computed from the flag algebra product structure (σ₂-type averaging).
@@ -114,55 +147,242 @@ lemma f₃_expand (r : ℕ) : f₃ r =
     + (((r : ℝ) ^ 2 - 8 * r + 12) / 6) • FlagAlgebra_4_0_0_7
     + (2 * ((r : ℝ) - 2) ^ 2 / 3) • FlagAlgebra_4_0_0_8
     + ((10 - 4 * (r : ℝ)) / 3) • FlagAlgebra_4_0_0_9
-    + (4 : ℝ) • FlagAlgebra_4_0_0_10 := by sorry
+    + (4 : ℝ) • FlagAlgebra_4_0_0_10 := by
+  dsimp only [f₃]
+  rw [pow_two]
+  simp only [add_mul, mul_add, sub_mul, mul_sub, smul_mul_smul_comm]
+  simp only [flagMul_FlagAlgebra_3_2_1_1_FlagAlgebra_3_2_1_1,
+             flagMul_FlagAlgebra_3_2_1_1_FlagAlgebra_3_2_1_2,
+             flagMul_FlagAlgebra_3_2_1_1_FlagAlgebra_3_2_1_3,
+             flagMul_FlagAlgebra_3_2_1_2_FlagAlgebra_3_2_1_1,
+             flagMul_FlagAlgebra_3_2_1_2_FlagAlgebra_3_2_1_2,
+             flagMul_FlagAlgebra_3_2_1_2_FlagAlgebra_3_2_1_3,
+             flagMul_FlagAlgebra_3_2_1_3_FlagAlgebra_3_2_1_1,
+             flagMul_FlagAlgebra_3_2_1_3_FlagAlgebra_3_2_1_2,
+             flagMul_FlagAlgebra_3_2_1_3_FlagAlgebra_3_2_1_3]
+  simp only [downward_sub, downward_add, downward_smul, smul_add, smul_smul]
+  simp only [downward_4_2_1_4, downward_4_2_1_5, downward_4_2_1_7, downward_4_2_1_10,
+             downward_4_2_1_11, downward_4_2_1_12, downward_4_2_1_14, downward_4_2_1_15,
+             downward_4_2_1_16, downward_4_2_1_17, downward_4_2_1_18, downward_4_2_1_19]
+  push_cast
+  module
 
 -- K₄-density correction: P_0(r) from Section 2, equation before (6); nonneg iff ⊠ ≤ (r³−6r²+11r−6)/r³.
 noncomputable def f₀ (r : ℕ) : FlagAlgebra ∅ₜ :=
   (((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3) • (1 : FlagAlgebra ∅ₜ)
   - FlagAlgebra_4_0_0_10
 
--- Scalar multipliers from the SDP certificate (Section 2, equation (6)); rational functions of r, nonneg for r ≥ 3.
+-- Scalar multipliers from the SDP certificate (Section 2, equation (6)); rational functions of r,
+-- nonneg for r ≥ 3. Common denominator factor `D r = 3r²−11r+9 > 0` for r ≥ 3. These are tuned so
+-- the certificate is tight on the Turán-graph support {∅, K₁,₃, C₄, K₄−e, K₄}, and they specialize
+-- at r = 3 to K4freeP4's (p₁,p₂,p₃) = (8/9, 5, 35/9).
 noncomputable def p₁ (r : ℕ) : ℝ :=
-  (3 * (r : ℝ)^3 - 10 * r^2 + 7 * r) / (3 * r^5 - 11 * r^4 + 9 * r^3)
+  6 * ((r : ℝ) - 1) * (3 * (r : ℝ) - 7) / ((r : ℝ)^2 * (3 * (r : ℝ)^2 - 11 * r + 9))
 
 noncomputable def p₂ (r : ℕ) : ℝ :=
-  (9 * (r : ℝ)^5 - 32 * r^4 + 25 * r^3) / (4 * (3 * r^5 - 11 * r^4 + 9 * r^3))
+  3 * (9 * (r : ℝ)^2 - 32 * r + 25) / (2 * (3 * (r : ℝ)^2 - 11 * r + 9))
 
 noncomputable def p₃ (r : ℕ) : ℝ :=
-  (15 * (r : ℝ)^3 - 24 * r^2 + 7 * r) / (4 * (3 * r^5 - 11 * r^4 + 9 * r^3))
+  3 * (15 * (r : ℝ)^2 - 24 * r + 7) / (2 * (r : ℝ)^2 * (3 * (r : ℝ)^2 - 11 * r + 9))
 
 -- Multiplier for the K₄-density correction term (uses a different denominator from p₁–p₃).
 noncomputable def p₀ (r : ℕ) : ℝ :=
   18 * ((r : ℝ) - 1)^2 / (3 * r^2 - 11 * r + 9)
 
-/-- The multiplier `p₁ r` is non-negative for `r ≥ 3` (proof TODO). -/
-lemma p₁_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₁ r := by sorry
+/-- The common denominator factor `D r = 3r²−11r+9` is positive for `r ≥ 3`
+(it equals `3(r−3)² + 7r − 18 ≥ 3`). -/
+lemma denom_factor_pos (r : ℕ) (hr : 3 ≤ r)
+    : (0 : ℝ) < 3 * (r : ℝ)^2 - 11 * r + 9 := by
+  have hx : (3 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
+  nlinarith [sq_nonneg ((r : ℝ) - 3), hx]
 
-/-- The multiplier `p₂ r` is non-negative for `r ≥ 3` (proof TODO). -/
-lemma p₂_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₂ r := by sorry
+/-- The multiplier `p₁ r` is non-negative for `r ≥ 3`. -/
+lemma p₁_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₁ r := by
+  have hx : (3 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
+  have hD := denom_factor_pos r hr
+  unfold p₁
+  apply div_nonneg
+  · nlinarith [mul_nonneg (show (0:ℝ) ≤ (r:ℝ) - 1 by linarith)
+                          (show (0:ℝ) ≤ 3 * (r:ℝ) - 7 by linarith)]
+  · exact mul_nonneg (sq_nonneg _) (le_of_lt hD)
 
-/-- The multiplier `p₃ r` is non-negative for `r ≥ 3` (proof TODO). -/
-lemma p₃_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₃ r := by sorry
+/-- The multiplier `p₂ r` is non-negative for `r ≥ 3`. -/
+lemma p₂_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₂ r := by
+  have hx : (3 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
+  have hD := denom_factor_pos r hr
+  unfold p₂
+  apply div_nonneg
+  · nlinarith [sq_nonneg ((r:ℝ) - 3), hx]
+  · linarith
 
-/-- The multiplier `p₀ r` is non-negative for `r ≥ 3` (proof TODO). -/
-lemma p₀_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₀ r := by sorry
+/-- The multiplier `p₃ r` is non-negative for `r ≥ 3`. -/
+lemma p₃_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₃ r := by
+  have hx : (3 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
+  have hD := denom_factor_pos r hr
+  unfold p₃
+  apply div_nonneg
+  · nlinarith [sq_nonneg ((r:ℝ) - 3), hx]
+  · exact mul_nonneg (by positivity) (le_of_lt hD)
 
--- K₄ density in K_{r+1}-free graphs is at most (r³−6r²+11r−6)/r³, i.e. f0 r ≥ 0 (Corollary 1.5, Murphy–Nir 2021).
+/-- The multiplier `p₀ r` is non-negative for `r ≥ 3`. -/
+lemma p₀_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ p₀ r := by
+  have hD := denom_factor_pos r hr
+  unfold p₀
+  apply div_nonneg
+  · positivity
+  · linarith
+
+/-- **K₄ density in K_{r+1}-free graphs** is at most `(r-1)(r-2)(r-3)/r³`
+(`= (r³−6r²+11r−6)/r³`), i.e. `0 ≤[K_{r+1}] f₀ r`. This is Corollary 1.5 of
+Murphy–Nir (2021), an instance of the classical generalized-Turán theorem (the
+Turán graph maximizes clique counts; Zykov 1949).
+
+NOTE (the sole remaining `sorry`). Unlike everything else in this file, this is
+*not* provable by the 4-vertex flag-SOS certificate: `f₀` carries the negative
+coefficient `c0 − 1 < 0` on the K₄ atom `FlagAlgebra_4_0_0_10`, while every
+σ-type square and every unlabeled flag has a *non-negative* K₄ coefficient (the
+F10-block of each square's Gram matrix is PSD). The bound is forced by the global
+K_{r+1}-free structure, which only constrains graphs on `≥ r+1` vertices — an
+unbounded size for parametric `r` — so no fixed-size flag computation can witness
+it. A faithful proof needs symmetrization/induction (or a cited clique-density
+theorem), which is a separate development from the SOS machinery here.
+
+We *do* discharge the flag-algebra layer: via `forbidLE_emptyType_iff_forbidLE`
+the goal reduces to the deterministic, recognizable statement about every density
+homomorphism `φ₀` (graph limit) that kills `K_{r+1}` —
+
+  `key : φ₀ ⟦K₄⟧ ≤ (r-1)(r-2)(r-3)/r³`,
+
+i.e. *the K₄ density is at most that of the Turán graph T(·, r)*. This `key` is
+the clique-density / generalized-Turán theorem (Zykov 1949). It is not in Mathlib
+(which has only the **edge** Turán theorem, `SimpleGraph.isTuranMaximal_iff_…`)
+nor in this repo. The natural route is induction on the clique size using that a
+vertex neighborhood in a `K_{r+1}`-free graph is `K_r`-free, with Turán's edge
+theorem as the base case — a dedicated combinatorial development. -/
 lemma K4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
     : 0 ≤[(completeGraph (Fin (r + 1))).toFinFlag] f₀ r
-  := by sorry
+  := by
+  -- Reduce the probabilistic `forbidLE` to the deterministic per-homomorphism form.
+  rw [← forbidLE_emptyType_iff_forbidLE]
+  intro φ₀ _hKfree
+  -- The K₄ density of any K_{r+1}-free limit is at most the Turán value (Cor 1.5 / Zykov).
+  -- This `key` is irreducibly global: a brute-force search confirms there is NO density-only
+  -- shortcut. (1) The natural telescoping inequality `kₛ₊₁·kₛ₋₁·(r-s+1) ≤ kₛ²·(r-s)` fails for
+  -- many K_{r+1}-free graphs (holds only at the extremal graph). (2) `k₄` is not a function of
+  -- `(k₂,k₃)` — equal lower clique densities admit different `k₄` — so no local bound
+  -- `k₄ ≤ F(k₂,k₃)` exists. The bound is asymptotic (finite graphs can exceed `c0`); proving it
+  -- needs Zykov symmetrization + a graph-limit argument (a dedicated multi-file development).
+  have key : φ₀ FlagAlgebra_4_0_0_10
+      ≤ ((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3 := by
+    sorry
+  -- Given `key`, the flag-algebra inequality `0 ≤ φ₀ (f₀ r)` follows by arithmetic.
+  have h0 : φ₀ (0 : FlagAlgebra ∅ₜ) = 0 := by simp
+  show φ₀ (0 : FlagAlgebra ∅ₜ) ≤ φ₀ (f₀ r)
+  rw [h0, f₀, PositiveHom.map_sub, PositiveHom.map_smul, PositiveHom.map_one, mul_one]
+  linarith [key]
 
--- Algebraic identity: the SDP certificate terms sum to the target bound.
-lemma SDP_certificate (r : ℕ) (hr : 3 ≤ r)
-    : P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r
-      = (12 * (((r : ℝ) - 1) / r) ^ 3) • (1 : FlagAlgebra ∅ₜ)
-  := by sorry
+/-- The constant `1` is the sum of all eleven unlabeled 4-vertex flags (the
+size-4 partition-of-unity), unconditionally. -/
+lemma one_eq_sum_flags : (1 : FlagAlgebra ∅ₜ) =
+    FlagAlgebra_4_0_0_0 + FlagAlgebra_4_0_0_1 + FlagAlgebra_4_0_0_2 + FlagAlgebra_4_0_0_3
+    + FlagAlgebra_4_0_0_4 + FlagAlgebra_4_0_0_5 + FlagAlgebra_4_0_0_6 + FlagAlgebra_4_0_0_7
+    + FlagAlgebra_4_0_0_8 + FlagAlgebra_4_0_0_9 + FlagAlgebra_4_0_0_10 := by
+  rw [← sum_flagWithSize_eq_one (σ := ∅ₜ) 4 (by norm_num)]
+  rw [Finset.sum_eq_multiset_sum, ← flagSet_4_0_0_eq_univ]
+  simp only [flagSet_4_0_0_val_eq, Multiset.map_coe, Multiset.sum_coe,
+             List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+  fold_unit_vectors
+  abel
 
--- Upper bound direction of Theorem 1.3(i) (Murphy–Nir 2021); generalizes K4freeP4.K4_free_P4_density_upper_bound (r = 3, bound = 32/9).
+/-- The nonnegative "leftover" `∑ⱼ gapⱼ · Fⱼ` by which the certificate exceeds
+the target on the non-extremal flags. The gaps vanish on the Turán-graph support
+`{∅, K₁,₃, C₄, K₄−e, K₄}` (atoms `0,4,8,9,10`); the six listed gaps are `≥ 0`
+for `r ≥ 3`. (`D r = 3r²−11r+9` is the common denominator factor.) -/
+noncomputable def leftover (r : ℕ) : FlagAlgebra ∅ₜ :=
+  (5 * ((r:ℝ) - 1)^3 * (3*(r:ℝ) - 7) / ((r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_1
+  + (((r:ℝ) - 1)^2 * (3*(r:ℝ) - 7) * (6*(r:ℝ) - 5) / ((r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_2
+  + (6 * ((r:ℝ) - 1)^3 * (3*(r:ℝ) - 7) / ((r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_3
+  + (6 * ((r:ℝ) - 1)^3 * (3*(r:ℝ) - 7) / ((r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_5
+  + (((r:ℝ) - 1) * (3*(r:ℝ) - 7) * (9*(r:ℝ)^2 - 18*r + 10) / (2 * (r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_6
+  + (((r:ℝ) - 1) * (6*(r:ℝ)^3 - 24*(r:ℝ)^2 + 37*r - 21) / ((r:ℝ)^2 * (3*(r:ℝ)^2 - 11*r + 9))) • FlagAlgebra_4_0_0_7
+
+/-- **The (corrected) SDP certificate identity.** Adding the four SOS/correction
+terms and the nonnegative `leftover` to `P4_density` gives exactly the target
+`12·((r-1)/r)³ · 1`. (The bound is *not* tight on every flag — hence `leftover`
+is needed and the earlier pure-equality `SDP_certificate` was unprovable.) Proved
+by reducing to per-flag scalar identities and clearing denominators (`r ≠ 0`,
+`D r ≠ 0` for `r ≥ 3`). -/
+lemma gap_identity (r : ℕ) (hr : 3 ≤ r) :
+    P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r + leftover r
+      = (12 * (((r : ℝ) - 1) / r) ^ 3) • (1 : FlagAlgebra ∅ₜ) := by
+  have hrpos : 0 < (r:ℝ) := by exact_mod_cast (by omega : 0 < r)
+  have hr0 : (r:ℝ) ≠ 0 := hrpos.ne'
+  have hD : (3 * (r:ℝ)^2 - 11 * r + 9) ≠ 0 := ne_of_gt (denom_factor_pos r hr)
+  rw [f₁_expand, f₂_expand, f₃_expand]
+  simp only [P4_density, f₀, p₁, p₂, p₃, p₀, leftover, ← Nat.cast_smul_eq_nsmul ℝ]
+  rw [one_eq_sum_flags]
+  set D : ℝ := 3 * (r:ℝ)^2 - 11 * r + 9 with hDdef
+  match_scalars <;> field_simp [hr0, hD] <;> (simp only [hDdef]; ring)
+
+/-- The `leftover` term is nonnegative for `r ≥ 3` (each gap is a ratio of
+nonnegative quantities, and flags are nonnegative). -/
+lemma leftover_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ leftover r := by
+  have hx : (3 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
+  have hD : 0 < 3 * (r:ℝ)^2 - 11 * r + 9 := denom_factor_pos r hr
+  have hden : (0:ℝ) ≤ (r:ℝ)^2 * (3 * (r:ℝ)^2 - 11 * r + 9) := mul_nonneg (sq_nonneg _) hD.le
+  have hden2 : (0:ℝ) ≤ 2 * (r:ℝ)^2 * (3 * (r:ℝ)^2 - 11 * r + 9) :=
+    mul_nonneg (by positivity) hD.le
+  have h1 : (0:ℝ) ≤ (r:ℝ) - 1 := by linarith
+  have h7 : (0:ℝ) ≤ 3 * (r:ℝ) - 7 := by linarith
+  rw [le_def, sub_zero]
+  intro φ
+  unfold leftover
+  simp only [PositiveHom.map_add, PositiveHom.map_smul, ge_iff_le]
+  refine add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg ?_ ?_) ?_) ?_) ?_) ?_ <;>
+    refine mul_nonneg (div_nonneg ?_ (by first | exact hden | exact hden2))
+                      (positiveHom_unitVector_ge_zero φ _)
+  · nlinarith [mul_nonneg (pow_nonneg h1 3) h7]
+  · nlinarith [mul_nonneg (mul_nonneg (pow_nonneg h1 2) h7) (show (0:ℝ) ≤ 6*(r:ℝ)-5 by linarith)]
+  · nlinarith [mul_nonneg (pow_nonneg h1 3) h7]
+  · nlinarith [mul_nonneg (pow_nonneg h1 3) h7]
+  · nlinarith [mul_nonneg (mul_nonneg h1 h7) (show (0:ℝ) ≤ 9*(r:ℝ)^2-18*r+10 by nlinarith [sq_nonneg ((r:ℝ)-1)])]
+  · nlinarith [mul_nonneg h1 (show (0:ℝ) ≤ 6*(r:ℝ)^3-24*(r:ℝ)^2+37*r-21 by nlinarith [sq_nonneg ((r:ℝ)-3), hx, mul_nonneg (sq_nonneg ((r:ℝ)-3)) (show (0:ℝ)≤(r:ℝ) by linarith)])]
+
+/-- **Upper-bound direction of Theorem 1.3(i)** (Murphy–Nir 2021). For `r ≥ 3`
+and K_{r+1}-free graphs, the `P₄` density is at most `12·((r-1)/r)³`. Generalizes
+`K4freeP4.K4_free_P4_density_upper_bound` (the `r = 3`, bound `32/9` case).
+
+Proof: add the nonnegative SOS terms `pᵢ·fᵢ` and the K₄-correction `p₀·f₀`
+(nonnegative under K_{r+1}-free by `K4_density_upper_bound`), then close with the
+`gap_identity` and `leftover_nonneg`. The only nontrivial input is the K₄-density
+bound (`K4_density_upper_bound`, Cor 1.5). -/
 theorem Kr_plus_1_free_P4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
     : P4_density ≤[(completeGraph (Fin (r + 1))).toFinFlag]
       (12 * (((r : ℝ) - 1) / r) ^ 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  sorry
+  set F := (completeGraph (Fin (r + 1))).toFinFlag with hF
+  -- Step 1: add the four nonnegative certificate terms to the left-hand side.
+  have hp1 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₁ r • f₁ r :=
+    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₁_nonneg r hr) (f₁_nonneg r))
+  have hp2 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₂ r • f₂ :=
+    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₂_nonneg r hr) f₂_nonneg)
+  have hp3 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₃ r • f₃ r :=
+    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₃_nonneg r hr) (f₃_nonneg r))
+  have hp0 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₀ r • f₀ r := by
+    have h := forbidLE_smul_nonneg (p₀_nonneg r hr) (K4_density_upper_bound r hr)
+    rwa [smul_zero] at h
+  have step1 : P4_density ≤[F]
+      P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r :=
+    forbidLE_trans_add_nonneg
+      (forbidLE_trans_add_nonneg
+        (forbidLE_trans_add_nonneg
+          (forbidLE_trans_add_nonneg (forbidLE_refl F P4_density) hp1) hp2) hp3) hp0
+  -- Step 2: the remaining gap is a nonnegative combination of flags (unconditional).
+  have step2 : (P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r) ≤[F]
+      (12 * (((r : ℝ) - 1) / r) ^ 3 : ℝ) • (1 : FlagAlgebra ∅ₜ) := by
+    apply forbidLE_of_le
+    rw [← gap_identity r hr]
+    exact le_add_of_nonneg_right (leftover_nonneg r hr)
+  exact forbidLE_trans step1 step2
 
 end CompleteGraphFreeP4
