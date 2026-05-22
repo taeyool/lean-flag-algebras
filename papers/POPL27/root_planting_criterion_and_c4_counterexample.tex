@@ -195,15 +195,22 @@ left open.
 
 \section{Flag-algebra background}
 
-We use Razborov's notation and terminology \cite{Razborov2007}.  For a universal
-theory $\T$ and a type $\sigma$, $\A^\sigma[\T]$ denotes the flag algebra of
-$\sigma$-flags.  The compact space of positive homomorphisms is
+We use Razborov's notation and terminology \cite{Razborov2007}, recalled here in
+graph-theoretic terms.  A \emph{type} $\sigma$ is a fixed finite labelled
+structure---for graphs, a choice of $k$ distinguished \emph{root} vertices and the
+adjacencies among them---and a \emph{$\sigma$-flag} is a finite structure carrying a
+marked copy of $\sigma$, that is, a structure rooted at $\sigma$; the \emph{empty type}
+($k=0$) marks nothing.  For a universal theory $\T$ and a type $\sigma$, $\A^\sigma[\T]$
+denotes the flag algebra of $\sigma$-flags.  The compact space of positive homomorphisms
+is
 \[
   \Homp(\A^\sigma[\T],\R).
 \]
 A sequence of finite $\sigma$-flags converges if all flag densities converge; its
 limit is an element of this homomorphism space, and conversely every positive
-homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.  We write
+homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.  We may therefore
+picture a positive homomorphism $\phi$ as a \emph{limit object} and $\phi(F)$ as the
+density of the flag $F$ in it.  We write
 $\F^\sigma[\T]$ for the (countable) set of finite $\sigma$-flags of $\T$ up to
 isomorphism, abbreviated $\F^\sigma$ when $\T$ is clear.  Since each flag density
 lies in $[0,1]$, evaluating a homomorphism on all flags embeds
@@ -238,8 +245,11 @@ characterised by
   \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
   \qquad(g\in\A^\sigma[\T]).
 \end{equation}
-Moreover, if a finite sequence converges to $\phi_0$, then the corresponding
-finite random-root distributions converge weakly to $\Ext_\sigma(\phi_0)$
+Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the rooted limit seen from a uniformly
+random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
+the expected rooted density of $g$ is the unlabelled density of $g$, normalised by that
+of $\sigma$.  Moreover, if a finite sequence converges to $\phi_0$, then the
+corresponding finite random-root distributions converge weakly to $\Ext_\sigma(\phi_0)$
 \cite[Theorems 3.5 and 3.12]{Razborov2007}.
 
 We will repeatedly use the following elementary consequence of the definition of
@@ -291,6 +301,9 @@ $\tau$-flag which is a model of $\T_0$ but not a model of $\T_1$.  This
 formulation uses the fact that $\T_1$ is universal: if a finite flag violates
 $\T_1$, then its underlying finite structure is one of the forbidden finite
 models of the quotient theory.
+
+Informally, the next lemma says that randomly rooting a constrained unlabelled limit
+almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
 Let $\phi_0\in Q_0$ and suppose $\phi_0(\brak\sigma)>0$.  If
@@ -367,6 +380,11 @@ Then \ref{cond:quotient} always implies \ref{cond:ensemble}.  Moreover,
 $f\in\A^\sigma[\T_0]$ if and only if $(\T_0,\T_1,\sigma)$ is root-plantable.
 \end{theorem}
 
+In words: a certificate proved in the quotient is always a valid constrained density
+bound, and it captures \emph{every} such bound precisely when $\sigma$ is
+root-plantable; when root-plantability fails, some inequality that holds almost surely
+under random rooting cannot be seen in the quotient.
+
 \begin{proof}
 By \cref{lem:support-passes-general}, every support appearing in the definition
 of $S_\sigma$ is contained in $Q_\sigma$.  Hence non-negativity on $Q_\sigma$
@@ -402,7 +420,11 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 \section{Clone-closed graph classes are root-plantable}
 
 We now give a checkable sufficient condition for root-plantability for graph
-classes, built on an independent blow-up construction.  Let
+classes, built on an independent blow-up construction.  The idea is that when a class is
+closed under blow-ups, a labelled vertex can be duplicated into a clone class of
+positive density, so a configuration the quotient exhibits only at an exceptional root
+can instead be realised at a random---hence typical---root, which is just what
+root-plantability requires.  Let
 $\T_0=\T_{\mathrm{Graph}}$, and let $\K$ be a hereditary class of finite simple
 graphs.  Equivalently, $\K$ is the class of finite models of the universal theory
 $\T_\K$ obtained from graph theory by forbidding all induced graphs not in $\K$.
