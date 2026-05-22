@@ -101,7 +101,14 @@ decisive, and the genuine obstruction is that a rooted density is pinned to a
 boundary value across all constrained limits.  We isolate this as a general pinning
 obstruction and conjecture that its absence characterises root-plantability, with
 the $C_5$-free graphs as the critical test case, for which we establish the
-supporting local structure.
+supporting local structure.  Finally we show that this incompleteness is confined to
+labelled types and never reaches a density bound: at the empty type the two semantics
+coincide, and for the degenerate and co-degenerate classes the constrained roots
+collapse to a single point, so the ensemble relaxation certifies exactly the same
+density bounds as the quotient.  We further prove that pinning is to a boundary value at
+the one-vertex and edge types, so every obstruction exhibited here is boundary; a
+practically relevant gap would require an interior or non-pinning obstruction, of which
+none is known.
 \end{abstract}
 
 \section{Introduction}
@@ -124,7 +131,13 @@ One direction is automatic.  Quotient semantics always implies ensemble semantic
 question.  The substantive content is the converse---whether \emph{every} true
 constrained density inequality can be certified in the quotient---so our results
 concern the \emph{completeness} of the quotient calculus, and the counterexamples
-below exhibit its \emph{incompleteness} for certain classes.
+below exhibit its \emph{incompleteness} for certain classes.  That incompleteness is,
+however, confined to labelled types.  At the empty type---where every density bound an
+application outputs actually lives---the two semantics provably coincide
+(\cref{prop:empty-type}), and the witnesses that expose the gap unlabel to zero
+(\cref{prop:ideal-zero,prop:single-point}); so the phenomenon concerns intermediate
+rooted certificates, not the final density bounds one wants to prove
+(\cref{sec:empty-type}).
 
 Let $\T_0$ be a universal first-order theory in a finite relational language,
 and let $\T_1$ be a universal strengthening of $\T_0$ in the same language.  In
@@ -847,6 +860,231 @@ root-plantability could conceivably fail through a \emph{joint} constraint on se
 flags with no single flag pinned, in which case a richer notion of obstruction would
 be needed.
 
+\subsection{Pinning is to a boundary value at the smallest types}\label{subsec:boundary}
+
+The obstructions exhibited above are all at the boundary, $c\in\{0,1\}$, and the remark
+after \cref{thm:pinning} observed that an interior value would require the almost-sure
+constancy as a genuine hypothesis.  At the smallest types we can show more: interior
+pinning does not occur, so every pinning obstruction there is a boundary one.  This
+matters because, as the next section shows, boundary obstructions are inert for density
+bounds.
+
+\begin{proposition}[No interior pinning at edgeless types]\label{prop:no-interior-edgeless}
+Let $\K$ forbid a family of graphs as (not necessarily induced) subgraphs, and let
+$\sigma$ be an edgeless type.  If a $\sigma$-flag $g$ is pinned to $c$ on $S_\sigma$, then
+$c\in\{0,1\}$.
+\end{proposition}
+
+\begin{proof}
+Every empty graph is $F$-free (each forbidden $F$ has an edge), so the zero graphon
+$o$---their limit---lies in $Q_0$, and the edgeless type $\sigma$ embeds in it with
+density $1$.  For any flag $h$ containing an edge,
+$\E_{\Ext_\sigma(o)}[\phi^\sigma(h)]=\phi_o(\avg{h}{\sigma})/\phi_o(\brak\sigma)=0$, since
+$o$ assigns density $0$ to every structure with an edge; as $\phi^\sigma(h)\ge0$ this
+forces $\phi^\sigma(h)=0$ almost surely.  Hence $\Ext_\sigma(o)$ is the point mass at the
+unique homomorphism $o^\sigma$ that vanishes on all edge-containing flags, and
+$o^\sigma\in S_\sigma$.  Pinning then gives $c=\phi_{o^\sigma}(g)$, which is $1$ if $g$ is
+the all-edgeless flag and $0$ otherwise.
+\end{proof}
+
+In particular this holds at the one-vertex type $\sigma=1$, where all the obstructions of
+this paper live.
+
+This generalises to every complete-multipartite type below the chromatic threshold of
+$\K$.  The key is to root $\sigma$ in the \emph{minimal} multipartite family that
+contains it, where each further vertex has its colour forced and the rooted density
+becomes a single monomial in the part sizes.
+
+\begin{theorem}[No interior pinning at complete-multipartite types]\label{thm:no-interior-cm}
+Let $\sigma$ be a complete-multipartite type with $s:=\chi(\sigma)\ge2$, and suppose the
+complete $s$-partite graphs lie in $\K$ (equivalently, no forbidden subgraph is
+$s$-colourable; this holds whenever $s$ is below the least chromatic number of a forbidden
+subgraph, e.g.\ $s=2$ exactly when $\K$ is non-degenerate).  Then no $\sigma$-flag is
+pinned to an interior value: a pinned flag is pinned to $0$ or $1$.
+\end{theorem}
+
+\begin{proof}
+For $\alpha=(\alpha_1,\dots,\alpha_s)$ in the open simplex, let $\phi_0^\alpha\in Q_0$ be
+the limit of complete $s$-partite graphs with parts of relative sizes $\alpha_j$.  As
+$\sigma$ is complete $s$-partite, it embeds in $\phi_0^\alpha$ with its $s$ parts filling
+the $s$ colours; fixing the embedding that sends the $i$-th part of $\sigma$ to colour
+$i$ gives a rooted limit $\psi_\alpha\in S_\sigma$.  In $\psi_\alpha$ a further
+independent vertex takes colour $c$ with probability $\alpha_c$ and is adjacent to every
+part of $\sigma$ except the one of colour $c$, while two further vertices are adjacent iff
+their colours differ.
+
+Let $g$ be a $\sigma$-flag with further vertices $v_1,\dots,v_m$.  Because $\sigma$
+already occupies all $s$ colours, a further vertex adjacent to all of $\sigma$ cannot be
+placed, and one non-adjacent to two parts cannot either; so each $v_t$ is non-adjacent to
+exactly one part of $\sigma$, which forces its colour (otherwise $\psi_\alpha(g)=0$).
+When these forced colours are consistent with the adjacencies among the $v_t$,
+\[
+  \psi_\alpha(g)=\prod_{j=1}^{s}\alpha_j^{\ell_j},
+  \qquad
+  \ell_j=\#\{t:v_t\text{ has colour }j\}.
+\]
+A flag pinned across $S_\sigma$ is constant on $\{\psi_\alpha\}$ over the open simplex.  A
+monomial $\prod_j\alpha_j^{\ell_j}$ is constant there only when every $\ell_j=0$, i.e.\
+$g=\sigma$ (value $1$); any flag with a further vertex gives a non-constant monomial and
+so is not pinned, while a non-realizable flag is pinned to $0$.  No interior value occurs.
+\end{proof}
+
+The edge type is the case $s=2$: here $\K$ contains all complete bipartite graphs
+(equivalently, by Erd\H{o}s--Stone--Simonovits, no forbidden subgraph is bipartite), and
+$\psi_\alpha(g)=\alpha^{a}(1-\alpha)^{b}$.  Together with
+\cref{prop:no-interior-edgeless} (the case $s=1$), this covers the one-vertex type, all
+non-edges and edges, triangles and larger cliques, and every complete-multipartite type
+below the chromatic threshold.
+
+\begin{remark}[The remaining types]
+\Cref{thm:no-interior-cm} roots $\sigma$ in the complete $\chi(\sigma)$-partite family, so
+it reaches exactly the complete-multipartite types below the chromatic threshold.  Two
+kinds of type remain.  Complete-multipartite types with $\chi(\sigma)$ at or above that
+threshold---such as the triangle type for a theory of chromatic threshold three---cannot
+be rooted in any multipartite family inside $\K$.  More fundamentally, a graph embeds as
+an \emph{induced} subgraph of a complete multipartite graph iff it is itself complete
+multipartite (induced non-adjacency must be transitive), so types that are not complete
+multipartite---the induced $P_4$ type, for instance---are not rooted by this family at
+all, and a different boundary-forcing family in $S_\sigma$ would be needed.  We
+nonetheless conjecture that interior pinning is impossible at every type, so that every
+pinning obstruction is to a boundary value.  Under \cref{conj:characterisation} this would
+make every obstruction boundary pinning, and hence---by the inertness of boundary
+obstructions established next (\cref{sec:empty-type})---confine any practically relevant
+gap to a genuinely non-pinning obstruction, of which none is known.
+\end{remark}
+
+\section{The gap is invisible to density bounds}\label{sec:empty-type}
+
+The obstructions above all occur at the \emph{labelled} type $\sigma=1$: the witnesses
+$-e$ and $e-\one_1$, and the pinning witness $g-c\,\one_\sigma$ of
+\cref{thm:pinning}, are elements of $\A^\sigma[\T_0]$ with $\sigma\ne\emptyset$.  A
+flag-algebra \emph{application}, by contrast, outputs a density inequality in the
+empty-type algebra $\A^0[\T_1]$---a statement $f\ge0$ on $Q_0$, such as a Mantel or
+Tur\'an bound.  One should therefore ask whether the incompleteness just exhibited can
+ever affect such a bound.  It cannot, for two independent reasons: at the empty type the
+two semantics coincide, and the witnesses that expose the gap unlabel to zero.
+
+\begin{proposition}[Empty-type collapse]\label{prop:empty-type}
+For the empty type, $\Ext_\emptyset(\phi_0)=\delta_{\phi_0}$ for every $\phi_0\in Q_0$;
+hence $S_\emptyset=Q_\emptyset=Q_0$.  Thus $(\T_0,\T_1,\emptyset)$ is always
+root-plantable, and quotient and ensemble semantics coincide for every $f\in\A^0[\T_0]$.
+\end{proposition}
+
+\begin{proof}
+The empty type admits a unique embedding into any structure, so the random root carries
+no information; we read this off \eqref{eq:extension-expectation}.  For
+$\sigma=\emptyset$ the unlabelling operator is the identity and $\brak\emptyset=\one$, so
+$\phi_0(\brak\emptyset)=1$ and $\mu:=\Ext_\emptyset(\phi_0)$ satisfies
+$\E_{\psi\sim\mu}[\psi(g)]=\phi_0(g)$ for all $g\in\A^0$.  Applying this to $g$ and to
+$g^2$ and using that $\phi_0$ is multiplicative,
+\[
+  \E_{\psi\sim\mu}\bigl[(\psi(g)-\phi_0(g))^2\bigr]=\phi_0(g^2)-\phi_0(g)^2=0,
+\]
+so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each of the countably many
+$g\in\A^0$.  Since flag densities separate the points of $X_0$, this forces
+$\mu=\delta_{\phi_0}$, whence
+$S_\emptyset=\overline{\bigcup_{\phi_0}\{\phi_0\}}=\overline{Q_0}=Q_0$.  The coincidence
+of the two semantics now follows from \cref{thm:support-criterion}.
+\end{proof}
+
+\begin{corollary}\label{cor:confined}
+No density bound in $\A^0[\T_1]$ is ensemble-true but quotient-false; every failure of
+the quotient/ensemble correspondence occurs at a labelled type $\sigma\ne\emptyset$.  In
+particular the witnesses $-e$ and $e-\one_1$ are inequalities at $\sigma=1$, not density
+bounds.
+\end{corollary}
+
+\Cref{cor:confined} settles the question of \emph{truth}.  A flag-algebra proof, though,
+reaches its empty-type conclusion through labelled multipliers, so one must still ask
+whether the labelled gap can affect a \emph{certificate}.  The method writes
+\[
+  f-\sum_i\avg{s_i}{\sigma_i}=(\text{a manifestly non-negative combination of flags}),
+\]
+each $s_i$ a sum of squares in $\A^{\sigma_i}[\T_1]$.  Because $\avg{s_i}{\sigma_i}$
+integrates $s_i$ against $\Ext_{\sigma_i}(\phi_0)$, a measure supported on
+$S_{\sigma_i}$, non-negativity of $s_i$ on $S_{\sigma_i}$ already suffices---weaker than
+the sum-of-squares condition, which is non-negativity on all of $Q_{\sigma_i}$.  An
+\emph{ensemble-relaxed} method could therefore use any multiplier non-negative on
+$S_\sigma$.  Write, as cones inside $\A^0[\T_1]$,
+\[
+  \C^{\mathrm{quot}}_\sigma=\{\avg{s}{\sigma}:s\text{ a sum of squares}\},
+  \qquad
+  \C^{\mathrm{ens}}_\sigma=\{\avg{s}{\sigma}:s\ge0\text{ on }S_\sigma\},
+\]
+for the empty-type contributions level $\sigma$ can make to the two methods, so that
+$\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma$ always.  The next two results
+show the witnesses gain nothing here, and that for the obstructions exhibited above the
+two cones in fact coincide.
+
+\begin{proposition}[The vanishing ideal unlabels to zero]\label{prop:ideal-zero}
+Let $\mathcal I_\sigma=\{a\in\A^\sigma[\T_1]:\psi(a)=0\text{ for all }\psi\in S_\sigma\}$.
+Then $\avg{a}{\sigma}=0$ in $\A^0[\T_1]$ for every $a\in\mathcal I_\sigma$.  In
+particular every pinning witness $g-c\,\one_\sigma$, and every flag-multiple
+$(g-c\,\one_\sigma)\,h$, unlabels to zero.  Consequently $\avg{\cdot}{\sigma}$ depends
+only on the restriction $s|_{S_\sigma}$, so
+$\C^{\mathrm{ens}}_\sigma\supsetneq\C^{\mathrm{quot}}_\sigma$ requires some $s\ge0$ on
+$S_\sigma$ whose restriction $s|_{S_\sigma}$ is the restriction of no sum of squares.
+\end{proposition}
+
+\begin{proof}
+For $\phi_0\in Q_0$ with $\phi_0(\brak\sigma)>0$,
+$\phi_0(\avg{a}{\sigma})=\phi_0(\brak\sigma)\,\E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(a)]$
+by \eqref{eq:extension-expectation}, and the expectation vanishes because the measure is
+supported on $S_\sigma$ and $a=0$ there.  If $\phi_0(\brak\sigma)=0$, then
+$\avg{a}{\sigma}$ is a combination of unlabelled structures each containing a copy of
+$\sigma$, so each has $\phi_0$-density $0$ by monotonicity and again
+$\phi_0(\avg{a}{\sigma})=0$.  Thus $\avg{a}{\sigma}$ vanishes on $Q_0$ and so is the zero
+element.  A pinning witness lies in $\mathcal I_\sigma$ by definition, and
+$\mathcal I_\sigma$ is an ideal; the final clause holds because
+$s-s'\in\mathcal I_\sigma$ whenever $s,s'$ agree on $S_\sigma$.
+\end{proof}
+
+\begin{proposition}[Degenerate roots collapse to a point]\label{prop:single-point}
+If $\K$ is edge-degenerate, or co-edge-degenerate, then $S_1$ is a single point.
+Consequently $\C^{\mathrm{ens}}_1=\C^{\mathrm{quot}}_1=\R_{\ge0}\,\one_0$: at the
+one-vertex type the ensemble relaxation certifies exactly the density bounds the
+quotient method does.  The degeneracy and co-degeneracy counterexamples
+(\cref{cor:c4-counterexample,cor:degenerate-family,cor:codegenerate}) therefore cost
+nothing for density bounds.
+\end{proposition}
+
+\begin{proof}
+Take $\K$ edge-degenerate; the co-degenerate case follows by complementation
+(\cref{lem:complementation}).  Let $F$ be any $1$-flag whose underlying graph $M$ has an
+edge.  A random $k$-subset of an $n$-vertex graph spans, in expectation, $\binom k2$
+times the edge density many edges, so the induced density obeys
+$p(M,G)\le\binom{|M|}{2}\rho(G)$; in the limit
+$\phi_0(M)\le\binom{|M|}2\phi_0(\rho)=0$ for every $\phi_0\in Q_0$.  As $\avg{F}{1}$ is a
+non-negative multiple of $M$, we get
+$\E_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(F)]=\phi_0(\avg{F}{1})=0$, and since
+$\phi^1(F)\ge0$, $\phi^1(F)=0$ almost surely.  Thus every support point of every
+$\Ext_1(\phi_0)$ assigns density $0$ to every edge-containing $1$-flag; exactly one
+homomorphism $o\in X_1$ does so (the rooted empty-graph limit, the others being
+determined by the chain relations), so $S_1=\{o\}$.  On a single point every element
+non-negative there agrees with the constant $s(o)\,\one_1$, a sum of squares, so
+$\avg{s}{1}=s(o)\,\brak1=s(o)\,\one_0$ for every such $s$; both cones equal
+$\R_{\ge0}\,\one_0$.
+\end{proof}
+
+\begin{remark}[What a practically relevant gap would require]
+\Cref{prop:single-point} shows the gap is not merely witness-inert but completely inert
+for the exhibited classes: a degenerate root carries no information, so its only
+contribution to a density bound is an additive constant, in either semantics.  A gap
+that \emph{does} reach a density bound therefore requires, by \cref{prop:ideal-zero}, a
+\emph{Positivstellensatz gap on the support variety}: a non-root-plantable type whose
+$S_\sigma$ is rich enough to carry a non-negative element that is not a restricted sum of
+squares.  Boundary pinning to a single point supplies none, and by
+\cref{prop:no-interior-edgeless,thm:no-interior-cm} the pinning at the one-vertex and
+edge types---hence at every obstruction exhibited here---is boundary.  \Cref{conj:characterisation}
+predicts that the only obstructions are pinning; if moreover pinning is always boundary
+(as \cref{subsec:boundary} conjectures) and the boundary support sets remain
+sum-of-squares-saturated, the quotient/ensemble gap---though genuine at labelled
+types---would never affect a density bound.  The $C_5$-free case of the next section,
+whose constrained roots are dense and locally bipartite rather than collapsed to a
+point, is the natural place where a richer $S_\sigma$, and with it a first practically
+relevant gap, could appear.
+\end{remark}
+
 \section{Toward the \texorpdfstring{$C_5$}{C5}-free case}
 
 Conjecture~\ref{conj:characterisation} predicts that the $C_5$-free graphs---dense,
@@ -988,7 +1226,12 @@ The results suggest three natural next steps.
   absence of any pinning obstruction is sufficient---for which $C_5$-free graphs
   (Conjecture~\ref{conj:c5}) are the natural first test; Lemmas~\ref{lem:c5-nbhd}
   and~\ref{lem:c5-blowup} reduce that case to planting dense, locally bipartite
-  roots.
+  roots.  This question also carries the practical stakes of the whole theory: by
+  \cref{sec:empty-type} the pinning obstructions are inert for density bounds, so only
+  a non-pinning obstruction---a support set rich enough to carry a non-negative element
+  that is no restricted sum of squares, for which the dense $C_5$-free roots are the
+  natural candidate---could let the quotient/ensemble gap affect a bound one actually
+  wants to prove.
 \end{enumerate}
 
 \begin{thebibliography}{9}
