@@ -88,21 +88,27 @@ semantics agree, for every flag-algebra element, exactly when a support-closure
 condition holds that we call \emph{root-plantability}: every constrained labelled limit
 must be approximable by rooted views of constrained unlabelled limits.  Closure under
 independent blow-ups implies root-plantability and recovers the correspondence for
-clique-free and triangle-free theories, but heredity alone does not.  Every
-edge-degenerate class with arbitrarily large stars---$C_4$-free, $K_{s,t}$-free,
-even-cycle-free, planar---fails at the one-vertex type, and by complementation so do
-their dense complements, so neither sparsity nor density is the dividing line.  The
-uniform cause is \emph{pinning}: a rooted density forced to a constant value across all
-constrained limits while the quotient still attains a different value.  We conjecture
-that the absence of pinning characterises root-plantability, the $C_5$-free graphs being
-the critical open case.
+clique-free and triangle-free theories; but heredity alone does not.  Every class so
+sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
+arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
+graphs among them---fails at the one-vertex type; by complementation so do their dense
+complements, so neither sparsity nor density is the dividing line.  The uniform cause is
+\emph{pinning}: a rooted quantity that takes one fixed value across all constrained
+limits while the quotient theory admits a root where it takes another.  We conjecture
+that the absence of pinning is exactly what makes a class root-plantable.  The $C_5$-free
+graphs are the critical test case: dense yet not closed under blow-ups, they escape both
+our sufficient condition and our obstruction, and since they exhibit no pinning the
+conjecture predicts them root-plantable---which we are not yet able to prove.
 
-This incompleteness is nevertheless invisible to the density bounds that a flag-algebra
-computation actually outputs.  Such bounds are statements of the empty type, where the
-two semantics provably coincide; the pinning witnesses unlabel to the zero element; and
-pinning, we prove, is always to a boundary value.  The gap is therefore confined to the
-intermediate labelled certificates: for the obstructions we exhibit it never reaches a
-density bound, and whether any constrained class makes it do so is left open.
+This incompleteness, however, never affects a density bound of the kind a flag-algebra
+computation is run to produce.  Such a bound is an inequality about whole graphs, whereas
+the gap between the two semantics lives entirely in the auxiliary inequalities---about
+graphs rooted at chosen vertices---that a proof passes through on the way to it.  We show
+that on whole-graph statements the two semantics always coincide, that the rooted
+examples witnessing the gap vanish once averaged back into whole-graph statements, and
+that the gap can open only at a degenerate extreme.  So for every class we exhibit, the
+incompleteness leaves the final density bounds untouched, and whether any class lets it
+reach one remains open.
 \end{abstract}
 
 \section{Introduction}
@@ -166,21 +172,26 @@ the quotient/ensemble correspondence for every flag-algebra element
 \paragraph{Results.}
 Root-plantability is implied by closure under independent blow-ups, which recovers the
 correspondence for clique-free and triangle-free theories.  Heredity alone, however,
-does not imply it: every edge-degenerate class containing arbitrarily large
-stars---$C_4$-free, $K_{s,t}$-free, even-cycle-free, planar---fails at the one-vertex
+does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
+only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
+$K_{s,t}$-free, even-cycle-free, and planar graphs among them) fails at the one-vertex
 type, witnessed by the rooted edge flag, and by complementation so do their dense
-complements, so neither sparsity nor density is the dividing line.  The uniform cause is
-\emph{pinning}: a rooted density forced to a constant value across all constrained
-limits while the quotient theory still attains a different one.  We conjecture that the
-absence of pinning characterises root-plantability, with the $C_5$-free graphs as the
-critical open case.  Yet this incompleteness never reaches a density bound.  Density
-bounds are statements of the empty type, where the two semantics provably coincide
-(\cref{prop:empty-type}); the pinning witnesses unlabel to the zero element
-(\cref{prop:ideal-zero}); and pinning is always to a boundary value
-(\cref{thm:no-interior}).  The gap is therefore confined to the intermediate, labelled
-certificates; for the obstructions we exhibit it never affects a density bound
-(\cref{sec:empty-type}), and whether some constrained class with a sufficiently rich
-rooted support makes it do so is left open.
+complements; neither sparsity nor density is the dividing line.  The uniform cause is
+\emph{pinning}: a rooted quantity that takes one fixed value across all constrained
+limits while the quotient theory admits a root where it takes another.  We conjecture
+that the absence of pinning characterises root-plantability.  The $C_5$-free graphs are
+the natural test case: dense yet not closed under blow-ups, they fall between our
+sufficient condition and our obstruction, and being free of pinning they are predicted
+root-plantable, though we cannot yet prove it.  This incompleteness, moreover, never
+reaches a density bound.  A density bound is a statement about whole graphs---the
+\emph{empty type}---where the two semantics provably coincide (\cref{prop:empty-type});
+the rooted examples that witness the gap vanish when averaged back to whole graphs
+(\cref{prop:ideal-zero}); and the gap can open only at a degenerate extreme, since
+pinning is always to a boundary value (\cref{thm:no-interior}).  The incompleteness is
+thus confined to the intermediate, rooted certificates a proof passes through; for the
+obstructions we exhibit it never affects a density bound (\cref{sec:empty-type}), and
+whether some constrained class with a sufficiently rich rooted support makes it do so is
+left open.
 
 \section{Flag-algebra background}
 
