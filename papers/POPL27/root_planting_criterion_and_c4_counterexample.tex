@@ -80,18 +80,17 @@
 Forbidden-subgraph reasoning in Razborov's flag algebras can be carried out in two
 ways: in the \emph{quotient} flag algebra of the constrained theory, the algebra one
 actually computes in, or by \emph{ensemble} semantics in the ambient theory, which
-asks that an inequality hold almost surely along the random labelled extensions of
-constrained limits and is what a constrained density bound asserts.  Quotient
+asks that an inequality hold almost surely along the random labelings of limits of
+unlabelled constrained graphs.  Quotient
 non-negativity always implies ensemble non-negativity, so the quotient calculus is
 unconditionally sound; we study the converse, its completeness.  We prove that the two
 semantics agree, for every flag-algebra element, exactly when a support-closure
-condition holds that we call \emph{root-plantability}: every constrained labelled limit
-must be approximable by rooted views of constrained unlabelled limits.  Closure under
-independent blow-ups implies root-plantability and recovers the correspondence for
-clique-free and triangle-free theories; but heredity alone does not.  Every class so
+condition, which we call \emph{root-plantability}, holds: every limit of labelled constrained graphs
+must be approximable by rooted views of limits of unlabelled constrained graphs. Closure under
+independent blow-ups (which holds for clique-free and triangle-free theories) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
 sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
 arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
-graphs among them---fails at the one-vertex type; by complementation so do their dense
+graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
 complements, so neither sparsity nor density is the dividing line.  The uniform cause is
 \emph{pinning}: a rooted quantity that takes one fixed value across all constrained
 limits while the quotient theory admits a root where it takes another.  We conjecture
@@ -121,9 +120,10 @@ flag algebra of the constrained theory and ask for non-negativity there
 (\emph{quotient semantics}); or one may stay in the ambient theory of all graphs and
 ask that the inequality hold almost surely along the random labelled extensions of
 constrained limits (\emph{ensemble semantics}).  The first is the algebra one
-actually computes in; the second is what a constrained density bound asserts.  When
-the two agree, a certificate proved in the quotient is a genuine density bound for
-the constrained class.  This paper determines exactly when they agree.
+actually computes in; the second is what we want to hold throughout the
+constrained class.  When the two agree, a certificate proved in the quotient is a
+genuine density bound for the constrained class.  This paper determines exactly when
+they agree.
 
 One direction is automatic.  Quotient semantics always implies ensemble semantics
 (\cref{thm:support-criterion}), so a quotient certificate is unconditionally
