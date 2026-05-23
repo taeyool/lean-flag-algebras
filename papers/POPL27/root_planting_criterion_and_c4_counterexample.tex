@@ -89,7 +89,7 @@ condition, which we call \emph{root-plantability}, holds: every labelled constra
 must be approximable by the labelled views of unlabelled constrained limits. Closure under
 independent blow-ups (which holds for the clique-free classes, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
 sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
-arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
+arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, $C_{2k}$-free, and planar
 graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
 complements, so neither sparsity nor density is the dividing line.  The uniform cause is
 \emph{pinning}: a labelled quantity that takes one fixed value across all constrained
@@ -183,7 +183,7 @@ Root-plantability is implied by closure under independent blow-ups, which recove
 correspondence for the clique-free classes, including triangle-free.  Heredity alone, however,
 does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
 only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
-$K_{s,t}$-free, even-cycle-free, and planar graphs among them) fails at the one-vertex
+$K_{s,t}$-free, $C_{2k}$-free, and planar graphs among them) fails at the one-vertex
 type, witnessed by the labelled edge flag, and by complementation so do their dense
 complements; neither sparsity nor density is the dividing line.  The uniform cause is
 \emph{pinning}: a labelled quantity that takes one fixed value across all constrained
@@ -195,8 +195,8 @@ edge or triangle they are predicted root-plantable, though we cannot yet prove i
 reaches a density bound.  A density bound is a statement about unlabelled graphs---the
 \emph{empty type}---where the two semantics provably coincide (\cref{prop:empty-type});
 the labelled examples that witness the gap vanish when averaged back to unlabelled graphs
-(\cref{prop:ideal-zero}); and the gap can open only at a degenerate extreme, since
-pinning is always to a boundary value (\cref{thm:no-interior}).  The incompleteness is
+(\cref{prop:ideal-zero}); and the gap can open only at a degenerate extreme, since for
+subgraph-forbidden classes pinning is always to a boundary value (\cref{thm:no-interior}).  The incompleteness is
 thus confined to the intermediate, labelled certificates a proof passes through; for the
 obstructions we exhibit it never affects a density bound (\cref{sec:empty-type}), and
 whether some constrained class with a sufficiently rich labelled support makes it do so is
@@ -229,8 +229,10 @@ of flags), modulo the linear relations
 \[
   F=\sum_{|H|=|F|+1}p(F,H)\,H
 \]
-that identify each flag with the average of its one-vertex extensions; these relations are
-what make ``density'' a well-defined linear functional on the whole space.  The space
+relating each flag to the flags one vertex larger.  These relations encode the
+consistency of densities across sizes---$p(F,G)=\sum_{|H|=|F|+1}p(F,H)\,p(H,G)$ for every
+larger $G$---and are what make ``density'' a well-defined linear functional on the whole
+space.  The space
 carries a commutative, associative \emph{product} that records how densities combine: the
 product $F_1\cdot F_2$ of $\sigma$-flags on $n_1$ and $n_2$ vertices is the formal
 combination of the $\sigma$-flags $H$ on $n_1+n_2-k$ vertices, each weighted by the
@@ -240,20 +242,25 @@ The product is rigged so that densities multiply in the limit (made precise next
 unit is the flag $\one_\sigma$ consisting of the type alone.  We write $\A^0[\T]$ for the
 empty-type algebra.
 
-\paragraph{Positive homomorphisms and limit objects.}
+\paragraph{Positive homomorphisms as limits.}
 A \emph{positive homomorphism} is a linear, unit-preserving, multiplicative map
 $\phi:\A^\sigma[\T]\to\R$---so $\phi(\one_\sigma)=1$ and
 $\phi(F_1\cdot F_2)=\phi(F_1)\,\phi(F_2)$---that is non-negative on flags, i.e.\
 $\phi(F)\ge0$ for every $F\in\F^\sigma$.  The set of all of them is denoted
-$\Homp(\A^\sigma[\T],\R)$.  By Razborov's theory these are exactly the \emph{limit
-objects}: a sequence of finite $\sigma$-flags of growing size \emph{converges} when every
-density $p(F,\cdot)$ converges, its limit is the homomorphism $\phi$ with
-$\phi(F)=\lim p(F,\cdot)$, and conversely every positive homomorphism arises in this way
-\cite[Theorem 3.3]{Razborov2007}.  We may therefore picture a positive homomorphism
-$\phi$ as a limit object and $\phi(F)$ as the density of the flag $F$ in it.  Since each
-density lies in $[0,1]$, evaluation on all flags embeds $\Homp(\A^\sigma[\T],\R)$ as a
-closed subspace of the compact metrizable cube $[0,1]^{\F^\sigma[\T]}$; in particular it
-is compact.
+$\Homp(\A^\sigma[\T],\R)$.  By Razborov's theory these are exactly the limits of
+convergent flag sequences: a sequence of finite $\sigma$-flags of growing size
+\emph{converges} when every density $p(F,\cdot)$ converges, its limit is the homomorphism
+$\phi$ with $\phi(F)=\lim p(F,\cdot)$, and conversely every positive homomorphism arises
+this way \cite[Theorem 3.3]{Razborov2007}.  We accordingly picture a positive homomorphism
+$\phi$ as a limit of finite graphs and $\phi(F)$ as the density of the flag $F$ in it, and
+we use the terms \emph{positive homomorphism} and \emph{limit} interchangeably.  On a single
+flag this value lies in $[0,1]$: for each size the flags of that size sum to the unit,
+$\sum_{|H|=|F|}H=\one_\sigma$ (a vertex set induces exactly one flag), so
+$0\le\phi(F)\le\sum_{|H|=|F|}\phi(H)=\phi(\one_\sigma)=1$.  Hence evaluation on all flags,
+$\phi\mapsto(\phi(F))_{F\in\F^\sigma}$, embeds $\Homp(\A^\sigma[\T],\R)$ into the compact
+metrizable cube $[0,1]^{\F^\sigma[\T]}$; the image is closed---cut out by the linear and
+multiplicative homomorphism conditions---so $\Homp(\A^\sigma[\T],\R)$ is itself compact
+metrizable.
 
 The averaging (unlabelling) operator
 \[
@@ -262,14 +269,21 @@ The averaging (unlabelling) operator
 forgets the labels of a $\sigma$-flag and averages over the choice of labelling.  The
 only properties we use are that it is linear and that on a single flag $F$ with
 underlying unlabelled graph $M$ it returns a \emph{non-negative scalar multiple}
-of $M$.  Write $\one_\sigma\in\A^\sigma[\T]$ for the flag consisting of the type alone
-(the multiplicative unit of $\A^\sigma[\T]$).  If $\sigma$ has size $k$, then
+of $M$.  Recall that $\one_\sigma\in\A^\sigma[\T]$, the flag consisting of the type alone, is the
+multiplicative unit of $\A^\sigma[\T]$.  Its unlabelling
 \[
   \brak{\sigma}:=\avg{\one_\sigma}{\sigma}\in\A^0[\T]
 \]
-is the unlabelled density of embeddings of the type $\sigma$.  The type $\sigma$ is
-\emph{non-degenerate} if $\brak\sigma\neq0$, equivalently if some limit assigns it
-positive density.  If
+is the unlabelled density of embeddings of the type $\sigma$: for a limit
+$\phi_0$, the value $\phi_0(\brak\sigma)$ is the probability that $k$ random vertices, in
+a random order, form a copy of $\sigma$.  The type $\sigma$ is
+\emph{non-degenerate} if $\brak\sigma\neq0$ in $\A^0[\T]$.  By the unlabelling property
+above, $\brak\sigma=\avg{\one_\sigma}{\sigma}$ is a non-negative multiple of the unlabelled
+graph underlying $\sigma$, so it is a \emph{non-negative element}: $\phi_0(\brak\sigma)\ge0$
+for every limit $\phi_0$.  Since an
+element of $\A^0[\T]$ is the zero element exactly when every limit assigns it the value
+$0$, $\brak\sigma\neq0$ holds precisely when $\phi_0(\brak\sigma)>0$ for some limit
+$\phi_0$.  If
 $\phi_0\in\Homp(\A^0[\T],\R)$ and $\phi_0(\brak\sigma)>0$, Razborov's extension
 theorem gives a unique probability measure on
 $\Homp(\A^\sigma[\T],\R)$, denoted here by
@@ -290,11 +304,15 @@ of $\sigma$.  Moreover, if a finite sequence converges to $\phi_0$, then the
 corresponding finite random-labelling distributions converge weakly to $\Ext_\sigma(\phi_0)$
 \cite[Theorems 3.5 and 3.12]{Razborov2007}.
 
-We will repeatedly use the following elementary consequence of the definition of
-support.
+Recall that the \emph{support} of a Borel probability measure $P$ on a compact metrizable
+space $X$, written $\supp(P)$, is the smallest closed set of full $P$-measure; equivalently,
+\[
+  \supp(P)=\{x\in X:P(U)>0\text{ for every open }U\ni x\}.
+\]
+We will repeatedly use the following elementary consequence.
 
 \begin{lemma}[Almost-sure non-negativity and support]\label{lem:support-as}
-Let $P$ be a Borel probability measure on a compact space $X$, and let
+Let $P$ be a Borel probability measure on a compact metrizable space $X$, and let
 $h:X\to\R$ be continuous.  Then
 \[
   P[h\ge0]=1
@@ -303,42 +321,45 @@ if and only if $h(x)\ge0$ for every $x\in\supp(P)$.
 \end{lemma}
 
 \begin{proof}
-If some $x\in\supp(P)$ satisfies $h(x)<0$, then the open set
-$\{y:h(y)<0\}$ contains $x$ and hence has positive $P$-measure, a
-contradiction.  Conversely, a Borel probability measure is concentrated on its
-closed support, so non-negativity on the support implies almost-sure
-non-negativity.
+($\Rightarrow$) Suppose $P[h\ge0]=1$, equivalently $P[h<0]=0$, and let
+$x\in\supp(P)$.  If $h(x)<0$, then $\{y:h(y)<0\}$ is an open set (as $h$ is continuous)
+containing $x$, so by the defining property of the support it has positive $P$-measure,
+contradicting $P[h<0]=0$.  Hence $h(x)\ge0$.
+
+($\Leftarrow$) Suppose $h\ge0$ on $\supp(P)$.  Then
+$\{y:h(y)\ge0\}\supseteq\supp(P)$, and the support has full measure, so
+$P[h\ge0]\ge P(\supp(P))=1$; that is, $P[h\ge0]=1$.
 \end{proof}
 
 \section{Constrained classes and supported homomorphisms}
 
-Let $\T_1$ be a hereditary subclass of $\T_0$.  For a non-degenerate type $\tau$ of
+Let $\T_1$ be a hereditary subclass of $\T_0$.  For a non-degenerate type $\sigma$ of
 $\T_1$, define
 \[
-  X_\tau:=\Homp(\A^\tau[\T_0],\R).
+  X_\sigma:=\Homp(\A^\sigma[\T_0],\R).
 \]
 The quotient map
 \[
-  \qmap_\tau:\A^\tau[\T_0]\twoheadrightarrow\A^\tau[\T_1]
+  \qmap_\sigma:\A^\sigma[\T_0]\twoheadrightarrow\A^\sigma[\T_1]
 \]
-pulls every $\psi\in\Homp(\A^\tau[\T_1],\R)$ back to a positive homomorphism on
-$\A^\tau[\T_0]$: as a surjection of algebras $\qmap_\tau$ sends each $\T_0$-flag to a
-$\T_1$-flag or to $0$, so $\psi\circ\qmap_\tau$ is an algebra homomorphism that is
-non-negative on every flag, hence a point of $X_\tau$.  We write
+pulls every $\psi\in\Homp(\A^\sigma[\T_1],\R)$ back to a positive homomorphism on
+$\A^\sigma[\T_0]$: as a surjection of algebras $\qmap_\sigma$ sends each $\T_0$-flag to a
+$\T_1$-flag or to $0$, so $\psi\circ\qmap_\sigma$ is an algebra homomorphism that is
+non-negative on every flag, hence a point of $X_\sigma$.  We write
 \[
-  Q_\tau
+  Q_\sigma
   :=
-  \{\psi\circ\qmap_\tau:
-      \psi\in\Homp(\A^\tau[\T_1],\R)\}
-  \subseteq X_\tau.
+  \{\psi\circ\qmap_\sigma:
+      \psi\in\Homp(\A^\sigma[\T_1],\R)\}
+  \subseteq X_\sigma.
 \]
-Thus $Q_\tau$ is the constrained, or $\T_1$-supported, part of the ambient
-homomorphism space.  It is closed in $X_\tau$: it is cut out by the conditions
-that all forbidden finite $\tau$-flags have value zero.
+Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient
+homomorphism space.  It is closed in $X_\sigma$: it is cut out by the conditions
+that all forbidden finite $\sigma$-flags have value zero.
 
-Equivalently, $\chi\in X_\tau$ lies in $Q_\tau$ iff it vanishes on every
-$\tau$-flag that belongs to $\T_0$ but not to $\T_1$.  This uses that $\T_1$ is
-hereditary: a $\tau$-flag is forbidden in $\A^\tau[\T_1]$ exactly when its underlying
+Equivalently, $\chi\in X_\sigma$ lies in $Q_\sigma$ iff it vanishes on every
+$\sigma$-flag that belongs to $\T_0$ but not to $\T_1$.  This uses that $\T_1$ is
+hereditary: a $\sigma$-flag is forbidden in $\A^\sigma[\T_1]$ exactly when its underlying
 graph is one of the forbidden graphs that define the constrained class.
 
 Informally, the next lemma says that randomly labelling a constrained unlabelled limit
@@ -671,11 +692,11 @@ The clone-closed hypothesis is not merely technical: the correspondence fails fo
 hereditary classes, and it fails for an entire family, always for the same
 structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
 that its dense limits carry no edges, then a typical vertex sees an empty
-neighbourhood; yet the constrained class may still retain an \emph{exceptional}
+neighbourhood; yet the class may still contain a graph with an \emph{exceptional}
 high-degree vertex, such as the centre of a star.  The labelled edge flag separates the
 two.
 
-Throughout this section $\sigma=1$ is the one-vertex type in graph theory,
+Throughout this section $\sigma=1$ is the one-vertex type,
 $e\in\A^1[\T_{\mathrm{Graph}}]$ is the labelled edge flag (the two-vertex flag in which
 the labelled vertex is adjacent to the one unlabelled vertex), and $\rho\in\A^0$ is
 the unlabelled edge flag; recall $\avg{e}{1}=\rho$ and $\brak1=1$.
@@ -848,7 +869,7 @@ Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
 $\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In particular the complements of the classes in
 \cref{cor:degenerate-family}---complement-of-$C_4$-free,
-complement-of-$K_{s,t}$-free, complement-of-even-cycle-free, and
+complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
 root-plantable.
 \end{corollary}
@@ -918,8 +939,8 @@ $\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-\one_\sigm
 degeneracy obstruction (\cref{thm:degenerate-obstruction}) and its dense
 counterpart (\cref{cor:codegenerate}) are exactly these, with $\sigma=1$ and
 $g=e$.  An interior value $c\in(0,1)$ would instead require the almost-sure pinning as a
-genuine hypothesis---but in fact never arises, as \cref{subsec:boundary} shows all
-pinning is to a boundary value.
+genuine hypothesis---but for a subgraph-forbidden class no interior value is ever pinned,
+as \cref{subsec:boundary} shows.
 \end{remark}
 
 \begin{conjecture}[Characterisation; tentative]\label{conj:characterisation}
