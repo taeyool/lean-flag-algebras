@@ -343,9 +343,9 @@ The quotient map
   \qmap_\sigma:\A^\sigma[\T_0]\twoheadrightarrow\A^\sigma[\T_1]
 \]
 pulls every $\psi\in\Homp(\A^\sigma[\T_1],\R)$ back to a positive homomorphism on
-$\A^\sigma[\T_0]$: as a surjection of algebras $\qmap_\sigma$ sends each $\T_0$-flag to a
-$\T_1$-flag or to $0$, so $\psi\circ\qmap_\sigma$ is an algebra homomorphism that is
-non-negative on every flag, hence a point of $X_\sigma$.  We write
+$\A^\sigma[\T_0]$.  Indeed, as a surjection of algebras $\qmap_\sigma$ sends each
+$\T_0$-flag to a $\T_1$-flag or to $0$, so $\psi\circ\qmap_\sigma$ is an algebra
+homomorphism, non-negative on every flag, and hence a point of $X_\sigma$.  We write
 \[
   Q_\sigma
   :=
@@ -354,13 +354,14 @@ non-negative on every flag, hence a point of $X_\sigma$.  We write
   \subseteq X_\sigma.
 \]
 Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient
-homomorphism space.  It is closed in $X_\sigma$: it is cut out by the conditions
-that all forbidden finite $\sigma$-flags have value zero.
+homomorphism space.  It is closed in $X_\sigma$, being cut out by the requirement
+that every forbidden finite $\sigma$-flag take the value zero.
 
 Equivalently, $\chi\in X_\sigma$ lies in $Q_\sigma$ iff it vanishes on every
 $\sigma$-flag that belongs to $\T_0$ but not to $\T_1$.  This uses that $\T_1$ is
-hereditary: a $\sigma$-flag is forbidden in $\A^\sigma[\T_1]$ exactly when its underlying
-graph is one of the forbidden graphs that define the constrained class.
+hereditary: whether a $\sigma$-flag is forbidden in $\A^\sigma[\T_1]$ is determined by its
+underlying unlabelled graph alone---the flag is forbidden exactly when that graph fails to
+lie in $\T_1$.
 
 Informally, the next lemma says that randomly labelling a constrained unlabelled limit
 almost surely yields a constrained labelled one.
@@ -479,7 +480,7 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 
 \section{Clone-closed graph classes are root-plantable}
 
-We now give a checkable sufficient condition for root-plantability for graph
+We now give a checkable sufficient condition for root-plantability of graph
 classes, built on an independent blow-up construction.  The idea is that when a class is
 closed under blow-ups, a labelled vertex can be duplicated into a clone class of
 positive density, so a configuration the quotient exhibits only at an exceptional vertex
@@ -688,8 +689,8 @@ for the triangle-free class.
 
 \section{Degenerate classes are not root-plantable}
 
-The clone-closed hypothesis is not merely technical: the correspondence fails for
-hereditary classes, and it fails for an entire family, always for the same
+The clone-closed hypothesis is not merely technical: the correspondence can fail for
+hereditary classes, and it does so for an entire family of them, always for the same
 structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
 that its dense limits carry no edges, then a typical vertex sees an empty
 neighbourhood; yet the class may still contain a graph with an \emph{exceptional}
@@ -742,10 +743,10 @@ so $S_1\ne Q_1$.
 \end{proof}
 
 \begin{remark}
-The hypothesis ``contains arbitrarily large stars'' is only used to exhibit a
-labelled limit in the quotient of positive labelled edge density; it may be replaced by the existence
-of any sequence of labelled graphs in $\K$ whose labelled edge density stays bounded
-away from $0$.
+The hypothesis ``contains arbitrarily large stars'' is only used to exhibit, in the
+quotient, a labelled limit of positive labelled edge density; it may be replaced by the
+existence of any sequence of labelled graphs in $\K$ whose labelled edge density stays
+bounded away from $0$.
 \end{remark}
 
 \begin{remark}[The obstruction]
@@ -1064,7 +1065,7 @@ $S_\sigma$.  Write, as cones inside $\A^0[\T_1]$,
   \qquad
   \C^{\mathrm{ens}}_\sigma=\{\avg{s}{\sigma}:s\ge0\text{ on }S_\sigma\},
 \]
-for the empty-type contributions level $\sigma$ can make to the two methods, so that
+for the empty-type contributions the type $\sigma$ can make to the two methods, so that
 $\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma$ always.  The next two results
 show the witnesses gain nothing here, and that for the obstructions exhibited above the
 two cones in fact coincide.
