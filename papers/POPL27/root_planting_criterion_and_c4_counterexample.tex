@@ -80,31 +80,32 @@
 Forbidden-subgraph reasoning in Razborov's flag algebras can be carried out in two
 ways: in the \emph{quotient} flag algebra of the constrained theory, the algebra one
 actually computes in, or by \emph{ensemble} semantics in the ambient theory, which
-asks that an inequality hold almost surely along the random labelings of limits of
-unlabelled constrained graphs.  Quotient
+asks that an inequality hold almost surely along the random labellings of unlabelled
+constrained limits.  Quotient
 non-negativity always implies ensemble non-negativity, so the quotient calculus is
 unconditionally sound; we study the converse, its completeness.  We prove that the two
 semantics agree, for every flag-algebra element, exactly when a support-closure
-condition, which we call \emph{root-plantability}, holds: every limit of labelled constrained graphs
-must be approximable by rooted views of limits of unlabelled constrained graphs. Closure under
-independent blow-ups (which holds for clique-free and triangle-free theories) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
+condition, which we call \emph{root-plantability}, holds: every labelled constrained limit
+must be approximable by the labelled views of unlabelled constrained limits. Closure under
+independent blow-ups (which holds for the clique-free theories, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
 sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
 arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
 graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
 complements, so neither sparsity nor density is the dividing line.  The uniform cause is
-\emph{pinning}: a rooted quantity that takes one fixed value across all constrained
-limits while the quotient theory admits a root where it takes another.  We conjecture
+\emph{pinning}: a labelled quantity that takes one fixed value across all constrained
+limits while the quotient theory admits a labelled limit where it takes another.  We conjecture
 that the absence of pinning is exactly what makes a class root-plantable.  The $C_5$-free
 graphs are the critical test case: dense yet not closed under blow-ups, they escape both
-our sufficient condition and our obstruction, and since they exhibit no pinning the
-conjecture predicts them root-plantable---which we are not yet able to prove.
+our sufficient condition and our obstruction, and since they exhibit no pinning
+obstruction from the edge or triangle the conjecture predicts them
+root-plantable---which we are not yet able to prove.
 
 This incompleteness, however, never affects a density bound of the kind a flag-algebra
-computation is run to produce.  Such a bound is an inequality about whole graphs, whereas
+computation is run to produce.  Such a bound is an inequality about unlabelled graphs, whereas
 the gap between the two semantics lives entirely in the auxiliary inequalities---about
-graphs rooted at chosen vertices---that a proof passes through on the way to it.  We show
-that on whole-graph statements the two semantics always coincide, that the rooted
-examples witnessing the gap vanish once averaged back into whole-graph statements, and
+vertex-labelled graphs---that a proof passes through on the way to it.  We show
+that on unlabelled-graph statements the two semantics always coincide, that the labelled
+examples witnessing the gap vanish once averaged back into unlabelled-graph statements, and
 that the gap can open only at a degenerate extreme.  So for every class we exhibit, the
 incompleteness leaves the final density bounds untouched, and whether any class lets it
 reach one remains open.
@@ -158,48 +159,56 @@ extension $\phi^\sigma$ of $\phi_0$ to type $\sigma$ satisfies
 The right property is not simply heredity, but the following support
 condition:
 \[
-  \overline{\bigcup_{\phi_0}\supp(\Ext_\sigma(\phi_0))}
+  \overline{\bigcup_{\substack{\phi_0\ \T_1\text{-supported,}\\ \text{positive }\sigma\text{-density}}}\;\supp\bigl(\Ext_\sigma(\phi_0)\bigr)}
   \;=\;
-  \{\psi\circ\qmap_\sigma:\psi\in\Homp(\A^\sigma[\T_1],\R)\},
+  \{\psi\circ\qmap_\sigma:\psi\in\Homp(\A^\sigma[\T_1],\R)\}.
 \]
-both sides regarded inside the ambient homomorphism space
-$\Homp(\A^\sigma[\T_0],\R)$.  Informally, every constrained labelled limit must be
-approximable by positive-probability rooted views of constrained unlabelled limits.  We
-call this condition \emph{root-plantability} and prove that it is exactly equivalent to
-the quotient/ensemble correspondence for every flag-algebra element
+The union ranges only over the unlabelled $\T_1$-supported homomorphisms $\phi_0$ of
+positive $\sigma$-density---those for which the canonical random extension above is
+defined; $\Ext_\sigma(\phi_0)$ denotes the law of that extension, $\supp$ its
+(topological) support, and the closure is taken in the compact space
+$\Homp(\A^\sigma[\T_0],\R)$ under pointwise convergence of flag densities.  Both sides lie
+in that ambient space: each $\psi\circ\qmap_\sigma$ is again a positive homomorphism on
+$\A^\sigma[\T_0]$, since $\qmap_\sigma$ carries every $\T_0$-flag to a $\T_1$-flag or to
+$0$, so the composite stays non-negative on flags.  (\Cref{sec:background} and
+\cref{def:root-planting} make all of this precise.)  Informally, every constrained
+labelled limit must be approximable by positive-probability labelled views of constrained
+unlabelled limits.  We call this condition \emph{root-plantability} and prove that it is
+exactly equivalent to the quotient/ensemble correspondence for every flag-algebra element
 (\cref{thm:support-criterion}).
 
 \paragraph{Results.}
 Root-plantability is implied by closure under independent blow-ups, which recovers the
-correspondence for clique-free and triangle-free theories.  Heredity alone, however,
+correspondence for the clique-free theories, including triangle-free.  Heredity alone, however,
 does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
 only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
 $K_{s,t}$-free, even-cycle-free, and planar graphs among them) fails at the one-vertex
-type, witnessed by the rooted edge flag, and by complementation so do their dense
+type, witnessed by the labelled edge flag, and by complementation so do their dense
 complements; neither sparsity nor density is the dividing line.  The uniform cause is
-\emph{pinning}: a rooted quantity that takes one fixed value across all constrained
-limits while the quotient theory admits a root where it takes another.  We conjecture
+\emph{pinning}: a labelled quantity that takes one fixed value across all constrained
+limits while the quotient theory admits a labelled limit where it takes another.  We conjecture
 that the absence of pinning characterises root-plantability.  The $C_5$-free graphs are
 the natural test case: dense yet not closed under blow-ups, they fall between our
-sufficient condition and our obstruction, and being free of pinning they are predicted
-root-plantable, though we cannot yet prove it.  This incompleteness, moreover, never
-reaches a density bound.  A density bound is a statement about whole graphs---the
+sufficient condition and our obstruction, and carrying no pinning obstruction from the
+edge or triangle they are predicted root-plantable, though we cannot yet prove it.  This incompleteness, moreover, never
+reaches a density bound.  A density bound is a statement about unlabelled graphs---the
 \emph{empty type}---where the two semantics provably coincide (\cref{prop:empty-type});
-the rooted examples that witness the gap vanish when averaged back to whole graphs
+the labelled examples that witness the gap vanish when averaged back to unlabelled graphs
 (\cref{prop:ideal-zero}); and the gap can open only at a degenerate extreme, since
 pinning is always to a boundary value (\cref{thm:no-interior}).  The incompleteness is
-thus confined to the intermediate, rooted certificates a proof passes through; for the
+thus confined to the intermediate, labelled certificates a proof passes through; for the
 obstructions we exhibit it never affects a density bound (\cref{sec:empty-type}), and
-whether some constrained class with a sufficiently rich rooted support makes it do so is
+whether some constrained class with a sufficiently rich labelled support makes it do so is
 left open.
 
-\section{Flag-algebra background}
+\section{Flag-algebra background}\label{sec:background}
 
 We use Razborov's notation and terminology \cite{Razborov2007}, recalled here in
 graph-theoretic terms.  A \emph{type} $\sigma$ is a fixed finite labelled
-structure---for graphs, a choice of $k$ distinguished \emph{root} vertices and the
+structure---for graphs, a choice of $k$ distinguished \emph{labelled} vertices (its
+\emph{roots}) and the
 adjacencies among them---and a \emph{$\sigma$-flag} is a finite structure carrying a
-marked copy of $\sigma$, that is, a structure rooted at $\sigma$; the \emph{empty type}
+marked copy of $\sigma$, that is, a structure labelled by $\sigma$; the \emph{empty type}
 ($k=0$) marks nothing.  For a universal theory $\T$ and a type $\sigma$, $\A^\sigma[\T]$
 denotes the flag algebra of $\sigma$-flags.  The compact space of positive homomorphisms
 is
@@ -224,10 +233,10 @@ For the empty type we write $\A^0[\T]$.  The averaging (unlabelling) operator
 forgets the labels of a $\sigma$-flag and averages over the choice of labelling.  The
 only properties we use are that it is linear and that on a single flag $F$ with
 underlying unlabelled structure $M$ it returns a \emph{non-negative scalar multiple}
-of $M$.  Write $1_\sigma\in\A^\sigma[\T]$ for the flag consisting of the type alone
+of $M$.  Write $\one_\sigma\in\A^\sigma[\T]$ for the flag consisting of the type alone
 (the multiplicative unit of $\A^\sigma[\T]$).  If $\sigma$ has size $k$, then
 \[
-  \brak{\sigma}:=\avg{1_\sigma}{\sigma}\in\A^0[\T]
+  \brak{\sigma}:=\avg{\one_\sigma}{\sigma}\in\A^0[\T]
 \]
 is the unlabelled density of embeddings of the type $\sigma$.  The type $\sigma$ is
 \emph{non-degenerate} if $\brak\sigma\neq0$, equivalently if some limit assigns it
@@ -245,11 +254,11 @@ characterised by
   \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
   \qquad(g\in\A^\sigma[\T]).
 \end{equation}
-Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the rooted limit seen from a uniformly
+Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the labelled limit seen from a uniformly
 random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
-the expected rooted density of $g$ is the unlabelled density of $g$, normalised by that
+the expected labelled density of $g$ is the unlabelled density of $g$, normalised by that
 of $\sigma$.  Moreover, if a finite sequence converges to $\phi_0$, then the
-corresponding finite random-root distributions converge weakly to $\Ext_\sigma(\phi_0)$
+corresponding finite random-labelling distributions converge weakly to $\Ext_\sigma(\phi_0)$
 \cite[Theorems 3.5 and 3.12]{Razborov2007}.
 
 We will repeatedly use the following elementary consequence of the definition of
@@ -283,8 +292,10 @@ The quotient map
 \[
   \qmap_\tau:\A^\tau[\T_0]\twoheadrightarrow\A^\tau[\T_1]
 \]
-pulls every homomorphism on $\A^\tau[\T_1]$ back to a homomorphism on
-$\A^\tau[\T_0]$.  We write
+pulls every $\psi\in\Homp(\A^\tau[\T_1],\R)$ back to a positive homomorphism on
+$\A^\tau[\T_0]$: as a surjection of algebras $\qmap_\tau$ sends each $\T_0$-flag to a
+$\T_1$-flag or to $0$, so $\psi\circ\qmap_\tau$ is an algebra homomorphism that is
+non-negative on every flag, hence a point of $X_\tau$.  We write
 \[
   Q_\tau
   :=
@@ -302,7 +313,7 @@ formulation uses the fact that $\T_1$ is universal: if a finite flag violates
 $\T_1$, then its underlying finite structure is one of the forbidden finite
 models of the quotient theory.
 
-Informally, the next lemma says that randomly rooting a constrained unlabelled limit
+Informally, the next lemma says that randomly labelling a constrained unlabelled limit
 almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
@@ -383,7 +394,7 @@ $f\in\A^\sigma[\T_0]$ if and only if $(\T_0,\T_1,\sigma)$ is root-plantable.
 In words: a certificate proved in the quotient is always a valid constrained density
 bound, and it captures \emph{every} such bound precisely when $\sigma$ is
 root-plantable; when root-plantability fails, some inequality that holds almost surely
-under random rooting cannot be seen in the quotient.
+under random labelling cannot be seen in the quotient.
 
 \begin{proof}
 By \cref{lem:support-passes-general}, every support appearing in the definition
@@ -422,8 +433,8 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 We now give a checkable sufficient condition for root-plantability for graph
 classes, built on an independent blow-up construction.  The idea is that when a class is
 closed under blow-ups, a labelled vertex can be duplicated into a clone class of
-positive density, so a configuration the quotient exhibits only at an exceptional root
-can instead be realised at a random---hence typical---root, which is just what
+positive density, so a configuration the quotient exhibits only at an exceptional vertex
+can instead be realised at a random---hence typical---vertex, which is just what
 root-plantability requires.  Let
 $\T_0=\T_{\mathrm{Graph}}$, and let $\K$ be a hereditary class of finite simple
 graphs.  Equivalently, $\K$ is the class of finite models of the universal theory
@@ -590,8 +601,8 @@ $\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a posit
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
 $X_\sigma\subseteq Y_\sigma$ is a closed subspace.  Let $P_j$ be the finite
-random-root distribution on $Y_\sigma$ obtained by choosing a random embedding
-of $\sigma$ into $B_j$ and recording all rooted flag densities.  These measures
+random-labelling distribution on $Y_\sigma$ obtained by choosing a random embedding
+of $\sigma$ into $B_j$ and recording all labelled flag densities.  These measures
 converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability measure on
 $Y_\sigma$ concentrated on $X_\sigma$.
 
@@ -632,13 +643,13 @@ for the triangle-free theory.
 The clone-closed hypothesis is not merely technical: the correspondence fails for
 hereditary classes, and it fails for an entire family, always for the same
 structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
-that its dense limits carry no edges, then a typical root sees an empty
+that its dense limits carry no edges, then a typical vertex sees an empty
 neighbourhood; yet the quotient theory may still retain an \emph{exceptional}
-high-degree root, such as the centre of a star.  The rooted edge flag separates the
+high-degree vertex, such as the centre of a star.  The labelled edge flag separates the
 two.
 
 Throughout this section $\sigma=1$ is the one-vertex type in graph theory,
-$e\in\A^1[\T_{\mathrm{Graph}}]$ is the rooted edge flag (the two-vertex flag in which
+$e\in\A^1[\T_{\mathrm{Graph}}]$ is the labelled edge flag (the two-vertex flag in which
 the labelled vertex is adjacent to the one unlabelled vertex), and $\rho\in\A^0$ is
 the unlabelled edge flag; recall $\avg{e}{1}=\rho$ and $\brak1=1$.
 
@@ -674,7 +685,7 @@ satisfies $\chi(e)=0$, and since $\chi\mapsto\chi(e)$ is continuous this gives t
 inclusion $S_1\subseteq\{\chi\in Q_1:\chi(e)=0\}$.
 
 \emph{Quotient semantics fails for $-e$.}  Let $S_N=K_{1,N-1}$ be the star on $N$
-vertices, rooted at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
+vertices, labelled at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
 Every unlabelled vertex is adjacent to the centre, so $p(e,S_N)=1$ for all $N$.  By
 compactness a subsequence converges to some $\psi\in Q_1$ with $\psi(e)=1$, whence
 $\psi(-e)=-1<0$.  Thus quotient semantics fails, and $\psi\in Q_1$ witnesses
@@ -684,17 +695,17 @@ so $S_1\ne Q_1$.
 
 \begin{remark}
 The hypothesis ``contains arbitrarily large stars'' is only used to exhibit a
-quotient root of positive rooted edge density; it may be replaced by the existence
-of any sequence of rooted graphs in $\K$ whose rooted edge density stays bounded
+labelled limit in the quotient of positive labelled edge density; it may be replaced by the existence
+of any sequence of labelled graphs in $\K$ whose labelled edge density stays bounded
 away from $0$.
 \end{remark}
 
 \begin{remark}[The obstruction]
 The centre of a star is an exceptional labelled vertex.  Quotient semantics can see
-it, because labelled limits may root at exceptional vertices.  Ensemble semantics
-instead roots a constrained unlabelled limit at a \emph{typical} vertex; in a
-degenerate class the edge density is zero, so a typical vertex has rooted edge
-density zero.  The high-degree root cannot be planted with positive probability
+it, because labelled limits may sit at exceptional vertices.  Ensemble semantics
+instead labels a constrained unlabelled limit at a \emph{typical} vertex; in a
+degenerate class the edge density is zero, so a typical vertex has labelled edge
+density zero.  The high-degree vertex cannot be planted with positive probability
 without leaving the class: duplicating the centre and one neighbour already produces
 a $K_{2,2}$, and more generally a denser local structure than a degenerate class can
 sustain.
@@ -792,7 +803,7 @@ an isomorphism of flag algebras
 $\A^\sigma[\T_{\mathrm{Graph}}]\cong\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$ carrying
 $\K$-flags to $\overline\K$-flags.  It therefore induces a homeomorphism
 $X_\sigma\cong X_{\overline\sigma}$ taking $Q_\sigma$ for $\K$ onto $Q_{\overline\sigma}$
-for $\overline\K$.  Complementation also commutes with the random root: a uniformly
+for $\overline\K$.  Complementation also commutes with the random labelling: a uniformly
 random embedding of $\sigma$ into $G$ is the same embedding of $\overline\sigma$ into
 $\overline G$, so it carries each $\Ext_\sigma(\phi_0)$ to the corresponding
 extension for $\overline\K$, and hence $S_\sigma$ for $\K$ onto $S_{\overline\sigma}$
@@ -808,7 +819,7 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
-$\sigma=1$, witnessed by $f:=e-1_1$ (with $1_1$ the unit of $\A^1$).  In particular the complements of the classes in
+$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In particular the complements of the classes in
 \cref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-even-cycle-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
@@ -819,21 +830,21 @@ root-plantable.
 By \cref{lem:complementation} it suffices that $\overline\K$ be not
 root-plantable at $1$, and this is \cref{thm:degenerate-obstruction}:
 $\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
-$-e$ for $\overline\K$ pulls back to $-(1_1-e)=e-1_1$ for $\K$.  Directly:
+$-e$ for $\overline\K$ pulls back to $-(\one_1-e)=e-\one_1$ for $\K$.  Directly:
 $\avg{e}{1}=\rho$ gives $\E[\phi^1(e)]=\phi_0(\rho)=1$, and $\phi^1(e)\le1$ forces
-$\phi^1(e)=1$ almost surely, so $e-1_1$ satisfies ensemble semantics; while the
-co-star rooted at its isolated vertex gives a $\psi\in Q_1$ with $\psi(e)=0$, whence
-$\psi(e-1_1)=-1<0$ and quotient semantics fails.
+$\phi^1(e)=1$ almost surely, so $e-\one_1$ satisfies ensemble semantics; while the
+co-star labelled at its isolated vertex gives a $\psi\in Q_1$ with $\psi(e)=0$, whence
+$\psi(e-\one_1)=-1<0$ and quotient semantics fails.
 \end{proof}
 
 \begin{remark}[The dichotomy: density is not the dividing line]
 \cref{thm:degenerate-obstruction} and \cref{cor:codegenerate}
 together show that root-plantability is governed neither by heredity nor by density:
-edge-degenerate classes (rooted edge density pinned to $0$) and co-edge-degenerate
+edge-degenerate classes (labelled edge density pinned to $0$) and co-edge-degenerate
 classes (pinned to $1$) both fail, for the same reason.  What separates a typical
-root from the exceptional one is that the rooted edge density is \emph{pinned} to a
+vertex from the exceptional one is that the labelled edge density is \emph{pinned} to a
 boundary value of $[0,1]$ across all constrained unlabelled limits, while the
-quotient theory still contains a root attaining the opposite boundary.  The
+quotient theory still contains a labelled limit attaining the opposite boundary.  The
 governing invariant is this boundary pinning, not sparsity or density.
 
 This refines, rather than closes, the problem of characterising root-plantability.
@@ -848,22 +859,22 @@ and the two obstructions.
 
 \subsection{The general obstruction and a conjecture}
 
-Both obstructions are instances of one mechanism: a rooted density pinned almost
+Both obstructions are instances of one mechanism: a labelled density pinned almost
 surely to a single value across all constrained limits, while the quotient escapes
 it.
 
 \begin{theorem}[Pinning obstruction]\label{thm:pinning}
 Let $\sigma$ be a non-degenerate type, let $g$ be a $\sigma$-flag, and let
-$c\in[0,1]$.  Suppose the rooted density of $g$ is almost surely pinned to $c$ across
+$c\in[0,1]$.  Suppose the labelled density of $g$ is almost surely pinned to $c$ across
 all constrained unlabelled limits: for every $\phi_0\in Q_0$ with
 $\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(g)=c$ almost surely under
-$\Ext_\sigma(\phi_0)$.  If the quotient theory contains a root attaining a different
+$\Ext_\sigma(\phi_0)$.  If the quotient theory contains a labelled limit attaining a different
 value---some $\psi\in Q_\sigma$ with $\psi(g)\ne c$---then $(\T_0,\T_1,\sigma)$ is not
 root-plantable.
 \end{theorem}
 
 \begin{proof}
-Both $g-c\,1_\sigma$ and $c\,1_\sigma-g$ have $\phi^\sigma$-value $0$ almost surely
+Both $g-c\,\one_\sigma$ and $c\,\one_\sigma-g$ have $\phi^\sigma$-value $0$ almost surely
 under every admissible $\Ext_\sigma(\phi_0)$, so each is ensemble-nonnegative and,
 by \cref{lem:support-as} and continuity, nonnegative on $S_\sigma$.  Since
 $\psi(g)\ne c$, one of the two is strictly negative at $\psi$; that
@@ -876,7 +887,7 @@ expectation condition, since a $[0,1]$-valued random variable with mean $0$
 (respectively $1$) is almost surely $0$ (respectively $1$).  Concretely, by
 \eqref{eq:extension-expectation}, $\phi_0(\avg{g}{\sigma})=0$ for all admissible
 $\phi_0$ gives the case $c=0$ (witness $-g$), and
-$\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-1_\sigma$).  The
+$\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-\one_\sigma$).  The
 degeneracy obstruction (\cref{thm:degenerate-obstruction}) and its dense
 counterpart (\cref{cor:codegenerate}) are exactly these, with $\sigma=1$ and
 $g=e$.  An interior value $c\in(0,1)$ would instead require the almost-sure pinning as a
@@ -922,22 +933,22 @@ weights, so every forbidden subgraph still has density $0$ in $W_\lambda$; hence
 $W_\lambda$ is $F$-free and its limit $\phi_0^{\lambda}$ lies in $Q_0$.  Its
 $\sigma$-density is positive for each $\lambda>0$, because the integrand defining the
 induced $\sigma$-density is positive on the positive-measure set of tuples on which $W$
-realises $\sigma$; so $\phi_0^{\lambda}$ roots $\sigma$.
+realises $\sigma$; so $\phi_0^{\lambda}$ can be labelled by $\sigma$.
 
 Every edge weight of $W_\lambda$ is at most $\lambda$, so under
 $\Ext_\sigma(\phi_0^{\lambda})$ the probability that a given further vertex attaches to
-the root, or that two further vertices are adjacent, is at most $\lambda$.  Hence as
-$\lambda\to0$ the rooted density of a $\sigma$-flag $g$ tends to $1$ when $g$ extends
+a labelled vertex, or that two further vertices are adjacent, is at most $\lambda$.  Hence as
+$\lambda\to0$ the labelled density of a $\sigma$-flag $g$ tends to $1$ when $g$ extends
 $\sigma$ by pairwise non-adjacent vertices that are also non-adjacent to $\sigma$, and to
 $0$ otherwise.  These limiting values are $\{0,1\}$, so $\Ext_\sigma(\phi_0^{\lambda})$
-concentrates at the rooted limit $o_\sigma$---the type $\sigma$ together with an isolated
+concentrates at the labelled limit $o_\sigma$---the type $\sigma$ together with an isolated
 edgeless cloud---which therefore lies in $S_\sigma$ and is $\{0,1\}$-valued on every flag.
 \end{proof}
 
 \begin{remark}[Scope]
 \Cref{thm:no-interior} is uniform in $\sigma$, with no restriction on the type, and
 subsumes the one-vertex, edge, and clique cases at once.  The scaled graphons
-$\lambda W$ supply, as $\lambda\to0$, a deterministic rooted view of $\sigma$ from which
+$\lambda W$ supply, as $\lambda\to0$, a deterministic labelled view of $\sigma$ from which
 the boundary value is read off.  No single $\K$-limit of positive $\sigma$-density has
 isolated $\sigma$-copies; but letting the $\sigma$-density tend to zero \emph{along} the
 family while staying positive realises such a view in the closure $S_\sigma$, exactly as
@@ -965,7 +976,7 @@ root-plantable, and quotient and ensemble semantics coincide for every $f\in\A^0
 \end{proposition}
 
 \begin{proof}
-The empty type admits a unique embedding into any structure, so the random root carries
+The empty type admits a unique embedding into any structure, so the random labelling carries
 no information; we read this off \eqref{eq:extension-expectation}.  For
 $\sigma=\emptyset$ the unlabelling operator is the identity and $\brak\emptyset=\one$, so
 $\phi_0(\brak\emptyset)=1$ and $\mu:=\Ext_\emptyset(\phi_0)$ satisfies
@@ -1011,7 +1022,10 @@ show the witnesses gain nothing here, and that for the obstructions exhibited ab
 two cones in fact coincide.
 
 \begin{proposition}[The vanishing ideal unlabels to zero]\label{prop:ideal-zero}
-Let $\mathcal I_\sigma=\{a\in\A^\sigma[\T_1]:\psi(a)=0\text{ for all }\psi\in S_\sigma\}$.
+Let $\mathcal I_\sigma=\{a\in\A^\sigma[\T_1]:\psi(a)=0\text{ for all }\psi\in S_\sigma\}$,
+where each $\psi\in S_\sigma\subseteq Q_\sigma$ is evaluated on $\A^\sigma[\T_1]$ through
+the unique homomorphism $\bar\psi\in\Homp(\A^\sigma[\T_1],\R)$ it factors as,
+$\psi=\bar\psi\circ\qmap_\sigma$.
 Then $\avg{a}{\sigma}=0$ in $\A^0[\T_1]$ for every $a\in\mathcal I_\sigma$.  In
 particular every pinning witness $g-c\,\one_\sigma$, and every flag-multiple
 $(g-c\,\one_\sigma)\,h$, unlabels to zero.  Consequently $\avg{\cdot}{\sigma}$ depends
@@ -1053,7 +1067,7 @@ non-negative multiple of $M$, we get
 $\E_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(F)]=\phi_0(\avg{F}{1})=0$, and since
 $\phi^1(F)\ge0$, $\phi^1(F)=0$ almost surely.  Thus every support point of every
 $\Ext_1(\phi_0)$ assigns density $0$ to every edge-containing $1$-flag; exactly one
-homomorphism $o\in X_1$ does so (the rooted empty-graph limit, the others being
+homomorphism $o\in X_1$ does so (the labelled empty-graph limit, the others being
 determined by the chain relations), so $S_1=\{o\}$.  On a single point every element
 non-negative there agrees with the constant $s(o)\,\one_1$, a sum of squares, so
 $\avg{s}{1}=s(o)\,\brak1=s(o)\,\one_0$ for every such $s$; both cones equal
@@ -1062,7 +1076,7 @@ $\R_{\ge0}\,\one_0$.
 
 \begin{remark}[What a practically relevant gap would require]
 \Cref{prop:single-point} shows the gap is not merely witness-inert but completely inert
-for the exhibited classes: a degenerate root carries no information, so its only
+for the exhibited classes: a degenerate labelling carries no information, so its only
 contribution to a density bound is an additive constant, in either semantics.  A gap
 that \emph{does} reach a density bound therefore requires, by \cref{prop:ideal-zero}, a
 \emph{Positivstellensatz gap on the support variety}: a non-root-plantable type whose
@@ -1073,7 +1087,7 @@ obstruction, exhibited here or not, is boundary.  \Cref{conj:characterisation} p
 that the only obstructions are pinning; if so, and if the boundary support sets remain
 sum-of-squares-saturated, the quotient/ensemble gap---though genuine at labelled
 types---would never affect a density bound.  The $C_5$-free case of the next section,
-whose constrained roots are dense and locally bipartite rather than collapsed to a
+whose constrained labelled limits are dense and locally bipartite rather than collapsed to a
 point, is the natural place where a richer $S_\sigma$, and with it a first practically
 relevant gap, could appear.
 \end{remark}
@@ -1102,14 +1116,14 @@ $P_4$-subgraph-free graphs are exactly the stars $K_{1,t}$ and the triangle.
 
 \begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
 The $C_5$-free theory has no pinning obstruction at $\sigma=1$ from the edge or the
-rooted-triangle flag.
+labelled triangle flag.
 \end{corollary}
 
 \begin{proof}
 A disjoint union of stars and triangles on at most $\deg(v)$ vertices has at most
 $\deg(v)$ edges, so the number of triangles through $v$ is at most $\deg(v)\le n$,
-and the rooted-triangle density at every vertex is $O(1/n)$.  Hence the
-rooted-triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
+and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
+labelled triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
 the quotient attains only $0$, so no obstruction arises.  The edge flag is not
 pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
 (the empty graph and the complete bipartite graphs).
@@ -1131,10 +1145,10 @@ triangle.
 \end{proof}
 
 Consequently the triangle-free $C_5$-free graphs form a clone-closed class, so by
-\cref{thm:clone-root-plantable} every $C_5$-free rooted limit realised by
+\cref{thm:clone-root-plantable} every $C_5$-free labelled limit realised by
 triangle-free graphs lies in $S_1$; and by \cref{lem:c5-nbhd} the
-neighbourhood of a positive-degree root is asymptotically independent (its induced
-edges have vanishing density), so dense $C_5$-free roots are locally bipartite.
+neighbourhood of a positive-degree vertex is asymptotically independent (its induced
+edges have vanishing density), so dense $C_5$-free labelled limits are locally bipartite.
 These facts leave no candidate obstruction, and we conjecture:
 
 \begin{conjecture}\label{conj:c5}
@@ -1204,8 +1218,8 @@ Three questions remain.
   By \cref{thm:no-interior} every pinning obstruction is to a boundary value, and
   \cref{sec:empty-type} shows the exhibited obstructions inert for density bounds.  A gap
   that did affect a genuine density bound would require a non-root-plantable type whose
-  rooted support is rich enough to carry a non-negative element that is no restricted sum
-  of squares.  None is known; the dense $C_5$-free roots, which do not collapse to a
+  labelled support is rich enough to carry a non-negative element that is no restricted sum
+  of squares.  None is known; the dense $C_5$-free labelled limits, which do not collapse to a
   point, are again the natural place to look.
 \end{enumerate}
 
