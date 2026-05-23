@@ -78,8 +78,8 @@
 
 \begin{abstract}
 Forbidden-subgraph reasoning in Razborov's flag algebras can be carried out in two
-ways: in the \emph{quotient} flag algebra of the constrained theory, the algebra one
-actually computes in, or by \emph{ensemble} semantics in the ambient theory, which
+ways: in the \emph{quotient} flag algebra of the constrained class, the algebra one
+actually computes in, or by \emph{ensemble} semantics in the ambient class of all graphs, which
 asks that an inequality hold almost surely along the random labellings of unlabelled
 constrained limits.  Quotient
 non-negativity always implies ensemble non-negativity, so the quotient calculus is
@@ -87,13 +87,13 @@ unconditionally sound; we study the converse, its completeness.  We prove that t
 semantics agree, for every flag-algebra element, exactly when a support-closure
 condition, which we call \emph{root-plantability}, holds: every labelled constrained limit
 must be approximable by the labelled views of unlabelled constrained limits. Closure under
-independent blow-ups (which holds for the clique-free theories, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
+independent blow-ups (which holds for the clique-free classes, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
 sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
 arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, even-cycle-free, and planar
 graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
 complements, so neither sparsity nor density is the dividing line.  The uniform cause is
 \emph{pinning}: a labelled quantity that takes one fixed value across all constrained
-limits while the quotient theory admits a labelled limit where it takes another.  We conjecture
+limits while the constrained class admits a labelled limit where it takes another.  We conjecture
 that the absence of pinning is exactly what makes a class root-plantable.  The $C_5$-free
 graphs are the critical test case: dense yet not closed under blow-ups, they escape both
 our sufficient condition and our obstruction, and since they exhibit no pinning
@@ -117,8 +117,8 @@ A recurring task in extremal combinatorics is to prove a density inequality that
 holds only under a forbidden-subgraph constraint, such as ``in every triangle-free
 graph this combination of subgraph densities is non-negative.''  Razborov's flag
 algebras offer two routes to such statements.  One may pass to the \emph{quotient}
-flag algebra of the constrained theory and ask for non-negativity there
-(\emph{quotient semantics}); or one may stay in the ambient theory of all graphs and
+flag algebra of the constrained class and ask for non-negativity there
+(\emph{quotient semantics}); or one may stay in the ambient class of all graphs and
 ask that the inequality hold almost surely along the random labelled extensions of
 constrained limits (\emph{ensemble semantics}).  The first is the algebra one
 actually computes in; the second is what we want to hold throughout the
@@ -133,10 +133,11 @@ question.  The substantive question is the converse---whether \emph{every} true
 constrained density inequality can be certified in the quotient---so our subject is the
 \emph{completeness} of the quotient calculus.
 
-Let $\T_0$ be a universal first-order theory in a finite relational language,
-and let $\T_1$ be a universal strengthening of $\T_0$ in the same language.  In
-applications one should think of $\T_0$ as the theory of finite simple graphs and
-of $\T_1$ as the theory obtained by imposing a forbidden-subgraph condition.  For
+Let $\T_0$ be the class of all finite simple graphs, and let $\T_1$ be a
+\emph{hereditary} subclass: a class of finite graphs closed under taking induced
+subgraphs, equivalently the graphs that avoid every member of some forbidden family.
+The reader should keep in mind a forbidden-subgraph class such as the triangle-free or
+$C_4$-free graphs.  For
 each non-degenerate type $\sigma$ of $\T_1$, Razborov's construction gives a
 quotient homomorphism
 \[
@@ -147,7 +148,7 @@ The quotient semantics of an element $f\in\A^\sigma[\T_0]$ says that
   \psi(\qmap_\sigma f)\ge 0
   \qquad\text{for every }\psi\in\Homp(\A^\sigma[\T_1],\R).
 \]
-The ensemble semantics stays in the ambient theory $\T_0$.  It asks that, for
+The ensemble semantics stays in the ambient class $\T_0$ of all graphs.  It asks that, for
 every unlabelled $\T_1$-supported homomorphism $\phi_0$, the canonical random
 extension $\phi^\sigma$ of $\phi_0$ to type $\sigma$ satisfies
 \[
@@ -179,14 +180,14 @@ exactly equivalent to the quotient/ensemble correspondence for every flag-algebr
 
 \paragraph{Results.}
 Root-plantability is implied by closure under independent blow-ups, which recovers the
-correspondence for the clique-free theories, including triangle-free.  Heredity alone, however,
+correspondence for the clique-free classes, including triangle-free.  Heredity alone, however,
 does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
 only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
 $K_{s,t}$-free, even-cycle-free, and planar graphs among them) fails at the one-vertex
 type, witnessed by the labelled edge flag, and by complementation so do their dense
 complements; neither sparsity nor density is the dividing line.  The uniform cause is
 \emph{pinning}: a labelled quantity that takes one fixed value across all constrained
-limits while the quotient theory admits a labelled limit where it takes another.  We conjecture
+limits while the constrained class admits a labelled limit where it takes another.  We conjecture
 that the absence of pinning characterises root-plantability.  The $C_5$-free graphs are
 the natural test case: dense yet not closed under blow-ups, they fall between our
 sufficient condition and our obstruction, and carrying no pinning obstruction from the
@@ -203,36 +204,64 @@ left open.
 
 \section{Flag-algebra background}\label{sec:background}
 
-We use Razborov's notation and terminology \cite{Razborov2007}, recalled here in
-graph-theoretic terms.  A \emph{type} $\sigma$ is a fixed finite labelled
-structure---for graphs, a choice of $k$ distinguished \emph{labelled} vertices (its
-\emph{roots}) and the
-adjacencies among them---and a \emph{$\sigma$-flag} is a finite structure carrying a
-marked copy of $\sigma$, that is, a structure labelled by $\sigma$; the \emph{empty type}
-($k=0$) marks nothing.  For a universal theory $\T$ and a type $\sigma$, $\A^\sigma[\T]$
-denotes the flag algebra of $\sigma$-flags.  The compact space of positive homomorphisms
-is
-\[
-  \Homp(\A^\sigma[\T],\R).
-\]
-A sequence of finite $\sigma$-flags converges if all flag densities converge; its
-limit is an element of this homomorphism space, and conversely every positive
-homomorphism arises in this way \cite[Theorem 3.3]{Razborov2007}.  We may therefore
-picture a positive homomorphism $\phi$ as a \emph{limit object} and $\phi(F)$ as the
-density of the flag $F$ in it.  We write
-$\F^\sigma[\T]$ for the (countable) set of finite $\sigma$-flags of $\T$ up to
-isomorphism, abbreviated $\F^\sigma$ when $\T$ is clear.  Since each flag density
-lies in $[0,1]$, evaluating a homomorphism on all flags embeds
-$\Homp(\A^\sigma[\T],\R)$ as a closed subspace of the compact metrizable cube
-$[0,1]^{\F^\sigma[\T]}$.
+We recall the flag-algebra apparatus \cite{Razborov2007}, at the level of detail a reader
+new to it needs.  Everything is phrased for finite simple graphs.  Throughout, $\T$ stands
+for a hereditary class of finite simple graphs---either the class $\T_0$ of all finite
+graphs, or a forbidden-subgraph subclass $\T_1$---and ``graph in $\T$'' means a finite
+graph belonging to that class.
 
-For the empty type we write $\A^0[\T]$.  The averaging (unlabelling) operator
+\paragraph{Types and flags.}
+A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
+(its \emph{roots})---$k$ distinguished vertices together with the edges among
+them.  A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled copy
+of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose vertices
+are marked so as to form the pattern $\sigma$.  The \emph{empty type} ($k=0$) marks
+nothing, so a flag of the empty type is just a graph in $\T$.  Flags are taken up to
+label-preserving isomorphism, and $\F^\sigma[\T]$ (abbreviated $\F^\sigma$) is the
+countable set of all of them.  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
+\emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of $|F|-k$
+unlabelled vertices of $G$, taken together with the $k$ roots, induces a copy of $F$; for
+the empty type this is the ordinary induced-subgraph density.
+
+\paragraph{The flag algebra.}
+$\A^\sigma[\T]$ is the real vector space spanned by $\F^\sigma$ (formal real combinations
+of flags), modulo the linear relations
+\[
+  F=\sum_{|H|=|F|+1}p(F,H)\,H
+\]
+that identify each flag with the average of its one-vertex extensions; these relations are
+what make ``density'' a well-defined linear functional on the whole space.  The space
+carries a commutative, associative \emph{product} that records how densities combine: the
+product $F_1\cdot F_2$ of $\sigma$-flags on $n_1$ and $n_2$ vertices is the formal
+combination of the $\sigma$-flags $H$ on $n_1+n_2-k$ vertices, each weighted by the
+probability that splitting the unlabelled vertices of $H$ uniformly into parts of sizes
+$n_1-k$ and $n_2-k$ exhibits $F_1$ on one part (with the roots) and $F_2$ on the other.
+The product is rigged so that densities multiply in the limit (made precise next); its
+unit is the flag $\one_\sigma$ consisting of the type alone.  We write $\A^0[\T]$ for the
+empty-type algebra.
+
+\paragraph{Positive homomorphisms and limit objects.}
+A \emph{positive homomorphism} is a linear, unit-preserving, multiplicative map
+$\phi:\A^\sigma[\T]\to\R$---so $\phi(\one_\sigma)=1$ and
+$\phi(F_1\cdot F_2)=\phi(F_1)\,\phi(F_2)$---that is non-negative on flags, i.e.\
+$\phi(F)\ge0$ for every $F\in\F^\sigma$.  The set of all of them is denoted
+$\Homp(\A^\sigma[\T],\R)$.  By Razborov's theory these are exactly the \emph{limit
+objects}: a sequence of finite $\sigma$-flags of growing size \emph{converges} when every
+density $p(F,\cdot)$ converges, its limit is the homomorphism $\phi$ with
+$\phi(F)=\lim p(F,\cdot)$, and conversely every positive homomorphism arises in this way
+\cite[Theorem 3.3]{Razborov2007}.  We may therefore picture a positive homomorphism
+$\phi$ as a limit object and $\phi(F)$ as the density of the flag $F$ in it.  Since each
+density lies in $[0,1]$, evaluation on all flags embeds $\Homp(\A^\sigma[\T],\R)$ as a
+closed subspace of the compact metrizable cube $[0,1]^{\F^\sigma[\T]}$; in particular it
+is compact.
+
+The averaging (unlabelling) operator
 \[
   \avg{\cdot}{\sigma}:\A^\sigma[\T]\to\A^0[\T]
 \]
 forgets the labels of a $\sigma$-flag and averages over the choice of labelling.  The
 only properties we use are that it is linear and that on a single flag $F$ with
-underlying unlabelled structure $M$ it returns a \emph{non-negative scalar multiple}
+underlying unlabelled graph $M$ it returns a \emph{non-negative scalar multiple}
 of $M$.  Write $\one_\sigma\in\A^\sigma[\T]$ for the flag consisting of the type alone
 (the multiplicative unit of $\A^\sigma[\T]$).  If $\sigma$ has size $k$, then
 \[
@@ -281,10 +310,10 @@ closed support, so non-negativity on the support implies almost-sure
 non-negativity.
 \end{proof}
 
-\section{Universal strengthenings and supported homomorphisms}
+\section{Constrained classes and supported homomorphisms}
 
-Let $\T_1$ be a universal strengthening of $\T_0$ in the same relational
-language.  For a non-degenerate type $\tau$ of $\T_1$, define
+Let $\T_1$ be a hereditary subclass of $\T_0$.  For a non-degenerate type $\tau$ of
+$\T_1$, define
 \[
   X_\tau:=\Homp(\A^\tau[\T_0],\R).
 \]
@@ -308,17 +337,16 @@ homomorphism space.  It is closed in $X_\tau$: it is cut out by the conditions
 that all forbidden finite $\tau$-flags have value zero.
 
 Equivalently, $\chi\in X_\tau$ lies in $Q_\tau$ iff it vanishes on every
-$\tau$-flag which is a model of $\T_0$ but not a model of $\T_1$.  This
-formulation uses the fact that $\T_1$ is universal: if a finite flag violates
-$\T_1$, then its underlying finite structure is one of the forbidden finite
-models of the quotient theory.
+$\tau$-flag that belongs to $\T_0$ but not to $\T_1$.  This uses that $\T_1$ is
+hereditary: a $\tau$-flag is forbidden in $\A^\tau[\T_1]$ exactly when its underlying
+graph is one of the forbidden graphs that define the constrained class.
 
 Informally, the next lemma says that randomly labelling a constrained unlabelled limit
 almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
 Let $\phi_0\in Q_0$ and suppose $\phi_0(\brak\sigma)>0$.  If
-$\phi^\sigma\sim\Ext_\sigma(\phi_0)$ is formed in the ambient theory $\T_0$,
+$\phi^\sigma\sim\Ext_\sigma(\phi_0)$ is formed in the ambient class $\T_0$,
 then
 \[
   \phi^\sigma\in Q_\sigma
@@ -327,9 +355,9 @@ then
 \end{lemma}
 
 \begin{proof}
-Let $F$ be a $\sigma$-flag of $\T_0$ that is not a model of $\T_1$, and let
-$M$ be its underlying unlabelled structure.  Since $\T_1$ is universal, $M$ is
-not a model of $\T_1$.  The downward average $\avg{F}{\sigma}$ is a
+Let $F$ be a $\sigma$-flag of $\T_0$ whose underlying unlabelled graph $M$ does not
+belong to $\T_1$; these are exactly the forbidden $\sigma$-flags.  The downward average
+$\avg{F}{\sigma}$ is a
 non-negative scalar multiple of $M$ as an element of $\A^0[\T_0]$.  Since
 $\phi_0\in Q_0$, we have $\phi_0(M)=0$, and hence
 $\phi_0(\avg{F}{\sigma})=0$.  By \eqref{eq:extension-expectation},
@@ -369,7 +397,7 @@ labelled homomorphism should be approximable by support points of random
 extensions from constrained unlabelled homomorphisms.
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-criterion}
-Let $\T_1$ be a universal strengthening of $\T_0$, and let $\sigma$ be a non-degenerate type of $\T_1$.  For $f\in\A^\sigma[\T_0]$, consider the following two
+Let $\T_1$ be a hereditary subclass of $\T_0$, and let $\sigma$ be a non-degenerate type of $\T_1$.  For $f\in\A^\sigma[\T_0]$, consider the following two
 conditions.
 \begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
   \item\label{cond:quotient}
@@ -435,10 +463,9 @@ classes, built on an independent blow-up construction.  The idea is that when a 
 closed under blow-ups, a labelled vertex can be duplicated into a clone class of
 positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
-root-plantability requires.  Let
-$\T_0=\T_{\mathrm{Graph}}$, and let $\K$ be a hereditary class of finite simple
-graphs.  Equivalently, $\K$ is the class of finite models of the universal theory
-$\T_\K$ obtained from graph theory by forbidding all induced graphs not in $\K$.
+root-plantability requires.  Throughout, $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
+all finite simple graphs, and $\K$ is a hereditary class of finite graphs, identified with
+the constrained class $\T_1=\T_\K$ of graphs avoiding every induced subgraph not in $\K$.
 
 \begin{definition}[Independent blow-up]
 Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
@@ -546,9 +573,9 @@ $\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
 
 \begin{proof}
 For $k=0$ there is nothing to prove.  Assume $k>0$.  Every ordered choice of
-vertices $\widehat\theta(i)\in C_{\theta(i)}$ is a model embedding of $\sigma$,
-because $\theta$ is a model embedding into $G$ and the blow-up preserves the
-relations between distinct base vertices.  For $N$ sufficiently large,
+vertices $\widehat\theta(i)\in C_{\theta(i)}$ is an induced embedding of $\sigma$,
+because $\theta$ is an induced embedding into $G$ and the blow-up preserves the
+adjacencies between distinct base vertices.  For $N$ sufficiently large,
 $|C_{\theta(i)}|\ge(\lambda/(2k))N$ for all $i$.  Thus the number of planted
 ordered embeddings is at least $(\lambda/(2k))^kN^k$, while the total number of
 ordered embeddings of $\sigma$ into $B_N$ is at most $N^k$.
@@ -579,7 +606,7 @@ $F_1,\ldots,F_s$ and a tolerance $\eps>0$:
   \{\chi\in X_\sigma:
     |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
 \]
-By the representation theorem in the constrained theory $\T_\K$, choose a
+By the representation theorem in the constrained class $\T_\K$, choose a
 convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
 $p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m=\max_i |F_i|$.
@@ -631,11 +658,11 @@ $\Ext_\sigma(\phi_0)(C)>0$.  Hence the support of $\Ext_\sigma(\phi_0)$ intersec
 $C\subseteq U$.  Since $U$ was arbitrary, $\psi\in S_\sigma$.
 \end{proof}
 
-\begin{corollary}[Clique-free and triangle-free theories]\label{cor:clique-free}
+\begin{corollary}[Clique-free and triangle-free classes]\label{cor:clique-free}
 For every $r\ge3$, every non-degenerate $K_r$-free type $\sigma$, and every
 $f\in\A^\sigma[\T_{\mathrm{Graph}}]$, quotient semantics and ensemble semantics
-are equivalent for the $K_r$-free theory.  In particular, the equivalence holds
-for the triangle-free theory.
+are equivalent for the $K_r$-free class.  In particular, the equivalence holds
+for the triangle-free class.
 \end{corollary}
 
 \section{Degenerate classes are not root-plantable}
@@ -644,7 +671,7 @@ The clone-closed hypothesis is not merely technical: the correspondence fails fo
 hereditary classes, and it fails for an entire family, always for the same
 structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
 that its dense limits carry no edges, then a typical vertex sees an empty
-neighbourhood; yet the quotient theory may still retain an \emph{exceptional}
+neighbourhood; yet the constrained class may still retain an \emph{exceptional}
 high-degree vertex, such as the centre of a star.  The labelled edge flag separates the
 two.
 
@@ -707,7 +734,7 @@ instead labels a constrained unlabelled limit at a \emph{typical} vertex; in a
 degenerate class the edge density is zero, so a typical vertex has labelled edge
 density zero.  The high-degree vertex cannot be planted with positive probability
 without leaving the class: duplicating the centre and one neighbour already produces
-a $K_{2,2}$, and more generally a denser local structure than a degenerate class can
+a $K_{2,2}$, and more generally a denser local configuration than a degenerate class can
 sustain.
 \end{remark}
 
@@ -727,12 +754,12 @@ subgraph: $C_4$, $K_4$ minus an edge, and $K_4$.  It is not clone-closed: the
 independent blow-up of $K_2$ into two clone classes of size $2$ is $K_{2,2}=C_4$.
 
 \begin{lemma}[Dense \texorpdfstring{$C_4$}{C4}-free limits have edge density zero]\label{lem:c4-edge-zero}
-$\K_{C_4}$ is edge-degenerate: if $\phi_0\in Q_0$ for the $C_4$-free theory, then
+$\K_{C_4}$ is edge-degenerate: if $\phi_0\in Q_0$ for the $C_4$-free class, then
 $\phi_0(\rho)=0$.
 \end{lemma}
 
 \begin{proof}
-By the representation theorem in the constrained theory, $\phi_0$ is the limit
+By the representation theorem in the constrained class, $\phi_0$ is the limit
 of a convergent sequence of finite $C_4$-free graphs $G_n$ with $|G_n|\to\infty$.
 We show that their edge densities tend to zero.
 
@@ -844,7 +871,7 @@ edge-degenerate classes (labelled edge density pinned to $0$) and co-edge-degene
 classes (pinned to $1$) both fail, for the same reason.  What separates a typical
 vertex from the exceptional one is that the labelled edge density is \emph{pinned} to a
 boundary value of $[0,1]$ across all constrained unlabelled limits, while the
-quotient theory still contains a labelled limit attaining the opposite boundary.  The
+constrained class still contains a labelled limit attaining the opposite boundary.  The
 governing invariant is this boundary pinning, not sparsity or density.
 
 This refines, rather than closes, the problem of characterising root-plantability.
@@ -868,7 +895,7 @@ Let $\sigma$ be a non-degenerate type, let $g$ be a $\sigma$-flag, and let
 $c\in[0,1]$.  Suppose the labelled density of $g$ is almost surely pinned to $c$ across
 all constrained unlabelled limits: for every $\phi_0\in Q_0$ with
 $\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(g)=c$ almost surely under
-$\Ext_\sigma(\phi_0)$.  If the quotient theory contains a labelled limit attaining a different
+$\Ext_\sigma(\phi_0)$.  If the constrained class contains a labelled limit attaining a different
 value---some $\psi\in Q_\sigma$ with $\psi(g)\ne c$---then $(\T_0,\T_1,\sigma)$ is not
 root-plantable.
 \end{theorem}
@@ -912,7 +939,7 @@ be needed.
 
 The obstructions exhibited above are all at the boundary, $c\in\{0,1\}$, and the remark
 after \cref{thm:pinning} observed that an interior value would require the almost-sure
-constancy as a genuine hypothesis.  We now show that for a subgraph-forbidden theory no
+constancy as a genuine hypothesis.  We now show that for a subgraph-forbidden class no
 interior value is ever pinned: every pinning obstruction is a boundary one.  This matters
 because, as the next section shows, boundary obstructions are inert for density bounds.
 
@@ -976,7 +1003,7 @@ root-plantable, and quotient and ensemble semantics coincide for every $f\in\A^0
 \end{proposition}
 
 \begin{proof}
-The empty type admits a unique embedding into any structure, so the random labelling carries
+The empty type admits a unique embedding into any graph, so the random labelling carries
 no information; we read this off \eqref{eq:extension-expectation}.  For
 $\sigma=\emptyset$ the unlabelling operator is the identity and $\brak\emptyset=\one$, so
 $\phi_0(\brak\emptyset)=1$ and $\mu:=\Ext_\emptyset(\phi_0)$ satisfies
@@ -1039,7 +1066,7 @@ For $\phi_0\in Q_0$ with $\phi_0(\brak\sigma)>0$,
 $\phi_0(\avg{a}{\sigma})=\phi_0(\brak\sigma)\,\E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(a)]$
 by \eqref{eq:extension-expectation}, and the expectation vanishes because the measure is
 supported on $S_\sigma$ and $a=0$ there.  If $\phi_0(\brak\sigma)=0$, then
-$\avg{a}{\sigma}$ is a combination of unlabelled structures each containing a copy of
+$\avg{a}{\sigma}$ is a combination of unlabelled graphs each containing a copy of
 $\sigma$, so each has $\phi_0$-density $0$ by monotonicity and again
 $\phi_0(\avg{a}{\sigma})=0$.  Thus $\avg{a}{\sigma}$ vanishes on $Q_0$ and so is the zero
 element.  A pinning witness lies in $\mathcal I_\sigma$ by definition, and
@@ -1115,7 +1142,7 @@ $P_4$-subgraph-free graphs are exactly the stars $K_{1,t}$ and the triangle.
 \end{proof}
 
 \begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
-The $C_5$-free theory has no pinning obstruction at $\sigma=1$ from the edge or the
+The $C_5$-free class has no pinning obstruction at $\sigma=1$ from the edge or the
 labelled triangle flag.
 \end{corollary}
 
@@ -1152,37 +1179,38 @@ edges have vanishing density), so dense $C_5$-free labelled limits are locally b
 These facts leave no candidate obstruction, and we conjecture:
 
 \begin{conjecture}\label{conj:c5}
-The $C_5$-free theory is root-plantable at every non-degenerate type; in particular
+The $C_5$-free class is root-plantable at every non-degenerate type; in particular
 \cref{conj:characterisation} holds for it.
 \end{conjecture}
 
-\section{Strengthening by a further theory \texorpdfstring{$\T'$}{T'}}
+\section{Strengthening by a further constraint}
 
 The framework is not tied to a single forbidden-subgraph constraint.  It applies
-unchanged when the constraint is a conjunction $\T\wedge\T'$ of two theories, provided
-the conjunction is again universal.
+unchanged to any hereditary class, in particular to the intersection $\K\cap\K'$ of the
+constrained class with a further graph property $\K'$, provided the intersection is again
+hereditary.
 
-\subsection{When \texorpdfstring{$\T'$}{T'} is universal}
+\subsection{When the further constraint is hereditary}
 
-If $\T'$ is universal in the same relational language as $\T$, then $\T_1:=\T\wedge\T'$
-is universal, the quotient flag algebra $\A^\sigma[\T_1]$ is well-defined, and the
-support-closure criterion (\cref{thm:support-criterion}) applies verbatim.  The
-equivalence of the two semantics is thus governed by root-plantability and by nothing
-weaker: it does \emph{not} hold for all universal strengthenings, as the degeneracy
+If $\K'$ is itself a hereditary graph property---closed under induced subgraphs---then the
+intersection $\T_1:=\K\cap\K'$ is hereditary, the quotient flag algebra $\A^\sigma[\T_1]$
+is well-defined, and the support-closure criterion (\cref{thm:support-criterion}) applies
+verbatim.  The equivalence of the two semantics is thus governed by root-plantability and
+by nothing weaker: it does \emph{not} hold for all hereditary classes, as the degeneracy
 obstruction (\cref{thm:degenerate-obstruction})---already in the $C_4$-free
 instance---refutes equivalence under heredity alone.  The substantive task is therefore
 to find checkable sufficient conditions for root-plantability.  Clone-closure is one
 (\cref{thm:clone-root-plantable}); natural candidates for others are closure under
-substitutions, true- or false-twin duplications, and model-theoretic amalgamation
-properties.
+substitutions, true- or false-twin duplications, and amalgamation properties.
 
-\subsection{When \texorpdfstring{$\T'$}{T'} is not universal}
+\subsection{When the further constraint is not hereditary}
 
-If $\T'$ is not universal, then $\T\wedge\T'$ is generally not closed under
-induced submodels.  This breaks the basic starting point of Razborov's flag
-algebra construction, which assumes that every induced substructure of a finite
-model is again a model of the theory.  In this case there may be no canonical
-quotient algebra $\A^\sigma[\T\wedge\T']$ of the usual flag-algebra kind.
+If $\K'$ is not hereditary---for instance connectivity, or a parity condition on the
+number of edges---then $\K\cap\K'$ is generally not closed under induced subgraphs.  This
+breaks the basic starting point of Razborov's flag-algebra construction, which assumes
+that every induced subgraph of a graph in the class is again in the class.  In this case
+there may be no canonical quotient algebra $\A^\sigma[\K\cap\K']$ of the usual
+flag-algebra kind.
 
 One can still study constraints imposed on ambient homomorphisms, for example
 conditions of the form
@@ -1192,7 +1220,7 @@ conditions of the form
   \phi(h_j)\ge0.
 \]
 But this is better viewed as \emph{relative semantics inside the ambient flag
-algebra} than as quotient semantics of a new universal theory, and lies outside the
+algebra} than as quotient semantics of a new hereditary class, and lies outside the
 quotient/ensemble problem considered here.
 
 \section{Open problems}
@@ -1203,7 +1231,7 @@ Three questions remain.
   \item \textbf{Sufficient conditions beyond clone-closure.}
   The blow-up proof of \cref{thm:clone-root-plantable} duplicates labelled vertices into
   positive-mass clone classes.  A broader theorem may permit more general substitutions
-  or local replacements, as long as the labelled finite model can be amplified into
+  or local replacements, as long as the labelled finite graph can be amplified into
   positive measure without leaving the constrained class; closure under true- or
   false-twin duplication is a natural first generalisation.
 
