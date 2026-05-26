@@ -23,7 +23,7 @@ bound and discharged with the API tactics. -/
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
-namespace C4Turan
+namespace C4TuranAPI
 
 /-- First SDP certificate matrix (rational, 4×4); paired with `v₁` over the
 σ₁ = `FlagType_2_0` type. -/
@@ -144,4 +144,4 @@ theorem C4_flagAlgebra_API
   apply forbidLE_of_le
   flag_nonneg
 
-end C4Turan
+end C4TuranAPI

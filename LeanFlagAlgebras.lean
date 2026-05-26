@@ -1,5 +1,6 @@
 -- Utils
 import LeanFlagAlgebras.Utils.Combinations
+import LeanFlagAlgebras.Utils.FlagExpansionTactic
 import LeanFlagAlgebras.Utils.LinExtension
 import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
 import LeanFlagAlgebras.Utils.MultinomialCoefficient
@@ -48,7 +49,6 @@ import LeanFlagAlgebras.API.CompleteGraphFreeP4
 import LeanFlagAlgebras.MantelTheorem.FlagDef
 import LeanFlagAlgebras.MantelTheorem.FlagDensity
 import LeanFlagAlgebras.MantelTheorem.FlagMul
-import LeanFlagAlgebras.MantelTheorem.FlagTactic
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.MantelTheorem.MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.GoodmanRamsey

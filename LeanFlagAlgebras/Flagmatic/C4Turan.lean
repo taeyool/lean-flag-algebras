@@ -113,12 +113,31 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 3 := ![
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 
-/-- **Main theorem (auto-generated statement, proof body TODO).**
+/-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
 Bound: '3/8'. -/
 theorem c4turan_flagAlgebra
     : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  sorry
+  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag]
+            FlagAlgebra_4_0_0_8 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
+    := by
+    apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact forbidLE_refl K3.toFinFlag FlagAlgebra_4_0_0_8
+  apply forbidLE_trans quadraticForm_trans
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 4)))
+
+  simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
+  simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_three, add_assoc]
+  reduce_downward_flagmul
+
+  expand_one_at 4
+
+  simp [smul_smul, downward_add, downward_smul]
+  ac_sort_rhs_pipeline
+
+  apply forbidLE_of_le
+  flag_nonneg
 
 end C4Turan

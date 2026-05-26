@@ -76,7 +76,8 @@ import json
 import re
 import sys
 from fractions import Fraction
-from itertools import permutations
+from itertools import combinations, permutations
+from math import comb
 from pathlib import Path
 from typing import Iterable
 
@@ -92,6 +93,7 @@ GRAPHS_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Graphs"
 FLAGS_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Flags"
 DENSITIES_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Densities"
 CERT_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic"
+COMMON_GRAPHS_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Forbid" / "CommonGraphs.lean"
 
 
 def _rel(p: Path) -> str:
@@ -285,10 +287,83 @@ def sigma_flag_to_lean(s: str, type_str: str) -> tuple[str, int, int, int, int]:
 # --------------------------------------------------------------------------- #
 
 
+# Cache for parsed CommonGraphs.lean table
+_COMMON_GRAPHS_CACHE: dict[str, tuple[int, frozenset[tuple[int, int]]]] | None = None
+
+# Regex matching `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨<n>, Flag_<n>_0_0_<i>⟩`.
+# This is more robust than parsing the `def <Name> : SimpleGraph ... := ...` line,
+# because the `def` body varies (`completeGraph (Fin n)` vs explicit adjacency)
+# while the `_toFinFlag_eq` lemma always has the same shape.
+_TOFINFLAG_RE = re.compile(
+    r"lemma\s+(?P<name>\w+)_toFinFlag_eq\s*"
+    r":\s*\1\.toFinFlag\s*=\s*"
+    r"⟨\s*(?P<n>\d+)\s*,\s*Flag_(?P=n)_0_0_(?P<idx>\d+)\s*⟩"
+)
+
+
+def parse_common_graphs() -> dict[str, tuple[int, frozenset[tuple[int, int]]]]:
+    """Parse `LeanFlagAlgebras/Forbid/CommonGraphs.lean` to learn which forbid
+    graphs are defined and their canonical (n, edges) form.
+
+    For each `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨n, Flag_n_0_0_i⟩`
+    found, returns `<Name> → (n, edges)` where the edges come from
+    `graphs_<n>.json[i]`. This way the function does not need to interpret the
+    actual `def <Name>` body (which may be `completeGraph (Fin n)`, an explicit
+    adjacency relation, etc.).
+
+    Result is cached after the first call.
+    """
+    global _COMMON_GRAPHS_CACHE
+    if _COMMON_GRAPHS_CACHE is not None:
+        return _COMMON_GRAPHS_CACHE
+
+    table: dict[str, tuple[int, frozenset[tuple[int, int]]]] = {}
+    if COMMON_GRAPHS_PATH.exists():
+        text = COMMON_GRAPHS_PATH.read_text(encoding="utf-8")
+        for m in _TOFINFLAG_RE.finditer(text):
+            name = m.group("name")
+            n = int(m.group("n"))
+            idx = int(m.group("idx"))
+            try:
+                edges = load_graphs(n)[idx]
+            except (FileNotFoundError, IndexError):
+                continue  # Stale lemma referencing a graph we can't look up
+            table[name] = (n, edges)
+
+    _COMMON_GRAPHS_CACHE = table
+    return table
+
+
 def _guess_forbid_tag(n: int, edges_str: str) -> str | None:
-    """Guess the Lean tag for a forbidden graph string (e.g. "K3"). None if unknown."""
-    if len(edges_str) == n * (n - 1):
-        return f"K{n}"
+    """Resolve the description's forbid graph string to a Lean identifier from
+    `Forbid/CommonGraphs.lean`.
+
+    Strategy: parse the edges from `edges_str` (flagmatic 2-digit format),
+    iterate through the table returned by `parse_common_graphs()`, and return
+    the first entry whose graph is isomorphic (same n, edges match up to
+    vertex permutation). If no match is found, returns `None` and the caller
+    falls back to a `sorry`-style stub.
+    """
+    # Parse the flagmatic edge digits to a 0-indexed edge set.
+    if len(edges_str) % 2 != 0:
+        return None
+    edges: list[tuple[int, int]] = []
+    for i in range(0, len(edges_str), 2):
+        u, v = int(edges_str[i]) - 1, int(edges_str[i + 1]) - 1
+        if u == v or not (0 <= u < n and 0 <= v < n):
+            return None
+        a, b = sorted((u, v))
+        edges.append((a, b))
+    edge_set = frozenset(edges)
+
+    table = parse_common_graphs()
+    for name, (cand_n, cand_edges) in table.items():
+        if cand_n != n or len(cand_edges) != len(edge_set):
+            continue
+        # Try every vertex permutation. n is tiny (≤ 6 in practice).
+        for perm in permutations(range(n)):
+            if _relabel(edge_set, perm) == cand_edges:
+                return name
     return None
 
 
@@ -649,7 +724,333 @@ def _forbid_expr_from_description(desc: str) -> tuple[str | None, str | None]:
     return f"{tag}.toFinFlag", tag
 
 
-def render_theorem_statement(cert: dict, theorem_name: str) -> str:
+# --------------------------------------------------------------------------- #
+# Branch-B helpers: induced density + `expand_under_forbid` lemma rendering
+# --------------------------------------------------------------------------- #
+
+
+def induced_density(
+    obj_n: int,
+    obj_edges: frozenset[tuple[int, int]],
+    host_n: int,
+    host_edges: frozenset[tuple[int, int]],
+) -> Fraction:
+    """Induced density d(obj; host): the fraction of `obj_n`-vertex subsets of
+    `host` whose induced subgraph is isomorphic to `obj`.
+
+    Counts vertex subsets S ⊆ [host_n] of size obj_n with host[S] ≅ obj, then
+    divides by C(host_n, obj_n). All graphs are 0-indexed unlabeled simple."""
+    if obj_n > host_n:
+        return Fraction(0)
+    total = comb(host_n, obj_n)
+    if total == 0:
+        return Fraction(0)
+    count = 0
+    for S in combinations(range(host_n), obj_n):
+        idx = {v: i for i, v in enumerate(S)}
+        induced = frozenset(
+            tuple(sorted((idx[u], idx[v])))
+            for (u, v) in host_edges
+            if u in idx and v in idx
+        )
+        # Brute-force iso check (obj_n is small — typically ≤ 5).
+        for perm in permutations(range(obj_n)):
+            if _relabel(obj_edges, perm) == induced:
+                count += 1
+                break
+    return Fraction(count, total)
+
+
+def _expansion_coefficients(
+    obj_flagmatic: str, N: int, forbid_tag: str | None
+) -> tuple[list[tuple[int, Fraction]], list[tuple[int, Fraction]]]:
+    """Compute the expansion of `obj` over all N-vertex graphs.
+
+    Returns `(admissible_terms, forbidden_terms)`, each a list of
+    `(host_index_in_graphs_N, density)` pairs with density != 0 only.
+    Both lists are sorted by host index ascending.
+
+    `forbid_tag` (e.g. "K3") is used to load the free-indices JSON. If `None`,
+    every host index is treated as admissible.
+    """
+    obj_n, obj_edges, _ = parse_flagmatic(obj_flagmatic)
+    hosts = load_graphs(N)
+    free_indices: set[int] = set(range(len(hosts)))
+    if forbid_tag is not None:
+        free_path = DENSITIES_DIR / f"graphs_{N}_{forbid_tag}_free_indices.json"
+        if free_path.exists():
+            with free_path.open() as f:
+                free_indices = set(json.load(f)["free_graph_indices"])
+    admissible: list[tuple[int, Fraction]] = []
+    forbidden: list[tuple[int, Fraction]] = []
+    for i, host_edges in enumerate(hosts):
+        d = induced_density(obj_n, obj_edges, N, host_edges)
+        if d == 0:
+            continue
+        if i in free_indices:
+            admissible.append((i, d))
+        else:
+            forbidden.append((i, d))
+    return admissible, forbidden
+
+
+def _lean_term(coef: Fraction, flag_ident: str) -> str:
+    """Format a single `(c : ℝ) • flag` summand. Drops `•` when c == 1."""
+    if coef == 1:
+        return flag_ident
+    if coef.denominator == 1:
+        return f"({coef.numerator} : ℝ) • {flag_ident}"
+    return f"({coef.numerator} / {coef.denominator} : ℝ) • {flag_ident}"
+
+
+def _format_expansion(terms: list[tuple[int, Fraction]], N: int) -> str:
+    """`(c0 : ℝ) • Flag_..._0 + Flag_..._3 + ...`"""
+    parts = [_lean_term(c, f"FlagAlgebra_{N}_0_0_{i}") for (i, c) in terms]
+    return " + ".join(parts)
+
+
+def _density_value_literal(q: Fraction) -> str:
+    """Format a rational density for the RHS of an auto-generated
+    `flagDensity₁ Flag_X Flag_Y = <q>` simp lemma."""
+    if q.denominator == 1:
+        return str(q.numerator)
+    return f"{q.numerator} / {q.denominator}"
+
+
+def render_density_simp_lemmas(
+    obj_flagmatic: str, N: int
+) -> tuple[str, dict[int, Fraction]]:
+    """Auto-generate `@[simp]` lemmas `flagDensity₁ Flag_obj Flag_host_i = <d_i>`
+    for every host index i in graphs_<N>.json. These are what `prove_flag_expand
+    N` needs to close goals when the RHS omits zero-density terms.
+
+    Returns `(lean_text, densities_by_index)`.
+    """
+    obj_n, obj_edges, _ = parse_flagmatic(obj_flagmatic)
+    # Parse the objective flag indices for the Lean Flag name
+    obj_idx = find_unlabeled_index(obj_n, obj_edges)
+    obj_flag = f"Flag_{obj_n}_0_0_{obj_idx}"
+
+    hosts = load_graphs(N)
+    densities: dict[int, Fraction] = {}
+    blocks: list[str] = []
+    for i, host_edges in enumerate(hosts):
+        d = induced_density(obj_n, obj_edges, N, host_edges)
+        densities[i] = d
+        host_flag = f"Flag_{N}_0_0_{i}"
+        thm_name = f"auto_flagDensity1_{obj_n}_0_0_{obj_idx}_{N}_0_0_{i}"
+        blocks.append(
+            f"@[simp]\n"
+            f"private theorem {thm_name}\n"
+            f"    : flagDensity₁ {obj_flag} {host_flag} = {_density_value_literal(d)}\n"
+            f"  := by\n"
+            f"  dsimp [{obj_flag}, {host_flag}]\n"
+            f"  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]\n"
+            f"  native_decide\n"
+        )
+    return "\n".join(blocks), densities
+
+
+def render_expand_under_forbid(
+    cert: dict,
+    obj_ident: str,
+    obj_flagmatic: str,
+    N: int,
+    forbid_expr: str,
+    forbid_tag: str,
+    lemma_name: str,
+) -> str | None:
+    """Auto-generate the helper lemma `obj =[forbid] (admissible expansion)`.
+
+    Returns the Lean text for the standalone `lemma` declaration, or `None` if
+    the post-forbid expansion would be empty (no admissible nonzero density —
+    shouldn't happen for a valid certificate).
+    """
+    admissible, forbidden = _expansion_coefficients(obj_flagmatic, N, forbid_tag)
+    if not admissible:
+        return None
+
+    # Auto-generate the @[simp] density-evaluation lemmas — these are what
+    # `prove_flag_expand N` needs to close (it relies on `flagDensity₁`
+    # evaluating to concrete rationals via simp).
+    density_lemmas, _densities = render_density_simp_lemmas(obj_flagmatic, N)
+
+    # Listing order in the FULL expansion: admissible first, forbidden last.
+    # This lets us peel forbidden terms off the right one at a time.
+    full_terms = admissible + forbidden
+    admissible_expr = _format_expansion(admissible, N)
+    full_expr = _format_expansion(full_terms, N)
+
+    # h_unit / h_zero for each forbidden term (in original listing order)
+    have_blocks: list[str] = []
+    for (i, _c) in forbidden:
+        flag_alg = f"FlagAlgebra_{N}_0_0_{i}"
+        flag_def = f"Flag_{N}_0_0_{i}"
+        have_blocks.append(
+            f"  have h_unit_{i} : ({flag_alg} : FlagAlgebra ∅ₜ)"
+            f" = ⟦unitVector (⟨{N}, {flag_def}⟩ : FinFlag ∅ₜ)⟧\n"
+            f"    := (Quotient.out_inj.mp rfl).symm\n"
+            f"  have h_zero_{i} : ({flag_alg} : FlagAlgebra ∅ₜ) =[{forbid_expr}] 0 := by\n"
+            f"    rw [h_unit_{i}]\n"
+            f"    apply unitVector_forbidEq_zero\n"
+            f"    rw [unlabel_emptyType]\n"
+            f"    exact lt_of_le_of_ne\n"
+            f"      (flagListDensity₁_ge_zero {forbid_expr}.2 {flag_def})\n"
+            f"      (Ne.symm flagDensity1_{forbid_tag}_{flag_def}_ne_zero)"
+        )
+    have_block = "\n".join(have_blocks)
+
+    # h_eq: full expansion lifted to forbidEq, via `forbidEq_of_eq (by prove_flag_expand N)`
+    h_eq_block = (
+        f"  have h_eq : {obj_ident} =[{forbid_expr}]\n"
+        f"      {full_expr} :=\n"
+        f"    forbidEq_of_eq (by prove_flag_expand {N})"
+    )
+
+    # rw cleanup: peel forbidden terms in REVERSE listing order (right-most first)
+    rw_lines: list[str] = []
+    for (i, _c) in reversed(forbidden):
+        rw_lines.append(
+            f"  rw [forbidEq_rw_right_add_left h_zero_{i}, add_zero] at h_eq"
+        )
+    rw_block = "\n".join(rw_lines)
+
+    body_parts = [p for p in [have_block, h_eq_block, rw_block, "  exact h_eq"] if p]
+    body = "\n".join(body_parts)
+
+    return (
+        f"-- Auto-generated `flagDensity₁` evaluation table (used by\n"
+        f"-- `prove_flag_expand {N}` to evaluate density coefficients).\n"
+        f"{density_lemmas}\n"
+        f"/-- Auto-generated expansion of the objective under the forbid relation:\n"
+        f"`{obj_ident} =[{forbid_expr}]` (sum over admissible {N}-vertex graphs). -/\n"
+        f"lemma {lemma_name}\n"
+        f"    : {obj_ident} =[{forbid_expr}] {admissible_expr}\n"
+        f"  := by\n"
+        f"{body}\n"
+    )
+
+
+_FIN_SUM_NAMES = {
+    2: "two", 3: "three", 4: "four", 5: "five",
+    6: "six", 7: "seven", 8: "eight",
+}
+
+
+def _block_names(t: int, total: int) -> dict[str, str]:
+    """Identifier conventions matching `render_matrices` / `render_flag_vectors`."""
+    suf = "" if total == 1 else _subscript(t + 1)
+    return {
+        "M": f"M{suf}",
+        "M_real": f"M{suf}_real",
+        "M_real_psd": f"M{suf}_real_posSemidef",
+        "v": f"v{suf}",
+    }
+
+
+def render_proof_body(
+    cert: dict, theorem_name: str = "main"
+) -> tuple[str | None, str | None]:
+    """Auto-generate the tactic block for the main theorem.
+
+    Returns `(proof_body, helper_lemma)`:
+      * `proof_body` — tactic block with 2-space indent, ready to follow `:= by`.
+      * `helper_lemma` — when present, the standalone `lemma` text for the
+        objective-expansion-under-forbid (branch B). Caller must emit this
+        BEFORE the main theorem.
+
+    Returns `(None, None)` if proof generation is unsupported (description
+    parse failure, non-K_n forbid, or block size with no `Fin.sum_univ_*`).
+    """
+    desc = cert.get("description", "")
+    try:
+        obj_ident, n_obj = _objective_from_description(desc)
+        obj_flagmatic = _DESC_OBJ_RE.search(desc).group(1)
+    except (ValueError, LookupError, AttributeError):
+        return None, None
+    N = int(cert["order_of_admissible_graphs"])
+    forbid_expr, forbid_tag = _forbid_expr_from_description(desc)
+    if forbid_expr is None or forbid_tag is None:
+        return None, None
+
+    # Branch detection: when n_obj < N we need an expand_under_forbid lemma.
+    helper_lemma: str | None = None
+    expand_rewrite: str = ""
+    if n_obj < N:
+        helper_name = f"{theorem_name}_expand_under_forbid"
+        helper_lemma = render_expand_under_forbid(
+            cert, obj_ident, obj_flagmatic, N, forbid_expr, forbid_tag, helper_name
+        )
+        if helper_lemma is None:
+            return None, None
+        # Step 4 of the proof: expand the objective under the forbid relation.
+        expand_rewrite = f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
+
+    T = len(cert["types"])
+    if T == 0:
+        return None, None
+
+    # Step 1: `have quadraticForm_trans` building obj ≤ obj + Σ ⟦v_tᵀ M_t v_t⟧
+    have_rhs = obj_ident
+    for t in range(T):
+        n = _block_names(t, T)
+        have_rhs += f" + ⟦flagQuadraticForm {n['M_real']} {n['v']}⟧₀"
+
+    # Inner proof of `have` — stack `forbidLE_add_QuadraticForm` calls in
+    # reverse order (the outermost + on the RHS gets peeled first), then
+    # close with reflexivity.
+    have_lines: list[str] = []
+    for t in reversed(range(T)):
+        n = _block_names(t, T)
+        have_lines.append(
+            f"    apply forbidLE_add_QuadraticForm {n['M_real']} "
+            f"{n['M_real_psd']} {n['v']}"
+        )
+    have_lines.append(f"    exact forbidLE_refl {forbid_expr} {obj_ident}")
+    have_block = "\n".join(have_lines)
+
+    # Step 5: per-block simp expanding the quadratic form. Only the first
+    # block's simp needs `flagQuadraticForm` (later blocks see it already
+    # unfolded — the Lean linter warns if we include it redundantly).
+    simp_lines: list[str] = []
+    for t in range(T):
+        n = _block_names(t, T)
+        n_t = len(cert["flags"][t])
+        finsum = _FIN_SUM_NAMES.get(n_t)
+        if finsum is None:
+            return None, None
+        head = "flagQuadraticForm, " if t == 0 else ""
+        simp_lines.append(
+            f"  simp [{head}{n['v']}, {n['M_real']}, "
+            f"ratMatrixToReal, {n['M']}, Fin.sum_univ_{finsum}, add_assoc]"
+        )
+    simp_block = "\n".join(simp_lines)
+
+    proof = (
+        f"  have quadraticForm_trans : {obj_ident} ≤[{forbid_expr}]\n"
+        f"            {have_rhs}\n"
+        f"    := by\n"
+        f"{have_block}\n"
+        f"  apply forbidLE_trans quadraticForm_trans\n"
+        f"  apply forbidLE_trans_forbidEq_right ?_  "
+        f"(forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one {forbid_expr} {N})))\n"
+        f"{expand_rewrite}"
+        f"\n"
+        f"{simp_block}\n"
+        f"  reduce_downward_flagmul\n"
+        f"\n"
+        f"  expand_one_at {N}\n"
+        f"\n"
+        f"  simp [smul_smul, downward_add, downward_smul]\n"
+        f"  ac_sort_rhs_pipeline\n"
+        f"\n"
+        f"  apply forbidLE_of_le\n"
+        f"  flag_nonneg"
+    )
+    return proof, helper_lemma
+
+
+def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | None = None) -> str:
     """Render the main `theorem` declaration with `sorry` for the proof body.
 
     Falls back to placeholders (`/- TODO: ... -/`) when description parsing
@@ -672,14 +1073,21 @@ def render_theorem_statement(cert: dict, theorem_name: str) -> str:
     except (TypeError, ValueError):
         bound_lit = f"/- TODO: bound `{bound!r}` -/ (0 : ℝ)"
 
+    if proof_body is None:
+        tactic_block = "  sorry"
+        note = "auto-generated statement, proof body TODO"
+    else:
+        tactic_block = proof_body
+        note = "auto-generated"
+
     return (
-        f"/-- **Main theorem (auto-generated statement, proof body TODO).**\n"
+        f"/-- **Main theorem ({note}).**\n"
         f"Certificate description: {desc!r}\n"
         f"Bound: {bound!r}. -/\n"
         f"theorem {theorem_name}\n"
         f"    : {obj_repr} ≤[{forbid_expr}] {bound_lit} • (1 : FlagAlgebra ∅ₜ)\n"
         f"  := by\n"
-        f"  sorry\n"
+        f"{tactic_block}\n"
     )
 
 
@@ -838,11 +1246,38 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
         f"-- theorem body still needs to be written (see TODO at the bottom).\n"
     )
 
+    proof_body, helper_lemma = render_proof_body(cert, theorem_name)
+    fallback_note = ""
+    if proof_body is None:
+        fallback_note = (
+            "-- Proof body not auto-generated (unsupported description / "
+            "forbid / block size).\n"
+        )
+
+    helper_section = ""
+    if helper_lemma is not None:
+        # Branch B needs:
+        #   * `prove_flag_expand` tactic (Utils.FlagExpansionTactic)
+        #   * `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁` for the auto-gen
+        #     `@[simp]` density tables (FlagAlgebra.Compute.FlagDensity);
+        #     this lemma lives in the `FlagAlgebras.Compute` namespace.
+        for extra in (
+            "import LeanFlagAlgebras.Utils.FlagExpansionTactic",
+            "import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity",
+        ):
+            if extra not in imports:
+                imports = imports + "\n" + extra
+        if "FlagAlgebras.Compute" not in opens:
+            opens = opens + "\nopen FlagAlgebras.Compute"
+        helper_section = helper_lemma + "\n"
+
     theorem_block = (
         f"set_option maxHeartbeats 0\n"
         f"set_option maxRecDepth 1500\n"
         f"\n"
-        f"{render_theorem_statement(cert, theorem_name)}"
+        f"{helper_section}"
+        f"{fallback_note}"
+        f"{render_theorem_statement(cert, theorem_name, proof_body)}"
     )
 
     return (
