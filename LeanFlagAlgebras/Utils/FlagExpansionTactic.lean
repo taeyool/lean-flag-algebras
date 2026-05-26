@@ -1,9 +1,9 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
-/-! # Mantel's theorem: problem-specific tactics
+/-! # Flag-algebra expansion tactics
 
-Custom proof automation for the Mantel's theorem development. Provides
+General-purpose proof automation for flag-algebra computations. Provides
 expression-walking helpers that locate/parse generated `Flag_n_k_m_i` and
 `FlagAlgebra_n_k_m_i` constants, plus three tactics:
 
@@ -14,7 +14,9 @@ expression-walking helpers that locate/parse generated `Flag_n_k_m_i` and
 * `prove_flag_mul` — reduce a flag product to a linear combination of flags.
 
 All three rewrite via the generated `flagSet_*_eq_univ` / `flagSet_*_val_eq`
-lemmas and close by algebraic normalization. -/
+lemmas and close by algebraic normalization. These tactics are problem-agnostic
+and used by the Flagmatic-to-Lean automation in `LeanFlagAlgebras/Flagmatic/`
+as well as by individual theorem developments (e.g. `MantelTheorem`). -/
 
 open Lean Elab Tactic Meta
 
