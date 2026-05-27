@@ -18,22 +18,28 @@ The Lean side stores canonical representatives in:
 ----------------------------------------------------------------------
 This file has two layers:
 
-  (1) Library functions — parsing, isomorphism lookup, identifier mapping:
+  (1) Library functions — parsing, isomorphism lookup, identifier mapping,
+      matrix assembly, branch-A/B proof rendering:
         parse_flagmatic, graph_to_lean, type_to_lean, sigma_flag_to_lean,
-        check_dependencies, render_flag_vectors, render_dependency_report
+        parse_common_graphs, check_dependencies, assemble_block_matrix,
+        ldl_decomposition, induced_density, render_flag_vectors,
+        render_matrices, render_expand_under_forbid, render_proof_body,
+        render_theorem_statement, render_skeleton, render_dependency_report
 
-  (2) CLI subcommands — used as a script. Three are provided:
+  (2) CLI subcommands — used as a script. Five are provided:
 
         inspect       certificate -> Lean-identifier mapping dump
         check-deps    list required JSON files (with [OK]/[MISSING]) and
                       emit ready-to-paste imports / opens / `load_*` commands
-        gen-skeleton  write a complete starter Lean file (imports + opens +
+        gen-skeleton  write a complete starter Lean file: imports + opens +
                       namespace + load_* + M_t/dM_t/LM_t with PSD lemmas +
-                      σ_t/v_t + TODO stub for the main theorem)
+                      σ_t/v_t + auto-proved main theorem (branch A) or
+                      auto-generated expand_under_forbid lemma + auto-proved
+                      main theorem (branch B). For unsupported descriptions
+                      (non-K_n forbid not in `Forbid/CommonGraphs.lean`,
+                      etc.) falls back to a `sorry`-bodied stub.
         gen-matrices  append only the M_t / dM_t / LM_t defs and PSD lemmas
         gen-vectors   append only σ_t and v_t definitions
-
-Future subcommands (gen-matrices, gen-theorem, ...) will reuse layer (1).
 
 ----------------------------------------------------------------------
 USAGE EXAMPLES (PowerShell; use `\\` on bash):
@@ -41,32 +47,52 @@ USAGE EXAMPLES (PowerShell; use `\\` on bash):
   # 1. Quick sanity check on a new certificate — does every flagmatic
   #    string resolve to a canonical Lean identifier?
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect `
-      LeanFlagAlgebras/Flagmatic/mantel_sparse_cert.json
+      LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
 
-  # 2. Find out which JSON files this certificate needs and whether
-  #    they exist on disk. Exit code is 0 if all present, 1 otherwise.
-  #    Also prints the exact `load_*` commands to paste into Lean.
+  # 2. Find out which JSON files this certificate needs and whether they
+  #    exist on disk. Exit code is 0 if all present, 1 otherwise. Also
+  #    prints the exact imports / opens / `load_*` commands.
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py check-deps `
-      LeanFlagAlgebras/Flagmatic/c4turan_sparse_cert.json
+      LeanFlagAlgebras/Flagmatic/Certificates/K3forbidC4_cert.json
 
-  # 3. Generate a complete starter Lean file: imports, opens, namespace,
-  #    load_* commands, σ_t / v_t definitions, and TODO stubs for the
-  #    matrix definitions and the main theorem body.
+  # 3. Generate a complete starter Lean file with auto-proved main theorem.
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton `
-      LeanFlagAlgebras/Flagmatic/mantel_sparse_cert.json `
-      LeanFlagAlgebras/API/MyNewProof.lean
+      LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json `
+      LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 
-  # 4. Or, if you already have a Lean file and only want to append σ/v
-  #    definitions to it:
+  # 4. Or, append-mode helpers when you have an existing file:
+  python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-matrices `
+      <cert>.json <target>.lean
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-vectors `
-      LeanFlagAlgebras/Flagmatic/mantel_sparse_cert.json `
-      LeanFlagAlgebras/API/MyNewProof.lean
+      <cert>.json <target>.lean
 
 Typical workflow for a fresh certificate:
   inspect  ->  check-deps  ->  (add missing JSONs if any)  ->  gen-skeleton
-   ->  fill in the M / dM / LM definitions and the main theorem body.
+   ->  lake build LeanFlagAlgebras.Flagmatic.<Name>
 
 For per-command help: `python flagmatic_to_lean.py <subcommand> --help`.
+
+----------------------------------------------------------------------
+VERIFIED SCENARIOS (see Certificates/ for inputs, *.lean for outputs):
+
+  cert                 forbid  N  n_obj  branch  blocks  bound
+  -------------------  ------  -  -----  ------  ------  -----
+  mantel_cert          K3      3    2      B        1     1/2
+  K3forbidC4_cert      K3      4    4      A        2     3/8
+  K4turan_cert         K4      4    2      B        2     2/3
+  ErdosPentagon_cert   K3      5    5      A        3   24/625
+
+What's covered:
+  * Branch A (n_obj == N) and Branch B (n_obj < N)
+  * K_n forbid auto-recognition (K3, K4 currently defined in CommonGraphs)
+  * Block counts 1, 2, 3
+  * Host sizes N = 3, 4, 5
+  * Both smul and bare-mul shapes in `reduce_downward_flagmul`
+
+What's NOT yet exercised (but should work):
+  * Non-K_n forbid (P_n, C_n, K_{a,b}, ...). The code is general — just
+    add `def X : SimpleGraph (Fin n) := ...` + `X_toFinFlag_eq` to
+    `Forbid/CommonGraphs.lean` and the parser picks it up via iso lookup.
 """
 
 from __future__ import annotations
@@ -983,8 +1009,20 @@ def render_proof_body(
         )
         if helper_lemma is None:
             return None, None
-        # Step 4 of the proof: expand the objective under the forbid relation.
-        expand_rewrite = f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
+        # Step 4: expand the objective under the forbid relation. When T ≥ 2,
+        # the LHS arrives as left-associated `((obj + Q1) + Q2) + ...`, but
+        # `forbidLE_rw_left_add_right` matches the pattern `obj + ?` only at
+        # the top-level `+`. Pre-rewrite with `add_assoc` to right-associate
+        # the sum so the pattern hits. For T = 1 this step is unnecessary
+        # (and `simp only` would error with "made no progress").
+        T_blocks = len(cert["types"])
+        if T_blocks >= 2:
+            expand_rewrite = (
+                f"  simp only [add_assoc]\n"
+                f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
+            )
+        else:
+            expand_rewrite = f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
 
     T = len(cert["types"])
     if T == 0:
@@ -1009,21 +1047,30 @@ def render_proof_body(
     have_lines.append(f"    exact forbidLE_refl {forbid_expr} {obj_ident}")
     have_block = "\n".join(have_lines)
 
-    # Step 5: per-block simp expanding the quadratic form. Only the first
-    # block's simp needs `flagQuadraticForm` (later blocks see it already
-    # unfolded — the Lean linter warns if we include it redundantly).
+    # Step 5: per-block simp expanding the quadratic form. To keep the file
+    # warning-free we tailor each simp's argument list:
+    #   * `flagQuadraticForm` only on the first simp (already unfolded after).
+    #   * `Fin.sum_univ_<n_t>` and `add_assoc` only the FIRST time we see a
+    #     given dimension n_t; once Lean has expanded one Σ over `Fin n_t`
+    #     and right-associated the resulting sum, repeating these on a later
+    #     block of the same dimension makes simp's linter flag them unused.
     simp_lines: list[str] = []
+    seen_finsum_sizes: set[int] = set()
     for t in range(T):
         n = _block_names(t, T)
         n_t = len(cert["flags"][t])
         finsum = _FIN_SUM_NAMES.get(n_t)
         if finsum is None:
             return None, None
-        head = "flagQuadraticForm, " if t == 0 else ""
-        simp_lines.append(
-            f"  simp [{head}{n['v']}, {n['M_real']}, "
-            f"ratMatrixToReal, {n['M']}, Fin.sum_univ_{finsum}, add_assoc]"
-        )
+        pieces: list[str] = []
+        if t == 0:
+            pieces.append("flagQuadraticForm")
+        pieces.extend([n["v"], n["M_real"], "ratMatrixToReal", n["M"]])
+        if n_t not in seen_finsum_sizes:
+            pieces.append(f"Fin.sum_univ_{finsum}")
+            pieces.append("add_assoc")
+            seen_finsum_sizes.add(n_t)
+        simp_lines.append(f"  simp [{', '.join(pieces)}]")
     simp_block = "\n".join(simp_lines)
 
     proof = (
@@ -1463,7 +1510,10 @@ def main(argv: list[str] | None = None) -> None:
 
     p_skel = sub.add_parser(
         "gen-skeleton",
-        help="write a complete starter Lean file (imports + opens + namespace + loads + σ/v + TODOs)",
+        help=(
+            "write a complete starter Lean file "
+            "(imports + opens + namespace + loads + matrices + σ/v + auto-proved main theorem)"
+        ),
     )
     p_skel.add_argument("certificate", type=Path)
     p_skel.add_argument("target", type=Path, help="Lean file to create")

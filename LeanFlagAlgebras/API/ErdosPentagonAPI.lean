@@ -20,7 +20,7 @@ the goal with the API tactics. -/
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
@@ -56,4 +56,4 @@ theorem ErdosPentagon_flagAlgebra_API
   apply forbidLE_of_le
   flag_nonneg
 
-end ErdosPentagon
+end ErdosPentagonAPI

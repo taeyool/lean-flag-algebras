@@ -15,7 +15,7 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
-namespace C4Turan
+namespace K3forbidC4
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
@@ -116,7 +116,7 @@ set_option maxRecDepth 1500
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
 Bound: '3/8'. -/
-theorem c4turan_flagAlgebra
+theorem K3forbidC4_flagAlgebra
     : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag]
@@ -140,4 +140,4 @@ theorem c4turan_flagAlgebra
   apply forbidLE_of_le
   flag_nonneg
 
-end C4Turan
+end K3forbidC4

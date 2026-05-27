@@ -11,7 +11,7 @@ density upper bound. -/
 
 open Matrix
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 /-- Rational PSD certificate matrix paired with the flag vector `v₀`. -/
 def P : Matrix (Fin 8) (Fin 8) ℚ :=
@@ -160,4 +160,4 @@ lemma R_real_eq_LDL :
 theorem R_real_posSemidef : R_real.PosSemidef := by
   exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dR_real_nonneg R_real_eq_LDL
 
-end ErdosPentagon
+end ErdosPentagonAPI

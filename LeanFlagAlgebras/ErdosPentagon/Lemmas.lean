@@ -22,7 +22,7 @@ The analytic heart of the Erdős pentagon upper bound. Provides:
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 private def lastNamePart (nm : Name) : String :=
   match nm with
@@ -121,7 +121,7 @@ private def mkFlagMulThmName? (mulTerm : Expr) : MetaM (Option Name) := do
   let gLast := if gNm?.isSome then lastNamePart gNm else flagToFlagAlgebraLastPart (lastNamePart gNm)
   let thmStrFG := s!"flagMul_{fLast}_{gLast}"
   let thmStrGF := s!"flagMul_{gLast}_{fLast}"
-  let epNs := Name.mkSimple "ErdosPentagon"
+  let epNs := Name.mkSimple "ErdosPentagonAPI"
   let cands := [
     Name.str fNm.getPrefix thmStrFG,
     Name.str fNm.getPrefix thmStrGF,
@@ -456,4 +456,4 @@ theorem ErdosPentagon_flagAlgebra
     forbidEq_smul (forbidEq_symm one_forbidEq_one_size_five_expand)
   exact forbidLE_trans h₁ (forbidLE_trans (forbidLE_of_le h₂) (forbidLE_of_forbidEq h₃))
 
-end ErdosPentagon
+end ErdosPentagonAPI

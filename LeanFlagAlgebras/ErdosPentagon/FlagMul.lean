@@ -11,7 +11,7 @@ These supply the product expansions consumed by the certificate reduction in
 open FlagAlgebras Forbid
 open FlagAlgebras.Compute
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_5_K3_free_indices.json"
 
@@ -26,4 +26,4 @@ load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_
 
 #print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
 
-end ErdosPentagon
+end ErdosPentagonAPI
