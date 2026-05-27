@@ -15,7 +15,7 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
-namespace K3fobidC4
+namespace K3forbidC4
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
 load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
@@ -140,4 +140,4 @@ theorem K3forbidC4_flagAlgebra
   apply forbidLE_of_le
   flag_nonneg
 
-end K3fobidC4
+end K3forbidC4

@@ -247,7 +247,7 @@ theorem K4turan_flagAlgebra
   rw [forbidLE_rw_left_add_right K4turan_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
-  simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_four, add_assoc]
+  simp [v₂, M₂_real, ratMatrixToReal, M₂]
   reduce_downward_flagmul
 
   expand_one_at 4

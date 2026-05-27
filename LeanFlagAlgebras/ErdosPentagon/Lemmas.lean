@@ -121,7 +121,7 @@ private def mkFlagMulThmName? (mulTerm : Expr) : MetaM (Option Name) := do
   let gLast := if gNm?.isSome then lastNamePart gNm else flagToFlagAlgebraLastPart (lastNamePart gNm)
   let thmStrFG := s!"flagMul_{fLast}_{gLast}"
   let thmStrGF := s!"flagMul_{gLast}_{fLast}"
-  let epNs := Name.mkSimple "ErdosPentagon"
+  let epNs := Name.mkSimple "ErdosPentagonAPI"
   let cands := [
     Name.str fNm.getPrefix thmStrFG,
     Name.str fNm.getPrefix thmStrGF,
