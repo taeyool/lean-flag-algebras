@@ -15,7 +15,7 @@ blow-up lower-bound construction to prove:
 open FlagAlgebras GraphAlgebras Forbid
 open Filter Topology SimpleGraph
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 /-- Upper bound: the `K₃`-free generalized Turán density of the pentagon is at
 most `24/625`, transferred from the flag-algebra bound
@@ -289,4 +289,4 @@ theorem ErdosPentagon_Turan
   · exact ErdosPentagon_Turan_upperBound
   · exact ErdosPentagon_Turan_lowerBound
 
-end ErdosPentagon
+end ErdosPentagonAPI

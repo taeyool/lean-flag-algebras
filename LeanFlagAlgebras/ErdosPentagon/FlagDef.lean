@@ -14,7 +14,7 @@ sum-of-squares certificate, and the flag-algebra vectors `v₀`/`v₁`/`v₂` of
 
 open FlagAlgebras SimpleGraph Compute
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 /-- The 5-cycle `C₅` on `Fin 5` (edges `01,12,23,34,40`); the target subgraph
 whose triangle-free density is being maximised. -/
@@ -72,4 +72,4 @@ noncomputable def v₂ : FlagAlgebraVec σ₂ 5 := ![
   FlagAlgebra_4_3_2_0, FlagAlgebra_4_3_2_2, FlagAlgebra_4_3_2_1, FlagAlgebra_4_3_2_3, FlagAlgebra_4_3_2_6
 ]
 
-end ErdosPentagon
+end ErdosPentagonAPI

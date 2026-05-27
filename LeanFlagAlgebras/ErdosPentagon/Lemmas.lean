@@ -22,7 +22,7 @@ The analytic heart of the Erdős pentagon upper bound. Provides:
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
-namespace ErdosPentagon
+namespace ErdosPentagonAPI
 
 private def lastNamePart (nm : Name) : String :=
   match nm with
@@ -456,4 +456,4 @@ theorem ErdosPentagon_flagAlgebra
     forbidEq_smul (forbidEq_symm one_forbidEq_one_size_five_expand)
   exact forbidLE_trans h₁ (forbidLE_trans (forbidLE_of_le h₂) (forbidLE_of_forbidEq h₃))
 
-end ErdosPentagon
+end ErdosPentagonAPI
