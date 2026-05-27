@@ -50,7 +50,7 @@
 \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
 \newcommand{\poshom}[1]{\Phi^{#1}}
-\newcommand{\den}[2]{p(#1,\,#2)}
+\newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
 \newcommand{\forbLES}[2]{\leq_{#1,\operatorname{Forb}(#2)}}
@@ -357,16 +357,19 @@ empty vertex set.
 
 \paragraph{Flags.}
 Fix a type $\sigma$ of size $k$.
-A \emph{$\sigma$-flag} is a pair $A = (G, \theta_A)$ where $G$ is a
-finite graph and $\theta_A : [k] \hookrightarrow V(G)$ is an injective map such
-that $\sigma$ is isomorphic to $G[\operatorname{Im}(\theta_A)]$ via $\theta_A$
-(i.e., $\theta_A$ is a graph embedding of $\sigma$ into $G$).
-The integer $|V(G)|$ is the \emph{size} of $A$.  Note that
-flags over the empty type $\emptyset$ are just ordinary finite graphs.
+A \emph{$\sigma$-flag} is a pair $A = (M, \theta_A)$ where $M$ is a
+finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
+that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_A)]$ via $\theta_A$
+(i.e., $\theta_A$ is a graph embedding of $\sigma$ into $M$).
+The integer $|V(M)|$ is the \emph{size} of $A$; we write $V(A)$ for $V(M)$.
+For a set $S \subseteq V(A)$ with $\operatorname{Im}(\theta_A) \subseteq S$,
+we write $A[S]$ for the $\sigma$-flag $(M[S], \theta_A)$ and call it the
+\emph{$\sigma$-flag induced by $A$ on $S$}.
+Note that flags over the empty type $\emptyset$ are just ordinary finite graphs.
 
-Two $\sigma$-flags $(G_1,\theta_1)$ and $(G_2,\theta_2)$ are
-\emph{isomorphic}, denoted by $(G_1,\theta_1) \cong_\sigma (G_2,\theta_2)$,
-if there is a graph isomorphism $\alpha: V(G_1)\to V(G_2)$
+Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
+\emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
+if there is a graph isomorphism $\alpha: V(M_1)\to V(M_2)$
 with $\alpha \circ \theta_1 = \theta_2$.  The set of isomorphism classes of
 $\sigma$-flags of size $n$ is written $\mathcal{F}^\sigma_n$, and
 $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
@@ -456,10 +459,10 @@ $\mathcal{F}^\sigma$ itself is infinite.
 
 \paragraph{Single-flag density.}
 Let $\sigma$ be a type of size $k$.  For a $\sigma$-flag $A$ of size $m$
-(the \emph{pattern flag}) and a $\sigma$-flag $G$ of size $n \geq m$
+(the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
 (the \emph{host flag}), the \emph{induced subflag density} $\den{A}{G}$ is
 the probability that a uniformly random $(m-k)$-element subset of
-$V(G) \setminus \operatorname{Im}(\theta_G)$, together with the labeled
+$V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
 \[
   \den{A}{G}
@@ -468,8 +471,7 @@ vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
     \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
                   ~\Big|~ |S|=m-k,\;
                   G[S \cup \operatorname{Im}(\theta_G)]
-                  \text{ is isomorphic to } A
-                  \text{ as a }\sigma\text{-flag}\Big\}\Bigr|}.
+                  \cong_\sigma A \Big\}\Bigr|}.
 \]
 This value lies in $[0,1]$ and is invariant under
 isomorphism of both $A$ and $G$.
@@ -478,53 +480,73 @@ isomorphism of both $A$ and $G$.
   Let $\sigma$ be the one-vertex type, and let $K_2^\bullet$ be the
   $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
   the labeled one.  Let $\overline{K_2}^{\bullet}$ be the corresponding
-  non-edge flag.  These flags are shown in \Cref{fig:small-graphs}.  Now root
-  a copy of $C_5$ at one of its vertices.  Among the
-  four non-root vertices, exactly two are neighbors of the root.  Hence
+  non-edge flag.  Let $C_5^\bullet$ be the $\sigma$-flag obtained from $C_5$
+  by labeling one of its vertices.  These flags are shown in
+  \Cref{fig:small-graphs}.  Among the four unlabeled vertices of $C_5^\bullet$,
+  exactly two are adjacent to the labeled vertex.  Hence
   \[
     \den{K_2^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
     \qquad
     \den{\overline{K_2}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
   \]
-  This tiny example captures the reason flags are useful: a flag remembers
-  the local view from a labeled configuration.  The same unrooted pentagon can
-  be queried from the perspective of a distinguished vertex, and the algebra
-  keeps those conditional densities as named algebraic coordinates rather than
-  side comments in prose.
+  % This tiny example captures the reason flags are useful: a flag remembers
+  % the local view from a labeled configuration.  The same unrooted pentagon can
+  % be queried from the perspective of a distinguished vertex, and the algebra
+  % keeps those conditional densities as named algebraic coordinates rather than
+  % side comments in prose.
 \end{example}
+
+\paragraph{Chain rule.}
+The density $\den{A}{G}$ can be computed in two equivalent ways: by sampling
+$m-k$ unlabeled vertices directly from $G$, or by first sampling a larger
+intermediate flag $B$ of size $n$ inside $G$ and then sampling $A$ inside $B$.
+These two procedures are the same experiment, which gives the following identity.
+
+\begin{lemma}[Chain rule]\label{lem:chain-rule}
+  For $A \in \mathcal{F}^\sigma_m$, $n \geq m$, and a $\sigma$-flag $G$ of size
+  $\geq n$,
+  \[
+    \den{A}{G}
+    \;=\;
+    \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,\den{B}{G}.
+  \]
+\end{lemma}
 
 \paragraph{Joint density.}
 For pattern $\sigma$-flags $A_1$ of size $m_1$ and $A_2$ of size $m_2$ and a host
-$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, the \emph{joint density}
-$\den{A_1,A_2}{G}$ is the probability, over a uniformly chosen ordered pair
-of disjoint subsets
-\[
-  S_i \subseteq V(G)\setminus \operatorname{Im}(\theta_G),
-  \qquad |S_i|=m_i-k,
-\]
-that $S_i$ together with the labeled vertices of $G$ induces a
-$\sigma$-flag isomorphic to $A_i$, for $i=1,2$.
-Joint densities are what make multiplication possible: the product of two
-pattern flags is interpreted as the probability that two disjoint samples occur
-simultaneously in the same host.  This turns combinatorial double counting
-into algebra.
+$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, let $(S_1, S_2)$ be a
+uniformly random ordered pair of disjoint subsets with
+$S_i \subseteq V(G) \setminus \operatorname{Im}(\theta_G)$ and $|S_i| = m_i - k$.
+The \emph{joint induced subflag density} $\den{A_1,A_2}{G}$ is the probability that for each
+$i = 1,2$, the set $S_i$ together with the labeled vertices of $G$ induces a
+$\sigma$-flag isomorphic to $A_i$.
+% Joint densities are what make multiplication possible: the product of two
+% pattern flags is interpreted as the probability that two disjoint samples occur
+% simultaneously in the same host.  This turns combinatorial double counting
+% into algebra.
 
 \subsection{The Flag Algebra}
 
-The next step is to stop distinguishing between expressions that have the same
-asymptotic meaning.  A small pattern flag $A$ can be counted directly in a
-large host flag $G$.  Equally, one can first sample a larger intermediate flag
-$B$ inside $G$, then count $A$ inside $B$, and finally average over the choice
-of $B$.
-These two sampling procedures give the same limiting density.  The flag
-algebra builds this sampling-averaging identity into the syntax by quotienting
-it out.  As a result, a proof can replace a pattern flag by any sufficiently
-large expansion of it, which is exactly the bookkeeping needed by flag algebra
-certificates.  This is the same kind of move one makes when quotienting
-programs by an equational theory: the quotient removes representation choices
-that should not affect observable behavior.
-
-Fix a type $\sigma$ of size $k$.  Let
+% The next step is to stop distinguishing between expressions that have the same
+% asymptotic meaning.
+% A small pattern flag $A$ can be counted directly in a large host flag $G$.
+% Equally, one can first sample a larger intermediate flag $B$ inside $G$, then
+% count $A$ inside $B$, and finally average over the choice of $B$.
+% These two sampling procedures give the same limiting density; the flag algebra
+% encodes this as a definitional equality, so a proof can replace a pattern flag
+% by any sufficiently large expansion of it---which is exactly the bookkeeping
+% needed by flag algebra certificates.
+% The flag algebra builds this sampling-averaging identity into the syntax by
+% quotienting it out.  As a result, a proof can replace a pattern flag by any
+% sufficiently large expansion of it, which is exactly the bookkeeping needed
+% by flag algebra certificates.
+% This is the same kind of move one makes when quotienting
+% programs by an equational theory: the quotient removes representation choices
+% that should not affect observable behavior.
+Fix a type $\sigma$ of size $k$.
+The flag algebra $\mathcal{A}^\sigma$ is the algebraic structure in which
+\Cref{lem:chain-rule} holds by definition.
+Let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
 combinations of $\sigma$-flags.  We also write $A$ for the basis vector
@@ -539,15 +561,24 @@ The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
-The zero-space relations express the combinatorial identity that, in a
-sufficiently large host flag $G$,
-\[
-  \den{A}{G}
-  =
-  \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,\den{B}{G}.
-\]
-That is, counting $A$ directly agrees with counting through an intermediate
-sample of size $n$.
+We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
+
+The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
+in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
+$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
+host flag.  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
+in $\mathcal{A}^\sigma$, giving a flag algebra proof the freedom to replace any
+pattern flag $A$ by an expansion
+$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ of any larger size $n$.
+% The zero-space relations express the combinatorial identity that, in a
+% sufficiently large host flag $G$,
+% \[
+%   \den{A}{G}
+%   =
+%   \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,\den{B}{G}.
+% \]
+% That is, counting $A$ directly agrees with counting through an intermediate
+% sample of size $n$.
 
 \paragraph{Multiplication.}
 For flags $A_1 \in \mathcal{F}^\sigma_{m_1}$ and
