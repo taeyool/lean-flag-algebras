@@ -338,14 +338,17 @@ $\T_1$, define
 \[
   X_\sigma:=\Homp(\A^\sigma[\T_0],\R).
 \]
-The quotient map
+Call a $\sigma$-flag \emph{forbidden} when its underlying unlabelled graph belongs to
+$\T_0$ but not to $\T_1$.  Because $\T_1$ is hereditary, being forbidden depends only on
+that underlying graph, not on how the flag is labelled.  The quotient map
 \[
   \qmap_\sigma:\A^\sigma[\T_0]\twoheadrightarrow\A^\sigma[\T_1]
 \]
-pulls every $\psi\in\Homp(\A^\sigma[\T_1],\R)$ back to a positive homomorphism on
-$\A^\sigma[\T_0]$.  Indeed, as a surjection of algebras $\qmap_\sigma$ sends each
-$\T_0$-flag to a $\T_1$-flag or to $0$, so $\psi\circ\qmap_\sigma$ is an algebra
-homomorphism, non-negative on every flag, and hence a point of $X_\sigma$.  We write
+is precisely the map that sends each forbidden flag to $0$ and every other flag to itself.
+It pulls each $\psi\in\Homp(\A^\sigma[\T_1],\R)$ back to a point of $X_\sigma$, the composite
+$\psi\circ\qmap_\sigma$: this is an algebra homomorphism, and it is non-negative on every
+flag because $\qmap_\sigma$ sends flags to flags or to $0$ and $\psi$ is non-negative on
+flags.  We write
 \[
   Q_\sigma
   :=
@@ -353,13 +356,34 @@ homomorphism, non-negative on every flag, and hence a point of $X_\sigma$.  We w
       \psi\in\Homp(\A^\sigma[\T_1],\R)\}
   \subseteq X_\sigma.
 \]
-Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient
-homomorphism space.  Equivalently, $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes
-on every $\sigma$-flag that belongs to $\T_0$ but not to $\T_1$.  This uses that $\T_1$ is
-hereditary: whether a $\sigma$-flag is forbidden in $\A^\sigma[\T_1]$ is determined by its
-underlying unlabelled graph alone---the flag is forbidden exactly when that graph fails to
-lie in $\T_1$.  Since each evaluation $\chi\mapsto\chi(F)$ is continuous, $Q_\sigma$ is an
-intersection of closed sets---one for each forbidden flag---and hence closed in $X_\sigma$.
+Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient homomorphism
+space.  It has a simple intrinsic description, phrased entirely in terms of $\chi$: a
+homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes on every
+forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
+flag to $0$, any $\chi=\psi\circ\qmap_\sigma$ satisfies
+$\chi(F)=\psi(\qmap_\sigma(F))=\psi(0)=0$ on every forbidden flag $F$, so every member of
+$Q_\sigma$ vanishes on the forbidden flags.
+
+The converse---that a homomorphism vanishing on all forbidden flags is itself of the form
+$\psi\circ\qmap_\sigma$---is the substantive direction, and it is where heredity does the
+work.  Forming $\A^\sigma[\T_1]$ amounts to declaring the forbidden flags equal to $0$, and
+heredity makes this consistent with multiplication: the product of a forbidden flag with
+any flag is again a combination of forbidden flags, because any graph that contains a
+non-$\T_1$ graph as an induced subgraph is itself outside $\T_1$.  Hence the elements that
+$\qmap_\sigma$ collapses to $0$ are exactly the linear combinations of forbidden flags.  A
+homomorphism $\chi$ that vanishes on all of them cannot distinguish $\A^\sigma[\T_0]$ from
+its quotient, so it descends through $\qmap_\sigma$: there is a unique homomorphism $\psi$
+on $\A^\sigma[\T_1]$ with $\chi=\psi\circ\qmap_\sigma$, and $\psi$ is non-negative on flags
+because $\chi$ is.  Thus $\psi\in\Homp(\A^\sigma[\T_1],\R)$ and $\chi\in Q_\sigma$.
+
+This description also makes the closedness of $Q_\sigma$ transparent.  For a single
+forbidden flag $F$, the condition $\chi(F)=0$ is a \emph{closed} one: the evaluation
+$\chi\mapsto\chi(F)$ is continuous---recall that $X_\sigma$ carries the topology of
+pointwise convergence of flag densities (\cref{sec:background})---so the homomorphisms
+satisfying it form the preimage $\{\chi:\chi(F)=0\}$ of the closed set $\{0\}$.  The space
+$Q_\sigma$ consists of the homomorphisms that satisfy all of these conditions at once, one
+per forbidden flag, so it is an intersection of closed sets and is therefore closed in
+$X_\sigma$.
 
 Informally, the next lemma says that randomly labelling a constrained unlabelled limit
 almost surely yields a constrained labelled one.
@@ -375,12 +399,10 @@ then
 \end{lemma}
 
 \begin{proof}
-Let $F$ be a $\sigma$-flag of $\T_0$ whose underlying unlabelled graph $M$ does not
-belong to $\T_1$; these are exactly the forbidden $\sigma$-flags.  The downward average
-$\avg{F}{\sigma}$ is a
-non-negative scalar multiple of $M$ as an element of $\A^0[\T_0]$.  Since
-$\phi_0\in Q_0$, we have $\phi_0(M)=0$, and hence
-$\phi_0(\avg{F}{\sigma})=0$.  By \eqref{eq:extension-expectation},
+Let $F$ be a forbidden $\sigma$-flag, and write $M\notin\T_1$ for its underlying unlabelled
+graph.  The downward average $\avg{F}{\sigma}$ is a non-negative scalar multiple of $M$ as
+an element of $\A^0[\T_0]$.  Since $\phi_0\in Q_0$ vanishes on every graph outside $\T_1$,
+we have $\phi_0(M)=0$, and hence $\phi_0(\avg{F}{\sigma})=0$.  By \eqref{eq:extension-expectation},
 \[
   \E[\phi^\sigma(F)]=0.
 \]
