@@ -76,7 +76,8 @@ import LeanFlagAlgebras.Logic.MantelTheorem
 
 -- Flagmatic
 import LeanFlagAlgebras.Flagmatic.Mantel
-import LeanFlagAlgebras.Flagmatic.C4Turan
+import LeanFlagAlgebras.Flagmatic.K3forbidC4
+import LeanFlagAlgebras.Flagmatic.K4turan
 
 /-! # LeanFlagAlgebras — top-level import manifest
 

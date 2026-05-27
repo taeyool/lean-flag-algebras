@@ -111,16 +111,16 @@ private def getAddArgsLE? (e : Expr) : Option (Expr × Expr) :=
   else
     none
 
-/-- If `e` is a scalar multiplication `c • x`, return `(c, x)`. -/
+/-- If `e` is a scalar multiplication `c • x`, return `(c, x)`. Returns `none`
+for any other shape (including ordinary multiplication `x * y`, which has the
+same `.app f x` skeleton and was previously mis-matched here). -/
 private def getSmulArgsLE? (e : Expr) : Option (Expr × Expr) :=
   let fn := e.getAppFn
   let args := e.getAppArgs
   if (fn.isConstOf ``HSMul.hSMul || fn.isConstOf ``SMul.smul) && args.size >= 2 then
     some (args[args.size - 2]!, args[args.size - 1]!)
   else
-    match e with
-    | .app f x => some (f, x)
-    | _ => none
+    none
 
 /-- If `e` is a multiplication `x * y`, return its two operands. -/
 private def getMulArgsLE? (e : Expr) : Option (Expr × Expr) :=
@@ -193,8 +193,12 @@ private def hasFlagConstLE (e : Expr) : Bool :=
 
 /-- Perform a single reduction step.  Returns `true` when progress was made.
 
-Two kinds of head terms are handled:
-* `downward (c • (A * B))` — look up the `flagMul_*` theorem, rewrite, then move.
+Three kinds of head terms inside a `downward (...)` wrapper are handled:
+* `downward (c • (A * B))` — smul-wrapped product. Look up the `flagMul_*`
+  theorem and rewrite via `forbidEq_smul`.
+* `downward (A * B)` — bare product (no smul). Same lookup, but the rewrite
+  drops the `forbidEq_smul` wrapper. This branch catches terms whose `1 • _`
+  coefficient was simplified away by an earlier `simp` step.
 * plain flag term (contains a `FlagAlgebra_*` / `Flag_*` constant but is not
   wrapped in `downward`) — move directly with `forbidLE_move_add_left_iff` /
   `forbidLE_move_term_left_iff` without any rewriting. -/
@@ -211,19 +215,33 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
       -- non-final case: head is the leftmost summand
       let head := head.consumeMData
       if let some downInner := stripDownwardLE? head then
-        -- head is `downward (c • (A * B))`
         let downInner := downInner.consumeMData
-        let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
-        let some thmName ← mkFlagMulThmNameLE? mulTerm curNs
-          | do
-              let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
-              throwError m!"reduce_downward_flagmul: could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
-        let thmId : TSyntax `term := mkIdent thmName
-        evalTactic (← `(tactic|
-          rw [Forbid.forbidLE_rw_left_add_right
-                (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
-              forbidLE_move_add_left_iff]))
-        return true
+        if let some (_c, mulTerm) := getSmulArgsLE? downInner then
+          -- (a) head = downward (c • (A * B))
+          let some thmName ← mkFlagMulThmNameLE? mulTerm curNs
+            | do
+                let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
+                throwError m!"reduce_downward_flagmul (smul branch): could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
+          let thmId : TSyntax `term := mkIdent thmName
+          evalTactic (← `(tactic|
+            rw [Forbid.forbidLE_rw_left_add_right
+                  (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
+                forbidLE_move_add_left_iff]))
+          return true
+        else if (getMulArgsLE? downInner).isSome then
+          -- (b) head = downward (A * B) — no smul wrapper
+          let some thmName ← mkFlagMulThmNameLE? downInner curNs
+            | do
+                let fNm? := findFlagAlgebraConstLE? downInner |>.orElse (fun _ => findFlagConstLE? downInner)
+                throwError m!"reduce_downward_flagmul (bare-mul branch): could not find flagMul theorem for mulTerm={downInner}; detectedConst={fNm?.getD Name.anonymous}"
+          let thmId : TSyntax `term := mkIdent thmName
+          evalTactic (← `(tactic|
+            rw [Forbid.forbidLE_rw_left_add_right
+                  (downward_forbidEq_equal_flags $thmId),
+                forbidLE_move_add_left_iff]))
+          return true
+        else
+          return false
       else if hasFlagConstLE head then
         -- head is a plain flag term: move it directly
         evalTactic (← `(tactic| rw [forbidLE_move_add_left_iff]))
@@ -233,19 +251,33 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
     else
       -- terminal case: lhs itself is a single term
       if let some downInner := stripDownwardLE? lhs then
-        -- lhs is `downward (c • (A * B))`
         let downInner := downInner.consumeMData
-        let some (_c, mulTerm) := getSmulArgsLE? downInner | return false
-        let some thmName ← mkFlagMulThmNameLE? mulTerm curNs
-          | do
-              let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
-              throwError m!"reduce_downward_flagmul: could not find terminal flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
-        let thmId : TSyntax `term := mkIdent thmName
-        evalTactic (← `(tactic|
-          rw [forbidLE_rw_left
-                (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
-              forbidLE_move_term_left_iff]))
-        return true
+        if let some (_c, mulTerm) := getSmulArgsLE? downInner then
+          -- (a) lhs = downward (c • (A * B))
+          let some thmName ← mkFlagMulThmNameLE? mulTerm curNs
+            | do
+                let fNm? := findFlagAlgebraConstLE? mulTerm |>.orElse (fun _ => findFlagConstLE? mulTerm)
+                throwError m!"reduce_downward_flagmul (terminal smul branch): could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
+          let thmId : TSyntax `term := mkIdent thmName
+          evalTactic (← `(tactic|
+            rw [forbidLE_rw_left
+                  (downward_forbidEq_equal_flags (forbidEq_smul (c := _) $thmId)),
+                forbidLE_move_term_left_iff]))
+          return true
+        else if (getMulArgsLE? downInner).isSome then
+          -- (b) lhs = downward (A * B) — no smul wrapper
+          let some thmName ← mkFlagMulThmNameLE? downInner curNs
+            | do
+                let fNm? := findFlagAlgebraConstLE? downInner |>.orElse (fun _ => findFlagConstLE? downInner)
+                throwError m!"reduce_downward_flagmul (terminal bare-mul branch): could not find flagMul theorem for mulTerm={downInner}; detectedConst={fNm?.getD Name.anonymous}"
+          let thmId : TSyntax `term := mkIdent thmName
+          evalTactic (← `(tactic|
+            rw [forbidLE_rw_left
+                  (downward_forbidEq_equal_flags $thmId),
+                forbidLE_move_term_left_iff]))
+          return true
+        else
+          return false
       else if hasFlagConstLE lhs then
         -- lhs is a plain flag term: move it directly
         evalTactic (← `(tactic| rw [forbidLE_move_term_left_iff]))

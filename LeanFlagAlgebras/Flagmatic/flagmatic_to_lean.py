@@ -983,8 +983,20 @@ def render_proof_body(
         )
         if helper_lemma is None:
             return None, None
-        # Step 4 of the proof: expand the objective under the forbid relation.
-        expand_rewrite = f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
+        # Step 4: expand the objective under the forbid relation. When T ≥ 2,
+        # the LHS arrives as left-associated `((obj + Q1) + Q2) + ...`, but
+        # `forbidLE_rw_left_add_right` matches the pattern `obj + ?` only at
+        # the top-level `+`. Pre-rewrite with `add_assoc` to right-associate
+        # the sum so the pattern hits. For T = 1 this step is unnecessary
+        # (and `simp only` would error with "made no progress").
+        T_blocks = len(cert["types"])
+        if T_blocks >= 2:
+            expand_rewrite = (
+                f"  simp only [add_assoc]\n"
+                f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
+            )
+        else:
+            expand_rewrite = f"  rw [forbidLE_rw_left_add_right {helper_name}]\n"
 
     T = len(cert["types"])
     if T == 0:
