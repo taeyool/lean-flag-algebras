@@ -397,6 +397,12 @@ def resolve_output_path(path_str: str) -> Path:
 # Known shorthands: (n, 0-indexed edges)
 _K3_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (1, 2))
 _K4_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
+_K5_EDGES: Tuple[Edge, ...] = (
+    (0, 1), (0, 2), (0, 3), (0, 4),
+    (1, 2), (1, 3), (1, 4),
+    (2, 3), (2, 4),
+    (3, 4),
+)
 
 
 def main() -> None:
@@ -433,6 +439,12 @@ def main() -> None:
         default=False,
         help="Forbid complete graph K4. Shorthand for --forbid 4:121314232434.",
     )
+    forbid_group.add_argument(
+        "--forbid-K5",
+        action="store_true",
+        default=False,
+        help="Forbid complete graph K5. Shorthand for --forbid 5:12131415232425343545.",
+    )
 
     args = parser.parse_args()
 
@@ -445,6 +457,10 @@ def main() -> None:
         forbid_n = 4
         forbid_edges = _K4_EDGES
         forbid_tag = "K4"
+    elif args.forbid_K5:
+        forbid_n = 5
+        forbid_edges = _K5_EDGES
+        forbid_tag = "K5"
     elif args.forbid:
         forbid_n, forbid_edges = parse_flagmatic_notation(args.forbid)
         forbid_tag = args.forbid  # e.g. "3:122331"
@@ -502,7 +518,13 @@ def main() -> None:
         if forbid_edges is None:
             out_name = f"density_{host_tag}_from_{pattern_tag}_no_forbid.json"
         else:
-            out_name = f"density_{host_tag}_from_{pattern_tag}.json"
+            # Always tag the output filename with the forbid identifier so
+            # two computations under different forbids (e.g. K3 vs K5) do
+            # not silently overwrite each other. Replace any non-alphanum
+            # characters in the tag (e.g. flagmatic strings like "3:122331")
+            # with underscores so it's filename-safe.
+            safe_tag = re.sub(r"[^A-Za-z0-9]", "_", forbid_tag)
+            out_name = f"density_{host_tag}_from_{pattern_tag}_forbid_{safe_tag}.json"
         out_path = Path(__file__).resolve().parent / out_name
 
     out_path.parent.mkdir(parents=True, exist_ok=True)

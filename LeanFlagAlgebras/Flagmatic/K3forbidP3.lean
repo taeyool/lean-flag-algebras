@@ -18,8 +18,8 @@ open SimpleGraph Matrix
 namespace K3forbidP3
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -87,6 +87,5 @@ theorem K3forbidP3_flagAlgebra
 
   apply forbidLE_of_le
   flag_nonneg
-
 
 end K3forbidP3

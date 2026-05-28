@@ -21,8 +21,8 @@ open FlagAlgebras.Compute
 namespace Mantel
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -102,7 +102,7 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_3
 
 /-- Auto-generated expansion of the objective under the forbid relation:
 `FlagAlgebra_2_0_0_1 =[K3.toFinFlag]` (sum over admissible 3-vertex graphs). -/
-lemma Mantel_flagAlgebra_expand_under_forbid
+lemma mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
   have h_unit_3 : (FlagAlgebra_3_0_0_3 : FlagAlgebra ∅ₜ) = ⟦unitVector (⟨3, Flag_3_0_0_3⟩ : FinFlag ∅ₜ)⟧
@@ -123,7 +123,7 @@ lemma Mantel_flagAlgebra_expand_under_forbid
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'
 Bound: '1/2'. -/
-theorem Mantel_flagAlgebra
+theorem mantel_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag]
@@ -133,7 +133,7 @@ theorem Mantel_flagAlgebra
     exact forbidLE_refl K3.toFinFlag FlagAlgebra_2_0_0_1
   apply forbidLE_trans quadraticForm_trans
   apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 3)))
-  rw [forbidLE_rw_left_add_right Mantel_flagAlgebra_expand_under_forbid]
+  rw [forbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul

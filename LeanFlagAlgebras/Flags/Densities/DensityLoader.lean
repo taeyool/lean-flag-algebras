@@ -303,7 +303,38 @@ elab "load_forbid_density_theorems" filename:str : command => do
               native_decide
           ))
           generatedNeZero := generatedNeZero + 1
-    | tag => throwError s!"Unsupported forbid tag: '{tag}'. Supported: K3, K4"
+    | "K5" =>
+      if isFree then
+        let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K5_Flag_{n}_0_0_{i}_eq_zero")
+        if ¬ env.contains thmName.getId then
+          elabCommand (← `(
+            @[simp]
+            theorem $thmName
+                : flagDensity₁ K5.toFinFlag.2 $flagName = 0
+              := by
+              rw [K5_toFinFlag_eq]
+              unfold $flagName
+              simp [Flag_5_0_0_33]
+              rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+              native_decide
+          ))
+          generatedEqZero := generatedEqZero + 1
+      else
+        let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K5_Flag_{n}_0_0_{i}_ne_zero")
+        if ¬ env.contains thmName.getId then
+          elabCommand (← `(
+            @[simp]
+            theorem $thmName
+                : ¬ flagDensity₁ K5.toFinFlag.2 $flagName = 0
+              := by
+              rw [K5_toFinFlag_eq]
+              unfold $flagName
+              simp [Flag_5_0_0_33]
+              rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+              native_decide
+          ))
+          generatedNeZero := generatedNeZero + 1
+    | tag => throwError s!"Unsupported forbid tag: '{tag}'. Supported: K3, K4, K5"
 
   logInfo s!"Generated {data.forbidTag} density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
 
