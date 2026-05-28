@@ -180,10 +180,10 @@ It automates the standard closing step in flag algebra API proofs:
 macro "flag_nonneg" : tactic =>
   `(tactic| (
     intro φ
-    simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
+    try simp only [sub_zero, PositiveHom.map_add, ge_iff_le]
     repeat apply add_nonneg
     all_goals (
-      simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left,
+      try simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left,
                  mul_nonneg_iff_of_pos_left, one_div, inv_pos]
       apply positiveHom_unitVector_ge_zero
     )

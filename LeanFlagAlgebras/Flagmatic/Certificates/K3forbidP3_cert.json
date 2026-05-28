@@ -1,0 +1,46 @@
+{
+    "description": "2-graph; maximize 3:1213 density; forbid 3:121323",
+    "bound": "3/4",
+    "order_of_admissible_graphs": 3,
+    "number_of_admissible_graphs": 3,
+    "admissible_graphs": [
+        "3:",
+        "3:12",
+        "3:1213"
+    ],
+    "number_of_types": 1,
+    "types": [
+        "1:"
+    ],
+    "numbers_of_flags": [
+        2
+    ],
+    "flags": [
+        [
+            "2:(1)",
+            "2:12(1)"
+        ]
+    ],
+    "qdash_matrices": [
+        [
+            [
+                3
+            ]
+        ]
+    ],
+    "r_matrices": [
+        [
+            [
+                "1/2"
+            ],
+            [
+                "-1/2"
+            ]
+        ]
+    ],
+    "admissible_graph_densities": [
+        0,
+        0,
+        1
+    ]
+}
