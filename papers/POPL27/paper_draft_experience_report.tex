@@ -55,11 +55,109 @@
 \newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
 \newcommand{\forbLES}[2]{\leq_{#1,\operatorname{Forb}(#2)}}
 \newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\gw}[1]{\textcolor{red}{\textbf{[GW: #1]}}}
 
 \tikzset{
   graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
   graph root/.style={circle, draw, fill=black, inner sep=0pt, minimum size=4.5pt},
-  graph edge/.style={line width=0.45pt}
+  graph edge/.style={line width=0.45pt},
+  graph nonedge/.style={line width=0.45pt, dashed},
+  inline/.style={scale=0.20, baseline=-0.5ex},
+  fv/.style={circle, fill=white, draw, inner sep=0pt, minimum size=3pt},
+  fr/.style={circle, fill=black, inner sep=0pt, minimum size=3pt}
+}
+
+% Inline flag macros: fv = unlabeled (open white), fr = labeled (filled black)
+% 2-vertex flags
+\newcommand{\fKtwo}{%
+  \begin{tikzpicture}[inline]
+    \draw (-1,0) -- (1,0);
+    \node[fv] at (-1,0) {};
+    \node[fv] at (1,0) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fKtwobull}{%
+  \begin{tikzpicture}[inline]
+    \draw (-1,0) -- (1,0);
+    \node[fr] at (-1,0) {};
+    \node[fv] at (1,0) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fbarKtwobull}{%
+  \begin{tikzpicture}[inline]
+    \node[fr] at (-1,0) {};
+    \node[fv] at (1,0) {};
+  \end{tikzpicture}%
+}
+% 3-vertex flags: (90:1)=top, (210:1)=bottom-left, (330:1)=bottom-right
+\newcommand{\fbarKthree}{%
+  \begin{tikzpicture}[inline]
+    \node[fv] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fbarPthree}{%
+  \begin{tikzpicture}[inline]
+    \draw (210:1) -- (330:1);
+    \node[fv] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fPthree}{%
+  \begin{tikzpicture}[inline]
+    \draw (210:1) -- (90:1) -- (330:1);
+    \node[fv] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fKthree}{%
+  \begin{tikzpicture}[inline]
+    \draw (210:1) -- (90:1) -- (330:1) -- (210:1);
+    \node[fv] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+% Labeled 3-vertex flags: labeled vertex (fr) at (90:1)
+\newcommand{\fbarPthreebull}{%
+  \begin{tikzpicture}[inline]
+    \draw (90:1) -- (330:1);
+    \node[fr] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fPthreebull}{%
+  \begin{tikzpicture}[inline]
+    \draw (90:1) -- (330:1) -- (210:1);
+    \node[fr] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+% 5-vertex flags: pentagon layout
+\newcommand{\fCfive}{%
+  \begin{tikzpicture}[inline]
+    \draw (90:1) -- (18:1) -- (-54:1) -- (-126:1) -- (162:1) -- cycle;
+    \node[fv] at (90:1) {};
+    \node[fv] at (18:1) {};
+    \node[fv] at (-54:1) {};
+    \node[fv] at (-126:1) {};
+    \node[fv] at (162:1) {};
+  \end{tikzpicture}%
+}
+\newcommand{\fCfivebull}{%
+  \begin{tikzpicture}[inline]
+    \draw (90:1) -- (18:1) -- (-54:1) -- (-126:1) -- (162:1) -- cycle;
+    \node[fr] at (90:1) {};
+    \node[fv] at (18:1) {};
+    \node[fv] at (-54:1) {};
+    \node[fv] at (-126:1) {};
+    \node[fv] at (162:1) {};
+  \end{tikzpicture}%
 }
 
 % Lean code style
@@ -362,10 +460,12 @@ finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_A)]$ via $\theta_A$
 (i.e., $\theta_A$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $A$; we write $V(A)$ for $V(M)$.
+The vertices in $\operatorname{Im}(\theta_A)$ are called the \emph{labeled vertices} of $A$; the remaining $|V(A)|-k$ vertices are \emph{unlabeled}.
 For a set $S \subseteq V(A)$ with $\operatorname{Im}(\theta_A) \subseteq S$,
 we write $A[S]$ for the $\sigma$-flag $(M[S], \theta_A)$ and call it the
 \emph{$\sigma$-flag induced by $A$ on $S$}.
 Note that flags over the empty type $\emptyset$ are just ordinary finite graphs.
+\Cref{fig:flag-examples} illustrates several flags of different types.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
 \emph{isomorphic}, denoted by $(M_1,\theta_1) \cong_\sigma (M_2,\theta_2)$,
@@ -376,11 +476,12 @@ $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
 $\mathcal{F}^\sigma$ itself is infinite.
 
-\begin{figure}[t]
+\begin{figure}[ht]
   \centering
-  \setlength{\tabcolsep}{1.1em}
-  \renewcommand{\arraystretch}{1.35}
-  \begin{tabular}{cccc}
+  \setlength{\tabcolsep}{1.2em}
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{cccccc}
+    % ∅-flags (ordinary graphs)
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
       \node[graph vertex] (a) at (0,0) {};
       \node[graph vertex] (b) at (0.8,0) {};
@@ -388,30 +489,46 @@ $\mathcal{F}^\sigma$ itself is infinite.
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
-      \draw[graph edge] (a) -- (b);
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
-      \draw[graph edge] (a) -- (b);
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
       \draw[graph edge] (b) -- (c);
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph vertex] (a) at (0,0) {};
-      \node[graph vertex] (b) at (0.75,0) {};
-      \node[graph vertex] (c) at (0.375,0.65) {};
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
       \draw[graph edge] (a) -- (b);
+      \draw[graph edge] (a) -- (c);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (a) -- (b);
+      \draw[graph edge] (a) -- (c);
       \draw[graph edge] (b) -- (c);
-      \draw[graph edge] (c) -- (a);
+    \end{tikzpicture}
+    &
+    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
+      \node[graph vertex] (v1) at (90:0.65) {};
+      \node[graph vertex] (v2) at (18:0.65) {};
+      \node[graph vertex] (v3) at (-54:0.65) {};
+      \node[graph vertex] (v4) at (-126:0.65) {};
+      \node[graph vertex] (v5) at (162:0.65) {};
+      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
     \end{tikzpicture}
     \\
-    $K_2$ & $T_{\text{one-edge}}$ & $T_{\text{path}}$ & $T_{\triangle}$ \\
+    $K_2$ & $\overline{K_3}$ & $\overline{P_3}$ & $P_3$ & $K_3$ & $C_5$ \\[0.8em]
+    % 1-vertex type σ-flags
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
       \node[graph root] (a) at (0,0) {};
       \node[graph vertex] (b) at (0.8,0) {};
@@ -423,26 +540,38 @@ $\mathcal{F}^\sigma$ itself is infinite.
       \node[graph vertex] (b) at (0.8,0) {};
     \end{tikzpicture}
     &
-    \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
-      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
-        \node[graph vertex] (v\i) at (\ang:0.65) {};
-      }
-      \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph root] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (a) -- (c);
     \end{tikzpicture}
     &
+    \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
+      \node[graph root] (a) at (90:0.65) {};
+      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (a) -- (c);
+      \draw[graph edge] (c) -- (b);
+    \end{tikzpicture}
+    &
+    &
     \begin{tikzpicture}[scale=0.7, baseline=-0.5ex]
-      \foreach \i/\ang in {1/90,2/18,3/-54,4/-126,5/162} {
-        \node[graph vertex] (v\i) at (\ang:0.65) {};
-      }
-      \node[graph root] at (v1) {};
+      \node[graph root] (v1) at (90:0.65) {};
+      \node[graph vertex] (v2) at (18:0.65) {};
+      \node[graph vertex] (v3) at (-54:0.65) {};
+      \node[graph vertex] (v4) at (-126:0.65) {};
+      \node[graph vertex] (v5) at (162:0.65) {};
       \draw[graph edge] (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v1);
     \end{tikzpicture}
     \\
-    $K_2^\bullet$ & $\overline{K_2}^{\bullet}$ & $C_5$ & $C_5^\bullet$
+    $K_2^\bullet$ & $\overline{K_2}^\bullet$ & $\overline{P_3}^\bullet$ & $P_3^\bullet$
+    & & $C_5^\bullet$ \\
   \end{tabular}
-  \caption{Graphs and rooted flags used in the running examples.  Filled
-  vertices are labeled vertices of a flag.}
-  \label{fig:small-graphs}
+  \caption{Examples of flags.  \emph{Top row}: $\emptyset$-flags (ordinary graphs)
+  of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the one-vertex type $\sigma$;
+  the filled vertex is the labeled one.}
+  \label{fig:flag-examples}
 \end{figure}
 
 \subsection{Subflag Densities}
@@ -460,7 +589,7 @@ $\mathcal{F}^\sigma$ itself is infinite.
 \paragraph{Single-flag density.}
 Let $\sigma$ be a type of size $k$.  For a $\sigma$-flag $A$ of size $m$
 (the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the \emph{host flag}), the \emph{induced subflag density} $\den{A}{G}$ is
+(the \emph{host flag}), the \emph{induced subflag density} (or simply \emph{density}) $\den{A}{G}$ is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
@@ -476,18 +605,14 @@ vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
 This value lies in $[0,1]$ and is invariant under
 isomorphism of both $A$ and $G$.
 
-\begin{example}[A rooted pentagon density]
-  Let $\sigma$ be the one-vertex type, and let $K_2^\bullet$ be the
-  $\sigma$-flag on two vertices in which the unlabeled vertex is adjacent to
-  the labeled one.  Let $\overline{K_2}^{\bullet}$ be the corresponding
-  non-edge flag.  Let $C_5^\bullet$ be the $\sigma$-flag obtained from $C_5$
-  by labeling one of its vertices.  These flags are shown in
-  \Cref{fig:small-graphs}.  Among the four unlabeled vertices of $C_5^\bullet$,
-  exactly two are adjacent to the labeled vertex.  Hence
+
+\begin{example}[Subflag densities in $C_5^\bullet$]
+  Let $\sigma$ be the one-vertex type.  Among the four unlabeled vertices of
+  $\fCfivebull$, exactly two are adjacent to the labeled one.  Hence
   \[
-    \den{K_2^\bullet}{C_5^\bullet} = \frac{2}{4} = \frac12,
+    \den{\fKtwobull}{\fCfivebull} = \frac{2}{4} = \frac12,
     \qquad
-    \den{\overline{K_2}^{\bullet}}{C_5^\bullet} = \frac{2}{4} = \frac12.
+    \den{\fbarKtwobull}{\fCfivebull} = \frac{2}{4} = \frac12.
   \]
   % This tiny example captures the reason flags are useful: a flag remembers
   % the local view from a labeled configuration.  The same unrooted pentagon can
@@ -562,14 +687,15 @@ The \emph{flag algebra} is the quotient module
   \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
+By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
+a flag and its equivalence class is immaterial.
 
 The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
 in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
 $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
-host flag.  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
-in $\mathcal{A}^\sigma$, giving a flag algebra proof the freedom to replace any
-pattern flag $A$ by an expansion
-$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ of any larger size $n$.
+host flag. \gw{A better phrasing for this sentence would be welcome.}  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
+in $\mathcal{A}^\sigma$, so we may replace $A$ by
+$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
@@ -580,51 +706,79 @@ $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ of any larger size $n$.
 % That is, counting $A$ directly agrees with counting through an intermediate
 % sample of size $n$.
 
+\begin{example}[$K_2$ expanded at size $3$]
+  % The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
+  % is thus a $\emptyset$-type flag) at size $3$.  There are four unlabeled graphs
+  % on three vertices: the empty graph, the one-edge graph, the two-edge path, and
+  % the triangle (the latter three are shown in \Cref{fig:small-graphs}).  If an
+  % edge is sampled uniformly from the three possible vertex pairs, its density
+  % in these graphs is respectively
+  Expanding $\fKtwo \in \mathcal{F}^\emptyset_2$ at size $3$, the density
+  of a uniformly sampled edge in each of the four $\emptyset$-flags on three
+  vertices is
+  \[
+    \den{\fKtwo}{\fbarKthree}=0,\quad
+    \den{\fKtwo}{\fbarPthree}=\tfrac13,\quad
+    \den{\fKtwo}{\fPthree}=\tfrac23,\quad
+    \den{\fKtwo}{\fKthree}=1,
+  \]
+  so the zero-space quotient identifies
+  \[
+    \fKtwo
+    \;=\;
+    \tfrac13\,\fbarPthree
+    + \tfrac23\,\fPthree
+    + \fKthree
+    \qquad\text{in } \mathcal{A}^{\emptyset}.
+  \]
+  % Mantel's theorem is the statement that the asymptotic edge density $K_2$ is
+  % at most $1/2$ in every $K_3$-free graph.  In the flag algebra proof,
+  % we start with the above equation and then eliminate the triangle term
+  % using the $K_3$-free hypothesis.  This style of expansion is common in
+  % flag algebra proofs.  It is also exactly the kind of elementary
+  % combinatorial bookkeeping that becomes unwieldy in the Lean formalization of
+  % more complex arguments, including the pentagon proof.  There the coefficients
+  % are still rational numbers from finite sampling, but there are hundreds of
+  % them, and every one must be justified inside Lean.
+\end{example}
+
 \paragraph{Multiplication.}
 For flags $A_1 \in \mathcal{F}^\sigma_{m_1}$ and
 $A_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
-$\ell \geq m_1 + m_2 - k$ and set
+$\ell \geq m_1 + m_2 - k$ and define
 \[
   [A_1] \cdot [A_2]
   \;=\;
   \sum_{D \in \mathcal{F}^\sigma_\ell} \den{A_1,A_2}{D} \cdot [D]
   \qquad\text{in } \mathcal{A}^\sigma.
 \]
-The zero-space quotient is what makes this formula independent of the
-auxiliary size $\ell$; it also respects isomorphism classes of the input flags.
-Extending bilinearly gives a commutative, associative $\mathbb{R}$-algebra.
-The unit is the type flag consisting only of the labeled vertices; we write it
-as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when $\sigma=\emptyset$.
+At first glance this definition appears to depend on both the choice of $\ell$
+and the choice of representatives for $[A_1]$ and $[A_2]$.  The zero-space
+quotient ensures neither matters: the product is independent of $\ell$ and
+respects isomorphism classes of the input flags.  Extending bilinearly to all
+of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
+The unit is the $\sigma$-flag $(\sigma, \operatorname{id}_{[k]})$ of size $k$,
+in which the underlying graph is $\sigma$ itself and every vertex is labeled;
+we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
+$\sigma=\emptyset$.
 
-\begin{example}[The edge expansion behind Mantel's theorem]
-  The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
-  is thus a $\emptyset$-type flag) at
-  size $3$.  There are four unlabeled graphs on three vertices: the empty
-  graph, the one-edge graph, the two-edge path, and the triangle
-  (the latter three are shown in \Cref{fig:small-graphs}).  If an
-  edge is sampled uniformly from the three possible vertex pairs, its density
-  in these graphs is respectively
+\begin{example}[Multiplying two 2-vertex flags]
+  Let $\sigma$ be the one-vertex type.  Taking $\ell = 3$, the joint density
+  $\den{\fKtwobull,\,\fbarKtwobull}{D}$ is $\tfrac{1}{2}$ for each size-3
+  $\sigma$-flag $D$ where $*$ has degree exactly $1$, and $0$ for all others:
   \[
-    0,\qquad \frac13,\qquad \frac23,\qquad 1.
-  \]
-  Thus the quotient identifies
-  \[
-    K_2
+    \den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}
     \;=\;
-    \frac13\,T_{\text{one-edge}}
-    + \frac23\,T_{\text{path}}
-    + T_{\triangle}
-    \qquad\text{in } \mathcal{A}^{\emptyset}.
+    \den{\fKtwobull,\,\fbarKtwobull}{\fPthreebull}
+    \;=\; \tfrac{1}{2},
   \]
-  Mantel's theorem is the statement that the asymptotic edge density $K_2$ is
-  at most $1/2$ in every $K_3$-free graph.  In the flag algebra proof,
-  we start with the above equation and then eliminate the triangle term
-  using the $K_3$-free hypothesis.  This style of expansion is common in
-  flag algebra proofs.  It is also exactly the kind of elementary
-  combinatorial bookkeeping that becomes unwieldy in the Lean formalization of
-  more complex arguments, including the pentagon proof.  There the coefficients
-  are still rational numbers from finite sampling, but there are hundreds of
-  them, and every one must be justified inside Lean.
+  so
+  \[
+    \fKtwobull \cdot \fbarKtwobull
+    \;=\;
+    \tfrac{1}{2}\fbarPthreebull + \tfrac{1}{2}\fPthreebull
+    \qquad\text{in } \mathcal{A}^\sigma.
+  \]
 \end{example}
 
 \subsection{Positive Homomorphisms, Semantic Order, and Unlabeling}
