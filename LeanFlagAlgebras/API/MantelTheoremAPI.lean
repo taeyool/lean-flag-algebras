@@ -66,8 +66,8 @@ noncomputable def v : FlagAlgebraVec σ 2 := ![
 ]
 
 load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
 
 /-- Under the K₃-forbid relation, the edge density `FlagAlgebra_2_0_0_1` equals
 `(1/3)·FlagAlgebra_3_0_0_1 + (2/3)·FlagAlgebra_3_0_0_2`: the 3-vertex expansion

@@ -156,6 +156,12 @@ def main() -> None:
         default=False,
         help="Forbid K4. Shorthand for --forbid 4:121314232434.",
     )
+    forbid_group.add_argument(
+        "--forbid-K5",
+        action="store_true",
+        default=False,
+        help="Forbid K5. Shorthand for --forbid 5:12131415232425343545.",
+    )
 
     args = parser.parse_args()
 
@@ -167,6 +173,10 @@ def main() -> None:
         forbid_n, forbid_edges = 4, _K4_EDGES
         forbid_tag = "K4"
         forbid_filename_tag = "K4"
+    elif args.forbid_K5:
+        forbid_n, forbid_edges = 5, tuple((u, v) for u in range(5) for v in range(u + 1, 5))
+        forbid_tag = "K5"
+        forbid_filename_tag = "K5"
     else:
         forbid_n, forbid_edges = parse_flagmatic_notation(args.forbid)
         forbid_tag = args.forbid                         # e.g. "3:122331"

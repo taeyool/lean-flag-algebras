@@ -485,12 +485,18 @@ def check_dependencies(cert: dict) -> list[Dep]:
             ),
         ))
 
-        # (e) density loader — try `_forbid_<tag>` and plain variants
+        # (e) density loader. The output of `calculate_densities.py` is
+        # always tagged with `_forbid_<tag>` (or `_no_forbid` when no forbid
+        # was used), so we *only* accept the correctly tagged file — silently
+        # falling back to an unsuffixed legacy file is dangerous because that
+        # file may have been computed under a different forbid (e.g. K3 vs
+        # K5) and would give wrong densities under the current forbid.
         base = f"density_{N}_{k}_{type_idx}_from_{m}_{k}_{type_idx}"
-        candidates = [DENSITIES_DIR / f"{base}_forbid_{forbid_tag}.json"] if forbid_tag else []
-        candidates.append(DENSITIES_DIR / f"{base}.json")
-        primary = candidates[0]
-        alternates = candidates[1:]
+        if forbid_tag is not None:
+            primary = DENSITIES_DIR / f"{base}_forbid_{forbid_tag}.json"
+        else:
+            primary = DENSITIES_DIR / f"{base}_no_forbid.json"
+        alternates: list[Path] = []
         deps.append(Dep(
             path=primary,
             purpose=f"density coefficients connecting host {N}-vertex flags to block {t + 1}'s {m}-vertex σ-flags",

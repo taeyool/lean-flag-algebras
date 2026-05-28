@@ -37,3 +37,19 @@ lemma K4_toFinFlag_eq
     ext i j
     fin_cases i <;> fin_cases j <;> simp [Sym2Graph_4_0_0_10, mkEdgeFinset]
   }
+
+set_option maxHeartbeats 0
+
+/-- The complete graph on 4 vertices, `K₅`. -/
+def K5 : SimpleGraph (Fin 5) := completeGraph (Fin 5)
+
+/-- `K5.toFinFlag` equals the explicit empty-type flag `⟨5, Flag_5_0_0_33⟩`. -/
+lemma K5_toFinFlag_eq
+    : K5.toFinFlag = ⟨5, Flag_5_0_0_33⟩
+  := by
+  simp [toFinFlag, K5]
+  congr
+  all_goals {
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_5_0_0_33, mkEdgeFinset]
+  }
