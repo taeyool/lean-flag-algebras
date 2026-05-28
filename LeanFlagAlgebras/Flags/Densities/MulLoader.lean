@@ -330,7 +330,41 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 simp [hsetval]
                 exact forbidEq_refl K4.toFinFlag _
             ))
-        | tag => throwError s!"Unsupported forbid tag: '{tag}'. Supported: K3, K4"
+        | "K5" =>
+          if i <= j then
+            elabCommand (← `(
+              theorem $thmName
+                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K5.toFinFlag] $rhs
+                := by
+                apply forbidEq_trans
+                  (unitVector_quot_mul_forbidEq_sum K5.toFinFlag
+                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                    $(Quote.quote hostSize)
+                    (by rfl))
+                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+                have hsetval := $flagSetValEq
+                simp [hsetval]
+                exact forbidEq_refl K5.toFinFlag _
+            ))
+          else
+            elabCommand (← `(
+              theorem $thmName
+                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K5.toFinFlag] $rhs
+                := by
+                rw [mul_comm]
+                apply forbidEq_trans
+                  (unitVector_quot_mul_forbidEq_sum K5.toFinFlag
+                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                    $(Quote.quote hostSize)
+                    (by rfl))
+                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+                have hsetval := $flagSetValEq
+                simp [hsetval]
+                exact forbidEq_refl K5.toFinFlag _
+            ))
+        | tag => throwError s!"Unsupported forbid tag: '{tag}'. Supported: K3, K4, K5"
         generated := generated + 1
 
   logInfo s!"Generated {generated} {data.forbidTag}-free multiplication theorem(s) from density JSON: {filename.getString}"

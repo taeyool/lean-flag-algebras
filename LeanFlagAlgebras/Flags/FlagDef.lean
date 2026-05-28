@@ -35,10 +35,12 @@ load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_0.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_1.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_2.json"
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_3.json"
 
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_0.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
 load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_2.json"
+load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_3.json"
 
 #print Sym2LabeledGraph_3_1_0_2
 #check downward_3_1_0_2
