@@ -1,6 +1,6 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.Utils.SortTactic
+import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
@@ -262,7 +262,7 @@ lemma flagQuadraticForm_P_v₀_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
-  ac_sort_pipeline
+  flagsum_ac_sort_pipeline
 
 /-- Explicit 5-vertex flag expansion of the quadratic form `v₁ᵀ Q v₁`. -/
 noncomputable def flagQuadraticForm_Q_v₁_expand
@@ -310,7 +310,7 @@ lemma flagQuadraticForm_Q_v₁_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
-  ac_sort_pipeline
+  flagsum_ac_sort_pipeline
 
 /-- Explicit 5-vertex flag expansion of the quadratic form `v₂ᵀ R v₂`. -/
 noncomputable def flagQuadraticForm_R_v₂_expand
@@ -348,7 +348,7 @@ lemma flagQuadraticForm_R_v₂_forbidEq
   reduce_flagmul
   apply Forbid.forbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
-  ac_sort_pipeline
+  flagsum_ac_sort_pipeline
 
 /-- The first square term is nonnegative after downward projection (since `P`
 is PSD): `0 ≤[K3] ⟦flagQuadraticForm_P_v₀_expand⟧₀`. -/

@@ -3,7 +3,7 @@ import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Utils.SortTactic
+import LeanFlagAlgebras.API.FlagSumSort
 
 /-! # API.K4freeP4 — P₄ density bound in K₄-free graphs
 
@@ -104,7 +104,7 @@ theorem K4_free_P4_density_upper_bound
   simp [-one_smul]
   expand_one_at 4
   rw [← one_smul ℝ (FlagAlgebra_4_0_0_6)]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
   apply forbidLE_of_le
   flag_nonneg
 

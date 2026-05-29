@@ -8,8 +8,8 @@ import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Utils.SortTactic
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
+import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.API
@@ -44,7 +44,7 @@ lemma dM₁_nonneg (i : Fin 4) : 0 ≤ dM₁ i := by
 lemma M₁_eq_LDL : M₁ = LM₁ * Matrix.diagonal dM₁ * LM₁ᵀ := by
   decide +kernel
 theorem M₁_posSemidef : M₁.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM₁_nonneg M₁_eq_LDL
+  exact posSemidef_of_LDLt dM₁_nonneg M₁_eq_LDL
 lemma dM₁_real_nonneg (i : Fin 4) : 0 ≤ (dM₁ i : ℝ) := by
   exact_mod_cast dM₁_nonneg i
 lemma M₁_real_eq_LDL :
@@ -56,7 +56,7 @@ lemma M₁_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M₁_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M₁_real_posSemidef : M₁_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₁_real_nonneg M₁_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM₁_real_nonneg M₁_real_eq_LDL
 
 /-- SDP certificate matrix for block 2 (rational, 3×3),
 paired with `v₂`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -77,7 +77,7 @@ lemma dM₂_nonneg (i : Fin 3) : 0 ≤ dM₂ i := by
 lemma M₂_eq_LDL : M₂ = LM₂ * Matrix.diagonal dM₂ * LM₂ᵀ := by
   decide +kernel
 theorem M₂_posSemidef : M₂.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM₂_nonneg M₂_eq_LDL
+  exact posSemidef_of_LDLt dM₂_nonneg M₂_eq_LDL
 lemma dM₂_real_nonneg (i : Fin 3) : 0 ≤ (dM₂ i : ℝ) := by
   exact_mod_cast dM₂_nonneg i
 lemma M₂_real_eq_LDL :
@@ -89,7 +89,7 @@ lemma M₂_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M₂_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₂_real_nonneg M₂_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM₂_real_nonneg M₂_real_eq_LDL
 
 /-- Label type for block 1 (flagmatic type '2:'). -/
 def σ₁ : FlagType (Fin 2) := FlagType_2_0
@@ -135,7 +135,7 @@ theorem K3forbidC4_flagAlgebra
   expand_one_at 4
 
   simp [smul_smul, downward_add, downward_smul]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
 
   apply forbidLE_of_le
   flag_nonneg

@@ -1,18 +1,16 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 3:121323').
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
--- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
--- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Utils.SortTactic
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
-import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.Utils.FlagExpansionTactic
+import LeanFlagAlgebras.API.Basic
+import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
+import LeanFlagAlgebras.API.FlagExpand
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
@@ -41,7 +39,7 @@ lemma dM_nonneg (i : Fin 2) : 0 ≤ dM i := by
 lemma M_eq_LDL : M = LM * Matrix.diagonal dM * LMᵀ := by
   decide +kernel
 theorem M_posSemidef : M.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM_nonneg M_eq_LDL
+  exact posSemidef_of_LDLt dM_nonneg M_eq_LDL
 lemma dM_real_nonneg (i : Fin 2) : 0 ≤ (dM i : ℝ) := by
   exact_mod_cast dM_nonneg i
 lemma M_real_eq_LDL :
@@ -53,7 +51,7 @@ lemma M_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M_real_posSemidef : M_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM_real_nonneg M_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM_real_nonneg M_real_eq_LDL
 
 /-- Label type for block 1 (flagmatic type '1:'). -/
 def σ : FlagType (Fin 1) := FlagType_1_0
@@ -67,7 +65,7 @@ set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 
 -- Auto-generated `flagDensity₁` evaluation table (used by
--- `prove_flag_expand 3` to evaluate density coefficients).
+-- `flag_expand 3` to evaluate density coefficients).
 @[simp]
 private theorem auto_flagDensity1_2_0_0_1_3_0_0_0
     : flagDensity₁ Flag_2_0_0_1 Flag_3_0_0_0 = 0
@@ -116,7 +114,7 @@ lemma mantel_flagAlgebra_expand_under_forbid
       (Ne.symm flagDensity1_K3_Flag_3_0_0_3_ne_zero)
   have h_eq : FlagAlgebra_2_0_0_1 =[K3.toFinFlag]
       (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + FlagAlgebra_3_0_0_3 :=
-    forbidEq_of_eq (by prove_flag_expand 3)
+    forbidEq_of_eq (by flag_expand 3)
   rw [forbidEq_rw_right_add_left h_zero_3, add_zero] at h_eq
   exact h_eq
 
@@ -141,7 +139,7 @@ theorem mantel_flagAlgebra
   expand_one_at 3
 
   simp [smul_smul, downward_add, downward_smul]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
 
   apply forbidLE_of_le
   flag_nonneg

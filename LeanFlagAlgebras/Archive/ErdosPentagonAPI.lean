@@ -2,7 +2,7 @@ import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.Utils.SortTactic
+import LeanFlagAlgebras.API.FlagSumSort
 
 /-! # API.ErdosPentagonAPI — the Erdős pentagon problem via the API layer
 
@@ -51,7 +51,7 @@ theorem ErdosPentagon_flagAlgebra_API
   expand_one_at 5
 
   simp [smul_smul, downward_add, downward_smul]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
 
   apply forbidLE_of_le
   flag_nonneg

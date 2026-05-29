@@ -10,8 +10,8 @@ it by reconstruction, and emits Lean 4 code that:
 
 This produces the SOS / PSD certificates that the flag-algebra density
 proofs in this repository depend on. The generated block relies on
-`ratMatrixToReal`, `posSemidef_of_eq_mul_diagonal_mul_transpose`, and
-`posSemidef_of_eq_mul_diagonal_mul_transpose_real` from
+`ratMatrixToReal`, `posSemidef_of_LDLt`, and
+`posSemidef_of_LDLt_real` from
 `LeanFlagAlgebras/Utils/Matrix/PosSemiDef.lean`.
 
 Inputs: a JSON matrix passed inline (--matrix) or via a file (--input), as a
@@ -252,13 +252,13 @@ def main() -> None:
     parser.add_argument(
         "--psd-helper",
         type=str,
-        default="posSemidef_of_eq_mul_diagonal_mul_transpose",
+        default="posSemidef_of_LDLt",
         help="Lean theorem name used to conclude PosSemidef over ℚ from (d_nonneg, eq_LDL)",
     )
     parser.add_argument(
         "--psd-helper-real",
         type=str,
-        default="posSemidef_of_eq_mul_diagonal_mul_transpose_real",
+        default="posSemidef_of_LDLt_real",
         help="Lean theorem name used to conclude PosSemidef over ℝ from (d_real_nonneg, real_eq_LDL)",
     )
     parser.add_argument(
@@ -330,8 +330,8 @@ def main() -> None:
 
 # Save the target matrix in matrix.json, then run with e.g.
 #   python generate_psd_proof.py --input matrix.json --name P --out path/to/Output.lean
-# The generated block depends on `ratMatrixToReal`, `posSemidef_of_eq_mul_diagonal_mul_transpose`,
-# and `posSemidef_of_eq_mul_diagonal_mul_transpose_real` from
+# The generated block depends on `ratMatrixToReal`, `posSemidef_of_LDLt`,
+# and `posSemidef_of_LDLt_real` from
 # `LeanFlagAlgebras/Utils/Matrix/PosSemiDef.lean`. Make sure the consuming file imports it.
 if __name__ == "__main__":
     main()

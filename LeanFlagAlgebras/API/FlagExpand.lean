@@ -7,11 +7,11 @@ General-purpose proof automation for flag-algebra computations. Provides
 expression-walking helpers that locate/parse generated `Flag_n_k_m_i` and
 `FlagAlgebra_n_k_m_i` constants, plus three tactics:
 
-* `prove_flag_expand_with_restriction N` — expand a flag at size `N` under a
+* `flag_expand_forbid N` — expand a flag at size `N` under a
   forbidden-subgraph (density-zero) restriction hypothesis;
-* `prove_flag_expand N` — expand one flag-algebra basis element as its size-`N`
+* `flag_expand N` — expand one flag-algebra basis element as its size-`N`
   flag sum;
-* `prove_flag_mul` — reduce a flag product to a linear combination of flags.
+* `flag_mul_reduce` — reduce a flag product to a linear combination of flags.
 
 All three rewrite via the generated `flagSet_*_eq_univ` / `flagSet_*_val_eq`
 lemmas and close by algebraic normalization. These tactics are problem-agnostic
@@ -111,7 +111,7 @@ partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name 
   collectAux e #[]
 
 /-
-`prove_flag_expand_with_restriction N` proves goals of the form
+`flag_expand_forbid N` proves goals of the form
 `∀ (φ : PositiveHom σ), φ F_forbidden = 0 → φ F = (size N expansion of F without F_forbidden)`.
 
 It introduces `φ` and the restriction hypothesis, expands `F` with
@@ -119,14 +119,14 @@ It introduces `φ` and the restriction hypothesis, expands `F` with
 size-`N` flag universe, and then substitutes the forbidden term using the
 hypothesis.
 -/
-syntax (name := flagExpandWithRestrictionTac) "prove_flag_expand_with_restriction " term : tactic
+syntax (name := flagExpandForbidTac) "flag_expand_forbid " term : tactic
 
-/-- Implementation of the `prove_flag_expand_with_restriction N` tactic. -/
+/-- Implementation of the `flag_expand_forbid N` tactic. -/
 def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
   withMainContext do
     let nExpr ← elabTerm N (some (mkConst ``Nat))
     let some nVal ← (Meta.evalNat nExpr).run
-      | throwError "Could not evaluate N to a natural number in `prove_flag_expand_with_restriction`."
+      | throwError "Could not evaluate N to a natural number in `flag_expand_forbid`."
 
     let target ← getMainTarget
     let flags := collectPrefixConstants "FlagAlgebra_" target
@@ -182,7 +182,7 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
     evalTactic (← `(tactic| simpa [one_div, add_assoc] using hφ))
 
 elab_rules : tactic
-  | `(tactic| prove_flag_expand_with_restriction $N) =>
+  | `(tactic| flag_expand_forbid $N) =>
       runFlagExpandWithRestriction N
 
 /-- Collect all constants containing `FlagAlgebra_...` in an expression tree. -/
@@ -203,7 +203,7 @@ partial def collectFlagAlgebraConsts (e : Expr) (acc : Array Name := #[]) : Arra
   | _ => acc
 
 /--
-`prove_flag_expand N` proves goals of the form
+`flag_expand N` proves goals of the form
 `(one loaded flag algebra basis element) = (its size N expansion)`.
 
 It automatically:
@@ -213,10 +213,10 @@ It automatically:
 4) rewrites using generated `flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`,
 5) closes by normalization (`ring_nf`), so RHS add-order differences are tolerated.
 -/
-syntax (name := flagUnitExpandTac) "prove_flag_expand " term : tactic
+syntax (name := flagExpandTac) "flag_expand " term : tactic
 
 elab_rules : tactic
-  | `(tactic| prove_flag_expand $N) => do
+  | `(tactic| flag_expand $N) => do
       withMainContext do
         if (← getGoals).isEmpty then
           pure ()
@@ -227,7 +227,7 @@ elab_rules : tactic
 
         let nExpr ← elabTerm N (some (mkConst ``Nat))
         let some nVal ← (Meta.evalNat nExpr).run
-          | throwError "Could not evaluate N to a natural number in `prove_flag_expand`."
+          | throwError "Could not evaluate N to a natural number in `flag_expand`."
 
         let goalTy ← (← getMainGoal).getType
         let some (_, lhs, _) := goalTy.eq?
@@ -274,7 +274,7 @@ elab_rules : tactic
           pure ()
 
 /--
-`prove_flag_mul` proves goals of the shape
+`flag_mul_reduce` proves goals of the shape
 `(flag) * (flag) = (linear combination of flags)`.
 
 It unfolds flag multiplication to a finite sum, rewrites by
@@ -282,10 +282,10 @@ It unfolds flag multiplication to a finite sum, rewrites by
 algebraic normalization. The RHS add-order is handled up to associativity and
 commutativity.
 -/
-syntax (name := flagMulTac) "prove_flag_mul" : tactic
+syntax (name := flagMulReduceTac) "flag_mul_reduce" : tactic
 
 elab_rules : tactic
-  | `(tactic| prove_flag_mul) => do
+  | `(tactic| flag_mul_reduce) => do
       withMainContext do
         evalTactic (← `(tactic| try dsimp))
         let goal ← getMainGoal

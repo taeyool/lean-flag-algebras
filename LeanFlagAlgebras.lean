@@ -1,12 +1,9 @@
 -- Utils
 import LeanFlagAlgebras.Utils.Combinations
-import LeanFlagAlgebras.Utils.FlagExpansionTactic
 import LeanFlagAlgebras.Utils.LinExtension
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
 import LeanFlagAlgebras.Utils.MultinomialCoefficient
 import LeanFlagAlgebras.Utils.Partitions
 import LeanFlagAlgebras.Utils.QuotientGraph
-import LeanFlagAlgebras.Utils.SortTactic
 import LeanFlagAlgebras.Utils.SubgraphUtil
 import LeanFlagAlgebras.Utils.TacticChoose
 
@@ -39,11 +36,11 @@ import LeanFlagAlgebras.Flags.Densities.MulLoader
 -- API
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
-import LeanFlagAlgebras.API.ErdosPentagonAPI
-import LeanFlagAlgebras.API.MantelTheoremAPI
-import LeanFlagAlgebras.API.C4TuranAPI
 import LeanFlagAlgebras.API.K4freeP4
 import LeanFlagAlgebras.API.CompleteGraphFreeP4
+import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.API.FlagExpand
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef
@@ -121,3 +118,6 @@ commented-out imports below for reference only). -/
 -- import LeanFlagAlgebras.Archive.MantelTheorem.FlagIso_old
 -- import LeanFlagAlgebras.Archive.MantelTheorem.FlagMuls
 -- import LeanFlagAlgebras.Archive.MantelTheorem.MantelTheorem
+-- import LeanFlagAlgebras.API.ErdosPentagonAPI
+-- import LeanFlagAlgebras.API.MantelTheoremAPI
+-- import LeanFlagAlgebras.API.C4TuranAPI

@@ -17,7 +17,7 @@ open Matrix
 
 /-- If `M = L * diagonal d * Lᵀ` with every `d i ≥ 0`, then `M` is positive semidefinite
 (rational entries). -/
-theorem posSemidef_of_eq_mul_diagonal_mul_transpose
+theorem posSemidef_of_LDLt
     {n : ℕ} {M L : Matrix (Fin n) (Fin n) ℚ} {d : Fin n → ℚ}
     (hd : ∀ i, 0 ≤ d i) (hM : M = L * Matrix.diagonal d * Lᵀ)
     : M.PosSemidef
@@ -38,8 +38,8 @@ theorem posSemidef_of_eq_mul_diagonal_mul_transpose
     simpa [Matrix.conjTranspose_eq_transpose_of_trivial, mul_assoc] using h
   simpa [hM] using hLDL
 
-/-- Real-entry version of `posSemidef_of_eq_mul_diagonal_mul_transpose`. -/
-theorem posSemidef_of_eq_mul_diagonal_mul_transpose_real
+/-- Real-entry version of `posSemidef_of_LDLt`. -/
+theorem posSemidef_of_LDLt_real
     {n : ℕ} {M L : Matrix (Fin n) (Fin n) ℝ} {d : Fin n → ℝ}
     (hd : ∀ i, 0 ≤ d i) (hM : M = L * Matrix.diagonal d * Lᵀ)
     : M.PosSemidef

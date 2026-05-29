@@ -1,13 +1,13 @@
 import Mathlib.Tactic
 import Mathlib.Tactic.Conv
 
-/-! # `sort` / `ac_sort` tactics: canonical ordering of additive expressions
+/-! # `flagsum_sort` / `flagsum_ac_sort` tactics: canonical ordering of additive expressions
 
 Shared custom tactics that reorder the terms of a sum into a canonical order keyed by the
-trailing numeric index of each base atom. `sort`/`sort_lhs`/`sort_rhs`/`sort_here` normalize
-linear combinations (`coeff • base`), while the `ac_sort*` family does add-AC reordering only;
-`*_pipeline` variants bundle arithmetic-normalization simp passes. Used to line up flag sums on
-both sides of (in)equalities so they can be compared term-by-term.
+trailing numeric index of each base atom. `flagsum_sort`/`flagsum_sort_lhs`/`flagsum_sort_rhs`
+normalize linear combinations (`coeff • base`), while the `flagsum_ac_sort*` family does
+add-AC reordering only; `*_pipeline` variants bundle arithmetic-normalization simp passes.
+Used to line up flag sums on both sides of (in)equalities so they can be compared term-by-term.
 -/
 
 open Lean Elab Tactic Meta
@@ -247,16 +247,16 @@ private def sortNormalizeConv : TacticM Unit :=
 elab "sort_here" : conv => sortNormalizeConv
 
 /-- Sort only the left side. Works on any relation (=, ≤, <, …). -/
-elab "sort_lhs" : tactic => do
+elab "flagsum_sort_lhs" : tactic => do
   evalTactic (← `(tactic| conv_lhs => sort_here))
 
 /-- Sort only the right side. Works on any relation (=, ≤, <, …). -/
-elab "sort_rhs" : tactic => do
+elab "flagsum_sort_rhs" : tactic => do
   evalTactic (← `(tactic| conv_rhs => sort_here))
 
 /-- Sort both sides. Works on any relation (=, ≤, <, …). -/
-elab "sort" : tactic => do
-  evalTactic (← `(tactic| sort_lhs; sort_rhs))
+elab "flagsum_sort" : tactic => do
+  evalTactic (← `(tactic| flagsum_sort_lhs; flagsum_sort_rhs))
 
 /-- `conv` entry: normalize the current focus (alias for `sort_here`). -/
 elab "sort_at" : conv => sortNormalizeConv
@@ -370,7 +370,7 @@ elab "ac_sort_at_pipeline" : conv => do
 Run the common pipeline on the left side of an equality goal:
 `conv_lhs => ac_sort_at_pipeline`.
 -/
-elab "ac_sort_lhs_pipeline" : tactic =>
+elab "flagsum_ac_sort_lhs_pipeline" : tactic =>
   do
     evalTactic (← `(tactic|
       (conv_lhs =>
@@ -380,7 +380,7 @@ elab "ac_sort_lhs_pipeline" : tactic =>
 Run the common pipeline on the right side of an equality goal:
 `conv_rhs => ac_sort_at_pipeline`.
 -/
-elab "ac_sort_rhs_pipeline" : tactic =>
+elab "flagsum_ac_sort_rhs_pipeline" : tactic =>
   do
     evalTactic (← `(tactic|
       (conv_rhs =>
@@ -389,8 +389,8 @@ elab "ac_sort_rhs_pipeline" : tactic =>
 /--
 Run the common pipeline on both sides of an equality goal.
 -/
-elab "ac_sort_pipeline" : tactic =>
+elab "flagsum_ac_sort_pipeline" : tactic =>
   do
     evalTactic (← `(tactic|
-      ac_sort_lhs_pipeline;
-      ac_sort_rhs_pipeline))
+      flagsum_ac_sort_lhs_pipeline;
+      flagsum_ac_sort_rhs_pipeline))

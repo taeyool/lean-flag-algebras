@@ -1,7 +1,7 @@
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.ReduceFlagMul
-import LeanFlagAlgebras.Utils.SortTactic
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
+import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.MantelTheorem.Lemmas
@@ -44,7 +44,7 @@ lemma dM_nonneg (i : Fin 2) : 0 ≤ dM i := by
 lemma M_eq_LDL : M = LM * Matrix.diagonal dM * LMᵀ := by
   decide +kernel
 theorem M_posSemidef : M.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM_nonneg M_eq_LDL
+  exact posSemidef_of_LDLt dM_nonneg M_eq_LDL
 lemma dM_real_nonneg (i : Fin 2) : 0 ≤ (dM i : ℝ) := by
   exact_mod_cast dM_nonneg i
 lemma M_real_eq_LDL :
@@ -56,7 +56,7 @@ lemma M_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M_real_posSemidef : M_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM_real_nonneg M_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM_real_nonneg M_real_eq_LDL
 
 /-- Label type for the quadratic form: the single-vertex type. -/
 def σ : FlagType (Fin 1) := FlagType_1_0
@@ -115,7 +115,7 @@ theorem Mantel_flagAlgebra_API
   expand_one_at 3
 
   simp [smul_smul, downward_add, downward_smul]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
 
   apply forbidLE_of_le
   flag_nonneg
