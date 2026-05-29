@@ -607,7 +607,7 @@ isomorphism of both $A$ and $G$.
 
 
 \begin{example}[Subflag densities in $C_5^\bullet$]
-  Let $\sigma$ be the one-vertex type.  Among the four unlabeled vertices of
+  Among the four unlabeled vertices of
   $\fCfivebull$, exactly two are adjacent to the labeled one.  Hence
   \[
     \den{\fKtwobull}{\fCfivebull} = \frac{2}{4} = \frac12,
@@ -714,20 +714,20 @@ $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
   % edge is sampled uniformly from the three possible vertex pairs, its density
   % in these graphs is respectively
   Expanding $\fKtwo \in \mathcal{F}^\emptyset_2$ at size $3$, the density
-  of a uniformly sampled edge in each of the four $\emptyset$-flags on three
+  of an edge in each of the four $\emptyset$-flags on three
   vertices is
   \[
     \den{\fKtwo}{\fbarKthree}=0,\quad
-    \den{\fKtwo}{\fbarPthree}=\tfrac13,\quad
-    \den{\fKtwo}{\fPthree}=\tfrac23,\quad
+    \den{\fKtwo}{\fbarPthree}=\frac13,\quad
+    \den{\fKtwo}{\fPthree}=\frac23,\quad
     \den{\fKtwo}{\fKthree}=1,
   \]
   so the zero-space quotient identifies
   \[
     \fKtwo
     \;=\;
-    \tfrac13\,\fbarPthree
-    + \tfrac23\,\fPthree
+    \frac13\,\fbarPthree
+    + \frac23\,\fPthree
     + \fKthree
     \qquad\text{in } \mathcal{A}^{\emptyset}.
   \]
@@ -762,21 +762,26 @@ in which the underlying graph is $\sigma$ itself and every vertex is labeled;
 we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
-\begin{example}[Multiplying two 2-vertex flags]
+\begin{example}[Multiplication of $K_2^\bullet$ and $\overline{K_2}^\bullet$]
   Let $\sigma$ be the one-vertex type.  Taking $\ell = 3$, the joint density
-  $\den{\fKtwobull,\,\fbarKtwobull}{D}$ is $\tfrac{1}{2}$ for each size-3
-  $\sigma$-flag $D$ where $*$ has degree exactly $1$, and $0$ for all others:
+  $\den{\fKtwobull,\,\fbarKtwobull}{G}$ equals $\frac{1}{2}$ for each size-3
+  $\sigma$-flag $G$ whose labeled vertex has degree exactly $1$:
   \[
     \den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}
     \;=\;
     \den{\fKtwobull,\,\fbarKtwobull}{\fPthreebull}
-    \;=\; \tfrac{1}{2},
+    \;=\; \frac{1}{2},
   \]
-  so
+  and vanishes on all other size-3 $\sigma$-flags:
+  \[
+    \den{\fKtwobull,\,\fbarKtwobull}{G} = 0
+    \qquad\text{for all } G \in \mathcal{F}_3^\sigma \setminus \{\fbarPthreebull,\,\fPthreebull\}.
+  \]
+  Hence
   \[
     \fKtwobull \cdot \fbarKtwobull
     \;=\;
-    \tfrac{1}{2}\fbarPthreebull + \tfrac{1}{2}\fPthreebull
+    \frac{1}{2}\,\fbarPthreebull + \frac{1}{2}\,\fPthreebull
     \qquad\text{in } \mathcal{A}^\sigma.
   \]
 \end{example}
