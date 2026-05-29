@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
 
 /-! # Erdős pentagon problem: PSD certificate matrices
 
@@ -48,7 +48,7 @@ lemma P_eq_LDL : P = LP * Matrix.diagonal dP * LPᵀ := by
 
 /-- `P` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem P_posSemidef : P.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dP_nonneg P_eq_LDL
+  exact posSemidef_of_LDLt dP_nonneg P_eq_LDL
 
 lemma dP_real_nonneg (i : Fin 8) : 0 ≤ (dP i : ℝ) := by
   exact_mod_cast dP_nonneg i
@@ -63,7 +63,7 @@ lemma P_real_eq_LDL :
 
 /-- The real lifting `P_real` is positive semidefinite. -/
 theorem P_real_posSemidef : P_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dP_real_nonneg P_real_eq_LDL
+  exact posSemidef_of_LDLt_real dP_real_nonneg P_real_eq_LDL
 
 
 -- LDLᵀ generated for Q, size=6, diagonal nonnegative=True
@@ -97,7 +97,7 @@ lemma Q_eq_LDL : Q = LQ * Matrix.diagonal dQ * LQᵀ := by
 
 /-- `Q` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem Q_posSemidef : Q.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dQ_nonneg Q_eq_LDL
+  exact posSemidef_of_LDLt dQ_nonneg Q_eq_LDL
 
 lemma dQ_real_nonneg (i : Fin 6) : 0 ≤ (dQ i : ℝ) := by
   exact_mod_cast dQ_nonneg i
@@ -112,7 +112,7 @@ lemma Q_real_eq_LDL :
 
 /-- The real lifting `Q_real` is positive semidefinite. -/
 theorem Q_real_posSemidef : Q_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dQ_real_nonneg Q_real_eq_LDL
+  exact posSemidef_of_LDLt_real dQ_real_nonneg Q_real_eq_LDL
 
 -- LDLᵀ generated for R, size=5, diagonal nonnegative=True
 def R : Matrix (Fin 5) (Fin 5) ℚ :=
@@ -143,7 +143,7 @@ lemma R_eq_LDL : R = LR * Matrix.diagonal dR * LRᵀ := by
 
 /-- `R` is positive semidefinite (via its LDLᵀ factorization). -/
 theorem R_posSemidef : R.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dR_nonneg R_eq_LDL
+  exact posSemidef_of_LDLt dR_nonneg R_eq_LDL
 
 lemma dR_real_nonneg (i : Fin 5) : 0 ≤ (dR i : ℝ) := by
   exact_mod_cast dR_nonneg i
@@ -158,6 +158,6 @@ lemma R_real_eq_LDL :
 
 /-- The real lifting `R_real` is positive semidefinite. -/
 theorem R_real_posSemidef : R_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dR_real_nonneg R_real_eq_LDL
+  exact posSemidef_of_LDLt_real dR_real_nonneg R_real_eq_LDL
 
 end ErdosPentagonAPI

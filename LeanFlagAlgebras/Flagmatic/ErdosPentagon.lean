@@ -5,11 +5,11 @@
 
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Utils.SortTactic
-import LeanFlagAlgebras.Utils.Matrix.PosSemiDef
+import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.API
@@ -54,7 +54,7 @@ lemma dM₁_nonneg (i : Fin 8) : 0 ≤ dM₁ i := by
 lemma M₁_eq_LDL : M₁ = LM₁ * Matrix.diagonal dM₁ * LM₁ᵀ := by
   decide +kernel
 theorem M₁_posSemidef : M₁.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM₁_nonneg M₁_eq_LDL
+  exact posSemidef_of_LDLt dM₁_nonneg M₁_eq_LDL
 lemma dM₁_real_nonneg (i : Fin 8) : 0 ≤ (dM₁ i : ℝ) := by
   exact_mod_cast dM₁_nonneg i
 lemma M₁_real_eq_LDL :
@@ -66,7 +66,7 @@ lemma M₁_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M₁_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M₁_real_posSemidef : M₁_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₁_real_nonneg M₁_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM₁_real_nonneg M₁_real_eq_LDL
 
 /-- SDP certificate matrix for block 2 (rational, 6×6),
 paired with `v₂`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -93,7 +93,7 @@ lemma dM₂_nonneg (i : Fin 6) : 0 ≤ dM₂ i := by
 lemma M₂_eq_LDL : M₂ = LM₂ * Matrix.diagonal dM₂ * LM₂ᵀ := by
   decide +kernel
 theorem M₂_posSemidef : M₂.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM₂_nonneg M₂_eq_LDL
+  exact posSemidef_of_LDLt dM₂_nonneg M₂_eq_LDL
 lemma dM₂_real_nonneg (i : Fin 6) : 0 ≤ (dM₂ i : ℝ) := by
   exact_mod_cast dM₂_nonneg i
 lemma M₂_real_eq_LDL :
@@ -105,7 +105,7 @@ lemma M₂_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M₂_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₂_real_nonneg M₂_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM₂_real_nonneg M₂_real_eq_LDL
 
 /-- SDP certificate matrix for block 3 (rational, 5×5),
 paired with `v₃`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -130,7 +130,7 @@ lemma dM₃_nonneg (i : Fin 5) : 0 ≤ dM₃ i := by
 lemma M₃_eq_LDL : M₃ = LM₃ * Matrix.diagonal dM₃ * LM₃ᵀ := by
   decide +kernel
 theorem M₃_posSemidef : M₃.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose dM₃_nonneg M₃_eq_LDL
+  exact posSemidef_of_LDLt dM₃_nonneg M₃_eq_LDL
 lemma dM₃_real_nonneg (i : Fin 5) : 0 ≤ (dM₃ i : ℝ) := by
   exact_mod_cast dM₃_nonneg i
 lemma M₃_real_eq_LDL :
@@ -142,7 +142,7 @@ lemma M₃_real_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `M₃_real` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem M₃_real_posSemidef : M₃_real.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real dM₃_real_nonneg M₃_real_eq_LDL
+  exact posSemidef_of_LDLt_real dM₃_real_nonneg M₃_real_eq_LDL
 
 /-- Label type for block 1 (flagmatic type '3:'). -/
 def σ₁ : FlagType (Fin 3) := FlagType_3_0
@@ -208,7 +208,7 @@ theorem ErdosPentagon_flagAlgebra
   expand_one_at 5
 
   simp [smul_smul, downward_add, downward_smul]
-  ac_sort_rhs_pipeline
+  flagsum_ac_sort_rhs_pipeline
 
   apply forbidLE_of_le
   flag_nonneg

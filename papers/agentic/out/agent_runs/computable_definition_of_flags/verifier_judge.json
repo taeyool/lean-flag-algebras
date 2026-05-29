@@ -1,5 +1,0 @@
-{
-  "retry_required": false,
-  "reason": "Dry-run mode skips alignment judge.",
-  "focus_points": []
-}

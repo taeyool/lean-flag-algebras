@@ -223,7 +223,8 @@ def find_unlabeled_index(n: int, edges: frozenset[tuple[int, int]]) -> int:
         for perm in permutations(range(n)):
             if _relabel(edges, perm) == g:
                 return i
-    raise LookupError(f"no graph in graphs_{n}.json isomorphic to edges={sorted(edges)}")
+    raise LookupError(
+        f"no graph in graphs_{n}.json isomorphic to edges={sorted(edges)}")
 
 
 def find_sigma_flag_index(
@@ -246,7 +247,8 @@ def find_sigma_flag_index(
         if entry["underlying_graph_num"] != underlying_idx:
             continue
         stored_edges = _edges_to_set(entry["edges"])
-        type_indices = entry["type_indices"]  # type_indices[j] = canonical vertex for label j
+        # type_indices[j] = canonical vertex for label j
+        type_indices = entry["type_indices"]
 
         # Need a permutation `perm` (input vertex -> canonical vertex) such that
         # _relabel(edges, perm) == stored_edges
@@ -289,7 +291,8 @@ def type_to_lean(s: str) -> tuple[str, int, int]:
     """`"k:edges"` -> ("FlagType_k_<i>", k, i)."""
     k, edges, labels = parse_flagmatic(s)
     if labels is not None:
-        raise ValueError(f"expected a type (no labels parenthesis), got: {s!r}")
+        raise ValueError(
+            f"expected a type (no labels parenthesis), got: {s!r}")
     i = find_unlabeled_index(k, edges)
     return f"FlagType_{k}_{i}", k, i
 
@@ -314,7 +317,8 @@ def sigma_flag_to_lean(s: str, type_str: str) -> tuple[str, int, int, int, int]:
 
 
 # Cache for parsed CommonGraphs.lean table
-_COMMON_GRAPHS_CACHE: dict[str, tuple[int, frozenset[tuple[int, int]]]] | None = None
+_COMMON_GRAPHS_CACHE: dict[str, tuple[int,
+                                      frozenset[tuple[int, int]]]] | None = None
 
 # Regex matching `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨<n>, Flag_<n>_0_0_<i>⟩`.
 # This is more robust than parsing the `def <Name> : SimpleGraph ... := ...` line,
@@ -406,7 +410,8 @@ class Dep:
       resolved   : actual existing Path if found, else None
     """
 
-    __slots__ = ("path", "purpose", "load_cmd", "alternates", "present", "resolved")
+    __slots__ = ("path", "purpose", "load_cmd",
+                 "alternates", "present", "resolved")
 
     def __init__(
         self,
@@ -424,7 +429,8 @@ class Dep:
             self.present = True
             self.resolved = path
         else:
-            self.resolved = next((p for p in self.alternates if p.exists()), None)
+            self.resolved = next(
+                (p for p in self.alternates if p.exists()), None)
             self.present = self.resolved is not None
 
 
@@ -438,7 +444,8 @@ def check_dependencies(cert: dict) -> list[Dep]:
     m_forbid = re.search(r"forbid\s+(\d+):([0-9]*)", desc)
     forbid_tag: str | None = None
     if m_forbid:
-        forbid_tag = _guess_forbid_tag(int(m_forbid.group(1)), m_forbid.group(2))
+        forbid_tag = _guess_forbid_tag(
+            int(m_forbid.group(1)), m_forbid.group(2))
 
     # (a) host graphs file — for admissible graph identifiers
     deps.append(Dep(
@@ -517,7 +524,8 @@ def required_json_files(cert: dict) -> dict[str, list[str]]:
     Prefer `check_dependencies` for new code — it returns presence info and the
     Lean `load_*` commands.
     """
-    out: dict[str, list[str]] = {"graphs": [], "flags": [], "forbid_indices": [], "density_loaders": []}
+    out: dict[str, list[str]] = {"graphs": [], "flags": [
+    ], "forbid_indices": [], "density_loaders": []}
     for d in check_dependencies(cert):
         name = d.path.name
         if name.startswith("graphs_") and "_free_indices" in name:
@@ -581,10 +589,12 @@ def _parse_qdash(qdash: list) -> list[list[Fraction]]:
 def _matmul(A: list[list[Fraction]], B: list[list[Fraction]]) -> list[list[Fraction]]:
     rows, mid = len(A), len(A[0])
     if len(B) != mid:
-        raise ValueError(f"matmul dim mismatch: {rows}x{mid} times {len(B)}x{len(B[0])}")
+        raise ValueError(
+            f"matmul dim mismatch: {rows}x{mid} times {len(B)}x{len(B[0])}")
     cols = len(B[0])
     return [
-        [sum((A[i][k] * B[k][j] for k in range(mid)), Fraction(0)) for j in range(cols)]
+        [sum((A[i][k] * B[k][j] for k in range(mid)), Fraction(0))
+         for j in range(cols)]
         for i in range(rows)
     ]
 
@@ -610,7 +620,8 @@ def ldl_decomposition(
     D = [Fraction(0)] * n
     for i in range(n):
         L[i][i] = Fraction(1)
-        D[i] = M[i][i] - sum((L[i][k] * L[i][k] * D[k] for k in range(i)), Fraction(0))
+        D[i] = M[i][i] - sum((L[i][k] * L[i][k] * D[k]
+                             for k in range(i)), Fraction(0))
         if D[i] < 0:
             raise ValueError(f"LDL: D[{i}] = {D[i]} < 0, matrix is not PSD")
         for j in range(i + 1, n):
@@ -661,7 +672,8 @@ def render_matrices(cert: dict) -> str:
     blocks: list[str] = []
     for t in range(total):
         try:
-            M = assemble_block_matrix(cert["qdash_matrices"][t], cert["r_matrices"][t])
+            M = assemble_block_matrix(
+                cert["qdash_matrices"][t], cert["r_matrices"][t])
             L, D = ldl_decomposition(M)
         except ValueError as e:
             raise ValueError(f"block {t + 1}: {e}") from e
@@ -690,7 +702,7 @@ lemma {dM_name}_nonneg (i : Fin {n}) : 0 ≤ {dM_name} i := by
 lemma {M_name}_eq_LDL : {M_name} = {LM_name} * Matrix.diagonal {dM_name} * {LM_name}ᵀ := by
   decide +kernel
 theorem {M_name}_posSemidef : {M_name}.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose {dM_name}_nonneg {M_name}_eq_LDL
+  exact posSemidef_of_LDLt {dM_name}_nonneg {M_name}_eq_LDL
 lemma {dM_name}_real_nonneg (i : Fin {n}) : 0 ≤ ({dM_name} i : ℝ) := by
   exact_mod_cast {dM_name}_nonneg i
 lemma {M_real}_eq_LDL :
@@ -702,7 +714,7 @@ lemma {M_real}_eq_LDL :
       simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
 /-- `{M_real}` is positive semidefinite (via its real LDLᵀ factorization). -/
 theorem {M_real}_posSemidef : {M_real}.PosSemidef := by
-  exact posSemidef_of_eq_mul_diagonal_mul_transpose_real {dM_name}_real_nonneg {M_real}_eq_LDL
+  exact posSemidef_of_LDLt_real {dM_name}_real_nonneg {M_real}_eq_LDL
 """
         )
     return "\n".join(blocks)
@@ -733,7 +745,8 @@ def _objective_from_description(desc: str) -> tuple[str, int]:
     """
     m = _DESC_OBJ_RE.search(desc)
     if not m:
-        raise ValueError(f"could not parse `maximize ... density` from description: {desc!r}")
+        raise ValueError(
+            f"could not parse `maximize ... density` from description: {desc!r}")
     flagmatic_str = m.group(1)
     ident, _idx = graph_to_lean(flagmatic_str)
     n, _, _ = parse_flagmatic(flagmatic_str)
@@ -809,7 +822,8 @@ def _expansion_coefficients(
     hosts = load_graphs(N)
     free_indices: set[int] = set(range(len(hosts)))
     if forbid_tag is not None:
-        free_path = DENSITIES_DIR / f"graphs_{N}_{forbid_tag}_free_indices.json"
+        free_path = DENSITIES_DIR / \
+            f"graphs_{N}_{forbid_tag}_free_indices.json"
         if free_path.exists():
             with free_path.open() as f:
                 free_indices = set(json.load(f)["free_graph_indices"])
@@ -853,7 +867,7 @@ def render_density_simp_lemmas(
     obj_flagmatic: str, N: int
 ) -> tuple[str, dict[int, Fraction]]:
     """Auto-generate `@[simp]` lemmas `flagDensity₁ Flag_obj Flag_host_i = <d_i>`
-    for every host index i in graphs_<N>.json. These are what `prove_flag_expand
+    for every host index i in graphs_<N>.json. These are what `flag_expand
     N` needs to close goals when the RHS omits zero-density terms.
 
     Returns `(lean_text, densities_by_index)`.
@@ -898,12 +912,13 @@ def render_expand_under_forbid(
     the post-forbid expansion would be empty (no admissible nonzero density —
     shouldn't happen for a valid certificate).
     """
-    admissible, forbidden = _expansion_coefficients(obj_flagmatic, N, forbid_tag)
+    admissible, forbidden = _expansion_coefficients(
+        obj_flagmatic, N, forbid_tag)
     if not admissible:
         return None
 
     # Auto-generate the @[simp] density-evaluation lemmas — these are what
-    # `prove_flag_expand N` needs to close (it relies on `flagDensity₁`
+    # `flag_expand N` needs to close (it relies on `flagDensity₁`
     # evaluating to concrete rationals via simp).
     density_lemmas, _densities = render_density_simp_lemmas(obj_flagmatic, N)
 
@@ -932,11 +947,11 @@ def render_expand_under_forbid(
         )
     have_block = "\n".join(have_blocks)
 
-    # h_eq: full expansion lifted to forbidEq, via `forbidEq_of_eq (by prove_flag_expand N)`
+    # h_eq: full expansion lifted to forbidEq, via `forbidEq_of_eq (by flag_expand N)`
     h_eq_block = (
         f"  have h_eq : {obj_ident} =[{forbid_expr}]\n"
         f"      {full_expr} :=\n"
-        f"    forbidEq_of_eq (by prove_flag_expand {N})"
+        f"    forbidEq_of_eq (by flag_expand {N})"
     )
 
     # rw cleanup: peel forbidden terms in REVERSE listing order (right-most first)
@@ -947,12 +962,13 @@ def render_expand_under_forbid(
         )
     rw_block = "\n".join(rw_lines)
 
-    body_parts = [p for p in [have_block, h_eq_block, rw_block, "  exact h_eq"] if p]
+    body_parts = [p for p in [have_block,
+                              h_eq_block, rw_block, "  exact h_eq"] if p]
     body = "\n".join(body_parts)
 
     return (
         f"-- Auto-generated `flagDensity₁` evaluation table (used by\n"
-        f"-- `prove_flag_expand {N}` to evaluate density coefficients).\n"
+        f"-- `flag_expand {N}` to evaluate density coefficients).\n"
         f"{density_lemmas}\n"
         f"/-- Auto-generated expansion of the objective under the forbid relation:\n"
         f"`{obj_ident} =[{forbid_expr}]` (sum over admissible {N}-vertex graphs). -/\n"
@@ -1095,7 +1111,7 @@ def render_proof_body(
         f"  expand_one_at {N}\n"
         f"\n"
         f"  simp [smul_smul, downward_add, downward_smul]\n"
-        f"  ac_sort_rhs_pipeline\n"
+        f"  flagsum_ac_sort_rhs_pipeline\n"
         f"\n"
         f"  apply forbidLE_of_le\n"
         f"  flag_nonneg"
@@ -1148,7 +1164,8 @@ def render_flag_vectors(cert: dict) -> str:
     """Render σ_t and v_t Lean definitions for every SDP block in the certificate."""
     types = cert["types"]
     flags = cert["flags"]
-    assert len(types) == len(flags), "types and flags must have the same length"
+    assert len(types) == len(
+        flags), "types and flags must have the same length"
 
     blocks: list[str] = []
     for t, (type_str, flag_list) in enumerate(zip(types, flags)):
@@ -1222,12 +1239,12 @@ def required_lean_imports(cert: dict) -> list[str]:
     """
     imports = [
         "import LeanFlagAlgebras.Flags.FlagDef",
-        "import LeanFlagAlgebras.API.Basic",
-        "import LeanFlagAlgebras.API.ReduceFlagMul",
         "import LeanFlagAlgebras.Flags.Densities.MulLoader",
         "import LeanFlagAlgebras.Flags.Densities.DensityLoader",
-        "import LeanFlagAlgebras.Utils.SortTactic",
-        "import LeanFlagAlgebras.Utils.Matrix.PosSemiDef",
+        "import LeanFlagAlgebras.API.Basic",
+        "import LeanFlagAlgebras.API.FlagMulReduce",
+        "import LeanFlagAlgebras.API.FlagSumSort",
+        "import LeanFlagAlgebras.API.Matrix.PosSemiDef",
     ]
     desc = cert.get("description", "")
     if re.search(r"forbid\s+\d+:", desc):
@@ -1238,7 +1255,8 @@ def required_lean_imports(cert: dict) -> list[str]:
 def render_dependency_report(cert: dict) -> tuple[str, bool]:
     """Pretty-print the dependency check. Returns (text, all_present)."""
     deps = check_dependencies(cert)
-    lines = [f"Dependency check for: {cert.get('description', '<no description>')}"]
+    lines = [
+        f"Dependency check for: {cert.get('description', '<no description>')}"]
     all_present = True
     for d in deps:
         mark = "OK     " if d.present else "MISSING"
@@ -1251,26 +1269,27 @@ def render_dependency_report(cert: dict) -> tuple[str, bool]:
         if not d.present:
             all_present = False
 
-    lines.append("")
-    lines.append("Lean imports (paste at the top of the API file):")
-    for imp in required_lean_imports(cert):
-        lines.append(f"  {imp}")
-    lines.append(
-        "  -- problem-specific helper lemmas (e.g. host-flag expansion under the"
-    )
-    lines.append(
-        "  -- forbid relation) may need an extra `import LeanFlagAlgebras.<Problem>.Lemmas`."
-    )
+    # lines.append("")
+    # lines.append("Lean imports (paste at the top of the API file):")
+    # for imp in required_lean_imports(cert):
+    #     lines.append(f"  {imp}")
+    # lines.append(
+    #     "  -- problem-specific helper lemmas (e.g. host-flag expansion under the"
+    # )
+    # lines.append(
+    #     "  -- forbid relation) may need an extra `import LeanFlagAlgebras.<Problem>.Lemmas`."
+    # )
 
-    lines.append("")
-    lines.append("Lean opens (paste at the top of the API file, after imports):")
-    for op in LEAN_OPENS:
-        lines.append(f"  {op}")
+    # lines.append("")
+    # lines.append(
+    #     "Lean opens (paste at the top of the API file, after imports):")
+    # for op in LEAN_OPENS:
+    #     lines.append(f"  {op}")
 
-    lines.append("")
-    lines.append("Lean load commands (paste into the API file's namespace):")
-    for cmd in required_lean_load_commands(cert):
-        lines.append(f"  {cmd}")
+    # lines.append("")
+    # lines.append("Lean load commands (paste into the API file's namespace):")
+    # for cmd in required_lean_load_commands(cert):
+    #     lines.append(f"  {cmd}")
 
     return "\n".join(lines), all_present
 
@@ -1279,7 +1298,7 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
     """Render a complete starter Lean API file: imports, opens, namespace,
     load commands, and σ_t / v_t definitions. Matrix defs and the main theorem
     body are left as TODO stubs."""
-    imports = "\n".join(required_lean_imports(cert))
+    import_list = required_lean_imports(cert)
     opens = "\n".join(LEAN_OPENS)
     loads = "\n".join(required_lean_load_commands(cert))
     matrices_body = render_matrices(cert)
@@ -1295,8 +1314,6 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
         f"-- Auto-generated from Flagmatic certificate "
         f"(description: {cert.get('description', '')!r}).\n"
         f"-- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)\n"
-        f"-- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main\n"
-        f"-- theorem body still needs to be written (see TODO at the bottom).\n"
     )
 
     proof_body, helper_lemma = render_proof_body(cert, theorem_name)
@@ -1310,19 +1327,25 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
     helper_section = ""
     if helper_lemma is not None:
         # Branch B needs:
-        #   * `prove_flag_expand` tactic (Utils.FlagExpansionTactic)
+        #   * `flag_expand` tactic (API.FlagExpand)
         #   * `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁` for the auto-gen
         #     `@[simp]` density tables (FlagAlgebra.Compute.FlagDensity);
         #     this lemma lives in the `FlagAlgebras.Compute` namespace.
         for extra in (
-            "import LeanFlagAlgebras.Utils.FlagExpansionTactic",
+            "import LeanFlagAlgebras.API.FlagExpand",
             "import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity",
         ):
-            if extra not in imports:
-                imports = imports + "\n" + extra
+            if extra not in import_list:
+                forbid_idx = next(
+                    (i for i, x in enumerate(import_list) if "Forbid" in x),
+                    len(import_list),
+                )
+                import_list.insert(forbid_idx, extra)
         if "FlagAlgebras.Compute" not in opens:
             opens = opens + "\nopen FlagAlgebras.Compute"
         helper_section = helper_lemma + "\n"
+
+    imports = "\n".join(import_list)
 
     theorem_block = (
         f"set_option maxHeartbeats 0\n"
@@ -1381,14 +1404,16 @@ def _cmd_gen_matrices(args: argparse.Namespace) -> None:
 
     if args.target.exists():
         existing = args.target.read_text(encoding="utf-8")
-        sep = "" if existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
+        sep = "" if existing.endswith("\n\n") else (
+            "\n" if existing.endswith("\n") else "\n\n")
         with args.target.open("a", encoding="utf-8") as f:
             f.write(sep + full)
     else:
         args.target.parent.mkdir(parents=True, exist_ok=True)
         args.target.write_text(full, encoding="utf-8")
 
-    print(f"wrote {len(full)} chars to {args.target} ({len(cert['types'])} block(s))")
+    print(
+        f"wrote {len(full)} chars to {args.target} ({len(cert['types'])} block(s))")
 
 
 def _cmd_gen_skeleton(args: argparse.Namespace) -> int:
@@ -1462,13 +1487,15 @@ def _cmd_gen_vectors(args: argparse.Namespace) -> None:
 
     if args.target.exists():
         existing = args.target.read_text(encoding="utf-8")
-        sep = "" if existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
+        sep = "" if existing.endswith("\n\n") else (
+            "\n" if existing.endswith("\n") else "\n\n")
         with args.target.open("a", encoding="utf-8") as f:
             f.write(sep + text)
     else:
         args.target.write_text(text, encoding="utf-8")
 
-    print(f"wrote {len(text)} chars to {args.target} ({len(cert['types'])} block(s))")
+    print(
+        f"wrote {len(text)} chars to {args.target} ({len(cert['types'])} block(s))")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -1490,13 +1517,16 @@ def main(argv: list[str] | None = None) -> None:
     )
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p_inspect = sub.add_parser("inspect", help="print certificate -> Lean identifier mapping")
+    p_inspect = sub.add_parser(
+        "inspect", help="print certificate -> Lean identifier mapping")
     p_inspect.add_argument("certificate", type=Path)
     p_inspect.set_defaults(func=_cmd_inspect)
 
-    p_gen = sub.add_parser("gen-vectors", help="append σ_t and v_t Lean definitions to a file")
+    p_gen = sub.add_parser(
+        "gen-vectors", help="append σ_t and v_t Lean definitions to a file")
     p_gen.add_argument("certificate", type=Path)
-    p_gen.add_argument("target", type=Path, help="Lean file to append to (created if absent)")
+    p_gen.add_argument("target", type=Path,
+                       help="Lean file to append to (created if absent)")
     p_gen.set_defaults(func=_cmd_gen_vectors)
 
     p_chk = sub.add_parser(
@@ -1511,7 +1541,8 @@ def main(argv: list[str] | None = None) -> None:
         help="append M_t / dM_t / LM_t Lean definitions and PSD lemmas to a file",
     )
     p_mat.add_argument("certificate", type=Path)
-    p_mat.add_argument("target", type=Path, help="Lean file to append to (created if absent)")
+    p_mat.add_argument("target", type=Path,
+                       help="Lean file to append to (created if absent)")
     p_mat.set_defaults(func=_cmd_gen_matrices)
 
     p_skel = sub.add_parser(
@@ -1537,7 +1568,8 @@ def main(argv: list[str] | None = None) -> None:
             "filename, e.g. `mantel_cert.json` -> `mantel_flagAlgebra`."
         ),
     )
-    p_skel.add_argument("--force", action="store_true", help="overwrite the target if it exists")
+    p_skel.add_argument("--force", action="store_true",
+                        help="overwrite the target if it exists")
     p_skel.set_defaults(func=_cmd_gen_skeleton)
 
     args = ap.parse_args(argv)

@@ -1,9 +1,9 @@
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Utils.SortTactic
+import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
 /-! # API.CompleteGraphFreeP4 — P₄ density bound in K_{r+1}-free graphs

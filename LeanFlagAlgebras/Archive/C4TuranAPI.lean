@@ -1,8 +1,3 @@
--- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 4:12132434 density; forbid 3:121323').
--- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
--- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
--- theorem body still needs to be written (see TODO at the bottom).
-
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
@@ -12,33 +7,40 @@ import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
+/-! # API.C4TuranAPI — a 4-vertex graph density bound for K₃-free graphs
+
+Per-problem density-bound proof on the API automation layer. The headline
+result `C4_flagAlgebra_API` shows that for K₃-free graphs the density of the
+4-vertex flag `FlagAlgebra_4_0_0_8` is at most `3/8`:
+
+  `FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)`.
+
+The certificate uses two PSD matrices `M₁` (4×4) and `M₂` (3×3), each shown
+positive semidefinite via an explicit LDLᵀ factorization (rational, then cast
+to ℝ). These produce non-negative quadratic-form terms that are added to the
+bound and discharged with the API tactics. -/
+
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
-namespace K3forbidC4
+namespace C4TuranAPI
 
-load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
-
-/-- SDP certificate matrix for block 1 (rational, 4×4),
-paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
+/-- First SDP certificate matrix (rational, 4×4); paired with `v₁` over the
+σ₁ = `FlagType_2_0` type. -/
 def M₁ : Matrix (Fin 4) (Fin 4) ℚ :=
-  !![(3 / 8 : ℚ), (-3 / 32 : ℚ), (-3 / 32 : ℚ), (-3 / 8 : ℚ);
-    (-3 / 32 : ℚ), (27 / 32 : ℚ), (-9 / 32 : ℚ), (3 / 32 : ℚ);
-    (-3 / 32 : ℚ), (-9 / 32 : ℚ), (27 / 32 : ℚ), (3 / 32 : ℚ);
-    (-3 / 8 : ℚ), (3 / 32 : ℚ), (3 / 32 : ℚ), (3 / 8 : ℚ)]
+  !![(3 / 8 : ℚ), 0, 0, (-3 / 8: ℚ);
+      0, 0, 0, 0;
+      0, 0, 0, 0;
+    (-3 / 8 : ℚ), 0, 0, (3 / 8 : ℚ)]
 noncomputable def M₁_real : Matrix (Fin 4) (Fin 4) ℝ :=
   ratMatrixToReal M₁
 def dM₁ : Fin 4 → ℚ :=
-  ![(3 / 8 : ℚ), (105 / 128 : ℚ), (99 / 140 : ℚ), 0]
+  ![(3 / 8 : ℚ), 0, 0, 0]
 def LM₁ : Matrix (Fin 4) (Fin 4) ℚ :=
   !![(1 : ℚ), 0, 0, 0;
-    (-1 / 4 : ℚ), (1 : ℚ), 0, 0;
-    (-1 / 4 : ℚ), (-13 / 35 : ℚ), (1 : ℚ), 0;
-    (-1 : ℚ), 0, 0, (1 : ℚ)]
+   0, (1 : ℚ), 0, 0;
+   0, 0, (1 : ℚ), 0;
+   (-1 : ℚ), 0, 0, (1 : ℚ)]
 lemma dM₁_nonneg (i : Fin 4) : 0 ≤ dM₁ i := by
   fin_cases i <;> norm_num [dM₁]
 lemma M₁_eq_LDL : M₁ = LM₁ * Matrix.diagonal dM₁ * LM₁ᵀ := by
@@ -58,20 +60,21 @@ lemma M₁_real_eq_LDL :
 theorem M₁_real_posSemidef : M₁_real.PosSemidef := by
   exact posSemidef_of_LDLt_real dM₁_real_nonneg M₁_real_eq_LDL
 
-/-- SDP certificate matrix for block 2 (rational, 3×3),
-paired with `v₂`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
+/-- Second SDP certificate matrix (rational, 3×3); paired with `v₂` over the
+σ₂ = `FlagType_2_1` type. -/
 def M₂ : Matrix (Fin 3) (Fin 3) ℚ :=
-  !![(1 / 2 : ℚ), 0, 0;
-    0, (9 / 8 : ℚ), (-9 / 8 : ℚ);
-    0, (-9 / 8 : ℚ), (9 / 8 : ℚ)]
+  !![0, 0, 0;
+      0, (9 / 8 : ℚ), (-9 / 8 : ℚ);
+      0, (-9 / 8 : ℚ), (9 / 8 : ℚ)
+    ]
 noncomputable def M₂_real : Matrix (Fin 3) (Fin 3) ℝ :=
   ratMatrixToReal M₂
 def dM₂ : Fin 3 → ℚ :=
-  ![(1 / 2 : ℚ), (9 / 8 : ℚ), 0]
+  ![0, (9 / 8 : ℚ), 0]
 def LM₂ : Matrix (Fin 3) (Fin 3) ℚ :=
   !![(1 : ℚ), 0, 0;
-    0, (1 : ℚ), 0;
-    0, (-1 : ℚ), (1 : ℚ)]
+   0, (1 : ℚ), 0;
+   0, (-1 : ℚ), (1 : ℚ)]
 lemma dM₂_nonneg (i : Fin 3) : 0 ≤ dM₂ i := by
   fin_cases i <;> norm_num [dM₂]
 lemma M₂_eq_LDL : M₂ = LM₂ * Matrix.diagonal dM₂ * LM₂ᵀ := by
@@ -91,32 +94,33 @@ lemma M₂_real_eq_LDL :
 theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
   exact posSemidef_of_LDLt_real dM₂_real_nonneg M₂_real_eq_LDL
 
-/-- Label type for block 1 (flagmatic type '2:'). -/
-def σ₁ : FlagType (Fin 2) := FlagType_2_0
-/-- Flag vector for block 1: the 4 σ-type 3-vertex flags paired with M₁. -/
-noncomputable def v₁ : FlagAlgebraVec σ₁ 4 := ![
-  FlagAlgebra_3_2_0_0,
-  FlagAlgebra_3_2_0_1,
-  FlagAlgebra_3_2_0_2,
-  FlagAlgebra_3_2_0_3
-]
+load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K3_free_indices.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K3.json"
+load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
+load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K3.json"
 
-/-- Label type for block 2 (flagmatic type '2:12'). -/
+/-- Label type for the first quadratic form: the 2-vertex no-edge type. -/
+def σ₁ : FlagType (Fin 2) := FlagType_2_0
+/-- Flag vector paired with `M₁` (the four σ₁-type 3-vertex flags). -/
+noncomputable def v₁ : FlagAlgebraVec σ₁ 4 := ![
+  FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_1, FlagAlgebra_3_2_0_2, FlagAlgebra_3_2_0_3
+]
+/-- Label type for the second quadratic form: the 2-vertex edge type. -/
 def σ₂ : FlagType (Fin 2) := FlagType_2_1
-/-- Flag vector for block 2: the 3 σ-type 3-vertex flags paired with M₂. -/
+/-- Flag vector paired with `M₂` (the three σ₂-type 3-vertex flags). -/
 noncomputable def v₂ : FlagAlgebraVec σ₂ 3 := ![
-  FlagAlgebra_3_2_1_0,
-  FlagAlgebra_3_2_1_1,
-  FlagAlgebra_3_2_1_2
+  FlagAlgebra_3_2_1_0, FlagAlgebra_3_2_1_1, FlagAlgebra_3_2_1_2
 ]
 
 set_option maxHeartbeats 0
 set_option maxRecDepth 1500
 
-/-- **Main theorem (auto-generated).**
-Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
-Bound: '3/8'. -/
-theorem K3forbidC4_flagAlgebra
+/-- **K₃-free 4-vertex density bound.** The density of `FlagAlgebra_4_0_0_8` in
+K₃-free graphs is at most `3/8`. Proved by adding the two PSD quadratic-form
+(SOS) terms from `M₁_real`/`v₁` and `M₂_real`/`v₂`, then reducing with the API
+tactics. -/
+theorem C4_flagAlgebra_API
     : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag]
@@ -140,4 +144,4 @@ theorem K3forbidC4_flagAlgebra
   apply forbidLE_of_le
   flag_nonneg
 
-end K3forbidC4
+end C4TuranAPI
