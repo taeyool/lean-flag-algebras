@@ -5,7 +5,7 @@ import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.API.FlagExpand

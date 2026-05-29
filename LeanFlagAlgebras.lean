@@ -35,11 +35,12 @@ import LeanFlagAlgebras.Flags.Densities.MulLoader
 
 -- API
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.ExprHelpers
+import LeanFlagAlgebras.API.FlagExpand
+import LeanFlagAlgebras.API.FlagMulReduce
+import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.API.K4freeP4
 import LeanFlagAlgebras.API.CompleteGraphFreeP4
-import LeanFlagAlgebras.API.FlagSumSort
-import LeanFlagAlgebras.API.FlagExpand
 import LeanFlagAlgebras.API.Matrix.PosSemiDef
 
 -- MantelTheorem
@@ -93,9 +94,9 @@ The imports above are grouped by layer, roughly from foundations upward:
 * **FlagAlgebra** — flag definitions, densities, the flag algebra, positive
   homomorphisms, random homomorphisms, quadratic forms, and `Compute.*`.
 * **Flags** — the flag/density loaders and generated flag definitions.
-* **API** — the reusable proof-automation layer (`Basic`, `ReduceFlagMul`) and
-  the per-problem density-bound proofs (ErdosPentagon, Mantel, C4 Turán,
-  K4-free P₄).
+* **API** — the reusable proof-automation layer (`Basic`, `ExprHelpers`,
+  `FlagExpand`, `FlagMulReduce`, `FlagSumSort`) and the per-problem
+  density-bound proofs (ErdosPentagon, Mantel, C4 Turán, K4-free P₄).
 * **MantelTheorem / ErdosPentagon / Turan / Forbid / Logic** — the
   problem-specific developments and the `Forbid` (almost-sure inequality under
   a forbidden subgraph) foundation they build on.

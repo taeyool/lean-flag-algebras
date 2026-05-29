@@ -1,5 +1,5 @@
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
 import LeanFlagAlgebras.API.FlagSumSort

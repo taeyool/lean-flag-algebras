@@ -1,6 +1,6 @@
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ReduceFlagMul
+import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulLoader
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.API.FlagSumSort

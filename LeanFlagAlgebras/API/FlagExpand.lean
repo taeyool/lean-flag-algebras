@@ -1,114 +1,28 @@
-import Mathlib.Tactic
-import LeanFlagAlgebras.FlagAlgebra.PositiveHom
+import LeanFlagAlgebras.API.ExprHelpers
 
-/-! # Flag-algebra expansion tactics
+/-! # API.FlagExpand — flag expansion tactics
 
-General-purpose proof automation for flag-algebra computations. Provides
-expression-walking helpers that locate/parse generated `Flag_n_k_m_i` and
-`FlagAlgebra_n_k_m_i` constants, plus three tactics:
+General-purpose proof automation for flag-algebra computations. Provides two
+tactics that expand a flag-algebra element as a finite flag sum:
 
 * `flag_expand_forbid N` — expand a flag at size `N` under a
-  forbidden-subgraph (density-zero) restriction hypothesis;
+  forbidden-subgraph (density-zero) restriction hypothesis.
 * `flag_expand N` — expand one flag-algebra basis element as its size-`N`
-  flag sum;
-* `flag_mul_reduce` — reduce a flag product to a linear combination of flags.
+  flag sum.
 
-All three rewrite via the generated `flagSet_*_eq_univ` / `flagSet_*_val_eq`
+Both rewrite via the generated `flagSet_*_eq_univ` / `flagSet_*_val_eq`
 lemmas and close by algebraic normalization. These tactics are problem-agnostic
 and used by the Flagmatic-to-Lean automation in `LeanFlagAlgebras/Flagmatic/`
-as well as by individual theorem developments (e.g. `MantelTheorem`). -/
+as well as by individual theorem developments (e.g. `MantelTheorem`).
+
+Shared Expr helpers (`findFlagAlgebraConst?`, `parseFlagAlgebraIndices?`, etc.)
+are provided by `API.ExprHelpers`.
+
+For flag-product reduction, see `API.FlagMulReduce`. -/
 
 open Lean Elab Tactic Meta
 
-namespace MantelTheorem
-
-/-- Find a constant name containing `FlagAlgebra_...` in an expression. -/
-partial def findFlagAlgebraConst? (e : Expr) : Option Name :=
-  match e with
-  | .const nm _ =>
-      if nm.toString.contains "FlagAlgebra_" then some nm else none
-  | .app f x =>
-      match findFlagAlgebraConst? f with
-      | some nm => some nm
-      | none => findFlagAlgebraConst? x
-  | .lam _ _ b _ => findFlagAlgebraConst? b
-  | .forallE _ _ b _ => findFlagAlgebraConst? b
-  | .letE _ _ v b _ =>
-      match findFlagAlgebraConst? v with
-      | some nm => some nm
-      | none => findFlagAlgebraConst? b
-  | .mdata _ b => findFlagAlgebraConst? b
-  | .proj _ _ b => findFlagAlgebraConst? b
-  | _ => none
-
-/-- Parse `(n,k,m,i)` from names like `...FlagAlgebra_n_k_m_i`. -/
-def parseFlagAlgebraIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
-  let s := nm.toString
-  let tail ← match s.splitOn "FlagAlgebra_" with
-    | _ :: t :: _ => some t
-    | _ => none
-  let parts := tail.splitOn "_"
-  let (nStr, kStr, mStr, iStr) ← match parts with
-    | nStr :: kStr :: mStr :: iStr :: _ => some (nStr, kStr, mStr, iStr)
-    | _ => none
-  let n ← String.toNat? nStr
-  let k ← String.toNat? kStr
-  let m ← String.toNat? mStr
-  let i ← String.toNat? iStr
-  pure (n, k, m, i)
-
-/-- Find a constant name containing `Flag_...` in an expression. -/
-partial def findFlagConst? (e : Expr) : Option Name :=
-  match e with
-  | .const nm _ =>
-    if nm.toString.contains "Flag_" then some nm else none
-  | .app f x =>
-    match findFlagConst? f with
-    | some nm => some nm
-    | none => findFlagConst? x
-  | .lam _ _ b _ => findFlagConst? b
-  | .forallE _ _ b _ => findFlagConst? b
-  | .letE _ _ v b _ =>
-    match findFlagConst? v with
-    | some nm => some nm
-    | none => findFlagConst? b
-  | .mdata _ b => findFlagConst? b
-  | .proj _ _ b => findFlagConst? b
-  | _ => none
-
-/-- Parse `(n,k,m,i)` from names like `...Flag_n_k_m_i`. -/
-def parseFlagIndices? (nm : Name) : Option (Nat × Nat × Nat × Nat) := do
-  let s := nm.toString
-  let tail ← match s.splitOn "Flag_" with
-    | _ :: t :: _ => some t
-    | _ => none
-  let parts := tail.splitOn "_"
-  let (nStr, kStr, mStr, iStr) ← match parts with
-    | nStr :: kStr :: mStr :: iStr :: _ => some (nStr, kStr, mStr, iStr)
-    | _ => none
-  let n ← String.toNat? nStr
-  let k ← String.toNat? kStr
-  let m ← String.toNat? mStr
-  let i ← String.toNat? iStr
-  pure (n, k, m, i)
-
-/-- Collect every constant whose name starts with `prefixStr` in an expression. -/
-partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name :=
-  let rec collectAux (e : Expr) (acc : Array Name) : Array Name :=
-    match e with
-    | .const n _ =>
-      if n.toString.startsWith prefixStr && !acc.contains n then
-        acc.push n
-      else
-        acc
-    | .app f a => collectAux a (collectAux f acc)
-    | .lam _ t b _ => collectAux b (collectAux t acc)
-    | .forallE _ t b _ => collectAux b (collectAux t acc)
-    | .letE _ t v b _ => collectAux b (collectAux v (collectAux t acc))
-    | .mdata _ expr => collectAux expr acc
-    | .proj _ _ expr => collectAux expr acc
-    | _ => acc
-  collectAux e #[]
+namespace FlagAlgebras.API
 
 /-
 `flag_expand_forbid N` proves goals of the form
@@ -162,9 +76,9 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
         pure <| mkIdent (Name.mkSimple s!"FlagType_{kVal}_{mVal}")
 
     let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
-    let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
+    let valEqName  : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
     let eqUnivId : TSyntax `ident := mkIdent eqUnivName
-    let valEqId : TSyntax `ident := mkIdent valEqName
+    let valEqId  : TSyntax `ident := mkIdent valEqName
 
     evalTactic (← `(tactic|
       have hExp := FlagAlgebras.unitVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
@@ -184,23 +98,6 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
 elab_rules : tactic
   | `(tactic| flag_expand_forbid $N) =>
       runFlagExpandWithRestriction N
-
-/-- Collect all constants containing `FlagAlgebra_...` in an expression tree. -/
-partial def collectFlagAlgebraConsts (e : Expr) (acc : Array Name := #[]) : Array Name :=
-  match e with
-  | .const nm _ =>
-      if nm.toString.contains "FlagAlgebra_" then acc.push nm else acc
-  | .app f x =>
-      let acc' := collectFlagAlgebraConsts f acc
-      collectFlagAlgebraConsts x acc'
-  | .lam _ _ b _ => collectFlagAlgebraConsts b acc
-  | .forallE _ _ b _ => collectFlagAlgebraConsts b acc
-  | .letE _ _ v b _ =>
-      let acc' := collectFlagAlgebraConsts v acc
-      collectFlagAlgebraConsts b acc'
-  | .mdata _ b => collectFlagAlgebraConsts b acc
-  | .proj _ _ b => collectFlagAlgebraConsts b acc
-  | _ => acc
 
 /--
 `flag_expand N` proves goals of the form
@@ -245,7 +142,7 @@ elab_rules : tactic
         let finFlagTerm ← `(term| ⟨$lhsNStx, $flagId⟩)
 
         let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
-        let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
+        let valEqName  : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
 
         runIfGoals (← `(tactic| apply Quotient.sound))
         runIfGoals (← `(tactic| dsimp))
@@ -255,7 +152,7 @@ elab_rules : tactic
         runIfGoals (← `(tactic| dsimp [FlagAlgebras.densityFlagSum]))
 
         let eqUnivId : TSyntax `ident := mkIdent eqUnivName
-        let valEqId : TSyntax `ident := mkIdent valEqName
+        let valEqId  : TSyntax `ident := mkIdent valEqName
         runIfGoals (← `(tactic| have h_eq_univ := $eqUnivId))
         runIfGoals (← `(tactic| have h_val_eq := $valEqId))
         runIfGoals (← `(tactic| rw [Finset.sum_eq_multiset_sum, ← h_eq_univ]))
@@ -273,65 +170,4 @@ elab_rules : tactic
         catch _ =>
           pure ()
 
-/--
-`flag_mul_reduce` proves goals of the shape
-`(flag) * (flag) = (linear combination of flags)`.
-
-It unfolds flag multiplication to a finite sum, rewrites by
-`flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`, and closes by
-algebraic normalization. The RHS add-order is handled up to associativity and
-commutativity.
--/
-syntax (name := flagMulReduceTac) "flag_mul_reduce" : tactic
-
-elab_rules : tactic
-  | `(tactic| flag_mul_reduce) => do
-      withMainContext do
-        evalTactic (← `(tactic| try dsimp))
-        let goal ← getMainGoal
-        let goalTy ← goal.getType
-        let some (_, lhs, rhs) := goalTy.eq?
-          | throwError "Goal must be an equality."
-
-        let lhsConsts := collectFlagAlgebraConsts lhs
-        let rhsConsts := collectFlagAlgebraConsts rhs
-
-        let some lhsConst := lhsConsts[0]?
-          | throwError "Could not find a `FlagAlgebra_*` constant on the LHS."
-        let some (_, kVal, mVal, _) := parseFlagAlgebraIndices? lhsConst
-          | throwError m!"Could not parse indices from LHS constant `{lhsConst}`."
-
-        let rhsNs := rhsConsts.toList.filterMap (fun nm =>
-          match parseFlagAlgebraIndices? nm with
-          | some (n, _, _, _) => some n
-          | none => none)
-        if rhsNs.isEmpty then
-          throwError "Could not infer target size `N` from RHS `FlagAlgebra_*` constants."
-        let nVal := rhsNs.foldl Nat.max 0
-
-        let eqUnivName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_eq_univ"
-        let valEqName : Name := Name.mkSimple s!"flagSet_{nVal}_{kVal}_{mVal}_val_eq"
-        let eqUnivId : TSyntax `ident := mkIdent eqUnivName
-        let valEqId : TSyntax `ident := mkIdent valEqName
-
-        evalTactic (← `(tactic| apply Quotient.sound))
-        evalTactic (← `(tactic| dsimp))
-        evalTactic (← `(tactic| simp [FlagAlgebras.flagVector_mul_eq_nested_sum, FlagAlgebras.flagMul, FlagAlgebras.flagMulWithSize]))
-        evalTactic (← `(tactic| have h_eq_univ := $eqUnivId))
-        evalTactic (← `(tactic| have h_val_eq := $valEqId))
-        evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum, ← h_eq_univ]))
-        evalTactic (← `(tactic| simp [h_val_eq]))
-        try
-          evalTactic (← `(tactic| ring_nf))
-        catch _ =>
-          pure ()
-        try
-          evalTactic (← `(tactic| apply flagVector_eq_eqv; ring_nf))
-        catch _ =>
-          pure ()
-        try
-          evalTactic (← `(tactic| apply flagVector_eq_eqv; simp [add_assoc, add_left_comm, add_comm]))
-        catch _ =>
-          pure ()
-
-end MantelTheorem
+end FlagAlgebras.API
