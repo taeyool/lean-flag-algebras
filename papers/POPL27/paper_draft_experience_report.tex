@@ -49,7 +49,7 @@
 \newcommand{\Fin}[1]{\mathsf{Fin}(#1)}
 \newcommand{\Flag}[1]{\mathcal{F}^{#1}}
 \newcommand{\FlagAlg}[1]{\mathcal{A}^{#1}}
-\newcommand{\poshom}[1]{\Phi^{#1}}
+\newcommand{\poshom}[1]{\mathrm{Hom}^+(\mathcal{A}^{#1}, \mathbb{R})}
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
@@ -256,7 +256,7 @@ pattern can occur when another pattern is forbidden.  Let $F$ be a finite
 simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 \[
   \mathrm{ex}(n,\,F;\,\mathcal{H})
-  =
+  :=
   \max\bigl\{
     \text{number of induced copies of }F\text{ in }G
     \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
@@ -270,7 +270,7 @@ question normalizes by the number of possible $|V(F)|$-vertex subsets and
 takes a limit:
 \[
   \tdensity{F}{\mathcal{H}}
-  =
+  :=
   \lim_{n\to\infty}
   \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
 \]
@@ -595,7 +595,7 @@ $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
 \[
   \den{A}{G}
-  \;=\;
+  \;:=\;
   \frac{1}{\binom{n-k}{m-k}}
     \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
                   ~\Big|~ |S|=m-k,\;
@@ -684,7 +684,7 @@ by all elements of the form
 \]
 The \emph{flag algebra} is the quotient module
 \[
-  \mathcal{A}^\sigma \;=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
+  \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
 We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
 By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
@@ -748,7 +748,7 @@ $A_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
 $\ell \geq m_1 + m_2 - k$ and define
 \[
   [A_1] \cdot [A_2]
-  \;=\;
+  \;:=\;
   \sum_{D \in \mathcal{F}^\sigma_\ell} \den{A_1,A_2}{D} \cdot [D]
   \qquad\text{in } \mathcal{A}^\sigma.
 \]
@@ -786,40 +786,68 @@ $\sigma=\emptyset$.
   \]
 \end{example}
 
-\subsection{Positive Homomorphisms, Semantic Order, and Unlabeling}
+\subsection{Positive Homomorphisms and Semantic Order}
 
-The quotient algebra is syntax for density expressions.  To use such an
-expression in an extremal argument, we need to say how it is evaluated in a
-limiting graph sequence.  That role is played by positive homomorphisms.
+% The quotient algebra is syntax for density expressions.  To use such an
+% expression in an extremal argument, we need to say how it is evaluated in a
+% limiting graph sequence.  That role is played by positive homomorphisms.
+
+The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
+densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
+\emph{asymptotic} statements: rather than a single finite host flag, we
+consider sequences $(G_n)_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
+what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
+sequences of host flags.  The semantic non-negativity cone
+$\mathcal{C}^\sigma$ then consists of the pattern $\sigma$-flag expressions
+whose density at every such limiting object is non-negative, and establishing
+membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
+to do.
 
 \paragraph{Positive homomorphisms.}
 Fix a type $\sigma$.  A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi([A]) \geq 0$ for every $\sigma$-flag $A$.  Thus $\phi$ assigns a real
-number to each algebra expression, respects addition and multiplication, and
-never assigns a negative value to a concrete flag.
+$\phi(A) \geq 0$ for every $\sigma$-flag $A$.  Thus $\phi$ assigns a real
+number to each flag algebra expression, respects addition, multiplication, and the unit, and
+never assigns a negative value to any flag.
+We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
+$\mathcal{A}^\sigma$.
 
-In the unlabeled case $\sigma=\emptyset$, positive homomorphisms are exactly
-the semantic objects represented by convergent graph sequences.  That is, if
-$(G_n)_{n \in \mathbb{N}}$ is a sequence of finite graphs with
-$|V(G_n)|\to\infty$ and every density $\den{A}{G_n}$ has a limit, then
-\[
-  [A]\longmapsto \lim_{n\to\infty}\den{A}{G_n}
-\]
-extends to a positive homomorphism on $\mathcal{A}^\emptyset$; conversely,
-every positive homomorphism on $\mathcal{A}^\emptyset$ arises this way in
-Razborov's semantics~\cite{razborov2007flag}.
+Call a sequence $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{convergent} if
+$|V(G_n)|\to\infty$ and $\lim_{n\to\infty}\den{A}{G_n}$ exists for every $\sigma$-flag $A$.
+The following theorem makes the connection between convergent sequences and
+positive homomorphisms precise.
+
+% \begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:convergent-hom}
+%   \begin{enumerate}
+%   \item[\textup{(a)}] For every convergent sequence $(G_n)_{n\in\mathbb{N}}$ of
+%     host $\sigma$-flags, the map $[A]\mapsto\lim_{n\to\infty}\den{A}{G_n}$ is a
+%     positive homomorphism on $\mathcal{A}^\sigma$.
+%   \item[\textup{(b)}] Conversely, every positive homomorphism
+%     $\phi:\mathcal{A}^\sigma\to\mathbb{R}$ equals
+%     $[A]\mapsto\lim_{n\to\infty}\den{A}{G_n}$ for some convergent sequence
+%     $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags.
+%   \end{enumerate}
+% \end{theorem}
+\begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:convergent-hom}
+  \begin{enumerate}
+  \item[\textup{(a)}] For every convergent sequence $(G_n)_{n\in\mathbb{N}}$ of
+    host $\sigma$-flags, the assignment $A\mapsto\lim_{n\to\infty}\den{A}{G_n}$
+    extends to an element of $\poshom{\sigma}$.
+  \item[\textup{(b)}] Conversely, every $\phi \in \poshom{\sigma}$ arises as the extension of
+    $A\mapsto\lim_{n\to\infty}\den{A}{G_n}$ for some convergent sequence
+    $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags.
+  \end{enumerate}
+\end{theorem}
 
 \paragraph{Semantic non-negativity and order.}
 For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
 \[
   \mathcal{C}^\sigma
-  =
+  :=
   \{f \in \mathcal{A}^\sigma
     \mid \phi(f) \geq 0
-    \text{ for every positive homomorphism }
-    \phi:\mathcal{A}^\sigma\to\mathbb{R}\}.
+    \text{ for every } \phi \in \poshom{\sigma}\}.
 \]
 An element of $\mathcal{C}^\sigma$ is non-negative under every positive
 homomorphism of the $\sigma$-flag algebra.  We write
@@ -829,10 +857,50 @@ homomorphism of the $\sigma$-flag algebra.  We write
   g-f \in \mathcal{C}^\sigma.
 \]
 Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every positive homomorphism
-$\phi:\mathcal{A}^\sigma\to\mathbb{R}$.  When $\sigma=\emptyset$, we write
+$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write
 $\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
 $\leq_\emptyset$.
+
+\paragraph{From semantic non-negativity to Tur\'an density.}
+The semantic order $\leq_\sigma$ bridges flag algebra and the Turán density
+$\tdensity{P}{H}$.  When host flag sequences are additionally required to be
+$H$-free, \Cref{thm:convergent-hom} shows the relevant limiting objects are
+the positive homomorphisms $\phi\in\poshom{\emptyset}$ satisfying $\phi(H)=0$.
+We therefore write
+\[
+  f \forbLE{H} g
+  \qquad\text{when}\qquad
+  \phi(f) \leq \phi(g)
+  \text{ for every } \phi \in \poshom{\emptyset} \text{ with } \phi(H) = 0,
+\]
+and $f \forbLES{\sigma}{H} g$ for the analogous ordering in
+$\mathcal{A}^\sigma$.  The following lemma is the soundness statement
+underlying every flag algebra proof.
+
+\begin{lemma}[Semantic bound]\label{lem:semantic-bound}
+  If $P \forbLE{H} c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  $\tdensity{P}{H} \leq c$.
+\end{lemma}
+
+A matching lower bound typically comes from an explicit $H$-free construction
+whose $P$-density approaches $c$, pinning down $\tdensity{P}{H}$ exactly.
+Two classical results illustrate how this looks in flag algebra language.
+
+\begin{example}[Mantel's theorem]
+  Triangle-free graphs have edge density at most $\tfrac{1}{2}$, so
+  $\tdensity{K_2}{K_3} = \tfrac{1}{2}$.  The upper bound is the flag algebra
+  inequality $K_2 \forbLE{K_3} \tfrac{1}{2}\cdot\mathbf{1}$; the balanced
+  complete bipartite graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$,
+  which are $K_3$-free, witness the lower bound.
+\end{example}
+
+\begin{example}[Pentagon density in triangle-free graphs~{\cite{grzesik2012,hatami2012}}]
+  The maximum density of $C_5$ in $K_3$-free graphs is
+  $\tdensity{C_5}{K_3} = \tfrac{24}{625}$, achieved in the limit by the
+  balanced blow-up of $C_5$.  The upper bound is the flag algebra inequality
+  $C_5 \forbLE{K_3} \tfrac{24}{625}\cdot\mathbf{1}$, established via an SDP
+  certificate.
+\end{example}
 
 \paragraph{Squares and PSD quadratic forms.}
 A real symmetric matrix $Q \in \mathbb{R}^{r\times r}$ is \emph{positive
@@ -857,7 +925,7 @@ This is the sense in which flag algebra
 proofs use ``sums of squares'': the proof data is a finite quadratic expression
 whose value is forced to be a non-negative real number by a PSD matrix.
 
-\paragraph{Downward (unlabeling) operator.}
+\subsection{The Downward Operator}
 Labeled algebras (i.e., $\mathcal{A}^\sigma$ with
 $\sigma \neq \emptyset$) often give stronger quadratic expressions because
 labels record local structure.  The final extremal statement, however, is
@@ -875,7 +943,7 @@ of the type vertices would recover the same labeled flag.  More precisely,
 define
 \[
   q_\sigma(A)
-  \;=\;
+  \;:=\;
   \frac{
     \bigl|\{\theta' : [k]\hookrightarrow V(G)
        \mid \theta' \text{ embeds }\sigma\text{ into }G
@@ -885,7 +953,7 @@ define
 Then
 \[
   \llbracket A \rrbracket_\sigma
-  \;=\;
+  \;:=\;
   q_\sigma(A)\cdot A|_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
@@ -960,7 +1028,7 @@ For an unlabeled target graph $P$ and an unlabeled forbidden graph $H$, the
 \emph{generalized Turán density} is
 \[
   \tdensity{P}{H}
-  \;=\;
+  \;:=\;
   \lim_{n\to\infty}
   \frac{1}{\binom{n}{|V(P)|}} \cdot
     {\max\Bigl\{|\text{induced copies of }P\text{ in }G|
