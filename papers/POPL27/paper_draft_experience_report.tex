@@ -52,8 +52,6 @@
 \newcommand{\poshom}[1]{\mathrm{Hom}^+(\mathcal{A}^{#1}, \mathbb{R})}
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
-\newcommand{\forbLE}[1]{\leq_{\operatorname{Forb}(#1)}}
-\newcommand{\forbLES}[2]{\leq_{#1,\operatorname{Forb}(#2)}}
 \newcommand{\lean}[1]{\texttt{#1}}
 \newcommand{\gw}[1]{\textcolor{red}{\textbf{[GW: #1]}}}
 
@@ -252,27 +250,27 @@ Where a choice was forced by feasibility rather than design, we say so.
 
 \paragraph{Why flag algebras matter.}
 Many central questions in extremal combinatorics ask how often one finite
-pattern can occur when another pattern is forbidden.  Let $F$ be a finite
+pattern can occur when another pattern is forbidden.  Let $P$ be a finite
 simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
 \[
-  \mathrm{ex}(n,\,F;\,\mathcal{H})
+  \mathrm{ex}(n,\,P;\,\mathcal{H})
   :=
   \max\bigl\{
-    \text{number of induced copies of }F\text{ in }G
+    \text{number of induced copies of }P\text{ in }G
     \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
   \bigr\},
 \]
-where an \emph{induced copy} of $F$ in $G$ is a vertex subset
-$S\subseteq V(G)$ with $|S|=|V(F)|$ and $G[S]\cong F$, and
+where an \emph{induced copy} of $P$ in $G$ is a vertex subset
+$S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
 \emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
 member of $\mathcal{H}$.  The corresponding asymptotic
-question normalizes by the number of possible $|V(F)|$-vertex subsets and
-takes a limit:
+question normalizes by the number of possible $|V(P)|$-vertex subsets and
+takes a limit; we call this the \emph{Turán density} of $P$ with respect to $\mathcal{H}$:
 \[
-  \tdensity{F}{\mathcal{H}}
+  \tdensity{P}{\mathcal{H}}
   :=
   \lim_{n\to\infty}
-  \frac{\mathrm{ex}(n,\,F;\,\mathcal{H})}{\binom{n}{|V(F)|}}.
+  \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
 \]
 For example, Mantel's theorem states that a triangle-free graph on $n$
 vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
@@ -288,9 +286,9 @@ records that, in any sufficiently large triangle-free graph, at most half of
 all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
-Determining $\tdensity{F}{\mathcal{H}}$ is hard because it is a statement
+Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
 about \emph{all} sufficiently large $\mathcal{H}$-free graphs: a valid upper
-bound must certify that the proportion of induced copies of $F$ never exceeds
+bound must certify that the proportion of induced copies of $P$ never exceeds
 the claimed value no matter how large the host graph is.  No finite collection of examples
 suffices, and the extremal graphs achieving the maximum may change
 unpredictably as $n$ grows.
@@ -394,6 +392,11 @@ following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.  No background in flag algebras or extremal
 combinatorics is assumed.  For $n \in \mathbb{N}$ we write
 $[n] = \{1,\ldots,n\}$; all graphs are undirected, finite and simple.
+Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
+forbidden induced subgraphs; a graph is \emph{$\mathcal{H}$-free} if it
+contains no induced subgraph isomorphic to any member of $\mathcal{H}$.
+All types, flags, and flag algebras below are defined relative to this
+fixed $\mathcal{H}$.
 % The goal is to make the proof pattern legible:
 % what are the terms, what do they mean, and why can a finite certificate say
 % something about all large graphs?
@@ -449,14 +452,14 @@ $[n] = \{1,\ldots,n\}$; all graphs are undirected, finite and simple.
 % local views.
 
 \paragraph{Types.}
-A \emph{type} of size $k$ is a graph $\sigma$ with vertex set $[k]$.
+A \emph{type} of size $k$ is an $\mathcal{H}$-free graph $\sigma$ with vertex set $[k]$.
 The \emph{empty type} $\emptyset$ (size $k=0$) is the unique graph on the
 empty vertex set.
 
 \paragraph{Flags.}
 Fix a type $\sigma$ of size $k$.
-A \emph{$\sigma$-flag} is a pair $A = (M, \theta_A)$ where $M$ is a
-finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
+A \emph{$\sigma$-flag} is a pair $A = (M, \theta_A)$ where $M$ is an
+$\mathcal{H}$-free finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_A)]$ via $\theta_A$
 (i.e., $\theta_A$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $A$; we write $V(A)$ for $V(M)$.
@@ -604,6 +607,7 @@ vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
 \]
 This value lies in $[0,1]$ and is invariant under
 isomorphism of both $A$ and $G$.
+When $n < m$, we set $\den{A}{G} := 0$ by convention.
 
 
 \begin{example}[Subflag densities in $C_5^\bullet$]
@@ -645,6 +649,7 @@ $S_i \subseteq V(G) \setminus \operatorname{Im}(\theta_G)$ and $|S_i| = m_i - k$
 The \emph{joint induced subflag density} $\den{A_1,A_2}{G}$ is the probability that for each
 $i = 1,2$, the set $S_i$ together with the labeled vertices of $G$ induces a
 $\sigma$-flag isomorphic to $A_i$.
+When $n < m_1 + m_2 - k$, we set $\den{A_1,A_2}{G} := 0$ by convention.
 % Joint densities are what make multiplication possible: the product of two
 % pattern flags is interpreted as the probability that two disjoint samples occur
 % simultaneously in the same host.  This turns combinatorial double counting
@@ -795,13 +800,21 @@ $\sigma=\emptyset$.
 The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
 densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 \emph{asymptotic} statements: rather than a single finite host flag, we
-consider sequences $(G_n)_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
+consider sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the pattern $\sigma$-flag expressions
 whose density at every such limiting object is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
 to do.
+
+\paragraph{Convergent sequences.}
+Call a sequence $\{G_n\}_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{increasing} if
+$|V(G_1)| < |V(G_2)| < \cdots$.  Each $G$ defines a point
+$p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(A) := \den{A}{G}$.
+An increasing sequence is \emph{convergent} if the sequence of points $p^{G_n}$
+converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
+equivalently, if $\lim_{n\to\infty}\den{A}{G_n}$ exists for every $\sigma$-flag $A$.
 
 \paragraph{Positive homomorphisms.}
 Fix a type $\sigma$.  A \emph{positive homomorphism} on
@@ -813,34 +826,31 @@ never assigns a negative value to any flag.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
-Call a sequence $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{convergent} if
-$|V(G_n)|\to\infty$ and $\lim_{n\to\infty}\den{A}{G_n}$ exists for every $\sigma$-flag $A$.
-The following theorem makes the connection between convergent sequences and
-positive homomorphisms precise.
+In $\mathcal{A}^\sigma$ the following identity holds for every $\ell \geq |\sigma|$:
+\[
+  \sum_{F \in \mathcal{F}^\sigma_\ell} F \;=\; \mathbf{1}_\sigma.
+\]
+Applying any $\phi \in \poshom{\sigma}$ to both sides gives
+$\sum_{F \in \mathcal{F}^\sigma_\ell} \phi(F) = 1$;
+non-negativity then forces $\phi(F) \in [0,1]$ for every $\sigma$-flag $F$.
+Thus each $\phi \in \poshom{\sigma}$ determines a point in $[0,1]^{\mathcal{F}^\sigma}$
+via the assignment $F \mapsto \phi(F)$, so $\poshom{\sigma}$ can be identified with
+a subset of $[0,1]^{\mathcal{F}^\sigma}$.  % It is moreover compact.
 
-% \begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:convergent-hom}
-%   \begin{enumerate}
-%   \item[\textup{(a)}] For every convergent sequence $(G_n)_{n\in\mathbb{N}}$ of
-%     host $\sigma$-flags, the map $[A]\mapsto\lim_{n\to\infty}\den{A}{G_n}$ is a
-%     positive homomorphism on $\mathcal{A}^\sigma$.
-%   \item[\textup{(b)}] Conversely, every positive homomorphism
-%     $\phi:\mathcal{A}^\sigma\to\mathbb{R}$ equals
-%     $[A]\mapsto\lim_{n\to\infty}\den{A}{G_n}$ for some convergent sequence
-%     $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags.
-%   \end{enumerate}
-% \end{theorem}
-\begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:convergent-hom}
+The following theorem makes precise the sense in which positive homomorphisms
+are exactly the limiting objects of convergent sequences of $\sigma$-flags.
+
+\begin{theorem}[Lov\'{a}sz--Szegedy~{\cite{lovasz2006limits}}]\label{thm:convergent-hom}
   \begin{enumerate}
-  \item[\textup{(a)}] For every convergent sequence $(G_n)_{n\in\mathbb{N}}$ of
-    host $\sigma$-flags, the assignment $A\mapsto\lim_{n\to\infty}\den{A}{G_n}$
-    extends to an element of $\poshom{\sigma}$.
-  \item[\textup{(b)}] Conversely, every $\phi \in \poshom{\sigma}$ arises as the extension of
-    $A\mapsto\lim_{n\to\infty}\den{A}{G_n}$ for some convergent sequence
-    $(G_n)_{n\in\mathbb{N}}$ of host $\sigma$-flags.
+  \item[\textup{(a)}] For every convergent sequence $\{G_n\}_{n\in\mathbb{N}}$ of
+    $\sigma$-flags, $\lim_{n\to\infty} p^{G_n} \in \poshom{\sigma}$.
+  \item[\textup{(b)}] Conversely, every $\phi \in \poshom{\sigma}$ satisfies
+    $\phi = \lim_{n\to\infty} p^{G_n}$ for some convergent sequence
+    $\{G_n\}_{n\in\mathbb{N}}$ of $\sigma$-flags.
   \end{enumerate}
 \end{theorem}
 
-\paragraph{Semantic non-negativity and order.}
+\paragraph{Semantic non-negativity cone and order.}
 For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
 \[
   \mathcal{C}^\sigma
@@ -849,57 +859,58 @@ For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
     \mid \phi(f) \geq 0
     \text{ for every } \phi \in \poshom{\sigma}\}.
 \]
-An element of $\mathcal{C}^\sigma$ is non-negative under every positive
-homomorphism of the $\sigma$-flag algebra.  We write
+We write
 \[
   f \leq_\sigma g
   \qquad\text{when}\qquad
   g-f \in \mathcal{C}^\sigma.
 \]
 Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write
-$\mathcal{C}$ for $\mathcal{C}^\emptyset$ and omit the subscript from
-$\leq_\emptyset$.
+$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
-The semantic order $\leq_\sigma$ bridges flag algebra and the Turán density
-$\tdensity{P}{H}$.  When host flag sequences are additionally required to be
-$H$-free, \Cref{thm:convergent-hom} shows the relevant limiting objects are
-the positive homomorphisms $\phi\in\poshom{\emptyset}$ satisfying $\phi(H)=0$.
-We therefore write
-\[
-  f \forbLE{H} g
-  \qquad\text{when}\qquad
-  \phi(f) \leq \phi(g)
-  \text{ for every } \phi \in \poshom{\emptyset} \text{ with } \phi(H) = 0,
-\]
-and $f \forbLES{\sigma}{H} g$ for the analogous ordering in
-$\mathcal{A}^\sigma$.  The following lemma is the soundness statement
-underlying every flag algebra proof.
+The problem of bounding the Turán density $\tdensity{P}{\mathcal{H}}$ from above
+reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
+lemma shows.
 
-\begin{lemma}[Semantic bound]\label{lem:semantic-bound}
-  If $P \forbLE{H} c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
-  $\tdensity{P}{H} \leq c$.
+\begin{lemma}\label{lem:semantic-bound}
+  If $P \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  $\tdensity{P}{\mathcal{H}} \leq c$.
 \end{lemma}
+\begin{proof}
+  Suppose for contradiction that $\tdensity{P}{\mathcal{H}} > c$.  Then
+  there exist $\varepsilon > 0$ and an increasing sequence of
+  $\mathcal{H}$-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
+  $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
+  is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and this product space is
+  compact (Tychonoff), the sequence $\{p^{G_k}\}$ has a convergent
+  subsequence; by \Cref{thm:convergent-hom}(a) its limit is some
+  $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
+  the densities $\den{P}{G_k}$, we have
+  $\phi(P) = \lim_k \den{P}{G_k} \geq c + \varepsilon > c$.  But
+  $P \leq c \cdot \mathbf{1}$ means $\phi(P) \leq c$ for every
+  $\phi \in \poshom{\emptyset}$, a contradiction.
+\end{proof}
 
-A matching lower bound typically comes from an explicit $H$-free construction
-whose $P$-density approaches $c$, pinning down $\tdensity{P}{H}$ exactly.
+A matching lower bound typically comes from an explicit $\mathcal{H}$-free construction
+whose $P$-density approaches $c$, pinning down $\tdensity{P}{\mathcal{H}}$ exactly.
 Two classical results illustrate how this looks in flag algebra language.
 
 \begin{example}[Mantel's theorem]
-  Triangle-free graphs have edge density at most $\tfrac{1}{2}$, so
-  $\tdensity{K_2}{K_3} = \tfrac{1}{2}$.  The upper bound is the flag algebra
-  inequality $K_2 \forbLE{K_3} \tfrac{1}{2}\cdot\mathbf{1}$; the balanced
-  complete bipartite graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$,
-  which are $K_3$-free, witness the lower bound.
+  Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$:
+  asymptotically, at most half of all vertex pairs in a triangle-free graph
+  are edges.  The upper bound translates into the flag algebra inequality
+  $K_2 \leq \tfrac{1}{2}\cdot\mathbf{1}$; the balanced complete bipartite
+  graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ witness the lower bound.
 \end{example}
 
-\begin{example}[Pentagon density in triangle-free graphs~{\cite{grzesik2012,hatami2012}}]
-  The maximum density of $C_5$ in $K_3$-free graphs is
-  $\tdensity{C_5}{K_3} = \tfrac{24}{625}$, achieved in the limit by the
-  balanced blow-up of $C_5$.  The upper bound is the flag algebra inequality
-  $C_5 \forbLE{K_3} \tfrac{24}{625}\cdot\mathbf{1}$, established via an SDP
-  certificate.
+\begin{example}[Erd\H{o}s Pentagon Problem~{\cite{grzesik2012,hatami2012}}]
+  The Erd\H{o}s pentagon problem asks for the maximum density of $C_5$ in
+  triangle-free graphs; the answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$,
+  meaning at most $\tfrac{24}{625}$ of all five-vertex subsets in such a graph
+  are pentagons.  The upper bound is the flag algebra inequality
+  $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$; an explicit $K_3$-free construction
+  (the balanced blow-up of $C_5$) witnesses the lower bound.
 \end{example}
 
 \paragraph{Squares and PSD quadratic forms.}
@@ -1007,7 +1018,7 @@ zero.
 To distinguish this from the type-indexed order $\leq_\sigma$, for
 $f,g\in\mathcal{A}^\emptyset$ write
 \[
-  f \forbLE{H} g
+  f \leq g
 \]
 when $\phi(f)\leq\phi(g)$ for every positive homomorphism
 $\phi:\mathcal{A}^\emptyset\to\mathbb{R}$ satisfying
@@ -1016,7 +1027,7 @@ every positive homomorphism satisfying the forbidden-graph condition
 $\phi([H])=0$.
 Thus an upper-bound proof for the target graph $P$ aims to establish
 \[
-  [P] \forbLE{H} c\cdot\mathbf{1}.
+  [P] \leq c\cdot\mathbf{1}.
 \]
 The finite proof data usually combines three ingredients already defined
 above: zero-space relations expand expressions to a common size, PSD quadratic
@@ -1035,7 +1046,7 @@ For an unlabeled target graph $P$ and an unlabeled forbidden graph $H$, the
                    ~\Big|~ |V(G)|=n \text{ and } G \text{ is }H\text{-free}\Bigr\}}.
 \]
 For the complete forbidden graph used in the certificate, the semantic
-inequality $[P] \forbLE{H} c\cdot\mathbf{1}$ implies
+inequality $[P] \leq c\cdot\mathbf{1}$ implies
 $\tdensity{P}{H}\leq c$.  A matching construction gives the reverse
 inequality when the claimed value is sharp.
 
@@ -1101,10 +1112,10 @@ the standard empty-typed level with the typed levels: every positive
 homomorphism $\phi$ on the empty-typed algebra extends to a probability
 measure $\mathbb{P}^{\phi}$ on the space of $\sigma$-typed positive
 homomorphisms for any $\sigma$.  This measure-theoretic result is the
-foundation on which the forbidden-subgraph predicate $\forbLES{\sigma}{H}$
+foundation on which the forbidden-subgraph predicate $\leq_\sigma$
 rests.  The transfer theorem
 \lean{generalizedTuranDensity\_le\_of\_forbidLE} then reduces a Tur\'an
-density bound to a single empty-typed semantic inequality $[P] \forbLE{H}
+density bound to a single empty-typed semantic inequality $[P] \leq
 c\cdot\mathbf{1}$ in the ambient algebra.  Any proof of that inequality,
 however it is assembled, immediately yields the bound $\tdensity{P}{H}\leq
 c$; and all the abstract-layer results about products, quadratic forms, and
@@ -1371,12 +1382,12 @@ def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
     P[phi0] {phi | phi f <= phi g} = 1
 \end{lstlisting}
 For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
-$f \forbLES{\sigma}{H} g$ is represented in Lean by this predicate.  It says:
+$f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
 for every empty-typed positive homomorphism $\phi_0$ in which $H$ has density
 zero, almost every random $\sigma$-typed extension $\phi$ satisfies
 $\phi(f)\leq\phi(g)$.  The side condition \lean{phi0 <sigma>0 > 0} records
 that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
-reduces to the untyped relation, which we write as $f \forbLE{H} g$ in the
+reduces to the untyped relation, which we write as $f \leq g$ in the
 paper.
 
 The probability measure $\mathbb{P}^{\phi_0}$ used in this definition is
@@ -1412,10 +1423,10 @@ theorem generalizedTuranDensity_le_of_forbidLE
     generalizedTuranDensity H F <= c
 \end{lstlisting}
 The Lean constant takes the forbidden graph first and the target graph
-second: \lean{generalizedTuranDensity H F} is the maximum density of $F$ in
-$H$-free graphs, written mathematically in this paper as $\tdensity{F}{H}$.
+second: \lean{generalizedTuranDensity H F} is the maximum density of $P$ in
+$H$-free graphs, written mathematically in this paper as $\tdensity{P}{H}$.
 Here the inequality is empty-typed, so the paper notation is
-$F.\lean{toFlagAlgebra} \forbLE{H} c\mathbf{1}$.
+$P.\lean{toFlagAlgebra} \leq c\mathbf{1}$.
 The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the same
 \lean{forbidLE} predicate.  Once this semantic inequality is checked, the
 asymptotic extremal bound follows.  This is the main payoff of the
@@ -2284,7 +2295,7 @@ theorem ErdosPentagon_Turan_upperBound
     ErdosPentagon_flagAlgebra
 \end{lstlisting}
 The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag-algebra
-inequality $C_5 \forbLE{K_3} \frac{24}{625} \cdot \mathbf{1}$, i.e., that
+inequality $C_5 \leq \frac{24}{625} \cdot \mathbf{1}$, i.e., that
 $C_5$-density is at most $24/625$ under the $K_3$-free assumption.  The proof
 exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$ (one per 1-vertex
 type, of sizes $8\times 8$, $6\times 6$, and $5\times 5$) and shows that the
@@ -2831,6 +2842,12 @@ P.~Billingsley.
 L.~Lov\'{a}sz.
 \newblock \textit{Large Networks and Graph Limits}.
 \newblock American Mathematical Society, 2012.
+
+\bibitem{lovasz2006limits}
+L.~Lov\'{a}sz and B.~Szegedy.
+\newblock Limits of dense graph sequences.
+\newblock \textit{Journal of Combinatorial Theory, Series~B}, 96(6):933--957,
+  2006.
 
 \end{thebibliography}
 
