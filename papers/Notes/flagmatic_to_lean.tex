@@ -750,8 +750,8 @@ suffix makes this confusion impossible at the file-system level.
 \section{Verified scenarios}
 \label{sec:scenarios}
 
-Four certificates have been put through the pipeline and produce
-files that the Lean kernel accepts with no \texttt{sorry}.
+Six certificates have been put through the pipeline and produce files
+that the Lean kernel accepts with no \texttt{sorry}.
 
 \begin{center}
 \begin{tabular}{lcccccc}
@@ -759,20 +759,26 @@ files that the Lean kernel accepts with no \texttt{sorry}.
 Certificate & Forbid & $N$ & $n_{\mathit{obj}}$ & Branch & $T$ & Bound \\
 \midrule
 Mantel               & $K_3$ & 3 & 2 & B & 1 & $1/2$    \\
+K3forbidP3           & $K_3$ & 3 & 3 & A & 1 & $3/4$    \\
 K3forbidC4           & $K_3$ & 4 & 4 & A & 2 & $3/8$    \\
 K4turan              & $K_4$ & 4 & 2 & B & 2 & $2/3$    \\
 ErdosPentagon        & $K_3$ & 5 & 5 & A & 3 & $24/625$ \\
+K5turan              & $K_5$ & 5 & 2 & B & 4 & $3/4$    \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The four cases between them exercise every feature of the translation
+The six cases between them exercise every feature of the translation
 script.
 \begin{itemize}
   \item \textbf{Mantel} ($K_3$, $N{=}3$, branch B, single block): the
     smallest non-trivial case, used to validate the branch-B template
     (auxiliary lemma, induced-density table, forbidden-term dropping)
     in isolation.
+  \item \textbf{K3forbidP3} ($K_3$, $N{=}3$, branch A, single block):
+    the branch-A counterpart of Mantel at the same host size; the
+    objective is the size-$3$ path and lives at host size, so no
+    expansion lemma is needed.
   \item \textbf{K3forbidC4} ($K_3$, $N{=}4$, branch A, two blocks):
     exercises branch A's per-block structure and the order in which the
     quadratic-form additions are emitted.
@@ -783,14 +789,18 @@ script.
     \texttt{load\_forbid\_density\_theorems} and the proof body work
     against a non-$K_3$ forbid.
   \item \textbf{ErdosPentagon} ($K_3$, $N{=}5$, branch A, three blocks):
-    the largest case in the suite, with three quadratic forms of
-    dimensions $8$, $6$, $5$ -- a single \texttt{reduce\_downward\_-
-    flagmul} call dispatches all $8^2 + 6^2 + 5^2 = 125$ product
-    terms.
+    the largest branch-A case in the suite, with three quadratic forms
+    of dimensions $8$, $6$, $5$ -- a single
+    \texttt{reduce\_downward\_flagmul} call dispatches all
+    $8^2 + 6^2 + 5^2 = 125$ product terms.
+  \item \textbf{K5turan} ($K_5$, $N{=}5$, branch B, four blocks): the
+    first instance with $H = K_5$, and the largest case overall. Four
+    quadratic forms of dimension $8$ each yield $4 \times 8^2 = 256$
+    product terms, all dispatched by a single
+    \texttt{reduce\_downward\_flagmul}, and the branch-B auxiliary
+    lemma carries an induced-density table of size $|\text{graphs}_5|
+    \times 1$.
 \end{itemize}
-
-A fifth case, K5turan, exercises a $K_5$ forbid; it is the worked example
-of Section~\ref{sec:extension} below.
 
 \section{Adding a new forbidden graph}
 \label{sec:extension}
@@ -845,11 +855,12 @@ native\_decide}), so a generic version would need to abstract over the
 present scale of K3, K4, K5 the manual copy-paste cost has not been
 high enough to motivate the abstraction.
 
-The K5turan certificate has been carried through steps~1--3 (the
-$K_5$ branches in \texttt{CommonGraphs.lean} and
-\texttt{DensityLoader.lean} are in place, and the K5-specific JSON
-files have been produced); step~4 is the remaining work item before
-that case can be built and added to Section~\ref{sec:scenarios}.
+The K5turan certificate has been carried through all four steps and
+appears in Section~\ref{sec:scenarios} as the kernel-verified end-to-end
+example of this extension procedure: the $K_5$ branches in
+\texttt{CommonGraphs.lean} and \texttt{DensityLoader.lean} are in place,
+the K5-specific JSON files have been produced, and the generated
+\texttt{K5turan.lean} compiles with no \texttt{sorry}.
 
 \section{What is still not automated}
 
@@ -868,7 +879,7 @@ certificate -- one whose induced-density coefficients, after lifting
 through \texttt{forbidEq\_of\_eq}, produce a form
 \texttt{ring\_nf} fails to normalize -- could in principle require
 manual intervention here. We have not run into such a case among the
-four verified scenarios of Section~\ref{sec:scenarios}, but we have
+six verified scenarios of Section~\ref{sec:scenarios}, but we have
 also not proven that none exists.
 
 \paragraph{Non-$K_n$ forbidden graphs.}
@@ -913,10 +924,11 @@ forbidden graph reduces to two lines in \texttt{CommonGraphs.lean} and
 a script run; extending it to a new theorem with an existing forbid
 reduces to one command.
 
-The four certificates of Section~\ref{sec:scenarios} -- Mantel,
-K3forbidC4, K4turan, Erd\H{o}s pentagon -- between them exercise every
-feature of the pipeline, and a fifth, K5turan, is the in-progress
-example that completes the $K_5$-forbid story. None of these required
-hand transcription of the certificate into Lean.
+The six certificates of Section~\ref{sec:scenarios} -- Mantel,
+K3forbidP3, K3forbidC4, K4turan, Erd\H{o}s pentagon, and K5turan --
+between them exercise every feature of the pipeline, spanning host sizes
+$N \in \{3, 4, 5\}$, block counts $1$ through $4$, both branches, and
+forbids $K_3$, $K_4$, $K_5$. None of these required hand transcription
+of the certificate into Lean.
 
 \end{document}
