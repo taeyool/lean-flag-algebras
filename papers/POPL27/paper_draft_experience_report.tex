@@ -1684,18 +1684,27 @@ making the \lean{forbidLE} framework more convenient for future applications.
 \section{The Bridge from Specification to Evaluable Proof}
 \label{sec:bridge}
 
-The specification of Section~\ref{sec:abstract} is mathematically right and
-operationally wrong: \lean{flagDensity} is defined via non-constructive
-quotients, the relevant \lean{Decidable} instances are not available
-directly, and the abstract layer has no notion of an external SDP solver.
-The bridge layer turns the specification into something a concrete proof can
-use.  It has four parts: a reflection layer that connects the abstract
-definitions to a computable graph type via adequacy theorems; SDP-certificate
-verification via LDL$^\top$ decomposition over $\Q$; a tactic layer that
-automates the recurring algebraic bookkeeping; and an API layer that packages
-all of the above behind a small interface used by the case studies.  We
-report each part as something we had to build rather than as a contribution
-in its own right.
+Section~\ref{sec:abstract} gives flag algebras a complete mathematical
+specification in Lean.  The difficulty is that this specification cannot
+drive a concrete proof on its own.  To prove Mantel's theorem or the
+Erd\H{o}s pentagon theorem, one must evaluate specific rational densities
+for specific graphs and discharge large numbers of algebraic
+rewriting steps.  Neither of these can be performed directly on the
+abstract definitions.  \lean{flagDensity} is defined via non-constructive
+quotients with no \lean{Decidable} instance; even where computation is
+possible in principle, evaluating it at a specific flag and host graph
+requires manually enumerating every graph embedding.  Discharging the
+algebraic bookkeeping---flag expansion, typed multiplication, linear
+normalization---would separately require thousands of manual tactic steps
+without automation.  The bridge layer is what we built
+to close these gaps.  It has four parts: a reflection layer that connects
+the abstract definitions to a computable graph type via adequacy theorems;
+SDP-certificate verification via LDL$^\top$ decomposition over $\Q$; a
+tactic layer that automates the recurring algebraic bookkeeping; and an API
+layer that packages all of the above behind a small interface used by the
+case studies.
+% We report each part as something we had to build rather than
+% as a contribution in its own right.
 
 \subsection{Proof by Reflection in ITP}
 
