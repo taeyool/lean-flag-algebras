@@ -1,0 +1,161 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{stmaryrd}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage[nameinlink,capitalize]{cleveref}
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\A}{\mathcal A}
+\newcommand{\K}{\mathcal K}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Homp}{\operatorname{Hom}^{+}}
+\newcommand{\Ext}{\operatorname{Ext}}
+\newcommand{\brak}[1]{\left\langle #1\right\rangle}
+\newcommand{\avg}[2]{\left\llbracket #1 \right\rrbracket_{#2}}
+
+\title{A Two-Root Obstruction for the \texorpdfstring{$C_5$}{C5}-Free Class}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The one-root planting construction for $C_5$-free graphs does not extend to all
+types.  At the two-root edge type there is already a pinning obstruction.  In
+every positive-edge-density $C_5$-free limit, a uniformly random rooted edge has
+asymptotically zero common-neighbour density, because $C_5$-free graphs have
+only $O(e(G))$ triangles.  But the quotient space contains the rooted limit of
+a book graph: a distinguished edge with linearly many common neighbours.  Thus
+the edge-rooted triangle flag is pinned to $0$ on ensemble supports and attains
+$1$ in the quotient, so the $C_5$-free class is not root-plantable at the edge
+type.
+\end{abstract}
+
+\section{Setup}
+
+Let
+\[
+  \K=\{G:\text{$G$ contains no $C_5$ as a subgraph}\}.
+\]
+Let $\tau$ be the two-vertex edge type.  Write $g\in\A^\tau$ for the
+three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent to both
+labelled vertices; equivalently, $g$ is the triangle flag rooted at an edge.
+
+\section{Triangle density in \texorpdfstring{$C_5$}{C5}-free graphs}
+
+\begin{lemma}[Few triangles]\label{lem:few-triangles}
+If $G$ is $C_5$-free, then the number $T(G)$ of triangles in $G$ satisfies
+\[
+  T(G)\le \frac23 e(G).
+\]
+In particular, every unlabelled $C_5$-free limit has triangle density $0$.
+\end{lemma}
+
+\begin{proof}
+For every vertex $v$, the neighbourhood graph $G[N(v)]$ contains no copy of
+$P_4$ as a subgraph: a path $a-b-c-d$ inside $N(v)$ would give the cycle
+$v-a-b-c-d-v$.  Therefore each connected component of $G[N(v)]$ is either a
+star or a triangle, and hence
+\[
+  e(G[N(v)])\le |N(v)|=d(v).
+\]
+Summing over $v$ gives
+\[
+  3T(G)=\sum_{v\in V(G)}e(G[N(v)])
+  \le \sum_{v\in V(G)}d(v)=2e(G).
+\]
+Since $e(G)\le \binom{|V(G)|}{2}$, the normalized triangle density is
+$O(1/|V(G)|)$ along any sequence with $|V(G)|\to\infty$.
+\end{proof}
+
+\begin{corollary}[The rooted triangle is pinned on ensembles]\label{cor:pinned}
+Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled homomorphism with
+$\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
+\[
+  \phi^\tau(g)=0
+  \qquad\text{almost surely.}
+\]
+\end{corollary}
+
+\begin{proof}
+The downward average $\avg{g}{\tau}$ is a positive scalar multiple of the
+unlabelled triangle.  By \Cref{lem:few-triangles},
+$\phi_0(\avg{g}{\tau})=0$.  Razborov's extension identity gives
+\[
+  \mathbb E[\phi^\tau(g)]
+  =
+  \frac{\phi_0(\avg{g}{\tau})}{\phi_0(\brak{\tau})}
+  =0.
+\]
+Since $\phi^\tau(g)\ge0$ pointwise, it is almost surely $0$.
+\end{proof}
+
+\section{The quotient sees a book edge}
+
+\begin{definition}[Book graphs]
+Let $B_n$ be the graph with two distinguished vertices $a,b$, the edge $ab$,
+and $n$ further vertices each adjacent to both $a$ and $b$, with no edges among
+the further vertices.
+\end{definition}
+
+\begin{lemma}\label{lem:book-c5-free}
+Each $B_n$ is $C_5$-free.  Rooted at the ordered edge $(a,b)$, the sequence
+$(B_n,a,b)$ has a convergent subsequence whose limit is a point $\psi\in Q_\tau$
+with
+\[
+  \psi(g)=1.
+\]
+\end{lemma}
+
+\begin{proof}
+A leaf of $B_n$ has neighbourhood exactly $\{a,b\}$.  A simple cycle containing
+a leaf must enter and leave it through $a$ and $b$.  Hence a simple cycle in
+$B_n$ uses at most two leaves, so its length is at most $4$.  Thus $B_n$ has no
+$C_5$.
+
+For the rooted density, every unlabelled vertex of $B_n$ is adjacent to both
+roots.  Therefore $p(g,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
+has the asserted limit.
+\end{proof}
+
+\begin{theorem}\label{thm:c5-edge-not-root-plantable}
+The $C_5$-free graph class is not root-plantable at the two-root edge type
+$\tau$.  Concretely, $-g$ satisfies ensemble semantics but not quotient
+semantics.
+\end{theorem}
+
+\begin{proof}
+By \Cref{cor:pinned}, every support point of every admissible edge-rooted
+ensemble has $g=0$, so $-g$ is ensemble-nonnegative.  By
+\Cref{lem:book-c5-free}, there is a quotient homomorphism
+$\psi\in Q_\tau$ with $\psi(g)=1$, hence $\psi(-g)=-1<0$.  Thus quotient
+semantics fails for $-g$, and the support-closure criterion gives
+$S_\tau\ne Q_\tau$.
+\end{proof}
+
+\begin{remark}
+This obstruction is different from the one-root situation.  A single typical
+vertex in a positive-density $C_5$-free limit may have nontrivial edge density
+to the rest of the graph, and the one-root planting note shows that every such
+rooted quotient limit can be planted.  A typical rooted edge is more rigid:
+the common-neighbour density is forced to vanish, while an exceptional edge in
+a sparse book graph may have common-neighbour density one.
+\end{remark}
+
+\end{document}
