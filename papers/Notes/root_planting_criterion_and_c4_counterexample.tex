@@ -124,8 +124,14 @@ constrained setting raises: \emph{how should a flag-algebra proof enforce the co
 and does the choice cost anything?}
 
 There are two natural answers.  Let $\T_1$ be the class of graphs we care about---say the
-triangle-free graphs, or more generally any \emph{hereditary} class, one closed under
-induced subgraphs, equivalently the graphs avoiding every member of some forbidden family.
+triangle-free graphs, or more generally any \emph{hereditary} class---one closed under
+\emph{induced} subgraphs: whenever a graph is in the class, so is every graph obtained by
+deleting vertices and keeping all edges among the vertices that remain.  We always use this
+induced-subgraph relation, never the weaker one that may also delete edges; the distinction
+matters here.  Equivalently, $\T_1$ is cut out by forbidding, as induced subgraphs, the
+members of some (possibly infinite) family---and a class named ``$H$-free'' is of this
+kind, since having no $H$ as a (not necessarily induced) subgraph is the same as omitting,
+as induced subgraphs, the finitely many graphs on $|H|$ vertices that contain $H$.
 One option is to pass to the \emph{quotient} flag algebra of $\T_1$ and ask for
 non-negativity there; this is the algebra a flag-algebra computation actually works in,
 the one in which the forbidden configurations have simply been set to zero.  The other
@@ -196,12 +202,19 @@ $C_5$-free constructions below use.
 
 \paragraph{When it fails.}
 Heredity alone is not enough.  Consider the $C_4$-free graphs.  Their large members are
-sparse---every $n$-vertex $C_4$-free graph has $o(n^2)$ edges---so a typical vertex of a
-constrained limit has essentially no neighbours: the \emph{labelled edge density}---the
-fraction of the graph a root is joined to---is almost surely $0$.  Yet the class contains arbitrarily large stars, whose centre is a vertex of
-edge density $1$.  The quotient sees this exceptional centre; the ensemble, sampling a
-typical vertex, never does.  So the inequality ``the labelled edge density is $0$'' holds
-in the ensemble but fails in the quotient, and the class is not root-plantable
+sparse---every $n$-vertex $C_4$-free graph has only $o(n^2)$ edges---so almost every vertex
+has vanishingly few neighbours.  The ensemble drops the single root at a \emph{random}
+vertex and measures its \emph{labelled edge density}---the fraction of the other vertices
+that root is joined to.  In a graph this sparse a random vertex has hardly any neighbours,
+so for almost every placement of the root this fraction is essentially $0$; in the limit it
+is \emph{almost surely} $0$ (that is, $0$ for all but a negligible set of root placements).
+The quotient, by contrast, may put the root wherever it likes.  The class contains
+arbitrarily large \emph{stars}---a single central vertex joined to many leaves and to
+nothing else---and rooting at such a centre gives labelled edge density $1$, because the
+centre is joined to \emph{every} other vertex.  That centre is an exceptional vertex: the
+quotient can sit on it, while the ensemble, only ever landing on a typical vertex, never
+does.  So the inequality ``the labelled edge density is $0$'' holds throughout the ensemble
+yet fails in the quotient, and the class is not root-plantable
 (\cref{thm:degenerate-obstruction,cor:c4-counterexample}).  The same failure befalls the
 $K_{s,t}$-free, $C_{2k}$-free, and planar graphs (\cref{cor:degenerate-family}).  One
 might guess this is a defect of \emph{sparsity}, but root-plantability is preserved by
