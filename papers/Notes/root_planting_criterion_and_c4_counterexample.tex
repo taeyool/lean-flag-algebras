@@ -61,6 +61,7 @@
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\Homp}{\operatorname{Hom}^{+}}
 \newcommand{\Homalg}{\operatorname{Hom}}
+\newcommand{\Emb}{\operatorname{Emb}}
 \newcommand{\Ext}{\operatorname{Ext}}
 \newcommand{\supp}{\operatorname{supp}}
 \newcommand{\Forb}{\operatorname{Forb}}
@@ -90,7 +91,7 @@ unconditionally sound; we study the converse, its completeness.  We prove that t
 semantics agree, for every flag-algebra element, exactly when a support-closure
 condition, which we call \emph{root-plantability}, holds: every labelled constrained limit
 must be approximable by the labelled views of unlabelled constrained limits. Closure under
-independent blow-ups (which holds for the clique-free classes, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide. But heredity alone does not lead to root-plantability.  Every class so
+independent blow-ups (which holds for the clique-free classes, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide.  The true-twin analogue, closure under complete blow-ups, gives further all-type positive examples that are not clone-closed, such as cluster graphs; more generally, infinite substitution-closed hereditary classes are root-plantable.  We also isolate a finite local planting criterion that captures local repair arguments beyond global closure assumptions, and verify it through a sparse root-blow-up repair condition. But heredity alone does not lead to root-plantability.  Every class so
 sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
 arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, $C_{2k}$-free, and planar
 graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
@@ -102,15 +103,16 @@ analysed type by type.  The one-vertex and two-root non-edge types admit local p
 constructions; at the two-root edge type a book edge gives a new pinning obstruction, so
 the all-types $C_5$-free conjecture is false.
 
-This incompleteness, however, never affects a density bound of the kind a flag-algebra
-computation is run to produce.  Such a bound is an inequality about unlabelled graphs, whereas
-the gap between the two semantics lives entirely in the auxiliary inequalities---about
+This incompleteness, however, never improves an asymptotic density bound at the
+closed-cone level.  Such a bound is an inequality about unlabelled graphs, whereas
+the gap between the two semantics lives in the auxiliary inequalities---about
 vertex-labelled graphs---that a proof passes through on the way to it.  We show
 that on unlabelled-graph statements the two semantics always coincide, that the labelled
-examples witnessing the gap vanish once averaged back into unlabelled-graph statements, and
-that the gap can open only at a degenerate extreme.  So for every class we exhibit, the
-incompleteness leaves the final density bounds untouched, and whether any class lets it
-reach one remains open.
+examples witnessing the gap vanish once averaged back into unlabelled-graph statements,
+and, more generally, that every ensemble-relaxed labelled contribution is a limit of
+ordinary quotient sum-of-squares contributions after unlabelling.  What can remain is
+only an exact or finite-truncation certificate question, not a new asymptotic density
+bound.
 \end{abstract}
 
 \section{Introduction}
@@ -182,7 +184,15 @@ exactly equivalent to the quotient/ensemble correspondence for every flag-algebr
 
 \paragraph{Results.}
 Root-plantability is implied by closure under independent blow-ups, which recovers the
-correspondence for the clique-free classes, including triangle-free.  Heredity alone, however,
+correspondence for the clique-free classes, including triangle-free.  The same proof also
+has a true-twin version: closure under complete blow-ups implies root-plantability, giving
+non-clone-closed all-type examples such as cluster graphs.  More generally, infinite
+substitution-closed hereditary classes are root-plantable, since the planted-module
+sampling estimate never sees the internal structure of a fibre unless two sampled
+vertices collide inside it.  Finally, a finite local planting criterion captures the
+same support argument when the planted graph must be repaired locally rather than
+obtained from a global closure operation, and a sparse root-blow-up repair theorem
+gives a checkable way to verify it.  Heredity alone, however,
 does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
 only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
 $K_{s,t}$-free, $C_{2k}$-free, and planar graphs among them) fails at the one-vertex
@@ -194,15 +204,15 @@ that pinning characterises root-plantability, understood type by type.  The $C_5
 graphs now illustrate both sides: the one-vertex and two-root non-edge types can be
 planted by local repairs of the blow-up construction, while the two-root edge type has a
 book-edge pinning obstruction.  This incompleteness, moreover, never
-reaches a density bound.  A density bound is a statement about unlabelled graphs---the
-\emph{empty type}---where the two semantics provably coincide (\cref{prop:empty-type});
-the labelled examples that witness the gap vanish when averaged back to unlabelled graphs
-(\cref{prop:ideal-zero}); and the gap can open only at a degenerate extreme, since for
-subgraph-forbidden classes pinning is always to a boundary value (\cref{thm:no-interior}).  The incompleteness is
-thus confined to the intermediate, labelled certificates a proof passes through; for the
-obstructions we exhibit it never affects a density bound (\cref{sec:empty-type}), and
-whether some constrained class with a sufficiently rich labelled support makes it do so is
-left open.
+improves the closed cone of density bounds.  A density bound is a statement about
+unlabelled graphs---the \emph{empty type}---where the two semantics provably coincide
+(\cref{prop:empty-type}); the labelled examples that witness the gap vanish when averaged
+back into unlabelled-graph statements (\cref{prop:ideal-zero}); and, in fact, every
+ensemble-relaxed labelled contribution is a $Q_0$-limit of ordinary quotient
+sum-of-squares contributions (\cref{thm:no-closed-certificate-gap}).  The incompleteness
+is thus confined to the intermediate, labelled certificates a proof passes through.  The
+remaining practical question is whether exact finite-degree or rational certificates can
+separate before taking this closure.
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -511,7 +521,7 @@ root-plantability requires.  Throughout, $\T_0=\T_{\mathrm{Graph}}$ denotes the 
 all finite simple graphs, and $\K$ is a hereditary class of finite graphs, identified with
 the constrained class $\T_1=\T_\K$ of graphs avoiding every induced subgraph not in $\K$.
 
-\begin{definition}[Independent blow-up]
+\begin{definition}[Independent blow-up]\label{def:independent-blow-up}
 Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
 $v\in V(G)$.  The independent blow-up $G^{\mathbf m}$ is obtained by replacing
 each vertex $v$ by an independent clone class $C_v$ of size $m_v$, and by putting
@@ -708,6 +718,394 @@ $f\in\A^\sigma[\T_{\mathrm{Graph}}]$, quotient semantics and ensemble semantics
 are equivalent for the $K_r$-free class.  In particular, the equivalence holds
 for the triangle-free class.
 \end{corollary}
+
+\section{Complete blow-ups and true twins}
+
+The previous theorem is the false-twin, or independent-clone, mechanism.  It is
+worth separating two nearby notions.  Closure under duplicating an arbitrary vertex as
+an independent false twin is not a new condition: repeated duplications produce exactly
+the independent blow-ups of \cref{def:independent-blow-up}, and conversely each one-vertex
+false-twin duplication is a special independent blow-up.  Thus false-twin closure is
+clone-closure in another language.
+
+The true-twin analogue is different.  Instead of replacing vertices by independent
+sets, replace them by cliques.
+
+\begin{definition}[Complete blow-up]
+Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
+$v\in V(G)$.  The complete blow-up $G^{\mathbf m,+}$ is obtained by replacing
+each vertex $v$ by a clique $C_v$ of size $m_v$, and by putting all edges
+between $C_v$ and $C_w$ whenever $vw\in E(G)$.
+\end{definition}
+
+\begin{definition}[True-clone-closed hereditary class]
+A hereditary graph class $\K$ is \emph{true-clone-closed} if every complete
+blow-up of every graph in $\K$ again belongs to $\K$.
+\end{definition}
+
+\begin{lemma}[Complete blow-up approximation]\label{lem:true-planted-estimate}
+The estimates of \cref{lem:planted-estimate,lem:planted-mass} remain valid,
+with the same constants, if the independent blow-up $B_N(G,\theta,\lambda)$ is
+replaced by the complete blow-up $B_N^+(G,\theta,\lambda)$ with the same clone
+class sizes.
+\end{lemma}
+
+\begin{proof}
+The proof is identical.  The only new edges are edges inside clone classes.  The
+``good'' event in the proof of \cref{lem:planted-estimate} already excludes every
+additional sampled vertex from the planted labelled clone classes and excludes two
+additional sampled vertices from the same non-labelled clone class.  On that event,
+no two sampled vertices lie in the same clone class, so all adjacencies are exactly the
+adjacencies of their base vertices in $G$.  The bad-event estimate and the planted-root
+mass count are unchanged.
+\end{proof}
+
+\begin{theorem}[True-clone-closed classes are root-plantable]\label{thm:true-clone-root-plantable}
+Let $\K$ be a true-clone-closed hereditary graph class, let
+$\T_1=\T_\K$, and let $\sigma$ be a non-degenerate type of $\T_\K$.  Then
+\[
+  S_\sigma=Q_\sigma.
+\]
+Consequently, quotient semantics and ensemble semantics are equivalent for every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+\end{theorem}
+
+\begin{proof}
+Repeat the proof of \cref{thm:clone-root-plantable}, replacing each independent
+planted blow-up $B_j$ by the complete planted blow-up $B_j^+$.  Since $G_t\in\K$
+and $\K$ is true-clone-closed, every $B_j^+$ remains in $\K$.  The approximation
+and positive planted-mass estimates needed for the closed-cylinder support argument
+are exactly \cref{lem:true-planted-estimate}.  The same Portmanteau argument therefore
+shows that every neighbourhood of every $\psi\in Q_\sigma$ intersects the support of
+some random $\sigma$-extension of an unlabelled constrained limit, so
+$Q_\sigma\subseteq S_\sigma$.  The reverse inclusion is the general
+support-passing statement.
+\end{proof}
+
+\begin{corollary}[Cluster graphs]\label{cor:cluster-graphs}
+The class of cluster graphs, equivalently finite disjoint unions of cliques, is
+root-plantable at every non-degenerate type.  It is not clone-closed.
+\end{corollary}
+
+\begin{proof}
+A complete blow-up of a disjoint union of cliques is again a disjoint union of
+cliques: each original clique becomes one larger clique, and distinct original
+components remain non-adjacent.  Hence \cref{thm:true-clone-root-plantable}
+applies.
+
+The class is not clone-closed.  The independent blow-up of a single edge into two
+clone classes of size $2$ is $K_{2,2}$, and the induced subgraph on two vertices from
+one side and one vertex from the other side is a path on three vertices.  Thus
+$K_{2,2}$ is not a cluster graph.
+\end{proof}
+
+\section{Substitution-closed graph classes}
+
+Pure true- and false-twin blow-ups are not the only modular amplifications that work.
+The same support argument applies whenever the constrained class is closed under
+substituting constrained graphs into the vertices of a constrained graph.  This is a
+stronger closure hypothesis, but the proof is conceptually useful: it isolates the real
+feature needed for root planting, namely a positive-mass module over each labelled
+vertex whose internal structure is asymptotically invisible to bounded rooted samples.
+
+\begin{definition}[Graph substitution]\label{def:graph-substitution}
+Let $G$ be a finite graph, and for each $v\in V(G)$ let $H_v$ be a finite graph,
+with the vertex sets of the $H_v$ disjoint.  The substitution
+\[
+  G[H_v:v\in V(G)]
+\]
+is the graph obtained by taking the disjoint union of the $H_v$ and, for every
+edge $vw\in E(G)$, adding all edges between $H_v$ and $H_w$.
+\end{definition}
+
+\begin{definition}[Substitution-closed hereditary class]
+A hereditary graph class $\K$ is \emph{substitution-closed} if
+$G[H_v:v\in V(G)]\in\K$ whenever $G\in\K$ and $H_v\in\K$ for every
+$v\in V(G)$.
+\end{definition}
+
+\begin{lemma}[Substitution planting estimate]\label{lem:substitution-planting-estimate}
+Assume $\K$ is hereditary and has graphs of arbitrarily large order.  Let
+$F=(G,\theta)$ be a $\sigma$-flag in $\K$ with $|\sigma|=k$ and $|G|=n>k$.
+Fix $0<\lambda\le1/2$, assign the same weights $w_v$ as in the planted blow-up
+construction, and for a large integer $N$ choose graphs $H_{v,N}\in\K$ with
+\[
+  \sum_v \left|\frac{|H_{v,N}|}{N}-w_v\right|\to0.
+\]
+Let
+\[
+  S_N:=G[H_{v,N}:v\in V(G)].
+\]
+If $\widehat\theta:\sigma\to S_N$ satisfies
+$\widehat\theta(i)\in H_{\theta(i),N}$ for all $i$, then the estimates of
+\cref{lem:planted-estimate,lem:planted-mass} hold for $S_N$ in place of the
+independent blow-up.
+\end{lemma}
+
+\begin{proof}
+Because $\K$ is hereditary and has arbitrarily large graphs, it contains graphs
+of every sufficiently large prescribed order: take an induced subgraph of that
+order inside a larger graph of $\K$.  Thus the fibres $H_{v,N}$ with the required
+asymptotic sizes exist.
+
+The proof of \cref{lem:planted-estimate} now applies verbatim.  The good event
+excludes every additional sampled vertex from the planted labelled fibres and
+excludes two additional sampled vertices from the same non-labelled fibre.  On
+this event, every sampled vertex lies in a distinct fibre and no unlabelled
+sample lies in a labelled fibre, so the induced labelled graph in $S_N$ is
+exactly the induced labelled graph in the base flag $(G,\theta)$ on the projected
+vertices.  The internal edges of the fibres are therefore never observed on the
+good event.  The probability of the bad event depends only on the fibre sizes and
+is the same as in \cref{lem:planted-estimate}.  The planted-root mass estimate is
+also identical, since every ordered choice of one vertex from each labelled fibre
+is an induced copy of $\sigma$.
+\end{proof}
+
+\begin{theorem}[Substitution-closed classes are root-plantable]\label{thm:substitution-root-plantable}
+Let $\K$ be an infinite substitution-closed hereditary graph class, let
+$\T_1=\T_\K$, and let $\sigma$ be a non-degenerate type of $\T_\K$.  Then
+\[
+  S_\sigma=Q_\sigma.
+\]
+Consequently, quotient semantics and ensemble semantics are equivalent for every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+\end{theorem}
+
+\begin{proof}
+Since $\K$ is infinite and hereditary, it has graphs of arbitrarily large order.
+Repeat the proof of \cref{thm:clone-root-plantable}, but replace the planted
+independent blow-ups $B_j$ by the substitution graphs
+$S_j=G_t[H_{v,j}:v\in V(G_t)]$ from \cref{lem:substitution-planting-estimate}.
+The base graph $G_t$ and all fibres $H_{v,j}$ belong to $\K$, so
+substitution-closure gives $S_j\in\K$.  The same closed-cylinder and Portmanteau
+argument then shows that every $\psi\in Q_\sigma$ lies in $S_\sigma$.
+The inclusion $S_\sigma\subseteq Q_\sigma$ is again the general support-passing
+statement.
+\end{proof}
+
+\section{A finite local planting criterion}
+
+The substitution theorem is still a global closure statement.  The $C_5$-free
+constructions below are more local: one first builds a planted modular blow-up
+and then repairs a sparse set of dangerous edges.  The following criterion packages
+exactly what such a repair has to prove.  It is deliberately finite and checkable:
+given a sufficiently large finite labelled witness, construct large constrained graphs
+in which the labelled witness appears with positive root probability and with all
+bounded rooted densities nearly unchanged.
+
+\begin{definition}[Finite local planting]\label{def:finite-local-planting}
+Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
+$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of ordered induced
+embeddings of $\sigma$ into a finite graph $H$.  We say that $\K$ has the
+\emph{finite local planting property at $\sigma$} if the following holds.
+
+For every integer $m\ge k$ and every $\eps>0$, there are an integer
+$n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ such that the
+following holds.  For every finite $\sigma$-flag $(G,\theta)$ in $\K$ with
+$|G|\ge n_0$, there exist a graph $H\in\K$ with $|H|\ge |G|$ and a subset
+\[
+  \Theta\subseteq \Emb_\sigma(H)
+\]
+such that
+\[
+  |\Theta|\ge \delta |V(H)|^k,
+\]
+and for every planted embedding $\widehat\theta\in\Theta$ and every ambient
+$\sigma$-flag $F$ with $|F|\le m$,
+\[
+  \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|<\eps .
+\]
+\end{definition}
+
+\begin{theorem}[Finite local planting implies root-plantability]\label{thm:finite-local-planting}
+Let $\K$ be a hereditary graph class and let $\sigma$ be a non-degenerate type
+in $\K$.  If $\K$ has the finite local planting property at $\sigma$, then
+\[
+  S_\sigma=Q_\sigma.
+\]
+Consequently, quotient semantics and ensemble semantics are equivalent for every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+\end{theorem}
+
+\begin{proof}
+The inclusion $S_\sigma\subseteq Q_\sigma$ is the general support-passing
+statement.  We prove the reverse inclusion.
+
+Let $\psi\in Q_\sigma$, and let $U$ be a basic neighbourhood of $\psi$ in
+$X_\sigma$, specified by ambient $\sigma$-flags $F_1,\ldots,F_s$ of size at most
+$m$ and a tolerance $\eps>0$:
+\[
+  U=
+  \{\chi\in X_\sigma:
+    |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
+\]
+Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ from finite local
+planting.  Choose a
+convergent sequence of $\sigma$-flags $(G_t,\theta_t)$ in $\K$ with
+$(G_t,\theta_t)\to\psi$ and $|G_t|\to\infty$.  For all sufficiently large $t$,
+we have $|G_t|\ge n_0$ and
+\[
+  |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/3
+  \qquad(1\le i\le s).
+\]
+
+Apply finite local planting to each such $(G_t,\theta_t)$, with the integer
+$m$ and tolerance $\eps/3$.  Thus, after discarding finitely many terms, we have
+graphs $H_t\in\K$ and sets $\Theta_t\subseteq\Emb_\sigma(H_t)$ such that
+$|H_t|\ge |G_t|\to\infty$, $|\Theta_t|\ge\delta |V(H_t)|^k$, and every
+$\widehat\theta\in\Theta_t$ satisfies
+\[
+  |p(F_i,(H_t,\widehat\theta))-p(F_i,(G_t,\theta_t))|<\eps/3
+  \qquad(1\le i\le s).
+\]
+Passing to a subsequence, assume the unlabelled graphs $H_t$ converge to some
+$\phi_0\in Q_0$.  Since $|\Emb_\sigma(H_t)|\ge |\Theta_t|\ge\delta |V(H_t)|^k$,
+the type density of $\sigma$ stays bounded away from zero, so
+$\phi_0(\brak\sigma)>0$.
+
+Let $P_t$ be the finite random-root distribution obtained by choosing a uniformly
+random element of $\Emb_\sigma(H_t)$ and recording all rooted flag densities in
+\[
+  Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
+\]
+By Razborov's random-extension theorem, $P_t$ converges weakly to
+$\Ext_\sigma(\phi_0)$.  Let
+\[
+  \widetilde C=
+  \{x\in Y_\sigma:
+    |x(F_i)-\psi(F_i)|\le 2\eps/3\text{ for all }i\}.
+\]
+Then $\widetilde C\cap X_\sigma\subseteq U$.  Every root in $\Theta_t$ lies in
+$\widetilde C$, and the total number of ordered embeddings of $\sigma$ into
+$H_t$ is at most $|V(H_t)|^k$, so
+\[
+  P_t(\widetilde C)\ge\delta
+\]
+for all large $t$.  Since $\widetilde C$ is closed, the closed-set form of
+Portmanteau gives
+\[
+  \Ext_\sigma(\phi_0)(\widetilde C)\ge\delta>0.
+\]
+The measure $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, so its support
+intersects $\widetilde C\cap X_\sigma\subseteq U$.  Since $U$ was arbitrary,
+$\psi\in S_\sigma$.
+\end{proof}
+
+\begin{remark}
+The pure blow-up and substitution theorems above prove finite local planting by
+taking $\Theta$ to be the planted root choices.  The one-root and two-root
+non-edge $C_5$-free constructions below prove it differently: the planted graphs
+are obtained by a blow-up followed by deleting a sparse set of dangerous
+neighbourhood edges.  This is why the criterion is useful beyond closure
+properties.
+\end{remark}
+
+\subsection{Sparse repairs of root blow-ups}
+
+Here is a concrete, checkable way to verify finite local planting.  Blow up only
+the labelled vertices into small positive-density root clusters, leave all
+unlabelled vertices as singletons, and repair only a sparse set of old--old edges.
+
+\begin{definition}[Sparse root-blow-up repair]\label{def:sparse-root-repair}
+Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
+$k\ge1$ labelled vertices.  We say that $\K$ has \emph{sparse root-blow-up
+repairs at $\sigma$} if the following holds.
+
+For every $0<\lambda\le1$ and every $\rho>0$, there is an integer
+$n_0=n_0(\lambda,\rho)$ such that for every $\sigma$-flag $(G,\theta)$ in $\K$
+with $n:=|G|\ge n_0$, there are an integer $L$ with
+\[
+  \frac{\lambda n}{2}\le L\le \lambda n
+\]
+and a graph $H\in\K$ with vertex set
+\[
+  V(H)=U\sqcup R_1\sqcup\cdots\sqcup R_k,
+  \qquad
+  U:=V(G)\setminus\operatorname{im}\theta,
+  \qquad
+  |R_i|=L,
+\]
+such that:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item for $i\ne j$, the pair $R_i,R_j$ is complete or empty according as
+        $\theta(i)\theta(j)$ is an edge or a non-edge of $G$;
+  \item for every $u\in U$ and every $x\in R_i$, the edge $xu$ is present in
+        $H$ if and only if $\theta(i)u$ is present in $G$;
+  \item the old part $H[U]$ differs from $G[U]$ on at most $\rho n^2$ unordered
+        pairs.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Sparse root repairs imply finite local planting]\label{thm:sparse-repair-planting}
+Let $\K$ be a hereditary graph class and let $\sigma$ be a non-degenerate type
+in $\K$ with $k\ge1$ labelled vertices.  If $\K$ has sparse root-blow-up repairs
+at $\sigma$, then $\K$ has the finite local planting property at $\sigma$.
+Consequently, $\K$ is root-plantable at $\sigma$.
+\end{theorem}
+
+\begin{proof}
+Fix $m\ge k$ and $\eps>0$.  Choose $0<\lambda\le1$ and $\rho>0$ so small that
+\[
+  C_m(\lambda+\rho)<\eps
+\]
+for a sufficiently large constant $C_m$ depending only on $m$ and $k$.  Let
+$n_0$ be the maximum of $m$, $\lceil2/\lambda\rceil$, and the threshold from
+\cref{def:sparse-root-repair} for this $\lambda$ and $\rho$.
+
+Let $(G,\theta)$ be a $\sigma$-flag in $\K$ with $n:=|G|\ge n_0$, and let
+$H$ be the repaired root blow-up supplied by the definition.  Put
+\[
+  \Theta:=R_1\times\cdots\times R_k\subseteq \Emb_\sigma(H),
+\]
+where the inclusion follows from the prescribed adjacencies between the root
+clusters.  Also $L\ge1$, so $|V(H)|=n-k+kL\ge n$, as required in
+\cref{def:finite-local-planting}.  Since $|V(H)|=n-k+kL\le (1+k\lambda)n$, we have
+\[
+  |\Theta|=L^k
+  \ge
+  \left(\frac{\lambda n}{2}\right)^k
+  \ge
+  \left(\frac{\lambda}{2(1+k\lambda)}\right)^k |V(H)|^k.
+\]
+Thus the root mass lower bound holds with
+\[
+  \delta:=\left(\frac{\lambda}{2(1+k\lambda)}\right)^k>0.
+\]
+
+It remains to check the rooted densities.  Fix a planted embedding
+$\widehat\theta\in\Theta$ and a $\sigma$-flag $F$ with $\ell:=|F|\le m$.  To
+compute $p(F,(H,\widehat\theta))$, sample $q:=\ell-k$ additional vertices from
+$H\setminus\operatorname{im}\widehat\theta$.  There are two bad events.
+
+First, the sample may hit one of the root clusters.  Since the total number of
+vertices in the root clusters is $kL=O_k(\lambda n)$ and $|H|\ge n-k$, this has
+probability $O_m(\lambda)$.
+
+Second, after the sample lies in $U$, it may contain both endpoints of one of
+the old pairs on which $H[U]$ differs from $G[U]$.  There are at most $\rho n^2$
+such pairs, so this has probability $O_m(\rho)$.
+
+Outside these bad events, the sampled vertices all lie in $U$, no repaired old
+edge is seen, the adjacencies from the planted roots to $U$ agree with the
+adjacencies from the original roots in $G$, and the adjacencies among the planted
+roots agree with $\sigma$.  Moreover, conditional on the sample lying in $U$, it
+is a uniform $q$-subset of $U$, exactly as in the rooted density
+$p(F,(G,\theta))$.  Hence
+\[
+  \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|
+  \le C_m(\lambda+\rho)<\eps .
+\]
+This is the finite local planting property, and the final conclusion follows from
+\cref{thm:finite-local-planting}.
+\end{proof}
+
+\begin{remark}
+\Cref{thm:sparse-repair-planting} is the local-repair form used implicitly in the
+positive $C_5$ results below.  For one root, the repair deletes the old edges inside
+$N_G(r)$; for the non-edge type, it deletes the old edges inside the two root
+neighbourhoods.  The neighbourhood lemma says these deleted sets are only linear in
+$|G|$, hence sparse enough for the theorem.
+\end{remark}
 
 \section{Degenerate classes are not root-plantable}
 
@@ -1074,7 +1472,13 @@ bounds.
 
 \Cref{cor:confined} settles the question of \emph{truth}.  A flag-algebra proof, though,
 reaches its empty-type conclusion through labelled multipliers, so one must still ask
-whether the labelled gap can affect a \emph{certificate}.  The method writes
+whether the labelled gap can affect a \emph{certificate}.  We measure empty-type
+contributions in the usual constrained seminorm
+\[
+  \|u\|_{Q_0}:=\sup_{\phi_0\in Q_0}|\phi_0(u)|
+  \qquad (u\in\A^0[\T_1]).
+\]
+The method writes
 \[
   f-\sum_i\avg{s_i}{\sigma_i}=(\text{a manifestly non-negative combination of flags}),
 \]
@@ -1090,9 +1494,60 @@ $S_\sigma$.  Write, as cones inside $\A^0[\T_1]$,
   \C^{\mathrm{ens}}_\sigma=\{\avg{s}{\sigma}:s\ge0\text{ on }S_\sigma\},
 \]
 for the empty-type contributions the type $\sigma$ can make to the two methods, so that
-$\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma$ always.  The next two results
-show the witnesses gain nothing here, and that for the obstructions exhibited above the
-two cones in fact coincide.
+$\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma$ always.  The next result
+shows that this inclusion becomes equality after closure.  Thus the labelled gap cannot
+improve an asymptotic density bound, although exact finite certificates may still differ.
+
+\begin{theorem}[No closed certificate gap]\label{thm:no-closed-certificate-gap}
+For every hereditary class $\T_1$ and every non-degenerate type $\sigma$,
+\[
+  \overline{\C^{\mathrm{quot}}_\sigma}^{\,\|\cdot\|_{Q_0}}
+  =
+  \overline{\C^{\mathrm{ens}}_\sigma}^{\,\|\cdot\|_{Q_0}} .
+\]
+Consequently, allowing labelled multipliers that are non-negative only on
+$S_\sigma$ cannot improve any density bound except possibly at the exact, non-closed
+certificate level.
+\end{theorem}
+
+\begin{proof}
+It suffices to prove
+$\C^{\mathrm{ens}}_\sigma\subseteq
+\overline{\C^{\mathrm{quot}}_\sigma}^{\,\|\cdot\|_{Q_0}}$.
+Let $s\in\A^\sigma[\T_1]$ be non-negative on $S_\sigma$.  As a function on the
+compact set $S_\sigma$, $s$ is continuous and non-negative.  The restrictions of
+$\A^\sigma[\T_1]$ to $S_\sigma$ form a unital real algebra separating points, since
+flag densities separate homomorphisms.  Applying Stone--Weierstrass to the continuous
+function $\sqrt{s}$, and choosing the approximation sufficiently close, for every
+$\delta>0$ there is $h\in\A^\sigma[\T_1]$ such that
+\[
+  \sup_{\psi\in S_\sigma}\left|s(\psi)-h(\psi)^2\right|<\delta .
+\]
+The element $h^2$ is a square, so $\avg{h^2}{\sigma}\in\C^{\mathrm{quot}}_\sigma$.
+
+Let $\phi_0\in Q_0$.  If $\phi_0(\brak\sigma)>0$, then
+$\Ext_\sigma(\phi_0)$ is supported on $S_\sigma$, and
+\eqref{eq:extension-expectation} gives
+\[
+  \left|\phi_0\!\left(\avg{s-h^2}{\sigma}\right)\right|
+  =
+  \phi_0(\brak\sigma)\,
+  \left|\E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(s-h^2)]\right|
+  \le \delta .
+\]
+If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
+$\avg{s-h^2}{\sigma}$ contains a copy of $\sigma$, so its $\phi_0$-density is zero
+by monotonicity; hence the same displayed quantity is $0$.  Therefore
+\[
+  \left\|\avg{s}{\sigma}-\avg{h^2}{\sigma}\right\|_{Q_0}\le\delta .
+\]
+Since $\delta$ was arbitrary, $\avg{s}{\sigma}$ lies in the
+$Q_0$-closure of $\C^{\mathrm{quot}}_\sigma$.
+\end{proof}
+
+The following exact observations complement the closed-cone theorem.  They show the
+specific witnesses gain nothing even before closure, and that for the first
+degenerate obstructions the two cones coincide outright.
 
 \begin{proposition}[The vanishing ideal unlabels to zero]\label{prop:ideal-zero}
 Let $\mathcal I_\sigma=\{a\in\A^\sigma[\T_1]:\psi(a)=0\text{ for all }\psi\in S_\sigma\}$,
@@ -1147,22 +1602,21 @@ $\avg{s}{1}=s(o)\,\brak1=s(o)\,\one_0$ for every such $s$; both cones equal
 $\R_{\ge0}\,\one_0$.
 \end{proof}
 
-\begin{remark}[What a practically relevant gap would require]
+\begin{remark}[What a practically relevant exact gap would require]
 \Cref{prop:single-point} shows the gap is not merely witness-inert but completely inert
 for the exhibited classes: a degenerate labelling carries no information, so its only
 contribution to a density bound is an additive constant, in either semantics.  A gap
-that \emph{does} reach a density bound therefore requires, by \cref{prop:ideal-zero}, a
-\emph{Positivstellensatz gap on the support variety}: a non-root-plantable type whose
-$S_\sigma$ is rich enough to carry a non-negative element that is not a restricted sum of
-squares.  Boundary pinning to a single point supplies none, and by
-\cref{thm:no-interior} pinning is \emph{always} to a boundary value---so every pinning
-obstruction, exhibited here or not, is boundary.  \Cref{conj:characterisation} predicts
-that the only obstructions are pinning; if so, and if the boundary support sets remain
-sum-of-squares-saturated, the quotient/ensemble gap---though genuine at labelled
-types---would never affect a density bound.  The $C_5$-free case of the next section
-illustrates both possibilities at once: the one-root and non-edge-rooted supports are
-rich but plantable, while the edge-rooted support has a boundary pinning obstruction
-coming from common neighbours of an exceptional book edge.
+that survives at the exact certificate level therefore requires, by
+\cref{prop:ideal-zero}, a \emph{Positivstellensatz gap on the support variety}: a
+non-root-plantable type whose $S_\sigma$ is rich enough to carry a non-negative
+element whose restriction is not represented exactly by a sum of squares.  By
+\cref{thm:no-closed-certificate-gap}, any such gap is necessarily non-closed: after
+unlabelling it can be approximated arbitrarily well by ordinary quotient sums of
+squares.  Boundary pinning to a single point supplies no exact gap, and by
+\cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free
+case of the next section illustrates both possibilities at once: the one-root and
+non-edge-rooted supports are rich but plantable, while the edge-rooted support has a
+boundary pinning obstruction coming from common neighbours of an exceptional book edge.
 \end{remark}
 
 \section{The \texorpdfstring{$C_5$}{C5}-free split}
@@ -1266,43 +1720,23 @@ inside $N_G(r)$, and all such edges were deleted in the construction of $H$.
 This contradiction proves the lemma.
 \end{proof}
 
-\begin{lemma}[Rooted density approximation]\label{lem:c5-density-approx}
-Fix $m\ge1$.  There is a constant $C_m$ such that the following holds.  Let
-$(G,r)$ be a rooted $C_5$-free graph on $n$ vertices, let
-$H=P_L(G,r)$ with $1\le L\le \lambda n$, and root $H$ at any vertex
-$x\in R$.  For every one-rooted flag $F$ with at most $m$ vertices,
-\[
-  \left|p(F,(H,x))-p(F,(G,r))\right|
-  \le C_m\left(\lambda+\frac1n\right).
-\]
+\begin{lemma}[One-root sparse repairs]\label{lem:c5-one-root-sparse-repair}
+The $C_5$-free graph class has sparse root-blow-up repairs at the one-vertex
+type.
 \end{lemma}
 
 \begin{proof}
-After enlarging $C_m$ we may ignore the finitely many cases with $n$ bounded in
-terms of $m$, since the left-hand side is always at most $1$.  Assume therefore
-that all denominators below are non-zero and comparable to the displayed powers
-of $n$.
+Let $0<\lambda\le1$ and $\rho>0$.  Choose
+$n_0\ge \max\{2/\lambda,1/\rho\}$.  Let $(G,r)$ be a one-rooted $C_5$-free graph
+with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
+$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r)$ and let $R$ be the planted
+root cluster.  By \cref{lem:c5-planting-free}, $H$ is $C_5$-free.
 
-Let $\ell=|F|\le m$.  The density $p(F,(H,x))$ is computed by sampling
-$\ell-1$ further vertices from $H\setminus\{x\}$.  Couple this with a uniform
-sample from $U=V(G)\setminus\{r\}$.
-
-There are two bad events.  First, the sample in $H$ may hit another vertex of
-the planted cluster $R$; this has probability at most
-\[
-  \frac{(\ell-1)(L-1)}{n+L-2}=O_m(\lambda+1/n).
-\]
-Second, after the sample has landed in $U$, it may contain both endpoints of an
-edge deleted from $G[N_G(r)]$.  By \cref{lem:c5-nbhd}, the number of deleted
-edges is at most $n$, so this probability is at most
-\[
-  \binom{\ell-1}{2}\frac{n}{\binom{n-1}{2}}
-  =O_m(1/n).
-\]
-Outside these bad events, the rooted induced graph seen from $x$ in $H$ is
-identical to the rooted induced graph seen from $r$ in $G$: the root has the
-same neighbours in $U$, and no edge among the sampled old vertices has been
-changed.  Enlarging the implicit constant gives the stated bound.
+The sparse-repair conditions are immediate from the construction.  There are no
+root--root adjacencies to check for the one-vertex type.  Each vertex of $R$ has
+exactly the same neighbours in $U:=V(G)\setminus\{r\}$ as $r$ had in $G$.  Finally,
+$H[U]$ differs from $G[U]$ only on the edges inside $N_G(r)$, and by
+\cref{lem:c5-nbhd} there are at most $|N_G(r)|\le n\le\rho n^2$ such edges.
 \end{proof}
 
 \begin{theorem}[One-root $C_5$-free root-plantability]\label{thm:c5-one-root}
@@ -1313,65 +1747,9 @@ The $C_5$-free graph class is root-plantable at the one-vertex type:
 \end{theorem}
 
 \begin{proof}
-The inclusion $S_1\subseteq Q_1$ is the general support-passing statement for
-hereditary constrained classes.  We prove $Q_1\subseteq S_1$.
-
-Let $\psi\in Q_1$, and let $U$ be a basic neighbourhood of $\psi$, specified by
-one-rooted flags $F_1,\ldots,F_s$ of size at most $m$ and a tolerance
-$\eps>0$:
-\[
-  U=
-  \{\chi\in Q_1:
-    |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
-\]
-Choose a convergent sequence of rooted $C_5$-free graphs
-$(G_t,r_t)$ with $|G_t|\to\infty$ and
-$p(\,\cdot\,,(G_t,r_t))\to\psi$.
-
-Pick $\lambda>0$ so small that $C_m\lambda<\eps/4$, where $C_m$ is the constant
-from \cref{lem:c5-density-approx}.  For each $t$, put
-\[
-  L_t=\max(1,\lfloor\lambda |G_t|\rfloor),
-  \qquad
-  H_t:=P_{L_t}(G_t,r_t).
-\]
-By \cref{lem:c5-planting-free}, every $H_t$ is $C_5$-free.  Passing to a
-subsequence, assume the unlabelled graphs $H_t$ converge to some
-$\phi_0\in Q_0$.
-
-Let $R_t$ be the planted cluster in $H_t$.  The probability that a uniformly
-random root of $H_t$ lies in $R_t$ tends to
-\[
-  \delta=\frac{\lambda}{1+\lambda}>0.
-\]
-Moreover, for every $x\in R_t$, \cref{lem:c5-density-approx} and the convergence
-of $(G_t,r_t)$ to $\psi$ imply, for all sufficiently large $t$,
-\[
-  |p(F_i,(H_t,x))-\psi(F_i)|\le\eps/2
-  \qquad(1\le i\le s).
-\]
-Let
-\[
-  Y_1:=[0,1]^{\F^{1}[\T_{\mathrm{Graph}}]},
-  \qquad
-  \widetilde C=
-  \{x\in Y_1:
-    |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
-\]
-This is a closed cylinder in the ambient product space.  Its intersection with
-$X_1$ is contained in $U$.  The finite random-root distribution of $H_t$,
-viewed as a measure on $Y_1$ by recording all rooted flag densities, assigns
-mass at least $\delta/2$ to $\widetilde C$ for all large $t$.
-
-By Razborov's random-extension theorem, these finite random-root distributions
-converge weakly to $\Ext_1(\phi_0)$ as measures on $Y_1$.  The closed-set form
-of the Portmanteau theorem gives
-\[
-  \Ext_1(\phi_0)(\widetilde C)\ge\delta/2>0.
-\]
-Since $\Ext_1(\phi_0)$ is concentrated on $X_1$, its support intersects
-$\widetilde C\cap X_1\subseteq U$.  Since $U$ was an arbitrary neighbourhood of
-$\psi$, we have $\psi\in S_1$.
+The one-vertex type is non-degenerate because the $C_5$-free class contains
+arbitrarily large graphs.  Hence
+\cref{lem:c5-one-root-sparse-repair,thm:sparse-repair-planting} apply.
 \end{proof}
 
 \begin{remark}
@@ -1442,33 +1820,27 @@ vertices are old edges of $G$.  The replacement therefore gives a $C_5$ in
 $G$, contradicting the hypothesis.
 \end{proof}
 
-\begin{lemma}[Non-edge rooted density approximation]\label{lem:c5-nonedge-density-approx}
-Fix $m\ge2$.  There is a constant $C_m$ such that the following holds.  Let
-$(G,r,s)$ be a $C_5$-free graph rooted at a non-edge, with $n$ vertices, let
-$H=P_L(G,r,s)$ with $1\le L\le\lambda n$, and root $H$ at any ordered pair
-$(x,y)\in R\times S$.  For every $\eta$-flag $F$ with at most $m$ vertices,
-\[
-  \left|p(F,(H,x,y))-p(F,(G,r,s))\right|
-  \le C_m\left(\lambda+\frac1n\right).
-\]
+\begin{lemma}[Non-edge sparse repairs]\label{lem:c5-nonedge-sparse-repair}
+The $C_5$-free graph class has sparse root-blow-up repairs at the two-root
+non-edge type $\eta$.
 \end{lemma}
 
 \begin{proof}
-As in \cref{lem:c5-density-approx}, bounded $n$ can be absorbed into the
-constant $C_m$, so assume all denominator estimates below are valid.  Let
-$\ell=|F|\le m$.  The density $p(F,(H,x,y))$ is computed by sampling
-$\ell-2$ further vertices from $H\setminus\{x,y\}$.  Couple this with a uniform
-sample from $U=V(G)\setminus\{r,s\}$.
+Let $0<\lambda\le1$ and $\rho>0$.  Choose
+$n_0\ge \max\{2/\lambda,2/\rho\}$.  Let $(G,r,s)$ be a $C_5$-free graph rooted at
+a non-edge, with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
+$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r,s)$ with planted clusters
+$R,S$.  By \cref{lem:c5-nonedge-planting-free}, $H$ is $C_5$-free.
 
-The sample in $H$ may hit another planted vertex in $R\cup S$; this has
-probability $O_m(\lambda+1/n)$.  Once the sample lies in $U$, the only remaining
-difference from $(G,r,s)$ is that edges inside $N_G(r)$ or inside $N_G(s)$ have
-been deleted.  By \cref{lem:c5-nbhd}, the number of such deleted edges is at
-most $2n$, so the probability that the sample contains the endpoints of one of
-them is $O_m(1/n)$.  Outside these bad events, the rooted induced graph seen
-from $(x,y)$ in $H$ is identical to the rooted induced graph seen from
-$(r,s)$ in $G$: the roots are non-adjacent, they have the same adjacencies to
-$U$, and no sampled old-old edge has changed.  This gives the estimate.
+The pair $R,S$ is empty, as required for the non-edge type, and the adjacencies
+from $R$ and $S$ to $U:=V(G)\setminus\{r,s\}$ agree with the adjacencies from
+$r$ and $s$ in $G$.  The old part $H[U]$ differs from $G[U]$ only on edges inside
+$N_G(r)$ or inside $N_G(s)$.  By \cref{lem:c5-nbhd}, the number of such edges is
+at most
+\[
+  |N_G(r)|+|N_G(s)|\le 2n\le \rho n^2 .
+\]
+Thus the sparse root-blow-up repair condition holds.
 \end{proof}
 
 \begin{theorem}[Non-edge type $C_5$-free root-plantability]\label{thm:c5-nonedge-root}
@@ -1480,62 +1852,9 @@ $\eta$:
 \end{theorem}
 
 \begin{proof}
-Again $S_\eta\subseteq Q_\eta$ is the general support-passing statement.  Let
-$\psi\in Q_\eta$, and let $U$ be a basic neighbourhood of $\psi$, specified by
-$\eta$-flags $F_1,\ldots,F_s$ of size at most $m$ and a tolerance $\eps>0$.
-Choose a convergent sequence of $C_5$-free graphs rooted at a non-edge,
-\[
-  (G_t,r_t,s_t),\qquad |G_t|\to\infty,
-\]
-with $p(\,\cdot\,,(G_t,r_t,s_t))\to\psi$.
-
-Pick $\lambda>0$ so small that the constant in
-\cref{lem:c5-nonedge-density-approx} satisfies $C_m\lambda<\eps/4$.  Put
-\[
-  L_t=\max(1,\lfloor\lambda |G_t|\rfloor),
-  \qquad
-  H_t:=P_{L_t}(G_t,r_t,s_t).
-\]
-By \cref{lem:c5-nonedge-planting-free}, every $H_t$ is $C_5$-free.  Passing to a
-subsequence, assume the unlabelled graphs $H_t$ converge to some
-$\phi_0\in Q_0$.
-
-Let $R_t,S_t$ be the planted clusters.  A uniformly random ordered embedding of
-the non-edge type into $H_t$ lands with its first label in $R_t$ and its second
-label in $S_t$ with probability at least
-\[
-  \delta_t\ge
-  \frac{|R_t||S_t|}{|V(H_t)|^2}
-  \longrightarrow
-  \left(\frac{\lambda}{1+2\lambda}\right)^2
-  =:\delta>0,
-\]
-where the denominator is only an upper bound for the number of ordered non-edge
-embeddings.  On this planted event, \cref{lem:c5-nonedge-density-approx} and the
-convergence to $\psi$ imply, for all sufficiently large $t$,
-\[
-  |p(F_i,(H_t,x,y))-\psi(F_i)|\le\eps/2
-  \qquad(1\le i\le s,\ (x,y)\in R_t\times S_t).
-\]
-
-Let
-\[
-  Y_\eta:=[0,1]^{\F^{\eta}[\T_{\mathrm{Graph}}]},
-  \qquad
-  \widetilde C=
-  \{z\in Y_\eta:
-    |z(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
-\]
-Then $\widetilde C\cap X_\eta\subseteq U$, and the finite random non-edge-root
-distribution of $H_t$ gives $\widetilde C$ mass at least $\delta/2$ for all
-large $t$.  These finite random-root distributions converge weakly to
-$\Ext_\eta(\phi_0)$ as measures on $Y_\eta$, so the closed-set form of the
-Portmanteau theorem gives
-\[
-  \Ext_\eta(\phi_0)(\widetilde C)\ge\delta/2>0.
-\]
-Since $\Ext_\eta(\phi_0)$ is concentrated on $X_\eta$, its support intersects
-$\widetilde C\cap X_\eta\subseteq U$.  As $U$ was arbitrary, $\psi\in S_\eta$.
+The non-edge type $\eta$ is non-degenerate because the $C_5$-free class contains
+arbitrarily large empty graphs.  Hence
+\cref{lem:c5-nonedge-sparse-repair,thm:sparse-repair-planting} apply.
 \end{proof}
 
 For comparison, ordinary blow-ups detect exactly the triangles.
@@ -1643,6 +1962,24 @@ semantics fails for $-g$, and the support-closure criterion gives
 $S_\tau\ne Q_\tau$.
 \end{proof}
 
+\begin{corollary}[The edge-type gap is closed-cone inert]\label{cor:c5-edge-closed-inert}
+For the $C_5$-free class and the edge type $\tau$,
+\[
+  \overline{\C^{\mathrm{quot}}_\tau}^{\,\|\cdot\|_{Q_0}}
+  =
+  \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
+\]
+Thus the ensemble-relaxed edge-rooted multipliers do not improve any asymptotic
+$C_5$-free density bound, even though $\tau$ is not root-plantable.
+\end{corollary}
+
+\begin{proof}
+This is the special case of \cref{thm:no-closed-certificate-gap} for the
+non-degenerate edge type $\tau$.  The pinned witness $g$ itself is even more inert:
+by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
+$g=0$ on $S_\tau$.
+\end{proof}
+
 \begin{remark}
 The $C_5$-free class therefore gives both a positive and a negative lesson.  A
 single typical vertex in a positive-density $C_5$-free limit may have nontrivial
@@ -1651,7 +1988,9 @@ every such rooted quotient limit can be planted.  A typical rooted edge is much
 more rigid: the common-neighbour density is forced to vanish, while an
 exceptional edge in a sparse book graph may have common-neighbour density one.
 This is precisely a pinning obstruction, so the characterisation conjecture
-survives this test but must be understood type by type.
+survives this test but must be understood type by type.  At the same time,
+\cref{cor:c5-edge-closed-inert} says that the obstruction does not create a new
+closed density-bound cone after unlabelling.
 \end{remark}
 
 \section{Strengthening by a further constraint}
@@ -1671,8 +2010,13 @@ by nothing weaker: it does \emph{not} hold for all hereditary classes, as the de
 obstruction (\cref{thm:degenerate-obstruction})---already in the $C_4$-free
 instance---refutes equivalence under heredity alone.  The substantive task is therefore
 to find checkable sufficient conditions for root-plantability.  Clone-closure is one
-(\cref{thm:clone-root-plantable}); natural candidates for others are closure under
-substitutions, true- or false-twin duplications, and amalgamation properties.
+(\cref{thm:clone-root-plantable}), and true-clone-closure is another
+(\cref{thm:true-clone-root-plantable}); global substitution-closure is a still broader
+one (\cref{thm:substitution-root-plantable}).  The remaining natural candidates involve
+structural hypotheses beyond sparse root-blow-up repairs
+(\cref{thm:sparse-repair-planting}), such as repairs incident to root clusters,
+multi-scale repairs, and amalgamation properties for classes that are not globally
+closed under substitution.
 
 \subsection{When the further constraint is not hereditary}
 
@@ -1699,12 +2043,13 @@ quotient/ensemble problem considered here.
 Three questions remain.
 
 \begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
-  \item \textbf{Sufficient conditions beyond clone-closure.}
-  The blow-up proof of \cref{thm:clone-root-plantable} duplicates labelled vertices into
-  positive-mass clone classes.  A broader theorem may permit more general substitutions
-  or local replacements, as long as the labelled finite graph can be amplified into
-  positive measure without leaving the constrained class; closure under true- or
-  false-twin duplication is a natural first generalisation.
+  \item \textbf{Beyond sparse root repairs.}
+  \Cref{thm:clone-root-plantable,thm:true-clone-root-plantable,thm:substitution-root-plantable}
+  cover pure false-clone blow-ups, pure true-clone blow-ups, and full substitution
+  closure; \cref{thm:finite-local-planting} gives the abstract finite criterion; and
+  \cref{thm:sparse-repair-planting} verifies it for sparse old-edge repairs after
+  root blow-up.  The next useful theorem would allow denser but structured repairs,
+  repairs incident to the planted root clusters, or amalgamation hypotheses.
 
   \item \textbf{The characterisation conjecture.}
   \Cref{conj:characterisation} asks whether the absence of a pinning obstruction is
@@ -1714,13 +2059,14 @@ Three questions remain.
   type or class with no pinning obstruction but still no root-plantability, or a theorem
   ruling this out under checkable hypotheses.
 
-  \item \textbf{Whether the gap ever reaches a density bound.}
-  By \cref{thm:no-interior} every pinning obstruction is to a boundary value, and
-  \cref{sec:empty-type} shows the exhibited obstructions inert for density bounds.  A gap
-  that did affect a genuine density bound would require a non-root-plantable type whose
-  labelled support is rich enough to carry a non-negative element that is no restricted sum
-  of squares.  None is known; the dense $C_5$-free labelled limits, which do not collapse to a
-  point, are again the natural place to look.
+  \item \textbf{Exact certificate gaps before closure.}
+  \Cref{thm:no-closed-certificate-gap} rules out any improvement of asymptotic density
+  bounds after taking the natural closed cone.  What remains is an exact finite-degree
+  question: can $\C^{\mathrm{ens}}_\sigma$ be strictly larger than
+  $\C^{\mathrm{quot}}_\sigma$ before closure in a way that changes a finite SDP or a
+  rational certificate?  The edge type in the $C_5$-free class is the first natural test:
+  it is non-root-plantable, its pinned witness and all multiples unlabel to zero, but its
+  support is not a single point.
 \end{enumerate}
 
 \begin{thebibliography}{9}
