@@ -121,6 +121,23 @@
   \end{tikzpicture}%
 }
 % Labeled 3-vertex flags: labeled vertex (fr) at (90:1)
+% label degree 0, no uu edge (all isolated)
+\newcommand{\fbarKthreebull}{%
+  \begin{tikzpicture}[inline]
+    \node[fr] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+% label degree 0, uu edge between unlabeled vertices
+\newcommand{\fEthreebull}{%
+  \begin{tikzpicture}[inline]
+    \draw (210:1) -- (330:1);
+    \node[fr] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
 \newcommand{\fbarPthreebull}{%
   \begin{tikzpicture}[inline]
     \draw (90:1) -- (330:1);
@@ -132,6 +149,16 @@
 \newcommand{\fPthreebull}{%
   \begin{tikzpicture}[inline]
     \draw (90:1) -- (330:1) -- (210:1);
+    \node[fr] at (90:1) {};
+    \node[fv] at (210:1) {};
+    \node[fv] at (330:1) {};
+  \end{tikzpicture}%
+}
+% Labeled 3-vertex flag: label at top connected to both (star/cherry)
+\newcommand{\fKonetwobull}{%
+  \begin{tikzpicture}[inline]
+    \draw (90:1) -- (210:1);
+    \draw (90:1) -- (330:1);
     \node[fr] at (90:1) {};
     \node[fv] at (210:1) {};
     \node[fv] at (330:1) {};
@@ -712,40 +739,25 @@ $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
 % That is, counting $A$ directly agrees with counting through an intermediate
 % sample of size $n$.
 
-\begin{example}[$K_2$ expanded at size $3$]
-  % The simplest useful zero-space relation expands the unlabeled edge $K_2$ (which
-  % is thus a $\emptyset$-type flag) at size $3$.  There are four unlabeled graphs
-  % on three vertices: the empty graph, the one-edge graph, the two-edge path, and
-  % the triangle (the latter three are shown in \Cref{fig:small-graphs}).  If an
-  % edge is sampled uniformly from the three possible vertex pairs, its density
-  % in these graphs is respectively
-  Expanding $\fKtwo \in \mathcal{F}^\emptyset_2$ at size $3$, the density
-  of an edge in each of the four $\emptyset$-flags on three
-  vertices is
+\begin{example}[$\fKtwo$ expanded at size $3$ in the triangle-free algebra]
+  Working in the triangle-free flag algebra (i.e., $\mathcal{H} = \{K_3\}$),
+  the $\emptyset$-flags of size $3$ are the three triangle-free graphs on three vertices:
+  $\fbarKthree$, $\fbarPthree$, and $\fPthree$.
+  The density of an edge in each of them is
   \[
     \den{\fKtwo}{\fbarKthree}=0,\quad
     \den{\fKtwo}{\fbarPthree}=\frac13,\quad
-    \den{\fKtwo}{\fPthree}=\frac23,\quad
-    \den{\fKtwo}{\fKthree}=1,
+    \den{\fKtwo}{\fPthree}=\frac23,
   \]
   so the zero-space quotient identifies
-  \[
+  \begin{equation}
     \fKtwo
     \;=\;
     \frac13\,\fbarPthree
     + \frac23\,\fPthree
-    + \fKthree
     \qquad\text{in } \mathcal{A}^{\emptyset}.
-  \]
-  % Mantel's theorem is the statement that the asymptotic edge density $K_2$ is
-  % at most $1/2$ in every $K_3$-free graph.  In the flag algebra proof,
-  % we start with the above equation and then eliminate the triangle term
-  % using the $K_3$-free hypothesis.  This style of expansion is common in
-  % flag algebra proofs.  It is also exactly the kind of elementary
-  % combinatorial bookkeeping that becomes unwieldy in the Lean formalization of
-  % more complex arguments, including the pentagon proof.  There the coefficients
-  % are still rational numbers from finite sampling, but there are hundreds of
-  % them, and every one must be justified inside Lean.
+    \label{eq:k2-expansion}
+  \end{equation}
 \end{example}
 
 \paragraph{Multiplication.}
@@ -828,9 +840,10 @@ We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
 In $\mathcal{A}^\sigma$ the following identity holds for every $\ell \geq |\sigma|$:
-\[
+\begin{equation}
   \sum_{F \in \mathcal{F}^\sigma_\ell} F \;=\; \mathbf{1}_\sigma.
-\]
+  \label{eq:sum-to-one}
+\end{equation}
 Applying any $\phi \in \poshom{\sigma}$ to both sides gives
 $\sum_{F \in \mathcal{F}^\sigma_\ell} \phi(F) = 1$;
 non-negativity then forces $\phi(F) \in [0,1]$ for every $\sigma$-flag $F$.
@@ -868,6 +881,16 @@ We write
 \]
 Equivalently, $f\leq_\sigma g$ means that
 $\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$.
+Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_\sigma f$.
+
+Two immediate examples of elements of $\mathcal{C}^\sigma$ are flags and squares.
+Every $\sigma$-flag $F$ satisfies $0 \leq_\sigma F$,
+because positive homomorphisms send every flag to a non-negative real by definition.
+For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_\sigma f^2$,
+because $\phi(f^2) = \phi(f)^2 \geq 0$ for every $\phi \in \poshom{\sigma}$.
+Moreover, if $0 \leq_\sigma f$ and $0 \leq_\sigma g$, then $0 \leq_\sigma f + g$,
+since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}$.
+Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
 
 \paragraph{From semantic non-negativity to Tur\'an density.}
 The problem of bounding the Turán density $\tdensity{P}{\mathcal{H}}$ from above
@@ -988,9 +1011,9 @@ and $q_\sigma(\mathbf{1}_\sigma) > 0$ always.
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:downward-nonneg}
-  For any type $\sigma$ and any $f \in \mathcal{C}^\sigma$,
+  For any type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$,
   \[
-    \llbracket f \rrbracket_\sigma \;\in\; \mathcal{C}.
+    0 \;\leq\; \llbracket f \rrbracket_\sigma.
   \]
 \end{theorem}
 \begin{proof}[Proof sketch]
@@ -999,7 +1022,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   has zero density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma$ be the ensemble rooted at $\phi_0$.
-  Since $f \in \mathcal{C}^\sigma$, every positive homomorphism on
+  Since $0 \leq_\sigma f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
   $\mathbb{E}[\boldsymbol{\phi}^\sigma(f)] \geq 0$.
   Rearranging~\eqref{eq:ensemble}:
@@ -1011,8 +1034,51 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
     \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
     \;\geq\; 0.
   \]
-  Since $\phi_0$ was arbitrary, $\llbracket f \rrbracket_\sigma \in \mathcal{C}$.
+  Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
+
+A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically follows a fixed pattern:
+(1) exhibit $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some non-empty type $\sigma$
+(e.g., a square $f = g^2$),
+(2) apply \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$, and
+(3) add $\llbracket f \rrbracket_\sigma$ to the zero-space expansion of $P$
+and use non-negativity of flags and \eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
+The following example illustrates this pattern.
+
+\begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
+We prove $\fKtwo \leq \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
+Let $\sigma$ be the one-vertex type.
+
+\textit{Step 1: A key inequality.}
+Since $0 \leq_\sigma (\fbarKtwobull - \fKtwobull)^2$,
+\Cref{thm:downward-nonneg} gives $0 \leq \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma$.
+Expanding the square and computing each product at size~$3$,
+then applying the downward operator:
+\begin{align}
+  0 &\leq \llbracket(\fbarKtwobull - \fKtwobull)^2\rrbracket_\sigma\notag\\
+  &= \llbracket\fbarKtwobull\cdot\fbarKtwobull - 2\cdot\fbarKtwobull\cdot\fKtwobull + \fKtwobull\cdot\fKtwobull\rrbracket_\sigma\notag\\
+  &= \left\llbracket\fbarKthreebull + \fEthreebull
+    - \fbarPthreebull - \fPthreebull
+    + \fKonetwobull\right\rrbracket_\sigma\notag\\
+  &= \fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree.
+  \label{eq:mantel-key}
+\end{align}
+
+\textit{Step 2: Algebraic derivation.}
+Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplify using \eqref{eq:sum-to-one}:
+\begin{align*}
+  \fKtwo
+  &= \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree
+  &&\text{by \eqref{eq:k2-expansion}}\\
+  &\leq \frac{1}{3}\,\fbarPthree + \frac{2}{3}\,\fPthree +
+    \frac{1}{2}\left(\fbarKthree - \frac{1}{3}\,\fbarPthree - \frac{1}{3}\,\fPthree\right) +
+    \frac{1}{3}\,\fbarPthree
+  &&\text{by \eqref{eq:mantel-key} and $0 \leq \fbarPthree$}\\
+  &= \frac{1}{2}\cdot\left(\fbarKthree + \fbarPthree + \fPthree\right)
+  \;=\; \frac{1}{2}\cdot\mathbf{1}.
+  &&\text{by \eqref{eq:sum-to-one}}
+\end{align*}
+\end{example}
 
 % \begin{corollary}[Razborov~{\cite{razborov2007flag}}]
 %   \label{thm:sdp-nonneg}
