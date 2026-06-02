@@ -112,7 +112,14 @@ examples witnessing the gap vanish once averaged back into unlabelled-graph stat
 and, more generally, that every ensemble-relaxed labelled contribution is a limit of
 ordinary quotient sum-of-squares contributions after unlabelling.  What can remain is
 only an exact or finite-truncation certificate question, not a new asymptotic density
-bound.
+bound.  Finally, we point out a different advantage of ensemble semantics: it can impose
+non-hereditary limit constraints directly.  On the Mantel equality slice, for example,
+the relative ensemble support records the labelled local structure of the balanced
+complete bipartite extremal limit, including the identity that a typical vertex has
+degree $1/2$.  More interestingly, applying the same idea to the verified $K_4$-free
+$P_4$ certificate extracts labelled equations that every $P_4$-extremal $K_4$-free
+limit must satisfy; these equations force edge density $2/3$, and hence recover the
+balanced complete tripartite extremal graphon.
 \end{abstract}
 
 \section{Introduction}
@@ -212,7 +219,17 @@ ensemble-relaxed labelled contribution is a $Q_0$-limit of ordinary quotient
 sum-of-squares contributions (\cref{thm:no-closed-certificate-gap}).  The incompleteness
 is thus confined to the intermediate, labelled certificates a proof passes through.  The
 remaining practical question is whether exact finite-degree or rational certificates can
-separate before taking this closure.
+separate before taking this closure.  A separate, positive flexibility of ensemble
+semantics is that it can be enhanced by non-hereditary limit constraints.  We formulate
+this relative semantics and use the Mantel equality slice to show how it recovers labelled
+identities of extremizers, such as $e=\frac12\one_1$ at a typical vertex of a maximum
+triangle-free limit, which ordinary hereditary quotient semantics cannot impose.  We then
+apply the same mechanism to the verified $K_4$-free $P_4$ certificate: equality in the
+bound forces the labelled certificate terms to vanish on the relative one- and two-root
+supports, yielding concrete local equations for extremal limits.  Integrating those
+local equations gives a short certificate-based derivation that every extremal
+$K_4$-free $P_4$ limit has edge density $2/3$, and therefore is the balanced complete
+tripartite limit by the equality case of Turán's theorem.
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -2018,25 +2035,318 @@ structural hypotheses beyond sparse root-blow-up repairs
 multi-scale repairs, and amalgamation properties for classes that are not globally
 closed under substitution.
 
-\subsection{When the further constraint is not hereditary}
+\subsection{Relative ensemble enhancements}
 
-If $\K'$ is not hereditary---for instance connectivity, or a parity condition on the
-number of edges---then $\K\cap\K'$ is generally not closed under induced subgraphs.  This
-breaks the basic starting point of Razborov's flag-algebra construction, which assumes
-that every induced subgraph of a graph in the class is again in the class.  In this case
-there may be no canonical quotient algebra $\A^\sigma[\K\cap\K']$ of the usual
-flag-algebra kind.
+If the further constraint is not hereditary---for instance connectivity, a parity
+condition, or a prescribed density value---then $\K\cap\K'$ is generally not closed under
+induced subgraphs.  This breaks the basic starting point of Razborov's quotient
+construction, which assumes that every induced subgraph of a graph in the class is again
+in the class.  In this case there may be no canonical quotient algebra
+$\A^\sigma[\K\cap\K']$ of the usual flag-algebra kind.
 
-One can still study constraints imposed on ambient homomorphisms, for example
-conditions of the form
+Ensemble semantics has more room.  Instead of forming a new quotient algebra, fix a
+closed set
 \[
-  \phi(g_i)=0,
-  \qquad
-  \phi(h_j)\ge0.
+  Y\subseteq Q_0
 \]
-But this is better viewed as \emph{relative semantics inside the ambient flag
-algebra} than as quotient semantics of a new hereditary class, and lies outside the
-quotient/ensemble problem considered here.
+of admissible unlabelled limits inside an existing hereditary theory.  The set $Y$ may
+be cut out by arbitrary continuous density constraints, for example
+$\phi_0(g_i)=0$, $\phi_0(h_j)\ge0$, or $\phi_0(\rho)=c$.  The relative labelled support
+at type $\sigma$ is
+\[
+  S_\sigma(Y):=
+  \overline{
+  \bigcup_{\substack{\phi_0\in Y\\ \phi_0(\brak\sigma)>0}}
+  \supp(\Ext_\sigma(\phi_0))
+  }.
+\]
+Relative ensemble positivity asks only for non-negativity on $S_\sigma(Y)$.  This is a
+genuine theory enhancement: it can impose limit-level conditions that are meaningful for
+the intended extremal problem but are invisible to hereditary quotients.
+
+\begin{proposition}[Relative ensemble soundness]\label{prop:relative-soundness}
+Let $Y\subseteq Q_0$ be closed, and let $s\in\A^\sigma[\T_1]$ be non-negative on
+$S_\sigma(Y)$.  Then
+\[
+  \phi_0(\avg{s}{\sigma})\ge0
+  \qquad(\phi_0\in Y).
+\]
+\end{proposition}
+
+\begin{proof}
+If $\phi_0(\brak\sigma)>0$, then $\Ext_\sigma(\phi_0)$ is supported on
+$S_\sigma(Y)$, so \eqref{eq:extension-expectation} gives
+\[
+  \phi_0(\avg{s}{\sigma})
+  =
+  \phi_0(\brak\sigma)\,
+  \E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(s)]
+  \ge0.
+\]
+If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
+$\avg{s}{\sigma}$ contains a copy of $\sigma$, hence has $\phi_0$-density $0$ by
+monotonicity.  Thus $\phi_0(\avg{s}{\sigma})=0$.
+\end{proof}
+
+\subsection{Example: the Mantel equality slice}
+
+Let $\T_1$ be the triangle-free graph theory, let $\rho\in\A^0[\T_1]$ be the
+unlabelled edge density, and set
+\[
+  Y_{\mathrm{Mantel}}
+  :=
+  \{\phi_0\in Q_0:\phi_0(\rho)=1/2\}.
+\]
+This is a closed, non-hereditary enhancement: it describes the equality case of Mantel's
+theorem at the level of limits, not a hereditary graph class.
+
+\begin{theorem}[Relative Mantel equality support]\label{thm:relative-mantel}
+The set $Y_{\mathrm{Mantel}}$ consists of the balanced complete bipartite limit.  Hence
+the relative supports at the one-vertex type, the edge type $\tau$, and the non-edge type
+$\eta$ are all single points.
+
+More explicitly:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item If $e\in\A^1[\T_1]$ is the one-root edge flag, then on
+        $S_1(Y_{\mathrm{Mantel}})$ one has
+        \[
+          e=\frac12\,\one_1 .
+        \]
+  \item At the ordered edge type $\tau$, let $a_\tau$ and $b_\tau$ be the two
+        three-vertex flags in which the new vertex is adjacent to exactly the first,
+        respectively exactly the second, labelled endpoint; let $z_\tau$ be the flag in
+        which it is adjacent to neither endpoint; and let $g_\tau$ denote the quotient
+        image of the common-neighbour triangle flag, already zero in the triangle-free
+        theory.  On $S_\tau(Y_{\mathrm{Mantel}})$,
+        \[
+          a_\tau=b_\tau=\frac12\,\one_\tau,
+          \qquad
+          z_\tau=g_\tau=0 .
+        \]
+  \item At the ordered non-edge type $\eta$, let $a_\eta,b_\eta,z_\eta,g_\eta$ denote the
+        analogous flags, where $g_\eta$ is now the flag in which the new vertex is
+        adjacent to both non-adjacent roots.  On $S_\eta(Y_{\mathrm{Mantel}})$,
+        \[
+          g_\eta=z_\eta=\frac12\,\one_\eta,
+          \qquad
+          a_\eta=b_\eta=0 .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By Mantel's theorem together with its equality/stability form, a triangle-free graph
+sequence with edge density tending to $1/2$ converges, after changing $o(n^2)$ edges, to
+the balanced complete bipartite graphs.  Equivalently, the only triangle-free graphon of
+edge density $1/2$ is the balanced complete bipartite graphon.  Thus
+$Y_{\mathrm{Mantel}}=\{\beta\}$, where $\beta$ denotes that limit.
+
+The remaining statements are direct readings of random rooted extensions of $\beta$.
+A random vertex of the balanced bipartite limit sees exactly half of the space across the
+bipartition and half on its own side, so the one-root edge density is $1/2$.
+
+A random ordered edge has its endpoints on opposite sides.  A further random vertex lies
+on the first endpoint's side with probability $1/2$ and is then adjacent only to the
+second endpoint; it lies on the second endpoint's side with probability $1/2$ and is then
+adjacent only to the first endpoint.  This gives the asserted $\tau$-identities.  A random
+ordered non-edge has both endpoints on the same side.  A further random vertex lies on
+the opposite side with probability $1/2$ and is adjacent to both roots, and lies on the
+same side with probability $1/2$ and is adjacent to neither.  This gives the asserted
+$\eta$-identities.
+\end{proof}
+
+\begin{remark}[Why this is not quotient semantics]
+The equality constraint $\phi_0(\rho)=1/2$ is not hereditary, so it is not naturally a
+quotient flag algebra.  The relative ensemble support nevertheless records strong
+labelled consequences of being an extremal Mantel limit.  For instance,
+$e=\frac12\one_1$ on $S_1(Y_{\mathrm{Mantel}})$, while this equality is false in the
+ordinary triangle-free quotient: rooted stars give quotient points with $e=1$, and empty
+graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
+local information about extremizers that the hereditary quotient deliberately forgets.
+\end{remark}
+
+\subsection{Example: equality slices from a certificate}
+
+The Mantel slice is a useful sanity check, but the graphon is already known.  A more
+exploratory use of relative ensemble semantics is to take a flag-algebra certificate and
+study the equality slice it defines.  The certificate then becomes a source of labelled
+equations for extremal limits, even when the extremal graphons themselves have not been
+classified.
+
+\begin{proposition}[Equality slices force certificate terms to vanish]\label{prop:equality-slice-vanishing}
+Let $h\in\A^0[\T_1]$, let $c\in\R$, and let
+\[
+  Y=\{\phi_0\in Q_0:\phi_0(h)=c\}.
+\]
+Suppose a certificate proves, on $Q_0$,
+\[
+  h+\sum_{i=1}^m \lambda_i\,\avg{\ell_i^2}{\sigma_i}\le c\,\one_0,
+  \qquad
+  \lambda_i>0 .
+\]
+Then each linear certificate term vanishes on the corresponding relative support:
+\[
+  \psi(\ell_i)=0
+  \qquad
+  (\psi\in S_{\sigma_i}(Y),\ 1\le i\le m).
+\]
+\end{proposition}
+
+\begin{proof}
+For $\phi_0\in Y$, the displayed certificate gives
+\[
+  \sum_i \lambda_i\,\phi_0(\avg{\ell_i^2}{\sigma_i})\le0.
+\]
+Each summand is non-negative by \eqref{eq:extension-expectation}: if
+$\phi_0(\brak{\sigma_i})>0$, it is
+$\phi_0(\brak{\sigma_i})\,\E[\psi(\ell_i)^2]$, and if
+$\phi_0(\brak{\sigma_i})=0$ it is $0$ by monotonicity.  Since all
+$\lambda_i$ are positive, every summand is zero for every $\phi_0\in Y$.
+Thus $\psi(\ell_i)^2=0$ almost surely under every admissible
+$\Ext_{\sigma_i}(\phi_0)$.  Hence $\ell_i=0$ on the union of the supports, and by
+continuity also on its closure $S_{\sigma_i}(Y)$.
+\end{proof}
+
+\begin{theorem}[The $K_4$-free $P_4$ equality slice]\label{thm:k4free-p4-equality-slice}
+Let $\T_1$ be the $K_4$-free graph theory, and let $\pi_{P_4}\in\A^0[\T_1]$ denote
+the $P_4$ density expression used in the verified certificate
+\texttt{API.K4freeP4}.  Define the extremal slice
+\[
+  Y_{P_4}:=\{\phi_0\in Q_0:\phi_0(\pi_{P_4})=32/9\}.
+\]
+Let $\eta$ be the ordered non-edge type and $\tau$ the ordered edge type.
+
+For $\eta$, let $z_\eta$ be the three-vertex flag in which the new vertex is adjacent
+to neither root, and let $g_\eta$ be the flag in which it is adjacent to both roots.
+Then on $S_\eta(Y_{P_4})$,
+\[
+  2z_\eta=g_\eta .
+\]
+
+For $\tau$, let $a_\tau$ and $b_\tau$ be the three-vertex flags in which the new
+vertex is adjacent to exactly the first, respectively exactly the second, root, and let
+$g_\tau$ be the common-neighbour triangle flag.  Then on $S_\tau(Y_{P_4})$,
+\[
+  a_\tau=b_\tau,
+  \qquad
+  a_\tau+b_\tau=2g_\tau .
+\]
+\end{theorem}
+
+\begin{proof}
+The verified $K_4$-free $P_4$ certificate has the form
+\[
+  \pi_{P_4}
+  +\frac89\,\avg{(2z_\eta-g_\eta)^2}{\eta}
+  +5\,\avg{(a_\tau-b_\tau)^2}{\tau}
+  +\frac{35}{9}\,\avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}
+  \le \frac{32}{9}\,\one_0 .
+\]
+This is exactly the certificate encoded by
+\texttt{K4freeP4.f\_1}, \texttt{K4freeP4.f\_2}, and \texttt{K4freeP4.f\_3}:
+the generated flags
+\[
+  \texttt{FlagAlgebra\_3\_2\_0\_0},\quad
+  \texttt{FlagAlgebra\_3\_2\_0\_3}
+\]
+are $z_\eta$ and $g_\eta$, while
+\[
+  \texttt{FlagAlgebra\_3\_2\_1\_1},\quad
+  \texttt{FlagAlgebra\_3\_2\_1\_2},\quad
+  \texttt{FlagAlgebra\_3\_2\_1\_3}
+\]
+are $a_\tau$, $b_\tau$, and $g_\tau$.  Applying
+\cref{prop:equality-slice-vanishing} to the equality slice $Y_{P_4}$ gives the three
+displayed labelled equations.
+\end{proof}
+
+\begin{remark}
+\Cref{thm:k4free-p4-equality-slice} is the kind of example the relative method is meant
+to produce.  It does not start from a known extremal graphon and read off its local
+statistics.  Instead, it takes a bound already proved by a flag-algebra certificate and
+extracts necessary local laws for every extremal limit.  These laws are invisible to the
+ordinary hereditary quotient: the quotient sees all $K_4$-free rooted limits, while the
+relative support sees only roots that occur with positive probability inside
+$P_4$-extremal limits.
+\end{remark}
+
+\begin{theorem}[A certificate route to the tripartite extremizer]\label{thm:k4free-p4-tripartite}
+Every $K_4$-free graphon in the equality slice $Y_{P_4}$ has edge density $2/3$.
+Consequently, by the equality case of Turán's theorem, every element of $Y_{P_4}$ is the
+balanced complete tripartite graphon.
+\end{theorem}
+
+\begin{proof}
+Let $W$ represent a point of $Y_{P_4}$.  Write
+\[
+  d(x):=\int W(x,u)\,du,\qquad
+  c(x,y):=\int W(x,u)W(y,u)\,du,
+\]
+and set
+\[
+  p:=\int d(x)\,dx,\qquad
+  D:=\int d(x)^2\,dx,\qquad
+  T:=\int W(x,y)c(x,y)\,dx\,dy .
+\]
+Thus $p$ is the edge density and $T$ is the triangle density in the usual graphon
+normalisation.
+
+The edge-root identity
+\[
+  a_\tau+b_\tau=2g_\tau
+\]
+from \cref{thm:k4free-p4-equality-slice} says that, for $W(x,y)$-almost every ordered
+pair $(x,y)$,
+\[
+  d(x)+d(y)-2c(x,y)=2c(x,y).
+\]
+Multiplying by $W(x,y)$ and integrating gives
+\[
+  2D=4T,
+  \qquad\text{hence}\qquad
+  D=2T. \tag{1}
+\]
+
+The non-edge-root identity
+\[
+  2z_\eta=g_\eta
+\]
+says that, for $(1-W(x,y))$-almost every ordered pair $(x,y)$,
+\[
+  2\bigl(1-d(x)-d(y)+c(x,y)\bigr)=c(x,y).
+\]
+Multiplying by $1-W(x,y)$ and integrating gives
+\[
+  D-T=6p-4D-2,
+\]
+or equivalently
+\[
+  5D-T=6p-2. \tag{2}
+\]
+Combining (1) and (2) yields
+\[
+  D=\frac{12p-4}{9}.
+\]
+On the other hand, Cauchy--Schwarz gives $D\ge p^2$.  Therefore
+\[
+  p^2\le \frac{12p-4}{9},
+  \qquad\text{so}\qquad
+  (3p-2)^2\le0.
+\]
+Thus $p=2/3$.
+
+Since $W$ is $K_4$-free and has the maximum possible $K_4$-free edge density, the graphon
+equality case of Turán's theorem applies: $W$ is equivalent, up to a measure-preserving
+relabeling, to the balanced complete tripartite graphon.
+\end{proof}
+
+\begin{remark}
+The point of \cref{thm:k4free-p4-tripartite} is not that Turán's equality case is new;
+it is that the $P_4$ certificate itself forces the problem back onto that equality case.
+The relative ensemble enhancement converts the vanishing of labelled SOS terms into
+rooted local equations, and those equations are strong enough to recover the global edge
+density of an extremizer.
+\end{remark}
 
 \section{Open problems}
 
