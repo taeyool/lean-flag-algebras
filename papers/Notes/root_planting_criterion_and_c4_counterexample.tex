@@ -119,7 +119,10 @@ complete bipartite extremal limit, including the identity that a typical vertex 
 degree $1/2$.  More interestingly, applying the same idea to the verified $K_4$-free
 $P_4$ certificate extracts labelled equations that every $P_4$-extremal $K_4$-free
 limit must satisfy; these equations force edge density $2/3$, and hence recover the
-balanced complete tripartite extremal graphon.
+balanced complete tripartite extremal graphon.  The same extraction works for the
+parametric $K_{r+1}$-free $P_4$ certificate: equality forces the $r$-partite local
+laws, and the only remaining external input needed to identify the whole graphon is the
+classical equality case of Zykov's clique-density theorem.
 \end{abstract}
 
 \section{Introduction}
@@ -229,7 +232,11 @@ bound forces the labelled certificate terms to vanish on the relative one- and t
 supports, yielding concrete local equations for extremal limits.  Integrating those
 local equations gives a short certificate-based derivation that every extremal
 $K_4$-free $P_4$ limit has edge density $2/3$, and therefore is the balanced complete
-tripartite limit by the equality case of Turán's theorem.
+tripartite limit by the equality case of Turán's theorem.  Finally, the parametric
+\texttt{CompleteGraphFreeP4} certificate gives the corresponding $r$-partite local
+equations for every $r\ge3$; for $r\ge4$, the equality case of Zykov's
+$K_4$-density theorem turns these equations into a full recovery of the balanced
+complete $r$-partite limit.
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -2348,9 +2355,124 @@ rooted local equations, and those equations are strong enough to recover the glo
 density of an extremizer.
 \end{remark}
 
+\begin{theorem}[Parametric $K_{r+1}$-free $P_4$ equality equations]
+\label{thm:parametric-p4-equality-slice}
+Fix an integer $r\ge3$.  Let $\T_r$ be the $K_{r+1}$-free graph theory, and let
+$\pi_{P_4}^{(r)}\in\A^0[\T_r]$ be the $P_4$ density expression used in
+\texttt{API.CompleteGraphFreeP4}.  Define the extremal slice
+\[
+  Y_r:=\left\{\phi_0\in Q_0^{(r)}:
+    \phi_0(\pi_{P_4}^{(r)})=12\left(\frac{r-1}{r}\right)^3\right\}.
+\]
+Let $\eta$ be the ordered non-edge type and $\tau$ the ordered edge type.
+
+For $\eta$, let $z_\eta$ be the three-vertex flag in which the new vertex is adjacent
+to neither root, and let $g_\eta$ be the flag in which it is adjacent to both roots.
+Then on $S_\eta(Y_r)$,
+\[
+  (r-1)z_\eta=g_\eta .
+\]
+
+For $\tau$, let $a_\tau$ and $b_\tau$ be the three-vertex flags in which the new
+vertex is adjacent to exactly the first, respectively exactly the second, root, and let
+$g_\tau$ be the common-neighbour flag.  Then on $S_\tau(Y_r)$,
+\[
+  a_\tau=b_\tau,
+  \qquad
+  (r-2)(a_\tau+b_\tau)=2g_\tau .
+\]
+
+Moreover, every $\phi_0\in Y_r$ has extremal $K_4$ density:
+\[
+  \phi_0(K_4)=\frac{(r-1)(r-2)(r-3)}{r^3},
+\]
+where $K_4$ denotes the unlabelled four-clique density element.
+\end{theorem}
+
+\begin{proof}
+The verified certificate in \texttt{API.CompleteGraphFreeP4} has the exact form
+\[
+\begin{aligned}
+  \pi_{P_4}^{(r)}
+  &+p_1(r)\avg{((r-1)z_\eta-g_\eta)^2}{\eta}
+   +p_2(r)\avg{(a_\tau-b_\tau)^2}{\tau} \\
+  &+p_3(r)\avg{((r-2)a_\tau+(r-2)b_\tau-2g_\tau)^2}{\tau}
+   +p_0(r)\kappa_4^{(r)}
+   +L_r
+   =
+   12\left(\frac{r-1}{r}\right)^3\one_0 .
+\end{aligned}
+\]
+Here $p_i(r)>0$ for $i=0,1,2,3$, the term
+\[
+  \kappa_4^{(r)}
+  :=
+  \frac{(r-1)(r-2)(r-3)}{r^3}\one_0-K_4
+\]
+is non-negative on $K_{r+1}$-free limits by the Zykov $K_4$-density bound
+\cite{Zykov1949}, and
+$L_r$ is the non-negative leftover term in the Lean file.
+
+If $\phi_0\in Y_r$, evaluating the displayed identity at $\phi_0$ gives a sum of
+non-negative terms equal to zero.  Hence all four positive-multiplier terms vanish, and
+also $\phi_0(L_r)=0$.  The vanishing of the three averaged squares is converted to
+pointwise vanishing on relative supports exactly as in
+\cref{prop:equality-slice-vanishing}.  This gives the two displayed rooted equations
+for $\eta$ and $\tau$.
+
+The vanishing of the $p_0(r)\kappa_4^{(r)}$ term gives
+$\phi_0(\kappa_4^{(r)})=0$, which is precisely the stated extremal $K_4$ density.
+\end{proof}
+
+\begin{corollary}[Recovery modulo Zykov equality]
+\label{cor:parametric-p4-turan-recovery}
+Assume $r\ge4$ and the equality case of Zykov's $K_4$-density theorem
+\cite{Zykov1949}: among $K_{r+1}$-free graphons, equality in the $K_4$-density bound
+occurs only at the balanced complete $r$-partite graphon.  Then every element of $Y_r$
+is the balanced complete $r$-partite graphon.
+
+Consequently, the relative supports at the one-vertex type, the ordered edge type
+$\tau$, and the ordered non-edge type $\eta$ are all single points.  More explicitly, if
+$e$ is the one-root edge flag, then on $S_1(Y_r)$,
+\[
+  e=\frac{r-1}{r}\one_1 .
+\]
+At the edge type $\tau$,
+\[
+  a_\tau=b_\tau=\frac1r\one_\tau,
+  \qquad
+  g_\tau=\frac{r-2}{r}\one_\tau,
+  \qquad
+  z_\tau=0 .
+\]
+At the non-edge type $\eta$,
+\[
+  z_\eta=\frac1r\one_\eta,
+  \qquad
+  g_\eta=\frac{r-1}{r}\one_\eta,
+  \qquad
+  a_\eta=b_\eta=0 .
+\]
+\end{corollary}
+
+\begin{proof}
+By \cref{thm:parametric-p4-equality-slice}, every $\phi_0\in Y_r$ has the extremal
+$K_4$ density among $K_{r+1}$-free graphons.  The imported equality case of Zykov's
+theorem therefore identifies $\phi_0$ with the balanced complete $r$-partite graphon.
+
+The displayed rooted identities are direct readings of random rooted extensions of that
+graphon.  A random vertex is adjacent to all parts except its own, giving
+$e=(r-1)\one_1/r$.  A random ordered edge has its endpoints in two distinct parts; a new
+vertex lies in the first endpoint's part, the second endpoint's part, or one of the
+remaining $r-2$ parts with probabilities $1/r$, $1/r$, and $(r-2)/r$, respectively.
+This gives the $\tau$-identities.  A random ordered non-edge has both endpoints in the
+same part; a new vertex lies in that part with probability $1/r$ and in one of the other
+$r-1$ parts with probability $(r-1)/r$, giving the $\eta$-identities.
+\end{proof}
+
 \section{Open problems}
 
-Three questions remain.
+Four questions remain.
 
 \begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
   \item \textbf{Beyond sparse root repairs.}
@@ -2377,6 +2499,15 @@ Three questions remain.
   rational certificate?  The edge type in the $C_5$-free class is the first natural test:
   it is non-root-plantable, its pinned witness and all multiples unlabel to zero, but its
   support is not a single point.
+
+  \item \textbf{Equality-slice mining beyond classical equality theorems.}
+  \Cref{thm:k4free-p4-tripartite,thm:parametric-p4-equality-slice} show that a verified
+  density certificate can be read backwards as a system of rooted local equations on its
+  equality slice.  In the $K_{r+1}$-free $P_4$ family, the final identification still
+  leans on classical Turán/Zykov equality cases.  The next genuinely new test is to mine
+  a certificate whose equality slice is not already controlled by a standard extremal
+  equality theorem, and see whether the relative equations themselves determine new
+  structure.
 \end{enumerate}
 
 \begin{thebibliography}{9}
@@ -2385,6 +2516,12 @@ Three questions remain.
 A.~A.~Razborov.
 \newblock Flag algebras.
 \newblock \emph{Journal of Symbolic Logic}, 72(4):1239--1282, 2007.
+
+\bibitem{Zykov1949}
+A.~A.~Zykov.
+\newblock On some properties of linear complexes.
+\newblock \emph{Mat. Sb. (N.S.)}, 24(66), no.~2:163--188, 1949.
+\newblock \url{https://www.mathnet.ru/eng/sm5974}.
 
 \bibitem{KovariSosTuran}
 T.~K\H{o}v\'ari, V.~T.~S\'os, and P.~Tur\'an.
