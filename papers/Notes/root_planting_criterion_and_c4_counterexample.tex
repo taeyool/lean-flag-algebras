@@ -72,8 +72,8 @@
 \newcommand{\one}{\mathbf 1}
 \DeclareMathOperator{\cl}{cl}
 
-\title{Root Planting, Quotient Semantics, and a Counterexample\\
-       for Forbidden-Subgraph Reasoning in Flag Algebras}
+\title{Completeness of Forbidden-Subgraph Reasoning in Flag Algebras:\\
+       A Root-Planting Criterion}
 \author{}
 \date{\today}
 
@@ -81,171 +81,166 @@
 \maketitle
 
 \begin{abstract}
-Forbidden-subgraph reasoning in Razborov's flag algebras can be carried out in two
-ways: in the \emph{quotient} flag algebra of the constrained class, the algebra one
-actually computes in, or by \emph{ensemble} semantics in the ambient class of all graphs, which
-asks that an inequality hold almost surely along the random labellings of unlabelled
-constrained limits.  Quotient
-non-negativity always implies ensemble non-negativity, so the quotient calculus is
-unconditionally sound; we study the converse, its completeness.  We prove that the two
-semantics agree, for every flag-algebra element, exactly when a support-closure
-condition, which we call \emph{root-plantability}, holds: every labelled constrained limit
-must be approximable by the labelled views of unlabelled constrained limits. Closure under
-independent blow-ups (which holds for the clique-free classes, including triangle-free) implies root-plantability and ensures that these two notions of non-negativity coincide.  The true-twin analogue, closure under complete blow-ups, gives further all-type positive examples that are not clone-closed, such as cluster graphs; more generally, infinite substitution-closed hereditary classes are root-plantable.  We also isolate a finite local planting criterion that captures local repair arguments beyond global closure assumptions, and verify it through a sparse root-blow-up repair condition. But heredity alone does not lead to root-plantability.  Every class so
-sparse that its $n$-vertex graphs have only $o(n^2)$ edges, yet that still contains
-arbitrarily large stars---the $C_4$-free, $K_{s,t}$-free, $C_{2k}$-free, and planar
-graphs among them---is not root-plantable at the one-vertex type; by complementation neither are their dense
-complements, so neither sparsity nor density is the dividing line.  The uniform cause is
-\emph{pinning}: a labelled quantity that takes one fixed value across all constrained
-limits while the constrained class admits a labelled limit where it takes another.  We conjecture
-that pinning is the basic obstruction, but the $C_5$-free graphs show that it must be
-analysed type by type.  The one-vertex and two-root non-edge types admit local planting
-constructions; at the two-root edge type a book edge gives a new pinning obstruction, so
-the all-types $C_5$-free conjecture is false.
+Razborov's flag algebras are among the most successful tools in extremal graph theory,
+underlying many computer-assisted density bounds such as Mantel's and Tur\'an's theorems
+and the Erd\H{o}s pentagon problem.  Often one wants such a bound only inside a hereditary
+class of graphs---those avoiding some forbidden subgraph, like the triangle-free or
+$C_4$-free graphs.  There are two natural ways to make the method respect the restriction.
+One can compute in the \emph{quotient} flag algebra of the class---the algebra the method
+actually uses, in which the forbidden configurations have been set to zero.  Or one can
+stay among all graphs and ask that the inequality hold for almost every local view of a
+limit of graphs from the class: this is what we call \emph{ensemble} semantics.  The
+quotient method is always sound, so a quotient proof is a genuine bound for the class; we
+ask when it is also \emph{complete}, capturing every true restricted inequality.
 
-This incompleteness, however, never improves an asymptotic density bound at the
-closed-cone level.  Such a bound is an inequality about unlabelled graphs, whereas
-the gap between the two semantics lives in the auxiliary inequalities---about
-vertex-labelled graphs---that a proof passes through on the way to it.  We show
-that on unlabelled-graph statements the two semantics always coincide, that the labelled
-examples witnessing the gap vanish once averaged back into unlabelled-graph statements,
-and, more generally, that every ensemble-relaxed labelled contribution is a limit of
-ordinary quotient sum-of-squares contributions after unlabelling.  What can remain is
-only an exact or finite-truncation certificate question, not a new asymptotic density
-bound.  Finally, we point out a different advantage of ensemble semantics: it can impose
-non-hereditary limit constraints directly.  On the Mantel equality slice, for example,
-the relative ensemble support records the labelled local structure of the balanced
-complete bipartite extremal limit, including the identity that a typical vertex has
-degree $1/2$.  More interestingly, applying the same idea to the verified $K_4$-free
-$P_4$ certificate extracts labelled equations that every $P_4$-extremal $K_4$-free
-limit must satisfy; these equations force edge density $2/3$, and hence recover the
-balanced complete tripartite extremal graphon.  We also record the corresponding
-stability mechanism: near equality in the certificate forces the three rooted square
-terms to be small, these approximate local equations force the edge density close to
-$2/3$, and graphon Turán stability then gives closeness to the tripartite graphon.  The
-same extraction works for the parametric $K_{r+1}$-free $P_4$ certificate: equality
-forces the $r$-partite local laws, and the only remaining external input needed to
-identify the whole graphon is the classical equality case of Zykov's clique-density
-theorem.
+Our main result (a support-closure criterion) is that the two semantics agree, for every
+flag-algebra element, exactly when a geometric condition we call \emph{root-plantability}
+holds: every labelled limit of the class must be realisable as a typical local view of an
+unlabelled one.  This holds whenever the class is closed under blow-ups---recovering the
+clique-free and triangle-free classes---and more generally under substitution.  It can
+also fail: the $C_4$-free graphs are a counterexample, and because the condition is
+preserved by complementation, so are some very dense classes, so neither sparsity nor
+density is the dividing line.  The common cause is \emph{pinning}, a local quantity frozen
+across the class while the quotient still sees it vary.
+
+This incompleteness, however, never weakens an actual density bound: such a bound concerns
+unlabelled graphs, where the two semantics always coincide, and the gap lives only in the
+labelled intermediate steps a proof passes through---closing once one takes the natural
+limit.  We illustrate the whole picture on the $C_5$-free graphs, where root-plantability
+holds for a single root and for a non-adjacent pair of roots but fails for an edge, where
+a ``book'' graph obstructs it, refuting the natural all-types conjecture.  Finally,
+ensemble semantics is strictly more flexible: it can impose non-hereditary constraints,
+such as fixing a limit's edge density, and thereby read off the local structure of
+extremal configurations.  For instance, read through this lens the verified $K_4$-free
+$P_4$ certificate forces every extremiser to be the balanced complete tripartite graph,
+with a quantitative stability version.
 \end{abstract}
 
 \section{Introduction}
 
-A recurring task in extremal combinatorics is to prove a density inequality that
-holds only under a forbidden-subgraph constraint, such as ``in every triangle-free
-graph this combination of subgraph densities is non-negative.''  Razborov's flag
-algebras offer two routes to such statements.  One may pass to the \emph{quotient}
-flag algebra of the constrained class and ask for non-negativity there
-(\emph{quotient semantics}); or one may stay in the ambient class of all graphs and
-ask that the inequality hold almost surely along the random labelled extensions of
-constrained limits (\emph{ensemble semantics}).  The first is the algebra one
-actually computes in; the second is what we want to hold throughout the
-constrained class.  When the two agree, a certificate proved in the quotient is a
-genuine density bound for the constrained class.  This paper determines exactly when
-they agree.
+A recurring task in extremal combinatorics is to prove a density inequality that holds
+only under a forbidden-subgraph constraint---for instance, ``in every triangle-free graph,
+this combination of subgraph densities is non-negative.''  Razborov's flag algebras
+\cite{Razborov2007} are among the most successful tools for such problems, and they
+underlie many computer-assisted density bounds, from Mantel's and Tur\'an's theorems to
+the Erd\H{o}s pentagon problem.  This paper concerns a foundational question that the
+constrained setting raises: \emph{how should a flag-algebra proof enforce the constraint,
+and does the choice cost anything?}
 
-One direction is automatic.  Quotient semantics always implies ensemble semantics
-(\cref{thm:support-criterion}), so a quotient certificate is unconditionally
-\emph{sound}: the validity of forbidden-subgraph flag-algebra reasoning is never in
-question.  The substantive question is the converse---whether \emph{every} true
-constrained density inequality can be certified in the quotient---so our subject is the
-\emph{completeness} of the quotient calculus.
+There are two natural answers.  Let $\T_1$ be the class of graphs we care about---say the
+triangle-free graphs, or more generally any \emph{hereditary} class, one closed under
+induced subgraphs, equivalently the graphs avoiding every member of some forbidden family.
+One option is to pass to the \emph{quotient} flag algebra of $\T_1$ and ask for
+non-negativity there; this is the algebra a flag-algebra computation actually works in,
+the one in which the forbidden configurations have simply been set to zero.  The other
+option is to stay in the ambient world $\T_0$ of \emph{all} graphs and test the inequality
+along the constrained \emph{limits}: take a convergent sequence of graphs from $\T_1$,
+single out (``label'') a few of its vertices at random, and require the inequality to hold
+almost surely for the resulting local view.  We call these the \emph{quotient} and
+\emph{ensemble} semantics.  The first is what one computes with; the second is the
+property one really wants throughout the class.
 
-Let $\T_0$ be the class of all finite simple graphs, and let $\T_1$ be a
-\emph{hereditary} subclass: a class of finite graphs closed under taking induced
-subgraphs, equivalently the graphs that avoid every member of some forbidden family.
-The reader should keep in mind a forbidden-subgraph class such as the triangle-free or
-$C_4$-free graphs.  For
-each non-degenerate type $\sigma$ of $\T_1$, Razborov's construction gives a
-quotient homomorphism
-\[
-  \qmap_\sigma:\A^\sigma[\T_0]\twoheadrightarrow \A^\sigma[\T_1].
-\]
-The quotient semantics of an element $f\in\A^\sigma[\T_0]$ says that
-\[
-  \psi(\qmap_\sigma f)\ge 0
-  \qquad\text{for every }\psi\in\Homp(\A^\sigma[\T_1],\R).
-\]
-The ensemble semantics stays in the ambient class $\T_0$ of all graphs.  It asks that, for
-every unlabelled $\T_1$-supported homomorphism $\phi_0$, the canonical random
-extension $\phi^\sigma$ of $\phi_0$ to type $\sigma$ satisfies
-\[
-  \phi^\sigma(f)\ge 0
-  \qquad\text{almost surely.}
-\]
+One direction is automatic: quotient non-negativity always implies ensemble
+non-negativity (\cref{thm:support-criterion}).  So forbidden-subgraph flag-algebra
+reasoning is unconditionally \emph{sound}---a certificate proved in the quotient is a
+genuine density bound for the constrained class, and its validity is never in question.
+The substantive question is the converse, \emph{completeness}: can \emph{every} true
+constrained inequality be certified in the quotient, or are there inequalities that hold
+throughout the class yet are invisible to the algebra one computes in?
 
 \paragraph{The criterion.}
-The right property is not simply heredity, but the following support
-condition:
+Our main result identifies exactly when completeness holds.  Fix a labelled pattern---a
+\emph{type} $\sigma$, a few vertices with prescribed adjacencies, which we call the
+\emph{roots}.  The two semantics then live in one and the same space of labelled limits:
+those the quotient can exhibit form a set $Q_\sigma$, while those arising as random local
+views of constrained \emph{unlabelled} limits form a set $S_\sigma$.  Soundness is the
+inclusion $S_\sigma\subseteq Q_\sigma$, which always holds.  We prove
+(\cref{thm:support-criterion}) that the two semantics coincide for \emph{every}
+flag-algebra element if and only if the reverse inclusion holds too, that is,
 \[
-  \overline{\bigcup_{\substack{\phi_0\ \T_1\text{-supported,}\\ \text{positive }\sigma\text{-density}}}\;\supp\bigl(\Ext_\sigma(\phi_0)\bigr)}
-  \;=\;
-  \{\psi\circ\qmap_\sigma:\psi\in\Homp(\A^\sigma[\T_1],\R)\}.
+  S_\sigma=Q_\sigma .
 \]
-The union ranges only over the unlabelled $\T_1$-supported homomorphisms $\phi_0$ of
-positive $\sigma$-density---those for which the canonical random extension above is
-defined; $\Ext_\sigma(\phi_0)$ denotes the law of that extension, $\supp$ its
-(topological) support, and the closure is taken in the compact space
-$\Homp(\A^\sigma[\T_0],\R)$ under pointwise convergence of flag densities.  Both sides lie
-in that ambient space: each $\psi\circ\qmap_\sigma$ is again a positive homomorphism on
-$\A^\sigma[\T_0]$, since $\qmap_\sigma$ carries every $\T_0$-flag to a $\T_1$-flag or to
-$0$, so the composite stays non-negative on flags.  (\Cref{sec:background} and
-\cref{def:root-planting} make all of this precise.)  Informally, every constrained
-labelled limit must be approximable by positive-probability labelled views of constrained
-unlabelled limits.  We call this condition \emph{root-plantability} and prove that it is
-exactly equivalent to the quotient/ensemble correspondence for every flag-algebra element
-(\cref{thm:support-criterion}).
+We call this condition \emph{root-plantability}: every constrained labelled limit must be
+approximable by the \emph{typical} local views---those occurring with positive
+probability---of constrained unlabelled limits.  Informally, any configuration the
+quotient can display at some special, hand-picked vertex must also be realisable at a
+random, hence typical, vertex of a large constrained graph; the roots can be
+\emph{planted} at typical vertices.  When this fails, some inequality holds almost surely
+under random labelling yet cannot be seen in the quotient, and the quotient calculus is
+\emph{incomplete}.  (\Cref{def:root-planting} makes the set $S_\sigma$ precise.)
 
-\paragraph{Results.}
-Root-plantability is implied by closure under independent blow-ups, which recovers the
-correspondence for the clique-free classes, including triangle-free.  The same proof also
-has a true-twin version: closure under complete blow-ups implies root-plantability, giving
-non-clone-closed all-type examples such as cluster graphs.  More generally, infinite
-substitution-closed hereditary classes are root-plantable, since the planted-module
-sampling estimate never sees the internal structure of a fibre unless two sampled
-vertices collide inside it.  Finally, a finite local planting criterion captures the
-same support argument when the planted graph must be repaired locally rather than
-obtained from a global closure operation, and a sparse root-blow-up repair theorem
-gives a checkable way to verify it.  Heredity alone, however,
-does not imply it: every \emph{edge-degenerate} class---one whose $n$-vertex graphs have
-only $o(n^2)$ edges---that contains arbitrarily large stars (the $C_4$-free,
-$K_{s,t}$-free, $C_{2k}$-free, and planar graphs among them) fails at the one-vertex
-type, witnessed by the labelled edge flag, and by complementation so do their dense
-complements; neither sparsity nor density is the dividing line.  The uniform cause is
-\emph{pinning}: a labelled quantity that takes one fixed value across all constrained
-limits while the constrained class admits a labelled limit where it takes another.  We conjecture
-that pinning characterises root-plantability, understood type by type.  The $C_5$-free
-graphs now illustrate both sides: the one-vertex and two-root non-edge types can be
-planted by local repairs of the blow-up construction, while the two-root edge type has a
-book-edge pinning obstruction.  This incompleteness, moreover, never
-improves the closed cone of density bounds.  A density bound is a statement about
-unlabelled graphs---the \emph{empty type}---where the two semantics provably coincide
-(\cref{prop:empty-type}); the labelled examples that witness the gap vanish when averaged
-back into unlabelled-graph statements (\cref{prop:ideal-zero}); and, in fact, every
-ensemble-relaxed labelled contribution is a $Q_0$-limit of ordinary quotient
-sum-of-squares contributions (\cref{thm:no-closed-certificate-gap}).  The incompleteness
-is thus confined to the intermediate, labelled certificates a proof passes through.  The
-remaining practical question is whether exact finite-degree or rational certificates can
-separate before taking this closure.  A separate, positive flexibility of ensemble
-semantics is that it can be enhanced by non-hereditary limit constraints.  We formulate
-this relative semantics and use the Mantel equality slice to show how it recovers labelled
-identities of extremizers, such as $e=\frac12\one_1$ at a typical vertex of a maximum
-triangle-free limit, which ordinary hereditary quotient semantics cannot impose.  We then
-apply the same mechanism to the verified $K_4$-free $P_4$ certificate: equality in the
-bound forces the labelled certificate terms to vanish on the relative one- and two-root
-supports, yielding concrete local equations for extremal limits.  Integrating those
-local equations gives a short certificate-based derivation that every extremal
-$K_4$-free $P_4$ limit has edge density $2/3$, and therefore is the balanced complete
-tripartite limit by the equality case of Turán's theorem.  The same proof gives
-qualitative stability by compactness.  More quantitatively, if the $P_4$ defect is
-$\Delta$, then the certificate controls the three rooted square terms by $O(\Delta)$,
-and the integrated local equations give
-$|p-2/3|\le C\Delta^{1/4}$ for the edge density $p$; composing this with any graphon
-Turán-stability modulus gives an explicit certificate-to-tripartite stability modulus.
-Finally, the parametric \texttt{CompleteGraphFreeP4} certificate gives the corresponding
-$r$-partite local equations for every $r\ge3$; for $r\ge4$, the equality case of Zykov's
-$K_4$-density theorem turns these equations into a full recovery of the balanced complete
-$r$-partite limit.
+\paragraph{When root-planting works.}
+Root-plantability holds whenever the constrained class is closed under \emph{blow-ups}
+(replacing each vertex by an independent set of clones): a clone class of positive density
+lets one realise at a random vertex what the quotient saw only at an exceptional one.
+This already covers the clique-free classes, the triangle-free graphs among them
+(\cref{thm:clone-root-plantable,cor:clique-free}).  The same argument has a
+``true-twin'' version using cliques in place of independent sets
+(\cref{thm:true-clone-root-plantable}, which yields e.g.\ the cluster graphs), and a
+common generalisation for classes closed under \emph{substitution}
+(\cref{thm:substitution-root-plantable}).  We also isolate a finite, checkable form of the
+argument---a \emph{local planting} criterion---that applies when the planted graph must be
+repaired locally rather than produced by a global closure operation
+(\cref{thm:finite-local-planting,thm:sparse-repair-planting}); this is what the
+$C_5$-free constructions below use.
+
+\paragraph{When it fails.}
+Heredity alone is not enough.  Consider the $C_4$-free graphs.  Their large members are
+sparse---every $n$-vertex $C_4$-free graph has $o(n^2)$ edges---so a typical vertex of a
+constrained limit has essentially no neighbours, and the labelled edge density is almost
+surely $0$.  Yet the class contains arbitrarily large stars, whose centre is a vertex of
+edge density $1$.  The quotient sees this exceptional centre; the ensemble, sampling a
+typical vertex, never does.  So the inequality ``the labelled edge density is $0$'' holds
+in the ensemble but fails in the quotient, and the class is not root-plantable
+(\cref{thm:degenerate-obstruction,cor:c4-counterexample}).  The same failure befalls the
+$K_{s,t}$-free, $C_{2k}$-free, and planar graphs (\cref{cor:degenerate-family}).  One
+might guess this is a defect of \emph{sparsity}, but root-plantability is preserved by
+complementation (\cref{lem:complementation}), so every sparse obstruction has a
+\emph{dense} mirror image (\cref{cor:codegenerate}); neither sparsity nor density is the
+dividing line.  The uniform cause is what we call \emph{pinning}: a labelled quantity
+frozen to a single value across all constrained limits while the quotient still attains
+another (\cref{thm:pinning}).  We conjecture that pinning is the only obstruction
+(\cref{conj:characterisation}), and show that for forbidden-subgraph classes any pinning
+is to a boundary value $0$ or $1$ (\cref{thm:no-interior}).
+
+\paragraph{The gap does not affect density bounds.}
+This incompleteness may sound alarming, but it never weakens an actual application.  A
+density bound---a Mantel- or Tur\'an-type inequality---is a statement about
+\emph{unlabelled} graphs, the \emph{empty type}, and there the two semantics provably
+coincide (\cref{prop:empty-type}): no density bound is ensemble-true but quotient-false.
+The incompleteness lives entirely in the intermediate, \emph{labelled} steps a proof
+passes through.  Even there it is benign: the labelled witnesses that expose the gap
+unlabel to zero (\cref{prop:ideal-zero}), and every ensemble-relaxed labelled
+contribution is, after unlabelling, a limit of ordinary quotient sum-of-squares
+contributions (\cref{thm:no-closed-certificate-gap}).  What could in principle remain is
+only a difference at the level of exact, finite certificates---never a new asymptotic
+bound.
+
+\paragraph{The \texorpdfstring{$C_5$}{C5}-free graphs.}
+These are the first dense, non-blow-up-closed class for which the question is genuinely
+open, and they show that root-plantability must be asked \emph{one type at a time}.  At
+the one-vertex type, and at the two-vertex non-edge type, a local repair of the blow-up
+construction works, so root-plantability holds
+(\cref{thm:c5-one-root,thm:c5-nonedge-root}).  At the two-vertex \emph{edge} type it
+fails: a typical edge has almost no common neighbours (triangles are too rare in
+$C_5$-free graphs), while a sparse ``book'' graph has an edge whose endpoints share every
+other vertex (\cref{thm:c5-edge-not-root-plantable}).  So the natural all-types conjecture
+is false---though, consistent with the previous paragraph, even this genuine obstruction
+leaves every $C_5$-free density bound untouched (\cref{cor:c5-edge-closed-inert}).
+
+\paragraph{A bonus: constraints the quotient cannot express.}
+Finally, ensemble semantics is strictly more flexible than the quotient, because it can
+impose \emph{non-hereditary} limit constraints---conditions such as ``edge density exactly
+$\tfrac12$'' that do not define a hereditary class and so have no quotient algebra at all.
+Fixing such a constraint and reading off the local structure it forces turns a
+flag-algebra certificate into information about extremal configurations.  On the Mantel
+equality slice this recovers the local statistics of the extremal complete bipartite
+limit, for instance that a typical vertex has degree $\tfrac12$ (\cref{thm:relative-mantel}).
+Applied to the verified $K_4$-free $P_4$ certificate, the same mechanism forces every
+extremiser to have edge density $\tfrac23$, hence (by the equality case of Tur\'an's
+theorem) to be the balanced complete tripartite graph (\cref{thm:k4free-p4-tripartite}),
+with a quantitative stability version (\cref{thm:k4free-p4-quant-stability}) and an
+$r$-partite generalisation (\cref{thm:parametric-p4-equality-slice}).
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -402,7 +397,9 @@ flags.  We write
   \subseteq X_\sigma.
 \]
 Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient homomorphism
-space.  It has a simple intrinsic description, phrased entirely in terms of $\chi$: a
+space.  We write $Q_0:=Q_\emptyset$ for the empty-type instance, the constrained
+unlabelled limits (the limits of graph sequences drawn from $\T_1$).  The set $Q_\sigma$
+has a simple intrinsic description, phrased entirely in terms of $\chi$: a
 homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes on every
 forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
 flag to $0$, any $\chi=\psi\circ\qmap_\sigma$ satisfies
@@ -1928,7 +1925,7 @@ vertices,
   3T(G)=\sum_v e(G[N(v)])\le \sum_v d(v)=2e(G),
 \]
 since every triangle is counted once at each of its three vertices.  As
-$e(G)=O(|V(G)|^2)$, the normalized triangle density is $O(1/|V(G)|)$ along any
+$e(G)=O(|V(G)|^2)$, the normalised triangle density is $O(1/|V(G)|)$ along any
 sequence with $|V(G)|\to\infty$.
 \end{proof}
 
@@ -2065,7 +2062,7 @@ closed set
 \[
   Y\subseteq Q_0
 \]
-of admissible unlabelled limits inside an existing hereditary theory.  The set $Y$ may
+of admissible unlabelled limits inside an existing hereditary class.  The set $Y$ may
 be cut out by arbitrary continuous density constraints, for example
 $\phi_0(g_i)=0$, $\phi_0(h_j)\ge0$, or $\phi_0(\rho)=c$.  The relative labelled support
 at type $\sigma$ is
@@ -2077,7 +2074,7 @@ at type $\sigma$ is
   }.
 \]
 Relative ensemble positivity asks only for non-negativity on $S_\sigma(Y)$.  This is a
-genuine theory enhancement: it can impose limit-level conditions that are meaningful for
+genuine enhancement of the class: it can impose limit-level conditions that are meaningful for
 the intended extremal problem but are invisible to hereditary quotients.
 
 \begin{proposition}[Relative ensemble soundness]\label{prop:relative-soundness}
@@ -2106,7 +2103,7 @@ monotonicity.  Thus $\phi_0(\avg{s}{\sigma})=0$.
 
 \subsection{Example: the Mantel equality slice}
 
-Let $\T_1$ be the triangle-free graph theory, let $\rho\in\A^0[\T_1]$ be the
+Let $\T_1$ be the triangle-free graph class, let $\rho\in\A^0[\T_1]$ be the
 unlabelled edge density, and set
 \[
   Y_{\mathrm{Mantel}}
@@ -2133,7 +2130,7 @@ More explicitly:
         respectively exactly the second, labelled endpoint; let $z_\tau$ be the flag in
         which it is adjacent to neither endpoint; and let $g_\tau$ denote the quotient
         image of the common-neighbour triangle flag, already zero in the triangle-free
-        theory.  On $S_\tau(Y_{\mathrm{Mantel}})$,
+        class.  On $S_\tau(Y_{\mathrm{Mantel}})$,
         \[
           a_\tau=b_\tau=\frac12\,\one_\tau,
           \qquad
@@ -2224,7 +2221,7 @@ continuity also on its closure $S_{\sigma_i}(Y)$.
 \end{proof}
 
 \begin{theorem}[The $K_4$-free $P_4$ equality slice]\label{thm:k4free-p4-equality-slice}
-Let $\T_1$ be the $K_4$-free graph theory, and let $\pi_{P_4}\in\A^0[\T_1]$ denote
+Let $\T_1$ be the $K_4$-free graph class, and let $\pi_{P_4}\in\A^0[\T_1]$ denote
 the $P_4$ density expression used in the verified certificate
 \texttt{API.K4freeP4}.  Define the extremal slice
 \[
@@ -2353,7 +2350,7 @@ Thus $p=2/3$.
 
 Since $W$ is $K_4$-free and has the maximum possible $K_4$-free edge density, the graphon
 equality case of Turán's theorem applies: $W$ is equivalent, up to a measure-preserving
-relabeling, to the balanced complete tripartite graphon.
+relabelling, to the balanced complete tripartite graphon.
 \end{proof}
 
 \begin{remark}
@@ -2369,7 +2366,7 @@ Let $(W_n)$ be a sequence of $K_4$-free graphons such that
 \[
   \phi_{W_n}(\pi_{P_4})\longrightarrow \frac{32}{9}.
 \]
-Then $W_n$ converges in cut distance, up to measure-preserving relabeling, to the
+Then $W_n$ converges in cut distance, up to measure-preserving relabelling, to the
 balanced complete tripartite graphon $T_3$.
 
 Equivalently, if $(G_n)$ is a sequence of finite $K_4$-free graphs with
@@ -2377,7 +2374,7 @@ $\pi_{P_4}(G_n)\to32/9$, then $G_n$ converges to $T_3$ in the graphon sense.
 \end{corollary}
 
 \begin{proof}
-The graphon space modulo measure-preserving relabeling is compact.  If a subsequence of
+The graphon space modulo measure-preserving relabelling is compact.  If a subsequence of
 $(W_n)$ converges to $W$, then $W$ is still $K_4$-free, because clique density is
 continuous in the cut topology.  The $P_4$ density expression is also continuous, so
 $\phi_W(\pi_{P_4})=32/9$, meaning $W\in Y_{P_4}$.  By
@@ -2552,7 +2549,7 @@ sharper modulus would require additional information beyond these three square t
 
 \begin{theorem}[Parametric $K_{r+1}$-free $P_4$ equality equations]
 \label{thm:parametric-p4-equality-slice}
-Fix an integer $r\ge3$.  Let $\T_r$ be the $K_{r+1}$-free graph theory, and let
+Fix an integer $r\ge3$.  Let $\T_r$ be the $K_{r+1}$-free graph class, and let
 $\pi_{P_4}^{(r)}\in\A^0[\T_r]$ be the $P_4$ density expression used in
 \texttt{API.CompleteGraphFreeP4}.  Define the extremal slice
 \[
