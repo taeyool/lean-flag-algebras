@@ -119,10 +119,14 @@ complete bipartite extremal limit, including the identity that a typical vertex 
 degree $1/2$.  More interestingly, applying the same idea to the verified $K_4$-free
 $P_4$ certificate extracts labelled equations that every $P_4$-extremal $K_4$-free
 limit must satisfy; these equations force edge density $2/3$, and hence recover the
-balanced complete tripartite extremal graphon.  The same extraction works for the
-parametric $K_{r+1}$-free $P_4$ certificate: equality forces the $r$-partite local
-laws, and the only remaining external input needed to identify the whole graphon is the
-classical equality case of Zykov's clique-density theorem.
+balanced complete tripartite extremal graphon.  We also record the corresponding
+stability mechanism: near equality in the certificate forces the three rooted square
+terms to be small, these approximate local equations force the edge density close to
+$2/3$, and graphon Turán stability then gives closeness to the tripartite graphon.  The
+same extraction works for the parametric $K_{r+1}$-free $P_4$ certificate: equality
+forces the $r$-partite local laws, and the only remaining external input needed to
+identify the whole graphon is the classical equality case of Zykov's clique-density
+theorem.
 \end{abstract}
 
 \section{Introduction}
@@ -232,11 +236,16 @@ bound forces the labelled certificate terms to vanish on the relative one- and t
 supports, yielding concrete local equations for extremal limits.  Integrating those
 local equations gives a short certificate-based derivation that every extremal
 $K_4$-free $P_4$ limit has edge density $2/3$, and therefore is the balanced complete
-tripartite limit by the equality case of Turán's theorem.  Finally, the parametric
-\texttt{CompleteGraphFreeP4} certificate gives the corresponding $r$-partite local
-equations for every $r\ge3$; for $r\ge4$, the equality case of Zykov's
-$K_4$-density theorem turns these equations into a full recovery of the balanced
-complete $r$-partite limit.
+tripartite limit by the equality case of Turán's theorem.  The same proof gives
+qualitative stability by compactness.  More quantitatively, if the $P_4$ defect is
+$\Delta$, then the certificate controls the three rooted square terms by $O(\Delta)$,
+and the integrated local equations give
+$|p-2/3|\le C\Delta^{1/4}$ for the edge density $p$; composing this with any graphon
+Turán-stability modulus gives an explicit certificate-to-tripartite stability modulus.
+Finally, the parametric \texttt{CompleteGraphFreeP4} certificate gives the corresponding
+$r$-partite local equations for every $r\ge3$; for $r\ge4$, the equality case of Zykov's
+$K_4$-density theorem turns these equations into a full recovery of the balanced complete
+$r$-partite limit.
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -2355,6 +2364,192 @@ rooted local equations, and those equations are strong enough to recover the glo
 density of an extremizer.
 \end{remark}
 
+\begin{corollary}[Qualitative stability]\label{cor:k4free-p4-qualitative-stability}
+Let $(W_n)$ be a sequence of $K_4$-free graphons such that
+\[
+  \phi_{W_n}(\pi_{P_4})\longrightarrow \frac{32}{9}.
+\]
+Then $W_n$ converges in cut distance, up to measure-preserving relabeling, to the
+balanced complete tripartite graphon $T_3$.
+
+Equivalently, if $(G_n)$ is a sequence of finite $K_4$-free graphs with
+$\pi_{P_4}(G_n)\to32/9$, then $G_n$ converges to $T_3$ in the graphon sense.
+\end{corollary}
+
+\begin{proof}
+The graphon space modulo measure-preserving relabeling is compact.  If a subsequence of
+$(W_n)$ converges to $W$, then $W$ is still $K_4$-free, because clique density is
+continuous in the cut topology.  The $P_4$ density expression is also continuous, so
+$\phi_W(\pi_{P_4})=32/9$, meaning $W\in Y_{P_4}$.  By
+\cref{thm:k4free-p4-tripartite}, $W$ is the balanced complete tripartite graphon.
+Thus every convergent subsequence has the same limit $T_3$, and compactness gives
+convergence of the whole sequence.
+\end{proof}
+
+\begin{proposition}[Near equality forces approximate local equations]
+\label{prop:k4free-p4-certificate-stability}
+Let $W$ be a $K_4$-free graphon, and put
+\[
+  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4})\ge0 .
+\]
+As before, write
+\[
+  d(x):=\int W(x,u)\,du,\qquad
+  c(x,y):=\int W(x,u)W(y,u)\,du .
+\]
+Define the three rooted square errors
+\[
+\begin{aligned}
+  R_\eta(W)
+    &:=\int (1-W(x,y))
+      \bigl(2(1-d(x)-d(y)+c(x,y))-c(x,y)\bigr)^2\,dx\,dy,\\
+  R_\tau^{-}(W)
+    &:=\int W(x,y)\bigl(d(x)-d(y)\bigr)^2\,dx\,dy,\\
+  R_\tau^{+}(W)
+    &:=\int W(x,y)\bigl(d(x)+d(y)-4c(x,y)\bigr)^2\,dx\,dy .
+\end{aligned}
+\]
+Then
+\[
+  R_\eta(W)\le\frac98\,\Delta,\qquad
+  R_\tau^{-}(W)\le\frac15\,\Delta,\qquad
+  R_\tau^{+}(W)\le\frac9{35}\,\Delta .
+\]
+\end{proposition}
+
+\begin{proof}
+The three integrals are the graphon evaluations of the three averaged square terms
+\[
+  \avg{(2z_\eta-g_\eta)^2}{\eta},\qquad
+  \avg{(a_\tau-b_\tau)^2}{\tau},\qquad
+  \avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}.
+\]
+Indeed, at a non-edge root $(x,y)$ one has
+\[
+  z_\eta=1-d(x)-d(y)+c(x,y),\qquad g_\eta=c(x,y),
+\]
+while at an edge root $(x,y)$ one has
+\[
+  a_\tau=d(x)-c(x,y),\qquad b_\tau=d(y)-c(x,y),\qquad g_\tau=c(x,y).
+\]
+Evaluating the verified certificate
+\[
+  \pi_{P_4}
+  +\frac89\,\avg{(2z_\eta-g_\eta)^2}{\eta}
+  +5\,\avg{(a_\tau-b_\tau)^2}{\tau}
+  +\frac{35}{9}\,\avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}
+  \le \frac{32}{9}\one_0
+\]
+at $W$ gives
+\[
+  \frac89 R_\eta(W)+5R_\tau^{-}(W)+\frac{35}{9}R_\tau^{+}(W)\le\Delta .
+\]
+Each summand is non-negative, so the three displayed estimates follow.
+\end{proof}
+
+\begin{theorem}[Certificate-to-Turán stability]\label{thm:k4free-p4-quant-stability}
+Let $W$ be a $K_4$-free graphon, let
+\[
+  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4}),
+\]
+and let $p:=\int W(x,y)\,dx\,dy$ be its edge density.  Then
+\[
+  (3p-2)^2
+  \le
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta},
+\]
+and hence
+\[
+  \left|p-\frac23\right|
+  \le
+  \frac13
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}
+  \Delta^{1/4}.
+\]
+
+Moreover, let $\omega_{\mathrm{Tur}}$ be any graphon Turán-stability modulus for
+$K_4$-free graphons: for every $\gamma>0$, if a $K_4$-free graphon $U$ has edge
+density at least $2/3-\omega_{\mathrm{Tur}}(\gamma)$, then
+$\delta_\square(U,T_3)<\gamma$.  Such a modulus exists by compactness and the equality
+case of Turán's theorem.  Then
+\[
+  \Delta
+  \le
+  \left(
+    \frac{3\,\omega_{\mathrm{Tur}}(\gamma)}
+    {\left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}}
+  \right)^4
+  \quad\Longrightarrow\quad
+  \delta_\square(W,T_3)<\gamma .
+\]
+\end{theorem}
+
+\begin{proof}
+Set
+\[
+  D:=\int d(x)^2\,dx,\qquad
+  T:=\int W(x,y)c(x,y)\,dx\,dy .
+\]
+Define the two integrated local-equation errors
+\[
+\begin{aligned}
+  E_\tau
+    &:=\int W(x,y)\bigl(d(x)+d(y)-4c(x,y)\bigr)\,dx\,dy,\\
+  E_\eta
+    &:=\int (1-W(x,y))
+      \bigl(2(1-d(x)-d(y)+c(x,y))-c(x,y)\bigr)\,dx\,dy .
+\end{aligned}
+\]
+As in the equality proof,
+\[
+  E_\tau=2D-4T,\qquad
+  E_\eta=2-6p+5D-T .
+\]
+Therefore
+\[
+  2E_\eta-\frac12E_\tau
+  =
+  4-12p+9D
+  =
+  (3p-2)^2+9(D-p^2).
+\]
+Since $D\ge p^2$ by Cauchy--Schwarz,
+\[
+  (3p-2)^2
+  \le
+  2|E_\eta|+\frac12|E_\tau|.
+\]
+Another application of Cauchy--Schwarz gives
+\[
+  |E_\eta|\le R_\eta(W)^{1/2},\qquad
+  |E_\tau|\le R_\tau^{+}(W)^{1/2}.
+\]
+Using \cref{prop:k4free-p4-certificate-stability},
+\[
+  (3p-2)^2
+  \le
+  2\left(\frac98\Delta\right)^{1/2}
+  +\frac12\left(\frac9{35}\Delta\right)^{1/2}
+  =
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta}.
+\]
+This is the first assertion, and the displayed edge-density estimate follows by taking
+square roots and dividing by $3$.
+
+The final implication is just Turán stability applied after this edge-density estimate:
+the displayed upper bound on $\Delta$ gives
+$p\ge2/3-\omega_{\mathrm{Tur}}(\gamma)$, hence
+$\delta_\square(W,T_3)<\gamma$.
+\end{proof}
+
+\begin{remark}[On the exponent]
+The certificate controls the squared rooted errors by $O(\Delta)$, hence it controls the
+integrated local-equation errors by $O(\sqrt{\Delta})$.  The edge-density argument above
+then bounds $(3p-2)^2$ by these integrated errors.  Thus the direct certificate route
+gives the explicit fourth-root modulus in \cref{thm:k4free-p4-quant-stability}.  A
+sharper modulus would require additional information beyond these three square terms.
+\end{remark}
+
 \begin{theorem}[Parametric $K_{r+1}$-free $P_4$ equality equations]
 \label{thm:parametric-p4-equality-slice}
 Fix an integer $r\ge3$.  Let $\T_r$ be the $K_{r+1}$-free graph theory, and let
@@ -2457,7 +2652,7 @@ At the non-edge type $\eta$,
 
 \begin{proof}
 By \cref{thm:parametric-p4-equality-slice}, every $\phi_0\in Y_r$ has the extremal
-$K_4$ density among $K_{r+1}$-free graphons.  The imported equality case of Zykov's
+$K_4$ density among $K_{r+1}$-free graphons.  The assumed equality case of Zykov's
 theorem therefore identifies $\phi_0$ with the balanced complete $r$-partite graphon.
 
 The displayed rooted identities are direct readings of random rooted extensions of that
