@@ -2314,7 +2314,9 @@ $P_4$-extremal limits.
 \begin{theorem}[A certificate route to the tripartite extremiser]\label{thm:k4free-p4-tripartite}
 Every $K_4$-free graphon in the equality slice $Y_{P_4}$ has edge density $2/3$.
 Consequently, by the equality case of Tur\'an's theorem, every element of $Y_{P_4}$ is the
-balanced complete tripartite graphon.
+balanced complete tripartite graphon.  The slice is moreover nonempty---the balanced
+complete tripartite graphon attains $\pi_{P_4}=32/9$---so $Y_{P_4}$ consists of exactly
+that graphon.
 \end{theorem}
 
 \begin{proof}
@@ -2379,6 +2381,11 @@ Thus $p=2/3$.
 Since $W$ is $K_4$-free and has the maximum possible $K_4$-free edge density, the graphon
 equality case of Tur\'an's theorem applies: $W$ is equivalent, up to a measure-preserving
 relabelling, to the balanced complete tripartite graphon.
+
+Conversely, the balanced complete tripartite graphon is itself $K_4$-free and attains
+$\pi_{P_4}=32/9$: this is the matching lower bound for the $P_4$ density, the achievability
+direction formalised in \texttt{API.CompleteGraphFreeP4} at $r=3$.  It therefore lies in
+$Y_{P_4}$, so the slice is nonempty and equals exactly this graphon.
 \end{proof}
 
 \begin{remark}
