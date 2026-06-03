@@ -451,9 +451,12 @@ arbitrary element, and such a product need not, on its face, be a combination of
 flags.  Heredity is exactly what rules this out: the product of a forbidden flag with any
 flag is again a combination of forbidden flags, because each flag occurring in the product
 contains the forbidden underlying graph as an induced subgraph, and any graph that contains
-a non-$\T_1$ graph as an induced subgraph is itself outside $\T_1$.  So the forbidden flags
-already span an ideal, not merely a subspace, and the ideal they generate is exactly their
-span.  Hence the elements that $\qmap_\sigma$ collapses to $0$ are exactly the linear
+a non-$\T_1$ graph as an induced subgraph is itself outside $\T_1$.  This last step uses
+only that $\T_1$ is hereditary---equivalently, that it is cut out by forbidding a family of
+induced subgraphs, here the entire complement $\T_0\setminus\T_1$: closure under induced
+subgraphs says exactly that a graph with a forbidden induced subgraph cannot lie in $\T_1$.
+So the forbidden flags already span an ideal, not merely a subspace, and the ideal they
+generate is exactly their span.  Hence the elements that $\qmap_\sigma$ collapses to $0$ are exactly the linear
 combinations of forbidden flags---nothing more.
 
 Now let $\chi$ vanish on every forbidden flag.  By linearity it vanishes on their whole
