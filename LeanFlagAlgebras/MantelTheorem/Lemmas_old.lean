@@ -1,6 +1,5 @@
 import LeanFlagAlgebras.MantelTheorem.FlagMul
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
-import LeanFlagAlgebras.API.FlagExpand
 
 /-! # Mantel's theorem: auxiliary lemmas
 
