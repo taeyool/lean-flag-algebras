@@ -14,8 +14,8 @@ enumerating the entire quotient `Fintype`.
 The general typed flags (type σ the `m`-th `k`-vertex graph) are produced
 analogously by `generate_flags k m n`: it evaluates the self-contained Lean
 enumeration `genFlagData k m n` — one orbit representative per flag, in the
-canonical order — at elaboration time, synthesizing the same named constants the
-old JSON loader (`load_flags`) did, with no JSON file read.
+canonical order — at elaboration time, synthesizing the named flag/type
+constants and `simp` lemmas with no JSON file read.
 
 Each line synthesizes named constants/theorems at elaboration time. Generated
 names use the `_<n>_<k>_<m>_<i>` suffix convention: `n` vertices; `k`,`m` describe
