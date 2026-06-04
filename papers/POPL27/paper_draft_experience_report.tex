@@ -1785,45 +1785,37 @@ are proved without those sketches---but it marks a natural direction for
 making the \lean{forbidLE} framework more convenient for future applications.
 
 
-\section{The Bridge from Specification to Evaluable Proof}
-\label{sec:bridge}
 
-Section~\ref{sec:abstract} gives flag algebras a complete mathematical
-specification in Lean.  The difficulty is that this specification cannot
-drive a concrete proof on its own.  To prove Mantel's theorem or the
-Erd\H{o}s pentagon theorem, one must evaluate specific rational densities
-for specific graphs and discharge large numbers of algebraic
-rewriting steps.  Neither of these can be performed directly on the
-abstract definitions.  \lean{flagDensity} is defined via non-constructive
-quotients with no \lean{Decidable} instance; even where computation is
-possible in principle, evaluating it at a specific flag and host graph
-requires manually enumerating every graph embedding.  Discharging the
-algebraic bookkeeping---flag expansion, typed multiplication, linear
-normalization---would separately require thousands of manual tactic steps
-without automation.  The bridge layer is what we built
-to close these gaps.  It has four parts: a reflection layer that connects
-the abstract definitions to a computable graph type via adequacy theorems;
-SDP-certificate verification via LDL$^\top$ decomposition over $\Q$; a
-tactic layer that automates the recurring algebraic bookkeeping; and an API
-layer that packages all of the above behind a small interface used by the
-case studies.
-% We report each part as something we had to build rather than
-% as a contribution in its own right.
+\section{The Reflection Layer}
+\label{sec:reflection}
 
-\subsection{Proof by Reflection in ITP}
-
-The proof-by-reflection pattern in interactive theorem proving has three
-components: (1) a \emph{concrete representation} over which a decision
+Proof by reflection discharges a proof obligation by running a verified
+computation rather than by constructing a proof term manually.  The pattern
+in interactive theorem proving has three components: (1) a \emph{concrete representation} over which a decision
 procedure can evaluate; (2) an \emph{adequacy theorem} proving that the
 decision procedure is sound with respect to the abstract definition; and (3)
 a \emph{decision procedure} (the evaluator) that, given the concrete
 representation, produces a Boolean answer which \lean{decide} converts into a
 proof.  Our architecture applies this pattern at multiple granularities.  The
-pattern itself is decades old; what we report here is the specific failure
-mode it exhibits when the abstract specification is built from quotient types,
-and how we worked around it.
+pattern itself is decades old; what we report here is why naive reflection
+breaks down when the abstract specification is built from quotient
+types---the evaluator is forced to reduce proof terms rather than
+data---and how we worked around it
+(Section~\ref{subsec:naive-to-usable}).
 
 \subsection{Concrete Graph Representations}
+
+Mathlib's \lean{SimpleGraph} represents a graph as a \lean{Prop}-valued
+adjacency relation:
+\begin{lstlisting}
+structure SimpleGraph (V : Type*) where
+  Adj      : V -> V -> Prop
+  symm     : Symmetric Adj
+  loopless : Irreflexive Adj
+\end{lstlisting}
+This design is mathematically natural but not directly computable: checking
+adjacency requires evaluating a \lean{Prop}, which \lean{native\_decide}
+cannot reduce.
 
 We introduce \lean{Sym2Graph n} in
 \lean{LeanFlagAlgebras.FlagAlgebra.Compute.Basic}:
@@ -1833,8 +1825,7 @@ structure Sym2Graph (n : N) where
   edges_valid : forall e in edges, not e.IsDiag
 \end{lstlisting}
 This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
-non-diagonal pairs.  Unlike \lean{SimpleGraph (Fin n)} (which uses a
-\lean{Prop}-valued adjacency relation), every operation on \lean{Sym2Graph n}
+non-diagonal pairs.  Every operation on \lean{Sym2Graph n}
 is computable: membership in \lean{edges} is decidable by \lean{Finset}
 membership.  The same file derives the \lean{Fintype} instances needed to
 make graph isomorphism decidable:
@@ -1848,7 +1839,32 @@ $V(G_2)$, or all bijections) and filter those that preserve adjacency and
 type embeddings.  This reduces ``are these two labeled graphs isomorphic?'' to
 a finite, decidable search.
 
+\lean{Sym2Graph n} connects to the abstract world via a coercion to
+\lean{SimpleGraph (Fin n)}:
+\begin{lstlisting}
+def Sym2Graph.toSimpleGraph (G : Sym2Graph n) : SimpleGraph (Fin n) where
+  Adj i j   := s(i, j) in G.edges
+  symm      := ...
+  loopless  := ...
+\end{lstlisting}
+The key line is \lean{Adj i j := s(i, j) \(\in\) G.edges}: \lean{Finset}
+membership replaces the \lean{Prop}-valued adjacency relation.  Symmetry
+follows from the symmetry of \lean{Sym2}, and \lean{loopless} follows from
+the \lean{edges\_valid} field.  Registering this as a \lean{Coe} instance
+means that wherever a \lean{SimpleGraph (Fin n)} is expected, a
+\lean{Sym2Graph n} can be used directly.
+
+Alongside \lean{Sym2Graph}, we define a computable density function
+\lean{sym2EmptyTypeFlagDensity} entirely over \lean{Finset} operations.
+The coercion above makes abstract definitions \emph{applicable} to
+\lean{Sym2Graph} inputs, but applicability is not computability:
+\lean{flagDensity} composed with the coercion still unfolds to
+non-computable quotient machinery.  The concrete density function sidesteps
+this by computing directly over the \lean{Finset} of edges, producing a
+value that \lean{native\_decide} can evaluate.
+
 \subsection{From Naive Reflection to Usable Reflection}
+\label{subsec:naive-to-usable}
 
 The central engineering lesson of the reflection layer is that
 \emph{computable} is not the same as \emph{usable}.  A straightforward
@@ -1871,76 +1887,28 @@ act as compiled code.  The connection between them is established by adequacy
 theorems, so changing the implementation of the Boolean checker does not
 change the mathematical theorem being proved.
 
-\paragraph{Optimization 1: Boolean isomorphism with early pruning.}
-The first bottleneck is flag isomorphism.  The generic \lean{Fintype}-based
-decision procedure enumerates equivalences and then filters by adjacency and
-type preservation.  In contrast, \lean{isEmptyIsoFast\_bool} first checks the
-edge-count invariant; if two graphs have different numbers of edges, it
-returns \lean{false} without enumerating any permutation.  Only after this
-cheap rejection test does it enumerate permutations of \lean{List.finRange n}
-and compare membership for every possible edge in \lean{allEdges n}:
-\begin{lstlisting}
-def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
-  if G1.edges.card != G2.edges.card then false
-  else
-    let perms := (List.finRange n).permutations
-    let edges := allEdges n
-    perms.any fun perm =>
-      edges.all fun e =>
-        edgeMembershipAgrees G1 G2 perm e
-\end{lstlisting}
+\paragraph{Fast isomorphism checking.}
+The first bottleneck is flag isomorphism.  We replace the generic
+\lean{Fintype}-based procedure with two optimized Boolean checkers.
+\lean{isEmptyIsoFast\_bool} avoids permutation enumeration entirely when the
+edge counts differ.  For typed flags, \lean{isIsoFast\_bool} additionally
+fixes the labeled vertices (which a $\sigma$-flag isomorphism must preserve)
+and enumerates permutations only of the non-type vertices, reducing the
+pentagon proof's search from $5! = 120$ to $(5-3)! = 2$ candidate maps per
+check.  This constant-factor improvement is multiplied across thousands of
+generated density lemmas, making the difference between a viable evaluator
+and a stuck proof search.
 
-\paragraph{Optimization 2: type-aware permutation.}
-Typed flags admit a stronger optimization.  A $\sigma$-flag isomorphism must
-commute with the type embedding, so the labeled vertices are fixed by the
-type map.  The optimized checker \lean{isIsoFast\_bool} computes the
-non-type vertices using \lean{getNonTypeVerts}, enumerates permutations only
-of those vertices, and reconstructs the full vertex map with
-\lean{buildFullMap}.  For the type-3, size-5 flags used in the pentagon
-proof, this changes the search from $5!$ candidate maps to $(5-3)!$ candidate
-maps before any adjacency comparison is performed.
+Both checkers come with correctness theorems for both outcomes
+(\lean{true\_correct} and \lean{false\_correct}), justifying their
+registration as high-priority \lean{DecidableEq} instances.  Equality on
+reflected flags still means equality in the quotient setoid; only the
+decision procedure's implementation has changed.  The JSON density table is
+therefore not a trusted artifact but a test vector: if a table entry
+disagrees with the verified evaluator, \lean{native\_decide} fails and the
+proof is rejected.
 
-\begin{example}[Why typed flags change the search space]
-  Consider a pentagon-proof flag with five vertices and a three-vertex type.
-  A flag isomorphism must send the first labeled vertex to the first labeled
-  vertex, the second to the second, and the third to the third, because it
-  must commute with the type embedding.  The only freedom is what to do with
-  the two remaining vertices.  The generic graph-isomorphism view still
-  starts from $5! = 120$ possible vertex permutations.  The typed checker
-  starts from the two-element list of non-type vertices and considers only
-  $2! = 2$ permutations.  This reduction looks small because the graphs have
-  only five vertices, but it is multiplied by the structure of the density
-  calculation: the checker is invoked while enumerating subgraphs, comparing
-  candidate representatives, and proving thousands of generated density
-  lemmas.  A constant-factor improvement at the graph level becomes the
-  difference between an evaluator that feels like a decision procedure and
-  one that feels like a stuck proof search.
-\end{example}
-
-\paragraph{Optimization 3: verified replacement of generic instances.}
-The optimized Boolean checkers are not trusted oracles.  Each checker comes
-with correctness theorems for both Boolean outcomes; for the empty-typed
-checker these are the \lean{true\_correct} and \lean{false\_correct} lemmas
-in \lean{Compute/FastIso.lean}.  These theorems justify replacing the generic
-quotient equality procedure by high-priority instances for reflected graph
-and flag equality.  From the perspective of the rest of the development,
-equality on reflected flags still means equality in the quotient setoid;
-only the implementation of the decision procedure has changed.
-
-\begin{example}[A failed table entry fails as a theorem]
-  Suppose the JSON table accidentally states that a certain density is
-  $3/10$ when the reflected computation gives $2/5$.  The loader will still
-  generate the theorem statement requested by the table, but after unfolding
-  the relevant flags and rewriting by the adequacy theorem, the goal becomes
-  the decidable proposition $2/5 = 3/10$.  At that point
-  \lean{native\_decide} fails.  The table is therefore not a trusted proof
-  artifact; it is closer to a test vector that Lean checks against the
-  specification.  This is a useful distinction for large computer-assisted
-  proofs: external computation proposes facts, but the proof assistant
-  accepts only those facts that its verified evaluator can reproduce.
-\end{example}
-
-\paragraph{Optimization 4: compute over data, prove equivalence once.}
+\paragraph{Concrete subgraph enumeration with one-time equivalence proof.}
 The density computation itself is similarly compiled.  Rather than enumerate
 abstract \lean{LabeledSubgraph}s directly, the concrete layer enumerates
 \lean{Sym2InducedSubgraph}s, represented only by a finite vertex set, and
@@ -2034,6 +2002,29 @@ the density from scratch.  In effect, the elaborator performs a verified
 specialization pass: it turns a general reflective evaluator into thousands
 of small, reusable theorem constants specialized to the flags that appear in
 the certificate.
+
+\section{The Bridge from Specification to Evaluable Proof}
+\label{sec:bridge}
+
+Section~\ref{sec:abstract} gives flag algebras a complete mathematical
+specification in Lean.  The difficulty is that this specification cannot
+drive a concrete proof on its own.  To prove Mantel's theorem or the
+Erd\H{o}s pentagon theorem, one must evaluate specific rational densities
+for specific graphs and discharge large numbers of algebraic
+rewriting steps.  Neither of these can be performed directly on the
+abstract definitions.  \lean{flagDensity} is defined via non-constructive
+quotients with no \lean{Decidable} instance; even where computation is
+possible in principle, evaluating it at a specific flag and host graph
+requires manually enumerating every graph embedding.  Discharging the
+algebraic bookkeeping---flag expansion, typed multiplication, linear
+normalization---would separately require thousands of manual tactic steps
+without automation.  The bridge layer is what we built
+to close these gaps.  It has four parts: a reflection layer that connects
+the abstract definitions to a computable graph type via adequacy theorems;
+SDP-certificate verification via LDL$^\top$ decomposition over $\Q$; a
+tactic layer that automates the recurring algebraic bookkeeping; and an API
+layer that packages all of the above behind a small interface used by the
+case studies.
 
 \subsection{SDP Certificate Verification via \texorpdfstring{LDL$^\top$}{LDL\string^T}}
 \label{sec:sdp}
