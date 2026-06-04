@@ -31,6 +31,13 @@ generate_empty_typed_flags 2
 generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_empty_typed_flags 5
+generate_empty_typed_flags 6
+-- n = 7 (1044 flags) is omitted: the elaboration-time enumeration runs in the
+-- Lean interpreter and takes >80 min, and the 1044-element list literal in the
+-- completeness bridge exceeds the default `maxRecDepth` (512). It is impractical
+-- for routine builds with the current interpreter-based generation; revisit if
+-- the generator is moved to compiled (native) evaluation.
+-- generate_empty_typed_flags 7
 
 generate_flags 1 0 1
 generate_flags 1 0 2

@@ -83,13 +83,18 @@ def canonicalEdgeList {n : ℕ} (G : Sym2Graph n) : List (ℕ × ℕ) :=
       let cand := relabeledEdgeList perm G
       if listPairLt cand best then cand else best) (relabeledEdgeList p G)
 
-/-- Total preorder used to order graphs into JSON file order: by edge count,
-then by canonical edge list. -/
-def graphKeyLe {n : ℕ} (G G' : Sym2Graph n) : Bool :=
-  decide (G.edges.card < G'.edges.card) ||
-    (G.edges.card == G'.edges.card &&
-      (listPairLt (canonicalEdgeList G) (canonicalEdgeList G') ||
-       canonicalEdgeList G == canonicalEdgeList G'))
+/-- The sort key putting graphs into JSON file order: `(edge count, canonical
+edge list)`. Precomputed once per graph so the sort does not re-evaluate the
+`n!`-cost `canonicalEdgeList` on every comparison. -/
+def graphKey {n : ℕ} (G : Sym2Graph n) : ℕ × List (ℕ × ℕ) :=
+  (G.edges.card, canonicalEdgeList G)
+
+/-- Total preorder on precomputed `graphKey`s: by edge count, then by canonical
+edge list. Yields the same boolean as comparing the graphs directly, but reads
+the canonical edge list from the key instead of recomputing it. -/
+def graphKeyLe (k k' : ℕ × List (ℕ × ℕ)) : Bool :=
+  decide (k.1 < k'.1) ||
+    (k.1 == k'.1 && (listPairLt k.2 k'.2 || k.2 == k'.2))
 
 /-! ## Computable enumeration of all graphs -/
 
@@ -142,13 +147,176 @@ already fast-iso-equivalent to it. -/
 def dedupStep {n : ℕ} (acc : List (Sym2Graph n)) (G : Sym2Graph n) : List (Sym2Graph n) :=
   if acc.any (fun H => isEmptyIsoFast_bool H G) = true then acc else acc ++ [G]
 
-/-- The deduplicated list: one representative per `∼sf`-class. -/
-def genSym2GraphsDedup (n : ℕ) : List (Sym2Graph n) :=
-  (allRawSym2Graphs n).foldl dedupStep []
+/-! ## Canonical-augmentation generator (empty-typed)
 
-/-- The deduplicated list, re-sorted into canonical JSON order. -/
+Instead of enumerating all `2 ^ C(n,2)` labeled graphs and deduplicating (which
+makes `n ≥ 7` intractable), we build the `n`-vertex representatives from the
+`(n-1)`-vertex representatives in nauty/McKay "orderly augmentation" style: take
+each representative `R` on the first `n-1` vertices, attach a new last vertex
+`Fin.last (n-1)` adjacent to every subset `S ⊆ Fin (n-1)`, then deduplicate the
+(much smaller) augmented family. Completeness is proved mathematically, so the
+elaboration-time `native_decide` bridge evaluates only this small generator.
+
+`augment`/`augmentAll`/`augReps` are the *computational* core (evaluated at
+elaboration time); `restrict`/`neighborsOfLast`/`extendEquivLast` are used only
+inside the completeness proof and need not be efficient. -/
+
+/-- Extend a vertex permutation `φ` of `Fin n` to `Fin (n+1)`, fixing the last
+vertex. Used to transport an isomorphism across the new vertex. -/
+def extendEquivLast {n : ℕ} (φ : Fin n ≃ Fin n) : Fin (n + 1) ≃ Fin (n + 1) where
+  toFun := Fin.lastCases (Fin.last n) (fun i => Fin.castSucc (φ i))
+  invFun := Fin.lastCases (Fin.last n) (fun i => Fin.castSucc (φ.symm i))
+  left_inv := by
+    intro x
+    cases x using Fin.lastCases with
+    | last => simp [Fin.lastCases_last]
+    | cast i => simp [Fin.lastCases_castSucc]
+  right_inv := by
+    intro x
+    cases x using Fin.lastCases with
+    | last => simp [Fin.lastCases_last]
+    | cast i => simp [Fin.lastCases_castSucc]
+
+@[simp] theorem extendEquivLast_castSucc {n : ℕ} (φ : Fin n ≃ Fin n) (i : Fin n) :
+    extendEquivLast φ (Fin.castSucc i) = Fin.castSucc (φ i) := by
+  simp only [extendEquivLast, Equiv.coe_fn_mk, Fin.lastCases_castSucc]
+
+@[simp] theorem extendEquivLast_last {n : ℕ} (φ : Fin n ≃ Fin n) :
+    extendEquivLast φ (Fin.last n) = Fin.last n := by
+  simp only [extendEquivLast, Equiv.coe_fn_mk, Fin.lastCases_last]
+
+/-- Add a new last vertex to `G`, adjacent to exactly the vertices in `S`. The
+old edges are carried over by `Fin.castSucc`. -/
+def augment {n : ℕ} (G : Sym2Graph n) (S : Finset (Fin n)) : Sym2Graph (n + 1) :=
+  ⟨G.edges.image (Sym2.map Fin.castSucc) ∪
+      S.image (fun v => s(Fin.castSucc v, Fin.last n)), by
+    intro e he
+    rw [Finset.mem_union] at he
+    rcases he with he | he
+    · rw [Finset.mem_image] at he
+      obtain ⟨e₀, he₀, rfl⟩ := he
+      have hnd : ¬ e₀.IsDiag := G.edges_valid e₀ he₀
+      clear he₀
+      revert hnd
+      induction e₀ using Sym2.ind with
+      | _ a b =>
+        rw [Sym2.map_pair_eq, Sym2.mk_isDiag_iff, Sym2.mk_isDiag_iff]
+        exact fun hnd hEq => hnd (Fin.castSucc_injective n hEq)
+    · rw [Finset.mem_image] at he
+      obtain ⟨v, _, rfl⟩ := he
+      rw [Sym2.mk_isDiag_iff]
+      exact (Fin.castSucc_lt_last v).ne⟩
+
+/-- Membership in the edge set of `augment G S`: either an old edge carried over
+by `Fin.castSucc`, or a new pendant edge `{castSucc v, last}` for `v ∈ S`. -/
+theorem mem_augment_edges {n : ℕ} (G : Sym2Graph n) (S : Finset (Fin n))
+    (e : Sym2 (Fin (n + 1))) :
+    e ∈ (augment G S).edges ↔
+      (∃ e₀ ∈ G.edges, Sym2.map Fin.castSucc e₀ = e) ∨
+      (∃ v ∈ S, s(Fin.castSucc v, Fin.last n) = e) := by
+  simp only [augment, Finset.mem_union, Finset.mem_image]
+
+/-- The induced subgraph of `H` on the first `n` vertices (drop the last). -/
+def restrict {n : ℕ} (H : Sym2Graph (n + 1)) : Sym2Graph n :=
+  ⟨(Finset.univ : Finset (Sym2 (Fin n))).filter
+      (fun e => ¬ e.IsDiag ∧ Sym2.map Fin.castSucc e ∈ H.edges), by
+    intro e he
+    exact (Finset.mem_filter.mp he).2.1⟩
+
+theorem mem_restrict_edges {n : ℕ} (H : Sym2Graph (n + 1)) (e : Sym2 (Fin n)) :
+    e ∈ (restrict H).edges ↔ ¬ e.IsDiag ∧ Sym2.map Fin.castSucc e ∈ H.edges := by
+  simp only [restrict, Finset.mem_filter, Finset.mem_univ, true_and]
+
+/-- The neighbors of the last vertex of `H`, as a subset of the first `n`. -/
+def neighborsOfLast {n : ℕ} (H : Sym2Graph (n + 1)) : Finset (Fin n) :=
+  (Finset.univ : Finset (Fin n)).filter (fun v => s(Fin.castSucc v, Fin.last n) ∈ H.edges)
+
+theorem mem_neighborsOfLast {n : ℕ} (H : Sym2Graph (n + 1)) (v : Fin n) :
+    v ∈ neighborsOfLast H ↔ s(Fin.castSucc v, Fin.last n) ∈ H.edges := by
+  simp only [neighborsOfLast, Finset.mem_filter, Finset.mem_univ, true_and]
+
+/-- All subsets of `Fin n`, enumerated computably as the sublists of `finRange n`. -/
+def allVertSubsets (n : ℕ) : List (Finset (Fin n)) :=
+  (List.finRange n).sublists.map List.toFinset
+
+theorem mem_allVertSubsets {n : ℕ} (S : Finset (Fin n)) : S ∈ allVertSubsets n := by
+  rw [allVertSubsets, List.mem_map]
+  refine ⟨(List.finRange n).filter (fun v => decide (v ∈ S)), ?_, ?_⟩
+  · rw [List.mem_sublists]; exact List.filter_sublist
+  · ext v
+    simp only [List.mem_toFinset, List.mem_filter, List.mem_finRange, true_and, decide_eq_true_eq]
+
+/-- All one-vertex augmentations of `G`: attach the new vertex to each subset. -/
+def augmentAll {n : ℕ} (G : Sym2Graph n) : List (Sym2Graph (n + 1)) :=
+  (allVertSubsets n).map (augment G)
+
+theorem mem_augmentAll {n : ℕ} (G : Sym2Graph n) (S : Finset (Fin n)) :
+    augment G S ∈ augmentAll G :=
+  List.mem_map.mpr ⟨S, mem_allVertSubsets S, rfl⟩
+
+/-- The augmentation-generated representatives: build the `(n+1)`-vertex graphs
+by augmenting each `n`-vertex representative, then deduplicate. This is the
+*specification*: it deduplicates by the `O(n!)`-per-comparison
+`isEmptyIsoFast_bool` test directly. The runtime generator `augRepsDeg` computes
+the same list, but only runs the `O(n!)` test when a cheap iso-invariant key
+collides, so most pairs never reach it. -/
+def augReps : (n : ℕ) → List (Sym2Graph n)
+  | 0 => [⟨∅, by simp⟩]
+  | n + 1 => ((augReps n).flatMap augmentAll).foldl dedupStep []
+
+/-- The degree of vertex `v` in `G`: the number of edges incident to `v`. -/
+def degree {n : ℕ} (G : Sym2Graph n) (v : Fin n) : ℕ :=
+  (G.edges.filter (fun e => v ∈ e)).card
+
+/-- The sorted degree sequence of `G`. An isomorphism invariant: isomorphic
+graphs have equal sorted degree sequences (`degKey_iso_invariant`). -/
+def degSeq {n : ℕ} (G : Sym2Graph n) : List ℕ :=
+  List.insertionSort (· ≤ ·) ((List.finRange n).map (degree G))
+
+/-- A cheap, computable isomorphism invariant: `(edge count, sorted degree
+sequence)`. Computed in `O(n²)` rather than `O(n!)`. Equal keys do *not* imply
+isomorphism (degree sequences collide), but *unequal* keys imply non-isomorphism,
+so the dedup only needs the expensive `isEmptyIsoFast_bool` test within a key
+bucket. -/
+def degKey {n : ℕ} (G : Sym2Graph n) : ℕ × List ℕ :=
+  (G.edges.card, degSeq G)
+
+/-- Attach the cheap key to a graph as a precomputed bucketing key. -/
+def withDegKey {n : ℕ} (G : Sym2Graph n) : Sym2Graph n × (ℕ × List ℕ) :=
+  (G, degKey G)
+
+/-- Keyed deduplication step with a cheap prefilter: keep `p` unless some survivor
+shares its cheap key (`q.2 == p.2`, `O(n)`) *and* is isomorphic to it
+(`isEmptyIsoFast_bool`, `O(n!)`). The `&&` short-circuits, so the expensive iso
+test runs only on cheap-key collisions. Makes the same keep/drop decisions as
+`dedupStep` because the cheap key is an iso invariant (`augRepsDeg_fst_eq`). -/
+def dedupStepDeg {n : ℕ} (acc : List (Sym2Graph n × (ℕ × List ℕ)))
+    (p : Sym2Graph n × (ℕ × List ℕ)) : List (Sym2Graph n × (ℕ × List ℕ)) :=
+  if acc.any (fun q => q.2 == p.2 && isEmptyIsoFast_bool q.1 p.1) = true then acc
+  else acc ++ [p]
+
+/-- The fast augmentation generator: identical structure to `augReps`, but each
+candidate carries its precomputed cheap key and dedup prefilters by it. The first
+component equals `augReps n` (`augRepsDeg_fst_eq`). -/
+def augRepsDeg : (n : ℕ) → List (Sym2Graph n × (ℕ × List ℕ))
+  | 0 => [withDegKey ⟨∅, by simp⟩]
+  | n + 1 =>
+      ((((augRepsDeg n).map Prod.fst).flatMap augmentAll).map withDegKey).foldl dedupStepDeg []
+
+/-- The deduplicated list: one representative per `∼sf`-class, produced by the
+canonical-augmentation generator (runtime form: cheap-key prefiltered dedup).
+The keystone bridge `genSym2GraphsDedup_eq` proves this equals the specification
+`augReps n`, so all completeness/`Nodup` reasoning happens on `augReps`. -/
+def genSym2GraphsDedup (n : ℕ) : List (Sym2Graph n) :=
+  (augRepsDeg n).map Prod.fst
+
+/-- The deduplicated list, re-sorted into canonical JSON order. We decorate each
+graph with its precomputed `graphKey`, sort by the key, then drop the keys, so
+`canonicalEdgeList` is evaluated once per graph rather than on every comparison
+of the `O(g(n)²)`-many comparisons the sort performs. -/
 def genSym2Graphs (n : ℕ) : List (Sym2Graph n) :=
-  List.insertionSort (fun G G' => graphKeyLe G G' = true) (genSym2GraphsDedup n)
+  (List.insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
+    ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))).map Prod.fst
 
 /-- The empty-typed flags (quotient classes) of the generated graphs. -/
 def genEmptyTypedFlags (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
@@ -237,15 +405,349 @@ theorem foldl_dedupStep_flags_nodup {n : ℕ} (xs : List (Sym2Graph n)) :
       have hG'x : G' ∼sf x := Quotient.exact hG'eq
       exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isEmptyIsoFast_bool_complete hG'x⟩)
 
+/-! ## Augmentation correctness
+
+The augmentation generator `augReps` is complete (every graph is `∼sf` to some
+representative) and produces a `Nodup` flag list. We prove this by induction on
+`n`: every `(n+1)`-vertex graph `H` is the augmentation of its own restriction
+(`augment_restrict_eq`), the restriction is `∼sf` some `n`-vertex representative
+`R₀` (induction hypothesis), and augmentation transports `∼sf` (`augment_transport`),
+so `H` is `∼sf` an element of `(augReps n).flatMap augmentAll`, which the dedup fold
+preserves up to `∼sf`. -/
+
+/-- `Sym2.map` of an injective function is injective. -/
+theorem sym2_map_injective {α β : Type*} {f : α → β} (hf : Function.Injective f) :
+    Function.Injective (Sym2.map f) := by
+  intro x y
+  induction x using Sym2.ind with | _ a b =>
+  induction y using Sym2.ind with | _ c d =>
+  intro h
+  rw [Sym2.map_pair_eq, Sym2.map_pair_eq, Sym2.eq_iff] at h
+  rw [Sym2.eq_iff]
+  rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
+  · exact Or.inl ⟨hf h1, hf h2⟩
+  · exact Or.inr ⟨hf h1, hf h2⟩
+
+/-- A vertex permutation that preserves edge membership induces a `∼sf` equivalence. -/
+theorem sym2GraphEqv_of_equiv {n : ℕ} {G R : Sym2Graph n} (φ : Fin n ≃ Fin n)
+    (h : ∀ e : Sym2 (Fin n), e ∈ G.edges ↔ Sym2.map φ e ∈ R.edges) : G ∼sf R := by
+  refine Nonempty.intro { graph_iso := ?_, type_preserve := ?_ }
+  · refine { toEquiv := φ, map_rel_iff' := ?_ }
+    intro a b
+    rw [Sym2Graph.toLabeledGraph_adj_iff, Sym2Graph.toLabeledGraph_adj_iff]
+    have he := h s(a, b)
+    rw [Sym2.map_pair_eq] at he
+    exact he.symm
+  · ext z
+    exact Fin.elim0 z
+
+/-- Conversely, a `∼sf` equivalence yields an edge-membership-preserving permutation. -/
+theorem edge_mem_iff_of_eqv {n : ℕ} {G R : Sym2Graph n} (h : G ∼sf R) :
+    ∃ φ : Fin n ≃ Fin n, ∀ e : Sym2 (Fin n), e ∈ G.edges ↔ Sym2.map φ e ∈ R.edges := by
+  have φ := h.some.graph_iso
+  simp only [Sym2Graph.toLabeledGraph] at φ
+  refine ⟨φ.toEquiv, ?_⟩
+  intro e
+  constructor
+  · intro he1
+    have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G.edges)).edgeSet := by
+      simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+        (And.intro he1 (G.edges_valid e he1))
+    have he2' : Sym2.map φ.toEquiv e ∈
+        (SimpleGraph.fromEdgeSet (SetLike.coe R.edges)).edgeSet :=
+      (φ.map_mem_edgeSet_iff).2 he1'
+    have : Sym2.map φ.toEquiv e ∈ R.edges ∧ ¬(Sym2.map φ.toEquiv e).IsDiag := by
+      simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he2'
+    exact this.1
+  · intro he2
+    have he2' : Sym2.map φ.toEquiv e ∈
+        (SimpleGraph.fromEdgeSet (SetLike.coe R.edges)).edgeSet := by
+      simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using
+        (And.intro he2 (R.edges_valid (Sym2.map φ.toEquiv e) he2))
+    have he1' : e ∈ (SimpleGraph.fromEdgeSet (SetLike.coe G.edges)).edgeSet :=
+      (φ.map_mem_edgeSet_iff).1 he2'
+    have : e ∈ G.edges ∧ ¬e.IsDiag := by
+      simpa [SimpleGraph.edgeSet_fromEdgeSet, Sym2.mem_diagSet_iff_isDiag] using he1'
+    exact this.1
+
+/-- The edge set of `augment R (S.image φ)` is the image of `augment G S`'s edge set
+under `extendEquivLast φ`, when `φ` is an edge-membership-preserving permutation. -/
+theorem augment_edges_image {n : ℕ} {G R : Sym2Graph n} (φ : Fin n ≃ Fin n)
+    (hφ : ∀ e₀ : Sym2 (Fin n), e₀ ∈ G.edges ↔ Sym2.map φ e₀ ∈ R.edges) (S : Finset (Fin n)) :
+    (augment R (S.image φ)).edges
+      = (augment G S).edges.image (Sym2.map (extendEquivLast φ)) := by
+  have hRimg : R.edges = G.edges.image (Sym2.map φ) := by
+    ext r
+    rw [Finset.mem_image]
+    constructor
+    · intro hr
+      refine ⟨Sym2.map φ.symm r, ?_, ?_⟩
+      · rw [hφ]; rwa [Sym2.map_map, Equiv.self_comp_symm, Sym2.map_id, id_eq]
+      · rw [Sym2.map_map, Equiv.self_comp_symm, Sym2.map_id, id_eq]
+    · rintro ⟨e₀, he₀, rfl⟩; exact (hφ e₀).mp he₀
+  have e1 : (G.edges.image (Sym2.map Fin.castSucc)).image (Sym2.map (extendEquivLast φ))
+          = R.edges.image (Sym2.map Fin.castSucc) := by
+    rw [Finset.image_image, hRimg, Finset.image_image]
+    apply Finset.image_congr
+    intro e he
+    clear he
+    induction e using Sym2.ind with
+    | _ a b =>
+      simp only [Function.comp_apply, Sym2.map_pair_eq, extendEquivLast_castSucc]
+  have e2 : (S.image (fun v => s(Fin.castSucc v, Fin.last n))).image
+              (Sym2.map (extendEquivLast φ))
+          = (S.image φ).image (fun v => s(Fin.castSucc v, Fin.last n)) := by
+    rw [Finset.image_image, Finset.image_image]
+    apply Finset.image_congr
+    intro v _
+    simp only [Function.comp_apply, Sym2.map_pair_eq, extendEquivLast_castSucc,
+      extendEquivLast_last]
+  have lhs_eq : (augment R (S.image φ)).edges =
+      R.edges.image (Sym2.map Fin.castSucc) ∪
+      (S.image φ).image (fun v => s(Fin.castSucc v, Fin.last n)) := rfl
+  have rhs_eq : (augment G S).edges =
+      G.edges.image (Sym2.map Fin.castSucc) ∪
+      S.image (fun v => s(Fin.castSucc v, Fin.last n)) := rfl
+  rw [lhs_eq, rhs_eq, Finset.image_union, e1, e2]
+
+/-- Augmentation transports `∼sf`: if `G ∼sf R` then for any `S` there is `S'` with
+`augment G S ∼sf augment R S'`. -/
+theorem augment_transport {n : ℕ} {G R : Sym2Graph n} (hGR : G ∼sf R) (S : Finset (Fin n)) :
+    ∃ S' : Finset (Fin n), augment G S ∼sf augment R S' := by
+  obtain ⟨φ, hφ⟩ := edge_mem_iff_of_eqv hGR
+  refine ⟨S.image φ, sym2GraphEqv_of_equiv (extendEquivLast φ) ?_⟩
+  intro e
+  rw [augment_edges_image φ hφ S,
+    (sym2_map_injective (extendEquivLast φ).injective).mem_finset_image]
+
+/-- Any `(n+1)`-vertex graph is the augmentation of its restriction by the neighbors
+of its last vertex. -/
+theorem augment_restrict_eq {n : ℕ} (H : Sym2Graph (n + 1)) :
+    H = augment (restrict H) (neighborsOfLast H) := by
+  apply Sym2Graph.ext
+  ext e
+  rw [mem_augment_edges]
+  constructor
+  · induction e using Sym2.ind with
+    | _ a b =>
+      intro hmem
+      cases a using Fin.lastCases with
+      | last =>
+        cases b using Fin.lastCases with
+        | last => exact absurd (Sym2.mk_isDiag_iff.mpr rfl) (H.edges_valid _ hmem)
+        | cast j =>
+          right
+          refine ⟨j, ?_, Sym2.eq_swap⟩
+          rw [mem_neighborsOfLast, Sym2.eq_swap]
+          exact hmem
+      | cast i =>
+        cases b using Fin.lastCases with
+        | last =>
+          right
+          exact ⟨i, (mem_neighborsOfLast H i).mpr hmem, rfl⟩
+        | cast j =>
+          left
+          refine ⟨s(i, j), ?_, by rw [Sym2.map_pair_eq]⟩
+          rw [mem_restrict_edges]
+          refine ⟨?_, by rw [Sym2.map_pair_eq]; exact hmem⟩
+          rw [Sym2.mk_isDiag_iff]
+          intro hij
+          exact (H.edges_valid _ hmem) (Sym2.mk_isDiag_iff.mpr (by rw [hij]))
+  · rintro (⟨e₀, he₀, rfl⟩ | ⟨v, hv, rfl⟩)
+    · rw [mem_restrict_edges] at he₀; exact he₀.2
+    · exact (mem_neighborsOfLast H v).mp hv
+
+/-- Completeness of the augmentation generator: every graph is `∼sf` to a representative. -/
+theorem augReps_complete : ∀ (n : ℕ) (G : Sym2Graph n), ∃ R ∈ augReps n, G ∼sf R
+  | 0 => by
+    intro G
+    haveI : IsEmpty (Sym2 (Fin 0)) :=
+      ⟨fun e => by induction e using Sym2.ind with | _ a b => exact a.elim0⟩
+    refine ⟨⟨∅, by simp⟩, List.mem_cons_self, ?_⟩
+    exact sym2GraphEqv_of_equiv (Equiv.refl (Fin 0)) (fun e => isEmptyElim e)
+  | n + 1 => by
+    intro H
+    obtain ⟨R₀, hR₀mem, hR₀iso⟩ := augReps_complete n (restrict H)
+    obtain ⟨S', hS'⟩ := augment_transport hR₀iso (neighborsOfLast H)
+    have hHiso : H ∼sf augment R₀ S' := by rw [augment_restrict_eq H]; exact hS'
+    have hmemFlat : augment R₀ S' ∈ (augReps n).flatMap augmentAll :=
+      List.mem_flatMap.mpr ⟨R₀, hR₀mem, mem_augmentAll R₀ S'⟩
+    obtain ⟨R, hRmem, hRiso⟩ :=
+      foldl_dedupStep_complete ((augReps n).flatMap augmentAll) [] (augment R₀ S') hmemFlat
+    exact ⟨R, hRmem, Sym2GraphEqv.trans hHiso hRiso⟩
+
+/-- The augmentation generator produces a `Nodup` flag list. -/
+theorem augReps_flags_nodup (n : ℕ) :
+    ((augReps n).map (Quotient.mk (Sym2GraphSetoid n))).Nodup := by
+  cases n with
+  | zero => simp [augReps]
+  | succ m =>
+    exact foldl_dedupStep_flags_nodup ((augReps m).flatMap augmentAll) [] (by simp)
+
+/-! ## Degree-prefilter dedup correctness
+
+The runtime generator `augRepsDeg` deduplicates with a cheap-key prefilter. We
+show it produces the same list as the specification `augReps` (`augRepsDeg_fst_eq`),
+so all completeness/`Nodup` results transfer. The only nontrivial fact is that the
+cheap key (`degKey`) is an isomorphism invariant (`degKey_iso_invariant`); the rest
+is a fold simulation that reuses `isEmptyIsoFast_bool`'s soundness. -/
+
+/-- Vertex membership transports along `Sym2.map` of an equivalence. -/
+theorem mem_map_equiv_iff {n : ℕ} (φ : Fin n ≃ Fin n) (v : Fin n) (e : Sym2 (Fin n)) :
+    φ v ∈ Sym2.map φ e ↔ v ∈ e := by
+  rw [Sym2.mem_map]
+  constructor
+  · rintro ⟨a, hae, hav⟩
+    rwa [φ.injective hav] at hae
+  · intro hv
+    exact ⟨v, hv, rfl⟩
+
+/-- Degrees transport along an edge-membership-preserving permutation. -/
+theorem degree_eq_of_eqv {n : ℕ} {G H : Sym2Graph n} (φ : Fin n ≃ Fin n)
+    (h : ∀ e : Sym2 (Fin n), e ∈ G.edges ↔ Sym2.map φ e ∈ H.edges) (v : Fin n) :
+    degree G v = degree H (φ v) := by
+  have hset : H.edges.filter (fun e => φ v ∈ e)
+      = (G.edges.filter (fun e => v ∈ e)).image (Sym2.map φ) := by
+    ext e'
+    simp only [Finset.mem_filter, Finset.mem_image]
+    constructor
+    · rintro ⟨he'H, hφv⟩
+      refine ⟨Sym2.map φ.symm e', ⟨?_, ?_⟩, ?_⟩
+      · have he : Sym2.map φ (Sym2.map φ.symm e') = e' := by rw [Sym2.map_map]; simp
+        rw [h (Sym2.map φ.symm e'), he]; exact he'H
+      · have hh := mem_map_equiv_iff φ.symm (φ v) e'
+        rw [Equiv.symm_apply_apply] at hh
+        exact hh.mpr hφv
+      · rw [Sym2.map_map]; simp
+    · rintro ⟨e, ⟨heG, hve⟩, rfl⟩
+      exact ⟨(h e).mp heG, (mem_map_equiv_iff φ v e).mpr hve⟩
+  unfold degree
+  rw [hset, Finset.card_image_of_injective _ (sym2_map_injective φ.injective)]
+
+/-- Edge counts agree under an edge-membership-preserving permutation. -/
+theorem edges_card_eq_of_eqv {n : ℕ} {G H : Sym2Graph n} (φ : Fin n ≃ Fin n)
+    (h : ∀ e : Sym2 (Fin n), e ∈ G.edges ↔ Sym2.map φ e ∈ H.edges) :
+    G.edges.card = H.edges.card := by
+  have hset : H.edges = G.edges.image (Sym2.map φ) := by
+    ext e'
+    simp only [Finset.mem_image]
+    constructor
+    · intro he'H
+      refine ⟨Sym2.map φ.symm e', ?_, ?_⟩
+      · have he : Sym2.map φ (Sym2.map φ.symm e') = e' := by rw [Sym2.map_map]; simp
+        rw [h (Sym2.map φ.symm e'), he]; exact he'H
+      · rw [Sym2.map_map]; simp
+    · rintro ⟨e, heG, rfl⟩
+      exact (h e).mp heG
+  rw [hset, Finset.card_image_of_injective _ (sym2_map_injective φ.injective)]
+
+/-- Sorted degree sequences agree under iso (their multisets coincide). -/
+theorem degSeq_eq_of_eqv {n : ℕ} {G H : Sym2Graph n} (φ : Fin n ≃ Fin n)
+    (h : ∀ e : Sym2 (Fin n), e ∈ G.edges ↔ Sym2.map φ e ∈ H.edges) :
+    degSeq G = degSeq H := by
+  have hperm : (List.finRange n).map (degree G) ~ (List.finRange n).map (degree H) := by
+    have hfun : degree G = (degree H) ∘ (φ : Fin n → Fin n) := by
+      funext v; exact degree_eq_of_eqv φ h v
+    rw [hfun, ← List.map_map]
+    exact (Equiv.Perm.map_finRange_perm (φ : Equiv.Perm (Fin n))).map (degree H)
+  unfold degSeq
+  exact List.Perm.eq_of_pairwise' (List.pairwise_insertionSort _ _)
+    (List.pairwise_insertionSort _ _)
+    ((List.perm_insertionSort _ _).trans (hperm.trans (List.perm_insertionSort _ _).symm))
+
+/-- The cheap key is an isomorphism invariant: the prefilter never skips a
+genuinely isomorphic survivor. -/
+theorem degKey_iso_invariant {n : ℕ} {G H : Sym2Graph n} (hh : G ∼sf H) :
+    degKey G = degKey H := by
+  obtain ⟨φ, hφ⟩ := edge_mem_iff_of_eqv hh
+  unfold degKey
+  rw [edges_card_eq_of_eqv φ hφ, degSeq_eq_of_eqv φ hφ]
+
+/-- `List.any` only sees the list's elements, so a predicate change that agrees on
+every member leaves it unchanged. -/
+theorem any_eq_of_forall_mem {α : Type*} (l : List α) {P Q : α → Bool}
+    (h : ∀ a ∈ l, P a = Q a) : l.any P = l.any Q := by
+  induction l with
+  | nil => rfl
+  | cons a t ih =>
+    simp only [List.any_cons]
+    rw [h a (List.mem_cons_self ..), ih fun b hb => h b (List.mem_cons_of_mem a hb)]
+
+/-- Fold simulation: the prefiltered `dedupStepDeg` fold (on key-tagged graphs)
+makes the same keep/drop decisions as the `dedupStep` fold, because the cheap key
+is an iso invariant and `isEmptyIsoFast_bool` is sound. We carry two invariants:
+the first components match, and every tag equals its graph's `degKey`. -/
+theorem foldl_dedupStepDeg_sim {n : ℕ} (xs : List (Sym2Graph n)) :
+    ∀ (accK : List (Sym2Graph n × (ℕ × List ℕ))) (accU : List (Sym2Graph n)),
+      accK.map Prod.fst = accU → (∀ q ∈ accK, q.2 = degKey q.1) →
+      ((xs.map withDegKey).foldl dedupStepDeg accK).map Prod.fst = xs.foldl dedupStep accU
+        ∧ (∀ q ∈ (xs.map withDegKey).foldl dedupStepDeg accK, q.2 = degKey q.1) := by
+  induction xs with
+  | nil => intro accK accU h1 h2; exact ⟨h1, h2⟩
+  | cons x rest ih =>
+    intro accK accU h1 h2
+    simp only [List.map_cons, List.foldl_cons]
+    have hany : accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x)
+        = accU.any (fun H => isEmptyIsoFast_bool H x) := by
+      rw [← h1, List.any_map]
+      apply any_eq_of_forall_mem
+      intro q hq
+      rw [h2 q hq]
+      by_cases hiso : isEmptyIsoFast_bool q.1 x = true
+      · have hkey : degKey q.1 = degKey x :=
+          degKey_iso_invariant (isEmptyIsoFast_bool_true_correct hiso)
+        simp [hiso, hkey]
+      · simp only [Bool.not_eq_true] at hiso
+        simp [hiso]
+    have e1 : dedupStepDeg accK (withDegKey x)
+        = if accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x) = true
+          then accK else accK ++ [withDegKey x] := rfl
+    have e2 : dedupStep accU x
+        = if accU.any (fun H => isEmptyIsoFast_bool H x) = true
+          then accU else accU ++ [x] := rfl
+    by_cases hb : accK.any (fun q => q.2 == degKey x && isEmptyIsoFast_bool q.1 x) = true
+    · rw [e1, if_pos hb, e2, if_pos (by rw [← hany]; exact hb)]
+      exact ih accK accU h1 h2
+    · rw [e1, if_neg hb, e2, if_neg (by rw [← hany]; exact hb)]
+      apply ih
+      · simp [List.map_append, withDegKey, h1]
+      · intro q hq
+        rw [List.mem_append, List.mem_singleton] at hq
+        rcases hq with hq | hq
+        · exact h2 q hq
+        · subst hq; rfl
+
+/-- The fast generator's first components agree with the specification `augReps`. -/
+theorem augRepsDeg_fst_eq (n : ℕ) : (augRepsDeg n).map Prod.fst = augReps n := by
+  induction n with
+  | zero => rfl
+  | succ m ih =>
+    show (((((augRepsDeg m).map Prod.fst).flatMap augmentAll).map withDegKey).foldl
+      dedupStepDeg []).map Prod.fst = ((augReps m).flatMap augmentAll).foldl dedupStep []
+    rw [ih]
+    exact (foldl_dedupStepDeg_sim ((augReps m).flatMap augmentAll) [] [] rfl (by simp)).1
+
+theorem genSym2GraphsDedup_eq (n : ℕ) : genSym2GraphsDedup n = augReps n := by
+  unfold genSym2GraphsDedup; exact augRepsDeg_fst_eq n
+
 /-! ## Completeness, no-duplication, and `= univ` -/
 
 theorem genSym2GraphsDedup_complete {n : ℕ} (G : Sym2Graph n) :
-    ∃ G', G' ∈ genSym2GraphsDedup n ∧ G ∼sf G' :=
-  foldl_dedupStep_complete (allRawSym2Graphs n) [] G (mem_allRawSym2Graphs G)
+    ∃ G', G' ∈ genSym2GraphsDedup n ∧ G ∼sf G' := by
+  rw [genSym2GraphsDedup_eq]
+  obtain ⟨R, hRmem, hiso⟩ := augReps_complete n G
+  exact ⟨R, hRmem, hiso⟩
 
 theorem genSym2Graphs_perm (n : ℕ) :
-    genSym2Graphs n ~ genSym2GraphsDedup n :=
-  List.perm_insertionSort _ _
+    genSym2Graphs n ~ genSym2GraphsDedup n := by
+  unfold genSym2Graphs
+  have h := (List.perm_insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
+    ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))).map Prod.fst
+  rw [List.map_map] at h
+  have hid : (Prod.fst ∘ fun G : Sym2Graph n => (G, graphKey G)) = id := by
+    funext G; rfl
+  rw [hid, List.map_id] at h
+  exact h
 
 theorem genSym2Graphs_complete {n : ℕ} (G : Sym2Graph n) :
     ∃ G', G' ∈ genSym2Graphs n ∧ G ∼sf G' := by
@@ -257,8 +759,8 @@ theorem genEmptyTypedFlags_nodup (n : ℕ) : (genEmptyTypedFlags n).Nodup := by
   have hperm : (genSym2Graphs n).map (Quotient.mk (Sym2GraphSetoid n)) ~
                (genSym2GraphsDedup n).map (Quotient.mk (Sym2GraphSetoid n)) :=
     (genSym2Graphs_perm n).map _
-  rw [hperm.nodup_iff]
-  exact foldl_dedupStep_flags_nodup (allRawSym2Graphs n) [] List.nodup_nil
+  rw [hperm.nodup_iff, genSym2GraphsDedup_eq]
+  exact augReps_flags_nodup n
 
 theorem genEmptyTypedFlagSet_eq_univ (n : ℕ) :
     genEmptyTypedFlagSet n = Finset.univ := by

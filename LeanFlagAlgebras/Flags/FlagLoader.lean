@@ -155,6 +155,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
   let flagTerms : Array (TSyntax `term) :=
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}") : TSyntax `term))
+  let flagListEqName := mkIdent (Name.mkSimple s!"Sym2FlagList_{n}_0_0_eq")
 
   let env ← getEnv
   if ¬ env.contains setName.getId then
@@ -163,12 +164,34 @@ elab "generate_empty_typed_flags" nStx:num : command => do
         ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
     ))
 
+  -- Positional list bridge: the named flag list equals `genEmptyTypedFlags n`.
+  -- Each `Sym2Flag_n_0_0_i` is `⟦Sym2Graph_n_0_0_i⟧`, where `Sym2Graph_n_0_0_i`
+  -- is the *canonical relabeling* (`canonicalEdgeList`) of `(genSym2Graphs n)[i]`
+  -- — isomorphic to it, but not edge-equal — so the two quotients agree
+  -- positionally. Deciding this *list* equality costs `O(g)` isomorphism checks
+  -- (one per position), versus the `O(g²)` the `Finset`/`toFinset` route forces;
+  -- that removes the quadratic blowup and keeps the bridge tractable at `n = 7`
+  -- (g = 1044). Both completeness lemmas below rewrite through it, then close via
+  -- the math theorems on `genEmptyTypedFlags`.
+  let env ← getEnv
+  if ¬ env.contains flagListEqName.getId then
+    elabCommand (← `(
+      theorem $flagListEqName :
+          ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n)))
+            = FlagAlgebras.Compute.genEmptyTypedFlags $(Quote.quote n) := by
+        native_decide
+    ))
+
   let env ← getEnv
   if ¬ env.contains setEqUnivName.getId then
     elabCommand (← `(
       theorem $setEqUnivName : $setName = Finset.univ := by
         have h : $setName = FlagAlgebras.Compute.genEmptyTypedFlagSet $(Quote.quote n) := by
-          native_decide
+          have hfl := $flagListEqName
+          show (([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset)
+              = FlagAlgebras.Compute.genEmptyTypedFlagSet $(Quote.quote n)
+          unfold FlagAlgebras.Compute.genEmptyTypedFlagSet
+          rw [hfl]
         rw [h]
         exact FlagAlgebras.Compute.genEmptyTypedFlagSet_eq_univ $(Quote.quote n)
     ))
@@ -195,7 +218,9 @@ elab "generate_empty_typed_flags" nStx:num : command => do
             [ $flagBridgeTerms,* ]) := by
         have hnodup :
             ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          native_decide
+          have hfl := $flagListEqName
+          rw [hfl]
+          exact FlagAlgebras.Compute.genEmptyTypedFlags_nodup $(Quote.quote n)
         have hdedup :
             ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
               = ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) := by
