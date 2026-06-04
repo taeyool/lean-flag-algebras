@@ -1178,75 +1178,107 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % algebraic bookkeeping.
 
 
-\section{The Mathematical Specification}
+\section{Formalizing Flag Algebras in Lean~4}
 \label{sec:abstract}
 
-The specification layer of our Lean formalization gives flag algebras a
-typed mathematical interface that is reusable across different extremal
-problems.  This section describes the choices we made for that interface.
-We are reporting choices, not contributions: each choice has a coherent
-alternative, and on at least one of them we do not know which is preferable.
+% -- Original introduction (commented out) ------------------------------------
+% The specification layer of our Lean formalization gives flag algebras a
+% typed mathematical interface that is reusable across different extremal
+% problems.  This section describes the choices we made for that interface.
+% We are reporting choices, not contributions: each choice has a coherent
+% alternative, and on at least one of them we do not know which is preferable.
+%
+% \paragraph{A design choice, not an enabling condition.}
+% In our predicate-based design, the forbidden-subgraph assumption is deferred
+% to a parameter on the semantic order rather than baked into a universal theory
+% at the outset.  In Razborov's original presentation~\cite{razborov2007flag},
+% the forbidden subgraph is specified by a universal first-order theory chosen
+% when the algebra is set up; both designs can express the same mathematical
+% statements.  A consequence---not an enabling condition---of our choice is
+% that random-extension theorems become the definitional content of the
+% forbidden-subgraph relation, rather than serving only as an analytic
+% ingredient inside a fixed theory.  What differs between the two designs is
+% which intermediate lemmas are reusable across choices of constraint, and how
+% many compatibility theorems must be reproved when a new forbidden graph is
+% introduced.  Whether predicate-deferral is preferable to Razborov's
+% universal-theory specification is a tradeoff we report on, not one we resolve.
+%
+% \paragraph{What this section reports.}
+% In informal arguments, the same symbol freely denotes a concrete graph, its
+% isomorphism class, a formal linear combination of flags, an element of the
+% quotient algebra, or a real value assigned by a positive homomorphism; the
+% transitions between these roles are implicit.  In Lean they are explicit:
+% each role is a distinct type, and each transition is a map that must be
+% proved compatible with the relevant equivalence relations and algebraic
+% operations.  The specification layer provides those maps and their
+% compatibility theorems, so that every subsequent certificate proof can work
+% at the algebra level without re-establishing the soundness of the surrounding
+% framework.
+%
+% The structure of the specification follows Razborov's mathematical
+% presentation.  Flags are quotients of labeled graphs by isomorphism.  Their
+% densities are formalized as a sampling semantics: the probability that a
+% uniformly random induced subgraph of a host graph is isomorphic to a given
+% flag.  The flag algebra is a further quotient, of the free real vector space
+% on flags, by expansion laws that identify a small flag with its expected
+% density expansion to a collection of larger flags.  Positive homomorphisms
+% are the models of that equational theory.  Razborov's random-extension
+% theorem, formalized using Mathlib's Prokhorov compactness theorem, connects
+% the standard empty-typed level with the typed levels: every positive
+% homomorphism $\phi$ on the empty-typed algebra extends to a probability
+% measure $\mathbb{P}^{\phi}$ on the space of $\sigma$-typed positive
+% homomorphisms for any $\sigma$.  This measure-theoretic result is the
+% foundation on which the forbidden-subgraph predicate $\leq_\sigma$
+% rests.  The transfer theorem
+% \lean{generalizedTuranDensity\_le\_of\_forbidLE} then reduces a Tur\'an
+% density bound to a single empty-typed semantic inequality $[P] \leq
+% c\cdot\mathbf{1}$ in the ambient algebra.  Any proof of that inequality,
+% however it is assembled, immediately yields the bound $\tdensity{P}{H}\leq
+% c$; and all the abstract-layer results about products, quadratic forms, and
+% the downward operator carry over to every forbidden graph without reproof.
+% Code snippets are lightly rendered in ASCII when the Lean source uses Unicode
+% notation; the names and fields match the implementation.
+% -- End original introduction -------------------------------------------------
 
-\paragraph{A design choice, not an enabling condition.}
-In our predicate-based design, the forbidden-subgraph assumption is deferred
-to a parameter on the semantic order rather than baked into a universal theory
-at the outset.  In Razborov's original presentation~\cite{razborov2007flag},
-the forbidden subgraph is specified by a universal first-order theory chosen
-when the algebra is set up; both designs can express the same mathematical
-statements.  A consequence---not an enabling condition---of our choice is
-that random-extension theorems become the definitional content of the
-forbidden-subgraph relation, rather than serving only as an analytic
-ingredient inside a fixed theory.  What differs between the two designs is
-which intermediate lemmas are reusable across choices of constraint, and how
-many compatibility theorems must be reproved when a new forbidden graph is
-introduced.  Whether predicate-deferral is preferable to Razborov's
-universal-theory specification is a tradeoff we report on, not one we resolve.
+This section describes the choices made in formalizing the flag algebra
+framework as a Lean~4 library.  The subsections follow the mathematical
+structure of Section~\ref{sec:background}: types and flags as quotient types,
+densities as a sampling semantics, the flag algebra as a further quotient, and
+positive homomorphisms as models of the equational theory.
 
-\paragraph{What this section reports.}
+\paragraph{How the $\mathcal{H}$-free constraint is encoded.}
+Section~\ref{sec:background} fixed a set $\mathcal{H}$ of forbidden graphs at
+the outset and defined all types, flags, and the flag algebra relative to that
+fixed~$\mathcal{H}$.  Our Lean formalization takes a different starting point:
+the algebra is built without fixing any $\mathcal{H}$---equivalently,
+with $\mathcal{H} = \emptyset$, so that no graph is initially excluded.  The
+$\mathcal{H}$-free constraint is then introduced as a separate predicate on
+the semantic order; in Razborov's original
+presentation~\cite{razborov2007flag}, by contrast, it is baked into the algebra
+at setup time.  The two formulations agree on the Tur\'an density bounds we
+prove; whether they are equivalent for all labeled computations is non-trivial
+and depends on the choice of $\mathcal{H}$.  What differs is how much algebraic
+infrastructure carries over to a new~$\mathcal{H}$ without reproof.  This is a
+tradeoff we report on, not one we resolve.
+\gw{Unsure how much to say here about the motivation and advantages of this design choice.}
+
+\paragraph{Explicit transitions in Lean.}
 In informal arguments, the same symbol freely denotes a concrete graph, its
-isomorphism class, a formal linear combination of flags, an element of the
-quotient algebra, or a real value assigned by a positive homomorphism; the
-transitions between these roles are implicit.  In Lean they are explicit:
+isomorphism class, a formal linear combination of flags, or an element of the
+flag algebra; the transitions between these roles are implicit.  In Lean they are explicit:
 each role is a distinct type, and each transition is a map that must be
 proved compatible with the relevant equivalence relations and algebraic
-operations.  The specification layer provides those maps and their
-compatibility theorems, so that every subsequent certificate proof can work
-at the algebra level without re-establishing the soundness of the surrounding
-framework.
-
-The structure of the specification follows Razborov's mathematical
-presentation.  Flags are quotients of labeled graphs by isomorphism.  Their
-densities are formalized as a sampling semantics: the probability that a
-uniformly random induced subgraph of a host graph is isomorphic to a given
-flag.  The flag algebra is a further quotient, of the free real vector space
-on flags, by expansion laws that identify a small flag with its expected
-density expansion to a collection of larger flags.  Positive homomorphisms
-are the models of that equational theory.  Razborov's random-extension
-theorem, formalized using Mathlib's Prokhorov compactness theorem, connects
-the standard empty-typed level with the typed levels: every positive
-homomorphism $\phi$ on the empty-typed algebra extends to a probability
-measure $\mathbb{P}^{\phi}$ on the space of $\sigma$-typed positive
-homomorphisms for any $\sigma$.  This measure-theoretic result is the
-foundation on which the forbidden-subgraph predicate $\leq_\sigma$
-rests.  The transfer theorem
-\lean{generalizedTuranDensity\_le\_of\_forbidLE} then reduces a Tur\'an
-density bound to a single empty-typed semantic inequality $[P] \leq
-c\cdot\mathbf{1}$ in the ambient algebra.  Any proof of that inequality,
-however it is assembled, immediately yields the bound $\tdensity{P}{H}\leq
-c$; and all the abstract-layer results about products, quadratic forms, and
-the downward operator carry over to every forbidden graph without reproof.
-Code snippets are lightly rendered in ASCII when the Lean source uses Unicode
-notation; the names and fields match the implementation.
+operations.  This section establishes those maps and their compatibility theorems once,
+so that each subsequent proof can work directly at the algebra level.
 
 \subsection{Types and Flags in Lean}
 
-The central representation problem is this: the mathematics works with
-isomorphism classes of labeled graphs, but a type theory only knows about
-concrete terms.  A function on flags must not depend on which representative
-was chosen from an isomorphism class, yet the proof assistant cannot verify
-this without being told explicitly.  The implementation resolves this tension
-in three steps: build a concrete representation, quotient by the relevant
-equivalence, and carry enough size information for later algebraic operations.
+Section~\ref{sec:background} defines a $\sigma$-flag as a concrete pair
+$(M,\theta_A)$ and collects their isomorphism classes into $\mathcal{F}^\sigma_n$ where
+$n = |V(M)|$.
+The Lean implementation mirrors this two-level structure: \lean{LabeledGraph}
+is the concrete pair, and \lean{Flag} is its quotient by labeled-graph
+isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$. \gw{I'm here.}
 
 The finite set $[k]$ is represented by \lean{Fin k}, and Mathlib's
 \lean{SimpleGraph V} is the type of simple undirected graphs with vertex type
@@ -1287,6 +1319,12 @@ proof obligation: in Lean, every function \emph{from} a quotient type must be
 constructed via \lean{Quotient.lift}, which requires an explicit proof that the
 function respects the equivalence relation.  We say more about the cost of
 this choice in Section~\ref{sec:obstacles}.
+
+Unlike Section~\ref{sec:background}, neither \lean{LabeledGraph} nor
+\lean{Flag} carries the $\mathcal{H}$-free condition: the underlying graphs are
+arbitrary.  The $\mathcal{H}$-free assumption is deferred to the semantic
+predicate on the final unlabelled inequality, as described in the section
+introduction.
 
 Expansion identities and products range over auxiliary sizes, and the final
 algebraic element must be shown independent of those auxiliary choices.  Two
