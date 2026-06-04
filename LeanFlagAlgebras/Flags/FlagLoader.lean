@@ -125,8 +125,7 @@ def natPairsToEdgesTerm (numVerts : ℕ) (edges : List (Nat × Nat)) :
 elab "generate_empty_typed_flags" nStx:num : command => do
   let n := nStx.getNat
 
-  let edgesStx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
-      FlagAlgebras.Compute.canonicalEdgeList)
+  let edgesStx ← `(FlagAlgebras.Compute.genCanonicalEdgeLists $(Quote.quote n))
   let graphEdges ← liftTermElabM do
     let valExpr ← Lean.Elab.Term.elabTermAndSynthesize edgesStx none
     let valExpr ← instantiateMVars valExpr
@@ -293,8 +292,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
   let n := nStx.getNat
 
   -- Type edges: the canonical edge list of the `k`-vertex graph with index `m`.
-  let typeEdgesStx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote k)).map
-      FlagAlgebras.Compute.canonicalEdgeList)
+  let typeEdgesStx ← `(FlagAlgebras.Compute.genCanonicalEdgeLists $(Quote.quote k))
   let allTypeEdges ← liftTermElabM do
     let valExpr ← Lean.Elab.Term.elabTermAndSynthesize typeEdgesStx none
     let valExpr ← instantiateMVars valExpr

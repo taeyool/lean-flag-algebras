@@ -310,13 +310,30 @@ The keystone bridge `genSym2GraphsDedup_eq` proves this equals the specification
 def genSym2GraphsDedup (n : ℕ) : List (Sym2Graph n) :=
   (augRepsDeg n).map Prod.fst
 
-/-- The deduplicated list, re-sorted into canonical JSON order. We decorate each
-graph with its precomputed `graphKey`, sort by the key, then drop the keys, so
-`canonicalEdgeList` is evaluated once per graph rather than on every comparison
-of the `O(g(n)²)`-many comparisons the sort performs. -/
+/-- The deduplicated list decorated with each graph's precomputed `graphKey`
+`(edge count, canonicalEdgeList)`, sorted into canonical JSON order. We decorate
+each graph with its key, sort by the key, and *keep the keys attached*, so the
+`n!`-cost `canonicalEdgeList` is evaluated once per graph (inside `graphKey`,
+before the sort) rather than on each of the `O(g(n)²)` comparisons the sort
+performs. Carrying the keys through also lets downstream consumers
+(`genCanonicalEdgeLists`, the `generate_*` commands) reuse the canonical edge
+lists instead of recomputing them. -/
+def genSym2GraphsKeyed (n : ℕ) : List (Sym2Graph n × ℕ × List (ℕ × ℕ)) :=
+  List.insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
+    ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))
+
+/-- The deduplicated list, re-sorted into canonical JSON order (sort keys dropped). -/
 def genSym2Graphs (n : ℕ) : List (Sym2Graph n) :=
-  (List.insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
-    ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))).map Prod.fst
+  (genSym2GraphsKeyed n).map Prod.fst
+
+/-- The canonical edge lists of `genSym2Graphs n`, in the same order, read from
+the precomputed `graphKey`s carried by `genSym2GraphsKeyed` (each key's second
+component *is* `canonicalEdgeList`). Equal by value to
+`(genSym2Graphs n).map canonicalEdgeList`, but without recomputing the `n!`-cost
+`canonicalEdgeList` — it was already computed once for the sort key. The
+`generate_*` commands and `genFlagData` consume this. -/
+def genCanonicalEdgeLists (n : ℕ) : List (List (ℕ × ℕ)) :=
+  (genSym2GraphsKeyed n).map (fun p => p.2.2)
 
 /-- The empty-typed flags (quotient classes) of the generated graphs. -/
 def genEmptyTypedFlags (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
@@ -740,7 +757,7 @@ theorem genSym2GraphsDedup_complete {n : ℕ} (G : Sym2Graph n) :
 
 theorem genSym2Graphs_perm (n : ℕ) :
     genSym2Graphs n ~ genSym2GraphsDedup n := by
-  unfold genSym2Graphs
+  unfold genSym2Graphs genSym2GraphsKeyed
   have h := (List.perm_insertionSort (fun a b => graphKeyLe a.2 b.2 = true)
     ((genSym2GraphsDedup n).map (fun G => (G, graphKey G)))).map Prod.fst
   rw [List.map_map] at h
@@ -850,8 +867,8 @@ def minTuple (ts : List (List ℕ)) : List ℕ :=
 order. Each entry is `(underlyingGraphIdx, canonicalUnderlyingEdges, typeIndices,
 coeffNum, coeffDen)` with the downward coefficient `coeffNum / coeffDen` reduced. -/
 def genFlagData (k m n : ℕ) : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat) :=
-  let graphsN := (genSym2Graphs n).map canonicalEdgeList
-  let sEdges := ((genSym2Graphs k).map canonicalEdgeList).getD m []
+  let graphsN := genCanonicalEdgeLists n
+  let sEdges := (genCanonicalEdgeLists k).getD m []
   let descF := Nat.descFactorial n k
   (List.range graphsN.length).flatMap (fun j =>
     let eEdges := graphsN.getD j []
