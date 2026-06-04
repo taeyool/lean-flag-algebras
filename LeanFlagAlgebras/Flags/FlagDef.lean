@@ -11,8 +11,11 @@ class — at elaboration time, with completeness (`… = Finset.univ`) discharge
 the mathematically-proved `genEmptyTypedFlagSet_eq_univ` rather than by
 enumerating the entire quotient `Fintype`.
 
-The typed flags are still loaded from the precomputed JSON produced by the Python
-script `generate_flags.py` (`Flags/*.json`) via `load_flags`.
+The general typed flags (type σ the `m`-th `k`-vertex graph) are produced
+analogously by `generate_flags k m n`: it evaluates the self-contained Lean
+enumeration `genFlagData k m n` — one orbit representative per flag, in the
+canonical order — at elaboration time, synthesizing the same named constants the
+old JSON loader (`load_flags`) did, with no JSON file read.
 
 Each line synthesizes named constants/theorems at elaboration time. Generated
 names use the `_<n>_<k>_<m>_<i>` suffix convention: `n` vertices; `k`,`m` describe
@@ -29,24 +32,24 @@ generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_empty_typed_flags 5
 
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_1_1_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_2_1_0.json"
+generate_flags 1 0 1
+generate_flags 1 0 2
 
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_3_1_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_3_2_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_3_2_1.json"
+generate_flags 1 0 3
+generate_flags 2 0 3
+generate_flags 2 1 3
 
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_2_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_2_1.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_1.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_2.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_4_3_3.json"
+generate_flags 2 0 4
+generate_flags 2 1 4
+generate_flags 3 0 4
+generate_flags 3 1 4
+generate_flags 3 2 4
+generate_flags 3 3 4
 
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_0.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_1.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_2.json"
-load_flags "LeanFlagAlgebras/Flags/Flags/flags_5_3_3.json"
+generate_flags 3 0 5
+generate_flags 3 1 5
+generate_flags 3 2 5
+generate_flags 3 3 5
 
 #print Sym2LabeledGraph_3_1_0_2
 #check downward_3_1_0_2
