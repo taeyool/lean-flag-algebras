@@ -41,6 +41,26 @@ open FlagAlgebras.Compute
 def mkEdgeFinset (n : ℕ) (l : List (Sym2 (Fin n))) : Finset (Sym2 (Fin n)) :=
   l.toFinset
 
+/-- Off-diagonal validity of `mkEdgeFinset n l` reduces to an off-diagonal check
+on the underlying *list* `l`, since `mkEdgeFinset n l = l.toFinset` and membership
+in `l.toFinset` is membership in `l`.
+
+The generated `Sym2Graph`/`Sym2FlagType`/`Sym2LabeledGraph` definitions use this to
+discharge `edges_valid` with a *structural* per-edge proof
+(`mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])`):
+`fin_cases` splits the finitely-many list entries and `simp` rewrites each via
+`isDiag_iff_proj_eq`, yielding a compact proof term the kernel checks cheaply.
+This replaces `edges_valid := by decide`, where the kernel must re-run the full
+`Decidable` reduction (the `decide` whnf) to verify `of_decide_eq_true (Eq.refl true)`
+— paid once in the elaborator and again in kernel type-checking. On the n = 6 worst
+case (156 graphs) the switch cut `decide` tactic execution ~9× and roughly halved
+kernel type-checking for these definitions. -/
+theorem mkEdgeFinset_diag_free {n : ℕ} {l : List (Sym2 (Fin n))}
+    (h : ∀ e ∈ l, ¬ e.IsDiag) : ∀ e ∈ mkEdgeFinset n l, ¬ e.IsDiag := by
+  intro e he
+  simp only [mkEdgeFinset, List.mem_toFinset] at he
+  exact h e he
+
 /-- Build the term defining the type embedding `i ↦ typeIndices[i]` as a nested
 `if i.1 = j then … else …` chain, used in the generated `type_embed` field. -/
 def mkTypeIndexNatExpr (typeIndices : Array Nat) : CommandElabM (TSyntax `term) := do
@@ -127,7 +147,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
       elabCommand (← `(
         def $graphName : Sym2Graph $(Quote.quote n) where
           edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
-          edges_valid := by decide
+          edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
       ))
 
     let env ← getEnv
@@ -302,7 +322,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     elabCommand (← `(
       def $typeName : Sym2FlagType $(Quote.quote k) where
         edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
-        edges_valid := by decide
+        edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
     ))
 
   let env ← getEnv
@@ -334,7 +354,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
       elabCommand (← `(
         def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
           edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
-          edges_valid := by decide
+          edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
           type_embed := by
             let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
               ⟨
