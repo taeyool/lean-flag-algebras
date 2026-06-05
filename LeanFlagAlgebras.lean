@@ -28,7 +28,7 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.Downward
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
 -- Flags
-import LeanFlagAlgebras.Flags.FlagLoader
+import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.Flags.Densities.DensityLoader
 import LeanFlagAlgebras.Flags.Densities.MulLoader

@@ -1,11 +1,11 @@
-import LeanFlagAlgebras.Flags.FlagLoader
+import LeanFlagAlgebras.Flags.FlagGenerator
 
 /-! # Flag data instantiation
 
 This module is the entry point of the Flags data pipeline on the Lean side.
 
 The empty-typed flags (type ∅ₜ) are produced by `generate_empty_typed_flags n`,
-a self-contained Lean enumeration (`FlagLoader.lean` / `Compute/Generate.lean`):
+a self-contained Lean enumeration (`FlagGenerator.lean` / `Compute/Generate.lean`):
 it evaluates `genSym2Graphs n` — one canonical representative per isomorphism
 class — at elaboration time, with completeness (`… = Finset.univ`) discharged by
 the mathematically-proved `genEmptyTypedFlagSet_eq_univ` rather than by
