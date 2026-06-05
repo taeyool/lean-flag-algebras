@@ -12,7 +12,7 @@ definitions and theorems, with no external JSON input:
   representative per isomorphism class of `n`-vertex graphs) at elaboration time
   and synthesizes, for each graph `i`, the constants `Sym2Graph_n_0_0_i`,
   `Sym2Flag_n_0_0_i`, `Flag_n_0_0_i`, `FlagAlgebra_n_0_0_i` (empty type ∅ₜ), plus
-  the finset/`= univ` lemmas `Sym2FlagSet_n_0_0`, `flagSet_n_0_0`,
+  the finset/`= univ` lemmas `sym2FlagSet_n_0_0`, `flagSet_n_0_0`,
   `flagSet_n_0_0_val_eq`, `flagSet_n_0_0_eq_univ`.
 * `generate_flags k m n` evaluates `genFlagData k m n` (the enumerated flags of
   the type σ given by the `k`-vertex graph with index `m`, in canonical order) at
@@ -185,7 +185,7 @@ def emitFlagSetMachinery
 -- `genSym2Graphs n` (one canonical representative per isomorphism class) at
 -- elaboration time and synthesize the named constants `Sym2Graph_n_0_0_i`,
 -- `Sym2Flag_n_0_0_i`, `Flag_n_0_0_i`, `FlagAlgebra_n_0_0_i`, the finset defs and
--- the `… = Finset.univ` lemmas. `Sym2FlagSet_n_0_0_eq_univ` is discharged by the
+-- the `… = Finset.univ` lemmas. `sym2FlagSet_n_0_0_eq_univ` is discharged by the
 -- mathematically-proved completeness theorem `genEmptyTypedFlagSet_eq_univ`
 -- (bridged to the named list by a single cheap `native_decide` over the explicit
 -- flag enumeration) rather than a `native_decide` over the entire quotient
@@ -229,8 +229,8 @@ elab "generate_empty_typed_flags" nStx:num : command => do
           ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
-  let setName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_0_0")
-  let setEqUnivName := mkIdent (Name.mkSimple s!"Sym2FlagSet_{n}_0_0_eq_univ")
+  let setName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_0_0")
+  let setEqUnivName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_0_0_eq_univ")
   let flagTerms : Array (TSyntax `term) :=
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}") : TSyntax `term))
