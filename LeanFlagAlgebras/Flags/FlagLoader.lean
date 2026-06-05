@@ -359,16 +359,13 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
                 (fun i : Fin $(Quote.quote k) =>
                   ⟨$idxNatExpr, by
                     fin_cases i <;> decide⟩),
-                by
-                  intro a b h
-                  fin_cases a <;> fin_cases b <;> simp at h ⊢
+                by decide
               ⟩
             have hmap : ∀ u v,
                 (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
                 ↔
                 (SimpleGraph.fromEdgeSet ((($typeTerm).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
-              intro u v
-              fin_cases u <;> fin_cases v <;> decide
+              decide
             refine ⟨e, ?_⟩
             exact hmap _ _
       ))
