@@ -113,6 +113,74 @@ def natPairsToEdgesTerm (numVerts : ℕ) (edges : List (Nat × Nat)) :
         ($(Quote.quote uv.2) : Fin $(Quote.quote numVerts))))
   `([ $terms,* ])
 
+/-- Elaborate `cmd` only when `name` is not already declared, so re-running a
+`generate_*` line is a no-op (the macros stay idempotent). Replaces the repeated
+`let env ← getEnv; if ¬ env.contains … then elabCommand …` guard at every
+generated declaration. -/
+def elabUnlessDefined (name : Name) (cmd : Syntax) : CommandElabM Unit := do
+  if ¬ (← getEnv).contains name then
+    elabCommand cmd
+
+/-- Emit the three declarations that bridge a finset of `Sym2*Flag`s to the
+corresponding finset of `Flag`s, shared verbatim by both generator macros:
+
+* `flagSet …` — the image of the `Sym2*Flag` finset (`setName`) under `toFlag`;
+* `flagSet …_val_eq` — its underlying multiset equals the explicit `Flag` list;
+* `flagSet …_eq_univ` — completeness, from `setEqUnivName` and surjectivity of
+  `toFlag`.
+
+The two macros differ only in the flag element type (`flagElemType`), the flag
+type tag (`flagType`), the `toFlag` map and its injectivity proof (`toFlagFn` /
+`toFlagInj`), the surjectivity witness (`surjWitness`), and the `Nodup` proof of
+the flag list (`nodupProof`); the dedup/`Quot.sound` value-lemma argument and the
+`Finset.map_univ_of_surjective` completeness argument are identical. Each
+declaration is emitted through `elabUnlessDefined`, so the macros stay idempotent. -/
+def emitFlagSetMachinery
+    (n : ℕ)
+    (flagType flagElemType toFlagFn toFlagInj surjWitness nodupProof : TSyntax `term)
+    (flagTerms flagBridgeTerms : Array (TSyntax `term))
+    (setName setEqUnivName flagSetName flagSetValEqName flagSetEqUnivName : Ident) :
+    CommandElabM Unit := do
+  elabUnlessDefined flagSetName.getId (← `(
+      def $flagSetName :=
+        Finset.map { toFun := $toFlagFn, inj' := $toFlagInj } $setName
+    ))
+
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagType $(Quote.quote n))).val =
+            [ $flagBridgeTerms,* ]) := by
+        have hnodup :
+            ([ $flagTerms,* ] : List $flagElemType).Nodup := $nodupProof
+        have hdedup :
+            ([ $flagTerms,* ] : List $flagElemType).dedup
+              = ([ $flagTerms,* ] : List $flagElemType) := by
+          exact List.Nodup.dedup hnodup
+        have hright :
+            (List.map $toFlagFn ([ $flagTerms,* ] : List $flagElemType))
+              = [ $flagBridgeTerms,* ] := by
+          rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map $toFlagFn
+              (([ $flagTerms,* ] : List $flagElemType).dedup)
+                = [ $flagBridgeTerms,* ] := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
+  elabUnlessDefined flagSetEqUnivName.getId (← `(
+      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
+        change
+          Finset.map { toFun := $toFlagFn, inj' := $toFlagInj } $setName
+            = Finset.univ
+        have hs : $setName = Finset.univ := $setEqUnivName
+        rw [hs]
+        exact Finset.map_univ_of_surjective (f :=
+          { toFun := $toFlagFn, inj' := $toFlagInj })
+          $surjWitness
+    ))
+
 -- `generate_empty_typed_flags n`: evaluate the self-contained Lean enumeration
 -- `genSym2Graphs n` (one canonical representative per isomorphism class) at
 -- elaboration time and synthesize the named constants `Sym2Graph_n_0_0_i`,
@@ -141,30 +209,22 @@ elab "generate_empty_typed_flags" nStx:num : command => do
     let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{i}")
     let edgesTerm ← natPairsToEdgesTerm n edgePairs
 
-    let env ← getEnv
-    if ¬ env.contains graphName.getId then
-      elabCommand (← `(
+    elabUnlessDefined graphName.getId (← `(
         def $graphName : Sym2Graph $(Quote.quote n) where
           edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
           edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagName.getId (← `(
         def $flagName : Sym2EmptyTypedFlag $(Quote.quote n) :=
           Quotient.mk (Sym2GraphSetoid $(Quote.quote n)) $graphName
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagBridgeName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagBridgeName.getId (← `(
         def $flagBridgeName := ($flagName : Sym2EmptyTypedFlag $(Quote.quote n)).toFlag
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagAlgebraName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
           ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
@@ -176,9 +236,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}") : TSyntax `term))
   let flagListEqName := mkIdent (Name.mkSimple s!"Sym2FlagList_{n}_0_0_eq")
 
-  let env ← getEnv
-  if ¬ env.contains setName.getId then
-    elabCommand (← `(
+  elabUnlessDefined setName.getId (← `(
       def $setName : Finset (Sym2EmptyTypedFlag $(Quote.quote n)) :=
         ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
     ))
@@ -192,18 +250,14 @@ elab "generate_empty_typed_flags" nStx:num : command => do
   -- that removes the quadratic blowup and keeps the bridge tractable at `n = 7`
   -- (g = 1044). Both completeness lemmas below rewrite through it, then close via
   -- the math theorems on `genEmptyTypedFlags`.
-  let env ← getEnv
-  if ¬ env.contains flagListEqName.getId then
-    elabCommand (← `(
+  elabUnlessDefined flagListEqName.getId (← `(
       theorem $flagListEqName :
           ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n)))
             = FlagAlgebras.Compute.genEmptyTypedFlags $(Quote.quote n) := by
         native_decide
     ))
 
-  let env ← getEnv
-  if ¬ env.contains setEqUnivName.getId then
-    elabCommand (← `(
+  elabUnlessDefined setEqUnivName.getId (← `(
       theorem $setEqUnivName : $setName = Finset.univ := by
         have h : $setName = FlagAlgebras.Compute.genEmptyTypedFlagSet $(Quote.quote n) := by
           have hfl := $flagListEqName
@@ -222,56 +276,20 @@ elab "generate_empty_typed_flags" nStx:num : command => do
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}") : TSyntax `term))
 
-  let env ← getEnv
-  if ¬ env.contains flagSetName.getId then
-    elabCommand (← `(
-      def $flagSetName :=
-        Finset.map { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective } $setName
-    ))
-
-  let env ← getEnv
-  if ¬ env.contains flagSetValEqName.getId then
-    elabCommand (← `(
-      theorem $flagSetValEqName :
-          (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val =
-            [ $flagBridgeTerms,* ]) := by
-        have hnodup :
-            ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
-          have hfl := $flagListEqName
-          rw [hfl]
-          exact FlagAlgebras.Compute.genEmptyTypedFlags_nodup $(Quote.quote n)
-        have hdedup :
-            ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
-              = ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) := by
-          exact List.Nodup.dedup hnodup
-        have hright :
-            (List.map Sym2EmptyTypedFlag.toFlag ([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))))
-              = [ $flagBridgeTerms,* ] := by
-          rfl
-        refine Quot.sound ?_
-        have heq :
-            List.map Sym2EmptyTypedFlag.toFlag
-              (([ $flagTerms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup)
-                = [ $flagBridgeTerms,* ] := by
-          simpa [hdedup] using hright
-        exact heq ▸ List.Perm.refl _
-    ))
-
-  let env ← getEnv
-  if ¬ env.contains flagSetEqUnivName.getId then
-    elabCommand (← `(
-      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
-        change
-          Finset.map { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective } $setName
-            = Finset.univ
-        have hs : $setName = Finset.univ := $setEqUnivName
-        rw [hs]
-        exact Finset.map_univ_of_surjective (f :=
-          { toFun := Sym2EmptyTypedFlag.toFlag, inj' := Sym2EmptyTypedFlag.toFlag_injective })
-          (by
-            intro F
-            exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩)
-    ))
+  emitFlagSetMachinery n
+    (← `(∅ₜ))
+    (← `(Sym2EmptyTypedFlag $(Quote.quote n)))
+    (← `(Sym2EmptyTypedFlag.toFlag))
+    (← `(Sym2EmptyTypedFlag.toFlag_injective))
+    (← `(by
+        intro F
+        exact ⟨F.toSym2EmptyTypedFlag, FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq F⟩))
+    (← `(by
+        have hfl := $flagListEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.genEmptyTypedFlags_nodup $(Quote.quote n)))
+    flagTerms flagBridgeTerms
+    setName setEqUnivName flagSetName flagSetValEqName flagSetEqUnivName
 
   logInfo s!"Generated {count} empty-typed flags as `Sym2Flag_{n}_0_0_i` (n = {n})."
 
@@ -314,18 +332,14 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
   let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{m}")
   let flagTypeName := mkIdent (Name.mkSimple s!"FlagType_{k}_{m}")
 
-  let env ← getEnv
-  if ¬ env.contains typeName.getId then
-    let typeEdgesTerm ← natPairsToEdgesTerm k typeEdges
-    elabCommand (← `(
+  let typeEdgesTerm ← natPairsToEdgesTerm k typeEdges
+  elabUnlessDefined typeName.getId (← `(
       def $typeName : Sym2FlagType $(Quote.quote k) where
         edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
         edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
     ))
 
-  let env ← getEnv
-  if ¬ env.contains flagTypeName.getId then
-    elabCommand (← `(
+  elabUnlessDefined flagTypeName.getId (← `(
       def $flagTypeName := (($typeName : Sym2FlagType $(Quote.quote k))).toFlagType
     ))
 
@@ -347,9 +361,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     let edgesTerm ← natPairsToEdgesTerm n graphEdges
     let idxNatExpr ← mkTypeIndexNatExpr typeIndices.toArray
 
-    let env ← getEnv
-    if ¬ env.contains labeledName.getId then
-      elabCommand (← `(
+    elabUnlessDefined labeledName.getId (← `(
         def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
           edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
           edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
@@ -370,22 +382,16 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
             exact hmap _ _
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagName.getId (← `(
         def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
           Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagBridgeName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagBridgeName.getId (← `(
         def $flagBridgeName := ($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag
       ))
 
-    let env ← getEnv
-    if ¬ env.contains flagAlgebraName.getId then
-      elabCommand (← `(
+    elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
           ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
@@ -399,17 +405,13 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     let baseFlagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{underlyingIdx}")
     let baseFlagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{underlyingIdx}")
 
-    let env ← getEnv
-    if ¬ env.contains unlabelThmName.getId then
-      elabCommand (← `(
+    elabUnlessDefined unlabelThmName.getId (← `(
         @[simp]
         theorem $unlabelThmName : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName := by
           exact Quotient.sound (FlagAlgebras.flagEqv.refl _)
       ))
 
-    let env ← getEnv
-    if ¬ env.contains downwardThmName.getId then
-      elabCommand (← `(
+    elabUnlessDefined downwardThmName.getId (← `(
         @[simp]
         theorem $downwardThmName
             : ⟦$flagAlgebraName⟧₀ = $coeffR • $baseFlagAlgebraName
@@ -432,9 +434,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}") : TSyntax `term))
 
-  let env ← getEnv
-  if ¬ env.contains setName.getId then
-    elabCommand (← `(
+  elabUnlessDefined setName.getId (← `(
       def $setName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
     ))
@@ -445,9 +445,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
   -- a `native_decide` that materialises `Finset.univ : Finset (Sym2Flag …)` via the
   -- full `Fintype (Sym2LabeledGraph σ n)` enumeration over all `2 ^ (C(n,2)+n)`
   -- edge subsets × embeddings.
-  let env ← getEnv
-  if ¬ env.contains setEqUnivName.getId then
-    elabCommand (← `(
+  elabUnlessDefined setEqUnivName.getId (← `(
       theorem $setEqUnivName : $setName = Finset.univ := by
         have h : $setName = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n) := by
           native_decide
@@ -462,53 +460,16 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     (List.range count).toArray.map (fun i =>
       (mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}") : TSyntax `term))
 
-  let env ← getEnv
-  if ¬ env.contains flagSetName.getId then
-    elabCommand (← `(
-      def $flagSetName :=
-        Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } $setName
-    ))
-
-  let env ← getEnv
-  if ¬ env.contains flagSetValEqName.getId then
-    elabCommand (← `(
-      theorem $flagSetValEqName :
-          (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val =
-            [ $flagBridgeTerms,* ]) := by
-        have hnodup :
-            ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          native_decide
-        have hdedup :
-            ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
-              = ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) := by
-          exact List.Nodup.dedup hnodup
-        have hright :
-            (List.map Sym2Flag.toFlag ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))))
-              = [ $flagBridgeTerms,* ] := by
-          rfl
-        refine Quot.sound ?_
-        have heq :
-            List.map Sym2Flag.toFlag
-              (([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup)
-                = [ $flagBridgeTerms,* ] := by
-          simpa [hdedup] using hright
-        exact heq ▸ List.Perm.refl _
-    ))
-
-  let env ← getEnv
-  if ¬ env.contains flagSetEqUnivName.getId then
-    elabCommand (← `(
-      theorem $flagSetEqUnivName : $flagSetName = Finset.univ := by
-        change
-          Finset.map { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective } $setName
-            = Finset.univ
-        have hs : $setName = Finset.univ := $setEqUnivName
-        rw [hs]
-        exact Finset.map_univ_of_surjective (f :=
-          { toFun := Sym2Flag.toFlag, inj' := Sym2Flag.toFlag_injective })
-          (by
-            intro F
-            exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩)
-    ))
+  emitFlagSetMachinery n
+    (← `($flagTypeName))
+    (← `(Sym2Flag $typeTerm $(Quote.quote n)))
+    (← `(Sym2Flag.toFlag))
+    (← `(Sym2Flag.toFlag_injective))
+    (← `(by
+        intro F
+        exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩))
+    (← `(by native_decide))
+    flagTerms flagBridgeTerms
+    setName setEqUnivName flagSetName flagSetValEqName flagSetEqUnivName
 
   logInfo s!"Generated `{typeName.getId}` and {count} flags as `Sym2Flag_{n}_{k}_{m}_i` (no JSON)."
