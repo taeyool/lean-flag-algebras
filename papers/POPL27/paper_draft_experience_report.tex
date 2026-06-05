@@ -1273,52 +1273,41 @@ so that each subsequent proof can work directly at the algebra level.
 
 \subsection{Types and Flags in Lean}
 
-Section~\ref{sec:background} defines a $\sigma$-flag as a concrete pair
-$(M,\theta_A)$ and collects their isomorphism classes into $\mathcal{F}^\sigma_n$ where
-$n = |V(M)|$.
-The Lean implementation mirrors this two-level structure: \lean{LabeledGraph}
-is the concrete pair, and \lean{Flag} is its quotient by labeled-graph
-isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$. \gw{I'm here.}
+Informally, a concrete pair $(M,\theta_A)$ and its isomorphism class are
+freely identified, both called a flag and denoted by the same symbol.  In Lean, however, the two must be distinct types.  \lean{LabeledGraph}
+is the concrete pair $(M,\theta_A)$, and \lean{Flag} is its
+quotient by flag isomorphism, corresponding to an element of
+$\mathcal{F}^\sigma_n$ where $n = |V(M)|$. \gw{I'm here.}
 
-The finite set $[k]$ is represented by \lean{Fin k}, and Mathlib's
-\lean{SimpleGraph V} is the type of simple undirected graphs with vertex type
-\lean{V}.  A flag type $\sigma$ of size $k$ is therefore a
-\lean{SimpleGraph (Fin k)}; the abbreviation
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
-\end{lstlisting}
-gives it a more suggestive name without introducing a new structure.  In Lean,
-\lean{abbrev} declares a definition that the type-checker treats as a
-transparent alias, roughly analogous to a reducible \lean{Definition} in Rocq.
-Before quotienting, a concrete $\sigma$-flag is:
-\begin{lstlisting}
-structure LabeledGraph (sigma : FlagType T) (V : Type) where
-  graph      : SimpleGraph V
-  type_embed : sigma ->g graph
-\end{lstlisting}
-The field \lean{type\_embed} is a Mathlib graph embedding (written \lean{->g}
-in the source): an injective vertex map that both preserves and reflects
-adjacency.  Its image is an induced copy of $\sigma$, exactly the labeling map
-$\theta_A$ in a flag $A = (G, \theta_A)$.
 
-Two \lean{LabeledGraph} values represent the same flag when there is a graph
-isomorphism between their ambient graphs that commutes with both embeddings of
-$\sigma$.  This is the setoid \lean{labeledGraphSetoid}, and the flag type is
-its quotient:
-\begin{lstlisting}
-def Flag (sigma : FlagType T) (V : Type) : Type :=
-  Quotient (labeledGraphSetoid sigma V)
+structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
+  graph      : SimpleGraph V
+  type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
-This design follows Razborov's original presentation, in which flags are
-isomorphism classes from the outset.  The alternative---choosing a canonical
-representative for each isomorphism class---is common in computational
-implementations and avoids quotient eliminators entirely.  We did not take that
-route because it would attach representation-specific side conditions to every
-algebraic lemma.  The cost of working with quotients is instead a recurring
-proof obligation: in Lean, every function \emph{from} a quotient type must be
-constructed via \lean{Quotient.lift}, which requires an explicit proof that the
-function respects the equivalence relation.  We say more about the cost of
-this choice in Section~\ref{sec:obstacles}.
+Mathlib's \lean{SimpleGraph V} is the type of simple graphs with vertex type
+\lean{V}.  Since the type $\sigma$ of Section~\ref{sec:background} is itself a
+graph, \lean{FlagType} is an abbreviation for \lean{SimpleGraph}.
+\lean{LabeledGraph} is the concrete pair $(M,\theta_A)$: \lean{graph} is $M$
+and \lean{type\_embed} is $\theta_A$ (a graph embedding
+$\sigma \hookrightarrow$\texttt{g} $\mathtt{graph}$: an injective vertex map that preserves
+and reflects adjacency).
+
+Two \lean{LabeledGraph} values represent the same flag when there is a
+\lean{LabeledGraphIso} between them:
+\begin{lstlisting}
+structure LabeledGraphIso (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+  graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
+  type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
+
+def Flag ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
+  Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
+\end{lstlisting}
+The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
+and \lean{type\_preserve} encodes the commutativity condition $\alpha \circ
+\theta_A = \theta_{A'}$ from Section~\ref{sec:background}.
+\lean{Flag} is the quotient of \lean{LabeledGraph} by this equivalence relation.
 
 Unlike Section~\ref{sec:background}, neither \lean{LabeledGraph} nor
 \lean{Flag} carries the $\mathcal{H}$-free condition: the underlying graphs are
@@ -1330,11 +1319,11 @@ Expansion identities and products range over auxiliary sizes, and the final
 algebraic element must be shown independent of those auxiliary choices.  Two
 thin wrappers make the ambient vertex count explicit:
 \begin{lstlisting}
-abbrev FlagWithSize (sigma : FlagType (Fin n0)) (n : N) :=
-  Flag sigma (Fin n)
+abbrev FlagWithSize ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) (n : (*@$\mathbb{N}$@*)) :=
+  Flag (*@$\sigma$@*) (Fin n)
 
-def FinFlag (sigma : FlagType (Fin n0)) : Type :=
-  Sigma (fun n : N => FlagWithSize sigma n)
+def FinFlag ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+  (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), FlagWithSize (*@$\sigma$@*) n
 \end{lstlisting}
 Here \lean{Sigma} is Lean's dependent pair type (written \lean{sigT} in Rocq).
 \lean{FlagWithSize sigma n} implements $\mathcal{F}^\sigma_n$, and
