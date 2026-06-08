@@ -1272,62 +1272,60 @@ proved compatible with the relevant equivalence relations and algebraic
 operations.  This section establishes those maps and their compatibility theorems once,
 so that each subsequent proof can work directly at the algebra level.
 
-\subsection{Types and Flags in Lean}
+\subsection{Flag Types and Flags}
 
 Informally, the word \emph{flag} refers both to a concrete pair $(M,\theta_A)$
 and to its isomorphism class.  In Lean, however, the two must be distinct types.  We define \lean{LabeledGraph}
 for the concrete pair $(M,\theta_A)$ and \lean{Flag} for its quotient by flag
-isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V(M)|$. \gw{I'm here.}
+isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V(M)|$.
 
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
 
-structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
+structure LabeledGraph {T : Type} ((*@$\sigma$@*) : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
-The structure \lean{LabeledGraph} takes the flag type $\sigma$ and a vertex type \lean{V} as parameters, and encodes a concrete $\sigma$-flag $(M,\theta_A)$. Here, \lean{FlagType T} is the Lean type of $\sigma$---concretely, \lean{SimpleGraph T}, so $\sigma$ is a simple graph with label set \lean{T}. The field \lean{graph} stores the graph $M$, and \lean{type\_embed} records the graph embedding $\theta_A$.
+The structure \lean{LabeledGraph} takes the flag type $\sigma$ and a vertex type \lean{V} as parameters, and encodes a concrete $\sigma$-flag $(M,\theta_A)$. \lean{FlagType T} is the type of $\sigma$, i.e., simple graphs with vertex type \lean{T}. The field \lean{graph} stores the underlying graph $M$, and \lean{type\_embed} records the graph embedding $\theta_A$.
 
-Two \lean{LabeledGraph} values represent the same flag when there is a
-\lean{LabeledGraphIso} between them:
+We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
+two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
+quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
-structure LabeledGraphIso (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+structure LabeledGraphIso {T : Type} (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
 
-def Flag ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
+def Flag {T : Type} ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
-and \lean{type\_preserve} encodes the commutativity condition $\alpha \circ
-\theta_A = \theta_{A'}$ from Section~\ref{sec:background}.
-\lean{Flag} is the quotient of \lean{LabeledGraph} by this equivalence relation.
+% The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
+% and \lean{type\_preserve} encodes the commutativity condition $\alpha \circ
+% \theta_A = \theta_{A'}$ from Section~\ref{sec:background}.
+Lean's quotient type requires a \emph{setoid}, which is a type explicitly
+equipped with an equivalence relation.  \lean{labeledGraphSetoid} serves this role, equipping
+\lean{LabeledGraph} with the equivalence relation induced by 
+\lean{LabeledGraphIso}.
 
-Unlike Section~\ref{sec:background}, neither \lean{LabeledGraph} nor
-\lean{Flag} carries the $\mathcal{H}$-free condition: the underlying graphs are
-arbitrary.  The $\mathcal{H}$-free assumption is deferred to the semantic
-predicate on the final unlabelled inequality, as described in the section
-introduction.
-
-Expansion identities and products range over auxiliary sizes, and the final
-algebraic element must be shown independent of those auxiliary choices.  Two
-thin wrappers make the ambient vertex count explicit:
+We can now define $\mathcal{F}^\sigma_n$ in Lean as \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)},
+abbreviated \lean{FlagWithSize}~$\sigma$~$n$.  \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
+\bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each element is a pair
+$(n, F)$ where $n$ records the size and $F$ is the $\sigma$-flag of that size.
 \begin{lstlisting}
-abbrev FlagWithSize ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) (n : (*@$\mathbb{N}$@*)) :=
+abbrev FlagWithSize {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) (n : (*@$\mathbb{N}$@*)) :=
   Flag (*@$\sigma$@*) (Fin n)
 
-def FinFlag ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), FlagWithSize (*@$\sigma$@*) n
 \end{lstlisting}
-Here \lean{Sigma} is Lean's dependent pair type (written \lean{sigT} in Rocq).
-\lean{FlagWithSize sigma n} implements $\mathcal{F}^\sigma_n$, and
-\lean{FinFlag sigma} is the all-size disjoint union that serves as the basis
-of the free vector space.  The first component of a \lean{FinFlag} records the
-ambient size; later quotient theorems prove that the algebraic element it
-represents is independent of whichever auxiliary size was chosen in
-intermediate computations.
 
-\subsection{Densities as Sampling Semantics}
+Unlike Section~\ref{sec:background}, none of the definitions above carries the
+$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  The
+$\mathcal{H}$-free assumption is deferred to the semantic predicate on the
+final unlabeled inequality, as described in the section introduction.
+\gw{This sentence needs revision.} \gw{I'm here.}
+
+\subsection{Subflag Densities}
 
 The next viewpoint is probabilistic.  A density $\den{F}{G}$ is the value of a
 finite sampling experiment: keep the type vertices fixed, sample the remaining
