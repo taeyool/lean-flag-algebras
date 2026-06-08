@@ -1,4 +1,4 @@
-% =========================================================================
+﻿% =========================================================================
 % DRAFT: experience-report framing.  Uses \documentclass{article} for local
 % compilation.  For POPL 2027 submission switch to:
 %   \documentclass[acmsmall,review,anonymous]{acmart}
@@ -470,7 +470,7 @@ fixed $\mathcal{H}$.
 % an unlabeling map transports labeled local reasoning back to ordinary
 % unlabeled graph statements.
 
-\subsection{Types and Flags}
+\subsection{Flag Types and Flags}
 
 % The first move in a flag algebra proof is to look at a large graph from the
 % perspective of a small labeled configuration.  This is what lets the method use
@@ -479,13 +479,15 @@ fixed $\mathcal{H}$.
 % vertex or a distinguished edge.  Types and flags are the notation for these
 % local views.
 
-\paragraph{Types.}
-A \emph{type} of size $k$ is an $\mathcal{H}$-free graph $\sigma$ with vertex set $[k]$.
-The \emph{empty type} $\emptyset$ (size $k=0$) is the unique graph on the
+\paragraph{Flag Types.}
+A \emph{flag type} of size $k$ is an $\mathcal{H}$-free graph $\sigma$ with vertex set $[k]$.
+The \emph{empty flag type} $\emptyset$ (size $k=0$) is the unique graph on the
 empty vertex set.
+We use the term \emph{flag type} rather than Razborov's original \emph{type}
+to avoid confusion with Lean's type system in later sections.
 
 \paragraph{Flags.}
-Fix a type $\sigma$ of size $k$.
+Fix a flag type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $A = (M, \theta_A)$ where $M$ is an
 $\mathcal{H}$-free finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_A)]$ via $\theta_A$
@@ -495,7 +497,7 @@ The vertices in $\operatorname{Im}(\theta_A)$ are called the \emph{labeled verti
 For a set $S \subseteq V(A)$ with $\operatorname{Im}(\theta_A) \subseteq S$,
 we write $A[S]$ for the $\sigma$-flag $(M[S], \theta_A)$ and call it the
 \emph{$\sigma$-flag induced by $A$ on $S$}.
-Note that flags over the empty type $\emptyset$ are just ordinary finite graphs.
+Note that flags over the empty flag type $\emptyset$ are just ordinary finite graphs.
 \Cref{fig:flag-examples} illustrates several flags of different types.
 
 Two $\sigma$-flags $(M_1,\theta_1)$ and $(M_2,\theta_2)$ are
@@ -600,7 +602,7 @@ $\mathcal{F}^\sigma$ itself is infinite.
     & & $C_5^\bullet$ \\
   \end{tabular}
   \caption{Examples of flags.  \emph{Top row}: $\emptyset$-flags (ordinary graphs)
-  of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the one-vertex type $\sigma$;
+  of sizes 2, 3, and 5.  \emph{Bottom row}: flags of the one-vertex flag type $\sigma$;
   the filled vertex is the labeled one.}
   \label{fig:flag-examples}
 \end{figure}
@@ -618,7 +620,7 @@ $\mathcal{F}^\sigma$ itself is infinite.
 % guesses, but rational numbers obtained by finite enumeration.
 
 \paragraph{Single-flag density.}
-Let $\sigma$ be a type of size $k$.  For a $\sigma$-flag $A$ of size $m$
+Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $A$ of size $m$
 (the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
 (the \emph{host flag}), the \emph{induced subflag density} (or simply \emph{density}) $\den{A}{G}$ is
 the probability that a uniformly random $(m-k)$-element subset of
@@ -701,7 +703,7 @@ When $n < m_1 + m_2 - k$, we set $\den{A_1,A_2}{G} := 0$ by convention.
 % This is the same kind of move one makes when quotienting
 % programs by an equational theory: the quotient removes representation choices
 % that should not affect observable behavior.
-Fix a type $\sigma$ of size $k$.
+Fix a flag type $\sigma$ of size $k$.
 The flag algebra $\mathcal{A}^\sigma$ is the algebraic structure in which
 \Cref{lem:chain-rule} holds by definition.
 Let
@@ -775,13 +777,13 @@ and the choice of representatives for $[A_1]$ and $[A_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
 respects isomorphism classes of the input flags.  Extending bilinearly to all
 of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
-The unit is the $\sigma$-flag $(\sigma, \operatorname{id}_{[k]})$ of size $k$,
+The unit of this algebra is the $\sigma$-flag $(\sigma, \operatorname{id}_{[k]})$ of size $k$,
 in which the underlying graph is $\sigma$ itself and every vertex is labeled;
 we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
 \begin{example}[Multiplication of $K_2^\bullet$ and $\overline{K_2}^\bullet$]
-  Let $\sigma$ be the one-vertex type.  Taking $\ell = 3$, the joint density
+  Let $\sigma$ be the one-vertex flag type.  Taking $\ell = 3$, the joint density
   $\den{\fKtwobull,\,\fbarKtwobull}{G}$ equals $\frac{1}{2}$ for each size-3
   $\sigma$-flag $G$ whose labeled vertex has degree exactly $1$:
   \[
@@ -830,7 +832,7 @@ converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
 equivalently, if $\lim_{n\to\infty}\den{A}{G_n}$ exists for every $\sigma$-flag $A$.
 
 \paragraph{Positive homomorphisms.}
-Fix a type $\sigma$.  A \emph{positive homomorphism} on
+Fix a flag type $\sigma$.  A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
 $\phi(A) \geq 0$ for every $\sigma$-flag $A$.  Thus $\phi$ assigns a real
@@ -865,7 +867,7 @@ are exactly the limiting objects of convergent sequences of $\sigma$-flags.
 \end{theorem}
 
 \paragraph{Semantic non-negativity cone and order.}
-For a fixed type $\sigma$, define the \emph{semantic non-negativity cone}
+For a fixed flag type $\sigma$, define the \emph{semantic non-negativity cone}
 \[
   \mathcal{C}^\sigma
   :=
@@ -968,7 +970,7 @@ $\mathcal{A}^\emptyset$ in a way that preserves semantic non-negativity
 (\Cref{thm:downward-nonneg}), so valid inequalities proved in a labeled algebra
 can be transferred to the unlabeled one.
 
-For a $\sigma$-flag $A=(G,\theta_A)$ of size $m$ (type of size $k$), let
+For a $\sigma$-flag $A=(G,\theta_A)$ of size $m$ (flag type of size $k$), let
 \[
   q_\sigma(A)
   \;:=\;
@@ -991,7 +993,7 @@ extended linearly to all of $\mathcal{A}^\sigma$.
 \paragraph{Random homomorphisms.}
 A positive homomorphism $\phi_0 \in \poshom{\emptyset}$ represents a limiting
 object for unlabeled graph sequences.  Given such a $\phi_0$ and a non-empty
-type $\sigma$, one can generate a \emph{random positive homomorphism} on
+flag type $\sigma$, one can generate a \emph{random positive homomorphism} on
 $\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
 limiting object.
 Whenever $\phi_0(\sigma) > 0$ (i.e., $\sigma$ has positive density as an unlabeled graph in the limiting object),
@@ -1011,15 +1013,14 @@ and $q_\sigma(\mathbf{1}_\sigma) > 0$ always.
 Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdot \rrbracket_\sigma$ maps $\mathcal{C}^\sigma$ to $\mathcal{C}$:
 
 \begin{theorem}[Razborov~{\cite{razborov2007flag}}]\label{thm:downward-nonneg}
-  For any type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$,
+  For any flag type $\sigma$ and any $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$,
   \[
     0 \;\leq\; \llbracket f \rrbracket_\sigma.
   \]
 \end{theorem}
 \begin{proof}[Proof sketch]
   Let $\phi_0 \in \poshom{\emptyset}$; we show $\phi_0(\llbracket f \rrbracket_\sigma) \geq 0$.
-  If $\phi_0(\sigma) = 0$, then the type $\sigma$
-  has zero density in the limiting object, and every $\sigma$-flag density also
+  If $\phi_0(\sigma) = 0$, then the flag type $\sigma$ has zero density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
   Otherwise, let $\boldsymbol{\phi}^\sigma$ be the ensemble rooted at $\phi_0$.
   Since $0 \leq_\sigma f$, every positive homomorphism on
@@ -1038,7 +1039,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
 \end{proof}
 
 A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically follows a fixed pattern:
-(1) exhibit $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some non-empty type $\sigma$
+(1) exhibit $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some non-empty flag type $\sigma$
 (e.g., a square $f = g^2$),
 (2) apply \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$, and
 (3) add $\llbracket f \rrbracket_\sigma$ to the zero-space expansion of $P$
@@ -1047,7 +1048,7 @@ The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
 We prove $\fKtwo \leq \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra.
-Let $\sigma$ be the one-vertex type.
+Let $\sigma$ be the one-vertex flag type.
 
 \textit{Step 1: A key inequality.}
 Since $0 \leq_\sigma (\fbarKtwobull - \fKtwobull)^2$,
@@ -1082,7 +1083,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 
 % \begin{corollary}[Razborov~{\cite{razborov2007flag}}]
 %   \label{thm:sdp-nonneg}
-%   For any type $\sigma$, elements $e_1,\ldots,e_r \in \mathcal{A}^\sigma$,
+%   For any flag type $\sigma$, elements $e_1,\ldots,e_r \in \mathcal{A}^\sigma$,
 %   and positive semidefinite matrix $Q \in \mathbb{R}^{r\times r}$,
 %   \[
 %     \Bigl\llbracket \sum_{i,j=1}^r Q_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma
@@ -1273,11 +1274,10 @@ so that each subsequent proof can work directly at the algebra level.
 
 \subsection{Types and Flags in Lean}
 
-Informally, a concrete pair $(M,\theta_A)$ and its isomorphism class are
-freely identified, both called a flag and denoted by the same symbol.  In Lean, however, the two must be distinct types.  \lean{LabeledGraph}
-is the concrete pair $(M,\theta_A)$, and \lean{Flag} is its
-quotient by flag isomorphism, corresponding to an element of
-$\mathcal{F}^\sigma_n$ where $n = |V(M)|$. \gw{I'm here.}
+Informally, the word \emph{flag} refers both to a concrete pair $(M,\theta_A)$
+and to its isomorphism class.  In Lean, however, the two must be distinct types.  We define \lean{LabeledGraph}
+for the concrete pair $(M,\theta_A)$ and \lean{Flag} for its quotient by flag
+isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V(M)|$. \gw{I'm here.}
 
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
@@ -1286,13 +1286,7 @@ structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
-Mathlib's \lean{SimpleGraph V} is the type of simple graphs with vertex type
-\lean{V}.  Since the type $\sigma$ of Section~\ref{sec:background} is itself a
-graph, \lean{FlagType} is an abbreviation for \lean{SimpleGraph}.
-\lean{LabeledGraph} is the concrete pair $(M,\theta_A)$: \lean{graph} is $M$
-and \lean{type\_embed} is $\theta_A$ (a graph embedding
-$\sigma \hookrightarrow$\texttt{g} $\mathtt{graph}$: an injective vertex map that preserves
-and reflects adjacency).
+The structure \lean{LabeledGraph} takes the flag type $\sigma$ and a vertex type \lean{V} as parameters, and encodes a concrete $\sigma$-flag $(M,\theta_A)$. Here, \lean{FlagType T} is the Lean type of $\sigma$---concretely, \lean{SimpleGraph T}, so $\sigma$ is a simple graph with label set \lean{T}. The field \lean{graph} stores the graph $M$, and \lean{type\_embed} records the graph embedding $\theta_A$.
 
 Two \lean{LabeledGraph} values represent the same flag when there is a
 \lean{LabeledGraphIso} between them:
