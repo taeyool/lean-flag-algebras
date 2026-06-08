@@ -62,15 +62,26 @@ theorem mkEdgeFinset_diag_free {n : ℕ} {l : List (Sym2 (Fin n))}
   exact h e he
 
 /-- Build the term defining the type embedding `i ↦ typeIndices[i]` as a nested
-`if i.1 = j then … else …` chain, used in the generated `type_embed` field. -/
-def mkTypeIndexNatExpr (typeIndices : Array Nat) : CommandElabM (TSyntax `term) := do
+`if i.1 = j then … else …` chain of `Fin n` *values*, used in the generated
+`type_embed` field.
+
+Each branch is `(⟨idx, by decide⟩ : Fin n)` — the bound proof `idx < n` is on a
+*concrete literal* (no free `i`), so the kernel checks a tiny `Nat.decLt`
+reduction per branch. This is the key to a cheap `type_embed`: the alternative —
+a single `ℕ`-valued chain wrapped as `⟨chain, by fin_cases i <;> decide⟩` /
+`⟨chain, by split_ifs <;> decide⟩` — forces the kernel to verify the bound for
+the *symbolic* `i`, which empirically dominates kernel type-checking (~13s of the
+~17s for a 72-flag size-5 line) regardless of the tactic used. Pushing `Fin.mk`
+into the branches removes that symbolic obligation entirely. -/
+def mkTypeIndexFinExpr (typeIndices : Array Nat) (n : ℕ) : CommandElabM (TSyntax `term) := do
   if _h : typeIndices.size = 0 then
     throwError "type_indices must be nonempty"
   let lastIdx := typeIndices[typeIndices.size - 1]!
-  let mut acc : TSyntax `term := ← `($(Quote.quote lastIdx))
+  let mut acc : TSyntax `term :=
+    ← `((⟨$(Quote.quote lastIdx), by decide⟩ : Fin $(Quote.quote n)))
   for j in (List.range (typeIndices.size - 1)).reverse do
     let idx := typeIndices[j]!
-    acc ← `(if i.1 = $(Quote.quote j) then $(Quote.quote idx) else $acc)
+    acc ← `(if i.1 = $(Quote.quote j) then (⟨$(Quote.quote idx), by decide⟩ : Fin $(Quote.quote n)) else $acc)
   pure acc
 
 /-- Build a `Rat` term from a `(numerator, denominator)` coefficient pair. -/
@@ -350,8 +361,6 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     let underlyingIdx := entry.1
     let graphEdges := entry.2.1
     let typeIndices := entry.2.2.1
-    let coeffNum := entry.2.2.2.1
-    let coeffDen := entry.2.2.2.2
 
     let labeledName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}")
     let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
@@ -359,7 +368,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{m}_{i}")
 
     let edgesTerm ← natPairsToEdgesTerm n graphEdges
-    let idxNatExpr ← mkTypeIndexNatExpr typeIndices.toArray
+    let idxFinExpr ← mkTypeIndexFinExpr typeIndices.toArray n
 
     elabUnlessDefined labeledName.getId (← `(
         def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
@@ -368,9 +377,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
           type_embed := by
             let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
               ⟨
-                (fun i : Fin $(Quote.quote k) =>
-                  ⟨$idxNatExpr, by
-                    fin_cases i <;> decide⟩),
+                (fun i : Fin $(Quote.quote k) => $idxFinExpr),
                 by decide
               ⟩
             have hmap : ∀ u v,
@@ -396,20 +403,55 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
           ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
-    let coeffQ ← coeffQTerm coeffNum coeffDen
-    let coeffR ← `(($coeffQ : ℝ))
-
-    let downwardThmName := mkIdent (Name.mkSimple s!"downward_{n}_{k}_{m}_{i}")
     let unlabelThmName := mkIdent (Name.mkSimple s!"unlabel_{n}_{k}_{m}_{i}")
-
     let baseFlagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{underlyingIdx}")
-    let baseFlagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{underlyingIdx}")
 
     elabUnlessDefined unlabelThmName.getId (← `(
         @[simp]
         theorem $unlabelThmName : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName := by
           exact Quotient.sound (FlagAlgebras.flagEqv.refl _)
       ))
+
+  -- Batch the per-flag downward normalizing factors into ONE `native_decide`
+  -- (previously one `native_decide` *per flag*, i.e. `count` compile-to-native
+  -- invocations). Each `downward_…_i` below extracts its own factor from this
+  -- single list equality by cheap kernel reduction (`List.getD`), so the whole
+  -- `generate_flags` call compiles a decision procedure to native code once.
+  let downwardFactorsEqName := mkIdent (Name.mkSimple s!"downwardFactors_{n}_{k}_{m}_eq")
+  let mut dnfTerms : Array (TSyntax `term) := #[]
+  let mut coeffTerms : Array (TSyntax `term) := #[]
+  for i in [0:count] do
+    let entry := flagData[i]!
+    let coeffNum := entry.2.2.2.1
+    let coeffDen := entry.2.2.2.2
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
+    dnfTerms := dnfTerms.push (←
+      `(FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag
+          ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
+    coeffTerms := coeffTerms.push (← coeffQTerm coeffNum coeffDen)
+
+  elabUnlessDefined downwardFactorsEqName.getId (← `(
+      theorem $downwardFactorsEqName :
+          ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
+        native_decide
+    ))
+
+  for i in [0:count] do
+    let entry := flagData[i]!
+    let underlyingIdx := entry.1
+    let coeffNum := entry.2.2.2.1
+    let coeffDen := entry.2.2.2.2
+
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}")
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{m}_{i}")
+
+    let coeffQ ← coeffQTerm coeffNum coeffDen
+    let coeffR ← `(($coeffQ : ℝ))
+
+    let downwardThmName := mkIdent (Name.mkSimple s!"downward_{n}_{k}_{m}_{i}")
+    let baseFlagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{underlyingIdx}")
+    let baseFlagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{underlyingIdx}")
 
     elabUnlessDefined downwardThmName.getId (← `(
         @[simp]
@@ -419,7 +461,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
           have hdnf : FlagAlgebras.downwardNormalizingFactor $flagBridgeName = $coeffQ := by
             change FlagAlgebras.downwardNormalizingFactor (($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag) = $coeffQ
             rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
-            native_decide
+            exact congrArg (fun l => l.getD $(Quote.quote i) (0 : ℚ)) $downwardFactorsEqName
           change
             FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩)
               =
@@ -439,16 +481,30 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
         ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset
     ))
 
-  -- `sym2FlagSet_{n}_{k}_{m}_eq_univ` is discharged by the mathematically-proved
-  -- completeness theorem `genFlagSet_eq_univ` (bridged to the named flag list by
-  -- one cheap `native_decide` over the tight `genFlagSet` enumeration) rather than
-  -- a `native_decide` that materialises `Finset.univ : Finset (Sym2Flag …)` via the
-  -- full `Fintype (Sym2LabeledGraph σ n)` enumeration over all `2 ^ (C(n,2)+n)`
-  -- edge subsets × embeddings.
+  -- Positional list bridge: the named flag list equals `genFlagsOrdered σ n` (the
+  -- dedup reps re-sorted into `genFlagData`'s JSON order). Deciding this *list*
+  -- equality costs O(g) isomorphism checks (one per position), versus the O(g²) the
+  -- `Finset`/`toFinset` route forces. `genFlagsOrdered_perm` then transfers `= univ`
+  -- (through `genFlagSet_eq_univ`) and `Nodup` (through `genFlags_nodup`) by proof —
+  -- so this single O(g) `native_decide` replaces the previous *two* O(g²) ones (the
+  -- `Finset`-equality `= univ` bridge and the separate `Nodup` check). Both lemmas
+  -- below rewrite through it, then close via the math theorems on `genFlags`.
+  let flagListEqName := mkIdent (Name.mkSimple s!"Sym2FlagList_{n}_{k}_{m}_eq")
+  elabUnlessDefined flagListEqName.getId (← `(
+      theorem $flagListEqName :
+          ([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n)))
+            = FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n) := by
+        native_decide
+    ))
+
   elabUnlessDefined setEqUnivName.getId (← `(
       theorem $setEqUnivName : $setName = Finset.univ := by
         have h : $setName = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n) := by
-          native_decide
+          have hfl := $flagListEqName
+          show (([ $flagTerms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset)
+              = FlagAlgebras.Compute.genFlagSet $typeTerm $(Quote.quote n)
+          rw [hfl]
+          exact FlagAlgebras.Compute.genFlagsOrdered_toFinset $typeTerm $(Quote.quote n)
         rw [h]
         exact FlagAlgebras.Compute.genFlagSet_eq_univ $typeTerm $(Quote.quote n)
     ))
@@ -468,7 +524,10 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
     (← `(by
         intro F
         exact ⟨F.toSym2Flag, FlagAlgebras.Flag.toSym2Flag_toFlag_eq F⟩))
-    (← `(by native_decide))
+    (← `(by
+        have hfl := $flagListEqName
+        rw [hfl]
+        exact FlagAlgebras.Compute.genFlagsOrdered_nodup $typeTerm $(Quote.quote n)))
     flagTerms flagBridgeTerms
     setName setEqUnivName flagSetName flagSetValEqName flagSetEqUnivName
 

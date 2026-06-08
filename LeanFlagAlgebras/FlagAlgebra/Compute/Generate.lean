@@ -1052,4 +1052,127 @@ theorem genFlagSet_eq_univ {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
   simp only [genFlagSet, genFlags, List.mem_toFinset, List.mem_map]
   exact ⟨G', hmem, Quotient.sound (sym2LabeledGraphEqv.symm hiso)⟩
 
+/-! ### O(g) JSON-order bridge for labeled flags
+
+Mirrors the empty-typed `genSym2Graphs` sort layer (`genSym2GraphsKeyed` +
+`genSym2Graphs_perm`): re-sort the dedup reps into `genFlagData`'s
+`(underlyingGraphIdx, typeIndices)` order so the `generate_flags` macro can bridge
+its named flag list to `genFlagsOrdered` with an O(g) positional `native_decide`
+(one isomorphism check per position) instead of the O(g²) `Finset`-equality bridge
+to `genFlagSet` plus a separate O(g²) `Nodup` `native_decide`. `genFlagsOrdered_perm`
+proves it is a permutation of `genFlags`, so `= univ` and `Nodup` transfer through the
+existing order-independent `genFlagSet_eq_univ` / `genFlags_nodup`. -/
+
+/-- `G`'s underlying edge-pair list (identity relabeling), in ℕ coordinates and
+canonical (`pairLe`) sort order. Equals `relabeledEdgeList` under the identity. -/
+def rawPairsNat {n : ℕ} (G : Sym2Graph n) : List (ℕ × ℕ) :=
+  sortPairs (((allEdges n).filter (fun e => decide (e ∈ G.edges))).map edgeToPair)
+
+/-- An ℕ-permutation of `[0, n)` relabeling `G`'s edges into `canonicalEdgeList G`.
+Any two such perms differ by an automorphism of the canonical graph, so the
+orbit-min computed from it (below) is independent of which one `find?` returns. -/
+def canonicalizingPerm {n : ℕ} (G : Sym2Graph n) : List ℕ :=
+  ((List.range n).permutations.find?
+    (fun p => sortPairs (applyPermToPairs p (rawPairsNat G)) == canonicalEdgeList G)).getD
+    (List.range n)
+
+/-- The type-embedding tuple `[type_embed 0, …, type_embed (k-1)]` of a labeled
+graph, in its own (raw) coordinates. -/
+def labeledTypeTuple {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) : List ℕ :=
+  (List.finRange k).map (fun i => (G.type_embed i).val)
+
+/-- JSON-order sort key of a labeled flag representative: the underlying graph's
+`graphKey` (edge count, canonical edge list) and the orbit-minimal type tuple in
+canonical coordinates. Class-invariant, matching `genFlagData`'s ordering. -/
+def labeledFlagKey {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) : (ℕ × List (ℕ × ℕ)) × List ℕ :=
+  let Gu : Sym2Graph n := ⟨G.edges, G.edges_valid⟩
+  let cel := canonicalEdgeList Gu
+  let p := canonicalizingPerm Gu
+  let tCanon := applyPermToTuple p (labeledTypeTuple G)
+  (graphKey Gu, minTuple (tupleOrbit (autPerms n cel) tCanon))
+
+/-- Lexicographic `≤` on labeled flag keys: edge count, then canonical edge list,
+then orbit-min type tuple. -/
+def labeledKeyLe (a b : (ℕ × List (ℕ × ℕ)) × List ℕ) : Bool :=
+  decide (a.1.1 < b.1.1) ||
+    (a.1.1 == b.1.1 &&
+      (listPairLt a.1.2 b.1.2 ||
+        (a.1.2 == b.1.2 && listNatLe a.2 b.2)))
+
+/-- `genFlags σ n` re-sorted into `genFlagData` (JSON) order via `labeledFlagKey`.
+A permutation of `genFlags σ n` (same set, so `= univ` is inherited) but in the
+order the `generate_flags` macro emits its named flag list.
+
+Decorate-sort-undecorate (as in `genSym2GraphsKeyed`): each rep's `labeledFlagKey`
+— which scans all `n!` permutations (`canonicalEdgeList`, `canonicalizingPerm`,
+`autPerms`) — is computed *once* and carried through the sort, so the `O(g²)`
+comparisons read the precomputed key instead of recomputing it. -/
+def genFlagsOrdered {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : List (Sym2Flag σ n) :=
+  (((genLabeledGraphsDedup σ n).map (fun G => (G, labeledFlagKey G))).insertionSort
+    (fun a b => labeledKeyLe a.2 b.2 = true)).map
+    (fun a => Quotient.mk (sym2LabeledGraphSetoid σ n) a.1)
+
+/-- `genFlagsOrdered σ n` is a permutation of `genFlags σ n`: the sort only reorders
+the dedup reps. Mirrors `genSym2Graphs_perm`. -/
+theorem genFlagsOrdered_perm {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    genFlagsOrdered σ n ~ genFlags σ n := by
+  unfold genFlagsOrdered genFlags
+  have h := (List.perm_insertionSort (fun a b => labeledKeyLe a.2 b.2 = true)
+    ((genLabeledGraphsDedup σ n).map (fun G => (G, labeledFlagKey G)))).map
+    (fun a => Quotient.mk (sym2LabeledGraphSetoid σ n) a.1)
+  rw [List.map_map] at h
+  have hid : ((fun a => Quotient.mk (sym2LabeledGraphSetoid σ n) a.1) ∘
+        fun G : Sym2LabeledGraph σ n => (G, labeledFlagKey G))
+      = Quotient.mk (sym2LabeledGraphSetoid σ n) := by
+    funext G; rfl
+  rw [hid] at h
+  exact h
+
+/-- The deduped labeled flags stay `Nodup` (no two survivors are `∼sf`-equivalent).
+The labeled analogue of `foldl_dedupStep_flags_nodup`. -/
+theorem foldl_dedupStepL_flags_nodup {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (xs : List (Sym2LabeledGraph σ n)) :
+    ∀ (acc : List (Sym2LabeledGraph σ n)),
+      (acc.map (Quotient.mk (sym2LabeledGraphSetoid σ n))).Nodup →
+      ((xs.foldl dedupStepL acc).map (Quotient.mk (sym2LabeledGraphSetoid σ n))).Nodup := by
+  induction xs with
+  | nil => intro acc hacc; exact hacc
+  | cons x rest ih =>
+    intro acc hacc
+    simp only [List.foldl_cons]
+    apply ih
+    unfold dedupStepL
+    by_cases hc : acc.any (fun H => isIsoFast_bool H x) = true
+    · rw [if_pos hc]; exact hacc
+    · rw [if_neg hc, List.map_append, List.map_cons, List.map_nil, List.nodup_append]
+      refine ⟨hacc, List.nodup_singleton _, ?_⟩
+      intro F hFacc b hb heq
+      rw [List.mem_singleton] at hb
+      subst hb
+      subst heq
+      obtain ⟨G', hG'mem, hG'eq⟩ := List.mem_map.mp hFacc
+      have hG'x : G' ∼sf x := Quotient.exact hG'eq
+      exact hc (List.any_eq_true.mpr ⟨G', hG'mem, isIsoFast_bool_complete hG'x⟩)
+
+/-- The generated typed flags have no duplicates. Mirrors `genEmptyTypedFlags_nodup`. -/
+theorem genFlags_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    (genFlags σ n).Nodup :=
+  foldl_dedupStepL_flags_nodup (allRawSym2LabeledGraphs σ n) [] (by simp)
+
+/-- `genFlagsOrdered σ n` has no duplicates (inherited from `genFlags` via the perm). -/
+theorem genFlagsOrdered_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    (genFlagsOrdered σ n).Nodup :=
+  (genFlagsOrdered_perm σ n).nodup_iff.mpr (genFlags_nodup σ n)
+
+/-- `genFlagsOrdered σ n` has the same `toFinset` as `genFlags σ n` (i.e. `genFlagSet`),
+since they are permutations. Lets the `generate_flags` `= univ` bridge rewrite the
+named flag list's `toFinset` to the proven-complete `genFlagSet`. -/
+theorem genFlagsOrdered_toFinset {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    (genFlagsOrdered σ n).toFinset = genFlagSet σ n := by
+  unfold genFlagSet
+  exact Finset.ext fun a => by
+    simp only [List.mem_toFinset]; exact (genFlagsOrdered_perm σ n).mem_iff
+
 end FlagAlgebras.Compute
