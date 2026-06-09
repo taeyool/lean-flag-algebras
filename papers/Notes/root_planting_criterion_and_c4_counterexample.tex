@@ -8,6 +8,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{aliascnt}
 \usepackage{hyperref}
 \hypersetup{
   colorlinks=true,
@@ -18,28 +19,50 @@
 
 % theorem environments
 \newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{question}[theorem]{Question}
-\newtheorem{conjecture}[theorem]{Conjecture}
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+\newaliascnt{proposition}{theorem}
+\newtheorem{proposition}[proposition]{Proposition}
+\aliascntresetthe{proposition}
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
+\newaliascnt{question}{theorem}
+\newtheorem{question}[question]{Question}
+\aliascntresetthe{question}
+\newaliascnt{conjecture}{theorem}
+\newtheorem{conjecture}[conjecture]{Conjecture}
+\aliascntresetthe{conjecture}
 \theoremstyle{definition}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-\newtheorem{remark}[theorem]{Remark}
+\newaliascnt{definition}{theorem}
+\newtheorem{definition}[definition]{Definition}
+\aliascntresetthe{definition}
+\newaliascnt{example}{theorem}
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}
+\newaliascnt{remark}{theorem}
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}
 
 \usepackage[nameinlink,capitalize]{cleveref}
 \crefname{theorem}{Theorem}{Theorems}
 \crefname{lemma}{Lemma}{Lemmas}
 \crefname{proposition}{Proposition}{Propositions}
 \crefname{corollary}{Corollary}{Corollaries}
+\crefname{question}{Question}{Questions}
+\crefname{conjecture}{Conjecture}{Conjectures}
 \crefname{definition}{Definition}{Definitions}
+\crefname{example}{Example}{Examples}
 \crefname{remark}{Remark}{Remarks}
 \Crefname{theorem}{Theorem}{Theorems}
 \Crefname{lemma}{Lemma}{Lemmas}
 \Crefname{proposition}{Proposition}{Propositions}
 \Crefname{corollary}{Corollary}{Corollaries}
+\Crefname{question}{Question}{Questions}
+\Crefname{conjecture}{Conjecture}{Conjectures}
 \Crefname{definition}{Definition}{Definitions}
+\Crefname{example}{Example}{Examples}
 \Crefname{remark}{Remark}{Remarks}
 
 \sloppy
@@ -236,7 +259,7 @@ passes through.  Even there it is benign: the labelled witnesses that expose the
 unlabel to zero---they average away to nothing once the labels are dropped
 (\cref{prop:ideal-zero})---and every contribution the ensemble relaxation can make is,
 after unlabelling, a limit of ordinary \emph{sum-of-squares contributions}: the standard
-nonnegative building blocks of a quotient certificate, each obtained by squaring a
+non-negative building blocks of a quotient certificate, each obtained by squaring a
 flag-algebra element and averaging it down to the unlabelled level
 (\cref{thm:no-closed-certificate-gap}).  What could in principle remain is
 only a difference at the level of exact, finite certificates---never a new asymptotic
@@ -319,10 +342,14 @@ $\Homp(\A^\sigma[\T],\R)$.  By Razborov's theory these are exactly the limits of
 convergent flag sequences: a sequence of finite $\sigma$-flags of growing size
 \emph{converges} when every density $p(F,\cdot)$ converges, its limit is the homomorphism
 $\phi$ with $\phi(F)=\lim p(F,\cdot)$, and conversely every positive homomorphism arises
-this way \cite[Theorem 3.3]{Razborov2007}.  We accordingly picture a positive homomorphism
-$\phi$ as a limit of finite graphs and $\phi(F)$ as the density of the flag $F$ in it, and
-we use the terms \emph{positive homomorphism} and \emph{limit} interchangeably.  On a single
-flag this value lies in $[0,1]$: for each size the flags of that size sum to the unit,
+this way \cite[Theorem 3.3]{Razborov2007}.  Terminologically, from now on a
+\emph{limit} means such a positive homomorphism unless we explicitly mention an
+approximating sequence.  Thus an \emph{unlabelled limit} is a point of
+$\Homp(\A^0[\T],\R)$, while a \emph{$\sigma$-labelled} or \emph{$\sigma$-rooted limit} is
+a point of $\Homp(\A^\sigma[\T],\R)$.  We freely pass between the two names: $\phi$ may be
+called a limit or a positive homomorphism, and $\phi(F)$ is the density of the flag $F$ in
+that limit.  On a single flag this value lies in $[0,1]$: for each size the flags of that
+size sum to the unit,
 $\sum_{|H|=|F|}H=\one_\sigma$ (a vertex set induces exactly one flag), so
 $0\le\phi(F)\le\sum_{|H|=|F|}\phi(H)=\phi(\one_\sigma)=1$.  Hence evaluation on all flags,
 $\phi\mapsto(\phi(F))_{F\in\F^\sigma}$, embeds $\Homp(\A^\sigma[\T],\R)$ into the compact
@@ -342,21 +369,25 @@ multiplicative unit of $\A^\sigma[\T]$.  Its unlabelling
 \[
   \brak{\sigma}:=\avg{\one_\sigma}{\sigma}\in\A^0[\T]
 \]
-is the unlabelled density of embeddings of the type $\sigma$: for a limit
-$\phi_0$ of finite graphs $G_n$, the value $\phi_0(\brak\sigma)$ is the limiting
-probability that $k$ vertices of $G_n$, chosen uniformly at random and in a
-random order, induce a copy of $\sigma$.  The type $\sigma$ is
-\emph{non-degenerate} if $\brak\sigma\neq0$ in $\A^0[\T]$---intuitively, if the pattern
-$\sigma$ is actually realised, occurring with positive density in some limit of the class,
-so that a copy of $\sigma$ can be sampled and labelled.  (A degenerate type occurs with
-density zero in every limit, so the random labelling below acts on nothing, and the
-root-planting story of this paper is vacuous for it.)  By the unlabelling property
-above, $\brak\sigma=\avg{\one_\sigma}{\sigma}$ is a non-negative multiple of the unlabelled
-graph underlying $\sigma$, so it is a \emph{non-negative element}: $\phi_0(\brak\sigma)\ge0$
-for every limit $\phi_0$.  Since an
-element of $\A^0[\T]$ is the zero element exactly when every limit assigns it the value
-$0$, $\brak\sigma\neq0$ holds precisely when $\phi_0(\brak\sigma)>0$ for some limit
-$\phi_0$.  If
+is the unlabelled density of embeddings of the type $\sigma$: if the unlabelled limit
+$\phi_0$ is represented by finite graphs $G_n$, then $\phi_0(\brak\sigma)$ is the
+limiting probability that $k$ vertices of $G_n$, chosen uniformly at random and in a
+random order, induce a copy of $\sigma$.
+
+\paragraph{Non-degenerate types.}
+A type $\sigma$ is \emph{non-degenerate} for the class $\T$ if
+$\brak\sigma\neq0$ in $\A^0[\T]$.  By the unlabelling property above,
+$\brak\sigma=\avg{\one_\sigma}{\sigma}$ is a non-negative multiple of the unlabelled graph
+underlying $\sigma$, so it is a \emph{non-negative element}: $\phi_0(\brak\sigma)\ge0$ for
+every unlabelled limit $\phi_0$.  Since an element of $\A^0[\T]$ is the zero element exactly
+when every unlabelled limit assigns it the value $0$, non-degeneracy is equivalently the
+existence of an unlabelled limit $\phi_0$ with $\phi_0(\brak\sigma)>0$.  Intuitively, the
+pattern $\sigma$ is actually realised, occurring with positive density in some unlabelled
+limit of the class, so that a copy of $\sigma$ can be sampled and labelled.  A degenerate
+type occurs with density zero in every unlabelled limit, so the random labelling below acts
+on nothing, and the root-planting story of this paper is vacuous for it.
+
+If
 $\phi_0\in\Homp(\A^0[\T],\R)$ and $\phi_0(\brak\sigma)>0$, Razborov's extension
 theorem gives a unique probability measure on
 $\Homp(\A^\sigma[\T],\R)$, denoted here by
@@ -370,6 +401,8 @@ characterised by
   \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
   \qquad(g\in\A^\sigma[\T]).
 \end{equation}
+The positivity assumption on $\phi_0(\brak\sigma)$ is exactly what permits this
+conditioning: the denominator is the limiting probability of seeing the root type.
 Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the labelled limit seen from a uniformly
 random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
 the expected labelled density of $g$ is the unlabelled density of $g$, normalised by that
@@ -388,21 +421,25 @@ We will repeatedly use the following elementary consequence.
 Let $P$ be a Borel probability measure on a compact metrizable space $X$, and let
 $h:X\to\R$ be continuous.  Then
 \[
-  P[h\ge0]=1
+  P[h(x)\ge0]=1
 \]
 if and only if $h(x)\ge0$ for every $x\in\supp(P)$.
 \end{lemma}
 
 \begin{proof}
-($\Rightarrow$) Suppose $P[h\ge0]=1$, equivalently $P[h<0]=0$, and let
+($\Rightarrow$) Suppose $P[h(x)\ge0]=1$, equivalently $P[h(x)<0]=0$, and let
 $x\in\supp(P)$.  If $h(x)<0$, then $\{y:h(y)<0\}$ is an open set (as $h$ is continuous)
 containing $x$, so by the defining property of the support it has positive $P$-measure,
-contradicting $P[h<0]=0$.  Hence $h(x)\ge0$.
+contradicting $P[h(x)<0]=0$.  Hence $h(x)\ge0$.
 
 ($\Leftarrow$) Suppose $h\ge0$ on $\supp(P)$.  Then
 $\{y:h(y)\ge0\}\supseteq\supp(P)$, and the support has full measure, so
-$P[h\ge0]\ge P(\supp(P))=1$; that is, $P[h\ge0]=1$.
+$P[h(x)\ge0]\ge P(\supp(P))=1$; that is, $P[h(x)\ge0]=1$.
 \end{proof}
+
+In applications $X$ will be a homomorphism space and $h(\chi)=\chi(f)$; the lemma lets us
+replace almost-sure non-negativity under a random extension by pointwise non-negativity on
+its support.
 
 \section{Constrained classes and supported homomorphisms}
 
@@ -430,11 +467,11 @@ flags.  We write
   \subseteq X_\sigma.
 \]
 Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient homomorphism
-space.  We write $Q_0:=Q_\emptyset$ for the empty-type instance, the constrained
-unlabelled limits (the limits of graph sequences drawn from $\T_1$).  The set $Q_\sigma$
-has a simple intrinsic description, one that never mentions the quotient: a
-homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes on every
-forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
+space.  In the terminology above, $Q_\sigma$ is the space of constrained
+$\sigma$-labelled limits, and $Q_0:=Q_\emptyset$ is the space of constrained unlabelled
+limits.  The set $Q_\sigma$ has a simple intrinsic description, one that never mentions the
+quotient: a homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes
+on every forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
 flag to $0$, any $\chi=\psi\circ\qmap_\sigma$ satisfies
 $\chi(F)=\psi(\qmap_\sigma(F))=\psi(0)=0$ on every forbidden flag $F$, so every member of
 $Q_\sigma$ vanishes on the forbidden flags.
@@ -485,7 +522,7 @@ $Q_\sigma$ consists of the homomorphisms that satisfy all of these conditions at
 per forbidden flag, so it is an intersection of closed sets and is therefore closed in
 $X_\sigma$.
 
-Informally, the next lemma says that randomly labelling a constrained unlabelled limit
+Informally, the next lemma says that randomly labelling a constrained unlabelled limit 
 almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
@@ -516,7 +553,8 @@ forbidden $\sigma$-flags shows that $\phi^\sigma\in Q_\sigma$ almost surely.
 The following definition is the main conceptual point of this paper.
 
 \begin{definition}[Root-planting set and root-plantability]\label{def:root-planting}
-Fix a non-degenerate type $\sigma$ of $\T_1$.  Define
+Fix a non-degenerate type $\sigma$ of $\T_1$; equivalently,
+$\phi_0(\brak\sigma)>0$ for some constrained unlabelled limit $\phi_0\in Q_0$.  Define
 \[
   S_\sigma
   :=
@@ -535,11 +573,13 @@ We say that the triple $(\T_0,\T_1,\sigma)$ is \emph{root-plantable} if
 
 By \cref{lem:support-passes-general}, one always has $S_\sigma\subseteq Q_\sigma$.
 The point of root-plantability is the reverse inclusion: every constrained
-labelled homomorphism should be approximable by support points of random
-extensions from constrained unlabelled homomorphisms.
+labelled limit should be approximable by support points of random extensions from
+constrained unlabelled limits.
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-criterion}
-Let $\T_1$ be a hereditary subclass of $\T_0$, and let $\sigma$ be a non-degenerate type of $\T_1$.  For $f\in\A^\sigma[\T_0]$, consider the following two
+Let $\T_1$ be a hereditary subclass of $\T_0$, and let $\sigma$ be a non-degenerate type of
+$\T_1$ (so $\phi_0(\brak\sigma)>0$ for some $\phi_0\in Q_0$).  For
+$f\in\A^\sigma[\T_0]$, consider the following two
 conditions.
 \begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
   \item\label{cond:quotient}
@@ -567,6 +607,15 @@ root-plantable; when root-plantability fails, some inequality that holds almost 
 under random labelling cannot be seen in the quotient.
 
 \begin{proof}
+We use the standard evaluation pairing between the algebra and its positive
+homomorphisms.  Thus an element $f\in\A^\sigma[\T_0]$ also denotes the continuous
+function
+\[
+  X_\sigma\longrightarrow\R,\qquad \chi\longmapsto \chi(f).
+\]
+In this sense, ``$f\ge0$ on $S_\sigma$'' means $\chi(f)\ge0$ for every
+$\chi\in S_\sigma$, and similarly for $Q_\sigma$.
+
 By \cref{lem:support-passes-general}, every support appearing in the definition
 of $S_\sigma$ is contained in $Q_\sigma$.  Hence non-negativity on $Q_\sigma$
 implies non-negativity on all those supports, and by \cref{lem:support-as} this
@@ -586,13 +635,22 @@ If $S_\sigma=Q_\sigma$, the two conditions are equivalent for every $f$.
 
 Conversely suppose $S_\sigma\ne Q_\sigma$.  Choose
 $\psi\in Q_\sigma\setminus S_\sigma$.  The compact space $X_\sigma$ is a closed subspace of the product
-$[0,1]^{\F^\sigma}$, hence is compact metrizable and normal.  The closed sets
-$S_\sigma$ and $\{\psi\}$ are disjoint subsets of the closed space $Q_\sigma$.
-By Urysohn's lemma there is a continuous function $h\in C(Q_\sigma)$ such that
-$h=1$ on $S_\sigma$ and $h(\psi)=-1$.  By Tietze's extension theorem, extend
-$h$ to a continuous function $H\in C(X_\sigma)$.  By the Stone--Weierstrass
-theorem in the form used by Razborov \cite[Proposition 3.7]{Razborov2007},
-$\A^\sigma[\T_0]$ is uniformly dense in $C(X_\sigma)$.  Choose
+$[0,1]^{\F^\sigma}$, hence is metrizable; so its subspace $Q_\sigma$ is metrizable as
+well, and therefore normal in the topological sense: disjoint closed subsets can be
+separated by a continuous function.  The sets
+$S_\sigma$ and $\{\psi\}$ are disjoint closed subsets of $Q_\sigma$.
+By Urysohn's lemma, followed by an affine rescaling, there is a continuous function
+$h\in C(Q_\sigma)$ such that $h=1$ on $S_\sigma$ and $h(\psi)=-1$.
+Also, $Q_\sigma$ is closed in $X_\sigma$ by the closedness observation in the previous
+section; more explicitly, it is cut out by the equations $\chi(F)=0$ for forbidden flags
+$F$.  Hence Tietze's extension theorem applies, and
+$h$ extends to a continuous function $H\in C(X_\sigma)$.  Finally, the evaluation
+functions coming from $\A^\sigma[\T_0]$ form a unital real subalgebra of
+$C(X_\sigma)$ and separate points of $X_\sigma$, since distinct positive homomorphisms
+disagree on some flag-algebra element.  Therefore Stone--Weierstrass, in the form used
+by Razborov \cite[Proposition 3.7]{Razborov2007}, says that every continuous function on
+$X_\sigma$ can be approximated arbitrarily well in sup norm by elements of
+$\A^\sigma[\T_0]$.  Choose
 $f\in\A^\sigma[\T_0]$ with $\|f-H\|_\infty<1/3$.  Then $f>0$ on
 $S_\sigma$, so ensemble semantics holds for $f$, while $f(\psi)<0$, so quotient
 semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
@@ -865,7 +923,7 @@ and $\K$ is true-clone-closed, every $B_j^+$ remains in $\K$.  The approximation
 and positive planted-mass estimates needed for the closed-cylinder support argument
 are exactly \cref{lem:true-planted-estimate}.  The same Portmanteau argument therefore
 shows that every neighbourhood of every $\psi\in Q_\sigma$ intersects the support of
-some random $\sigma$-extension of an unlabelled constrained limit, so
+some random $\sigma$-extension of a constrained unlabelled limit, so
 $Q_\sigma\subseteq S_\sigma$.  The reverse inclusion is the general
 support-passing statement.
 \end{proof}
@@ -1988,7 +2046,7 @@ sequence with $|V(G)|\to\infty$.
 \end{proof}
 
 \begin{corollary}[The edge-rooted triangle is pinned on ensembles]\label{cor:c5-edge-pinned}
-Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled homomorphism with
+Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled limit with
 $\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
 \[
   \phi^\tau(g)=0

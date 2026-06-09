@@ -676,21 +676,21 @@ These two procedures are the same experiment, which gives the following identity
   \]
 \end{lemma}
 
-\paragraph{Joint density.}
-For pattern $\sigma$-flags $F_1, \ldots, F_t$ of sizes $m_1, \ldots, m_t$ and
-a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $F_1, \ldots, F_t$
+\paragraph{Multi-flag density.}
+For pattern $\sigma$-flags $A_1, \ldots, A_t$ of sizes $m_1, \ldots, m_t$ and
+a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $A_1, \ldots, A_t$
 \emph{fit} in $G$ if
 \[
   n - k \;\geq\; (m_1 - k) + \cdots + (m_t - k).
 \]
-When $F_1, \ldots, F_t$ fit in $G$, let $(S_1, \ldots, S_t)$ be a uniformly
+When $A_1, \ldots, A_t$ fit in $G$, let $(S_1, \ldots, S_t)$ be a uniformly
 random tuple of pairwise-disjoint subsets $S_i \subseteq V(G) \setminus
 \operatorname{Im}(\theta_G)$ with $|S_i| = m_i - k$.
-The \emph{density of $F_1, \ldots, F_t$ in $G$}, written $\den{F_1,\ldots,F_t}{G}$, is the
-probability that $G[S_i \cup \operatorname{Im}(\theta_G)] \cong_\sigma F_i$
+The \emph{density of $A_1, \ldots, A_t$ in $G$}, written $\den{A_1,\ldots,A_t}{G}$, is the
+probability that $G[S_i \cup \operatorname{Im}(\theta_G)] \cong_\sigma A_i$
 for every $i \in [t]$.
-When $F_1, \ldots, F_t$ do not fit in $G$, we set
-$\den{F_1,\ldots,F_t}{G} := 0$ by convention.
+When $A_1, \ldots, A_t$ do not fit in $G$, we set
+$\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 % Joint densities are what make multiplication possible: the product of two
 % pattern flags is interpreted as the probability that two disjoint samples occur
 % simultaneously in the same host.  This turns combinatorial double counting
@@ -794,7 +794,7 @@ we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
 \begin{example}[Multiplication of $K_2^\bullet$ and $\overline{K_2}^\bullet$]
-  Let $\sigma$ be the one-vertex flag type.  Taking $\ell = 3$, the joint density
+  Let $\sigma$ be the one-vertex flag type.  Taking $\ell = 3$, the density
   $\den{\fKtwobull,\,\fbarKtwobull}{G}$ equals $\frac{1}{2}$ for each size-3
   $\sigma$-flag $G$ whose labeled vertex has degree exactly $1$:
   \[
@@ -1252,36 +1252,39 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % notation; the names and fields match the implementation.
 % -- End original introduction -------------------------------------------------
 
-This section describes the choices made in formalizing the flag algebra
-framework as a Lean~4 library.  The subsections follow the mathematical
-structure of Section~\ref{sec:background}: types and flags as quotient types,
-densities as a sampling semantics, the flag algebra as a further quotient, and
-positive homomorphisms as models of the equational theory.
+This section formalizes the flag algebra framework in Lean~4.
+In informal arguments, the same symbol freely denotes a concrete graph,
+its isomorphism class, a formal linear combination of flags, or a flag algebra
+element.  In our Lean formalization, each role is a distinct type and each transition is an
+explicit map for which we prove compatibility with the relevant equivalence relations.
 
-\paragraph{How the $\mathcal{H}$-free constraint is encoded.}
 Section~\ref{sec:background} fixed a set $\mathcal{H}$ of forbidden graphs at
 the outset and defined all types, flags, and the flag algebra relative to that
 fixed~$\mathcal{H}$.  Our Lean formalization takes a different starting point:
-the algebra is built without fixing any $\mathcal{H}$---equivalently,
-with $\mathcal{H} = \emptyset$, so that no graph is initially excluded.  The
+the algebra is built without fixing any $\mathcal{H}$, or equivalently with
+$\mathcal{H} = \emptyset$, so that no graph is initially excluded.  The
 $\mathcal{H}$-free constraint is then introduced as a separate predicate on
-the semantic order; in Razborov's original
+the semantic order.  In Razborov's original
 presentation~\cite{razborov2007flag}, by contrast, it is baked into the algebra
 at setup time.  The two formulations agree on the Tur\'an density bounds we
-prove; whether they are equivalent for all labeled computations is non-trivial
+prove.  Whether they are equivalent for all labeled computations is non-trivial
 and depends on the choice of $\mathcal{H}$.  What differs is how much algebraic
 infrastructure carries over to a new~$\mathcal{H}$ without reproof.  This is a
 tradeoff we report on, not one we resolve.
-\gw{Unsure how much to say here about the motivation and advantages of this design choice.}
+\gw{This paragraph needs revision.}
 
-\paragraph{Explicit transitions in Lean.}
-In informal arguments, the same symbol freely denotes a concrete graph, its
-isomorphism class, a formal linear combination of flags, or an element of the
-flag algebra; the transitions between these roles are implicit.  In Lean they are explicit:
-each role is a distinct type, and each transition is a map that must be
-proved compatible with the relevant equivalence relations and algebraic
-operations.  This section establishes those maps and their compatibility theorems once,
-so that each subsequent proof can work directly at the algebra level.
+Throughout this section, the following variables are in scope:
+\begin{lstlisting}
+variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
+         {U : Type}  [Fintype U]  [DecidableEq U]
+         {U(*@$_1$@*) : Type} [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
+         {U(*@$_2$@*) : Type} [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
+         {W : Type} [Fintype W] [DecidableEq W]
+         {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+\end{lstlisting}
+\lean{FlagType} is introduced in the next subsection.
+\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are custom typeclass instances
+asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for every \lean{i : Fin t}.
 
 \subsection{Flag Types and Flags}
 
@@ -1293,7 +1296,7 @@ isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
 
-structure LabeledGraph {T : Type} ((*@$\sigma$@*) : FlagType T) (V : Type) where
+structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
@@ -1303,11 +1306,11 @@ We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
 two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
 quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
-structure LabeledGraphIso {T : Type} (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+structure LabeledGraphIso (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
 
-def Flag {T : Type} ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
+def Flag ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
 % The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
@@ -1334,51 +1337,69 @@ Unlike Section~\ref{sec:background}, none of the definitions above carries the
 $\mathcal{H}$-free condition: the underlying graphs are arbitrary.  The
 $\mathcal{H}$-free assumption is deferred to the semantic predicate on the
 final unlabeled inequality, as described in the section introduction.
-\gw{This sentence needs revision.} \gw{I'm here.}
+\gw{This sentence needs revision.}
 
 \subsection{Subflag Densities}
 
-Densities are defined uniformly over lists of pattern flags, avoiding a
-separate theory for one-flag, pair, and triple densities.
-\lean{labeledSubgraphListDensity} computes the density at the representative
-level: given a list \lean{Hl} of $t$ labeled pattern graphs and a host
-\lean{LabeledGraph}, it returns the count of realizing induced sub-flag lists
-divided by the multinomial coefficient over the sample space:
+Formalizing density function is not straightforward.  The density
+$\den{A_1,\ldots,A_t}{G}$ from Section~\ref{sec:background} should be a
+function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
+\lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
+define a function from a quotient type in Lean is to first define it on the
+underlying type, prove that it respects the equivalence relation, and lift it
+via \lean{Quotient.lift}.  That is, one must first define the density with
+\lean{LabeledGraph} inputs, then prove that replacing any input by an
+isomorphic \lean{LabeledGraph} gives the same result.
+
+We first introduce \lean{LabeledGraphList} as an abbreviation for a
+list of $t$ \lean{LabeledGraph}s, one per index in \lean{Fin t}.
+Given such a list of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
+\lean{labeledGraphListDensity} computes the density as the number of tuples
+$(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{A_1,\ldots,A_t}{G}$,
+divided by the total number of candidate tuples.  Rather than adopting the
+probabilistic sampling formulation of Section~\ref{sec:background}, this direct ratio is easier to work with in Lean.
 \begin{lstlisting}
-noncomputable def labeledSubgraphListDensity
+abbrev LabeledGraphList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
+  := (*@$\forall$@*) (i : Fin t), LabeledGraph (*@$\sigma$@*) (Vl i)
+
+noncomputable def labeledGraphListDensity
     (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
-  labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
+  labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
-The lemma \lean{labeledSubgraphListDensity\_respect\_eqv} proves that replacing
-either the pattern list or the host by isomorphic labeled graphs gives the same
-rational number.  This justifies lifting to the quotient:
+The \lean{noncomputable} keyword signals that Lean cannot synthesize an algorithm
+to evaluate the function.  This poses no obstacle to formalizing flag algebra
+itself, but becomes relevant when applying the algebra to concrete graphs, a
+point we return to in Section~\ref{sec:reflection}.
+
+Lifting \lean{labeledGraphListDensity} to the quotient type \lean{Flag} requires
+several intermediate congruence lemmas.  The result is \lean{flagListDensity},
+a density function defined on \lean{Flag}s.
 \begin{lstlisting}
+abbrev FlagList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
+  := (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
+
 noncomputable def flagListDensity : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
-  fun Fl (*@$\Rightarrow$@*) quotLabeledSubgraphListDensity Fl.coe
+  -- definition omitted
 \end{lstlisting}
-The single-flag and joint densities are specializations of \lean{flagListDensity}
+\lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
 to singleton and pair lists:
 \begin{lstlisting}
 noncomputable def flagDensity(*@$_1$@*) (F : Flag (*@$\sigma$@*) U) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity [F](*@$^\mathtt{f}$@*) G
 
-noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*))
-    (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
-\lean{flagDensity}$_1$ is the induced sub-flag density $\den{F}{G}$, and
-\lean{flagDensity}$_2$ is the joint density used to define multiplication.
+Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
 
-The following theorem is the chain rule of
-Section~\ref{sec:background} (Lemma~\ref{lem:chain-rule}): for flags of
-intermediate size $\ell'$,
+Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants. \gw{I'm here.}
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
+    {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
     ((*@$\ell'$@*) : (*@$\mathbb{N}$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
-    : flagDensity(*@$_1$@*) F(*@$_1$@*) G =
-      (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
+    : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
 \end{lstlisting}
 
 \subsection{The Algebra as an Equational Theory}
