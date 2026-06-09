@@ -5,7 +5,7 @@ import Mathlib.Algebra.Order.Field.Rat
 
 This file defines the density of a single subflag inside another flag, the
 typed analogue of subgraph density used to build the flag algebra `A^σ`.
-`labeledSubgraphCount`/`labeledSubgraphDensity` count and normalize the
+`labeledGraphCount`/`labeledGraphDensity` count and normalize the
 type-preserving induced copies of `H` inside a labeled graph `G`; these are
 shown invariant under labeled-graph isomorphism and then lifted through the
 `Flag` quotient to `subflagDensity : Flag σ V → Flag σ W → ℚ`. Boundary facts
@@ -27,19 +27,19 @@ variable {Z : Type} [Fintype Z]
 
 /-- Number of induced labeled subgraphs of `G` that are isomorphic (as
 labeled graphs) to `H`; the unnormalized subflag count. -/
-noncomputable def labeledSubgraphCount
+noncomputable def labeledGraphCount
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℕ
   :=
   let p (G' : LabeledSubgraph σ G) : Prop := G'.IsInduced ∧ Nonempty (G'.coe ≃f H)
   let S := { G' : LabeledSubgraph σ G | p G' }
   S.toFinset.card
 
-/-- Density of `H` in `G`: `labeledSubgraphCount` divided by the number of
+/-- Density of `H` in `G`: `labeledGraphCount` divided by the number of
 ways to choose the non-type vertices of an `H`-sized induced subgraph. -/
-noncomputable def labeledSubgraphDensity
+noncomputable def labeledGraphDensity
     (H : LabeledGraph σ V) (G : LabeledGraph σ W) : ℚ
   :=
-  let labeledSubgraph_cnt := labeledSubgraphCount H G
+  let labeledSubgraph_cnt := labeledGraphCount H G
   let num_of_all_induced_subgraph := (G.size - σ.size).choose (H.size - σ.size)
   labeledSubgraph_cnt / num_of_all_induced_subgraph
 
@@ -82,7 +82,7 @@ def relOfPredOnLabeledSubgraph
     (relOfLabeledSubgraph φ H₀ H₁) → (p₀ H₀ ↔ p₁ H₁)
 
 /-- Predicate on subgraphs of `G`: "this subgraph is labeled-isomorphic to
-`H`". The defining property counted by `labeledSubgraphCount`. -/
+`H`". The defining property counted by `labeledGraphCount`. -/
 def predIsoLabeledH
     (H : LabeledGraph σ U) (G : LabeledGraph σ W)
     : LabeledSubgraph σ G → Prop
@@ -278,10 +278,10 @@ def isoSetOfInducedLabeledSubgraphFromIsoGH
     (predIsoLabeledH_related φ ψ)
 
 omit [Fintype W] [Fintype Z] in
-lemma labeledSubgraphCount_respect_eqv
+lemma labeledGraphCount_respect_eqv
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
-    : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁
+    : labeledGraphCount H₀ G₀ = labeledGraphCount H₁ G₁
   := by
   let S₀ := { G' : LabeledSubgraph σ G₀ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₀) }
   let S₁ := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f H₁) }
@@ -292,45 +292,45 @@ lemma labeledSubgraphCount_respect_eqv
 
 /-- Subgraph density is invariant under labeled-graph isomorphism in both
 arguments; the well-definedness fact enabling the `Flag`-quotient lift. -/
-lemma labeledSubgraphDensity_respect_eqv
+lemma labeledGraphDensity_respect_eqv
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
     {H₀ : LabeledGraph σ W} {H₁ : LabeledGraph σ Z} (ψ : H₀ ≃f H₁)
-    : labeledSubgraphDensity H₀ G₀ = labeledSubgraphDensity H₁ G₁
+    : labeledGraphDensity H₀ G₀ = labeledGraphDensity H₁ G₁
   := by
-  dsimp only [labeledSubgraphDensity]
-  have h_count : labeledSubgraphCount H₀ G₀ = labeledSubgraphCount H₁ G₁ := labeledSubgraphCount_respect_eqv φ ψ
+  dsimp only [labeledGraphDensity]
+  have h_count : labeledGraphCount H₀ G₀ = labeledGraphCount H₁ G₁ := labeledGraphCount_respect_eqv φ ψ
   have h_H_size : H₀.size = H₁.size := labeledGraphIso_size_eq H₀ H₁ ψ
   have h_G_size : G₀.size = G₁.size := labeledGraphIso_size_eq G₀ G₁ φ
   rw [h_count, h_H_size, h_G_size]
 
-/-- `labeledSubgraphDensity H` lifted through the `Flag` quotient in its
+/-- `labeledGraphDensity H` lifted through the `Flag` quotient in its
 second (host) argument. -/
-noncomputable def labeledSubgraphDensityLifted
+noncomputable def labeledGraphDensityLifted
     (H : LabeledGraph σ V) : Flag σ W → ℚ
   := by
-  apply Quot.lift (fun G : LabeledGraph σ W ↦ labeledSubgraphDensity H G)
+  apply Quot.lift (fun G : LabeledGraph σ W ↦ labeledGraphDensity H G)
   intro _ _ G_eqv
-  exact labeledSubgraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
+  exact labeledGraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
 
-lemma labeledSubgraphDensityLifted_respect_eqv
+lemma labeledGraphDensityLifted_respect_eqv
     {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
-    : labeledSubgraphDensityLifted H₀ G = labeledSubgraphDensityLifted H₁ G
+    : labeledGraphDensityLifted H₀ G = labeledGraphDensityLifted H₁ G
   := by
-  dsimp only [labeledSubgraphDensityLifted]
+  dsimp only [labeledGraphDensityLifted]
   congr
   ext
-  exact labeledSubgraphDensity_respect_eqv LabeledGraphIso.refl ψ
+  exact labeledGraphDensity_respect_eqv LabeledGraphIso.refl ψ
 
-/-- The density of one flag inside another: `labeledSubgraphDensity` fully
+/-- The density of one flag inside another: `labeledGraphDensity` fully
 lifted to the `Flag` quotient in both arguments. This is the headline
 definition of the file. -/
 noncomputable def subflagDensity
     : Flag σ V → Flag σ W → ℚ
   := by
-  apply Quot.lift labeledSubgraphDensityLifted
+  apply Quot.lift labeledGraphDensityLifted
   intro H H' h_eqv
   ext G
-  exact labeledSubgraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
+  exact labeledGraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
 omit [Fintype T] [Fintype U] in
 lemma bot_labeledSubgraph_iso_emptyLabeledGraph
@@ -389,16 +389,16 @@ lemma labeledSubgraph_eq_bot_iff_iso_emptyLabeledGraph
     exact h_uv_G
 
 
-lemma labeledSubgraphCount_empty
+lemma labeledGraphCount_empty
     {σ : FlagType T} (G : LabeledGraph σ U)
-    : labeledSubgraphCount (emptyLabeledGraph σ) G = ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size))
+    : labeledGraphCount (emptyLabeledGraph σ) G = ((G.size - σ.size).choose ((emptyLabeledGraph σ).size - σ.size))
   := by
   dsimp [LabeledGraph.size]
   have h_σ_size : Fintype.card T = σ.size := by rfl
   rw [h_σ_size]
   let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f (emptyLabeledGraph σ)) }
   let S₁ := { G' : LabeledSubgraph σ G | G' = G.bottom }
-  simp only [labeledSubgraphCount, le_refl,tsub_eq_zero_of_le, Nat.choose_zero_right]
+  simp only [labeledGraphCount, le_refl,tsub_eq_zero_of_le, Nat.choose_zero_right]
   show S₀.toFinset.card = 1
   have h_S₀_S₁ : S₀ = S₁ := by
     ext G'
@@ -408,11 +408,11 @@ lemma labeledSubgraphCount_empty
     rintro rfl; exact ⟨LabeledGraph.bottom_isInduced G, rfl⟩
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
-lemma labeledSubgraphDensity_empty
+lemma labeledGraphDensity_empty
     {σ : FlagType T} (G : LabeledGraph σ U)
-    : labeledSubgraphDensity (emptyLabeledGraph σ) G = 1
+    : labeledGraphDensity (emptyLabeledGraph σ) G = 1
   := by
-  simp only [labeledSubgraphDensity, labeledSubgraphCount_empty G]
+  simp only [labeledGraphDensity, labeledGraphCount_empty G]
   refine (div_eq_one_iff_eq ?_).mpr rfl
   dsimp only [LabeledGraph.size]
   have : Fintype.card T = σ.size := by rfl
@@ -425,7 +425,7 @@ lemma subflagDensity_empty
     : subflagDensity (emptyFlag σ) G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
-  exact labeledSubgraphDensity_empty Grep
+  exact labeledGraphDensity_empty Grep
 
 omit [Fintype T] in
 lemma induced_full_labeledSubgraph_eq_top
@@ -457,11 +457,11 @@ lemma top_labeledSubgraph_iso_G
   }
   exact Nonempty.intro ⟨graph_iso, rfl⟩
 
-lemma labeledSubgraphCount_self
+lemma labeledGraphCount_self
     {σ : FlagType T} (G : LabeledGraph σ U)
-    : labeledSubgraphCount G G = 1
+    : labeledGraphCount G G = 1
   := by
-  dsimp [labeledSubgraphCount]
+  dsimp [labeledGraphCount]
   let S₀ := { G' : LabeledSubgraph σ G | G'.IsInduced ∧ Nonempty (G'.coe ≃f G) }
   let S₁ := { G' : LabeledSubgraph σ G | G' = G.top }
   show S₀.toFinset.card = 1
@@ -473,22 +473,22 @@ lemma labeledSubgraphCount_self
     exact ⟨LabeledGraph.top_isInduced G, top_labeledSubgraph_iso_G⟩
   simp only [h_S₀_S₁, Set.setOf_eq_eq_singleton, Set.toFinset_singleton, Finset.card_singleton, S₁]
 
-lemma labeledSubgraphDensity_self
-    (G : LabeledGraph σ V) : labeledSubgraphDensity G G = 1
+lemma labeledGraphDensity_self
+    (G : LabeledGraph σ V) : labeledGraphDensity G G = 1
   := by
-  simp only [labeledSubgraphDensity, Nat.choose_self, Nat.cast_one, div_one, Nat.cast_eq_one]
-  exact labeledSubgraphCount_self G
+  simp only [labeledGraphDensity, Nat.choose_self, Nat.cast_one, div_one, Nat.cast_eq_one]
+  exact labeledGraphCount_self G
 
 /-- A flag has density `1` in itself. -/
 lemma subflagDensity_self
     (G : Flag σ V) : subflagDensity G G = 1
   := by
   rcases Quotient.exists_rep G with ⟨Grep, rfl⟩
-  exact labeledSubgraphDensity_self Grep
+  exact labeledGraphDensity_self Grep
 
-lemma labeledSubgraphCount_other
+lemma labeledGraphCount_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
-    : labeledSubgraphCount G₀ G₁ = 0
+    : labeledGraphCount G₀ G₁ = 0
   := by
   let S := { G' : LabeledSubgraph σ G₁ | G'.IsInduced ∧ Nonempty (G'.coe ≃f G₀) }
   show S.toFinset.card = 0
@@ -501,12 +501,12 @@ lemma labeledSubgraphCount_other
   let f_G₀_G₁ : G₀ ≃f G₁ := h_G'_iso_G₀.some.symm.trans h_G₁_top_iso_G₁.some
   exact h_not_iso.elim f_G₀_G₁
 
-lemma labeledSubgraphDensity_other
+lemma labeledGraphDensity_other
     {G₀ G₁ : LabeledGraph σ U} (h_not_iso : IsEmpty (G₀ ≃f G₁))
-    : labeledSubgraphDensity G₀ G₁ = 0
+    : labeledGraphDensity G₀ G₁ = 0
   := by
-  dsimp only [labeledSubgraphDensity]
-  rw [labeledSubgraphCount_other h_not_iso]
+  dsimp only [labeledGraphDensity]
+  rw [labeledGraphCount_other h_not_iso]
   simp only [Nat.cast_zero, zero_div]
 
 /-- Two distinct flags of the same size have density `0` in each other. -/
@@ -516,7 +516,7 @@ lemma subflagDensity_other
   := by
   rcases Quotient.exists_rep G₀ with ⟨Grep₀, rfl⟩
   rcases Quotient.exists_rep G₁ with ⟨Grep₁, rfl⟩
-  apply labeledSubgraphDensity_other
+  apply labeledGraphDensity_other
   rw [← not_nonempty_iff]
   exact fun h_iso ↦ h_neq <| Quotient.sound h_iso
 

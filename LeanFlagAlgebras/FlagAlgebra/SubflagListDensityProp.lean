@@ -63,8 +63,8 @@ theorem flagListDensity₂_prod_approx
   have hF'rep₂ : (⟦F'rep⟧ : Quotient (labeledGraphSetoid σ U)).out.size = F'rep.size := rfl
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity F G, ← subflagDensity_eq_flagListDensity F' G]
-  rw [← hFrep₁, hFrep₂, ← hF'rep₁, hF'rep₂, ← hGrep₁, hGrep₂, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
-  dsimp only [subflagDensity, Quotient.lift_mk, labeledSubgraphDensityLifted]
+  rw [← hFrep₁, hFrep₂, ← hF'rep₁, hF'rep₂, ← hGrep₁, hGrep₂, ← labeledGraphListDensity_eq_flagDensity₂ Frep F'rep Grep]
+  dsimp only [subflagDensity, Quotient.lift_mk, labeledGraphDensityLifted]
 
   let freeG := Finset.univ \ Grep.type_verts.toFinset
   have hfreeG_size : freeG.card = Grep.size - σ.size := by
@@ -245,10 +245,10 @@ theorem flagListDensity₂_prod_approx
         · simp only [Fin.eq_one_of_ne_zero i hi, Fin.isValue, w]
           exact union_sdiff_cancel_right (hfreeG_sub (l 1) (hl 1).1)
 
-  have P₁ : labeledSubgraphDensity Frep Grep * labeledSubgraphDensity F'rep Grep = A.card / Ω.toFinset.card := by
-    dsimp only [labeledSubgraphDensity]
+  have P₁ : labeledGraphDensity Frep Grep * labeledGraphDensity F'rep Grep = A.card / Ω.toFinset.card := by
+    dsimp only [labeledGraphDensity]
     field_simp; congr
-    · dsimp only [labeledSubgraphCount]
+    · dsimp only [labeledGraphCount]
       rw [← Nat.cast_mul, Nat.cast_inj, ← Finset.card_product]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
@@ -303,10 +303,10 @@ theorem flagListDensity₂_prod_approx
       rw [hfreeG_size, hfreeF_size, hfreeF'_size] at hΩ_size
       rw [hΩ_size]; rfl
 
-  have P₂ : labeledSubgraphListDensity (labeledGraphPairToList Frep F'rep) Grep = (A ∩ B).card / B.card := by
-    dsimp only [labeledSubgraphListDensity]
+  have P₂ : labeledGraphListDensity (labeledGraphPairToList Frep F'rep) Grep = (A ∩ B).card / B.card := by
+    dsimp only [labeledGraphListDensity]
     congr
-    · dsimp only [labeledSubgraphListCount]
+    · dsimp only [labeledGraphListCount]
       apply Finset.card_eq_of_equiv
       refine Equiv.ofBijective ?_ ?_
       · intro ⟨l, hl⟩

@@ -255,9 +255,9 @@ theorem Turan_density_K3
     intro k
     dsimp only [flagDensity₁]
     rw [← @subflagDensity_eq_flagListDensity, Flag_3_0_0_3_eq]
-    simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity, F, lG]
+    simp [subflagDensity, labeledGraphDensityLifted, labeledGraphDensity, F, lG]
     left
-    simp [labeledSubgraphCount]
+    simp [labeledGraphCount]
     rw [@Fintype.card_eq_zero_iff]
     apply Subtype.isEmpty_of_false
     simp
@@ -274,9 +274,9 @@ theorem Turan_density_K3
     intro k
     dsimp only [flagDensity₁]
     rw [← @subflagDensity_eq_flagListDensity, Flag_2_0_0_1_eq]
-    simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity, F, lG]
+    simp [subflagDensity, labeledGraphDensityLifted, labeledGraphDensity, F, lG]
     congr!
-    · simp [labeledSubgraphCount]
+    · simp [labeledGraphCount]
       refine Eq.symm (Finset.card_bij ?_ ?_ ?_ ?_)
       · intro e he
         simp [edgeFinset] at he

@@ -72,9 +72,9 @@ theorem flagDensity₁_flagType_asEmptyType_pos
   dsimp only [flagDensity₁]
   rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F.2]
   dsimp only [SimpleGraph.toEmptyTypeFlag, unlabel, unlabeledGraphQuot, Quotient.lift_mk,
-    subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
+    subflagDensity, labeledGraphDensityLifted, labeledGraphDensity]
   apply div_pos
-  · simp only [Nat.cast_pos, labeledSubgraphCount]
+  · simp only [Nat.cast_pos, labeledGraphCount]
     rw [Finset.card_pos]
     simp only [Finset.Nonempty, Set.mem_toFinset, Set.mem_setOf_eq]
     let G : LabeledSubgraph ∅ₜ (unlabeledGraph F.2.out) :=
@@ -138,11 +138,11 @@ theorem labelExtensions_nonempty
   := by
   dsimp only [flagDensity₁] at hF
   rw [← subflagDensity_eq_flagListDensity, ← Quotient.out_eq F] at hF
-  dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledSubgraphDensityLifted,
-    labeledSubgraphDensity, Quotient.lift_mk] at hF
+  dsimp only [SimpleGraph.toEmptyTypeFlag, subflagDensity, labeledGraphDensityLifted,
+    labeledGraphDensity, Quotient.lift_mk] at hF
   rw [gt_iff_lt, div_pos_iff] at hF
   rcases hF with ⟨hF_num, hF_den⟩ | ⟨hF_num, hF_den⟩
-  · dsimp only [labeledSubgraphCount] at hF_num
+  · dsimp only [labeledGraphCount] at hF_num
     simp only [Set.toFinset_setOf, Nat.cast_pos, Finset.card_pos] at hF_num
     obtain ⟨G', hG'⟩ := hF_num
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'

@@ -20,7 +20,7 @@ import Mathlib.Tactic.Ring
 # Densities of flags relative to a list of subflags
 
 This file generalizes `SubflagDensity` from a single subflag to a finite *list* of
-subflags. It defines `labeledSubgraphListDensity` (the fraction of vertex-class
+subflags. It defines `labeledGraphListDensity` (the fraction of vertex-class
 arrangements realizing a whole list of disjoint, prescribed flags simultaneously),
 lifts it through the flag quotient to `flagListDensity`, and specializes it to the
 fixed-arity helpers `flagDensity₁` / `flagDensity₂` / `flagDensity₃`.
@@ -84,7 +84,7 @@ def setOfLabeledSubgraphListIsoHl (G : LabeledGraph σ U) (Hl : LabeledGraphList
 
 /-- The number of induced subgraph lists of `G` realizing the flag list `Hl`
 (the numerator of the list density). -/
-noncomputable def labeledSubgraphListCount
+noncomputable def labeledGraphListCount
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℕ
   :=
   have : Fintype (setOfLabeledSubgraphListIsoHl G Hl) := Fintype.ofFinite _
@@ -93,12 +93,12 @@ noncomputable def labeledSubgraphListCount
 
 /-- The density of the flag list `Hl` in `G`: the count of realizing subgraph lists
 normalized by the multinomial coefficient counting ways to distribute the non-type
-vertices among the list members. The list generalization of `labeledSubgraphDensity`. -/
-noncomputable def labeledSubgraphListDensity
+vertices among the list members. The list generalization of `labeledGraphDensity`. -/
+noncomputable def labeledGraphListDensity
     (Hl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W) : ℚ
   :=
   let r_list (i : Fin t) := (Hl i).size - σ.size
-  labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
+  labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - σ.size)
 
 /-- Two subgraph lists correspond entrywise under the host isomorphism `φ`. -/
 def relOfLabeledSubgraphList
@@ -291,19 +291,19 @@ noncomputable def isoSetOfInducedLabeledSubgraphListFromIsoGHl
 omit [DecidableEq T] in
 /-- List density is invariant under isomorphism of both the flag list and the host
 graph; this well-definedness is what lets it descend to the flag quotient. -/
-lemma labeledSubgraphListDensity_respect_eqv
+lemma labeledGraphListDensity_respect_eqv
     {Hl₀ : LabeledGraphList σ t Vl} {Hl₁ : LabeledGraphList σ t Vl'} (ψ : ∀ (i : Fin t), Hl₀ i ≃f Hl₁ i)
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁)
-    : labeledSubgraphListDensity Hl₀ G₀ = labeledSubgraphListDensity Hl₁ G₁
+    : labeledGraphListDensity Hl₀ G₀ = labeledGraphListDensity Hl₁ G₁
   := by
-  dsimp [labeledSubgraphListDensity]
+  dsimp [labeledGraphListDensity]
   let S₀ := { Gl : LabeledSubgraphList σ t G₀ | Gl.IsInduced ∧ predIsoLabeledHl G₀ Hl₀ Gl}
   let S₁ := { Gl : LabeledSubgraphList σ t G₁ | Gl.IsInduced ∧ predIsoLabeledHl G₁ Hl₁ Gl}
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
   let h_iso_S₀_S₁ : S₀ ≃ S₁ := isoSetOfInducedLabeledSubgraphListFromIsoGHl φ ψ
-  have h_count : labeledSubgraphListCount Hl₀ G₀ = labeledSubgraphListCount Hl₁ G₁ := by
-    dsimp only [labeledSubgraphListCount]
+  have h_count : labeledGraphListCount Hl₀ G₀ = labeledGraphListCount Hl₁ G₁ := by
+    dsimp only [labeledGraphListCount]
     show S₀.toFinset.card = S₁.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr h_iso_S₀_S₁
     simp_all only [Set.toFinset_card]
@@ -315,48 +315,48 @@ lemma labeledSubgraphListDensity_respect_eqv
 
 /-! ## Lifting list density through the flag quotients -/
 
-/-- `labeledSubgraphListDensity Hl` lifted to accept a quotient `Flag σ W` host. -/
-noncomputable def labeledSubgraphListDensityLifted
+/-- `labeledGraphListDensity Hl` lifted to accept a quotient `Flag σ W` host. -/
+noncomputable def labeledGraphListDensityLifted
     (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
   := by
-  apply Quot.lift (fun G => labeledSubgraphListDensity Hl G)
+  apply Quot.lift (fun G => labeledGraphListDensity Hl G)
   intro _ _ h_eqv
-  exact labeledSubgraphListDensity_respect_eqv (fun _ ↦ LabeledGraphIso.refl) h_eqv.some
+  exact labeledGraphListDensity_respect_eqv (fun _ ↦ LabeledGraphIso.refl) h_eqv.some
 
 omit [DecidableEq T] in
-lemma labeledSubgraphListDensityLifted_respect_eqv
+lemma labeledGraphListDensityLifted_respect_eqv
     {Hl : LabeledGraphList σ t Vl} {Hl' : LabeledGraphList σ t Vl'}
     (ψ : ∀ (i : Fin t), Hl i ≃f Hl' i) (G : Flag σ W)
-    : labeledSubgraphListDensityLifted Hl G = labeledSubgraphListDensityLifted Hl' G
+    : labeledGraphListDensityLifted Hl G = labeledGraphListDensityLifted Hl' G
   := by
-  dsimp [labeledSubgraphListDensityLifted]
+  dsimp [labeledGraphListDensityLifted]
   congr
   ext Grep
-  exact labeledSubgraphListDensity_respect_eqv ψ LabeledGraphIso.refl
+  exact labeledGraphListDensity_respect_eqv ψ LabeledGraphIso.refl
 
 /-- List density with both arguments taken in their respective quotients:
 a quotient flag list and a quotient flag host. -/
-noncomputable def quotLabeledSubgraphListDensity
+noncomputable def quotLabeledGraphListDensity
     : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
   := by
-  apply Quot.lift labeledSubgraphListDensityLifted
+  apply Quot.lift labeledGraphListDensityLifted
   intro _ _ ψ
   ext G
-  exact labeledSubgraphListDensityLifted_respect_eqv (fun i ↦ (ψ i).some) G
+  exact labeledGraphListDensityLifted_respect_eqv (fun i ↦ (ψ i).some) G
 
 omit [DecidableEq T] in
-lemma quotLabeledSubgraphListDensity_respect_eqv
+lemma quotLabeledGraphListDensity_respect_eqv
     {Hl Hl' : LabeledGraphList σ t Vl} (h : Hl ∼fl Hl') (G : Flag σ W)
-    : quotLabeledSubgraphListDensity ⟦Hl⟧ G = quotLabeledSubgraphListDensity ⟦Hl'⟧ G
+    : quotLabeledGraphListDensity ⟦Hl⟧ G = quotLabeledGraphListDensity ⟦Hl'⟧ G
   :=
-  labeledSubgraphListDensityLifted_respect_eqv (fun i ↦ (h i).some) G
+  labeledGraphListDensityLifted_respect_eqv (fun i ↦ (h i).some) G
 
 /-- The density of a `FlagList` (a list of flags) inside a host flag `G`. This is
 the headline list-density operator consumed downstream by `FlagAlgebra`. -/
 noncomputable def flagListDensity
     : FlagList σ t Vl → Flag σ W → ℚ
   :=
-  fun Fl => quotLabeledSubgraphListDensity Fl.coe
+  fun Fl => quotLabeledGraphListDensity Fl.coe
 
 omit [DecidableEq T] in
 theorem flagListDensity_HEq_eq
@@ -367,8 +367,8 @@ theorem flagListDensity_HEq_eq
   subst h_Vl_eq
   have h_Fl_eq : Fl = Fl' := by rw [←heq_eq_eq Fl Fl']; exact h_HEq
   subst h_Fl_eq
-  dsimp [flagListDensity, quotLabeledSubgraphListDensity, eqv_QuotLabeledGraphList_FlagList]
-  dsimp [labeledSubgraphListDensityLifted, labeledSubgraphListDensity]
+  dsimp [flagListDensity, quotLabeledGraphListDensity, eqv_QuotLabeledGraphList_FlagList]
+  dsimp [labeledGraphListDensityLifted, labeledGraphListDensity]
   congr!
 
 omit [DecidableEq T] in
@@ -380,8 +380,8 @@ theorem subflagDensity_eq_flagListDensity
   := by
   rcases Quotient.exists_rep F with ⟨Frep, hFrep⟩
   rcases Quotient.exists_rep G with ⟨Grep, hGrep⟩
-  have h_count : labeledSubgraphCount Frep Grep = labeledSubgraphListCount (fun (_ : Fin 1) => Frep) Grep := by
-    dsimp [labeledSubgraphCount, labeledSubgraphListCount]
+  have h_count : labeledGraphCount Frep Grep = labeledGraphListCount (fun (_ : Fin 1) => Frep) Grep := by
+    dsimp [labeledGraphCount, labeledGraphListCount]
     apply Finset.card_bij
     · intro H hH
       simp only [Set.toFinset_setOf, Finset.mem_filter, Finset.mem_univ, true_and] at hH
@@ -405,13 +405,13 @@ theorem subflagDensity_eq_flagListDensity
       ext1 i
       rw [Fin.fin_one_eq_zero i]
   calc
-    subflagDensity F G = labeledSubgraphDensity Frep Grep := by
+    subflagDensity F G = labeledGraphDensity Frep Grep := by
       subst hFrep hGrep
       rfl
-    _ = labeledSubgraphListDensity (fun (_ : Fin 1) => Frep) Grep := by
-      dsimp [labeledSubgraphDensity, labeledSubgraphListDensity]
+    _ = labeledGraphListDensity (fun (_ : Fin 1) => Frep) Grep := by
+      dsimp [labeledGraphDensity, labeledGraphListDensity]
       rw [← h_count, multinomialCoefficient_fin_one]; congr
-    _ = quotLabeledSubgraphListDensity [F]ᶠ.coe G := by
+    _ = quotLabeledGraphListDensity [F]ᶠ.coe G := by
       have : [F]ᶠ.coe = ⟦fun (_ : Fin 1) => Frep⟧ := by
         dsimp [eqv_QuotLabeledGraphList_FlagList]
         apply Quotient.sound
@@ -444,13 +444,13 @@ omit [DecidableEq T] in
 
 /-- Computing list density on labeled-graph representatives equals computing
 `flagListDensity` on their quotient images. -/
-theorem labeledSubgraphListDensity_eq_flagListDensity
+theorem labeledGraphListDensity_eq_flagListDensity
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
-    : labeledSubgraphListDensity Fl G = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
+    : labeledGraphListDensity Fl G = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
   := by
-  show quotLabeledSubgraphListDensity ⟦Fl⟧ ⟦G⟧ = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
+  show quotLabeledGraphListDensity ⟦Fl⟧ ⟦G⟧ = flagListDensity (QuotLabeledGraphList.coe ⟦Fl⟧) ⟦G⟧
   dsimp [flagListDensity, eqv_QuotLabeledGraphList_FlagList]
-  apply quotLabeledSubgraphListDensity_respect_eqv
+  apply quotLabeledGraphListDensity_respect_eqv
   calc
     Fl ∼fl (fun i => ⟦Fl⟧.out i) := flagListEqv.symm (Quotient.mk_out Fl)
     _ ∼fl (fun i => ⟦⟦Fl⟧.out i⟧.out) := by
@@ -459,29 +459,29 @@ theorem labeledSubgraphListDensity_eq_flagListDensity
       exact flagEqv.symm (Quotient.mk_out (⟦Fl⟧.out i))
 
 omit [DecidableEq T] in
-theorem labeledSubgraphListDensity_eq_flagDensity₁
+theorem labeledGraphListDensity_eq_flagDensity₁
     (F : LabeledGraph σ U) (G : LabeledGraph σ W)
-    : labeledSubgraphListDensity [F]ᵍ G = flagDensity₁ ⟦F⟧ ⟦G⟧
+    : labeledGraphListDensity [F]ᵍ G = flagDensity₁ ⟦F⟧ ⟦G⟧
   := by
-  rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_singleton]
+  rw [labeledGraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_singleton]
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₁]
 
 omit [DecidableEq T] in
-theorem labeledSubgraphListDensity_eq_flagDensity₂
+theorem labeledGraphListDensity_eq_flagDensity₂
     (F₁ : LabeledGraph σ U₁) (F₂ : LabeledGraph σ U₂) (G : LabeledGraph σ W)
-    : labeledSubgraphListDensity [F₁, F₂]ᵍ G = flagDensity₂ ⟦F₁⟧ ⟦F₂⟧ ⟦G⟧
+    : labeledGraphListDensity [F₁, F₂]ᵍ G = flagDensity₂ ⟦F₁⟧ ⟦F₂⟧ ⟦G⟧
   := by
-  rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_pair]
+  rw [labeledGraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_pair]
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₂]
 
 omit [DecidableEq T] in
-theorem labeledSubgraphListDensity_eq_flagDensity₃
+theorem labeledGraphListDensity_eq_flagDensity₃
     (F₁ : LabeledGraph σ U₁) (F₂ : LabeledGraph σ U₂) (F₃ : LabeledGraph σ U₃) (G : LabeledGraph σ W)
-    : labeledSubgraphListDensity [F₁, F₂, F₃]ᵍ G = flagDensity₃ ⟦F₁⟧ ⟦F₂⟧ ⟦F₃⟧ ⟦G⟧
+    : labeledGraphListDensity [F₁, F₂, F₃]ᵍ G = flagDensity₃ ⟦F₁⟧ ⟦F₂⟧ ⟦F₃⟧ ⟦G⟧
   := by
-  rw [labeledSubgraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_triple]
+  rw [labeledGraphListDensity_eq_flagListDensity, list_quot_eq_quot_list_triple]
   simp only [QuotLabeledGraphList.coe, FlagList.coe,
     Equiv.invFun_as_coe, Equiv.toFun_as_coe, Equiv.apply_symm_apply, flagDensity₃]
 
@@ -521,13 +521,13 @@ theorem flagDensity_le_card
   obtain ⟨Frep, hFrep⟩ := Quotient.exists_rep F
   dsimp [flagDensity₁] at h
   rw [← subflagDensity_eq_flagListDensity F G, ← hGrep, ← hFrep] at h
-  dsimp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity] at h
-  have : labeledSubgraphCount Frep Grep > 0 := by
+  dsimp [subflagDensity, labeledGraphDensityLifted, labeledGraphDensity] at h
+  have : labeledGraphCount Frep Grep > 0 := by
     apply Nat.pos_of_ne_zero
     intro h_zero
     rw [h_zero] at h
     simp only [Nat.cast_zero, zero_div, gt_iff_lt, lt_self_iff_false] at h
-  simp only [labeledSubgraphCount, Set.toFinset_setOf, gt_iff_lt, Finset.card_pos] at this
+  simp only [labeledGraphCount, Set.toFinset_setOf, gt_iff_lt, Finset.card_pos] at this
   obtain ⟨G_sub, hG_sub⟩ := this
   simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG_sub
   obtain ⟨h_ind, h_iso⟩ := hG_sub
@@ -547,14 +547,14 @@ theorem flagDensity_le_card'
   obtain ⟨Grep, hGrep⟩ := Quotient.exists_rep G
   obtain ⟨Frep, hFrep⟩ := Quotient.exists_rep F
   obtain ⟨F'rep, hF'rep⟩ := Quotient.exists_rep F'
-  rw [← hFrep, ← hF'rep, ← hGrep, ← labeledSubgraphListDensity_eq_flagDensity₂ Frep F'rep Grep] at h
-  dsimp [labeledSubgraphListDensity] at h
-  have h_count_pos : 0 < labeledSubgraphListCount (labeledGraphPairToList Frep F'rep) Grep := by
+  rw [← hFrep, ← hF'rep, ← hGrep, ← labeledGraphListDensity_eq_flagDensity₂ Frep F'rep Grep] at h
+  dsimp [labeledGraphListDensity] at h
+  have h_count_pos : 0 < labeledGraphListCount (labeledGraphPairToList Frep F'rep) Grep := by
     apply Nat.pos_of_ne_zero
     intro h_zero
     rw [h_zero] at h
     simp only [Nat.cast_zero, zero_div, gt_iff_lt, lt_self_iff_false] at h
-  simp only [labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl, Set.toFinset_card] at h_count_pos
+  simp only [labeledGraphListCount, setOfLabeledSubgraphListIsoHl, Set.toFinset_card] at h_count_pos
   have ⟨⟨Gl, hGl⟩, _⟩ := Finset.card_pos.mp h_count_pos
   simp only [predIsoLabeledHl, Set.mem_setOf_eq] at hGl
   let h_iso := (hGl.2.1 0).some
@@ -655,24 +655,24 @@ theorem flagDensity_permute
     (Fl : FlagList σ t Vl) (G : Flag σ W) (π : Perm t)
     : flagListDensity Fl G = flagListDensity (Fl.permute π) G
   := by
-  dsimp [flagListDensity, quotLabeledSubgraphListDensity]
+  dsimp [flagListDensity, quotLabeledGraphListDensity]
   congr; ext Grep
   let S₀ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl (π i)))
   let f_iso_S₀_S₁ : S₀ ≃ S₁ := setOfLabeledSubgraphListIsoHl_permute Grep (fun i => Quotient.out (Fl i)) π
   let hS₀ : Fintype S₀ := Fintype.ofFinite S₀
   let hS₁ : Fintype S₁ := Fintype.ofFinite S₁
-  have h_count : labeledSubgraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep
-                 = labeledSubgraphListCount (fun i => Quotient.out (Fl i)) Grep
+  have h_count : labeledGraphListCount (fun i => Quotient.out (Fl.permute π i)) Grep
+                 = labeledGraphListCount (fun i => Quotient.out (Fl i)) Grep
     := by
-    dsimp only [labeledSubgraphListCount]
+    dsimp only [labeledGraphListCount]
     show S₁.toFinset.card = S₀.toFinset.card
     have card_eq : Fintype.card S₀ = Fintype.card S₁ := Fintype.card_congr f_iso_S₀_S₁
     simp_all only [Set.toFinset_card]
   have h_coeff : multinomialCoefficient (fun i ↦ (Quotient.out (Fl i)).size - σ.size) (Grep.size - σ.size)
                  = multinomialCoefficient (fun i ↦ (Quotient.out (Fl.permute π i)).size - σ.size) (Grep.size - σ.size)
     := (multinomialCoefficient_eq_of_perm (Grep.size - σ.size)).symm
-  dsimp [labeledSubgraphListDensity]
+  dsimp [labeledGraphListDensity]
   rw [h_count, h_coeff]
 
 /-! ### `FintypeList` / `DecidableEqList` instances for 2- and 3-element type families
@@ -866,9 +866,9 @@ theorem flagDensity_insert_empty
     (Fl : FlagList σ t Vl) (G : Flag σ W)
     : flagListDensity Fl G = flagListDensity (Fl.insert (emptyFlag σ)) G
   := by
-  dsimp [flagListDensity, quotLabeledSubgraphListDensity]
+  dsimp [flagListDensity, quotLabeledGraphListDensity]
   congr; ext Grep
-  dsimp [labeledSubgraphListDensity, labeledSubgraphListCount]
+  dsimp [labeledGraphListDensity, labeledGraphListCount]
   let S₀ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl i))
   let S₁ := setOfLabeledSubgraphListIsoHl Grep (fun i => Quotient.out (Fl.insert (emptyFlag σ) i))
   let h_S₀ : Fintype S₀ := Fintype.ofFinite S₀
@@ -966,8 +966,8 @@ omit [DecidableEq T] in
 /-- List density is nonnegative. -/
 theorem labeledGraphListDensity_ge_zero
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
-    : 0 ≤ labeledSubgraphListDensity Fl G := by
-    dsimp [labeledSubgraphListDensity]
+    : 0 ≤ labeledGraphListDensity Fl G := by
+    dsimp [labeledGraphListDensity]
     apply div_nonneg <;> simp only [Nat.cast_nonneg]
 
 omit [DecidableEq T] in
@@ -975,8 +975,8 @@ omit [DecidableEq T] in
 the non-type vertices counted by the multinomial normalizer). -/
 theorem labeledGraphListDensity_le_one
     (Fl : LabeledGraphList σ t Vl) (G : LabeledGraph σ W)
-    : labeledSubgraphListDensity Fl G ≤ 1 := by
-    dsimp only [labeledSubgraphListDensity, labeledSubgraphListCount, setOfLabeledSubgraphListIsoHl, Set.coe_setOf]
+    : labeledGraphListDensity Fl G ≤ 1 := by
+    dsimp only [labeledGraphListDensity, labeledGraphListCount, setOfLabeledSubgraphListIsoHl, Set.coe_setOf]
     apply div_le_one_of_le₀ <;> try simp only [Nat.cast_nonneg]
     let VG := (Finset.univ : Finset W) \ G.type_verts.toFinset
     have h_VG : VG.card = G.size - σ.size := by
@@ -1043,7 +1043,7 @@ theorem labeledGraphListDensity_le_one
 omit [DecidableEq T] in
 theorem quotLabeledGraphListDensity_ge_zero
     (Fl : QuotLabeledGraphList σ t Vl) (G :Flag σ W)
-    : 0 ≤ quotLabeledSubgraphListDensity Fl G
+    : 0 ≤ quotLabeledGraphListDensity Fl G
   := by
   rcases Quot.exists_rep Fl with ⟨Flrep, hFlrep⟩
   rcases Quot.exists_rep G with ⟨Grep, hGrep⟩
@@ -1053,7 +1053,7 @@ theorem quotLabeledGraphListDensity_ge_zero
 omit [DecidableEq T] in
 theorem quotLabeledGraphListDensity_le_one
     (Fl : QuotLabeledGraphList σ t Vl) (G :Flag σ W)
-    : quotLabeledSubgraphListDensity Fl G ≤ 1
+    : quotLabeledGraphListDensity Fl G ≤ 1
   := by
   rcases Quot.exists_rep Fl with ⟨Flrep, hFlrep⟩
   rcases Quot.exists_rep G with ⟨Grep, hGrep⟩
@@ -2622,9 +2622,9 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
     : (Nat.choose (ℓ + 2 * ℓ₀ - ℓ₁ - ℓ₂ - ℓ₃) (ℓ' + ℓ₀ - ℓ₁ - ℓ₂))
-        * labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G
+        * labeledGraphListCount [H₁, H₂, H₃]ᵍ G
       = ∑ G' : Flag σ (Fin ℓ'),
-          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
+          labeledGraphListCount [H₁, H₂]ᵍ G'.out * labeledGraphListCount [G'.out, H₃]ᵍ G
   := by
   let ℓ_other := (ℓ - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀) - (ℓ₃ - ℓ₀)
   let ℓ'_other := (ℓ' - ℓ₀) - (ℓ₁ - ℓ₀) - (ℓ₂ - ℓ₀)
@@ -2639,9 +2639,9 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
   let h_iso : S_LHS ≃ S_RHS :=
     powersetCard_prod_setOfLabeledSubgraphListIsoHl_iso_sigma_setOfLabeledSubgraphListIsoHl ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ
   calc
-    (Nat.choose ℓ_other ℓ'_other) * (labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G)
+    (Nat.choose ℓ_other ℓ'_other) * (labeledGraphListCount [H₁, H₂, H₃]ᵍ G)
     _ = (Nat.choose ℓ_other ℓ'_other) * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
-              dsimp [labeledSubgraphListCount]
+              dsimp [labeledGraphListCount]
               congr!
     _ = ((Finset.univ : Finset (Fin ℓ_other)).powersetCard ℓ'_other).card
         * (setOfLabeledSubgraphListIsoHl G [H₁, H₂, H₃]ᵍ).toFinset.card := by
@@ -2660,8 +2660,8 @@ lemma labeledGraphTripleCount_eq_sum_density_prods'
               dsimp [S_RHS]
               simp only [Set.mem_toFinset, Fintype.card_sigma, Fintype.card_prod, Fintype.card_ofFinset, Set.toFinset_card]
     _ = ∑ G' : Flag σ (Fin ℓ'),
-          labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G := by
-              dsimp [labeledSubgraphListCount]
+          labeledGraphListCount [H₁, H₂]ᵍ G'.out * labeledGraphListCount [G'.out, H₃]ᵍ G := by
+              dsimp [labeledGraphListCount]
               congr!
 
 set_option maxHeartbeats 400000 in
@@ -2677,13 +2677,13 @@ lemma labeledGraphTripleCount_eq_sum_density_prods
         * multinomialCoefficient
             (fun i : Fin 2 ↦ match i with | 0 => ℓ' - ℓ₀ | 1 => ℓ₃ - ℓ₀)
             (ℓ - ℓ₀)
-        * labeledSubgraphListCount [H₁, H₂, H₃]ᵍ G
+        * labeledGraphListCount [H₁, H₂, H₃]ᵍ G
       =
           multinomialCoefficient
             (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
             (ℓ - ℓ₀)
         * ∑ G' : Flag σ (Fin ℓ'),
-            labeledSubgraphListCount [H₁, H₂]ᵍ G'.out * labeledSubgraphListCount [G'.out, H₃]ᵍ G
+            labeledGraphListCount [H₁, H₂]ᵍ G'.out * labeledGraphListCount [G'.out, H₃]ᵍ G
   := by
   rw [← labeledGraphTripleCount_eq_sum_density_prods' ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ]
   have : multinomialCoefficient
@@ -2821,10 +2821,10 @@ densities. The representative-level statement behind the public chain rules. -/
 lemma labeledGraphTripleDensity_eq_sum_density_prods
     (ℓ' : ℕ) (H₁ : LabeledGraph σ (Fin ℓ₁)) (H₂ : LabeledGraph σ (Fin ℓ₂)) (H₃ : LabeledGraph σ (Fin ℓ₃)) (G : LabeledGraph σ (Fin ℓ))
     (hℓ₁ : ℓ₀ ≤ ℓ₁) (hℓ₂ : ℓ₀ ≤ ℓ₂) (hℓ₃ : ℓ₀ ≤ ℓ₃) (hℓ' : ℓ₁ + ℓ₂ ≤ ℓ' + ℓ₀) (hℓ : ℓ' + ℓ₃ ≤ ℓ + ℓ₀)
-    : labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
+    : labeledGraphListDensity [H₁, H₂, H₃]ᵍ G
       =
-      ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out
-                              * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
+      ∑ G' : Flag σ (Fin ℓ'), labeledGraphListDensity [H₁, H₂]ᵍ G'.out
+                              * labeledGraphListDensity [G'.out, H₃]ᵍ G
   := by
   let C_lhs  := multinomialCoefficient
                   (fun i : Fin 3 ↦ match i with | 0 => ℓ₁ - ℓ₀ | 1 => ℓ₂ - ℓ₀ | 2 => ℓ₃ - ℓ₀)
@@ -2851,10 +2851,10 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
   have h_C_pos : C > 0 := by
     dsimp [C]
     simp only [gt_iff_lt, mul_pos_iff_of_pos_left, h_C_lhs_pos, h_C_rhs₀_pos, h_C_rhs₁_pos]
-  suffices C * labeledSubgraphListDensity [H₁, H₂, H₃]ᵍ G
+  suffices C * labeledGraphListDensity [H₁, H₂, H₃]ᵍ G
            =
-           C * ∑ G' : Flag σ (Fin ℓ'), labeledSubgraphListDensity [H₁, H₂]ᵍ G'.out
-                                       * labeledSubgraphListDensity [G'.out, H₃]ᵍ G
+           C * ∑ G' : Flag σ (Fin ℓ'), labeledGraphListDensity [H₁, H₂]ᵍ G'.out
+                                       * labeledGraphListDensity [G'.out, H₃]ᵍ G
   by exact (mul_right_inj' (by exact_mod_cast h_C_pos.ne')).mp this
   {
     have h_σ_size : σ.size = ℓ₀ := Fintype.card_fin ℓ₀
@@ -2863,24 +2863,24 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
     have h_fintype_three := fintype_card_match_comm_three ℓ₀ ℓ₁ ℓ₂ ℓ₃
     have pair_density_eq_count_over_coeff :
         ∑ G' : Flag σ (Fin ℓ'),
-          labeledSubgraphListDensity (labeledGraphPairToList H₁ H₂) G'.out *
-          labeledSubgraphListDensity (labeledGraphPairToList G'.out H₃) G
+          labeledGraphListDensity (labeledGraphPairToList H₁ H₂) G'.out *
+          labeledGraphListDensity (labeledGraphPairToList G'.out H₃) G
         =
         ∑ G' : Flag σ (Fin ℓ'),
-          @Nat.cast ℚ Rat.instNatCast ((labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) G'.out)) / (C_rhs₀) *
-          ((labeledSubgraphListCount (labeledGraphPairToList G'.out H₃) G) / C_rhs₁)
+          @Nat.cast ℚ Rat.instNatCast ((labeledGraphListCount (labeledGraphPairToList H₁ H₂) G'.out)) / (C_rhs₀) *
+          ((labeledGraphListCount (labeledGraphPairToList G'.out H₃) G) / C_rhs₁)
       := by
       apply Finset.sum_congr rfl
       intro G' _
       congr!
-      · dsimp [labeledSubgraphListDensity]
+      · dsimp [labeledGraphListDensity]
         congr
         · dsimp [labeledGraphPairToList, LabeledGraph.size]
           rw [h_σ_size, ← h_fintype_two₀]
           rfl
         · dsimp [LabeledGraph.size]
           exact Fintype.card_fin ℓ'
-      · dsimp [labeledSubgraphListDensity]
+      · dsimp [labeledGraphListDensity]
         congr
         · dsimp [labeledGraphPairToList, LabeledGraph.size]
           rw [h_σ_size, ← h_fintype_two₁]
@@ -2889,66 +2889,66 @@ lemma labeledGraphTripleDensity_eq_sum_density_prods
           exact Fintype.card_fin ℓ
     rw [pair_density_eq_count_over_coeff]
     have triple_density_eq_count_over_coeff :
-        labeledSubgraphListDensity (labeledGraphTripleToList H₁ H₂ H₃) G
+        labeledGraphListDensity (labeledGraphTripleToList H₁ H₂ H₃) G
         =
-        (labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / C_lhs
+        (labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / C_lhs
       := by
-      dsimp [labeledSubgraphListDensity]
+      dsimp [labeledGraphListDensity]
       congr
       · rw [h_σ_size, ← h_fintype_three]
         rfl
       · exact Fintype.card_fin ℓ
     rw [triple_density_eq_count_over_coeff]
     calc
-      (C : ℚ) * (↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / ↑C_lhs)
-      _ = ((C : ℚ) / ↑C_lhs) * ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+      (C : ℚ) * (↑(labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) / ↑C_lhs)
+      _ = ((C : ℚ) / ↑C_lhs) * ↑(labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 ring
       _ = ((C_lhs : ℚ) * ↑C_rhs₀ * ↑C_rhs₁ / ↑C_lhs) *
-          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+          ↑(labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 rw [Nat.cast_mul, Nat.cast_mul]
       _ = ((C_lhs : ℚ) * ((↑C_rhs₀ * ↑C_rhs₁) / ↑C_lhs)) *
-          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+          ↑(labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 ring
       _ = (C_rhs₀ : ℚ) * ↑C_rhs₁ *
-          ↑(labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+          ↑(labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 field_simp
-      _ = ↑(C_rhs₀ * C_rhs₁ * labeledSubgraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
+      _ = ↑(C_rhs₀ * C_rhs₁ * labeledGraphListCount (labeledGraphTripleToList H₁ H₂ H₃) G) := by
                 simp only [Nat.cast_mul]
       _ = ↑(C_lhs * ∑ G' : Flag σ (Fin ℓ'),
-                      (labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-                      (labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+                      (labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                      (labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
                 rw [labeledGraphTripleCount_eq_sum_density_prods ℓ' H₁ H₂ H₃ G hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ]
       _ = ↑C_lhs * ∑ G' : Flag σ (Fin ℓ'),
-                      ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-                      ↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) := by
+                      ↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                      ↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) := by
                 simp only [Nat.cast_mul, Nat.cast_sum]
       _ = ((C_lhs : ℚ) * (↑C_rhs₀ * ↑C_rhs₁) / (↑C_rhs₀ * ↑C_rhs₁))
           * ∑ G' : Flag σ (Fin ℓ'),
-              ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-              (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+              ↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+              (↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
                 field_simp
       _ = ((C : ℚ) / (↑C_rhs₀ * ↑C_rhs₁))
           * ∑ G' : Flag σ (Fin ℓ'),
-              ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-              (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
+              ↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+              (↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)) := by
                 rw [Nat.cast_mul, Nat.cast_mul]
                 ring
       _ = (C : ℚ)
           * ((∑ G' : Flag σ (Fin ℓ'),
-                ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-                (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)))
+                ↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+                (↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G)))
              / (↑C_rhs₀ * ↑C_rhs₁)) := by
                 field_simp
       _ = (C : ℚ)
           * ∑ G' : Flag σ (Fin ℓ'),
-              (↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
-               ↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G))
+              (↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) *
+               ↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G))
               / (↑C_rhs₀ * ↑C_rhs₁) := by
                 rw [Finset.sum_div]
       _ = (C : ℚ)
           * ∑ G' : Flag σ (Fin ℓ'),
-            ↑(labeledSubgraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) / ↑C_rhs₀ *
-            (↑(labeledSubgraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) / ↑C_rhs₁) := by
+            ↑(labeledGraphListCount (labeledGraphPairToList H₁ H₂) (Quotient.out G')) / ↑C_rhs₀ *
+            (↑(labeledGraphListCount (labeledGraphPairToList (Quotient.out G') H₃) G) / ↑C_rhs₁) := by
                 field_simp
   }
 
@@ -2960,15 +2960,15 @@ theorem flagTripleDensity_eq_sum_density_prods
     : flagDensity₃ F₁ F₂ F₃ G = ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ F₁ F₂ G' * flagDensity₂ G' F₃ G
   := by
   rw [←F₁.out_eq, ←F₂.out_eq, ←F₃.out_eq, ←G.out_eq]
-  rw [←labeledSubgraphListDensity_eq_flagDensity₃ F₁.out F₂.out F₃.out G.out]
+  rw [←labeledGraphListDensity_eq_flagDensity₃ F₁.out F₂.out F₃.out G.out]
   have h : ∑ (G' : Flag σ (Fin ℓ')), flagDensity₂ ⟦F₁.out⟧ ⟦F₂.out⟧ G' * flagDensity₂ G' ⟦F₃.out⟧ ⟦G.out⟧
-           = ∑ (G' : Flag σ (Fin ℓ')), labeledSubgraphListDensity [F₁.out, F₂.out]ᵍ G'.out * labeledSubgraphListDensity [G'.out, F₃.out]ᵍ G.out
+           = ∑ (G' : Flag σ (Fin ℓ')), labeledGraphListDensity [F₁.out, F₂.out]ᵍ G'.out * labeledGraphListDensity [G'.out, F₃.out]ᵍ G.out
     := by
     apply Finset.sum_congr (by rfl)
     intros G'
     rw [←G'.out_eq]
-    rw [←labeledSubgraphListDensity_eq_flagDensity₂ F₁.out F₂.out G'.out]
-    rw [←labeledSubgraphListDensity_eq_flagDensity₂ G'.out F₃.out G.out]
+    rw [←labeledGraphListDensity_eq_flagDensity₂ F₁.out F₂.out G'.out]
+    rw [←labeledGraphListDensity_eq_flagDensity₂ G'.out F₃.out G.out]
     simp only [Quotient.out_eq, Finset.mem_univ, imp_self]
   rw [h]
   exact labeledGraphTripleDensity_eq_sum_density_prods ℓ' F₁.out F₂.out F₃.out G.out hℓ₁ hℓ₂ hℓ₃ hℓ' hℓ

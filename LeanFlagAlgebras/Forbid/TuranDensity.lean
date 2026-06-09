@@ -84,9 +84,9 @@ lemma flagDensitySeq_eq_zero_of_free
   intro i
   dsimp only [flagDensitySeq, toFinFlag, flagDensity₁]
   rw [← @subflagDensity_eq_flagListDensity]
-  simp [subflagDensity, labeledSubgraphDensityLifted, labeledSubgraphDensity]
+  simp [subflagDensity, labeledGraphDensityLifted, labeledGraphDensity]
   left
-  simp [labeledSubgraphCount]
+  simp [labeledGraphCount]
   rw [@Fintype.card_eq_zero_iff]
   apply Subtype.isEmpty_of_false
   simp
@@ -109,9 +109,9 @@ lemma flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra
     _ = φ ⟦unitVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
     _ = φ G.toFlagAlgebra := by rfl
 
-lemma labeledSubgraphCount_emptyType_eq_subgraphCount
+lemma labeledGraphCount_emptyType_eq_subgraphCount
     {n m : ℕ} (F : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
-    : labeledSubgraphCount
+    : labeledGraphCount
         { graph := F, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj F.Adj }
         { graph := G, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.Adj }
       = subgraphCount F G := by
@@ -180,10 +180,10 @@ lemma subgraphDensity_eq_flagDensity₁
   rw [← @subflagDensity_eq_flagListDensity]
   simp [toFinFlag]
   change subgraphDensity F G =
-    labeledSubgraphDensity
+    labeledGraphDensity
       { graph := F, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj F.Adj }
       { graph := G, type_embed := RelEmbedding.ofIsEmpty ∅ₜ.Adj G.Adj }
-  simp [subgraphDensity, labeledSubgraphDensity, labeledSubgraphCount_emptyType_eq_subgraphCount,
+  simp [subgraphDensity, labeledGraphDensity, labeledGraphCount_emptyType_eq_subgraphCount,
     LabeledGraph.size]
 
 /-- Turán-density bridge: a forbidden inequality `F.toFlagAlgebra ≤[H.toFinFlag] c • 1`
