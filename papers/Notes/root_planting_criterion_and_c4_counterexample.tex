@@ -236,7 +236,7 @@ passes through.  Even there it is benign: the labelled witnesses that expose the
 unlabel to zero---they average away to nothing once the labels are dropped
 (\cref{prop:ideal-zero})---and every contribution the ensemble relaxation can make is,
 after unlabelling, a limit of ordinary \emph{sum-of-squares contributions}: the standard
-nonnegative building blocks of a quotient certificate, each obtained by squaring a
+non-negative building blocks of a quotient certificate, each obtained by squaring a
 flag-algebra element and averaging it down to the unlabelled level
 (\cref{thm:no-closed-certificate-gap}).  What could in principle remain is
 only a difference at the level of exact, finite certificates---never a new asymptotic
@@ -370,6 +370,8 @@ characterised by
   \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
   \qquad(g\in\A^\sigma[\T]).
 \end{equation}
+The positivity assumption on $\phi_0(\brak\sigma)$ is exactly what permits this
+conditioning: the denominator is the limiting probability of seeing the root type.
 Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the labelled limit seen from a uniformly
 random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
 the expected labelled density of $g$ is the unlabelled density of $g$, normalised by that
@@ -404,6 +406,10 @@ $\{y:h(y)\ge0\}\supseteq\supp(P)$, and the support has full measure, so
 $P[h\ge0]\ge P(\supp(P))=1$; that is, $P[h\ge0]=1$.
 \end{proof}
 
+In applications $X$ will be a homomorphism space and $h(\chi)=\chi(f)$; the lemma lets us
+replace almost-sure non-negativity under a random extension by pointwise non-negativity on
+its support.
+
 \section{Constrained classes and supported homomorphisms}
 
 Let $\T_1$ be a hereditary subclass of $\T_0$.  For a non-degenerate type $\sigma$ of
@@ -430,8 +436,7 @@ flags.  We write
   \subseteq X_\sigma.
 \]
 Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient homomorphism
-space.  We write $Q_0:=Q_\emptyset$ for the empty-type instance, the constrained
-unlabelled limits (the limits of graph sequences drawn from $\T_1$).  The set $Q_\sigma$
+space.  We write $Q_0:=Q_\emptyset$ for the empty-type instance.  The set $Q_\sigma$
 has a simple intrinsic description, one that never mentions the quotient: a
 homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes on every
 forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
@@ -485,7 +490,7 @@ $Q_\sigma$ consists of the homomorphisms that satisfy all of these conditions at
 per forbidden flag, so it is an intersection of closed sets and is therefore closed in
 $X_\sigma$.
 
-Informally, the next lemma says that randomly labelling a constrained unlabelled limit
+Informally, the next lemma says that randomly labelling a constrained unlabelled limit 
 almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
@@ -539,7 +544,9 @@ labelled homomorphism should be approximable by support points of random
 extensions from constrained unlabelled homomorphisms.
 
 \begin{theorem}[Support-closure criterion]\label{thm:support-criterion}
-Let $\T_1$ be a hereditary subclass of $\T_0$, and let $\sigma$ be a non-degenerate type of $\T_1$.  For $f\in\A^\sigma[\T_0]$, consider the following two
+Let $\T_1$ be a hereditary subclass of $\T_0$, and let $\sigma$ be a non-degenerate type of
+$\T_1$ (so $\phi_0(\brak\sigma)>0$ for some $\phi_0\in Q_0$).  For
+$f\in\A^\sigma[\T_0]$, consider the following two
 conditions.
 \begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
   \item\label{cond:quotient}
