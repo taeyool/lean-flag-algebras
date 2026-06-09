@@ -622,10 +622,15 @@ $\mathcal{F}^\sigma$ itself is infinite.
 \paragraph{Single-flag density.}
 Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $A$ of size $m$
 (the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the \emph{host flag}), the \emph{induced subflag density} (or simply \emph{density}) $\den{A}{G}$ is
+(the \emph{host flag}), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
-vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.  Explicitly:
+vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.
+% The \emph{density of $A$ in $G$}, written $\den{A}{G}$, is the probability
+% that a uniformly random $(m-k)$-element subset $S$ of
+% $V(G) \setminus \operatorname{Im}(\theta_G)$ satisfies
+% $G[S \cup \operatorname{Im}(\theta_G)] \cong_\sigma A$.
+Explicitly:
 \[
   \den{A}{G}
   \;:=\;
@@ -672,14 +677,20 @@ These two procedures are the same experiment, which gives the following identity
 \end{lemma}
 
 \paragraph{Joint density.}
-For pattern $\sigma$-flags $A_1$ of size $m_1$ and $A_2$ of size $m_2$ and a host
-$\sigma$-flag $G$ of size $n \geq m_1 + m_2 - k$, let $(S_1, S_2)$ be a
-uniformly random ordered pair of disjoint subsets with
-$S_i \subseteq V(G) \setminus \operatorname{Im}(\theta_G)$ and $|S_i| = m_i - k$.
-The \emph{joint induced subflag density} $\den{A_1,A_2}{G}$ is the probability that for each
-$i = 1,2$, the set $S_i$ together with the labeled vertices of $G$ induces a
-$\sigma$-flag isomorphic to $A_i$.
-When $n < m_1 + m_2 - k$, we set $\den{A_1,A_2}{G} := 0$ by convention.
+For pattern $\sigma$-flags $F_1, \ldots, F_t$ of sizes $m_1, \ldots, m_t$ and
+a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $F_1, \ldots, F_t$
+\emph{fit} in $G$ if
+\[
+  n - k \;\geq\; (m_1 - k) + \cdots + (m_t - k).
+\]
+When $F_1, \ldots, F_t$ fit in $G$, let $(S_1, \ldots, S_t)$ be a uniformly
+random tuple of pairwise-disjoint subsets $S_i \subseteq V(G) \setminus
+\operatorname{Im}(\theta_G)$ with $|S_i| = m_i - k$.
+The \emph{density of $F_1, \ldots, F_t$ in $G$}, written $\den{F_1,\ldots,F_t}{G}$, is the
+probability that $G[S_i \cup \operatorname{Im}(\theta_G)] \cong_\sigma F_i$
+for every $i \in [t]$.
+When $F_1, \ldots, F_t$ do not fit in $G$, we set
+$\den{F_1,\ldots,F_t}{G} := 0$ by convention.
 % Joint densities are what make multiplication possible: the product of two
 % pattern flags is interpreted as the probability that two disjoint samples occur
 % simultaneously in the same host.  This turns combinatorial double counting
@@ -1327,56 +1338,48 @@ final unlabeled inequality, as described in the section introduction.
 
 \subsection{Subflag Densities}
 
-The next viewpoint is probabilistic.  A density $\den{F}{G}$ is the value of a
-finite sampling experiment: keep the type vertices fixed, sample the remaining
-vertices of the host graph, and observe the induced flag.  This reading is
-important for certification.  The SDP search manipulates algebraic density
-expressions, while Lean grounds each expression in a finite sample space and a
-finite count.
-
-The implementation in \lean{FlagAlgebra/SubflagListDensity.lean} defines this
-sampling semantics uniformly for lists of requested flags.  This avoids a
-separate theory for one-flag densities, pair densities, and triple densities.
-At the representative level, \lean{LabeledSubgraphList} records the sampled
-subgraphs of a host.  The main well-formedness conditions are:
+Densities are defined uniformly over lists of pattern flags, avoiding a
+separate theory for one-flag, pair, and triple densities.
+\lean{labeledSubgraphListDensity} computes the density at the representative
+level: given a list \lean{Hl} of $t$ labeled pattern graphs and a host
+\lean{LabeledGraph}, it returns the count of realizing induced sub-flag lists
+divided by the multinomial coefficient over the sample space:
 \begin{lstlisting}
-LabeledSubgraphList.IsInduced
-predDisjointLabeledSubgraphList
-predIsoLabeledHl
+noncomputable def labeledSubgraphListDensity
+    (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+  let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
+  labeledSubgraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
-They say that each sample is induced, that independently sampled flags overlap
-only in the shared type vertices, and that the observed subgraphs have the
-requested flag-isomorphism type.  The density is the rational value of that
-experiment:
+The lemma \lean{labeledSubgraphListDensity\_respect\_eqv} proves that replacing
+either the pattern list or the host by isomorphic labeled graphs gives the same
+rational number.  This justifies lifting to the quotient:
 \begin{lstlisting}
-def labeledSubgraphListDensity (Hl : LabeledGraphList sigma t Vl)
-    (G : LabeledGraph sigma W) : Q :=
-  labeledSubgraphListCount Hl G /
-    multinomialCoefficient r_list (G.size - sigma.size)
+noncomputable def flagListDensity : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+  fun Fl (*@$\Rightarrow$@*) quotLabeledSubgraphListDensity Fl.coe
 \end{lstlisting}
-The denominator is the size of the finite sample space for the additional,
-unlabeled vertices.  The quotient lift is justified by
-\lean{labeledSubgraphListDensity\_respect\_eqv}: replacing the requested flags
-or the host by isomorphic labeled graphs gives the same rational number.  This
-is the first recurring pattern of the section: the quotient remains the
-specification, and computations over representatives are admitted only after an
-invariance proof.
-
-The single- and two-flag densities used by the algebra are arity-specialized
-views of this same semantics:
+The single-flag and joint densities are specializations of \lean{flagListDensity}
+to singleton and pair lists:
 \begin{lstlisting}
-def flagDensity1 (F : Flag sigma U) (G : Flag sigma W) : Q :=
-  flagListDensity [F] G
+noncomputable def flagDensity(*@$_1$@*) (F : Flag (*@$\sigma$@*) U) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+  flagListDensity [F](*@$^\mathtt{f}$@*) G
 
-def flagDensity2 (F1 : Flag sigma U1) (F2 : Flag sigma U2)
-    (G : Flag sigma W) : Q :=
-  flagListDensity [F1, F2] G
+noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*))
+    (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+  flagListDensity [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
-The Lean source names these constants with Unicode subscripted numerals; the
-displayed code uses ASCII names only for portability.  Conceptually,
-\lean{flagDensity1} is the induced
-subflag density $\den{F}{G}$, while \lean{flagDensity2} is the joint density
-that makes multiplication possible.
+\lean{flagDensity}$_1$ is the induced sub-flag density $\den{F}{G}$, and
+\lean{flagDensity}$_2$ is the joint density used to define multiplication.
+
+The following theorem is the chain rule of
+Section~\ref{sec:background} (Lemma~\ref{lem:chain-rule}): for flags of
+intermediate size $\ell'$,
+\begin{lstlisting}
+theorem flagDensity_eq_sum_density_prods
+    ((*@$\ell'$@*) : (*@$\mathbb{N}$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
+    (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
+    : flagDensity(*@$_1$@*) F(*@$_1$@*) G =
+      (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
+\end{lstlisting}
 
 \subsection{The Algebra as an Equational Theory}
 
