@@ -237,7 +237,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
 
     elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
   let setName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_0_0")
@@ -400,7 +400,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
 
     elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
     let unlabelThmName := mkIdent (Name.mkSimple s!"unlabel_{n}_{k}_{m}_{i}")
@@ -463,9 +463,9 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
             rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
             exact congrArg (fun l => l.getD $(Quote.quote i) (0 : ℚ)) $downwardFactorsEqName
           change
-            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩)
+            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩)
               =
-            $coeffR • (⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
+            $coeffR • (⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
           apply Quotient.sound
           simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hdnf]
       ))

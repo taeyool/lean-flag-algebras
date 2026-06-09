@@ -91,7 +91,7 @@ example : FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_3 =
     (1 / 2 : ℝ) • FlagAlgebra_4_2_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_2_0_10
   := by
   dsimp only [FlagAlgebra_3_2_0_0, FlagAlgebra_3_2_0_3]
-  rw [unitVector_quot_mul_eq_flagMul_quot]
+  rw [basisVector_quot_mul_eq_flagMul_quot]
   simp [flagMul, flagMulWithSize]
   rw [Finset.sum_eq_multiset_sum, ← flagSet_4_2_0_eq_univ, flagSet_4_2_0_val_eq]
   simp [add_quot, smul_quot]
@@ -265,7 +265,7 @@ machinery here and is a substantial development on its own:
 `#print axioms Kr_plus_1_free_P4_density_upper_bound` lists this axiom, making the
 proof's dependence on the unproved result explicit. -/
 axiom Zykov_K4_density_bound (r : ℕ) (hr : 3 ≤ r) (φ₀ : PositiveHom ∅ₜ)
-    (hKfree : φ₀ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0)
+    (hKfree : φ₀ ⟦basisVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0)
     : φ₀ FlagAlgebra_4_0_0_10 ≤ ((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3
 
 /-- **K₄ density in K_{r+1}-free graphs** is at most `(r-1)(r-2)(r-3)/r³`, i.e.
@@ -346,7 +346,7 @@ lemma leftover_nonneg (r : ℕ) (hr : 3 ≤ r) : 0 ≤ leftover r := by
   simp only [PositiveHom.map_add, PositiveHom.map_smul, ge_iff_le]
   refine add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg ?_ ?_) ?_) ?_) ?_) ?_ <;>
     refine mul_nonneg (div_nonneg ?_ (by first | exact hden | exact hden2))
-                      (positiveHom_unitVector_ge_zero φ _)
+                      (positiveHom_basisVector_ge_zero φ _)
   · nlinarith [mul_nonneg (pow_nonneg h1 3) h7]
   · nlinarith [mul_nonneg (mul_nonneg (pow_nonneg h1 2) h7) (show (0:ℝ) ≤ 6*(r:ℝ)-5 by linarith)]
   · nlinarith [mul_nonneg (pow_nonneg h1 3) h7]
@@ -427,7 +427,7 @@ sequence for each of `F₈`, `F₉`, `F₁₀` along the subsequence.
 `#print axioms Kr_plus_1_free_P4_density_achievable` lists this axiom. -/
 axiom Turan_limit_P4_density (r : ℕ) (hr : 2 ≤ r) :
     ∃ φ : PositiveHom ∅ₜ,
-      φ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
+      φ ⟦basisVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
       φ P4_density = 12 * (((r : ℝ) - 1) / r) ^ 3
 
 /-- **Lower-bound direction of Lemma 2.1** (Murphy–Nir 2021). For `r ≥ 3`, the
@@ -444,7 +444,7 @@ density value are given by the axiom `Turan_limit_P4_density`. Together with
 `Zykov_K4_density_bound` (for the upper bound) and `Turan_limit_P4_density` (here). -/
 theorem Kr_plus_1_free_P4_density_achievable (r : ℕ) (hr : 3 ≤ r) :
     ∃ φ : PositiveHom ∅ₜ,
-      φ ⟦unitVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
+      φ ⟦basisVector (completeGraph (Fin (r + 1))).toFinFlag⟧ = 0 ∧
       φ P4_density = 12 * (((r : ℝ) - 1) / r) ^ 3 :=
   Turan_limit_P4_density r (by omega)
 

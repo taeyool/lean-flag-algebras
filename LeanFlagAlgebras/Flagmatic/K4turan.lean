@@ -214,11 +214,11 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_10
 lemma K4turan_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K4.toFinFlag] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
-  have h_unit_10 : (FlagAlgebra_4_0_0_10 : FlagAlgebra ∅ₜ) = ⟦unitVector (⟨4, Flag_4_0_0_10⟩ : FinFlag ∅ₜ)⟧
+  have h_unit_10 : (FlagAlgebra_4_0_0_10 : FlagAlgebra ∅ₜ) = ⟦basisVector (⟨4, Flag_4_0_0_10⟩ : FinFlag ∅ₜ)⟧
     := (Quotient.out_inj.mp rfl).symm
   have h_zero_10 : (FlagAlgebra_4_0_0_10 : FlagAlgebra ∅ₜ) =[K4.toFinFlag] 0 := by
     rw [h_unit_10]
-    apply unitVector_forbidEq_zero
+    apply basisVector_forbidEq_zero
     rw [unlabel_emptyType]
     exact lt_of_le_of_ne
       (flagListDensity₁_ge_zero K4.toFinFlag.2 Flag_4_0_0_10)

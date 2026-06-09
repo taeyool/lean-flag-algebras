@@ -51,7 +51,7 @@ noncomputable def flagType_asEmptyTypeAlgebra
     : FlagAlgebra ∅ₜ
   :=
   let σ₀_finFlag : FinFlag ∅ₜ := ⟨n₀, σ.toEmptyTypeFlag⟩
-  ⟦unitVector σ₀_finFlag⟧
+  ⟦basisVector σ₀_finFlag⟧
 
 -- Notation `⟨σ⟩₀` for the empty-type algebra element of the type graph `σ`.
 notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
@@ -59,10 +59,10 @@ notation "⟨" σ "⟩₀" => (flagType_asEmptyTypeAlgebra σ)
 theorem one_downward_eq
     : ⟦(1 : FlagAlgebra σ)⟧₀ = (downwardNormalizingFactor (emptyFlag σ) : ℝ) • ⟨σ⟩₀
   := by
-  have : (1 : FlagAlgebra σ) = ⟦unitVector ⟨n₀, emptyFlag σ⟩⟧ := by rfl
+  have : (1 : FlagAlgebra σ) = ⟦basisVector ⟨n₀, emptyFlag σ⟩⟧ := by rfl
   rw [this]
   dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, downwardFlag, Quotient.lift_mk]
-  rw [linearExtension_unitVector, rat_smul_eq_real_smul, smul_quot]
+  rw [linearExtension_basisVector, rat_smul_eq_real_smul, smul_quot]
   congr
 
 theorem flagDensity₁_flagType_asEmptyType_pos
@@ -430,12 +430,12 @@ noncomputable def integralFlagDensitySpaceSeq
 
 /- Lemma 3.11 -/
 /-- Lemma 3.11: along a flag sequence converging to `φ`, the expected `F`-densities tend to
-the normalized downward value `(φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦1⟧₀)`. -/
+the normalized downward value `(φ ⟦⟦basisVector F⟧⟧₀) / (φ ⟦1⟧₀)`. -/
 theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
     {s : FlagSeq ∅ₜ} {φ : PositiveHom ∅ₜ} (hσ : φ ⟨σ⟩₀ > 0)
     (hs_conv : ConvergesTo s φ.coe) (hs_den : ∀ n, flagDensity₁ σ.toEmptyTypeFlag (s n).2 > 0)
     : ∀ (F : FinFlag σ), Tendsto (integralFlagDensitySpaceSeq hs_den F) atTop
-      (𝓝 ((φ ⟦⟦unitVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
+      (𝓝 ((φ ⟦⟦basisVector F⟧⟧₀) / (φ ⟦(1 : FlagAlgebra σ)⟧₀)))
   := by
   intro F
   obtain ⟨h_inc, h_lim⟩ := flagSeq_convergesTo_iff.mp hs_conv
@@ -450,7 +450,7 @@ theorem tendsto_integral_flagDensitySpace_of_converge_flagSeq
   rw [tendsto_congr' h_eventually_eq]
   apply Tendsto.div
   · dsimp only [downward, downwardFlagVectorQuot, Quotient.lift_mk]
-    simp_rw [downwardFlagVector_unitVector]
+    simp_rw [downwardFlagVector_basisVector]
     dsimp only [downwardFlag, rat_smul_eq_real_smul]
     simp_rw [smul_quot, PositiveHom.map_smul]
     apply Tendsto.const_mul
@@ -1115,9 +1115,9 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   use ℙ'
   intro f
   rcases Quotient.exists_rep f with ⟨frep, rfl⟩
-  rw [flagVector_eq_sum_unitVector frep]
+  rw [flagVector_eq_sum_basisVector frep]
   simp_rw [sum_quot, downward_sum, PositiveHom.map_sum, Finset.sum_div]
-  have : ∀ F ∈ frep.support, Integrable (fun φ ↦ (PositiveHomSpace.toPosHom φ) ⟦frep F • unitVector F⟧) ℙ' := by
+  have : ∀ F ∈ frep.support, Integrable (fun φ ↦ (PositiveHomSpace.toPosHom φ) ⟦frep F • basisVector F⟧) ℙ' := by
     intro F hF
     constructor
     · apply Measurable.aestronglyMeasurable
@@ -1125,17 +1125,17 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
       rw [measurable_pi_iff]
       intro g
       rcases Quotient.exists_rep g with ⟨grep, rfl⟩
-      rw [flagVector_eq_sum_unitVector grep]
+      rw [flagVector_eq_sum_basisVector grep]
       simp_rw [sum_quot, PositiveHom.map_sum]
       apply Finset.measurable_sum grep.support
       intro G hG
-      simp_rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+      simp_rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_basisVector]
       apply Measurable.const_mul
       apply Measurable.comp (flagDensitySpace_eval_measurable G) measurable_subtype_coe
     · apply @HasFiniteIntegral.of_bounded _ _ _ _ _ _ _ (abs (frep F))
       apply Eventually.of_forall
       intro φ
-      rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector, mul_comm]
+      rw [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_basisVector, mul_comm]
       simp only [norm_mul, Real.norm_eq_abs]
       apply mul_le_of_le_one_left (abs_nonneg (frep F))
       have hφ := flagDensitySpace_mem_Icc_zero_one φ F
@@ -1150,7 +1150,7 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   have hℙF := ProbabilityMeasure.tendsto_iff_forall_integral_tendsto.mp hℙ F.toBoundedContinuousFun
   have h' := tendsto_integral_flagDensitySpace_of_converge_flagSeq hσ hs_conv hs_den F
   rw [← tendsto_nhds_unique hℙF h']
-  simp_rw [PositiveHomSpace.toPosHom_unitVector]
+  simp_rw [PositiveHomSpace.toPosHom_basisVector]
   dsimp only [ProbabilityMeasure.coe_mk, ℙ']
   rw [integral_subtype_comap (@positiveHomSpace_measurable _ σ) (fun a ↦ a F)]
   apply setIntegral_eq_integral_of_ae_compl_eq_zero
@@ -1208,18 +1208,18 @@ theorem downward_zero_at_hom
     : ∀ f : FlagAlgebra σ, φ ⟦f⟧₀ = 0
   := by
   intro f
-  rw [← Quotient.out_eq f, flagVector_eq_sum_unitVector f.out]
+  rw [← Quotient.out_eq f, flagVector_eq_sum_basisVector f.out]
   rw [sum_quot, downward_sum, PositiveHom.map_sum]
   apply Finset.sum_eq_zero
   intro F _
   rw [smul_quot, downward_smul, PositiveHom.map_smul, mul_eq_zero]
   right
   dsimp only [downward, downwardFlagVectorQuot, downwardFlagVector, Quotient.lift_mk]
-  rw [linearExtension_unitVector]
+  rw [linearExtension_basisVector]
   dsimp only [downwardFlag]
   rw [rat_smul_eq_real_smul, smul_quot, PositiveHom.map_smul, mul_eq_zero]
   right
-  apply positiveHom_unitVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
+  apply positiveHom_basisVector_eq_zero φ (flagDensity₁_flagType_asEmptyType_pos F)
   exact hφ
 
 /-- The downward operator preserves the semantic cone: if `f ≥ 0` semantically in the typed
@@ -1229,7 +1229,7 @@ theorem downward_preserve_semanticCone
     : ⟦f⟧₀ ∈ semanticCone ∅ₜ
   := by
   intro φ₀
-  have : φ₀ ⟨σ⟩₀ ≥ 0 := positiveHom_unitVector_ge_zero φ₀ _
+  have : φ₀ ⟨σ⟩₀ ≥ 0 := positiveHom_basisVector_ge_zero φ₀ _
   rcases eq_or_lt_of_le this with hφ₀ | hφ₀
   · have : φ₀ ⟦f⟧₀ = 0 := downward_zero_at_hom φ₀ (Eq.symm hφ₀) f
     exact le_of_eq (Eq.symm this)
@@ -1259,7 +1259,7 @@ theorem square_downward_mul_ge_mul_downward_square
   := by
   intro φ
   rw [PositiveHom.map_sub φ _ _, PositiveHom.map_mul φ _ _, PositiveHom.map_mul φ _ _]
-  have : φ ⟨σ⟩₀ ≥ 0 := positiveHom_unitVector_ge_zero φ _
+  have : φ ⟨σ⟩₀ ≥ 0 := positiveHom_basisVector_ge_zero φ _
   rcases eq_or_lt_of_le this with hφ | hφ
   · have hφ_zero : ∀ k : FlagAlgebra σ, φ ⟦k⟧₀ = 0 := downward_zero_at_hom φ (Eq.symm hφ)
     rw [hφ_zero (f * f), hφ_zero (g * g), hφ_zero (f * g)]
@@ -1307,9 +1307,9 @@ theorem square_downward_mul_ge_mul_downward_square
       intro k
       funext ψ
       conv_lhs =>
-        rw [← Quotient.out_eq k, flagVector_eq_sum_unitVector k.out]
+        rw [← Quotient.out_eq k, flagVector_eq_sum_basisVector k.out]
         rw [sum_quot, PositiveHom.map_sum]
-        simp only [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_unitVector]
+        simp only [smul_quot, PositiveHom.map_smul, PositiveHomSpace.toPosHom_basisVector]
     have h_F_eq : F_func = (fun ψ => ∑ F ∈ f.out.support, f.out F * ψ.val F) := by
       dsimp [F_func]
       exact h_eval_eq f
