@@ -323,7 +323,13 @@ of flags), modulo the linear relations
 relating each flag to the flags one vertex larger.  This quotient is compatible with the
 induced-density evaluation $p(\,\cdot\,,G)$: for every larger $G$ the identity
 $p(F,G)=\sum_{|H|=|F|+1}p(F,H)\,p(H,G)$ holds, so $p(\,\cdot\,,G)$ respects the defining
-relations and descends to a well-defined linear functional on $\A^\sigma$.  The space
+relations and descends to a well-defined linear functional on $\A^\sigma$.  We keep the
+same notation for this extension: if $f\in\A^\sigma[\T]$ is represented by
+$\sum_i a_iF_i$, then
+\[
+  p(f,G):=\sum_i a_i\,p(F_i,G),
+\]
+independently of the chosen representative.  The space
 carries a commutative, associative \emph{product} that records how densities combine: the
 product $F_1\cdot F_2$ of $\sigma$-flags on $n_1$ and $n_2$ vertices is the formal
 combination of the $\sigma$-flags $H$ on $n_1+n_2-k$ vertices, each weighted by the
@@ -664,8 +670,11 @@ closed under blow-ups, a labelled vertex can be duplicated into a clone class of
 positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
 root-plantability requires.  Throughout, $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
-all finite simple graphs, and $\K$ is a hereditary class of finite graphs, identified with
-the constrained class $\T_1=\T_\K$ of graphs avoiding every induced subgraph not in $\K$.
+all finite simple graphs.  If $\K$ is a hereditary class of finite graphs, we write
+$\T_\K$ for the same class in the constrained-theory notation: equivalently, $\T_\K$
+is the class of graphs avoiding every induced subgraph not in $\K$.  Thus in this
+section $\T_1=\T_\K$ is just $\K$ viewed as the constrained class inside
+$\T_{\mathrm{Graph}}$.
 
 \begin{definition}[Independent blow-up]\label{def:independent-blow-up}
 Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
@@ -736,10 +745,11 @@ labelled vertices.  Call the sample good if none of these additional vertices
 lies in a planted labelled clone class $C_{\theta(1)},\ldots,C_{\theta(k)}$ and
 no two of them lie in the same non-labelled clone class.  The probability of
 hitting a planted labelled clone class is at most
-$(\ell-k)\lambda+O_m(\operatorname{err}_N)$.  Conditional on avoiding the planted clone classes, the normalised target weights
-of the non-labelled clone classes are equal, up to $O_m(\operatorname{err}_N)$,
-because the total non-labelled mass is $1-\lambda\ge1/2$.  Therefore the
-probability that two sampled vertices
+$(\ell-k)\lambda+O_m(\operatorname{err}_N)$.  Conditional on avoiding the
+planted clone classes, the sample lands among the non-labelled clone classes
+with probabilities proportional to their normalised sizes; these probabilities
+are all $1/(n-k)+O_m(\operatorname{err}_N)$ because the total non-labelled mass
+is $1-\lambda\ge1/2$.  Therefore the probability that two sampled vertices
 fall in the same non-labelled clone class is at most
 $\binom{\ell-k}{2}/(n-k)+O_m(\operatorname{err}_N)$.  Hence the bad probability is
 bounded by the right-hand side of \eqref{eq:planted-estimate}, after enlarging
@@ -828,10 +838,11 @@ $\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a posit
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
 $X_\sigma\subseteq Y_\sigma$ is a closed subspace.  Let $P_j$ be the finite
-random-labelling distribution on $Y_\sigma$ obtained by choosing a random embedding
-of $\sigma$ into $B_j$ and recording all labelled flag densities.  These measures
-converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability measure on
-$Y_\sigma$ concentrated on $X_\sigma$.
+random-labelling distribution on $Y_\sigma$ obtained by choosing a random induced
+embedding of $\sigma$ into $B_j$ and recording the resulting labelled flag
+densities.  By the finite-graph form of the random-extension theorem, these
+measures converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability
+measure on $Y_\sigma$ concentrated on $X_\sigma$.
 
 Consider the closed cylinder in the ambient product space
 \[
@@ -840,8 +851,9 @@ Consider the closed cylinder in the ambient product space
     |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
 \]
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
-large $j$, \cref{lem:planted-estimate} implies that every planted root lies
-in $\widetilde C$.  By \cref{lem:planted-mass},
+large $j$, \cref{lem:planted-estimate} and the choice of $t,\lambda,N_j$ imply
+that every planted root has all $F_i$-coordinates within $\eps/2$ of $\psi$,
+hence lies in $\widetilde C$.  By \cref{lem:planted-mass},
 \[
   P_j(\widetilde C)\ge c_{|\sigma|,\lambda}>0
 \]
@@ -1115,15 +1127,16 @@ random element of $\Emb_\sigma(H_t)$ and recording all rooted flag densities in
   Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
 \]
 By Razborov's random-extension theorem, $P_t$ converges weakly to
-$\Ext_\sigma(\phi_0)$.  Let
+$\Ext_\sigma(\phi_0)$ as a probability measure on the ambient product space.  Let
 \[
   \widetilde C=
   \{x\in Y_\sigma:
     |x(F_i)-\psi(F_i)|\le 2\eps/3\text{ for all }i\}.
 \]
 Then $\widetilde C\cap X_\sigma\subseteq U$.  Every root in $\Theta_t$ lies in
-$\widetilde C$, and the total number of ordered embeddings of $\sigma$ into
-$H_t$ is at most $|V(H_t)|^k$, so
+$\widetilde C$, because its $F_i$-coordinates differ from those of $\psi$ by at
+most the two $\eps/3$ errors above.  The total number of ordered embeddings of
+$\sigma$ into $H_t$ is at most $|V(H_t)|^k$, so
 \[
   P_t(\widetilde C)\ge\delta
 \]
