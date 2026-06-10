@@ -1014,10 +1014,45 @@ def dedupStepL {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     List (Sym2LabeledGraph σ n) :=
   if acc.any (fun H => isIsoFast_bool H G) = true then acc else acc ++ [G]
 
-/-- The deduplicated typed labeled graphs: one representative per `∼sf`-class. -/
+/-- The cheap labeled key: the *underlying* graph's `degKey` `(edge count, sorted degree
+sequence)`. An iso invariant of the labeled graph (`labeledDegKey_iso_invariant`), since a
+labeled `∼sf` restricts to an `∼sf` of the underlying graphs — so the dedup runs the
+expensive `isIsoFast_bool` only against survivors sharing this key (almost always just
+survivors with the *same* underlying graph), instead of all `O(g)` of them. -/
+def labeledDegKey {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) : ℕ × List ℕ :=
+  degKey ⟨G.edges, G.edges_valid⟩
+
+/-- Attach the cheap key to a labeled graph as a precomputed bucketing key. -/
+def withLabeledDegKey {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (G : Sym2LabeledGraph σ n) : Sym2LabeledGraph σ n × (ℕ × List ℕ) :=
+  (G, labeledDegKey G)
+
+/-- Keyed deduplication step with a cheap prefilter: keep `p` unless some survivor shares
+its cheap key (`q.2 == p.2`, `O(n)`) *and* is `isIsoFast_bool` to it. The `&&` short-circuits,
+so the expensive iso test runs only on cheap-key collisions. Makes the same keep/drop
+decisions as `dedupStepL` because the cheap key is an iso invariant (`foldl_dedupStepDegL_sim`).
+The labeled analogue of `dedupStepDeg`. -/
+def dedupStepDegL {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (acc : List (Sym2LabeledGraph σ n × (ℕ × List ℕ)))
+    (p : Sym2LabeledGraph σ n × (ℕ × List ℕ)) :
+    List (Sym2LabeledGraph σ n × (ℕ × List ℕ)) :=
+  if acc.any (fun q => q.2 == p.2 && isIsoFast_bool q.1 p.1) = true then acc
+  else acc ++ [p]
+
+/-- The deduplicated typed labeled graphs, key-tagged, produced by the cheap-key-prefiltered
+fold. `genLabeledGraphsDedup_eq` proves its first components equal the naive `dedupStepL`
+fold, so all completeness/`Nodup` reasoning happens on the latter. -/
+def genLabeledGraphsDedupKeyed {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    List (Sym2LabeledGraph σ n × (ℕ × List ℕ)) :=
+  ((allAugSym2LabeledGraphs σ n).map withLabeledDegKey).foldl dedupStepDegL []
+
+/-- The deduplicated typed labeled graphs: one representative per `∼sf`-class, computed by
+the cheap-key-prefiltered fold (equal to the naive `dedupStepL` fold by
+`genLabeledGraphsDedup_eq`). -/
 def genLabeledGraphsDedup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     List (Sym2LabeledGraph σ n) :=
-  (allAugSym2LabeledGraphs σ n).foldl dedupStepL []
+  (genLabeledGraphsDedupKeyed σ n).map Prod.fst
 
 /-- The typed flags (quotient classes) of the generated labeled graphs. -/
 def genFlags {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : List (Sym2Flag σ n) :=
@@ -1083,9 +1118,81 @@ theorem foldl_dedupStepL_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
 
 /-! ### Completeness and `= univ` -/
 
+/-- A labeled `∼sf` restricts to an `∼sf` of the underlying (empty-typed) graphs: the same
+graph isomorphism, forgetting the (empty) type preservation. -/
+theorem underlying_eqv_of_labeled_eqv {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    {G H : Sym2LabeledGraph σ n} (h : G ∼sf H) :
+    (⟨G.edges, G.edges_valid⟩ : Sym2Graph n) ∼sf ⟨H.edges, H.edges_valid⟩ :=
+  ⟨{ graph_iso := h.some.graph_iso
+     type_preserve := by ext z; exact Fin.elim0 z }⟩
+
+/-- The cheap labeled key is an isomorphism invariant: it is the underlying graph's `degKey`,
+and a labeled iso restricts to an iso of underlying graphs. So the prefilter never skips a
+genuinely isomorphic survivor. -/
+theorem labeledDegKey_iso_invariant {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    {G H : Sym2LabeledGraph σ n} (hh : G ∼sf H) :
+    labeledDegKey G = labeledDegKey H :=
+  degKey_iso_invariant (underlying_eqv_of_labeled_eqv hh)
+
+/-- Fold simulation: the prefiltered `dedupStepDegL` fold makes the same keep/drop decisions
+as the `dedupStepL` fold, because the cheap key is an iso invariant and `isIsoFast_bool` is
+sound. We carry two invariants: the first components match, and every tag is its graph's
+`labeledDegKey`. The labeled analogue of `foldl_dedupStepDeg_sim`. -/
+theorem foldl_dedupStepDegL_sim {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (xs : List (Sym2LabeledGraph σ n)) :
+    ∀ (accK : List (Sym2LabeledGraph σ n × (ℕ × List ℕ)))
+      (accU : List (Sym2LabeledGraph σ n)),
+      accK.map Prod.fst = accU → (∀ q ∈ accK, q.2 = labeledDegKey q.1) →
+      ((xs.map withLabeledDegKey).foldl dedupStepDegL accK).map Prod.fst
+          = xs.foldl dedupStepL accU
+        ∧ (∀ q ∈ (xs.map withLabeledDegKey).foldl dedupStepDegL accK,
+            q.2 = labeledDegKey q.1) := by
+  induction xs with
+  | nil => intro accK accU h1 h2; exact ⟨h1, h2⟩
+  | cons x rest ih =>
+    intro accK accU h1 h2
+    simp only [List.map_cons, List.foldl_cons]
+    have hany : accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x)
+        = accU.any (fun H => isIsoFast_bool H x) := by
+      rw [← h1, List.any_map]
+      apply any_eq_of_forall_mem
+      intro q hq
+      rw [h2 q hq]
+      by_cases hiso : isIsoFast_bool q.1 x = true
+      · have hkey : labeledDegKey q.1 = labeledDegKey x :=
+          labeledDegKey_iso_invariant (isIsoFast_bool_true_correct hiso)
+        simp [hiso, hkey]
+      · simp only [Bool.not_eq_true] at hiso
+        simp [hiso]
+    have e1 : dedupStepDegL accK (withLabeledDegKey x)
+        = if accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x) = true
+          then accK else accK ++ [withLabeledDegKey x] := rfl
+    have e2 : dedupStepL accU x
+        = if accU.any (fun H => isIsoFast_bool H x) = true
+          then accU else accU ++ [x] := rfl
+    by_cases hb : accK.any (fun q => q.2 == labeledDegKey x && isIsoFast_bool q.1 x) = true
+    · rw [e1, if_pos hb, e2, if_pos (by rw [← hany]; exact hb)]
+      exact ih accK accU h1 h2
+    · rw [e1, if_neg hb, e2, if_neg (by rw [← hany]; exact hb)]
+      apply ih
+      · simp [List.map_append, withLabeledDegKey, h1]
+      · intro q hq
+        rw [List.mem_append, List.mem_singleton] at hq
+        rcases hq with hq | hq
+        · exact h2 q hq
+        · subst hq; rfl
+
+/-- The cheap-key-prefiltered dedup equals the naive `dedupStepL` fold (first components),
+so all completeness/`Nodup` reasoning transfers. The labeled analogue of `augRepsDeg_fst_eq`. -/
+theorem genLabeledGraphsDedup_eq {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    genLabeledGraphsDedup σ n = (allAugSym2LabeledGraphs σ n).foldl dedupStepL [] := by
+  unfold genLabeledGraphsDedup genLabeledGraphsDedupKeyed
+  exact (foldl_dedupStepDegL_sim (allAugSym2LabeledGraphs σ n) [] [] rfl (by simp)).1
+
 theorem genLabeledGraphsDedup_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
     ∃ G', G' ∈ genLabeledGraphsDedup σ n ∧ G ∼sf G' := by
+  rw [genLabeledGraphsDedup_eq]
   obtain ⟨H', hH'mem, hGH'⟩ := allAugSym2LabeledGraphs_complete G
   obtain ⟨G', hG'mem, hH'G'⟩ :=
     foldl_dedupStepL_complete (allAugSym2LabeledGraphs σ n) [] H' hH'mem
@@ -1206,8 +1313,10 @@ theorem foldl_dedupStepL_flags_nodup {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
 
 /-- The generated typed flags have no duplicates. Mirrors `genEmptyTypedFlags_nodup`. -/
 theorem genFlags_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
-    (genFlags σ n).Nodup :=
-  foldl_dedupStepL_flags_nodup (allAugSym2LabeledGraphs σ n) [] (by simp)
+    (genFlags σ n).Nodup := by
+  unfold genFlags
+  rw [genLabeledGraphsDedup_eq]
+  exact foldl_dedupStepL_flags_nodup (allAugSym2LabeledGraphs σ n) [] (by simp)
 
 /-- `genFlagsOrdered σ n` has no duplicates (inherited from `genFlags` via the perm). -/
 theorem genFlagsOrdered_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
