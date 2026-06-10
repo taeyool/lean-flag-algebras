@@ -1420,12 +1420,12 @@ Here \lean{->0} is Mathlib's type of finitely supported functions.  The
 expansion law identifies a basis flag with its density expansion at any larger
 size:
 \begin{lstlisting}
-def densityFlagSum (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
+def flagExpansion (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
   (*@$\sum$@*) F' : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*),
     flagDensity(*@$_1$@*) F.2 F' * basisVector (*@$\langle$@*)(*@$\ell$@*), F'(*@$\rangle$@*)
 
 def zeroElement (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
-  basisVector F - densityFlagSum F (*@$\ell$@*)
+  basisVector F - flagExpansion F (*@$\ell$@*)
 
 def ZeroSpace ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Submodule R (FlagVector (*@$\sigma$@*)) :=
   Submodule.span R (zeroSet (*@$\sigma$@*))
