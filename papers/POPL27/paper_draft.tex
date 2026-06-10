@@ -237,22 +237,21 @@
 \maketitle
 
 \begin{abstract}
-Flag algebras are a powerful method for proving asymptotic extremal graph
-inequalities, often by reducing a graph-theoretic problem to a finite
-semidefinite-programming certificate.  Many applications are constrained:
-they prove inequalities only for graphs that avoid specified finite patterns,
-such as triangle-free graphs.  We present a machine-checked formalization of
-flag algebras for finite simple graphs, together with a verified path from
-externally generated certificates to formal proofs in Lean.
+Flag algebras are a powerful method for proving asymptotic inequalities in
+extremal graph theory, often by reducing a graph-theoretic problem to a finite
+semidefinite-programming certificate.  The method is often used for
+constrained problems, where the desired inequality is required only for graphs
+that avoid specified finite patterns, such as triangles.  We present a
+machine-checked formalization of flag algebras for finite simple graphs,
+together with a path from externally generated flag-algebra certificates to formal
+proofs in Lean.
 
-The formalization covers the standard objects of the method.  A flag is a
-finite graph with some vertices labelled, and a flag density is the
-probability that a random set of vertices induces a given flag.  The flag
-algebra identifies density expressions that have the same asymptotic meaning;
-positive homomorphisms represent graph limits; and averaging operators forget
-labels.  To make computer-found certificates usable in the proof assistant,
-we build a verified certificate-to-proof pipeline whose goal is to reconstruct,
-inside Lean, the algebraic proof proposed by an external
+The formalization covers the mathematical layer of the method: partially
+labelled graphs, their densities in large graphs, the algebra of density
+expressions, graph-limit semantics, and the operations used to remove labels
+from an argument.  To make computer-found certificates usable in the proof
+assistant, we build a certificate-to-proof pipeline whose goal is to
+reconstruct, inside Lean, the algebraic proof proposed by an external
 semidefinite-programming search.  The external search is used only to suggest
 finite data: lists of flags, density and multiplication tables, and rational
 positive-semidefinite matrices.  Lean then checks these data against
@@ -264,16 +263,18 @@ theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
 further density bounds for constrained graph classes.
 
 The same formalization also led us to new theoretical results about
-constrained flag algebras.  We compare two ways to enforce a constraint such
-as ``the graph contains no copy of $H$'': setting the forbidden configurations
-to zero in a quotient algebra, or testing inequalities on random rooted views
-of limits of graphs satisfying the constraint.  We prove a root-planting
-criterion characterizing when these two views coincide, establish positive
-results for classes closed under vertex blow-ups or more general
-substitutions, and exhibit a counterexample based on $C_4$-free graphs.  Thus
-the development does more than formalize existing proof technology: it
-isolates a new criterion explaining when certificate computations faithfully
-capture the local behavior of constrained graph limits.
+constrained flag algebras.  We distinguish the quotient semantics approach,
+which builds a hereditary graph constraint into the flag algebra from the
+start, from the ensemble semantics approach, which imposes constraints
+afterwards by testing inequalities on random labelled views of constrained
+graph limits.  The two approaches often agree, but they need not agree for
+all densities of finite labelled patterns.  We prove a root-planting criterion
+characterizing when they do agree, establish positive results for classes
+closed under vertex blow-ups or more general substitutions, and exhibit a
+counterexample based on $C_4$-free graphs.  This post hoc ensemble viewpoint
+also points beyond Razborov's original hereditary setting: it can impose
+constraints on graph limits that are not themselves hereditary, such as
+restricting to an extremal-density or equality slice.
 \end{abstract}
 
 % =========================================================================
