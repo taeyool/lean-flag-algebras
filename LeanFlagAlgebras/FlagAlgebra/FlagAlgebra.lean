@@ -314,7 +314,7 @@ noncomputable instance : MulOneClass (FlagVector σ) where
 
 /-- The averaged expansion of a flag `F` onto size-`ℓ` flags:
 `∑_{F'} d(F; F') • F'`. Setting `F` equal to this sum is Razborov's relation. -/
-noncomputable def densityFlagSum
+noncomputable def flagExpansion
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
   ∑ F' : FlagWithSize σ ℓ, (flagDensity₁ F.2 F') • basisVector ⟨ℓ, F'⟩
@@ -323,7 +323,7 @@ noncomputable def densityFlagSum
 which is identified with `0` (chain rule / averaging identity). -/
 noncomputable def zeroElement
     (F : FinFlag σ) (ℓ : ℕ) : FlagVector σ
-  := basisVector F - densityFlagSum F ℓ
+  := basisVector F - flagExpansion F ℓ
 
 /-- The set of all generating relations `zeroElement F ℓ` (with `F.1 ≤ ℓ`). -/
 noncomputable def zeroSet
@@ -393,17 +393,17 @@ def flagVectorEqv (f g : FlagVector σ) : Prop
 
 infixl:50 " ∼v " => flagVectorEqv
 
-theorem basisVector_eqv_densityFlagSum
+theorem basisVector_eqv_flagExpansion
     (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
-    : basisVector F ∼v densityFlagSum F ℓ
+    : basisVector F ∼v flagExpansion F ℓ
   :=
   zeroElement_in_zeroSpace hℓ
 
-theorem one_vector_eqv_densityFlagSum
+theorem one_vector_eqv_flagExpansion
     (ℓ : ℕ) (hℓ : n₀ ≤ ℓ)
-    : (1 : FlagVector σ) ∼v densityFlagSum 1 ℓ
+    : (1 : FlagVector σ) ∼v flagExpansion 1 ℓ
   :=
-  basisVector_eqv_densityFlagSum _ _ (finFlag_one_fst ▸ hℓ)
+  basisVector_eqv_flagExpansion _ _ (finFlag_one_fst ▸ hℓ)
 
 @[refl]
 theorem flagVectorEqv.refl (f : FlagVector σ)
@@ -549,14 +549,14 @@ theorem flagMulWithSize_indep_on_size
     exact (this hℓ₂ hℓ₁ hℓ').symm
   simp only [flagMulWithSize]
   calc
-    _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ↑(flagDensity₂ F₁.2 F₂.2 F') • densityFlagSum ⟨ℓ₁, F'⟩ ℓ₂) := by
+    _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ↑(flagDensity₂ F₁.2 F₂.2 F') • flagExpansion ⟨ℓ₁, F'⟩ ℓ₂) := by
       apply flagVectorEqv_sum; rintro _ -
       apply flagVectorEqv_smul
       apply zeroElement_in_zeroSpace hℓ
     _ ∼v (∑ F' : FlagWithSize σ ℓ₁, ∑ G' : FlagWithSize σ ℓ₂,
           ↑(flagDensity₂ F₁.snd F₂.snd F') • ↑(flagDensity₁ F' G') • basisVector ⟨ℓ₂, G'⟩) := by
       apply flagVectorEqv_sum; rintro _ -
-      dsimp only [densityFlagSum]
+      dsimp only [flagExpansion]
       rw [smul_sum]
     _ ∼v _ := by
       rw [sum_comm]
@@ -579,7 +579,7 @@ theorem flag_mul_zeroElement
   := by
   rw [zeroElement, mul_sub]
   show _ ∼v _
-  simp only [densityFlagSum, rat_smul_eq_real_smul, mul_sum]
+  simp only [flagExpansion, rat_smul_eq_real_smul, mul_sum]
   let L := F.1 + G.1 + ℓ
   symm
   calc
@@ -879,7 +879,7 @@ theorem basisVector_quot_eq_sum
   := by
   simp_rw [← smul_quot, ← sum_quot]
   apply Quotient.sound
-  exact basisVector_eqv_densityFlagSum _ _ hℓ
+  exact basisVector_eqv_flagExpansion _ _ hℓ
 
 /-- The sum of all flags of any fixed size `ℓ ≥ n₀` equals `1` in the flag
 algebra; the basic normalization identity used throughout density proofs. -/
@@ -942,10 +942,10 @@ instance : NeZero (1 : FlagAlgebra σ) where
       have hℓ : ℓ i ≤ L := le_sup_iff.mpr <| .inl <| le_sup (mem_univ _)
       have φ_sum' : ∀ (s : Finset (FlagWithSize σ (ℓ i))) (f : FlagWithSize σ (ℓ i) → FlagVector σ), φ (∑ i ∈ s, f i) = ∑ i ∈ s, φ (f i) :=
         linearExtension_sum _
-      have φ_neg : φ (-densityFlagSum iG (ℓ i)) = -φ (densityFlagSum iG (ℓ i)) :=
+      have φ_neg : φ (-flagExpansion iG (ℓ i)) = -φ (flagExpansion iG (ℓ i)) :=
         linearExtension_neg _ _
       rw [hG2, zeroElement, sub_eq_add_neg, φ_add]
-      rw [φ_neg, ← sub_eq_add_neg, sub_eq_zero, densityFlagSum, φ_sum']
+      rw [φ_neg, ← sub_eq_add_neg, sub_eq_zero, flagExpansion, φ_sum']
       have : φ (basisVector iG) = flagDensity₁ iG.2 F := by
         simp only [φ, linearExtension_basisVector]
       have hℓ'' : n₀ ≤ iG.fst := finFlag_size_ge_n₀ iG

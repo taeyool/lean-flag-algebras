@@ -306,7 +306,7 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
   rw [linearExtension_smul]
   simp only [smul_eq_mul, mul_eq_zero]; right
   rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
-  dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul] at hvi
+  dsimp only [zeroElement, flagExpansion, rat_smul_eq_real_smul] at hvi
   rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
   simp_rw [linearExtension_smul, linearExtension_basisVector]
   exact h₀ F ℓ hℓ

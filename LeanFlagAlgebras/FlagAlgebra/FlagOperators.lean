@@ -933,9 +933,9 @@ lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
   := by
   calc
     _ = (downwardNormalizingFactor F.2) • basisVector ⟨F.1, unlabel F.2⟩ := rfl
-    _ ∼v (downwardNormalizingFactor F.2) • densityFlagSum ⟨F.1, unlabel F.2⟩ ℓ := by
+    _ ∼v (downwardNormalizingFactor F.2) • flagExpansion ⟨F.1, unlabel F.2⟩ ℓ := by
       apply flagVectorEqv_smul
-      exact basisVector_eqv_densityFlagSum _ ℓ hℓ
+      exact basisVector_eqv_flagExpansion _ ℓ hℓ
     _ ∼v (downwardNormalizingFactor F.2) • (∑ G : FlagWithSize ∅ₜ ℓ, flagDensity₁ (unlabel F.2) G • basisVector ⟨ℓ, G⟩) := by
       apply flagVectorEqv_smul
       rfl
@@ -979,11 +979,11 @@ lemma downwardFlagVector_zeroElement_zeroSpace
   have h_supp : (zeroElement F ℓ).support ⊆ S ∪ {F} := by
     dsimp only [zeroElement]
     calc
-      _ ⊆ (basisVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
+      _ ⊆ (basisVector F).support ∪ (flagExpansion F ℓ).support := Finsupp.support_sub
       _ ⊆ S ∪ {F} := by
         rw [Finset.union_comm]
         apply Finset.union_subset_union
-        · dsimp only [densityFlagSum, rat_smul_eq_real_smul]
+        · dsimp only [flagExpansion, rat_smul_eq_real_smul]
           apply Finset.Subset.trans Finsupp.support_finset_sum
           apply Finset.biUnion_subset.mpr
           intro G _
@@ -1010,7 +1010,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       exact exists_apply_eq_apply _ F.2
   have h₁ : ∀ G ∈ S, G ≠ F → (zeroElement F ℓ) G = -(flagDensity₁ F.2 G.2) := by
     intro G hG h_G_neq_F
-    simp only [zeroElement, densityFlagSum]
+    simp only [zeroElement, flagExpansion]
     rw [Finsupp.sub_apply, Finset.sum_apply', basisVector_apply_other F G h_G_neq_F.symm]
     simp only [zero_sub, neg_inj]
     have h_Gℓ : G.1 = ℓ := by
@@ -1031,7 +1031,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       simp only [heq_eq_eq, true_and] at hG'
       exact hG'
   have h₂ : (zeroElement F ℓ) F = if F ∈ S then 0 else 1 := by
-    dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul, Finsupp.coe_sub, Pi.sub_apply]
+    dsimp only [zeroElement, flagExpansion, rat_smul_eq_real_smul, Finsupp.coe_sub, Pi.sub_apply]
     simp only [basisVector_apply_self]
     rw [Finset.sum_apply']
     split
