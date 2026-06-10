@@ -105,8 +105,8 @@ elab_rules : tactic
 
 It automatically:
 1) moves to `FlagVector` via `Quotient.sound`,
-2) infers the LHS flag and applies `basisVector_eqv_densityFlagSum`,
-3) unfolds `densityFlagSum`,
+2) infers the LHS flag and applies `basisVector_eqv_flagExpansion`,
+3) unfolds `flagExpansion`,
 4) rewrites using generated `flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`,
 5) closes by normalization (`ring_nf`), so RHS add-order differences are tolerated.
 -/
@@ -148,8 +148,8 @@ elab_rules : tactic
         runIfGoals (← `(tactic| dsimp))
         runIfGoals (← `(tactic|
           refine FlagAlgebras.flagVectorEqv.trans
-            (FlagAlgebras.basisVector_eqv_densityFlagSum $finFlagTerm $N (by simp)) ?_))
-        runIfGoals (← `(tactic| dsimp [FlagAlgebras.densityFlagSum]))
+            (FlagAlgebras.basisVector_eqv_flagExpansion $finFlagTerm $N (by simp)) ?_))
+        runIfGoals (← `(tactic| dsimp [FlagAlgebras.flagExpansion]))
 
         let eqUnivId : TSyntax `ident := mkIdent eqUnivName
         let valEqId  : TSyntax `ident := mkIdent valEqName
