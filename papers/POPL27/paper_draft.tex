@@ -344,7 +344,7 @@ reconstructs, in Lean, algebraic proofs suggested by external certificate
 data.  The aim is not only to verify a few final inequalities, but to
 formalize enough of the method that certificates found by
 semidefinite-programming search can be checked against the mathematical
-definitions and theorems inside the proof assistant.  The formalization therefore covers the
+definitions inside the proof assistant.  The formalization therefore covers the
 mathematical layer of the method: partially labeled graphs, their densities in
 large graphs, the quotient algebra of density expressions, graph-limit
 semantics through positive homomorphisms, and the downward operator that
@@ -357,14 +357,14 @@ obligation: graphs and flags are used only up to isomorphism, density
 expressions are identified when they have the same asymptotic meaning, and a
 claimed inequality must hold under every positive homomorphism.  Second, there
 is a data-heavy computation obligation: the external search proposes finite
-data---lists of flags, density and multiplication tables, and rational
-positive-semidefinite matrices---but Lean must check those data against the
+data, namely, lists of flags, density and multiplication tables, and rational
+positive-semidefinite matrices, but Lean must check those data against the
 formal definitions rather than trust the scripts that produced them.  Third,
 there is an algebraic bookkeeping obligation: the proof repeatedly expands
 flags to common sizes, multiplies typed flags, applies forbidden-graph
 assumptions, and normalizes large linear combinations.  Our bridge layer
 separates these concerns.  It connects concrete computable graph
-representations to the quotient definitions by adequacy theorems, verifies
+representations in Lean to the quotient definitions in Lean by adequacy theorems, verifies
 positive-semidefiniteness exactly over $\mathbb{Q}$, and packages the
 normalization steps into tactics and elaboration macros used by the case
 studies.
@@ -375,7 +375,7 @@ constraint is imposed.  In the \emph{quotient semantics approach}, one builds
 a hereditary graph constraint, such as $H$-freeness, into the flag algebra
 from the start; this is the traditional way to work in an algebra of
 $H$-free graphs.  In the \emph{ensemble semantics approach}, one first works
-with graph limits and then imposes the constraint by testing inequalities on
+with graph limits and then imposes the constraint a posteriori by testing inequalities on
 random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
@@ -384,7 +384,7 @@ under vertex blow-ups or more general substitutions, and exhibits a
 counterexample based on $C_4$-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
-to an extremal-density or equality slice.
+to an extremal-density or equality slice. Our formalization supports the ensemble semantics.
 
 \paragraph{Contributions.}
 The paper makes four main contributions.  First, it gives a Lean
@@ -392,16 +392,17 @@ formalization of the core flag-algebra objects for finite simple graphs:
 flags, densities, the quotient algebra, positive homomorphisms, semantic
 order, and the downward/random-homomorphism machinery used in flag-algebra
 proofs.  Second, it builds a certificate-to-proof pipeline that turns
-externally generated rational certificate data into Lean-checked algebraic
+externally generated rational flag-algebra-certificate data into Lean-checked algebraic
 proofs.  Third, it demonstrates the pipeline on machine-checked proofs of
 Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
 and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
 semantic comparison between quotient and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
-generalization beyond hereditary constraints.
+generalization beyond hereditary constraints. The non-standard ensemble semantics is
+followed by our formalization.
 
 \paragraph{Organization.}
-Section~\ref{sec:background} recalls the mathematical background.
+Section~\ref{sec:background} recalls the mathematical background of flag algebras.
 Section~\ref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
 Section~\ref{sec:obstacles} describes the main formalization obstacles:
