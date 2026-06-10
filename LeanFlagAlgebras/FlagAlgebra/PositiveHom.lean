@@ -28,7 +28,7 @@ nonnegative on every flag. These are exactly the semantic evaluations
 (limits of subgraph densities) of the flag algebra. -/
 def PositiveHom (σ : FlagType (Fin n₀)) : Type
   :=
-  { φ : Hom σ // ∀ (F : FinFlag σ), φ ⟦unitVector F⟧ ≥ 0 }
+  { φ : Hom σ // ∀ (F : FinFlag σ), φ ⟦basisVector F⟧ ≥ 0 }
 
 instance : FunLike (PositiveHom σ) (FlagAlgebra σ) ℝ where
   coe := fun φ => φ.val
@@ -86,48 +86,48 @@ end PositiveHom
 
 /-- A positive homomorphism is nonnegative on every flag (the defining
 property, restated as `0 ≤ …`). -/
-theorem positiveHom_unitVector_ge_zero
+theorem positiveHom_basisVector_ge_zero
     (φ : PositiveHom σ) (F : FinFlag σ)
-    : 0 ≤ φ ⟦unitVector F⟧
+    : 0 ≤ φ ⟦basisVector F⟧
   :=
   φ.2 F
 
 /-- The φ-values of all flags of a fixed size `ℓ ≥ n₀` sum to `1`
 (a probability-distribution normalization). -/
-theorem sum_positiveHom_unitVector_flagWithSize_eq_one
+theorem sum_positiveHom_basisVector_flagWithSize_eq_one
     (φ : PositiveHom σ) (ℓ : ℕ) (hℓ : ℓ ≥ n₀)
-    : ∑ F : FlagWithSize σ ℓ, φ ⟦unitVector ⟨ℓ, F⟩⟧ = 1
+    : ∑ F : FlagWithSize σ ℓ, φ ⟦basisVector ⟨ℓ, F⟩⟧ = 1
   := by
   rw [← PositiveHom.map_sum, sum_flagWithSize_eq_one ℓ hℓ, PositiveHom.map_one]
 
 /-- A positive homomorphism maps every flag into `[0, 1]`: the upper bound,
 since each flag is one summand of a sum-to-one of nonnegatives. -/
-theorem positiveHom_unitVector_le_one
+theorem positiveHom_basisVector_le_one
     (φ : PositiveHom σ) (F : FinFlag σ)
-    : φ ⟦unitVector F⟧ ≤ 1
+    : φ ⟦basisVector F⟧ ≤ 1
   := by
   classical
   let ℓ := F.1
   have hℓ : ℓ ≥ n₀ := finFlag_size_ge_n₀ F
-  rw [← sum_positiveHom_unitVector_flagWithSize_eq_one φ ℓ hℓ]
+  rw [← sum_positiveHom_basisVector_flagWithSize_eq_one φ ℓ hℓ]
   rw [← @Finset.add_sum_erase _ _ _ _ _ _ F.2 (by simp)]
   have : F = ⟨ℓ, F.2⟩ := rfl
   rw [← this, le_add_iff_nonneg_right]
   apply Finset.sum_nonneg
   intro G _
-  exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+  exact positiveHom_basisVector_ge_zero φ ⟨ℓ, G⟩
 
 /-- Vanishing propagates along positive density: if `φ` kills a flag `F` and a
 larger flag `G` contains `F` with positive density, then `φ` kills `G` too. -/
-theorem positiveHom_unitVector_eq_zero
+theorem positiveHom_basisVector_eq_zero
     (φ : PositiveHom σ) {ℓ ℓ' : ℕ} {F : FlagWithSize σ ℓ} {G : FlagWithSize σ ℓ'}
-    (h : flagDensity₁ F G > 0) (hF : φ ⟦unitVector ⟨ℓ, F⟩⟧ = 0)
-    : φ ⟦unitVector ⟨ℓ', G⟩⟧ = 0
+    (h : flagDensity₁ F G > 0) (hF : φ ⟦basisVector ⟨ℓ, F⟩⟧ = 0)
+    : φ ⟦basisVector ⟨ℓ', G⟩⟧ = 0
   := by
   have hℓ : ℓ ≤ ℓ' := by
     have := flagDensity_le_card h
     simp_all only [gt_iff_lt, Fintype.card_fin]
-  rw [unitVector_quot_eq_sum ⟨ℓ, F⟩ ℓ' hℓ] at hF
+  rw [basisVector_quot_eq_sum ⟨ℓ, F⟩ ℓ' hℓ] at hF
   simp_rw [PositiveHom.map_sum, PositiveHom.map_smul] at hF
   rw [Finset.sum_eq_zero_iff_of_nonneg] at hF
   · specialize hF G (Finset.mem_univ G)
@@ -139,7 +139,7 @@ theorem positiveHom_unitVector_eq_zero
     apply Left.mul_nonneg
     · simp only [Rat.cast_nonneg]
       apply flagListDensity_ge_zero
-    · exact positiveHom_unitVector_ge_zero φ ⟨ℓ', G'⟩
+    · exact positiveHom_basisVector_ge_zero φ ⟨ℓ', G'⟩
 
 /-! ## The semantic cone and the induced order on the flag algebra -/
 
@@ -181,7 +181,7 @@ instance : Preorder (FlagAlgebra σ) where
 /-- Every flag is nonnegative in the semantic order. -/
 theorem flag_geq_zero
     (F : FinFlag σ)
-    : (⟦unitVector F⟧ : FlagAlgebra σ) ≥ 0
+    : (⟦basisVector F⟧ : FlagAlgebra σ) ≥ 0
   := by
   simp [semanticCone]
   intro φ

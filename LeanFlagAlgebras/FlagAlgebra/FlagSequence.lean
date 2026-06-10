@@ -120,11 +120,11 @@ instance : FunLike (FlagDensitySpace σ) (FinFlag σ) ℝ where
     exact congrFun h F
 
 instance : TopologicalSpace (PositiveHom σ) :=
-  TopologicalSpace.induced (fun a ↦ ⟨fun F ↦ a ⟦unitVector F⟧, (by
+  TopologicalSpace.induced (fun a ↦ ⟨fun F ↦ a ⟦basisVector F⟧, (by
     intro f _; simp; constructor
-    · exact positiveHom_unitVector_ge_zero a f
-    · exact positiveHom_unitVector_le_one a f
-    : (fun F ↦ a ⟦unitVector F⟧) ∈ FlagDensitySpace σ)⟩)
+    · exact positiveHom_basisVector_ge_zero a f
+    · exact positiveHom_basisVector_le_one a f
+    : (fun F ↦ a ⟦basisVector F⟧) ∈ FlagDensitySpace σ)⟩)
     instTopologicalSpaceSubtype
 
 theorem flagDensitySpace_mem_Icc_zero_one
@@ -205,23 +205,23 @@ theorem increasing_flagSeq_contain_convergent_subseq
 
 namespace PositiveHom
 
-/-- The density profile of a positive homomorphism: `F ↦ φ ⟦unitVector F⟧`,
+/-- The density profile of a positive homomorphism: `F ↦ φ ⟦basisVector F⟧`,
 landing in `FlagDensitySpace`. This is the bridge between the algebraic
 `PositiveHom` and the analytic limit semantics. -/
 @[coe]
 protected noncomputable def coe (φ : PositiveHom σ) : FlagDensitySpace σ
   := {
-    val := fun F => φ ⟦unitVector F⟧
+    val := fun F => φ ⟦basisVector F⟧
     property := by
       simp only [FlagDensitySpace, Set.pi_univ_Icc, Set.mem_Icc]
       constructor <;> intro F
-      · exact positiveHom_unitVector_ge_zero φ F
-      · exact positiveHom_unitVector_le_one φ F
+      · exact positiveHom_basisVector_ge_zero φ F
+      · exact positiveHom_basisVector_le_one φ F
   }
 
 theorem coe_flag
     (φ : PositiveHom σ) (F : FinFlag σ)
-    : φ.coe F = φ ⟦unitVector F⟧
+    : φ.coe F = φ ⟦basisVector F⟧
   :=
   rfl
 
@@ -235,7 +235,7 @@ theorem coe_injective
   apply congrFun at h
   ext f
   rcases Quotient.exists_rep f with ⟨frep, rfl⟩
-  rw [flagVector_eq_sum_unitVector frep]
+  rw [flagVector_eq_sum_basisVector frep]
   simp_rw [sum_quot, smul_quot, map_sum, map_smul]
   apply Finset.sum_congr rfl
   rintro F -
@@ -260,9 +260,9 @@ noncomputable def PositiveHomSpace.toPosHom
 noncomputable instance : CoeFun (PositiveHomSpace σ) (fun _ => FlagAlgebra σ → ℝ) where
   coe φ := PositiveHomSpace.toPosHom φ
 
-theorem PositiveHomSpace.toPosHom_unitVector
+theorem PositiveHomSpace.toPosHom_basisVector
     (φ : PositiveHomSpace σ) (F : FinFlag σ)
-    : (toPosHom φ) ⟦unitVector F⟧ = φ.val F
+    : (toPosHom φ) ⟦basisVector F⟧ = φ.val F
   := by
   rw [← PositiveHom.coe_flag]
   congr
@@ -308,7 +308,7 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
   rcases hv i with ⟨F, ℓ, hℓ, hvi⟩
   dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul] at hvi
   rw [hvi, linearExtension_sub, linearExtension_sum, sub_eq_zero]
-  simp_rw [linearExtension_smul, linearExtension_unitVector]
+  simp_rw [linearExtension_smul, linearExtension_basisVector]
   exact h₀ F ℓ hℓ
 
 /-- The function `FlagAlgebra σ → ℝ` obtained by linearly extending a profile
@@ -332,8 +332,8 @@ theorem homFunFromZeroSpaceProp_with_oneProp_map_one
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a) (h₁ : oneProp a)
     : homFunFromZeroSpaceProp h₀ 1 = 1
   := by
-  show linearExtension a (unitVector 1) = 1
-  rw [linearExtension_unitVector]
+  show linearExtension a (basisVector 1) = 1
+  rw [linearExtension_basisVector]
   exact h₁
 
 theorem homFunFromZeroSpaceProp_map_add
@@ -355,7 +355,7 @@ theorem homFunFromZeroSpaceProp_with_mulProp_map_mul
   rw [← h_frep, ← h_grep, ← mul_quot]
   simp only [homFunFromZeroSpaceProp, Quotient.lift_mk]
   rw [flagVector_mul_eq_nested_sum]
-  nth_rw 3 [flagVector_eq_sum_unitVector frep, flagVector_eq_sum_unitVector grep]
+  nth_rw 3 [flagVector_eq_sum_basisVector frep, flagVector_eq_sum_basisVector grep]
   simp_rw [linearExtension_sum]
   rw [Finset.sum_mul_sum]
   apply Finset.sum_congr rfl
@@ -365,14 +365,14 @@ theorem homFunFromZeroSpaceProp_with_mulProp_map_mul
   simp_rw [linearExtension_smul]
   rw [smul_mul_smul_comm]
   congr
-  simp only [linearExtension_unitVector]
+  simp only [linearExtension_basisVector]
   rw [h₂ F G]
   dsimp only [flagMul, flagMulWithSize]
   rw [linearExtension_sum]
   apply Finset.sum_congr rfl
   intro H _
   simp only [rat_smul_eq_real_smul]
-  rw [linearExtension_smul, linearExtension_unitVector]
+  rw [linearExtension_smul, linearExtension_basisVector]
   rfl
 
 theorem homFunFromZeroSpaceProp_map_smul
@@ -415,8 +415,8 @@ noncomputable def positiveHomFromZeroSpaceOneMulProp
     property := by
       intro F
       simp only [homFromZeroSpaceOneMulProp, homFunFromZeroSpaceProp, AlgHom.coe_mk, RingHom.coe_mk,
-        MonoidHom.coe_mk, OneHom.coe_mk, Quotient.lift_mk, linearExtension, unitVector_support,
-        Finset.sum_singleton, unitVector_apply_self, one_smul, ge_iff_le]
+        MonoidHom.coe_mk, OneHom.coe_mk, Quotient.lift_mk, linearExtension, basisVector_support,
+        Finset.sum_singleton, basisVector_apply_self, one_smul, ge_iff_le]
       exact (flagDensitySpace_mem_Icc_zero_one a F).1
   }
 
@@ -435,21 +435,21 @@ theorem positiveHomSpace_eq
     repeat' constructor
     · intro F ℓ hℓ
       simp only [PositiveHom.coe_flag]
-      rw [unitVector_quot_eq_sum F ℓ hℓ]
+      rw [basisVector_quot_eq_sum F ℓ hℓ]
       simp_rw [PositiveHom.map_sum, PositiveHom.map_smul]
     · simp only [oneProp, PositiveHom.coe_flag]
       exact PositiveHom.map_one φ
     · intro F₁ F₂
       simp only [PositiveHom.coe_flag]
       rw [← PositiveHom.map_mul φ, ← mul_quot, flagVector_mul_eq_nested_sum]
-      simp only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, mul_one, one_smul]
+      simp only [basisVector_support, Finset.sum_singleton, basisVector_apply_self, mul_one, one_smul]
       dsimp only [flagMul, flagMulWithSize, rat_smul_eq_real_smul]
       simp_rw [sum_quot, smul_quot, PositiveHom.map_sum, PositiveHom.map_smul]
   · intro ⟨h₀, h₁, h₂⟩
     use positiveHomFromZeroSpaceOneMulProp a h₀ h₁ h₂
     ext F
-    show linearExtension a (unitVector F) = a F
-    exact linearExtension_unitVector a F
+    show linearExtension a (basisVector F) = a F
+    exact linearExtension_basisVector a F
 
 theorem zeroSpacePropSet_eq_iInter
     : {a : FlagDensitySpace σ | zeroSpaceProp a} =
@@ -661,8 +661,8 @@ theorem flagSeq_limit_mem_positiveHom
   := by
   use positiveHomFromFlagSeqLimit hs_conv
   ext F
-  show linearExtension a (unitVector F) = a F
-  simp only [linearExtension, unitVector_support, Finset.sum_singleton, unitVector_apply_self, one_smul]
+  show linearExtension a (basisVector F) = a F
+  simp only [linearExtension, basisVector_support, Finset.sum_singleton, basisVector_apply_self, one_smul]
 
 instance {ℓ : ℕ} : MeasurableSpace (FlagWithSize σ ℓ) := ⊤
 
@@ -674,13 +674,13 @@ noncomputable def PositiveHom.toPMF
     (φ : PositiveHom σ) {ℓ : ℕ} (hℓ : ℓ ≥ n₀)
     : PMF (FlagWithSize σ ℓ)
   := {
-    val := fun (F : FlagWithSize σ ℓ) ↦ ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧)
+    val := fun (F : FlagWithSize σ ℓ) ↦ ENNReal.ofReal (φ ⟦basisVector ⟨ℓ, F⟩⟧)
     property := by
-      have h := hasSum_fintype (fun F ↦ ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧))
-      have h_sum : ∑ F : FlagWithSize σ ℓ, ENNReal.ofReal (φ ⟦unitVector ⟨ℓ, F⟩⟧) = 1 := by
-        rw [← ENNReal.ofReal_sum_of_nonneg (fun F _ ↦ positiveHom_unitVector_ge_zero φ ⟨ℓ, F⟩), ← ENNReal.ofReal_one]
+      have h := hasSum_fintype (fun F ↦ ENNReal.ofReal (φ ⟦basisVector ⟨ℓ, F⟩⟧))
+      have h_sum : ∑ F : FlagWithSize σ ℓ, ENNReal.ofReal (φ ⟦basisVector ⟨ℓ, F⟩⟧) = 1 := by
+        rw [← ENNReal.ofReal_sum_of_nonneg (fun F _ ↦ positiveHom_basisVector_ge_zero φ ⟨ℓ, F⟩), ← ENNReal.ofReal_one]
         congr
-        exact sum_positiveHom_unitVector_flagWithSize_eq_one φ ℓ hℓ
+        exact sum_positiveHom_basisVector_flagWithSize_eq_one φ ℓ hℓ
       rw [h_sum] at h
       exact h
   }
@@ -720,11 +720,11 @@ theorem randomDensity_expectation
   := by
   dsimp only [PositiveHom.toMeasure, PositiveHom.toPMF, randomDensity]
   rw [PMF.integral_eq_sum, PositiveHom.coe_flag]
-  rw [unitVector_quot_eq_sum F ℓ hℓ, PositiveHom.map_sum]
+  rw [basisVector_quot_eq_sum F ℓ hℓ, PositiveHom.map_sum]
   apply Finset.sum_congr rfl
   intro G _
   rw [PositiveHom.map_smul, mul_comm]
-  have : φ ⟦unitVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+  have : φ ⟦basisVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_basisVector_ge_zero φ ⟨ℓ, G⟩
   rw [← ENNReal.toReal_ofReal this]
   congr
 
@@ -739,7 +739,7 @@ theorem randomDensity_second_moment
   intro G _
   rw [mul_comm]
   congr
-  have : φ ⟦unitVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+  have : φ ⟦basisVector ⟨ℓ, G⟩⟧ ≥ 0 := positiveHom_basisVector_ge_zero φ ⟨ℓ, G⟩
   rw [← ENNReal.toReal_ofReal this]
   congr
 
@@ -761,21 +761,21 @@ theorem randomDensity_variance_bounded
   simp_rw [PositiveHom.coe_flag]
   calc
     _ = ∑ G : FlagWithSize σ ℓ,
-        ((flagDensity₁ F.2 G) ^ 2 - flagDensity₂ F.2 F.2 G) * φ ⟦unitVector ⟨ℓ, G⟩⟧ := by
+        ((flagDensity₁ F.2 G) ^ 2 - flagDensity₂ F.2 F.2 G) * φ ⟦basisVector ⟨ℓ, G⟩⟧ := by
       simp_rw [sub_mul, Finset.sum_sub_distrib]
       congr
       rw [pow_two, ← PositiveHom.map_mul, ← mul_quot, flagVector_mul_eq_nested_sum]
       simp_rw [← PositiveHom.map_smul, ← PositiveHom.map_sum]
       congr
-      simp only [unitVector_support, Finset.sum_singleton, unitVector_apply_self, mul_one, one_smul]
+      simp only [basisVector_support, Finset.sum_singleton, basisVector_apply_self, mul_one, one_smul]
       simp_rw [← smul_quot, ← sum_quot]
       apply Quotient.sound
       calc
         _ ∼v flagMulWithSize F F ℓ := by
           apply flagMul_indep_on_size
           linarith
-        _ = ∑ G : FlagWithSize σ ℓ, flagDensity₂ F.2 F.2 G • unitVector ⟨ℓ, G⟩ := rfl
-    _ ≤ ∑ G : FlagWithSize σ ℓ, (c / ℓ) * φ ⟦unitVector ⟨ℓ, G⟩⟧ := by
+        _ = ∑ G : FlagWithSize σ ℓ, flagDensity₂ F.2 F.2 G • basisVector ⟨ℓ, G⟩ := rfl
+    _ ≤ ∑ G : FlagWithSize σ ℓ, (c / ℓ) * φ ⟦basisVector ⟨ℓ, G⟩⟧ := by
       apply Finset.sum_le_sum
       intro G _
       apply mul_le_mul_of_nonneg_right
@@ -792,7 +792,7 @@ theorem randomDensity_variance_bounded
               Rat.cast_natCast] at hc
             rw [pow_two]
             exact hc
-      · exact positiveHom_unitVector_ge_zero φ ⟨ℓ, G⟩
+      · exact positiveHom_basisVector_ge_zero φ ⟨ℓ, G⟩
     _ = c / ℓ := by
       rw [← Finset.mul_sum, ← PositiveHom.map_sum]
       have hℓ_ge_n₀ : ℓ ≥ n₀ := by linarith [finFlag_size_ge_n₀ F]

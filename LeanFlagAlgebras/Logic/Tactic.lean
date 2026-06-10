@@ -153,7 +153,7 @@ def runForbiddenFlagExpansion (N : TSyntax `term) : TacticM Unit :=
     let valEqId : TSyntax `ident := mkIdent valEqName
 
     evalTactic (← `(tactic|
-      have hExp := FlagAlgebras.unitVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
+      have hExp := FlagAlgebras.basisVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
     evalTactic (← `(tactic| have hφ := congrArg φ hExp))
     evalTactic (← `(tactic| rw [FlagAlgebras.PositiveHom.map_sum] at hφ))
     evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum] at hφ))
@@ -196,7 +196,7 @@ def runForbiddenFlagMul (N : TSyntax `term) : TacticM Unit :=
       let idents := flags.map mkIdent
       evalTactic (← `(tactic| dsimp [$[$idents:ident],*] at *))
 
-    evalTactic (← `(tactic| rw [FlagAlgebras.unitVector_quot_mul_eq_flagMul_quot]))
+    evalTactic (← `(tactic| rw [FlagAlgebras.basisVector_quot_mul_eq_flagMul_quot]))
     evalTactic (← `(tactic| dsimp [FlagAlgebras.flagMul, FlagAlgebras.flagMulWithSize]))
 
     -- Figure out the sigma indices from nVal to construct flagSet_N_k_m_eq_univ

@@ -310,7 +310,7 @@ elab "load_empty_typed_flags" filename:str : command => do
     if ¬ env.contains flagAlgebraName.getId then
       elabCommand (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
     if shouldLogProgress i graphsJson.size then
@@ -503,7 +503,7 @@ elab "load_flags" filename:str : command => do
     if ¬ env.contains flagAlgebraName.getId then
       elabCommand (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
     let coeffQ ← coeffQTerm coeffNum coeffDen
@@ -528,9 +528,9 @@ elab "load_flags" filename:str : command => do
             rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
             native_decide
           change
-            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩)
+            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩)
               =
-            $coeffR • (⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
+            $coeffR • (⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
           apply Quotient.sound
           simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hunlabel, hdnf]
       ))

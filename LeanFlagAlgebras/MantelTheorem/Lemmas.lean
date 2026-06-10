@@ -54,7 +54,7 @@ lemma K0_eq_one
     : FlagAlgebra_0_0_0_0 = 1
   := by
   apply Quotient.sound
-  show _ ∼v unitVector ⟨0, default⟩
+  show _ ∼v basisVector ⟨0, default⟩
   congr!
   exact Unique.uniq instUniqueFlagWithSize Flag_0_0_0_0
 
@@ -85,7 +85,7 @@ lemma K1₁_eq_one
     : FlagAlgebra_1_1_0_0 = 1
   := by
   apply Quotient.sound
-  show _ ∼v unitVector ⟨1, default⟩
+  show _ ∼v basisVector ⟨1, default⟩
   congr!
   exact Unique.uniq instUniqueFlagWithSize Flag_1_1_0_0
 

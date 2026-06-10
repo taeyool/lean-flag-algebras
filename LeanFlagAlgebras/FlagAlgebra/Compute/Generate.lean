@@ -961,6 +961,51 @@ theorem mem_allRawSym2LabeledGraphs {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
   rw [mkTypeEmbedding?_self]
   rfl
 
+/-- The fast labeled enumeration: `σ`-typed labeled graphs built over only the
+*canonical* underlying graphs `genSym2Graphs n` (the augmentation reps — 156 at
+`n = 6`), instead of all `2 ^ C(n,2)` raw edge subsets (491520 at `n = 6`). Not every
+labeled graph is *literally* here, but every one is `∼sf` to an element
+(`allAugSym2LabeledGraphs_complete`) — all the dedup/`= univ` chain needs — so the
+bridge never materialises the brute-force list. -/
+def allAugSym2LabeledGraphs {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
+    List (Sym2LabeledGraph σ n) :=
+  (genSym2Graphs n).flatMap (labeledOfGraph σ)
+
+/-- Transport a labeled graph along an isomorphism of its underlying graph: if `H`'s
+underlying graph is `∼sf` to `R`, then `H` is `∼sf` to the labeled graph over `R`
+obtained by post-composing `H`'s type embedding with the underlying iso, which lies in
+`labeledOfGraph σ R`. The labeled analogue of the embedding-free transport used for
+`genSym2Graphs_complete`. -/
+theorem mem_labeledOfGraph_eqv_of_underlying {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (H : Sym2LabeledGraph σ n) {R : Sym2Graph n}
+    (hiso : (⟨H.edges, H.edges_valid⟩ : Sym2Graph n) ∼sf R) :
+    ∃ H', H' ∈ labeledOfGraph σ R ∧ H ∼sf H' := by
+  have ψ : (SimpleGraph.fromEdgeSet (SetLike.coe H.edges)) ≃g
+      (SimpleGraph.fromEdgeSet (SetLike.coe R.edges)) := by
+    have h := hiso.some.graph_iso
+    simpa only [Sym2Graph.toLabeledGraph] using h
+  set emb' : (SimpleGraph.fromEdgeSet (SetLike.coe σ.edges)) ↪g
+      (SimpleGraph.fromEdgeSet (SetLike.coe R.edges)) :=
+    ψ.toEmbedding.comp H.type_embed with hemb'
+  refine ⟨⟨R.edges, R.edges_valid, emb'⟩, ?_, ?_⟩
+  · rw [labeledOfGraph, List.mem_filterMap]
+    refine ⟨fun x => emb' x, mem_allFinMaps _, ?_⟩
+    rw [mkTypeEmbedding?_self]
+    rfl
+  · refine Nonempty.intro { graph_iso := ?_, type_preserve := ?_ }
+    · exact ψ
+    · rfl
+
+/-- Every labeled graph is `∼sf` to an element of the fast augmentation-based
+enumeration. The fast replacement for the literal `mem_allRawSym2LabeledGraphs`. -/
+theorem allAugSym2LabeledGraphs_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
+    (H : Sym2LabeledGraph σ n) :
+    ∃ H', H' ∈ allAugSym2LabeledGraphs σ n ∧ H ∼sf H' := by
+  obtain ⟨R, hRmem, hRiso⟩ :=
+    genSym2Graphs_complete (⟨H.edges, H.edges_valid⟩ : Sym2Graph n)
+  obtain ⟨H', hH'mem, hH'iso⟩ := mem_labeledOfGraph_eqv_of_underlying H hRiso
+  exact ⟨H', List.mem_flatMap.mpr ⟨R, hRmem, hH'mem⟩, hH'iso⟩
+
 /-! ### Generation (dedup by `isIsoFast_bool`) -/
 
 /-- One `foldl` step: append `G` unless some survivor is fast-iso to it. -/
@@ -972,7 +1017,7 @@ def dedupStepL {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
 /-- The deduplicated typed labeled graphs: one representative per `∼sf`-class. -/
 def genLabeledGraphsDedup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     List (Sym2LabeledGraph σ n) :=
-  (allRawSym2LabeledGraphs σ n).foldl dedupStepL []
+  (allAugSym2LabeledGraphs σ n).foldl dedupStepL []
 
 /-- The typed flags (quotient classes) of the generated labeled graphs. -/
 def genFlags {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) : List (Sym2Flag σ n) :=
@@ -1040,8 +1085,11 @@ theorem foldl_dedupStepL_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
 
 theorem genLabeledGraphsDedup_complete {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     (G : Sym2LabeledGraph σ n) :
-    ∃ G', G' ∈ genLabeledGraphsDedup σ n ∧ G ∼sf G' :=
-  foldl_dedupStepL_complete (allRawSym2LabeledGraphs σ n) [] G (mem_allRawSym2LabeledGraphs G)
+    ∃ G', G' ∈ genLabeledGraphsDedup σ n ∧ G ∼sf G' := by
+  obtain ⟨H', hH'mem, hGH'⟩ := allAugSym2LabeledGraphs_complete G
+  obtain ⟨G', hG'mem, hH'G'⟩ :=
+    foldl_dedupStepL_complete (allAugSym2LabeledGraphs σ n) [] H' hH'mem
+  exact ⟨G', hG'mem, sym2LabeledGraphEqv.trans hGH' hH'G'⟩
 
 theorem genFlagSet_eq_univ {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     genFlagSet σ n = Finset.univ := by
@@ -1159,7 +1207,7 @@ theorem foldl_dedupStepL_flags_nodup {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
 /-- The generated typed flags have no duplicates. Mirrors `genEmptyTypedFlags_nodup`. -/
 theorem genFlags_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :
     (genFlags σ n).Nodup :=
-  foldl_dedupStepL_flags_nodup (allRawSym2LabeledGraphs σ n) [] (by simp)
+  foldl_dedupStepL_flags_nodup (allAugSym2LabeledGraphs σ n) [] (by simp)
 
 /-- `genFlagsOrdered σ n` has no duplicates (inherited from `genFlags` via the perm). -/
 theorem genFlagsOrdered_nodup {k : ℕ} (σ : Sym2FlagType k) (n : ℕ) :

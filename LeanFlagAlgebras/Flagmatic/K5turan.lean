@@ -538,11 +538,11 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_33
 lemma K5turan_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K5.toFinFlag] (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
   := by
-  have h_unit_33 : (FlagAlgebra_5_0_0_33 : FlagAlgebra ∅ₜ) = ⟦unitVector (⟨5, Flag_5_0_0_33⟩ : FinFlag ∅ₜ)⟧
+  have h_unit_33 : (FlagAlgebra_5_0_0_33 : FlagAlgebra ∅ₜ) = ⟦basisVector (⟨5, Flag_5_0_0_33⟩ : FinFlag ∅ₜ)⟧
     := (Quotient.out_inj.mp rfl).symm
   have h_zero_33 : (FlagAlgebra_5_0_0_33 : FlagAlgebra ∅ₜ) =[K5.toFinFlag] 0 := by
     rw [h_unit_33]
-    apply unitVector_forbidEq_zero
+    apply basisVector_forbidEq_zero
     rw [unlabel_emptyType]
     exact lt_of_le_of_ne
       (flagListDensity₁_ge_zero K5.toFinFlag.2 Flag_5_0_0_33)

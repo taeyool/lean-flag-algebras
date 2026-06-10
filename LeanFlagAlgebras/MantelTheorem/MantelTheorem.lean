@@ -394,13 +394,13 @@ theorem Turan_density_K3
   obtain ⟨_, hϕ_conv⟩ := flagSeq_convergesTo_iff.mp hϕ_conv
 
   have hφ_K3 : φ FlagAlgebra_3_0_0_3 = 0 := by
-    have h_eval_K3 : a ⟨3, Flag_3_0_0_3⟩ = φ ⟦unitVector ⟨3, Flag_3_0_0_3⟩⟧ := by
+    have h_eval_K3 : a ⟨3, Flag_3_0_0_3⟩ = φ ⟦basisVector ⟨3, Flag_3_0_0_3⟩⟧ := by
       have hφ_val : (φ.coe : FinFlag ∅ₜ → ℝ) = (a : FinFlag ∅ₜ → ℝ) := congrArg Subtype.val hφ
       have hφ_eval : φ.coe ⟨3, Flag_3_0_0_3⟩ = a ⟨3, Flag_3_0_0_3⟩ := by
         simpa using congrFun hφ_val ⟨3, Flag_3_0_0_3⟩
       calc
         a ⟨3, Flag_3_0_0_3⟩ = φ.coe ⟨3, Flag_3_0_0_3⟩ := by simpa using hφ_eval.symm
-        _ = φ ⟦unitVector ⟨3, Flag_3_0_0_3⟩⟧ := by
+        _ = φ ⟦basisVector ⟨3, Flag_3_0_0_3⟩⟧ := by
               simpa using (PositiveHom.coe_flag φ ⟨3, Flag_3_0_0_3⟩)
     apply @tendsto_nhds_unique _ _ _ _ (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨3, Flag_3_0_0_3⟩) atTop
     · simpa [h_eval_K3] using (hϕ_conv ⟨3, Flag_3_0_0_3⟩)
@@ -412,14 +412,14 @@ theorem Turan_density_K3
   have hφ_K2_le : φ FlagAlgebra_2_0_0_1 ≤ 1 / 2 := Mantel_theorem' φ hφ_K3
   have hφ_K2_tendsto :
       Tendsto (fun n ↦ flagDensitySeq (s ∘ ϕ) n ⟨2, Flag_2_0_0_1⟩) atTop (nhds (φ FlagAlgebra_2_0_0_1)) := by
-    have h_eval_K2 : a ⟨2, Flag_2_0_0_1⟩ = φ ⟦unitVector ⟨2, Flag_2_0_0_1⟩⟧ := by
+    have h_eval_K2 : a ⟨2, Flag_2_0_0_1⟩ = φ ⟦basisVector ⟨2, Flag_2_0_0_1⟩⟧ := by
       have hφ_val : (φ.coe : FinFlag ∅ₜ → ℝ) = (a : FinFlag ∅ₜ → ℝ) := by
         exact congrArg Subtype.val hφ
       have hφ_eval : φ.coe ⟨2, Flag_2_0_0_1⟩ = a ⟨2, Flag_2_0_0_1⟩ := by
         simpa using congrFun hφ_val (⟨2, Flag_2_0_0_1⟩ : FinFlag ∅ₜ)
       calc
         a ⟨2, Flag_2_0_0_1⟩ = φ.coe ⟨2, Flag_2_0_0_1⟩ := by simpa using hφ_eval.symm
-        _ = φ ⟦unitVector ⟨2, Flag_2_0_0_1⟩⟧ := by
+        _ = φ ⟦basisVector ⟨2, Flag_2_0_0_1⟩⟧ := by
               simpa using (PositiveHom.coe_flag φ ⟨2, Flag_2_0_0_1⟩)
     simpa [h_eval_K2] using (hϕ_conv ⟨2, Flag_2_0_0_1⟩)
   rw [Metric.tendsto_atTop'] at hφ_K2_tendsto

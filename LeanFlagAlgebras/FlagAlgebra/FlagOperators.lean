@@ -253,7 +253,7 @@ theorem unlabel_eq_iff_unlabeledGraph_eqv
 /-- The image of a single flag `F` under unlabeling: the unlabelled flag
 `unlabel F` scaled by its combinatorial weight `downwardNormalizingFactor F`. -/
 noncomputable def downwardFlag (F : Flag σ (Fin n)) : FlagVector ∅ₜ :=
-  downwardNormalizingFactor F • unitVector ⟨n, unlabel F⟩
+  downwardNormalizingFactor F • basisVector ⟨n, unlabel F⟩
 
 /-- `downwardFlag` extended linearly to flag vectors. -/
 noncomputable def downwardFlagVector : FlagVector σ → FlagVector ∅ₜ :=
@@ -267,11 +267,11 @@ lemma downwardFlagVector_zero
   := by
   simp only [downwardFlagVector, linearExtension_zero]
 
-lemma downwardFlagVector_unitVector
+lemma downwardFlagVector_basisVector
     (F : FinFlag σ)
-    : downwardFlagVector (unitVector F) = downwardFlag F.2
+    : downwardFlagVector (basisVector F) = downwardFlag F.2
   := by
-  simp only [downwardFlagVector, linearExtension_unitVector]
+  simp only [downwardFlagVector, linearExtension_basisVector]
 
 lemma downwardFlagVector_add
     (f f' : FlagVector σ)
@@ -932,15 +932,15 @@ lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
     : downwardFlag F.2 ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G
   := by
   calc
-    _ = (downwardNormalizingFactor F.2) • unitVector ⟨F.1, unlabel F.2⟩ := rfl
+    _ = (downwardNormalizingFactor F.2) • basisVector ⟨F.1, unlabel F.2⟩ := rfl
     _ ∼v (downwardNormalizingFactor F.2) • densityFlagSum ⟨F.1, unlabel F.2⟩ ℓ := by
       apply flagVectorEqv_smul
-      exact unitVector_eqv_densityFlagSum _ ℓ hℓ
-    _ ∼v (downwardNormalizingFactor F.2) • (∑ G : FlagWithSize ∅ₜ ℓ, flagDensity₁ (unlabel F.2) G • unitVector ⟨ℓ, G⟩) := by
+      exact basisVector_eqv_densityFlagSum _ ℓ hℓ
+    _ ∼v (downwardNormalizingFactor F.2) • (∑ G : FlagWithSize ∅ₜ ℓ, flagDensity₁ (unlabel F.2) G • basisVector ⟨ℓ, G⟩) := by
       apply flagVectorEqv_smul
       rfl
     _ ∼v ∑ G : FlagWithSize ∅ₜ ℓ, ∑ G' ∈ labelExtensions G σ,
-          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • unitVector ⟨ℓ, G⟩ := by
+          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • basisVector ⟨ℓ, G⟩ := by
       rw [Finset.smul_sum]
       apply flagVectorEqv_sum
       intro G _
@@ -951,7 +951,7 @@ lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
       intro G' _
       rw [smul_smul]
     _ ∼v ∑ G : FlagWithSize ∅ₜ ℓ, ∑ G' ∈ Finset.filter (fun G' ↦ unlabel G' = G) Finset.univ,
-          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • unitVector ⟨ℓ, unlabel G'⟩ := by
+          flagDensity₁ F.2 G' • downwardNormalizingFactor G' • basisVector ⟨ℓ, unlabel G'⟩ := by
       apply flagVectorEqv_sum
       intro G _
       apply flagVectorEqv_sum
@@ -960,7 +960,7 @@ lemma downwardFlag_eqv_sum_flagDensity_smul_downwardFlag
       dsimp only [labelExtensions] at hG'
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hG'
       rw [hG']
-    _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardNormalizingFactor G • unitVector ⟨ℓ, unlabel G⟩ := by
+    _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardNormalizingFactor G • basisVector ⟨ℓ, unlabel G⟩ := by
       rw [Finset.sum_fiberwise _ (fun G => unlabel G)]
     _ ∼v ∑ G : FlagWithSize σ ℓ, flagDensity₁ F.2 G • downwardFlag G := by
       apply flagVectorEqv_sum
@@ -979,7 +979,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
   have h_supp : (zeroElement F ℓ).support ⊆ S ∪ {F} := by
     dsimp only [zeroElement]
     calc
-      _ ⊆ (unitVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
+      _ ⊆ (basisVector F).support ∪ (densityFlagSum F ℓ).support := Finsupp.support_sub
       _ ⊆ S ∪ {F} := by
         rw [Finset.union_comm]
         apply Finset.union_subset_union
@@ -988,9 +988,9 @@ lemma downwardFlagVector_zeroElement_zeroSpace
           apply Finset.biUnion_subset.mpr
           intro G _
           apply Finset.Subset.trans Finsupp.support_smul
-          simp only [unitVector_support, Finset.singleton_subset_iff, Finset.mem_map,
+          simp only [basisVector_support, Finset.singleton_subset_iff, Finset.mem_map,
             Finset.mem_univ, Function.Embedding.coeFn_mk, true_and, exists_apply_eq_apply, S]
-        · simp only [unitVector_support, subset_refl]
+        · simp only [basisVector_support, subset_refl]
   have h_supp_outside : ∀ G ∈ S ∪ {F},
     G ∉ (zeroElement F ℓ).support → (zeroElement F ℓ) G • downwardFlag G.2 = 0 := by
     intro G _ hG
@@ -1011,7 +1011,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
   have h₁ : ∀ G ∈ S, G ≠ F → (zeroElement F ℓ) G = -(flagDensity₁ F.2 G.2) := by
     intro G hG h_G_neq_F
     simp only [zeroElement, densityFlagSum]
-    rw [Finsupp.sub_apply, Finset.sum_apply', unitVector_apply_other F G h_G_neq_F.symm]
+    rw [Finsupp.sub_apply, Finset.sum_apply', basisVector_apply_other F G h_G_neq_F.symm]
     simp only [zero_sub, neg_inj]
     have h_Gℓ : G.1 = ℓ := by
       simp_all only [Finset.mem_map, Finset.mem_univ, true_and, S]
@@ -1021,10 +1021,10 @@ lemma downwardFlagVector_zeroElement_zeroSpace
     subst h_Gℓ
     rw [Finset.sum_eq_single_of_mem G.2]
     · simp only [Sigma.eta, rat_smul_eq_real_smul, Finsupp.coe_smul, Pi.smul_apply,
-        unitVector_apply_self, smul_eq_mul, mul_one]
+        basisVector_apply_self, smul_eq_mul, mul_one]
     · simp only [Finset.mem_univ]
     · intro G' _ hG'
-      rw [Finsupp.smul_apply, unitVector_apply_other, smul_zero]
+      rw [Finsupp.smul_apply, basisVector_apply_other, smul_zero]
       contrapose! hG'
       simp only [ne_eq] at *
       rw [Sigma.ext_iff] at hG'
@@ -1032,14 +1032,14 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       exact hG'
   have h₂ : (zeroElement F ℓ) F = if F ∈ S then 0 else 1 := by
     dsimp only [zeroElement, densityFlagSum, rat_smul_eq_real_smul, Finsupp.coe_sub, Pi.sub_apply]
-    simp only [unitVector_apply_self]
+    simp only [basisVector_apply_self]
     rw [Finset.sum_apply']
     split
     next h =>
       rw [hF_iff] at h
       subst h
       rw [Finset.sum_eq_single_of_mem F.2]
-      · simp only [flagDensity_self, Rat.cast_one, Sigma.eta, one_smul, unitVector_apply_self, sub_self]
+      · simp only [flagDensity_self, Rat.cast_one, Sigma.eta, one_smul, basisVector_apply_self, sub_self]
       · simp only [Finset.mem_univ]
       · intro G _ hG
         simp only [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, mul_eq_zero, Rat.cast_eq_zero]
@@ -1051,7 +1051,7 @@ lemma downwardFlagVector_zeroElement_zeroSpace
       intro G _
       simp only [mul_eq_zero]
       right
-      apply unitVector_apply_other_size
+      apply basisVector_apply_other_size
       symm; simp only
       rw [ne_eq, ← hF_iff]
       exact h
@@ -1268,8 +1268,8 @@ theorem downward_emptyType
   := by
   rcases Quot.exists_rep f with ⟨f, rfl⟩
   apply Quotient.sound
-  rw [flagVector_eq_sum_unitVector f]
-  simp [downwardFlagVector_sum, downwardFlagVector_smul, downwardFlagVector_unitVector]
+  rw [flagVector_eq_sum_basisVector f]
+  simp [downwardFlagVector_sum, downwardFlagVector_smul, downwardFlagVector_basisVector]
   apply flagVector_eq_eqv
   congr!
   simp [downwardFlag, unlabel_emptyType, downwardNormalizingFactor_emptyType]

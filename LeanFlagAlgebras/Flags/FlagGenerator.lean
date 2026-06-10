@@ -237,7 +237,7 @@ elab "generate_empty_typed_flags" nStx:num : command => do
 
     elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
   let setName := mkIdent (Name.mkSimple s!"sym2FlagSet_{n}_0_0")
@@ -320,6 +320,17 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
   let m := mStx.getNat
   let n := nStx.getNat
 
+  -- Dependency check: each generated flag's `unlabel`/`downward` bridge is stated against the
+  -- underlying empty-typed flag `Flag_n_0_0_i` (produced by `generate_empty_typed_flags n`).
+  -- If that prerequisite is missing, the emitted `unlabel` theorem references an undefined
+  -- `Flag_n_0_0_i`, which auto-binds as an opaque variable and fails with a cryptic
+  -- `Quotient.sound (flagEqv.refl …)` type mismatch only *after* enumerating all flags
+  -- (minutes, at large n). Fail fast here with an actionable message instead.
+  unless (← getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
+    throwError s!"`generate_flags {k} {m} {n}` requires the underlying empty-typed flags \
+`Flag_{n}_0_0_i`, which are produced by `generate_empty_typed_flags {n}`. \
+Add `generate_empty_typed_flags {n}` before this command."
+
   -- Type edges: the canonical edge list of the `k`-vertex graph with index `m`.
   let typeEdgesStx ← `(FlagAlgebras.Compute.genCanonicalEdgeLists $(Quote.quote k))
   let allTypeEdges ← liftTermElabM do
@@ -400,7 +411,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
 
     elabUnlessDefined flagAlgebraName.getId (← `(
         noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
-          ⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
       ))
 
     let unlabelThmName := mkIdent (Name.mkSimple s!"unlabel_{n}_{k}_{m}_{i}")
@@ -463,9 +474,9 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
             rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
             exact congrArg (fun l => l.getD $(Quote.quote i) (0 : ℚ)) $downwardFactorsEqName
           change
-            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.unitVector ⟨$(Quote.quote n), $flagBridgeName⟩)
+            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩)
               =
-            $coeffR • (⟦FlagAlgebras.unitVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
+            $coeffR • (⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
           apply Quotient.sound
           simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hdnf]
       ))

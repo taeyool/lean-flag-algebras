@@ -14,7 +14,7 @@ For every unordered pair `(i, j)` of forbidden-free pattern flags, it generates
 a theorem `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[Kr.toFinFlag] Σ`,
 where the right-hand sum is built from the precomputed density coefficients
 times the forbidden-free host flag algebras, proved via
-`unitVector_quot_mul_forbidEq_sum` and the `flagSet_*_eq_univ` /
+`basisVector_quot_mul_forbidEq_sum` and the `flagSet_*_eq_univ` /
 `flagSet_*_val_eq` completeness lemmas. The forbidden graph (`K3` or `K4`) is
 selected by `forbid.tag`. It relies on the `Flag_*`/`FlagAlgebra_*`/`flagSet_*`
 constants synthesized by `FlagDef.lean` and the JSON helpers in
@@ -269,7 +269,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                   : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3.toFinFlag] $rhs
                 := by
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K3.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K3.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -286,7 +286,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 := by
                 rw [mul_comm]
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K3.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K3.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -303,7 +303,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                   : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K4.toFinFlag] $rhs
                 := by
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K4.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K4.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -320,7 +320,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 := by
                 rw [mul_comm]
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K4.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K4.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -337,7 +337,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                   : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K5.toFinFlag] $rhs
                 := by
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K5.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K5.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -354,7 +354,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 := by
                 rw [mul_comm]
                 apply forbidEq_trans
-                  (unitVector_quot_mul_forbidEq_sum K5.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum K5.toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -372,7 +372,7 @@ elab "load_forbid_mul_theorems" filename:str : command => do
 -- `load_mul_theorems "density_*_no_forbid.json"`: for every unordered pair
 -- `(i, j)` of pattern flags, generate the plain-equality theorem
 -- `@[simp] FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j = Σ`
--- using `unitVector_quot_mul_eq_flagMul_quot` and the `flagSet_*` lemmas.
+-- using `basisVector_quot_mul_eq_flagMul_quot` and the `flagSet_*` lemmas.
 -- Intended for JSON files without a forbidden subgraph (`"forbid": null`).
 elab "load_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
@@ -437,7 +437,7 @@ elab "load_mul_theorems" filename:str : command => do
                 : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) = $rhs
               := by
               dsimp only [$[$idsArray:ident],*]
-              rw [unitVector_quot_mul_eq_flagMul_quot]
+              rw [basisVector_quot_mul_eq_flagMul_quot]
               simp [flagMul, flagMulWithSize]
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq
@@ -452,7 +452,7 @@ elab "load_mul_theorems" filename:str : command => do
               := by
               rw [mul_comm]
               dsimp only [$[$idsArray:ident],*]
-              rw [unitVector_quot_mul_eq_flagMul_quot]
+              rw [basisVector_quot_mul_eq_flagMul_quot]
               simp [flagMul, flagMulWithSize]
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq

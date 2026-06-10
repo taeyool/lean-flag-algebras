@@ -29,7 +29,7 @@ namespace FlagAlgebras.API
 `∀ (φ : PositiveHom σ), φ F_forbidden = 0 → φ F = (size N expansion of F without F_forbidden)`.
 
 It introduces `φ` and the restriction hypothesis, expands `F` with
-`unitVector_quot_eq_sum`, maps by `φ`, rewrites the
+`basisVector_quot_eq_sum`, maps by `φ`, rewrites the
 size-`N` flag universe, and then substitutes the forbidden term using the
 hypothesis.
 -/
@@ -81,7 +81,7 @@ def runFlagExpandWithRestriction (N : TSyntax `term) : TacticM Unit :=
     let valEqId  : TSyntax `ident := mkIdent valEqName
 
     evalTactic (← `(tactic|
-      have hExp := FlagAlgebras.unitVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
+      have hExp := FlagAlgebras.basisVector_quot_eq_sum (σ := $sigmaTerm) $finFlagTerm $N (by simp)))
     evalTactic (← `(tactic| have hφ := congrArg φ hExp))
     evalTactic (← `(tactic| rw [FlagAlgebras.PositiveHom.map_sum] at hφ))
     evalTactic (← `(tactic| rw [Finset.sum_eq_multiset_sum] at hφ))
@@ -105,7 +105,7 @@ elab_rules : tactic
 
 It automatically:
 1) moves to `FlagVector` via `Quotient.sound`,
-2) infers the LHS flag and applies `unitVector_eqv_densityFlagSum`,
+2) infers the LHS flag and applies `basisVector_eqv_densityFlagSum`,
 3) unfolds `densityFlagSum`,
 4) rewrites using generated `flagSet_{N}_{k}_{m}_eq_univ` and `flagSet_{N}_{k}_{m}_val_eq`,
 5) closes by normalization (`ring_nf`), so RHS add-order differences are tolerated.
@@ -148,7 +148,7 @@ elab_rules : tactic
         runIfGoals (← `(tactic| dsimp))
         runIfGoals (← `(tactic|
           refine FlagAlgebras.flagVectorEqv.trans
-            (FlagAlgebras.unitVector_eqv_densityFlagSum $finFlagTerm $N (by simp)) ?_))
+            (FlagAlgebras.basisVector_eqv_densityFlagSum $finFlagTerm $N (by simp)) ?_))
         runIfGoals (← `(tactic| dsimp [FlagAlgebras.densityFlagSum]))
 
         let eqUnivId : TSyntax `ident := mkIdent eqUnivName

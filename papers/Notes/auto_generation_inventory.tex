@@ -1,0 +1,383 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\btt}[1]{\texttt{\detokenize{#1}}}
+
+% ---- Lean code listing style -------------------------------------------
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, noncomputable, syntax, elab, elab_rules,
+    macro, macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat, decide, native_decide,
+    fin_cases, norm_num, exact, set_option},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  inputencoding=utf8,
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{gray!6},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=0.8\baselineskip,
+  belowskip=0.8\baselineskip
+}
+% -----------------------------------------------------------------------
+
+\title{What Can Be Generated Automatically}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+This note lists what the repository can currently generate without hand
+transcription: the command to run, what it produces, and when you would
+use it. It is a reference for the state of the tooling, not an argument
+about it. Names follow the convention \texttt{\_n\_k\_m\_i}: $n$ vertices,
+type $\sigma$ the $k$-vertex graph of index $m$ (\texttt{0\_0} is the empty
+type $\emptyset_t$), enumeration index $i$.
+
+One fact is worth stating up front because it affects how you use all of
+the generators: every generated definition comes with a lemma closed by
+\texttt{decide}/\texttt{native\_decide} or a verified tactic, and the
+result is re-checked by the Lean kernel. So if a generator's input is
+wrong, you find out as a \texttt{lake build} failure on the generated
+file, not as a wrong theorem. You can therefore treat the scripts as
+untrusted helpers and let the build decide whether the output is sound.
+
+\section{The pieces and how they stack}
+
+There are three groups of generators. Each consumes only what the group
+below it produced.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Group & Produces & Needs as input \\
+\midrule
+1. Flags        & flag/type definitions, completeness lemmas & nothing \\
+2. Numerical    & density / multiplication theorems & density JSON (\S\ref{sec:pipeline}) \\
+3. Certificate  & SDP matrices, vectors, the main theorem & a flagmatic JSON \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A typical use runs them top to bottom: the flag definitions and the
+density data are built once and committed; from then on, porting a new
+certificate is just Group~3.
+
+\section{Group 1: flag and type definitions}
+\label{sec:flags}
+
+\paragraph{Where.} \texttt{Flags/FlagGenerator.lean} defines the macros;
+\texttt{Flags/FlagDef.lean} invokes them, one line per size. These run at
+elaboration time and read no files.
+
+\paragraph{\texttt{generate\_empty\_typed\_flags n}.} Produces, for every
+non-isomorphic $n$-vertex graph $i$: \texttt{Sym2Graph\_n\_0\_0\_i},
+\texttt{Sym2Flag\_n\_0\_0\_i}, \texttt{Flag\_n\_0\_0\_i},
+\texttt{FlagAlgebra\_n\_0\_0\_i}, plus the finsets and completeness lemmas
+\texttt{flagSet\_n\_0\_0}, \texttt{flagSet\_n\_0\_0\_val\_eq},
+\texttt{flagSet\_n\_0\_0\_eq\_univ} (and their \texttt{sym2} counterparts).
+Currently instantiated for $n = 0,\dots,6$.
+
+\paragraph{\texttt{generate\_flags k m n}.} Produces the type
+\texttt{FlagType\_k\_m} and, for every flag $i$ on it:
+\texttt{Sym2LabeledGraph\_n\_k\_m\_i}, \texttt{Sym2Flag\_n\_k\_m\_i},
+\texttt{Flag\_n\_k\_m\_i}, \texttt{FlagAlgebra\_n\_k\_m\_i}, the
+\texttt{@[simp]} lemmas \texttt{unlabel\_n\_k\_m\_i} and
+\texttt{downward\_n\_k\_m\_i}, and the matching \texttt{flagSet\_n\_k\_m\_*}
+lemmas. Currently instantiated for the type/size pairs the present
+scenarios use, up to $n = 5$.
+
+\paragraph{When to use.} Only when you need flags of a size or type not
+already in \texttt{FlagDef.lean} -- add the corresponding
+\texttt{generate\_*} line and rebuild. For everything else the constants
+are already available project-wide, so you just refer to them by name.
+
+\paragraph{Limits.} $n = 7$ (1044 graphs) is not instantiated: the
+elaboration-time enumeration runs in the interpreter and takes over 80
+minutes, and the completeness bridge's list literal exceeds the default
+\texttt{maxRecDepth}.
+
+\section{Group 2: density and multiplication theorems}
+\label{sec:data}
+
+\paragraph{Where.} \texttt{Flags/Densities/DensityLoader.lean} and
+\texttt{Flags/Densities/MulLoader.lean}. Each macro reads one JSON file
+(produced by \S\ref{sec:pipeline}) and registers \texttt{simp} theorems
+about the Group-1 constants. Put the relevant lines near the top of your
+proof file.
+
+\paragraph{\texttt{load\_forbid\_density\_theorems "*\_free\_indices.json"}.}
+For each $n$-vertex empty-typed flag, registers
+$\mathrm{flagDensity}_1\,H\,\texttt{Flag\_n\_0\_0\_i} = 0$ when the flag is
+$H$-free and $\ne 0$ otherwise. Recognizes the tags $K_3$, $K_4$, $K_5$.
+Used to drop forbidden host flags.
+
+\paragraph{\texttt{load\_flag\_pair\_density\_theorems "density\_*.json"}.}
+Registers $\mathrm{flagDensity}_2\,\texttt{Flag\_<pat>\_p1}\,\texttt{Flag\_<pat>\_p2}\,\texttt{Flag\_<host>\_h} = \text{value}$,
+one per row of the file. Used wherever a pair density appears as a
+\texttt{simp} fact.
+
+\paragraph{\texttt{load\_forbid\_mul\_theorems "density\_*.json"}.} From the
+same file, registers the product expansions
+$\texttt{FlagAlgebra\_<pat>\_i}\cdot\texttt{FlagAlgebra\_<pat>\_j}
+=_H \sum_h c\,\texttt{FlagAlgebra\_<host>\_h}$
+for each $H$-free pair $(i,j)$, named
+\texttt{flagMul\_FlagAlgebra\_<pat>\_i\_FlagAlgebra\_<pat>\_j}. These are
+what \texttt{reduce\_downward\_flagmul} looks up in the main proof. A
+companion \texttt{load\_mul\_theorems} emits the plain (no-forbid) equality
+version.
+
+\paragraph{File-name discipline.} The loaders require the forbid to be in
+the file name (\texttt{\_forbid\_<H>}, or \texttt{\_no\_forbid}). This is
+deliberate: two density tables computed under different forbids would
+otherwise share a name, and you could load the wrong one. Keep the tag in
+the name and this cannot happen.
+
+\section{The data pipeline behind Group 2}
+\label{sec:pipeline}
+
+Group~2 reads JSON; this is where that JSON comes from. Four Python
+scripts under \texttt{Flags/} and \texttt{Flags/Densities/}, in a fixed
+order:
+
+\begin{lstlisting}[language={}]
+generate_graphs.py
+   └─→ Graphs/graphs_n.json          (canonical edge lists, n ≤ 7)
+         ├─→ gen_free_indices.py
+         │     └─→ Densities/graphs_n_<H>_free_indices.json
+         │           ▷ load_forbid_density_theorems
+         └─→ generate_flags.py  (also reads graphs_k.json for σ)
+               └─→ Flags/flags_n_k_m.json
+                     └─→ calculate_densities.py  (host + pattern)
+                           └─→ Densities/density_<host>_from_<pat>_forbid_<H>.json
+                                 ▷ load_flag_pair_density_theorems
+                                 ▷ load_forbid_mul_theorems
+\end{lstlisting}
+
+These JSON files feed \emph{only} the Group-2 loaders. They used to also be
+the source of the Group-1 flag definitions, but those are now built inside
+Lean (\S\ref{sec:flags}); the scripts' docstrings still mention the old
+\texttt{FlagLoader.lean} consumer, which is stale.
+
+\paragraph{\texttt{generate\_graphs.py}.} Lists every non-isomorphic
+$n$-vertex graph via NetworkX's atlas ($n \le 7$), canonicalizes each to
+its lexicographically smallest edge list, and writes
+\texttt{Graphs/graphs\_n.json}. The size $n$ is hard-coded in the
+\texttt{\_\_main\_\_} block. Run it once per new $n$.
+
+\paragraph{\texttt{generate\_flags.py n k type\_num}.} Reads
+\texttt{graphs\_k.json} (the type $\sigma$) and \texttt{graphs\_n.json} (the
+underlying graphs), enumerates flags by automorphism orbit, and writes
+\texttt{Flags/flags\_n\_k\_m.json} with each flag's
+\texttt{type\_indices} and \texttt{downward\_coeff}.
+\begin{lstlisting}[language={}]
+python generate_flags.py 4 2 0
+\end{lstlisting}
+
+\paragraph{\texttt{gen\_free\_indices.py <graphs\_n.json> {-}{-}forbid-H}.}
+Writes the indices of the $H$-free graphs to
+\texttt{graphs\_n\_<H>\_free\_indices.json}. $H$ is \texttt{--forbid-K3} /
+\texttt{-K4} / \texttt{-K5}, or \texttt{--forbid <flagmatic string>}
+(e.g.\ \texttt{3:122331}).
+\begin{lstlisting}[language={}]
+python gen_free_indices.py ../Graphs/graphs_4.json --forbid-K3
+\end{lstlisting}
+
+\paragraph{\texttt{calculate\_densities.py {-}{-}host \ldots {-}{-}pattern \ldots {-}{-}forbid-H}.}
+Computes the exact pair density $p(F_1, F_2; G)$ over all $H$-free hosts
+and forbidden-free pattern pairs, and writes
+\texttt{density\_<host>\_from\_<pat>\_forbid\_<H>.json} (or
+\texttt{\_no\_forbid} if \texttt{--forbid} is omitted).
+\begin{lstlisting}[language={}]
+python calculate_densities.py --host ../Flags/flags_4_2_0.json \
+       --pattern ../Flags/flags_3_2_0.json --forbid-K3
+\end{lstlisting}
+
+\paragraph{On index ordering.} The scripts order graphs and flags by their
+own canonical form; Lean (Group~1) orders them by its own. The density
+JSON refers to flags only by index, so the two orderings have to match. If
+they ever did not, the \texttt{native\_decide} on the generated density
+lemma would fail -- the value would be asserted about the wrong
+Lean-defined flag -- so a mismatch shows up at build time. You do not have
+to check the ordering by hand.
+
+\section{Group 3: porting a certificate to a Lean module}
+\label{sec:cert}
+
+\paragraph{Where.} \texttt{Flagmatic/flagmatic\_to\_lean.py}. Input is one
+flagmatic SDP certificate JSON; output is a \texttt{.lean} module under
+\texttt{Flagmatic/}. Subcommands:
+\begin{lstlisting}[language={}]
+python flagmatic_to_lean.py inspect      <cert>.json
+python flagmatic_to_lean.py check-deps   <cert>.json
+python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean [--namespace N]
+\end{lstlisting}
+
+\paragraph{\texttt{inspect}.} Read-only. Prints the Lean identifier each
+flagmatic string in the certificate resolves to. Run it first on a new
+certificate to confirm the strings map to constants that exist.
+
+\paragraph{\texttt{check-deps}.} Reports which density JSON files
+(\S\ref{sec:pipeline}) the certificate will need, marks each present or
+missing, and prints the \texttt{load\_*} lines that will be emitted. Exits
+nonzero if anything is missing, so it doubles as a pre-build guard. If it
+reports a missing file, generate it with the relevant pipeline script,
+then re-run.
+
+\paragraph{\texttt{gen-skeleton}.} Writes the full module: the SDP matrices
+$M_t$ with their LDL$^\top$ positive-semidefiniteness proofs, the real
+liftings, the \texttt{load\_*} lines, the type \texttt{σ} and flag vectors
+\texttt{v}, the main theorem, and -- when the objective lives below host
+size -- an \texttt{*\_expand\_under\_forbid} lemma plus its
+\texttt{flagDensity}$_1$ evaluation table. The result builds with no
+\texttt{sorry}.
+
+\paragraph{Workflow.}
+\begin{lstlisting}[language={}]
+inspect  →  check-deps  →  gen-skeleton  →  lake build
+\end{lstlisting}
+The first two catch identifier and dependency problems before any Lean
+compilation.
+
+\section{Worked example (Mantel)}
+
+The full sequence for $K_3$-free edge density at $N=3$, assuming the
+$n\le 3$ flags are already in \texttt{FlagDef.lean}:
+\begin{lstlisting}[language={}]
+# data the certificate needs (run once, output committed)
+python gen_free_indices.py ../Graphs/graphs_3.json --forbid-K3
+python calculate_densities.py --host ../Flags/flags_3_1_0.json \
+       --pattern ../Flags/flags_2_1_0.json --forbid-K3
+
+# port the certificate
+python flagmatic_to_lean.py check-deps   Certificates/mantel_cert.json
+python flagmatic_to_lean.py gen-skeleton Certificates/mantel_cert.json \
+       Mantel.lean --namespace Mantel
+lake build
+\end{lstlisting}
+The generated \texttt{Mantel.lean} loads the two JSON files, states
+$\texttt{FlagAlgebra\_2\_0\_0\_1} \le_{K_3} \tfrac12\cdot 1$, and proves it.
+
+\section{Adding a new forbidden graph}
+\label{sec:newforbid}
+
+To forbid a graph $X$ (on $n_X$ vertices) beyond $K_3$, $K_4$, $K_5$, you
+touch five files, grouped into the three steps below. The certificate
+translator (\S\ref{sec:cert}) is \emph{not} one of them: it finds $X$ by
+re-parsing \texttt{CommonGraphs.lean}, so it needs no edit. Before
+starting, find the canonical index $i_X$ of $X$ in
+\texttt{graphs\_$n_X$.json} (e.g.\ with \texttt{inspect}), and make sure
+the size-$n_X$ flags are already generated in \texttt{FlagDef.lean}.
+
+\begin{enumerate}
+\item \textbf{\texttt{Forbid/CommonGraphs.lean}} -- define $X$ and its flag
+  identity:
+\begin{lstlisting}
+def X : SimpleGraph (Fin n_X) := ...
+lemma X_toFinFlag_eq : X.toFinFlag = ⟨n_X, Flag_nX_0_0_iX⟩ := by ...
+\end{lstlisting}
+  Copy the $K_3$/$K_4$/$K_5$ entries as a template; only the \texttt{def}
+  body and the index $i_X$ change.
+
+\item \textbf{The two data scripts} (\texttt{gen\_free\_indices.py},
+  \texttt{calculate\_densities.py}) -- add a \texttt{--forbid-X} shorthand.
+  The subgraph-containment logic is already generic (a plain
+  \texttt{--forbid <flagmatic string>} works for any graph); what the
+  shorthand adds is a clean tag \texttt{"X"}, which is what lands in the
+  JSON's \texttt{forbid.tag} field and in the output file name. That tag
+  has to match the Lean identifier, which is why the raw \texttt{--forbid
+  3:\ldots} form (tag \texttt{"3\_\ldots"}) is not enough by itself.
+
+\item \textbf{The two forbid loaders} -- the step that is easy to miss.
+  Both \texttt{load\_forbid\_density\_theorems}
+  (\texttt{DensityLoader.lean}) and \texttt{load\_forbid\_mul\_theorems}
+  (\texttt{MulLoader.lean}) \texttt{match} on the tag and currently know
+  only \texttt{"K3"}, \texttt{"K4"}, \texttt{"K5"} -- any other tag throws
+  \texttt{Unsupported forbid tag}. Add a \texttt{| "X" => \ldots} branch to
+  each, copied from an existing one, replacing the tag, the lemma name
+  \texttt{X\_toFinFlag\_eq}, and the index in
+  \texttt{simp [Flag\_nX\_0\_0\_iX]}. Each branch is about 15 lines. (The
+  pair-density loader \texttt{load\_flag\_pair\_density\_theorems} and the
+  no-forbid \texttt{load\_mul\_theorems} are generic and need no branch.)
+\end{enumerate}
+
+Then generate the data and build:
+\begin{lstlisting}[language={}]
+python gen_free_indices.py ../Graphs/graphs_nX.json --forbid-X
+python calculate_densities.py --host ... --pattern ... --forbid-X
+python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
+lake build
+\end{lstlisting}
+
+Step~3 is manual because each forbid lemma bakes \texttt{X\_toFinFlag\_eq}
+into its proof script, so the loaders dispatch on the tag rather than
+abstracting over the graph. At three forbids the copy-paste has been
+cheaper than that abstraction; if the list grows it is the natural thing
+to factor out.
+
+\section{What is available now}
+
+\paragraph{Sizes.} Empty-typed flags up to $n = 6$; typed flags up to
+$n = 5$ (the type/size pairs listed in \texttt{FlagDef.lean}).
+
+\paragraph{Forbidden graphs.} $K_3$, $K_4$, $K_5$ are wired end to end.
+Adding another one is the procedure of Section~\ref{sec:newforbid} (five
+files, three steps); the certificate translator needs no change. Non-$K_n$
+forbids ($C_4$, $P_4$, \ldots) have not been run end to end yet.
+
+\paragraph{Ported certificates.} Six build with no \texttt{sorry}:
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+Certificate & Forbid & $N$ & blocks & bound \\
+\midrule
+Mantel        & $K_3$ & 3 & 1 & $1/2$    \\
+K3forbidP3    & $K_3$ & 3 & 1 & $3/4$    \\
+K3forbidC4    & $K_3$ & 4 & 2 & $3/8$    \\
+K4turan       & $K_4$ & 4 & 2 & $2/3$    \\
+ErdosPentagon & $K_3$ & 5 & 3 & $24/625$ \\
+K5turan       & $K_5$ & 5 & 4 & $3/4$    \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Manual steps that remain.} Producing the density JSON is still
+a Python step (Group~1 flag definitions are not). A new forbidden graph
+needs the procedure of Section~\ref{sec:newforbid}. The branch
+that lifts the objective to host size ends in a \texttt{ring\_nf} whose
+success has not been characterized in general, though it has closed every
+case so far.
+
+\end{document}

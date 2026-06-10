@@ -29,7 +29,7 @@ noncomputable def forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : FlagAlgebra ∅ₜ :=
   ∑ F' : FlagWithSize ∅ₜ expandSize with flagDensity₁ F_forbid.2 (unlabel F') = 0,
-    (flagDensity₁ ((⟨0, default⟩ : FinFlag ∅ₜ).2) F' : ℝ) • ⟦unitVector ⟨expandSize, F'⟩⟧
+    (flagDensity₁ ((⟨0, default⟩ : FinFlag ∅ₜ).2) F' : ℝ) • ⟦basisVector ⟨expandSize, F'⟩⟧
 
 /-- Under `F_forbid`, the constant `1` equals its `forbidExpand_one` expansion;
 this is the rewrite used to turn the target bound into a sum over explicit
@@ -38,7 +38,7 @@ theorem one_forbidEq_forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
     : (1 : FlagAlgebra ∅ₜ) =[F_forbid] forbidExpand_one F_forbid expandSize := by
   simpa [forbidExpand_one] using
-    (unitVector_quot_forbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
+    (basisVector_quot_forbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
 /-- If `f ≤[F] g` and `c` is non-negative under `F`, then `f ≤[F] g + c`. -/
 lemma forbidLE_trans_add_nonneg
@@ -79,7 +79,7 @@ theorem forbidLE_add_QuadraticForm
 
 /-
 `fold_unit_vectors` scans the current goal for subexpressions of the form
-`⟦unitVector ⟨n, Flag_n_k_m_i⟩⟧` and folds each occurrence into the
+`⟦basisVector ⟨n, Flag_n_k_m_i⟩⟧` and folds each occurrence into the
 corresponding `FlagAlgebra_n_k_m_i` constant.  No arguments needed.
 -/
 
@@ -135,7 +135,7 @@ elab "fold_unit_vectors" : tactic =>
         | throwError s!"Could not infer flag constant name from {algNm}"
       let algId := mkIdent algNm
       let flagId := mkIdent flagNm
-      `(Lean.Parser.Tactic.rwRule| ← (show $algId:term = ⟦unitVector ⟨_, $flagId:term⟩⟧ by rfl))
+      `(Lean.Parser.Tactic.rwRule| ← (show $algId:term = ⟦basisVector ⟨_, $flagId:term⟩⟧ by rfl))
     evalTactic (← `(tactic| rw [$rw_rules,*]))
 
 /--
@@ -169,13 +169,13 @@ elab_rules : tactic
 
 /--
 `flag_nonneg` closes goals of the form `f ≤[F_forbid] g` when `g - f` is a
-non-negative linear combination of FlagAlgebra unit vectors (of the form `c • ⟦unitVector F⟧`).
+non-negative linear combination of FlagAlgebra unit vectors (of the form `c • ⟦basisVector F⟧`).
 
 It automates the standard closing step in flag algebra API proofs:
 1. Reduces to a semantic inequality via `forbidLE_of_le`
 2. Distributes `φ` over `+` using `PositiveHom.map_add`
 3. Decomposes the sum into individual non-negativity goals using `add_nonneg`
-4. Closes each leaf with `positiveHom_unitVector_ge_zero`
+4. Closes each leaf with `positiveHom_basisVector_ge_zero`
 -/
 macro "flag_nonneg" : tactic =>
   `(tactic| (
@@ -185,7 +185,7 @@ macro "flag_nonneg" : tactic =>
     all_goals (
       try simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left,
                  mul_nonneg_iff_of_pos_left, one_div, inv_pos]
-      apply positiveHom_unitVector_ge_zero
+      apply positiveHom_basisVector_ge_zero
     )
   ))
 

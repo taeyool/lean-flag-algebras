@@ -25,12 +25,12 @@ def _root_.SimpleGraph.toFinFlag
   }⟧
   ⟨n, F⟩
 
-/-- The flag-algebra element `⟦unitVector G.toFinFlag⟧` represented by a finite simple
+/-- The flag-algebra element `⟦basisVector G.toFinFlag⟧` represented by a finite simple
 graph `G`. -/
 noncomputable def _root_.SimpleGraph.toFlagAlgebra
     {n : ℕ} (G : SimpleGraph (Fin n)) : FlagAlgebra ∅ₜ
   :=
-  ⟦unitVector G.toFinFlag⟧
+  ⟦basisVector G.toFinFlag⟧
 
 lemma exists_graphSeq_of_densityLowerBound
     {n m : ℕ} (H : SimpleGraph (Fin n)) (F : SimpleGraph (Fin m))
@@ -106,7 +106,7 @@ lemma flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra
     simpa using congrFun (congrArg Subtype.val hφ) G.toFinFlag
   calc
     a G.toFinFlag = φ.coe G.toFinFlag := by simpa using hφ_eval.symm
-    _ = φ ⟦unitVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
+    _ = φ ⟦basisVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
     _ = φ G.toFlagAlgebra := by rfl
 
 lemma labeledGraphCount_emptyType_eq_subgraphCount
