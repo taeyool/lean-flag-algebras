@@ -291,11 +291,11 @@ simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
   \bigr\},
 \]
 where an \emph{induced copy} of $P$ in $G$ is a vertex subset
-$S\subseteq V(G)$ with $|S|=|V(P)|$ and the restriction of $G$ to $S$, denoted $G[S]$, is isomorphic to $P$, and
+$S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
 \emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
 member of $\mathcal{H}$.  The corresponding asymptotic
 question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit. We call this the \emph{Tur\'an density} of $P$ with respect to $\mathcal{H}$:
+takes a limit; we call this the \emph{Tur\'an density} of $P$ with respect to $\mathcal{H}$:
 \[
   \tdensity{P}{\mathcal{H}}
   :=
@@ -303,8 +303,8 @@ takes a limit. We call this the \emph{Tur\'an density} of $P$ with respect to $\
   \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
 \]
 For example, Mantel's theorem states that a triangle-free graph on $n$
-vertices has at most $\lfloor n^2/4\rfloor$ edges (that is, 
-$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$) achieved by the
+vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
+$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
 complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
 asymptotic value
 \[
@@ -329,10 +329,9 @@ distinguished labeled subgraph.  By treating the densities of such partially
 labeled patterns as algebraic objects, the method turns a global asymptotic
 problem into a finite inequality in a quotient algebra.  Crucially, many
 strong inequalities can be obtained from positive semidefinite matrices: an
-semidefinite programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
+semidefinite-programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
 why that finite certificate implies an asymptotic bound for the whole graph
-class.  This
-combination of mathematical abstraction and computer search has been unusually
+class.  This combination of mathematical abstraction and computer search has been unusually
 effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
 problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
 density of pentagons in triangle-free graphs.
@@ -364,7 +363,7 @@ there is an algebraic bookkeeping obligation: the proof repeatedly expands
 flags to common sizes, multiplies typed flags, applies forbidden-graph
 assumptions, and normalizes large linear combinations.  Our bridge layer
 separates these concerns.  It connects concrete computable graph
-representations in Lean to the quotient definitions in Lean by adequacy theorems, verifies
+representations to quotient definitions in Lean by adequacy theorems, verifies
 positive-semidefiniteness exactly over $\mathbb{Q}$, and packages the
 normalization steps into tactics and elaboration macros used by the case
 studies.
@@ -375,8 +374,8 @@ constraint is imposed.  In the \emph{quotient semantics approach}, one builds
 a hereditary graph constraint, such as $H$-freeness, into the flag algebra
 from the start; this is the traditional way to work in an algebra of
 $H$-free graphs.  In the \emph{ensemble semantics approach}, one first works
-with graph limits and then imposes the constraint a posteriori by testing inequalities on
-random labeled views of those constrained limits.  These two viewpoints agree
+with graph limits and then imposes the constraint post hoc by testing
+inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
 characterizing when they do agree, gives positive results for classes closed
@@ -384,7 +383,8 @@ under vertex blow-ups or more general substitutions, and exhibits a
 counterexample based on $C_4$-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
-to an extremal-density or equality slice. Our formalization supports the ensemble semantics.
+to an extremal-density or equality slice.  This is also the semantic viewpoint
+made explicit by our formalization.
 
 \paragraph{Contributions.}
 The paper makes four main contributions.  First, it gives a Lean
@@ -392,14 +392,13 @@ formalization of the core flag-algebra objects for finite simple graphs:
 flags, densities, the quotient algebra, positive homomorphisms, semantic
 order, and the downward/random-homomorphism machinery used in flag-algebra
 proofs.  Second, it builds a certificate-to-proof pipeline that turns
-externally generated rational flag-algebra-certificate data into Lean-checked algebraic
+externally generated rational certificate data into Lean-checked algebraic
 proofs.  Third, it demonstrates the pipeline on machine-checked proofs of
 Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
 and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
 semantic comparison between quotient and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
-generalization beyond hereditary constraints. The non-standard ensemble semantics is
-followed by our formalization.
+generalization beyond hereditary constraints.
 
 \paragraph{Organization.}
 Section~\ref{sec:background} recalls the mathematical background of flag algebras.
