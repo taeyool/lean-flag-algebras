@@ -223,8 +223,8 @@
 \title{Formalizing Flag Algebras in Lean: Certified Proofs in Extremal Graph Theory and Root-Planting Semantics}
 \date{}
 
-\author[1]{Gyeongwon Jeong}
-\author[1]{Seonghun Park}
+\author[1,3]{Gyeongwon Jeong}
+\author[1,3]{Seonghun Park}
 \author[1]{Jihoon Hyun}
 \author[2]{Sang-il Oum}
 \author[3]{Hongseok Yang}
@@ -239,36 +239,41 @@
 \begin{abstract}
 Flag algebras are a powerful method for proving asymptotic extremal graph
 inequalities, often by reducing a graph-theoretic problem to a finite
-semidefinite-programming certificate.  We present a machine-checked
-formalization of flag algebras for finite simple graphs, together with a
-verified path from externally generated flag-algebra certificates to formal
-proofs.
+semidefinite-programming certificate.  Many applications are constrained:
+they prove inequalities only for graphs that avoid specified finite patterns,
+such as triangle-free graphs.  We present a machine-checked formalization of
+flag algebras for finite simple graphs, together with a verified path from
+externally generated certificates to formal proofs in Lean.
 
-The formalization includes types, flags, flag densities, the flag algebra
-quotient, positive homomorphisms, averaging operators, and
-forbidden-subgraph reasoning.  Around this abstract development we build a
-certificate-checking framework that connects computable graph representations
-to the quotient definitions, loads density and multiplication tables generated
-outside the proof assistant, checks rational positive-semidefinite
-certificates exactly, and automates the algebraic normalization steps that
-occur in flag-algebra proofs.  The resulting pipeline turns Flagmatic-style
-certificate data into Lean proofs with only a small amount of
-problem-specific guidance.  As case studies, the development proves Mantel's
-theorem, the Erd\H{o}s pentagon theorem
-($\tdensity{C_5}{K_3}=24/625$), Goodman-type inequalities, and further density
-bounds for constrained graph classes.
+The formalization covers the standard objects of the method.  A flag is a
+finite graph with some vertices labelled, and a flag density is the
+probability that a random set of vertices induces a given flag.  The flag
+algebra identifies density expressions that have the same asymptotic meaning;
+positive homomorphisms represent graph limits; and averaging operators forget
+labels.  To make computer-found certificates usable in the proof assistant,
+we build a verified certificate-to-proof pipeline whose goal is to reconstruct,
+inside Lean, the algebraic proof proposed by an external
+semidefinite-programming search.  The external search is used only to suggest
+finite data: lists of flags, density and multiplication tables, and rational
+positive-semidefinite matrices.  Lean then checks these data against
+computable graph enumerations, connects the computations to the quotient
+definitions, verifies positive-semidefiniteness exactly over $\mathbb{Q}$,
+and automates the algebraic normalization steps that occur in flag-algebra
+proofs.  As case studies, we generate machine-checked proofs of Mantel's
+theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
+further density bounds for constrained graph classes.
 
-The formalization also exposes a semantic question about how
-forbidden-subgraph assumptions are represented.  We compare quotient
-semantics, where forbidden configurations are set to zero in the flag
-algebra, with ensemble semantics, where inequalities are tested on random
-rooted views of constrained graph limits.  We prove a root-planting criterion
-characterizing when the two semantics coincide, establish positive results
-for clone-closed and substitution-closed classes, and exhibit a counterexample
-based on $C_4$-free graphs.  Thus the development is not only a verified
-implementation of existing flag-algebra proof technology, but also a formal
-framework for investigating the semantics of constrained flag-algebra
-reasoning.
+The same formalization also led us to new theoretical results about
+constrained flag algebras.  We compare two ways to enforce a constraint such
+as ``the graph contains no copy of $H$'': setting the forbidden configurations
+to zero in a quotient algebra, or testing inequalities on random rooted views
+of limits of graphs satisfying the constraint.  We prove a root-planting
+criterion characterizing when these two views coincide, establish positive
+results for classes closed under vertex blow-ups or more general
+substitutions, and exhibit a counterexample based on $C_4$-free graphs.  Thus
+the development does more than formalize existing proof technology: it
+isolates a new criterion explaining when certificate computations faithfully
+capture the local behavior of constrained graph limits.
 \end{abstract}
 
 % =========================================================================
