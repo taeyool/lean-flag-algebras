@@ -1289,9 +1289,9 @@ blow-up of every graph in $\K$ again belongs to $\K$.
 
 \begin{lemma}[Complete blow-up approximation]\label{lem:true-planted-estimate}
 The estimates of \cref{lem:planted-estimate,lem:planted-mass} remain valid,
-with the same constants, if the independent blow-up $B_N(G,\theta,\lambda)$ is
-replaced by the complete blow-up $B_N^+(G,\theta,\lambda)$ with the same clone
-class sizes.
+with the same constants and the same hypotheses on $N$ and $\operatorname{err}_N$,
+if the independent blow-up $B_N(G,\theta,\lambda)$ is replaced by the complete
+blow-up $B_N^+(G,\theta,\lambda)$ with the same clone class sizes.
 \end{lemma}
 
 \begin{proof}
@@ -1371,10 +1371,14 @@ $v\in V(G)$.
 \begin{lemma}[Substitution planting estimate]\label{lem:substitution-planting-estimate}
 Assume $\K$ is hereditary and has graphs of arbitrarily large order.  Let
 $F=(G,\theta)$ be a $\sigma$-flag in $\K$ with $|\sigma|=k$ and $|G|=n>k$.
-Fix $0<\lambda\le1/2$, assign the same weights $w_v$ as in the planted blow-up
-construction, and for a large integer $N$ choose graphs $H_{v,N}\in\K$ with
+Fix $0<\lambda\le1/2$ and assign the same weights $w_v$ as in the planted
+blow-up construction.  For all sufficiently large integers $N$, choose positive
+integers $s_{v,N}$ summing to $N$ and graphs $H_{v,N}\in\K$ with
+$|H_{v,N}|=s_{v,N}$ such that
 \[
-  \sum_v \left|\frac{|H_{v,N}|}{N}-w_v\right|\to0.
+  \operatorname{err}^{\mathrm{sub}}_N
+  :=
+  \sum_v \left|\frac{s_{v,N}}{N}-w_v\right|\to0.
 \]
 Let
 \[
@@ -1383,14 +1387,18 @@ Let
 If $\widehat\theta:\sigma\to S_N$ satisfies
 $\widehat\theta(i)\in H_{\theta(i),N}$ for all $i$, then the estimates of
 \cref{lem:planted-estimate,lem:planted-mass} hold for $S_N$ in place of the
-independent blow-up.
+independent blow-up, with $\operatorname{err}^{\mathrm{sub}}_N$ in place of
+$\operatorname{err}_N$ and with the same small-error hypothesis in
+\cref{lem:planted-mass}.
 \end{lemma}
 
 \begin{proof}
 Because $\K$ is hereditary and has arbitrarily large graphs, it contains graphs
 of every sufficiently large prescribed order: take an induced subgraph of that
-order inside a larger graph of $\K$.  Thus the fibres $H_{v,N}$ with the required
-asymptotic sizes exist.
+order inside a larger graph of $\K$.  Choose positive integers $s_{v,N}$ summing
+to $N$ and satisfying $s_{v,N}/N\to w_v$.  Since every $w_v$ is positive, all
+$s_{v,N}$ are eventually large enough that fibres $H_{v,N}\in\K$ of those exact
+orders exist.
 
 The proof of \cref{lem:planted-estimate} now applies verbatim.  The good event
 excludes every additional sampled vertex from the planted labelled fibres and
@@ -2001,9 +2009,10 @@ $g^2$ and using that $\phi_0$ is multiplicative,
 \[
   \E_{\psi\sim\mu}\bigl[(\psi(g)-\phi_0(g))^2\bigr]=\phi_0(g^2)-\phi_0(g)^2=0,
 \]
-so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each of the countably many
-$g\in\A^0$.  Since flag densities separate the points of $X_0$, this forces
-$\mu=\delta_{\phi_0}$, whence
+so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each fixed $g\in\A^0$.
+Apply this to the countable family of unlabelled flags and intersect the resulting
+probability-one events.  Since those flag densities separate the points of $X_0$, this
+forces $\mu=\delta_{\phi_0}$, whence
 $S_\emptyset=\overline{\bigcup_{\phi_0}\{\phi_0\}}=\overline{Q_0}=Q_0$.  The coincidence
 of the two semantics now follows from \cref{thm:support-criterion}.
 \end{proof}
