@@ -11,6 +11,9 @@ __pycache__/
 # Claude Code internal files
 .claude/
 
+# Local agent handoff notes
+HANDOFF.md
+
 # Conda environment files
 .conda/
 

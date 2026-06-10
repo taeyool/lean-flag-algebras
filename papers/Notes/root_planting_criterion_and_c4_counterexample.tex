@@ -704,21 +704,25 @@ parameter $0<\lambda\le 1/2$.  If $k>0$, assign weights
   \qquad
   w_v=\frac{1-\lambda}{n-k}\quad(v\notin\operatorname{im}\theta).
 \]
-If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.  For a large integer $N$, let
-$B_N(G,\theta,\lambda)$ be an independent blow-up of $G$ whose clone class
-$C_v$ has size approximately $w_vN$, and put
+If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.  For an integer $N\ge n$, choose
+positive integer clone-class sizes $|C_v|$ summing to $N$, and let
+$B_N(G,\theta,\lambda)$ be the corresponding independent blow-up.  The estimates
+below measure how close these choices are to the target proportions $w_v$ by
 \[
   \operatorname{err}_N
   :=
   \sum_{v\in V(G)}\left|\frac{|C_v|}{N}-w_v\right|.
 \]
-The error tends to zero along suitable choices of integer cluster sizes.
+For fixed $G,\theta,\lambda$, the sizes can be chosen, for instance by rounding
+the numbers $w_vN$, so that $\operatorname{err}_N\to0$ as $N\to\infty$.
 
 \begin{lemma}[Planted blow-up approximation]\label{lem:planted-estimate}
 Let $m\ge k$ be fixed.  There is a constant $C_m$, depending only on $m$, such
-that the following holds for every $0<\lambda\le 1/2$.  Let $F_0$ be any $\sigma$-flag with at most $m$
-vertices, let $(G,\theta)$ be a $\sigma$-flag on $n>k$ vertices, and let
-$B_N=B_N(G,\theta,\lambda)$.  If
+that the following holds for every $0<\lambda\le 1/2$.  Let $F_0$ be any
+$\sigma$-flag with at most $m$ vertices, let $(G,\theta)$ be a $\sigma$-flag on
+$n$ vertices with $n\ge\max\{m,k+1\}$, and let
+$B_N=B_N(G,\theta,\lambda)$ be a planted blow-up with positive clone classes of
+total size $N\ge n$.  If
 $\widehat\theta:\sigma\to B_N$ satisfies
 $\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
 \begin{equation}\label{eq:planted-estimate}
@@ -726,7 +730,8 @@ $\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
   \le
   C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
 \end{equation}
-Consequently, for every fixed $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ there is a
+Consequently, if $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ is represented by a finite
+linear combination of $\sigma$-flags with at most $m$ vertices, then there is a
 constant $C_f$ such that
 \begin{equation}\label{eq:planted-linear-estimate}
   \left|p(f,(B_N,\widehat\theta))-p(f,(G,\theta))\right|
@@ -738,36 +743,384 @@ constant $C_f$ such that
 \begin{proof}
 It suffices to prove \eqref{eq:planted-estimate}; the estimate for $f$ follows
 by linearity because $f$ is a finite linear combination of flags.
+The size assumptions have two roles.  First, $|F_0|\le m\le n$, so both
+$p(F_0,(G,\theta))$ and $p(F_0,(B_N,\widehat\theta))$ are defined.  Second, the
+clone classes are positive and have total size $N$, so $N\ge n$; this is used in
+the finite denominator comparisons below.
 
-Let $\ell=|F_0|\le m$.  To compute $p(F_0,(B_N,\widehat\theta))$, choose
-$\ell-k$ additional unlabelled vertices uniformly from $B_N$, avoiding the
-labelled vertices.  Call the sample good if none of these additional vertices
-lies in a planted labelled clone class $C_{\theta(1)},\ldots,C_{\theta(k)}$ and
-no two of them lie in the same non-labelled clone class.  The probability of
-hitting a planted labelled clone class is at most
-$(\ell-k)\lambda+O_m(\operatorname{err}_N)$.  Conditional on avoiding the
-planted clone classes, the sample lands among the non-labelled clone classes
-with probabilities proportional to their normalised sizes; these probabilities
-are all $1/(n-k)+O_m(\operatorname{err}_N)$ because the total non-labelled mass
-is $1-\lambda\ge1/2$.  Therefore the probability that two sampled vertices
-fall in the same non-labelled clone class is at most
-$\binom{\ell-k}{2}/(n-k)+O_m(\operatorname{err}_N)$.  Hence the bad probability is
-bounded by the right-hand side of \eqref{eq:planted-estimate}, after enlarging
-$C_m$.
+Let $\ell=|F_0|\le m$ and put $q:=\ell-k$.  If $q=0$, then $F_0$ is just the
+type $\sigma$ itself; no additional vertices are sampled and the two
+probabilities are equal.  Hence assume $q>0$.  To compute
+$p(F_0,(B_N,\widehat\theta))$, choose a uniformly random $q$-element subset of
+$B_N\setminus\operatorname{im}\widehat\theta$.  For the estimates only, expose
+this unordered subset as an ordered sample
+\[
+  X_1,\ldots,X_q
+\]
+drawn without replacement, and then forget the order.  This produces the same
+uniform $q$-subset, and all events below depend only on that subset.  Let
+\[
+  U:=V(G)\setminus\operatorname{im}\theta,
+  \qquad
+  R:=C_{\theta(1)}\cup\cdots\cup C_{\theta(k)} .
+\]
+Thus $R$ is the union of the clone classes attached to the labelled vertices
+(and $R=\emptyset$ if $k=0$).
 
-On the good event, projecting every sampled vertex of $B_N$ to its base vertex
-in $G$ gives a uniformly chosen $(\ell-k)$-subset of
-$V(G)\setminus\operatorname{im}\theta$, up to total variation error
-$O_m(\operatorname{err}_N)$.  The induced labelled graph in the blow-up is then
-exactly the induced labelled graph in $(G,\theta)$ on the projected vertices,
-because distinct clone classes have precisely the adjacencies of their base
-vertices.  Thus the two flag probabilities differ only through the bad event and
-rounding error, which proves the claim.
+The proof has two parts.  First we show that, with probability
+$O_m(\lambda+1/(n-k)+\operatorname{err}_N)$, the sample is bad: it either meets
+one of the labelled clone classes in $R$ or chooses two vertices from the same
+non-labelled clone class.  Second, on the complementary good event, projection
+from the blow-up to $G$ preserves the induced rooted flag.  The only remaining
+question on the good event is whether the projected $q$-set is close to a
+uniform $q$-subset of $U$; this will contribute only
+$O_m(\operatorname{err}_N)$ in total variation.  Combining these two errors gives
+\eqref{eq:planted-estimate}.
+
+By the definition of $\operatorname{err}_N$,
+\[
+  \frac{|R|}{N}\le \lambda+\operatorname{err}_N .
+\]
+Since each exposed position $X_j$ is marginally uniform on the
+$N-k$ vertices of $B_N\setminus\operatorname{im}\widehat\theta$, we have
+\[
+  \Prob[X_j\in R]
+  \le
+  \frac{|R|}{N-k}
+  =
+  \frac{N}{N-k}\frac{|R|}{N}
+  \le
+  (m+1)(\lambda+\operatorname{err}_N).
+\]
+Here the last inequality uses only $N\ge n\ge k+1$ and $k\le m$, which imply
+$N/(N-k)\le k+1\le m+1$.  A union bound over the $q\le m$ exposed positions then gives
+\[
+  \Prob[\text{the sample meets }R]
+  =
+  \Prob\!\left[\bigcup_{j=1}^q\{X_j\in R\}\right]
+  \le
+  K_m^{(1)}(\lambda+\operatorname{err}_N),
+\]
+for a constant $K_m^{(1)}$ depending only on $m$.
+
+Now condition on the sample avoiding $R$.  Under this conditioning, the exposed
+sequence is a uniform ordered sample without replacement from the union of the
+non-labelled clone classes.  For each $v\in U$, write $s_v:=|C_v|$ and
+$S:=\sum_{u\in U}s_u$.  Each exposed position then falls in the clone class
+$C_v$ with marginal probability $s_v/S$.
+
+Here is the normalisation estimate explicitly.  Put
+\[
+  \beta:=\sum_{v\in U}w_v
+  =
+  \begin{cases}
+    1-\lambda,& k>0,\\
+    1,& k=0,
+  \end{cases}
+  \qquad
+  a_v:=\frac{s_v}{N},\qquad
+  a:=\frac{\beta}{n-k},\qquad
+  A:=\frac SN=\sum_{v\in U}a_v .
+\]
+The definition of $\operatorname{err}_N$ gives
+\[
+  \sum_{v\in U}
+  |a_v-a|
+  \le \operatorname{err}_N,
+  \qquad
+  |A-\beta|
+  =
+  \left|\sum_{v\in U}(a_v-a)\right|
+  \le \operatorname{err}_N .
+\]
+Since $\beta\ge1/2$ and $a/\beta=1/(n-k)$, we have
+\[
+\begin{aligned}
+  \sum_{v\in U}\left|\frac{s_v}{S}-\frac1{n-k}\right|
+  &=
+  \sum_{v\in U}\left|\frac{a_v}{A}-\frac{a}{\beta}\right|  \\
+  &\le
+  \sum_{v\in U}\left|\frac{a_v}{A}-\frac{a_v}{\beta}\right|
+  +
+  \sum_{v\in U}\left|\frac{a_v-a}{\beta}\right|  \\
+  &=
+  \frac{|A-\beta|}{\beta}
+  +
+  \frac1{\beta}\sum_{v\in U}|a_v-a|  \\
+  &\le 4\,\operatorname{err}_N .
+\end{aligned}
+\]
+Thus the probability vector
+\[
+  \left(\frac{s_v}{S}\right)_{v\in U}
+\]
+has $\ell^1$-distance at most $4\operatorname{err}_N$ from the uniform vector on
+the $n-k$ vertices of $U$.  In particular, each coordinate satisfies
+$s_v/S\le 1/(n-k)+K_m^{(0)}\operatorname{err}_N$ for a constant
+$K_m^{(0)}$ depending only on $m$.
+
+Now fix two exposed positions $a<b$.  We bound the probability that $X_a$ and
+$X_b$ land in the same non-labelled clone class, still under the conditioning
+that the whole sample avoids $R$.  If $X_a\in C_v$, then $X_b$ is uniform among
+the remaining $S-1$ vertices in the non-labelled clone classes.  Therefore
+\[
+  \Prob[X_b\in C_v\mid X_a\in C_v,\ \text{the sample avoids }R]
+  =
+  \frac{s_v-1}{S-1}
+  \le
+  \frac{s_v}{S}.
+\]
+Averaging over the possible clone class $C_v$ of $X_a$ gives the explicit bound
+\[
+  \begin{aligned}
+  &\Prob[X_a,X_b\text{ lie in the same non-labelled clone class}
+        \mid \text{the sample avoids }R]  \\
+  &\qquad =
+  \sum_{v\in U}
+    \frac{s_v}{S}\cdot\frac{s_v-1}{S-1}
+  \le
+  \sum_{v\in U}\left(\frac{s_v}{S}\right)^2
+  \le
+  \max_{v\in U}\frac{s_v}{S}
+  \le
+  \frac1{n-k}+K_m^{(0)}\operatorname{err}_N.
+  \end{aligned}
+\]
+Let $E_{\mathrm{coll}}$ be the event that two sampled vertices
+lie in the same non-labelled clone class.  Equivalently, for the ordered
+exposure, $E_{\mathrm{coll}}$ is the union over pairs $a<b$ of the events that
+$X_a$ and $X_b$ land in the same clone class.  A second union bound over the at
+most $\binom q2\le\binom m2$ pairs gives
+\[
+  \Prob[E_{\mathrm{coll}}\mid \text{the sample avoids }R]
+  \le
+  K_m^{(2)}\left(\frac1{n-k}+\operatorname{err}_N\right),
+\]
+for a constant $K_m^{(2)}$ depending only on $m$.
+
+Call the sample good if it avoids $R$ and no two sampled vertices lie in the same
+non-labelled clone class.  Combining the two bounds above,
+\[
+  \Prob[\text{bad}]
+  \le
+  K_m^{(3)}\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+\]
+where $K_m^{(3)}$ again depends only on $m$.
+
+It remains to compare what happens on the good event with the rooted density in
+the base flag $(G,\theta)$.  Let
+\[
+  \pi:B_N\to G
+\]
+be the projection sending each clone class $C_v$ to its base vertex $v$.  On the
+good event, the vertices $\pi(X_1),\ldots,\pi(X_q)$ are distinct elements of
+$U$.
+
+First compare their distribution with the uniform distribution on $q$ distinct
+vertices of $U$.  Let $\mu$ be the probability vector on $U$ given by
+$\mu(v)=s_v/S$, and let $\nu$ be the uniform probability vector on $U$.  The
+normalisation estimate above says
+\[
+  \|\mu-\nu\|_1\le 4\operatorname{err}_N .
+\]
+Here is the same comparison for ordered distinct tuples.  Let $r:=|U|=n-k$, and
+let $D$ be the set of ordered $q$-tuples of distinct elements of $U$.  On the
+good event, the projected ordered tuple $(\pi(X_1),\ldots,\pi(X_q))$ has the
+probability
+\[
+  P_\mu(v_1,\ldots,v_q)
+  =
+  \frac{\prod_{j=1}^q \mu(v_j)}
+       {Z_\mu},
+  \qquad
+  Z_\mu:=\sum_{(u_1,\ldots,u_q)\in D}\prod_{j=1}^q \mu(u_j),
+\]
+for $(v_1,\ldots,v_q)\in D$.  Indeed, the numerator is proportional to the
+number $s_{v_1}\cdots s_{v_q}$ of ways to choose one vertex from each prescribed
+clone class, and $Z_\mu$ is the normalising constant after restricting to
+distinct base vertices.  The uniform ordered distinct tuple has the analogous law
+\[
+  P_\nu(v_1,\ldots,v_q)
+  =
+  \frac{\prod_{j=1}^q \nu(v_j)}
+       {Z_\nu},
+  \qquad
+  Z_\nu:=\sum_{(u_1,\ldots,u_q)\in D}\prod_{j=1}^q \nu(u_j).
+\]
+Since $\nu$ is uniform,
+\[
+  Z_\nu=\frac{r(r-1)\cdots(r-q+1)}{r^q}.
+\]
+Because $r\ge q$ and $q\le m$, this number is bounded below by a positive
+constant $\alpha_m$ depending only on $m$.
+
+The target for the next few estimates is the following total-variation bound:
+for some constant $K_m^{(4)}$ depending only on $m$,
+\begin{equation}\label{eq:ordered-good-tv-target}
+  d_{\mathrm{TV}}(P_\mu,P_\nu)\le K_m^{(4)}\operatorname{err}_N .
+\end{equation}
+After forgetting the order, the same bound will hold for the projected $q$-set
+on the good event.
+
+For $(v_1,\ldots,v_q)\in D$, write
+\[
+  w_\mu(v_1,\ldots,v_q):=\prod_{j=1}^q\mu(v_j),
+  \qquad
+  w_\nu(v_1,\ldots,v_q):=\prod_{j=1}^q\nu(v_j).
+\]
+The unnormalised weights are close.  For each tuple, a telescoping expansion gives
+\[
+  \left|
+    \prod_{j=1}^q\mu(v_j)-\prod_{j=1}^q\nu(v_j)
+  \right|
+  \le
+  \sum_{i=1}^q
+  |\mu(v_i)-\nu(v_i)|
+  \prod_{j<i}\mu(v_j)\prod_{j>i}\nu(v_j).
+\]
+Now sum this inequality over $D$.  This gives
+\[
+\begin{aligned}
+&\sum_{(v_1,\ldots,v_q)\in D}
+  \left|
+    \prod_{j=1}^q\mu(v_j)-\prod_{j=1}^q\nu(v_j)
+  \right|  \\
+&\qquad\le
+  \sum_{i=1}^q
+  \sum_{(v_1,\ldots,v_q)\in D}
+  |\mu(v_i)-\nu(v_i)|
+  \prod_{j<i}\mu(v_j)\prod_{j>i}\nu(v_j).
+\end{aligned}
+\]
+It remains to bound the inner sum for each fixed $i$.  All terms in it are
+non-negative, and $D\subseteq U^q$, so we may enlarge the inner sum from $D$ to
+all of $U^q$:
+\[
+\begin{aligned}
+&\sum_{(v_1,\ldots,v_q)\in D}
+  |\mu(v_i)-\nu(v_i)|
+  \prod_{j<i}\mu(v_j)\prod_{j>i}\nu(v_j)  \\
+&\qquad\le
+  \sum_{(v_1,\ldots,v_q)\in U^q}
+  |\mu(v_i)-\nu(v_i)|
+  \prod_{j<i}\mu(v_j)\prod_{j>i}\nu(v_j)  \\
+&\qquad=
+  \left(\sum_{v_i\in U}|\mu(v_i)-\nu(v_i)|\right)
+  \prod_{j<i}\left(\sum_{v_j\in U}\mu(v_j)\right)
+  \prod_{j>i}\left(\sum_{v_j\in U}\nu(v_j)\right)  \\
+&\qquad=
+  \|\mu-\nu\|_1 .
+\end{aligned}
+\]
+Summing this bound over the $q$ possible values of $i$ gives
+\begin{equation}\label{eq:good-unnormalized-weight-bound}
+  \sum_{(v_1,\ldots,v_q)\in D}
+  |w_\mu(v_1,\ldots,v_q)-w_\nu(v_1,\ldots,v_q)|
+  \le
+  q\|\mu-\nu\|_1
+  \le
+  m\|\mu-\nu\|_1
+  \le
+  K_m''\operatorname{err}_N,
+\end{equation}
+where the last inequality uses $\|\mu-\nu\|_1\le4\operatorname{err}_N$ and
+$K_m''$ depends only on $m$.  Since
+$Z_\mu-Z_\nu=\sum_D(w_\mu-w_\nu)$, \eqref{eq:good-unnormalized-weight-bound} also gives
+\begin{equation}\label{eq:good-normalizer-bound}
+  |Z_\mu-Z_\nu|\le K_m''\operatorname{err}_N .
+\end{equation}
+If
+$K_m''\operatorname{err}_N\ge\alpha_m/2$, then the target
+\eqref{eq:ordered-good-tv-target} is automatic after increasing $K_m^{(4)}$:
+indeed, total variation distance is always at most $1$, while
+$1\le (2K_m''/\alpha_m)\operatorname{err}_N$.  Otherwise
+$K_m''\operatorname{err}_N<\alpha_m/2$.  Since $Z_\nu\ge\alpha_m$ and
+\eqref{eq:good-normalizer-bound} holds, we have
+\[
+  Z_\mu
+  \ge
+  Z_\nu-|Z_\mu-Z_\nu|
+  \ge
+  \alpha_m-\frac{\alpha_m}{2}
+  =
+  \frac{\alpha_m}{2}.
+\]
+In this case the normalisation can be estimated directly:
+the two bounds being reused are
+\eqref{eq:good-unnormalized-weight-bound} for $\sum_D|w_\mu-w_\nu|$ and
+\eqref{eq:good-normalizer-bound} for $|Z_\mu-Z_\nu|$.  Thus
+\[
+\begin{aligned}
+  \sum_D\left|\frac{w_\mu}{Z_\mu}-\frac{w_\nu}{Z_\nu}\right|
+  &\le
+  \frac1{Z_\mu}\sum_D|w_\mu-w_\nu|
+  +
+  \left|\frac1{Z_\mu}-\frac1{Z_\nu}\right|\sum_D w_\nu  \\
+  &=
+  \frac1{Z_\mu}\sum_D|w_\mu-w_\nu|
+  +
+  \frac{|Z_\mu-Z_\nu|}{Z_\mu}
+  \le
+  \frac{4K_m''}{\alpha_m}\operatorname{err}_N .
+\end{aligned}
+\]
+Thus, after enlarging $K_m^{(4)}$ if necessary, the target
+\eqref{eq:ordered-good-tv-target} holds in this case as well.
+Forgetting the order cannot increase total variation distance, so the projected
+$q$-set on the good event is within $K_m^{(4)}\operatorname{err}_N$ of a
+uniformly chosen $q$-subset of $U$.
+
+Finally, on the good event the induced labelled graph is preserved by projection.
+The planted labels $\widehat\theta(i)\in C_{\theta(i)}$ have exactly the same
+adjacencies to a sampled vertex in $C_v$ as $\theta(i)$ has to $v$ in $G$, and
+two sampled unlabelled vertices lie in distinct clone classes, so their adjacency
+is exactly the adjacency of their two base vertices.  Therefore the rooted flag
+seen in $(B_N,\widehat\theta)$ is the same as the rooted flag seen in
+$(G,\theta)$ on the projected $q$-set.
+
+Let $h$ be the indicator that a $q$-set of base vertices induces $F_0$ together
+with the labels.  Let $Q_{\mathrm{good}}$ be the distribution of the projected
+$q$-set conditioned on the good event, and let $U_q$ be the uniform distribution
+on $q$-subsets of $U$.  If $\gamma:=\Prob[\text{good}]$, then the contribution
+from bad samples is some number $(1-\gamma)b$ with $0\le b\le1$, and
+\[
+  p(F_0,(B_N,\widehat\theta))
+  =
+  \gamma\,\E_{Q_{\mathrm{good}}}h+(1-\gamma)b .
+\]
+On the other hand,
+\[
+  p(F_0,(G,\theta))
+  =
+  \E_{U_q}h
+  =
+  \gamma\,\E_{U_q}h+(1-\gamma)\E_{U_q}h .
+\]
+Subtracting these two expressions gives
+\[
+\begin{aligned}
+&\left|p(F_0,(B_N,\widehat\theta))-p(F_0,(G,\theta))\right| \\
+&\qquad\le
+  \gamma\left|\E_{Q_{\mathrm{good}}}h-\E_{U_q}h\right|
+  +(1-\gamma)\left|b-\E_{U_q}h\right| \\
+&\qquad\le
+  d_{\mathrm{TV}}(Q_{\mathrm{good}},U_q)+\Prob[\text{bad}]  \\
+&\qquad\le
+  K_m^{(4)}\operatorname{err}_N
+  +
+  K_m^{(3)}\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right).
+\end{aligned}
+\]
+Taking the lemma's constant $C_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
+\eqref{eq:planted-estimate}.
 \end{proof}
 
 \begin{lemma}[Positive probability of the planted root]\label{lem:planted-mass}
-With the notation above, for all sufficiently large $N$, the finite random
-extension of the unlabelled graph $B_N(G,\theta,\lambda)$ to type $\sigma$ gives
+With the notation above, consider the following finite random labelling
+experiment on the unlabelled graph $B_N(G,\theta,\lambda)$: choose uniformly from
+all induced embeddings $\widehat\theta:\sigma\to B_N(G,\theta,\lambda)$, where
+the labels of $\sigma$ are kept in their prescribed order.  If either $k=0$, or
+$k>0$ and $\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
 probability at least
 \[
   c_{k,\lambda}:=
@@ -776,19 +1129,43 @@ probability at least
     \left(\dfrac{\lambda}{2k}\right)^k, & k>0,
   \end{cases}
 \]
-to the event that the random labelled embedding
-$\widehat\theta:\sigma\to B_N(G,\theta,\lambda)$ satisfies
+to the event that the chosen embedding satisfies
 $\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
 \end{lemma}
 
 \begin{proof}
-For $k=0$ there is nothing to prove.  Assume $k>0$.  Every ordered choice of
+For $k=0$ there is only the empty embedding, so the probability is $1$.  Assume
+$k>0$.  The random labelling above is not a uniform map from $\sigma$ to $B_N$;
+it is uniform over the finite set of induced labelled copies of $\sigma$ in
+$B_N$.  Every ordered choice of
 vertices $\widehat\theta(i)\in C_{\theta(i)}$ is an induced embedding of $\sigma$,
 because $\theta$ is an induced embedding into $G$ and the blow-up preserves the
-adjacencies between distinct base vertices.  For $N$ sufficiently large,
-$|C_{\theta(i)}|\ge(\lambda/(2k))N$ for all $i$.  Thus the number of planted
-ordered embeddings is at least $(\lambda/(2k))^kN^k$, while the total number of
-ordered embeddings of $\sigma$ into $B_N$ is at most $N^k$.
+adjacencies between distinct base vertices.  Since
+$\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
+\[
+  \frac{|C_{\theta(i)}|}{N}
+  \ge
+  w_{\theta(i)}-\operatorname{err}_N
+  =
+  \frac{\lambda}{k}-\operatorname{err}_N
+  \ge
+  \frac{\lambda}{2k}.
+\]
+Hence the number of planted ordered embeddings is at least
+\[
+  \prod_{i=1}^k |C_{\theta(i)}|
+  \ge
+  \left(\frac{\lambda}{2k}\right)^k N^k .
+\]
+The denominator in the random experiment is the total number of induced ordered
+embeddings of $\sigma$ into $B_N$.  This denominator is at most the number of all
+ordered maps from the $k$ labelled vertices to $V(B_N)$, namely $N^k$.  Therefore
+the probability of choosing a planted embedding is at least
+\[
+  \frac{(\lambda/(2k))^kN^k}{N^k}
+  =
+  \left(\frac{\lambda}{2k}\right)^k .
+\]
 \end{proof}
 
 \subsection{Root-plantability theorem}
@@ -823,12 +1200,21 @@ $p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m=\max_i |F_i|$.
 Choose $0<\lambda\le 1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
 constant from \cref{lem:planted-estimate}.  Then fix one $t$ large enough that
 \[
+  |G_t|\ge\max\{m,k+1\},
+  \qquad
   |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10
   \quad\text{for all }i,
   \qquad
   \frac{C_m}{|G_t|-|\sigma|}<\eps/10.
 \]
-Finally take a sequence $N_j\to\infty$ with rounding errors tending to zero and, for all large $j$, satisfying $C_m\operatorname{err}_{N_j}<\eps/10$; put
+Finally take a sequence $N_j\to\infty$ with rounding errors tending to zero and,
+for all large $j$, satisfying
+\[
+  C_m\operatorname{err}_{N_j}<\eps/10,
+  \qquad
+  \text{and, if }k>0,\quad \operatorname{err}_{N_j}\le\lambda/(2k);
+\]
+put
 \[
   B_j:=B_{N_j}(G_t,\theta_t,\lambda).
 \]
@@ -903,9 +1289,9 @@ blow-up of every graph in $\K$ again belongs to $\K$.
 
 \begin{lemma}[Complete blow-up approximation]\label{lem:true-planted-estimate}
 The estimates of \cref{lem:planted-estimate,lem:planted-mass} remain valid,
-with the same constants, if the independent blow-up $B_N(G,\theta,\lambda)$ is
-replaced by the complete blow-up $B_N^+(G,\theta,\lambda)$ with the same clone
-class sizes.
+with the same constants and the same hypotheses on $N$ and $\operatorname{err}_N$,
+if the independent blow-up $B_N(G,\theta,\lambda)$ is replaced by the complete
+blow-up $B_N^+(G,\theta,\lambda)$ with the same clone class sizes.
 \end{lemma}
 
 \begin{proof}
@@ -985,10 +1371,14 @@ $v\in V(G)$.
 \begin{lemma}[Substitution planting estimate]\label{lem:substitution-planting-estimate}
 Assume $\K$ is hereditary and has graphs of arbitrarily large order.  Let
 $F=(G,\theta)$ be a $\sigma$-flag in $\K$ with $|\sigma|=k$ and $|G|=n>k$.
-Fix $0<\lambda\le1/2$, assign the same weights $w_v$ as in the planted blow-up
-construction, and for a large integer $N$ choose graphs $H_{v,N}\in\K$ with
+Fix $0<\lambda\le1/2$ and assign the same weights $w_v$ as in the planted
+blow-up construction.  For all sufficiently large integers $N$, choose positive
+integers $s_{v,N}$ summing to $N$ and graphs $H_{v,N}\in\K$ with
+$|H_{v,N}|=s_{v,N}$ such that
 \[
-  \sum_v \left|\frac{|H_{v,N}|}{N}-w_v\right|\to0.
+  \operatorname{err}^{\mathrm{sub}}_N
+  :=
+  \sum_v \left|\frac{s_{v,N}}{N}-w_v\right|\to0.
 \]
 Let
 \[
@@ -997,14 +1387,18 @@ Let
 If $\widehat\theta:\sigma\to S_N$ satisfies
 $\widehat\theta(i)\in H_{\theta(i),N}$ for all $i$, then the estimates of
 \cref{lem:planted-estimate,lem:planted-mass} hold for $S_N$ in place of the
-independent blow-up.
+independent blow-up, with $\operatorname{err}^{\mathrm{sub}}_N$ in place of
+$\operatorname{err}_N$ and with the same small-error hypothesis in
+\cref{lem:planted-mass}.
 \end{lemma}
 
 \begin{proof}
 Because $\K$ is hereditary and has arbitrarily large graphs, it contains graphs
 of every sufficiently large prescribed order: take an induced subgraph of that
-order inside a larger graph of $\K$.  Thus the fibres $H_{v,N}$ with the required
-asymptotic sizes exist.
+order inside a larger graph of $\K$.  Choose positive integers $s_{v,N}$ summing
+to $N$ and satisfying $s_{v,N}/N\to w_v$.  Since every $w_v$ is positive, all
+$s_{v,N}$ are eventually large enough that fibres $H_{v,N}\in\K$ of those exact
+orders exist.
 
 The proof of \cref{lem:planted-estimate} now applies verbatim.  The good event
 excludes every additional sampled vertex from the planted labelled fibres and
@@ -1615,9 +2009,10 @@ $g^2$ and using that $\phi_0$ is multiplicative,
 \[
   \E_{\psi\sim\mu}\bigl[(\psi(g)-\phi_0(g))^2\bigr]=\phi_0(g^2)-\phi_0(g)^2=0,
 \]
-so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each of the countably many
-$g\in\A^0$.  Since flag densities separate the points of $X_0$, this forces
-$\mu=\delta_{\phi_0}$, whence
+so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each fixed $g\in\A^0$.
+Apply this to the countable family of unlabelled flags and intersect the resulting
+probability-one events.  Since those flag densities separate the points of $X_0$, this
+forces $\mu=\delta_{\phi_0}$, whence
 $S_\emptyset=\overline{\bigcup_{\phi_0}\{\phi_0\}}=\overline{Q_0}=Q_0$.  The coincidence
 of the two semantics now follows from \cref{thm:support-criterion}.
 \end{proof}
