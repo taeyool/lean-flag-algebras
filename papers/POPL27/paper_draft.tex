@@ -291,11 +291,11 @@ simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
   \bigr\},
 \]
 where an \emph{induced copy} of $P$ in $G$ is a vertex subset
-$S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
+$S\subseteq V(G)$ with $|S|=|V(P)|$ and the restriction of $G$ to $S$, denoted $G[S]$, is isomorphic to $P$, and
 \emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
 member of $\mathcal{H}$.  The corresponding asymptotic
 question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit; we call this the \emph{Turán density} of $P$ with respect to $\mathcal{H}$:
+takes a limit. We call this the \emph{Tur\'an density} of $P$ with respect to $\mathcal{H}$:
 \[
   \tdensity{P}{\mathcal{H}}
   :=
@@ -303,8 +303,8 @@ takes a limit; we call this the \emph{Turán density} of $P$ with respect to $\m
   \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
 \]
 For example, Mantel's theorem states that a triangle-free graph on $n$
-vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
-$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
+vertices has at most $\lfloor n^2/4\rfloor$ edges (that is, 
+$\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$) achieved by the
 complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
 asymptotic value
 \[
@@ -318,7 +318,7 @@ write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
 Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
 about \emph{all} sufficiently large $\mathcal{H}$-free graphs: a valid upper
-bound must certify that the proportion of induced copies of $P$ never exceeds
+bound must guarantee that the proportion of induced copies of $P$ never exceeds
 the claimed value, asymptotically, no matter how large the host graph is.  No
 finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
@@ -329,7 +329,7 @@ distinguished labeled subgraph.  By treating the densities of such partially
 labeled patterns as algebraic objects, the method turns a global asymptotic
 problem into a finite inequality in a quotient algebra.  Crucially, many
 strong inequalities can be obtained from positive semidefinite matrices: an
-SDP solver searches for a certificate, and a flag algebra theorem explains
+semidefinite programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
 why that finite certificate implies an asymptotic bound for the whole graph
 class.  This
 combination of mathematical abstraction and computer search has been unusually
@@ -344,7 +344,7 @@ reconstructs, in Lean, algebraic proofs suggested by external certificate
 data.  The aim is not only to verify a few final inequalities, but to
 formalize enough of the method that certificates found by
 semidefinite-programming search can be checked against the mathematical
-definitions inside the proof assistant.  The formalization therefore covers the
+definitions and theorems inside the proof assistant.  The formalization therefore covers the
 mathematical layer of the method: partially labeled graphs, their densities in
 large graphs, the quotient algebra of density expressions, graph-limit
 semantics through positive homomorphisms, and the downward operator that
