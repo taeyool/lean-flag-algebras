@@ -1,0 +1,885 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{longtable}
+% Use DejaVu Sans Mono if present (as the other Notes files do); fall back otherwise.
+\IfFontExistsTF{DejaVu Sans Mono}{\setmonofont{DejaVu Sans Mono}[Scale=0.85]}{}
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+% Robust so it survives moving arguments (section titles -> table of contents).
+\DeclareRobustCommand{\btt}[1]{\texttt{\detokenize{#1}}}
+
+% ---- Lean code listing style -------------------------------------------
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, noncomputable, syntax, elab, elab_rules,
+    macro, macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat, decide, native_decide,
+    fin_cases, norm_num, exact, set_option, unfold, induction},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  inputencoding=utf8,
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{gray!6},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=0.8\baselineskip,
+  belowskip=0.8\baselineskip
+}
+% -----------------------------------------------------------------------
+
+\title{Generating and Optimizing Flags in Lean:\\
+An Implementation and Optimization History of\\
+\btt{generate_empty_typed_flags} and \btt{generate_flags}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note documents the design, implementation, and optimization of the two
+elaboration-time flag-generation commands of the \btt{lean-flag-algebras}
+development, \btt{generate_empty_typed_flags} and \btt{generate_flags}. It traces
+the code from commit \btt{afe184a} (``Phase~1''), where the empty-typed flags were
+already generated in Lean but the typed (labeled) flags were still loaded from
+external JSON, through the cut-over to fully self-contained Lean generation and a
+long sequence of performance and proof-engineering optimizations, ending with the
+augmentation-based labeled enumeration and the degree-key dedup prefilter. For each
+change we explain how it worked, why it was made, what improvement it produced (with
+measured numbers wherever they were recorded), and what remained slow afterwards. We
+also document the cases where an anticipated improvement failed to materialize, the
+dead ends and confounded diagnoses, the two fundamental walls that make $n=6$
+expensive and $n=7$ impractical under the current architecture, and the directions
+that remain promising. The note is intended to be self-contained for a reader who has
+never seen this code.
+\end{abstract}
+
+\tableofcontents
+
+% =======================================================================
+\section{Scope and orientation}
+% =======================================================================
+
+The \btt{lean-flag-algebras} project formalizes Razborov-style flag-algebra
+arguments (here, the Murphy--Nir 2021 results). A flag-algebra proof works over a
+\emph{basis of flags}: small graphs, possibly carrying a labeled ``type''~$\sigma$.
+To run such a proof inside Lean one must \emph{enumerate} all flags of a given size
+(one canonical representative per isomorphism class) and \emph{prove} two facts about
+the enumeration:
+\begin{itemize}
+  \item \textbf{Completeness}: the enumeration hits every isomorphism class, i.e.\
+        its image in the quotient is \btt{Finset.univ}.
+  \item \textbf{No duplication}: \btt{Nodup} of the enumerated list.
+\end{itemize}
+Originally these flags were produced by external Python scripts that emitted JSON,
+which a Lean macro parsed at elaboration time. The work documented here replaced that
+JSON pipeline with self-contained Lean enumeration: two \emph{commands} that, at
+elaboration time, run a pure Lean computation to enumerate the flags and synthesize
+the named constants and completeness/no-duplication/downward-coefficient theorems that
+the rest of the development consumes.
+
+The two commands are:
+\begin{itemize}
+  \item \btt{generate_empty_typed_flags n} --- the unlabeled (``empty-typed'',
+        type $\varnothing_t$) flags on $n$ vertices: one canonical graph per
+        isomorphism class, together with the abstract \btt{Flag} bridges.
+  \item \btt{generate_flags k m n} --- the $\sigma$-typed (labeled) flags on $n$
+        vertices, where $\sigma$ is the $k$-vertex graph of canonical index $m$.
+        Each labeled flag is built on top of an underlying empty-typed flag and
+        additionally records its \emph{type embedding} and a downward-normalizing
+        coefficient.
+\end{itemize}
+
+This document reviews every relevant commit from \btt{afe184a} (2026-06-04) to
+\btt{54b06f7}, the last commit at the time of writing. Throughout, $g = g(n,k,m)$
+denotes the number of flags produced by a line (the count of isomorphism classes),
+which is the dominant scaling parameter. Representative counts: the empty-typed
+classes are $1,1,2,4,11,34,156,1044$ for $n=0,\dots,7$; the heaviest typed lines used
+in practice are $\btt{generate_flags 3 0 5}$ ($g=72$) and $\btt{generate_flags 3 0 6}$
+($g=816$).
+
+% =======================================================================
+\section{Background: the data model and the generation paradigm}
+% =======================================================================
+
+\subsection{Computable graphs, labeled graphs, and flags}
+
+The development carries two parallel representations of the same mathematical
+objects. The abstract layer (\btt{LabeledGraph}, \btt{Flag}) is the one the
+flag-algebra theory is stated over; the \emph{computable} layer (\btt{Sym2Graph},
+\btt{Sym2LabeledGraph}) is finite-data and decidable, suitable for
+\btt{decide}/\btt{native_decide}.
+
+\begin{itemize}
+  \item \btt{Sym2Graph n} is a graph on \btt{Fin n}: a \btt{Finset (Sym2 (Fin n))}
+        of edges together with a proof that no edge is a self-loop
+        (\btt{edges_valid}). \btt{Sym2EmptyTypedFlag n} is the quotient of
+        \btt{Sym2Graph n} by isomorphism; \btt{Sym2Graph.toFlag} maps it into the
+        abstract \btt{Flag} $\varnothing_t\ (\btt{Fin n})$.
+  \item \btt{Sym2LabeledGraph} $\sigma$ \btt{n} extends a \btt{Sym2Graph} with a
+        \emph{type embedding} \btt{type_embed}, a graph embedding of (the decoded)
+        $\sigma$ into the underlying graph. \btt{Sym2Flag} $\sigma$ \btt{n} is its
+        quotient by labeled isomorphism, and \btt{Sym2Flag.toFlag} maps it to the
+        abstract \btt{Flag}.
+  \item The computable isomorphism relation is written $\sim_{\!sf}$
+        (\btt{Sym2GraphEqv} / \btt{sym2LabeledGraphEqv}); two computable
+        (labeled) graphs are equivalent iff their decoded abstract forms are
+        flag-isomorphic. The fast decidable check is \btt{isEmptyIsoFast_bool}
+        (unlabeled) / \btt{isIsoFast_bool} (labeled).
+\end{itemize}
+
+A \emph{flag isomorphism} of labeled graphs carries a \btt{graph_iso} (an isomorphism
+of the underlying simple graphs) together with a \btt{type_preserve} field stating
+that the isomorphism commutes with the two type embeddings. This structure is what
+makes the labeled iso check both subtler and, as it happens, \emph{cheaper} than the
+unlabeled one (Section~\ref{sec:degkey}).
+
+\subsection{The two stages of a generation command}
+
+Each command has two stages, and almost every optimization in this history targets one
+of them:
+
+\begin{enumerate}
+  \item \textbf{Elaboration-time data computation.} The macro evaluates a pure Lean
+        function (\btt{genCanonicalEdgeLists n} or \btt{genFlagData k m n}) to obtain
+        the flag data --- canonical edge lists, type indices, and downward
+        coefficients. This evaluation runs in the Lean elaborator/interpreter (or via
+        compiled \btt{Lean.Meta.evalExpr}).
+  \item \textbf{Declaration emission and proof.} For each flag the macro emits named
+        \btt{def}s (\btt{Sym2Graph_n_0_0_i}, \btt{Sym2Flag_n_k_m_i},
+        \btt{Flag_n_k_m_i}, \btt{FlagAlgebra_n_k_m_i}, and for labeled flags an
+        \btt{unlabel_n_k_m_i} bridge to the underlying flag and a
+        \btt{downward_n_k_m_i} coefficient theorem), and finally the set-level
+        machinery: a finset of the named flags, a \btt{Nodup} proof, and a
+        \btt{= Finset.univ} completeness proof.
+\end{enumerate}
+
+\subsection{The central proof problem: completeness without the ``monster''}
+\label{sec:monster}
+
+The naive way to prove \btt{sym2FlagSet_n_k_m = Finset.univ} is a single
+\btt{native_decide}. But \btt{Finset.univ : Finset (Sym2Flag} $\sigma$ \btt{n)}
+forces the \btt{Fintype (Sym2LabeledGraph} $\sigma$ \btt{n)} instance, which
+enumerates \emph{all} $2^{\binom n2}$ edge subsets crossed with \emph{all} type
+embeddings, then quotients --- an astronomically large object we call the
+\emph{monster}. Materializing it is the original bottleneck.
+
+The architecture's answer, common to both commands, is a \emph{symbolic} completeness
+theorem proved once, mathematically, in \btt{Generate.lean}:
+\begin{itemize}
+  \item \btt{genEmptyTypedFlagSet_eq_univ n} and
+        \btt{genFlagSet_eq_univ}~$\sigma$~\btt{n}: the \emph{generated} finset equals
+        \btt{univ}, proved by \btt{Finset.eq_univ_of_forall} from a completeness lemma
+        about the generator --- never by reduction.
+\end{itemize}
+The macro then only has to \emph{bridge} the concrete named-flag list to the
+generator's enumeration. That bridge is the part discharged by \btt{native_decide},
+and reducing its cost from $O(g^2)$ to $O(g)$ is the recurring theme of this history.
+
+% =======================================================================
+\section{The original implementation and the \btt{afe184a} baseline}
+% =======================================================================
+
+\subsection{The JSON pipeline (pre-Phase~1)}
+
+In the original implementation, two external Python scripts
+(\btt{generate_graphs.py}, \btt{generate_flags.py}) enumerated the
+non-isomorphic graphs and the typed flags and wrote them to JSON files
+(\btt{graphs_n.json}, \btt{flags_n_k_m.json}). A Lean macro module (then named
+\btt{FlagLoader.lean}) provided \btt{load_empty_typed_flags "graphs_n.json"} and
+\btt{load_flags "flags_n_k_m.json"}, which parsed the JSON with
+\btt{Lean.Data.Json} and emitted the corresponding named declarations. The
+provenance of the enumeration was thus \emph{outside} the Lean development: a reader
+had to trust the Python scripts and the JSON files, and the build depended on those
+files being present and consistent.
+
+\subsection{Phase~1 (commit \btt{afe184a}): empty-typed flags in Lean}
+
+At \btt{afe184a} (``Phase~1: generate empty-typed flags in Lean, replacing the JSON
+pipeline'') the \emph{empty-typed} half had already been internalized.
+\btt{Generate.lean} contained a pure Lean enumeration of one canonical graph per
+isomorphism class, and \btt{generate_empty_typed_flags n} emitted those graphs and
+their flags. The key pieces, which all later work builds on, were:
+\begin{itemize}
+  \item \textbf{Canonical-augmentation generator.} \btt{augReps n} builds the
+        $n$-vertex representatives by induction on $n$: take the $n$-vertex reps, add
+        one new vertex adjacent to each subset of the existing vertices
+        (\btt{augmentAll}), and deduplicate up to $\sim_{\!sf}$ by a fold
+        (\btt{dedupStep}). This is the standard ``orderly/canonical augmentation''
+        idea; crucially it never enumerates all $2^{\binom n2}$ subsets --- it grows
+        the representatives directly.
+  \item \textbf{Canonicalization and ordering.} \btt{canonicalEdgeList} computes a
+        graph's lexicographically minimal edge list over all $n!$ relabelings (the
+        canonical form); \btt{graphKey} $=$ (edge count, canonical edge list)
+        provides a total order; the generated list \btt{genSym2Graphs n} is sorted
+        into this canonical/``JSON'' order so the named constants come out in a
+        stable, reproducible order.
+  \item \textbf{Completeness and no-duplication}, proved symbolically:
+        \btt{augReps_complete} (every graph is $\sim_{\!sf}$ to a representative),
+        \btt{genEmptyTypedFlags_nodup}, and \btt{genEmptyTypedFlagSet_eq_univ}.
+\end{itemize}
+At \btt{afe184a}, \btt{FlagDef.lean} generated empty-typed flags for $n=0,\dots,5$ in
+Lean, but still loaded the typed flags from JSON via \btt{load_flags}, and the JSON
+\btt{load_*} commands still existed alongside the generators. This is our baseline.
+
+% =======================================================================
+\section{Phase~2: typed-flag generation and symbolic completeness (\btt{212968a})}
+% =======================================================================
+
+\subsection{What changed}
+
+Commit \btt{212968a} (``Phase~2'') internalized the typed flags. It added
+\btt{genFlagData k m n} to \btt{Generate.lean}: for each underlying graph (in the
+canonical order of \btt{genSym2Graphs n}) it enumerates the valid type embeddings of
+$\sigma$, groups them into orbits under the underlying graph's automorphism group,
+keeps the orbit-lexicographically-minimal tuple as the representative, and records the
+downward coefficient $\lvert\text{orbit}\rvert / n^{\underline{k}}$ in lowest terms.
+The new command \btt{generate_flags k m n} consumes this data, emitting one
+\btt{Sym2LabeledGraph}/\btt{Sym2Flag}/\btt{Flag}/\btt{FlagAlgebra} per flag, plus the
+per-flag \btt{unlabel} and \btt{downward} bridges, plus the set-level machinery.
+
+\subsection{Why, and the improvement}
+
+The point was to remove the JSON dependency \emph{and} to avoid the monster. Instead
+of a \btt{native_decide} over \btt{Finset.univ : Finset (Sym2Flag} $\sigma$ \btt{n)},
+\btt{sym2FlagSet_n_k_m_eq_univ} now applies the symbolic \btt{genFlagSet_eq_univ}
+(Section~\ref{sec:monster}), bridged to the named list by one \btt{native_decide} over
+the \emph{tight} \btt{genFlagSet} enumeration. The recorded effect was a drop of the
+\btt{FlagDef} build from \textbf{568\,s to 274\,s} ($\sim 2\times$), with all flag
+counts unchanged and the full project compiling cleanly. The bridge at this point was
+still an $O(g^2)$ comparison (a finset/quotient equality, each of the $g$ elements
+membership-checked, each membership an iso check), which the later optimizations
+target.
+
+Commit \btt{8a3ceab} then removed the now-dead JSON loaders
+(\btt{load_empty_typed_flags}, \btt{load_flags}, all the parsing helpers and JSON
+structs, and the \btt{Lean.Data.Json} import) --- roughly 640 lines of dead code ---
+completing the cut-over.
+
+% =======================================================================
+\section{Empty-typed optimizations (\btt{fbaeed0}, \btt{fa8939e}, \btt{de7dcbc})}
+% =======================================================================
+
+These three commits sharpened the empty-typed path and pushed it to $n=6$; several of
+their ideas were later ported to the labeled path during the session work.
+
+\subsection{Degree-key prefilter, decorate-sort-undecorate, and the $O(g)$ bridge (\btt{fbaeed0})}
+\label{sec:fbaeed0}
+
+This commit made three orthogonal changes:
+
+\paragraph{Degree-sequence dedup prefilter.} The augmentation dedup compared each new
+candidate against every survivor with the $O(n!)$-flavored \btt{isEmptyIsoFast_bool}.
+\btt{fbaeed0} introduced a cheap, $O(n^2)$ isomorphism invariant
+\btt{degKey} $=$ (edge count, sorted degree sequence) and a keyed dedup step
+\btt{dedupStepDeg} that runs the expensive iso test \emph{only} when the cheap keys
+collide:
+\begin{lstlisting}
+def dedupStepDeg (acc) (p) :=
+  if acc.any (fun q => q.2 == p.2 && isEmptyIsoFast_bool q.1 p.1) = true
+  then acc else acc ++ [p]
+\end{lstlisting}
+Correctness is non-trivial: the keyed fold must make the \emph{same} keep/drop
+decisions as the naive fold. This needs (i) \btt{degKey_iso_invariant}: $\sim_{\!sf}$
+graphs have equal keys (so the prefilter never wrongly skips a real isomorph), proved
+via \btt{degree_eq_of_eqv}/\btt{degSeq_eq_of_eqv}; and (ii) a fold simulation
+\btt{foldl_dedupStepDeg_sim} carrying two invariants (the first components match, every
+tag is its graph's \btt{degKey}). Finally \btt{augRepsDeg_fst_eq} shows the fast keyed
+generator's first components equal the specification \btt{augReps}, so all
+completeness/\btt{Nodup} reasoning continues to run on \btt{augReps}. The whole change
+is \btt{sorry}-free.
+
+\paragraph{Decorate-sort-undecorate.} \btt{canonicalEdgeList} is $O(n!)$. Computing it
+afresh inside the sort comparator would cost $O(g^2)$ key computations. The keyed
+generator instead \emph{decorates} each graph with its key once, sorts by the
+precomputed key, and carries the key through --- $O(g)$ key computations plus a cheap
+$O(g^2 \log g)$ comparison sort on small tuples.
+
+\paragraph{$O(g)$ completeness bridge.} The empty-typed completeness bridge was
+rewired from an $O(g^2)$ \btt{toFinset} comparison to a \emph{positional list
+equality}
+\[
+  \btt{[Sym2Flag_n_0_0_i] = genEmptyTypedFlags n},
+\]
+which costs $O(g)$ iso checks --- one per position --- because the named list and the
+generator are in the \emph{same} canonical order (this is exactly what the sort layer
+buys). This is the template the labeled path eventually copied (commit \btt{bb6f60f}).
+The commit also extended \btt{FlagDef} to $n=6$ (156 classes) and documented why
+$n=7$ (1044) is omitted under interpreter-based generation.
+
+\subsection{Structural \btt{edges_valid} (\btt{fa8939e})}
+\label{sec:edges_valid}
+
+Every generated graph carried an \btt{edges_valid} proof (no edge is a self-loop). It
+was discharged by \btt{by decide} over \btt{l.toFinset}, which forces the kernel to
+re-run the full \btt{Decidable} reduction to check \btt{of_decide_eq_true (Eq.refl
+true)} --- paid once in the elaborator and again in kernel type-checking, for every
+graph. The fix added \btt{mkEdgeFinset_diag_free}, reducing finset-level off-diagonal
+validity to a list check (membership in \btt{l.toFinset} is membership in \btt{l}),
+discharged structurally by \btt{fin_cases <;> simp [Sym2.isDiag_iff_proj_eq]}. The
+proof term becomes compact and cheap for the kernel. On the $n=6$ worst case (156
+graphs) this cut \btt{decide} tactic execution $\sim 9\times$ and roughly halved kernel
+type-checking for these definitions.
+
+\subsection{Reusing the precomputed canonical edge list (\btt{de7dcbc})}
+\label{sec:reuse}
+
+\btt{genSym2Graphs} decorated each graph with its \btt{graphKey} $=$ (edge count,
+canonical edge list), sorted, then \emph{dropped} the keys via \btt{.map Prod.fst}.
+Four downstream sites (the two generation commands and both lines of
+\btt{genFlagData}) then \emph{recomputed} the $O(n!)$ \btt{canonicalEdgeList} from
+scratch. \btt{de7dcbc} threads the keys through instead: \btt{genSym2GraphsKeyed}
+keeps each graph paired with its key, \btt{genSym2Graphs} becomes a projection, and
+\btt{genCanonicalEdgeLists} reads the canonical lists straight off the keys (value-
+identical because the insertion sort permutes whole pairs, so $p.2.2 =
+\btt{canonicalEdgeList}\ p.1$ is invariant). This is a pure value-preserving refactor:
+\btt{genSym2Graphs_perm} only needed \btt{genSym2GraphsKeyed} added to its
+\btt{unfold}. On $n=6$ the empty-typed generation interpretation dropped
+\textbf{13.6\,s $\to$ 9.73\,s ($\sim 28\%$)}.
+
+% =======================================================================
+\section{Typed-flag elaboration cost: whole-goal \btt{decide} (\btt{81cf849})}
+% =======================================================================
+
+The generated \btt{type_embed} field carries two proofs per flag: that the embedding
+map is injective, and an adjacency-preservation statement \btt{hmap}. These were
+discharged by \btt{fin_cases ... <;> decide}/\btt{simp}, which re-synthesizes a
+\btt{Decidable}/\btt{Fintype} instance \emph{per case per flag} --- a typeclass-
+inference blow-up. Discharging each whole goal with a single \btt{decide} synthesizes
+the instance once. The heaviest typed line ($n=5$, $k=3$, 72 flags) dropped
+\textbf{$\sim 63$\,s $\to \sim 22$\,s}, and the full \btt{FlagDef} build
+\textbf{$\sim 301$\,s $\to \sim 100$\,s ($\sim 3\times$)}, with all counts and
+downstream theorems unchanged. This was the single largest end-to-end win in the
+typed path and the reason the per-flag \btt{decide}s are no longer the dominant cost.
+
+% =======================================================================
+\section{Refactors and naming (\btt{4b6632d}, \btt{bc53254}, \btt{36a6741})}
+% =======================================================================
+
+Three maintainability commits, with no intended performance effect:
+\btt{4b6632d} replaced the per-declaration \btt{getEnv}/\btt{env.contains} idempotence
+guard repeated at every emission with a single \btt{elabUnlessDefined} helper, and
+collapsed the near-verbatim finset-to-\btt{Flag} bridge trio (\btt{flagSet},
+\btt{_val_eq}, \btt{_eq_univ}) duplicated across both macros into one parameterized
+\btt{emitFlagSetMachinery} emitter. \btt{bc53254} standardized a finset name.
+\btt{36a6741} renamed \btt{FlagLoader.lean} to \btt{FlagGenerator.lean}, since the
+module no longer loads anything --- its macros synthesize flags from a self-contained
+Lean enumeration. These refactors matter for the rest of the story only because they
+created the shared helpers (\btt{elabUnlessDefined}, \btt{emitFlagSetMachinery}) that
+the session work plugged into.
+
+% =======================================================================
+\section{Session work I: the $O(g)$ labeled completeness bridge (\btt{bb6f60f})}
+% =======================================================================
+
+\subsection{The starting asymmetry}
+
+After the pre-session work, the empty-typed path had an $O(g)$ positional bridge
+(Section~\ref{sec:fbaeed0}) but the labeled path did \emph{not}: \btt{generate_flags}
+still discharged completeness by an $O(g^2)$ \btt{Finset}-equality
+\btt{sym2FlagSet = genFlagSet}, \emph{and} a \emph{separate} $O(g^2)$ \btt{Nodup}
+\btt{native_decide}. The session began by closing this gap.
+
+\subsection{Prototype, then measure, then prove}
+
+The labeled enumeration was not sorted into canonical order, so a positional bridge
+needed a sort layer. The approach mirrored \btt{genSym2GraphsKeyed}: define
+\btt{genFlagsOrdered} $=$ the deduped reps re-sorted into \btt{genFlagData}'s order via
+a sort key \btt{labeledFlagKey} (the underlying graph's \btt{graphKey} together with
+the orbit-minimal type tuple in canonical coordinates). Crucially, the key is built
+once per representative and carried through the sort (the same decorate-sort-undecorate
+discipline; a first attempt that recomputed the $n!$-scanning key inside the comparator
+ballooned the cost and was discarded).
+
+A deliberate decision was to \emph{prototype and measure before proving}: the key and
+\btt{genFlagsOrdered} were added as definitions, the bridge
+\btt{[flagTerms] = genFlagsOrdered} was checked to evaluate \btt{true} by
+\btt{native_decide} (confirming the key reproduces the JSON order), and the per-bridge
+costs were measured in isolation before any perm/\btt{Nodup} proof was written. The
+measurement at $n=5$ ($g=72$), as three separately profiled \btt{native_decide}s:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+bridge & proves & kernel cost \\
+\midrule
+\btt{measO2} (old eq\_univ) & \btt{sym2FlagSet = genFlagSet} ($O(g^2)$) & 4.5\,s \\
+\btt{measNodup} (old nodup) & \btt{[flagTerms].Nodup} ($O(g^2)$)       & 13.1\,s \\
+\btt{measO1} (new bridge)   & \btt{[flagTerms] = genFlagsOrdered} ($O(g)$) & 7.7\,s \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{A false alarm, then the real comparison}
+
+Read naively, the new bridge ($7.7$\,s) looked \emph{slower} than the old eq\_univ
+bridge ($4.5$\,s) --- a near-miss that would have killed the change. The resolution was
+that this is the wrong comparison. The \emph{old} design pays \emph{two} $O(g^2)$
+\btt{native_decide}s per line, \btt{measO2} \emph{and} \btt{measNodup}, because
+\btt{Nodup} of the quotient list is itself $O(g^2)$ and, worse, every one of its
+$\sim g^2/2$ pairwise checks is a \emph{failed} iso search (a full permutation scan to
+conclude non-equality) --- which is why \btt{measNodup} is the single most expensive
+piece at $13.1$\,s. The \emph{new} design pays only \btt{measO1}; both \btt{eq_univ}
+and \btt{Nodup} are then derived from that one bridge by ordinary proof, with no further
+\btt{native_decide}. So the honest per-line comparison is
+\[
+  \underbrace{4.5 + 13.1 = 17.6\,\text{s}}_{\text{old}} \;\longrightarrow\;
+  \underbrace{7.7\,\text{s}}_{\text{new}} \quad (\sim 2.3\times),
+\]
+and the gap widens at $n=6$ because the $O(g^2)$ pieces grow faster than the $O(g)$
+one. A decomposition baseline showed a shared $\sim 3.2$\,s dedup-fold cost inside both
+\btt{measO2} and \btt{measO1}, so the genuine bridge-comparison delta is even more
+favorable.
+
+\subsection{The proofs}
+
+The supporting math, all added to \btt{Generate.lean}, was small and low-risk because
+it mirrors the empty-typed template:
+\begin{itemize}
+  \item \btt{genFlagsOrdered_perm}: \btt{genFlagsOrdered} $\sim$ \btt{genFlags} (a
+        permutation), a $\sim$12-line near-copy of \btt{genSym2Graphs_perm} using
+        \btt{List.perm_insertionSort}.
+  \item \btt{genFlags_nodup} and the helper \btt{foldl_dedupStepL_flags_nodup}: a
+        structural induction on the dedup fold, \emph{no} \btt{native_decide}.
+  \item \btt{genFlagsOrdered_nodup}, \btt{genFlagsOrdered_toFinset}: transfer
+        \btt{Nodup} and \btt{= genFlagSet} across the permutation.
+\end{itemize}
+The macro was then rewired to emit one bridge theorem \btt{Sym2FlagList_n_k_m_eq}
+($O(g)$ \btt{native_decide}) and to derive \btt{eq_univ} (through the order-independent
+\btt{genFlagSet_eq_univ}) and the \btt{Nodup} obligation (through \btt{genFlags_nodup})
+by proof. Notably, the sort key itself needs \emph{no} correctness proof: it lives in
+the \btt{native_decide}-trusted zone, exactly like the JSON order it replaces --- if
+it were wrong, the bridge simply would not compile. Verified: all 16 \btt{generate_flags}
+lines through $n=5$ build, counts unchanged, full project green.
+
+% =======================================================================
+\section{Session work II: augmentation-based labeled enumeration (\btt{a993a33})}
+% =======================================================================
+
+\subsection{The exponential the labeled path was still paying}
+\label{sec:bruteforce}
+
+The $O(g)$ bridge above made the \emph{comparison} cheap, but it did not change
+\emph{what the bridge evaluates}. The bridge runs \btt{native_decide} on
+\btt{genFlagsOrdered}, which sits on \btt{genLabeledGraphsDedup}, which deduplicated
+\begin{lstlisting}
+allRawSym2LabeledGraphs sigma n = (allRawSym2Graphs n).flatMap (labeledOfGraph sigma)
+\end{lstlisting}
+--- i.e.\ \emph{every} one of the $2^{\binom n2}$ edge subsets of $K_n$ crossed with
+each type embedding. At $n=6$ this is \textbf{491{,}520} raw labeled graphs
+($2^{15}=32768$ underlying subsets $\times$ embeddings), and the dedup fold runs on the
+order of \textbf{$10^8$} isomorphism checks. This brute force was \emph{exactly} the
+exponential sweep the empty-typed path had already escaped via canonical augmentation;
+the labeled path had simply never been given the same treatment. This was the dominant
+$n=6$ cost and the subject of an explicit user decision (``go with option~2'').
+
+\subsection{The fix and its one new proof}
+
+The change replaces the brute-force factor \btt{allRawSym2Graphs n} (32768 graphs at
+$n=6$) with the augmentation-generated canonical graphs \btt{genSym2Graphs n} (156 at
+$n=6$):
+\begin{lstlisting}
+def allAugSym2LabeledGraphs sigma n := (genSym2Graphs n).flatMap (labeledOfGraph sigma)
+\end{lstlisting}
+The subtlety is completeness. The old chain used \emph{literal} membership
+(\btt{mem_allRawSym2LabeledGraphs}: every labeled graph is \emph{in} the brute-force
+list, since all subsets are present). The new list does not literally contain every
+labeled graph, so literal membership is replaced by \emph{up-to-iso} completeness:
+\begin{itemize}
+  \item \btt{mem_labeledOfGraph_eqv_of_underlying} (the new content): if a labeled
+        graph $H$'s underlying graph is $\sim_{\!sf}$ to a canonical $R$, then $H$ is
+        $\sim_{\!sf}$ to a labeled graph over $R$ --- obtained by \emph{transporting}
+        $H$'s type embedding along the underlying-graph isomorphism (post-composing
+        with the iso $\psi$). The flag-equivalence witness is
+        \btt{{ graph_iso := psi, type_preserve := rfl }}: because the new embedding is
+        \emph{defined} as $\psi \circ H.\btt{type_embed}$, the \btt{type_preserve}
+        obligation is literally \btt{rfl}, exactly as the design predicted.
+  \item \btt{allAugSym2LabeledGraphs_complete}: combine
+        \btt{genSym2Graphs_complete} (underlying completeness, already proved on the
+        empty-typed side) with the transport.
+\end{itemize}
+Everything downstream is unchanged: \btt{genFlagsOrdered} sorts by an iso-invariant
+key, so its \emph{value} (and hence the bridge \btt{native_decide}, and the flag
+counts) is provably identical regardless of which representatives the dedup picks. The
+$n=5$ build confirmed identical counts and that every bridge still evaluates
+\btt{true}.
+
+\subsection{Measured improvement}
+
+The fast enumeration is \textbf{2{,}808} raw labeled graphs at $n=6$ versus
+\textbf{491{,}520} --- a \textbf{$175\times$} reduction --- and the dedup fold drops from
+$\sim 10^8$ to $\sim 2.3\times 10^6$ isomorphism checks. The whole computation (with the
+full dedup) runs in well under a minute compiled. This removed the \emph{enumeration}
+wall completely; what remained at $n=6$ is a different, smaller set of costs
+(Section~\ref{sec:n6frontier}).
+
+% =======================================================================
+\section{The $n=6$ frontier and the missing-prerequisite bug (\btt{b15c62b})}
+\label{sec:n6frontier}
+% =======================================================================
+
+With the enumeration cheap, an attempt to actually build \btt{generate_flags 3 0 6}
+ran into a cascade of \emph{distinct} walls, plus one outright bug. This section is
+also a record of how the diagnosis went wrong before it went right, because the user
+asked for the dead ends.
+
+\subsection{Three stacked resource walls}
+
+\begin{enumerate}
+  \item \textbf{\btt{maxRecDepth} (512).} \btt{generate_flags 3 0 6} emits list
+        literals of length $g=816$ (the bridge \btt{[flagTerms]}, the \btt{setName}
+        \btt{toFinset}, the downward batch \btt{[dnfTerms]/[coeffTerms]}). Each is an
+        816-deep \btt{List.cons} term; elaborating and kernel-reducing it exceeds the
+        default \btt{maxRecDepth} of 512. (This is the same wall the $n=7$ empty-typed
+        case is documented to hit at 1044 elements.) Confirmed by \btt{\#eval}:
+        $g(3,0,6)=816 > 512$. Raising \btt{maxRecDepth} to $\sim 4000$ eliminates this
+        specific error.
+  \item \textbf{\btt{maxHeartbeats} (200000).} Once the flags generate, elaborating
+        the bridge theorem itself hits a \emph{deterministic timeout at} \btt{isDefEq}
+        --- a different tunable. This is a \btt{native_decide}-on-a-huge-goal cost: the
+        unifier works on the 816-element goal term independently of how fast the
+        underlying computation is.
+  \item \textbf{Wall-clock.} A reproduction with \btt{maxHeartbeats 0} (unlimited,
+        chosen to ``measure true wall-clock'') and a \emph{non-killing} background
+        build ran for $\sim 3$ hours without finishing --- because removing the
+        heartbeat limit removed the only safety valve on the pathological
+        \btt{isDefEq}. (Two process-management mistakes compounded here: a Bash
+        \btt{timeout} parameter does \emph{not} terminate background tasks, and live
+        \btt{lean.exe} processes seen during the run were the editor's LSP workers, not
+        the build.)
+\end{enumerate}
+The lesson recorded in the history: \btt{maxRecDepth} is \emph{necessary but not
+sufficient} for $n=6$; the genuine remaining wall is the bridge's elaboration-time
+\btt{isDefEq} over an 800+-element goal, which none of the enumeration optimizations
+touch.
+
+\subsection{The \btt{unlabel} bug: a long red herring with a trivial root}
+
+Separately, running \btt{generate_flags 3 0 6} produced, after $\sim$1--2 minutes, a
+cryptic error:
+\begin{lstlisting}
+Application type mismatch: FlagAlgebras.flagEqv.refl ?m.14
+  has type      ?m.14 ~f ?m.14
+  but is expected to have type   ?m.9 = ?m.10
+in   Quotient.sound (FlagAlgebras.flagEqv.refl ?m.14)
+\end{lstlisting}
+This is the proof of the generated \btt{unlabel_n_k_m_i} theorem
+(\btt{unlabel Flag_n_k_m_i = Flag_n_0_0_j} by \btt{Quotient.sound (flagEqv.refl _)}).
+A great deal of effort went into \emph{wrong} hypotheses: that it was an $n$-dependent
+\emph{definitional-equality} failure (the underlying graphs not being defeq at $n=6$);
+that it was a \btt{maxRecDepth} or \btt{maxHeartbeats} resource limit; that it needed
+an iso-based proof instead of \btt{refl}. A minimal reproduction appeared to show
+$n=5$ succeeding and $n=6$ failing with \emph{identical} code, ``confirming'' an
+$n$-dependence --- but that minimal test was \emph{confounded}: it imported
+\btt{FlagDef}, in which \btt{generate_empty_typed_flags 6} was commented out, so the
+base flag \btt{Flag_6_0_0_0} did not exist and Lean silently \emph{auto-bound} it as an
+opaque variable. Every ``defeq failure'' was really ``cannot prove
+\btt{unlabel ... = (arbitrary variable)}''.
+
+The actual root cause: \btt{generate_flags k m n} states each flag's \btt{unlabel}
+bridge against the underlying empty-typed flag \btt{Flag_n_0_0_i}, which is produced by
+\btt{generate_empty_typed_flags n}. With that prerequisite commented out, the bridge
+references an undefined name, auto-bound as a variable, so the otherwise-correct proof
+cannot close. Confirmation: with \btt{generate_empty_typed_flags 6} present, the exact
+generated proof \btt{Quotient.sound (flagEqv.refl _)} compiles fine at $n=6$. So this
+was never a math or performance bug at all --- it was a missing prerequisite surfaced
+through a terrible error message.
+
+\subsection{The fix}
+
+Commit \btt{b15c62b} added a fast dependency check at the top of \btt{generate_flags}:
+\begin{lstlisting}
+unless (<- getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
+  throwError s!"`generate_flags {k} {m} {n}` requires the underlying empty-typed flags
+    `Flag_{n}_0_0_i`, ... Add `generate_empty_typed_flags {n}` before this command."
+\end{lstlisting}
+The cryptic, minutes-later \btt{flagEqv.refl} mismatch becomes an immediate,
+actionable error (a 10-second build) when the prerequisite is absent, and the
+with-prerequisite path is unchanged.
+
+% =======================================================================
+\section{Session work III: the degree-key dedup prefilter (\btt{54b06f7})}
+\label{sec:degkey}
+% =======================================================================
+
+\subsection{The one untransferred technique}
+
+After option~2, a systematic comparison of the two paths showed exactly one technique
+present on the empty-typed side and absent on the labeled side: the
+degree-sequence dedup prefilter (Section~\ref{sec:fbaeed0}). The labeled
+\btt{dedupStepL} ran \btt{isIsoFast_bool} against \emph{every} survivor, whereas the
+empty-typed \btt{dedupStepDeg} buckets by \btt{degKey}. Commit \btt{54b06f7} ports it.
+
+The key choice was to key on the \emph{underlying graph's} \btt{degKey} rather than
+invent a labeled-specific key:
+\begin{lstlisting}
+def labeledDegKey (G : Sym2LabeledGraph sigma n) := degKey <G.edges, G.edges_valid>
+\end{lstlisting}
+This is sound because a labeled $\sim_{\!sf}$ restricts to an $\sim_{\!sf}$ of the
+underlying graphs (\btt{underlying_eqv_of_labeled_eqv}: take the same
+\btt{graph_iso}, forget the empty \btt{type_preserve}), so
+\btt{labeledDegKey_iso_invariant} follows directly from the empty-typed
+\btt{degKey_iso_invariant}. The fold simulation \btt{foldl_dedupStepDegL_sim} is a
+near-verbatim copy of \btt{foldl_dedupStepDeg_sim}, and \btt{genLabeledGraphsDedup_eq}
+(the analogue of \btt{augRepsDeg_fst_eq}) proves the keyed dedup \emph{equals} the
+naive \btt{dedupStepL} fold --- so the value, the bridge, and all
+completeness/\btt{Nodup} proofs are unchanged (they were re-routed through the
+equality). Keying on the underlying graph captures the bulk of the benefit: a flag of
+underlying graph $G$ then runs the expensive iso test only against survivors whose
+underlying graph shares $G$'s degree key --- almost always just survivors with the
+\emph{same} underlying graph, rather than all $\sim g$ of them.
+
+\subsection{An anticipated improvement that did not materialize}
+
+This was flagged in advance as ``a real untransferred technique, but probably not the
+$n=6$ bottleneck'', and the measurement confirmed it: the dedup over the post-option~2
+2,808-element list is already \emph{sub-10\,ms} either way. The reasons are structural
+and were predicted:
+\begin{itemize}
+  \item Option~2 had already shrunk the dedup input $175\times$, so the fold is small.
+  \item The labeled \btt{isIsoFast_bool} is \emph{already} cheap: it prefilters on
+        edge count, and --- because a flag isomorphism must preserve the type embedding
+        --- it permutes only the $(n-k)!$ \emph{non-type} vertices, i.e.\ $3!=6$ at
+        $n=6,\,k=3$, not $n!=720$. The empty-typed \btt{degKey} mattered precisely
+        because the unlabeled check did pay $n!$; on the labeled side that motivation
+        is largely gone.
+\end{itemize}
+The change is nonetheless correct, \btt{sorry}-free, and value-preserving, and was kept
+(by explicit user decision) for structural parity with the empty-typed path and as
+insurance if the dedup ever becomes a bottleneck at larger $n$. The honest accounting:
+it optimizes a step that option~2 had already made cheap, and it does \emph{not}
+address the actual $n=6$ wall (the bridge \btt{isDefEq}). The
+\btt{naive\_ms=0\ keyed\_ms=0} reading from the in-\btt{\#eval} timer was itself partly
+a measurement artifact (Lean \btt{let} bindings are lazy, so the work happened after the
+timing points), but the build-profile-level conclusion --- ``already fast either way''
+--- is robust.
+
+% =======================================================================
+\section{Complexity of the successive approaches}
+% =======================================================================
+
+The table summarizes how the two halves of each command scaled across the history.
+Here $g$ is the number of flags on a line, $R$ the size of the \emph{raw} candidate
+list fed to the dedup, and ``iso check'' the cost of one $\sim_{\!sf}$ decision.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+component & before & after \\
+\midrule
+empty-typed enumeration   & augmentation (always) & augmentation $+$ degree prefilter \\
+labeled raw list $R$ ($n{=}6$) & $491{,}520$ (brute force) & $2{,}808$ (augmentation) \\
+labeled dedup             & $O(R\cdot g)$ iso checks, all-pairs & bucketed by \btt{degKey} \\
+empty-typed completeness  & $O(g^2)$ \btt{toFinset} bridge & $O(g)$ positional bridge \\
+labeled completeness      & $O(g^2)$ \btt{Finset} $+$ $O(g^2)$ \btt{Nodup} & $O(g)$ positional $+$ proof \\
+\btt{= univ}              & monster \btt{Fintype} \btt{native\_decide} & symbolic theorem $+$ cheap bridge \\
+per-flag \btt{type\_embed}  & \btt{fin\_cases <;> decide} (per-case instance) & whole-goal \btt{decide} \\
+per-flag \btt{edges\_valid} & \btt{by decide} (kernel re-reduction) & structural \btt{fin\_cases} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The most important architectural point is that two \emph{separate} ideas were needed
+to make the labeled completeness tractable, and they compose: the
+\emph{augmentation enumeration} (commit \btt{a993a33}) makes the thing the bridge
+\emph{evaluates} cheap, while the \emph{$O(g)$ ordered bridge} (commit \btt{bb6f60f})
+makes the \emph{comparison} cheap. Neither alone suffices; the brute-force enumeration
+under an $O(g)$ bridge is still exponential, and an augmentation enumeration under an
+$O(g^2)$ bridge still pays the quadratic comparison.
+
+% =======================================================================
+\section{Measured and estimated speedups (summary)}
+% =======================================================================
+
+\begin{center}
+\begin{longtable}{p{2.1cm}p{5.4cm}p{6.0cm}}
+\toprule
+commit & change & measured / estimated effect \\
+\midrule
+\endhead
+\btt{212968a} & Phase 2: typed Lean generation $+$ symbolic completeness & \btt{FlagDef} build $568\,\text{s}\to274\,\text{s}$ ($\sim 2\times$) \\
+\btt{fbaeed0} & degree prefilter, decorate-sort, $O(g)$ empty-typed bridge, $n{=}6$ & enabled $n{=}6$; $O(g^2)\to O(g)$ empty-typed bridge \\
+\btt{fa8939e} & structural \btt{edges_valid} & $n{=}6$ \btt{decide} $\sim 9\times$; kernel type-checking $\sim$ halved \\
+\btt{de7dcbc} & reuse precomputed \btt{canonicalEdgeList} & $n{=}6$ empty-typed $13.6\,\text{s}\to9.73\,\text{s}$ ($\sim 28\%$) \\
+\btt{81cf849} & whole-goal \btt{decide} for \btt{type_embed} & heaviest line $\sim 63\,\text{s}\to22\,\text{s}$; \btt{FlagDef} $\sim 301\,\text{s}\to100\,\text{s}$ ($\sim 3\times$) \\
+\btt{bb6f60f} & $O(g)$ labeled bridge (this session) & per-line $17.6\,\text{s}\to7.7\,\text{s}$ at $n{=}5$ ($\sim 2.3\times$); removes the $13\,\text{s}$ \btt{Nodup} \btt{native_decide} \\
+\btt{a993a33} & augmentation labeled enumeration (this session) & raw list $491{,}520\to2{,}808$ at $n{=}6$ ($175\times$); dedup $\sim 10^8\to 2.3\times10^6$ iso checks \\
+\btt{b15c62b} & prerequisite check (this session) & cryptic minutes-later error $\to$ clear $10$-second error \\
+\btt{54b06f7} & labeled degree-key prefilter (this session) & negligible at $n{=}6$ (dedup already sub-$10$\,ms); structural parity \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+% =======================================================================
+\section{Remaining bottlenecks and what became impractical}
+% =======================================================================
+
+\subsection{$n=6$ (labeled): the bridge \btt{isDefEq} wall}
+
+After every optimization above, \btt{generate_flags 3 0 6} is still not a routine
+build. The remaining costs, in rough order:
+\begin{itemize}
+  \item The bridge \btt{native_decide}'s \emph{elaboration-time} \btt{isDefEq} over the
+        816-element goal term --- this is what times out at the default
+        \btt{maxHeartbeats}, and it is \emph{not} addressed by any enumeration or
+        comparison optimization, because it is about the syntactic size of the goal,
+        not the cost of the computation.
+  \item The 816 per-flag \btt{type_embed} \btt{decide}s (already $\sim 3\times$ cheaper
+        after \btt{81cf849}, but $11\times$ more of them than at $n=5$).
+  \item The depth-816 list literals, which require \btt{set_option maxRecDepth 4000}.
+\end{itemize}
+None of these is the dedup, which option~2 and the degree-key prefilter addressed.
+This is why the degree-key prefilter, although the ``textbook'' missing optimization,
+did not move the needle: it sharpened a part that was no longer the bottleneck.
+
+\subsection{$n=7$ (empty-typed): the interpreter-enumeration wall}
+
+$n=7$ (1044 classes) is omitted entirely. Two independent reasons are documented in
+\btt{FlagDef.lean}: the elaboration-time enumeration runs in the Lean interpreter and
+takes $>80$ minutes, and the 1044-element list literal in the completeness bridge
+exceeds the default \btt{maxRecDepth}. Both are properties of \emph{interpreter-based
+generation}, not of the mathematics; the file note explicitly says ``revisit if the
+generator is moved to compiled (native) evaluation''.
+
+\subsection{What is genuinely hard to optimize further, and why}
+
+\begin{itemize}
+  \item The \btt{native_decide} \emph{kernel evaluation} (\btt{reduceBool}) is, by
+        design, the trust boundary; its cost is the cost of running the decision
+        procedure once and cannot be ``proved away''. The only levers are making the
+        procedure cheaper (done: augmentation, $(n-k)!$ search, prefilters) or making
+        the \emph{goal} smaller (not yet done).
+  \item The large-goal \btt{isDefEq} is a property of stating a single equality between
+        an $\sim g$-element literal and a computed list. Shrinking it means changing
+        the \emph{shape} of the bridge (Section~\ref{sec:future}), not tuning a tactic.
+  \item The empty-typed path is essentially at the limit of the current strategy: it
+        already uses canonical augmentation, a degree prefilter, decorate-sort, key
+        reuse, structural \btt{edges_valid}, and an $O(g)$ bridge. The only remaining
+        large win there is the move off the interpreter.
+\end{itemize}
+
+% =======================================================================
+\section{Dead ends, false starts, and reverted experiments}
+% =======================================================================
+
+\begin{itemize}
+  \item \textbf{Recomputing the sort key in the comparator.} The first
+        \btt{genFlagsOrdered} recomputed the $n!$-scanning \btt{labeledFlagKey} inside
+        the sort comparator, making it $O(g^2)$ key computations; replaced by
+        decorate-sort-undecorate.
+  \item \textbf{The ``new bridge is slower'' near-miss.} Comparing \btt{measO1}
+        ($7.7$\,s) to \btt{measO2} ($4.5$\,s) alone suggested a regression; the fair
+        comparison (against \btt{measO2}$+$\btt{measNodup}$=17.6$\,s) reversed the
+        conclusion.
+  \item \textbf{\btt{maxRecDepth} / \btt{maxHeartbeats} as the $n=6$ fix.} Both were
+        tried and both only \emph{revealed the next wall}; neither makes $n=6$ a
+        routine build.
+  \item \textbf{The 3-hour runaway.} \btt{maxHeartbeats 0} plus a misunderstanding that
+        a background build would be auto-killed produced a multi-hour, ultimately
+        useless run.
+  \item \textbf{The \btt{unlabel} ``defeq bug''.} A long investigation chased an
+        $n$-dependent definitional-equality failure that did not exist; the minimal
+        reproduction was confounded by an auto-bound \btt{Flag_6_0_0_0} (because the
+        imported \btt{FlagDef} had \btt{generate_empty_typed_flags 6} commented out).
+        The real cause was a missing prerequisite (Section~\ref{sec:n6frontier}).
+  \item \textbf{The degree-key prefilter as a speedup.} Implemented and proved, but the
+        measured benefit at $n=6$ was negligible; kept for structural parity rather
+        than performance (Section~\ref{sec:degkey}).
+\end{itemize}
+
+% =======================================================================
+\section{Promising directions for future optimization}
+\label{sec:future}
+% =======================================================================
+
+\begin{enumerate}
+  \item \textbf{Compiled (native) elaboration-time generation.} The single highest-
+        value change. \btt{genFlagData}/\btt{genCanonicalEdgeLists} are already
+        evaluated via compiled \btt{Lean.Meta.evalExpr} for the \emph{data}, but the
+        broader enumeration and the bridges still hit interpreter and kernel-reduction
+        costs. Moving the heavy enumeration fully onto compiled evaluation is what the
+        $n=7$ note explicitly anticipates, and it directly attacks the $>80$-minute
+        interpreter wall.
+  \item \textbf{Shrinking the bridge goal.} The $n=6$ wall is the \btt{isDefEq}/
+        \btt{native_decide} over an $\sim g$-element literal. Emitting the list as a
+        \emph{chunked} concatenation (each chunk under \btt{maxRecDepth}, with a shallow
+        \btt{++} spine) would avoid the depth-$g$ literal and shrink the per-step goal,
+        at the cost of a more elaborate bridge proof. This is the only idea that
+        targets the actual remaining wall, but it touches every bridge proof and was
+        deliberately deferred.
+  \item \textbf{Structural per-flag \btt{type_embed} proofs.} The 816 per-flag
+        \btt{decide}s are the second-largest $n=6$ cost and are \emph{typed-specific}
+        (the empty-typed path has no type embedding, so there is nothing to port). The
+        \btt{edges_valid} refactor (Section~\ref{sec:edges_valid}) is the template: a
+        compact structural proof in place of a kernel \btt{decide}.
+  \item \textbf{A type-refined degree key.} The labeled \btt{degKey} currently ignores
+        the type placement. Adding the ordered sequence of type-vertex degrees
+        $[\deg(\btt{type_embed}\ i)]_i$ --- itself iso-invariant via
+        \btt{type_preserve} --- would split within-underlying-graph buckets further.
+        The expected gain is small (within-graph buckets are already tiny), so this is
+        a refinement, not a fix.
+  \item \textbf{Caching canonical forms per underlying graph in \btt{labeledFlagKey}.}
+        The sort key recomputes the $n!$ canonical form per \emph{flag}, whereas
+        \btt{genFlagData} computes it once per \emph{underlying graph}. Reusing it
+        (as \btt{genCanonicalEdgeLists} did for the empty-typed sort,
+        Section~\ref{sec:reuse}) would cut the key-computation part of the bridge's
+        native run --- though, again, the native run is not the $n=6$ wall.
+\end{enumerate}
+
+% =======================================================================
+\section{Conclusion}
+% =======================================================================
+
+Over this history the flag generators moved from an external JSON pipeline to a fully
+self-contained Lean development, and the dominant proof obligation --- completeness ---
+went from a prohibitive ``monster'' \btt{Fintype} \btt{native_decide} to a symbolic
+theorem bridged by a single $O(g)$ positional comparison. The two structurally
+significant wins were internalizing the typed enumeration with a symbolic completeness
+proof (\btt{212968a}, $\sim 2\times$) and, this session, giving the labeled path the two
+techniques the empty-typed path already had: an augmentation enumeration in place of a
+$2^{\binom n2}$ brute force (\btt{a993a33}, $175\times$ fewer raw graphs at $n=6$) and a
+linear ordered completeness bridge in place of two quadratic \btt{native_decide}s
+(\btt{bb6f60f}, $\sim 2.3\times$ per line and the removal of the $13$-second \btt{Nodup}
+check). A series of proof-engineering optimizations --- structural \btt{edges_valid}
+($\sim 9\times$ \btt{decide}), whole-goal \btt{decide} ($\sim 3\times$ on the full
+build), and canonical-form reuse ($\sim 28\%$) --- compounded with these.
+
+The honest closing assessment is that the development is now bounded not by the
+enumeration or the comparison, both of which are cheap, but by two costs that the
+\emph{shape} of the current architecture imposes: the interpreter-time enumeration
+(fatal at $n=7$) and the elaboration-time \btt{isDefEq}/\btt{native_decide} over a
+$g$-element goal literal (expensive at $n=6$). The one optimization that the empty-typed
+path had and the labeled path lacked --- the degree-key dedup prefilter --- was duly
+ported, proved correct, and found to be negligible in practice, precisely because the
+earlier augmentation change had already removed the cost it was meant to address. The
+clearest path forward is compiled generation and a chunked bridge goal; everything else
+is refinement.
+
+\end{document}
