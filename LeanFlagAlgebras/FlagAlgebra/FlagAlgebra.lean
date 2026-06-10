@@ -213,8 +213,7 @@ pair subflag density. Up to `∼v` it is independent of `ℓ` (large enough). -/
 noncomputable def flagMulWithSize
     (F F' : FinFlag σ) (ℓ : ℕ) : FlagVector σ
   :=
-  let ℓ_flags : Finset (FlagWithSize σ ℓ) := univ
-  ∑ G ∈ ℓ_flags, (flagDensity₂ F.2 F'.2 G) • basisVector ⟨ℓ, G⟩
+  ∑ G : FlagWithSize σ ℓ, (flagDensity₂ F.2 F'.2 G) • basisVector ⟨ℓ, G⟩
 
 theorem flagMulWithSize_comm
     (F F' : FinFlag σ) (ℓ : ℕ) : flagMulWithSize F F' ℓ = flagMulWithSize F' F ℓ
