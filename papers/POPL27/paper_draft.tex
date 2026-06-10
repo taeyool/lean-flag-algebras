@@ -711,7 +711,8 @@ $\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 % that should not affect observable behavior.
 Fix a flag type $\sigma$ of size $k$.
 The flag algebra $\mathcal{A}^\sigma$ is the algebraic structure in which
-\Cref{lem:chain-rule} holds by definition.
+Lemma~\ref{lem:chain-rule} holds by definition.
+\gw{A better phrasing for this sentence would be welcome.}
 Let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
@@ -719,10 +720,11 @@ combinations of $\sigma$-flags.  We also write $A$ for the basis vector
 corresponding to a flag $A$.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
-\[
+\begin{equation}
+  \label{eq:zero-element}
   A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B,
   \qquad \text{for}\ A \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
-\]
+\end{equation}
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
@@ -731,12 +733,20 @@ We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
 By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
 a flag and its equivalence class is immaterial.
 
-The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
-in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
-$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
-host flag. \gw{A better phrasing for this sentence would be welcome.}  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
-in $\mathcal{A}^\sigma$, so we may replace $A$ by
-$\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
+% The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
+% in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
+% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
+% host flag. \gw{A better phrasing for this sentence would be welcome.}  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
+% in $\mathcal{A}^\sigma$, so we may replace $A$ by
+% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
+We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
+\emph{expansion of $A$ at size $n$}.
+By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
+its expansion at any size $n \geq m$ have the same density in every host flag.
+Quotienting by $\mathcal{Z}^\sigma$ makes any two pattern expressions that
+have the same density in every host flag definitionally equal in
+$\mathcal{A}^\sigma$.  We may therefore
+freely replace $A$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
@@ -1282,6 +1292,7 @@ variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
 asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for every \lean{i : Fin t}.
 
 \subsection{Flag Types and Flags}
+\label{sec:flagtypes}
 
 Informally, the word \emph{flag} refers both to a concrete pair $(M,\theta_A)$
 and to its isomorphism class.  In Lean, however, the two must be distinct types.  We define \lean{LabeledGraph}
@@ -1399,36 +1410,49 @@ theorem flagDensity_eq_sum_density_prods
 
 \subsection{The Flag Algebra}
 
-The flag algebra itself is the point where finite sampling expressions become
-an equational calculus.  Paper proofs freely replace a small flag by its
-expected expansion in a larger host size.  In Lean this replacement is not a
-simplification rule; it is the defining relation of the quotient algebra.  We
-start with the free real vector space on all finite $\sigma$-flags:
+For the remainder of this section, $\sigma$ denotes a \lean{FlagType (Fin $n_0$)} for a fixed $n_0 \in \mathbb{N}$:
+\begin{lstlisting}
+variable {(*@$n_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))}
+\end{lstlisting}
+
+To define the flag algebra, we first construct the free $\mathbb{R}$-module with basis
+$\mathcal{F}^\sigma$.  Each element is represented as a finitely supported
+function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
+type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} maps
+each flag to its corresponding basis element:
 \begin{lstlisting}
 abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
-  FinFlag (*@$\sigma$@*) (*@$\to_0$@*) R
+  FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
 
 def basisVector (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
-Here \lean{->0} is Mathlib's type of finitely supported functions.  The
-expansion law identifies a basis flag with its density expansion at any larger
-size:
-\begin{lstlisting}
-def flagExpansion (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
-  (*@$\sum$@*) F' : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*),
-    flagDensity(*@$_1$@*) F.2 F' * basisVector (*@$\langle$@*)(*@$\ell$@*), F'(*@$\rangle$@*)
+Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} defines the basis vector for $F \in \mathcal{F}^\sigma$, taking value $1$ at $F$ and $0$ elsewhere.
 
+Next, we define the zero space $\mathcal{Z}^\sigma$.  We encode the generating element of
+Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
+collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the submodule
+they span:
+\begin{lstlisting}
 def zeroElement (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
   basisVector F - flagExpansion F (*@$\ell$@*)
 
-def ZeroSpace ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Submodule R (FlagVector (*@$\sigma$@*)) :=
-  Submodule.span R (zeroSet (*@$\sigma$@*))
+noncomputable def zeroSet ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagVector (*@$\sigma$@*)) :=
+  {k | (*@$\exists$@*) (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)), F.1 (*@$\leq$@*) (*@$\ell$@*) (*@$\wedge$@*) k = zeroElement F (*@$\ell$@*)}
+
+def ZeroSpace ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
+  Submodule.span (*@$\mathbb{R}$@*) (zeroSet (*@$\sigma$@*))
 \end{lstlisting}
-The \lean{zeroSet} records only size choices satisfying \lean{F.1 <= ell}; the
-snippet suppresses that guard to foreground the algebraic shape.  The quotient
-then says that two formal linear combinations are equal when their difference
-is generated by expansion laws:
+Here \lean{flagExpansion F} $\ell$ computes
+$\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G} \cdot G$,
+the density expansion of $F$ at size $\ell$.
+
+Following the same pattern as the definition of \lean{Flag} from
+\lean{LabeledGraph} in Section~\ref{sec:flagtypes}, we now define
+the flag algebra $\mathcal{A}^\sigma$ as a quotient of \lean{FlagVector} $\sigma$.
+The equivalence relation \lean{flagVectorEqv} declares two elements of \lean{FlagVector} $\sigma$ equivalent
+when their difference lies in \lean{ZeroSpace} $\sigma$, and \lean{flagVectorSetoid} $\sigma$ 
+packages this relation into a setoid so that Lean's quotient type can be applied.
 \begin{lstlisting}
 def flagVectorEqv (f g : FlagVector (*@$\sigma$@*)) : Prop :=
   f - g (*@$\in$@*) ZeroSpace (*@$\sigma$@*)
@@ -1436,9 +1460,8 @@ def flagVectorEqv (f g : FlagVector (*@$\sigma$@*)) : Prop :=
 abbrev FlagAlgebra ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
-This quotient is the semantic bridge from formal linear combinations to
-density expressions: a small flag and its larger-size expansion become the
-same algebra element.
+In the resulting type, a flag and its density expansion at any larger size
+are definitionally equal.
 
 Multiplication is defined by joint sampling.  On basis elements, the product is
 first computed at an auxiliary output size:
@@ -1449,7 +1472,7 @@ def flagMulWithSize (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{
 \end{lstlisting}
 The theorem \lean{flagMulWithSize\_indep\_on\_size} proves that any two large
 enough choices of \lean{ell} are equivalent modulo the zero space.  Only after
-that proof do we lift multiplication to \lean{FlagAlgebra sigma} and build its
+that proof do we lift multiplication to \lean{FlagAlgebra} $\sigma$ and build its
 commutative ring structure.  The commutativity, associativity, unit laws, and
 quotient-compatibility proofs are therefore part of the mathematical content:
 they show that the finite sampling semantics supports the symbolic calculus
@@ -1476,7 +1499,7 @@ The semantic cone is the set of expressions non-negative in all such models:
 def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
 \end{lstlisting}
-Thus the order on \lean{FlagAlgebra sigma} is a semantic validity relation, not
+Thus the order on \lean{FlagAlgebra} $\sigma$ is a semantic validity relation, not
 a syntactic ordering on coefficients.  An inequality $f\leq g$ means that
 every positive homomorphism evaluates $f$ no larger than $g$.
 
