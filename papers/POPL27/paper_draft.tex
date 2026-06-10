@@ -220,7 +220,7 @@
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
 
 % =========================================================================
-\title{A Verified Flag Algebra Pipeline in Lean~4}
+\title{Formalizing Flag Algebras in Lean: Certified Proofs in Extremal Graph Theory and Root-Planting Semantics}
 \date{}
 
 \author[1]{Gyeongwon Jeong}
@@ -237,38 +237,38 @@
 \maketitle
 
 \begin{abstract}
-Flag algebras are a proof method for extremal combinatorics that turns
-asymptotic questions about large graphs into finite algebraic certificates,
-typically found by semidefinite programming.  We report on a Lean~4
-formalization of the method for simple graphs.  Flags are quotient types
-modulo label-preserving isomorphism; the flag algebra is a quotient
-$\mathbb{R}$-module by density-expansion identities; positive homomorphisms
-provide the semantic non-negativity cone; and the forbidden-subgraph
-assumption \lean{forbidLE} is deferred to a parameter on the semantic
-order rather than baked into a universal theory.  A bridge theorem
-\lean{generalizedTuranDensity\_le\_of\_forbidLE} turns a checked empty-typed
-semantic inequality into a generalized Tur\'an-density bound.
+Flag algebras are a powerful method for proving asymptotic extremal graph
+inequalities, often by reducing a graph-theoretic problem to a finite
+semidefinite-programming certificate.  We present a machine-checked
+formalization of flag algebras for finite simple graphs, together with a
+verified path from externally generated flag-algebra certificates to formal
+proofs.
 
-Around this abstract layer we build a verified bridge from specification to
-evaluable proof: a reflection layer connects the quotient definitions to a
-computable graph type \lean{Sym2Graph} by adequacy theorems; a tactic layer
-and an API layer automate the recurring algebraic bookkeeping; and
-elaboration-time macros generate and discharge thousands of density and
-multiplication lemmas from external JSON tables.  SDP
-positive-semidefiniteness certificates are checked exactly over $\mathbb{Q}$
-by LDL$^\top$ decompositions, with matrix equalities evaluated by
-\lean{decide +kernel}; density-table lemmas are evaluated by
-\lean{native\_decide}.  The development proves Mantel's theorem, the Erd\H{o}s
-pentagon theorem ($\tdensity{C_5}{K_3}=24/625$), two Goodman-style
-inequalities, and a $C_4$-density bound for triangle-free graphs.
+The formalization includes types, flags, flag densities, the flag algebra
+quotient, positive homomorphisms, averaging operators, and
+forbidden-subgraph reasoning.  Around this abstract development we build a
+certificate-checking framework that connects computable graph representations
+to the quotient definitions, loads density and multiplication tables generated
+outside the proof assistant, checks rational positive-semidefinite
+certificates exactly, and automates the algebraic normalization steps that
+occur in flag-algebra proofs.  The resulting pipeline turns Flagmatic-style
+certificate data into Lean proofs with only a small amount of
+problem-specific guidance.  As case studies, the development proves Mantel's
+theorem, the Erd\H{o}s pentagon theorem
+($\tdensity{C_5}{K_3}=24/625$), Goodman-type inequalities, and further density
+bounds for constrained graph classes.
 
-We do not claim a single methodological
-thesis.  Section by section, we describe the choices we made for the
-mathematical specification, the engineering obstacles those choices
-exposed, the bridge layer they forced us to build, the recurring proof
-patterns we noticed in the case studies, the questions our work left open,
-and the lessons we believe are transferable beyond flag algebras.
-Where a choice was forced by feasibility rather than design, we say so.
+The formalization also exposes a semantic question about how
+forbidden-subgraph assumptions are represented.  We compare quotient
+semantics, where forbidden configurations are set to zero in the flag
+algebra, with ensemble semantics, where inequalities are tested on random
+rooted views of constrained graph limits.  We prove a root-planting criterion
+characterizing when the two semantics coincide, establish positive results
+for clone-closed and substitution-closed classes, and exhibit a counterexample
+based on $C_4$-free graphs.  Thus the development is not only a verified
+implementation of existing flag-algebra proof technology, but also a formal
+framework for investigating the semantics of constrained flag-algebra
+reasoning.
 \end{abstract}
 
 % =========================================================================
