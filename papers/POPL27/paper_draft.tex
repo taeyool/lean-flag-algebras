@@ -782,12 +782,13 @@ freely replace $A$ by its expansion at any size $n \geq m$.
 For flags $A_1 \in \mathcal{F}^\sigma_{m_1}$ and
 $A_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
 $\ell \geq m_1 + m_2 - k$ and define
-\[
+\begin{equation}
+  \label{eq:mul}
   [A_1] \cdot [A_2]
   \;:=\;
   \sum_{D \in \mathcal{F}^\sigma_\ell} \den{A_1,A_2}{D} \cdot [D]
   \qquad\text{in } \mathcal{A}^\sigma.
-\]
+\end{equation}
 At first glance this definition appears to depend on both the choice of $\ell$
 and the choice of representatives for $[A_1]$ and $[A_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
@@ -1399,7 +1400,7 @@ noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$
 \end{lstlisting}
 Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
 
-Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants. \gw{I'm here.}
+Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
@@ -1410,16 +1411,16 @@ theorem flagDensity_eq_sum_density_prods
 
 \subsection{The Flag Algebra}
 
-For the remainder of this section, $\sigma$ denotes a \lean{FlagType (Fin $n_0$)} for a fixed $n_0 \in \mathbb{N}$:
+For the remainder of Section~\ref{sec:abstract}, $\sigma$ denotes a \lean{FlagType (Fin $n_0$)} for a fixed $n_0 \in \mathbb{N}$:
 \begin{lstlisting}
 variable {(*@$n_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))}
 \end{lstlisting}
 
 To define the flag algebra, we first construct the free $\mathbb{R}$-module with basis
-$\mathcal{F}^\sigma$.  Each element is represented as a finitely supported
+$\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
 function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
-type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} maps
-each flag to its corresponding basis element:
+type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
+the constructor that produces the basis element for each flag:
 \begin{lstlisting}
 abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
@@ -1427,7 +1428,7 @@ abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
 def basisVector (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
-Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} defines the basis vector for $F \in \mathcal{F}^\sigma$, taking value $1$ at $F$ and $0$ elsewhere.
+Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} defines the basis function for $F \in \mathcal{F}^\sigma$, taking value $1$ at $F$ and $0$ elsewhere.
 
 Next, we define the zero space $\mathcal{Z}^\sigma$.  We encode the generating element of
 Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
@@ -1443,9 +1444,9 @@ noncomputable def zeroSet ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (F
 def ZeroSpace ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
   Submodule.span (*@$\mathbb{R}$@*) (zeroSet (*@$\sigma$@*))
 \end{lstlisting}
-Here \lean{flagExpansion F} $\ell$ computes
+Here \lean{flagExpansion F} $\ell$ is defined as
 $\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G} \cdot G$,
-the density expansion of $F$ at size $\ell$.
+the expansion of $F$ at size $\ell$.
 
 Following the same pattern as the definition of \lean{Flag} from
 \lean{LabeledGraph} in Section~\ref{sec:flagtypes}, we now define
@@ -1460,25 +1461,45 @@ def flagVectorEqv (f g : FlagVector (*@$\sigma$@*)) : Prop :=
 abbrev FlagAlgebra ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
-In the resulting type, a flag and its density expansion at any larger size
+In the resulting type \lean{FlagAlgebra}, a flag and its density expansion at any larger size
 are definitionally equal.
 
-Multiplication is defined by joint sampling.  On basis elements, the product is
-first computed at an auxiliary output size:
+Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
+\lean{flagMulWithSize} defines the product
+of two flags at a chosen output size $\ell$ as in
+Equation~\eqref{eq:mul}.  \lean{flagMul} specializes to the minimal admissible
+size $\ell = F.1 + F'.1 - n_0$.  \lean{bilinearExtension} then extends
+\lean{flagMul} linearly in each argument to give multiplication on
+\lean{FlagVector} $\sigma$, and \lean{Quotient.map$_2$} lifts this to
+\lean{FlagAlgebra} $\sigma$.
 \begin{lstlisting}
 def flagMulWithSize (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
-  (*@$\sum$@*) G : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*),
-    flagDensity(*@$_2$@*) F.2 F'.2 G * basisVector (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
-\end{lstlisting}
-The theorem \lean{flagMulWithSize\_indep\_on\_size} proves that any two large
-enough choices of \lean{ell} are equivalent modulo the zero space.  Only after
-that proof do we lift multiplication to \lean{FlagAlgebra} $\sigma$ and build its
-commutative ring structure.  The commutativity, associativity, unit laws, and
-quotient-compatibility proofs are therefore part of the mathematical content:
-they show that the finite sampling semantics supports the symbolic calculus
-used by certificates.
+  (*@$\sum$@*) G : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*), flagDensity(*@$_2$@*) F.2 F'.2 G * basisVector (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
 
-\subsection{Positive Homomorphisms as Models}
+noncomputable def flagMul (F F' : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
+  flagMulWithSize F F' (F.1 + F'.1 - (*@$n_0$@*))
+
+noncomputable instance : Mul (FlagVector (*@$\sigma$@*)) where
+  mul := bilinearExtension flagMul
+
+noncomputable instance : Mul (FlagAlgebra (*@$\sigma$@*)) where
+  mul := by
+    apply Quotient.map(*@$_2$@*) ((*@$\cdot$@*) * (*@$\cdot$@*))
+    -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$\sigma$}@*),
+    --   flagVectorEqv f f' and flagVectorEqv g g' imply flagVectorEqv (f * g) (f' * g')
+\end{lstlisting}
+\lean{Quotient.map$_2$} is a Lean built-in function that lifts a binary
+operation to a quotient type given a proof that the operation respects the
+equivalence relation.  Here that proof amounts to showing that multiplication
+on \lean{FlagVector} $\sigma$ respects \lean{flagVectorEqv}, as noted in the
+comment above.  We also prove \lean{flagMulWithSize\_indep\_on\_size}: for any two choices of $\ell$, the results of \lean{flagMulWithSize F F'} $\ell$ are
+equivalent under \lean{flagVectorEqv}, justifying the choice of minimal size
+in \lean{flagMul}.
+
+With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
+a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$. \gw{I'm here.}
+
+\subsection{Positive Homomorphisms and Semantic Order}
 
 The next shift is from finite experiments to asymptotic semantics.  Positive
 homomorphisms are the models of the equational theory: they assign a real value
