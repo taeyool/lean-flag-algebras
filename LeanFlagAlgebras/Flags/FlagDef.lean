@@ -31,7 +31,8 @@ generate_empty_typed_flags 2
 generate_empty_typed_flags 3
 generate_empty_typed_flags 4
 generate_empty_typed_flags 5
-generate_empty_typed_flags 6
+-- generate_empty_typed_flags 6
+
 -- n = 7 (1044 flags) is omitted: the elaboration-time enumeration runs in the
 -- Lean interpreter and takes >80 min, and the 1044-element list literal in the
 -- completeness bridge exceeds the default `maxRecDepth` (512). It is impractical
@@ -57,6 +58,10 @@ generate_flags 3 0 5
 generate_flags 3 1 5
 generate_flags 3 2 5
 generate_flags 3 3 5
+
+-- set_option maxRecDepth 4000
+-- set_option maxHeartbeats 40000000
+-- generate_flags 3 0 6
 
 #print Sym2LabeledGraph_3_1_0_2
 #check downward_3_1_0_2
