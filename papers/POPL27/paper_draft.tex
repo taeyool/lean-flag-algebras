@@ -1,5 +1,5 @@
 ﻿% =========================================================================
-% DRAFT: experience-report framing.  Uses \documentclass{article} for local
+% DRAFT: Uses \documentclass{article} for local
 % compilation.  For POPL 2027 submission switch to:
 %   \documentclass[acmsmall,review,anonymous]{acmart}
 % with the ACM CCS/keywords block below uncommented.
@@ -15,7 +15,7 @@
 %
 % Keywords: flag algebras, Lean 4, proof by reflection, semidefinite
 %   programming, Turan density, interactive theorem proving,
-%   tactic metaprogramming, extremal combinatorics, experience report
+%   tactic metaprogramming, extremal combinatorics
 % =========================================================================
 \documentclass{article}
 
@@ -220,8 +220,7 @@
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
 
 % =========================================================================
-\title{A Verified Flag Algebra Pipeline in Lean~4: \\
-       An Experience Report}
+\title{A Verified Flag Algebra Pipeline in Lean~4}
 \date{}
 
 \author[1]{Gyeongwon Jeong}
@@ -263,7 +262,7 @@ by LDL$^\top$ decompositions, with matrix equalities evaluated by
 pentagon theorem ($\tdensity{C_5}{K_3}=24/625$), two Goodman-style
 inequalities, and a $C_4$-density bound for triangle-free graphs.
 
-This is an experience report.  We do not claim a single methodological
+We do not claim a single methodological
 thesis.  Section by section, we describe the choices we made for the
 mathematical specification, the engineering obstacles those choices
 exposed, the bridge layer they forced us to build, the recurring proof
@@ -334,13 +333,9 @@ effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
 problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
 density of pentagons in triangle-free graphs.
 
-\paragraph{An experience report, not a thesis paper.}
+\paragraph{Design choices, not a single thesis.}
 This paper reports on a Lean~4 formalization of the flag algebra method for
-simple graphs.  We chose an experience-report framing rather than a
-single-thesis framing because the most honest description of what we did is
-that we made design choices, encountered obstacles, built infrastructure,
-proved case studies, and observed recurring patterns---rather than that we
-discovered \emph{the} correct way to formalize a flag-algebra proof.  On at
+simple graphs.  On at
 least one substantive design axis, the predicate-based versus
 universal-theory specification of forbidden subgraphs, we do not know whether
 our choice is preferable to Razborov's original presentation; we report on
@@ -2862,7 +2857,7 @@ pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
 inequalities, and an inequality bounding the $C_4$-density of triangle-free
 graphs.
 
-This paper is an experience report.  We do not claim to have found
+We do not claim to have found
 \emph{the} right way to formalize flag algebras.  We have described the
 choices we made for the mathematical specification, the engineering
 obstacles those choices exposed, the bridge layer we built around them, the
