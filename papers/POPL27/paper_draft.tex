@@ -237,7 +237,7 @@
 \maketitle
 
 \begin{abstract}
-Razvorov's flag algebras are a powerful method for proving asymptotic inequalities in
+Razborov's flag algebras are a powerful method for proving asymptotic inequalities in
 extremal graph theory, often by reducing a graph-theoretic problem to a finite
 semidefinite-programming certificate.  The method is especially useful in
 constrained settings, where the desired inequality is required only for graphs
@@ -295,7 +295,7 @@ $S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
 \emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
 member of $\mathcal{H}$.  The corresponding asymptotic
 question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit; we call this the \emph{Turán density} of $P$ with respect to $\mathcal{H}$:
+takes a limit; we call this the \emph{Tur\'an density} of $P$ with respect to $\mathcal{H}$:
 \[
   \tdensity{P}{\mathcal{H}}
   :=
@@ -318,7 +318,7 @@ write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
 Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
 about \emph{all} sufficiently large $\mathcal{H}$-free graphs: a valid upper
-bound must certify that the proportion of induced copies of $P$ never exceeds
+bound must guarantee that the proportion of induced copies of $P$ never exceeds
 the claimed value, asymptotically, no matter how large the host graph is.  No
 finite collection of examples suffices, and the extremal graphs achieving the
 maximum may change unpredictably as $n$ grows.
@@ -329,10 +329,9 @@ distinguished labeled subgraph.  By treating the densities of such partially
 labeled patterns as algebraic objects, the method turns a global asymptotic
 problem into a finite inequality in a quotient algebra.  Crucially, many
 strong inequalities can be obtained from positive semidefinite matrices: an
-SDP solver searches for a certificate, and a flag algebra theorem explains
+semidefinite-programming (SDP) solver searches for a certificate, and a flag algebra theorem explains
 why that finite certificate implies an asymptotic bound for the whole graph
-class.  This
-combination of mathematical abstraction and computer search has been unusually
+class.  This combination of mathematical abstraction and computer search has been unusually
 effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
 problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
 density of pentagons in triangle-free graphs.
@@ -357,14 +356,14 @@ obligation: graphs and flags are used only up to isomorphism, density
 expressions are identified when they have the same asymptotic meaning, and a
 claimed inequality must hold under every positive homomorphism.  Second, there
 is a data-heavy computation obligation: the external search proposes finite
-data---lists of flags, density and multiplication tables, and rational
-positive-semidefinite matrices---but Lean must check those data against the
+data, namely, lists of flags, density and multiplication tables, and rational
+positive-semidefinite matrices, but Lean must check those data against the
 formal definitions rather than trust the scripts that produced them.  Third,
 there is an algebraic bookkeeping obligation: the proof repeatedly expands
 flags to common sizes, multiplies typed flags, applies forbidden-graph
 assumptions, and normalizes large linear combinations.  Our bridge layer
 separates these concerns.  It connects concrete computable graph
-representations to the quotient definitions by adequacy theorems, verifies
+representations to quotient definitions in Lean by adequacy theorems, verifies
 positive-semidefiniteness exactly over $\mathbb{Q}$, and packages the
 normalization steps into tactics and elaboration macros used by the case
 studies.
@@ -375,8 +374,8 @@ constraint is imposed.  In the \emph{quotient semantics approach}, one builds
 a hereditary graph constraint, such as $H$-freeness, into the flag algebra
 from the start; this is the traditional way to work in an algebra of
 $H$-free graphs.  In the \emph{ensemble semantics approach}, one first works
-with graph limits and then imposes the constraint by testing inequalities on
-random labeled views of those constrained limits.  These two viewpoints agree
+with graph limits and then imposes the constraint post hoc by testing
+inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
 characterizing when they do agree, gives positive results for classes closed
@@ -384,7 +383,8 @@ under vertex blow-ups or more general substitutions, and exhibits a
 counterexample based on $C_4$-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
-to an extremal-density or equality slice.
+to an extremal-density or equality slice.  This is also the semantic viewpoint
+made explicit by our formalization.
 
 \paragraph{Contributions.}
 The paper makes four main contributions.  First, it gives a Lean
@@ -401,7 +401,7 @@ flag algebras, including the root-planting criterion and the resulting
 generalization beyond hereditary constraints.
 
 \paragraph{Organization.}
-Section~\ref{sec:background} recalls the mathematical background.
+Section~\ref{sec:background} recalls the mathematical background of flag algebras.
 Section~\ref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
 Section~\ref{sec:obstacles} describes the main formalization obstacles:
@@ -425,12 +425,15 @@ This section recalls the mathematical definitions underlying flag algebras,
 following Razborov~\cite{razborov2007flag}, and sets up the notation used
 throughout the paper.  No background in flag algebras or extremal
 combinatorics is assumed.  For $n \in \mathbb{N}$ we write
-$[n] = \{1,\ldots,n\}$; all graphs are undirected, finite and simple.
+$[n] = \{1,\ldots,n\}$. All graphs $G$ are undirected, finite and simple,
+and their vertex and edge sets are written $V(G)$ and $E(G)$, respectively.
 Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
-forbidden induced subgraphs; a graph is \emph{$\mathcal{H}$-free} if it
-contains no induced subgraph isomorphic to any member of $\mathcal{H}$.
-All types, flags, and flag algebras below are defined relative to this
-fixed $\mathcal{H}$.
+forbidden induced subgraphs.  If $G$ is a graph and $S\subseteq V(G)$, the
+\emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
+exactly the edges of $G$ with both endpoints in $S$.  Thus a graph is
+\emph{$\mathcal{H}$-free} if there is no set $S\subseteq V(G)$ for which
+$G[S]$ is isomorphic to a member of $\mathcal{H}$.  All types, flags, and flag
+algebras below are defined relative to this fixed $\mathcal{H}$.
 % The goal is to make the proof pattern legible:
 % what are the terms, what do they mean, and why can a finite certificate say
 % something about all large graphs?
