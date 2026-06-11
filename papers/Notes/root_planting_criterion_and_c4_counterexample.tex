@@ -351,10 +351,12 @@ $\phi$ with $\phi(F)=\lim p(F,\cdot)$, and conversely every positive homomorphis
 this way \cite[Theorem 3.3]{Razborov2007}.  Terminologically, from now on a
 \emph{limit} means such a positive homomorphism unless we explicitly mention an
 approximating sequence.  Thus an \emph{unlabelled limit} is a point of
-$\Homp(\A^0[\T],\R)$, while a \emph{$\sigma$-labelled} or \emph{$\sigma$-rooted limit} is
-a point of $\Homp(\A^\sigma[\T],\R)$.  We freely pass between the two names: $\phi$ may be
-called a limit or a positive homomorphism, and $\phi(F)$ is the density of the flag $F$ in
-that limit.  On a single flag this value lies in $[0,1]$: for each size the flags of that
+$\Homp(\A^0[\T],\R)$, while a \emph{$\sigma$-labelled limit} is a point of
+$\Homp(\A^\sigma[\T],\R)$.  We use ``roots'' for the distinguished labelled vertices, but
+use ``labelled'' for the corresponding flags and limits.  We freely pass between the
+names limit and positive homomorphism: $\phi$ may be called a limit or a positive
+homomorphism, and $\phi(F)$ is the density of the flag $F$ in that limit.  On a single flag
+this value lies in $[0,1]$: for each size the flags of that
 size sum to the unit,
 $\sum_{|H|=|F|}H=\one_\sigma$ (a vertex set induces exactly one flag), so
 $0\le\phi(F)\le\sum_{|H|=|F|}\phi(H)=\phi(\one_\sigma)=1$.  Hence evaluation on all flags,
@@ -778,7 +780,7 @@ the finite denominator comparisons below.
 
 Let $\ell=|F_0|\le m$ and put $q:=\ell-k$.  If $q=0$, then $F_0$ is just the
 type $\sigma$ itself; no additional vertices are sampled and the two
-probabilities are equal.  Hence assume $q>0$.  To compute
+probabilities are equal to $1$.  Hence assume $q>0$.  To compute
 $p(F_0,(B_N,\widehat\theta))$, choose a uniformly random $q$-element subset of
 $B_N\setminus\operatorname{im}\widehat\theta$.  For the estimates only, expose
 this unordered subset as an ordered sample
@@ -799,7 +801,7 @@ The proof has two parts.  First we show that, with probability
 $O_m(\lambda+1/(n-k)+\operatorname{err}_N)$, the sample is bad: it either meets
 one of the labelled clone classes in $R$ or chooses two vertices from the same
 non-labelled clone class.  Second, on the complementary good event, projection
-from the blow-up to $G$ preserves the induced rooted flag.  The only remaining
+from the blow-up to $G$ preserves the induced $\sigma$-flag.  The only remaining
 question on the good event is whether the projected $q$-set is close to a
 uniform $q$-subset of $U$; this will contribute only
 $O_m(\operatorname{err}_N)$ in total variation.  Combining these two errors gives
@@ -938,8 +940,8 @@ non-labelled clone class.  Combining the two bounds above,
 \]
 where $K_m^{(3)}$ again depends only on $m$.
 
-It remains to compare what happens on the good event with the rooted density in
-the base flag $(G,\theta)$.  Let
+It remains to compare what happens on the good event with the corresponding
+$\sigma$-flag density in the base flag $(G,\theta)$.  Let
 \[
   \pi:B_N\to G
 \]
@@ -1106,8 +1108,8 @@ Finally, on the good event the induced labelled graph is preserved by projection
 The planted labels $\widehat\theta(i)\in C_{\theta(i)}$ have exactly the same
 adjacencies to a sampled vertex in $C_v$ as $\theta(i)$ has to $v$ in $G$, and
 two sampled unlabelled vertices lie in distinct clone classes, so their adjacency
-is exactly the adjacency of their two base vertices.  Therefore the rooted flag
-seen in $(B_N,\widehat\theta)$ is the same as the rooted flag seen in
+is exactly the adjacency of their two base vertices.  Therefore the $\sigma$-flag
+seen in $(B_N,\widehat\theta)$ is the same as the $\sigma$-flag seen in
 $(G,\theta)$ on the projected $q$-set.
 
 Let $h$ be the indicator that a $q$-set of base vertices induces $F_0$ together
@@ -1388,7 +1390,8 @@ The same support argument applies whenever the constrained class is closed under
 substituting constrained graphs into the vertices of a constrained graph.  This is a
 stronger closure hypothesis, but the proof is conceptually useful: it isolates the real
 feature needed for root planting, namely a positive-mass module over each labelled
-vertex whose internal structure is asymptotically invisible to bounded rooted samples.
+vertex whose internal structure is asymptotically invisible to samples of bounded
+labelled flags.
 
 \begin{definition}[Graph substitution]\label{def:graph-substitution}
 Let $G$ be a finite graph, and for each $v\in V(G)$ let $H_v$ be a finite graph,
@@ -1553,8 +1556,8 @@ $\phi_0\in Q_0$.  Since $|\Emb_\sigma(H_t)|\ge |\Theta_t|\ge\delta |V(H_t)|^k$,
 the type density of $\sigma$ stays bounded away from zero, so
 $\phi_0(\brak\sigma)>0$.
 
-Let $P_t$ be the finite random-root distribution obtained by choosing a uniformly
-random element of $\Emb_\sigma(H_t)$ and recording all rooted flag densities in
+Let $P_t$ be the finite random-labelling distribution obtained by choosing a uniformly
+random element of $\Emb_\sigma(H_t)$ and recording all $\sigma$-flag densities in
 \[
   Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
 \]
@@ -1680,7 +1683,7 @@ Outside these bad events, the sampled vertices all lie in $U$, no repaired old
 edge is seen, the adjacencies from the planted roots to $U$ agree with the
 adjacencies from the original roots in $G$, and the adjacencies among the planted
 roots agree with $\sigma$.  Moreover, conditional on the sample lying in $U$, it
-is a uniform $q$-subset of $U$, exactly as in the rooted density
+is a uniform $q$-subset of $U$, exactly as in the density
 $p(F,(G,\theta))$.  Hence
 \[
   \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|
@@ -1913,8 +1916,8 @@ one-vertex type their edge density is \emph{not} pinned---the class contains gra
 every density in $[0,\tfrac12]$, so no boundary-pinning obstruction applies---and a
 local root-cloning repair proves root-plantability there.  The same repair also handles
 the two-root non-edge type by cloning the two non-adjacent roots simultaneously.  At the
-two-root edge type, however, the edge-rooted triangle flag is pinned to $0$ on random
-edge extensions, while a book graph gives a quotient edge with common-neighbour density
+two-root edge type, however, the triangle flag over the edge type is pinned to $0$ on
+random edge extensions, while a book graph gives a quotient edge with common-neighbour density
 $1$.  Thus the full all-types $C_5$-free conjecture is false, even though the positive
 one-root and non-edge cases remain useful models for planting beyond clone-closure.
 \end{remark}
@@ -2206,8 +2209,8 @@ element whose restriction is not represented exactly by a sum of squares.  By
 unlabelling it can be approximated arbitrarily well by ordinary quotient sums of
 squares.  Boundary pinning to a single point supplies no exact gap, and by
 \cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free
-case of the next section illustrates both possibilities at once: the one-root and
-non-edge-rooted supports are rich but plantable, while the edge-rooted support has a
+case of the next section illustrates both possibilities at once: the one-vertex and
+non-edge-type supports are rich but plantable, while the edge-type support has a
 boundary pinning obstruction coming from common neighbours of an exceptional book edge.
 \end{remark}
 
@@ -2267,7 +2270,7 @@ if the root sits in a triangle, cloning the root and one neighbour creates a
 five-cycle.  The repair is local.  Clone the root into a small positive-density
 independent set, but first delete all old edges inside its neighbourhood.  The
 deleted set is only linear in the number of vertices by \cref{lem:c5-nbhd}, so
-it is invisible to the densities of fixed rooted flags.
+it is invisible to the densities of fixed labelled flags.
 
 \begin{definition}[One-root planting]\label{def:c5-one-root-planting}
 Let $(G,r)$ be a rooted graph and let $L\ge1$.  The planted graph
@@ -2349,7 +2352,7 @@ arbitrarily large graphs.  Hence
 blow-up theorem in one rooted variable.  It uses two facts special to one root:
 the only dangerous new $C_5$s created by cloning the root pass through an old
 edge inside $N_G(r)$, and those old neighbourhood edges have density
-$O(1/|G|)$ in rooted sampling.  For larger types one would have to control
+$O(1/|G|)$ in sampling for fixed labelled flags.  For larger types one would have to control
 edges inside and between several root-neighbourhood regions.  The next result
 shows that this can still be done for two non-adjacent roots; the following
 subsection shows that it cannot work in general at the edge type.
@@ -2469,8 +2472,8 @@ triangle.
 The same class is not root-plantable at the two-root edge type.  Let $\tau$ be
 the type consisting of a labelled edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
 be the three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent
-to both labelled vertices; equivalently, $g$ is the triangle flag rooted at an
-edge.
+to both labelled vertices; equivalently, $g$ is the triangle $\tau$-flag over
+the edge type.
 
 \begin{lemma}[Few triangles]\label{lem:c5-few-triangles}
 If $G$ is $C_5$-free, then the number $T(G)$ of triangles in $G$ satisfies
@@ -2491,7 +2494,7 @@ $e(G)=O(|V(G)|^2)$, the normalised triangle density is $O(1/|V(G)|)$ along any
 sequence with $|V(G)|\to\infty$.
 \end{proof}
 
-\begin{corollary}[The edge-rooted triangle is pinned on ensembles]\label{cor:c5-edge-pinned}
+\begin{corollary}[The triangle edge-type flag is pinned on ensembles]\label{cor:c5-edge-pinned}
 Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled limit with
 $\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
 \[
@@ -2534,7 +2537,7 @@ a leaf must enter and leave it through $a$ and $b$.  Hence a simple cycle in
 $B_n$ uses at most two leaves, so its length is at most $4$.  Thus $B_n$ has no
 $C_5$.
 
-For the rooted density, every unlabelled vertex of $B_n$ is adjacent to both
+For the $\tau$-flag density, every unlabelled vertex of $B_n$ is adjacent to both
 roots.  Therefore $p(g,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
 has the asserted limit.
 \end{proof}
@@ -2547,7 +2550,7 @@ semantics.
 
 \begin{proof}
 By \cref{cor:c5-edge-pinned}, every support point of every admissible
-edge-rooted ensemble has $g=0$, so $-g$ is ensemble-non-negative.  By
+edge-type ensemble has $g=0$, so $-g$ is ensemble-non-negative.  By
 \cref{lem:c5-book}, there is a quotient homomorphism
 $\psi\in Q_\tau$ with $\psi(g)=1$, hence $\psi(-g)=-1<0$.  Thus quotient
 semantics fails for $-g$, and the support-closure criterion gives
@@ -2561,7 +2564,7 @@ For the $C_5$-free class and the edge type $\tau$,
   =
   \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
 \]
-Thus the ensemble-relaxed edge-rooted multipliers do not improve any asymptotic
+Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
 $C_5$-free density bound, even though $\tau$ is not root-plantable.
 \end{corollary}
 
@@ -2576,7 +2579,7 @@ $g=0$ on $S_\tau$.
 The $C_5$-free class therefore gives both a positive and a negative lesson.  A
 single typical vertex in a positive-density $C_5$-free limit may have nontrivial
 edge density to the rest of the graph, and \cref{thm:c5-one-root} shows that
-every such rooted quotient limit can be planted.  A typical rooted edge is much
+every such labelled quotient limit can be planted.  A typical labelled edge is much
 more rigid: the common-neighbour density is forced to vanish, while an
 exceptional edge in a sparse book graph may have common-neighbour density one.
 This is precisely a pinning obstruction, so the characterisation conjecture
@@ -2716,7 +2719,7 @@ the balanced complete bipartite graphs.  Equivalently, the only triangle-free gr
 edge density $1/2$ is the balanced complete bipartite graphon.  Thus
 $Y_{\mathrm{Mantel}}=\{\beta\}$, where $\beta$ denotes that limit.
 
-The remaining statements are direct readings of random rooted extensions of $\beta$.
+The remaining statements are direct readings of random labelled extensions of $\beta$.
 A random vertex of the balanced bipartite limit sees exactly half of the space across the
 bipartition and half on its own side, so the one-root edge density is $1/2$.
 
@@ -2735,7 +2738,7 @@ The equality constraint $\phi_0(\rho)=1/2$ is not hereditary, so it is not natur
 quotient flag algebra.  The relative ensemble support nevertheless records strong
 labelled consequences of being an extremal Mantel limit.  For instance,
 $e=\frac12\one_1$ on $S_1(Y_{\mathrm{Mantel}})$, while this equality is false in the
-ordinary triangle-free quotient: rooted stars give quotient points with $e=1$, and empty
+ordinary triangle-free quotient: stars labelled at their centres give quotient points with $e=1$, and empty
 graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
 local information about extremisers that the hereditary quotient deliberately forgets.
 \end{remark}
@@ -2840,7 +2843,7 @@ displayed labelled equations.
 to produce.  It does not start from a known extremal graphon and read off its local
 statistics.  Instead, it takes a bound already proved by a flag-algebra certificate and
 extracts necessary local laws for every extremal limit.  These laws are invisible to the
-ordinary hereditary quotient: the quotient sees all $K_4$-free rooted limits, while the
+ordinary hereditary quotient: the quotient sees all $K_4$-free labelled limits, while the
 relative support sees only roots that occur with positive probability inside
 $P_4$-extremal limits.
 \end{remark}
@@ -2926,7 +2929,7 @@ $Y_{P_4}$, so the slice is nonempty and equals exactly this graphon.
 The point of \cref{thm:k4free-p4-tripartite} is not that Tur\'an's equality case is new;
 it is that the $P_4$ certificate itself forces the problem back onto that equality case.
 The relative ensemble enhancement converts the vanishing of labelled SOS terms into
-rooted local equations, and those equations are strong enough to recover the global edge
+labelled local equations, and those equations are strong enough to recover the global edge
 density of an extremiser.
 \end{remark}
 
@@ -2963,7 +2966,7 @@ As before, write
   d(x):=\int W(x,u)\,du,\qquad
   c(x,y):=\int W(x,u)W(y,u)\,du .
 \]
-Define the three rooted square errors
+Define the three local square errors
 \[
 \begin{aligned}
   R_\eta(W)
@@ -3109,7 +3112,7 @@ $\delta_\square(W,T_3)<\gamma$.
 \end{proof}
 
 \begin{remark}[On the exponent]
-The certificate controls the squared rooted errors by $O(\Delta)$, hence it controls the
+The certificate controls the squared local errors by $O(\Delta)$, hence it controls the
 integrated local-equation errors by $O(\sqrt{\Delta})$.  The edge-density argument above
 then bounds $(3p-2)^2$ by these integrated errors.  Thus the direct certificate route
 gives the explicit fourth-root modulus in \cref{thm:k4free-p4-quant-stability}.  A
@@ -3178,7 +3181,7 @@ If $\phi_0\in Y_r$, evaluating the displayed identity at $\phi_0$ gives a sum of
 non-negative terms equal to zero.  Hence all four positive-multiplier terms vanish, and
 also $\phi_0(L_r)=0$.  The vanishing of the three averaged squares is converted to
 pointwise vanishing on relative supports exactly as in
-\cref{prop:equality-slice-vanishing}.  This gives the two displayed rooted equations
+\cref{prop:equality-slice-vanishing}.  This gives the two displayed labelled equations
 for $\eta$ and $\tau$.
 
 The vanishing of the $p_0(r)\kappa_4^{(r)}$ term gives
@@ -3221,7 +3224,7 @@ By \cref{thm:parametric-p4-equality-slice}, every $\phi_0\in Y_r$ has the extrem
 $K_4$ density among $K_{r+1}$-free graphons.  The assumed equality case of Zykov's
 theorem therefore identifies $\phi_0$ with the balanced complete $r$-partite graphon.
 
-The displayed rooted identities are direct readings of random rooted extensions of that
+The displayed labelled identities are direct readings of random labelled extensions of that
 graphon.  A random vertex is adjacent to all parts except its own, giving
 $e=(r-1)\one_1/r$.  A random ordered edge has its endpoints in two distinct parts; a new
 vertex lies in the first endpoint's part, the second endpoint's part, or one of the
@@ -3263,7 +3266,7 @@ Four questions remain.
 
   \item \textbf{Equality-slice mining beyond classical equality theorems.}
   \Cref{thm:k4free-p4-tripartite,thm:parametric-p4-equality-slice} show that a verified
-  density certificate can be read backwards as a system of rooted local equations on its
+  density certificate can be read backwards as a system of labelled local equations on its
   equality slice.  In the $K_{r+1}$-free $P_4$ family, the final identification still
   leans on classical Tur\'an/Zykov equality cases.  The next genuinely new test is to mine
   a certificate whose equality slice is not already controlled by a standard extremal
