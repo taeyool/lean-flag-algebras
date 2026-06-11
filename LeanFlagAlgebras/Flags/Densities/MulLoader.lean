@@ -261,15 +261,19 @@ elab "load_forbid_mul_theorems" filename:str : command => do
         throwError s!"Missing definition: {flagOrd2.getId}"
 
       if !(env.contains thmName.getId) then
-        match data.forbidTag with
-        | "K3" =>
+        match parseCompleteGraphTag data.forbidTag with
+        | some r =>
+          let krIdent := mkIdent (Name.mkSimple s!"K{r}")
+          if !(env.contains krIdent.getId) then
+            throwError s!"Missing definition: K{r}. Define it in CommonGraphs.lean, \
+              e.g. `generate_complete_graph {r} <canonical index of K{r}>`."
           if i <= j then
             elabCommand (← `(
               theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3.toFinFlag] $rhs
+                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($krIdent).toFinFlag] $rhs
                 := by
                 apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K3.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum ($krIdent).toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -277,16 +281,16 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
                 have hsetval := $flagSetValEq
                 simp [hsetval]
-                exact forbidEq_refl K3.toFinFlag _
+                exact forbidEq_refl ($krIdent).toFinFlag _
             ))
           else
             elabCommand (← `(
               theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K3.toFinFlag] $rhs
+                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($krIdent).toFinFlag] $rhs
                 := by
                 rw [mul_comm]
                 apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K3.toFinFlag
+                  (basisVector_quot_mul_forbidEq_sum ($krIdent).toFinFlag
                     ⟨$(Quote.quote patternSize), $flagOrd1⟩
                     ⟨$(Quote.quote patternSize), $flagOrd2⟩
                     $(Quote.quote hostSize)
@@ -294,77 +298,10 @@ elab "load_forbid_mul_theorems" filename:str : command => do
                 rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
                 have hsetval := $flagSetValEq
                 simp [hsetval]
-                exact forbidEq_refl K3.toFinFlag _
+                exact forbidEq_refl ($krIdent).toFinFlag _
             ))
-        | "K4" =>
-          if i <= j then
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K4.toFinFlag] $rhs
-                := by
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K4.toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl K4.toFinFlag _
-            ))
-          else
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K4.toFinFlag] $rhs
-                := by
-                rw [mul_comm]
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K4.toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl K4.toFinFlag _
-            ))
-        | "K5" =>
-          if i <= j then
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K5.toFinFlag] $rhs
-                := by
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K5.toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl K5.toFinFlag _
-            ))
-          else
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[K5.toFinFlag] $rhs
-                := by
-                rw [mul_comm]
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum K5.toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl K5.toFinFlag _
-            ))
-        | tag => throwError s!"Unsupported forbid tag: '{tag}'. Supported: K3, K4, K5"
+        | none => throwError s!"Unsupported forbid tag: '{data.forbidTag}'. \
+            Expected a complete-graph tag 'K<r>' (e.g. K3, K4, K5)."
         generated := generated + 1
 
   logInfo s!"Generated {generated} {data.forbidTag}-free multiplication theorem(s) from density JSON: {filename.getString}"

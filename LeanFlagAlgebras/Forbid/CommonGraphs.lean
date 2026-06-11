@@ -10,46 +10,38 @@ their `toFinFlag` representations as explicit empty-type flags.
 
 open FlagAlgebras SimpleGraph Compute
 
-/-- The complete graph on 3 vertices, `K₃` (a triangle). -/
-def K3 : SimpleGraph (Fin 3) := completeGraph (Fin 3)
+open Lean Elab Command in
+/-- `generate_complete_graph r idx` defines the complete graph
+`K{r} : SimpleGraph (Fin r) := completeGraph (Fin r)` and proves
+`K{r}_toFinFlag_eq : K{r}.toFinFlag = ⟨r, Flag_r_0_0_idx⟩`, where `idx` is the canonical
+index of `K_r` among the empty-typed `r`-vertex flags from `FlagDef.lean`.
 
-/-- `K3.toFinFlag` equals the explicit empty-type flag `⟨3, Flag_3_0_0_3⟩`. -/
-lemma K3_toFinFlag_eq
-    : K3.toFinFlag = ⟨3, Flag_3_0_0_3⟩
-  := by
-  simp [toFinFlag, K3]
-  congr
-  all_goals {
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_3_0_0_3, mkEdgeFinset]
-  }
+These are exactly the per-clique constants the density/multiplication forbid loaders look
+up by the `"K{r}"` tag (`load_forbid_density_theorems`, `load_forbid_mul_theorems`), so
+adding a new complete-graph forbid is one line here (plus `--forbid-Kn r` on the Python
+side) with no loader edits. -/
+elab "generate_complete_graph " rStx:num idxStx:num : command => do
+  let r := rStx.getNat
+  let idx := idxStx.getNat
+  let kIdent    := mkIdent (Name.mkSimple s!"K{r}")
+  let kEqIdent  := mkIdent (Name.mkSimple s!"K{r}_toFinFlag_eq")
+  let flagIdent := mkIdent (Name.mkSimple s!"Flag_{r}_0_0_{idx}")
+  let sym2Ident := mkIdent (Name.mkSimple s!"Sym2Graph_{r}_0_0_{idx}")
+  let rT : TSyntax `term := Quote.quote r
+  elabCommand (← `(command|
+    def $kIdent : SimpleGraph (Fin $rT) := completeGraph (Fin $rT)))
+  elabCommand (← `(command|
+    set_option maxHeartbeats 0 in
+    lemma $kEqIdent : ($kIdent).toFinFlag = ⟨$rT, $flagIdent⟩ := by
+      simp [toFinFlag, $kIdent:ident]
+      congr
+      all_goals {
+        ext i j
+        fin_cases i <;> fin_cases j <;> simp [$sym2Ident:ident, mkEdgeFinset]
+      }))
 
-/-- The complete graph on 4 vertices, `K₄`. -/
-def K4 : SimpleGraph (Fin 4) := completeGraph (Fin 4)
-
-/-- `K4.toFinFlag` equals the explicit empty-type flag `⟨4, Flag_4_0_0_10⟩`. -/
-lemma K4_toFinFlag_eq
-    : K4.toFinFlag = ⟨4, Flag_4_0_0_10⟩
-  := by
-  simp [toFinFlag, K4]
-  congr
-  all_goals {
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_4_0_0_10, mkEdgeFinset]
-  }
-
-set_option maxHeartbeats 0
-
-/-- The complete graph on 4 vertices, `K₅`. -/
-def K5 : SimpleGraph (Fin 5) := completeGraph (Fin 5)
-
-/-- `K5.toFinFlag` equals the explicit empty-type flag `⟨5, Flag_5_0_0_33⟩`. -/
-lemma K5_toFinFlag_eq
-    : K5.toFinFlag = ⟨5, Flag_5_0_0_33⟩
-  := by
-  simp [toFinFlag, K5]
-  congr
-  all_goals {
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_5_0_0_33, mkEdgeFinset]
-  }
+-- `K₃` (a triangle), `K₄`, `K₅` and their flag identities. The second argument is the
+-- canonical index of `K_r` among the empty-typed `r`-vertex flags in `FlagDef.lean`.
+generate_complete_graph 3 3
+generate_complete_graph 4 10
+generate_complete_graph 5 33

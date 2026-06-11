@@ -292,6 +292,11 @@ $\texttt{FlagAlgebra\_2\_0\_0\_1} \le_{K_3} \tfrac12\cdot 1$, and proves it.
 \section{Adding a new forbidden graph}
 \label{sec:newforbid}
 
+\emph{Update: for the complete graphs $K_n$ this five-file procedure has since
+been collapsed to a single line --- see Section~\ref{sec:knupdate}. The recipe
+below is the general one, still used as written for non-$K_n$ forbids
+($C_4$, $P_4$, \ldots).}
+
 To forbid a graph $X$ (on $n_X$ vertices) beyond $K_3$, $K_4$, $K_5$, you
 touch five files, grouped into the three steps below. The certificate
 translator (\S\ref{sec:cert}) is \emph{not} one of them: it finds $X$ by
@@ -345,6 +350,61 @@ into its proof script, so the loaders dispatch on the tag rather than
 abstracting over the graph. At three forbids the copy-paste has been
 cheaper than that abstraction; if the list grows it is the natural thing
 to factor out.
+
+\section{Update: generalizing the $K_n$ forbids}
+\label{sec:knupdate}
+
+The procedure of Section~\ref{sec:newforbid} treated every forbidden graph
+alike, complete graphs included. But $K_n$ is the one forbid family that is
+fully parametric in a single number, so it no longer needs that procedure. The
+three places that used to hard-code $K_3$, $K_4$, $K_5$ one at a time have each
+been collapsed to a single $n$-generic form.
+
+\paragraph{Python --- was three shorthands, now one.}
+\btt{gen_free_indices.py} and \btt{calculate_densities.py} carried separate
+\btt{--forbid-K3}, \btt{--forbid-K4}, \btt{--forbid-K5} flags, each a
+hand-written edge tuple. They now share one \btt{--forbid-Kn N}: it builds the
+$K_N$ edge set from a one-line \btt{complete_graph_edges} helper and emits the
+clean tag \btt{KN} for any $N$. The three old flags stay as aliases routing
+through the same path, so existing commands and committed file names are
+unchanged. (The raw \btt{--forbid <flagmatic>} form still handles arbitrary
+graphs; what it lacks is the clean \btt{KN} tag the loaders key on --- which is
+why the shorthands existed in the first place.)
+
+\paragraph{\texttt{CommonGraphs.lean} --- was three def/lemma pairs, now three
+one-liners.} The hand-written \btt{def K3} / \btt{K3_toFinFlag_eq} and its
+$K_4$, $K_5$ copies are replaced by a macro \btt{generate_complete_graph r idx},
+which emits \btt{def K{r}} and proves
+\btt{K{r}_toFinFlag_eq : K{r}.toFinFlag = ⟨r, Flag_r_0_0_idx⟩}. The only datum
+left is \btt{idx}, the canonical index of $K_r$ among the empty-typed
+$r$-vertex flags ($K_3\!\to\!3$, $K_4\!\to\!10$, $K_5\!\to\!33$).
+
+\paragraph{The two forbid loaders --- was the easy-to-miss Step 3, now nothing.}
+This is the step Section~\ref{sec:newforbid} singled out as manual and easy to
+forget. Both \texttt{load\_forbid\_density\_theorems} and
+\texttt{load\_forbid\_mul\_theorems} used a \texttt{match} on the tag with one
+copy-pasted \btt{| "K3" =>} / \btt{"K4"} / \btt{"K5"} branch apiece (each baking
+in a lemma name and a literal \btt{simp [Flag_r_0_0_idx]}). Those branches are
+gone. A helper \btt{parseCompleteGraphTag} recovers $r$ from a \btt{"K<r>"} tag,
+and --- the piece that removes the last hard-coded index ---
+\texttt{load\_forbid\_density\_theorems} now reads the forbidden flag's
+representative \emph{off} the \btt{K{r}_toFinFlag_eq} lemma (via
+\btt{forbidFlagIdentOfToFinFlagEq}) instead of from a literal index. The
+multiplication loader never needed the index, so it just refers to \btt{K{r}}
+by name.
+
+\paragraph{Net effect.} Adding a new clique forbid $K_r$ no longer touches five
+files: run the Python step with \btt{--forbid-Kn r}, and add one line
+\btt{generate_complete_graph r <idx>} to \texttt{CommonGraphs.lean}. The loaders
+need no edit --- Step~3 of Section~\ref{sec:newforbid} disappears for complete
+graphs, leaving only the one genuine datum (the index $i_{K_r}$). The refactor
+was checked by rebuilding the $K_3$/$K_4$/$K_5$ certificates (Mantel, K4turan,
+K5turan) green.
+
+\paragraph{Still bounded.} The empty-typed flags exist only up to $n=5$
+(\btt{generate_empty_typed_flags 6} is commented out in
+\texttt{FlagDef.lean}), so $K_n$ forbids are available through $n=5$ today; $K_6$
+and up wait on enabling those flags.
 
 \section{What is available now}
 
