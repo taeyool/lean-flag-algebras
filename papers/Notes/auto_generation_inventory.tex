@@ -391,7 +391,8 @@ and --- the piece that removes the last hard-coded index ---
 representative \emph{off} the \btt{K{r}_toFinFlag_eq} lemma (via
 \btt{forbidFlagIdentOfToFinFlagEq}) instead of from a literal index. The
 multiplication loader never needed the index, so it just refers to \btt{K{r}}
-by name.
+by name. \emph{(This $K_n$ gating was then dropped entirely --- see ``Going
+further'' below.)}
 
 \paragraph{Net effect.} Adding a new clique forbid $K_r$ no longer touches five
 files: run the Python step with \btt{--forbid-Kn r}, and add one line
@@ -400,6 +401,30 @@ need no edit --- Step~3 of Section~\ref{sec:newforbid} disappears for complete
 graphs, leaving only the one genuine datum (the index $i_{K_r}$). The refactor
 was checked by rebuilding the $K_3$/$K_4$/$K_5$ certificates (Mantel, K4turan,
 K5turan) green.
+
+\paragraph{Going further --- the loaders are not $K_n$-specific.} Nothing in
+either loader's generated proof uses completeness of $K_n$: the density proof is
+\btt{rw [<tag>_toFinFlag_eq]; ...; native_decide} and the multiplication proof is
+\btt{basisVector_quot_mul_forbidEq_sum <graph>.toFinFlag ...}, both valid for any
+forbidden graph. So the \btt{"K<r>"} tag parsing above was a restriction, not a
+requirement --- and since the JSON tag already \emph{is} the Lean identifier
+(\btt{"K3"} names \btt{def K3}), even the parsing was unnecessary. A helper
+\btt{resolveForbidGraph} now maps the tag \emph{directly} to its identifier:
+tag \btt{C4} resolves to \btt{def C4} and \btt{C4_toFinFlag_eq}, with the
+canonical index read off that lemma. The \btt{"K<r>"} parse is kept only to hand
+back a clique-specific hint (\btt{generate_complete_graph r ...}) when a $K_r$
+definition is missing; every other tag gets the generic ``define \btt{def <tag>}
+and \btt{<tag>_toFinFlag_eq}'' hint. On the Python side a \btt{--tag C4} option
+gives the raw \btt{--forbid <flagmatic>} path the clean identifier-matching tag
+it previously lacked.
+
+\paragraph{Net effect, generalized.} A non-clique forbid $X$ (e.g.\ $C_4$,
+$P_4$) now follows the \emph{same} short path as a clique: compute the data with
+\btt{--forbid <X> --tag X}, and add \btt{def X} plus its \btt{X_toFinFlag_eq}
+(carrying $X$'s canonical index) to \texttt{CommonGraphs.lean}. The loaders need
+no edit for \emph{any} forbid --- the lone remaining per-graph datum is the
+index, which is genuine information about $X$. $K_3$ and $K_4$ were re-verified
+green (Mantel, K4turan) after this change.
 
 \paragraph{Still bounded.} The empty-typed flags exist only up to $n=5$
 (\btt{generate_empty_typed_flags 6} is commented out in

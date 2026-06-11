@@ -135,6 +135,15 @@ def main() -> None:
         default=None,
         help="Output JSON path (default: <script_dir>/<input_stem>_<tag>_free_indices.json)",
     )
+    parser.add_argument(
+        "--tag",
+        default=None,
+        help=(
+            "Override the forbid tag (and filename tag) with a clean Lean identifier, "
+            "e.g. 'C4'. Needed for non-clique '--forbid' graphs so the JSON tag matches "
+            "a `def <tag>` on the Lean side. The Kn shorthands already emit a clean 'KN' tag."
+        ),
+    )
 
     forbid_group = parser.add_mutually_exclusive_group(required=True)
     forbid_group.add_argument(
@@ -195,6 +204,12 @@ def main() -> None:
         forbid_n, forbid_edges = parse_flagmatic_notation(args.forbid)
         forbid_tag = args.forbid                         # e.g. "3:122331"
         forbid_filename_tag = notation_to_filename(args.forbid)  # e.g. "3_122331"
+
+    # A clean explicit tag (e.g. "C4") overrides both the JSON tag and the
+    # filename tag, so non-clique forbids can name the matching Lean `def`.
+    if args.tag is not None:
+        forbid_tag = args.tag
+        forbid_filename_tag = args.tag
 
     input_path = Path(args.input_path)
     n_hint = infer_n_from_filename(input_path)

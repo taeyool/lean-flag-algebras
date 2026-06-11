@@ -18,8 +18,10 @@ about flag densities (which the loaded `Flag_*`/`FlagAlgebra_*` constants from
 * `load_forbid_density_theorems "*_free_indices.json"` reads the
   `gen_free_indices.py` output (the indices of graphs avoiding a forbidden
   subgraph) and generates, per `n`-vertex empty-typed flag, a theorem stating
-  its single-flag density of `K3`/`K4` is zero (forbidden-graph-free) or
-  nonzero, again via `native_decide`.
+  its single-flag density of the forbidden graph is zero (forbidden-graph-free)
+  or nonzero, again via `native_decide`. The forbidden graph is whatever
+  `forbid.tag` names (any `def <tag>` with a `<tag>_toFinFlag_eq` lemma in
+  `CommonGraphs.lean` — not restricted to complete graphs).
 
 The helper `def`s below parse the two JSON shapes into `DensityJsonData` /
 `FreeIndexJsonData`.
@@ -181,6 +183,28 @@ def forbidFlagIdentOfToFinFlagEq (thmName : Name) : CommandElabM (TSyntax `ident
         return mkIdent nm
   throwError s!"Could not locate a `Flag_*` representative in the RHS of {thmName}"
 
+/-- Resolve a forbid `tag` to its Lean graph identifier and `…_toFinFlag_eq` lemma name,
+checking both exist. Any `tag` naming a `def <tag>` together with a `<tag>_toFinFlag_eq`
+lemma works, so the loaders are not restricted to complete graphs — a `C4`/`P4`/… forbid
+needs only those two declarations (plus a matching `forbid.tag` in the JSON). Complete-graph
+tags `"K<r>"` additionally get a clique-specific hint when the declarations are missing. -/
+def resolveForbidGraph (tag : String) : CommandElabM (TSyntax `ident × Name) := do
+  let env ← getEnv
+  let gName := Name.mkSimple tag
+  let eqName := Name.mkSimple s!"{tag}_toFinFlag_eq"
+  if env.contains gName && env.contains eqName then
+    return (mkIdent gName, eqName)
+  let hint :=
+    match parseCompleteGraphTag tag with
+    | some r =>
+      s!" Add `generate_complete_graph {r} <canonical index of K{r}>` to CommonGraphs.lean."
+    | none =>
+      s!" Define `def {tag}` and `lemma {tag}_toFinFlag_eq : {tag}.toFinFlag = \
+⟨n, Flag_n_0_0_<idx>⟩` in CommonGraphs.lean, and ensure the JSON `forbid.tag` matches \
+that Lean identifier."
+  throwError s!"Unknown forbid graph for tag '{tag}': missing `def {tag}` and/or \
+`{tag}_toFinFlag_eq`.{hint}"
+
 /-- Build the RHS term of a density theorem from a `(num, den)` value. -/
 def densityValueToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
   if den = 1 then
@@ -244,8 +268,8 @@ elab "load_flag_pair_density_theorems" filename:str : command => do
 
 -- `load_forbid_density_theorems "*_free_indices.json"`: for each of the
 -- `total_graphs` empty-typed `n`-vertex flags, generate a `simp` theorem
--- stating the single-flag density of the forbidden graph (`K3` or `K4`,
--- selected by `forbid.tag`) is `= 0` when the graph is forbidden-free and
+-- stating the single-flag density of the forbidden graph (named by
+-- `forbid.tag`, resolved to `def <tag>` via `resolveForbidGraph`) is `= 0` when the graph is forbidden-free and
 -- `≠ 0` otherwise, proved via `native_decide`.
 elab "load_forbid_density_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
@@ -256,8 +280,16 @@ elab "load_forbid_density_theorems" filename:str : command => do
       throwError s!"free_graph_indices contains out-of-range index {i} (total_graphs = {data.totalGraphs})"
 
   let n := data.graphN
+  let tag := data.forbidTag
   let mut generatedEqZero : Nat := 0
   let mut generatedNeZero : Nat := 0
+
+  -- Resolve the forbidden graph and read its flag representative off the
+  -- `<tag>_toFinFlag_eq` lemma once; this is graph-agnostic (any `def <tag>`
+  -- with that lemma works, complete graph or not).
+  let (gIdent, gEqName) ← resolveForbidGraph tag
+  let gEqIdent := mkIdent gEqName
+  let forbidFlag ← forbidFlagIdentOfToFinFlagEq gEqName
 
   for i in [0:data.totalGraphs] do
     let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
@@ -267,50 +299,36 @@ elab "load_forbid_density_theorems" filename:str : command => do
     if ¬ env.contains flagName.getId then
       throwError s!"Missing definition: {flagName.getId}"
 
-    match parseCompleteGraphTag data.forbidTag with
-    | some r =>
-      let krIdent := mkIdent (Name.mkSimple s!"K{r}")
-      let krEqName := Name.mkSimple s!"K{r}_toFinFlag_eq"
-      let krEqIdent := mkIdent krEqName
-      if ¬ env.contains krIdent.getId then
-        throwError s!"Missing definition: K{r}. Define it in CommonGraphs.lean, \
-          e.g. `generate_complete_graph {r} <canonical index of K{r}>`."
-      if ¬ env.contains krEqName then
-        throwError s!"Missing lemma: K{r}_toFinFlag_eq. Define it in CommonGraphs.lean, \
-          e.g. `generate_complete_graph {r} <canonical index of K{r}>`."
-      let forbidFlag ← forbidFlagIdentOfToFinFlagEq krEqName
-      if isFree then
-        let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K{r}_Flag_{n}_0_0_{i}_eq_zero")
-        if ¬ env.contains thmName.getId then
-          elabCommand (← `(
-            @[simp]
-            theorem $thmName
-                : flagDensity₁ ($krIdent).toFinFlag.2 $flagName = 0
-              := by
-              rw [$krEqIdent:ident]
-              unfold $flagName
-              simp [$forbidFlag:ident]
-              rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-              native_decide
-          ))
-          generatedEqZero := generatedEqZero + 1
-      else
-        let thmName := mkIdent (Name.mkSimple s!"flagDensity1_K{r}_Flag_{n}_0_0_{i}_ne_zero")
-        if ¬ env.contains thmName.getId then
-          elabCommand (← `(
-            @[simp]
-            theorem $thmName
-                : ¬ flagDensity₁ ($krIdent).toFinFlag.2 $flagName = 0
-              := by
-              rw [$krEqIdent:ident]
-              unfold $flagName
-              simp [$forbidFlag:ident]
-              rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-              native_decide
-          ))
-          generatedNeZero := generatedNeZero + 1
-    | none => throwError s!"Unsupported forbid tag: '{data.forbidTag}'. \
-        Expected a complete-graph tag 'K<r>' (e.g. K3, K4, K5)."
+    if isFree then
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_eq_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : flagDensity₁ ($gIdent).toFinFlag.2 $flagName = 0
+            := by
+            rw [$gEqIdent:ident]
+            unfold $flagName
+            simp [$forbidFlag:ident]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedEqZero := generatedEqZero + 1
+    else
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_ne_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : ¬ flagDensity₁ ($gIdent).toFinFlag.2 $flagName = 0
+            := by
+            rw [$gEqIdent:ident]
+            unfold $flagName
+            simp [$forbidFlag:ident]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedNeZero := generatedNeZero + 1
 
   logInfo s!"Generated {data.forbidTag} density theorems from {filename.getString}: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
 
