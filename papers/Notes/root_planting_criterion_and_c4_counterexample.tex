@@ -697,32 +697,56 @@ triangle-free class is clone-closed.
 
 \subsection{The planted blow-up estimate}
 
-Let $F=(G,\theta)$ be a $\sigma$-flag with $|\sigma|=k$ and $|G|=n>k$.  Fix a
-parameter $0<\lambda\le 1/2$.  If $k>0$, assign weights
+We first fix the notation used in the estimates.  Let $(G,\theta)$ be a
+$\sigma$-flag with $|\sigma|=k$ and $|G|=n>k$, and fix a parameter
+$0<\lambda\le 1/2$.  The blow-up will be used to make the planted labelled
+vertices visible with positive probability, while keeping the densities
+$p(F,\cdot)$ of every fixed $\sigma$-flag $F$ close to their values in
+$(G,\theta)$.  For that purpose we first prescribe the desired
+fractions of the future blow-up lying over each vertex of $G$: the labelled
+vertices together receive total mass $\lambda$, and the non-labelled vertices
+share the remaining mass uniformly.  These desired fractions are the
+\emph{target weights}.  If $k>0$, set
 \[
   w_{\theta(i)}=\frac{\lambda}{k}\quad(1\le i\le k),
   \qquad
   w_v=\frac{1-\lambda}{n-k}\quad(v\notin\operatorname{im}\theta).
 \]
-If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.  For an integer $N\ge n$, choose
-positive integer clone-class sizes $|C_v|$ summing to $N$, and let
-$B_N(G,\theta,\lambda)$ be the corresponding independent blow-up.  The estimates
-below measure how close these choices are to the target proportions $w_v$ by
+If $k=0$, set $w_v=1/n$ for all $v\in V(G)$.
+
+The target weights are ideal limiting fractions, not a finite graph by
+themselves.  To build an actual $N$-vertex blow-up, one must choose integer
+clone-class sizes whose normalised sizes approximate these fractions.  Thus, for
+an integer $N\ge n$, let
+\[
+  \mathbf m=(m_v)_{v\in V(G)}
+\]
+be any vector of positive integers with $\sum_v m_v=N$, and let
+$B_N=G^{\mathbf m}$ be the corresponding independent blow-up.  We write $C_v$
+for the clone class of $v$, so $|C_v|=m_v$.  The graph $B_N$ depends only on
+$G$ and the chosen vector $\mathbf m$; the parameters $\theta$ and $\lambda$
+enter through the target proportions $w_v$ and hence through the error term
 \[
   \operatorname{err}_N
   :=
   \sum_{v\in V(G)}\left|\frac{|C_v|}{N}-w_v\right|.
 \]
-For fixed $G,\theta,\lambda$, the sizes can be chosen, for instance by rounding
-the numbers $w_vN$, so that $\operatorname{err}_N\to0$ as $N\to\infty$.
+For fixed $G,\theta,\lambda$, the vectors $\mathbf m$ can be chosen, for
+instance by rounding the numbers $w_vN$, so that
+$\operatorname{err}_N\to0$ as $N\to\infty$.
 
 \begin{lemma}[Planted blow-up approximation]\label{lem:planted-estimate}
-Let $m\ge k$ be fixed.  There is a constant $C_m$, depending only on $m$, such
-that the following holds for every $0<\lambda\le 1/2$.  Let $F_0$ be any
-$\sigma$-flag with at most $m$ vertices, let $(G,\theta)$ be a $\sigma$-flag on
-$n$ vertices with $n\ge\max\{m,k+1\}$, and let
-$B_N=B_N(G,\theta,\lambda)$ be a planted blow-up with positive clone classes of
-total size $N\ge n$.  If
+Let $m\ge k$ be fixed.  There is a constant $C_m$, depending only on $m$ and
+on no other data, such that the following holds for every
+$0<\lambda\le 1/2$.  Let $F_0$ be any $\sigma$-flag with at most $m$ vertices,
+let $(G,\theta)$ be a $\sigma$-flag on $n$ vertices with
+$n\ge\max\{m,k+1\}$, and choose any positive clone-class sizes
+$\mathbf m=(m_v)_{v\in V(G)}$ with total size $N\ge n$.  Let
+$B_N=G^{\mathbf m}$ be the resulting independent blow-up, define
+$\operatorname{err}_N$ from this $\mathbf m$ and from the target weights
+defined above using $(G,\theta)$ and $\lambda$, and write $C_v$ for the clone
+class of $v$.
+If
 $\widehat\theta:\sigma\to B_N$ satisfies
 $\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
 \begin{equation}\label{eq:planted-estimate}
@@ -732,7 +756,9 @@ $\widehat\theta(i)\in C_{\theta(i)}$ for all $i$, then
 \end{equation}
 Consequently, if $f\in\A^\sigma[\T_{\mathrm{Graph}}]$ is represented by a finite
 linear combination of $\sigma$-flags with at most $m$ vertices, then there is a
-constant $C_f$ such that
+constant $C_f$ depending only on this chosen finite linear combination
+(in particular, independent of $n$, $G$, $\theta$, $\lambda$, $N$,
+$\mathbf m$, and $\widehat\theta$) such that
 \begin{equation}\label{eq:planted-linear-estimate}
   \left|p(f,(B_N,\widehat\theta))-p(f,(G,\theta))\right|
   \le
@@ -742,10 +768,12 @@ constant $C_f$ such that
 
 \begin{proof}
 It suffices to prove \eqref{eq:planted-estimate}; the estimate for $f$ follows
-by linearity because $f$ is a finite linear combination of flags.
-The size assumptions have two roles.  First, $|F_0|\le m\le n$, so both
+by linearity because $f$ is a finite linear combination of flags.  Indeed, if
+$f=\sum_r a_r F_r$ with each $|F_r|\le m$, one may take
+$C_f=C_m\sum_r |a_r|$. Before starting the proof, we point out that 
+the size assumptions have two roles.  First, $|F_0|\le m\le n$, so both
 $p(F_0,(G,\theta))$ and $p(F_0,(B_N,\widehat\theta))$ are defined.  Second, the
-clone classes are positive and have total size $N$, so $N\ge n$; this is used in
+inequality $N\ge n$ is used in
 the finite denominator comparisons below.
 
 Let $\ell=|F_0|\le m$ and put $q:=\ell-k$.  If $q=0$, then $F_0$ is just the
@@ -781,6 +809,9 @@ By the definition of $\operatorname{err}_N$,
 \[
   \frac{|R|}{N}\le \lambda+\operatorname{err}_N .
 \]
+Here $R$ includes the $k$ planted labelled vertices themselves, although those
+vertices are not in the sampling space; this only makes the following upper
+bound larger.
 Since each exposed position $X_j$ is marginally uniform on the
 $N-k$ vertices of $B_N\setminus\operatorname{im}\widehat\theta$, we have
 \[
@@ -954,8 +985,9 @@ Since $\nu$ is uniform,
 Because $r\ge q$ and $q\le m$, this number is bounded below by a positive
 constant $\alpha_m$ depending only on $m$.
 
-The target for the next few estimates is the following total-variation bound:
-for some constant $K_m^{(4)}$ depending only on $m$,
+The target for the next few estimates is the following total-variation bound,
+where $d_{\mathrm{TV}}$ denotes total variation distance: for some constant
+$K_m^{(4)}$ depending only on $m$,
 \begin{equation}\label{eq:ordered-good-tv-target}
   d_{\mathrm{TV}}(P_\mu,P_\nu)\le K_m^{(4)}\operatorname{err}_N .
 \end{equation}
@@ -1116,11 +1148,13 @@ Taking the lemma's constant $C_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
 \end{proof}
 
 \begin{lemma}[Positive probability of the planted root]\label{lem:planted-mass}
-With the notation above, consider the following finite random labelling
-experiment on the unlabelled graph $B_N(G,\theta,\lambda)$: choose uniformly from
-all induced embeddings $\widehat\theta:\sigma\to B_N(G,\theta,\lambda)$, where
-the labels of $\sigma$ are kept in their prescribed order.  If either $k=0$, or
-$k>0$ and $\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
+Keep the blow-up notation introduced above: $B_N=G^{\mathbf m}$, with clone
+classes $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
+$\operatorname{err}_N$.  Consider the following finite random labelling
+experiment on the unlabelled graph $B_N$: choose uniformly from all induced
+embeddings $\widehat\theta:\sigma\to B_N$, where the labels of $\sigma$ are kept
+in their prescribed order.  If either $k=0$, or $k>0$ and
+$\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
 probability at least
 \[
   c_{k,\lambda}:=
@@ -1196,7 +1230,8 @@ $F_1,\ldots,F_s$ and a tolerance $\eps>0$:
 By the representation theorem in the constrained class $\T_\K$, choose a
 convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
-$p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m=\max_i |F_i|$.
+$p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m\ge k$ be an integer bounding the sizes
+of all the flags $F_i$; if the list is empty, take $m=k$.
 Choose $0<\lambda\le 1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
 constant from \cref{lem:planted-estimate}.  Then fix one $t$ large enough that
 \[
@@ -1207,8 +1242,11 @@ constant from \cref{lem:planted-estimate}.  Then fix one $t$ large enough that
   \qquad
   \frac{C_m}{|G_t|-|\sigma|}<\eps/10.
 \]
-Finally take a sequence $N_j\to\infty$ with rounding errors tending to zero and,
-for all large $j$, satisfying
+Finally take a sequence of clone-size vectors
+$\mathbf m^{(j)}=(m^{(j)}_v)_{v\in V(G_t)}$ with total sizes $N_j\to\infty$
+and with $\operatorname{err}_{N_j}\to0$, where the error is computed from
+$\mathbf m^{(j)}$ and the target weights attached to $(G_t,\theta_t)$ and
+$\lambda$; for all large $j$, require
 \[
   C_m\operatorname{err}_{N_j}<\eps/10,
   \qquad
@@ -1216,7 +1254,7 @@ for all large $j$, satisfying
 \]
 put
 \[
-  B_j:=B_{N_j}(G_t,\theta_t,\lambda).
+  B_j:=G_t^{\mathbf m^{(j)}}.
 \]
 Since $G_t\in\K$ and $\K$ is clone-closed, every $B_j$ lies in $\K$.  Passing to
 a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
@@ -1290,8 +1328,8 @@ blow-up of every graph in $\K$ again belongs to $\K$.
 \begin{lemma}[Complete blow-up approximation]\label{lem:true-planted-estimate}
 The estimates of \cref{lem:planted-estimate,lem:planted-mass} remain valid,
 with the same constants and the same hypotheses on $N$ and $\operatorname{err}_N$,
-if the independent blow-up $B_N(G,\theta,\lambda)$ is replaced by the complete
-blow-up $B_N^+(G,\theta,\lambda)$ with the same clone class sizes.
+if the independent blow-up $B_N=G^{\mathbf m}$ is replaced by the complete
+blow-up $B_N^+=G^{\mathbf m,+}$ with the same clone class sizes.
 \end{lemma}
 
 \begin{proof}
@@ -1443,7 +1481,7 @@ and then repairs a sparse set of dangerous edges.  The following criterion packa
 exactly what such a repair has to prove.  It is deliberately finite and checkable:
 given a sufficiently large finite labelled witness, construct large constrained graphs
 in which the labelled witness appears with positive root probability and with all
-bounded rooted densities nearly unchanged.
+bounded $\sigma$-flag densities nearly unchanged.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
@@ -1625,7 +1663,7 @@ Thus the root mass lower bound holds with
   \delta:=\left(\frac{\lambda}{2(1+k\lambda)}\right)^k>0.
 \]
 
-It remains to check the rooted densities.  Fix a planted embedding
+It remains to check the $\sigma$-flag densities.  Fix a planted embedding
 $\widehat\theta\in\Theta$ and a $\sigma$-flag $F$ with $\ell:=|F|\le m$.  To
 compute $p(F,(H,\widehat\theta))$, sample $q:=\ell-k$ additional vertices from
 $H\setminus\operatorname{im}\widehat\theta$.  There are two bad events.
@@ -2229,7 +2267,7 @@ if the root sits in a triangle, cloning the root and one neighbour creates a
 five-cycle.  The repair is local.  Clone the root into a small positive-density
 independent set, but first delete all old edges inside its neighbourhood.  The
 deleted set is only linear in the number of vertices by \cref{lem:c5-nbhd}, so
-it is invisible to fixed rooted densities.
+it is invisible to the densities of fixed rooted flags.
 
 \begin{definition}[One-root planting]\label{def:c5-one-root-planting}
 Let $(G,r)$ be a rooted graph and let $L\ge1$.  The planted graph
