@@ -991,7 +991,10 @@ $\mathcal{A}^\emptyset$ in a way that preserves semantic non-negativity
 (\Cref{thm:downward-nonneg}), so valid inequalities proved in a labeled algebra
 can be transferred to the unlabeled one.
 
-For a $\sigma$-flag $A=(G,\theta_A)$ of size $m$ (flag type of size $k$), let
+For a $\sigma$-flag $A = (G, \theta_A)$, let $A|_\emptyset$ denote the
+$\emptyset$-flag obtained from $A$ by forgetting the embedding $\theta_A$,
+i.e., viewing $G$ as a $\emptyset$-flag.
+For a $\sigma$-flag $A$ of size $m$ with $|\sigma|=k$, let
 \[
   q_\sigma(A)
   \;:=\;
@@ -1003,11 +1006,11 @@ For a $\sigma$-flag $A=(G,\theta_A)$ of size $m$ (flag type of size $k$), let
 \]
 be the probability that a uniformly random injection $[k]\hookrightarrow V(G)$
 recovers a flag isomorphic to $A$.
-The \emph{downward operator} is
+The \emph{downward operator} is then
 \[
   \llbracket A \rrbracket_\sigma
   \;:=\;
-  q_\sigma(A)\cdot G,
+  q_\sigma(A)\cdot A|_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
 
