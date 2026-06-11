@@ -1512,28 +1512,68 @@ a commutative associative $\mathbb{R}$-algebra, completing the formalization of 
 
 \subsection{Positive Homomorphisms and Semantic Order}
 
-The next shift is from finite experiments to asymptotic semantics.  Positive
-homomorphisms are the models of the equational theory: they assign a real value
-to every algebra expression, preserve the algebra operations, and send every
-concrete flag to a non-negative number.  In
-\lean{FlagAlgebra/PositiveHom.lean} they are implemented as a subtype of real
-algebra homomorphisms:
+The central result of this subsection is the formalization of
+Theorem~\ref{thm:convergent-hom}, which states that positive homomorphisms are
+exactly the limiting objects of convergent flag sequences.  \lean{FlagSeq} $\sigma$ is the type of sequences of $\sigma$-flags indexed by
+$\mathbb{N}$, and \lean{ConvergesTo} encodes convergence.
+\begin{lstlisting}
+abbrev FlagSeq ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) := (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
+
+def ConvergesTo (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
+  Increases s (*@$\wedge$@*) Tendsto (flagDensitySeq s) atTop ((*@$\mathcal{N}$@*) a)
+\end{lstlisting}
+\lean{ConvergesTo} conjoins two predicates: the first asserts that the sizes
+of the flags in $s$ are strictly increasing, and the second asserts that
+$\den{F}{s(n)} \to a(F)$ as $n \to \infty$ for every $\sigma$-flag $F$.
+
+\lean{PositiveHom} $\sigma$ is the subtype of $\mathbb{R}$-algebra homomorphisms from
+\lean{FlagAlgebra} $\sigma$ to $\mathbb{R}$ that are non-negative on every $\sigma$-flag:
 \begin{lstlisting}
 abbrev Hom ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) :=
-  FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[R] R
+  FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[(*@$\mathbb{R}$@*)] (*@$\mathbb{R}$@*)
 
 def PositiveHom ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
-  { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*),
-      (*@$\phi$@*) [[basisVector F]] (*@$\geq$@*) 0 }
+  { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
-The semantic cone is the set of expressions non-negative in all such models:
+In Lean, $\{\ \phi : T\ //\ P\ \phi\ \}$ is the subtype of elements of $T$
+satisfying predicate $P$, and $\llbracket \cdot \rrbracket$ is the quotient
+map \lean{FlagVector} $\sigma \to$ \lean{FlagAlgebra} $\sigma$.
+
+We formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
+\begin{lstlisting}
+(*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
+theorem flagSeq_limit_mem_positiveHom
+    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)} (hs_conv : ConvergesTo s a)
+    : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a
+
+(*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
+theorem positiveHom_as_flagSeq_limit
+    ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
+    : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
+\end{lstlisting}
+Here \lean{FlagDensitySpace} $\sigma$ is the compact subspace of
+$[0,1]^{\mathcal{F}^\sigma}$ in which density profiles land, and
+\lean{$\phi$.coe} is the underlying function $\mathcal{F}^\sigma \to \mathbb{R}$
+of a positive homomorphism $\phi$.  The first theorem formalizes part (a) of
+Theorem~\ref{thm:convergent-hom}: any limit of a convergent flag sequence is
+the evaluation function of some positive homomorphism.  The second formalizes
+part (b), proved via a probabilistic argument.
+
+With positive homomorphisms characterized, we use them to define the semantic
+non-negativity cone $\mathcal{C}^\sigma$ and the order it induces on
+\lean{FlagAlgebra} $\sigma$.
+\lean{semanticCone} $\sigma$ is the set of elements that every positive
+homomorphism evaluates non-negatively, and we define $f \leq g$ to mean
+$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance:
 \begin{lstlisting}
 def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
+
+instance : LE (FlagAlgebra (*@$\sigma$@*)) where
+  le := fun f g => g - f (*@$\in$@*) semanticCone (*@$\sigma$@*)
 \end{lstlisting}
-Thus the order on \lean{FlagAlgebra} $\sigma$ is a semantic validity relation, not
-a syntactic ordering on coefficients.  An inequality $f\leq g$ means that
-every positive homomorphism evaluates $f$ no larger than $g$.
+
+\subsection{The Downward Operator}
 
 The downward operator, implemented in \lean{FlagAlgebra/FlagOperators.lean},
 is the bridge from typed algebras back to the empty-typed algebra:
@@ -2427,7 +2467,7 @@ with a 1-vertex type.  Then
   \;=\;
   2 \cdot K_2 - \mathbf{1}
   \;\geq\; 0
-  \;\;\text{in the semantic cone,}
+  \;\;\text{in the semantic non-negativity cone,}
 \]
 which suffices to conclude $K_2 \leq \frac{1}{2} \cdot \mathbf{1}$ in the
 presence of $K_3 = 0$.  The SDP certificate here is small enough to write
@@ -2904,7 +2944,7 @@ We have reported on a Lean~4 formalization of Razborov's flag algebra method
 for simple graphs.  The development carries a specification of the
 mathematical theory---flags as quotients modulo isomorphism, the quotient
 algebra of density-expansion relations, positive homomorphisms and the
-semantic cone, and the predicate-based forbidden-subgraph framework---and a
+semantic non-negativity cone, and the predicate-based forbidden-subgraph framework---and a
 bridge of reflection, tactic, and API layers that turns specifications
 written in this language into proofs Lean's kernel can check.  The case
 studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
