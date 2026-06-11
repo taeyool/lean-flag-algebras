@@ -116,8 +116,9 @@ def collect_free_indices(
     return indices
 
 
-_K3_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (1, 2))
-_K4_EDGES: Tuple[Edge, ...] = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
+def complete_graph_edges(n: int) -> Tuple[Edge, ...]:
+    """Edges of the complete graph K_n on vertices 0..n-1 (sorted, 0-indexed)."""
+    return tuple((u, v) for u in range(n) for v in range(u + 1, n))
 
 
 def main() -> None:
@@ -160,23 +161,36 @@ def main() -> None:
         "--forbid-K5",
         action="store_true",
         default=False,
-        help="Forbid K5. Shorthand for --forbid 5:12131415232425343545.",
+        help="Forbid K5. Shorthand for --forbid-Kn 5.",
+    )
+    forbid_group.add_argument(
+        "--forbid-Kn",
+        metavar="N",
+        type=int,
+        default=None,
+        help="Forbid the complete graph K_N for any N >= 1 (tag 'KN').",
     )
 
     args = parser.parse_args()
 
-    if args.forbid_K3:
-        forbid_n, forbid_edges = 3, _K3_EDGES
-        forbid_tag = "K3"
-        forbid_filename_tag = "K3"
+    # Resolve the clique size for any of the complete-graph shorthands.
+    if args.forbid_Kn is not None:
+        clique_n: int | None = args.forbid_Kn
+    elif args.forbid_K3:
+        clique_n = 3
     elif args.forbid_K4:
-        forbid_n, forbid_edges = 4, _K4_EDGES
-        forbid_tag = "K4"
-        forbid_filename_tag = "K4"
+        clique_n = 4
     elif args.forbid_K5:
-        forbid_n, forbid_edges = 5, tuple((u, v) for u in range(5) for v in range(u + 1, 5))
-        forbid_tag = "K5"
-        forbid_filename_tag = "K5"
+        clique_n = 5
+    else:
+        clique_n = None
+
+    if clique_n is not None:
+        if clique_n < 1:
+            parser.error(f"--forbid-Kn requires N >= 1, got {clique_n}")
+        forbid_n, forbid_edges = clique_n, complete_graph_edges(clique_n)
+        forbid_tag = f"K{clique_n}"
+        forbid_filename_tag = f"K{clique_n}"
     else:
         forbid_n, forbid_edges = parse_flagmatic_notation(args.forbid)
         forbid_tag = args.forbid                         # e.g. "3:122331"
