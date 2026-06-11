@@ -518,7 +518,7 @@ $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
 $\mathcal{F}^\sigma$ itself is infinite.
 
-\begin{figure}[ht]
+\begin{figure}[t]
   \centering
   \setlength{\tabcolsep}{1.2em}
   \renewcommand{\arraystretch}{1.3}
@@ -583,18 +583,18 @@ $\mathcal{F}^\sigma$ itself is infinite.
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (90:0.65) {};
-      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph root] (b) at (210:0.65) {};
       \node[graph vertex] (c) at (330:0.65) {};
-      \draw[graph edge] (a) -- (c);
+      \draw[graph edge] (b) -- (c);
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (90:0.65) {};
-      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph root] (b) at (210:0.65) {};
       \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (b) -- (a);
       \draw[graph edge] (a) -- (c);
-      \draw[graph edge] (c) -- (b);
     \end{tikzpicture}
     &
     &
@@ -707,26 +707,17 @@ $\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 
 \subsection{The Flag Algebra}
 
-% The next step is to stop distinguishing between expressions that have the same
-% asymptotic meaning.
-% A small pattern flag $A$ can be counted directly in a large host flag $G$.
-% Equally, one can first sample a larger intermediate flag $B$ inside $G$, then
-% count $A$ inside $B$, and finally average over the choice of $B$.
-% These two sampling procedures give the same limiting density; the flag algebra
-% encodes this as a definitional equality, so a proof can replace a pattern flag
-% by any sufficiently large expansion of it---which is exactly the bookkeeping
-% needed by flag algebra certificates.
-% The flag algebra builds this sampling-averaging identity into the syntax by
-% quotienting it out.  As a result, a proof can replace a pattern flag by any
-% sufficiently large expansion of it, which is exactly the bookkeeping needed
-% by flag algebra certificates.
-% This is the same kind of move one makes when quotienting
-% programs by an equational theory: the quotient removes representation choices
-% that should not affect observable behavior.
 Fix a flag type $\sigma$ of size $k$.
-The flag algebra $\mathcal{A}^\sigma$ is the algebraic structure in which
-Lemma~\ref{lem:chain-rule} holds by definition.
-\gw{A better phrasing for this sentence would be welcome.}
+Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
+``algebra'' is used in the standard algebraic sense: a vector space equipped
+with a bilinear multiplication and a distinguished multiplicative unit,
+satisfying the usual associativity and unit laws.  The flag algebras in this
+paper are commutative $\mathbb{R}$-algebras.} of density expressions generated
+by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
+density of that local labeled pattern in a large host graph.  The quotient
+below records the standard sampling identities among these building blocks,
+beginning with the expansion identity coming from
+Lemma~\ref{lem:chain-rule}.
 Let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
@@ -747,20 +738,19 @@ We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
 By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
 a flag and its equivalence class is immaterial.
 
-% The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
-% in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
-% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
-% host flag. \gw{A better phrasing for this sentence would be welcome.}  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
-% in $\mathcal{A}^\sigma$, so we may replace $A$ by
-% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
 We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
 \emph{expansion of $A$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag.
-Quotienting by $\mathcal{Z}^\sigma$ makes any two pattern expressions that
-have the same density in every host flag definitionally equal in
-$\mathcal{A}^\sigma$.  We may therefore
-freely replace $A$ by its expansion at any size $n \geq m$.
+The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
+equality
+\[
+  [A]
+  =
+  \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,[B]
+  \qquad\text{in }\mathcal{A}^\sigma .
+\]
+We may therefore freely replace $A$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
