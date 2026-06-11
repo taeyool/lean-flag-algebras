@@ -15,8 +15,9 @@ a theorem `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[Kr.toFinFlag] Σ`
 where the right-hand sum is built from the precomputed density coefficients
 times the forbidden-free host flag algebras, proved via
 `basisVector_quot_mul_forbidEq_sum` and the `flagSet_*_eq_univ` /
-`flagSet_*_val_eq` completeness lemmas. The forbidden graph (`K3` or `K4`) is
-selected by `forbid.tag`. It relies on the `Flag_*`/`FlagAlgebra_*`/`flagSet_*`
+`flagSet_*_val_eq` completeness lemmas. The forbidden graph is named by
+`forbid.tag` and resolved to `def <tag>` (any graph with a `<tag>_toFinFlag_eq`
+lemma, not just complete graphs). It relies on the `Flag_*`/`FlagAlgebra_*`/`flagSet_*`
 constants synthesized by `FlagDef.lean` and the JSON helpers in
 `DensityLoader.lean`.
 -/
@@ -196,11 +197,12 @@ private def unlabelRhsIdentFromTheorem (thmName : Name) : CommandElabM (TSyntax 
 
 -- `load_forbid_mul_theorems "density_*.json"`: for every unordered pair
 -- `(i, j)` of forbidden-free pattern flags, generate the theorem
--- `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[Kr.toFinFlag] Σ`, where
+-- `FlagAlgebra_<pattern>_i * FlagAlgebra_<pattern>_j =[G.toFinFlag] Σ`, where
 -- the RHS sum collects `coeff • FlagAlgebra_<host>_h` over density rows with
--- forbidden-free host `h` and nonzero coefficient. `Kr` is `K3`/`K4` from
--- `forbid.tag`. Validates the pattern/host tags share a flag type and that all
--- referenced constants exist; skips already-generated theorems.
+-- forbidden-free host `h` and nonzero coefficient. The forbidden graph `G` is
+-- `def <forbid.tag>`, resolved via `resolveForbidGraph` (any graph, not just
+-- complete graphs). Validates the pattern/host tags share a flag type and that
+-- all referenced constants exist; skips already-generated theorems.
 elab "load_forbid_mul_theorems" filename:str : command => do
   let path := System.FilePath.mk filename.getString
   let data <- parseMulJsonFile path
@@ -217,6 +219,10 @@ elab "load_forbid_mul_theorems" filename:str : command => do
   if patternFlagTypeName != hostFlagTypeName then
     throwError s!"Pattern and host tags use different flag types: {data.patternTag} vs {data.hostTag}"
   let flagTypeIdent := mkIdent patternFlagTypeName
+
+  -- Resolve the forbidden graph from the tag once. Graph-agnostic: any `def <tag>`
+  -- with a `<tag>_toFinFlag_eq` lemma works, complete graph or not.
+  let (gIdent, _) ← resolveForbidGraph data.forbidTag
 
   let mut generated : Nat := 0
 
@@ -261,47 +267,39 @@ elab "load_forbid_mul_theorems" filename:str : command => do
         throwError s!"Missing definition: {flagOrd2.getId}"
 
       if !(env.contains thmName.getId) then
-        match parseCompleteGraphTag data.forbidTag with
-        | some r =>
-          let krIdent := mkIdent (Name.mkSimple s!"K{r}")
-          if !(env.contains krIdent.getId) then
-            throwError s!"Missing definition: K{r}. Define it in CommonGraphs.lean, \
-              e.g. `generate_complete_graph {r} <canonical index of K{r}>`."
-          if i <= j then
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($krIdent).toFinFlag] $rhs
-                := by
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum ($krIdent).toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl ($krIdent).toFinFlag _
-            ))
-          else
-            elabCommand (← `(
-              theorem $thmName
-                  : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($krIdent).toFinFlag] $rhs
-                := by
-                rw [mul_comm]
-                apply forbidEq_trans
-                  (basisVector_quot_mul_forbidEq_sum ($krIdent).toFinFlag
-                    ⟨$(Quote.quote patternSize), $flagOrd1⟩
-                    ⟨$(Quote.quote patternSize), $flagOrd2⟩
-                    $(Quote.quote hostSize)
-                    (by rfl))
-                rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
-                have hsetval := $flagSetValEq
-                simp [hsetval]
-                exact forbidEq_refl ($krIdent).toFinFlag _
-            ))
-        | none => throwError s!"Unsupported forbid tag: '{data.forbidTag}'. \
-            Expected a complete-graph tag 'K<r>' (e.g. K3, K4, K5)."
+        if i <= j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                  ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                  $(Quote.quote hostSize)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patternSize), $flagOrd1⟩
+                  ⟨$(Quote.quote patternSize), $flagOrd2⟩
+                  $(Quote.quote hostSize)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
         generated := generated + 1
 
   logInfo s!"Generated {generated} {data.forbidTag}-free multiplication theorem(s) from density JSON: {filename.getString}"
