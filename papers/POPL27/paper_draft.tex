@@ -618,6 +618,11 @@ $\mathcal{F}^\sigma$ itself is infinite.
 
 \subsection{Subflag Densities}
 
+In a density calculation, flags play two roles.  The \emph{pattern flag} is the
+small local configuration whose occurrence is being measured, while the
+\emph{host flag} is the larger flag in which we sample vertices.  These are
+roles in the calculation, not different kinds of flags.
+
 % Once pattern flags have been named, the basic question is simple: if we sample
 % a few extra vertices in a larger host flag, what smaller flag do we see?
 % The resulting densities are the bridge between finite host flags and
@@ -707,26 +712,17 @@ $\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 
 \subsection{The Flag Algebra}
 
-% The next step is to stop distinguishing between expressions that have the same
-% asymptotic meaning.
-% A small pattern flag $A$ can be counted directly in a large host flag $G$.
-% Equally, one can first sample a larger intermediate flag $B$ inside $G$, then
-% count $A$ inside $B$, and finally average over the choice of $B$.
-% These two sampling procedures give the same limiting density; the flag algebra
-% encodes this as a definitional equality, so a proof can replace a pattern flag
-% by any sufficiently large expansion of it---which is exactly the bookkeeping
-% needed by flag algebra certificates.
-% The flag algebra builds this sampling-averaging identity into the syntax by
-% quotienting it out.  As a result, a proof can replace a pattern flag by any
-% sufficiently large expansion of it, which is exactly the bookkeeping needed
-% by flag algebra certificates.
-% This is the same kind of move one makes when quotienting
-% programs by an equational theory: the quotient removes representation choices
-% that should not affect observable behavior.
 Fix a flag type $\sigma$ of size $k$.
-The flag algebra $\mathcal{A}^\sigma$ is the algebraic structure in which
-Lemma~\ref{lem:chain-rule} holds by definition.
-\gw{A better phrasing for this sentence would be welcome.}
+Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
+``algebra'' is used in the standard algebraic sense: a vector space equipped
+with a bilinear multiplication and a distinguished multiplicative unit,
+satisfying the usual associativity and unit laws.  The flag algebras in this
+paper are commutative $\mathbb{R}$-algebras.} of density expressions generated
+by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
+density of that local labeled pattern in a large host graph.  The quotient
+below records the standard sampling identities among these building blocks,
+beginning with the expansion identity coming from
+Lemma~\ref{lem:chain-rule}.
 Let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
@@ -747,20 +743,19 @@ We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
 By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
 a flag and its equivalence class is immaterial.
 
-% The generator $A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ lies
-% in $\mathcal{Z}^\sigma$ because \Cref{lem:chain-rule} says that $A$ and
-% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ are the same pattern density-wise, agreeing on every
-% host flag. \gw{A better phrasing for this sentence would be welcome.}  Quotienting by $\mathcal{Z}^\sigma$ makes these two definitionally equal
-% in $\mathcal{A}^\sigma$, so we may replace $A$ by
-% $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ at any size $n \geq m$.
 We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
 \emph{expansion of $A$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag.
-Quotienting by $\mathcal{Z}^\sigma$ makes any two pattern expressions that
-have the same density in every host flag definitionally equal in
-$\mathcal{A}^\sigma$.  We may therefore
-freely replace $A$ by its expansion at any size $n \geq m$.
+The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
+equality
+\[
+  [A]
+  =
+  \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,[B]
+  \qquad\text{in }\mathcal{A}^\sigma .
+\]
+We may therefore freely replace $A$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
@@ -1511,7 +1506,7 @@ equivalent under \lean{flagVectorEqv}, justifying the choice of minimal size
 in \lean{flagMul}.
 
 With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
-a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$. \gw{I'm here.}
+a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$.
 
 \subsection{Positive Homomorphisms and Semantic Order}
 
@@ -1542,7 +1537,7 @@ In Lean, $\{\ \phi : T\ //\ P\ \phi\ \}$ is the subtype of elements of $T$
 satisfying predicate $P$, and $\llbracket \cdot \rrbracket$ is the quotient
 map \lean{FlagVector} $\sigma \to$ \lean{FlagAlgebra} $\sigma$.
 
-We formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
+Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom
@@ -1554,20 +1549,21 @@ theorem positiveHom_as_flagSeq_limit
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
 \end{lstlisting}
-Here \lean{FlagDensitySpace} $\sigma$ is the compact subspace of
-$[0,1]^{\mathcal{F}^\sigma}$ in which density profiles land, and
-\lean{$\phi$.coe} is the underlying function $\mathcal{F}^\sigma \to \mathbb{R}$
-of a positive homomorphism $\phi$.  The first theorem formalizes part (a) of
-Theorem~\ref{thm:convergent-hom}: any limit of a convergent flag sequence is
-the evaluation function of some positive homomorphism.  The second formalizes
-part (b), proved via a probabilistic argument.
+Here \lean{FlagDensitySpace} $\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
+\lean{$\phi$.coe} is the point $F \mapsto \phi(F)$ in $[0,1]^{\mathcal{F}^\sigma}$
+that $\phi$ determines.
+Part (a) follows by verifying that the limit satisfies the algebraic properties
+of a positive homomorphism.  Part (b) is more demanding: its proof proceeds by sampling a random flag sequence according to $\phi$
+and showing that the sequence converges to $\phi$ almost surely.  Measure-theoretic arguments are among the harder proofs to formalize in Lean.
+They require explicit measurability proofs that informal arguments routinely omit, as
+well as careful conversion between real-valued, non-negative, and extended-real
+numeric types.
 
-With positive homomorphisms characterized, we use them to define the semantic
-non-negativity cone $\mathcal{C}^\sigma$ and the order it induces on
-\lean{FlagAlgebra} $\sigma$.
-\lean{semanticCone} $\sigma$ is the set of elements that every positive
+Lastly, positive homomorphisms let us define the semantic non-negativity cone
+$\mathcal{C}^\sigma$ and the order it induces on \lean{FlagAlgebra} $\sigma$.
+\lean{semanticCone} $\sigma$ is the set of elements in \lean{FlagAlgebra} $\sigma$ that every positive
 homomorphism evaluates non-negatively, and we define $f \leq g$ to mean
-$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance:
+$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance. \gw{I'm here.}
 \begin{lstlisting}
 def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
