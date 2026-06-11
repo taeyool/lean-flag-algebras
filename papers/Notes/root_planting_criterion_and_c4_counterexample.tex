@@ -296,9 +296,9 @@ $r$-partite generalisation (\cref{thm:parametric-p4-equality-slice}).
 
 We recall the flag-algebra apparatus \cite{Razborov2007}, at the level of detail a reader
 new to it needs.  Everything is phrased for finite simple graphs.  Throughout, $\T$ stands
-for a hereditary class of finite simple graphs---either the class $\T_0$ of all finite
-graphs, or a forbidden-subgraph subclass $\T_1$---and ``graph in $\T$'' means a finite
-graph belonging to that class.
+for a hereditary class of finite simple graphs---either the class
+$\T_0=\T_{\mathrm{Graph}}$ of all finite simple graphs, or a forbidden-subgraph subclass
+$\T_1$---and ``graph in $\T$'' means a finite graph belonging to that class.
 
 \paragraph{Types and flags.}
 A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
@@ -671,7 +671,7 @@ classes, built on an independent blow-up construction.  The idea is that when a 
 closed under blow-ups, a labelled vertex can be duplicated into a clone class of
 positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
-root-plantability requires.  Throughout, $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
+root-plantability requires.  Recall that $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
 all finite simple graphs.  If $\K$ is a hereditary class of finite graphs, we write
 $\T_\K$ for the same class in the constrained-theory notation: equivalently, $\T_\K$
 is the class of graphs avoiding every induced subgraph not in $\K$.  Thus in this
@@ -1222,8 +1222,17 @@ We prove the reverse inclusion.  Let $\psi\in Q_\sigma$.  We must show that ever
 neighbourhood of $\psi$ in $X_\sigma$ intersects the support of some
 $\Ext_\sigma(\phi_0)$ with $\phi_0\in Q_0$ and $\phi_0(\brak\sigma)>0$.
 
-Let a basic neighbourhood of $\psi$ be specified by flags
-$F_1,\ldots,F_s$ and a tolerance $\eps>0$:
+The topology on $X_\sigma$ is the subspace topology inherited from the product
+\[
+  [0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]},
+\]
+where $\F^\sigma[\T_{\mathrm{Graph}}]$ is the set of $\sigma$-flags in the
+ambient class of all finite graphs, and the coordinate indexed by a flag $F$
+records the value $\chi(F)$.
+Therefore finite-coordinate cylinders form a neighbourhood basis.  Concretely,
+every neighbourhood of $\psi$ contains one specified by finitely many
+$\sigma$-flags $F_1,\ldots,F_s$ and positive tolerances.  Shrinking the tolerances
+to a common positive number $\eps$, it is enough to work with a neighbourhood of the form
 \[
   U=
   \{\chi\in X_\sigma:
