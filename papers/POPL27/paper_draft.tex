@@ -1511,7 +1511,7 @@ equivalent under \lean{flagVectorEqv}, justifying the choice of minimal size
 in \lean{flagMul}.
 
 With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
-a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$. \gw{I'm here.}
+a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$.
 
 \subsection{Positive Homomorphisms and Semantic Order}
 
@@ -1542,7 +1542,7 @@ In Lean, $\{\ \phi : T\ //\ P\ \phi\ \}$ is the subtype of elements of $T$
 satisfying predicate $P$, and $\llbracket \cdot \rrbracket$ is the quotient
 map \lean{FlagVector} $\sigma \to$ \lean{FlagAlgebra} $\sigma$.
 
-We formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
+Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom
@@ -1554,20 +1554,21 @@ theorem positiveHom_as_flagSeq_limit
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
 \end{lstlisting}
-Here \lean{FlagDensitySpace} $\sigma$ is the compact subspace of
-$[0,1]^{\mathcal{F}^\sigma}$ in which density profiles land, and
-\lean{$\phi$.coe} is the underlying function $\mathcal{F}^\sigma \to \mathbb{R}$
-of a positive homomorphism $\phi$.  The first theorem formalizes part (a) of
-Theorem~\ref{thm:convergent-hom}: any limit of a convergent flag sequence is
-the evaluation function of some positive homomorphism.  The second formalizes
-part (b), proved via a probabilistic argument.
+Here \lean{FlagDensitySpace} $\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
+\lean{$\phi$.coe} is the point $F \mapsto \phi(F)$ in $[0,1]^{\mathcal{F}^\sigma}$
+that $\phi$ determines.
+Part (a) follows by verifying that the limit satisfies the algebraic properties
+of a positive homomorphism.  Part (b) is more demanding: its proof proceeds by sampling a random flag sequence according to $\phi$
+and showing that the sequence converges to $\phi$ almost surely.  Measure-theoretic arguments are among the harder proofs to formalize in Lean.
+They require explicit measurability proofs that informal arguments routinely omit, as
+well as careful conversion between real-valued, non-negative, and extended-real
+numeric types.
 
-With positive homomorphisms characterized, we use them to define the semantic
-non-negativity cone $\mathcal{C}^\sigma$ and the order it induces on
-\lean{FlagAlgebra} $\sigma$.
-\lean{semanticCone} $\sigma$ is the set of elements that every positive
+Lastly, positive homomorphisms let us define the semantic non-negativity cone
+$\mathcal{C}^\sigma$ and the order it induces on \lean{FlagAlgebra} $\sigma$.
+\lean{semanticCone} $\sigma$ is the set of elements in \lean{FlagAlgebra} $\sigma$ that every positive
 homomorphism evaluates non-negatively, and we define $f \leq g$ to mean
-$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance:
+$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance. \gw{I'm here.}
 \begin{lstlisting}
 def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
