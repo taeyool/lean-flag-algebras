@@ -518,7 +518,7 @@ $\mathcal{F}^\sigma = \bigcup_{n \geq k} \mathcal{F}^\sigma_n$.
 Each $\mathcal{F}^\sigma_n$ is finite, although
 $\mathcal{F}^\sigma$ itself is infinite.
 
-\begin{figure}[ht]
+\begin{figure}[t]
   \centering
   \setlength{\tabcolsep}{1.2em}
   \renewcommand{\arraystretch}{1.3}
@@ -583,18 +583,18 @@ $\mathcal{F}^\sigma$ itself is infinite.
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (90:0.65) {};
-      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph root] (b) at (210:0.65) {};
       \node[graph vertex] (c) at (330:0.65) {};
-      \draw[graph edge] (a) -- (c);
+      \draw[graph edge] (b) -- (c);
     \end{tikzpicture}
     &
     \begin{tikzpicture}[scale=0.8, baseline=-0.5ex]
-      \node[graph root] (a) at (90:0.65) {};
-      \node[graph vertex] (b) at (210:0.65) {};
+      \node[graph vertex] (a) at (90:0.65) {};
+      \node[graph root] (b) at (210:0.65) {};
       \node[graph vertex] (c) at (330:0.65) {};
+      \draw[graph edge] (b) -- (a);
       \draw[graph edge] (a) -- (c);
-      \draw[graph edge] (c) -- (b);
     \end{tikzpicture}
     &
     &
