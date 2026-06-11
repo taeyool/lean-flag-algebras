@@ -410,6 +410,15 @@ def main() -> None:
     parser.add_argument("--host", required=True, help="Host graph JSON path (usually flags_i_j_k.json)")
     parser.add_argument("--pattern", required=True, help="Pattern graph JSON path (usually flags_i_j_k.json)")
     parser.add_argument("--out", required=False, help="Output JSON path")
+    parser.add_argument(
+        "--tag",
+        default=None,
+        help=(
+            "Override the forbid tag (and output filename tag) with a clean Lean identifier, "
+            "e.g. 'C4'. Needed for non-clique '--forbid' graphs so the JSON tag matches "
+            "a `def <tag>` on the Lean side. The Kn shorthands already emit a clean 'KN' tag."
+        ),
+    )
 
     forbid_group = parser.add_mutually_exclusive_group(required=False)
     forbid_group.add_argument(
@@ -475,6 +484,13 @@ def main() -> None:
         forbid_n = None
         forbid_edges = None
         forbid_tag = "none"
+
+    # A clean explicit tag (e.g. "C4") overrides the tag so non-clique forbids can
+    # name the matching Lean `def`. Only meaningful when a graph is forbidden.
+    if args.tag is not None:
+        if forbid_edges is None:
+            parser.error("--tag requires a forbidden graph (use with --forbid / --forbid-Kn / --forbid-K3 ...)")
+        forbid_tag = args.tag
 
     host_path = resolve_input_path(args.host)
     pattern_path = resolve_input_path(args.pattern)
