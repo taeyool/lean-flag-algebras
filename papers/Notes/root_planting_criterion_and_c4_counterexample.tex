@@ -303,13 +303,19 @@ $\T_1$---and ``graph in $\T$'' means a finite graph belonging to that class.
 \paragraph{Types and flags.}
 A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
 (its \emph{roots})---$k$ distinguished vertices together with the edges among
-them.  A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled copy
-of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose vertices
-are marked so as to form the pattern $\sigma$.  The \emph{empty type} ($k=0$) marks
-nothing, so a flag of the empty type is just a graph in $\T$.  Flags are taken up to
-label-preserving isomorphism, and $\F^\sigma[\T]$ (abbreviated $\F^\sigma$) is the
-countable set of all such isomorphism classes (so two flags related by a
-root-fixing isomorphism are the same element of $\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
+them.  An \emph{induced embedding} of $\sigma$ into a graph $H$ is an injective
+map from the labelled vertices of $\sigma$ to $V(H)$ that preserves both edges
+and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
+are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
+subgraph of $H$, with the labels kept in their prescribed order.
+A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished induced labelled
+copy of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose
+vertices are marked so as to form the pattern $\sigma$.  The \emph{empty type}
+($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
+Flags are taken up to label-preserving isomorphism, and $\F^\sigma[\T]$
+(abbreviated $\F^\sigma$) is the countable set of all such isomorphism classes
+(so two flags related by a root-fixing isomorphism are the same element of
+$\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
 \emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of $|F|-k$
 unlabelled vertices of $G$, taken together with the $k$ roots, induces a copy of $F$; for
 the empty type this is the ordinary induced-subgraph density.
@@ -1265,7 +1271,8 @@ $\lambda$; for all large $j$, require
   \qquad 
   \text{if }k>0,\text{ then } \operatorname{err}_{N_j}\le\lambda/(2k);
 \]
-put
+discarding finitely many initial terms, assume these requirements hold for every
+$j$, and put
 \[
   B_j:=G_t^{\mathbf m^{(j)}}.
 \]
@@ -1274,12 +1281,27 @@ a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
 $\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a positive lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$; hence $\phi_0(\brak\sigma)>0$.
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
-$X_\sigma\subseteq Y_\sigma$ is a closed subspace.  Let $P_j$ be the finite
-random-labelling distribution on $Y_\sigma$ obtained by choosing a random induced
-embedding of $\sigma$ into $B_j$ and recording the resulting labelled flag
-densities.  By the finite-graph form of the random-extension theorem, these
-measures converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability
-measure on $Y_\sigma$ concentrated on $X_\sigma$.
+$X_\sigma\subseteq Y_\sigma$ is a closed subspace.  For each fixed $j$ and each
+induced embedding $\widehat\theta\in\Emb_\sigma(B_j)$, form the point
+$x_{j,\widehat\theta}\in Y_\sigma$ whose $F$-coordinate is
+$p(F,(B_j,\widehat\theta))$ whenever $|F|\le |B_j|$; for the remaining
+coordinates with $|F|>|B_j|$, fill in any fixed value, say $0$.  This convention
+for too-large flags is irrelevant for limits, since $|B_j|\to\infty$ and every
+fixed coordinate is eventually a genuine finite density.  Let $P_j$ be the
+pushforward of the uniform probability measure on the finite set
+$\Emb_\sigma(B_j)$ under the map
+$\widehat\theta\mapsto x_{j,\widehat\theta}$.
+
+Thus $P_j$ is a well-defined finite probability measure on $Y_\sigma$ for each
+$j$.  We are not choosing embeddings for different $j$ on a common probability
+space, nor claiming that a randomly chosen labelled sequence converges almost
+surely.  The finite-graph form of the random-extension theorem is precisely a
+weak-convergence statement for these measures: since $B_j\to\phi_0$ and
+$\phi_0(\brak\sigma)>0$, the measures $P_j$ converge weakly to
+$\Ext_\sigma(\phi_0)$, viewed as a probability measure on $Y_\sigma$ concentrated
+on $X_\sigma$.  Equivalently for our purposes, every statistic depending on
+finitely many flag-density coordinates has the limiting distribution prescribed
+by $\Ext_\sigma(\phi_0)$.
 
 Consider the closed cylinder in the ambient product space
 \[
@@ -1288,14 +1310,42 @@ Consider the closed cylinder in the ambient product space
     |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
 \]
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
-large $j$, \cref{lem:planted-estimate} and the choice of $t,\lambda,N_j$ imply
-that every planted root has all $F_i$-coordinates within $\eps/2$ of $\psi$,
-hence lies in $\widetilde C$.  By \cref{lem:planted-mass},
+large $j$, write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j$, and
+call an induced embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
+$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each labelled vertex $a$ of
+$\sigma$.  We now explain what \cref{lem:planted-estimate} gives for a planted
+embedding.  Since each $F_i$ has at most $m$ vertices, the lemma applies with
+base flag $(G_t,\theta_t)$ and with the clone-size vector
+$\mathbf m^{(j)}$.  Hence
+\[
+  |p(F_i,(B_j,\widehat\theta))-p(F_i,(G_t,\theta_t))|
+  \le
+  C_m\left(\lambda+\frac1{|G_t|-|\sigma|}+\operatorname{err}_{N_j}\right)
+  <\frac{3\eps}{10}
+\]
+for every $i$, by the choices of $\lambda$, $t$, and $j$.  Also
+$|p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10$, so the triangle inequality gives
+\[
+  |p(F_i,(B_j,\widehat\theta))-\psi(F_i)|<\frac{4\eps}{10}<\frac{\eps}{2}
+  \qquad(1\le i\le s).
+\]
+In other words, the point $x_{j,\widehat\theta}\in Y_\sigma$ associated to every
+planted embedding lies in the closed cylinder $\widetilde C$.
+
+Now use the positive mass of planted embeddings.  By \cref{lem:planted-mass},
+when an induced embedding of $\sigma$ into $B_j$ is chosen uniformly, the
+probability that it is planted is at least $c_{|\sigma|,\lambda}$.  Since every
+planted embedding contributes a point of $\widetilde C$, the pushforward measure
+$P_j$ satisfies
 \[
   P_j(\widetilde C)\ge c_{|\sigma|,\lambda}>0
 \]
-for all sufficiently large $j$.  Since $\widetilde C$ is closed in $Y_\sigma$, the
-closed-set form of the Portmanteau theorem gives
+for all sufficiently large $j$.
+
+Finally pass this positive finite mass to the limiting random-extension measure.
+The set $\widetilde C$ is closed in $Y_\sigma$, and $P_j$ converges weakly to
+$\Ext_\sigma(\phi_0)$.  Therefore the closed-set form of the Portmanteau theorem
+gives
 \[
   \Ext_\sigma(\phi_0)(\widetilde C)
   \ge
@@ -1303,15 +1353,31 @@ closed-set form of the Portmanteau theorem gives
   \ge c_{|\sigma|,\lambda}>0.
 \]
 Since $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, this says
-$\Ext_\sigma(\phi_0)(C)>0$.  Hence the support of $\Ext_\sigma(\phi_0)$ intersects
-$C\subseteq U$.  Since $U$ was arbitrary, $\psi\in S_\sigma$.
+$\Ext_\sigma(\phi_0)(C)>0$.  A closed set of positive measure must meet the
+support of that measure, so the support of $\Ext_\sigma(\phi_0)$ intersects
+$C\subseteq U$.  Thus the support intersects this basic neighbourhood of $\psi$.
+Because every neighbourhood of $\psi$ contains such a basic neighbourhood, every
+neighbourhood of $\psi$ meets the support of some admissible random extension.
+Hence $\psi\in S_\sigma$.
 \end{proof}
 
 \begin{corollary}[Clique-free and triangle-free classes]\label{cor:clique-free}
-For every $r\ge3$, every non-degenerate $K_r$-free type $\sigma$, and every
-$f\in\A^\sigma[\T_{\mathrm{Graph}}]$, quotient semantics and ensemble semantics
-are equivalent for the $K_r$-free class.  In particular, the equivalence holds
-for the triangle-free class.
+Fix $r\ge3$, and let $\K$ be the class of $K_r$-free graphs.  Let $\sigma$ be a
+non-degenerate type in $\T_\K$, and let $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+Then the following two conditions, formed with respect to the constrained class
+$\T_\K$, are equivalent:
+\[
+  \chi(f)\ge0\quad\text{for every }\chi\in Q_\sigma
+\]
+and
+\[
+  \Prob_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}
+  [\phi^\sigma(f)\ge0]=1
+  \quad\text{for every }\phi_0\in Q_0
+  \text{ with }\phi_0(\brak\sigma)>0.
+\]
+In particular, when $r=3$, the same equivalence holds for every non-degenerate
+triangle-free type $\sigma$ and every $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 \end{corollary}
 
 \section{Complete blow-ups and true twins}
