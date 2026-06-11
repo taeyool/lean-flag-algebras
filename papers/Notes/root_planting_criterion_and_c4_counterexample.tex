@@ -303,13 +303,19 @@ $\T_1$---and ``graph in $\T$'' means a finite graph belonging to that class.
 \paragraph{Types and flags.}
 A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
 (its \emph{roots})---$k$ distinguished vertices together with the edges among
-them.  A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled copy
-of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose vertices
-are marked so as to form the pattern $\sigma$.  The \emph{empty type} ($k=0$) marks
-nothing, so a flag of the empty type is just a graph in $\T$.  Flags are taken up to
-label-preserving isomorphism, and $\F^\sigma[\T]$ (abbreviated $\F^\sigma$) is the
-countable set of all such isomorphism classes (so two flags related by a
-root-fixing isomorphism are the same element of $\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
+them.  An \emph{induced embedding} of $\sigma$ into a graph $H$ is an injective
+map from the labelled vertices of $\sigma$ to $V(H)$ that preserves both edges
+and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
+are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
+subgraph of $H$, with the labels kept in their prescribed order.
+A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished induced labelled
+copy of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose
+vertices are marked so as to form the pattern $\sigma$.  The \emph{empty type}
+($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
+Flags are taken up to label-preserving isomorphism, and $\F^\sigma[\T]$
+(abbreviated $\F^\sigma$) is the countable set of all such isomorphism classes
+(so two flags related by a root-fixing isomorphism are the same element of
+$\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
 \emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of $|F|-k$
 unlabelled vertices of $G$, taken together with the $k$ roots, induces a copy of $F$; for
 the empty type this is the ordinary induced-subgraph density.
@@ -772,8 +778,10 @@ $\mathbf m$, and $\widehat\theta$) such that
 It suffices to prove \eqref{eq:planted-estimate}; the estimate for $f$ follows
 by linearity because $f$ is a finite linear combination of flags.  Indeed, if
 $f=\sum_r a_r F_r$ with each $|F_r|\le m$, one may take
-$C_f=C_m\sum_r |a_r|$. Before starting the proof, we point out that 
-the size assumptions have two roles.  First, $|F_0|\le m\le n$, so both
+$C_f=C_m\sum_r |a_r|$.
+
+Before turning to the sampling argument, note that the size assumptions have two
+roles.  First, $|F_0|\le m\le n$, so both
 $p(F_0,(G,\theta))$ and $p(F_0,(B_N,\widehat\theta))$ are defined.  Second, the
 inequality $N\ge n$ is used in
 the finite denominator comparisons below.
@@ -1152,10 +1160,10 @@ Taking the lemma's constant $C_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
 \begin{lemma}[Positive probability of the planted root]\label{lem:planted-mass}
 Keep the blow-up notation introduced above: $B_N=G^{\mathbf m}$, with clone
 classes $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
-$\operatorname{err}_N$.  Consider the following finite random labelling
-experiment on the unlabelled graph $B_N$: choose uniformly from all induced
-embeddings $\widehat\theta:\sigma\to B_N$, where the labels of $\sigma$ are kept
-in their prescribed order.  If either $k=0$, or $k>0$ and
+$\operatorname{err}_N$; write $k:=|\sigma|$.  Consider the following finite
+random labelling experiment on the unlabelled graph $B_N$: choose uniformly from
+all induced embeddings $\widehat\theta:\sigma\to B_N$, where the labels of
+$\sigma$ are kept in their prescribed order.  If either $k=0$, or $k>0$ and
 $\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
 probability at least
 \[
@@ -1220,7 +1228,8 @@ $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 The inclusion $S_\sigma\subseteq Q_\sigma$ is \cref{lem:support-passes-general}.
 We prove the reverse inclusion.  Let $\psi\in Q_\sigma$.  We must show that every
 neighbourhood of $\psi$ in $X_\sigma$ intersects the support of some
-$\Ext_\sigma(\phi_0)$ with $\phi_0\in Q_0$ and $\phi_0(\brak\sigma)>0$.
+$\Ext_\sigma(\phi_0)$ with $\phi_0\in Q_0$ and $\phi_0(\brak\sigma)>0$.  Write
+$k:=|\sigma|$.
 
 The topology on $X_\sigma$ is the subspace topology inherited from the product
 \[
@@ -1265,7 +1274,8 @@ $\lambda$; for all large $j$, require
   \qquad 
   \text{if }k>0,\text{ then } \operatorname{err}_{N_j}\le\lambda/(2k);
 \]
-put
+discarding finitely many initial terms, assume these requirements hold for every
+$j$, and put
 \[
   B_j:=G_t^{\mathbf m^{(j)}}.
 \]
@@ -1274,12 +1284,27 @@ a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
 $\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a positive lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$; hence $\phi_0(\brak\sigma)>0$.
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
-$X_\sigma\subseteq Y_\sigma$ is a closed subspace.  Let $P_j$ be the finite
-random-labelling distribution on $Y_\sigma$ obtained by choosing a random induced
-embedding of $\sigma$ into $B_j$ and recording the resulting labelled flag
-densities.  By the finite-graph form of the random-extension theorem, these
-measures converge weakly to $\Ext_\sigma(\phi_0)$, viewed as a probability
-measure on $Y_\sigma$ concentrated on $X_\sigma$.
+$X_\sigma\subseteq Y_\sigma$ is a closed subspace.  For each fixed $j$ and each
+induced embedding $\widehat\theta\in\Emb_\sigma(B_j)$, form the point
+$x_{j,\widehat\theta}\in Y_\sigma$ whose $F$-coordinate is
+$p(F,(B_j,\widehat\theta))$ whenever $|F|\le |B_j|$; for the remaining
+coordinates with $|F|>|B_j|$, fill in any fixed value, say $0$.  This convention
+for too-large flags is irrelevant for limits, since $|B_j|\to\infty$ and every
+fixed coordinate is eventually a genuine finite density.  Let $P_j$ be the
+pushforward of the uniform probability measure on the finite set
+$\Emb_\sigma(B_j)$ under the map
+$\widehat\theta\mapsto x_{j,\widehat\theta}$.
+
+Thus $P_j$ is a well-defined finite probability measure on $Y_\sigma$ for each
+$j$.  We are not choosing embeddings for different $j$ on a common probability
+space, nor claiming that a randomly chosen labelled sequence converges almost
+surely.  The finite-graph form of the random-extension theorem is precisely a
+weak-convergence statement for these measures: since $B_j\to\phi_0$ and
+$\phi_0(\brak\sigma)>0$, the measures $P_j$ converge weakly to
+$\Ext_\sigma(\phi_0)$, viewed as a probability measure on $Y_\sigma$ concentrated
+on $X_\sigma$.  Equivalently for our purposes, every statistic depending on
+finitely many flag-density coordinates has the limiting distribution prescribed
+by $\Ext_\sigma(\phi_0)$.
 
 Consider the closed cylinder in the ambient product space
 \[
@@ -1288,14 +1313,42 @@ Consider the closed cylinder in the ambient product space
     |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
 \]
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
-large $j$, \cref{lem:planted-estimate} and the choice of $t,\lambda,N_j$ imply
-that every planted root has all $F_i$-coordinates within $\eps/2$ of $\psi$,
-hence lies in $\widetilde C$.  By \cref{lem:planted-mass},
+large $j$, write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j$, and
+call an induced embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
+$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each labelled vertex $a$ of
+$\sigma$.  We now explain what \cref{lem:planted-estimate} gives for a planted
+embedding.  Since each $F_i$ has at most $m$ vertices, the lemma applies with
+base flag $(G_t,\theta_t)$ and with the clone-size vector
+$\mathbf m^{(j)}$.  Hence
+\[
+  |p(F_i,(B_j,\widehat\theta))-p(F_i,(G_t,\theta_t))|
+  \le
+  C_m\left(\lambda+\frac1{|G_t|-|\sigma|}+\operatorname{err}_{N_j}\right)
+  <\frac{3\eps}{10}
+\]
+for every $i$, by the choices of $\lambda$, $t$, and $j$.  Also
+$|p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10$, so the triangle inequality gives
+\[
+  |p(F_i,(B_j,\widehat\theta))-\psi(F_i)|<\frac{4\eps}{10}<\frac{\eps}{2}
+  \qquad(1\le i\le s).
+\]
+In other words, the point $x_{j,\widehat\theta}\in Y_\sigma$ associated to every
+planted embedding lies in the closed cylinder $\widetilde C$.
+
+Now use the positive mass of planted embeddings.  By \cref{lem:planted-mass},
+when an induced embedding of $\sigma$ into $B_j$ is chosen uniformly, the
+probability that it is planted is at least $c_{|\sigma|,\lambda}$.  Since every
+planted embedding contributes a point of $\widetilde C$, the pushforward measure
+$P_j$ satisfies
 \[
   P_j(\widetilde C)\ge c_{|\sigma|,\lambda}>0
 \]
-for all sufficiently large $j$.  Since $\widetilde C$ is closed in $Y_\sigma$, the
-closed-set form of the Portmanteau theorem gives
+for all sufficiently large $j$.
+
+Finally pass this positive finite mass to the limiting random-extension measure.
+The set $\widetilde C$ is closed in $Y_\sigma$, and $P_j$ converges weakly to
+$\Ext_\sigma(\phi_0)$.  Therefore the closed-set form of the Portmanteau theorem
+gives
 \[
   \Ext_\sigma(\phi_0)(\widetilde C)
   \ge
@@ -1303,16 +1356,40 @@ closed-set form of the Portmanteau theorem gives
   \ge c_{|\sigma|,\lambda}>0.
 \]
 Since $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, this says
-$\Ext_\sigma(\phi_0)(C)>0$.  Hence the support of $\Ext_\sigma(\phi_0)$ intersects
-$C\subseteq U$.  Since $U$ was arbitrary, $\psi\in S_\sigma$.
+$\Ext_\sigma(\phi_0)(C)>0$.  A closed set of positive measure must meet the
+support of that measure, so the support of $\Ext_\sigma(\phi_0)$ intersects
+$C\subseteq U$.  Thus the support intersects this basic neighbourhood of $\psi$.
+Because every neighbourhood of $\psi$ contains such a basic neighbourhood, every
+neighbourhood of $\psi$ meets the support of some admissible random extension.
+Hence $\psi\in S_\sigma$.
 \end{proof}
 
 \begin{corollary}[Clique-free and triangle-free classes]\label{cor:clique-free}
-For every $r\ge3$, every non-degenerate $K_r$-free type $\sigma$, and every
-$f\in\A^\sigma[\T_{\mathrm{Graph}}]$, quotient semantics and ensemble semantics
-are equivalent for the $K_r$-free class.  In particular, the equivalence holds
-for the triangle-free class.
+Fix $r\ge3$, and let $\K$ be the class of $K_r$-free graphs.  Let $\sigma$ be a
+non-degenerate type in $\T_\K$, and let $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
+Then the following two conditions, formed with respect to the constrained class
+$\T_\K$, are equivalent:
+\[
+  \chi(f)\ge0\quad\text{for every }\chi\in Q_\sigma
+\]
+and
+\[
+  \Prob_{\phi^\sigma\sim\Ext_\sigma(\phi_0)}
+  [\phi^\sigma(f)\ge0]=1
+  \quad\text{for every }\phi_0\in Q_0
+  \text{ with }\phi_0(\brak\sigma)>0.
+\]
+In particular, when $r=3$, the same equivalence holds for every non-degenerate
+triangle-free type $\sigma$ and every $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 \end{corollary}
+
+\begin{proof}
+The class of $K_r$-free graphs is hereditary, and it is clone-closed by the
+example above.  Therefore \cref{thm:clone-root-plantable} applies to $\T_\K$ and
+gives root-plantability for every non-degenerate type $\sigma$ in this class.
+The stated equivalence is exactly the quotient/ensemble equivalence in the final
+sentence of that theorem.  The triangle-free case is the special case $r=3$.
+\end{proof}
 
 \section{Complete blow-ups and true twins}
 
@@ -1346,13 +1423,81 @@ blow-up $B_N^+=G^{\mathbf m,+}$ with the same clone class sizes.
 \end{lemma}
 
 \begin{proof}
-The proof is identical.  The only new edges are edges inside clone classes.  The
-``good'' event in the proof of \cref{lem:planted-estimate} already excludes every
-additional sampled vertex from the planted labelled clone classes and excludes two
-additional sampled vertices from the same non-labelled clone class.  On that event,
-no two sampled vertices lie in the same clone class, so all adjacencies are exactly the
-adjacencies of their base vertices in $G$.  The bad-event estimate and the planted-root
-mass count are unchanged.
+Work in the notation of
+\cref{lem:planted-estimate,lem:planted-mass}; in particular, write
+$k:=|\sigma|$ and $n:=|G|$.
+We compare the complete blow-up $B_N^+=G^{\mathbf m,+}$ with the independent
+blow-up $B_N=G^{\mathbf m}$ using the same clone classes $C_v$ and the same
+projection map $\pi:C_v\mapsto v$.  The only difference between the two finite
+graphs is internal to the clone classes: in $B_N$ each $C_v$ is independent,
+whereas in $B_N^+$ each $C_v$ is a clique.  All edges between distinct clone
+classes are governed by the same base graph $G$.
+
+First consider the approximation estimate for a $\sigma$-flag $F_0$ with
+$|F_0|\le m$.  Fix a planted labelling $\widehat\theta:\sigma\to B_N^+$ with
+$\widehat\theta(i)\in C_{\theta(i)}$, and compute
+$p(F_0,(B_N^+,\widehat\theta))$ by sampling the $q=|F_0|-|\sigma|$ additional
+vertices from $B_N^+\setminus\operatorname{im}\widehat\theta$.  Use exactly the
+same bad event as in \cref{lem:planted-estimate}: the sample is bad if it meets
+one of the labelled clone classes or if two sampled vertices lie in the same
+non-labelled clone class.  The probability of this bad event depends only on the
+sizes of the clone classes and on sampling without replacement.  The two
+union-bound estimates in the proof of \cref{lem:planted-estimate} therefore
+apply without change and give
+\[
+  \Prob[\text{bad}]
+  \le
+  K_m^{(3)}\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+\]
+with the same constant $K_m^{(3)}$ used there.
+
+On the complementary good event, the extra edges inside the complete clone
+classes are never observed.  Indeed, no sampled vertex lies in a labelled clone
+class, and no two sampled vertices lie in the same non-labelled clone class.
+Thus every adjacency involving a sampled vertex is an adjacency between two
+distinct clone classes, hence is exactly the adjacency of the corresponding base
+vertices in $G$.  The planted labelled vertices also lie in distinct clone
+classes, because $\theta$ is injective; since $\theta$ is an induced embedding of
+the type $\sigma$ into $G$, their mutual adjacencies are the same as in the base
+type.
+Consequently, on the good event, the induced $\sigma$-flag seen in
+$(B_N^+,\widehat\theta)$ is exactly the induced $\sigma$-flag seen in
+$(G,\theta)$ after projecting the sampled vertices to $G$.
+
+It remains only to compare the projected good sample with a uniform sample in
+$V(G)\setminus\operatorname{im}\theta$.  This comparison uses only the numbers
+$|C_v|$ and not the edge relation inside any clone class.  The normalisation
+estimate for the vector $(|C_v|/S)_{v\notin\operatorname{im}\theta}$, the
+collision estimate, and the total-variation comparison of the projected good
+sample with a uniform sample are therefore exactly the estimates already proved
+in \cref{lem:planted-estimate}.  Combining these clone-size estimates with the
+good-event preservation just described gives
+\[
+  \left|p(F_0,(B_N^+,\widehat\theta))-p(F_0,(G,\theta))\right|
+  \le
+  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+\]
+with the same constant $C_m$.  The extension from a single flag $F_0$ to a
+finite linear combination is by linearity: if $f=\sum_r a_rF_r$ with
+$|F_r|\le m$, then the same argument gives the bound with
+$C_f=C_m\sum_r|a_r|$.
+
+Now consider the planted-mass estimate.  Choose a uniformly random induced
+embedding of $\sigma$ into $B_N^+$.  Every ordered choice of one vertex from each
+labelled clone class $C_{\theta(i)}$ is an induced copy of $\sigma$: the labelled
+clone classes are distinct, and all adjacencies between them are inherited from
+the base flag $(G,\theta)$.  Hence the same lower bound on the number of planted
+ordered embeddings holds,
+\[
+  \prod_{i=1}^k |C_{\theta(i)}|
+  \ge
+  \left(\frac{\lambda}{2k}\right)^k N^k
+  \qquad(k>0),
+\]
+under the same hypothesis $\operatorname{err}_N\le\lambda/(2k)$.  The total
+number of induced ordered embeddings is still at most the number $N^k$ of all
+ordered maps from the $k$ labelled vertices to $V(B_N^+)$.  Dividing gives the
+same lower bound $c_{k,\lambda}$, and the case $k=0$ is again trivial.
 \end{proof}
 
 \begin{theorem}[True-clone-closed classes are root-plantable]\label{thm:true-clone-root-plantable}
@@ -1366,15 +1511,143 @@ $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 \end{theorem}
 
 \begin{proof}
-Repeat the proof of \cref{thm:clone-root-plantable}, replacing each independent
-planted blow-up $B_j$ by the complete planted blow-up $B_j^+$.  Since $G_t\in\K$
-and $\K$ is true-clone-closed, every $B_j^+$ remains in $\K$.  The approximation
-and positive planted-mass estimates needed for the closed-cylinder support argument
-are exactly \cref{lem:true-planted-estimate}.  The same Portmanteau argument therefore
-shows that every neighbourhood of every $\psi\in Q_\sigma$ intersects the support of
-some random $\sigma$-extension of a constrained unlabelled limit, so
-$Q_\sigma\subseteq S_\sigma$.  The reverse inclusion is the general
-support-passing statement.
+The inclusion $S_\sigma\subseteq Q_\sigma$ is the general support-passing
+statement, \cref{lem:support-passes-general}.  We prove the reverse inclusion.
+Fix $\psi\in Q_\sigma$.  It suffices to show that every neighbourhood of $\psi$
+in $X_\sigma$ meets the support of some admissible random extension.
+
+As before, $X_\sigma$ has the subspace topology inherited from
+\[
+  [0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]},
+\]
+so finite-coordinate cylinders form a neighbourhood basis.  Thus every
+neighbourhood of $\psi$ contains one of the form
+\[
+  U=
+  \{\chi\in X_\sigma:
+    |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i=1,\ldots,s\}
+\]
+for finitely many $\sigma$-flags $F_1,\ldots,F_s$ and some $\eps>0$, after
+shrinking the coordinate tolerances to a common value.  We will find a
+constrained unlabelled limit $\phi_0\in Q_0$ with $\phi_0(\brak\sigma)>0$ whose
+random $\sigma$-extension has support meeting this $U$.
+
+Since $\psi\in Q_\sigma$, the representation theorem in the constrained class
+$\T_\K$ gives a convergent sequence of $\sigma$-flags
+$(G_t,\theta_t)$ with $G_t\in\K$, $|G_t|\to\infty$, and
+$p(\cdot,(G_t,\theta_t))\to\psi$.  Let $m\ge|\sigma|$ bound the sizes of the
+finitely many flags $F_i$; if the list is empty, take $m=|\sigma|$.  Choose
+$0<\lambda\le1/2$ so small that $C_m\lambda<\eps/10$, where $C_m$ is the
+constant from \cref{lem:true-planted-estimate}.  Then choose $t$ large enough
+that
+\[
+  |G_t|\ge\max\{m,|\sigma|+1\},\qquad
+  |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10\quad(1\le i\le s),
+\]
+and
+\[
+  \frac{C_m}{|G_t|-|\sigma|}<\eps/10 .
+\]
+
+For this fixed base flag $(G_t,\theta_t)$, choose clone-size vectors
+$\mathbf m^{(j)}=(m_v^{(j)})_{v\in V(G_t)}$ with total sizes $N_j\to\infty$ and
+with errors $\operatorname{err}_{N_j}\to0$, computed using the same target
+weights determined by $(G_t,\theta_t)$ and $\lambda$.  Discarding finitely many
+initial terms, assume that for every $j$,
+\[
+  C_m\operatorname{err}_{N_j}<\eps/10
+  \qquad\text{and}\qquad
+  \text{if }|\sigma|>0,\text{ then }
+  \operatorname{err}_{N_j}\le\lambda/(2|\sigma|).
+\]
+Put
+\[
+  B_j^+:=G_t^{\mathbf m^{(j)},+}.
+\]
+Write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j^+$.  An induced
+embedding $\widehat\theta:\sigma\to B_j^+$ will be called \emph{planted} if
+$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for every labelled vertex $a$ of
+$\sigma$.
+Because $G_t\in\K$ and $\K$ is true-clone-closed, every $B_j^+$ belongs to
+$\K$.  Passing to a subsequence if necessary, the unlabelled graphs $B_j^+$
+converge to some $\phi_0\in Q_0$.
+
+The planted-mass part of \cref{lem:true-planted-estimate} gives a constant
+$c_{|\sigma|,\lambda}>0$, independent of $j$, such that a uniformly random
+induced embedding of $\sigma$ into $B_j^+$ is planted with probability at least
+$c_{|\sigma|,\lambda}$.  In particular, the density of induced copies of
+$\sigma$ in $B_j^+$ stays bounded below by a positive constant, so the limiting
+unlabelled homomorphism satisfies $\phi_0(\brak\sigma)>0$.
+
+Let
+\[
+  Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
+\]
+For each $j$, define a probability measure $P_j$ on $Y_\sigma$ as follows:
+choose uniformly an induced embedding
+$\widehat\theta\in\Emb_\sigma(B_j^+)$ and record the labelled flag-density vector
+$x_{j,\widehat\theta}$ with coordinates
+$x_{j,\widehat\theta}(F)=p(F,(B_j^+,\widehat\theta))$ whenever this finite
+density is defined; for coordinates indexed by flags larger than $B_j^+$, fill
+in any fixed value, say $0$.  This convention is irrelevant for weak limits,
+because each fixed flag eventually has at most $|B_j^+|$ vertices.
+Equivalently, $P_j$ is the pushforward of the uniform measure on
+$\Emb_\sigma(B_j^+)$ under
+$\widehat\theta\mapsto x_{j,\widehat\theta}$.  The finite-graph random-extension
+theorem gives
+\[
+  P_j \Rightarrow \Ext_\sigma(\phi_0)
+\]
+weakly as probability measures on $Y_\sigma$, with the limit measure
+concentrated on $X_\sigma$.
+
+Now define the closed cylinder
+\[
+  \widetilde C=
+  \{x\in Y_\sigma:
+    |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i=1,\ldots,s\}
+\]
+and put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  If
+$\widehat\theta$ is a planted embedding into $B_j^+$, the approximation part of
+\cref{lem:true-planted-estimate} gives, for every $i$,
+\[
+  |p(F_i,(B_j^+,\widehat\theta))-p(F_i,(G_t,\theta_t))|
+  \le
+  C_m\left(\lambda+\frac1{|G_t|-|\sigma|}
+      +\operatorname{err}_{N_j}\right)
+  < \frac{3\eps}{10}.
+\]
+Together with
+$|p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10$, this implies
+\[
+  |p(F_i,(B_j^+,\widehat\theta))-\psi(F_i)|<\eps/2 .
+\]
+Thus every planted embedding contributes a point of $\widetilde C$.  Since
+planted embeddings have probability at least $c_{|\sigma|,\lambda}$,
+\[
+  P_j(\widetilde C)\ge c_{|\sigma|,\lambda}
+\]
+for every $j$.
+
+Because $\widetilde C$ is closed in $Y_\sigma$, Portmanteau gives
+\[
+  \Ext_\sigma(\phi_0)(\widetilde C)
+  \ge
+  \limsup_j P_j(\widetilde C)
+  \ge
+  c_{|\sigma|,\lambda}>0 .
+\]
+The measure $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, so
+$\Ext_\sigma(\phi_0)(C)>0$.  Hence the support of
+$\Ext_\sigma(\phi_0)$ meets $C\subseteq U$.  Since $U$ was an arbitrary basic
+neighbourhood of $\psi$, every neighbourhood of $\psi$ meets the support of some
+admissible random extension, and therefore $\psi\in S_\sigma$.  This proves
+$Q_\sigma\subseteq S_\sigma$, hence $S_\sigma=Q_\sigma$.
+
+The final assertion follows from the support-closure criterion,
+\cref{thm:support-criterion}: once $S_\sigma=Q_\sigma$, quotient semantics and
+ensemble semantics are equivalent for every
+$f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 \end{proof}
 
 \begin{corollary}[Cluster graphs]\label{cor:cluster-graphs}
@@ -1383,15 +1656,38 @@ root-plantable at every non-degenerate type.  It is not clone-closed.
 \end{corollary}
 
 \begin{proof}
-A complete blow-up of a disjoint union of cliques is again a disjoint union of
-cliques: each original clique becomes one larger clique, and distinct original
-components remain non-adjacent.  Hence \cref{thm:true-clone-root-plantable}
-applies.
+Let $\K$ be the class of cluster graphs, i.e. finite disjoint unions of cliques.
+This class is hereditary: deleting vertices from a disjoint union of cliques
+again gives a disjoint union of cliques.
 
-The class is not clone-closed.  The independent blow-up of a single edge into two
-clone classes of size $2$ is $K_{2,2}$, and the induced subgraph on two vertices from
-one side and one vertex from the other side is a path on three vertices.  Thus
-$K_{2,2}$ is not a cluster graph.
+We first show that $\K$ is true-clone-closed.  Let $G\in\K$, and write its
+connected components as cliques $D_1,\ldots,D_r$.  Form a complete blow-up
+$G^{\mathbf m,+}$.  If $v,w$ lie in the same component $D_a$, then either
+$v=w$, in which case the clone class $C_v$ is a clique by the definition of
+complete blow-up, or $v\ne w$, in which case $vw$ is an edge of $G$ and all
+edges between $C_v$ and $C_w$ are present.  Thus the union
+\[
+  \bigcup_{v\in D_a} C_v
+\]
+is a clique.  If $v$ and $w$ lie in different components of $G$, then $vw$ is not
+an edge of $G$, so no edges are added between $C_v$ and $C_w$.  Hence the
+complete blow-up is again a disjoint union of cliques, one clique for each
+component of $G$.  Therefore $\K$ is true-clone-closed, and
+\cref{thm:true-clone-root-plantable} shows that $\K$ is root-plantable at every
+non-degenerate type.
+
+It remains to check that $\K$ is not clone-closed.  The single edge $K_2$
+belongs to $\K$.  Take its independent blow-up in which both endpoints are
+replaced by independent clone classes of size $2$.  The resulting graph is
+$K_{2,2}$: all four cross edges are present and there are no edges inside either
+clone class.  Choose two vertices from one side and one vertex from the other.
+The induced subgraph on these three vertices has exactly two edges, namely a
+path on three vertices.  A path on three vertices is not a disjoint union of
+cliques, because its three vertices form one connected component that is not a
+clique.  Since $\K$ is hereditary, if $K_{2,2}$ were in $\K$ then this induced
+three-vertex path would also be in $\K$, a contradiction.  Thus this independent
+blow-up of a graph in $\K$ does not belong to $\K$, and $\K$ is not
+clone-closed.
 \end{proof}
 
 \section{Substitution-closed graph classes}
