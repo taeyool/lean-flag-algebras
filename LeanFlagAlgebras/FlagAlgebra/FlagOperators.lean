@@ -160,11 +160,9 @@ lemma downwardNormalizingFactor_labeledGraph_respect_eqv
 /-- The unlabeling weight, lifted to flags (isomorphism classes); the weight by
 which `unlabel F` is scaled when forgetting the labels of the flag `F`. -/
 noncomputable def downwardNormalizingFactor
-    : Flag σ (Fin n) → ℚ
-  := by
-  apply Quot.lift (fun G : LabeledGraph σ (Fin n) => downwardNormalizingFactor_labeledGraph G)
-  intro G G' G_eqv
-  exact downwardNormalizingFactor_labeledGraph_respect_eqv G_eqv
+    : Flag σ (Fin n) → ℚ :=
+  Quotient.lift (fun G : LabeledGraph σ (Fin n) => downwardNormalizingFactor_labeledGraph G)
+    fun _ _ G_eqv => downwardNormalizingFactor_labeledGraph_respect_eqv G_eqv
 
 /-- The unlabeling weight is strictly positive. -/
 theorem downwardNormalizingFactor_pos
@@ -235,11 +233,9 @@ theorem unlabeledGraphQuot_respect_eqv
 underlying graph as a `∅ₜ`-flag. The single-flag core of the `downward`
 operator. -/
 noncomputable def unlabel {V : Type}
-    : Flag σ V → Flag ∅ₜ V
-  := by
-  apply Quot.lift (fun G : LabeledGraph σ V => unlabeledGraphQuot G)
-  intro G G' G_eqv
-  exact unlabeledGraphQuot_respect_eqv G_eqv
+    : Flag σ V → Flag ∅ₜ V :=
+  Quotient.lift (fun G : LabeledGraph σ V => unlabeledGraphQuot G)
+    fun _ _ G_eqv => unlabeledGraphQuot_respect_eqv G_eqv
 
 theorem unlabel_eq_iff_unlabeledGraph_eqv
     {F : LabeledGraph σ V} {G : LabeledGraph ∅ₜ V}
@@ -1163,11 +1159,9 @@ lemma downwardFlagVectorQuot_respect_eqv
 forget the labels of every flag, averaging by the unlabeling weights. The main
 construction of this file; notation `⟦f⟧₀`. -/
 noncomputable def downward
-    : FlagAlgebra σ → FlagAlgebra ∅ₜ
-  := by
-  apply Quot.lift (fun g : FlagVector σ => downwardFlagVectorQuot g)
-  intro f f' f_eqv
-  exact downwardFlagVectorQuot_respect_eqv f_eqv
+    : FlagAlgebra σ → FlagAlgebra ∅ₜ :=
+  Quotient.lift (fun g : FlagVector σ => downwardFlagVectorQuot g)
+    fun _ _ f_eqv => downwardFlagVectorQuot_respect_eqv f_eqv
 
 notation "⟦" f "⟧₀" => (downward f)
 
@@ -1257,7 +1251,8 @@ theorem downwardNormalizingFactor_emptyType
     : downwardNormalizingFactor F = 1
   := by
   rcases Quot.exists_rep F with ⟨F, rfl⟩
-  simp [downwardNormalizingFactor, downwardNormalizingFactor_labeledGraph]
+  show downwardNormalizingFactor_labeledGraph F = 1
+  simp [downwardNormalizingFactor_labeledGraph]
   rw [div_self (by simp [Nat.cast_eq_zero, Nat.factorial_ne_zero]), div_one, Rat.natCast_eq_one_iff]
   exact isomorphismCount_emptyType F
 

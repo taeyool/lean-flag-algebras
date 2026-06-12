@@ -292,12 +292,9 @@ lemma subgraphDensityLifted_respects_eqv
 /-- The subgraph density `d(H, G)` as a function of the isomorphism classes of
 both `H` and `G`. This is the canonical density on `QuotSimpleGraph`. -/
 noncomputable def quotSubgraphDensity
-    : QuotSimpleGraph V → QuotSimpleGraph W → ℚ
-  := by
-  apply Quot.lift subgraphDensityLifted
-  intro H₀ H₁ h_eqv
-  ext G
-  exact subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
+    : QuotSimpleGraph V → QuotSimpleGraph W → ℚ :=
+  Quotient.lift subgraphDensityLifted
+    fun H₀ H₁ h_eqv => funext fun G => subgraphDensityLifted_respects_eqv H₀ H₁ h_eqv G
 
 
 /-- The empty graph on `0` vertices occurs exactly once as an induced subgraph

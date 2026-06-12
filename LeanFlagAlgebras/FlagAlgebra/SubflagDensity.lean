@@ -306,11 +306,9 @@ lemma labeledGraphDensity_respect_eqv
 /-- `labeledGraphDensity H` lifted through the `Flag` quotient in its
 second (host) argument. -/
 noncomputable def labeledGraphDensityLifted
-    (H : LabeledGraph σ V) : Flag σ W → ℚ
-  := by
-  apply Quot.lift (fun G : LabeledGraph σ W ↦ labeledGraphDensity H G)
-  intro _ _ G_eqv
-  exact labeledGraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
+    (H : LabeledGraph σ V) : Flag σ W → ℚ :=
+  Quotient.lift (fun G : LabeledGraph σ W ↦ labeledGraphDensity H G)
+    fun _ _ G_eqv => labeledGraphDensity_respect_eqv (Classical.choice G_eqv) LabeledGraphIso.refl
 
 lemma labeledGraphDensityLifted_respect_eqv
     {H₀ : LabeledGraph σ U} {H₁ : LabeledGraph σ V} (ψ : H₀ ≃f H₁) (G : Flag σ W)
@@ -325,12 +323,9 @@ lemma labeledGraphDensityLifted_respect_eqv
 lifted to the `Flag` quotient in both arguments. This is the headline
 definition of the file. -/
 noncomputable def subflagDensity
-    : Flag σ V → Flag σ W → ℚ
-  := by
-  apply Quot.lift labeledGraphDensityLifted
-  intro H H' h_eqv
-  ext G
-  exact labeledGraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
+    : Flag σ V → Flag σ W → ℚ :=
+  Quotient.lift labeledGraphDensityLifted
+    fun H H' h_eqv => funext fun G => labeledGraphDensityLifted_respect_eqv (Classical.choice h_eqv) G
 
 omit [Fintype T] [Fintype U] in
 lemma bot_labeledSubgraph_iso_emptyLabeledGraph

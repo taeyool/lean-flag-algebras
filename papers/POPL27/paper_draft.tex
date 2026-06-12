@@ -1583,41 +1583,138 @@ instance : LE (FlagAlgebra (*@$\sigma$@*)) where
 
 \subsection{The Downward Operator}
 
-The downward operator, implemented in \lean{FlagAlgebra/FlagOperators.lean},
-is the bridge from typed algebras back to the empty-typed algebra:
+The downward operator from Section~2.5 is implemented in
+\lean{FlagAlgebra/FlagOperators.lean}.  As with the density functions in
+Section~3.2, the definition cannot start directly on
+\lean{Flag}: the mathematical input is an isomorphism class, but Lean must first
+define the corresponding function on concrete \lean{LabeledGraph}s and then
+prove that it respects flag isomorphism.
+
+The normalizing factor $q_\sigma(F)$ is formalized in exactly this way.  For a
+concrete labeled graph $G$, \lean{isomorphismCount G} counts the label
+placements on the same underlying graph that realize a flag isomorphic to
+$G$.  Dividing by the number of all injections of the labels gives
+\lean{downwardNormalizingFactor\_labeledGraph}; the quotient-level function
+\lean{downwardNormalizingFactor} is obtained by a \lean{Quotient.lift}.
 \begin{lstlisting}
-def downward : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra emptyType := ...
+noncomputable def downwardNormalizingFactor_labeledGraph
+    (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
+  let num_of_all_injections := n.factorial / (n - (*@$n_0$@*)).factorial
+  isomorphismCount G / num_of_all_injections
+
+noncomputable def downwardNormalizingFactor
+    : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+  Quotient.lift
+    (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) =>
+      downwardNormalizingFactor_labeledGraph G)
+    (fun _ _ h => downwardNormalizingFactor_labeledGraph_respect_eqv h)
+\end{lstlisting}
+The proof obligation in the last line is the formal counterpart of saying that
+$q_\sigma(F)$ depends only on the flag, not on the chosen representative.
+
+The same representative-level pattern appears again when forgetting labels.
+We first define \lean{unlabeledGraph} on \lean{LabeledGraph}s by keeping the
+underlying graph and replacing the type embedding by the unique empty-type
+embedding.  After proving that this operation respects flag isomorphism, it is
+lifted to flags as \lean{unlabel}.
+\begin{lstlisting}
+def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph emptyType V :=
+  -- same graph, with the empty type embedding
+
+noncomputable def unlabel
+    : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag emptyType V :=
+  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => unlabeledGraphQuot G)
+    (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
+\end{lstlisting}
+
+Only after these two quotient lifts do we define the downward image of a single
+flag:
+\begin{lstlisting}
+noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector emptyType :=
+  downwardNormalizingFactor F (*@$\bullet$@*) basisVector ((*@$n$@*), unlabel F)
+\end{lstlisting}
+This is the Lean version of $\llbracket F\rrbracket_\sigma =
+q_\sigma(F)\cdot F|_\emptyset$.  The remaining task is not merely to extend
+this function linearly.  Since \lean{FlagAlgebra} $\sigma$ is a quotient of
+\lean{FlagVector} $\sigma$ by the zero-space relations, the linear extension
+must be shown to send every zero-space relation in the typed algebra to a
+zero-space relation in the empty-typed algebra.
+
+The main combinatorial lemma behind this lift is a double-counting identity.
+It compares two ways of first forgetting labels and then expanding to a larger
+unlabeled flag: either count copies of \lean{unlabel F} and multiply by the
+normalizing factor of $F$, or sum over all label extensions of the larger
+unlabeled flag.
+\begin{lstlisting}
+theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
+    (F : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*))
+    (F' : FlagWithSize emptyType (*@$\ell'$@*)) (h : (*@$\ell \leq \ell'$@*)) :
+    flagDensity(*@$_1$@*) (unlabel F) F' * downwardNormalizingFactor F =
+      (*@$\sum$@*) G (*@$\in$@*) labelExtensions F' (*@$\sigma$@*),
+        flagDensity(*@$_1$@*) F G * downwardNormalizingFactor G
+\end{lstlisting}
+This identity is then used to prove that \lean{downwardFlag} respects the
+expansion equations generating the zero space:
+\begin{lstlisting}
+lemma downwardFlagVector_zeroSpace
+    (f : FlagVector (*@$\sigma$@*)) (hf : f (*@$\in$@*) ZeroSpace (*@$\sigma$@*)) :
+    downwardFlagVector f (*@$\in$@*) ZeroSpace emptyType
+
+noncomputable def downward
+    : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra emptyType :=
+  Quotient.lift (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
+    (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
 
 notation "[[" f "]]0" => downward f
 \end{lstlisting}
-It is not just a forgetful map.  The definition includes Razborov's
-normalizing factor, and the lift to the quotient proves that averaging over
-label placements respects the expansion equations.  This is one of the places
-where the formalization exposes an invariant that paper notation usually hides
-inside the brackets $\llbracket-\rrbracket_\sigma$.
+Thus the concise paper notation $\llbracket-\rrbracket_\sigma$ hides two
+successive quotient lifts and a substantial compatibility proof with the
+zero-space presentation of the algebra.
 
-SDP certificates enter through a compact semantic theorem about quadratic
-forms:
+The semantic soundness of the downward operator is proved in
+\lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
+object called a random homomorphism; instead, for an empty-typed positive
+homomorphism $\phi_0$ with positive $\sigma$-density, Lean constructs a
+probability measure on \lean{PositiveHomSpace} $\sigma$.  Its defining property
+is the formal version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
-def flagQuadraticForm (M : Matrix (Fin n) (Fin n) R)
-    (v : Fin n (*@$\to$@*) FlagAlgebra (*@$\sigma$@*)) : FlagAlgebra (*@$\sigma$@*) :=
-  (*@$\sum$@*) i, (*@$\sum$@*) j, M i j * (v i * v j)
-
-theorem flagQuadraticForm_nonneg
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef)
-    (v : Fin n (*@$\to$@*) FlagAlgebra (*@$\sigma$@*)) :
-    flagQuadraticForm M v (*@$\geq$@*) 0
-
-theorem flagQuadraticForm_downward_nonneg
-    (hM : M.PosSemidef) (v : Fin n (*@$\to$@*) FlagAlgebra (*@$\sigma$@*)) :
-    [[flagQuadraticForm M v]]0 (*@$\geq$@*) 0
+theorem exists_probMeasure_extend_emptyType_positiveHom
+    {(*@$\phi_0$@*) : PositiveHom emptyType}
+    (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
+    (*@$\exists$@*) (P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*))),
+      (*@$\forall$@*) (f : FlagAlgebra (*@$\sigma$@*)),
+        (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)),
+          PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
+        =
+        (*@$\phi_0$@*) [[f]]0 / (*@$\phi_0$@*) [[(1 : FlagAlgebra (*@$\sigma$@*))]]0
 \end{lstlisting}
-This is the abstraction barrier for external SDP search.  The search procedure
-may propose a matrix, but the checked artifact is a theorem in the semantic
-preorder: if Lean verifies the matrix is positive semidefinite, then every
-typed positive homomorphism evaluates the corresponding quadratic form
-non-negatively, and every empty-typed positive homomorphism evaluates its
-downward average non-negatively.
+This theorem corresponds to Razborov's random-extension theorem and supplies
+Equation~\eqref{eq:ensemble} in the form used by \Cref{thm:downward-nonneg}.
+The informal proof chooses random labelings of large finite graphs, passes to a
+weak limit of the resulting measures, and observes that the limit is supported
+on positive homomorphisms.  In Lean each of these phrases expands into
+explicit data: finite probability mass functions weighted by
+\lean{downwardNormalizingFactor}, positivity of the denominators, convergence
+of integrals against bounded continuous coordinate functions, measurability and
+integrability of evaluations, and separate support proofs for the algebraic
+properties defining \lean{PositiveHomSpace}.  The proof also has to move
+between rational densities, real-valued functions, non-negative probabilities,
+and extended-real measure values.
+
+The payoff is the formal semantic transfer theorem corresponding to
+\Cref{thm:downward-nonneg}: the downward image of a semantically non-negative
+typed element is semantically non-negative in the empty-typed algebra.
+\begin{lstlisting}
+theorem downward_preserve_semanticCone
+    (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
+    [[f]]0 (*@$\in$@*) semanticCone emptyType
+\end{lstlisting}
+The proof splits on whether $\phi_0(\langle\sigma\rangle_0)$ is zero.  In the
+zero case, every downward value vanishes at $\phi_0$; in the positive case, the
+random-extension measure above rewrites $\phi_0([[f]]_0)$ as a positive
+normalizing factor times the expectation of a non-negative random variable.
+This is the formal bridge from typed inequalities to the unlabeled semantic
+order used by certificate proofs.
 
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}

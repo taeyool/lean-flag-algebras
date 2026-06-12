@@ -316,11 +316,9 @@ theorem zeroSpaceProp_linearExtension_respect_eqv
 profile then vanishes on the zero space). -/
 noncomputable def homFunFromZeroSpaceProp
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a)
-    : FlagAlgebra σ → ℝ
-  := by
-  apply Quot.lift (linearExtension a)
-  intro f f' f_eqv
-  exact zeroSpaceProp_linearExtension_respect_eqv h₀ f_eqv
+    : FlagAlgebra σ → ℝ :=
+  Quotient.lift (linearExtension a)
+    fun _ _ f_eqv => zeroSpaceProp_linearExtension_respect_eqv h₀ f_eqv
 
 theorem homFunFromZeroSpaceProp_map_zero
     {a : FlagDensitySpace σ} (h₀ : zeroSpaceProp a)

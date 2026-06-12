@@ -317,11 +317,9 @@ lemma labeledGraphListDensity_respect_eqv
 
 /-- `labeledGraphListDensity Hl` lifted to accept a quotient `Flag σ W` host. -/
 noncomputable def labeledGraphListDensityLifted
-    (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ
-  := by
-  apply Quot.lift (fun G => labeledGraphListDensity Hl G)
-  intro _ _ h_eqv
-  exact labeledGraphListDensity_respect_eqv (fun _ ↦ LabeledGraphIso.refl) h_eqv.some
+    (Hl : LabeledGraphList σ t Vl) : Flag σ W → ℚ :=
+  Quotient.lift (fun G => labeledGraphListDensity Hl G)
+    fun _ _ h_eqv => labeledGraphListDensity_respect_eqv (fun _ ↦ LabeledGraphIso.refl) h_eqv.some
 
 omit [DecidableEq T] in
 lemma labeledGraphListDensityLifted_respect_eqv
@@ -337,12 +335,9 @@ lemma labeledGraphListDensityLifted_respect_eqv
 /-- List density with both arguments taken in their respective quotients:
 a quotient flag list and a quotient flag host. -/
 noncomputable def quotLabeledGraphListDensity
-    : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ
-  := by
-  apply Quot.lift labeledGraphListDensityLifted
-  intro _ _ ψ
-  ext G
-  exact labeledGraphListDensityLifted_respect_eqv (fun i ↦ (ψ i).some) G
+    : QuotLabeledGraphList σ t Vl → Flag σ W → ℚ :=
+  Quotient.lift labeledGraphListDensityLifted
+    fun _ _ ψ => funext fun G => labeledGraphListDensityLifted_respect_eqv (fun i ↦ (ψ i).some) G
 
 omit [DecidableEq T] in
 lemma quotLabeledGraphListDensity_respect_eqv
