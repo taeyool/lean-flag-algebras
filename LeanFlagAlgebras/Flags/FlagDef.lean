@@ -54,6 +54,7 @@ generate_flags 3 1 4
 generate_flags 3 2 4
 generate_flags 3 3 4
 
+generate_flags 1 0 5
 generate_flags 3 0 5
 generate_flags 3 1 5
 generate_flags 3 2 5
