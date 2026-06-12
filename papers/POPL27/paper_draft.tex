@@ -432,7 +432,7 @@ forbidden induced subgraphs.  If $G$ is a graph and $S\subseteq V(G)$, the
 \emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
 exactly the edges of $G$ with both endpoints in $S$.  Thus a graph is
 \emph{$\mathcal{H}$-free} if there is no set $S\subseteq V(G)$ for which
-$G[S]$ is isomorphic to a member of $\mathcal{H}$.  All types, flags, and flag
+$G[S]$ is isomorphic to a member of $\mathcal{H}$.  All flag types, flags, and flag
 algebras below are defined relative to this fixed $\mathcal{H}$.
 % The goal is to make the proof pattern legible:
 % what are the terms, what do they mean, and why can a finite certificate say
@@ -867,7 +867,7 @@ never assigns a negative value to any flag.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
-In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |\sigma|$:
+In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |V(\sigma)|$:
 \begin{equation}
   \sum_{F \in \mathcal{F}^\sigma_\ell} F \;=\; \mathbf{1}_\sigma.
   \label{eq:sum-to-one}
@@ -999,7 +999,7 @@ can be transferred to the unlabeled one.
 For a $\sigma$-flag $A = (G, \theta_A)$, let $A|_\emptyset$ denote the
 $\emptyset$-flag obtained from $A$ by forgetting the embedding $\theta_A$,
 i.e., viewing $G$ as a $\emptyset$-flag.
-For a $\sigma$-flag $A$ of size $m$ with $|\sigma|=k$, let
+For a $\sigma$-flag $A$ of size $m$ with $|V(\sigma)|=k$, let
 \[
   q_\sigma(A)
   \;:=\;
