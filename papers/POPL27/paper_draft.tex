@@ -987,6 +987,7 @@ Two classical results illustrate how this looks in flag algebra language.
 % whose value is forced to be a non-negative real number by a PSD matrix.
 
 \subsection{The Downward Operator}
+\label{sec:background-downward}
 Labeled flag algebras (i.e., $\mathcal{A}^\sigma$ with $\sigma \neq \emptyset$) are often
 richer than the unlabeled algebra $\mathcal{A}^\emptyset$: establishing membership
 in $\mathcal{C}^\sigma$ can be easier than working directly in $\mathcal{C}$.
@@ -1360,6 +1361,7 @@ final unlabeled inequality, as described in the section introduction.
 \gw{This sentence needs revision.}
 
 \subsection{Subflag Densities}
+\label{sec:formal-subflag-densities}
 
 Formalizing density function is not straightforward.  The density
 $\den{A_1,\ldots,A_t}{G}$ from Section~\ref{sec:background} should be a
@@ -1392,15 +1394,29 @@ to evaluate the function.  This poses no obstacle to formalizing flag algebra
 itself, but becomes relevant when applying the algebra to concrete graphs, a
 point we return to in Section~\ref{sec:reflection}.
 
-Lifting \lean{labeledGraphListDensity} to the quotient type \lean{Flag} requires
-several intermediate congruence lemmas.  The result is \lean{flagListDensity},
-a density function defined on \lean{Flag}s.
+Lifting \lean{labeledGraphListDensity} to the quotient type \lean{Flag} is
+slightly layered.  We first lift the host argument \lean{G}, then lift the list of
+pattern flags \lean{Hl}, and finally package the result as a function on \lean{FlagList}.
+The congruence proofs, omitted below, show that the density is unchanged when
+the host or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
 abbrev FlagList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
   := (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
 
+noncomputable def labeledGraphListDensityLifted
+    (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+  Quotient.lift
+    (fun G => labeledGraphListDensity Hl G)
+    (...) -- proof that host equivalence preserves density
+
+noncomputable def quotLabeledGraphListDensity
+    : QuotLabeledGraphList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+  Quotient.lift
+    labeledGraphListDensityLifted
+    (...) -- proof that pattern-list equivalence preserves density
+
 noncomputable def flagListDensity : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
-  -- definition omitted
+  fun Fl => quotLabeledGraphListDensity Fl.coe
 \end{lstlisting}
 \lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
 to singleton and pair lists:
@@ -1583,62 +1599,48 @@ instance : LE (FlagAlgebra (*@$\sigma$@*)) where
 
 \subsection{The Downward Operator}
 
-The downward operator from Section~2.5 is implemented in
-\lean{FlagAlgebra/FlagOperators.lean}.  As with the density functions in
-Section~3.2, the definition cannot start directly on
-\lean{Flag}: the mathematical input is an isomorphism class, but Lean must first
-define the corresponding function on concrete \lean{LabeledGraph}s and then
-prove that it respects flag isomorphism.
-
-The normalizing factor $q_\sigma(F)$ is formalized in exactly this way.  For a
-concrete labeled graph $G$, \lean{isomorphismCount G} counts the label
-placements on the same underlying graph that realize a flag isomorphic to
-$G$.  Dividing by the number of all injections of the labels gives
-\lean{downwardNormalizingFactor\_labeledGraph}; the quotient-level function
-\lean{downwardNormalizingFactor} is obtained by a \lean{Quotient.lift}.
+Formalizing the downward operator from Section~\ref{sec:background-downward}
+requires two levels of lifting.  In the formula
+$\llbracket A \rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$, both
+$q_\sigma(A)$ and $A|_\emptyset$ are first defined for concrete
+\lean{LabeledGraph}s and then lifted to \lean{Flag}s, following the same
+quotient pattern as the density functions in
+Section~\ref{sec:formal-subflag-densities}.  This gives the single-flag map
+\lean{downwardFlag}; the map is then linearly extended to
+\lean{FlagVector} $\sigma$ and lifted once more through the zero-space quotient
+to obtain a function on \lean{FlagAlgebra} $\sigma$. \gw{I'm here.}
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - (*@$n_0$@*)).factorial
-  isomorphismCount G / num_of_all_injections
+  isomor(*@\texttt{ph}@*)ismCount G / num_of_all_injections
 
 noncomputable def downwardNormalizingFactor
     : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
-    (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) =>
-      downwardNormalizingFactor_labeledGraph G)
+    (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G)
     (fun _ _ h => downwardNormalizingFactor_labeledGraph_respect_eqv h)
-\end{lstlisting}
-The proof obligation in the last line is the formal counterpart of saying that
-$q_\sigma(F)$ depends only on the flag, not on the chosen representative.
 
-The same representative-level pattern appears again when forgetting labels.
-We first define \lean{unlabeledGraph} on \lean{LabeledGraph}s by keeping the
-underlying graph and replacing the type embedding by the unique empty-type
-embedding.  After proving that this operation respects flag isomorphism, it is
-lifted to flags as \lean{unlabel}.
-\begin{lstlisting}
-def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph emptyType V :=
-  -- same graph, with the empty type embedding
+def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph emptyType V := ...
 
-noncomputable def unlabel
-    : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag emptyType V :=
-  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => unlabeledGraphQuot G)
+noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag emptyType V :=
+  Quotient.lift
+    (fun G : LabeledGraph (*@$\sigma$@*) V => unlabeledGraphQuot G)
     (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
 \end{lstlisting}
-
-Only after these two quotient lifts do we define the downward image of a single
-flag:
+These lifts let us define the downward image of a single flag:
 \begin{lstlisting}
 noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector emptyType :=
   downwardNormalizingFactor F (*@$\bullet$@*) basisVector ((*@$n$@*), unlabel F)
 \end{lstlisting}
 This is the Lean version of $\llbracket F\rrbracket_\sigma =
-q_\sigma(F)\cdot F|_\emptyset$.  The remaining task is not merely to extend
-this function linearly.  Since \lean{FlagAlgebra} $\sigma$ is a quotient of
-\lean{FlagVector} $\sigma$ by the zero-space relations, the linear extension
-must be shown to send every zero-space relation in the typed algebra to a
-zero-space relation in the empty-typed algebra.
+q_\sigma(F)\cdot F|_\emptyset$.
+
+The main new obligation appears when this single-flag operation is lifted to
+\lean{FlagAlgebra}.  Since \lean{FlagAlgebra} $\sigma$ is a quotient of
+\lean{FlagVector} $\sigma$ by the zero-space relations, the linear extension of
+\lean{downwardFlag} must be shown to send every typed zero-space relation to an
+empty-typed zero-space relation.
 
 The main combinatorial lemma behind this lift is a double-counting identity.
 It compares two ways of first forgetting labels and then expanding to a larger
