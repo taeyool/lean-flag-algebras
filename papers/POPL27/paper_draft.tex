@@ -1067,12 +1067,13 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically follows a fixed pattern:
-(1) exhibit $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some non-empty flag type $\sigma$
-(e.g., a square $f = g^2$),
-(2) apply \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$, and
-(3) add $\llbracket f \rrbracket_\sigma$ to the zero-space expansion of $P$
-and use non-negativity of flags and \eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
+A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically proceeds as follows:
+first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
+non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
+\Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
+then, one adds $\llbracket f \rrbracket_\sigma$ to $P$ or an expansion of $P$
+at an appropriate size, and uses non-negativity of flags and
+\eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
