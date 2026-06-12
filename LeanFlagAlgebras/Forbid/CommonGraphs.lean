@@ -93,3 +93,18 @@ generate_complete_graph 5 33
      load_forbid_density_theorems "...graphs_4_C4_free_indices.json"
      load_forbid_mul_theorems     "...density_..._forbid_C4.json"
    ──────────────────────────────────────────────────────────────────────────── -/
+set_option maxHeartbeats 0
+
+def C5 : SimpleGraph (Fin 5) := {
+  Adj i j := match i, j with
+    | 0, 1 | 1, 0 | 0, 2 | 2, 0 | 1, 3 | 3, 1 | 2, 4 | 4, 2 | 3, 4 | 4, 3 => true
+    | _, _ => false
+}
+
+lemma C5_toFinFlag_eq : C5.toFinFlag = ⟨5, Flag_5_0_0_19⟩ := by
+  simp [toFinFlag, C5]
+  congr
+  all_goals {
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [Sym2Graph_5_0_0_19, mkEdgeFinset]
+  }
