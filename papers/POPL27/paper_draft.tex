@@ -432,7 +432,7 @@ forbidden induced subgraphs.  If $G$ is a graph and $S\subseteq V(G)$, the
 \emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
 exactly the edges of $G$ with both endpoints in $S$.  Thus a graph is
 \emph{$\mathcal{H}$-free} if there is no set $S\subseteq V(G)$ for which
-$G[S]$ is isomorphic to a member of $\mathcal{H}$.  All types, flags, and flag
+$G[S]$ is isomorphic to a member of $\mathcal{H}$.  All flag types, flags, and flag
 algebras below are defined relative to this fixed $\mathcal{H}$.
 % The goal is to make the proof pattern legible:
 % what are the terms, what do they mean, and why can a finite certificate say
@@ -867,7 +867,7 @@ never assigns a negative value to any flag.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
-In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |\sigma|$:
+In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |V(\sigma)|$:
 \begin{equation}
   \sum_{F \in \mathcal{F}^\sigma_\ell} F \;=\; \mathbf{1}_\sigma.
   \label{eq:sum-to-one}
@@ -999,7 +999,7 @@ can be transferred to the unlabeled one.
 For a $\sigma$-flag $A = (G, \theta_A)$, let $A|_\emptyset$ denote the
 $\emptyset$-flag obtained from $A$ by forgetting the embedding $\theta_A$,
 i.e., viewing $G$ as a $\emptyset$-flag.
-For a $\sigma$-flag $A$ of size $m$ with $|\sigma|=k$, let
+For a $\sigma$-flag $A$ of size $m$ with $|V(\sigma)|=k$, let
 \[
   q_\sigma(A)
   \;:=\;
@@ -1067,12 +1067,13 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically follows a fixed pattern:
-(1) exhibit $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some non-empty flag type $\sigma$
-(e.g., a square $f = g^2$),
-(2) apply \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$, and
-(3) add $\llbracket f \rrbracket_\sigma$ to the zero-space expansion of $P$
-and use non-negativity of flags and \eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
+A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically proceeds as follows:
+first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
+non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
+\Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
+then, one adds $\llbracket f \rrbracket_\sigma$ to $P$ or an expansion of $P$
+at an appropriate size, and uses non-negativity of flags and
+\eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
@@ -1413,6 +1414,7 @@ noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$
 Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
 
 Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
+\gw{The proof of the chain rule was also very difficult, but I'm not sure whether it would be worth discussing that here.}
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
@@ -1432,7 +1434,7 @@ To define the flag algebra, we first construct the free $\mathbb{R}$-module with
 $\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
 function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
 type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
-the constructor that produces the basis element for each flag:
+the constructor that produces the basis vector for each flag:
 \begin{lstlisting}
 abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
@@ -1440,7 +1442,7 @@ abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
 def basisVector (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
-Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} defines the basis function for $F \in \mathcal{F}^\sigma$, taking value $1$ at $F$ and $0$ elsewhere.
+Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
 
 Next, we define the zero space $\mathcal{Z}^\sigma$.  We encode the generating element of
 Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
@@ -1473,7 +1475,7 @@ def flagVectorEqv (f g : FlagVector (*@$\sigma$@*)) : Prop :=
 abbrev FlagAlgebra ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
-In the resulting type \lean{FlagAlgebra}, a flag and its density expansion at any larger size
+In the resulting type \lean{FlagAlgebra} $\sigma$, a flag and its density expansion at any larger size
 are definitionally equal.
 
 Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
@@ -1516,7 +1518,7 @@ a commutative associative $\mathbb{R}$-algebra, completing the formalization of 
 The central result of this subsection is the formalization of
 Theorem~\ref{thm:convergent-hom}, which states that positive homomorphisms are
 exactly the limiting objects of convergent flag sequences.  \lean{FlagSeq} $\sigma$ is the type of sequences of $\sigma$-flags indexed by
-$\mathbb{N}$, and \lean{ConvergesTo} encodes convergence.
+$\mathbb{N}$, and \lean{ConvergesTo} encodes its convergence.
 \begin{lstlisting}
 abbrev FlagSeq ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) := (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
 
@@ -1525,7 +1527,7 @@ def ConvergesTo (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to
 \end{lstlisting}
 \lean{ConvergesTo} conjoins two predicates: the first asserts that the sizes
 of the flags in $s$ are strictly increasing, and the second asserts that
-$\den{F}{s(n)} \to a(F)$ as $n \to \infty$ for every $\sigma$-flag $F$.
+$\lim_{n \to \infty} \den{F}{s(n)} = a(F)$ for every $\sigma$-flag $F$.
 
 \lean{PositiveHom} $\sigma$ is the subtype of $\mathbb{R}$-algebra homomorphisms from
 \lean{FlagAlgebra} $\sigma$ to $\mathbb{R}$ that are non-negative on every $\sigma$-flag:
@@ -1555,18 +1557,22 @@ theorem positiveHom_as_flagSeq_limit
 Here \lean{FlagDensitySpace} $\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
 \lean{$\phi$.coe} is the point $F \mapsto \phi(F)$ in $[0,1]^{\mathcal{F}^\sigma}$
 that $\phi$ determines.
-Part (a) follows by verifying that the limit satisfies the algebraic properties
-of a positive homomorphism.  Part (b) is more demanding: its proof proceeds by sampling a random flag sequence according to $\phi$
-and showing that the sequence converges to $\phi$ almost surely.  Measure-theoretic arguments are among the harder proofs to formalize in Lean.
-They require explicit measurability proofs that informal arguments routinely omit, as
-well as careful conversion between real-valued, non-negative, and extended-real
-numeric types.
+Both directions require nontrivial formalization work.  In part (a), one must
+show that the limit $a$ of a flag sequence $s$ satisfies all algebraic
+properties of a positive homomorphism, including details that informal proofs
+leave implicit.  Part (b) is more demanding: its proof proceeds by sampling a
+random flag sequence according to $\phi$ and showing that the sequence
+converges to $\phi$ almost surely.  Formalizing this random construction
+requires a fully measure-theoretic account: explicit measurability proofs, as
+well as careful conversion between real-valued functions, non-negative
+quantities, and extended-real measure values.
 
-Lastly, positive homomorphisms let us define the semantic non-negativity cone
-$\mathcal{C}^\sigma$ and the order it induces on \lean{FlagAlgebra} $\sigma$.
-\lean{semanticCone} $\sigma$ is the set of elements in \lean{FlagAlgebra} $\sigma$ that every positive
-homomorphism evaluates non-negatively, and we define $f \leq g$ to mean
-$g - f \in \mathcal{C}^\sigma$ via a Lean \lean{LE} instance. \gw{I'm here.}
+We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
+and the order it induces on $\mathcal{A}^\sigma$.
+\lean{semanticCone} $\sigma$ is the set of elements in \lean{FlagAlgebra} $\sigma$
+that every positive homomorphism evaluates non-negatively.  The induced order
+is installed as a Lean \lean{LE} instance, with $f \leq g$ defined to mean
+$g - f \in \mathcal{C}^\sigma$.
 \begin{lstlisting}
 def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
