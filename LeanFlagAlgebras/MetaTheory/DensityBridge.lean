@@ -23,18 +23,19 @@ lemma flagDensity₁_eq_subflagDensity {U W : Type} [Fintype U] [Fintype W]
     (F : Flag σ U) (G : Flag σ W) : flagDensity₁ F G = subflagDensity F G :=
   (subflagDensity_eq_flagListDensity F G).symm
 
-/-- On representatives, the flag density is the labelled-graph density. -/
-lemma flagDensity₁_mk {ℓ ℓ' : ℕ} (Hrep : LabeledGraph σ (Fin ℓ)) (Grep : LabeledGraph σ (Fin ℓ')) :
-    flagDensity₁ (⟦Hrep⟧ : FlagWithSize σ ℓ) (⟦Grep⟧ : FlagWithSize σ ℓ')
-      = labeledGraphDensity Hrep Grep := by
+/-- On representatives, the flag density is the labelled-graph density (any finite hosts). -/
+lemma flagDensity₁_mk {U W : Type} [Fintype U] [Fintype W] [DecidableEq U] [DecidableEq W]
+    (Hrep : LabeledGraph σ U) (Grep : LabeledGraph σ W) :
+    flagDensity₁ (⟦Hrep⟧ : Flag σ U) (⟦Grep⟧ : Flag σ W) = labeledGraphDensity Hrep Grep := by
   rw [flagDensity₁_eq_subflagDensity]; rfl
 
 /-- **Density as a card ratio** (the bridge entry point): the flag density of `H` in `G`
 equals the number of induced labelled copies of `H`, divided by the binomial counting the
-choices of non-root vertices. -/
-lemma flagDensity₁_eq_count_div {ℓ ℓ' : ℕ}
-    (Hrep : LabeledGraph σ (Fin ℓ)) (Grep : LabeledGraph σ (Fin ℓ')) :
-    flagDensity₁ (⟦Hrep⟧ : FlagWithSize σ ℓ) (⟦Grep⟧ : FlagWithSize σ ℓ')
+choices of non-root vertices.  Stated for any finite host vertex type (needed for the blow-up,
+whose host is the sigma type `Σ v, Fin (m v)`). -/
+lemma flagDensity₁_eq_count_div {U W : Type} [Fintype U] [Fintype W] [DecidableEq U] [DecidableEq W]
+    (Hrep : LabeledGraph σ U) (Grep : LabeledGraph σ W) :
+    flagDensity₁ (⟦Hrep⟧ : Flag σ U) (⟦Grep⟧ : Flag σ W)
       = (labeledGraphCount Hrep Grep : ℚ)
           / ((Grep.size - σ.size).choose (Hrep.size - σ.size)) := by
   rw [flagDensity₁_mk]; rfl

@@ -81,11 +81,12 @@ theorem labeledGraphCount_eq_subset_count (H : LabeledGraph σ U) (G : LabeledGr
 /-- **Flag density as a subset-sampling probability**: the density of `H` in `G` is the
 fraction of `(|H|−k)`-vertex subsets (together with the roots) that induce a copy of `H`.
 This is the form the planted blow-up estimate samples against. -/
-theorem flagDensity₁_eq_subset_count_div {n₀ : ℕ} {σ' : FlagType (Fin n₀)} {ℓ ℓ' : ℕ}
-    (Hrep : LabeledGraph σ' (Fin ℓ)) (Grep : LabeledGraph σ' (Fin ℓ')) :
-    flagDensity₁ (⟦Hrep⟧ : FlagWithSize σ' ℓ) (⟦Grep⟧ : FlagWithSize σ' ℓ')
-      = ((Finset.univ.filter (fun S : Finset (Fin ℓ') =>
-          ∃ (h : Grep.type_verts ⊆ (↑S : Set (Fin ℓ'))),
+theorem flagDensity₁_eq_subset_count_div {n₀ : ℕ} {σ' : FlagType (Fin n₀)}
+    {U W : Type} [Fintype U] [Fintype W] [DecidableEq U] [DecidableEq W]
+    (Hrep : LabeledGraph σ' U) (Grep : LabeledGraph σ' W) :
+    flagDensity₁ (⟦Hrep⟧ : Flag σ' U) (⟦Grep⟧ : Flag σ' W)
+      = ((Finset.univ.filter (fun S : Finset W =>
+          ∃ (h : Grep.type_verts ⊆ (↑S : Set W)),
             Nonempty ((inducedLabeledSubgraph Grep (↑S) h).coe ≃f Hrep))).card : ℚ)
         / ((Grep.size - σ'.size).choose (Hrep.size - σ'.size)) := by
   rw [flagDensity₁_eq_count_div, labeledGraphCount_eq_subset_count]
