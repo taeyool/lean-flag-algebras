@@ -10,7 +10,8 @@ blow-ups (`clone_closed`).  From such a class we synthesise a `Constraint` (the 
 support-closure capstone consumes), whose forbidden flags/graphs are exactly the ones whose
 underlying graph leaves the class.
 
-The two *consumption lemmas* the capstone needs are:
+The two *consumption lemmas* the capstone needs are (`F1`/`F2` are this file's own mnemonics, not
+paper labels):
 
 * `mem_of_forbiddenFree` (F1): a `σ`-flag that has zero density of every forbidden flag has
   its underlying graph in the class.

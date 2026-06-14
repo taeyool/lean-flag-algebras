@@ -3,6 +3,10 @@ import LeanFlagAlgebras.MetaTheory.DensityBridge
 
 /-! # Labeled graph count as a vertex-subset count
 
+Infrastructure for §5 `lem:planted-estimate` of `MetaTheory/paper.tex` (no direct paper
+counterpart): it recasts flag density as a subset-sampling probability, the form the planted
+blow-up estimate samples against.
+
 This file relates the abstract `labeledGraphCount H G` (the number of induced
 labeled subgraphs of `G` that are isomorphic to `H`) to a concrete count of
 vertex subsets of `G`: those subsets `S` that contain all of `G`'s roots and

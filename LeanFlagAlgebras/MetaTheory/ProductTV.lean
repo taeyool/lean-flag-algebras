@@ -9,6 +9,18 @@ by peeling one coordinate at a time and telescoping.
 
 It feeds the comparison between the clone-weighted sampling distribution on a blow-up and the
 uniform distribution on the base graph.
+
+## Status: superseded in the final capstone
+
+This module still **correctly formalises** `eq:good-unnormalized-weight-bound` (`prod_tv_bound`)
+and the accompanying `ℓ¹`-normalisation estimate (`l1_normalization_bound`).  However, the
+total-variation route it provides was **superseded** in the final clone-root-plantability proof
+(`CloneClosed`) by the *uniform-clone simplification*: because the capstone uses the **uniform**
+`(M+1)`-blow-up (every clone class the same size), the planted-estimate gap is controlled directly
+by the explicit binomial ratio (`PlantedEstimate`, `BinomialRatio`), with no need to compare two
+distinct product distributions in TV.  Consequently nothing downstream imports this file except the
+`MetaTheory` aggregator; it is retained as a faithful, self-contained record of the general
+(non-uniform) bound rather than as a live dependency of the capstone.
 -/
 
 namespace FlagAlgebras.MetaTheory

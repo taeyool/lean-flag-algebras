@@ -53,9 +53,9 @@ lemma evalContinuousMap_apply (f : FlagAlgebra σ) (ψ : PositiveHomSpace σ) :
 /-- Evaluation as an `ℝ`-algebra homomorphism into `C(X_σ, ℝ)`. -/
 noncomputable def evalAlgHom : FlagAlgebra σ →ₐ[ℝ] C(PositiveHomSpace σ, ℝ) where
   toFun := evalContinuousMap
-  map_one' := by ext ψ; simpa using PositiveHom.map_one (PositiveHomSpace.toPosHom ψ)
+  map_one' := by ext ψ; simp
   map_mul' f g := by ext ψ; simpa using PositiveHom.map_mul (PositiveHomSpace.toPosHom ψ) f g
-  map_zero' := by ext ψ; simpa using PositiveHom.map_zero (PositiveHomSpace.toPosHom ψ)
+  map_zero' := by ext ψ; simp
   map_add' f g := by ext ψ; simpa using PositiveHom.map_add (PositiveHomSpace.toPosHom ψ) f g
   commutes' r := by
     ext ψ

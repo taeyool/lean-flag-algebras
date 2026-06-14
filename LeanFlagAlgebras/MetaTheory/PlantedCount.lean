@@ -20,12 +20,27 @@ open FlagAlgebras LabeledSubgraph
 
 variable {n k : ℕ} {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)}
 
+/-! ## Root-projection helpers
+
+Small facts relating the *planted* roots `θ̂ = ⟨θ ·, c ·⟩` of the blow-up to the base roots `θ`
+under the projection `Sigma.fst`.  They are the bookkeeping that lets the fiberwise count below
+split a good blow-up subset into its (forced) planted roots and a free clone choice over the
+non-root base vertices. -/
+
+/-- The induced labelled subgraph depends only on the *value* of its vertex set, not on the
+particular proof of the root-containment side-condition: equal vertex sets give a definitionally
+equal induced subgraph.  Used to transport an "induces `F₀`" hypothesis across an equality of
+vertex sets. -/
 private theorem indLab_congr {T : Type} [Fintype T] {σ : FlagType T} {V : Type}
     (G : LabeledGraph σ V) {S₁ S₂ : Set V} (hS : S₁ = S₂)
     (h₁ : G.type_verts ⊆ S₁) (h₂ : G.type_verts ⊆ S₂) :
     inducedLabeledSubgraph G S₁ h₁ = inducedLabeledSubgraph G S₂ h₂ := by
   subst hS; rfl
 
+/-- On a good vertex set `S'` (injective projection, containing the planted roots), a vertex `x ∈ S'`
+projects onto a *base root* iff `x` itself is a *planted root*.  In other words, within a transversal
+the roots upstairs and downstairs correspond exactly, so removing the planted roots from `S'` removes
+precisely the base roots from its projection. -/
 private theorem mem_baseRoots_iff (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
     (S' : Finset (Σ v : Fin n, Fin (m v)))
     (hroot : (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S')
@@ -53,7 +68,9 @@ private theorem mem_baseRoots_iff (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i
     rw [← ht]
     simp only [baseLabeledGraph_type_embed, blowupLabeledGraph_type_embed]
 
--- planted roots Sigma.fst-injective
+/-- The planted roots `{⟨θ i, c i⟩}` project `Sigma.fst`-injectively: distinct labels `i ≠ j` give
+distinct base vertices `θ i ≠ θ j` (as `θ` is an embedding), so each root sits in its own clone
+class. -/
 private theorem plantedRoots_injOn (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i))) :
     Set.InjOn Sigma.fst (↑((blowupLabeledGraph m θ c).type_verts.toFinset) : Set (Σ v : Fin n, Fin (m v))) := by
   intro a ha b hb hab
@@ -65,7 +82,8 @@ private theorem plantedRoots_injOn (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ 
   have htab : ta = tb := θ.injective this
   subst htab; rfl
 
--- planted roots project to base roots
+/-- The projection sends the planted roots exactly onto the base roots: `Sigma.fst` maps
+`{⟨θ i, c i⟩ : i}` onto `{θ i : i}`. -/
 private theorem plantedRoots_image (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i))) :
     ((blowupLabeledGraph m θ c).type_verts.toFinset).image Sigma.fst
       = (baseLabeledGraph θ).type_verts.toFinset := by
@@ -83,7 +101,18 @@ private theorem plantedRoots_image (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ 
     rw [LabeledGraph.mem_type_verts]
     exact ⟨t, rfl⟩
 
--- The fiber-card lemma: for W ∈ t, the good blow-up subsets with image W number ∏_{W∖roots} m.
+/-! ## The fiberwise count
+
+The fiber over a base subset `W` is in bijection with the clone choices over the *non-root* vertices
+`W ∖ roots` (the planted roots are forced), realised by the inverse pair `S' ↦ S' ∖ roots` and
+`Q ↦ Q ∪ roots`.  This reduces the good-event count to `clone_fiber_card`. -/
+
+/-- **Fiber cardinality**: for a base subset `W` (containing the base roots) that induces `F₀`, the
+good blow-up subsets whose projection is exactly `W` number `∏_{v ∈ W ∖ roots} m v` — one free clone
+choice per non-root vertex of `W`, with the planted roots forced.  Proved by the explicit bijection
+`S' ↦ S' ∖ planted-roots` / `Q ↦ Q ∪ planted-roots` with the clone-fiber subsets counted by
+`clone_fiber_card`; `good_event_induces_iff` transfers the "induces `F₀`" condition between the
+blow-up subset and its projection. -/
 private theorem fiber_card (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
     {U : Type} [Fintype U] (F₀ : LabeledGraph H U)
     (W : Finset (Fin n))
@@ -202,6 +231,8 @@ private theorem fiber_card (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (
       exact (Finset.mem_sdiff.mp h1).2 h2
     exact Finset.union_sdiff_cancel_right hdisj
 
+
+/-! ## The good-event count -/
 
 /-- **Good-event count** (`lem:planted-estimate`): the good blow-up subsets inducing `F₀` are
 counted by `∑_W ∏_{v ∈ W ∖ roots} m v` over the base subsets `W` (containing the roots) inducing

@@ -2,6 +2,8 @@ import LeanFlagAlgebras.FlagAlgebra.FlagAlgebra
 
 /-! # The flag-density bridge (entry point)
 
+Infrastructure for §5 `lem:planted-estimate` of `MetaTheory/paper.tex`.
+
 The planted blow-up estimate compares the flag density `p(F₀, ·)` on a blow-up with its value
 on the base graph.  To reason about it quantitatively we first expose the abstract
 `flagDensity₁` as the concrete *card ratio* it is by definition:

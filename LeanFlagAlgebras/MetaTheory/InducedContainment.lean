@@ -3,6 +3,9 @@ import LeanFlagAlgebras.FlagAlgebra.FlagOperators
 
 /-! # From positive flag density to induced-subgraph containment
 
+Infrastructure for §5 of `MetaTheory/paper.tex` (no direct paper counterpart): the containment
+bridge feeding the `K_r`-free heredity step (`forbiddenFree_of_mem` in `GraphClassConstraint`).
+
 Two bridging theorems linking a positive labeled flag density to a concrete
 induced-subgraph containment witness.
 

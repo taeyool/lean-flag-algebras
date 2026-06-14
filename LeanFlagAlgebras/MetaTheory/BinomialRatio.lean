@@ -2,6 +2,12 @@ import Mathlib
 
 /-! # Limits of the planted-estimate ratio under uniform clone sizes
 
+Analytic core (§5 of `MetaTheory/paper.tex`) of the uniform-clone specialisation of
+`lem:planted-estimate`: it shows the "good" probability `ρ` of `PlantedEstimate.planted_estimate`
+tends to `1` in the iterated `M → ∞`, `n → ∞` limit, so the planted blow-up density matches the
+base density in the limit.  (`E1`/`E2` below are this file's own mnemonics for the two limit
+lemmas, not paper labels.)
+
 Two analytic limit lemmas about the planted-estimate ratio when every clone of the blow-up has the
 *same* size `M`, so an `n`-vertex base blows up to a graph on `n · M` vertices.  Writing `k` for the
 type size and `ℓ` for the test-flag size, set `r := ℓ − k`.
