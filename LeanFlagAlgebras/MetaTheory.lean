@@ -9,6 +9,7 @@ import LeanFlagAlgebras.MetaTheory.LabeledCount
 import LeanFlagAlgebras.MetaTheory.BlowupFlag
 import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 import LeanFlagAlgebras.MetaTheory.CloneCount
+import LeanFlagAlgebras.MetaTheory.PlantedCount
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -40,6 +41,8 @@ Aggregator. Currently wires in:
   determined by its flag-integrals (the weak-limit uniqueness used in `thm:clone-root-plantable`).
 * `CloneCount`       — `clone_fiber_card`: subsets of the blow-up projecting injectively onto a
   base set `W` number `∏_{v∈W} m v` (the clone multiplicity in the good-event count).
+* `PlantedCount`     — `good_event_count`: the good blow-up subsets inducing `F₀` are counted
+  fiberwise as `∑_W ∏_{v∈W∖roots} m v` over the base subsets `W` inducing `F₀`.
 
 Still to come (§5): `lem:planted-estimate` (the sampling argument gluing the subset count to
 `ProductTV` via `blowupGoodIso` and bad-event bounds), then `thm:clone-root-plantable`
