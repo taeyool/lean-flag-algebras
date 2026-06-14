@@ -13,6 +13,7 @@ import LeanFlagAlgebras.MetaTheory.PlantedCount
 import LeanFlagAlgebras.MetaTheory.CloneTotal
 import LeanFlagAlgebras.MetaTheory.PlantedEstimate
 import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
+import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -56,8 +57,12 @@ Aggregator. Currently wires in:
 * `ForbiddenIdeal`   — §3 faithfulness `forbiddenIdeal_eq_span`: under heredity (the product of a
   forbidden flag with any element stays in the ℝ-span of the forbidden flags), the forbidden
   ideal coincides with that ℝ-span.
+* `ConstrainedRep`   — the constrained representation theorem `exists_constrained_flagSeq_limit`
+  (constrained refinement of Razborov 3.3(b)): a positive homomorphism vanishing on every
+  forbidden flag is the density limit of a flag sequence whose flags are themselves forbidden-free.
+  The foundational input to `thm:clone-root-plantable`.
 
-Still to come (§5): `thm:clone-root-plantable` (representation theorem + weak-limit uniqueness via
-`MeasureUniqueness` + closed-set Portmanteau + `planted_estimate`/`lem:planted-mass`) and
+Still to come (§5): `thm:clone-root-plantable` (constrained representation + weak-limit uniqueness
+via `MeasureUniqueness` + closed-set Portmanteau + `planted_estimate`/`lem:planted-mass`) and
 `CloneClosed` (clone-closed classes are root-plantable; clique-free and triangle-free corollary).
 -/
