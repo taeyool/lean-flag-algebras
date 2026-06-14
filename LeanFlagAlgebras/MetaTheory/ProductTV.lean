@@ -103,4 +103,49 @@ theorem prod_tv_bound (μ ν : α → ℝ) (hμ : ∑ a, μ a = 1) (hν : ∑ a,
               = ↑q * (∑ a, |μ a - ν a|) + ∑ a, |μ a - ν a| := by push_cast; ring
           rw [hexp]; linarith [ih]
 
+/-- **The `ℓ¹` normalization estimate** (paper §5, lines 877–901): the clone-weighted
+probability vector `v ↦ a v / A` (with `A = ∑ a`) is within `4·err` in `ℓ¹` of the "uniform"
+vector `v ↦ c / β` (with `β = ∑ c = |U|·c`), provided the unnormalized weights `a v` are within
+`err` (summed) of the constant `c` and `β ≥ 1/2`.  Composed with `prod_tv_bound`, this gives the
+total-variation target for the planted blow-up estimate. -/
+theorem l1_normalization_bound {U : Type*} [Fintype U] (a : U → ℝ) (c err : ℝ)
+    (ha : ∀ v, 0 ≤ a v) (herr : ∑ v, |a v - c| ≤ err)
+    (hβ : (1 : ℝ) / 2 ≤ ∑ _v : U, c) (hA : 0 < ∑ v, a v) :
+    ∑ v, |a v / (∑ u, a u) - c / (∑ _u : U, c)| ≤ 4 * err := by
+  set A := ∑ u, a u with hAdef
+  set β := ∑ _u : U, c with hβdef
+  have hβpos : (0 : ℝ) < β := by linarith
+  have herr0 : 0 ≤ err := le_trans (Finset.sum_nonneg fun v _ => abs_nonneg _) herr
+  have hAβ : |A - β| ≤ err := by
+    have hsub : A - β = ∑ v, (a v - c) := by rw [hAdef, hβdef, Finset.sum_sub_distrib]
+    rw [hsub]; exact (Finset.abs_sum_le_sum_abs _ _).trans herr
+  have htwo : ∀ x : ℝ, 0 ≤ x → x / β ≤ 2 * x := fun x hx => by
+    rw [div_le_iff₀ hβpos]; nlinarith [hβ, hx]
+  calc ∑ v, |a v / A - c / β|
+      ≤ ∑ v, (|a v / A - a v / β| + |a v / β - c / β|) :=
+        Finset.sum_le_sum fun v _ => abs_sub_le _ _ _
+    _ = (∑ v, |a v / A - a v / β|) + (∑ v, |a v / β - c / β|) := Finset.sum_add_distrib
+    _ ≤ 2 * err + 2 * err := by
+        gcongr ?_ + ?_
+        · have hid : ∀ v, |a v / A - a v / β| = a v * |1 / A - 1 / β| := fun v => by
+            rw [div_eq_mul_inv (a v), div_eq_mul_inv (a v), ← mul_sub, abs_mul,
+              abs_of_nonneg (ha v), one_div, one_div]
+          simp_rw [hid]
+          rw [← Finset.sum_mul, ← hAdef]
+          have hcompute : A * |1 / A - 1 / β| = |A - β| / β := by
+            have hstep : (1 : ℝ) / A - 1 / β = (β - A) / (A * β) := by
+              rw [div_sub_div _ _ (ne_of_gt hA) (ne_of_gt hβpos), one_mul, mul_one]
+            rw [hstep, abs_div, abs_of_pos (mul_pos hA hβpos), abs_sub_comm β A]
+            field_simp
+          rw [hcompute]
+          calc |A - β| / β ≤ err / β := by gcongr
+            _ ≤ 2 * err := htwo err herr0
+        · have hid : ∀ v, |a v / β - c / β| = |a v - c| / β := fun v => by
+            rw [div_sub_div_same, abs_div, abs_of_pos hβpos]
+          simp_rw [hid]
+          rw [← Finset.sum_div]
+          calc (∑ v, |a v - c|) / β ≤ err / β := by gcongr
+            _ ≤ 2 * err := htwo err herr0
+    _ = 4 * err := by ring
+
 end FlagAlgebras.MetaTheory
