@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.FlagAlgebra.SubflagDensity
+import LeanFlagAlgebras.MetaTheory.DensityBridge
 
 /-! # Labeled graph count as a vertex-subset count
 
@@ -76,5 +77,17 @@ theorem labeledGraphCount_eq_subset_count (H : LabeledGraph σ U) (G : LabeledGr
       exact ⟨inducedLabeledSubgraph_isInduced G _ h, hiso⟩
     · -- `i` of this subgraph is `S`
       simp only [inducedLabeledSubgraph_verts G _ h, Finset.toFinset_coe]
+
+/-- **Flag density as a subset-sampling probability**: the density of `H` in `G` is the
+fraction of `(|H|−k)`-vertex subsets (together with the roots) that induce a copy of `H`.
+This is the form the planted blow-up estimate samples against. -/
+theorem flagDensity₁_eq_subset_count_div {n₀ : ℕ} {σ' : FlagType (Fin n₀)} {ℓ ℓ' : ℕ}
+    (Hrep : LabeledGraph σ' (Fin ℓ)) (Grep : LabeledGraph σ' (Fin ℓ')) :
+    flagDensity₁ (⟦Hrep⟧ : FlagWithSize σ' ℓ) (⟦Grep⟧ : FlagWithSize σ' ℓ')
+      = ((Finset.univ.filter (fun S : Finset (Fin ℓ') =>
+          ∃ (h : Grep.type_verts ⊆ (↑S : Set (Fin ℓ'))),
+            Nonempty ((inducedLabeledSubgraph Grep (↑S) h).coe ≃f Hrep))).card : ℚ)
+        / ((Grep.size - σ'.size).choose (Hrep.size - σ'.size)) := by
+  rw [flagDensity₁_eq_count_div, labeledGraphCount_eq_subset_count]
 
 end FlagAlgebras.MetaTheory
