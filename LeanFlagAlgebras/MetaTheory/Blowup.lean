@@ -65,6 +65,22 @@ theorem cliqueFree_independentBlowup [DecidableEq V] (G : SimpleGraph V) (m : V 
     exact hs.isClique hp hq hpq
   · rw [Finset.card_image_of_injOn (blowup_clique_projInjOn G m hs.isClique), hs.card_eq]
 
+/-! ## Good-event projection (`lem:planted-estimate`, the structure-preserving step) -/
+
+/-- **Projection preserves induced structure on a transversal**: on a vertex set `S` meeting
+each clone class at most once (so `Sigma.fst` is injective on `S`), the induced subgraph of the
+blow-up on `S` is isomorphic, via the projection, to the induced subgraph of `G` on `Sigma.fst ''
+S`.  This is the "good event" step of `lem:planted-estimate`: a sampled set with distinct base
+vertices induces the same graph as its projection. -/
+noncomputable def blowupInduceIso (G : SimpleGraph V) (m : V → ℕ)
+    {S : Set (Σ v : V, Fin (m v))} (hinj : Set.InjOn Sigma.fst S) :
+    (independentBlowup G m).induce S ≃g G.induce (Sigma.fst '' S) where
+  toEquiv := Equiv.Set.imageOfInjOn Sigma.fst S hinj
+  map_rel_iff' := by
+    intro a b
+    rw [SimpleGraph.induce_adj, SimpleGraph.induce_adj, independentBlowup_adj]
+    rfl
+
 /-! ## Positive probability of the planted root (`lem:planted-mass`) -/
 
 open Finset
