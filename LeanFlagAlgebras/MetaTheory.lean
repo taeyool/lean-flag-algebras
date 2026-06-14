@@ -2,6 +2,7 @@ import LeanFlagAlgebras.MetaTheory.MeasureSupport
 import LeanFlagAlgebras.MetaTheory.EvalAlgebra
 import LeanFlagAlgebras.MetaTheory.ConstrainedClass
 import LeanFlagAlgebras.MetaTheory.SupportClosure
+import LeanFlagAlgebras.MetaTheory.Blowup
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -18,10 +19,12 @@ Aggregator. Currently wires in:
   supported space `Q_σ` with its intrinsic description `mem_Qσ_iff` and closedness.
 * `SupportClosure`  — §2 `lem:support-passes-general` and §4 `def:root-planting` +
   `thm:support-criterion` (the support-closure criterion).
+* `Blowup`          — §5 `def:independent-blow-up`: the independent blow-up construction, its
+  projection, and the preservation of `K_r`-freeness (the core of `cor:clique-free`).
 
-Still to come (§5): `Blowup` (independent blow-up, planted-mass and planted-estimate) and
-`CloneClosed` (clone-closed classes are root-plantable; clique-free and triangle-free
-corollary), plus
+Still to come (§5): the quantitative estimates `lem:planted-mass` and `lem:planted-estimate`
+(in `Blowup`), and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
+triangle-free corollary), plus
 the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
 ideal).
 -/
