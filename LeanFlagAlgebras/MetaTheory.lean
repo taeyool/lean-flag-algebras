@@ -3,6 +3,7 @@ import LeanFlagAlgebras.MetaTheory.EvalAlgebra
 import LeanFlagAlgebras.MetaTheory.ConstrainedClass
 import LeanFlagAlgebras.MetaTheory.SupportClosure
 import LeanFlagAlgebras.MetaTheory.Blowup
+import LeanFlagAlgebras.MetaTheory.ProductTV
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -20,10 +21,13 @@ Aggregator. Currently wires in:
 * `SupportClosure`  — §2 `lem:support-passes-general` and §4 `def:root-planting` +
   `thm:support-criterion` (the support-closure criterion).
 * `Blowup`          — §5 `def:independent-blow-up`: the independent blow-up construction, its
-  projection, and the preservation of `K_r`-freeness (the core of `cor:clique-free`).
+  projection, the preservation of `K_r`-freeness (the core of `cor:clique-free`), and
+  `lem:planted-mass` (positive probability of the planted root).
+* `ProductTV`       — the product-distribution total-variation bound
+  (`eq:good-unnormalized-weight-bound`), the analytic core of `lem:planted-estimate`.
 
-Still to come (§5): the quantitative estimates `lem:planted-mass` and `lem:planted-estimate`
-(in `Blowup`), and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
+Still to come (§5): `lem:planted-estimate` (assembling `ProductTV` with the blow-up density
+bridge), and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
 triangle-free corollary), plus
 the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
 ideal).
