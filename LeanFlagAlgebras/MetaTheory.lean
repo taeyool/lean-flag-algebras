@@ -10,6 +10,7 @@ import LeanFlagAlgebras.MetaTheory.BlowupFlag
 import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 import LeanFlagAlgebras.MetaTheory.CloneCount
 import LeanFlagAlgebras.MetaTheory.PlantedCount
+import LeanFlagAlgebras.MetaTheory.CloneTotal
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
