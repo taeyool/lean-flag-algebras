@@ -16,6 +16,8 @@ import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.InducedContainment
 import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
+import LeanFlagAlgebras.MetaTheory.BinomialRatio
+import LeanFlagAlgebras.MetaTheory.WeakConvergence
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -72,7 +74,16 @@ Aggregator. Currently wires in:
   forbidden-free, via the containment bridge + `comap`), and the `K_r`-free instance
   `cliqueFreeClass`.
 
-Still to come (§5): `thm:clone-root-plantable` (the weak-limit step — blow-up rooting measures
-converge to `ℙ[φ₀]` via `MeasureUniqueness` + closed-set Portmanteau, glued with
-`planted_estimate`/`lem:planted-mass`) and `cor:clique-free` (from `cliqueFreeClass`).
+* `BinomialRatio`    — the analytic core of the planted limit under uniform clone sizes:
+  `rho_tendsto_atTop` (`M^(ℓ−k)·C(n−k,ℓ−k)/C(nM−k,ℓ−k) → descFactorial(n−k,ℓ−k)/n^(ℓ−k)` as
+  `M→∞`) and `rho_inf_tendsto_one` (that limit `→ 1` as `n→∞`).
+* `WeakConvergence`  — `tendsto_rootingMeasure_extend`: the σ-rooting measures of *any* flag
+  sequence converging to `φ₀` converge weakly (on `FlagDensitySpace σ`) to the inclusion-
+  pushforward `(ℙ[φ₀]).map Subtype.val` of the random extension (subsequence-uniqueness via the
+  existing integral identification + `measure_eq_of_integral_flag_eq`).
+
+Still to come (§5): `thm:clone-root-plantable` (assemble the constrained representation, the
+uniform blow-up sequence, `WeakConvergence` + closed-set Portmanteau, and the `BinomialRatio`/
+`planted_estimate`/`lem:planted-mass` quantitative bounds) and `cor:clique-free` (from
+`cliqueFreeClass`).
 -/
