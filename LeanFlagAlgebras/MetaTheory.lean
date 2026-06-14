@@ -18,6 +18,8 @@ import LeanFlagAlgebras.MetaTheory.InducedContainment
 import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
 import LeanFlagAlgebras.MetaTheory.BinomialRatio
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
+import LeanFlagAlgebras.MetaTheory.RootingUniform
+import LeanFlagAlgebras.MetaTheory.BlowupSequence
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -82,8 +84,20 @@ Aggregator. Currently wires in:
   pushforward `(ℙ[φ₀]).map Subtype.val` of the random extension (subsequence-uniqueness via the
   existing integral identification + `measure_eq_of_integral_flag_eq`).
 
+* `RootingUniform`   — the σ-rooting measure is the uniform-over-rootings pushforward:
+  `toProbMeasure_apply_eq_dnf_ratio` (the measure of a set is the `downwardNormalizingFactor`
+  ratio over labelings whose density profile lands in the set) and
+  `sum_isomorphismCount_labelExtensions` (`∑ isomorphismCount = #σ-rootings of the host graph`).
+  Together: rooting-measure(A) = `#{rootings with profile ∈ A} / #{rootings}` — the bridge that
+  turns `lem:planted-mass` (an embedding ratio) into a measure lower bound.
+* `BlowupSequence`   — part (2) of the capstone: the uniform `(M+1)`-blow-up flag sequence
+  `blowupFlagSeq` (presented on `Fin (n·(M+1))` via `blowupGraphFin`), its subsequential limit
+  `exists_blowup_limit`, and the two properties `blowup_limit_mem_Q0` (`posHomPoint φ₀ ∈ Q0`, via
+  `forbiddenFree_of_mem` + `clone_closed`) and `blowup_limit_type_pos` (`φ₀⟨σ⟩₀ > 0`, from the
+  `1/nⁿ⁰` σ-type density lower bound surviving the blow-up).
+
 Still to come (§5): `thm:clone-root-plantable` (assemble the constrained representation, the
-uniform blow-up sequence, `WeakConvergence` + closed-set Portmanteau, and the `BinomialRatio`/
-`planted_estimate`/`lem:planted-mass` quantitative bounds) and `cor:clique-free` (from
-`cliqueFreeClass`).
+blow-up limit `φ₀`, `WeakConvergence` + closed-set Portmanteau, and `RootingUniform` +
+`planted_estimate`/`BinomialRatio`/`lem:planted-mass` for the cylinder mass bound) and
+`cor:clique-free` (from `cliqueFreeClass`).
 -/
