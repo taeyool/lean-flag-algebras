@@ -80,7 +80,7 @@ import LeanFlagAlgebras.Flagmatic.K3forbidC4
 import LeanFlagAlgebras.Flagmatic.K4turan
 -- import LeanFlagAlgebras.Flagmatic.K5turan
 
--- MetaTheory (paper.tex §1–5): §2–§4 complete; §5 (Blowup, CloneClosed) in progress
+-- MetaTheory (paper.tex §1–5): complete and sorry-free (clone-closed classes are root-plantable)
 import LeanFlagAlgebras.MetaTheory
 
 /-! # LeanFlagAlgebras — top-level import manifest
