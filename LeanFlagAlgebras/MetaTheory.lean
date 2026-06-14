@@ -14,6 +14,8 @@ import LeanFlagAlgebras.MetaTheory.CloneTotal
 import LeanFlagAlgebras.MetaTheory.PlantedEstimate
 import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
+import LeanFlagAlgebras.MetaTheory.InducedContainment
+import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -61,8 +63,16 @@ Aggregator. Currently wires in:
   (constrained refinement of Razborov 3.3(b)): a positive homomorphism vanishing on every
   forbidden flag is the density limit of a flag sequence whose flags are themselves forbidden-free.
   The foundational input to `thm:clone-root-plantable`.
+* `InducedContainment` — the density/containment bridge: a positive flag-density yields an inducing
+  vertex subset (`exists_inducing_subset_of_flagDensity₁_ne_zero`) and, for unlabelled flags, an
+  induced graph embedding `D.graph ↪g H.graph` (`exists_graph_embedding_of_flagDensity₁_ne_zero`).
+* `GraphClassConstraint` — the hereditary clone-closed `GraphClass` (`Mem`/`comap`/`clone_closed`),
+  its `Constraint` (`constraintOf`), the two capstone-consumption lemmas `mem_of_forbiddenFree`
+  (forbidden-free ⟹ in class, via `flagDensity_self`) and `forbiddenFree_of_mem` (in class ⟹
+  forbidden-free, via the containment bridge + `comap`), and the `K_r`-free instance
+  `cliqueFreeClass`.
 
-Still to come (§5): `thm:clone-root-plantable` (constrained representation + weak-limit uniqueness
-via `MeasureUniqueness` + closed-set Portmanteau + `planted_estimate`/`lem:planted-mass`) and
-`CloneClosed` (clone-closed classes are root-plantable; clique-free and triangle-free corollary).
+Still to come (§5): `thm:clone-root-plantable` (the weak-limit step — blow-up rooting measures
+converge to `ℙ[φ₀]` via `MeasureUniqueness` + closed-set Portmanteau, glued with
+`planted_estimate`/`lem:planted-mass`) and `cor:clique-free` (from `cliqueFreeClass`).
 -/
