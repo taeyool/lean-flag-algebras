@@ -8,6 +8,7 @@ import LeanFlagAlgebras.MetaTheory.DensityBridge
 import LeanFlagAlgebras.MetaTheory.LabeledCount
 import LeanFlagAlgebras.MetaTheory.BlowupFlag
 import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
+import LeanFlagAlgebras.MetaTheory.CloneCount
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -37,6 +38,8 @@ Aggregator. Currently wires in:
   set the induced labelled subgraph of the blow-up is `≃f` (via projection) that of the base.
 * `MeasureUniqueness` — `measure_eq_of_integral_flag_eq`: a probability measure on `X_σ` is
   determined by its flag-integrals (the weak-limit uniqueness used in `thm:clone-root-plantable`).
+* `CloneCount`       — `clone_fiber_card`: subsets of the blow-up projecting injectively onto a
+  base set `W` number `∏_{v∈W} m v` (the clone multiplicity in the good-event count).
 
 Still to come (§5): `lem:planted-estimate` (the sampling argument gluing the subset count to
 `ProductTV` via `blowupGoodIso` and bad-event bounds), then `thm:clone-root-plantable`
