@@ -7,6 +7,7 @@ import LeanFlagAlgebras.MetaTheory.ProductTV
 import LeanFlagAlgebras.MetaTheory.DensityBridge
 import LeanFlagAlgebras.MetaTheory.LabeledCount
 import LeanFlagAlgebras.MetaTheory.BlowupFlag
+import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -34,9 +35,12 @@ Aggregator. Currently wires in:
   flag density as the fraction of vertex subsets inducing a copy of the flag.
 * `BlowupFlag`      — the blow-up/base as labelled graphs, and `blowupGoodIso`: on a good vertex
   set the induced labelled subgraph of the blow-up is `≃f` (via projection) that of the base.
+* `MeasureUniqueness` — `measure_eq_of_integral_flag_eq`: a probability measure on `X_σ` is
+  determined by its flag-integrals (the weak-limit uniqueness used in `thm:clone-root-plantable`).
 
 Still to come (§5): `lem:planted-estimate` (the sampling argument gluing the subset count to
-`ProductTV` via `blowupGoodIso` and bad-event bounds), then `CloneClosed` (clone-closed classes are root-plantable; clique-free and
+`ProductTV` via `blowupGoodIso` and bad-event bounds), then `thm:clone-root-plantable`
+(representation theorem + Portmanteau + `MeasureUniqueness`) and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
 triangle-free corollary), plus
 the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
 ideal).
