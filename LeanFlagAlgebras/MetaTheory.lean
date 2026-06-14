@@ -11,6 +11,7 @@ import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 import LeanFlagAlgebras.MetaTheory.CloneCount
 import LeanFlagAlgebras.MetaTheory.PlantedCount
 import LeanFlagAlgebras.MetaTheory.CloneTotal
+import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -44,11 +45,14 @@ Aggregator. Currently wires in:
   base set `W` number `∏_{v∈W} m v` (the clone multiplicity in the good-event count).
 * `PlantedCount`     — `good_event_count`: the good blow-up subsets inducing `F₀` are counted
   fiberwise as `∑_W ∏_{v∈W∖roots} m v` over the base subsets `W` inducing `F₀`.
+* `CloneTotal`       — `clone_total_card`/`clone_total_card_const`: the total good size-`r`
+  supersets of the roots, `C(|S₀|,r)·∏ m v` (equal clones: `C(|S₀|,r)·M^r`).
+* `ForbiddenIdeal`   — §3 faithfulness `forbiddenIdeal_eq_span`: under heredity (the product of a
+  forbidden flag with any element stays in the ℝ-span of the forbidden flags), the forbidden
+  ideal coincides with that ℝ-span.
 
-Still to come (§5): `lem:planted-estimate` (the sampling argument gluing the subset count to
-`ProductTV` via `blowupGoodIso` and bad-event bounds), then `thm:clone-root-plantable`
-(representation theorem + Portmanteau + `MeasureUniqueness`) and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
-triangle-free corollary), plus
-the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
-ideal).
+Still to come (§5): `lem:planted-estimate` (`PlantedEstimate.planted_estimate`, the sampling
+argument gluing the subset count to the good/bad split — in progress), then
+`thm:clone-root-plantable` (representation theorem + Portmanteau + `MeasureUniqueness`) and
+`CloneClosed` (clone-closed classes are root-plantable; clique-free and triangle-free corollary).
 -/
