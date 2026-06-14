@@ -90,4 +90,19 @@ noncomputable def blowupGoodIso (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, 
   rw [he (Bsub.coe.type_embed t)]
   rfl
 
+/-- **Good event preserves the induced flag**: on a good vertex set, the induced labelled
+subgraph of the blow-up is `≃f F₀` iff the induced labelled subgraph of the base on the
+projection is.  (Immediate from `blowupGoodIso` by composition.) -/
+lemma good_event_induces_iff {U : Type} (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
+    {S' : Set (Σ v : Fin n, Fin (m v))} (hinj : Set.InjOn Sigma.fst S')
+    (hroot : (blowupLabeledGraph m θ c).type_verts ⊆ S')
+    (hπ : (baseLabeledGraph θ).type_verts ⊆ Sigma.fst '' S') (F₀ : LabeledGraph H U) :
+    Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) S' hroot).coe ≃f F₀)
+      ↔ Nonempty ((inducedLabeledSubgraph (baseLabeledGraph θ) (Sigma.fst '' S') hπ).coe ≃f F₀) := by
+  constructor
+  · rintro ⟨φ⟩
+    exact ⟨(blowupGoodIso m θ c hinj hroot hπ).symm.trans φ⟩
+  · rintro ⟨φ⟩
+    exact ⟨(blowupGoodIso m θ c hinj hroot hπ).trans φ⟩
+
 end FlagAlgebras.MetaTheory
