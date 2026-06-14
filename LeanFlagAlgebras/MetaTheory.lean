@@ -4,6 +4,7 @@ import LeanFlagAlgebras.MetaTheory.ConstrainedClass
 import LeanFlagAlgebras.MetaTheory.SupportClosure
 import LeanFlagAlgebras.MetaTheory.Blowup
 import LeanFlagAlgebras.MetaTheory.ProductTV
+import LeanFlagAlgebras.MetaTheory.DensityBridge
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -25,9 +26,11 @@ Aggregator. Currently wires in:
   `lem:planted-mass` (positive probability of the planted root).
 * `ProductTV`       — the product-distribution total-variation bound
   (`eq:good-unnormalized-weight-bound`), the analytic core of `lem:planted-estimate`.
+* `DensityBridge`   — the entry point of the density bridge: `flagDensity₁ F G` exposed as the
+  card ratio `labeledGraphCount F G / ((|G|−k) choose (|F|−k))`.
 
-Still to come (§5): `lem:planted-estimate` (assembling `ProductTV` with the blow-up density
-bridge), and `CloneClosed` (clone-closed classes are root-plantable; clique-free and
+Still to come (§5): the rest of the density bridge (counting `labeledGraphCount` on the blow-up
+via vertex subsets) and `lem:planted-estimate` (gluing it to `ProductTV`), then `CloneClosed` (clone-closed classes are root-plantable; clique-free and
 triangle-free corollary), plus
 the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
 ideal).
