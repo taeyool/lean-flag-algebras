@@ -124,6 +124,80 @@ documented in the relevant module's header.
 
 ---
 
+## How the existing flag-algebra formalisation enabled this
+
+This meta-theory is a layer **on top of** the repository's existing formalisation of flag algebras
+(`LeanFlagAlgebras/FlagAlgebra/`, `LeanFlagAlgebras/Forbid/`). That base supplied the entire
+*semantic foundation* — Razborov's flag algebra, its homomorphism space, the random-extension
+measure, the density and rooting machinery — so the §1–5 results could be **stated and proved by
+reusing deep existing results rather than re-deriving the framework**. This is what reduced the task
+from "formalise flag algebras *and then* the meta-theory" to "formalise the meta-theory, reusing
+the flag algebras", and is the single biggest reason a `sorry`-free §1–5 was feasible. Concretely:
+
+1. **The objects to talk about already existed.** `FlagAlgebra σ` (the algebra `A^σ`, with
+   `basisVector`, the product, `flagDensity_self`), `PositiveHom σ`, and — crucially — the **compact
+   metric homomorphism space `PositiveHomSpace σ` (`X_σ`)** with its `CompactSpace`/`MetricSpace`/
+   closedness instances and coordinate continuity (`FinFlag.continuous`). Because `X_σ` and its
+   topology were already in place, §2–§4 (`Q_σ`, `S_σ`, the support-closure criterion) could be
+   phrased *directly* as topology/measure statements about `X_σ`, with no need to build the space.
+
+2. **The representation theorem — and its proof *technique* — was reusable.**
+   `positiveHom_as_flagSeq_limit` / `flagSeq_limit_mem_positiveHom` (FlagSequence) realise points of
+   `X_σ` as graph limits. Its proof goes through a probabilistic construction — `flagSeqMeasure`,
+   `randomDensity_expectation`, `flagSeqMeasure_error_prob_zero`. The **single hardest new result**,
+   the constrained representation theorem (`ConstrainedRep`), was obtained by *adapting that very
+   machinery*: intersecting the existing full-measure convergence event with a new full-measure
+   "forbidden-free" event. Without the existing `flagSeqMeasure` development this step would have
+   meant redeveloping the whole representation theorem from scratch.
+
+3. **The random-extension measure `ℙ[φ₀]` gave the ensemble semantics for free.**
+   `probMeasure_extend_emptyType_positiveHom` together with its **defining integral identity**
+   (`…_spec`: `∫ φ f dℙ[φ₀] = φ₀⟦f⟧₀ / φ₀⟨σ⟩₀`, Razborov 3.5) is what "ensemble non-negativity" and
+   the §3 *support-passes* lemma are manipulations of. The surrounding tightness/weak-convergence
+   results — `flagDensitySpace_probMeasure_isSeqCompact` (Prokhorov),
+   `exists_converge_flagSeq_and_probMeasure_tendsto`,
+   `tendsto_integral_flagDensitySpace_of_converge_flagSeq`,
+   `increasing_flagSeq_contain_convergent_subseq` — reduced `WeakConvergence`'s hard
+   "`P_M ⇒ ℙ[φ₀]`" theorem to a subsequence-uniqueness argument over existing lemmas, instead of
+   from-scratch measure theory.
+
+4. **The rooting measure and its combinatorics collapsed the capstone's crux.** `FinFlag.toPMF` /
+   `FinFlag.toProbMeasure` (the σ-rooting probability measure, weighted by
+   `downwardNormalizingFactor`) and the count identities `isomorphismCount`, `labelExtensions`, and
+   `isoInjectiveMapSet_card_eq_sum_labelExtensions_isomorphismCount_mul_labeledGraphCount` (all in
+   FlagOperators) were exactly what `RootingUniform` and the crux `planted_cylinder_mass` needed:
+   because `isomorphismCount` *already* counts σ-rootings per isomorphism class, the feared
+   measure-↔-embedding bridge became a short regrouping rather than a several-hundred-line
+   development.
+
+5. **Flag density as a count, and the labelled-graph machinery, underpin the whole planted
+   estimate.** `flagDensity₁`, `flagDensity_self` (a flag has density `1` in itself — the
+   *self-forbidding* trick), `labeledGraphCount`, `subflagDensity`, and
+   `LabeledGraph` / `LabeledSubgraph` / `inducedLabeledSubgraph` / `≃f` (`LabeledGraphIso`) from
+   `FlagDef` drive `DensityBridge`, `LabeledCount`, `CloneCount`/`CloneTotal`/`PlantedCount`,
+   `PlantedEstimate`, and the heredity lemmas in `GraphClassConstraint`.
+
+6. **The labelled/unlabelled bridge was already built.** The `downward` operators (`⟦·⟧₀`),
+   `⟨σ⟩₀` (`flagType_asEmptyTypeAlgebra`), and `downwardNormalizingFactor` are the translation
+   between the σ-labelled and `∅ₜ`-unlabelled (graph) worlds that §3 and §5 cross constantly.
+
+7. **The single-forbidden-flag pattern was the template to generalise.** `Forbid/Basic`'s
+   `forbidEq` / `forbidLE` (reasoning conditioned a.s. on one forbidden flag) is conceptually what
+   the `Constraint` / `GraphClass` framework here generalises to an entire forbidden family.
+
+8. **Mathlib provided the analytic finale on top of the repo base:** Stone–Weierstrass and Urysohn
+   (the support-closure criterion), closed-set Portmanteau and `Measure.support` (the capstone's
+   limit step), `Ideal.Quotient` (the §3 quotient algebra), and `SimpleGraph.CliqueFree.comap`
+   (`K_r`-free heredity).
+
+What is genuinely **new** here — not present in the existing formalisation — is the meta-theory
+layer itself: the constrained class and quotient (§3), the support-closure criterion (§4), the
+independent blow-up with its planted estimate and the reusable `GraphClass` packaging, the capstone
+(§5), and the constrained representation theorem. These are built *with*, but go beyond, the
+flag-algebra base.
+
+---
+
 ## Repository layout (this directory)
 
 * **`paper.tex`** — the source article; §1–5 are what is formalised here.
@@ -133,10 +207,9 @@ documented in the relevant module's header.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
 
 This `MetaTheory` development is built *on top of* the main `LeanFlagAlgebras/` formalisation of
-flag algebras (the flag algebra `A^σ`, positive homomorphisms `PositiveHom σ`, the compact
-homomorphism space `PositiveHomSpace σ`, the random-extension measure `ℙ[φ₀]`, etc.); it adds new
-theory rather than re-deriving that machinery. See the repository's top-level `CLAUDE.md` for the
-overall flag-algebra codebase.
+flag algebras and adds new theory rather than re-deriving that machinery — see
+[How the existing flag-algebra formalisation enabled this](#how-the-existing-flag-algebra-formalisation-enabled-this)
+above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra codebase.
 
 ---
 
