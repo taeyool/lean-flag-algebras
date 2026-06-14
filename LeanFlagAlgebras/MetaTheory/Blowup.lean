@@ -81,6 +81,19 @@ noncomputable def blowupInduceIso (G : SimpleGraph V) (m : V → ℕ)
     rw [SimpleGraph.induce_adj, SimpleGraph.induce_adj, independentBlowup_adj]
     rfl
 
+/-- The **planted labelling** as an induced graph embedding: placing each labelled vertex `i` at
+the clone `⟨θ i, c i⟩` embeds the type graph `H` into the blow-up (the type embedding of the
+planted flag `(B_N, θ̂)`).  Adjacency is preserved and reflected because the blow-up adjacency of
+two clones is the `G`-adjacency of their base vertices. -/
+def blowupPlantedEmb {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)} (m : Fin n → ℕ)
+    (θ : H ↪g G) (c : ∀ i, Fin (m (θ i))) : H ↪g independentBlowup G m where
+  toFun i := ⟨θ i, c i⟩
+  inj' i j h := θ.injective (congrArg Sigma.fst h)
+  map_rel_iff' := by
+    intro a b
+    rw [independentBlowup_adj]
+    exact θ.map_adj_iff
+
 /-! ## Positive probability of the planted root (`lem:planted-mass`) -/
 
 open Finset
