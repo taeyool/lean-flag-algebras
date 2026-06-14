@@ -20,6 +20,7 @@ import LeanFlagAlgebras.MetaTheory.BinomialRatio
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.RootingUniform
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
+import LeanFlagAlgebras.MetaTheory.CloneClosed
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -96,8 +97,16 @@ Aggregator. Currently wires in:
   `forbiddenFree_of_mem` + `clone_closed`) and `blowup_limit_type_pos` (`φ₀⟨σ⟩₀ > 0`, from the
   `1/nⁿ⁰` σ-type density lower bound surviving the blow-up).
 
-Still to come (§5): `thm:clone-root-plantable` (assemble the constrained representation, the
-blow-up limit `φ₀`, `WeakConvergence` + closed-set Portmanteau, and `RootingUniform` +
-`planted_estimate`/`BinomialRatio`/`lem:planted-mass` for the cylinder mass bound) and
-`cor:clique-free` (from `cliqueFreeClass`).
+* `CloneClosed`      — §5 finale. `clone_root_plantable` (`thm:clone-root-plantable`): every
+  clone-closed hereditary `GraphClass` is root-plantable, `Sσ = Qσ`. The reverse inclusion
+  `Qσ ⊆ Sσ` assembles: the constrained representation (in-class base flag `G_t`), the uniform
+  blow-up limit `φ₀ ∈ Q0` with `φ₀⟨σ⟩₀ > 0`, weak convergence of the rooting measures to
+  `ℙ[φ₀]`, closed-set Portmanteau, and the cylinder-mass bound `P_M(C̃) ≥ (1/2n)ⁿ⁰` (`RootingUniform`
+  turns the rooting measure into a labeling/embedding count, `planted_estimate`+`BinomialRatio`
+  put the planted rootings in the cylinder, `lem:planted-mass` lower-bounds the count). Then
+  `clique_free_root_plantable`/`clique_free_quotient_iff_ensemble` (`cor:clique-free`, from
+  `cliqueFreeClass`): the `K_r`-free (and triangle-free, `r = 3`) classes are root-plantable, so
+  quotient and ensemble semantics agree for every `f`.
+
+This completes the formalisation of the proved results of `MetaTheory/paper.tex` §1–5.
 -/
