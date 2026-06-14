@@ -6,6 +6,7 @@ import LeanFlagAlgebras.MetaTheory.Blowup
 import LeanFlagAlgebras.MetaTheory.ProductTV
 import LeanFlagAlgebras.MetaTheory.DensityBridge
 import LeanFlagAlgebras.MetaTheory.LabeledCount
+import LeanFlagAlgebras.MetaTheory.BlowupFlag
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -29,12 +30,13 @@ Aggregator. Currently wires in:
   (`eq:good-unnormalized-weight-bound`), the analytic core of `lem:planted-estimate`.
 * `DensityBridge`   — the entry point of the density bridge: `flagDensity₁ F G` exposed as the
   card ratio `labeledGraphCount F G / ((|G|−k) choose (|F|−k))`.
-* `LabeledCount`    — `labeledGraphCount_eq_subset_count`: `labeledGraphCount H G` equals the
-  number of vertex subsets `S ⊇` roots whose induced labelled subgraph is `≃f H`.
+* `LabeledCount`    — `labeledGraphCount_eq_subset_count` and `flagDensity₁_eq_subset_count_div`:
+  flag density as the fraction of vertex subsets inducing a copy of the flag.
+* `BlowupFlag`      — the blow-up/base as labelled graphs, and `blowupGoodIso`: on a good vertex
+  set the induced labelled subgraph of the blow-up is `≃f` (via projection) that of the base.
 
-Still to come (§5): `lem:planted-estimate` (the sampling argument on the blow-up, gluing the
-subset count to `ProductTV` via the good-event isomorphism and bad-event bounds), then
-`CloneClosed` (clone-closed classes are root-plantable; clique-free and
+Still to come (§5): `lem:planted-estimate` (the sampling argument gluing the subset count to
+`ProductTV` via `blowupGoodIso` and bad-event bounds), then `CloneClosed` (clone-closed classes are root-plantable; clique-free and
 triangle-free corollary), plus
 the §3 faithfulness lemma `forbiddenIdeal_eq_span` (heredity ⟹ the forbidden flags span an
 ideal).
