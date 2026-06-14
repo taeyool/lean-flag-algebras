@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.Clique
+import Mathlib.Tactic
 
 /-! # Independent blow-ups (paper §5)
 
@@ -63,5 +64,94 @@ theorem cliqueFree_independentBlowup [DecidableEq V] (G : SimpleGraph V) (m : V 
     have hpq : p ≠ q := fun h => hab (by rw [h])
     exact hs.isClique hp hq hpq
   · rw [Finset.card_image_of_injOn (blowup_clique_projInjOn G m hs.isClique), hs.card_eq]
+
+/-! ## Positive probability of the planted root (`lem:planted-mass`) -/
+
+open Finset
+
+attribute [local instance] Classical.propDecidable
+
+variable {n k : ℕ}
+
+/-- All *ordered* induced embeddings of a type graph `H` into the blow-up `G^{\mathbf m}`
+(an injective vertex map preserving adjacency and non-adjacency, with the `k` labels in their
+prescribed order). -/
+noncomputable def blowupEmbeddings (G : SimpleGraph (Fin n)) (H : SimpleGraph (Fin k))
+    (m : Fin n → ℕ) : Finset (Fin k → Σ v : Fin n, Fin (m v)) :=
+  univ.filter fun g =>
+    Function.Injective g ∧ ∀ i j, H.Adj i j ↔ (independentBlowup G m).Adj (g i) (g j)
+
+/-- The *planted* embeddings: place each labelled vertex `i` somewhere in the clone class of
+`θ i`.  Every choice of clones gives a genuine induced embedding. -/
+noncomputable def plantedEmbeddings {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)}
+    (m : Fin n → ℕ) (θ : H ↪g G) : Finset (Fin k → Σ v : Fin n, Fin (m v)) :=
+  univ.image fun (c : ∀ i : Fin k, Fin (m (θ i))) i => (⟨θ i, c i⟩ : Σ v : Fin n, Fin (m v))
+
+/-- There are exactly `∏ᵢ m(θ i)` planted embeddings. -/
+lemma plantedEmbeddings_card {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)}
+    (m : Fin n → ℕ) (θ : H ↪g G) : (plantedEmbeddings m θ).card = ∏ i, m (θ i) := by
+  rw [plantedEmbeddings, Finset.card_image_of_injective]
+  · rw [Finset.card_univ, Fintype.card_pi]; simp
+  · intro c c' hcc
+    funext i
+    have h := congrFun hcc i
+    simpa using h
+
+/-- Planted embeddings really are induced embeddings. -/
+lemma plantedEmbeddings_subset {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)}
+    (m : Fin n → ℕ) (θ : H ↪g G) : plantedEmbeddings m θ ⊆ blowupEmbeddings G H m := by
+  intro g hg
+  rw [plantedEmbeddings, Finset.mem_image] at hg
+  obtain ⟨c, -, rfl⟩ := hg
+  rw [blowupEmbeddings, Finset.mem_filter]
+  refine ⟨Finset.mem_univ _, ?_, ?_⟩
+  · intro a b hab
+    exact θ.injective (congrArg Sigma.fst hab)
+  · intro i j
+    rw [independentBlowup_adj]
+    exact θ.map_adj_iff.symm
+
+/-- The total number of induced embeddings is at most `N^k`, `N = ∑ m v`. -/
+lemma blowupEmbeddings_card_le (G : SimpleGraph (Fin n)) (H : SimpleGraph (Fin k))
+    (m : Fin n → ℕ) : (blowupEmbeddings G H m).card ≤ (∑ v, m v) ^ k := by
+  calc (blowupEmbeddings G H m).card
+      ≤ (univ : Finset (Fin k → Σ v : Fin n, Fin (m v))).card :=
+        Finset.card_le_card (Finset.filter_subset _ _)
+    _ = (∑ v, m v) ^ k := by
+        rw [Finset.card_univ, Fintype.card_pi]
+        simp [Fintype.card_sigma]
+
+/-- **Positive probability of the planted root** (`lem:planted-mass`): when each labelled
+clone class is large enough (`m(θ i) ≥ (λ/2k)·N`), a uniformly random induced embedding of
+the type into the blow-up is *planted* with probability at least `(λ/2k)^k`. -/
+theorem planted_mass {G : SimpleGraph (Fin n)} {H : SimpleGraph (Fin k)} (m : Fin n → ℕ)
+    (θ : H ↪g G) {lam : ℚ} (hlam : 0 < lam) (hk : 0 < k) (hm : ∀ v, 1 ≤ m v)
+    (hsize : ∀ i, lam / (2 * k) * ((∑ v, m v : ℕ) : ℚ) ≤ (m (θ i) : ℚ)) :
+    (lam / (2 * k)) ^ k ≤
+      ((plantedEmbeddings m θ).card : ℚ) / ((blowupEmbeddings G H m).card : ℚ) := by
+  set N : ℕ := ∑ v, m v with hN
+  set base : ℚ := lam / (2 * k) with hbase
+  have hbase_nonneg : 0 ≤ base := by positivity
+  have hPA : (plantedEmbeddings m θ).card ≤ (blowupEmbeddings G H m).card :=
+    Finset.card_le_card (plantedEmbeddings_subset m θ)
+  have hAN : (blowupEmbeddings G H m).card ≤ N ^ k := blowupEmbeddings_card_le G H m
+  have hPpos : 0 < (plantedEmbeddings m θ).card := by
+    rw [plantedEmbeddings_card]
+    exact Finset.prod_pos fun i _ => lt_of_lt_of_le Nat.zero_lt_one (hm (θ i))
+  have hApos : 0 < ((blowupEmbeddings G H m).card : ℚ) := by
+    exact_mod_cast lt_of_lt_of_le hPpos hPA
+  have hPlow : base ^ k * (N : ℚ) ^ k ≤ ((plantedEmbeddings m θ).card : ℚ) := by
+    rw [plantedEmbeddings_card, Nat.cast_prod, ← mul_pow]
+    calc (base * (N : ℚ)) ^ k = ∏ _i : Fin k, base * (N : ℚ) := by
+          rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+      _ ≤ ∏ i, ((m (θ i)) : ℚ) := by
+          refine Finset.prod_le_prod (fun i _ => ?_) (fun i _ => hsize i)
+          positivity
+  rw [le_div_iff₀ hApos]
+  calc base ^ k * ((blowupEmbeddings G H m).card : ℚ)
+      ≤ base ^ k * (N : ℚ) ^ k := by
+        apply mul_le_mul_of_nonneg_left _ (pow_nonneg hbase_nonneg k)
+        exact_mod_cast hAN
+    _ ≤ ((plantedEmbeddings m θ).card : ℚ) := hPlow
 
 end FlagAlgebras.MetaTheory
