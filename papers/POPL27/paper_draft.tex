@@ -55,6 +55,7 @@
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
 \newcommand{\gw}[1]{\textcolor{red}{\textbf{[GW: #1]}}}
+\newcommand{\Ext}{\operatorname{Ext}}
 
 \tikzset{
   graph vertex/.style={circle, draw, fill=white, inner sep=0pt, minimum size=4.5pt},
@@ -1028,8 +1029,10 @@ $\mathcal{A}^\sigma$ by sampling a random embedding of $\sigma$ into the
 limiting object.
 Whenever $\phi_0(\sigma) > 0$ (i.e., $\sigma$ has positive density as an unlabeled graph in the limiting object),
 the following holds~\cite{razborov2007flag}:
-there exists a unique probability distribution on $\poshom{\sigma}$ such that for every $f \in \mathcal{A}^\sigma$, the random positive
-homomorphism $\boldsymbol{\phi}^\sigma$ drawn from this distribution satisfies
+there exists a unique probability distribution on $\poshom{\sigma}$,
+which we denote $\Ext_\sigma(\phi_0)$,
+such that for every $f \in \mathcal{A}^\sigma$, the random positive
+homomorphism $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$ satisfies
 \begin{equation}\label{eq:ensemble}
   \mathbb{E}\bigl[\boldsymbol{\phi}^\sigma(f)\bigr]
   \;=\;
@@ -1052,7 +1055,7 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Let $\phi_0 \in \poshom{\emptyset}$; we show $\phi_0(\llbracket f \rrbracket_\sigma) \geq 0$.
   If $\phi_0(\sigma) = 0$, then the flag type $\sigma$ has zero density in the limiting object, and every $\sigma$-flag density also
   vanishes, so $\phi_0(\llbracket f \rrbracket_\sigma) = 0$.
-  Otherwise, let $\boldsymbol{\phi}^\sigma$ be the ensemble rooted at $\phi_0$.
+  Otherwise, let $\boldsymbol{\phi}^\sigma \sim \Ext_\sigma(\phi_0)$.
   Since $0 \leq_\sigma f$, every positive homomorphism on
   $\mathcal{A}^\sigma$ evaluates $f$ non-negatively, so
   $\mathbb{E}[\boldsymbol{\phi}^\sigma(f)] \geq 0$.
@@ -1677,7 +1680,8 @@ The semantic soundness of the downward operator is proved in
 \lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
 object called a random homomorphism; instead, for an empty-typed positive
 homomorphism $\phi_0$ with positive $\sigma$-density, Lean constructs a
-probability measure on \lean{PositiveHomSpace} $\sigma$.  Its defining property
+probability measure on \lean{PositiveHomSpace} $\sigma$ corresponding to
+$\Ext_\sigma(\phi_0)$ from Section~\ref{sec:background-downward}.  Its defining property
 is the formal version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
