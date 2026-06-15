@@ -2,8 +2,8 @@ import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.API.Matrix.PosSemiDef
-import LeanFlagAlgebras.Flags.Densities.MulLoader
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.MulLoader_old
+import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.Forbid.CommonGraphs
 

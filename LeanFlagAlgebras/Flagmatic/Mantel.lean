@@ -2,8 +2,8 @@
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
 
 import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.Flags.Densities.MulLoader
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.API.FlagSumSort
@@ -18,9 +18,9 @@ open FlagAlgebras.Compute
 
 namespace Mantel
 
-load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json"
+generate_forbid_density_theorems 3 K3
+generate_flag_pair_density_theorems 1 0 2 3 K3
+generate_forbid_mul_theorems 1 0 2 3 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

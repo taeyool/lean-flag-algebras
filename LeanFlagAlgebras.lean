@@ -30,8 +30,8 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 -- Flags
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
-import LeanFlagAlgebras.Flags.Densities.MulLoader
+import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 
 -- API
 import LeanFlagAlgebras.API.Basic

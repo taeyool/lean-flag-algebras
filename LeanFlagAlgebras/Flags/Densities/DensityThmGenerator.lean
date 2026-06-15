@@ -1,0 +1,492 @@
+import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+import Mathlib.Tactic
+
+/-! # Density theorem generators
+
+This module provides elaboration-time commands that synthesize `simp` theorems
+about flag densities for the flags generated in `FlagDef.lean`. There are two:
+
+* `generate_forbid_density_theorems n Forbid` — for each `n`-vertex (empty-typed)
+  flag, records whether it is free of a forbidden subgraph.
+* `generate_flag_pair_density_theorems k m patN hostN Forbid` and its
+  `…_no_forbid` variant — the pair densities `p(F₁, F₂; G)` used when expanding a
+  product of two flags into a sum of larger flags.
+
+See each command's own documentation below for the meaning of its parameters and
+example invocations. The densities and the forbidden-free partition are computed
+during elaboration, and every generated theorem is independently verified by
+`native_decide`.
+
+A forbidden graph `Forbid` is named by any `def Forbid` in `CommonGraphs.lean`
+that has a companion `Forbid_toFinFlag_eq` lemma; the complete graphs `K3`, `K4`,
+`K5` are provided there, and non-complete graphs (e.g. `C5`) work too.
+`MulThmGenerator.lean` adds the matching flag-multiplication generators.
+-/
+
+open Lean Elab Command
+open FlagAlgebras
+open FlagAlgebras.Compute
+
+namespace Flags.Densities
+
+/-- If `tag` has the form `"K<r>"` for some `r ≥ 1`, return that clique size `r`.
+This is what lets the forbid loaders handle the complete graph `K_r` for *any* `r`
+from a single code path, rather than one hard-coded branch per `r`. -/
+def parseCompleteGraphTag (tag : String) : Option Nat :=
+  if tag.startsWith "K" then
+    match (tag.drop 1).toNat? with
+    | some r => if r ≥ 1 then some r else none
+    | none   => none
+  else
+    none
+
+/-- Extract the `Flag_*` representative from a `…_toFinFlag_eq` lemma whose statement is
+`G.toFinFlag = ⟨n, Flag_n_0_0_idx⟩`. The forbid loader uses this to `simp` with the
+forbidden graph's flag definition, so the canonical index `idx` is read off the lemma
+instead of being hard-coded per forbid. -/
+def forbidFlagIdentOfToFinFlagEq (thmName : Name) : CommandElabM (TSyntax `ident) := do
+  let env ← getEnv
+  let some ci := env.find? thmName
+    | throwError s!"Missing lemma: {thmName}"
+  let some (_, _, rhs) := ci.type.eq?
+    | throwError s!"Lemma {thmName} is not an equality `G.toFinFlag = ⟨n, Flag_*⟩`"
+  for a in rhs.getAppArgs do
+    if let .const nm _ := a.getAppFn then
+      if nm.toString.startsWith "Flag_" then
+        return mkIdent nm
+  throwError s!"Could not locate a `Flag_*` representative in the RHS of {thmName}"
+
+/-- Resolve a forbid `tag` to its Lean graph identifier and `…_toFinFlag_eq` lemma name,
+checking both exist. Any `tag` naming a `def <tag>` together with a `<tag>_toFinFlag_eq`
+lemma works, so this is not restricted to complete graphs — a `C4`/`P4`/… forbid needs
+only those two declarations. Complete-graph tags `"K<r>"` additionally get a
+clique-specific hint when the declarations are missing. -/
+def resolveForbidGraph (tag : String) : CommandElabM (TSyntax `ident × Name) := do
+  let env ← getEnv
+  let gName := Name.mkSimple tag
+  let eqName := Name.mkSimple s!"{tag}_toFinFlag_eq"
+  if env.contains gName && env.contains eqName then
+    return (mkIdent gName, eqName)
+  let hint :=
+    match parseCompleteGraphTag tag with
+    | some r =>
+      s!" Add `generate_complete_graph {r} <canonical index of K{r}>` to CommonGraphs.lean."
+    | none =>
+      s!" Define `def {tag}` and `lemma {tag}_toFinFlag_eq : {tag}.toFinFlag = \
+⟨n, Flag_n_0_0_<idx>⟩` in CommonGraphs.lean, matching the identifier `{tag}` you passed."
+  throwError s!"Unknown forbid graph for tag '{tag}': missing `def {tag}` and/or \
+`{tag}_toFinFlag_eq`.{hint}"
+
+/-- Build the RHS term of a density theorem from a `(num, den)` value. -/
+def densityValueToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
+  if den = 1 then
+    `($(Quote.quote num))
+  else
+    `((($(Quote.quote num) : Rat) / ($(Quote.quote den) : Rat)))
+
+/-! ## Forbidden-subgraph containment and the forbidden-free partition
+
+The helpers below decide, for each flag, whether its underlying graph contains a
+given forbidden subgraph. `generate_forbid_density_theorems` uses them to split
+the `n`-vertex flags into forbidden-free and not. -/
+
+/-- All injective maps `Fin slots → Fin hostN` whose images avoid `used`,
+represented as length-`slots` lists of distinct host-vertex indices (`< hostN`).
+The elaboration-time search space for embedding a `forbidN`-vertex graph into an
+`n`-vertex host. Structural recursion on `slots`. -/
+private def hostInjectionsAux (hostN : Nat) : Nat → List Nat → List (List Nat)
+  | 0, _ => [[]]
+  | slots + 1, used =>
+      ((List.range hostN).filter (fun v => ¬ used.contains v)).flatMap (fun v =>
+        (hostInjectionsAux hostN slots (v :: used)).map (fun rest => v :: rest))
+
+/-- All injective maps `Fin forbidN → Fin hostN` (length-`forbidN` lists of
+distinct vertices `< hostN`); empty when `forbidN > hostN`. Entry `i` of each
+list is the host vertex assigned to forbidden-graph vertex `i`. -/
+private def hostInjections (forbidN hostN : Nat) : List (List Nat) :=
+  hostInjectionsAux hostN forbidN []
+
+/-- Undirected edge membership: is `{a, b}` an edge of `edges` (in either
+orientation)? -/
+private def edgeMem (edges : List (Nat × Nat)) (a b : Nat) : Bool :=
+  edges.any (fun e => (e.1 == a && e.2 == b) || (e.1 == b && e.2 == a))
+
+/-- **The single place that fixes the forbidden-subgraph containment notion.**
+
+Returns `true` when the host graph (`hostEdges` on `hostN` vertices) contains the
+forbidden graph (`forbidEdges` on `forbidN` vertices) as a **non-induced**
+subgraph — i.e. there is an injection `φ` of the forbidden vertices into the host
+mapping every forbidden edge to a host edge (extra host edges allowed). This is
+exactly Python's `contains_forbidden_subgraph`, and it is the notion we expect to
+want for general forbidden graphs in the long run.
+
+Design note (induced vs. non-induced). For a **complete-graph** forbid `K_r` —
+the only forbids in current use — non-induced containment coincides exactly with
+the *induced* notion (`r` mutually adjacent vertices induce `K_r`), so the
+theorems emitted below — which are about the *induced* single-flag density
+`flagDensity₁ … = 0` — are provable by `native_decide` precisely on the partition
+this function computes. For a future *non-complete, non-induced* forbid the
+free/non-free split this function produces is already the intended (non-induced)
+one; what would then also need to change is the emitted theorem *statement*
+(currently the induced `flagDensity₁ = 0`), to a containment-based statement.
+That is the one coupled spot to revisit — see `generate_forbid_density_theorems`. -/
+def containsForbiddenSubgraph
+    (forbidN : Nat) (forbidEdges : List (Nat × Nat))
+    (hostN : Nat) (hostEdges : List (Nat × Nat)) : Bool :=
+  if forbidEdges.isEmpty then
+    true
+  else if hostN < forbidN then
+    false
+  else
+    (hostInjections forbidN hostN).any (fun φ =>
+      forbidEdges.all (fun e =>
+        edgeMem hostEdges (φ.getD e.1 0) (φ.getD e.2 0)))
+
+/-- Parse a `"Flag_<r>_0_0_<idx>"` constant name into its vertex count `r` and
+canonical index `idx`. Used to recover the forbidden graph's canonical edge list
+from `genCanonicalEdgeLists r`. -/
+def parseFlagRIdx (flagName : String) : CommandElabM (Nat × Nat) := do
+  match flagName.splitOn "_" with
+  | ["Flag", rStr, _, _, idxStr] =>
+      let some r := rStr.toNat? | throwError s!"Cannot parse vertex count from {flagName}"
+      let some idx := idxStr.toNat? | throwError s!"Cannot parse index from {flagName}"
+      pure (r, idx)
+  | _ => throwError s!"Unexpected flag-name shape (want Flag_r_0_0_idx): {flagName}"
+
+/-- Evaluate `genCanonicalEdgeLists m` at elaboration time: the canonical edge
+lists (0-indexed endpoint pairs) of the `m`-vertex canonical graphs, in the same
+order as the generated `Flag_m_0_0_i` constants. Reuses the same compiler-backed
+`evalNatPairLists` bridge the flag generator uses. -/
+def evalCanonicalEdgeLists (m : Nat) : CommandElabM (List (List (Nat × Nat))) := do
+  let edgesStx ← `(FlagAlgebras.Compute.genCanonicalEdgeLists $(Quote.quote m))
+  liftTermElabM do
+    let valExpr ← Lean.Elab.Term.elabTermAndSynthesize edgesStx none
+    let valExpr ← instantiateMVars valExpr
+    let typeExpr ← Lean.Meta.inferType valExpr
+    evalNatPairLists typeExpr valExpr
+
+-- `generate_forbid_density_theorems n Forbid`
+--
+-- For each `n`-vertex empty-typed flag `Flag_n_0_0_i`, generate a `@[simp]`
+-- theorem recording whether it contains the forbidden graph `Forbid`:
+--   • forbidden-free  → `flagDensity1_Forbid_Flag_n_0_0_i_eq_zero :`
+--                       `   flagDensity₁ Forbid.toFinFlag.2 Flag_n_0_0_i = 0`
+--   • contains Forbid → `flagDensity1_Forbid_Flag_n_0_0_i_ne_zero :`
+--                       `   ¬ flagDensity₁ Forbid.toFinFlag.2 Flag_n_0_0_i = 0`
+-- (one per flag), each proved by `native_decide`.
+--
+-- Parameters:
+--   • `n`      : vertex count of the empty-typed flags to scan (`Flag_n_0_0_*`).
+--   • `Forbid` : the forbidden graph — any `def Forbid` in `CommonGraphs.lean`
+--                with a `Forbid_toFinFlag_eq` lemma (e.g. `K3`, `K4`, `K5`).
+--
+-- Prerequisites: run `generate_empty_typed_flags n` first (so `Flag_n_0_0_*`
+-- exist), and have `Forbid` / `Forbid_toFinFlag_eq` in scope.
+--
+-- Example — record which 4-vertex graphs are K₄-free:
+--   `generate_forbid_density_theorems 4 K4`
+elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
+  let n := nStx.getNat
+  let tag := gStx.getId.toString
+
+  -- Resolve the forbidden graph and read its flag representative — identical to
+  -- the JSON loader, so the emitted proof terms match exactly.
+  let (gIdent, gEqName) ← resolveForbidGraph tag
+  let gEqIdent := mkIdent gEqName
+  let forbidFlag ← forbidFlagIdentOfToFinFlagEq gEqName
+
+  -- The forbidden graph's canonical edge list, recovered from the (r, idx) of its
+  -- `Flag_r_0_0_idx` representative.
+  let (r, idx) ← parseFlagRIdx forbidFlag.getId.toString
+  let forbidAll ← evalCanonicalEdgeLists r
+  let forbidEdges := forbidAll.getD idx []
+
+  -- The host enumeration, in the same order as the `Flag_n_0_0_i` constants.
+  let hostAll ← evalCanonicalEdgeLists n
+  let total := hostAll.length
+
+  let mut generatedEqZero : Nat := 0
+  let mut generatedNeZero : Nat := 0
+
+  for i in [0:total] do
+    let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
+    let isFree := ¬ containsForbiddenSubgraph r forbidEdges n (hostAll.getD i [])
+
+    let env ← getEnv
+    if ¬ env.contains flagName.getId then
+      throwError s!"Missing definition: {flagName.getId}"
+
+    if isFree then
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_eq_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : flagDensity₁ ($gIdent).toFinFlag.2 $flagName = 0
+            := by
+            rw [$gEqIdent:ident]
+            unfold $flagName
+            simp [$forbidFlag:ident]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedEqZero := generatedEqZero + 1
+    else
+      let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_ne_zero")
+      if ¬ env.contains thmName.getId then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName
+              : ¬ flagDensity₁ ($gIdent).toFinFlag.2 $flagName = 0
+            := by
+            rw [$gEqIdent:ident]
+            unfold $flagName
+            simp [$forbidFlag:ident]
+            rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+            native_decide
+        ))
+        generatedNeZero := generatedNeZero + 1
+
+  logInfo s!"Generated {tag} density theorems: eq_zero={generatedEqZero}, ne_zero={generatedNeZero}"
+
+/-! ## Subflag-multiplication density `p(F₁, F₂; G)`
+
+The helpers below compute, by elementary combinatorics over edge lists, the
+density `p(F₁, F₂; G)` — the fraction of ways to place two disjoint induced
+copies of the pattern flags `F₁`, `F₂` inside a host flag `G` (sharing the type
+vertices). `generate_flag_pair_density_theorems` uses it to fill in the
+right-hand sides of its `flagDensity₂ … = value` theorems, which `native_decide`
+then verifies. The flags' edge lists and type-vertex indices come from
+`genFlagData k m n`, in the same order as the generated `Flag_n_k_m_i` constants. -/
+
+/-- Lexicographic `≤` / `<` on endpoint pairs. -/
+private def pairLe (x y : Nat × Nat) : Bool := x.1 < y.1 || (x.1 == y.1 && x.2 ≤ y.2)
+private def pairLt (x y : Nat × Nat) : Bool := x.1 < y.1 || (x.1 == y.1 && x.2 < y.2)
+
+/-- Sort an edge list into canonical `(min,max)`-pair lex order. -/
+private def sortEdges (edges : List (Nat × Nat)) : List (Nat × Nat) :=
+  List.insertionSort (fun x y => pairLe x y = true) edges
+
+/-- Lexicographic `<` on sorted edge lists (shorter prefix is smaller); the order
+`canonicalLabeledForm` minimizes over. -/
+private def edgeListLt : List (Nat × Nat) → List (Nat × Nat) → Bool
+  | [], [] => false
+  | [], _ :: _ => true
+  | _ :: _, [] => false
+  | x :: xs, y :: ys =>
+      if pairLt x y then true
+      else if x == y then edgeListLt xs ys
+      else false
+
+/-- Apply a relabeling `perm` (`perm[v]` is the new label of `v`) to an edge list,
+normalizing each edge to `(min,max)` and sorting. Mirrors Python `relabel_edges`. -/
+private def relabelEdges (perm : List Nat) (edges : List (Nat × Nat)) : List (Nat × Nat) :=
+  sortEdges (edges.map (fun e =>
+    let a := perm.getD e.1 0
+    let b := perm.getD e.2 0
+    if a ≤ b then (a, b) else (b, a)))
+
+/-- Canonical edge list with the labeled vertices fixed as `0..k-1` (in `labels`
+order) and the unlabeled tail permuted to its lexicographically smallest form.
+Mirrors Python `canonical_labeled_form`. The density only depends on equality of
+these forms, so any consistent type-respecting canonicalization is correct. -/
+private def canonicalLabeledForm (edges : List (Nat × Nat)) (n : Nat) (labels : List Nat) :
+    List (Nat × Nat) :=
+  let k := labels.length
+  let unlabeled := (List.range n).filter (fun v => ¬ labels.contains v)
+  let baseMap : List Nat := (List.range n).map (fun v =>
+    match labels.findIdx? (· == v) with
+    | some t => t
+    | none => k + (unlabeled.findIdx? (· == v)).getD 0)
+  let baseEdges := relabelEdges baseMap edges
+  if n == k then baseEdges
+  else
+    let tail := (List.range (n - k)).map (· + k)
+    let cands := tail.permutations.map (fun pt =>
+      let fullPerm : List Nat := (List.range n).map (fun v =>
+        if v < k then v else pt.getD (v - k) v)
+      relabelEdges fullPerm baseEdges)
+    cands.foldl (fun best c => if edgeListLt c best then c else best) (cands.headD baseEdges)
+
+/-- All size-`r` sub-lists of `xs` preserving order (Python `itertools.combinations`). -/
+private def combinations : List Nat → Nat → List (List Nat)
+  | _, 0 => [[]]
+  | [], _ + 1 => []
+  | x :: xs, r + 1 => (combinations xs r).map (fun c => x :: c) ++ combinations xs (r + 1)
+
+/-- The subgraph induced on `vertices` (host vertices), re-indexed to local
+positions `0..vertices.length-1`. -/
+private def inducedLocalEdges (vertices : List Nat) (hostEdges : List (Nat × Nat)) :
+    List (Nat × Nat) :=
+  let m := vertices.length
+  (List.range m).flatMap (fun i =>
+    (List.range m).filterMap (fun j =>
+      if i < j then
+        if edgeMem hostEdges (vertices.getD i 0) (vertices.getD j 0) then some (i, j) else none
+      else none))
+
+/-- Reduce `good / total` to lowest terms, with `total = 0 ↦ 0/1`. -/
+private def fracReduce (good total : Nat) : Nat × Nat :=
+  if total == 0 then (0, 1)
+  else let g := Nat.gcd good total; (good / g, total / g)
+
+/-- Exact subflag-multiplication density `p(F₁, F₂; G)` as a reduced `(num, den)`
+pair. Faithful port of Python `density_p_f1_f2_given_g`: counts the fraction of
+ways to split the unlabeled host vertices into disjoint groups (sizes `m₁-k`,
+`m₂-k`, sharing the `k` type vertices) whose induced labeled subflags equal `F₁`
+and `F₂`. -/
+def densityPF1F2GivenG
+    (hostN : Nat) (hostEdges : List (Nat × Nat)) (hostLabels : List Nat)
+    (m1 : Nat) (f1Edges : List (Nat × Nat)) (f1Labels : List Nat)
+    (m2 : Nat) (f2Edges : List (Nat × Nat)) (f2Labels : List Nat) : Nat × Nat :=
+  let k := hostLabels.length
+  if f1Labels.length ≠ k || f2Labels.length ≠ k then (0, 1)
+  else if k > m1 || k > m2 then (0, 1)
+  else if hostLabels.dedup.length ≠ k then (0, 1)
+  else
+    let r1 := m1 - k
+    let r2 := m2 - k
+    if hostN < k + r1 + r2 then (0, 1)
+    else
+      let f1Canon := canonicalLabeledForm f1Edges m1 f1Labels
+      let f2Canon := canonicalLabeledForm f2Edges m2 f2Labels
+      let unlabeled := (List.range hostN).filter (fun v => ¬ hostLabels.contains v)
+      let res := (combinations unlabeled r1).foldl (fun (acc : Nat × Nat) aExtra =>
+        let aVertices := hostLabels ++ aExtra
+        let aCanon := canonicalLabeledForm (inducedLocalEdges aVertices hostEdges) m1 (List.range k)
+        let remaining := unlabeled.filter (fun v => ¬ aExtra.contains v)
+        (combinations remaining r2).foldl (fun (acc2 : Nat × Nat) bExtra =>
+          let total := acc2.1 + 1
+          if aCanon != f1Canon then (total, acc2.2)
+          else
+            let bVertices := hostLabels ++ bExtra
+            let bCanon := canonicalLabeledForm (inducedLocalEdges bVertices hostEdges) m2 (List.range k)
+            if bCanon == f2Canon then (total, acc2.2 + 1) else (total, acc2.2)
+        ) acc
+      ) (0, 0)
+      fracReduce res.2 res.1
+
+/-- Evaluate `genFlagData k m n` at elaboration time: per σ-typed flag, its
+`(underlyingGraphIdx, canonicalUnderlyingEdges, typeIndices, coeffNum, coeffDen)`,
+in the same order as the generated `Flag_n_k_m_i` constants. -/
+def evalFlagDataRows (k m n : Nat) :
+    CommandElabM (List (Nat × List (Nat × Nat) × List Nat × Nat × Nat)) := do
+  let stx ← `(FlagAlgebras.Compute.genFlagData $(Quote.quote k) $(Quote.quote m) $(Quote.quote n))
+  liftTermElabM do
+    let valExpr ← Lean.Elab.Term.elabTermAndSynthesize stx none
+    let valExpr ← instantiateMVars valExpr
+    let typeExpr ← Lean.Meta.inferType valExpr
+    evalFlagData typeExpr valExpr
+
+/-- The forbidden graph's `(vertexCount, canonicalEdgeList)`, recovered from its
+`<tag>_toFinFlag_eq` lemma (`⟨r, Flag_r_0_0_idx⟩`). -/
+def forbidEdgesOfTag (tag : String) : CommandElabM (Nat × List (Nat × Nat)) := do
+  let (_, gEqName) ← resolveForbidGraph tag
+  let forbidFlag ← forbidFlagIdentOfToFinFlagEq gEqName
+  let (r, idx) ← parseFlagRIdx forbidFlag.getId.toString
+  let forbidAll ← evalCanonicalEdgeLists r
+  pure (r, forbidAll.getD idx [])
+
+/-- The forbidden-free indices among a flag list, by **underlying-graph**
+containment (`containsForbiddenSubgraph` on each flag's underlying edges). With
+`forbid = none`, every index is "free". The σ-typed analogue of the empty-typed
+free-index split, matching Python's `forbid_free_only` over flag records. -/
+def freeFlagIndices (n : Nat) (forbid : Option (Nat × List (Nat × Nat)))
+    (flags : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat)) : List Nat :=
+  match forbid with
+  | none => List.range flags.length
+  | some (r, forbidEdges) =>
+      (List.range flags.length).filter (fun i =>
+        ¬ containsForbiddenSubgraph r forbidEdges n ((flags.getD i (0, [], [], 0, 0)).2.1))
+
+/-- Shared core for the pair-density emitters. For every unordered pair `(i, j)`
+of (forbidden-free) pattern flags `Flag_patN_k_m_*` and every (forbidden-free)
+host flag `Flag_hostN_k_m_h`, emit the `simp` theorem `flagDensity₂ … = value`,
+the `value` computed by `densityPF1F2GivenG` and re-checked by `native_decide`.
+`forbid = none` includes all flags (the no-forbid case). -/
+def genPairDensityCore (k m patN hostN : Nat)
+    (forbid : Option (Nat × List (Nat × Nat))) : CommandElabM Unit := do
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patternFree := freeFlagIndices patN forbid patterns
+  let hostFree := freeFlagIndices hostN forbid hosts
+
+  let mut generated : Nat := 0
+  for p1 in patternFree do
+    for p2 in patternFree do
+      if p1 ≤ p2 then
+        let f1 := patterns.getD p1 (0, [], [], 0, 0)
+        let f2 := patterns.getD p2 (0, [], [], 0, 0)
+        for h in hostFree do
+          let g := hosts.getD h (0, [], [], 0, 0)
+          let nd := densityPF1F2GivenG hostN g.2.1 g.2.2.1 patN f1.2.1 f1.2.2.1 patN f2.2.1 f2.2.2.1
+          let rhsTerm ← densityValueToTerm nd.1 nd.2
+          let f1Name := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{p1}")
+          let f2Name := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{p2}")
+          let gName := mkIdent (Name.mkSimple s!"Flag_{hostTag}_{h}")
+          let thmName := mkIdent (Name.mkSimple
+            s!"flagDensity₂_Flag_{patternTag}_{p1}_Flag_{patternTag}_{p2}_Flag_{hostTag}_{h}")
+
+          let env := (← getEnv)
+          if ¬ env.contains f1Name.getId then throwError s!"Missing definition: {f1Name.getId}"
+          if ¬ env.contains f2Name.getId then throwError s!"Missing definition: {f2Name.getId}"
+          if ¬ env.contains gName.getId then throwError s!"Missing definition: {gName.getId}"
+
+          if ¬ env.contains thmName.getId then
+            elabCommand (← `(
+              @[simp]
+              theorem $thmName
+                  : flagDensity₂ $f1Name $f2Name $gName = $rhsTerm
+                := by
+                first | delta $f1Name $f2Name $gName | skip
+                rw [flagDensity₂_eq_sym2FlagDensity₂]
+                native_decide
+            ))
+            generated := generated + 1
+
+  logInfo s!"Generated {generated} pair-density theorem(s): pattern {patternTag}, host {hostTag}"
+
+-- `generate_flag_pair_density_theorems k m patN hostN Forbid`
+--
+-- Generate the pair-density (`flagDensity₂`) `simp` theorems for a σ-typed flag
+-- algebra, restricted to flags free of a forbidden subgraph. Parameters:
+--   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
+--                `k`-vertex graph, `k` the number of labeled (type) vertices.
+--   • `patN`   : size of the two "pattern" flags whose joint density is taken.
+--   • `hostN`  : size of the "host" flag the density is measured in.
+--   • `Forbid` : a forbidden graph (`def Forbid` + `Forbid_toFinFlag_eq` in
+--                `CommonGraphs.lean`, e.g. `K3`/`K4`/`K5`); only `Forbid`-free
+--                pattern and host flags take part.
+--
+-- For each unordered pair `(i ≤ j)` of `Forbid`-free pattern flags and each
+-- `Forbid`-free host `h` it emits
+--   `flagDensity₂_Flag_patN_k_m_i_Flag_patN_k_m_j_Flag_hostN_k_m_h :`
+--   `   flagDensity₂ Flag_patN_k_m_i Flag_patN_k_m_j Flag_hostN_k_m_h = value`,
+-- proved by `native_decide`.
+--
+-- Prerequisites: run `generate_flags k m patN` and `generate_flags k m hostN`.
+--
+-- Example — K₄-free pair densities of 3-vertex flags of type `FlagType_2_0`
+-- inside 4-vertex hosts:
+--   `generate_flag_pair_density_theorems 2 0 3 4 K4`
+elab "generate_flag_pair_density_theorems" kS:num mS:num patS:num hostS:num
+    forbidS:ident : command => do
+  let forbid ← forbidEdgesOfTag forbidS.getId.toString
+  genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat (some forbid)
+
+-- `generate_flag_pair_density_theorems_no_forbid k m patN hostN`
+--
+-- The no-forbidden-subgraph version of `generate_flag_pair_density_theorems`:
+-- same `k`, `m`, `patN`, `hostN`, but with no `Forbid` every pattern and host
+-- flag participates. Emits the same `flagDensity₂ … = value` `@[simp]` theorems.
+--
+-- Example:
+--   `generate_flag_pair_density_theorems_no_forbid 2 0 3 4`
+elab "generate_flag_pair_density_theorems_no_forbid" kS:num mS:num patS:num hostS:num : command => do
+  genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat none
+
+end Flags.Densities

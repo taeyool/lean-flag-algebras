@@ -6,8 +6,8 @@
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulLoader
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.API.FlagSumSort
 import LeanFlagAlgebras.API.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
@@ -17,13 +17,13 @@ open SimpleGraph Matrix
 
 namespace ErdosPentagon
 
-load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_5_K3_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0_forbid_K3.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1_forbid_K3.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2_forbid_K3.json"
+generate_forbid_density_theorems 5 K3
+generate_flag_pair_density_theorems 3 0 4 5 K3
+generate_forbid_mul_theorems 3 0 4 5 K3
+generate_flag_pair_density_theorems 3 1 4 5 K3
+generate_forbid_mul_theorems 3 1 4 5 K3
+generate_flag_pair_density_theorems 3 2 4 5 K3
+generate_forbid_mul_theorems 3 2 4 5 K3
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

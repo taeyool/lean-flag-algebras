@@ -1,0 +1,260 @@
+import LeanFlagAlgebras.Forbid.CommonGraphs
+import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+import LeanFlagAlgebras.Forbid.Basic
+import Mathlib.Tactic
+
+/-! # Flag multiplication theorem generators
+
+This module provides two elaboration-time commands that synthesize flag-product
+("multiplication") theorems for a fixed flag type, expanding the product of two
+pattern flags into the basis of larger host flags:
+
+* `generate_forbid_mul_theorems k m patN hostN Forbid` — products modulo a
+  forbidden subgraph (right-hand side holds up to `=[Forbid.toFinFlag]`).
+* `generate_mul_theorems k m patN hostN` — plain products (`=`), no forbid.
+
+See each command's documentation below for the meaning of the parameters and
+example invocations. Both obtain their expansion coefficients from the density
+computation in `DensityThmGenerator.lean`, and rely on the `FlagAlgebra_*` /
+`flagSet_*` constants produced by `generate_flags` (`FlagDef.lean`).
+-/
+
+open Lean Elab Command
+open FlagAlgebras Forbid
+open FlagAlgebras.Compute
+
+namespace Flags.Densities
+
+/-- Build a real-number coefficient term from a `(num, den)` pair. -/
+def coeffToTerm (num den : Nat) : CommandElabM (TSyntax `term) := do
+  if den = 1 then
+    `((($(Quote.quote num) : Nat) : ℝ))
+  else
+    `((($(Quote.quote num) : ℝ) / ($(Quote.quote den) : ℝ)))
+
+/-- Build the term `coeff • flagName`, one summand of the multiplication RHS. -/
+def coeffSmulFlagTerm (num den : Nat) (flagName : Name) : CommandElabM (TSyntax `term) := do
+  let coeffTerm <- coeffToTerm num den
+  let flagIdent := mkIdent flagName
+  `($coeffTerm • $flagIdent)
+
+/-- Left-fold a list of summands into `t₀ + t₁ + …`, or `0` when empty. -/
+def sumTerms (flagTypeName : Name) (terms : Array (TSyntax `term)) : CommandElabM (TSyntax `term) := do
+  let flagTypeIdent := mkIdent flagTypeName
+  match terms.toList with
+  | [] =>
+      `((0 : FlagAlgebra $flagTypeIdent))
+  | t :: ts =>
+      ts.foldlM (fun acc nxt => `($acc + $nxt)) t
+
+/-- The right-hand side of a multiplication theorem:
+`Σ_{h : density ≠ 0} cₕ • FlagAlgebra_hostTag_h`, summed in increasing host-index
+order, where `cₕ` is the subflag-multiplication density
+`p(pattern iOrd, pattern jOrd; host h)` from `densityPF1F2GivenG`. Shared by both
+commands below. -/
+def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Name)
+    (patterns hosts : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat))
+    (hostFree : List Nat) (iOrd jOrd : Nat) : CommandElabM (TSyntax `term) := do
+  let f1 := patterns.getD iOrd (0, [], [], 0, 0)
+  let f2 := patterns.getD jOrd (0, [], [], 0, 0)
+  let mut rhsTerms : Array (TSyntax `term) := #[]
+  for h in hostFree do
+    let g := hosts.getD h (0, [], [], 0, 0)
+    let nd := densityPF1F2GivenG hostN g.2.1 g.2.2.1 patN f1.2.1 f1.2.2.1 patN f2.2.1 f2.2.2.1
+    if nd.1 != 0 then
+      let hostName := Name.mkSimple s!"FlagAlgebra_{hostTag}_{h}"
+      if !((← getEnv).contains hostName) then throwError s!"Missing definition: {hostName}"
+      rhsTerms := rhsTerms.push (← coeffSmulFlagTerm nd.1 nd.2 hostName)
+  sumTerms patternFlagTypeName rhsTerms
+
+-- `generate_forbid_mul_theorems k m patN hostN Forbid`
+--
+-- Generate the flag-product expansion theorems for a σ-typed flag algebra,
+-- modulo a forbidden subgraph. Parameters:
+--   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
+--                `k`-vertex graph, and `k` is the number of labeled (type)
+--                vertices shared by every flag.
+--   • `patN`   : size (number of vertices) of the two factor "pattern" flags.
+--   • `hostN`  : size of the "host" flags the product expands into; for a product
+--                of two `patN`-vertex flags sharing `k` type vertices this is
+--                `hostN = 2 * patN - k`.
+--   • `Forbid` : a forbidden graph — any `def Forbid` in `CommonGraphs.lean`
+--                with a companion `Forbid_toFinFlag_eq` lemma (e.g. `K3`, `K4`,
+--                `K5`). Only `Forbid`-free pattern and host flags take part.
+--
+-- For each ordered pair `(i, j)` of `Forbid`-free pattern flags it emits
+--   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
+--   `  FlagAlgebra_patN_k_m_i * FlagAlgebra_patN_k_m_j`
+--   `    =[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
+-- where `=[Forbid.toFinFlag]` is equality in the flag algebra up to the forbidden
+-- subgraph, the sum ranges over `Forbid`-free hosts `h`, and `cₕ` is the
+-- subflag-multiplication density of the two patterns inside host `h`.
+--
+-- Prerequisites: run `generate_flags k m patN` and `generate_flags k m hostN`
+-- first (so the `FlagAlgebra_*` and `flagSet_…` constants exist), and have
+-- `Forbid` / `Forbid_toFinFlag_eq` in scope.
+--
+-- Example — K₄-free products of 3-vertex flags of type `FlagType_2_0`, expanded
+-- over 4-vertex hosts:
+--   `generate_forbid_mul_theorems 2 0 3 4 K4`
+elab "generate_forbid_mul_theorems" kS:num mS:num patS:num hostS:num forbidS:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+  let patternFlagTypeName := Name.mkSimple s!"FlagType_{k}_{m}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let (gIdent, gEqName) ← resolveForbidGraph forbidS.getId.toString
+  let forbidFlag ← forbidFlagIdentOfToFinFlagEq gEqName
+  let (r, idx) ← parseFlagRIdx forbidFlag.getId.toString
+  let forbidAll ← evalCanonicalEdgeLists r
+  let forbid := some (r, forbidAll.getD idx [])
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patternFree := freeFlagIndices patN forbid patterns
+  let hostFree := freeFlagIndices hostN forbid hosts
+  let flagSetEqUniv := mkIdent (Name.mkSimple s!"flagSet_{hostTag}_eq_univ")
+  let flagSetValEq := mkIdent (Name.mkSimple s!"flagSet_{hostTag}_val_eq")
+
+  let mut generated : Nat := 0
+  for i in patternFree do
+    for j in patternFree do
+      let iOrd := if i ≤ j then i else j
+      let jOrd := if i ≤ j then j else i
+      let rhs ← buildMulRhs patN hostN hostTag patternFlagTypeName patterns hosts hostFree iOrd jOrd
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{j}")
+      let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{iOrd}")
+      let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
+
+      let env ← getEnv
+      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(env.contains flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(env.contains flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+
+      if !(env.contains thmName.getId) then
+        if i ≤ j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              simp [hsetval]
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} {forbidS.getId.toString}-free multiplication theorem(s): pattern {patternTag}"
+
+-- `generate_mul_theorems k m patN hostN`
+--
+-- The no-forbidden-subgraph analogue of `generate_forbid_mul_theorems`: the same
+-- `k`, `m`, `patN`, `hostN` parameters but no `Forbid`, so every pattern and host
+-- flag participates. For each ordered pair `(i, j)` of pattern flags it emits the
+-- plain-equality, `@[simp]`-tagged theorem
+--   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
+--   `  FlagAlgebra_patN_k_m_i * FlagAlgebra_patN_k_m_j = Σ_h cₕ • FlagAlgebra_hostN_k_m_h`
+-- (ordinary `=`, since no subgraph is forbidden). Same prerequisites as above.
+--
+-- Example — products of 3-vertex flags of type `FlagType_2_0` over 4-vertex hosts:
+--   `generate_mul_theorems 2 0 3 4`
+elab "generate_mul_theorems" kS:num mS:num patS:num hostS:num : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+  let patternFlagTypeName := Name.mkSimple s!"FlagType_{k}_{m}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patternFree := freeFlagIndices patN none patterns
+  let hostFree := freeFlagIndices hostN none hosts
+  let flagSetEqUniv := mkIdent (Name.mkSimple s!"flagSet_{hostTag}_eq_univ")
+  let flagSetValEq := mkIdent (Name.mkSimple s!"flagSet_{hostTag}_val_eq")
+
+  let mut generated : Nat := 0
+  for i in patternFree do
+    for j in patternFree do
+      let iOrd := if i ≤ j then i else j
+      let jOrd := if i ≤ j then j else i
+      let rhs ← buildMulRhs patN hostN hostTag patternFlagTypeName patterns hosts hostFree iOrd jOrd
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{j}")
+      let flagAlgOrd1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{iOrd}")
+      let flagAlgOrd2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
+
+      let env ← getEnv
+      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+
+      if !(env.contains thmName.getId) then
+        let idsArray : Array (TSyntax `ident) := #[flagAlgOrd1, flagAlgOrd2]
+        if i ≤ j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) = $rhs
+              := by
+              dsimp only [$[$idsArray:ident],*]
+              rw [basisVector_quot_mul_eq_flagMul_quot]
+              simp [flagMul, flagMulWithSize]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              rw [hsetval]
+              simp [add_quot, smul_quot]
+              rfl
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) = $rhs
+              := by
+              rw [mul_comm]
+              dsimp only [$[$idsArray:ident],*]
+              rw [basisVector_quot_mul_eq_flagMul_quot]
+              simp [flagMul, flagMulWithSize]
+              rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
+              have hsetval := $flagSetValEq
+              rw [hsetval]
+              simp [add_quot, smul_quot]
+              rfl
+          ))
+        elabCommand (← `(attribute [simp] $thmName))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} plain multiplication theorem(s): pattern {patternTag}"
+
+end Flags.Densities

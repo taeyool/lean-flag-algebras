@@ -1,3 +1,46 @@
+# =============================================================================
+# OUT OF DATE -- needs updating to the current Lean density/multiplication API.
+#
+# The flag-pair density, forbidden-density, and flag-multiplication theorems used
+# to be produced by a Python -> JSON -> Lean pipeline:
+#     calculate_densities.py / gen_free_indices.py  ->  *.json
+#         ->  the `load_*` macros in DensityLoader.lean / MulLoader.lean
+# That pipeline has been REPLACED by self-contained Lean commands that compute
+# everything during elaboration (no JSON, no Python):
+#     DensityThmGenerator.lean : generate_forbid_density_theorems
+#                                generate_flag_pair_density_theorems[_no_forbid]
+#     MulThmGenerator.lean     : generate_forbid_mul_theorems
+#                                generate_mul_theorems
+# The old JSON loaders are preserved (but not in the build) as
+# DensityLoader_old.lean / MulLoader_old.lean.
+#
+# CONSEQUENCE: this script's generated output (`gen-skeleton`, `check-deps`) is
+# now stale and will NOT compile as emitted, because it still produces:
+#   * `import ...Flags.Densities.MulLoader` / `...DensityLoader`
+#       -- those modules were renamed to MulThmGenerator / DensityThmGenerator;
+#   * `load_forbid_density_theorems "..._free_indices.json"`,
+#     `load_flag_pair_density_theorems "density_....json"`,
+#     `load_forbid_mul_theorems "density_....json"`, and the
+#     `gen_free_indices.py` / `calculate_densities.py` regeneration steps
+#       -- none of which the active build uses any more.
+#
+# TODO -- update the emitters to the new commands (numeric params, no JSON):
+#   import ...DensityThmGenerator ;  import ...MulThmGenerator
+#   graphs_<n>_<TAG>_free_indices         -> generate_forbid_density_theorems <n> <TAG>
+#   density_<hostN>_<k>_<m>_from_<patN>_<k>_<m>_forbid_<TAG>
+#                                         -> generate_flag_pair_density_theorems <k> <m> <patN> <hostN> <TAG>
+#                                            generate_forbid_mul_theorems        <k> <m> <patN> <hostN> <TAG>
+#   density_..._no_forbid                 -> generate_flag_pair_density_theorems_no_forbid <k> <m> <patN> <hostN>
+#                                            generate_mul_theorems                         <k> <m> <patN> <hostN>
+# and drop the calculate_densities.py / gen_free_indices.py regeneration steps.
+# Until this is done, skeletons emitted here must be hand-edited (or used against
+# the preserved *_old loaders after regenerating the JSON with the restored
+# Python scripts).
+#
+# Still valid: the graphs_<n>.json / flags_<m>_<k>_<typeNum>.json lookups below
+# (the flag/type enumeration they back is unchanged).
+# =============================================================================
+
 """Convert Flagmatic certificates to Lean (flag-algebra API) code.
 
 Flagmatic encodes graphs as strings:

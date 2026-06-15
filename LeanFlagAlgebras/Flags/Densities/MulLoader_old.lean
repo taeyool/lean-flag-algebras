@@ -1,5 +1,5 @@
 import LeanFlagAlgebras.Forbid.CommonGraphs
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
 import LeanFlagAlgebras.Forbid.Basic
 import Lean.Data.Json
 import Mathlib.Tactic

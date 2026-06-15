@@ -1,8 +1,8 @@
 import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
-import LeanFlagAlgebras.Flags.Densities.MulLoader
-import LeanFlagAlgebras.Flags.Densities.DensityLoader
+import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.API.FlagSumSort
 
 /-! # API.K4freeP4 — P₄ density bound in K₄-free graphs
@@ -24,11 +24,11 @@ open SimpleGraph
 
 namespace K4freeP4
 
-load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_4_K4_free_indices.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K4.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_0_from_3_2_0_forbid_K4.json"
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K4.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_4_2_1_from_3_2_1_forbid_K4.json"
+generate_forbid_density_theorems 4 K4
+generate_flag_pair_density_theorems 2 0 3 4 K4
+generate_forbid_mul_theorems 2 0 3 4 K4
+generate_flag_pair_density_theorems 2 1 3 4 K4
+generate_forbid_mul_theorems 2 1 3 4 K4
 
 /-- The `P₄` (4-vertex path) density, expressed in the basis of 4-vertex graph
 densities (the K₄ term `FlagAlgebra_4_0_0_10` is omitted because it vanishes for

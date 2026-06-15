@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.Flags.Densities.MulLoader
+import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 
 /-! # Erdős pentagon problem: generated flag products
 
@@ -13,16 +13,16 @@ open FlagAlgebras.Compute
 
 namespace ErdosPentagonAPI
 
-load_forbid_density_theorems "LeanFlagAlgebras/Flags/Densities/graphs_5_K3_free_indices.json"
+generate_forbid_density_theorems 5 K3
 
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_0_from_4_3_0_forbid_K3.json"
+generate_flag_pair_density_theorems 3 0 4 5 K3
+generate_forbid_mul_theorems 3 0 4 5 K3
 
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_1_from_4_3_1_forbid_K3.json"
+generate_flag_pair_density_theorems 3 1 4 5 K3
+generate_forbid_mul_theorems 3 1 4 5 K3
 
-load_flag_pair_density_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2_forbid_K3.json"
-load_forbid_mul_theorems "LeanFlagAlgebras/Flags/Densities/density_5_3_2_from_4_3_2_forbid_K3.json"
+generate_flag_pair_density_theorems 3 2 4 5 K3
+generate_forbid_mul_theorems 3 2 4 5 K3
 
 #print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
 
