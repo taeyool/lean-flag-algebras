@@ -1277,26 +1277,35 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % notation; the names and fields match the implementation.
 % -- End original introduction -------------------------------------------------
 
-This section formalizes the flag algebra framework in Lean~4.
-In informal arguments, the same symbol freely denotes a concrete graph,
-its isomorphism class, a formal linear combination of flags, or a flag algebra
-element.  In our Lean formalization, each role is a distinct type and each transition is an
-explicit map for which we prove compatibility with the relevant equivalence relations.
+Informal flag algebra proofs are compact partly because the notation is
+deliberately overloaded.  The same symbol may denote a concrete labeled graph,
+its isomorphism class, a basis vector in a free vector space, an element of the
+quotient algebra, or the real number obtained by evaluating that element in a
+limit.  On paper these shifts are usually harmless and are left implicit.  In
+Lean they become the first formalization problem: each role must be represented
+by a separate type, and each shift between roles must be justified by a theorem
+saying that it respects isomorphism, quotienting, density expansion, and
+multiplication.
 
-Section~\ref{sec:background} fixed a set $\mathcal{H}$ of forbidden graphs at
-the outset and defined all types, flags, and the flag algebra relative to that
-fixed~$\mathcal{H}$.  Our Lean formalization takes a different starting point:
-the algebra is built without fixing any $\mathcal{H}$, or equivalently with
-$\mathcal{H} = \emptyset$, so that no graph is initially excluded.  The
-$\mathcal{H}$-free constraint is then introduced as a separate predicate on
-the semantic order.  In Razborov's original
-presentation~\cite{razborov2007flag}, by contrast, it is baked into the algebra
-at setup time.  The two formulations agree on the Tur\'an density bounds we
-prove.  Whether they are equivalent for all labeled computations is non-trivial
-and depends on the choice of $\mathcal{H}$.  What differs is how much algebraic
-infrastructure carries over to a new~$\mathcal{H}$ without reproof.  This is a
-tradeoff we report on, not one we resolve.
-\gw{This paragraph needs revision.}
+The purpose of the specification layer is to make this typed version of the
+mathematics usable for later certificate proofs.  It provides the objects and
+compatibility theorems corresponding to the informal interface of
+Section~\ref{sec:background}: flags as isomorphism classes of labeled graphs,
+densities as finite sampling probabilities, the flag algebra as a quotient by
+expansion identities, and positive homomorphisms as the semantic interpretation
+of algebra elements.  Once these facts are proved once, the later proof scripts
+can work with algebraic expressions rather than repeatedly returning to the
+underlying graph representatives and finite sampling definitions.
+
+A second, independent design choice concerns where forbidden-subgraph
+assumptions enter the development.  In the background section we fixed
+$\mathcal{H}$ first and defined all flags and algebras relative to the
+$\mathcal{H}$-free world.  In Lean we instead build the ambient flag algebra
+without fixing $\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a
+predicate on the semantic order.  This choice keeps the algebraic infrastructure
+reusable across different extremal problems; the price is that we must prove
+that the deferred predicate has the same meaning as the usual constrained
+flag-algebra semantics when it is used to derive Tur\'an-density bounds.
 
 Throughout this section, the following variables are in scope:
 \begin{lstlisting}
