@@ -1393,15 +1393,23 @@ sentence of that theorem.  The triangle-free case is the special case $r=3$.
 
 \section{Complete blow-ups and true twins}
 
-The previous theorem is the false-twin, or independent-clone, mechanism.  It is
-worth separating two nearby notions.  Closure under duplicating an arbitrary vertex as
-an independent false twin is not a new condition: repeated duplications produce exactly
-the independent blow-ups of \cref{def:independent-blow-up}, and conversely each one-vertex
-false-twin duplication is a special independent blow-up.  Thus false-twin closure is
+The previous theorem uses the false-twin mechanism.  Let us spell out the
+terminology.  In a finite graph, two distinct vertices $x$ and $y$ are
+\emph{false twins} if they are not adjacent and have the same neighbours outside
+the pair $\{x,y\}$: for every other vertex $z$, we have $zx\in E$ if and only
+if $zy\in E$.  Duplicating a vertex as a false twin therefore creates a new
+vertex with the same external neighbourhood as the old one, but with no edge
+between the old and new copies.  Repeating this operation replaces each vertex
+by an independent clone class, exactly as in the independent blow-ups of
+\cref{def:independent-blow-up}.  Conversely, each one-vertex false-twin
+duplication is a special independent blow-up.  Thus false-twin closure is
 clone-closure in another language.
 
-The true-twin analogue is different.  Instead of replacing vertices by independent
-sets, replace them by cliques.
+The true-twin analogue is different.  Two vertices are \emph{true twins} if
+they are adjacent and have the same neighbours outside the pair.  Thus
+duplicating a vertex as a true twin creates a new copy joined to the old one,
+and repeated true-twin duplications replace vertices by cliques rather than by
+independent sets.
 
 \begin{definition}[Complete blow-up]
 Let $G$ be a finite graph and let $m_v\ge1$ be an integer for each
