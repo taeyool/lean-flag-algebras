@@ -9,7 +9,7 @@ about flag densities for the flags generated in `FlagDef.lean`. There are two:
 
 * `generate_forbid_density_theorems n Forbid` — for each `n`-vertex (empty-typed)
   flag, records whether it is free of a forbidden subgraph.
-* `generate_flag_pair_density_theorems k m patN hostN Forbid` and its
+* `generate_flag_pair_density_theorems patN hostN k m Forbid` and its
   `…_no_forbid` variant — the pair densities `p(F₁, F₂; G)` used when expanding a
   product of two flags into a sum of larger flags.
 
@@ -450,14 +450,14 @@ def genPairDensityCore (k m patN hostN : Nat)
 
   logInfo s!"Generated {generated} pair-density theorem(s): pattern {patternTag}, host {hostTag}"
 
--- `generate_flag_pair_density_theorems k m patN hostN Forbid`
+-- `generate_flag_pair_density_theorems patN hostN k m Forbid`
 --
 -- Generate the pair-density (`flagDensity₂`) `simp` theorems for a σ-typed flag
 -- algebra, restricted to flags free of a forbidden subgraph. Parameters:
---   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
---                `k`-vertex graph, `k` the number of labeled (type) vertices.
 --   • `patN`   : size of the two "pattern" flags whose joint density is taken.
 --   • `hostN`  : size of the "host" flag the density is measured in.
+--   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
+--                `k`-vertex graph, `k` the number of labeled (type) vertices.
 --   • `Forbid` : a forbidden graph (`def Forbid` + `Forbid_toFinFlag_eq` in
 --                `CommonGraphs.lean`, e.g. `K3`/`K4`/`K5`); only `Forbid`-free
 --                pattern and host flags take part.
@@ -468,25 +468,25 @@ def genPairDensityCore (k m patN hostN : Nat)
 --   `   flagDensity₂ Flag_patN_k_m_i Flag_patN_k_m_j Flag_hostN_k_m_h = value`,
 -- proved by `native_decide`.
 --
--- Prerequisites: run `generate_flags k m patN` and `generate_flags k m hostN`.
+-- Prerequisites: run `generate_flags patN k m` and `generate_flags hostN k m`.
 --
 -- Example — K₄-free pair densities of 3-vertex flags of type `FlagType_2_0`
 -- inside 4-vertex hosts:
---   `generate_flag_pair_density_theorems 2 0 3 4 K4`
-elab "generate_flag_pair_density_theorems" kS:num mS:num patS:num hostS:num
+--   `generate_flag_pair_density_theorems 3 4 2 0 K4`
+elab "generate_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
     forbidS:ident : command => do
   let forbid ← forbidEdgesOfTag forbidS.getId.toString
   genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat (some forbid)
 
--- `generate_flag_pair_density_theorems_no_forbid k m patN hostN`
+-- `generate_flag_pair_density_theorems_no_forbid patN hostN k m`
 --
 -- The no-forbidden-subgraph version of `generate_flag_pair_density_theorems`:
--- same `k`, `m`, `patN`, `hostN`, but with no `Forbid` every pattern and host
+-- same `patN`, `hostN`, `k`, `m`, but with no `Forbid` every pattern and host
 -- flag participates. Emits the same `flagDensity₂ … = value` `@[simp]` theorems.
 --
 -- Example:
---   `generate_flag_pair_density_theorems_no_forbid 2 0 3 4`
-elab "generate_flag_pair_density_theorems_no_forbid" kS:num mS:num patS:num hostS:num : command => do
+--   `generate_flag_pair_density_theorems_no_forbid 3 4 2 0`
+elab "generate_flag_pair_density_theorems_no_forbid" patS:num hostS:num kS:num mS:num : command => do
   genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat none
 
 end Flags.Densities

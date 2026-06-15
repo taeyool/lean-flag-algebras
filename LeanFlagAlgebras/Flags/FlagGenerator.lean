@@ -14,14 +14,14 @@ definitions and theorems, with no external JSON input:
   `Sym2Flag_n_0_0_i`, `Flag_n_0_0_i`, `FlagAlgebra_n_0_0_i` (empty type ∅ₜ), plus
   the finset/`= univ` lemmas `sym2FlagSet_n_0_0`, `flagSet_n_0_0`,
   `flagSet_n_0_0_val_eq`, `flagSet_n_0_0_eq_univ`.
-* `generate_flags k m n` evaluates `genFlagData k m n` (the enumerated flags of
-  the type σ given by the `k`-vertex graph with index `m`, in canonical order) at
-  elaboration time and synthesizes the type constants `Sym2FlagType_k_m`,
-  `FlagType_k_m`, and for each flag `i` the constants `Sym2LabeledGraph_n_k_m_i`,
-  `Sym2Flag_n_k_m_i`, `Flag_n_k_m_i`, `FlagAlgebra_n_k_m_i`, the `simp` lemmas
-  `unlabel_n_k_m_i` and `downward_n_k_m_i` (relating the labeled flag to its
-  underlying empty-typed flag via the precomputed downward-normalizing
-  coefficient), plus the corresponding finset/`= univ` lemmas.
+* `generate_flags n k m` synthesizes the `n`-vertex flags of the type σ given by
+  the `k`-vertex graph with index `m`, evaluating the corresponding Lean
+  enumeration at elaboration time. It produces the type constants
+  `Sym2FlagType_k_m`, `FlagType_k_m`, and for each flag `i` the constants
+  `Sym2LabeledGraph_n_k_m_i`, `Sym2Flag_n_k_m_i`, `Flag_n_k_m_i`,
+  `FlagAlgebra_n_k_m_i`, the `simp` lemmas `unlabel_n_k_m_i` and `downward_n_k_m_i`
+  (relating the labeled flag to its underlying empty-typed flag via the precomputed
+  downward-normalizing coefficient), plus the corresponding finset/`= univ` lemmas.
 
 The `… = Finset.univ` completeness lemmas are discharged by the mathematically
 proved theorems `genEmptyTypedFlagSet_eq_univ` / `genFlagSet_eq_univ` (bridged to
@@ -304,9 +304,10 @@ elab "generate_empty_typed_flags" nStx:num : command => do
 
   logInfo s!"Generated {count} empty-typed flags as `Sym2Flag_{n}_0_0_i` (n = {n})."
 
--- `generate_flags k m n`: evaluate the self-contained Lean enumeration
--- `genFlagData k m n` at elaboration time (one orbit representative per flag, in
--- canonical order) and synthesize the named constants `Sym2FlagType_k_m`,
+-- `generate_flags n k m`: synthesize the `n`-vertex σ-typed flags, where σ is the
+-- `k`-vertex graph with index `m`. Evaluates the enumeration `genFlagData k m n`
+-- at elaboration time (one orbit representative per flag, in canonical order) and
+-- synthesizes the named constants `Sym2FlagType_k_m`,
 -- `FlagType_k_m`, and per flag `Sym2LabeledGraph_n_k_m_i`, `Sym2Flag_n_k_m_i`,
 -- `Flag_n_k_m_i`, `FlagAlgebra_n_k_m_i`, the `simp` lemmas `unlabel_n_k_m_i` /
 -- `downward_n_k_m_i`, and the finset/`= univ` lemmas. The type's edges and each
@@ -315,10 +316,10 @@ elab "generate_empty_typed_flags" nStx:num : command => do
 -- `Sym2Graph_n_0_0_j`'s exactly (preserving `unlabel`/`downward` defeq); the
 -- downward coefficient is the reduced orbit ratio computed by `genFlagData` and
 -- independently re-checked by the per-flag `native_decide`.
-elab "generate_flags" kStx:num mStx:num nStx:num : command => do
+elab "generate_flags" nStx:num kStx:num mStx:num : command => do
+  let n := nStx.getNat
   let k := kStx.getNat
   let m := mStx.getNat
-  let n := nStx.getNat
 
   -- Dependency check: each generated flag's `unlabel`/`downward` bridge is stated against the
   -- underlying empty-typed flag `Flag_n_0_0_i` (produced by `generate_empty_typed_flags n`).
@@ -327,7 +328,7 @@ elab "generate_flags" kStx:num mStx:num nStx:num : command => do
   -- `Quotient.sound (flagEqv.refl …)` type mismatch only *after* enumerating all flags
   -- (minutes, at large n). Fail fast here with an actionable message instead.
   unless (← getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
-    throwError s!"`generate_flags {k} {m} {n}` requires the underlying empty-typed flags \
+    throwError s!"`generate_flags {n} {k} {m}` requires the underlying empty-typed flags \
 `Flag_{n}_0_0_i`, which are produced by `generate_empty_typed_flags {n}`. \
 Add `generate_empty_typed_flags {n}` before this command."
 

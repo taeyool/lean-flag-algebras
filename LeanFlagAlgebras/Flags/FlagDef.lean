@@ -12,7 +12,7 @@ the mathematically-proved `genEmptyTypedFlagSet_eq_univ` rather than by
 enumerating the entire quotient `Fintype`.
 
 The general typed flags (type σ the `m`-th `k`-vertex graph) are produced
-analogously by `generate_flags k m n`: it evaluates the self-contained Lean
+analogously by `generate_flags n k m`: it evaluates the self-contained Lean
 enumeration `genFlagData k m n` — one orbit representative per flag, in the
 canonical order — at elaboration time, synthesizing the named flag/type
 constants and `simp` lemmas with no JSON file read.
@@ -40,29 +40,29 @@ generate_empty_typed_flags 5
 -- the generator is moved to compiled (native) evaluation.
 -- generate_empty_typed_flags 7
 
-generate_flags 1 0 1
-generate_flags 1 0 2
+generate_flags 1 1 0
+generate_flags 2 1 0
 
-generate_flags 1 0 3
-generate_flags 2 0 3
-generate_flags 2 1 3
+generate_flags 3 1 0
+generate_flags 3 2 0
+generate_flags 3 2 1
 
-generate_flags 2 0 4
-generate_flags 2 1 4
-generate_flags 3 0 4
-generate_flags 3 1 4
-generate_flags 3 2 4
-generate_flags 3 3 4
+generate_flags 4 2 0
+generate_flags 4 2 1
+generate_flags 4 3 0
+generate_flags 4 3 1
+generate_flags 4 3 2
+generate_flags 4 3 3
 
-generate_flags 1 0 5
-generate_flags 3 0 5
-generate_flags 3 1 5
-generate_flags 3 2 5
-generate_flags 3 3 5
+generate_flags 5 1 0
+generate_flags 5 3 0
+generate_flags 5 3 1
+generate_flags 5 3 2
+generate_flags 5 3 3
 
 -- set_option maxRecDepth 4000
 -- set_option maxHeartbeats 40000000
--- generate_flags 3 0 6
+-- generate_flags 6 3 0
 
 #print Sym2LabeledGraph_3_1_0_2
 #check downward_3_1_0_2

@@ -80,11 +80,11 @@ lemma f₃_nonneg (r : ℕ) : 0 ≤ f₃ r := by
   rw [pow_two]
   exact square_downward_nonneg _
 
-generate_flag_pair_density_theorems_no_forbid 2 0 3 4
-generate_mul_theorems 2 0 3 4
+generate_flag_pair_density_theorems_no_forbid 3 4 2 0
+generate_mul_theorems 3 4 2 0
 -- σ₂-type (edge-label) products, needed for `f₂_expand` / `f₃_expand`.
-generate_flag_pair_density_theorems_no_forbid 2 1 3 4
-generate_mul_theorems 2 1 3 4
+generate_flag_pair_density_theorems_no_forbid 3 4 2 1
+generate_mul_theorems 3 4 2 1
 
 
 example : FlagAlgebra_3_2_0_0 * FlagAlgebra_3_2_0_3 =

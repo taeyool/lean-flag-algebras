@@ -25,10 +25,10 @@ open SimpleGraph
 namespace K4freeP4
 
 generate_forbid_density_theorems 4 K4
-generate_flag_pair_density_theorems 2 0 3 4 K4
-generate_forbid_mul_theorems 2 0 3 4 K4
-generate_flag_pair_density_theorems 2 1 3 4 K4
-generate_forbid_mul_theorems 2 1 3 4 K4
+generate_flag_pair_density_theorems 3 4 2 0 K4
+generate_forbid_mul_theorems 3 4 2 0 K4
+generate_flag_pair_density_theorems 3 4 2 1 K4
+generate_forbid_mul_theorems 3 4 2 1 K4
 
 /-- The `P₄` (4-vertex path) density, expressed in the basis of 4-vertex graph
 densities (the K₄ term `FlagAlgebra_4_0_0_10` is omitted because it vanishes for
