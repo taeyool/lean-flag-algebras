@@ -18,12 +18,12 @@ open SimpleGraph Matrix
 namespace ErdosPentagon
 
 generate_forbid_density_theorems 5 K3
-generate_flag_pair_density_theorems 3 0 4 5 K3
-generate_forbid_mul_theorems 3 0 4 5 K3
-generate_flag_pair_density_theorems 3 1 4 5 K3
-generate_forbid_mul_theorems 3 1 4 5 K3
-generate_flag_pair_density_theorems 3 2 4 5 K3
-generate_forbid_mul_theorems 3 2 4 5 K3
+generate_flag_pair_density_theorems 4 5 3 0 K3
+generate_forbid_mul_theorems 4 5 3 0 K3
+generate_flag_pair_density_theorems 4 5 3 1 K3
+generate_forbid_mul_theorems 4 5 3 1 K3
+generate_flag_pair_density_theorems 4 5 3 2 K3
+generate_forbid_mul_theorems 4 5 3 2 K3
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

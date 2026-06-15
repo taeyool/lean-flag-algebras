@@ -18,8 +18,8 @@ open SimpleGraph Matrix
 namespace K3forbidP3
 
 generate_forbid_density_theorems 3 K3
-generate_flag_pair_density_theorems 1 0 2 3 K3
-generate_forbid_mul_theorems 1 0 2 3 K3
+generate_flag_pair_density_theorems 2 3 1 0 K3
+generate_forbid_mul_theorems 2 3 1 0 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

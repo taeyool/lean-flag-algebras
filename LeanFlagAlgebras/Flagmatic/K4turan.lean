@@ -21,10 +21,10 @@ open FlagAlgebras.Compute
 namespace K4turan
 
 generate_forbid_density_theorems 4 K4
-generate_flag_pair_density_theorems 2 0 3 4 K4
-generate_forbid_mul_theorems 2 0 3 4 K4
-generate_flag_pair_density_theorems 2 1 3 4 K4
-generate_forbid_mul_theorems 2 1 3 4 K4
+generate_flag_pair_density_theorems 3 4 2 0 K4
+generate_forbid_mul_theorems 3 4 2 0 K4
+generate_flag_pair_density_theorems 3 4 2 1 K4
+generate_forbid_mul_theorems 3 4 2 1 K4
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/

@@ -9,9 +9,9 @@ This module provides two elaboration-time commands that synthesize flag-product
 ("multiplication") theorems for a fixed flag type, expanding the product of two
 pattern flags into the basis of larger host flags:
 
-* `generate_forbid_mul_theorems k m patN hostN Forbid` — products modulo a
+* `generate_forbid_mul_theorems patN hostN k m Forbid` — products modulo a
   forbidden subgraph (right-hand side holds up to `=[Forbid.toFinFlag]`).
-* `generate_mul_theorems k m patN hostN` — plain products (`=`), no forbid.
+* `generate_mul_theorems patN hostN k m` — plain products (`=`), no forbid.
 
 See each command's documentation below for the meaning of the parameters and
 example invocations. Both obtain their expansion coefficients from the density
@@ -67,17 +67,17 @@ def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Nam
       rhsTerms := rhsTerms.push (← coeffSmulFlagTerm nd.1 nd.2 hostName)
   sumTerms patternFlagTypeName rhsTerms
 
--- `generate_forbid_mul_theorems k m patN hostN Forbid`
+-- `generate_forbid_mul_theorems patN hostN k m Forbid`
 --
 -- Generate the flag-product expansion theorems for a σ-typed flag algebra,
 -- modulo a forbidden subgraph. Parameters:
---   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
---                `k`-vertex graph, and `k` is the number of labeled (type)
---                vertices shared by every flag.
 --   • `patN`   : size (number of vertices) of the two factor "pattern" flags.
 --   • `hostN`  : size of the "host" flags the product expands into; for a product
 --                of two `patN`-vertex flags sharing `k` type vertices this is
 --                `hostN = 2 * patN - k`.
+--   • `k`, `m` : select the flag type σ = `FlagType_k_m` — σ is the `m`-th
+--                `k`-vertex graph, and `k` is the number of labeled (type)
+--                vertices shared by every flag.
 --   • `Forbid` : a forbidden graph — any `def Forbid` in `CommonGraphs.lean`
 --                with a companion `Forbid_toFinFlag_eq` lemma (e.g. `K3`, `K4`,
 --                `K5`). Only `Forbid`-free pattern and host flags take part.
@@ -90,14 +90,14 @@ def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Nam
 -- subgraph, the sum ranges over `Forbid`-free hosts `h`, and `cₕ` is the
 -- subflag-multiplication density of the two patterns inside host `h`.
 --
--- Prerequisites: run `generate_flags k m patN` and `generate_flags k m hostN`
+-- Prerequisites: run `generate_flags patN k m` and `generate_flags hostN k m`
 -- first (so the `FlagAlgebra_*` and `flagSet_…` constants exist), and have
 -- `Forbid` / `Forbid_toFinFlag_eq` in scope.
 --
 -- Example — K₄-free products of 3-vertex flags of type `FlagType_2_0`, expanded
 -- over 4-vertex hosts:
---   `generate_forbid_mul_theorems 2 0 3 4 K4`
-elab "generate_forbid_mul_theorems" kS:num mS:num patS:num hostS:num forbidS:ident : command => do
+--   `generate_forbid_mul_theorems 3 4 2 0 K4`
+elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ident : command => do
   let k := kS.getNat
   let m := mS.getNat
   let patN := patS.getNat
@@ -176,10 +176,10 @@ elab "generate_forbid_mul_theorems" kS:num mS:num patS:num hostS:num forbidS:ide
 
   logInfo s!"Generated {generated} {forbidS.getId.toString}-free multiplication theorem(s): pattern {patternTag}"
 
--- `generate_mul_theorems k m patN hostN`
+-- `generate_mul_theorems patN hostN k m`
 --
 -- The no-forbidden-subgraph analogue of `generate_forbid_mul_theorems`: the same
--- `k`, `m`, `patN`, `hostN` parameters but no `Forbid`, so every pattern and host
+-- `patN`, `hostN`, `k`, `m` parameters but no `Forbid`, so every pattern and host
 -- flag participates. For each ordered pair `(i, j)` of pattern flags it emits the
 -- plain-equality, `@[simp]`-tagged theorem
 --   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
@@ -187,8 +187,8 @@ elab "generate_forbid_mul_theorems" kS:num mS:num patS:num hostS:num forbidS:ide
 -- (ordinary `=`, since no subgraph is forbidden). Same prerequisites as above.
 --
 -- Example — products of 3-vertex flags of type `FlagType_2_0` over 4-vertex hosts:
---   `generate_mul_theorems 2 0 3 4`
-elab "generate_mul_theorems" kS:num mS:num patS:num hostS:num : command => do
+--   `generate_mul_theorems 3 4 2 0`
+elab "generate_mul_theorems" patS:num hostS:num kS:num mS:num : command => do
   let k := kS.getNat
   let m := mS.getNat
   let patN := patS.getNat

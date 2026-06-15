@@ -15,14 +15,14 @@ namespace ErdosPentagonAPI
 
 generate_forbid_density_theorems 5 K3
 
-generate_flag_pair_density_theorems 3 0 4 5 K3
-generate_forbid_mul_theorems 3 0 4 5 K3
+generate_flag_pair_density_theorems 4 5 3 0 K3
+generate_forbid_mul_theorems 4 5 3 0 K3
 
-generate_flag_pair_density_theorems 3 1 4 5 K3
-generate_forbid_mul_theorems 3 1 4 5 K3
+generate_flag_pair_density_theorems 4 5 3 1 K3
+generate_forbid_mul_theorems 4 5 3 1 K3
 
-generate_flag_pair_density_theorems 3 2 4 5 K3
-generate_forbid_mul_theorems 3 2 4 5 K3
+generate_flag_pair_density_theorems 4 5 3 2 K3
+generate_forbid_mul_theorems 4 5 3 2 K3
 
 #print flagMul_FlagAlgebra_4_3_2_0_FlagAlgebra_4_3_2_0
 
