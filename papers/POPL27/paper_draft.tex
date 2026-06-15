@@ -54,6 +54,8 @@
 \newcommand{\den}[2]{p(#1;\,#2)}
 \newcommand{\tdensity}[2]{\pi(#1;\,#2)}
 \newcommand{\lean}[1]{\texttt{#1}}
+\newcommand{\emptyt}{\emptyset_{\mathrm{t}}}
+\newcommand{\leansmul}{\mathbin{\vcenter{\hbox{$\scriptstyle\bullet$}}}}
 \newcommand{\gw}[1]{\textcolor{red}{\textbf{[GW: #1]}}}
 \newcommand{\Ext}{\operatorname{Ext}}
 
@@ -1298,6 +1300,11 @@ infrastructure carries over to a new~$\mathcal{H}$ without reproof.  This is a
 tradeoff we report on, not one we resolve.
 \gw{This paragraph needs revision.}
 
+One notational convention is specific to the formalization.  In
+Section~\ref{sec:background}, the empty flag type was written simply as
+$\emptyset$.  In Lean-related notation, we write it as $\emptyt$ to avoid
+confusion with ordinary empty sets.
+
 Throughout this section, the following variables are in scope:
 \begin{lstlisting}
 variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
@@ -1613,7 +1620,16 @@ quotient pattern as the density functions in
 Section~\ref{sec:formal-subflag-densities}.  This gives the single-flag map
 \lean{downwardFlag}; the map is then linearly extended to
 \lean{FlagVector} $\sigma$ and lifted once more through the zero-space quotient
-to obtain a function on \lean{FlagAlgebra} $\sigma$. \gw{I'm here.}
+to obtain a function on \lean{FlagAlgebra} $\sigma$.
+
+We begin with the first of these two lifts.  We first define
+$q_\sigma(A)$ on concrete \lean{LabeledGraph}s and then lift it to
+\lean{Flag}s as \lean{downwardNormalizingFactor}.  Similarly,
+\lean{unlabeledGraph} implements $A|_\emptyset$ on \lean{LabeledGraph}s, and
+\lean{unlabel} is its lifted version.  Each quotient lift requires a proof that
+isomorphic representatives give the same result.  Finally, \lean{downwardFlag}
+combines these two lifted components, realizing
+$\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
@@ -1626,75 +1642,53 @@ noncomputable def downwardNormalizingFactor
     (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G)
     (fun _ _ h => downwardNormalizingFactor_labeledGraph_respect_eqv h)
 
-def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph emptyType V := ...
+def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph (*@$\emptyt$@*) V := ...
 
-noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag emptyType V :=
+noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
   Quotient.lift
     (fun G : LabeledGraph (*@$\sigma$@*) V => unlabeledGraphQuot G)
     (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
-\end{lstlisting}
-These lifts let us define the downward image of a single flag:
-\begin{lstlisting}
-noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector emptyType :=
-  downwardNormalizingFactor F (*@$\bullet$@*) basisVector ((*@$n$@*), unlabel F)
-\end{lstlisting}
-This is the Lean version of $\llbracket F\rrbracket_\sigma =
-q_\sigma(F)\cdot F|_\emptyset$.
 
-The main new obligation appears when this single-flag operation is lifted to
-\lean{FlagAlgebra}.  Since \lean{FlagAlgebra} $\sigma$ is a quotient of
-\lean{FlagVector} $\sigma$ by the zero-space relations, the linear extension of
-\lean{downwardFlag} must be shown to send every typed zero-space relation to an
-empty-typed zero-space relation.
-
-The main combinatorial lemma behind this lift is a double-counting identity.
-It compares two ways of first forgetting labels and then expanding to a larger
-unlabeled flag: either count copies of \lean{unlabel F} and multiply by the
-normalizing factor of $F$, or sum over all label extensions of the larger
-unlabeled flag.
-\begin{lstlisting}
-theorem flagDensity_mul_downwardNormalizingFactor_eq_sum_labelExtensions
-    (F : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*))
-    (F' : FlagWithSize emptyType (*@$\ell'$@*)) (h : (*@$\ell \leq \ell'$@*)) :
-    flagDensity(*@$_1$@*) (unlabel F) F' * downwardNormalizingFactor F =
-      (*@$\sum$@*) G (*@$\in$@*) labelExtensions F' (*@$\sigma$@*),
-        flagDensity(*@$_1$@*) F G * downwardNormalizingFactor G
+noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
+  downwardNormalizingFactor F (*@$\leansmul$@*) basisVector ((*@$n$@*), unlabel F)
 \end{lstlisting}
-This identity is then used to prove that \lean{downwardFlag} respects the
-expansion equations generating the zero space:
-\begin{lstlisting}
-lemma downwardFlagVector_zeroSpace
-    (f : FlagVector (*@$\sigma$@*)) (hf : f (*@$\in$@*) ZeroSpace (*@$\sigma$@*)) :
-    downwardFlagVector f (*@$\in$@*) ZeroSpace emptyType
 
-noncomputable def downward
-    : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra emptyType :=
-  Quotient.lift (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
+The second lift starts from this single-flag map and is substantially harder.
+Lean first extends \lean{downwardFlag} linearly to a map from
+\lean{FlagVector} $\sigma$ to \lean{FlagVector} $\emptyt$, and then descends
+this map through the quotient defining \lean{FlagAlgebra} $\sigma$.  At the single-flag
+level, the construction only has to respect isomorphism of representatives; at
+the algebra level, it must also respect the expansion equations generating the
+zero space $\mathcal{Z}^\sigma$.  This compatibility is the well-definedness proof needed by the
+final quotient lift: \gw{I'm here.}
+\begin{lstlisting}
+noncomputable def downward : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
+  Quotient.lift
+    (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
     (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
-
-notation "[[" f "]]0" => downward f
 \end{lstlisting}
-Thus the concise paper notation $\llbracket-\rrbracket_\sigma$ hides two
-successive quotient lifts and a substantial compatibility proof with the
-zero-space presentation of the algebra.
+We write this map in the paper as $\llbracket-\rrbracket_0$.  Thus the concise
+notation hides two successive quotient lifts and a substantial compatibility
+proof with the zero-space presentation of the algebra.
 
 The semantic soundness of the downward operator is proved in
 \lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
-object called a random homomorphism; instead, for an empty-typed positive
+object called a random homomorphism; instead, for a $\emptyt$-typed positive
 homomorphism $\phi_0$ with positive $\sigma$-density, Lean constructs a
 probability measure on \lean{PositiveHomSpace} $\sigma$ corresponding to
 $\Ext_\sigma(\phi_0)$ from Section~\ref{sec:background-downward}.  Its defining property
 is the formal version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
-    {(*@$\phi_0$@*) : PositiveHom emptyType}
+    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
     (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
     (*@$\exists$@*) (P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*))),
       (*@$\forall$@*) (f : FlagAlgebra (*@$\sigma$@*)),
         (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)),
           PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
         =
-        (*@$\phi_0$@*) [[f]]0 / (*@$\phi_0$@*) [[(1 : FlagAlgebra (*@$\sigma$@*))]]0
+        (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
+          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
 \end{lstlisting}
 This theorem corresponds to Razborov's random-extension theorem and supplies
 Equation~\eqref{eq:ensemble} in the form used by \Cref{thm:downward-nonneg}.
@@ -1711,15 +1705,15 @@ and extended-real measure values.
 
 The payoff is the formal semantic transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: the downward image of a semantically non-negative
-typed element is semantically non-negative in the empty-typed algebra.
+typed element is semantically non-negative in the $\emptyt$-typed algebra.
 \begin{lstlisting}
 theorem downward_preserve_semanticCone
     (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
-    [[f]]0 (*@$\in$@*) semanticCone emptyType
+    (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*)
 \end{lstlisting}
 The proof splits on whether $\phi_0(\langle\sigma\rangle_0)$ is zero.  In the
 zero case, every downward value vanishes at $\phi_0$; in the positive case, the
-random-extension measure above rewrites $\phi_0([[f]]_0)$ as a positive
+random-extension measure above rewrites $\phi_0(\llbracket f\rrbracket_0)$ as a positive
 normalizing factor times the expectation of a non-negative random variable.
 This is the formal bridge from typed inequalities to the unlabeled semantic
 order used by certificate proofs.
@@ -1737,14 +1731,14 @@ the semantic order.
 
 The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
 \begin{lstlisting}
-def forbidLE (H : FinFlag emptyType) (f g : FlagAlgebra sigma) : Prop :=
-  forall (phi0 : PositiveHom emptyType), phi0 <sigma>0 > 0 ->
-    phi0 [[basisVector H]] = 0 ->
+def forbidLE (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra sigma) : Prop :=
+  forall (phi0 : PositiveHom (*@$\emptyt$@*)), phi0 <sigma>0 > 0 ->
+    phi0 (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
     P[phi0] {phi | phi f <= phi g} = 1
 \end{lstlisting}
 For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
 $f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
-for every empty-typed positive homomorphism $\phi_0$ in which $H$ has density
+for every $\emptyt$-typed positive homomorphism $\phi_0$ in which $H$ has density
 zero, almost every random $\sigma$-typed extension $\phi$ satisfies
 $\phi(f)\leq\phi(g)$.  The side condition \lean{phi0 <sigma>0 > 0} records
 that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
@@ -1765,11 +1759,12 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
   exists P : ProbabilityMeasure (PositiveHomSpace sigma),
     forall f : FlagAlgebra sigma,
       integral (fun phi => phi f) P =
-        phi0 [[f]]0 / phi0 [[(1 : FlagAlgebra sigma)]]0
+        phi0 (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
+          phi0 (*@$\llbracket$@*)(1 : FlagAlgebra sigma)(*@$\rrbracket_0$@*)
 \end{lstlisting}
 This theorem explains why the formalization needs measure theory.  The
 downward operator gives the expectation of typed random extensions, so a
-forbidden-subgraph assumption stated at the empty-typed level must be
+forbidden-subgraph assumption stated at the $\emptyt$-typed level must be
 transported through almost-sure statements about typed extensions.  This is
 the consequence we mentioned at the start of the section: in the
 predicate-based design, random extensions are the definitional content of the
@@ -1780,13 +1775,13 @@ The final transfer theorem, in \lean{Forbid/TuranDensity.lean}, has the shape
 needed by certificate proofs:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\bullet$@*) 1) :
+    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) 1) :
     generalizedTuranDensity H F <= c
 \end{lstlisting}
 The Lean constant takes the forbidden graph first and the target graph
 second: \lean{generalizedTuranDensity H F} is the maximum density of $P$ in
 $H$-free graphs, written mathematically in this paper as $\tdensity{P}{H}$.
-Here the inequality is empty-typed, so the paper notation is
+Here the inequality is $\emptyt$-typed, so the paper notation is
 $P.\lean{toFlagAlgebra} \leq c\mathbf{1}$.
 The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the same
 \lean{forbidLE} predicate.  Once this semantic inequality is checked, the
@@ -1828,7 +1823,7 @@ To state that \lean{Sym2Graph.toFlag} is inverse to
 \lean{Flag.toSym2EmptyTypedFlag}, one cannot simply compute both sides to the
 same normal form; the map out of the quotient must go through an eliminator:
 \begin{lstlisting}
-def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag emptyType (Fin n) :=
+def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag (*@$\emptyt$@*) (Fin n) :=
   Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
 \end{lstlisting}
 The \lean{toFlag\_respect\_eqv} proof---showing that isomorphic
@@ -2432,18 +2427,18 @@ algebraic identity \lean{one\_forbidEq\_expand} together with a tactic
 \lean{expand\_one\_at N} that automates the boilerplate rewrite chain
 (\lean{Finset.sum\_eq\_multiset\_sum}, the \lean{flagSet\_N\_0\_0\_eq\_univ}
 rewrite, simplification with \lean{flagSet\_N\_0\_0\_val\_eq}, and the
-collapse of empty-type density factors).
+collapse of $\emptyt$-type density factors).
 
 \paragraph{\lean{forbidLE\_add\_QuadraticForm}.}
 The standard upper-bound strategy in a flag-algebra proof is: start with the
 target inequality, add one or more PSD quadratic forms in typed flag
 variables, and then verify that the resulting expression sits inside the
-empty-typed forbid-cone.  The lemma
+$\emptyt$-typed forbid-cone.  The lemma
 \lean{forbidLE\_add\_QuadraticForm} encapsulates the addition step:
 \begin{lstlisting}
 theorem forbidLE_add_QuadraticForm
     (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
-    : (f <=[F_forbid] g) -> f <=[F_forbid] g + [[flagQuadraticForm M v]]0
+    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
 \end{lstlisting}
 Iterating this lemma over a list of PSD certificates turns an upper-bound
 proof into a transitive chain of quadratic-form additions, one per type.
@@ -2555,7 +2550,7 @@ upper-bound certificate:
 \begin{lstlisting}
 theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3
 \end{lstlisting}
-Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra emptyType} representing
+Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra} $\emptyt$ representing
 the single edge and the triangle.  The inequality asserts that in every
 sequence of graphs whose triangle density tends to zero, the edge density is
 at most $1/2$.  The second is the ordinary Tur\'an-density theorem, proved
@@ -2762,7 +2757,7 @@ The forbidden-subgraph predicate \lean{forbidLE}
 universal theory at the top of the algebra to a parameter on the semantic
 order at use sites.  Razborov's original presentation does the opposite.
 Both designs can express the same theorems.  We do not know which design is
-preferable in the long run.  Reusable lemmas about the empty-typed algebra
+preferable in the long run.  Reusable lemmas about the $\emptyt$-typed algebra
 are easier to share across forbidden graphs in our design; lemmas that
 exploit a specific forbidden graph from the outset may be cleaner in
 Razborov's.  We invite future work to compare the two on a development that
