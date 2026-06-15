@@ -1289,32 +1289,50 @@ by a separate type, and each shift between roles must be justified by a theorem
 saying that it respects isomorphism, quotienting, density expansion, and
 multiplication.
 
-The purpose of the specification layer is to make this typed version of the
-mathematics usable for later certificate proofs.  It provides the objects and
-compatibility theorems corresponding to the informal interface of
+Our first design choice is to build this typed mathematical interface
+separately from the proof-by-computation machinery used later for certificates.
+Here computation means evaluation inside Lean as part of proof checking, not a
+numerical experiment outside the prover.  For example, Lean may evaluate a
+finite flag-density table or normalize an algebraic expression, and the
+resulting equality can be used as a proof step only because it is connected to
+the mathematical definitions by previously proved theorems.  We call the
+interface supporting these proof-producing computations the
+\emph{specification layer}: it states the mathematical objects and proves their
+basic interface theorems.  It provides the formal counterpart of the informal
+interface in
 Section~\ref{sec:background}: flags as isomorphism classes of labeled graphs,
 densities as finite sampling probabilities, the flag algebra as a quotient by
 expansion identities, and positive homomorphisms as the semantic interpretation
-of algebra elements.  Once these facts are proved once, the later proof scripts
-can work with algebraic expressions rather than repeatedly returning to the
-underlying graph representatives and finite sampling definitions.
+of algebra elements.  Once this interface has been established, later proofs
+checking particular flag-algebra certificates can work with algebraic
+expressions rather than repeatedly returning to the underlying graph
+representatives and finite sampling definitions.
 
-A second, independent design choice concerns where forbidden-subgraph
-assumptions enter the development.  In the background section we fixed
+A second design choice concerns where forbidden-subgraph assumptions enter
+the development.  In the background section we fixed
 $\mathcal{H}$ first and defined all flags and algebras relative to the
 $\mathcal{H}$-free world.  In Lean we instead build the ambient flag algebra
 without fixing $\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a
-predicate on the semantic order.  This choice keeps the algebraic infrastructure
-reusable across different extremal problems; the price is that we must prove
-that the deferred predicate has the same meaning as the usual constrained
-flag-algebra semantics when it is used to derive Tur\'an-density bounds.
+predicate on the semantic order.  The practical reason for this choice is that
+it keeps the basic flag-algebra formalization as close as possible to the
+unconstrained theory.  If every definition carried an arbitrary forbidden
+family $\mathcal{H}$ from the start, then even the elementary constructions of
+flags, densities, expansion identities, and multiplication would acquire an
+extra parameter and extra side conditions.  We expected this to make the first
+formalization of the core theory harder.  By postponing $\mathcal{H}$-freeness,
+we can develop the ambient algebra once and introduce the constraint only at
+the point where it is needed for extremal applications.  This also keeps the
+algebraic infrastructure reusable across different problems; the price is that
+we must prove that the deferred predicate has the same meaning as the usual
+constrained flag-algebra semantics when it is used to derive Tur\'an-density
+bounds.
 
 One notational convention is specific to the formalization.  In
 Section~\ref{sec:background}, the empty flag type was written simply as
 $\emptyset$.  In Lean-related notation, we write it as $\emptyt$ to avoid
 confusion with ordinary empty sets.
 
-Throughout this section, the following variables are in scope:
+Throughout this section, the following Lean context is in scope:
 \begin{lstlisting}
 variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
          {U : Type}  [Fintype U]  [DecidableEq U]
@@ -1323,9 +1341,20 @@ variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
          {W : Type} [Fintype W] [DecidableEq W]
          {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
 \end{lstlisting}
-\lean{FlagType} is introduced in the next subsection.
-\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are custom typeclass instances
-asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for every \lean{i : Fin t}.
+For readers not familiar with Lean syntax, this block is a list of standing
+assumptions rather than a mathematical statement.  The symbols \lean{T},
+\lean{U}, \lean{U$_1$}, \lean{U$_2$}, and \lean{W} are finite vertex types;
+\lean{[Fintype U]} records that Lean may enumerate the elements of \lean{U},
+and \lean{[DecidableEq U]} records that equality on \lean{U} can be decided by
+computation.  Curly braces mark arguments that Lean usually infers from
+context, while square brackets mark typeclass assumptions that Lean searches
+for automatically.  The variable $\sigma$ is a flag type on the label type
+\lean{T}; \lean{FlagType} is introduced in the next subsection.  Finally,
+\lean{Fin t} is the finite type with elements $0,1,\ldots,t-1$, so
+\lean{Vl : Fin t -> Type} is a finite list of vertex types.  The assumptions
+\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are custom typeclass
+instances asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for
+each index \lean{i : Fin t}.
 
 \subsection{Flag Types and Flags}
 \label{sec:flagtypes}
