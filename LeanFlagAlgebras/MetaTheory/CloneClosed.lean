@@ -213,7 +213,7 @@ private theorem sum_isomorphismCount_labelExtensions_filtered (ℓ' : ℕ)
 /-- **Uniform-over-rootings count ratio.** The σ-rooting measure of a set `A` of density
 profiles is the fraction of σ-labellings of the host graph whose induced density profile lands
 in `A`. -/
-private theorem toProbMeasure_apply_eq_labeling_ratio (F : FinFlag ∅ₜ)
+theorem toProbMeasure_apply_eq_labeling_ratio (F : FinFlag ∅ₜ)
     (hF : flagDensity₁ σ.toEmptyTypeFlag F.2 > 0) (A : Set (FlagDensitySpace σ)) :
     ((F.toProbMeasure hF : Measure (FlagDensitySpace σ)) A).toReal
       = ((Finset.univ.filter (fun H : LabeledGraph σ (Fin F.1) =>
@@ -281,14 +281,14 @@ theorem blowupFlagSeq_type_pos {n : ℕ} (hn : 0 < n) {Γ : SimpleGraph (Fin n)}
 
 /-- The asymptotic planted-estimate gap `ρ_∞(n, r) = descFactorial(n−n₀, r) / n^r`, the limit of
 the planted-estimate ratio as the (uniform) clone size grows. -/
-private noncomputable def rhoInf (n₀ n r : ℕ) : ℝ :=
+noncomputable def rhoInf (n₀ n r : ℕ) : ℝ :=
   ((n - n₀).descFactorial r : ℝ) / ((n : ℝ) ^ r)
 
 /-! ### Counting σ-labellings of a fixed host graph -/
 
 /-- The σ-labellings of a fixed host graph `K` (labelled graphs with underlying graph `K`)
 biject with the σ-embeddings `σ ↪g K`, via `H ↦ H.type_embed`. -/
-private def labelingEquivEmbedding {N : ℕ} (K : SimpleGraph (Fin N)) :
+def labelingEquivEmbedding {N : ℕ} (K : SimpleGraph (Fin N)) :
     {H : LabeledGraph σ (Fin N) // H.graph = K} ≃ (σ ↪g K) where
   toFun H := H.2 ▸ H.1.type_embed
   invFun e := ⟨⟨K, e⟩, rfl⟩
@@ -301,7 +301,7 @@ private def labelingEquivEmbedding {N : ℕ} (K : SimpleGraph (Fin N)) :
 
 /-- The σ-labellings of a host graph `K`, as a `Finset`, has cardinality equal to the number of
 σ-embeddings `σ ↪g K`. -/
-private theorem card_labelings_eq_card_embeddings {N : ℕ} (K : SimpleGraph (Fin N)) :
+theorem card_labelings_eq_card_embeddings {N : ℕ} (K : SimpleGraph (Fin N)) :
     (Finset.univ.filter (fun H : LabeledGraph σ (Fin N) => H.graph = K)).card
       = Fintype.card (σ ↪g K) := by
   rw [← Fintype.card_coe]
@@ -330,7 +330,7 @@ private def embeddingEquivBlowupEmbeddings {n : ℕ} (Γ : SimpleGraph (Fin n)) 
 
 /-- Post-composing with a graph isomorphism `K ≃g K'` transports σ-embeddings, giving a
 bijection `(σ ↪g K) ≃ (σ ↪g K')`. -/
-private def embeddingIsoCongr {V W : Type} {K : SimpleGraph V} {K' : SimpleGraph W}
+def embeddingIsoCongr {V W : Type} {K : SimpleGraph V} {K' : SimpleGraph W}
     (e : K ≃g K') : (σ ↪g K) ≃ (σ ↪g K') where
   toFun f := e.toEmbedding.comp f
   invFun f := e.symm.toEmbedding.comp f
@@ -344,7 +344,7 @@ private def embeddingIsoCongr {V W : Type} {K : SimpleGraph V} {K' : SimpleGraph
       RelIso.coe_toRelEmbedding, RelIso.apply_symm_apply]
 
 /-- The number of σ-labellings of a host graph is invariant under graph isomorphism. -/
-private theorem card_labelings_eq_of_iso {N N' : ℕ} {K : SimpleGraph (Fin N)}
+theorem card_labelings_eq_of_iso {N N' : ℕ} {K : SimpleGraph (Fin N)}
     {K' : SimpleGraph (Fin N')} (e : K ≃g K') :
     (Finset.univ.filter (fun H : LabeledGraph σ (Fin N) => H.graph = K)).card
       = (Finset.univ.filter (fun H : LabeledGraph σ (Fin N') => H.graph = K')).card := by
@@ -353,7 +353,7 @@ private theorem card_labelings_eq_of_iso {N N' : ℕ} {K : SimpleGraph (Fin N)}
 
 /-- The density `flagDensity₁ Fi.2 ⟦G⟧` of a fixed flag in a host is invariant under a
 flag-isomorphism `G₀ ≃f G₁` of the host (even across different vertex types). -/
-private theorem flagDensity₁_respect_eqv {U V : Type} [Fintype U] [DecidableEq U]
+theorem flagDensity₁_respect_eqv {U V : Type} [Fintype U] [DecidableEq U]
     [Fintype V] [DecidableEq V] (Fi : FinFlag σ)
     {G₀ : LabeledGraph σ U} {G₁ : LabeledGraph σ V} (φ : G₀ ≃f G₁) :
     flagDensity₁ Fi.2 (⟦G₀⟧ : Flag σ U) = flagDensity₁ Fi.2 (⟦G₁⟧ : Flag σ V) := by
@@ -371,13 +371,13 @@ private theorem flagDensity₁_respect_eqv {U V : Type} [Fintype U] [DecidableEq
 
 /-- Transport a labelled graph along a graph isomorphism of its host (relabelling the vertex
 type), giving an `≃f`-isomorphic labelled graph with the new host as underlying graph. -/
-private def transportLabeled {V W : Type} {G : LabeledGraph σ V} {K : SimpleGraph W}
+def transportLabeled {V W : Type} {G : LabeledGraph σ V} {K : SimpleGraph W}
     (e : G.graph ≃g K) : LabeledGraph σ W where
   graph := K
   type_embed := e.toEmbedding.comp G.type_embed
 
 /-- The transport along `e` is `≃f`-isomorphic to the original (via `e`). -/
-private def transportLabeled_iso {V W : Type} {G : LabeledGraph σ V} {K : SimpleGraph W}
+def transportLabeled_iso {V W : Type} {G : LabeledGraph σ V} {K : SimpleGraph W}
     (e : G.graph ≃g K) : G ≃f transportLabeled e where
   graph_iso := e
   type_preserve := rfl

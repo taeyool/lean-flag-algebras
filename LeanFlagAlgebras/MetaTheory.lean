@@ -21,6 +21,14 @@ import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.RootingUniform
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
 import LeanFlagAlgebras.MetaTheory.CloneClosed
+import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
+import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
+import LeanFlagAlgebras.MetaTheory.SubstitutionClass
+import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
+import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+import LeanFlagAlgebras.MetaTheory.TrueClone
+import LeanFlagAlgebras.MetaTheory.Substitution
+import LeanFlagAlgebras.MetaTheory.ClusterGraph
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -109,4 +117,29 @@ Aggregator. Currently wires in:
   quotient and ensemble semantics agree for every `f`.
 
 This completes the formalisation of the proved results of `MetaTheory/paper.tex` §1–5.
+
+§6–§7 build on the §5 machinery by generalising the independent blow-up to the **generalised
+blow-up** `subBlowup G W` (a within-class family `W`), which covers the complete blow-up of §6
+(`W = ⊤`, clique clone classes) and the substitution of §7 (`W = H_v`, arbitrary in-class fibres).
+Off the diagonal the adjacency is the base adjacency `G`, so on the "good" (transversal) sets the
+whole §5 estimate machinery applies unchanged.
+
+* `SubstitutionBlowup` — `subBlowup`/`completeBlowup`, off-diagonal agreement, the planted labelled
+  graph, and `good_event_induces_iff_sub` (the §5 good-event isomorphism, carried across the
+  identity-on-a-transversal iso `subBlowupToIndepIso`).
+* `SubstitutionEstimate` — `planted_mass_sub` and `planted_estimate_sub` (§6 `lem:true-planted-estimate`
+  / §7 `lem:substitution-planting-estimate`); the estimate is `PlantedEstimate.planted_estimate_host`
+  (the host-parametric form of `lem:planted-estimate`) at `B = subBlowupLabeledGraph`.
+* `SubstitutionClass` — `HeredClass`, a hereditary class *without* a closure assumption (cluster
+  graphs are not clone-closed), with its `constraintOf` and the two consumption lemmas.
+* `SubstitutionSequence` — the uniform generalised-blow-up flag sequence and its base limit `φ₀`
+  (`blowup_limit_mem_Q0_sub`, `blowup_limit_type_pos_sub`).
+* `SubstitutionClosed` — `subst_root_plantable`: under a within-class blow-up closure hypothesis,
+  `S_σ = Q_σ` (the §6–§7 analogue of `clone_root_plantable`, mirroring its proof).
+* `TrueClone` — §6 `thm:true-clone-root-plantable`: `true_clone_root_plantable` and
+  `true_clone_quotient_iff_ensemble` for `TrueCloneClosed` classes (`W = ⊤`).
+* `Substitution` — §7 `thm:substitution-root-plantable`: `substitution_root_plantable` and
+  `substitution_quotient_iff_ensemble` for infinite `SubstitutionClosed` classes.
+* `ClusterGraph` — §6 `cor:cluster-graphs`: cluster graphs (`P₃`-free) are true-clone-closed, hence
+  `cluster_root_plantable` — root-plantable though *not* clone-closed.
 -/

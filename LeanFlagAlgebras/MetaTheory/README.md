@@ -1,7 +1,7 @@
 # MetaTheory — a Lean 4 formalisation of the root-plantability meta-theory of flag algebras
 
 This directory formalises, in Lean 4 (toolchain `leanprover/lean4:v4.27.0`, Mathlib `v4.27.0`),
-the **proved results of Sections 1–5 of [`paper.tex`](./paper.tex)** — the *meta-theory* of
+the **proved results of Sections 1–7 of [`paper.tex`](./paper.tex)** — the *meta-theory* of
 flag algebras that asks **when forbidden-subgraph ("quotient") reasoning is complete** for a
 constrained graph class.
 
@@ -13,6 +13,13 @@ The headline result is:
 > agree for **every** `f ∈ A^σ`. Specialised to `K_r`-free graphs, this is **`cor:clique-free`**
 > (`clique_free_root_plantable` / `clique_free_quotient_iff_ensemble`), covering the
 > triangle-free case `r = 3`.
+
+The same conclusion is then extended (§6–§7) to classes closed under **complete blow-ups**
+(true twins) — **`true_clone_root_plantable`**, with `cluster_root_plantable` covering cluster
+graphs, which are *not* clone-closed — and under **substitution** —
+**`substitution_root_plantable`**. All three are instances of one generalised theorem
+**`subst_root_plantable`** ([`SubstitutionClosed.lean`](./SubstitutionClosed.lean)), obtained by
+reusing the §5 proof over a *generalised blow-up* `subBlowup`.
 
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom`.
@@ -37,6 +44,13 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §5 `lem:planted-estimate` | (equal non-root clones) planted vs base density differ by `≤ 1 − ρ` | `planted_estimate` | [`PlantedEstimate`](./PlantedEstimate.lean) |
 | §5 `thm:clone-root-plantable` | clone-closed hereditary classes are root-plantable | `clone_root_plantable` | [`CloneClosed`](./CloneClosed.lean) |
 | §5 `cor:clique-free` | `K_r`-free / triangle-free classes are root-plantable | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` | [`CloneClosed`](./CloneClosed.lean) |
+| §6 `def:complete-blow-up` | the complete blow-up `G^{m,+}` (clique clone classes); the generalised blow-up `subBlowup` | `completeBlowup`, `subBlowup` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean) |
+| §6/§7 `lem:true-planted-estimate`, `lem:substitution-planting-estimate` | the planted mass + estimate carry over to the generalised blow-up | `planted_mass_sub`, `planted_estimate_sub` | [`SubstitutionEstimate`](./SubstitutionEstimate.lean) |
+| §6 `thm:true-clone-root-plantable` | true-clone-closed hereditary classes are root-plantable | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` | [`TrueClone`](./TrueClone.lean) |
+| §6 `cor:cluster-graphs` | cluster graphs (`P₃`-free; not clone-closed) are root-plantable | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` | [`ClusterGraph`](./ClusterGraph.lean) |
+| §7 `def:graph-substitution` | the substitution `G[H_v]` (= `subBlowup G H`) | `subBlowup` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean) |
+| §7 `thm:substitution-root-plantable` | infinite substitution-closed hereditary classes are root-plantable | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` | [`Substitution`](./Substitution.lean) |
+| (shared) | root-plantability from any within-class blow-up closure | `subst_root_plantable` | [`SubstitutionClosed`](./SubstitutionClosed.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -45,9 +59,11 @@ foundational input to `thm:clone-root-plantable`:
 |---|---|---|---|
 | Constrained representation theorem | a positive hom vanishing on all forbidden flags is the density limit of a sequence of **forbidden-free** flags (a *constrained* refinement of Razborov 3.3(b)) | `exists_constrained_flagSeq_limit` | [`ConstrainedRep`](./ConstrainedRep.lean) |
 
-§1 (Introduction) is prose and has nothing to formalise. Sections **§6 onward** of `paper.tex`
-(true twins / complete blow-ups, substitution-closed classes, finite local planting, degeneracy
-obstructions, …) are **out of scope** here — see [Scope & limitations](#scope--limitations).
+§1 (Introduction) is prose and has nothing to formalise. **§6 (complete blow-ups / true twins)
+and §7 (substitution-closed classes) are also formalised** (table above), reusing the §5 machinery
+through the generalised blow-up `subBlowup`. Sections **§8 onward** of `paper.tex` (finite local
+planting, degeneracy obstructions, …) are **out of scope** here — see
+[Scope & limitations](#scope--limitations).
 
 ---
 
@@ -55,10 +71,12 @@ obstructions, …) are **out of scope** here — see [Scope & limitations](#scop
 
 * **`sorry`-free.** No `sorry`/`admit`/`native_decide` appears in any module, and there are no
   `axiom` declarations.
-* **Axiom-clean.** The three capstone theorems (`clone_root_plantable`,
-  `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble`) depend on **only the three
-  standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 23 modules (≈7900 jobs).
+* **Axiom-clean.** Every capstone theorem — the §5 `clone_root_plantable` /
+  `clique_free_root_plantable` / `clique_free_quotient_iff_ensemble` and the §6–§7
+  `subst_root_plantable` / `true_clone_root_plantable` / `substitution_root_plantable` /
+  `cluster_root_plantable` — depends on **only the three standard Mathlib axioms**
+  `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 31 modules (7937 jobs).
 
 ### How to verify it yourself
 
@@ -119,6 +137,30 @@ clearly-bounded changes. (Per-module detail is in [`ARCHITECTURE.md`](./ARCHITEC
    `GraphClass` structure ([`GraphClassConstraint`](./GraphClassConstraint.lean)). The
    `lem:planted-mass` count is over `ℚ`.
 
+5. **§6–§7 are unified through one generalised blow-up.** The paper proves `lem:true-planted-estimate`
+   and `lem:substitution-planting-estimate` separately (complete blow-ups vs. substitution). We
+   define a single construction `subBlowup G W` (the within-class family `W` is `⊤` for §6 and the
+   in-class fibres for §7) and prove the estimate **once**: `planted_estimate_sub` is the §5
+   `planted_estimate` generalised to an arbitrary host (`planted_estimate_host`), since on the
+   transversals the estimate samples, `subBlowup` is indistinguishable from the independent blow-up.
+   Consequently the §6/§7 estimates inherit the uniform-clone simplification of Deviation 1 (the
+   clean `1 − ρ`, with the same `ρ`), not the paper's general-clone `C_m(λ + 1/(n−k) + err_N)`.
+   Likewise `subst_root_plantable` is `clone_root_plantable` re-run over `subBlowup` under an abstract
+   *within-class blow-up closure* hypothesis, of which §6's `TrueCloneClosed` and §7's
+   `SubstitutionClosed` are instances.
+
+6. **§6–§7 packaging.** Heredity is separated from closure into a `HeredClass` structure (the §5
+   `GraphClass` bundled `clone_closed`, but `cor:cluster-graphs` needs a class that is hereditary yet
+   *not* clone-closed). §7's "infinite" hypothesis is stated as its used consequence — the class
+   contains a graph of every finite order (`∀ N, ∃ H : SimpleGraph (Fin N), hc.Mem H`). Cluster
+   graphs are encoded by the equivalent `P₃`-free condition "adjacency is transitive on distinct
+   vertices" rather than literally "disjoint union of cliques".
+
+7. **`cor:cluster-graphs`: only the positive half is formalised.** We prove cluster graphs are
+   root-plantable (`cluster_root_plantable`). The paper's accompanying remark that the class is *not*
+   clone-closed (witnessed by `K₂`'s independent blow-up `K_{2,2} ⊇` induced `P₃`) is a separate
+   finite construction we did not formalise; it is not needed for any theorem.
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -129,10 +171,12 @@ documented in the relevant module's header.
 This meta-theory is a layer **on top of** the repository's existing formalisation of flag algebras
 (`LeanFlagAlgebras/FlagAlgebra/`, `LeanFlagAlgebras/Forbid/`). That base supplied the entire
 *semantic foundation* — Razborov's flag algebra, its homomorphism space, the random-extension
-measure, the density and rooting machinery — so the §1–5 results could be **stated and proved by
+measure, the density and rooting machinery — so the §1–7 results could be **stated and proved by
 reusing deep existing results rather than re-deriving the framework**. This is what reduced the task
 from "formalise flag algebras *and then* the meta-theory" to "formalise the meta-theory, reusing
-the flag algebras", and is the single biggest reason a `sorry`-free §1–5 was feasible. Concretely:
+the flag algebras", and is the single biggest reason a `sorry`-free §1–7 was feasible. (§6–§7 add a
+second layer of reuse on top: they are built by reusing §5 — see the §6–§7 row of the results table
+and Deviation 5.) Concretely:
 
 1. **The objects to talk about already existed.** `FlagAlgebra σ` (the algebra `A^σ`, with
    `basisVector`, the product, `flagDensity_self`), `PositiveHom σ`, and — crucially — the **compact
@@ -200,8 +244,8 @@ flag-algebra base.
 
 ## Repository layout (this directory)
 
-* **`paper.tex`** — the source article; §1–5 are what is formalised here.
-* **`*.lean`** — 23 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`paper.tex`** — the source article; §1–7 are what is formalised here.
+* **`*.lean`** — 31 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
@@ -215,13 +259,13 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
 
 ## Scope & limitations
 
-* **Formalised:** the proved results of §1–5 (above).
-* **Not formalised (future work):** §6+ of `paper.tex` — complete blow-ups / true twins
-  (`thm:true-clone-root-plantable`), substitution-closed classes
-  (`thm:substitution-root-plantable`), the finite-local-planting criterion, and the degeneracy
-  obstructions (`thm:degenerate-obstruction`, the pinning theorems, …). The §5 machinery here
-  (especially the planted estimate and the `GraphClass` packaging) is intended to be reusable for
-  those.
+* **Formalised:** the proved results of §1–7 (above) — including §6 (complete blow-ups / true twins,
+  `thm:true-clone-root-plantable`, `cor:cluster-graphs`) and §7 (substitution-closed classes,
+  `thm:substitution-root-plantable`), obtained by generalising the §5 planted estimate to the
+  generalised blow-up `subBlowup` (`SubstitutionBlowup`/`SubstitutionEstimate`/`SubstitutionClosed`).
+* **Not formalised (future work):** §8 onward of `paper.tex` — the finite-local-planting criterion,
+  and the degeneracy obstructions (`thm:degenerate-obstruction`, the pinning theorems, …). The
+  generalised-blow-up machinery here is intended to be reusable for those.
 * The development reuses results from the surrounding `LeanFlagAlgebras/FlagAlgebra/` directory
   (representation theorem, random-extension measure, Prokhorov compactness, …) as already-proved
   lemmas — these are part of the trusted base, not re-verified here, but they are themselves
