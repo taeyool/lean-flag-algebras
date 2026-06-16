@@ -717,16 +717,15 @@ $\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 
 Fix a flag type $\sigma$ of size $k$.
 Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
-``algebra'' is used in the standard algebraic sense: a vector space equipped
-with a bilinear multiplication and a distinguished multiplicative unit,
-satisfying the usual associativity and unit laws.  The flag algebras in this
-paper are commutative $\mathbb{R}$-algebras.} of density expressions generated
+``algebra'' means a vector space with bilinear multiplication and a unit,
+satisfying the usual laws; the flag algebras in this paper are commutative
+$\mathbb{R}$-algebras.} of density expressions generated
 by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
 density of that local labeled pattern in a large host graph.  The quotient
 below records the standard sampling identities among these building blocks,
 beginning with the expansion identity coming from
 Lemma~\ref{lem:chain-rule}.
-Let
+Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
 combinations of $\sigma$-flags.  We also write $A$ for the basis vector
@@ -1405,15 +1404,16 @@ def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n
 \end{lstlisting}
 
 Unlike Section~\ref{sec:background}, none of the definitions above carries the
-$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  The
-$\mathcal{H}$-free assumption is deferred to the semantic predicate on the
-final unlabeled inequality, as described in the section introduction.
-\gw{This sentence needs revision.}
+$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  This is a
+deliberate interface choice.  The core quotient and density machinery is
+developed once for all finite graphs, while the $\mathcal{H}$-free assumption
+is imposed later through the semantic predicate on the final unlabeled
+inequality.
 
 \subsection{Subflag Densities}
 \label{sec:formal-subflag-densities}
 
-Formalizing density function is not straightforward.  The density
+Formalizing the density function is not straightforward.  The density
 $\den{A_1,\ldots,A_t}{G}$ from Section~\ref{sec:background} should be a
 function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
@@ -1480,7 +1480,10 @@ noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$
 Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
 
 Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
-\gw{The proof of the chain rule was also very difficult, but I'm not sure whether it would be worth discussing that here.}
+Although the statement mirrors the elementary sampling identity from
+Section~\ref{sec:background}, the formal proof must also commute finite counts
+with quotient lifts and the coercions between rational densities and real-valued
+algebra expressions.
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
@@ -1542,7 +1545,7 @@ abbrev FlagAlgebra ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
 In the resulting type \lean{FlagAlgebra} $\sigma$, a flag and its density expansion at any larger size
-are definitionally equal.
+are equal as elements of the quotient.
 
 Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
 \lean{flagMulWithSize} defines the product
@@ -1698,7 +1701,9 @@ this map through the quotient defining \lean{FlagAlgebra} $\sigma$.  At the sing
 level, the construction only has to respect isomorphism of representatives; at
 the algebra level, it must also respect the expansion equations generating the
 zero space $\mathcal{Z}^\sigma$.  This compatibility is the well-definedness proof needed by the
-final quotient lift: \gw{I'm here.}
+final quotient lift: if two flag-vector representatives differ by a zero-space
+relation, their downward images must agree in the empty-type quotient.
+\gw{I'm here.}
 \begin{lstlisting}
 noncomputable def downward : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   Quotient.lift
