@@ -1288,43 +1288,39 @@ by a separate type, and each shift between roles must be justified by a theorem
 saying that it respects isomorphism, quotienting, density expansion, and
 multiplication.
 
-Our first design choice is to build this typed mathematical interface
-separately from the proof-by-computation machinery used later for certificates.
-Here computation means evaluation inside Lean as part of proof checking, not a
-numerical experiment outside the prover.  For example, Lean may evaluate a
-finite flag-density table or normalize an algebraic expression, and the
-resulting equality can be used as a proof step only because it is connected to
-the mathematical definitions by previously proved theorems.  We call the
-interface supporting these proof-producing computations the
-\emph{specification layer}: it states the mathematical objects and proves their
-basic interface theorems.  It provides the formal counterpart of the informal
-interface in
-Section~\ref{sec:background}: flags as isomorphism classes of labeled graphs,
+Our first design choice is to separate this typed mathematical interface from
+the proof-by-computation machinery used later to check flag-algebra
+certificates.  Here computation means evaluation inside Lean as part of proof
+checking, not a numerical experiment outside the prover.  For example, Lean may
+evaluate a finite flag-density table or normalize an algebraic expression, and
+the resulting equality can be used as a proof step only because previously
+proved theorems connect the computation to the mathematical definitions.  We
+call the interface supporting these proof-producing computations the
+\emph{specification layer}.  It formalizes the objects from
+Section~\ref{sec:background}---flags as isomorphism classes of labeled graphs,
 densities as finite sampling probabilities, the flag algebra as a quotient by
-expansion identities, and positive homomorphisms as the semantic interpretation
-of algebra elements.  Once this interface has been established, later proofs
-checking particular flag-algebra certificates can work with algebraic
-expressions rather than repeatedly returning to the underlying graph
-representatives and finite sampling definitions.
+expansion identities, and positive homomorphisms as semantic interpretations of
+algebra elements---and proves their basic interface theorems.  Once this layer
+has been established, certificate proofs can manipulate algebraic expressions
+without repeatedly returning to graph representatives and finite sampling
+definitions.
 
-A second design choice concerns where forbidden-subgraph assumptions enter
-the development.  In the background section we fixed
-$\mathcal{H}$ first and defined all flags and algebras relative to the
-$\mathcal{H}$-free world.  In Lean we instead build the ambient flag algebra
-without fixing $\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a
-predicate on the semantic order.  The practical reason for this choice is that
-it keeps the basic flag-algebra formalization as close as possible to the
-unconstrained theory.  If every definition carried an arbitrary forbidden
-family $\mathcal{H}$ from the start, then even the elementary constructions of
-flags, densities, expansion identities, and multiplication would acquire an
-extra parameter and extra side conditions.  We expected this to make the first
-formalization of the core theory harder.  By postponing $\mathcal{H}$-freeness,
-we can develop the ambient algebra once and introduce the constraint only at
-the point where it is needed for extremal applications.  This also keeps the
-algebraic infrastructure reusable across different problems; the price is that
-we must prove that the deferred predicate has the same meaning as the usual
-constrained flag-algebra semantics when it is used to derive Tur\'an-density
-bounds.
+A second design choice concerns where forbidden-subgraph assumptions enter the
+development.  In the background section we fixed $\mathcal{H}$ first and
+defined all flags and algebras relative to the $\mathcal{H}$-free world.  In
+Lean we instead build the ambient flag algebra without fixing
+$\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a predicate on the
+semantic order.  Thus the core formalization implements the unconstrained
+theory.  If every definition carried an arbitrary forbidden family
+$\mathcal{H}$ from the start, then even the elementary constructions of flags,
+densities, expansion identities, and multiplication would acquire an extra
+parameter and extra side conditions.  By postponing $\mathcal{H}$-freeness, we
+develop the ambient algebra once and introduce the constraint only when it is
+needed for extremal applications.  This keeps the algebraic infrastructure
+reusable across different forbidden graphs.  The deferred treatment is still
+sound for Tur\'an-density bounds: \Cref{sec:forbidden} explains the semantic
+predicate and the transfer theorem connecting it to the usual constrained
+flag-algebra viewpoint.
 
 One notational convention is specific to the formalization.  In
 Section~\ref{sec:background}, the empty flag type was written simply as
@@ -1333,35 +1329,53 @@ confusion with ordinary empty sets.
 
 Throughout this section, the following Lean context is in scope:
 \begin{lstlisting}
-variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
-         {U : Type}  [Fintype U]  [DecidableEq U]
-         {U(*@$_1$@*) : Type} [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
-         {U(*@$_2$@*) : Type} [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
-         {W : Type} [Fintype W] [DecidableEq W]
-         {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+variable {T : Type} [Fintype T]
+          {U : Type} [Fintype U]  [DecidableEq U]
+          {U(*@$_1$@*) : Type} [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
+          {U(*@$_2$@*) : Type} [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
+          {W : Type}  [Fintype W] [DecidableEq W]
+          {(*@$\sigma$@*) : FlagType T}
+          {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
 \end{lstlisting}
-For readers not familiar with Lean syntax, this block is a list of standing
-assumptions rather than a mathematical statement.  The symbols \lean{T},
-\lean{U}, \lean{U$_1$}, \lean{U$_2$}, and \lean{W} are finite vertex types;
-\lean{[Fintype U]} records that Lean may enumerate the elements of \lean{U},
-and \lean{[DecidableEq U]} records that equality on \lean{U} can be decided by
-computation.  Curly braces mark arguments that Lean usually infers from
-context, while square brackets mark typeclass assumptions that Lean searches
-for automatically.  The variable $\sigma$ is a flag type on the label type
-\lean{T}; \lean{FlagType} is introduced in the next subsection.  Finally,
-\lean{Fin t} is the finite type with elements $0,1,\ldots,t-1$, so
-\lean{Vl : Fin t -> Type} is a finite list of vertex types.  The assumptions
-\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are custom typeclass
-instances asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for
-each index \lean{i : Fin t}.
+For readers not familiar with Lean syntax, this block declares standing
+parameters rather than a new mathematical statement.  Curly braces mark
+implicit parameters that Lean usually infers from context.  Square brackets
+mark implicit \emph{instance} parameters, called typeclass assumptions.  Here
+an ``assumption'' is satisfied by providing data of the required kind: a
+\lean{Fintype U} instance witnesses that \lean{U} is finite by giving an
+enumeration of its elements, and a \lean{DecidableEq U} instance gives a
+decision procedure for equality on \lean{U}.  Lean searches for these instances
+automatically when a later definition or theorem needs them.
+
+Thus \lean{T}, \lean{U}, \lean{U$_1$}, \lean{U$_2$}, and \lean{W} are finite
+vertex types used below, with enumeration and equality data available where
+needed.  The variable $\sigma$ is a flag type on the label type \lean{T};
+\lean{FlagType} is introduced in the next subsection.  The type \lean{Fin t}
+has elements $0,1,\ldots,t-1$, so \lean{Vl : Fin t -> Type} is a finite list of
+vertex types.  The custom typeclass assumptions \lean{FintypeList Vl} and
+\lean{DecidableEqList Vl} provide \lean{Fintype (Vl i)} and
+\lean{DecidableEq (Vl i)} instances for each index \lean{i : Fin t}.
 
 \subsection{Flag Types and Flags}
 \label{sec:flagtypes}
 
-Informally, the word \emph{flag} refers both to a concrete pair $(M,\theta_A)$
-and to its isomorphism class.  In Lean, however, the two must be distinct types.  We define \lean{LabeledGraph}
-for the concrete pair $(M,\theta_A)$ and \lean{Flag} for its quotient by flag
-isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V(M)|$.
+Our formalization builds on Mathlib, and in particular on Mathlib's graph
+library.  Before giving the Lean definitions of flags, we recall the small
+pieces of Mathlib notation used below.  In Section~\ref{sec:background} we
+described a finite graph as having a vertex set $V(G)$.  In Lean, the vertex
+set is represented by a type: a term of type \lean{SimpleGraph V} is a simple
+graph whose vertices are the elements of \lean{V}.  Finiteness is supplied
+separately by assumptions such as \lean{Fintype V}; for example,
+\lean{SimpleGraph (Fin n)} is the Lean version of a graph on the vertex set
+\(\{0,\ldots,n-1\}\).
+
+Mathlib provides ${G\hookrightarrow_g H}$ for the type of graph embeddings
+from $G$ to $H$.  Such an embedding is an injective vertex map that
+preserves and reflects adjacency, so its image is an induced copy of $G$
+in $H$.  Mathlib also provides $G\simeq_g H$ for graph isomorphisms.
+With this notation in place, the concrete pair $(M,\theta_A)$ from
+Section~\ref{sec:background} is represented by \lean{LabeledGraph}, while its
+isomorphism class is represented by \lean{Flag}.
 
 \begin{lstlisting}
 abbrev FlagType := SimpleGraph
@@ -1370,26 +1384,59 @@ structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
-The structure \lean{LabeledGraph} takes the flag type $\sigma$ and a vertex type \lean{V} as parameters, and encodes a concrete $\sigma$-flag $(M,\theta_A)$. \lean{FlagType T} is the type of $\sigma$, i.e., simple graphs with vertex type \lean{T}. The field \lean{graph} stores the underlying graph $M$, and \lean{type\_embed} records the graph embedding $\theta_A$.
+Here \lean{FlagType T} is simply a name for \lean{SimpleGraph T}: a flag type
+is represented by a simple graph on the label type \lean{T}.  The structure
+\lean{LabeledGraph} packages the two pieces of a concrete $\sigma$-flag: the
+field \lean{graph} stores the underlying graph $M$, and the field
+\lean{type\_embed} stores the embedding
+$\theta_A:\sigma\hookrightarrow_g M$.
 
 We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
 two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
 quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
-structure LabeledGraphIso (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+structure LabeledGraphIso {V W : Type}
+    (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
+
+infixl:50 " (*@$\simeq$@*)f " => LabeledGraphIso
+
+def flagEqv (G G' : LabeledGraph (*@$\sigma$@*) V) : Prop :=
+  Nonempty (G (*@$\simeq$@*)f G')
+
+instance labeledGraphSetoid ((*@$\sigma$@*) : FlagType T) (V : Type)
+    : Setoid (LabeledGraph (*@$\sigma$@*) V) where
+  -- r : LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) Prop
+  r     := flagEqv
+  -- iseqv : Equivalence r
+  iseqv := ...
 
 def Flag ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-% The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
-% and \lean{type\_preserve} encodes the commutativity condition $\alpha \circ
-% \theta_A = \theta_{A'}$ from Section~\ref{sec:background}.
-Lean's quotient type requires a \emph{setoid}, which is a type explicitly
-equipped with an equivalence relation.  \lean{labeledGraphSetoid} serves this role, equipping
-\lean{LabeledGraph} with the equivalence relation induced by 
-\lean{LabeledGraphIso}.
+\lean{LabeledGraphIso} represents an isomorphism of concrete $\sigma$-flags.
+It consists of a graph isomorphism \lean{graph\_iso} between the underlying
+graphs, together with a compatibility proof \lean{type\_preserve} saying that
+this isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy
+of $\sigma$ in $G'$.  This is the Lean form of the condition
+$\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ abbreviates
+this structure.
+
+The next definition, \lean{flagEqv}, turns labeled-graph isomorphism into a
+proposition: two terms $G,G'$ of type
+\lean{LabeledGraph}~$\sigma$~\lean{V} are equivalent if there exists a
+label-preserving graph isomorphism between them.  Lean's quotient type does not
+take an arbitrary relation directly; it expects a \emph{setoid}, namely a type
+together with an explicitly supplied equivalence relation.  The instance
+\lean{labeledGraphSetoid} provides this package for
+\lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} is the relation
+\lean{flagEqv}, and its field \lean{iseqv} contains the proofs that this
+relation is reflexive, symmetric, and transitive.  Finally,
+\lean{Flag}~$\sigma$~\lean{V} is defined as the quotient of
+\lean{LabeledGraph}~$\sigma$~\lean{V} by that setoid, so its elements are
+precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
+\lean{V}.
 
 We can now define $\mathcal{F}^\sigma_n$ in Lean as \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)},
 abbreviated \lean{FlagWithSize}~$\sigma$~$n$.  \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
