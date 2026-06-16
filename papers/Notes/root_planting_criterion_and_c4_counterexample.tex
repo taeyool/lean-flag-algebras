@@ -1195,12 +1195,18 @@ $\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
   \ge
   \frac{\lambda}{2k}.
 \]
-Hence the number of planted ordered embeddings is at least
+The clone classes $C_{\theta(1)},\ldots,C_{\theta(k)}$ are distinct, since
+$\theta$ is injective.  Thus the choices of the $k$ labelled vertices may be
+made independently: there are $|C_{\theta(i)}|$ choices for the image of label
+$i$, and every resulting ordered choice is one of the planted induced embeddings
+counted above.  Hence the number of planted ordered embeddings is at least
 \[
   \prod_{i=1}^k |C_{\theta(i)}|
   \ge
   \left(\frac{\lambda}{2k}\right)^k N^k .
 \]
+The last inequality is just the product of the individual lower bounds
+$|C_{\theta(i)}|\ge(\lambda/(2k))N$.
 The denominator in the random experiment is the total number of induced ordered
 embeddings of $\sigma$ into $B_N$.  This denominator is at most the number of all
 ordered maps from the $k$ labelled vertices to $V(B_N)$, namely $N^k$.  Therefore
@@ -1494,8 +1500,14 @@ Now consider the planted-mass estimate.  Choose a uniformly random induced
 embedding of $\sigma$ into $B_N^+$.  Every ordered choice of one vertex from each
 labelled clone class $C_{\theta(i)}$ is an induced copy of $\sigma$: the labelled
 clone classes are distinct, and all adjacencies between them are inherited from
-the base flag $(G,\theta)$.  Hence the same lower bound on the number of planted
-ordered embeddings holds,
+the base flag $(G,\theta)$.  Since the clone classes are distinct, these choices
+are independent: for label $i$ there are $|C_{\theta(i)}|$ possible images, and
+the product counts the ordered choices of all $k$ labelled images.  The
+hypothesis $\operatorname{err}_N\le\lambda/(2k)$ gives, as in
+\cref{lem:planted-mass},
+$|C_{\theta(i)}|\ge(\lambda/(2k))N$ for every $i$.  Multiplying these $k$
+lower bounds gives the same lower bound on the number of planted ordered
+embeddings,
 \[
   \prod_{i=1}^k |C_{\theta(i)}|
   \ge
@@ -1668,33 +1680,23 @@ Let $\K$ be the class of cluster graphs, i.e. finite disjoint unions of cliques.
 This class is hereditary: deleting vertices from a disjoint union of cliques
 again gives a disjoint union of cliques.
 
-We first show that $\K$ is true-clone-closed.  Let $G\in\K$, and write its
-connected components as cliques $D_1,\ldots,D_r$.  Form a complete blow-up
-$G^{\mathbf m,+}$.  If $v,w$ lie in the same component $D_a$, then either
-$v=w$, in which case the clone class $C_v$ is a clique by the definition of
-complete blow-up, or $v\ne w$, in which case $vw$ is an edge of $G$ and all
-edges between $C_v$ and $C_w$ are present.  Thus the union
-\[
-  \bigcup_{v\in D_a} C_v
-\]
-is a clique.  If $v$ and $w$ lie in different components of $G$, then $vw$ is not
-an edge of $G$, so no edges are added between $C_v$ and $C_w$.  Hence the
-complete blow-up is again a disjoint union of cliques, one clique for each
-component of $G$.  Therefore $\K$ is true-clone-closed, and
-\cref{thm:true-clone-root-plantable} shows that $\K$ is root-plantable at every
+We first check true-clone-closure.  Let $G\in\K$, and write its connected
+components as cliques $D_1,\ldots,D_r$.  In the complete blow-up
+$G^{\mathbf m,+}$, the union $\bigcup_{v\in D_a} C_v$ is a clique: each
+individual clone class is a clique, and all edges between clone classes over
+adjacent vertices of $D_a$ are present.  No edges are added between clone
+classes lying over different components.  Thus $G^{\mathbf m,+}$ is again a
+disjoint union of cliques.  Hence $\K$ is true-clone-closed, so
+\cref{thm:true-clone-root-plantable} gives root-plantability at every
 non-degenerate type.
 
-It remains to check that $\K$ is not clone-closed.  The single edge $K_2$
-belongs to $\K$.  Take its independent blow-up in which both endpoints are
-replaced by independent clone classes of size $2$.  The resulting graph is
-$K_{2,2}$: all four cross edges are present and there are no edges inside either
-clone class.  Choose two vertices from one side and one vertex from the other.
-The induced subgraph on these three vertices has exactly two edges, namely a
-path on three vertices.  A path on three vertices is not a disjoint union of
-cliques, because its three vertices form one connected component that is not a
-clique.  Since $\K$ is hereditary, if $K_{2,2}$ were in $\K$ then this induced
-three-vertex path would also be in $\K$, a contradiction.  Thus this independent
-blow-up of a graph in $\K$ does not belong to $\K$, and $\K$ is not
+It remains to show that $\K$ is not clone-closed.  The graph $K_2$ belongs to
+$\K$, but its independent blow-up with both clone classes of size $2$ is
+$K_{2,2}$, the complete bipartite graph with two vertices on each side.  This
+graph contains an induced $P_3$, the path on three vertices, obtained by taking
+two vertices from one side and one from the other.  Since $P_3$ is not a
+disjoint union of cliques and $\K$ is hereditary, $K_{2,2}\notin\K$.  Thus an
+independent blow-up of a graph in $\K$ can leave $\K$, so $\K$ is not
 clone-closed.
 \end{proof}
 
