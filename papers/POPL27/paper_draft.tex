@@ -638,8 +638,8 @@ roles in the calculation, not different kinds of flags.
 
 \paragraph{Single-flag density.}
 Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $A$ of size $m$
-(the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the \emph{host flag}), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
+(the pattern flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
+(the host flag), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.
@@ -748,7 +748,7 @@ a flag and its equivalence class is immaterial.
 We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
 \emph{expansion of $A$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
-its expansion at any size $n \geq m$ have the same density in every host flag.
+its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
 The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
 equality
 \[
@@ -843,7 +843,7 @@ $\sigma=\emptyset$.
 The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
 densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 \emph{asymptotic} statements: rather than a single finite host flag, we
-consider sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
+consider increasing sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the pattern $\sigma$-flag expressions
@@ -853,7 +853,7 @@ to do.
 
 \paragraph{Convergent sequences.}
 Call a sequence $\{G_n\}_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{increasing} if
-$|V(G_1)| < |V(G_2)| < \cdots$.  Each $G$ defines a point
+$|V(G_1)| < |V(G_2)| < \cdots$.  Each host $\sigma$-flag $G$ defines a point
 $p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(A) := \den{A}{G}$.
 An increasing sequence is \emph{convergent} if the sequence of points $p^{G_n}$
 converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
@@ -910,7 +910,7 @@ We write
   g-f \in \mathcal{C}^\sigma.
 \]
 Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$.
+$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
 Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_\sigma f$.
 
 Two immediate examples of elements of $\mathcal{C}^\sigma$ are flags and squares.
@@ -938,10 +938,10 @@ lemma shows.
   $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
   is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and this product space is
   compact (Tychonoff), the sequence $\{p^{G_k}\}$ has a convergent
-  subsequence; by \Cref{thm:convergent-hom}(a) its limit is some
+  subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
-  the densities $\den{P}{G_k}$, we have
-  $\phi(P) = \lim_k \den{P}{G_k} \geq c + \varepsilon > c$.  But
+  $\{p^{G_{k_j}}\}$, we have
+  $\phi(P) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
   $P \leq c \cdot \mathbf{1}$ means $\phi(P) \leq c$ for every
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
