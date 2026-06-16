@@ -1426,9 +1426,11 @@ this structure.
 The next definition, \lean{flagEqv}, turns labeled-graph isomorphism into a
 proposition: two terms $G,G'$ of type
 \lean{LabeledGraph}~$\sigma$~\lean{V} are equivalent if there exists a
-label-preserving graph isomorphism between them.  Lean's quotient type does not
-take an arbitrary relation directly; it expects a \emph{setoid}, namely a type
-together with an explicitly supplied equivalence relation.  The instance
+label-preserving graph isomorphism between them.  Thus $G\simeq_f G'$ is the
+type of isomorphism data, while \lean{flagEqv G G'} is the proposition that
+such data exists.  Lean's quotient type does not take an arbitrary relation
+directly; it expects a \emph{setoid}, namely a type together with an explicitly
+supplied equivalence relation.  The instance
 \lean{labeledGraphSetoid} provides this package for
 \lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} is the relation
 \lean{flagEqv}, and its field \lean{iseqv} contains the proofs that this
@@ -1471,8 +1473,8 @@ via \lean{Quotient.lift}.  That is, one must first define the density with
 isomorphic \lean{LabeledGraph} gives the same result.
 
 We first introduce \lean{LabeledGraphList} as an abbreviation for a
-list of $t$ \lean{LabeledGraph}s, one per index in \lean{Fin t}.
-Given such a list of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
+\lean{Fin t}-indexed tuple of \lean{LabeledGraph}s.
+Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
 \lean{labeledGraphListDensity} computes the density as the number of tuples
 $(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{A_1,\ldots,A_t}{G}$,
 divided by the total number of candidate tuples.  Rather than adopting the
@@ -1486,17 +1488,55 @@ noncomputable def labeledGraphListDensity
   let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
   labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
-The \lean{noncomputable} keyword signals that Lean cannot synthesize an algorithm
-to evaluate the function.  This poses no obstacle to formalizing flag algebra
-itself, but becomes relevant when applying the algebra to concrete graphs, a
-point we return to in Section~\ref{sec:reflection}.
+The first line defines \lean{LabeledGraphList} by spelling out what a finite
+list means in this dependent setting: it is a function that assigns to each
+index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\lean{(Vl i)}.
+The family \lean{Vl : Fin t -> Type} records the vertex type of each entry, so
+the $t$ pattern flags are not forced to share one ambient vertex type.
 
-Lifting \lean{labeledGraphListDensity} to the quotient type \lean{Flag} is
-slightly layered.  We first lift the host argument \lean{G}, then lift the list of
-pattern flags \lean{Hl}, and finally package the result as a function on \lean{FlagList}.
-The congruence proofs, omitted below, show that the density is unchanged when
-the host or any pattern flag is replaced by an isomorphic representative.
+The second definition is the finite ratio corresponding to
+$\den{A_1,\ldots,A_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
+graphs and \lean{G} is the concrete labeled graph in which they are counted.
+The local function \lean{r\_list} records, for each pattern, how many unlabeled
+vertices it contributes:
+\[
+  r_i = |V(H_i)| - |\sigma|.
+\]
+The numerator \lean{labeledGraphListCount Hl G}, defined immediately before
+this function in the Lean development, counts the induced subgraph lists of
+\lean{G} that realize the patterns in \lean{Hl}.  The denominator applies
+\lean{multinomialCoefficient} to \lean{r\_list} and
+\(|V(G)| - |\sigma|\), written in Lean as the difference between \lean{G.size}
+and the size of \(\sigma\); it counts the possible choices of
+pairwise-disjoint unlabeled vertex sets of those sizes from the non-type
+vertices of \lean{G}.  Thus the quotient is a rational number.
+The \lean{noncomputable} keyword signals that Lean cannot synthesize an
+algorithm to evaluate this definition directly.  This poses no obstacle to
+formalizing flag algebra itself, but becomes relevant when applying the algebra
+to concrete extremal problems, a point we return to in Section~\ref{sec:reflection}.
+
+The concrete function \lean{labeledGraphListDensity} has two inputs: the tuple
+\lean{Hl} of pattern labeled graphs and the target labeled graph \lean{G}.  To
+make this a function of flags, we lift these two inputs separately.  The target
+input is lifted from \lean{LabeledGraph} to \lean{Flag}; for the pattern tuple,
+the intermediate quotient is the quotient of concrete tuples by entrywise
+isomorphism.  We first lift the target input \lean{G}, then lift the pattern
+tuples, and finally package the result as a function on \lean{FlagList}.  The
+congruence proofs, omitted below, show that the density is unchanged when the
+target or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
+def labeledGraphListEqv {(*@$\sigma$@*) : FlagType T} {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
+    (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
+  (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
+
+instance labeledGraphListSetoid ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
+    : Setoid (LabeledGraphList (*@$\sigma$@*) t Vl) where
+  r     := labeledGraphListEqv
+  iseqv := ... -- proofs that entrywise isomorphism is an equivalence
+
+def QuotLabeledGraphList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
+  Quotient (labeledGraphListSetoid (*@$\sigma$@*) t Vl)
+
 abbrev FlagList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
   := (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
 
@@ -1504,7 +1544,7 @@ noncomputable def labeledGraphListDensityLifted
     (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G => labeledGraphListDensity Hl G)
-    (...) -- proof that host equivalence preserves density
+    (...) -- proof that target equivalence preserves density
 
 noncomputable def quotLabeledGraphListDensity
     : QuotLabeledGraphList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
@@ -1512,10 +1552,39 @@ noncomputable def quotLabeledGraphListDensity
     labeledGraphListDensityLifted
     (...) -- proof that pattern-list equivalence preserves density
 
+noncomputable def FlagList.coe (Fl : FlagList (*@$\sigma$@*) t Vl)
+    : QuotLabeledGraphList (*@$\sigma$@*) t Vl :=
+  (*@$\llbracket$@*)fun i => (Fl i).out(*@$\rrbracket$@*)
+
 noncomputable def flagListDensity : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   fun Fl => quotLabeledGraphListDensity Fl.coe
 \end{lstlisting}
-\lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
+Here \lean{labeledGraphListEqv} says that two concrete tuples are equivalent exactly
+when their entries are isomorphic as labeled graphs: for each index \lean{i},
+there must exist an isomorphism \lean{Gl i}~\(\simeq_f\)~\lean{Gl' i}.  The
+instance \lean{labeledGraphListSetoid} supplies the setoid required by
+\lean{Quotient}.  Its quotient is \lean{QuotLabeledGraphList}.  The
+abbreviation \lean{FlagList} is the more convenient tuple of already-quotiented
+flags.
+
+The three density definitions then lift the original concrete density one
+argument at a time.  For a fixed concrete pattern tuple \lean{Hl},
+\lean{labeledGraphListDensityLifted Hl} is a function
+\lean{Flag}~$\sigma$~\lean{W}~\(\to \mathbb{Q}\), obtained by quotienting the
+target argument.  The next definition, \lean{quotLabeledGraphListDensity},
+lifts the pattern tuple as well, so its first input is a
+\lean{QuotLabeledGraphList} and its second input is a target \lean{Flag}.  In
+the final definition, the input \lean{Fl} has type
+\lean{FlagList}~$\sigma$~\lean{t Vl}, that is, \lean{Fl i} is already a flag
+for each \lean{i : Fin t}.  The term \lean{Fl.coe} has type
+\lean{QuotLabeledGraphList}~$\sigma$~\lean{t Vl}; concretely, it chooses a
+representative \lean{(Fl i).out} for each flag in the tuple and forms the
+quotient class of the concrete tuple \lean{fun i => (Fl i).out}.  Thus
+\lean{flagListDensity} can call \lean{quotLabeledGraphListDensity} after
+converting the tuple-of-flags input into the quotient-of-tuples input expected
+by the preceding definition.
+
+The following \lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
 to singleton and pair lists:
 \begin{lstlisting}
 noncomputable def flagDensity(*@$_1$@*) (F : Flag (*@$\sigma$@*) U) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
@@ -1524,17 +1593,27 @@ noncomputable def flagDensity(*@$_1$@*) (F : Flag (*@$\sigma$@*) U) (G : Flag (*
 noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
-Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
+Here the superscripted bracket notation is only a tuple constructor for
+\lean{FlagList}.  Thus \lean{[F]}$^{\mathtt{f}}$ is the one-entry
+\lean{FlagList} whose unique entry is \lean{F}, and
+\lean{[F}$_1$\lean{, F}$_2$\lean{]}$^{\mathtt{f}}$ is the two-entry
+\lean{FlagList} sending the first index of \lean{Fin 2} to \lean{F}$_1$ and
+the second to \lean{F}$_2$.  The superscript \(\mathtt{f}\) distinguishes this
+notation from ordinary list notation and from quotient brackets; it does not
+add another quotienting operation.
 
 Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
 Although the statement mirrors the elementary sampling identity from
 Section~\ref{sec:background}, the formal proof must also commute finite counts
 with quotient lifts and the coercions between rational densities and real-valued
-algebra expressions.
+algebra expressions.\footnote{In the Lean source, the intermediate size
+\(\ell'\) is an explicit argument mainly for convenience: when applying the
+chain rule, one often chooses the size of the intermediate flag directly.}
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
-    {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\ell'$@*) : (*@$\mathbb{N}$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
+    {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
+    {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))}
+    (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
     : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
 \end{lstlisting}
