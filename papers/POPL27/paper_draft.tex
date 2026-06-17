@@ -1612,9 +1612,7 @@ Building on the definitions above, we prove the following chain rule (Lemma~\ref
 Although the statement mirrors the elementary sampling identity from
 Section~\ref{sec:background}, the formal proof must also commute finite counts
 with quotient lifts and the coercions between rational densities and real-valued
-algebra expressions.\footnote{In the Lean source, the intermediate size
-\(\ell'\) is an explicit argument mainly for convenience: when applying the
-chain rule, one often chooses the size of the intermediate flag directly.}
+algebra expressions.
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
