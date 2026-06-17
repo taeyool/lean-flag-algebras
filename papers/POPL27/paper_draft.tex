@@ -216,8 +216,6 @@
     {alpha}{{$\alpha$}}1
     {forall}{{$\forall$}}1
     {exists}{{$\exists$}}1
-    {phi}{{$\phi$}}1
-    {psi}{{$\psi$}}1
 }
 \lstset{language=Lean4, frame=single, framesep=4pt,
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
@@ -1392,8 +1390,7 @@ instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
     : Setoid (LabeledGraph (*@$\sigma$@*) V) where
   -- r : LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) Prop
   r     := fun G G' => Nonempty (G (*@$\simeq$@*)f G')
-  -- iseqv : Equivalence r
-  iseqv := ...
+  iseqv := ... -- proof that r defines an equivalence relation
 
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
@@ -1445,11 +1442,11 @@ function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
 define a function from a quotient type in Lean is to first define it on the
 underlying type, prove that it respects the equivalence relation, and lift it
 via \lean{Quotient.lift}.  That is, one must first define the density with
-\lean{LabeledGraph} inputs, then prove that replacing any input by an
+\lean{LabeledGraph} inputs, and then prove that replacing any input by an
 isomorphic \lean{LabeledGraph} gives the same result.
 
 We first introduce \lean{LabeledGraphList} as an abbreviation for a
-\lean{Fin t}-indexed tuple of \lean{LabeledGraph}s.
+(\lean{Fin t})-indexed tuple of \lean{LabeledGraph}s.
 Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
 \lean{labeledGraphListDensity} computes the density as the number of tuples
 $(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{A_1,\ldots,A_t}{G}$,
@@ -1463,8 +1460,7 @@ abbrev LabeledGraphList {T : Type} [Fintype T]
 noncomputable def labeledGraphListDensity
     {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
     {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
-    ((*@$\sigma$@*) : FlagType T)
-    (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+    ((*@$\sigma$@*) : FlagType T) (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
   labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
@@ -1474,10 +1470,13 @@ index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\le
 The family \lean{Vl : Fin t -> Type} records the vertex type of each entry, so
 the $t$ pattern flags are not forced to share one ambient vertex type.
 The square-bracket assumptions in the density signature provide the finite
-enumeration and equality tests needed for counting.  The typeclasses
-\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are componentwise versions
-of \lean{Fintype} and \lean{DecidableEq}: they supply those instances for each
-vertex type \lean{Vl i} in the tuple.
+enumeration and equality tests needed for counting.  A \lean{Fintype} instance
+for a vertex type gives Lean a finite list of all its vertices, and a
+\lean{DecidableEq} instance gives a decision procedure for testing whether two
+vertices are equal.  The typeclasses \lean{FintypeList Vl} and
+\lean{DecidableEqList Vl} are componentwise versions of these assumptions:
+they supply the corresponding enumeration and equality-test instances for
+each vertex type \lean{Vl i} in the tuple.
 
 The second definition is the finite ratio corresponding to
 $\den{A_1,\ldots,A_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
@@ -1510,16 +1509,15 @@ tuples, and finally package the result as a function on \lean{FlagList}.  The
 congruence proofs, omitted below, show that the density is unchanged when the
 target or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
-def labeledGraphListEqv {T : Type} [Fintype T]
-    ((*@$\sigma$@*) : FlagType T) {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
-    (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
+def labeledGraphListEqv {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
   (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
 
 instance labeledGraphListSetoid {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
     : Setoid (LabeledGraphList (*@$\sigma$@*) t Vl) where
   r     := labeledGraphListEqv (*@$\sigma$@*)
-  iseqv := ... -- proofs that entrywise isomorphism is an equivalence
+  iseqv := ... -- proof that the entrywise isomorphism is an equivalence
 
 def QuotLabeledGraphList {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
@@ -1547,8 +1545,8 @@ noncomputable def quotLabeledGraphListDensity
     (labeledGraphListDensityLifted (*@$\sigma$@*))
     (...) -- proof that pattern-list equivalence preserves density
 
-noncomputable def FlagList.coe {T : Type} [Fintype T]
-    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
+noncomputable def FlagList.coe 
+    {T : Type} [Fintype T] {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
     ((*@$\sigma$@*) : FlagType T) (Fl : FlagList (*@$\sigma$@*) t Vl)
     : QuotLabeledGraphList (*@$\sigma$@*) t Vl :=
   (*@$\llbracket$@*)fun i => (Fl i).out(*@$\rrbracket$@*)
@@ -1596,14 +1594,12 @@ noncomputable def flagDensity(*@$_1$@*)
   flagListDensity (*@$\sigma$@*) [F](*@$^\mathtt{f}$@*) G
 
 noncomputable def flagDensity(*@$_2$@*)
-    {T U(*@$_1$@*) U(*@$_2$@*) W : Type} [Fintype T]
-    [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)] [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
+    {T U(*@$_1$@*) U(*@$_2$@*) W : Type} [Fintype T] [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)] [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)] 
     [Fintype W] [DecidableEq W]
-    ((*@$\sigma$@*) : FlagType T)
-    (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+    ((*@$\sigma$@*) : FlagType T) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity (*@$\sigma$@*) [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
-Here the superscripted bracket notation is only a tuple constructor for
+Here the superscripted bracket notation is a tuple constructor for
 \lean{FlagList}.  Thus \lean{[F]}$^{\mathtt{f}}$ is the one-entry
 \lean{FlagList} whose unique entry is \lean{F}, and
 \lean{[F}$_1$\lean{, F}$_2$\lean{]}$^{\mathtt{f}}$ is the two-entry
@@ -1622,12 +1618,9 @@ chain rule, one often chooses the size of the intermediate flag directly.}
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*)))
-    (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
+    ((*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
-    : flagDensity(*@$_1$@*) (*@$\sigma$@*) F(*@$_1$@*) G =
-      (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)),
-        flagDensity(*@$_1$@*) (*@$\sigma$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) (*@$\sigma$@*) G' G
+    : flagDensity(*@$_1$@*) (*@$\sigma$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) (*@$\sigma$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) (*@$\sigma$@*) G' G
 \end{lstlisting}
 
 \subsection{The Flag Algebra}
@@ -1885,7 +1878,7 @@ noncomputable def downwardNormalizingFactor_labeledGraph
     {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - (*@$n_0$@*)).factorial
-  isomor(*@\texttt{ph}@*)ismCount (*@$\sigma$@*) G / num_of_all_injections
+  isomorphismCount (*@$\sigma$@*) G / num_of_all_injections
 
 noncomputable def downwardNormalizingFactor
     {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
@@ -1999,16 +1992,16 @@ The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
 \begin{lstlisting}
 def forbidLE {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     (H : FinFlag 0 (*@$\emptyt$@*)) (f g : FlagAlgebra n(*@$_0$@*) (*@$\sigma$@*)) : Prop :=
-  forall (phi0 : PositiveHom 0 (*@$\emptyt$@*)), phi0 (*@$\langle\sigma\rangle_0$@*) > 0 ->
-    phi0 (*@$\llbracket$@*)basisVector (*@$\emptyt$@*) H(*@$\rrbracket_0$@*) = 0 ->
-    P[phi0] {phi : PositiveHomSpace n(*@$_0$@*) (*@$\sigma$@*) | phi f <= phi g} = 1
+  forall ((*@$\phi_0$@*) : PositiveHom 0 (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
+    (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector (*@$\emptyt$@*) H(*@$\rrbracket_0$@*) = 0 ->
+    P[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace n(*@$_0$@*) (*@$\sigma$@*) | (*@$\phi$@*) f <= (*@$\phi$@*) g} = 1
 \end{lstlisting}
 For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
 $f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
 for every $\emptyt$-typed positive homomorphism $\phi_0$ in which $H$ has density
 zero, almost every random $\sigma$-typed extension $\phi$ satisfies
 $\phi(f)\leq\phi(g)$.  The side condition
-\lean{phi0 $\langle\sigma\rangle_0$ > 0} records
+\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} records
 that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
 reduces to the untyped relation, which we write as $f \leq g$ in the
 paper.
@@ -2024,13 +2017,13 @@ positive homomorphisms, and then view it as a probability measure on
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
-    {phi0 : PositiveHom 0 (*@$\emptyt$@*)}
-    (h_sigma : phi0 (*@$\langle\sigma\rangle_0$@*) > 0) :
+    {(*@$\phi_0$@*) : PositiveHom 0 (*@$\emptyt$@*)}
+    (h_sigma : (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0) :
   exists P : ProbabilityMeasure (PositiveHomSpace n(*@$_0$@*) (*@$\sigma$@*)),
     forall f : FlagAlgebra n(*@$_0$@*) (*@$\sigma$@*),
-      integral (fun phi => phi f) P =
-        phi0 (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
-          phi0 (*@$\llbracket$@*)(1 : FlagAlgebra n(*@$_0$@*) (*@$\sigma$@*))(*@$\rrbracket_0$@*)
+      integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) P =
+        (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
+          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra n(*@$_0$@*) (*@$\sigma$@*))(*@$\rrbracket_0$@*)
 \end{lstlisting}
 This theorem explains why the formalization needs measure theory.  The
 downward operator gives the expectation of typed random extensions, so a
