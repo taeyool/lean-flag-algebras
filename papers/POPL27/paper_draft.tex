@@ -1744,9 +1744,7 @@ theorem handles the choice of output size:
 \begin{lstlisting}
 theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)} ...
-  : flagVectorEqv
-      (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*))
-      (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*))
+  : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*))
 \end{lstlisting}
 The ellipsis hides the admissibility assumptions on the two output sizes:
 \(\ell_1\) and \(\ell_2\) must both be large enough to contain the two input
@@ -1775,14 +1773,11 @@ exactly the limiting objects of convergent flag sequences.
 $\sigma$-flags indexed by $\mathbb{N}$, and \lean{ConvergesTo} encodes its
 convergence.
 \begin{lstlisting}
-abbrev FlagSeq {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
+abbrev FlagSeq {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
   (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
 
-def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (s : FlagSeq (*@$\sigma$@*))
-    (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
+def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
   Increases s (*@$\wedge$@*) Tendsto (flagDensitySeq s) atTop ((*@$\mathcal{N}$@*) a)
 \end{lstlisting}
 \lean{ConvergesTo} conjoins two predicates: the first asserts that the sizes
