@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionClass
+import LeanFlagAlgebras.MetaTheory.HeredClass
 import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
 

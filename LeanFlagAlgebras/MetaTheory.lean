@@ -15,15 +15,16 @@ import LeanFlagAlgebras.MetaTheory.PlantedEstimate
 import LeanFlagAlgebras.MetaTheory.ForbiddenIdeal
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.InducedContainment
+import LeanFlagAlgebras.MetaTheory.HeredClass
 import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
 import LeanFlagAlgebras.MetaTheory.BinomialRatio
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.RootingUniform
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
+import LeanFlagAlgebras.MetaTheory.CapstoneShared
 import LeanFlagAlgebras.MetaTheory.CloneClosed
 import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
 import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
-import LeanFlagAlgebras.MetaTheory.SubstitutionClass
 import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
 import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
 import LeanFlagAlgebras.MetaTheory.TrueClone
@@ -32,7 +33,7 @@ import LeanFlagAlgebras.MetaTheory.ClusterGraph
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
-Formalisation of the proved results in §1–5 of `MetaTheory/paper.tex`: when forbidden-subgraph
+Formalisation of the proved results in §1–7 of `MetaTheory/paper.tex`: when forbidden-subgraph
 ("quotient") reasoning is *complete* for a constrained graph class.
 
 Aggregator. Currently wires in:
@@ -79,11 +80,14 @@ Aggregator. Currently wires in:
 * `InducedContainment` — the density/containment bridge: a positive flag-density yields an inducing
   vertex subset (`exists_inducing_subset_of_flagDensity₁_ne_zero`) and, for unlabelled flags, an
   induced graph embedding `D.graph ↪g H.graph` (`exists_graph_embedding_of_flagDensity₁_ne_zero`).
-* `GraphClassConstraint` — the hereditary clone-closed `GraphClass` (`Mem`/`comap`/`clone_closed`),
-  its `Constraint` (`constraintOf`), the two capstone-consumption lemmas `mem_of_forbiddenFree`
-  (forbidden-free ⟹ in class, via `flagDensity_self`) and `forbiddenFree_of_mem` (in class ⟹
-  forbidden-free, via the containment bridge + `comap`), and the `K_r`-free instance
-  `cliqueFreeClass`.
+* `HeredClass`        — the shared class framework (used by §5, §6 and §7): `graphFlag`, the
+  closure-free `HeredClass` structure (`Mem` + `comap` heredity), its `Constraint` (`constraintOf`),
+  and the two capstone-consumption lemmas `mem_of_forbiddenFree` (forbidden-free ⟹ in class, via
+  `flagDensity_self`) and `forbiddenFree_of_mem` (in class ⟹ forbidden-free, via the containment
+  bridge + `comap`). These never use any closure operation, so they serve every constrained class.
+* `GraphClassConstraint` — the §5 clone-closure layer: `GraphClass extends HeredClass` adding
+  `clone_closed` (closure under independent blow-ups), thin wrappers over the `HeredClass`
+  constraint/consumption lemmas, and the `K_r`-free instance `cliqueFreeClass`.
 
 * `BinomialRatio`    — the analytic core of the planted limit under uniform clone sizes:
   `rho_tendsto_atTop` (`M^(ℓ−k)·C(n−k,ℓ−k)/C(nM−k,ℓ−k) → descFactorial(n−k,ℓ−k)/n^(ℓ−k)` as
@@ -105,6 +109,11 @@ Aggregator. Currently wires in:
   `forbiddenFree_of_mem` + `clone_closed`) and `blowup_limit_type_pos` (`φ₀⟨σ⟩₀ > 0`, from the
   `1/nⁿ⁰` σ-type density lower bound surviving the blow-up).
 
+* `CapstoneShared`   — the construction-agnostic capstone toolkit shared by the §5 and §6–§7
+  root-plantability finales (and reusable for §8+): the σ-rooting-measure-as-labelling-count identity
+  (`toProbMeasure_apply_eq_labeling_ratio`), closed coordinate cylinders (`cyl`/`isClosed_cyl`), the
+  finite-cylinder closure criterion (`mem_closure_of_forall_finset_cylinder`), the asymptotic
+  planted-gap `rhoInf`, and the σ-labelling/embedding counting isos. None of it mentions a blow-up.
 * `CloneClosed`      — §5 finale. `clone_root_plantable` (`thm:clone-root-plantable`): every
   clone-closed hereditary `GraphClass` is root-plantable, `Sσ = Qσ`. The reverse inclusion
   `Qσ ⊆ Sσ` assembles: the constrained representation (in-class base flag `G_t`), the uniform
@@ -116,7 +125,7 @@ Aggregator. Currently wires in:
   `cliqueFreeClass`): the `K_r`-free (and triangle-free, `r = 3`) classes are root-plantable, so
   quotient and ensemble semantics agree for every `f`.
 
-This completes the formalisation of the proved results of `MetaTheory/paper.tex` §1–5.
+This completes the §1–5 layer.
 
 §6–§7 build on the §5 machinery by generalising the independent blow-up to the **generalised
 blow-up** `subBlowup G W` (a within-class family `W`), which covers the complete blow-up of §6
@@ -130,8 +139,9 @@ whole §5 estimate machinery applies unchanged.
 * `SubstitutionEstimate` — `planted_mass_sub` and `planted_estimate_sub` (§6 `lem:true-planted-estimate`
   / §7 `lem:substitution-planting-estimate`); the estimate is `PlantedEstimate.planted_estimate_host`
   (the host-parametric form of `lem:planted-estimate`) at `B = subBlowupLabeledGraph`.
-* `SubstitutionClass` — `HeredClass`, a hereditary class *without* a closure assumption (cluster
-  graphs are not clone-closed), with its `constraintOf` and the two consumption lemmas.
+  The §6–§7 classes reuse the closure-free `HeredClass` base directly (cluster graphs are a
+  `HeredClass` that is *not* a `GraphClass`), and the capstone reuses `CapstoneShared` — so the
+  §6–§7 layer does not import the §5 capstone `CloneClosed`.
 * `SubstitutionSequence` — the uniform generalised-blow-up flag sequence and its base limit `φ₀`
   (`blowup_limit_mem_Q0_sub`, `blowup_limit_type_pos_sub`).
 * `SubstitutionClosed` — `subst_root_plantable`: under a within-class blow-up closure hypothesis,

@@ -76,7 +76,7 @@ planting, degeneracy obstructions, …) are **out of scope** here — see
   `subst_root_plantable` / `true_clone_root_plantable` / `substitution_root_plantable` /
   `cluster_root_plantable` — depends on **only the three standard Mathlib axioms**
   `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 31 modules (7937 jobs).
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 32 modules (7938 jobs).
 
 ### How to verify it yourself
 
@@ -149,9 +149,12 @@ clearly-bounded changes. (Per-module detail is in [`ARCHITECTURE.md`](./ARCHITEC
    *within-class blow-up closure* hypothesis, of which §6's `TrueCloneClosed` and §7's
    `SubstitutionClosed` are instances.
 
-6. **§6–§7 packaging.** Heredity is separated from closure into a `HeredClass` structure (the §5
-   `GraphClass` bundled `clone_closed`, but `cor:cluster-graphs` needs a class that is hereditary yet
-   *not* clone-closed). §7's "infinite" hypothesis is stated as its used consequence — the class
+6. **§6–§7 packaging.** Heredity is separated from closure into a `HeredClass` structure
+   ([`HeredClass`](./HeredClass.lean)), with the §5 `GraphClass extends HeredClass` adding
+   `clone_closed` — because `cor:cluster-graphs` needs a class that is hereditary yet *not*
+   clone-closed. The closure-agnostic constraint/consumption machinery and the construction-agnostic
+   capstone toolkit ([`CapstoneShared`](./CapstoneShared.lean)) are therefore shared by §5, §6 and §7
+   rather than duplicated. §7's "infinite" hypothesis is stated as its used consequence — the class
    contains a graph of every finite order (`∀ N, ∃ H : SimpleGraph (Fin N), hc.Mem H`). Cluster
    graphs are encoded by the equivalent `P₃`-free condition "adjacency is transitive on distinct
    vertices" rather than literally "disjoint union of cliques".
@@ -245,7 +248,7 @@ flag-algebra base.
 ## Repository layout (this directory)
 
 * **`paper.tex`** — the source article; §1–7 are what is formalised here.
-* **`*.lean`** — 31 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`*.lean`** — 32 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.

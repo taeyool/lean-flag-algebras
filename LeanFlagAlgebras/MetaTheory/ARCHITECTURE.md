@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 31 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 32 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -75,8 +75,9 @@ module except two**: `ProductTV` (superseded — see Deviation 1 in the README) 
 (the standalone §3 faithfulness result, not used as a lemma downstream). Both are reached only by
 the aggregator.
 
-The **§6–§7 layer** sits on top of §5, reusing it heavily (it depends on `CloneClosed`,
-`BlowupSequence`, `WeakConvergence`, `BinomialRatio`, and the host-parametric `PlantedEstimate`):
+The **§6–§7 layer** sits on top of §5, reusing it heavily (it depends on `CapstoneShared`,
+`BlowupSequence`, `WeakConvergence`, `BinomialRatio`, the host-parametric `PlantedEstimate`, and the
+`HeredClass` base — but *not* on the §5 capstone `CloneClosed`):
 
 ```
   §6–§7 construction + estimate        §6–§7 capstone + results
@@ -84,8 +85,8 @@ The **§6–§7 layer** sits on top of §5, reusing it heavily (it depends on `C
   SubstitutionBlowup                   SubstitutionClosed
    (subBlowup; good-event iso)          (subst_root_plantable —
      │        │                          mirror of clone_root_plantable)
-  SubstitutionEstimate  SubstitutionClass        │
-   (planted_*_sub)       (HeredClass)            ├── TrueClone   (§6 thm)
+  SubstitutionEstimate   [HeredClass]            │
+   (planted_*_sub)       (§5 base, reused)       ├── TrueClone   (§6 thm)
      │      via              │                    ├── Substitution (§7 thm)
      │  planted_estimate_host│                    └── ClusterGraph (§6 cor)
      └──► SubstitutionSequence ──────────────────┘
@@ -93,10 +94,12 @@ The **§6–§7 layer** sits on top of §5, reusing it heavily (it depends on `C
 ```
 
 The §5 file `PlantedEstimate` was generalised *in place* to a host-parametric `planted_estimate_host`
-(its public `planted_estimate` is now a one-line instance, so §5 is unchanged), and a handful of
-construction-agnostic helpers in `CloneClosed` were made non-`private` for `SubstitutionClosed` to
-reuse. The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`), the measure machinery
-(`RootingUniform`/`WeakConvergence`/`MeasureUniqueness`), and `ConstrainedRep` are reused **verbatim**.
+(its public `planted_estimate` is now a one-line instance, so §5 is unchanged), and the
+construction-agnostic capstone helpers were factored out of `CloneClosed` into the shared
+**[`CapstoneShared`](./CapstoneShared.lean)** module that both capstones import (so the §6–§7 capstone
+does *not* depend on the §5 one). The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`),
+the measure machinery (`RootingUniform`/`WeakConvergence`/`MeasureUniqueness`), and `ConstrainedRep`
+are reused **verbatim**.
 
 ---
 
@@ -182,11 +185,17 @@ reuse. The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`), th
   `exists_graph_embedding_of_flagDensity₁_ne_zero`: positive density of an unlabelled `D` in `H`
   yields a graph embedding `D.graph ↪g H.graph` — exactly what `CliqueFree.comap` consumes.
 
-* **[`GraphClassConstraint`](./GraphClassConstraint.lean)** — the hereditary clone-closed package.
-  The `GraphClass` structure (`Mem` + `comap` heredity + `clone_closed`), the derived `Constraint`
-  (`constraintOf`), the two consumption lemmas `mem_of_forbiddenFree` (forbidden-free ⟹ in class,
-  via `flagDensity_self = 1`) and `forbiddenFree_of_mem` (in class ⟹ forbidden-free, via the
-  containment bridge + `comap`), and the instance `cliqueFreeClass r`.
+* **[`HeredClass`](./HeredClass.lean)** — the **shared class framework** (used by §5, §6 and §7).
+  `graphFlag` (a graph as an `∅ₜ`-flag); the `HeredClass` structure (`Mem` + `comap` heredity, with
+  *no* closure assumption); the derived `Constraint` (`constraintOf`); and the two consumption
+  lemmas `mem_of_forbiddenFree` (forbidden-free ⟹ in class, via `flagDensity_self = 1`) and
+  `forbiddenFree_of_mem` (in class ⟹ forbidden-free, via the containment bridge + `comap`). These
+  never use any closure operation, so they serve every constrained class once.
+
+* **[`GraphClassConstraint`](./GraphClassConstraint.lean)** — the §5 clone-closure layer.
+  `GraphClass extends HeredClass` adding `clone_closed` (closure under independent blow-ups); thin
+  wrappers `constraintOf` / `mem_of_forbiddenFree` / `forbiddenFree_of_mem` over the `HeredClass`
+  versions (so the §5 capstone's call sites are unchanged); and the instance `cliqueFreeClass r`.
 
 * **[`ConstrainedRep`](./ConstrainedRep.lean)** — the **constrained representation theorem**
   `exists_constrained_flagSeq_limit` (the foundational new input; see README Deviation 2). A
@@ -208,14 +217,20 @@ reuse. The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`), th
   limit `exists_blowup_limit`, and the two key properties `blowup_limit_mem_Q0`
   (`posHomPoint φ₀ ∈ Q0`) and `blowup_limit_type_pos` (`φ₀⟨σ⟩₀ ≥ 1/n^{n₀} > 0`).
 
+* **[`CapstoneShared`](./CapstoneShared.lean)** — the **construction-agnostic capstone toolkit**,
+  shared by the §5 and §6–§7 capstones (and reusable for §8+): the σ-rooting-measure-as-labelling-
+  count identity (`toProbMeasure_apply_eq_labeling_ratio`), closed coordinate cylinders
+  (`cyl`/`isClosed_cyl`), the finite-cylinder closure criterion
+  (`mem_closure_of_forall_finset_cylinder`), the asymptotic planted-gap `rhoInf`, and the
+  σ-labelling/embedding counting isos (`card_labelings_eq_card_embeddings`, `embeddingIsoCongr`,
+  `transportLabeled`, …). None of it mentions any specific blow-up.
+
 ### The capstone
 
 * **[`CloneClosed`](./CloneClosed.lean)** — `thm:clone-root-plantable` + `cor:clique-free`.
   `clone_root_plantable`, `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble`. Wires
-  everything above together (walkthrough below). A handful of its construction-agnostic helpers
-  (`toProbMeasure_apply_eq_labeling_ratio`, `rhoInf`, `card_labelings_eq_card_embeddings`,
-  `embeddingIsoCongr`, `flagDensity₁_respect_eqv`, `transportLabeled`, …) are public so that the
-  §6–§7 capstone can reuse them.
+  everything above together (walkthrough below), on top of `CapstoneShared` plus the §5-specific
+  `embeddingEquivBlowupEmbeddings` / `blowupFlagSeq_type_pos` / `planted_cylinder_mass`.
 
 ### §6–§7 generalised blow-up
 
@@ -231,11 +246,9 @@ reuse. The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`), th
   `PlantedEstimate.planted_estimate_host` at `B = subBlowupLabeledGraph`, with the good-event input
   `good_event_induces_iff_sub`.
 
-* **[`SubstitutionClass`](./SubstitutionClass.lean)** — `HeredClass`, a hereditary class **with no
-  closure assumption** (needed because cluster graphs are not clone-closed), its `constraintOf`, and
-  the two consumption lemmas `mem_of_forbiddenFree` / `forbiddenFree_of_mem` (mirrors of
-  `GraphClassConstraint`, which never used `clone_closed`). `GraphClass.toHeredClass` forgets §5's
-  bundled closure.
+* The §6–§7 classes use the closure-free **[`HeredClass`](./HeredClass.lean)** base directly (see
+  the §2–§5 list above) — there is no §6/§7-specific class module. Cluster graphs are a `HeredClass`
+  that is *not* a `GraphClass`, which is exactly why heredity is factored out of clone-closure.
 
 * **[`SubstitutionSequence`](./SubstitutionSequence.lean)** — the §6–§7 base side: the uniform
   generalised `(M+1)`-blow-up flag sequence `blowupFlagSeq_sub` (parameterised by a within-class
@@ -246,7 +259,8 @@ reuse. The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`), th
 * **[`SubstitutionClosed`](./SubstitutionClosed.lean)** — the generalised capstone
   `subst_root_plantable`: under a *within-class blow-up closure* hypothesis (`∀ Γ ∈ class, ∀ M,
   ∃ W, subBlowup Γ W ∈ class`), `S_σ = Q_σ`. Mirrors `clone_root_plantable` line-for-line over
-  `subBlowup` (with `embeddingEquivBlowupEmbeddings_sub`, `planted_cylinder_mass_sub`).
+  `subBlowup` (with `embeddingEquivBlowupEmbeddings_sub`, `planted_cylinder_mass_sub`), reusing the
+  shared `CapstoneShared` toolkit — it does **not** import the §5 capstone `CloneClosed`.
 
 ### §6–§7 results
 

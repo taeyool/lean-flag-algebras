@@ -13,6 +13,14 @@ proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit toget
   `support_passes`, `mem_Qσ_iff`). There is **no** `_<n>_<k>_<m>_<i>` generated-name convention
   here — that convention belongs to the precomputed flag *data* under `LeanFlagAlgebras/Flags/`,
   which this development does not touch.
+* **§6–§7 naming convention.** Two markers distinguish the generalised-blow-up layer from §5:
+  the `subBlowup` *prefix* names the generalised **construction and its objects**
+  (`subBlowup`, `subBlowupGraphFin`, `subBlowupLabeledGraph`, `subBlowupPlantedEmb`); the `_sub`
+  *suffix* names a §6–§7 **lemma/theorem that is the analogue of the §5 declaration of the same
+  base name** (`planted_estimate_sub` ↔ `planted_estimate`, `planted_mass_sub` ↔ `planted_mass`,
+  `blowupFlagSeq_sub` ↔ `blowupFlagSeq`, `exists_blowup_limit_sub` ↔ `exists_blowup_limit`,
+  `plantedIso_sub` ↔ `plantedIso`, `good_event_induces_iff_sub` ↔ `good_event_induces_iff`, …).
+  So if you know the §5 name, the §6–§7 name is `…_sub`; the proof is the §5 proof over `subBlowup`.
 * **Docstrings.** Every module opens with a `/-! # … -/` header stating its purpose, the
   `paper.tex` section/result it formalises, and its key results. Public declarations (and most
   important private helpers) carry `/-- … -/` doc-comments. Long files use `/-! ## … -/` section
@@ -72,10 +80,10 @@ jump straight to the module and Lean name; read that module's header, then the n
 3. **§5 capstone machinery:** `ConstrainedRep`, `InducedContainment` → `GraphClassConstraint`,
    `RootingUniform`, `WeakConvergence`, `BlowupSequence`.
 4. **The §5 capstone:** `CloneClosed`.
-5. **§6–§7 generalised blow-up:** `SubstitutionBlowup` → `SubstitutionEstimate`,
-   `SubstitutionClass` → `SubstitutionSequence` → `SubstitutionClosed` → `TrueClone`,
-   `Substitution`, `ClusterGraph`. (Each mirrors its §5 namesake; read the module header first to
-   see the one-line difference.)
+5. **§6–§7 generalised blow-up:** `SubstitutionBlowup` → `SubstitutionEstimate`
+   (reusing the closure-free `HeredClass` base) → `SubstitutionSequence` → `SubstitutionClosed`
+   → `TrueClone`, `Substitution`, `ClusterGraph`. (Each mirrors its §5 namesake; read the module
+   header first to see the one-line difference.)
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly

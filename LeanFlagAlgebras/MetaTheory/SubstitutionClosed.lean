@@ -1,7 +1,7 @@
 import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
 import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
-import LeanFlagAlgebras.MetaTheory.SubstitutionClass
-import LeanFlagAlgebras.MetaTheory.CloneClosed
+import LeanFlagAlgebras.MetaTheory.HeredClass
+import LeanFlagAlgebras.MetaTheory.CapstoneShared
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.BinomialRatio
 
