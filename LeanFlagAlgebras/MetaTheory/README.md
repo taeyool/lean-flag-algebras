@@ -14,12 +14,19 @@ The headline result is:
 > (`clique_free_root_plantable` / `clique_free_quotient_iff_ensemble`), covering the
 > triangle-free case `r = 3`.
 
-The same conclusion is then extended (§6–§7) to classes closed under **complete blow-ups**
-(true twins) — **`true_clone_root_plantable`**, with `cluster_root_plantable` covering cluster
-graphs, which are *not* clone-closed — and under **substitution** —
-**`substitution_root_plantable`**. All three are instances of one generalised theorem
-**`subst_root_plantable`** ([`SubstitutionClosed.lean`](./SubstitutionClosed.lean)), obtained by
-reusing the §5 proof over a *generalised blow-up* `subBlowup`.
+The same conclusion holds for classes closed under **complete blow-ups** (true twins, §6),
+**substitution** (§7), and cluster graphs — and §5, §6 and §7 are in fact **one theorem**:
+
+> **`blowupClosed_root_plantable`** ([`BlowupClosed.lean`](./BlowupClosed.lean), paper
+> `thm:blowup-root-plantable`) — every **blow-up-closed** hereditary class is root-plantable.
+> A class is *blow-up-closed* if one may always blow up a single vertex of a member to an
+> arbitrarily large graph, *choosing* the interior, without leaving the class (`BlowupClosed`).
+
+Clone-closed (§5, `clone_root_plantable_blowup`), true-clone-closed (§6, `true_clone_root_plantable`,
+with `cluster_root_plantable`), and substitution-closed (§7, `substitution_root_plantable`) are each
+a one-line corollary, via the corresponding `…toBlowupClosed` implication. Blow-up-closure is the
+*existential* ("some interior works") weakening of substitution-closure's *universal* ("every
+interior works") — strictly weaker, so unlike substitution-closure it covers §5 and §6 as well.
 
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom`.
@@ -48,9 +55,13 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §6/§7 `lem:true-planted-estimate`, `lem:substitution-planting-estimate` | the planted mass + estimate carry over to the generalised blow-up | `planted_mass_sub`, `planted_estimate_sub` | [`SubstitutionEstimate`](./SubstitutionEstimate.lean) |
 | §6 `thm:true-clone-root-plantable` | true-clone-closed hereditary classes are root-plantable | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` | [`TrueClone`](./TrueClone.lean) |
 | §6 `cor:cluster-graphs` | cluster graphs (`P₃`-free; not clone-closed) are root-plantable | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` | [`ClusterGraph`](./ClusterGraph.lean) |
-| §7 `def:graph-substitution` | the substitution `G[H_v]` (= `subBlowup G H`) | `subBlowup` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean) |
-| §7 `thm:substitution-root-plantable` | infinite substitution-closed hereditary classes are root-plantable | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` | [`Substitution`](./Substitution.lean) |
-| (shared) | root-plantability from any within-class blow-up closure | `subst_root_plantable` | [`SubstitutionClosed`](./SubstitutionClosed.lean) |
+| §7 `def:substitution-closed` | the substitution `G[H_v]` (= `subBlowup G H`) | `subBlowup`, `SubstitutionClosed` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean), [`Substitution`](./Substitution.lean) |
+| §7 `def:blow-up-closed`, `def:vertex-blowup` | the single-vertex blow-up `G[v→H]`; the blow-up-closure property | `oneBlowup`, `BlowupClosed` | [`BlowupClosed`](./BlowupClosed.lean) |
+| §7 `lem:blowup-iterate` | single-vertex blow-up closure ⟹ uniform full blow-up in the class | `BlowupClosed.toUniform` | [`BlowupClosed`](./BlowupClosed.lean) |
+| §7 `thm:blowup-root-plantable` | **the unified theorem**: blow-up-closed hereditary classes are root-plantable | `blowupClosed_root_plantable` | [`BlowupClosed`](./BlowupClosed.lean) |
+| §7 `cor:closures-imply-blowup` | clone- / true-clone- / substitution-closed ⟹ blow-up-closed | `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` | [`BlowupClosed`](./BlowupClosed.lean), [`TrueClone`](./TrueClone.lean), [`Substitution`](./Substitution.lean) |
+| §6 `thm:true-clone-root-plantable`, §7 `thm:substitution-root-plantable` | each a corollary of the unified theorem | `true_clone_root_plantable`, `substitution_root_plantable` | [`TrueClone`](./TrueClone.lean), [`Substitution`](./Substitution.lean) |
+| (engine) | root-plantability from any uniform within-class blow-up closure | `subst_root_plantable` | [`SubstitutionClosed`](./SubstitutionClosed.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -71,12 +82,12 @@ planting, degeneracy obstructions, …) are **out of scope** here — see
 
 * **`sorry`-free.** No `sorry`/`admit`/`native_decide` appears in any module, and there are no
   `axiom` declarations.
-* **Axiom-clean.** Every capstone theorem — the §5 `clone_root_plantable` /
-  `clique_free_root_plantable` / `clique_free_quotient_iff_ensemble` and the §6–§7
-  `subst_root_plantable` / `true_clone_root_plantable` / `substitution_root_plantable` /
-  `cluster_root_plantable` — depends on **only the three standard Mathlib axioms**
-  `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 32 modules (7938 jobs).
+* **Axiom-clean.** Every capstone theorem — the unified `blowupClosed_root_plantable`, the §5
+  `clone_root_plantable` / `clique_free_root_plantable` / `clique_free_quotient_iff_ensemble`, and
+  the §6–§7 `true_clone_root_plantable` / `substitution_root_plantable` / `cluster_root_plantable`
+  — depends on **only the three standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]`
+  — no `sorryAx`.
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 33 modules (7939 jobs).
 
 ### How to verify it yourself
 
@@ -248,7 +259,7 @@ flag-algebra base.
 ## Repository layout (this directory)
 
 * **`paper.tex`** — the source article; §1–7 are what is formalised here.
-* **`*.lean`** — 32 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`*.lean`** — 33 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.

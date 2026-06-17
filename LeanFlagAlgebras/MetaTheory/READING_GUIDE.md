@@ -57,6 +57,9 @@ will meet them constantly:
   `completeBlowup` (`W = ⊤`), `subBlowupLabeledGraph`, `HeredClass` (hereditary class with no
   closure assumption), `TrueCloneClosed` / `SubstitutionClosed` (the closure predicates),
   `subst_root_plantable`, `clusterClass`.
+* The §7 unification: `oneBlowup G v H` (single-vertex blow-up `G[v→H]`), `BlowupClosed` (the
+  blow-up-closure property), and `blowupClosed_root_plantable` (the theorem of which clone-,
+  true-clone- and substitution-closure are corollaries, via the `…toBlowupClosed` implications).
 
 ---
 
@@ -110,7 +113,9 @@ jump straight to the module and Lean name; read that module's header, then the n
 | (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
 | §6 `def:complete-blow-up` / §7 `def:graph-substitution` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
 | §6 `lem:true-planted-estimate` / §7 `lem:substitution-planting-estimate` | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
-| (shared) blow-up-closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
+| (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
+| §7 `def:blow-up-closed`, `thm:blowup-root-plantable` (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
+| §7 `lem:blowup-iterate`, `cor:closures-imply-blowup` | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
 | §6 `thm:true-clone-root-plantable` | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
 | §6 `cor:cluster-graphs` | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
 | §7 `thm:substitution-root-plantable` | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |

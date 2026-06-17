@@ -60,13 +60,13 @@ def clusterClass : HeredClass where
 graph (each clone class is a clique, and the between-class structure inherits transitivity from the
 base). -/
 theorem clusterClass_trueCloneClosed : TrueCloneClosed clusterClass := by
-  intro n Γ hΓ m p q r hpq hqr hpr
+  intro V _ _ G hG m p q r hpq hqr hpr
   rw [completeBlowup_adj_iff] at hpq hqr ⊢
   rcases hpq with hA | ⟨hB1, hB2⟩ <;> rcases hqr with hC | ⟨hD1, hD2⟩
   · -- both between-class: use transitivity in the base (or same class if projections coincide)
     by_cases hpr1 : p.1 = r.1
     · exact Or.inr ⟨hpr1, hpr⟩
-    · exact Or.inl (hΓ p.1 q.1 r.1 hA hC hpr1)
+    · exact Or.inl (hG p.1 q.1 r.1 hA hC hpr1)
   · -- p∼q in base, q,r same class: rewrite the second projection
     exact Or.inl (hD1 ▸ hA)
   · -- p,q same class, q∼r in base: rewrite the first projection

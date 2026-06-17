@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+import LeanFlagAlgebras.MetaTheory.BlowupClosed
 
 /-! # Substitution-closed graph classes: root-plantability (paper §7)
 
@@ -8,9 +8,10 @@ A hereditary class is **substitution-closed** (`def:substitution-closed`) if the
 is exactly `subBlowup G Hs` with `Hs v = H_v` (between-fibre adjacency = `G`, within-fibre = `H_v`).
 
 `thm:substitution-root-plantable`: every infinite substitution-closed hereditary class is
-root-plantable at every non-degenerate type.  This is `subst_root_plantable` with the closure
-witness built from in-class fibres of the right size (which exist because the class has graphs of
-every order).
+root-plantable at every non-degenerate type.  Since infinite substitution-closure implies
+blow-up-closure (blow up a vertex to an in-class graph of the right size,
+`SubstitutionClosed.toBlowupClosed`), this is now a **corollary of the unified theorem**
+`blowupClosed_root_plantable` (paper `cor:closures-imply-blowup`(3)).
 -/
 
 open MeasureTheory
@@ -23,23 +24,41 @@ open FlagAlgebras
 /-- A hereditary class is **substitution-closed** (`def:substitution-closed`) if substituting
 in-class fibres into the vertices of an in-class graph yields an in-class graph. -/
 def SubstitutionClosed (hc : HeredClass) : Prop :=
-  ∀ {n : ℕ} (Γ : SimpleGraph (Fin n)), hc.Mem Γ →
-    ∀ {s : Fin n → ℕ} (Hs : ∀ v, SimpleGraph (Fin (s v))),
-      (∀ v, hc.Mem (Hs v)) → hc.Mem (subBlowup Γ Hs)
+  ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V), hc.Mem G →
+    ∀ {s : V → ℕ} (Hs : ∀ v, SimpleGraph (Fin (s v))),
+      (∀ v, hc.Mem (Hs v)) → hc.Mem (subBlowup G Hs)
 
-/-- **Substitution-closed classes are root-plantable** (`thm:substitution-root-plantable`).  For an
-infinite (here: containing a graph of every order `hinf`) substitution-closed hereditary class `hc`
-and any non-degenerate type `σ`, the constraint `hc.constraintOf σ` is root-plantable, `S_σ = Q_σ`.
-The uniform substitution of an in-class base by in-class fibres of size `M+1` stays in the class,
-which is the closure witness `subst_root_plantable` needs. -/
+/-- **Infinite substitution-closed ⟹ blow-up-closed** (`cor:closures-imply-blowup`(3)): blow up a
+vertex to an in-class graph `H` of order `N` (which exists by infinitude), a one-vertex substitution
+in the class by substitution-closure. -/
+theorem SubstitutionClosed.toBlowupClosed {hc : HeredClass} (hsc : SubstitutionClosed hc)
+    (hinf : ∀ N : ℕ, ∃ H : SimpleGraph (Fin N), hc.Mem H) : BlowupClosed hc := by
+  -- Every singleton-vertex graph is in the class (an in-class one exists by `hinf 1`, and all
+  -- graphs on `Fin 1` are edgeless, hence equal to `⊥`).
+  have h1 : hc.Mem (⊥ : SimpleGraph (Fin 1)) := by
+    obtain ⟨H₁, hH₁⟩ := hinf 1
+    have hH₁bot : H₁ = ⊥ := by
+      ext a b
+      have hab : a = b := Subsingleton.elim a b
+      subst hab
+      simp [SimpleGraph.irrefl]
+    rwa [hH₁bot] at hH₁
+  intro V _ _ G v N hG
+  -- Pick an in-class interior `H` of order `N`.
+  obtain ⟨H, hH⟩ := hinf N
+  refine ⟨H, ?_⟩
+  -- `oneBlowup G v H ≃g subBlowup G (oneFamily v H)`, in the class by substitution-closure
+  -- (each fibre of `oneFamily v H` is in the class).
+  rw [hc.Mem_congr (oneBlowup_iso G v H)]
+  exact hsc G hG (oneFamily v H) (fun w => oneFamily_mem v H hH h1 w)
+
+/-- **Substitution-closed classes are root-plantable** (`thm:substitution-root-plantable`), now a
+corollary of the unified `blowupClosed_root_plantable`. -/
 theorem substitution_root_plantable (hc : HeredClass) (hsc : SubstitutionClosed hc)
     (hinf : ∀ N : ℕ, ∃ H : SimpleGraph (Fin N), hc.Mem H)
     {n₀ : ℕ} (σ : FlagType (Fin n₀)) (hn₀ : 0 < n₀) :
     RootPlantable (hc.constraintOf σ) :=
-  subst_root_plantable hc σ hn₀ (by
-    intro n Γ hΓ M
-    obtain ⟨Hfib, hHfib⟩ := hinf (M + 1)
-    exact ⟨fun _ => Hfib, hsc Γ hΓ (fun _ => Hfib) (fun _ => hHfib)⟩)
+  blowupClosed_root_plantable (hsc.toBlowupClosed hinf) σ hn₀
 
 /-- **Quotient/ensemble equivalence for a substitution-closed class**
 (`thm:substitution-root-plantable`, final assertion). -/

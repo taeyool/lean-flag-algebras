@@ -27,6 +27,7 @@ import LeanFlagAlgebras.MetaTheory.SubstitutionBlowup
 import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
 import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
 import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+import LeanFlagAlgebras.MetaTheory.BlowupClosed
 import LeanFlagAlgebras.MetaTheory.TrueClone
 import LeanFlagAlgebras.MetaTheory.Substitution
 import LeanFlagAlgebras.MetaTheory.ClusterGraph
@@ -144,12 +145,19 @@ whole §5 estimate machinery applies unchanged.
   §6–§7 layer does not import the §5 capstone `CloneClosed`.
 * `SubstitutionSequence` — the uniform generalised-blow-up flag sequence and its base limit `φ₀`
   (`blowup_limit_mem_Q0_sub`, `blowup_limit_type_pos_sub`).
-* `SubstitutionClosed` — `subst_root_plantable`: under a within-class blow-up closure hypothesis,
-  `S_σ = Q_σ` (the §6–§7 analogue of `clone_root_plantable`, mirroring its proof).
-* `TrueClone` — §6 `thm:true-clone-root-plantable`: `true_clone_root_plantable` and
-  `true_clone_quotient_iff_ensemble` for `TrueCloneClosed` classes (`W = ⊤`).
-* `Substitution` — §7 `thm:substitution-root-plantable`: `substitution_root_plantable` and
-  `substitution_quotient_iff_ensemble` for infinite `SubstitutionClosed` classes.
+* `SubstitutionClosed` — `subst_root_plantable`: under a uniform within-class blow-up closure
+  hypothesis, `S_σ = Q_σ` (the §6–§7 capstone engine, the analogue of `clone_root_plantable`).
+* `BlowupClosed` — **the §7 unification.** The single-vertex blow-up `oneBlowup G v H`
+  (`def:vertex-blowup`), the blow-up-closure property `BlowupClosed` (`def:blow-up-closed`), the
+  iteration bridge `BlowupClosed.toUniform` (`lem:blowup-iterate`), and the unified theorem
+  `blowupClosed_root_plantable` (`thm:blowup-root-plantable`): every blow-up-closed hereditary class
+  is root-plantable. Clone-, true-clone- and substitution-closure are special cases
+  (`…toBlowupClosed`), so the three theorems below are corollaries.
+* `TrueClone` — §6 `thm:true-clone-root-plantable`: `true_clone_root_plantable` (corollary of
+  `blowupClosed_root_plantable` via `TrueCloneClosed.toBlowupClosed`, clique interior).
+* `Substitution` — §7 `thm:substitution-root-plantable`: `substitution_root_plantable` (corollary
+  via `SubstitutionClosed.toBlowupClosed`); `rem:strictness` — substitution-closure is strictly
+  stronger than blow-up-closure and misses §5/§6.
 * `ClusterGraph` — §6 `cor:cluster-graphs`: cluster graphs (`P₃`-free) are true-clone-closed, hence
-  `cluster_root_plantable` — root-plantable though *not* clone-closed.
+  `cluster_root_plantable` — root-plantable though *not* clone-closed (nor substitution-closed).
 -/

@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.MetaTheory.SubstitutionClosed
+import LeanFlagAlgebras.MetaTheory.BlowupClosed
 
 /-! # Complete blow-ups and true twins: root-plantability (paper §6)
 
@@ -8,7 +8,9 @@ by a *clique* rather than an independent set.  The complete blow-up is `complete
 case `W = ⊤` of the generalised blow-up `subBlowup`.
 
 `thm:true-clone-root-plantable`: every true-clone-closed hereditary class is root-plantable at every
-non-degenerate type.  This is `subst_root_plantable` with the closure witness `W = fun _ => ⊤`.
+non-degenerate type.  Since true-clone-closure implies blow-up-closure (blow up a vertex to a
+clique, `TrueCloneClosed.toBlowupClosed`), this is now a **corollary of the unified theorem**
+`blowupClosed_root_plantable` (paper `cor:closures-imply-blowup`(2)).
 -/
 
 open MeasureTheory
@@ -21,20 +23,25 @@ open FlagAlgebras
 /-- A hereditary class is **true-clone-closed** (`def:true-clone-closed`) if every complete blow-up
 of a member is a member. -/
 def TrueCloneClosed (hc : HeredClass) : Prop :=
-  ∀ {n : ℕ} (Γ : SimpleGraph (Fin n)), hc.Mem Γ → ∀ (m : Fin n → ℕ),
-    hc.Mem (completeBlowup Γ m)
+  ∀ {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V), hc.Mem G → ∀ (m : V → ℕ),
+    hc.Mem (completeBlowup G m)
 
-/-- **True-clone-closed classes are root-plantable** (`thm:true-clone-root-plantable`).  For any
-true-clone-closed hereditary class `hc` and any non-degenerate type `σ`, the constraint
-`hc.constraintOf σ` is root-plantable, `S_σ = Q_σ`.  The uniform complete `(M+1)`-blow-up of an
-in-class base stays in the class (`W = ⊤`), which is exactly the closure witness
-`subst_root_plantable` needs. -/
+/-- **True-clone-closed ⟹ blow-up-closed** (`cor:closures-imply-blowup`(2)): blow up a vertex to a
+clique `K_N`, which is a one-vertex complete blow-up, in the class by true-clone-closure. -/
+theorem TrueCloneClosed.toBlowupClosed {hc : HeredClass} (htcc : TrueCloneClosed hc) :
+    BlowupClosed hc := by
+  intro V _ _ G v N hG
+  refine ⟨(⊤ : SimpleGraph (Fin N)), ?_⟩
+  -- `oneBlowup G v ⊤ ≃g subBlowup G (oneFamily v ⊤) = completeBlowup G (oneSize v N)`.
+  rw [hc.Mem_congr (oneBlowup_iso G v (⊤ : SimpleGraph (Fin N))), subBlowup_oneFamily_top G v N]
+  exact htcc G hG (oneSize v N)
+
+/-- **True-clone-closed classes are root-plantable** (`thm:true-clone-root-plantable`), now a
+corollary of the unified `blowupClosed_root_plantable`. -/
 theorem true_clone_root_plantable (hc : HeredClass) (htcc : TrueCloneClosed hc)
     {n₀ : ℕ} (σ : FlagType (Fin n₀)) (hn₀ : 0 < n₀) :
     RootPlantable (hc.constraintOf σ) :=
-  subst_root_plantable hc σ hn₀ (by
-    intro n Γ hΓ M
-    exact ⟨fun _ => (⊤ : SimpleGraph (Fin (M + 1))), htcc Γ hΓ (fun _ => M + 1)⟩)
+  blowupClosed_root_plantable htcc.toBlowupClosed σ hn₀
 
 /-- **Quotient/ensemble equivalence for a true-clone-closed class** (`thm:true-clone-root-plantable`,
 final assertion).  Once `S_σ = Q_σ`, quotient non-negativity and ensemble non-negativity agree for

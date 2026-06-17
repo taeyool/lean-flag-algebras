@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 32 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 33 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -262,20 +262,33 @@ are reused **verbatim**.
   `subBlowup` (with `embeddingEquivBlowupEmbeddings_sub`, `planted_cylinder_mass_sub`), reusing the
   shared `CapstoneShared` toolkit — it does **not** import the §5 capstone `CloneClosed`.
 
-### §6–§7 results
+### The unification (paper §7) and the §6–§7 results
+
+* **[`BlowupClosed`](./BlowupClosed.lean)** — the **common generalisation** of §5–§7. The
+  single-vertex blow-up `oneBlowup G v H` (`def:vertex-blowup`); the **blow-up-closure** property
+  `BlowupClosed` (`def:blow-up-closed` — for every member `G`, vertex `v`, and `N`, *some* order-`N`
+  interior `H` keeps `oneBlowup G v H` in the class); the iteration bridge `BlowupClosed.toUniform`
+  (`lem:blowup-iterate` — blowing up vertices one at a time yields a uniform full blow-up in the
+  class, the hypothesis `subst_root_plantable` consumes); and the unified theorem
+  `blowupClosed_root_plantable` (`thm:blowup-root-plantable`). The bridge rests on the iso
+  `oneBlowup_iso` (one-vertex blow-up = one-class sub-blow-up) and `Mem_congr` (membership is
+  iso-invariant). `GraphClass.toBlowupClosed` (clone-closed ⟹ blow-up-closed, edgeless interior)
+  lives here; `clone_root_plantable_blowup` re-derives §5 as a corollary.
 
 * **[`TrueClone`](./TrueClone.lean)** — §6 `thm:true-clone-root-plantable`. `TrueCloneClosed`
-  (complete-blow-up closure), `true_clone_root_plantable` (= `subst_root_plantable` with `W = ⊤`),
-  and `true_clone_quotient_iff_ensemble`.
+  (complete-blow-up closure), `TrueCloneClosed.toBlowupClosed` (clique interior), and
+  `true_clone_root_plantable` — now a **corollary** of `blowupClosed_root_plantable`.
 
 * **[`Substitution`](./Substitution.lean)** — §7 `thm:substitution-root-plantable`.
-  `SubstitutionClosed` (substitution closure), `substitution_root_plantable` (witness = in-class
-  fibres of the right size, which exist by infinitude), and `substitution_quotient_iff_ensemble`.
+  `SubstitutionClosed` (substitution closure), `SubstitutionClosed.toBlowupClosed` (an in-class
+  interior of the right size, by infinitude), and `substitution_root_plantable` — a **corollary** of
+  `blowupClosed_root_plantable`. `rem:strictness`: substitution-closure (∀-fibre) is strictly
+  stronger than blow-up-closure (∃-fibre) and misses §5/§6.
 
 * **[`ClusterGraph`](./ClusterGraph.lean)** — §6 `cor:cluster-graphs`. Cluster graphs as the
   `P₃`-free `HeredClass` `clusterClass`, the complete-blow-up adjacency `completeBlowup_adj_iff`,
   true-clone-closure `clusterClass_trueCloneClosed`, hence `cluster_root_plantable` — root-plantable
-  although **not** clone-closed.
+  although **not** clone-closed (nor substitution-closed).
 
 ---
 
