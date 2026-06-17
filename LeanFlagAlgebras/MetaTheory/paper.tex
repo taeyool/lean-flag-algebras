@@ -213,9 +213,13 @@ This already covers the clique-free classes ($K_r$-free graphs, $r\ge3$), the
 triangle-free graphs among them
 (\cref{thm:clone-root-plantable,cor:clique-free}).  The same argument has a
 ``true-twin'' version using cliques in place of independent sets
-(\cref{thm:true-clone-root-plantable}, which yields e.g.\ the cluster graphs), and a
-common generalisation for classes closed under \emph{substitution}---replacing each vertex
-by an entire graph drawn from the class, not just by a set of clones
+(\cref{thm:true-clone-root-plantable}, which yields e.g.\ the cluster graphs).  Both are
+instances of a single criterion: root-plantability holds for every \emph{blow-up-closed}
+class---one in which a single vertex may always be blown up to an arbitrarily large graph,
+of the class's own choosing, without leaving the class (\cref{thm:blowup-root-plantable}).
+This is what the proof actually needs, because the blown-up interior is invisible to the
+sampling argument; closure under \emph{substitution}---replacing each vertex by an entire
+graph drawn from the class---is one strictly stronger sufficient condition
 (\cref{thm:substitution-root-plantable}).  We also isolate a finite, checkable form of the
 argument---a \emph{local planting} criterion---for the case where the blown-up graph does
 not automatically lie in the class but can be returned to it by changing only a sparse set
@@ -1755,6 +1759,40 @@ those of $G$ (each vertex of $H_i$ inherits the adjacencies of $v_i$).  Hence
 $G_n=G[H_v:v\in V(G)]$ with $|H_v|=m$ for all $v$, and $G_n\in\K$.
 \end{proof}
 
+The remaining ingredient is that the planting estimates
+\cref{lem:planted-estimate,lem:true-planted-estimate} hold for \emph{arbitrary} interiors,
+not just independent and complete ones.  This is the formal content of the opening remark:
+the interior is never observed.
+
+\begin{lemma}[Planting is blind to the interior]\label{lem:general-planting-estimate}
+Let $\K$ be hereditary and let $F=(G,\theta)$ be a $\sigma$-flag with $|\sigma|=k$ and
+$|G|=n>k$.  Let $B=G[H_v:v\in V(G)]$ be any simultaneous blow-up of $G$, with the clone
+class $H_v$ of size $s_v\ge1$ at each $v$.  Then the estimates of
+\cref{lem:planted-estimate,lem:planted-mass} hold for $B$ in place of the independent
+blow-up, with the same constants and the same hypotheses on the clone sizes $s_v$; the
+interiors $H_v$ play no role.
+\end{lemma}
+
+\begin{proof}
+This is the proof of \cref{lem:true-planted-estimate} with ``complete'' replaced by
+``arbitrary''.  For the approximation estimate, sample the $q=|F_0|-k$ extra vertices and
+condition on the good event that no sampled vertex lies in a labelled clone class and that
+no two sampled vertices lie in the same clone class.  On this event every sampled vertex
+lies in a distinct clone class, so every adjacency involving a sampled vertex is an
+adjacency between two \emph{distinct} clone classes, and therefore equals the corresponding
+base adjacency in $G$---whatever the interiors $H_v$ are.  Hence the induced $\sigma$-flag
+seen in $B$ is exactly the one seen in $(G,\theta)$ after projecting to $G$, and an interior
+edge is never observed.  The probability of the bad event and the total-variation
+comparison with a uniform sample depend only on the sizes $s_v$ and on sampling without
+replacement, exactly as in \cref{lem:planted-estimate}.  For the planted-mass bound, every
+ordered choice of one vertex from each labelled clone class $H_{\theta(i)}$ is an induced
+copy of $\sigma$: the labelled clone classes are distinct and their mutual adjacencies are
+inherited from $(G,\theta)$.  So the planted count $\prod_i s_{\theta(i)}$ and its lower
+bound are unchanged.  By the same token an induced copy of $\sigma$ already arises from any
+transversal of $k$ labelled clone classes spanning an induced $\sigma$ in $G$, so the
+positive lower bound on the $\sigma$-type density of $B$ also carries over.
+\end{proof}
+
 \begin{theorem}[Blow-up-closed classes are root-plantable]\label{thm:blowup-root-plantable}
 Let $\K$ be a blow-up-closed hereditary graph class, let $\T_1=\T_\K$, and let $\sigma$
 be a non-degenerate type of $\T_\K$.  Then $S_\sigma=Q_\sigma$, and consequently
@@ -1769,12 +1807,10 @@ The inclusion $S_\sigma\subseteq Q_\sigma$ is the general support-passing statem
 $\psi\in Q_\sigma$, represent it by in-class flags $(G_t,\theta_t)$ with $|G_t|\to\infty$,
 and fix one such base flag $(G_t,\theta_t)$.  For each $j$, \cref{lem:blowup-iterate}
 supplies a uniform blow-up $B_j=G_t[H_v^{(j)}:v\in V(G_t)]$ with $|H_v^{(j)}|=j$ for all
-$v$, and $B_j\in\K$.  Each $B_j$ is a blow-up of $G_t$ in the sense of
-\cref{lem:planted-estimate,lem:true-planted-estimate}: its between-class adjacencies are
-those of $G_t$ and the interiors $H_v^{(j)}$ are never observed on the good event.  Thus
-the planted estimate, the planted-mass bound, and the positive lower bound on the
-$\sigma$-type density all hold for $B_j$ exactly as for the independent and complete
-blow-ups, with uniform clone sizes $j$.  The closed-cylinder and Portmanteau argument of
+$v$, and $B_j\in\K$.  By \cref{lem:general-planting-estimate} the planted estimate, the
+planted-mass bound, and the positive lower bound on the $\sigma$-type density all hold for
+$B_j$ with uniform clone sizes $j$, exactly as for the independent blow-ups of
+\cref{thm:clone-root-plantable}.  The closed-cylinder and Portmanteau argument of
 \cref{thm:clone-root-plantable} then puts positive mass arbitrarily close to $\psi$, so
 $\psi\in S_\sigma$.
 \end{proof}
@@ -2971,10 +3007,12 @@ verbatim.  The equivalence of the two semantics is thus governed by root-plantab
 by nothing weaker: it does \emph{not} hold for all hereditary classes, as the degeneracy
 obstruction (\cref{thm:degenerate-obstruction})---already in the $C_4$-free
 instance---refutes equivalence under heredity alone.  The substantive task is therefore
-to find checkable sufficient conditions for root-plantability.  Clone-closure is one
-(\cref{thm:clone-root-plantable}), and true-clone-closure is another
-(\cref{thm:true-clone-root-plantable}); global substitution-closure is a still broader
-one (\cref{thm:substitution-root-plantable}).  The remaining natural candidates involve
+to find checkable sufficient conditions for root-plantability.  Clone-closure
+(\cref{thm:clone-root-plantable}), true-clone-closure (\cref{thm:true-clone-root-plantable}),
+and global substitution-closure (\cref{thm:substitution-root-plantable}) are three such
+conditions, all subsumed by the single \emph{blow-up-closure} criterion
+(\cref{thm:blowup-root-plantable})---of which substitution-closure is in fact the strictest,
+not the broadest (\cref{rem:strictness}).  The remaining natural candidates involve
 structural hypotheses beyond sparse root-blow-up repairs
 (\cref{thm:sparse-repair-planting}), such as repairs incident to root clusters,
 multi-scale repairs, and amalgamation properties for classes that are not globally
@@ -3607,9 +3645,10 @@ Four questions remain.
 
 \begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
   \item \textbf{Beyond sparse root repairs.}
-  \Cref{thm:clone-root-plantable,thm:true-clone-root-plantable,thm:substitution-root-plantable}
-  cover pure false-clone blow-ups, pure true-clone blow-ups, and full substitution
-  closure; \cref{thm:finite-local-planting} gives the abstract finite criterion; and
+  \Cref{thm:blowup-root-plantable} unifies pure false-clone blow-ups, pure true-clone
+  blow-ups, and full substitution closure
+  (\cref{thm:clone-root-plantable,thm:true-clone-root-plantable,thm:substitution-root-plantable})
+  under blow-up-closure; \cref{thm:finite-local-planting} gives the abstract finite criterion; and
   \cref{thm:sparse-repair-planting} verifies it for sparse old-edge repairs after
   root blow-up.  The next useful theorem would allow denser but structured repairs,
   repairs incident to the planted root clusters, or amalgamation hypotheses.

@@ -241,10 +241,10 @@ are reused **verbatim**.
   `blowupGoodIso` with the identity-on-a-transversal iso `subBlowupToIndepIso`).
 
 * **[`SubstitutionEstimate`](./SubstitutionEstimate.lean)** — §6 `lem:true-planted-estimate` / §7
-  `lem:substitution-planting-estimate`. `planted_mass_sub` (planted-root probability `≥ (λ/2k)^k`,
-  insensitive to `W`) and `planted_estimate_sub` (density gap `≤ 1 − ρ`), the latter just
-  `PlantedEstimate.planted_estimate_host` at `B = subBlowupLabeledGraph`, with the good-event input
-  `good_event_induces_iff_sub`.
+  `lem:general-planting-estimate` (planting is blind to the interior). `planted_mass_sub`
+  (planted-root probability `≥ (λ/2k)^k`, insensitive to `W`) and `planted_estimate_sub` (density
+  gap `≤ 1 − ρ`), the latter just `PlantedEstimate.planted_estimate_host` at
+  `B = subBlowupLabeledGraph`, with the good-event input `good_event_induces_iff_sub`.
 
 * The §6–§7 classes use the closure-free **[`HeredClass`](./HeredClass.lean)** base directly (see
   the §2–§5 list above) — there is no §6/§7-specific class module. Cluster graphs are a `HeredClass`

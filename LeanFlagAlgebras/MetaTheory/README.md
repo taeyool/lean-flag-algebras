@@ -52,7 +52,7 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §5 `thm:clone-root-plantable` | clone-closed hereditary classes are root-plantable | `clone_root_plantable` | [`CloneClosed`](./CloneClosed.lean) |
 | §5 `cor:clique-free` | `K_r`-free / triangle-free classes are root-plantable | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` | [`CloneClosed`](./CloneClosed.lean) |
 | §6 `def:complete-blow-up` | the complete blow-up `G^{m,+}` (clique clone classes); the generalised blow-up `subBlowup` | `completeBlowup`, `subBlowup` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean) |
-| §6/§7 `lem:true-planted-estimate`, `lem:substitution-planting-estimate` | the planted mass + estimate carry over to the generalised blow-up | `planted_mass_sub`, `planted_estimate_sub` | [`SubstitutionEstimate`](./SubstitutionEstimate.lean) |
+| §6 `lem:true-planted-estimate`, §7 `lem:general-planting-estimate` | the planted mass + estimate carry over to *any* blow-up (the interior is never observed) | `planted_mass_sub`, `planted_estimate_sub` | [`SubstitutionEstimate`](./SubstitutionEstimate.lean) |
 | §6 `thm:true-clone-root-plantable` | true-clone-closed hereditary classes are root-plantable | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` | [`TrueClone`](./TrueClone.lean) |
 | §6 `cor:cluster-graphs` | cluster graphs (`P₃`-free; not clone-closed) are root-plantable | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` | [`ClusterGraph`](./ClusterGraph.lean) |
 | §7 `def:substitution-closed` | the substitution `G[H_v]` (= `subBlowup G H`) | `subBlowup`, `SubstitutionClosed` | [`SubstitutionBlowup`](./SubstitutionBlowup.lean), [`Substitution`](./Substitution.lean) |
@@ -148,12 +148,12 @@ clearly-bounded changes. (Per-module detail is in [`ARCHITECTURE.md`](./ARCHITEC
    `GraphClass` structure ([`GraphClassConstraint`](./GraphClassConstraint.lean)). The
    `lem:planted-mass` count is over `ℚ`.
 
-5. **§6–§7 are unified through one generalised blow-up.** The paper proves `lem:true-planted-estimate`
-   and `lem:substitution-planting-estimate` separately (complete blow-ups vs. substitution). We
-   define a single construction `subBlowup G W` (the within-class family `W` is `⊤` for §6 and the
-   in-class fibres for §7) and prove the estimate **once**: `planted_estimate_sub` is the §5
-   `planted_estimate` generalised to an arbitrary host (`planted_estimate_host`), since on the
-   transversals the estimate samples, `subBlowup` is indistinguishable from the independent blow-up.
+5. **§6–§7 are unified through one generalised blow-up** (matching the paper's revised §7, where
+   `lem:general-planting-estimate` states the estimate for arbitrary interiors). We define a single
+   construction `subBlowup G W` (the within-class family `W` is `⊤` for §6 and the in-class fibres
+   for §7) and prove the estimate **once**: `planted_estimate_sub` is the §5 `planted_estimate`
+   generalised to an arbitrary host (`planted_estimate_host`), since on the transversals the estimate
+   samples, `subBlowup` is indistinguishable from the independent blow-up.
    Consequently the §6/§7 estimates inherit the uniform-clone simplification of Deviation 1 (the
    clean `1 − ρ`, with the same `ρ`), not the paper's general-clone `C_m(λ + 1/(n−k) + err_N)`.
    Likewise `subst_root_plantable` is `clone_root_plantable` re-run over `subBlowup` under an abstract

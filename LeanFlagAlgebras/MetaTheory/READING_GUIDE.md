@@ -111,8 +111,8 @@ jump straight to the module and Lean name; read that module's header, then the n
 | §5 `thm:clone-root-plantable` (l.1217) | `CloneClosed` | `clone_root_plantable` |
 | §5 `cor:clique-free` (l.1367) | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
 | (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
-| §6 `def:complete-blow-up` / §7 `def:graph-substitution` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
-| §6 `lem:true-planted-estimate` / §7 `lem:substitution-planting-estimate` | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
+| §6 `def:complete-blow-up` / §7 `def:substitution-closed` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
+| §6 `lem:true-planted-estimate` / §7 `lem:general-planting-estimate` (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
 | (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
 | §7 `def:blow-up-closed`, `thm:blowup-root-plantable` (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
 | §7 `lem:blowup-iterate`, `cor:closures-imply-blowup` | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |

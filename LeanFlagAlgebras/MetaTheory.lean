@@ -138,7 +138,7 @@ whole §5 estimate machinery applies unchanged.
   graph, and `good_event_induces_iff_sub` (the §5 good-event isomorphism, carried across the
   identity-on-a-transversal iso `subBlowupToIndepIso`).
 * `SubstitutionEstimate` — `planted_mass_sub` and `planted_estimate_sub` (§6 `lem:true-planted-estimate`
-  / §7 `lem:substitution-planting-estimate`); the estimate is `PlantedEstimate.planted_estimate_host`
+  / §7 `lem:general-planting-estimate`); the estimate is `PlantedEstimate.planted_estimate_host`
   (the host-parametric form of `lem:planted-estimate`) at `B = subBlowupLabeledGraph`.
   The §6–§7 classes reuse the closure-free `HeredClass` base directly (cluster graphs are a
   `HeredClass` that is *not* a `GraphClass`), and the capstone reuses `CapstoneShared` — so the
