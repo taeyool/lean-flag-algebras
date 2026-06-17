@@ -1623,23 +1623,16 @@ theorem flagDensity_eq_sum_density_prods
 
 \subsection{The Flag Algebra}
 
-The algebraic part of the formalization works with flag types whose label type
-is \lean{Fin $n_0$}.  In the source file, \lean{$n_0$} and \(\sigma\) are
-ambient variables for this subsection; below, we keep displaying them in each
-signature.
-
 To define the flag algebra, we first construct the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
 function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsupp}
 type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
 the constructor that produces the basis vector for each flag:
 \begin{lstlisting}
-abbrev FlagVector (n(*@$_0$@*) : (*@$\mathbb{N}$@*))
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
-  FinFlag n(*@$_0$@*) (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
+abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+  FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
 
-def basisVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
-    (F : FinFlag n(*@$_0$@*) (*@$\sigma$@*)) : FlagVector n(*@$_0$@*) (*@$\sigma$@*) :=
+def basisVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
 Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
