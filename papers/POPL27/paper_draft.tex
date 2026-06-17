@@ -1381,21 +1381,17 @@ We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
 two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
 quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
-structure LabeledGraphIso {T V W : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
-    (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+structure LabeledGraphIso {T V V' : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) V') where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
 
 infixl:50 " (*@$\simeq$@*)f " => LabeledGraphIso
 
-def flagEqv {T V : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
-    (G G' : LabeledGraph (*@$\sigma$@*) V) : Prop :=
-  Nonempty (LabeledGraphIso (*@$\sigma$@*) G G')
-
 instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type)
     : Setoid (LabeledGraph (*@$\sigma$@*) V) where
   -- r : LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) Prop
-  r     := flagEqv (*@$\sigma$@*)
+  r     := fun G G' => Nonempty (G (*@$\simeq$@*)f G')
   -- iseqv : Equivalence r
   iseqv := ...
 
@@ -1410,37 +1406,29 @@ of $\sigma$ in $G'$.  This is the Lean form of the condition
 $\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ abbreviates
 this structure, with $\sigma$ inferred from the two labeled graphs.
 
-The next definition, \lean{flagEqv}, turns labeled-graph isomorphism into a
-proposition: two terms $G,G'$ of type
-\lean{LabeledGraph}~$\sigma$~\lean{V} are equivalent if there exists a
-label-preserving graph isomorphism between them.  Thus $G\simeq_f G'$ is the
-type of isomorphism data, while \lean{flagEqv G G'} is the proposition that
-such data exists.  Lean's quotient type does not take an arbitrary relation
-directly; it expects a \emph{setoid}, namely a type together with an explicitly
-supplied equivalence relation.  The instance
-\lean{labeledGraphSetoid} provides this package for
-\lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} is the relation
-\lean{flagEqv}, and its field \lean{iseqv} contains the proofs that this
+Lean's quotient type does not take an arbitrary relation directly; it expects
+a \emph{setoid}, namely a type together with an explicitly supplied equivalence
+relation.  The instance \lean{labeledGraphSetoid} provides this package for
+\lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} identifies two
+terms $G,G'$ when there exists labeled-graph isomorphism data
+$G\simeq_f G'$, and its field \lean{iseqv} contains the proofs that this
 relation is reflexive, symmetric, and transitive.  Finally,
 \lean{Flag}~$\sigma$~\lean{V} is defined as the quotient of
 \lean{LabeledGraph}~$\sigma$~\lean{V} by that setoid, so its elements are
 precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
 \lean{V}.
 
-We can now define $\mathcal{F}^\sigma_n$ in Lean as \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)},
-abbreviated \lean{FlagWithSize}~$\sigma$~$n$.  \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
+We can now define $\mathcal{F}^\sigma_n$ in Lean as
+\lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
+\lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
 \bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each element is a pair
 $(n, F)$ where $n$ records the size and $F$ is the $\sigma$-flag of that size.
 \begin{lstlisting}
-abbrev FlagWithSize (n(*@$_0$@*) n : (*@$\mathbb{N}$@*))
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
-  Flag (*@$\sigma$@*) (Fin n)
-
-def FinFlag (n(*@$_0$@*) : (*@$\mathbb{N}$@*)) ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
-  (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), FlagWithSize n(*@$_0$@*) n (*@$\sigma$@*)
+def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+  (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
-Unlike Section~\ref{sec:background}, none of the definitions above carries the
+Note that unlike Section~\ref{sec:background}, none of the definitions above carries the
 $\mathcal{H}$-free condition: the underlying graphs are arbitrary.  This is a
 deliberate interface choice.  The core quotient and density machinery is
 developed once for all finite graphs, while the $\mathcal{H}$-free assumption
@@ -1676,7 +1664,7 @@ submodule they span:
 noncomputable def flagExpansion {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
     ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     (F : FinFlag n(*@$_0$@*) (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector n(*@$_0$@*) (*@$\sigma$@*) :=
-  (*@$\sum$@*) F' : FlagWithSize n(*@$_0$@*) (*@$\ell$@*) (*@$\sigma$@*),
+  (*@$\sum$@*) F' : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)),
     flagDensity(*@$_1$@*) (*@$\sigma$@*) F.2 F' (*@$\leansmul$@*) basisVector (*@$\sigma$@*) (*@$\langle$@*)(*@$\ell$@*), F'(*@$\rangle$@*)
 
 noncomputable def zeroElement {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
@@ -1734,7 +1722,7 @@ established.  Finally, \lean{Quotient.map$_2$} lifts the product to
 noncomputable def flagMulWithSize {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
     ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     (F F' : FinFlag n(*@$_0$@*) (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector n(*@$_0$@*) (*@$\sigma$@*) :=
-  (*@$\sum$@*) G : FlagWithSize n(*@$_0$@*) (*@$\ell$@*) (*@$\sigma$@*),
+  (*@$\sum$@*) G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)),
     flagDensity(*@$_2$@*) (*@$\sigma$@*) F.2 F'.2 G (*@$\leansmul$@*) basisVector (*@$\sigma$@*) (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
 
 noncomputable def flagMul {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
@@ -2132,8 +2120,8 @@ the formalization, the product of basis elements is computed as a sum over
 all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
 independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
 Its hypotheses say that both output sizes are large enough, and its proof has
-to relate sums over \lean{FlagWithSize sigma ell} and
-\lean{FlagWithSize sigma ell'}, which are definitionally distinct types even
+to relate sums over \lean{Flag sigma (Fin ell)} and
+\lean{Flag sigma (Fin ell')}, which are definitionally distinct types even
 when the corresponding mathematical sets are connected by expansion.
 
 The same issue arises internally when collecting the flags for the
