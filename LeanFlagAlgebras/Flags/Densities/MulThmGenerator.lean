@@ -193,7 +193,7 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
 --
 -- Prerequisites: the forbid-free host set must already exist — run
 -- `generate_forbid_free_empty_typed_flags hostN Forbid` and (for `k > 0`)
--- `generate_forbid_free_flags k m hostN Forbid` first, plus have the pattern
+-- `generate_forbid_free_flags hostN k m Forbid` first, plus have the pattern
 -- `FlagAlgebra_*`/`Flag_*` constants and `Forbid` / `Forbid_toFinFlag_eq` in scope.
 --
 -- Example — K₃-free products of 2-vertex flags of type `FlagType_1_0` over 3-vertex
@@ -231,7 +231,7 @@ elab "generate_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num forbid
   unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
     throwError s!"`generate_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
 forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
-`generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {k} {m} {hostN} {tag}`" else ""} first."
+`generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
 
   let mut generated : Nat := 0
   for i in patternFree do

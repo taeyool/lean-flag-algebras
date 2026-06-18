@@ -179,7 +179,7 @@ explicitly-generated forbid-free set `flagSetHfree_N_k_m_<Forbid>` (via its filt
 lemma `…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the
 forbidden terms automatically (no manual `basisVector_forbidEq_zero` step).
 
-Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags k m N Forbid`,
+Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags N k m Forbid`,
 or the empty-typed `generate_forbid_free_empty_typed_flags N Forbid` for `k = m = 0`), and the
 relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]` (as emitted by
 `generate_forbid_density_theorems`).

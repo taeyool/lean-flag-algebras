@@ -305,13 +305,14 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num gStx:ident : command => d
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}); \
 flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
 
--- `generate_forbid_free_flags k m n Forbid`: the σ-typed analogue. Emits only the
--- `Forbid`-free σ-typed `n`-vertex flags `Flag_n_k_m_i` (those whose underlying
--- graph is `Forbid`-free), their `unlabel`/`downward` bridges, and the
--- completeness `flagSetHfree_n_k_m_<Forbid> = univ.filter (forbid-free)`. Requires
--- the underlying `Forbid`-free empty-typed flags (run
--- `generate_forbid_free_empty_typed_flags n Forbid` first).
-elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : command => do
+-- `generate_forbid_free_flags n k m Forbid`: the σ-typed analogue (flag size `n`
+-- first, matching `generate_flags n k m`). Emits only the `Forbid`-free σ-typed
+-- `n`-vertex flags `Flag_n_k_m_i` (those whose underlying graph is `Forbid`-free),
+-- their `unlabel`/`downward` bridges, and the completeness
+-- `flagSetHfree_n_k_m_<Forbid> = univ.filter (forbid-free)`. Requires the underlying
+-- `Forbid`-free empty-typed flags (run `generate_forbid_free_empty_typed_flags n Forbid`
+-- first).
+elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num gStx:ident : command => do
   let k := kStx.getNat
   let m := mStx.getNat
   let n := nStx.getNat
@@ -324,7 +325,7 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
   let forbidSym2 := mkIdent (Name.mkSimple s!"Sym2Flag_{r}_0_0_{idx}")
 
   unless (← getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
-    throwError s!"`generate_forbid_free_flags {k} {m} {n} {tag}` requires the underlying \
+    throwError s!"`generate_forbid_free_flags {n} {k} {m} {tag}` requires the underlying \
 {tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_flags {n} {tag}` first."
 
   let allTypeEdges ← evalCanonicalEdgeLists k

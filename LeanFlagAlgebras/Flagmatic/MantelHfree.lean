@@ -37,7 +37,7 @@ generate_flag_pair_density_theorems 2 3 1 0 K3
 -- Forbid-free: generate only the K3-free flags + completeness, then the forbid-free
 -- multiplication theorems (proved over `flagSetHfree`, not the full `flagSet`).
 generate_forbid_free_empty_typed_flags 3 K3
-generate_forbid_free_flags 1 0 3 K3
+generate_forbid_free_flags 3 1 0 K3
 generate_forbid_free_mul_theorems 2 3 1 0 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2), paired with `v`. -/
