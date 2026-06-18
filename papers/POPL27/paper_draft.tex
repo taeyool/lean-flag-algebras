@@ -1866,7 +1866,7 @@ We begin with the first of these two lifts.  We first define
 $q_\sigma(A)$ on concrete \lean{LabeledGraph}s and then lift it to
 \lean{Flag}s as \lean{downwardNormalizingFactor}.  Similarly,
 \lean{unlabeledGraph} implements $A|_\emptyset$ on \lean{LabeledGraph}s, and
-\lean{unlabel} is its lifted version.  Each quotient lift requires a proof that
+\lean{unlabel} is its lifted version on \lean{Flag}s.  Each lift requires a proof that
 isomorphic representatives give the same result.  Finally, \lean{downwardFlag}
 combines these two lifted components, realizing
 $\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.
@@ -1895,34 +1895,59 @@ noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type}
     (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabeledGraph G(*@$\rrbracket$@*))
     (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
 
-noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)}
-    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardFlag
+    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
-  downwardNormalizingFactor F (*@$\leansmul$@*)
-    basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
+  downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
 
 The second lift starts from this single-flag map and is substantially harder.
-Lean first extends \lean{downwardFlag} linearly to a map from
-\lean{FlagVector} $\sigma$ to \lean{FlagVector} $\emptyt$, and then descends
-this map through the quotient defining \lean{FlagAlgebra} $\sigma$.  At the single-flag
-level, the construction only has to respect isomorphism of representatives; at
-the algebra level, it must also respect the expansion equations generating the
-zero space $\mathcal{Z}^\sigma$.  This compatibility is the well-definedness proof needed by the
-final quotient lift: if two flag-vector representatives differ by a zero-space
-relation, their downward images must agree in the empty-type quotient.
-\gw{I'm here.}
+Lean first extends \lean{downwardFlag} linearly to
+\lean{downwardFlagVector}, a map from \lean{FlagVector} $\sigma$ to
+\lean{FlagVector} $\emptyt$.  The difficulty is the next step, descending this
+linear map through the quotient defining \lean{FlagAlgebra} $\sigma$.
+At the single-flag level, the construction only has to respect isomorphism of
+representatives; at the algebra level, it must also respect the expansion
+equations generating the zero space $\mathcal{Z}^\sigma$.
+
+The code below shows this second lift.  The intermediate
+\lean{downwardFlagVectorQuot} applies \lean{downwardFlagVector} and then
+quotients the resulting \lean{FlagVector} $\emptyt$, so its output lies in
+\lean{FlagAlgebra} $\emptyt$.  The second lift then quotients the input
+parameter of \lean{downwardFlagVectorQuot}.  To do so, Lean needs the proof
+\lean{downwardFlagVectorQuot\_respect\_eqv}: two \lean{FlagVector} $\sigma$
+inputs that differ by a zero-space element produce the same element of
+\lean{FlagAlgebra} $\emptyt$.
 \begin{lstlisting}
-noncomputable def downward {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
+noncomputable def downwardFlagVector
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    : FlagVector (*@$\sigma$@*) (*@$\to$@*) FlagVector (*@$\emptyt$@*) :=
+  linearExtension (fun F : FinFlag (*@$\sigma$@*) => downwardFlag F.2)
+
+noncomputable def downwardFlagVectorQuot 
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (f : FlagVector (*@$\sigma$@*)) : FlagAlgebra (*@$\emptyt$@*) :=
+  (*@$\llbracket$@*)downwardFlagVector f(*@$\rrbracket$@*)
+
+lemma downwardFlagVectorQuot_respect_eqv
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    {f f' : FlagVector (*@$\sigma$@*)} (h : f - f' (*@$\in$@*) ZeroSpace (*@$\sigma$@*)) :
+    downwardFlagVectorQuot f = downwardFlagVectorQuot f'
+
+noncomputable def downward
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
     FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   Quotient.lift
     (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
     (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
 \end{lstlisting}
-We write this map in the paper as $\llbracket-\rrbracket_0$.  Thus the concise
-notation hides two successive quotient lifts and a substantial compatibility
-proof with the zero-space presentation of the algebra.
+The last definition is the quotient-level downward operator.  In mathematical
+prose we write it as $\llbracket-\rrbracket_\sigma$, following
+Section~\ref{sec:background-downward}; in Lean snippets below, the same map is
+rendered as $\llbracket-\rrbracket_0$, emphasizing that its codomain is the
+$\emptyt$-typed algebra.  In either notation, the concise brackets hide two
+successive quotient lifts and a substantial compatibility proof with the
+zero-space presentation of the algebra. \gw{I'm here.}
 
 The semantic soundness of the downward operator is proved in
 \lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
