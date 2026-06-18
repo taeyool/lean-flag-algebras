@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.API.ExprHelpers
+import LeanFlagAlgebras.Forbid.Basic
 
 /-! # API.FlagExpand — flag expansion tactics
 
@@ -169,5 +170,51 @@ elab_rules : tactic
           runIfGoals (← `(tactic| apply FlagAlgebras.flagVector_eq_eqv; simp [add_assoc, add_left_comm, add_comm]))
         catch _ =>
           pure ()
+
+/--
+`flag_expand_hfree N Forbid` is the forbid-free single-flag analogue of `flag_expand N`.
+On a goal `FlagAlgebra_n_k_m_i =[Forbid.toFinFlag] (its size-`N` forbid-free expansion)`, it
+expands the flag with `basisVector_quot_forbidEq_sum` rewritten directly onto the
+explicitly-generated forbid-free set `flagSetHfree_N_k_m_<Forbid>` (via its filtered-completeness
+lemma `…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the
+forbidden terms automatically (no manual `basisVector_forbidEq_zero` step).
+
+Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags k m N Forbid`,
+or the empty-typed `generate_forbid_free_empty_typed_flags N Forbid` for `k = m = 0`), and the
+relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]` (as emitted by
+`generate_forbid_density_theorems`).
+-/
+syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident : tactic
+
+elab_rules : tactic
+  | `(tactic| flag_expand_hfree $N:num $forbid:ident) =>
+      withMainContext do
+        let nVal := N.getNat
+        let tag := forbid.getId.toString
+        let target ← getMainTarget
+        let lhsExpr ←
+          match target.getAppFnArgs with
+          | (``Forbid.forbidEq, args) =>
+              match args[args.size - 2]? with
+              | some e => pure e
+              | none => throwError "flag_expand_hfree: malformed `=[ ]` goal."
+          | _ => throwError "flag_expand_hfree: goal must be `f =[F] g`."
+        let some lhsConst := findFlagAlgebraConst? lhsExpr
+          | throwError "flag_expand_hfree: no `FlagAlgebra_*` constant on the LHS of `=[ ]`."
+        let some (lhsN, kVal, mVal, iVal) := parseFlagAlgebraIndices? lhsConst
+          | throwError m!"flag_expand_hfree: could not parse indices from `{lhsConst}`."
+        let flagId : TSyntax `term := mkIdent (Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}")
+        let lhsNStx : TSyntax `term := Syntax.mkNumLit (toString lhsN)
+        let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}")
+        let setEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_eq")
+        let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
+        evalTactic (← `(tactic|
+          apply Forbid.forbidEq_trans
+            (Forbid.basisVector_quot_forbidEq_sum ($forbid).toFinFlag ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+        evalTactic (← `(tactic|
+          rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
+        evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
+        evalTactic (← `(tactic| simp))
+        evalTactic (← `(tactic| exact Forbid.forbidEq_refl ($forbid).toFinFlag _))
 
 end FlagAlgebras.API

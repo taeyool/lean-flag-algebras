@@ -110,13 +110,7 @@ over the K3-free 3-vertex flags via `basisVector_quot_forbidEq_sum` rewritten on
 lemma mantel_flagAlgebra_expand_under_forbid
     : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
-  apply Forbid.forbidEq_trans
-    (Forbid.basisVector_quot_forbidEq_sum K3.toFinFlag ⟨2, Flag_2_0_0_1⟩ 3 (by decide))
-  rw [Finset.sum_congr (s₂ := flagSetHfree_3_0_0_K3)
-        (by rw [flagSetHfree_3_0_0_K3_eq]; try congr 1) (fun _ _ => rfl)]
-  simp only [Finset.sum_eq_multiset_sum, flagSetHfree_3_0_0_K3_val_eq]
-  simp
-  exact Forbid.forbidEq_refl K3.toFinFlag _
+  flag_expand_hfree 3 K3
 
 /-- **Mantel's theorem (forbid-free formalization).**
 A `K3`-free graph has edge density at most `1/2`. -/
