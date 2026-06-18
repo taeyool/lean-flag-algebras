@@ -49,6 +49,108 @@ theorem Sym2Flag.unlabel_toFlag_eq (S : Sym2Flag σ n) :
   induction S using Quotient.inductionOn with
   | _ G => rfl
 
+/-! ### Pruned generation of forbid-free flags
+
+Generating only the forbid-free flags by filtering at the *underlying-graph* level
+(cheap — `genSym2Graphs n` is the small empty-typed enumeration) and building σ-typed
+flags only over the surviving graphs, then deduplicating. The completeness lemma
+`genFlagsHfree_toFinset_eq` proves the result equals `univ.filter p` (the predicate the
+forbid bridges produce) WITHOUT reducing the full typed enumeration `genFlagsOrdered σ n`
+— that full reduction is the `native_decide` wall at typed `n ≥ 6`. -/
+
+/-- Survivors of the labeled dedup fold come from the input list. -/
+theorem foldl_dedupStepL_subset (xs : List (Sym2LabeledGraph σ n)) :
+    ∀ (acc : List (Sym2LabeledGraph σ n)), xs.foldl dedupStepL acc ⊆ acc ++ xs := by
+  induction xs with
+  | nil => intro acc; simp
+  | cons x rest ih =>
+    intro acc g hg
+    simp only [List.foldl_cons] at hg
+    have hg2 := ih (dedupStepL acc x) hg
+    rw [List.mem_append] at hg2
+    rcases hg2 with hg2 | hg2
+    · have hmem : g ∈ acc ++ [x] := by
+        unfold dedupStepL at hg2
+        split at hg2
+        · exact List.mem_append_left _ hg2
+        · exact hg2
+      rw [List.mem_append, List.mem_singleton] at hmem
+      rcases hmem with h | h
+      · exact List.mem_append_left _ h
+      · exact h ▸ List.mem_append_right _ (List.mem_cons_self ..)
+    · exact List.mem_append_right _ (List.mem_cons_of_mem _ hg2)
+
+/-- A member of `labeledOfGraph σ G` has underlying graph `G`. -/
+theorem mem_labeledOfGraph_underlying {G : Sym2Graph n} {Glab : Sym2LabeledGraph σ n}
+    (h : Glab ∈ labeledOfGraph σ G) : (⟨Glab.edges, Glab.edges_valid⟩ : Sym2Graph n) = G := by
+  rw [labeledOfGraph, List.mem_filterMap] at h
+  obtain ⟨f, _, hf⟩ := h
+  cases hmk : mkTypeEmbedding? σ G f with
+  | none => rw [hmk] at hf; simp at hf
+  | some emb =>
+    rw [hmk] at hf
+    obtain rfl := Option.some.inj hf
+    rfl
+
+/-- Forbid-free σ-typed labeled graphs: filter the underlying-graph enumeration by `q`,
+build labeled graphs over the survivors, dedup (keyed). The graph filter shrinks the input
+before the expensive labeled dedup, so the downstream `native_decide` stays tractable. -/
+def genLabeledGraphsHfree (σ : Sym2FlagType k) (n : ℕ) (q : Sym2Graph n → Bool) :
+    List (Sym2LabeledGraph σ n) :=
+  (((((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
+    dedupStepDegL []).map Prod.fst
+
+/-- The keyed pruned dedup equals the naive `dedupStepL` fold (mirrors
+`genLabeledGraphsDedup_eq`). -/
+theorem genLabeledGraphsHfree_eq (q : Sym2Graph n → Bool) :
+    genLabeledGraphsHfree σ n q
+      = (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)).foldl dedupStepL [] := by
+  unfold genLabeledGraphsHfree
+  exact (foldl_dedupStepDegL_sim (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ))
+    [] [] rfl (by simp)).1
+
+/-- The forbid-free σ-typed flags: quotient classes of `genLabeledGraphsHfree`. -/
+def genFlagsHfree (σ : Sym2FlagType k) (n : ℕ) (q : Sym2Graph n → Bool) : List (Sym2Flag σ n) :=
+  (genLabeledGraphsHfree σ n q).map (Quotient.mk (sym2LabeledGraphSetoid σ n))
+
+/-- **Completeness of the pruned generation, without reducing the full enumeration.** The
+flags produced by `genFlagsHfree σ n q` are exactly `univ.filter p`, where the flag
+predicate `p` agrees with the graph predicate `q` on underlying graphs (`hcompat`) and `q`
+is isomorphism-invariant (`hq`). Mirrors `genFlagSet_eq_univ`, restricting coverage to the
+`q`-true classes via `genSym2Graphs_complete`. -/
+theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n → Bool) (p : Sym2Flag σ n → Bool)
+    (hq : ∀ {G G' : Sym2Graph n}, G ∼sf G' → q G = q G')
+    (hcompat : ∀ (Glab : Sym2LabeledGraph σ n),
+        p (Quotient.mk (sym2LabeledGraphSetoid σ n) Glab) = q ⟨Glab.edges, Glab.edges_valid⟩) :
+    (genFlagsHfree σ n q).toFinset = Finset.univ.filter (fun F => p F = true) := by
+  rw [genFlagsHfree, genLabeledGraphsHfree_eq]
+  apply Finset.ext
+  intro F
+  simp only [List.mem_toFinset, List.mem_map, Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨Glab, hGlab, rfl⟩
+    have hsub := foldl_dedupStepL_subset
+      (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)) [] hGlab
+    rw [List.nil_append, List.mem_flatMap] at hsub
+    obtain ⟨G, hGmem, hGlabmem⟩ := hsub
+    rw [List.mem_filter] at hGmem
+    rw [hcompat, mem_labeledOfGraph_underlying hGlabmem]
+    exact hGmem.2
+  · intro hpF
+    obtain ⟨Glab0, rfl⟩ := Quotient.exists_rep F
+    have hqU : q ⟨Glab0.edges, Glab0.edges_valid⟩ = true := by rw [← hcompat]; exact hpF
+    obtain ⟨R, hRmem, hRiso⟩ :=
+      genSym2Graphs_complete (⟨Glab0.edges, Glab0.edges_valid⟩ : Sym2Graph n)
+    have hqR : q R = true := by rw [← hq hRiso]; exact hqU
+    obtain ⟨Glab', hGlab'mem, hGlab'iso⟩ := mem_labeledOfGraph_eqv_of_underlying Glab0 hRiso
+    have hInput : Glab' ∈ ((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ) :=
+      List.mem_flatMap.mpr ⟨R, List.mem_filter.mpr ⟨hRmem, hqR⟩, hGlab'mem⟩
+    obtain ⟨Glab'', hGlab''mem, hGlab''iso⟩ :=
+      foldl_dedupStepL_complete (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ))
+        [] Glab' hInput
+    exact ⟨Glab'', hGlab''mem,
+      Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab''iso))⟩
+
 end FlagAlgebras.Compute
 
 namespace Flags.Densities
@@ -333,8 +435,8 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
   let freeSym2Terms : Array (TSyntax `term) := freeArr.map (fun i =>
     mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}"))
   let isHfreeName := mkIdent (Name.mkSimple s!"isHfree_{n}_{k}_{m}_{tag}")
+  let isHfreeGraphName := mkIdent (Name.mkSimple s!"isHfreeGraph_{n}_{k}_{m}_{tag}")
   let sym2SetName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_{k}_{m}_{tag}")
-  let sym2ListEqName := mkIdent (Name.mkSimple s!"sym2FlagListHfree_{n}_{k}_{m}_{tag}_eq")
   let sym2SetEqName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_{k}_{m}_{tag}_eq")
   let flagSetName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}")
   let flagSetEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_eq")
@@ -343,25 +445,33 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
       def $isHfreeName (S : Sym2Flag $typeTerm $(Quote.quote n)) : Bool :=
         decide (FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁ $forbidSym2 (S.toUnderlying) = 0)))
 
+  -- Graph-level forbid-free test (the pruning predicate). Iso-invariant since it factors
+  -- through the quotient `⟦·⟧`, and agrees with `isHfree` on a flag's underlying graph.
+  elabUnlessDefined isHfreeGraphName.getId (← `(
+      def $isHfreeGraphName (G : FlagAlgebras.Compute.Sym2Graph $(Quote.quote n)) : Bool :=
+        decide (FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁ $forbidSym2
+          (Quotient.mk (FlagAlgebras.Compute.Sym2GraphSetoid $(Quote.quote n)) G) = 0)))
+
   elabUnlessDefined sym2SetName.getId (← `(
       def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
 
-  elabUnlessDefined sym2ListEqName.getId (← `(
-      theorem $sym2ListEqName :
-          ((FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n)).filter (fun S => $isHfreeName S))
-            = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) := by
-        native_decide))
-
+  -- Completeness WITHOUT reducing the full typed enumeration `genFlagsOrdered σ n` (the
+  -- `native_decide` wall at typed n ≥ 6). Connect the named free set to the PRUNED generation
+  -- (graph-level filter → tractable `native_decide`), then invoke the generic completeness
+  -- theorem `genFlagsHfree_toFinset_eq`.
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
           $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
-        rw [← FlagAlgebras.Compute.genFlagSet_eq_univ $typeTerm $(Quote.quote n),
-          ← FlagAlgebras.Compute.genFlagsOrdered_toFinset $typeTerm $(Quote.quote n)]
-        show _ = ((FlagAlgebras.Compute.genFlagsOrdered $typeTerm $(Quote.quote n)).toFinset).filter
-            (fun S => $isHfreeName S = true)
-        rw [← List.toFinset_filter, $sym2ListEqName:ident]
-        rfl))
+        have hpruned : $sym2SetName
+            = (FlagAlgebras.Compute.genFlagsHfree $typeTerm $(Quote.quote n) $isHfreeGraphName).toFinset := by
+          native_decide
+        rw [hpruned]
+        refine FlagAlgebras.Compute.genFlagsHfree_toFinset_eq
+          $isHfreeGraphName $isHfreeName ?_ (fun Glab => rfl)
+        intro G G' hGG'
+        simp only [$isHfreeGraphName:ident]
+        rw [Quotient.sound hGG']))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
@@ -390,8 +500,8 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
           exact hx))
 
   -- The underlying multiset of `flagSetHfree` is the explicit free-flag list (mirrors
-  -- `emitFlagSetMachinery`'s `…_val_eq`); the free list is `Nodup` as a `filter` of the
-  -- `Nodup` enumeration (`sym2FlagListHfree_eq`).
+  -- `emitFlagSetMachinery`'s `…_val_eq`); the free list is `Nodup` by a direct `native_decide`
+  -- over the (few) named free flags.
   let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_val_eq")
   let freeBridgeTerms : Array (TSyntax `term) := freeArr.map (fun i =>
     mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}"))
@@ -401,8 +511,7 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
             = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
                 Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
         have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
-          rw [← $sym2ListEqName:ident]
-          exact (FlagAlgebras.Compute.genFlagsOrdered_nodup $typeTerm $(Quote.quote n)).filter _
+          native_decide
         have hdedup :
             ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
               = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
