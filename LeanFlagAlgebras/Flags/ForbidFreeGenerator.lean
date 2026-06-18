@@ -97,16 +97,16 @@ build labeled graphs over the survivors, dedup (keyed). The graph filter shrinks
 before the expensive labeled dedup, so the downstream `native_decide` stays tractable. -/
 def genLabeledGraphsHfree (σ : Sym2FlagType k) (n : ℕ) (q : Sym2Graph n → Bool) :
     List (Sym2LabeledGraph σ n) :=
-  (((((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
+  (((((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
     dedupStepDegL []).map Prod.fst
 
 /-- The keyed pruned dedup equals the naive `dedupStepL` fold (mirrors
 `genLabeledGraphsDedup_eq`). -/
 theorem genLabeledGraphsHfree_eq (q : Sym2Graph n → Bool) :
     genLabeledGraphsHfree σ n q
-      = (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)).foldl dedupStepL [] := by
+      = (((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ)).foldl dedupStepL [] := by
   unfold genLabeledGraphsHfree
-  exact (foldl_dedupStepDegL_sim (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ))
+  exact (foldl_dedupStepDegL_sim (((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ))
     [] [] rfl (by simp)).1
 
 /-- The forbid-free σ-typed flags: quotient classes of `genLabeledGraphsHfree`. -/
@@ -117,7 +117,7 @@ def genFlagsHfree (σ : Sym2FlagType k) (n : ℕ) (q : Sym2Graph n → Bool) : L
 flags produced by `genFlagsHfree σ n q` are exactly `univ.filter p`, where the flag
 predicate `p` agrees with the graph predicate `q` on underlying graphs (`hcompat`) and `q`
 is isomorphism-invariant (`hq`). Mirrors `genFlagSet_eq_univ`, restricting coverage to the
-`q`-true classes via `genSym2Graphs_complete`. -/
+`q`-true classes via `genSym2GraphsDedup_complete`. -/
 theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n → Bool) (p : Sym2Flag σ n → Bool)
     (hq : ∀ {G G' : Sym2Graph n}, G ∼sf G' → q G = q G')
     (hcompat : ∀ (Glab : Sym2LabeledGraph σ n),
@@ -130,7 +130,7 @@ theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n → Bool) (p : Sym2Flag σ n 
   constructor
   · rintro ⟨Glab, hGlab, rfl⟩
     have hsub := foldl_dedupStepL_subset
-      (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ)) [] hGlab
+      (((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ)) [] hGlab
     rw [List.nil_append, List.mem_flatMap] at hsub
     obtain ⟨G, hGmem, hGlabmem⟩ := hsub
     rw [List.mem_filter] at hGmem
@@ -140,13 +140,13 @@ theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n → Bool) (p : Sym2Flag σ n 
     obtain ⟨Glab0, rfl⟩ := Quotient.exists_rep F
     have hqU : q ⟨Glab0.edges, Glab0.edges_valid⟩ = true := by rw [← hcompat]; exact hpF
     obtain ⟨R, hRmem, hRiso⟩ :=
-      genSym2Graphs_complete (⟨Glab0.edges, Glab0.edges_valid⟩ : Sym2Graph n)
+      genSym2GraphsDedup_complete (⟨Glab0.edges, Glab0.edges_valid⟩ : Sym2Graph n)
     have hqR : q R = true := by rw [← hq hRiso]; exact hqU
     obtain ⟨Glab', hGlab'mem, hGlab'iso⟩ := mem_labeledOfGraph_eqv_of_underlying Glab0 hRiso
-    have hInput : Glab' ∈ ((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ) :=
+    have hInput : Glab' ∈ ((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ) :=
       List.mem_flatMap.mpr ⟨R, List.mem_filter.mpr ⟨hRmem, hqR⟩, hGlab'mem⟩
     obtain ⟨Glab'', hGlab''mem, hGlab''iso⟩ :=
-      foldl_dedupStepL_complete (((genSym2Graphs n).filter q).flatMap (labeledOfGraph σ))
+      foldl_dedupStepL_complete (((genSym2GraphsDedup n).filter q).flatMap (labeledOfGraph σ))
         [] Glab' hInput
     exact ⟨Glab'', hGlab''mem,
       Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab''iso))⟩
