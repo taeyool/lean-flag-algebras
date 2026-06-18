@@ -169,8 +169,39 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num gStx:ident : command => d
           exact hx
     ))
 
+  -- The underlying multiset of `flagSetHfree` is the explicit free-flag list, so the
+  -- forbid bridges can `rw [← …_eq]` onto `flagSetHfree` then unfold to the list.
+  -- Mirrors `emitFlagSetMachinery`'s `…_val_eq`; the free list is `Nodup` because it
+  -- is a `filter` of the `Nodup` enumeration (`sym2FlagListHfree_eq`).
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}_val_eq")
+  let freeBridgeTerms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}"))
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
+            = [ $freeBridgeTerms,* ]) := by
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
+          rw [← $sym2ListEqName:ident]
+          exact (FlagAlgebras.Compute.genEmptyTypedFlags_nodup $(Quote.quote n)).filter _
+        have hdedup :
+            ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
+              = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
+          List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2EmptyTypedFlag.toFlag
+              ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))))
+              = [ $freeBridgeTerms,* ] := by rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2EmptyTypedFlag.toFlag
+              (([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup)
+                = [ $freeBridgeTerms,* ] := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}); \
-flagSetHfree_{n}_0_0_{tag} completeness proved."
+flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
 
 -- `generate_forbid_free_flags k m n Forbid`: the σ-typed analogue. Emits only the
 -- `Forbid`-free σ-typed `n`-vertex flags `Flag_n_k_m_i` (those whose underlying
@@ -358,7 +389,39 @@ elab "generate_forbid_free_flags" kStx:num mStx:num nStx:num gStx:ident : comman
             ← FlagAlgebras.Compute.Sym2Flag.unlabel_toFlag_eq, x.toSym2Flag_toFlag_eq]
           exact hx))
 
+  -- The underlying multiset of `flagSetHfree` is the explicit free-flag list (mirrors
+  -- `emitFlagSetMachinery`'s `…_val_eq`); the free list is `Nodup` as a `filter` of the
+  -- `Nodup` enumeration (`sym2FlagListHfree_eq`).
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_val_eq")
+  let freeBridgeTerms : Array (TSyntax `term) := freeArr.map (fun i =>
+    mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}"))
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val
+            = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
+                Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
+          rw [← $sym2ListEqName:ident]
+          exact (FlagAlgebras.Compute.genFlagsOrdered_nodup $typeTerm $(Quote.quote n)).filter _
+        have hdedup :
+            ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
+              = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
+          List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2Flag.toFlag
+              ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))))
+              = ([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))) := by
+          rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2Flag.toFlag
+              (([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup)
+                = ([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))) := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
   logInfo s!"Generated {freeArr.size} {tag}-free σ-typed flags (n = {n}, type {k}_{m}); \
-flagSetHfree_{n}_{k}_{m}_{tag} completeness proved."
+flagSetHfree_{n}_{k}_{m}_{tag} completeness + val_eq proved."
 
 end Flags.Densities

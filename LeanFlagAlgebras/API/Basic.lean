@@ -11,7 +11,7 @@ per-problem density-bound proof:
 * `forbidLE_trans_add_nonneg`, `flagQuadraticForm_downward_forbidLE_nonneg`,
   `forbidLE_add_QuadraticForm` — combine a known `forbidLE` bound with a
   non-negative PSD quadratic-form (SOS) certificate term.
-* Custom tactics `fold_unit_vectors`, `expand_one_at n`, and `flag_nonneg`
+* Custom tactics `fold_basis_vectors`, `expand_one_at n`, and `flag_nonneg`
   (defined via `elab`/`syntax`/`macro`), automating the boilerplate that is
   otherwise identical across all flag-algebra API proofs.
 -/
@@ -78,13 +78,13 @@ theorem forbidLE_add_QuadraticForm
   exact flagQuadraticForm_nonneg M hM v
 
 /-
-`fold_unit_vectors` scans the current goal for subexpressions of the form
+`fold_basis_vectors` scans the current goal for subexpressions of the form
 `⟦basisVector ⟨n, Flag_n_k_m_i⟩⟧` and folds each occurrence into the
 corresponding `FlagAlgebra_n_k_m_i` constant.  No arguments needed.
 -/
 
 /-- Recursively collect the names of all `Flag_*` constants occurring in `e`
-(helper for `fold_unit_vectors`). -/
+(helper for `fold_basis_vectors`). -/
 private partial def collectFlagConstNamesInExpr (e : Expr) : Array Name :=
   let e := e.consumeMData
   let fromChildren : Array Name := match e with
@@ -119,7 +119,7 @@ private def algebraNameToFlagConstName (nm : Name) : Option Name :=
     else none
   | _ => none
 
-elab "fold_unit_vectors" : tactic =>
+elab "fold_basis_vectors" : tactic =>
   withMainContext do
     let goal ← getMainGoal
     let target ← goal.getType
@@ -165,7 +165,32 @@ elab_rules : tactic
       evalTactic (← `(tactic| rw [$eq_univ_rw]))
       evalTactic (← `(tactic| simp [$val_eq_simp, unlabel_emptyType]))
       evalTactic (← `(tactic| simp [default, flagDensity_empty]))
-      evalTactic (← `(tactic| fold_unit_vectors))
+      evalTactic (← `(tactic| fold_basis_vectors))
+
+/--
+`expand_one_hfree_at n Forbid` is the forbid-free analogue of `expand_one_at n`.
+It unfolds `forbidExpand_one` for a graph of size `n` and reduces the resulting
+`Finset` sum directly onto the explicitly-generated `Forbid`-free flag set
+`flagSetHfree_n_0_0_<Forbid>` (via its filtered-completeness lemma `…_eq` and
+`…_val_eq`), instead of materializing the full `flagSet` and dropping forbidden
+terms. Prerequisite: run `generate_forbid_free_empty_typed_flags n Forbid` first.
+-/
+syntax "expand_one_hfree_at" num ident : tactic
+
+elab_rules : tactic
+  | `(tactic| expand_one_hfree_at $n:num $forbid:ident) => do
+      let nVal := n.getNat
+      let tag := forbid.getId.toString
+      let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}")
+      let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
+      let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
+      evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
+      evalTactic (← `(tactic|
+        rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; congr 1) (fun _ _ => rfl)]))
+      evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))
+      evalTactic (← `(tactic| simp [unlabel_emptyType]))
+      evalTactic (← `(tactic| simp [default, flagDensity_empty]))
+      evalTactic (← `(tactic| fold_basis_vectors))
 
 /--
 `flag_nonneg` closes goals of the form `f ≤[F_forbid] g` when `g - f` is a

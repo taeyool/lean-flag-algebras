@@ -297,7 +297,7 @@ lemma one_eq_sum_flags : (1 : FlagAlgebra ∅ₜ) =
   rw [Finset.sum_eq_multiset_sum, ← flagSet_4_0_0_eq_univ]
   simp only [flagSet_4_0_0_val_eq, Multiset.map_coe, Multiset.sum_coe,
              List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-  fold_unit_vectors
+  fold_basis_vectors
   abel
 
 /-- The nonnegative "leftover" `∑ⱼ gapⱼ · Fⱼ` by which the certificate exceeds

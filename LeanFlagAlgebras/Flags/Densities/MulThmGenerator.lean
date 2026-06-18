@@ -176,6 +176,117 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
 
   logInfo s!"Generated {generated} {forbidS.getId.toString}-free multiplication theorem(s): pattern {patternTag}"
 
+-- `generate_forbid_free_mul_theorems patN hostN k m Forbid`
+--
+-- The forbid-free analogue of `generate_forbid_mul_theorems`: same parameters and
+-- same emitted theorems
+--   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
+--   `  FlagAlgebra_patN_k_m_i * FlagAlgebra_patN_k_m_j`
+--   `    =[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
+-- but the proof rewrites the `basisVector_quot_mul_forbidEq_sum` expansion (a sum
+-- over `univ.filter (fun F' => flagDensity₁ Forbid (unlabel F') = 0)`) directly onto
+-- the explicitly-generated forbid-free host set `flagSetHfree_hostN_k_m_<Forbid>` via
+-- its filtered-completeness lemma `…_eq`, rather than materializing the full host
+-- `flagSet` and dropping forbidden terms with `simp`. This never references the
+-- forbidden host flags, so it works at host sizes the full `generate_flags` cannot
+-- reach (where only the forbid-free flags are generated).
+--
+-- Prerequisites: the forbid-free host set must already exist — run
+-- `generate_forbid_free_empty_typed_flags hostN Forbid` and (for `k > 0`)
+-- `generate_forbid_free_flags k m hostN Forbid` first, plus have the pattern
+-- `FlagAlgebra_*`/`Flag_*` constants and `Forbid` / `Forbid_toFinFlag_eq` in scope.
+--
+-- Example — K₃-free products of 2-vertex flags of type `FlagType_1_0` over 3-vertex
+-- hosts (the Mantel setup):
+--   `generate_forbid_free_mul_theorems 2 3 1 0 K3`
+elab "generate_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let tag := forbidS.getId.toString
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+  let patternFlagTypeName := Name.mkSimple s!"FlagType_{k}_{m}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let (gIdent, gEqName) ← resolveForbidGraph tag
+  let forbidFlag ← forbidFlagIdentOfToFinFlagEq gEqName
+  let (r, idx) ← parseFlagRIdx forbidFlag.getId.toString
+  let forbidAll ← evalCanonicalEdgeLists r
+  let forbid := some (r, forbidAll.getD idx [])
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patternFree := freeFlagIndices patN forbid patterns
+  let hostFree := freeFlagIndices hostN forbid hosts
+
+  let flagSetHfreeName := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}")
+  let flagSetHfreeEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_eq")
+  let flagSetHfreeValEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_val_eq")
+  unless (← getEnv).contains flagSetHfreeEq.getId do
+    throwError s!"`generate_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
+forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
+`generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {k} {m} {hostN} {tag}`" else ""} first."
+
+  let mut generated : Nat := 0
+  for i in patternFree do
+    for j in patternFree do
+      let iOrd := if i ≤ j then i else j
+      let jOrd := if i ≤ j then j else i
+      let rhs ← buildMulRhs patN hostN hostTag patternFlagTypeName patterns hosts hostFree iOrd jOrd
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{j}")
+      let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{iOrd}")
+      let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
+
+      let env ← getEnv
+      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(env.contains flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(env.contains flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+
+      if !(env.contains thmName.getId) then
+        if i ≤ j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              exact forbidEq_refl ($gIdent).toFinFlag _
+          ))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} {tag}-free (forbid-free-host) multiplication theorem(s): pattern {patternTag}"
+
 -- `generate_mul_theorems patN hostN k m`
 --
 -- The no-forbidden-subgraph analogue of `generate_forbid_mul_theorems`: the same
