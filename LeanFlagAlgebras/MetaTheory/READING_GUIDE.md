@@ -13,6 +13,14 @@ proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit toget
   `support_passes`, `mem_Qσ_iff`). There is **no** `_<n>_<k>_<m>_<i>` generated-name convention
   here — that convention belongs to the precomputed flag *data* under `LeanFlagAlgebras/Flags/`,
   which this development does not touch.
+* **§6–§7 naming convention.** Two markers distinguish the generalised-blow-up layer from §5:
+  the `subBlowup` *prefix* names the generalised **construction and its objects**
+  (`subBlowup`, `subBlowupGraphFin`, `subBlowupLabeledGraph`, `subBlowupPlantedEmb`); the `_sub`
+  *suffix* names a §6–§7 **lemma/theorem that is the analogue of the §5 declaration of the same
+  base name** (`planted_estimate_sub` ↔ `planted_estimate`, `planted_mass_sub` ↔ `planted_mass`,
+  `blowupFlagSeq_sub` ↔ `blowupFlagSeq`, `exists_blowup_limit_sub` ↔ `exists_blowup_limit`,
+  `plantedIso_sub` ↔ `plantedIso`, `good_event_induces_iff_sub` ↔ `good_event_induces_iff`, …).
+  So if you know the §5 name, the §6–§7 name is `…_sub`; the proof is the §5 proof over `subBlowup`.
 * **Docstrings.** Every module opens with a `/-! # … -/` header stating its purpose, the
   `paper.tex` section/result it formalises, and its key results. Public declarations (and most
   important private helpers) carry `/-- … -/` doc-comments. Long files use `/-! ## … -/` section
@@ -43,8 +51,15 @@ will meet them constantly:
 * `PositiveHomSpace σ` — the **compact metric space `X_σ`** of such homomorphisms (a closed subset
   of `FlagDensitySpace σ`, which carries the product topology of `FinFlag σ → [0,1]`).
 * `FinFlag σ` — finite σ-flags; `FlagSeq σ = ℕ → FinFlag σ` — flag sequences (graph limits).
-* In `MetaTheory`: `Qσ`, `Sσ`, `RootPlantable`, `Constraint`, `GraphClass`, `constraintOf`,
+* In `MetaTheory` (§2–§5): `Qσ`, `Sσ`, `RootPlantable`, `Constraint`, `GraphClass`, `constraintOf`,
   `independentBlowup`, `blowupLabeledGraph`, `cliqueFreeClass`.
+* In `MetaTheory` (§6–§7): `subBlowup G W` (generalised blow-up, within-class family `W`),
+  `completeBlowup` (`W = ⊤`), `subBlowupLabeledGraph`, `HeredClass` (hereditary class with no
+  closure assumption), `TrueCloneClosed` / `SubstitutionClosed` (the closure predicates),
+  `subst_root_plantable`, `clusterClass`.
+* The §7 unification: `oneBlowup G v H` (single-vertex blow-up `G[v→H]`), `BlowupClosed` (the
+  blow-up-closure property), and `blowupClosed_root_plantable` (the theorem of which clone-,
+  true-clone- and substitution-closure are corollaries, via the `…toBlowupClosed` implications).
 
 ---
 
@@ -67,7 +82,11 @@ jump straight to the module and Lean name; read that module's header, then the n
    `CloneCount` → `CloneTotal` → `PlantedCount` → `PlantedEstimate` (with `BinomialRatio`).
 3. **§5 capstone machinery:** `ConstrainedRep`, `InducedContainment` → `GraphClassConstraint`,
    `RootingUniform`, `WeakConvergence`, `BlowupSequence`.
-4. **The capstone:** `CloneClosed`.
+4. **The §5 capstone:** `CloneClosed`.
+5. **§6–§7 generalised blow-up:** `SubstitutionBlowup` → `SubstitutionEstimate`
+   (reusing the closure-free `HeredClass` base) → `SubstitutionSequence` → `SubstitutionClosed`
+   → `TrueClone`, `Substitution`, `ClusterGraph`. (Each mirrors its §5 namesake; read the module
+   header first to see the one-line difference.)
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -92,6 +111,15 @@ jump straight to the module and Lean name; read that module's header, then the n
 | §5 `thm:clone-root-plantable` (l.1217) | `CloneClosed` | `clone_root_plantable` |
 | §5 `cor:clique-free` (l.1367) | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
 | (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
+| §6 `def:complete-blow-up` / §7 `def:substitution-closed` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
+| §6 `lem:true-planted-estimate` / §7 `lem:general-planting-estimate` (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
+| (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
+| §7 `def:blow-up-closed`, `thm:blowup-root-plantable` (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
+| §7 `lem:blowup-iterate`, `cor:closures-imply-blowup` | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
+| §6 `thm:true-clone-root-plantable` | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
+| §6 `cor:cluster-graphs` | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
+| §7 `thm:substitution-root-plantable` | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
+| (new) host-parametric planted estimate | `PlantedEstimate` | `planted_estimate_host` |
 
 ---
 

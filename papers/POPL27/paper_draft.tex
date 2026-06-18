@@ -216,8 +216,6 @@
     {alpha}{{$\alpha$}}1
     {forall}{{$\forall$}}1
     {exists}{{$\exists$}}1
-    {phi}{{$\phi$}}1
-    {psi}{{$\psi$}}1
 }
 \lstset{language=Lean4, frame=single, framesep=4pt,
         rulecolor=\color{black!20}, backgroundcolor=\color{gray!5}}
@@ -638,8 +636,8 @@ roles in the calculation, not different kinds of flags.
 
 \paragraph{Single-flag density.}
 Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $A$ of size $m$
-(the \emph{pattern flag}) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the \emph{host flag}), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
+(the pattern flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
+(the host flag), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
 vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.
@@ -717,16 +715,15 @@ $\den{A_1,\ldots,A_t}{G} := 0$ by convention.
 
 Fix a flag type $\sigma$ of size $k$.
 Informally, the flag algebra $\mathcal{A}^\sigma$ is an algebra\footnote{Here
-``algebra'' is used in the standard algebraic sense: a vector space equipped
-with a bilinear multiplication and a distinguished multiplicative unit,
-satisfying the usual associativity and unit laws.  The flag algebras in this
-paper are commutative $\mathbb{R}$-algebras.} of density expressions generated
+``algebra'' means a vector space with bilinear multiplication and a unit,
+satisfying the usual laws; the flag algebras in this paper are commutative
+$\mathbb{R}$-algebras.} of density expressions generated
 by $\sigma$-flags.  Each flag is a symbolic building block: it stands for the
 density of that local labeled pattern in a large host graph.  The quotient
 below records the standard sampling identities among these building blocks,
 beginning with the expansion identity coming from
 Lemma~\ref{lem:chain-rule}.
-Let
+Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
 combinations of $\sigma$-flags.  We also write $A$ for the basis vector
@@ -749,7 +746,7 @@ a flag and its equivalence class is immaterial.
 We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
 \emph{expansion of $A$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
-its expansion at any size $n \geq m$ have the same density in every host flag.
+its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
 The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
 equality
 \[
@@ -844,7 +841,7 @@ $\sigma=\emptyset$.
 The flag algebra $\mathcal{A}^\sigma$ provides algebraic syntax for expressing
 densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 \emph{asymptotic} statements: rather than a single finite host flag, we
-consider sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
+consider increasing sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the pattern $\sigma$-flag expressions
@@ -854,7 +851,7 @@ to do.
 
 \paragraph{Convergent sequences.}
 Call a sequence $\{G_n\}_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{increasing} if
-$|V(G_1)| < |V(G_2)| < \cdots$.  Each $G$ defines a point
+$|V(G_1)| < |V(G_2)| < \cdots$.  Each host $\sigma$-flag $G$ defines a point
 $p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(A) := \den{A}{G}$.
 An increasing sequence is \emph{convergent} if the sequence of points $p^{G_n}$
 converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
@@ -911,7 +908,7 @@ We write
   g-f \in \mathcal{C}^\sigma.
 \]
 Equivalently, $f\leq_\sigma g$ means that
-$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$.
+$\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
 Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_\sigma f$.
 
 Two immediate examples of elements of $\mathcal{C}^\sigma$ are flags and squares.
@@ -939,10 +936,10 @@ lemma shows.
   $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
   is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and this product space is
   compact (Tychonoff), the sequence $\{p^{G_k}\}$ has a convergent
-  subsequence; by \Cref{thm:convergent-hom}(a) its limit is some
+  subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
-  the densities $\den{P}{G_k}$, we have
-  $\phi(P) = \lim_k \den{P}{G_k} \geq c + \varepsilon > c$.  But
+  $\{p^{G_{k_j}}\}$, we have
+  $\phi(P) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
   $P \leq c \cdot \mathbf{1}$ means $\phi(P) \leq c$ for every
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
@@ -1279,184 +1276,354 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % notation; the names and fields match the implementation.
 % -- End original introduction -------------------------------------------------
 
-This section formalizes the flag algebra framework in Lean~4.
-In informal arguments, the same symbol freely denotes a concrete graph,
-its isomorphism class, a formal linear combination of flags, or a flag algebra
-element.  In our Lean formalization, each role is a distinct type and each transition is an
-explicit map for which we prove compatibility with the relevant equivalence relations.
+Informal flag algebra proofs are compact partly because the notation is
+deliberately overloaded.  The same symbol may denote a concrete labeled graph,
+its isomorphism class, a basis vector in a free vector space, an element of the
+quotient algebra, or the real number obtained by evaluating that element in a
+limit.  On paper these shifts are usually harmless and are left implicit.  In
+Lean they become the first formalization problem: each role must be represented
+by a separate type, and each shift between roles must be justified by a theorem
+saying that it respects isomorphism, quotienting, density expansion, and
+multiplication.
 
-Section~\ref{sec:background} fixed a set $\mathcal{H}$ of forbidden graphs at
-the outset and defined all types, flags, and the flag algebra relative to that
-fixed~$\mathcal{H}$.  Our Lean formalization takes a different starting point:
-the algebra is built without fixing any $\mathcal{H}$, or equivalently with
-$\mathcal{H} = \emptyset$, so that no graph is initially excluded.  The
-$\mathcal{H}$-free constraint is then introduced as a separate predicate on
-the semantic order.  In Razborov's original
-presentation~\cite{razborov2007flag}, by contrast, it is baked into the algebra
-at setup time.  The two formulations agree on the Tur\'an density bounds we
-prove.  Whether they are equivalent for all labeled computations is non-trivial
-and depends on the choice of $\mathcal{H}$.  What differs is how much algebraic
-infrastructure carries over to a new~$\mathcal{H}$ without reproof.  This is a
-tradeoff we report on, not one we resolve.
-\gw{This paragraph needs revision.}
+Our first design choice is to separate this typed mathematical interface from
+the proof-by-computation machinery used later to check flag-algebra
+certificates.  Here computation means evaluation inside Lean as part of proof
+checking, not a numerical experiment outside the prover.  For example, Lean may
+evaluate a finite flag-density table or normalize an algebraic expression, and
+the resulting equality can be used as a proof step only because previously
+proved theorems connect the computation to the mathematical definitions.  We
+call the interface supporting these proof-producing computations the
+\emph{specification layer}.  It formalizes the objects from
+Section~\ref{sec:background}---flags as isomorphism classes of labeled graphs,
+densities as finite sampling probabilities, the flag algebra as a quotient by
+expansion identities, and positive homomorphisms as semantic interpretations of
+algebra elements---and proves their basic interface theorems.  Once this layer
+has been established, certificate proofs can manipulate algebraic expressions
+without repeatedly returning to graph representatives and finite sampling
+definitions.
+
+A second design choice concerns where forbidden-subgraph assumptions enter the
+development.  In the background section we fixed $\mathcal{H}$ first and
+defined all flags and algebras relative to the $\mathcal{H}$-free world.  In
+Lean we instead build the ambient flag algebra without fixing
+$\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a predicate on the
+semantic order.  Thus the core formalization implements the unconstrained
+theory.  If every definition carried an arbitrary forbidden family
+$\mathcal{H}$ from the start, then even the elementary constructions of flags,
+densities, expansion identities, and multiplication would acquire an extra
+parameter and extra side conditions.  By postponing $\mathcal{H}$-freeness, we
+develop the ambient algebra once and introduce the constraint only when it is
+needed for extremal applications.  This keeps the algebraic infrastructure
+reusable across different forbidden graphs.  The deferred treatment is still
+sound for Tur\'an-density bounds: \Cref{sec:forbidden} explains the semantic
+predicate and the transfer theorem connecting it to the usual constrained
+flag-algebra viewpoint.
 
 One notational convention is specific to the formalization.  In
 Section~\ref{sec:background}, the empty flag type was written simply as
 $\emptyset$.  In Lean-related notation, we write it as $\emptyt$ to avoid
 confusion with ordinary empty sets.
 
-Throughout this section, the following variables are in scope:
-\begin{lstlisting}
-variable {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
-         {U : Type}  [Fintype U]  [DecidableEq U]
-         {U(*@$_1$@*) : Type} [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)]
-         {U(*@$_2$@*) : Type} [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
-         {W : Type} [Fintype W] [DecidableEq W]
-         {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
-\end{lstlisting}
-\lean{FlagType} is introduced in the next subsection.
-\lean{FintypeList Vl} and \lean{DecidableEqList Vl} are custom typeclass instances
-asserting \lean{Fintype (Vl i)} and \lean{DecidableEq (Vl i)} for every \lean{i : Fin t}.
+The displayed snippets below are also an expository version rather than a
+literal transcript of the source.  In the actual Lean implementation, many of
+the parameters are declared once as ambient variables and then inferred by
+Lean; here we spell them out at the definitions where they are used.  When a
+displayed definition marks a parameter as implicit, later applications omit
+that parameter, following Lean's usual argument-passing convention.  We also
+occasionally use paper-facing names for intermediate terms when the
+implementation names are optimized for local proof context or tactic plumbing.
+These deviations are meant to expose the dependency of each construction on
+the label type, the vertex types, and the flag type \(\sigma\), without asking
+the reader to remember a global Lean context or source-file naming convention.
 
 \subsection{Flag Types and Flags}
 \label{sec:flagtypes}
 
-Informally, the word \emph{flag} refers both to a concrete pair $(M,\theta_A)$
-and to its isomorphism class.  In Lean, however, the two must be distinct types.  We define \lean{LabeledGraph}
-for the concrete pair $(M,\theta_A)$ and \lean{Flag} for its quotient by flag
-isomorphism, corresponding to an element of $\mathcal{F}^\sigma_n$ where $n = |V(M)|$.
+Our formalization builds on Mathlib, and in particular on Mathlib's graph
+library.  Before giving the Lean definitions of flags, we recall the small
+pieces of Mathlib notation used below.  In Section~\ref{sec:background} we
+described a finite graph as having a vertex set $V(G)$.  In Lean, the vertex
+set is represented by a type: a term of type \lean{SimpleGraph V} is a simple
+graph whose vertices are the elements of \lean{V}.  Finiteness is supplied
+separately by assumptions such as \lean{Fintype V}; for example,
+\lean{SimpleGraph (Fin n)} is the Lean version of a graph on the vertex set
+\(\{0,\ldots,n-1\}\).
+
+Mathlib provides ${G\hookrightarrow_g H}$ for the type of graph embeddings
+from $G$ to $H$.  Such an embedding is an injective vertex map that
+preserves and reflects adjacency, so its image is an induced copy of $G$
+in $H$.  Mathlib also provides $G\simeq_g H$ for graph isomorphisms.
+With this notation in place, the concrete pair $(M,\theta_A)$ from
+Section~\ref{sec:background} is represented by \lean{LabeledGraph}, while its
+isomorphism class is represented by \lean{Flag}.
 
 \begin{lstlisting}
-abbrev FlagType := SimpleGraph
+abbrev FlagType (T : Type) := SimpleGraph T
 
-structure LabeledGraph ((*@$\sigma$@*) : FlagType T) (V : Type) where
+structure LabeledGraph {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) where
   graph      : SimpleGraph V
   type_embed : (*@$\sigma$@*) (*@$\hookrightarrow$@*)g graph
 \end{lstlisting}
-The structure \lean{LabeledGraph} takes the flag type $\sigma$ and a vertex type \lean{V} as parameters, and encodes a concrete $\sigma$-flag $(M,\theta_A)$. \lean{FlagType T} is the type of $\sigma$, i.e., simple graphs with vertex type \lean{T}. The field \lean{graph} stores the underlying graph $M$, and \lean{type\_embed} records the graph embedding $\theta_A$.
+Here \lean{FlagType T} is simply a name for \lean{SimpleGraph T}: a flag type
+is represented by a simple graph on the label type \lean{T}.  The structure
+\lean{LabeledGraph} packages the two pieces of a concrete $\sigma$-flag: the
+field \lean{graph} stores the underlying graph $M$, and the field
+\lean{type\_embed} stores the embedding
+$\theta_A:\sigma\hookrightarrow_g M$.  In the signature, braces mark
+parameters that Lean normally infers from context, and square brackets mark
+typeclass assumptions.  Thus \lean{[Fintype T]} tells Lean that the label type
+\lean{T} is finite; later signatures use assumptions such as
+\lean{[DecidableEq V]} when equality on a vertex type must be decidable.
 
 We define \lean{LabeledGraphIso} as a structure capturing isomorphisms between
 two \lean{LabeledGraph} terms, and \lean{Flag} as the type obtained by
 quotienting \lean{LabeledGraph} by this isomorphism relation:
 \begin{lstlisting}
-structure LabeledGraphIso (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) W) where
+structure LabeledGraphIso {T V V' : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (G : LabeledGraph (*@$\sigma$@*) V) (G' : LabeledGraph (*@$\sigma$@*) V') where
   graph_iso     : G.graph (*@$\simeq$@*)g G'.graph
   type_preserve : graph_iso (*@$\circ$@*) G.type_embed = G'.type_embed
 
-def Flag ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
+infixl:50 " (*@$\simeq$@*)f " => LabeledGraphIso
+
+instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type)
+    : Setoid (LabeledGraph (*@$\sigma$@*) V) where
+  -- r : LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) LabeledGraph (*@$\sigma$@*) V (*@$\to$@*) Prop
+  r     := fun G G' => Nonempty (G (*@$\simeq$@*)f G')
+  iseqv := ... -- proof that r defines an equivalence relation
+
+def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
-% The field \lean{graph\_iso} is a graph isomorphism between the underlying graphs,
-% and \lean{type\_preserve} encodes the commutativity condition $\alpha \circ
-% \theta_A = \theta_{A'}$ from Section~\ref{sec:background}.
-Lean's quotient type requires a \emph{setoid}, which is a type explicitly
-equipped with an equivalence relation.  \lean{labeledGraphSetoid} serves this role, equipping
-\lean{LabeledGraph} with the equivalence relation induced by 
-\lean{LabeledGraphIso}.
+\lean{LabeledGraphIso} represents an isomorphism of concrete $\sigma$-flags.
+It consists of a graph isomorphism \lean{graph\_iso} between the underlying
+graphs, together with a compatibility proof \lean{type\_preserve} saying that
+this isomorphism sends the labeled copy of $\sigma$ in $G$ to the labeled copy
+of $\sigma$ in $G'$.  This is the Lean form of the condition
+$\alpha\circ\theta_G=\theta_{G'}$.  The notation $G\simeq_f G'$ abbreviates
+this structure, with $\sigma$ inferred from the two labeled graphs.
 
-We can now define $\mathcal{F}^\sigma_n$ in Lean as \lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)},
-abbreviated \lean{FlagWithSize}~$\sigma$~$n$.  \lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
+Lean's quotient type does not take an arbitrary relation directly; it expects
+a \emph{setoid}, namely a type together with an explicitly supplied equivalence
+relation.  The instance \lean{labeledGraphSetoid} provides this package for
+\lean{LabeledGraph}~$\sigma$~\lean{V}.  Its field \lean{r} identifies two
+terms $G,G'$ when there exists labeled-graph isomorphism data
+$G\simeq_f G'$, and its field \lean{iseqv} contains the proofs that this
+relation is reflexive, symmetric, and transitive.  Finally,
+\lean{Flag}~$\sigma$~\lean{V} is defined as the quotient of
+\lean{LabeledGraph}~$\sigma$~\lean{V} by that setoid, so its elements are
+precisely isomorphism classes of concrete $\sigma$-flags on the vertex type
+\lean{V}.
+
+We can now define $\mathcal{F}^\sigma_n$ in Lean as
+\lean{Flag}~$\sigma$~\lean{(Fin}~$n$\lean{)}.  The type
+\lean{FinFlag}~$\sigma$ is the all-size union $\mathcal{F}^\sigma =
 \bigcup_n \mathcal{F}^\sigma_n$, defined as a dependent pair type in Lean; each element is a pair
 $(n, F)$ where $n$ records the size and $F$ is the $\sigma$-flag of that size.
 \begin{lstlisting}
-abbrev FlagWithSize {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) (n : (*@$\mathbb{N}$@*)) :=
-  Flag (*@$\sigma$@*) (Fin n)
-
 def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
-  (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), FlagWithSize (*@$\sigma$@*) n
+  (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
-Unlike Section~\ref{sec:background}, none of the definitions above carries the
-$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  The
-$\mathcal{H}$-free assumption is deferred to the semantic predicate on the
-final unlabeled inequality, as described in the section introduction.
-\gw{This sentence needs revision.}
+Note that unlike Section~\ref{sec:background}, none of the definitions above carries the
+$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  This is a
+deliberate interface choice.  The core quotient and density machinery is
+developed once for all finite graphs, while the $\mathcal{H}$-free assumption
+is imposed later through the semantic predicate on the final unlabeled
+inequality.
 
 \subsection{Subflag Densities}
 \label{sec:formal-subflag-densities}
 
-Formalizing density function is not straightforward.  The density
+Formalizing the density function is not straightforward.  The density
 $\den{A_1,\ldots,A_t}{G}$ from Section~\ref{sec:background} should be a
 function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
 define a function from a quotient type in Lean is to first define it on the
 underlying type, prove that it respects the equivalence relation, and lift it
 via \lean{Quotient.lift}.  That is, one must first define the density with
-\lean{LabeledGraph} inputs, then prove that replacing any input by an
+\lean{LabeledGraph} inputs, and then prove that replacing any input by an
 isomorphic \lean{LabeledGraph} gives the same result.
 
 We first introduce \lean{LabeledGraphList} as an abbreviation for a
-list of $t$ \lean{LabeledGraph}s, one per index in \lean{Fin t}.
-Given such a list of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
+(\lean{Fin t})-indexed tuple of \lean{LabeledGraph}s.
+Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
 \lean{labeledGraphListDensity} computes the density as the number of tuples
 $(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{A_1,\ldots,A_t}{G}$,
 divided by the total number of candidate tuples.  Rather than adopting the
 probabilistic sampling formulation of Section~\ref{sec:background}, this direct ratio is easier to work with in Lean.
 \begin{lstlisting}
-abbrev LabeledGraphList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
-  := (*@$\forall$@*) (i : Fin t), LabeledGraph (*@$\sigma$@*) (Vl i)
+abbrev LabeledGraphList {T : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
+  (*@$\forall$@*) (i : Fin t), LabeledGraph (*@$\sigma$@*) (Vl i)
 
 noncomputable def labeledGraphListDensity
-    (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+    {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+    ((*@$\sigma$@*) : FlagType T) (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) (G : LabeledGraph (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   let r_list (i : Fin t) := (Hl i).size - (*@$\sigma$@*).size
   labeledGraphListCount Hl G / multinomialCoefficient r_list (G.size - (*@$\sigma$@*).size)
 \end{lstlisting}
-The \lean{noncomputable} keyword signals that Lean cannot synthesize an algorithm
-to evaluate the function.  This poses no obstacle to formalizing flag algebra
-itself, but becomes relevant when applying the algebra to concrete graphs, a
-point we return to in Section~\ref{sec:reflection}.
+The first line defines \lean{LabeledGraphList} by spelling out what a finite
+list means in this dependent setting: it is a function that assigns to each
+index \lean{i : Fin t} a concrete $\sigma$-flag \lean{LabeledGraph}~$\sigma$~\lean{(Vl i)}.
+The family \lean{Vl : Fin t -> Type} records the vertex type of each entry, so
+the $t$ pattern flags are not forced to share one ambient vertex type.
+The square-bracket assumptions in the density signature provide the finite
+enumeration and equality tests needed for counting.  A \lean{Fintype} instance
+for a vertex type gives Lean a finite list of all its vertices, and a
+\lean{DecidableEq} instance gives a decision procedure for testing whether two
+vertices are equal.  The typeclasses \lean{FintypeList Vl} and
+\lean{DecidableEqList Vl} are componentwise versions of these assumptions:
+they supply the corresponding enumeration and equality-test instances for
+each vertex type \lean{Vl i} in the tuple.
 
-Lifting \lean{labeledGraphListDensity} to the quotient type \lean{Flag} is
-slightly layered.  We first lift the host argument \lean{G}, then lift the list of
-pattern flags \lean{Hl}, and finally package the result as a function on \lean{FlagList}.
-The congruence proofs, omitted below, show that the density is unchanged when
-the host or any pattern flag is replaced by an isomorphic representative.
+The second definition is the finite ratio corresponding to
+$\den{A_1,\ldots,A_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
+graphs and \lean{G} is the concrete labeled graph in which they are counted.
+The local function \lean{r\_list} records, for each pattern, how many unlabeled
+vertices it contributes:
+\[
+  r_i = |V(H_i)| - |\sigma|.
+\]
+The numerator \lean{labeledGraphListCount Hl G}, defined immediately before
+this function in the Lean development, counts the induced subgraph lists of
+\lean{G} that realize the patterns in \lean{Hl}.  The denominator applies
+\lean{multinomialCoefficient} to \lean{r\_list} and
+\(|V(G)| - |\sigma|\), written in Lean as the difference between \lean{G.size}
+and the size of \(\sigma\); it counts the possible choices of
+pairwise-disjoint unlabeled vertex sets of those sizes from the non-type
+vertices of \lean{G}.  Thus the quotient is a rational number.
+The \lean{noncomputable} keyword signals that Lean cannot synthesize an
+algorithm to evaluate this definition directly.  This poses no obstacle to
+formalizing flag algebra itself, but becomes relevant when applying the algebra
+to concrete extremal problems, a point we return to in Section~\ref{sec:reflection}.
+
+The concrete function \lean{labeledGraphListDensity} has two inputs: the tuple
+\lean{Hl} of pattern labeled graphs and the target labeled graph \lean{G}.  To
+make this a function of flags, we lift these two inputs separately.  The target
+input is lifted from \lean{LabeledGraph} to \lean{Flag}; for the pattern tuple,
+the intermediate quotient is the quotient of concrete tuples by entrywise
+isomorphism.  We first lift the target input \lean{G}, then lift the pattern
+tuples, and finally package the result as a function on \lean{FlagList}.  The
+congruence proofs, omitted below, show that the density is unchanged when the
+target or any pattern flag is replaced by an isomorphic representative.
 \begin{lstlisting}
-abbrev FlagList ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
-  := (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
+def labeledGraphListEqv {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} (Gl Gl' : LabeledGraphList (*@$\sigma$@*) t Vl) : Prop :=
+  (*@$\forall$@*) (i : Fin t), Nonempty (Gl i (*@$\simeq$@*)f Gl' i)
+
+instance labeledGraphListSetoid {T : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type)
+    : Setoid (LabeledGraphList (*@$\sigma$@*) t Vl) where
+  r     := labeledGraphListEqv
+  iseqv := ... -- proof that the entrywise isomorphism is an equivalence
+
+def QuotLabeledGraphList {T : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
+  Quotient (labeledGraphListSetoid (*@$\sigma$@*) t Vl)
+
+abbrev FlagList {T : Type} [Fintype T]
+    ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
+  (*@$\forall$@*) (i : Fin t), Flag (*@$\sigma$@*) (Vl i)
 
 noncomputable def labeledGraphListDensityLifted
-    (Hl : LabeledGraphList (*@$\sigma$@*) t Vl) : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+    {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+    {(*@$\sigma$@*) : FlagType T} (Hl : LabeledGraphList (*@$\sigma$@*) t Vl)
+    : Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G => labeledGraphListDensity Hl G)
-    (...) -- proof that host equivalence preserves density
+    (...) -- proof that target equivalence preserves density
 
 noncomputable def quotLabeledGraphListDensity
+    {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+    {(*@$\sigma$@*) : FlagType T}
     : QuotLabeledGraphList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     labeledGraphListDensityLifted
     (...) -- proof that pattern-list equivalence preserves density
 
-noncomputable def flagListDensity : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
-  fun Fl => quotLabeledGraphListDensity Fl.coe
+noncomputable def FlagList.coe
+    {T : Type} [Fintype T] {(*@$\sigma$@*) : FlagType T}
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type}
+    (Fl : FlagList (*@$\sigma$@*) t Vl)
+    : QuotLabeledGraphList (*@$\sigma$@*) t Vl :=
+  (*@$\llbracket$@*)fun i => (Fl i).out(*@$\rrbracket$@*)
+
+noncomputable def flagListDensity
+    {T W : Type} [Fintype T] [Fintype W] [DecidableEq W]
+    {t : (*@$\mathbb{N}$@*)} {Vl : Fin t (*@$\to$@*) Type} [FintypeList Vl] [DecidableEqList Vl]
+    {(*@$\sigma$@*) : FlagType T}
+    : FlagList (*@$\sigma$@*) t Vl (*@$\to$@*) Flag (*@$\sigma$@*) W (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
+  fun Fl => quotLabeledGraphListDensity (FlagList.coe Fl)
 \end{lstlisting}
-\lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
+Here \lean{labeledGraphListEqv} says that two concrete tuples are equivalent exactly
+when their entries are isomorphic as labeled graphs: for each index \lean{i},
+there must exist an isomorphism \lean{Gl i}~\(\simeq_f\)~\lean{Gl' i}.  The
+instance \lean{labeledGraphListSetoid} supplies the setoid required by
+\lean{Quotient}.  Its quotient is \lean{QuotLabeledGraphList}.  The
+abbreviation \lean{FlagList} is the more convenient tuple of already-quotiented
+flags.
+
+The three density definitions then lift the original concrete density one
+argument at a time.  For a fixed concrete pattern tuple \lean{Hl},
+\lean{labeledGraphListDensityLifted Hl} is a function
+\lean{Flag}~$\sigma$~\lean{W}~\(\to \mathbb{Q}\), obtained by quotienting the
+target argument.  The next definition, \lean{quotLabeledGraphListDensity},
+lifts the pattern tuple as well, so its first input is a
+\lean{QuotLabeledGraphList} and its second input is a target \lean{Flag}.  In
+the final definition, the input \lean{Fl} has type
+\lean{FlagList}~$\sigma$~\lean{t Vl}, that is, \lean{Fl i} is already a flag
+for each \lean{i : Fin t}.  The term
+\lean{FlagList.coe Fl} has type
+\lean{QuotLabeledGraphList}~$\sigma$~\lean{t Vl}; concretely, it chooses a
+representative \lean{(Fl i).out} for each flag in the tuple and forms the
+quotient class of the concrete tuple \lean{fun i => (Fl i).out}.  Thus
+\lean{flagListDensity} can call
+\lean{quotLabeledGraphListDensity} after converting the
+tuple-of-flags input into the quotient-of-tuples input expected by the
+preceding definition.
+
+The following \lean{flagDensity}$_1$ and \lean{flagDensity}$_2$ are specializations of \lean{flagListDensity}
 to singleton and pair lists:
 \begin{lstlisting}
-noncomputable def flagDensity(*@$_1$@*) (F : Flag (*@$\sigma$@*) U) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+noncomputable def flagDensity(*@$_1$@*)
+    {T U W : Type} [Fintype T] [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W]
+    {(*@$\sigma$@*) : FlagType T} (F : Flag (*@$\sigma$@*) U) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity [F](*@$^\mathtt{f}$@*) G
 
-noncomputable def flagDensity(*@$_2$@*) (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
+noncomputable def flagDensity(*@$_2$@*)
+    {T U(*@$_1$@*) U(*@$_2$@*) W : Type} [Fintype T] [Fintype U(*@$_1$@*)] [DecidableEq U(*@$_1$@*)] [Fintype U(*@$_2$@*)] [DecidableEq U(*@$_2$@*)]
+    [Fintype W] [DecidableEq W]
+    {(*@$\sigma$@*) : FlagType T} (F(*@$_1$@*) : Flag (*@$\sigma$@*) U(*@$_1$@*)) (F(*@$_2$@*) : Flag (*@$\sigma$@*) U(*@$_2$@*)) (G : Flag (*@$\sigma$@*) W) : (*@$\mathbb{Q}$@*) :=
   flagListDensity [F(*@$_1$@*), F(*@$_2$@*)](*@$^\mathtt{f}$@*) G
 \end{lstlisting}
-Here \lean{[}$\cdot$\lean{]}$^{\mathtt{f}}$ denotes the notation for constructing a \lean{FlagList}.
+Here the superscripted bracket notation is a tuple constructor for
+\lean{FlagList}.  Thus \lean{[F]}$^{\mathtt{f}}$ is the one-entry
+\lean{FlagList} whose unique entry is \lean{F}, and
+\lean{[F}$_1$\lean{, F}$_2$\lean{]}$^{\mathtt{f}}$ is the two-entry
+\lean{FlagList} sending the first index of \lean{Fin 2} to \lean{F}$_1$ and
+the second to \lean{F}$_2$.  The superscript \(\mathtt{f}\) distinguishes this
+notation from ordinary list notation and from quotient brackets; it does not
+add another quotienting operation.
 
 Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
-\gw{The proof of the chain rule was also very difficult, but I'm not sure whether it would be worth discussing that here.}
+Although the statement mirrors the elementary sampling identity from
+Section~\ref{sec:background}, the formal proof must also commute finite counts
+with quotient lifts and the coercions between rational densities and real-valued
+algebra expressions.
 \begin{lstlisting}
 theorem flagDensity_eq_sum_density_prods
-    {(*@$\ell_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))} {(*@$\ell_1$@*) (*@$\ell$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\ell'$@*) : (*@$\mathbb{N}$@*)) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
+    {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
     : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
 \end{lstlisting}
 
 \subsection{The Flag Algebra}
-
-For the remainder of Section~\ref{sec:abstract}, $\sigma$ denotes a \lean{FlagType (Fin $n_0$)} for a fixed $n_0 \in \mathbb{N}$:
-\begin{lstlisting}
-variable {(*@$n_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))}
-\end{lstlisting}
 
 To define the flag algebra, we first construct the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$.  Each element in this module is represented as a finitely supported
@@ -1464,79 +1631,135 @@ function from $\mathcal{F}^\sigma$ to $\mathbb{R}$, using Mathlib's \lean{Finsup
 type.  \lean{FlagVector} $\sigma$ is the resulting type, and \lean{basisVector} is
 the constructor that produces the basis vector for each flag:
 \begin{lstlisting}
-abbrev FlagVector ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
+abbrev FlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   FinFlag (*@$\sigma$@*) (*@$\to_0$@*) (*@$\mathbb{R}$@*)
 
-def basisVector (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
+def basisVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
   Finsupp.single F 1
 \end{lstlisting}
 Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp.single F 1} constructs the basis vector for $F \in \mathcal{F}^\sigma$: the function taking value $1$ at $F$ and $0$ elsewhere.
 
-Next, we define the zero space $\mathcal{Z}^\sigma$.  We encode the generating element of
+Next, we define the zero space $\mathcal{Z}^\sigma$.  The auxiliary function
+\lean{flagExpansion F}~$\ell$ is the Lean version of
+$\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G}\cdot G$, the expansion of
+$F$ at size $\ell$.  We encode the generating element of
 Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
-collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the submodule
-they span:
+collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the
+submodule they span:
 \begin{lstlisting}
-def zeroElement (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
+noncomputable def flagExpansion {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+    : FlagVector (*@$\sigma$@*) :=
+  (*@$\sum$@*) F' : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)), flagDensity(*@$_1$@*) F.2 F' (*@$\leansmul$@*) basisVector (*@$\langle$@*)(*@$\ell$@*), F'(*@$\rangle$@*)
+
+noncomputable def zeroElement {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+    : FlagVector (*@$\sigma$@*) :=
   basisVector F - flagExpansion F (*@$\ell$@*)
 
-noncomputable def zeroSet ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagVector (*@$\sigma$@*)) :=
+noncomputable def zeroSet {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+    : Set (FlagVector (*@$\sigma$@*)) :=
   {k | (*@$\exists$@*) (F : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)), F.1 (*@$\leq$@*) (*@$\ell$@*) (*@$\wedge$@*) k = zeroElement F (*@$\ell$@*)}
 
-def ZeroSpace ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
+noncomputable def ZeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+    : Submodule (*@$\mathbb{R}$@*) (FlagVector (*@$\sigma$@*)) :=
   Submodule.span (*@$\mathbb{R}$@*) (zeroSet (*@$\sigma$@*))
 \end{lstlisting}
-Here \lean{flagExpansion F} $\ell$ is defined as
-$\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G} \cdot G$,
-the expansion of $F$ at size $\ell$.
 
 Following the same pattern as the definition of \lean{Flag} from
 \lean{LabeledGraph} in Section~\ref{sec:flagtypes}, we now define
 the flag algebra $\mathcal{A}^\sigma$ as a quotient of \lean{FlagVector} $\sigma$.
 The equivalence relation \lean{flagVectorEqv} declares two elements of \lean{FlagVector} $\sigma$ equivalent
-when their difference lies in \lean{ZeroSpace} $\sigma$, and \lean{flagVectorSetoid} $\sigma$ 
+when their difference lies in \lean{ZeroSpace} $\sigma$, and \lean{flagVectorSetoid} $\sigma$
 packages this relation into a setoid so that Lean's quotient type can be applied.
 \begin{lstlisting}
-def flagVectorEqv (f g : FlagVector (*@$\sigma$@*)) : Prop :=
+def flagVectorEqv {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (f g : FlagVector (*@$\sigma$@*)) : Prop :=
   f - g (*@$\in$@*) ZeroSpace (*@$\sigma$@*)
 
-abbrev FlagAlgebra ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
+instance flagVectorSetoid {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Setoid (FlagVector (*@$\sigma$@*)) where
+  r     := flagVectorEqv
+  iseqv := ... -- proof that flagVectorEqv is an equivalence relation
+
+abbrev FlagAlgebra {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   Quotient (flagVectorSetoid (*@$\sigma$@*))
 \end{lstlisting}
-In the resulting type \lean{FlagAlgebra} $\sigma$, a flag and its density expansion at any larger size
-are definitionally equal.
+The quotient therefore imposes a family of expansion identities: for every
+flag \lean{F : FinFlag}~$\sigma$ and every size $\ell \geq F.1$, the class of
+\lean{basisVector F} is identified with the class of
+\lean{flagExpansion F}~$\ell$, i.e. with the linear combination of all
+size-$\ell$ flags weighted by their densities over \(F\).
 
 Formalizing multiplication in $\mathcal{A}^\sigma$ also requires several steps.
-\lean{flagMulWithSize} defines the product
+The term \lean{flagMulWithSize} defines the product
 of two flags at a chosen output size $\ell$ as in
-Equation~\eqref{eq:mul}.  \lean{flagMul} specializes to the minimal admissible
-size $\ell = F.1 + F'.1 - n_0$.  \lean{bilinearExtension} then extends
-\lean{flagMul} linearly in each argument to give multiplication on
-\lean{FlagVector} $\sigma$, and \lean{Quotient.map$_2$} lifts this to
+Equation~\eqref{eq:mul}. The term \lean{flagMul} specializes this product to the minimal admissible
+size $\ell = F.1 + F'.1 - n_0$. Then, \lean{bilinearExtension} extends
+\lean{flagMul} linearly in each argument to give a product on
+\lean{FlagVector} $\sigma$.  This intermediate product is only a bilinear
+operation on formal sums; the quotient is where the usual algebra laws are
+established.  Finally, \lean{Quotient.map$_2$} lifts the product to
 \lean{FlagAlgebra} $\sigma$.
 \begin{lstlisting}
-def flagMulWithSize (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*)) : FlagVector (*@$\sigma$@*) :=
-  (*@$\sum$@*) G : FlagWithSize (*@$\sigma$@*) (*@$\ell$@*), flagDensity(*@$_2$@*) F.2 F'.2 G * basisVector (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
+noncomputable def flagMulWithSize {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F F' : FinFlag (*@$\sigma$@*)) ((*@$\ell$@*) : (*@$\mathbb{N}$@*))
+    : FlagVector (*@$\sigma$@*) :=
+  (*@$\sum$@*) G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)), flagDensity(*@$_2$@*) F.2 F'.2 G (*@$\leansmul$@*) basisVector (*@$\langle$@*)(*@$\ell$@*), G(*@$\rangle$@*)
 
-noncomputable def flagMul (F F' : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
-  flagMulWithSize F F' (F.1 + F'.1 - (*@$n_0$@*))
+noncomputable def flagMul {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F F' : FinFlag (*@$\sigma$@*)) : FlagVector (*@$\sigma$@*) :=
+  flagMulWithSize F F' (F.1 + F'.1 - n(*@$_0$@*))
 
-noncomputable instance : Mul (FlagVector (*@$\sigma$@*)) where
+noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Mul (FlagVector (*@$\sigma$@*)) where
   mul := bilinearExtension flagMul
 
-noncomputable instance : Mul (FlagAlgebra (*@$\sigma$@*)) where
+noncomputable instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Mul (FlagAlgebra (*@$\sigma$@*)) where
   mul := by
     apply Quotient.map(*@$_2$@*) ((*@$\cdot$@*) * (*@$\cdot$@*))
-    -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$\sigma$}@*),
-    --   flagVectorEqv f f' and flagVectorEqv g g' imply flagVectorEqv (f * g) (f' * g')
+    -- proof omitted: for f f' g g' : FlagVector (*@\textcolor{gray}{$n_0$}@*) (*@\textcolor{gray}{$\sigma$}@*),
+    --   flagVectorEqv f f' and flagVectorEqv g g'
+    --   imply flagVectorEqv (f * g) (f' * g')
 \end{lstlisting}
-\lean{Quotient.map$_2$} is a Lean built-in function that lifts a binary
+Here \lean{Quotient.map$_2$} is a Lean built-in function that lifts a binary
 operation to a quotient type given a proof that the operation respects the
-equivalence relation.  Here that proof amounts to showing that multiplication
-on \lean{FlagVector} $\sigma$ respects \lean{flagVectorEqv}, as noted in the
-comment above.  We also prove \lean{flagMulWithSize\_indep\_on\_size}: for any two choices of $\ell$, the results of \lean{flagMulWithSize F F'} $\ell$ are
-equivalent under \lean{flagVectorEqv}, justifying the choice of minimal size
-in \lean{flagMul}.
+equivalence relation.  In the displayed definition, the expression
+\lean{($\cdot$ * $\cdot$)} is not a new operation: since its two arguments are
+flag vectors, Lean resolves \lean{*} using the immediately preceding
+\lean{Mul (FlagVector}~$\sigma$\lean{)} instance, whose multiplication is
+\lean{bilinearExtension flagMul}.  The quotient instance then lifts exactly
+this vector-level multiplication to \lean{FlagAlgebra} $\sigma$.  The proof
+obligation amounts to showing that this multiplication respects
+\lean{flagVectorEqv}, as noted in the comment above.  The load-bearing lemma
+is that \lean{ZeroSpace} $\sigma$ is
+closed under multiplication by arbitrary flag vectors:
+\begin{lstlisting}
+theorem flagVector_mul_zeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+    (f : FlagVector (*@$\sigma$@*)) {k : FlagVector (*@$\sigma$@*)} (hk_zero : k (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
+    : f * k (*@$\in$@*) ZeroSpace (*@$\sigma$@*)
+\end{lstlisting}
+Together with commutativity, this says that \lean{ZeroSpace} $\sigma$ is an
+ideal in the algebraic sense: multiplying a zero-space element by any flag
+vector still gives a zero-space element.  This is exactly the property needed
+to define multiplication on the quotient.  If two representatives differ by a
+zero-space element, then multiplying both by the same vector still gives
+representatives that differ by a zero-space element, so the product does not
+depend on the chosen representatives.  This is the compatibility condition
+that allows the Lean definition to use \lean{Quotient.map$_2$}.  A separate
+theorem handles the choice of output size:
+\begin{lstlisting}
+theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+    {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)} ...
+    : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*))
+\end{lstlisting}
+The ellipsis hides the admissibility assumptions on the two output sizes:
+\(\ell_1\) and \(\ell_2\) must both be large enough to contain the two input
+flags after identifying their common type \(\sigma\).  In Lean this is written
+as
+\[
+  F_1.1 + F_2.1 \leq \ell_i + n_0
+  \qquad (i=1,2),
+\]
+where \(F_j.1\) is the total number of vertices of \(F_j\), and \(n_0\) is the
+number of labeled vertices in \(\sigma\).  Equivalently, the intended output
+size is at least \(F_1.1 + F_2.1 - n_0\): the non-type vertices of the two
+flags are sampled disjointly, while the \(n_0\) type vertices are shared.  The
+theorem then says that any two such admissible output sizes give equivalent
+flag vectors, justifying the choice of the minimal size in \lean{flagMul}.
 
 With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
 a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$.
@@ -1545,44 +1768,58 @@ a commutative associative $\mathbb{R}$-algebra, completing the formalization of 
 
 The central result of this subsection is the formalization of
 Theorem~\ref{thm:convergent-hom}, which states that positive homomorphisms are
-exactly the limiting objects of convergent flag sequences.  \lean{FlagSeq} $\sigma$ is the type of sequences of $\sigma$-flags indexed by
-$\mathbb{N}$, and \lean{ConvergesTo} encodes its convergence.
+exactly the limiting objects of convergent flag sequences.
+\lean{FlagSeq}~$\sigma$ is the type of sequences of
+$\sigma$-flags indexed by $\mathbb{N}$, and \lean{ConvergesTo} encodes its
+convergence.
 \begin{lstlisting}
-abbrev FlagSeq ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) := (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
+abbrev FlagSeq {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
+  (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
 
-def ConvergesTo (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
+def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
   Increases s (*@$\wedge$@*) Tendsto (flagDensitySeq s) atTop ((*@$\mathcal{N}$@*) a)
 \end{lstlisting}
 \lean{ConvergesTo} conjoins two predicates: the first asserts that the sizes
 of the flags in $s$ are strictly increasing, and the second asserts that
 $\lim_{n \to \infty} \den{F}{s(n)} = a(F)$ for every $\sigma$-flag $F$.
 
-\lean{PositiveHom} $\sigma$ is the subtype of $\mathbb{R}$-algebra homomorphisms from
-\lean{FlagAlgebra} $\sigma$ to $\mathbb{R}$ that are non-negative on every $\sigma$-flag:
+\lean{PositiveHom}~$\sigma$ is the subtype of
+$\mathbb{R}$-algebra homomorphisms from
+\lean{FlagAlgebra}~$\sigma$ to $\mathbb{R}$ that are
+non-negative on every $\sigma$-flag:
 \begin{lstlisting}
-abbrev Hom ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) :=
+abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
   FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[(*@$\mathbb{R}$@*)] (*@$\mathbb{R}$@*)
 
-def PositiveHom ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Type :=
-  { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
+def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+  { (*@$\phi$@*) : Hom (*@$\sigma$@*) //
+      (*@$\forall$@*) F : FinFlag (*@$\sigma$@*),
+        (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
 In Lean, $\{\ \phi : T\ //\ P\ \phi\ \}$ is the subtype of elements of $T$
 satisfying predicate $P$, and $\llbracket \cdot \rrbracket$ is the quotient
-map \lean{FlagVector} $\sigma \to$ \lean{FlagAlgebra} $\sigma$.
+map \lean{FlagVector}~$\sigma \to$
+\lean{FlagAlgebra}~$\sigma$.
 
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom
-    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)} (hs_conv : ConvergesTo s a)
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)}
+    (hs_conv : ConvergesTo s a)
     : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a
 
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
 theorem positiveHom_as_flagSeq_limit
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
 \end{lstlisting}
-Here \lean{FlagDensitySpace} $\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
+Here \lean{FlagDensitySpace}~$\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
 \lean{$\phi$.coe} is the point $F \mapsto \phi(F)$ in $[0,1]^{\mathcal{F}^\sigma}$
 that $\phi$ determines.
 Both directions require nontrivial formalization work.  In part (a), one must
@@ -1597,15 +1834,18 @@ quantities, and extended-real measure values.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
-\lean{semanticCone} $\sigma$ is the set of elements in \lean{FlagAlgebra} $\sigma$
-that every positive homomorphism evaluates non-negatively.  The induced order
-is installed as a Lean \lean{LE} instance, with $f \leq g$ defined to mean
+\lean{semanticCone}~$\sigma$ is the set of elements in
+\lean{FlagAlgebra}~$\sigma$ that every positive homomorphism
+evaluates non-negatively.  The induced order is installed as a Lean
+\lean{LE} instance, with $f \leq g$ defined to mean
 $g - f \in \mathcal{C}^\sigma$.
 \begin{lstlisting}
-def semanticCone ((*@$\sigma$@*) : FlagType (Fin (*@$n_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
+def semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
 
-instance : LE (FlagAlgebra (*@$\sigma$@*)) where
+instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : LE (FlagAlgebra (*@$\sigma$@*)) where
   le := fun f g => g - f (*@$\in$@*) semanticCone (*@$\sigma$@*)
 \end{lstlisting}
 
@@ -1632,25 +1872,34 @@ combines these two lifted components, realizing
 $\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph
+    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - (*@$n_0$@*)).factorial
-  isomor(*@\texttt{ph}@*)ismCount G / num_of_all_injections
+  isomorphismCount G / num_of_all_injections
 
 noncomputable def downwardNormalizingFactor
+    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
   Quotient.lift
     (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G)
     (fun _ _ h => downwardNormalizingFactor_labeledGraph_respect_eqv h)
 
-def unlabeledGraph (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph (*@$\emptyt$@*) V := ...
+def unlabeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type}
+    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph (*@$\emptyt$@*) V := ...
 
-noncomputable def unlabel : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
+noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type}
+    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
+    Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
   Quotient.lift
-    (fun G : LabeledGraph (*@$\sigma$@*) V => unlabeledGraphQuot G)
+    (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabeledGraph G(*@$\rrbracket$@*))
     (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
 
-noncomputable def downwardFlag (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
-  downwardNormalizingFactor F (*@$\leansmul$@*) basisVector ((*@$n$@*), unlabel F)
+noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)}
+    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
+  downwardNormalizingFactor F (*@$\leansmul$@*)
+    basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
 
 The second lift starts from this single-flag map and is substantially harder.
@@ -1660,9 +1909,13 @@ this map through the quotient defining \lean{FlagAlgebra} $\sigma$.  At the sing
 level, the construction only has to respect isomorphism of representatives; at
 the algebra level, it must also respect the expansion equations generating the
 zero space $\mathcal{Z}^\sigma$.  This compatibility is the well-definedness proof needed by the
-final quotient lift: \gw{I'm here.}
+final quotient lift: if two flag-vector representatives differ by a zero-space
+relation, their downward images must agree in the empty-type quotient.
+\gw{I'm here.}
 \begin{lstlisting}
-noncomputable def downward : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
+noncomputable def downward {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
+    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
+    FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
   Quotient.lift
     (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
     (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
@@ -1675,11 +1928,12 @@ The semantic soundness of the downward operator is proved in
 \lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
 object called a random homomorphism; instead, for a $\emptyt$-typed positive
 homomorphism $\phi_0$ with positive $\sigma$-density, Lean constructs a
-probability measure on \lean{PositiveHomSpace} $\sigma$ corresponding to
+probability measure on \lean{PositiveHomSpace}~$\sigma$ corresponding to
 $\Ext_\sigma(\phi_0)$ from Section~\ref{sec:background-downward}.  Its defining property
 is the formal version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
     (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
     (*@$\exists$@*) (P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*))),
@@ -1708,7 +1962,9 @@ The payoff is the formal semantic transfer theorem corresponding to
 typed element is semantically non-negative in the $\emptyt$-typed algebra.
 \begin{lstlisting}
 theorem downward_preserve_semanticCone
-    (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (f : FlagAlgebra (*@$\sigma$@*))
+    (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
     (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*)
 \end{lstlisting}
 The proof splits on whether $\phi_0(\langle\sigma\rangle_0)$ is zero.  In the
@@ -1731,16 +1987,18 @@ the semantic order.
 
 The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
 \begin{lstlisting}
-def forbidLE (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra sigma) : Prop :=
-  forall (phi0 : PositiveHom (*@$\emptyt$@*)), phi0 <sigma>0 > 0 ->
-    phi0 (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
-    P[phi0] {phi | phi f <= phi g} = 1
+def forbidLE {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
+    (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
+  forall ((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
+    (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
+    P[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f <= (*@$\phi$@*) g} = 1
 \end{lstlisting}
 For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
 $f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
 for every $\emptyt$-typed positive homomorphism $\phi_0$ in which $H$ has density
 zero, almost every random $\sigma$-typed extension $\phi$ satisfies
-$\phi(f)\leq\phi(g)$.  The side condition \lean{phi0 <sigma>0 > 0} records
+$\phi(f)\leq\phi(g)$.  The side condition
+\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} records
 that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
 reduces to the untyped relation, which we write as $f \leq g$ in the
 paper.
@@ -1752,15 +2010,17 @@ theorem: approximate $\phi_0$ by growing untyped flag sequences, pass to a
 subsequential limit of probability measures on the typed density space using
 Mathlib's Prokhorov infrastructure, prove that the limit is supported on
 positive homomorphisms, and then view it as a probability measure on
-\lean{PositiveHomSpace sigma}.  The resulting theorem is:
+\lean{PositiveHomSpace}~$\sigma$.  The resulting theorem is:
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
-    (h_sigma : phi0 <sigma>0 > 0) :
-  exists P : ProbabilityMeasure (PositiveHomSpace sigma),
-    forall f : FlagAlgebra sigma,
-      integral (fun phi => phi f) P =
-        phi0 (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
-          phi0 (*@$\llbracket$@*)(1 : FlagAlgebra sigma)(*@$\rrbracket_0$@*)
+    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
+    (h_sigma : (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0) :
+  exists P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)),
+    forall f : FlagAlgebra (*@$\sigma$@*),
+      integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) P =
+        (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
+          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
 \end{lstlisting}
 This theorem explains why the formalization needs measure theory.  The
 downward operator gives the expectation of typed random extensions, so a
@@ -1775,7 +2035,9 @@ The final transfer theorem, in \lean{Forbid/TuranDensity.lean}, has the shape
 needed by certificate proofs:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    (hc : 0 <= c) (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) 1) :
+    {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
+    {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
+    (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))) :
     generalizedTuranDensity H F <= c
 \end{lstlisting}
 The Lean constant takes the forbidden graph first and the target graph
@@ -1848,8 +2110,8 @@ the formalization, the product of basis elements is computed as a sum over
 all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
 independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
 Its hypotheses say that both output sizes are large enough, and its proof has
-to relate sums over \lean{FlagWithSize sigma ell} and
-\lean{FlagWithSize sigma ell'}, which are definitionally distinct types even
+to relate sums over \lean{Flag sigma (Fin ell)} and
+\lean{Flag sigma (Fin ell')}, which are definitionally distinct types even
 when the corresponding mathematical sets are connected by expansion.
 
 The same issue arises internally when collecting the flags for the
@@ -1956,17 +2218,17 @@ equivalences \lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in
 multiple ways depending on which prior instances are in scope.  In
 \lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
 defined, the elaborator had to be given explicit guidance via
-\lean{@Finset.univ}:
+\lean{Finset.univ} with a type ascription:
 \begin{lstlisting}
 instance : Fintype (Embedding V W) :=
-  { elems := (@Finset.univ (V -> W)).filterMap ..., ... }
+  { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
 
 instance : Fintype (G1 ->g G2) :=
-  { elems := (@Finset.univ (Embedding V W)).filterMap ..., ... }
+  { elems := (Finset.univ : Finset (Embedding V W)).filterMap ..., ... }
 \end{lstlisting}
 The graph-embedding and graph-isomorphism instances are built by filtering
 finite enumerations of simpler function or equivalence types.  The explicit
-\lean{@Finset.univ} keeps the intended enumeration visible to the elaborator,
+\lean{Finset.univ} type ascription keeps the intended enumeration visible to the elaborator,
 instead of relying on typeclass search to rediscover it in a later goal.
 A related issue arose for dependent function types indexed by a small finite
 type, where Lean's typeclass search does not look through \lean{match}

@@ -296,39 +296,79 @@ private theorem good_event_count_const (m : Fin n → ℕ) (θ : H ↪g G) (c : 
     rw [← baseRoots_eq_image]; exact hvnr
   rw [Finset.sum_congr rfl hsummand, Finset.sum_const, smul_eq_mul, mul_comm]
 
+/-- **Good event count, collapsed — host-generic version**.  For any host `B` over the blow-up
+vertex type with the *same* planted roots (`hBroots`) and whose good subsets induce `F₀` exactly when
+the blow-up's do (`hBgood`), the good `B`-subsets inducing `F₀` number `M^(ℓ-k)` times the base
+subsets inducing `F₀`.  Reduces to `good_event_count_const` by showing the two good-inducing filter
+finsets are equal. -/
+private theorem good_event_count_const_host (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
+    (F₀ : LabeledGraph H (Fin ℓ)) (M : ℕ)
+    (hM : ∀ v, v ∉ Finset.image (fun t => θ t) Finset.univ → m v = M)
+    (B : LabeledGraph H (Σ v : Fin n, Fin (m v)))
+    (hBroots : B.type_verts = (blowupLabeledGraph m θ c).type_verts)
+    (hBgood : ∀ (S' : Finset (Σ v : Fin n, Fin (m v))),
+        Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))) →
+        ∀ (hr : B.type_verts ⊆ (↑S' : Set _))
+          (hr' : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set _)),
+          (Nonempty ((inducedLabeledSubgraph B (↑S') hr).coe ≃f F₀) ↔
+           Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') hr').coe ≃f F₀))) :
+    (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
+      ∃ (hroot : B.type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
+        Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))) ∧
+        Nonempty ((inducedLabeledSubgraph B (↑S') hroot).coe ≃f F₀))).card
+      = M ^ (ℓ - k) *
+        (Finset.univ.filter (fun W : Finset (Fin n) =>
+          ∃ (hroot : (baseLabeledGraph θ).type_verts ⊆ (↑W : Set (Fin n))),
+            Nonempty ((inducedLabeledSubgraph (baseLabeledGraph θ) (↑W) hroot).coe ≃f F₀))).card := by
+  rw [← good_event_count_const m θ c F₀ M hM]
+  -- The two good-inducing filter finsets are equal.
+  congr 1
+  apply Finset.filter_congr
+  intro S' _
+  constructor
+  · rintro ⟨hroot, hinj, hind⟩
+    have hroot' : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set _) := hBroots ▸ hroot
+    exact ⟨hroot', hinj, (hBgood S' hinj hroot hroot').mp hind⟩
+  · rintro ⟨hroot', hinj, hind⟩
+    have hroot : B.type_verts ⊆ (↑S' : Set _) := hBroots ▸ hroot'
+    exact ⟨hroot, hinj, (hBgood S' hinj hroot hroot').mpr hind⟩
+
 /-- **Good/bad split** (count form): writing `A_blow, A_good, T_all, T_good` for the four counts,
 `A_good ≤ A_blow` and `A_blow + T_good ≤ A_good + T_all`.  The first drops the InjOn condition; the
-second observes that a *bad* (non-InjOn) inducing subset is a bad size-`ℓ` root-superset. -/
-private theorem count_split (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
+second observes that a *bad* (non-InjOn) inducing subset is a bad size-`ℓ` root-superset.  This is
+host-generic: it depends on the host `B : LabeledGraph H (Σ v, Fin (m v))` only through its roots and
+`induced_iso_card`, never through adjacency. -/
+private theorem count_split (m : Fin n → ℕ)
+    (B : LabeledGraph H (Σ v : Fin n, Fin (m v)))
     (F₀ : LabeledGraph H (Fin ℓ)) :
     let A_blow := (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      ∃ (h : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
-        Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') h).coe ≃f F₀))).card
+      ∃ (h : B.type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
+        Nonempty ((inducedLabeledSubgraph B (↑S') h).coe ≃f F₀))).card
     let A_good := (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      ∃ (hroot : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
+      ∃ (hroot : B.type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
         Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))) ∧
-        Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') hroot).coe ≃f F₀))).card
+        Nonempty ((inducedLabeledSubgraph B (↑S') hroot).coe ≃f F₀))).card
     let T_all := (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ)).card
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ)).card
     let T_good := (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
         Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))))).card
     A_good ≤ A_blow ∧ A_blow + T_good ≤ A_good + T_all := by
   intro A_blow A_good T_all T_good
   -- abbreviate the four underlying finsets
   set Iall := Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      ∃ (h : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
-        Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') h).coe ≃f F₀))
+      ∃ (h : B.type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
+        Nonempty ((inducedLabeledSubgraph B (↑S') h).coe ≃f F₀))
     with hIall
   set Igood := Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      ∃ (hroot : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
+      ∃ (hroot : B.type_verts ⊆ (↑S' : Set (Σ v : Fin n, Fin (m v)))),
         Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))) ∧
-        Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') hroot).coe ≃f F₀))
+        Nonempty ((inducedLabeledSubgraph B (↑S') hroot).coe ≃f F₀))
     with hIgood
   set Sall := Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ) with hSall
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ) with hSall
   set Sgood := Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
         Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v)))) with hSgood
   -- Igood ⊆ Iall
   have hsub_good : Igood ⊆ Iall := by
@@ -352,8 +392,8 @@ private theorem count_split (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin 
     rw [hIall, Finset.mem_filter] at hin
     obtain ⟨_, hroot, hind⟩ := hin
     -- S' has card ℓ (inducing F₀) and contains the roots ⇒ ∈ Sall
-    have hcard : S'.card = ℓ := induced_iso_card (blowupLabeledGraph m θ c) F₀ S' hroot hind
-    have hrootF : (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' :=
+    have hcard : S'.card = ℓ := induced_iso_card B F₀ S' hroot hind
+    have hrootF : B.type_verts.toFinset ⊆ S' :=
       Set.toFinset_subset.mpr hroot
     have hmemSall : S' ∈ Sall := by
       rw [hSall, Finset.mem_filter]; exact ⟨Finset.mem_univ _, hrootF, hcard⟩
@@ -375,17 +415,29 @@ private theorem count_split (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin 
   show Iall.card + Sgood.card ≤ Igood.card + Sall.card
   omega
 
-/-- **Reduced planted estimate** (`lem:planted-estimate`, equal non-root clones): the density of
-`F₀` in the planted blow-up differs from its density in the base by at most `1 - ρ`, where
-`ρ = M^(ℓ-k)·C(n-k, ℓ-k) / C(N-k, ℓ-k)` (`N = ∑ v, m v`) is the probability a uniform
-`(ℓ-k)`-sample of non-root blow-up vertices meets each clone class at most once. -/
-theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
+/-- **Reduced planted estimate, host-generic** (`lem:planted-estimate`, equal non-root clones).
+The same bound as `planted_estimate` holds for *any* host `B` over the blow-up vertex type with the
+same planted roots as `blowupLabeledGraph m θ c` (`hBroots`) and whose good subsets induce `F₀`
+exactly when the blow-up's do (`hBgood`).  The host enters the proof only through these two
+hypotheses: every other count depends solely on the planted-root finset and clone sizes. -/
+theorem planted_estimate_host (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
     (F₀ : LabeledGraph H (Fin ℓ)) (M : ℕ)
-    (hM : ∀ v, v ∉ Finset.image (fun t => θ t) Finset.univ → m v = M) :
-    |flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦blowupLabeledGraph m θ c⟧ : Flag H (Σ v : Fin n, Fin (m v)))
+    (hM : ∀ v, v ∉ Finset.image (fun t => θ t) Finset.univ → m v = M)
+    (B : LabeledGraph H (Σ v : Fin n, Fin (m v)))
+    (hBroots : B.type_verts = (blowupLabeledGraph m θ c).type_verts)
+    (hBgood : ∀ (S' : Finset (Σ v : Fin n, Fin (m v))),
+        Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))) →
+        ∀ (hr : B.type_verts ⊆ (↑S' : Set _))
+          (hr' : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S' : Set _)),
+          (Nonempty ((inducedLabeledSubgraph B (↑S') hr).coe ≃f F₀) ↔
+           Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S') hr').coe ≃f F₀))) :
+    |flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦B⟧ : Flag H (Σ v : Fin n, Fin (m v)))
        - flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦baseLabeledGraph θ⟧ : Flag H (Fin n))|
       ≤ 1 - (M ^ (ℓ - k) * ((n - k).choose (ℓ - k)) : ℚ)
             / (((∑ v, m v) - k).choose (ℓ - k)) := by
+  -- The host roots, as a finset, coincide with the planted-root finset.
+  have hBrootsF : B.type_verts.toFinset = (blowupLabeledGraph m θ c).type_verts.toFinset := by
+    rw [Set.toFinset_congr hBroots]
   -- `F₀.type_embed : Fin k ↪ Fin ℓ` is injective, so `k ≤ ℓ`.
   have hk : k ≤ ℓ := by
     have := Fintype.card_le_of_injective (F₀.type_embed : Fin k → Fin ℓ) F₀.type_embed.injective
@@ -397,19 +449,19 @@ theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m 
     rw [abs_le]; constructor <;> nlinarith
   -- The two densities are nonnegative and at most one.
   set pblow := flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ))
-      (⟦blowupLabeledGraph m θ c⟧ : Flag H (Σ v : Fin n, Fin (m v))) with hpblow_def
+      (⟦B⟧ : Flag H (Σ v : Fin n, Fin (m v))) with hpblow_def
   set pbase := flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦baseLabeledGraph θ⟧ : Flag H (Fin n))
     with hpbase_def
   have hpbase0 : 0 ≤ pbase := flagListDensity₁_ge_zero _ _
   have hpbase1 : pbase ≤ 1 := flagListDensity₁_le_one _ _
-  -- The two density-as-count equations.
+  -- The two density-as-count equations.  `B.size = ∑ v, m v` since `B` is over the blow-up type.
   have hpblow_eq : pblow
       = ((Finset.univ.filter (fun S : Finset (Σ v : Fin n, Fin (m v)) =>
-          ∃ (h : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S : Set (Σ v : Fin n, Fin (m v)))),
-            Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S) h).coe
+          ∃ (h : B.type_verts ⊆ (↑S : Set (Σ v : Fin n, Fin (m v)))),
+            Nonempty ((inducedLabeledSubgraph B (↑S) h).coe
               ≃f F₀))).card : ℚ)
         / (((∑ v, m v) - k).choose (ℓ - k)) := by
-    rw [hpblow_def, flagDensity₁_eq_subset_count_div F₀ (blowupLabeledGraph m θ c)]
+    rw [hpblow_def, flagDensity₁_eq_subset_count_div F₀ B]
     simp only [LabeledGraph.size, Fintype.card_sigma, Fintype.card_fin, FlagType.size]
   have hpbase_eq : pbase
       = ((Finset.univ.filter (fun S : Finset (Fin n) =>
@@ -420,8 +472,8 @@ theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m 
     simp only [LabeledGraph.size, Fintype.card_fin, FlagType.size]
   -- Abbreviate the four counts and the denominators.
   set Aiall := (Finset.univ.filter (fun S : Finset (Σ v : Fin n, Fin (m v)) =>
-      ∃ (h : (blowupLabeledGraph m θ c).type_verts ⊆ (↑S : Set (Σ v : Fin n, Fin (m v)))),
-        Nonempty ((inducedLabeledSubgraph (blowupLabeledGraph m θ c) (↑S) h).coe ≃f F₀))).card
+      ∃ (h : B.type_verts ⊆ (↑S : Set (Σ v : Fin n, Fin (m v)))),
+        Nonempty ((inducedLabeledSubgraph B (↑S) h).coe ≃f F₀))).card
     with hAiall
   set Aibase := (Finset.univ.filter (fun S : Finset (Fin n) =>
       ∃ (h : (baseLabeledGraph θ).type_verts ⊆ (↑S : Set (Fin n))),
@@ -439,27 +491,29 @@ theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m 
     simp only [hCblow0, Nat.cast_zero, div_zero, sub_zero] at hpblow0 hpblow1 ⊢
     rw [abs_le]; constructor <;> nlinarith
   have hCblowQ : (0 : ℚ) < Cblow := by rw [Nat.cast_pos]; exact hCblowpos
-  -- The total counts of size-`ℓ` planted-root supersets ("all" and "good").
+  -- The total counts of size-`ℓ` host-root supersets ("all" and "good").  Computed over `B`'s roots,
+  -- which equal the planted-root finset (`hBrootsF`).
   have hTall : (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ)).card = Cblow := by
-    rw [superset_count (blowupLabeledGraph m θ c).type_verts.toFinset ℓ
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ)).card = Cblow := by
+    rw [hBrootsF,
+      superset_count (blowupLabeledGraph m θ c).type_verts.toFinset ℓ
         (by rw [plantedRoots_card m θ c]; exact hk),
       plantedRoots_card m θ c, hCblow]
     congr 2
     simp only [Fintype.card_sigma, Fintype.card_fin]
   have hTgood : (Finset.univ.filter (fun S' : Finset (Σ v : Fin n, Fin (m v)) =>
-      (blowupLabeledGraph m θ c).type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
+      B.type_verts.toFinset ⊆ S' ∧ S'.card = ℓ ∧
         Set.InjOn Sigma.fst (↑S' : Set (Σ v : Fin n, Fin (m v))))).card
       = Cbase * M ^ (ℓ - k) := by
-    rw [good_total_count m θ c M hk hM, hCbase]
+    rw [hBrootsF, good_total_count m θ c M hk hM, hCbase]
   -- The count split: `A_good ≤ A_blow` and `A_blow + T_good ≤ A_good + T_all`.
   have hAgood : Aiall ≥ M ^ (ℓ - k) * Aibase ∧
       Aiall + Cbase * M ^ (ℓ - k) ≤ M ^ (ℓ - k) * Aibase + Cblow := by
-    have hsplit := count_split m θ c F₀
+    have hsplit := count_split m B F₀
     simp only at hsplit
     obtain ⟨hgood_le, hbad_le⟩ := hsplit
-    rw [good_event_count_const m θ c F₀ M hM] at hgood_le
-    rw [good_event_count_const m θ c F₀ M hM, hTall, hTgood] at hbad_le
+    rw [good_event_count_const_host m θ c F₀ M hM B hBroots hBgood] at hgood_le
+    rw [good_event_count_const_host m θ c F₀ M hM B hBroots hBgood, hTall, hTgood] at hbad_le
     exact ⟨hgood_le, hbad_le⟩
   obtain ⟨hAgood_le, hbad_le⟩ := hAgood
   -- `T_good ≤ T_all`, i.e. `Cbase·M^(ℓ-k) ≤ Cblow`.
@@ -527,5 +581,20 @@ theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m 
   rw [hpblow_eq, hpbase_eq]
   exact final ((Aibase : ℚ) / Cbase) ((Aiall : ℚ) / Cblow) ρ
     (by rw [← hpbase_eq]; exact hpbase0) (by rw [← hpbase_eq]; exact hpbase1) hρ0 hρ1 hlo hhi
+
+/-- **Reduced planted estimate** (`lem:planted-estimate`, equal non-root clones): the density of
+`F₀` in the planted blow-up differs from its density in the base by at most `1 - ρ`, where
+`ρ = M^(ℓ-k)·C(n-k, ℓ-k) / C(N-k, ℓ-k)` (`N = ∑ v, m v`) is the probability a uniform
+`(ℓ-k)`-sample of non-root blow-up vertices meets each clone class at most once.  The instance of
+`planted_estimate_host` at the host `B = blowupLabeledGraph m θ c`. -/
+theorem planted_estimate (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
+    (F₀ : LabeledGraph H (Fin ℓ)) (M : ℕ)
+    (hM : ∀ v, v ∉ Finset.image (fun t => θ t) Finset.univ → m v = M) :
+    |flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦blowupLabeledGraph m θ c⟧ : Flag H (Σ v : Fin n, Fin (m v)))
+       - flagDensity₁ (⟦F₀⟧ : Flag H (Fin ℓ)) (⟦baseLabeledGraph θ⟧ : Flag H (Fin n))|
+      ≤ 1 - (M ^ (ℓ - k) * ((n - k).choose (ℓ - k)) : ℚ)
+            / (((∑ v, m v) - k).choose (ℓ - k)) :=
+  planted_estimate_host m θ c F₀ M hM (blowupLabeledGraph m θ c) rfl
+    (fun _ _ _ _ => Iff.rfl)
 
 end FlagAlgebras.MetaTheory

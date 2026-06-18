@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 23 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 33 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -22,6 +22,18 @@ extensions. Soundness (`S_σ ⊆ Q_σ`) is §3's "support passes" lemma. The har
 a target `ψ ∈ Q_σ`, represents it by *in-class* finite flags, **blows them up** so the type can be
 *planted*, and shows — via weak convergence + Portmanteau — that the planted blow-ups put positive
 mass arbitrarily close to `ψ`, so `ψ ∈ S_σ`.
+
+**§6–§7** keep the same argument but change the blow-up. The independent blow-up of §5 replaces each
+vertex by an *edgeless* clone class; §6's complete blow-up replaces it by a *clique* and §7's
+substitution by an *arbitrary in-class* graph. All three are instances of one **generalised blow-up**
+`subBlowup G W` (a within-class family `W`). The crucial observation is that **off the diagonal**
+(distinct base vertices) the adjacency of `subBlowup` is the base adjacency `G`, identical for all
+three; and the planted estimate only ever evaluates densities on **transversals** (vertex sets
+meeting each clone class at most once, where the within-class edges are never seen). So `subBlowup`
+agrees with the independent blow-up on exactly the sets the §5 estimate inspects, and the whole §5
+pipeline carries over. The capstone `subst_root_plantable` is `clone_root_plantable` re-run over
+`subBlowup`, parameterised by an abstract *within-class blow-up closure* hypothesis; §6 supplies it
+with `W = ⊤` (cliques) and §7 with in-class fibres.
 
 ---
 
@@ -62,6 +74,32 @@ The capstone [`CloneClosed`](./CloneClosed.lean) imports, directly or transitive
 module except two**: `ProductTV` (superseded — see Deviation 1 in the README) and `ForbiddenIdeal`
 (the standalone §3 faithfulness result, not used as a lemma downstream). Both are reached only by
 the aggregator.
+
+The **§6–§7 layer** sits on top of §5, reusing it heavily (it depends on `CapstoneShared`,
+`BlowupSequence`, `WeakConvergence`, `BinomialRatio`, the host-parametric `PlantedEstimate`, and the
+`HeredClass` base — but *not* on the §5 capstone `CloneClosed`):
+
+```
+  §6–§7 construction + estimate        §6–§7 capstone + results
+  ─────────────────────────────        ────────────────────────
+  SubstitutionBlowup                   SubstitutionClosed
+   (subBlowup; good-event iso)          (subst_root_plantable —
+     │        │                          mirror of clone_root_plantable)
+  SubstitutionEstimate   [HeredClass]            │
+   (planted_*_sub)       (§5 base, reused)       ├── TrueClone   (§6 thm)
+     │      via              │                    ├── Substitution (§7 thm)
+     │  planted_estimate_host│                    └── ClusterGraph (§6 cor)
+     └──► SubstitutionSequence ──────────────────┘
+            (blowupFlagSeq_sub, base limit φ₀)
+```
+
+The §5 file `PlantedEstimate` was generalised *in place* to a host-parametric `planted_estimate_host`
+(its public `planted_estimate` is now a one-line instance, so §5 is unchanged), and the
+construction-agnostic capstone helpers were factored out of `CloneClosed` into the shared
+**[`CapstoneShared`](./CapstoneShared.lean)** module that both capstones import (so the §6–§7 capstone
+does *not* depend on the §5 one). The combinatorial counting (`CloneCount`/`CloneTotal`/`PlantedCount`),
+the measure machinery (`RootingUniform`/`WeakConvergence`/`MeasureUniqueness`), and `ConstrainedRep`
+are reused **verbatim**.
 
 ---
 
@@ -147,11 +185,17 @@ the aggregator.
   `exists_graph_embedding_of_flagDensity₁_ne_zero`: positive density of an unlabelled `D` in `H`
   yields a graph embedding `D.graph ↪g H.graph` — exactly what `CliqueFree.comap` consumes.
 
-* **[`GraphClassConstraint`](./GraphClassConstraint.lean)** — the hereditary clone-closed package.
-  The `GraphClass` structure (`Mem` + `comap` heredity + `clone_closed`), the derived `Constraint`
-  (`constraintOf`), the two consumption lemmas `mem_of_forbiddenFree` (forbidden-free ⟹ in class,
-  via `flagDensity_self = 1`) and `forbiddenFree_of_mem` (in class ⟹ forbidden-free, via the
-  containment bridge + `comap`), and the instance `cliqueFreeClass r`.
+* **[`HeredClass`](./HeredClass.lean)** — the **shared class framework** (used by §5, §6 and §7).
+  `graphFlag` (a graph as an `∅ₜ`-flag); the `HeredClass` structure (`Mem` + `comap` heredity, with
+  *no* closure assumption); the derived `Constraint` (`constraintOf`); and the two consumption
+  lemmas `mem_of_forbiddenFree` (forbidden-free ⟹ in class, via `flagDensity_self = 1`) and
+  `forbiddenFree_of_mem` (in class ⟹ forbidden-free, via the containment bridge + `comap`). These
+  never use any closure operation, so they serve every constrained class once.
+
+* **[`GraphClassConstraint`](./GraphClassConstraint.lean)** — the §5 clone-closure layer.
+  `GraphClass extends HeredClass` adding `clone_closed` (closure under independent blow-ups); thin
+  wrappers `constraintOf` / `mem_of_forbiddenFree` / `forbiddenFree_of_mem` over the `HeredClass`
+  versions (so the §5 capstone's call sites are unchanged); and the instance `cliqueFreeClass r`.
 
 * **[`ConstrainedRep`](./ConstrainedRep.lean)** — the **constrained representation theorem**
   `exists_constrained_flagSeq_limit` (the foundational new input; see README Deviation 2). A
@@ -173,11 +217,78 @@ the aggregator.
   limit `exists_blowup_limit`, and the two key properties `blowup_limit_mem_Q0`
   (`posHomPoint φ₀ ∈ Q0`) and `blowup_limit_type_pos` (`φ₀⟨σ⟩₀ ≥ 1/n^{n₀} > 0`).
 
+* **[`CapstoneShared`](./CapstoneShared.lean)** — the **construction-agnostic capstone toolkit**,
+  shared by the §5 and §6–§7 capstones (and reusable for §8+): the σ-rooting-measure-as-labelling-
+  count identity (`toProbMeasure_apply_eq_labeling_ratio`), closed coordinate cylinders
+  (`cyl`/`isClosed_cyl`), the finite-cylinder closure criterion
+  (`mem_closure_of_forall_finset_cylinder`), the asymptotic planted-gap `rhoInf`, and the
+  σ-labelling/embedding counting isos (`card_labelings_eq_card_embeddings`, `embeddingIsoCongr`,
+  `transportLabeled`, …). None of it mentions any specific blow-up.
+
 ### The capstone
 
 * **[`CloneClosed`](./CloneClosed.lean)** — `thm:clone-root-plantable` + `cor:clique-free`.
   `clone_root_plantable`, `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble`. Wires
-  everything above together (walkthrough below).
+  everything above together (walkthrough below), on top of `CapstoneShared` plus the §5-specific
+  `embeddingEquivBlowupEmbeddings` / `blowupFlagSeq_type_pos` / `planted_cylinder_mass`.
+
+### §6–§7 generalised blow-up
+
+* **[`SubstitutionBlowup`](./SubstitutionBlowup.lean)** — `def:complete-blow-up`. The generalised
+  blow-up `subBlowup G W` (within-class family `W`), `completeBlowup` (`W = ⊤`), the off-diagonal
+  agreement `subBlowup_adj_of_fst_ne`, the planted labelled graph `subBlowupLabeledGraph`, and the
+  good-event isomorphism `good_event_induces_iff_sub` (obtained by composing `BlowupFlag`'s
+  `blowupGoodIso` with the identity-on-a-transversal iso `subBlowupToIndepIso`).
+
+* **[`SubstitutionEstimate`](./SubstitutionEstimate.lean)** — §6 `lem:true-planted-estimate` / §7
+  `lem:general-planting-estimate` (planting is blind to the interior). `planted_mass_sub`
+  (planted-root probability `≥ (λ/2k)^k`, insensitive to `W`) and `planted_estimate_sub` (density
+  gap `≤ 1 − ρ`), the latter just `PlantedEstimate.planted_estimate_host` at
+  `B = subBlowupLabeledGraph`, with the good-event input `good_event_induces_iff_sub`.
+
+* The §6–§7 classes use the closure-free **[`HeredClass`](./HeredClass.lean)** base directly (see
+  the §2–§5 list above) — there is no §6/§7-specific class module. Cluster graphs are a `HeredClass`
+  that is *not* a `GraphClass`, which is exactly why heredity is factored out of clone-closure.
+
+* **[`SubstitutionSequence`](./SubstitutionSequence.lean)** — the §6–§7 base side: the uniform
+  generalised `(M+1)`-blow-up flag sequence `blowupFlagSeq_sub` (parameterised by a within-class
+  family `Wf`), its limit `exists_blowup_limit_sub`, and `blowup_limit_mem_Q0_sub` /
+  `blowup_limit_type_pos_sub`. `plantedIso_sub` shows the planted set still induces `σ` (distinct
+  base vertices ⟹ base adjacency).
+
+* **[`SubstitutionClosed`](./SubstitutionClosed.lean)** — the generalised capstone
+  `subst_root_plantable`: under a *within-class blow-up closure* hypothesis (`∀ Γ ∈ class, ∀ M,
+  ∃ W, subBlowup Γ W ∈ class`), `S_σ = Q_σ`. Mirrors `clone_root_plantable` line-for-line over
+  `subBlowup` (with `embeddingEquivBlowupEmbeddings_sub`, `planted_cylinder_mass_sub`), reusing the
+  shared `CapstoneShared` toolkit — it does **not** import the §5 capstone `CloneClosed`.
+
+### The unification (paper §7) and the §6–§7 results
+
+* **[`BlowupClosed`](./BlowupClosed.lean)** — the **common generalisation** of §5–§7. The
+  single-vertex blow-up `oneBlowup G v H` (`def:vertex-blowup`); the **blow-up-closure** property
+  `BlowupClosed` (`def:blow-up-closed` — for every member `G`, vertex `v`, and `N`, *some* order-`N`
+  interior `H` keeps `oneBlowup G v H` in the class); the iteration bridge `BlowupClosed.toUniform`
+  (`lem:blowup-iterate` — blowing up vertices one at a time yields a uniform full blow-up in the
+  class, the hypothesis `subst_root_plantable` consumes); and the unified theorem
+  `blowupClosed_root_plantable` (`thm:blowup-root-plantable`). The bridge rests on the iso
+  `oneBlowup_iso` (one-vertex blow-up = one-class sub-blow-up) and `Mem_congr` (membership is
+  iso-invariant). `GraphClass.toBlowupClosed` (clone-closed ⟹ blow-up-closed, edgeless interior)
+  lives here; `clone_root_plantable_blowup` re-derives §5 as a corollary.
+
+* **[`TrueClone`](./TrueClone.lean)** — §6 `thm:true-clone-root-plantable`. `TrueCloneClosed`
+  (complete-blow-up closure), `TrueCloneClosed.toBlowupClosed` (clique interior), and
+  `true_clone_root_plantable` — now a **corollary** of `blowupClosed_root_plantable`.
+
+* **[`Substitution`](./Substitution.lean)** — §7 `thm:substitution-root-plantable`.
+  `SubstitutionClosed` (substitution closure), `SubstitutionClosed.toBlowupClosed` (an in-class
+  interior of the right size, by infinitude), and `substitution_root_plantable` — a **corollary** of
+  `blowupClosed_root_plantable`. `rem:strictness`: substitution-closure (∀-fibre) is strictly
+  stronger than blow-up-closure (∃-fibre) and misses §5/§6.
+
+* **[`ClusterGraph`](./ClusterGraph.lean)** — §6 `cor:cluster-graphs`. Cluster graphs as the
+  `P₃`-free `HeredClass` `clusterClass`, the complete-blow-up adjacency `completeBlowup_adj_iff`,
+  true-clone-closure `clusterClass_trueCloneClosed`, hence `cluster_root_plantable` — root-plantable
+  although **not** clone-closed (nor substitution-closed).
 
 ---
 
@@ -227,3 +338,16 @@ Goal: `RootPlantable (constraintOf gc σ)`, i.e. `S_σ = Q_σ`. The inclusion `S
 `cor:clique-free` is then `clone_root_plantable (cliqueFreeClass r) σ`, with
 `clique_free_quotient_iff_ensemble` recovering the quotient/ensemble equivalence via
 `support_criterion`.
+
+### The §6–§7 capstone (`subst_root_plantable`)
+
+`subst_root_plantable` (in [`SubstitutionClosed`](./SubstitutionClosed.lean)) follows the **same six
+steps**, with three substitutions: (i) the base graph is fed to a *within-class blow-up closure*
+hypothesis to obtain a family `Wf` with `subBlowup Γ (Wf M) ∈ class` for every `M` (replacing
+`clone_closed`); (ii) the blow-up sequence is `blowupFlagSeq_sub Γ Wf` and the cylinder-mass crux is
+`planted_cylinder_mass_sub`, using `planted_estimate_sub` / `planted_mass_sub` /
+`embeddingEquivBlowupEmbeddings_sub` in place of their §5 namesakes; (iii) steps 4 and 6
+(weak convergence, Portmanteau + support) are **identical** — they never mention the construction.
+The three end results instantiate the closure hypothesis: `true_clone_root_plantable` with `W = ⊤`,
+`substitution_root_plantable` with in-class fibres, and `cluster_root_plantable` via
+`clusterClass_trueCloneClosed`.
