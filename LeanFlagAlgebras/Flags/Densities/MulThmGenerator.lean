@@ -224,7 +224,11 @@ elab "generate_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num forbid
   let flagSetHfreeName := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}")
   let flagSetHfreeEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_eq")
   let flagSetHfreeValEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_val_eq")
-  unless (← getEnv).contains flagSetHfreeEq.getId do
+  -- The forbid-free set may have been generated in the current namespace (the
+  -- generation commands emit unqualified names that pick up the surrounding
+  -- namespace), so resolve against both the current namespace and the root.
+  let ns ← getCurrNamespace
+  unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
     throwError s!"`generate_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
 forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 `generate_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_forbid_free_flags {k} {m} {hostN} {tag}`" else ""} first."
@@ -260,7 +264,7 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                   $(Quote.quote hostN)
                   (by rfl))
               rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
-                    (by rw [$flagSetHfreeEq:ident]; congr 1) (fun _ _ => rfl)]
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
               exact forbidEq_refl ($gIdent).toFinFlag _
@@ -278,7 +282,7 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                   $(Quote.quote hostN)
                   (by rfl))
               rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
-                    (by rw [$flagSetHfreeEq:ident]; congr 1) (fun _ _ => rfl)]
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
               exact forbidEq_refl ($gIdent).toFinFlag _

@@ -186,7 +186,7 @@ elab_rules : tactic
       let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
       evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
       evalTactic (← `(tactic|
-        rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; congr 1) (fun _ _ => rfl)]))
+        rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; try congr 1) (fun _ _ => rfl)]))
       evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))
       evalTactic (← `(tactic| simp [unlabel_emptyType]))
       evalTactic (← `(tactic| simp [default, flagDensity_empty]))
