@@ -1,0 +1,515 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\btt}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\bv}[1]{\llbracket #1 \rrbracket}
+\newcommand{\feq}{\mathrel{=_{[F]}}}
+
+\theoremstyle{definition}
+\newtheorem*{principle}{Principle}
+\newtheorem*{observation}{Observation}
+
+% ---- Lean code listing style -------------------------------------------
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, noncomputable, syntax, elab, elab_rules,
+    macro, macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat, decide, native_decide,
+    fin_cases, norm_num, exact, set_option, refine},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  inputencoding=utf8,
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{gray!6},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=0.8\baselineskip,
+  belowskip=0.8\baselineskip
+}
+% -----------------------------------------------------------------------
+
+\title{The Forbid-Free Flag Framework:\\ Design and Rationale}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note explains the \emph{forbid-free} layer of the Lean flag-algebra
+development: the machinery that, when a proof works under a forbidden-subgraph
+hypothesis (triangle-free, $K_4$-free, $\dots$), generates and reasons with only
+the flags that survive that hypothesis, rather than the full flag enumeration.
+It is meant to be read on its own. It first recalls the small amount of
+flag-algebra background it needs, then develops the design in the order the
+pieces depend on one another, and along the way records the observations and
+design decisions that shaped it---in particular \emph{where} the speed-up
+actually comes from, why the flag indexing is what it is, and the trade-offs of
+a more aggressive ``true pruning'' that we deliberately did not build.
+Identifier names follow the repository convention \btt{_n_k_m_i}: $n$ vertices,
+type $\sigma$ the $k$-vertex graph of index $m$ (\btt{_0_0} is the empty type
+$\emptyset_t$), enumeration index $i$.
+\end{abstract}
+
+\tableofcontents
+
+\section{Background and motivation}\label{sec:motivation}
+
+A flag-algebra density proof works by expanding the quantity of interest in a
+basis of \emph{flags} of some fixed size $n$, and then bounding the resulting
+linear (or, with a semidefinite certificate, quadratic) combination. The
+repository realises this concretely: for each flag it generates a named Lean
+constant \btt{Flag_n_k_m_i} (and its quotient \btt{FlagAlgebra_n_k_m_i}),
+together with the bridging lemmas a proof needs---how the flag unlabels, how it
+projects downward, how products of smaller flags expand into it. All of this is
+produced by elaboration-time \emph{generation commands} (\btt{generate_flags},
+\btt{generate_empty_typed_flags}) that enumerate the isomorphism classes,
+deduplicate them, and emit the constants with machine-checked bridging lemmas.
+
+The number of flags grows quickly: there are $11$ unlabeled graphs on $4$
+vertices, $34$ on $5$, $156$ on $6$, $1044$ on $7$, and the labeled (typed)
+counts are larger still. Generating every flag---each with a kernel-checked
+\btt{type_embed} proof, a \btt{downward} lemma, and an entry in the completeness
+argument---is the dominant cost of setting up a proof, and at $n \ge 6$ it is
+the difference between a proof that compiles and one that does not.
+
+Many extremal problems are stated under a \emph{forbidden subgraph}: maximise
+edge density among triangle-free graphs (Mantel), among $K_r$-free graphs
+(Tur\'an), and so on. Under such a hypothesis the flags that \emph{contain} the
+forbidden graph $H$ carry no information: they are identically zero in the
+relevant conditioned algebra. So in principle we never need them. The
+forbid-free framework makes that principle operational:
+
+\begin{principle}
+Under a forbidden subgraph $H$, generate only the $H$-free flags, prove they are
+\emph{complete} (they account for everything that survives the forbidden
+relation), and route every proof bridge through that smaller set.
+\end{principle}
+
+The rest of this note is about turning that one sentence into something that
+both type-checks and is actually faster.
+
+\section{The vanishing principle}\label{sec:vanishing}
+
+The semantic foundation already existed in \btt{Forbid/Basic.lean} before the
+forbid-free layer was built; we recall it because everything downstream keys off
+one predicate it produces.
+
+Write $f \feq g$ (\btt{forbidEq}, notation \btt{=[F]}) for the relation ``$f$ and
+$g$ agree almost surely under random homomorphisms drawn conditioned on the
+forbidden flag $F$ having density zero.'' It is an additive, scalar-linear
+congruence. The key fact is that a flag which \emph{does} contain $F$ dies:
+
+\begin{lstlisting}
+theorem basisVector_forbidEq_zero (F_forbid : FinFlag emptyT) (F : FinFlag sigma)
+    (hF : flagDensity1 F_forbid.2 (unlabel F.2) > 0) : llbracket basisVector F rrbracket =[F_forbid] 0
+\end{lstlisting}
+
+Feeding this into the ordinary size-$\ell$ expansion of a flag (resp.\ a product
+of flags) and discarding the vanishing terms yields the two lemmas the whole
+framework is built to consume:
+\[
+  \bv{\mathsf{bv}\,F}
+  \feq
+  \!\!\sum_{\substack{F' : \mathrm{FlagWithSize}\,\sigma\,\ell \\[1pt]
+        \mathrm{flagDensity}_1\, F\, (\mathrm{unlabel}\,F') = 0}}\!\!
+        \bigl(\mathrm{flagDensity}_1\, F.2\, F'\bigr)\cdot \bv{\mathsf{bv}\,\langle\ell,F'\rangle},
+\]
+and analogously \btt{basisVector_quot_mul_forbidEq_sum} for a product, with
+$\mathrm{flagDensity}_2$ in place of $\mathrm{flagDensity}_1$. The sum ranges
+\emph{only} over the flags $F'$ whose forbidden-density is zero.
+
+\begin{observation}[The linchpin predicate]
+The index set of these expansions is
+\[
+   \mathrm{univ}.\mathrm{filter}\;\bigl(\lambda F'.\;
+     \mathrm{flagDensity}_1\, F_{\mathrm{forbid}}.2\,(\mathrm{unlabel}\,F') = 0\bigr).
+\]
+Call the body the \emph{forbid-free predicate} $p$. It is a density-based,
+\emph{analytic} statement (``$F$ occurs in $F'$ with density $0$''), not an
+\emph{a priori} combinatorial one. Every design decision below is organised so
+that the generated $H$-free flag set is provably equal to exactly this
+$\mathrm{univ}.\mathrm{filter}\,p$, because that is what lets a bridge rewrite an
+expansion's sum directly onto the named generated constants.
+\end{observation}
+
+\section{Forbid-free generation and filtered completeness}\label{sec:generation}
+
+\paragraph{The first design decision: stay in the full algebra.}
+We do \emph{not} build a separate ``$H$-free flag algebra'' with its own type,
+operations, and metatheory. We stay inside the existing \btt{FlagAlgebra sigma}
+and the relation $\feq$, and change only \emph{which flag constants we bother to
+generate}. The cost of a separate algebra (re-proving the entire flag-algebra
+toolkit over it) would dwarf any generation savings, and---more importantly---it
+would not compose with the existing bridges and certificates. So the forbid-free
+layer is additive: it sits on top of the ordinary flags.
+
+\paragraph{The completeness we must prove.}
+For the generated $H$-free set \btt{flagSetHfree} to be usable by the bridges, it
+must be proved equal to the linchpin set, in exactly that form:
+\begin{lstlisting}
+theorem flagSetHfree_n_k_m_F_eq :
+    flagSetHfree_n_k_m_F = Finset.univ.filter (fun F' => flagDensity1 F.toFinFlag.2 (unlabel F') = 0)
+\end{lstlisting}
+Matching the predicate verbatim is the whole point: a bridge can then take the
+expansion of Section~\ref{sec:vanishing}, whose sum is over
+$\mathrm{univ}.\mathrm{filter}\,p$, and \btt{rw} it onto \btt{flagSetHfree}.
+
+\paragraph{The commands.}
+Two commands generate the constants and prove this completeness:
+\begin{itemize}
+  \item \btt{generate_forbid_free_empty_typed_flags n Forbid} --- the empty-typed
+        ($k=m=0$) flags on $n$ vertices;
+  \item \btt{generate_forbid_free_flags n k m Forbid} --- the $\sigma$-typed
+        analogue (signature leads with the flag size $n$, matching
+        \btt{generate_flags n k m}).
+\end{itemize}
+Each emits only the $H$-free flag constants, their \btt{unlabel}/\btt{downward}
+bridges, the set \btt{flagSetHfree}, the completeness lemma above, and a
+\btt{flagSetHfree_..._val_eq} stating that the set's underlying multiset is the
+explicit list of named free constants (the bridges need both: \btt{_eq} to
+recognise the set, \btt{_val_eq} to expand a sum over it into named terms).
+
+\paragraph{How completeness is proved (Phase 1).}
+The generator already proves the \emph{full} completeness
+$\btt{flagSet} = \mathrm{univ}$ (\btt{genFlagSet_eq_univ}). The forbid-free
+completeness is then obtained by \emph{filtering} that:
+\begin{enumerate}
+  \item a single \btt{native_decide} checks that the full Lean enumeration,
+        filtered by an executable $H$-freeness test, equals the explicit list of
+        free constants;
+  \item filtering commutes with \btt{toFinset} and with \btt{= univ}, giving
+        $\btt{flagSetHfree} = \mathrm{univ}.\mathrm{filter}\,p$.
+\end{enumerate}
+The executable $H$-freeness test routes through the computable
+\btt{sym2EmptyTypeFlagDensity1} (the noncomputable \btt{flagDensity1} cannot be
+run by \btt{native_decide} directly) and is reconciled with the analytic
+predicate by \btt{flagDensity1_eq_sym2EmptyTypeFlagDensity1}.
+
+\paragraph{Typed vs.\ empty-typed, and the \texttt{toUnderlying} bridge.}
+$H$-freeness is a property of the \emph{underlying graph}: a $\sigma$-typed flag
+is $H$-free iff the graph obtained by forgetting its labelling is. To express
+this we added a computable forgetful map and its compatibility lemma:
+\begin{lstlisting}
+def Sym2Flag.toUnderlying (S : Sym2Flag sigma n) : Sym2EmptyTypedFlag n
+theorem Sym2Flag.unlabel_toFlag_eq (S : Sym2Flag sigma n) :
+    unlabel (S.toFlag) = (S.toUnderlying).toFlag
+\end{lstlisting}
+With these, the typed forbid-free predicate is decided on the underlying graph,
+and the typed completeness reuses the empty-typed reasoning. (At a size where the
+ordinary \btt{FlagDef} already generated every flag, \btt{elabUnlessDefined}
+makes the forbid-free command \emph{reuse} those constants rather than redefine
+them; see Section~\ref{sec:indexing}.)
+
+\section{The forbid bridges}\label{sec:bridges}
+
+A flag-algebra proof expands flag-algebra elements in three places, and each had
+a bridge that built the \emph{full} flag set and dropped the forbidden terms with
+\btt{simp}. We reworked all three to consume \btt{flagSetHfree} directly:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+What expands & Ordinary bridge & Forbid-free bridge \\
+\midrule
+product of flags & \btt{generate_mul_theorems} & \btt{generate_forbid_free_mul_theorems} (command)\\
+the unit $1$     & \btt{expand_one_at}         & \btt{expand_one_hfree_at} (tactic)\\
+a single flag    & \btt{flag_expand}           & \btt{flag_expand_hfree} (tactic)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Each forbid-free bridge follows the same skeleton: apply the relevant restricted
+expansion from Section~\ref{sec:vanishing}, rewrite its sum onto
+\btt{flagSetHfree}, expand to the named constants via \btt{_val_eq}, and close.
+
+\paragraph{A subtlety worth recording: decidability instances.}
+The naive step ``\btt{rw [<- flagSetHfree_eq]} to turn the expansion's
+$\mathrm{univ}.\mathrm{filter}\,p$ into \btt{flagSetHfree}'' \emph{fails}, and the
+reason is instructive. The filter in the expansion lemma and the filter in
+\btt{flagSetHfree_eq} carry different \btt{DecidablePred} instances (one arises
+from an abstract $F_{\mathrm{forbid}}$ later specialised, the other is synthesised
+for the concrete forbidden graph). \btt{Decidable} is \emph{data}, not a
+proof-irrelevant \btt{Prop}; two instances are propositionally equal
+(\btt{Subsingleton}) but not definitionally so, so \btt{rw}---which matches up to
+syntactic/defeq equality---does not see them as the same term. The robust pattern is
+to rewrite the \emph{set} with a congruence that discharges the instance gap:
+\begin{lstlisting}
+rw [Finset.sum_congr (s2 := flagSetHfree) (by rw [flagSetHfree_eq]; try congr 1) (fun _ _ => rfl)]
+simp only [Finset.sum_eq_multiset_sum, flagSetHfree_val_eq]
+simp                       -- evaluates the list and the (simp-tagged) density lemmas
+exact forbidEq_refl _ _
+\end{lstlisting}
+Here \btt{congr 1} reduces the residual to the instance equality, which closes by
+subsingleton; \btt{try} is needed because in the empty-typed case the instances
+\emph{do} coincide and the \btt{rw} already closes the goal, so \btt{congr 1}
+would error on no goals. (Two further bridge-implementation gotchas, both fixed:
+the generation commands emit unqualified names that pick up the surrounding
+\btt{namespace}, so cross-command ``does this lemma exist?'' checks must look up
+both the current namespace and the root; and \btt{Finset.sum_eq_multiset_sum}
+must be applied with \btt{simp only}, not \btt{rw}, because its higher-order
+pattern $\sum_{x}f\,x$ defeats \btt{rw}'s matcher.)
+
+\section{The completeness wall, and pruned generation}\label{sec:pruned}
+
+\paragraph{The wall.}
+Phase 1's completeness \btt{native_decide} reduces the \emph{full} enumeration.
+For empty-typed flags this is fine up to $n=6$ (the enumeration has $156$
+elements; it runs in under a minute). For \emph{typed} flags at $n=6$ it is not:
+the typed enumeration \btt{genFlagsOrdered sigma 6} has on the order of $900$
+labeled graphs before deduplication, and the \btt{native_decide} goal
+\btt{(genFlagsOrdered sigma 6).filter isHfree = [free list]} forces the elaborator
+to manipulate that whole object as a term. It times out at the \btt{isDefEq}
+heartbeat limit after roughly $41$ minutes. Phase 1 filtering cannot avoid this:
+proving ``the free list equals the full enumeration filtered'' inherently names
+the full enumeration.
+
+\paragraph{The insight that breaks the wall.}
+Two facts combine. First, \emph{a typed flag is $H$-free iff its underlying graph
+is}. Second, the generator already builds typed flags as
+\btt{labeledOfGraph} applied to the \emph{underlying-graph} enumeration
+\btt{genSym2Graphs n}. So instead of building all typed flags and filtering, we
+can filter at the cheap \emph{graph} level---\btt{genSym2Graphs 6} has only $156$
+elements, of which $38$ are $K_3$-free---and build typed flags only over the
+surviving $38$ graphs. The expensive labeled deduplication then runs over $\sim
+111$ flags instead of $\sim 900$, and the corresponding \btt{native_decide}
+finishes in about two minutes.
+
+\paragraph{The construction and its completeness.}
+We added (in \btt{ForbidFreeGenerator.lean}) a generic pruned generator and its
+completeness theorem:
+\begin{lstlisting}
+def genLabeledGraphsHfree (sigma) (n) (q : Sym2Graph n -> Bool) : List (Sym2LabeledGraph sigma n)
+  -- (genSym2Graphs n).filter q  |> flatMap (labeledOfGraph sigma) |> keyed-dedup
+def genFlagsHfree (sigma) (n) (q) : List (Sym2Flag sigma n)
+
+theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n -> Bool) (p : Sym2Flag sigma n -> Bool)
+    (hq : forall {G G'}, G ~sf G' -> q G = q G')                      -- q iso-invariant
+    (hcompat : forall Glab, p (mk Glab) = q (underlying Glab)) :       -- p agrees with q on underlyings
+    (genFlagsHfree sigma n q).toFinset = Finset.univ.filter (fun F => p F = true)
+\end{lstlisting}
+The completeness is a membership argument that mirrors the existing
+\btt{genFlagSet_eq_univ}, threading the predicate through the \emph{existing}
+\btt{genSym2Graphs_complete} (every graph is isomorphic to a generated
+representative). It reuses the existing deduplication-completeness lemmas and
+needs only two new small facts (\btt{foldl_dedupStepL_subset}: dedup survivors
+come from the input; \btt{mem_labeledOfGraph_underlying}: a labeled graph built
+over $G$ has underlying graph $G$).
+
+\begin{observation}[What we deliberately avoided]
+A ``textbook'' pruned generation would never enumerate the forbidden graphs at
+all, by augmenting only $H$-free representatives. Its completeness would require
+a \emph{vertex-deletion monotonicity} lemma (deleting a vertex from an $H$-free
+graph keeps it $H$-free), an augmentation recursion restricted to $H$-free
+classes, and a bridge between combinatorial non-containment and the analytic
+density-zero predicate. The graph-level-filter design needs \emph{none} of these:
+$q$ is the density predicate itself, its iso-invariance is structural (it factors
+through the quotient $\bv{\cdot}$), and completeness reuses the unrestricted
+\btt{genSym2Graphs_complete}. This is why the framework filters rather than truly
+prunes; Section~\ref{sec:truepruning} discusses the trade-off.
+\end{observation}
+
+The typed command's completeness was then re-wired to use this: a tractable
+\btt{native_decide} establishes
+\btt{sym2FlagSetHfree = (genFlagsHfree sigma n q).toFinset}, and
+\btt{genFlagsHfree_toFinset_eq} supplies the rest (with \btt{hq} discharged by
+\btt{Quotient.sound} and \btt{hcompat} by \btt{rfl} through \btt{toUnderlying}).
+The full-enumeration \btt{native_decide} is gone. The empty-typed command is left
+as-is, since its enumeration is small enough.
+
+\section{Where the speed-up actually comes from}\label{sec:speedup}
+
+This point caused genuine confusion and is worth stating carefully, because the
+pruned command \emph{still enumerates every flag}.
+
+To choose which indices are $H$-free, the command runs \btt{evalFlagDataRows k m
+n}, which computes the data for \emph{all} $(k,m,n)$ flags. So the all-flags
+enumeration does happen. But it happens as \emph{compiled native code producing a
+plain list} that the macro reads---there is no proof obligation attached, and at
+$n=6$ it costs seconds. That step was never the bottleneck.
+
+The bottleneck was the \emph{kernel-checked completeness proof}. Doing the
+enumeration as a proposition about the full \btt{genFlagsOrdered sigma 6} term
+(so the elaborator and kernel must grind \btt{isDefEq}/\btt{reduceBool} over it)
+is enormously more expensive than running the same algorithm as data. Pruning
+moves the proof's heavy lifting onto the small filtered construction
+\btt{genFlagsHfree}, and supplies the link to ``all flags'' through the
+once-proved \emph{general} theorem \btt{genFlagsHfree_toFinset_eq}, so the kernel
+never has to process the full typed enumeration. A secondary saving is real but
+smaller: the emitted, kernel-checked \emph{declarations}---each flag's constants,
+its \btt{type_embed} \btt{decide}, its \btt{downward} lemma---are produced only
+for the $H$-free indices.
+
+\begin{principle}[Slogan]
+The win is not ``enumerate fewer flags as data.'' It is ``do not make the kernel
+verify a proof about the full enumeration, and only emit kernel-checked
+declarations for the flags you keep.''
+\end{principle}
+
+\paragraph{Honest boundary.} The one cost the current approach does \emph{not}
+remove is the compiled, elaboration-time enumeration over all flags. At $n=6$
+that is negligible. As $n$ grows the $H$-free fraction shrinks (roughly
+$38/156$ at $n=6$, $\sim107/1044$ at $n=7$) and that full enumeration---together
+with its $O(g^2)$ deduplication---could itself become the limiting factor. Only a
+true pruned augmentation would remove it.
+
+\section{The indexing scheme}\label{sec:indexing}
+
+The index $i$ in \btt{Flag_n_k_m_i} is the flag's \emph{rank in the canonical
+sort of all $(k,m,n)$ flags} (sorted by \btt{labeledFlagKey}). The forbid-free
+command keeps these original indices and simply omits the forbidden ones, so the
+generated free flags carry \emph{non-contiguous} indices with gaps. For example
+the $K_3$-free $4$-vertex flags of type \btt{2_0} are
+\[
+  \btt{Flag_4_2_0_0},\,\dots,\,\btt{Flag_4_2_0_10},\,
+  \btt{Flag_4_2_0_13},\,\btt{Flag_4_2_0_14},\,\btt{Flag_4_2_0_15},\,\btt{Flag_4_2_0_18}
+\]
+--- the indices $11,12,16,17$ are absent (those flags contain a triangle). They
+are \emph{not} renumbered to $0,\dots,14$.
+
+This is a deliberate, load-bearing choice: \btt{Flag_n_k_m_i} denotes the same
+flag no matter which command emitted it. That single fact is what lets the
+forbid-free layer be additive rather than a fork:
+\begin{itemize}
+  \item at sizes the ordinary \btt{FlagDef} already covers, the forbid-free
+        command's \btt{elabUnlessDefined} finds the constants and \emph{reuses}
+        them, instead of creating a clashing second definition;
+  \item the per-flag \btt{unlabel} lemma refers to its underlying flag by that
+        flag's (full-enumeration) index, and the density/multiplication theorems
+        refer to flags by index---all of which line up only because the indexing
+        is shared;
+  \item the indices agree with the Flagmatic certificate numbering the rest of
+        the pipeline assumes.
+\end{itemize}
+
+\section{Design discussion: ``true'' pruned augmentation}\label{sec:truepruning}
+
+It is natural to ask whether we should go further and never generate the
+forbidden flags at all. The honest analysis follows; the conclusion is that the
+current ``filter, don't prune'' design is the better-engineered point on the
+curve, and that true pruning is a \emph{conditional future} step.
+
+\paragraph{It forfeits the shared indexing.}
+The index $i$ is a flag's rank among \emph{all} flags. Computing that rank
+requires knowing how many flags---forbidden or not---sort before it, which means
+knowing the forbidden flags. A true pruned augmentation, by construction, never
+produces (or even keys) the forbidden flags, so it can recover the free flags'
+\emph{relative} order but not their absolute rank. Its natural output is a
+\emph{contiguous, free-only} indexing, which denotes different flags than the
+current scheme; and the full rank is genuinely unrecoverable without
+re-enumerating the forbidden flags. So true pruning and the shared indexing of
+Section~\ref{sec:indexing} are mutually exclusive.
+
+\paragraph{Advantages of true pruning.}
+\begin{itemize}
+  \item It removes the one residual cost of Section~\ref{sec:speedup}: generation
+        would scale with the number of $H$-free flags, not the total. This is what
+        would matter at $n \ge 7$, where the free fraction is small and even the
+        compiled full enumeration is heavy.
+  \item It is conceptually cleaner---``generate exactly the admissible flags.''
+  \item Its free-only numbering may align better with Flagmatic's own
+        forbid-aware flag numbering (Flagmatic typically numbers only admissible
+        flags), which could simplify certificate ingestion.
+\end{itemize}
+
+\paragraph{Disadvantages of true pruning.}
+\begin{itemize}
+  \item \emph{Loss of shared indexing} (above): name clashes with \btt{FlagDef},
+        broken cross-references (\btt{unlabel} targets, density/mul theorems), and
+        a certificate re-indexing problem. One would need either a separate
+        \btt{FlagHfree_*} namespace or a consistent project-wide re-index.
+  \item \emph{A much harder completeness proof}: the vertex-deletion monotonicity
+        lemma, the $H$-free-restricted augmentation recursion, and the
+        combinatorial-to-analytic ($H$-free $\Leftrightarrow$ density $0$) bridge
+        --- exactly the machinery the current design avoids by reusing
+        \btt{genSym2Graphs_complete}.
+  \item \emph{More code and more proof risk} for a payoff that is not yet on the
+        table.
+\end{itemize}
+
+\paragraph{Verdict.}
+The indexing incompatibility is decisive rather than incidental: the current
+scheme's value is precisely that the forbid-free machinery sits \emph{on top of}
+the existing flags and certificates instead of forking them. Treat true pruning
+as worthwhile only once (a)~$n \ge 7$ is a real target and (b)~the
+elaboration-time enumeration---not the proofs---is measured to be the
+bottleneck. If that day comes, the cleanest design is to let the pruned generator
+renumber to free-rank under its own names and re-express the certificate in
+free-rank (likely Flagmatic's native numbering anyway), rather than trying to
+preserve full-enumeration indices.
+
+\section{Status, validation, and where things live}\label{sec:status}
+
+\paragraph{Validated.} Empty-typed generation works through $n=6$; typed
+generation works through $n=6$ (the $K_3$-free type-\btt{1_0} case builds in
+about $1$m$48$s, versus the $41$-minute timeout of the unpruned approach). All
+three bridges are exercised end-to-end by \btt{Flagmatic/MantelHfree.lean}, a
+forbid-free formalisation of Mantel's theorem that proves the $1/2$ bound using
+forbid-free generation, the forbid-free multiplication theorems, an
+\btt{flag_expand_hfree} objective expansion, and \btt{expand_one_hfree_at}; it
+builds green and leaves the ordinary \btt{Mantel.lean} untouched. (At $n=3$ there
+is no generation saving---\btt{FlagDef} already has every flag---so \btt{MantelHfree}
+validates the bridges rather than the speed-up; the speed-up is what makes the
+$n=6$ typed generation feasible at all.)
+
+\paragraph{API summary.} The generation API consistently leads with the flag
+size $n$:
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Command / tactic & Role \\
+\midrule
+\btt{generate_forbid_free_empty_typed_flags n Forbid} & empty-typed $H$-free flags + completeness \\
+\btt{generate_forbid_free_flags n k m Forbid}         & $\sigma$-typed $H$-free flags + completeness \\
+\btt{generate_forbid_free_mul_theorems patN hostN k m Forbid} & $H$-free product expansions \\
+\btt{expand_one_hfree_at n Forbid}                    & expand the unit over $H$-free flags \\
+\btt{flag_expand_hfree n Forbid}                      & expand one flag over $H$-free flags \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{File map.}
+\begin{itemize}
+  \item \btt{LeanFlagAlgebras/Forbid/Basic.lean} --- $\feq$, the vanishing lemma,
+        and the restricted expansions (Section~\ref{sec:vanishing}).
+  \item \btt{LeanFlagAlgebras/Flags/ForbidFreeGenerator.lean} --- the two
+        generation commands, the \btt{toUnderlying} bridge, and the pruned
+        generation + \btt{genFlagsHfree_toFinset_eq} (Sections~\ref{sec:generation},
+        \ref{sec:pruned}).
+  \item \btt{LeanFlagAlgebras/Flags/Densities/MulThmGenerator.lean} ---
+        \btt{generate_forbid_free_mul_theorems}.
+  \item \btt{LeanFlagAlgebras/API/Basic.lean} --- \btt{expand_one_hfree_at}.
+  \item \btt{LeanFlagAlgebras/API/FlagExpand.lean} --- \btt{flag_expand_hfree}.
+  \item \btt{LeanFlagAlgebras/Flagmatic/MantelHfree.lean} --- the worked example.
+\end{itemize}
+
+\end{document}
