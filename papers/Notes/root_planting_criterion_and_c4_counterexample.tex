@@ -2023,26 +2023,21 @@ without assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
-$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings of
-$\sigma$ into a finite graph $H$.  We say that $\K$ has the
-\emph{finite local planting property at $\sigma$} if the following holds.
-
-For every integer $m\ge k$ and every $\eps>0$, there are an integer
-$n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ such that the
-following holds.  For every finite $\sigma$-flag $(G,\theta)$ in $\K$ with
-$|G|\ge n_0$, there exist a graph $H\in\K$ with $|H|\ge |G|$ and a subset
-\[
-  \Theta\subseteq \Emb_\sigma(H)
-\]
-such that
-\[
-  |\Theta|\ge \delta |V(H)|^k,
-\]
-and for every embedding $\widehat\theta\in\Theta$ and every ambient
-$\sigma$-flag $F$ with $|F|\le m$,
-\[
-  \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|<\eps .
-\]
+$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings
+$\sigma\to H$.  We say that $\K$ has the \emph{finite local planting property at
+$\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an integer
+$n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
+property. Every finite $\sigma$-flag $(G,\theta)$ in $\K$ with $|G|\ge n_0$ admits a graph
+$H\in\K$ and a set $\Theta\subseteq\Emb_\sigma(H)$ such that:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item $|H|\ge |G|$;
+  \item $|\Theta|\ge \delta |V(H)|^k$;
+  \item for every $\widehat\theta\in\Theta$ and every ambient $\sigma$-flag $F$
+        with $|F|\le m$,
+        \[
+          \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|<\eps .
+        \]
+\end{enumerate}
 \end{definition}
 
 \begin{theorem}[Finite local planting implies root-plantability]\label{thm:finite-local-planting}
