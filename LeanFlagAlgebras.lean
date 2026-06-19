@@ -29,7 +29,6 @@ import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 
 -- Flags
 import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.Flags.FlagDef
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 

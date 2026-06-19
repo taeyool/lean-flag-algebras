@@ -124,12 +124,29 @@ def natPairsToEdgesTerm (numVerts : ℕ) (edges : List (Nat × Nat)) :
         ($(Quote.quote uv.2) : Fin $(Quote.quote numVerts))))
   `([ $terms,* ])
 
-/-- Elaborate `cmd` only when `name` is not already declared, so re-running a
-`generate_*` line is a no-op (the macros stay idempotent). Replaces the repeated
-`let env ← getEnv; if ¬ env.contains … then elabCommand …` guard at every
-generated declaration. -/
+/-- True if `name` is declared in the current namespace (as `getCurrNamespace ++ name`)
+or at the root. The `generate_*` macros emit *unqualified* names that pick up the
+surrounding namespace, so a prerequisite/existence check (e.g. "is the underlying
+empty-typed flag present?") must consult both: the locally-generated copy and any
+root-level one. -/
+def isDeclaredInScope (name : Name) : CommandElabM Bool := do
+  let ns ← getCurrNamespace
+  let env ← getEnv
+  return env.contains (ns ++ name) || env.contains name
+
+/-- Elaborate `cmd` only when `name` is not already declared *in the current
+namespace*, so re-running a `generate_*` line is a no-op (the macros stay
+idempotent). Generated declarations pick up the surrounding namespace, so this
+guard checks the namespace-qualified name `getCurrNamespace ++ name` rather than
+the root name: checking the root would (a) wrongly *skip* local generation when a
+same-named root constant happens to exist (e.g. while migrating off a global flag
+library) and (b) fail to detect the in-namespace re-declaration when two
+`generate_*` calls share a type/underlying constant within one namespace. At the
+root namespace `getCurrNamespace` is anonymous, so this coincides with the old
+root check. -/
 def elabUnlessDefined (name : Name) (cmd : Syntax) : CommandElabM Unit := do
-  if ¬ (← getEnv).contains name then
+  let ns ← getCurrNamespace
+  if ¬ (← getEnv).contains (ns ++ name) then
     elabCommand cmd
 
 /-- Emit the three declarations that bridge a finset of `Sym2*Flag`s to the
@@ -327,7 +344,7 @@ elab "generate_flags" nStx:num kStx:num mStx:num : command => do
   -- `Flag_n_0_0_i`, which auto-binds as an opaque variable and fails with a cryptic
   -- `Quotient.sound (flagEqv.refl …)` type mismatch only *after* enumerating all flags
   -- (minutes, at large n). Fail fast here with an actionable message instead.
-  unless (← getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
+  unless (← isDeclaredInScope (Name.mkSimple s!"Flag_{n}_0_0_0")) do
     throwError s!"`generate_flags {n} {k} {m}` requires the underlying empty-typed flags \
 `Flag_{n}_0_0_i`, which are produced by `generate_empty_typed_flags {n}`. \
 Add `generate_empty_typed_flags {n}` before this command."

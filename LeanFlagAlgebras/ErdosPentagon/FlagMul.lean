@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
+import LeanFlagAlgebras.ErdosPentagon.FlagDef
 
 /-! # Erdős pentagon problem: generated flag products
 

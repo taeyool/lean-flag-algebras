@@ -1,7 +1,7 @@
 -- Auto-generated from Flagmatic certificate (description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545').
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
 
-import LeanFlagAlgebras.Flags.FlagDef
+import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.API.Basic
@@ -17,6 +17,24 @@ open SimpleGraph Matrix
 open FlagAlgebras.Compute
 
 namespace K5turan
+
+-- Locally generate the flags this example needs (formerly from the global
+-- `Flags/FlagDef.lean`): the empty-typed underlying flags (n = 4/5), the forbidden
+-- graph `K5`, and the σ-typed (3-labelled) pattern/host flags. Flag generation comes
+-- first, so the density and multiplication theorem generators below resolve to these
+-- local constants.
+generate_empty_typed_flags 2
+generate_empty_typed_flags 4
+generate_empty_typed_flags 5
+generate_complete_graph 5 33
+generate_flags 4 3 0
+generate_flags 4 3 1
+generate_flags 4 3 2
+generate_flags 4 3 3
+generate_flags 5 3 0
+generate_flags 5 3 1
+generate_flags 5 3 2
+generate_flags 5 3 3
 
 generate_forbid_density_theorems 5 K5
 generate_flag_pair_density_theorems 4 5 3 0 K5

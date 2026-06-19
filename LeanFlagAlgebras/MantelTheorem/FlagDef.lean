@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.Flags.FlagDef
+import LeanFlagAlgebras.Flags.FlagGenerator
 
 /-! # Mantel's theorem: flag definitions
 
@@ -11,6 +11,18 @@ library; the commented `abbrev`s document the intended combinatorial name
 (`K2`, `O3`, `K3`) are left active. -/
 
 namespace MantelTheorem
+
+-- Locally generate the flags this development uses (formerly imported from the global
+-- `Flags/FlagDef.lean`): the empty-typed flags of sizes 0–3 and the σ-typed (1-labelled)
+-- flags of sizes 1–3. These produce the `MantelTheorem.Flag_*` / `MantelTheorem.FlagAlgebra_*`
+-- constants the abbreviations below and the rest of the development refer to.
+generate_empty_typed_flags 0
+generate_empty_typed_flags 1
+generate_empty_typed_flags 2
+generate_empty_typed_flags 3
+generate_flags 1 1 0
+generate_flags 2 1 0
+generate_flags 3 1 0
 
 -- noncomputable abbrev K0_flag := Flag_0_0_0_0
 -- noncomputable abbrev K1_flag := Flag_1_0_0_0

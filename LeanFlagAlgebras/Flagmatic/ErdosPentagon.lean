@@ -3,7 +3,7 @@
 -- Matrix defs (M_t, dM_t, LM_t) and PSD proofs are filled in; the main
 -- theorem body still needs to be written (see TODO at the bottom).
 
-import LeanFlagAlgebras.Flags.FlagDef
+import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
@@ -16,6 +16,22 @@ open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
 
 namespace ErdosPentagon
+
+-- Locally generate the flags this example needs (formerly from the global
+-- `Flags/FlagDef.lean`): the empty-typed underlying flags (n = 3 for the forbidden
+-- `K3`, n = 4/5 for the pattern/host), the forbidden graph, and the σ-typed (3-labelled)
+-- pattern/host flags. Flag generation comes first, so the density and multiplication
+-- theorem generators below resolve to these local constants.
+generate_empty_typed_flags 3
+generate_empty_typed_flags 4
+generate_empty_typed_flags 5
+generate_complete_graph 3 3
+generate_flags 4 3 0
+generate_flags 4 3 1
+generate_flags 4 3 2
+generate_flags 5 3 0
+generate_flags 5 3 1
+generate_flags 5 3 2
 
 generate_forbid_density_theorems 5 K3
 generate_flag_pair_density_theorems 4 5 3 0 K3

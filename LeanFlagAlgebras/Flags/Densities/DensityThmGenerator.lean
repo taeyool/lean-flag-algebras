@@ -53,7 +53,9 @@ def forbidFlagIdentOfToFinFlagEq (thmName : Name) : CommandElabM (TSyntax `ident
     | throwError s!"Lemma {thmName} is not an equality `G.toFinFlag = ⟨n, Flag_*⟩`"
   for a in rhs.getAppArgs do
     if let .const nm _ := a.getAppFn then
-      if nm.toString.startsWith "Flag_" then
+      -- `nm` may be namespace-qualified (e.g. `Mantel.Flag_3_0_0_3`); test the
+      -- final name component so qualified flag constants are recognised too.
+      if (match nm with | .str _ s => s.startsWith "Flag_" | _ => false) then
         return mkIdent nm
   throwError s!"Could not locate a `Flag_*` representative in the RHS of {thmName}"
 
@@ -64,10 +66,16 @@ only those two declarations. Complete-graph tags `"K<r>"` additionally get a
 clique-specific hint when the declarations are missing. -/
 def resolveForbidGraph (tag : String) : CommandElabM (TSyntax `ident × Name) := do
   let env ← getEnv
-  let gName := Name.mkSimple tag
-  let eqName := Name.mkSimple s!"{tag}_toFinFlag_eq"
-  if env.contains gName && env.contains eqName then
-    return (mkIdent gName, eqName)
+  let ns ← getCurrNamespace
+  let gSuffix := Name.mkSimple tag
+  let eqSuffix := Name.mkSimple s!"{tag}_toFinFlag_eq"
+  -- The forbidden graph `def <tag>` and its `<tag>_toFinFlag_eq` lemma are emitted
+  -- unqualified, so they land in whatever namespace the example generates them in.
+  -- Prefer the current namespace, falling back to the root.
+  if env.contains (ns ++ gSuffix) && env.contains (ns ++ eqSuffix) then
+    return (mkIdent (ns ++ gSuffix), ns ++ eqSuffix)
+  if env.contains gSuffix && env.contains eqSuffix then
+    return (mkIdent gSuffix, eqSuffix)
   let hint :=
     match parseCompleteGraphTag tag with
     | some r =>
@@ -147,7 +155,9 @@ def containsForbiddenSubgraph
 canonical index `idx`. Used to recover the forbidden graph's canonical edge list
 from `genCanonicalEdgeLists r`. -/
 def parseFlagRIdx (flagName : String) : CommandElabM (Nat × Nat) := do
-  match flagName.splitOn "_" with
+  -- `flagName` may be namespace-qualified (e.g. `Mantel.Flag_3_0_0_3`); match on
+  -- the final dotted component so qualified names parse too.
+  match ((flagName.splitOn ".").getLastD flagName).splitOn "_" with
   | ["Flag", rStr, _, _, idxStr] =>
       let some r := rStr.toNat? | throwError s!"Cannot parse vertex count from {flagName}"
       let some idx := idxStr.toNat? | throwError s!"Cannot parse index from {flagName}"
@@ -213,13 +223,12 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
     let flagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
     let isFree := ¬ containsForbiddenSubgraph r forbidEdges n (hostAll.getD i [])
 
-    let env ← getEnv
-    if ¬ env.contains flagName.getId then
+    if ¬ (← isDeclaredInScope flagName.getId) then
       throwError s!"Missing definition: {flagName.getId}"
 
     if isFree then
       let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_eq_zero")
-      if ¬ env.contains thmName.getId then
+      if ¬ (← isDeclaredInScope thmName.getId) then
         elabCommand (← `(
           @[simp]
           theorem $thmName
@@ -234,7 +243,7 @@ elab "generate_forbid_density_theorems" nStx:num gStx:ident : command => do
         generatedEqZero := generatedEqZero + 1
     else
       let thmName := mkIdent (Name.mkSimple s!"flagDensity1_{tag}_Flag_{n}_0_0_{i}_ne_zero")
-      if ¬ env.contains thmName.getId then
+      if ¬ (← isDeclaredInScope thmName.getId) then
         elabCommand (← `(
           @[simp]
           theorem $thmName
@@ -431,12 +440,11 @@ def genPairDensityCore (k m patN hostN : Nat)
           let thmName := mkIdent (Name.mkSimple
             s!"flagDensity₂_Flag_{patternTag}_{p1}_Flag_{patternTag}_{p2}_Flag_{hostTag}_{h}")
 
-          let env := (← getEnv)
-          if ¬ env.contains f1Name.getId then throwError s!"Missing definition: {f1Name.getId}"
-          if ¬ env.contains f2Name.getId then throwError s!"Missing definition: {f2Name.getId}"
-          if ¬ env.contains gName.getId then throwError s!"Missing definition: {gName.getId}"
+          if ¬ (← isDeclaredInScope f1Name.getId) then throwError s!"Missing definition: {f1Name.getId}"
+          if ¬ (← isDeclaredInScope f2Name.getId) then throwError s!"Missing definition: {f2Name.getId}"
+          if ¬ (← isDeclaredInScope gName.getId) then throwError s!"Missing definition: {gName.getId}"
 
-          if ¬ env.contains thmName.getId then
+          if ¬ (← isDeclaredInScope thmName.getId) then
             elabCommand (← `(
               @[simp]
               theorem $thmName
