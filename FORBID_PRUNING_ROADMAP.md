@@ -182,13 +182,28 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   so the tag path is only correct for complete-graph forbids; the induced pruned path (5a + the new
   command) is the correctness fix for arbitrary `F`. (`MantelHfree`'s full flag-free port lands here / Task 7.)
 
-- `[ ]` **6. User-facing format + convenience commands.** Declare F by edge list (small DSL →
-  `Sym2Graph m`); wrappers `forbid_complete_graph r`, `forbid_cycle k`, `forbid_path k`, …; and
-  a way to pass a *list* of forbidden graphs.
+- `[ ]` **6. User-facing format + convenience commands (complete graphs only, for now).**
+  Provide a convenience command/term `forbid_complete_graph r` that yields the complete graph
+  `K_r` as a **`Sym2Graph r` term** (all `C(r,2)` edges) for the edge-based commands to forbid —
+  replacing the `generate_complete_graph r idx` + canonical-flag setup. **Scope decision (user,
+  2026-06-19): support only complete graphs for now.** Defer the general edge-list DSL,
+  `forbid_cycle k` / `forbid_path k`, and passing a *list* of forbidden graphs — the family
+  machinery (Tasks 3/4/5a: `qFreeFamily`, the family bridge, `prunedFreeFamilyFlags_toFinset_eq`)
+  is already in place for when this is revisited.
 
-- `[ ]` **7. Migrate examples + docs.** Port `MantelHfree` (and other forbid examples) to the
-  pruning-based, flag-free pipeline; update `papers/Notes/forbid_free_*`; decide whether to
-  retire or keep the filter path as a fallback.
+- `[ ]` **7. Migrate all `Flagmatic` examples + docs.** Port **every** example under
+  `LeanFlagAlgebras/Flagmatic/` to the edge-based, pruning-based pipeline (drop
+  `generate_complete_graph` + the tag-based `generate_forbid_*` commands; forbid via a `Sym2Graph`
+  term; state forbidden bounds as `≤[⟨_, toFlag ⟦F⟧⟩]`). The files and their (all complete-graph)
+  forbids:
+  - `Mantel.lean`, `MantelHfree.lean`, `ErdosPentagon.lean`, `K3forbidC4.lean`, `K3forbidP3.lean` — K₃;
+  - `K4turan.lean` — K₄;
+  - `K5turan.lean` — K₅ (note: currently commented out of the aggregator `LeanFlagAlgebras.lean`, so
+    compiler-unverified — migrate best-effort and re-enable if it builds).
+  Since all forbid a *complete* graph, Task 6's complete-graph support suffices. **Prerequisite
+  (carried from 5b):** the edge-based proof tactics — `flag_expand_hfree`, `expand_one_hfree_at` term
+  variants (they currently take a forbid tag). Then update `papers/Notes/forbid_free_*`; decide
+  whether to retire or keep the filter/tag path as a fallback.
 
 ## Multi-graph design notes (for D3)
 
@@ -321,3 +336,10 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   anywhere. **Remaining 5b (→ Task 7):** edge-based proof tactics (`flag_expand_hfree`,
   `expand_one_hfree_at` take a tag) + the actual `MantelHfree` theorem migration. **Next:** Task 7
   (tactics + MantelHfree end-to-end) or Task 6 (user-facing DSL on top of the edge-based commands).
+- **2026-06-19** — **Plan change (user).** Two scope updates, no code change: (1) **Task 7** now
+  migrates *all* examples under `LeanFlagAlgebras/Flagmatic/` (Mantel, MantelHfree, ErdosPentagon,
+  K3forbidC4, K3forbidP3, K4turan, K5turan), not just Mantel; (2) **Task 6** supports **only complete
+  graphs for now** (edge-list DSL / cycles / paths / families deferred — the family machinery from
+  Tasks 3/4/5a stays available for later). These fit together: every Flagmatic example forbids a
+  complete graph (K₃/K₄/K₅), so complete-graph support is exactly what the Task-7 migration needs.
+  Updated the Task 6 / Task 7 bullets accordingly.
