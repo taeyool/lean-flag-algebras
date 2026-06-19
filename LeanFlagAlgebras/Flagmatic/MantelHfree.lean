@@ -32,22 +32,26 @@ open FlagAlgebras.Compute
 
 namespace MantelHfree
 
--- Locally generate every flag this example needs (formerly imported from the global
--- `Flags/FlagDef.lean`): the empty-typed underlying flags, the forbidden graph `K3`,
--- and the σ-typed (1-labelled) flags. All flag-generating commands come first, so the
--- density / multiplication theorem generators below resolve to these local constants.
-generate_empty_typed_flags 2
+-- ── Setup: define the forbidden graph `K3` (the framework's input) ─────────────────
+-- The forbid-free framework works *relative to* a forbidden graph, which must already
+-- exist. `generate_complete_graph 3 3` names `K3` and proves
+-- `K3.toFinFlag = ⟨3, Flag_3_0_0_3⟩`, so it needs the empty-typed 3-vertex flags to name
+-- the canonical triangle flag `Flag_3_0_0_3`. That triangle is, by definition, the one
+-- flag that is NOT K3-free, so no `generate_forbid_free_*` command produces it — these
+-- two lines are irreducible setup (see the note at the end of the file).
 generate_empty_typed_flags 3
 generate_complete_graph 3 3
-generate_flags 2 1 0
-generate_flags 3 1 0
 
-generate_forbid_density_theorems 3 K3
-generate_flag_pair_density_theorems 2 3 1 0 K3
--- Forbid-free: generate only the K3-free flags + completeness, then the forbid-free
--- multiplication theorems (proved over `flagSetHfree`, not the full `flagSet`).
+-- ── Forbid-free generation: only the K3-free flags, their filtered completeness, and the
+-- forbid-free multiplication theorems (proved over `flagSetHfree`, never the full set). ──
+generate_forbid_free_empty_typed_flags 2 K3
 generate_forbid_free_empty_typed_flags 3 K3
+generate_forbid_free_flags 2 1 0 K3
 generate_forbid_free_flags 3 1 0 K3
+-- Pair densities over the K3-free flags, consumed by the forbid-free multiplication
+-- theorems below. `generate_flag_pair_density_theorems … K3` is forbid-restricted (it
+-- computes `flagDensity₂` only for K3-free pattern/host pairs); see the end-of-file note.
+generate_flag_pair_density_theorems 2 3 1 0 K3
 generate_forbid_free_mul_theorems 2 3 1 0 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2), paired with `v`. -/
@@ -146,5 +150,33 @@ theorem mantel_flagAlgebra
 
   apply forbidLE_of_le
   flag_nonneg
+
+/-! ## What is (and isn't) forbid-free here
+
+Everything above the proofs is forbid-free except two unavoidable pieces:
+
+* **Defining the forbidden graph** — `generate_empty_typed_flags 3` +
+  `generate_complete_graph 3 3`. The forbidden graph is the *input* the framework works
+  relative to, and the framework's H-free test is the **analytic** one,
+  `isHfree S := decide (sym2EmptyTypeFlagDensity₁ Sym2Flag_3_0_0_3 S = 0)`, which evaluates
+  the density of the forbidden flag `Sym2Flag_3_0_0_3` (equivalently `Flag_3_0_0_3`). That
+  flag is by definition the one that is *not* K3-free, so no `generate_forbid_free_*`
+  command emits it; it has to come from `generate_empty_typed_flags 3`, and
+  `generate_complete_graph 3 3` then names `K3` off it. Removing these entirely would mean
+  switching the H-free test to the **combinatorial** predicate `hasTri`
+  (`Flags/ForbidFreePruned.lean`), which never mentions a forbidden flag — but wiring that
+  in needs the still-unproven bridge `triFree G ↔ flagDensity₁ K3 (unlabel ⟦G⟧) = 0`.
+
+* **Pair densities** — `generate_flag_pair_density_theorems 2 3 1 0 K3`. The forbid-free
+  multiplication generator discharges its goal by `simp`-ing each product coefficient to a
+  rational, which needs these `@[simp] flagDensity₂ … = c` lemmas. The command is already
+  forbid-restricted (it only computes K3-free pattern/host pairs); there is no separate
+  `_free`-named version because a density is a density — "forbid-free" only changes *which*
+  pairs are computed, not the values. It is effectively part of the forbid-free pipeline.
+
+So the remaining non-`forbid_free`-named commands are (1) the forbidden-graph definition,
+which is genuinely the framework's input, and (2) a forbid-restricted density step the
+forbid-free multiplication generator consumes. A literally-only-`generate_forbid_free_*`
+file is blocked on the combinatorial-vs-analytic H-free bridge above. -/
 
 end MantelHfree
