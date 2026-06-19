@@ -109,9 +109,17 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   - Validated by `native_decide` (pruned reps = `augReps`-filtered reps): K4, C4, C5 (n = 4/5) and a
     {K4, C4} family (n = 5).
 
-- `[ ]` **4. Generalize the bridge.** `inducedFree F G ↔ flagDensity₁ F (unlabel ⟦G⟧) = 0`
-  for arbitrary (induced) F, reusing the step-1 proof. Family version is the conjunction
-  `(∀ F ∈ Fs, …) ↔ (∀ F ∈ Fs, flagDensity₁ F … = 0)` — no new bridge math.
+- `[x]` **4. Generalize the bridge.** DONE in `Flags/ForbidFreePruned.lean`, sorry-free.
+  - General heart `existsInducedIso_iff F G`: `(∃ induced subgraph of G iso to F) ↔ inducedContains F G`
+    (→ destructs the iso into an induced embedding; ← builds the induced subgraph on the embedding's
+    image via `Equiv.ofBijective` + `inducedSubgraph_coe_adj_iff`).
+  - General count `inducedContainsCount_pos_iff F G` (`sym2GraphToList F` is the length-1 list `[F]`).
+  - General bridge `inducedContains_iff_density_ne_zero` / `not_inducedContains_iff_density_eq_zero`:
+    `(¬) inducedContains F G ↔ sym2EmptyTypeFlagDensity₁ ⟦F⟧ ⟦G⟧ (≠/=) 0`. The `n < m` denominator-zero
+    case is excluded via `inducedContains → m ≤ n` (`Fintype.card_le_of_embedding`).
+  - Family bridge `forall_not_inducedContains_iff_forall_density_eq_zero` (the conjunction — no new math).
+  - Consistency `inducedContains_triangleGraph_iff_hasTri` (the general predicate at `triangleGraph` is
+    `hasTri`, so this subsumes the Task-1 K₃ bridge).
 
 - `[ ]` **5. Generalize the wiring** (also absorbs Task 2's deferred command work). Forbid-free
   commands accept an arbitrary `F : Sym2Graph m` (and later a family), using the step-3 generic
@@ -184,3 +192,18 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   `Fin.castSucc`. **Next: Task 4** — generalize the bridge to
   `¬ inducedContains F G ↔ flagDensity₁ F (unlabel ⟦G⟧) = 0`, reusing the Task-1 proof; the family
   version is the conjunction.
+- **2026-06-19** — **Task 4 DONE** (sorry-free, builds). Generalized the bridge in
+  `Flags/ForbidFreePruned.lean`: the general heart `existsInducedIso_iff` (induced-subgraph iso ↔
+  `inducedContains`), the count `inducedContainsCount_pos_iff`, the bridge
+  `inducedContains_iff_density_ne_zero` / `not_inducedContains_iff_density_eq_zero`
+  (`(¬) inducedContains F G ↔ density ⟦F⟧ ⟦G⟧ (≠/=) 0`), the family conjunction
+  `forall_not_inducedContains_iff_forall_density_eq_zero`, and the consistency lemma
+  `inducedContains_triangleGraph_iff_hasTri`. The count/bridge are near-verbatim generalizations of
+  Task 1 (`sym2GraphToList F` has length 1; the `3 ≤ n` step becomes `m ≤ n` from the embedding via
+  `Fintype.card_le_of_embedding`). The only genuinely new work was the heart's ← direction (build the
+  iso on `image f` via `Equiv.ofBijective` + a bijectivity proof); the → direction needed
+  `simp only [Function.Embedding.coeFn_mk]` to expose the embedding application before rewriting with
+  `inducedSubgraph_coe_adj_iff`. **Next: Task 5** — generalize the wiring (edge-based forbid-free
+  commands over arbitrary `F`/families using the Task-3 generator + Task-4 bridge; the generic analogue
+  of `prunedTriFreeFlags_toFinset_eq`), which also realizes the pruning perf win and the `MantelHfree`
+  flag-free port.

@@ -548,4 +548,114 @@ example : (augRepsFreeB (qFree C5graph) 5).length
 example : (augRepsFreeB (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩]) 5).length
     = ((augReps 5).filter (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩] 5)).length := by native_decide
 
+/-! ## Generalized bridge (Task 4): `inducedContains F G ↔ density ≠ 0` for arbitrary `F`.
+
+The arbitrary-`F` analogue of the Task-1 K₃ bridge: the combinatorial induced-containment
+predicate equals positivity of the analytic induced `F`-density. The K₃ case is the instance
+`F := triangleGraph`. The family version is the conjunction (no new bridge math). -/
+
+/-- **General heart.** `G` has an induced subgraph isomorphic to `F` iff `G` contains `F` as
+an induced subgraph (the combinatorial embedding). -/
+theorem existsInducedIso_iff {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) :
+    (∃ H : Sym2InducedSubgraph G, Nonempty (H.toLabeledSubgraph.coe ≃f F.toLabeledGraph))
+      ↔ inducedContains F G := by
+  constructor
+  · -- (→) destruct the iso into an induced embedding
+    rintro ⟨H, ⟨φ⟩⟩
+    refine ⟨⟨fun i => (φ.graph_iso.symm i).val,
+        fun a b hab => φ.graph_iso.symm.injective (Subtype.ext hab)⟩, fun i j => ?_⟩
+    simp only [Function.Embedding.coeFn_mk]
+    rw [← inducedSubgraph_coe_adj_iff H (φ.graph_iso.symm i) (φ.graph_iso.symm j),
+        ← Sym2Graph.toLabeledGraph_adj_iff]
+    exact φ.graph_iso.symm.map_rel_iff
+  · -- (←) build the induced subgraph on the embedding's image, and the iso to `F`
+    rintro ⟨f, hf⟩
+    have hmem : ∀ i : Fin m,
+        f i ∈ (⟨Finset.image f Finset.univ⟩ : Sym2InducedSubgraph G).toLabeledSubgraph.subgraph.verts := by
+      intro i
+      simp only [Sym2InducedSubgraph.toLabeledSubgraph, Finset.coe_image, Finset.coe_univ,
+        Set.image_univ, Set.mem_range]
+      exact ⟨i, rfl⟩
+    have hbij : Function.Bijective
+        (fun i : Fin m => (⟨f i, hmem i⟩ :
+          ↥((⟨Finset.image f Finset.univ⟩ : Sym2InducedSubgraph G).toLabeledSubgraph.subgraph.verts))) := by
+      refine ⟨fun i j hij => f.injective (Subtype.ext_iff.mp hij), ?_⟩
+      rintro ⟨v, hv⟩
+      simp only [Sym2InducedSubgraph.toLabeledSubgraph, Finset.coe_image, Finset.coe_univ,
+        Set.image_univ, Set.mem_range] at hv
+      obtain ⟨i, hi⟩ := hv
+      exact ⟨i, Subtype.ext hi⟩
+    refine ⟨⟨Finset.image f Finset.univ⟩, ⟨{
+      graph_iso := (RelIso.mk (Equiv.ofBijective _ hbij) ?_).symm
+      type_preserve := by funext i; exact i.elim0 }⟩⟩
+    intro i j
+    rw [inducedSubgraph_coe_adj_iff]
+    show s(f i, f j) ∈ G.edges ↔ F.toLabeledGraph.graph.Adj i j
+    rw [hf i j, Sym2Graph.toLabeledGraph_adj_iff]
+
+/-- The induced-`F` placement count is positive iff `G` contains `F` as an induced subgraph.
+(`sym2GraphToList F` is the length-1 list `[F]`, so this is just the heart re-expressed via
+the count.) The arbitrary-`F` analogue of `triangleCount_pos_iff`. -/
+theorem inducedContainsCount_pos_iff {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) :
+    0 < sym2InducedSubgraphListCount (sym2GraphToList F) G ↔ inducedContains F G := by
+  unfold sym2InducedSubgraphListCount
+  rw [Finset.card_pos, ← existsInducedIso_iff]
+  constructor
+  · rintro ⟨Gl, hGl⟩
+    simp only [finsetOfSym2InducedSubgraphListIsoHl, Finset.mem_filter, Finset.mem_univ,
+      true_and] at hGl
+    exact ⟨Gl 0, hGl.1 0⟩
+  · rintro ⟨H, hH⟩
+    refine ⟨fun _ => H, ?_⟩
+    simp only [finsetOfSym2InducedSubgraphListIsoHl, Finset.mem_filter, Finset.mem_univ, true_and]
+    exact ⟨fun _ => hH, fun i j hij => absurd (Subsingleton.elim i j) hij⟩
+
+/-- **General induced-`F` density bridge.** `G` contains `F` as an induced subgraph iff its
+analytic induced `F`-density is nonzero — the arbitrary-`F` analogue of
+`hasTri_iff_triangleDensity_ne_zero`. The `n < m` denominator-zero case cannot arise: an induced
+containment supplies an embedding `Fin m ↪ Fin n`, hence `m ≤ n`. -/
+theorem inducedContains_iff_density_ne_zero {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) :
+    inducedContains F G ↔ sym2EmptyTypeFlagDensity₁ ⟦F⟧ ⟦G⟧ ≠ 0 := by
+  rw [← sym2InducedSubgraphListDensity_eq_sym2EmptyTypeFlagDensity₁]
+  simp only [sym2InducedSubgraphListDensity]
+  constructor
+  · intro hG
+    have hmn : m ≤ n := by
+      obtain ⟨f, _⟩ := hG
+      simpa using Fintype.card_le_of_embedding f
+    have hmc : multinomialCoefficient (fun _ : Fin 1 => m) n ≠ 0 := by
+      have := multinomialCoefficient_pos (fun _ : Fin 1 => m) n (by simpa using hmn)
+      omega
+    have hcount : sym2InducedSubgraphListCount (sym2GraphToList F) G ≠ 0 :=
+      ((inducedContainsCount_pos_iff F G).mpr hG).ne'
+    exact div_ne_zero (Nat.cast_ne_zero.mpr hcount) (Nat.cast_ne_zero.mpr hmc)
+  · intro hne
+    by_contra hG
+    have hcount : sym2InducedSubgraphListCount (sym2GraphToList F) G = 0 := by
+      by_contra hc
+      exact hG ((inducedContainsCount_pos_iff F G).mp (Nat.pos_of_ne_zero hc))
+    rw [hcount] at hne
+    simp at hne
+
+/-- The `= 0` form of the general bridge: `F`-freeness (no induced `F`) iff zero induced
+`F`-density. This is what the genuine-pruning predicate `qFree F` plugs into. -/
+theorem not_inducedContains_iff_density_eq_zero {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) :
+    ¬ inducedContains F G ↔ sym2EmptyTypeFlagDensity₁ ⟦F⟧ ⟦G⟧ = 0 := by
+  rw [inducedContains_iff_density_ne_zero]
+  exact not_ne_iff
+
+/-- **Family bridge** (per D3): `G` is free of *every* `Fp ∈ Fs` iff every induced `Fp`-density
+vanishes. Just the conjunction of the single-graph bridge — no new bridge math. -/
+theorem forall_not_inducedContains_iff_forall_density_eq_zero
+    (Fs : List (Σ m : ℕ, Sym2Graph m)) {n : ℕ} (G : Sym2Graph n) :
+    (∀ Fp ∈ Fs, ¬ inducedContains Fp.2 G)
+      ↔ (∀ Fp ∈ Fs, sym2EmptyTypeFlagDensity₁ ⟦Fp.2⟧ ⟦G⟧ = 0) :=
+  forall_congr' fun Fp => imp_congr_right fun _ => not_inducedContains_iff_density_eq_zero Fp.2 G
+
+/-- Consistency with Task 1: the general predicate at `F := triangleGraph` is exactly `hasTri`,
+so the general bridge subsumes the K₃ bridge `not_hasTri_iff_triangleDensity_eq_zero`. -/
+theorem inducedContains_triangleGraph_iff_hasTri {n : ℕ} (G : Sym2Graph n) :
+    inducedContains triangleGraph G ↔ hasTri G :=
+  (inducedContainsCount_pos_iff triangleGraph G).symm.trans (triangleCount_pos_iff G)
+
 end FlagAlgebras.Compute
