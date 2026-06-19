@@ -156,17 +156,25 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     `Quotient.sound`) — needed because edge-based the forbid is syntactically `⟦F⟧` (the old
     `rw [Quotient.sound …]` matched the forbid quotient). Validated on **K₃** at MantelHfree's sizes
     (empty-typed 2/3, typed type-1_0 → 2/5 free); full project builds.
-  - **TODO (remaining 5b):** (b) edge-based `generate_flag_pair_density_theorems` /
-    `generate_forbid_free_mul_theorems` — clean clones (the mul bridge `basisVector_quot_mul_forbidEq_sum`
-    takes *any* forbid flag, so `toFlag ⟦F⟧` works, and the free-host set names already match), but they
-    live in `MulThmGenerator` / `DensityThmGenerator`, which only import `DensityThmGenerator` — so first
-    relocate `evalBoolList` + `evalInducedFreeMask` into `DensityThmGenerator` (adding
-    `import …ForbidFreePruned` there) and refactor `genPairDensityCore` to take precomputed free-index
-    sets; (c) edge-based proof tactics (`flag_expand_hfree`, `expand_one_hfree_at` currently take a tag)
-    and the **`MantelHfree` end-to-end migration** off `generate_complete_graph` + tag commands (overlaps
-    Task 7); (d) the perf win is realized for empty-typed (pruned `native_decide` vs full-enum); the typed
-    path still routes through `genFlagsHfree` (graph-level filter) — a genuine-pruning typed generation is
-    a later optimization.
+  - **DONE — edge-based pair-density + mul commands.** `generate_pruned_flag_pair_density_theorems
+    patN hostN k m F` (in `DensityThmGenerator`) and `generate_pruned_forbid_free_mul_theorems
+    patN hostN k m F` (in `MulThmGenerator`). Both edge-based: `F` a `Sym2Graph m` term, induced
+    free-index split (`evalInducedFreeMask` + `inducedFreeFlagIndices`). The mul theorems are
+    `=[⟨_, toFlag ⟦F⟧⟩]` (the `FinFlag` of `⟦F⟧`, whose `.2` is `toFlag ⟦F⟧` so the bridge's sum
+    filter matches the generator's `flagSetHfree_…_eq`); the bridge `basisVector_quot_mul_forbidEq_sum`
+    accepts any forbid `FinFlag`. **Refactor:** moved `evalBoolList` + `evalInducedFreeMask` into
+    `DensityThmGenerator` (+ `import …ForbidFreePruned`), removed them from `ForbidFreeGenerator`; split
+    `genPairDensityCore` into `genPairDensityCoreOn` (takes precomputed free sets) + the wrapper.
+    Validated the **full chain** (gen → typed gen → pair-density → mul) forbidding K₃ via `triangleGraph`
+    at MantelHfree's sizes (15 pair densities, 4 mul theorems); full project builds (7980 jobs).
+  - **TODO (remaining 5b → folds into Task 7):** (c) edge-based proof tactics — `flag_expand_hfree`,
+    `expand_one_hfree_at` currently take a forbid *tag*; they need term variants — and the **`MantelHfree`
+    end-to-end migration** (drop `generate_complete_graph` + tag commands; state the bound as
+    `≤[⟨_, toFlag ⟦triangleGraph⟧⟩]`). (d) the perf win is realized for empty-typed (pruned `native_decide`
+    vs full-enum); the typed path still routes through `genFlagsHfree` (graph-level filter) — a
+    genuine-pruning typed generation is a later optimization.
+  All four edge-based **generation/density/mul commands** are in and verified end-to-end; only the proof
+  tactics + the example migration remain (Task 7).
   **Scope (from explorer map):** the forbid is threaded as a string tag through 5 stages in
   `Densities/DensityThmGenerator.lean` (`resolveForbidGraph` → `forbidFlagIdentOfToFinFlagEq` →
   `parseFlagRIdx` → `evalCanonicalEdgeLists` → `containsForbiddenSubgraph`), consumed by 6 commands
@@ -298,3 +306,18 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   (`flag_expand_hfree` / `expand_one_hfree_at`) — a coupled chunk overlapping Task 7, best done together.
   Both generation commands (empty-typed + σ-typed) are the edge-based core and are verified. **Next:**
   the edge-based mul/pair-density commands + tactic migration (5b cont. / Task 7), or Task 6 (DSL).
+- **2026-06-19** — **Task 5b: edge-based pair-density + mul commands DONE** (full project builds, 7980
+  jobs). Added `generate_pruned_flag_pair_density_theorems` (in `DensityThmGenerator`) and
+  `generate_pruned_forbid_free_mul_theorems` (in `MulThmGenerator`), completing the edge-based
+  generation/density/mul command surface. Both take `F` a `Sym2Graph m` term; induced free split via
+  `evalInducedFreeMask` + new `inducedFreeFlagIndices`. The mul theorems are `=[⟨_, toFlag ⟦F⟧⟩]` — the
+  forbid must be a `FinFlag ∅ₜ` (= `⟨n, FlagWithSize⟩`), not the `Flag`; its `.2 = toFlag ⟦F⟧` matches the
+  generator's `flagSetHfree_…_eq` filter, and `basisVector_quot_mul_forbidEq_sum` accepts any forbid
+  `FinFlag`. **Refactor (shared base):** relocated `evalBoolList` + `evalInducedFreeMask` into
+  `DensityThmGenerator` (+ `import …ForbidFreePruned`), removed the copies from `ForbidFreeGenerator`; split
+  `genPairDensityCore` → `genPairDensityCoreOn` (precomputed free sets) + wrapper. Verified the full
+  edge-based chain (empty-typed gen → typed gen → pair-density → mul) forbidding K₃ via `triangleGraph` at
+  MantelHfree's sizes: 2/3 empty-typed, 2/5 typed, 15 pair densities, 4 mul theorems — no canonical flag
+  anywhere. **Remaining 5b (→ Task 7):** edge-based proof tactics (`flag_expand_hfree`,
+  `expand_one_hfree_at` take a tag) + the actual `MantelHfree` theorem migration. **Next:** Task 7
+  (tactics + MantelHfree end-to-end) or Task 6 (user-facing DSL on top of the edge-based commands).

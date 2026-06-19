@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+import LeanFlagAlgebras.Flags.ForbidFreePruned
 import Mathlib.Tactic
 
 /-! # Density theorem generators
@@ -175,6 +176,38 @@ def evalCanonicalEdgeLists (m : Nat) : CommandElabM (List (List (Nat × Nat))) :
     let valExpr ← instantiateMVars valExpr
     let typeExpr ← Lean.Meta.inferType valExpr
     evalNatPairLists typeExpr valExpr
+
+/-! ### Edge-based (induced) forbid-free split
+
+For the edge-based forbid commands (forbid is a `Sym2Graph m` *term* `F`, not a tag), the
+forbid-free split is computed with the **induced** predicate `inducedContains F`, not the
+non-induced `containsForbiddenSubgraph`. The mask is read straight off the Lean enumeration
+`genSym2Graphs n`, so it uses exactly the `inducedContains` of the pruning core / Task-4 bridge. -/
+
+/-- Compiler-backed evaluation of a closed `Expr` of type `List Bool`. -/
+unsafe def evalBoolListImpl (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool) :=
+  Lean.Meta.evalExpr (List Bool) type value
+
+@[implemented_by evalBoolListImpl]
+opaque evalBoolList (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool)
+
+/-- The induced forbid-free mask aligned with the flag-index order: entry `i` is `true` iff the
+`i`-th canonical `n`-vertex graph (`genSym2Graphs n`) does **not** contain an induced `F`. -/
+def evalInducedFreeMask (n : Nat) (fStx : TSyntax `ident) : CommandElabM (List Bool) := do
+  let stx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
+    (fun G => !decide (FlagAlgebras.Compute.inducedContains $fStx G)))
+  liftTermElabM do
+    let e ← Lean.Elab.Term.elabTermAndSynthesize stx none
+    let e ← instantiateMVars e
+    let t ← Lean.Meta.inferType e
+    evalBoolList t e
+
+/-- The σ-typed forbid-free indices for an induced forbid mask: flag `i` is free iff its
+underlying graph (canonical index `(flags[i]).1`) is induced-`F`-free per `freeMask`. -/
+def inducedFreeFlagIndices (freeMask : List Bool)
+    (flags : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat)) : List Nat :=
+  (List.range flags.length).filter (fun i =>
+    freeMask.getD ((flags.getD i (0, [], [], 0, 0)).1) false)
 
 -- `generate_forbid_density_theorems n Forbid`
 --
@@ -414,15 +447,11 @@ of (forbidden-free) pattern flags `Flag_patN_k_m_*` and every (forbidden-free)
 host flag `Flag_hostN_k_m_h`, emit the `simp` theorem `flagDensity₂ … = value`,
 the `value` computed by `densityPF1F2GivenG` and re-checked by `native_decide`.
 `forbid = none` includes all flags (the no-forbid case). -/
-def genPairDensityCore (k m patN hostN : Nat)
-    (forbid : Option (Nat × List (Nat × Nat))) : CommandElabM Unit := do
+def genPairDensityCoreOn (k m patN hostN : Nat)
+    (patterns hosts : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat))
+    (patternFree hostFree : List Nat) : CommandElabM Unit := do
   let patternTag := s!"{patN}_{k}_{m}"
   let hostTag := s!"{hostN}_{k}_{m}"
-
-  let patterns ← evalFlagDataRows k m patN
-  let hosts ← evalFlagDataRows k m hostN
-  let patternFree := freeFlagIndices patN forbid patterns
-  let hostFree := freeFlagIndices hostN forbid hosts
 
   let mut generated : Nat := 0
   for p1 in patternFree do
@@ -457,6 +486,16 @@ def genPairDensityCore (k m patN hostN : Nat)
             generated := generated + 1
 
   logInfo s!"Generated {generated} pair-density theorem(s): pattern {patternTag}, host {hostTag}"
+
+/-- Shared core for the pair-density emitters: compute the (non-induced, tag-based) forbid-free
+index split, then delegate to `genPairDensityCoreOn`. -/
+def genPairDensityCore (k m patN hostN : Nat)
+    (forbid : Option (Nat × List (Nat × Nat))) : CommandElabM Unit := do
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patternFree := freeFlagIndices patN forbid patterns
+  let hostFree := freeFlagIndices hostN forbid hosts
+  genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
 
 -- `generate_flag_pair_density_theorems patN hostN k m Forbid`
 --
@@ -496,5 +535,27 @@ elab "generate_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
 --   `generate_flag_pair_density_theorems_no_forbid 3 4 2 0`
 elab "generate_flag_pair_density_theorems_no_forbid" patS:num hostS:num kS:num mS:num : command => do
   genPairDensityCore kS.getNat mS.getNat patS.getNat hostS.getNat none
+
+-- `generate_pruned_flag_pair_density_theorems patN hostN k m F`
+--
+-- The **edge-based, induced** analogue of `generate_flag_pair_density_theorems`: `F` is a
+-- `Sym2Graph mF` *term* (no tag, no canonical flag), and the forbid-free pattern/host split uses
+-- the induced predicate `inducedContains F` (via `evalInducedFreeMask`). The emitted
+-- `flagDensity₂ … = value` `@[simp]` theorems are identical in form — a density is a density; only
+-- *which* pairs are computed differs. Prerequisite: the `F`-free pattern/host flags must exist (run
+-- the edge-based generators `generate_pruned_forbid_free_flags …` first).
+elab "generate_pruned_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
+    fStx:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patMask ← evalInducedFreeMask patN fStx
+  let hostMask ← evalInducedFreeMask hostN fStx
+  let patternFree := inducedFreeFlagIndices patMask patterns
+  let hostFree := inducedFreeFlagIndices hostMask hosts
+  genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
 
 end Flags.Densities

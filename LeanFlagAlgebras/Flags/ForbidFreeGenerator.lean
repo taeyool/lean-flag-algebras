@@ -315,27 +315,10 @@ flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
   `generate_complete_graph`, no canonical forbidden flag, no tag resolution;
 * the forbid-free split uses the **induced** predicate `inducedContains F` (correct for arbitrary
   `F`, not only complete graphs), and the completeness lemma cites
-  `prunedFreeFlags_toFinset_eq` (genuine pruning) — **no full enumeration**. -/
+  `prunedFreeFlags_toFinset_eq` (genuine pruning) — **no full enumeration**.
 
-/-- Compiler-backed evaluation of a closed `Expr` of type `List Bool`, used to read the
-induced forbid-free mask `(genSym2Graphs n).map (¬ inducedContains F ·)` at elaboration time. -/
-unsafe def evalBoolListImpl (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool) :=
-  Lean.Meta.evalExpr (List Bool) type value
-
-@[implemented_by evalBoolListImpl]
-opaque evalBoolList (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool)
-
-/-- The induced forbid-free mask aligned with the flag-index order: entry `i` is `true` iff the
-`i`-th canonical `n`-vertex graph (`genSym2Graphs n`) does **not** contain an induced `F`. Reuses
-the same `inducedContains` the pruned generator and the Task-5a bridge use. -/
-def evalInducedFreeMask (n : Nat) (fStx : TSyntax `ident) : CommandElabM (List Bool) := do
-  let stx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
-    (fun G => !decide (FlagAlgebras.Compute.inducedContains $fStx G)))
-  liftTermElabM do
-    let e ← Lean.Elab.Term.elabTermAndSynthesize stx none
-    let e ← instantiateMVars e
-    let t ← Lean.Meta.inferType e
-    evalBoolList t e
+(The `evalBoolList` / `evalInducedFreeMask` helpers live in `Densities.DensityThmGenerator`, shared
+with the edge-based pair-density / mul commands.) -/
 
 elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => do
   let n := nStx.getNat

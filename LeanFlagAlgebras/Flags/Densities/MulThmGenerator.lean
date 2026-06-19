@@ -289,6 +289,106 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 
   logInfo s!"Generated {generated} {tag}-free (forbid-free-host) multiplication theorem(s): pattern {patternTag}"
 
+-- `generate_pruned_forbid_free_mul_theorems patN hostN k m F`
+--
+-- The **edge-based** analogue of `generate_forbid_free_mul_theorems`: `F` is a `Sym2Graph mF`
+-- *term* (no tag, no canonical forbidden flag). The forbid flag in the emitted
+-- `=[Sym2EmptyTypedFlag.toFlag ⟦F⟧]` theorems is `⟦F⟧` directly; the forbid-free pattern/host split
+-- is **induced** (`evalInducedFreeMask`); and the proof rewrites the
+-- `basisVector_quot_mul_forbidEq_sum (toFlag ⟦F⟧)` expansion onto the edge-based forbid-free host set
+-- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
+-- generators). Prerequisite: run `generate_pruned_forbid_free_empty_typed_flags hostN F`
+-- (and, for `k > 0`, `generate_pruned_forbid_free_flags hostN k m F`) first.
+elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let tagFull := toString fStx.getId
+  let tag := (tagFull.splitOn ".").getLastD tagFull
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+  let patternFlagTypeName := Name.mkSimple s!"FlagType_{k}_{m}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patMask ← evalInducedFreeMask patN fStx
+  let hostMask ← evalInducedFreeMask hostN fStx
+  let patternFree := inducedFreeFlagIndices patMask patterns
+  let hostFree := inducedFreeFlagIndices hostMask hosts
+
+  -- The forbid flag is the `FinFlag` of the term `⟦F⟧` (no canonical flag). Its `.2` is
+  -- `Sym2EmptyTypedFlag.toFlag ⟦F⟧`, matching the edge-based generator's `flagSetHfree_…_eq`.
+  let forbidFlagTm ← `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$fStx⟧⟩
+      : FlagAlgebras.FinFlag ∅ₜ))
+
+  let flagSetHfreeName := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}")
+  let flagSetHfreeEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_eq")
+  let flagSetHfreeValEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_val_eq")
+  let ns ← getCurrNamespace
+  unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
+    throwError s!"`generate_pruned_forbid_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
+edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
+`generate_pruned_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_pruned_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
+
+  let mut generated : Nat := 0
+  for i in patternFree do
+    for j in patternFree do
+      let iOrd := if i ≤ j then i else j
+      let jOrd := if i ≤ j then j else i
+      let rhs ← buildMulRhs patN hostN hostTag patternFlagTypeName patterns hosts hostFree iOrd jOrd
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{j}")
+      let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{iOrd}")
+      let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
+
+      if !(← isDeclaredInScope lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(← isDeclaredInScope lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(← isDeclaredInScope flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(← isDeclaredInScope flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+
+      if !(← isDeclaredInScope thmName.getId) then
+        if i ≤ j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$forbidFlagTm] $rhs
+              := by
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum $forbidFlagTm
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              exact forbidEq_refl $forbidFlagTm _
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$forbidFlagTm] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEq_trans
+                (basisVector_quot_mul_forbidEq_sum $forbidFlagTm
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              exact forbidEq_refl $forbidFlagTm _
+          ))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} {tag}-free (edge-based, forbid-free-host) multiplication theorem(s): pattern {patternTag}"
+
 -- `generate_mul_theorems patN hostN k m`
 --
 -- The no-forbidden-subgraph analogue of `generate_forbid_mul_theorems`: the same
