@@ -77,11 +77,22 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   `count / C(n,3)` and the `n < 3` denominator-zero case is handled by deriving `3 ≤ n` from
   `hasTri`. Added `import Mathlib.Tactic` + `Compute.FlagDensity` to the file.
 
-- `[ ]` **2. Wire K3 pruning end-to-end.** Route the K3 forbid-free generator through
-  `augRepsTriFree` + step-1 bridge instead of the filter; make `resolveForbidGraph`/`isHfree`
-  edge-based (no canonical forbidden flag, per D2). Port `MantelHfree` to this path and build
-  green. *Deliverables: ~1.8× pruning win realized; `MantelHfree` becomes truly only-forbid-free
-  (drops `generate_empty_typed_flags 3` + the forbidden-flag setup).*
+- `[x]` **2. Wire K3 pruning end-to-end (theorem level).** DONE in `Flags/ForbidFreePruned.lean`:
+  `prunedTriFreeFlags_toFinset_eq` proves the genuine-pruning generator produces *exactly* the
+  analytically-K3-free empty-typed flags —
+  `((augRepsTriFree n).map ⟦·⟧).toFinset = univ.filter (sym2EmptyTypeFlagDensity₁ ⟦triangleGraph⟧ · = 0)` —
+  via the Task-1 bridge, with **no full enumeration and no canonical forbidden flag**. Supporting
+  lemmas: `dedupStep_subset` / `foldl_dedupStep_subset` (dedup keeps input elements),
+  `augRepsTriFree_triFree` (every pruned rep is triangle-free), `prunedTriFreeFlags`. Sorry-free; builds.
+
+  **Rescoped → Task 5:** the *command-surface* refactor (route `generate_forbid_free_*` through the
+  pruned generator; realize the ~1.8× perf win) and the **`MantelHfree` flag-free port** are folded
+  into Task 5 (generic wiring). Rationale: `MantelHfree` cannot be *partially* flag-free — its typed
+  `generate_forbid_free_flags`, the `generate_flag_pair_density_theorems` /
+  `generate_forbid_free_mul_theorems` density step, and the `≤[K3.toFinFlag]` statement all pull
+  `K3` / `Sym2Flag_3_0_0_3` in — so it needs the full edge-based (arbitrary-F) commands, and doing them
+  K3-specifically now would just be redone in Task 5. The wiring theorem above is the K3 instance of
+  what Task 5's generic commands will cite.
 
 - `[ ]` **3. Generalize the combinatorial core (generic, multi-graph-ready).**
   - `inducedContains (F : Sym2Graph m) (G : Sym2Graph n) : Prop` + `Decidable`.
@@ -95,9 +106,13 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   for arbitrary (induced) F, reusing the step-1 proof. Family version is the conjunction
   `(∀ F ∈ Fs, …) ↔ (∀ F ∈ Fs, flagDensity₁ F … = 0)` — no new bridge math.
 
-- `[ ]` **5. Generalize the wiring.** Forbid-free commands accept an arbitrary `F : Sym2Graph m`
-  (and later a family), using the step-3 generic pruned generator + step-4 bridge. Reuse
-  `genFlagsHfree_toFinset_eq`'s generic plumbing.
+- `[ ]` **5. Generalize the wiring** (also absorbs Task 2's deferred command work). Forbid-free
+  commands accept an arbitrary `F : Sym2Graph m` (and later a family), using the step-3 generic
+  pruned generator + step-4 bridge (the generic analogue of `prunedTriFreeFlags_toFinset_eq`). Reuse
+  `genFlagsHfree_toFinset_eq`'s generic plumbing. **This is where the pruning perf win and the
+  edge-based (flag-free) command interface are actually realized** — `resolveForbidGraph` / `isHfree`
+  read `F`'s edges directly (no canonical forbidden flag), so examples drop `generate_empty_typed_flags r`
+  + `generate_complete_graph`. (`MantelHfree`'s flag-free port lands here / in Task 7.)
 
 - `[ ]` **6. User-facing format + convenience commands.** Declare F by edge list (small DSL →
   `Sym2Graph m`); wrappers `forbid_complete_graph r`, `forbid_cycle k`, `forbid_path k`, …; and
@@ -138,3 +153,14 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   pruned generator in. Note for Task 2: the bridge is stated for `⟦triangleGraph⟧`; identify it
   with the framework's `Sym2Flag_3_0_0_3` via `Quotient.sound` (both are the triangle), and
   show `triFreeB = isHfreeGraph` as `Bool` predicates from the bridge.
+- **2026-06-19** — **Task 2 core DONE** (theorem-level wiring, sorry-free, builds). Proved
+  `prunedTriFreeFlags_toFinset_eq` in `Flags/ForbidFreePruned.lean`: the genuine-pruning generator
+  yields exactly the analytically-K3-free empty-typed flags (`= univ.filter (density ⟦triangleGraph⟧ = 0)`),
+  via the Task-1 bridge — no full enumeration, no canonical forbidden flag. New supporting lemmas:
+  `dedupStep_subset`, `foldl_dedupStep_subset`, `augRepsTriFree_triFree`, `prunedTriFreeFlags`.
+  **Plan change:** the command-surface refactor + `MantelHfree` flag-free port + perf realization are
+  folded into Task 5 (generic wiring) rather than done K3-specifically — `MantelHfree` can't be
+  partially flag-free (typed/density/mul + the `≤[K3.toFinFlag]` statement all pull `K3` in), so the
+  full edge-based commands are needed anyway and the K3 version would be thrown away. Updated Task 2/5
+  bullets accordingly. **Next: Task 3** (generic combinatorial core — `inducedContains` + a pruned
+  generator generic in the predicate, multi-graph-ready per D3).

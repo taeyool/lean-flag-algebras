@@ -255,6 +255,80 @@ theorem not_hasTri_iff_triangleDensity_eq_zero {n : ℕ} (G : Sym2Graph n) :
   rw [hasTri_iff_triangleDensity_ne_zero]
   exact not_ne_iff
 
+/-! ## Wiring: the pruned generator produces exactly the analytic K₃-free flags (Task 2)
+
+The end-to-end statement connecting the genuine-pruning generator (`augRepsTriFree`, which
+never builds a triangle) to the analytic forbid-free set the framework uses — via the Task-1
+bridge. A pruning-based forbid-free generation cites this in place of the full-enumeration
+completeness: note it mentions neither a canonical forbidden flag nor the full enumeration. -/
+
+/-- `dedupStep` keeps only graphs drawn from `acc` or the new graph `x`. -/
+theorem dedupStep_subset {n : ℕ} (acc : List (Sym2Graph n)) (x G : Sym2Graph n) :
+    G ∈ dedupStep acc x → G ∈ acc ++ [x] := by
+  unfold dedupStep
+  split <;> intro h
+  · exact List.mem_append_left _ h
+  · exact h
+
+/-- Survivors of the `dedupStep` fold come from the input list. -/
+theorem foldl_dedupStep_subset {n : ℕ} (xs : List (Sym2Graph n)) :
+    ∀ (acc : List (Sym2Graph n)) (G : Sym2Graph n),
+      G ∈ xs.foldl dedupStep acc → G ∈ acc ++ xs := by
+  induction xs with
+  | nil => intro acc G h; simpa using h
+  | cons x rest ih =>
+    intro acc G h
+    simp only [List.foldl_cons] at h
+    have h2 := ih (dedupStep acc x) G h
+    rw [List.mem_append] at h2
+    rcases h2 with h2 | h2
+    · have h3 := dedupStep_subset acc x G h2
+      rw [List.mem_append, List.mem_singleton] at h3
+      rcases h3 with h3 | h3
+      · exact List.mem_append_left _ h3
+      · exact h3 ▸ List.mem_append_right _ (List.mem_cons_self ..)
+    · exact List.mem_append_right _ (List.mem_cons_of_mem _ h2)
+
+/-- Every representative produced by the pruned generator is triangle-free. -/
+theorem augRepsTriFree_triFree : ∀ (n : ℕ), ∀ R ∈ augRepsTriFree n, ¬ hasTri R := by
+  intro n
+  cases n with
+  | zero => intro R _ htri; obtain ⟨a, _⟩ := htri; exact a.elim0
+  | succ m =>
+    intro R hR
+    have hsub := foldl_dedupStep_subset ((augRepsTriFree m).flatMap augmentAllTriFree) [] R hR
+    rw [List.nil_append, List.mem_flatMap] at hsub
+    obtain ⟨_, _, hRG⟩ := hsub
+    rw [augmentAllTriFree, List.mem_filter] at hRG
+    exact triFreeB_eq_true.mp hRG.2
+
+/-- The empty-typed flags produced by genuine pruning: the quotient classes of the
+triangle-free representatives. -/
+def prunedTriFreeFlags (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
+  (augRepsTriFree n).map (Quotient.mk (Sym2GraphSetoid n))
+
+/-- **Genuine pruning is correct w.r.t. the analytic K₃-density.** The pruned generator
+produces exactly the empty-typed flags of zero induced K₃-density — never enumerating any
+triangle-containing graph, and without reference to any canonical forbidden flag. This is the
+lemma a pruning-based `flagSetHfree_…_eq` would cite instead of the full-enumeration
+`native_decide`. -/
+theorem prunedTriFreeFlags_toFinset_eq (n : ℕ) :
+    (prunedTriFreeFlags n).toFinset
+      = Finset.univ.filter (fun S => sym2EmptyTypeFlagDensity₁ ⟦triangleGraph⟧ S = 0) := by
+  apply Finset.ext
+  intro S
+  simp only [prunedTriFreeFlags, List.mem_toFinset, List.mem_map, Finset.mem_filter,
+    Finset.mem_univ, true_and]
+  obtain ⟨G, rfl⟩ := Quotient.exists_rep S
+  rw [← not_hasTri_iff_triangleDensity_eq_zero]
+  constructor
+  · rintro ⟨R, hRmem, hRG⟩ htri
+    exact augRepsTriFree_triFree n R hRmem
+      (hasTri_of_eqv (Sym2GraphEqv.symm (Quotient.exact hRG)) htri)
+  · intro hG
+    obtain ⟨R, hRmem, hRiso⟩ := augRepsTriFree_complete n G hG
+    exact ⟨R, hRmem, Quotient.sound (Sym2GraphEqv.symm hRiso)⟩
+
 /-! ## Status: the combinatorial↔analytic bridge is proved (Task 1)
 
 `not_hasTri_iff_triangleDensity_eq_zero` is the bridge between the *combinatorial* predicate
