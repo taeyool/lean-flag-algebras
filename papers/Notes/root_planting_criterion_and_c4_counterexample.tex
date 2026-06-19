@@ -1973,13 +1973,16 @@ interior works'' weakening of substitution-closure's universal ``every interior 
 
 \section{A finite local planting criterion}
 
-\Cref{thm:blowup-root-plantable} is the broad closure theorem above.  It proves
-root-plantability by a global operation: whenever the quotient exhibits a finite
-labelled witness $(G,\theta)$, one blows up the vertices of $G$ and stays inside the
-class.  The planted copies of the labelled vertices then form a positive-density set of
-root placements, and bounded flag densities still look almost like they did in
-$(G,\theta)$.  In other words, a view that was visible only by hand-picking the roots has
-been made visible to random roots.
+We now turn from global closure hypotheses to a local question: can a specific labelled
+witness be planted without requiring the whole class to be closed under blow-ups?  In the
+proof of \cref{thm:blowup-root-plantable}, the starting point was a constrained labelled
+limit $\psi\in Q_\sigma$, approximated by large finite $\sigma$-flags $(G,\theta)$ in the
+class.  The proof then made the roots in such a finite witness typical by a global
+operation: blow up the vertices of $G$ while staying inside the class.  The planted copies
+of the labelled vertices form a positive-density set of root placements, and the densities
+of flags of any fixed size still look almost like they did in $(G,\theta)$.  In other
+words, a view that was visible only by hand-picking the roots has been made visible to
+random roots.
 
 The next examples, especially the $C_5$-free class, do not have such a global closure
 property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
@@ -1995,9 +1998,9 @@ up to error $\eps$.  Then every sufficiently large labelled witness $(G,\theta)$
 class should have a larger in-class graph $H$ containing many good placements of the
 roots.  ``Many'' means a positive proportion on the $|V(H)|^k$ scale, encoded by the
 constant $\delta$; this is what will become positive probability under random labelling.
-For every good placement, all bounded $\sigma$-flag statistics are nearly the same as in
-the original witness.  Thus the quotient view of $(G,\theta)$ can be made typical without
-assuming any global blow-up closure of the class.
+For every good placement, all $\sigma$-flag statistics involving at most $m$ vertices are
+nearly the same as in the original witness.  Thus the quotient view of $(G,\theta)$ can be
+made typical without assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
