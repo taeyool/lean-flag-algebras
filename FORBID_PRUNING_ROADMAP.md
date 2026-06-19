@@ -94,13 +94,20 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   K3-specifically now would just be redone in Task 5. The wiring theorem above is the K3 instance of
   what Task 5's generic commands will cite.
 
-- `[ ]` **3. Generalize the combinatorial core (generic, multi-graph-ready).**
-  - `inducedContains (F : Sym2Graph m) (G : Sym2Graph n) : Prop` + `Decidable`.
-  - A **generic** pruned generator over an abstract predicate `p` with hypotheses
-    `p_of_eqv` (iso-invariance) and `p_of_restrict` (vertex-deletion monotonicity), plus its
-    completeness theorem — generalizing `augRepsTriFree` / `augRepsTriFree_complete`.
-  - Instances: single F (`¬ inducedContains F ·`) and family (`∀ F ∈ Fs, ¬ inducedContains F ·`).
-  - Validate counts (K4, C4, C5) by `native_decide`.
+- `[x]` **3. Generalize the combinatorial core (generic, multi-graph-ready).** DONE in
+  `Flags/ForbidFreePruned.lean`, sorry-free.
+  - `inducedContains (F : Sym2Graph m) (G : Sym2Graph n)` — induced embedding (`↔` on edges) +
+    `Decidable`; iso-invariance `inducedContains_of_eqv`; vertex-deletion monotonicity
+    `inducedContains_of_restrict`.
+  - Generic pruned generator `augRepsFreeB (q : (k) → Sym2Graph k → Bool)` (+ `augmentAllFreeB`),
+    with completeness `augRepsFreeB_complete` (given `q` iso-invariant + preserved by `restrict`)
+    and soundness `augRepsFreeB_free` (given `q` holds at the empty base) — generalizing
+    `augRepsTriFree` / `_complete` / `_triFree`.
+  - Instances: single F (`qFree` + `qFree_iso` / `qFree_restrict` + `augRepsFreeB_qFree_complete` /
+    `_free`) and **finite family** (`qFreeFamily` over `List (Σ m, Sym2Graph m)` + analogous lemmas
+    + `augRepsFreeB_qFreeFamily_complete`).
+  - Validated by `native_decide` (pruned reps = `augReps`-filtered reps): K4, C4, C5 (n = 4/5) and a
+    {K4, C4} family (n = 5).
 
 - `[ ]` **4. Generalize the bridge.** `inducedFree F G ↔ flagDensity₁ F (unlabel ⟦G⟧) = 0`
   for arbitrary (induced) F, reusing the step-1 proof. Family version is the conjunction
@@ -164,3 +171,16 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   full edge-based commands are needed anyway and the K3 version would be thrown away. Updated Task 2/5
   bullets accordingly. **Next: Task 3** (generic combinatorial core — `inducedContains` + a pruned
   generator generic in the predicate, multi-graph-ready per D3).
+- **2026-06-19** — **Task 3 DONE** (sorry-free, builds). Added the generic combinatorial core to
+  `Flags/ForbidFreePruned.lean`: `inducedContains` (induced embedding; + `Decidable`,
+  `inducedContains_of_eqv`, `inducedContains_of_restrict`); the predicate-generic pruned generator
+  `augRepsFreeB` (+ `augmentAllFreeB`) with `augRepsFreeB_complete` and `augRepsFreeB_free`; the
+  single-graph instance `qFree` and the finite-family instance `qFreeFamily` (over
+  `List (Σ m, Sym2Graph m)`), each with iso/restrict lemmas + a completeness wrapper. Validated
+  pruned-count = filter-count by `native_decide` for K4/C4/C5 and a {K4, C4} family. The generator
+  proofs are a near-mechanical generalization of the K3 ones (`q ·= true` for `¬ hasTri`, `hq_iso`
+  for `hasTri_of_eqv`, `hq_restrict` for `hasTri_of_restrict`); `inducedContains_of_eqv/_restrict`
+  mirror `hasTri_of_eqv/_restrict` via an explicit embedding composed with the iso permutation /
+  `Fin.castSucc`. **Next: Task 4** — generalize the bridge to
+  `¬ inducedContains F G ↔ flagDensity₁ F (unlabel ⟦G⟧) = 0`, reusing the Task-1 proof; the family
+  version is the conjunction.

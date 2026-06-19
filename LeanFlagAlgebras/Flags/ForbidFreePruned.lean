@@ -347,4 +347,205 @@ with the framework's `isHfreeGraph` via this bridge (and the canonical K₃ flag
 `⟦triangleGraph⟧ = Sym2Flag_3_0_0_3` by `Quotient.sound`). The general arbitrary-`F` lift is
 Tasks 3–5 in `FORBID_PRUNING_ROADMAP.md`. -/
 
+/-! ## Generic combinatorial core (Task 3)
+
+A general *induced*-containment predicate `inducedContains F G`, and a pruned generator
+`augRepsFreeB` that is **generic in the (Bool) H-free predicate** `q`, with its completeness
+and soundness. The single forbidden graph instantiates `q := qFree F`; a finite family would
+instantiate `q := fun _ G => decide (∀ F ∈ Fs, ¬ inducedContains F G)` (per D3). This
+generalizes `hasTri` / `augRepsTriFree` and is the foundation for the arbitrary-`F` bridge
+(Task 4) and wiring (Task 5). -/
+
+/-- `G` contains `F` as an *induced* subgraph: an injection of `F`'s vertices into `G`'s
+preserving adjacency *and* non-adjacency (the `↔`). -/
+def inducedContains {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) : Prop :=
+  ∃ f : Fin m ↪ Fin n, ∀ i j : Fin m, (s(f i, f j) ∈ G.edges ↔ s(i, j) ∈ F.edges)
+
+instance {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) : Decidable (inducedContains F G) := by
+  unfold inducedContains; infer_instance
+
+/-- Induced containment is an isomorphism invariant (transport the embedding along the
+edge-preserving permutation from `G ∼sf G'`). -/
+theorem inducedContains_of_eqv {m n : ℕ} {F : Sym2Graph m} {G G' : Sym2Graph n}
+    (h : G ∼sf G') (hG : inducedContains F G) : inducedContains F G' := by
+  obtain ⟨φ, hφ⟩ := edge_mem_iff_of_eqv h
+  obtain ⟨f, hf⟩ := hG
+  refine ⟨f.trans φ.toEmbedding, fun i j => ?_⟩
+  simp only [Function.Embedding.trans_apply, Equiv.coe_toEmbedding]
+  rw [← hf i j, hφ s(f i, f j), Sym2.map_pair_eq]
+
+/-- **Vertex-deletion monotonicity.** An induced copy of `F` in `restrict H` is an induced
+copy in `H`; contrapositively, `F`-freeness is preserved by `restrict`. -/
+theorem inducedContains_of_restrict {m n : ℕ} {F : Sym2Graph m} {H : Sym2Graph (n + 1)}
+    (h : inducedContains F (restrict H)) : inducedContains F H := by
+  obtain ⟨f, hf⟩ := h
+  refine ⟨f.trans ⟨Fin.castSucc, Fin.castSucc_injective n⟩, fun i j => ?_⟩
+  simp only [Function.Embedding.trans_apply, Function.Embedding.coeFn_mk]
+  rw [← hf i j, mem_restrict_edges, Sym2.map_pair_eq]
+  constructor
+  · intro hmem
+    refine ⟨fun hd => ?_, hmem⟩
+    rw [Sym2.mk_isDiag_iff] at hd
+    exact H.edges_valid _ hmem (by rw [Sym2.mk_isDiag_iff]; exact congrArg Fin.castSucc hd)
+  · exact fun h => h.2
+
+/-- All `q`-free one-vertex augmentations of `G` (generic in the Bool predicate `q`). -/
+def augmentAllFreeB (q : (k : ℕ) → Sym2Graph k → Bool) {n : ℕ} (G : Sym2Graph n) :
+    List (Sym2Graph (n + 1)) :=
+  (augmentAll G).filter (fun H => q (n + 1) H)
+
+/-- Predicate-generic pruned generator: augment only `q`-free representatives, keep only the
+`q`-free augmentations, dedup. With `q := qFree F` this never builds an `F`-containing graph;
+a finite family of forbidden graphs is another instance of `q`. -/
+def augRepsFreeB (q : (k : ℕ) → Sym2Graph k → Bool) : (n : ℕ) → List (Sym2Graph n)
+  | 0 => [⟨∅, by simp⟩]
+  | n + 1 => ((augRepsFreeB q n).flatMap (augmentAllFreeB q)).foldl dedupStep []
+
+/-- **Completeness of the generic pruned generator.** If `q` is iso-invariant and preserved
+by `restrict`, every `q`-free graph is `∼sf` to a representative produced by `augRepsFreeB q`.
+Mirrors `augRepsTriFree_complete`. -/
+theorem augRepsFreeB_complete (q : (k : ℕ) → Sym2Graph k → Bool)
+    (hq_iso : ∀ {k : ℕ} {G G' : Sym2Graph k}, G ∼sf G' → q k G = q k G')
+    (hq_restrict : ∀ {k : ℕ} {H : Sym2Graph (k + 1)}, q (k + 1) H = true → q k (restrict H) = true) :
+    ∀ (n : ℕ) (G : Sym2Graph n), q n G = true → ∃ R ∈ augRepsFreeB q n, G ∼sf R
+  | 0 => by
+    intro G _
+    haveI : IsEmpty (Sym2 (Fin 0)) :=
+      ⟨fun e => by induction e using Sym2.ind with | _ a b => exact a.elim0⟩
+    refine ⟨⟨∅, by simp⟩, List.mem_cons_self, ?_⟩
+    exact sym2GraphEqv_of_equiv (Equiv.refl (Fin 0)) (fun e => isEmptyElim e)
+  | n + 1 => by
+    intro H hH
+    have hRestr : q n (restrict H) = true := hq_restrict hH
+    obtain ⟨R₀, hR₀mem, hR₀iso⟩ := augRepsFreeB_complete q hq_iso hq_restrict n (restrict H) hRestr
+    obtain ⟨S', hS'⟩ := augment_transport hR₀iso (neighborsOfLast H)
+    have hHiso : H ∼sf augment R₀ S' := by rw [augment_restrict_eq H]; exact hS'
+    have hAug : q (n + 1) (augment R₀ S') = true := by rw [← hq_iso hHiso]; exact hH
+    have hmemFilt : augment R₀ S' ∈ augmentAllFreeB q R₀ :=
+      List.mem_filter.mpr ⟨mem_augmentAll R₀ S', hAug⟩
+    have hmemFlat : augment R₀ S' ∈ (augRepsFreeB q n).flatMap (augmentAllFreeB q) :=
+      List.mem_flatMap.mpr ⟨R₀, hR₀mem, hmemFilt⟩
+    obtain ⟨R, hRmem, hRiso⟩ :=
+      foldl_dedupStep_complete ((augRepsFreeB q n).flatMap (augmentAllFreeB q)) []
+        (augment R₀ S') hmemFlat
+    exact ⟨R, hRmem, Sym2GraphEqv.trans hHiso hRiso⟩
+
+/-- **Soundness of the generic pruned generator.** Every representative it produces is
+`q`-free, provided the empty base graph is (`hq0`). -/
+theorem augRepsFreeB_free (q : (k : ℕ) → Sym2Graph k → Bool)
+    (hq0 : q 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true) :
+    ∀ (n : ℕ) (R : Sym2Graph n), R ∈ augRepsFreeB q n → q n R = true := by
+  intro n
+  cases n with
+  | zero =>
+    intro R hR
+    change R ∈ [(⟨∅, by simp⟩ : Sym2Graph 0)] at hR
+    rw [List.mem_singleton] at hR
+    subst hR
+    exact hq0
+  | succ m =>
+    intro R hR
+    have hsub := foldl_dedupStep_subset ((augRepsFreeB q m).flatMap (augmentAllFreeB q)) [] R hR
+    rw [List.nil_append, List.mem_flatMap] at hsub
+    obtain ⟨_, _, hRG⟩ := hsub
+    rw [augmentAllFreeB, List.mem_filter] at hRG
+    exact hRG.2
+
+/-! ### Single forbidden graph: instantiate the generic generator with `q := qFree F`. -/
+
+/-- The single-forbidden-graph H-free Bool predicate: `F`-free iff no induced copy of `F`. -/
+def qFree {m : ℕ} (F : Sym2Graph m) : (k : ℕ) → Sym2Graph k → Bool :=
+  fun _ G => !decide (inducedContains F G)
+
+theorem qFree_eq_true {m k : ℕ} (F : Sym2Graph m) (G : Sym2Graph k) :
+    qFree F k G = true ↔ ¬ inducedContains F G := by
+  simp [qFree]
+
+theorem qFree_iso {m k : ℕ} (F : Sym2Graph m) {G G' : Sym2Graph k} (h : G ∼sf G') :
+    qFree F k G = qFree F k G' := by
+  unfold qFree
+  congr 1
+  exact decide_eq_decide.mpr ⟨inducedContains_of_eqv h, inducedContains_of_eqv (Sym2GraphEqv.symm h)⟩
+
+theorem qFree_restrict {m k : ℕ} (F : Sym2Graph m) {H : Sym2Graph (k + 1)}
+    (hH : qFree F (k + 1) H = true) : qFree F k (restrict H) = true := by
+  rw [qFree_eq_true] at hH ⊢
+  exact mt inducedContains_of_restrict hH
+
+/-- Completeness for a single forbidden graph: every `F`-free graph is `∼sf` a pruned rep. -/
+theorem augRepsFreeB_qFree_complete {m : ℕ} (F : Sym2Graph m) (n : ℕ) (G : Sym2Graph n)
+    (hG : ¬ inducedContains F G) : ∃ R ∈ augRepsFreeB (qFree F) n, G ∼sf R :=
+  augRepsFreeB_complete (qFree F) (qFree_iso F) (fun {_ _} h => qFree_restrict F h) n G
+    ((qFree_eq_true F G).mpr hG)
+
+/-- Soundness for a single (nonempty) forbidden graph: every pruned rep is `F`-free. -/
+theorem augRepsFreeB_qFree_free {m : ℕ} (F : Sym2Graph m) (hm : 0 < m)
+    (n : ℕ) (R : Sym2Graph n) (hR : R ∈ augRepsFreeB (qFree F) n) : ¬ inducedContains F R := by
+  rw [← qFree_eq_true]
+  refine augRepsFreeB_free (qFree F) ?_ n R hR
+  rw [qFree_eq_true]
+  rintro ⟨f, _⟩
+  exact (f ⟨0, hm⟩).elim0
+
+/-! ### Finite family of forbidden graphs (per D3): another instance of the same generator. -/
+
+/-- H-free Bool predicate for a finite family `Fs`: free of *every* `Fp ∈ Fs` (induced). The
+graphs may have different sizes (`Σ m, Sym2Graph m`). -/
+def qFreeFamily (Fs : List (Σ m : ℕ, Sym2Graph m)) : (k : ℕ) → Sym2Graph k → Bool :=
+  fun _ G => decide (∀ Fp ∈ Fs, ¬ inducedContains Fp.2 G)
+
+theorem qFreeFamily_iso (Fs : List (Σ m : ℕ, Sym2Graph m)) {k : ℕ} {G G' : Sym2Graph k}
+    (h : G ∼sf G') : qFreeFamily Fs k G = qFreeFamily Fs k G' := by
+  simp only [qFreeFamily, decide_eq_decide]
+  constructor
+  · exact fun hG Fp hFp => mt (inducedContains_of_eqv (Sym2GraphEqv.symm h)) (hG Fp hFp)
+  · exact fun hG' Fp hFp => mt (inducedContains_of_eqv h) (hG' Fp hFp)
+
+theorem qFreeFamily_restrict (Fs : List (Σ m : ℕ, Sym2Graph m)) {k : ℕ} {H : Sym2Graph (k + 1)}
+    (hH : qFreeFamily Fs (k + 1) H = true) : qFreeFamily Fs k (restrict H) = true := by
+  simp only [qFreeFamily, decide_eq_true_eq] at hH ⊢
+  exact fun Fp hFp => mt inducedContains_of_restrict (hH Fp hFp)
+
+/-- Completeness for a finite family: every graph free of all `Fp ∈ Fs` is a pruned rep. -/
+theorem augRepsFreeB_qFreeFamily_complete (Fs : List (Σ m : ℕ, Sym2Graph m)) (n : ℕ)
+    (G : Sym2Graph n) (hG : ∀ Fp ∈ Fs, ¬ inducedContains Fp.2 G) :
+    ∃ R ∈ augRepsFreeB (qFreeFamily Fs) n, G ∼sf R :=
+  augRepsFreeB_complete (qFreeFamily Fs) (qFreeFamily_iso Fs)
+    (fun {_ _} h => qFreeFamily_restrict Fs h) n G
+    (by simp only [qFreeFamily, decide_eq_true_eq]; exact hG)
+
+/-! ### Validation: the pruned generator agrees with the filter (for K₄, C₄, C₅). -/
+
+/-- `K₄` as a computable graph. -/
+def K4graph : Sym2Graph 4 where
+  edges := {s(0, 1), s(0, 2), s(0, 3), s(1, 2), s(1, 3), s(2, 3)}
+  edges_valid := by decide
+
+/-- The 4-cycle `C₄` as a computable graph. -/
+def C4graph : Sym2Graph 4 where
+  edges := {s(0, 1), s(1, 2), s(2, 3), s(3, 0)}
+  edges_valid := by decide
+
+/-- The 5-cycle `C₅` as a computable graph. -/
+def C5graph : Sym2Graph 5 where
+  edges := {s(0, 1), s(1, 2), s(2, 3), s(3, 4), s(4, 0)}
+  edges_valid := by decide
+
+-- The pruned `F`-free representative count matches the count obtained by filtering the full
+-- representative list `augReps` — i.e. the generic pruning is sound and complete on these.
+example : (augRepsFreeB (qFree K4graph) 4).length
+    = ((augReps 4).filter (qFree K4graph 4)).length := by native_decide
+example : (augRepsFreeB (qFree K4graph) 5).length
+    = ((augReps 5).filter (qFree K4graph 5)).length := by native_decide
+example : (augRepsFreeB (qFree C4graph) 4).length
+    = ((augReps 4).filter (qFree C4graph 4)).length := by native_decide
+example : (augRepsFreeB (qFree C4graph) 5).length
+    = ((augReps 5).filter (qFree C4graph 5)).length := by native_decide
+example : (augRepsFreeB (qFree C5graph) 5).length
+    = ((augReps 5).filter (qFree C5graph 5)).length := by native_decide
+
+-- Family: simultaneously forbidding `K₄` and `C₄` (the multi-graph instance of D3).
+example : (augRepsFreeB (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩]) 5).length
+    = ((augReps 5).filter (qFreeFamily [⟨4, K4graph⟩, ⟨4, C4graph⟩] 5)).length := by native_decide
+
 end FlagAlgebras.Compute
