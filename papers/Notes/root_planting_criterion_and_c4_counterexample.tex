@@ -1973,14 +1973,31 @@ interior works'' weakening of substitution-closure's universal ``every interior 
 
 \section{A finite local planting criterion}
 
-\Cref{thm:blowup-root-plantable} is the most general closure theorem above, but
-it is still a global closure statement.  The $C_5$-free
-constructions below are more local: one first builds a planted modular blow-up
-and then repairs a sparse set of dangerous edges.  The following criterion packages
-exactly what such a repair has to prove.  It is deliberately finite and checkable:
-given a sufficiently large finite labelled witness, construct large constrained graphs
-in which the labelled witness appears with positive root probability and with all
-bounded $\sigma$-flag densities nearly unchanged.
+\Cref{thm:blowup-root-plantable} is the broad closure theorem above.  It proves
+root-plantability by a global operation: whenever the quotient exhibits a finite
+labelled witness $(G,\theta)$, one blows up the vertices of $G$ and stays inside the
+class.  The planted copies of the labelled vertices then form a positive-density set of
+root placements, and bounded flag densities still look almost like they did in
+$(G,\theta)$.  In other words, a view that was visible only by hand-picking the roots has
+been made visible to random roots.
+
+The next examples, especially the $C_5$-free class, do not have such a global closure
+property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
+is more local: after planting the roots, one can repair the few dangerous edges and still
+change so little of the graph that no fixed flag-density test notices.  The purpose of
+this section is to isolate exactly the finite statement that such a repair must prove.
+The payoff is \cref{thm:finite-local-planting}: this finite planting property already
+implies root-plantability.
+
+The definition below says the following.  Fix a resolution $m$ and a tolerance
+$\eps$: we are only asking to preserve the densities of flags with at most $m$ vertices,
+up to error $\eps$.  Then every sufficiently large labelled witness $(G,\theta)$ in the
+class should have a larger in-class graph $H$ containing many good placements of the
+roots.  ``Many'' means a positive proportion on the $|V(H)|^k$ scale, encoded by the
+constant $\delta$; this is what will become positive probability under random labelling.
+For every good placement, all bounded $\sigma$-flag statistics are nearly the same as in
+the original witness.  Thus the quotient view of $(G,\theta)$ can be made typical without
+assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
