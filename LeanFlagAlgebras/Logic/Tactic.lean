@@ -88,7 +88,9 @@ partial def collectPrefixConstants (prefixStr : String) (e : Expr) : Array Name 
   let rec collectAux (e : Expr) (acc : Array Name) : Array Name :=
     match e with
     | .const n _ =>
-      if n.toString.startsWith prefixStr && !acc.contains n then
+      -- Match the final name component, so namespace-qualified constants
+      -- (e.g. `MantelTheorem.FlagAlgebra_…`) are collected too.
+      if (match n with | .str _ s => s.startsWith prefixStr | _ => false) && !acc.contains n then
         acc.push n
       else
         acc

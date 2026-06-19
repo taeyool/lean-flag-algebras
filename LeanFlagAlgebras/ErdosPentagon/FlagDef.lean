@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.Flags.FlagDef
+import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Forbid.TuranDensity
 import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.ErdosPentagon.MatrixDef
@@ -15,6 +15,22 @@ sum-of-squares certificate, and the flag-algebra vectors `v₀`/`v₁`/`v₂` of
 open FlagAlgebras SimpleGraph Compute
 
 namespace ErdosPentagonAPI
+
+-- Locally generate the flags this development uses (formerly from the global
+-- `Flags/FlagDef.lean`): empty-typed underlying flags (n = 3 for the forbidden `K3`,
+-- n = 4/5 for the pattern/host and the pentagon `C5`), the forbidden graph `K3`, and the
+-- σ-typed (3-labelled) pattern/host flags. These `ErdosPentagonAPI.*` constants are
+-- shared by `FlagMul` / `Lemmas` / `ErdosPentagon` (which all import this file).
+generate_empty_typed_flags 3
+generate_empty_typed_flags 4
+generate_empty_typed_flags 5
+generate_complete_graph 3 3
+generate_flags 4 3 0
+generate_flags 4 3 1
+generate_flags 4 3 2
+generate_flags 5 3 0
+generate_flags 5 3 1
+generate_flags 5 3 2
 
 /-- The 5-cycle `C₅` on `Fin 5` (edges `01,12,23,34,40`); the target subgraph
 whose triangle-free density is being maximised. -/

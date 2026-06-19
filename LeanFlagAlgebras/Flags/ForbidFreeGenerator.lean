@@ -324,7 +324,7 @@ elab "generate_forbid_free_flags" nStx:num kStx:num mStx:num gStx:ident : comman
   let (r, idx) ← parseFlagRIdx forbidFlag.getId.toString
   let forbidSym2 := mkIdent (Name.mkSimple s!"Sym2Flag_{r}_0_0_{idx}")
 
-  unless (← getEnv).contains (Name.mkSimple s!"Flag_{n}_0_0_0") do
+  unless (← isDeclaredInScope (Name.mkSimple s!"Flag_{n}_0_0_0")) do
     throwError s!"`generate_forbid_free_flags {n} {k} {m} {tag}` requires the underlying \
 {tag}-free empty-typed flags. Add `generate_forbid_free_empty_typed_flags {n} {tag}` first."
 

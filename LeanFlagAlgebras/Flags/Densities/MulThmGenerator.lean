@@ -63,7 +63,7 @@ def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Nam
     let nd := densityPF1F2GivenG hostN g.2.1 g.2.2.1 patN f1.2.1 f1.2.2.1 patN f2.2.1 f2.2.2.1
     if nd.1 != 0 then
       let hostName := Name.mkSimple s!"FlagAlgebra_{hostTag}_{h}"
-      if !((← getEnv).contains hostName) then throwError s!"Missing definition: {hostName}"
+      if !(← isDeclaredInScope hostName) then throwError s!"Missing definition: {hostName}"
       rhsTerms := rhsTerms.push (← coeffSmulFlagTerm nd.1 nd.2 hostName)
   sumTerms patternFlagTypeName rhsTerms
 
@@ -132,13 +132,12 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
       let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
       let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
 
-      let env ← getEnv
-      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
-      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
-      if !(env.contains flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
-      if !(env.contains flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+      if !(← isDeclaredInScope lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(← isDeclaredInScope lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(← isDeclaredInScope flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(← isDeclaredInScope flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
 
-      if !(env.contains thmName.getId) then
+      if !(← isDeclaredInScope thmName.getId) then
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
@@ -245,13 +244,12 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
       let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
       let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
 
-      let env ← getEnv
-      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
-      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
-      if !(env.contains flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
-      if !(env.contains flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+      if !(← isDeclaredInScope lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(← isDeclaredInScope lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(← isDeclaredInScope flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(← isDeclaredInScope flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
 
-      if !(env.contains thmName.getId) then
+      if !(← isDeclaredInScope thmName.getId) then
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
@@ -332,11 +330,10 @@ elab "generate_mul_theorems" patS:num hostS:num kS:num mS:num : command => do
       let flagAlgOrd2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{jOrd}")
       let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
 
-      let env ← getEnv
-      if !(env.contains lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
-      if !(env.contains lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(← isDeclaredInScope lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(← isDeclaredInScope lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
 
-      if !(env.contains thmName.getId) then
+      if !(← isDeclaredInScope thmName.getId) then
         let idsArray : Array (TSyntax `ident) := #[flagAlgOrd1, flagAlgOrd2]
         if i ≤ j then
           elabCommand (← `(
