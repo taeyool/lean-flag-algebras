@@ -658,4 +658,76 @@ theorem inducedContains_triangleGraph_iff_hasTri {n : ℕ} (G : Sym2Graph n) :
     inducedContains triangleGraph G ↔ hasTri G :=
   (inducedContainsCount_pos_iff triangleGraph G).symm.trans (triangleCount_pos_iff G)
 
+/-! ## Generic wiring (Task 5): the pruned generator produces exactly the analytic `F`-free flags.
+
+The arbitrary-`F` analogue of the Task-2 wiring `prunedTriFreeFlags_toFinset_eq`: the genuine
+pruned generator `augRepsFreeB (qFree F)` (which never builds a graph containing an induced `F`)
+produces *exactly* the empty-typed flags of zero induced `F`-density — no full enumeration and no
+canonical forbidden flag. This is the lemma the edge-based forbid-free commands cite. The family
+version covers simultaneous forbidding (D3). The remaining command-surface work — making the
+`generate_forbid_free_*` commands accept a `Sym2Graph m` term and route through these — is Task 5b. -/
+
+/-- Soundness for a finite family of (nonempty) forbidden graphs: every pruned representative is
+free of every `Fp ∈ Fs`. (The family analogue of `augRepsFreeB_qFree_free`.) -/
+theorem augRepsFreeB_qFreeFamily_free (Fs : List (Σ m : ℕ, Sym2Graph m))
+    (hFs : ∀ Fp ∈ Fs, 0 < Fp.1) (n : ℕ) (R : Sym2Graph n)
+    (hR : R ∈ augRepsFreeB (qFreeFamily Fs) n) : ∀ Fp ∈ Fs, ¬ inducedContains Fp.2 R := by
+  have hq0 : qFreeFamily Fs 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true := by
+    simp only [qFreeFamily, decide_eq_true_eq]
+    rintro Fp hFp ⟨f, _⟩
+    exact (f ⟨0, hFs Fp hFp⟩).elim0
+  have h := augRepsFreeB_free (qFreeFamily Fs) hq0 n R hR
+  simpa only [qFreeFamily, decide_eq_true_eq] using h
+
+/-- The empty-typed flags produced by genuine pruning for a single forbidden graph `F`: the
+quotient classes of the `F`-free representatives. -/
+def prunedFreeFlags {m : ℕ} (F : Sym2Graph m) (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
+  (augRepsFreeB (qFree F) n).map (Quotient.mk (Sym2GraphSetoid n))
+
+/-- **Genuine pruning is correct w.r.t. the analytic induced `F`-density** (single `F`). The
+pruned generator produces exactly the empty-typed flags of zero induced `F`-density — never
+enumerating any graph that contains an induced `F`, and with no reference to a canonical forbidden
+flag. The arbitrary-`F` analogue of `prunedTriFreeFlags_toFinset_eq`. -/
+theorem prunedFreeFlags_toFinset_eq {m : ℕ} (F : Sym2Graph m) (hm : 0 < m) (n : ℕ) :
+    (prunedFreeFlags F n).toFinset
+      = Finset.univ.filter (fun S => sym2EmptyTypeFlagDensity₁ ⟦F⟧ S = 0) := by
+  apply Finset.ext
+  intro S
+  simp only [prunedFreeFlags, List.mem_toFinset, List.mem_map, Finset.mem_filter,
+    Finset.mem_univ, true_and]
+  obtain ⟨G, rfl⟩ := Quotient.exists_rep S
+  rw [← not_inducedContains_iff_density_eq_zero]
+  constructor
+  · rintro ⟨R, hRmem, hRG⟩ hcon
+    exact augRepsFreeB_qFree_free F hm n R hRmem
+      (inducedContains_of_eqv (Sym2GraphEqv.symm (Quotient.exact hRG)) hcon)
+  · intro hG
+    obtain ⟨R, hRmem, hRiso⟩ := augRepsFreeB_qFree_complete F n G hG
+    exact ⟨R, hRmem, Quotient.sound (Sym2GraphEqv.symm hRiso)⟩
+
+/-- The empty-typed flags produced by genuine pruning for a finite family `Fs`. -/
+def prunedFreeFamilyFlags (Fs : List (Σ m : ℕ, Sym2Graph m)) (n : ℕ) :
+    List (Sym2EmptyTypedFlag n) :=
+  (augRepsFreeB (qFreeFamily Fs) n).map (Quotient.mk (Sym2GraphSetoid n))
+
+/-- **Genuine pruning is correct for a finite family** (per D3): the pruned generator produces
+exactly the empty-typed flags whose induced `Fp`-density vanishes for every `Fp ∈ Fs`. -/
+theorem prunedFreeFamilyFlags_toFinset_eq (Fs : List (Σ m : ℕ, Sym2Graph m))
+    (hFs : ∀ Fp ∈ Fs, 0 < Fp.1) (n : ℕ) :
+    (prunedFreeFamilyFlags Fs n).toFinset
+      = Finset.univ.filter (fun S => ∀ Fp ∈ Fs, sym2EmptyTypeFlagDensity₁ ⟦Fp.2⟧ S = 0) := by
+  apply Finset.ext
+  intro S
+  simp only [prunedFreeFamilyFlags, List.mem_toFinset, List.mem_map, Finset.mem_filter,
+    Finset.mem_univ, true_and]
+  obtain ⟨G, rfl⟩ := Quotient.exists_rep S
+  rw [← forall_not_inducedContains_iff_forall_density_eq_zero]
+  constructor
+  · rintro ⟨R, hRmem, hRG⟩ Fp hFp hcon
+    exact augRepsFreeB_qFreeFamily_free Fs hFs n R hRmem Fp hFp
+      (inducedContains_of_eqv (Sym2GraphEqv.symm (Quotient.exact hRG)) hcon)
+  · intro hall
+    obtain ⟨R, hRmem, hRiso⟩ := augRepsFreeB_qFreeFamily_complete Fs n G hall
+    exact ⟨R, hRmem, Quotient.sound (Sym2GraphEqv.symm hRiso)⟩
+
 end FlagAlgebras.Compute

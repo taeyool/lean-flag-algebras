@@ -121,13 +121,36 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   - Consistency `inducedContains_triangleGraph_iff_hasTri` (the general predicate at `triangleGraph` is
     `hasTri`, so this subsumes the Task-1 K₃ bridge).
 
-- `[ ]` **5. Generalize the wiring** (also absorbs Task 2's deferred command work). Forbid-free
-  commands accept an arbitrary `F : Sym2Graph m` (and later a family), using the step-3 generic
-  pruned generator + step-4 bridge (the generic analogue of `prunedTriFreeFlags_toFinset_eq`). Reuse
-  `genFlagsHfree_toFinset_eq`'s generic plumbing. **This is where the pruning perf win and the
-  edge-based (flag-free) command interface are actually realized** — `resolveForbidGraph` / `isHfree`
-  read `F`'s edges directly (no canonical forbidden flag), so examples drop `generate_empty_typed_flags r`
-  + `generate_complete_graph`. (`MantelHfree`'s flag-free port lands here / in Task 7.)
+- `[x]` **5a. Generalize the wiring (theorem level).** DONE in `Flags/ForbidFreePruned.lean`,
+  sorry-free. The arbitrary-`F` analogue of `prunedTriFreeFlags_toFinset_eq`:
+  - `prunedFreeFlags F n` + `prunedFreeFlags_toFinset_eq` (single `F`, needs `0 < m`): the genuine
+    pruned generator `augRepsFreeB (qFree F)` produces *exactly*
+    `univ.filter (sym2EmptyTypeFlagDensity₁ ⟦F⟧ · = 0)` — via the Task-4 bridge
+    `not_inducedContains_iff_density_eq_zero` + Task-3 soundness/completeness. No full enumeration,
+    no canonical forbidden flag.
+  - `prunedFreeFamilyFlags Fs n` + `prunedFreeFamilyFlags_toFinset_eq` (family, needs all `Fp` nonempty):
+    `= univ.filter (∀ Fp ∈ Fs, density ⟦Fp.2⟧ · = 0)`, via the family bridge + new family soundness
+    `augRepsFreeB_qFreeFamily_free`.
+  These are the lemmas the edge-based commands cite. Proofs are near-verbatim generalizations of the
+  K₃ wiring (swap `hasTri`→`inducedContains F`, `triangleGraph`→`F`).
+
+- `[ ]` **5b. Generalize the wiring (command surface).** The remaining meta-programming. Make the
+  `generate_forbid_free_*` commands accept a `Sym2Graph m` term (D2) and route generation through the
+  pruned generator, citing the 5a lemmas. **Scope (from explorer map):** the forbid graph is threaded
+  as a string tag through 5 stages in `Densities/DensityThmGenerator.lean` — `resolveForbidGraph` →
+  `forbidFlagIdentOfToFinFlagEq` → `parseFlagRIdx` → `evalCanonicalEdgeLists` →
+  `containsForbiddenSubgraph`. Six forbid-aware commands consume it
+  (`generate_forbid_density_theorems`, `generate_flag_pair_density_theorems`,
+  `generate_forbid_mul_theorems`, `generate_forbid_free_mul_theorems`,
+  `generate_forbid_free_empty_typed_flags`, `generate_forbid_free_flags`) across ~10 example files
+  (~60 invocations, all `K3`/`K4`/`K5`). **Correctness note:** `containsForbiddenSubgraph` is
+  *non-induced*, so the current free-index split is only correct for complete-graph forbids (induced =
+  non-induced); routing through the *induced* pruned generator (5a) is what makes arbitrary-`F`
+  (induced) forbidding correct. Steps: (i) edge-based forbid argument (term, not tag) + structural
+  edge extraction; (ii) replace the empty-typed completeness `native_decide` with a citation of
+  `prunedFreeFlags_toFinset_eq`; (iii) realize the pruning perf win (no `genSym2GraphsDedup`
+  full-enum + filter); (iv) drop `generate_empty_typed_flags r` + `generate_complete_graph` from
+  examples. (`MantelHfree`'s flag-free port lands here / in Task 7.) Large; separable from 5a.
 
 - `[ ]` **6. User-facing format + convenience commands.** Declare F by edge list (small DSL →
   `Sym2Graph m`); wrappers `forbid_complete_graph r`, `forbid_cycle k`, `forbid_path k`, …; and
@@ -207,3 +230,20 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   commands over arbitrary `F`/families using the Task-3 generator + Task-4 bridge; the generic analogue
   of `prunedTriFreeFlags_toFinset_eq`), which also realizes the pruning perf win and the `MantelHfree`
   flag-free port.
+- **2026-06-19** — **Task 5a DONE** (theorem-level generic wiring, sorry-free, builds). Added the
+  arbitrary-`F` analogue of `prunedTriFreeFlags_toFinset_eq` to `Flags/ForbidFreePruned.lean`:
+  `prunedFreeFlags F n` / `prunedFreeFlags_toFinset_eq` (single `F`, `0 < m`) and
+  `prunedFreeFamilyFlags Fs n` / `prunedFreeFamilyFlags_toFinset_eq` (family, all `Fp` nonempty), plus
+  the new family soundness `augRepsFreeB_qFreeFamily_free`. The pruned generator `augRepsFreeB (qFree F)`
+  produces exactly `univ.filter (density ⟦F⟧ · = 0)` (resp. the family conjunction), via the Task-4
+  bridge + Task-3 soundness/completeness — no full enumeration, no canonical forbidden flag. Proofs are
+  near-verbatim generalizations of the K₃ wiring. **Plan change:** split Task 5 into **5a (theorem level,
+  done)** and **5b (command surface, deferred)**. Rationale: an explorer map showed the command refactor
+  is large and separable — the forbid is threaded as a string tag through a 5-stage pipeline
+  (`resolveForbidGraph` → `forbidFlagIdentOfToFinFlagEq` → `parseFlagRIdx` → `evalCanonicalEdgeLists` →
+  `containsForbiddenSubgraph`) consumed by 6 commands across ~10 files (~60 invocations). It also
+  surfaced a correctness point: `containsForbiddenSubgraph` is *non-induced*, so the current free-index
+  split is only sound for complete-graph forbids; the induced pruned generator (5a) is what makes
+  arbitrary-`F` induced forbidding correct — so 5b is also a correctness upgrade, not just perf. **Next:
+  Task 5b** (edge-based commands routing through `prunedFreeFlags_toFinset_eq`) or Task 6 (user-facing
+  DSL), per the user's preference.
