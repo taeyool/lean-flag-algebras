@@ -1493,8 +1493,8 @@ this function in the Lean development, counts the induced subgraph lists of
 \lean{multinomialCoefficient} to \lean{r\_list} and
 \(|V(G)| - |\sigma|\), written in Lean as the difference between \lean{G.size}
 and the size of \(\sigma\); it counts the possible choices of
-pairwise-disjoint unlabeled vertex sets of those sizes from the non-type
-vertices of \lean{G}.  Thus the quotient is a rational number.
+pairwise-disjoint vertex sets of those sizes among the unlabeled vertices of
+\lean{G}.  Thus the quotient is a rational number.
 The \lean{noncomputable} keyword signals that Lean cannot synthesize an
 algorithm to evaluate this definition directly.  This poses no obstacle to
 formalizing flag algebra itself, but becomes relevant when applying the algebra
@@ -1756,10 +1756,11 @@ as
 \]
 where \(F_j.1\) is the total number of vertices of \(F_j\), and \(n_0\) is the
 number of labeled vertices in \(\sigma\).  Equivalently, the intended output
-size is at least \(F_1.1 + F_2.1 - n_0\): the non-type vertices of the two
-flags are sampled disjointly, while the \(n_0\) type vertices are shared.  The
-theorem then says that any two such admissible output sizes give equivalent
-flag vectors, justifying the choice of the minimal size in \lean{flagMul}.
+size is at least \(F_1.1 + F_2.1 - n_0\): the unlabeled vertices outside the
+type are sampled disjointly in the two flags, while the \(n_0\) type vertices
+are shared.  The theorem then says that any two such admissible output sizes
+give equivalent flag vectors, justifying the choice of the minimal size in
+\lean{flagMul}.
 
 With these definitions in place, we prove that \lean{FlagAlgebra} $\sigma$ is
 a commutative associative $\mathbb{R}$-algebra, completing the formalization of the algebraic structure of $\mathcal{A}^\sigma$.
@@ -2383,11 +2384,11 @@ The first bottleneck is flag isomorphism.  We replace the generic
 \lean{isEmptyIsoFast\_bool} avoids permutation enumeration entirely when the
 edge counts differ.  For typed flags, \lean{isIsoFast\_bool} additionally
 fixes the labeled vertices (which a $\sigma$-flag isomorphism must preserve)
-and enumerates permutations only of the non-type vertices, reducing the
-pentagon proof's search from $5! = 120$ to $(5-3)! = 2$ candidate maps per
-check.  This constant-factor improvement is multiplied across thousands of
-generated density lemmas, making the difference between a viable evaluator
-and a stuck proof search.
+and enumerates permutations only of the unlabeled vertices outside the type,
+reducing the pentagon proof's search from $5! = 120$ to $(5-3)! = 2$ candidate
+maps per check.  This constant-factor improvement is multiplied across
+thousands of generated density lemmas, making the difference between a viable
+evaluator and a stuck proof search.
 
 Both checkers come with correctness theorems for both outcomes
 (\lean{true\_correct} and \lean{false\_correct}), justifying their

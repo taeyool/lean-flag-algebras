@@ -118,10 +118,11 @@ ask when it is also \emph{complete}, capturing every true restricted inequality.
 Our main result (a support-closure criterion) is that the two semantics agree, for every
 flag-algebra element, exactly when a geometric condition we call \emph{root-plantability}
 holds: every labelled limit of the class must be realisable as a typical local view of an
-unlabelled one.  This holds whenever the class is closed under blow-ups---recovering the
-clique-free classes, triangle-free among them---and more generally under substitution.  It can
-also fail: the $C_4$-free graphs are a counterexample. The common cause is \emph{pinning}, a local quantity frozen
-across the class while the quotient still sees it vary.
+unlabelled one.  This holds whenever the class is blow-up-closed---recovering the
+clique-free classes, triangle-free among them---with substitution-closure as a stronger
+special case.  It can also fail: the $C_4$-free graphs are a counterexample.  The common
+cause is \emph{pinning}, a local quantity frozen across the class while the quotient
+still sees it vary.
 
 This incompleteness, however, never weakens an actual density bound: such a bound concerns
 unlabelled graphs, where the two semantics always coincide, and the gap lives only in the
@@ -142,7 +143,7 @@ A recurring task in extremal combinatorics is to prove a density inequality that
 only under a forbidden-subgraph constraint---for instance, ``in every triangle-free graph,
 this combination of subgraph densities is non-negative.''  Razborov's flag algebras
 \cite{Razborov2007} are among the most successful tools for such problems, and they
-underlie many computer-assisted density bounds. This paper concerns a foundational question that the
+underlie many computer-assisted density bounds.  This paper concerns a foundational question that the
 constrained setting raises: \emph{how should a flag-algebra proof enforce the constraint,
 and does the choice cost anything?}
 
@@ -204,7 +205,8 @@ under random labelling yet cannot be seen in the quotient, and the quotient calc
 \emph{incomplete}.  (\Cref{def:root-planting} makes the set $S_\sigma$ precise.)
 
 \paragraph{When root-planting works.}
-Root-plantability holds whenever the constrained class is closed under \emph{blow-ups}
+Root-plantability holds whenever the constrained class is closed under
+\emph{independent blow-ups}
 (replacing each vertex by an independent set of clones): blowing one vertex up into a
 \emph{clone class} of positive density---a positive fraction of all the vertices, so that a
 random vertex lands in it with probability bounded away from zero---lets one realise at
@@ -271,8 +273,8 @@ bound.
 
 \paragraph{The \texorpdfstring{$C_5$}{C5}-free graphs.}
 These are the first dense, non-blow-up-closed class for which the question is genuinely
-open, and they show that root-plantability must be asked \emph{one type at a time}.  At
-the one-vertex type, and at the two-vertex non-edge type (two non-adjacent roots), a local
+nontrivial, and they show that root-plantability must be asked \emph{one type at a time}.
+At the one-vertex type, and at the two-vertex non-edge type (two non-adjacent roots), a local
 repair of the blow-up construction works, so root-plantability holds
 (\cref{thm:c5-one-root,thm:c5-nonedge-root}).  At the two-vertex \emph{edge} type (two
 adjacent roots) it
@@ -287,8 +289,9 @@ Finally, ensemble semantics is strictly more flexible than the quotient, because
 impose \emph{non-hereditary} limit constraints---conditions such as ``edge density exactly
 $\tfrac12$'' that do not define a hereditary class and so have no quotient algebra at all.
 Fixing such a constraint and reading off the local structure it forces turns a
-flag-algebra certificate into information about extremal configurations.  On the Mantel equality slice---the triangle-free limits that actually attain edge
-density $\tfrac12$---this recovers the local statistics of the extremal complete bipartite
+flag-algebra certificate into information about extremal configurations.  On the Mantel
+equality slice---the triangle-free limits that actually attain edge density
+$\tfrac12$---this recovers the local statistics of the extremal complete bipartite
 limit, for instance that a typical vertex has degree $\tfrac12$ (\cref{thm:relative-mantel}).
 Applied to the verified $K_4$-free $P_4$ certificate, the same mechanism forces every
 extremiser to have edge density $\tfrac23$, hence (by the equality case of Tur\'an's
@@ -678,8 +681,8 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 
 We now give a checkable sufficient condition for root-plantability of graph
 classes, built on an independent blow-up construction.  The idea is that when a class is
-closed under blow-ups, a labelled vertex can be duplicated into a clone class of
-positive density, so a configuration the quotient exhibits only at an exceptional vertex
+closed under independent blow-ups, a labelled vertex can be duplicated into a clone class
+of positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
 root-plantability requires.  Recall that $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
 all finite simple graphs.  If $\K$ is a hereditary class of finite graphs, we write
@@ -716,7 +719,7 @@ vertices visible with positive probability, while keeping the densities
 $p(F,\cdot)$ of every fixed $\sigma$-flag $F$ close to their values in
 $(G,\theta)$.  For that purpose we first prescribe the desired
 fractions of the future blow-up lying over each vertex of $G$: the labelled
-vertices together receive total mass $\lambda$, and the non-labelled vertices
+vertices together receive total mass $\lambda$, and the unlabelled vertices
 share the remaining mass uniformly.  These desired fractions are the
 \emph{target weights}.  If $k>0$, set
 \[
@@ -812,7 +815,7 @@ Thus $R$ is the union of the clone classes attached to the labelled vertices
 The proof has two parts.  First we show that, with probability
 $O_m(\lambda+1/(n-k)+\operatorname{err}_N)$, the sample is bad: it either meets
 one of the labelled clone classes in $R$ or chooses two vertices from the same
-non-labelled clone class.  Second, on the complementary good event, projection
+unlabelled clone class.  Second, on the complementary good event, projection
 from the blow-up to $G$ preserves the induced $\sigma$-flag.  The only remaining
 question on the good event is whether the projected $q$-set is close to a
 uniform $q$-subset of $U$; this will contribute only
@@ -850,7 +853,7 @@ for a constant $K_m^{(1)}$ depending only on $m$.
 
 Now condition on the sample avoiding $R$.  Under this conditioning, the exposed
 sequence is a uniform ordered sample without replacement from the union of the
-non-labelled clone classes.  For each $v\in U$, write $s_v:=|C_v|$ and
+unlabelled clone classes.  For each $v\in U$, write $s_v:=|C_v|$ and
 $S:=\sum_{u\in U}s_u$.  Each exposed position then falls in the clone class
 $C_v$ with marginal probability $s_v/S$.
 
@@ -905,9 +908,9 @@ $s_v/S\le 1/(n-k)+K_m^{(0)}\operatorname{err}_N$ for a constant
 $K_m^{(0)}$ depending only on $m$.
 
 Now fix two exposed positions $a<b$.  We bound the probability that $X_a$ and
-$X_b$ land in the same non-labelled clone class, still under the conditioning
+$X_b$ land in the same unlabelled clone class, still under the conditioning
 that the whole sample avoids $R$.  If $X_a\in C_v$, then $X_b$ is uniform among
-the remaining $S-1$ vertices in the non-labelled clone classes.  Therefore
+the remaining $S-1$ vertices in the unlabelled clone classes.  Therefore
 \[
   \Prob[X_b\in C_v\mid X_a\in C_v,\ \text{the sample avoids }R]
   =
@@ -918,7 +921,7 @@ the remaining $S-1$ vertices in the non-labelled clone classes.  Therefore
 Averaging over the possible clone class $C_v$ of $X_a$ gives the explicit bound
 \[
   \begin{aligned}
-  &\Prob[X_a,X_b\text{ lie in the same non-labelled clone class}
+  &\Prob[X_a,X_b\text{ lie in the same unlabelled clone class}
         \mid \text{the sample avoids }R]  \\
   &\qquad =
   \sum_{v\in U}
@@ -932,7 +935,7 @@ Averaging over the possible clone class $C_v$ of $X_a$ gives the explicit bound
   \end{aligned}
 \]
 Let $E_{\mathrm{coll}}$ be the event that two sampled vertices
-lie in the same non-labelled clone class.  Equivalently, for the ordered
+lie in the same unlabelled clone class.  Equivalently, for the ordered
 exposure, $E_{\mathrm{coll}}$ is the union over pairs $a<b$ of the events that
 $X_a$ and $X_b$ land in the same clone class.  A second union bound over the at
 most $\binom q2\le\binom m2$ pairs gives
@@ -944,7 +947,7 @@ most $\binom q2\le\binom m2$ pairs gives
 for a constant $K_m^{(2)}$ depending only on $m$.
 
 Call the sample good if it avoids $R$ and no two sampled vertices lie in the same
-non-labelled clone class.  Combining the two bounds above,
+unlabelled clone class.  Combining the two bounds above,
 \[
   \Prob[\text{bad}]
   \le
@@ -1291,7 +1294,9 @@ $j$, and put
 \]
 Since $G_t\in\K$ and $\K$ is clone-closed, every $B_j$ lies in $\K$.  Passing to
 a subsequence if necessary, the unlabelled graphs $B_j$ converge to some
-$\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a positive lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$; hence $\phi_0(\brak\sigma)>0$.
+$\phi_0\in Q_0$.  The counting argument in \cref{lem:planted-mass} gives a positive
+lower bound, independent of $j$, on the density of embeddings of $\sigma$ in $B_j$;
+hence $\phi_0(\brak\sigma)>0$.
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
 $X_\sigma\subseteq Y_\sigma$ is a closed subspace.  For each fixed $j$ and each
@@ -1458,7 +1463,7 @@ $p(F_0,(B_N^+,\widehat\theta))$ by sampling the $q=|F_0|-|\sigma|$ additional
 vertices from $B_N^+\setminus\operatorname{im}\widehat\theta$.  Use exactly the
 same bad event as in \cref{lem:planted-estimate}: the sample is bad if it meets
 one of the labelled clone classes or if two sampled vertices lie in the same
-non-labelled clone class.  The probability of this bad event depends only on the
+unlabelled clone class.  The probability of this bad event depends only on the
 sizes of the clone classes and on sampling without replacement.  The two
 union-bound estimates in the proof of \cref{lem:planted-estimate} therefore
 apply without change and give
@@ -1471,7 +1476,7 @@ with the same constant $K_m^{(3)}$ used there.
 
 On the complementary good event, the extra edges inside the complete clone
 classes are never observed.  Indeed, no sampled vertex lies in a labelled clone
-class, and no two sampled vertices lie in the same non-labelled clone class.
+class, and no two sampled vertices lie in the same unlabelled clone class.
 Thus every adjacency involving a sampled vertex is an adjacency between two
 distinct clone classes, hence is exactly the adjacency of the corresponding base
 vertices in $G$.  The planted labelled vertices also lie in distinct clone
@@ -1706,20 +1711,20 @@ clone-closed.
 
 \section{A common generalisation: blow-up-closed classes}\label{sec:blowup-closed}
 
-The proofs of \cref{thm:clone-root-plantable,thm:true-clone-root-plantable} are, in all
-but one detail, the same proof.  Inspecting them shows that the planted estimate and
-the planted-mass bound never use the \emph{internal} structure of a blown-up vertex:
-the good event keeps the sampled vertices in distinct clone classes, where every
-observed adjacency is a between-class adjacency, governed by the base graph $G$ alone
-(\cref{lem:planted-estimate,lem:true-planted-estimate}).  Independent blow-ups (clone
-classes empty) and complete blow-ups (clone classes complete) differ only in the
-unobserved interior, so the same argument applies to \emph{any} way of replacing each
-vertex by a graph.  This section isolates the exact closure hypothesis the argument
-needs, of which clone-closure, true-clone-closure, and the substitution-closure below
-are all special cases.
+The proofs of \cref{thm:clone-root-plantable,thm:true-clone-root-plantable} differ only
+in what is put inside each clone class.  Inspecting the estimates shows that this
+interior is never observed.  On the good sampling event, the sampled vertices lie in
+distinct clone classes, so every adjacency that matters is a between-class adjacency
+and is governed by the base graph $G$ alone
+(\cref{lem:planted-estimate,lem:true-planted-estimate}).  Independent blow-ups and
+complete blow-ups therefore differ only in data the sampling argument ignores.  The same
+proof works for any graph placed inside each blown-up vertex.  This section isolates the
+exact closure hypothesis needed for that argument; clone-closure, true-clone-closure,
+and substitution-closure are all special cases.
 
 \begin{definition}[Vertex blow-up]\label{def:vertex-blowup}
-Let $G$ be a finite graph, $v\in V(G)$, and $H$ a finite graph disjoint from $G$.  The
+Let $G$ be a finite graph, $v\in V(G)$, and $H$ a finite graph whose vertex set is
+disjoint from $G$.  The
 \emph{blow-up of $v$ to $H$}, written $G[v\to H]$, is obtained by deleting $v$ and adding
 a disjoint copy of $H$, joining every vertex of $H$ to every $G$-neighbour of $v$ and
 keeping the internal edges of $H$.  (Equivalently $G[v\to H]=G[H_w:w\in V(G)]$ with
@@ -1732,14 +1737,15 @@ blow-up (\cref{def:complete-blow-up}).
 
 \begin{definition}[Blow-up-closed hereditary class]\label{def:blow-up-closed}
 A hereditary graph class $\K$ is \emph{blow-up-closed} if for every $G\in\K$, every
-$v\in V(G)$, and every $N\in\mathbb N$ there is a graph $H$ with $|H|\ge N$ such that
-$G[v\to H]\in\K$.
+$v\in V(G)$, and every $N\in\mathbb N$ there is a finite graph $H$ with $|H|\ge N$ such
+that $G[v\to H]\in\K$.
 \end{definition}
 
 In words: in a blow-up-closed class one may always blow up a single vertex to an
 arbitrarily large graph without leaving the class.  The class chooses the interior $H$;
-this is the only difference from substitution-closure, which would demand that
-\emph{every} in-class interior be allowed (see \cref{rem:strictness} below).
+the graph $H$ is not required to belong to $\K$ by itself.  This is the key difference
+from substitution-closure, which demands that \emph{every} in-class interior be allowed
+(see \cref{rem:strictness} below).
 
 \begin{lemma}[From single vertices to a full uniform blow-up]\label{lem:blowup-iterate}
 Let $\K$ be blow-up-closed, $G\in\K$, and $m\ge1$.  Then there are graphs
@@ -1748,15 +1754,21 @@ $G[H_v:v\in V(G)]$ belongs to $\K$.
 \end{lemma}
 
 \begin{proof}
-Process the vertices $v_1,\dots,v_n$ of $G$ one at a time.  Put $G_0=G$.  Given
-$G_{i-1}\in\K$, apply \cref{def:blow-up-closed} to $G_{i-1}$, its vertex $v_i$, and
-$N=m$: there is $H'_i$ with $|H'_i|\ge m$ and $G_{i-1}[v_i\to H'_i]\in\K$.  By heredity,
-restrict $H'_i$ to an induced subgraph $H_i$ on exactly $m$ vertices; then
-$G_{i-1}[v_i\to H_i]$ is an induced subgraph of $G_{i-1}[v_i\to H'_i]$, so it lies in
-$\K$.  Set $G_i=G_{i-1}[v_i\to H_i]\in\K$.  Blowing up $v_i$ does not disturb the clone
-classes already created at $v_1,\dots,v_{i-1}$, and all between-class adjacencies remain
-those of $G$ (each vertex of $H_i$ inherits the adjacencies of $v_i$).  Hence
-$G_n=G[H_v:v\in V(G)]$ with $|H_v|=m$ for all $v$, and $G_n\in\K$.
+List the vertices of the original graph as $v_1,\dots,v_n$ and process them in that
+order.  Put $G_0=G$.  At stage $i$, the vertices $v_i,\dots,v_n$ have not yet been
+replaced, while $v_1,\dots,v_{i-1}$ have already been replaced by their new fibres.  Since
+$G_{i-1}\in\K$, apply \cref{def:blow-up-closed} inside the current graph $G_{i-1}$ to the
+still-present vertex $v_i$ with $N=m$.  This gives a graph $H'_i$ with $|H'_i|\ge m$ and
+$G_{i-1}[v_i\to H'_i]\in\K$.
+
+Choose an induced subgraph $H_i\subseteq H'_i$ on exactly $m$ vertices.  By heredity,
+$G_{i-1}[v_i\to H_i]$ is again in $\K$, because it is an induced subgraph of
+$G_{i-1}[v_i\to H'_i]$.  Set $G_i=G_{i-1}[v_i\to H_i]$.
+Replacing $v_i$ does not change any fibre already created over
+$v_1,\dots,v_{i-1}$, and every new vertex in $H_i$ inherits exactly the old adjacencies of
+$v_i$ to the vertices that remain or have already been blown up.  Thus, after all
+vertices have been processed, the resulting graph is precisely the simultaneous blow-up
+$G[H_v:v\in V(G)]$ with $|H_v|=m$ for every original vertex $v$, and it lies in $\K$.
 \end{proof}
 
 The remaining ingredient is that the planting estimates
@@ -1765,32 +1777,50 @@ not just independent and complete ones.  This is the formal content of the openi
 the interior is never observed.
 
 \begin{lemma}[Planting is blind to the interior]\label{lem:general-planting-estimate}
-Let $\K$ be hereditary and let $F=(G,\theta)$ be a $\sigma$-flag with $|\sigma|=k$ and
-$|G|=n>k$.  Let $B=G[H_v:v\in V(G)]$ be any simultaneous blow-up of $G$, with the clone
-class $H_v$ of size $s_v\ge1$ at each $v$.  Then the estimates of
-\cref{lem:planted-estimate,lem:planted-mass} hold for $B$ in place of the independent
-blow-up, with the same constants and the same hypotheses on the clone sizes $s_v$; the
-interiors $H_v$ play no role.
+Let $(G,\theta)$ be a $\sigma$-flag with $|\sigma|=k$ and $|G|=n>k$.  Let
+$B=G[H_v:v\in V(G)]$ be any simultaneous blow-up of $G$, with
+$s_v:=|H_v|\ge1$ and total size $N=\sum_v s_v$.  Fix $0<\lambda\le1/2$, define the target
+weights $w_v$ from $(G,\theta)$ and $\lambda$ as in \cref{lem:planted-estimate}, and put
+\[
+  \operatorname{err}_N:=\sum_{v\in V(G)}\left|\frac{s_v}{N}-w_v\right|.
+\]
+Then the conclusions of \cref{lem:planted-estimate,lem:planted-mass} hold for $B$ in
+place of the independent blow-up with the same constants.  In particular, for every
+integer $m\ge k$, every planted labelling
+$\widehat\theta$ (meaning $\widehat\theta(i)\in H_{\theta(i)}$ for each labelled
+vertex $i$), and every test $\sigma$-flag $F_0$ with at most $m$ vertices,
+\[
+  \left|p(F_0,(B,\widehat\theta))-p(F_0,(G,\theta))\right|
+  \le
+  C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
+\]
+and, if $k=0$ or $\operatorname{err}_N\le\lambda/(2k)$, the planted embeddings have
+probability at least $c_{k,\lambda}$ under a uniformly random induced embedding of
+$\sigma$ into $B$.  Here $C_m$ and $c_{k,\lambda}$ are the constants from
+\cref{lem:planted-estimate,lem:planted-mass}.
 \end{lemma}
 
 \begin{proof}
 This is the proof of \cref{lem:true-planted-estimate} with ``complete'' replaced by
-``arbitrary''.  For the approximation estimate, sample the $q=|F_0|-k$ extra vertices and
-condition on the good event that no sampled vertex lies in a labelled clone class and that
-no two sampled vertices lie in the same clone class.  On this event every sampled vertex
-lies in a distinct clone class, so every adjacency involving a sampled vertex is an
-adjacency between two \emph{distinct} clone classes, and therefore equals the corresponding
-base adjacency in $G$---whatever the interiors $H_v$ are.  Hence the induced $\sigma$-flag
-seen in $B$ is exactly the one seen in $(G,\theta)$ after projecting to $G$, and an interior
-edge is never observed.  The probability of the bad event and the total-variation
-comparison with a uniform sample depend only on the sizes $s_v$ and on sampling without
-replacement, exactly as in \cref{lem:planted-estimate}.  For the planted-mass bound, every
-ordered choice of one vertex from each labelled clone class $H_{\theta(i)}$ is an induced
-copy of $\sigma$: the labelled clone classes are distinct and their mutual adjacencies are
-inherited from $(G,\theta)$.  So the planted count $\prod_i s_{\theta(i)}$ and its lower
-bound are unchanged.  By the same token an induced copy of $\sigma$ already arises from any
-transversal of $k$ labelled clone classes spanning an induced $\sigma$ in $G$, so the
-positive lower bound on the $\sigma$-type density of $B$ also carries over.
+``arbitrary''.  For the approximation estimate, fix a test flag $F_0$, sample the
+$q=|F_0|-k$ extra vertices, and condition on the good event that no sampled vertex lies in
+a labelled clone class and that no two sampled vertices lie in the same clone class.  On
+this event every sampled vertex lies in a distinct clone class, so every adjacency
+involving a sampled vertex is an adjacency between two \emph{distinct} clone classes and
+therefore equals the corresponding base adjacency in $G$, whatever the interiors $H_v$
+are.  Hence the induced $\sigma$-flag seen in $B$ is exactly the one seen in $(G,\theta)$
+after projecting to $G$, and an interior edge is never observed.  The probability of the
+bad event and the total-variation comparison with a uniform sample depend only on the
+sizes $s_v$ and on sampling without replacement, exactly as in
+\cref{lem:planted-estimate}.
+
+For the planted-mass bound, every ordered choice of one vertex from each labelled clone
+class $H_{\theta(i)}$ is an induced copy of $\sigma$: the labelled clone classes are
+distinct and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted
+count $\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
+induced copy of $\sigma$ already arises from any transversal of $k$ labelled clone classes
+spanning an induced $\sigma$ in $G$, so the positive lower bound on the $\sigma$-type
+density of $B$ also carries over.
 \end{proof}
 
 \begin{theorem}[Blow-up-closed classes are root-plantable]\label{thm:blowup-root-plantable}
@@ -1802,22 +1832,81 @@ $f\in\A^\sigma[\T_{\mathrm{Graph}}]$.
 
 \begin{proof}
 The inclusion $S_\sigma\subseteq Q_\sigma$ is the general support-passing statement,
-\cref{lem:support-passes-general}.  For the reverse inclusion we repeat the proof of
-\cref{thm:clone-root-plantable} verbatim, with one substitution.  As there, fix
-$\psi\in Q_\sigma$, represent it by in-class flags $(G_t,\theta_t)$ with $|G_t|\to\infty$,
-and fix one such base flag $(G_t,\theta_t)$.  For each $j$, \cref{lem:blowup-iterate}
-supplies a uniform blow-up $B_j=G_t[H_v^{(j)}:v\in V(G_t)]$ with $|H_v^{(j)}|=j$ for all
-$v$, and $B_j\in\K$.  By \cref{lem:general-planting-estimate} the planted estimate, the
-planted-mass bound, and the positive lower bound on the $\sigma$-type density all hold for
-$B_j$ with uniform clone sizes $j$, exactly as for the independent blow-ups of
-\cref{thm:clone-root-plantable}.  The closed-cylinder and Portmanteau argument of
-\cref{thm:clone-root-plantable} then puts positive mass arbitrarily close to $\psi$, so
-$\psi\in S_\sigma$.
+\cref{lem:support-passes-general}.  We prove the reverse inclusion.  Fix
+$\psi\in Q_\sigma$, and let $U$ be a basic neighbourhood of $\psi$ in $X_\sigma$, say
+\[
+  U=\{\chi\in X_\sigma:
+      |\chi(F_i)-\psi(F_i)|<\eps\text{ for }i=1,\ldots,s\},
+\]
+where the $F_i$ are finitely many $\sigma$-flags.  Write $k=|\sigma|$, and let
+$m\ge k$ bound the sizes of the $F_i$.
+
+Represent $\psi$ by in-class flags $(G_t,\theta_t)$ with $G_t\in\K$,
+$|G_t|\to\infty$, and $p(\cdot,(G_t,\theta_t))\to\psi$.  Choose one large base flag
+$(G_t,\theta_t)$, and write $n=|G_t|$, so that
+\[
+  |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/10
+  \quad(1\le i\le s),
+  \qquad
+  \frac{C_m}{n-k}<\eps/10.
+\]
+If $k>0$, also choose $t$ so large that $k/n\le1/2$ and $C_m k/n<\eps/10$, and set
+$\lambda:=k/n$.  If $k=0$, choose any $0<\lambda\le1/2$ with
+$C_m\lambda<\eps/10$.  This is the small point hidden by the phrase ``uniform blow-up'':
+for $k>0$, uniform clone classes have normalized weight $1/n$ at every vertex, exactly
+matching the target weights for $\lambda=k/n$.
+
+For each $j\ge1$, \cref{lem:blowup-iterate} gives a simultaneous blow-up
+\[
+  B_j=G_t[H_v^{(j)}:v\in V(G_t)]\in\K,
+  \qquad |H_v^{(j)}|=j\text{ for every }v.
+\]
+Thus the normalized clone-class sizes are all $1/n$.  With the choice of $\lambda$ above,
+the error term in \cref{lem:general-planting-estimate} is $0$ when $k>0$; when $k=0$ it is
+also $0$, since the target weights are uniform.  Passing to a subsequence, the unlabelled
+graphs $B_j$ converge to some constrained limit $\phi_0\in Q_0$.  Moreover, there are
+many induced copies of the type in $B_j$: for $k>0$, choosing one vertex from each
+labelled clone class gives $j^k=(1/n)^k|V(B_j)|^k$ ordered induced copies of $\sigma$,
+and for $k=0$ the empty type has density $1$.  Thus the $\sigma$-density of $B_j$ is
+bounded below by a positive constant independent of $j$, so
+$\phi_0(\brak\sigma)>0$.  The planted-mass estimate also gives a positive lower bound,
+independent of $j$, for the probability that a uniformly random induced embedding of
+$\sigma$ into $B_j$ is one of these planted embeddings.
+
+Let $Y_\sigma=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, and let $P_j$ be the pushforward
+to $Y_\sigma$ of the uniform measure on induced embeddings
+$\widehat\theta:\sigma\to B_j$, recording all finite flag densities.  The finite-graph
+random-extension theorem gives
+\[
+  P_j\Rightarrow \Ext_\sigma(\phi_0),
+\]
+with the limit measure concentrated on $X_\sigma$.  Define the closed cylinder
+\[
+  \widetilde C=
+  \{x\in Y_\sigma:
+    |x(F_i)-\psi(F_i)|\le\eps/2\text{ for all }i\}.
+\]
+For a planted embedding $\widehat\theta$, \cref{lem:general-planting-estimate} gives
+\[
+  |p(F_i,(B_j,\widehat\theta))-p(F_i,(G_t,\theta_t))|
+  \le C_m\left(\lambda+\frac1{n-k}\right)<\frac{2\eps}{10}
+\]
+for every $i$.  Together with the choice of $(G_t,\theta_t)$, this puts every planted
+embedding in $\widetilde C$.  Since planted embeddings have probability bounded below by a
+constant $c>0$, we have $P_j(\widetilde C)\ge c$ for all $j$.
+
+By Portmanteau, the closedness of $\widetilde C$ gives
+\[
+  \Ext_\sigma(\phi_0)(\widetilde C)\ge\limsup_j P_j(\widetilde C)\ge c>0.
+\]
+Because $\Ext_\sigma(\phi_0)$ is concentrated on $X_\sigma$, its support meets
+$\widetilde C\cap X_\sigma\subseteq U$.  Thus every basic neighbourhood of $\psi$ meets
+the support of some admissible random extension, so $\psi\in S_\sigma$.
 \end{proof}
 
 \Cref{thm:blowup-root-plantable} subsumes the two previous root-plantability theorems and
-extends them, because each of the three closure hypotheses already considered implies
-blow-up-closure.
+also yields the substitution theorem below, because each closure hypothesis in the next
+corollary implies blow-up-closure.
 
 \begin{corollary}\label{cor:closures-imply-blowup}
 Each of the following hereditary classes is blow-up-closed, and hence root-plantable at
@@ -1836,8 +1925,11 @@ every non-degenerate type:
 In each case $G[v\to H]$ is the corresponding one-vertex blow-up.  For (1),
 $G[v\to\overline{K_N}]$ is an independent blow-up of $G$, so it lies in $\K$ by
 clone-closure; for (2), $G[v\to K_N]$ is a complete blow-up, in $\K$ by
-true-clone-closure; for (3), $G[v\to H]=G[H_w:w\in V(G)]$ with the in-class fibre $H$ at
-$v$ and single vertices elsewhere, in $\K$ by substitution-closure.  Apply
+true-clone-closure.  For (3), an infinite hereditary class contains graphs of arbitrarily
+large order; otherwise, if all orders were bounded, there would be only finitely many
+graphs in the class.  Choose such an in-class graph $H$ with $|H|\ge N$.  Then
+$G[v\to H]=G[H_w:w\in V(G)]$ with the in-class fibre $H$ at $v$ and single vertices
+elsewhere, so it lies in $\K$ by substitution-closure.  Apply
 \cref{thm:blowup-root-plantable}.
 \end{proof}
 
@@ -1863,7 +1955,7 @@ Immediate from \cref{cor:closures-imply-blowup}(3) and
 
 \begin{remark}[Substitution-closure is strictly stronger]\label{rem:strictness}
 Substitution-closure demands $G[H_v:v\in V(G)]\in\K$ for \emph{all} in-class fibres $H_v$,
-whereas root planting only needs \emph{one} large blow-up of each base graph to stay in
+whereas the blow-up criterion only needs \emph{one} large blow-up of each base graph to stay in
 $\K$.  The gap is real and excludes \cref{thm:clone-root-plantable,thm:true-clone-root-plantable}:
 \begin{itemize}
 \item Triangle-free graphs are clone-closed but not substitution-closed: $K_2\in\K$, yet
@@ -1881,13 +1973,34 @@ interior works'' weakening of substitution-closure's universal ``every interior 
 
 \section{A finite local planting criterion}
 
-The substitution theorem is still a global closure statement.  The $C_5$-free
-constructions below are more local: one first builds a planted modular blow-up
-and then repairs a sparse set of dangerous edges.  The following criterion packages
-exactly what such a repair has to prove.  It is deliberately finite and checkable:
-given a sufficiently large finite labelled witness, construct large constrained graphs
-in which the labelled witness appears with positive root probability and with all
-bounded $\sigma$-flag densities nearly unchanged.
+We now turn from global closure hypotheses to a local question: can a specific labelled
+witness be planted without requiring the whole class to be closed under blow-ups?  In the
+proof of \cref{thm:blowup-root-plantable}, the starting point was a constrained labelled
+limit $\psi\in Q_\sigma$, approximated by large finite $\sigma$-flags $(G,\theta)$ in the
+class.  The proof then made the roots in such a finite witness typical by a global
+operation: blow up the vertices of $G$ while staying inside the class.  The planted copies
+of the labelled vertices form a positive-density set of root placements, and the densities
+of flags of any fixed size still look almost like they did in $(G,\theta)$.  In other
+words, a view that was visible only by hand-picking the roots has been made visible to
+random roots.
+
+The next examples, especially the $C_5$-free class, do not have such a global closure
+property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
+is more local: after planting the roots, one can repair the few dangerous edges and still
+change so little of the graph that no fixed flag-density test notices.  The purpose of
+this section is to isolate exactly the finite statement that such a repair must prove.
+The payoff is \cref{thm:finite-local-planting}: this finite planting property already
+implies root-plantability.
+
+The definition below says the following.  Fix a resolution $m$ and a tolerance
+$\eps$: we are only asking to preserve the densities of flags with at most $m$ vertices,
+up to error $\eps$.  Then every sufficiently large labelled witness $(G,\theta)$ in the
+class should have a larger in-class graph $H$ containing many good placements of the
+roots.  ``Many'' means a positive proportion on the $|V(H)|^k$ scale, encoded by the
+constant $\delta$; this is what will become positive probability under random labelling.
+For every good placement, all $\sigma$-flag statistics involving at most $m$ vertices are
+nearly the same as in the original witness.  Thus the quotient view of $(G,\theta)$ can be
+made typical without assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
@@ -1989,7 +2102,7 @@ $\psi\in S_\sigma$.
 \end{proof}
 
 \begin{remark}
-The pure blow-up and substitution theorems above prove finite local planting by
+The closure theorems above prove finite local planting by
 taking $\Theta$ to be the planted root choices.  The one-root and two-root
 non-edge $C_5$-free constructions below prove it differently: the planted graphs
 are obtained by a blow-up followed by deleting a sparse set of dangerous
@@ -2185,7 +2298,7 @@ is the classical K\H{o}v\'ari--S\'os--Tur\'an bound.
 
 Let
 \[
-  \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as a not-necessarily-induced subgraph}\}.
+  \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as a (not necessarily induced) subgraph}\}.
 \]
 This is hereditary; in the induced-subgraph language of flag algebras it is
 axiomatised by forbidding the three four-vertex graphs that contain a $C_4$ as a
@@ -2285,8 +2398,8 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
-$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In particular the complements of the classes in
-\cref{cor:degenerate-family}---complement-of-$C_4$-free,
+$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In
+particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
 root-plantable.
@@ -2317,7 +2430,7 @@ This refines, rather than closes, the problem of characterising root-plantabilit
 The $C_5$-free graphs show why the question must be asked at a fixed type.  At the
 one-vertex type their edge density is \emph{not} pinned---the class contains graphs of
 every density in $[0,\tfrac12]$, so no boundary-pinning obstruction applies---and a
-local root-cloning repair proves root-plantability there.  The same repair also handles
+local root-blow-up repair proves root-plantability there.  The same repair also handles
 the two-root non-edge type by cloning the two non-adjacent roots simultaneously.  At the
 two-root edge type, however, the triangle flag over the edge type is pinned to $0$ on
 random edge extensions, while a book graph gives a quotient edge with common-neighbour density
@@ -2619,13 +2732,16 @@ boundary pinning obstruction coming from common neighbours of an exceptional boo
 
 \section{The \texorpdfstring{$C_5$}{C5}-free split}
 
-The $C_5$-free graphs are dense and not clone-closed, so they are the first natural
-place to test root-plantability beyond the blow-up theorem.  They split sharply by
-type.  At the one-vertex type, the elementary pinning obstructions disappear and a local
-planting construction works.  At the two-root non-edge type, a simultaneous version of
-the same construction works.  At the two-root edge type, a book-edge construction gives a
-pinning obstruction.  Throughout, $C_5$-free again means containing no $C_5$ as a
-not-necessarily-induced subgraph (the densest such graphs being complete bipartite).
+The $C_5$-free graphs are dense and not blow-up-closed, so they are the first natural
+place to test root-plantability beyond the global closure theorem.  Indeed, in $K_4$,
+blowing up one vertex $v$ to two vertices $x,y$ creates a $5$-cycle
+$x-a-b-y-c-x$ through the three neighbours $a,b,c$ of $v$, regardless of the edge
+between $x$ and $y$.  They split sharply by type.  At the one-vertex type, the
+elementary pinning obstructions disappear and a local planting construction works.  At
+the two-root non-edge type, a simultaneous version of the same construction works.  At
+the two-root edge type, a book-edge construction gives a pinning obstruction.
+Throughout, $C_5$-free again means containing no $C_5$ as a (not necessarily induced)
+subgraph (the densest such graphs being complete bipartite).
 
 The key fact is a strong local constraint.
 
@@ -2667,8 +2783,8 @@ pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
 
 \subsection{The one-root planting theorem}
 
-The one-root case is the first example where root-plantability holds without
-clone-closure.  Ordinary false-twin duplication of a vertex may create $C_5$s:
+The one-root case is the first example where root-plantability holds without a
+global blow-up-closure hypothesis.  Ordinary false-twin duplication of a vertex may create $C_5$s:
 if the root sits in a triangle, cloning the root and one neighbour creates a
 five-cycle.  The repair is local.  Clone the root into a small positive-density
 independent set, but first delete all old edges inside its neighbourhood.  The
@@ -2751,8 +2867,8 @@ arbitrarily large graphs.  Hence
 \end{proof}
 
 \begin{remark}
-\Cref{thm:c5-one-root} is the promised local replacement for the clone-closed
-blow-up theorem in one rooted variable.  It uses two facts special to one root:
+\Cref{thm:c5-one-root} is the promised local replacement for the global
+blow-up-closure theorem in one rooted variable.  It uses two facts special to one root:
 the only dangerous new $C_5$s created by cloning the root pass through an old
 edge inside $N_G(r)$, and those old neighbourhood edges have density
 $O(1/|G|)$ in sampling for fixed labelled flags.  For larger types one would have to control
@@ -2855,7 +2971,7 @@ arbitrarily large empty graphs.  Hence
 \cref{lem:c5-nonedge-sparse-repair,thm:sparse-repair-planting} apply.
 \end{proof}
 
-For comparison, ordinary blow-ups detect exactly the triangles.
+For comparison, ordinary independent blow-ups detect exactly the triangles.
 
 \begin{lemma}\label{lem:c5-blowup}
 Every independent blow-up of a $C_5$-free graph $G$ is again $C_5$-free if and only
@@ -3009,7 +3125,7 @@ obstruction (\cref{thm:degenerate-obstruction})---already in the $C_4$-free
 instance---refutes equivalence under heredity alone.  The substantive task is therefore
 to find checkable sufficient conditions for root-plantability.  Clone-closure
 (\cref{thm:clone-root-plantable}), true-clone-closure (\cref{thm:true-clone-root-plantable}),
-and global substitution-closure (\cref{thm:substitution-root-plantable}) are three such
+and substitution-closure (\cref{thm:substitution-root-plantable}) are three such
 conditions, all subsumed by the single \emph{blow-up-closure} criterion
 (\cref{thm:blowup-root-plantable})---of which substitution-closure is in fact the strictest,
 not the broadest (\cref{rem:strictness}).  The remaining natural candidates involve
@@ -3143,8 +3259,8 @@ The equality constraint $\phi_0(\rho)=1/2$ is not hereditary, so it is not natur
 quotient flag algebra.  The relative ensemble support nevertheless records strong
 labelled consequences of being an extremal Mantel limit.  For instance,
 $e=\frac12\one_1$ on $S_1(Y_{\mathrm{Mantel}})$, while this equality is false in the
-ordinary triangle-free quotient: stars labelled at their centres give quotient points with $e=1$, and empty
-graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
+ordinary triangle-free quotient: stars labelled at their centres give quotient points
+with $e=1$, and empty graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
 local information about extremisers that the hereditary quotient deliberately forgets.
 \end{remark}
 
@@ -3646,7 +3762,7 @@ Four questions remain.
 \begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
   \item \textbf{Beyond sparse root repairs.}
   \Cref{thm:blowup-root-plantable} unifies pure false-clone blow-ups, pure true-clone
-  blow-ups, and full substitution closure
+  blow-ups, and full substitution-closure
   (\cref{thm:clone-root-plantable,thm:true-clone-root-plantable,thm:substitution-root-plantable})
   under blow-up-closure; \cref{thm:finite-local-planting} gives the abstract finite criterion; and
   \cref{thm:sparse-repair-planting} verifies it for sparse old-edge repairs after
