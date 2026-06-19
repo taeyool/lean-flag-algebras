@@ -235,8 +235,8 @@ sparse---every $n$-vertex $C_4$-free graph has only $o(n^2)$ edges---so almost e
 has vanishingly few neighbours.  The ensemble drops the single root at a \emph{random}
 vertex and measures its \emph{labelled edge density}---the fraction of the other vertices
 that root is joined to.  In a graph this sparse a random vertex has hardly any neighbours,
-so for almost every placement of the root this fraction is essentially $0$; in the limit it
-is \emph{almost surely} $0$ (that is, $0$ for all but a negligible set of root placements).
+so for almost every choice of the root this fraction is essentially $0$; in the limit it
+is \emph{almost surely} $0$ (that is, $0$ for all but a negligible set of root choices).
 The quotient, by contrast, may put the root wherever it likes.  The class contains
 arbitrarily large \emph{stars}---a single central vertex joined to many leaves and to
 nothing else---and rooting at such a centre gives labelled edge density $1$, because the
@@ -310,12 +310,12 @@ $\T_1$---and ``graph in $\T$'' means a finite graph belonging to that class.
 \paragraph{Types and flags.}
 A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
 (its \emph{roots})---$k$ distinguished vertices together with the edges among
-them.  An \emph{induced embedding} of $\sigma$ into a graph $H$ is an injective
+them.  An \emph{embedding} of $\sigma$ into a graph $H$ is an injective
 map from the labelled vertices of $\sigma$ to $V(H)$ that preserves both edges
 and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
 are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
 subgraph of $H$, with the labels kept in their prescribed order.
-A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished induced labelled
+A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled
 copy of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose
 vertices are marked so as to form the pattern $\sigma$.  The \emph{empty type}
 ($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
@@ -1169,7 +1169,7 @@ Keep the blow-up notation introduced above: $B_N=G^{\mathbf m}$, with clone
 classes $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
 $\operatorname{err}_N$; write $k:=|\sigma|$.  Consider the following finite
 random labelling experiment on the unlabelled graph $B_N$: choose uniformly from
-all induced embeddings $\widehat\theta:\sigma\to B_N$, where the labels of
+all embeddings $\widehat\theta:\sigma\to B_N$, where the labels of
 $\sigma$ are kept in their prescribed order.  If either $k=0$, or $k>0$ and
 $\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
 probability at least
@@ -1187,10 +1187,10 @@ $\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
 \begin{proof}
 For $k=0$ there is only the empty embedding, so the probability is $1$.  Assume
 $k>0$.  The random labelling above is not a uniform map from $\sigma$ to $B_N$;
-it is uniform over the finite set of induced labelled copies of $\sigma$ in
-$B_N$.  Every ordered choice of
-vertices $\widehat\theta(i)\in C_{\theta(i)}$ is an induced embedding of $\sigma$,
-because $\theta$ is an induced embedding into $G$ and the blow-up preserves the
+it is uniform over the finite set of labelled copies of $\sigma$ in
+$B_N$.  Every choice of vertices
+$\widehat\theta(i)\in C_{\theta(i)}$ is an embedding of $\sigma$,
+because $\theta$ is an embedding into $G$ and the blow-up preserves the
 adjacencies between distinct base vertices.  Since
 $\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
 \[
@@ -1205,8 +1205,8 @@ $\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
 The clone classes $C_{\theta(1)},\ldots,C_{\theta(k)}$ are distinct, since
 $\theta$ is injective.  Thus the choices of the $k$ labelled vertices may be
 made independently: there are $|C_{\theta(i)}|$ choices for the image of label
-$i$, and every resulting ordered choice is one of the planted induced embeddings
-counted above.  Hence the number of planted ordered embeddings is at least
+$i$, and every resulting choice is one of the planted embeddings counted above.
+Hence the number of planted embeddings is at least
 \[
   \prod_{i=1}^k |C_{\theta(i)}|
   \ge
@@ -1214,9 +1214,9 @@ counted above.  Hence the number of planted ordered embeddings is at least
 \]
 The last inequality is just the product of the individual lower bounds
 $|C_{\theta(i)}|\ge(\lambda/(2k))N$.
-The denominator in the random experiment is the total number of induced ordered
-embeddings of $\sigma$ into $B_N$.  This denominator is at most the number of all
-ordered maps from the $k$ labelled vertices to $V(B_N)$, namely $N^k$.  Therefore
+The denominator in the random experiment is the total number of embeddings of
+$\sigma$ into $B_N$.  This denominator is at most the number of all maps from the
+$k$ labelled vertices to $V(B_N)$, namely $N^k$.  Therefore
 the probability of choosing a planted embedding is at least
 \[
   \frac{(\lambda/(2k))^kN^k}{N^k}
@@ -1300,7 +1300,7 @@ hence $\phi_0(\brak\sigma)>0$.
 
 Let $Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, so that
 $X_\sigma\subseteq Y_\sigma$ is a closed subspace.  For each fixed $j$ and each
-induced embedding $\widehat\theta\in\Emb_\sigma(B_j)$, form the point
+embedding $\widehat\theta\in\Emb_\sigma(B_j)$, form the point
 $x_{j,\widehat\theta}\in Y_\sigma$ whose $F$-coordinate is
 $p(F,(B_j,\widehat\theta))$ whenever $|F|\le |B_j|$; for the remaining
 coordinates with $|F|>|B_j|$, fill in any fixed value, say $0$.  This convention
@@ -1329,7 +1329,7 @@ Consider the closed cylinder in the ambient product space
 \]
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
 large $j$, write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j$, and
-call an induced embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
+call an embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
 $\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each labelled vertex $a$ of
 $\sigma$.  We now explain what \cref{lem:planted-estimate} gives for a planted
 embedding.  Since each $F_i$ has at most $m$ vertices, the lemma applies with
@@ -1351,7 +1351,7 @@ In other words, the point $x_{j,\widehat\theta}\in Y_\sigma$ associated to every
 planted embedding lies in the closed cylinder $\widetilde C$.
 
 Now use the positive mass of planted embeddings.  By \cref{lem:planted-mass},
-when an induced embedding of $\sigma$ into $B_j$ is chosen uniformly, the
+when an embedding of $\sigma$ into $B_j$ is chosen uniformly, the
 probability that it is planted is at least $c_{|\sigma|,\lambda}$.  Since every
 planted embedding contributes a point of $\widetilde C$, the pushforward measure
 $P_j$ satisfies
@@ -1480,7 +1480,7 @@ class, and no two sampled vertices lie in the same unlabelled clone class.
 Thus every adjacency involving a sampled vertex is an adjacency between two
 distinct clone classes, hence is exactly the adjacency of the corresponding base
 vertices in $G$.  The planted labelled vertices also lie in distinct clone
-classes, because $\theta$ is injective; since $\theta$ is an induced embedding of
+classes, because $\theta$ is injective; since $\theta$ is an embedding of
 the type $\sigma$ into $G$, their mutual adjacencies are the same as in the base
 type.
 Consequently, on the good event, the induced $\sigma$-flag seen in
@@ -1505,18 +1505,17 @@ finite linear combination is by linearity: if $f=\sum_r a_rF_r$ with
 $|F_r|\le m$, then the same argument gives the bound with
 $C_f=C_m\sum_r|a_r|$.
 
-Now consider the planted-mass estimate.  Choose a uniformly random induced
-embedding of $\sigma$ into $B_N^+$.  Every ordered choice of one vertex from each
-labelled clone class $C_{\theta(i)}$ is an induced copy of $\sigma$: the labelled
-clone classes are distinct, and all adjacencies between them are inherited from
-the base flag $(G,\theta)$.  Since the clone classes are distinct, these choices
-are independent: for label $i$ there are $|C_{\theta(i)}|$ possible images, and
-the product counts the ordered choices of all $k$ labelled images.  The
+Now consider the planted-mass estimate.  Choose a uniformly random embedding of
+$\sigma$ into $B_N^+$.  Every choice of one vertex from each labelled clone class
+$C_{\theta(i)}$ gives an embedding of $\sigma$: the labelled clone classes are
+distinct, and all adjacencies between them are inherited from the base flag
+$(G,\theta)$.  Since the clone classes are distinct, these choices are independent:
+for label $i$ there are $|C_{\theta(i)}|$ possible images, and the product counts
+these choices of embeddings.  The
 hypothesis $\operatorname{err}_N\le\lambda/(2k)$ gives, as in
 \cref{lem:planted-mass},
 $|C_{\theta(i)}|\ge(\lambda/(2k))N$ for every $i$.  Multiplying these $k$
-lower bounds gives the same lower bound on the number of planted ordered
-embeddings,
+lower bounds gives the same lower bound on the number of planted embeddings,
 \[
   \prod_{i=1}^k |C_{\theta(i)}|
   \ge
@@ -1524,8 +1523,8 @@ embeddings,
   \qquad(k>0),
 \]
 under the same hypothesis $\operatorname{err}_N\le\lambda/(2k)$.  The total
-number of induced ordered embeddings is still at most the number $N^k$ of all
-ordered maps from the $k$ labelled vertices to $V(B_N^+)$.  Dividing gives the
+number of embeddings is still at most the number $N^k$ of all maps from the
+$k$ labelled vertices to $V(B_N^+)$.  Dividing gives the
 same lower bound $c_{k,\lambda}$, and the case $k=0$ is again trivial.
 \end{proof}
 
@@ -1603,8 +1602,8 @@ converge to some $\phi_0\in Q_0$.
 
 The planted-mass part of \cref{lem:true-planted-estimate} gives a constant
 $c_{|\sigma|,\lambda}>0$, independent of $j$, such that a uniformly random
-induced embedding of $\sigma$ into $B_j^+$ is planted with probability at least
-$c_{|\sigma|,\lambda}$.  In particular, the density of induced copies of
+embedding of $\sigma$ into $B_j^+$ is planted with probability at least
+$c_{|\sigma|,\lambda}$.  In particular, the density of copies of
 $\sigma$ in $B_j^+$ stays bounded below by a positive constant, so the limiting
 unlabelled homomorphism satisfies $\phi_0(\brak\sigma)>0$.
 
@@ -1613,7 +1612,7 @@ Let
   Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
 \]
 For each $j$, define a probability measure $P_j$ on $Y_\sigma$ as follows:
-choose uniformly an induced embedding
+choose uniformly an embedding
 $\widehat\theta\in\Emb_\sigma(B_j^+)$ and record the labelled flag-density vector
 $x_{j,\widehat\theta}$ with coordinates
 $x_{j,\widehat\theta}(F)=p(F,(B_j^+,\widehat\theta))$ whenever this finite
@@ -1795,7 +1794,7 @@ vertex $i$), and every test $\sigma$-flag $F_0$ with at most $m$ vertices,
   C_m\left(\lambda+\frac1{n-k}+\operatorname{err}_N\right),
 \]
 and, if $k=0$ or $\operatorname{err}_N\le\lambda/(2k)$, the planted embeddings have
-probability at least $c_{k,\lambda}$ under a uniformly random induced embedding of
+probability at least $c_{k,\lambda}$ under a uniformly random embedding of
 $\sigma$ into $B$.  Here $C_m$ and $c_{k,\lambda}$ are the constants from
 \cref{lem:planted-estimate,lem:planted-mass}.
 \end{lemma}
@@ -1814,12 +1813,12 @@ bad event and the total-variation comparison with a uniform sample depend only o
 sizes $s_v$ and on sampling without replacement, exactly as in
 \cref{lem:planted-estimate}.
 
-For the planted-mass bound, every ordered choice of one vertex from each labelled clone
-class $H_{\theta(i)}$ is an induced copy of $\sigma$: the labelled clone classes are
-distinct and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted
-count $\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
-induced copy of $\sigma$ already arises from any transversal of $k$ labelled clone classes
-spanning an induced $\sigma$ in $G$, so the positive lower bound on the $\sigma$-type
+For the planted-mass bound, every choice of one vertex from each labelled clone class
+$H_{\theta(i)}$ gives an embedding of $\sigma$: the labelled clone classes are distinct
+and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted count
+$\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
+embedding of $\sigma$ already arises from any transversal of $k$ labelled clone classes
+spanning a copy of $\sigma$ in $G$, so the positive lower bound on the $\sigma$-type
 density of $B$ also carries over.
 \end{proof}
 
@@ -1865,16 +1864,16 @@ Thus the normalized clone-class sizes are all $1/n$.  With the choice of $\lambd
 the error term in \cref{lem:general-planting-estimate} is $0$ when $k>0$; when $k=0$ it is
 also $0$, since the target weights are uniform.  Passing to a subsequence, the unlabelled
 graphs $B_j$ converge to some constrained limit $\phi_0\in Q_0$.  Moreover, there are
-many induced copies of the type in $B_j$: for $k>0$, choosing one vertex from each
-labelled clone class gives $j^k=(1/n)^k|V(B_j)|^k$ ordered induced copies of $\sigma$,
-and for $k=0$ the empty type has density $1$.  Thus the $\sigma$-density of $B_j$ is
+many embeddings of the type in $B_j$: for $k>0$, choosing one vertex from each labelled
+clone class gives $j^k=(1/n)^k|V(B_j)|^k$ embeddings of $\sigma$, and for $k=0$ the
+empty type has density $1$.  Thus the $\sigma$-density of $B_j$ is
 bounded below by a positive constant independent of $j$, so
 $\phi_0(\brak\sigma)>0$.  The planted-mass estimate also gives a positive lower bound,
-independent of $j$, for the probability that a uniformly random induced embedding of
+independent of $j$, for the probability that a uniformly random embedding of
 $\sigma$ into $B_j$ is one of these planted embeddings.
 
 Let $Y_\sigma=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}$, and let $P_j$ be the pushforward
-to $Y_\sigma$ of the uniform measure on induced embeddings
+to $Y_\sigma$ of the uniform measure on embeddings
 $\widehat\theta:\sigma\to B_j$, recording all finite flag densities.  The finite-graph
 random-extension theorem gives
 \[
@@ -1973,57 +1972,72 @@ interior works'' weakening of substitution-closure's universal ``every interior 
 
 \section{A finite local planting criterion}
 
-We now turn from global closure hypotheses to a local question: can a specific labelled
-witness be planted without requiring the whole class to be closed under blow-ups?  In the
-proof of \cref{thm:blowup-root-plantable}, the starting point was a constrained labelled
-limit $\psi\in Q_\sigma$, approximated by large finite $\sigma$-flags $(G,\theta)$ in the
-class.  The proof then made the roots in such a finite witness typical by a global
-operation: blow up the vertices of $G$ while staying inside the class.  The planted copies
-of the labelled vertices form a positive-density set of root placements, and the densities
-of flags of any fixed size still look almost like they did in $(G,\theta)$.  In other
-words, a view that was visible only by hand-picking the roots has been made visible to
-random roots.
+We now turn from global closure hypotheses to a local question.  Fix a constrained
+labelled limit $\psi\in Q_\sigma$; concretely, $\psi$ is a positive homomorphism of the
+constrained $\sigma$-flag algebra, viewed inside the ambient labelled homomorphism space.
+By the representation theorem, $\psi$ is the limit of a sequence of finite
+$\sigma$-flags
+\[
+  (G_t,\theta_t),\qquad G_t\in\K,\qquad |G_t|\to\infty,
+\]
+meaning that for every fixed $\sigma$-flag $F$ one has
+$p(F,(G_t,\theta_t))\to\psi(F)$.  These pairs are the concrete labelled witnesses in
+this section: they are finite rooted graphs whose local statistics approximate the
+limiting view $\psi$.
+
+To \emph{plant} such a finite witness means to build a larger graph $H$ in the class with
+many embeddings $\widehat\theta:\sigma\to H$ whose rooted flag densities are close to
+those of $(G,\theta)$.  In the proof of \cref{thm:blowup-root-plantable}, this was done
+by a global operation: blow up the vertices of $G$ while staying inside the class.  The
+labelled vertices then have large clone classes, and choosing one vertex from each such
+class gives a positive-density set of embeddings $\sigma\to H$.  For these embeddings, the
+densities of flags of any fixed size still look almost like they did in $(G,\theta)$.
+In other words, a view that was visible only by hand-picking the roots has been made
+visible to random roots.
 
 The next examples, especially the $C_5$-free class, do not have such a global closure
 property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
-is more local: after planting the roots, one can repair the few dangerous edges and still
-change so little of the graph that no fixed flag-density test notices.  The purpose of
-this section is to isolate exactly the finite statement that such a repair must prove.
-The payoff is \cref{thm:finite-local-planting}: this finite planting property already
-implies root-plantability.
+is more local: first create many possible embeddings of the labelled type---in the
+$C_5$ constructions below, by replacing each root with a positive-density set of new
+vertices, any one of which can serve as the image of that root---and then repair the few
+dangerous edges.  If the repair changes so little of the graph that no fixed flag-density
+test notices, these embeddings remain good.  The purpose of this section is to isolate
+exactly what one has to check at the level of finite graphs: the repaired graph must
+remain in the class, contain a positive-density set of embeddings $\sigma\to H$, and
+preserve the rooted densities of all flags up to the chosen size.  The payoff is
+\cref{thm:finite-local-planting}: carrying out this finite-graph verification is already
+enough to prove root-plantability.
 
-The definition below says the following.  Fix a resolution $m$ and a tolerance
-$\eps$: we are only asking to preserve the densities of flags with at most $m$ vertices,
-up to error $\eps$.  Then every sufficiently large labelled witness $(G,\theta)$ in the
-class should have a larger in-class graph $H$ containing many good placements of the
-roots.  ``Many'' means a positive proportion on the $|V(H)|^k$ scale, encoded by the
-constant $\delta$; this is what will become positive probability under random labelling.
-For every good placement, all $\sigma$-flag statistics involving at most $m$ vertices are
-nearly the same as in the original witness.  Thus the quotient view of $(G,\theta)$ can be
-made typical without assuming any global blow-up closure of the class.
+The definition below formalizes this finite check.  Let $k=|\sigma|$ be the number of
+labelled vertices, fix a resolution $m\ge k$, and fix a tolerance $\eps>0$.  We only ask
+to preserve $\sigma$-flag densities $p(F,\cdot)$ for flags $F$ with at most $m$ vertices,
+and only up to error $\eps$.  The requirement is that every sufficiently large labelled
+witness $(G,\theta)$ in the class can be replaced by a larger in-class graph $H$ together
+with a set $\Theta\subseteq\Emb_\sigma(H)$ of embeddings $\sigma\to H$.  The
+lower bound $|\Theta|\ge\delta |V(H)|^k$ ensures that a uniformly random embedding
+of $\sigma$ into $H$ lands in $\Theta$ with probability at least $\delta$, since
+$|\Emb_\sigma(H)|\le |V(H)|^k$.  For each $\widehat\theta\in\Theta$, the densities
+$p(F,(H,\widehat\theta))$ must be close to $p(F,(G,\theta))$ for every such flag $F$.
+Thus the finite approximations to $\psi$ can be made typical under random labelling
+without assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite local planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
-$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of ordered induced
-embeddings of $\sigma$ into a finite graph $H$.  We say that $\K$ has the
-\emph{finite local planting property at $\sigma$} if the following holds.
-
-For every integer $m\ge k$ and every $\eps>0$, there are an integer
-$n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ such that the
-following holds.  For every finite $\sigma$-flag $(G,\theta)$ in $\K$ with
-$|G|\ge n_0$, there exist a graph $H\in\K$ with $|H|\ge |G|$ and a subset
-\[
-  \Theta\subseteq \Emb_\sigma(H)
-\]
-such that
-\[
-  |\Theta|\ge \delta |V(H)|^k,
-\]
-and for every planted embedding $\widehat\theta\in\Theta$ and every ambient
-$\sigma$-flag $F$ with $|F|\le m$,
-\[
-  \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|<\eps .
-\]
+$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings
+$\sigma\to H$.  We say that $\K$ has the \emph{finite local planting property at
+$\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an integer
+$n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
+property. Every finite $\sigma$-flag $(G,\theta)$ in $\K$ with $|G|\ge n_0$ admits a graph
+$H\in\K$ and a set $\Theta\subseteq\Emb_\sigma(H)$ such that:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item $|H|\ge |G|$;
+  \item $|\Theta|\ge \delta |V(H)|^k$;
+  \item for every $\widehat\theta\in\Theta$ and every ambient $\sigma$-flag $F$
+        with $|F|\le m$,
+        \[
+          \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|<\eps .
+        \]
+\end{enumerate}
 \end{definition}
 
 \begin{theorem}[Finite local planting implies root-plantability]\label{thm:finite-local-planting}
@@ -2041,24 +2055,23 @@ The inclusion $S_\sigma\subseteq Q_\sigma$ is the general support-passing
 statement.  We prove the reverse inclusion.
 
 Let $\psi\in Q_\sigma$, and let $U$ be a basic neighbourhood of $\psi$ in
-$X_\sigma$, specified by ambient $\sigma$-flags $F_1,\ldots,F_s$ of size at most
-$m$ and a tolerance $\eps>0$:
+$X_\sigma$, specified by ambient $\sigma$-flags $F_1,\ldots,F_s$ and a tolerance
+$\eps>0$.  Choose an integer $m\ge|\sigma|$ bounding the sizes of the $F_i$.  Then
 \[
   U=
   \{\chi\in X_\sigma:
     |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
 \]
-Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ from finite local
-planting.  Choose a
-convergent sequence of $\sigma$-flags $(G_t,\theta_t)$ in $\K$ with
-$(G_t,\theta_t)\to\psi$ and $|G_t|\to\infty$.  For all sufficiently large $t$,
-we have $|G_t|\ge n_0$ and
+Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
+local planting property.  Choose a convergent sequence of $\sigma$-flags
+$(G_t,\theta_t)$ in $\K$ with $(G_t,\theta_t)\to\psi$ and $|G_t|\to\infty$.
+For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
 \[
   |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/3
   \qquad(1\le i\le s).
 \]
 
-Apply finite local planting to each such $(G_t,\theta_t)$, with the integer
+Apply that property to each such $(G_t,\theta_t)$, with the integer
 $m$ and tolerance $\eps/3$.  Thus, after discarding finitely many terms, we have
 graphs $H_t\in\K$ and sets $\Theta_t\subseteq\Emb_\sigma(H_t)$ such that
 $|H_t|\ge |G_t|\to\infty$, $|\Theta_t|\ge\delta |V(H_t)|^k$, and every
@@ -2084,10 +2097,10 @@ $\Ext_\sigma(\phi_0)$ as a probability measure on the ambient product space.  Le
   \{x\in Y_\sigma:
     |x(F_i)-\psi(F_i)|\le 2\eps/3\text{ for all }i\}.
 \]
-Then $\widetilde C\cap X_\sigma\subseteq U$.  Every root in $\Theta_t$ lies in
-$\widetilde C$, because its $F_i$-coordinates differ from those of $\psi$ by at
-most the two $\eps/3$ errors above.  The total number of ordered embeddings of
-$\sigma$ into $H_t$ is at most $|V(H_t)|^k$, so
+Then $\widetilde C\cap X_\sigma\subseteq U$.  Every embedding in $\Theta_t$ gives a
+point of $\widetilde C$, because its $F_i$-coordinates differ from those of $\psi$ by
+at most the two $\eps/3$ errors above.  The total number of embeddings of $\sigma$ into
+$H_t$ is at most $|V(H_t)|^k$, so
 \[
   P_t(\widetilde C)\ge\delta
 \]
@@ -2102,19 +2115,20 @@ $\psi\in S_\sigma$.
 \end{proof}
 
 \begin{remark}
-The closure theorems above prove finite local planting by
-taking $\Theta$ to be the planted root choices.  The one-root and two-root
-non-edge $C_5$-free constructions below prove it differently: the planted graphs
-are obtained by a blow-up followed by deleting a sparse set of dangerous
-neighbourhood edges.  This is why the criterion is useful beyond closure
+The closure theorems above verify the finite local planting property by
+taking $\Theta$ to be the embeddings obtained by choosing one vertex from each
+labelled clone class.  The one-root and two-root non-edge $C_5$-free constructions
+below prove it differently: they first blow up the roots and then delete a sparse set of
+dangerous neighbourhood edges.  This is why the criterion is useful beyond closure
 properties.
 \end{remark}
 
 \subsection{Sparse repairs of root blow-ups}
 
 Here is a concrete, checkable way to verify finite local planting.  Blow up only
-the labelled vertices into small positive-density root clusters, leave all
-unlabelled vertices as singletons, and repair only a sparse set of old--old edges.
+the labelled vertices into small positive-density sets from which the embeddings of
+$\sigma$ will be chosen, leave all unlabelled vertices as singletons, and repair only a
+sparse set of old--old edges.
 
 \begin{definition}[Sparse root-blow-up repair]\label{def:sparse-root-repair}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
@@ -2154,12 +2168,13 @@ Consequently, $\K$ is root-plantable at $\sigma$.
 \end{theorem}
 
 \begin{proof}
-Fix $m\ge k$ and $\eps>0$.  Choose $0<\lambda\le1$ and $\rho>0$ so small that
+Fix $m\ge k$ and $\eps>0$.  Let $C_m$ be a constant, depending only on $m$ and
+$k$, large enough for the two sampling estimates below.  Choose
+$0<\lambda\le1$ and $\rho>0$ so small that
 \[
-  C_m(\lambda+\rho)<\eps
+  C_m(\lambda+\rho)<\eps .
 \]
-for a sufficiently large constant $C_m$ depending only on $m$ and $k$.  Let
-$n_0$ be the maximum of $m$, $\lceil2/\lambda\rceil$, and the threshold from
+Let $n_0$ be the maximum of $m$, $\lceil2/\lambda\rceil$, and the threshold from
 \cref{def:sparse-root-repair} for this $\lambda$ and $\rho$.
 
 Let $(G,\theta)$ be a $\sigma$-flag in $\K$ with $n:=|G|\ge n_0$, and let
@@ -2168,7 +2183,7 @@ $H$ be the repaired root blow-up supplied by the definition.  Put
   \Theta:=R_1\times\cdots\times R_k\subseteq \Emb_\sigma(H),
 \]
 where the inclusion follows from the prescribed adjacencies between the root
-clusters.  Also $L\ge1$, so $|V(H)|=n-k+kL\ge n$, as required in
+sets $R_i$.  Also $L\ge1$, so $|V(H)|=n-k+kL\ge n$, as required in
 \cref{def:finite-local-planting}.  Since $|V(H)|=n-k+kL\le (1+k\lambda)n$, we have
 \[
   |\Theta|=L^k
@@ -2177,18 +2192,18 @@ clusters.  Also $L\ge1$, so $|V(H)|=n-k+kL\ge n$, as required in
   \ge
   \left(\frac{\lambda}{2(1+k\lambda)}\right)^k |V(H)|^k.
 \]
-Thus the root mass lower bound holds with
+Thus the embedding-count lower bound holds with
 \[
   \delta:=\left(\frac{\lambda}{2(1+k\lambda)}\right)^k>0.
 \]
 
-It remains to check the $\sigma$-flag densities.  Fix a planted embedding
+It remains to check the $\sigma$-flag densities.  Fix an embedding
 $\widehat\theta\in\Theta$ and a $\sigma$-flag $F$ with $\ell:=|F|\le m$.  To
 compute $p(F,(H,\widehat\theta))$, sample $q:=\ell-k$ additional vertices from
 $H\setminus\operatorname{im}\widehat\theta$.  There are two bad events.
 
-First, the sample may hit one of the root clusters.  Since the total number of
-vertices in the root clusters is $kL=O_k(\lambda n)$ and $|H|\ge n-k$, this has
+First, the sample may hit one of the sets $R_i$.  Since the total number of
+vertices in $R_1\cup\cdots\cup R_k$ is $kL=O_k(\lambda n)$ and $|H|\ge n-k$, this has
 probability $O_m(\lambda)$.
 
 Second, after the sample lies in $U$, it may contain both endpoints of one of
@@ -2196,9 +2211,9 @@ the old pairs on which $H[U]$ differs from $G[U]$.  There are at most $\rho n^2$
 such pairs, so this has probability $O_m(\rho)$.
 
 Outside these bad events, the sampled vertices all lie in $U$, no repaired old
-edge is seen, the adjacencies from the planted roots to $U$ agree with the
-adjacencies from the original roots in $G$, and the adjacencies among the planted
-roots agree with $\sigma$.  Moreover, conditional on the sample lying in $U$, it
+edge is seen, the adjacencies from the images of $\widehat\theta$ to $U$ agree with the
+adjacencies from the original roots in $G$, and the adjacencies among those images agree
+with $\sigma$.  Moreover, conditional on the sample lying in $U$, it
 is a uniform $q$-subset of $U$, exactly as in the density
 $p(F,(G,\theta))$.  Hence
 \[
