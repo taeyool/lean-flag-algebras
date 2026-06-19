@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
+import LeanFlagAlgebras.Flags.ForbidFreePruned
 
 /-! # Forbid-free flag generation
 
@@ -304,6 +305,165 @@ elab "generate_forbid_free_empty_typed_flags" nStx:num gStx:ident : command => d
 
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}); \
 flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
+
+/-! ### Edge-based, pruning-backed empty-typed generation (Task 5b)
+
+`generate_pruned_forbid_free_empty_typed_flags n F` is the arbitrary-`F` analogue of
+`generate_forbid_free_empty_typed_flags`, with two differences:
+
+* the forbidden graph is a **`Sym2Graph m` term** `F` read directly (D2) — no
+  `generate_complete_graph`, no canonical forbidden flag, no tag resolution;
+* the forbid-free split uses the **induced** predicate `inducedContains F` (correct for arbitrary
+  `F`, not only complete graphs), and the completeness lemma cites
+  `prunedFreeFlags_toFinset_eq` (genuine pruning) — **no full enumeration**. -/
+
+/-- Compiler-backed evaluation of a closed `Expr` of type `List Bool`, used to read the
+induced forbid-free mask `(genSym2Graphs n).map (¬ inducedContains F ·)` at elaboration time. -/
+unsafe def evalBoolListImpl (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool) :=
+  Lean.Meta.evalExpr (List Bool) type value
+
+@[implemented_by evalBoolListImpl]
+opaque evalBoolList (type value : Lean.Expr) : Lean.Meta.MetaM (List Bool)
+
+/-- The induced forbid-free mask aligned with the flag-index order: entry `i` is `true` iff the
+`i`-th canonical `n`-vertex graph (`genSym2Graphs n`) does **not** contain an induced `F`. Reuses
+the same `inducedContains` the pruned generator and the Task-5a bridge use. -/
+def evalInducedFreeMask (n : Nat) (fStx : TSyntax `ident) : CommandElabM (List Bool) := do
+  let stx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
+    (fun G => !decide (FlagAlgebras.Compute.inducedContains $fStx G)))
+  liftTermElabM do
+    let e ← Lean.Elab.Term.elabTermAndSynthesize stx none
+    let e ← instantiateMVars e
+    let t ← Lean.Meta.inferType e
+    evalBoolList t e
+
+elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : command => do
+  let n := nStx.getNat
+  let tagFull := toString fStx.getId
+  let tag := (tagFull.splitOn ".").getLastD tagFull
+
+  let hostEdges ← evalCanonicalEdgeLists n
+  let freeMask ← evalInducedFreeMask n fStx
+  let freeIndices := (List.range hostEdges.length).filter (fun i => freeMask.getD i false)
+
+  -- Emit the forbid-free flag constants (identical to `generate_forbid_free_empty_typed_flags`).
+  for i in freeIndices do
+    let edgePairs := hostEdges[i]!
+    let graphName := mkIdent (Name.mkSimple s!"Sym2Graph_{n}_0_0_{i}")
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}")
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{i}")
+    let edgesTerm ← natPairsToEdgesTerm n edgePairs
+    elabUnlessDefined graphName.getId (← `(
+        def $graphName : Sym2Graph $(Quote.quote n) where
+          edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
+          edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
+      ))
+    elabUnlessDefined flagName.getId (← `(
+        def $flagName : Sym2EmptyTypedFlag $(Quote.quote n) :=
+          Quotient.mk (Sym2GraphSetoid $(Quote.quote n)) $graphName
+      ))
+    elabUnlessDefined flagBridgeName.getId (← `(
+        def $flagBridgeName := ($flagName : Sym2EmptyTypedFlag $(Quote.quote n)).toFlag
+      ))
+    elabUnlessDefined flagAlgebraName.getId (← `(
+        noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+      ))
+
+  let freeSym2Terms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}"))
+
+  let isHfreeName := mkIdent (Name.mkSimple s!"isHfree_{n}_0_0_{tag}")
+  let sym2SetName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_0_0_{tag}")
+  let sym2SetEqName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_0_0_{tag}_eq")
+  let flagSetName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}")
+  let flagSetEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}_eq")
+
+  -- The framework's analytic forbid-free test, stated directly on the `Sym2Graph` term `F`.
+  elabUnlessDefined isHfreeName.getId (← `(
+      def $isHfreeName (S : FlagAlgebras.Compute.Sym2EmptyTypedFlag $(Quote.quote n)) : Bool :=
+        decide (FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁ ⟦$fStx⟧ S = 0)
+    ))
+
+  elabUnlessDefined sym2SetName.getId (← `(
+      def $sym2SetName : Finset (Sym2EmptyTypedFlag $(Quote.quote n)) :=
+        ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
+    ))
+
+  -- Completeness via genuine pruning (Task 5a): the named free set equals the pruned generation
+  -- (one `native_decide` over the *pruned* generator — never builds an `F`-containing graph),
+  -- closed by `prunedFreeFlags_toFinset_eq`. No full enumeration, no canonical forbidden flag.
+  elabUnlessDefined sym2SetEqName.getId (← `(
+      theorem $sym2SetEqName :
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+        have hpruned : $sym2SetName
+            = (FlagAlgebras.Compute.prunedFreeFlags $fStx $(Quote.quote n)).toFinset := by
+          native_decide
+        rw [hpruned, FlagAlgebras.Compute.prunedFreeFlags_toFinset_eq $fStx (by decide) $(Quote.quote n)]
+        ext S
+        simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq]
+    ))
+
+  elabUnlessDefined flagSetName.getId (← `(
+      noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n)) :=
+        ($sym2SetName).map ⟨Sym2EmptyTypedFlag.toFlag,
+          fun a b h => Sym2EmptyTypedFlag.toFlag_injective a b h⟩
+    ))
+
+  elabUnlessDefined flagSetEqName.getId (← `(
+      theorem $flagSetEqName :
+          $flagSetName
+            = Finset.univ.filter (fun F' =>
+                flagDensity₁ (Sym2EmptyTypedFlag.toFlag ⟦$fStx⟧) (unlabel F') = 0) := by
+        rw [$flagSetName:ident, $sym2SetEqName:ident]
+        ext x
+        simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
+          Function.Embedding.coeFn_mk]
+        constructor
+        · rintro ⟨S, hS, hSx⟩
+          rw [← hSx, unlabel_emptyType]
+          show flagDensity₁ (Sym2EmptyTypedFlag.toFlag ⟦$fStx⟧) S.toFlag = 0
+          rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+          exact of_decide_eq_true hS
+        · intro hx
+          refine ⟨x.toSym2EmptyTypedFlag, ?_, x.toSym2EmptyTypedFlag_toFlag_eq⟩
+          rw [unlabel_emptyType] at hx
+          show $isHfreeName _ = true
+          rw [$isHfreeName:ident, decide_eq_true_eq,
+            ← flagDensity₁_eq_sym2EmptyTypeFlagDensity₁, x.toSym2EmptyTypedFlag_toFlag_eq]
+          exact hx
+    ))
+
+  -- Underlying multiset of `flagSetHfree` = the explicit free-flag list (for the forbid bridges).
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}_val_eq")
+  let freeBridgeTerms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}"))
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
+            = [ $freeBridgeTerms,* ]) := by
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
+          native_decide
+        have hdedup :
+            ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
+              = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
+          List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2EmptyTypedFlag.toFlag
+              ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))))
+              = [ $freeBridgeTerms,* ] := by rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2EmptyTypedFlag.toFlag
+              (([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup)
+                = [ $freeBridgeTerms,* ] := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
+  logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}) by genuine \
+pruning (edge-based, induced); flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved via prunedFreeFlags."
 
 -- `generate_forbid_free_flags n k m Forbid`: the σ-typed analogue (flag size `n`
 -- first, matching `generate_flags n k m`). Emits only the `Forbid`-free σ-typed

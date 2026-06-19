@@ -134,23 +134,29 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   These are the lemmas the edge-based commands cite. Proofs are near-verbatim generalizations of the
   K₃ wiring (swap `hasTri`→`inducedContains F`, `triangleGraph`→`F`).
 
-- `[ ]` **5b. Generalize the wiring (command surface).** The remaining meta-programming. Make the
-  `generate_forbid_free_*` commands accept a `Sym2Graph m` term (D2) and route generation through the
-  pruned generator, citing the 5a lemmas. **Scope (from explorer map):** the forbid graph is threaded
-  as a string tag through 5 stages in `Densities/DensityThmGenerator.lean` — `resolveForbidGraph` →
-  `forbidFlagIdentOfToFinFlagEq` → `parseFlagRIdx` → `evalCanonicalEdgeLists` →
-  `containsForbiddenSubgraph`. Six forbid-aware commands consume it
-  (`generate_forbid_density_theorems`, `generate_flag_pair_density_theorems`,
-  `generate_forbid_mul_theorems`, `generate_forbid_free_mul_theorems`,
-  `generate_forbid_free_empty_typed_flags`, `generate_forbid_free_flags`) across ~10 example files
-  (~60 invocations, all `K3`/`K4`/`K5`). **Correctness note:** `containsForbiddenSubgraph` is
-  *non-induced*, so the current free-index split is only correct for complete-graph forbids (induced =
-  non-induced); routing through the *induced* pruned generator (5a) is what makes arbitrary-`F`
-  (induced) forbidding correct. Steps: (i) edge-based forbid argument (term, not tag) + structural
-  edge extraction; (ii) replace the empty-typed completeness `native_decide` with a citation of
-  `prunedFreeFlags_toFinset_eq`; (iii) realize the pruning perf win (no `genSym2GraphsDedup`
-  full-enum + filter); (iv) drop `generate_empty_typed_flags r` + `generate_complete_graph` from
-  examples. (`MantelHfree`'s flag-free port lands here / in Task 7.) Large; separable from 5a.
+- `[~]` **5b. Generalize the wiring (command surface).** In progress.
+  - **DONE — edge-based empty-typed generator.** `generate_pruned_forbid_free_empty_typed_flags n F`
+    in `Flags/ForbidFreeGenerator.lean`: `F` is a **`Sym2Graph m` term** (D2 — no
+    `generate_complete_graph`, no canonical forbidden flag, no tag resolution); the free-index split
+    uses the **induced** `inducedContains F` (correct for arbitrary `F`); completeness is proved by
+    `native_decide` (named set = `prunedFreeFlags F n`) + `prunedFreeFlags_toFinset_eq` (5a) — **no
+    full enumeration**. Emits the free flag constants, `isHfree_n_0_0_<tag>` (on `⟦F⟧`),
+    `sym2FlagSetHfree_…` / `…_eq` (analytic form), `flagSetHfree_…` / `…_eq` (bridge form
+    `flagDensity₁ (toFlag ⟦F⟧) (unlabel ·) = 0`) + `…_val_eq`. New helpers: `evalBoolList` bridge +
+    `evalInducedFreeMask` (mask over `genSym2Graphs n`). Validated on **C₄** (non-complete: 10 free at
+    n=4, 28 at n=5) and **K₄** (10 free at n=4); full project builds.
+  - **TODO (remaining 5b):** (a) the σ-typed analogue (`generate_pruned_forbid_free_flags n k m F`,
+    routing through a typed pruned generation + 5a); (b) edge-based `generate_flag_pair_density_theorems`
+    / `generate_forbid_(free_)mul_theorems` (the forbid bridges currently cite `Forbid.toFinFlag`, so
+    they need restating with `toFlag ⟦F⟧` as the forbid flag); (c) migrate example call sites
+    (`MantelHfree` first) off `generate_complete_graph` + tag commands to the edge-based ones; (d) the
+    perf win is realized for empty-typed (pruned native_decide vs full-enum); confirm it for typed.
+  **Scope (from explorer map):** the forbid is threaded as a string tag through 5 stages in
+  `Densities/DensityThmGenerator.lean` (`resolveForbidGraph` → `forbidFlagIdentOfToFinFlagEq` →
+  `parseFlagRIdx` → `evalCanonicalEdgeLists` → `containsForbiddenSubgraph`), consumed by 6 commands
+  across ~10 files (~60 invocations, all `K3`/`K4`/`K5`). `containsForbiddenSubgraph` is *non-induced*,
+  so the tag path is only correct for complete-graph forbids; the induced pruned path (5a + the new
+  command) is the correctness fix for arbitrary `F`. (`MantelHfree`'s full flag-free port lands here / Task 7.)
 
 - `[ ]` **6. User-facing format + convenience commands.** Declare F by edge list (small DSL →
   `Sym2Graph m`); wrappers `forbid_complete_graph r`, `forbid_cycle k`, `forbid_path k`, …; and
@@ -247,3 +253,16 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   arbitrary-`F` induced forbidding correct — so 5b is also a correctness upgrade, not just perf. **Next:
   Task 5b** (edge-based commands routing through `prunedFreeFlags_toFinset_eq`) or Task 6 (user-facing
   DSL), per the user's preference.
+- **2026-06-19** — **Task 5b: edge-based empty-typed generator DONE** (builds; project green). Added
+  `generate_pruned_forbid_free_empty_typed_flags n F` to `Flags/ForbidFreeGenerator.lean` (which now
+  imports `Flags.ForbidFreePruned`). `F` is a `Sym2Graph m` *term* (D2) — no `generate_complete_graph`,
+  no canonical forbidden flag, no tag resolution; the free-index split is *induced* (`inducedContains F`,
+  via a new `evalBoolList` eval bridge + `evalInducedFreeMask` over `genSym2Graphs n`); completeness is
+  `native_decide` (named set = `prunedFreeFlags F n`) + `prunedFreeFlags_toFinset_eq` (5a) — **no full
+  enumeration, no canonical flag**. Emits the free flag constants + `isHfree`/`sym2FlagSetHfree(_eq)` /
+  `flagSetHfree(_eq)` (analytic + bridge `toFlag ⟦F⟧` forms) + `_val_eq`. A scratch test verified C₄
+  (10 free n=4, 28 n=5) and K₄ (10 free n=4), then was deleted; full project builds (7979 jobs).
+  Fiddly bit: dot-notation `⟦F⟧.toFlag` fails (head type prints as `Quot`) — use the prefix
+  `Sym2EmptyTypedFlag.toFlag ⟦F⟧`. **Next (5b cont.):** σ-typed edge-based generator; edge-based
+  pair-density / mul commands (need the forbid bridges restated with `toFlag ⟦F⟧`); migrate `MantelHfree`
+  off the tag commands. **Or** Task 6 (user-facing DSL on top of the edge-based command).
