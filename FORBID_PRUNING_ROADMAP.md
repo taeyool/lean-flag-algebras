@@ -145,12 +145,28 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     `flagDensity₁ (toFlag ⟦F⟧) (unlabel ·) = 0`) + `…_val_eq`. New helpers: `evalBoolList` bridge +
     `evalInducedFreeMask` (mask over `genSym2Graphs n`). Validated on **C₄** (non-complete: 10 free at
     n=4, 28 at n=5) and **K₄** (10 free at n=4); full project builds.
-  - **TODO (remaining 5b):** (a) the σ-typed analogue (`generate_pruned_forbid_free_flags n k m F`,
-    routing through a typed pruned generation + 5a); (b) edge-based `generate_flag_pair_density_theorems`
-    / `generate_forbid_(free_)mul_theorems` (the forbid bridges currently cite `Forbid.toFinFlag`, so
-    they need restating with `toFlag ⟦F⟧` as the forbid flag); (c) migrate example call sites
-    (`MantelHfree` first) off `generate_complete_graph` + tag commands to the edge-based ones; (d) the
-    perf win is realized for empty-typed (pruned native_decide vs full-enum); confirm it for typed.
+  - **DONE — edge-based σ-typed generator.** `generate_pruned_forbid_free_flags n k m F` in
+    `Flags/ForbidFreeGenerator.lean`: the σ-typed analogue. `F` a `Sym2Graph m` term; the free-index
+    split is induced (`evalInducedFreeMask` on each flag's underlying graph index); the forbid-free test
+    is the density on `⟦F⟧` (so `hcompat` stays `rfl`); completeness routes through the existing
+    graph-level `genFlagsHfree` + `genFlagsHfree_toFinset_eq`. Emits the typed flag constants + `unlabel`
+    / `downward` bridges + `isHfree`/`isHfreeGraph` + `sym2FlagSetHfree(_eq)` + `flagSetHfree(_eq)`
+    (bridge form `flagDensity₁ (toFlag ⟦F⟧) (unlabel ·)`) + `_val_eq`. The shared iso-invariance step in
+    `sym2FlagSetHfree_…_eq` was made robust (`simp only [isHfreeGraph, hq]` with a host-`n`-pinned
+    `Quotient.sound`) — needed because edge-based the forbid is syntactically `⟦F⟧` (the old
+    `rw [Quotient.sound …]` matched the forbid quotient). Validated on **K₃** at MantelHfree's sizes
+    (empty-typed 2/3, typed type-1_0 → 2/5 free); full project builds.
+  - **TODO (remaining 5b):** (b) edge-based `generate_flag_pair_density_theorems` /
+    `generate_forbid_free_mul_theorems` — clean clones (the mul bridge `basisVector_quot_mul_forbidEq_sum`
+    takes *any* forbid flag, so `toFlag ⟦F⟧` works, and the free-host set names already match), but they
+    live in `MulThmGenerator` / `DensityThmGenerator`, which only import `DensityThmGenerator` — so first
+    relocate `evalBoolList` + `evalInducedFreeMask` into `DensityThmGenerator` (adding
+    `import …ForbidFreePruned` there) and refactor `genPairDensityCore` to take precomputed free-index
+    sets; (c) edge-based proof tactics (`flag_expand_hfree`, `expand_one_hfree_at` currently take a tag)
+    and the **`MantelHfree` end-to-end migration** off `generate_complete_graph` + tag commands (overlaps
+    Task 7); (d) the perf win is realized for empty-typed (pruned `native_decide` vs full-enum); the typed
+    path still routes through `genFlagsHfree` (graph-level filter) — a genuine-pruning typed generation is
+    a later optimization.
   **Scope (from explorer map):** the forbid is threaded as a string tag through 5 stages in
   `Densities/DensityThmGenerator.lean` (`resolveForbidGraph` → `forbidFlagIdentOfToFinFlagEq` →
   `parseFlagRIdx` → `evalCanonicalEdgeLists` → `containsForbiddenSubgraph`), consumed by 6 commands
@@ -266,3 +282,19 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   `Sym2EmptyTypedFlag.toFlag ⟦F⟧`. **Next (5b cont.):** σ-typed edge-based generator; edge-based
   pair-density / mul commands (need the forbid bridges restated with `toFlag ⟦F⟧`); migrate `MantelHfree`
   off the tag commands. **Or** Task 6 (user-facing DSL on top of the edge-based command).
+- **2026-06-19** — **Task 5b: edge-based σ-typed generator DONE** (builds; project green). Added
+  `generate_pruned_forbid_free_flags n k m F` to `Flags/ForbidFreeGenerator.lean` — the σ-typed analogue
+  of the empty-typed generator. `F` a `Sym2Graph m` term; free-index split induced (via `evalInducedFreeMask`
+  on each flag's underlying graph index); predicates density-based on `⟦F⟧` (so `hcompat = rfl`);
+  completeness via the existing `genFlagsHfree` + `genFlagsHfree_toFinset_eq`. Emits typed flag constants,
+  `unlabel`/`downward` bridges, `sym2FlagSetHfree(_eq)` / `flagSetHfree(_eq)` (bridge form) / `_val_eq`.
+  Made the iso-invariance step robust (`simp only [isHfreeGraph, hq]` with a host-`n`-pinned `Quotient.sound`
+  `have`) and applied that fix to the existing tag command too (it's strictly more robust; the tag
+  command's opaque `forbidSym2` was unaffected either way). Validated on **K₃** at MantelHfree's sizes
+  (empty-typed 2/3 free, typed type-1_0 2/5 free, `downward` bridges); full project builds (7979 jobs).
+  **Decision:** stop 5b here for this increment — the remaining mul/pair-density commands require relocating
+  the mask helpers into `DensityThmGenerator` (+ `import …ForbidFreePruned`) and refactoring
+  `genPairDensityCore`, and a full `MantelHfree` migration also needs edge-based proof tactics
+  (`flag_expand_hfree` / `expand_one_hfree_at`) — a coupled chunk overlapping Task 7, best done together.
+  Both generation commands (empty-typed + σ-typed) are the edge-based core and are verified. **Next:**
+  the edge-based mul/pair-density commands + tactic migration (5b cont. / Task 7), or Task 6 (DSL).
