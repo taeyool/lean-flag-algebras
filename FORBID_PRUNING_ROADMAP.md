@@ -233,6 +233,38 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   `papers/Notes/forbid_free_*`; decide whether to retire the filter/tag path (still used by nothing
   under `Flagmatic/` now, but the commands remain for K5turan-style heavy cases / fallback).
 
+- `[ ]` **8. Realize the pruning speed-up (perf — the original motivation).** The original point of
+  pruning was to make loading forbid-free flags feasible at **n = 6, 7** (e.g. K₃-free). A
+  laptop-side measurement on 2026-06-21 (see the Progress Log) showed the win is **only partly
+  realized**, and surfaced two concrete gaps. The architectural reason: pruning currently optimizes
+  **only the empty-typed generation**; the σ-typed generation and the pair-density `native_decide`s —
+  which dominate the real compile cost of the typed examples — are untouched.
+
+  **`[!]` DESKTOP FOLLOW-UP — measurements must be redone on the strong desktop, not the laptop.**
+  Every `lean` invocation here pays a CPU-bound **~42 s mathlib import load** that does not warm up
+  across runs, which swamps the small cases; the large cases (`ErdosPentagon`, pruned empty-typed
+  n = 7) **did not finish** in 6–20 min and had to be killed. So the laptop cannot give clean numbers.
+  On the desktop, run: (i) empty-typed **full-enum vs pruned at n = 7** (107 vs 1044 graphs — where the
+  separation should finally be large); (ii) a clean **old-vs-new `ErdosPentagon`** compile (expected
+  ≈ equal — see finding (a)).
+
+  Two follow-up work items the measurement motivates:
+  - `[ ]` **8a. Cheap check for complete-graph forbids.** The migrated command prunes with the
+    **generic `inducedContains F`** (embeddings `Fin m ↪ Fin n`, needed for arbitrary `F`), which is
+    far more expensive per graph than the original K₃-specific `hasTri` (a 3-vertex scan). For K₃ at
+    n = 7 this heavy check made the *pruned* generation itself not finish in ~6.5 min on the laptop —
+    the genericization (Task 3) traded per-check speed for generality and largely cancels the pruning
+    win for complete graphs at high n. Add a specialized `hasClique r` (generalizing `hasTri`) and
+    route `completeSym2Graph r` forbids through it (a `q` instance for `augRepsFreeB`), keeping the
+    generic path for non-complete `F`.
+  - `[ ]` **8b. Genuine-pruning σ-typed generator (= the long-deferred 5b (d)).** The typed path still
+    enumerates *all* σ-typed flags then filters (`genFlagsHfree`), and the pair-density step emits one
+    `native_decide` per forbid-free pair (`ErdosPentagon`: ~2 832 of them). This — not the empty-typed
+    step — is where the typed examples spend their time, so a genuine-pruning typed generator (and/or
+    cheaper pair-density evaluation) is what would actually speed up `ErdosPentagon` / `K4turan` /
+    `K5turan`. This is also the prerequisite for making **`K5turan`** (Task 7) tractable enough to
+    re-enable in the aggregator.
+
 ## Multi-graph design notes (for D3)
 
 - **Predicate.** Family H-free = `fun G => ∀ F ∈ Fs, ¬ inducedContains F G`. Iso-invariant and
@@ -398,3 +430,27 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     in ~15–50 s each off warm `.lake` oleans (`lake build LeanFlagAlgebras.Flagmatic.<X>`); a from-clean
     project build is ~3340 jobs (mathlib cached). **Next:** update `papers/Notes/forbid_free_*`; a
     genuine-pruning *typed* generator (5b (d)) to make K5turan tractable; optionally retire the tag path.
+- **2026-06-21** — **Performance investigation (laptop) — opened Task 8.** Checked whether pruning
+  actually delivers the original goal (feasible K₃-free flag loading at n = 6, 7) and whether the slow
+  `ErdosPentagon` compile is a pruning regression. Measured by running single files through `lean`
+  directly with a hand-set `LEAN_PATH` (`lake env` was triggering a full rebuild). **Findings:**
+  - **Fixed cost:** a bare mathlib import load is **~42 s per invocation** and does **not** warm across
+    runs (CPU-bound) — so on the laptop this swamps the small cases and the large ones don't finish.
+  - **Empty-typed n = 6 (clean):** full enumeration (156 flags) **175 s** vs pruned K₃-free (38 flags)
+    **158 s** — pruning helps but only ~17 s here (most of both is the shared import + `native_decide`;
+    the augmentation-based full enum is already cheap at n = 6). **Empty-typed n = 7 pruned** (generic
+    `inducedContains`) **did not finish in ~6.5 min** (killed). **`ErdosPentagon` n = 5 pre-pruning
+    (old)** **did not finish in ~20+ min** (killed).
+  - **(a) `ErdosPentagon` slowness is NOT a pruning regression.** It is at n = 5 where the empty-typed
+    step (all pruning touches) is trivial; its cost is the σ-typed generation (still a graph-level
+    *filter*) + ~2 832 pair-density `native_decide`s (computed for K₃-free pairs in *both* old and new).
+    The pre-pruning version is just as slow here. The new version even emits *fewer* flag constants, so
+    it should be ≤ the old time. The laptop CPU is the real cause.
+  - **(b) The pruning win is only partly realized**, for two reasons now logged as **Task 8a** (the
+    command prunes with the *generic* `inducedContains`, far costlier than the old K₃-specific `hasTri`
+    — this is why pruned n = 7 didn't finish) and **Task 8b** (σ-typed generation + pair-density, where
+    the typed examples actually spend their time, are still un-pruned).
+  - **DESKTOP FOLLOW-UP (Task 8):** redo the decisive benchmarks on the strong desktop — full-vs-pruned
+    empty-typed **at n = 7**, and a clean old-vs-new `ErdosPentagon`. Scratch bench files were created
+    under `_bench/` and deleted after; nothing committed. **Next:** Task 8a (cheap `hasClique` check for
+    complete-graph forbids) and 8b (genuine-pruning σ-typed generator) are where the real speed-ups are.
