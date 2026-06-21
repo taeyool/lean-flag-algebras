@@ -4,6 +4,7 @@
 -- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagGenerator
+import LeanFlagAlgebras.Flags.ForbidFreeGenerator
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
@@ -20,24 +21,22 @@ open FlagAlgebras.Compute
 
 namespace K4turan
 
--- Locally generate the flags this example needs (formerly from the global
--- `Flags/FlagDef.lean`): the empty-typed underlying flags, the forbidden graph, and
--- the σ-typed pattern/host flags. Flag generation comes first, so the density and
--- multiplication theorem generators below resolve to these local constants.
-generate_empty_typed_flags 2
-generate_empty_typed_flags 3
-generate_empty_typed_flags 4
-generate_complete_graph 4 10
-generate_flags 3 2 0
-generate_flags 3 2 1
-generate_flags 4 2 0
-generate_flags 4 2 1
-
-generate_forbid_density_theorems 4 K4
-generate_flag_pair_density_theorems 3 4 2 0 K4
-generate_forbid_mul_theorems 3 4 2 0 K4
-generate_flag_pair_density_theorems 3 4 2 1 K4
-generate_forbid_mul_theorems 3 4 2 1 K4
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
+-- `Sym2Graph 4` term `K4 := completeSym2Graph 4` (no canonical forbidden flag); the K4-containing
+-- flags are never generated (genuine pruning). The pruned commands emit only the K4-free flags,
+-- their completeness, and the forbid-free pair-density / multiplication theorems for both σ-types.
+def K4 : Sym2Graph 4 := completeSym2Graph 4
+generate_pruned_forbid_free_empty_typed_flags 2 K4
+generate_pruned_forbid_free_empty_typed_flags 3 K4
+generate_pruned_forbid_free_empty_typed_flags 4 K4
+generate_pruned_forbid_free_flags 3 2 0 K4
+generate_pruned_forbid_free_flags 3 2 1 K4
+generate_pruned_forbid_free_flags 4 2 0 K4
+generate_pruned_forbid_free_flags 4 2 1 K4
+generate_pruned_flag_pair_density_theorems 3 4 2 0 K4
+generate_pruned_forbid_free_mul_theorems 3 4 2 0 K4
+generate_pruned_flag_pair_density_theorems 3 4 2 1 K4
+generate_pruned_forbid_free_mul_theorems 3 4 2 1 K4
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -214,48 +213,29 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_9
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
   native_decide
 
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_4_0_0_10
-    : flagDensity₁ Flag_2_0_0_1 Flag_4_0_0_10 = 1
-  := by
-  dsimp [Flag_2_0_0_1, Flag_4_0_0_10]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-/-- Auto-generated expansion of the objective under the forbid relation:
-`FlagAlgebra_2_0_0_1 =[K4.toFinFlag]` (sum over admissible 4-vertex graphs). -/
+/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
+over the K4-free 4-vertex flags via `flag_expand_hfree 4 K4` (`basisVector_quot_forbidEq_sum`
+rewritten onto `flagSetHfree_4_0_0_K4`; the K4 term `Flag_4_0_0_10` is dropped automatically). -/
 lemma K4turan_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[K4.toFinFlag] (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
+    : FlagAlgebra_2_0_0_1 =[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
+        (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
-  have h_unit_10 : (FlagAlgebra_4_0_0_10 : FlagAlgebra ∅ₜ) = ⟦basisVector (⟨4, Flag_4_0_0_10⟩ : FinFlag ∅ₜ)⟧
-    := (Quotient.out_inj.mp rfl).symm
-  have h_zero_10 : (FlagAlgebra_4_0_0_10 : FlagAlgebra ∅ₜ) =[K4.toFinFlag] 0 := by
-    rw [h_unit_10]
-    apply basisVector_forbidEq_zero
-    rw [unlabel_emptyType]
-    exact lt_of_le_of_ne
-      (flagListDensity₁_ge_zero K4.toFinFlag.2 Flag_4_0_0_10)
-      (Ne.symm flagDensity1_K4_Flag_4_0_0_10_ne_zero)
-  have h_eq : FlagAlgebra_2_0_0_1 =[K4.toFinFlag]
-      (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9 + FlagAlgebra_4_0_0_10 :=
-    forbidEq_of_eq (by flag_expand 4)
-  rw [forbidEq_rw_right_add_left h_zero_10, add_zero] at h_eq
-  exact h_eq
+  flag_expand_hfree 4 K4
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 4:121314232434'
 Bound: '2/3'. -/
 theorem K4turan_flagAlgebra
-    : FlagAlgebra_2_0_0_1 ≤[K4.toFinFlag] (2 / 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)] (2 / 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[K4.toFinFlag]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
     := by
     apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
     apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl K4.toFinFlag FlagAlgebra_2_0_0_1
+    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K4.toFinFlag 4)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) 4)))
   simp only [add_assoc]
   rw [forbidLE_rw_left_add_right K4turan_flagAlgebra_expand_under_forbid]
 
@@ -263,7 +243,7 @@ theorem K4turan_flagAlgebra
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
   reduce_downward_flagmul
 
-  expand_one_at 4
+  expand_one_hfree_at 4 K4
 
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline

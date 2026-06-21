@@ -134,7 +134,8 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   These are the lemmas the edge-based commands cite. Proofs are near-verbatim generalizations of the
   K₃ wiring (swap `hasTri`→`inducedContains F`, `triangleGraph`→`F`).
 
-- `[~]` **5b. Generalize the wiring (command surface).** In progress.
+- `[x]` **5b. Generalize the wiring (command surface).** DONE — all four edge-based commands
+  (empty-typed / σ-typed generators, pair-density, mul) plus the edge-based proof tactics are in.
   - **DONE — edge-based empty-typed generator.** `generate_pruned_forbid_free_empty_typed_flags n F`
     in `Flags/ForbidFreeGenerator.lean`: `F` is a **`Sym2Graph m` term** (D2 — no
     `generate_complete_graph`, no canonical forbidden flag, no tag resolution); the free-index split
@@ -167,14 +168,27 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     `genPairDensityCore` into `genPairDensityCoreOn` (takes precomputed free sets) + the wrapper.
     Validated the **full chain** (gen → typed gen → pair-density → mul) forbidding K₃ via `triangleGraph`
     at MantelHfree's sizes (15 pair densities, 4 mul theorems); full project builds (7980 jobs).
-  - **TODO (remaining 5b → folds into Task 7):** (c) edge-based proof tactics — `flag_expand_hfree`,
-    `expand_one_hfree_at` currently take a forbid *tag*; they need term variants — and the **`MantelHfree`
-    end-to-end migration** (drop `generate_complete_graph` + tag commands; state the bound as
-    `≤[⟨_, toFlag ⟦triangleGraph⟧⟩]`). (d) the perf win is realized for empty-typed (pruned `native_decide`
-    vs full-enum); the typed path still routes through `genFlagsHfree` (graph-level filter) — a
-    genuine-pruning typed generation is a later optimization.
-  All four edge-based **generation/density/mul commands** are in and verified end-to-end; only the proof
-  tactics + the example migration remain (Task 7).
+  - **DONE — edge-based proof tactics (term variants).** `flag_expand_hfree N F` and
+    `expand_one_hfree_at N F` now take the forbid as a `Sym2Graph` **term** identifier `F` (e.g.
+    `K3 := completeSym2Graph 3`), not a `SimpleGraph` tag. `expand_one_hfree_at` was already
+    forbid-agnostic (reads the forbid from the goal's `forbidExpand_one`; uses `F` only to name
+    `flagSetHfree_*`); both now strip any namespace from the tag for robustness. `flag_expand_hfree`
+    builds the forbid flag directly as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators
+    and the goal's `=[ ]`), so no `.toFinFlag`. **Two fixes were needed:** (i) `API/FlagExpand.lean`
+    now `import`s `FlagAlgebra.Compute.Basic` so the fully-qualified `Sym2EmptyTypedFlag.toFlag` in
+    the tactic's quotation pre-resolves at the tactic's *definition* site (Lean hygiene resolves
+    quotation idents at def site, not use site); (ii) the closing was strengthened — for ≥3-term
+    expansions the produced sum is *right*-associated with `⟦basisVector⟧` atoms while the stated RHS
+    is *left*-associated with `FlagAlgebra_*` atoms (defeq atoms, different bracketing), so
+    `forbidEq_refl` (defeq check) no longer closes it; the tactic now falls back to
+    `forbidEq_of_eq` + `dsimp only [FlagAlgebra_*]` (unfold to matching `⟦basisVector⟧` atoms) +
+    `first | rfl | abel | simp only [add_assoc, add_comm, add_left_comm]`, with the `forbidEq_refl`
+    fast path kept for the ≤2-term cases.
+  - **(d) perf:** the empty-typed pruned `native_decide` realizes the perf win; the typed path still
+    routes through `genFlagsHfree` (graph-level filter) — a genuine-pruning typed generation is a
+    later optimization.
+  All four edge-based **generation/density/mul commands** *and* the proof tactics are in and verified
+  end-to-end (Task 7 migration builds on them).
   **Scope (from explorer map):** the forbid is threaded as a string tag through 5 stages in
   `Densities/DensityThmGenerator.lean` (`resolveForbidGraph` → `forbidFlagIdentOfToFinFlagEq` →
   `parseFlagRIdx` → `evalCanonicalEdgeLists` → `containsForbiddenSubgraph`), consumed by 6 commands
@@ -182,28 +196,42 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   so the tag path is only correct for complete-graph forbids; the induced pruned path (5a + the new
   command) is the correctness fix for arbitrary `F`. (`MantelHfree`'s full flag-free port lands here / Task 7.)
 
-- `[ ]` **6. User-facing format + convenience commands (complete graphs only, for now).**
-  Provide a convenience command/term `forbid_complete_graph r` that yields the complete graph
-  `K_r` as a **`Sym2Graph r` term** (all `C(r,2)` edges) for the edge-based commands to forbid —
-  replacing the `generate_complete_graph r idx` + canonical-flag setup. **Scope decision (user,
-  2026-06-19): support only complete graphs for now.** Defer the general edge-list DSL,
-  `forbid_cycle k` / `forbid_path k`, and passing a *list* of forbidden graphs — the family
-  machinery (Tasks 3/4/5a: `qFreeFamily`, the family bridge, `prunedFreeFamilyFlags_toFinset_eq`)
-  is already in place for when this is revisited.
+- `[x]` **6. User-facing format + convenience commands (complete graphs only, for now).** DONE in
+  `Forbid/CommonGraphs.lean`. `completeSym2Graph (r : ℕ) : Sym2Graph r` is the complete graph `K_r`
+  as a **`Sym2Graph r` term** — `edges := Finset.univ.filter (fun e => ¬ e.IsDiag)` (all non-loop
+  pairs), `edges_valid` straight from the filter. It is parametric (one definition for every `r`,
+  no per-`r` macro) and evaluates under the generators' `native_decide` / `evalExpr`. A
+  `forbid_complete_graph r` term macro aliases it for the roadmap's user-facing name. Usage:
+  `def K4 : Sym2Graph 4 := completeSym2Graph 4` (or `forbid_complete_graph 4`), then pass `K4` to
+  the edge-based commands and tactics; bounds read `≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ :
+  FinFlag ∅ₜ)]`. Validated for `K3`/`K4`/`K5`. **Scope decision (user, 2026-06-19): complete graphs
+  only for now.** The general edge-list DSL, `forbid_cycle k` / `forbid_path k`, and forbidding a
+  *list* of graphs are deferred (the family machinery — Tasks 3/4/5a — stays available).
 
-- `[ ]` **7. Migrate all `Flagmatic` examples + docs.** Port **every** example under
-  `LeanFlagAlgebras/Flagmatic/` to the edge-based, pruning-based pipeline (drop
-  `generate_complete_graph` + the tag-based `generate_forbid_*` commands; forbid via a `Sym2Graph`
-  term; state forbidden bounds as `≤[⟨_, toFlag ⟦F⟧⟩]`). The files and their (all complete-graph)
-  forbids:
-  - `Mantel.lean`, `MantelHfree.lean`, `ErdosPentagon.lean`, `K3forbidC4.lean`, `K3forbidP3.lean` — K₃;
-  - `K4turan.lean` — K₄;
-  - `K5turan.lean` — K₅ (note: currently commented out of the aggregator `LeanFlagAlgebras.lean`, so
-    compiler-unverified — migrate best-effort and re-enable if it builds).
-  Since all forbid a *complete* graph, Task 6's complete-graph support suffices. **Prerequisite
-  (carried from 5b):** the edge-based proof tactics — `flag_expand_hfree`, `expand_one_hfree_at` term
-  variants (they currently take a forbid tag). Then update `papers/Notes/forbid_free_*`; decide
-  whether to retire or keep the filter/tag path as a fallback.
+- `[x]` **7. Migrate all `Flagmatic` examples + docs.** DONE (6/7 build green; K5turan migrated but
+  compile-heavy — see below). Every example under `LeanFlagAlgebras/Flagmatic/` now forbids a
+  `Sym2Graph` term `def K{r} : Sym2Graph r := completeSym2Graph r`, generates via the edge-based
+  pruned commands (`generate_pruned_forbid_free_*`, `generate_pruned_*_theorems`), states its bound
+  as `≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K{r}⟧⟩ : FinFlag ∅ₜ)]`, and proves it with the edge-based
+  `flag_expand_hfree` / `expand_one_hfree_at`. `generate_empty_typed_flags` + `generate_complete_graph`
+  + the tag-based `generate_forbid_*` / `generate_flags` are gone (and the forbidden-graph density
+  lemma — `Flag_r_0_0_idx` for the complete graph, never generated by pruning — was dropped from each
+  file's `auto_flagDensity1_*` table). Each gained `import …Flags.ForbidFreeGenerator` (+ an
+  `open FlagAlgebras.Compute` where missing). Status per file:
+  - **Built & in the aggregator:** `MantelHfree.lean`, `Mantel.lean`, `K3forbidP3.lean`,
+    `K3forbidC4.lean`, `ErdosPentagon.lean` (K₃); `K4turan.lean` (K₄). Verified by `lake build`.
+  - **`K5turan.lean` (K₅):** edits complete (same recipe), but its edge-based pruned generation at
+    `n = 5` forbidding K₅ is very compile-heavy — K₅-free is a weak constraint, so almost all 5-vertex
+    flags survive and the four σ-typed pair-density steps emit a huge number of `native_decide`
+    theorems (one lean process exceeded ~6 GB and had not finished after ~20 min). It remains
+    **commented out of the aggregator** (`LeanFlagAlgebras.lean`), as before — best-effort per the
+    original note; a genuine-pruning *typed* generation (5b (d)) would be the way to make it tractable.
+  Two proofs split by objective shape: the edge-density examples (`Mantel`, `MantelHfree`, `K4turan`,
+  `K5turan`) expand the size-2 objective with `flag_expand_hfree` (the ≥3-term closing fix above was
+  needed for K₄/K₅); the host-size-objective examples (`K3forbidP3`, `K3forbidC4`, `ErdosPentagon`)
+  have a basis-flag objective and only need `expand_one_hfree_at`. **Remaining:** update
+  `papers/Notes/forbid_free_*`; decide whether to retire the filter/tag path (still used by nothing
+  under `Flagmatic/` now, but the commands remain for K5turan-style heavy cases / fallback).
 
 ## Multi-graph design notes (for D3)
 
@@ -343,3 +371,30 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   Tasks 3/4/5a stays available for later). These fit together: every Flagmatic example forbids a
   complete graph (K₃/K₄/K₅), so complete-graph support is exactly what the Task-7 migration needs.
   Updated the Task 6 / Task 7 bullets accordingly.
+- **2026-06-21** — **Tasks 5b(c), 6, and 7 DONE** (6/7 examples build green; full project `lake build`
+  re-confirmed). Three pieces of work:
+  - **Task 6 — `completeSym2Graph`.** Added `completeSym2Graph (r : ℕ) : Sym2Graph r`
+    (`edges := Finset.univ.filter (¬ ·.IsDiag)`) + a `forbid_complete_graph r` term macro to
+    `Forbid/CommonGraphs.lean`. Parametric (no per-`r` macro), evaluates under the generators'
+    `native_decide`/`evalExpr`. The generation commands all "just work" on `def K{r} := completeSym2Graph r`.
+  - **Task 5b(c) — edge-based proof tactics.** Made `flag_expand_hfree N F` / `expand_one_hfree_at N F`
+    take the forbid as a `Sym2Graph` term identifier (build `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩`
+    instead of `F.toFinFlag`; strip namespace for the `flagSetHfree_*` tag). Hit two real issues, both
+    fixed: (i) a **quotation-hygiene** failure — the fully-qualified `Sym2EmptyTypedFlag.toFlag` in the
+    tactic's `` `(…) `` quotation is resolved at the tactic's *definition* site, so `API/FlagExpand.lean`
+    must `import FlagAlgebra.Compute.Basic` for it to pre-resolve (symptom: `Unknown identifier …toFlag✝`);
+    (ii) the closing `simp; exact forbidEq_refl` only works for ≤2-term expansions — for ≥3 terms the
+    produced sum is right-associated `⟦basisVector⟧` while the stated RHS is left-associated
+    `FlagAlgebra_*` (defeq atoms, different bracketing), so I added a fallback
+    `forbidEq_of_eq` + `dsimp only [FlagAlgebra_*]` + `first | rfl | abel | simp only [add_assoc, …]`
+    (guard the empty-goal case *before* `withMainContext`, else "No goals to be solved" on the 2-term path).
+  - **Task 7 — migrate the examples.** Ported all seven `Flagmatic/` files to the edge-based pruned
+    pipeline (forbid a `Sym2Graph` term; `≤[⟨_, toFlag ⟦K{r}⟧⟩]`; `generate_pruned_*` + the new tactics;
+    dropped `generate_empty_typed_flags`/`generate_complete_graph`/tag commands and the forbidden-flag
+    density lemma). **Built & verified:** `MantelHfree`, `Mantel`, `K3forbidP3`, `K3forbidC4`,
+    `ErdosPentagon`, `K4turan`. **`K5turan`:** edits done but compile-heavy (K₅-free at n=5 is a weak
+    constraint → enormous pair-density `native_decide` count, >6 GB, did not finish in ~20 min); left
+    commented out of the aggregator as before. Iteration tip for next session: the example targets build
+    in ~15–50 s each off warm `.lake` oleans (`lake build LeanFlagAlgebras.Flagmatic.<X>`); a from-clean
+    project build is ~3340 jobs (mathlib cached). **Next:** update `papers/Notes/forbid_free_*`; a
+    genuine-pruning *typed* generator (5b (d)) to make K5turan tractable; optionally retire the tag path.
