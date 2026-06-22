@@ -65,24 +65,9 @@ def LM₁ : Matrix (Fin 8) (Fin 8) ℚ :=
     (4021139 / 2270700 : ℚ), (8332808888371 / 40005426955379 : ℚ), (-1 : ℚ), 0, 0, (1 : ℚ), 0, 0;
     (4021139 / 2270700 : ℚ), (-1 : ℚ), 0, 0, 0, 0, (1 : ℚ), 0;
     (-3 / 2 : ℚ), 0, 0, 0, 0, 0, 0, (1 : ℚ)]
-lemma dM₁_nonneg (i : Fin 8) : 0 ≤ dM₁ i := by
-  fin_cases i <;> norm_num [dM₁]
-lemma M₁_eq_LDL : M₁ = LM₁ * Matrix.diagonal dM₁ * LM₁ᵀ := by
-  decide +kernel
-theorem M₁_posSemidef : M₁.PosSemidef := by
-  exact posSemidef_of_LDLt dM₁_nonneg M₁_eq_LDL
-lemma dM₁_real_nonneg (i : Fin 8) : 0 ≤ (dM₁ i : ℝ) := by
-  exact_mod_cast dM₁_nonneg i
-lemma M₁_real_eq_LDL :
-    M₁_real = (ratMatrixToReal LM₁ * Matrix.diagonal (fun i => (dM₁ i : ℝ))) * (ratMatrixToReal LM₁)ᵀ := by
-  calc
-    M₁_real = ratMatrixToReal (LM₁ * Matrix.diagonal dM₁ * LM₁ᵀ) := by
-      simp [M₁_real, ratMatrixToReal, M₁_eq_LDL]
-    _ = (ratMatrixToReal LM₁ * Matrix.diagonal (fun i => (dM₁ i : ℝ))) * (ratMatrixToReal LM₁)ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `M₁_real` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `M₁_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem M₁_real_posSemidef : M₁_real.PosSemidef := by
-  exact posSemidef_of_LDLt_real dM₁_real_nonneg M₁_real_eq_LDL
+  psd_real_ldlt M₁ LM₁ dM₁
 
 /-- SDP certificate matrix for block 2 (rational, 6×6),
 paired with `v₂`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -104,24 +89,9 @@ def LM₂ : Matrix (Fin 6) (Fin 6) ℚ :=
     (-24796885 / 34250156 : ℚ), (-224119197083990 / 955338527286107 : ℚ), (-112059598541995 / 283476335889407 : ℚ), (1 : ℚ), 0, 0;
     (17784719 / 68500312 : ℚ), (-408775394092007 / 955338527286107 : ℚ), (-253 / 622 : ℚ), 0, (1 : ℚ), 0;
     (17784719 / 68500312 : ℚ), (-158177277686807 / 955338527286107 : ℚ), (-369 / 622 : ℚ), 0, (-1 : ℚ), (1 : ℚ)]
-lemma dM₂_nonneg (i : Fin 6) : 0 ≤ dM₂ i := by
-  fin_cases i <;> norm_num [dM₂]
-lemma M₂_eq_LDL : M₂ = LM₂ * Matrix.diagonal dM₂ * LM₂ᵀ := by
-  decide +kernel
-theorem M₂_posSemidef : M₂.PosSemidef := by
-  exact posSemidef_of_LDLt dM₂_nonneg M₂_eq_LDL
-lemma dM₂_real_nonneg (i : Fin 6) : 0 ≤ (dM₂ i : ℝ) := by
-  exact_mod_cast dM₂_nonneg i
-lemma M₂_real_eq_LDL :
-    M₂_real = (ratMatrixToReal LM₂ * Matrix.diagonal (fun i => (dM₂ i : ℝ))) * (ratMatrixToReal LM₂)ᵀ := by
-  calc
-    M₂_real = ratMatrixToReal (LM₂ * Matrix.diagonal dM₂ * LM₂ᵀ) := by
-      simp [M₂_real, ratMatrixToReal, M₂_eq_LDL]
-    _ = (ratMatrixToReal LM₂ * Matrix.diagonal (fun i => (dM₂ i : ℝ))) * (ratMatrixToReal LM₂)ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `M₂_real` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `M₂_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem M₂_real_posSemidef : M₂_real.PosSemidef := by
-  exact posSemidef_of_LDLt_real dM₂_real_nonneg M₂_real_eq_LDL
+  psd_real_ldlt M₂ LM₂ dM₂
 
 /-- SDP certificate matrix for block 3 (rational, 5×5),
 paired with `v₃`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -141,24 +111,9 @@ def LM₃ : Matrix (Fin 5) (Fin 5) ℚ :=
     (260220559 / 762955200 : ℚ), (-1 / 2 : ℚ), (1 : ℚ), 0, 0;
     (260220559 / 762955200 : ℚ), (-1 / 2 : ℚ), (-1 : ℚ), (1 : ℚ), 0;
     (-121257041 / 381477600 : ℚ), (-1 : ℚ), 0, 0, (1 : ℚ)]
-lemma dM₃_nonneg (i : Fin 5) : 0 ≤ dM₃ i := by
-  fin_cases i <;> norm_num [dM₃]
-lemma M₃_eq_LDL : M₃ = LM₃ * Matrix.diagonal dM₃ * LM₃ᵀ := by
-  decide +kernel
-theorem M₃_posSemidef : M₃.PosSemidef := by
-  exact posSemidef_of_LDLt dM₃_nonneg M₃_eq_LDL
-lemma dM₃_real_nonneg (i : Fin 5) : 0 ≤ (dM₃ i : ℝ) := by
-  exact_mod_cast dM₃_nonneg i
-lemma M₃_real_eq_LDL :
-    M₃_real = (ratMatrixToReal LM₃ * Matrix.diagonal (fun i => (dM₃ i : ℝ))) * (ratMatrixToReal LM₃)ᵀ := by
-  calc
-    M₃_real = ratMatrixToReal (LM₃ * Matrix.diagonal dM₃ * LM₃ᵀ) := by
-      simp [M₃_real, ratMatrixToReal, M₃_eq_LDL]
-    _ = (ratMatrixToReal LM₃ * Matrix.diagonal (fun i => (dM₃ i : ℝ))) * (ratMatrixToReal LM₃)ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `M₃_real` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `M₃_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem M₃_real_posSemidef : M₃_real.PosSemidef := by
-  exact posSemidef_of_LDLt_real dM₃_real_nonneg M₃_real_eq_LDL
+  psd_real_ldlt M₃ LM₃ dM₃
 
 /-- Label type for block 1 (flagmatic type '3:'). -/
 def σ₁ : FlagType (Fin 3) := FlagType_3_0

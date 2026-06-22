@@ -11,7 +11,7 @@
 #       generate_pruned_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
 #       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
 #     (densities are computed inside Lean -- no `*.json`, no Python regeneration);
-#   * M_t / dM_t / LM_t + PSD lemmas, the σ_t / v_t flag vectors, the forbid-free
+#   * M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the σ_t / v_t flag vectors, the forbid-free
 #     objective expansion (branch B, closed by `flag_expand_hfree`), and the
 #     auto-proved main theorem (`≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K{r}⟧⟩ : FinFlag ∅ₜ)]`).
 #
@@ -75,7 +75,7 @@ This file has two layers:
                       theorem (branch B). For an unsupported description
                       (non-complete-graph forbid, etc.) falls back to a
                       `sorry`-bodied stub.
-        gen-matrices  append only the M_t / dM_t / LM_t defs and PSD lemmas
+        gen-matrices  append only the M_t / dM_t / LM_t defs and PSD theorem
         gen-vectors   append only σ_t and v_t definitions
 
 ----------------------------------------------------------------------
@@ -520,11 +520,15 @@ def _lean_vector_lit(v: list[Fraction]) -> str:
 
 
 def render_matrices(cert: dict) -> str:
-    """Render M_t / dM_t / LM_t and the PSD lemma cluster for every SDP block.
+    """Render M_t / M_t_real / dM_t / LM_t and the PSD theorem for every SDP block.
 
-    The output matches the structure used in `LeanFlagAlgebras/API/{Mantel,
-    C4Turan}API.lean`: rational matrix, real cast, LDLᵀ data, then six lemmas
-    (dM_nonneg / M_eq_LDL / M_posSemidef and their real counterparts).
+    Only the data (rational matrix, real cast, and the LDLᵀ factors `dM`/`LM`) is
+    emitted; the entire PSD proof collapses to a single `psd_real_ldlt` tactic call
+    (from `API/Matrix/PosSemiDef.lean`), which discharges the diagonal-nonnegativity
+    and `M = LM·diag(dM)·LMᵀ` side goals internally. The intermediate lemmas the old
+    template spelled out (dM_nonneg / M_eq_LDL / rational M_posSemidef / dM_real_nonneg
+    / M_real_eq_LDL) are no longer needed — nothing downstream consumes them; the proof
+    only uses `M_t_real` and `M_t_real_posSemidef`.
     """
     total = len(cert["types"])
     blocks: list[str] = []
@@ -555,24 +559,9 @@ def {dM_name} : Fin {n} → ℚ :=
   {D_lit}
 def {LM_name} : Matrix (Fin {n}) (Fin {n}) ℚ :=
   {L_lit}
-lemma {dM_name}_nonneg (i : Fin {n}) : 0 ≤ {dM_name} i := by
-  fin_cases i <;> norm_num [{dM_name}]
-lemma {M_name}_eq_LDL : {M_name} = {LM_name} * Matrix.diagonal {dM_name} * {LM_name}ᵀ := by
-  decide +kernel
-theorem {M_name}_posSemidef : {M_name}.PosSemidef := by
-  exact posSemidef_of_LDLt {dM_name}_nonneg {M_name}_eq_LDL
-lemma {dM_name}_real_nonneg (i : Fin {n}) : 0 ≤ ({dM_name} i : ℝ) := by
-  exact_mod_cast {dM_name}_nonneg i
-lemma {M_real}_eq_LDL :
-    {M_real} = (ratMatrixToReal {LM_name} * Matrix.diagonal (fun i => ({dM_name} i : ℝ))) * (ratMatrixToReal {LM_name})ᵀ := by
-  calc
-    {M_real} = ratMatrixToReal ({LM_name} * Matrix.diagonal {dM_name} * {LM_name}ᵀ) := by
-      simp [{M_real}, ratMatrixToReal, {M_name}_eq_LDL]
-    _ = (ratMatrixToReal {LM_name} * Matrix.diagonal (fun i => ({dM_name} i : ℝ))) * (ratMatrixToReal {LM_name})ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `{M_real}` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `{M_real}` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem {M_real}_posSemidef : {M_real}.PosSemidef := by
-  exact posSemidef_of_LDLt_real {dM_name}_real_nonneg {M_real}_eq_LDL
+  psd_real_ldlt {M_name} {LM_name} {dM_name}
 """
         )
     return "\n".join(blocks)
@@ -1460,7 +1449,7 @@ def main(argv: list[str] | None = None) -> None:
 
     p_mat = sub.add_parser(
         "gen-matrices",
-        help="append M_t / dM_t / LM_t Lean definitions and PSD lemmas to a file",
+        help="append M_t / dM_t / LM_t Lean definitions and the PSD theorem to a file",
     )
     p_mat.add_argument("certificate", type=Path)
     p_mat.add_argument("target", type=Path,

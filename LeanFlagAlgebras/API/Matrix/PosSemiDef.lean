@@ -65,3 +65,35 @@ noncomputable def ratMatrixToReal {n : ℕ}
     (M : Matrix (Fin n) (Fin n) ℚ)
     : Matrix (Fin n) (Fin n) ℝ :=
   M.map (Rat.castHom ℝ)
+
+/-- From a **rational** LDLᵀ factorization `M = L * diagonal d * Lᵀ` with `d ≥ 0`, the real
+cast `ratMatrixToReal M` is positive semidefinite. This bundles the `ℚ → ℝ` plumbing
+(`exact_mod_cast` of the nonnegativity, and `map`-distributes-over-product for the equality) so
+SDP-certificate emitters need only supply the rational `(d_nonneg, eq_LDL)` pair. -/
+theorem posSemidef_real_of_LDLt
+    {n : ℕ} {M L : Matrix (Fin n) (Fin n) ℚ} {d : Fin n → ℚ}
+    (hd : ∀ i, 0 ≤ d i) (hM : M = L * Matrix.diagonal d * Lᵀ)
+    : (ratMatrixToReal M).PosSemidef
+  := by
+  have hd' : ∀ i, (0 : ℝ) ≤ (d i : ℝ) := fun i => by exact_mod_cast hd i
+  refine posSemidef_of_LDLt_real (L := ratMatrixToReal L) (d := fun i => (d i : ℝ))
+    (fun i => hd' i) ?_
+  calc
+    ratMatrixToReal M = ratMatrixToReal (L * Matrix.diagonal d * Lᵀ) := by rw [hM]
+    _ = (ratMatrixToReal L * Matrix.diagonal (fun i => (d i : ℝ))) * (ratMatrixToReal L)ᵀ := by
+      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
+
+/-- Close a `(ratMatrixToReal M).PosSemidef` goal from the concrete rational LDLᵀ data.
+`psd_real_ldlt M L d` discharges the two side goals of `posSemidef_real_of_LDLt`: the
+diagonal nonnegativity by `fin_cases`/`norm_num`, and the factorization equality by
+`decide +kernel`. The goal may be stated through any definitional wrapper of
+`ratMatrixToReal M` (e.g. a `def M_real := ratMatrixToReal M`). -/
+syntax (name := psdRealLdlt) "psd_real_ldlt" ppSpace ident ppSpace ident ppSpace ident : tactic
+
+macro_rules
+  | `(tactic| psd_real_ldlt $M:ident $L:ident $d:ident) =>
+    `(tactic|
+        refine posSemidef_real_of_LDLt (M := $M) (L := $L) (d := $d) ?_ ?_ <;>
+          first
+            | (intro i; fin_cases i <;> norm_num [$d:ident])
+            | decide +kernel)

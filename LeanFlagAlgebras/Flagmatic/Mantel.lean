@@ -44,24 +44,9 @@ def dM : Fin 2 → ℚ :=
 def LM : Matrix (Fin 2) (Fin 2) ℚ :=
   !![(1 : ℚ), 0;
     (-1 : ℚ), (1 : ℚ)]
-lemma dM_nonneg (i : Fin 2) : 0 ≤ dM i := by
-  fin_cases i <;> norm_num [dM]
-lemma M_eq_LDL : M = LM * Matrix.diagonal dM * LMᵀ := by
-  decide +kernel
-theorem M_posSemidef : M.PosSemidef := by
-  exact posSemidef_of_LDLt dM_nonneg M_eq_LDL
-lemma dM_real_nonneg (i : Fin 2) : 0 ≤ (dM i : ℝ) := by
-  exact_mod_cast dM_nonneg i
-lemma M_real_eq_LDL :
-    M_real = (ratMatrixToReal LM * Matrix.diagonal (fun i => (dM i : ℝ))) * (ratMatrixToReal LM)ᵀ := by
-  calc
-    M_real = ratMatrixToReal (LM * Matrix.diagonal dM * LMᵀ) := by
-      simp [M_real, ratMatrixToReal, M_eq_LDL]
-    _ = (ratMatrixToReal LM * Matrix.diagonal (fun i => (dM i : ℝ))) * (ratMatrixToReal LM)ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `M_real` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `M_real` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem M_real_posSemidef : M_real.PosSemidef := by
-  exact posSemidef_of_LDLt_real dM_real_nonneg M_real_eq_LDL
+  psd_real_ldlt M LM dM
 
 /-- Label type for block 1 (flagmatic type '1:'). -/
 def σ : FlagType (Fin 1) := FlagType_1_0
