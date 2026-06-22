@@ -60,6 +60,11 @@ will meet them constantly:
 * The §7 unification: `oneBlowup G v H` (single-vertex blow-up `G[v→H]`), `BlowupClosed` (the
   blow-up-closure property), and `blowupClosed_root_plantable` (the theorem of which clone-,
   true-clone- and substitution-closure are corollaries, via the `…toBlowupClosed` implications).
+* In `MetaTheory` (§8): `FinitePlanting` / `SparseRootRepair` (the finite-planting and
+  sparse-root-repair properties of a `HeredClass`), `finitePlanting_root_plantable` /
+  `sparseRootRepair_finitePlanting` (the two criteria), `c5FreeClass` (the `C₅`-free class;
+  `C5g := cycleGraph 5`, `Mem G := C5g.Free G`), the plantings `oneRootPlant` / `twoRootPlant`, and
+  the `C₅` types `oneVertexType` / `twoNonEdgeType` (both `⊥`, on `Fin 1` / `Fin 2`).
 
 ---
 
@@ -87,10 +92,18 @@ jump straight to the module and Lean name; read that module's header, then the n
    (reusing the closure-free `HeredClass` base) → `SubstitutionSequence` → `SubstitutionClosed`
    → `TrueClone`, `Substitution`, `ClusterGraph`. (Each mirrors its §5 namesake; read the module
    header first to see the one-line difference.)
+6. **§8 finite planting + the `C₅`-free class:** `FinitePlanting` (the §5/§7 capstone over an
+   abstract planting family — read its header to see what it reuses from `CapstoneShared`/
+   `WeakConvergence`) → `SparseRootRepair` (the coupling-free sampling estimate; read
+   `counting_coupling_bound`) → `C5Free` (the class + `lem:c5-nbhd`) → `C5OneRoot` →
+   `C5TwoRootNonEdge` → `C5Blowup`.
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
-([`CloneClosed.lean`](./CloneClosed.lean), especially the private `planted_cylinder_mass`).
+([`CloneClosed.lean`](./CloneClosed.lean), especially the private `planted_cylinder_mass`); and in
+§8, the coupling-free sampling bound `counting_coupling_bound` ([`SparseRootRepair.lean`](./SparseRootRepair.lean))
+and the `C₅`-freeness case analyses (`oneRootPlant_c5free`/`twoRootPlant_c5free`, and the
+neighbourhood-structure `lem:c5-nbhd` in [`C5Free.lean`](./C5Free.lean)).
 
 ---
 
@@ -120,6 +133,16 @@ jump straight to the module and Lean name; read that module's header, then the n
 | §6 `cor:cluster-graphs` | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
 | §7 `thm:substitution-root-plantable` | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
 | (new) host-parametric planted estimate | `PlantedEstimate` | `planted_estimate_host` |
+| §8 `def:finite-local-planting`, `thm:finite-local-planting` | `FinitePlanting` | `FinitePlanting`, `finitePlanting_root_plantable` |
+| §8 `def:sparse-root-repair`, `thm:sparse-repair-planting` | `SparseRootRepair` | `SparseRootRepair`, `sparseRootRepair_finitePlanting` (crux helper `counting_coupling_bound`) |
+| §8 `lem:c5-nbhd` (+ the `C₅`-free class) | `C5Free` | `c5free_neighborhood_edge_card_le`, `c5FreeClass`, `C5g`, `c5_copy_of_pentagon` |
+| §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
+| §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
+| §8 `lem:c5-blowup` | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
+
+For a line-numbered `paper.tex` ↦ Lean audit map of §8 (what to read and what to verify), see the
+**[Auditing the correspondence](./README.md#auditing-the-correspondence-to-papertex)** section of the
+README.
 
 ---
 

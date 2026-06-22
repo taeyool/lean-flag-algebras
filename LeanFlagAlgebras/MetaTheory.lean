@@ -31,6 +31,12 @@ import LeanFlagAlgebras.MetaTheory.BlowupClosed
 import LeanFlagAlgebras.MetaTheory.TrueClone
 import LeanFlagAlgebras.MetaTheory.Substitution
 import LeanFlagAlgebras.MetaTheory.ClusterGraph
+import LeanFlagAlgebras.MetaTheory.C5Free
+import LeanFlagAlgebras.MetaTheory.FinitePlanting
+import LeanFlagAlgebras.MetaTheory.SparseRootRepair
+import LeanFlagAlgebras.MetaTheory.C5OneRoot
+import LeanFlagAlgebras.MetaTheory.C5TwoRootNonEdge
+import LeanFlagAlgebras.MetaTheory.C5Blowup
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -160,4 +166,25 @@ whole §5 estimate machinery applies unchanged.
   stronger than blow-up-closure and misses §5/§6.
 * `ClusterGraph` — §6 `cor:cluster-graphs`: cluster graphs (`P₃`-free) are true-clone-closed, hence
   `cluster_root_plantable` — root-plantable though *not* clone-closed (nor substitution-closed).
+
+§8 adds a *finite, local* root-plantability criterion that applies beyond any global blow-up closure,
+and verifies it for the (dense, not blow-up-closed) `C₅`-free class by a sparse local repair.
+
+* `FinitePlanting` — §8 `def:finite-local-planting` + `thm:finite-local-planting`:
+  `finitePlanting_root_plantable` — the **finite planting property** at a non-degenerate `σ` implies
+  root-plantability (`S_σ = Q_σ`). The §5/§7 capstone argument with the blow-up sequence replaced by
+  the abstract planting family `Hₜ`; reuses `CapstoneShared`/`WeakConvergence`/`SupportClosure`
+  verbatim, and a generic `flagSeqLimit_mem_Q0`.
+* `SparseRootRepair` — §8 `def:sparse-root-repair` + `thm:sparse-repair-planting`:
+  `sparseRootRepair_finitePlanting` — sparse root-blow-up repairs imply finite planting, via a
+  coupling-free combinatorial sampling estimate (`counting_coupling_bound`).
+* `C5Free` — the `C₅`-free hereditary class `c5FreeClass` (Mathlib `IsContained`/`Free`), and §8
+  `lem:c5-nbhd` (`c5free_neighborhood_edge_card_le`): `e(G[N(v)]) ≤ |N(v)|` (`P₄`-free neighbourhoods).
+* `C5OneRoot` — §8 `def:c5-one-root-planting`/`lem:c5-planting-free`/`thm:c5-one-root`: the one-root
+  planting `oneRootPlant`, its `C₅`-freeness (`oneRootPlant_c5free`), and `c5free_one_root_plantable`
+  (`S₁ = Q₁` for the `C₅`-free class at the one-vertex type).
+* `C5TwoRootNonEdge` — §8 two-root non-edge analogues: `twoRootPlant`, `twoRootPlant_c5free`, and
+  `c5free_two_root_nonedge_plantable` (`S_η = Q_η`).
+* `C5Blowup` — §8 `lem:c5-blowup`: an independent blow-up of a `C₅`-free graph is `C₅`-free iff the
+  graph is triangle-free (`c5_blowup_free_iff_triangleFree`) — why naive blow-ups fail for `C₅`-free.
 -/

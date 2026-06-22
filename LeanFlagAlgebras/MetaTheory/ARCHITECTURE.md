@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 33 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 39 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -34,6 +34,24 @@ agrees with the independent blow-up on exactly the sets the §5 estimate inspect
 pipeline carries over. The capstone `subst_root_plantable` is `clone_root_plantable` re-run over
 `subBlowup`, parameterised by an abstract *within-class blow-up closure* hypothesis; §6 supplies it
 with `W = ⊤` (cliques) and §7 with in-class fibres.
+
+**§8** takes the abstraction one step further. Instead of *any* particular construction, it isolates
+the **finite planting property** (`FinitePlanting`): the only thing the capstone ever used about the
+blow-up was that, from a large in-class flag `(G,θ)`, it produced a larger in-class graph `H` with a
+positive-density set `Θ` of `σ`-embeddings whose bounded-size flag densities matched `(G,θ)`. Take
+*that* as a hypothesis and the same six-step argument (representation → a sequence `Hₜ` → base limit
+`φ₀ ∈ Q₀` with `φ₀⟨σ⟩₀ > 0` → weak convergence → Portmanteau → support) proves root-plantability —
+`finitePlanting_root_plantable` (`thm:finite-local-planting`). The blow-up sequence of one fixed base
+is replaced by a sequence `Hₜ` with one planting per representation term, and the cylinder-mass crux
+becomes *immediate*: `|Θₜ| ≥ δ|V(Hₜ)|^k` is turned into `Pₜ(C̃) ≥ δ` by the same
+`toProbMeasure_apply_eq_labeling_ratio` count identity, with no planted-estimate/`ρ` analysis. The
+payoff is that a class with **no** global blow-up closure can still qualify: the `C₅`-free class
+(dense, not blow-up-closed) is shown to have `FinitePlanting` at the one-vertex and two-root non-edge
+types by a *sparse local repair* — clone only the roots, then delete the few old neighbourhood edges
+(linear in `n` by `lem:c5-nbhd`) that a naive clone would turn into `C₅`s. The bridge
+`sparseRootRepair_finitePlanting` (`thm:sparse-repair-planting`) is a finite, coupling-free sampling
+estimate (a uniformly random bounded sample is unlikely to meet a root-cluster or span a repaired
+edge), reusing nothing measure-theoretic.
 
 ---
 
@@ -290,6 +308,60 @@ are reused **verbatim**.
   true-clone-closure `clusterClass_trueCloneClosed`, hence `cluster_root_plantable` — root-plantable
   although **not** clone-closed (nor substitution-closed).
 
+### §8 finite planting and the `C₅`-free class
+
+This layer sits on top of the §5/§7 capstone toolkit (it imports `CapstoneShared`,
+`WeakConvergence`, `ConstrainedRep`, `SupportClosure`, `HeredClass`, `BlowupSequence`) but **not** any
+specific blow-up construction. The abstract criteria (`FinitePlanting`, `SparseRootRepair`) are
+class-generic; the `C₅`-free modules then instantiate them.
+
+```
+  §8 abstract criteria                §8 C₅-free instantiation
+  ────────────────────                ────────────────────────
+  FinitePlanting                      C5Free  (c5FreeClass; lem:c5-nbhd;
+   (thm:finite-local-planting)         C5g; c5_copy_of_pentagon)
+     │                                   │           │
+  SparseRootRepair                    C5OneRoot   C5TwoRootNonEdge   C5Blowup
+   (thm:sparse-repair-planting)        (oneRootPlant; (twoRootPlant;     (lem:c5-blowup)
+     └──────────────┬──────────────────  thm:c5-one-   thm:c5-nonedge-
+                    │                     root)         root)
+       both C5*Root modules consume SparseRootRepair + C5Free
+```
+
+* **[`FinitePlanting`](./FinitePlanting.lean)** — §8 `def:finite-local-planting` (`FinitePlanting`)
+  and `thm:finite-local-planting` (`finitePlanting_root_plantable`). The §5 capstone
+  `clone_root_plantable` re-run with the blow-up sequence replaced by the abstract planting family
+  `Hₜ`. New generic helper `flagSeqLimit_mem_Q0` (the limit of forbidden-free flags lies in `Q₀` —
+  the construction-free form of `blowup_limit_mem_Q0`); the uniform `σ`-type-density lower bound
+  giving `φ₀⟨σ⟩₀ > 0` is recovered from `|Θₜ| ≥ δ|V|^k` via embedding↔`subgraphCount` counting. The
+  Portmanteau/support tail is the `CloneClosed` tail, with the cylinder centred at `ψ` directly.
+* **[`SparseRootRepair`](./SparseRootRepair.lean)** — §8 `def:sparse-root-repair` (`SparseRootRepair`,
+  host vertex type `nonRoot G ⊕ (Fin n₀ × Fin L)`) and `thm:sparse-repair-planting`
+  (`sparseRootRepair_finitePlanting`). The largest §8 module. Its heart is the **coupling-free**
+  `counting_coupling_bound` (paper Deviation 8a): a three-term `Finset.card` inequality bounding
+  `|p_H − p_G|` by `2·P_W[S⊄U] + P_W[S⊆U∧Bad]`, with the two bad-event terms estimated by binomial
+  superset counts (`Finset.powersetCard`). Bridges to the flag densities by `flagDensity₁_eq_subset_count_div`
+  ([`LabeledCount`](./LabeledCount.lean)) on both sides; presents the sum-type witness on `Fin N`
+  (`Fintype.equivFin`, `flagDensity₁_respect_eqv`) to feed `FinitePlanting`.
+* **[`C5Free`](./C5Free.lean)** — the `C₅`-free class `c5FreeClass : HeredClass` (`C5g := cycleGraph 5`,
+  `Mem G := C5g.Free G` via Mathlib `IsContained`/`Free`/`Copy`), and §8 `lem:c5-nbhd`
+  (`c5free_neighborhood_edge_card_le`: `e(G[N(v)]) ≤ |N(v)|`, via "`G[N(v)]` is `P₄`-subgraph-free ⟹
+  each component a star or triangle"). Public helper `c5_copy_of_pentagon` (5 vertices + 5 cyclic
+  edges + 10 distinctnesses ⟹ `C5g ⊑ G`), reused by both planting-free proofs.
+* **[`C5OneRoot`](./C5OneRoot.lean)** — §8 one-root case: `oneRootPlant` (`def:c5-one-root-planting`),
+  `oneRootPlant_c5free` (`lem:c5-planting-free`, by case analysis on how many cycle vertices land in
+  the root cluster), the sparse-repair instance `c5FreeClass_sparseRootRepair_oneVertex` (clause (iii)
+  injects altered pairs into `(G.induce N(r)).edgeFinset`, then `lem:c5-nbhd`), and
+  `c5free_one_root_plantable` (`thm:c5-one-root`, `S₁ = Q₁`).
+* **[`C5TwoRootNonEdge`](./C5TwoRootNonEdge.lean)** — §8 two-root non-edge case: `twoRootPlant`,
+  `twoRootPlant_c5free` (a slick projection argument — project every cycle vertex to `G`, clones to
+  their root), `c5FreeClass_sparseRootRepair_twoNonEdge` (two neighbourhoods `N(r)`, `N(s)`), and
+  `c5free_two_root_nonedge_plantable` (`thm:c5-nonedge-root`, `S_η = Q_η`).
+* **[`C5Blowup`](./C5Blowup.lean)** — §8 `lem:c5-blowup` (`c5_blowup_free_iff_triangleFree`): for a
+  `C₅`-free `G`, every `independentBlowup` is `C₅`-free iff `G` is triangle-free (a triangle lifts to
+  a `C₅` in the size-2 blow-up; conversely a blow-up `C₅` projects to a closed 5-walk forcing a
+  triangle or a `C₅` in `G`).
+
 ---
 
 ## The capstone proof, step by step (`clone_root_plantable`)
@@ -351,3 +423,28 @@ hypothesis to obtain a family `Wf` with `subBlowup Γ (Wf M) ∈ class` for ever
 The three end results instantiate the closure hypothesis: `true_clone_root_plantable` with `W = ⊤`,
 `substitution_root_plantable` with in-class fibres, and `cluster_root_plantable` via
 `clusterClass_trueCloneClosed`.
+
+### The §8 capstone (`finitePlanting_root_plantable`)
+
+`finitePlanting_root_plantable` (in [`FinitePlanting`](./FinitePlanting.lean)) follows the **same six
+steps**, but the construction is now *abstract*. Step 1 (reduce to finite cylinders) is unchanged
+(`mem_closure_of_forall_finset_cylinder`). Step 2 (the in-class base sequence) is again
+`exists_constrained_flagSeq_limit`. The change is in steps 3 and 5:
+
+* **Step 3 (sequence + base limit).** There is no fixed base blown up over `M`. Instead, applying the
+  `FinitePlanting` hypothesis to each large representation term `(Gₜ, θₜ)` yields a graph `Hₜ` with a
+  planting `Θₜ`; the `Hₜ` (sizes `→ ∞`) are assembled into a flag sequence (strictly-increasing-size
+  subsequence via `strictMono_subseq_of_tendsto_atTop`, then `increasing_flagSeq_contain_convergent_subseq`),
+  whose limit `φ₀` lies in `Q₀` by the *generic* `flagSeqLimit_mem_Q0` (each `Hₜ` is in the class,
+  hence forbidden-free), and has `φ₀⟨σ⟩₀ > 0` from the uniform bound `subgraphDensity σ Hₜ ≥ δ`
+  (derived from `|Θₜ| ≥ δ|V(Hₜ)|^k` by embedding↔`subgraphCount` counting).
+* **Step 5 (cylinder mass — now immediate).** With `C̃` centred at `ψ` (radius `2ε/3`), each
+  `θ̂ ∈ Θₜ` gives a labelling whose profile lies in `C̃` (clause (iii) of `FinitePlanting` + the
+  representation closeness), and `toProbMeasure_apply_eq_labeling_ratio` + `card_labelings_eq_card_embeddings`
+  give `Pₜ(C̃) ≥ |Θₜ|/|V(Hₜ)|^k ≥ δ` directly — **no** `planted_estimate`/`ρ`/`BinomialRatio`.
+
+Steps 4 and 6 (weak convergence via `tendsto_rootingMeasure_extend`; Portmanteau + support) are again
+**identical** — they never mention the construction. The `C₅`-free end results
+`c5free_one_root_plantable`/`c5free_two_root_nonedge_plantable` then arrive in two hops:
+`SparseRootRepair ⇒ FinitePlanting` (`sparseRootRepair_finitePlanting`) and the `C₅`-free sparse-repair
+instances supply the hypothesis, with `lem:c5-nbhd` bounding the repaired-edge count.
