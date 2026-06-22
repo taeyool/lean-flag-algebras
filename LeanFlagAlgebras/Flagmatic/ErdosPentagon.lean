@@ -4,6 +4,7 @@
 -- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagGenerator
+import LeanFlagAlgebras.Flags.ForbidFreeGenerator
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
@@ -14,32 +15,31 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
+open FlagAlgebras.Compute
 
 namespace ErdosPentagon
 
--- Locally generate the flags this example needs (formerly from the global
--- `Flags/FlagDef.lean`): the empty-typed underlying flags (n = 3 for the forbidden
--- `K3`, n = 4/5 for the pattern/host), the forbidden graph, and the σ-typed (3-labelled)
--- pattern/host flags. Flag generation comes first, so the density and multiplication
--- theorem generators below resolve to these local constants.
-generate_empty_typed_flags 3
-generate_empty_typed_flags 4
-generate_empty_typed_flags 5
-generate_complete_graph 3 3
-generate_flags 4 3 0
-generate_flags 4 3 1
-generate_flags 4 3 2
-generate_flags 5 3 0
-generate_flags 5 3 1
-generate_flags 5 3 2
-
-generate_forbid_density_theorems 5 K3
-generate_flag_pair_density_theorems 4 5 3 0 K3
-generate_forbid_mul_theorems 4 5 3 0 K3
-generate_flag_pair_density_theorems 4 5 3 1 K3
-generate_forbid_mul_theorems 4 5 3 1 K3
-generate_flag_pair_density_theorems 4 5 3 2 K3
-generate_forbid_mul_theorems 4 5 3 2 K3
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
+-- `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical forbidden flag); the K3-containing
+-- flags are never generated (genuine pruning). The pruned commands emit only the K3-free flags
+-- (the pentagon `C₅` objective `FlagAlgebra_5_0_0_19` among them), their completeness, and the
+-- forbid-free pair-density / multiplication theorems for all three σ-types.
+def K3 : Sym2Graph 3 := completeSym2Graph 3
+generate_pruned_forbid_free_empty_typed_flags 3 K3
+generate_pruned_forbid_free_empty_typed_flags 4 K3
+generate_pruned_forbid_free_empty_typed_flags 5 K3
+generate_pruned_forbid_free_flags 4 3 0 K3
+generate_pruned_forbid_free_flags 4 3 1 K3
+generate_pruned_forbid_free_flags 4 3 2 K3
+generate_pruned_forbid_free_flags 5 3 0 K3
+generate_pruned_forbid_free_flags 5 3 1 K3
+generate_pruned_forbid_free_flags 5 3 2 K3
+generate_pruned_flag_pair_density_theorems 4 5 3 0 K3
+generate_pruned_forbid_free_mul_theorems 4 5 3 0 K3
+generate_pruned_flag_pair_density_theorems 4 5 3 1 K3
+generate_pruned_forbid_free_mul_theorems 4 5 3 1 K3
+generate_pruned_flag_pair_density_theorems 4 5 3 2 K3
+generate_pruned_forbid_free_mul_theorems 4 5 3 2 K3
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -204,24 +204,24 @@ set_option maxRecDepth 1500
 Certificate description: '2-graph; maximize 5:1213243545 density; forbid 3:121323'
 Bound: '24/625'. -/
 theorem ErdosPentagon_flagAlgebra
-    : FlagAlgebra_5_0_0_19 ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_5_0_0_19 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_5_0_0_19 ≤[K3.toFinFlag]
+  have quadraticForm_trans : FlagAlgebra_5_0_0_19 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_5_0_0_19 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀ + ⟦flagQuadraticForm M₃_real v₃⟧₀
     := by
     apply forbidLE_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
     apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
     apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl K3.toFinFlag FlagAlgebra_5_0_0_19
+    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_5_0_0_19
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 5)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 5)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_six, add_assoc]
   simp [v₃, M₃_real, ratMatrixToReal, M₃, Fin.sum_univ_five, add_assoc]
   reduce_downward_flagmul
 
-  expand_one_at 5
+  expand_one_hfree_at 5 K3
 
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline

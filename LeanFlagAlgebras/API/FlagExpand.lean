@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.API.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
+import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 
 /-! # API.FlagExpand — flag expansion tactics
 
@@ -172,17 +173,21 @@ elab_rules : tactic
           pure ()
 
 /--
-`flag_expand_hfree N Forbid` is the forbid-free single-flag analogue of `flag_expand N`.
-On a goal `FlagAlgebra_n_k_m_i =[Forbid.toFinFlag] (its size-`N` forbid-free expansion)`, it
-expands the flag with `basisVector_quot_forbidEq_sum` rewritten directly onto the
-explicitly-generated forbid-free set `flagSetHfree_N_k_m_<Forbid>` (via its filtered-completeness
-lemma `…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the
-forbidden terms automatically (no manual `basisVector_forbidEq_zero` step).
+`flag_expand_hfree N F` is the forbid-free single-flag analogue of `flag_expand N`.
+On a goal `FlagAlgebra_n_k_m_i =[⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩] (its size-`N` forbid-free
+expansion)`, it expands the flag with `basisVector_quot_forbidEq_sum` rewritten directly onto the
+explicitly-generated forbid-free set `flagSetHfree_N_k_m_<F>` (via its filtered-completeness lemma
+`…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the forbidden terms
+automatically (no manual `basisVector_forbidEq_zero` step).
 
-Prerequisites: the forbid-free host set must exist (run `generate_forbid_free_flags N k m Forbid`,
-or the empty-typed `generate_forbid_free_empty_typed_flags N Forbid` for `k = m = 0`), and the
-relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]` (as emitted by
-`generate_forbid_density_theorems`).
+`F` is the **edge-based** forbidden graph: a `Sym2Graph mF` term (e.g. `K3 : Sym2Graph 3`), the
+same identifier passed to `generate_pruned_forbid_free_*`. The forbidden flag is built directly
+from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=[ ]`),
+so no canonical forbidden flag / `.toFinFlag` is needed.
+
+Prerequisites: the forbid-free host set must exist (run `generate_pruned_forbid_free_flags N k m F`,
+or the empty-typed `generate_pruned_forbid_free_empty_typed_flags N F` for `k = m = 0`), and the
+relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]`.
 -/
 syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident : tactic
 
@@ -190,7 +195,10 @@ elab_rules : tactic
   | `(tactic| flag_expand_hfree $N:num $forbid:ident) =>
       withMainContext do
         let nVal := N.getNat
-        let tag := forbid.getId.toString
+        -- Strip any namespace qualifier so the tag matches the generated `flagSetHfree_*` names
+        -- (the `generate_pruned_*` commands use the same last-dotted-component convention).
+        let tagFull := forbid.getId.toString
+        let tag := (tagFull.splitOn ".").getLastD tagFull
         let target ← getMainTarget
         let lhsExpr ←
           match target.getAppFnArgs with
@@ -208,13 +216,35 @@ elab_rules : tactic
         let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}")
         let setEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_eq")
         let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
+        -- The forbidden flag is the `FinFlag` of the term `⟦F⟧` (no canonical flag); its `.2` is
+        -- `Sym2EmptyTypedFlag.toFlag ⟦F⟧`, matching the generators' `flagSetHfree_…_eq` filter and
+        -- the goal's `=[ ]`.
+        let forbidFlagTm : TSyntax `term ←
+          `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$forbid⟧⟩ : FlagAlgebras.FinFlag ∅ₜ))
         evalTactic (← `(tactic|
           apply Forbid.forbidEq_trans
-            (Forbid.basisVector_quot_forbidEq_sum ($forbid).toFinFlag ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+            (Forbid.basisVector_quot_forbidEq_sum $forbidFlagTm ⟨$lhsNStx, $flagId⟩ $N (by decide))))
         evalTactic (← `(tactic|
           rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
         evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
         evalTactic (← `(tactic| simp))
-        evalTactic (← `(tactic| exact Forbid.forbidEq_refl ($forbid).toFinFlag _))
+        -- Close the residual `produced =[F] stated`. For a ≤2-term expansion `produced` is
+        -- definitionally the stated RHS (`FlagAlgebra_n_k_m_i` unfolds to its `⟦basisVector⟧`),
+        -- so `forbidEq_refl` closes it directly. For ≥3-term expansions the produced sum is
+        -- *right*-associated while the stated RHS is *left*-associated, so we first unfold the
+        -- `FlagAlgebra_*` constants (making both sides `⟦basisVector⟧`-atoms) and finish with an
+        -- additive-commutative normalization that is insensitive to the bracketing.
+        evalTactic (← `(tactic| try exact Forbid.forbidEq_refl $forbidFlagTm _))
+        unless (← getGoals).isEmpty do
+          withMainContext do
+            let faIdents := (collectPrefixConstants "FlagAlgebra_" (← getMainTarget)).map mkIdent
+            evalTactic (← `(tactic| refine Forbid.forbidEq_of_eq ?_))
+            unless faIdents.isEmpty do
+              evalTactic (← `(tactic| dsimp only [$[$faIdents:ident],*]))
+            evalTactic (← `(tactic|
+              first
+                | rfl
+                | abel
+                | simp only [add_assoc, add_comm, add_left_comm]))
 
 end FlagAlgebras.API

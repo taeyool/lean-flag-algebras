@@ -168,19 +168,24 @@ elab_rules : tactic
       evalTactic (← `(tactic| fold_basis_vectors))
 
 /--
-`expand_one_hfree_at n Forbid` is the forbid-free analogue of `expand_one_at n`.
+`expand_one_hfree_at n F` is the forbid-free analogue of `expand_one_at n`.
 It unfolds `forbidExpand_one` for a graph of size `n` and reduces the resulting
-`Finset` sum directly onto the explicitly-generated `Forbid`-free flag set
-`flagSetHfree_n_0_0_<Forbid>` (via its filtered-completeness lemma `…_eq` and
+`Finset` sum directly onto the explicitly-generated `F`-free flag set
+`flagSetHfree_n_0_0_<F>` (via its filtered-completeness lemma `…_eq` and
 `…_val_eq`), instead of materializing the full `flagSet` and dropping forbidden
-terms. Prerequisite: run `generate_forbid_free_empty_typed_flags n Forbid` first.
+terms. The tactic is forbid-agnostic (the forbidden flag is read from the goal's
+`forbidExpand_one`); `F` is only used to name the `flagSetHfree_*` lemmas, so it is
+the same identifier (a `Sym2Graph` term, e.g. `K3`) passed to
+`generate_pruned_forbid_free_empty_typed_flags n F`. Prerequisite: run that command first.
 -/
 syntax "expand_one_hfree_at" num ident : tactic
 
 elab_rules : tactic
   | `(tactic| expand_one_hfree_at $n:num $forbid:ident) => do
       let nVal := n.getNat
-      let tag := forbid.getId.toString
+      -- Strip any namespace qualifier so the tag matches the generated `flagSetHfree_*` names.
+      let tagFull := forbid.getId.toString
+      let tag := (tagFull.splitOn ".").getLastD tagFull
       let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}")
       let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
       let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")

@@ -4,6 +4,7 @@
 -- theorem body still needs to be written (see TODO at the bottom).
 
 import LeanFlagAlgebras.Flags.FlagGenerator
+import LeanFlagAlgebras.Flags.ForbidFreeGenerator
 import LeanFlagAlgebras.API.Basic
 import LeanFlagAlgebras.API.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
@@ -14,26 +15,26 @@ import LeanFlagAlgebras.Forbid.CommonGraphs
 
 open FlagAlgebras Forbid FlagAlgebras.API
 open SimpleGraph Matrix
+open FlagAlgebras.Compute
 
 namespace K3forbidC4
 
--- Locally generate the flags this example needs (formerly from the global
--- `Flags/FlagDef.lean`): the empty-typed underlying flags, the forbidden graph, and
--- the σ-typed pattern/host flags. Flag generation comes first, so the density and
--- multiplication theorem generators below resolve to these local constants.
-generate_empty_typed_flags 3
-generate_empty_typed_flags 4
-generate_complete_graph 3 3
-generate_flags 3 2 0
-generate_flags 3 2 1
-generate_flags 4 2 0
-generate_flags 4 2 1
-
-generate_forbid_density_theorems 4 K3
-generate_flag_pair_density_theorems 3 4 2 0 K3
-generate_forbid_mul_theorems 3 4 2 0 K3
-generate_flag_pair_density_theorems 3 4 2 1 K3
-generate_forbid_mul_theorems 3 4 2 1 K3
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
+-- `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical forbidden flag); the K3-containing
+-- flags are never generated. The pruned commands emit only the K3-free flags (the C₄ objective
+-- `FlagAlgebra_4_0_0_8` among them), their completeness, and the forbid-free pair-density /
+-- multiplication theorems for both σ-types.
+def K3 : Sym2Graph 3 := completeSym2Graph 3
+generate_pruned_forbid_free_empty_typed_flags 3 K3
+generate_pruned_forbid_free_empty_typed_flags 4 K3
+generate_pruned_forbid_free_flags 3 2 0 K3
+generate_pruned_forbid_free_flags 3 2 1 K3
+generate_pruned_forbid_free_flags 4 2 0 K3
+generate_pruned_forbid_free_flags 4 2 1 K3
+generate_pruned_flag_pair_density_theorems 3 4 2 0 K3
+generate_pruned_forbid_free_mul_theorems 3 4 2 0 K3
+generate_pruned_flag_pair_density_theorems 3 4 2 1 K3
+generate_pruned_forbid_free_mul_theorems 3 4 2 1 K3
 
 /-- SDP certificate matrix for block 1 (rational, 4×4),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -129,22 +130,22 @@ set_option maxRecDepth 1500
 Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
 Bound: '3/8'. -/
 theorem K3forbidC4_flagAlgebra
-    : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_4_0_0_8 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag]
+  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_4_0_0_8 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
     := by
     apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
     apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl K3.toFinFlag FlagAlgebra_4_0_0_8
+    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_4_0_0_8
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 4)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 4)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_three, add_assoc]
   reduce_downward_flagmul
 
-  expand_one_at 4
+  expand_one_hfree_at 4 K3
 
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline

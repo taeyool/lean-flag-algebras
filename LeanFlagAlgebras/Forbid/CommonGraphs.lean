@@ -62,3 +62,40 @@ elab "generate_complete_graph " rStx:num idxStx:num : command => do
         ext i j
         fin_cases i <;> fin_cases j <;> simp [$sym2Ident:ident, mkEdgeFinset]
       }))
+
+/-! ## Edge-based complete graphs (Task 6)
+
+The edge-based, pruning-backed forbid-free commands (`generate_pruned_forbid_free_*`,
+`generate_pruned_*_theorems`) forbid a `Sym2Graph m` **term** directly (decision D2), rather
+than a `SimpleGraph` tag resolved off a canonical flag. `completeSym2Graph r` is the complete
+graph `K_r` in that representation: every non-loop pair of `Fin r` is an edge. Forbidding it
+captures *induced* `K_r`-freeness, which for a complete graph coincides with ordinary
+`K_r`-freeness (decision D1).
+
+Use it by naming the graph in the example's namespace and passing that identifier to the
+edge-based commands and the `flag_expand_hfree` / `expand_one_hfree_at` tactics:
+
+```
+def K4 : Sym2Graph 4 := completeSym2Graph 4        -- or `forbid_complete_graph 4`
+generate_pruned_forbid_free_empty_typed_flags 4 K4
+…
+theorem … ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)] …
+```
+
+**Scope (user, 2026-06-19):** only complete graphs are provided for now; the general edge-list
+DSL / `forbid_cycle` / `forbid_path` / forbidding a *list* of graphs are deferred (the family
+machinery from Tasks 3/4/5a stays available for when this is revisited). -/
+
+namespace FlagAlgebras.Compute
+
+/-- The complete graph `K_r` as a computable `Sym2Graph r`: every non-loop pair is an edge. -/
+def completeSym2Graph (r : ℕ) : Sym2Graph r where
+  edges := Finset.univ.filter (fun e => ¬ e.IsDiag)
+  edges_valid := fun e he => (Finset.mem_filter.mp he).2
+
+end FlagAlgebras.Compute
+
+/-- `forbid_complete_graph r` elaborates to the complete graph `K_r` as a `Sym2Graph r` term,
+for the edge-based forbid-free commands (Task 6). Typical use:
+`def K4 : Sym2Graph 4 := forbid_complete_graph 4`. -/
+macro "forbid_complete_graph " r:term : term => `(FlagAlgebras.Compute.completeSym2Graph $r)

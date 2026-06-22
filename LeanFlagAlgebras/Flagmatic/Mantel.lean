@@ -2,6 +2,7 @@
 -- Generator: LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py (gen-skeleton)
 
 import LeanFlagAlgebras.Flags.FlagGenerator
+import LeanFlagAlgebras.Flags.ForbidFreeGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.API.Basic
@@ -18,19 +19,18 @@ open FlagAlgebras.Compute
 
 namespace Mantel
 
--- Locally generate the flags this example needs (formerly from the global
--- `Flags/FlagDef.lean`): the empty-typed underlying flags, the forbidden graph, and
--- the σ-typed pattern/host flags. Flag generation comes first, so the density and
--- multiplication theorem generators below resolve to these local constants.
-generate_empty_typed_flags 2
-generate_empty_typed_flags 3
-generate_complete_graph 3 3
-generate_flags 2 1 0
-generate_flags 3 1 0
-
-generate_forbid_density_theorems 3 K3
-generate_flag_pair_density_theorems 2 3 1 0 K3
-generate_forbid_mul_theorems 2 3 1 0 K3
+-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden graph is the
+-- `Sym2Graph 3` term `K3 := completeSym2Graph 3` (no canonical forbidden flag, no
+-- `generate_complete_graph`), and the K3-containing flags are never generated. The pruned
+-- commands emit only the K3-free flags, their completeness, and the forbid-free pair-density /
+-- multiplication theorems consumed by the proof below.
+def K3 : Sym2Graph 3 := completeSym2Graph 3
+generate_pruned_forbid_free_empty_typed_flags 2 K3
+generate_pruned_forbid_free_empty_typed_flags 3 K3
+generate_pruned_forbid_free_flags 2 1 0 K3
+generate_pruned_forbid_free_flags 3 1 0 K3
+generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
+generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -100,53 +100,34 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
   rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
   native_decide
 
-@[simp]
-private theorem auto_flagDensity1_2_0_0_1_3_0_0_3
-    : flagDensity₁ Flag_2_0_0_1 Flag_3_0_0_3 = 1
-  := by
-  dsimp [Flag_2_0_0_1, Flag_3_0_0_3]
-  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
-  native_decide
-
-/-- Auto-generated expansion of the objective under the forbid relation:
-`FlagAlgebra_2_0_0_1 =[K3.toFinFlag]` (sum over admissible 3-vertex graphs). -/
+/-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
+over the K3-free 3-vertex flags via `flag_expand_hfree 3 K3` (`basisVector_quot_forbidEq_sum`
+rewritten onto `flagSetHfree_3_0_0_K3`; the triangle term is dropped automatically). -/
 lemma mantel_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[K3.toFinFlag] (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+    : FlagAlgebra_2_0_0_1 =[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+        (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
-  have h_unit_3 : (FlagAlgebra_3_0_0_3 : FlagAlgebra ∅ₜ) = ⟦basisVector (⟨3, Flag_3_0_0_3⟩ : FinFlag ∅ₜ)⟧
-    := (Quotient.out_inj.mp rfl).symm
-  have h_zero_3 : (FlagAlgebra_3_0_0_3 : FlagAlgebra ∅ₜ) =[K3.toFinFlag] 0 := by
-    rw [h_unit_3]
-    apply basisVector_forbidEq_zero
-    rw [unlabel_emptyType]
-    exact lt_of_le_of_ne
-      (flagListDensity₁_ge_zero K3.toFinFlag.2 Flag_3_0_0_3)
-      (Ne.symm flagDensity1_K3_Flag_3_0_0_3_ne_zero)
-  have h_eq : FlagAlgebra_2_0_0_1 =[K3.toFinFlag]
-      (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2 + FlagAlgebra_3_0_0_3 :=
-    forbidEq_of_eq (by flag_expand 3)
-  rw [forbidEq_rw_right_add_left h_zero_3, add_zero] at h_eq
-  exact h_eq
+  flag_expand_hfree 3 K3
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'
 Bound: '1/2'. -/
 theorem mantel_flagAlgebra
-    : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M_real v⟧₀
     := by
     apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
-    exact forbidLE_refl K3.toFinFlag FlagAlgebra_2_0_0_1
+    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
   apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K3.toFinFlag 3)))
+  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
   rw [forbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
 
-  expand_one_at 3
+  expand_one_hfree_at 3 K3
 
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
