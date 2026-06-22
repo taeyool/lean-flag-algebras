@@ -2066,9 +2066,10 @@ $\eps>0$.  Then
   \{\chi\in X_\sigma:
     |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
 \]
-Pick an integer $m\ge|\sigma|$ bounding the sizes of the $F_i$. Also,
-choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
-local planting property.  Choose a convergent sequence of $\sigma$-flags
+Write $k=|\sigma|$ for the number of labelled vertices, and pick an integer $m\ge k$
+bounding the sizes of the $F_i$.
+Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
+local planting property.  Also, choose a convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $(G_t,\theta_t)\to\psi$, and $|G_t|\to\infty$.
 For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
 \[
@@ -2076,7 +2077,7 @@ For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
   \qquad(1\le i\le s).
 \]
 
-Apply that property to each such $(G_t,\theta_t)$, with the integer
+Now apply the finite local planting property to each such $(G_t,\theta_t)$, with the integer
 $m$ and tolerance $\eps/3$.  Thus, after discarding finitely many terms, we have
 graphs $H_t\in\K$ and sets $\Theta_t\subseteq\Emb_\sigma(H_t)$ such that
 $|H_t|\ge |G_t|\to\infty$, $|\Theta_t|\ge\delta |V(H_t)|^k$, and every
@@ -2120,9 +2121,10 @@ $\psi\in S_\sigma$.
 \end{proof}
 
 \begin{remark}
-The closure theorems above verify the finite local planting property by
-taking $\Theta$ to be the embeddings obtained by choosing one vertex from each
-labelled clone class.  The one-root and two-root non-edge $C_5$-free constructions
+The clone-based root-plantability theorems above
+(\cref{thm:clone-root-plantable,thm:true-clone-root-plantable}) verify the finite local
+planting property by taking $\Theta$ to be the embeddings obtained by choosing one vertex
+from each labelled clone class.  The one-root and two-root non-edge $C_5$-free constructions
 below prove it differently: they first blow up the roots and then delete a sparse set of
 dangerous neighbourhood edges.  This is why the criterion is useful beyond closure
 properties.
