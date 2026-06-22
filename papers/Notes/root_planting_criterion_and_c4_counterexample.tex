@@ -2185,8 +2185,7 @@ set; conditions (i) and (ii) are then immediate vertex counts and (iii) a two-ev
 sampling estimate.  We may therefore fix all constants in advance and only afterwards
 introduce $(G,\theta)$.
 
-Fix the constants first.  Let $C_m$ be a constant, depending only on $m$ (with $k=|\sigma|$
-fixed), large enough for the two sampling estimates used for (iii) below.  Choose
+Fix the constants first.  Set $C_m:=4m^2$.  Choose
 $0<\lambda\le1$ and $\rho>0$ so small that
 \[
   C_m(\lambda+\rho)<\eps ,
@@ -2268,21 +2267,33 @@ most $\rho n^2$ pairs of $D$, we get
   \rho n^2\cdot\frac{4q^2}{n^2}=4q^2\rho\le4m^2\rho.
 \]
 
-Finally, we compare the two sampling experiments.  
-Outside both bad events that we handled in the previous two steps, the sampled vertices lie in $U$ and span no altered pair, so $H$
-and $G$ agree on them; together with conditions (i) and (ii) of \cref{def:sparse-root-repair}---which
-make $\operatorname{im}\widehat\theta$ induce $\sigma$ and match its adjacencies to $U$ with
-those of the original roots $\operatorname{im}\theta$---the $\sigma$-flag induced by
-$(\operatorname{im}\widehat\theta,\text{sample})$ in $H$ equals the one induced by
-$(\operatorname{im}\theta,\text{sample})$ in $G$.  So the densities differ by at most the total probability of these two bad events, which we bounded by $2mk\lambda+4m^2\rho$:
+Finally, compare the two sampling experiments.  Write $B_1$ for the first bad event (the
+sample meets $R$) and $B_2$ for the second (the sample contains an altered pair); the two
+estimates above give $\Prob[B_1]\le2mk\lambda$ and $\Prob[B_2]\le4m^2\rho$.  Let $A_H$ be the
+event that the sample, together with the roots $\operatorname{im}\widehat\theta$, induces $F$
+in $H$, so that $p(F,(H,\widehat\theta))=\Prob[A_H]$.  Conditioned on $B_1^c$ the sample
+avoids $R$, hence lies in $U$, and is then a uniform $q$-subset of $U$---exactly the sample
+defining $p(F,(G,\theta))$.  Accordingly couple the two experiments: draw the $H$-sample $S$
+uniformly from the $q$-subsets of $W$, and take the $G$-sample to be $S$ on $B_1^c$ and an
+independent uniform $q$-subset of $U$ on $B_1$.  Writing $A_G$ for the event that the
+$G$-sample, with the roots $\operatorname{im}\theta$, induces $F$ in $G$, we then have
+$p(F,(G,\theta))=\Prob[A_G]$, and the two samples agree on $B_1^c$.  On $B_1^c\cap B_2^c$
+the samples agree, lie in $U$, and span no altered pair, so $H$ and $G$ agree on them;
+together with conditions (i) and (ii) of \cref{def:sparse-root-repair}---which make
+$\operatorname{im}\widehat\theta$ induce $\sigma$ and match its adjacencies to $U$ with those
+of the original roots $\operatorname{im}\theta$---the induced $\sigma$-flags coincide, so
+$A_H$ and $A_G$ occur together.  Thus $A_H$ and $A_G$ differ only within $B_1\cup B_2$, and
 \[
+\begin{aligned}
   \bigl|p(F,(H,\widehat\theta))-p(F,(G,\theta))\bigr|
-  \le 2mk\lambda+4m^2\rho
-  \le 4m^2(\lambda+\rho).
+  &=\bigl|\Prob[A_H]-\Prob[A_G]\bigr|
+  \le\Prob[B_1\cup B_2]\\
+  &\le\Prob[B_1]+\Prob[B_2]
+  \le 2mk\lambda+4m^2\rho .
+\end{aligned}
 \]
-The two sampling estimates thus hold with $C_m=4m^2$ (which bounds both $2mk$ and $4m^2$,
-as $k\le m$), the constant fixed at the outset; by the choice of $\lambda$ and $\rho$,
-$C_m(\lambda+\rho)<\eps$, which is (iii).
+Since $C_m=4m^2$ bounds both $2mk$ (as $k\le m$) and $4m^2$, the right-hand side is at most
+$C_m(\lambda+\rho)$, which by the choice of $\lambda$ and $\rho$ is $<\eps$.  This is (iii).
 
 This is the finite local planting property at $\sigma$.
 \end{proof}
