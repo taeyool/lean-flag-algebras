@@ -2185,7 +2185,8 @@ set; conditions (i) and (ii) are then immediate vertex counts and (iii) a two-ev
 sampling estimate.  We may therefore fix all constants in advance and only afterwards
 introduce $(G,\theta)$.
 
-Fix the constants first.  Let $C_m$ be a constant, depending only on $m$ (with $k=|\sigma|$ fixed), large enough for the two sampling estimates used for (iii) below.  Choose
+Fix the constants first.  Let $C_m$ be a constant, depending only on $m$ (with $k=|\sigma|$
+fixed), large enough for the two sampling estimates used for (iii) below.  Choose
 $0<\lambda\le1$ and $\rho>0$ so small that
 \[
   C_m(\lambda+\rho)<\eps ,
@@ -2241,21 +2242,47 @@ $\Prob[X_j\in R]\le kL/|W|$.  A union bound over the $q=\ell-k\le m$ positions t
   \Prob[\text{the sample meets }R]
   \le q\cdot\frac{kL}{|W|}
   \le m\cdot\frac{k\lambda n}{n/2}
-  =2mk\lambda,
+  =2mk\lambda.
 \]
-which is $O_m(\lambda)$ (indeed at most $2m^2\lambda$, since $k\le m$).  Second, once the sample lies
-in $U$, it may contain both endpoints of one of the at most $\rho n^2$ old pairs on
-which $H[U]$ differs from $G[U]$, which has probability $O_m(\rho)$.  Outside these
-events the sampled vertices all lie in $U$, no repaired old edge is seen, the
-adjacencies from the images of $\widehat\theta$ to $U$ agree with those from the
-original roots in $G$, and the adjacencies among those images agree with $\sigma$;
-moreover, conditional on the sample lying in $U$ it is a uniform $q$-subset of $U$,
-exactly as in $p(F,(G,\theta))$.  Taking $C_m$ to bound both $O_m$ constants
-therefore gives
+
+Second, the sample may contain both endpoints of one of the altered old pairs.  Let $D$ be
+the set of unordered pairs $\{u,u'\}\subseteq U$ on which $H[U]$ and $G[U]$ differ; by
+condition (iii) of \cref{def:sparse-root-repair}, $|D|\le\rho n^2$.  If $q\le1$ the sample
+has at most one vertex, so it contains no pair and 
 \[
-  \left|p(F,(H,\widehat\theta))-p(F,(G,\theta))\right|\le C_m(\lambda+\rho)<\eps ,
+  \Prob[\text{the sample contains an unordered pair from }D] = 0
 \]
-which is (iii).
+Now assume that $q\ge2$.  A fixed pair $\{u,u'\}\subseteq U$ then lies entirely in the sample with probability
+\[
+  \frac{\binom{|W|-2}{q-2}}{\binom{|W|}{q}}
+  =\frac{q(q-1)}{|W|\,(|W|-1)}
+  \le\Bigl(\frac{q}{|W|}\Bigr)^{2}
+  \le\frac{4q^2}{n^2},
+\]
+the first inequality holding because $2\le q\le|W|$ (so $|W|-1\ge1$ and
+$\tfrac{q-1}{|W|-1}\le\tfrac{q}{|W|}$), the second because $|W|\ge n/2$.  Summing this bound
+over the at
+most $\rho n^2$ pairs of $D$, we get
+\[
+  \Prob[\text{the sample contains an unordered pair from }D] \leq 
+  \rho n^2\cdot\frac{4q^2}{n^2}=4q^2\rho\le4m^2\rho.
+\]
+
+Finally, we compare the two sampling experiments.  
+Outside both bad events that we handled in the previous two steps, the sampled vertices lie in $U$ and span no altered pair, so $H$
+and $G$ agree on them; together with conditions (i) and (ii) of \cref{def:sparse-root-repair}---which
+make $\operatorname{im}\widehat\theta$ induce $\sigma$ and match its adjacencies to $U$ with
+those of the original roots $\operatorname{im}\theta$---the $\sigma$-flag induced by
+$(\operatorname{im}\widehat\theta,\text{sample})$ in $H$ equals the one induced by
+$(\operatorname{im}\theta,\text{sample})$ in $G$.  So the densities differ by at most the total probability of these two bad events, which we bounded by $2mk\lambda+4m^2\rho$:
+\[
+  \bigl|p(F,(H,\widehat\theta))-p(F,(G,\theta))\bigr|
+  \le 2mk\lambda+4m^2\rho
+  \le 4m^2(\lambda+\rho).
+\]
+The two sampling estimates thus hold with $C_m=4m^2$ (which bounds both $2mk$ and $4m^2$,
+as $k\le m$), the constant fixed at the outset; by the choice of $\lambda$ and $\rho$,
+$C_m(\lambda+\rho)<\eps$, which is (iii).
 
 This is the finite local planting property at $\sigma$.
 \end{proof}
