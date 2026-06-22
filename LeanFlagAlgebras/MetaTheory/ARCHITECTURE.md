@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 39 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 40 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -52,6 +52,11 @@ types by a *sparse local repair* — clone only the roots, then delete the few o
 `sparseRootRepair_finitePlanting` (`thm:sparse-repair-planting`) is a finite, coupling-free sampling
 estimate (a uniformly random bounded sample is unlikely to meet a root-cluster or span a repaired
 edge), reusing nothing measure-theoretic.
+
+**§9** begins the negative side. The first formalised result, `pinning_obstruction`, uses no new
+graph theory: it packages the support-closure criterion's contrapositive. If an evaluation is
+almost surely pinned to a constant on every admissible random extension, closedness of the level set
+puts all of `S_σ` in that level set; a quotient point outside it witnesses `S_σ ≠ Q_σ`.
 
 ---
 
@@ -361,6 +366,13 @@ class-generic; the `C₅`-free modules then instantiate them.
   `C₅`-free `G`, every `independentBlowup` is `C₅`-free iff `G` is triangle-free (a triangle lifts to
   a `C₅` in the size-2 blow-up; conversely a blow-up `C₅` projects to a closed 5-walk forcing a
   triangle or a `C₅` in `G`).
+
+### §9 pinning obstructions
+
+* **[`Pinning`](./Pinning.lean)** — §9 `thm:pinning` (`pinning_obstruction`). The helper
+  `Sσ_subset_eval_eq_of_ae_pinned` turns almost-sure pinning under every admissible random extension
+  into the closed-set inclusion `S_σ ⊆ {χ | χ(g)=c}`. Then `support_pinning_obstruction` and
+  `pinning_obstruction` show that any `ψ ∈ Q_σ` with `ψ(g) ≠ c` prevents root-plantability.
 
 ---
 

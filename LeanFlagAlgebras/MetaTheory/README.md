@@ -1,9 +1,9 @@
 # MetaTheory — a Lean 4 formalisation of the root-plantability meta-theory of flag algebras
 
 This directory formalises, in Lean 4 (toolchain `leanprover/lean4:v4.27.0`, Mathlib `v4.27.0`),
-the **proved results of Sections 1–8 of [`paper.tex`](./paper.tex)** — the *meta-theory* of
-flag algebras that asks **when forbidden-subgraph ("quotient") reasoning is complete** for a
-constrained graph class.
+the **proved results of Sections 1–8 of [`paper.tex`](./paper.tex)**, plus the first abstract
+obstruction theorem from §9 — the *meta-theory* of flag algebras that asks **when
+forbidden-subgraph ("quotient") reasoning is complete** for a constrained graph class.
 
 The headline result is:
 
@@ -39,6 +39,12 @@ non-closure application:
 > *abstract* planting family — so the dense, **not blow-up-closed** `C₅`-free class qualifies via a
 > sparse local repair (`sparseRootRepair_finitePlanting`), giving `c5free_one_root_plantable`
 > (`S₁ = Q₁`) and `c5free_two_root_nonedge_plantable` (`S_η = Q_η`).
+
+**§9 has begun** with the abstract obstruction mechanism:
+
+> **`pinning_obstruction`** ([`Pinning.lean`](./Pinning.lean), paper `thm:pinning`) — if a
+> labelled quantity is almost surely pinned to one value under every admissible random extension,
+> but some quotient point takes a different value, then `S_σ ≠ Q_σ`.
 
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom`.
@@ -85,6 +91,7 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free` | two-root non-edge planting `P_L(G,r,s)` and its `C₅`-freeness | `twoRootPlant`, `twoRootPlant_c5free` | [`C5TwoRootNonEdge`](./C5TwoRootNonEdge.lean) |
 | §8 `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | the `C₅`-free class is root-plantable at the two-root non-edge type (`S_η = Q_η`) | `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` | [`C5TwoRootNonEdge`](./C5TwoRootNonEdge.lean) |
 | §8 `lem:c5-blowup` | an independent blow-up of a `C₅`-free graph is `C₅`-free iff triangle-free | `c5_blowup_free_iff_triangleFree` | [`C5Blowup`](./C5Blowup.lean) |
+| §9 `thm:pinning` | almost-sure pinning plus a quotient point with a different value obstructs root-plantability | `pinning_obstruction` | [`Pinning`](./Pinning.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -97,8 +104,9 @@ foundational input to `thm:clone-root-plantable`:
 and §7 (substitution-closed classes) are also formalised** (table above), reusing the §5 machinery
 through the generalised blow-up `subBlowup`; **§8 (finite local planting and the `C₅`-free class) is
 formalised too**, reusing the §5/§7 capstone toolkit (see the §8 rows above and Deviation 8).
-Sections **§9 onward** of `paper.tex` (degeneracy obstructions, the `C₄`/`C₅`-edge counterexamples,
-the pinning theorems, …) are **out of scope** here — see [Scope & limitations](#scope--limitations).
+§9 is currently only partially formalised: the abstract pinning theorem is present, while the
+degenerate examples and boundary/no-interior results remain future work — see
+[Scope & limitations](#scope--limitations).
 
 A note on how to read the §8 rows against the paper, and what to scrutinise when checking the
 correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#auditing-the-correspondence-to-papertex) below.
@@ -113,10 +121,11 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   `clone_root_plantable` / `clique_free_root_plantable` / `clique_free_quotient_iff_ensemble`, the
   §6–§7 `true_clone_root_plantable` / `substitution_root_plantable` / `cluster_root_plantable`, and
   the §8 `finitePlanting_root_plantable` / `sparseRootRepair_finitePlanting` /
-  `c5free_one_root_plantable` / `c5free_two_root_nonedge_plantable` — depends on **only the three
-  standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 39 modules (7945 jobs); the full
-  project `lake build` (7987 jobs) builds with §8 integrated.
+  `c5free_one_root_plantable` / `c5free_two_root_nonedge_plantable`, and the §9
+  `pinning_obstruction` — depends on **only the three standard Mathlib axioms**
+  `[propext, Classical.choice, Quot.sound]` — no `sorryAx`.
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 40 modules (7946 jobs); the full
+  project `lake build LeanFlagAlgebras` builds with §9's pinning module integrated (7988 jobs).
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
   the elaboration step budget for proofs run in a large local context. This affects *how long* the
@@ -131,7 +140,7 @@ lake exe cache get                              # fetch the Mathlib cache (don't
 lake build LeanFlagAlgebras.MetaTheory          # build every MetaTheory module
 
 # confirm there are no incomplete proofs
-grep -rnE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
+rg -n '\b(sorry|admit|native_decide)\b' LeanFlagAlgebras/MetaTheory -g '*.lean'   # → no output
 
 # confirm the capstone depends only on the standard axioms (no sorryAx)
 echo 'import LeanFlagAlgebras.MetaTheory.CloneClosed
@@ -396,8 +405,8 @@ coupling-free sparse-repair counting bound, and the `C₅`-free planting constru
 
 ## Repository layout (this directory)
 
-* **`paper.tex`** — the source article; §1–8 are what is formalised here.
-* **`*.lean`** — 39 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`paper.tex`** — the source article; §1–8 and §9's abstract pinning obstruction are formalised here.
+* **`*.lean`** — 40 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
@@ -418,11 +427,12 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   and §8 (the finite-local-planting criterion `thm:finite-local-planting`, `thm:sparse-repair-planting`,
   and the `C₅`-free root-plantability results `thm:c5-one-root`/`thm:c5-nonedge-root` with `lem:c5-nbhd`
   and `lem:c5-blowup`) in the `FinitePlanting`/`SparseRootRepair`/`C5Free`/`C5OneRoot`/
-  `C5TwoRootNonEdge`/`C5Blowup` modules.
-* **Not formalised (future work):** §9 onward of `paper.tex` — the degeneracy obstructions
-  (`thm:degenerate-obstruction`, `lem:c4-edge-zero`, `cor:c4-counterexample`, the pinning theorems
-  `thm:pinning`/`thm:no-interior`, `prop:empty-type`, …). The criterion and machinery here are
-  intended to be reusable for those.
+  `C5TwoRootNonEdge`/`C5Blowup` modules, plus §9's abstract pinning obstruction
+  (`thm:pinning`) in `Pinning`.
+* **Not formalised (future work):** the remaining §9 onward results of `paper.tex` — the degeneracy
+  examples (`thm:degenerate-obstruction`, `lem:c4-edge-zero`, `cor:c4-counterexample`), the
+  boundary theorem (`thm:no-interior`), `prop:empty-type`, and later consequences. The criterion and
+  machinery here are intended to be reusable for those.
 * The development reuses results from the surrounding `LeanFlagAlgebras/FlagAlgebra/` directory
   (representation theorem, random-extension measure, Prokhorov compactness, …) as already-proved
   lemmas — these are part of the trusted base, not re-verified here, but they are themselves

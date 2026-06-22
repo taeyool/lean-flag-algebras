@@ -65,6 +65,9 @@ will meet them constantly:
   `sparseRootRepair_finitePlanting` (the two criteria), `c5FreeClass` (the `C₅`-free class;
   `C5g := cycleGraph 5`, `Mem G := C5g.Free G`), the plantings `oneRootPlant` / `twoRootPlant`, and
   the `C₅` types `oneVertexType` / `twoNonEdgeType` (both `⊥`, on `Fin 1` / `Fin 2`).
+* In `MetaTheory` (§9): `pinning_obstruction`, the abstract obstruction theorem saying that
+  almost-sure pinning on all admissible ensembles plus a quotient point with a different value
+  forces `¬ RootPlantable`.
 
 ---
 
@@ -97,6 +100,8 @@ jump straight to the module and Lean name; read that module's header, then the n
    `WeakConvergence`) → `SparseRootRepair` (the coupling-free sampling estimate; read
    `counting_coupling_bound`) → `C5Free` (the class + `lem:c5-nbhd`) → `C5OneRoot` →
    `C5TwoRootNonEdge` → `C5Blowup`.
+7. **§9 obstruction:** `Pinning`, which is the small topological contrapositive of
+   root-plantability used by the later degenerate examples.
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -139,6 +144,7 @@ neighbourhood-structure `lem:c5-nbhd` in [`C5Free.lean`](./C5Free.lean)).
 | §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
 | §8 `lem:c5-blowup` | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
+| §9 `thm:pinning` | `Pinning` | `pinning_obstruction` |
 
 For a line-numbered `paper.tex` ↦ Lean audit map of §8 (what to read and what to verify), see the
 **[Auditing the correspondence](./README.md#auditing-the-correspondence-to-papertex)** section of the

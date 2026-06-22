@@ -79,7 +79,7 @@ import LeanFlagAlgebras.Flagmatic.K3forbidC4
 import LeanFlagAlgebras.Flagmatic.K4turan
 -- import LeanFlagAlgebras.Flagmatic.K5turan
 
--- MetaTheory (paper.tex §1–5): complete and sorry-free (clone-closed classes are root-plantable)
+-- MetaTheory (paper.tex §1–8, plus §9 pinning obstruction): complete and sorry-free
 import LeanFlagAlgebras.MetaTheory
 
 /-! # LeanFlagAlgebras — top-level import manifest
