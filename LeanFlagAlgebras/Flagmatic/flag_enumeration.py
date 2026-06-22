@@ -1,22 +1,23 @@
-"""Enumerate flags of a given type and emit them as enriched JSON.
+"""Canonical typed-flag enumeration, for the Flagmatic-to-Lean automation.
 
 Given a total size ``n``, a type size ``k``, and a type index ``type_num``,
-this script reads the precomputed non-isomorphic graphs from
-``Graphs/graphs_k.json`` (the type sigma) and ``Graphs/graphs_n.json`` (the
-candidate underlying graphs). For each ``n``-vertex graph it finds all
-embeddings of the type, groups them into automorphism orbits, and emits one
-flag per orbit together with its ``downward_coeff`` (orbit size divided by the
-number of injections of the ``k`` labels into ``n`` vertices).
+:func:`canonical_flags` finds, for each non-isomorphic ``n``-vertex graph (from
+``graph_enumeration.canonical_graphs``), all embeddings of the type sigma
+(= ``canonical_graphs(k)[type_num]``), groups them into automorphism orbits, and
+returns one flag per orbit together with its ``downward_coeff`` (orbit size
+divided by the number of injections of the ``k`` labels into ``n`` vertices).
 
-Output: ``Flags/flags_<n>_<k>_<type_num>.json`` with fields ``n``, ``k``,
-``type_num``, ``type_edges``, and ``flags`` (each having
-``underlying_graph_num``, ``edges``, ``type_indices``, ``downward_coeff``).
-This file is consumed on the Lean side by the ``load_flags`` macro in
-``FlagLoader.lean`` (invoked from ``Flags/FlagDef.lean``), which synthesizes
-the ``Sym2Flag_n_k_m_i`` / ``Flag_n_k_m_i`` / ``downward_n_k_m_i`` constants.
+This is the in-memory enumeration imported by ``flagmatic_to_lean.py`` to resolve
+flag identifier indices — it reproduces the order of the Lean ``genFlagData``
+generator, so its indices match the generated ``FlagAlgebra_n_k_m_i`` constants.
+It reads no JSON.
 
-Example:
-    python generate_flags.py 4 2 0
+The legacy ``generate_flag_json`` / CLI still *write* ``flags_<n>_<k>_<type_num>.json``
+(same dict shape: ``n``, ``k``, ``type_num``, ``type_edges``, ``flags``), kept for
+the old ``load_flags`` loaders; the active Lean build no longer consumes them.
+
+Example (legacy JSON dump):
+    python flag_enumeration.py 4 2 0
 """
 
 import argparse
@@ -114,35 +115,28 @@ def to_fraction_string(value: Fraction) -> str:
 	return f"{value.numerator}/{value.denominator}"
 
 
-def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
-	"""Build the flag JSON for type ``graphs_k[type_num]`` over ``n`` vertices.
+def canonical_flags(n: int, k: int, type_num: int) -> Dict:
+	"""In-memory flag data for type ``graphs_k[type_num]`` over ``n`` vertices, in
+	the order used by ``flags_<n>_<k>_<type_num>.json``.
+
+	Mirrors :func:`generate_flag_json` but sources the underlying graphs from
+	``generate_graphs.canonical_graphs`` (no JSON read), so it stays in lockstep
+	with the Lean ``genFlagData`` order — meaning the flag indices it returns
+	match the generated ``FlagAlgebra_n_k_m_i`` constants. Does no file I/O.
 
 	One flag is emitted per automorphism orbit of valid type embeddings, with
 	its downward coefficient = orbit size / (number of label injections).
 	"""
+	import graph_enumeration
+
 	if n < k:
 		raise ValueError("n must be greater than or equal to k.")
 
-	base_dir = Path(__file__).resolve().parent
-	types_dir = base_dir / "Graphs"
-	flags_dir = base_dir / "Flags"
-	flags_dir.mkdir(parents=True, exist_ok=True)
-
-	type_k_file = types_dir / f"graphs_{k}.json"
-	type_n_file = types_dir / f"graphs_{n}.json"
-
-	if not type_k_file.exists():
-		raise FileNotFoundError(f"Missing file: {type_k_file}")
-	if not type_n_file.exists():
-		raise FileNotFoundError(f"Missing file: {type_n_file}")
-
-	with type_k_file.open("r", encoding="utf-8") as f:
-		types_k_raw = json.load(f)
-	with type_n_file.open("r", encoding="utf-8") as f:
-		types_n_raw = json.load(f)
+	types_k_raw = graph_enumeration.canonical_graphs(k)
+	types_n_raw = graph_enumeration.canonical_graphs(n)
 
 	if type_num < 0 or type_num >= len(types_k_raw):
-		raise IndexError(f"type_num={type_num} out of range for {type_k_file.name}")
+		raise IndexError(f"type_num={type_num} out of range for graphs_{k}")
 
 	sigma_edges = normalize_edges(types_k_raw[type_num])
 	all_n_graphs = [normalize_edges(g_edges) for g_edges in types_n_raw]
@@ -192,19 +186,35 @@ def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
 	}
 
 
+def generate_flag_json(n: int, k: int, type_num: int) -> Dict:
+	"""Build the flag JSON for type ``graphs_k[type_num]`` over ``n`` vertices.
+
+	Thin wrapper over :func:`canonical_flags` (the in-memory core), kept for the
+	CLI and any callers that expect the historical name.
+	"""
+	return canonical_flags(n, k, type_num)
+
+
 def main() -> None:
-	"""CLI: parse n, k, type_num and write Flags/flags_<n>_<k>_<type_num>.json."""
+	"""CLI (legacy): parse n, k, type_num and write the legacy
+	``LeanFlagAlgebras/Flags/Flags/flags_<n>_<k>_<type_num>.json`` (no longer
+	consumed by the active Lean build; kept for the old loaders)."""
 	parser = argparse.ArgumentParser(
-		description="Generate enriched flag JSON from Graphs/graphs_k.json and Graphs/graphs_n.json"
+		description="Write the legacy enriched flag JSON (canonical_flags dumped to disk)."
 	)
 	parser.add_argument("n", type=int, help="Total number of vertices")
 	parser.add_argument("k", type=int, help="Type size (number of labeled vertices)")
-	parser.add_argument("type_num", type=int, help="Index in Graphs/graphs_k.json")
+	parser.add_argument("type_num", type=int, help="Index into canonical_graphs(k)")
 	args = parser.parse_args()
 
 	output = generate_flag_json(args.n, args.k, args.type_num)
 
-	out_path = Path(__file__).resolve().parent / "Flags" / f"flags_{args.n}_{args.k}_{args.type_num}.json"
+	# Repo-root-relative so the legacy JSON still lands in Flags/Flags/ regardless
+	# of where this module now lives (Flagmatic/).
+	repo_root = Path(__file__).resolve().parents[2]
+	out_dir = repo_root / "LeanFlagAlgebras" / "Flags" / "Flags"
+	out_dir.mkdir(parents=True, exist_ok=True)
+	out_path = out_dir / f"flags_{args.n}_{args.k}_{args.type_num}.json"
 	with out_path.open("w", encoding="utf-8") as f:
 		json.dump(output, f, indent=2)
 

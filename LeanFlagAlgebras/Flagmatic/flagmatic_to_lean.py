@@ -1,44 +1,30 @@
 # =============================================================================
-# OUT OF DATE -- needs updating to the current Lean density/multiplication API.
+# CURRENT (updated 2026-06-22) -- targets the edge-based, pruning-backed,
+# JSON-free Lean pipeline. `gen-skeleton` emits proof files that compile as-is.
 #
-# The flag-pair density, forbidden-density, and flag-multiplication theorems used
-# to be produced by a Python -> JSON -> Lean pipeline:
-#     calculate_densities.py / gen_free_indices.py  ->  *.json
-#         ->  the `load_*` macros in DensityLoader.lean / MulLoader.lean
-# That pipeline has been REPLACED by self-contained Lean commands that compute
-# everything during elaboration (no JSON, no Python):
-#     DensityThmGenerator.lean : generate_forbid_density_theorems
-#                                generate_flag_pair_density_theorems[_no_forbid]
-#     MulThmGenerator.lean     : generate_forbid_mul_theorems
-#                                generate_mul_theorems
-# The old JSON loaders are preserved (but not in the build) as
-# DensityLoader_old.lean / MulLoader_old.lean.
+# What it generates (see `render_pruned_commands` / `render_skeleton`):
+#   * the forbidden graph as a `Sym2Graph` term  `def K{r} := completeSym2Graph r`
+#     (decision D2 -- no canonical forbidden flag, no `generate_complete_graph`);
+#   * the edge-based pruned generation / density / multiplication commands
+#       generate_pruned_forbid_free_empty_typed_flags <n> K{r}
+#       generate_pruned_forbid_free_flags             <n> <k> <m> K{r}
+#       generate_pruned_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
+#       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
+#     (densities are computed inside Lean -- no `*.json`, no Python regeneration);
+#   * M_t / dM_t / LM_t + PSD lemmas, the σ_t / v_t flag vectors, the forbid-free
+#     objective expansion (branch B, closed by `flag_expand_hfree`), and the
+#     auto-proved main theorem (`≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K{r}⟧⟩ : FinFlag ∅ₜ)]`).
 #
-# CONSEQUENCE: this script's generated output (`gen-skeleton`, `check-deps`) is
-# now stale and will NOT compile as emitted, because it still produces:
-#   * `import ...Flags.Densities.MulLoader` / `...DensityLoader`
-#       -- those modules were renamed to MulThmGenerator / DensityThmGenerator;
-#   * `load_forbid_density_theorems "..._free_indices.json"`,
-#     `load_flag_pair_density_theorems "density_....json"`,
-#     `load_forbid_mul_theorems "density_....json"`, and the
-#     `gen_free_indices.py` / `calculate_densities.py` regeneration steps
-#       -- none of which the active build uses any more.
+# NO JSON ON DISK is required: the canonical graph/flag enumeration (which fixes
+# the `FlagAlgebra_…` identifier indices, in lockstep with the Lean generators'
+# order) is computed in-memory by `graph_enumeration.py` / `flag_enumeration.py`
+# (this directory), imported below. Verified end-to-end: regenerating the four
+# `Certificates/*_cert.json` reproduces the committed `Flagmatic/*.lean` (modulo
+# cosmetics) and `lake build` accepts the generated proofs.
 #
-# TODO -- update the emitters to the new commands (numeric params, no JSON):
-#   import ...DensityThmGenerator ;  import ...MulThmGenerator
-#   graphs_<n>_<TAG>_free_indices         -> generate_forbid_density_theorems <n> <TAG>
-#   density_<hostN>_<k>_<m>_from_<patN>_<k>_<m>_forbid_<TAG>
-#                                         -> generate_flag_pair_density_theorems <k> <m> <patN> <hostN> <TAG>
-#                                            generate_forbid_mul_theorems        <k> <m> <patN> <hostN> <TAG>
-#   density_..._no_forbid                 -> generate_flag_pair_density_theorems_no_forbid <k> <m> <patN> <hostN>
-#                                            generate_mul_theorems                         <k> <m> <patN> <hostN>
-# and drop the calculate_densities.py / gen_free_indices.py regeneration steps.
-# Until this is done, skeletons emitted here must be hand-edited (or used against
-# the preserved *_old loaders after regenerating the JSON with the restored
-# Python scripts).
-#
-# Still valid: the graphs_<n>.json / flags_<m>_<k>_<typeNum>.json lookups below
-# (the flag/type enumeration they back is unchanged).
+# Scope: complete-graph forbids (K_r) only, matching the migrated examples.
+# Secondary subcommands `check-deps` / `inspect` still print the OLD JSON-style
+# dependency report and have not been reworked to the pruned commands.
 # =============================================================================
 
 """Convert Flagmatic certificates to Lean (flag-algebra API) code.
@@ -163,9 +149,20 @@ FLAGS_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Flags"
 DENSITIES_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Densities"
 CERT_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic"
 COMMON_GRAPHS_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Forbid" / "CommonGraphs.lean"
-GEN_GRAPHS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "generate_graphs.py"
-GEN_FLAGS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "generate_flags.py"
+GEN_GRAPHS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic" / "graph_enumeration.py"
+GEN_FLAGS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic" / "flag_enumeration.py"
 FLAGDEF_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "FlagDef.lean"
+
+# The canonical graph/flag enumeration lives alongside this script (in
+# `Flagmatic/`). Import it in-memory so identifier lookups need no JSON on disk:
+# `canonical_graphs` / `canonical_flags` reproduce exactly the order the Lean
+# generators (`genSym2Graphs` / `genFlagData`) use, so the indices we compute
+# match the generated `FlagAlgebra_…` constants. (Running this file as a script
+# already puts its own directory on `sys.path`; the insert keeps imports working
+# when this module is imported from elsewhere.)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import graph_enumeration as _graph_enum  # noqa: E402
+import flag_enumeration as _flag_enum  # noqa: E402
 
 
 def _rel(p: Path) -> str:
@@ -238,16 +235,19 @@ def _edges_to_set(edges: Iterable[Iterable[int]]) -> frozenset[tuple[int, int]]:
 
 
 def load_graphs(n: int) -> list[frozenset[tuple[int, int]]]:
-    path = GRAPHS_DIR / f"graphs_{n}.json"
-    with path.open() as f:
-        data = json.load(f)
-    return [_edges_to_set(g) for g in data]
+    """Canonical ``n``-vertex graphs as edge sets, computed in-memory (no JSON).
+
+    Order matches ``graphs_<n>.json`` / the Lean ``genSym2Graphs`` enumeration,
+    so list position is the canonical graph index used in identifier names.
+    """
+    return [_edges_to_set(g) for g in _graph_enum.canonical_graphs(n)]
 
 
 def load_flags(m: int, k: int, type_num: int) -> dict:
-    path = FLAGS_DIR / f"flags_{m}_{k}_{type_num}.json"
-    with path.open() as f:
-        return json.load(f)
+    """Flag data for type ``graphs_k[type_num]`` over ``m`` vertices, in-memory
+    (no JSON). Same dict shape as the old ``flags_<m>_<k>_<type_num>.json``
+    (keys ``n``, ``k``, ``type_num``, ``type_edges``, ``flags``)."""
+    return _flag_enum.canonical_flags(m, k, type_num)
 
 
 # --------------------------------------------------------------------------- #
@@ -1044,20 +1044,43 @@ def _objective_from_description(desc: str) -> tuple[str, int]:
     return ident, n
 
 
-def _forbid_expr_from_description(desc: str) -> tuple[str | None, str | None]:
-    """Return (Lean forbid expression, tag) parsed from description.
+def _forbid_finflag_expr(tag: str) -> str:
+    """The edge-based forbid as a `FinFlag ∅ₜ`, e.g.
+    `(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)`. This is the form the
+    migrated pruned pipeline uses in `≤[…]` / `=[…]` and in the proof tactics —
+    no canonical forbidden flag, no `.toFinFlag`."""
+    return f"(⟨_, Sym2EmptyTypedFlag.toFlag ⟦{tag}⟧⟩ : FinFlag ∅ₜ)"
 
-    e.g. "forbid 3:121323" → ("K3.toFinFlag", "K3"). For non-complete graphs
-    returns (None, None) so the caller can emit a TODO placeholder.
+
+def _forbid_graph_from_description(desc: str):
+    """Parse the ``forbid n:edges`` clause.
+
+    Returns ``(n, edges_frozenset, tag)`` for a **complete-graph** forbid (tag
+    ``"K{n}"``, defined on the Lean side as ``completeSym2Graph n``), else
+    ``(None, None, None)``. The migrated edge-based pipeline forbids a
+    ``completeSym2Graph`` term, so only complete graphs are supported.
     """
     m = _DESC_FORBID_RE.search(desc)
     if not m:
-        return None, None
+        return None, None, None
     n, edges, _ = parse_flagmatic(m.group(1))
-    tag = _guess_forbid_tag(n, m.group(1).split(":", 1)[1])
+    tag = _predict_forbid_tag(n, m.group(1).split(":", 1)[1])  # "K{n}" iff complete
+    if tag is None:
+        return None, None, None
+    return n, edges, tag
+
+
+def _forbid_expr_from_description(desc: str) -> tuple[str | None, str | None]:
+    """Return (Lean forbid `FinFlag` expression, tag) parsed from description.
+
+    e.g. "forbid 3:121323" → ("(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)",
+    "K3"). For non-complete graphs returns (None, None) so the caller can emit a
+    TODO placeholder.
+    """
+    _n, _edges, tag = _forbid_graph_from_description(desc)
     if tag is None:
         return None, None
-    return f"{tag}.toFinFlag", tag
+    return _forbid_finflag_expr(tag), tag
 
 
 # --------------------------------------------------------------------------- #
@@ -1098,36 +1121,29 @@ def induced_density(
 
 
 def _expansion_coefficients(
-    obj_flagmatic: str, N: int, forbid_tag: str | None
+    obj_flagmatic: str, N: int, forbid_n: int, forbid_edges: frozenset[tuple[int, int]]
 ) -> tuple[list[tuple[int, Fraction]], list[tuple[int, Fraction]]]:
-    """Compute the expansion of `obj` over all N-vertex graphs.
+    """Compute the expansion of `obj` over all N-vertex graphs, split by forbid.
 
     Returns `(admissible_terms, forbidden_terms)`, each a list of
-    `(host_index_in_graphs_N, density)` pairs with density != 0 only.
-    Both lists are sorted by host index ascending.
+    `(host_index_in_graphs_N, density)` pairs with density != 0 only, sorted by
+    host index ascending.
 
-    `forbid_tag` (e.g. "K3") is used to load the free-indices JSON. If `None`,
-    every host index is treated as admissible.
+    The split is computed **in-memory** (no JSON): a host graph is *forbidden*
+    iff it contains an induced copy of the forbid graph — for a complete graph
+    `K_r` this is exactly `induced_density(K_r; host) ≠ 0` (= contains `K_r`),
+    the same induced semantics the pruned generator uses.
     """
     obj_n, obj_edges, _ = parse_flagmatic(obj_flagmatic)
     hosts = load_graphs(N)
-    free_indices: set[int] = set(range(len(hosts)))
-    if forbid_tag is not None:
-        free_path = DENSITIES_DIR / \
-            f"graphs_{N}_{forbid_tag}_free_indices.json"
-        if free_path.exists():
-            with free_path.open() as f:
-                free_indices = set(json.load(f)["free_graph_indices"])
     admissible: list[tuple[int, Fraction]] = []
     forbidden: list[tuple[int, Fraction]] = []
     for i, host_edges in enumerate(hosts):
         d = induced_density(obj_n, obj_edges, N, host_edges)
         if d == 0:
             continue
-        if i in free_indices:
-            admissible.append((i, d))
-        else:
-            forbidden.append((i, d))
+        is_free = induced_density(forbid_n, forbid_edges, N, host_edges) == 0
+        (admissible if is_free else forbidden).append((i, d))
     return admissible, forbidden
 
 
@@ -1155,11 +1171,15 @@ def _density_value_literal(q: Fraction) -> str:
 
 
 def render_density_simp_lemmas(
-    obj_flagmatic: str, N: int
+    obj_flagmatic: str, N: int, skip_indices: frozenset[int] = frozenset()
 ) -> tuple[str, dict[int, Fraction]]:
     """Auto-generate `@[simp]` lemmas `flagDensity₁ Flag_obj Flag_host_i = <d_i>`
-    for every host index i in graphs_<N>.json. These are what `flag_expand
-    N` needs to close goals when the RHS omits zero-density terms.
+    for every host index i in graphs_<N>.json. These are what `flag_expand_hfree
+    N K{r}` needs to close goals when the RHS omits zero-density terms.
+
+    `skip_indices` are host indices to omit — used for the forbid-containing
+    hosts, whose `Flag_N_0_0_i` is never generated by the pruned commands, so a
+    lemma naming it would reference an undefined constant.
 
     Returns `(lean_text, densities_by_index)`.
     """
@@ -1174,6 +1194,8 @@ def render_density_simp_lemmas(
     for i, host_edges in enumerate(hosts):
         d = induced_density(obj_n, obj_edges, N, host_edges)
         densities[i] = d
+        if i in skip_indices:
+            continue
         host_flag = f"Flag_{N}_0_0_{i}"
         thm_name = f"auto_flagDensity1_{obj_n}_0_0_{obj_idx}_{N}_0_0_{i}"
         blocks.append(
@@ -1203,70 +1225,41 @@ def render_expand_under_forbid(
     the post-forbid expansion would be empty (no admissible nonzero density —
     shouldn't happen for a valid certificate).
     """
+    forbid_n, forbid_edges, _tag = _forbid_graph_from_description(
+        cert.get("description", ""))
+    if forbid_n is None:
+        return None
     admissible, forbidden = _expansion_coefficients(
-        obj_flagmatic, N, forbid_tag)
+        obj_flagmatic, N, forbid_n, forbid_edges)
     if not admissible:
         return None
 
     # Auto-generate the @[simp] density-evaluation lemmas — these are what
-    # `flag_expand N` needs to close (it relies on `flagDensity₁`
-    # evaluating to concrete rationals via simp).
-    density_lemmas, _densities = render_density_simp_lemmas(obj_flagmatic, N)
+    # `flag_expand_hfree N K{r}` needs to close (it relies on `flagDensity₁`
+    # evaluating to concrete rationals via simp). The forbid-containing hosts are
+    # skipped: the pruned commands never generate their `Flag_N_0_0_i`, so naming
+    # one would reference an undefined constant.
+    skip = frozenset(i for (i, _c) in forbidden)
+    density_lemmas, _densities = render_density_simp_lemmas(
+        obj_flagmatic, N, skip_indices=skip)
 
-    # Listing order in the FULL expansion: admissible first, forbidden last.
-    # This lets us peel forbidden terms off the right one at a time.
-    full_terms = admissible + forbidden
+    # The pruned generator's `flagSetHfree` already excludes the forbidden hosts,
+    # so the stated RHS is just the admissible (forbid-free) expansion and the
+    # whole lemma is closed by `flag_expand_hfree` — no manual term peeling.
     admissible_expr = _format_expansion(admissible, N)
-    full_expr = _format_expansion(full_terms, N)
-
-    # h_unit / h_zero for each forbidden term (in original listing order)
-    have_blocks: list[str] = []
-    for (i, _c) in forbidden:
-        flag_alg = f"FlagAlgebra_{N}_0_0_{i}"
-        flag_def = f"Flag_{N}_0_0_{i}"
-        have_blocks.append(
-            f"  have h_unit_{i} : ({flag_alg} : FlagAlgebra ∅ₜ)"
-            f" = ⟦basisVector (⟨{N}, {flag_def}⟩ : FinFlag ∅ₜ)⟧\n"
-            f"    := (Quotient.out_inj.mp rfl).symm\n"
-            f"  have h_zero_{i} : ({flag_alg} : FlagAlgebra ∅ₜ) =[{forbid_expr}] 0 := by\n"
-            f"    rw [h_unit_{i}]\n"
-            f"    apply basisVector_forbidEq_zero\n"
-            f"    rw [unlabel_emptyType]\n"
-            f"    exact lt_of_le_of_ne\n"
-            f"      (flagListDensity₁_ge_zero {forbid_expr}.2 {flag_def})\n"
-            f"      (Ne.symm flagDensity1_{forbid_tag}_{flag_def}_ne_zero)"
-        )
-    have_block = "\n".join(have_blocks)
-
-    # h_eq: full expansion lifted to forbidEq, via `forbidEq_of_eq (by flag_expand N)`
-    h_eq_block = (
-        f"  have h_eq : {obj_ident} =[{forbid_expr}]\n"
-        f"      {full_expr} :=\n"
-        f"    forbidEq_of_eq (by flag_expand {N})"
-    )
-
-    # rw cleanup: peel forbidden terms in REVERSE listing order (right-most first)
-    rw_lines: list[str] = []
-    for (i, _c) in reversed(forbidden):
-        rw_lines.append(
-            f"  rw [forbidEq_rw_right_add_left h_zero_{i}, add_zero] at h_eq"
-        )
-    rw_block = "\n".join(rw_lines)
-
-    body_parts = [p for p in [have_block,
-                              h_eq_block, rw_block, "  exact h_eq"] if p]
-    body = "\n".join(body_parts)
 
     return (
         f"-- Auto-generated `flagDensity₁` evaluation table (used by\n"
-        f"-- `flag_expand {N}` to evaluate density coefficients).\n"
+        f"-- `flag_expand_hfree {N} {forbid_tag}` to evaluate density coefficients).\n"
         f"{density_lemmas}\n"
-        f"/-- Auto-generated expansion of the objective under the forbid relation:\n"
-        f"`{obj_ident} =[{forbid_expr}]` (sum over admissible {N}-vertex graphs). -/\n"
+        f"/-- Edge-based forbid-free expansion of the objective: `{obj_ident}` is\n"
+        f"expanded directly over the {forbid_tag}-free {N}-vertex flags via\n"
+        f"`flag_expand_hfree {N} {forbid_tag}` (`basisVector_quot_forbidEq_sum` rewritten onto\n"
+        f"`flagSetHfree_{N}_0_0_{forbid_tag}`; the forbidden terms are dropped automatically). -/\n"
         f"lemma {lemma_name}\n"
         f"    : {obj_ident} =[{forbid_expr}] {admissible_expr}\n"
         f"  := by\n"
-        f"{body}\n"
+        f"  flag_expand_hfree {N} {forbid_tag}\n"
     )
 
 
@@ -1399,7 +1392,7 @@ def render_proof_body(
         f"{simp_block}\n"
         f"  reduce_downward_flagmul\n"
         f"\n"
-        f"  expand_one_at {N}\n"
+        f"  expand_one_hfree_at {N} {forbid_tag}\n"
         f"\n"
         f"  simp [smul_smul, downward_add, downward_smul]\n"
         f"  flagsum_ac_sort_rhs_pipeline\n"
@@ -1495,52 +1488,95 @@ def render_flag_vectors(cert: dict) -> str:
 LEAN_OPENS: list[str] = [
     "open FlagAlgebras Forbid FlagAlgebras.API",
     "open SimpleGraph Matrix",
+    "open FlagAlgebras.Compute",
 ]
 
 
-def required_lean_load_commands(cert: dict) -> list[str]:
-    """Return the in-namespace `load_*` lines for this certificate's dependencies.
+def render_pruned_commands(cert: dict) -> str:
+    """Emit the `def K{r}` forbid graph + the edge-based pruned generation /
+    density / multiplication commands this certificate needs.
 
-    Uses the same resolution logic as `check_dependencies`: when a `_forbid_<tag>`
-    variant of a density file exists on disk, it is preferred over the plain
-    variant; otherwise we fall back to the plain path.
+    Command-set rule (derived from the `generate_pruned_*` elab prerequisites):
+      * empty-typed sizes = {objective size} ∪ {host N} ∪ {pattern size per block}
+        (a σ-typed `generate_pruned_forbid_free_flags n …` needs empty-typed at n;
+        the objective + host expansion name `FlagAlgebra_{n_obj/N}_0_0_*`);
+      * typed flags        = (patN, k, m) and (N, k, m) per block;
+      * pair-density + mul = (patN, N, k, m) per block.
+    Only complete-graph forbids are supported (the forbid is `completeSym2Graph r`).
     """
-    out: list[str] = []
-    seen: set[str] = set()
-    for d in check_dependencies(cert):
-        if not d.load_cmd:
-            continue
-        cmd = d.load_cmd
-        if d.resolved is not None and d.resolved != d.path:
-            cmd = cmd.replace(_rel(d.path), _rel(d.resolved))
-        if cmd in seen:
-            continue
-        seen.add(cmd)
-        out.extend(cmd.splitlines())
-    return out
+    desc = cert.get("description", "")
+    forbid_n, _edges, tag = _forbid_graph_from_description(desc)
+    if tag is None:
+        return "-- TODO: forbid graph (no complete-graph K_n match in description)"
+    N = int(cert["order_of_admissible_graphs"])
+
+    # Objective size — the empty-typed flags the objective / its expansion name.
+    try:
+        _obj_ident, n_obj = _objective_from_description(desc)
+    except (ValueError, LookupError):
+        n_obj = N
+
+    empty_sizes: set[int] = {n_obj, N}
+    typed_triples: set[tuple[int, int, int]] = set()   # (n, k, m)
+    block_params: list[tuple[int, int, int]] = []       # (patN, k, m) per block
+    for t, type_str in enumerate(cert["types"]):
+        k, _, _ = parse_flagmatic(type_str)
+        _, _, type_idx = type_to_lean(type_str)
+        patN, _, _ = parse_flagmatic(cert["flags"][t][0])
+        empty_sizes.add(patN)
+        typed_triples.add((patN, k, type_idx))
+        typed_triples.add((N, k, type_idx))
+        block_params.append((patN, k, type_idx))
+
+    lines = [
+        f"-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden",
+        f"-- graph is the `Sym2Graph {forbid_n}` term `{tag} := completeSym2Graph {forbid_n}` (no canonical",
+        f"-- forbidden flag, no `generate_complete_graph`); the {tag}-containing flags are never",
+        f"-- generated. The pruned commands emit only the {tag}-free flags, their completeness, and",
+        f"-- the forbid-free pair-density / multiplication theorems consumed by the proof below.",
+        f"def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}",
+    ]
+    for n in sorted(empty_sizes):
+        lines.append(f"generate_pruned_forbid_free_empty_typed_flags {n} {tag}")
+    for (n, k, m) in sorted(typed_triples):
+        lines.append(f"generate_pruned_forbid_free_flags {n} {k} {m} {tag}")
+    for (patN, k, m) in block_params:
+        lines.append(
+            f"generate_pruned_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
+        lines.append(
+            f"generate_pruned_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
+    return "\n".join(lines)
 
 
-def required_lean_imports(cert: dict) -> list[str]:
-    """Return the Lean `import` lines this certificate's API file needs.
+def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
+    """Return the Lean `import` lines for the edge-based pruned pipeline.
 
-    A baseline set is always emitted (API.Basic + matrix/PSD utilities + the two
-    density loaders that `check-deps` recommends). If a forbid tag was detected
-    from the certificate description we also include `Forbid.CommonGraphs`,
-    which is where `K3.toFinFlag`, `K4.toFinFlag`, ... are defined.
+    Base set (matches the migrated `Flagmatic/*.lean` files): the flag /
+    forbid-free / density / mul generators, the API automation + matrix PSD
+    utilities, and `Forbid.CommonGraphs` (where `completeSym2Graph` lives).
+
+    `branch_b` (objective size < host N) additionally pulls in `API.FlagExpand`
+    (the `flag_expand_hfree` tactic) and `FlagAlgebra.Compute.FlagDensity` (the
+    `flagDensity₁` reflection lemma for the auto-generated `@[simp]` density
+    table) — both unused, hence omitted, when the objective is itself a host flag.
     """
-    imports = [
-        "import LeanFlagAlgebras.Flags.FlagDef",
-        "import LeanFlagAlgebras.Flags.Densities.MulLoader",
-        "import LeanFlagAlgebras.Flags.Densities.DensityLoader",
+    base = [
+        "import LeanFlagAlgebras.Flags.FlagGenerator",
+        "import LeanFlagAlgebras.Flags.ForbidFreeGenerator",
+        "import LeanFlagAlgebras.Flags.Densities.MulThmGenerator",
+        "import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator",
         "import LeanFlagAlgebras.API.Basic",
         "import LeanFlagAlgebras.API.FlagMulReduce",
         "import LeanFlagAlgebras.API.FlagSumSort",
         "import LeanFlagAlgebras.API.Matrix.PosSemiDef",
     ]
-    desc = cert.get("description", "")
-    if re.search(r"forbid\s+\d+:", desc):
-        imports.append("import LeanFlagAlgebras.Forbid.CommonGraphs")
-    return imports
+    if branch_b:
+        base += [
+            "import LeanFlagAlgebras.API.FlagExpand",
+            "import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity",
+        ]
+    base.append("import LeanFlagAlgebras.Forbid.CommonGraphs")
+    return base
 
 
 def render_dependency_report(cert: dict) -> tuple[str, bool]:
@@ -1599,12 +1635,12 @@ def render_dependency_report(cert: dict) -> tuple[str, bool]:
 
 
 def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> str:
-    """Render a complete starter Lean API file: imports, opens, namespace,
-    load commands, and σ_t / v_t definitions. Matrix defs and the main theorem
-    body are left as TODO stubs."""
-    import_list = required_lean_imports(cert)
+    """Render a complete starter Lean API file for the edge-based pruned pipeline:
+    imports, opens, namespace, `def K{r}` + `generate_pruned_*` commands, the
+    matrix/PSD defs, σ_t / v_t definitions, the forbid-free objective expansion
+    (branch B), and the auto-proved main theorem."""
     opens = "\n".join(LEAN_OPENS)
-    loads = "\n".join(required_lean_load_commands(cert))
+    commands = render_pruned_commands(cert)
     matrices_body = render_matrices(cert)
     vectors_body = render_flag_vectors(cert)
     # render_flag_vectors prepends a 2-line auto-gen header; strip it so the
@@ -1621,6 +1657,9 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
     )
 
     proof_body, helper_lemma = render_proof_body(cert, theorem_name)
+    # Branch B (objective expanded under the forbid) needs the extra
+    # `flag_expand_hfree` / `flagDensity₁` imports; branch A does not.
+    import_list = required_lean_imports(cert, branch_b=helper_lemma is not None)
     fallback_note = ""
     if proof_body is None:
         fallback_note = (
@@ -1628,26 +1667,10 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
             "forbid / block size).\n"
         )
 
-    helper_section = ""
-    if helper_lemma is not None:
-        # Branch B needs:
-        #   * `flag_expand` tactic (API.FlagExpand)
-        #   * `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁` for the auto-gen
-        #     `@[simp]` density tables (FlagAlgebra.Compute.FlagDensity);
-        #     this lemma lives in the `FlagAlgebras.Compute` namespace.
-        for extra in (
-            "import LeanFlagAlgebras.API.FlagExpand",
-            "import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity",
-        ):
-            if extra not in import_list:
-                forbid_idx = next(
-                    (i for i, x in enumerate(import_list) if "Forbid" in x),
-                    len(import_list),
-                )
-                import_list.insert(forbid_idx, extra)
-        if "FlagAlgebras.Compute" not in opens:
-            opens = opens + "\nopen FlagAlgebras.Compute"
-        helper_section = helper_lemma + "\n"
+    # Branch B emits a standalone objective-expansion lemma before the theorem;
+    # branch A (objective is itself a host flag) has none. All required imports /
+    # opens are already in the fixed edge-based set, so no conditional wiring.
+    helper_section = helper_lemma + "\n" if helper_lemma is not None else ""
 
     imports = "\n".join(import_list)
 
@@ -1668,7 +1691,7 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
         f"\n"
         f"namespace {namespace}\n"
         f"\n"
-        f"{loads}\n"
+        f"{commands}\n"
         f"\n"
         f"{matrices_body}\n"
         f"{vectors_body}\n"
