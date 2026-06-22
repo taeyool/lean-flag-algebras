@@ -3,16 +3,18 @@
 Given a square symmetric matrix of exact rationals, this script computes an
 exact (Fraction-based) LDLᵀ decomposition M = L · diag(d) · Lᵀ, sanity-checks
 it by reconstruction, and emits Lean 4 code that:
-  - defines the matrix, the L factor, and the diagonal d over ℚ,
-  - proves d is entrywise nonnegative and M = L · diag(d) · Lᵀ,
-  - concludes M.PosSemidef via a configurable helper theorem,
-  - and derives the analogous ℝ-valued statements via `ratMatrixToReal`.
+  - defines the matrix M and its LDLᵀ factors L, d over ℚ,
+  - defines the real cast `M_real := ratMatrixToReal M`,
+  - and proves `M_real.PosSemidef` in a single `psd_real_ldlt M L d` line.
+
+The `psd_real_ldlt` tactic discharges the diagonal-nonnegativity and
+`M = L · diag(d) · Lᵀ` side goals internally, so the script no longer spells
+out the intermediate d-nonneg / eq_LDL / rational-PosSemidef lemmas.
 
 This produces the SOS / PSD certificates that the flag-algebra density
 proofs in this repository depend on. The generated block relies on
-`ratMatrixToReal`, `posSemidef_of_LDLt`, and
-`posSemidef_of_LDLt_real` from
-`LeanFlagAlgebras/Utils/Matrix/PosSemiDef.lean`.
+`ratMatrixToReal` and the `psd_real_ldlt` tactic from
+`LeanFlagAlgebras/API/Matrix/PosSemiDef.lean`.
 
 Inputs: a JSON matrix passed inline (--matrix) or via a file (--input), as a
 list of rows whose entries are ints/floats/rational strings like "1/2".
@@ -142,25 +144,30 @@ def emit_lean_block(
     mat: List[List[Fraction]],
     l: List[List[Fraction]],
     d: List[Fraction],
-    psd_helper_name: str,
-    psd_helper_real_name: str,
 ) -> str:
-    """Build the full Lean proof block for the PSD certificate.
+    """Build the Lean proof block for the PSD certificate.
 
-    Emits the ℚ definitions (matrix, L, d), the d-nonneg lemma, the
-    M = L·diag(d)·Lᵀ equality, the `PosSemidef` theorem via psd_helper_name,
-    and the ℝ-valued counterparts derived through `ratMatrixToReal` using
-    psd_helper_real_name. Returns the block as a single newline-joined string.
+    Emits only the data — the ℚ definitions (matrix, L, d) and the ℝ cast
+    `{mat}_real := ratMatrixToReal {mat}` — followed by a single-line proof
+    `theorem {mat}_real_posSemidef : {mat}_real.PosSemidef := by psd_real_ldlt …`.
+    The `psd_real_ldlt` tactic (from `API/Matrix/PosSemiDef.lean`) discharges the
+    diagonal-nonnegativity and `M = L·diag(d)·Lᵀ` side goals internally, so the old
+    intermediate lemmas (d_nonneg / eq_LDL / rational posSemidef / real counterparts)
+    are no longer spelled out. Returns the block as a single newline-joined string.
     """
     n = len(mat)
 
     real_mat_name = f"{mat_name}_real"
-    real_d_nonneg_name = f"{d_name}_real_nonneg"
-    real_eq_ldl_name = f"{mat_name}_real_eq_LDL"
 
     lines = []
     lines.append(f"def {mat_name} : Matrix (Fin {n}) (Fin {n}) ℚ :=")
     lines.append(f"  {matrix_to_lean_bang(mat)}")
+    lines.append("")
+
+    lines.append(
+        f"noncomputable def {real_mat_name} : Matrix (Fin {n}) (Fin {n}) ℝ :="
+    )
+    lines.append(f"  ratMatrixToReal {mat_name}")
     lines.append("")
 
     lines.append(f"def {d_name} : Fin {n} → ℚ :=")
@@ -171,56 +178,13 @@ def emit_lean_block(
     lines.append(f"  {matrix_to_lean_bang(l)}")
     lines.append("")
 
-    lines.append(f"lemma {d_name}_nonneg (i : Fin {n}) : 0 ≤ {d_name} i := by")
-    lines.append(f"  fin_cases i <;> norm_num [{d_name}]")
-    lines.append("")
-
     lines.append(
-        f"lemma {mat_name}_eq_LDL : {mat_name} = {l_name} * Matrix.diagonal {d_name} * {l_name}ᵀ := by"
+        f"/-- `{real_mat_name}` is positive semidefinite (via its rational LDLᵀ factorization). -/"
     )
-    lines.append("  decide +kernel")
-    lines.append("")
-
-    lines.append(f"theorem {mat_name}_posSemidef : {mat_name}.PosSemidef := by")
-    lines.append(f"  exact {psd_helper_name} {d_name}_nonneg {mat_name}_eq_LDL")
-    lines.append("")
-
-    # Real-valued counterpart, derived from the rational LDLᵀ certificate above.
-    lines.append(
-        f"noncomputable def {real_mat_name} : Matrix (Fin {n}) (Fin {n}) ℝ :="
-    )
-    lines.append(f"  ratMatrixToReal {mat_name}")
-    lines.append("")
-
-    lines.append(
-        f"lemma {real_d_nonneg_name} (i : Fin {n}) : 0 ≤ ({d_name} i : ℝ) := by"
-    )
-    lines.append(f"  exact_mod_cast {d_name}_nonneg i")
-    lines.append("")
-
-    lines.append(f"lemma {real_eq_ldl_name} :")
-    lines.append(
-        f"    {real_mat_name} = (ratMatrixToReal {l_name} * Matrix.diagonal (fun i => ({d_name} i : ℝ))) * (ratMatrixToReal {l_name})ᵀ := by"
-    )
-    lines.append("  calc")
-    lines.append(
-        f"    {real_mat_name} = ratMatrixToReal ({l_name} * Matrix.diagonal {d_name} * {l_name}ᵀ) := by"
-    )
-    lines.append(f"      simp [{real_mat_name}, ratMatrixToReal, {mat_name}_eq_LDL]")
-    lines.append(
-        f"    _ = (ratMatrixToReal {l_name} * Matrix.diagonal (fun i => ({d_name} i : ℝ))) * (ratMatrixToReal {l_name})ᵀ := by"
-    )
-    lines.append(
-        "      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]"
-    )
-    lines.append("")
-
     lines.append(
         f"theorem {real_mat_name}_posSemidef : {real_mat_name}.PosSemidef := by"
     )
-    lines.append(
-        f"  exact {psd_helper_real_name} {real_d_nonneg_name} {real_eq_ldl_name}"
-    )
+    lines.append(f"  psd_real_ldlt {mat_name} {l_name} {d_name}")
 
     return "\n".join(lines)
 
@@ -248,18 +212,6 @@ def main() -> None:
     )
     parser.add_argument(
         "--name", type=str, default="P", help="Lean matrix name prefix (default: P)"
-    )
-    parser.add_argument(
-        "--psd-helper",
-        type=str,
-        default="posSemidef_of_LDLt",
-        help="Lean theorem name used to conclude PosSemidef over ℚ from (d_nonneg, eq_LDL)",
-    )
-    parser.add_argument(
-        "--psd-helper-real",
-        type=str,
-        default="posSemidef_of_LDLt_real",
-        help="Lean theorem name used to conclude PosSemidef over ℝ from (d_real_nonneg, real_eq_LDL)",
     )
     parser.add_argument(
         "--out", type=str, help="Output Lean file path. If omitted, prints to stdout"
@@ -303,8 +255,6 @@ def main() -> None:
         mat,
         l,
         d,
-        args.psd_helper,
-        args.psd_helper_real,
     )
 
     nonneg = all(x >= 0 for x in d)
@@ -330,8 +280,7 @@ def main() -> None:
 
 # Save the target matrix in matrix.json, then run with e.g.
 #   python generate_psd_proof.py --input matrix.json --name P --out path/to/Output.lean
-# The generated block depends on `ratMatrixToReal`, `posSemidef_of_LDLt`,
-# and `posSemidef_of_LDLt_real` from
-# `LeanFlagAlgebras/Utils/Matrix/PosSemiDef.lean`. Make sure the consuming file imports it.
+# The generated block depends on `ratMatrixToReal` and the `psd_real_ldlt` tactic from
+# `LeanFlagAlgebras/API/Matrix/PosSemiDef.lean`. Make sure the consuming file imports it.
 if __name__ == "__main__":
     main()

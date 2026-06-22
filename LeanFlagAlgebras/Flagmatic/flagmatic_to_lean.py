@@ -11,7 +11,7 @@
 #       generate_pruned_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
 #       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
 #     (densities are computed inside Lean -- no `*.json`, no Python regeneration);
-#   * M_t / dM_t / LM_t + PSD lemmas, the σ_t / v_t flag vectors, the forbid-free
+#   * M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the σ_t / v_t flag vectors, the forbid-free
 #     objective expansion (branch B, closed by `flag_expand_hfree`), and the
 #     auto-proved main theorem (`≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K{r}⟧⟩ : FinFlag ∅ₜ)]`).
 #
@@ -23,8 +23,12 @@
 # cosmetics) and `lake build` accepts the generated proofs.
 #
 # Scope: complete-graph forbids (K_r) only, matching the migrated examples.
-# Secondary subcommands `check-deps` / `inspect` still print the OLD JSON-style
-# dependency report and have not been reworked to the pruned commands.
+# `check-deps` / `inspect` report against the edge-based pruned commands too:
+# they validate the cert (complete-graph forbid; all flag strings resolve via the
+# in-memory enumeration) and print the `generate_pruned_*` block -- there are no
+# JSON files to locate. (The old JSON-pipeline machinery -- `check_dependencies`,
+# the `Dep` class, `required_json_files`, the CommonGraphs/FlagDef parsers -- has
+# been removed; see git history if you need it.)
 # =============================================================================
 
 """Convert Flagmatic certificates to Lean (flag-algebra API) code.
@@ -50,24 +54,28 @@ This file has two layers:
   (1) Library functions — parsing, isomorphism lookup, identifier mapping,
       matrix assembly, branch-A/B proof rendering:
         parse_flagmatic, graph_to_lean, type_to_lean, sigma_flag_to_lean,
-        parse_common_graphs, check_dependencies, assemble_block_matrix,
-        ldl_decomposition, induced_density, render_flag_vectors,
-        render_matrices, render_expand_under_forbid, render_proof_body,
+        assemble_block_matrix, ldl_decomposition, induced_density,
+        render_pruned_commands, render_matrices, render_flag_vectors,
+        render_expand_under_forbid, render_proof_body,
         render_theorem_statement, render_skeleton, render_dependency_report
 
   (2) CLI subcommands — used as a script. Five are provided:
 
-        inspect       certificate -> Lean-identifier mapping dump
-        check-deps    list required JSON files (with [OK]/[MISSING]) and
-                      emit ready-to-paste imports / opens / `load_*` commands
+        inspect       certificate -> Lean-identifier mapping dump + the
+                      `generate_pruned_*` command block it maps to
+        check-deps    validate the cert (complete-graph forbid; every flagmatic
+                      string resolves via the in-memory enumeration) and print
+                      the `generate_pruned_*` block. Exit 0 if ready, 1 if not.
+                      No JSON on disk is needed (densities are generated in Lean).
         gen-skeleton  write a complete starter Lean file: imports + opens +
-                      namespace + load_* + M_t/dM_t/LM_t with PSD lemmas +
-                      σ_t/v_t + auto-proved main theorem (branch A) or
-                      auto-generated expand_under_forbid lemma + auto-proved
-                      main theorem (branch B). For unsupported descriptions
-                      (non-K_n forbid not in `Forbid/CommonGraphs.lean`,
-                      etc.) falls back to a `sorry`-bodied stub.
-        gen-matrices  append only the M_t / dM_t / LM_t defs and PSD lemmas
+                      namespace + `def K{r} := completeSym2Graph r` + the
+                      `generate_pruned_*` commands + M_t/dM_t/LM_t with PSD
+                      lemmas + σ_t/v_t + auto-proved main theorem (branch A) or
+                      forbid-free expand lemma (`flag_expand_hfree`) + main
+                      theorem (branch B). For an unsupported description
+                      (non-complete-graph forbid, etc.) falls back to a
+                      `sorry`-bodied stub.
+        gen-matrices  append only the M_t / dM_t / LM_t defs and PSD theorem
         gen-vectors   append only σ_t and v_t definitions
 
 ----------------------------------------------------------------------
@@ -78,9 +86,8 @@ USAGE EXAMPLES (PowerShell; use `\\` on bash):
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect `
       LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
 
-  # 2. Find out which JSON files this certificate needs and whether they
-  #    exist on disk. Exit code is 0 if all present, 1 otherwise. Also
-  #    prints the exact imports / opens / `load_*` commands.
+  # 2. Check the cert is supported and preview the commands gen-skeleton emits.
+  #    Exit code 0 if ready, 1 otherwise. (No JSON files are involved.)
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py check-deps `
       LeanFlagAlgebras/Flagmatic/Certificates/K3forbidC4_cert.json
 
@@ -96,7 +103,7 @@ USAGE EXAMPLES (PowerShell; use `\\` on bash):
       <cert>.json <target>.lean
 
 Typical workflow for a fresh certificate:
-  inspect  ->  check-deps  ->  (add missing JSONs if any)  ->  gen-skeleton
+  inspect  ->  check-deps  ->  gen-skeleton
    ->  lake build LeanFlagAlgebras.Flagmatic.<Name>
 
 For per-command help: `python flagmatic_to_lean.py <subcommand> --help`.
@@ -143,16 +150,6 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-GRAPHS_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Graphs"
-FLAGS_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Flags"
-DENSITIES_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "Densities"
-CERT_DIR = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic"
-COMMON_GRAPHS_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Forbid" / "CommonGraphs.lean"
-GEN_GRAPHS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic" / "graph_enumeration.py"
-GEN_FLAGS_PY = REPO_ROOT / "LeanFlagAlgebras" / "Flagmatic" / "flag_enumeration.py"
-FLAGDEF_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "FlagDef.lean"
-
 # The canonical graph/flag enumeration lives alongside this script (in
 # `Flagmatic/`). Import it in-memory so identifier lookups need no JSON on disk:
 # `canonical_graphs` / `canonical_flags` reproduce exactly the order the Lean
@@ -163,14 +160,6 @@ FLAGDEF_PATH = REPO_ROOT / "LeanFlagAlgebras" / "Flags" / "FlagDef.lean"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import graph_enumeration as _graph_enum  # noqa: E402
 import flag_enumeration as _flag_enum  # noqa: E402
-
-
-def _rel(p: Path) -> str:
-    """Path relative to the repo root, as a forward-slash string."""
-    try:
-        return p.resolve().relative_to(REPO_ROOT).as_posix()
-    except ValueError:
-        return p.as_posix()
 
 
 # =========================================================================== #
@@ -363,19 +352,10 @@ def sigma_flag_to_lean(s: str, type_str: str) -> tuple[str, int, int, int, int]:
 
 
 # Cache for parsed CommonGraphs.lean table
-_COMMON_GRAPHS_CACHE: dict[str, tuple[int,
-                                      frozenset[tuple[int, int]]]] | None = None
-
 # Regex matching `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨<n>, Flag_<n>_0_0_<i>⟩`.
 # This is more robust than parsing the `def <Name> : SimpleGraph ... := ...` line,
 # because the `def` body varies (`completeGraph (Fin n)` vs explicit adjacency)
 # while the `_toFinFlag_eq` lemma always has the same shape.
-_TOFINFLAG_RE = re.compile(
-    r"lemma\s+(?P<name>\w+)_toFinFlag_eq\s*"
-    r":\s*\1\.toFinFlag\s*=\s*"
-    r"⟨\s*(?P<n>\d+)\s*,\s*Flag_(?P=n)_0_0_(?P<idx>\d+)\s*⟩"
-)
-
 # Regex matching the `generate_complete_graph <r> <idx>` macro invocation. The
 # complete graphs K3/K4/K5/... are not written out as literal
 # `lemma K{r}_toFinFlag_eq` declarations — the macro at the top of
@@ -383,96 +363,6 @@ _TOFINFLAG_RE = re.compile(
 # `_TOFINFLAG_RE` never sees them and we must recover `K{r}` from the macro call
 # itself. The graph is the complete graph on `r` vertices (edges = all pairs),
 # which we can build directly without consulting graphs_<r>.json.
-_GEN_COMPLETE_RE = re.compile(
-    r"^\s*generate_complete_graph\s+(?P<r>\d+)\s+(?P<idx>\d+)\s*$",
-    re.MULTILINE,
-)
-
-
-def parse_common_graphs() -> dict[str, tuple[int, frozenset[tuple[int, int]]]]:
-    """Parse `LeanFlagAlgebras/Forbid/CommonGraphs.lean` to learn which forbid
-    graphs are defined and their canonical (n, edges) form.
-
-    Two kinds of entry are recognized:
-
-      1. `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨n, Flag_n_0_0_i⟩`
-         → `<Name> → (n, edges)` with edges from `graphs_<n>.json[i]`. This
-         covers hand-written forbid graphs (e.g. `C4`) without interpreting the
-         `def <Name>` body (which may be `completeGraph (Fin n)`, an explicit
-         adjacency relation, etc.).
-
-      2. `generate_complete_graph <r> <idx>` macro calls → `K<r> → (r, edges)`
-         with edges = every pair on `r` vertices. The complete graphs are macro-
-         generated, so their `_toFinFlag_eq` lemmas never appear as literal text
-         for rule 1 to match; without this rule `K3`/`K4`/`K5` forbids go
-         undetected and proof generation falls back to a `sorry` stub.
-
-    Result is cached after the first call.
-    """
-    global _COMMON_GRAPHS_CACHE
-    if _COMMON_GRAPHS_CACHE is not None:
-        return _COMMON_GRAPHS_CACHE
-
-    table: dict[str, tuple[int, frozenset[tuple[int, int]]]] = {}
-    if COMMON_GRAPHS_PATH.exists():
-        text = COMMON_GRAPHS_PATH.read_text(encoding="utf-8")
-        # Strip Lean comments first, so a `_toFinFlag_eq` lemma that appears only
-        # inside a worked-example comment block (e.g. the `C4` template) is NOT
-        # mistaken for a real definition. Block comments `/- ... -/` then line
-        # comments `-- ...`.
-        text = re.sub(r"/-.*?-/", "", text, flags=re.DOTALL)
-        text = re.sub(r"--[^\n]*", "", text)
-        for m in _TOFINFLAG_RE.finditer(text):
-            name = m.group("name")
-            n = int(m.group("n"))
-            idx = int(m.group("idx"))
-            try:
-                edges = load_graphs(n)[idx]
-            except (FileNotFoundError, IndexError):
-                continue  # Stale lemma referencing a graph we can't look up
-            table[name] = (n, edges)
-
-        # Macro-generated complete graphs K_r (see `generate_complete_graph`).
-        for m in _GEN_COMPLETE_RE.finditer(text):
-            r = int(m.group("r"))
-            edges = frozenset(combinations(range(r), 2))
-            table[f"K{r}"] = (r, edges)
-
-    _COMMON_GRAPHS_CACHE = table
-    return table
-
-
-def _guess_forbid_tag(n: int, edges_str: str) -> str | None:
-    """Resolve the description's forbid graph string to a Lean identifier from
-    `Forbid/CommonGraphs.lean`.
-
-    Strategy: parse the edges from `edges_str` (flagmatic 2-digit format),
-    iterate through the table returned by `parse_common_graphs()`, and return
-    the first entry whose graph is isomorphic (same n, edges match up to
-    vertex permutation). If no match is found, returns `None` and the caller
-    falls back to a `sorry`-style stub.
-    """
-    # Parse the flagmatic edge digits to a 0-indexed edge set.
-    if len(edges_str) % 2 != 0:
-        return None
-    edges: list[tuple[int, int]] = []
-    for i in range(0, len(edges_str), 2):
-        u, v = int(edges_str[i]) - 1, int(edges_str[i + 1]) - 1
-        if u == v or not (0 <= u < n and 0 <= v < n):
-            return None
-        a, b = sorted((u, v))
-        edges.append((a, b))
-    edge_set = frozenset(edges)
-
-    table = parse_common_graphs()
-    for name, (cand_n, cand_edges) in table.items():
-        if cand_n != n or len(cand_edges) != len(edge_set):
-            continue
-        # Try every vertex permutation. n is tiny (≤ 6 in practice).
-        for perm in permutations(range(n)):
-            if _relabel(edge_set, perm) == cand_edges:
-                return name
-    return None
 
 
 def _parse_forbid_edges(n: int, edges_str: str) -> frozenset[tuple[int, int]] | None:
@@ -505,329 +395,6 @@ def _predict_forbid_tag(n: int, edges_str: str) -> str | None:
     if edges == frozenset(combinations(range(n), 2)):
         return f"K{n}"
     return None
-
-
-def _forbid_def_dep(n: int, edges_str: str, detected_tag: str | None) -> Dep:
-    """A `Dep` for the forbid-graph DEFINITION in `CommonGraphs.lean`.
-
-    `present` is true iff the description's forbid graph is already defined there
-    (i.e. `detected_tag is not None`). When MISSING, `fix_hint` carries a
-    paste-ready snippet: a one-line `generate_complete_graph` for complete graphs
-    (with the canonical index computed here), or a pointer to the worked `C4`
-    template for non-complete graphs.
-    """
-    flagmatic = f"{n}:{edges_str}"
-    if detected_tag is not None:
-        return Dep(
-            path=COMMON_GRAPHS_PATH,
-            purpose=f"forbid graph {flagmatic!r} is defined in CommonGraphs.lean (tag {detected_tag})",
-            present_override=True,
-        )
-
-    predicted = _predict_forbid_tag(n, edges_str)
-    if predicted is not None:  # complete graph K_n
-        try:
-            idx = find_unlabeled_index(n, _parse_forbid_edges(n, edges_str))
-            snippet = f"add to {_rel(COMMON_GRAPHS_PATH)}:  generate_complete_graph {n} {idx}"
-        except (LookupError, FileNotFoundError):
-            snippet = (
-                f"add to {_rel(COMMON_GRAPHS_PATH)}:  generate_complete_graph {n} <idx>"
-                f"  (idx = canonical index of K{n} in graphs_{n}.json)"
-            )
-    else:
-        snippet = (
-            f"define forbid graph {flagmatic!r} in {_rel(COMMON_GRAPHS_PATH)} by hand: "
-            f"`def <Tag> : SimpleGraph (Fin {n}) := ...` + `<Tag>_toFinFlag_eq` "
-            f"(copy the worked C4 example in that file; <Tag> becomes the forbid tag)"
-        )
-    return Dep(
-        path=COMMON_GRAPHS_PATH,
-        purpose=f"forbid graph {flagmatic!r} must be defined in CommonGraphs.lean",
-        present_override=False,
-        fix_hint=snippet,
-    )
-
-
-class Dep:
-    """A required build input (a Lean JSON file, or the forbid-graph definition)
-    with diagnostics for code generation.
-
-    Attributes:
-      path       : absolute Path expected on disk (or one candidate when alternates exist)
-      purpose    : human-readable reason why this file is needed
-      load_cmd   : the Lean `load_*` command that imports it (None for raw flag/graph defs)
-      alternates : other paths that would also satisfy the requirement (e.g. with/without
-                   `_forbid_<tag>` suffix). The resolved one is in `path`.
-      fix_hint   : ready-to-run command / paste-ready snippet that creates this input
-                   when it is MISSING (shown by `check-deps`). None if not actionable.
-      present    : whether the input is satisfied
-      resolved   : actual existing Path if found, else None
-
-    `present_override` is for inputs whose satisfaction is NOT just "path exists on
-    disk" — notably the forbid-graph definition, which lives inside
-    `CommonGraphs.lean` and is detected by parsing, not by a filename.
-    """
-
-    __slots__ = ("path", "purpose", "load_cmd",
-                 "alternates", "fix_hint", "present", "resolved")
-
-    def __init__(
-        self,
-        path: Path,
-        purpose: str,
-        load_cmd: str | None = None,
-        alternates: list[Path] | None = None,
-        fix_hint: str | None = None,
-        present_override: bool | None = None,
-    ) -> None:
-        self.path = path
-        self.purpose = purpose
-        self.load_cmd = load_cmd
-        self.alternates = alternates or []
-        self.fix_hint = fix_hint
-        if present_override is not None:
-            self.present = present_override
-            self.resolved = path if present_override else None
-        elif path.exists():
-            self.present = True
-            self.resolved = path
-        else:
-            self.resolved = next(
-                (p for p in self.alternates if p.exists()), None)
-            self.present = self.resolved is not None
-
-
-def _gen_graphs_hint(n: int) -> str:
-    """How to create `graphs_<n>.json` (the script hard-codes `n` in __main__)."""
-    return (
-        f"edit {_rel(GEN_GRAPHS_PY)} __main__ to `generate_graphs_json({n})` and run it "
-        f"(creates graphs_{n}.json)"
-    )
-
-
-def _gen_flags_hint(n: int, k: int, t: int) -> str:
-    """How to create `flags_<n>_<k>_<t>.json` (needs graphs_<n> and graphs_<k> first)."""
-    return f"python {_rel(GEN_FLAGS_PY)} {n} {k} {t}"
-
-
-_GEN_EMPTY_RE = re.compile(r"^\s*generate_empty_typed_flags\s+(\d+)\b", re.MULTILINE)
-_GEN_FLAGS_RE = re.compile(r"^\s*generate_flags\s+(\d+)\s+(\d+)\s+(\d+)\b", re.MULTILINE)
-
-
-def parse_flagdef_loads() -> tuple[set[int], set[tuple[int, int, int]]]:
-    """Parse `Flags/FlagDef.lean` for which flags are actually instantiated on the
-    Lean side. JSON-on-disk is necessary but NOT sufficient: the matching
-    `generate_*` line must also be present in `FlagDef.lean`, or every
-    `FlagAlgebra_…` / `Flag_…` identifier the generated proof names is undefined
-    and the build fails.
-
-    Returns `(empty_sizes, flag_triples)`:
-      * `empty_sizes`  — every `n` from `generate_empty_typed_flags n`
-                         (defines `Flag_n_0_0_*`, `FlagAlgebra_n_0_0_*`).
-      * `flag_triples` — every `(nVerts, kTypeSize, typeNum)` from
-                         `generate_flags k m n` (which the elaborator turns into
-                         `Flag_n_k_m_*` / `FlagAlgebra_n_k_m_*` — note the source
-                         argument order is `k m n` but the identifier order is
-                         `n k m`).
-
-    Commented-out lines (block `/- -/` or line `--`) are ignored.
-    """
-    empty: set[int] = set()
-    triples: set[tuple[int, int, int]] = set()
-    if FLAGDEF_PATH.exists():
-        text = FLAGDEF_PATH.read_text(encoding="utf-8")
-        text = re.sub(r"/-.*?-/", "", text, flags=re.DOTALL)
-        text = re.sub(r"--[^\n]*", "", text)
-        for mo in _GEN_EMPTY_RE.finditer(text):
-            empty.add(int(mo.group(1)))
-        for mo in _GEN_FLAGS_RE.finditer(text):
-            k, m, n = int(mo.group(1)), int(mo.group(2)), int(mo.group(3))
-            triples.add((n, k, m))  # store in identifier order (nVerts, kTypeSize, typeNum)
-    return empty, triples
-
-
-def check_dependencies(cert: dict) -> list[Dep]:
-    """Return the list of Lean JSON files this certificate needs, with presence info."""
-    deps: list[Dep] = []
-    N = int(cert["order_of_admissible_graphs"])
-
-    # Forbid graph (from description). `detected_tag` is the tag IF the graph is
-    # already defined in CommonGraphs.lean; `tag` is the name we use for data-file
-    # names — the detected one, else the predicted `K{n}` for complete graphs, else
-    # a `???` placeholder (non-complete graph not yet defined).
-    desc = cert.get("description", "")
-    m_forbid = re.search(r"forbid\s+(\d+):([0-9]*)", desc)
-    forbid_n: int | None = None
-    forbid_edges_str = ""
-    detected_tag: str | None = None
-    if m_forbid:
-        forbid_n = int(m_forbid.group(1))
-        forbid_edges_str = m_forbid.group(2)
-        detected_tag = _guess_forbid_tag(forbid_n, forbid_edges_str)
-    forbid_tag = detected_tag or (
-        _predict_forbid_tag(forbid_n, forbid_edges_str) if forbid_n is not None else None
-    )
-    forbid_flagmatic = f"{forbid_n}:{forbid_edges_str}" if forbid_n is not None else None
-
-    # (a) host graphs file — for admissible graph identifiers
-    deps.append(Dep(
-        path=GRAPHS_DIR / f"graphs_{N}.json",
-        purpose=f"admissible {N}-vertex graph definitions (used by FlagAlgebra_{N}_0_0_*)",
-        fix_hint=_gen_graphs_hint(N),
-    ))
-
-    # (a2) forbid-graph DEFINITION in CommonGraphs.lean — a first-class dependency,
-    # so `check-deps` tells you to define it (with a paste-ready snippet) instead of
-    # silently emitting a `???` filename.
-    if forbid_n is not None:
-        deps.append(_forbid_def_dep(forbid_n, forbid_edges_str, detected_tag))
-
-    # Shared `--forbid` argument for the data-generation hints below.
-    forbid_arg = (
-        f"--forbid-Kn {forbid_n}" if (forbid_tag and forbid_tag == f"K{forbid_n}")
-        else f"--forbid {forbid_flagmatic} --tag {forbid_tag}" if forbid_tag
-        else f"--forbid {forbid_flagmatic} --tag <Tag>"
-    ) if forbid_flagmatic else None
-
-    # (b) forbid-free indices file — used by `load_forbid_density_theorems`
-    if forbid_tag is not None:
-        fpath = DENSITIES_DIR / f"graphs_{N}_{forbid_tag}_free_indices.json"
-        deps.append(Dep(
-            path=fpath,
-            purpose=f"{forbid_tag}-free index list for {N}-vertex graphs",
-            load_cmd=f'load_forbid_density_theorems "{_rel(fpath)}"',
-            fix_hint=(
-                f"python {_rel(DENSITIES_DIR / 'gen_free_indices.py')} "
-                f"{_rel(GRAPHS_DIR / f'graphs_{N}.json')} {forbid_arg}"
-            ),
-        ))
-    else:
-        deps.append(Dep(
-            path=DENSITIES_DIR / f"graphs_{N}_???_free_indices.json",
-            purpose="forbid-free index list (define the forbid graph first to pin the tag)",
-            load_cmd=None,
-        ))
-
-    seen_type_dims: set[tuple[int, int]] = set()
-    # Typed-flag identifiers this certificate names, in (nVerts, kTypeSize, typeNum)
-    # order — each must be loaded by a `generate_flags` line in FlagDef.lean.
-    required_triples: set[tuple[int, int, int]] = set()
-    for t, type_str in enumerate(cert["types"]):
-        k, _, _ = parse_flagmatic(type_str)
-        first_flag = cert["flags"][t][0]
-        m, _, _ = parse_flagmatic(first_flag)
-        _, _, type_idx = type_to_lean(type_str)
-
-        # Both the N-vertex HOST typed flags (FlagAlgebra_N_k_t_*, used in the
-        # density pairing) and the m-vertex σ-flags (FlagAlgebra_m_k_t_*) are named
-        # by the proof, so both must be loaded in FlagDef.lean.
-        required_triples.add((N, k, type_idx))
-        required_triples.add((m, k, type_idx))
-
-        # (c) type-size graphs file — only if different from host
-        if (k, 0) not in seen_type_dims and k != N:
-            deps.append(Dep(
-                path=GRAPHS_DIR / f"graphs_{k}.json",
-                purpose=f"underlying graphs for block {t + 1} type σ = {type_str!r}",
-                fix_hint=_gen_graphs_hint(k),
-            ))
-            seen_type_dims.add((k, 0))
-
-        # (d) sigma-flags file
-        deps.append(Dep(
-            path=FLAGS_DIR / f"flags_{m}_{k}_{type_idx}.json",
-            purpose=(
-                f"σ-flag vector v{_subscript(t + 1) if len(cert['types']) > 1 else ''}"
-                f" (block {t + 1}): {m}-vertex flags over type {type_str!r}"
-            ),
-            fix_hint=_gen_flags_hint(m, k, type_idx),
-        ))
-
-        # (e) density loader. The output of `calculate_densities.py` is
-        # always tagged with `_forbid_<tag>` (or `_no_forbid` when no forbid
-        # was used), so we *only* accept the correctly tagged file — silently
-        # falling back to an unsuffixed legacy file is dangerous because that
-        # file may have been computed under a different forbid (e.g. K3 vs
-        # K5) and would give wrong densities under the current forbid.
-        base = f"density_{N}_{k}_{type_idx}_from_{m}_{k}_{type_idx}"
-        if forbid_tag is not None:
-            primary = DENSITIES_DIR / f"{base}_forbid_{forbid_tag}.json"
-        else:
-            primary = DENSITIES_DIR / f"{base}_no_forbid.json"
-        alternates: list[Path] = []
-        density_hint = None
-        if forbid_arg is not None:
-            # `calculate_densities.py` reads two flag files — the N-vertex HOST
-            # (flags_N_k_t) and the m-vertex PATTERN (flags_m_k_t). These are only
-            # needed to *produce* the density JSON (not by the Lean build), so they
-            # are not separate dependency lines; instead, when this density file is
-            # MISSING we prepend `generate_flags` for whichever of the two does not
-            # yet exist, so the fix is a self-contained recipe.
-            host_flags = FLAGS_DIR / f"flags_{N}_{k}_{type_idx}.json"
-            pattern_flags = FLAGS_DIR / f"flags_{m}_{k}_{type_idx}.json"
-            recipe: list[str] = []
-            for fp, (a, b, c) in ((host_flags, (N, k, type_idx)),
-                                  (pattern_flags, (m, k, type_idx))):
-                if not fp.exists():
-                    recipe.append(f"{_gen_flags_hint(a, b, c)}   # first: creates {fp.name}")
-            recipe.append(
-                f"python {_rel(DENSITIES_DIR / 'calculate_densities.py')} "
-                f"--host {_rel(host_flags)} --pattern {_rel(pattern_flags)} {forbid_arg}"
-            )
-            density_hint = "\n".join(recipe)
-        deps.append(Dep(
-            path=primary,
-            purpose=f"density coefficients connecting host {N}-vertex flags to block {t + 1}'s {m}-vertex σ-flags",
-            load_cmd=(
-                f'load_flag_pair_density_theorems "{_rel(primary)}"'
-                + "\n"
-                + f'load_forbid_mul_theorems "{_rel(primary)}"'
-            ),
-            alternates=alternates,
-            fix_hint=density_hint,
-        ))
-
-    # FlagDef.lean loads — the JSON files above are necessary but NOT sufficient:
-    # `FlagDef.lean` must also instantiate the flags via `generate_*` lines, or the
-    # generated proof references undefined `FlagAlgebra_…` / `Flag_…` identifiers.
-    empty_loaded, triples_loaded = parse_flagdef_loads()
-    flagdef_rel = _rel(FLAGDEF_PATH)
-    deps.append(Dep(
-        path=FLAGDEF_PATH,
-        purpose=f"FlagDef.lean must load empty-typed {N}-vertex flags (FlagAlgebra_{N}_0_0_*, admissible graphs)",
-        present_override=(N in empty_loaded),
-        fix_hint=f"add `generate_empty_typed_flags {N}` to {flagdef_rel}",
-    ))
-    for (n, k, ti) in sorted(required_triples):
-        deps.append(Dep(
-            path=FLAGDEF_PATH,
-            purpose=f"FlagDef.lean must load typed flags FlagAlgebra_{n}_{k}_{ti}_* (type σ: {k}-vertex graph #{ti})",
-            present_override=((n, k, ti) in triples_loaded),
-            fix_hint=f"add `generate_flags {k} {ti} {n}` to {flagdef_rel}",
-        ))
-
-    return deps
-
-
-def required_json_files(cert: dict) -> dict[str, list[str]]:
-    """Backward-compatible wrapper: bucketed file-name list (no presence info).
-
-    Prefer `check_dependencies` for new code — it returns presence info and the
-    Lean `load_*` commands.
-    """
-    out: dict[str, list[str]] = {"graphs": [], "flags": [
-    ], "forbid_indices": [], "density_loaders": []}
-    for d in check_dependencies(cert):
-        name = d.path.name
-        if name.startswith("graphs_") and "_free_indices" in name:
-            out["forbid_indices"].append(name)
-        elif name.startswith("graphs_"):
-            out["graphs"].append(name)
-        elif name.startswith("flags_"):
-            out["flags"].append(name)
-        elif name.startswith("density_"):
-            out["density_loaders"].append(name)
-    return out
 
 
 # =========================================================================== #
@@ -953,11 +520,15 @@ def _lean_vector_lit(v: list[Fraction]) -> str:
 
 
 def render_matrices(cert: dict) -> str:
-    """Render M_t / dM_t / LM_t and the PSD lemma cluster for every SDP block.
+    """Render M_t / M_t_real / dM_t / LM_t and the PSD theorem for every SDP block.
 
-    The output matches the structure used in `LeanFlagAlgebras/API/{Mantel,
-    C4Turan}API.lean`: rational matrix, real cast, LDLᵀ data, then six lemmas
-    (dM_nonneg / M_eq_LDL / M_posSemidef and their real counterparts).
+    Only the data (rational matrix, real cast, and the LDLᵀ factors `dM`/`LM`) is
+    emitted; the entire PSD proof collapses to a single `psd_real_ldlt` tactic call
+    (from `API/Matrix/PosSemiDef.lean`), which discharges the diagonal-nonnegativity
+    and `M = LM·diag(dM)·LMᵀ` side goals internally. The intermediate lemmas the old
+    template spelled out (dM_nonneg / M_eq_LDL / rational M_posSemidef / dM_real_nonneg
+    / M_real_eq_LDL) are no longer needed — nothing downstream consumes them; the proof
+    only uses `M_t_real` and `M_t_real_posSemidef`.
     """
     total = len(cert["types"])
     blocks: list[str] = []
@@ -988,24 +559,9 @@ def {dM_name} : Fin {n} → ℚ :=
   {D_lit}
 def {LM_name} : Matrix (Fin {n}) (Fin {n}) ℚ :=
   {L_lit}
-lemma {dM_name}_nonneg (i : Fin {n}) : 0 ≤ {dM_name} i := by
-  fin_cases i <;> norm_num [{dM_name}]
-lemma {M_name}_eq_LDL : {M_name} = {LM_name} * Matrix.diagonal {dM_name} * {LM_name}ᵀ := by
-  decide +kernel
-theorem {M_name}_posSemidef : {M_name}.PosSemidef := by
-  exact posSemidef_of_LDLt {dM_name}_nonneg {M_name}_eq_LDL
-lemma {dM_name}_real_nonneg (i : Fin {n}) : 0 ≤ ({dM_name} i : ℝ) := by
-  exact_mod_cast {dM_name}_nonneg i
-lemma {M_real}_eq_LDL :
-    {M_real} = (ratMatrixToReal {LM_name} * Matrix.diagonal (fun i => ({dM_name} i : ℝ))) * (ratMatrixToReal {LM_name})ᵀ := by
-  calc
-    {M_real} = ratMatrixToReal ({LM_name} * Matrix.diagonal {dM_name} * {LM_name}ᵀ) := by
-      simp [{M_real}, ratMatrixToReal, {M_name}_eq_LDL]
-    _ = (ratMatrixToReal {LM_name} * Matrix.diagonal (fun i => ({dM_name} i : ℝ))) * (ratMatrixToReal {LM_name})ᵀ := by
-      simp [ratMatrixToReal, Matrix.map_mul_ratCast, Matrix.transpose_map, mul_assoc]
-/-- `{M_real}` is positive semidefinite (via its real LDLᵀ factorization). -/
+/-- `{M_real}` is positive semidefinite (via its rational LDLᵀ factorization). -/
 theorem {M_real}_posSemidef : {M_real}.PosSemidef := by
-  exact posSemidef_of_LDLt_real {dM_name}_real_nonneg {M_real}_eq_LDL
+  psd_real_ldlt {M_name} {LM_name} {dM_name}
 """
         )
     return "\n".join(blocks)
@@ -1579,59 +1135,74 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
     return base
 
 
+def _resolution_failures(cert: dict) -> list[str]:
+    """Flagmatic strings in `cert` that do NOT resolve to a canonical Lean
+    identifier via the in-memory enumeration (objective, types, σ-flags). Empty
+    list means everything resolves."""
+    desc = cert.get("description", "")
+    failures: list[str] = []
+    try:
+        _objective_from_description(desc)
+    except (ValueError, LookupError) as e:
+        failures.append(f"objective: {e}")
+    for t, type_str in enumerate(cert.get("types", [])):
+        try:
+            type_to_lean(type_str)
+            for fs in cert.get("flags", [])[t]:
+                sigma_flag_to_lean(fs, type_str)
+        except (ValueError, LookupError, IndexError) as e:
+            failures.append(f"block {t + 1} ({type_str!r}): {e}")
+    return failures
+
+
 def render_dependency_report(cert: dict) -> tuple[str, bool]:
-    """Pretty-print the dependency check. Returns (text, all_present)."""
-    deps = check_dependencies(cert)
-    lines = [
-        f"Dependency check for: {cert.get('description', '<no description>')}"]
-    all_present = True
-    fixes: list[str] = []
-    for d in deps:
-        mark = "OK     " if d.present else "MISSING"
-        shown = _rel(d.resolved) if d.resolved is not None else _rel(d.path)
-        lines.append(f"  [{mark}] {shown}")
-        lines.append(f"          purpose: {d.purpose}")
-        if not d.present and d.alternates:
-            for alt in d.alternates:
-                lines.append(f"          alt:     {_rel(alt)}")
-        if not d.present:
-            all_present = False
-            if d.fix_hint:
-                hint_lines = d.fix_hint.split("\n")
-                lines.append(f"          fix:     {hint_lines[0]}")
-                for extra in hint_lines[1:]:
-                    lines.append(f"                   {extra}")
-                fixes.append(d.fix_hint)
+    """Report what `gen-skeleton` will emit and whether the certificate is
+    supported. Returns (text, ok).
 
-    if not all_present:
-        lines.append("")
-        lines.append(
-            "To resolve, run the `fix:` actions above (top to bottom — define the "
-            "forbid graph before generating its data files), then re-run check-deps.")
+    The edge-based pruned pipeline has NO on-disk dependencies — flags, densities
+    and products are all generated inside Lean — so there are no JSON files to
+    locate. Instead this checks the two real preconditions (the forbid is a
+    complete graph; every flagmatic string resolves to a canonical identifier via
+    the in-memory enumeration) and prints the `generate_pruned_*` command block.
+    """
+    desc = cert.get("description", "")
+    lines = [f"Dependency check for: {desc or '<no description>'}",
+             "(edge-based pruned pipeline — everything is generated in Lean; no JSON on disk)"]
+    ok = True
 
-    # lines.append("")
-    # lines.append("Lean imports (paste at the top of the API file):")
-    # for imp in required_lean_imports(cert):
-    #     lines.append(f"  {imp}")
-    # lines.append(
-    #     "  -- problem-specific helper lemmas (e.g. host-flag expansion under the"
-    # )
-    # lines.append(
-    #     "  -- forbid relation) may need an extra `import LeanFlagAlgebras.<Problem>.Lemmas`."
-    # )
+    # 1. Forbid graph must be a complete graph K_n (the only supported edge-based forbid).
+    forbid_n, _edges, tag = _forbid_graph_from_description(desc)
+    if tag is not None:
+        lines.append(f"  [OK         ] forbid {forbid_n}-clique -> `def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}`")
+        lines.append( "                generated inline (a Sym2Graph term) — no CommonGraphs.lean edit needed")
+    else:
+        ok = False
+        m = re.search(r"forbid\s+(\S+)", desc)
+        lines.append(f"  [UNSUPPORTED] forbid {(m.group(1) if m else '<none>')!r} is not a complete graph K_n")
+        lines.append( "                the edge-based pruned pipeline currently supports complete-graph forbids only")
 
-    # lines.append("")
-    # lines.append(
-    #     "Lean opens (paste at the top of the API file, after imports):")
-    # for op in LEAN_OPENS:
-    #     lines.append(f"  {op}")
+    # 2. Every flagmatic string must resolve to a canonical identifier (in-memory, no JSON).
+    failures = _resolution_failures(cert)
+    if failures:
+        ok = False
+        lines.append("  [MISSING    ] some flagmatic strings did not resolve to a canonical flag:")
+        for fmsg in failures:
+            lines.append(f"                - {fmsg}")
+    else:
+        lines.append("  [OK         ] all objective / type / σ-flag strings resolve (in-memory enumeration, n <= 7)")
 
-    # lines.append("")
-    # lines.append("Lean load commands (paste into the API file's namespace):")
-    # for cmd in required_lean_load_commands(cert):
-    #     lines.append(f"  {cmd}")
+    # 3. Show the commands gen-skeleton will emit.
+    lines.append("")
+    lines.append("gen-skeleton will emit these commands (def + generate_pruned_*):")
+    for cmd in render_pruned_commands(cert).splitlines():
+        if cmd.startswith("--") or not cmd.strip():
+            continue
+        lines.append(f"  {cmd}")
 
-    return "\n".join(lines), all_present
+    lines.append("")
+    lines.append("OK — `gen-skeleton` should produce a buildable proof file." if ok
+                 else "NOT READY — resolve the issues above before `gen-skeleton`.")
+    return "\n".join(lines), ok
 
 
 def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> str:
@@ -1785,26 +1356,16 @@ def _cmd_inspect(args: argparse.Namespace) -> None:
     print(f"description: {cert['description']}")
     print(f"bound: {cert['bound']}")
 
-    # Forbid graph: show its canonical index and whether it is defined in Lean,
-    # so the `generate_complete_graph r idx` line needs no manual index hunting.
-    m_forbid = re.search(r"forbid\s+(\d+):([0-9]*)", cert.get("description", ""))
-    if m_forbid:
-        fn, fedges = int(m_forbid.group(1)), m_forbid.group(2)
-        detected = _guess_forbid_tag(fn, fedges)
-        try:
-            fidx = find_unlabeled_index(fn, _parse_forbid_edges(fn, fedges))
-            idx_note = f"Flag_{fn}_0_0_{fidx}"
-        except (LookupError, FileNotFoundError, TypeError):
-            idx_note = "<graphs_%d.json missing>" % fn
-        if detected is not None:
-            status = f"defined in CommonGraphs.lean (tag {detected})"
-        elif _predict_forbid_tag(fn, fedges) is not None:
-            status = (f"NOT defined yet — add `generate_complete_graph {fn} {fidx}` "
-                      f"to CommonGraphs.lean") if idx_note.startswith("Flag") else \
-                     "NOT defined yet — add a `generate_complete_graph` line to CommonGraphs.lean"
-        else:
-            status = "NOT defined yet — add `def <Tag>` + `<Tag>_toFinFlag_eq` to CommonGraphs.lean (see C4 example)"
-        print(f"forbid graph: {fn}:{fedges}  ->  {idx_note}   [{status}]")
+    # Forbid graph: the edge-based pipeline forbids a `completeSym2Graph` term,
+    # generated inline — no canonical forbidden flag, no CommonGraphs.lean edit.
+    forbid_n, _edges, tag = _forbid_graph_from_description(cert.get("description", ""))
+    if tag is not None:
+        print(f"forbid graph: K_{forbid_n}  ->  def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}")
+        print(f"              bound stated as  ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦{tag}⟧⟩ : FinFlag ∅ₜ)]")
+    else:
+        m_forbid = re.search(r"forbid\s+(\S+)", cert.get("description", ""))
+        shown = m_forbid.group(1) if m_forbid else "<none>"
+        print(f"forbid graph: {shown}  ->  UNSUPPORTED (edge-based pipeline handles complete-graph K_n forbids only)")
 
     print("\nadmissible graphs (host-size):")
     for s, dens in zip(cert["admissible_graphs"], cert["admissible_graph_densities"]):
@@ -1823,9 +1384,11 @@ def _cmd_inspect(args: argparse.Namespace) -> None:
             ident, *_ = sigma_flag_to_lean(s, type_s)
             print(f"    {s!r:>20}  ->  {ident}")
 
-    print("\nrequired JSON files:")
-    for k, v in required_json_files(cert).items():
-        print(f"  {k}: {v}")
+    print("\ngenerate_pruned_* commands (what gen-skeleton emits; no JSON on disk):")
+    for cmd in render_pruned_commands(cert).splitlines():
+        if cmd.startswith("--") or not cmd.strip():
+            continue
+        print(f"  {cmd}")
 
 
 def _cmd_gen_vectors(args: argparse.Namespace) -> None:
@@ -1886,7 +1449,7 @@ def main(argv: list[str] | None = None) -> None:
 
     p_mat = sub.add_parser(
         "gen-matrices",
-        help="append M_t / dM_t / LM_t Lean definitions and PSD lemmas to a file",
+        help="append M_t / dM_t / LM_t Lean definitions and the PSD theorem to a file",
     )
     p_mat.add_argument("certificate", type=Path)
     p_mat.add_argument("target", type=Path,
