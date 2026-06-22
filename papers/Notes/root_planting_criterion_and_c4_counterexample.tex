@@ -119,8 +119,8 @@ Our main result (a support-closure criterion) is that the two semantics agree, f
 flag-algebra element, exactly when a geometric condition we call \emph{root-plantability}
 holds: every labelled limit of the class must be realisable as a typical local view of an
 unlabelled one.  This holds whenever the class is blow-up-closed---recovering the
-clique-free classes, triangle-free among them---with substitution-closure as a stronger
-special case.  It can also fail: the $C_4$-free graphs are a counterexample.  The common
+clique-free classes, triangle-free among them---with substitution-closure as a stronger sufficient
+condition.  It can also fail: the $C_4$-free graphs are a counterexample.  The common
 cause is \emph{pinning}, a local quantity frozen across the class while the quotient
 still sees it vary.
 
@@ -223,11 +223,11 @@ This is what the proof actually needs, because the blown-up interior is invisibl
 sampling argument; closure under \emph{substitution}---replacing each vertex by an entire
 graph drawn from the class---is one strictly stronger sufficient condition
 (\cref{thm:substitution-root-plantable}).  We also isolate a finite, checkable form of the
-argument---a \emph{local planting} criterion---for the case where the blown-up graph does
-not automatically lie in the class but can be returned to it by changing only a sparse set
-of edges, rather than by any global closure property
-(\cref{thm:finite-local-planting,thm:sparse-repair-planting}); this is what the
-$C_5$-free constructions below use.
+argument---the \emph{finite planting} criterion (\cref{thm:finite-local-planting})---and show
+it can be met by a purely \emph{local} repair, changing only a sparse set of edges, even when
+the blown-up graph does not automatically lie in the class and no global closure property
+applies (\cref{thm:sparse-repair-planting}); this is what the $C_5$-free constructions below
+use.
 
 \paragraph{When it fails.}
 Heredity alone is not enough.  Consider the $C_4$-free graphs.  Their large members are
@@ -316,8 +316,8 @@ and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
 are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
 subgraph of $H$, with the labels kept in their prescribed order.
 A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled
-copy of $\sigma$ singled out inside it---informally, a finite graph $k$ of whose
-vertices are marked so as to form the pattern $\sigma$.  The \emph{empty type}
+copy of $\sigma$ singled out inside it---informally, a finite graph in which $k$ marked
+vertices form the pattern $\sigma$.  The \emph{empty type}
 ($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
 Flags are taken up to label-preserving isomorphism, and $\F^\sigma[\T]$
 (abbreviated $\F^\sigma$) is the countable set of all such isomorphism classes
@@ -365,16 +365,16 @@ this way \cite[Theorem 3.3]{Razborov2007}.  Terminologically, from now on a
 \emph{limit} means such a positive homomorphism unless we explicitly mention an
 approximating sequence.  Thus an \emph{unlabelled limit} is a point of
 $\Homp(\A^0[\T],\R)$, while a \emph{$\sigma$-labelled limit} is a point of
-$\Homp(\A^\sigma[\T],\R)$.  We use ``roots'' for the distinguished labelled vertices, but
-use ``labelled'' for the corresponding flags and limits.  We freely pass between the
-names limit and positive homomorphism: $\phi$ may be called a limit or a positive
-homomorphism, and $\phi(F)$ is the density of the flag $F$ in that limit.  On a single flag
+$\Homp(\A^\sigma[\T],\R)$.  We say ``roots'' for the
+distinguished labelled vertices and ``labelled'' for the corresponding flags and limits, and use
+``limit'' and ``positive homomorphism'' interchangeably; $\phi(F)$ is the density of the flag $F$ in
+the limit $\phi$.  On a single flag
 this value lies in $[0,1]$: for each size the flags of that
 size sum to the unit,
 $\sum_{|H|=|F|}H=\one_\sigma$ (a vertex set induces exactly one flag), so
 $0\le\phi(F)\le\sum_{|H|=|F|}\phi(H)=\phi(\one_\sigma)=1$.  Hence evaluation on all flags,
 $\phi\mapsto(\phi(F))_{F\in\F^\sigma}$, embeds $\Homp(\A^\sigma[\T],\R)$ into the compact
-metrizable cube $[0,1]^{\F^\sigma[\T]}$; the image is closed---cut out by the linear and
+metrizable cube $[0,1]^{\F^\sigma}$; the image is closed---cut out by the linear and
 multiplicative homomorphism conditions---so $\Homp(\A^\sigma[\T],\R)$ is itself compact
 metrizable.
 
@@ -392,8 +392,8 @@ multiplicative unit of $\A^\sigma[\T]$.  Its unlabelling
 \]
 is the unlabelled density of embeddings of the type $\sigma$: if the unlabelled limit
 $\phi_0$ is represented by finite graphs $G_n$, then $\phi_0(\brak\sigma)$ is the
-limiting probability that $k$ vertices of $G_n$, chosen uniformly at random and in a
-random order, induce a copy of $\sigma$.
+limiting probability that $k$ vertices of $G_n$, chosen uniformly at random and placed in a
+random order, induce a copy of $\sigma$ respecting the labels.
 
 \paragraph{Non-degenerate types.}
 A type $\sigma$ is \emph{non-degenerate} for the class $\T$ if
@@ -488,8 +488,8 @@ flags.  We write
   \subseteq X_\sigma.
 \]
 Thus $Q_\sigma$ is the constrained, or $\T_1$-supported, part of the ambient homomorphism
-space.  In the terminology above, $Q_\sigma$ is the space of constrained
-$\sigma$-labelled limits, and $Q_0:=Q_\emptyset$ is the space of constrained unlabelled
+space.  We call $Q_\sigma$ the space of constrained
+$\sigma$-labelled limits, and $Q_0:=Q_\emptyset$ the space of constrained unlabelled
 limits.  The set $Q_\sigma$ has a simple intrinsic description, one that never mentions the
 quotient: a homomorphism $\chi\in X_\sigma$ lies in $Q_\sigma$ if and only if it vanishes
 on every forbidden flag.  One direction is immediate.  Since $\qmap_\sigma$ sends each forbidden
@@ -1317,7 +1317,7 @@ surely.  The finite-graph form of the random-extension theorem is precisely a
 weak-convergence statement for these measures: since $B_j\to\phi_0$ and
 $\phi_0(\brak\sigma)>0$, the measures $P_j$ converge weakly to
 $\Ext_\sigma(\phi_0)$, viewed as a probability measure on $Y_\sigma$ concentrated
-on $X_\sigma$.  Equivalently for our purposes, every statistic depending on
+on $X_\sigma$.  Equivalently for our purposes, every continuous function of
 finitely many flag-density coordinates has the limiting distribution prescribed
 by $\Ext_\sigma(\phi_0)$.
 
@@ -1592,8 +1592,8 @@ Put
 \[
   B_j^+:=G_t^{\mathbf m^{(j)},+}.
 \]
-Write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j^+$.  An induced
-embedding $\widehat\theta:\sigma\to B_j^+$ will be called \emph{planted} if
+Write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j^+$.  An embedding
+$\widehat\theta:\sigma\to B_j^+$ will be called \emph{planted} if
 $\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for every labelled vertex $a$ of
 $\sigma$.
 Because $G_t\in\K$ and $\K$ is true-clone-closed, every $B_j^+$ belongs to
@@ -1852,7 +1852,7 @@ $(G_t,\theta_t)$, and write $n=|G_t|$, so that
 If $k>0$, also choose $t$ so large that $k/n\le1/2$ and $C_m k/n<\eps/10$, and set
 $\lambda:=k/n$.  If $k=0$, choose any $0<\lambda\le1/2$ with
 $C_m\lambda<\eps/10$.  This is the small point hidden by the phrase ``uniform blow-up'':
-for $k>0$, uniform clone classes have normalized weight $1/n$ at every vertex, exactly
+for $k>0$, uniform clone classes have normalised weight $1/n$ at every vertex, exactly
 matching the target weights for $\lambda=k/n$.
 
 For each $j\ge1$, \cref{lem:blowup-iterate} gives a simultaneous blow-up
@@ -1860,7 +1860,7 @@ For each $j\ge1$, \cref{lem:blowup-iterate} gives a simultaneous blow-up
   B_j=G_t[H_v^{(j)}:v\in V(G_t)]\in\K,
   \qquad |H_v^{(j)}|=j\text{ for every }v.
 \]
-Thus the normalized clone-class sizes are all $1/n$.  With the choice of $\lambda$ above,
+Thus the normalised clone-class sizes are all $1/n$.  With the choice of $\lambda$ above,
 the error term in \cref{lem:general-planting-estimate} is $0$ when $k>0$; when $k=0$ it is
 also $0$, since the target weights are uniform.  Passing to a subsequence, the unlabelled
 graphs $B_j$ converge to some constrained limit $\phi_0\in Q_0$.  Moreover, there are
@@ -1970,9 +1970,12 @@ substitution-closure does not.  Blow-up-closure is exactly the existential ``som
 interior works'' weakening of substitution-closure's universal ``every interior works''.
 \end{remark}
 
-\section{A finite local planting criterion}
+\section{Finite planting and the \texorpdfstring{$C_5$}{C5}-free class}
 
-We now turn from global closure hypotheses to a local question.  Fix a constrained
+We now isolate a finite, checkable criterion for root-plantability---\emph{finite
+planting}---which is implied by the global closure hypotheses of the previous sections but
+can also be met by a purely \emph{local} repair when no such closure is available.  Fix a
+constrained
 labelled limit $\psi\in Q_\sigma$; concretely, $\psi$ is a positive homomorphism of the
 constrained $\sigma$-flag algebra, viewed inside the ambient labelled homomorphism space.
 By the representation theorem, $\psi$ is the limit of a sequence of finite
@@ -1986,7 +1989,7 @@ this section: they are finite rooted graphs whose $\sigma$-flag densities approx
 limiting view $\psi$.
 
 To \emph{plant} such a finite witness means to build a larger graph $H$ in the class with
-many embeddings $\widehat\theta:\sigma\to H$ whose rooted flag densities are close to
+many embeddings $\widehat\theta:\sigma\to H$ whose $\sigma$-flag densities are close to
 those of $(G,\theta)$.  In the proof of \cref{thm:blowup-root-plantable}, this was done
 by a global operation: blow up the vertices of $G$ while staying inside the class.  The
 labelled vertices then have large clone classes, and choosing one vertex from each such
@@ -2010,7 +2013,7 @@ preserve the rooted densities of all flags up to the chosen size.  The payoff is
 \cref{thm:finite-local-planting}: carrying out this finite-graph verification is already
 enough to prove root-plantability.
 
-The definition below formalizes this finite check.  Let $k=|\sigma|$ be the number of
+The definition below formalises this finite check.  Let $k=|\sigma|$ be the number of
 labelled vertices, fix a resolution $m\ge k$, and fix a tolerance $\eps>0$.  We only ask
 to preserve $\sigma$-flag densities $p(F,\cdot)$ for flags $F$ with at most $m$ vertices,
 and only up to error $\eps$.  The requirement is that every sufficiently large labelled
@@ -2023,10 +2026,10 @@ $p(F,(H,\widehat\theta))$ must be close to $p(F,(G,\theta))$ for every such flag
 Thus the finite approximations to $\psi$ can be made typical under random labelling
 without assuming any global blow-up closure of the class.
 
-\begin{definition}[Finite local planting]\label{def:finite-local-planting}
+\begin{definition}[Finite planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
 $k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings
-$\sigma\to H$.  We say that $\K$ has the \emph{finite local planting property at
+$\sigma\to H$.  We say that $\K$ has the \emph{finite planting property at
 $\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an integer
 $n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
 property.
@@ -2043,9 +2046,9 @@ $H\in\K$ and a set $\Theta\subseteq\Emb_\sigma(H)$ such that:
 \end{enumerate}
 \end{definition}
 
-\begin{theorem}[Finite local planting implies root-plantability]\label{thm:finite-local-planting}
+\begin{theorem}[Finite planting implies root-plantability]\label{thm:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a non-degenerate type
-in $\K$.  If $\K$ has the finite local planting property at $\sigma$, then
+in $\K$.  If $\K$ has the finite planting property at $\sigma$, then
 \[
   S_\sigma=Q_\sigma.
 \]
@@ -2068,7 +2071,7 @@ $\eps>0$.  Then
 Write $k=|\sigma|$ for the number of labelled vertices, and pick an integer $m\ge k$
 bounding the sizes of the $F_i$.
 Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
-local planting property.  Also, choose a convergent sequence of $\sigma$-flags
+planting property.  Also, choose a convergent sequence of $\sigma$-flags
 $(G_t,\theta_t)$ with $G_t\in\K$, $(G_t,\theta_t)\to\psi$, and $|G_t|\to\infty$.
 For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
 \[
@@ -2076,7 +2079,7 @@ For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
   \qquad(1\le i\le s).
 \]
 
-Now apply the finite local planting property to each such $(G_t,\theta_t)$, with the integer
+Now apply the finite planting property to each such $(G_t,\theta_t)$, with the integer
 $m$ and tolerance $\eps/3$.  Thus, after discarding finitely many terms, we have
 graphs $H_t\in\K$ and sets $\Theta_t\subseteq\Emb_\sigma(H_t)$ such that
 $|H_t|\ge |G_t|\to\infty$, $|\Theta_t|\ge\delta |V(H_t)|^k$, and every
@@ -2121,7 +2124,7 @@ $\psi\in S_\sigma$.
 
 \begin{remark}
 The clone-based root-plantability theorems above
-(\cref{thm:clone-root-plantable,thm:true-clone-root-plantable}) verify the finite local
+(\cref{thm:clone-root-plantable,thm:true-clone-root-plantable}) verify the finite
 planting property by taking $\Theta$ to be the embeddings obtained by choosing one vertex
 from each labelled clone class.  The one-root and two-root non-edge $C_5$-free constructions
 below prove it differently: they first blow up the roots and then delete a sparse set of
@@ -2129,9 +2132,9 @@ dangerous neighbourhood edges.  This is why the criterion is useful beyond closu
 properties.
 \end{remark}
 
-\subsection{Sparse repairs of root blow-ups}
+\subsection{Sparse root-blow-up repairs}
 
-Here is a concrete, checkable way to verify finite local planting.  Blow up only
+Here is a concrete, checkable way to verify finite planting.  Blow up only
 the labelled vertices into small positive-density sets from which the embeddings of
 $\sigma$ will be chosen, leave all unlabelled vertices as singletons, and repair only a
 sparse set of old--old edges.
@@ -2165,15 +2168,15 @@ such that:
 \end{enumerate}
 \end{definition}
 
-\begin{theorem}[Sparse root repairs imply finite local planting]\label{thm:sparse-repair-planting}
+\begin{theorem}[Sparse root repairs imply finite planting]\label{thm:sparse-repair-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a non-degenerate type
 in $\K$ with $k\ge1$ labelled vertices.  If $\K$ has sparse root-blow-up repairs
-at $\sigma$, then $\K$ has the finite local planting property at $\sigma$.
+at $\sigma$, then $\K$ has the finite planting property at $\sigma$.
 Consequently, $\K$ is root-plantable at $\sigma$.
 \end{theorem}
 
 \begin{proof}
-We show that $\K$ has the finite local planting property at $\sigma$;
+We show that $\K$ has the finite planting property at $\sigma$;
 root-plantability then follows from \cref{thm:finite-local-planting}.  Fix
 $m\ge k$ and $\eps>0$.  By \cref{def:finite-local-planting} we must, from $m$ and
 $\eps$ alone, produce an integer $n_0\ge m$ and a constant $\delta>0$ so that every
@@ -2267,22 +2270,29 @@ most $\rho n^2$ pairs of $D$, we get
   \rho n^2\cdot\frac{4q^2}{n^2}=4q^2\rho\le4m^2\rho.
 \]
 
-Finally, compare the two sampling experiments.  Write $B_1$ for the first bad event (the
-sample meets $R$) and $B_2$ for the second (the sample contains an altered pair); the two
-estimates above give $\Prob[B_1]\le2mk\lambda$ and $\Prob[B_2]\le4m^2\rho$.  Let $A_H$ be the
-event that the sample, together with the roots $\operatorname{im}\widehat\theta$, induces $F$
-in $H$, so that $p(F,(H,\widehat\theta))=\Prob[A_H]$.  Conditioned on $B_1^c$ the sample
-avoids $R$, hence lies in $U$, and is then a uniform $q$-subset of $U$---exactly the sample
-defining $p(F,(G,\theta))$.  Accordingly couple the two experiments: draw the $H$-sample $S$
-uniformly from the $q$-subsets of $W$, and take the $G$-sample to be $S$ on $B_1^c$ and an
-independent uniform $q$-subset of $U$ on $B_1$.  Writing $A_G$ for the event that the
-$G$-sample, with the roots $\operatorname{im}\theta$, induces $F$ in $G$, we then have
-$p(F,(G,\theta))=\Prob[A_G]$, and the two samples agree on $B_1^c$.  On $B_1^c\cap B_2^c$
-the samples agree, lie in $U$, and span no altered pair, so $H$ and $G$ agree on them;
-together with conditions (i) and (ii) of \cref{def:sparse-root-repair}---which make
-$\operatorname{im}\widehat\theta$ induce $\sigma$ and match its adjacencies to $U$ with those
-of the original roots $\operatorname{im}\theta$---the induced $\sigma$-flags coincide, so
-$A_H$ and $A_G$ occur together.  Thus $A_H$ and $A_G$ differ only within $B_1\cup B_2$, and
+Finally, compare the two sampling experiments for $p(F,(H,\widehat\theta))$ and
+$p(F,(G,\theta))$.  Write $B_1$ for the first bad event (the
+sample meets $R$) and $B_2$ for the second (the sample contains an altered pair), so that the
+two estimates above read $\Prob[B_1]\le2mk\lambda$ and $\Prob[B_2]\le4m^2\rho$.
+
+Realise both experiments on one probability space, as a coupled pair $(S,T)$ of samples---$S$
+for the $H$-experiment, $T$ for the $G$-experiment---by the following recipe.  Draw $S$ a
+uniformly random $q$-subset of $W$.  If $S\subseteq U$ (equivalently, on $B_1^c$), set
+$T:=S$; otherwise (on $B_1$) draw $T$ a uniformly random $q$-subset of $U$, independent of
+$S$.  Then $S$ is a uniformly random $q$-subset of $W$ by construction.  Moreover $T$ is a
+uniformly random $q$-subset of $U$. Writing $A_H$ for the event
+that $S$, together with the roots $\operatorname{im}\widehat\theta$, induces $F$ in $H$, and
+$A_G$ for the event that $T$, together with the roots $\operatorname{im}\theta$, induces $F$
+in $G$, we thus have $p(F,(H,\widehat\theta))=\Prob[A_H]$ and $p(F,(G,\theta))=\Prob[A_G]$,
+while $S=T$ on $B_1^c$.
+
+On $B_1^c\cap B_2^c$ the two samples are equal, lie in $U$, and span no altered pair, so $H$
+and $G$ agree on them; together with conditions (i) and (ii) of
+\cref{def:sparse-root-repair}---which make $\operatorname{im}\widehat\theta$ induce $\sigma$
+and match its adjacencies to $U$ with those of the original roots
+$\operatorname{im}\theta$---the $\sigma$-flags induced by $(\operatorname{im}\widehat\theta,S)$
+in $H$ and by $(\operatorname{im}\theta,T)$ in $G$ coincide, so $A_H$ and $A_G$ occur
+together.  Thus $A_H$ and $A_G$ differ only within $B_1\cup B_2$, and
 \[
 \begin{aligned}
   \bigl|p(F,(H,\widehat\theta))-p(F,(G,\theta))\bigr|
@@ -2295,16 +2305,253 @@ $A_H$ and $A_G$ occur together.  Thus $A_H$ and $A_G$ differ only within $B_1\cu
 Since $C_m=4m^2$ bounds both $2mk$ (as $k\le m$) and $4m^2$, the right-hand side is at most
 $C_m(\lambda+\rho)$, which by the choice of $\lambda$ and $\rho$ is $<\eps$.  This is (iii).
 
-This is the finite local planting property at $\sigma$.
+This is the finite planting property at $\sigma$.
 \end{proof}
 
 \begin{remark}
-\Cref{thm:sparse-repair-planting} is the local-repair form used implicitly in the
-positive $C_5$ results below.  For one root, the repair deletes the old edges inside
-$N_G(r)$; for the non-edge type, it deletes the old edges inside the two root
-neighbourhoods.  The neighbourhood lemma says these deleted sets are only linear in
-$|G|$, hence sparse enough for the theorem.
+\Cref{subsec:c5-planting} below applies this to the $C_5$-free class, where cloning a root forces
+deleting only the old edges inside its neighbourhood---a sparse set by \cref{lem:c5-nbhd}.
 \end{remark}
+
+\subsection{The root-plantable types}
+\label{subsec:c5-planting}
+
+The $C_5$-free graphs are dense and not blow-up-closed, so they are the first natural place to
+test root-plantability beyond the global closure theorem.  Indeed, in $K_4$, blowing up one
+vertex $v$ to two vertices $x,y$ creates a $5$-cycle $x-a-b-y-c-x$ through the three neighbours
+$a,b,c$ of $v$, regardless of the edge between $x$ and $y$, so a naive blow-up leaves the class.
+The repair is local, and \cref{thm:sparse-repair-planting} applies: root-plantability holds at the
+one-vertex type and at the two-root non-edge type.  (The two-root \emph{edge} type, by contrast,
+obstructs; see \cref{sec:c5-edge}.)  Throughout, $C_5$-free means containing no $C_5$ as a (not
+necessarily induced) subgraph, the densest such graphs being complete bipartite.
+
+The key fact is a strong local constraint.
+
+\begin{lemma}[Neighbourhoods in $C_5$-free graphs]\label{lem:c5-nbhd}
+If $G$ is $C_5$-free and $v\in V(G)$, then $G[N(v)]$ contains no path on four
+vertices as a subgraph.  Consequently every connected component of $G[N(v)]$ is
+a star or a triangle, and in particular
+\[
+  e(G[N(v)])\le |N(v)|.
+\]
+\end{lemma}
+
+\begin{proof}
+A path $a$-$x$-$y$-$b$ inside $N(v)$ together with $v$ forms the $5$-cycle
+$v$-$a$-$x$-$y$-$b$-$v$.  Thus $G[N(v)]$ is $P_4$-subgraph-free.
+
+Now let $C$ be a connected component of a graph with no $P_4$ subgraph.  If $C$
+is acyclic, then its diameter is at most $2$, hence it is a star.  If $C$
+contains a cycle, no cycle has length at least $4$, and a triangle cannot have
+any further vertex in the same component: a shortest path from such a vertex to
+the triangle would contain a $P_4$.  Thus $C$ is a triangle.  Each component has
+at most as many edges as vertices, giving the displayed bound.
+\end{proof}
+
+\subsubsection{The one-root type}
+
+The one-root case is the first example where root-plantability holds without a
+global blow-up-closure hypothesis.  Ordinary false-twin duplication of a vertex may create $C_5$s:
+if the root sits in a triangle, cloning the root and one neighbour creates a
+five-cycle.  The repair is local.  Clone the root into a small positive-density
+independent set, but first delete all old edges inside its neighbourhood.  The
+deleted set is only linear in the number of vertices by \cref{lem:c5-nbhd}, so
+it is invisible to the densities of fixed labelled flags.
+
+\begin{definition}[One-root planting]\label{def:c5-one-root-planting}
+Let $(G,r)$ be a rooted graph and let $L\ge1$.  The planted graph
+$P_L(G,r)$ is defined as follows.  Remove $r$, add an independent set $R$ of
+$L$ new vertices, and keep the old vertex set
+\[
+  U:=V(G)\setminus\{r\}.
+\]
+Inside $U$, keep every edge of $G-r$ except the edges with both endpoints in
+$N_G(r)$.  Finally, join every vertex of $R$ to every vertex of $N_G(r)$, and
+to no other vertex of $U$.
+\end{definition}
+
+\begin{lemma}[The planted graph is still $C_5$-free]\label{lem:c5-planting-free}
+If $G$ is $C_5$-free, then $P_L(G,r)$ is $C_5$-free for every $L\ge1$.
+\end{lemma}
+
+\begin{proof}
+Put $H=P_L(G,r)$ and let $R$ be the planted root cluster.  Suppose, for a
+contradiction, that $H$ contains a $5$-cycle $C$.
+
+If $C$ uses no vertex of $R$, then all its edges are old edges of $G-r$, so it
+is a $C_5$ in $G$.
+
+If $C$ uses exactly one vertex $x\in R$, write the cycle as
+\[
+  x-a-b-c-d-x.
+\]
+The edges incident with $x$ force $a,d\in N_G(r)$, and the three middle edges
+are old edges of $G$.  Hence
+\[
+  r-a-b-c-d-r
+\]
+is a $C_5$ in $G$, again impossible.
+
+Finally suppose $C$ uses at least two vertices of $R$.  Since $R$ is
+independent and the independence number of $C_5$ is $2$, it uses exactly two,
+say $x,y\in R$.  On one of the two arcs between $x$ and $y$ in the cycle there
+are two consecutive old vertices, say $b,c$.  Both are adjacent in $H$ to a
+vertex of $R$, so both lie in $N_G(r)$; but the edge $bc$ would then be an edge
+inside $N_G(r)$, and all such edges were deleted in the construction of $H$.
+This contradiction proves the lemma.
+\end{proof}
+
+\begin{lemma}[One-root sparse repairs]\label{lem:c5-one-root-sparse-repair}
+The $C_5$-free graph class has sparse root-blow-up repairs at the one-vertex
+type.
+\end{lemma}
+
+\begin{proof}
+Let $0<\lambda\le1$ and $\rho>0$.  Choose
+$n_0\ge \max\{2/\lambda,1/\rho\}$.  Let $(G,r)$ be a one-rooted $C_5$-free graph
+with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
+$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r)$ and let $R$ be the planted
+root cluster.  By \cref{lem:c5-planting-free}, $H$ is $C_5$-free.
+
+The sparse-repair conditions are immediate from the construction.  There are no
+root--root adjacencies to check for the one-vertex type.  Each vertex of $R$ has
+exactly the same neighbours in $U:=V(G)\setminus\{r\}$ as $r$ had in $G$.  Finally,
+$H[U]$ differs from $G[U]$ only on the edges inside $N_G(r)$, and by
+\cref{lem:c5-nbhd} there are at most $|N_G(r)|\le n\le\rho n^2$ such edges.
+\end{proof}
+
+\begin{theorem}[One-root $C_5$-free root-plantability]\label{thm:c5-one-root}
+The $C_5$-free graph class is root-plantable at the one-vertex type:
+\[
+  S_1=Q_1.
+\]
+\end{theorem}
+
+\begin{proof}
+The one-vertex type is non-degenerate because the $C_5$-free class contains
+arbitrarily large graphs.  Hence
+\cref{lem:c5-one-root-sparse-repair,thm:sparse-repair-planting} apply.
+\end{proof}
+
+\begin{remark}
+\Cref{thm:c5-one-root} is the promised local replacement for the global
+blow-up-closure theorem in one rooted variable.  It uses two facts special to one root:
+the only dangerous new $C_5$s created by cloning the root pass through an old
+edge inside $N_G(r)$, and those old neighbourhood edges have density
+$O(1/|G|)$ in sampling for fixed labelled flags.  For larger types one would have to control
+edges inside and between several root-neighbourhood regions.  The next result
+shows that this can still be done for two non-adjacent roots; \cref{sec:c5-edge}
+shows that it cannot work in general at the edge type.
+\end{remark}
+
+\subsubsection{The two-root non-edge type}
+
+Let $\eta$ be the two-vertex non-edge type.  The same idea works for $\eta$:
+clone both roots into two independent clusters, leave no edges between the
+clusters, and delete the old edges inside each root-neighbourhood.  Mixed
+five-cycles using one clone of each root project back to genuine $C_5$s in the
+original graph; cycles using two clones from the same root are killed by the
+neighbourhood-edge deletion.
+
+\begin{definition}[Two-root non-edge planting]\label{def:c5-nonedge-planting}
+Let $(G,r,s)$ be a rooted graph with $rs\notin E(G)$, and let $L\ge1$.  The
+planted graph $P_L(G,r,s)$ is defined as follows.  Remove $r,s$, add two
+disjoint independent sets $R$ and $S$ of size $L$, and keep the old vertex set
+\[
+  U:=V(G)\setminus\{r,s\}.
+\]
+There are no edges inside $R$, inside $S$, or between $R$ and $S$.  Inside
+$U$, keep every edge of $G-\{r,s\}$ except the edges with both endpoints in
+$N_G(r)$ or both endpoints in $N_G(s)$.  Finally, join every vertex of $R$ to
+every vertex of $N_G(r)$, and every vertex of $S$ to every vertex of $N_G(s)$,
+with no other new edges.
+\end{definition}
+
+\begin{lemma}[The non-edge planted graph is $C_5$-free]\label{lem:c5-nonedge-planting-free}
+If $G$ is $C_5$-free and $rs\notin E(G)$, then $P_L(G,r,s)$ is $C_5$-free for
+every $L\ge1$.
+\end{lemma}
+
+\begin{proof}
+Put $H=P_L(G,r,s)$ and let $R,S$ be the planted clusters.  The set
+$R\cup S$ is independent, and the independence number of $C_5$ is $2$, so any
+$5$-cycle in $H$ uses at most two planted vertices.
+
+If a $5$-cycle uses no planted vertex, all its edges are old edges of
+$G-\{r,s\}$, hence it is a $C_5$ in $G$.
+
+If it uses exactly one planted vertex, say $x\in R$, write the cycle as
+\[
+  x-a-b-c-d-x.
+\]
+Then $a,d\in N_G(r)$ and the middle edges are old edges of $G$, so
+$r-a-b-c-d-r$ is a $C_5$ in $G$.  The case $x\in S$ is identical.
+
+If it uses two planted vertices from the same cluster, say $x,y\in R$, then on
+the length-three arc between $x$ and $y$ there are two consecutive old vertices
+$b,c$.  Both are adjacent to a vertex of $R$, hence both lie in $N_G(r)$, but
+the edge $bc$ would have been deleted.  The same argument applies to two
+vertices of $S$.
+
+It remains to consider one planted vertex $x\in R$ and one planted vertex
+$y\in S$.  Since $x$ and $y$ are non-adjacent, replacing $x$ by $r$ and $y$ by
+$s$ in the cycle preserves all five cycle edges: neighbours of $x$ lie in
+$N_G(r)$, neighbours of $y$ lie in $N_G(s)$, and all edges among the three old
+vertices are old edges of $G$.  The replacement therefore gives a $C_5$ in
+$G$, contradicting the hypothesis.
+\end{proof}
+
+\begin{lemma}[Non-edge sparse repairs]\label{lem:c5-nonedge-sparse-repair}
+The $C_5$-free graph class has sparse root-blow-up repairs at the two-root
+non-edge type $\eta$.
+\end{lemma}
+
+\begin{proof}
+Let $0<\lambda\le1$ and $\rho>0$.  Choose
+$n_0\ge \max\{2/\lambda,2/\rho\}$.  Let $(G,r,s)$ be a $C_5$-free graph rooted at
+a non-edge, with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
+$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r,s)$ with planted clusters
+$R,S$.  By \cref{lem:c5-nonedge-planting-free}, $H$ is $C_5$-free.
+
+The pair $R,S$ is empty, as required for the non-edge type, and the adjacencies
+from $R$ and $S$ to $U:=V(G)\setminus\{r,s\}$ agree with the adjacencies from
+$r$ and $s$ in $G$.  The old part $H[U]$ differs from $G[U]$ only on edges inside
+$N_G(r)$ or inside $N_G(s)$.  By \cref{lem:c5-nbhd}, the number of such edges is
+at most
+\[
+  |N_G(r)|+|N_G(s)|\le 2n\le \rho n^2 .
+\]
+Thus the sparse root-blow-up repair condition holds.
+\end{proof}
+
+\begin{theorem}[Non-edge type $C_5$-free root-plantability]\label{thm:c5-nonedge-root}
+The $C_5$-free graph class is root-plantable at the two-root non-edge type
+$\eta$:
+\[
+  S_\eta=Q_\eta.
+\]
+\end{theorem}
+
+\begin{proof}
+The non-edge type $\eta$ is non-degenerate because the $C_5$-free class contains
+arbitrarily large empty graphs.  Hence
+\cref{lem:c5-nonedge-sparse-repair,thm:sparse-repair-planting} apply.
+\end{proof}
+
+For comparison, ordinary independent blow-ups detect exactly the triangles.
+
+\begin{lemma}\label{lem:c5-blowup}
+Every independent blow-up of a $C_5$-free graph $G$ is again $C_5$-free if and only
+if $G$ is triangle-free.
+\end{lemma}
+
+\begin{proof}
+A $C_5$ in a blow-up projects to a closed walk of length $5$ in $G$, and conversely
+any closed walk of length $5$ in $G$ lifts to a $C_5$ in a blow-up with classes of
+size $\ge2$.  Since $G$ is $C_5$-free, such a walk---being of odd length $5$, hence
+containing an odd cycle of length $3$ or $5$---exists if and only if $G$ has a
+triangle.
+\end{proof}
 
 \section{Degenerate classes are not root-plantable}
 
@@ -2339,7 +2586,7 @@ semantics but not quotient semantics, and in fact
 \end{theorem}
 
 \begin{proof}
-\emph{Ensemble semantics holds for $-e$.}  Let $\phi_0\in Q_0$.  Since $\brak1=1$ we
+Let $\phi_0\in Q_0$.  Since $\brak1=1$ we
 have $\phi_0(\brak1)=1>0$, so $\Ext_1(\phi_0)$ is defined.  As $\avg{e}{1}=\rho$,
 \eqref{eq:extension-expectation} gives
 \[
@@ -2352,7 +2599,7 @@ by \cref{lem:support-as} every support point $\chi$ of every $\Ext_1(\phi_0)$
 satisfies $\chi(e)=0$, and since $\chi\mapsto\chi(e)$ is continuous this gives the
 inclusion $S_1\subseteq\{\chi\in Q_1:\chi(e)=0\}$.
 
-\emph{Quotient semantics fails for $-e$.}  Let $S_N=K_{1,N-1}$ be the star on $N$
+Let $S_N=K_{1,N-1}$ be the star on $N$
 vertices, labelled at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
 Every unlabelled vertex is adjacent to the centre, so $p(e,S_N)=1$ for all $N$.  By
 compactness a subsequence converges to some $\psi\in Q_1$ with $\psi(e)=1$, whence
@@ -2521,9 +2768,8 @@ one-vertex type their edge density is \emph{not} pinned---the class contains gra
 every density in $[0,\tfrac12]$, so no boundary-pinning obstruction applies---and a
 local root-blow-up repair proves root-plantability there.  The same repair also handles
 the two-root non-edge type by cloning the two non-adjacent roots simultaneously.  At the
-two-root edge type, however, the triangle flag over the edge type is pinned to $0$ on
-random edge extensions, while a book graph gives a quotient edge with common-neighbour density
-$1$.  Thus the full all-types $C_5$-free conjecture is false, even though the positive
+two-root edge type, by contrast, a pinning obstruction does arise, so the full all-types
+$C_5$-free conjecture is false (\cref{sec:c5-edge}), even though the positive
 one-root and non-edge cases remain useful models for planting beyond clone-closure.
 \end{remark}
 
@@ -2602,8 +2848,9 @@ $W_\lambda\le W$ pointwise, and the density of any subgraph is monotone in the e
 weights, so every forbidden subgraph still has density $0$ in $W_\lambda$; hence
 $W_\lambda$ is $F$-free and its limit $\phi_0^{\lambda}$ lies in $Q_0$.  Its
 $\sigma$-density is positive for each $\lambda>0$, because the integrand defining the
-induced $\sigma$-density is positive on the positive-measure set of tuples on which $W$
-realises $\sigma$; so $\phi_0^{\lambda}$ can be labelled by $\sigma$.
+induced $\sigma$-density is positive on the set of tuples where every $\sigma$-edge has
+$W>0$ and every $\sigma$-non-edge has $W<1$, a set of positive measure since $\phi_0$ has
+positive $\sigma$-density; so $\phi_0^{\lambda}$ can be labelled by $\sigma$.
 
 Every edge weight of $W_\lambda$ is at most $\lambda$, so under
 $\Ext_\sigma(\phi_0^{\lambda})$ the probability that a given further vertex attaches to
@@ -2626,6 +2873,148 @@ the degenerate corner of a complete bipartite family does for the edge type.  By
 complementation (\cref{lem:complementation}) the same holds for every class whose
 complement is subgraph-forbidden, including the dense co-degenerate ones.  The
 consequences for density bounds are drawn in \cref{sec:empty-type}.
+\end{remark}
+
+\subsection{The \texorpdfstring{$C_5$}{C5}-free edge-type obstruction}\label{sec:c5-edge}
+
+The $C_5$-free class is root-plantable at the one-vertex type (\cref{thm:c5-one-root}) and at the
+two-root non-edge type (\cref{thm:c5-nonedge-root}), shown in \cref{subsec:c5-planting} by a local
+sparse repair.  The two-root \emph{edge} type behaves oppositely: a book-edge construction gives a
+pinning obstruction, so root-plantability fails there.  We first record that no pinning obstruction
+arises at the one-vertex type, and then build the edge-type obstruction.
+
+\begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
+The $C_5$-free class has no pinning obstruction at $\sigma=1$ from the edge or the
+labelled triangle flag.
+\end{corollary}
+
+\begin{proof}
+A disjoint union of stars and triangles on at most $\deg(v)$ vertices has at most
+$\deg(v)$ edges, so the number of triangles through $v$ is at most $\deg(v)\le n$,
+and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
+labelled triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
+the quotient attains only $0$, so no obstruction arises.  The edge flag is not
+pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
+(the empty graph and the complete bipartite graphs).
+\end{proof}
+
+The same class is not root-plantable at the two-root edge type.  Let $\tau$ be
+the type consisting of a labelled edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
+be the three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent
+to both labelled vertices; equivalently, $g$ is the triangle $\tau$-flag over
+the edge type.
+
+\begin{lemma}[Few triangles]\label{lem:c5-few-triangles}
+If $G$ is $C_5$-free, then the number $T(G)$ of triangles in $G$ satisfies
+\[
+  T(G)\le\frac23 e(G).
+\]
+In particular, every unlabelled $C_5$-free limit has triangle density zero.
+\end{lemma}
+
+\begin{proof}
+For every $v$, \cref{lem:c5-nbhd} gives $e(G[N(v)])\le d(v)$.  Summing over
+vertices,
+\[
+  3T(G)=\sum_v e(G[N(v)])\le \sum_v d(v)=2e(G),
+\]
+since every triangle is counted once at each of its three vertices.  As
+$e(G)=O(|V(G)|^2)$, the normalised triangle density is $O(1/|V(G)|)$ along any
+sequence with $|V(G)|\to\infty$.
+\end{proof}
+
+\begin{corollary}[The triangle edge-type flag is pinned on ensembles]\label{cor:c5-edge-pinned}
+Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled limit with
+$\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
+\[
+  \phi^\tau(g)=0
+  \qquad\text{almost surely.}
+\]
+\end{corollary}
+
+\begin{proof}
+The downward average $\avg{g}{\tau}$ is a positive scalar multiple of the
+unlabelled triangle.  By \cref{lem:c5-few-triangles},
+$\phi_0(\avg{g}{\tau})=0$.  Razborov's extension identity gives
+\[
+  \E[\phi^\tau(g)]
+  =
+  \frac{\phi_0(\avg{g}{\tau})}{\phi_0(\brak{\tau})}
+  =0.
+\]
+Since $\phi^\tau(g)\ge0$ pointwise, it is almost surely zero.
+\end{proof}
+
+\begin{definition}[Book graphs]\label{def:c5-book}
+Let $B_n$ be the graph with two distinguished vertices $a,b$, the edge $ab$,
+and $n$ further vertices each adjacent to both $a$ and $b$, with no edges among
+the further vertices.
+\end{definition}
+
+\begin{lemma}[The book edge is $C_5$-free]\label{lem:c5-book}
+Each $B_n$ is $C_5$-free.  Rooted at the ordered edge $(a,b)$, the sequence
+$(B_n,a,b)$ has a convergent subsequence whose limit is a point $\psi\in Q_\tau$
+with
+\[
+  \psi(g)=1.
+\]
+\end{lemma}
+
+\begin{proof}
+A leaf of $B_n$ has neighbourhood exactly $\{a,b\}$.  A simple cycle containing
+a leaf must enter and leave it through $a$ and $b$.  Hence a simple cycle in
+$B_n$ uses at most two leaves, so its length is at most $4$.  Thus $B_n$ has no
+$C_5$.
+
+For the $\tau$-flag density, every unlabelled vertex of $B_n$ is adjacent to both
+roots.  Therefore $p(g,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
+has the asserted limit.
+\end{proof}
+
+\begin{theorem}[The edge type is not root-plantable]\label{thm:c5-edge-not-root-plantable}
+The $C_5$-free graph class is not root-plantable at the two-root edge type
+$\tau$.  Concretely, $-g$ satisfies ensemble semantics but not quotient
+semantics.
+\end{theorem}
+
+\begin{proof}
+By \cref{cor:c5-edge-pinned}, every support point of every admissible
+edge-type ensemble has $g=0$, so $-g$ is ensemble-non-negative.  By
+\cref{lem:c5-book}, there is a quotient homomorphism
+$\psi\in Q_\tau$ with $\psi(g)=1$, hence $\psi(-g)=-1<0$.  Thus quotient
+semantics fails for $-g$, and the support-closure criterion gives
+$S_\tau\ne Q_\tau$.
+\end{proof}
+
+\begin{corollary}[The edge-type gap is closed-cone inert]\label{cor:c5-edge-closed-inert}
+For the $C_5$-free class and the edge type $\tau$,
+\[
+  \overline{\C^{\mathrm{quot}}_\tau}^{\,\|\cdot\|_{Q_0}}
+  =
+  \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
+\]
+Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
+$C_5$-free density bound, even though $\tau$ is not root-plantable.
+\end{corollary}
+
+\begin{proof}
+This is the special case of \cref{thm:no-closed-certificate-gap} for the
+non-degenerate edge type $\tau$.  The pinned witness $g$ itself is even more inert:
+by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
+$g=0$ on $S_\tau$.
+\end{proof}
+
+\begin{remark}
+The $C_5$-free class therefore gives both a positive and a negative lesson.  A
+single typical vertex in a positive-density $C_5$-free limit may have nontrivial
+edge density to the rest of the graph, and \cref{thm:c5-one-root} shows that
+every such labelled quotient limit can be planted.  A typical labelled edge is much
+more rigid: the common-neighbour density is forced to vanish, while an
+exceptional edge in a sparse book graph may have common-neighbour density one.
+This is precisely a pinning obstruction, so the characterisation conjecture (\cref{conj:characterisation})
+survives this test but must be understood type by type.  At the same time,
+\cref{cor:c5-edge-closed-inert} says that the obstruction does not create a new
+closed density-bound cone after unlabelling.
 \end{remark}
 
 \section{The gap is invisible to density bounds}\label{sec:empty-type}
@@ -2813,387 +3202,10 @@ element whose restriction is not represented exactly by a sum of squares.  By
 \cref{thm:no-closed-certificate-gap}, any such gap is necessarily non-closed: after
 unlabelling it can be approximated arbitrarily well by ordinary quotient sums of
 squares.  Boundary pinning to a single point supplies no exact gap, and by
-\cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free
-case of the next section illustrates both possibilities at once: the one-vertex and
+\cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free class
+illustrates both possibilities at once: the one-vertex and
 non-edge-type supports are rich but plantable, while the edge-type support has a
 boundary pinning obstruction coming from common neighbours of an exceptional book edge.
-\end{remark}
-
-\section{The \texorpdfstring{$C_5$}{C5}-free split}
-
-The $C_5$-free graphs are dense and not blow-up-closed, so they are the first natural
-place to test root-plantability beyond the global closure theorem.  Indeed, in $K_4$,
-blowing up one vertex $v$ to two vertices $x,y$ creates a $5$-cycle
-$x-a-b-y-c-x$ through the three neighbours $a,b,c$ of $v$, regardless of the edge
-between $x$ and $y$.  They split sharply by type.  At the one-vertex type, the
-elementary pinning obstructions disappear and a local planting construction works.  At
-the two-root non-edge type, a simultaneous version of the same construction works.  At
-the two-root edge type, a book-edge construction gives a pinning obstruction.
-Throughout, $C_5$-free again means containing no $C_5$ as a (not necessarily induced)
-subgraph (the densest such graphs being complete bipartite).
-
-The key fact is a strong local constraint.
-
-\begin{lemma}[Neighbourhoods in $C_5$-free graphs]\label{lem:c5-nbhd}
-If $G$ is $C_5$-free and $v\in V(G)$, then $G[N(v)]$ contains no path on four
-vertices as a subgraph.  Consequently every connected component of $G[N(v)]$ is
-a star or a triangle, and in particular
-\[
-  e(G[N(v)])\le |N(v)|.
-\]
-\end{lemma}
-
-\begin{proof}
-A path $a$-$x$-$y$-$b$ inside $N(v)$ together with $v$ forms the $5$-cycle
-$v$-$a$-$x$-$y$-$b$-$v$.  Thus $G[N(v)]$ is $P_4$-subgraph-free.
-
-Now let $C$ be a connected component of a graph with no $P_4$ subgraph.  If $C$
-is acyclic, then its diameter is at most $2$, hence it is a star.  If $C$
-contains a cycle, no cycle has length at least $4$, and a triangle cannot have
-any further vertex in the same component: a shortest path from such a vertex to
-the triangle would contain a $P_4$.  Thus $C$ is a triangle.  Each component has
-at most as many edges as vertices, giving the displayed bound.
-\end{proof}
-
-\begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
-The $C_5$-free class has no pinning obstruction at $\sigma=1$ from the edge or the
-labelled triangle flag.
-\end{corollary}
-
-\begin{proof}
-A disjoint union of stars and triangles on at most $\deg(v)$ vertices has at most
-$\deg(v)$ edges, so the number of triangles through $v$ is at most $\deg(v)\le n$,
-and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
-labelled triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
-the quotient attains only $0$, so no obstruction arises.  The edge flag is not
-pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
-(the empty graph and the complete bipartite graphs).
-\end{proof}
-
-\subsection{The one-root planting theorem}
-
-The one-root case is the first example where root-plantability holds without a
-global blow-up-closure hypothesis.  Ordinary false-twin duplication of a vertex may create $C_5$s:
-if the root sits in a triangle, cloning the root and one neighbour creates a
-five-cycle.  The repair is local.  Clone the root into a small positive-density
-independent set, but first delete all old edges inside its neighbourhood.  The
-deleted set is only linear in the number of vertices by \cref{lem:c5-nbhd}, so
-it is invisible to the densities of fixed labelled flags.
-
-\begin{definition}[One-root planting]\label{def:c5-one-root-planting}
-Let $(G,r)$ be a rooted graph and let $L\ge1$.  The planted graph
-$P_L(G,r)$ is defined as follows.  Remove $r$, add an independent set $R$ of
-$L$ new vertices, and keep the old vertex set
-\[
-  U:=V(G)\setminus\{r\}.
-\]
-Inside $U$, keep every edge of $G-r$ except the edges with both endpoints in
-$N_G(r)$.  Finally, join every vertex of $R$ to every vertex of $N_G(r)$, and
-to no other vertex of $U$.
-\end{definition}
-
-\begin{lemma}[The planted graph is still $C_5$-free]\label{lem:c5-planting-free}
-If $G$ is $C_5$-free, then $P_L(G,r)$ is $C_5$-free for every $L\ge1$.
-\end{lemma}
-
-\begin{proof}
-Put $H=P_L(G,r)$ and let $R$ be the planted root cluster.  Suppose, for a
-contradiction, that $H$ contains a $5$-cycle $C$.
-
-If $C$ uses no vertex of $R$, then all its edges are old edges of $G-r$, so it
-is a $C_5$ in $G$.
-
-If $C$ uses exactly one vertex $x\in R$, write the cycle as
-\[
-  x-a-b-c-d-x.
-\]
-The edges incident with $x$ force $a,d\in N_G(r)$, and the three middle edges
-are old edges of $G$.  Hence
-\[
-  r-a-b-c-d-r
-\]
-is a $C_5$ in $G$, again impossible.
-
-Finally suppose $C$ uses at least two vertices of $R$.  Since $R$ is
-independent and the independence number of $C_5$ is $2$, it uses exactly two,
-say $x,y\in R$.  On one of the two arcs between $x$ and $y$ in the cycle there
-are two consecutive old vertices, say $b,c$.  Both are adjacent in $H$ to a
-vertex of $R$, so both lie in $N_G(r)$; but the edge $bc$ would then be an edge
-inside $N_G(r)$, and all such edges were deleted in the construction of $H$.
-This contradiction proves the lemma.
-\end{proof}
-
-\begin{lemma}[One-root sparse repairs]\label{lem:c5-one-root-sparse-repair}
-The $C_5$-free graph class has sparse root-blow-up repairs at the one-vertex
-type.
-\end{lemma}
-
-\begin{proof}
-Let $0<\lambda\le1$ and $\rho>0$.  Choose
-$n_0\ge \max\{2/\lambda,1/\rho\}$.  Let $(G,r)$ be a one-rooted $C_5$-free graph
-with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
-$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r)$ and let $R$ be the planted
-root cluster.  By \cref{lem:c5-planting-free}, $H$ is $C_5$-free.
-
-The sparse-repair conditions are immediate from the construction.  There are no
-root--root adjacencies to check for the one-vertex type.  Each vertex of $R$ has
-exactly the same neighbours in $U:=V(G)\setminus\{r\}$ as $r$ had in $G$.  Finally,
-$H[U]$ differs from $G[U]$ only on the edges inside $N_G(r)$, and by
-\cref{lem:c5-nbhd} there are at most $|N_G(r)|\le n\le\rho n^2$ such edges.
-\end{proof}
-
-\begin{theorem}[One-root $C_5$-free root-plantability]\label{thm:c5-one-root}
-The $C_5$-free graph class is root-plantable at the one-vertex type:
-\[
-  S_1=Q_1.
-\]
-\end{theorem}
-
-\begin{proof}
-The one-vertex type is non-degenerate because the $C_5$-free class contains
-arbitrarily large graphs.  Hence
-\cref{lem:c5-one-root-sparse-repair,thm:sparse-repair-planting} apply.
-\end{proof}
-
-\begin{remark}
-\Cref{thm:c5-one-root} is the promised local replacement for the global
-blow-up-closure theorem in one rooted variable.  It uses two facts special to one root:
-the only dangerous new $C_5$s created by cloning the root pass through an old
-edge inside $N_G(r)$, and those old neighbourhood edges have density
-$O(1/|G|)$ in sampling for fixed labelled flags.  For larger types one would have to control
-edges inside and between several root-neighbourhood regions.  The next result
-shows that this can still be done for two non-adjacent roots; the following
-subsection shows that it cannot work in general at the edge type.
-\end{remark}
-
-\subsection{The two-root non-edge type}
-
-Let $\eta$ be the two-vertex non-edge type.  The same idea works for $\eta$:
-clone both roots into two independent clusters, leave no edges between the
-clusters, and delete the old edges inside each root-neighbourhood.  Mixed
-five-cycles using one clone of each root project back to genuine $C_5$s in the
-original graph; cycles using two clones from the same root are killed by the
-neighbourhood-edge deletion.
-
-\begin{definition}[Two-root non-edge planting]\label{def:c5-nonedge-planting}
-Let $(G,r,s)$ be a rooted graph with $rs\notin E(G)$, and let $L\ge1$.  The
-planted graph $P_L(G,r,s)$ is defined as follows.  Remove $r,s$, add two
-disjoint independent sets $R$ and $S$ of size $L$, and keep the old vertex set
-\[
-  U:=V(G)\setminus\{r,s\}.
-\]
-There are no edges inside $R$, inside $S$, or between $R$ and $S$.  Inside
-$U$, keep every edge of $G-\{r,s\}$ except the edges with both endpoints in
-$N_G(r)$ or both endpoints in $N_G(s)$.  Finally, join every vertex of $R$ to
-every vertex of $N_G(r)$, and every vertex of $S$ to every vertex of $N_G(s)$,
-with no other new edges.
-\end{definition}
-
-\begin{lemma}[The non-edge planted graph is $C_5$-free]\label{lem:c5-nonedge-planting-free}
-If $G$ is $C_5$-free and $rs\notin E(G)$, then $P_L(G,r,s)$ is $C_5$-free for
-every $L\ge1$.
-\end{lemma}
-
-\begin{proof}
-Put $H=P_L(G,r,s)$ and let $R,S$ be the planted clusters.  The set
-$R\cup S$ is independent, and the independence number of $C_5$ is $2$, so any
-$5$-cycle in $H$ uses at most two planted vertices.
-
-If a $5$-cycle uses no planted vertex, all its edges are old edges of
-$G-\{r,s\}$, hence it is a $C_5$ in $G$.
-
-If it uses exactly one planted vertex, say $x\in R$, write the cycle as
-\[
-  x-a-b-c-d-x.
-\]
-Then $a,d\in N_G(r)$ and the middle edges are old edges of $G$, so
-$r-a-b-c-d-r$ is a $C_5$ in $G$.  The case $x\in S$ is identical.
-
-If it uses two planted vertices from the same cluster, say $x,y\in R$, then on
-the length-three arc between $x$ and $y$ there are two consecutive old vertices
-$b,c$.  Both are adjacent to a vertex of $R$, hence both lie in $N_G(r)$, but
-the edge $bc$ would have been deleted.  The same argument applies to two
-vertices of $S$.
-
-It remains to consider one planted vertex $x\in R$ and one planted vertex
-$y\in S$.  Since $x$ and $y$ are non-adjacent, replacing $x$ by $r$ and $y$ by
-$s$ in the cycle preserves all five cycle edges: neighbours of $x$ lie in
-$N_G(r)$, neighbours of $y$ lie in $N_G(s)$, and all edges among the three old
-vertices are old edges of $G$.  The replacement therefore gives a $C_5$ in
-$G$, contradicting the hypothesis.
-\end{proof}
-
-\begin{lemma}[Non-edge sparse repairs]\label{lem:c5-nonedge-sparse-repair}
-The $C_5$-free graph class has sparse root-blow-up repairs at the two-root
-non-edge type $\eta$.
-\end{lemma}
-
-\begin{proof}
-Let $0<\lambda\le1$ and $\rho>0$.  Choose
-$n_0\ge \max\{2/\lambda,2/\rho\}$.  Let $(G,r,s)$ be a $C_5$-free graph rooted at
-a non-edge, with $n:=|G|\ge n_0$, and put $L=\lfloor\lambda n\rfloor$.  Then
-$\lambda n/2\le L\le\lambda n$.  Let $H=P_L(G,r,s)$ with planted clusters
-$R,S$.  By \cref{lem:c5-nonedge-planting-free}, $H$ is $C_5$-free.
-
-The pair $R,S$ is empty, as required for the non-edge type, and the adjacencies
-from $R$ and $S$ to $U:=V(G)\setminus\{r,s\}$ agree with the adjacencies from
-$r$ and $s$ in $G$.  The old part $H[U]$ differs from $G[U]$ only on edges inside
-$N_G(r)$ or inside $N_G(s)$.  By \cref{lem:c5-nbhd}, the number of such edges is
-at most
-\[
-  |N_G(r)|+|N_G(s)|\le 2n\le \rho n^2 .
-\]
-Thus the sparse root-blow-up repair condition holds.
-\end{proof}
-
-\begin{theorem}[Non-edge type $C_5$-free root-plantability]\label{thm:c5-nonedge-root}
-The $C_5$-free graph class is root-plantable at the two-root non-edge type
-$\eta$:
-\[
-  S_\eta=Q_\eta.
-\]
-\end{theorem}
-
-\begin{proof}
-The non-edge type $\eta$ is non-degenerate because the $C_5$-free class contains
-arbitrarily large empty graphs.  Hence
-\cref{lem:c5-nonedge-sparse-repair,thm:sparse-repair-planting} apply.
-\end{proof}
-
-For comparison, ordinary independent blow-ups detect exactly the triangles.
-
-\begin{lemma}\label{lem:c5-blowup}
-Every independent blow-up of a $C_5$-free graph $G$ is again $C_5$-free if and only
-if $G$ is triangle-free.
-\end{lemma}
-
-\begin{proof}
-A $C_5$ in a blow-up projects to a closed walk of length $5$ in $G$, and conversely
-any closed walk of length $5$ in $G$ lifts to a $C_5$ in a blow-up with classes of
-size $\ge2$.  Since $G$ is $C_5$-free, such a walk---being of odd length $5$, hence
-containing an odd cycle of length $3$ or $5$---exists if and only if $G$ has a
-triangle.
-\end{proof}
-
-\subsection{The edge-type obstruction}
-
-The same class is not root-plantable at the two-root edge type.  Let $\tau$ be
-the type consisting of a labelled edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
-be the three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent
-to both labelled vertices; equivalently, $g$ is the triangle $\tau$-flag over
-the edge type.
-
-\begin{lemma}[Few triangles]\label{lem:c5-few-triangles}
-If $G$ is $C_5$-free, then the number $T(G)$ of triangles in $G$ satisfies
-\[
-  T(G)\le\frac23 e(G).
-\]
-In particular, every unlabelled $C_5$-free limit has triangle density zero.
-\end{lemma}
-
-\begin{proof}
-For every $v$, \cref{lem:c5-nbhd} gives $e(G[N(v)])\le d(v)$.  Summing over
-vertices,
-\[
-  3T(G)=\sum_v e(G[N(v)])\le \sum_v d(v)=2e(G),
-\]
-since every triangle is counted once at each of its three vertices.  As
-$e(G)=O(|V(G)|^2)$, the normalised triangle density is $O(1/|V(G)|)$ along any
-sequence with $|V(G)|\to\infty$.
-\end{proof}
-
-\begin{corollary}[The triangle edge-type flag is pinned on ensembles]\label{cor:c5-edge-pinned}
-Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled limit with
-$\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
-\[
-  \phi^\tau(g)=0
-  \qquad\text{almost surely.}
-\]
-\end{corollary}
-
-\begin{proof}
-The downward average $\avg{g}{\tau}$ is a positive scalar multiple of the
-unlabelled triangle.  By \cref{lem:c5-few-triangles},
-$\phi_0(\avg{g}{\tau})=0$.  Razborov's extension identity gives
-\[
-  \E[\phi^\tau(g)]
-  =
-  \frac{\phi_0(\avg{g}{\tau})}{\phi_0(\brak{\tau})}
-  =0.
-\]
-Since $\phi^\tau(g)\ge0$ pointwise, it is almost surely zero.
-\end{proof}
-
-\begin{definition}[Book graphs]\label{def:c5-book}
-Let $B_n$ be the graph with two distinguished vertices $a,b$, the edge $ab$,
-and $n$ further vertices each adjacent to both $a$ and $b$, with no edges among
-the further vertices.
-\end{definition}
-
-\begin{lemma}[The book edge is $C_5$-free]\label{lem:c5-book}
-Each $B_n$ is $C_5$-free.  Rooted at the ordered edge $(a,b)$, the sequence
-$(B_n,a,b)$ has a convergent subsequence whose limit is a point $\psi\in Q_\tau$
-with
-\[
-  \psi(g)=1.
-\]
-\end{lemma}
-
-\begin{proof}
-A leaf of $B_n$ has neighbourhood exactly $\{a,b\}$.  A simple cycle containing
-a leaf must enter and leave it through $a$ and $b$.  Hence a simple cycle in
-$B_n$ uses at most two leaves, so its length is at most $4$.  Thus $B_n$ has no
-$C_5$.
-
-For the $\tau$-flag density, every unlabelled vertex of $B_n$ is adjacent to both
-roots.  Therefore $p(g,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
-has the asserted limit.
-\end{proof}
-
-\begin{theorem}[The edge type is not root-plantable]\label{thm:c5-edge-not-root-plantable}
-The $C_5$-free graph class is not root-plantable at the two-root edge type
-$\tau$.  Concretely, $-g$ satisfies ensemble semantics but not quotient
-semantics.
-\end{theorem}
-
-\begin{proof}
-By \cref{cor:c5-edge-pinned}, every support point of every admissible
-edge-type ensemble has $g=0$, so $-g$ is ensemble-non-negative.  By
-\cref{lem:c5-book}, there is a quotient homomorphism
-$\psi\in Q_\tau$ with $\psi(g)=1$, hence $\psi(-g)=-1<0$.  Thus quotient
-semantics fails for $-g$, and the support-closure criterion gives
-$S_\tau\ne Q_\tau$.
-\end{proof}
-
-\begin{corollary}[The edge-type gap is closed-cone inert]\label{cor:c5-edge-closed-inert}
-For the $C_5$-free class and the edge type $\tau$,
-\[
-  \overline{\C^{\mathrm{quot}}_\tau}^{\,\|\cdot\|_{Q_0}}
-  =
-  \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
-\]
-Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
-$C_5$-free density bound, even though $\tau$ is not root-plantable.
-\end{corollary}
-
-\begin{proof}
-This is the special case of \cref{thm:no-closed-certificate-gap} for the
-non-degenerate edge type $\tau$.  The pinned witness $g$ itself is even more inert:
-by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
-$g=0$ on $S_\tau$.
-\end{proof}
-
-\begin{remark}
-The $C_5$-free class therefore gives both a positive and a negative lesson.  A
-single typical vertex in a positive-density $C_5$-free limit may have nontrivial
-edge density to the rest of the graph, and \cref{thm:c5-one-root} shows that
-every such labelled quotient limit can be planted.  A typical labelled edge is much
-more rigid: the common-neighbour density is forced to vanish, while an
-exceptional edge in a sparse book graph may have common-neighbour density one.
-This is precisely a pinning obstruction, so the characterisation conjecture
-survives this test but must be understood type by type.  At the same time,
-\cref{cor:c5-edge-closed-inert} says that the obstruction does not create a new
-closed density-bound cone after unlabelling.
 \end{remark}
 
 \section{Strengthening by a further constraint}
@@ -3451,7 +3463,7 @@ displayed labelled equations.
 \begin{remark}
 \Cref{thm:k4free-p4-equality-slice} is the kind of example the relative method is meant
 to produce.  It does not start from a known extremal graphon and read off its local
-statistics.  Instead, it takes a bound already proved by a flag-algebra certificate and
+densities.  Instead, it takes a bound already proved by a flag-algebra certificate and
 extracts necessary local laws for every extremal limit.  These laws are invisible to the
 ordinary hereditary quotient: the quotient sees all $K_4$-free labelled limits, while the
 relative support sees only roots that occur with positive probability inside
@@ -3461,7 +3473,7 @@ $P_4$-extremal limits.
 \begin{theorem}[A certificate route to the tripartite extremiser]\label{thm:k4free-p4-tripartite}
 Every $K_4$-free graphon in the equality slice $Y_{P_4}$ has edge density $2/3$.
 Consequently, by the equality case of Tur\'an's theorem, every element of $Y_{P_4}$ is the
-balanced complete tripartite graphon.  The slice is moreover nonempty---the balanced
+balanced complete tripartite graphon.  The slice is moreover non-empty---the balanced
 complete tripartite graphon attains $\pi_{P_4}=32/9$---so $Y_{P_4}$ consists of exactly
 that graphon.
 \end{theorem}
@@ -3532,7 +3544,7 @@ relabelling, to the balanced complete tripartite graphon.
 Conversely, the balanced complete tripartite graphon is itself $K_4$-free and attains
 $\pi_{P_4}=32/9$: this is the matching lower bound for the $P_4$ density, the achievability
 direction formalised in \texttt{API.CompleteGraphFreeP4} at $r=3$.  It therefore lies in
-$Y_{P_4}$, so the slice is nonempty and equals exactly this graphon.
+$Y_{P_4}$, so the slice is non-empty and equals exactly this graphon.
 \end{proof}
 
 \begin{remark}
@@ -3860,7 +3872,7 @@ Four questions remain.
 
   \item \textbf{The characterisation conjecture.}
   \Cref{conj:characterisation} asks whether the absence of a pinning obstruction is
-  already sufficient for root-plantability.  The $C_5$-free split sharpens the test:
+  already sufficient for root-plantability.  The $C_5$-free class sharpens the test:
   the one-vertex type has no elementary pinning obstruction and is root-plantable, while
   the edge type fails for exactly a pinning reason.  A decisive next example would be a
   type or class with no pinning obstruction but still no root-plantability, or a theorem
