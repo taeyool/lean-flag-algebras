@@ -1997,10 +1997,11 @@ visible to random roots.
 
 The next examples, especially the $C_5$-free class, do not have such a global closure
 property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
-is more local: first create many possible embeddings of the labelled type---in the
-$C_5$ constructions below, by replacing each root with a positive-density set of new
-vertices, any one of which can serve as the image of that root---and then repair the few
-dangerous edges.  If the repair changes so little of the graph that the $\sigma$-flag densities up to the
+is more local: only a sparse, root-centred part of the graph is altered, with no closure
+property of the class assumed.  One first creates many possible embeddings of the labelled
+type---in the $C_5$ constructions below, by replacing each root with a positive-density set
+of new vertices, any one of which can serve as the image of that root---and then repairs the
+few dangerous edges.  If the repair changes so little of the graph that the $\sigma$-flag densities up to the
 chosen size are essentially unchanged, these embeddings still reproduce the local view of
 $(G,\theta)$.  The purpose of this section is to isolate
 exactly what one has to check at the level of finite graphs: the repaired graph must
@@ -2030,7 +2031,7 @@ $\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an intege
 $n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
 property.
 
-Every finite $\sigma$-flag $(G,\theta)$ in $\K$ with $|G|\ge n_0$ admits a graph
+Every finite $\sigma$-flag $(G,\theta)$ with $G\in\K$ and $|G|\ge n_0$ admits a graph
 $H\in\K$ and a set $\Theta\subseteq\Emb_\sigma(H)$ such that:
 \begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
   \item $|V(H)|\ge |G|$;
@@ -2059,15 +2060,16 @@ statement.  We prove the reverse inclusion.
 
 Let $\psi\in Q_\sigma$, and let $U$ be a basic neighbourhood of $\psi$ in
 $X_\sigma$, specified by ambient $\sigma$-flags $F_1,\ldots,F_s$ and a tolerance
-$\eps>0$.  Choose an integer $m\ge|\sigma|$ bounding the sizes of the $F_i$.  Then
+$\eps>0$.  Then
 \[
   U=
   \{\chi\in X_\sigma:
     |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
 \]
-Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
+Pick an integer $m\ge|\sigma|$ bounding the sizes of the $F_i$. Also,
+choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
 local planting property.  Choose a convergent sequence of $\sigma$-flags
-$(G_t,\theta_t)$ in $\K$ with $(G_t,\theta_t)\to\psi$ and $|G_t|\to\infty$.
+$(G_t,\theta_t)$ with $G_t\in\K$, $(G_t,\theta_t)\to\psi$, and $|G_t|\to\infty$.
 For all sufficiently large $t$, we have $|G_t|\ge n_0$ and
 \[
   |p(F_i,(G_t,\theta_t))-\psi(F_i)|<\eps/3
@@ -2139,8 +2141,8 @@ $k\ge1$ labelled vertices.  We say that $\K$ has \emph{sparse root-blow-up
 repairs at $\sigma$} if the following holds.
 
 For every $0<\lambda\le1$ and every $\rho>0$, there is an integer
-$n_0=n_0(\lambda,\rho)$ such that for every $\sigma$-flag $(G,\theta)$ in $\K$
-with $n:=|G|\ge n_0$, there are an integer $L$ with
+$n_0=n_0(\lambda,\rho)$ such that for every $\sigma$-flag $(G,\theta)$ with $G\in\K$
+and $n:=|G|\ge n_0$, there are an integer $L$ with
 \[
   \frac{\lambda n}{2}\le L\le \lambda n
 \]
@@ -2180,7 +2182,7 @@ $0<\lambda\le1$ and $\rho>0$ so small that
 Let $n_0$ be the maximum of $m$, $2k$, $\lceil2/\lambda\rceil$, and the threshold from
 \cref{def:sparse-root-repair} for this $\lambda$ and $\rho$.
 
-Let $(G,\theta)$ be a $\sigma$-flag in $\K$ with $n:=|G|\ge n_0$, and let
+Let $(G,\theta)$ be a $\sigma$-flag with $G\in\K$ and $n:=|G|\ge n_0$, and let
 $H$ be the repaired root blow-up supplied by the definition.  Put
 \[
   \Theta:=R_1\times\cdots\times R_k\subseteq \Emb_\sigma(H),
