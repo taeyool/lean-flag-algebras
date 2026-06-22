@@ -2250,9 +2250,9 @@ $\Prob[X_j\in R]\le kL/|W|$.  A union bound over the $q=\ell-k\le m$ positions t
 Second, the sample may contain both endpoints of one of the altered old pairs.  Let $D$ be
 the set of unordered pairs $\{u,u'\}\subseteq U$ on which $H[U]$ and $G[U]$ differ; by
 condition (iii) of \cref{def:sparse-root-repair}, $|D|\le\rho n^2$.  If $q\le1$ the sample
-has at most one vertex, so it contains no pair and 
+has at most one vertex, so it contains no pair, and
 \[
-  \Prob[\text{the sample contains an unordered pair from }D] = 0
+  \Prob[\text{the sample contains an unordered pair from }D] = 0 .
 \]
 Now assume that $q\ge2$.  A fixed pair $\{u,u'\}\subseteq U$ then lies entirely in the sample with probability
 \[
@@ -2889,8 +2889,8 @@ labelled triangle flag.
 \end{corollary}
 
 \begin{proof}
-A disjoint union of stars and triangles on at most $\deg(v)$ vertices has at most
-$\deg(v)$ edges, so the number of triangles through $v$ is at most $\deg(v)\le n$,
+By \cref{lem:c5-nbhd}, $G[N(v)]$ is a disjoint union of stars and triangles, so it has
+at most $\deg(v)$ edges; hence the number of triangles through $v$ is at most $\deg(v)\le n$,
 and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
 labelled triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
 the quotient attains only $0$, so no obstruction arises.  The edge flag is not
@@ -2935,7 +2935,7 @@ $\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
 \begin{proof}
 The downward average $\avg{g}{\tau}$ is a positive scalar multiple of the
 unlabelled triangle.  By \cref{lem:c5-few-triangles},
-$\phi_0(\avg{g}{\tau})=0$.  Razborov's extension identity gives
+$\phi_0(\avg{g}{\tau})=0$.  By \eqref{eq:extension-expectation},
 \[
   \E[\phi^\tau(g)]
   =
@@ -2986,24 +2986,6 @@ semantics fails for $-g$, and the support-closure criterion gives
 $S_\tau\ne Q_\tau$.
 \end{proof}
 
-\begin{corollary}[The edge-type gap is closed-cone inert]\label{cor:c5-edge-closed-inert}
-For the $C_5$-free class and the edge type $\tau$,
-\[
-  \overline{\C^{\mathrm{quot}}_\tau}^{\,\|\cdot\|_{Q_0}}
-  =
-  \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
-\]
-Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
-$C_5$-free density bound, even though $\tau$ is not root-plantable.
-\end{corollary}
-
-\begin{proof}
-This is the special case of \cref{thm:no-closed-certificate-gap} for the
-non-degenerate edge type $\tau$.  The pinned witness $g$ itself is even more inert:
-by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
-$g=0$ on $S_\tau$.
-\end{proof}
-
 \begin{remark}
 The $C_5$-free class therefore gives both a positive and a negative lesson.  A
 single typical vertex in a positive-density $C_5$-free limit may have nontrivial
@@ -3012,9 +2994,7 @@ every such labelled quotient limit can be planted.  A typical labelled edge is m
 more rigid: the common-neighbour density is forced to vanish, while an
 exceptional edge in a sparse book graph may have common-neighbour density one.
 This is precisely a pinning obstruction, so the characterisation conjecture (\cref{conj:characterisation})
-survives this test but must be understood type by type.  At the same time,
-\cref{cor:c5-edge-closed-inert} says that the obstruction does not create a new
-closed density-bound cone after unlabelling.
+survives this test but must be understood type by type.
 \end{remark}
 
 \section{The gap is invisible to density bounds}\label{sec:empty-type}
@@ -3207,6 +3187,28 @@ illustrates both possibilities at once: the one-vertex and
 non-edge-type supports are rich but plantable, while the edge-type support has a
 boundary pinning obstruction coming from common neighbours of an exceptional book edge.
 \end{remark}
+
+As a final, concrete instance, take the $C_5$-free class at the edge type $\tau$ of
+\cref{sec:c5-edge}, which is not root-plantable (\cref{thm:c5-edge-not-root-plantable});
+its gap, too, is closed-cone inert.
+
+\begin{corollary}[The edge-type gap is closed-cone inert]\label{cor:c5-edge-closed-inert}
+For the $C_5$-free class and the edge type $\tau$,
+\[
+  \overline{\C^{\mathrm{quot}}_\tau}^{\,\|\cdot\|_{Q_0}}
+  =
+  \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
+\]
+Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
+$C_5$-free density bound, even though $\tau$ is not root-plantable.
+\end{corollary}
+
+\begin{proof}
+This is the special case of \cref{thm:no-closed-certificate-gap} for the
+non-degenerate edge type $\tau$.  The pinned witness $g$ (the triangle $\tau$-flag) is even
+more inert: by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
+$g=0$ on $S_\tau$ (\cref{cor:c5-edge-pinned}).
+\end{proof}
 
 \section{Strengthening by a further constraint}
 
