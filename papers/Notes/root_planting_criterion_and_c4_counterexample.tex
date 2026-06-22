@@ -1982,7 +1982,7 @@ $\sigma$-flags
 \]
 meaning that for every fixed $\sigma$-flag $F$ one has
 $p(F,(G_t,\theta_t))\to\psi(F)$.  These pairs are the concrete labelled witnesses in
-this section: they are finite rooted graphs whose local statistics approximate the
+this section: they are finite rooted graphs whose $\sigma$-flag densities approximate the
 limiting view $\psi$.
 
 To \emph{plant} such a finite witness means to build a larger graph $H$ in the class with
@@ -2000,8 +2000,9 @@ property.  A naive blow-up can create forbidden cycles.  What sometimes happens 
 is more local: first create many possible embeddings of the labelled type---in the
 $C_5$ constructions below, by replacing each root with a positive-density set of new
 vertices, any one of which can serve as the image of that root---and then repair the few
-dangerous edges.  If the repair changes so little of the graph that no fixed flag-density
-test notices, these embeddings remain good.  The purpose of this section is to isolate
+dangerous edges.  If the repair changes so little of the graph that the $\sigma$-flag densities up to the
+chosen size are essentially unchanged, these embeddings still reproduce the local view of
+$(G,\theta)$.  The purpose of this section is to isolate
 exactly what one has to check at the level of finite graphs: the repaired graph must
 remain in the class, contain a positive-density set of embeddings $\sigma\to H$, and
 preserve the rooted densities of all flags up to the chosen size.  The payoff is
@@ -2027,10 +2028,12 @@ $k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings
 $\sigma\to H$.  We say that $\K$ has the \emph{finite local planting property at
 $\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an integer
 $n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
-property. Every finite $\sigma$-flag $(G,\theta)$ in $\K$ with $|G|\ge n_0$ admits a graph
+property.
+
+Every finite $\sigma$-flag $(G,\theta)$ in $\K$ with $|G|\ge n_0$ admits a graph
 $H\in\K$ and a set $\Theta\subseteq\Emb_\sigma(H)$ such that:
 \begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
-  \item $|H|\ge |G|$;
+  \item $|V(H)|\ge |G|$;
   \item $|\Theta|\ge \delta |V(H)|^k$;
   \item for every $\widehat\theta\in\Theta$ and every ambient $\sigma$-flag $F$
         with $|F|\le m$,
@@ -2174,7 +2177,7 @@ $0<\lambda\le1$ and $\rho>0$ so small that
 \[
   C_m(\lambda+\rho)<\eps .
 \]
-Let $n_0$ be the maximum of $m$, $\lceil2/\lambda\rceil$, and the threshold from
+Let $n_0$ be the maximum of $m$, $2k$, $\lceil2/\lambda\rceil$, and the threshold from
 \cref{def:sparse-root-repair} for this $\lambda$ and $\rho$.
 
 Let $(G,\theta)$ be a $\sigma$-flag in $\K$ with $n:=|G|\ge n_0$, and let
