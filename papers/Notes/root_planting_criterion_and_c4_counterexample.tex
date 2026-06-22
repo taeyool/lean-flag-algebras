@@ -2185,8 +2185,7 @@ set; conditions (i) and (ii) are then immediate vertex counts and (iii) a two-ev
 sampling estimate.  We may therefore fix all constants in advance and only afterwards
 introduce $(G,\theta)$.
 
-Fix the constants first.  Let $C_m$ be a constant, depending only on $m$ (and so on
-$k$), large enough for the two sampling estimates used for (iii) below.  Choose
+Fix the constants first.  Let $C_m$ be a constant, depending only on $m$ (with $k=|\sigma|$ fixed), large enough for the two sampling estimates used for (iii) below.  Choose
 $0<\lambda\le1$ and $\rho>0$ so small that
 \[
   C_m(\lambda+\rho)<\eps ,
@@ -2228,9 +2227,23 @@ $L\ge\lambda n/2$,
 It remains to verify (iii).  Fix an embedding $\widehat\theta\in\Theta$ and a
 $\sigma$-flag $F$ with $\ell:=|F|\le m$.  To compute $p(F,(H,\widehat\theta))$,
 sample $q:=\ell-k$ additional vertices from
-$H\setminus\operatorname{im}\widehat\theta$.  Two events are bad.  First, the sample
-may hit one of the sets $R_i$; since $|R_1\cup\cdots\cup R_k|=kL=O_k(\lambda n)$ and
-$|V(H)|\ge n-k$, this has probability $O_m(\lambda)$.  Second, once the sample lies
+$H\setminus\operatorname{im}\widehat\theta$.  Two events are bad.  First, the sample may meet the union of the
+root sets, $R:=R_1\cup\cdots\cup R_k$, of size $|R|=kL$.  The $q$ sampled vertices are
+drawn from $W:=V(H)\setminus\operatorname{im}\widehat\theta$, which has
+\[
+  |W|=|V(H)|-k=n-2k+kL\ge n-k\ge n/2,
+\]
+the inequalities using $L\ge1$ and $n\ge n_0\ge2k$.  Since $L\le\lambda n$, at most
+$kL\le k\lambda n$ of the vertices of $W$ lie in $R$.  Expose the sample as an ordered
+draw without replacement $X_1,\dots,X_q$; each $X_j$ is marginally uniform on $W$, so
+$\Prob[X_j\in R]\le kL/|W|$.  A union bound over the $q=\ell-k\le m$ positions then gives
+\[
+  \Prob[\text{the sample meets }R]
+  \le q\cdot\frac{kL}{|W|}
+  \le m\cdot\frac{k\lambda n}{n/2}
+  =2mk\lambda,
+\]
+which is $O_m(\lambda)$ (indeed at most $2m^2\lambda$, since $k\le m$).  Second, once the sample lies
 in $U$, it may contain both endpoints of one of the at most $\rho n^2$ old pairs on
 which $H[U]$ differs from $G[U]$, which has probability $O_m(\rho)$.  Outside these
 events the sampled vertices all lie in $U$, no repaired old edge is seen, the
