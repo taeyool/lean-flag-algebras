@@ -32,16 +32,45 @@
 \usepackage{microtype}
 \usepackage{fullpage}
 \usepackage{authblk}
-\usepackage{cleveref}
+\usepackage{aliascnt}
 \usepackage{tikz}
 
 % ---- Theorem environments -----------------------------------------------
 \newtheorem{theorem}{Theorem}[section]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{example}[theorem]{Example}
-\newtheorem{remark}[theorem]{Remark}
+
+\newaliascnt{lemma}{theorem}
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}
+
+\newaliascnt{corollary}{theorem}
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}
+
+\newaliascnt{definition}{theorem}
+\newtheorem{definition}[definition]{Definition}
+\aliascntresetthe{definition}
+
+\newaliascnt{example}{theorem}
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}
+
+\newaliascnt{remark}{theorem}
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}
+
+\usepackage{cleveref}
+\crefname{theorem}{Theorem}{Theorems}
+\Crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\Crefname{lemma}{Lemma}{Lemmas}
+\crefname{corollary}{Corollary}{Corollaries}
+\Crefname{corollary}{Corollary}{Corollaries}
+\crefname{definition}{Definition}{Definitions}
+\Crefname{definition}{Definition}{Definitions}
+\crefname{example}{Example}{Examples}
+\Crefname{example}{Example}{Examples}
+\crefname{remark}{Remark}{Remarks}
+\Crefname{remark}{Remark}{Remarks}
 
 % ---- Macros -------------------------------------------------------------
 \newcommand{\R}{\mathbb{R}}
@@ -838,6 +867,7 @@ $\sigma=\emptyset$.
 \end{example}
 
 \subsection{Positive Homomorphisms and Semantic Order}
+\label{sec:background-semantic-order}
 
 % The quotient algebra is syntax for density expressions.  To use such an
 % expression in an extremal argument, we need to say how it is evaluated in a
@@ -1267,7 +1297,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % theorem, formalized using Mathlib's Prokhorov compactness theorem, connects
 % the standard empty-typed level with the typed levels: every positive
 % homomorphism $\phi$ on the empty-typed algebra extends to a probability
-% measure $\mathbb{P}^{\phi}$ on the space of $\sigma$-typed positive
+% measure $\Ext_\sigma(\phi)$ on the space of $\sigma$-typed positive
 % homomorphisms for any $\sigma$.  This measure-theoretic result is the
 % foundation on which the forbidden-subgraph predicate $\leq_\sigma$
 % rests.  The transfer theorem
@@ -2127,62 +2157,95 @@ bounds.
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
 
-The last specification choice is about modularity.  In pen-and-paper flag
-algebra proofs, one often works as if there were a separate theory of
-$H$-free graphs, with the density of $H$ set to zero from the start.  That is
-convenient on paper but a poor formal interface: every forbidden graph would
-generate a new quotient theory and a new family of compatibility lemmas.  We
-instead keep one ambient flag algebra and put the forbidden condition into
-the semantic order.
+In Section~\ref{sec:background}, following Razborov's usual presentation, the
+forbidden graphs are fixed before the flag algebra is built.  For example, in
+an \(H\)-free problem, the \(\sigma\)-typed algebra is already the algebra of
+\(H\)-free \(\sigma\)-flags, and the semantic order of
+Section~\ref{sec:background-semantic-order} is defined inside that constrained
+world.  Thus, for \(H\)-free algebra elements \(f\) and \(g\), the statement
+\(f\leq_\sigma g\) means
+\[
+  g-f\in\mathcal{C}^\sigma,
+\]
+where \(\mathcal{C}^\sigma\) is the semantic non-negativity cone of the
+\(H\)-free \(\sigma\)-typed flag algebra.  We call this the
+\emph{quotient-semantics} view: the forbidden configurations have already
+been quotiented away before the order is tested.
 
-The predicate is \lean{forbidLE}, in \lean{Forbid/Basic.lean}:
-\begin{lstlisting}
-def forbidLE {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
-    (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
-  forall ((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
-    (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
-    (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f <= (*@$\phi$@*) g} = 1
-\end{lstlisting}
-For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
-$f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
-for every $\emptyt$-typed positive homomorphism $\phi_0$ in which $H$ has density
-zero, almost every random $\sigma$-typed extension $\phi$ satisfies
-$\phi(f)\leq\phi(g)$.  The side condition
-\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} records
-that the type $\sigma$ can actually be sampled.  When $\sigma=\emptyset$, this
-reduces to the untyped relation, which we write as $f \leq g$ in the
-paper.
+Our formalization takes the opposite route.  The core development constructs
+the ambient flag algebra \(\mathcal{A}^\sigma\) without choosing any forbidden
+graph.  This keeps the definitions of flags, densities, products, the downward
+operator, and positive homomorphisms independent of the extremal problem.  It
+also creates an obligation: once a forbidden graph \(H\) is supplied later, we
+must still be able to express the constrained semantic order between two
+ambient algebra elements \(f,g\in\mathcal{A}^\sigma\).
 
-The probability measure $\mathbb{P}^{\phi_0}$ used in this definition is
-the most analytic part of the specification layer.  In
-\lean{FlagAlgebra/RandomHom.lean}, the code follows Razborov's random-extension
-theorem: approximate $\phi_0$ by growing untyped flag sequences, pass to a
-subsequential limit of probability measures on the typed density space using
-Mathlib's Prokhorov infrastructure, prove that the limit is supported on
-positive homomorphisms, and then view it as a probability measure on
-\lean{PositiveHomSpace}~$\sigma$.  The resulting theorem is:
+The order we use for this purpose is the \emph{ensemble semantic order}.  For
+readability we state it for a single forbidden graph \(H\), which is the case
+implemented by the Lean predicate below; the later semantic comparison applies
+to arbitrary forbidden families. \gw{The current framework only supports
+forbidding a single graph. I plan to extend it to support forbidding multiple
+graphs.}
+
+\begin{definition}[Ensemble semantic order]\label{def:ensemble-semantic-order}
+Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
+\(f,g\in\mathcal{A}^\sigma\) in the ambient flag algebra.  We write
+\(f\leq^{\mathrm{ens}}_{H,\sigma} g\) if, for every empty-type positive
+homomorphism \(\phi_0\) such that
+\[
+  \phi_0(\llbracket H\rrbracket_0)=0
+  \qquad\text{and}\qquad
+  \phi_0(\langle\sigma\rangle_0)>0,
+\]
+the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
+\[
+  \mathbb{P}\bigl[\phi(f)\leq\phi(g)\bigr]=1.
+\]
+\end{definition}
+
+The first condition says that the base limit is \(H\)-free; the second says
+that the type \(\sigma\) can actually be sampled from that limit.  The last
+line then compares \(f\) and \(g\) not against all positive homomorphisms on a
+separate quotient algebra, but against almost every typed random extension of
+every \(H\)-free base limit.  Section~? proves that, for arbitrary
+forbidden graph sets, this ensemble order agrees with the quotient-semantic
+order above.  The Lean predicate \lean{forbidLE} is the formal definition of
+\Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
-theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
+def forbidLE
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
-    (h_sigma : (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0) :
-  exists (*@$\mathbb{P}$@*) : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)),
-    forall f : FlagAlgebra (*@$\sigma$@*),
-      integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) (*@$\mathbb{P}$@*) =
-        (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
-          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*) := ...
+    (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
+  (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
+    (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
+    (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
 \end{lstlisting}
-This theorem explains why the formalization needs measure theory.  The
-downward operator gives the expectation of typed random extensions, so a
-forbidden-subgraph assumption stated at the $\emptyt$-typed level must be
-transported through almost-sure statements about typed extensions.  This is
-the consequence we mentioned at the start of the section: in the
-predicate-based design, random extensions are the definitional content of the
-forbidden-subgraph relation, not merely an analytic ingredient supporting a
-fixed universal theory.
+In the displayed Lean notation,
+\(\mathbb{P}[\phi_0]\) denotes the random-extension measure
+\(\Ext_\sigma(\phi_0)\).
 
-The final transfer theorem, in \lean{Forbid/TuranDensity.lean}, has the shape
-needed by certificate proofs:
+What remains is to connect this constrained semantic inequality to the finite
+extremal quantity that we ultimately want to bound.  In
+\lean{Turan/GeneralizedTuran.lean}, the finite extremal number and its limiting
+density are defined as follows:
+\begin{lstlisting}
+noncomputable def generalizedExtremalNumber
+    (n : (*@$\mathbb{N}$@*)) (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{N}$@*) := by
+  classical
+  exact sup { G : SimpleGraph (Fin n) | H.Free G }
+    (fun (G : SimpleGraph (Fin n)) => GraphAlgebras.subgraphCount F G)
+
+noncomputable def generalizedTuranDensity
+    (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{R}$@*) :=
+  limUnder atTop fun n =>
+    (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : (*@$\mathbb{R}$@*))
+\end{lstlisting}
+Here \lean{H.Free G} says that the host graph \(G\) is \(H\)-free, and
+\lean{subgraphCount F G} counts copies of the target graph \(F\) in \(G\).
+Thus \lean{generalizedTuranDensity H F} is the asymptotic maximum density of
+copies of \(F\) among \(H\)-free graphs.
+
+The bridge theorem in \lean{Forbid/TuranDensity.lean} is the point at which the
+ensemble order becomes an extremal bound:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
@@ -2190,17 +2253,14 @@ theorem generalizedTuranDensity_le_of_forbidLE
     (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))) :
     generalizedTuranDensity H F <= c := ...
 \end{lstlisting}
-The Lean constant takes the forbidden graph first and the target graph
-second: \lean{generalizedTuranDensity H F} is the maximum density of $P$ in
-$H$-free graphs, written mathematically in this paper as $\tdensity{P}{H}$.
-Here the inequality is $\emptyt$-typed, so the paper notation is
-$P.\lean{toFlagAlgebra} \leq c\mathbf{1}$.
-The Lean notation \lean{<=[H.toFinFlag]} is the concrete syntax for the same
-\lean{forbidLE} predicate.  Once this semantic inequality is checked, the
-asymptotic extremal bound follows.  This is the main payoff of the
-specification layer: a concrete certificate proof can be assembled from finite
-counting, PSD non-negativity, and algebraic rewriting, while the passage from
-that certificate to a Tur\'an-density theorem is handled once and reused.
+The hypothesis is an \(\emptyt\)-typed \lean{forbidLE} inequality: the target
+graph \(F\), viewed as an element of the empty-type flag algebra, is at most
+\(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
+graph \(H\).  The theorem concludes exactly the combinatorial statement
+\lean{generalizedTuranDensity H F <= c}.  This is the main payoff of the
+specification layer: a concrete certificate proof only has to establish one
+semantic inequality in the ambient algebra, and the passage from that
+inequality to a Tur\'an-density bound is handled once and reused.
 
 \section{The Reflection Layer}
 \label{sec:reflection}
