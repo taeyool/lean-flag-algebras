@@ -1,11 +1,11 @@
 import «LeanFlagAlgebras».FlagAlgebra.Compute.Downward
-import «LeanFlagAlgebras».FlagAlgebra.Compute.Generate
+import «LeanFlagAlgebras».FlagAlgebra.Compute.FlagEnumeration
 import Mathlib.Tactic
 
 /-! # Flag generation macros
 
 This module defines the elaboration-time macros that turn the self-contained
-Lean flag enumerations (`FlagAlgebra.Compute.Generate`) into named Lean
+Lean flag enumerations (`FlagAlgebra.Compute.FlagEnumeration`) into named Lean
 definitions and theorems, with no external JSON input:
 
 * `generate_empty_typed_flags n` evaluates `genSym2Graphs n` (one canonical
