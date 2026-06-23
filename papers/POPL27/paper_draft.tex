@@ -2203,19 +2203,38 @@ that certificate to a Tur\'an-density theorem is handled once and reused.
 \section{The Reflection Layer}
 \label{sec:reflection}
 
-Proof by reflection discharges a proof obligation by running a verified
-computation rather than by constructing a proof term manually.  The pattern
-in interactive theorem proving has three components: (1) a \emph{concrete representation} over which a decision
-procedure can evaluate; (2) an \emph{adequacy theorem} proving that the
-decision procedure is sound with respect to the abstract definition; and (3)
-a \emph{decision procedure} (the evaluator) that, given the concrete
-representation, produces a Boolean answer which \lean{decide} converts into a
-proof.  Our architecture applies this pattern at multiple granularities.  The
-pattern itself is decades old; what we report here is why naive reflection
-breaks down when the abstract specification is built from quotient
-types---the evaluator is forced to reduce proof terms rather than
-data---and how we worked around it
-(Section~\ref{subsec:naive-to-usable}).
+The definitions in Section~\ref{sec:abstract} are intentionally close to the
+mathematics.  Many of them are marked \lean{noncomputable}: this does not mean
+that they are unusable as specifications, but that Lean should not be expected
+to reduce them as executable programs.  Quotients, \lean{Classical.choice},
+\lean{Prop}-valued adjacency relations, and abstract finite enumerations are
+all appropriate for stating the theory of flag algebras, but they are a poor
+interface for repeatedly evaluating small graph computations.
+
+Certificate checking needs exactly those finite computations.  It must decide
+whether two concrete flags represent the same isomorphism class, compute
+subflag densities, and reduce products among named flags.  These tasks are
+finite, but if we ask the evaluator to unfold the abstract definitions directly,
+it ends up reducing quotient eliminators, proof-valued fields, and generic
+finite-search instances rather than running a simple graph algorithm.
+
+Isomorphism testing is the smallest example of the gap.  Abstractly, two
+flags are equal when there exists a type-preserving graph isomorphism between
+representatives.  In the computable layer, a graph is instead stored as a
+finite set of unordered edges, so the same question becomes a Boolean search
+over vertex permutations together with edge-membership checks.  Correctness
+theorems for both Boolean outcomes connect this executable test back to the
+quotient relation.  In this sense the computation \emph{reflects} the
+mathematical proposition: Lean runs the Boolean program on concrete data, then
+uses a theorem saying that the answer has the intended abstract meaning.
+
+The files in \lean{FlagAlgebra/Compute/} provide this executable mirror of the
+specification layer.  They introduce concrete graph and flag representations,
+optimized Boolean procedures for isomorphism and density computations, and
+adequacy theorems proving that these procedures agree with the quotient-based
+definitions.  This is the reflection pattern used throughout the rest of the
+development: a concrete representation, an evaluator, and a theorem connecting
+the evaluator to the abstract specification. \gw{I'm here.}
 
 \subsection{Concrete Graph Representations}
 
