@@ -2005,13 +2005,14 @@ The last definition is the quotient-level downward operator.  In mathematical
 prose we write it as \(\llbracket-\rrbracket_\sigma\), following
 Section~\ref{sec:background-downward}; in Lean snippets below, the same map is
 rendered as \(\llbracket-\rrbracket_0\), emphasizing that its codomain is the
-\(\emptyt\)-typed algebra.  The notation is compact, but the implementation
+empty-typed algebra.  The notation is compact, but the implementation
 contains the full descent from concrete labeled graphs to flags, from flags to
 flag vectors, and finally from flag vectors to the quotient algebra.
 
 It remains to connect this algebraic map to the semantics of positive
-homomorphisms.  The relevant construction lives in
-\lean{FlagAlgebra/RandomHom.lean}.  Given an empty-type positive homomorphism
+homomorphisms.
+%The relevant construction lives in \lean{FlagAlgebra/RandomHom.lean}.
+Given an empty-type positive homomorphism
 \(\phi_0\) in which the type \(\sigma\) has positive density, Lean constructs a
 probability measure on \lean{PositiveHomSpace}~\(\sigma\).  This measure is the
 formal version of the random extension \(\Ext_\sigma(\phi_0)\): it represents
@@ -2019,23 +2020,19 @@ the experiment of choosing a random occurrence of the type \(\sigma\) in the
 limiting object represented by \(\phi_0\).  Its defining property is the formal
 version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
-theorem exists_probMeasure_extend_emptyType_positiveHom
+theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
-    (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
+    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
     (*@$\exists$@*) (P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*))),
       (*@$\forall$@*) (f : FlagAlgebra (*@$\sigma$@*)),
-        (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)),
-          PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
-        =
-        (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
-          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
+        (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)), PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
+        = (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) / (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
 \end{lstlisting}
 The statement says that averaging the typed evaluation \(\phi(f)\) over this
 random extension recovers the empty-type evaluation of the downward image,
 divided by the normalizing value of the typed unit.  Equivalently,
 \(\phi_0(\llbracket f\rrbracket_0)\) is that typed average multiplied by
-\(\phi_0(\llbracket 1\rrbracket_0)\).  This is exactly the bridge needed for
+\(\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)\).  This is exactly the bridge needed for
 semantic soundness: a typed inequality can be tested by first randomly rooting
 the unlabeled limiting object, evaluating in the typed algebra, and then
 averaging back down.
@@ -2043,12 +2040,11 @@ averaging back down.
 The payoff is the formal semantic transfer theorem corresponding to
 \Cref{thm:downward-nonneg}: if \(f\) is semantically non-negative in the
 \(\sigma\)-typed algebra, then its downward image is semantically non-negative
-in the \(\emptyt\)-typed algebra.
+in the empty-typed algebra.
 \begin{lstlisting}
 theorem downward_preserve_semanticCone
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (f : FlagAlgebra (*@$\sigma$@*))
-    (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
+    (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
     (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*)
 \end{lstlisting}
 To prove the theorem, Lean tests the claimed empty-type non-negativity against
@@ -2058,7 +2054,8 @@ zero at \(\phi_0\).  If \(\phi_0(\langle\sigma\rangle_0)>0\), the
 random-extension theorem rewrites \(\phi_0(\llbracket f\rrbracket_0)\) as a
 positive normalizing factor times the average of \(\phi(f)\) over typed
 positive homomorphisms.  Since \(f\in\mathcal{C}^\sigma\), every integrand is
-non-negative, and so the average is non-negative.  This is the formal bridge
+non-negative, and so the average is non-negative.  \gw{This proof sketch may be unnecessary.}
+This is the formal bridge
 from typed inequalities to the unlabeled semantic order used by certificate
 proofs.
 
@@ -2100,7 +2097,7 @@ Mathlib's Prokhorov infrastructure, prove that the limit is supported on
 positive homomorphisms, and then view it as a probability measure on
 \lean{PositiveHomSpace}~$\sigma$.  The resulting theorem is:
 \begin{lstlisting}
-theorem exists_probMeasure_extend_emptyType_positiveHom
+theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
     (h_sigma : (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0) :
