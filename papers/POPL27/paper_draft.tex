@@ -2136,206 +2136,6 @@ asymptotic extremal bound follows.  This is the main payoff of the
 specification layer: a concrete certificate proof can be assembled from finite
 counting, PSD non-negativity, and algebraic rewriting, while the passage from
 that certificate to a Tur\'an-density theorem is handled once and reused.
-
-
-\section{Engineering Obstacles}
-\label{sec:obstacles}
-
-The specification layer of Section~\ref{sec:abstract} exposed several
-engineering obstacles that we report here as obstacles rather than design
-principles.  Three of them follow from Lean~4's intensional type theory and
-its typeclass mechanism: quotient eliminators carry recurring compatibility
-proofs; size-changing combinatorial operations produce dependent-type
-transports; and \lean{Fintype} instances synthesized through different
-elaboration paths are extensionally but not definitionally equal.  A fourth
-obstacle, function extensionality, is mathematically benign but appears at
-every step that relates a function-level equality to a pointwise one.  We
-describe the obstacles, the mitigations we used, and where the open ends
-remain.  The point is not the particular workarounds; it is that an
-intensional type theory makes these obstacles visible at the boundaries of
-quotient, dependent-type, and finite-enumeration constructions, and someone
-formalizing similar material should expect to face them.
-
-\subsection{Quotient Eliminators and Their Recurring Cost}
-
-Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
-\emph{from} them or equality \emph{in} them must go through
-\lean{Quotient.lift} or \lean{Quotient.sound}.  \lean{Quotient.lift} requires
-a proof that the function respects the equivalence relation;
-\lean{Quotient.sound} requires producing a witness of the relation for each
-equality goal.
-
-The adequacy theorems in Section~\ref{sec:reflection} illustrate the cost.
-To state that \lean{Sym2Graph.toFlag} is inverse to
-\lean{Flag.toSym2EmptyTypedFlag}, one cannot simply compute both sides to the
-same normal form; the map out of the quotient must go through an eliminator:
-\begin{lstlisting}
-def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag (*@$\emptyt$@*) (Fin n) :=
-  Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
-\end{lstlisting}
-The \lean{toFlag\_respect\_eqv} proof---showing that isomorphic
-\lean{Sym2Graph} values map to the same \lean{Flag}---is not automatic; it
-required \lean{Quotient.sound} applied to a graph isomorphism witness
-assembled from the concrete data.  This is exactly the kind of compatibility
-proof that ordinary mathematical notation suppresses.
-
-The recurring cost of carrying \lean{Quotient} eliminators through the
-development is real.  A design built around canonical representatives from the
-start would not pay this cost, but it would attach representation-specific
-side conditions to every algebraic lemma; we chose the quotient design to keep
-the specification close to Razborov's mathematics and accept the eliminator
-overhead.  Whether the alternative would have been more economical overall is
-a tradeoff we cannot evaluate from this vantage point.
-
-\subsection{Dependent-Type Transports from Size-Changing Operations}
-
-Flag algebra operations change the vertex count of flags: the product of a
-size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.  In
-the formalization, the product of basis elements is computed as a sum over
-all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
-independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
-Its hypotheses say that both output sizes are large enough, and its proof has
-to relate sums over \lean{Flag sigma (Fin ell)} and
-\lean{Flag sigma (Fin ell')}, which are definitionally distinct types even
-when the corresponding mathematical sets are connected by expansion.
-
-The same issue arises internally when collecting the flags for the
-multiplication sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with
-type family $Vl$) changes type when a new flag is inserted: the result has
-type \lean{FlagList sigma (t+1) (listTypeInsert Vl W)}.  Because
-\lean{listTypeInsert Vl W} is not definitionally equal to any pre-existing
-type family, relating the old and new lists requires \emph{heterogeneous
-equality} (\lean{HEq}):
-\begin{lstlisting}
-theorem flagList_HEq
-    (h_Vl_eq : Vl' = Vl)
-    (h_Fl_eq : forall i, Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
-    : HEq Fl Fl'
-\end{lstlisting}
-The \lean{cast} calls are explicit coercions through propositional equality
-proofs; they are the formalization's acknowledgment that two types are equal
-only up to a proof, not by computation.
-
-Similarly, even if two indices $i$ and $i'$ into a flag list are
-propositionally equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and
-\lean{Flag sigma (Vl i')} are not definitionally equal, forcing the use of
-heterogeneous equality:
-\begin{lstlisting}
-theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
-    : HEq (Fl i) (Fl i') := by subst h; rfl
-\end{lstlisting}
-This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
-density computation infrastructure: every operation that crosses a size
-boundary must carry explicit propositional equality evidence.  Our
-\emph{mitigation} was to isolate each size-change obligation in a small named
-lemma---examples are \lean{flagList\_HEq},
-\lean{flaglist\_heq\_of\_idx\_eq}, and \lean{flagListDensity\_HEq\_eq}---so
-that high-level proofs invoke clean invariance statements while the transport
-details remain in the small layer where they belong.
-
-\subsection{Function Extensionality and Proof-Valued Fields}
-
-In Lean~4's intensional type theory, function extensionality
-($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not definitional but is
-available as an axiom (\lean{funext}, derived from \lean{propext}).  This
-creates friction wherever the formalization must relate a function-level
-equality (such as a type embedding) to a pointwise equality (the embedding's
-behavior on individual vertices).  For example, constructing a labeled-graph
-isomorphism from a vertex map $\zeta$ requires reassembling pointwise
-information back into a function:
-\begin{lstlisting}
-have h_emb : forall t : T, zeta (G0'.type_embed t) = G1'.type_embed t := ...
-let iso : G0'.coe =~f G1'.coe := { ..., type_preserve := funext h_emb }
-\end{lstlisting}
-Without \lean{funext} as an axiom, the \lean{type\_preserve} field could not
-be filled.
-
-Proof-valued structure fields create a related difficulty.  The
-\lean{Sym2Graph} type carries a field
-\lean{edges\_valid : forall e in edges, not e.IsDiag}; two \lean{Sym2Graph}
-values with the same edge set but different proof terms for
-\lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
-definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
-theorems therefore requires \lean{proof\_irrel\_heq} at every such field:
-\begin{lstlisting}
-theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
-    G.toLabeledGraph.toSym2Graph = G := by
-  congr  -- reduces to field equalities
-  ...
-  exact proof_irrel_heq _ _  -- edge validity field
-\end{lstlisting}
-
-\subsection{Fintype Instance Conflicts}
-\label{sec:fintype}
-
-The fourth obstacle is the most pervasive in the counting layer.  Sets defined
-by set-builder notation $\{x \mid P\ x\}$ have type \lean{Set T}, which is
-\lean{Finite} whenever \lean{T} is a \lean{Fintype}, but does not
-automatically carry a \lean{Fintype} instance.  Many Mathlib lemmas about
-cardinality (\lean{Fintype.card}, \lean{Finset.card\_univ},
-\lean{Fintype.card\_congr}) require \lean{Fintype}, not merely \lean{Finite}.
-The elaborator infers \lean{Fintype} instances automatically, but in a
-development with multiple overlapping constructions (quotient types, embedded
-subgraphs, partial-function spaces), the same type can receive different
-\lean{Fintype} instances from different elaboration paths.  When two
-instances do not reduce to the same term definitionally, the kernel rejects
-the goal even if the instances are provably equal.
-
-The mitigation is to bind the intended \lean{Fintype} instance immediately
-after naming a finite set:
-\begin{lstlisting}
-let hS0 : Fintype S0 := Fintype.ofFinite S0
-let hS1 : Fintype S1 := Fintype.ofFinite S1
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso_S0_S1
-\end{lstlisting}
-This pattern appears repeatedly in \lean{SubflagListDensity.lean}: for the
-quotient-respect lemma for list densities, for permutation of sampled flags,
-and for insertion of an empty flag.  Without the explicit \lean{let} bindings,
-Lean can synthesize a \lean{Fintype} for each set through a different path at
-each use, and \lean{Fintype.card\_congr} no longer sees the two cardinalities
-as referring to the same enumeration terms.  A similar explicit
-\lean{Fintype.ofFinite} construction is used in \lean{FlagOperators.lean} for
-the isomorphism set with a fixed underlying graph.
-
-For parameterized types such as injections \lean{Embedding V W} and
-equivalences \lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in
-multiple ways depending on which prior instances are in scope.  In
-\lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
-defined, the elaborator had to be given explicit guidance via
-\lean{Finset.univ} with a type ascription:
-\begin{lstlisting}
-instance : Fintype (Embedding V W) :=
-  { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
-
-instance : Fintype (G1 ->g G2) :=
-  { elems := (Finset.univ : Finset (Embedding V W)).filterMap ..., ... }
-\end{lstlisting}
-The graph-embedding and graph-isomorphism instances are built by filtering
-finite enumerations of simpler function or equivalence types.  The explicit
-\lean{Finset.univ} type ascription keeps the intended enumeration visible to the elaborator,
-instead of relying on typeclass search to rediscover it in a later goal.
-A related issue arose for dependent function types indexed by a small finite
-type, where Lean's typeclass search does not look through \lean{match}
-expressions inside type-valued functions; the \lean{FintypeList} typeclass
-threads \lean{Fintype} instances per component explicitly to compensate.
-
-\paragraph{What remains open.}
-Not all intensionality obstacles were resolved.  The most significant gap is
-in \lean{Forbid/Basic.lean}: several strengthening lemmas about recovering
-representative-level information from quotient-level forbidden equalities
-remain as commented proof sketches, not as imported declarations or trusted
-axioms.  For example, one would like a general theorem saying that if a
-basis vector is zero under the forbidden equality relation, then the
-corresponding unlabeled flag has positive density of the forbidden graph.
-Proving such a statement requires careful reasoning about how zero-space
-relations interact with individual representatives.  This is not needed for
-the main case studies---\lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan}
-are proved without those sketches---but it marks a natural direction for
-making the \lean{forbidLE} framework more convenient for future applications.
-
-
-
 \section{The Reflection Layer}
 \label{sec:reflection}
 
@@ -3215,6 +3015,204 @@ for the SDP equalities was deliberate: the SDP step is the trust-critical
 component, and the small matrices allow kernel evaluation.  There are no
 \lean{sorry}s or new \lean{axiom}s in the proof paths of either
 \lean{Mantel\_theorem} or \lean{ErdosPentagon\_Turan}.
+
+
+\section{Engineering Obstacles}
+\label{sec:obstacles}
+
+The specification layer of Section~\ref{sec:abstract} exposed several
+engineering obstacles that we report here as obstacles rather than design
+principles.  Three of them follow from Lean~4's intensional type theory and
+its typeclass mechanism: quotient eliminators carry recurring compatibility
+proofs; size-changing combinatorial operations produce dependent-type
+transports; and \lean{Fintype} instances synthesized through different
+elaboration paths are extensionally but not definitionally equal.  A fourth
+obstacle, function extensionality, is mathematically benign but appears at
+every step that relates a function-level equality to a pointwise one.  We
+describe the obstacles, the mitigations we used, and where the open ends
+remain.  The point is not the particular workarounds; it is that an
+intensional type theory makes these obstacles visible at the boundaries of
+quotient, dependent-type, and finite-enumeration constructions, and someone
+formalizing similar material should expect to face them.
+
+\subsection{Quotient Eliminators and Their Recurring Cost}
+
+Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
+\emph{from} them or equality \emph{in} them must go through
+\lean{Quotient.lift} or \lean{Quotient.sound}.  \lean{Quotient.lift} requires
+a proof that the function respects the equivalence relation;
+\lean{Quotient.sound} requires producing a witness of the relation for each
+equality goal.
+
+The adequacy theorems in Section~\ref{sec:reflection} illustrate the cost.
+To state that \lean{Sym2Graph.toFlag} is inverse to
+\lean{Flag.toSym2EmptyTypedFlag}, one cannot simply compute both sides to the
+same normal form; the map out of the quotient must go through an eliminator:
+\begin{lstlisting}
+def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag (*@$\emptyt$@*) (Fin n) :=
+  Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
+\end{lstlisting}
+The \lean{toFlag\_respect\_eqv} proof---showing that isomorphic
+\lean{Sym2Graph} values map to the same \lean{Flag}---is not automatic; it
+required \lean{Quotient.sound} applied to a graph isomorphism witness
+assembled from the concrete data.  This is exactly the kind of compatibility
+proof that ordinary mathematical notation suppresses.
+
+The recurring cost of carrying \lean{Quotient} eliminators through the
+development is real.  A design built around canonical representatives from the
+start would not pay this cost, but it would attach representation-specific
+side conditions to every algebraic lemma; we chose the quotient design to keep
+the specification close to Razborov's mathematics and accept the eliminator
+overhead.  Whether the alternative would have been more economical overall is
+a tradeoff we cannot evaluate from this vantage point.
+
+\subsection{Dependent-Type Transports from Size-Changing Operations}
+
+Flag algebra operations change the vertex count of flags: the product of a
+size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.  In
+the formalization, the product of basis elements is computed as a sum over
+all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
+independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
+Its hypotheses say that both output sizes are large enough, and its proof has
+to relate sums over \lean{Flag sigma (Fin ell)} and
+\lean{Flag sigma (Fin ell')}, which are definitionally distinct types even
+when the corresponding mathematical sets are connected by expansion.
+
+The same issue arises internally when collecting the flags for the
+multiplication sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with
+type family $Vl$) changes type when a new flag is inserted: the result has
+type \lean{FlagList sigma (t+1) (listTypeInsert Vl W)}.  Because
+\lean{listTypeInsert Vl W} is not definitionally equal to any pre-existing
+type family, relating the old and new lists requires \emph{heterogeneous
+equality} (\lean{HEq}):
+\begin{lstlisting}
+theorem flagList_HEq
+    (h_Vl_eq : Vl' = Vl)
+    (h_Fl_eq : forall i, Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
+    : HEq Fl Fl'
+\end{lstlisting}
+The \lean{cast} calls are explicit coercions through propositional equality
+proofs; they are the formalization's acknowledgment that two types are equal
+only up to a proof, not by computation.
+
+Similarly, even if two indices $i$ and $i'$ into a flag list are
+propositionally equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and
+\lean{Flag sigma (Vl i')} are not definitionally equal, forcing the use of
+heterogeneous equality:
+\begin{lstlisting}
+theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
+    : HEq (Fl i) (Fl i') := by subst h; rfl
+\end{lstlisting}
+This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
+density computation infrastructure: every operation that crosses a size
+boundary must carry explicit propositional equality evidence.  Our
+\emph{mitigation} was to isolate each size-change obligation in a small named
+lemma---examples are \lean{flagList\_HEq},
+\lean{flaglist\_heq\_of\_idx\_eq}, and \lean{flagListDensity\_HEq\_eq}---so
+that high-level proofs invoke clean invariance statements while the transport
+details remain in the small layer where they belong.
+
+\subsection{Function Extensionality and Proof-Valued Fields}
+
+In Lean~4's intensional type theory, function extensionality
+($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not definitional but is
+available as an axiom (\lean{funext}, derived from \lean{propext}).  This
+creates friction wherever the formalization must relate a function-level
+equality (such as a type embedding) to a pointwise equality (the embedding's
+behavior on individual vertices).  For example, constructing a labeled-graph
+isomorphism from a vertex map $\zeta$ requires reassembling pointwise
+information back into a function:
+\begin{lstlisting}
+have h_emb : forall t : T, zeta (G0'.type_embed t) = G1'.type_embed t := ...
+let iso : G0'.coe =~f G1'.coe := { ..., type_preserve := funext h_emb }
+\end{lstlisting}
+Without \lean{funext} as an axiom, the \lean{type\_preserve} field could not
+be filled.
+
+Proof-valued structure fields create a related difficulty.  The
+\lean{Sym2Graph} type carries a field
+\lean{edges\_valid : forall e in edges, not e.IsDiag}; two \lean{Sym2Graph}
+values with the same edge set but different proof terms for
+\lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
+definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
+theorems therefore requires \lean{proof\_irrel\_heq} at every such field:
+\begin{lstlisting}
+theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
+    G.toLabeledGraph.toSym2Graph = G := by
+  congr  -- reduces to field equalities
+  ...
+  exact proof_irrel_heq _ _  -- edge validity field
+\end{lstlisting}
+
+\subsection{Fintype Instance Conflicts}
+\label{sec:fintype}
+
+The fourth obstacle is the most pervasive in the counting layer.  Sets defined
+by set-builder notation $\{x \mid P\ x\}$ have type \lean{Set T}, which is
+\lean{Finite} whenever \lean{T} is a \lean{Fintype}, but does not
+automatically carry a \lean{Fintype} instance.  Many Mathlib lemmas about
+cardinality (\lean{Fintype.card}, \lean{Finset.card\_univ},
+\lean{Fintype.card\_congr}) require \lean{Fintype}, not merely \lean{Finite}.
+The elaborator infers \lean{Fintype} instances automatically, but in a
+development with multiple overlapping constructions (quotient types, embedded
+subgraphs, partial-function spaces), the same type can receive different
+\lean{Fintype} instances from different elaboration paths.  When two
+instances do not reduce to the same term definitionally, the kernel rejects
+the goal even if the instances are provably equal.
+
+The mitigation is to bind the intended \lean{Fintype} instance immediately
+after naming a finite set:
+\begin{lstlisting}
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso_S0_S1
+\end{lstlisting}
+This pattern appears repeatedly in \lean{SubflagListDensity.lean}: for the
+quotient-respect lemma for list densities, for permutation of sampled flags,
+and for insertion of an empty flag.  Without the explicit \lean{let} bindings,
+Lean can synthesize a \lean{Fintype} for each set through a different path at
+each use, and \lean{Fintype.card\_congr} no longer sees the two cardinalities
+as referring to the same enumeration terms.  A similar explicit
+\lean{Fintype.ofFinite} construction is used in \lean{FlagOperators.lean} for
+the isomorphism set with a fixed underlying graph.
+
+For parameterized types such as injections \lean{Embedding V W} and
+equivalences \lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in
+multiple ways depending on which prior instances are in scope.  In
+\lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
+defined, the elaborator had to be given explicit guidance via
+\lean{Finset.univ} with a type ascription:
+\begin{lstlisting}
+instance : Fintype (Embedding V W) :=
+  { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
+
+instance : Fintype (G1 ->g G2) :=
+  { elems := (Finset.univ : Finset (Embedding V W)).filterMap ..., ... }
+\end{lstlisting}
+The graph-embedding and graph-isomorphism instances are built by filtering
+finite enumerations of simpler function or equivalence types.  The explicit
+\lean{Finset.univ} type ascription keeps the intended enumeration visible to the elaborator,
+instead of relying on typeclass search to rediscover it in a later goal.
+A related issue arose for dependent function types indexed by a small finite
+type, where Lean's typeclass search does not look through \lean{match}
+expressions inside type-valued functions; the \lean{FintypeList} typeclass
+threads \lean{Fintype} instances per component explicitly to compensate.
+
+\paragraph{What remains open.}
+Not all intensionality obstacles were resolved.  The most significant gap is
+in \lean{Forbid/Basic.lean}: several strengthening lemmas about recovering
+representative-level information from quotient-level forbidden equalities
+remain as commented proof sketches, not as imported declarations or trusted
+axioms.  For example, one would like a general theorem saying that if a
+basis vector is zero under the forbidden equality relation, then the
+corresponding unlabeled flag has positive density of the forbidden graph.
+Proving such a statement requires careful reasoning about how zero-space
+relations interact with individual representatives.  This is not needed for
+the main case studies---\lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan}
+are proved without those sketches---but it marks a natural direction for
+making the \lean{forbidLE} framework more convenient for future applications.
+
 
 
 \section{What We Are Unsure About}
