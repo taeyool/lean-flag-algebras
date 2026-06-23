@@ -443,7 +443,7 @@ algebras below are defined relative to this fixed $\mathcal{H}$.
 % For $n \in \mathbb{N}$ we write $[n] = \{1,\ldots,n\}$.
 % All graphs are undirected, finite and simple.
 % To keep roles separate, this section uses $P$ for a target graph, $H$ for a
-% forbidden graph, $A,B,D$ for generic flags, $G$ for a host graph or host flag,
+% forbidden graph or intermediate flag, $F$ for a pattern flag, $G$ for a host graph or host flag,
 % $Q$ for a positive semidefinite matrix, and $\phi$ for a positive
 % homomorphism.
 
@@ -499,15 +499,17 @@ to avoid confusion with Lean's type system in later sections.
 
 \paragraph{Flags.}
 Fix a flag type $\sigma$ of size $k$.
-A \emph{$\sigma$-flag} is a pair $A = (M, \theta_A)$ where $M$ is an
-$\mathcal{H}$-free finite graph and $\theta_A : [k] \hookrightarrow V(M)$ is an injective map such
-that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_A)]$ via $\theta_A$
-(i.e., $\theta_A$ is a graph embedding of $\sigma$ into $M$).
-The integer $|V(M)|$ is the \emph{size} of $A$; we write $V(A)$ for $V(M)$.
-The vertices in $\operatorname{Im}(\theta_A)$ are called the \emph{labeled vertices} of $A$; the remaining $|V(A)|-k$ vertices are \emph{unlabeled}.
-For a set $S \subseteq V(A)$ with $\operatorname{Im}(\theta_A) \subseteq S$,
-we write $A[S]$ for the $\sigma$-flag $(M[S], \theta_A)$ and call it the
-\emph{$\sigma$-flag induced by $A$ on $S$}.
+A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ where $M$ is an
+$\mathcal{H}$-free finite graph and $\theta_F : [k] \hookrightarrow V(M)$ is an injective map such
+that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
+(i.e., $\theta_F$ is a graph embedding of $\sigma$ into $M$).
+The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
+The vertices in $\operatorname{Im}(\theta_F)$ are called the
+\emph{labeled vertices} of $F$; the remaining $|V(F)|-k$ vertices are
+\emph{unlabeled}.
+For a set $S \subseteq V(F)$ with $\operatorname{Im}(\theta_F) \subseteq S$,
+we write $F[S]$ for the $\sigma$-flag $(M[S], \theta_F)$ and call it the
+\emph{$\sigma$-flag induced by $F$ on $S$}.
 Note that flags over the empty flag type $\emptyset$ are just ordinary finite graphs.
 \Cref{fig:flag-examples} illustrates several flags of different types.
 
@@ -623,7 +625,9 @@ $\mathcal{F}^\sigma$ itself is infinite.
 In a density calculation, flags play two roles.  The \emph{pattern flag} is the
 small local configuration whose occurrence is being measured, while the
 \emph{host flag} is the larger flag in which we sample vertices.  These are
-roles in the calculation, not different kinds of flags.
+roles in the calculation, not different kinds of flags.  We use \(F\), or
+\(F_i\), for pattern flags, \(G\) for host flags, and \(H\) for an intermediate
+flag when a third flag variable is needed.
 
 % Once pattern flags have been named, the basic question is simple: if we sample
 % a few extra vertices in a larger host flag, what smaller flag do we see?
@@ -636,29 +640,29 @@ roles in the calculation, not different kinds of flags.
 % guesses, but rational numbers obtained by finite enumeration.
 
 \paragraph{Single-flag density.}
-Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $A$ of size $m$
+Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $F$ of size $m$
 (the pattern flag) and a $\sigma$-flag $G = (M, \theta_G)$ of size $n \geq m$
-(the host flag), the \emph{density of $A$ in $G$}, written $\den{A}{G}$, is
+(the host flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
-vertices of $G$, induces a $\sigma$-flag isomorphic to $A$.
-% The \emph{density of $A$ in $G$}, written $\den{A}{G}$, is the probability
+vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.
+% The \emph{density of $F$ in $G$}, written $\den{F}{G}$, is the probability
 % that a uniformly random $(m-k)$-element subset $S$ of
 % $V(G) \setminus \operatorname{Im}(\theta_G)$ satisfies
-% $G[S \cup \operatorname{Im}(\theta_G)] \cong_\sigma A$.
+% $G[S \cup \operatorname{Im}(\theta_G)] \cong_\sigma F$.
 Explicitly:
 \[
-  \den{A}{G}
+  \den{F}{G}
   \;:=\;
   \frac{1}{\binom{n-k}{m-k}}
     \cdot {\Bigl|\Big\{S \subseteq V(G)\setminus \operatorname{Im}(\theta_G)
                   ~\Big|~ |S|=m-k,\;
                   G[S \cup \operatorname{Im}(\theta_G)]
-                  \cong_\sigma A \Big\}\Bigr|}.
+                  \cong_\sigma F \Big\}\Bigr|}.
 \]
 This value lies in $[0,1]$ and is invariant under
-isomorphism of both $A$ and $G$.
-When $n < m$, we set $\den{A}{G} := 0$ by convention.
+isomorphism of both $F$ and $G$.
+When $n < m$, we set $\den{F}{G} := 0$ by convention.
 
 
 \begin{example}[Subflag densities in $C_5^\bullet$]
@@ -677,36 +681,36 @@ When $n < m$, we set $\den{A}{G} := 0$ by convention.
 \end{example}
 
 \paragraph{Chain rule.}
-The density $\den{A}{G}$ can be computed in two equivalent ways: by sampling
+The density $\den{F}{G}$ can be computed in two equivalent ways: by sampling
 $m-k$ unlabeled vertices directly from $G$, or by first sampling a larger
-intermediate flag $B$ of size $n$ inside $G$ and then sampling $A$ inside $B$.
+intermediate flag $H$ of size $n$ inside $G$ and then sampling $F$ inside $H$.
 These two procedures are the same experiment, which gives the following identity.
 
 \begin{lemma}[Chain rule]\label{lem:chain-rule}
-  For $A \in \mathcal{F}^\sigma_m$, $n \geq m$, and a $\sigma$-flag $G$ of size
+  For $F \in \mathcal{F}^\sigma_m$, $n \geq m$, and a $\sigma$-flag $G$ of size
   $\geq n$,
   \[
-    \den{A}{G}
+    \den{F}{G}
     \;=\;
-    \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,\den{B}{G}.
+    \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,\den{H}{G}.
   \]
 \end{lemma}
 
 \paragraph{Multi-flag density.}
-For pattern $\sigma$-flags $A_1, \ldots, A_t$ of sizes $m_1, \ldots, m_t$ and
-a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $A_1, \ldots, A_t$
+For pattern $\sigma$-flags $F_1, \ldots, F_t$ of sizes $m_1, \ldots, m_t$ and
+a host $\sigma$-flag $G = (M, \theta_G)$ of size $n$, we say $F_1, \ldots, F_t$
 \emph{fit} in $G$ if
 \[
   n - k \;\geq\; (m_1 - k) + \cdots + (m_t - k).
 \]
-When $A_1, \ldots, A_t$ fit in $G$, let $(S_1, \ldots, S_t)$ be a uniformly
+When $F_1, \ldots, F_t$ fit in $G$, let $(S_1, \ldots, S_t)$ be a uniformly
 random tuple of pairwise-disjoint subsets $S_i \subseteq V(G) \setminus
 \operatorname{Im}(\theta_G)$ with $|S_i| = m_i - k$.
-The \emph{density of $A_1, \ldots, A_t$ in $G$}, written $\den{A_1,\ldots,A_t}{G}$, is the
-probability that $G[S_i \cup \operatorname{Im}(\theta_G)] \cong_\sigma A_i$
+The \emph{density of $F_1, \ldots, F_t$ in $G$}, written $\den{F_1,\ldots,F_t}{G}$, is the
+probability that $G[S_i \cup \operatorname{Im}(\theta_G)] \cong_\sigma F_i$
 for every $i \in [t]$.
-When $A_1, \ldots, A_t$ do not fit in $G$, we set
-$\den{A_1,\ldots,A_t}{G} := 0$ by convention.
+When $F_1, \ldots, F_t$ do not fit in $G$, we set
+$\den{F_1,\ldots,F_t}{G} := 0$ by convention.
 % Joint densities are what make multiplication possible: the product of two
 % pattern flags is interpreted as the probability that two disjoint samples occur
 % simultaneously in the same host.  This turns combinatorial double counting
@@ -727,44 +731,44 @@ Lemma~\ref{lem:chain-rule}.
 Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  We also write $A$ for the basis vector
-corresponding to a flag $A$.
+combinations of $\sigma$-flags.  We also write $F$ for the basis vector
+corresponding to a flag $F$.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
   \label{eq:zero-element}
-  A - \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B,
-  \qquad \text{for}\ A \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
+  F - \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot H,
+  \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
-We write $[A]$ for the equivalence class of a flag $A$ in $\mathcal{A}^\sigma$.
-By abuse of notation, we write $A$ for $[A]$ whenever the distinction between
+We write $[F]$ for the equivalence class of a flag $F$ in $\mathcal{A}^\sigma$.
+By abuse of notation, we write $F$ for $[F]$ whenever the distinction between
 a flag and its equivalence class is immaterial.
 
-We call $\sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B} \cdot B$ the
-\emph{expansion of $A$ at size $n$}.
-By Lemma~\ref{lem:chain-rule}, a flag $A \in \mathcal{F}^\sigma_m$ and
+We call $\sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot H$ the
+\emph{expansion of $F$ at size $n$}.
+By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
 The quotient by $\mathcal{Z}^\sigma$ records this counting identity as the
 equality
 \[
-  [A]
+  [F]
   =
-  \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,[B]
+  \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,[H]
   \qquad\text{in }\mathcal{A}^\sigma .
 \]
-We may therefore freely replace $A$ by its expansion at any size $n \geq m$.
+We may therefore freely replace $F$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
-%   \den{A}{G}
+%   \den{F}{G}
 %   =
-%   \sum_{B \in \mathcal{F}^\sigma_n} \den{A}{B}\,\den{B}{G}.
+%   \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,\den{H}{G}.
 % \]
-% That is, counting $A$ directly agrees with counting through an intermediate
+% That is, counting $F$ directly agrees with counting through an intermediate
 % sample of size $n$.
 
 \begin{example}[$\fKtwo$ expanded at size $3$ in the triangle-free algebra]
@@ -789,18 +793,18 @@ We may therefore freely replace $A$ by its expansion at any size $n \geq m$.
 \end{example}
 
 \paragraph{Multiplication.}
-For flags $A_1 \in \mathcal{F}^\sigma_{m_1}$ and
-$A_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
+For flags $F_1 \in \mathcal{F}^\sigma_{m_1}$ and
+$F_2 \in \mathcal{F}^\sigma_{m_2}$, choose an auxiliary size
 $\ell \geq m_1 + m_2 - k$ and define
 \begin{equation}
   \label{eq:mul}
-  [A_1] \cdot [A_2]
+  [F_1] \cdot [F_2]
   \;:=\;
-  \sum_{D \in \mathcal{F}^\sigma_\ell} \den{A_1,A_2}{D} \cdot [D]
+  \sum_{H \in \mathcal{F}^\sigma_\ell} \den{F_1,F_2}{H} \cdot [H]
   \qquad\text{in } \mathcal{A}^\sigma.
 \end{equation}
 At first glance this definition appears to depend on both the choice of $\ell$
-and the choice of representatives for $[A_1]$ and $[A_2]$.  The zero-space
+and the choice of representatives for $[F_1]$ and $[F_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
 respects isomorphism classes of the input flags.  Extending bilinearly to all
 of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
@@ -853,16 +857,16 @@ to do.
 \paragraph{Convergent sequences.}
 Call a sequence $\{G_n\}_{n\in\mathbb{N}}$ of host $\sigma$-flags \emph{increasing} if
 $|V(G_1)| < |V(G_2)| < \cdots$.  Each host $\sigma$-flag $G$ defines a point
-$p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(A) := \den{A}{G}$.
+$p^G \in [0,1]^{\mathcal{F}^\sigma}$ by $p^G(F) := \den{F}{G}$.
 An increasing sequence is \emph{convergent} if the sequence of points $p^{G_n}$
 converges in $[0,1]^{\mathcal{F}^\sigma}$ endowed with the product topology;
-equivalently, if $\lim_{n\to\infty}\den{A}{G_n}$ exists for every $\sigma$-flag $A$.
+equivalently, if $\lim_{n\to\infty}\den{F}{G_n}$ exists for every $\sigma$-flag $F$.
 
 \paragraph{Positive homomorphisms.}
 Fix a flag type $\sigma$.  A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi(A) \geq 0$ for every $\sigma$-flag $A$.  Thus $\phi$ assigns a real
+$\phi(F) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
 number to each flag algebra expression, respects addition, multiplication, and the unit, and
 never assigns a negative value to any flag.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
@@ -998,28 +1002,28 @@ $\mathcal{A}^\emptyset$ in a way that preserves semantic non-negativity
 (\Cref{thm:downward-nonneg}), so valid inequalities proved in a labeled algebra
 can be transferred to the unlabeled one.
 
-For a $\sigma$-flag $A = (G, \theta_A)$, let $A|_\emptyset$ denote the
-$\emptyset$-flag obtained from $A$ by forgetting the embedding $\theta_A$,
-i.e., viewing $G$ as a $\emptyset$-flag.
-For a $\sigma$-flag $A$ of size $m$ with $|V(\sigma)|=k$, let
+For a $\sigma$-flag $F = (M, \theta_F)$, let $F|_\emptyset$ denote the
+$\emptyset$-flag obtained from $F$ by forgetting the embedding $\theta_F$,
+i.e., viewing $M$ as a $\emptyset$-flag.
+For a $\sigma$-flag $F$ of size $m$ with $|V(\sigma)|=k$, let
 \[
-  q_\sigma(A)
+  q_\sigma(F)
   \;:=\;
   \frac{
-    \bigl|\{\theta' : [k]\hookrightarrow V(G)
-       \mid \theta' \text{ embeds }\sigma\text{ into }G
-       \text{ and } (G,\theta')\cong_\sigma A\}\bigr|}
+    \bigl|\{\theta' : [k]\hookrightarrow V(M)
+       \mid \theta' \text{ embeds }\sigma\text{ into }M
+       \text{ and } (M,\theta')\cong_\sigma F\}\bigr|}
        {m(m-1)\cdots(m-k+1)}
 \]
-be the probability that a uniformly random injection $[k]\hookrightarrow V(G)$
-recovers a flag isomorphic to $A$.
+be the probability that a uniformly random injection $[k]\hookrightarrow V(M)$
+recovers a flag isomorphic to $F$.
 The \emph{downward operator}
 $\llbracket\cdot\rrbracket_\sigma:\mathcal{A}^\sigma\to\mathcal{A}^\emptyset$
 is then defined on flags by
 \[
-  \llbracket A \rrbracket_\sigma
+  \llbracket F \rrbracket_\sigma
   \;:=\;
-  q_\sigma(A)\cdot A|_\emptyset,
+  q_\sigma(F)\cdot F|_\emptyset,
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
 
@@ -1438,7 +1442,7 @@ inequality.
 \label{sec:formal-subflag-densities}
 
 Formalizing the density function is not straightforward.  The density
-$\den{A_1,\ldots,A_t}{G}$ from Section~\ref{sec:background} should be a
+$\den{F_1,\ldots,F_t}{G}$ from Section~\ref{sec:background} should be a
 function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
 define a function from a quotient type in Lean is to first define it on the
@@ -1451,7 +1455,7 @@ We first introduce \lean{LabeledGraphList} as an abbreviation for a
 (\lean{Fin t})-indexed tuple of \lean{LabeledGraph}s.
 Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph},
 \lean{labeledGraphListDensity} computes the density as the number of tuples
-$(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{A_1,\ldots,A_t}{G}$,
+$(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{F_1,\ldots,F_t}{G}$,
 divided by the total number of candidate tuples.  Rather than adopting the
 probabilistic sampling formulation of Section~\ref{sec:background}, this direct ratio is easier to work with in Lean.
 \begin{lstlisting}
@@ -1481,7 +1485,7 @@ they supply the corresponding enumeration and equality-test instances for
 each vertex type \lean{Vl i} in the tuple.
 
 The second definition is the finite ratio corresponding to
-$\den{A_1,\ldots,A_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
+$\den{F_1,\ldots,F_t}{G}$.  Here \lean{Hl} is the tuple of pattern labeled
 graphs and \lean{G} is the concrete labeled graph in which they are counted.
 The local function \lean{r\_list} records, for each pattern, how many unlabeled
 vertices it contributes:
@@ -1910,25 +1914,26 @@ instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@
 
 \subsection{The Downward Operator}
 
-Formalizing the downward operator from Section~\ref{sec:background-downward}
-requires two levels of lifting.  In the formula
-$\llbracket A \rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$, both
-$q_\sigma(A)$ and $A|_\emptyset$ are first defined for concrete
-\lean{LabeledGraph}s and then lifted to \lean{Flag}s, following the same
-quotient pattern as the density functions in
-Section~\ref{sec:formal-subflag-densities}.  This gives the single-flag map
-\lean{downwardFlag}; the map is then linearly extended to
-\lean{FlagVector} $\sigma$ and lifted once more through the zero-space quotient
-to obtain a function on \lean{FlagAlgebra} $\sigma$.
+The downward operator from Section~\ref{sec:background-downward} forgets the
+labels of a typed flag-algebra expression while keeping the correct averaging
+factor.  On a single flag the intended formula is
+\[
+  \llbracket F \rrbracket_\sigma = q_\sigma(F)\cdot F|_\emptyset.
+\]
+The formalization follows this formula, but it has to pass through the two
+quotients already introduced: first the quotient from concrete labeled graphs
+to flags, and then the zero-space quotient from flag vectors to the flag
+algebra.
 
-We begin with the first of these two lifts.  We first define
-$q_\sigma(A)$ on concrete \lean{LabeledGraph}s and then lift it to
-\lean{Flag}s as \lean{downwardNormalizingFactor}.  Similarly,
-\lean{unlabeledGraph} implements $A|_\emptyset$ on \lean{LabeledGraph}s, and
-\lean{unlabel} is its lifted version on \lean{Flag}s.  Each lift requires a proof that
-isomorphic representatives give the same result.  Finally, \lean{downwardFlag}
-combines these two lifted components, realizing
-$\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.
+The single-flag part defines the two ingredients of the formula separately.
+The rational number \(q_\sigma(F)\) is implemented as
+\lean{downwardNormalizingFactor}; before it can be used on flags, it is defined
+on concrete \lean{LabeledGraph}s and proved invariant under labeled-graph
+isomorphism.  The operation \(F|_\emptyset\), which forgets the type embedding,
+is implemented first as \lean{unlabeledGraph} on concrete labeled graphs and
+then lifted to \lean{unlabel} on \lean{Flag}s.  The map \lean{downwardFlag}
+combines the two: it sends a typed flag to the basis vector of its unlabeling,
+scaled by the normalizing factor.
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph
     {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -1960,23 +1965,19 @@ noncomputable def downwardFlag
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
 
-The second lift starts from this single-flag map and is substantially harder.
-Lean first extends \lean{downwardFlag} linearly to
-\lean{downwardFlagVector}, a map from \lean{FlagVector} $\sigma$ to
-\lean{FlagVector} $\emptyt$.  The difficulty is the next step, descending this
-linear map through the quotient defining \lean{FlagAlgebra} $\sigma$.
-At the single-flag level, the construction only has to respect isomorphism of
-representatives; at the algebra level, it must also respect the expansion
-equations generating the zero space $\mathcal{Z}^\sigma$.
+The algebra-level operator is built in three steps.  First,
+\lean{downwardFlagVector} extends the single-flag map linearly from basis
+flags to arbitrary \lean{FlagVector}~\(\sigma\) terms.  Second,
+\lean{downwardFlagVectorQuot} sends the resulting empty-type flag vector into
+\lean{FlagAlgebra}~\(\emptyt\).  Third, \lean{downward} descends
+the input through the quotient defining \lean{FlagAlgebra}~\(\sigma\).
 
-The code below shows this second lift.  The intermediate
-\lean{downwardFlagVectorQuot} applies \lean{downwardFlagVector} and then
-quotients the resulting \lean{FlagVector} $\emptyt$, so its output lies in
-\lean{FlagAlgebra} $\emptyt$.  The second lift then quotients the input
-parameter of \lean{downwardFlagVectorQuot}.  To do so, Lean needs the proof
-\lean{downwardFlagVectorQuot\_respect\_eqv}: two \lean{FlagVector} $\sigma$
-inputs that differ by a zero-space element produce the same element of
-\lean{FlagAlgebra} $\emptyt$.
+The compatibility theorem needed for the third step is the essential point.  A
+flag vector may be changed by an element of the zero space without changing the
+corresponding flag-algebra element; the respect lemma displayed below proves
+that the downward image is unchanged by exactly those zero-space relations.
+Thus the formalized operator is not merely a linear map on representatives: it
+is a well-defined map on the quotient algebra.
 \begin{lstlisting}
 noncomputable def downwardFlagVector
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -2001,20 +2002,22 @@ noncomputable def downward
     (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
 \end{lstlisting}
 The last definition is the quotient-level downward operator.  In mathematical
-prose we write it as $\llbracket-\rrbracket_\sigma$, following
+prose we write it as \(\llbracket-\rrbracket_\sigma\), following
 Section~\ref{sec:background-downward}; in Lean snippets below, the same map is
-rendered as $\llbracket-\rrbracket_0$, emphasizing that its codomain is the
-$\emptyt$-typed algebra.  In either notation, the concise brackets hide two
-successive quotient lifts and a substantial compatibility proof with the
-zero-space presentation of the algebra. \gw{I'm here.}
+rendered as \(\llbracket-\rrbracket_0\), emphasizing that its codomain is the
+\(\emptyt\)-typed algebra.  The notation is compact, but the implementation
+contains the full descent from concrete labeled graphs to flags, from flags to
+flag vectors, and finally from flag vectors to the quotient algebra.
 
-The semantic soundness of the downward operator is proved in
-\lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
-object called a random homomorphism; instead, for a $\emptyt$-typed positive
-homomorphism $\phi_0$ with positive $\sigma$-density, Lean constructs a
-probability measure on \lean{PositiveHomSpace}~$\sigma$ corresponding to
-$\Ext_\sigma(\phi_0)$ from Section~\ref{sec:background-downward}.  Its defining property
-is the formal version of Equation~\eqref{eq:ensemble}:
+It remains to connect this algebraic map to the semantics of positive
+homomorphisms.  The relevant construction lives in
+\lean{FlagAlgebra/RandomHom.lean}.  Given an empty-type positive homomorphism
+\(\phi_0\) in which the type \(\sigma\) has positive density, Lean constructs a
+probability measure on \lean{PositiveHomSpace}~\(\sigma\).  This measure is the
+formal version of the random extension \(\Ext_\sigma(\phi_0)\): it represents
+the experiment of choosing a random occurrence of the type \(\sigma\) in the
+limiting object represented by \(\phi_0\).  Its defining property is the formal
+version of Equation~\eqref{eq:ensemble}:
 \begin{lstlisting}
 theorem exists_probMeasure_extend_emptyType_positiveHom
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -2028,22 +2031,19 @@ theorem exists_probMeasure_extend_emptyType_positiveHom
         (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
           (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
 \end{lstlisting}
-This theorem corresponds to Razborov's random-extension theorem and supplies
-Equation~\eqref{eq:ensemble} in the form used by \Cref{thm:downward-nonneg}.
-The informal proof chooses random labelings of large finite graphs, passes to a
-weak limit of the resulting measures, and observes that the limit is supported
-on positive homomorphisms.  In Lean each of these phrases expands into
-explicit data: finite probability mass functions weighted by
-\lean{downwardNormalizingFactor}, positivity of the denominators, convergence
-of integrals against bounded continuous coordinate functions, measurability and
-integrability of evaluations, and separate support proofs for the algebraic
-properties defining \lean{PositiveHomSpace}.  The proof also has to move
-between rational densities, real-valued functions, non-negative probabilities,
-and extended-real measure values.
+The statement says that averaging the typed evaluation \(\phi(f)\) over this
+random extension recovers the empty-type evaluation of the downward image,
+divided by the normalizing value of the typed unit.  Equivalently,
+\(\phi_0(\llbracket f\rrbracket_0)\) is that typed average multiplied by
+\(\phi_0(\llbracket 1\rrbracket_0)\).  This is exactly the bridge needed for
+semantic soundness: a typed inequality can be tested by first randomly rooting
+the unlabeled limiting object, evaluating in the typed algebra, and then
+averaging back down.
 
 The payoff is the formal semantic transfer theorem corresponding to
-\Cref{thm:downward-nonneg}: the downward image of a semantically non-negative
-typed element is semantically non-negative in the $\emptyt$-typed algebra.
+\Cref{thm:downward-nonneg}: if \(f\) is semantically non-negative in the
+\(\sigma\)-typed algebra, then its downward image is semantically non-negative
+in the \(\emptyt\)-typed algebra.
 \begin{lstlisting}
 theorem downward_preserve_semanticCone
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -2051,12 +2051,16 @@ theorem downward_preserve_semanticCone
     (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
     (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*)
 \end{lstlisting}
-The proof splits on whether $\phi_0(\langle\sigma\rangle_0)$ is zero.  In the
-zero case, every downward value vanishes at $\phi_0$; in the positive case, the
-random-extension measure above rewrites $\phi_0(\llbracket f\rrbracket_0)$ as a positive
-normalizing factor times the expectation of a non-negative random variable.
-This is the formal bridge from typed inequalities to the unlabeled semantic
-order used by certificate proofs.
+To prove the theorem, Lean tests the claimed empty-type non-negativity against
+an arbitrary positive homomorphism \(\phi_0\).  If
+\(\phi_0(\langle\sigma\rangle_0)=0\), then every downward value has evaluation
+zero at \(\phi_0\).  If \(\phi_0(\langle\sigma\rangle_0)>0\), the
+random-extension theorem rewrites \(\phi_0(\llbracket f\rrbracket_0)\) as a
+positive normalizing factor times the average of \(\phi(f)\) over typed
+positive homomorphisms.  Since \(f\in\mathcal{C}^\sigma\), every integrand is
+non-negative, and so the average is non-negative.  This is the formal bridge
+from typed inequalities to the unlabeled semantic order used by certificate
+proofs.
 
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
