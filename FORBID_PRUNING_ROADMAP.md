@@ -282,13 +282,26 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       (2) optionally route the **σ-typed** command / pair-density too — but its pruning is a graph-level
       *filter* (not the genuine generator), so the real typed cost is 8b, not 8a. Empty-typed (where the
       genuine pruned generator lives, and the n = 6/7 K₃-free loading goal sits) is now routed.
-  - `[ ]` **8b. Genuine-pruning σ-typed generator (= the long-deferred 5b (d)).** The typed path still
-    enumerates *all* σ-typed flags then filters (`genFlagsHfree`), and the pair-density step emits one
-    `native_decide` per forbid-free pair (`ErdosPentagon`: ~2 832 of them). This — not the empty-typed
-    step — is where the typed examples spend their time, so a genuine-pruning typed generator (and/or
-    cheaper pair-density evaluation) is what would actually speed up `ErdosPentagon` / `K4turan` /
-    `K5turan`. This is also the prerequisite for making **`K5turan`** (Task 7) tractable enough to
-    re-enable in the aggregator.
+  - `[~]` **8b. Cheaper typed-example cost.** Two named cost centers; the dominant one is done.
+    - **DONE — batched (chunked) pair-density `native_decide`.** The pair-density step used to emit
+      *one `native_decide` per forbid-free pair* (`ErdosPentagon`: ~2 832). `genPairDensityCoreOn`
+      (`Densities/DensityThmGenerator.lean`) now proves the densities in **chunks** of 200 — one batch
+      lemma `pairDensityBatch_…_c : [sym2FlagDensity₂ …, …] = [value, …]` per chunk by a single
+      `native_decide` — and derives each `@[simp] flagDensity₂ … = value` by projecting the chunk
+      (`congrArg (·.getD i 0)`), exactly the `downwardFactorsHfree_…_eq` pattern. **Chunking is required:**
+      a single big batch overflows `maxRecDepth` (default 512) when the projection's `List.getD i`
+      recurses for large `i`; chunk 200 keeps depth < 512. Results: `MantelHfree` 15 pairs → 1
+      `native_decide`; **`ErdosPentagon` 2 832 pairs → 15** `native_decide`s (1800→9, 672→4, 360→2);
+      full project builds green (7989 jobs). The individual `@[simp]` lemmas are unchanged in statement,
+      so the mul commands consume them as before. (Clean before/after wall-time not isolated — the
+      structural win is ~189× fewer `native_decide` compilations.)
+    - **TODO — genuine-pruning σ-typed generator.** `genFlagsHfree` still enumerates *all* σ-typed
+      flags (over `genSym2GraphsDedup n`) and filters. Building labeled flags directly over the pruned
+      reps (`augRepsFreeB`/clique) would avoid materializing forbidden graphs at the typed level too.
+      Lower leverage than the pair-density batch at the current example sizes; left as a refinement.
+    - **TODO — re-enable `K5turan`.** Its blocker was the pair-density count (K₅-free is weak → most
+      pairs free); the batch should make it tractable now. Worth re-testing and, if it builds, removing
+      it from the aggregator's comment-out.
 
 ## Multi-graph design notes (for D3)
 
@@ -512,3 +525,17 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   at n=4/5), `C4graph` → "generic" (10 at n=4), both proving correct completeness. (Lean-API note:
   `Expr.natLit?` does not exist — match `.lit (.natVal r)` after `whnf`.) Remaining 8a: a clean
   native-only n=7 timing of the routed command. **Next:** Task 8b (genuine-pruning σ-typed generator).
+- **2026-06-23** — **Task 8b: batched pair-density DONE** (full project builds, 7989 jobs). Replaced the
+  per-pair `native_decide` in `genPairDensityCoreOn` (`Densities/DensityThmGenerator.lean`) with a
+  **chunked batch**: per chunk of 200 pairs, one `pairDensityBatch_…_c : [sym2FlagDensity₂ …] = [value …]`
+  proved by a single `native_decide`, and each `@[simp] flagDensity₂ … = value` derived by
+  `exact congrArg (·.getD i 0) batch` (the `downwardFactors` pattern). **Chunking was essential:** a
+  single 1800-element batch built the `native_decide` fine but the per-pair projection's `List.getD i`
+  reduction overflowed `maxRecDepth` (default 512) for large `i` — chunk 200 keeps the depth < 512.
+  Results: `MantelHfree` 15→1; **`ErdosPentagon` 2832→15** `native_decide`s (1800→9, 672→4, 360→2),
+  builds green; all other pair-density consumers (tag / edge / no-forbid commands) build in the full
+  project (7989 jobs). The `@[simp]` lemma statements are unchanged, so the mul proofs consume them as
+  before. **Not done (the other 8b option):** the genuine-pruning σ-typed *generator* (`genFlagsHfree`
+  still filters the full enum) — lower leverage at current sizes, left as a refinement. **K5turan** may
+  now be tractable (its blocker was the pair-density count); worth re-testing to re-enable. **Next:**
+  σ-typed pruned generator, or K5turan re-enable, or Task 7 docs.

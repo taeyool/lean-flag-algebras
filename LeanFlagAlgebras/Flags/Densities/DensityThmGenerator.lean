@@ -475,15 +475,25 @@ def freeFlagIndices (n : Nat) (forbid : Option (Nat × List (Nat × Nat)))
 /-- Shared core for the pair-density emitters. For every unordered pair `(i, j)`
 of (forbidden-free) pattern flags `Flag_patN_k_m_*` and every (forbidden-free)
 host flag `Flag_hostN_k_m_h`, emit the `simp` theorem `flagDensity₂ … = value`,
-the `value` computed by `densityPF1F2GivenG` and re-checked by `native_decide`.
-`forbid = none` includes all flags (the no-forbid case). -/
+the `value` computed by `densityPF1F2GivenG`. `forbid = none` includes all flags.
+
+**Task 8b — one batched `native_decide`.** Rather than one `native_decide` per pair (the
+dominant typed-example cost: `ErdosPentagon` emits ~2 832), we prove a single batch lemma
+`pairDensityBatch_… : [sym2FlagDensity₂ …, …] = [value, …]` by **one** `native_decide`, then
+derive each `@[simp] flagDensity₂ … = value` by projecting the batch (`congrArg (·.getD i 0)`),
+exactly the `downwardFactorsHfree_…_eq` pattern. This amortizes the per-pair `native_decide`
+compilation across all pairs. -/
 def genPairDensityCoreOn (k m patN hostN : Nat)
     (patterns hosts : List (Nat × List (Nat × Nat) × List Nat × Nat × Nat))
     (patternFree hostFree : List Nat) : CommandElabM Unit := do
   let patternTag := s!"{patN}_{k}_{m}"
   let hostTag := s!"{hostN}_{k}_{m}"
 
-  let mut generated : Nat := 0
+  -- Collect the batch: the `sym2FlagDensity₂` terms (LHS), the value terms (RHS), and the
+  -- per-pair `(thmName, f1, f2, g, value)` metadata (its array index is its batch position).
+  let mut sym2Terms : Array (TSyntax `term) := #[]
+  let mut valueTerms : Array (TSyntax `term) := #[]
+  let mut pairs : Array (Ident × Ident × Ident × Ident × TSyntax `term) := #[]
   for p1 in patternFree do
     for p2 in patternFree do
       if p1 ≤ p2 then
@@ -496,6 +506,9 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
           let f1Name := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{p1}")
           let f2Name := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{p2}")
           let gName := mkIdent (Name.mkSimple s!"Flag_{hostTag}_{h}")
+          let s1Name := mkIdent (Name.mkSimple s!"Sym2Flag_{patternTag}_{p1}")
+          let s2Name := mkIdent (Name.mkSimple s!"Sym2Flag_{patternTag}_{p2}")
+          let sgName := mkIdent (Name.mkSimple s!"Sym2Flag_{hostTag}_{h}")
           let thmName := mkIdent (Name.mkSimple
             s!"flagDensity₂_Flag_{patternTag}_{p1}_Flag_{patternTag}_{p2}_Flag_{hostTag}_{h}")
 
@@ -503,19 +516,37 @@ def genPairDensityCoreOn (k m patN hostN : Nat)
           if ¬ (← isDeclaredInScope f2Name.getId) then throwError s!"Missing definition: {f2Name.getId}"
           if ¬ (← isDeclaredInScope gName.getId) then throwError s!"Missing definition: {gName.getId}"
 
-          if ¬ (← isDeclaredInScope thmName.getId) then
-            elabCommand (← `(
-              @[simp]
-              theorem $thmName
-                  : flagDensity₂ $f1Name $f2Name $gName = $rhsTerm
-                := by
-                first | delta $f1Name $f2Name $gName | skip
-                rw [flagDensity₂_eq_sym2FlagDensity₂]
-                native_decide
-            ))
-            generated := generated + 1
+          sym2Terms := sym2Terms.push
+            (← `(FlagAlgebras.Compute.sym2FlagDensity₂ $s1Name $s2Name $sgName))
+          valueTerms := valueTerms.push rhsTerm
+          pairs := pairs.push (thmName, f1Name, f2Name, gName, rhsTerm)
 
-  logInfo s!"Generated {generated} pair-density theorem(s): pattern {patternTag}, host {hostTag}"
+  -- Batch in chunks (one `native_decide` per chunk), so each per-pair projection's `List.getD`
+  -- reduction stays shallow: a single big batch (e.g. 1800 pairs) overflows `maxRecDepth` when the
+  -- projection reduces `getD i` for large `i`. Chunk size 200 keeps depth < 512 (the default) while
+  -- still collapsing ~1800 per-pair `native_decide`s to ~9.
+  let chunk := 200
+  let nChunks := (pairs.size + chunk - 1) / chunk
+  for c in [0:nChunks] do
+    let lo := c * chunk
+    let hi := min (lo + chunk) pairs.size
+    let batchName := mkIdent (Name.mkSimple s!"pairDensityBatch_{patternTag}_{hostTag}_{c}")
+    elabUnlessDefined batchName.getId (← `(
+        theorem $batchName
+            : ([ $(sym2Terms.extract lo hi),* ] : List ℚ) = [ $(valueTerms.extract lo hi),* ] := by
+          native_decide))
+    for li in [0:(hi - lo)] do
+      let (thmName, f1Name, f2Name, gName, rhsTerm) := pairs[lo + li]!
+      if ¬ (← isDeclaredInScope thmName.getId) then
+        elabCommand (← `(
+          @[simp]
+          theorem $thmName : flagDensity₂ $f1Name $f2Name $gName = $rhsTerm := by
+            first | delta $f1Name $f2Name $gName | skip
+            rw [flagDensity₂_eq_sym2FlagDensity₂]
+            exact congrArg (fun l => l.getD $(Quote.quote li) (0 : ℚ)) $batchName))
+
+  logInfo s!"Generated {pairs.size} pair-density theorem(s) via {nChunks} batched native_decide(s): \
+pattern {patternTag}, host {hostTag}"
 
 /-- Shared core for the pair-density emitters: compute the (non-induced, tag-based) forbid-free
 index split, then delegate to `genPairDensityCoreOn`. -/
