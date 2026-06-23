@@ -1768,43 +1768,66 @@ a commutative associative $\mathbb{R}$-algebra, completing the formalization of 
 
 \subsection{Positive Homomorphisms and Semantic Order}
 
-The central result of this subsection is the formalization of
-Theorem~\ref{thm:convergent-hom}, which states that positive homomorphisms are
-exactly the limiting objects of convergent flag sequences.
-\lean{FlagSeq}~$\sigma$ is the type of sequences of
-$\sigma$-flags indexed by $\mathbb{N}$, and \lean{ConvergesTo} encodes its
-convergence.
+This subsection describes how we encode the semantic side of flag algebras in
+Lean: sequences of finite flags, their limiting density functions, positive
+homomorphisms, and the order induced by testing against all positive
+homomorphisms.  The convergence theorem from
+Theorem~\ref{thm:convergent-hom} is the main mathematical bridge between finite
+flag sequences and positive homomorphisms, but the formalization first has to
+make each of these surrounding notions explicit.
+
+\lean{FlagSeq}~$\sigma$ is the type of sequences of $\sigma$-flags indexed by
+$\mathbb{N}$.  The predicate \lean{ConvergesTo} says that such a sequence has a
+prescribed limiting density function.
 \begin{lstlisting}
 abbrev FlagSeq {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
   (*@$\mathbb{N}$@*) (*@$\to$@*) FinFlag (*@$\sigma$@*)
 
-def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
+def ConvergesTo {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (s : FlagSeq (*@$\sigma$@*)) (a : FinFlag (*@$\sigma$@*) (*@$\to$@*) (*@$\mathbb{R}$@*)) : Prop :=
   Increases s (*@$\wedge$@*) Tendsto (flagDensitySeq s) atTop ((*@$\mathcal{N}$@*) a)
 \end{lstlisting}
-\lean{ConvergesTo} conjoins two predicates: the first asserts that the sizes
-of the flags in $s$ are strictly increasing, and the second asserts that
-$\lim_{n \to \infty} \den{F}{s(n)} = a(F)$ for every $\sigma$-flag $F$.
+Here the candidate limit \(a\) is a real-valued function on finite
+\(\sigma\)-flags.  The first conjunct, \lean{Increases s}, asserts that the
+underlying sizes of the flags \(s(0),s(1),\ldots\) strictly increase.  The
+second conjunct uses Lean's filter notation for convergence:
+\lean{atTop} is the limit \(n\to\infty\) on \(\mathbb{N}\), and
+\(\mathcal{N} a\) is the neighbourhood filter of the function \(a\).  The term
+\lean{flagDensitySeq s} is the sequence of density functions associated to
+\(s\); its \(n\)-th value sends a finite \(\sigma\)-flag \(F\) to
+\(\den{F}{s(n)}\).  Thus the \lean{Tendsto} line is the Lean statement that,
+for every finite \(\sigma\)-flag \(F\),
+\[
+  \lim_{n\to\infty}\den{F}{s(n)}=a(F).
+\]
 
-\lean{PositiveHom}~$\sigma$ is the subtype of
-$\mathbb{R}$-algebra homomorphisms from
-\lean{FlagAlgebra}~$\sigma$ to $\mathbb{R}$ that are
-non-negative on every $\sigma$-flag:
+Mathematically, a positive homomorphism is an
+\(\mathbb{R}\)-algebra homomorphism
+\(\phi:\mathcal{A}^\sigma\to\mathbb{R}\) such that
+\(\phi(F)\ge 0\) for every finite \(\sigma\)-flag \(F\), viewed as a basis
+element of the flag algebra.  The Lean definition follows this sentence almost
+literally:
 \begin{lstlisting}
-abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
+abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
   FlagAlgebra (*@$\sigma$@*) (*@$\to_a$@*)[(*@$\mathbb{R}$@*)] (*@$\mathbb{R}$@*)
 
-def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
-  { (*@$\phi$@*) : Hom (*@$\sigma$@*) //
-      (*@$\forall$@*) F : FinFlag (*@$\sigma$@*),
-        (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
+def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
+  { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
-In Lean, $\{\ \phi : T\ //\ P\ \phi\ \}$ is the subtype of elements of $T$
-satisfying predicate $P$, and $\llbracket \cdot \rrbracket$ is the quotient
-map \lean{FlagVector}~$\sigma \to$
-\lean{FlagAlgebra}~$\sigma$.
+The notation \lean{$\to_a$[$\mathbb{R}$]} denotes Lean's type of
+\(\mathbb{R}\)-algebra homomorphisms: functions preserving addition,
+multiplication, scalar multiplication by real numbers, and the unit.  Thus
+\lean{Hom}~\(\sigma\) abbreviates the type of algebra homomorphisms from
+\lean{FlagAlgebra}~\(\sigma\) to \(\mathbb{R}\).  The second definition then uses
+Lean's subtype notation
+\(\{\ \phi : T\ //\ P\ \phi\ \}\), meaning elements \(\phi\) of \(T\) together
+with a proof that they satisfy \(P\).  Here \(P\) is the positivity condition:
+for every finite \(\sigma\)-flag \(F\), \lean{basisVector F} is the formal basis
+vector representing \(F\), \(\llbracket\cdot\rrbracket\) is the quotient map
+from \lean{FlagVector}~\(\sigma\) to \lean{FlagAlgebra}~\(\sigma\), and the
+inequality says precisely that
+\[
+  \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr)\ge 0 .
+\]
 
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
