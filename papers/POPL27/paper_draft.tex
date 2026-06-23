@@ -2452,7 +2452,7 @@ Section~\ref{sec:intro}: a certificate-to-proof pipeline whose output the Lean
 kernel checks and whose own computation never enters the trusted base
 (Section~\ref{sec:flagmatic-trust}), validated on six certificates
 (Section~\ref{sec:flagmatic-scenarios}).
-\sh{I'm here.}
+
 \subsection{The recurring four-part shape}
 \label{sec:flagmatic-shape}
 
@@ -2482,6 +2482,13 @@ in turn by the next four subsections.
 
 \subsection{Generating the forbid-free flags and their data}
 \label{sec:flagmatic-gen}
+
+% TODO/REVISIT: How much detail to give here (pruned generation, completeness
+% via native_decide, adequacy-based density/product proofs) depends on how much
+% the reflection layer (Section~\ref{sec:reflection}) ends up covering about the
+% same machinery.  That  issection not finalized yet, so this subsection is left
+% as-is for now -- revisit once Section~\ref{sec:reflection}'s level of detail is
+% settled, to avoid over/under-explaining or duplicating it.
 
 The forbidden graph is an explicit \lean{Sym2Graph} term, and the flag,
 density, and product data are \emph{generated inside Lean}---by a handful of
@@ -2515,7 +2522,7 @@ meta-commands.
 
 \subsection{The certificate matrices and their flag vectors}
 \label{sec:flagmatic-psd}
-
+\sh{I'm here.}
 A real symmetric matrix is positive semidefinite iff it factors as
 $M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
 over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
