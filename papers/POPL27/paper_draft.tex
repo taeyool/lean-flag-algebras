@@ -1817,13 +1817,19 @@ The notation \lean{$\to_a$[$\mathbb{R}$]} denotes Lean's type of
 \(\mathbb{R}\)-algebra homomorphisms: functions preserving addition,
 multiplication, scalar multiplication by real numbers, and the unit.  Thus
 \lean{Hom}~\(\sigma\) abbreviates the type of algebra homomorphisms from
-\lean{FlagAlgebra}~\(\sigma\) to \(\mathbb{R}\).  The second definition then uses
-Lean's subtype notation
-\(\{\ \phi : T\ //\ P\ \phi\ \}\), meaning elements \(\phi\) of \(T\) together
-with a proof that they satisfy \(P\).  Here \(P\) is the positivity condition:
-for every finite \(\sigma\)-flag \(F\), \lean{basisVector F} is the formal basis
-vector representing \(F\), \(\llbracket\cdot\rrbracket\) is the quotient map
-from \lean{FlagVector}~\(\sigma\) to \lean{FlagAlgebra}~\(\sigma\), and the
+\lean{FlagAlgebra}~\(\sigma\) to \(\mathbb{R}\).  The second definition is
+Lean's subtype construction.  Mathematically, we read it in the usual
+set-comprehension form
+\[
+  \{\phi\in \lean{Hom}~\sigma
+    \mid \phi(\llbracket\lean{basisVector F}\rrbracket)\ge 0
+    \text{ for every }F\in\mathcal{F}^{\sigma}\}.
+\]
+In other words, the only extra condition on an algebra homomorphism is the
+positivity condition: for every finite \(\sigma\)-flag \(F\),
+\lean{basisVector F} is the formal basis vector representing \(F\),
+\(\llbracket\cdot\rrbracket\) is the quotient map from
+\lean{FlagVector}~\(\sigma\) to \lean{FlagAlgebra}~\(\sigma\), and the
 inequality says precisely that
 \[
   \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr)\ge 0 .
@@ -1832,30 +1838,60 @@ inequality says precisely that
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
-theorem flagSeq_limit_mem_positiveHom
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)}
-    (hs_conv : ConvergesTo s a)
+theorem flagSeq_limit_mem_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)} (hs_conv : ConvergesTo s a)
     : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a
 
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
-theorem positiveHom_as_flagSeq_limit
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
 \end{lstlisting}
-Here \lean{FlagDensitySpace}~$\sigma$ denotes the function space $[0,1]^{\mathcal{F}^\sigma}$, and
-\lean{$\phi$.coe} is the point $F \mapsto \phi(F)$ in $[0,1]^{\mathcal{F}^\sigma}$
-that $\phi$ determines.
+Here \lean{FlagDensitySpace}~$\sigma$ is the set of functions
+\(\mathcal{F}^\sigma\to\mathbb{R}\) whose values lie in \([0,1]\), so its
+points are density profiles of finite \(\sigma\)-flags.  The expression
+\lean{$\phi$.coe} denotes the map \lean{PositiveHom.coe}, which forgets the
+algebra-homomorphism structure of \(\phi\) and remembers only the density
+profile it induces:
+\[
+  F\longmapsto \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr).
+\]
+Thus the first theorem says that the limiting density profile \(a\) of a
+convergent flag sequence is equal to the profile \lean{$\phi$.coe} of some
+positive homomorphism \(\phi\).  Conversely, the second theorem says that every
+positive homomorphism \(\phi\), after passing to this profile
+\lean{$\phi$.coe}, arises as the limit of some flag sequence.
 Both directions require nontrivial formalization work.  In part (a), one must
-show that the limit $a$ of a flag sequence $s$ satisfies all algebraic
+show that the limit \(a\) of a flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
-leave implicit.  Part (b) is more demanding: its proof proceeds by sampling a
-random flag sequence according to $\phi$ and showing that the sequence
-converges to $\phi$ almost surely.  Formalizing this random construction
-requires a fully measure-theoretic account: explicit measurability proofs, as
-well as careful conversion between real-valued functions, non-negative
-quantities, and extended-real measure values.
+leave implicit.  Part (b) goes in the opposite direction.  Starting from a
+positive homomorphism \(\phi\), the proof uses the values \(\phi(G)\) to put a
+probability distribution on the finite \(\sigma\)-flags of each sufficiently
+large size: a flag \(G\) is sampled with weight \(\phi(G)\).  These weights are
+indeed probabilities because \(\phi\) is non-negative on flags and satisfies the normalization
+identity
+\[
+  \sum_{G\in\mathcal{F}^{\sigma}_{\ell}} \phi(G) 
+  = 
+  \phi\left(\sum_{G\in\mathcal{F}^{\sigma}_{\ell}} G\right) 
+  = 
+  \phi(\mathbf{1}_\sigma)
+  = 
+  1.
+\]
+One then samples an entire sequence
+\[
+  X=(X_0,X_1,\ldots),
+\]
+where \(X_n\) is chosen from the distribution on flags of size \(n^2+n_0\).
+The key estimate says that, for each fixed test flag \(F\), the density
+\(\den{F}{X_n}\) is very likely to be close to \(\phi(F)\) once \(n\) is large.
+Thus almost every sampled sequence has the limiting density profile prescribed
+by \(\phi\).  Selecting one such realization and calling it
+\(G_0,G_1,\ldots\) gives the deterministic flag sequence required by
+Theorem~\ref{thm:convergent-hom}(b).  The Lean proof formalizes this argument
+by building the probability distributions, proving the concentration estimate,
+and then extracting one sequence whose density profile is \lean{$\phi$.coe}.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
@@ -1865,12 +1901,10 @@ evaluates non-negatively.  The induced order is installed as a Lean
 \lean{LE} instance, with $f \leq g$ defined to mean
 $g - f \in \mathcal{C}^\sigma$.
 \begin{lstlisting}
-def semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
+def semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Set (FlagAlgebra (*@$\sigma$@*)) :=
   { f | (*@$\forall$@*) (*@$\phi$@*) : PositiveHom (*@$\sigma$@*), (*@$\phi$@*) f (*@$\geq$@*) 0 }
 
-instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : LE (FlagAlgebra (*@$\sigma$@*)) where
+instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : LE (FlagAlgebra (*@$\sigma$@*)) where
   le := fun f g => g - f (*@$\in$@*) semanticCone (*@$\sigma$@*)
 \end{lstlisting}
 
