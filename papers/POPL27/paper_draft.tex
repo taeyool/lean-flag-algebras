@@ -1401,6 +1401,18 @@ instance labeledGraphSetoid {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T)
 def Flag {T : Type} [Fintype T] ((*@$\sigma$@*) : FlagType T) (V : Type) : Type :=
   Quotient (labeledGraphSetoid (*@$\sigma$@*) V)
 \end{lstlisting}
+\lean{Quotient} comes with bracket notation for equivalence classes.  In Lean
+code, the bare notation \(\llbracket x\rrbracket\) means ``the quotient class
+of the representative \(x\),'' with the relevant quotient inferred from the
+expected type.  Thus, when the expected type is
+\lean{Flag}~\(\sigma\)~\lean{V}, \(\llbracket G\rrbracket\) is the flag
+represented by the concrete labeled graph \(G\).  Later, when the expected type
+is \lean{FlagAlgebra}~\(\sigma\), the same bare brackets send a
+\lean{FlagVector} representative to its class modulo the zero space.  This
+bare quotient notation should be distinguished from the subscripted brackets
+\(\llbracket-\rrbracket_\sigma\) or \(\llbracket-\rrbracket_0\), which denote
+the downward operator.
+
 \lean{LabeledGraphIso} represents an isomorphism of concrete $\sigma$-flags.
 It consists of a graph isomorphism \lean{graph\_iso} between the underlying
 graphs, together with a compatibility proof \lean{type\_preserve} saying that
@@ -1625,7 +1637,7 @@ theorem flagDensity_eq_sum_density_prods
     {(*@$\ell_0$@*) (*@$\ell_1$@*) (*@$\ell$@*) (*@$\ell'$@*) : (*@$\mathbb{N}$@*)}
     ((*@$\sigma$@*) : FlagType (Fin (*@$\ell_0$@*))) (F(*@$_1$@*) : Flag (*@$\sigma$@*) (Fin (*@$\ell_1$@*))) (G : Flag (*@$\sigma$@*) (Fin (*@$\ell$@*)))
     (h(*@$\ell_1$@*) : (*@$\ell_0$@*) (*@$\leq$@*) (*@$\ell_1$@*)) (h(*@$\ell'$@*) : (*@$\ell_1$@*) (*@$\leq$@*) (*@$\ell'$@*)) (h(*@$\ell$@*) : (*@$\ell'$@*) (*@$\leq$@*) (*@$\ell$@*))
-    : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G
+    : flagDensity(*@$_1$@*) F(*@$_1$@*) G = (*@$\sum$@*) G' : Flag (*@$\sigma$@*) (Fin (*@$\ell'$@*)), flagDensity(*@$_1$@*) F(*@$_1$@*) G' * flagDensity(*@$_1$@*) G' G := ...
 \end{lstlisting}
 
 \subsection{The Flag Algebra}
@@ -1735,7 +1747,7 @@ closed under multiplication by arbitrary flag vectors:
 \begin{lstlisting}
 theorem flagVector_mul_zeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     (f : FlagVector (*@$\sigma$@*)) {k : FlagVector (*@$\sigma$@*)} (hk_zero : k (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
-    : f * k (*@$\in$@*) ZeroSpace (*@$\sigma$@*)
+    : f * k (*@$\in$@*) ZeroSpace (*@$\sigma$@*) := ...
 \end{lstlisting}
 Together with commutativity, this says that \lean{ZeroSpace} $\sigma$ is an
 ideal in the algebraic sense: multiplying a zero-space element by any flag
@@ -1749,7 +1761,7 @@ theorem handles the choice of output size:
 \begin{lstlisting}
 theorem flagMulWithSize_indep_on_size {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*)))
     {F(*@$_1$@*) F(*@$_2$@*) : FinFlag (*@$\sigma$@*)} {(*@$\ell_1$@*) (*@$\ell_2$@*) : (*@$\mathbb{N}$@*)} ...
-    : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*))
+    : flagVectorEqv (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_1$@*)) (flagMulWithSize F(*@$_1$@*) F(*@$_2$@*) (*@$\ell_2$@*)) := ...
 \end{lstlisting}
 The ellipsis hides the admissibility assumptions on the two output sizes:
 \(\ell_1\) and \(\ell_2\) must both be large enough to contain the two input
@@ -1844,12 +1856,12 @@ Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two se
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (a)}@*)
 theorem flagSeq_limit_mem_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (s : FlagSeq (*@$\sigma$@*)) {a : FlagDensitySpace (*@$\sigma$@*)} (hs_conv : ConvergesTo s a)
-    : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a
+    : (*@$\exists$@*) ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*)), (*@$\phi$@*).coe = a := ...
 
 (*@\textcolor{gray}{\itshape -- Theorem~\ref{thm:convergent-hom} (b)}@*)
 theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
-    : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe
+    : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe := ...
 \end{lstlisting}
 Here \lean{FlagDensitySpace}~$\sigma$ is the set of functions
 \(\mathcal{F}^\sigma\to\mathbb{R}\) whose values lie in \([0,1]\), so its
@@ -1930,38 +1942,40 @@ The rational number \(q_\sigma(F)\) is implemented as
 \lean{downwardNormalizingFactor}; before it can be used on flags, it is defined
 on concrete \lean{LabeledGraph}s and proved invariant under labeled-graph
 isomorphism.  The operation \(F|_\emptyset\), which forgets the type embedding,
-is implemented first as \lean{unlabeledGraph} on concrete labeled graphs and
+is implemented first as \lean{unlabel\_labeledGraph} on concrete labeled graphs and
 then lifted to \lean{unlabel} on \lean{Flag}s.  The map \lean{downwardFlag}
 combines the two: it sends a typed flag to the basis vector of its unlabeling,
 scaled by the normalizing factor.
+
+The normalizing factor is computed by counting label placements.  For a
+concrete typed labeled graph \(G\) on \(n\) vertices, \lean{isomorphismCount G}
+is the number of ways to place the \(n_0\) labels on the same underlying
+unlabeled graph so that the resulting typed labeled graph is flag-isomorphic to
+\(G\).  The denominator \(n!/(n-n_0)!\) is the total number of injections of the
+\(n_0\) labels into the \(n\) vertices, so their ratio is exactly
+\(q_\sigma(G)\).  In the last line of the snippet, the black dot is Lean's
+scalar multiplication operation on \lean{FlagVector}s: it scales the basis
+vector indexed by the pair consisting of \(n\) and \lean{unlabel F} by
+\lean{downwardNormalizingFactor F}.
 \begin{lstlisting}
-noncomputable def downwardNormalizingFactor_labeledGraph
-    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardNormalizingFactor_labeledGraph {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     (G : LabeledGraph (*@$\sigma$@*) (Fin n)) : (*@$\mathbb{Q}$@*) :=
-  let num_of_all_injections := n.factorial / (n - (*@$n_0$@*)).factorial
+  let num_of_all_injections := n.factorial / (n - n(*@$_0$@*)).factorial
   isomorphismCount G / num_of_all_injections
 
-noncomputable def downwardNormalizingFactor
-    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardNormalizingFactor {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     : Flag (*@$\sigma$@*) (Fin n) (*@$\to$@*) (*@$\mathbb{Q}$@*) :=
-  Quotient.lift
-    (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G)
-    (fun _ _ h => downwardNormalizingFactor_labeledGraph_respect_eqv h)
+  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) (Fin n) => downwardNormalizingFactor_labeledGraph G) (...)
 
-def unlabeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type}
-    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (G : LabeledGraph (*@$\sigma$@*) V) : LabeledGraph (*@$\emptyt$@*) V := ...
+def unlabel_labeledGraph {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (G : LabeledGraph (*@$\sigma$@*) V)
+    : LabeledGraph (*@$\emptyt$@*) V := ...
 
-noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type}
-    {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
-    Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
-  Quotient.lift
-    (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabeledGraph G(*@$\rrbracket$@*))
-    (fun _ _ h => unlabeledGraphQuot_respect_eqv h)
+noncomputable def unlabel {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {V : Type} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    : Flag (*@$\sigma$@*) V (*@$\to$@*) Flag (*@$\emptyt$@*) V :=
+  Quotient.lift (fun G : LabeledGraph (*@$\sigma$@*) V => (*@$\llbracket$@*)unlabel_labeledGraph G(*@$\rrbracket$@*)) (...)
 
-noncomputable def downwardFlag
-    {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (F : Flag (*@$\sigma$@*) (Fin n)) : FlagVector (*@$\emptyt$@*) :=
+noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (F : Flag (*@$\sigma$@*) (Fin n))
+    : FlagVector (*@$\emptyt$@*) :=
   downwardNormalizingFactor F (*@$\leansmul$@*) basisVector (*@$\langle$@*)n, unlabel F(*@$\rangle$@*)
 \end{lstlisting}
 
@@ -1969,95 +1983,144 @@ The algebra-level operator is built in three steps.  First,
 \lean{downwardFlagVector} extends the single-flag map linearly from basis
 flags to arbitrary \lean{FlagVector}~\(\sigma\) terms.  Second,
 \lean{downwardFlagVectorQuot} sends the resulting empty-type flag vector into
-\lean{FlagAlgebra}~\(\emptyt\).  Third, \lean{downward} descends
-the input through the quotient defining \lean{FlagAlgebra}~\(\sigma\).
+\lean{FlagAlgebra}~\(\emptyt\).  Third, \lean{downward} turns this
+representative-level construction into a function whose input is an element of
+the quotient algebra \lean{FlagAlgebra}~\(\sigma\), rather than a chosen
+\lean{FlagVector} representative.
 
 The compatibility theorem needed for the third step is the essential point.  A
 flag vector may be changed by an element of the zero space without changing the
 corresponding flag-algebra element; the respect lemma displayed below proves
-that the downward image is unchanged by exactly those zero-space relations.
-Thus the formalized operator is not merely a linear map on representatives: it
-is a well-defined map on the quotient algebra.
+that the downward image is unchanged whenever two flag-vector representatives
+differ by an element of the zero space.  Thus the formalized operator is not
+merely a linear map on representatives: it is a well-defined map on the
+quotient algebra.
 \begin{lstlisting}
-noncomputable def downwardFlagVector
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+noncomputable def downwardFlagVector {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     : FlagVector (*@$\sigma$@*) (*@$\to$@*) FlagVector (*@$\emptyt$@*) :=
   linearExtension (fun F : FinFlag (*@$\sigma$@*) => downwardFlag F.2)
 
-noncomputable def downwardFlagVectorQuot 
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (f : FlagVector (*@$\sigma$@*)) : FlagAlgebra (*@$\emptyt$@*) :=
-  (*@$\llbracket$@*)downwardFlagVector f(*@$\rrbracket$@*)
+noncomputable def downwardFlagVectorQuot {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    : FlagVector (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
+  fun f : FlagVector (*@$\sigma$@*) => (*@$\llbracket$@*)downwardFlagVector f(*@$\rrbracket$@*)
 
-lemma downwardFlagVectorQuot_respect_eqv
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    {f f' : FlagVector (*@$\sigma$@*)} (h : f - f' (*@$\in$@*) ZeroSpace (*@$\sigma$@*)) :
-    downwardFlagVectorQuot f = downwardFlagVectorQuot f'
+lemma downwardFlagVectorQuot_respect_eqv {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    {f f' : FlagVector (*@$\sigma$@*)} (h : f - f' (*@$\in$@*) ZeroSpace (*@$\sigma$@*))
+    : downwardFlagVectorQuot f = downwardFlagVectorQuot f' := ...
 
-noncomputable def downward
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} :
-    FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
-  Quotient.lift
-    (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
-    (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
+noncomputable def downward {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    : FlagAlgebra (*@$\sigma$@*) (*@$\to$@*) FlagAlgebra (*@$\emptyt$@*) :=
+  Quotient.lift (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f) (...)
+
+notation "(*@$\llbracket$@*)" f "(*@$\rrbracket_0$@*)" => (downward f)
 \end{lstlisting}
-The last definition is the quotient-level downward operator.  In mathematical
-prose we write it as \(\llbracket-\rrbracket_\sigma\), following
-Section~\ref{sec:background-downward}; in Lean snippets below, the same map is
-rendered as \(\llbracket-\rrbracket_0\), emphasizing that its codomain is the
-empty-typed algebra.  The notation is compact, but the implementation
-contains the full descent from concrete labeled graphs to flags, from flags to
-flag vectors, and finally from flag vectors to the quotient algebra.
+The last definition is the quotient-level downward operator, and the final
+line of the snippet is the Lean notation declaration saying that
+\(\llbracket f\rrbracket_0\) expands to \lean{downward f}.  In mathematical
+prose we write this operator as \(\llbracket-\rrbracket_\sigma\), following
+Section~\ref{sec:background-downward}.  In Lean code, the subscript \(0\)
+emphasizes that the codomain is the
+\(\emptyt\)-typed algebra.  The notation is compact, but the implementation
+contains the full sequence of quotient lifts: from concrete labeled graphs to
+flags, from flags to flag vectors, and finally from flag-vector
+representatives to elements of the quotient algebra.
 
 It remains to connect this algebraic map to the semantics of positive
-homomorphisms.
-%The relevant construction lives in \lean{FlagAlgebra/RandomHom.lean}.
-Given an empty-type positive homomorphism
-\(\phi_0\) in which the type \(\sigma\) has positive density, Lean constructs a
-probability measure on \lean{PositiveHomSpace}~\(\sigma\).  This measure is the
-formal version of the random extension \(\Ext_\sigma(\phi_0)\): it represents
-the experiment of choosing a random occurrence of the type \(\sigma\) in the
-limiting object represented by \(\phi_0\).  Its defining property is the formal
-version of Equation~\eqref{eq:ensemble}:
+homomorphisms.  The theorem below is the Lean form of the random-extension
+identity from Equation~\eqref{eq:ensemble}, so we first spell out the objects
+appearing in the statement.  The type \lean{PositiveHomSpace}~\(\sigma\) is the
+measurable space whose points are positive homomorphisms on
+\(\mathcal{A}^\sigma\), represented in Lean by their density profiles.  A term
+\(\phi : \lean{PositiveHomSpace}~\sigma\) can therefore be converted back to
+the corresponding positive homomorphism by \lean{PositiveHomSpace.toPosHom}.
+At this point \(\phi\) is just a point of this measurable space, not yet a
+random sample.  The expression
+\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\) is simply the value of the
+positive homomorphism represented by \(\phi\) on \(f\).
+
+The hypothesis
+\(\phi_0(\langle\sigma\rangle_0)>0\) says that the type \(\sigma\), viewed as
+an empty-type flag-algebra element, has positive density under the base
+homomorphism \(\phi_0\).  Under this hypothesis Lean constructs a probability
+measure \(P\) on \lean{PositiveHomSpace}~\(\sigma\).  This \(P\) is the formal
+random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
+randomly choosing an occurrence of the type \(\sigma\) in the limiting object
+represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
+\(P\) is present, a point
+\(\phi : \lean{PositiveHomSpace}~\sigma\) may be regarded as a random positive
+homomorphism drawn from this distribution.  The displayed theorem states the
+defining identity of that distribution:
 \begin{lstlisting}
-theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0) :
-    (*@$\exists$@*) (P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*))),
-      (*@$\forall$@*) (f : FlagAlgebra (*@$\sigma$@*)),
+theorem exists_probMeasure_extend_emptyType_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
+    : (*@$\exists$@*) P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)), (*@$\forall$@*) f : FlagAlgebra (*@$\sigma$@*),
         (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)), PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
         = (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) / (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
+  := ...
 \end{lstlisting}
-The statement says that averaging the typed evaluation \(\phi(f)\) over this
-random extension recovers the empty-type evaluation of the downward image,
-divided by the normalizing value of the typed unit.  Equivalently,
-\(\phi_0(\llbracket f\rrbracket_0)\) is that typed average multiplied by
-\(\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)\).  This is exactly the bridge needed for
-semantic soundness: a typed inequality can be tested by first randomly rooting
-the unlabeled limiting object, evaluating in the typed algebra, and then
-averaging back down.
+The integral line uses Mathlib's binder notation for integration with respect
+to a specified measure.  In general, Lean writes
+\[
+  \int x, g(x)\,\partial\mu
+\]
+for the integral of the function \(x\mapsto g(x)\) with respect to the measure
+\(\mu\).  The comma separates the bound variable from the integrand, and
+\(\partial\mu\) supplies the measure; the symbol \(\partial\) is only notation
+for ``with respect to'', not a derivative.  In the theorem above, the bound
+variable is
+\(\phi : \lean{PositiveHomSpace}~\sigma\), the integrand is
+\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\), and the measure is \(P\).
+Since \(P\) is a probability measure, this integral is simply expectation.
+Thus the line
+\[
+  \int \bigl(\phi \mapsto \phi(f)\bigr)\, dP
+\]
+should be read as
+\[
+  \mathbb{E}_{\phi\sim P}[\phi(f)].
+\]
+With this reading, the theorem says exactly that \(P\) satisfies
+Equation~\eqref{eq:ensemble}:
+\[
+  \mathbb{E}_{\phi\sim P}[\phi(f)]
+  =
+  \frac{\phi_0(\llbracket f\rrbracket_0)}
+       {\phi_0(\llbracket 1\rrbracket_0)} .
+\]
+The denominator is the normalizing value of the typed unit after applying the
+downward operator, and it is positive under the hypothesis
+\(\phi_0(\langle\sigma\rangle_0)>0\).  Thus the theorem gives a concrete way
+to compute the unlabeled value \(\phi_0(\llbracket f\rrbracket_0)\) from typed
+evaluations: randomly label the limiting object represented by \(\phi_0\) with
+a copy of \(\sigma\), evaluate \(f\) in the resulting \(\sigma\)-typed positive
+homomorphism, average these values, and multiply by the positive normalizing
+denominator.
 
-The payoff is the formal semantic transfer theorem corresponding to
-\Cref{thm:downward-nonneg}: if \(f\) is semantically non-negative in the
-\(\sigma\)-typed algebra, then its downward image is semantically non-negative
-in the empty-typed algebra.
+The payoff is the Lean transfer theorem corresponding to
+\Cref{thm:downward-nonneg}: if \(f\) is non-negative under every positive
+homomorphism in the
+\(\sigma\)-typed algebra, then its downward image is non-negative under every
+empty-type positive homomorphism.
 \begin{lstlisting}
-theorem downward_preserve_semanticCone
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*)) :
-    (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*)
+theorem downward_preserve_semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+    (f : FlagAlgebra (*@$\sigma$@*)) (hf : f (*@$\in$@*) semanticCone (*@$\sigma$@*))
+    : (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*) := ...
 \end{lstlisting}
-To prove the theorem, Lean tests the claimed empty-type non-negativity against
-an arbitrary positive homomorphism \(\phi_0\).  If
-\(\phi_0(\langle\sigma\rangle_0)=0\), then every downward value has evaluation
-zero at \(\phi_0\).  If \(\phi_0(\langle\sigma\rangle_0)>0\), the
-random-extension theorem rewrites \(\phi_0(\llbracket f\rrbracket_0)\) as a
-positive normalizing factor times the average of \(\phi(f)\) over typed
-positive homomorphisms.  Since \(f\in\mathcal{C}^\sigma\), every integrand is
-non-negative, and so the average is non-negative.  \gw{This proof sketch may be unnecessary.}
-This is the formal bridge
-from typed inequalities to the unlabeled semantic order used by certificate
-proofs.
+The proof is the formal use of Equation~\eqref{eq:ensemble}.  To show that
+\(\llbracket f\rrbracket_0\) lies in \lean{semanticCone}~\(\emptyt\), Lean
+tests it against an arbitrary empty-type positive homomorphism \(\phi_0\).  If
+\(\phi_0(\langle\sigma\rangle_0)=0\), a separate zero-density lemma shows that
+every downward value evaluates to \(0\) at \(\phi_0\).  If
+\(\phi_0(\langle\sigma\rangle_0)>0\), the random-extension theorem provides
+the probability measure \(P=\Ext_\sigma(\phi_0)\), obtained by randomly
+labeling an occurrence of \(\sigma\), and rewrites
+\(\phi_0(\llbracket f\rrbracket_0)\) as a positive normalizing factor times
+the expectation of \(\phi(f)\) over \(\phi\sim P\).  Since
+\(f\in\mathcal{C}^\sigma\), every typed positive homomorphism \(\phi\) has
+\(\phi(f)\ge 0\).  The expectation is therefore non-negative, and multiplying
+by the positive normalizing factor preserves non-negativity.  This is the
+transfer from typed inequalities to the unlabeled order used later in density
+bounds.
 
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
@@ -2105,7 +2168,7 @@ theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     forall f : FlagAlgebra (*@$\sigma$@*),
       integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) P =
         (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
-          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
+          (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*) := ...
 \end{lstlisting}
 This theorem explains why the formalization needs measure theory.  The
 downward operator gives the expectation of typed random extensions, so a
@@ -2123,7 +2186,7 @@ theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
     {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
     (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))) :
-    generalizedTuranDensity H F <= c
+    generalizedTuranDensity H F <= c := ...
 \end{lstlisting}
 The Lean constant takes the forbidden graph first and the target graph
 second: \lean{generalizedTuranDensity H F} is the maximum density of $P$ in
@@ -2136,6 +2199,7 @@ asymptotic extremal bound follows.  This is the main payoff of the
 specification layer: a concrete certificate proof can be assembled from finite
 counting, PSD non-negativity, and algebraic rewriting, while the passage from
 that certificate to a Tur\'an-density theorem is handled once and reused.
+
 \section{The Reflection Layer}
 \label{sec:reflection}
 
@@ -2278,13 +2342,13 @@ adequacy theorems for the compute-density layer:
 theorem flagDensity1_eq_sym2FlagDensity1
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
     flagDensity1 F.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity1 F G
+    sym2EmptyTypeFlagDensity1 F G := ...
 
 theorem flagDensity2_eq_sym2FlagDensity2
     (F0 : Sym2EmptyTypedFlag m0) (F1 : Sym2EmptyTypedFlag m1)
     (G : Sym2EmptyTypedFlag n) :
     flagDensity2 F0.toFlag F1.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity2 F0 F1 G
+    sym2EmptyTypeFlagDensity2 F0 F1 G := ...
 \end{lstlisting}
 The right-hand sides are defined entirely over \lean{Sym2Graph} and are fully
 computable.  After rewriting a density goal with these theorems, the goal
@@ -2379,7 +2443,7 @@ step each tactic would later have to automate.
 
 The section is organized around that shared shape.
 Section~\ref{sec:flagmatic-shape} isolates it as a four-part skeleton;
-Sections~\ref{sec:flagmatic-psd}--\ref{sec:flagmatic-close} show how each part
+Sections~\ref{sec:flagmatic-gen}--\ref{sec:flagmatic-close} show how each part
 is discharged by a reusable, kernel-checked component; and
 Section~\ref{sec:flagmatic-script}
 describes the translator that assembles the whole proof from a Flagmatic
@@ -2392,94 +2456,29 @@ kernel checks and whose own computation never enters the trusted base
 \subsection{The recurring four-part shape}
 \label{sec:flagmatic-shape}
 
-Every API-style proof in the development is a populated instance of the same
-four-part skeleton.
+Each of these proofs has the same four-part skeleton.  We list the parts in the
+order a finished proof presents them:
 
 \begin{enumerate}
-  \item \textbf{Per-block PSD certificates.}  For each subflag type $\sigma_t$
-    the certificate carries a rational positive semidefinite matrix $M_t$.
-    Part~1 declares each $M_t$ together with a proof that it is PSD over
-    $\mathbb{R}$.
-  \item \textbf{Flag, density, and product data.}  Part~2 brings into scope,
-    for the relevant sizes, the $\mathcal{H}$-free flags, their completeness
-    lemmas, and the pair-density and typed-multiplication identities that the
-    proof body rewrites with.
-  \item \textbf{Subflag vectors.}  Part~3 names the type $\sigma_t$ and the
-    vector $v_t$ of $\sigma_t$-flags that the quadratic form
-    $\langle v_t, M_t\, v_t\rangle$ is built from.
-  \item \textbf{The theorem and its proof body.}  Part~4 states the bound
-    $P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ and discharges it by adding each
-    block's quadratic form, expanding the unit at host size, reducing every
-    downward-averaged product, normalizing, and closing by non-negativity.
+  \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
+    (only those that avoid the forbidden graph), together with the pair-density
+    and typed-multiplication identities among them that the body rewrites with.
+  \item \textbf{Certificate matrices and flag vectors.}  For each subflag type
+    $\sigma_t$, a rational matrix $M_t$ paired with a vector $v_t$ of
+    $\sigma_t$-flags; together they form the quadratic form
+    $\langle v_t, M_t\, v_t\rangle$.
+  \item \textbf{Lifting the objective (when needed).}  If the objective is
+    smaller than the host size, one auxiliary lemma first lifts it to host size,
+    dropping the contributions that contain the forbidden graph.
+  \item \textbf{The main theorem.}  The bound $P \leq_{\mathcal{H}}
+    c\cdot\mathbf{1}$, discharged by adding each block's quadratic form,
+    expanding the unit at host size, reducing every downward-averaged product,
+    normalizing, and closing by non-negativity.
 \end{enumerate}
 
-The shape has exactly two structural variants, selected by comparing the
-objective's vertex count $n_{\mathit{obj}}$ to the host size $N$ at which the
-certificate's admissible graphs live.  In \emph{Branch~A}
-($n_{\mathit{obj}}=N$) the objective is already a host-size flag, so the
-proof works directly with it ($C_4$-Tur\'an, Erd\H{o}s pentagon).  In
-\emph{Branch~B} ($n_{\mathit{obj}}<N$) the objective must first be expanded
-up to host size, dropping the $\mathcal{H}$-containing contributions on the
-way; this costs one extra auxiliary lemma (Mantel, $K_4$- and $K_5$-Tur\'an).
-Everything else is shared.
+Each part of the shape is discharged by a verified, reusable component, taken up
+in turn by the next four subsections.
 
-
-Each part of the shape is discharged by a verified, reusable component, and the
-four subsections that follow take the recurring steps in turn: verifying the
-SDP certificate, generating the forbid-free data, expanding and reducing typed
-products, and normalizing and closing.  All of these tactics share one enabler.
-Every flag and flag-algebra constant is named \lean{Flag\_n\_k\_m\_i} /
-\lean{FlagAlgebra\_n\_k\_m\_i}, where $n$ is the vertex count, $k$ and $m$
-identify the type graph, and $i$ is the canonical index within the isomorphism
-class; the convention is not merely organizational but a machine-readable
-encoding of structure.  By parsing the trailing integers from a constant's
-\lean{Name}---a syntactic object the elaboration monad inspects without
-triggering type-checking or attribute resolution---a tactic recovers the
-canonical order of a flag term, the name of its precomputed density or
-multiplication lemma, and the type parameters it needs, all in the fast
-elaboration path.  To tolerate the syntactic variation the elaborator
-introduces, the tactics normalize the expression tree with a
-\lean{collectPrefixConstants} traversal before inspecting names and compare flag
-terms with \lean{Expr.eqv} rather than structural equality; this metaprogramming
-was among the least portable parts of the development.
-
-\subsection{Verifying and adding the SDP certificates}
-\label{sec:flagmatic-psd}
-
-A real symmetric matrix is positive semidefinite iff it factors as
-$M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
-over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
-cluster of rational definitions closed by a one-line proof:
-\begin{lstlisting}
-def M  : Matrix (Fin 2) (Fin 2) Q := !![(1/2 : Q), (-1/2 : Q); (-1/2 : Q), (1/2 : Q)]
-def dM : Fin 2 -> Q := ![(1/2 : Q), 0]
-def LM : Matrix (Fin 2) (Fin 2) Q := !![(1 : Q), 0; (-1 : Q), (1 : Q)]
-noncomputable def M_real : Matrix (Fin 2) (Fin 2) R := ratMatrixToReal M
-theorem M_real_posSemidef : M_real.PosSemidef := by
-  psd_real_ldlt M LM dM
-\end{lstlisting}
-The tactic \lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean})
-refines the goal through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and
-discharges its two side conditions: the diagonal non-negativity $d_M \geq 0$ by
-\lean{fin\_cases}/\lean{norm\_num}, and the factorization equality
-$M = L_M\,\mathrm{diag}(d_M)\,L_M^\top$ by \lean{decide +kernel}---a decidable
-rational matrix equality the kernel evaluates entry by entry, using no compiled
-native code.  The lemma bundles the $\mathbb{Q}\!\to\!\mathbb{R}$ plumbing, so
-the emitter need only supply the rational triple $(M, L_M, d_M)$.  Because the
-equality is kernel-checked, a wrong $L_M$ or $d_M$ surfaces as a compile error
-on this line, never as a silently accepted non-PSD matrix---the one place we
-deliberately pay for in-kernel evaluation (Section~\ref{sec:flagmatic-trust}).
-
-Once a block is known positive semidefinite, it enters the proof through a
-single lemma:
-\begin{lstlisting}
-theorem forbidLE_add_QuadraticForm
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
-    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
-\end{lstlisting}
-which adds the quadratic form $\llbracket\langle v, M\,v\rangle\rrbracket$ to the
-target under the forbid relation.  Iterating it once per type builds a
-transitive chain of additions, one block at a time.
 
 \subsection{Generating the forbid-free flags and their data}
 \label{sec:flagmatic-gen}
@@ -2514,56 +2513,131 @@ forbid-freeness predicate from it, so a new forbidden graph is a new
 \lean{Sym2Graph} definition rather than a new per-forbid branch in the
 meta-commands.
 
-\subsection{Expanding and reducing typed products}
+\subsection{The certificate matrices and their flag vectors}
+\label{sec:flagmatic-psd}
+
+A real symmetric matrix is positive semidefinite iff it factors as
+$M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
+over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
+cluster of rational definitions closed by a one-line proof, and is paired with
+the vector of $\sigma$-flags it will be contracted against:
+\begin{lstlisting}
+def M  : Matrix (Fin 2) (Fin 2) Q := !![(1/2 : Q), (-1/2 : Q); (-1/2 : Q), (1/2 : Q)]
+def dM : Fin 2 -> Q := ![(1/2 : Q), 0]
+def LM : Matrix (Fin 2) (Fin 2) Q := !![(1 : Q), 0; (-1 : Q), (1 : Q)]
+noncomputable def M_real : Matrix (Fin 2) (Fin 2) R := ratMatrixToReal M
+theorem M_real_posSemidef : M_real.PosSemidef := by
+  psd_real_ldlt M LM dM
+def sigma : FlagType (Fin 1) := FlagType_1_0
+noncomputable def v : FlagAlgebraVec sigma 2 := ![FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1]
+\end{lstlisting}
+The tactic \lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean})
+refines the goal through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and
+discharges its two side conditions: the diagonal non-negativity $d_M \geq 0$ by
+\lean{fin\_cases}/\lean{norm\_num}, and the factorization equality
+$M = L_M\,\mathrm{diag}(d_M)\,L_M^\top$ by \lean{decide +kernel}---a decidable
+rational matrix equality the kernel evaluates entry by entry, using no compiled
+native code.  The lemma bundles the $\mathbb{Q}\!\to\!\mathbb{R}$ plumbing, so
+the emitter need only supply the rational triple $(M, L_M, d_M)$.  Because the
+equality is kernel-checked, a wrong $L_M$ or $d_M$ surfaces as a compile error
+on this line, never as a silently accepted non-PSD matrix---the one place we
+deliberately pay for in-kernel evaluation (Section~\ref{sec:flagmatic-trust}).
+The vector $v_t$ alongside it merely lists the $\sigma_t$-flags by name;
+together $(M_t, v_t)$ form the quadratic form
+$\llbracket\langle v_t, M_t\,v_t\rangle\rrbracket$ that the main theorem adds to
+the target.
+
+\subsection{Lifting the objective to host size}
 \label{sec:flagmatic-expand}
 
-Two structural identities recur in every proof: the \emph{expansion} of a flag
-at a larger size as a weighted sum of host-size flags, and the \emph{product} of
-two typed flags as a linear combination at the product size.  Under a forbid
-both are produced in forbid-free form.
+Whether this step is present is the proof's one structural choice, fixed by
+comparing the objective's vertex count $n_{\mathit{obj}}$ to the host size $N$
+fixed by the certificate.  In \emph{Branch~A} ($n_{\mathit{obj}}=N$), the
+objective is already a host-size flag and this subsection is skipped
+($C_4$-Tur\'an, Erd\H{o}s pentagon).  In \emph{Branch~B} ($n_{\mathit{obj}}<N$;
+Mantel, $K_4$- and $K_5$-Tur\'an), the objective must first be lifted, by
+rewriting it as its forbid-free expansion at size $N$.  Concretely,
+\lean{flag\_expand\_hfree N K} closes a goal $P =_{K} \sum_j c_j\,F_j$ by
+rewriting with \lean{basisVector\_quot\_forbidEq\_sum} directly onto the
+generated \lean{flagSetHfree\_N\_0\_0\_<K>} set---never materializing the full
+\lean{flagSet}, and dropping the $\mathcal{H}$-containing host terms
+automatically (no manual \lean{basisVector\_forbidEq\_zero} step).  Its closing
+arithmetic needs the relevant \lean{flagDensity\textsubscript{1}} values present
+as \lean{@[simp]} lemmas, which the translator emits (each closed by
+\lean{native\_decide} after an adequacy rewrite).
 
-Expansion is used in two places, both forbid-free.  In Branch~B the objective is
-lifted to host size by \lean{flag\_expand\_hfree N K}, which closes a goal
-$F =_{K} \sum_j c_j\,F_j$; the unit is expanded by \lean{expand\_one\_hfree\_at N
-K}, which rewrites $\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free
-flags.  Both rewrite with \lean{basisVector\_quot\_forbidEq\_sum} directly onto
-the generated \lean{flagSetHfree\_N\_k\_m\_<K>} set---never materializing the
-full \lean{flagSet}, and dropping the forbidden host terms automatically (no
-manual \lean{basisVector\_forbidEq\_zero} step).  The closing arithmetic of
-\lean{flag\_expand\_hfree} needs the relevant \lean{flagDensity\textsubscript{1}}
-values present as \lean{@[simp]} lemmas, which the translator emits (each closed
-by \lean{native\_decide} after an adequacy rewrite).
+\subsection{The main theorem}
+\label{sec:flagmatic-close}
 
-Products are reduced by \lean{reduce\_downward\_flagmul}.  The generation step
+The body assembles the pieces in a fixed sequence.  First, each block's
+quadratic form is added to the target by \lean{forbidLE\_add\_QuadraticForm}:
+\begin{lstlisting}
+theorem forbidLE_add_QuadraticForm
+    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
+    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
+\end{lstlisting}
+iterated once per type to build a transitive chain of additions.  The unit on
+the right is then expanded to host size by \lean{expand\_one\_hfree\_at N K},
+which rewrites $\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free flags by
+the same \lean{basisVector\_quot\_forbidEq\_sum} machinery as the objective lift
+of Section~\ref{sec:flagmatic-expand}.
+
+The downward-averaged products are discharged by
+\lean{reduce\_downward\_flagmul}.  The generation step
 (Section~\ref{sec:flagmatic-gen}) has already registered a
 \lean{flagMul\_<A>\_<B>} expansion for each pattern pair; the tactic
 right-associates the sum with \lean{simp only [downward\_add, add\_assoc]} and
 then rewrites each head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its
 \lean{flagMul} identity, moving each rewritten term across the inequality.  A
-single call dispatches all of a block's downward-averaged products.
+single call dispatches all of a block's products.
 
-\subsection{Normalizing and closing}
-\label{sec:flagmatic-close}
+What remains is an equality between two linear combinations of flag terms that
+are equal but syntactically reordered.  Generic tactics (\lean{ring},
+\lean{ac\_rfl}) search over all permutations of summands and become
+prohibitively slow past ${\sim}20$ terms, so we normalize with
+\lean{flagsum\_ac\_sort\_rhs\_pipeline} (in \lean{API/FlagSumSort.lean}): it
+flattens the expression into a list of (base, coefficient) pairs, assigns each
+base the sort key read from the trailing integer of its name, stable-sorts,
+merges like coefficients, and proves the original-equals-sorted equality up to
+add-AC.  The recorded counterexample is in \lean{ErdosPentagon.Lemmas}: a
+commented call reads ``\texttt{-- sort\_at -- takes more than 10 minutes}''; the
+generic \lean{sort\_at}, which uses \lean{simp} without index guidance, times out
+on ${\sim}25$-term expressions, while the index-guided sort completes the same
+step in under a second.
 
-After expansion and product reduction, the obligation is an equality between two
-linear combinations of flag terms that are equal but syntactically reordered.
-Generic tactics (\lean{ring}, \lean{ac\_rfl}) handle this in principle but search
-over all permutations of summands and become prohibitively slow past ${\sim}20$
-terms.  \lean{flagsum\_ac\_sort\_rhs\_pipeline} (in \lean{API/FlagSumSort.lean})
-instead flattens the expression into a list of (base, coefficient) pairs,
-assigns each base the sort key read from the trailing integer of its name,
-stable-sorts, merges like coefficients, and proves the original-equals-sorted
-equality up to add-AC.  The recorded counterexample is in
-\lean{ErdosPentagon.Lemmas}: a commented call reads
-``\texttt{-- sort\_at -- takes more than 10 minutes}''; the generic
-\lean{sort\_at}, which uses \lean{simp} without index guidance, times out on
-${\sim}25$-term expressions, while the index-guided sort completes the same step
-in under a second.
+The final non-negativity goal is closed by \lean{flag\_nonneg}: it distributes
+an arbitrary positive homomorphism over the sum, splits with \lean{add\_nonneg},
+and discharges each leaf by \lean{positiveHom\_basisVector\_ge\_zero}.
 
-What remains is a non-negativity goal, closed by \lean{flag\_nonneg}: it
-distributes an arbitrary positive homomorphism over the sum, splits with
-\lean{add\_nonneg}, and discharges each leaf by
-\lean{positiveHom\_basisVector\_ge\_zero}.
+\paragraph{Adding quadratic forms and closing (Part~4).}
+Two API lemmas frame the body.  The standard upper-bound move---add one or more
+PSD quadratic forms to the target, then check that the result lies in the
+forbid-cone---is encapsulated by
+\begin{lstlisting}
+theorem forbidLE_add_QuadraticForm
+    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
+    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*) := ...
+\end{lstlisting}
+iterated once per type to build a transitive chain of additions.  The unit is
+expanded to host size by \lean{expand\_one\_hfree\_at N K} (rewriting
+$\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free flags); the
+downward-averaged products are discharged by \lean{reduce\_downward\_flagmul},
+which first right-associates the sum with
+\lean{simp only [downward\_add, add\_assoc]} and then rewrites each head
+summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
+identity, moving each rewritten term across the inequality; and the final
+non-negativity goal is closed by \lean{flag\_nonneg}, which distributes an
+arbitrary positive homomorphism over the sum, splits with \lean{add\_nonneg},
+and discharges each leaf by \lean{positiveHom\_basisVector\_ge\_zero}.
+
+\paragraph{Metaprogramming robustness.}
+These tactics must tolerate the syntactic variation Lean's elaborator
+introduces: after unification and implicit-argument resolution, the same flag
+term can appear in different syntactic forms.  We normalize the expression tree
+with a \lean{collectPrefixConstants} traversal before inspecting names, and
+compare flag terms with \lean{Expr.eqv} rather than structural equality.  This
+required substantial experimentation with the Lean~4 metaprogramming API and is
+among the least portable parts of the development.
 
 \subsection{The translation script}
 \label{sec:flagmatic-script}
@@ -2647,7 +2721,7 @@ obligation is closed by one of: \lean{decide +kernel} (the PSD matrix
 equality, kept in the kernel because it is load-bearing and small enough to
 finish there), \lean{native\_decide} (the density evaluations, large but
 individually simple rational equalities, checked by compiled code outside the
-kernel), or a verified tactic of Sections~\ref{sec:flagmatic-psd}--\ref{sec:flagmatic-close}.  A
+kernel), or a verified tactic of Sections~\ref{sec:flagmatic-gen}--\ref{sec:flagmatic-close}.  A
 miscomputation in the script---a wrong factorization, a wrong density, a
 mis-resolved identifier---surfaces as a compile error, never as a silently
 accepted false theorem.  The certificate and the solver behind it are
@@ -2822,7 +2896,7 @@ $K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$.  The repository contains two
 checked statements.  The first is the flag-algebra inequality used as the
 upper-bound certificate:
 \begin{lstlisting}
-theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3
+theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3 := ...
 \end{lstlisting}
 Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra} $\emptyt$ representing
 the single edge and the triangle.  The inequality asserts that in every
@@ -2831,8 +2905,7 @@ at most $1/2$.  The second is the ordinary Tur\'an-density theorem, proved
 in the same module by combining the algebraic upper bound with a formal
 complete-bipartite lower-bound construction:
 \begin{lstlisting}
-theorem Turan_density_K3
-    : turanDensity (completeGraph (Fin 3)) = 1 / 2
+theorem Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2 := ...
 \end{lstlisting}
 
 \paragraph{Which layer does what.}
@@ -2892,8 +2965,7 @@ A second small case study, in \lean{API/C4TuranAPI.lean}, proves an
 inequality about $C_4$ density (\lean{FlagAlgebra\_4\_0\_0\_8}) in
 triangle-free graphs:
 \begin{lstlisting}
-theorem C4_flagAlgebra_API
-    : FlagAlgebra_4_0_0_8 <=[K3.toFinFlag] (3 / 8 : R) * 1
+theorem C4_flagAlgebra_API : FlagAlgebra_4_0_0_8 <=[K3.toFinFlag] (3 / 8 : R) * 1 := ...
 \end{lstlisting}
 The certificate is a sum of two PSD quadratic forms, one for each of two
 size-2 types.  The matrices $M_1$ and $M_2$ (sizes $4 \times 4$ and
@@ -2912,8 +2984,7 @@ externally generated SDP certificate.
 
 The main result is:
 \begin{lstlisting}
-theorem ErdosPentagon_Turan
-    : generalizedTuranDensity K3 C5 = 24/625
+theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
 \end{lstlisting}
 proved as the conjunction of an upper bound and a lower bound.
 
@@ -2952,8 +3023,7 @@ The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
 \paragraph{Lower bound.}
 The lower bound
 \begin{lstlisting}
-theorem ErdosPentagon_Turan_lowerBound
-    : generalizedTuranDensity K3 C5 >= 24/625
+theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= 24/625 := ...
 \end{lstlisting}
 is proved by an explicit construction in
 \lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  The blow-up
@@ -2973,7 +3043,7 @@ triangle in the blow-up back to a triangle in the base graph:
 theorem blowUp_K3_free
     {m : Nat} {G : SimpleGraph (Fin m)}
     (n : Nat) (hfree : K3.Free G) :
-    K3.Free (blowUp G n)
+    K3.Free (blowUp G n) := ...
 \end{lstlisting}
 The construction has $5n$ vertices and at least $n^5$ copies of $C_5$:
 \begin{lstlisting}
