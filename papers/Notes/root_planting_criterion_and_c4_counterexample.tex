@@ -1972,6 +1972,14 @@ interior works'' weakening of substitution-closure's universal ``every interior 
 
 \section{Finite planting and the \texorpdfstring{$C_5$}{C5}-free class}
 
+This section is the first place where the choice of type becomes a real part of the
+phenomenon.  The closure hypotheses above are type-uniform: once a class is clone-closed,
+true-clone-closed, blow-up-closed, or substitution-closed in the relevant sense, the
+root-plantability conclusion holds for every non-degenerate type.  Finite planting is
+different.  It is a property \emph{at a fixed type} $\sigma$, and a local repair may work
+for one type while failing for another.  The $C_5$-free class below is the basic example:
+the one-root and two-root non-edge types are plantable, but the two-root edge type is not.
+
 We now isolate a finite, checkable criterion for root-plantability---\emph{finite
 planting}---which is implied by the global closure hypotheses of the previous sections but
 can also be met by a purely \emph{local} repair when no such closure is available.  Fix a
@@ -2151,7 +2159,7 @@ and $n:=|G|\ge n_0$, there are an integer $L$ with
 \]
 and a graph $H\in\K$ with vertex set
 \[
-  V(H)=U\sqcup R_1\sqcup\cdots\sqcup R_k,
+  V(H)=U\uplus R_1\uplus\cdots\uplus R_k,
   \qquad
   U:=V(G)\setminus\operatorname{im}\theta,
   \qquad
@@ -2205,7 +2213,7 @@ both $\delta$ and $n_0$ depend only on $m$ and $\eps$, as
 
 Now let $(G,\theta)$ be a $\sigma$-flag with $G\in\K$ and $n:=|G|\ge n_0$, and let
 $H$ be the sparse root blow-up repair supplied by \cref{def:sparse-root-repair} for
-this $\lambda$ and $\rho$, so that $V(H)=U\sqcup R_1\sqcup\cdots\sqcup R_k$ with
+this $\lambda$ and $\rho$, so that $V(H)=U\uplus R_1\uplus\cdots\uplus R_k$ with
 $U=V(G)\setminus\operatorname{im}\theta$ and each root set of common size
 $L\in[\lambda n/2,\lambda n]$.  Put
 \[
@@ -2322,8 +2330,17 @@ vertex $v$ to two vertices $x,y$ creates a $5$-cycle $x-a-b-y-c-x$ through the t
 $a,b,c$ of $v$, regardless of the edge between $x$ and $y$, so a naive blow-up leaves the class.
 The repair is local, and \cref{thm:sparse-repair-planting} applies: root-plantability holds at the
 one-vertex type and at the two-root non-edge type.  (The two-root \emph{edge} type, by contrast,
-obstructs; see \cref{sec:c5-edge}.)  Throughout, $C_5$-free means containing no $C_5$ as a (not
-necessarily induced) subgraph, the densest such graphs being complete bipartite.
+obstructs; see \cref{sec:c5-edge}.)
+
+The ambient convention is unchanged here: throughout the paper, a hereditary class is ordered by
+induced subgraphs.  The local convention is that $C_5$-free has its usual extremal-graph-theory
+meaning, namely containing no $C_5$ as a (not necessarily induced) subgraph.  Equivalently, in the
+induced-hereditary language this forbids all five-vertex induced graphs that contain a $C_5$.
+Balanced complete bipartite graphs are $C_5$-free and attain edge density $1/2$; conversely, the
+Erd\H{o}s--Stone--Simonovits theorem
+\cite{ErdosStone,ErdosSimonovits} gives $\mathrm{ex}(n,C_5)=(1/2+o(1))\binom n2$, and Simonovits's
+stability/exact theorem for colour-critical graphs \cite{Simonovits1968} identifies the unique
+dense extremal limit as the balanced complete bipartite graphon.
 
 The key fact is a strong local constraint.
 
@@ -2733,7 +2750,7 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
-$\overline{K_{1,N-1}}=K_{N-1}\sqcup K_1$.  Then $\K$ is not root-plantable at
+$\overline{K_{1,N-1}}=K_{N-1}\uplus K_1$.  Then $\K$ is not root-plantable at
 $\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In
 particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
@@ -3911,6 +3928,22 @@ A.~A.~Zykov.
 \newblock On some properties of linear complexes.
 \newblock \emph{Mat. Sb. (N.S.)}, 24(66), no.~2:163--188, 1949.
 \newblock \url{https://www.mathnet.ru/eng/sm5974}.
+
+\bibitem{ErdosStone}
+P.~Erd\H{o}s and A.~H.~Stone.
+\newblock On the structure of linear graphs.
+\newblock \emph{Bulletin of the American Mathematical Society}, 52:1087--1091, 1946.
+
+\bibitem{ErdosSimonovits}
+P.~Erd\H{o}s and M.~Simonovits.
+\newblock A limit theorem in graph theory.
+\newblock \emph{Studia Scientiarum Mathematicarum Hungarica}, 1:51--57, 1966.
+
+\bibitem{Simonovits1968}
+M.~Simonovits.
+\newblock A method for solving extremal problems in graph theory, stability problems.
+\newblock In \emph{Theory of Graphs (Proc. Colloq., Tihany, 1966)}, pages 279--319.
+\newblock Academic Press, New York, 1968.
 
 \bibitem{KovariSosTuran}
 T.~K\H{o}v\'ari, V.~T.~S\'os, and P.~Tur\'an.
