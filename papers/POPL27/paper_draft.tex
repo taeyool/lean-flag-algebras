@@ -1894,7 +1894,8 @@ $q_\sigma(A)$ on concrete \lean{LabeledGraph}s and then lift it to
 \lean{unlabel} is its lifted version on \lean{Flag}s.  Each lift requires a proof that
 isomorphic representatives give the same result.  Finally, \lean{downwardFlag}
 combines these two lifted components, realizing
-$\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.
+$\llbracket A\rrbracket_\sigma = q_\sigma(A)\cdot A|_\emptyset$.  In Lean,
+$\leansmul$ denotes scalar multiplication from the ambient module structure.
 \begin{lstlisting}
 noncomputable def downwardNormalizingFactor_labeledGraph
     {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
@@ -1935,9 +1936,10 @@ At the single-flag level, the construction only has to respect isomorphism of
 representatives; at the algebra level, it must also respect the expansion
 equations generating the zero space $\mathcal{Z}^\sigma$.
 
-The code below shows this second lift.  The intermediate
-\lean{downwardFlagVectorQuot} applies \lean{downwardFlagVector} and then
-quotients the resulting \lean{FlagVector} $\emptyt$, so its output lies in
+The code below shows this second lift.  We first define
+\lean{downwardFlagVectorQuot}, which wraps the output of
+\lean{downwardFlagVector} with the quotient map
+$\llbracket\cdot\rrbracket$, giving a value of type
 \lean{FlagAlgebra} $\emptyt$.  The second lift then quotients the input
 parameter of \lean{downwardFlagVectorQuot}.  To do so, Lean needs the proof
 \lean{downwardFlagVectorQuot\_respect\_eqv}: two \lean{FlagVector} $\sigma$
@@ -1966,13 +1968,12 @@ noncomputable def downward
     (fun f : FlagVector (*@$\sigma$@*) => downwardFlagVectorQuot f)
     (fun _ _ h => downwardFlagVectorQuot_respect_eqv h)
 \end{lstlisting}
-The last definition is the quotient-level downward operator.  In mathematical
-prose we write it as $\llbracket-\rrbracket_\sigma$, following
+The resulting \lean{downward} is the operator from $\mathcal{A}^\sigma$ to
+$\mathcal{A}^{\emptyset}$.  In mathematical prose we write it as
+$\llbracket-\rrbracket_\sigma$, following
 Section~\ref{sec:background-downward}; in Lean snippets below, the same map is
 rendered as $\llbracket-\rrbracket_0$, emphasizing that its codomain is the
-$\emptyt$-typed algebra.  In either notation, the concise brackets hide two
-successive quotient lifts and a substantial compatibility proof with the
-zero-space presentation of the algebra. \gw{I'm here.}
+empty-typed algebra. \gw{I'm here.}
 
 The semantic soundness of the downward operator is proved in
 \lean{FlagAlgebra/RandomHom.lean}.  We do not formalize a separate informal
