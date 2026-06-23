@@ -262,13 +262,13 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       `qCliqueFree_eq_qFree` (= `qFree F` for complete `F`) + `prunedCliqueFreeFlags` /
       `prunedCliqueFreeFlags_toFinset_eq` (Task-5a wiring applies verbatim). `completeSym2Graph_edges_iff`
       added to `Forbid/CommonGraphs.lean` supplies the "complete" hypothesis. Validated: clique counts
-      `7/14/38` at n = 4/5/6 (= K₃-free), and **n = 7 now FINISHES: 107 K₃-free classes** (the generic
-      check never did).
-    - **Perf caveat (measurement flaw):** the n = 7 bench ran the generation *twice* (an interpreted
-      `#eval` + a `native_decide`), ~959 s wall total — so the clean native-only cost is **unmeasured**
-      and n = 7 is clearly still *not fast*. The iso-dedup (`isEmptyIsoFast` over the growing list) is now
-      a likely co-bottleneck, independent of the clique check. So 8a makes n = 7 **feasible** (qualitative
-      win) but not yet *cheap*.
+      `7/14/38` at n = 4/5/6 (= K₃-free), and n = 7 generates 107 K₃-free classes.
+    - **Perf reality (measured 2026-06-23 — see Progress Log; supersedes the earlier "feasibility"
+      claim).** The clique check is **≈ as fast as the generic `inducedContains` at every n**
+      (n=7: 576 s clique vs 577 s generic; n=6: ~5 s each) — the forbid predicate is *not* the generation
+      bottleneck; the **iso-dedup** is. The earlier "generic n=7 doesn't finish" was an artifact of
+      killing it at 6.5 min (it finishes ~9.6 min, like clique). So 8a is a correct, clean specialization
+      with **≈ 0 % practical speedup**; the clean native-only n=7 cost (~561 s generation) is now pinned.
     - **DONE — command routing (empty-typed).** `generate_pruned_forbid_free_empty_typed_flags n F`
       now auto-detects a complete-graph forbid: `detectCompleteR` inspects `F`'s definition for
       `completeSym2Graph r` (via `getAppFnArgs` + `whnf` literal match), and if so the free-mask eval
@@ -278,10 +278,9 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       taken. Verified: `K3` → "cheap clique check" (counts 7/14 at n=4/5), `C4graph` → "generic"
       (count 10 at n=4); both prove correct completeness. (Helpers `detectCompleteR` /
       `evalCliqueFreeMask` live in `Densities/DensityThmGenerator.lean`.)
-    - **REMAINING for 8a:** (1) clean native-only n = 7 timing of the routed command (no `#eval`);
-      (2) optionally route the **σ-typed** command / pair-density too — but its pruning is a graph-level
-      *filter* (not the genuine generator), so the real typed cost is 8b, not 8a. Empty-typed (where the
-      genuine pruned generator lives, and the n = 6/7 K₃-free loading goal sits) is now routed.
+    - **REMAINING for 8a:** none of practical value — the measurement shows the clique check doesn't
+      move the needle (≈ 0 %), so further 8a routing (e.g. the σ-typed command) is not worth it. The
+      generation bottleneck to target instead is the **iso-dedup** (a separate, future optimization).
   - `[~]` **8b. Cheaper typed-example cost.** Two named cost centers; the dominant one is done.
     - **DONE — batched (chunked) pair-density `native_decide`.** The pair-density step used to emit
       *one `native_decide` per forbid-free pair* (`ErdosPentagon`: ~2 832). `genPairDensityCoreOn`
@@ -293,8 +292,11 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       recurses for large `i`; chunk 200 keeps depth < 512. Results: `MantelHfree` 15 pairs → 1
       `native_decide`; **`ErdosPentagon` 2 832 pairs → 15** `native_decide`s (1800→9, 672→4, 360→2);
       full project builds green (7989 jobs). The individual `@[simp]` lemmas are unchanged in statement,
-      so the mul commands consume them as before. (Clean before/after wall-time not isolated — the
-      structural win is ~189× fewer `native_decide` compilations.)
+      so the mul commands consume them as before. **Measured (2026-06-23):** `ErdosPentagon`
+      own-compile-time 219 s (old per-pair) → **196 s (new), ~10 %** — modest, because the per-pair
+      `native_decide`s were individually cheap, so pair-density is only ~10–15 % of the file's total
+      compile (the dominant cost is σ-typed flag generation + the SOS proof). 189× fewer `native_decide`
+      compilations, but a ~10 % wall-time win.
     - **TODO — genuine-pruning σ-typed generator.** `genFlagsHfree` still enumerates *all* σ-typed
       flags (over `genSym2GraphsDedup n`) and filters. Building labeled flags directly over the pruned
       reps (`augRepsFreeB`/clique) would avoid materializing forbidden graphs at the typed level too.
@@ -302,6 +304,27 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     - **TODO — re-enable `K5turan`.** Its blocker was the pair-density count (K₅-free is weak → most
       pairs free); the batch should make it tractable now. Worth re-testing and, if it builds, removing
       it from the aggregator's comment-out.
+
+- `[ ]` **9. Performance: target the real bottlenecks (identified by the 2026-06-23 measurement).**
+  The 8a/8b measurements showed the forbid *predicate* (8a, ≈ 0 %) and the pair-density *count* (8b,
+  ~10 %) are **not** where the compile time goes. The two genuine cost centers — neither yet optimized:
+  - `[ ]` **9a. Faster iso-dedup** — the bottleneck of empty-typed / graph generation at high n.
+    Evidence: K₃-free n=7 generation is ~561 s, and clique vs generic predicate made *no* difference
+    (~576 s each) because both pay the same dedup. `dedupStep` keeps a running list of representatives
+    and iso-checks each new graph against *all* of them via `isEmptyIsoFast` — roughly **quadratic** in
+    the class count (1044 graphs at n=7). Options: (i) **bucket by an iso-invariant** (e.g. degree
+    sequence) so `isEmptyIsoFast` only compares within a bucket — the keyed-dedup machinery already
+    exists (`degKey` / `augRepsDeg`, used by the non-pruned `genSym2GraphsDedup`); extend it to the
+    pruned `augRepsFreeB` path; (ii) a **canonical form** key so dedup becomes a hash/sort instead of
+    pairwise iso-checks. This is the real lever for making n = 6/7 forbid-free loading *cheap* (the
+    original Task-8 motivation). Likely also speeds the non-forbid enumeration.
+  - `[ ]` **9b. σ-typed flag generation + SOS-proof cost** — the bottleneck of the typed *examples*.
+    For `ErdosPentagon`, pair-density is only ~10–15 % of the ~196 s compile; the rest is the σ-typed
+    `genFlagsHfree` generation (still a full-enum filter — overlaps the deferred "genuine-pruning σ-typed
+    generator" under 8b) plus the SOS proof (`flag_expand_hfree` / `reduce_downward_flagmul` /
+    `flagsum_ac_sort` / `flag_nonneg`). First **profile** a typed example (`set_option profiler true`,
+    or per-declaration timing) to attribute the time between generation and proof, then optimize the
+    larger share. Also the path to a tractable `K5turan` (8b TODO).
 
 ## Multi-graph design notes (for D3)
 
@@ -539,3 +562,25 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   still filters the full enum) — lower leverage at current sizes, left as a refinement. **K5turan** may
   now be tractable (its blocker was the pair-density count); worth re-testing to re-enable. **Next:**
   σ-typed pruned generator, or K5turan re-enable, or Task 7 docs.
+- **2026-06-23** — **Performance measurements (desktop): 8a and 8b deliver only modest practical
+  speedups — the real bottlenecks are elsewhere.** Clean isolated runs (native_decide-only or warm-deps
+  own-compile-time):
+  - **8a — clique vs generic forbid predicate** (same `augRepsFreeB` generator, two predicates, K₃-free
+    empty-typed; ~15 s import baseline subtracted): n=6 generic ~5.4 s gen vs clique ~5.1 s; **n=7 generic
+    577 s vs clique 576 s** — essentially **equal at every n**. The forbid predicate is *not* the
+    generation bottleneck; the **iso-dedup** (`dedupStep`/`isEmptyIsoFast` over the growing graph list,
+    shared by both paths) is. The earlier "generic n=7 didn't finish" was a measurement artifact — it was
+    killed at 6.5 min but actually finishes at ~9.6 min, same as clique. **8a's practical speedup ≈ 0%**
+    (it is still a correct, clean specialization; and the clean native-only n=7 number — ~9.6 min wall,
+    ~561 s generation — is now pinned, closing that 8a loose end).
+  - **8b — batched vs per-pair pair-density** (`Flagmatic/ErdosPentagon` own-compile-time, warm deps,
+    via a temporary revert of `genPairDensityCoreOn` to 52e3f74): OLD per-pair (2832 `native_decide`s)
+    **219 s** vs NEW batched (15) **196 s** → **~23 s, ~10% faster**. The per-pair `native_decide`s were
+    individually cheap, so the pair-density step is only ~10–15 % of ErdosPentagon's compile; the
+    dominant cost is the **σ-typed flag generation + the SOS proof**, which 8b does not touch. (Single
+    runs, ~±10 % build variance — treat 10 % as indicative.)
+  - **Redirect for future perf work.** The genuine levers are (i) a faster **iso-dedup** (the graph /
+    empty-typed generation bottleneck at high n) and (ii) the **σ-typed flag generation + SOS-proof**
+    cost (the typed-example bottleneck) — *not* the forbid predicate (8a) or the pair-density count (8b).
+    8a/8b are correct and tidy but low-impact; the roadmap's premises about where the time went were
+    both off. (Both stay — they're not regressions, just smaller wins than hoped.)
