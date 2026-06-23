@@ -2521,29 +2521,39 @@ the certificate.
 \section{From a Recurring Proof Pattern to a Certificate-to-Lean Compiler}
 \label{sec:flagmatic}
 \label{sec:bridge}% legacy alias: this section absorbed the former ``Bridge'' section
+
+Software such as Flagmatic~\cite{vaughan2013flagmatic} searches for
+flag-algebra certificates automatically, but a certificate is numerical
+data---lists of flags, density and multiplication tables, and rational
+positive semidefinite matrices---not a machine-checked proof.  Turning one
+into a verified theorem means transcribing every number into the proof
+assistant, reproducing the bookkeeping that links subflags to host flags, and
+checking positive-semidefiniteness, densities, and product expansions inside
+the kernel.
+
+The specification of Section~\ref{sec:abstract} and the reflection layer of
+Section~\ref{sec:reflection} make it possible to carry this out by hand.  We
+did so for our first case studies---computing the expansions, products, and
+normalizations step by step---and found the proofs nearly identical in
+structure.  Mantel's theorem, the $C_4$-density bound, and the Erd\H{o}s
+pentagon theorem differ in their flags, their coefficients, and their positive
+semidefinite matrices, but each follows the same sequence of moves, in the same
+order, with only the sizes and the data changing.  That regularity is what
+convinced us the manual work could be mechanized, and it showed which recurring
+step each tactic would later have to automate.
+
+The section is organized around that shared shape.
+Section~\ref{sec:flagmatic-shape} isolates it as a four-part skeleton;
+Sections~\ref{sec:flagmatic-psd}--\ref{sec:flagmatic-close} show how each part
+is discharged by a reusable, kernel-checked component; and
+Section~\ref{sec:flagmatic-script}
+describes the translator that assembles the whole proof from a Flagmatic
+certificate alone.  The translator realizes the second contribution of
+Section~\ref{sec:intro}: a certificate-to-proof pipeline whose output the Lean
+kernel checks and whose own computation never enters the trusted base
+(Section~\ref{sec:flagmatic-trust}), validated on six certificates
+(Section~\ref{sec:flagmatic-scenarios}).
 \sh{I'm here.}
-The mathematical specification of Section~\ref{sec:abstract} and the
-reflection layer of Section~\ref{sec:reflection} are enough, in principle,
-to write a flag-algebra proof in Lean by hand.  When we did so for the first
-case studies, a different observation emerged: the proofs were almost
-identical.  Mantel's theorem, the $C_4$-density bound, and the
-Erd\H{o}s pentagon theorem differ in their flags, their rational
-coefficients, and their positive semidefinite matrices, but their
-\emph{proof scripts} have the same shape---the same sequence of tactic
-calls, in the same order, parametrized only by sizes and data.
-
-This regularity is itself a result.  If the only thing that changes between
-two flag-algebra proofs is finite data, then the human-written part is
-mechanizable: a script can read that data from an external certificate and
-emit the proof.  This section describes the pattern
-(Section~\ref{sec:flagmatic-shape}), the verified Lean building blocks that
-each part of it rests on (Section~\ref{sec:flagmatic-blocks}), and the
-translator that fills the pattern from a Flagmatic certificate alone
-(Section~\ref{sec:flagmatic-script}).  The translator is the second
-contribution promised in Section~\ref{sec:intro}: a certificate-to-proof
-pipeline whose output the Lean kernel checks, and whose own computation is
-never trusted (Section~\ref{sec:flagmatic-trust}).
-
 \subsection{The recurring four-part shape}
 \label{sec:flagmatic-shape}
 
@@ -2578,32 +2588,29 @@ up to host size, dropping the $\mathcal{H}$-containing contributions on the
 way; this costs one extra auxiliary lemma (Mantel, $K_4$- and $K_5$-Tur\'an).
 Everything else is shared.
 
-\subsection{The building blocks}
-\label{sec:flagmatic-blocks}
 
-Each part of the shape is discharged by a verified component.  These
-components are reusable on their own---one can invoke them by hand---but in
-this section their role is to be the targets that the translator emits into.
-We describe them in turn, deferring to the reflection layer
-(Section~\ref{sec:reflection}) for the density computation they ultimately
-rest on.
+Each part of the shape is discharged by a verified, reusable component, and the
+four subsections that follow take the recurring steps in turn: verifying the
+SDP certificate, generating the forbid-free data, expanding and reducing typed
+products, and normalizing and closing.  All of these tactics share one enabler.
+Every flag and flag-algebra constant is named \lean{Flag\_n\_k\_m\_i} /
+\lean{FlagAlgebra\_n\_k\_m\_i}, where $n$ is the vertex count, $k$ and $m$
+identify the type graph, and $i$ is the canonical index within the isomorphism
+class; the convention is not merely organizational but a machine-readable
+encoding of structure.  By parsing the trailing integers from a constant's
+\lean{Name}---a syntactic object the elaboration monad inspects without
+triggering type-checking or attribute resolution---a tactic recovers the
+canonical order of a flag term, the name of its precomputed density or
+multiplication lemma, and the type parameters it needs, all in the fast
+elaboration path.  To tolerate the syntactic variation the elaborator
+introduces, the tactics normalize the expression tree with a
+\lean{collectPrefixConstants} traversal before inspecting names and compare flag
+terms with \lean{Expr.eqv} rather than structural equality; this metaprogramming
+was among the least portable parts of the development.
 
-\paragraph{Names as machine-readable metadata.}
-A design decision underlies every tactic below: each flag and flag-algebra
-constant is named \lean{Flag\_n\_k\_m\_i} / \lean{FlagAlgebra\_n\_k\_m\_i},
-where $n$ is the vertex count, $k$ and $m$ identify the type graph, and $i$ is
-the canonical index within the isomorphism class.  The convention is not
-merely organizational: it is a machine-readable encoding of mathematical
-structure.  By parsing the trailing integers from a constant's \lean{Name}---a
-syntactic object Lean~4's elaboration monad inspects without triggering
-type-checking or attribute resolution---a tactic recovers the canonical order
-of a flag term in a linear combination, the name of its precomputed density or
-multiplication lemma, and the type parameters needed to instantiate the
-adequacy theorem of Section~\ref{sec:reflection}.  Every tactic below runs its
-name parsing in the fast elaboration path; this is what lets it scale to
-pentagon-sized expressions.
+\subsection{Verifying and adding the SDP certificates}
+\label{sec:flagmatic-psd}
 
-\paragraph{PSD via rational \texorpdfstring{LDL$^\top$}{LDL\^T} (Part~1).}
 A real symmetric matrix is positive semidefinite iff it factors as
 $M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
 over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
@@ -2628,12 +2635,25 @@ equality is kernel-checked, a wrong $L_M$ or $d_M$ surfaces as a compile error
 on this line, never as a silently accepted non-PSD matrix---the one place we
 deliberately pay for in-kernel evaluation (Section~\ref{sec:flagmatic-trust}).
 
-\paragraph{Forbid-conditioned flag and density generation (Part~2).}
+Once a block is known positive semidefinite, it enters the proof through a
+single lemma:
+\begin{lstlisting}
+theorem forbidLE_add_QuadraticForm
+    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
+    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
+\end{lstlisting}
+which adds the quadratic form $\llbracket\langle v, M\,v\rangle\rrbracket$ to the
+target under the forbid relation.  Iterating it once per type builds a
+transitive chain of additions, one block at a time.
+
+\subsection{Generating the forbid-free flags and their data}
+\label{sec:flagmatic-gen}
+
 The forbidden graph is an explicit \lean{Sym2Graph} term, and the flag,
 density, and product data are \emph{generated inside Lean}---by a handful of
 elaboration commands, each parametric in the forbid term \lean{K}---rather than
-read from precomputed tables.  The commands emit exactly the constants the
-proof needs:
+read from precomputed tables.  The commands emit exactly the constants the proof
+needs:
 \begin{lstlisting}
 def K3 : Sym2Graph 3 := completeSym2Graph 3
 generate_pruned_forbid_free_empty_typed_flags 3 K3
@@ -2646,83 +2666,69 @@ small underlying-graph enumeration by an isomorphism-invariant forbid-freeness
 predicate \emph{before} building the typed flags, so the
 $\mathcal{H}$-containing flags are pruned before they are ever
 materialized---this is what keeps the typed enumeration tractable at host sizes
-where the full typed \lean{native\_decide} would otherwise wall.  Completeness
-is a lemma of the form \lean{flagSetHfree\_N\_k\_m\_<K>}~$=$~\lean{univ.filter p},
+where the full typed \lean{native\_decide} would otherwise wall.  Completeness is
+a lemma of the form \lean{flagSetHfree\_N\_k\_m\_<K>}~$=$~\lean{univ.filter p},
 proved by a single \lean{native\_decide} that references only the surviving
-constants; the pair
-densities and product expansions are each proved by the adequacy rewrite of
-Section~\ref{sec:reflection} followed by an evaluator call.  All numerical
-content is therefore recomputed and re-checked in Lean every build; the
-certificate never asserts a density value the kernel does not reproduce.
-Crucially, the generators take the forbidden graph as a \emph{term argument}
-(an \lean{ident} naming a \lean{Sym2Graph}) and build the forbid-freeness
-predicate from it, so a new forbidden graph is a new \lean{Sym2Graph}
-definition rather than a new per-forbid branch in the meta-commands.
+constants; the pair densities and product expansions are each proved by the
+adequacy rewrite of Section~\ref{sec:reflection} followed by an evaluator call.
+All numerical content is therefore recomputed and re-checked in Lean every
+build; the certificate never asserts a density value the kernel does not
+reproduce.  Crucially, the generators take the forbidden graph as a \emph{term
+argument} (an \lean{ident} naming a \lean{Sym2Graph}) and build the
+forbid-freeness predicate from it, so a new forbidden graph is a new
+\lean{Sym2Graph} definition rather than a new per-forbid branch in the
+meta-commands.
 
-\paragraph{Flag expansion and multiplication.}
-Two structural identities recur in every proof.  The \emph{expansion} of a flag
-$F\in\Flag{\sigma}_m$ at a larger size $n$ writes it as a weighted sum of all
-$n$-vertex flags; the \emph{product} of two typed flags is a linear combination
-at the product size.  Under a forbid both are produced in forbid-free form.
-The tactic \lean{flag\_expand\_hfree N K} (in \lean{API/FlagExpand.lean}) closes
-a goal $F =_{K} \sum_j c_j\,F_j$ by rewriting with
-\lean{basisVector\_quot\_forbidEq\_sum} directly onto the generated
-\lean{flagSetHfree\_N\_k\_m\_<K>} set---never materializing the full
-\lean{flagSet}, and dropping the forbidden host terms automatically (no manual
-\lean{basisVector\_forbidEq\_zero} step).  Its closing arithmetic needs the
-relevant \lean{flagDensity\textsubscript{1}} values present as \lean{@[simp]}
-lemmas, which the translator emits (each closed by \lean{native\_decide} after
-an adequacy rewrite).  Products are symmetric:
-\lean{generate\_pruned\_forbid\_free\_mul\_theorems} registers a
-\lean{flagMul\_<A>\_<B>} expansion for each pattern pair, and the proof body
-consumes them with \lean{reduce\_downward\_flagmul}.
+\subsection{Expanding and reducing typed products}
+\label{sec:flagmatic-expand}
 
-\paragraph{Linear normalization.}
-After expansion, the obligation is an equality between two linear combinations
-of flag terms that are equal but syntactically reordered.  Generic tactics
-(\lean{ring}, \lean{ac\_rfl}) handle this in principle but search over all
-permutations of summands and become prohibitively slow past ${\sim}20$ terms.
-The \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic (in \lean{API/FlagSumSort.lean})
+Two structural identities recur in every proof: the \emph{expansion} of a flag
+at a larger size as a weighted sum of host-size flags, and the \emph{product} of
+two typed flags as a linear combination at the product size.  Under a forbid
+both are produced in forbid-free form.
+
+Expansion is used in two places, both forbid-free.  In Branch~B the objective is
+lifted to host size by \lean{flag\_expand\_hfree N K}, which closes a goal
+$F =_{K} \sum_j c_j\,F_j$; the unit is expanded by \lean{expand\_one\_hfree\_at N
+K}, which rewrites $\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free
+flags.  Both rewrite with \lean{basisVector\_quot\_forbidEq\_sum} directly onto
+the generated \lean{flagSetHfree\_N\_k\_m\_<K>} set---never materializing the
+full \lean{flagSet}, and dropping the forbidden host terms automatically (no
+manual \lean{basisVector\_forbidEq\_zero} step).  The closing arithmetic of
+\lean{flag\_expand\_hfree} needs the relevant \lean{flagDensity\textsubscript{1}}
+values present as \lean{@[simp]} lemmas, which the translator emits (each closed
+by \lean{native\_decide} after an adequacy rewrite).
+
+Products are reduced by \lean{reduce\_downward\_flagmul}.  The generation step
+(Section~\ref{sec:flagmatic-gen}) has already registered a
+\lean{flagMul\_<A>\_<B>} expansion for each pattern pair; the tactic
+right-associates the sum with \lean{simp only [downward\_add, add\_assoc]} and
+then rewrites each head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its
+\lean{flagMul} identity, moving each rewritten term across the inequality.  A
+single call dispatches all of a block's downward-averaged products.
+
+\subsection{Normalizing and closing}
+\label{sec:flagmatic-close}
+
+After expansion and product reduction, the obligation is an equality between two
+linear combinations of flag terms that are equal but syntactically reordered.
+Generic tactics (\lean{ring}, \lean{ac\_rfl}) handle this in principle but search
+over all permutations of summands and become prohibitively slow past ${\sim}20$
+terms.  \lean{flagsum\_ac\_sort\_rhs\_pipeline} (in \lean{API/FlagSumSort.lean})
 instead flattens the expression into a list of (base, coefficient) pairs,
 assigns each base the sort key read from the trailing integer of its name,
 stable-sorts, merges like coefficients, and proves the original-equals-sorted
 equality up to add-AC.  The recorded counterexample is in
 \lean{ErdosPentagon.Lemmas}: a commented call reads
-``\texttt{-- sort\_at -- takes more than 10 minutes}''.  The generic
+``\texttt{-- sort\_at -- takes more than 10 minutes}''; the generic
 \lean{sort\_at}, which uses \lean{simp} without index guidance, times out on
-expressions of ${\sim}25$ flag terms; the index-guided sort completes the same
-step in under a second.  It is a correctness-enabling optimization, not a
-convenience wrapper.
+${\sim}25$-term expressions, while the index-guided sort completes the same step
+in under a second.
 
-\paragraph{Adding quadratic forms and closing (Part~4).}
-Two API lemmas frame the body.  The standard upper-bound move---add one or more
-PSD quadratic forms to the target, then check that the result lies in the
-forbid-cone---is encapsulated by
-\begin{lstlisting}
-theorem forbidLE_add_QuadraticForm
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
-    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
-\end{lstlisting}
-iterated once per type to build a transitive chain of additions.  The unit is
-expanded to host size by \lean{expand\_one\_hfree\_at N K} (rewriting
-$\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free flags); the
-downward-averaged products are discharged by \lean{reduce\_downward\_flagmul},
-which first right-associates the sum with
-\lean{simp only [downward\_add, add\_assoc]} and then rewrites each head
-summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
-identity, moving each rewritten term across the inequality; and the final
-non-negativity goal is closed by \lean{flag\_nonneg}, which distributes an
-arbitrary positive homomorphism over the sum, splits with \lean{add\_nonneg},
-and discharges each leaf by \lean{positiveHom\_basisVector\_ge\_zero}.
-
-\paragraph{Metaprogramming robustness.}
-These tactics must tolerate the syntactic variation Lean's elaborator
-introduces: after unification and implicit-argument resolution, the same flag
-term can appear in different syntactic forms.  We normalize the expression tree
-with a \lean{collectPrefixConstants} traversal before inspecting names, and
-compare flag terms with \lean{Expr.eqv} rather than structural equality.  This
-required substantial experimentation with the Lean~4 metaprogramming API and is
-among the least portable parts of the development.
+What remains is a non-negativity goal, closed by \lean{flag\_nonneg}: it
+distributes an arbitrary positive homomorphism over the sum, splits with
+\lean{add\_nonneg}, and discharges each leaf by
+\lean{positiveHom\_basisVector\_ge\_zero}.
 
 \subsection{The translation script}
 \label{sec:flagmatic-script}
@@ -2755,7 +2761,7 @@ assembled matrix.  The script reconstructs $M_t = R_t\,Q_t'\,R_t^\top$ in
 exact rationals, then factors it as $L_t\,\mathrm{diag}(d_t)\,L_t^\top$ by a
 textbook elimination loop that handles the rank deficiency the assembled
 matrix typically has.  It emits $M_t$, $L_t$, $d_t$, and the one-line
-\lean{psd\_real\_ldlt} proof of Section~\ref{sec:flagmatic-blocks}.  None of
+\lean{psd\_real\_ldlt} proof of Section~\ref{sec:flagmatic-psd}.  None of
 the script's matrix arithmetic is trusted; the kernel re-checks the
 factorization.
 
@@ -2806,7 +2812,7 @@ obligation is closed by one of: \lean{decide +kernel} (the PSD matrix
 equality, kept in the kernel because it is load-bearing and small enough to
 finish there), \lean{native\_decide} (the density evaluations, large but
 individually simple rational equalities, checked by compiled code outside the
-kernel), or a verified tactic of Section~\ref{sec:flagmatic-blocks}.  A
+kernel), or a verified tactic of Sections~\ref{sec:flagmatic-psd}--\ref{sec:flagmatic-close}.  A
 miscomputation in the script---a wrong factorization, a wrong density, a
 mis-resolved identifier---surfaces as a compile error, never as a silently
 accepted false theorem.  The certificate and the solver behind it are
@@ -2997,7 +3003,7 @@ theorem Turan_density_K3
 \paragraph{Which layer does what.}
 The proof exercises every layer.  The specification layer
 (Section~\ref{sec:abstract}) supplies the algebraic statement and the
-transfer theorem.  The forbid-conditioned generators (Section~\ref{sec:flagmatic-blocks})
+transfer theorem.  The forbid-conditioned generators (Section~\ref{sec:flagmatic-gen})
 produce and discharge the density-table and multiplication lemmas used to expand $K_2$
 and $(a-b)^2$ at size $3$.  The proof exhibits an explicit square in the
 algebra of 1-vertex-typed flags.  Let $a = \lean{FlagAlgebra\_2\_1\_0\_0}$
@@ -3093,7 +3099,7 @@ $\frac{24}{625} \cdot \mathbf{1} - [C_5]$.
 
 \emph{Which layer does what.}  The PSD verification (\lean{P\_posSemidef},
 \lean{Q\_posSemidef}, \lean{R\_posSemidef}) lives in
-Section~\ref{sec:flagmatic-blocks}: $LDL^\top$ decomposition over $\Q$, with the matrix
+Section~\ref{sec:flagmatic-psd}: $LDL^\top$ decomposition over $\Q$, with the matrix
 equalities discharged by \lean{decide +kernel}.  The expansion and
 multiplication identities are discharged by the tactic layer
 (\lean{prove\_flag\_expand\_with\_forbidden\_flag 5} and the corresponding
