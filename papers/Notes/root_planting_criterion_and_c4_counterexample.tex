@@ -336,7 +336,7 @@ of flags), modulo the linear relations
 relating each flag to the flags one vertex larger.  This quotient is compatible with the
 induced-density evaluation $p(\,\cdot\,,G)$: for every larger $G$ the identity
 $p(F,G)=\sum_{|H|=|F|+1}p(F,H)\,p(H,G)$ holds, so $p(\,\cdot\,,G)$ respects the defining
-relations and descends to a well-defined linear functional on $\A^\sigma$.  We keep the
+relations and descends to a well-defined linear functional on $\A^\sigma[\T]$.  We keep the
 same notation for this extension: if $f\in\A^\sigma[\T]$ is represented by
 $\sum_i a_iF_i$, then
 \[
@@ -1970,7 +1970,7 @@ substitution-closure does not.  Blow-up-closure is exactly the existential ``som
 interior works'' weakening of substitution-closure's universal ``every interior works''.
 \end{remark}
 
-\section{Finite planting and the \texorpdfstring{$C_5$}{C5}-free class}
+\section{Finite planting and root-plantable \texorpdfstring{$C_5$}{C5}-free types}
 
 This section is the first place where the choice of type becomes a real part of the
 phenomenon.  The closure hypotheses above are type-uniform: once a class is clone-closed,
@@ -2321,7 +2321,7 @@ This is the finite planting property at $\sigma$.
 deleting only the old edges inside its neighbourhood---a sparse set by \cref{lem:c5-nbhd}.
 \end{remark}
 
-\subsection{The root-plantable types}
+\subsection{Root-plantable \texorpdfstring{$C_5$}{C5}-free types}
 \label{subsec:c5-planting}
 
 The $C_5$-free graphs are dense and not blow-up-closed, so they are the first natural place to
@@ -2570,19 +2570,20 @@ containing an odd cycle of length $3$ or $5$---exists if and only if $G$ has a
 triangle.
 \end{proof}
 
-\section{Degenerate classes are not root-plantable}
+\section{Pinning obstructions to root-plantability}
 
-The clone-closed hypothesis is not merely technical: the correspondence can fail for
-hereditary classes, and it does so for an entire family of them, always for the same
-structural reason.  The obstruction is \emph{degeneracy}.  If a class is so sparse
-that its dense limits carry no edges, then a typical vertex sees an empty
-neighbourhood; yet the class may still contain a graph with an \emph{exceptional}
-high-degree vertex, such as the centre of a star.  The labelled edge flag separates the
-two.
+We now turn from planting criteria to obstructions, beginning with the simplest
+pinning mechanism: \emph{degeneracy}.  Here degeneracy means that graphs in the class
+have vanishing edge density asymptotically: every $n$-vertex member has $o(n^2)$ edges,
+equivalently every dense limit of the class has edge density zero.  In such a limit a
+typical vertex sees no labelled edge, yet the class may still contain finite graphs with an
+\emph{exceptional} high-degree vertex, such as the centre of a star.  The labelled edge
+flag separates the two.
 
-Throughout this section $\sigma=1$ is the one-vertex type,
+For the degeneracy obstruction below, $\sigma=1$ is the one-vertex type,
 $e\in\A^1[\T_{\mathrm{Graph}}]$ is the labelled edge flag (the two-vertex flag in which
-the labelled vertex is adjacent to the one unlabelled vertex), and $\rho\in\A^0$ is
+the labelled vertex is adjacent to the one unlabelled vertex), and
+$\rho\in\A^0[\T_{\mathrm{Graph}}]$ is
 the unlabelled edge flag; recall $\avg{e}{1}=\rho$ and $\brak1=1$.
 
 \begin{definition}[Edge-degenerate class]\label{def:edge-degenerate}
@@ -2595,8 +2596,12 @@ in $\K$ is $o(n^2)$.
 \begin{theorem}[Degeneracy obstruction]\label{thm:degenerate-obstruction}
 Let $\K$ be a hereditary graph class that is edge-degenerate and contains
 arbitrarily large stars.  Then $(\T_{\mathrm{Graph}},\T_\K,\sigma{=}1)$ is not
-root-plantable.  Concretely, $f:=-e\in\A^1[\T_{\mathrm{Graph}}]$ satisfies ensemble
-semantics but not quotient semantics, and in fact
+root-plantable.  Concretely, for $f:=-e\in\A^1[\T_{\mathrm{Graph}}]$,
+\[
+  \Prob_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(f)\ge0]=1
+  \qquad\text{for every }\phi_0\in Q_0,
+\]
+but some $\psi\in Q_1$ has $\psi(f)<0$; in fact
 \[
   S_1\ \subseteq\ \{\chi\in Q_1:\chi(e)=0\}\ \subsetneq\ Q_1 .
 \]
@@ -2643,7 +2648,7 @@ a $K_{2,2}$, and more generally a denser local configuration than a degenerate c
 sustain.
 \end{remark}
 
-\subsection{Examples}
+\subsection{Sparse degenerate examples}
 
 The hypotheses of \cref{thm:degenerate-obstruction} are met by many familiar
 sparse classes.  We first record the original $C_4$-free case, where edge-degeneracy
@@ -2693,8 +2698,8 @@ $\phi_0(\rho)=0$.
 \begin{corollary}[\texorpdfstring{$C_4$}{C4}-free counterexample]\label{cor:c4-counterexample}
 $\K_{C_4}$ is edge-degenerate (\cref{lem:c4-edge-zero}) and contains all stars,
 so by \cref{thm:degenerate-obstruction} it is not root-plantable at
-$\sigma=1$: the element $-e$ satisfies ensemble semantics but not quotient
-semantics.
+$\sigma=1$: the element $-e$ is non-negative almost surely under every admissible
+one-root random extension, but is negative at some point of $Q_1$.
 \end{corollary}
 
 \begin{corollary}[A family of degenerate obstructions]\label{cor:degenerate-family}
@@ -2751,7 +2756,8 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\uplus K_1$.  Then $\K$ is not root-plantable at
-$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of $\A^1$).  In
+$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of
+$\A^1[\T_{\mathrm{Graph}}]$).  In
 particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
@@ -2764,9 +2770,10 @@ root-plantable at $1$, and this is \cref{thm:degenerate-obstruction}:
 $\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
 $-e$ for $\overline\K$ pulls back to $-(\one_1-e)=e-\one_1$ for $\K$.  Directly:
 $\avg{e}{1}=\rho$ gives $\E[\phi^1(e)]=\phi_0(\rho)=1$, and $\phi^1(e)\le1$ forces
-$\phi^1(e)=1$ almost surely, so $e-\one_1$ satisfies ensemble semantics; while the
-co-star labelled at its isolated vertex gives a $\psi\in Q_1$ with $\psi(e)=0$, whence
-$\psi(e-\one_1)=-1<0$ and quotient semantics fails.
+$\phi^1(e)=1$ almost surely, so $e-\one_1$ is non-negative almost surely under every
+admissible one-root random extension; while the co-star labelled at its isolated vertex
+gives a $\psi\in Q_1$ with $\psi(e)=0$, whence $\psi(e-\one_1)=-1<0$ and quotient
+semantics fails.
 \end{proof}
 
 \begin{remark}[The dichotomy: density is not the dividing line]
@@ -2841,7 +2848,7 @@ root-plantability could conceivably fail through a \emph{joint} constraint on se
 flags with no single flag pinned, in which case a richer notion of obstruction would
 be needed.
 
-\subsection{Pinning is always to a boundary value}\label{subsec:boundary}
+\subsection{Boundary pinning for subgraph-forbidden classes}\label{subsec:boundary}
 
 The obstructions exhibited above are all at the boundary, $c\in\{0,1\}$, and the remark
 after \cref{thm:pinning} observed that an interior value would require the almost-sure
@@ -2990,8 +2997,12 @@ has the asserted limit.
 
 \begin{theorem}[The edge type is not root-plantable]\label{thm:c5-edge-not-root-plantable}
 The $C_5$-free graph class is not root-plantable at the two-root edge type
-$\tau$.  Concretely, $-g$ satisfies ensemble semantics but not quotient
-semantics.
+$\tau$.  Concretely,
+\[
+  \Prob_{\phi^\tau\sim\Ext_\tau(\phi_0)}[\phi^\tau(-g)\ge0]=1
+  \qquad\text{for every }\phi_0\in Q_0\text{ with }\phi_0(\brak{\tau})>0,
+\]
+but $-g$ is negative at some point of $Q_\tau$.
 \end{theorem}
 
 \begin{proof}
@@ -3036,12 +3047,12 @@ The empty type admits a unique embedding into any graph, so the random labelling
 no information; we read this off \eqref{eq:extension-expectation}.  For
 $\sigma=\emptyset$ the unlabelling operator is the identity and $\brak\emptyset=\one_0$, so
 $\phi_0(\brak\emptyset)=1$ and $\mu:=\Ext_\emptyset(\phi_0)$ satisfies
-$\E_{\psi\sim\mu}[\psi(g)]=\phi_0(g)$ for all $g\in\A^0$.  Applying this to $g$ and to
+$\E_{\psi\sim\mu}[\psi(g)]=\phi_0(g)$ for all $g\in\A^0[\T_0]$.  Applying this to $g$ and to
 $g^2$ and using that $\phi_0$ is multiplicative,
 \[
   \E_{\psi\sim\mu}\bigl[(\psi(g)-\phi_0(g))^2\bigr]=\phi_0(g^2)-\phi_0(g)^2=0,
 \]
-so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each fixed $g\in\A^0$.
+so $\psi(g)=\phi_0(g)$ for $\mu$-almost every $\psi$, for each fixed $g\in\A^0[\T_0]$.
 Apply this to the countable family of unlabelled flags and intersect the resulting
 probability-one events.  Since those flag densities separate the points of $X_0$, this
 forces $\mu=\delta_{\phi_0}$, whence
@@ -3260,8 +3271,8 @@ If the further constraint is not hereditary---for instance connectivity, a parit
 condition, or a prescribed density value---then $\K\cap\K'$ is generally not closed under
 induced subgraphs.  This breaks the basic starting point of Razborov's quotient
 construction, which assumes that every induced subgraph of a graph in the class is again
-in the class.  In this case there may be no canonical quotient algebra
-$\A^\sigma[\K\cap\K']$ of the usual flag-algebra kind.
+in the class.  In this case there may be no canonical quotient flag algebra for
+$\K\cap\K'$ of the usual kind.
 
 Ensemble semantics has more room.  Instead of forming a new quotient algebra, fix a
 closed set
