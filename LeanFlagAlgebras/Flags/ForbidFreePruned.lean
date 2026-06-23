@@ -730,4 +730,109 @@ theorem prunedFreeFamilyFlags_toFinset_eq (Fs : List (Σ m : ℕ, Sym2Graph m))
     obtain ⟨R, hRmem, hRiso⟩ := augRepsFreeB_qFreeFamily_complete Fs n G hall
     exact ⟨R, hRmem, Quotient.sound (Sym2GraphEqv.symm hRiso)⟩
 
+/-! ## Task 8a: cheap clique check for complete-graph forbids
+
+For a *complete-graph* forbid `K_r`, induced `K_r`-containment is just "`G` has an `r`-clique".
+The generic `inducedContains (completeSym2Graph r)` decides this by enumerating embeddings
+`Fin r ↪ Fin n` (expensive); `hasClique r` decides it by enumerating vertex *subsets* (cheap,
+the generalization of the K₃-specific `hasTri`). Routing complete-graph forbids through `qCliqueFree`
+keeps the generic path for non-complete `F` while restoring the pruning speed-up at high `n`. -/
+
+/-- `G` has an `r`-clique: an `r`-element vertex set, pairwise adjacent. Decided by enumerating
+subsets (cheap), unlike `inducedContains` which enumerates embeddings. Generalizes `hasTri`. -/
+def hasClique (r : ℕ) (G : Sym2Graph n) : Prop :=
+  ∃ s : Finset (Fin n), s.card = r ∧ ∀ a ∈ s, ∀ b ∈ s, a ≠ b → s(a, b) ∈ G.edges
+
+instance (r : ℕ) (G : Sym2Graph n) : Decidable (hasClique r G) := by
+  unfold hasClique; infer_instance
+
+/-- `hasClique` is an isomorphism invariant (transport the clique set along the iso permutation). -/
+theorem hasClique_of_eqv {r : ℕ} {G R : Sym2Graph n} (h : G ∼sf R) (hG : hasClique r G) :
+    hasClique r R := by
+  obtain ⟨φ, hφ⟩ := edge_mem_iff_of_eqv h
+  obtain ⟨s, hcard, hadj⟩ := hG
+  refine ⟨s.image φ, ?_, ?_⟩
+  · rw [Finset.card_image_of_injective _ φ.injective]; exact hcard
+  · intro a ha b hb hab
+    rw [Finset.mem_image] at ha hb
+    obtain ⟨a', ha', rfl⟩ := ha
+    obtain ⟨b', hb', rfl⟩ := hb
+    have h2 := (hφ s(a', b')).mp (hadj a' ha' b' hb' (fun he => hab (by rw [he])))
+    rwa [Sym2.map_pair_eq] at h2
+
+/-- **Vertex-deletion monotonicity** for cliques (mirrors `hasTri_of_restrict`). -/
+theorem hasClique_of_restrict {r : ℕ} {H : Sym2Graph (n + 1)} (h : hasClique r (restrict H)) :
+    hasClique r H := by
+  obtain ⟨s, hcard, hadj⟩ := h
+  refine ⟨s.image Fin.castSucc, ?_, ?_⟩
+  · rw [Finset.card_image_of_injective _ (Fin.castSucc_injective n)]; exact hcard
+  · intro a ha b hb hab
+    rw [Finset.mem_image] at ha hb
+    obtain ⟨a', ha', rfl⟩ := ha
+    obtain ⟨b', hb', rfl⟩ := hb
+    have h2 := ((mem_restrict_edges H _).mp (hadj a' ha' b' hb' (fun he => hab (by rw [he])))).2
+    rwa [Sym2.map_pair_eq] at h2
+
+/-- **Clique = induced complete-graph containment.** For any `F : Sym2Graph r` that is complete
+(every off-diagonal pair is an edge), `inducedContains F G ↔ hasClique r G`. This lets the cheap
+subset-based clique check stand in for the generic embedding-based `inducedContains`. -/
+theorem inducedContains_iff_hasClique {r : ℕ} (F : Sym2Graph r)
+    (hF : ∀ i j : Fin r, s(i, j) ∈ F.edges ↔ i ≠ j) (G : Sym2Graph n) :
+    inducedContains F G ↔ hasClique r G := by
+  constructor
+  · rintro ⟨f, hf⟩
+    refine ⟨Finset.univ.image f, ?_, ?_⟩
+    · rw [Finset.card_image_of_injective _ f.injective, Finset.card_univ, Fintype.card_fin]
+    · intro a ha b hb hab
+      rw [Finset.mem_image] at ha hb
+      obtain ⟨i, _, rfl⟩ := ha
+      obtain ⟨j, _, rfl⟩ := hb
+      rw [hf i j, hF i j]
+      exact fun he => hab (by rw [he])
+  · rintro ⟨s, hcard, hadj⟩
+    let e : Fin r ≃ {x // x ∈ s} := (finCongr hcard.symm).trans s.equivFin.symm
+    refine ⟨⟨fun i => (e i).val, fun i j hij => e.injective (Subtype.ext hij)⟩, fun i j => ?_⟩
+    simp only [Function.Embedding.coeFn_mk]
+    rw [hF i j]
+    by_cases h : i = j
+    · subst h
+      refine iff_of_false (fun hmem => ?_) (not_not_intro rfl)
+      exact absurd (Sym2.mk_isDiag_iff.mpr rfl) (G.edges_valid _ hmem)
+    · exact iff_of_true
+        (hadj _ (e i).property _ (e j).property (fun he => h (e.injective (Subtype.ext he)))) h
+
+/-- The cheap `q`-predicate for an `r`-clique (complete-graph) forbid: `K_r`-free iff no `r`-clique. -/
+def qCliqueFree (r : ℕ) : (k : ℕ) → Sym2Graph k → Bool :=
+  fun _ G => !decide (hasClique r G)
+
+/-- `qCliqueFree r` is exactly `qFree F` for any complete `F : Sym2Graph r` — so the cheap generator
+produces the same set, and the Task-5a wiring applies verbatim. -/
+theorem qCliqueFree_eq_qFree {r : ℕ} (F : Sym2Graph r)
+    (hF : ∀ i j : Fin r, s(i, j) ∈ F.edges ↔ i ≠ j) : qCliqueFree r = qFree F := by
+  funext k G
+  simp only [qCliqueFree, qFree]
+  congr 1
+  exact decide_eq_decide.mpr (inducedContains_iff_hasClique F hF G).symm
+
+/-- The empty-typed flags produced by the *cheap* clique-pruned generator. -/
+def prunedCliqueFreeFlags (r n : ℕ) : List (Sym2EmptyTypedFlag n) :=
+  (augRepsFreeB (qCliqueFree r) n).map (Quotient.mk (Sym2GraphSetoid n))
+
+/-- **The cheap clique-pruned generator is correct** w.r.t. the analytic complete-graph density:
+for any complete `F : Sym2Graph r` (`0 < r`), it produces exactly the empty-typed flags of zero
+induced `F`-density — at the cost of a subset scan rather than an embedding search. -/
+theorem prunedCliqueFreeFlags_toFinset_eq {r : ℕ} (F : Sym2Graph r)
+    (hF : ∀ i j : Fin r, s(i, j) ∈ F.edges ↔ i ≠ j) (hr : 0 < r) (n : ℕ) :
+    (prunedCliqueFreeFlags r n).toFinset
+      = Finset.univ.filter (fun S => sym2EmptyTypeFlagDensity₁ ⟦F⟧ S = 0) := by
+  unfold prunedCliqueFreeFlags
+  rw [qCliqueFree_eq_qFree F hF]
+  exact prunedFreeFlags_toFinset_eq F hr n
+
+-- Correctness: the cheap clique generator reproduces the K₃-free class counts (7/14/38), matching
+-- `augRepsTriFree` — and reduces by the cheap subset scan, not the generic embedding search.
+example : (augRepsFreeB (qCliqueFree 3) 4).length = 7 := by native_decide
+example : (augRepsFreeB (qCliqueFree 3) 5).length = 14 := by native_decide
+example : (augRepsFreeB (qCliqueFree 3) 6).length = 38 := by native_decide
+
 end FlagAlgebras.Compute

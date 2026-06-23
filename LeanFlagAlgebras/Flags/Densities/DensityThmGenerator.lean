@@ -209,6 +209,36 @@ def inducedFreeFlagIndices (freeMask : List Bool)
   (List.range flags.length).filter (fun i =>
     freeMask.getD ((flags.getD i (0, [], [], 0, 0)).1) false)
 
+/-- Like `evalInducedFreeMask`, but for a **complete-graph** forbid `K_r`: uses the cheap
+`hasClique r` (vertex-subset scan) instead of the generic embedding-based `inducedContains`
+(Task 8a). Same mask, far cheaper at high `n`. -/
+def evalCliqueFreeMask (n r : Nat) : CommandElabM (List Bool) := do
+  let stx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
+    (fun G => !decide (FlagAlgebras.Compute.hasClique $(Quote.quote r) G)))
+  liftTermElabM do
+    let e ← Lean.Elab.Term.elabTermAndSynthesize stx none
+    let e ← instantiateMVars e
+    let t ← Lean.Meta.inferType e
+    evalBoolList t e
+
+/-- If the forbid identifier `fStx` is (definitionally) `completeSym2Graph r` for a literal `r`,
+return `some r` — so the cheap clique check (Task 8a) can replace the generic `inducedContains`.
+Returns `none` for any other forbid (the generic path is then used). -/
+def detectCompleteR (fStx : TSyntax `ident) : CommandElabM (Option Nat) := do
+  let ns ← getCurrNamespace
+  let env ← getEnv
+  let nm := fStx.getId
+  let some name := ([ns ++ nm, nm].filter (env.contains ·)).head? | return none
+  let some ci := env.find? name | return none
+  let some val := ci.value? | return none
+  match val.getAppFnArgs with
+  | (``FlagAlgebras.Compute.completeSym2Graph, #[rArg]) =>
+      liftTermElabM do
+        match (← Lean.Meta.whnf rArg) with
+        | .lit (.natVal r) => return some r
+        | _ => return none
+  | _ => return none
+
 -- `generate_forbid_density_theorems n Forbid`
 --
 -- For each `n`-vertex empty-typed flag `Flag_n_0_0_i`, generate a `@[simp]`

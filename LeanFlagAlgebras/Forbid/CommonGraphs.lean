@@ -93,6 +93,13 @@ def completeSym2Graph (r : ℕ) : Sym2Graph r where
   edges := Finset.univ.filter (fun e => ¬ e.IsDiag)
   edges_valid := fun e he => (Finset.mem_filter.mp he).2
 
+/-- `completeSym2Graph r` is complete: an off-diagonal pair is an edge iff the endpoints differ.
+This is the hypothesis the clique-based pruning (`inducedContains_iff_hasClique`, Task 8a) needs. -/
+theorem completeSym2Graph_edges_iff (r : ℕ) (i j : Fin r) :
+    s(i, j) ∈ (completeSym2Graph r).edges ↔ i ≠ j := by
+  simp only [completeSym2Graph, Finset.mem_filter, Finset.mem_univ, true_and, Sym2.mk_isDiag_iff,
+    ne_eq]
+
 end FlagAlgebras.Compute
 
 /-- `forbid_complete_graph r` elaborates to the complete graph `K_r` as a `Sym2Graph r` term,

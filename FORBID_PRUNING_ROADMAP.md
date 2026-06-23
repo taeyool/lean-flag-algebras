@@ -240,23 +240,48 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   **only the empty-typed generation**; the σ-typed generation and the pair-density `native_decide`s —
   which dominate the real compile cost of the typed examples — are untouched.
 
-  **`[!]` DESKTOP FOLLOW-UP — measurements must be redone on the strong desktop, not the laptop.**
-  Every `lean` invocation here pays a CPU-bound **~42 s mathlib import load** that does not warm up
-  across runs, which swamps the small cases; the large cases (`ErdosPentagon`, pruned empty-typed
-  n = 7) **did not finish** in 6–20 min and had to be killed. So the laptop cannot give clean numbers.
-  On the desktop, run: (i) empty-typed **full-enum vs pruned at n = 7** (107 vs 1044 graphs — where the
-  separation should finally be large); (ii) a clean **old-vs-new `ErdosPentagon`** compile (expected
-  ≈ equal — see finding (a)).
+  **`[!]` DESKTOP FOLLOW-UP — partly done 2026-06-23 (see Progress Log); the n=7 timing is gated on 8a.**
+  Desktop fixed cost is **~10 s** per `lean` invocation (vs ~42 s on the laptop) and `lake env lean`
+  runs single files without rebuilding, so clean per-file timing *does* work here. But the decisive
+  n=7 runs were attempted and **still did not finish** on the strong desktop: both full-enum and
+  *pruned-with-generic-`inducedContains`* empty-typed n=7 were killed with no output after several
+  minutes. So the n=7 comparison is **blocked on 8a** — the cheap `hasClique` check must land first to
+  make the pruned side finish before it can be timed. Remaining desktop measurements to do *after 8a*:
+  (i) full-enum vs pruned-`hasClique` empty-typed at n = 7; (ii) a clean old-vs-new `ErdosPentagon`
+  compile (expected ≈ equal — see finding (a)).
 
   Two follow-up work items the measurement motivates:
-  - `[ ]` **8a. Cheap check for complete-graph forbids.** The migrated command prunes with the
-    **generic `inducedContains F`** (embeddings `Fin m ↪ Fin n`, needed for arbitrary `F`), which is
-    far more expensive per graph than the original K₃-specific `hasTri` (a 3-vertex scan). For K₃ at
-    n = 7 this heavy check made the *pruned* generation itself not finish in ~6.5 min on the laptop —
-    the genericization (Task 3) traded per-check speed for generality and largely cancels the pruning
-    win for complete graphs at high n. Add a specialized `hasClique r` (generalizing `hasTri`) and
-    route `completeSym2Graph r` forbids through it (a `q` instance for `augRepsFreeB`), keeping the
-    generic path for non-complete `F`.
+  - `[~]` **8a. Cheap check for complete-graph forbids.** Background: the migrated command prunes with
+    the **generic `inducedContains F`** (embeddings `Fin m ↪ Fin n`, needed for arbitrary `F`), far more
+    expensive per graph than the K₃-specific `hasTri` (a vertex-subset scan) — so pruned K₃-free n = 7
+    did not finish (laptop ~6.5 min; **also did not finish on the desktop**, 2026-06-23).
+    - **DONE — clique core** (in `Flags/ForbidFreePruned.lean`, sorry-free, builds): `hasClique r G`
+      (`∃ s : Finset (Fin n), s.card = r ∧ pairwise-adjacent`; decided by a *subset* scan, generalizing
+      `hasTri`) + `hasClique_of_eqv` / `hasClique_of_restrict`; `inducedContains_iff_hasClique` (for any
+      *complete* `F`, `inducedContains F G ↔ hasClique r G`); the `q` instance `qCliqueFree r` +
+      `qCliqueFree_eq_qFree` (= `qFree F` for complete `F`) + `prunedCliqueFreeFlags` /
+      `prunedCliqueFreeFlags_toFinset_eq` (Task-5a wiring applies verbatim). `completeSym2Graph_edges_iff`
+      added to `Forbid/CommonGraphs.lean` supplies the "complete" hypothesis. Validated: clique counts
+      `7/14/38` at n = 4/5/6 (= K₃-free), and **n = 7 now FINISHES: 107 K₃-free classes** (the generic
+      check never did).
+    - **Perf caveat (measurement flaw):** the n = 7 bench ran the generation *twice* (an interpreted
+      `#eval` + a `native_decide`), ~959 s wall total — so the clean native-only cost is **unmeasured**
+      and n = 7 is clearly still *not fast*. The iso-dedup (`isEmptyIsoFast` over the growing list) is now
+      a likely co-bottleneck, independent of the clique check. So 8a makes n = 7 **feasible** (qualitative
+      win) but not yet *cheap*.
+    - **DONE — command routing (empty-typed).** `generate_pruned_forbid_free_empty_typed_flags n F`
+      now auto-detects a complete-graph forbid: `detectCompleteR` inspects `F`'s definition for
+      `completeSym2Graph r` (via `getAppFnArgs` + `whnf` literal match), and if so the free-mask eval
+      (`evalCliqueFreeMask`) and the `sym2FlagSetHfree_…_eq` `native_decide` both run over the cheap
+      `hasClique r` / `prunedCliqueFreeFlags` path (closed by `prunedCliqueFreeFlags_toFinset_eq`);
+      non-complete `F` keep the generic `inducedContains` path. The log line reports which path was
+      taken. Verified: `K3` → "cheap clique check" (counts 7/14 at n=4/5), `C4graph` → "generic"
+      (count 10 at n=4); both prove correct completeness. (Helpers `detectCompleteR` /
+      `evalCliqueFreeMask` live in `Densities/DensityThmGenerator.lean`.)
+    - **REMAINING for 8a:** (1) clean native-only n = 7 timing of the routed command (no `#eval`);
+      (2) optionally route the **σ-typed** command / pair-density too — but its pruning is a graph-level
+      *filter* (not the genuine generator), so the real typed cost is 8b, not 8a. Empty-typed (where the
+      genuine pruned generator lives, and the n = 6/7 K₃-free loading goal sits) is now routed.
   - `[ ]` **8b. Genuine-pruning σ-typed generator (= the long-deferred 5b (d)).** The typed path still
     enumerates *all* σ-typed flags then filters (`genFlagsHfree`), and the pair-density step emits one
     `native_decide` per forbid-free pair (`ErdosPentagon`: ~2 832 of them). This — not the empty-typed
@@ -454,3 +479,36 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     empty-typed **at n = 7**, and a clean old-vs-new `ErdosPentagon`. Scratch bench files were created
     under `_bench/` and deleted after; nothing committed. **Next:** Task 8a (cheap `hasClique` check for
     complete-graph forbids) and 8b (genuine-pruning σ-typed generator) are where the real speed-ups are.
+- **2026-06-23** — **Desktop session (back from remote).** Confirmed the merged laptop work (Tasks 6/7/5b(c))
+  builds on the desktop (warm build of the edge-based `MantelHfree`, 3343 jobs). Measured the desktop fixed
+  cost at **~10 s** per `lean` import (vs ~42 s on the laptop); `lake env lean` runs single files without
+  rebuilding, so clean per-file benchmarking works here. Attempted the `[!]` n=7 measurement (full-enum vs
+  pruned-with-generic-`inducedContains`, empty-typed): **both were still running with no output after
+  several minutes and were killed** — even the strong desktop cannot finish pruned-generic n=7. This
+  confirms the generic `inducedContains` is the bottleneck and the n=7 timing is **gated on 8a**. (Bench
+  files under `_bench/` were deleted; nothing committed.) **Proceeding with Task 8a** (cheap `hasClique`)
+  next, then re-measuring n=7. Also: the `Generate.lean` → `FlagEnumeration.lean` (+ `IsoInvariants.lean`)
+  refactor landed (user); `ForbidFreePruned.lean` now imports `FlagEnumeration`.
+- **2026-06-23** — **Task 8a core DONE** (builds; sorry-free). Added the cheap clique check to
+  `Flags/ForbidFreePruned.lean`: `hasClique r` (subset-scan; generalizes `hasTri`) + `Decidable` +
+  `hasClique_of_eqv` / `hasClique_of_restrict`; `inducedContains_iff_hasClique` (for complete `F`); the
+  `q` instance `qCliqueFree r` + `qCliqueFree_eq_qFree` + `prunedCliqueFreeFlags(_toFinset_eq)` (reuses
+  the Task-5a wiring). `Forbid/CommonGraphs.lean` gained `completeSym2Graph_edges_iff`. Validation:
+  clique counts 7/14/38 at n=4/5/6 (= K₃-free); **n=7 generation now finishes (107 classes)** where the
+  generic `inducedContains` did not. `ForbidFreePruned` + `CommonGraphs` build (38 s). **Caveat:** the
+  n=7 bench conflated an interpreted `#eval` with the `native_decide` (~959 s wall total) — the clean
+  native cost is unmeasured and n=7 is still slow, so the iso-dedup is a likely second bottleneck (8a
+  makes n=7 *feasible*, not yet *cheap*). **Remaining 8a:** clean native-only n=7 timing; route the
+  generation command to use `qCliqueFree` for `completeSym2Graph r` forbids (the `q` instance + wiring
+  are ready). **Next:** the command routing, then Task 8b (genuine-pruning σ-typed generator), which is
+  where the typed examples (and K5turan) actually spend their time.
+- **2026-06-23** — **Task 8a command routing DONE (empty-typed).** `generate_pruned_forbid_free_empty_typed_flags`
+  now auto-routes complete-graph forbids through the cheap clique path. Added `detectCompleteR` (inspects
+  the forbid ident's definition for `completeSym2Graph r` via `getAppFnArgs` + a `whnf` `.lit (.natVal r)`
+  match) and `evalCliqueFreeMask` to `Densities/DensityThmGenerator.lean`; the command branches the
+  free-mask eval and the `sym2FlagSetHfree_…_eq` proof on `detectCompleteR` (cheap
+  `prunedCliqueFreeFlags_toFinset_eq` for complete `F`, generic `prunedFreeFlags_toFinset_eq` otherwise),
+  and the log line now reports the path. Verified on a scratch: `K3` → "cheap clique check" (counts 7/14
+  at n=4/5), `C4graph` → "generic" (10 at n=4), both proving correct completeness. (Lean-API note:
+  `Expr.natLit?` does not exist — match `.lit (.natVal r)` after `whnf`.) Remaining 8a: a clean
+  native-only n=7 timing of the routed command. **Next:** Task 8b (genuine-pruning σ-typed generator).

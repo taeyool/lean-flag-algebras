@@ -326,7 +326,13 @@ elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : comma
   let tag := (tagFull.splitOn ".").getLastD tagFull
 
   let hostEdges ← evalCanonicalEdgeLists n
-  let freeMask ← evalInducedFreeMask n fStx
+  -- Task 8a: for a complete-graph forbid `completeSym2Graph r`, prune with the cheap `hasClique r`
+  -- (a vertex-subset scan) instead of the generic embedding-based `inducedContains` — same free
+  -- set, far cheaper at high `n`. Non-complete forbids keep the generic path.
+  let completeR? ← detectCompleteR fStx
+  let freeMask ← match completeR? with
+    | some r => evalCliqueFreeMask n r
+    | none => evalInducedFreeMask n fStx
   let freeIndices := (List.range hostEdges.length).filter (fun i => freeMask.getD i false)
 
   -- Emit the forbid-free flag constants (identical to `generate_forbid_free_empty_typed_flags`).
@@ -375,17 +381,28 @@ elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : comma
     ))
 
   -- Completeness via genuine pruning (Task 5a): the named free set equals the pruned generation
-  -- (one `native_decide` over the *pruned* generator — never builds an `F`-containing graph),
-  -- closed by `prunedFreeFlags_toFinset_eq`. No full enumeration, no canonical forbidden flag.
-  elabUnlessDefined sym2SetEqName.getId (← `(
-      theorem $sym2SetEqName :
-          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
+  -- (one `native_decide` over the *pruned* generator — never builds an `F`-containing graph), closed
+  -- by `prunedFreeFlags_toFinset_eq`. No full enumeration, no canonical forbidden flag. For a
+  -- complete-graph forbid the `native_decide` runs over the cheap *clique*-pruned generator (8a).
+  let sym2SetEqProof : TSyntax `term ← match completeR? with
+    | some r => `(by
+        have hpruned : $sym2SetName
+            = (FlagAlgebras.Compute.prunedCliqueFreeFlags $(Quote.quote r) $(Quote.quote n)).toFinset := by
+          native_decide
+        rw [hpruned, FlagAlgebras.Compute.prunedCliqueFreeFlags_toFinset_eq $fStx
+            (FlagAlgebras.Compute.completeSym2Graph_edges_iff $(Quote.quote r)) (by decide) $(Quote.quote n)]
+        ext S
+        simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq])
+    | none => `(by
         have hpruned : $sym2SetName
             = (FlagAlgebras.Compute.prunedFreeFlags $fStx $(Quote.quote n)).toFinset := by
           native_decide
         rw [hpruned, FlagAlgebras.Compute.prunedFreeFlags_toFinset_eq $fStx (by decide) $(Quote.quote n)]
         ext S
-        simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq]
+        simp only [$isHfreeName:ident, Finset.mem_filter, Finset.mem_univ, true_and, decide_eq_true_eq])
+  elabUnlessDefined sym2SetEqName.getId (← `(
+      theorem $sym2SetEqName :
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := $sym2SetEqProof
     ))
 
   elabUnlessDefined flagSetName.getId (← `(
@@ -445,8 +462,11 @@ elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : comma
         exact heq ▸ List.Perm.refl _
     ))
 
+  let pathDesc := match completeR? with
+    | some r => s!"cheap clique check (K{r}, hasClique {r})"
+    | none => "generic inducedContains"
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}) by genuine \
-pruning (edge-based, induced); flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved via prunedFreeFlags."
+pruning (edge-based, induced) via the {pathDesc}; flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
 
 -- `generate_forbid_free_flags n k m Forbid`: the σ-typed analogue (flag size `n`
 -- first, matching `generate_flags n k m`). Emits only the `Forbid`-free σ-typed
