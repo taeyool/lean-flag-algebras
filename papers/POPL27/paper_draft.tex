@@ -2042,19 +2042,20 @@ The hypothesis
 \(\phi_0(\langle\sigma\rangle_0)>0\) says that the type \(\sigma\), viewed as
 an empty-type flag-algebra element, has positive density under the base
 homomorphism \(\phi_0\).  Under this hypothesis Lean constructs a probability
-measure \(P\) on \lean{PositiveHomSpace}~\(\sigma\).  This \(P\) is the formal
+measure \(\mathbb{P}\) on \lean{PositiveHomSpace}~\(\sigma\).  This
+\(\mathbb{P}\) is the formal
 random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
 randomly choosing an occurrence of the type \(\sigma\) in the limiting object
 represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
-\(P\) is present, a point
+\(\mathbb{P}\) is present, a point
 \(\phi : \lean{PositiveHomSpace}~\sigma\) may be regarded as a random positive
 homomorphism drawn from this distribution.  The displayed theorem states the
 defining identity of that distribution:
 \begin{lstlisting}
-theorem exists_probMeasure_extend_emptyType_positiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
+theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
-    : (*@$\exists$@*) P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)), (*@$\forall$@*) f : FlagAlgebra (*@$\sigma$@*),
-        (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)), PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)P
+    : (*@$\exists$@*) (*@$\mathbb{P}$@*) : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)), (*@$\forall$@*) f : FlagAlgebra (*@$\sigma$@*),
+        (*@$\int$@*) ((*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*)), PositiveHomSpace.toPosHom (*@$\phi$@*) f (*@$\partial$@*)(*@$\mathbb{P}$@*)
         = (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) / (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*)
   := ...
 \end{lstlisting}
@@ -2069,20 +2070,21 @@ for the integral of the function \(x\mapsto g(x)\) with respect to the measure
 for ``with respect to'', not a derivative.  In the theorem above, the bound
 variable is
 \(\phi : \lean{PositiveHomSpace}~\sigma\), the integrand is
-\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\), and the measure is \(P\).
-Since \(P\) is a probability measure, this integral is simply expectation.
+\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\), and the measure is
+\(\mathbb{P}\).  Since \(\mathbb{P}\) is a probability measure, this integral
+is simply expectation.
 Thus the line
 \[
-  \int \bigl(\phi \mapsto \phi(f)\bigr)\, dP
+  \int \bigl(\phi \mapsto \phi(f)\bigr)\, d\mathbb{P}
 \]
 should be read as
 \[
-  \mathbb{E}_{\phi\sim P}[\phi(f)].
+  \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)].
 \]
-With this reading, the theorem says exactly that \(P\) satisfies
+With this reading, the theorem says exactly that \(\mathbb{P}\) satisfies
 Equation~\eqref{eq:ensemble}:
 \[
-  \mathbb{E}_{\phi\sim P}[\phi(f)]
+  \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)]
   =
   \frac{\phi_0(\llbracket f\rrbracket_0)}
        {\phi_0(\llbracket 1\rrbracket_0)} .
@@ -2112,10 +2114,10 @@ tests it against an arbitrary empty-type positive homomorphism \(\phi_0\).  If
 \(\phi_0(\langle\sigma\rangle_0)=0\), a separate zero-density lemma shows that
 every downward value evaluates to \(0\) at \(\phi_0\).  If
 \(\phi_0(\langle\sigma\rangle_0)>0\), the random-extension theorem provides
-the probability measure \(P=\Ext_\sigma(\phi_0)\), obtained by randomly
+the probability measure \(\mathbb{P}=\Ext_\sigma(\phi_0)\), obtained by randomly
 labeling an occurrence of \(\sigma\), and rewrites
 \(\phi_0(\llbracket f\rrbracket_0)\) as a positive normalizing factor times
-the expectation of \(\phi(f)\) over \(\phi\sim P\).  Since
+the expectation of \(\phi(f)\) over \(\phi\sim \mathbb{P}\).  Since
 \(f\in\mathcal{C}^\sigma\), every typed positive homomorphism \(\phi\) has
 \(\phi(f)\ge 0\).  The expectation is therefore non-negative, and multiplying
 by the positive normalizing factor preserves non-negativity.  This is the
@@ -2139,7 +2141,7 @@ def forbidLE {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin 
     (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
   forall ((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
     (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
-    P[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f <= (*@$\phi$@*) g} = 1
+    (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f <= (*@$\phi$@*) g} = 1
 \end{lstlisting}
 For $f,g\in\mathcal{A}^\sigma$, the mathematical relation
 $f \leq_\sigma g$ is represented in Lean by this predicate.  It says:
@@ -2164,9 +2166,9 @@ theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*)
     {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)}
     (h_sigma : (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0) :
-  exists P : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)),
+  exists (*@$\mathbb{P}$@*) : ProbabilityMeasure (PositiveHomSpace (*@$\sigma$@*)),
     forall f : FlagAlgebra (*@$\sigma$@*),
-      integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) P =
+      integral (fun (*@$\phi$@*) => (*@$\phi$@*) f) (*@$\mathbb{P}$@*) =
         (*@$\phi_0$@*) (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) /
           (*@$\phi_0$@*) (*@$\llbracket$@*)(1 : FlagAlgebra (*@$\sigma$@*))(*@$\rrbracket_0$@*) := ...
 \end{lstlisting}
