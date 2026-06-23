@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.Generate
+import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import Mathlib.Tactic
 

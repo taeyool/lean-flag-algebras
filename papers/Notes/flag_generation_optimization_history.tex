@@ -192,7 +192,7 @@ embeddings, then quotients --- an astronomically large object we call the
 \emph{monster}. Materializing it is the original bottleneck.
 
 The architecture's answer, common to both commands, is a \emph{symbolic} completeness
-theorem proved once, mathematically, in \btt{Generate.lean}:
+theorem proved once, mathematically, in \btt{FlagEnumeration.lean}:
 \begin{itemize}
   \item \btt{genEmptyTypedFlagSet_eq_univ n} and
         \btt{genFlagSet_eq_univ}~$\sigma$~\btt{n}: the \emph{generated} finset equals
@@ -224,7 +224,7 @@ files being present and consistent.
 
 At \btt{afe184a} (``Phase~1: generate empty-typed flags in Lean, replacing the JSON
 pipeline'') the \emph{empty-typed} half had already been internalized.
-\btt{Generate.lean} contained a pure Lean enumeration of one canonical graph per
+\btt{FlagEnumeration.lean} contained a pure Lean enumeration of one canonical graph per
 isomorphism class, and \btt{generate_empty_typed_flags n} emitted those graphs and
 their flags. The key pieces, which all later work builds on, were:
 \begin{itemize}
@@ -256,7 +256,7 @@ Lean, but still loaded the typed flags from JSON via \btt{load_flags}, and the J
 \subsection{What changed}
 
 Commit \btt{212968a} (``Phase~2'') internalized the typed flags. It added
-\btt{genFlagData k m n} to \btt{Generate.lean}: for each underlying graph (in the
+\btt{genFlagData k m n} to \btt{FlagEnumeration.lean}: for each underlying graph (in the
 canonical order of \btt{genSym2Graphs n}) it enumerates the valid type embeddings of
 $\sigma$, groups them into orbits under the underlying graph's automorphism group,
 keeps the orbit-lexicographically-minimal tuple as the representative, and records the
@@ -460,7 +460,7 @@ favorable.
 
 \subsection{The proofs}
 
-The supporting math, all added to \btt{Generate.lean}, was small and low-risk because
+The supporting math, all added to \btt{FlagEnumeration.lean}, was small and low-risk because
 it mirrors the empty-typed template:
 \begin{itemize}
   \item \btt{genFlagsOrdered_perm}: \btt{genFlagsOrdered} $\sim$ \btt{genFlags} (a

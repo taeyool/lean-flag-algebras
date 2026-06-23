@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
+import LeanFlagAlgebras.FlagAlgebra.Compute.IsoInvariants
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Permutation
 import Mathlib.Data.List.FinRange
@@ -309,7 +309,6 @@ theorem isEmptyIsoFast_bool_true_correct
     let f : Fin n → Fin n := fun v => (π[v.val]?).getD v
     have hf : Function.Injective f := by
       intro a b h_eq
-      -- I'm not sure if it needs to be taken out separately as lemma.
       have h_getD_eq_get (v : Fin n) :
           (π[v.val]?).getD v = π.get ⟨v.val, by rw [hlen]; exact v.isLt⟩ := by
         have hv : v.val < π.length := by
@@ -359,7 +358,7 @@ theorem isEmptyIsoFast_bool_false_correct
   contrapose h
   have φ := h.some.graph_iso
   simp [isEmptyIsoFast_bool]
-  refine ⟨sym2Graph_card_edges_eq_of_eqv h, ?_⟩
+  refine ⟨edgeCount_eq_of_eqv h, ?_⟩
   simp [Sym2Graph.toLabeledGraph] at φ
   refine ⟨(List.finRange n).map φ.toEquiv, ?_, ?_⟩
   · simpa using (Equiv.Perm.map_finRange_perm φ.toEquiv)
@@ -829,7 +828,7 @@ theorem isIsoFast_bool_false_correct
   have φ := h.some
   have φg := φ.graph_iso
   simp [isIsoFast_bool]
-  refine ⟨sym2LabeledGraph_card_edges_eq_of_eqv h, ?_⟩
+  refine ⟨labeledEdgeCount_eq_of_eqv h, ?_⟩
   use (getNonTypeVerts n k G₁.type_embed).map h.some.graph_iso
   exact ⟨nonType_perm_witness_of_eqv h, buildFullMap_edge_witness_of_eqv h⟩
 
