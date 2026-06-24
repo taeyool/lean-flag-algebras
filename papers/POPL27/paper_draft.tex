@@ -2305,27 +2305,37 @@ reused.
 The definitions in Section~\ref{sec:abstract} are intentionally close to the
 mathematics.  Many of them are marked \lean{noncomputable}: this does not mean
 that they are unusable as specifications, but that Lean should not be expected
-to reduce them as executable programs.  Quotients, \lean{Classical.choice},
-\lean{Prop}-valued adjacency relations, and abstract finite enumerations are
-all appropriate for stating the theory of flag algebras, but they are a poor
-interface for repeatedly evaluating small graph computations.
+to reduce them as executable programs.  This is a normal situation when
+formalizing mathematics.  A definition is often written to express the
+mathematical object directly, not to specify the data structures and loops by
+which one should compute it.  For instance, we may identify flags up to
+isomorphism, define a finite collection by a predicate, or use an existence
+proof to choose a representative.  These choices are harmless, and often
+preferable, at the level of theorems: they keep statements invariant under
+isomorphism and avoid committing the theory to an arbitrary encoding.
 
-Certificate checking needs exactly those finite computations.  It must decide
-whether two concrete flags represent the same isomorphism class, compute
-subflag densities, and reduce products among named flags.  These tasks are
-finite, but if we ask the evaluator to unfold the abstract definitions directly,
-it ends up reducing quotient eliminators, proof-valued fields, and generic
-finite-search instances rather than running a simple graph algorithm.
+The cost is that the computational content is only implicit.  To evaluate such
+a definition, Lean would have to turn propositions such as adjacency or
+isomorphism into data, enumerate finite sets described abstractly, and choose
+representatives of quotient classes.  In proofs, this information can be
+supplied by lemmas or by classical reasoning.  As an executable program,
+however, there is no direct instruction saying which edge list to inspect,
+which vertex permutations to try, or which representative to return.  Thus
+\lean{noncomputable} marks a boundary: the definition is a faithful
+mathematical specification, but not the program we want Lean to run repeatedly.
 
-Isomorphism testing is the smallest example of the gap.  Abstractly, two
-flags are equal when there exists a type-preserving graph isomorphism between
-representatives.  In the computable layer, a graph is instead stored as a
-finite set of unordered edges, so the same question becomes a Boolean search
-over vertex permutations together with edge-membership checks.  Correctness
-theorems for both Boolean outcomes connect this executable test back to the
-quotient relation.  In this sense the computation \emph{reflects} the
-mathematical proposition: Lean runs the Boolean program on concrete data, then
-uses a theorem saying that the answer has the intended abstract meaning.
+To apply the framework to concrete graphs, however, we need exactly the finite
+computations that the specification layer leaves implicit.  Given the named finite
+flags appearing in a certificate, Lean must decide whether two concrete flags
+represent the same isomorphism class, compute subflag densities, and reduce
+products among named flags.  These tasks are finite, but the abstract
+definitions do not provide executable instructions for carrying them out.  They
+describe equality through quotients and the existence of isomorphisms, and they
+describe counts using abstract finite sets.  For actual evaluation, we therefore
+provide separate Boolean algorithms and prove that their results agree with the
+abstract definitions.  We call this pattern \emph{reflection}: Lean runs a
+Boolean program on concrete data, then uses a correctness theorem saying that
+the result has the intended meaning in the specification layer.
 
 The files in \lean{FlagAlgebra/Compute/} provide this executable mirror of the
 specification layer.  They introduce concrete graph and flag representations,
