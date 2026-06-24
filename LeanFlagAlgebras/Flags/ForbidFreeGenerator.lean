@@ -152,6 +152,74 @@ theorem genFlagsHfree_toFinset_eq (q : Sym2Graph n → Bool) (p : Sym2Flag σ n 
     exact ⟨Glab'', hGlab''mem,
       Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab''iso))⟩
 
+/-! ### Genuine-pruning σ-typed generation (Task 8b)
+
+`genFlagsHfree` filters the *full* graph enumeration `genSym2GraphsDedup n` by `q`. The version
+below instead builds labeled graphs directly over the **pruned** representatives
+`augRepsFreeB qB n` — which never materializes a forbidden graph at the graph level — then labels
+and dedups. Its completeness is the same statement as `genFlagsHfree_toFinset_eq`, but routed
+through `augRepsFreeB_free` (soundness) and `augRepsFreeB_complete` (completeness) in place of the
+filter + `genSym2GraphsDedup_complete`. The predicate `qB` is the recursion-indexed
+`(k) → Sym2Graph k → Bool` that `augRepsFreeB` needs (e.g. `qFree F` / `qCliqueFree r`). -/
+
+/-- Forbid-free σ-typed labeled graphs by **genuine pruning**: label the pruned graph reps
+`augRepsFreeB qB n`, then keyed-dedup. No forbidden graph is ever built. -/
+def genLabeledGraphsHfreePruned (σ : Sym2FlagType k) (n : ℕ)
+    (qB : (k : ℕ) → Sym2Graph k → Bool) : List (Sym2LabeledGraph σ n) :=
+  ((((augRepsFreeB qB n).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
+    dedupStepDegL []).map Prod.fst
+
+/-- The keyed pruned dedup equals the naive `dedupStepL` fold (mirrors `genLabeledGraphsHfree_eq`). -/
+theorem genLabeledGraphsHfreePruned_eq (qB : (k : ℕ) → Sym2Graph k → Bool) :
+    genLabeledGraphsHfreePruned σ n qB
+      = ((augRepsFreeB qB n).flatMap (labeledOfGraph σ)).foldl dedupStepL [] := by
+  unfold genLabeledGraphsHfreePruned
+  exact (foldl_dedupStepDegL_sim ((augRepsFreeB qB n).flatMap (labeledOfGraph σ))
+    [] [] rfl (by simp)).1
+
+/-- The genuine-pruning forbid-free σ-typed flags. -/
+def genFlagsHfreePruned (σ : Sym2FlagType k) (n : ℕ)
+    (qB : (k : ℕ) → Sym2Graph k → Bool) : List (Sym2Flag σ n) :=
+  (genLabeledGraphsHfreePruned σ n qB).map (Quotient.mk (sym2LabeledGraphSetoid σ n))
+
+/-- **Completeness of the genuine-pruning σ-typed generation.** The flags produced by
+`genFlagsHfreePruned σ n qB` are exactly `univ.filter p`, where the flag predicate `p` agrees with
+`qB n` on underlying graphs (`hcompat`) and `qB` is iso-invariant (`hq_iso`), preserved by `restrict`
+(`hq_restrict`), and holds at the empty base (`hq0`). The arbitrary-`F` σ-typed analogue of
+`prunedFreeFlags_toFinset_eq` — no full enumeration, no forbidden graph ever built. -/
+theorem genFlagsHfreePruned_toFinset_eq (qB : (k : ℕ) → Sym2Graph k → Bool) (p : Sym2Flag σ n → Bool)
+    (hq_iso : ∀ {k : ℕ} {G G' : Sym2Graph k}, G ∼sf G' → qB k G = qB k G')
+    (hq_restrict : ∀ {k : ℕ} {H : Sym2Graph (k + 1)}, qB (k + 1) H = true → qB k (restrict H) = true)
+    (hq0 : qB 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true)
+    (hcompat : ∀ (Glab : Sym2LabeledGraph σ n),
+        p (Quotient.mk (sym2LabeledGraphSetoid σ n) Glab) = qB n ⟨Glab.edges, Glab.edges_valid⟩) :
+    (genFlagsHfreePruned σ n qB).toFinset = Finset.univ.filter (fun F => p F = true) := by
+  rw [genFlagsHfreePruned, genLabeledGraphsHfreePruned_eq]
+  apply Finset.ext
+  intro F
+  simp only [List.mem_toFinset, List.mem_map, Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨Glab, hGlab, rfl⟩
+    have hsub := foldl_dedupStepL_subset
+      ((augRepsFreeB qB n).flatMap (labeledOfGraph σ)) [] hGlab
+    rw [List.nil_append, List.mem_flatMap] at hsub
+    obtain ⟨G, hGmem, hGlabmem⟩ := hsub
+    rw [hcompat, mem_labeledOfGraph_underlying hGlabmem]
+    exact augRepsFreeB_free qB hq0 n G hGmem
+  · intro hpF
+    obtain ⟨Glab0, rfl⟩ := Quotient.exists_rep F
+    have hqU : qB n ⟨Glab0.edges, Glab0.edges_valid⟩ = true := by rw [← hcompat]; exact hpF
+    obtain ⟨R, hRmem, hRiso⟩ :=
+      augRepsFreeB_complete qB hq_iso hq_restrict n ⟨Glab0.edges, Glab0.edges_valid⟩ hqU
+    obtain ⟨Glab', hGlab'mem, hGlab'iso⟩ := mem_labeledOfGraph_eqv_of_underlying Glab0 hRiso
+    have hInput : Glab' ∈ (augRepsFreeB qB n).flatMap (labeledOfGraph σ) :=
+      List.mem_flatMap.mpr ⟨R, hRmem, hGlab'mem⟩
+    obtain ⟨Glab'', hGlab''mem, hGlab''iso⟩ :=
+      foldl_dedupStepL_complete ((augRepsFreeB qB n).flatMap (labeledOfGraph σ))
+        [] Glab' hInput
+    exact ⟨Glab'', hGlab''mem,
+      Quotient.sound (sym2LabeledGraphEqv.symm (sym2LabeledGraphEqv.trans hGlab'iso hGlab''iso))⟩
+
 end FlagAlgebras.Compute
 
 namespace Flags.Densities
@@ -844,20 +912,26 @@ elab "generate_pruned_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident :
       def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
         ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
 
+  -- Genuine-pruning σ-typed completeness (Task 8b): the named free set equals the labeled flags built
+  -- over the *pruned* graph reps `augRepsFreeB (qFree F)` — no forbidden graph is materialized, and the
+  -- `native_decide` runs the cheap combinatorial `qFree` over the pruned reps rather than the density
+  -- filter over the full `genSym2GraphsDedup`. Closed by `genFlagsHfreePruned_toFinset_eq`; `hcompat`
+  -- matches the density-based `isHfree` to `qFree` via the Task-4 bridge (`qFree_eq_density_decide`).
   elabUnlessDefined sym2SetEqName.getId (← `(
       theorem $sym2SetEqName :
           $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by
         have hpruned : $sym2SetName
-            = (FlagAlgebras.Compute.genFlagsHfree $typeTerm $(Quote.quote n) $isHfreeGraphName).toFinset := by
+            = (FlagAlgebras.Compute.genFlagsHfreePruned $typeTerm $(Quote.quote n)
+                (FlagAlgebras.Compute.qFree $fStx)).toFinset := by
           native_decide
         rw [hpruned]
-        refine FlagAlgebras.Compute.genFlagsHfree_toFinset_eq
-          $isHfreeGraphName $isHfreeName ?_ (fun Glab => rfl)
-        intro G G' hGG'
-        have hq : (Quotient.mk (FlagAlgebras.Compute.Sym2GraphSetoid $(Quote.quote n)) G)
-            = Quotient.mk (FlagAlgebras.Compute.Sym2GraphSetoid $(Quote.quote n)) G' :=
-          Quotient.sound hGG'
-        simp only [$isHfreeGraphName:ident, hq]))
+        exact FlagAlgebras.Compute.genFlagsHfreePruned_toFinset_eq (FlagAlgebras.Compute.qFree $fStx)
+          $isHfreeName
+          (fun {_ _ _} h => FlagAlgebras.Compute.qFree_iso $fStx h)
+          (fun {_ _} h => FlagAlgebras.Compute.qFree_restrict $fStx h)
+          (FlagAlgebras.Compute.qFree_hq0 $fStx (by decide))
+          (fun Glab => by
+            rw [FlagAlgebras.Compute.qFree_eq_density_decide]; rfl)))
 
   elabUnlessDefined flagSetName.getId (← `(
       noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=

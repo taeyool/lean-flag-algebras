@@ -644,6 +644,22 @@ theorem not_inducedContains_iff_density_eq_zero {m n : ℕ} (F : Sym2Graph m) (G
   rw [inducedContains_iff_density_ne_zero]
   exact not_ne_iff
 
+/-- `qFree F` as the analytic density test (Bool form), via the Task-4 bridge. Lets the genuine-pruning
+σ-typed wiring match the combinatorial generator predicate `qFree F` against the density-based
+`isHfree` (their `hcompat`). -/
+theorem qFree_eq_density_decide {m k : ℕ} (F : Sym2Graph m) (G : Sym2Graph k) :
+    qFree F k G = decide (sym2EmptyTypeFlagDensity₁ ⟦F⟧ ⟦G⟧ = 0) := by
+  simp only [qFree, ← not_inducedContains_iff_density_eq_zero, decide_not]
+
+/-- `qFree F` holds at the empty base for a nonempty `F` (`0 < m`): no nonempty `F` embeds in the
+empty 0-vertex graph. The `hq0` hypothesis `augRepsFreeB_complete`/`genFlagsHfreePruned_toFinset_eq`
+need. -/
+theorem qFree_hq0 {m : ℕ} (F : Sym2Graph m) (hm : 0 < m) :
+    qFree F 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true := by
+  rw [qFree_eq_true]
+  rintro ⟨f, _⟩
+  exact (f ⟨0, hm⟩).elim0
+
 /-- **Family bridge** (per D3): `G` is free of *every* `Fp ∈ Fs` iff every induced `Fp`-density
 vanishes. Just the conjunction of the single-graph bridge — no new bridge math. -/
 theorem forall_not_inducedContains_iff_forall_density_eq_zero

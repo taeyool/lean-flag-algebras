@@ -297,10 +297,20 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       `native_decide`s were individually cheap, so pair-density is only ~10–15 % of the file's total
       compile (the dominant cost is σ-typed flag generation + the SOS proof). 189× fewer `native_decide`
       compilations, but a ~10 % wall-time win.
-    - **TODO — genuine-pruning σ-typed generator.** `genFlagsHfree` still enumerates *all* σ-typed
-      flags (over `genSym2GraphsDedup n`) and filters. Building labeled flags directly over the pruned
-      reps (`augRepsFreeB`/clique) would avoid materializing forbidden graphs at the typed level too.
-      Lower leverage than the pair-density batch at the current example sizes; left as a refinement.
+    - **DONE — genuine-pruning σ-typed generator** (the actual typed-example speedup). Added
+      `genFlagsHfreePruned σ n qB` + `genFlagsHfreePruned_toFinset_eq` to `Flags/ForbidFreeGenerator.lean`:
+      it builds labeled flags directly over the **pruned graph reps** `augRepsFreeB qB n` (never
+      materializing a forbidden graph), with completeness mirroring `genFlagsHfree_toFinset_eq` but
+      routed through `augRepsFreeB_free` / `augRepsFreeB_complete`. Routed the edge-based typed command
+      `generate_pruned_forbid_free_flags` through it with `qB := qFree F`; its `native_decide` now runs
+      the **cheap combinatorial `qFree`** over the pruned reps instead of the **density filter over the
+      full `genSym2GraphsDedup`**. Helpers added to `ForbidFreePruned.lean`: `qFree_eq_density_decide`
+      (the bridge so the density-based `isHfree` matches `qFree` in `hcompat`) and `qFree_hq0`.
+      **Measured: `ErdosPentagon` own-compile 196 s → 128 s (~35 %)** — the real win for the typed
+      examples (vs 8a ≈ 0 % and the pair-density batch ~10 %); the density-filtered full enumeration was
+      a bigger cost than the pair-density count. All typed examples build (full project green, 7989 jobs).
+      (Uses `qFree` uniformly — at the example sizes (n ≤ 5) `inducedContains` is cheap; the clique
+      specialization (8a) only matters at the empty-typed high-n generation.)
     - **TODO — re-enable `K5turan`.** Its blocker was the pair-density count (K₅-free is weak → most
       pairs free); the batch should make it tractable now. Worth re-testing and, if it builds, removing
       it from the aggregator's comment-out.
@@ -318,13 +328,13 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     pruned `augRepsFreeB` path; (ii) a **canonical form** key so dedup becomes a hash/sort instead of
     pairwise iso-checks. This is the real lever for making n = 6/7 forbid-free loading *cheap* (the
     original Task-8 motivation). Likely also speeds the non-forbid enumeration.
-  - `[ ]` **9b. σ-typed flag generation + SOS-proof cost** — the bottleneck of the typed *examples*.
-    For `ErdosPentagon`, pair-density is only ~10–15 % of the ~196 s compile; the rest is the σ-typed
-    `genFlagsHfree` generation (still a full-enum filter — overlaps the deferred "genuine-pruning σ-typed
-    generator" under 8b) plus the SOS proof (`flag_expand_hfree` / `reduce_downward_flagmul` /
-    `flagsum_ac_sort` / `flag_nonneg`). First **profile** a typed example (`set_option profiler true`,
-    or per-declaration timing) to attribute the time between generation and proof, then optimize the
-    larger share. Also the path to a tractable `K5turan` (8b TODO).
+  - `[~]` **9b. σ-typed flag generation + SOS-proof cost** — the bottleneck of the typed *examples*.
+    The **generation half is DONE** (8b genuine-pruning σ-typed generator): routing
+    `generate_pruned_forbid_free_flags` through `genFlagsHfreePruned` cut `ErdosPentagon` 196 s → 128 s
+    (~35 %), confirming the density-filtered full enumeration was the larger share. **Remaining:** the
+    **SOS proof** (`flag_expand_hfree` / `reduce_downward_flagmul` / `flagsum_ac_sort` / `flag_nonneg`)
+    — now the dominant part of the ~128 s. Profile a typed example (`set_option profiler true`) to find
+    the heaviest proof step, then optimize it. Also the path to a tractable `K5turan` (8b TODO).
 
 ## Multi-graph design notes (for D3)
 
@@ -584,3 +594,18 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     cost (the typed-example bottleneck) — *not* the forbid predicate (8a) or the pair-density count (8b).
     8a/8b are correct and tidy but low-impact; the roadmap's premises about where the time went were
     both off. (Both stay — they're not regressions, just smaller wins than hoped.)
+- **2026-06-24** — **Task 8b: genuine-pruning σ-typed generator DONE — the real typed-example win.**
+  Added `genFlagsHfreePruned σ n qB` + `genFlagsHfreePruned_toFinset_eq` to `Flags/ForbidFreeGenerator.lean`:
+  it labels the **pruned** reps `augRepsFreeB qB n` (never materializing a forbidden graph), completeness
+  mirroring `genFlagsHfree_toFinset_eq` via `augRepsFreeB_free`/`augRepsFreeB_complete`. Routed the typed
+  command `generate_pruned_forbid_free_flags` through it (`qB := qFree F`); its `native_decide` now runs
+  the cheap combinatorial `qFree` over the pruned reps instead of the **density** filter over the **full**
+  `genSym2GraphsDedup`. Helpers added to `ForbidFreePruned.lean`: `qFree_eq_density_decide` (bridge for the
+  `hcompat`: density-based `isHfree` = `qFree`) and `qFree_hq0`. **Measured: `ErdosPentagon` own-compile
+  196 s → 128 s (~35 %)**; full project builds (7989 jobs). So the σ-typed generation's *density filter
+  over the full enumeration* was the real cost (per the 2026-06-23 redirect, item (ii)) — bigger than the
+  pair-density count (8b's earlier ~10 %) and the forbid predicate (8a's ~0 %). hcompat fix: `rw
+  [qFree_eq_density_decide]; rfl` (the `toUnderlying`/`⟦graph⟧` step is defeq but needs `rfl`'s default
+  transparency, not `rw`'s reducible one). **Remaining 8b:** re-enable `K5turan` (now plausibly tractable
+  with both the batch and the pruned σ-typed generation). Task 9b's σ-typed-*generation* half is now
+  addressed; its SOS-proof half and Task 9a (iso-dedup) remain.
