@@ -2990,27 +2990,65 @@ $\K$ has at least $\binom n2-o(n^2)$ edges.  Such classes are as dense as possib
 with edge density tending to $1$, yet they fail just as the sparse ones do.
 
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
-Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
-$\overline{K_{1,N-1}}=K_{N-1}\uplus K_1$.  Then $\K$ is not root-plantable at
-$\sigma=\vtype$, witnessed by $f:=e-\one_{\vtype}$ (with \(\one_{\vtype}\)
-the unit of $\A^{\vtype}[\T_{\mathrm{Graph}}]$).  In
-particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
-complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
-complement-of-planar graphs---are dense hereditary classes that are not
-root-plantable.
+Let $\K$ be hereditary and co-edge-degenerate, and suppose that $\K$ contains
+the co-stars
+\[
+  \overline{K_{1,N-1}}=K_{N-1}\uplus K_1
+\]
+for arbitrarily large $N$.  Then $\K$ is not root-plantable at
+$\sigma=\vtype$.  More concretely, the element
+$e-\one_{\vtype}\in\A^{\vtype}[\T_{\mathrm{Graph}}]$ is non-negative almost
+surely under every admissible one-root random extension, but is negative at
+some point of $Q_{\vtype}(\K)$.
+
+In particular, the graph-complement classes of the examples in
+\cref{cor:degenerate-family} are dense hereditary classes that are not
+root-plantable at the one-vertex type.
 \end{corollary}
 
 \begin{proof}
-By \cref{lem:complementation} it suffices that $\overline\K$ be not
-root-plantable at \(\vtype\), and this is \cref{thm:degenerate-obstruction}:
-$\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
-$-e$ for $\overline\K$ pulls back to $-(\one_{\vtype}-e)=e-\one_{\vtype}$ for $\K$.  Directly:
-$\avg{e}{\vtype}=\rho$ gives $\E[\phi^{\vtype}(e)]=\phi_0(\rho)=1$, and
-$\phi^{\vtype}(e)\le1$ forces
-$\phi^{\vtype}(e)=1$ almost surely, so $e-\one_{\vtype}$ is non-negative almost surely under every
-admissible one-root random extension; while the co-star rooted at its isolated vertex
-gives a $\psi\in Q_{\vtype}$ with $\psi(e)=0$, whence $\psi(e-\one_{\vtype})=-1<0$ and quotient
-semantics fails.
+Since $\K$ is co-edge-degenerate, $\overline\K$ is edge-degenerate.  Since
+$\K$ contains arbitrarily large co-stars, $\overline\K$ contains arbitrarily
+large stars.  Thus \cref{thm:degenerate-obstruction} shows that
+$\overline\K$ is not root-plantable at \(\vtype\).  The one-vertex type is
+equal to its complement, so \cref{lem:complementation} transfers this failure
+back to $\K$.
+
+Let us also identify the witness directly.  If $\phi_0\in Q_0(\K)$, then
+co-edge-degeneracy gives $\phi_0(\rho)=1$.  Since
+\(\avg{e}{\vtype}=\rho\) and \(\brak{\vtype}=\one_0\), the extension formula
+gives
+\[
+  \E_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}
+  [\phi^{\vtype}(e)]
+  =
+  \phi_0(\rho)
+  =
+  1.
+\]
+The random variable \(\phi^{\vtype}(e)\) is a flag density, so it lies in
+\([0,1]\).  Hence \(\phi^{\vtype}(e)=1\) almost surely, and therefore
+\[
+  \phi^{\vtype}(e-\one_{\vtype})=0
+  \qquad\text{almost surely.}
+\]
+Thus \(e-\one_{\vtype}\) is ensemble-non-negative.
+
+On the other hand, choose co-stars
+\(\overline{K_{1,N_j-1}}=K_{N_j-1}\uplus K_1\in\K\) with \(N_j\to\infty\),
+and root each one at its isolated vertex.  The one-root edge density is then
+always \(0\).  By compactness, a subsequence converges to a point
+\(\psi\in Q_{\vtype}(\K)\) with \(\psi(e)=0\), and hence
+\[
+  \psi(e-\one_{\vtype})=-1<0.
+\]
+So quotient semantics fails for the same element.
+
+For the final claim, take the complements of the classes listed in
+\cref{cor:degenerate-family}.  The original classes are edge-degenerate and
+contain arbitrarily large stars; their complement classes are therefore
+co-edge-degenerate and contain arbitrarily large co-stars, so the first part
+applies.
 \end{proof}
 
 \begin{remark}[The dichotomy: density is not the dividing line]
