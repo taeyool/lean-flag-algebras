@@ -93,6 +93,7 @@
 \newcommand{\qmap}{\mathfrak q}
 \newcommand{\eps}{\varepsilon}
 \newcommand{\one}{\mathbf 1}
+\newcommand{\vtype}{\mathsf{1}}
 \DeclareMathOperator{\cl}{cl}
 
 \title{Completeness of Forbidden-Subgraph Reasoning in Flag Algebras:\\
@@ -2440,7 +2441,7 @@ $H[U]$ differs from $G[U]$ only on the edges inside $N_G(r)$, and by
 \begin{theorem}[One-root $C_5$-free root-plantability]\label{thm:c5-one-root}
 The $C_5$-free graph class is root-plantable at the one-vertex type:
 \[
-  S_1=Q_1.
+  S_{\vtype}=Q_{\vtype}.
 \]
 \end{theorem}
 
@@ -2573,18 +2574,31 @@ triangle.
 \section{Pinning obstructions to root-plantability}
 
 We now turn from planting criteria to obstructions, beginning with the simplest
-pinning mechanism: \emph{degeneracy}.  Here degeneracy means that graphs in the class
-have vanishing edge density asymptotically: every $n$-vertex member has $o(n^2)$ edges,
-equivalently every dense limit of the class has edge density zero.  In such a limit a
-typical vertex sees no labelled edge, yet the class may still contain finite graphs with an
-\emph{exceptional} high-degree vertex, such as the centre of a star.  The labelled edge
-flag separates the two.
+pinning mechanism: \emph{degeneracy}.  Here pinning is a property of a
+particular labelled flag, or more generally of a particular labelled algebra
+element.  It means that, for some type
+\(\sigma\), element \(g\in\A^\sigma[\T_{\mathrm{Graph}}]\), and constant \(c\),
+when any constrained unlabelled limit is rooted at random as a \(\sigma\)-flag,
+the resulting labelled homomorphism evaluates \(g\) as \(c\) almost surely,
+even though a specially chosen labelled limit can evaluate \(g\) differently.
+Degeneracy gives the most basic example.  It means
+that graphs in the class have vanishing edge density asymptotically: every
+$n$-vertex member has $o(n^2)$ edges, equivalently every dense limit of the
+class has edge density zero.  In such a limit a typical vertex sees no
+labelled edge, so the density of the labelled edge flag is pinned to \(0\)
+under random rooting.  The class may still contain finite graphs with an
+\emph{exceptional} high-degree vertex, such as the centre of a star.  The labelled edge flag
+separates the typical rooted view from this exceptional rooted view.
 
-For the degeneracy obstruction below, $\sigma=1$ is the one-vertex type,
-$e\in\A^1[\T_{\mathrm{Graph}}]$ is the labelled edge flag (the two-vertex flag in which
-the labelled vertex is adjacent to the one unlabelled vertex), and
+For the degeneracy obstruction below, write \(\vtype\) for the one-vertex
+type.  The notation \(\one_\sigma\) always denotes the unit of the
+\(\sigma\)-typed flag algebra; thus \(\vtype\) is a type, while
+\(\one_{\vtype}\) is an algebra element.  Let
+$e\in\A^{\vtype}[\T_{\mathrm{Graph}}]$ be the labelled edge flag (the
+two-vertex flag in which the labelled vertex is adjacent to the one unlabelled vertex), and
 $\rho\in\A^0[\T_{\mathrm{Graph}}]$ is
-the unlabelled edge flag; recall $\avg{e}{1}=\rho$ and $\brak1=1$.
+the unlabelled edge flag; recall $\avg{e}{\vtype}=\rho$ and
+$\brak{\vtype}=\one_0$.
 
 \begin{definition}[Edge-degenerate class]\label{def:edge-degenerate}
 A hereditary graph class $\K$ is \emph{edge-degenerate} if every constrained
@@ -2595,43 +2609,44 @@ in $\K$ is $o(n^2)$.
 
 \begin{theorem}[Degeneracy obstruction]\label{thm:degenerate-obstruction}
 Let $\K$ be a hereditary graph class that is edge-degenerate and contains
-arbitrarily large stars.  Then $(\T_{\mathrm{Graph}},\T_\K,\sigma{=}1)$ is not
-root-plantable.  Concretely, for $f:=-e\in\A^1[\T_{\mathrm{Graph}}]$,
+arbitrarily large stars.  Then $(\T_{\mathrm{Graph}},\T_\K,\sigma{=}\vtype)$ is not
+root-plantable.  Concretely, for $f:=-e\in\A^{\vtype}[\T_{\mathrm{Graph}}]$,
 \[
-  \Prob_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(f)\ge0]=1
+  \Prob_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}[\phi^{\vtype}(f)\ge0]=1
   \qquad\text{for every }\phi_0\in Q_0,
 \]
-but some $\psi\in Q_1$ has $\psi(f)<0$; in fact
+but some $\psi\in Q_{\vtype}$ has $\psi(f)<0$; in fact
 \[
-  S_1\ \subseteq\ \{\chi\in Q_1:\chi(e)=0\}\ \subsetneq\ Q_1 .
+  S_{\vtype}\ \subseteq\ \{\chi\in Q_{\vtype}:\chi(e)=0\}\ \subsetneq\ Q_{\vtype}.
 \]
 \end{theorem}
 
 \begin{proof}
-Let $\phi_0\in Q_0$.  Since $\brak1=1$ we
-have $\phi_0(\brak1)=1>0$, so $\Ext_1(\phi_0)$ is defined.  As $\avg{e}{1}=\rho$,
+Let $\phi_0\in Q_0$.  Since $\brak{\vtype}=\one_0$ we
+have $\phi_0(\brak{\vtype})=1>0$, so $\Ext_{\vtype}(\phi_0)$ is defined.  As $\avg{e}{\vtype}=\rho$,
 \eqref{eq:extension-expectation} gives
 \[
-  \E_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(e)]
-  =\frac{\phi_0(\rho)}{\phi_0(\brak1)}=\phi_0(\rho)=0,
+  \E_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}[\phi^{\vtype}(e)]
+  =\frac{\phi_0(\rho)}{\phi_0(\brak{\vtype})}=\phi_0(\rho)=0,
 \]
-using edge-degeneracy.  Because $\phi^1(e)\ge0$ pointwise, $\phi^1(e)=0$ almost
-surely, hence $\phi^1(-e)=0\ge0$ almost surely.  Moreover,
-by \cref{lem:support-as} every support point $\chi$ of every $\Ext_1(\phi_0)$
+using edge-degeneracy.  Because $\phi^{\vtype}(e)\ge0$ pointwise, $\phi^{\vtype}(e)=0$ almost
+surely, hence $\phi^{\vtype}(-e)=0\ge0$ almost surely.  Moreover,
+by \cref{lem:support-as} every support point $\chi$ of every $\Ext_{\vtype}(\phi_0)$
 satisfies $\chi(e)=0$, and since $\chi\mapsto\chi(e)$ is continuous this gives the
-inclusion $S_1\subseteq\{\chi\in Q_1:\chi(e)=0\}$.
+inclusion $S_{\vtype}\subseteq\{\chi\in Q_{\vtype}:\chi(e)=0\}$.
 
 Let $S_N=K_{1,N-1}$ be the star on $N$
 vertices, labelled at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
 Every unlabelled vertex is adjacent to the centre, so $p(e,S_N)=1$ for all $N$.  By
-compactness a subsequence converges to some $\psi\in Q_1$ with $\psi(e)=1$, whence
-$\psi(-e)=-1<0$.  Thus, $\psi\in Q_1$ witnesses
-$\{\chi\in Q_1:\chi(e)=0\}\subsetneq Q_1$; in particular $\psi\in Q_1\setminus S_1$,
-so $S_1\ne Q_1$.
+compactness a subsequence converges to some $\psi\in Q_{\vtype}$ with $\psi(e)=1$, whence
+$\psi(-e)=-1<0$.  Thus, $\psi\in Q_{\vtype}$ witnesses
+$\{\chi\in Q_{\vtype}:\chi(e)=0\}\subsetneq Q_{\vtype}$; in particular
+$\psi\in Q_{\vtype}\setminus S_{\vtype}$, so $S_{\vtype}\ne Q_{\vtype}$.
 \end{proof}
 
 \begin{remark}
-The hypothesis ``contains arbitrarily large stars'' is only used to exhibit, in $Q_1$, a labelled limit of positive labelled edge density; it may be replaced by the
+The hypothesis ``contains arbitrarily large stars'' is only used to exhibit, in
+$Q_{\vtype}$, a labelled limit of positive labelled edge density; it may be replaced by the
 existence of any sequence of labelled graphs in $\K$ whose labelled edge density stays
 bounded away from $0$.
 \end{remark}
@@ -2697,8 +2712,8 @@ $\phi_0(\rho)=0$.
 \begin{corollary}[\texorpdfstring{$C_4$}{C4}-free counterexample]\label{cor:c4-counterexample}
 $\K_{C_4}$ is edge-degenerate (\cref{lem:c4-edge-zero}) and contains all stars,
 so by \cref{thm:degenerate-obstruction} it is not root-plantable at
-$\sigma=1$: the element $-e$ is non-negative almost surely under every admissible
-one-root random extension, but is negative at some point of $Q_1$.
+$\sigma=\vtype$: the element $-e$ is non-negative almost surely under every admissible
+one-root random extension, but is negative at some point of $Q_{\vtype}$.
 \end{corollary}
 
 \begin{corollary}[A family of degenerate obstructions]\label{cor:degenerate-family}
@@ -2728,7 +2743,7 @@ For a hereditary graph class $\K$ let $\overline\K=\{\overline G:G\in\K\}$, whic
 again hereditary, and for a type $\sigma$ let $\overline\sigma$ be its complement.
 Then $(\T_{\mathrm{Graph}},\T_\K,\sigma)$ is root-plantable if and only if
 $(\T_{\mathrm{Graph}},\T_{\overline\K},\overline\sigma)$ is.  For the one-vertex type
-$\sigma=1=\overline\sigma$, the class $\K$ is root-plantable at $1$ if and only if
+$\sigma=\vtype=\overline\sigma$, the class $\K$ is root-plantable at \(\vtype\) if and only if
 $\overline\K$ is.
 \end{lemma}
 
@@ -2755,8 +2770,8 @@ with edge density tending to $1$, yet they fail just as the sparse ones do.
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
 Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
 $\overline{K_{1,N-1}}=K_{N-1}\uplus K_1$.  Then $\K$ is not root-plantable at
-$\sigma=1$, witnessed by $f:=e-\one_1$ (with $\one_1$ the unit of
-$\A^1[\T_{\mathrm{Graph}}]$).  In
+$\sigma=\vtype$, witnessed by $f:=e-\one_{\vtype}$ (with \(\one_{\vtype}\)
+the unit of $\A^{\vtype}[\T_{\mathrm{Graph}}]$).  In
 particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
 complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
 complement-of-planar graphs---are dense hereditary classes that are not
@@ -2765,13 +2780,14 @@ root-plantable.
 
 \begin{proof}
 By \cref{lem:complementation} it suffices that $\overline\K$ be not
-root-plantable at $1$, and this is \cref{thm:degenerate-obstruction}:
+root-plantable at \(\vtype\), and this is \cref{thm:degenerate-obstruction}:
 $\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
-$-e$ for $\overline\K$ pulls back to $-(\one_1-e)=e-\one_1$ for $\K$.  Directly:
-$\avg{e}{1}=\rho$ gives $\E[\phi^1(e)]=\phi_0(\rho)=1$, and $\phi^1(e)\le1$ forces
-$\phi^1(e)=1$ almost surely, so $e-\one_1$ is non-negative almost surely under every
+$-e$ for $\overline\K$ pulls back to $-(\one_{\vtype}-e)=e-\one_{\vtype}$ for $\K$.  Directly:
+$\avg{e}{\vtype}=\rho$ gives $\E[\phi^{\vtype}(e)]=\phi_0(\rho)=1$, and
+$\phi^{\vtype}(e)\le1$ forces
+$\phi^{\vtype}(e)=1$ almost surely, so $e-\one_{\vtype}$ is non-negative almost surely under every
 admissible one-root random extension; while the co-star labelled at its isolated vertex
-gives a $\psi\in Q_1$ with $\psi(e)=0$, whence $\psi(e-\one_1)=-1<0$ and quotient
+gives a $\psi\in Q_{\vtype}$ with $\psi(e)=0$, whence $\psi(e-\one_{\vtype})=-1<0$ and quotient
 semantics fails.
 \end{proof}
 
@@ -2828,7 +2844,7 @@ expectation condition, since a $[0,1]$-valued random variable with mean $0$
 $\phi_0$ gives the case $c=0$ (witness $-g$), and
 $\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-\one_\sigma$).  The
 degeneracy obstruction (\cref{thm:degenerate-obstruction}) and its dense
-counterpart (\cref{cor:codegenerate}) are exactly these, with $\sigma=1$ and
+counterpart (\cref{cor:codegenerate}) are exactly these, with $\sigma=\vtype$ and
 $g=e$.  An interior value $c\in(0,1)$ would instead require the almost-sure pinning as a
 genuine hypothesis---but for a subgraph-forbidden class no interior value is ever pinned,
 as \cref{subsec:boundary} shows.
@@ -2907,7 +2923,7 @@ pinning obstruction, so root-plantability fails there.  We first record that no 
 arises at the one-vertex type, and then build the edge-type obstruction.
 
 \begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
-The $C_5$-free class has no pinning obstruction at $\sigma=1$ from the edge or the
+The $C_5$-free class has no pinning obstruction at $\sigma=\vtype$ from the edge or the
 labelled triangle flag.
 \end{corollary}
 
@@ -2915,7 +2931,7 @@ labelled triangle flag.
 By \cref{lem:c5-nbhd}, $G[N(v)]$ is a disjoint union of stars and triangles, so it has
 at most $\deg(v)$ edges; hence the number of triangles through $v$ is at most $\deg(v)\le n$,
 and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
-labelled triangle flag has density $0$ on \emph{all} of $Q_1$: it is pinned at $0$, but
+labelled triangle flag has density $0$ on \emph{all} of $Q_{\vtype}$: it is pinned at $0$, but
 the quotient attains only $0$, so no obstruction arises.  The edge flag is not
 pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
 (the empty graph and the complete bipartite graphs).
@@ -3026,14 +3042,21 @@ survives this test but must be understood type by type.
 
 \section{The gap is invisible to density bounds}\label{sec:empty-type}
 
-The obstructions above all occur at the \emph{labelled} type $\sigma=1$: the witnesses
-$-e$ and $e-\one_1$, and the pinning witness $g-c\,\one_\sigma$ of
-\cref{thm:pinning}, are elements of $\A^\sigma[\T_0]$ with $\sigma\ne\emptyset$.  A
-flag-algebra \emph{application}, by contrast, outputs a density inequality in the
-empty-type algebra $\A^0[\T_1]$---a statement $f\ge0$ on $Q_0$, such as a Mantel or
-Tur\'an bound.  One should therefore ask whether the incompleteness just exhibited can
-ever affect such a bound.  It cannot, for two independent reasons: at the empty type the
-two semantics coincide, and the witnesses that expose the gap unlabel to zero.
+The obstructions above all occur at non-empty labelled types.  A \emph{pinning}
+obstruction means that some labelled flag \(g\) has a fixed value \(c\) in
+almost every random labelled view of every constrained unlabelled limit, even
+though a specially chosen labelled quotient limit can give \(g\) a different
+value.  Algebraically, the corresponding witness is \(g-c\,\one_\sigma\) or
+\(c\,\one_\sigma-g\): it vanishes on the ensemble support but not on all of
+\(Q_\sigma\).  In the one-vertex examples this type is \(\sigma=\vtype\), and
+the witnesses are \(-e\) and \(e-\one_{\vtype}\), where \(\vtype\) is the
+one-vertex type and \(\one_{\vtype}\) is the unit of its flag algebra.  A
+flag-algebra \emph{application}, by contrast, outputs a density inequality in
+the empty-type algebra $\A^0[\T_1]$---a statement $f\ge0$ on $Q_0$, such as a
+Mantel or Tur\'an bound.  One should therefore ask whether the incompleteness
+just exhibited can ever affect such a bound.  It cannot, for two independent
+reasons: at the empty type the two semantics coincide, and the witnesses that
+expose the gap unlabel to zero.
 
 \begin{proposition}[Empty-type collapse]\label{prop:empty-type}
 For the empty type, $\Ext_\emptyset(\phi_0)=\delta_{\phi_0}$ for every $\phi_0\in Q_0$;
@@ -3062,7 +3085,7 @@ of the two semantics now follows from \cref{thm:support-criterion}.
 \begin{corollary}\label{cor:confined}
 No density bound in $\A^0[\T_1]$ is ensemble-true but quotient-false; every failure of
 the quotient/ensemble correspondence occurs at a labelled type $\sigma\ne\emptyset$.  In
-particular the witnesses $-e$ and $e-\one_1$ are inequalities at $\sigma=1$, not density
+particular the witnesses $-e$ and $e-\one_{\vtype}$ are inequalities at $\sigma=\vtype$, not density
 bounds.
 \end{corollary}
 
@@ -3172,8 +3195,8 @@ $s-s'\in\mathcal I_\sigma$ whenever $s,s'$ agree on $S_\sigma$.
 \end{proof}
 
 \begin{proposition}[Degenerate roots collapse to a point]\label{prop:single-point}
-If $\K$ is edge-degenerate, or co-edge-degenerate, then $S_1$ is a single point.
-Consequently $\C^{\mathrm{ens}}_1=\C^{\mathrm{quot}}_1=\R_{\ge0}\,\one_0$: at the
+If $\K$ is edge-degenerate, or co-edge-degenerate, then $S_{\vtype}$ is a single point.
+Consequently $\C^{\mathrm{ens}}_{\vtype}=\C^{\mathrm{quot}}_{\vtype}=\R_{\ge0}\,\one_0$: at the
 one-vertex type the ensemble relaxation certifies exactly the density bounds the
 quotient method does.  The degeneracy and co-degeneracy counterexamples
 (\cref{cor:c4-counterexample,cor:degenerate-family,cor:codegenerate}) therefore cost
@@ -3182,19 +3205,19 @@ nothing for density bounds.
 
 \begin{proof}
 Take $\K$ edge-degenerate; the co-degenerate case follows by complementation
-(\cref{lem:complementation}).  Let $F$ be any $1$-flag whose underlying graph $M$ has an
+(\cref{lem:complementation}).  Let $F$ be any \(\vtype\)-flag whose underlying graph $M$ has an
 edge.  A random $|M|$-subset of an $n$-vertex graph spans, in expectation,
 $\binom{|M|}{2}$ times the edge density many edges, so the induced density obeys
 $p(M,G)\le\binom{|M|}{2}\rho(G)$; in the limit
-$\phi_0(M)\le\binom{|M|}2\phi_0(\rho)=0$ for every $\phi_0\in Q_0$.  As $\avg{F}{1}$ is a
+$\phi_0(M)\le\binom{|M|}2\phi_0(\rho)=0$ for every $\phi_0\in Q_0$.  As $\avg{F}{\vtype}$ is a
 non-negative multiple of $M$, we get
-$\E_{\phi^1\sim\Ext_1(\phi_0)}[\phi^1(F)]=\phi_0(\avg{F}{1})=0$, and since
-$\phi^1(F)\ge0$, $\phi^1(F)=0$ almost surely.  Thus every support point of every
-$\Ext_1(\phi_0)$ assigns density $0$ to every edge-containing $1$-flag; exactly one
-homomorphism $o\in X_1$ does so (the labelled empty-graph limit, the others being
-determined by the chain relations), so $S_1=\{o\}$.  On a single point every element
-non-negative there agrees with the constant $s(o)\,\one_1$, a sum of squares, so
-$\avg{s}{1}=s(o)\,\brak1=s(o)\,\one_0$ for every such $s$; both cones equal
+$\E_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}[\phi^{\vtype}(F)]=\phi_0(\avg{F}{\vtype})=0$, and since
+$\phi^{\vtype}(F)\ge0$, $\phi^{\vtype}(F)=0$ almost surely.  Thus every support point of every
+$\Ext_{\vtype}(\phi_0)$ assigns density $0$ to every edge-containing \(\vtype\)-flag; exactly one
+homomorphism $o\in X_{\vtype}$ does so (the labelled empty-graph limit, the others being
+determined by the chain relations), so $S_{\vtype}=\{o\}$.  On a single point every element
+non-negative there agrees with the constant $s(o)\,\one_{\vtype}$, a sum of squares, so
+$\avg{s}{\vtype}=s(o)\,\brak{\vtype}=s(o)\,\one_0$ for every such $s$; both cones equal
 $\R_{\ge0}\,\one_0$.
 \end{proof}
 
@@ -3336,10 +3359,10 @@ $\eta$ are all single points.
 
 More explicitly:
 \begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
-  \item If $e\in\A^1[\T_1]$ is the one-root edge flag, then on
-        $S_1(Y_{\mathrm{Mantel}})$ one has
+  \item If $e\in\A^{\vtype}[\T_1]$ is the one-root edge flag, then on
+        $S_{\vtype}(Y_{\mathrm{Mantel}})$ one has
         \[
-          e=\frac12\,\one_1 .
+          e=\frac12\,\one_{\vtype} .
         \]
   \item At the ordered edge type $\tau$, let $a_\tau$ and $b_\tau$ be the two
         three-vertex flags in which the new vertex is adjacent to exactly the first,
@@ -3388,7 +3411,7 @@ $\eta$-identities.
 The equality constraint $\phi_0(\rho)=1/2$ is not hereditary, so it is not naturally a
 quotient flag algebra.  The relative ensemble support nevertheless records strong
 labelled consequences of being an extremal Mantel limit.  For instance,
-$e=\frac12\one_1$ on $S_1(Y_{\mathrm{Mantel}})$, while this equality is false in the
+$e=\frac12\one_{\vtype}$ on $S_{\vtype}(Y_{\mathrm{Mantel}})$, while this equality is false in the
 ordinary triangle-free quotient: stars labelled at their centres give quotient points
 with $e=1$, and empty graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
 local information about extremisers that the hereditary quotient deliberately forgets.
@@ -3848,9 +3871,9 @@ is the balanced complete $r$-partite graphon.
 
 Consequently, the relative supports at the one-vertex type, the ordered edge type
 $\tau$, and the ordered non-edge type $\eta$ are all single points.  More explicitly, if
-$e$ is the one-root edge flag, then on $S_1(Y_r)$,
+$e$ is the one-root edge flag, then on $S_{\vtype}(Y_r)$,
 \[
-  e=\frac{r-1}{r}\one_1 .
+  e=\frac{r-1}{r}\one_{\vtype} .
 \]
 At the edge type $\tau$,
 \[
@@ -3877,7 +3900,7 @@ theorem therefore identifies $\phi_0$ with the balanced complete $r$-partite gra
 
 The displayed labelled identities are direct readings of random labelled extensions of that
 graphon.  A random vertex is adjacent to all parts except its own, giving
-$e=(r-1)\one_1/r$.  A random ordered edge has its endpoints in two distinct parts; a new
+$e=(r-1)\one_{\vtype}/r$.  A random ordered edge has its endpoints in two distinct parts; a new
 vertex lies in the first endpoint's part, the second endpoint's part, or one of the
 remaining $r-2$ parts with probabilities $1/r$, $1/r$, and $(r-2)/r$, respectively.
 This gives the $\tau$-identities.  A random ordered non-edge has both endpoints in the
