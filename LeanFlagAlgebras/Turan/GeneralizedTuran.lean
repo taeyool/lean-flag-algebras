@@ -21,16 +21,15 @@ variable {U V W : Type}
   [Fintype V] [DecidableEq V]
   [Fintype W] [DecidableEq W]
 
+open Classical in
 /--
 `generalizedExtremalNumber n H F` is the maximum number of induced copies of `F`
 among all `H`-free graphs on `n` vertices.
 
 This generalizes `extremalNumber n H`, where the optimized statistic is the edge count.
 -/
-noncomputable def generalizedExtremalNumber (n : ℕ) (H : SimpleGraph U) (F : SimpleGraph W) : ℕ
-  := by
-  classical
-  exact sup { G : SimpleGraph (Fin n) | H.Free G }
+noncomputable def generalizedExtremalNumber (n : ℕ) (H : SimpleGraph U) (F : SimpleGraph W) : ℕ :=
+  sup { G : SimpleGraph (Fin n) | H.Free G }
     (fun (G : SimpleGraph (Fin n)) ↦ GraphAlgebras.subgraphCount F G)
 
 omit [Fintype U] [DecidableEq U] [Fintype W] [DecidableEq W] in

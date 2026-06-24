@@ -2226,23 +2226,26 @@ In the displayed Lean notation,
 What remains is to turn this constrained semantic inequality into the
 Tur\'an-density upper bound described in
 \Cref{sec:background-semantic-order}.  Lean formulates the target as
-\lean{generalizedTuranDensity H F}: for each \(n\), it first maximizes the
-number of copies of \(F\) over all \(H\)-free graphs on \(n\) vertices, and
-then takes the limiting normalized density. The relevant definitions are:
+\lean{generalizedTuranDensity H F}; here ``generalized'' only indicates that
+the target \(F\) is an arbitrary graph, rather than just an edge.  For each
+\(n\), it first maximizes the number of induced copies of \(F\) over all \(H\)-free
+graphs on \(n\) vertices, and then takes the limiting normalized density. The
+relevant definitions are:
 \begin{lstlisting}
 noncomputable def generalizedExtremalNumber
-    (n : (*@$\mathbb{N}$@*)) (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{N}$@*) := by
-  classical
-  exact sup { G : SimpleGraph (Fin n) | H.Free G }
+    {U W : Type}
+    (n : (*@$\mathbb{N}$@*)) (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{N}$@*) :=
+  sup { G : SimpleGraph (Fin n) | H.Free G }
     (fun (G : SimpleGraph (Fin n)) => GraphAlgebras.subgraphCount F G)
 
 noncomputable def generalizedTuranDensity
+    {U W : Type} [Fintype W]
     (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{R}$@*) :=
   limUnder atTop fun n =>
     (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : (*@$\mathbb{R}$@*))
 \end{lstlisting}
 Here \lean{H.Free G} says that the host graph \(G\) is \(H\)-free, and
-\lean{subgraphCount F G} counts copies of the target graph \(F\) in \(G\).
+\lean{subgraphCount F G} counts induced copies of the target graph \(F\) in \(G\).
 After normalization by \(\binom{n}{|V(F)|}\), this is exactly the
 Tur\'an density $\pi(F;H)$.
 
