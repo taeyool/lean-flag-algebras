@@ -324,16 +324,29 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
 - `[ ]` **9. Performance: target the real bottlenecks (identified by the 2026-06-23 measurement).**
   The 8a/8b measurements showed the forbid *predicate* (8a, ≈ 0 %) and the pair-density *count* (8b,
   ~10 %) are **not** where the compile time goes. The two genuine cost centers — neither yet optimized:
-  - `[ ]` **9a. Faster iso-dedup** — the bottleneck of empty-typed / graph generation at high n.
-    Evidence: K₃-free n=7 generation is ~561 s, and clique vs generic predicate made *no* difference
-    (~576 s each) because both pay the same dedup. `dedupStep` keeps a running list of representatives
-    and iso-checks each new graph against *all* of them via `isEmptyIsoFast` — roughly **quadratic** in
-    the class count (1044 graphs at n=7). Options: (i) **bucket by an iso-invariant** (e.g. degree
-    sequence) so `isEmptyIsoFast` only compares within a bucket — the keyed-dedup machinery already
-    exists (`degKey` / `augRepsDeg`, used by the non-pruned `genSym2GraphsDedup`); extend it to the
-    pruned `augRepsFreeB` path; (ii) a **canonical form** key so dedup becomes a hash/sort instead of
-    pairwise iso-checks. This is the real lever for making n = 6/7 forbid-free loading *cheap* (the
-    original Task-8 motivation). Likely also speeds the non-forbid enumeration.
+  - `[x]` **9a. Faster iso-dedup — DONE (option (i), 2026-06-24): ~7× at n=7.**
+    Problem: `dedupStep` keeps a running list of representatives and iso-checks each new graph against
+    *all* of them via `isEmptyIsoFast` — roughly **quadratic** in the class count. The pruned generator
+    `augRepsFreeB` used this unkeyed dedup, so K₃-free n=7 generation was ~561 s with clique vs generic
+    predicate making *no* difference (~576 s each — both pay the same dedup).
+    **Fix:** extended the existing degree-keyed machinery (`withDegKey` / `dedupStepDeg`, used by the
+    non-pruned `genSym2GraphsDedup`) to the pruned path. Added to `Flags/ForbidFreePruned.lean`:
+    `augRepsFreeBDeg` (pruned analogue of `augRepsDeg` — each candidate carries its `degKey`; the
+    `O(n!)` iso test runs only on cheap-key collisions) and `augRepsFreeBDeg_fst_eq`
+    (`(augRepsFreeBDeg q n).map Prod.fst = augRepsFreeB q n`), proved by **reusing the same
+    `foldl_dedupStepDeg_sim`** that backs `augRepsDeg_fst_eq` (the cheap key is an iso invariant, so
+    keyed and naive dedup make identical keep/drop decisions). All soundness/completeness reasoning
+    stays on the unkeyed `augRepsFreeB` spec — the bridge transfers it. Routed all four pruned
+    generators through the keyed reps (def change + one bridge `rw`/`simp` lemma each; the `_toFinset_eq`
+    proofs are otherwise unchanged): empty-typed `prunedFreeFlags` / `prunedFreeFamilyFlags` /
+    `prunedCliqueFreeFlags`, and the σ-typed `genLabeledGraphsHfreePruned`.
+    **Measured (native-only `lake env lean`, K₃-free `length` at n=7, count = 107 verified):**
+    **unkeyed 583 s → keyed 83 s (~7.0×).** Subtracting the fixed ~47 s native-compile overhead, the
+    dedup *work* is ~15× faster (536 s → 36 s). This is the real lever for cheap n = 6/7 forbid-free
+    loading (the original Task-8 motivation); it does **not** speed the current low-n examples (n ≤ 5,
+    where generation is already a sub-second slice — consistent with the σ-typed perf-neutral finding),
+    but it is what makes high-n pruned generation tractable. (Option (ii), a canonical-form hash/sort
+    key, would remove the remaining within-bucket quadratic factor — a possible future refinement.)
   - `[~]` **9b. Typed-example compile cost — PROFILED (2026-06-24).** `set_option profiler true` on
     `ErdosPentagon` (standalone ~195 s own-compile after a 6.5 s import) attributes the time roughly as:
     - **~47 s — one `blocked` span** = the *one-time native-code compilation* of the flag/density/
@@ -656,3 +669,24 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   variance — its own task); (ii) cut `native_decide` reliance (~87 s, big rework). A linter-disable
   experiment (`linter.unusedTactic`/`unreachableTactic`) was perf-neutral (~1 s). **Lesson: only compare
   standalone-vs-standalone own-compile times; full-build "(N s)" is a scheduler artifact.**
+- **2026-06-24** — **Task 9a: keyed pruned iso-dedup DONE — ~7× at n=7 (the real high-n win).** The
+  pruned generator `augRepsFreeB` deduplicated with the unkeyed `dedupStep` (iso-check each new graph
+  against *all* survivors — quadratic), so K₃-free n=7 generation was ~561–583 s and the 8a clique
+  predicate made no difference (both paid the same dedup). Extended the degree-keyed machinery
+  (`withDegKey`/`dedupStepDeg`, already used by the non-pruned `genSym2GraphsDedup`) to the pruned path:
+  added `augRepsFreeBDeg` (pruned analogue of `augRepsDeg`) + `augRepsFreeBDeg_fst_eq`
+  (`(augRepsFreeBDeg q n).map Prod.fst = augRepsFreeB q n`) to `Flags/ForbidFreePruned.lean`, the bridge
+  **reusing the same `foldl_dedupStepDeg_sim`** that proves `augRepsDeg_fst_eq` (degKey is an iso
+  invariant ⇒ keyed and naive dedup agree). Soundness/completeness stay on the unkeyed spec via the
+  bridge. Routed all four pruned generators through the keyed reps (def + one bridge rewrite each;
+  `_toFinset_eq` proofs otherwise unchanged): empty-typed `prunedFreeFlags` / `prunedFreeFamilyFlags` /
+  `prunedCliqueFreeFlags` and σ-typed `genLabeledGraphsHfreePruned` (so
+  `genFlagsHfreePruned`/`generate_pruned_forbid_free_flags` benefit too). `ForbidFreePruned` +
+  `ForbidFreeGenerator` build green; full project green. **Measured (native-only `lake env lean`,
+  K₃-free `.length` at n=7, count 107 verified, machine idle): unkeyed 583 s → keyed 83 s (~7.0×);**
+  net of the ~47 s fixed native-compile overhead the dedup work is ~15× faster (536 s → 36 s). As
+  predicted by the n=5/6/7 scaling analysis, this helps **high-n** generation (the original Task-8
+  motivation, and the empty-typed class-count regime), **not** the low-n examples (n ≤ 5) where
+  generation is already negligible. Bench scratch (`_bench/`) removed, not committed. Option (ii) — a
+  canonical-form hash/sort key to kill the residual within-bucket quadratic — remains as a future
+  refinement.

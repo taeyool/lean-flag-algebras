@@ -166,7 +166,7 @@ filter + `genSym2GraphsDedup_complete`. The predicate `qB` is the recursion-inde
 `augRepsFreeB qB n`, then keyed-dedup. No forbidden graph is ever built. -/
 def genLabeledGraphsHfreePruned (σ : Sym2FlagType k) (n : ℕ)
     (qB : (k : ℕ) → Sym2Graph k → Bool) : List (Sym2LabeledGraph σ n) :=
-  ((((augRepsFreeB qB n).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
+  (((((augRepsFreeBDeg qB n).map Prod.fst).flatMap (labeledOfGraph σ)).map withLabeledDegKey).foldl
     dedupStepDegL []).map Prod.fst
 
 /-- The keyed pruned dedup equals the naive `dedupStepL` fold (mirrors `genLabeledGraphsHfree_eq`). -/
@@ -174,6 +174,7 @@ theorem genLabeledGraphsHfreePruned_eq (qB : (k : ℕ) → Sym2Graph k → Bool)
     genLabeledGraphsHfreePruned σ n qB
       = ((augRepsFreeB qB n).flatMap (labeledOfGraph σ)).foldl dedupStepL [] := by
   unfold genLabeledGraphsHfreePruned
+  rw [augRepsFreeBDeg_fst_eq]
   exact (foldl_dedupStepDegL_sim ((augRepsFreeB qB n).flatMap (labeledOfGraph σ))
     [] [] rfl (by simp)).1
 

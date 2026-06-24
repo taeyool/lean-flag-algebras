@@ -451,6 +451,40 @@ theorem augRepsFreeB_free (q : (k : ℕ) → Sym2Graph k → Bool)
     rw [augmentAllFreeB, List.mem_filter] at hRG
     exact hRG.2
 
+/-! ### Keyed (degree-prefiltered) runtime form of the pruned generator (Task 9a)
+
+`augRepsFreeB` deduplicates with the unkeyed `dedupStep`, which iso-checks each new graph against
+*all* survivors (`O(g(n)²)` `isEmptyIsoFast_bool` calls). At high `n` this dominates pruned
+generation. `augRepsFreeBDeg` is the pruned analogue of `augRepsDeg` (vs `augReps`): each candidate
+carries its precomputed cheap key `degKey`, and `dedupStepDeg` runs the `O(n!)` iso test only on
+cheap-key collisions. The first component equals `augRepsFreeB q n` (`augRepsFreeBDeg_fst_eq`), so
+all soundness/completeness reasoning stays on the unkeyed spec. -/
+
+/-- Keyed (degree-prefiltered) runtime form of `augRepsFreeB`: identical structure, but each
+candidate carries its precomputed `degKey` and the dedup prefilters by it. The first component
+equals `augRepsFreeB q n` (`augRepsFreeBDeg_fst_eq`). -/
+def augRepsFreeBDeg (q : (k : ℕ) → Sym2Graph k → Bool) :
+    (n : ℕ) → List (Sym2Graph n × (ℕ × List ℕ))
+  | 0 => [withDegKey ⟨∅, by simp⟩]
+  | n + 1 =>
+      ((((augRepsFreeBDeg q n).map Prod.fst).flatMap (augmentAllFreeB q)).map withDegKey).foldl
+        dedupStepDeg []
+
+/-- The keyed pruned generator's first components agree with the spec `augRepsFreeB`. Mirrors
+`augRepsDeg_fst_eq`, reusing the same fold-simulation lemma `foldl_dedupStepDeg_sim` (the cheap key
+`degKey` is an iso invariant, so keyed and naive dedup make identical keep/drop decisions). -/
+theorem augRepsFreeBDeg_fst_eq (q : (k : ℕ) → Sym2Graph k → Bool) (n : ℕ) :
+    (augRepsFreeBDeg q n).map Prod.fst = augRepsFreeB q n := by
+  induction n with
+  | zero => rfl
+  | succ m ih =>
+    show (((((augRepsFreeBDeg q m).map Prod.fst).flatMap (augmentAllFreeB q)).map withDegKey).foldl
+        dedupStepDeg []).map Prod.fst
+      = ((augRepsFreeB q m).flatMap (augmentAllFreeB q)).foldl dedupStep []
+    rw [ih]
+    exact (foldl_dedupStepDeg_sim ((augRepsFreeB q m).flatMap (augmentAllFreeB q)) [] [] rfl
+      (by simp)).1
+
 /-! ### Single forbidden graph: instantiate the generic generator with `q := qFree F`. -/
 
 /-- The single-forbidden-graph H-free Bool predicate: `F`-free iff no induced copy of `F`. -/
@@ -698,7 +732,7 @@ theorem augRepsFreeB_qFreeFamily_free (Fs : List (Σ m : ℕ, Sym2Graph m))
 /-- The empty-typed flags produced by genuine pruning for a single forbidden graph `F`: the
 quotient classes of the `F`-free representatives. -/
 def prunedFreeFlags {m : ℕ} (F : Sym2Graph m) (n : ℕ) : List (Sym2EmptyTypedFlag n) :=
-  (augRepsFreeB (qFree F) n).map (Quotient.mk (Sym2GraphSetoid n))
+  ((augRepsFreeBDeg (qFree F) n).map Prod.fst).map (Quotient.mk (Sym2GraphSetoid n))
 
 /-- **Genuine pruning is correct w.r.t. the analytic induced `F`-density** (single `F`). The
 pruned generator produces exactly the empty-typed flags of zero induced `F`-density — never
@@ -709,8 +743,8 @@ theorem prunedFreeFlags_toFinset_eq {m : ℕ} (F : Sym2Graph m) (hm : 0 < m) (n 
       = Finset.univ.filter (fun S => sym2EmptyTypeFlagDensity₁ ⟦F⟧ S = 0) := by
   apply Finset.ext
   intro S
-  simp only [prunedFreeFlags, List.mem_toFinset, List.mem_map, Finset.mem_filter,
-    Finset.mem_univ, true_and]
+  simp only [prunedFreeFlags, augRepsFreeBDeg_fst_eq, List.mem_toFinset, List.mem_map,
+    Finset.mem_filter, Finset.mem_univ, true_and]
   obtain ⟨G, rfl⟩ := Quotient.exists_rep S
   rw [← not_inducedContains_iff_density_eq_zero]
   constructor
@@ -724,7 +758,7 @@ theorem prunedFreeFlags_toFinset_eq {m : ℕ} (F : Sym2Graph m) (hm : 0 < m) (n 
 /-- The empty-typed flags produced by genuine pruning for a finite family `Fs`. -/
 def prunedFreeFamilyFlags (Fs : List (Σ m : ℕ, Sym2Graph m)) (n : ℕ) :
     List (Sym2EmptyTypedFlag n) :=
-  (augRepsFreeB (qFreeFamily Fs) n).map (Quotient.mk (Sym2GraphSetoid n))
+  ((augRepsFreeBDeg (qFreeFamily Fs) n).map Prod.fst).map (Quotient.mk (Sym2GraphSetoid n))
 
 /-- **Genuine pruning is correct for a finite family** (per D3): the pruned generator produces
 exactly the empty-typed flags whose induced `Fp`-density vanishes for every `Fp ∈ Fs`. -/
@@ -734,8 +768,8 @@ theorem prunedFreeFamilyFlags_toFinset_eq (Fs : List (Σ m : ℕ, Sym2Graph m))
       = Finset.univ.filter (fun S => ∀ Fp ∈ Fs, sym2EmptyTypeFlagDensity₁ ⟦Fp.2⟧ S = 0) := by
   apply Finset.ext
   intro S
-  simp only [prunedFreeFamilyFlags, List.mem_toFinset, List.mem_map, Finset.mem_filter,
-    Finset.mem_univ, true_and]
+  simp only [prunedFreeFamilyFlags, augRepsFreeBDeg_fst_eq, List.mem_toFinset, List.mem_map,
+    Finset.mem_filter, Finset.mem_univ, true_and]
   obtain ⟨G, rfl⟩ := Quotient.exists_rep S
   rw [← forall_not_inducedContains_iff_forall_density_eq_zero]
   constructor
@@ -832,7 +866,7 @@ theorem qCliqueFree_eq_qFree {r : ℕ} (F : Sym2Graph r)
 
 /-- The empty-typed flags produced by the *cheap* clique-pruned generator. -/
 def prunedCliqueFreeFlags (r n : ℕ) : List (Sym2EmptyTypedFlag n) :=
-  (augRepsFreeB (qCliqueFree r) n).map (Quotient.mk (Sym2GraphSetoid n))
+  ((augRepsFreeBDeg (qCliqueFree r) n).map Prod.fst).map (Quotient.mk (Sym2GraphSetoid n))
 
 /-- **The cheap clique-pruned generator is correct** w.r.t. the analytic complete-graph density:
 for any complete `F : Sym2Graph r` (`0 < r`), it produces exactly the empty-typed flags of zero
