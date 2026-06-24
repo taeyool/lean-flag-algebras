@@ -38,12 +38,16 @@ import LeanFlagAlgebras.MetaTheory.C5OneRoot
 import LeanFlagAlgebras.MetaTheory.C5TwoRootNonEdge
 import LeanFlagAlgebras.MetaTheory.C5Blowup
 import LeanFlagAlgebras.MetaTheory.Pinning
+import LeanFlagAlgebras.MetaTheory.EdgeObstruction
+import LeanFlagAlgebras.MetaTheory.StarWitness
+import LeanFlagAlgebras.MetaTheory.C4Free
+import LeanFlagAlgebras.MetaTheory.DegenerateFamily
+import LeanFlagAlgebras.MetaTheory.DenseObstruction
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
-Formalisation of the proved results in §1–8 of `MetaTheory/paper.tex`, plus §9's abstract
-pinning obstruction: when forbidden-subgraph ("quotient") reasoning is *complete* for a
-constrained graph class, and when it can fail.
+Formalisation of the proved results in §1–9.2 of `MetaTheory/paper.tex`: when forbidden-subgraph
+("quotient") reasoning is *complete* for a constrained graph class, and when it can fail.
 
 Aggregator. Currently wires in:
 
@@ -192,4 +196,32 @@ and verifies it for the (dense, not blow-up-closed) `C₅`-free class by a spars
 * `Pinning` — §9 `thm:pinning`: a labelled quantity pinned almost surely to one value on all
   admissible ensembles, but taking a different value at some quotient point, obstructs
   root-plantability (`pinning_obstruction`).
+
+§9.1–§9.2 instantiate the obstruction concretely.  The mechanism is **boundary pinning** of the
+one-root edge flag `e` at the one-vertex type `vtype`: its density is pinned almost surely to a
+boundary value of `[0,1]` (`0` for a degenerate class, `1` for a co-degenerate one) across every
+admissible random extension, while the constrained quotient still contains a labelled limit (a star,
+resp. co-star) attaining the opposite boundary.
+
+* `EdgeObstruction` — §9 the one-root edge flag `e` / unlabelled edge `ρ = ⟦e⟧₀`, `def:edge-degenerate`
+  (`EdgeDegenerate`) and its dual `CoEdgeDegenerate`, the two endpoint a.s.-pinning facts
+  (`ae_e_eq_zero_of_pinned`/`ae_e_eq_one_of_pinned`, from the expectation `∫ χ e = φ₀ ρ`), and the
+  abstract obstruction theorems `edgeDegenerate_not_rootPlantable_of_witness` /
+  `coEdgeDegenerate_not_rootPlantable_of_witness` (over `pinning_obstruction`).
+* `StarWitness` — §9 the concrete witnesses: a flag-sequence-to-`Q_vtype` assembly
+  (`exists_Qσ_point_edge_eq`, via Razborov 3.3(a)), the star / co-star constructions with their
+  one-root edge densities (`star_edge_density = 1`, `coStar_edge_density = 0`), and
+  `thm:degenerate-obstruction` (`degenerate_not_rootPlantable`) + `cor:codegenerate`
+  (`coDegenerate_not_rootPlantable`).
+* `C4Free` — §9.1 the `C₄`-free class `c4FreeClass`, the elementary Kővári–Sós–Turán bound
+  `(2·e(G))² ≤ 2|G|³` (`c4free_card_edges_sq_le`, cherry double-count), `lem:c4-edge-zero`
+  (`c4FreeClass_edgeDegenerate`) and `cor:c4-counterexample` (`c4free_not_rootPlantable`).
+* `DegenerateFamily` — §9.1 the general principle behind `cor:degenerate-family`:
+  `edgeDegenerate_of_subquadratic` (a subquadratic edge bound `e(G) ≤ f(|G|)`, `f N / N² → 0`, implies
+  edge-degeneracy).  The four listed families are instances via their extremal bounds.
+* `DenseObstruction` — §9.2 `cor:codegenerate` made concrete: the *dense* complement-of-`C₄`-free
+  class `coC4FreeClass` (edge density → 1) is also not root-plantable (`coC4free_not_rootPlantable`),
+  via `coC4FreeClass_coEdgeDegenerate` — density is not the dividing line.  Uses complementation only
+  through the edge-count identity `e(G)+e(Gᶜ)=C(|G|,2)` and `coStarᶜ = star`, not the full
+  `lem:complementation` isomorphism.
 -/

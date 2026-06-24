@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 40 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 45 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
@@ -53,10 +53,19 @@ types by a *sparse local repair* — clone only the roots, then delete the few o
 estimate (a uniformly random bounded sample is unlikely to meet a root-cluster or span a repaired
 edge), reusing nothing measure-theoretic.
 
-**§9** begins the negative side. The first formalised result, `pinning_obstruction`, uses no new
-graph theory: it packages the support-closure criterion's contrapositive. If an evaluation is
-almost surely pinned to a constant on every admissible random extension, closedness of the level set
-puts all of `S_σ` in that level set; a quotient point outside it witnesses `S_σ ≠ Q_σ`.
+**§9** is the negative side. The abstract engine `pinning_obstruction` uses no new graph theory: it
+packages the support-closure criterion's contrapositive. If an evaluation is almost surely pinned to
+a constant on every admissible random extension, closedness of the level set puts all of `S_σ` in
+that level set; a quotient point outside it witnesses `S_σ ≠ Q_σ`. **§9.1–§9.2** instantiate this at
+the one-vertex type with the one-root edge flag `e`: the paper's "Endpoints are automatic" remark
+says a `[0,1]`-valued density of mean `0` (resp. `1`) is a.s. `0` (resp. `1`), so the degeneracy
+obstruction (`thm:degenerate-obstruction`, edge density pinned to `0`, witnessed by a star) and its
+dense dual (`cor:codegenerate`, pinned to `1`, witnessed by a co-star) are both *endpoint* cases of
+`pinning_obstruction` reached from a mere expectation condition. The `C₄`-free class is the explicit
+sparse example (edge density → 0 by the elementary Kővári–Sós–Turán bound), and its dense complement
+is the explicit dense one — so density is not the dividing line. The full complementation
+*isomorphism* `lem:complementation` is **not** formalised; the dense example is obtained directly,
+using complementation only at the elementary edge-count level.
 
 ---
 
@@ -373,6 +382,44 @@ class-generic; the `C₅`-free modules then instantiate them.
   `Sσ_subset_eval_eq_of_ae_pinned` turns almost-sure pinning under every admissible random extension
   into the closed-set inclusion `S_σ ⊆ {χ | χ(g)=c}`. Then `support_pinning_obstruction` and
   `pinning_obstruction` show that any `ψ ∈ Q_σ` with `ψ(g) ≠ c` prevents root-plantability.
+
+The §9.1–§9.2 concrete obstructions build on `Pinning` in a short chain
+`EdgeObstruction → StarWitness → C4Free → {DegenerateFamily, DenseObstruction}`:
+
+* **[`EdgeObstruction`](./EdgeObstruction.lean)** — §9 `def:edge-degenerate`. Builds the one-vertex
+  type `vtype := (⊥ : FlagType (Fin 1))`, the one-root edge flag `e : A^vtype` and unlabelled edge
+  `ρ := ⟦e⟧₀`, proves the denominator collapse `one_downward_vtype` (`⟦1⟧₀ = 1`) and the specialised
+  expectation `expectation_e` (`∫ χ e = φ₀ ρ`), then the two endpoint a.s.-pinning facts
+  `ae_e_eq_zero_of_pinned` / `ae_e_eq_one_of_pinned` (mean `0`/`1` ⟹ a.s. `0`/`1`). `EdgeDegenerate` /
+  `CoEdgeDegenerate` and the abstract obstructions
+  `edgeDegenerate_not_rootPlantable_of_witness` / `coEdgeDegenerate_not_rootPlantable_of_witness`
+  (over `pinning_obstruction`) close the module; `Sσ_subset_e_eq_zero_of_edgeDegenerate` records the
+  structured `S_v ⊆ {χ(e)=0}` half of `thm:degenerate-obstruction`.
+* **[`StarWitness`](./StarWitness.lean)** — §9 the concrete witnesses. The σ-typed forbidden-freeness
+  `flagDensity_forbidden_eq_zero_of_mem` (analogue of `HeredClass.forbiddenFree_of_mem`) lets a
+  convergent in-class flag sequence's limit land in `Q_vtype`; `exists_Qσ_point_edge_eq` assembles
+  that limit (Razborov 3.3(a) `flagSeq_limit_mem_positiveHom` + compactness
+  `increasing_flagSeq_contain_convergent_subseq`). The star / co-star are built explicitly with
+  `star_edge_density = 1` / `coStar_edge_density = 0`, giving `degenerate_not_rootPlantable`
+  (`thm:degenerate-obstruction`) and `coDegenerate_not_rootPlantable` (`cor:codegenerate`, abstract).
+* **[`C4Free`](./C4Free.lean)** — §9.1 the `C₄`-free class `c4FreeClass` (`Mem G := (cycleGraph 4).Free G`).
+  The counting heart `c4free_card_edges_sq_le` (`(2·e(G))² ≤ 2|G|³`) is a cherry double-count
+  (`cherry_count_eq`, `c4free_common_neighbors_le_one`, `c4_copy_of_square`) plus Cauchy–Schwarz;
+  `flagDensity_unlabelledEdge_eq` rewrites the unlabelled-edge density as `e(G)/C(N,2)`. Then
+  `c4FreeClass_edgeDegenerate` (`lem:c4-edge-zero`) squeezes the squared density to `0` over the
+  constrained-representation sequence, and `c4free_not_rootPlantable` (`cor:c4-counterexample`) feeds a
+  star into `degenerate_not_rootPlantable`. The shared analytic helpers `edgeDensity_sq_bound` /
+  `edgeDensity_bound_tendsto_zero` live here and are reused by `DenseObstruction`.
+* **[`DegenerateFamily`](./DegenerateFamily.lean)** — §9.1 `cor:degenerate-family`. The general
+  criterion `edgeDegenerate_of_subquadratic` (subquadratic edge bound ⟹ edge-degenerate), the common
+  mechanism of the four listed families; `C₄` is the one whose bound is proved from scratch.
+* **[`DenseObstruction`](./DenseObstruction.lean)** — §9.2 `cor:codegenerate`, made concrete. The
+  dense `coC4FreeClass` (`Mem G := (cycleGraph 4).Free Gᶜ`), its co-edge-degeneracy
+  `coC4FreeClass_coEdgeDegenerate` (edge density `1 − e(Gᶜ)/C(N,2) → 1`, via the complement edge-count
+  identity `card_edgeFinset_add_compl` and the `C₄` bound on `Gᶜ`), and `coC4free_not_rootPlantable`.
+  The load-bearing `downwardNormalizingFactor_edge_eq_one` (so `φ₀ ρ` is the genuine edge density) is
+  proved via `isomorphismCount edgeLabeled = 2`. Complementation enters only elementarily — never the
+  `lem:complementation` isomorphism.
 
 ---
 

@@ -67,7 +67,12 @@ will meet them constantly:
   the `C₅` types `oneVertexType` / `twoNonEdgeType` (both `⊥`, on `Fin 1` / `Fin 2`).
 * In `MetaTheory` (§9): `pinning_obstruction`, the abstract obstruction theorem saying that
   almost-sure pinning on all admissible ensembles plus a quotient point with a different value
-  forces `¬ RootPlantable`.
+  forces `¬ RootPlantable`.  Its §9–§9.2 instances: the one-root edge flag `e` / unlabelled edge
+  `ρ = ⟦e⟧₀` at `vtype := (⊥ : FlagType (Fin 1))`, `EdgeDegenerate` / `CoEdgeDegenerate`,
+  `degenerate_not_rootPlantable` (`thm:degenerate-obstruction`, witnessed by `starLabeled`),
+  `c4FreeClass` with `c4FreeClass_edgeDegenerate` / `c4free_not_rootPlantable` (`lem:c4-edge-zero` /
+  `cor:c4-counterexample`), `edgeDegenerate_of_subquadratic` (`cor:degenerate-family`), and the dense
+  `coC4FreeClass` / `coC4free_not_rootPlantable` (`cor:codegenerate`).
 
 ---
 
@@ -145,6 +150,11 @@ neighbourhood-structure `lem:c5-nbhd` in [`C5Free.lean`](./C5Free.lean)).
 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
 | §8 `lem:c5-blowup` | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
 | §9 `thm:pinning` | `Pinning` | `pinning_obstruction` |
+| §9 `def:edge-degenerate`, endpoint pinning | `EdgeObstruction` | `EdgeDegenerate`, `CoEdgeDegenerate`, `e`, `ρ`, `vtype`, `ae_e_eq_zero_of_pinned`, `ae_e_eq_one_of_pinned`, `edgeDegenerate_not_rootPlantable_of_witness` |
+| §9 `thm:degenerate-obstruction`, §9.2 `cor:codegenerate` (abstract) | `StarWitness` | `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`, `exists_Qσ_point_edge_eq`, `starLabeled`, `coStarLabeled` |
+| §9.1 `lem:c4-edge-zero`, `cor:c4-counterexample` | `C4Free` | `c4FreeClass`, `c4free_card_edges_sq_le`, `c4FreeClass_edgeDegenerate`, `c4free_not_rootPlantable`, `c4_copy_of_square` |
+| §9.1 `cor:degenerate-family` (general criterion) | `DegenerateFamily` | `edgeDegenerate_of_subquadratic` |
+| §9.2 `cor:codegenerate` (concrete dense) | `DenseObstruction` | `coC4FreeClass`, `coC4FreeClass_coEdgeDegenerate`, `coC4free_not_rootPlantable` |
 
 For a line-numbered `paper.tex` ↦ Lean audit map of §8 (what to read and what to verify), see the
 **[Auditing the correspondence](./README.md#auditing-the-correspondence-to-papertex)** section of the
