@@ -11,13 +11,13 @@ The analytic heart of the Erdős pentagon upper bound. Provides:
 * the `reduce_ep_flagmul` tactic, which repeatedly rewrites flag products on the
   left of a forbidden-equality goal using the generated `flagMul_*` theorems;
 * the expanded forms (`flagQuadraticForm_*_expand`) of the three PSD quadratic
-  forms `vᵢᵀ Mᵢ vᵢ` as 5-vertex flag combinations, with `*_forbidEq` lemmas
+  forms `vᵢᵀ Mᵢ vᵢ` as 5-vertex flag combinations, with `*_inducedForbidEq` lemmas
   proving they equal the matrix quadratic forms modulo the forbidden triangle;
-* the `*_downward_forbidLE_nonneg` lemmas: each square term is `≥ 0` after
+* the `*_downward_inducedForbidLE_nonneg` lemmas: each square term is `≥ 0` after
   downward projection, given the matrix is PSD;
-* `one_forbidEq_one_size_five_expand`, the size-5 expansion of `1`;
+* `one_inducedForbidEq_one_size_five_expand`, the size-5 expansion of `1`;
 * `ErdosPentagon_flagAlgebra`, the flag-algebra density bound
-  `C5 ≤[K3] (24/625)·1` (the pentagon count in triangle-free graphs). -/
+  `C5 ≤ᵢ[K3] (24/625)·1` (the pentagon count in triangle-free graphs). -/
 
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
@@ -152,8 +152,8 @@ private def stepReduceFlagMul : TacticM Bool :=
               throwError m!"auto_reduce_ep_flagmul: could not find flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
         let thmId : TSyntax `term := mkIdent thmName
         evalTactic (← `(tactic|
-          rw [forbidEq_rw_left_add_right (forbidEq_smul (c := _) $thmId),
-              forbidEq_move_add_left_iff]))
+          rw [inducedForbidEq_rw_left_add_right (inducedForbidEq_smul (c := _) $thmId),
+              inducedForbidEq_move_add_left_iff]))
         return true
       return false
     else if let some (_c, mulTerm) := getSmulArgs? lhs then
@@ -163,8 +163,8 @@ private def stepReduceFlagMul : TacticM Bool :=
             throwError m!"auto_reduce_ep_flagmul: could not find terminal flagMul theorem for mulTerm={mulTerm}; detectedConst={fNm?.getD Name.anonymous}"
       let thmId : TSyntax `term := mkIdent thmName
       evalTactic (← `(tactic|
-        rw [forbidEq_rw_left (forbidEq_smul (c := _) $thmId),
-            forbidEq_move_term_left_iff]))
+        rw [inducedForbidEq_rw_left (inducedForbidEq_smul (c := _) $thmId),
+            inducedForbidEq_move_term_left_iff]))
       return true
     else
       return false
@@ -254,13 +254,13 @@ noncomputable def flagQuadraticForm_P_v₀_expand
 
 /-- The matrix quadratic form `v₀ᵀ P v₀` equals its explicit 5-vertex flag
 expansion `flagQuadraticForm_P_v₀_expand`, modulo the forbidden triangle. -/
-lemma flagQuadraticForm_P_v₀_forbidEq
-    : flagQuadraticForm P_real v₀ =[K3.toFinFlag] flagQuadraticForm_P_v₀_expand
+lemma flagQuadraticForm_P_v₀_inducedForbidEq
+    : flagQuadraticForm P_real v₀ =ᵢ[K3.toFinFlag] flagQuadraticForm_P_v₀_expand
   := by
   dsimp [flagQuadraticForm_P_v₀_expand]
   simp [flagQuadraticForm, v₀, P_real, ratMatrixToReal, P, Fin.sum_univ_eight, add_assoc]
   reduce_ep_flagmul
-  apply Forbid.forbidEq_of_eq
+  apply Forbid.inducedForbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
   flagsum_ac_sort_pipeline
 
@@ -302,13 +302,13 @@ noncomputable def flagQuadraticForm_Q_v₁_expand
 
 /-- The matrix quadratic form `v₁ᵀ Q v₁` equals its explicit 5-vertex flag
 expansion `flagQuadraticForm_Q_v₁_expand`, modulo the forbidden triangle. -/
-lemma flagQuadraticForm_Q_v₁_forbidEq
-    : flagQuadraticForm Q_real v₁ =[K3.toFinFlag] flagQuadraticForm_Q_v₁_expand
+lemma flagQuadraticForm_Q_v₁_inducedForbidEq
+    : flagQuadraticForm Q_real v₁ =ᵢ[K3.toFinFlag] flagQuadraticForm_Q_v₁_expand
   := by
   dsimp [flagQuadraticForm_Q_v₁_expand]
   simp [flagQuadraticForm, v₁, Q_real, ratMatrixToReal, Q, Fin.sum_univ_six, add_assoc]
   reduce_ep_flagmul
-  apply Forbid.forbidEq_of_eq
+  apply Forbid.inducedForbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
   flagsum_ac_sort_pipeline
 
@@ -340,44 +340,44 @@ noncomputable def flagQuadraticForm_R_v₂_expand
 
 /-- The matrix quadratic form `v₂ᵀ R v₂` equals its explicit 5-vertex flag
 expansion `flagQuadraticForm_R_v₂_expand`, modulo the forbidden triangle. -/
-lemma flagQuadraticForm_R_v₂_forbidEq
-    : flagQuadraticForm R_real v₂ =[K3.toFinFlag] flagQuadraticForm_R_v₂_expand
+lemma flagQuadraticForm_R_v₂_inducedForbidEq
+    : flagQuadraticForm R_real v₂ =ᵢ[K3.toFinFlag] flagQuadraticForm_R_v₂_expand
   := by
   dsimp [flagQuadraticForm_R_v₂_expand]
   simp [flagQuadraticForm, v₂, R_real, ratMatrixToReal, R, Fin.sum_univ_five, add_assoc]
   reduce_ep_flagmul
-  apply Forbid.forbidEq_of_eq
+  apply Forbid.inducedForbidEq_of_eq
   simp only [Nat.cast_one, one_smul, smul_add]
   flagsum_ac_sort_pipeline
 
 /-- The first square term is nonnegative after downward projection (since `P`
-is PSD): `0 ≤[K3] ⟦flagQuadraticForm_P_v₀_expand⟧₀`. -/
-lemma flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
+is PSD): `0 ≤ᵢ[K3] ⟦flagQuadraticForm_P_v₀_expand⟧₀`. -/
+lemma flagQuadraticForm_P_v₀_expand_downward_inducedForbidLE_nonneg
+    : 0 ≤ᵢ[K3.toFinFlag] ⟦flagQuadraticForm_P_v₀_expand⟧₀
   := by
-  apply downward_forbidLE_nonneg
-  apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_P_v₀_forbidEq
-  apply forbidLE_of_le
+  apply downward_inducedForbidLE_nonneg
+  apply inducedForbidLE_trans_inducedForbidEq_right _ flagQuadraticForm_P_v₀_inducedForbidEq
+  apply inducedForbidLE_of_le
   exact flagQuadraticForm_nonneg P_real P_real_posSemidef v₀
 
 /-- The second square term is nonnegative after downward projection (since `Q`
-is PSD): `0 ≤[K3] ⟦flagQuadraticForm_Q_v₁_expand⟧₀`. -/
-lemma flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_Q_v₁_expand⟧₀
+is PSD): `0 ≤ᵢ[K3] ⟦flagQuadraticForm_Q_v₁_expand⟧₀`. -/
+lemma flagQuadraticForm_Q_v₁_expand_downward_inducedForbidLE_nonneg
+    : 0 ≤ᵢ[K3.toFinFlag] ⟦flagQuadraticForm_Q_v₁_expand⟧₀
   := by
-  apply downward_forbidLE_nonneg
-  apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_Q_v₁_forbidEq
-  apply forbidLE_of_le
+  apply downward_inducedForbidLE_nonneg
+  apply inducedForbidLE_trans_inducedForbidEq_right _ flagQuadraticForm_Q_v₁_inducedForbidEq
+  apply inducedForbidLE_of_le
   exact flagQuadraticForm_nonneg Q_real Q_real_posSemidef v₁
 
 /-- The third square term is nonnegative after downward projection (since `R`
-is PSD): `0 ≤[K3] ⟦flagQuadraticForm_R_v₂_expand⟧₀`. -/
-lemma flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
-    : 0 ≤[K3.toFinFlag] ⟦flagQuadraticForm_R_v₂_expand⟧₀
+is PSD): `0 ≤ᵢ[K3] ⟦flagQuadraticForm_R_v₂_expand⟧₀`. -/
+lemma flagQuadraticForm_R_v₂_expand_downward_inducedForbidLE_nonneg
+    : 0 ≤ᵢ[K3.toFinFlag] ⟦flagQuadraticForm_R_v₂_expand⟧₀
   := by
-  apply downward_forbidLE_nonneg
-  apply forbidLE_trans_forbidEq_right _ flagQuadraticForm_R_v₂_forbidEq
-  apply forbidLE_of_le
+  apply downward_inducedForbidLE_nonneg
+  apply inducedForbidLE_trans_inducedForbidEq_right _ flagQuadraticForm_R_v₂_inducedForbidEq
+  apply inducedForbidLE_of_le
   exact flagQuadraticForm_nonneg R_real R_real_posSemidef v₂
 
 /-- The constant `1` expanded as the sum of all triangle-free 5-vertex flags. -/
@@ -399,37 +399,37 @@ noncomputable def one_size_five_expand
   + FlagAlgebra_5_0_0_25
 
 /-- Modulo the forbidden triangle, `1` equals `one_size_five_expand`. -/
-lemma one_forbidEq_one_size_five_expand
-    : 1 =[K3.toFinFlag] one_size_five_expand
+lemma one_inducedForbidEq_one_size_five_expand
+    : 1 =ᵢ[K3.toFinFlag] one_size_five_expand
   := by
   have : (1 : FlagAlgebra ∅ₜ) = ⟦basisVector ⟨0, default⟩⟧ := rfl
   rw [this]
-  have h := basisVector_quot_forbidEq_sum K3.toFinFlag (⟨0, default⟩ : FinFlag ∅ₜ) 5 (by simp)
-  apply forbidEq_trans h
+  have h := basisVector_quot_inducedForbidEq_sum K3.toFinFlag (⟨0, default⟩ : FinFlag ∅ₜ) 5 (by simp)
+  apply inducedForbidEq_trans h
   simp [default, flagDensity_empty]
   rw [Finset.sum_eq_multiset_sum, ← flagSet_5_0_0_eq_univ]
   simp [flagSet_5_0_0_val_eq, unlabel_emptyType, ← add_assoc]
-  apply forbidEq_of_eq
+  apply inducedForbidEq_of_eq
   rfl
 
 /-- **Erdős pentagon bound (flag-algebra form).** Modulo the forbidden
 triangle, the pentagon density is at most `24/625`:
-`C5 ≤[K3] (24/625)·1`. Proved by adding the three PSD square terms (each `≥ 0`)
+`C5 ≤ᵢ[K3] (24/625)·1`. Proved by adding the three PSD square terms (each `≥ 0`)
 to `C5` and bounding the result via the size-5 expansion of `1`. -/
 theorem ErdosPentagon_flagAlgebra
-    : C5.toFlagAlgebra ≤[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : C5.toFlagAlgebra ≤ᵢ[K3.toFinFlag] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have h₁ : C5.toFlagAlgebra ≤[K3.toFinFlag]
+  have h₁ : C5.toFlagAlgebra ≤ᵢ[K3.toFinFlag]
             C5.toFlagAlgebra + ⟦flagQuadraticForm_P_v₀_expand⟧₀
                              + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
                              + ⟦flagQuadraticForm_R_v₂_expand⟧₀
     := by
     have : C5.toFlagAlgebra = C5.toFlagAlgebra + 0 + 0 + 0 := by simp only [add_zero]
     nth_rw 1 [this]
-    apply forbidLE_add _ flagQuadraticForm_R_v₂_expand_downward_forbidLE_nonneg
-    apply forbidLE_add _ flagQuadraticForm_Q_v₁_expand_downward_forbidLE_nonneg
-    apply forbidLE_add _ flagQuadraticForm_P_v₀_expand_downward_forbidLE_nonneg
-    exact forbidLE_refl K3.toFinFlag C5.toFlagAlgebra
+    apply inducedForbidLE_add _ flagQuadraticForm_R_v₂_expand_downward_inducedForbidLE_nonneg
+    apply inducedForbidLE_add _ flagQuadraticForm_Q_v₁_expand_downward_inducedForbidLE_nonneg
+    apply inducedForbidLE_add _ flagQuadraticForm_P_v₀_expand_downward_inducedForbidLE_nonneg
+    exact inducedForbidLE_refl K3.toFinFlag C5.toFlagAlgebra
   have h₂ : (C5.toFlagAlgebra + ⟦flagQuadraticForm_P_v₀_expand⟧₀
                               + ⟦flagQuadraticForm_Q_v₁_expand⟧₀
                               + ⟦flagQuadraticForm_R_v₂_expand⟧₀)
@@ -450,10 +450,10 @@ theorem ErdosPentagon_flagAlgebra
       simp only [PositiveHom.map_smul, Nat.ofNat_pos, div_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
       apply positiveHom_basisVector_ge_zero
     }
-  have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =[K3.toFinFlag]
+  have h₃ : ((24 / 625 : ℝ) • one_size_five_expand) =ᵢ[K3.toFinFlag]
             (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
     :=
-    forbidEq_smul (forbidEq_symm one_forbidEq_one_size_five_expand)
-  exact forbidLE_trans h₁ (forbidLE_trans (forbidLE_of_le h₂) (forbidLE_of_forbidEq h₃))
+    inducedForbidEq_smul (inducedForbidEq_symm one_inducedForbidEq_one_size_five_expand)
+  exact inducedForbidLE_trans h₁ (inducedForbidLE_trans (inducedForbidLE_of_le h₂) (inducedForbidLE_of_inducedForbidEq h₃))
 
 end ErdosPentagonAPI

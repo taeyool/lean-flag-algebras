@@ -3,10 +3,11 @@ import LeanFlagAlgebras.Turan.GeneralizedTuran
 
 /-! # From forbidden-subgraph bounds to Turán densities
 
-This file bridges the `forbidLE` reasoning framework with classical extremal graph
+This file bridges the `inducedForbidLE` reasoning framework with classical extremal graph
 theory. It converts a `SimpleGraph` into a flag (`toFinFlag`) and a flag-algebra element
-(`toFlagAlgebra`), and proves `generalizedTuranDensity_le_of_forbidLE`: a forbidden
-inequality `F.toFlagAlgebra ≤[H.toFinFlag] c • 1` yields the generalized Turán-density
+(`toFlagAlgebra`). The ordinary-free bridge is
+`generalizedTuranDensity_le_of_forbidLE`: an inequality under the ordinary
+`H`-free condition, `F.toFlagAlgebra ≤[H] c • 1`, yields the generalized Turán-density
 bound `generalizedTuranDensity H F ≤ c`.
 -/
 
@@ -98,6 +99,36 @@ lemma flagDensitySeq_eq_zero_of_free
     IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨ψ.graph_iso.symm⟩⟩
   exact False.elim ((hG_free (ϕ i)) hcontains)
 
+lemma flagDensitySeq_eq_zero_of_free_of_isContained
+    {n : ℕ} (H : SimpleGraph (Fin n))
+    {a : ℕ → ℕ} (Gseq : (k : ℕ) → SimpleGraph (Fin (a k)))
+    (hG_free : ∀ k : ℕ, H.Free (Gseq k))
+    (ϕ : ℕ → ℕ) (K : FinFlag ∅ₜ)
+    (hK : K ∈ forbiddenFlags H)
+    : ∀ i, flagDensitySeq ((fun k ↦ (Gseq k).toFinFlag) ∘ ϕ) i K = 0 := by
+  rcases K with ⟨k, K⟩
+  rcases hK with ⟨Krep, hKrep_eq, hK⟩
+  change K = ⟦Krep⟧ at hKrep_eq
+  intro i
+  rw [hKrep_eq]
+  dsimp only [flagDensitySeq, toFinFlag, flagDensity₁]
+  rw [← @subflagDensity_eq_flagListDensity]
+  simp [subflagDensity, labeledGraphDensityLifted, labeledGraphDensity]
+  left
+  simp [labeledGraphCount]
+  rw [@Fintype.card_eq_zero_iff]
+  apply Subtype.isEmpty_of_false
+  simp
+  intro G' hG'_ind
+  rw [← Set.univ_eq_empty_iff]
+  ext ψ
+  simp at ψ
+  have hK_host : SimpleGraph.IsContained Krep.graph (Gseq (ϕ i)) :=
+    IsContained.of_exists_iso_subgraph ⟨G'.subgraph, ⟨ψ.graph_iso.symm⟩⟩
+  have hcontains : SimpleGraph.IsContained H (Gseq (ϕ i)) :=
+    SimpleGraph.IsContained.trans hK hK_host
+  exact False.elim ((hG_free (ϕ i)) hcontains)
+
 lemma flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra
     {a : FlagDensitySpace ∅ₜ} {φ : PositiveHom ∅ₜ}
     (hφ : φ.coe = a) {n : ℕ} (G : SimpleGraph (Fin n))
@@ -108,6 +139,16 @@ lemma flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra
     a G.toFinFlag = φ.coe G.toFinFlag := by simpa using hφ_eval.symm
     _ = φ ⟦basisVector G.toFinFlag⟧ := by simp [PositiveHom.coe_flag]
     _ = φ G.toFlagAlgebra := by rfl
+
+lemma flagDensitySpace_eval_finFlag_eq_positiveHom_eval_basisVector
+    {a : FlagDensitySpace ∅ₜ} {φ : PositiveHom ∅ₜ}
+    (hφ : φ.coe = a) (K : FinFlag ∅ₜ)
+    : a K = φ ⟦basisVector K⟧ := by
+  have hφ_eval : φ.coe K = a K := by
+    simpa using congrFun (congrArg Subtype.val hφ) K
+  calc
+    a K = φ.coe K := by simpa using hφ_eval.symm
+    _ = φ ⟦basisVector K⟧ := by simp [PositiveHom.coe_flag]
 
 lemma labeledGraphCount_emptyType_eq_subgraphCount
     {n m : ℕ} (F : SimpleGraph (Fin n)) (G : SimpleGraph (Fin m))
@@ -186,16 +227,33 @@ lemma subgraphDensity_eq_flagDensity₁
   simp [subgraphDensity, labeledGraphDensity, labeledGraphCount_emptyType_eq_subgraphCount,
     LabeledGraph.size]
 
-/-- Turán-density bridge: a forbidden inequality `F.toFlagAlgebra ≤[H.toFinFlag] c • 1`
-(with `0 ≤ c`) implies the generalized Turán-density bound
-`generalizedTuranDensity H F ≤ c`. -/
-theorem generalizedTuranDensity_le_of_forbidLE
+/-- The empty-type flag of `H` itself is one of the `H`-forbidden flags (`H ⊑ H`). -/
+theorem mem_forbiddenFlags_self {n : ℕ} (H : SimpleGraph (Fin n)) :
+    H.toFinFlag ∈ forbiddenFlags H :=
+  ⟨{ graph := H, type_embed := RelEmbedding.ofIsEmpty _ _ }, rfl, SimpleGraph.IsContained.refl H⟩
+
+/-- **Induced ⟹ non-induced bridge.** For any forbidden graph `H`, an induced single-flag
+bound `f ≤ᵢ[H.toFinFlag] g` implies the non-induced (ordinary-`H`-free) bound `f ≤[H] g`:
+the ordinary-free condition kills every `H`-containing flag, in particular `H.toFinFlag`
+itself, so it implies the single-flag condition. This lets the induced SOS machinery (which
+proves `≤ᵢ[H.toFinFlag]`) feed the non-induced Turán bridge `generalizedTuranDensity_le_of_forbidLE`. -/
+theorem inducedForbidLE_toFinFlag_imp_forbidLE
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)} {N : ℕ} (H : SimpleGraph (Fin N))
+    {f g : FlagAlgebra σ} (h : f ≤ᵢ[H.toFinFlag] g) : f ≤[H] g := by
+  intro φ₀ hσ hcond
+  exact h φ₀ hσ (hcond H.toFinFlag (mem_forbiddenFlags_self H))
+
+/-- Single-induced-flag bridge: a forbidden inequality
+`F.toFlagAlgebra ≤ᵢ[H.toFinFlag] c • 1` (with `0 ≤ c`) implies the generalized
+Turán-density bound `generalizedTuranDensity H F ≤ c`. For the non-induced `H`-free
+semantics (the default), use `generalizedTuranDensity_le_of_forbidLE`. -/
+theorem generalizedTuranDensity_le_of_inducedForbidLE
     {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
-    {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
+    {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤ᵢ[H.toFinFlag] c • 1)
     : generalizedTuranDensity H F ≤ c
   := by
-  rw [← forbidLE_emptyType_iff_forbidLE] at h
-  dsimp [forbidLE_emptyType] at h
+  rw [← inducedForbidLE_emptyType_iff_inducedForbidLE] at h
+  dsimp [inducedForbidLE_emptyType, forbidLE_emptyTypeWith, inducedForbiddenCondition] at h
 
   let f_den : ℕ → ℝ := fun k ↦ (generalizedExtremalNumber k H F / k.choose m : ℝ)
   suffices hε : ∀ ε > 0, ∀ᶠ k in atTop, f_den k ≤ c + ε by
@@ -241,6 +299,81 @@ theorem generalizedTuranDensity_le_of_forbidLE
     · have hH_den_zero : ∀ n, flagDensitySeq (gseq ∘ ϕ) n H.toFinFlag = 0 := by
         simpa [gseq] using flagDensitySeq_eq_zero_of_free H Gseq hG_free ϕ
       rw [tendsto_congr hH_den_zero, tendsto_const_nhds_iff]
+  · simp [PositiveHom.map_smul]
+    calc
+      c < c + ε := lt_add_of_pos_right c hε_pos
+      _ ≤ φ F.toFlagAlgebra := by
+        have hF_tendsto :
+            Tendsto (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n F.toFinFlag)
+              atTop (nhds (φ F.toFlagAlgebra)) := by
+          simpa [flagDensitySpace_eval_toFinFlag_eq_positiveHom_eval_toFlagAlgebra hφ F]
+            using (hϕ_conv F.toFinFlag)
+        apply le_of_tendsto_of_tendsto'
+          (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ c + ε) atTop (𝓝 (c + ε))) hF_tendsto
+        intro k
+        specialize hG_den (ϕ k)
+        dsimp [flagDensitySeq]
+        rw [← subgraphDensity_eq_flagDensity₁]
+        exact le_of_lt hG_den
+
+/-- Ordinary-free Turán-density bridge: a forbidden inequality under the ordinary
+`H`-free condition implies the generalized Turán-density bound. The target density
+still counts induced copies of `F`; the forbidden host condition is ordinary
+subgraph-freeness for `H`. -/
+theorem generalizedTuranDensity_le_of_forbidLE
+    {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
+    {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H] c • 1)
+    : generalizedTuranDensity H F ≤ c
+  := by
+  change forbidLEWith (forbiddenCondition H) F.toFlagAlgebra (c • 1) at h
+  rw [← forbidLE_emptyTypeWith_iff_forbidLEWith] at h
+  dsimp [forbidLE_emptyTypeWith, forbiddenCondition, familyForbiddenCondition] at h
+
+  let f_den : ℕ → ℝ := fun k ↦ (generalizedExtremalNumber k H F / k.choose m : ℝ)
+  suffices hε : ∀ ε > 0, ∀ᶠ k in atTop, f_den k ≤ c + ε by
+    refine le_iff_forall_pos_le_add.mpr ?_
+    intro ε hε_pos
+    refine le_of_tendsto_of_tendsto ?_ (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ c + ε) atTop (𝓝 (c + ε))) (hε ε hε_pos)
+    simpa [f_den] using (tendsto_generalizedTuranDensity H F)
+
+  contrapose h
+  push_neg at h ⊢
+  obtain ⟨ε, hε_pos, hε⟩ := h
+  obtain ⟨a₀, ha₀_inc, ha_gt₀⟩ := extraction_of_frequently_atTop hε
+  let a : ℕ → ℕ := fun k ↦ a₀ (k + m)
+  have ha_inc : StrictMono a := by
+    intro k l hkl
+    exact ha₀_inc (Nat.add_lt_add_right hkl m)
+  have ha_gt : ∀ k : ℕ, c + ε < f_den (a k) := by
+    intro k
+    simpa [a] using (ha_gt₀ (k + m))
+  have hm_le_a : ∀ k : ℕ, m ≤ a k := by
+    intro k
+    exact le_trans (Nat.le_add_left m k) (ha₀_inc.id_le (k + m))
+  clear hε ha₀_inc ha_gt₀
+
+  have hcε : 0 ≤ c + ε := add_nonneg hc (le_of_lt hε_pos)
+  obtain ⟨Gseq, hG_free, hG_den⟩ := exists_graphSeq_of_densityLowerBound H F hcε a hm_le_a ha_gt
+  let gseq : FlagSeq ∅ₜ := fun k ↦ (Gseq k).toFinFlag
+  have hgseq_inc : Increases gseq := by
+    intro k l hkl
+    simp [gseq, toFinFlag]
+    exact Nat.lt_of_succ_le (ha_inc hkl)
+  obtain ⟨x, ϕ, hϕ_mono, hϕ_conv'⟩ := increasing_flagSeq_contain_convergent_subseq gseq hgseq_inc
+  obtain ⟨φ, hφ⟩ := flagSeq_limit_mem_positiveHom (gseq ∘ ϕ) hϕ_conv'
+  obtain ⟨hϕ_inc, hϕ_conv⟩ := flagSeq_convergesTo_iff.mp hϕ_conv'
+  clear hcε hgseq_inc hϕ_inc hϕ_conv'
+
+  use φ
+  constructor
+  · intro K hK
+    apply @tendsto_nhds_unique _ _ _ _
+        (fun n ↦ flagDensitySeq (gseq ∘ ϕ) n K) atTop
+    · simpa [flagDensitySpace_eval_finFlag_eq_positiveHom_eval_basisVector hφ K]
+        using (hϕ_conv K)
+    · have hK_den_zero : ∀ n, flagDensitySeq (gseq ∘ ϕ) n K = 0 := by
+        simpa [gseq] using flagDensitySeq_eq_zero_of_free_of_isContained H Gseq hG_free ϕ K hK
+      rw [tendsto_congr hK_den_zero, tendsto_const_nhds_iff]
   · simp [PositiveHom.map_smul]
     calc
       c < c + ε := lt_add_of_pos_right c hε_pos

@@ -62,15 +62,18 @@ set_option maxRecDepth 1500
 Certificate description: '2-graph; maximize 3:1213 density; forbid 3:121323'
 Bound: '3/4'. -/
 theorem K3forbidP3_flagAlgebra
-    : FlagAlgebra_3_0_0_2 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_3_0_0_2 ≤[completeGraph (Fin 3)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_3_0_0_2 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  apply inducedForbidLE_toFinFlag_imp_forbidLE
+  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
+        from (completeSym2Graph_finFlag_eq 3).symm]
+  have quadraticForm_trans : FlagAlgebra_3_0_0_2 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_3_0_0_2 + ⟦flagQuadraticForm M_real v⟧₀
     := by
-    apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
-    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_3_0_0_2
-  apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
+    apply inducedForbidLE_add_QuadraticForm M_real M_real_posSemidef v
+    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_3_0_0_2
+  apply inducedForbidLE_trans quadraticForm_trans
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
@@ -80,7 +83,7 @@ theorem K3forbidP3_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 end K3forbidP3

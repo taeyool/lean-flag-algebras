@@ -2305,30 +2305,40 @@ reused.
 The definitions in Section~\ref{sec:abstract} are intentionally close to the
 mathematics.  Many of them are marked \lean{noncomputable}: this does not mean
 that they are unusable as specifications, but that Lean should not be expected
-to reduce them as executable programs.  Quotients, \lean{Classical.choice},
-\lean{Prop}-valued adjacency relations, and abstract finite enumerations are
-all appropriate for stating the theory of flag algebras, but they are a poor
-interface for repeatedly evaluating small graph computations.
+to reduce them as executable programs.  This is a normal situation when
+formalizing mathematics.  A definition is often written to express the
+mathematical object directly, not to specify the data structures and loops by
+which one should compute it.  For instance, we may identify flags up to
+isomorphism, define a finite collection by a predicate, or use an existence
+proof to choose a representative.  These choices are harmless, and often
+preferable, at the level of theorems: they keep statements invariant under
+isomorphism and avoid committing the theory to an arbitrary encoding.
 
-Certificate checking needs exactly those finite computations.  It must decide
-whether two concrete flags represent the same isomorphism class, compute
-subflag densities, and reduce products among named flags.  These tasks are
-finite, but if we ask the evaluator to unfold the abstract definitions directly,
-it ends up reducing quotient eliminators, proof-valued fields, and generic
-finite-search instances rather than running a simple graph algorithm.
+The cost is that the computational content is only implicit.  To evaluate such
+a definition, Lean would have to turn propositions such as adjacency or
+isomorphism into data, enumerate finite sets described abstractly, and choose
+representatives of quotient classes.  In proofs, this information can be
+supplied by lemmas or by classical reasoning.  As an executable program,
+however, there is no direct instruction saying which edge list to inspect,
+which vertex permutations to try, or which representative to return.  Thus
+\lean{noncomputable} marks a boundary: the definition is a faithful
+mathematical specification, but not the program we want Lean to run repeatedly.
 
-Isomorphism testing is the smallest example of the gap.  Abstractly, two
-flags are equal when there exists a type-preserving graph isomorphism between
-representatives.  In the computable layer, a graph is instead stored as a
-finite set of unordered edges, so the same question becomes a Boolean search
-over vertex permutations together with edge-membership checks.  Correctness
-theorems for both Boolean outcomes connect this executable test back to the
-quotient relation.  In this sense the computation \emph{reflects} the
-mathematical proposition: Lean runs the Boolean program on concrete data, then
-uses a theorem saying that the answer has the intended abstract meaning.
+To apply the framework to concrete graphs, however, we need exactly the finite
+computations that the specification layer leaves implicit.  Given the named finite
+flags appearing in a certificate, Lean must decide whether two concrete flags
+represent the same isomorphism class, compute subflag densities, and reduce
+products among named flags.  These tasks are finite, but the abstract
+definitions do not provide executable instructions for carrying them out.  They
+describe equality through quotients and the existence of isomorphisms, and they
+describe counts using abstract finite sets.  For actual evaluation, we therefore
+provide separate Boolean algorithms and prove that their results agree with the
+abstract definitions.  We call this pattern \emph{reflection}: Lean runs a
+Boolean program on concrete data, then uses a correctness theorem saying that
+the result has the intended meaning in the specification layer.
 
-The files in \lean{FlagAlgebra/Compute/} provide this executable mirror of the
-specification layer.  They introduce concrete graph and flag representations,
+This section develops the reflection layer as an executable mirror of the
+specification layer.  It introduces concrete graph and flag representations,
 optimized Boolean procedures for isomorphism and density computations, and
 adequacy theorems proving that these procedures agree with the quotient-based
 definitions.  This is the reflection pattern used throughout the rest of the
@@ -2386,76 +2396,41 @@ the \lean{edges\_valid} field.  Registering this as a \lean{Coe} instance
 means that wherever a \lean{SimpleGraph (Fin n)} is expected, a
 \lean{Sym2Graph n} can be used directly.
 
-Alongside \lean{Sym2Graph}, we define a computable density function
-\lean{sym2EmptyTypeFlagDensity} entirely over \lean{Finset} operations.
-The coercion above makes abstract definitions \emph{applicable} to
+The same concrete representation also supports a more usable isomorphism
+test.  The generic \lean{Fintype}-based instances above are enough for
+decidability, but repeated density checks need a faster decision procedure.
+The reflected checker first rejects impossible cases by simple isomorphism
+invariants such as edge counts; for typed flags, it also fixes the labeled
+vertices and only permutes the remaining unlabeled vertices.  Correctness
+theorems for the Boolean outcomes justify using this checker as the
+\lean{DecidableEq} instance for reflected flags.  Equality still means equality
+in the quotient setoid; only the decision procedure has changed.
+
+\subsection{Correctness as Adequacy}
+
+For density computations, we define a computable density function
+\lean{sym2EmptyTypeFlagDensity} entirely over \lean{Finset} operations.  The
+coercion above makes abstract definitions \emph{applicable} to
 \lean{Sym2Graph} inputs, but applicability is not computability:
-\lean{flagDensity} composed with the coercion still unfolds to
-non-computable quotient machinery.  The concrete density function sidesteps
-this by computing directly over the \lean{Finset} of edges, producing a
-value that \lean{native\_decide} can evaluate.
+\lean{flagDensity} composed with the coercion still unfolds to non-computable
+quotient machinery.  The concrete density function sidesteps this by computing
+directly over the \lean{Finset} of edges, producing a value that
+\lean{native\_decide} can evaluate.
 
-\subsection{From Naive Reflection to Usable Reflection}
-\label{subsec:naive-to-usable}
+The reflected density computation also replaces abstract subgraph enumeration
+with data-oriented enumeration.  Rather than enumerate abstract
+\lean{LabeledSubgraph}s directly, it enumerates \lean{Sym2InducedSubgraph}s,
+represented only by finite vertex sets, and computes their edge sets by
+filtering the host graph's \lean{Finset} of edges.  For typed flags,
+\lean{Sym2InducedLabeledSubgraph} additionally stores the proof that the type
+vertices are included.  A count-level adequacy theorem proves that this
+enumeration has the same cardinality as the abstract \lean{LabeledSubgraph}
+enumeration.  Thus the cost of quotient and subgraph reasoning is paid once in
+the proof of adequacy, not in every generated density lemma.
 
-The central engineering lesson of the reflection layer is that
-\emph{computable} is not the same as \emph{usable}.  A straightforward
-reflective design would keep the abstract definitions as close as possible to
-the mathematics, make the relevant finite types into \lean{Fintype}s, and ask
-\lean{native\_decide} to evaluate density goals by unfolding
-\lean{flagDensity}.  This works as a proof of concept, but it is not a viable
-compilation strategy for the pentagon proof.  Each density check would then
-repeatedly construct finite sets of abstract subgraphs, compare quotient
-classes by searching for flag isomorphisms, synthesize overlapping
-\lean{Fintype} instances, and carry proof-valued fields through the
-evaluator.  The graphs are small, but the proof terms are not: the evaluator
-is reducing a proof-relevant encoding of finite combinatorics, not a simple
-graph algorithm.
-
-The optimized layer treats reflection more like verified compilation.  The
-abstract quotient definitions remain the specification, while the executable
-programs in \lean{Compute/FastIso.lean} and \lean{Compute/FlagDensity.lean}
-act as compiled code.  The connection between them is established by adequacy
-theorems, so changing the implementation of the Boolean checker does not
-change the mathematical theorem being proved.
-
-\paragraph{Fast isomorphism checking.}
-The first bottleneck is flag isomorphism.  We replace the generic
-\lean{Fintype}-based procedure with two optimized Boolean checkers.
-\lean{isEmptyIsoFast\_bool} avoids permutation enumeration entirely when the
-edge counts differ.  For typed flags, \lean{isIsoFast\_bool} additionally
-fixes the labeled vertices (which a $\sigma$-flag isomorphism must preserve)
-and enumerates permutations only of the unlabeled vertices outside the type,
-reducing the pentagon proof's search from $5! = 120$ to $(5-3)! = 2$ candidate
-maps per check.  This constant-factor improvement is multiplied across
-thousands of generated density lemmas, making the difference between a viable
-evaluator and a stuck proof search.
-
-Both checkers come with correctness theorems for both outcomes
-(\lean{true\_correct} and \lean{false\_correct}), justifying their
-registration as high-priority \lean{DecidableEq} instances.  Equality on
-reflected flags still means equality in the quotient setoid; only the
-decision procedure's implementation has changed.  The JSON density table is
-therefore not a trusted artifact but a test vector: if a table entry
-disagrees with the verified evaluator, \lean{native\_decide} fails and the
-proof is rejected.
-
-\paragraph{Concrete subgraph enumeration with one-time equivalence proof.}
-The density computation itself is similarly compiled.  Rather than enumerate
-abstract \lean{LabeledSubgraph}s directly, the concrete layer enumerates
-\lean{Sym2InducedSubgraph}s, represented only by a finite vertex set, and
-computes their edge sets by filtering the host graph's \lean{Finset} of
-edges.  For typed flags, \lean{Sym2InducedLabeledSubgraph} additionally
-stores the proof that the type vertices are included.  A count-level
-adequacy theorem proves that this data-oriented enumeration has the same
-cardinality as the abstract \lean{LabeledSubgraph} enumeration.  Thus the
-cost of quotient and subgraph reasoning is paid once in the proof of
-adequacy, not thousands of times in the generated density lemmas.
-
-\subsection{Adequacy Theorems}
-
-The connection between the abstract and concrete worlds is established by
-adequacy theorems for the compute-density layer:
+We use \emph{adequacy theorem} for this form of correctness theorem: a theorem
+stating that the reflected computation agrees with the abstract definition it
+implements.  For the density evaluator, the central adequacy theorems are:
 \begin{lstlisting}
 theorem flagDensity1_eq_sym2FlagDensity1
     (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :

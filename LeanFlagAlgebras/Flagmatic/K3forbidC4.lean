@@ -100,16 +100,19 @@ set_option maxRecDepth 1500
 Certificate description: '2-graph; maximize 4:12132434 density; forbid 3:121323'
 Bound: '3/8'. -/
 theorem K3forbidC4_flagAlgebra
-    : FlagAlgebra_4_0_0_8 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_4_0_0_8 ≤[completeGraph (Fin 3)] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  apply inducedForbidLE_toFinFlag_imp_forbidLE
+  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
+        from (completeSym2Graph_finFlag_eq 3).symm]
+  have quadraticForm_trans : FlagAlgebra_4_0_0_8 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_4_0_0_8 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
     := by
-    apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_4_0_0_8
-  apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 4)))
+    apply inducedForbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply inducedForbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_4_0_0_8
+  apply inducedForbidLE_trans quadraticForm_trans
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 4)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_three, add_assoc]
@@ -120,7 +123,7 @@ theorem K3forbidC4_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 end K3forbidC4

@@ -1,14 +1,15 @@
 import LeanFlagAlgebras.FlagAlgebra.QuadraticForm
+import Mathlib.Combinatorics.SimpleGraph.Copy
 import Mathlib.Tactic
 
 /-! # Forbidden-subgraph reasoning framework
 
-This file defines the relations `f =[F] g` (`forbidEq`) and `f ≤[F] g` (`forbidLE`),
+This file defines the relations `f =ᵢ[F] g` (`inducedForbidEq`) and `f ≤ᵢ[F] g` (`inducedForbidLE`),
 the statement language for the end-to-end density bounds. They mean that, almost surely
 under random positive homomorphisms `φ` drawn conditioned on the forbidden flag `F`
 having density `0` (`φ₀ ⟦basisVector F⟧ = 0`), one has `φ f = φ g` resp. `φ f ≤ φ g`
 (probability `1`). The file proves the algebraic and order lemmas (refl/symm/trans,
-add/smul, `forbidLE_of_le`, downward monotonicity, …) consumed by the API tactics, as
+add/smul, `inducedForbidLE_of_le`, downward monotonicity, …) consumed by the API tactics, as
 well as the empty-type variants and the equivalence between them.
 -/
 
@@ -22,29 +23,90 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 /-! ## Core relations -/
 
-/-- `f =[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
-assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
-`φ` satisfies `φ f = φ g` almost surely (probability `1`). -/
-def forbidEq
-    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
+/-- A forbidden condition is a property of the ambient empty-type positive homomorphism.
+
+The old single-forbidden-flag semantics is recovered by `inducedForbiddenCondition`;
+ordinary-free semantics can be added by replacing this condition with one that kills
+all induced patterns containing the forbidden graph as an ordinary subgraph. -/
+def ForbidCondition : Type :=
+  PositiveHom ∅ₜ → Prop
+
+/-- The condition used by the original `inducedForbidEq`/`inducedForbidLE` API: the empty-type
+forbidden flag has density zero. -/
+def inducedForbiddenCondition (F_forbid : FinFlag ∅ₜ) : ForbidCondition :=
+  fun φ₀ => φ₀ ⟦basisVector F_forbid⟧ = 0
+
+/-- A condition that kills every empty-type flag in a prescribed family. This is the
+basic shape needed for ordinary-free semantics, where one forbids all induced patterns
+that contain the forbidden graph as an ordinary subgraph. -/
+def familyForbiddenCondition (Fs : Set (FinFlag ∅ₜ)) : ForbidCondition :=
+  fun φ₀ => ∀ F, F ∈ Fs → φ₀ ⟦basisVector F⟧ = 0
+
+/-- Empty-type flags whose underlying graph contains `H` as an ordinary, not
+necessarily induced, subgraph. This is the graph family that should vanish when
+the ambient objects are ordinary `H`-free. -/
+noncomputable def forbiddenFlags {n : ℕ} (H : SimpleGraph (Fin n)) :
+    Set (FinFlag ∅ₜ) :=
+  fun F =>
+    ∃ G : LabeledGraph ∅ₜ (Fin F.1), F.2 = ⟦G⟧ ∧ SimpleGraph.IsContained H G.graph
+
+/-- Ordinary-free forbidden condition: every induced pattern whose underlying graph
+contains `H` as an ordinary subgraph has density zero. -/
+noncomputable def forbiddenCondition {n : ℕ} (H : SimpleGraph (Fin n)) :
+    ForbidCondition :=
+  familyForbiddenCondition (forbiddenFlags H)
+
+/-- `forbidEqWith C f g`: for every base homomorphism `φ₀` satisfying the forbidden
+condition `C`, the conditioned random homomorphism `φ` satisfies `φ f = φ g` almost
+surely. -/
+def forbidEqWith
+    (C : ForbidCondition) (f g : FlagAlgebra σ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), (hσ : φ₀ ⟨σ⟩₀ > 0)
-    → φ₀ ⟦basisVector F_forbid⟧ = 0
+    → C φ₀
     → ℙ[φ₀] {φ | φ f = φ g} = 1
 
-/-- `f ≤[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
-assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
-`φ` satisfies `φ f ≤ φ g` almost surely (probability `1`). -/
-def forbidLE
-    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
+/-- `forbidLEWith C f g`: for every base homomorphism `φ₀` satisfying the forbidden
+condition `C`, the conditioned random homomorphism `φ` satisfies `φ f ≤ φ g` almost
+surely. -/
+def forbidLEWith
+    (C : ForbidCondition) (f g : FlagAlgebra σ) : Prop
   :=
   ∀ (φ₀ : PositiveHom ∅ₜ), (hσ : φ₀ ⟨σ⟩₀ > 0)
-    → φ₀ ⟦basisVector F_forbid⟧ = 0
+    → C φ₀
     → ℙ[φ₀] {φ | φ f ≤ φ g} = 1
 
--- Notation: `f =[F] g` for `forbidEq F f g` and `f ≤[F] g` for `forbidLE F f g`.
-notation f "=[" F_forbid "]" g => forbidEq F_forbid f g
-notation f "≤[" F_forbid "]" g => forbidLE F_forbid f g
+/-- `f =ᵢ[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
+assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
+`φ` satisfies `φ f = φ g` almost surely (probability `1`). -/
+def inducedForbidEq
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
+  :=
+  forbidEqWith (inducedForbiddenCondition F_forbid) f g
+
+/-- `f ≤ᵢ[F_forbid] g`: for every base homomorphism `φ₀` with `σ` of positive density that
+assigns density `0` to the forbidden flag `F_forbid`, the conditioned random homomorphism
+`φ` satisfies `φ f ≤ φ g` almost surely (probability `1`). -/
+def inducedForbidLE
+    (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra σ) : Prop
+  :=
+  forbidLEWith (inducedForbiddenCondition F_forbid) f g
+
+/-- Equality modulo the ordinary `H`-free condition. -/
+noncomputable def forbidEq {m : ℕ}
+    (H : SimpleGraph (Fin m)) (f g : FlagAlgebra σ) : Prop :=
+  forbidEqWith (forbiddenCondition H) f g
+
+/-- Order modulo the ordinary `H`-free condition. -/
+noncomputable def forbidLE {m : ℕ}
+    (H : SimpleGraph (Fin m)) (f g : FlagAlgebra σ) : Prop :=
+  forbidLEWith (forbiddenCondition H) f g
+
+-- Notation: `f =ᵢ[F] g` for `inducedForbidEq F f g` and `f ≤ᵢ[F] g` for `inducedForbidLE F f g`.
+notation f "=ᵢ[" F_forbid "]" g => inducedForbidEq F_forbid f g
+notation f "≤ᵢ[" F_forbid "]" g => inducedForbidLE F_forbid f g
+notation f "=[" H "]" g => forbidEq H f g
+notation f "≤[" H "]" g => forbidLE H f g
 
 lemma positiveHomSpace_eval_eq_sum
     (k : FlagAlgebra σ)
@@ -90,42 +152,42 @@ lemma forbidLE_set_measurable
 
 /-! ## Reflexivity, symmetry, transitivity and the equality/order bridge -/
 
-theorem forbidEq_refl
+theorem inducedForbidEq_refl
     (F_forbid : FinFlag ∅ₜ) (f : FlagAlgebra σ)
-    : f =[F_forbid] f
+    : f =ᵢ[F_forbid] f
   := by
   intro φ₀ hσ hF_forbid
   simp
 
-theorem forbidLE_refl
+theorem inducedForbidLE_refl
     (F_forbid : FinFlag ∅ₜ) (f : FlagAlgebra σ)
-    : f ≤[F_forbid] f
+    : f ≤ᵢ[F_forbid] f
   := by
   intro φ₀ hσ hF_forbid
   simp
 
-theorem forbidEq_symm
+theorem inducedForbidEq_symm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : g =[F_forbid] f
+    (hfg : f =ᵢ[F_forbid] g)
+    : g =ᵢ[F_forbid] f
   := by
   intro φ₀ hσ hF_forbid
   simpa [eq_comm] using hfg φ₀ hσ hF_forbid
 
-theorem forbidEq_of_eq
+theorem inducedForbidEq_of_eq
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f = g)
-    : f =[F_forbid] g
+    : f =ᵢ[F_forbid] g
   := by
   subst hfg
-  exact forbidEq_refl F_forbid f
+  exact inducedForbidEq_refl F_forbid f
 
 /-- An unconditional flag-algebra inequality `f ≤ g` lifts to the forbidden relation
-`f ≤[F_forbid] g` for any forbidden flag. -/
-theorem forbidLE_of_le
+`f ≤ᵢ[F_forbid] g` for any forbidden flag. -/
+theorem inducedForbidLE_of_le
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
     (hfg : f ≤ g)
-    : f ≤[F_forbid] g
+    : f ≤ᵢ[F_forbid] g
   := by
   intro φ₀ hσ hF_forbid
   have hsubset : (Set.univ : Set (PositiveHomSpace σ)) ⊆
@@ -145,12 +207,12 @@ theorem forbidLE_of_le
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-/-- A forbidden equality `f =[F_forbid] g` implies the forbidden inequality
-`f ≤[F_forbid] g`. -/
-theorem forbidLE_of_forbidEq
+/-- A forbidden equality `f =ᵢ[F_forbid] g` implies the forbidden inequality
+`f ≤ᵢ[F_forbid] g`. -/
+theorem inducedForbidLE_of_inducedForbidEq
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : f ≤[F_forbid] g
+    (hfg : f =ᵢ[F_forbid] g)
+    : f ≤ᵢ[F_forbid] g
   := by
   intro φ₀ hσ hF_forbid
   have hEq : ℙ[φ₀] {φ : PositiveHomSpace σ | φ f = φ g} = 1 := hfg φ₀ hσ hF_forbid
@@ -167,10 +229,10 @@ theorem forbidLE_of_forbidEq
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hmono
 
 /-- Transitivity of the forbidden equality relation. -/
-theorem forbidEq_trans
+theorem inducedForbidEq_trans
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g) (hgh : g =[F_forbid] h)
-    : f =[F_forbid] h
+    (hfg : f =ᵢ[F_forbid] g) (hgh : g =ᵢ[F_forbid] h)
+    : f =ᵢ[F_forbid] h
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f = φ g}
@@ -191,33 +253,33 @@ theorem forbidEq_trans
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f = φ h} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidEq_rw_left
+theorem inducedForbidEq_rw_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (f =[F_forbid] h) ↔ (g =[F_forbid] h)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (f =ᵢ[F_forbid] h) ↔ (g =ᵢ[F_forbid] h)
   := by
   constructor
   · intro hfh
-    exact forbidEq_trans (forbidEq_symm hfg) hfh
+    exact inducedForbidEq_trans (inducedForbidEq_symm hfg) hfh
   · intro hgh
-    exact forbidEq_trans hfg hgh
+    exact inducedForbidEq_trans hfg hgh
 
-theorem forbidEq_rw_right
+theorem inducedForbidEq_rw_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (h =[F_forbid] f) ↔ (h =[F_forbid] g)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (h =ᵢ[F_forbid] f) ↔ (h =ᵢ[F_forbid] g)
   := by
   constructor
   · intro hhf
-    exact forbidEq_trans hhf hfg
+    exact inducedForbidEq_trans hhf hfg
   · intro hhg
-    exact forbidEq_trans hhg (forbidEq_symm hfg)
+    exact inducedForbidEq_trans hhg (inducedForbidEq_symm hfg)
 
 /-- Transitivity of the forbidden inequality relation. -/
-theorem forbidLE_trans
+theorem inducedForbidLE_trans
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g) (hgh : g ≤[F_forbid] h)
-    : f ≤[F_forbid] h
+    (hfg : f ≤ᵢ[F_forbid] g) (hgh : g ≤ᵢ[F_forbid] h)
+    : f ≤ᵢ[F_forbid] h
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f ≤ φ g}
@@ -238,46 +300,46 @@ theorem forbidLE_trans
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ h} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidLE_trans_forbidEq_left
+theorem inducedForbidLE_trans_inducedForbidEq_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g) (hgh : g ≤[F_forbid] h)
-    : f ≤[F_forbid] h
+    (hfg : f =ᵢ[F_forbid] g) (hgh : g ≤ᵢ[F_forbid] h)
+    : f ≤ᵢ[F_forbid] h
   :=
-  forbidLE_trans (forbidLE_of_forbidEq hfg) hgh
+  inducedForbidLE_trans (inducedForbidLE_of_inducedForbidEq hfg) hgh
 
-theorem forbidLE_trans_forbidEq_right
+theorem inducedForbidLE_trans_inducedForbidEq_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g) (hgh : g =[F_forbid] h)
-    : f ≤[F_forbid] h
+    (hfg : f ≤ᵢ[F_forbid] g) (hgh : g =ᵢ[F_forbid] h)
+    : f ≤ᵢ[F_forbid] h
   :=
-  forbidLE_trans hfg (forbidLE_of_forbidEq hgh)
+  inducedForbidLE_trans hfg (inducedForbidLE_of_inducedForbidEq hgh)
 
-theorem forbidLE_rw_left
+theorem inducedForbidLE_rw_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (f ≤[F_forbid] h) ↔ (g ≤[F_forbid] h)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (f ≤ᵢ[F_forbid] h) ↔ (g ≤ᵢ[F_forbid] h)
   := by
   constructor
   · intro hfh
-    exact forbidLE_trans (forbidLE_of_forbidEq (forbidEq_symm hfg)) hfh
+    exact inducedForbidLE_trans (inducedForbidLE_of_inducedForbidEq (inducedForbidEq_symm hfg)) hfh
   · intro hgh
-    exact forbidLE_trans (forbidLE_of_forbidEq hfg) hgh
+    exact inducedForbidLE_trans (inducedForbidLE_of_inducedForbidEq hfg) hgh
 
-theorem forbidLE_rw_right
+theorem inducedForbidLE_rw_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (h ≤[F_forbid] f) ↔ (h ≤[F_forbid] g)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (h ≤ᵢ[F_forbid] f) ↔ (h ≤ᵢ[F_forbid] g)
   := by
   constructor
   · intro hhf
-    exact forbidLE_trans hhf (forbidLE_of_forbidEq hfg)
+    exact inducedForbidLE_trans hhf (inducedForbidLE_of_inducedForbidEq hfg)
   · intro hhg
-    exact forbidLE_trans hhg (forbidLE_of_forbidEq (forbidEq_symm hfg))
+    exact inducedForbidLE_trans hhg (inducedForbidLE_of_inducedForbidEq (inducedForbidEq_symm hfg))
 
-theorem forbidLE_antisymm
+theorem inducedForbidLE_antisymm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g) (hgf : g ≤[F_forbid] f)
-    : f =[F_forbid] g
+    (hfg : f ≤ᵢ[F_forbid] g) (hgf : g ≤ᵢ[F_forbid] f)
+    : f =ᵢ[F_forbid] g
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f ≤ φ g}
@@ -301,10 +363,10 @@ theorem forbidLE_antisymm
 /-! ## Compatibility with addition, subtraction, scalar multiplication and sums -/
 
 /-- Forbidden equality is additive: adding two forbidden equalities side by side. -/
-theorem forbidEq_add
+theorem inducedForbidEq_add
     {F_forbid : FinFlag ∅ₜ} {f g f' g' : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g) (hf'g' : f' =[F_forbid] g')
-    : (f + f') =[F_forbid] (g + g')
+    (hfg : f =ᵢ[F_forbid] g) (hf'g' : f' =ᵢ[F_forbid] g')
+    : (f + f') =ᵢ[F_forbid] (g + g')
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f = φ g}
@@ -330,54 +392,54 @@ theorem forbidEq_add
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ (f + f') = φ (g + g')} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidEq_add_left
+theorem inducedForbidEq_add_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (h + f) =[F_forbid] (h + g)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (h + f) =ᵢ[F_forbid] (h + g)
   :=
-  forbidEq_add (forbidEq_refl F_forbid h) hfg
+  inducedForbidEq_add (inducedForbidEq_refl F_forbid h) hfg
 
-theorem forbidEq_add_right
+theorem inducedForbidEq_add_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (f + h) =[F_forbid] (g + h)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (f + h) =ᵢ[F_forbid] (g + h)
   :=
-  forbidEq_add hfg (forbidEq_refl F_forbid h)
+  inducedForbidEq_add hfg (inducedForbidEq_refl F_forbid h)
 
-theorem forbidEq_sum_eq_zero
+theorem inducedForbidEq_sum_eq_zero
     {F_forbid : FinFlag ∅ₜ} {α : Type*}
     (s : Finset α) (f : α → FlagAlgebra σ)
-    (hzero : ∀ a ∈ s, f a =[F_forbid] 0)
-    : (Finset.sum s f) =[F_forbid] 0
+    (hzero : ∀ a ∈ s, f a =ᵢ[F_forbid] 0)
+    : (Finset.sum s f) =ᵢ[F_forbid] 0
   := by
   classical
   revert hzero
   refine Finset.induction_on s ?base ?step
   · intro _
-    simpa using (forbidEq_refl F_forbid (0 : FlagAlgebra σ))
+    simpa using (inducedForbidEq_refl F_forbid (0 : FlagAlgebra σ))
   · intro a s ha ih hzero
-    have ha0 : f a =[F_forbid] 0 := hzero a (by simp)
-    have hs : ∀ x ∈ s, f x =[F_forbid] 0 := by
+    have ha0 : f a =ᵢ[F_forbid] 0 := hzero a (by simp)
+    have hs : ∀ x ∈ s, f x =ᵢ[F_forbid] 0 := by
       intro x hx
       exact hzero x (by simp [hx])
-    have hs0 : (Finset.sum s f) =[F_forbid] 0 := ih hs
-    simpa [Finset.sum_insert, ha] using (forbidEq_add ha0 hs0)
+    have hs0 : (Finset.sum s f) =ᵢ[F_forbid] 0 := ih hs
+    simpa [Finset.sum_insert, ha] using (inducedForbidEq_add ha0 hs0)
 
-theorem forbidEq_sum_filter_eq_zero
+theorem inducedForbidEq_sum_filter_eq_zero
     {F_forbid : FinFlag ∅ₜ} {α : Type*}
     (s : Finset α) (p : α → Prop) [DecidablePred p] (f : α → FlagAlgebra σ)
-    (hzero : ∀ a ∈ s, p a → f a =[F_forbid] 0)
-  : (Finset.sum (s.filter p) f) =[F_forbid] 0
+    (hzero : ∀ a ∈ s, p a → f a =ᵢ[F_forbid] 0)
+  : (Finset.sum (s.filter p) f) =ᵢ[F_forbid] 0
   := by
-  apply forbidEq_sum_eq_zero (F_forbid := F_forbid) (s := s.filter p) (f := f)
+  apply inducedForbidEq_sum_eq_zero (F_forbid := F_forbid) (s := s.filter p) (f := f)
   intro a ha
   exact hzero a (Finset.mem_filter.mp ha).1 (Finset.mem_filter.mp ha).2
 
 /-- Forbidden equality is preserved by scaling both sides by the same real `c`. -/
-theorem forbidEq_smul
+theorem inducedForbidEq_smul
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ} {c : ℝ}
-    (hfg : f =[F_forbid] g)
-    : (c • f) =[F_forbid] (c • g)
+    (hfg : f =ᵢ[F_forbid] g)
+    : (c • f) =ᵢ[F_forbid] (c • g)
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f = φ g}
@@ -397,78 +459,78 @@ theorem forbidEq_smul
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ (c • f) = φ (c • g)} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidEq_smul_zero
+theorem inducedForbidEq_smul_zero
     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} {c : ℝ}
-    (hfg : f =[F_forbid] 0)
-    : (c • f) =[F_forbid] 0
+    (hfg : f =ᵢ[F_forbid] 0)
+    : (c • f) =ᵢ[F_forbid] 0
   := by
-  have := forbidEq_smul (c := c) hfg
+  have := inducedForbidEq_smul (c := c) hfg
   simpa using this
 
-theorem forbidEq_rw_left_add_right
+theorem inducedForbidEq_rw_left_add_right
     {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : ((f + h) =[F_forbid] k) ↔ ((g + h) =[F_forbid] k)
+    (hfg : f =ᵢ[F_forbid] g)
+    : ((f + h) =ᵢ[F_forbid] k) ↔ ((g + h) =ᵢ[F_forbid] k)
   :=
-  forbidEq_rw_left (forbidEq_add_right hfg)
+  inducedForbidEq_rw_left (inducedForbidEq_add_right hfg)
 
-theorem forbidEq_rw_left_add_left
+theorem inducedForbidEq_rw_left_add_left
     {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : ((h + f) =[F_forbid] k) ↔ ((h + g) =[F_forbid] k)
+    (hfg : f =ᵢ[F_forbid] g)
+    : ((h + f) =ᵢ[F_forbid] k) ↔ ((h + g) =ᵢ[F_forbid] k)
   :=
-  forbidEq_rw_left (forbidEq_add_left hfg)
+  inducedForbidEq_rw_left (inducedForbidEq_add_left hfg)
 
-theorem forbidEq_rw_right_add_right
+theorem inducedForbidEq_rw_right_add_right
     {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (k =[F_forbid] (f + h)) ↔ (k =[F_forbid] (g + h))
+    (hfg : f =ᵢ[F_forbid] g)
+    : (k =ᵢ[F_forbid] (f + h)) ↔ (k =ᵢ[F_forbid] (g + h))
   :=
-  forbidEq_rw_right (forbidEq_add_right hfg)
+  inducedForbidEq_rw_right (inducedForbidEq_add_right hfg)
 
-theorem forbidEq_rw_right_add_left
+theorem inducedForbidEq_rw_right_add_left
     {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : (k =[F_forbid] (h + f)) ↔ (k =[F_forbid] (h + g))
+    (hfg : f =ᵢ[F_forbid] g)
+    : (k =ᵢ[F_forbid] (h + f)) ↔ (k =ᵢ[F_forbid] (h + g))
   :=
-  forbidEq_rw_right (forbidEq_add_left hfg)
+  inducedForbidEq_rw_right (inducedForbidEq_add_left hfg)
 
-theorem forbidEq_rw_left_smul
+theorem inducedForbidEq_rw_left_smul
     {F_forbid : FinFlag ∅ₜ} {f g k : FlagAlgebra σ} {c : ℝ}
-    (hfg : f =[F_forbid] g)
-    : ((c • f) =[F_forbid] k) ↔ ((c • g) =[F_forbid] k)
+    (hfg : f =ᵢ[F_forbid] g)
+    : ((c • f) =ᵢ[F_forbid] k) ↔ ((c • g) =ᵢ[F_forbid] k)
   :=
-  forbidEq_rw_left (forbidEq_smul (c := c) hfg)
+  inducedForbidEq_rw_left (inducedForbidEq_smul (c := c) hfg)
 
-theorem forbidEq_rw_right_smul
+theorem inducedForbidEq_rw_right_smul
     {F_forbid : FinFlag ∅ₜ} {f g k : FlagAlgebra σ} {c : ℝ}
-    (hfg : f =[F_forbid] g)
-    : (k =[F_forbid] (c • f)) ↔ (k =[F_forbid] (c • g))
+    (hfg : f =ᵢ[F_forbid] g)
+    : (k =ᵢ[F_forbid] (c • f)) ↔ (k =ᵢ[F_forbid] (c • g))
   :=
-  forbidEq_rw_right (forbidEq_smul (c := c) hfg)
+  inducedForbidEq_rw_right (inducedForbidEq_smul (c := c) hfg)
 
-theorem forbidEq_move_add_left_iff
+theorem inducedForbidEq_move_add_left_iff
     {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
-    : ((a + b) =[F_forbid] c) ↔ (b =[F_forbid] (c - a))
+    : ((a + b) =ᵢ[F_forbid] c) ↔ (b =ᵢ[F_forbid] (c - a))
   := by
   constructor
   · intro habc
-    have h1 := forbidEq_add_right (h := -a) habc
+    have h1 := inducedForbidEq_add_right (h := -a) habc
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
   · intro hbc
-    have h1 := forbidEq_add_left (h := a) hbc
+    have h1 := inducedForbidEq_add_left (h := a) hbc
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
 
-theorem forbidEq_move_add_left
+theorem inducedForbidEq_move_add_left
     {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
-    (habc : (a + b) =[F_forbid] c)
-    : b =[F_forbid] (c - a)
+    (habc : (a + b) =ᵢ[F_forbid] c)
+    : b =ᵢ[F_forbid] (c - a)
   :=
-  (forbidEq_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
+  (inducedForbidEq_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
 
-theorem forbidEq_collect_smul_left_iff
+theorem inducedForbidEq_collect_smul_left_iff
     {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
-    : ((a • x + b • x) =[F_forbid] y) ↔ (((a + b) • x) =[F_forbid] y)
+    : ((a • x + b • x) =ᵢ[F_forbid] y) ↔ (((a + b) • x) =ᵢ[F_forbid] y)
   := by
   constructor
   · intro h
@@ -476,9 +538,9 @@ theorem forbidEq_collect_smul_left_iff
   · intro h
     simpa [add_smul] using h
 
-theorem forbidEq_collect_smul_right_iff
+theorem inducedForbidEq_collect_smul_right_iff
     {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
-    : (y =[F_forbid] (a • x + b • x)) ↔ (y =[F_forbid] ((a + b) • x))
+    : (y =ᵢ[F_forbid] (a • x + b • x)) ↔ (y =ᵢ[F_forbid] ((a + b) • x))
   := by
   constructor
   · intro h
@@ -486,9 +548,9 @@ theorem forbidEq_collect_smul_right_iff
   · intro h
     simpa [add_smul] using h
 
-theorem forbidEq_collect_sub_smul_left_iff
+theorem inducedForbidEq_collect_sub_smul_left_iff
     {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
-    : ((a • x - b • x) =[F_forbid] y) ↔ (((a - b) • x) =[F_forbid] y)
+    : ((a • x - b • x) =ᵢ[F_forbid] y) ↔ (((a - b) • x) =ᵢ[F_forbid] y)
   := by
   constructor
   · intro h
@@ -496,9 +558,9 @@ theorem forbidEq_collect_sub_smul_left_iff
   · intro h
     simpa [sub_eq_add_neg, add_smul] using h
 
-theorem forbidEq_collect_sub_smul_right_iff
+theorem inducedForbidEq_collect_sub_smul_right_iff
     {F_forbid : FinFlag ∅ₜ} {a b : ℝ} {x y : FlagAlgebra σ}
-    : (y =[F_forbid] (a • x - b • x)) ↔ (y =[F_forbid] ((a - b) • x))
+    : (y =ᵢ[F_forbid] (a • x - b • x)) ↔ (y =ᵢ[F_forbid] ((a - b) • x))
   := by
   constructor
   · intro h
@@ -506,34 +568,34 @@ theorem forbidEq_collect_sub_smul_right_iff
   · intro h
     simpa [sub_eq_add_neg, add_smul] using h
 
-theorem forbidEq_move_term_left_iff
+theorem inducedForbidEq_move_term_left_iff
     {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
-    : (a =[F_forbid] c) ↔ ((0 : FlagAlgebra σ) =[F_forbid] (c - a))
+    : (a =ᵢ[F_forbid] c) ↔ ((0 : FlagAlgebra σ) =ᵢ[F_forbid] (c - a))
   := by
   constructor
   · intro hac
-    have hsum : (a + (0 : FlagAlgebra σ)) =[F_forbid] c := by
-      simpa using (forbidEq_add_right (h := (0 : FlagAlgebra σ)) hac)
-    exact (forbidEq_move_add_left_iff (F_forbid := F_forbid)
+    have hsum : (a + (0 : FlagAlgebra σ)) =ᵢ[F_forbid] c := by
+      simpa using (inducedForbidEq_add_right (h := (0 : FlagAlgebra σ)) hac)
+    exact (inducedForbidEq_move_add_left_iff (F_forbid := F_forbid)
       (a := a) (b := (0 : FlagAlgebra σ)) (c := c)).1 hsum
   · intro hzero
-    have hsum : (a + (0 : FlagAlgebra σ)) =[F_forbid] c :=
-      (forbidEq_move_add_left_iff (F_forbid := F_forbid)
+    have hsum : (a + (0 : FlagAlgebra σ)) =ᵢ[F_forbid] c :=
+      (inducedForbidEq_move_add_left_iff (F_forbid := F_forbid)
         (a := a) (b := (0 : FlagAlgebra σ)) (c := c)).2 hzero
     simpa using hsum
 
-theorem forbidEq_move_term_left
+theorem inducedForbidEq_move_term_left
     {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
-    (hac : a =[F_forbid] c)
-    : (0 : FlagAlgebra σ) =[F_forbid] (c - a)
+    (hac : a =ᵢ[F_forbid] c)
+    : (0 : FlagAlgebra σ) =ᵢ[F_forbid] (c - a)
   :=
-  (forbidEq_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
+  (inducedForbidEq_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
 
 /-- Forbidden inequality is additive: adding two forbidden inequalities side by side. -/
-theorem forbidLE_add
+theorem inducedForbidLE_add
     {F_forbid : FinFlag ∅ₜ} {f g f' g' : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g) (hf'g' : f' ≤[F_forbid] g')
-    : (f + f') ≤[F_forbid] (g + g')
+    (hfg : f ≤ᵢ[F_forbid] g) (hf'g' : f' ≤ᵢ[F_forbid] g')
+    : (f + f') ≤ᵢ[F_forbid] (g + g')
   := by
   intro φ₀ hσ hF_forbid
   let A : Set (PositiveHomSpace σ) := {φ | φ f ≤ φ g}
@@ -559,25 +621,25 @@ theorem forbidLE_add
       _ ≤ ℙ[φ₀] {φ : PositiveHomSpace σ | φ (f + f') ≤ φ (g + g')} :=
         ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
 
-theorem forbidLE_add_left
+theorem inducedForbidLE_add_left
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g)
-    : (h + f) ≤[F_forbid] (h + g)
+    (hfg : f ≤ᵢ[F_forbid] g)
+    : (h + f) ≤ᵢ[F_forbid] (h + g)
   :=
-  forbidLE_add (forbidLE_refl F_forbid h) hfg
+  inducedForbidLE_add (inducedForbidLE_refl F_forbid h) hfg
 
-theorem forbidLE_add_right
+theorem inducedForbidLE_add_right
     {F_forbid : FinFlag ∅ₜ} {f g h : FlagAlgebra σ}
-    (hfg : f ≤[F_forbid] g)
-    : (f + h) ≤[F_forbid] (g + h)
+    (hfg : f ≤ᵢ[F_forbid] g)
+    : (f + h) ≤ᵢ[F_forbid] (g + h)
   :=
-  forbidLE_add hfg (forbidLE_refl F_forbid h)
+  inducedForbidLE_add hfg (inducedForbidLE_refl F_forbid h)
 
 /-- Scaling a forbidden inequality by a nonnegative real preserves it. -/
-theorem forbidLE_smul_nonneg
+theorem inducedForbidLE_smul_nonneg
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ} {c : ℝ}
-    (hc : 0 ≤ c) (hfg : f ≤[F_forbid] g)
-    : (c • f) ≤[F_forbid] (c • g)
+    (hc : 0 ≤ c) (hfg : f ≤ᵢ[F_forbid] g)
+    : (c • f) ≤ᵢ[F_forbid] (c • g)
   := by
   intro φ₀ hσ hF_forbid
   have hA : ℙ[φ₀] {φ : PositiveHomSpace σ | φ f ≤ φ g} = 1 := hfg φ₀ hσ hF_forbid
@@ -600,10 +662,10 @@ theorem forbidLE_smul_nonneg
 /-! ## Forbidden flags vanish, and flag expansion modulo the forbidden flag -/
 
 /-- A flag `F` whose unlabeled version contains the forbidden flag with positive density
-is forced to density `0` under the conditioning: `⟦basisVector F⟧ =[F_forbid] 0`. -/
-theorem basisVector_forbidEq_zero
+is forced to density `0` under the conditioning: `⟦basisVector F⟧ =ᵢ[F_forbid] 0`. -/
+theorem basisVector_inducedForbidEq_zero
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (hF : flagDensity₁ F_forbid.2 (unlabel F.2) > 0)
-    : ⟦basisVector F⟧ =[F_forbid] 0
+    : ⟦basisVector F⟧ =ᵢ[F_forbid] 0
   := by
   intro φ₀ hσ hF_forbid
   have h_nonneg : ∀ φ : PositiveHomSpace σ, 0 ≤ φ ⟦basisVector F⟧ := by
@@ -635,30 +697,30 @@ theorem basisVector_forbidEq_zero
     ae_zero_of_integral_eq_zero h_nonneg h_measurable (by simpa using h_integrable) h_integral_zero
   simpa [PositiveHomSpace.toPosHom_basisVector] using h_prob_zero
 
--- theorem flagDensity₁_pos_of_basisVector_forbidEq_zero
---     {F_forbid : FinFlag ∅ₜ} {F : FinFlag σ} (hF_forbid : ⟦basisVector F⟧ =[F_forbid] 0)
+-- theorem flagDensity₁_pos_of_basisVector_inducedForbidEq_zero
+--     {F_forbid : FinFlag ∅ₜ} {F : FinFlag σ} (hF_forbid : ⟦basisVector F⟧ =ᵢ[F_forbid] 0)
 --     : flagDensity₁ F_forbid.2 (unlabel F.2) > 0
 --   := by
 --   contrapose! hF_forbid
---   simp [forbidEq]
+--   simp [inducedForbidEq]
 --   sorry
 
--- theorem forbidEq_zero_iff
---     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
+-- theorem inducedForbidEq_zero_iff
+--     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =ᵢ[F_forbid] 0)
 --     : ∃ (I : Type) (_ : Fintype I) (c : I → ℝ) (v : I → FinFlag σ),
 --       f = ∑ i, c i • ⟦basisVector (v i)⟧ ∧ (∀ i, flagDensity₁ F_forbid.2 (unlabel (v i).2) > 0)
 --   := by
---   dsimp [forbidEq] at hf
+--   dsimp [inducedForbidEq] at hf
 --   sorry
 
--- theorem all_basisVector_forbidEq_zero_of_sum_forbidEq_zero
+-- theorem all_basisVector_inducedForbidEq_zero_of_sum_inducedForbidEq_zero
 --     {I : Type} [Fintype I]
 --     {c : I → ℝ} (hc : ∀ i, c i ≠ 0) {v : I → FinFlag σ} (hv : ∀ i j, i ≠ j → v i ≠ v j)
---     {F_forbid : FinFlag ∅ₜ} (hf : (∑ i, c i • ⟦basisVector (v i)⟧) =[F_forbid] 0)
---     : ∀ i, ⟦basisVector (v i)⟧ =[F_forbid] 0
+--     {F_forbid : FinFlag ∅ₜ} (hf : (∑ i, c i • ⟦basisVector (v i)⟧) =ᵢ[F_forbid] 0)
+--     : ∀ i, ⟦basisVector (v i)⟧ =ᵢ[F_forbid] 0
 --   := by
 --   intro i
---   apply basisVector_forbidEq_zero
+--   apply basisVector_inducedForbidEq_zero
 --   sorry
 
 -- theorem flagAlgebra_eq_sum_basisVector_quot
@@ -689,29 +751,29 @@ theorem basisVector_forbidEq_zero
 --   intro G
 --   simp [unlabel, unlabeledGraphQuot, unlabeledGraph]
 
--- theorem downward_forbidEq_zero
---     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
---     : ⟦f⟧₀ =[F_forbid] 0
+-- theorem downward_inducedForbidEq_zero
+--     {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =ᵢ[F_forbid] 0)
+--     : ⟦f⟧₀ =ᵢ[F_forbid] 0
 --   := by
 --   obtain ⟨I, _, c, hc, v, hv, hf⟩ := flagAlgebra_eq_sum_basisVector_quot f
 --   subst hf
---   apply all_basisVector_forbidEq_zero_of_sum_forbidEq_zero hc hv at hf
+--   apply all_basisVector_inducedForbidEq_zero_of_sum_inducedForbidEq_zero hc hv at hf
 --   simp_rw [downward_sum, downward_smul]
---   apply forbidEq_sum_eq_zero
+--   apply inducedForbidEq_sum_eq_zero
 --   intro i _
---   apply forbidEq_smul_zero
+--   apply inducedForbidEq_smul_zero
 --   simp [downward, downwardFlagVectorQuot, downwardFlagVector_basisVector, downwardFlag, smul_quot]
---   apply forbidEq_smul_zero
---   apply basisVector_forbidEq_zero
+--   apply inducedForbidEq_smul_zero
+--   apply basisVector_inducedForbidEq_zero
 --   simp [unlabel_unlabel]
---   apply flagDensity₁_pos_of_basisVector_forbidEq_zero
+--   apply flagDensity₁_pos_of_basisVector_inducedForbidEq_zero
 --   exact hf i
 
 /-- Modulo the forbidden flag, a flag `⟦basisVector F⟧` equals its size-`ℓ` expansion
 restricted to flags that avoid `F_forbid` (those with `F_forbid`-density `0`). -/
-theorem basisVector_quot_forbidEq_sum
+theorem basisVector_quot_inducedForbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
-    : ⟦basisVector F⟧ =[F_forbid]
+    : ⟦basisVector F⟧ =ᵢ[F_forbid]
       ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') = 0,
         (flagDensity₁ F.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧
   := by
@@ -742,18 +804,18 @@ theorem basisVector_quot_forbidEq_sum
     rfl
   rw [hsplit]
   nth_rw 2 [← zero_add (∑ F' with flagDensity₁ F_forbid.2 (unlabel F') = 0, _)]
-  apply forbidEq_add
-  · apply forbidEq_sum_filter_eq_zero
+  apply inducedForbidEq_add
+  · apply inducedForbidEq_sum_filter_eq_zero
     intro x _ hx
-    apply forbidEq_smul_zero
-    exact basisVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
-  · apply forbidEq_refl
+    apply inducedForbidEq_smul_zero
+    exact basisVector_inducedForbidEq_zero F_forbid ⟨ℓ, x⟩ hx
+  · apply inducedForbidEq_refl
 
 /-- Modulo the forbidden flag, a product `⟦basisVector F₁⟧ * ⟦basisVector F₂⟧` equals its
 size-`ℓ` expansion restricted to flags that avoid `F_forbid`. -/
-theorem basisVector_quot_mul_forbidEq_sum
+theorem basisVector_quot_mul_inducedForbidEq_sum
     (F_forbid : FinFlag ∅ₜ) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
-    : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =[F_forbid]
+    : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =ᵢ[F_forbid]
       ∑ F' : FlagWithSize σ ℓ with flagDensity₁ F_forbid.2 (unlabel F') = 0,
         (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧
   := by
@@ -785,12 +847,12 @@ theorem basisVector_quot_mul_forbidEq_sum
     rfl
   rw [hsplit]
   nth_rw 2 [← zero_add (∑ F' with flagDensity₁ F_forbid.2 (unlabel F') = 0, _)]
-  apply forbidEq_add
-  · apply forbidEq_sum_filter_eq_zero
+  apply inducedForbidEq_add
+  · apply inducedForbidEq_sum_filter_eq_zero
     intro x _ hx
-    apply forbidEq_smul_zero
-    exact basisVector_forbidEq_zero F_forbid ⟨ℓ, x⟩ hx
-  · apply forbidEq_refl
+    apply inducedForbidEq_smul_zero
+    exact basisVector_inducedForbidEq_zero F_forbid ⟨ℓ, x⟩ hx
+  · apply inducedForbidEq_refl
 
 lemma flagType_asEmptyTypeAlgebra_emptyType_eq_one
     : ⟨∅ₜ⟩₀ = 1
@@ -937,53 +999,80 @@ lemma probMeasure_extend_emptyType_positiveHom_singleton_eq_one
 
 /-! ## Empty-type variants and their equivalence with the probabilistic relations -/
 
-/-- Empty-type form of `forbidEq`: for the empty type `∅ₜ`, the deterministic statement
+/-- Empty-type form of `forbidEqWith`: for the empty type `∅ₜ`, the deterministic
+statement that every base homomorphism satisfying `C` gives the same value to `f`
+and `g`. -/
+def forbidEq_emptyTypeWith
+    (C : ForbidCondition) (f g : FlagAlgebra ∅ₜ) : Prop
+  :=
+  ∀ (φ₀ : PositiveHom ∅ₜ), C φ₀ → φ₀ f = φ₀ g
+
+/-- Empty-type form of `forbidLEWith`: for the empty type `∅ₜ`, the deterministic
+statement that every base homomorphism satisfying `C` evaluates `f` below `g`. -/
+def forbidLE_emptyTypeWith
+    (C : ForbidCondition) (f g : FlagAlgebra ∅ₜ) : Prop
+  :=
+  ∀ (φ₀ : PositiveHom ∅ₜ), C φ₀ → φ₀ f ≤ φ₀ g
+
+/-- Empty-type form of `inducedForbidEq`: for the empty type `∅ₜ`, the deterministic statement
 that every base homomorphism `φ₀` killing `F_forbid` satisfies `φ₀ f = φ₀ g`. -/
-def forbidEq_emptyType
+def inducedForbidEq_emptyType
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
   :=
-  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦basisVector F_forbid⟧ = 0 → φ₀ f = φ₀ g
+  forbidEq_emptyTypeWith (inducedForbiddenCondition F_forbid) f g
 
-/-- Empty-type form of `forbidLE`: for the empty type `∅ₜ`, the deterministic statement
+/-- Empty-type form of `inducedForbidLE`: for the empty type `∅ₜ`, the deterministic statement
 that every base homomorphism `φ₀` killing `F_forbid` satisfies `φ₀ f ≤ φ₀ g`. -/
-def forbidLE_emptyType
+def inducedForbidLE_emptyType
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ) : Prop
   :=
-  ∀ (φ₀ : PositiveHom ∅ₜ), φ₀ ⟦basisVector F_forbid⟧ = 0 → φ₀ f ≤ φ₀ g
+  forbidLE_emptyTypeWith (inducedForbiddenCondition F_forbid) f g
 
--- Notation: `f =[F]₀ g` / `f ≤[F]₀ g` for the empty-type variants.
-notation f "=[" F_forbid "]₀" g => forbidEq_emptyType F_forbid f g
-notation f "≤[" F_forbid "]₀" g => forbidLE_emptyType F_forbid f g
+/-- Empty-type equality modulo the ordinary `H`-free condition. -/
+noncomputable def forbidEq_emptyType {m : ℕ}
+    (H : SimpleGraph (Fin m)) (f g : FlagAlgebra ∅ₜ) : Prop :=
+  forbidEq_emptyTypeWith (forbiddenCondition H) f g
 
-theorem forbidEq_emptyType_symm
+/-- Empty-type order modulo the ordinary `H`-free condition. -/
+noncomputable def forbidLE_emptyType {m : ℕ}
+    (H : SimpleGraph (Fin m)) (f g : FlagAlgebra ∅ₜ) : Prop :=
+  forbidLE_emptyTypeWith (forbiddenCondition H) f g
+
+-- Notation: `f =ᵢ[F]₀ g` / `f ≤ᵢ[F]₀ g` for the empty-type variants.
+notation f "=ᵢ[" F_forbid "]₀" g => inducedForbidEq_emptyType F_forbid f g
+notation f "≤ᵢ[" F_forbid "]₀" g => inducedForbidLE_emptyType F_forbid f g
+notation f "=[" H "]₀" g => forbidEq_emptyType H f g
+notation f "≤[" H "]₀" g => forbidLE_emptyType H f g
+
+theorem inducedForbidEq_emptyType_symm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
-    (hf_eq_g : f =[F_forbid]₀ g)
-    : g =[F_forbid]₀ f
+    (hf_eq_g : f =ᵢ[F_forbid]₀ g)
+    : g =ᵢ[F_forbid]₀ f
   := by
   intro φ₀ hF_forbid
   exact (hf_eq_g φ₀ hF_forbid).symm
 
-theorem forbidEq_emptyType_implies_forbidLE_emptyType
+theorem inducedForbidEq_emptyType_implies_inducedForbidLE_emptyType
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
-    (hf_eq_g : f =[F_forbid]₀ g)
-    : f ≤[F_forbid]₀ g
+    (hf_eq_g : f =ᵢ[F_forbid]₀ g)
+    : f ≤ᵢ[F_forbid]₀ g
   := by
   intro φ₀ hF_forbid
   exact le_of_eq (hf_eq_g φ₀ hF_forbid)
 
-theorem forbidLE_emptyType_antisymm
+theorem inducedForbidLE_emptyType_antisymm
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
-    (hfg : f ≤[F_forbid]₀ g) (hgf : g ≤[F_forbid]₀ f)
-    : f =[F_forbid]₀ g
+    (hfg : f ≤ᵢ[F_forbid]₀ g) (hgf : g ≤ᵢ[F_forbid]₀ f)
+    : f =ᵢ[F_forbid]₀ g
   := by
   intro φ₀ hF_forbid
   exact le_antisymm (hfg φ₀ hF_forbid) (hgf φ₀ hF_forbid)
 
-/-- For the empty type, the deterministic relation `≤[F]₀` is equivalent to the
-probabilistic relation `≤[F]`. -/
-theorem forbidLE_emptyType_iff_forbidLE
+/-- For the empty type, the deterministic relation `≤ᵢ[F]₀` is equivalent to the
+probabilistic relation `≤ᵢ[F]`. -/
+theorem inducedForbidLE_emptyType_iff_inducedForbidLE
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
-    : (f ≤[F_forbid]₀ g) ↔ (f ≤[F_forbid] g)
+    : (f ≤ᵢ[F_forbid]₀ g) ↔ (f ≤ᵢ[F_forbid] g)
   := by
   constructor
   · intro hfg φ₀ hσ hF_forbid
@@ -1055,29 +1144,104 @@ theorem forbidLE_emptyType_iff_forbidLE
       simpa [A] using ha₀A
     simpa [ha₀_toPosHom] using ha₀A'
 
-/-- For the empty type, the deterministic relation `=[F]₀` is equivalent to the
-probabilistic relation `=[F]`. -/
-theorem forbidEq_emptyType_iff_forbidEq
+/-- Condition-parametric version of `inducedForbidLE_emptyType_iff_inducedForbidLE`. -/
+theorem forbidLE_emptyTypeWith_iff_forbidLEWith
+    (C : ForbidCondition) (f g : FlagAlgebra ∅ₜ)
+    : forbidLE_emptyTypeWith C f g ↔ forbidLEWith C f g
+  := by
+  constructor
+  · intro hfg φ₀ hσ hC
+    let a₀ : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
+    let S : Set (PositiveHomSpace ∅ₜ) := ({a₀} : Set (PositiveHomSpace ∅ₜ))
+    let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f ≤ φ g}
+    have ha₀_toPosHom : PositiveHomSpace.toPosHom a₀ = φ₀ := by
+      apply PositiveHom.coe_injective
+      calc
+        PositiveHom.coe (PositiveHomSpace.toPosHom a₀) = a₀ := Classical.choose_spec a₀.property
+        _ = PositiveHom.coe φ₀ := by rfl
+    have ha₀A : a₀ ∈ A := by
+      have ha₀A' : a₀ f ≤ a₀ g := by
+        simpa [ha₀_toPosHom] using (hfg φ₀ hC)
+      simpa [A] using ha₀A'
+    have hsubset : S ⊆ A := by
+      intro φ hφ
+      have hEq : φ = a₀ := by simpa [S] using hφ
+      subst hEq
+      exact ha₀A
+    have hsingle : ℙ[φ₀] S = 1 := by
+      simpa [S, a₀, Set.setOf_eq_eq_singleton] using
+        probMeasure_extend_emptyType_positiveHom_singleton_eq_one φ₀
+    apply le_antisymm
+    · exact ProbabilityMeasure.apply_le_one (ℙ[φ₀]) A
+    · calc
+        1 = ℙ[φ₀] S := by simpa using hsingle.symm
+        _ ≤ ℙ[φ₀] A := ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
+  · intro hfg φ₀ hC
+    have hσ : φ₀ ⟨∅ₜ⟩₀ > 0 := by simp [flagType_asEmptyTypeAlgebra_emptyType_eq_one]
+    let a₀ : PositiveHomSpace ∅ₜ := (⟨φ₀.coe, ⟨φ₀, rfl⟩⟩ : PositiveHomSpace ∅ₜ)
+    let S : Set (PositiveHomSpace ∅ₜ) := ({a₀} : Set (PositiveHomSpace ∅ₜ))
+    let A : Set (PositiveHomSpace ∅ₜ) := {φ | φ f ≤ φ g}
+    have ha₀_toPosHom : PositiveHomSpace.toPosHom a₀ = φ₀ := by
+      apply PositiveHom.coe_injective
+      calc
+        PositiveHom.coe (PositiveHomSpace.toPosHom a₀) = a₀ := Classical.choose_spec a₀.property
+        _ = PositiveHom.coe φ₀ := by rfl
+    have hA : ℙ[φ₀] A = 1 := hfg φ₀ hσ hC
+    have hsingle : ℙ[φ₀] S = 1 := by
+      simpa [S, a₀, Set.setOf_eq_eq_singleton] using
+        probMeasure_extend_emptyType_positiveHom_singleton_eq_one φ₀
+    have hinter : ℙ[φ₀] (S ∩ A) = 1 := by
+      apply prob_inter_eq_one_of_prob_eq_one
+      · simp [S]
+      · exact (forbidLE_set_measurable (σ := ∅ₜ) f g)
+      · exact hsingle
+      · exact hA
+    have ha₀A : a₀ ∈ A := by
+      by_contra ha₀A
+      have hempty : (S ∩ A : Set (PositiveHomSpace ∅ₜ)) = ∅ := by
+        ext φ
+        constructor
+        · intro hφ
+          rcases hφ with ⟨hS, hA'⟩
+          have hEq : φ = a₀ := by simpa [S] using hS
+          subst hEq
+          exact (ha₀A hA').elim
+        · intro hφ
+          exact False.elim hφ
+      have hzero : ℙ[φ₀] (S ∩ A) = 0 := by
+        simp [hempty]
+      have : (1 : NNReal) = 0 := by
+        calc
+          (1 : NNReal) = ℙ[φ₀] (S ∩ A) := by simpa using hinter.symm
+          _ = 0 := hzero
+      exact one_ne_zero this
+    have ha₀A' : a₀ f ≤ a₀ g := by
+      simpa [A] using ha₀A
+    simpa [ha₀_toPosHom] using ha₀A'
+
+/-- For the empty type, the deterministic relation `=ᵢ[F]₀` is equivalent to the
+probabilistic relation `=ᵢ[F]`. -/
+theorem inducedForbidEq_emptyType_iff_inducedForbidEq
     (F_forbid : FinFlag ∅ₜ) (f g : FlagAlgebra ∅ₜ)
-    : (f =[F_forbid]₀ g) ↔ (f =[F_forbid] g)
+    : (f =ᵢ[F_forbid]₀ g) ↔ (f =ᵢ[F_forbid] g)
   := by
   constructor
   · intro hfg
-    apply forbidLE_antisymm <;> rw [← forbidLE_emptyType_iff_forbidLE]
-    · exact forbidEq_emptyType_implies_forbidLE_emptyType hfg
-    · exact forbidEq_emptyType_implies_forbidLE_emptyType (forbidEq_emptyType_symm hfg)
+    apply inducedForbidLE_antisymm <;> rw [← inducedForbidLE_emptyType_iff_inducedForbidLE]
+    · exact inducedForbidEq_emptyType_implies_inducedForbidLE_emptyType hfg
+    · exact inducedForbidEq_emptyType_implies_inducedForbidLE_emptyType (inducedForbidEq_emptyType_symm hfg)
   · intro hfg
-    apply forbidLE_emptyType_antisymm <;> rw [forbidLE_emptyType_iff_forbidLE]
-    · exact forbidLE_of_forbidEq hfg
-    · exact forbidLE_of_forbidEq (forbidEq_symm hfg)
+    apply inducedForbidLE_emptyType_antisymm <;> rw [inducedForbidLE_emptyType_iff_inducedForbidLE]
+    · exact inducedForbidLE_of_inducedForbidEq hfg
+    · exact inducedForbidLE_of_inducedForbidEq (inducedForbidEq_symm hfg)
 
 /-! ## Downward (unlabeling) monotonicity -/
 
-/-- Empty-type form of downward monotonicity: if `0 ≤[F_forbid] f` for a labeled `f`,
+/-- Empty-type form of downward monotonicity: if `0 ≤ᵢ[F_forbid] f` for a labeled `f`,
 then its unlabeling `⟦f⟧₀` is forbidden-nonnegative. -/
-theorem downward_forbidLE_nonneg_emptyType
-    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
-    : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀
+theorem downward_inducedForbidLE_nonneg_emptyType
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤ᵢ[F_forbid] f)
+    : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F_forbid]₀ ⟦f⟧₀
   := by
   intro φ₀ hF_forbid
   simp only [PositiveHom.map_zero]
@@ -1126,81 +1290,81 @@ theorem downward_forbidLE_nonneg_emptyType
       simpa [hden_ne] using hmul_nonneg
     exact this
 
-/-- Downward monotonicity: if `0 ≤[F_forbid] f` then the unlabeling `⟦f⟧₀` is
+/-- Downward monotonicity: if `0 ≤ᵢ[F_forbid] f` then the unlabeling `⟦f⟧₀` is
 forbidden-nonnegative. -/
-theorem downward_forbidLE_nonneg
-    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤[F_forbid] f)
-    : 0 ≤[F_forbid] ⟦f⟧₀
+theorem downward_inducedForbidLE_nonneg
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : 0 ≤ᵢ[F_forbid] f)
+    : 0 ≤ᵢ[F_forbid] ⟦f⟧₀
   := by
-  have h0 : (0 : FlagAlgebra ∅ₜ) ≤[F_forbid]₀ ⟦f⟧₀ :=
-    downward_forbidLE_nonneg_emptyType (σ := σ) hf
-  exact (forbidLE_emptyType_iff_forbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
+  have h0 : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F_forbid]₀ ⟦f⟧₀ :=
+    downward_inducedForbidLE_nonneg_emptyType (σ := σ) hf
+  exact (inducedForbidLE_emptyType_iff_inducedForbidLE F_forbid (0 : FlagAlgebra ∅ₜ) ⟦f⟧₀).1 h0
 
-theorem forbidLE_move_add_left_iff
+theorem inducedForbidLE_move_add_left_iff
     {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
-    : ((a + b) ≤[F_forbid] c) ↔ (b ≤[F_forbid] (c - a))
+    : ((a + b) ≤ᵢ[F_forbid] c) ↔ (b ≤ᵢ[F_forbid] (c - a))
   := by
   constructor
   · intro habc
-    have h1 := forbidLE_add_right (h := -a) habc
+    have h1 := inducedForbidLE_add_right (h := -a) habc
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
   · intro hbc
-    have h1 := forbidLE_add_left (h := a) hbc
+    have h1 := inducedForbidLE_add_left (h := a) hbc
     simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
 
-theorem forbidLE_move_add_left
+theorem inducedForbidLE_move_add_left
     {F_forbid : FinFlag ∅ₜ} {a b c : FlagAlgebra σ}
-    (habc : (a + b) ≤[F_forbid] c)
-    : b ≤[F_forbid] (c - a)
+    (habc : (a + b) ≤ᵢ[F_forbid] c)
+    : b ≤ᵢ[F_forbid] (c - a)
   :=
-  (forbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
+  (inducedForbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := b) (c := c)).1 habc
 
-theorem forbidLE_move_term_left_iff
+theorem inducedForbidLE_move_term_left_iff
     {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
-    : (a ≤[F_forbid] c) ↔ ((0 : FlagAlgebra σ) ≤[F_forbid] (c - a))
+    : (a ≤ᵢ[F_forbid] c) ↔ ((0 : FlagAlgebra σ) ≤ᵢ[F_forbid] (c - a))
   := by
   simpa using
-    (forbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := (0 : FlagAlgebra σ)) (c := c))
+    (inducedForbidLE_move_add_left_iff (F_forbid := F_forbid) (a := a) (b := (0 : FlagAlgebra σ)) (c := c))
 
-theorem forbidLE_move_term_left
+theorem inducedForbidLE_move_term_left
     {F_forbid : FinFlag ∅ₜ} {a c : FlagAlgebra σ}
-    (hac : a ≤[F_forbid] c)
-    : (0 : FlagAlgebra σ) ≤[F_forbid] (c - a)
+    (hac : a ≤ᵢ[F_forbid] c)
+    : (0 : FlagAlgebra σ) ≤ᵢ[F_forbid] (c - a)
   :=
-  (forbidLE_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
+  (inducedForbidLE_move_term_left_iff (F_forbid := F_forbid) (a := a) (c := c)).1 hac
 
-/-- Downward monotonicity for equalities: if `f =[F_forbid] 0` then `⟦f⟧₀ =[F_forbid] 0`. -/
-theorem downward_forbidEq_zero
-    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =[F_forbid] 0)
-    : ⟦f⟧₀ =[F_forbid] 0
+/-- Downward monotonicity for equalities: if `f =ᵢ[F_forbid] 0` then `⟦f⟧₀ =ᵢ[F_forbid] 0`. -/
+theorem downward_inducedForbidEq_zero
+    {F_forbid : FinFlag ∅ₜ} {f : FlagAlgebra σ} (hf : f =ᵢ[F_forbid] 0)
+    : ⟦f⟧₀ =ᵢ[F_forbid] 0
   := by
-  refine forbidLE_antisymm ?_ ?_
-  · have hf' : (-1 • f) =[F_forbid] 0 := by
-      refine forbidEq_move_term_left_iff.mpr ?_
+  refine inducedForbidLE_antisymm ?_ ?_
+  · have hf' : (-1 • f) =ᵢ[F_forbid] 0 := by
+      refine inducedForbidEq_move_term_left_iff.mpr ?_
       simp only [Int.reduceNeg, neg_smul, one_smul, sub_neg_eq_add, zero_add]
-      exact forbidEq_symm hf
+      exact inducedForbidEq_symm hf
     simp only [Int.reduceNeg, neg_smul, one_smul] at hf'
-    rw [forbidLE_move_term_left_iff]
+    rw [inducedForbidLE_move_term_left_iff]
     simp only [zero_sub, ← downward_neg]
-    exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf'))
-  · exact downward_forbidLE_nonneg (forbidLE_of_forbidEq (forbidEq_symm hf))
+    exact downward_inducedForbidLE_nonneg (inducedForbidLE_of_inducedForbidEq (inducedForbidEq_symm hf'))
+  · exact downward_inducedForbidLE_nonneg (inducedForbidLE_of_inducedForbidEq (inducedForbidEq_symm hf))
 
-/-- Downward monotonicity for equalities: a forbidden equality `a =[F_forbid] b` descends
-to the unlabelings `⟦a⟧₀ =[F_forbid] ⟦b⟧₀`. -/
-theorem downward_forbidEq_equal_flags
+/-- Downward monotonicity for equalities: a forbidden equality `a =ᵢ[F_forbid] b` descends
+to the unlabelings `⟦a⟧₀ =ᵢ[F_forbid] ⟦b⟧₀`. -/
+theorem downward_inducedForbidEq_equal_flags
     {F_forbid : FinFlag ∅ₜ} {a b : FlagAlgebra σ}
-    (hab : a =[F_forbid] b)
-    : ⟦a⟧₀ =[F_forbid] ⟦b⟧₀
+    (hab : a =ᵢ[F_forbid] b)
+    : ⟦a⟧₀ =ᵢ[F_forbid] ⟦b⟧₀
   := by
-  refine forbidEq_move_term_left_iff.mpr ?_
+  refine inducedForbidEq_move_term_left_iff.mpr ?_
   rw [← downward_sub]
-  exact forbidEq_symm (downward_forbidEq_zero ((forbidEq_symm (forbidEq_move_term_left hab))))
+  exact inducedForbidEq_symm (downward_inducedForbidEq_zero ((inducedForbidEq_symm (inducedForbidEq_move_term_left hab))))
 
-theorem forbidLE_rw_left_add_right
+theorem inducedForbidLE_rw_left_add_right
     {F_forbid : FinFlag ∅ₜ} {f g h k : FlagAlgebra σ}
-    (hfg : f =[F_forbid] g)
-    : ((f + h) ≤[F_forbid] k) ↔ ((g + h) ≤[F_forbid] k)
-  := forbidLE_rw_left (forbidEq_add_right hfg)
+    (hfg : f =ᵢ[F_forbid] g)
+    : ((f + h) ≤ᵢ[F_forbid] k) ↔ ((g + h) ≤ᵢ[F_forbid] k)
+  := inducedForbidLE_rw_left (inducedForbidEq_add_right hfg)
 
 
 

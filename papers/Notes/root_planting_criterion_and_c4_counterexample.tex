@@ -2755,14 +2755,15 @@ defined using the constrained class $\K$.
 Let $C_\sigma$ send a finite $\sigma$-flag $F=(G,\theta)$ to the
 $\overline\sigma$-flag $\overline F=(\overline G,\theta)$.  This operation is
 an involution: applying the corresponding map $C_{\overline\sigma}$ returns
-the original flag.  We first check that this rule is compatible with the
-equalities used to define the flag algebra.  In the flag algebra, a flag is
-identified with the weighted average of its one-vertex extensions; therefore,
-if complementing a flag is to define a map on algebra elements, it must carry
-each such equality to the corresponding equality for complemented flags.  If
-$F$ is a $\sigma$-flag and $H$ is a larger $\sigma$-flag, then the same set of
-unlabelled vertices induces $F$ in $H$ if and only if it
-induces $\overline F$ in $\overline H$. Therefore
+the original flag.  This rule clearly sends isomorphic flags to isomorphic
+flags.  We next check that it is compatible with the extension equalities used
+to define the flag algebra.  In the flag algebra, a flag is identified with
+the weighted average of its one-vertex extensions; therefore, if complementing
+a flag is to define a map on algebra elements, it must carry each such equality
+to the corresponding equality for complemented flags.  If $F$ is a
+$\sigma$-flag and $H$ is a larger $\sigma$-flag, then the same chosen set of
+unlabelled vertices, together with the roots, induces $F$ in $H$ if and only if
+it induces $\overline F$ in $\overline H$.  Therefore
 \[
   p(F,H)=p(\overline F,\overline H).
 \]
@@ -2820,9 +2821,33 @@ be the induced map on positive homomorphisms, defined by
   \qquad
   (a\in\A^{\overline\sigma}[\T_{\mathrm{Graph}}]).
 \]
-This is just precomposition with the inverse algebra isomorphism.  Its inverse
-is $\widehat C_{\overline\sigma}$, so it is a homeomorphism.  Because forbidden
-flags correspond under complementation, the intrinsic description of
+This is precomposition with the inverse algebra isomorphism.  We check
+continuity directly from the definition of the topology.  For any type $\tau$
+and any $a\in\A^\tau[\T_{\mathrm{Graph}}]$, write
+\[
+  \operatorname{ev}_a:X_\tau\to\mathbb R,
+  \qquad
+  \operatorname{ev}_a(\eta)=\eta(a),
+\]
+for the corresponding evaluation map.  The topology on $X_\tau$ is the weakest
+topology in which all such maps are continuous.  Thus it suffices to check
+that each composite ${\operatorname{ev}_a}\circ{\widehat C_\sigma}$ is
+continuous.  For $a\in\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$,
+\[
+  ({\operatorname{ev}_a} \circ {\widehat C_\sigma})(\chi)
+  =
+  \widehat C_\sigma(\chi)(a)
+  =
+  \chi(C_{\overline\sigma}a)
+  =
+  \operatorname{ev}_{C_{\overline\sigma}a}(\chi),
+\]
+which is one of the defining continuous evaluation maps on $X_\sigma$.  Thus
+$\widehat C_\sigma$ is continuous.  The same argument with $\sigma$ and
+$\overline\sigma$ interchanged shows that $\widehat C_{\overline\sigma}$ is
+continuous, and the two maps are inverse to each other.  Thus
+$\widehat C_\sigma$ is a continuous bijection with continuous inverse.  Because
+forbidden flags correspond under complementation, the intrinsic description of
 $Q_\sigma$ as the homomorphisms vanishing on forbidden flags shows that
 \[
   \widehat C_\sigma(Q_\sigma(\K))=Q_{\overline\sigma}(\overline\K).
@@ -2851,23 +2876,107 @@ $g\in\A^\sigma[\T_{\mathrm{Graph}}]$ the expectation formula gives
        {\overline\phi_0(\brak{\overline\sigma})}.
 \]
 The right-hand side is the expectation of $C_\sigma(g)$ under
-$\Ext_{\overline\sigma}(\overline\phi_0)$.  These identities hold for every
-$g$, and the evaluation functions coming from the flag algebra form a
-separating algebra of continuous functions on the compact homomorphism space;
-hence they determine probability measures.  Thus pushing
-$\Ext_\sigma(\phi_0)$ forward by $\widehat C_\sigma$ gives
-$\Ext_{\overline\sigma}(\overline\phi_0)$.  As $\phi_0$ ranges over
-$Q_0(\K)$, the limits $\overline\phi_0$ range over $Q_0(\overline\K)$.
-Since a homeomorphism sends the support of a measure to the support of its
-pushforward, $\widehat C_\sigma$ takes each support appearing in the definition
-of $S_\sigma(\K)$ to the corresponding support appearing in the definition of
+$\Ext_{\overline\sigma}(\overline\phi_0)$.  Let
+\[
+  \mu:=(\widehat C_\sigma)_*\Ext_\sigma(\phi_0),
+  \qquad
+  \mu':=\Ext_{\overline\sigma}(\overline\phi_0).
+\]
+We show that $\mu=\mu'$.  By the definition of pushforward and the identity
+\(\widehat C_\sigma(\psi)(C_\sigma g)=\psi(g)\), the preceding expectation
+calculation gives, for every $g\in\A^\sigma[\T_{\mathrm{Graph}}]$,
+\[
+  \int_{X_{\overline\sigma}}\eta(C_\sigma g)\,d\mu(\eta)
+  =
+  \E_{\eta\sim\Ext_{\overline\sigma}(\overline\phi_0)}[\eta(C_\sigma g)]
+  =
+  \int_{X_{\overline\sigma}}\eta(C_\sigma g)\,d\mu'(\eta).
+\]
+Since $C_\sigma$ is onto, every element of
+$\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$ has the form $C_\sigma g$.  Hence
+$\mu$ and $\mu'$ have the same integral against every evaluation function
+$\operatorname{ev}_a$ on $X_{\overline\sigma}$.
+
+It remains to explain why agreement on all evaluation functions determines the
+measure.  Let
+\[
+  \mathcal E
+  :=
+  \{\operatorname{ev}_a:a\in\A^{\overline\sigma}[\T_{\mathrm{Graph}}]\}.
+\]
+This class already contains all finite linear combinations of its elements:
+\[
+  \sum_i c_i\,\operatorname{ev}_{a_i}
+  =
+  \operatorname{ev}_{\sum_i c_i a_i}.
+\]
+Thus it is closed under sums and scalar multiples.  It contains the constant
+function $1$ because $\operatorname{ev}_{\one_{\overline\sigma}}=1$, and it is
+closed under products because
+\[
+  \operatorname{ev}_a(\eta)\operatorname{ev}_b(\eta)
+  =
+  \eta(a)\eta(b)
+  =
+  \eta(a\cdot b)
+  =
+  \operatorname{ev}_{a\cdot b}(\eta).
+\]
+It also separates points: if two homomorphisms $\eta_1,\eta_2$ are different,
+then by definition they differ on some flag-algebra element $a$, so
+\(\operatorname{ev}_a(\eta_1)\ne\operatorname{ev}_a(\eta_2)\).  The
+Stone--Weierstrass theorem therefore says the following concrete approximation
+statement: for every continuous function
+\(h:X_{\overline\sigma}\to\mathbb R\) and every \(\eps>0\), there is some
+\(\operatorname{ev}_a\in\mathcal E\) such that
+\[
+  \sup_{\eta\in X_{\overline\sigma}} |h(\eta)-\operatorname{ev}_a(\eta)|<\eps .
+\]
+This is what ``uniformly dense'' means here.  Since $\mu$ and $\mu'$ agree on
+each evaluation function, they agree on this approximating
+\(\operatorname{ev}_a\).  Hence
+\[
+  \left|\int h\,d\mu-\int h\,d\mu'\right|
+  \le
+  \left|\int (h-\operatorname{ev}_a)\,d\mu\right|
+  +
+  \left|\int (h-\operatorname{ev}_a)\,d\mu'\right|
+  <2\eps,
+\]
+because both $\mu$ and $\mu'$ are probability measures.  Since $\eps$ is
+arbitrary, the two integrals of $h$ are equal.  Thus $\mu$ and $\mu'$ agree on
+all continuous functions, and probability measures on a compact space are
+determined by their integrals against continuous functions.  Hence
+\[
+  (\widehat C_\sigma)_*\Ext_\sigma(\phi_0)
+  =
+  \Ext_{\overline\sigma}(\overline\phi_0).
+\]
+
+As $\phi_0$ ranges over $Q_0(\K)$, $\overline\phi_0$ ranges over
+$Q_0(\overline\K)$.  It remains only to translate supports.  We use the following
+elementary fact.  If $T:X\to Y$ is a continuous bijection with continuous inverse
+and $\nu=T_*\mu$, then
+\[
+  T(\supp\mu)=\supp\nu .
+\]
+Indeed, if $x\in\supp\mu$ and $V$ is an open neighbourhood of $T(x)$, then
+$T^{-1}(V)$ is an open neighbourhood of $x$, so
+\(\nu(V)=\mu(T^{-1}(V))>0\).  Thus $T(x)\in\supp\nu$.  Conversely, if
+$T(x)\in\supp\nu$ and $U$ is an open neighbourhood of $x$, then $T(U)$ is an
+open neighbourhood of $T(x)$; by injectivity,
+\(\mu(U)=\nu(T(U))>0\).  Thus $x\in\supp\mu$.  Applying this fact to
+$T=\widehat C_\sigma$ and to the equality of extension measures above,
+$\widehat C_\sigma$ takes each support appearing in the definition of
+$S_\sigma(\K)$ to the corresponding support appearing in the definition of
 $S_{\overline\sigma}(\overline\K)$.  After taking the union and closure, we get
 \[
   \widehat C_\sigma(S_\sigma(\K))=S_{\overline\sigma}(\overline\K).
 \]
 
-Thus the same homeomorphism identifies both pairs of spaces,
-$Q_\sigma(\K)$ with $Q_{\overline\sigma}(\overline\K)$ and $S_\sigma(\K)$ with
+Thus the same explicit map $\widehat C_\sigma$ sends the quotient space
+$Q_\sigma(\K)$ exactly onto $Q_{\overline\sigma}(\overline\K)$, and sends the
+ensemble-support space $S_\sigma(\K)$ exactly onto
 $S_{\overline\sigma}(\overline\K)$.  Consequently
 $S_\sigma(\K)=Q_\sigma(\K)$ if and only if
 $S_{\overline\sigma}(\overline\K)=Q_{\overline\sigma}(\overline\K)$.  This is
@@ -2881,27 +2990,65 @@ $\K$ has at least $\binom n2-o(n^2)$ edges.  Such classes are as dense as possib
 with edge density tending to $1$, yet they fail just as the sparse ones do.
 
 \begin{corollary}[A dense obstruction]\label{cor:codegenerate}
-Let $\K$ be hereditary, co-edge-degenerate, and contain all co-stars
-$\overline{K_{1,N-1}}=K_{N-1}\uplus K_1$.  Then $\K$ is not root-plantable at
-$\sigma=\vtype$, witnessed by $f:=e-\one_{\vtype}$ (with \(\one_{\vtype}\)
-the unit of $\A^{\vtype}[\T_{\mathrm{Graph}}]$).  In
-particular the complements of the classes in \cref{cor:degenerate-family}---complement-of-$C_4$-free,
-complement-of-$K_{s,t}$-free, complement-of-$C_{2k}$-free, and
-complement-of-planar graphs---are dense hereditary classes that are not
-root-plantable.
+Let $\K$ be hereditary and co-edge-degenerate, and suppose that $\K$ contains
+the co-stars
+\[
+  \overline{K_{1,N-1}}=K_{N-1}\uplus K_1
+\]
+for arbitrarily large $N$.  Then $\K$ is not root-plantable at
+$\sigma=\vtype$.  More concretely, the element
+$e-\one_{\vtype}\in\A^{\vtype}[\T_{\mathrm{Graph}}]$ is non-negative almost
+surely under every admissible one-root random extension, but is negative at
+some point of $Q_{\vtype}(\K)$.
+
+In particular, the graph-complement classes of the examples in
+\cref{cor:degenerate-family} are dense hereditary classes that are not
+root-plantable at the one-vertex type.
 \end{corollary}
 
 \begin{proof}
-By \cref{lem:complementation} it suffices that $\overline\K$ be not
-root-plantable at \(\vtype\), and this is \cref{thm:degenerate-obstruction}:
-$\overline\K$ is edge-degenerate and contains all stars $K_{1,N-1}$.  The witness
-$-e$ for $\overline\K$ pulls back to $-(\one_{\vtype}-e)=e-\one_{\vtype}$ for $\K$.  Directly:
-$\avg{e}{\vtype}=\rho$ gives $\E[\phi^{\vtype}(e)]=\phi_0(\rho)=1$, and
-$\phi^{\vtype}(e)\le1$ forces
-$\phi^{\vtype}(e)=1$ almost surely, so $e-\one_{\vtype}$ is non-negative almost surely under every
-admissible one-root random extension; while the co-star rooted at its isolated vertex
-gives a $\psi\in Q_{\vtype}$ with $\psi(e)=0$, whence $\psi(e-\one_{\vtype})=-1<0$ and quotient
-semantics fails.
+Since $\K$ is co-edge-degenerate, $\overline\K$ is edge-degenerate.  Since
+$\K$ contains arbitrarily large co-stars, $\overline\K$ contains arbitrarily
+large stars.  Thus \cref{thm:degenerate-obstruction} shows that
+$\overline\K$ is not root-plantable at \(\vtype\).  The one-vertex type is
+equal to its complement, so \cref{lem:complementation} transfers this failure
+back to $\K$.
+
+Let us also identify the witness directly.  If $\phi_0\in Q_0(\K)$, then
+co-edge-degeneracy gives $\phi_0(\rho)=1$.  Since
+\(\avg{e}{\vtype}=\rho\) and \(\brak{\vtype}=\one_0\), the extension formula
+gives
+\[
+  \E_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}
+  [\phi^{\vtype}(e)]
+  =
+  \phi_0(\rho)
+  =
+  1.
+\]
+The random variable \(\phi^{\vtype}(e)\) is a flag density, so it lies in
+\([0,1]\).  Hence \(\phi^{\vtype}(e)=1\) almost surely, and therefore
+\[
+  \phi^{\vtype}(e-\one_{\vtype})=0
+  \qquad\text{almost surely.}
+\]
+Thus \(e-\one_{\vtype}\) is ensemble-non-negative.
+
+On the other hand, choose co-stars
+\(\overline{K_{1,N_j-1}}=K_{N_j-1}\uplus K_1\in\K\) with \(N_j\to\infty\),
+and root each one at its isolated vertex.  The one-root edge density is then
+always \(0\).  By compactness, a subsequence converges to a point
+\(\psi\in Q_{\vtype}(\K)\) with \(\psi(e)=0\), and hence
+\[
+  \psi(e-\one_{\vtype})=-1<0.
+\]
+So quotient semantics fails for the same element.
+
+For the final claim, take the complements of the classes listed in
+\cref{cor:degenerate-family}.  The original classes are edge-degenerate and
+contain arbitrarily large stars; their complement classes are therefore
+co-edge-degenerate and contain arbitrarily large co-stars, so the first part
+applies.
 \end{proof}
 
 \begin{remark}[The dichotomy: density is not the dividing line]

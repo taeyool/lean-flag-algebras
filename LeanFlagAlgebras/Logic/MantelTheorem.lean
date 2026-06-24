@@ -58,12 +58,12 @@ theorem downward_entails_eq_of_forbid_unlabel_zero
   := by
   let F_typed : FinFlag σ := ⟨n, F⟩
   let F_untyped : FinFlag ∅ₜ := ⟨n, unlabel F⟩
-  have hF_zero : ⟦basisVector F_typed⟧ =[F_untyped] 0 := by
-    refine Forbid.basisVector_forbidEq_zero F_untyped F_typed ?_
+  have hF_zero : ⟦basisVector F_typed⟧ =ᵢ[F_untyped] 0 := by
+    refine Forbid.basisVector_inducedForbidEq_zero F_untyped F_typed ?_
     change 0 < flagDensity₁ (unlabel F) (unlabel F)
     rw [flagDensity_self]
     norm_num
-  have h_forbid : f =[F_untyped] f' := by
+  have h_forbid : f =ᵢ[F_untyped] f' := by
     intro φ₀ hσ hF_forbid
     let A : Set (PositiveHomSpace σ) := {φ | φ ⟦basisVector F_typed⟧ = φ 0}
     let B : Set (PositiveHomSpace σ) := {φ | φ f = φ f'}
@@ -77,9 +77,9 @@ theorem downward_entails_eq_of_forbid_unlabel_zero
     · calc
         1 = ℙ[φ₀] A := by simpa using hA.symm
         _ ≤ ℙ[φ₀] B := ProbabilityMeasure.apply_mono (ℙ[φ₀]) hsubset
-  have h_down_forbid : ⟦f⟧₀ =[F_untyped]₀ ⟦f'⟧₀ :=
-    (Forbid.forbidEq_emptyType_iff_forbidEq F_untyped ⟦f⟧₀ ⟦f'⟧₀).2
-      (Forbid.downward_forbidEq_equal_flags h_forbid)
+  have h_down_forbid : ⟦f⟧₀ =ᵢ[F_untyped]₀ ⟦f'⟧₀ :=
+    (Forbid.inducedForbidEq_emptyType_iff_inducedForbidEq F_untyped ⟦f⟧₀ ⟦f'⟧₀).2
+      (Forbid.downward_inducedForbidEq_equal_flags h_forbid)
   intro φ hF
   exact h_down_forbid φ (by simpa [F_untyped] using hF)
 

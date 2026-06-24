@@ -10,7 +10,7 @@ This module provides two elaboration-time commands that synthesize flag-product
 pattern flags into the basis of larger host flags:
 
 * `generate_forbid_mul_theorems patN hostN k m Forbid` — products modulo a
-  forbidden subgraph (right-hand side holds up to `=[Forbid.toFinFlag]`).
+  forbidden subgraph (right-hand side holds up to `=ᵢ[Forbid.toFinFlag]`).
 * `generate_mul_theorems patN hostN k m` — plain products (`=`), no forbid.
 
 See each command's documentation below for the meaning of the parameters and
@@ -85,8 +85,8 @@ def buildMulRhs (patN hostN : Nat) (hostTag : String) (patternFlagTypeName : Nam
 -- For each ordered pair `(i, j)` of `Forbid`-free pattern flags it emits
 --   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
 --   `  FlagAlgebra_patN_k_m_i * FlagAlgebra_patN_k_m_j`
---   `    =[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
--- where `=[Forbid.toFinFlag]` is equality in the flag algebra up to the forbidden
+--   `    =ᵢ[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
+-- where `=ᵢ[Forbid.toFinFlag]` is equality in the flag algebra up to the forbidden
 -- subgraph, the sum ranges over `Forbid`-free hosts `h`, and `cₕ` is the
 -- subflag-multiplication density of the two patterns inside host `h`.
 --
@@ -141,10 +141,10 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[($gIdent).toFinFlag] $rhs
               := by
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum ($gIdent).toFinFlag
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -152,16 +152,16 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq
               simp [hsetval]
-              exact forbidEq_refl ($gIdent).toFinFlag _
+              exact inducedForbidEq_refl ($gIdent).toFinFlag _
           ))
         else
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[($gIdent).toFinFlag] $rhs
               := by
               rw [mul_comm]
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum ($gIdent).toFinFlag
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -169,7 +169,7 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
               rw [Finset.sum_eq_multiset_sum, ← $flagSetEqUniv]
               have hsetval := $flagSetValEq
               simp [hsetval]
-              exact forbidEq_refl ($gIdent).toFinFlag _
+              exact inducedForbidEq_refl ($gIdent).toFinFlag _
           ))
         generated := generated + 1
 
@@ -181,8 +181,8 @@ elab "generate_forbid_mul_theorems" patS:num hostS:num kS:num mS:num forbidS:ide
 -- same emitted theorems
 --   `flagMul_FlagAlgebra_patN_k_m_i_FlagAlgebra_patN_k_m_j :`
 --   `  FlagAlgebra_patN_k_m_i * FlagAlgebra_patN_k_m_j`
---   `    =[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
--- but the proof rewrites the `basisVector_quot_mul_forbidEq_sum` expansion (a sum
+--   `    =ᵢ[Forbid.toFinFlag] Σ_h cₕ • FlagAlgebra_hostN_k_m_h`,
+-- but the proof rewrites the `basisVector_quot_mul_inducedForbidEq_sum` expansion (a sum
 -- over `univ.filter (fun F' => flagDensity₁ Forbid (unlabel F') = 0)`) directly onto
 -- the explicitly-generated forbid-free host set `flagSetHfree_hostN_k_m_<Forbid>` via
 -- its filtered-completeness lemma `…_eq`, rather than materializing the full host
@@ -253,10 +253,10 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[($gIdent).toFinFlag] $rhs
               := by
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum ($gIdent).toFinFlag
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -265,16 +265,16 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact forbidEq_refl ($gIdent).toFinFlag _
+              exact inducedForbidEq_refl ($gIdent).toFinFlag _
           ))
         else
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($gIdent).toFinFlag] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[($gIdent).toFinFlag] $rhs
               := by
               rw [mul_comm]
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum ($gIdent).toFinFlag
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum ($gIdent).toFinFlag
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -283,7 +283,7 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact forbidEq_refl ($gIdent).toFinFlag _
+              exact inducedForbidEq_refl ($gIdent).toFinFlag _
           ))
         generated := generated + 1
 
@@ -293,9 +293,9 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 --
 -- The **edge-based** analogue of `generate_forbid_free_mul_theorems`: `F` is a `Sym2Graph mF`
 -- *term* (no tag, no canonical forbidden flag). The forbid flag in the emitted
--- `=[Sym2EmptyTypedFlag.toFlag ⟦F⟧]` theorems is `⟦F⟧` directly; the forbid-free pattern/host split
+-- `=ᵢ[Sym2EmptyTypedFlag.toFlag ⟦F⟧]` theorems is `⟦F⟧` directly; the forbid-free pattern/host split
 -- is **induced** (`evalInducedFreeMask`); and the proof rewrites the
--- `basisVector_quot_mul_forbidEq_sum (toFlag ⟦F⟧)` expansion onto the edge-based forbid-free host set
+-- `basisVector_quot_mul_inducedForbidEq_sum (toFlag ⟦F⟧)` expansion onto the edge-based forbid-free host set
 -- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
 -- generators). Prerequisite: run `generate_pruned_forbid_free_empty_typed_flags hostN F`
 -- (and, for `k > 0`, `generate_pruned_forbid_free_flags hostN k m F`) first.
@@ -353,10 +353,10 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$forbidFlagTm] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[$forbidFlagTm] $rhs
               := by
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum $forbidFlagTm
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum $forbidFlagTm
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -365,16 +365,16 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact forbidEq_refl $forbidFlagTm _
+              exact inducedForbidEq_refl $forbidFlagTm _
           ))
         else
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$forbidFlagTm] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[$forbidFlagTm] $rhs
               := by
               rw [mul_comm]
-              apply forbidEq_trans
-                (basisVector_quot_mul_forbidEq_sum $forbidFlagTm
+              apply inducedForbidEq_trans
+                (basisVector_quot_mul_inducedForbidEq_sum $forbidFlagTm
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -383,7 +383,7 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact forbidEq_refl $forbidFlagTm _
+              exact inducedForbidEq_refl $forbidFlagTm _
           ))
         generated := generated + 1
 

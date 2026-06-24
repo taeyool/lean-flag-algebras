@@ -6,10 +6,10 @@ This module is the foundation of the API layer that sits on top of `Forbid`.
 It provides the reusable helper lemmas and custom tactics shared by every
 per-problem density-bound proof:
 
-* `forbidExpand_one` / `one_forbidEq_forbidExpand_one` — rewrite the constant
+* `forbidExpand_one` / `one_inducedForbidEq_forbidExpand_one` — rewrite the constant
   `1` as the forbid-conditioned sum of unlabeled flags of a given size.
-* `forbidLE_trans_add_nonneg`, `flagQuadraticForm_downward_forbidLE_nonneg`,
-  `forbidLE_add_QuadraticForm` — combine a known `forbidLE` bound with a
+* `inducedForbidLE_trans_add_nonneg`, `flagQuadraticForm_downward_inducedForbidLE_nonneg`,
+  `inducedForbidLE_add_QuadraticForm` — combine a known `inducedForbidLE` bound with a
   non-negative PSD quadratic-form (SOS) certificate term.
 * Custom tactics `fold_basis_vectors`, `expand_one_at n`, and `flag_nonneg`
   (defined via `elab`/`syntax`/`macro`), automating the boilerplate that is
@@ -34,47 +34,47 @@ noncomputable def forbidExpand_one
 /-- Under `F_forbid`, the constant `1` equals its `forbidExpand_one` expansion;
 this is the rewrite used to turn the target bound into a sum over explicit
 4- or 5-vertex flags. -/
-theorem one_forbidEq_forbidExpand_one
+theorem one_inducedForbidEq_forbidExpand_one
     (F_forbid : FinFlag ∅ₜ) (expandSize : ℕ)
-    : (1 : FlagAlgebra ∅ₜ) =[F_forbid] forbidExpand_one F_forbid expandSize := by
+    : (1 : FlagAlgebra ∅ₜ) =ᵢ[F_forbid] forbidExpand_one F_forbid expandSize := by
   simpa [forbidExpand_one] using
-    (basisVector_quot_forbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
+    (basisVector_quot_inducedForbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
-/-- If `f ≤[F] g` and `c` is non-negative under `F`, then `f ≤[F] g + c`. -/
-lemma forbidLE_trans_add_nonneg
+/-- If `f ≤ᵢ[F] g` and `c` is non-negative under `F`, then `f ≤ᵢ[F] g + c`. -/
+lemma inducedForbidLE_trans_add_nonneg
     {F_forbid : FinFlag ∅ₜ} {f g c : FlagAlgebra ∅ₜ}
-    (hfg : f ≤[F_forbid] g) (hc : 0 ≤[F_forbid] c)
-    : f ≤[F_forbid] (g + c) := by
+    (hfg : f ≤ᵢ[F_forbid] g) (hc : 0 ≤ᵢ[F_forbid] c)
+    : f ≤ᵢ[F_forbid] (g + c) := by
   rw [← add_zero f]
-  exact forbidLE_add hfg hc
+  exact inducedForbidLE_add hfg hc
 
 /-- The downward projection of a PSD quadratic form in flag vectors is
 non-negative under any forbidden subgraph `F_forbid`; this is the basic SOS
 (sum-of-squares) certificate term. -/
-theorem flagQuadraticForm_downward_forbidLE_nonneg
+theorem flagQuadraticForm_downward_inducedForbidLE_nonneg
     {n₀ : ℕ} {σ : FlagType (Fin n₀)}
     (F_forbid : FinFlag ∅ₜ)
     (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
-    : 0 ≤[F_forbid] ⟦flagQuadraticForm M v⟧₀
+    : 0 ≤ᵢ[F_forbid] ⟦flagQuadraticForm M v⟧₀
   := by
-  apply downward_forbidLE_nonneg
-  apply forbidLE_of_le
+  apply downward_inducedForbidLE_nonneg
+  apply inducedForbidLE_of_le
   exact flagQuadraticForm_nonneg M hM v
 
 /-- Adding a PSD quadratic-form (SOS) term to the right-hand side preserves a
-`forbidLE` bound: from `f ≤[F] g` derive `f ≤[F] g + ⟦flagQuadraticForm M v⟧₀`.
+`inducedForbidLE` bound: from `f ≤ᵢ[F] g` derive `f ≤ᵢ[F] g + ⟦flagQuadraticForm M v⟧₀`.
 This is the workhorse for stacking SDP certificate terms. -/
-theorem forbidLE_add_QuadraticForm
+theorem inducedForbidLE_add_QuadraticForm
     {n₀ : ℕ} {σ : FlagType (Fin n₀)}
     {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra ∅ₜ}
     (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
-    : (f ≤[F_forbid] g) → f ≤[F_forbid] g + ⟦flagQuadraticForm M v⟧₀
+    : (f ≤ᵢ[F_forbid] g) → f ≤ᵢ[F_forbid] g + ⟦flagQuadraticForm M v⟧₀
   := by
   intro hfg
   rw [← add_zero f]
-  apply forbidLE_add hfg
-  apply downward_forbidLE_nonneg
-  apply forbidLE_of_le
+  apply inducedForbidLE_add hfg
+  apply downward_inducedForbidLE_nonneg
+  apply inducedForbidLE_of_le
   exact flagQuadraticForm_nonneg M hM v
 
 /-
@@ -198,11 +198,11 @@ elab_rules : tactic
       evalTactic (← `(tactic| fold_basis_vectors))
 
 /--
-`flag_nonneg` closes goals of the form `f ≤[F_forbid] g` when `g - f` is a
+`flag_nonneg` closes goals of the form `f ≤ᵢ[F_forbid] g` when `g - f` is a
 non-negative linear combination of FlagAlgebra unit vectors (of the form `c • ⟦basisVector F⟧`).
 
 It automates the standard closing step in flag algebra API proofs:
-1. Reduces to a semantic inequality via `forbidLE_of_le`
+1. Reduces to a semantic inequality via `inducedForbidLE_of_le`
 2. Distributes `φ` over `+` using `PositiveHom.map_add`
 3. Decomposes the sum into individual non-negativity goals using `add_nonneg`
 4. Closes each leaf with `positiveHom_basisVector_ge_zero`

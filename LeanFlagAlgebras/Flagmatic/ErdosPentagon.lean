@@ -159,17 +159,20 @@ set_option maxRecDepth 1500
 Certificate description: '2-graph; maximize 5:1213243545 density; forbid 3:121323'
 Bound: '24/625'. -/
 theorem ErdosPentagon_flagAlgebra
-    : FlagAlgebra_5_0_0_19 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_5_0_0_19 ≤[completeGraph (Fin 3)] (24 / 625 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_5_0_0_19 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  apply inducedForbidLE_toFinFlag_imp_forbidLE
+  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
+        from (completeSym2Graph_finFlag_eq 3).symm]
+  have quadraticForm_trans : FlagAlgebra_5_0_0_19 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_5_0_0_19 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀ + ⟦flagQuadraticForm M₃_real v₃⟧₀
     := by
-    apply forbidLE_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
-    apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_5_0_0_19
-  apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 5)))
+    apply inducedForbidLE_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
+    apply inducedForbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply inducedForbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_5_0_0_19
+  apply inducedForbidLE_trans quadraticForm_trans
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 5)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_six, add_assoc]
@@ -181,7 +184,7 @@ theorem ErdosPentagon_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 end ErdosPentagon
