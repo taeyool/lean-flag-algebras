@@ -2650,121 +2650,118 @@ meta-commands.
 
 \subsection{The certificate matrices and their flag vectors}
 \label{sec:flagmatic-psd}
-\sh{I'm here.}
-A real symmetric matrix is positive semidefinite iff it factors as
-$M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
-over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
-cluster of rational definitions closed by a one-line proof, and is paired with
-the vector of $\sigma$-flags it will be contracted against:
+
+Each matrix is the part of the certificate that carries the bound.  The
+flag-algebra method does not prove $P \leq_{\mathcal{H}}
+c\cdot\mathbf{1}$ by manipulating $P$ directly; it adds to $P$ a quantity that is
+provably non-negative and chosen so that the sum is bounded by $c$ term by term.
+That quantity is a quadratic form $\langle v_t, M_t\, v_t\rangle$ in the
+$\sigma_t$-flags, and a quadratic form with $M_t$ positive semidefinite is the
+flag-algebra analogue of a sum of squares: it is non-negative for every
+assignment, so adding it can only raise $P$, never lower it.  The SDP solver
+(Flagmatic) is exactly the search for such matrices---it returns the $M_t$ for
+which the slack $c\cdot\mathbf{1} - P - \sum_t \langle v_t, M_t\, v_t\rangle$ has
+only non-negative coefficients.  We take the $M_t$ as given; the one property Lean
+must verify is that each is positive semidefinite.
+
+We establish that property through an $LDL^\top$ factorization: a symmetric $M$
+that factors as $M = L D L^\top$ with $D$ diagonal and its diagonal entries
+$d \geq 0$ is positive semidefinite, because
+\[
+  x^\top M x \;=\; x^\top L D L^\top x \;=\; \sum_i d_i\,(L^\top x)_i^2 \;\geq\; 0 .
+\]
+The right-hand side is a sum of squares---the concrete form of the analogy from
+the intro.  We use this factorization rather than a spectral test because
+checking it needs only rational arithmetic: with exact rational entries
+$M = L D L^\top$ is an equality verified over $\mathbb{Q}$---no eigenvalues, no
+floating point---and the result lifts to $\mathbb{R}$, where the flags live.  Each
+block is a few rational definitions and a one-line proof, paired with the vector
+of $\sigma$-flags it is contracted against:
 \begin{lstlisting}
+-- the rational matrix M, its factorization data (dM, LM), and the real lift
 def M  : Matrix (Fin 2) (Fin 2) Q := !![(1/2 : Q), (-1/2 : Q); (-1/2 : Q), (1/2 : Q)]
 def dM : Fin 2 -> Q := ![(1/2 : Q), 0]
 def LM : Matrix (Fin 2) (Fin 2) Q := !![(1 : Q), 0; (-1 : Q), (1 : Q)]
 noncomputable def M_real : Matrix (Fin 2) (Fin 2) R := ratMatrixToReal M
+
+-- positive semidefiniteness, proved from the factorization
 theorem M_real_posSemidef : M_real.PosSemidef := by
   psd_real_ldlt M LM dM
+
+-- the vector of sigma-flags M is contracted against
 def sigma : FlagType (Fin 1) := FlagType_1_0
 noncomputable def v : FlagAlgebraVec sigma 2 := ![FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1]
 \end{lstlisting}
-The tactic \lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean})
-refines the goal through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and
-discharges its two side conditions: the diagonal non-negativity $d_M \geq 0$ by
+The positive-semidefiniteness proof is a single call to
+\lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean}): given the
+precomputed factorization, the tactic proves \lean{M\_real.PosSemidef}
+automatically.  It refines the goal
+through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and discharges its two
+side conditions: the diagonal non-negativity $d \geq 0$ by
 \lean{fin\_cases}/\lean{norm\_num}, and the factorization equality
-$M = L_M\,\mathrm{diag}(d_M)\,L_M^\top$ by \lean{decide +kernel}---a decidable
+$M = L D L^\top$ by \lean{decide +kernel}---a decidable
 rational matrix equality the kernel evaluates entry by entry, using no compiled
-native code.  The lemma bundles the $\mathbb{Q}\!\to\!\mathbb{R}$ plumbing, so
-the emitter need only supply the rational triple $(M, L_M, d_M)$.  Because the
-equality is kernel-checked, a wrong $L_M$ or $d_M$ surfaces as a compile error
+native code.  The emitter therefore supplies only the rational triple
+$(M, L, d)$.  Because the
+equality is kernel-checked, a wrong $L$ or $d$ surfaces as a compile error
 on this line, never as a silently accepted non-PSD matrix---the one place we
 deliberately pay for in-kernel evaluation (Section~\ref{sec:flagmatic-trust}).
-The vector $v_t$ alongside it merely lists the $\sigma_t$-flags by name;
-together $(M_t, v_t)$ form the quadratic form
-$\llbracket\langle v_t, M_t\,v_t\rangle\rrbracket$ that the main theorem adds to
-the target.
+The vector $v$ alongside it merely lists the $\sigma$-flags by name;
+together $(M, v)$ form the quadratic form
+$\llbracket\langle v, M\,v\rangle\rrbracket$---one per $\sigma$-type---that the
+main theorem adds to the target.
 
 \subsection{Lifting the objective to host size}
 \label{sec:flagmatic-expand}
 
-Whether this step is present is the proof's one structural choice, fixed by
-comparing the objective's vertex count $n_{\mathit{obj}}$ to the host size $N$
-fixed by the certificate.  In \emph{Branch~A} ($n_{\mathit{obj}}=N$), the
-objective is already a host-size flag and this subsection is skipped
-($C_4$-Tur\'an, Erd\H{o}s pentagon).  In \emph{Branch~B} ($n_{\mathit{obj}}<N$;
-Mantel, $K_4$- and $K_5$-Tur\'an), the objective must first be lifted, by
-rewriting it as its induced-forbid-free expansion at size $N$.  Concretely,
-\lean{flag\_expand\_hfree N K} closes a goal $P =_{K} \sum_j c_j\,F_j$ by
-rewriting with \lean{basisVector\_quot\_forbidEq\_sum} directly onto the
-generated \lean{flagSetHfree\_N\_0\_0\_<K>} set---never materializing the full
-\lean{flagSet}, and dropping the host terms that contain an induced member of
-\(\mathcal{H}\) automatically (no manual \lean{basisVector\_forbidEq\_zero} step).  Its closing
-arithmetic needs the relevant \lean{flagDensity\textsubscript{1}} values present
-as \lean{@[simp]} lemmas, which the translator emits (each closed by
-\lean{native\_decide} after an adequacy rewrite).
+The host size $N$ is the world the densities live in, and the objective is not
+always a flag of that size.  When it is smaller we simply lift it to host
+size before the rest of the proof runs; this is the proof's one branch point.  If the objective is already host-size
+(\emph{Branch~A}: $n_{\mathit{obj}}=N$; the $C_4$-density bound, Erd\H{o}s
+pentagon) the
+step is empty.  If it is smaller (\emph{Branch~B}: $n_{\mathit{obj}}<N$; Mantel,
+$K_4$- and $K_5$-Tur\'an) a single call to \lean{flag\_expand\_hfree N K} does
+it, rewriting the objective (via \lean{basisVector\_quot\_forbidEq\_sum}) over the
+$N$-vertex induced-$\mathcal{H}$-free flags and dropping the host terms that
+contain an induced copy of $\mathcal{H}$.  Its closing arithmetic needs the
+relevant \lean{flagDensity\textsubscript{1}} values, which the translator emits as
+\lean{@[simp]} lemmas.
 
 \subsection{The main theorem}
 \label{sec:flagmatic-close}
+\sh{I'm here.}
 
-The body assembles the pieces in a fixed sequence.  First, each block's
-quadratic form is added to the target by \lean{forbidLE\_add\_QuadraticForm}:
-\begin{lstlisting}
-theorem forbidLE_add_QuadraticForm
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
-    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)
-\end{lstlisting}
-iterated once per type to build a transitive chain of additions.  The unit on
-the right is then expanded to host size by \lean{expand\_one\_hfree\_at N K},
-which rewrites $\mathbf{1}$ as the sum of $N$-vertex
-induced-\(\mathcal{H}\)-free flags by
-the same \lean{basisVector\_quot\_forbidEq\_sum} machinery as the objective lift
-of Section~\ref{sec:flagmatic-expand}.
-
-The downward-averaged products are discharged by
-\lean{reduce\_downward\_flagmul}.  The generation step
-(Section~\ref{sec:flagmatic-gen}) has already registered a
-\lean{flagMul\_<A>\_<B>} expansion for each pattern pair; the tactic
-right-associates the sum with \lean{simp only [downward\_add, add\_assoc]} and
-then rewrites each head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its
-\lean{flagMul} identity, moving each rewritten term across the inequality.  A
-single call dispatches all of a block's products.
-
-What remains is an equality between two linear combinations of flag terms that
-are equal but syntactically reordered.  Generic tactics (\lean{ring},
-\lean{ac\_rfl}) search over all permutations of summands and become
-prohibitively slow past ${\sim}20$ terms, so we normalize with
-\lean{flagsum\_ac\_sort\_rhs\_pipeline} (in \lean{API/FlagSumSort.lean}): it
-flattens the expression into a list of (base, coefficient) pairs, assigns each
-base the sort key read from the trailing integer of its name, stable-sorts,
-merges like coefficients, and proves the original-equals-sorted equality up to
-add-AC.  The recorded counterexample is in \lean{ErdosPentagon.Lemmas}: a
-commented call reads ``\texttt{-- sort\_at -- takes more than 10 minutes}''; the
-generic \lean{sort\_at}, which uses \lean{simp} without index guidance, times out
-on ${\sim}25$-term expressions, while the index-guided sort completes the same
-step in under a second.
-
-The final non-negativity goal is closed by \lean{flag\_nonneg}: it distributes
-an arbitrary positive homomorphism over the sum, splits with \lean{add\_nonneg},
-and discharges each leaf by \lean{positiveHom\_basisVector\_ge\_zero}.
-
-\paragraph{Adding quadratic forms and closing (Part~4).}
-Two API lemmas frame the body.  The standard upper-bound move---add one or more
-PSD quadratic forms to the target, then check that the result lies in the
-forbid-cone---is encapsulated by
+\paragraph{Adding quadratic forms and closing.}
+% Phrased in terms of the established forbid order $\leq_{\mathcal{H}}$ to avoid
+% introducing the undefined term "forbid-cone" (used nowhere else).
+The standard upper-bound move---add one or more PSD quadratic forms to the
+target, then check that the augmented target is
+$\leq_{\mathcal{H}} c\cdot\mathbf{1}$---rests on
+\lean{forbidLE\_add\_QuadraticForm}, which does the adding (from
+$f \leq_{\mathcal{H}} g$ it gives
+$f \leq_{\mathcal{H}} g + \llbracket\langle v, M\,v\rangle\rrbracket$):
 \begin{lstlisting}
 theorem forbidLE_add_QuadraticForm
     (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
     : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*) := ...
 \end{lstlisting}
-iterated once per type to build a transitive chain of additions.  The unit is
+iterated once per type to build a transitive chain of additions.  The rest of the
+body performs the check: the unit is
 expanded to host size by \lean{expand\_one\_hfree\_at N K} (rewriting
 $\mathbf{1}$ as the sum of $N$-vertex induced-\(\mathcal{H}\)-free flags); the
 downward-averaged products are discharged by \lean{reduce\_downward\_flagmul},
 which first right-associates the sum with
 \lean{simp only [downward\_add, add\_assoc]} and then rewrites each head
 summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
-identity, moving each rewritten term across the inequality; and the final
-non-negativity goal is closed by \lean{flag\_nonneg}, which distributes an
-arbitrary positive homomorphism over the sum, splits with \lean{add\_nonneg},
-and discharges each leaf by \lean{positiveHom\_basisVector\_ge\_zero}.
+identity, moving each rewritten term across the inequality; the resulting
+equality between two reordered combinations of flag terms is normalized by
+\lean{flagsum\_ac\_sort\_rhs\_pipeline}, which sorts the summands by the index in
+each flag's name and proves the reordering up to add-AC (an index-guided
+substitute for \lean{ring}/\lean{ac\_rfl}, which grow too slow past ${\sim}20$
+terms); and the final non-negativity goal is closed by \lean{flag\_nonneg}, which
+distributes an arbitrary positive homomorphism over the sum, splits with
+\lean{add\_nonneg}, and discharges each leaf by
+\lean{positiveHom\_basisVector\_ge\_zero}.
 
 \paragraph{Metaprogramming robustness.}
 These tactics must tolerate the syntactic variation Lean's elaborator
@@ -2803,7 +2800,7 @@ separately maintained table.
 \paragraph{Assembling Part~1.}
 The certificate stores each block as a pair $(Q_t', R_t)$, not as the
 assembled matrix.  The script reconstructs $M_t = R_t\,Q_t'\,R_t^\top$ in
-exact rationals, then factors it as $L_t\,\mathrm{diag}(d_t)\,L_t^\top$ by a
+exact rationals, then factors it as $L_t D_t L_t^\top$ by a
 textbook elimination loop that handles the rank deficiency the assembled
 matrix typically has.  It emits $M_t$, $L_t$, $d_t$, and the one-line
 \lean{psd\_real\_ldlt} proof of Section~\ref{sec:flagmatic-psd}.  None of
@@ -2812,7 +2809,7 @@ factorization.
 
 \paragraph{Emitting the body: Branch~A vs.\ Branch~B.}
 For Branch~A the body is a fixed sequence parametrized only by $N$, the block
-count $T$, and the per-block dimensions.  For the $C_4$-Tur\'an certificate
+count $T$, and the per-block dimensions.  For the $C_4$-density certificate
 ($K_3$-free, $N=4$, $T=2$) the script emits:
 \begin{lstlisting}
 theorem K3forbidC4_flagAlgebra
@@ -2850,7 +2847,7 @@ generator; everything downstream is verified by Lean.
 
 The script computes a great deal---it isomorphism-matches certificate strings
 to indices, assembles $R_t\,Q_t'\,R_t^\top$, factors it as
-$L\,\mathrm{diag}(d)\,L^\top$, enumerates induced subgraphs to fill the
+$L D L^\top$, enumerates induced subgraphs to fill the
 Branch~B coefficient table, and decides which generators and imports to
 emit---and \emph{none} of this enters the trusted base.  Every emitted
 obligation is closed by one of: \lean{decide +kernel} (the PSD matrix
