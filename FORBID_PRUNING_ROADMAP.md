@@ -297,20 +297,26 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
       `native_decide`s were individually cheap, so pair-density is only ~10–15 % of the file's total
       compile (the dominant cost is σ-typed flag generation + the SOS proof). 189× fewer `native_decide`
       compilations, but a ~10 % wall-time win.
-    - **DONE — genuine-pruning σ-typed generator** (the actual typed-example speedup). Added
-      `genFlagsHfreePruned σ n qB` + `genFlagsHfreePruned_toFinset_eq` to `Flags/ForbidFreeGenerator.lean`:
-      it builds labeled flags directly over the **pruned graph reps** `augRepsFreeB qB n` (never
-      materializing a forbidden graph), with completeness mirroring `genFlagsHfree_toFinset_eq` but
-      routed through `augRepsFreeB_free` / `augRepsFreeB_complete`. Routed the edge-based typed command
-      `generate_pruned_forbid_free_flags` through it with `qB := qFree F`; its `native_decide` now runs
-      the **cheap combinatorial `qFree`** over the pruned reps instead of the **density filter over the
-      full `genSym2GraphsDedup`**. Helpers added to `ForbidFreePruned.lean`: `qFree_eq_density_decide`
-      (the bridge so the density-based `isHfree` matches `qFree` in `hcompat`) and `qFree_hq0`.
-      **Measured: `ErdosPentagon` own-compile 196 s → 128 s (~35 %)** — the real win for the typed
-      examples (vs 8a ≈ 0 % and the pair-density batch ~10 %); the density-filtered full enumeration was
-      a bigger cost than the pair-density count. All typed examples build (full project green, 7989 jobs).
-      (Uses `qFree` uniformly — at the example sizes (n ≤ 5) `inducedContains` is cheap; the clique
-      specialization (8a) only matters at the empty-typed high-n generation.)
+    - **DONE — genuine-pruning σ-typed generator** (structurally cleaner; build-time **perf-neutral**).
+      Added `genFlagsHfreePruned σ n qB` + `genFlagsHfreePruned_toFinset_eq` to
+      `Flags/ForbidFreeGenerator.lean`: it builds labeled flags directly over the **pruned graph reps**
+      `augRepsFreeB qB n` (never materializing a forbidden graph), with completeness mirroring
+      `genFlagsHfree_toFinset_eq` but routed through `augRepsFreeB_free` / `augRepsFreeB_complete`. Routed
+      the edge-based typed command `generate_pruned_forbid_free_flags` through it with `qB := qFree F`; its
+      `native_decide` now runs the **cheap combinatorial `qFree`** over the pruned reps instead of the
+      **density filter over the full `genSym2GraphsDedup`**. Helpers added to `ForbidFreePruned.lean`:
+      `qFree_eq_density_decide` (the bridge so the density-based `isHfree` matches `qFree` in `hcompat`)
+      and `qFree_hq0`. **CORRECTION (2026-06-24):** the originally-recorded "196 s → 128 s (~35 %)" win
+      was a **measurement error** — it compared a *standalone* `lake build` (196 s) against a *full-build*
+      reported time (128 s). In a parallel `lake build`, the per-module "(N s)" is the scheduler's wall
+      attribution, not a true own-time (ErdosPentagon **and** K4turan both reported exactly 128 s). The
+      fair **standalone-vs-standalone** comparison is **196 s (old `genFlagsHfree`) → 195 s (new
+      `genFlagsHfreePruned`) ≈ perf-neutral.** So this is a *structural* improvement (genuine pruning, no
+      full enumeration, cheaper predicate, correct) but **not** a build-time speedup — it joins 8a (≈ 0 %)
+      and the 8b pair-density batch (~10 %) as a tidy-but-low-impact change. The real cost lies elsewhere
+      (see 9b profiling below). All typed examples build (full project green, 7989 jobs). (Uses `qFree`
+      uniformly — at the example sizes (n ≤ 5) `inducedContains` is cheap; the clique specialization (8a)
+      only matters at the empty-typed high-n generation.)
     - **TODO — re-enable `K5turan`.** Its blocker was the pair-density count (K₅-free is weak → most
       pairs free); the batch should make it tractable now. Worth re-testing and, if it builds, removing
       it from the aggregator's comment-out.
@@ -328,13 +334,38 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     pruned `augRepsFreeB` path; (ii) a **canonical form** key so dedup becomes a hash/sort instead of
     pairwise iso-checks. This is the real lever for making n = 6/7 forbid-free loading *cheap* (the
     original Task-8 motivation). Likely also speeds the non-forbid enumeration.
-  - `[~]` **9b. σ-typed flag generation + SOS-proof cost** — the bottleneck of the typed *examples*.
-    The **generation half is DONE** (8b genuine-pruning σ-typed generator): routing
-    `generate_pruned_forbid_free_flags` through `genFlagsHfreePruned` cut `ErdosPentagon` 196 s → 128 s
-    (~35 %), confirming the density-filtered full enumeration was the larger share. **Remaining:** the
-    **SOS proof** (`flag_expand_hfree` / `reduce_downward_flagmul` / `flagsum_ac_sort` / `flag_nonneg`)
-    — now the dominant part of the ~128 s. Profile a typed example (`set_option profiler true`) to find
-    the heaviest proof step, then optimize it. Also the path to a tractable `K5turan` (8b TODO).
+  - `[~]` **9b. Typed-example compile cost — PROFILED (2026-06-24).** `set_option profiler true` on
+    `ErdosPentagon` (standalone ~195 s own-compile after a 6.5 s import) attributes the time roughly as:
+    - **~47 s — one `blocked` span** = the *one-time native-code compilation* of the flag/density/
+      generation closure that the first `native_decide` in the file pulls in. **High variance** (depends
+      on system load / the C toolchain); this single span is what made the full-build "(128 s)" attribution
+      unreliable. Inherent to the `native_decide` (reflection) approach.
+    - **~40 s — kernel "type checking"** across the ~15 pair-density batch `native_decide`s (~2.8 s each):
+      the kernel verifying the 200-element batch list literals. Roughly proportional to the *total* pair
+      count, so batch size doesn't move it (already established in 8b).
+    - **~40 s — `simp`** (~600 ms × ~70) in the **mul command's per-theorem proof** (the final full `simp`
+      after `simp only [sum_eq_multiset_sum, valEq]`, one per mul theorem across the 3 σ-types).
+    - The SOS proof tactics in the main theorem (`flag_expand_hfree` / `reduce_downward_flagmul` /
+      `flagsum_ac_sort` / `flag_nonneg`) are **not** the bottleneck — only a handful of `simp`s.
+    **Conclusion:** the framing "SOS proof is the dominant cost" was wrong; the cost is `native_decide`
+    (compile + kernel-check, ~87 s, largely inherent + high-variance) and the **mul-command `simp`s**
+    (~40 s). **Two levers, both with caveats:** (i) *narrow the mul `simp` to `simp only`* with the
+    generated `flagDensity₂_*` names + structural lemmas — biggest tractable win (~40 s) but **fragile**
+    (an incomplete simp set breaks ~70 generated theorems across all examples) and hard to validate under
+    the ~±50 s `native_decide` variance; deserves its own careful task with profiler-isolated before/after.
+    (ii) *reduce `native_decide` reliance* (the ~87 s) — a large framework rework. A quick experiment
+    disabling `linter.unusedTactic` / `linter.unreachableTactic` was **perf-neutral** (~1 s). Also the
+    path to a tractable `K5turan` (8b TODO).
+    - **DECISION (2026-06-24, path A): the profiling above is 9b's accepted outcome.** No optimization is
+      landed now — the only tractable lever (i, the mul `simp`) is too fragile to apply blind and can't be
+      cleanly validated under the `native_decide` variance, and lever (ii) is a major rework. The
+      typed-example compile cost is now *correctly understood and documented*; that is the deliverable.
+    - `[ ]` **9c. (deferred, optional) Narrow the mul-command `simp` to `simp only`.** Dedicated task for
+      lever (i): in `MulThmGenerator` (and the edge-based `generate_pruned_forbid_free_mul_theorems`),
+      replace the final full `simp` with `simp only [Finset.sum_eq_multiset_sum, <valEq>, <generated
+      flagDensity₂_* names for the block>, <Multiset/​smul/​add structural lemmas>]`. Develop against
+      `MantelHfree` (fast), confirm every example still builds, and keep it **only** if a profiler-isolated
+      before/after of the summed mul-`simp` time shows a clean win. ~40 s potential on `ErdosPentagon`.
 
 ## Multi-graph design notes (for D3)
 
@@ -601,11 +632,27 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   command `generate_pruned_forbid_free_flags` through it (`qB := qFree F`); its `native_decide` now runs
   the cheap combinatorial `qFree` over the pruned reps instead of the **density** filter over the **full**
   `genSym2GraphsDedup`. Helpers added to `ForbidFreePruned.lean`: `qFree_eq_density_decide` (bridge for the
-  `hcompat`: density-based `isHfree` = `qFree`) and `qFree_hq0`. **Measured: `ErdosPentagon` own-compile
-  196 s → 128 s (~35 %)**; full project builds (7989 jobs). So the σ-typed generation's *density filter
-  over the full enumeration* was the real cost (per the 2026-06-23 redirect, item (ii)) — bigger than the
-  pair-density count (8b's earlier ~10 %) and the forbid predicate (8a's ~0 %). hcompat fix: `rw
-  [qFree_eq_density_decide]; rfl` (the `toUnderlying`/`⟦graph⟧` step is defeq but needs `rfl`'s default
-  transparency, not `rw`'s reducible one). **Remaining 8b:** re-enable `K5turan` (now plausibly tractable
-  with both the batch and the pruned σ-typed generation). Task 9b's σ-typed-*generation* half is now
-  addressed; its SOS-proof half and Task 9a (iso-dedup) remain.
+  `hcompat`: density-based `isHfree` = `qFree`) and `qFree_hq0`. ⚠️ **The "196 s → 128 s (~35 %)" first
+  recorded here was a MEASUREMENT ERROR — see the 2026-06-24 correction entry below. The fair comparison
+  is perf-neutral (~196 → ~195 standalone).** hcompat fix: `rw [qFree_eq_density_decide]; rfl` (the
+  `toUnderlying`/`⟦graph⟧` step is defeq but needs `rfl`'s default transparency, not `rw`'s reducible one).
+  **Remaining 8b:** re-enable `K5turan`. The change stays — it is a correct *structural* improvement
+  (genuine pruning, no full enumeration), just not a build-time win.
+- **2026-06-24** — **Task 9b: profiled the typed examples — and CORRECTED the 8b σ-typed "35 %" to
+  perf-neutral.** Profiled `ErdosPentagon` (`lake env lean -Dprofiler=true`). The ~195 s standalone
+  own-compile (after a 6.5 s import) splits as: **~47 s** one `blocked` span (one-time native-code
+  compilation of the flag/density closure pulled in by the first `native_decide` — high variance);
+  **~40 s** kernel "type checking" of the ~15 pair-density batch `native_decide`s (~2.8 s each); **~40 s**
+  of `simp` (~600 ms × ~70) in the **mul command's per-theorem proof**. The SOS proof tactics
+  (`flag_expand_hfree`/`reduce_downward_flagmul`/`flagsum_ac_sort`/`flag_nonneg`) are **minor** — so 9b's
+  premise ("SOS proof dominates") was wrong. **Correction:** while measuring I found the standalone
+  `ErdosPentagon` is **~195 s** with the new `genFlagsHfreePruned` — essentially equal to the **196 s**
+  measured earlier for the old `genFlagsHfree` (both standalone). The "128 s" I had compared against was a
+  **full-build** reported time, where `lake`'s parallel scheduler attributes wall-time per module
+  unreliably (ErdosPentagon *and* K4turan both showed exactly 128 s). So **the σ-typed pruned generator is
+  perf-neutral**, joining 8a (≈ 0 %) and the 8b pair-density batch (~10 %) — all structurally good, none a
+  real speedup. **Levers that remain (both caveated):** (i) narrow the mul-command `simp` to `simp only`
+  (~40 s, but fragile across ~70 generated theorems + hard to validate under ~±50 s `native_decide`
+  variance — its own task); (ii) cut `native_decide` reliance (~87 s, big rework). A linter-disable
+  experiment (`linter.unusedTactic`/`unreachableTactic`) was perf-neutral (~1 s). **Lesson: only compare
+  standalone-vs-standalone own-compile times; full-build "(N s)" is a scheduler artifact.**
