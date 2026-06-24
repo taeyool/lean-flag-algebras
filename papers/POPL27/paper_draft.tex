@@ -288,18 +288,18 @@ quotient definitions, verifies positive-semidefiniteness exactly over
 $\mathbb{Q}$, and automates the algebraic normalization steps that occur in
 flag-algebra proofs.  As case studies, we obtain machine-checked proofs of Mantel's
 theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities, and
-a $C_4$-density bound for triangle-free graphs.
+a $C_4$-density bound for induced-triangle-free graphs.
 
 The same formalization also led us to new theoretical results about
-constrained flag algebras.  We distinguish the quotient semantics approach,
-which builds a hereditary graph constraint, such as $H$-freeness, into the
+constrained flag algebras.  We distinguish the built-in constraint semantics approach,
+which builds a hereditary graph constraint, such as induced-\(H\)-freeness, into the
 flag algebra from the start, from the ensemble semantics approach, which
 imposes constraints afterwards by testing inequalities on random labeled views
 of constrained graph limits.  The two approaches often agree, but they need
 not agree for all densities of finite labeled patterns.  We prove a
 root-planting criterion characterizing when they do agree, establish positive
 results for classes closed under vertex blow-ups or more general
-substitutions, and exhibit a counterexample based on $C_4$-free graphs.  This
+substitutions, and exhibit a counterexample based on induced-\(C_4\)-free graphs.  This
 post hoc ensemble viewpoint also points beyond Razborov's original hereditary
 setting: it can impose constraints on graph limits that are not themselves
 hereditary, such as restricting to an extremal-density or equality slice.
@@ -318,22 +318,30 @@ simple graph and $\mathcal{H}$ a collection of finite simple graphs.  We write
   :=
   \max\bigl\{
     \text{number of induced copies of }P\text{ in }G
-    \mid |V(G)|=n,\; G\text{ is }\mathcal{H}\text{-free}
+    \mid |V(G)|=n,\; G\text{ is induced-}\mathcal{H}\text{-free}
   \bigr\},
 \]
 where an \emph{induced copy} of $P$ in $G$ is a vertex subset
 $S\subseteq V(G)$ with $|S|=|V(P)|$ and $G[S]\cong P$, and
-\emph{$\mathcal{H}$-free} means that $G$ contains no induced copy of any
+\emph{induced-\(\mathcal{H}\)-free} means that $G$ contains no induced copy of any
 member of $\mathcal{H}$.  The corresponding asymptotic
 question normalizes by the number of possible $|V(P)|$-vertex subsets and
-takes a limit; we call this the \emph{Tur\'an density} of $P$ with respect to $\mathcal{H}$:
+takes a limit; we call this the \emph{induced Tur\'an density} of $P$ with
+respect to $\mathcal{H}$:
 \[
   \tdensity{P}{\mathcal{H}}
   :=
   \lim_{n\to\infty}
   \frac{\mathrm{ex}(n,\,P;\,\mathcal{H})}{\binom{n}{|V(P)|}}.
 \]
-For example, Mantel's theorem states that a triangle-free graph on $n$
+This convention is slightly nonstandard.  In the classical Tur\'an-density
+convention, ``\(H\)-free'' usually means free in the ordinary subgraph order,
+and the counted copies of the target graph are also usually non-induced.  In
+this paper, \(\tdensity{P}{\mathcal{H}}\) always refers to the induced version:
+hosts are induced-\(\mathcal{H}\)-free and the statistic being optimized is
+the induced \(P\)-density.  After this point we sometimes omit the word
+``induced'' when no confusion should arise.
+For example, Mantel's theorem states that an induced-triangle-free graph on $n$
 vertices has at most $\lfloor n^2/4\rfloor$ edges---that is,
 $\mathrm{ex}(n,\,K_2;\,K_3)=\lfloor n^2/4\rfloor$---achieved by the
 complete bipartite graph $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$.  The
@@ -343,12 +351,12 @@ asymptotic value
   = \lim_{n\to\infty}\frac{\lfloor n^2/4\rfloor}{\binom{n}{2}}
   = \frac{1}{2}
 \]
-records that, in any sufficiently large triangle-free graph, at most half of
+records that, in any sufficiently large induced-triangle-free graph, at most half of
 all vertex pairs are edges.  (Whenever $\mathcal{H}=\{H\}$ is a singleton we
 write $H$ in place of $\mathcal{H}$; so $K_3$ above abbreviates $\{K_3\}$.)
 
 Determining $\tdensity{P}{\mathcal{H}}$ is hard because it is a statement
-about \emph{all} sufficiently large $\mathcal{H}$-free graphs: a valid upper
+about \emph{all} sufficiently large induced-\(\mathcal{H}\)-free graphs: a valid upper
 bound must guarantee that the proportion of induced copies of $P$ never exceeds
 the claimed value, asymptotically, no matter how large the host graph is.  No
 finite collection of examples suffices, and the extremal graphs achieving the
@@ -365,7 +373,7 @@ why that finite certificate implies an asymptotic bound for the whole graph
 class.  This combination of mathematical abstraction and computer search has been unusually
 effective.  It underlies, for example, the solution of the Erd\H{o}s pentagon
 problem~\cite{hatami2012,grzesik2012}, which determines the maximum asymptotic
-density of pentagons in triangle-free graphs.
+density of pentagons in induced-triangle-free graphs.
 
 \paragraph{From certificates to formal proofs.}
 This paper presents a machine-checked formalization of flag algebras for
@@ -401,17 +409,17 @@ studies.
 
 \paragraph{Constrained semantics.}
 Constrained extremal problems also expose a mathematical choice about when a
-constraint is imposed.  In the \emph{quotient semantics approach}, one builds
-a hereditary graph constraint, such as $H$-freeness, into the flag algebra
+constraint is imposed.  In the \emph{built-in constraint semantics} approach, one builds
+a hereditary graph constraint, such as induced-\(H\)-freeness, into the flag algebra
 from the start; this is the traditional way to work in an algebra of
-$H$-free graphs.  In the \emph{ensemble semantics approach}, one first works
+induced-\(H\)-free graphs.  In the \emph{ensemble semantics approach}, one first works
 with graph limits and then imposes the constraint post hoc by testing
 inequalities on random labeled views of those constrained limits.  These two viewpoints agree
 for many purposes, but they do not automatically agree on every density of a
 finite labeled pattern.  Our investigation proves a root-planting criterion
 characterizing when they do agree, gives positive results for classes closed
 under vertex blow-ups or more general substitutions, and exhibits a
-counterexample based on $C_4$-free graphs.  The ensemble viewpoint is useful
+counterexample based on induced-\(C_4\)-free graphs.  The ensemble viewpoint is useful
 beyond this comparison: because it imposes constraints post hoc on graph
 limits, it can also express non-hereditary restrictions such as restricting
 to an extremal-density or equality slice.  This is also the semantic viewpoint
@@ -426,8 +434,8 @@ proofs.  Second, it builds a certificate-to-proof pipeline that turns
 externally generated rational certificate data into Lean-checked algebraic
 proofs.  Third, it demonstrates the pipeline on machine-checked proofs of
 Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
-and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
-semantic comparison between quotient and ensemble approaches to constrained
+and a $C_4$-density bound for induced-triangle-free graphs.  Fourth, it develops the
+semantic comparison between built-in constraint and ensemble approaches to constrained
 flag algebras, including the root-planting criterion and the resulting
 generalization beyond hereditary constraints.
 
@@ -462,7 +470,7 @@ Throughout this section we fix a (possibly empty) finite set $\mathcal{H}$ of
 forbidden induced subgraphs.  If $G$ is a graph and $S\subseteq V(G)$, the
 \emph{induced subgraph} $G[S]$ is the graph on vertex set $S$ whose edges are
 exactly the edges of $G$ with both endpoints in $S$.  Thus a graph is
-\emph{$\mathcal{H}$-free} if there is no set $S\subseteq V(G)$ for which
+\emph{induced-\(\mathcal{H}\)-free} if there is no set $S\subseteq V(G)$ for which
 $G[S]$ is isomorphic to a member of $\mathcal{H}$.  All flag types, flags, and flag
 algebras below are defined relative to this fixed $\mathcal{H}$.
 % The goal is to make the proof pattern legible:
@@ -520,7 +528,7 @@ algebras below are defined relative to this fixed $\mathcal{H}$.
 % local views.
 
 \paragraph{Flag Types.}
-A \emph{flag type} of size $k$ is an $\mathcal{H}$-free graph $\sigma$ with vertex set $[k]$.
+A \emph{flag type} of size $k$ is an induced-\(\mathcal{H}\)-free graph \(\sigma\) with vertex set $[k]$.
 The \emph{empty flag type} $\emptyset$ (size $k=0$) is the unique graph on the
 empty vertex set.
 We use the term \emph{flag type} rather than Razborov's original \emph{type}
@@ -529,7 +537,7 @@ to avoid confusion with Lean's type system in later sections.
 \paragraph{Flags.}
 Fix a flag type $\sigma$ of size $k$.
 A \emph{$\sigma$-flag} is a pair $F = (M, \theta_F)$ where $M$ is an
-$\mathcal{H}$-free finite graph and $\theta_F : [k] \hookrightarrow V(M)$ is an injective map such
+induced-\(\mathcal{H}\)-free finite graph and $\theta_F : [k] \hookrightarrow V(M)$ is an injective map such
 that $\sigma$ is isomorphic to $M[\operatorname{Im}(\theta_F)]$ via $\theta_F$
 (i.e., $\theta_F$ is a graph embedding of $\sigma$ into $M$).
 The integer $|V(M)|$ is the \emph{size} of $F$; we write $V(F)$ for $V(M)$.
@@ -800,9 +808,9 @@ We may therefore freely replace $F$ by its expansion at any size $n \geq m$.
 % That is, counting $F$ directly agrees with counting through an intermediate
 % sample of size $n$.
 
-\begin{example}[$\fKtwo$ expanded at size $3$ in the triangle-free algebra]
-  Working in the triangle-free flag algebra (i.e., $\mathcal{H} = \{K_3\}$),
-  the $\emptyset$-flags of size $3$ are the three triangle-free graphs on three vertices:
+\begin{example}[$\fKtwo$ expanded at size $3$ in the induced-triangle-free algebra]
+  Working in the induced-triangle-free flag algebra (i.e., $\mathcal{H} = \{K_3\}$),
+  the $\emptyset$-flags of size $3$ are the three induced-triangle-free graphs on three vertices:
   $\fbarKthree$, $\fbarPthree$, and $\fPthree$.
   The density of an edge in each of them is
   \[
@@ -955,8 +963,8 @@ Moreover, if $0 \leq_\sigma f$ and $0 \leq_\sigma g$, then $0 \leq_\sigma f + g$
 since $\phi(f+g) = \phi(f) + \phi(g) \geq 0$ for every $\phi \in \poshom{\sigma}$.
 Similarly, if $0 \leq_\sigma f$ and $c$ is a non-negative real number, then $0 \leq_\sigma c \cdot f$.
 
-\paragraph{From semantic non-negativity to Tur\'an density.}
-The problem of bounding the Turán density $\tdensity{P}{\mathcal{H}}$ from above
+\paragraph{From semantic non-negativity to induced Tur\'an density.}
+The problem of bounding the induced Tur\'an density $\tdensity{P}{\mathcal{H}}$ from above
 reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
@@ -967,7 +975,7 @@ lemma shows.
 \begin{proof}
   Suppose for contradiction that $\tdensity{P}{\mathcal{H}} > c$.  Then
   there exist $\varepsilon > 0$ and an increasing sequence of
-  $\mathcal{H}$-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
+  induced-\(\mathcal{H}\)-free graphs $\{G_k\}_{k\in\mathbb{N}}$ such that
   $\den{P}{G_k} > c + \varepsilon$ for all $k$.  Since each $p^{G_k}$
   is a point in $[0,1]^{\mathcal{F}^\emptyset}$ and this product space is
   compact (Tychonoff), the sequence $\{p^{G_k}\}$ has a convergent
@@ -979,13 +987,13 @@ lemma shows.
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
-A matching lower bound typically comes from an explicit $\mathcal{H}$-free construction
+A matching lower bound typically comes from an explicit induced-\(\mathcal{H}\)-free construction
 whose $P$-density approaches $c$, pinning down $\tdensity{P}{\mathcal{H}}$ exactly.
 Two classical results illustrate how this looks in flag algebra language.
 
 \begin{example}[Mantel's theorem]
   Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$, meaning
-  asymptotically at most half of all vertex pairs in a triangle-free graph
+  asymptotically at most half of all vertex pairs in an induced-triangle-free graph
   are edges.  The upper bound translates into the flag algebra inequality
   $K_2 \leq \tfrac{1}{2}\cdot\mathbf{1}$; the balanced complete bipartite
   graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ witness the lower bound.
@@ -993,8 +1001,8 @@ Two classical results illustrate how this looks in flag algebra language.
 
 \begin{example}[Erd\H{o}s Pentagon Problem~{\cite{grzesik2012,hatami2012}}]
   The Erd\H{o}s pentagon problem asks for the maximum density of $C_5$ in
-  triangle-free graphs; the asymptotic answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$.  The upper bound corresponds to the flag algebra inequality
-  $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$; an explicit $K_3$-free construction
+  induced-triangle-free graphs; the asymptotic answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$.  The upper bound corresponds to the flag algebra inequality
+  $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$; an explicit induced-\(K_3\)-free construction
   (the balanced blow-up of $C_5$) witnesses the lower bound.
 \end{example}
 
@@ -1117,7 +1125,7 @@ at an appropriate size, and uses non-negativity of flags and
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
-We prove $\fKtwo \leq \tfrac{1}{2}\cdot\mathbf{1}$ in the triangle-free flag algebra (i.e., the algebra $\mathcal{A}^\emptyset$ with $\mathcal{H} = \{K_3\}$).
+We prove $\fKtwo \leq \tfrac{1}{2}\cdot\mathbf{1}$ in the induced-triangle-free flag algebra (i.e., the algebra $\mathcal{A}^\emptyset$ with $\mathcal{H} = \{K_3\}$).
 Let $\sigma$ be the one-vertex flag type.
 
 \textit{Step 1: A key inequality.}
@@ -1340,20 +1348,21 @@ definitions.
 
 A second design choice concerns where forbidden-subgraph assumptions enter the
 development.  In the background section we fixed $\mathcal{H}$ first and
-defined all flags and algebras relative to the $\mathcal{H}$-free world.  In
-Lean we instead build the ambient flag algebra without fixing
-$\mathcal{H}$, and impose $\mathcal{H}$-freeness later as a predicate on the
-semantic order.  Thus the core formalization implements the unconstrained
+defined all flags and algebras relative to the induced-\(\mathcal{H}\)-free
+world.  In Lean we instead build the ambient flag algebra without fixing
+$\mathcal{H}$, and impose induced-\(\mathcal{H}\)-freeness later as a
+predicate on the semantic order.  Thus the core formalization implements the unconstrained
 theory.  If every definition carried an arbitrary forbidden family
 $\mathcal{H}$ from the start, then even the elementary constructions of flags,
 densities, expansion identities, and multiplication would acquire an extra
-parameter and extra side conditions.  By postponing $\mathcal{H}$-freeness, we
+parameter and extra side conditions.  By postponing induced-\(\mathcal{H}\)-freeness, we
 develop the ambient algebra once and introduce the constraint only when it is
 needed for extremal applications.  This keeps the algebraic infrastructure
 reusable across different forbidden graphs.  The deferred treatment is still
-sound for Tur\'an-density bounds: \Cref{sec:forbidden} explains the semantic
-predicate and the transfer theorem connecting it to the usual constrained
-flag-algebra viewpoint.
+sound for induced Tur\'an-density bounds: \Cref{sec:forbidden} defines the
+ensemble semantic order used for forbidden graphs and states the transfer
+theorem that turns an empty-type ensemble inequality into the corresponding
+induced extremal-density bound.
 
 One notational convention is specific to the formalization.  In
 Section~\ref{sec:background}, the empty flag type was written simply as
@@ -1474,9 +1483,9 @@ def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n
 \end{lstlisting}
 
 Note that unlike Section~\ref{sec:background}, none of the definitions above carries the
-$\mathcal{H}$-free condition: the underlying graphs are arbitrary.  This is a
+induced-\(\mathcal{H}\)-free condition: the underlying graphs are arbitrary.  This is a
 deliberate interface choice.  The core quotient and density machinery is
-developed once for all finite graphs, while the $\mathcal{H}$-free assumption
+developed once for all finite graphs, while the induced-\(\mathcal{H}\)-free assumption
 is imposed later through the semantic predicate on the final unlabeled
 inequality.
 
@@ -1859,27 +1868,24 @@ abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(
 def PositiveHom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) : Type :=
   { (*@$\phi$@*) : Hom (*@$\sigma$@*) // (*@$\forall$@*) F : FinFlag (*@$\sigma$@*), (*@$\phi$@*) (*@$\llbracket$@*)basisVector F(*@$\rrbracket$@*) (*@$\geq$@*) 0 }
 \end{lstlisting}
-The notation \lean{$\to_a$[$\mathbb{R}$]} denotes Lean's type of
-\(\mathbb{R}\)-algebra homomorphisms: functions preserving addition,
-multiplication, scalar multiplication by real numbers, and the unit.  Thus
-\lean{Hom}~\(\sigma\) abbreviates the type of algebra homomorphisms from
-\lean{FlagAlgebra}~\(\sigma\) to \(\mathbb{R}\).  The second definition is
-Lean's subtype construction.  Mathematically, we read it in the usual
-set-comprehension form
+The arrow \lean{$\to_a$[$\mathbb{R}$]} in the first definition is Lean's
+notation for the type of \(\mathbb{R}\)-algebra homomorphisms:
+functions preserving addition, multiplication, scalar multiplication by real
+numbers, and the unit.  Thus \lean{Hom} abbreviates the type of algebra
+homomorphisms from \lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type
+\(\sigma\) supplied as its argument.  The second definition is Lean's subtype
+construction.  Mathematically, we read it in the usual set-comprehension form
 \[
-  \{\phi\in \lean{Hom}~\sigma
-    \mid \phi(\llbracket\lean{basisVector F}\rrbracket)\ge 0
+  \{\phi\in \operatorname{Hom}(\mathcal{A}^\sigma,\mathbb{R})
+    \mid \phi(F)\ge 0
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
 In other words, the only extra condition on an algebra homomorphism is the
-positivity condition: for every finite \(\sigma\)-flag \(F\),
-\lean{basisVector F} is the formal basis vector representing \(F\),
-\(\llbracket\cdot\rrbracket\) is the quotient map from
-\lean{FlagVector}~\(\sigma\) to \lean{FlagAlgebra}~\(\sigma\), and the
-inequality says precisely that
-\[
-  \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr)\ge 0 .
-\]
+positivity condition.  In Lean syntax, this is the
+\lean{$\forall$ F : FinFlag $\sigma$} field after the subtype separator.
+Here \lean{basisVector F} is the formal basis vector representing \(F\), and
+the bare quotient brackets send that flag vector to its class in the flag
+algebra before \(\phi\) evaluates it.
 
 Using these definitions, we formalize Theorem~\ref{thm:convergent-hom} as two separate theorems:
 \begin{lstlisting}
@@ -1893,7 +1899,7 @@ theorem positiveHom_as_flagSeq_limit {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\si
     ((*@$\phi$@*) : PositiveHom (*@$\sigma$@*))
     : (*@$\exists$@*) (s : FlagSeq (*@$\sigma$@*)), ConvergesTo s (*@$\phi$@*).coe := ...
 \end{lstlisting}
-Here \lean{FlagDensitySpace}~$\sigma$ is the set of functions
+Here \lean{FlagDensitySpace} with argument \(\sigma\) is the set of functions
 \(\mathcal{F}^\sigma\to\mathbb{R}\) whose values lie in \([0,1]\), so its
 points are density profiles of finite \(\sigma\)-flags.  The expression
 \lean{$\phi$.coe} denotes the map \lean{PositiveHom.coe}, which forgets the
@@ -1903,10 +1909,10 @@ profile it induces:
   F\longmapsto \phi\bigl(\llbracket\lean{basisVector F}\rrbracket\bigr).
 \]
 Thus the first theorem says that the limiting density profile \(a\) of a
-convergent flag sequence is equal to the profile \lean{$\phi$.coe} of some
-positive homomorphism \(\phi\).  Conversely, the second theorem says that every
-positive homomorphism \(\phi\), after passing to this profile
-\lean{$\phi$.coe}, arises as the limit of some flag sequence.
+convergent flag sequence is equal to this profile of some positive
+homomorphism \(\phi\).  Conversely, the second theorem says that every
+positive homomorphism \(\phi\), after passing to this profile, arises as the
+limit of some flag sequence.
 Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
@@ -1937,7 +1943,8 @@ by \(\phi\).  Selecting one such realization and calling it
 \(G_0,G_1,\ldots\) gives the deterministic flag sequence required by
 Theorem~\ref{thm:convergent-hom}(b).  The Lean proof formalizes this argument
 by building the probability distributions, proving the concentration estimate,
-and then extracting one sequence whose density profile is \lean{$\phi$.coe}.
+and then extracting one sequence whose density profile is the profile obtained
+from the Lean expression \lean{PositiveHom.coe}.
 
 We also define the semantic non-negativity cone $\mathcal{C}^\sigma$
 and the order it induces on $\mathcal{A}^\sigma$.
@@ -2011,11 +2018,11 @@ noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$
 
 The algebra-level operator is built in three steps.  First,
 \lean{downwardFlagVector} extends the single-flag map linearly from basis
-flags to arbitrary \lean{FlagVector}~\(\sigma\) terms.  Second,
+flags to arbitrary \(\sigma\)-typed \lean{FlagVector} terms.  Second,
 \lean{downwardFlagVectorQuot} sends the resulting empty-type flag vector into
-\lean{FlagAlgebra}~\(\emptyt\).  Third, \lean{downward} turns this
+\(\emptyt\)-typed \lean{FlagAlgebra}.  Third, \lean{downward} turns this
 representative-level construction into a function whose input is an element of
-the quotient algebra \lean{FlagAlgebra}~\(\sigma\), rather than a chosen
+the \(\sigma\)-typed quotient algebra, rather than a chosen
 \lean{FlagVector} representative.
 
 The compatibility theorem needed for the third step is the essential point.  A
@@ -2058,29 +2065,30 @@ representatives to elements of the quotient algebra.
 It remains to connect this algebraic map to the semantics of positive
 homomorphisms.  The theorem below is the Lean form of the random-extension
 identity from Equation~\eqref{eq:ensemble}, so we first spell out the objects
-appearing in the statement.  The type \lean{PositiveHomSpace}~\(\sigma\) is the
+appearing in the statement.  The type \lean{PositiveHomSpace}, with argument
+\(\sigma\), is the
 measurable space whose points are positive homomorphisms on
 \(\mathcal{A}^\sigma\), represented in Lean by their density profiles.  A term
-\(\phi : \lean{PositiveHomSpace}~\sigma\) can therefore be converted back to
-the corresponding positive homomorphism by \lean{PositiveHomSpace.toPosHom}.
+of type \lean{PositiveHomSpace} applied to \(\sigma\) can be converted back to
+the corresponding positive homomorphism by
+\lean{PositiveHomSpace.toPosHom} applied to that term.
 At this point \(\phi\) is just a point of this measurable space, not yet a
-random sample.  The expression
-\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\) is simply the value of the
-positive homomorphism represented by \(\phi\) on \(f\).
+random sample.  The Lean expression
+\lean{PositiveHomSpace.toPosHom $\phi$ f} is the value of the positive
+homomorphism represented by \(\phi\) on \(f\).
 
-The hypothesis
-\(\phi_0(\langle\sigma\rangle_0)>0\) says that the type \(\sigma\), viewed as
-an empty-type flag-algebra element, has positive density under the base
-homomorphism \(\phi_0\).  Under this hypothesis Lean constructs a probability
-measure \(\mathbb{P}\) on \lean{PositiveHomSpace}~\(\sigma\).  This
+The hypothesis named \lean{h$\sigma$} in the theorem is the Lean assumption
+that \(\phi_0(\langle\sigma\rangle_0)>0\).  It says that the type \(\sigma\),
+viewed as an empty-type flag-algebra element, has positive density under
+\(\phi_0\).  Under this hypothesis Lean constructs a probability measure
+\(\mathbb{P}\) on \lean{PositiveHomSpace} with argument \(\sigma\).  This
 \(\mathbb{P}\) is the formal
 random extension \(\Ext_\sigma(\phi_0)\): it is the distribution obtained by
 randomly choosing an occurrence of the type \(\sigma\) in the limiting object
 represented by \(\phi_0\) and using that occurrence as the labeled type.  Once
-\(\mathbb{P}\) is present, a point
-\(\phi : \lean{PositiveHomSpace}~\sigma\) may be regarded as a random positive
-homomorphism drawn from this distribution.  The displayed theorem states the
-defining identity of that distribution:
+\(\mathbb{P}\) is present, a point of this measurable space may be regarded as
+a random positive homomorphism drawn from this distribution.  The
+displayed theorem states the defining identity of that distribution:
 \begin{lstlisting}
 theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
     {(*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)} (h(*@$\sigma$@*) : (*@$\phi_0$@*) ((*@$\langle\sigma\rangle_0$@*)) > 0)
@@ -2091,23 +2099,15 @@ theorem (*@\texttt{exists\_probMeasure\_extend\_emptyType\_positiveHom}@*) {n(*@
 \end{lstlisting}
 The integral line uses Mathlib's binder notation for integration with respect
 to a specified measure.  In general, Lean writes
-\[
-  \int x, g(x)\,\partial\mu
-\]
-for the integral of the function \(x\mapsto g(x)\) with respect to the measure
-\(\mu\).  The comma separates the bound variable from the integrand, and
-\(\partial\mu\) supplies the measure; the symbol \(\partial\) is only notation
-for ``with respect to'', not a derivative.  In the theorem above, the bound
-variable is
-\(\phi : \lean{PositiveHomSpace}~\sigma\), the integrand is
-\lean{PositiveHomSpace.toPosHom}~\(\phi\)~\(f\), and the measure is
+\lean{$\int$ x, g x $\partial\mu$} for the integral of the function
+\(x\mapsto g(x)\) with respect to the measure \(\mu\).  The comma separates
+the bound variable from the integrand, and \(\partial\mu\) supplies the
+measure; the symbol \(\partial\) is only notation for ``with respect to'', not
+a derivative.  In the theorem above, the bound variable is
+\lean{$\phi$ : PositiveHomSpace $\sigma$}, the integrand is
+\lean{PositiveHomSpace.toPosHom $\phi$ f}, and the measure is
 \(\mathbb{P}\).  Since \(\mathbb{P}\) is a probability measure, this integral
-is simply expectation.
-Thus the line
-\[
-  \int \bigl(\phi \mapsto \phi(f)\bigr)\, d\mathbb{P}
-\]
-should be read as
+is mathematically an expectation:
 \[
   \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)].
 \]
@@ -2139,7 +2139,7 @@ theorem downward_preserve_semanticCone {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\
     : (*@$\llbracket$@*)f(*@$\rrbracket_0$@*) (*@$\in$@*) semanticCone (*@$\emptyt$@*) := ...
 \end{lstlisting}
 The proof is the formal use of Equation~\eqref{eq:ensemble}.  To show that
-\(\llbracket f\rrbracket_0\) lies in \lean{semanticCone}~\(\emptyt\), Lean
+\(\llbracket f\rrbracket_0\) lies in the empty-type \lean{semanticCone}, Lean
 tests it against an arbitrary empty-type positive homomorphism \(\phi_0\).  If
 \(\phi_0(\langle\sigma\rangle_0)=0\), a separate zero-density lemma shows that
 every downward value evaluates to \(0\) at \(\phi_0\).  If
@@ -2157,45 +2157,42 @@ bounds.
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
 
-In Section~\ref{sec:background}, following Razborov's usual presentation, the
-forbidden graphs are fixed before the flag algebra is built.  For example, in
-an \(H\)-free problem, the \(\sigma\)-typed algebra is already the algebra of
-\(H\)-free \(\sigma\)-flags, and the semantic order of
-Section~\ref{sec:background-semantic-order} is defined inside that constrained
-world.  Thus, for \(H\)-free algebra elements \(f\) and \(g\), the statement
-\(f\leq_\sigma g\) means
-\[
-  g-f\in\mathcal{C}^\sigma,
-\]
-where \(\mathcal{C}^\sigma\) is the semantic non-negativity cone of the
-\(H\)-free \(\sigma\)-typed flag algebra.  We call this the
-\emph{quotient-semantics} view: the forbidden configurations have already
-been quotiented away before the order is tested.
+Section~\ref{sec:background} presented flag algebras in the usual constrained
+form: a finite forbidden family \(\mathcal{H}\) is fixed first, and the flag
+types, flags, algebras, and positive homomorphisms are all built inside the
+induced-\(\mathcal{H}\)-free world.  In that setup, an inequality
+\(f\leq_\sigma g\) is already an inequality in the constrained
+\(\sigma\)-typed algebra: the forbidden configurations have been removed
+before the semantic order is tested.
 
-Our formalization takes the opposite route.  The core development constructs
-the ambient flag algebra \(\mathcal{A}^\sigma\) without choosing any forbidden
-graph.  This keeps the definitions of flags, densities, products, the downward
-operator, and positive homomorphisms independent of the extremal problem.  It
-also creates an obligation: once a forbidden graph \(H\) is supplied later, we
-must still be able to express the constrained semantic order between two
-ambient algebra elements \(f,g\in\mathcal{A}^\sigma\).
+Our Lean formalization deliberately separates these two steps.  The core
+development constructs the ambient flag algebra \(\mathcal{A}^\sigma\) of all
+finite simple graphs, with no forbidden family as a parameter.  The definitions
+of flags, densities, products, the downward operator, and positive
+homomorphisms are therefore reusable across extremal problems.  A forbidden
+graph is introduced only later, as an assumption on the semantic comparison
+between two ambient algebra elements \(f,g\in\mathcal{A}^\sigma\): we test only
+base positive homomorphisms \(\phi_0\) in which the forbidden graph has induced
+density zero, and then require the desired typed inequality to hold almost surely
+after randomly labeling an occurrence of \(\sigma\).  Thus forbiddenness is not a new
+flag-algebra universe in the implementation; it is an a posteriori condition on
+which positive homomorphisms are allowed to interpret the ambient algebra.
 
-The order we use for this purpose is the \emph{ensemble semantic order}.  For
-readability we state it for a single forbidden graph \(H\), which is the case
-implemented by the Lean predicate below; the later semantic comparison applies
-to arbitrary forbidden families. \gw{The current framework only supports
-forbidding a single graph. I plan to extend it to support forbidding multiple
-graphs.}
+The order used for this a posteriori condition is the
+\emph{ensemble semantic order}.  The current API implements the case of one
+forbidden graph \(H\); a forbidden family would replace the single zero-density
+assumption below by one such assumption for every member of the family.
 
 \begin{definition}[Ensemble semantic order]\label{def:ensemble-semantic-order}
 Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
 \(f,g\in\mathcal{A}^\sigma\) in the ambient flag algebra.  We write
 \(f\leq^{\mathrm{ens}}_{H,\sigma} g\) if, for every empty-type positive
-homomorphism \(\phi_0\) such that
+homomorphism \(\phi_0\) such that, viewing \(H\) and \(\sigma\) as
+empty-type flag-algebra elements,
 \[
-  \phi_0(\llbracket H\rrbracket_0)=0
+  \phi_0(H)=0
   \qquad\text{and}\qquad
-  \phi_0(\langle\sigma\rangle_0)>0,
+  \phi_0(\sigma)>0,
 \]
 the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 \[
@@ -2203,76 +2200,104 @@ the random extension \(\phi\sim\Ext_\sigma(\phi_0)\) satisfies
 \]
 \end{definition}
 
-The first condition says that the base limit is \(H\)-free; the second says
-that the type \(\sigma\) can actually be sampled from that limit.  The last
-line then compares \(f\) and \(g\) not against all positive homomorphisms on a
-separate quotient algebra, but against almost every typed random extension of
-every \(H\)-free base limit.  Section~? proves that, for arbitrary
-forbidden graph sets, this ensemble order agrees with the quotient semantic
-order above.  The Lean predicate \lean{forbidLE} is the formal definition of
+\begin{remark}[Relation to built-in induced-\(H\)-free semantics]
+There is another standard way to impose the same forbidden-graph condition:
+one builds the induced-\(H\)-free restriction into the flag algebra from the
+beginning, so that the algebra itself is already an algebra of
+induced-\(H\)-free flags.  Semantic inequalities are then tested inside that
+separately built constrained algebra.  Our ensemble order does something
+different.  It keeps the ambient algebra of all finite graphs, takes a limit
+of large induced-\(H\)-free graphs, and then chooses the labels randomly in
+that limit.  Consequently, it tests what is true for almost every labeled
+view of a constrained limit.
+
+For unlabelled density bounds, this distinction is harmless: the final
+induced Tur\'an-density statements are recovered by the transfer theorem below.
+For labelled intermediate inequalities, however, the two viewpoints are not
+automatically identical.  The built-in induced-\(H\)-free algebra may allow us to put
+the labels at a specially chosen, very rare vertex configuration, whereas the
+ensemble order only sees configurations that occur with nonzero probability
+when the labels are sampled at random.  Later in the paper we analyze exactly
+when this difference disappears, and we also give examples showing that it can
+be real.
+\end{remark}
+
+The first condition says that \(\phi_0\) assigns induced density zero to the
+forbidden graph \(H\); the second says that \(\sigma\) has positive density under
+\(\phi_0\), so a random occurrence of \(\sigma\) can be chosen.  The last line
+then compares \(f\) and \(g\) not against all positive homomorphisms on a
+separately built induced-\(H\)-free algebra, but against almost every \(\sigma\)-typed positive
+homomorphism obtained by randomly labeling from such a \(\phi_0\).  The Lean
+predicate \lean{forbidLE} is the formalization of
 \Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
-def forbidLE
-    {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))}
-    (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
-  (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
-    (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
-    (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
-
-notation f "(*@$\leq$@*)[" F_forbid "]" g => forbidLE F_forbid f g
+def forbidLE {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} (H : FinFlag (*@$\emptyt$@*)) (f g : FlagAlgebra (*@$\sigma$@*)) : Prop :=
+  (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)),
+    (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0
+    -> (*@$\,$@*) (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0
+    -> (*@$\,$@*) (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
 \end{lstlisting}
-In the displayed Lean notation,
-\(\mathbb{P}[\phi_0]\) denotes the random extension probability measure
-\(\Ext_\sigma(\phi_0)\).
-The implementation also introduces the Lean notation
-\(\lean{f}\mathrel{\leq[\lean{H}]}\lean{g}\) for
-\lean{forbidLE H f g}.
+Read the header first.  The implicit arguments
+\lean{n$_0$ : $\mathbb{N}$} and
+\lean{$\sigma$ : FlagType (Fin n$_0$)} fix the flag type, while the explicit
+arguments \lean{H : FinFlag $\emptyt$} and
+\lean{f g : FlagAlgebra $\sigma$} name the forbidden graph and the two
+ambient \(\sigma\)-typed algebra elements being compared.  In particular,
+\lean{f} and \lean{g} do not live in a separately built induced-\(H\)-free algebra.
 
-What remains is to turn this constrained semantic inequality into the
-Tur\'an-density upper bound described in
-\Cref{sec:background-semantic-order}.  Lean formulates the target as
-\lean{generalizedTuranDensity H F}; here ``generalized'' only indicates that
-the target \(F\) is an arbitrary graph, rather than just an edge.  For each
-\(n\), it first maximizes the number of induced copies of \(F\) over all \(H\)-free
-graphs on \(n\) vertices, and then takes the limiting normalized density. The
-relevant definitions are:
-\begin{lstlisting}
-noncomputable def generalizedExtremalNumber
-    {U W : Type}
-    (n : (*@$\mathbb{N}$@*)) (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{N}$@*) :=
-  sup { G : SimpleGraph (Fin n) | H.Free G }
-    (fun (G : SimpleGraph (Fin n)) => GraphAlgebras.subgraphCount F G)
+The body then ranges over empty-type positive homomorphisms
+\lean{$\phi_0$ : PositiveHom $\emptyt$}.  The hypothesis
+\lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} says that the type \(\sigma\)
+has positive density after its labels are forgotten, which is the condition
+needed to form the random-extension measure \(\mathbb{P}[\phi_0]\).  The
+hypothesis \lean{$\phi_0$ $\llbracket$basisVector H$\rrbracket_0$ = 0}
+imposes the induced forbidden-graph assumption: \lean{basisVector H} is the basis
+element for \(H\), viewed in the empty-type flag algebra.
 
-noncomputable def generalizedTuranDensity
-    {U W : Type} [Fintype W]
-    (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{R}$@*) :=
-  limUnder atTop fun n =>
-    (generalizedExtremalNumber n H F / n.choose (Fintype.card W) : (*@$\mathbb{R}$@*))
-\end{lstlisting}
-Here \lean{H.Free G} says that the host graph \(G\) is \(H\)-free, and
-\lean{subgraphCount F G} counts induced copies of the target graph \(F\) in \(G\).
-After normalization by \(\binom{n}{|V(F)|}\), this is exactly the
-Tur\'an density $\pi(F;H)$.
+The conclusion says that the event
+\lean{\{$\phi$ : PositiveHomSpace $\sigma$ | $\phi$ f $\leq$ $\phi$ g\}} has
+probability one under this random extension.  Here a sampled
+\lean{$\phi$} is a \(\sigma\)-typed positive
+homomorphism, so the event is exactly that the sampled homomorphism evaluates
+\lean{f} at most \lean{g}.
 
-The following bridge theorem is the point at which the
-ensemble semantic order becomes an extremal bound.  It is the
-ensemble-semantic version of \Cref{lem:semantic-bound}: the semantic inequality
-is stated with \lean{forbidLE} rather than with the quotient semantic order:
+What remains is to connect
+the semantic predicate above to the corresponding asymptotic bound on induced densities.
+In the theorem below, the variables have types
+\lean{H : SimpleGraph (Fin n)} and \lean{F : SimpleGraph (Fin m)}. Here \(H\) is
+the forbidden graph and \(F\) is the target graph.  The expression \lean{F.toFlagAlgebra} converts
+the simple graph \(F\) into the corresponding element of the empty-type flag
+algebra \lean{FlagAlgebra $\emptyt$}, whose evaluation is the induced
+\(F\)-density.  Likewise, \lean{H.toFinFlag} converts \(H\) into a finite
+empty-type flag \lean{FinFlag $\emptyt$}, so the zero-density hypothesis in
+\lean{forbidLE} with \lean{H.toFinFlag} is the semantic form of being induced-\(H\)-free.
+
+The formal bridge packages this passage from semantic order to the finite
+asymptotic statement:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
-    {c : (*@$\mathbb{R}$@*)} (hc : 0 (*@$\leq$@*) c)
-    (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))) :
-    generalizedTuranDensity H F (*@$\leq$@*) c := ...
+    {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)} {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
+    (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*)))
+    : generalizedTuranDensity H F <= c := ...
 \end{lstlisting}
 The hypothesis is an \(\emptyt\)-typed \lean{forbidLE} inequality: the target
 graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
-graph \(H\).  The theorem concludes exactly the combinatorial statement
-\(\lean{generalizedTuranDensity H F}\leq \lean{c}\).  This is the main payoff of the
-specification layer: a concrete certificate proof only has to establish one
-semantic inequality in the ambient algebra, and the passage from that
-inequality to a Tur\'an-density bound is handled once and reused.
+induced subgraph \(H\).  The conclusion is the corresponding induced
+Tur\'an-density bound, written in Lean as
+\lean{generalizedTuranDensity H F <= c}; mathematically, it is the assertion
+\[
+  \tdensity{F}{H}
+  =
+  \lim_{N\to\infty}
+  \max_{\substack{|V(G)|=N\\ G\text{ induced-}H\text{-free}}}
+  \den{F}{G}
+  \leq c .
+\]
+Thus a certificate proof only has to
+establish one semantic inequality in the ambient algebra; the passage from
+that inequality to the induced extremal-density statement is handled once and
+reused.
 
 \section{The Reflection Layer}
 \label{sec:reflection}
@@ -2554,7 +2579,7 @@ order a finished proof presents them:
 
 \begin{enumerate}
   \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
-    (only those that avoid the forbidden graph), together with the pair-density
+    (only those that are induced-free for the chosen forbidden graph), together with the pair-density
     and typed-multiplication identities among them that the body rewrites with.
   \item \textbf{Certificate matrices and flag vectors.}  For each subflag type
     $\sigma_t$, a rational matrix $M_t$ paired with a vector $v_t$ of
@@ -2562,7 +2587,7 @@ order a finished proof presents them:
     $\langle v_t, M_t\, v_t\rangle$.
   \item \textbf{Lifting the objective (when needed).}  If the objective is
     smaller than the host size, one auxiliary lemma first lifts it to host size,
-    dropping the contributions that contain the forbidden graph.
+    dropping the contributions that contain an induced copy of the forbidden graph.
   \item \textbf{The main theorem.}  The bound $P \leq_{\mathcal{H}}
     c\cdot\mathbf{1}$, discharged by adding each block's quadratic form,
     expanding the unit at host size, reducing every downward-averaged product,
@@ -2573,7 +2598,7 @@ Each part of the shape is discharged by a verified, reusable component, taken up
 in turn by the next four subsections.
 
 
-\subsection{Generating the forbid-free flags and their data}
+\subsection{Generating the induced forbid-free flags and their data}
 \label{sec:flagmatic-gen}
 
 % TODO/REVISIT: How much detail to give here (pruned generation, completeness
@@ -2595,10 +2620,10 @@ generate_pruned_forbid_free_flags 3 1 0 K3
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
 generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
 \end{lstlisting}
-These commands enumerate only the $\mathcal{H}$-free flags: they filter the
-small underlying-graph enumeration by an isomorphism-invariant forbid-freeness
+These commands enumerate only the induced-\(\mathcal{H}\)-free flags: they filter the
+small underlying-graph enumeration by an isomorphism-invariant induced-freeness
 predicate \emph{before} building the typed flags, so the
-$\mathcal{H}$-containing flags are pruned before they are ever
+flags containing an induced forbidden graph are pruned before they are ever
 materialized---this is what keeps the typed enumeration tractable at host sizes
 where the full typed \lean{native\_decide} would otherwise wall.  Completeness is
 a lemma of the form \lean{flagSetHfree\_N\_k\_m\_<K>}~$=$~\lean{univ.filter p},
@@ -2608,8 +2633,8 @@ adequacy rewrite of Section~\ref{sec:reflection} followed by an evaluator call.
 All numerical content is therefore recomputed and re-checked in Lean every
 build; the certificate never asserts a density value the kernel does not
 reproduce.  Crucially, the generators take the forbidden graph as a \emph{term
-argument} (an \lean{ident} naming a \lean{Sym2Graph}) and build the
-forbid-freeness predicate from it, so a new forbidden graph is a new
+argument} (an \lean{ident} naming a \lean{Sym2Graph}) and build the induced
+freeness predicate from it, so a new forbidden graph is a new
 \lean{Sym2Graph} definition rather than a new per-forbid branch in the
 meta-commands.
 
@@ -2685,12 +2710,12 @@ fixed by the certificate.  In \emph{Branch~A} ($n_{\mathit{obj}}=N$), the
 objective is already a host-size flag and this subsection is skipped
 ($C_4$-Tur\'an, Erd\H{o}s pentagon).  In \emph{Branch~B} ($n_{\mathit{obj}}<N$;
 Mantel, $K_4$- and $K_5$-Tur\'an), the objective must first be lifted, by
-rewriting it as its forbid-free expansion at size $N$.  Concretely,
+rewriting it as its induced-forbid-free expansion at size $N$.  Concretely,
 \lean{flag\_expand\_hfree N K} closes a goal $P =_{K} \sum_j c_j\,F_j$ by
 rewriting with \lean{basisVector\_quot\_forbidEq\_sum} directly onto the
 generated \lean{flagSetHfree\_N\_0\_0\_<K>} set---never materializing the full
-\lean{flagSet}, and dropping the $\mathcal{H}$-containing host terms
-automatically (no manual \lean{basisVector\_forbidEq\_zero} step).  Its closing
+\lean{flagSet}, and dropping the host terms that contain an induced member of
+\(\mathcal{H}\) automatically (no manual \lean{basisVector\_forbidEq\_zero} step).  Its closing
 arithmetic needs the relevant \lean{flagDensity\textsubscript{1}} values present
 as \lean{@[simp]} lemmas, which the translator emits (each closed by
 \lean{native\_decide} after an adequacy rewrite).
@@ -2707,7 +2732,8 @@ theorem forbidLE_add_QuadraticForm
 \end{lstlisting}
 iterated once per type to build a transitive chain of additions.  The unit on
 the right is then expanded to host size by \lean{expand\_one\_hfree\_at N K},
-which rewrites $\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free flags by
+which rewrites $\mathbf{1}$ as the sum of $N$-vertex
+induced-\(\mathcal{H}\)-free flags by
 the same \lean{basisVector\_quot\_forbidEq\_sum} machinery as the objective lift
 of Section~\ref{sec:flagmatic-expand}.
 
@@ -2749,7 +2775,7 @@ theorem forbidLE_add_QuadraticForm
 \end{lstlisting}
 iterated once per type to build a transitive chain of additions.  The unit is
 expanded to host size by \lean{expand\_one\_hfree\_at N K} (rewriting
-$\mathbf{1}$ as the sum of $N$-vertex $\mathcal{H}$-free flags); the
+$\mathbf{1}$ as the sum of $N$-vertex induced-\(\mathcal{H}\)-free flags); the
 downward-averaged products are discharged by \lean{reduce\_downward\_flagmul},
 which first right-associates the sum with
 \lean{simp only [downward\_add, add\_assoc]} and then rewrites each head
@@ -3019,7 +3045,7 @@ current repository rather than copied from an external report.
 
 \subsection{Mantel's Theorem}
 
-Mantel's theorem states that a triangle-free graph on $n$ vertices has at
+Mantel's theorem states that an induced-triangle-free graph on $n$ vertices has at
 most $\lfloor n^2/4 \rfloor$ edges, achieved by the complete bipartite graph
 $K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$.  The repository contains two
 checked statements.  The first is the flag-algebra inequality used as the
@@ -3029,8 +3055,8 @@ theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3 := ...
 \end{lstlisting}
 Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra} $\emptyt$ representing
 the single edge and the triangle.  The inequality asserts that in every
-sequence of graphs whose triangle density tends to zero, the edge density is
-at most $1/2$.  The second is the ordinary Tur\'an-density theorem, proved
+sequence of graphs whose induced triangle density tends to zero, the edge
+density is at most $1/2$.  The second is the Tur\'an-density theorem, proved
 in the same module by combining the algebraic upper bound with a formal
 complete-bipartite lower-bound construction:
 \begin{lstlisting}
@@ -3088,11 +3114,11 @@ These results are not needed for the pentagon proof, but they demonstrate
 that the formalized algebraic layer is not specialized solely to the two
 headline theorems.
 
-\subsection{A $C_4$-Density Bound for Triangle-Free Graphs}
+\subsection{A $C_4$-Density Bound for Induced-Triangle-Free Graphs}
 
 A second small case study, in \lean{API/C4TuranAPI.lean}, proves an
 inequality about $C_4$ density (\lean{FlagAlgebra\_4\_0\_0\_8}) in
-triangle-free graphs:
+induced-triangle-free graphs:
 \begin{lstlisting}
 theorem C4_flagAlgebra_API : FlagAlgebra_4_0_0_8 <=[K3.toFinFlag] (3 / 8 : R) * 1 := ...
 \end{lstlisting}
@@ -3166,8 +3192,10 @@ def blowUp
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
 of $n$ vertices and each edge by a complete bipartite graph) is
-triangle-free.  The repository proves this by transporting any hypothetical
-triangle in the blow-up back to a triangle in the base graph:
+induced-triangle-free.  Since \(K_3\) is complete, this is the same condition
+as the Lean predicate appearing below: any triangle subgraph is automatically
+an induced triangle.  The repository proves the statement by transporting any
+hypothetical triangle in the blow-up back to a triangle in the base graph:
 \begin{lstlisting}
 theorem blowUp_K3_free
     {m : Nat} {G : SimpleGraph (Fin m)}
@@ -3405,7 +3433,8 @@ representative-level information from quotient-level forbidden equalities
 remain as commented proof sketches, not as imported declarations or trusted
 axioms.  For example, one would like a general theorem saying that if a
 basis vector is zero under the forbidden equality relation, then the
-corresponding unlabeled flag has positive density of the forbidden graph.
+corresponding unlabeled flag has positive induced density of the forbidden
+graph.
 Proving such a statement requires careful reasoning about how zero-space
 relations interact with individual representatives.  This is not needed for
 the main case studies---\lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan}
@@ -3482,7 +3511,7 @@ as a further test of the API layer.  The proof structure compiles---it uses
 the same API tactics as Mantel, $C_4$, and the pentagon---but several
 non-negativity facts (\lean{f}$_1$\lean{\_nonneg}, the main combined
 inequality) currently remain as \lean{sorry} placeholders.  We mention it
-because it demonstrates that the API generalizes beyond triangle-free
+because it demonstrates that the API generalizes beyond induced-triangle-free
 forbids ($K_3$) to a $4$-clique forbid ($K_4$); we do \emph{not} count it
 among the proved results.
 
@@ -3728,7 +3757,7 @@ bridge of reflection, tactic, and API layers that turns specifications
 written in this language into proofs Lean's kernel can check.  The case
 studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
 pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
-inequalities, and an inequality bounding the $C_4$-density of triangle-free
+inequalities, and an inequality bounding the $C_4$-density of induced-triangle-free
 graphs.
 
 We do not claim to have found
