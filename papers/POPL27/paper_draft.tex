@@ -2615,41 +2615,70 @@ meta-commands.
 
 \subsection{The certificate matrices and their flag vectors}
 \label{sec:flagmatic-psd}
-\sh{I'm here.}
-A real symmetric matrix is positive semidefinite iff it factors as
-$M = L\,\mathrm{diag}(d)\,L^\top$ with $d\geq 0$.  We verify the factorization
-over $\mathbb{Q}$ and lift it to $\mathbb{R}$.  Each block is emitted as a
-cluster of rational definitions closed by a one-line proof, and is paired with
-the vector of $\sigma$-flags it will be contracted against:
+
+Each matrix is the part of the certificate that carries the bound.  The
+flag-algebra method does not prove $P \leq_{\mathcal{H}}
+c\cdot\mathbf{1}$ by manipulating $P$ directly; it adds to $P$ a quantity that is
+provably non-negative and chosen so that the sum is bounded by $c$ term by term.
+That quantity is a quadratic form $\langle v_t, M_t\, v_t\rangle$ in the
+$\sigma_t$-flags, and a quadratic form with $M_t$ positive semidefinite is the
+flag-algebra analogue of a sum of squares: it is non-negative for every
+assignment, so adding it can only raise $P$, never lower it.  The SDP solver
+(Flagmatic) is exactly the search for such matrices---it returns the $M_t$ for
+which the slack $c\cdot\mathbf{1} - P - \sum_t \langle v_t, M_t\, v_t\rangle$ has
+only non-negative coefficients.  We take the $M_t$ as given; the one property Lean
+must verify is that each is positive semidefinite.
+
+We establish that property through an $LDL^\top$ factorization: a symmetric $M$
+that factors as $M = L D L^\top$ with $D$ diagonal and its diagonal entries
+$d \geq 0$ is positive semidefinite, because
+\[
+  x^\top M x \;=\; x^\top L D L^\top x \;=\; \sum_i d_i\,(L^\top x)_i^2 \;\geq\; 0 .
+\]
+The right-hand side is a sum of squares---the concrete form of the analogy from
+the intro.  We use this factorization rather than a spectral test because
+checking it needs only rational arithmetic: with exact rational entries
+$M = L D L^\top$ is an equality verified over $\mathbb{Q}$---no eigenvalues, no
+floating point---and the result lifts to $\mathbb{R}$, where the flags live.  Each
+block is a few rational definitions and a one-line proof, paired with the vector
+of $\sigma$-flags it is contracted against:
 \begin{lstlisting}
+-- the rational matrix M, its factorization data (dM, LM), and the real lift
 def M  : Matrix (Fin 2) (Fin 2) Q := !![(1/2 : Q), (-1/2 : Q); (-1/2 : Q), (1/2 : Q)]
 def dM : Fin 2 -> Q := ![(1/2 : Q), 0]
 def LM : Matrix (Fin 2) (Fin 2) Q := !![(1 : Q), 0; (-1 : Q), (1 : Q)]
 noncomputable def M_real : Matrix (Fin 2) (Fin 2) R := ratMatrixToReal M
+
+-- positive semidefiniteness, proved from the factorization
 theorem M_real_posSemidef : M_real.PosSemidef := by
   psd_real_ldlt M LM dM
+
+-- the vector of sigma-flags M is contracted against
 def sigma : FlagType (Fin 1) := FlagType_1_0
 noncomputable def v : FlagAlgebraVec sigma 2 := ![FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1]
 \end{lstlisting}
-The tactic \lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean})
-refines the goal through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and
-discharges its two side conditions: the diagonal non-negativity $d_M \geq 0$ by
+The positive-semidefiniteness proof is a single call to
+\lean{psd\_real\_ldlt M LM dM} (in \lean{API/Matrix/PosSemiDef.lean}): given the
+precomputed factorization, the tactic proves \lean{M\_real.PosSemidef}
+automatically.  It refines the goal
+through the generic lemma \lean{posSemidef\_real\_of\_LDLt} and discharges its two
+side conditions: the diagonal non-negativity $d \geq 0$ by
 \lean{fin\_cases}/\lean{norm\_num}, and the factorization equality
-$M = L_M\,\mathrm{diag}(d_M)\,L_M^\top$ by \lean{decide +kernel}---a decidable
+$M = L D L^\top$ by \lean{decide +kernel}---a decidable
 rational matrix equality the kernel evaluates entry by entry, using no compiled
-native code.  The lemma bundles the $\mathbb{Q}\!\to\!\mathbb{R}$ plumbing, so
-the emitter need only supply the rational triple $(M, L_M, d_M)$.  Because the
-equality is kernel-checked, a wrong $L_M$ or $d_M$ surfaces as a compile error
+native code.  The emitter therefore supplies only the rational triple
+$(M, L, d)$.  Because the
+equality is kernel-checked, a wrong $L$ or $d$ surfaces as a compile error
 on this line, never as a silently accepted non-PSD matrix---the one place we
 deliberately pay for in-kernel evaluation (Section~\ref{sec:flagmatic-trust}).
-The vector $v_t$ alongside it merely lists the $\sigma_t$-flags by name;
-together $(M_t, v_t)$ form the quadratic form
-$\llbracket\langle v_t, M_t\,v_t\rangle\rrbracket$ that the main theorem adds to
-the target.
+The vector $v$ alongside it merely lists the $\sigma$-flags by name;
+together $(M, v)$ form the quadratic form
+$\llbracket\langle v, M\,v\rangle\rrbracket$---one per $\sigma$-type---that the
+main theorem adds to the target.
 
 \subsection{Lifting the objective to host size}
 \label{sec:flagmatic-expand}
-
+\sh{I'm here.}
 Whether this step is present is the proof's one structural choice, fixed by
 comparing the objective's vertex count $n_{\mathit{obj}}$ to the host size $N$
 fixed by the certificate.  In \emph{Branch~A} ($n_{\mathit{obj}}=N$), the
@@ -2767,7 +2796,7 @@ separately maintained table.
 \paragraph{Assembling Part~1.}
 The certificate stores each block as a pair $(Q_t', R_t)$, not as the
 assembled matrix.  The script reconstructs $M_t = R_t\,Q_t'\,R_t^\top$ in
-exact rationals, then factors it as $L_t\,\mathrm{diag}(d_t)\,L_t^\top$ by a
+exact rationals, then factors it as $L_t D_t L_t^\top$ by a
 textbook elimination loop that handles the rank deficiency the assembled
 matrix typically has.  It emits $M_t$, $L_t$, $d_t$, and the one-line
 \lean{psd\_real\_ldlt} proof of Section~\ref{sec:flagmatic-psd}.  None of
@@ -2814,7 +2843,7 @@ generator; everything downstream is verified by Lean.
 
 The script computes a great deal---it isomorphism-matches certificate strings
 to indices, assembles $R_t\,Q_t'\,R_t^\top$, factors it as
-$L\,\mathrm{diag}(d)\,L^\top$, enumerates induced subgraphs to fill the
+$L D L^\top$, enumerates induced subgraphs to fill the
 Branch~B coefficient table, and decides which generators and imports to
 emit---and \emph{none} of this enters the trusted base.  Every emitted
 obligation is closed by one of: \lean{decide +kernel} (the PSD matrix
