@@ -2703,26 +2703,23 @@ main theorem adds to the target.
 
 \subsection{Lifting the objective to host size}
 \label{sec:flagmatic-expand}
-\sh{I'm here.}
-Whether this step is present is the proof's one structural choice, fixed by
-comparing the objective's vertex count $n_{\mathit{obj}}$ to the host size $N$
-fixed by the certificate.  In \emph{Branch~A} ($n_{\mathit{obj}}=N$), the
-objective is already a host-size flag and this subsection is skipped
-($C_4$-Tur\'an, Erd\H{o}s pentagon).  In \emph{Branch~B} ($n_{\mathit{obj}}<N$;
-Mantel, $K_4$- and $K_5$-Tur\'an), the objective must first be lifted, by
-rewriting it as its induced-forbid-free expansion at size $N$.  Concretely,
-\lean{flag\_expand\_hfree N K} closes a goal $P =_{K} \sum_j c_j\,F_j$ by
-rewriting with \lean{basisVector\_quot\_forbidEq\_sum} directly onto the
-generated \lean{flagSetHfree\_N\_0\_0\_<K>} set---never materializing the full
-\lean{flagSet}, and dropping the host terms that contain an induced member of
-\(\mathcal{H}\) automatically (no manual \lean{basisVector\_forbidEq\_zero} step).  Its closing
-arithmetic needs the relevant \lean{flagDensity\textsubscript{1}} values present
-as \lean{@[simp]} lemmas, which the translator emits (each closed by
-\lean{native\_decide} after an adequacy rewrite).
+
+The host size $N$ is the world the densities live in, and the objective is not
+always a flag of that size.  When it is smaller we simply lift it to host
+size before the rest of the proof runs; this is the proof's one branch point.  If the objective is already host-size
+(\emph{Branch~A}: $n_{\mathit{obj}}=N$; the $C_4$-density bound, Erd\H{o}s
+pentagon) the
+step is empty.  If it is smaller (\emph{Branch~B}: $n_{\mathit{obj}}<N$; Mantel,
+$K_4$- and $K_5$-Tur\'an) a single call to \lean{flag\_expand\_hfree N K} does
+it, rewriting the objective (via \lean{basisVector\_quot\_forbidEq\_sum}) over the
+$N$-vertex induced-$\mathcal{H}$-free flags and dropping the host terms that
+contain an induced copy of $\mathcal{H}$.  Its closing arithmetic needs the
+relevant \lean{flagDensity\textsubscript{1}} values, which the translator emits as
+\lean{@[simp]} lemmas.
 
 \subsection{The main theorem}
 \label{sec:flagmatic-close}
-
+\sh{I'm here.}
 The body assembles the pieces in a fixed sequence.  First, each block's
 quadratic form is added to the target by \lean{forbidLE\_add\_QuadraticForm}:
 \begin{lstlisting}
@@ -2831,7 +2828,7 @@ factorization.
 
 \paragraph{Emitting the body: Branch~A vs.\ Branch~B.}
 For Branch~A the body is a fixed sequence parametrized only by $N$, the block
-count $T$, and the per-block dimensions.  For the $C_4$-Tur\'an certificate
+count $T$, and the per-block dimensions.  For the $C_4$-density certificate
 ($K_3$-free, $N=4$, $T=2$) the script emits:
 \begin{lstlisting}
 theorem K3forbidC4_flagAlgebra
