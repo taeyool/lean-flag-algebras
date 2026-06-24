@@ -2208,7 +2208,7 @@ that the type \(\sigma\) can actually be sampled from that limit.  The last
 line then compares \(f\) and \(g\) not against all positive homomorphisms on a
 separate quotient algebra, but against almost every typed random extension of
 every \(H\)-free base limit.  Section~? proves that, for arbitrary
-forbidden graph sets, this ensemble order agrees with the quotient-semantic
+forbidden graph sets, this ensemble order agrees with the quotient semantic
 order above.  The Lean predicate \lean{forbidLE} is the formal definition of
 \Cref{def:ensemble-semantic-order}:
 \begin{lstlisting}
@@ -2220,13 +2220,15 @@ def forbidLE
     (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
 \end{lstlisting}
 In the displayed Lean notation,
-\(\mathbb{P}[\phi_0]\) denotes the random-extension measure
+\(\mathbb{P}[\phi_0]\) denotes the random extension probability measure
 \(\Ext_\sigma(\phi_0)\).
 
-What remains is to connect this constrained semantic inequality to the finite
-extremal quantity that we ultimately want to bound.  In
-\lean{Turan/GeneralizedTuran.lean}, the finite extremal number and its limiting
-density are defined as follows:
+What remains is to turn this constrained semantic inequality into the
+Tur\'an-density upper bound described in
+\Cref{sec:background-semantic-order}.  Lean formulates the target as
+\lean{generalizedTuranDensity H F}: for each \(n\), it first maximizes the
+number of copies of \(F\) over all \(H\)-free graphs on \(n\) vertices, and
+then takes the limiting normalized density. The relevant definitions are:
 \begin{lstlisting}
 noncomputable def generalizedExtremalNumber
     (n : (*@$\mathbb{N}$@*)) (H : SimpleGraph U) (F : SimpleGraph W) : (*@$\mathbb{N}$@*) := by
@@ -2241,11 +2243,11 @@ noncomputable def generalizedTuranDensity
 \end{lstlisting}
 Here \lean{H.Free G} says that the host graph \(G\) is \(H\)-free, and
 \lean{subgraphCount F G} counts copies of the target graph \(F\) in \(G\).
-Thus \lean{generalizedTuranDensity H F} is the asymptotic maximum density of
-copies of \(F\) among \(H\)-free graphs.
+After normalization by \(\binom{n}{|V(F)|}\), this is exactly the
+Tur\'an density $\pi(F;H)$.
 
-The bridge theorem in \lean{Forbid/TuranDensity.lean} is the point at which the
-ensemble order becomes an extremal bound:
+The following bridge theorem is the point at which the
+ensemble semantic order becomes an extremal bound:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
