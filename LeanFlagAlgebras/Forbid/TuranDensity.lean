@@ -191,7 +191,7 @@ lemma subgraphDensity_eq_flagDensity₁
 `generalizedTuranDensity H F ≤ c`. -/
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : ℕ} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
-  {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
+    {c : ℝ} (hc : 0 ≤ c) (h : F.toFlagAlgebra ≤[H.toFinFlag] c • 1)
     : generalizedTuranDensity H F ≤ c
   := by
   rw [← forbidLE_emptyType_iff_forbidLE] at h
