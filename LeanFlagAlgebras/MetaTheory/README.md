@@ -185,6 +185,26 @@ lake env lean /tmp/chk.lean
 The formalisation is faithful to the paper's *statements and arguments*, with a few deliberate,
 clearly-bounded changes. (Per-module detail is in [`ARCHITECTURE.md`](./ARCHITECTURE.md).)
 
+**None of these is a *statement* deviation.** Every formalised `theorem`/`def` faithfully encodes the
+paper result it claims — that is exactly what the
+[statement-level audit](#auditing-the-correspondence-to-papertex) checks, and what makes the
+machine-checked, `sorry`-free proofs meaningful. The deviations below are all of three harmless
+kinds:
+
+* **Proof route** — a different but equivalent argument reaching the *same* statement. The
+  substantive ones: the uniform-clone exact-count planted estimate instead of the paper's
+  total-variation bound (Deviation 1); the elementary cherry-count `C₄` edge bound instead of the
+  convexity bound (Deviation 9d); and — most significantly — **`lem:complementation` (Lemma 50) is
+  proved via the complement *homeomorphism* of homomorphism spaces, never constructing the paper's
+  flag-algebra complement *isomorphism* `C_σ`** (Deviation 9b).
+* **Scope** — a paper result formalised only in part: the abstract `cor:degenerate-family` criterion
+  without its named extremal-bound instances (Deviation 9c), and the positive half of
+  `cor:cluster-graphs` (Deviation 7).
+* **Packaging / minor generalisation** — structural repackaging and statements proved slightly more
+  generally than needed (Deviations 4, 6).
+
+Each is detailed below and in the relevant module's header.
+
 1. **Uniform clone sizes in the planted estimate (a simplification).** The paper's
    `lem:planted-estimate` allows arbitrary clone sizes and pays a total-variation error term,
    giving an asymptotic bound `C_m(λ + 1/(n−k) + err_N)`. Our `planted_estimate` restricts to the
@@ -217,7 +237,12 @@ clearly-bounded changes. (Per-module detail is in [`ARCHITECTURE.md`](./ARCHITEC
    *carrier sets* (the ideal and the ℝ-span live in different `SetLike` types) and takes heredity
    as an explicit hypothesis; the hereditary clone-closed class is packaged as a reusable
    `GraphClass` structure ([`GraphClassConstraint`](./GraphClassConstraint.lean)). The
-   `lem:planted-mass` count is over `ℚ`.
+   `lem:planted-mass` count is over `ℚ`. The §9 abstract obstruction theorems — `pinning_obstruction`
+   ([`Pinning`](./Pinning.lean), `thm:pinning`) and the endpoint witnesses
+   `edgeDegenerate_not_rootPlantable_of_witness` / `coEdgeDegenerate_not_rootPlantable_of_witness`
+   ([`EdgeObstruction`](./EdgeObstruction.lean)) — are stated for a general flag-algebra element
+   `g : A^σ` and real constant `c`, slightly more general than (hence implying) the paper's `σ`-flag
+   `g` with `c ∈ [0,1]`.
 
 5. **§6–§7 are unified through one generalised blow-up** (matching the paper's revised §7, where
    `lem:general-planting-estimate` states the estimate for arbitrary interiors). We define a single
