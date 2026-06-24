@@ -227,7 +227,7 @@
              native_decide,decide,norm_num,simp,ring,linarith,omega,
              exact,apply,rw,calc,intro,constructor,use,refine,obtain,
              rcases,cases,induction,assumption,contradiction,trivial,rfl,
-             macro,elab},
+             macro,elab,notation},
   keywordstyle=\color{blue!70!black}\bfseries,
   comment=[l]{--},
   commentstyle=\color{gray}\itshape,
@@ -2117,7 +2117,7 @@ Equation~\eqref{eq:ensemble}:
   \mathbb{E}_{\phi\sim \mathbb{P}}[\phi(f)]
   =
   \frac{\phi_0(\llbracket f\rrbracket_0)}
-       {\phi_0(\llbracket 1\rrbracket_0)} .
+       {\phi_0(\llbracket \mathbf{1}_\sigma\rrbracket_0)} .
 \]
 The denominator is the normalizing value of the typed unit after applying the
 downward operator, and it is positive under the hypothesis
@@ -2218,10 +2218,15 @@ def forbidLE
   (*@$\forall\;$@*)((*@$\phi_0$@*) : PositiveHom (*@$\emptyt$@*)), (*@$\phi_0$@*) (*@$\langle\sigma\rangle_0$@*) > 0 ->
     (*@$\phi_0$@*) (*@$\llbracket$@*)basisVector H(*@$\rrbracket_0$@*) = 0 ->
     (*@$\mathbb{P}$@*)[(*@$\phi_0$@*)] {(*@$\phi$@*) : PositiveHomSpace (*@$\sigma$@*) | (*@$\phi$@*) f (*@$\leq\;$@*)(*@$\phi$@*) g} = 1
+
+notation f "(*@$\leq$@*)[" F_forbid "]" g => forbidLE F_forbid f g
 \end{lstlisting}
 In the displayed Lean notation,
 \(\mathbb{P}[\phi_0]\) denotes the random extension probability measure
 \(\Ext_\sigma(\phi_0)\).
+The implementation also introduces the Lean notation
+\(\lean{f}\mathrel{\leq[\lean{H}]}\lean{g}\) for
+\lean{forbidLE H f g}.
 
 What remains is to turn this constrained semantic inequality into the
 Tur\'an-density upper bound described in
@@ -2250,19 +2255,21 @@ After normalization by \(\binom{n}{|V(F)|}\), this is exactly the
 Tur\'an density $\pi(F;H)$.
 
 The following bridge theorem is the point at which the
-ensemble semantic order becomes an extremal bound:
+ensemble semantic order becomes an extremal bound.  It is the
+ensemble-semantic version of \Cref{lem:semantic-bound}: the semantic inequality
+is stated with \lean{forbidLE} rather than with the quotient semantic order:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
     {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)}
-    {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
+    {c : (*@$\mathbb{R}$@*)} (hc : 0 (*@$\leq$@*) c)
     (h : F.toFlagAlgebra <=[H.toFinFlag] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))) :
-    generalizedTuranDensity H F <= c := ...
+    generalizedTuranDensity H F (*@$\leq$@*) c := ...
 \end{lstlisting}
 The hypothesis is an \(\emptyt\)-typed \lean{forbidLE} inequality: the target
 graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
 graph \(H\).  The theorem concludes exactly the combinatorial statement
-\lean{generalizedTuranDensity H F <= c}.  This is the main payoff of the
+\(\lean{generalizedTuranDensity H F}\leq \lean{c}\).  This is the main payoff of the
 specification layer: a concrete certificate proof only has to establish one
 semantic inequality in the ambient algebra, and the passage from that
 inequality to a Tur\'an-density bound is handled once and reused.
