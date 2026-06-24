@@ -2337,8 +2337,8 @@ abstract definitions.  We call this pattern \emph{reflection}: Lean runs a
 Boolean program on concrete data, then uses a correctness theorem saying that
 the result has the intended meaning in the specification layer.
 
-The files in \lean{FlagAlgebra/Compute/} provide this executable mirror of the
-specification layer.  They introduce concrete graph and flag representations,
+This section develops the reflection layer as an executable mirror of the
+specification layer.  It introduces concrete graph and flag representations,
 optimized Boolean procedures for isomorphism and density computations, and
 adequacy theorems proving that these procedures agree with the quotient-based
 definitions.  This is the reflection pattern used throughout the rest of the
