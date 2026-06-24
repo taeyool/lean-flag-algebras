@@ -2765,72 +2765,73 @@ among the least portable parts of the development.
 \subsection{The translation script}
 \label{sec:flagmatic-script}
 
-The translator \lean{flagmatic\_to\_lean.py} turns a Flagmatic certificate
-into a Lean module populating Parts~1--4.  Its main entry point is
+The pieces of the previous subsections---generated flags, certificate matrices,
+the optional objective lift, and the main theorem---are assembled from a
+Flagmatic certificate by one script, \lean{flagmatic\_to\_lean.py}.  A single
+invocation
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-and the output is a self-contained file that \lean{lake build} accepts with
-no \lean{sorry}.  Two diagnostic subcommands, \lean{inspect} (resolve every
-certificate string to its Lean identifier) and \lean{check-deps} (report the
-generators and imports the file will use), let one catch mismatches before
-any Lean compilation.
+emits a self-contained Lean file that compiles under \lean{lake build} as a
+complete proof, with no \lean{sorry} gaps.  Two diagnostic
+subcommands help before any compilation:
+\lean{inspect} resolves every certificate string to its Lean identifier, and
+\lean{check-deps} validates the certificate and previews the
+\lean{generate\_pruned\_*} commands it will emit.
 
-\paragraph{Resolving certificate strings to indices.}
-A Flagmatic certificate names graphs by compact strings: \lean{"3:1213"} is
-the $3$-vertex path, and \lean{"3:12(2)"} is a $3$-vertex flag on a size-$2$
-type.  The Lean side names them by canonical index, \lean{Flag\_n\_k\_m\_i}.
-The script parses each string into $(n, E, \mathit{labels})$ and
-isomorphism-matches it against the canonical enumeration, recovering the
-index $i$ by brute-forcing the $n!$ vertex permutations---ample, since
-$n\leq 5$ here.  The same enumeration that Lean uses to define the flags is
-reused by the script, so the indices agree by construction rather than by a
-separately maintained table.
+Every later step refers to flags by their canonical index, so the script's
+first job is to translate.  A Flagmatic certificate names graphs by compact
+strings (\lean{"3:1213"} is the $3$-vertex path, \lean{"3:12(2)"} a $3$-vertex
+flag on a size-$2$ type), whereas Lean names them \lean{Flag\_n\_k\_m\_i}.  The
+script parses each string into its vertex count, edge set, and type labels, then
+isomorphism-matches it against a canonical enumeration that reproduces the order
+of Lean's flag generators to recover the index $i$.  Because the script
+reproduces that order exactly, the $i$ it computes is already the $i$ in
+\lean{Flag\_n\_k\_m\_i}---so no separate flag-to-index table has to be kept in
+sync with the Lean side.
 
-\paragraph{Assembling Part~1.}
-The certificate stores each block as a pair $(Q_t', R_t)$, not as the
-assembled matrix.  The script reconstructs $M_t = R_t\,Q_t'\,R_t^\top$ in
-exact rationals, then factors it as $L_t D_t L_t^\top$ by a
-textbook elimination loop that handles the rank deficiency the assembled
-matrix typically has.  It emits $M_t$, $L_t$, $d_t$, and the one-line
-\lean{psd\_real\_ldlt} proof of Section~\ref{sec:flagmatic-psd}.  None of
-the script's matrix arithmetic is trusted; the kernel re-checks the
-factorization.
+With the indices in hand, the script fills the four parts of
+Section~\ref{sec:flagmatic-shape}.  Three of them are emitted mechanically, as
+fixed templates keyed to the sizes: the \lean{generate\_pruned\_*} commands for
+the flags and density data (Part~1, parametric in the forbid term \lean{K}); the
+\lean{flag\_expand\_hfree N K} lemma and its \lean{native\_decide} coefficient
+table when the objective must be lifted (Part~3, Branch~B only); and the proof
+body of Section~\ref{sec:flagmatic-close} (Part~4).  The one part that takes real
+computation is the certificate matrices (Part~2): the certificate stores each
+block as a pair $(Q_t', R_t)$, and the script reconstructs
+$M_t = R_t\,Q_t'\,R_t^\top$ in exact rationals, factors it as $L_t D_t L_t^\top$
+(an elimination that tolerates the usual rank deficiency), and emits $M_t$,
+$L_t$, $d_t$, the flag vector $v_t$, and the one-line \lean{psd\_real\_ldlt} proof
+of Section~\ref{sec:flagmatic-psd}.
 
-\paragraph{Emitting the body: Branch~A vs.\ Branch~B.}
-For Branch~A the body is a fixed sequence parametrized only by $N$, the block
-count $T$, and the per-block dimensions.  For the $C_4$-density certificate
-($K_3$-free, $N=4$, $T=2$) the script emits:
+For the Mantel certificate ($K_3$-free, $N=3$, $T=1$, Branch~B) the emitted main
+theorem reads:
 \begin{lstlisting}
-theorem K3forbidC4_flagAlgebra
-    : FlagAlgebra_4_0_0_8
-      (*@$\leq$@*)[((*@$\langle$@*)_, Sym2EmptyTypedFlag.toFlag (*@$\llbracket$@*)K3(*@$\rrbracket$@*)(*@$\rangle$@*) : FinFlag (*@$\emptyt$@*))] (3 / 8 : (*@$\mathbb{R}$@*)) (*@$\bullet$@*) (1 : FlagAlgebra (*@$\emptyt$@*)) := by
+theorem mantel_flagAlgebra
+    : FlagAlgebra_2_0_0_1
+      (*@$\leq$@*)[((*@$\langle$@*)_, Sym2EmptyTypedFlag.toFlag (*@$\llbracket$@*)K3(*@$\rrbracket$@*)(*@$\rangle$@*) : FinFlag (*@$\emptyt$@*))] (1 / 2 : (*@$\mathbb{R}$@*)) (*@$\bullet$@*) (1 : FlagAlgebra (*@$\emptyt$@*)) := by
   have quadraticForm_trans : ... := by
-    apply forbidLE_add_QuadraticForm M(*@$_2$@*)_real M(*@$_2$@*)_real_posSemidef v(*@$_2$@*)
-    apply forbidLE_add_QuadraticForm M(*@$_1$@*)_real M(*@$_1$@*)_real_posSemidef v(*@$_1$@*)
-    exact forbidLE_refl _ FlagAlgebra_4_0_0_8
+    apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
+    exact forbidLE_refl _ FlagAlgebra_2_0_0_1
   apply forbidLE_trans quadraticForm_trans
   apply forbidLE_trans_forbidEq_right ?_
-        (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one _ 4)))
-  simp [flagQuadraticForm, v(*@$_1$@*), M(*@$_1$@*)_real, ratMatrixToReal, M(*@$_1$@*), Fin.sum_univ_four, add_assoc]
-  simp [v(*@$_2$@*), M(*@$_2$@*)_real, ratMatrixToReal, M(*@$_2$@*), Fin.sum_univ_three, add_assoc]
+        (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one _ 3)))
+  rw [forbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
+  simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
-  expand_one_hfree_at 4 K3
+  expand_one_hfree_at 3 K3
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
   apply forbidLE_of_le
   flag_nonneg
 \end{lstlisting}
-The \lean{forbidLE\_add\_QuadraticForm} calls are emitted in reverse of the
-addition order so the outermost summand peels off first; the per-block
-\lean{Fin.sum\_univ\_<n>} and the argument to \lean{expand\_one\_hfree\_at}
-are chosen from the block dimensions and $N$.  For Branch~B the script
-additionally emits the host-size expansion lemma (a single
-\lean{flag\_expand\_hfree N K} body plus the \lean{native\_decide}
-coefficient table) and a \lean{rw} that splices it in after the
-unit-expansion step.  Selecting the branch, choosing the per-block
-parameters, and ordering the additions is the entire ``intelligence'' of the
-generator; everything downstream is verified by Lean.
+Here the \lean{rw} line is the objective lift of Part~3 (Mantel is Branch~B); a
+Branch~A certificate omits it, and a certificate with several SDP blocks simply
+repeats the \lean{forbidLE\_add\_QuadraticForm} step once per block.
+Choosing the branch, the per-block parameters, and the order of the additions is
+the entire ``intelligence'' of the generator; none of its computation is trusted,
+and everything it emits is re-checked by Lean
+(Section~\ref{sec:flagmatic-trust}).
 
 \subsection{Trust model}
 \label{sec:flagmatic-trust}
