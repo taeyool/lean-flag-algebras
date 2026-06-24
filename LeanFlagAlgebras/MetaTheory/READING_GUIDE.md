@@ -3,6 +3,8 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
+The development is 49 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+
 ---
 
 ## Conventions
@@ -69,10 +71,15 @@ will meet them constantly:
   almost-sure pinning on all admissible ensembles plus a quotient point with a different value
   forces `¬ RootPlantable`.  Its §9–§9.2 instances: the one-root edge flag `e` / unlabelled edge
   `ρ = ⟦e⟧₀` at `vtype := (⊥ : FlagType (Fin 1))`, `EdgeDegenerate` / `CoEdgeDegenerate`,
-  `degenerate_not_rootPlantable` (`thm:degenerate-obstruction`, witnessed by `starLabeled`),
+  `degenerate_not_rootPlantable` / `coDegenerate_not_rootPlantable` (`thm:degenerate-obstruction`,
+  witnessed by `starLabeled` / `coStarLabeled` respectively),
   `c4FreeClass` with `c4FreeClass_edgeDegenerate` / `c4free_not_rootPlantable` (`lem:c4-edge-zero` /
   `cor:c4-counterexample`), `edgeDegenerate_of_subquadratic` (`cor:degenerate-family`), and the dense
-  `coC4FreeClass` / `coC4free_not_rootPlantable` (`cor:codegenerate`).
+  `coC4FreeClass` / `coC4free_not_rootPlantable` (`cor:codegenerate`). `lem:complementation`
+  (complementation invariance, `complementation_invariance`) is the four-module `FlagComplement` →
+  `ComplementHom` → `ComplementClass` → `ComplementInvariance` stack: the complement on flags +
+  density invariance (`flagDensity₁_compl`), the complemented homomorphism `complHom` packaged as a
+  homeomorphism `complHomeo`, the `Q_σ`/`S_σ` transfer, and the invariance capstone.
 
 ---
 
@@ -107,6 +114,12 @@ jump straight to the module and Lean name; read that module's header, then the n
    `C5TwoRootNonEdge` → `C5Blowup`.
 7. **§9 obstruction:** `Pinning`, which is the small topological contrapositive of
    root-plantability used by the later degenerate examples.
+8. **§9.1/§9.2 obstruction chain:** `EdgeObstruction` → `StarWitness` → `C4Free` →
+   `DegenerateFamily` → `DenseObstruction` (the edge-pinning abstract obstruction, its star/co-star
+   witnesses, the `C₄`-free counterexample, the general subquadratic criterion, and the dense
+   complement obstruction). Then the four-module complement stack
+   `FlagComplement` → `ComplementHom` → `ComplementClass` → `ComplementInvariance`, ending at
+   `complementation_invariance` (`lem:complementation`).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -119,46 +132,69 @@ neighbourhood-structure `lem:c5-nbhd` in [`C5Free.lean`](./C5Free.lean)).
 
 ## Map: paper result → module → Lean name
 
-| `paper.tex` | Module | Lean declaration(s) |
-|---|---|---|
-| §2 `lem:support-as` (l.434) | `MeasureSupport` | `ae_nonneg_iff_nonneg_on_support` |
-| §3 quotient algebra / `Q_σ` | `ConstrainedClass` | `ConstrainedAlgebra`, `qmap`, `Qσ`, `mem_Qσ_iff`, `Qσ_isClosed` |
-| §3 forbidden-ideal faithfulness | `ForbiddenIdeal` | `forbiddenIdeal_eq_span` |
-| §3 `lem:support-passes-general` (l.542) | `SupportClosure` | `support_passes` |
-| §4 `def:root-planting` (l.569) | `SupportClosure` | `Sσ`, `RootPlantable`, `Sσ_subset_Qσ` |
-| §4 `thm:support-criterion` (l.593) | `SupportClosure` | `support_criterion`, `quotient_implies_ensemble` |
-| §5 `def:independent-blow-up` (l.687) | `Blowup` | `independentBlowup`, `blowupProj`, `cliqueFree_independentBlowup` |
-| §5 `lem:planted-mass` (l.1160) | `Blowup` | `planted_mass` |
-| §5 `lem:planted-estimate` (l.746) | `PlantedEstimate` | `planted_estimate` (uniform-clone form) |
-| — (its general TV bound) | `ProductTV` | `prod_tv_bound`, `l1_normalization_bound` *(superseded)* |
-| §5 `thm:clone-root-plantable` (l.1217) | `CloneClosed` | `clone_root_plantable` |
-| §5 `cor:clique-free` (l.1367) | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
-| (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
-| §6 `def:complete-blow-up` / §7 `def:substitution-closed` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
-| §6 `lem:true-planted-estimate` / §7 `lem:general-planting-estimate` (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
-| (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
-| §7 `def:blow-up-closed`, `thm:blowup-root-plantable` (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
-| §7 `lem:blowup-iterate`, `cor:closures-imply-blowup` | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
-| §6 `thm:true-clone-root-plantable` | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
-| §6 `cor:cluster-graphs` | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
-| §7 `thm:substitution-root-plantable` | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
-| (new) host-parametric planted estimate | `PlantedEstimate` | `planted_estimate_host` |
-| §8 `def:finite-local-planting`, `thm:finite-local-planting` | `FinitePlanting` | `FinitePlanting`, `finitePlanting_root_plantable` |
-| §8 `def:sparse-root-repair`, `thm:sparse-repair-planting` | `SparseRootRepair` | `SparseRootRepair`, `sparseRootRepair_finitePlanting` (crux helper `counting_coupling_bound`) |
-| §8 `lem:c5-nbhd` (+ the `C₅`-free class) | `C5Free` | `c5free_neighborhood_edge_card_le`, `c5FreeClass`, `C5g`, `c5_copy_of_pentagon` |
-| §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
-| §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
-| §8 `lem:c5-blowup` | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
-| §9 `thm:pinning` | `Pinning` | `pinning_obstruction` |
-| §9 `def:edge-degenerate`, endpoint pinning | `EdgeObstruction` | `EdgeDegenerate`, `CoEdgeDegenerate`, `e`, `ρ`, `vtype`, `ae_e_eq_zero_of_pinned`, `ae_e_eq_one_of_pinned`, `edgeDegenerate_not_rootPlantable_of_witness` |
-| §9 `thm:degenerate-obstruction`, §9.2 `cor:codegenerate` (abstract) | `StarWitness` | `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`, `exists_Qσ_point_edge_eq`, `starLabeled`, `coStarLabeled` |
-| §9.1 `lem:c4-edge-zero`, `cor:c4-counterexample` | `C4Free` | `c4FreeClass`, `c4free_card_edges_sq_le`, `c4FreeClass_edgeDegenerate`, `c4free_not_rootPlantable`, `c4_copy_of_square` |
-| §9.1 `cor:degenerate-family` (general criterion) | `DegenerateFamily` | `edgeDegenerate_of_subquadratic` |
-| §9.2 `cor:codegenerate` (concrete dense) | `DenseObstruction` | `coC4FreeClass`, `coC4FreeClass_coEdgeDegenerate`, `coC4free_not_rootPlantable` |
+The **paper number** column (`Lemma N` / `Theorem N` / etc.) is the canonical, stable identifier —
+it is what an auditor reads in the PDF and what `paper.aux` assigns. The `paper.tex` line numbers
+are approximate and **drift on every paper edit**; locate a result by its number or `\label{…}`,
+not its line. (Lines below were last synced to the current `paper.tex`.)
 
-For a line-numbered `paper.tex` ↦ Lean audit map of §8 (what to read and what to verify), see the
+| Paper # | `paper.tex` | Module | Lean declaration(s) |
+|---|---|---|---|
+| Lemma 1 | §2 `lem:support-as` (l.444) | `MeasureSupport` | `ae_nonneg_iff_nonneg_on_support` |
+| — | §3 quotient algebra / `Q_σ` | `ConstrainedClass` | `ConstrainedAlgebra`, `qmap`, `Qσ`, `mem_Qσ_iff`, `Qσ_isClosed` |
+| — | §3 forbidden-ideal faithfulness | `ForbiddenIdeal` | `forbiddenIdeal_eq_span` |
+| Lemma 2 | §3 `lem:support-passes-general` (l.552) | `SupportClosure` | `support_passes` |
+| Definition 3 | §4 `def:root-planting` (l.579) | `SupportClosure` | `Sσ`, `RootPlantable`, `Sσ_subset_Qσ` |
+| Theorem 4 | §4 `thm:support-criterion` (l.603) | `SupportClosure` | `support_criterion`, `quotient_implies_ensemble` |
+| Definition 5 | §5 `def:independent-blow-up` (l.697) | `Blowup` | `independentBlowup`, `blowupProj`, `cliqueFree_independentBlowup` |
+| Lemma 9 | §5 `lem:planted-mass` (l.1170) | `Blowup` | `planted_mass` |
+| Lemma 8 | §5 `lem:planted-estimate` (l.756) | `PlantedEstimate` | `planted_estimate` (uniform-clone form) |
+| — | — (its general TV bound) | `ProductTV` | `prod_tv_bound`, `l1_normalization_bound` *(superseded)* |
+| Theorem 10 | §5 `thm:clone-root-plantable` (l.1233) | `CloneClosed` | `clone_root_plantable` |
+| Corollary 11 | §5 `cor:clique-free` (l.1385) | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
+| — | (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
+| — | §6 `def:complete-blow-up` / §7 `def:substitution-closed` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
+| Lemma 14 / Lemma 20 | §6 `lem:true-planted-estimate` (l.1444) / §7 `lem:general-planting-estimate` (l.1781) (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
+| — | (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
+| Definition 18 / Theorem 21 | §7 `def:blow-up-closed` (l.1740), `thm:blowup-root-plantable` (l.1828) (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
+| Lemma 19 / Corollary 22 | §7 `lem:blowup-iterate` (l.1752), `cor:closures-imply-blowup` (l.1913) | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
+| Theorem 15 | §6 `thm:true-clone-root-plantable` (l.1534) | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
+| Corollary 16 | §6 `cor:cluster-graphs` (l.1684) | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
+| Theorem 24 | §7 `thm:substitution-root-plantable` (l.1948) | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
+| — | (new) host-parametric planted estimate | `PlantedEstimate` | `planted_estimate_host` |
+| Theorem 27 | §8 `def:finite-local-planting`, `thm:finite-local-planting` (l.2060) | `FinitePlanting` | `FinitePlanting`, `finitePlanting_root_plantable` |
+| Theorem 30 | §8 `def:sparse-root-repair`, `thm:sparse-repair-planting` (l.2182) | `SparseRootRepair` | `SparseRootRepair`, `sparseRootRepair_finitePlanting` (crux helper `counting_coupling_bound`) |
+| Lemma 32 | §8 `lem:c5-nbhd` (l.2350) (+ the `C₅`-free class) | `C5Free` | `c5free_neighborhood_edge_card_le`, `c5FreeClass`, `C5g`, `c5_copy_of_pentagon` |
+| Theorem 36 | §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` (l.2443) | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
+| Theorem 41 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` (l.2547) | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
+| Lemma 42 | §8 `lem:c5-blowup` (l.2563) | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
+| Theorem 53 | §9 `thm:pinning` (l.3081) | `Pinning` | `pinning_obstruction` |
+| Definition 43 | §9 `def:edge-degenerate` (l.2605), endpoint pinning | `EdgeObstruction` | `EdgeDegenerate`, `CoEdgeDegenerate`, `e`, `ρ`, `vtype`, `ae_e_eq_zero_of_pinned`, `ae_e_eq_one_of_pinned`, `edgeDegenerate_not_rootPlantable_of_witness` |
+| Theorem 44 / Corollary 51 | §9 `thm:degenerate-obstruction` (l.2612), §9.2 `cor:codegenerate` (l.2992) (abstract) | `StarWitness` | `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`, `exists_Qσ_point_edge_eq`, `starLabeled`, `coStarLabeled` |
+| Lemma 47 / Corollary 48 | §9.1 `lem:c4-edge-zero` (l.2682), `cor:c4-counterexample` (l.2714) | `C4Free` | `c4FreeClass`, `c4free_card_edges_sq_le`, `c4FreeClass_edgeDegenerate`, `c4free_not_rootPlantable`, `c4_copy_of_square` |
+| Corollary 49 | §9.1 `cor:degenerate-family` (l.2721) (general criterion; see scope note below) | `DegenerateFamily` | `edgeDegenerate_of_subquadratic` |
+| Corollary 51 | §9.2 `cor:codegenerate` (l.2992) (concrete dense) | `DenseObstruction` | `coC4FreeClass`, `coC4FreeClass_coEdgeDegenerate`, `coC4free_not_rootPlantable` |
+| Lemma 50 | §9.2 `lem:complementation` (l.2743) (complementation invariance) | `FlagComplement`, `ComplementHom`, `ComplementClass`, `ComplementInvariance` | `Flag.compl`/`uncompl`, `flagDensity₁_compl`, `complHom`, `complHomeo`, `HeredClass.compl`, `complHomeo_image_Qσ`, `complHomeo_map_eq`, `complHomeo_image_Sσ`, `complementation_invariance`, `complementation_invariance_oneVertex` |
+
+**Scope of `cor:degenerate-family` (Corollary 49).** Only the *abstract* subquadratic criterion
+`edgeDegenerate_of_subquadratic` is formalised. The named instances in the paper (general `K_{s,t}`
+with `s ≥ 3`, even cycles `C_{2k}`, planar graphs) are **not** formalised: each would instantiate the
+criterion via a classical extremal bound (`ex(n, K_{s,t})`, `ex(n, C_{2k})`, planar edge counts) that
+is outside the current Mathlib. The `C₄` case (`c4FreeClass_edgeDegenerate`, Lemma 47) is the one
+instance that is carried through.
+
+For a line-numbered `paper.tex` ↦ Lean audit map of **§8**, see the
 **[Auditing the correspondence](./README.md#auditing-the-correspondence-to-papertex)** section of the
-README.
+README. The **§9 / §9.1 / §9.2** results (and `lem:complementation`) have no separate line-numbered
+audit table: statement-level checking of those is done from the §9 rows of the map above (each cites
+its paper number, `\label`, line, module, and Lean name) together with `#print axioms` on the
+headline theorems — so §9 is audited from this file, not unverified.
+
+**Scope / not yet formalised.** The formalised frontier is **through §9.2 + `lem:complementation`
+(Lemma 50) + `thm:pinning` (Theorem 53)**. Not yet formalised (future work): the characterisation
+*conjecture* (`conj:characterisation`), the boundary / no-interior results (`thm:no-interior`,
+`subsec:boundary`), the `C₅`-edge obstruction (`sec:c5-edge`), §10, and the non-`C₄` degenerate
+families of Corollary 49. See the README's
+**[Scope & limitations](./README.md#scope--limitations)** for the authoritative list.
 
 ---
 
@@ -170,7 +206,22 @@ README.
   printf 'import LeanFlagAlgebras.MetaTheory.CloneClosed\nopen FlagAlgebras.MetaTheory\n#print axioms clone_root_plantable\n' > /tmp/chk.lean
   lake env lean /tmp/chk.lean
   ```
-  A result is honest iff this prints only `[propext, Classical.choice, Quot.sound]` (no `sorryAx`).
+  A result is honest if and only if this prints only `[propext, Classical.choice, Quot.sound]` (no
+  `sorryAx`). **One headline theorem per paper result** worth checking this way: `clone_root_plantable`,
+  `true_clone_root_plantable`, `substitution_root_plantable`, `cluster_root_plantable`,
+  `blowupClosed_root_plantable` (§5–§7 capstones); `finitePlanting_root_plantable`,
+  `sparseRootRepair_finitePlanting`, `c5free_one_root_plantable`, `c5free_two_root_nonedge_plantable`
+  (§8); `pinning_obstruction`, `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`,
+  `c4free_not_rootPlantable`, `coC4free_not_rootPlantable`, `edgeDegenerate_of_subquadratic`,
+  `complementation_invariance` (§9). The README's
+  **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
+  §8/§9 subset of these in one `printf | lake env lean` invocation.
+
+* **Mechanical re-verification (the kernel-acceptance gate).** From the repo root, run
+  `lake exe cache get`, then `lake build LeanFlagAlgebras.MetaTheory` (the whole layer must go green),
+  then `grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'` (must
+  print **nothing**). An empty grep plus a green build plus the `#print axioms` outputs above is the
+  full machine-checked guarantee — every result is kernel-accepted with no escape hatches.
 
 * **Find a definition or its uses:** `grep -rn 'planted_mass' LeanFlagAlgebras/MetaTheory` (the
   dependency table in [`ARCHITECTURE.md`](./ARCHITECTURE.md) also shows which module imports which).

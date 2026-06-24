@@ -43,6 +43,10 @@ import LeanFlagAlgebras.MetaTheory.StarWitness
 import LeanFlagAlgebras.MetaTheory.C4Free
 import LeanFlagAlgebras.MetaTheory.DegenerateFamily
 import LeanFlagAlgebras.MetaTheory.DenseObstruction
+import LeanFlagAlgebras.MetaTheory.FlagComplement
+import LeanFlagAlgebras.MetaTheory.ComplementHom
+import LeanFlagAlgebras.MetaTheory.ComplementClass
+import LeanFlagAlgebras.MetaTheory.ComplementInvariance
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -224,4 +228,22 @@ resp. co-star) attaining the opposite boundary.
   via `coC4FreeClass_coEdgeDegenerate` — density is not the dividing line.  Uses complementation only
   through the edge-count identity `e(G)+e(Gᶜ)=C(|G|,2)` and `coStarᶜ = star`, not the full
   `lem:complementation` isomorphism.
+
+§9.2 `lem:complementation` (the full **complementation invariance** of root-plantability) is
+formalised in a four-module stack, via the complement *homeomorphism* of homomorphism spaces rather
+than the paper's explicit flag-algebra complement isomorphism (a documented proof-route deviation):
+
+* `FlagComplement` — the complement on flags (`Flag.compl : Flag σ V → Flag σᶜ V`, with the clean
+  `uncompl` involution partner) and the combinatorial core `flagDensity₁_compl` /`flagDensity₂_compl`
+  (`flagDensity Fᶜ Gᶜ = flagDensity F G`), `unlabel_compl`, `downwardNormalizingFactor_compl`.
+* `ComplementHom` — `complHom : PositiveHom σ → PositiveHom σᶜ` (built from the density profile via
+  `positiveHomFromZeroSpaceOneMulProp`, the props transferred through the density identities), its
+  inverse `uncomplHom`, and the homeomorphism `complHomeo : PositiveHomSpace σ ≃ₜ PositiveHomSpace σᶜ`.
+* `ComplementClass` — the complement hereditary class `HeredClass.compl` (`K̄`, `Mem G := Mem Gᶜ`),
+  the forbidden-flag correspondence, and `complHomeo_image_Qσ` (`Φ '' Q_σ(K) = Q_{σᶜ}(K̄)`).
+* `ComplementInvariance` — the measure pushforward `complHomeo_map_eq` (`Φ_* ℙ[φ₀] = ℙ[φ̄₀]`, via
+  `measure_eq_of_integral_flag_eq`), the support transfer `complHomeo_image_Sσ`, and the capstone
+  `complementation_invariance` (`lem:complementation`): `RootPlantable (K.constraintOf σ) ↔
+  RootPlantable (K̄.constraintOf σᶜ)`, with `complementation_invariance_oneVertex` the `σ = vtype`
+  corollary.
 -/

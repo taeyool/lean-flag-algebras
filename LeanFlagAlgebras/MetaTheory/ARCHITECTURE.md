@@ -1,12 +1,45 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 45 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 49 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
-[`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order.
+[`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order. The precise
+*Lean-name → file:line* lookup tables (paper label ↦ Lean statement ↦ `file:line`) live in
+[`README.md`](./README.md) ("Auditing the correspondence to `paper.tex`") and
+[`READING_GUIDE.md`](./READING_GUIDE.md); this document is the big-picture companion.
 
 All modules live in namespace `FlagAlgebras.MetaTheory` and are aggregated by
 [`../MetaTheory.lean`](../MetaTheory.lean).
+
+---
+
+## How to audit & re-verify
+
+Two complementary checks establish that this directory faithfully formalises `paper.tex`.
+
+**Statement-level audit (what to read).** Every proof here is machine-checked and `sorry`-free, so
+the Lean kernel already guarantees that each result *follows from its hypotheses*. A human audit
+therefore reduces to a **statement-level** comparison: read each Lean `theorem`/`def` *signature* and
+check that it faithfully encodes the paper claim it says it formalises (matching hypotheses and
+conclusion) — you do **not** need to read the proofs to trust them. The precise *`paper.tex`-label ↦
+Lean-statement ↦ `file:line`* lookup tables that make this mechanical live in
+[`README.md`](./README.md) ("Auditing the correspondence to `paper.tex`") and
+[`READING_GUIDE.md`](./READING_GUIDE.md); every module also opens with a `/-! # … -/` header naming
+the `paper.tex` result(s) it formalises.
+
+**Mechanical re-verification (how to re-check by machine).** From the repository root:
+
+```bash
+lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 49 modules)
+grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
+```
+
+Then confirm each headline result rests only on the standard axioms — `#print axioms <headline>`
+should report `[propext, Classical.choice, Quot.sound]` and **no `sorryAx`** (e.g.
+`clone_root_plantable`, `finitePlanting_root_plantable`, `pinning_obstruction`,
+`complementation_invariance`). See the verification section of [`README.md`](./README.md) for the
+full ready-to-run command block.
 
 ---
 
@@ -63,9 +96,11 @@ obstruction (`thm:degenerate-obstruction`, edge density pinned to `0`, witnessed
 dense dual (`cor:codegenerate`, pinned to `1`, witnessed by a co-star) are both *endpoint* cases of
 `pinning_obstruction` reached from a mere expectation condition. The `C₄`-free class is the explicit
 sparse example (edge density → 0 by the elementary Kővári–Sós–Turán bound), and its dense complement
-is the explicit dense one — so density is not the dividing line. The full complementation
-*isomorphism* `lem:complementation` is **not** formalised; the dense example is obtained directly,
-using complementation only at the elementary edge-count level.
+is the explicit dense one — so density is not the dividing line. That dense example is obtained
+*directly* (using complementation only at the elementary edge-count level); separately,
+`lem:complementation` itself — root-plantability invariance under complementation — is formalised via
+the complement *homeomorphism* of homomorphism spaces (the four-module stack described below), not the
+paper's flag-algebra complement isomorphism.
 
 ---
 
@@ -266,8 +301,10 @@ are reused **verbatim**.
 
 ### §6–§7 generalised blow-up
 
-* **[`SubstitutionBlowup`](./SubstitutionBlowup.lean)** — `def:complete-blow-up`. The generalised
-  blow-up `subBlowup G W` (within-class family `W`), `completeBlowup` (`W = ⊤`), the off-diagonal
+* **[`SubstitutionBlowup`](./SubstitutionBlowup.lean)** — the **generalised blow-up** `subBlowup G W`
+  (within-class family `W`), introduced in code as the §6–§7 generalisation of the §5 independent
+  blow-up — *not* itself a numbered paper definition; its `W = ⊤` (clique) case `completeBlowup` is
+  `def:complete-blow-up` (Definition 12, the true-twin complete blow-up). Also: the off-diagonal
   agreement `subBlowup_adj_of_fst_ne`, the planted labelled graph `subBlowupLabeledGraph`, and the
   good-event isomorphism `good_event_induces_iff_sub` (obtained by composing `BlowupFlag`'s
   `blowupGoodIso` with the identity-on-a-transversal iso `subBlowupToIndepIso`).
@@ -304,18 +341,21 @@ are reused **verbatim**.
   class, the hypothesis `subst_root_plantable` consumes); and the unified theorem
   `blowupClosed_root_plantable` (`thm:blowup-root-plantable`). The bridge rests on the iso
   `oneBlowup_iso` (one-vertex blow-up = one-class sub-blow-up) and `Mem_congr` (membership is
-  iso-invariant). `GraphClass.toBlowupClosed` (clone-closed ⟹ blow-up-closed, edgeless interior)
-  lives here; `clone_root_plantable_blowup` re-derives §5 as a corollary.
+  iso-invariant). `GraphClass.toBlowupClosed` (clone-closed ⟹ blow-up-closed, edgeless interior —
+  `cor:closures-imply-blowup`(1), Corollary 22) lives here; `clone_root_plantable_blowup`
+  re-derives §5 as a corollary.
 
 * **[`TrueClone`](./TrueClone.lean)** — §6 `thm:true-clone-root-plantable`. `TrueCloneClosed`
-  (complete-blow-up closure), `TrueCloneClosed.toBlowupClosed` (clique interior), and
-  `true_clone_root_plantable` — now a **corollary** of `blowupClosed_root_plantable`.
+  (complete-blow-up closure), `TrueCloneClosed.toBlowupClosed` (clique interior —
+  `cor:closures-imply-blowup`(2), Corollary 22), and `true_clone_root_plantable` — now a
+  **corollary** of `blowupClosed_root_plantable`.
 
 * **[`Substitution`](./Substitution.lean)** — §7 `thm:substitution-root-plantable`.
   `SubstitutionClosed` (substitution closure), `SubstitutionClosed.toBlowupClosed` (an in-class
-  interior of the right size, by infinitude), and `substitution_root_plantable` — a **corollary** of
-  `blowupClosed_root_plantable`. `rem:strictness`: substitution-closure (∀-fibre) is strictly
-  stronger than blow-up-closure (∃-fibre) and misses §5/§6.
+  interior of the right size, by infinitude — `cor:closures-imply-blowup`(3), Corollary 22), and
+  `substitution_root_plantable` — a **corollary** of `blowupClosed_root_plantable`. `rem:strictness`:
+  substitution-closure (∀-fibre) is strictly stronger than blow-up-closure (∃-fibre) and misses
+  §5/§6.
 
 * **[`ClusterGraph`](./ClusterGraph.lean)** — §6 `cor:cluster-graphs`. Cluster graphs as the
   `P₃`-free `HeredClass` `clusterClass`, the complete-blow-up adjacency `completeBlowup_adj_iff`,
@@ -372,7 +412,7 @@ class-generic; the `C₅`-free modules then instantiate them.
   their root), `c5FreeClass_sparseRootRepair_twoNonEdge` (two neighbourhoods `N(r)`, `N(s)`), and
   `c5free_two_root_nonedge_plantable` (`thm:c5-nonedge-root`, `S_η = Q_η`).
 * **[`C5Blowup`](./C5Blowup.lean)** — §8 `lem:c5-blowup` (`c5_blowup_free_iff_triangleFree`): for a
-  `C₅`-free `G`, every `independentBlowup` is `C₅`-free iff `G` is triangle-free (a triangle lifts to
+  `C₅`-free `G`, every `independentBlowup` is `C₅`-free if and only if `G` is triangle-free (a triangle lifts to
   a `C₅` in the size-2 blow-up; conversely a blow-up `C₅` projects to a closed 5-walk forcing a
   triangle or a `C₅` in `G`).
 
@@ -412,14 +452,53 @@ The §9.1–§9.2 concrete obstructions build on `Pinning` in a short chain
   `edgeDensity_bound_tendsto_zero` live here and are reused by `DenseObstruction`.
 * **[`DegenerateFamily`](./DegenerateFamily.lean)** — §9.1 `cor:degenerate-family`. The general
   criterion `edgeDegenerate_of_subquadratic` (subquadratic edge bound ⟹ edge-degenerate), the common
-  mechanism of the four listed families; `C₄` is the one whose bound is proved from scratch.
+  mechanism of the listed families: `K_{s,t}`-free graphs (Kővári–Sós–Turán), even cycles `C_{2k}`
+  (Bondy–Simonovits), forests / bounded-average-degree classes, and planar graphs. `C₄` (the
+  `K_{2,2}` case) is the one whose bound is proved from scratch; the other families' extremal bounds
+  are outside current Mathlib, so only the abstract criterion is instantiated for them.
 * **[`DenseObstruction`](./DenseObstruction.lean)** — §9.2 `cor:codegenerate`, made concrete. The
   dense `coC4FreeClass` (`Mem G := (cycleGraph 4).Free Gᶜ`), its co-edge-degeneracy
   `coC4FreeClass_coEdgeDegenerate` (edge density `1 − e(Gᶜ)/C(N,2) → 1`, via the complement edge-count
   identity `card_edgeFinset_add_compl` and the `C₄` bound on `Gᶜ`), and `coC4free_not_rootPlantable`.
   The load-bearing `downwardNormalizingFactor_edge_eq_one` (so `φ₀ ρ` is the genuine edge density) is
   proved via `isomorphismCount edgeLabeled = 2`. Complementation enters only elementarily — never the
-  `lem:complementation` isomorphism.
+  `lem:complementation` isomorphism (which is itself formalised separately, below).
+
+### §9.2 complementation invariance (`lem:complementation`)
+
+A four-module stack proves that root-plantability is invariant under graph complementation — *not*
+by building the paper's flag-algebra complement isomorphism `C_σ`, but by building the complement
+**homeomorphism** of homomorphism spaces directly. Chain:
+`FlagComplement → ComplementHom → ComplementClass → ComplementInvariance`.
+
+* **[`FlagComplement`](./FlagComplement.lean)** — the complement on flags. `LabeledGraph.compl` /
+  `Flag.compl : Flag σ V → Flag σᶜ V` and a *clean* `uncompl` involution partner (the round-trips are
+  honest `Eq`, so the `σᶜᶜ` transport never appears downstream). The combinatorial heart is
+  `flagDensity₁_compl` / `flagDensity₂_compl` (`flagDensity Fᶜ Gᶜ = flagDensity F G`, via the
+  subset-count formula and `induce`/`compl` commutation), plus `unlabel_compl` and
+  `downwardNormalizingFactor_compl` (the unlabelling weight is complement-invariant), used in the
+  measure layer.
+* **[`ComplementHom`](./ComplementHom.lean)** — `complHom : PositiveHom σ → PositiveHom σᶜ`, built
+  *from the density profile* via `positiveHomFromZeroSpaceOneMulProp`: the three homomorphism axioms
+  (`zeroSpaceProp`/`oneProp`/`mulProp`) of the complemented profile follow from the Layer-1 density
+  identities by reindexing the sums along the `compl`/`uncompl` bijection. Its symmetric inverse
+  `uncomplHom`, the clean mutual-inverse laws, and the homeomorphism
+  `complHomeo : PositiveHomSpace σ ≃ₜ PositiveHomSpace σᶜ` (continuity coordinatewise, since
+  `(complHomeo χ).val G = χ.val G.uncompl`).
+* **[`ComplementClass`](./ComplementClass.lean)** — the complement hereditary class `HeredClass.compl`
+  (`K̄`, `Mem G := Mem Gᶜ`, `comap` via `complEmbedding`), the forbidden-flag correspondence
+  `complClass_forbσ_iff`, and the quotient-space transfer
+  `complHomeo_image_Qσ : Φ '' Q_σ(K) = Q_{σᶜ}(K̄)` (via `mem_Qσ_iff` + the forbidden bridge).
+* **[`ComplementInvariance`](./ComplementInvariance.lean)** — the capstone. The base complement
+  homomorphism `complBase` (carrying the `∅ₜᶜ = ∅ₜ` transport), the **measure pushforward**
+  `complHomeo_map_eq : Φ_* ℙ[φ₀] = ℙ[φ̄₀]` (by `measure_eq_of_integral_flag_eq`, reducing — by
+  linearity to basis vectors — to matching the expectation formula, whose numerators *and*
+  denominators are individually equal via `downward_basisVector` + the Layer-1 invariance lemmas),
+  the support transfer `complHomeo_image_Sσ : Φ '' S_σ(K) = S_{σᶜ}(K̄)` (homeomorphism image of a
+  closure-of-supports, with the index union reindexed by the `complBase` bijection), and finally
+  `complementation_invariance : RootPlantable (K.constraintOf σ) ↔ RootPlantable (K̄.constraintOf σᶜ)`
+  — apply the bijection `Φ` to `S_σ(K) = Q_σ(K)`. `complementation_invariance_oneVertex` is the
+  `σ = vtype` corollary (`(⊥ : FlagType (Fin 1))ᶜ = ⊥`), matching the paper's final sentence.
 
 ---
 
@@ -507,3 +586,27 @@ Steps 4 and 6 (weak convergence via `tendsto_rootingMeasure_extend`; Portmanteau
 `c5free_one_root_plantable`/`c5free_two_root_nonedge_plantable` then arrive in two hops:
 `SparseRootRepair ⇒ FinitePlanting` (`sparseRootRepair_finitePlanting`) and the `C₅`-free sparse-repair
 instances supply the hypothesis, with `lem:c5-nbhd` bounding the repaired-edge count.
+
+---
+
+## Formalisation frontier / what remains
+
+This directory formalises `paper.tex` **§1–§9.2 in full** — including the two §9.2 results that close
+out that range: `lem:complementation` (Lemma 50), the complementation invariance of
+root-plantability, formalised as `complementation_invariance` (the `FlagComplement` →
+`ComplementHom` → `ComplementClass` → `ComplementInvariance` stack — via the complement
+*homeomorphism* of homomorphism spaces, not the paper's flag-algebra complement isomorphism); and
+`thm:pinning` (Theorem 53), the abstract pinning obstruction, formalised as `pinning_obstruction`.
+**`lem:complementation` is formalised** (this overrides any stale note to the contrary elsewhere).
+
+Not yet formalised (future work; the machinery here is intended to be reusable for it):
+
+* the pinning **conjecture** `conj:characterisation` (the tentative general characterisation);
+* the **boundary / no-interior** results — `thm:no-interior` and all of §`subsec:boundary`;
+* the **`C₅`-edge obstruction** of §`sec:c5-edge`, `thm:c5-edge-not-root-plantable`;
+* **§10** `prop:empty-type` (empty-type collapse) and the later consequences built on it;
+* within `cor:degenerate-family`, the **three non-`C₄` families** — general `K_{s,t}` (`s ≥ 3`), even
+  cycles `C_{2k}`, and planar graphs — whose extremal edge bounds (Kővári–Sós–Turán,
+  Bondy–Simonovits, the planar `≤ 3n−6` bound) lie outside current Mathlib. Only the abstract
+  subquadratic criterion `edgeDegenerate_of_subquadratic` is proved; `C₄` (the `K_{2,2}` case) is the
+  one whose bound is established from scratch and discharged through that criterion.
