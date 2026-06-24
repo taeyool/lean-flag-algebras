@@ -176,13 +176,14 @@ constrained inequality be certified in the quotient, or are there inequalities t
 throughout the class yet are invisible to the algebra one computes in?
 
 \paragraph{The criterion.}
-Our main result identifies exactly when completeness holds.  Fix a labelled pattern---a
-\emph{type} $\sigma$, a few vertices with prescribed adjacencies, which we call the
-\emph{roots}.  The two semantics then live in one and the same space of \emph{labelled
-limits}.  Such a limit is a \emph{view} from a copy of $\sigma$: root a large graph of the
-class at a labelled copy of $\sigma$, record the density of every \emph{flag} (a finite
-graph with a marked copy of $\sigma$ inside it), and pass to the limit---the local picture
-the roots see.  Each semantics singles
+Our main result identifies exactly when completeness holds.  Fix a type $\sigma$:
+a small graph whose distinguished vertices, with their prescribed adjacencies, are
+called the \emph{roots}.  The two semantics then live in one and the same space of
+\emph{labelled limits}.  Such a limit is a \emph{view} from a copy of $\sigma$:
+choose a copy of $\sigma$ in a large graph of the class, treat its vertices as
+the roots, record the density of every \emph{flag} (a finite graph with a specified
+copy of $\sigma$ inside it), and pass to the limit---the local picture the roots see.
+Each semantics singles
 out a subset of these views.  The set $Q_\sigma$ ($Q$ for \emph{quotient}) collects the
 views the quotient can exhibit: those obtained by placing the copy of $\sigma$
 \emph{anywhere} in graphs of the class---even at \emph{exceptional} vertices, ones that a
@@ -202,7 +203,7 @@ are dropped at random into a large graph of the class.  Informally, any view the
 quotient can display at some special, hand-picked vertex must also be realisable at a
 random, hence typical, vertex of a large constrained graph; the roots can be
 \emph{planted} at typical vertices.  When this fails, some inequality holds almost surely
-under random labelling yet cannot be seen in the quotient, and the quotient calculus is
+under random rooting yet cannot be seen in the quotient, and the quotient calculus is
 \emph{incomplete}.  (\Cref{def:root-planting} makes the set $S_\sigma$ precise.)
 
 \paragraph{When root-planting works.}
@@ -234,25 +235,25 @@ use.
 Heredity alone is not enough.  Consider the $C_4$-free graphs.  Their large members are
 sparse---every $n$-vertex $C_4$-free graph has only $o(n^2)$ edges---so almost every vertex
 has vanishingly few neighbours.  The ensemble drops the single root at a \emph{random}
-vertex and measures its \emph{labelled edge density}---the fraction of the other vertices
+vertex and measures its \emph{one-root edge density}---the fraction of the other vertices
 that root is joined to.  In a graph this sparse a random vertex has hardly any neighbours,
 so for almost every choice of the root this fraction is essentially $0$; in the limit it
 is \emph{almost surely} $0$ (that is, $0$ for all but a negligible set of root choices).
 The quotient, by contrast, may put the root wherever it likes.  The class contains
 arbitrarily large \emph{stars}---a single central vertex joined to many leaves and to
-nothing else---and rooting at such a centre gives labelled edge density $1$, because the
+nothing else---and rooting at such a centre gives one-root edge density $1$, because the
 centre is joined to \emph{every} other vertex.  That centre is an exceptional vertex: the
 quotient can sit on it, while the ensemble, only ever landing on a typical vertex, never
-does.  So the inequality ``the labelled edge density is $0$'' holds throughout the ensemble
+does.  So the inequality ``the one-root edge density is $0$'' holds throughout the ensemble
 yet fails in the quotient, and the class is not root-plantable
 (\cref{thm:degenerate-obstruction,cor:c4-counterexample}).  The same failure befalls the
 $K_{s,t}$-free, $C_{2k}$-free, and planar graphs (\cref{cor:degenerate-family}).  One
 might guess this is a defect of \emph{sparsity}, but root-plantability is preserved by
 complementation (\cref{lem:complementation}), so every sparse obstruction has a
 \emph{dense} mirror image (\cref{cor:codegenerate}); neither sparsity nor density is the
-dividing line.  The uniform cause is what we call \emph{pinning}: a labelled quantity
-frozen to a single value across all constrained limits while the quotient still attains
-another (\cref{thm:pinning}).  We conjecture that pinning is the only obstruction
+dividing line.  The uniform cause is what we call \emph{pinning}: the density of
+a fixed flag or algebra element is frozen to a single value across all constrained
+limits while the quotient still attains another (\cref{thm:pinning}).  We conjecture that pinning is the only obstruction
 (\cref{conj:characterisation}), and show that for forbidden-subgraph classes any pinning
 is to a boundary value $0$ or $1$ (\cref{thm:no-interior}).
 
@@ -262,7 +263,7 @@ density bound---a Mantel- or Tur\'an-type inequality---is a statement about
 \emph{unlabelled} graphs, the \emph{empty type}, and there the two semantics provably
 coincide (\cref{prop:empty-type}): no density bound is ensemble-true but quotient-false.
 The incompleteness lives entirely in the intermediate, \emph{labelled} steps a proof
-passes through.  Even there it is benign: the labelled witnesses that expose the gap
+passes through.  Even there it is benign: the witnesses at non-empty types that expose the gap
 unlabel to zero---they average away to nothing once the labels are dropped
 (\cref{prop:ideal-zero})---and every contribution the ensemble relaxation can make is,
 after unlabelling, a limit of ordinary \emph{sum-of-squares contributions}: the standard
@@ -309,20 +310,20 @@ $\T_0=\T_{\mathrm{Graph}}$ of all finite simple graphs, or a forbidden-subgraph 
 $\T_1$---and ``graph in $\T$'' means a finite graph belonging to that class.
 
 \paragraph{Types and flags.}
-A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{labelled} vertices
-(its \emph{roots})---$k$ distinguished vertices together with the edges among
-them.  An \emph{embedding} of $\sigma$ into a graph $H$ is an injective
-map from the labelled vertices of $\sigma$ to $V(H)$ that preserves both edges
+A \emph{type} $\sigma$ is a fixed graph in $\T$ on $k$ \emph{roots}---$k$
+distinguished vertices together with the edges among them.  An \emph{embedding}
+of $\sigma$ into a graph $H$ is an injective map from the roots of $\sigma$ to
+$V(H)$ that preserves both edges
 and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
 are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
-subgraph of $H$, with the labels kept in their prescribed order.
-A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished labelled
-copy of $\sigma$ singled out inside it---informally, a finite graph in which $k$ marked
-vertices form the pattern $\sigma$.  The \emph{empty type}
+subgraph of $H$, with the roots kept in their prescribed order.
+A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished copy of
+$\sigma$ singled out inside it---informally, a finite graph in which $k$ roots
+form the pattern $\sigma$.  The \emph{empty type}
 ($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
-Flags are taken up to label-preserving isomorphism, and $\F^\sigma[\T]$
+Flags are taken up to root-preserving isomorphism, and $\F^\sigma[\T]$
 (abbreviated $\F^\sigma$) is the countable set of all such isomorphism classes
-(so two flags related by a root-fixing isomorphism are the same element of
+(so two flags related by a root-preserving isomorphism are the same element of
 $\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
 \emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of $|F|-k$
 unlabelled vertices of $G$, taken together with the $k$ roots, induces a copy of $F$; for
@@ -366,8 +367,9 @@ this way \cite[Theorem 3.3]{Razborov2007}.  Terminologically, from now on a
 \emph{limit} means such a positive homomorphism unless we explicitly mention an
 approximating sequence.  Thus an \emph{unlabelled limit} is a point of
 $\Homp(\A^0[\T],\R)$, while a \emph{$\sigma$-labelled limit} is a point of
-$\Homp(\A^\sigma[\T],\R)$.  We say ``roots'' for the
-distinguished labelled vertices and ``labelled'' for the corresponding flags and limits, and use
+$\Homp(\A^\sigma[\T],\R)$.  We use \emph{roots} for the distinguished vertices
+of a type or flag, and reserve \emph{labelled} for the associated flag-algebra
+objects, such as labelled flags, labelled algebras, and labelled limits.  We use
 ``limit'' and ``positive homomorphism'' interchangeably; $\phi(F)$ is the density of the flag $F$ in
 the limit $\phi$.  On a single flag
 this value lies in $[0,1]$: for each size the flags of that
@@ -406,7 +408,7 @@ when every unlabelled limit assigns it the value $0$, non-degeneracy is equivale
 existence of an unlabelled limit $\phi_0$ with $\phi_0(\brak\sigma)>0$.  Intuitively, the
 pattern $\sigma$ is actually realised, occurring with positive density in some unlabelled
 limit of the class, so that a copy of $\sigma$ can be sampled and labelled.  A degenerate
-type occurs with density zero in every unlabelled limit, so the random labelling below acts
+type occurs with density zero in every unlabelled limit, so the random rooting below acts
 on nothing, and the root-planting story of this paper is vacuous for it.
 
 If
@@ -427,9 +429,9 @@ The positivity assumption on $\phi_0(\brak\sigma)$ is exactly what permits this
 conditioning: the denominator is the limiting probability of seeing the root type.
 Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the labelled limit seen from a uniformly
 random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
-the expected labelled density of $g$ is the unlabelled density of $g$, normalised by that
+the expected density of $g$ is the unlabelled density of $g$, normalised by that
 of $\sigma$.  Moreover, if a finite sequence converges to $\phi_0$, then the
-corresponding finite random-labelling distributions converge weakly to $\Ext_\sigma(\phi_0)$
+corresponding finite random-rooting distributions converge weakly to $\Ext_\sigma(\phi_0)$
 \cite[Theorems 3.5 and 3.12]{Razborov2007}.
 
 Recall that the \emph{support} of a Borel probability measure $P$ on a compact metrizable
@@ -544,7 +546,7 @@ $Q_\sigma$ consists of the homomorphisms that satisfy all of these conditions at
 per forbidden flag, so it is an intersection of closed sets and is therefore closed in
 $X_\sigma$.
 
-Informally, the next lemma says that randomly labelling a constrained unlabelled limit 
+Informally, the next lemma says that randomly choosing roots in a constrained unlabelled limit
 almost surely yields a constrained labelled one.
 
 \begin{lemma}[Support passes to random extensions]\label{lem:support-passes-general}
@@ -626,7 +628,7 @@ $f\in\A^\sigma[\T_0]$ if and only if $(\T_0,\T_1,\sigma)$ is root-plantable.
 In words: a certificate proved in the quotient is always a valid constrained density
 bound, and it captures \emph{every} such bound precisely when $\sigma$ is
 root-plantable; when root-plantability fails, some inequality that holds almost surely
-under random labelling cannot be seen in the quotient.
+under random rooting cannot be seen in the quotient.
 
 \begin{proof}
 We use the standard evaluation pairing between the algebra and its positive
@@ -682,7 +684,7 @@ semantics fails.  Thus equivalence for all $f$ forces $S_\sigma=Q_\sigma$.
 
 We now give a checkable sufficient condition for root-plantability of graph
 classes, built on an independent blow-up construction.  The idea is that when a class is
-closed under independent blow-ups, a labelled vertex can be duplicated into a clone class
+closed under independent blow-ups, a root can be duplicated into a clone class
 of positive density, so a configuration the quotient exhibits only at an exceptional vertex
 can instead be realised at a random---hence typical---vertex, which is just what
 root-plantability requires.  Recall that $\T_0=\T_{\mathrm{Graph}}$ denotes the class of
@@ -715,12 +717,12 @@ triangle-free class is clone-closed.
 
 We first fix the notation used in the estimates.  Let $(G,\theta)$ be a
 $\sigma$-flag with $|\sigma|=k$ and $|G|=n>k$, and fix a parameter
-$0<\lambda\le 1/2$.  The blow-up will be used to make the planted labelled
-vertices visible with positive probability, while keeping the densities
+$0<\lambda\le 1/2$.  The blow-up will be used to make the planted roots
+visible with positive probability, while keeping the densities
 $p(F,\cdot)$ of every fixed $\sigma$-flag $F$ close to their values in
 $(G,\theta)$.  For that purpose we first prescribe the desired
-fractions of the future blow-up lying over each vertex of $G$: the labelled
-vertices together receive total mass $\lambda$, and the unlabelled vertices
+fractions of the future blow-up lying over each vertex of $G$: the roots
+together receive total mass $\lambda$, and the unlabelled vertices
 share the remaining mass uniformly.  These desired fractions are the
 \emph{target weights}.  If $k>0$, set
 \[
@@ -810,12 +812,12 @@ uniform $q$-subset, and all events below depend only on that subset.  Let
   \qquad
   R:=C_{\theta(1)}\cup\cdots\cup C_{\theta(k)} .
 \]
-Thus $R$ is the union of the clone classes attached to the labelled vertices
+Thus $R$ is the union of the clone classes attached to the roots
 (and $R=\emptyset$ if $k=0$).
 
 The proof has two parts.  First we show that, with probability
 $O_m(\lambda+1/(n-k)+\operatorname{err}_N)$, the sample is bad: it either meets
-one of the labelled clone classes in $R$ or chooses two vertices from the same
+one of the root clone classes in $R$ or chooses two vertices from the same
 unlabelled clone class.  Second, on the complementary good event, projection
 from the blow-up to $G$ preserves the induced $\sigma$-flag.  The only remaining
 question on the good event is whether the projected $q$-set is close to a
@@ -827,7 +829,7 @@ By the definition of $\operatorname{err}_N$,
 \[
   \frac{|R|}{N}\le \lambda+\operatorname{err}_N .
 \]
-Here $R$ includes the $k$ planted labelled vertices themselves, although those
+Here $R$ includes the $k$ planted roots themselves, although those
 vertices are not in the sampling space; this only makes the following upper
 bound larger.
 Since each exposed position $X_j$ is marginally uniform on the
@@ -1120,8 +1122,8 @@ Forgetting the order cannot increase total variation distance, so the projected
 $q$-set on the good event is within $K_m^{(4)}\operatorname{err}_N$ of a
 uniformly chosen $q$-subset of $U$.
 
-Finally, on the good event the induced labelled graph is preserved by projection.
-The planted labels $\widehat\theta(i)\in C_{\theta(i)}$ have exactly the same
+Finally, on the good event the induced $\sigma$-flag is preserved by projection.
+The planted roots $\widehat\theta(i)\in C_{\theta(i)}$ have exactly the same
 adjacencies to a sampled vertex in $C_v$ as $\theta(i)$ has to $v$ in $G$, and
 two sampled unlabelled vertices lie in distinct clone classes, so their adjacency
 is exactly the adjacency of their two base vertices.  Therefore the $\sigma$-flag
@@ -1169,8 +1171,8 @@ Taking the lemma's constant $C_m$ larger than $K_m^{(3)}+K_m^{(4)}$ proves
 Keep the blow-up notation introduced above: $B_N=G^{\mathbf m}$, with clone
 classes $C_v$, target weights defined from $(G,\theta)$ and $\lambda$, and error
 $\operatorname{err}_N$; write $k:=|\sigma|$.  Consider the following finite
-random labelling experiment on the unlabelled graph $B_N$: choose uniformly from
-all embeddings $\widehat\theta:\sigma\to B_N$, where the labels of
+random-rooting experiment on the unlabelled graph $B_N$: choose uniformly from
+all embeddings $\widehat\theta:\sigma\to B_N$, where the roots of
 $\sigma$ are kept in their prescribed order.  If either $k=0$, or $k>0$ and
 $\operatorname{err}_N\le\lambda/(2k)$, then this experiment gives
 probability at least
@@ -1187,8 +1189,8 @@ $\widehat\theta(i)\in C_{\theta(i)}$ for all $i=1,\ldots,k$.
 
 \begin{proof}
 For $k=0$ there is only the empty embedding, so the probability is $1$.  Assume
-$k>0$.  The random labelling above is not a uniform map from $\sigma$ to $B_N$;
-it is uniform over the finite set of labelled copies of $\sigma$ in
+$k>0$.  The random-rooting experiment above is not a uniform map from $\sigma$ to $B_N$;
+it is uniform over the finite set of embeddings of $\sigma$ into
 $B_N$.  Every choice of vertices
 $\widehat\theta(i)\in C_{\theta(i)}$ is an embedding of $\sigma$,
 because $\theta$ is an embedding into $G$ and the blow-up preserves the
@@ -1204,9 +1206,9 @@ $\operatorname{err}_N\le\lambda/(2k)$, each planted clone class satisfies
   \frac{\lambda}{2k}.
 \]
 The clone classes $C_{\theta(1)},\ldots,C_{\theta(k)}$ are distinct, since
-$\theta$ is injective.  Thus the choices of the $k$ labelled vertices may be
-made independently: there are $|C_{\theta(i)}|$ choices for the image of label
-$i$, and every resulting choice is one of the planted embeddings counted above.
+$\theta$ is injective.  Thus the choices of the $k$ roots may be made
+independently: there are $|C_{\theta(i)}|$ choices for the image of the
+$i$th root, and every resulting choice is one of the planted embeddings counted above.
 Hence the number of planted embeddings is at least
 \[
   \prod_{i=1}^k |C_{\theta(i)}|
@@ -1217,7 +1219,7 @@ The last inequality is just the product of the individual lower bounds
 $|C_{\theta(i)}|\ge(\lambda/(2k))N$.
 The denominator in the random experiment is the total number of embeddings of
 $\sigma$ into $B_N$.  This denominator is at most the number of all maps from the
-$k$ labelled vertices to $V(B_N)$, namely $N^k$.  Therefore
+$k$ roots to $V(B_N)$, namely $N^k$.  Therefore
 the probability of choosing a planted embedding is at least
 \[
   \frac{(\lambda/(2k))^kN^k}{N^k}
@@ -1331,7 +1333,7 @@ Consider the closed cylinder in the ambient product space
 Put $C:=\widetilde C\cap X_\sigma$.  Then $C\subseteq U$.  For all sufficiently
 large $j$, write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j$, and
 call an embedding $\widehat\theta:\sigma\to B_j$ \emph{planted} if
-$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each labelled vertex $a$ of
+$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for each root $a$ of
 $\sigma$.  We now explain what \cref{lem:planted-estimate} gives for a planted
 embedding.  Since each $F_i$ has at most $m$ vertices, the lemma applies with
 base flag $(G_t,\theta_t)$ and with the clone-size vector
@@ -1458,12 +1460,12 @@ whereas in $B_N^+$ each $C_v$ is a clique.  All edges between distinct clone
 classes are governed by the same base graph $G$.
 
 First consider the approximation estimate for a $\sigma$-flag $F_0$ with
-$|F_0|\le m$.  Fix a planted labelling $\widehat\theta:\sigma\to B_N^+$ with
+$|F_0|\le m$.  Fix a planted embedding $\widehat\theta:\sigma\to B_N^+$ with
 $\widehat\theta(i)\in C_{\theta(i)}$, and compute
 $p(F_0,(B_N^+,\widehat\theta))$ by sampling the $q=|F_0|-|\sigma|$ additional
 vertices from $B_N^+\setminus\operatorname{im}\widehat\theta$.  Use exactly the
 same bad event as in \cref{lem:planted-estimate}: the sample is bad if it meets
-one of the labelled clone classes or if two sampled vertices lie in the same
+one of the root clone classes or if two sampled vertices lie in the same
 unlabelled clone class.  The probability of this bad event depends only on the
 sizes of the clone classes and on sampling without replacement.  The two
 union-bound estimates in the proof of \cref{lem:planted-estimate} therefore
@@ -1476,11 +1478,11 @@ apply without change and give
 with the same constant $K_m^{(3)}$ used there.
 
 On the complementary good event, the extra edges inside the complete clone
-classes are never observed.  Indeed, no sampled vertex lies in a labelled clone
+classes are never observed.  Indeed, no sampled vertex lies in a root clone
 class, and no two sampled vertices lie in the same unlabelled clone class.
 Thus every adjacency involving a sampled vertex is an adjacency between two
 distinct clone classes, hence is exactly the adjacency of the corresponding base
-vertices in $G$.  The planted labelled vertices also lie in distinct clone
+vertices in $G$.  The planted roots also lie in distinct clone
 classes, because $\theta$ is injective; since $\theta$ is an embedding of
 the type $\sigma$ into $G$, their mutual adjacencies are the same as in the base
 type.
@@ -1507,11 +1509,11 @@ $|F_r|\le m$, then the same argument gives the bound with
 $C_f=C_m\sum_r|a_r|$.
 
 Now consider the planted-mass estimate.  Choose a uniformly random embedding of
-$\sigma$ into $B_N^+$.  Every choice of one vertex from each labelled clone class
-$C_{\theta(i)}$ gives an embedding of $\sigma$: the labelled clone classes are
+$\sigma$ into $B_N^+$.  Every choice of one vertex from each root clone class
+$C_{\theta(i)}$ gives an embedding of $\sigma$: the root clone classes are
 distinct, and all adjacencies between them are inherited from the base flag
 $(G,\theta)$.  Since the clone classes are distinct, these choices are independent:
-for label $i$ there are $|C_{\theta(i)}|$ possible images, and the product counts
+for the $i$th root there are $|C_{\theta(i)}|$ possible images, and the product counts
 these choices of embeddings.  The
 hypothesis $\operatorname{err}_N\le\lambda/(2k)$ gives, as in
 \cref{lem:planted-mass},
@@ -1525,7 +1527,7 @@ lower bounds gives the same lower bound on the number of planted embeddings,
 \]
 under the same hypothesis $\operatorname{err}_N\le\lambda/(2k)$.  The total
 number of embeddings is still at most the number $N^k$ of all maps from the
-$k$ labelled vertices to $V(B_N^+)$.  Dividing gives the
+$k$ roots to $V(B_N^+)$.  Dividing gives the
 same lower bound $c_{k,\lambda}$, and the case $k=0$ is again trivial.
 \end{proof}
 
@@ -1595,7 +1597,7 @@ Put
 \]
 Write $C_v^{(j)}$ for the clone class of $v\in V(G_t)$ in $B_j^+$.  An embedding
 $\widehat\theta:\sigma\to B_j^+$ will be called \emph{planted} if
-$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for every labelled vertex $a$ of
+$\widehat\theta(a)\in C_{\theta_t(a)}^{(j)}$ for every root $a$ of
 $\sigma$.
 Because $G_t\in\K$ and $\K$ is true-clone-closed, every $B_j^+$ belongs to
 $\K$.  Passing to a subsequence if necessary, the unlabelled graphs $B_j^+$
@@ -1786,7 +1788,7 @@ weights $w_v$ from $(G,\theta)$ and $\lambda$ as in \cref{lem:planted-estimate},
 \]
 Then the conclusions of \cref{lem:planted-estimate,lem:planted-mass} hold for $B$ in
 place of the independent blow-up with the same constants.  In particular, for every
-integer $m\ge k$, every planted labelling
+integer $m\ge k$, every planted embedding
 $\widehat\theta$ (meaning $\widehat\theta(i)\in H_{\theta(i)}$ for each labelled
 vertex $i$), and every test $\sigma$-flag $F_0$ with at most $m$ vertices,
 \[
@@ -1804,7 +1806,7 @@ $\sigma$ into $B$.  Here $C_m$ and $c_{k,\lambda}$ are the constants from
 This is the proof of \cref{lem:true-planted-estimate} with ``complete'' replaced by
 ``arbitrary''.  For the approximation estimate, fix a test flag $F_0$, sample the
 $q=|F_0|-k$ extra vertices, and condition on the good event that no sampled vertex lies in
-a labelled clone class and that no two sampled vertices lie in the same clone class.  On
+a root clone class and that no two sampled vertices lie in the same clone class.  On
 this event every sampled vertex lies in a distinct clone class, so every adjacency
 involving a sampled vertex is an adjacency between two \emph{distinct} clone classes and
 therefore equals the corresponding base adjacency in $G$, whatever the interiors $H_v$
@@ -1814,11 +1816,11 @@ bad event and the total-variation comparison with a uniform sample depend only o
 sizes $s_v$ and on sampling without replacement, exactly as in
 \cref{lem:planted-estimate}.
 
-For the planted-mass bound, every choice of one vertex from each labelled clone class
-$H_{\theta(i)}$ gives an embedding of $\sigma$: the labelled clone classes are distinct
+For the planted-mass bound, every choice of one vertex from each root clone class
+$H_{\theta(i)}$ gives an embedding of $\sigma$: the root clone classes are distinct
 and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted count
 $\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
-embedding of $\sigma$ already arises from any transversal of $k$ labelled clone classes
+embedding of $\sigma$ already arises from any transversal of $k$ root clone classes
 spanning a copy of $\sigma$ in $G$, so the positive lower bound on the $\sigma$-type
 density of $B$ also carries over.
 \end{proof}
@@ -1993,15 +1995,15 @@ $\sigma$-flags
   (G_t,\theta_t),\qquad G_t\in\K,\qquad |G_t|\to\infty,
 \]
 meaning that for every fixed $\sigma$-flag $F$ one has
-$p(F,(G_t,\theta_t))\to\psi(F)$.  These pairs are the concrete labelled witnesses in
-this section: they are finite rooted graphs whose $\sigma$-flag densities approximate the
+$p(F,(G_t,\theta_t))\to\psi(F)$.  These pairs are the concrete finite witnesses in
+this section: they are finite graphs with specified roots whose $\sigma$-flag densities approximate the
 limiting view $\psi$.
 
 To \emph{plant} such a finite witness means to build a larger graph $H$ in the class with
 many embeddings $\widehat\theta:\sigma\to H$ whose $\sigma$-flag densities are close to
 those of $(G,\theta)$.  In the proof of \cref{thm:blowup-root-plantable}, this was done
 by a global operation: blow up the vertices of $G$ while staying inside the class.  The
-labelled vertices then have large clone classes, and choosing one vertex from each such
+roots then have large clone classes, and choosing one vertex from each such
 class gives a positive-density set of embeddings $\sigma\to H$.  For these embeddings, the
 densities of flags of any fixed size still look almost like they did in $(G,\theta)$.
 In other words, a view that was visible only by hand-picking the roots has been made
@@ -2010,7 +2012,7 @@ visible to random roots.
 The next examples, especially the $C_5$-free class, do not have such a global closure
 property.  A naive blow-up can create forbidden cycles.  What sometimes happens instead
 is more local: only a sparse, root-centred part of the graph is altered, with no closure
-property of the class assumed.  One first creates many possible embeddings of the labelled
+property of the class assumed.  One first creates many possible embeddings of the
 type---in the $C_5$ constructions below, by replacing each root with a positive-density set
 of new vertices, any one of which can serve as the image of that root---and then repairs the
 few dangerous edges.  If the repair changes so little of the graph that the $\sigma$-flag densities up to the
@@ -2018,26 +2020,26 @@ chosen size are essentially unchanged, these embeddings still reproduce the loca
 $(G,\theta)$.  The purpose of this section is to isolate
 exactly what one has to check at the level of finite graphs: the repaired graph must
 remain in the class, contain a positive-density set of embeddings $\sigma\to H$, and
-preserve the rooted densities of all flags up to the chosen size.  The payoff is
+preserve the $\sigma$-flag densities up to the chosen size.  The payoff is
 \cref{thm:finite-local-planting}: carrying out this finite-graph verification is already
 enough to prove root-plantability.
 
 The definition below formalises this finite check.  Let $k=|\sigma|$ be the number of
-labelled vertices, fix a resolution $m\ge k$, and fix a tolerance $\eps>0$.  We only ask
+roots, fix a resolution $m\ge k$, and fix a tolerance $\eps>0$.  We only ask
 to preserve $\sigma$-flag densities $p(F,\cdot)$ for flags $F$ with at most $m$ vertices,
-and only up to error $\eps$.  The requirement is that every sufficiently large labelled
+and only up to error $\eps$.  The requirement is that every sufficiently large finite
 witness $(G,\theta)$ in the class can be replaced by a larger in-class graph $H$ together
 with a set $\Theta\subseteq\Emb_\sigma(H)$ of embeddings $\sigma\to H$.  The
 lower bound $|\Theta|\ge\delta |V(H)|^k$ ensures that a uniformly random embedding
 of $\sigma$ into $H$ lands in $\Theta$ with probability at least $\delta$, since
 $|\Emb_\sigma(H)|\le |V(H)|^k$.  For each $\widehat\theta\in\Theta$, the densities
 $p(F,(H,\widehat\theta))$ must be close to $p(F,(G,\theta))$ for every such flag $F$.
-Thus the finite approximations to $\psi$ can be made typical under random labelling
+Thus the finite approximations to $\psi$ can be made typical under random rooting
 without assuming any global blow-up closure of the class.
 
 \begin{definition}[Finite planting]\label{def:finite-local-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
-$k$ labelled vertices.  Write $\Emb_\sigma(H)$ for the set of embeddings
+$k$ roots.  Write $\Emb_\sigma(H)$ for the set of embeddings
 $\sigma\to H$.  We say that $\K$ has the \emph{finite planting property at
 $\sigma$} if, for every integer $m\ge k$ and every $\eps>0$, there are an integer
 $n_0=n_0(m,\eps)\ge m$ and a constant $\delta=\delta(m,\eps)>0$ with the following
@@ -2077,7 +2079,7 @@ $\eps>0$.  Then
   \{\chi\in X_\sigma:
     |\chi(F_i)-\psi(F_i)|<\eps\text{ for all }i\}.
 \]
-Write $k=|\sigma|$ for the number of labelled vertices, and pick an integer $m\ge k$
+Write $k=|\sigma|$ for the number of roots, and pick an integer $m\ge k$
 bounding the sizes of the $F_i$.
 Choose $n_0=n_0(m,\eps/3)$ and $\delta=\delta(m,\eps/3)$ supplied by the finite
 planting property.  Also, choose a convergent sequence of $\sigma$-flags
@@ -2102,7 +2104,7 @@ $\phi_0\in Q_0$.  Since $|\Emb_\sigma(H_t)|\ge |\Theta_t|\ge\delta |V(H_t)|^k$,
 the type density of $\sigma$ stays bounded away from zero, so
 $\phi_0(\brak\sigma)>0$.
 
-Let $P_t$ be the finite random-labelling distribution obtained by choosing a uniformly
+Let $P_t$ be the finite random-rooting distribution obtained by choosing a uniformly
 random element of $\Emb_\sigma(H_t)$ and recording all $\sigma$-flag densities in
 \[
   Y_\sigma:=[0,1]^{\F^\sigma[\T_{\mathrm{Graph}}]}.
@@ -2135,7 +2137,7 @@ $\psi\in S_\sigma$.
 The clone-based root-plantability theorems above
 (\cref{thm:clone-root-plantable,thm:true-clone-root-plantable}) verify the finite
 planting property by taking $\Theta$ to be the embeddings obtained by choosing one vertex
-from each labelled clone class.  The one-root and two-root non-edge $C_5$-free constructions
+from each root clone class.  The one-root and two-root non-edge $C_5$-free constructions
 below prove it differently: they first blow up the roots and then delete a sparse set of
 dangerous neighbourhood edges.  This is why the criterion is useful beyond closure
 properties.
@@ -2144,13 +2146,13 @@ properties.
 \subsection{Sparse root-blow-up repairs}
 
 Here is a concrete, checkable way to verify finite planting.  Blow up only
-the labelled vertices into small positive-density sets from which the embeddings of
+the roots into small positive-density sets from which the embeddings of
 $\sigma$ will be chosen, leave all unlabelled vertices as singletons, and repair only a
 sparse set of old--old edges.
 
 \begin{definition}[Sparse root-blow-up repair]\label{def:sparse-root-repair}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a type in $\K$ with
-$k\ge1$ labelled vertices.  We say that $\K$ has \emph{sparse root-blow-up
+$k\ge1$ roots.  We say that $\K$ has \emph{sparse root-blow-up
 repairs at $\sigma$} if the following holds.
 For every $0<\lambda\le1$ and every $\rho>0$, there is an integer
 $n_0=n_0(\lambda,\rho)$ such that for every $\sigma$-flag $(G,\theta)$ with $G\in\K$
@@ -2179,7 +2181,7 @@ such that:
 
 \begin{theorem}[Sparse root repairs imply finite planting]\label{thm:sparse-repair-planting}
 Let $\K$ be a hereditary graph class and let $\sigma$ be a non-degenerate type
-in $\K$ with $k\ge1$ labelled vertices.  If $\K$ has sparse root-blow-up repairs
+in $\K$ with $k\ge1$ roots.  If $\K$ has sparse root-blow-up repairs
 at $\sigma$, then $\K$ has the finite planting property at $\sigma$.
 Consequently, $\K$ is root-plantable at $\sigma$.
 \end{theorem}
@@ -2579,23 +2581,23 @@ particular labelled flag, or more generally of a particular labelled algebra
 element.  It means that, for some type
 \(\sigma\), element \(g\in\A^\sigma[\T_{\mathrm{Graph}}]\), and constant \(c\),
 when any constrained unlabelled limit is rooted at random as a \(\sigma\)-flag,
-the resulting labelled homomorphism evaluates \(g\) as \(c\) almost surely,
+the resulting homomorphism evaluates \(g\) as \(c\) almost surely,
 even though a specially chosen labelled limit can evaluate \(g\) differently.
 Degeneracy gives the most basic example.  It means
 that graphs in the class have vanishing edge density asymptotically: every
 $n$-vertex member has $o(n^2)$ edges, equivalently every dense limit of the
 class has edge density zero.  In such a limit a typical vertex sees no
-labelled edge, so the density of the labelled edge flag is pinned to \(0\)
+edge from the root to a further vertex, so the density of the one-root edge flag is pinned to \(0\)
 under random rooting.  The class may still contain finite graphs with an
-\emph{exceptional} high-degree vertex, such as the centre of a star.  The labelled edge flag
+\emph{exceptional} high-degree vertex, such as the centre of a star.  The one-root edge flag
 separates the typical rooted view from this exceptional rooted view.
 
 For the degeneracy obstruction below, write \(\vtype\) for the one-vertex
 type.  The notation \(\one_\sigma\) always denotes the unit of the
 \(\sigma\)-typed flag algebra; thus \(\vtype\) is a type, while
 \(\one_{\vtype}\) is an algebra element.  Let
-$e\in\A^{\vtype}[\T_{\mathrm{Graph}}]$ be the labelled edge flag (the
-two-vertex flag in which the labelled vertex is adjacent to the one unlabelled vertex), and
+$e\in\A^{\vtype}[\T_{\mathrm{Graph}}]$ be the edge flag over the one-vertex type (the
+two-vertex flag in which the root is adjacent to the one unlabelled vertex), and
 $\rho\in\A^0[\T_{\mathrm{Graph}}]$ is
 the unlabelled edge flag; recall $\avg{e}{\vtype}=\rho$ and
 $\brak{\vtype}=\one_0$.
@@ -2636,7 +2638,7 @@ satisfies $\chi(e)=0$, and since $\chi\mapsto\chi(e)$ is continuous this gives t
 inclusion $S_{\vtype}\subseteq\{\chi\in Q_{\vtype}:\chi(e)=0\}$.
 
 Let $S_N=K_{1,N-1}$ be the star on $N$
-vertices, labelled at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
+vertices, rooted at its centre; by hypothesis $S_N\in\K$ for arbitrarily large $N$.
 Every unlabelled vertex is adjacent to the centre, so $p(e,S_N)=1$ for all $N$.  By
 compactness a subsequence converges to some $\psi\in Q_{\vtype}$ with $\psi(e)=1$, whence
 $\psi(-e)=-1<0$.  Thus, $\psi\in Q_{\vtype}$ witnesses
@@ -2646,16 +2648,16 @@ $\psi\in Q_{\vtype}\setminus S_{\vtype}$, so $S_{\vtype}\ne Q_{\vtype}$.
 
 \begin{remark}
 The hypothesis ``contains arbitrarily large stars'' is only used to exhibit, in
-$Q_{\vtype}$, a labelled limit of positive labelled edge density; it may be replaced by the
-existence of any sequence of labelled graphs in $\K$ whose labelled edge density stays
+$Q_{\vtype}$, a labelled limit of positive one-root edge density; it may be replaced by the
+existence of any sequence of one-root graphs in $\K$ whose one-root edge density stays
 bounded away from $0$.
 \end{remark}
 
 \begin{remark}[The obstruction]
-The centre of a star is an exceptional labelled vertex.  Quotient semantics can see
+The centre of a star is an exceptional root.  Quotient semantics can see
 it, because labelled limits may sit at exceptional vertices.  Ensemble semantics
-instead labels a constrained unlabelled limit at a \emph{typical} vertex; in a
-degenerate class the edge density is zero, so a typical vertex has labelled edge
+instead chooses the root in a constrained unlabelled limit at a \emph{typical} vertex; in a
+degenerate class the edge density is zero, so a typical vertex has one-root edge
 density zero.  The high-degree vertex cannot be planted with positive probability
 without leaving the class: duplicating the centre and one neighbour already produces
 a $K_{2,2}$, and more generally a denser local configuration than a degenerate class can
@@ -2748,18 +2750,129 @@ $\overline\K$ is.
 \end{lemma}
 
 \begin{proof}
-Vertex-wise complementation $G\mapsto\overline G$ is an involution on finite graphs
-that takes induced-subgraph densities to those of the complements, hence extends to
-an isomorphism of flag algebras
-$\A^\sigma[\T_{\mathrm{Graph}}]\cong\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$ carrying
-$\K$-flags to $\overline\K$-flags.  It therefore induces a homeomorphism
-$X_\sigma\cong X_{\overline\sigma}$ taking $Q_\sigma$ for $\K$ onto $Q_{\overline\sigma}$
-for $\overline\K$.  Complementation also commutes with the random labelling: a uniformly
-random embedding of $\sigma$ into $G$ is the same embedding of $\overline\sigma$ into
-$\overline G$, so it carries each $\Ext_\sigma(\phi_0)$ to the corresponding
-extension for $\overline\K$, and hence $S_\sigma$ for $\K$ onto $S_{\overline\sigma}$
-for $\overline\K$.  Thus $S_\sigma=Q_\sigma$ holds for $\K$ if and only if it holds
-for $\overline\K$.
+In this proof write $Q_\sigma(\K)$ and $S_\sigma(\K)$ for the two spaces
+defined using the constrained class $\K$.
+Let $C_\sigma$ send a finite $\sigma$-flag $F=(G,\theta)$ to the
+$\overline\sigma$-flag $\overline F=(\overline G,\theta)$.  This operation is
+an involution: applying the corresponding map $C_{\overline\sigma}$ returns
+the original flag.  We first check that this rule is compatible with the
+equalities used to define the flag algebra.  In the flag algebra, a flag is
+identified with the weighted average of its one-vertex extensions; therefore,
+if complementing a flag is to define a map on algebra elements, it must carry
+each such equality to the corresponding equality for complemented flags.  If
+$F$ is a $\sigma$-flag and $H$ is a larger $\sigma$-flag, then the same set of
+unlabelled vertices induces $F$ in $H$ if and only if it
+induces $\overline F$ in $\overline H$. Therefore
+\[
+  p(F,H)=p(\overline F,\overline H).
+\]
+In particular, if
+\[
+  F-\sum_{|H|=|F|+1}p(F,H)\,H
+\]
+is one of the one-vertex extension relations defining
+$\A^\sigma[\T_{\mathrm{Graph}}]$, its image under $C_\sigma$ is
+\[
+  \overline F-\sum_{|H|=|F|+1}p(\overline F,\overline H)\,\overline H,
+\]
+which is exactly the corresponding extension relation in
+$\A^{\overline\sigma}[\T_{\mathrm{Graph}}]$.  Thus two expressions that
+represent the same element before complementing still represent the same
+element after complementing.  So $C_\sigma$ gives a well-defined linear map
+between the two flag algebras.  Since complementation is involutive, this
+linear map has inverse $C_{\overline\sigma}$, and hence is a linear isomorphism
+\[
+  C_\sigma:\A^\sigma[\T_{\mathrm{Graph}}]\cong
+  \A^{\overline\sigma}[\T_{\mathrm{Graph}}].
+\]
+
+We next check that this linear isomorphism is multiplicative.  Let $F_1$ and
+$F_2$ be $\sigma$-flags, and let $H$ be a $\sigma$-flag of the product size
+$|F_1|+|F_2|-|\sigma|$.  By definition, the coefficient of $H$ in
+$F_1\cdot F_2$ is the probability that a uniformly random split of the unlabelled
+vertices of $H$ into two parts of the required sizes exhibits $F_1$ on the
+first part together with the roots and $F_2$ on the second part together with
+the roots.  For each fixed split this event holds in $H$ if and only if the
+same split in $\overline H$ exhibits $\overline F_1$ and $\overline F_2$.
+Thus the coefficient of $H$ in $F_1\cdot F_2$ is the coefficient of $\overline H$ in
+$\overline F_1\cdot\overline F_2$.  Summing over all product-size flags gives
+\[
+  C_\sigma(F_1\cdot F_2)=C_\sigma(F_1)\cdot C_\sigma(F_2).
+\]
+By bilinearity the same identity holds for arbitrary elements of
+$\A^\sigma[\T_{\mathrm{Graph}}]$, so $C_\sigma$ is an algebra isomorphism.
+
+Now consider the constrained classes.  A $\sigma$-flag $F$ is admissible for
+$\K$ exactly when its underlying unlabelled graph lies in $\K$.  The underlying
+graph of $C_\sigma(F)$ is the complement of that graph, so $F$ is admissible
+for $\K$ exactly when $C_\sigma(F)$ is admissible for $\overline\K$; likewise,
+forbidden flags correspond to forbidden flags.  Hence the algebra isomorphism
+identifies the constrained quotient for $\K$ with the constrained quotient for
+$\overline\K$.
+
+Let
+\[
+  \widehat C_\sigma:X_\sigma\longrightarrow X_{\overline\sigma}
+\]
+be the induced map on positive homomorphisms, defined by
+\[
+  \widehat C_\sigma(\chi)(a)=\chi(C_{\overline\sigma}a)
+  \qquad
+  (a\in\A^{\overline\sigma}[\T_{\mathrm{Graph}}]).
+\]
+This is just precomposition with the inverse algebra isomorphism.  Its inverse
+is $\widehat C_{\overline\sigma}$, so it is a homeomorphism.  Because forbidden
+flags correspond under complementation, the intrinsic description of
+$Q_\sigma$ as the homomorphisms vanishing on forbidden flags shows that
+\[
+  \widehat C_\sigma(Q_\sigma(\K))=Q_{\overline\sigma}(\overline\K).
+\]
+
+It remains to check the ensemble supports.  Let $\phi_0\in Q_0(\K)$ and put
+$\overline\phi_0:=\widehat C_\emptyset(\phi_0)\in Q_0(\overline\K)$.  Since
+complementation preserves embeddings of the type, it also commutes with
+unlabelling:
+\[
+  C_\emptyset(\avg{g}{\sigma})
+  =
+  \avg{C_\sigma(g)}{\overline\sigma},
+  \qquad
+  C_\emptyset(\brak\sigma)=\brak{\overline\sigma}.
+\]
+Therefore $\phi_0(\brak\sigma)>0$ if and only if
+$\overline\phi_0(\brak{\overline\sigma})>0$.  Moreover, for
+$g\in\A^\sigma[\T_{\mathrm{Graph}}]$ the expectation formula gives
+\[
+  \E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(g)]
+  =
+  \frac{\phi_0(\avg{g}{\sigma})}{\phi_0(\brak\sigma)}
+  =
+  \frac{\overline\phi_0(\avg{C_\sigma(g)}{\overline\sigma})}
+       {\overline\phi_0(\brak{\overline\sigma})}.
+\]
+The right-hand side is the expectation of $C_\sigma(g)$ under
+$\Ext_{\overline\sigma}(\overline\phi_0)$.  These identities hold for every
+$g$, and the evaluation functions coming from the flag algebra form a
+separating algebra of continuous functions on the compact homomorphism space;
+hence they determine probability measures.  Thus pushing
+$\Ext_\sigma(\phi_0)$ forward by $\widehat C_\sigma$ gives
+$\Ext_{\overline\sigma}(\overline\phi_0)$.  As $\phi_0$ ranges over
+$Q_0(\K)$, the limits $\overline\phi_0$ range over $Q_0(\overline\K)$.
+Since a homeomorphism sends the support of a measure to the support of its
+pushforward, $\widehat C_\sigma$ takes each support appearing in the definition
+of $S_\sigma(\K)$ to the corresponding support appearing in the definition of
+$S_{\overline\sigma}(\overline\K)$.  After taking the union and closure, we get
+\[
+  \widehat C_\sigma(S_\sigma(\K))=S_{\overline\sigma}(\overline\K).
+\]
+
+Thus the same homeomorphism identifies both pairs of spaces,
+$Q_\sigma(\K)$ with $Q_{\overline\sigma}(\overline\K)$ and $S_\sigma(\K)$ with
+$S_{\overline\sigma}(\overline\K)$.  Consequently
+$S_\sigma(\K)=Q_\sigma(\K)$ if and only if
+$S_{\overline\sigma}(\overline\K)=Q_{\overline\sigma}(\overline\K)$.  This is
+the desired equivalence of root-plantability.  The final assertion follows
+because the one-vertex type is equal to its complement.
 \end{proof}
 
 Call $\K$ \emph{co-edge-degenerate} if $\overline\K$ is edge-degenerate; equivalently
@@ -2786,7 +2899,7 @@ $-e$ for $\overline\K$ pulls back to $-(\one_{\vtype}-e)=e-\one_{\vtype}$ for $\
 $\avg{e}{\vtype}=\rho$ gives $\E[\phi^{\vtype}(e)]=\phi_0(\rho)=1$, and
 $\phi^{\vtype}(e)\le1$ forces
 $\phi^{\vtype}(e)=1$ almost surely, so $e-\one_{\vtype}$ is non-negative almost surely under every
-admissible one-root random extension; while the co-star labelled at its isolated vertex
+admissible one-root random extension; while the co-star rooted at its isolated vertex
 gives a $\psi\in Q_{\vtype}$ with $\psi(e)=0$, whence $\psi(e-\one_{\vtype})=-1<0$ and quotient
 semantics fails.
 \end{proof}
@@ -2794,9 +2907,9 @@ semantics fails.
 \begin{remark}[The dichotomy: density is not the dividing line]
 \cref{thm:degenerate-obstruction} and \cref{cor:codegenerate}
 together show that root-plantability is governed neither by heredity nor by density:
-edge-degenerate classes (labelled edge density pinned to $0$) and co-edge-degenerate
+edge-degenerate classes (one-root edge density pinned to $0$) and co-edge-degenerate
 classes (pinned to $1$) both fail, for the same reason.  What separates a typical
-vertex from the exceptional one is that the labelled edge density is \emph{pinned} to a
+vertex from the exceptional one is that the one-root edge density is \emph{pinned} to a
 boundary value of $[0,1]$ across all constrained unlabelled limits, while the
 constrained class still contains a labelled limit attaining the opposite boundary.  The
 governing invariant is this boundary pinning, not sparsity or density.
@@ -2814,13 +2927,13 @@ one-root and non-edge cases remain useful models for planting beyond clone-closu
 
 \subsection{The general obstruction and a conjecture}
 
-Both obstructions are instances of one mechanism: a labelled density pinned almost
+Both obstructions are instances of one mechanism: the density of a flag pinned almost
 surely to a single value across all constrained limits, while the quotient escapes
 it.
 
 \begin{theorem}[Pinning obstruction]\label{thm:pinning}
 Let $\sigma$ be a non-degenerate type, let $g$ be a $\sigma$-flag, and let
-$c\in[0,1]$.  Suppose the labelled density of $g$ is almost surely pinned to $c$ across
+$c\in[0,1]$.  Suppose the density of $g$ is almost surely pinned to $c$ across
 all constrained unlabelled limits: for every $\phi_0\in Q_0$ with
 $\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(g)=c$ almost surely under
 $\Ext_\sigma(\phi_0)$.  If the constrained class contains a labelled limit attaining a different
@@ -2893,8 +3006,8 @@ positive $\sigma$-density; so $\phi_0^{\lambda}$ can be labelled by $\sigma$.
 
 Every edge weight of $W_\lambda$ is at most $\lambda$, so under
 $\Ext_\sigma(\phi_0^{\lambda})$ the probability that a given further vertex attaches to
-a labelled vertex, or that two further vertices are adjacent, is at most $\lambda$.  Hence as
-$\lambda\to0$ the labelled density of a $\sigma$-flag $g$ tends to $1$ when $g$ extends
+a root, or that two further vertices are adjacent, is at most $\lambda$.  Hence as
+$\lambda\to0$ the density of a $\sigma$-flag $g$ tends to $1$ when $g$ extends
 $\sigma$ by pairwise non-adjacent vertices that are also non-adjacent to $\sigma$, and to
 $0$ otherwise.  These limiting values are $\{0,1\}$, so $\Ext_\sigma(\phi_0^{\lambda})$
 concentrates at the labelled limit $o_\sigma$---the type $\sigma$ together with an isolated
@@ -2904,7 +3017,7 @@ edgeless cloud---which therefore lies in $S_\sigma$ and is $\{0,1\}$-valued on e
 \begin{remark}[Scope]
 \Cref{thm:no-interior} is uniform in $\sigma$, with no restriction on the type, and
 subsumes the one-vertex, edge, and clique cases at once.  The scaled graphons
-$\lambda W$ supply, as $\lambda\to0$, a deterministic labelled view of $\sigma$ from which
+$\lambda W$ supply, as $\lambda\to0$, a deterministic rooted view of $\sigma$ from which
 the boundary value is read off.  No single $\K$-limit of positive $\sigma$-density has
 isolated $\sigma$-copies; but letting the $\sigma$-density tend to zero \emph{along} the
 family while staying positive realises such a view in the closure $S_\sigma$, exactly as
@@ -2924,23 +3037,23 @@ arises at the one-vertex type, and then build the edge-type obstruction.
 
 \begin{corollary}[No pinning obstruction for $C_5$-free]\label{cor:c5-no-pin}
 The $C_5$-free class has no pinning obstruction at $\sigma=\vtype$ from the edge or the
-labelled triangle flag.
+triangle flag over the one-vertex type.
 \end{corollary}
 
 \begin{proof}
 By \cref{lem:c5-nbhd}, $G[N(v)]$ is a disjoint union of stars and triangles, so it has
 at most $\deg(v)$ edges; hence the number of triangles through $v$ is at most $\deg(v)\le n$,
-and the labelled triangle density at every vertex is $O(1/n)$.  Hence the
-labelled triangle flag has density $0$ on \emph{all} of $Q_{\vtype}$: it is pinned at $0$, but
+and the one-root triangle density at every vertex is $O(1/n)$.  Hence the
+triangle flag over the one-vertex type has density $0$ on \emph{all} of $Q_{\vtype}$: it is pinned at $0$, but
 the quotient attains only $0$, so no obstruction arises.  The edge flag is not
 pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
 (the empty graph and the complete bipartite graphs).
 \end{proof}
 
 The same class is not root-plantable at the two-root edge type.  Let $\tau$ be
-the type consisting of a labelled edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
+the type consisting of two roots joined by an edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
 be the three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent
-to both labelled vertices; equivalently, $g$ is the triangle $\tau$-flag over
+to both roots; equivalently, $g$ is the triangle $\tau$-flag over
 the edge type.
 
 \begin{lemma}[Few triangles]\label{lem:c5-few-triangles}
@@ -3033,7 +3146,7 @@ $S_\tau\ne Q_\tau$.
 The $C_5$-free class therefore gives both a positive and a negative lesson.  A
 single typical vertex in a positive-density $C_5$-free limit may have nontrivial
 edge density to the rest of the graph, and \cref{thm:c5-one-root} shows that
-every such labelled quotient limit can be planted.  A typical labelled edge is much
+every such labelled quotient limit can be planted.  A typical two-root edge is much
 more rigid: the common-neighbour density is forced to vanish, while an
 exceptional edge in a sparse book graph may have common-neighbour density one.
 This is precisely a pinning obstruction, so the characterisation conjecture (\cref{conj:characterisation})
@@ -3042,10 +3155,10 @@ survives this test but must be understood type by type.
 
 \section{The gap is invisible to density bounds}\label{sec:empty-type}
 
-The obstructions above all occur at non-empty labelled types.  A \emph{pinning}
+The obstructions above all occur at non-empty types.  A \emph{pinning}
 obstruction means that some labelled flag \(g\) has a fixed value \(c\) in
-almost every random labelled view of every constrained unlabelled limit, even
-though a specially chosen labelled quotient limit can give \(g\) a different
+almost every random rooted view of every constrained unlabelled limit, even
+though a specially chosen quotient limit at this type can give \(g\) a different
 value.  Algebraically, the corresponding witness is \(g-c\,\one_\sigma\) or
 \(c\,\one_\sigma-g\): it vanishes on the ensemble support but not on all of
 \(Q_\sigma\).  In the one-vertex examples this type is \(\sigma=\vtype\), and
@@ -3065,7 +3178,7 @@ root-plantable, and quotient and ensemble semantics coincide for every $f\in\A^0
 \end{proposition}
 
 \begin{proof}
-The empty type admits a unique embedding into any graph, so the random labelling carries
+The empty type admits a unique embedding into any graph, so the random rooting carries
 no information; we read this off \eqref{eq:extension-expectation}.  For
 $\sigma=\emptyset$ the unlabelling operator is the identity and $\brak\emptyset=\one_0$, so
 $\phi_0(\brak\emptyset)=1$ and $\mu:=\Ext_\emptyset(\phi_0)$ satisfies
@@ -3084,7 +3197,7 @@ of the two semantics now follows from \cref{thm:support-criterion}.
 
 \begin{corollary}\label{cor:confined}
 No density bound in $\A^0[\T_1]$ is ensemble-true but quotient-false; every failure of
-the quotient/ensemble correspondence occurs at a labelled type $\sigma\ne\emptyset$.  In
+the quotient/ensemble correspondence occurs at a non-empty type $\sigma\ne\emptyset$.  In
 particular the witnesses $-e$ and $e-\one_{\vtype}$ are inequalities at $\sigma=\vtype$, not density
 bounds.
 \end{corollary}
@@ -3223,7 +3336,7 @@ $\R_{\ge0}\,\one_0$.
 
 \begin{remark}[What a practically relevant exact gap would require]
 \Cref{prop:single-point} shows the gap is not merely witness-inert but completely inert
-for the exhibited classes: a degenerate labelling carries no information, so its only
+for the exhibited classes: a degenerate root choice carries no information, so its only
 contribution to a density bound is an additive constant, in either semantics.  A gap
 that survives at the exact certificate level therefore requires, by
 \cref{prop:ideal-zero}, a \emph{Positivstellensatz gap on the support variety}: a
@@ -3366,7 +3479,7 @@ More explicitly:
         \]
   \item At the ordered edge type $\tau$, let $a_\tau$ and $b_\tau$ be the two
         three-vertex flags in which the new vertex is adjacent to exactly the first,
-        respectively exactly the second, labelled endpoint; let $z_\tau$ be the flag in
+        respectively exactly the second, root endpoint; let $z_\tau$ be the flag in
         which it is adjacent to neither endpoint; and let $g_\tau$ denote the quotient
         image of the common-neighbour triangle flag, already zero in the triangle-free
         class.  On $S_\tau(Y_{\mathrm{Mantel}})$,
@@ -3412,7 +3525,7 @@ The equality constraint $\phi_0(\rho)=1/2$ is not hereditary, so it is not natur
 quotient flag algebra.  The relative ensemble support nevertheless records strong
 labelled consequences of being an extremal Mantel limit.  For instance,
 $e=\frac12\one_{\vtype}$ on $S_{\vtype}(Y_{\mathrm{Mantel}})$, while this equality is false in the
-ordinary triangle-free quotient: stars labelled at their centres give quotient points
+ordinary triangle-free quotient: stars rooted at their centres give quotient points
 with $e=1$, and empty graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
 local information about extremisers that the hereditary quotient deliberately forgets.
 \end{remark}
