@@ -11,10 +11,10 @@ Per-problem density-bound proof built on the API automation layer. The headline
 result `K4_free_P4_density_upper_bound` shows that for K₄-free graphs the path
 `P₄` (4-vertex path) density is at most `32/9`:
 
-  `P4_density ≤[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)`.
+  `P4_density ≤ᵢ[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)`.
 
 The proof assembles a sum-of-squares certificate from three squared flag
-combinations `f₁, f₂, f₃` and discharges the resulting `forbidLE` goal with the
+combinations `f₁, f₂, f₃` and discharges the resulting `inducedForbidLE` goal with the
 API tactics (`reduce_downward_flagmul`, `expand_one_at`, `flag_nonneg`). It is
 the `r = 3` instance of the more general `CompleteGraphFreeP4` result.
 -/
@@ -89,11 +89,11 @@ most `32/9`. Proved by adding the non-negative SOS terms `(8/9)·f₁ + 5·f₂ 
 (35/9)·f₃` and reducing the resulting flag-algebra inequality with the API
 tactics. -/
 theorem K4_free_P4_density_upper_bound
-    : P4_density ≤[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : P4_density ≤ᵢ[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have h : P4_density ≤[K4.toFinFlag]
+  have h : P4_density ≤ᵢ[K4.toFinFlag]
       P4_density + (8 / 9 : ℝ) • f₁ + (5 : ℝ) • f₂ + (35 / 9 : ℝ) • f₃ := by
-    apply forbidLE_of_le
+    apply inducedForbidLE_of_le
     have h₁ : 0 ≤ (8 / 9 : ℝ) • f₁ := nonneg_smul_nonneg_geq_zero (by norm_num) f₁_nonneg
     have h₂ : 0 ≤ (5 : ℝ) • f₂ := nonneg_smul_nonneg_geq_zero (by norm_num) f₂_nonneg
     have h₃ : 0 ≤ (35 / 9 : ℝ) • f₃ := nonneg_smul_nonneg_geq_zero (by norm_num) f₃_nonneg
@@ -102,8 +102,8 @@ theorem K4_free_P4_density_upper_bound
       _ ≤ P4_density + (8 / 9 : ℝ) • f₁ + (5 : ℝ) • f₂ := le_add_of_nonneg_right h₂
       _ ≤ P4_density + (8 / 9 : ℝ) • f₁ + (5 : ℝ) • f₂ + (35 / 9 : ℝ) • f₃ := le_add_of_nonneg_right h₃
 
-  apply forbidLE_trans h
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one K4.toFinFlag 4)))
+  apply inducedForbidLE_trans h
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one K4.toFinFlag 4)))
 
   dsimp [P4_density, f₁, f₂, f₃]
   simp only [pow_two, add_mul, mul_add, sub_mul, mul_sub, smul_mul_smul_comm]
@@ -117,7 +117,7 @@ theorem K4_free_P4_density_upper_bound
   expand_one_at 4
   rw [← one_smul ℝ (FlagAlgebra_4_0_0_6)]
   flagsum_ac_sort_rhs_pipeline
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 end K4freeP4

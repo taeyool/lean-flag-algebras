@@ -184,10 +184,10 @@ private theorem auto_flagDensity1_2_0_0_1_4_0_0_9
   native_decide
 
 /-- Edge-based forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
-over the K4-free 4-vertex flags via `flag_expand_hfree 4 K4` (`basisVector_quot_forbidEq_sum`
+over the K4-free 4-vertex flags via `flag_expand_hfree 4 K4` (`basisVector_quot_inducedForbidEq_sum`
 rewritten onto `flagSetHfree_4_0_0_K4`; the K4 term `Flag_4_0_0_10` is dropped automatically). -/
 lemma K4turan_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
+    : FlagAlgebra_2_0_0_1 =ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
         (1 / 6 : ℝ) • FlagAlgebra_4_0_0_1 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_2 + (1 / 3 : ℝ) • FlagAlgebra_4_0_0_3 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_4 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_5 + (1 / 2 : ℝ) • FlagAlgebra_4_0_0_6 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_7 + (2 / 3 : ℝ) • FlagAlgebra_4_0_0_8 + (5 / 6 : ℝ) • FlagAlgebra_4_0_0_9
   := by
   flag_expand_hfree 4 K4
@@ -196,18 +196,21 @@ lemma K4turan_flagAlgebra_expand_under_forbid
 Certificate description: '2-graph; maximize 2:12 density; forbid 4:121314232434'
 Bound: '2/3'. -/
 theorem K4turan_flagAlgebra
-    : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)] (2 / 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 4)] (2 / 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
+  apply inducedForbidLE_toFinFlag_imp_forbidLE
+  rw [show (completeGraph (Fin 4)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)
+        from (completeSym2Graph_finFlag_eq 4).symm]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
     := by
-    apply forbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply forbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
-  apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) 4)))
+    apply inducedForbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply inducedForbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
+  apply inducedForbidLE_trans quadraticForm_trans
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K4⟧⟩ : FinFlag ∅ₜ) 4)))
   simp only [add_assoc]
-  rw [forbidLE_rw_left_add_right K4turan_flagAlgebra_expand_under_forbid]
+  rw [inducedForbidLE_rw_left_add_right K4turan_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_four, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
@@ -218,7 +221,7 @@ theorem K4turan_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 end K4turan

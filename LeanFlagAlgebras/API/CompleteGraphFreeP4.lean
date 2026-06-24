@@ -14,7 +14,7 @@ headline result `Kr_plus_1_free_P4_density_upper_bound` (upper-bound direction
 of Theorem 1.3(i), Murphy–Nir 2021) states that for `r ≥ 3` and K_{r+1}-free
 graphs the `P₄` density is at most `12·((r-1)/r)³`:
 
-  `P4_density ≤[(completeGraph (Fin (r+1))).toFinFlag]
+  `P4_density ≤ᵢ[(completeGraph (Fin (r+1))).toFinFlag]
      (12 * (((r:ℝ) - 1) / r) ^ 3) • (1 : FlagAlgebra ∅ₜ)`.
 
 The certificate consists of r-parameterized squared terms `f₁ r, f₂, f₃ r`,
@@ -281,15 +281,15 @@ axiom Zykov_K4_density_bound (r : ℕ) (hr : 3 ≤ r) (φ₀ : PositiveHom ∅�
     : φ₀ FlagAlgebra_4_0_0_10 ≤ ((r : ℝ)^3 - 6 * r^2 + 11 * r - 6) / (r : ℝ)^3
 
 /-- **K₄ density in K_{r+1}-free graphs** is at most `(r-1)(r-2)(r-3)/r³`, i.e.
-`0 ≤[K_{r+1}] f₀ r` (Corollary 1.5, Murphy–Nir 2021). The flag-algebra layer is
-discharged here: via `forbidLE_emptyType_iff_forbidLE` the goal reduces to the
+`0 ≤ᵢ[K_{r+1}] f₀ r` (Corollary 1.5, Murphy–Nir 2021). The flag-algebra layer is
+discharged here: via `inducedForbidLE_emptyType_iff_inducedForbidLE` the goal reduces to the
 per-homomorphism `K₄`-density bound, which is exactly the `Zykov_K4_density_bound`
 axiom. -/
 lemma K4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
-    : 0 ≤[(completeGraph (Fin (r + 1))).toFinFlag] f₀ r
+    : 0 ≤ᵢ[(completeGraph (Fin (r + 1))).toFinFlag] f₀ r
   := by
-  -- Reduce the probabilistic `forbidLE` to the deterministic per-homomorphism form.
-  rw [← forbidLE_emptyType_iff_forbidLE]
+  -- Reduce the probabilistic `inducedForbidLE` to the deterministic per-homomorphism form.
+  rw [← inducedForbidLE_emptyType_iff_inducedForbidLE]
   intro φ₀ hKfree
   -- The K₄ density of any K_{r+1}-free limit is at most the Turán value (Zykov, assumed).
   have key := Zykov_K4_density_bound r hr φ₀ hKfree
@@ -375,33 +375,33 @@ Proof: add the nonnegative SOS terms `pᵢ·fᵢ` and the K₄-correction `p₀�
 `gap_identity` and `leftover_nonneg`. The only nontrivial input is the K₄-density
 bound (`K4_density_upper_bound`, Cor 1.5). -/
 theorem Kr_plus_1_free_P4_density_upper_bound (r : ℕ) (hr : 3 ≤ r)
-    : P4_density ≤[(completeGraph (Fin (r + 1))).toFinFlag]
+    : P4_density ≤ᵢ[(completeGraph (Fin (r + 1))).toFinFlag]
       (12 * (((r : ℝ) - 1) / r) ^ 3 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
   set F := (completeGraph (Fin (r + 1))).toFinFlag with hF
   -- Step 1: add the four nonnegative certificate terms to the left-hand side.
-  have hp1 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₁ r • f₁ r :=
-    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₁_nonneg r hr) (f₁_nonneg r))
-  have hp2 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₂ r • f₂ :=
-    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₂_nonneg r hr) f₂_nonneg)
-  have hp3 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₃ r • f₃ r :=
-    forbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₃_nonneg r hr) (f₃_nonneg r))
-  have hp0 : (0 : FlagAlgebra ∅ₜ) ≤[F] p₀ r • f₀ r := by
-    have h := forbidLE_smul_nonneg (p₀_nonneg r hr) (K4_density_upper_bound r hr)
+  have hp1 : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F] p₁ r • f₁ r :=
+    inducedForbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₁_nonneg r hr) (f₁_nonneg r))
+  have hp2 : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F] p₂ r • f₂ :=
+    inducedForbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₂_nonneg r hr) f₂_nonneg)
+  have hp3 : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F] p₃ r • f₃ r :=
+    inducedForbidLE_of_le (nonneg_smul_nonneg_geq_zero (p₃_nonneg r hr) (f₃_nonneg r))
+  have hp0 : (0 : FlagAlgebra ∅ₜ) ≤ᵢ[F] p₀ r • f₀ r := by
+    have h := inducedForbidLE_smul_nonneg (p₀_nonneg r hr) (K4_density_upper_bound r hr)
     rwa [smul_zero] at h
-  have step1 : P4_density ≤[F]
+  have step1 : P4_density ≤ᵢ[F]
       P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r :=
-    forbidLE_trans_add_nonneg
-      (forbidLE_trans_add_nonneg
-        (forbidLE_trans_add_nonneg
-          (forbidLE_trans_add_nonneg (forbidLE_refl F P4_density) hp1) hp2) hp3) hp0
+    inducedForbidLE_trans_add_nonneg
+      (inducedForbidLE_trans_add_nonneg
+        (inducedForbidLE_trans_add_nonneg
+          (inducedForbidLE_trans_add_nonneg (inducedForbidLE_refl F P4_density) hp1) hp2) hp3) hp0
   -- Step 2: the remaining gap is a nonnegative combination of flags (unconditional).
-  have step2 : (P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r) ≤[F]
+  have step2 : (P4_density + p₁ r • f₁ r + p₂ r • f₂ + p₃ r • f₃ r + p₀ r • f₀ r) ≤ᵢ[F]
       (12 * (((r : ℝ) - 1) / r) ^ 3 : ℝ) • (1 : FlagAlgebra ∅ₜ) := by
-    apply forbidLE_of_le
+    apply inducedForbidLE_of_le
     rw [← gap_identity r hr]
     exact le_add_of_nonneg_right (leftover_nonneg r hr)
-  exact forbidLE_trans step1 step2
+  exact inducedForbidLE_trans step1 step2
 
 
 /-- **Turán r-partite graphon limit — existence and P₄ density value — taken as an explicit

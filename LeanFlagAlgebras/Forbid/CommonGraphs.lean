@@ -102,6 +102,35 @@ theorem completeSym2Graph_edges_iff (r : ℕ) (i j : Fin r) :
 
 end FlagAlgebras.Compute
 
+open FlagAlgebras.Compute in
+/-- **Sym2 ↔ SimpleGraph bridge for the complete graph.** The induced forbidden flag of the
+edge-based `completeSym2Graph r` equals the empty-type flag of the abstract `completeGraph (Fin r)`
+(`= ⊤`). This lets an induced bound `f ≤ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦completeSym2Graph r⟧⟩] g`
+(proved by the Sym2-based pruning/SOS machinery) feed the non-induced graph bridge
+`inducedForbidLE_toFinFlag_imp_forbidLE` and hence `forbidLE (completeGraph (Fin r))`. -/
+theorem completeSym2Graph_finFlag_eq (r : ℕ) :
+    (⟨r, Sym2EmptyTypedFlag.toFlag ⟦completeSym2Graph r⟧⟩ : FinFlag ∅ₜ)
+      = (completeGraph (Fin r)).toFinFlag := by
+  have hgraph : (completeSym2Graph r).toLabeledGraph.graph = completeGraph (Fin r) := by
+    ext u v
+    rw [Sym2Graph.toLabeledGraph_adj_iff, completeSym2Graph_edges_iff]
+    exact Iff.rfl
+  have hflag : Sym2EmptyTypedFlag.toFlag ⟦completeSym2Graph r⟧
+      = (⟦{ graph := completeGraph (Fin r), type_embed := RelEmbedding.ofIsEmpty _ _ }⟧
+          : Flag ∅ₜ (Fin r)) := by
+    simp only [Sym2EmptyTypedFlag.toFlag, Sym2Graph.toFlag, Quotient.lift_mk]
+    refine Quotient.sound (Nonempty.intro ?_)
+    exact {
+      graph_iso := by
+        refine { toEquiv := Equiv.refl _, map_rel_iff' := ?_ }
+        intro u v
+        simp [hgraph]
+      type_preserve := List.ofFn_inj.mp rfl }
+  show (⟨r, Sym2EmptyTypedFlag.toFlag ⟦completeSym2Graph r⟧⟩ : FinFlag ∅ₜ)
+      = ⟨r, (⟦{ graph := completeGraph (Fin r), type_embed := RelEmbedding.ofIsEmpty _ _ }⟧
+              : Flag ∅ₜ (Fin r))⟩
+  rw [hflag]
+
 /-- `forbid_complete_graph r` elaborates to the complete graph `K_r` as a `Sym2Graph r` term,
 for the edge-based forbid-free commands (Task 6). Typical use:
 `def K4 : Sym2Graph 4 := forbid_complete_graph 4`. -/

@@ -4,14 +4,14 @@ import LeanFlagAlgebras.Flags.ForbidFreePruned
 /-! # Forbid-free flag generation
 
 When working under a forbidden subgraph, only the forbid-free flags are ever
-needed (the forbidden ones vanish under the `=[Forbid]` relation). This module
+needed (the forbidden ones vanish under the `=ᵢ[Forbid]` relation). This module
 provides generation commands that emit *only* the forbid-free flag constants and
 prove the corresponding completeness lemma — the forbid-free analogue of
 `generate_empty_typed_flags` / `generate_flags`, whose completeness is `= univ`.
 
 Instead of `flagSet = univ`, the forbid-free completeness is
 `flagSetHfree = univ.filter (fun F' => flagDensity₁ Forbid.toFinFlag.2 (unlabel F') = 0)`
-— exactly the predicate the `Forbid` expansion lemmas (`basisVector_quot_*_forbidEq_sum`)
+— exactly the predicate the `Forbid` expansion lemmas (`basisVector_quot_*_inducedForbidEq_sum`)
 produce — so the forbid bridges can rewrite directly onto the named forbid-free list.
 
 The completeness is derived from the existing `… = univ` by filtering: the

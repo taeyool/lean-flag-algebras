@@ -174,15 +174,15 @@ elab_rules : tactic
 
 /--
 `flag_expand_hfree N F` is the forbid-free single-flag analogue of `flag_expand N`.
-On a goal `FlagAlgebra_n_k_m_i =[⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩] (its size-`N` forbid-free
-expansion)`, it expands the flag with `basisVector_quot_forbidEq_sum` rewritten directly onto the
+On a goal `FlagAlgebra_n_k_m_i =ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩] (its size-`N` forbid-free
+expansion)`, it expands the flag with `basisVector_quot_inducedForbidEq_sum` rewritten directly onto the
 explicitly-generated forbid-free set `flagSetHfree_N_k_m_<F>` (via its filtered-completeness lemma
 `…_eq` and `…_val_eq`) — never materialising the full `flagSet`, and dropping the forbidden terms
-automatically (no manual `basisVector_forbidEq_zero` step).
+automatically (no manual `basisVector_inducedForbidEq_zero` step).
 
 `F` is the **edge-based** forbidden graph: a `Sym2Graph mF` term (e.g. `K3 : Sym2Graph 3`), the
 same identifier passed to `generate_pruned_forbid_free_*`. The forbidden flag is built directly
-from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=[ ]`),
+from it as `⟨_, Sym2EmptyTypedFlag.toFlag ⟦F⟧⟩` (matching the generators and the goal's `=ᵢ[ ]`),
 so no canonical forbidden flag / `.toFinFlag` is needed.
 
 Prerequisites: the forbid-free host set must exist (run `generate_pruned_forbid_free_flags N k m F`,
@@ -202,13 +202,13 @@ elab_rules : tactic
         let target ← getMainTarget
         let lhsExpr ←
           match target.getAppFnArgs with
-          | (``Forbid.forbidEq, args) =>
+          | (``Forbid.inducedForbidEq, args) =>
               match args[args.size - 2]? with
               | some e => pure e
-              | none => throwError "flag_expand_hfree: malformed `=[ ]` goal."
-          | _ => throwError "flag_expand_hfree: goal must be `f =[F] g`."
+              | none => throwError "flag_expand_hfree: malformed `=ᵢ[ ]` goal."
+          | _ => throwError "flag_expand_hfree: goal must be `f =ᵢ[F] g`."
         let some lhsConst := findFlagAlgebraConst? lhsExpr
-          | throwError "flag_expand_hfree: no `FlagAlgebra_*` constant on the LHS of `=[ ]`."
+          | throwError "flag_expand_hfree: no `FlagAlgebra_*` constant on the LHS of `=ᵢ[ ]`."
         let some (lhsN, kVal, mVal, iVal) := parseFlagAlgebraIndices? lhsConst
           | throwError m!"flag_expand_hfree: could not parse indices from `{lhsConst}`."
         let flagId : TSyntax `term := mkIdent (Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}")
@@ -218,27 +218,27 @@ elab_rules : tactic
         let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
         -- The forbidden flag is the `FinFlag` of the term `⟦F⟧` (no canonical flag); its `.2` is
         -- `Sym2EmptyTypedFlag.toFlag ⟦F⟧`, matching the generators' `flagSetHfree_…_eq` filter and
-        -- the goal's `=[ ]`.
+        -- the goal's `=ᵢ[ ]`.
         let forbidFlagTm : TSyntax `term ←
           `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$forbid⟧⟩ : FlagAlgebras.FinFlag ∅ₜ))
         evalTactic (← `(tactic|
-          apply Forbid.forbidEq_trans
-            (Forbid.basisVector_quot_forbidEq_sum $forbidFlagTm ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+          apply Forbid.inducedForbidEq_trans
+            (Forbid.basisVector_quot_inducedForbidEq_sum $forbidFlagTm ⟨$lhsNStx, $flagId⟩ $N (by decide))))
         evalTactic (← `(tactic|
           rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
         evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
         evalTactic (← `(tactic| simp))
-        -- Close the residual `produced =[F] stated`. For a ≤2-term expansion `produced` is
+        -- Close the residual `produced =ᵢ[F] stated`. For a ≤2-term expansion `produced` is
         -- definitionally the stated RHS (`FlagAlgebra_n_k_m_i` unfolds to its `⟦basisVector⟧`),
-        -- so `forbidEq_refl` closes it directly. For ≥3-term expansions the produced sum is
+        -- so `inducedForbidEq_refl` closes it directly. For ≥3-term expansions the produced sum is
         -- *right*-associated while the stated RHS is *left*-associated, so we first unfold the
         -- `FlagAlgebra_*` constants (making both sides `⟦basisVector⟧`-atoms) and finish with an
         -- additive-commutative normalization that is insensitive to the bracketing.
-        evalTactic (← `(tactic| try exact Forbid.forbidEq_refl $forbidFlagTm _))
+        evalTactic (← `(tactic| try exact Forbid.inducedForbidEq_refl $forbidFlagTm _))
         unless (← getGoals).isEmpty do
           withMainContext do
             let faIdents := (collectPrefixConstants "FlagAlgebra_" (← getMainTarget)).map mkIdent
-            evalTactic (← `(tactic| refine Forbid.forbidEq_of_eq ?_))
+            evalTactic (← `(tactic| refine Forbid.inducedForbidEq_of_eq ?_))
             unless faIdents.isEmpty do
               evalTactic (← `(tactic| dsimp only [$[$faIdents:ident],*]))
             evalTactic (← `(tactic|

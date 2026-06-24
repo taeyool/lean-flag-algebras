@@ -7,13 +7,13 @@
 --     only the K3-free flags and their filtered-completeness lemma (`flagSetHfree_…_eq`), proved
 --     via `prunedFreeFlags_toFinset_eq` (no full enumeration, no canonical flag);
 --   * `generate_pruned_forbid_free_mul_theorems` proves the products
---     `=[⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩]` over the forbid-free host set;
+--     `=ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩]` over the forbid-free host set;
 --   * the objective is expanded with the edge-based `flag_expand_hfree 3 K3`
---     (`basisVector_quot_forbidEq_sum` rewritten onto `flagSetHfree` directly — no full
+--     (`basisVector_quot_inducedForbidEq_sum` rewritten onto `flagSetHfree` directly — no full
 --     expansion + manual triangle-term drop);
 --   * the unit is expanded with the edge-based `expand_one_hfree_at 3 K3`.
 --
--- The bound is stated as `≤[⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩]`. At host size 3 there is no
+-- The bound is stated as `≤ᵢ[⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩]`. At host size 3 there is no
 -- generation saving (every 3-vertex flag is K3-free except the triangle); the point is to
 -- validate the edge-based forbid-free bridges end-to-end. The savings appear at host sizes
 -- where only the forbid-free flags need be generated (n ≥ 6, empty-typed).
@@ -102,10 +102,10 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
   native_decide
 
 /-- Forbid-free expansion of the objective: `FlagAlgebra_2_0_0_1` is expanded directly
-over the K3-free 3-vertex flags via `basisVector_quot_forbidEq_sum` rewritten onto
+over the K3-free 3-vertex flags via `basisVector_quot_inducedForbidEq_sum` rewritten onto
 `flagSetHfree_3_0_0_K3` (no full `flagSet`, no manual triangle-term drop). -/
 lemma mantel_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+    : FlagAlgebra_2_0_0_1 =ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
         (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
   flag_expand_hfree 3 K3
@@ -113,16 +113,19 @@ lemma mantel_flagAlgebra_expand_under_forbid
 /-- **Mantel's theorem (forbid-free formalization).**
 A `K3`-free graph has edge density at most `1/2`. -/
 theorem mantel_flagAlgebra
-    : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+    : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 3)] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  apply inducedForbidLE_toFinFlag_imp_forbidLE
+  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
+        from (completeSym2Graph_finFlag_eq 3).symm]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M_real v⟧₀
     := by
-    apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v
-    exact forbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
-  apply forbidLE_trans quadraticForm_trans
-  apply forbidLE_trans_forbidEq_right ?_  (forbidEq_smul (forbidEq_symm (one_forbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
-  rw [forbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
+    apply inducedForbidLE_add_QuadraticForm M_real M_real_posSemidef v
+    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
+  apply inducedForbidLE_trans quadraticForm_trans
+  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
+  rw [inducedForbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
@@ -132,7 +135,7 @@ theorem mantel_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply forbidLE_of_le
+  apply inducedForbidLE_of_le
   flag_nonneg
 
 /-! ## What is (and isn't) forbid-free here
