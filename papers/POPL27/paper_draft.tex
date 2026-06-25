@@ -2804,33 +2804,31 @@ Here the \lean{rw} line is the objective lift of Part~3 (Mantel is Branch~B); a
 Branch~A certificate omits it, and a certificate with several SDP blocks simply
 repeats the \lean{forbidLE\_add\_QuadraticForm} step once per block.
 Choosing the branch, the per-block parameters, and the order of the additions is
-the entire ``intelligence'' of the generator; none of its computation is trusted,
-and everything it emits is re-checked by Lean
-(Section~\ref{sec:flagmatic-trust}).
+the entire ``intelligence'' of the generator; why none of it has to be trusted is
+the subject of Section~\ref{sec:flagmatic-trust}.
 
 \subsection{Trust model}
 \label{sec:flagmatic-trust}
 
-The script computes a great deal---it isomorphism-matches certificate strings
-to indices, assembles $R_t\,Q_t'\,R_t^\top$, factors it as
-$L D L^\top$, enumerates induced subgraphs to fill the
-Branch~B coefficient table, and decides which generators and imports to
-emit---and \emph{none} of this enters the trusted base.  Every emitted
-obligation is closed by one of: \lean{decide +kernel} (the PSD matrix
-equality, kept in the kernel because it is load-bearing and small enough to
-finish there), \lean{native\_decide} (the density evaluations, large but
-individually simple rational equalities, checked by compiled code outside the
-kernel), or a verified tactic of Sections~\ref{sec:flagmatic-gen}--\ref{sec:flagmatic-close}.  A
-miscomputation in the script---a wrong factorization, a wrong density, a
-mis-resolved identifier---surfaces as a compile error, never as a silently
+The script computes a great deal: it resolves certificate strings to flag
+indices, reconstructs and factors the certificate matrices, and decides which
+declarations and imports to emit.  \emph{None} of this enters the trusted
+base.  Every emitted
+proof obligation is closed by one of: \lean{decide +kernel} (in the kernel),
+\lean{native\_decide} (by compiled code outside the kernel), or a verified
+tactic of Sections~\ref{sec:flagmatic-gen}--\ref{sec:flagmatic-close}.  A
+miscomputation in the script surfaces as a compile error, never as a silently
 accepted false theorem.  The certificate and the solver behind it are
 candidate generators; the kernel is the authority.
 
-We report the resulting two-level profile (compiled \lean{native\_decide} for
-the bulk density bookkeeping, in-kernel \lean{decide +kernel} for the PSD
-step) as a fact about the development rather than a designed trust hierarchy.
-Section~\ref{sec:lessons} returns to how a reader who depends on the artifact
-should read it.
+Those two checkers do not carry the same trust.  Because \lean{native\_decide}
+evaluates outside the kernel, the proof obligations it closes also rest on the
+Lean compiler and runtime, not the kernel alone.  We keep the load-bearing PSD
+step inside the kernel and discharge the bulk density bookkeeping with
+\lean{native\_decide}, and report this split as a fact about the development
+rather than a chosen design: we would keep the density obligations in the
+kernel as well if it could check them, but it cannot yet on the encoding the
+specification uses.
 
 \subsection{Verified scenarios}
 \label{sec:flagmatic-scenarios}
