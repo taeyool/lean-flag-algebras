@@ -47,6 +47,12 @@ import LeanFlagAlgebras.MetaTheory.FlagComplement
 import LeanFlagAlgebras.MetaTheory.ComplementHom
 import LeanFlagAlgebras.MetaTheory.ComplementClass
 import LeanFlagAlgebras.MetaTheory.ComplementInvariance
+import LeanFlagAlgebras.MetaTheory.C5FewTriangles
+import LeanFlagAlgebras.MetaTheory.C5EdgeObstruction
+import LeanFlagAlgebras.MetaTheory.NoInterior
+import LeanFlagAlgebras.MetaTheory.EdgeThinning
+import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
+import LeanFlagAlgebras.MetaTheory.NoInteriorThinning
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -246,4 +252,48 @@ than the paper's explicit flag-algebra complement isomorphism (a documented proo
   `complementation_invariance` (`lem:complementation`): `RootPlantable (K.constraintOf σ) ↔
   RootPlantable (K̄.constraintOf σᶜ)`, with `complementation_invariance_oneVertex` the `σ = vtype`
   corollary.
+
+§9.5 is the **`C₅`-free edge-type obstruction** — the first dense, non-blow-up-closed class for which
+the question is nontrivial, and the section that refutes the natural all-types `C₅`-free conjecture.
+Root-plantability holds for a single root and for a non-adjacent pair (§8) but *fails* at the two-root
+**edge** type, where a book graph obstructs it.
+
+* `C5FewTriangles` — §9.5 `lem:c5-few-triangles`: `3·T(G) ≤ 2·e(G)` for `C₅`-free `G`
+  (`c5free_three_mul_triangle_le`, via `3·T(G) = ∑_v e(G[N(v)]) ≤ ∑_v deg(v)` using `lem:c5-nbhd`),
+  the unlabelled-triangle density `T(G)/C(N,3)` (`flagDensity_unlabelledTriangle_eq`), and the
+  triangle-degeneracy `c5FreeClass_triangleDensity_zero` (every constrained limit has triangle
+  density `0`; mirror of `c4FreeClass_edgeDegenerate`).
+* `C5EdgeObstruction` — §9.5 the two-root edge type `edgeType` (`τ`), the common-neighbour triangle
+  flag `F_tri` (`F_△`), and the obstruction: `ae_Ftri_eq_zero_of_pinned` (`cor:c5-edge-pinned`, `F_△`
+  pinned a.s. to `0` under random edge-rooting), the book graph `bookLabeled` (`def:c5-book`) with
+  `book_c5free` (`lem:c5-book` freeness) and `book_Ftri_density = 1`, the quotient point
+  `exists_book_Qτ_point` (`lem:c5-book`), and the capstone `c5free_edge_not_rootPlantable`
+  (`thm:c5-edge-not-root-plantable`) via `pinning_obstruction`. `cor:c5-no-pin` records that the
+  one-vertex type gives no obstruction: `c5free_triOverVtype_zero_on_Qvtype` (the one-root triangle
+  flag is `0` on all of `Q_vtype`) and `c5free_edge_not_pinned` (the edge flag takes a.s. values `0`
+  on edgeless limits and `≥ 1/4` on balanced complete bipartite limits — not pinned).  A generalised
+  quotient-point assembly `exists_Qσ_point_flag_eq` (any `σ`, any flag) is also provided.
+
+§9.4 is **boundary pinning** (`thm:no-interior`): for an *edge-deletion-closed* hereditary class, no
+*interior* density value is ever pinned, so every pinning obstruction is a boundary one.  The proof
+exhibits a `{0,1}`-valued point of `S_σ` — the `λ → 0` limit of random extensions of edge-thinned
+constrained limits.
+
+* `NoInterior` — the low-level predicate `EdgeDeletionClosed` (every spanning subgraph of an in-class
+  graph is in-class), shared by the thinning stack.
+* `EdgeThinning` — the random edge-thinning of a finite graph (Bernoulli `Measure.pi` over potential
+  edges): `thinExpectDensity` (the expected induced density), its first-moment upper bound
+  `thinExpectDensity_le_pow` (`≤ C(C(|M|,2),e(M))·λ^{e(M)}`, the correct *induced*-density form) and
+  σ-type lower bound `thinExpectDensity_type_ge` (`≥ λ^{e(σ)}·density`), and the second-moment
+  realization `exists_thinned_realization` (a deterministic in-class spanning subgraph whose densities
+  track the expectations within `ε`, via a block-independence variance bound + Chebyshev + union
+  bound).
+* `EdgeThinningLimit` — `exists_thinned_limit`: the edge-thinned constrained limit `φ₀^λ ∈ Q₀`
+  (a diagonal realization of `exists_thinned_realization` over a representing sequence), with
+  `φ₀^λ⟨σ⟩₀ ≥ λ^{e(σ)}·φ₀⟨σ⟩₀ > 0` and the per-flag bound `φ₀^λ(M) ≤ C·λ^{e(M)}`.
+* `NoInteriorThinning` — `exists_boolean_point_in_Sσ`: as `λ → 0`, the flag moments of `ℙ[φ₀^λ]`
+  converge to the `{0,1}`-valued "edgeless cloud" profile (new-edge flags vanish like `λ`, the unique
+  edgeless extension of each size `→ 1`), so an L¹/Markov cylinder argument places that boolean point
+  `ψ_σ ∈ S_σ`; hence the capstone `no_interior_pinning` (`thm:no-interior`): a `σ`-flag pinned to `c`
+  on `S_σ` has `c ∈ {0,1}`.
 -/

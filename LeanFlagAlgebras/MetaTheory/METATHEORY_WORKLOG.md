@@ -7,17 +7,18 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-06-25. (Stopping point: §1–**9.2** of `paper.tex` formalised, INCLUDING the full
-`lem:complementation` (Lemma 50). §9 (pinning obstructions), §9.1 (sparse degenerate / C₄-free) and
-§9.2 (the dense obstruction AND `lem:complementation` — complementation invariance) completed this
-session — see "§9–§9.2 — DONE" and "`lem:complementation` — DONE" below; §8 was the prior session
-("§8 — DONE"). `lake build LeanFlagAlgebras.MetaTheory` → 7955 jobs green (49 modules); `grep -rnwE
-'sorry|admit|native_decide'` over `MetaTheory` → empty; all §9 headline theorems (incl.
-`complementation_invariance`) `#print axioms` = `[propext, Classical.choice, Quot.sound]`. §9/§9.1/§9.2
-COMMITTED+PUSHED to `main` (`4533cf6`/`e416e0e`); the `lem:complementation` four-module stack + the
-comprehensive md-doc update are COMMITTED+PUSHED to `main` (`14ee426`; deviations-overview polish
-`c3c149a`). This file is now tracked+committed on `main` as `METATHEORY_WORKLOG.md` (renamed from `WORKLOG.md`). Next target: the rest of §9 (boundary/no-interior, C₅-edge obstruction)
-and §10.)
+Last updated: 2026-06-26. (Stopping point: §1–**9.5** of `paper.tex` formalised — the WHOLE of §9.
+This session added **§9.3** (`thm:pinning` general obstruction — already present as `pinning_obstruction`),
+**§9.4** (`thm:no-interior`, boundary pinning for edge-deletion-closed classes — the edge-thinning
+stack), and **§9.5** (the `C₅`-free edge-type obstruction `thm:c5-edge-not-root-plantable`, refuting
+the all-types conjecture). See "§9.3–§9.5 — DONE" below. Prior sessions: §1–9.2 + `lem:complementation`
+("§9–§9.2 — DONE"), §8 ("§8 — DONE"). `lake build LeanFlagAlgebras.MetaTheory` → **7961 jobs green**
+(55 modules); `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all headline
+theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPlantable`) `#print axioms`
+= `[propext, Classical.choice, Quot.sound]`. **NOT yet committed** (6 new untracked modules +
+`MetaTheory.lean` modified) as of this update — confirm with the user before committing/pushing to
+`main`. Next target: **§10** (`sec:empty-type`, "the gap is invisible to density bounds") and **§11**
+(strengthening by a further constraint; the `K₄`-free-`P₄` equality slice).)
 
 ---
 
@@ -322,21 +323,68 @@ modules in prose (a worklog, not a checklist), which is fine here. The full `pap
 Lean-name ↦ `file:line` map for §9–§9.2 *and* Lemma 50 lives in `README.md` and `READING_GUIDE.md` —
 use those for the statement-level correspondence audit.
 
+## §9.3–§9.5 — DONE (2026-06-26). "General obstruction; boundary pinning; the C₅-free edge type"
+
+Six new modules (all green, `sorry`/`admit`/`native_decide`-free, axioms `[propext, Classical.choice,
+Quot.sound]`), wired into `MetaTheory.lean` after the complement stack. **The whole of §9 is now
+formalised.**
+
+* **§9.3 `thm:pinning`** ("The general obstruction") was already present from the §8/§9 session as
+  `Pinning.pinning_obstruction` — confirmed, no new work.
+* **§9.5 — the `C₅`-free edge-type obstruction** (the headline that *refutes the all-types
+  conjecture*). Two modules:
+  * `C5FewTriangles` — `lem:c5-few-triangles` (`c5free_three_mul_triangle_le`: `3·T(G) ≤ 2·e(G)` via
+    `3·T(G) = ∑_v e(G[N(v)])` (new combinatorial double-count `three_mul_card_cliqueFinset_three_eq`)
+    `≤ ∑_v deg(v)` using `lem:c5-nbhd`), the unlabelled-triangle density `T(G)/C(N,3)`
+    (`flagDensity_unlabelledTriangle_eq` + `induced_iso_top3_iff`), and the triangle-degeneracy
+    `c5FreeClass_triangleDensity_zero` (mirror of `c4FreeClass_edgeDegenerate`).
+  * `C5EdgeObstruction` — the two-root edge type `edgeType`, the triangle flag `F_tri` (`F_△`),
+    `ae_Ftri_eq_zero_of_pinned` (`cor:c5-edge-pinned`), the book graph `bookLabeled` (`def:c5-book`)
+    with `book_c5free`/`book_Ftri_density`, `exists_book_Qτ_point` (`lem:c5-book`), and the capstone
+    `c5free_edge_not_rootPlantable` (`thm:c5-edge-not-root-plantable`). `cor:c5-no-pin` is the two
+    no-obstruction-at-vtype facts (`c5free_triOverVtype_zero_on_Qvtype`, `c5free_edge_not_pinned`).
+    Also the generalised quotient-point assembly `exists_Qσ_point_flag_eq`.
+* **§9.4 — boundary pinning** (`thm:no-interior`). The four-module **edge-thinning stack**:
+  `NoInterior` (`EdgeDeletionClosed` predicate), `EdgeThinning` (random Bernoulli edge-thinning over
+  `Measure.pi`; `thinExpectDensity` + first-moment bounds + the second-moment realization
+  `exists_thinned_realization`), `EdgeThinningLimit` (`exists_thinned_limit`: the thinned constrained
+  limit `φ₀^λ ∈ Q₀` by a diagonal realization, mirroring `FinitePlanting`), and `NoInteriorThinning`
+  (`exists_boolean_point_in_Sσ`: the `λ→0` weak-limit `{0,1}`-valued point of `S_σ` via L¹/Markov on
+  the cylinder criterion) — closing the capstone `no_interior_pinning`.
+
+**Deviations worth recording (for README Deviation list).** (a) §9.4 proof route: the paper uses
+random thinning + **McDiarmid**; Mathlib has no bounded-difference inequality, so we used random
+thinning + a **second-moment (variance/Chebyshev) concentration** — the variance bound rests on a
+block-independence lemma (`1_S ⟂ 1_{S'}` when the two `k`-subsets share `≤ 1` vertex, via `Measure.pi`
+coordinate independence). Same theorem, McDiarmid-free route. (b) The first-moment bound is the
+**correct induced-density form** `thinExpectDensity ≤ C(C(|M|,2), e(M))·λ^{e(M)}` — the naive `≤ λ^q`
+is *false* for induced densities (e.g. induced `P₃` in a thinned `K_n` has density `3λ²(1−λ) > λ²`);
+the binomial constant is `λ`-independent so the `λ→0` argument is unaffected. (c) The boolean point
+`ψ_σ` is built as the limit of the explicit "edgeless cloud" `σ ⊎ \bar K_m` and shown to be in `S_σ`
+by an L¹/Markov cylinder argument (no abstract Dirac-from-moment-convergence machinery). (d) §9.5's
+`lem:c5-few-triangles` is the faithful `3T ≤ 2e`; the triangle density `→0` squeeze mirrors §9.1.
+
+**How it was reused.** §9.5 reused the §9.1 `C4Free` degeneracy template wholesale (density-→0
+squeeze, `flagDensity₁_eq_subset_count_div` subset-counting, the `StarWitness` quotient-point
+assembly). §9.4 reused `pinning`-free: `exists_constrained_flagSeq_limit` (§5), the `FinitePlanting`
+diagonal-extraction pattern (§8), `CapstoneShared`'s `mem_closure_of_forall_finset_cylinder`, and the
+`RandomHom` extension spec. **Workflow that worked:** scaffold each module's *statements* (with
+`sorry`), parse-check via `lake env lean` (no build lock — safe alongside other agents), then delegate
+each module's proofs to its own background agent iterating on `lake env lean <module>`; build
+per-module oleans only after; full aggregator build + `#print axioms` at the end. The four §9.4
+modules were proved by **four agents in parallel** (each owning one file, using the others' stable
+*types* as black boxes), then the full clean rebuild connected the chain.
+
 ## Next work / open follow-ups
 
-**▶ TO RESUME (start here).** Everything through `paper.tex` **§9.2 + `lem:complementation` is DONE**,
-committed+pushed (`c3c149a`), green and `sorry`-free. The natural next target is the **rest of §9 and
-§10**. In paper order (find sections by `\section{...}`/`\label{...}`, **not** line number — they
-drift):
+**▶ TO RESUME (start here).** Everything through `paper.tex` **§9 (all of §9.1–§9.5) +
+`lem:complementation` is DONE**, green and `sorry`-free, axiom-clean. §9.3/§9.4/§9.5 are **green and
+verified but NOT yet committed** (6 untracked modules `C5FewTriangles`/`C5EdgeObstruction`/`NoInterior`/
+`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning` + modified `MetaTheory.lean` + this WORKLOG) —
+confirm with the user, then commit/push. The natural next target is **§10** (`sec:empty-type`, "the gap
+is invisible to density bounds") and **§11**. In paper order (find sections by
+`\section{...}`/`\label{...}`, **not** line number — they drift):
 
-* **§9.4 "Boundary pinning for subgraph-forbidden classes"** — `thm:no-interior` (`subsec:boundary`):
-  for a subgraph-forbidden class no *interior* density value is ever pinned, so every pinning
-  obstruction is a *boundary* one. Reuses the §9 `pinning_obstruction` + edge-flag machinery
-  (`EdgeObstruction`/`Pinning`); a different flavour (showing a density attains a whole sub-interval).
-* **§9.5 "The `C₅`-free edge-type obstruction"** — `thm:c5-edge-not-root-plantable` (`sec:c5-edge`,
-  with `cor:c5-no-pin`, `lem:c5-few-triangles`, `cor:c5-edge-pinned`, `def:c5-book`, `lem:c5-book`):
-  the all-types `C₅`-free conjecture is *false* at the two-root **edge** type. Builds on §8's
-  `c5FreeClass` + the §9 pinning obstruction.
 * **§10 "The gap is invisible to density bounds"** — `prop:empty-type` (`sec:empty-type`), with
   `cor:confined`, `thm:no-closed-certificate-gap`, `prop:ideal-zero`, `prop:single-point`,
   `cor:c5-edge-closed-inert`: degenerate-type gaps collapse at the empty type, so they never affect
