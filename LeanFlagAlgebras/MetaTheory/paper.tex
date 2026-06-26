@@ -31,9 +31,6 @@
 \newaliascnt{question}{theorem}
 \newtheorem{question}[question]{Question}
 \aliascntresetthe{question}
-\newaliascnt{conjecture}{theorem}
-\newtheorem{conjecture}[conjecture]{Conjecture}
-\aliascntresetthe{conjecture}
 \theoremstyle{definition}
 \newaliascnt{definition}{theorem}
 \newtheorem{definition}[definition]{Definition}
@@ -51,7 +48,6 @@
 \crefname{proposition}{Proposition}{Propositions}
 \crefname{corollary}{Corollary}{Corollaries}
 \crefname{question}{Question}{Questions}
-\crefname{conjecture}{Conjecture}{Conjectures}
 \crefname{definition}{Definition}{Definitions}
 \crefname{example}{Example}{Examples}
 \crefname{remark}{Remark}{Remarks}
@@ -60,7 +56,6 @@
 \Crefname{proposition}{Proposition}{Propositions}
 \Crefname{corollary}{Corollary}{Corollaries}
 \Crefname{question}{Question}{Questions}
-\Crefname{conjecture}{Conjecture}{Conjectures}
 \Crefname{definition}{Definition}{Definitions}
 \Crefname{example}{Example}{Examples}
 \Crefname{remark}{Remark}{Remarks}
@@ -155,7 +150,7 @@ deleting vertices and keeping all edges among the vertices that remain.  We alwa
 induced-subgraph relation, never the weaker one that may also delete edges; the distinction
 matters here.  Equivalently, $\T_1$ is cut out by forbidding, as induced subgraphs, the
 members of some (possibly infinite) family---and a class named ``$H$-free'' is of this
-kind, since having no $H$ as a (not necessarily induced) subgraph is the same as omitting,
+kind, since having no $H$ as an ordinary subgraph is the same as omitting,
 as induced subgraphs, the finitely many graphs on $|H|$ vertices that contain $H$.
 One option is to pass to the \emph{quotient} flag algebra of $\T_1$ and ask for
 non-negativity there; this is the algebra a flag-algebra computation actually works in,
@@ -179,17 +174,18 @@ throughout the class yet are invisible to the algebra one computes in?
 Our main result identifies exactly when completeness holds.  Fix a type $\sigma$:
 a small graph whose distinguished vertices, with their prescribed adjacencies, are
 called the \emph{roots}.  The two semantics then live in one and the same space of
-\emph{labelled limits}.  Such a limit is a \emph{view} from a copy of $\sigma$:
-choose a copy of $\sigma$ in a large graph of the class, treat its vertices as
-the roots, record the density of every \emph{flag} (a finite graph with a specified
-copy of $\sigma$ inside it), and pass to the limit---the local picture the roots see.
+\emph{labelled limits}.  Such a limit is a \emph{view} from an embedding of $\sigma$:
+choose an embedding $\sigma\to G$ in a large graph of the class, treat the images of the
+roots as the roots, record the density of every \emph{flag} (a finite graph with a
+specified embedding of $\sigma$ inside it), and pass to the limit---the local picture the
+roots see.
 Each semantics singles
 out a subset of these views.  The set $Q_\sigma$ ($Q$ for \emph{quotient}) collects the
-views the quotient can exhibit: those obtained by placing the copy of $\sigma$
+views the quotient can exhibit: those obtained by placing an embedding of $\sigma$
 \emph{anywhere} in graphs of the class---even at \emph{exceptional} vertices, ones that a
 uniformly random choice almost never lands on.  The set $S_\sigma$
 ($S$ for \emph{support}) collects the views ensemble semantics actually sees: those that
-arise with positive probability when the copy of $\sigma$ is dropped at a
+arise with positive probability when the embedding of $\sigma$ is chosen at a
 \emph{random}---hence typical---spot in a large graph of the class.  Soundness is the
 inclusion $S_\sigma\subseteq Q_\sigma$, which always holds.  We prove
 (\cref{thm:support-criterion}) that the two semantics coincide for \emph{every}
@@ -253,9 +249,9 @@ complementation (\cref{lem:complementation}), so every sparse obstruction has a
 \emph{dense} mirror image (\cref{cor:codegenerate}); neither sparsity nor density is the
 dividing line.  The uniform cause is what we call \emph{pinning}: the density of
 a fixed flag or algebra element is frozen to a single value across all constrained
-limits while the quotient still attains another (\cref{thm:pinning}).  We conjecture that pinning is the only obstruction
-(\cref{conj:characterisation}), and show that for forbidden-subgraph classes any pinning
-is to a boundary value $0$ or $1$ (\cref{thm:no-interior}).
+limits while the quotient still attains another (\cref{thm:pinning}).  For
+edge-deletion-closed hereditary classes, any such pinning is to a boundary value $0$ or $1$
+(\cref{thm:no-interior}).
 
 \paragraph{The gap does not affect density bounds.}
 This incompleteness may sound alarming, but it never weakens an actual application.  A
@@ -317,7 +313,7 @@ $V(H)$ that preserves both edges
 and non-edges: two vertices are adjacent in $\sigma$ if and only if their images
 are adjacent in $H$.  Equivalently, it identifies $\sigma$ with an induced
 subgraph of $H$, with the roots kept in their prescribed order.
-A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished copy of
+A \emph{$\sigma$-flag} is a graph in $\T$ with a distinguished embedding of
 $\sigma$ singled out inside it---informally, a finite graph in which $k$ roots
 form the pattern $\sigma$.  The \emph{empty type}
 ($k=0$) marks nothing, so a flag of the empty type is just a graph in $\T$.
@@ -325,9 +321,9 @@ Flags are taken up to root-preserving isomorphism, and $\F^\sigma[\T]$
 (abbreviated $\F^\sigma$) is the countable set of all such isomorphism classes
 (so two flags related by a root-preserving isomorphism are the same element of
 $\F^\sigma$).  For $\sigma$-flags $F$ and $G$ with $|F|\le|G|$, the
-\emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of $|F|-k$
-unlabelled vertices of $G$, taken together with the $k$ roots, induces a copy of $F$; for
-the empty type this is the ordinary induced-subgraph density.
+\emph{density} $p(F,G)\in[0,1]$ is the probability that a uniformly random set of
+$|F|-k$ unlabelled vertices of $G$, taken together with the $k$ roots, induces a flag
+isomorphic to $F$; for the empty type this is the ordinary induced-subgraph density.
 
 \paragraph{The flag algebra.}
 $\A^\sigma[\T]$ is the real vector space spanned by $\F^\sigma$ (formal real combinations
@@ -396,7 +392,7 @@ multiplicative unit of $\A^\sigma[\T]$.  Its unlabelling
 is the unlabelled density of embeddings of the type $\sigma$: if the unlabelled limit
 $\phi_0$ is represented by finite graphs $G_n$, then $\phi_0(\brak\sigma)$ is the
 limiting probability that $k$ vertices of $G_n$, chosen uniformly at random and placed in a
-random order, induce a copy of $\sigma$ respecting the labels.
+random order, induce the labelled graph $\sigma$.
 
 \paragraph{Non-degenerate types.}
 A type $\sigma$ is \emph{non-degenerate} for the class $\T$ if
@@ -407,9 +403,9 @@ every unlabelled limit $\phi_0$.  Since an element of $\A^0[\T]$ is the zero ele
 when every unlabelled limit assigns it the value $0$, non-degeneracy is equivalently the
 existence of an unlabelled limit $\phi_0$ with $\phi_0(\brak\sigma)>0$.  Intuitively, the
 pattern $\sigma$ is actually realised, occurring with positive density in some unlabelled
-limit of the class, so that a copy of $\sigma$ can be sampled and labelled.  A degenerate
-type occurs with density zero in every unlabelled limit, so the random rooting below acts
-on nothing, and the root-planting story of this paper is vacuous for it.
+limit of the class, so that an embedding of $\sigma$ can be sampled and labelled.  A
+degenerate type occurs with density zero in every unlabelled limit, so the random rooting
+below acts on nothing, and the root-planting story of this paper is vacuous for it.
 
 If
 $\phi_0\in\Homp(\A^0[\T],\R)$ and $\phi_0(\brak\sigma)>0$, Razborov's extension
@@ -428,9 +424,10 @@ characterised by
 The positivity assumption on $\phi_0(\brak\sigma)$ is exactly what permits this
 conditioning: the denominator is the limiting probability of seeing the root type.
 Intuitively, $\Ext_\sigma(\phi_0)$ is the law of the labelled limit seen from a uniformly
-random copy of $\sigma$ inside $\phi_0$; \eqref{eq:extension-expectation} records that
-the expected density of $g$ is the unlabelled density of $g$, normalised by that
-of $\sigma$.  Moreover, if a finite sequence converges to $\phi_0$, then the
+random embedding of $\sigma$ in finite graphs converging to $\phi_0$;
+\eqref{eq:extension-expectation} records that the expected density of $g$ is the
+unlabelled density of $g$, normalised by that of $\sigma$.  Moreover, if a finite sequence
+converges to $\phi_0$, then the
 corresponding finite random-rooting distributions converge weakly to $\Ext_\sigma(\phi_0)$
 \cite[Theorems 3.5 and 3.12]{Razborov2007}.
 
@@ -1606,7 +1603,7 @@ converge to some $\phi_0\in Q_0$.
 The planted-mass part of \cref{lem:true-planted-estimate} gives a constant
 $c_{|\sigma|,\lambda}>0$, independent of $j$, such that a uniformly random
 embedding of $\sigma$ into $B_j^+$ is planted with probability at least
-$c_{|\sigma|,\lambda}$.  In particular, the density of copies of
+$c_{|\sigma|,\lambda}$.  In particular, the density of embeddings of
 $\sigma$ in $B_j^+$ stays bounded below by a positive constant, so the limiting
 unlabelled homomorphism satisfies $\phi_0(\brak\sigma)>0$.
 
@@ -1821,8 +1818,8 @@ $H_{\theta(i)}$ gives an embedding of $\sigma$: the root clone classes are disti
 and their mutual adjacencies are inherited from $(G,\theta)$.  So the planted count
 $\prod_i s_{\theta(i)}$ and its lower bound are unchanged.  By the same token an
 embedding of $\sigma$ already arises from any transversal of $k$ root clone classes
-spanning a copy of $\sigma$ in $G$, so the positive lower bound on the $\sigma$-type
-density of $B$ also carries over.
+whose projected vertices form an embedding of $\sigma$ in $G$, so the positive lower
+bound on the $\sigma$-type density of $B$ also carries over.
 \end{proof}
 
 \begin{theorem}[Blow-up-closed classes are root-plantable]\label{thm:blowup-root-plantable}
@@ -2337,7 +2334,7 @@ obstructs; see \cref{sec:c5-edge}.)
 
 The ambient convention is unchanged here: throughout the paper, a hereditary class is ordered by
 induced subgraphs.  The local convention is that $C_5$-free has its usual extremal-graph-theory
-meaning, namely containing no $C_5$ as a (not necessarily induced) subgraph.  Equivalently, in the
+meaning, namely containing no $C_5$ as an ordinary subgraph.  Equivalently, in the
 induced-hereditary language this forbids all five-vertex induced graphs that contain a $C_5$.
 Balanced complete bipartite graphs are $C_5$-free and attain edge density $1/2$; conversely, the
 Erd\H{o}s--Stone--Simonovits theorem
@@ -2579,10 +2576,10 @@ We now turn from planting criteria to obstructions, beginning with the simplest
 pinning mechanism: \emph{degeneracy}.  Here pinning is a property of a
 particular labelled flag, or more generally of a particular labelled algebra
 element.  It means that, for some type
-\(\sigma\), element \(g\in\A^\sigma[\T_{\mathrm{Graph}}]\), and constant \(c\),
+\(\sigma\), element \(a\in\A^\sigma[\T_{\mathrm{Graph}}]\), and constant \(c\),
 when any constrained unlabelled limit is rooted at random as a \(\sigma\)-flag,
-the resulting homomorphism evaluates \(g\) as \(c\) almost surely,
-even though a specially chosen labelled limit can evaluate \(g\) differently.
+the resulting homomorphism evaluates \(a\) as \(c\) almost surely,
+even though a specially chosen labelled limit can evaluate \(a\) differently.
 Degeneracy gives the most basic example.  It means
 that graphs in the class have vanishing edge density asymptotically: every
 $n$-vertex member has $o(n^2)$ edges, equivalently every dense limit of the
@@ -2672,7 +2669,7 @@ is the classical K\H{o}v\'ari--S\'os--Tur\'an bound.
 
 Let
 \[
-  \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as a (not necessarily induced) subgraph}\}.
+  \K_{C_4}:=\{G:\text{$G$ contains no copy of $C_4$ as an ordinary subgraph}\}.
 \]
 This is hereditary; in the induced-subgraph language of flag algebras it is
 axiomatised by forbidding the three four-vertex graphs that contain a $C_4$ as a
@@ -3063,114 +3060,228 @@ governing invariant is this boundary pinning, not sparsity or density.
 
 This refines, rather than closes, the problem of characterising root-plantability.
 The $C_5$-free graphs show why the question must be asked at a fixed type.  At the
-one-vertex type their edge density is \emph{not} pinned---the class contains graphs of
-every density in $[0,\tfrac12]$, so no boundary-pinning obstruction applies---and a
-local root-blow-up repair proves root-plantability there.  The same repair also handles
+one-vertex type the edge flag is \emph{not} pinned: empty graphs give one-root edge
+density $0$, while balanced complete bipartite graphs give one-root edge density
+$\tfrac12$.  Thus no boundary-pinning obstruction comes from the one-root edge flag, and
+a local root-blow-up repair proves root-plantability there.  The same repair also handles
 the two-root non-edge type by cloning the two non-adjacent roots simultaneously.  At the
 two-root edge type, by contrast, a pinning obstruction does arise, so the full all-types
-$C_5$-free conjecture is false (\cref{sec:c5-edge}), even though the positive
-one-root and non-edge cases remain useful models for planting beyond clone-closure.
+$C_5$-free conjecture is false (\cref{sec:c5-edge}), even though the positive one-root and
+non-edge cases remain useful models for planting beyond clone-closure.
 \end{remark}
 
-\subsection{The general obstruction and a conjecture}
+\subsection{The general obstruction}
 
 Both obstructions are instances of one mechanism: the density of a flag pinned almost
 surely to a single value across all constrained limits, while the quotient escapes
 it.
 
 \begin{theorem}[Pinning obstruction]\label{thm:pinning}
-Let $\sigma$ be a non-degenerate type, let $g$ be a $\sigma$-flag, and let
-$c\in[0,1]$.  Suppose the density of $g$ is almost surely pinned to $c$ across
+Let $\sigma$ be a non-degenerate type, let $F$ be a $\sigma$-flag, and let
+$c\in[0,1]$.  Suppose the density of $F$ is almost surely pinned to $c$ across
 all constrained unlabelled limits: for every $\phi_0\in Q_0$ with
-$\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(g)=c$ almost surely under
-$\Ext_\sigma(\phi_0)$.  If the constrained class contains a labelled limit attaining a different
-value---some $\psi\in Q_\sigma$ with $\psi(g)\ne c$---then $(\T_0,\T_1,\sigma)$ is not
+$\phi_0(\brak\sigma)>0$, one has $\phi^\sigma(F)=c$ almost surely under
+$\phi^\sigma \sim \Ext_\sigma(\phi_0)$.  If the constrained class contains a labelled limit attaining a different
+value---some $\psi\in Q_\sigma$ with $\psi(F)\ne c$---then $(\T_0,\T_1,\sigma)$ is not
 root-plantable.
 \end{theorem}
 
 \begin{proof}
-Both $g-c\,\one_\sigma$ and $c\,\one_\sigma-g$ have $\phi^\sigma$-value $0$ almost surely
-under every admissible $\Ext_\sigma(\phi_0)$, so each is ensemble-non-negative and,
-by \cref{lem:support-as} and continuity, non-negative on $S_\sigma$.  Since
-$\psi(g)\ne c$, one of the two is strictly negative at $\psi$; that
-$\psi\in Q_\sigma$ therefore lies outside $S_\sigma$, so $S_\sigma\ne Q_\sigma$.
+Let
+\[
+  Z:=\{\chi\in X_\sigma:\chi(F)=c\}.
+\]
+This set is closed.  By the pinning hypothesis, $Z$ has full measure under every
+admissible $\Ext_\sigma(\phi_0)$, so the support of every such extension is contained in
+$Z$.  Since $S_\sigma$ is the closure of the union of these supports, and $Z$ is closed,
+we have $S_\sigma\subseteq Z$.  But the assumed point $\psi\in Q_\sigma$ satisfies
+$\psi(F)\ne c$, hence $\psi\notin S_\sigma$.  Therefore $S_\sigma\ne Q_\sigma$, so the
+triple is not root-plantable.
 \end{proof}
 
 \begin{remark}[Endpoints are automatic and checkable]
 At the endpoints $c\in\{0,1\}$ the almost-sure pinning follows from a mere
 expectation condition, since a $[0,1]$-valued random variable with mean $0$
 (respectively $1$) is almost surely $0$ (respectively $1$).  Concretely, by
-\eqref{eq:extension-expectation}, $\phi_0(\avg{g}{\sigma})=0$ for all admissible
-$\phi_0$ gives the case $c=0$ (witness $-g$), and
-$\phi_0(\avg{g}{\sigma})=\phi_0(\brak\sigma)$ gives $c=1$ (witness $g-\one_\sigma$).  The
-degeneracy obstruction (\cref{thm:degenerate-obstruction}) and its dense
-counterpart (\cref{cor:codegenerate}) are exactly these, with $\sigma=\vtype$ and
-$g=e$.  An interior value $c\in(0,1)$ would instead require the almost-sure pinning as a
-genuine hypothesis---but for a subgraph-forbidden class no interior value is ever pinned,
-as \cref{subsec:boundary} shows.
+\eqref{eq:extension-expectation}, $\phi_0(\avg{F}{\sigma})=0$ for all admissible
+$\phi_0$ gives the case $c=0$; if there is $\psi\in Q_\sigma$ with $\psi(F)>0$, then
+the signed element $-F$ is non-negative on $S_\sigma$ and negative at $\psi$.  Similarly,
+$\phi_0(\avg{F}{\sigma})=\phi_0(\brak\sigma)$ gives the case $c=1$; if there is
+$\psi\in Q_\sigma$ with $\psi(F)<1$, then $F-\one_\sigma$ is non-negative on
+$S_\sigma$ and negative at $\psi$.  The degeneracy obstruction
+(\cref{thm:degenerate-obstruction}) and its dense
+counterpart (\cref{cor:codegenerate}) are these two endpoint cases with $\sigma=\vtype$
+and $F=e$.  An interior value $c\in(0,1)$ would instead require the almost-sure pinning as a
+genuine hypothesis---but for an edge-deletion-closed hereditary class no interior value is
+ever pinned, as \cref{subsec:boundary} shows.
 \end{remark}
 
-\begin{conjecture}[Characterisation; tentative]\label{conj:characterisation}
-$(\T_{\mathrm{Graph}},\T_\K,\sigma)$ is root-plantable if and only if it admits no
-pinning obstruction: there is no $\sigma$-flag $g$ and constant $c$ with
-$\phi^\sigma(g)=c$ almost surely for all constrained unlabelled limits while some
-$\psi\in Q_\sigma$ has $\psi(g)\ne c$.
-\end{conjecture}
-
-The forward implication is \cref{thm:pinning}; the conjecture asserts that the
-absence of such single-flag pinning is already sufficient.  It is tentative:
-root-plantability could conceivably fail through a \emph{joint} constraint on several
-flags with no single flag pinned, in which case a richer notion of obstruction would
-be needed.
-
-\subsection{Boundary pinning for subgraph-forbidden classes}\label{subsec:boundary}
+\subsection{Boundary pinning for edge-deletion-closed classes}\label{subsec:boundary}
 
 The obstructions exhibited above are all at the boundary, $c\in\{0,1\}$, and the remark
 after \cref{thm:pinning} observed that an interior value would require the almost-sure
-constancy as a genuine hypothesis.  We now show that for a subgraph-forbidden class no
-interior value is ever pinned: every pinning obstruction is a boundary one.  This matters
-because, as the next section shows, boundary obstructions are inert for density bounds.
+constancy as a genuine hypothesis.  We now show this boundary phenomenon for hereditary
+classes that are also closed under deleting edges.  This is not a change of ambient order:
+the flag algebra still uses induced subgraphs.  The extra edge-deletion closure is exactly
+what is needed for the thinning argument below, and it is automatic for the usual
+ordinary-subgraph-free classes.  This matters for the next section, where the final objects
+of interest are \emph{density bounds}: unlabelled extremal inequalities in $\A^0[\T_1]$,
+such as Mantel- or Tur\'an-type inequalities among graph densities.  Boundary pinning can
+expose a real failure of root-plantability at a non-empty type, but after unlabelling it
+gives no stronger asymptotic bound at the empty type.
 
 \begin{theorem}[No interior pinning]\label{thm:no-interior}
-Let $\K$ be defined by forbidding a family of graphs as (not necessarily induced)
-subgraphs, and let $\sigma$ be any non-degenerate type.  If a $\sigma$-flag $g$ is pinned
-to $c$ on $S_\sigma$, then $c\in\{0,1\}$.
+Let $\K$ be a hereditary graph class that is closed under deleting edges, and let $\sigma$
+be any non-degenerate type.  If a $\sigma$-flag $F$ is pinned to $c$ on $S_\sigma$, then
+$c\in\{0,1\}$.
 \end{theorem}
 
 \begin{proof}
-It is enough to produce a single point $o_\sigma\in S_\sigma$ that is $\{0,1\}$-valued on
-every flag: pinning forces $g\equiv c$ on $S_\sigma$, so then $c=o_\sigma(g)\in\{0,1\}$.
+It is enough to produce a positive homomorphism $\psi_\sigma\in S_\sigma$ that is
+$\{0,1\}$-valued on every flag: pinning forces $F\equiv c$ on $S_\sigma$, so then
+$c=\psi_\sigma(F)\in\{0,1\}$.
 
-As $\sigma$ is non-degenerate, some $\phi_0\in Q_0$ has positive $\sigma$-density; let $W$
-be a graphon representing it.  For $\lambda\in(0,1]$ put $W_\lambda:=\lambda W$.  Then
-$W_\lambda\le W$ pointwise, and the density of any subgraph is monotone in the edge
-weights, so every forbidden subgraph still has density $0$ in $W_\lambda$; hence
-$W_\lambda$ is $F$-free and its limit $\phi_0^{\lambda}$ lies in $Q_0$.  Its
-$\sigma$-density is positive for each $\lambda>0$, because the integrand defining the
-induced $\sigma$-density is positive on the set of tuples where every $\sigma$-edge has
-$W>0$ and every $\sigma$-non-edge has $W<1$, a set of positive measure since $\phi_0$ has
-positive $\sigma$-density; so $\phi_0^{\lambda}$ can be labelled by $\sigma$.
+As $\sigma$ is non-degenerate, some $\phi_0\in Q_0$ has positive $\sigma$-density.  Choose
+finite graphs $G_n\in\K$ converging to $\phi_0$.  For $\lambda\in(0,1]$, form a random
+spanning subgraph $G_n^\lambda$ by keeping each edge of $G_n$ independently with
+probability $\lambda$.  Since $\K$ is closed under deleting edges, every realisation of
+$G_n^\lambda$ still lies in $\K$.
 
-Every edge weight of $W_\lambda$ is at most $\lambda$, so under
-$\Ext_\sigma(\phi_0^{\lambda})$ the probability that a given further vertex attaches to
-a root, or that two further vertices are adjacent, is at most $\lambda$.  Hence as
-$\lambda\to0$ the density of a $\sigma$-flag $g$ tends to $1$ when $g$ extends
-$\sigma$ by pairwise non-adjacent vertices that are also non-adjacent to $\sigma$, and to
-$0$ otherwise.  These limiting values are $\{0,1\}$, so $\Ext_\sigma(\phi_0^{\lambda})$
-concentrates at the labelled limit $o_\sigma$---the type $\sigma$ together with an isolated
-edgeless cloud---which therefore lies in $S_\sigma$ and is $\{0,1\}$-valued on every flag.
+For each fixed finite graph $H$, the expected induced density of $H$ in $G_n^\lambda$ is
+determined by the induced densities of graphs on $|H|$ vertices in $G_n$.  Indeed, for
+two graphs $H$ and $M$ on the same number of vertices, let $q_{H,M}(\lambda)$ be the
+probability that the random graph obtained from $M$ by keeping each edge independently
+with probability $\lambda$ is isomorphic to $H$.  Then
+\[
+  \E[p(H,G_n^\lambda)]
+  =
+  \sum_{|M|=|H|} q_{H,M}(\lambda)\,p(M,G_n).
+\]
+The sum is finite, and $p(M,G_n)$ converges for every $M$ because $G_n\to\phi_0$; hence
+the expectation on the left has a limit as $n\to\infty$.  Call this limit
+$\alpha_H^\lambda$.
+
+We now choose actual thinned graphs whose finite densities follow these limiting
+expectations.  Fix $r$ and $\eps>0$.  For all large $n$, the expectations
+$\E[p(H,G_n^\lambda)]$ are within $\eps/2$ of $\alpha_H^\lambda$ for every graph $H$
+with at most $r$ vertices.
+
+We claim that, with probability tending to $1$, all the actual densities
+$p(H,G_n^\lambda)$ are also close to their expectations for this finite list of graphs.
+Here is the estimate.  Write $N=|V(G_n)|$ and fix a graph $H$ on $h\le r$ vertices.  The
+random thinning is determined by independent coin flips, one for each edge of $G_n$.  If
+we change the outcome of just one coin, say the coin for the edge $xy$, then the induced
+$H$-density can change only through samples that contain both $x$ and $y$.  Among all
+$h$-vertex samples, the fraction containing $x$ and $y$ is
+\[
+  \frac{\binom{N-2}{h-2}}{\binom Nh}=O_h(N^{-2})
+\]
+(and it is $0$ if $h<2$).  Thus changing one coin changes $p(H,G_n^\lambda)$ by at most
+$C_hN^{-2}$ for a constant $C_h$ depending only on $h$.  We use the following elementary
+concentration estimate.  Let $Y_1,\ldots,Y_m$ be independent random variables and let
+$X=f(Y_1,\ldots,Y_m)$.  Suppose that for each $i$, changing only the value of $Y_i$ while
+leaving all other $Y_j$ fixed can change $f$ by at most $c_i$.  Then
+\[
+  \Prob[\,|X-\E[X]|>t\,]\le
+  2\exp\left(-\frac{2t^2}{\sum_i c_i^2}\right).
+\]
+Here $Y_1,\ldots,Y_m$ are the edge-retention coins of the thinning process and
+$X=p(H,G_n^\lambda)$.  There are at most $\binom N2$ such coins, and we may take every
+$c_i$ to be $C_hN^{-2}$.  Hence
+\[
+  \sum_i c_i^2 \le \binom N2 C_h^2N^{-4}=O_h(N^{-2}),
+\]
+so, with $t=\eps/2$, the right-hand side tends to $0$ as $N\to\infty$.  Therefore
+\[
+  \Prob\bigl[\,|p(H,G_n^\lambda)-\E[p(H,G_n^\lambda)]|>\eps/2\,\bigr]\to0 .
+\]
+There are only finitely many graphs $H$ with at most $r$ vertices, so a union bound shows
+that, with probability tending to $1$, the same estimate holds for all of them
+simultaneously.  Hence, for all large $n$, there is at least one realisation of
+$G_n^\lambda$ for which
+\[
+  |p(H,G_n^\lambda)-\alpha_H^\lambda|<\eps
+  \qquad\text{for every } |H|\le r .
+\]
+Taking $r=1,2,\ldots$ and $\eps=1/r$, and choosing $n$ increasing at each step, gives a
+deterministic sequence of thinned graphs whose density of every fixed finite graph $H$
+converges to $\alpha_H^\lambda$.  This sequence lies in $\K$, so its limit is a
+constrained unlabelled positive homomorphism; denote it by $\phi_0^\lambda\in Q_0$.
+
+We now check that this limit can still be rooted by $\sigma$.  Consider an embedding
+$\theta:\sigma\to G_n$.  After thinning, the same map $\theta$ is still an embedding of
+$\sigma$ if all edges of $\sigma$ are kept; the non-edges of $\sigma$ stay non-edges
+because thinning only deletes edges.  Therefore the expected $\sigma$-density of
+$G_n^\lambda$ is at least
+$\lambda^{e(\sigma)}$ times the $\sigma$-density of $G_n$.  Passing to the deterministic
+thinned limit gives
+\[
+  \phi_0^\lambda(\brak\sigma)\ge
+  \lambda^{e(\sigma)}\phi_0(\brak\sigma)>0.
+\]
+Thus $\Ext_\sigma(\phi_0^\lambda)$ is defined for every $\lambda>0$.
+
+Now let $F'$ be a $\sigma$-flag, and let $m(F')$ be the number of edges of $F'$ not already
+belonging to the root type $\sigma$.  The unlabelled graph underlying $F'$ has
+at least $e(\sigma)+m(F')$ edges, and the thinning formula above gives
+\[
+  \phi_0^\lambda(\avg{F'}{\sigma})=O(\lambda^{e(\sigma)+m(F')})
+  \qquad(\lambda\to0).
+\]
+Dividing by the lower bound for $\phi_0^\lambda(\brak\sigma)$ in
+\eqref{eq:extension-expectation}, we get
+\[
+  \E_{\phi^\sigma\sim\Ext_\sigma(\phi_0^\lambda)}[\phi^\sigma(F')]
+  =O(\lambda^{m(F')}).
+\]
+Hence every flag with $m(F')>0$ has density tending to $0$ in probability under
+$\Ext_\sigma(\phi_0^\lambda)$.  For each size there is a unique remaining flag, namely
+the extension of $\sigma$ by vertices that are pairwise non-adjacent and non-adjacent to
+the roots; since the flags of that size sum to $\one_\sigma$, its density tends to $1$ in
+probability.
+
+By compactness, take any weak subsequential limit of the measures
+$\Ext_\sigma(\phi_0^\lambda)$ as $\lambda\to0$.  The preceding coordinate convergence
+forces this limiting measure to be the Dirac measure at a positive homomorphism
+$\psi_\sigma\in X_\sigma$ characterised as follows: for each number of vertices,
+$\psi_\sigma$ assigns value $1$ to the unique flag extending $\sigma$ with no new edges,
+and value $0$ to every other flag of that size.  Thus $\psi_\sigma$ lies in $S_\sigma$ and
+is $\{0,1\}$-valued on every flag.
 \end{proof}
 
 \begin{remark}[Scope]
 \Cref{thm:no-interior} is uniform in $\sigma$, with no restriction on the type, and
-subsumes the one-vertex, edge, and clique cases at once.  The scaled graphons
-$\lambda W$ supply, as $\lambda\to0$, a deterministic rooted view of $\sigma$ from which
-the boundary value is read off.  No single $\K$-limit of positive $\sigma$-density has
-isolated $\sigma$-copies; but letting the $\sigma$-density tend to zero \emph{along} the
-family while staying positive realises such a view in the closure $S_\sigma$, exactly as
-the degenerate corner of a complete bipartite family does for the edge type.  By
-complementation (\cref{lem:complementation}) the same holds for every class whose
-complement is subgraph-forbidden, including the dense co-degenerate ones.  The
+subsumes the one-vertex, edge, and clique cases at once.  The edge-thinned limits
+$\phi_0^\lambda$ have positive $\sigma$-density for every fixed $\lambda>0$.  Thus each
+$\phi_0^\lambda$ is an admissible unlabelled limit for the extension theorem, and it has
+an extension measure $\Ext_\sigma(\phi_0^\lambda)$ obtained by choosing an embedding of
+$\sigma$ at random and recording the resulting labelled limit.  The estimates in the proof
+say that, as $\lambda\to0$, these measures converge in flag-density coordinates to the
+probability measure concentrated at the positive homomorphism $\psi_\sigma$: all flags
+with a new edge have value $0$, and the unique edgeless extension of each size has value
+$1$.
+Here is the support-closure argument explicitly.  Take any open neighbourhood $U$ of
+$\psi_\sigma$.  Since the topology on $X_\sigma$ is generated by the flag-density
+coordinates, $U$ contains a smaller neighbourhood $V$ of $\psi_\sigma$ described by
+finitely many inequalities involving finitely many flag densities.  The coordinate
+convergence above implies that
+\[
+  \Ext_\sigma(\phi_0^\lambda)(V)>0
+\]
+for all sufficiently small $\lambda>0$, and hence also
+$\Ext_\sigma(\phi_0^\lambda)(U)>0$.  An open set of positive measure must meet the support
+of that measure, so $U$ meets $\supp(\Ext_\sigma(\phi_0^\lambda))$ for some admissible
+$\lambda$.  Since this holds for every neighbourhood $U$ of $\psi_\sigma$,
+$\psi_\sigma$ belongs to the closure of the union of all admissible supports, which is
+exactly $S_\sigma$.
+The role of the parameter $\lambda$ is only to approach this limiting positive
+homomorphism through admissible extension measures.  It is harmless if
+$\phi_0^\lambda(\brak\sigma)$ tends to $0$ as $\lambda\to0$: for every fixed positive
+$\lambda$ the value is still nonzero, so $\Ext_\sigma(\phi_0^\lambda)$ is defined, and the
+closure in the definition of $S_\sigma$ records the limit as $\lambda$ goes to zero.
+Finally, by applying complementation (\cref{lem:complementation}), the same
+no-interior-pinning conclusion applies to every class whose image under graph
+complementation is edge-deletion-closed, including the dense co-degenerate ones.  The
 consequences for density bounds are drawn in \cref{sec:empty-type}.
 \end{remark}
 
@@ -3193,15 +3304,18 @@ at most $\deg(v)$ edges; hence the number of triangles through $v$ is at most $\
 and the one-root triangle density at every vertex is $O(1/n)$.  Hence the
 triangle flag over the one-vertex type has density $0$ on \emph{all} of $Q_{\vtype}$: it is pinned at $0$, but
 the quotient attains only $0$, so no obstruction arises.  The edge flag is not
-pinned at all, as $C_5$-free graphs realise every edge density in $[0,\tfrac12]$
-(the empty graph and the complete bipartite graphs).
+pinned at all: empty graphs give one-root edge density $0$, while balanced complete
+bipartite graphs are $C_5$-free and give one-root edge density $\tfrac12$ in the limit.
+Thus, after choosing the root uniformly at random, the edge flag has limiting value $0$ in
+one $C_5$-free sequence and limiting value $\tfrac12$ in another; it is therefore not
+pinned to a single value.
 \end{proof}
 
 The same class is not root-plantable at the two-root edge type.  Let $\tau$ be
-the type consisting of two roots joined by an edge, and let $g\in\A^\tau[\T_{\mathrm{Graph}}]$
-be the three-vertex $\tau$-flag in which the one unlabelled vertex is adjacent
-to both roots; equivalently, $g$ is the triangle $\tau$-flag over
-the edge type.
+the type consisting of two roots joined by an edge, and let
+$F_\triangle\in\A^\tau[\T_{\mathrm{Graph}}]$ be the three-vertex $\tau$-flag in which
+the one unlabelled vertex is adjacent to both roots; equivalently, $F_\triangle$ is the
+triangle $\tau$-flag over the edge type.
 
 \begin{lemma}[Few triangles]\label{lem:c5-few-triangles}
 If $G$ is $C_5$-free, then the number $T(G)$ of triangles in $G$ satisfies
@@ -3222,26 +3336,27 @@ $e(G)=O(|V(G)|^2)$, the normalised triangle density is $O(1/|V(G)|)$ along any
 sequence with $|V(G)|\to\infty$.
 \end{proof}
 
-\begin{corollary}[The triangle edge-type flag is pinned on ensembles]\label{cor:c5-edge-pinned}
+\begin{corollary}[The triangle edge-type flag is pinned under random edge-rooting]
+\label{cor:c5-edge-pinned}
 Let $\phi_0\in Q_0$ be a $C_5$-free unlabelled limit with
 $\phi_0(\brak{\tau})>0$, and let $\phi^\tau\sim\Ext_\tau(\phi_0)$.  Then
 \[
-  \phi^\tau(g)=0
+  \phi^\tau(F_\triangle)=0
   \qquad\text{almost surely.}
 \]
 \end{corollary}
 
 \begin{proof}
-The downward average $\avg{g}{\tau}$ is a positive scalar multiple of the
+The downward average $\avg{F_\triangle}{\tau}$ is a positive scalar multiple of the
 unlabelled triangle.  By \cref{lem:c5-few-triangles},
-$\phi_0(\avg{g}{\tau})=0$.  By \eqref{eq:extension-expectation},
+$\phi_0(\avg{F_\triangle}{\tau})=0$.  By \eqref{eq:extension-expectation},
 \[
-  \E[\phi^\tau(g)]
+  \E[\phi^\tau(F_\triangle)]
   =
-  \frac{\phi_0(\avg{g}{\tau})}{\phi_0(\brak{\tau})}
+  \frac{\phi_0(\avg{F_\triangle}{\tau})}{\phi_0(\brak{\tau})}
   =0.
 \]
-Since $\phi^\tau(g)\ge0$ pointwise, it is almost surely zero.
+Since $\phi^\tau(F_\triangle)\ge0$ pointwise, it is almost surely zero.
 \end{proof}
 
 \begin{definition}[Book graphs]\label{def:c5-book}
@@ -3251,22 +3366,26 @@ the further vertices.
 \end{definition}
 
 \begin{lemma}[The book edge is $C_5$-free]\label{lem:c5-book}
-Each $B_n$ is $C_5$-free.  Rooted at the ordered edge $(a,b)$, the sequence
+Each $B_n$ is $C_5$-free.  With the two roots placed at $a$ and $b$ in that order, the sequence
 $(B_n,a,b)$ has a convergent subsequence whose limit is a point $\psi\in Q_\tau$
 with
 \[
-  \psi(g)=1.
+  \psi(F_\triangle)=1.
 \]
 \end{lemma}
 
 \begin{proof}
-A leaf of $B_n$ has neighbourhood exactly $\{a,b\}$.  A simple cycle containing
-a leaf must enter and leave it through $a$ and $b$.  Hence a simple cycle in
-$B_n$ uses at most two leaves, so its length is at most $4$.  Thus $B_n$ has no
-$C_5$.
+Every vertex of $B_n$ other than $a$ and $b$ is adjacent only to $a$ and $b$.
+Suppose such a further vertex $x$ lies on a cycle with no repeated vertices.  Then the two
+neighbours of $x$ along the cycle must be $a$ and $b$, because $x$ has no other
+neighbours in $B_n$.  Thus a cycle using one further vertex is just a triangle through
+$a$ and $b$, and a cycle using two further vertices can only be the $4$-cycle
+$a,x,b,y,a$ up to reversing the order.  A cycle cannot use three further vertices, since
+each of them would need both $a$ and $b$ as its two neighbours on the cycle, forcing $a$ or
+$b$ to appear more than once.  Hence $B_n$ has no cycle of length $5$, and so no $C_5$.
 
 For the $\tau$-flag density, every unlabelled vertex of $B_n$ is adjacent to both
-roots.  Therefore $p(g,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
+roots.  Therefore $p(F_\triangle,(B_n,a,b))=1$ for all $n$, and any convergent subsequence
 has the asserted limit.
 \end{proof}
 
@@ -3274,40 +3393,75 @@ has the asserted limit.
 The $C_5$-free graph class is not root-plantable at the two-root edge type
 $\tau$.  Concretely,
 \[
-  \Prob_{\phi^\tau\sim\Ext_\tau(\phi_0)}[\phi^\tau(-g)\ge0]=1
+  \Prob_{\phi^\tau\sim\Ext_\tau(\phi_0)}[\phi^\tau(-F_\triangle)\ge0]=1
   \qquad\text{for every }\phi_0\in Q_0\text{ with }\phi_0(\brak{\tau})>0,
 \]
-but $-g$ is negative at some point of $Q_\tau$.
+but $-F_\triangle$ is negative at some $\psi\in Q_\tau$.
 \end{theorem}
 
 \begin{proof}
-By \cref{cor:c5-edge-pinned}, every support point of every admissible
-edge-type ensemble has $g=0$, so $-g$ is ensemble-non-negative.  By
-\cref{lem:c5-book}, there is a quotient homomorphism
-$\psi\in Q_\tau$ with $\psi(g)=1$, hence $\psi(-g)=-1<0$.  Thus quotient
-semantics fails for $-g$, and the support-closure criterion gives
-$S_\tau\ne Q_\tau$.
+First fix any constrained unlabelled limit $\phi_0\in Q_0$ with
+$\phi_0(\brak\tau)>0$.  This positivity means that the random edge-rooting measure
+$\Ext_\tau(\phi_0)$ is defined.  By \cref{cor:c5-edge-pinned}, if
+$\phi^\tau$ is sampled from this measure, then
+$\phi^\tau(F_\triangle)=0$ almost surely.  Hence
+\[
+  \phi^\tau(-F_\triangle)=0
+\]
+almost surely, and in particular it is almost surely non-negative.  This proves the
+displayed probability-one assertion.
+
+Next we show that the same signed flag is negative at a labelled quotient homomorphism.
+It is useful first to record where the random edge-rooting measures can live.  Let
+\[
+  Z:=\{\chi\in X_\tau:\chi(F_\triangle)=0\}.
+\]
+The set $Z$ is closed, since evaluation at $F_\triangle$ is continuous.  The first
+paragraph says that, for every $\phi_0\in Q_0$ with $\phi_0(\brak\tau)>0$, the measure
+$\Ext_\tau(\phi_0)$ gives probability one to $Z$.  A probability measure whose mass is
+one on a closed set has support contained in that closed set: outside $Z$ there is the
+open set $X_\tau\setminus Z$, and it has measure zero.  Therefore every support appearing
+in the definition of $S_\tau$ is contained in $Z$.  Since $S_\tau$ is the closure of the
+union of those supports, and $Z$ is closed, we get
+\[
+  S_\tau\subseteq Z .
+\]
+
+On the other hand, \cref{lem:c5-book} gives a labelled quotient homomorphism
+$\psi\in Q_\tau$ with $\psi(F_\triangle)=1$.  Thus $\psi\notin Z$, and hence
+$\psi\notin S_\tau$.  This implies that
+\[
+  \psi(-F_\triangle)=-1<0
+\]
+and $S_\tau\ne Q_\tau$, i.e., the $C_5$-free class is not root-plantable at the type $\tau$.
 \end{proof}
 
 \begin{remark}
-The $C_5$-free class therefore gives both a positive and a negative lesson.  A
-single typical vertex in a positive-density $C_5$-free limit may have nontrivial
-edge density to the rest of the graph, and \cref{thm:c5-one-root} shows that
-every such labelled quotient limit can be planted.  A typical two-root edge is much
-more rigid: the common-neighbour density is forced to vanish, while an
-exceptional edge in a sparse book graph may have common-neighbour density one.
-This is precisely a pinning obstruction, so the characterisation conjecture (\cref{conj:characterisation})
-survives this test but must be understood type by type.
+The $C_5$-free class therefore gives both a positive and a negative lesson.  At the
+one-vertex type, a randomly chosen root can see a genuine positive fraction of the graph:
+for example, in a balanced complete bipartite graph its one-root edge density is
+$\tfrac12$.  The local planting theorem for this class, \cref{thm:c5-one-root}, says that
+every one-root quotient view can be approximated by views obtained from randomly chosen
+roots in $C_5$-free graphs.
+
+The two-root edge type behaves differently.  If the two roots are chosen by first taking a
+positive edge-density $C_5$-free limit and then choosing a random edge, the
+common-neighbour triangle flag has value $0$ almost surely by
+\cref{cor:c5-edge-pinned}.  But the book graphs contain a special edge $ab$ whose
+common-neighbour density is $1$.  This special edge is not seen by random edge-rooting in
+any positive edge-density limit, but it still produces a legitimate quotient homomorphism
+in $Q_\tau$.  Thus the edge type has a pinning obstruction even though the one-vertex and
+non-edge types are root-plantable; the obstruction analysis has to be done type by type.
 \end{remark}
 
 \section{The gap is invisible to density bounds}\label{sec:empty-type}
 
 The obstructions above all occur at non-empty types.  A \emph{pinning}
-obstruction means that some labelled flag \(g\) has a fixed value \(c\) in
+obstruction means that some labelled flag \(F\) has a fixed value \(c\) in
 almost every random rooted view of every constrained unlabelled limit, even
-though a specially chosen quotient limit at this type can give \(g\) a different
-value.  Algebraically, the corresponding witness is \(g-c\,\one_\sigma\) or
-\(c\,\one_\sigma-g\): it vanishes on the ensemble support but not on all of
+though a specially chosen quotient limit at this type can give \(F\) a different
+value.  Algebraically, the corresponding witness is \(F-c\,\one_\sigma\) or
+\(c\,\one_\sigma-F\): it vanishes on the ensemble support but not on all of
 \(Q_\sigma\).  In the one-vertex examples this type is \(\sigma=\vtype\), and
 the witnesses are \(-e\) and \(e-\one_{\vtype}\), where \(\vtype\) is the
 one-vertex type and \(\one_{\vtype}\) is the unit of its flag algebra.  A
@@ -3415,7 +3569,7 @@ $\Ext_\sigma(\phi_0)$ is supported on $S_\sigma$, and
   \le \delta .
 \]
 If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
-$\avg{s-h^2}{\sigma}$ contains a copy of $\sigma$, so its $\phi_0$-density is zero
+$\avg{s-h^2}{\sigma}$ contains an embedding of $\sigma$, so its $\phi_0$-density is zero
 by monotonicity; hence the same displayed quantity is $0$.  Therefore
 \[
   \left\|\avg{s}{\sigma}-\avg{h^2}{\sigma}\right\|_{Q_0}\le\delta .
@@ -3434,8 +3588,8 @@ where each $\psi\in S_\sigma\subseteq Q_\sigma$ is evaluated on $\A^\sigma[\T_1]
 the unique homomorphism $\bar\psi\in\Homp(\A^\sigma[\T_1],\R)$ it factors as,
 $\psi=\bar\psi\circ\qmap_\sigma$.
 Then $\avg{a}{\sigma}=0$ in $\A^0[\T_1]$ for every $a\in\mathcal I_\sigma$.  In
-particular every pinning witness $g-c\,\one_\sigma$, and every flag-multiple
-$(g-c\,\one_\sigma)\,h$, unlabels to zero.  Consequently $\avg{\cdot}{\sigma}$ depends
+particular every pinning witness $F-c\,\one_\sigma$, and every flag-multiple
+$(F-c\,\one_\sigma)\,h$, unlabels to zero.  Consequently $\avg{\cdot}{\sigma}$ depends
 only on the restriction $s|_{S_\sigma}$, so
 $\C^{\mathrm{ens}}_\sigma\supsetneq\C^{\mathrm{quot}}_\sigma$ requires some $s\ge0$ on
 $S_\sigma$ whose restriction $s|_{S_\sigma}$ is the restriction of no sum of squares.
@@ -3446,7 +3600,7 @@ For $\phi_0\in Q_0$ with $\phi_0(\brak\sigma)>0$,
 $\phi_0(\avg{a}{\sigma})=\phi_0(\brak\sigma)\,\E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(a)]$
 by \eqref{eq:extension-expectation}, and the expectation vanishes because the measure is
 supported on $S_\sigma$ and $a=0$ there.  If $\phi_0(\brak\sigma)=0$, then
-$\avg{a}{\sigma}$ is a combination of unlabelled graphs each containing a copy of
+$\avg{a}{\sigma}$ is a combination of unlabelled graphs each containing an embedding of
 $\sigma$, so each has $\phi_0$-density $0$ by monotonicity and again
 $\phi_0(\avg{a}{\sigma})=0$.  Thus $\avg{a}{\sigma}$ vanishes on $Q_0$ and so is the zero
 element.  A pinning witness lies in $\mathcal I_\sigma$ by definition, and
@@ -3515,9 +3669,9 @@ $C_5$-free density bound, even though $\tau$ is not root-plantable.
 
 \begin{proof}
 This is the special case of \cref{thm:no-closed-certificate-gap} for the
-non-degenerate edge type $\tau$.  The pinned witness $g$ (the triangle $\tau$-flag) is even
-more inert: by \cref{prop:ideal-zero}, $g$ and all its flag-multiples unlabel to zero, since
-$g=0$ on $S_\tau$ (\cref{cor:c5-edge-pinned}).
+non-degenerate edge type $\tau$.  The pinned witness $F_\triangle$ (the triangle $\tau$-flag) is even
+more inert: by \cref{prop:ideal-zero}, $F_\triangle$ and all its flag-multiples unlabel to zero, since
+$F_\triangle=0$ on $S_\tau$ (\cref{cor:c5-edge-pinned}).
 \end{proof}
 
 \section{Strengthening by a further constraint}
@@ -3596,7 +3750,7 @@ $S_\sigma(Y)$, so \eqref{eq:extension-expectation} gives
   \ge0.
 \]
 If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
-$\avg{s}{\sigma}$ contains a copy of $\sigma$, hence has $\phi_0$-density $0$ by
+$\avg{s}{\sigma}$ contains an embedding of $\sigma$, hence has $\phi_0$-density $0$ by
 monotonicity.  Thus $\phi_0(\avg{s}{\sigma})=0$.
 \end{proof}
 
@@ -4181,14 +4335,6 @@ Four questions remain.
   \cref{thm:sparse-repair-planting} verifies it for sparse old-edge repairs after
   root blow-up.  The next useful theorem would allow denser but structured repairs,
   repairs incident to the planted root clusters, or amalgamation hypotheses.
-
-  \item \textbf{The characterisation conjecture.}
-  \Cref{conj:characterisation} asks whether the absence of a pinning obstruction is
-  already sufficient for root-plantability.  The $C_5$-free class sharpens the test:
-  the one-vertex type has no elementary pinning obstruction and is root-plantable, while
-  the edge type fails for exactly a pinning reason.  A decisive next example would be a
-  type or class with no pinning obstruction but still no root-plantability, or a theorem
-  ruling this out under checkable hypotheses.
 
   \item \textbf{Exact certificate gaps before closure.}
   \Cref{thm:no-closed-certificate-gap} rules out any improvement of asymptotic density
