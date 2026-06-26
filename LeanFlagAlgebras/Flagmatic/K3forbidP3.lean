@@ -29,7 +29,7 @@ generate_pruned_forbid_free_empty_typed_flags 3 K3
 generate_pruned_forbid_free_flags 2 1 0 K3
 generate_pruned_forbid_free_flags 3 1 0 K3
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
-generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
+generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -64,16 +64,13 @@ Bound: '3/4'. -/
 theorem K3forbidP3_flagAlgebra
     : FlagAlgebra_3_0_0_2 ≤[completeGraph (Fin 3)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  apply inducedForbidLE_toFinFlag_imp_forbidLE
-  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
-        from (completeSym2Graph_finFlag_eq 3).symm]
-  have quadraticForm_trans : FlagAlgebra_3_0_0_2 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  have quadraticForm_trans : FlagAlgebra_3_0_0_2 ≤[completeGraph (Fin 3)]
             FlagAlgebra_3_0_0_2 + ⟦flagQuadraticForm M_real v⟧₀
     := by
-    apply inducedForbidLE_add_QuadraticForm M_real M_real_posSemidef v
-    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_3_0_0_2
-  apply inducedForbidLE_trans quadraticForm_trans
-  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
+    apply forbidLEWith_add_QuadraticForm M_real M_real_posSemidef v
+    exact forbidLEWith_refl _ FlagAlgebra_3_0_0_2
+  apply forbidLEWith_trans quadraticForm_trans
+  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 3)))
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
@@ -83,7 +80,7 @@ theorem K3forbidP3_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply inducedForbidLE_of_le
+  apply forbidLEWith_of_le
   flag_nonneg
 
 end K3forbidP3

@@ -37,13 +37,13 @@ generate_pruned_forbid_free_flags 5 3 1 K5
 generate_pruned_forbid_free_flags 5 3 2 K5
 generate_pruned_forbid_free_flags 5 3 3 K5
 generate_pruned_flag_pair_density_theorems 4 5 3 0 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 0 K5
+generate_pruned_forbid_free_mul_theorems 4 5 3 0 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 1 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 1 K5
+generate_pruned_forbid_free_mul_theorems 4 5 3 1 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 2 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 2 K5
+generate_pruned_forbid_free_mul_theorems 4 5 3 2 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 generate_pruned_flag_pair_density_theorems 4 5 3 3 K5
-generate_pruned_forbid_free_mul_theorems 4 5 3 3 K5
+generate_pruned_forbid_free_mul_theorems 4 5 3 3 K5 (completeGraph (Fin 5)) (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 
 /-- SDP certificate matrix for block 1 (rational, 8×8),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -486,10 +486,10 @@ private theorem auto_flagDensity1_2_0_0_1_5_0_0_32
 over the K5-free 5-vertex flags via `flag_expand_hfree 5 K5` (`basisVector_quot_inducedForbidEq_sum`
 rewritten onto `flagSetHfree_5_0_0_K5`; the K5 term `Flag_5_0_0_33` is dropped automatically). -/
 lemma K5turan_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ)]
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 5)]
         (1 / 10 : ℝ) • FlagAlgebra_5_0_0_1 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_2 + (1 / 5 : ℝ) • FlagAlgebra_5_0_0_3 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_4 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_5 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_6 + (3 / 10 : ℝ) • FlagAlgebra_5_0_0_7 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_8 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_9 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_10 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_11 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_12 + (2 / 5 : ℝ) • FlagAlgebra_5_0_0_13 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_14 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_15 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_16 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_17 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_18 + (1 / 2 : ℝ) • FlagAlgebra_5_0_0_19 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_20 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_21 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_22 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_23 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_24 + (3 / 5 : ℝ) • FlagAlgebra_5_0_0_25 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_26 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_27 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_28 + (7 / 10 : ℝ) • FlagAlgebra_5_0_0_29 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_30 + (4 / 5 : ℝ) • FlagAlgebra_5_0_0_31 + (9 / 10 : ℝ) • FlagAlgebra_5_0_0_32
   := by
-  flag_expand_hfree 5 K5
+  flag_expand_hfree 5 K5 (completeSym2Graph_finFlag_mem_forbiddenFlags 5)
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 5:12131415232425343545'
@@ -497,21 +497,18 @@ Bound: '3/4'. -/
 theorem K5turan_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)] (3 / 4 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  apply inducedForbidLE_toFinFlag_imp_forbidLE
-  rw [show (completeGraph (Fin 5)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ)
-        from (completeSym2Graph_finFlag_eq 5).symm]
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ)]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 5)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀ + ⟦flagQuadraticForm M₃_real v₃⟧₀ + ⟦flagQuadraticForm M₄_real v₄⟧₀
     := by
-    apply inducedForbidLE_add_QuadraticForm M₄_real M₄_real_posSemidef v₄
-    apply inducedForbidLE_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
-    apply inducedForbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply inducedForbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
-  apply inducedForbidLE_trans quadraticForm_trans
-  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ) 5)))
+    apply forbidLEWith_add_QuadraticForm M₄_real M₄_real_posSemidef v₄
+    apply forbidLEWith_add_QuadraticForm M₃_real M₃_real_posSemidef v₃
+    apply forbidLEWith_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply forbidLEWith_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact forbidLEWith_refl _ FlagAlgebra_2_0_0_1
+  apply forbidLEWith_trans quadraticForm_trans
+  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K5⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 5) 5)))
   simp only [add_assoc]
-  rw [inducedForbidLE_rw_left_add_right K5turan_flagAlgebra_expand_under_forbid]
+  rw [forbidLEWith_rw_left_add_right K5turan_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_eight, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂]
@@ -524,7 +521,7 @@ theorem K5turan_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply inducedForbidLE_of_le
+  apply forbidLEWith_of_le
   flag_nonneg
 
 end K5turan

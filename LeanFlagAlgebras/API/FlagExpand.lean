@@ -189,10 +189,10 @@ Prerequisites: the forbid-free host set must exist (run `generate_pruned_forbid_
 or the empty-typed `generate_pruned_forbid_free_empty_typed_flags N F` for `k = m = 0`), and the
 relevant `flagDensity₁ …` evaluation lemmas must be `@[simp]`.
 -/
-syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident : tactic
+syntax (name := flagExpandHfreeTac) "flag_expand_hfree " num ident term : tactic
 
 elab_rules : tactic
-  | `(tactic| flag_expand_hfree $N:num $forbid:ident) =>
+  | `(tactic| flag_expand_hfree $N:num $forbid:ident $hmem:term) =>
       withMainContext do
         let nVal := N.getNat
         -- Strip any namespace qualifier so the tag matches the generated `flagSetHfree_*` names
@@ -202,13 +202,13 @@ elab_rules : tactic
         let target ← getMainTarget
         let lhsExpr ←
           match target.getAppFnArgs with
-          | (``Forbid.inducedForbidEq, args) =>
+          | (``Forbid.forbidEq, args) =>
               match args[args.size - 2]? with
               | some e => pure e
-              | none => throwError "flag_expand_hfree: malformed `=ᵢ[ ]` goal."
-          | _ => throwError "flag_expand_hfree: goal must be `f =ᵢ[F] g`."
+              | none => throwError "flag_expand_hfree: malformed `=[ ]` goal."
+          | _ => throwError "flag_expand_hfree: goal must be `f =[H] g`."
         let some lhsConst := findFlagAlgebraConst? lhsExpr
-          | throwError "flag_expand_hfree: no `FlagAlgebra_*` constant on the LHS of `=ᵢ[ ]`."
+          | throwError "flag_expand_hfree: no `FlagAlgebra_*` constant on the LHS of `=[ ]`."
         let some (lhsN, kVal, mVal, iVal) := parseFlagAlgebraIndices? lhsConst
           | throwError m!"flag_expand_hfree: could not parse indices from `{lhsConst}`."
         let flagId : TSyntax `term := mkIdent (Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}")
@@ -222,8 +222,9 @@ elab_rules : tactic
         let forbidFlagTm : TSyntax `term ←
           `((⟨_, FlagAlgebras.Compute.Sym2EmptyTypedFlag.toFlag ⟦$forbid⟧⟩ : FlagAlgebras.FinFlag ∅ₜ))
         evalTactic (← `(tactic|
-          apply Forbid.inducedForbidEq_trans
-            (Forbid.basisVector_quot_inducedForbidEq_sum $forbidFlagTm ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+          apply Forbid.forbidEqWith_trans
+            (Forbid.basisVector_quot_forbidEq_sum_ofMem $forbidFlagTm
+              $hmem ⟨$lhsNStx, $flagId⟩ $N (by decide))))
         evalTactic (← `(tactic|
           rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
         evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
@@ -234,11 +235,11 @@ elab_rules : tactic
         -- *right*-associated while the stated RHS is *left*-associated, so we first unfold the
         -- `FlagAlgebra_*` constants (making both sides `⟦basisVector⟧`-atoms) and finish with an
         -- additive-commutative normalization that is insensitive to the bracketing.
-        evalTactic (← `(tactic| try exact Forbid.inducedForbidEq_refl $forbidFlagTm _))
+        evalTactic (← `(tactic| try exact Forbid.forbidEqWith_refl _ _))
         unless (← getGoals).isEmpty do
           withMainContext do
             let faIdents := (collectPrefixConstants "FlagAlgebra_" (← getMainTarget)).map mkIdent
-            evalTactic (← `(tactic| refine Forbid.inducedForbidEq_of_eq ?_))
+            evalTactic (← `(tactic| refine Forbid.forbidEqWith_of_eq ?_))
             unless faIdents.isEmpty do
               evalTactic (← `(tactic| dsimp only [$[$faIdents:ident],*]))
             evalTactic (← `(tactic|

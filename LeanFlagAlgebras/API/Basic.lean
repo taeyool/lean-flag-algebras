@@ -40,6 +40,15 @@ theorem one_inducedForbidEq_forbidExpand_one
   simpa [forbidExpand_one] using
     (basisVector_quot_inducedForbidEq_sum (σ := ∅ₜ) F_forbid (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
+/-- Ordinary `H`-free unit expansion (`_ofMem` form): under `forbiddenCondition H`, `1` equals
+its `forbidExpand_one` expansion, given the forbid flag is `H`-forbidden (`hmem`). -/
+theorem one_forbidEq_forbidExpand_one_ofMem
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fforbid : FinFlag ∅ₜ)
+    (hmem : Fforbid ∈ forbiddenFlags H) (expandSize : ℕ)
+    : (1 : FlagAlgebra ∅ₜ) =[H] forbidExpand_one Fforbid expandSize := by
+  simpa [forbidExpand_one] using
+    (basisVector_quot_forbidEq_sum_ofMem (σ := ∅ₜ) Fforbid hmem (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
+
 /-- If `f ≤ᵢ[F] g` and `c` is non-negative under `F`, then `f ≤ᵢ[F] g + c`. -/
 lemma inducedForbidLE_trans_add_nonneg
     {F_forbid : FinFlag ∅ₜ} {f g c : FlagAlgebra ∅ₜ}
@@ -75,6 +84,21 @@ theorem inducedForbidLE_add_QuadraticForm
   apply inducedForbidLE_add hfg
   apply downward_inducedForbidLE_nonneg
   apply inducedForbidLE_of_le
+  exact flagQuadraticForm_nonneg M hM v
+
+/-- Condition-generic SOS stacker: adding a PSD quadratic-form term preserves a `forbidLEWith C`
+bound. Ordinary examples use `C := forbiddenCondition (completeGraph r)`. -/
+theorem forbidLEWith_add_QuadraticForm
+    {n₀ : ℕ} {σ : FlagType (Fin n₀)}
+    {C : ForbidCondition} {f g : FlagAlgebra ∅ₜ}
+    (M : Matrix (Fin n) (Fin n) ℝ) (hM : M.PosSemidef) (v : FlagAlgebraVec σ n)
+    : (forbidLEWith C f g) → forbidLEWith C f (g + ⟦flagQuadraticForm M v⟧₀)
+  := by
+  intro hfg
+  rw [← add_zero f]
+  apply forbidLEWith_add hfg
+  apply downward_forbidLEWith_nonneg
+  apply forbidLEWith_of_le
   exact flagQuadraticForm_nonneg M hM v
 
 /-

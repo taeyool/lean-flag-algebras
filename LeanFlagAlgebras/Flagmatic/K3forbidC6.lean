@@ -34,9 +34,9 @@ generate_pruned_forbid_free_flags 4 2 1 K3
 generate_pruned_forbid_free_flags 6 2 0 K3
 generate_pruned_forbid_free_flags 6 2 1 K3
 generate_pruned_flag_pair_density_theorems 4 6 2 0 K3
-generate_pruned_forbid_free_mul_theorems 4 6 2 0 K3
+generate_pruned_forbid_free_mul_theorems 4 6 2 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 generate_pruned_flag_pair_density_theorems 4 6 2 1 K3
-generate_pruned_forbid_free_mul_theorems 4 6 2 1 K3
+generate_pruned_forbid_free_mul_theorems 4 6 2 1 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 /-- SDP certificate matrix for block 1 (rational, 15×15),
 paired with `v₁`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -155,17 +155,14 @@ Bound: '92129/5242880'. -/
 theorem K3forbidC6_flagAlgebra
     : FlagAlgebra_6_0_0_53 ≤[completeGraph (Fin 3)] (92129 / 5242880 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  apply inducedForbidLE_toFinFlag_imp_forbidLE
-  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
-        from (completeSym2Graph_finFlag_eq 3).symm]
-  have quadraticForm_trans : FlagAlgebra_6_0_0_53 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  have quadraticForm_trans : FlagAlgebra_6_0_0_53 ≤[completeGraph (Fin 3)]
             FlagAlgebra_6_0_0_53 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
     := by
-    apply inducedForbidLE_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
-    apply inducedForbidLE_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
-    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_6_0_0_53
-  apply inducedForbidLE_trans quadraticForm_trans
-  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 6)))
+    apply forbidLEWith_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply forbidLEWith_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact forbidLEWith_refl _ FlagAlgebra_6_0_0_53
+  apply forbidLEWith_trans quadraticForm_trans
+  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 6)))
 
   simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_fifteen, add_assoc]
   simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_ten, add_assoc]
@@ -176,7 +173,7 @@ theorem K3forbidC6_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply inducedForbidLE_of_le
+  apply forbidLEWith_of_le
   flag_nonneg
 
 end K3forbidC6
