@@ -23,7 +23,8 @@ most `24/625`, transferred from the flag-algebra bound
 theorem ErdosPentagon_Turan_upperBound
     : generalizedTuranDensity K3 C5 ≤ 24 / 625
   :=
-  generalizedTuranDensity_le_of_inducedForbidLE (by norm_num) ErdosPentagon_flagAlgebra
+  generalizedTuranDensity_le_of_forbidLE (by norm_num)
+    (inducedForbidLE_toFinFlag_imp_forbidLE K3 ErdosPentagon_flagAlgebra)
 
 /-- The `n`-fold blow-up of `G`: each vertex is replaced by an independent set
 of `n` copies, with edges inherited from `G` on the first coordinate. -/
