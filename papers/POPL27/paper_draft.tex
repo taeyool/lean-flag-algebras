@@ -2302,117 +2302,180 @@ reused.
 \section{The Reflection Layer}
 \label{sec:reflection}
 
-The definitions in Section~\ref{sec:abstract} are intentionally close to the
-mathematics.  Many of them are marked \lean{noncomputable}: this does not mean
-that they are unusable as specifications, but that Lean should not be expected
-to reduce them as executable programs.  This is a normal situation when
-formalizing mathematics.  A definition is often written to express the
-mathematical object directly, not to specify the data structures and loops by
-which one should compute it.  For instance, we may identify flags up to
-isomorphism, define a finite collection by a predicate, or use an existence
-proof to choose a representative.  These choices are harmless, and often
-preferable, at the level of theorems: they keep statements invariant under
-isomorphism and avoid committing the theory to an arbitrary encoding.
+There are at least two ways to carry out a formal proof.  One is to proceed as a
+mathematician usually would: when a finite claim is needed, write a proof of
+that claim directly.  In the flag-algebra setting this would mean proving, one
+by one, that two particular flags are isomorphic, that a certain density is a
+given rational number, or that a product of basis flags expands into a specified
+linear combination.  This is possible in principle, but it is the wrong scale:
+a single certificate contains many such finite checks, and hand-proving each
+one would bury the mathematical argument under routine case analysis.
 
-The cost is that the computational content is only implicit.  To evaluate such
-a definition, Lean would have to turn propositions such as adjacency or
-isomorphism into data, enumerate finite sets described abstractly, and choose
-representatives of quotient classes.  In proofs, this information can be
-supplied by lemmas or by classical reasoning.  As an executable program,
-however, there is no direct instruction saying which edge list to inspect,
-which vertex permutations to try, or which representative to return.  Thus
-\lean{noncomputable} marks a boundary: the definition is a faithful
-mathematical specification, but not the program we want Lean to run repeatedly.
+The second approach is computation-oriented.  Instead of proving each finite
+calculation from scratch, we prove once that an algorithm correctly performs the
+kind of calculation we need, and then we let Lean run that algorithm inside later
+proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
+Lean formalization is the computable counterpart of the abstract flag-algebra
+layer described in Section~\ref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
+such as testing flag isomorphism, computing a density, or expanding a product,
+it provides a program that carries out the calculation and a theorem saying that
+the program's output agrees with the abstract definition.  Later proofs can then
+run the program and invoke the correctness theorem, rather than reconstructing
+the finite verification case by case.
 
-To apply the framework to concrete graphs, however, we need exactly the finite
-computations that the specification layer leaves implicit.  Given the named finite
-flags appearing in a certificate, Lean must decide whether two concrete flags
-represent the same isomorphism class, compute subflag densities, and reduce
-products among named flags.  These tasks are finite, but the abstract
-definitions do not provide executable instructions for carrying them out.  They
-describe equality through quotients and the existence of isomorphisms, and they
-describe counts using abstract finite sets.  For actual evaluation, we therefore
-provide separate Boolean algorithms and prove that their results agree with the
-abstract definitions.  We call this pattern \emph{reflection}: Lean runs a
-Boolean program on concrete data, then uses a correctness theorem saying that
-the result has the intended meaning in the specification layer.
+Flag algebras are especially well suited to this style.  In applications, the
+certificates are often found by computer search or semidefinite programming, and
+checking them already involves many finite computations: flag isomorphism,
+subflag densities, multiplication tables, and rational arithmetic.  A formal
+proof should not trust an external table, but it also should not replay every
+table entry as a long hand proof.  Reflection gives the middle path: verify the
+evaluator once, then use the verified evaluator repeatedly.  Each time Lean runs
+the evaluator, the correctness theorem explains why the computed answer has the
+claimed mathematical meaning.
 
-This section develops the reflection layer as an executable mirror of the
-specification layer.  It introduces concrete graph and flag representations,
-optimized Boolean procedures for isomorphism and density computations, and
-adequacy theorems proving that these procedures agree with the quotient-based
-definitions.  This is the reflection pattern used throughout the rest of the
+Section~\ref{sec:abstract} gave the specification layer: definitions close to
+the mathematics, where flags are identified up to isomorphism and quotient
+classes hide arbitrary choices of representatives.  Those definitions are the
+right ones for stating theorems, but many are marked \lean{noncomputable}
+because they are specifications rather than efficient programs.  This section
+develops the executable mirror of that specification layer: concrete graph and
+flag representations, optimized procedures for isomorphism and density
+computations, and adequacy theorems proving that those procedures agree with the
+quotient-based definitions.  The same pattern is used throughout the rest of the
 development: a concrete representation, an evaluator, and a theorem connecting
-the evaluator to the abstract specification. \gw{I'm here.}
+the evaluator to the abstract specification.
 
 \subsection{Concrete Graph Representations}
 
-Mathlib's \lean{SimpleGraph} represents a graph as a \lean{Prop}-valued
-adjacency relation:
+The finite coefficients in a flag-algebra proof come from concrete counting
+problems.  For example, suppose \(F\) and \(G\) are empty-type flags.  To
+compute the density \(\den{F}{G}\), one can conceptually enumerate all
+\(|V(F)|\)-vertex induced subflags of \(G\), test which of them are isomorphic
+to \(F\), count the successful ones, and divide by
+\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-typed density the same experiment
+keeps the labeled vertices fixed and chooses only the additional unlabeled
+vertices.  The downward normalizing factor \(q_\sigma(F)\) is another finite
+count of the same flavor: it counts label placements rather than subflags.
+
+Thus an executable flag-algebra development needs two basic ingredients.  It
+must be able to enumerate the finite objects being counted, such as candidate
+induced subflags, and it must be able to answer finite yes/no questions, such
+as whether two flags are isomorphic.  In Lean these ingredients are usually
+provided by typeclass instances.  A \lean{Fintype} instance gives Lean an
+explicit finite collection containing every element of a type; a
+\lean{Decidable} instance gives a procedure for deciding a proposition.  Once
+such instances are available, a definition that says ``count all objects
+satisfying this predicate'' can be evaluated by iterating over the finite
+collection and filtering by the decision procedure. \gw{I'm here.}
+
+Section~\ref{sec:abstract} already contains \lean{Fintype} and
+\lean{Decidable} assumptions, but they serve the specification rather than the
+evaluator.  They let us state finite sums and cardinalities in the abstract
+theory.  For example, the abstract graph type stores adjacency as a proposition,
+and flags are quotient objects:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
   Adj      : V -> V -> Prop
   symm     : Symmetric Adj
   loopless : Irreflexive Adj
-\end{lstlisting}
-This design is mathematically natural but not directly computable: checking
-adjacency requires evaluating a \lean{Prop}, which \lean{native\_decide}
-cannot reduce.
 
-We introduce \lean{Sym2Graph n} in
-\lean{LeanFlagAlgebras.FlagAlgebra.Compute.Basic}:
+def flagEqv (G G' : LabeledGraph sigma V) : Prop :=
+  Nonempty (G =~f G')
+
+def Flag (sigma : FlagType T) (V : Type) : Type :=
+  Quotient (labeledGraphSetoid sigma V)
+\end{lstlisting}
+This is exactly the right language for the mathematics, but it leaves the
+computational data implicit.  When the specification layer needs a finite set,
+it can obtain one noncomputably from a proof of finiteness:
 \begin{lstlisting}
-structure Sym2Graph (n : N) where
+noncomputable def labeledGraphListCount ... : Nat :=
+  have : Fintype (setOfLabeledSubgraphListIsoHl G Hl) :=
+    Fintype.ofFinite _
+  (setOfLabeledSubgraphListIsoHl G Hl).toFinset.card
+
+noncomputable instance FlagFintype ... : Fintype (Flag sigma V) :=
+  Quotient.fintype (labeledGraphSetoid sigma V)
+\end{lstlisting}
+These definitions are enough to prove theorems about densities, because Lean
+can reason classically that the relevant sets are finite and have cardinalities.
+They are not, however, the algorithms we want to run.  The first count does not
+hand the evaluator a concrete list of vertex subsets to loop over; the quotient
+instance does not by itself provide a Boolean isomorphism checker.  The missing
+data are precisely the executable enumeration and decision procedures described
+above.
+
+The reflection layer therefore introduces data-oriented graph representations.
+The empty-type representation is \lean{Sym2Graph n}:
+\begin{lstlisting}
+structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, not e.IsDiag
 \end{lstlisting}
 This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
-non-diagonal pairs.  Every operation on \lean{Sym2Graph n}
-is computable: membership in \lean{edges} is decidable by \lean{Finset}
-membership.  The same file derives the \lean{Fintype} instances needed to
-make graph isomorphism decidable:
-\begin{lstlisting}
-instance : Fintype (G1 ->g G2) := ...   -- graph embeddings
-instance : Fintype (G1 =~g G2) := ...   -- graph isomorphisms
-instance : Decidable (Nonempty (G =~f G')) := ...  -- flag isomorphism
-\end{lstlisting}
-These instances enumerate candidates (all injections from $V(G_1)$ to
-$V(G_2)$, or all bijections) and filter those that preserve adjacency and
-type embeddings.  This reduces ``are these two labeled graphs isomorphic?'' to
-a finite, decidable search.
+non-diagonal pairs.  Now adjacency is checked by membership in a finite set of
+edges, and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
+enumerating possible edge sets.  The representation still decodes to the
+abstract graph language by interpreting adjacency as membership in
+\lean{edges}.  For typed flags, \lean{Sym2LabeledGraph} adds the embedding of
+the type vertices into this explicit edge-set graph.
 
-\lean{Sym2Graph n} connects to the abstract world via a coercion to
-\lean{SimpleGraph (Fin n)}:
+This representation also makes the two ingredients above concrete.  Candidate
+induced subflags are represented by finite vertex sets, so their enumeration is
+just the enumeration of all finite subsets of \(\{0,\ldots,n-1\}\):
 \begin{lstlisting}
-def Sym2Graph.toSimpleGraph (G : Sym2Graph n) : SimpleGraph (Fin n) where
-  Adj i j   := s(i, j) in G.edges
-  symm      := ...
-  loopless  := ...
-\end{lstlisting}
-The key line is \lean{Adj i j := s(i, j) \(\in\) G.edges}: \lean{Finset}
-membership replaces the \lean{Prop}-valued adjacency relation.  Symmetry
-follows from the symmetry of \lean{Sym2}, and \lean{loopless} follows from
-the \lean{edges\_valid} field.  Registering this as a \lean{Coe} instance
-means that wherever a \lean{SimpleGraph (Fin n)} is expected, a
-\lean{Sym2Graph n} can be used directly.
+structure Sym2InducedSubgraph (G : Sym2Graph n) where
+  verts : Finset (Fin n)
 
-The same concrete representation also supports a more usable isomorphism
-test.  The generic \lean{Fintype}-based instances above are enough for
-decidability, but repeated density checks need a faster decision procedure.
-The reflected checker first rejects impossible cases by simple isomorphism
-invariants such as edge counts; for typed flags, it also fixes the labeled
-vertices and only permutes the remaining unlabeled vertices.  Correctness
-theorems for the Boolean outcomes justify using this checker as the
-\lean{DecidableEq} instance for reflected flags.  Equality still means equality
-in the quotient setoid; only the decision procedure has changed.
+instance (G : Sym2Graph n) : Fintype (Sym2InducedSubgraph G) where
+  elems := Finset.map
+    { toFun := fun V => ({ verts := V } : Sym2InducedSubgraph G)
+      inj'  := ... }
+    (Finset.univ : Finset (Finset (Fin n)))
+  complete H := ...
+\end{lstlisting}
+Once a vertex set is chosen, its induced edge set is computed by filtering the
+host graph's explicit edge set.
+
+The isomorphism decision procedure is similarly concrete.  For empty-type
+graphs, it first rejects graphs with different edge counts, then searches over
+vertex permutations and checks edge membership:
+\begin{lstlisting}
+def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
+  if G1.edges.card != G2.edges.card then false
+  else
+    let perms := (List.finRange n).permutations
+    let edges := allEdges n
+    perms.any fun perm =>
+      edges.all fun e =>
+        decide (e (*@$\in$@*) G1.edges) ==
+        decide (applyPermEdge perm e (*@$\in$@*) G2.edges)
+
+instance fastDecidableSym2GraphEqv
+    (G1 G2 : Sym2Graph n) : Decidable (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) :=
+  if h : isEmptyIsoFast_bool G1 G2 = true then
+    isTrue  (isEmptyIsoFast_bool_true_correct h)
+  else
+    isFalse (isEmptyIsoFast_bool_false_correct ...)
+
+instance fastDecidableSym2EmptyTypedFlagEqv :
+    DecidableEq (Sym2EmptyTypedFlag n) := ...
+\end{lstlisting}
+The Boolean program is not trusted on its own: the \lean{true\_correct} and
+\lean{false\_correct} theorems turn its two possible outcomes into proofs about
+the quotient relation.  Thus equality still means equality up to flag
+isomorphism; only the procedure used to decide it has changed.  For typed flags,
+the analogous checker fixes the labeled vertices and permutes only the
+remaining vertices.
 
 \subsection{Correctness as Adequacy}
 
-For density computations, we define a computable density function
-\lean{sym2EmptyTypeFlagDensity} entirely over \lean{Finset} operations.  The
-coercion above makes abstract definitions \emph{applicable} to
-\lean{Sym2Graph} inputs, but applicability is not computability:
-\lean{flagDensity} composed with the coercion still unfolds to non-computable
+For density computations, we define computable density functions such as
+\lean{sym2EmptyTypeFlagDensity1} entirely over \lean{Finset} operations.  The
+decoding map from the concrete representation to the abstract graph type makes
+abstract definitions \emph{applicable} to \lean{Sym2Graph} inputs, but
+applicability is not computability:
+\lean{flagDensity} composed with this decoding still unfolds to non-computable
 quotient machinery.  The concrete density function sidesteps this by computing
 directly over the \lean{Finset} of edges, producing a value that
 \lean{native\_decide} can evaluate.
