@@ -2366,63 +2366,62 @@ explicit finite collection containing every element of a type; a
 \lean{Decidable} instance gives a procedure for deciding a proposition.  Once
 such instances are available, a definition that says ``count all objects
 satisfying this predicate'' can be evaluated by iterating over the finite
-collection and filtering by the decision procedure. \gw{I'm here.}
+collection and filtering by the decision procedure.
 
-Section~\ref{sec:abstract} already contains \lean{Fintype} and
-\lean{Decidable} assumptions, but they serve the specification rather than the
-evaluator.  They let us state finite sums and cardinalities in the abstract
-theory.  For example, the abstract graph type stores adjacency as a proposition,
-and flags are quotient objects:
+The specification layer of Section~\ref{sec:abstract} deliberately starts from
+Mathlib's graph type \lean{SimpleGraph V}.  Here \lean{V} is the
+type whose elements are the vertices of the graph, and the adjacency relation
+\lean{Adj} takes two vertices and returns a proposition:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
   Adj      : V -> V -> Prop
   symm     : Symmetric Adj
   loopless : Irreflexive Adj
-
-def flagEqv (G G' : LabeledGraph sigma V) : Prop :=
-  Nonempty (G =~f G')
-
-def Flag (sigma : FlagType T) (V : Type) : Type :=
-  Quotient (labeledGraphSetoid sigma V)
 \end{lstlisting}
-This is exactly the right language for the mathematics, but it leaves the
-computational data implicit.  When the specification layer needs a finite set,
-it can obtain one noncomputably from a proof of finiteness:
-\begin{lstlisting}
-noncomputable def labeledGraphListCount ... : Nat :=
-  have : Fintype (setOfLabeledSubgraphListIsoHl G Hl) :=
-    Fintype.ofFinite _
-  (setOfLabeledSubgraphListIsoHl G Hl).toFinset.card
+This is exactly the right language for the mathematics, but it is too general to
+be the data structure of the evaluator.  The type \lean{V} need not come with a
+computable enumeration of its vertices, and the relation \lean{Adj} need not
+come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
+\lean{Flag}s are built on top of this graph type, they inherit the same
+generality.  Even if the specification layer knows that, for each size, there are
+only finitely many flags up to isomorphism, this does not by itself provide the
+computational choices needed by the evaluator: a concrete enumeration of
+representatives and a Boolean procedure for comparing them up to isomorphism.
 
-noncomputable instance FlagFintype ... : Fintype (Flag sigma V) :=
-  Quotient.fintype (labeledGraphSetoid sigma V)
-\end{lstlisting}
-These definitions are enough to prove theorems about densities, because Lean
-can reason classically that the relevant sets are finite and have cardinalities.
-They are not, however, the algorithms we want to run.  The first count does not
-hand the evaluator a concrete list of vertex subsets to loop over; the quotient
-instance does not by itself provide a Boolean isomorphism checker.  The missing
-data are precisely the executable enumeration and decision procedures described
-above.
-
-The reflection layer therefore introduces data-oriented graph representations.
-The empty-type representation is \lean{Sym2Graph n}:
+To supply these choices, the reflection layer introduces a family of more rigid
+edge-set representations: vertices are fixed finite types, edges are explicit
+finite data, and isomorphism is reduced to finite search over permutations
+compatible with the labels.  The empty-type core is \lean{Sym2Graph n}; typed
+flags use the same representation style through \lean{Sym2FlagType} and
+\lean{Sym2LabeledGraph}:
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, not e.IsDiag
-\end{lstlisting}
-This represents a graph on $\{0,\ldots,n-1\}$ as a finite set of unordered
-non-diagonal pairs.  Now adjacency is checked by membership in a finite set of
-edges, and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
-enumerating possible edge sets.  The representation still decodes to the
-abstract graph language by interpreting adjacency as membership in
-\lean{edges}.  For typed flags, \lean{Sym2LabeledGraph} adds the embedding of
-the type vertices into this explicit edge-set graph.
 
-This representation also makes the two ingredients above concrete.  Candidate
-induced subflags are represented by finite vertex sets, so their enumeration is
-just the enumeration of all finite subsets of \(\{0,\ldots,n-1\}\):
+structure Sym2FlagType (k : Nat) where
+  edges       : Finset (Sym2 (Fin k))
+  edges_valid : forall e in edges, not e.IsDiag
+
+structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
+  edges       : Finset (Sym2 (Fin n))
+  edges_valid : forall e in edges, not e.IsDiag
+  type_embed  :
+    fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*)
+      fromEdgeSet (SetLike.coe edges)
+\end{lstlisting}
+Thus a graph on $\{0,\ldots,n-1\}$ is stored as a finite set of unordered
+non-diagonal pairs.  Adjacency is checked by membership in this finite edge set,
+and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
+enumerating possible edge sets.  The typed versions add the finite edge set for
+the type graph and the embedding of those type vertices into the host.  All of
+these representations still decode to the abstract graph language by
+interpreting adjacency as membership in \lean{edges}. \gw{I'm here.}
+
+These edge-set representations also make the two ingredients above concrete.
+Candidate induced subflags are represented by finite vertex sets, so their
+enumeration is just the enumeration of all finite subsets of
+\(\{0,\ldots,n-1\}\):
 \begin{lstlisting}
 structure Sym2InducedSubgraph (G : Sym2Graph n) where
   verts : Finset (Fin n)
