@@ -306,3 +306,67 @@ If a theorem is used by generated examples, also test:
 ```powershell
 lake env lean LeanFlagAlgebras/Flagmatic/ErdosPentagon.lean
 ```
+
+---
+
+## Progress (2026-06-26) — DONE, non-breaking, builds green
+
+All six parts carried out in `LeanFlagAlgebras/Forbid/Basic.lean`. The change is **purely
+additive**: every new `…With`/generic lemma was introduced, and each existing `inducedForbid…`
+theorem was rewritten as a thin compatibility wrapper, so all names + notation are preserved and
+no downstream file (`API.Basic`, `TuranDensity`, the generators, the examples) needed any change.
+
+**Verification:** `Forbid.Basic`, `API.Basic`, `Forbid.TuranDensity`, and the generated
+`Flagmatic.ErdosPentagon` example all build green (no errors, no `sorry`); full project build green.
+
+### Part 1 — condition-parametric algebraic API ✓
+Added the condition-parametric core lemmas and made the induced ones wrappers
+(`inducedForbid…_X := forbid…With_X …`):
+`forbidEqWith_refl`, `forbidLEWith_refl`, `forbidEqWith_symm`, `forbidEqWith_of_eq`,
+`forbidLEWith_of_le`, `forbidLEWith_of_forbidEqWith`, `forbidEqWith_trans`, `forbidLEWith_trans`,
+`forbidLEWith_antisymm`, `forbidEqWith_add`, `forbidLEWith_add`, `forbidEqWith_smul`,
+`forbidLEWith_smul_nonneg`, plus `forbidEqWith_smul_zero`, `forbidEqWith_sum_eq_zero`,
+`forbidEqWith_sum_filter_eq_zero` (needed by Part 3). The proofs are the original ones with the
+forbidden-flag hypothesis `hF_forbid` replaced by a generic `hC : C φ₀`. The non-core induced
+lemmas (`…_rw_*`, `…_add_left/right`, `…_move_*`, `…_collect_*`) were left as full proofs that call
+the (now-wrapper) core lemmas — names preserved, still build.
+
+### Part 2 — condition-parametric downward soundness ✓
+`downward_forbidLEWith_nonneg_emptyType` and `downward_forbidLEWith_nonneg` over arbitrary
+`C : ForbidCondition` (non-empty via the existing `forbidLE_emptyTypeWith_iff_forbidLEWith`);
+`downward_inducedForbidLE_nonneg_emptyType` / `downward_inducedForbidLE_nonneg` are wrappers. This
+is the soundness theorem that stays meaningful for arbitrary relative ensemble constraints `C_Y`.
+
+### Part 3 — generic kill-predicate expansion ✓
+`basisVector_quot_forbidEqWith_sum_of_kill` and `basisVector_quot_mul_forbidEqWith_sum_of_kill`:
+generic over `C` and a `Kill : FlagWithSize σ ℓ → Prop` with `[DecidablePred Kill]` and a hypothesis
+`hkill : ∀ F', Kill F' → forbidEqWith C ⟦basisVector ⟨ℓ,F'⟩⟧ 0`; conclusion sums over the surviving
+`with ¬ Kill F'`. Proof: `basisVector_quot_eq_sum` → `Finset.sum_filter_add_sum_filter_not` →
+killed part `= 0` via `forbidEqWith_sum_filter_eq_zero`/`forbidEqWith_smul_zero`/`hkill`, kept part
+reflexive.
+
+### Part 4 — forbidden-family specialization ✓
+`basisVector_familyForbidEq_zero` (family version of basis-vector vanishing, proof copied from
+`basisVector_inducedForbidEq_zero` with the final density-zero step supplied by `hcond D hD`), and
+`basisVector_quot_familyForbidEq_sum` — the family expansion via
+`KillFs F' := ∃ D ∈ Fs, flagDensity₁ D.2 (unlabel F') > 0`, surviving terms
+`∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0` (stated as `¬ KillFs`, with an explicit
+`[DecidablePred KillFs]` instance argument since `Fs : Set _`).
+
+### Part 5 — hereditary-class specialization ✓ (kept independent)
+Did **not** import `MetaTheory.HeredClass` into `Forbid.Basic`. The family specialization (Part 4)
+is strong enough; a later file can instantiate `Fs := {D | underlying graph of D ∉ K}` for a
+hereditary `K`. (No `K.Mem`-based theorem added here.)
+
+### Part 6 — backward-compatibility wrappers ✓
+`basisVector_quot_inducedForbidEq_sum` and `basisVector_quot_mul_inducedForbidEq_sum` reproved from
+the generic kill versions with `Kill := fun x => 0 < flagDensity₁ F_forbid.2 (unlabel x)` and
+`hkill := basisVector_inducedForbidEq_zero …`. The surviving filter `¬ (0 < d)` is converted to the
+original `d = 0` form via `Finset.filter_congr` + nonnegativity of flag densities
+(`flagListDensity₁_ge_zero`), so the wrapper's *statement* (and thus all downstream uses) is
+unchanged. `downward_inducedForbidLE_nonneg*` likewise wrap Part 2.
+
+### Non-goals respected
+No basis-vector pruning was attempted for non-hereditary limit constraints (e.g. `ρ = 1/2`); no
+theorem name or notation was removed; `API.Basic` tactics were not touched (the wrappers keep them
+compiling as-is).
