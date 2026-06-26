@@ -15,9 +15,10 @@ the all-types conjecture). See "§9.3–§9.5 — DONE" below. Prior sessions: �
 ("§9–§9.2 — DONE"), §8 ("§8 — DONE"). `lake build LeanFlagAlgebras.MetaTheory` → **7961 jobs green**
 (55 modules); `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all headline
 theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPlantable`) `#print axioms`
-= `[propext, Classical.choice, Quot.sound]`. **NOT yet committed** (6 new untracked modules +
-`MetaTheory.lean` modified) as of this update — confirm with the user before committing/pushing to
-`main`. Next target: **§10** (`sec:empty-type`, "the gap is invisible to density bounds") and **§11**
+= `[propext, Classical.choice, Quot.sound]`. **COMMITTED+PUSHED to `main`** as `4288088` (the 6 new Lean
+modules + `MetaTheory.lean`, rebased onto the user's §5/paper-draft commits); the reference-doc sync
+(`README`/`ARCHITECTURE`/`READING_GUIDE` + this `METATHEORY_WORKLOG`) is in the follow-up commit this
+session. Next target: **§10** (`sec:empty-type`, "the gap is invisible to density bounds") and **§11**
 (strengthening by a further constraint; the `K₄`-free-`P₄` equality slice).)
 
 ---
@@ -36,8 +37,8 @@ theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPla
   `BlowupClosed.toUniform` (single-vertex ⟹ uniform blow-up) is the one new lemma. New module
   `BlowupClosed.lean`; paper §7 fully revised. All theorems depend only on
   `[propext, Classical.choice, Quot.sound]`. (At the §7 milestone: 33 modules, 7939 jobs; with §8:
-  39 modules, 7945 jobs; **now with §9 / §9.1 / §9.2 (incl. `lem:complementation`): 49 modules,
-  `lake build LeanFlagAlgebras.MetaTheory` → 7955 jobs green**;
+  39 modules, 7945 jobs; with §9/§9.1/§9.2 + `lem:complementation`: 49 modules, 7955 jobs; **now with
+  ALL of §9 (§9.1–§9.5): 55 modules, `lake build LeanFlagAlgebras.MetaTheory` → 7961 jobs green**;
   `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty.)
 * **Commits:** §5 `3a607f2`/`e795f28`; §6/§7 `abb2ca1`; refactor `2026a18`; unification `d446996`;
   paper §7 correctness review + Notes sync `dcf5285`. All pushed to `main`.
@@ -54,11 +55,18 @@ theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPla
 * **Headline results (obstruction/negative side, §8–§9):** `pinning_obstruction` (§9.3 `thm:pinning`,
   the abstract obstruction), `degenerate_not_rootPlantable` / `coDegenerate_not_rootPlantable` (stars /
   co-stars, §9), `c4free_not_rootPlantable` / `coC4free_not_rootPlantable` (sparse / dense hereditary
-  classes, §9.1/§9.2), and `complementation_invariance` (Lemma 50, §9.2). These are the obstruction
-  capstones — a class can FAIL to be root-plantable, on both the sparse and the dense side.
-* **Scale:** 49 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2, +4 for `lem:complementation`) + 4 committed reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`,
-  same dir), in namespace `FlagAlgebras.MetaTheory`, aggregated by
-  `LeanFlagAlgebras/MetaTheory.lean` and in the top build manifest `LeanFlagAlgebras.lean`.
+  classes, §9.1/§9.2), `complementation_invariance` (Lemma 50, §9.2), **`no_interior_pinning`** (§9.4
+  `thm:no-interior` — for an edge-deletion-closed class no *interior* density is ever pinned), and
+  **`c5free_edge_not_rootPlantable`** (§9.5 `thm:c5-edge-not-root-plantable` — the `C₅`-free class fails
+  at the two-root edge type, refuting the all-types conjecture). These are the obstruction capstones —
+  a class can FAIL to be root-plantable, on both the sparse and the dense side, and even at one type but
+  not another.
+* **Scale:** 55 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+  +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
+  [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`]) + 4 committed reference docs
+  (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in namespace
+  `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the top build
+  manifest `LeanFlagAlgebras.lean`.
 
 ## Read these first (committed reference docs, same directory)
 
@@ -93,12 +101,13 @@ theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPla
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 7955 jobs, green (§1–9.2 + Lemma 50)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 7961 jobs, green (§1–9, all of §9)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
               coDegenerate_not_rootPlantable c4free_not_rootPlantable coC4free_not_rootPlantable \
-              pinning_obstruction; do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
+              pinning_obstruction no_interior_pinning c5free_edge_not_rootPlantable; \
+       do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    ```
    **Stale-`.olean` gotcha:** `lake build <single module>` can serve a stale `.olean`, so a "green"
@@ -378,10 +387,10 @@ modules were proved by **four agents in parallel** (each owning one file, using 
 ## Next work / open follow-ups
 
 **▶ TO RESUME (start here).** Everything through `paper.tex` **§9 (all of §9.1–§9.5) +
-`lem:complementation` is DONE**, green and `sorry`-free, axiom-clean. §9.3/§9.4/§9.5 are **green and
-verified but NOT yet committed** (6 untracked modules `C5FewTriangles`/`C5EdgeObstruction`/`NoInterior`/
-`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning` + modified `MetaTheory.lean` + this WORKLOG) —
-confirm with the user, then commit/push. The natural next target is **§10** (`sec:empty-type`, "the gap
+`lem:complementation` is DONE**, green and `sorry`-free, axiom-clean, and **COMMITTED+PUSHED to `main`**
+(the 6 new modules `C5FewTriangles`/`C5EdgeObstruction`/`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/
+`NoInteriorThinning` + `MetaTheory.lean` in `4288088`; the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc
+sync in the follow-up commit). The natural next target is **§10** (`sec:empty-type`, "the gap
 is invisible to density bounds") and **§11**. In paper order (find sections by
 `\section{...}`/`\label{...}`, **not** line number — they drift):
 

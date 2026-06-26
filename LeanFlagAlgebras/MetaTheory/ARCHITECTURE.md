@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 49 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 55 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order. The precise
@@ -31,15 +31,15 @@ the `paper.tex` result(s) it formalises.
 
 ```bash
 lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
-lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 49 modules)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 55 modules)
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
 ```
 
 Then confirm each headline result rests only on the standard axioms — `#print axioms <headline>`
 should report `[propext, Classical.choice, Quot.sound]` and **no `sorryAx`** (e.g.
 `clone_root_plantable`, `finitePlanting_root_plantable`, `pinning_obstruction`,
-`complementation_invariance`). See the verification section of [`README.md`](./README.md) for the
-full ready-to-run command block.
+`complementation_invariance`, `no_interior_pinning`, `c5free_edge_not_rootPlantable`). See the
+verification section of [`README.md`](./README.md) for the full ready-to-run command block.
 
 ---
 
@@ -101,6 +101,33 @@ is the explicit dense one — so density is not the dividing line. That dense ex
 `lem:complementation` itself — root-plantability invariance under complementation — is formalised via
 the complement *homeomorphism* of homomorphism spaces (the four-module stack described below), not the
 paper's flag-algebra complement isomorphism.
+
+**§9.4** sharpens the obstruction story for **edge-deletion-closed** classes (every spanning subgraph
+of a member is a member): `thm:no-interior` says a `σ`-flag can only be pinned to `0` or `1` on `S_σ`,
+never to an interior value. The argument is the **edge-thinning stack**. Keep each edge of an in-class
+graph independently with probability `λ` (a product Bernoulli measure on `Sym2 (Fin N)`, `thinMeasure`);
+edge-deletion closure keeps the thinned graph in the class. A first-moment bound controls the expected
+induced density of any flag `M` (the *correct* induced-density form `≤ C(C(|M|,2),e(M))·λ^{e(M)}`, the
+λ-independent binomial constant being harmless), and a second-moment/Chebyshev concentration —
+resting on a **block-independence** lemma (two `k`-subsets sharing `≤ 1` vertex have independent
+indicators, by `Measure.pi`) in place of the paper's McDiarmid inequality — produces a *deterministic*
+in-class thinned realization (`exists_thinned_realization`). Diagonalising over `λ` gives a thinned
+constrained limit `φ₀^λ ∈ Q₀` with positive `σ`-density (`exists_thinned_limit`, a mirror of
+`FinitePlanting`'s base limit). As `λ → 0` the flag moments converge to the `{0,1}`-valued "edgeless
+cloud" profile, which an L¹/Markov cylinder argument places in `S_σ` (`exists_boolean_point_in_Sσ`);
+a `σ`-flag pinned to `c` on `S_σ` must then agree with that boolean point, forcing `c ∈ {0,1}`
+(`no_interior_pinning`).
+
+**§9.5** is the first **positive answer that the all-types conjecture fails**: the `C₅`-free class is
+root-plantable at the one-vertex and two-root non-edge types (§8) but **not** at the two-root **edge**
+type `τ` (`thm:c5-edge-not-root-plantable`). The pinned quantity is the common-neighbour triangle flag
+`F_△` over `edgeType`: in a `C₅`-free graph triangles are scarce — `lem:c5-few-triangles`
+(`3·T(G) ≤ 2·e(G)`, from the double-count `3·T(G) = ∑_v e(G[N(v)])` and §8's `lem:c5-nbhd`) forces the
+triangle density to `0`, so `F_△` is a.s. pinned to `0` under random edge-rooting (`cor:c5-edge-pinned`,
+the same squeeze pattern as §9.1's edge case). Yet the `C₅`-free **book graph** (`def:c5-book`) has
+`F_△`-density `1`, giving a `Q_τ` quotient point at the opposite value, so `pinning_obstruction`
+applies. The vertex type is genuinely different (`cor:c5-no-pin`): there the triangle-over-vtype
+density is `0` on `Q_vtype` and the edge is not pinned, so the obstruction is *edge-type*-specific.
 
 ---
 
@@ -500,6 +527,57 @@ by building the paper's flag-algebra complement isomorphism `C_σ`, but by build
   — apply the bijection `Φ` to `S_σ(K) = Q_σ(K)`. `complementation_invariance_oneVertex` is the
   `σ = vtype` corollary (`(⊥ : FlagType (Fin 1))ᶜ = ⊥`), matching the paper's final sentence.
 
+### §9.4 boundary / no-interior pinning (the edge-thinning stack)
+
+A four-module stack proves `thm:no-interior` (Theorem 55, `subsec:boundary`): for an
+edge-deletion-closed class, a `σ`-flag pinned to `c` on `S_σ` has `c ∈ {0,1}`. Chain:
+`NoInterior → EdgeThinning → EdgeThinningLimit → NoInteriorThinning`. It reuses the §8 base-limit
+toolkit (`flagSeqLimit_mem_Q0`, `CapstoneShared`, `WeakConvergence`, `SupportClosure`) but introduces
+a fresh probabilistic ingredient — random edge-thinning. (Proof-route deviation: McDiarmid-free, see
+README Deviation 10.)
+
+* **[`NoInterior`](./NoInterior.lean)** — the predicate `EdgeDeletionClosed` (every spanning subgraph
+  of an in-class graph is in-class) and the elementary closure consequences the stack consumes.
+* **[`EdgeThinning`](./EdgeThinning.lean)** — random Bernoulli edge-thinning of a finite graph: the
+  product measure `thinMeasure` (`Measure.pi` of Bernoullis over `Sym2 (Fin N)`) and the thinned graph
+  `thinGraph`; the expected induced density `thinExpectDensity` with the **first-moment** upper bound
+  `thinExpectDensity_le_pow` (`≤ C(C(|M|,2),e(M))·λ^{e(M)}`, the *correct* induced-density form — README
+  Deviation 10b) and the `σ`-type **lower** bound `thinExpectDensity_type_ge`; and the **second-moment**
+  realization `exists_thinned_realization` — a deterministic in-class spanning subgraph tracking the
+  expectations within `ε` (block-independence variance bound + Chebyshev + union bound, McDiarmid-free
+  — README Deviation 10a). The largest §9.4 module.
+* **[`EdgeThinningLimit`](./EdgeThinningLimit.lean)** — `exists_thinned_limit`: the edge-thinned
+  constrained limit `φ₀^λ ∈ Q₀` (a diagonal realization mirroring `BlowupSequence`/`FinitePlanting`),
+  with `σ`-density `≥ λ^{e(σ)}·φ₀⟨σ⟩₀ > 0` and per-flag bound `≤ C·λ^{e(M)}`.
+* **[`NoInteriorThinning`](./NoInteriorThinning.lean)** — the capstone. `exists_boolean_point_in_Sσ`:
+  as `λ → 0` the flag moments of `ℙ[φ₀^λ]` converge to the `{0,1}`-valued "edgeless cloud" profile, so
+  an L¹/Markov cylinder argument places that boolean point `ψ_σ ∈ S_σ` (README Deviation 10c); then
+  `no_interior_pinning` (`thm:no-interior`): a `σ`-flag pinned to `c` on `S_σ` must agree with `ψ_σ`,
+  hence `c ∈ {0,1}`.
+
+### §9.5 the `C₅`-edge obstruction (`sec:c5-edge`)
+
+Two modules prove that the natural "root-plantable at *every* type" conjecture **fails**: the
+`C₅`-free class is root-plantable at the one-vertex and two-root non-edge types (§8) but not at the
+two-root **edge** type. They reuse `Pinning`, the §8 `c5FreeClass`/`lem:c5-nbhd` (`C5Free`), and the
+constrained-representation + `Q_σ`-point machinery.
+
+* **[`C5FewTriangles`](./C5FewTriangles.lean)** — §9.5 `lem:c5-few-triangles`
+  (`c5free_three_mul_triangle_le`: `3·T(G) ≤ 2·e(G)` for `C₅`-free `G`), via the new combinatorial
+  double-count `three_mul_card_cliqueFinset_three_eq` (`3·T(G) = ∑_v e(G[N(v)])`, `T = #cliqueFinset 3`)
+  and §8's `lem:c5-nbhd`. The unlabelled-triangle density is `flagDensity_unlabelledTriangle_eq`
+  (`= T(G)/C(N,3)`); `c5FreeClass_triangleDensity_zero` squeezes it to `0` over every constrained limit
+  (the mirror of `c4FreeClass_edgeDegenerate`).
+* **[`C5EdgeObstruction`](./C5EdgeObstruction.lean)** — §9.5 the obstruction itself. The two-root edge
+  type `edgeType` (`⊤` on `Fin 2`), the common-neighbour triangle flag `F_tri`/`triangleFF`; the a.s.
+  pinning `ae_Ftri_eq_zero_of_pinned` (`cor:c5-edge-pinned`: `F_△` pinned to `0` under random
+  edge-rooting); the `C₅`-free **book graph** `bookLabeled` (`def:c5-book`) with `book_c5free`
+  (`lem:c5-book`) and `book_Ftri_density = 1`; the `Q_τ` point `exists_book_Qτ_point` (assembled by the
+  generic `exists_Qσ_point_flag_eq`, any `σ`, any flag); and the capstone
+  `c5free_edge_not_rootPlantable` (`thm:c5-edge-not-root-plantable`) — not root-plantable at the
+  edge type, refuting the all-types conjecture. `cor:c5-no-pin` is the two no-obstruction-at-vtype
+  facts `c5free_triOverVtype_zero_on_Qvtype` and `c5free_edge_not_pinned`.
+
 ---
 
 ## The capstone proof, step by step (`clone_root_plantable`)
@@ -591,20 +669,26 @@ instances supply the hypothesis, with `lem:c5-nbhd` bounding the repaired-edge c
 
 ## Formalisation frontier / what remains
 
-This directory formalises `paper.tex` **§1–§9.2 in full** — including the two §9.2 results that close
-out that range: `lem:complementation` (Lemma 50), the complementation invariance of
-root-plantability, formalised as `complementation_invariance` (the `FlagComplement` →
-`ComplementHom` → `ComplementClass` → `ComplementInvariance` stack — via the complement
-*homeomorphism* of homomorphism spaces, not the paper's flag-algebra complement isomorphism); and
-`thm:pinning` (Theorem 53), the abstract pinning obstruction, formalised as `pinning_obstruction`.
-**`lem:complementation` is formalised** (this overrides any stale note to the contrary elsewhere).
+This directory formalises `paper.tex` **§1–§9 in full** — including the whole obstruction half:
+`thm:pinning` (Theorem 53, `pinning_obstruction`); `lem:complementation` (Lemma 50), the
+complementation invariance of root-plantability, formalised as `complementation_invariance` (the
+`FlagComplement` → `ComplementHom` → `ComplementClass` → `ComplementInvariance` stack — via the
+complement *homeomorphism* of homomorphism spaces, not the paper's flag-algebra complement
+isomorphism); the §9.4 boundary / no-interior theorem `thm:no-interior` (Theorem 55,
+`no_interior_pinning`, the `NoInterior` → `EdgeThinning` → `EdgeThinningLimit` → `NoInteriorThinning`
+edge-thinning stack — McDiarmid-free, README Deviation 10); and the §9.5 `C₅`-edge obstruction
+`thm:c5-edge-not-root-plantable` (Theorem 62, `c5free_edge_not_rootPlantable`, the
+`C5FewTriangles` + `C5EdgeObstruction` pair) with `lem:c5-few-triangles` and the book-graph quotient
+point. **`lem:complementation` is formalised** (this overrides any stale note to the contrary
+elsewhere).
 
 Not yet formalised (future work; the machinery here is intended to be reusable for it):
 
-* the pinning **conjecture** `conj:characterisation` (the tentative general characterisation);
-* the **boundary / no-interior** results — `thm:no-interior` and all of §`subsec:boundary`;
-* the **`C₅`-edge obstruction** of §`sec:c5-edge`, `thm:c5-edge-not-root-plantable`;
-* **§10** `prop:empty-type` (empty-type collapse) and the later consequences built on it;
+* the pinning **conjecture** `conj:characterisation` (the tentative general characterisation) — the
+  one §9 result still open;
+* **§10** `prop:empty-type` (`sec:empty-type`, empty-type collapse) and the later consequences built
+  on it;
+* **§11** (relative ensembles, the `K₄`-free-`P₄` equality slice);
 * within `cor:degenerate-family`, the **three non-`C₄` families** — general `K_{s,t}` (`s ≥ 3`), even
   cycles `C_{2k}`, and planar graphs — whose extremal edge bounds (Kővári–Sós–Turán,
   Bondy–Simonovits, the planar `≤ 3n−6` bound) lie outside current Mathlib. Only the abstract
