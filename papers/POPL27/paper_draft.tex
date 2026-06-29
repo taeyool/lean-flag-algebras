@@ -2393,21 +2393,17 @@ representatives and a Boolean procedure for comparing them up to isomorphism.
 The reflection layer therefore does not use \lean{SimpleGraph} directly as the
 evaluator's representation.  Instead, it introduces a family of more rigid
 edge-set representations: an \(n\)-vertex graph has vertex type \lean{Fin n},
-and its edges are stored as a finite set of unordered pairs
-\lean{Finset (Sym2 (Fin n))}, where \lean{Sym2} forms unordered pairs.  The
-empty-type case uses the structure \lean{Sym2Graph n}.  For typed flags, the
-flag type itself is encoded as \lean{Sym2FlagType k}; since a flag type is just
-a graph on the labeled vertices, \lean{Sym2FlagType} has the same fields as
-\lean{Sym2Graph}.  The labeled graph is then represented by
-\lean{Sym2LabeledGraph}, the edge-set analogue of \lean{LabeledGraph}: \gw{I'm here.}
+and its edge set is stored as \lean{Finset (Sym2 (Fin n))}, a finite set of
+unordered pairs of vertices.  This representation is packaged as the structure
+\lean{Sym2Graph}.  We then reuse the same graph structure to define a
+concrete flag type, \lean{Sym2FlagType}, and a concrete labeled graph,
+\lean{Sym2LabeledGraph}.  \gw{I'm here.}
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, not e.IsDiag
 
-structure Sym2FlagType (k : Nat) where
-  edges       : Finset (Sym2 (Fin k))
-  edges_valid : forall e in edges, not e.IsDiag
+abbrev Sym2FlagType (k : Nat) := Sym2Graph k
 
 structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
