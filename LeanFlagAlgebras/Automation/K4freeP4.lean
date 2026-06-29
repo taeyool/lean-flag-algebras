@@ -1,13 +1,13 @@
 import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.FlagMulReduce
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.Automation.FlagSumSort
 
-/-! # API.K4freeP4 — P₄ density bound in K₄-free graphs
+/-! # Automation.K4freeP4 — P₄ density bound in K₄-free graphs
 
-Per-problem density-bound proof built on the API automation layer. The headline
+Per-problem density-bound proof built on the Automation layer. The headline
 result `K4_free_P4_density_upper_bound` shows that for K₄-free graphs the path
 `P₄` (4-vertex path) density is at most `32/9`:
 
@@ -15,11 +15,11 @@ result `K4_free_P4_density_upper_bound` shows that for K₄-free graphs the path
 
 The proof assembles a sum-of-squares certificate from three squared flag
 combinations `f₁, f₂, f₃` and discharges the resulting `inducedForbidLE` goal with the
-API tactics (`reduce_downward_flagmul`, `expand_one_at`, `flag_nonneg`). It is
+Automation tactics (`reduce_downward_flagmul`, `expand_one_at`, `flag_nonneg`). It is
 the `r = 3` instance of the more general `CompleteGraphFreeP4` result.
 -/
 
-open FlagAlgebras Forbid FlagAlgebras.API
+open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph
 
 namespace K4freeP4
@@ -86,7 +86,7 @@ lemma f₃_nonneg : 0 ≤ f₃ := by
 
 /-- **K₄-free `P₄` density bound.** In any K₄-free graph the `P₄` density is at
 most `32/9`. Proved by adding the non-negative SOS terms `(8/9)·f₁ + 5·f₂ +
-(35/9)·f₃` and reducing the resulting flag-algebra inequality with the API
+(35/9)·f₃` and reducing the resulting flag-algebra inequality with the Automation
 tactics. -/
 theorem K4_free_P4_density_upper_bound
     : P4_density ≤ᵢ[K4.toFinFlag] (32 / 9 : ℝ) • (1 : FlagAlgebra ∅ₜ)

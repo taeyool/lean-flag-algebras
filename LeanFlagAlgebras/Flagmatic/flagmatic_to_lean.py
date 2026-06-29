@@ -524,7 +524,7 @@ def render_matrices(cert: dict) -> str:
 
     Only the data (rational matrix, real cast, and the LDLᵀ factors `dM`/`LM`) is
     emitted; the entire PSD proof collapses to a single `psd_real_ldlt` tactic call
-    (from `API/Matrix/PosSemiDef.lean`), which discharges the diagonal-nonnegativity
+    (from `Automation/Matrix/PosSemiDef.lean`), which discharges the diagonal-nonnegativity
     and `M = LM·diag(dM)·LMᵀ` side goals internally. The intermediate lemmas the old
     template spelled out (dM_nonneg / M_eq_LDL / rational M_posSemidef / dM_real_nonneg
     / M_real_eq_LDL) are no longer needed — nothing downstream consumes them; the proof
@@ -821,7 +821,7 @@ def render_expand_under_forbid(
 
 # `Fin.sum_univ_<name>` lemmas used to expand `flagQuadraticForm`'s double sum.
 # Mathlib provides two..eight; nine..sixteen are added by
-# `LeanFlagAlgebras/API/FinSumUniv.lean` (imported only when a block exceeds 8 —
+# `LeanFlagAlgebras/Automation/FinSumUniv.lean` (imported only when a block exceeds 8 —
 # see `required_lean_imports`). Bump both this table and that file in lockstep to
 # support still-larger SDP blocks.
 _FIN_SUM_NAMES = {
@@ -832,7 +832,7 @@ _FIN_SUM_NAMES = {
 }
 
 # Mathlib ships `Fin.sum_univ_*` only up to eight; sizes above this come from
-# `LeanFlagAlgebras/API/FinSumUniv.lean`.
+# `LeanFlagAlgebras/Automation/FinSumUniv.lean`.
 _MATHLIB_FIN_SUM_MAX = 8
 
 
@@ -1080,7 +1080,7 @@ def render_flag_vectors(cert: dict) -> str:
 
 
 LEAN_OPENS: list[str] = [
-    "open FlagAlgebras Forbid FlagAlgebras.API",
+    "open FlagAlgebras Forbid FlagAlgebras.Automation",
     "open SimpleGraph Matrix",
     "open FlagAlgebras.Compute",
 ]
@@ -1146,10 +1146,10 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
     """Return the Lean `import` lines for the edge-based pruned pipeline.
 
     Base set (matches the migrated `Flagmatic/*.lean` files): the flag /
-    forbid-free / density / mul generators, the API automation + matrix PSD
+    forbid-free / density / mul generators, the Automation layer + matrix PSD
     utilities, and `Forbid.CommonGraphs` (where `completeSym2Graph` lives).
 
-    `branch_b` (objective size < host N) additionally pulls in `API.FlagExpand`
+    `branch_b` (objective size < host N) additionally pulls in `Automation.FlagExpand`
     (the `flag_expand_hfree` tactic) and `FlagAlgebra.Compute.FlagDensity` (the
     `flagDensity₁` reflection lemma for the auto-generated `@[simp]` density
     table) — both unused, hence omitted, when the objective is itself a host flag.
@@ -1159,14 +1159,14 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
         "import LeanFlagAlgebras.Flags.ForbidFreeGenerator",
         "import LeanFlagAlgebras.Flags.Densities.MulThmGenerator",
         "import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator",
-        "import LeanFlagAlgebras.API.Basic",
-        "import LeanFlagAlgebras.API.FlagMulReduce",
-        "import LeanFlagAlgebras.API.FlagSumSort",
-        "import LeanFlagAlgebras.API.Matrix.PosSemiDef",
+        "import LeanFlagAlgebras.Automation.Basic",
+        "import LeanFlagAlgebras.Automation.FlagMulReduce",
+        "import LeanFlagAlgebras.Automation.FlagSumSort",
+        "import LeanFlagAlgebras.Automation.Matrix.PosSemiDef",
     ]
     if branch_b:
         base += [
-            "import LeanFlagAlgebras.API.FlagExpand",
+            "import LeanFlagAlgebras.Automation.FlagExpand",
             "import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity",
         ]
     # Blocks with more than eight σ-flags expand their quadratic form with
@@ -1174,7 +1174,7 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
     # continuation lemmas. Omitted for the small examples so their regeneration
     # stays byte-for-byte with the committed files.
     if _max_block_size(cert) > _MATHLIB_FIN_SUM_MAX:
-        base.append("import LeanFlagAlgebras.API.FinSumUniv")
+        base.append("import LeanFlagAlgebras.Automation.FinSumUniv")
     base.append("import LeanFlagAlgebras.Forbid.CommonGraphs")
     return base
 

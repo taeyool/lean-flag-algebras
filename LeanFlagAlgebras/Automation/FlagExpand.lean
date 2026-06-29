@@ -1,8 +1,8 @@
-import LeanFlagAlgebras.API.ExprHelpers
+import LeanFlagAlgebras.Automation.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 
-/-! # API.FlagExpand — flag expansion tactics
+/-! # Automation.FlagExpand — flag expansion tactics
 
 General-purpose proof automation for flag-algebra computations. Provides two
 tactics that expand a flag-algebra element as a finite flag sum:
@@ -18,13 +18,13 @@ and used by the Flagmatic-to-Lean automation in `LeanFlagAlgebras/Flagmatic/`
 as well as by individual theorem developments (e.g. `MantelTheorem`).
 
 Shared Expr helpers (`findFlagAlgebraConst?`, `parseFlagAlgebraIndices?`, etc.)
-are provided by `API.ExprHelpers`.
+are provided by `Automation.ExprHelpers`.
 
-For flag-product reduction, see `API.FlagMulReduce`. -/
+For flag-product reduction, see `Automation.FlagMulReduce`. -/
 
 open Lean Elab Tactic Meta
 
-namespace FlagAlgebras.API
+namespace FlagAlgebras.Automation
 
 /-
 `flag_expand_forbid N` proves goals of the form
@@ -247,4 +247,4 @@ elab_rules : tactic
                 | abel
                 | simp only [add_assoc, add_comm, add_left_comm]))
 
-end FlagAlgebras.API
+end FlagAlgebras.Automation

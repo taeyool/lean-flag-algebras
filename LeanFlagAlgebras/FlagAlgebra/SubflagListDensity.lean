@@ -3009,7 +3009,7 @@ theorem flagDensity_eq_sum_density_prods
 /-! ## Public chain-rule aliases
 
 Short, uniformly named handles for the four chain rules above (subscripts =
-arities of the two density factors), used by the `Forbid`/`API` tactic layer. -/
+arities of the two density factors), used by the `Forbid`/`Automation` tactic layer. -/
 
 alias density_chain_rule₁₁ := flagDensity_eq_sum_density_prods
 alias density_chain_rule₁₂ := flagPairDensity_eq_sum_density_prods'

@@ -33,14 +33,14 @@ import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 
 -- API
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.ExprHelpers
-import LeanFlagAlgebras.API.FlagExpand
-import LeanFlagAlgebras.API.FlagMulReduce
-import LeanFlagAlgebras.API.FlagSumSort
-import LeanFlagAlgebras.API.K4freeP4
-import LeanFlagAlgebras.API.CompleteGraphFreeP4
-import LeanFlagAlgebras.API.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.ExprHelpers
+import LeanFlagAlgebras.Automation.FlagExpand
+import LeanFlagAlgebras.Automation.FlagMulReduce
+import LeanFlagAlgebras.Automation.FlagSumSort
+import LeanFlagAlgebras.Automation.K4freeP4
+import LeanFlagAlgebras.Automation.CompleteGraphFreeP4
+import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
 
 -- MantelTheorem
 import LeanFlagAlgebras.MantelTheorem.FlagDef
@@ -121,6 +121,6 @@ commented-out imports below for reference only). -/
 -- import LeanFlagAlgebras.Archive.MantelTheorem.FlagIso_old
 -- import LeanFlagAlgebras.Archive.MantelTheorem.FlagMuls
 -- import LeanFlagAlgebras.Archive.MantelTheorem.MantelTheorem
--- import LeanFlagAlgebras.API.ErdosPentagonAPI
--- import LeanFlagAlgebras.API.MantelTheoremAPI
--- import LeanFlagAlgebras.API.C4TuranAPI
+-- import LeanFlagAlgebras.Automation.ErdosPentagonAPI
+-- import LeanFlagAlgebras.Automation.MantelTheoremAPI
+-- import LeanFlagAlgebras.Automation.C4TuranAPI

@@ -1,15 +1,15 @@
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.FlagMulReduce
-import LeanFlagAlgebras.API.FlagSumSort
-import LeanFlagAlgebras.API.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
+import LeanFlagAlgebras.Automation.FlagSumSort
+import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
 import LeanFlagAlgebras.Flags.Densities.MulLoader_old
 import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
 import LeanFlagAlgebras.MantelTheorem.Lemmas
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
-/-! # API.MantelTheoremAPI — Mantel's theorem via the API layer
+/-! # Automation.MantelTheoremAPI — Mantel's theorem via the Automation layer
 
-Per-problem density-bound proof on the API automation layer. The headline
+Per-problem density-bound proof on the Automation layer. The headline
 result `Mantel_flagAlgebra_API` is the flag-algebra form of Mantel's theorem:
 in K₃-free graphs the edge density (`FlagAlgebra_2_0_0_1`) is at most `1/2`:
 
@@ -19,9 +19,9 @@ The certificate uses a single 2×2 PSD matrix `M` (shown positive semidefinite
 via an explicit LDLᵀ factorization, rational then cast to ℝ) together with the
 auxiliary equality `K2_expand_under_forbid` that rewrites the edge density on
 three vertices, after dropping the K₃ term which vanishes under the forbidden
-subgraph. The goal is then discharged with the API tactics. -/
+subgraph. The goal is then discharged with the Automation tactics. -/
 
-open FlagAlgebras Forbid FlagAlgebras.API
+open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 
 namespace MantelTheoremAPI
@@ -96,7 +96,7 @@ set_option maxRecDepth 1500
 /-- **Mantel's theorem (flag-algebra form).** In K₃-free graphs the edge
 density is at most `1/2`. Proved by adding the PSD quadratic-form (SOS) term
 from `M_real`/`v`, expanding the edge density via `K2_expand_under_forbid`, and
-reducing with the API tactics. -/
+reducing with the Automation tactics. -/
 theorem Mantel_flagAlgebra_API
     : FlagAlgebra_2_0_0_1 ≤[K3.toFinFlag] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by

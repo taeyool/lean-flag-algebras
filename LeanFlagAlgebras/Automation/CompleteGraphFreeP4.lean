@@ -1,15 +1,15 @@
 import LeanFlagAlgebras.Flags.FlagGenerator
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.FlagMulReduce
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.Automation.FlagSumSort
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
-/-! # API.CompleteGraphFreeP4 — P₄ density bound in K_{r+1}-free graphs
+/-! # Automation.CompleteGraphFreeP4 — P₄ density bound in K_{r+1}-free graphs
 
-Per-problem density-bound proof on the API automation layer, generalizing
-`API.K4freeP4` from K₄ to an arbitrary forbidden complete graph K_{r+1}. The
+Per-problem density-bound proof on the Automation layer, generalizing
+`Automation.K4freeP4` from K₄ to an arbitrary forbidden complete graph K_{r+1}. The
 headline result `Kr_plus_1_free_P4_density_upper_bound` (upper-bound direction
 of Theorem 1.3(i), Murphy–Nir 2021) states that for `r ≥ 3` and K_{r+1}-free
 graphs the `P₄` density is at most `12·((r-1)/r)³`:
@@ -34,7 +34,7 @@ exhibits the dependence. The `r = 3` case specializes to
 `K4freeP4.K4_free_P4_density_upper_bound` with bound `32/9` (there `f₀` is
 unnecessary since K₄ is forbidden). -/
 
-open FlagAlgebras Forbid FlagAlgebras.API
+open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph
 
 namespace CompleteGraphFreeP4

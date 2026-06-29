@@ -1,9 +1,9 @@
-import LeanFlagAlgebras.API.ExprHelpers
+import LeanFlagAlgebras.Automation.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
 
-/-! # API.FlagMulReduce — the `reduce_flagmul` and `reduce_downward_flagmul` tactics
+/-! # Automation.FlagMulReduce — the `reduce_flagmul` and `reduce_downward_flagmul` tactics
 
-Part of the API automation layer. This module defines two custom tactics that
+Part of the Automation layer. This module defines two custom tactics that
 reduce flag-algebra product expressions:
 
 * `reduce_flagmul` — proves goals of the shape
@@ -18,13 +18,13 @@ reduce flag-algebra product expressions:
   expansion theorem and moving the rewritten term onto the right-hand side.
   Plain flag summands (no `downward` wrapper) are moved directly.
 
-Shared Expr helpers are provided by `API.ExprHelpers`.
+Shared Expr helpers are provided by `Automation.ExprHelpers`.
 -/
 
 open FlagAlgebras Forbid
 open Lean Elab Tactic Meta
 
-namespace FlagAlgebras.API
+namespace FlagAlgebras.Automation
 
 /--
 `reduce_flagmul` proves goals of the shape
@@ -252,4 +252,4 @@ elab "reduce_downward_flagmul" : tactic => do
   evalTactic (← `(tactic| try simp only [downward_add, add_assoc]))
   runReduceDownwardFlagMul
 
-end FlagAlgebras.API
+end FlagAlgebras.Automation

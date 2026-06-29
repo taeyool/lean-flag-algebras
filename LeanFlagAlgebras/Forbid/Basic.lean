@@ -9,7 +9,7 @@ the statement language for the end-to-end density bounds. They mean that, almost
 under random positive homomorphisms `φ` drawn conditioned on the forbidden flag `F`
 having density `0` (`φ₀ ⟦basisVector F⟧ = 0`), one has `φ f = φ g` resp. `φ f ≤ φ g`
 (probability `1`). The file proves the algebraic and order lemmas (refl/symm/trans,
-add/smul, `inducedForbidLE_of_le`, downward monotonicity, …) consumed by the API tactics, as
+add/smul, `inducedForbidLE_of_le`, downward monotonicity, …) consumed by the Automation tactics, as
 well as the empty-type variants and the equivalence between them.
 -/
 

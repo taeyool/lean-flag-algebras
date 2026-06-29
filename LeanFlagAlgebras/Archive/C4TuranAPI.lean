@@ -1,15 +1,15 @@
 import LeanFlagAlgebras.Flags.FlagDef
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.FlagMulReduce
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
 import LeanFlagAlgebras.Flags.Densities.MulLoader_old
 import LeanFlagAlgebras.Flags.Densities.DensityLoader_old
-import LeanFlagAlgebras.API.FlagSumSort
-import LeanFlagAlgebras.API.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.FlagSumSort
+import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
-/-! # API.C4TuranAPI — a 4-vertex graph density bound for K₃-free graphs
+/-! # Automation.C4TuranAPI — a 4-vertex graph density bound for K₃-free graphs
 
-Per-problem density-bound proof on the API automation layer. The headline
+Per-problem density-bound proof on the Automation layer. The headline
 result `C4_flagAlgebra_API` shows that for K₃-free graphs the density of the
 4-vertex flag `FlagAlgebra_4_0_0_8` is at most `3/8`:
 
@@ -18,9 +18,9 @@ result `C4_flagAlgebra_API` shows that for K₃-free graphs the density of the
 The certificate uses two PSD matrices `M₁` (4×4) and `M₂` (3×3), each shown
 positive semidefinite via an explicit LDLᵀ factorization (rational, then cast
 to ℝ). These produce non-negative quadratic-form terms that are added to the
-bound and discharged with the API tactics. -/
+bound and discharged with the Automation tactics. -/
 
-open FlagAlgebras Forbid FlagAlgebras.API
+open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 
 namespace C4TuranAPI
@@ -118,7 +118,7 @@ set_option maxRecDepth 1500
 
 /-- **K₃-free 4-vertex density bound.** The density of `FlagAlgebra_4_0_0_8` in
 K₃-free graphs is at most `3/8`. Proved by adding the two PSD quadratic-form
-(SOS) terms from `M₁_real`/`v₁` and `M₂_real`/`v₂`, then reducing with the API
+(SOS) terms from `M₁_real`/`v₁` and `M₂_real`/`v₂`, then reducing with the Automation
 tactics. -/
 theorem C4_flagAlgebra_API
     : FlagAlgebra_4_0_0_8 ≤[K3.toFinFlag] (3 / 8 : ℝ) • (1 : FlagAlgebra ∅ₜ)

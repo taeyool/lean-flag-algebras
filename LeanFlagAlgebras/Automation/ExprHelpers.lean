@@ -1,10 +1,10 @@
 import Mathlib.Tactic
 import LeanFlagAlgebras.FlagAlgebra.PositiveHom
 
-/-! # API.ExprHelpers — shared Expr-traversal utilities
+/-! # Automation.ExprHelpers — shared Expr-traversal utilities
 
 Shared meta-programming utilities used by `FlagExpand` and `FlagMulReduce`.
-All definitions live in `FlagAlgebras.API` so that both modules can use them
+All definitions live in `FlagAlgebras.Automation` so that both modules can use them
 without qualification.
 
 Provides:
@@ -25,7 +25,7 @@ Provides:
 
 open Lean Elab Tactic Meta
 
-namespace FlagAlgebras.API
+namespace FlagAlgebras.Automation
 
 /-- The final string component of a `Name`. -/
 def lastNamePart (nm : Name) : String :=
@@ -221,4 +221,4 @@ def mkFlagMulThmName? (mulTerm : Expr) (curNs : Name) : MetaM (Option Name) := d
       return some cand
   return none
 
-end FlagAlgebras.API
+end FlagAlgebras.Automation

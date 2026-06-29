@@ -297,7 +297,7 @@ After each stage, run:
 
 ```powershell
 lake env lean LeanFlagAlgebras/Forbid/Basic.lean
-lake env lean LeanFlagAlgebras/API/Basic.lean
+lake env lean LeanFlagAlgebras/Automation/Basic.lean
 lake env lean LeanFlagAlgebras/Forbid/TuranDensity.lean
 ```
 
