@@ -1289,7 +1289,7 @@ def _cmd_inspect(args: argparse.Namespace) -> None:
     forbid_n, _edges, tag = _forbid_graph_from_description(cert.get("description", ""))
     if tag is not None:
         print(f"forbid graph: K_{forbid_n}  ->  def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}")
-        print(f"              bound stated as  ≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦{tag}⟧⟩ : FinFlag ∅ₜ)]")
+        print(f"              bound stated as  ≤[completeGraph (Fin {forbid_n})]  (ordinary forbid)")
     else:
         m_forbid = re.search(r"forbid\s+(\S+)", cert.get("description", ""))
         shown = m_forbid.group(1) if m_forbid else "<none>"

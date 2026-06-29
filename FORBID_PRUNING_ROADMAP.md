@@ -708,3 +708,97 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
   fully closed). It is the heaviest example but reliable. (Note 8a/8b/9a's individual build-time impact
   on the *low-n* examples stays ≈ 0/neutral — but on K5turan, where the flag volume is near-maximal,
   8b+9a are the difference between intractable and ~11 min.)
+- **2026-06-29** — **NEW LINE: subgraph (non-induced) forbidding of arbitrary `F` — Route B, G1+G2
+  DONE** (standalone-compiled; full `lake build` pending — a K3forbidC6 build holds the lock).
+  Motivation: D1 scoped the pipeline to **induced** semantics, but flagmatic certificates forbid as a
+  **subgraph** (verified on a user `C5free_cert.json`: 26 admissible graphs = the subgraph-C₅-free
+  count, not the induced-free 33). Rather than C₅-specifically, generalized to arbitrary `F`.
+  - **G1 — `subgraphContains` (in `Flags/ForbidFreePruned.lean`).** The non-induced sibling of
+    `inducedContains`: `∃ f : Fin m ↪ Fin n, ∀ i j, s(i,j) ∈ F.edges → s(f i, f j) ∈ G.edges`
+    (adjacency `↔` weakened to `→`). + `Decidable`, `subgraphContains_of_eqv` / `_of_restrict`
+    (near-verbatim mirrors of the induced ones), the `q`-instance `qSubgraphFree F` +
+    `_eq_true`/`_iso`/`_restrict`/`_hq0`, and the generic-generator wrappers
+    `augRepsFreeB_qSubgraphFree_complete` / `_free` (reuse `augRepsFreeB` unchanged — the pruning
+    backbone is already predicate-generic).
+  - **G2 — bridge to the framework.** Graph level: `subgraphContains_iff_isContained` (in
+    `ForbidFreePruned.lean`) — `subgraphContains F G ↔ SimpleGraph.IsContained F.toLabeledGraph.graph
+    G.toLabeledGraph.graph`, via Mathlib `SimpleGraph.Copy` (= injective adjacency-preserving hom) read
+    through `Sym2Graph.toLabeledGraph_adj_iff`. Added `import Mathlib.Combinatorics.SimpleGraph.Copy`.
+    Framework level: `sym2Graph_finFlag_mem_forbiddenFlags` (in `Forbid/CommonGraphs.lean`, which now
+    imports `ForbidFreePruned`) — `subgraphContains F G → (⟨n, toFlag ⟦G⟧⟩ : FinFlag) ∈
+    forbiddenFlags F.toLabeledGraph.graph`, i.e. `⟨G.toLabeledGraph, rfl, bridge.mp h⟩`. This is the
+    arbitrary-`F` subgraph analogue of `completeSym2Graph_finFlag_mem_forbiddenFlags` — the `hmem`
+    witness the `_ofMem` / family expansion lemmas need.
+  - **Key reuse / why this is tractable:** the framework's `forbiddenCondition`/`forbiddenFlags` (=
+    `IsContained`, subgraph) already *is* subgraph semantics (Option B); the pruning generator
+    `augRepsFreeB` is already predicate-generic; G1 is a one-directional copy of the DONE
+    `inducedContains` infra; G2's graph bridge is `Copy` ↔ our edge-preserving injection. No new
+    analytic density bridge needed (D1's blocker) — subgraph membership routes straight through
+    `IsContained`.
+  - **Next: G3+** — the subgraph expansion wrappers (kill = `subgraphContains H`, vanishing via
+    `basisVector_familyForbidEq_zero` with the killed flag as its own witness), then the generator
+    subgraph free-mask path (`evalSubgraphFreeMask` analogue of `evalInducedFreeMask` +
+    `prunedSubgraphFreeFlags_toFinset_eq`), then tactics + `flagmatic_to_lean.py`. (The induced
+    single/family path of Tasks 3–5 stays; subgraph is a parallel sibling.)
+- **2026-06-29** — **G3 DONE (subgraph expansion wrappers, in `Forbid/Basic.lean`; standalone-compiled).**
+  Found `basisVector_quot_familyForbidEq_sum` already exists (Task-5a era) but is stated over a `Set`
+  `Fs` with a `DecidablePred` side-condition — unusable directly with the *infinite* `forbiddenFlags H`,
+  and there is no `mul` analogue. So added two finite-family `=[H]` wrappers built straight on the
+  generic kill lemmas:
+  - `basisVector_quot_forbidEq_sum_ofFamilyMem` (sum) and `basisVector_quot_mul_forbidEq_sum_ofFamilyMem`
+    (product): take a `Finset (FinFlag ∅ₜ)` `Fs` with `hmem : ∀ D ∈ Fs, D ∈ forbiddenFlags H`,
+    kill `∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F')` (Finset-bounded ∃ ⇒ `DecidablePred` auto-found),
+    survivors `∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0`. Proof = the generic
+    `basisVector_quot_(mul_)forbidEqWith_sum_of_kill (forbiddenCondition H)` + a `filter_congr` (survivor
+    `∀ = 0` ↔ `¬ ∃ > 0`, using `flagListDensity₁_ge_zero`) + `basisVector_familyForbidEq_zero
+    (forbiddenFlags H) D (hmem D hD)` for the vanishing. No condition-monotonicity needed — `hmem` puts
+    each killed witness directly in `forbiddenFlags H`, and `forbiddenCondition H` *is*
+    `familyForbiddenCondition (forbiddenFlags H)` (defeq), so the `=[H]` goal accepts the kill-lemma term.
+  - **G4 building blocks DONE** (standalone-compiled): `subgraphContains_of_edges_subset` (in
+    `ForbidFreePruned.lean` — any edge-superset `G ⊇ H` on `Fin m` subgraph-contains `H` via the
+    identity embedding) and `sym2Graph_supergraph_mem_forbiddenFlags` (in `CommonGraphs.lean` — hence
+    the flag of any such `G` is in `forbiddenFlags H`). These are the per-member `hmem` inputs the G3
+    finite-family wrappers need for the supergraph family.
+  - **Next: G4 (remainder)** — a `supergraphFamily (H : Sym2Graph m) : Finset (FinFlag ∅ₜ)` enumerating
+    `H`'s edge-supersets (with `∀ D ∈ supergraphFamily H, D ∈ forbiddenFlags H` from the building block
+    above), then the generator command emitting the `qSubgraphFree`-pruned flags + the `=[H]` expansion
+    theorems via the G3 wrappers (proving the survivor filter `∀ D ∈ Fs, density = 0` equals the
+    `qSubgraphFree` free set); then G5 (tactics) / G6 (`flagmatic_to_lean.py`).
+- **2026-06-29** — **MATH CORE COMPLETE: `supergraphFamily` + capstone `=[H]` expansions for ARBITRARY
+  `H` (in `Forbid/CommonGraphs.lean`; standalone-compiled, no sorry).** Also confirmed G1–G3 + the G4
+  building blocks integrate into the **full project build (8005 jobs green)**.
+  - `supergraphFamily (H : Sym2Graph m) : Finset (FinFlag ∅ₜ)` — `noncomputable` (`FinFlag` quotients
+    carry only a classical `DecidableEq`; the generator's `native_decide` lives on the computable
+    `Sym2Graph` side, not here). Enumerated as `H.edges ∪ S` over `S ⊆ (completeSym2Graph m).edges \
+    H.edges` via `Finset.powerset.image`. Wrapped in `section … open scoped Classical` so the def and the
+    membership proof (`Finset.mem_image`) share one `DecidableEq` instance.
+  - `supergraphFamily_mem_forbiddenFlags` — `∀ D ∈ supergraphFamily H, D ∈ forbiddenFlags H` (each is an
+    edge-superset ⇒ `Finset.subset_union_left` ⇒ G4 building block). The `hmem` for the G3 wrappers.
+  - **Capstones** `basisVector_quot_forbidEq_sum_subgraph` and `basisVector_quot_mul_forbidEq_sum_subgraph`
+    — one-liners: `basisVector_quot_(mul_)forbidEq_sum_ofFamilyMem (supergraphFamily H)
+    (supergraphFamily_mem_forbiddenFlags H) …`. For **any** forbidden `H : Sym2Graph m` they give
+    `⟦basisVector F⟧ =[H.toLabeledGraph.graph] ∑ F' with (∀ D ∈ supergraphFamily H, flagDensity₁ D.2
+    (unlabel F') = 0), …` — the subgraph-`H`-free expansion, membership discharged automatically. This is
+    what the subgraph generator command will cite (the analogue of the complete-graph `_ofMem` path).
+  - **So Route B's MATH is done end-to-end (G1–G4-family), arbitrary `H`, no sorry.** Remaining is pure
+    elaborator engineering: **G4 command** (emit subgraph-`H`-free flags via `qSubgraphFree` + the `=[H]`
+    theorems citing the capstones; bridge the survivor filter to the computable `qSubgraphFree`/Sym2 set —
+    the family analogue of `flagSetHfree_…_eq`), then **G5** (tactic variants) / **G6**
+    (`flagmatic_to_lean.py` emit non-complete forbids).
+- **2026-06-29** — **G4 command — started; hit (and scoped) the computability blocker.** Attempted the
+  computable bridge from the abstract `supergraphFamily` to a `native_decide`-able Sym2 enumeration.
+  Two findings, both now reflected in the code:
+  - **`Finset (FinFlag ∅ₜ)` has no auto `DecidableEq`** (its quotient `Fintype` is `noncomputable`), so
+    `supergraphFamily` (built by `Finset.image`) needs `open scoped Classical` and is `noncomputable`.
+    The capstones + membership compile fine this way (the `∀/∃ D ∈ Fs` filters need only `DecidablePred`,
+    not `DecidableEq`). A `List`-valued `Fs` would dodge the `DecidableEq` issue — **but**:
+  - **`Finset.toList` / `Multiset.toList` are `noncomputable`** (they choose an order via `Classical`), so
+    a supergraph `List` derived from the edge-`Finset` powerset is *also* noncomputable. A genuinely
+    `native_decide`-able supergraph enumeration must therefore be built from **`List` primitives**
+    (`List.finRange`, `List.sublists`, an explicit `Sym2 (Fin m)` edge list) — not from `Finset` ops.
+  - **Decision:** kept the proven **`Finset`-based math core** green (G1–G4-family, capstones, all
+    standalone-compiled; full-build integration re-run). The computable `List`-primitive supergraph
+    enumeration + the `flagSetHfree_…_eq`-style completeness bridge + the elaborator command are the
+    concrete next steps for G4 (well-scoped, no remaining *math* unknowns — it is representation
+    plumbing between the abstract `FinFlag` capstone and the computable `Sym2`/`native_decide` side,
+    mirroring the single-flag command's `flagSetEqName` proof for a family).

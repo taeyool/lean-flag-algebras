@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagEnumeration
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
+import Mathlib.Combinatorics.SimpleGraph.Copy
 import Mathlib.Tactic
 
 /-! # Genuine pruned augmentation (K₃-free, empty-typed graph level)
@@ -701,6 +702,117 @@ theorem forall_not_inducedContains_iff_forall_density_eq_zero
     (∀ Fp ∈ Fs, ¬ inducedContains Fp.2 G)
       ↔ (∀ Fp ∈ Fs, sym2EmptyTypeFlagDensity₁ ⟦Fp.2⟧ ⟦G⟧ = 0) :=
   forall_congr' fun Fp => imp_congr_right fun _ => not_inducedContains_iff_density_eq_zero Fp.2 G
+
+/-! ## Subgraph (non-induced) containment — arbitrary-`F` *subgraph* forbidding (Route B / G1)
+
+`inducedContains` above forbids `F` as an **induced** pattern (adjacency `↔`). For the standard
+extremal/Turán notion — forbidding `F` as a **(not necessarily induced) subgraph** — we need the
+one-directional analogue: an injection preserving `F`'s edges into `G` (the host may carry extra
+edges among the image). This mirrors the `inducedContains` infrastructure with `↔` weakened to `→`,
+and feeds the same generic pruned generator (`augRepsFreeB`) via `qSubgraphFree`. The bridge to the
+framework's `SimpleGraph.IsContained` / `forbiddenFlags` lives in `Forbid/Basic.lean` (G2). -/
+
+/-- `G` contains `F` as a *(not necessarily induced)* subgraph: an injection of `F`'s vertices into
+`G`'s that preserves `F`'s edges (only the `→` direction — contrast `inducedContains`'s `↔`). -/
+def subgraphContains {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) : Prop :=
+  ∃ f : Fin m ↪ Fin n, ∀ i j : Fin m, s(i, j) ∈ F.edges → s(f i, f j) ∈ G.edges
+
+instance {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) : Decidable (subgraphContains F G) := by
+  unfold subgraphContains; infer_instance
+
+/-- Subgraph containment is an isomorphism invariant (transport the embedding along the
+edge-preserving permutation from `G ∼sf G'`). Mirrors `inducedContains_of_eqv`. -/
+theorem subgraphContains_of_eqv {m n : ℕ} {F : Sym2Graph m} {G G' : Sym2Graph n}
+    (h : G ∼sf G') (hG : subgraphContains F G) : subgraphContains F G' := by
+  obtain ⟨φ, hφ⟩ := edge_mem_iff_of_eqv h
+  obtain ⟨f, hf⟩ := hG
+  refine ⟨f.trans φ.toEmbedding, fun i j hij => ?_⟩
+  simp only [Function.Embedding.trans_apply, Equiv.coe_toEmbedding]
+  have := (hφ s(f i, f j)).mp (hf i j hij)
+  rwa [Sym2.map_pair_eq] at this
+
+/-- **Vertex-deletion monotonicity.** A subgraph copy of `F` in `restrict H` is one in `H`;
+contrapositively, subgraph-`F`-freeness is preserved by `restrict`. Mirrors
+`inducedContains_of_restrict`. -/
+theorem subgraphContains_of_restrict {m n : ℕ} {F : Sym2Graph m} {H : Sym2Graph (n + 1)}
+    (h : subgraphContains F (restrict H)) : subgraphContains F H := by
+  obtain ⟨f, hf⟩ := h
+  refine ⟨f.trans ⟨Fin.castSucc, Fin.castSucc_injective n⟩, fun i j hij => ?_⟩
+  simp only [Function.Embedding.trans_apply, Function.Embedding.coeFn_mk]
+  have := ((mem_restrict_edges H _).mp (hf i j hij)).2
+  rwa [Sym2.map_pair_eq] at this
+
+/-- The single-forbidden-graph *subgraph*-H-free Bool predicate: free iff no subgraph copy of `F`. -/
+def qSubgraphFree {m : ℕ} (F : Sym2Graph m) : (k : ℕ) → Sym2Graph k → Bool :=
+  fun _ G => !decide (subgraphContains F G)
+
+theorem qSubgraphFree_eq_true {m k : ℕ} (F : Sym2Graph m) (G : Sym2Graph k) :
+    qSubgraphFree F k G = true ↔ ¬ subgraphContains F G := by simp [qSubgraphFree]
+
+theorem qSubgraphFree_iso {m k : ℕ} (F : Sym2Graph m) {G G' : Sym2Graph k} (h : G ∼sf G') :
+    qSubgraphFree F k G = qSubgraphFree F k G' := by
+  unfold qSubgraphFree
+  congr 1
+  exact decide_eq_decide.mpr
+    ⟨subgraphContains_of_eqv h, subgraphContains_of_eqv (Sym2GraphEqv.symm h)⟩
+
+theorem qSubgraphFree_restrict {m k : ℕ} (F : Sym2Graph m) {H : Sym2Graph (k + 1)}
+    (hH : qSubgraphFree F (k + 1) H = true) : qSubgraphFree F k (restrict H) = true := by
+  rw [qSubgraphFree_eq_true] at hH ⊢
+  exact mt subgraphContains_of_restrict hH
+
+/-- `qSubgraphFree F` holds at the empty base for a nonempty `F` (`0 < m`). Mirrors `qFree_hq0`. -/
+theorem qSubgraphFree_hq0 {m : ℕ} (F : Sym2Graph m) (hm : 0 < m) :
+    qSubgraphFree F 0 (⟨∅, by simp⟩ : Sym2Graph 0) = true := by
+  rw [qSubgraphFree_eq_true]
+  rintro ⟨f, _⟩
+  exact (f ⟨0, hm⟩).elim0
+
+/-- Completeness: every subgraph-`F`-free graph is `∼sf` a pruned `qSubgraphFree`-rep. Mirrors
+`augRepsFreeB_qFree_complete`. -/
+theorem augRepsFreeB_qSubgraphFree_complete {m : ℕ} (F : Sym2Graph m) (n : ℕ) (G : Sym2Graph n)
+    (hG : ¬ subgraphContains F G) : ∃ R ∈ augRepsFreeB (qSubgraphFree F) n, G ∼sf R :=
+  augRepsFreeB_complete (qSubgraphFree F) (qSubgraphFree_iso F)
+    (fun {_ _} h => qSubgraphFree_restrict F h) n G ((qSubgraphFree_eq_true F G).mpr hG)
+
+/-- Soundness: every pruned `qSubgraphFree`-rep is subgraph-`F`-free (for nonempty `F`). Mirrors
+`augRepsFreeB_qFree_free`. -/
+theorem augRepsFreeB_qSubgraphFree_free {m : ℕ} (F : Sym2Graph m) (hm : 0 < m)
+    (n : ℕ) (R : Sym2Graph n) (hR : R ∈ augRepsFreeB (qSubgraphFree F) n) :
+    ¬ subgraphContains F R := by
+  rw [← qSubgraphFree_eq_true]
+  refine augRepsFreeB_free (qSubgraphFree F) ?_ n R hR
+  rw [qSubgraphFree_eq_true]
+  rintro ⟨f, _⟩
+  exact (f ⟨0, hm⟩).elim0
+
+/-- **G2 bridge (graph level).** Our combinatorial `subgraphContains F G` agrees with Mathlib's
+`SimpleGraph.IsContained` between the underlying simple graphs. `IsContained A B = Nonempty (Copy A B)`
+and a `Copy` is exactly an injective adjacency-preserving map `A →g B` — which, read through
+`Sym2Graph.toLabeledGraph_adj_iff`, is our edge-preserving injection. This is what connects the
+subgraph-free generator to the framework's `forbiddenFlags` (whose membership is `IsContained`). -/
+theorem subgraphContains_iff_isContained {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n) :
+    subgraphContains F G
+      ↔ SimpleGraph.IsContained F.toLabeledGraph.graph G.toLabeledGraph.graph := by
+  constructor
+  · rintro ⟨f, hf⟩
+    refine ⟨{ toHom := ⟨f, ?_⟩, injective' := f.injective }⟩
+    intro a b hab
+    rw [Sym2Graph.toLabeledGraph_adj_iff] at hab ⊢
+    exact hf a b hab
+  · rintro ⟨c⟩
+    refine ⟨⟨c, c.injective⟩, fun i j hij => ?_⟩
+    have hadj : G.toLabeledGraph.graph.Adj (c i) (c j) :=
+      c.toHom.map_adj ((Sym2Graph.toLabeledGraph_adj_iff F i j).mpr hij)
+    rwa [Sym2Graph.toLabeledGraph_adj_iff] at hadj
+
+/-- **Edge-superset ⇒ subgraph containment** (same vertex count, via the identity embedding). The
+building block for the supergraph family: any `G ⊇ H` (edge-superset on `Fin m`) subgraph-contains `H`.
+This is what makes the supergraphs of `H` lie in `forbiddenFlags H` (G4). -/
+theorem subgraphContains_of_edges_subset {m : ℕ} {H G : Sym2Graph m}
+    (hsub : H.edges ⊆ G.edges) : subgraphContains H G := by
+  refine ⟨Function.Embedding.refl (Fin m), fun i j hij => ?_⟩
+  simpa using hsub hij
 
 /-- Consistency with Task 1: the general predicate at `F := triangleGraph` is exactly `hasTri`,
 so the general bridge subsumes the K₃ bridge `not_hasTri_iff_triangleDensity_eq_zero`. -/

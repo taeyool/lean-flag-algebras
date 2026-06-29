@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Forbid.TuranDensity
+import LeanFlagAlgebras.Flags.ForbidFreePruned
 
 /-! # Common forbidden graphs
 
@@ -130,6 +131,82 @@ theorem completeSym2Graph_finFlag_eq (r : ℕ) :
       = ⟨r, (⟦{ graph := completeGraph (Fin r), type_embed := RelEmbedding.ofIsEmpty _ _ }⟧
               : Flag ∅ₜ (Fin r))⟩
   rw [hflag]
+
+open FlagAlgebras.Compute Forbid in
+/-- **G2 framework bridge (general, subgraph semantics).** If `G` contains `F` as a (not necessarily
+induced) subgraph, then the empty-typed flag of `G` lies in `forbiddenFlags` of `F`'s simple graph.
+This is the arbitrary-`F` analogue of `completeSym2Graph_finFlag_mem_forbiddenFlags`: the membership
+witness the ordinary `_ofMem` / family expansion lemmas need, with the `IsContained` obligation
+discharged by `subgraphContains_iff_isContained`. The representation identity `toFlag ⟦G⟧ = ⟦G.toLabeledGraph⟧`
+holds by `rfl` (`Sym2EmptyTypedFlag.toFlag` lifts `Sym2Graph.toFlag = ⟦·.toLabeledGraph⟧`). -/
+theorem sym2Graph_finFlag_mem_forbiddenFlags {m n : ℕ} (F : Sym2Graph m) (G : Sym2Graph n)
+    (h : subgraphContains F G) :
+    (⟨n, Sym2EmptyTypedFlag.toFlag ⟦G⟧⟩ : FinFlag ∅ₜ)
+      ∈ forbiddenFlags F.toLabeledGraph.graph :=
+  ⟨G.toLabeledGraph, rfl, (subgraphContains_iff_isContained F G).mp h⟩
+
+open FlagAlgebras.Compute Forbid in
+/-- **Supergraph ⇒ `forbiddenFlags` membership.** Any edge-superset `G ⊇ H` (same vertex count)
+gives a flag in `forbiddenFlags H`. This is the per-member `hmem` input the finite-family expansion
+`basisVector_quot_forbidEq_sum_ofFamilyMem` needs for the supergraph family of `H` (G4). -/
+theorem sym2Graph_supergraph_mem_forbiddenFlags {m : ℕ} {H G : Sym2Graph m}
+    (hsub : H.edges ⊆ G.edges) :
+    (⟨m, Sym2EmptyTypedFlag.toFlag ⟦G⟧⟩ : FinFlag ∅ₜ)
+      ∈ forbiddenFlags H.toLabeledGraph.graph :=
+  sym2Graph_finFlag_mem_forbiddenFlags H G (subgraphContains_of_edges_subset hsub)
+
+section SupergraphFamily
+open FlagAlgebras.Compute Forbid
+open scoped Classical
+
+/-- The **supergraph family** of `H`: every edge-superset of `H` on `Fin m`, as empty-typed flags
+(`H.edges ∪ S` over subsets `S` of the non-`H` complete-graph edges). The finite `Fs` fed to
+`basisVector_quot_forbidEq_sum_ofFamilyMem` for subgraph-`H`-forbidding (a flag has zero induced
+density of *all* of these iff it is subgraph-`H`-free). `noncomputable` because `FinFlag` quotients
+carry only a classical `DecidableEq`; a *computable* enumeration for the generator's `native_decide`
+(built from `List` primitives, not the noncomputable `Finset.toList`) is the remaining G4 step. -/
+noncomputable def supergraphFamily {m : ℕ} (H : Sym2Graph m) : Finset (FinFlag ∅ₜ) :=
+  ((completeSym2Graph m).edges \ H.edges).powerset.image (fun S =>
+    ⟨m, Sym2EmptyTypedFlag.toFlag ⟦{
+      edges := H.edges ∪ S.filter (fun e => ¬ e.IsDiag)
+      edges_valid := fun e he => by
+        rcases Finset.mem_union.mp he with h | h
+        · exact H.edges_valid e h
+        · exact (Finset.mem_filter.mp h).2 }⟧⟩)
+
+/-- Every member of `supergraphFamily H` is in `forbiddenFlags H` (it is an edge-superset of `H`,
+hence subgraph-contains `H`). This is the `hmem` input for `basisVector_quot_forbidEq_sum_ofFamilyMem`. -/
+theorem supergraphFamily_mem_forbiddenFlags {m : ℕ} (H : Sym2Graph m) :
+    ∀ D ∈ supergraphFamily H, D ∈ forbiddenFlags H.toLabeledGraph.graph := by
+  intro D hD
+  rw [supergraphFamily, Finset.mem_image] at hD
+  obtain ⟨S, _, rfl⟩ := hD
+  exact sym2Graph_supergraph_mem_forbiddenFlags Finset.subset_union_left
+
+/-- **Arbitrary-`H` subgraph-forbidding expansion** (capstone of G1–G4). Instantiates the
+finite-family expansion `basisVector_quot_forbidEq_sum_ofFamilyMem` at the supergraph family of `H`:
+modulo *subgraph*-`H`-freeness, `⟦basisVector F⟧` expands over the flags with zero induced density of
+every supergraph of `H` (= the subgraph-`H`-free flags). The membership obligation is discharged by
+`supergraphFamily_mem_forbiddenFlags`; the generator cites this directly. -/
+theorem basisVector_quot_forbidEq_sum_subgraph {n₀ : ℕ} {σ : FlagType (Fin n₀)}
+    {m : ℕ} (H : Sym2Graph m) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : ⟦basisVector F⟧ =[H.toLabeledGraph.graph]
+      ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ supergraphFamily H, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₁ F.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ :=
+  basisVector_quot_forbidEq_sum_ofFamilyMem (supergraphFamily H)
+    (supergraphFamily_mem_forbiddenFlags H) F ℓ hℓ
+
+/-- **Arbitrary-`H` subgraph-forbidding product expansion** (capstone). The multiplication analogue of
+`basisVector_quot_forbidEq_sum_subgraph`. -/
+theorem basisVector_quot_mul_forbidEq_sum_subgraph {n₀ : ℕ} {σ : FlagType (Fin n₀)}
+    {m : ℕ} (H : Sym2Graph m) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
+    : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =[H.toLabeledGraph.graph]
+      ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ supergraphFamily H, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ :=
+  basisVector_quot_mul_forbidEq_sum_ofFamilyMem (supergraphFamily H)
+    (supergraphFamily_mem_forbiddenFlags H) F₁ F₂ ℓ hℓ
+
+end SupergraphFamily
 
 open FlagAlgebras.Compute Forbid in
 /-- The edge-based complete graph's induced forbidden flag is `H`-forbidden for
