@@ -2431,6 +2431,12 @@ structure Sym2InducedLabeledSubgraph
   verts : Finset (Fin n)
   verts_subset : G.type_verts (*@$\subseteq$@*) verts
 
+def Sym2InducedLabeledSubgraph.edges
+    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
+    {G : Sym2LabeledGraph sigma n} (H : Sym2InducedLabeledSubgraph G) :
+    Finset (Sym2 (Fin n)) :=
+  G.edges.filter (fun e => forall v in e, v in H.verts)
+
 instance
     {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
     (G : Sym2LabeledGraph sigma n) :
@@ -2441,20 +2447,22 @@ instance
     else none)
     (by grind)
   complete H := ...
-
-def Sym2InducedLabeledSubgraph.edges
-    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
-    {G : Sym2LabeledGraph sigma n} (H : Sym2InducedLabeledSubgraph G) :
-    Finset (Sym2 (Fin n)) :=
-  G.edges.filter (fun e => forall v in e, v in H.verts)
 \end{lstlisting}
-The enumeration is deliberately simple.  Since the vertices of \(G\) are
-\lean{Fin n}, Lean can enumerate the finite set of all subsets of
-\(\{0,\ldots,n-1\}\).  The instance scans this list and keeps a subset \(V\)
-precisely when it contains the type vertices \lean{G.type\_verts}; the retained
-subset is stored together with the proof of that containment.  Once such a
-vertex set is chosen, its induced edge set is computed by filtering the host
-graph's explicit edge set. \gw{I'm here.}
+The type \lean{Sym2InducedLabeledSubgraph G} represents induced subflags
+of \(G\): it stores the chosen vertex set together with a proof that the
+labeled vertices are included.  Its edge set is then computed by filtering the
+host graph's explicit edge set to the edges whose endpoints both lie in the
+chosen vertex set.  The \lean{Fintype (Sym2InducedLabeledSubgraph G)} instance
+therefore provides an enumeration of all induced subflags of \(G\).  Concretely,
+the instance contains an \lean{elems} field listing all elements of this type,
+together with a \lean{complete} proof that this enumeration misses none of
+them.  Here the
+enumeration is deliberately simple: since the vertices of \(G\) are
+\lean{Fin n}, Lean enumerates all subsets of \(\{0,\ldots,n-1\}\), keeps
+exactly those containing \lean{G.type\_verts}, and stores the retained subset
+with the proof of containment.  With this instance available, the evaluator can
+iterate through all induced subflags of \(G\) and count the ones isomorphic to
+the pattern \(F\) when computing \(\den{F}{G}\). \gw{I'm here.}
 
 The core reflection definitions already give a generic decidability instance for
 the relation \(G \sim_{\mathsf{sf}} G'\) by asking Lean to enumerate graph
