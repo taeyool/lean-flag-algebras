@@ -11,6 +11,47 @@ compile-time advantage** (compile time is dominated by framework-neutral `native
 density/multiplication tables + PSD checks; the forbid relation is only an index on the
 small SOS-chain proof). So we consolidate on the mathematically-correct ordinary framework.
 
+## 2026-06-29 update — EXAMPLES-ONLY scope; all 8 examples building
+
+**Scope decision (user): EXAMPLES-ONLY.** Remove induced from the 8 Flagmatic
+examples; **KEEP** the induced framework for its other in-build consumers
+(`API/CompleteGraphFreeP4`, `API/K4freeP4`, `ErdosPentagon/{Lemmas,ErdosPentagon}`,
+`Logic/MantelTheorem`, and the non-pruned generators). So step 3 below is **not**
+"delete induced" — it is "keep induced working alongside ordinary."
+
+**What changed this session:**
+- **`Flags/Densities/MulThmGenerator.lean`** — the pruned mul generator's proof
+  finish now closes with `refine forbidEqWith_of_eq ?_; dsimp only [host idents];
+  abel` instead of `forbidEqWith_refl` (refl can't reconcile the right-assoc-unfolded
+  LHS with the left-assoc-folded RHS at ≥3-term sums; surfaced on K3forbidC6's size-6
+  theorems).
+- **`API/FlagMulReduce.lean`** — (a) `reduce_downward_flagmul` made **dual-head**:
+  every rewrite site is `first | <ordinary forbidLEWith_* rw> | <induced
+  inducedForbidLE_* rw>`, so ONE tactic drives both ordinary `≤[H]` goals (the
+  examples) and induced `≤ᵢ[F]` goals (`API/K4freeP4` — the one in-build induced
+  consumer of this tactic; `inducedForbidLE` is a non-reducible `def`, so the generic
+  lemmas alone cannot match it). (b) reduce fuel bumped 256 → 16384 (K3forbidC6's
+  size-6 SOS has far more product summands than 256).
+- **`Flagmatic/flagmatic_to_lean.py`** — template updated to emit the ordinary form
+  (no induced-bridge preamble; `forbidLEWith_*`/`forbidEqWith_*`;
+  `one_forbidEq_forbidExpand_one_ofMem` + membership; the objective-expand helper and
+  mul-generate call pass the forbid `SimpleGraph` + membership).
+
+**Build state:**
+- Root (`LeanFlagAlgebras.lean`) **excludes `Archive/*`** (so the Archive induced
+  consumers are irrelevant) and imports only **6** Flagmatic examples — **not**
+  K3forbidC6, **not** MantelHfree (built on demand for cost).
+- GREEN (#59 DONE): `lake build LeanFlagAlgebras` = 7999/8002, no errors — the whole
+  project, incl. **K4freeP4 with the dual-head tactic** and every other induced consumer
+  (`CompleteGraphFreeP4`, `ErdosPentagon/Lemmas`, `Logic/MantelTheorem`), plus the 6 root
+  examples (Mantel, ErdosPentagon, K3forbidP3, K3forbidC4, K4turan, K5turan).
+- NOT RECONFIRMED: the 2 non-root examples **K3forbidC6 + MantelHfree** — their rebuild
+  against the new deps was **stopped before finishing** (to commit). To verify, run
+  `lake build LeanFlagAlgebras.Flagmatic.K3forbidC6 LeanFlagAlgebras.Flagmatic.MantelHfree`.
+  MantelHfree was green pre-dual-head and only needs a routine rebuild; **K3forbidC6's
+  reduce was never reached, so the fuel cap 16384 is the one unverified value** — if it
+  exhausts, bump `runReduceDownwardFlagMul`'s fuel default higher in `API/FlagMulReduce.lean`.
+
 ## Branch
 
 This WIP is committed on branch **`option-b-remove-induced`** (NOT `main`, because the
