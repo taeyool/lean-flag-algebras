@@ -21,15 +21,15 @@ import LeanFlagAlgebras.Flags.FlagGenerator
 import LeanFlagAlgebras.Flags.ForbidFreeGenerator
 import LeanFlagAlgebras.Flags.Densities.MulThmGenerator
 import LeanFlagAlgebras.Flags.Densities.DensityThmGenerator
-import LeanFlagAlgebras.API.Basic
-import LeanFlagAlgebras.API.FlagMulReduce
-import LeanFlagAlgebras.API.FlagSumSort
-import LeanFlagAlgebras.API.Matrix.PosSemiDef
-import LeanFlagAlgebras.API.FlagExpand
+import LeanFlagAlgebras.Automation.Basic
+import LeanFlagAlgebras.Automation.FlagMulReduce
+import LeanFlagAlgebras.Automation.FlagSumSort
+import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.FlagExpand
 import LeanFlagAlgebras.FlagAlgebra.Compute.FlagDensity
 import LeanFlagAlgebras.Forbid.CommonGraphs
 
-open FlagAlgebras Forbid FlagAlgebras.API
+open FlagAlgebras Forbid FlagAlgebras.Automation
 open SimpleGraph Matrix
 open FlagAlgebras.Compute
 

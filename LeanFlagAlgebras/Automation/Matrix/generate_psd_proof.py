@@ -14,7 +14,7 @@ out the intermediate d-nonneg / eq_LDL / rational-PosSemidef lemmas.
 This produces the SOS / PSD certificates that the flag-algebra density
 proofs in this repository depend on. The generated block relies on
 `ratMatrixToReal` and the `psd_real_ldlt` tactic from
-`LeanFlagAlgebras/API/Matrix/PosSemiDef.lean`.
+`LeanFlagAlgebras/Automation/Matrix/PosSemiDef.lean`.
 
 Inputs: a JSON matrix passed inline (--matrix) or via a file (--input), as a
 list of rows whose entries are ints/floats/rational strings like "1/2".
@@ -150,7 +150,7 @@ def emit_lean_block(
     Emits only the data — the ℚ definitions (matrix, L, d) and the ℝ cast
     `{mat}_real := ratMatrixToReal {mat}` — followed by a single-line proof
     `theorem {mat}_real_posSemidef : {mat}_real.PosSemidef := by psd_real_ldlt …`.
-    The `psd_real_ldlt` tactic (from `API/Matrix/PosSemiDef.lean`) discharges the
+    The `psd_real_ldlt` tactic (from `Automation/Matrix/PosSemiDef.lean`) discharges the
     diagonal-nonnegativity and `M = L·diag(d)·Lᵀ` side goals internally, so the old
     intermediate lemmas (d_nonneg / eq_LDL / rational posSemidef / real counterparts)
     are no longer spelled out. Returns the block as a single newline-joined string.
@@ -281,6 +281,6 @@ def main() -> None:
 # Save the target matrix in matrix.json, then run with e.g.
 #   python generate_psd_proof.py --input matrix.json --name P --out path/to/Output.lean
 # The generated block depends on `ratMatrixToReal` and the `psd_real_ldlt` tactic from
-# `LeanFlagAlgebras/API/Matrix/PosSemiDef.lean`. Make sure the consuming file imports it.
+# `LeanFlagAlgebras/Automation/Matrix/PosSemiDef.lean`. Make sure the consuming file imports it.
 if __name__ == "__main__":
     main()

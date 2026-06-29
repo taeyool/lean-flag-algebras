@@ -448,7 +448,7 @@ quotient eliminators, dependent-type transports, function extensionality, and
 \lean{Fintype}-instance ambiguity.
 Sections~\ref{sec:reflection} and~\ref{sec:bridge} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
-the tactic layer, the API layer, and elaboration-time theorem generation.
+the tactic layer, the Automation layer, and elaboration-time theorem generation.
 Section~\ref{sec:proof-style} records a recurring proof pattern from the case
 studies: density equalities are proved by explicit bijections between finite
 sample spaces.  Section~\ref{sec:results} presents the verified case studies.
@@ -2368,32 +2368,37 @@ such instances are available, a definition that says ``count all objects
 satisfying this predicate'' can be evaluated by iterating over the finite
 collection and filtering by the decision procedure.
 
-The specification layer of Section~\ref{sec:abstract} deliberately starts from
-Mathlib's graph type \lean{SimpleGraph V}.  Here \lean{V} is the
-type whose elements are the vertices of the graph, and the adjacency relation
-\lean{Adj} takes two vertices and returns a proposition:
+The specification layer of Section~\ref{sec:abstract}, however, is not designed
+around producing such executable \lean{Fintype} and \lean{Decidable} instances.
+Its starting point is Mathlib's graph type \lean{SimpleGraph V}, where
+\lean{V} is the type whose elements are the vertices of the graph and the
+adjacency relation \lean{Adj} takes two vertices and returns a proposition:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
   Adj      : V -> V -> Prop
   symm     : Symmetric Adj
   loopless : Irreflexive Adj
 \end{lstlisting}
-This is exactly the right language for the mathematics, but it is too general to
-be the data structure of the evaluator.  The type \lean{V} need not come with a
-computable enumeration of its vertices, and the relation \lean{Adj} need not
-come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
+This works well for the mathematical specification, but it is too general to be
+the data structure of the evaluator.  The vertex type \lean{V} need not come
+with an algorithm for enumerating its vertices, and the relation \lean{Adj} need
+not come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
 \lean{Flag}s are built on top of this graph type, they inherit the same
 generality.  Even if the specification layer knows that, for each size, there are
 only finitely many flags up to isomorphism, this does not by itself provide the
 computational choices needed by the evaluator: a concrete enumeration of
 representatives and a Boolean procedure for comparing them up to isomorphism.
 
-To supply these choices, the reflection layer introduces a family of more rigid
-edge-set representations: vertices are fixed finite types, edges are explicit
-finite data, and isomorphism is reduced to finite search over permutations
-compatible with the labels.  The empty-type core is \lean{Sym2Graph n}; typed
-flags use the same representation style through \lean{Sym2FlagType} and
-\lean{Sym2LabeledGraph}:
+The reflection layer therefore does not use \lean{SimpleGraph} directly as the
+evaluator's representation.  Instead, it introduces a family of more rigid
+edge-set representations: an \(n\)-vertex graph has vertex type \lean{Fin n},
+and its edges are stored as a finite set of unordered pairs
+\lean{Finset (Sym2 (Fin n))}, where \lean{Sym2} forms unordered pairs.  The
+empty-type case uses the structure \lean{Sym2Graph n}.  For typed flags, the
+flag type itself is encoded as \lean{Sym2FlagType k}; since a flag type is just
+a graph on the labeled vertices, \lean{Sym2FlagType} has the same fields as
+\lean{Sym2Graph}.  The labeled graph is then represented by
+\lean{Sym2LabeledGraph}, the edge-set analogue of \lean{LabeledGraph}: \gw{I'm here.}
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
@@ -2406,9 +2411,7 @@ structure Sym2FlagType (k : Nat) where
 structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, not e.IsDiag
-  type_embed  :
-    fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*)
-      fromEdgeSet (SetLike.coe edges)
+  type_embed  : fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
 Thus a graph on $\{0,\ldots,n-1\}$ is stored as a finite set of unordered
 non-diagonal pairs.  Adjacency is checked by membership in this finite edge set,
@@ -2416,7 +2419,7 @@ and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
 enumerating possible edge sets.  The typed versions add the finite edge set for
 the type graph and the embedding of those type vertices into the host.  All of
 these representations still decode to the abstract graph language by
-interpreting adjacency as membership in \lean{edges}. \gw{I'm here.}
+interpreting adjacency as membership in \lean{edges}.
 
 These edge-set representations also make the two ingredients above concrete.
 Candidate induced subflags are represented by finite vertex sets, so their
@@ -2553,7 +2556,7 @@ multiplication tables, and by family-specific loaders such as
 \lean{load\_k4\_density\_theorems} that combine the generic adequacy lemma
 with a forbidden-graph filter.
 
-The macro \lean{generate\_basisVector\_lemmas} in \lean{API/Basic.lean} plays
+The macro \lean{generate\_basisVector\_lemmas} in \lean{Automation/Basic.lean} plays
 a similar role for unit-vector identities.  Given \lean{n} and a count, it
 emits simp lemmas of the form
 $\lean{[[basisVector <n, Flag\_n\_0\_0\_i>]] = FlagAlgebra\_n\_0\_0\_i}$ for
@@ -2606,7 +2609,7 @@ output the Lean kernel checks and whose own computation never enters the trusted
 base (Section~\ref{sec:flagmatic-trust}), validated on six certificates
 (Section~\ref{sec:flagmatic-scenarios}).
 
-\subsection{The recurring proof pattern}
+\subsection{The Four-Part Proof Skeleton}
 \label{sec:flagmatic-shape}
 
 Each of these proofs has the same four-part skeleton.  We list the parts in the
@@ -2633,7 +2636,7 @@ Each part of the shape is discharged by a verified, reusable component, taken up
 in turn by the pipeline of the next subsection.
 
 
-\subsection{The certificate-to-Lean pipeline}
+\subsection{The Certificate-to-Lean Pipeline}
 \label{sec:flagmatic-pipeline}
 \label{sec:flagmatic-gen}\label{sec:flagmatic-psd}\label{sec:flagmatic-expand}%
 \label{sec:flagmatic-close}\label{sec:flagmatic-script}% legacy aliases: this
@@ -2704,18 +2707,18 @@ theorem forbidLE_add_QuadraticForm
     : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*) := ...
 \end{lstlisting}
 iterated once per type to build a transitive chain of additions.  The rest of the
-body performs the check: the unit is expanded to host size by
+body performs the check.  The unit is expanded to host size by
 \lean{expand\_one\_hfree\_at N K} (rewriting $\mathbf{1}$ as the sum of
-$N$-vertex induced-\(\mathcal{H}\)-free flags); the downward-averaged products
+$N$-vertex induced-\(\mathcal{H}\)-free flags), and the downward-averaged products
 are discharged by \lean{reduce\_downward\_flagmul}, which first right-associates
 the sum with \lean{simp only [downward\_add, add\_assoc]} and then rewrites each
 head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
-identity, moving each rewritten term across the inequality; the resulting
+identity, moving each rewritten term across the inequality.  The resulting
 equality between two reordered combinations of flag terms is normalized by
 \lean{flagsum\_ac\_sort\_rhs\_pipeline}, which sorts the summands by the index in
 each flag's name and proves the reordering up to add-AC (an index-guided
 substitute for \lean{ring}/\lean{ac\_rfl}, which grow too slow past ${\sim}20$
-terms); and the final non-negativity goal is closed by \lean{flag\_nonneg}, which
+terms).  Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
 distributes an arbitrary positive homomorphism over the sum, splits with
 \lean{add\_nonneg}, and discharges each leaf by
 \lean{positiveHom\_basisVector\_ge\_zero}.
@@ -2770,7 +2773,7 @@ theorem mantel_flagAlgebra                               -- Part 4: main theorem
 \lean{K3}.)  A Branch~A certificate drops the Part~3 lemma; extra SDP blocks add
 one matrix and one \lean{forbidLE\_add\_QuadraticForm} call each.
 
-\subsection{Trust model}
+\subsection{Trust Model}
 \label{sec:flagmatic-trust}
 
 The script computes a great deal: it resolves certificate strings to flag
@@ -2935,8 +2938,8 @@ current repository rather than copied from an external report.
       \lean{GraphAlgebra/}, \lean{FlagAlgebra/}, \lean{Forbid/}, \lean{Turan/} \\
     Reflection and flag-loading layer & 4\,361 &
       \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
-    Case studies, SDP certificates, API, tactics & 3\,483 &
-      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/}, \lean{API/} \\
+    Case studies, SDP certificates, Automation, tactics & 3\,483 &
+      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/}, \lean{Automation/} \\
     Shared utilities & 2\,451 &
       \lean{Utils/} \\
     \midrule
@@ -3006,16 +3009,16 @@ and the squared downward lemma for $(a-b)^2$.  Those supporting lemmas are
 proved in \lean{MantelTheorem/Lemmas.lean} and
 \lean{MantelTheorem/FlagMul.lean} by the Mantel-specific tactics
 \lean{prove\_flag\_expand}, \lean{prove\_flag\_expand\_with\_restriction},
-and \lean{prove\_flag\_mul}.  The more uniform API-style version
+and \lean{prove\_flag\_mul}.  The more uniform Automation-style version
 \lean{Mantel\_flagAlgebra\_API} in \lean{API/MantelTheoremAPI.lean} proves
 \[
   \lean{FlagAlgebra\_2\_0\_0\_1 <=[K3.toFinFlag] (1/2) * 1}
 \]
-using the generic API tactics: \lean{forbidLE\_add\_QuadraticForm} for the
+using the generic Automation tactics: \lean{forbidLE\_add\_QuadraticForm} for the
 PSD certificate, \lean{reduce\_downward\_flagmul} for the multiplication
 rewrites, \lean{expand\_one\_at 3} for the unit-element expansion,
 \lean{ac\_sort\_rhs\_pipeline} for the linear normalization, and
-\lean{flag\_nonneg} for the closing step.  The API version is roughly thirty
+\lean{flag\_nonneg} for the closing step.  The Automation version is roughly thirty
 lines including the matrix definitions.
 
 \paragraph{Additional Goodman-style consequences.}
@@ -3046,7 +3049,7 @@ lines, almost all of which is identical in structure to the
 iterate \lean{forbidLE\_add\_QuadraticForm}, \lean{reduce\_downward\_flagmul},
 \lean{expand\_one\_at 4}, \lean{ac\_sort\_rhs\_pipeline}, and
 \lean{flag\_nonneg}.  This case study is the smallest non-trivial test of
-the API layer: it uses two types rather than one and exercises the
+the Automation layer: it uses two types rather than one and exercises the
 multiplication-table machinery at size $4$, but does not require an
 externally generated SDP certificate.
 
@@ -3082,9 +3085,9 @@ multiplication identities are discharged by the tactic layer
 multiplication tactic) on top of the elaboration-time-generated density and
 multiplication tables.  The linear normalization is done by
 \lean{ac\_sort\_pipeline}.  The final assembly into a flag-algebra inequality
-is done in \lean{ErdosPentagon/ErdosPentagon.lean}; the API-style restatement
+is done in \lean{ErdosPentagon/ErdosPentagon.lean}; the Automation-style restatement
 \lean{ErdosPentagon\_flagAlgebra\_API} in \lean{API/ErdosPentagonAPI.lean}
-shows the same proof in the API style of the previous two case studies.
+shows the same proof in the Automation style of the previous two case studies.
 
 The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
 \lean{ErdosPentagon\_flagAlgebra} to the combinatorial statement via
@@ -3394,7 +3397,7 @@ might dissolve some of these obstacles.  We report them as Lean~4 obstacles
 without claiming they are foundational.
 
 \paragraph{Is the bridge layer essential or an artifact of our spec choices?}
-Section~\ref{sec:bridge}'s reflection, tactic, and API layers are
+Section~\ref{sec:bridge}'s reflection, tactic, and Automation layers are
 load-bearing in our development: the pentagon proof does not go through
 without them.  But a different specification layer might collapse some of
 this work into the spec side.  For instance, a spec layer that committed to
@@ -3417,16 +3420,16 @@ multiplication-table loading, or the named-lemma cache itself---would be the
 first bottleneck.
 
 \paragraph{Work in progress: $K_4$-free $P_4$ density.}
-The file \lean{API/K4freeP4.lean} contains a skeleton for the
+The file \lean{Automation/K4freeP4.lean} contains a skeleton for the
 inequality
 \[
   \lean{P4\_density <=[K4.toFinFlag] (96/27) * 1}
 \]
-as a further test of the API layer.  The proof structure compiles---it uses
-the same API tactics as Mantel, $C_4$, and the pentagon---but several
+as a further test of the Automation layer.  The proof structure compiles---it uses
+the same Automation tactics as Mantel, $C_4$, and the pentagon---but several
 non-negativity facts (\lean{f}$_1$\lean{\_nonneg}, the main combined
 inequality) currently remain as \lean{sorry} placeholders.  We mention it
-because it demonstrates that the API generalizes beyond induced-triangle-free
+because it demonstrates that the Automation layer generalizes beyond induced-triangle-free
 forbids ($K_3$) to a $4$-clique forbid ($K_4$); we do \emph{not} count it
 among the proved results.
 
@@ -3668,7 +3671,7 @@ for simple graphs.  The development carries a specification of the
 mathematical theory---flags as quotients modulo isomorphism, the quotient
 algebra of density-expansion relations, positive homomorphisms and the
 semantic non-negativity cone, and the predicate-based forbidden-subgraph framework---and a
-bridge of reflection, tactic, and API layers that turns specifications
+bridge of reflection, tactic, and Automation layers that turns specifications
 written in this language into proofs Lean's kernel can check.  The case
 studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
 pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style

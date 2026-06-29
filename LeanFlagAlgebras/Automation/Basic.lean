@@ -1,8 +1,8 @@
 import LeanFlagAlgebras.Forbid.Basic
 
-/-! # API.Basic — core flag-algebra proof automation
+/-! # Automation.Basic — core flag-algebra proof automation
 
-This module is the foundation of the API layer that sits on top of `Forbid`.
+This module is the foundation of the Automation layer that sits on top of `Forbid`.
 It provides the reusable helper lemmas and custom tactics shared by every
 per-problem density-bound proof:
 
@@ -13,14 +13,14 @@ per-problem density-bound proof:
   non-negative PSD quadratic-form (SOS) certificate term.
 * Custom tactics `fold_basis_vectors`, `expand_one_at n`, and `flag_nonneg`
   (defined via `elab`/`syntax`/`macro`), automating the boilerplate that is
-  otherwise identical across all flag-algebra API proofs.
+  otherwise identical across all flag-algebra Automation-layer proofs.
 -/
 
 open FlagAlgebras Forbid
 open SimpleGraph Matrix
 open Lean Elab Command Tactic
 
-namespace FlagAlgebras.API
+namespace FlagAlgebras.Automation
 
 /-- The constant `1`, re-expressed under the forbidden subgraph `F_forbid` as
 the conditioned sum over unlabeled flags of size `expandSize` whose density
@@ -167,7 +167,7 @@ elab "fold_basis_vectors" : tactic =>
 the resulting Finset sum to a sum over the explicit list of unlabeled flags.
 
 This automates the boilerplate step that appears identically in every flag algebra
-API proof, varying only in `n`:
+Automation-layer proof, varying only in `n`:
 
   dsimp only [forbidExpand_one]
   rw [Finset.sum_eq_multiset_sum]
@@ -225,7 +225,7 @@ elab_rules : tactic
 `flag_nonneg` closes goals of the form `f ≤ᵢ[F_forbid] g` when `g - f` is a
 non-negative linear combination of FlagAlgebra unit vectors (of the form `c • ⟦basisVector F⟧`).
 
-It automates the standard closing step in flag algebra API proofs:
+It automates the standard closing step in flag algebra Automation-layer proofs:
 1. Reduces to a semantic inequality via `inducedForbidLE_of_le`
 2. Distributes `φ` over `+` using `PositiveHom.map_add`
 3. Decomposes the sum into individual non-negativity goals using `add_nonneg`
@@ -243,4 +243,4 @@ macro "flag_nonneg" : tactic =>
     )
   ))
 
-end FlagAlgebras.API
+end FlagAlgebras.Automation

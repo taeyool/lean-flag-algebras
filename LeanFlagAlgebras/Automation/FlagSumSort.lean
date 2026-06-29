@@ -12,7 +12,7 @@ Used to line up flag sums on both sides of (in)equalities so they can be compare
 
 open Lean Elab Tactic Meta
 
-namespace FlagAlgebras.API
+namespace FlagAlgebras.Automation
 
 /-- Linear term represented as `(base, coeff)` meaning `coeff • base`. -/
 abbrev LinTerm := Expr × Expr
@@ -397,4 +397,4 @@ elab "flagsum_ac_sort_pipeline" : tactic =>
       flagsum_ac_sort_lhs_pipeline;
       flagsum_ac_sort_rhs_pipeline))
 
-end FlagAlgebras.API
+end FlagAlgebras.Automation

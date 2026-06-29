@@ -346,11 +346,10 @@ theorem.
 
 \section{The cert-to-Lean pipeline}
 
-The script \texttt{flagmatic\_to\_lean.py} exposes five subcommands:
+The script \texttt{flagmatic\_to\_lean.py} exposes four subcommands:
 
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py inspect       <cert>.json
-python flagmatic_to_lean.py check-deps    <cert>.json
 python flagmatic_to_lean.py gen-skeleton  <cert>.json <target>.lean [opts]
 python flagmatic_to_lean.py gen-matrices  <cert>.json <target>.lean
 python flagmatic_to_lean.py gen-vectors   <cert>.json <target>.lean
@@ -359,14 +358,9 @@ python flagmatic_to_lean.py gen-vectors   <cert>.json <target>.lean
 \paragraph{\texttt{inspect}.} A read-only diagnostic. Prints, for every
 flagmatic string in the certificate (admissible graphs, types,
 $\sigma$-flags), the Lean identifier it resolves to via the mapping of
-Section~5. Useful as a sanity check on a fresh certificate.
-
-\paragraph{\texttt{check-deps}.} Reports which JSON files
-(Sections~\ref{sec:flag-defs}, \ref{sec:density-tables}) the certificate
-will reference, marks each as present or missing on disk, and emits the
-exact \texttt{import} and \texttt{load\_*} lines that the generated Lean
-file will use. Exits with code $1$ if any required file is missing,
-making it convenient as a CI guard.
+Section~5. Because it resolves every string, it doubles as a validity
+check on a fresh certificate (it raises on the first string that fails to
+resolve).
 
 \paragraph{\texttt{gen-skeleton}.} The main entry point. Produces a
 complete Lean file containing the four parts of
@@ -383,10 +377,10 @@ single-block-aware and respect the same identifier conventions as
 
 The standard workflow is
 \begin{lstlisting}[language={}]
-inspect -> check-deps -> gen-skeleton -> lake build
+inspect -> gen-skeleton -> lake build
 \end{lstlisting}
-which catches identifier mismatches and missing dependencies before any
-Lean compilation is attempted.
+where \texttt{inspect} catches identifier mismatches before any Lean
+compilation is attempted.
 
 \section{Resolving flagmatic strings to Lean identifiers}
 \label{sec:mapping}
@@ -547,9 +541,7 @@ file name, so one of them silently overwrites the other and the
 overwriting set of densities is silently loaded by the proof. We
 removed the fallback. The translation script now demands an
 explicit \texttt{\_forbid\_<H>} suffix (or \texttt{\_no\_forbid} for the
-unconditioned case) for every density file, and \texttt{check-deps}
-reports any missing variant rather than silently substituting
-another.
+unconditioned case) for every density file.
 
 \section{The main theorem: branches A and B (generates Part 4)}
 \label{sec:body}
@@ -735,17 +727,6 @@ silently accepted false claim. The trust model here is exactly the one
 already in place for the meta-commands and the data-generation
 scripts of Section~\ref{sec:flag-defs}, and the translation script
 fits into that model without adding to it.
-
-\paragraph{The dependency check as a safety net.}
-The strict \texttt{check-deps} behavior described in Section~7 is a
-defence-in-depth measure for one specific failure mode that the
-re-verification does not by itself prevent: silently loading the
-\emph{wrong} density JSON. If two density files have the same
-``host\_from\_pattern'' base name but one was computed under the
-$K_3$-forbid and the other under the $K_5$-forbid, then loading the wrong
-one yields fully verified theorems that are simply theorems about a
-different problem. Insisting on the explicit \texttt{\_forbid\_<H>}
-suffix makes this confusion impossible at the file-system level.
 
 \section{Verified scenarios}
 \label{sec:scenarios}

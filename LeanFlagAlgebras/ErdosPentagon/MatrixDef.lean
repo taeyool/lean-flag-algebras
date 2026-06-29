@@ -1,4 +1,4 @@
-import LeanFlagAlgebras.API.Matrix.PosSemiDef
+import LeanFlagAlgebras.Automation.Matrix.PosSemiDef
 
 /-! # Erdős pentagon problem: PSD certificate matrices
 

@@ -18,7 +18,7 @@ multiplication via subflag densities (`flagMul`/`flagMulWithSize`), and the
 quotient `FlagAlgebra σ = FlagVector σ / ZeroSpace σ` is then equipped with its
 commutative ring and `ℝ`-algebra structure, including `⟦·⟧` quotient lemmas.
 
-Sits above `FlagDef`/`SubflagListDensity` and below the `Forbid`/`API` layers
+Sits above `FlagDef`/`SubflagListDensity` and below the `Forbid`/`Automation` layers
 that use it to prove extremal density bounds. -/
 
 namespace FlagAlgebras

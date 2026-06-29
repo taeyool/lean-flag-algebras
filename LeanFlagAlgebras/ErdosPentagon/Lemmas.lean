@@ -1,6 +1,6 @@
 import LeanFlagAlgebras.ErdosPentagon.FlagDef
 import LeanFlagAlgebras.ErdosPentagon.FlagMul
-import LeanFlagAlgebras.API.FlagSumSort
+import LeanFlagAlgebras.Automation.FlagSumSort
 import LeanFlagAlgebras.Forbid.Basic
 import Mathlib.Tactic
 
