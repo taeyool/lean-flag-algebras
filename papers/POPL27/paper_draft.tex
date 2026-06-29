@@ -448,10 +448,11 @@ quotient eliminators, dependent-type transports, function extensionality, and
 \lean{Fintype}-instance ambiguity.
 Sections~\ref{sec:reflection} and~\ref{sec:bridge} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
-the tactic layer, the Automation layer, and elaboration-time theorem generation.
+the tactic layer, the Automation layer, elaboration-time theorem generation,
+and the verified results.
 Section~\ref{sec:proof-style} records a recurring proof pattern from the case
 studies: density equalities are proved by explicit bijections between finite
-sample spaces.  Section~\ref{sec:results} presents the verified case studies.
+sample spaces.
 Sections~\ref{sec:unsure} and~\ref{sec:lessons} discuss limitations and
 lessons for future formalizations, and Sections~\ref{sec:related}
 and~\ref{sec:conclusion} give related work and conclusions.
@@ -991,7 +992,7 @@ A matching lower bound typically comes from an explicit induced-\(\mathcal{H}\)-
 whose $P$-density approaches $c$, pinning down $\tdensity{P}{\mathcal{H}}$ exactly.
 Two classical results illustrate how this looks in flag algebra language.
 
-\begin{example}[Mantel's theorem]
+\begin{example}[Mantel's theorem]\label{ex:mantel}
   Mantel's theorem states $\tdensity{K_2}{K_3} = \tfrac{1}{2}$, meaning
   asymptotically at most half of all vertex pairs in an induced-triangle-free graph
   are edges.  The upper bound translates into the flag algebra inequality
@@ -999,7 +1000,7 @@ Two classical results illustrate how this looks in flag algebra language.
   graphs $K_{\lfloor n/2\rfloor,\lceil n/2\rceil}$ witness the lower bound.
 \end{example}
 
-\begin{example}[Erd\H{o}s Pentagon Problem~{\cite{grzesik2012,hatami2012}}]
+\begin{example}[Erd\H{o}s Pentagon Problem~{\cite{grzesik2012,hatami2012}}]\label{ex:pentagon}
   The Erd\H{o}s pentagon problem asks for the maximum density of $C_5$ in
   induced-triangle-free graphs; the asymptotic answer is $\tdensity{C_5}{K_3} = \tfrac{24}{625}$.  The upper bound corresponds to the flag algebra inequality
   $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$; an explicit induced-\(K_3\)-free construction
@@ -2790,14 +2791,16 @@ development, but a tactic that misfires only ever builds a term the kernel
 rejects, so its fragility costs at most a failed build.
 
 \subsection{Evaluation}
-\label{sec:flagmatic-scenarios}
+\label{sec:results}\label{sec:flagmatic-scenarios}
 
-Six certificates have been carried end-to-end through \lean{gen-skeleton},
-producing files the kernel accepts with no \lean{sorry}
-(Table~\ref{tab:flagmatic-scenarios}).  Between them they exercise both
-branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$, and the
-forbids $K_3$, $K_4$, $K_5$.  None of the six required hand transcription of
-the certificate into Lean.
+To see whether the pipeline produces checked proofs in practice, we ran
+\lean{gen-skeleton} on six certificates chosen to span the cases it must handle:
+both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$, and
+three forbids ($K_3$, $K_4$, $K_5$).  Every one compiles to a file the kernel
+accepts with no \lean{sorry} (Table~\ref{tab:flagmatic-scenarios}), and none
+required hand transcription of the certificate into Lean.  Three are classical
+extremal results, whose upper bounds we describe below; the rest appear only in
+the table.
 
 \begin{table}[t]
   \centering
@@ -2819,11 +2822,35 @@ the certificate into Lean.
   \end{tabular}
 \end{table}
 
-The two largest cases show that a single tactic call scales over a whole
-block structure: ErdosPentagon's three quadratic forms of dimensions
-$8,6,5$ leave one \lean{reduce\_downward\_flagmul} to dispatch
-$8^2+6^2+5^2 = 125$ product terms, and K5turan's four dimension-$8$ forms
-leave it $4\times 8^2 = 256$.
+\paragraph{Mantel's theorem.}
+The smallest and most transparent case: its single block is small enough to
+write the certificate by hand as an explicit square,
+$\llbracket (a-b)^2\rrbracket_1 = 2K_2 - \mathbf{1} \geq 0$, with no external
+solver.  It proves $K_2 \leq \tfrac12\cdot\mathbf{1}$, and therefore serves as
+the simplest validation of the entire certificate-to-proof pipeline.
+
+\paragraph{A $C_4$-density bound.}
+A sum of two PSD forms, one per size-$2$ type ($4\times4$ and $3\times3$ over
+$\mathbb{Q}$), again with no externally generated SDP.  It proves a
+$\tfrac38\cdot\mathbf{1}$ bound on $C_4$ density, and is the first example to
+require the pipeline to combine multiple independently certified PSD blocks into
+a single proof.
+
+\paragraph{The Erd\H{o}s pentagon theorem.}
+The most demanding of the three: three PSD blocks of sizes $8$, $6$, and $5$
+that the tactics must add, expand, and normalize in a single pass.  It proves
+$C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$, demonstrating that the same proof
+skeleton scales to substantially larger certificates without modification.
+
+Together, these examples exercise every structural variation of the
+certificate-to-Lean pipeline introduced in Section~\ref{sec:flagmatic-pipeline},
+from a single hand-checkable certificate to multi-block SDP certificates
+requiring substantial symbolic normalization.
+
+As an aside, the pipeline proves only upper bounds; for Mantel and the pentagon,
+the matching lower bounds are formalized separately in Lean, completing the
+Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
+and~\ref{ex:pentagon}.
 
 \paragraph{What is not automated.}
 \label{sec:flagmatic-open}
@@ -2891,199 +2918,34 @@ combinatorial interpretation, and the formalization makes its presence
 mandatory rather than optional.
 
 
-\section{Case Studies}
-\label{sec:results}
+\section{Lower Bounds and Other Inequalities}
+\label{sec:lowerbounds}
 
-This section presents the verified results.  Each case study is annotated
-with which layer of Sections~\ref{sec:abstract}--\ref{sec:bridge} does the
-work, so the section doubles as a worked example of the report.  All proof
-paths below are machine-checked in Lean~4 and contain no \lean{sorry}
-placeholders.  Some commented auxiliary generalization lemmas outside those
-proof paths remain unfinished (see Section~\ref{sec:obstacles}); we flag the
-one in-progress case study (a $K_4$-free $P_4$ density bound) at the end of
-Section~\ref{sec:unsure}.
+The certificates of Section~\ref{sec:results} establish the flag-algebra upper
+bounds; the matching lower bounds, which pin down the Tur\'an densities exactly,
+are formalized separately in Lean, as are a few further inequalities.  We
+collect them here.
 
-\subsection{Scale of the Formalization}
-
-Table~\ref{tab:metrics} summarizes the scale of the active formalization
-(excluding archived experiments).  The line counts were computed from the
-current repository rather than copied from an external report.
-
-\begin{table}
-  \small
-  \caption{Scale of the Lean~4 formalization.}
-  \label{tab:metrics}
-  \begin{tabular}{lrl}
-    \toprule
-    Component & Lines & Primary files \\
-    \midrule
-    Specification layer (algebra, density, limits) & 15\,896 &
-      \lean{GraphAlgebra/}, \lean{FlagAlgebra/}, \lean{Forbid/}, \lean{Turan/} \\
-    Reflection and flag-loading layer & 4\,361 &
-      \lean{FlagAlgebra/Compute/}, \lean{Flags/} \\
-    Case studies, SDP certificates, Automation, tactics & 3\,483 &
-      \lean{MantelTheorem/}, \lean{ErdosPentagon/}, \lean{Logic/}, \lean{Automation/} \\
-    Shared utilities & 2\,451 &
-      \lean{Utils/} \\
-    \midrule
-    Total active Lean (excluding \lean{Archive/}) & 26\,191 & \\
-    \bottomrule
-  \end{tabular}
-
-  \medskip
-  \begin{tabular}{lr}
-    \toprule
-    Computationally verified artifact & Count \\
-    \midrule
-    Auto-generated density lemmas (pentagon proof) & 2\,847 \\
-    Multiplication table entries verified & $>$\,300 \\
-    \lean{decide~+kernel} SDP matrix equalities (pentagon) &
-      3 (sizes $8{\times}8$, $6{\times}6$, $5{\times}5$ over $\Q$) \\
-    \lean{native\_decide} density table checks & $>$\,2\,800 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsection{Mantel's Theorem}
-
-Mantel's theorem states that an induced-triangle-free graph on $n$ vertices has at
-most $\lfloor n^2/4 \rfloor$ edges, achieved by the complete bipartite graph
-$K_{\lfloor n/2\rfloor, \lceil n/2\rceil}$.  The repository contains two
-checked statements.  The first is the flag-algebra inequality used as the
-upper-bound certificate:
-\begin{lstlisting}
-theorem Mantel_theorem : K2 <= (1/2 : R) * 1 + K3 := ...
-\end{lstlisting}
-Here $K_2$ and $K_3$ are elements of \lean{FlagAlgebra} $\emptyt$ representing
-the single edge and the triangle.  The inequality asserts that in every
-sequence of graphs whose induced triangle density tends to zero, the edge
-density is at most $1/2$.  The second is the Tur\'an-density theorem, proved
-in the same module by combining the algebraic upper bound with a formal
-complete-bipartite lower-bound construction:
+\paragraph{Mantel's theorem.}
+Combined with its complete-bipartite lower-bound construction, the upper bound
+gives the Tur\'an-density theorem in the same module:
 \begin{lstlisting}
 theorem Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2 := ...
 \end{lstlisting}
 
-\paragraph{Which layer does what.}
-The proof exercises every layer.  The specification layer
-(Section~\ref{sec:abstract}) supplies the algebraic statement and the
-transfer theorem.  The forbid-conditioned generators (Section~\ref{sec:flagmatic-gen})
-produce and discharge the density-table and multiplication lemmas used to expand $K_2$
-and $(a-b)^2$ at size $3$.  The proof exhibits an explicit square in the
-algebra of 1-vertex-typed flags.  Let $a = \lean{FlagAlgebra\_2\_1\_0\_0}$
-and $b = \lean{FlagAlgebra\_2\_1\_0\_1}$ be the two typed flags of size 2
-with a 1-vertex type.  Then
-\[
-  \bigl\llbracket (a - b)^2 \bigr\rrbracket_1
-  \;=\;
-  2 \cdot K_2 - \mathbf{1}
-  \;\geq\; 0
-  \;\;\text{in the semantic non-negativity cone,}
-\]
-which suffices to conclude $K_2 \leq \frac{1}{2} \cdot \mathbf{1}$ in the
-presence of $K_3 = 0$.  The SDP certificate here is small enough to write
-explicitly (no external solver needed), making Mantel's theorem a clean
-end-to-end illustration of the method before the heavier machinery of the
-pentagon proof.
-
-The formal proof in \lean{LeanFlagAlgebras.MantelTheorem.MantelTheorem} uses
-the generated expansion lemma \lean{expand\_K2\_on\_three\_vertex\_graphs}
-and the squared downward lemma for $(a-b)^2$.  Those supporting lemmas are
-proved in \lean{MantelTheorem/Lemmas.lean} and
-\lean{MantelTheorem/FlagMul.lean} by the Mantel-specific tactics
-\lean{prove\_flag\_expand}, \lean{prove\_flag\_expand\_with\_restriction},
-and \lean{prove\_flag\_mul}.  The more uniform Automation-style version
-\lean{Mantel\_flagAlgebra\_API} in \lean{API/MantelTheoremAPI.lean} proves
-\[
-  \lean{FlagAlgebra\_2\_0\_0\_1 <=[K3.toFinFlag] (1/2) * 1}
-\]
-using the generic Automation tactics: \lean{forbidLE\_add\_QuadraticForm} for the
-PSD certificate, \lean{reduce\_downward\_flagmul} for the multiplication
-rewrites, \lean{expand\_one\_at 3} for the unit-element expansion,
-\lean{ac\_sort\_rhs\_pipeline} for the linear normalization, and
-\lean{flag\_nonneg} for the closing step.  The Automation version is roughly thirty
-lines including the matrix definitions.
-
-\paragraph{Additional Goodman-style consequences.}
-The active \lean{MantelTheorem/} directory also contains two small
-flag-algebraic inequalities proved with the same basic infrastructure:
-\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
-$K_3 \geq K_2(2K_2-\mathbf{1})$, and
-\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
-$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
-These results are not needed for the pentagon proof, but they demonstrate
-that the formalized algebraic layer is not specialized solely to the two
-headline theorems.
-
-\subsection{A $C_4$-Density Bound for Induced-Triangle-Free Graphs}
-
-A second small case study, in \lean{API/C4TuranAPI.lean}, proves an
-inequality about $C_4$ density (\lean{FlagAlgebra\_4\_0\_0\_8}) in
-induced-triangle-free graphs:
-\begin{lstlisting}
-theorem C4_flagAlgebra_API : FlagAlgebra_4_0_0_8 <=[K3.toFinFlag] (3 / 8 : R) * 1 := ...
-\end{lstlisting}
-The certificate is a sum of two PSD quadratic forms, one for each of two
-size-2 types.  The matrices $M_1$ and $M_2$ (sizes $4 \times 4$ and
-$3 \times 3$ over $\Q$) and their $LDL^\top$ decompositions are written
-explicitly in the same file.  The full proof is approximately twenty-five
-lines, almost all of which is identical in structure to the
-\lean{Mantel\_flagAlgebra\_API} proof: assemble the PSD certificates,
-iterate \lean{forbidLE\_add\_QuadraticForm}, \lean{reduce\_downward\_flagmul},
-\lean{expand\_one\_at 4}, \lean{ac\_sort\_rhs\_pipeline}, and
-\lean{flag\_nonneg}.  This case study is the smallest non-trivial test of
-the Automation layer: it uses two types rather than one and exercises the
-multiplication-table machinery at size $4$, but does not require an
-externally generated SDP certificate.
-
-\subsection{The Erd\H{o}s Pentagon Theorem}
-
-The main result is:
+\paragraph{The Erd\H{o}s pentagon theorem.}
+The full result
 \begin{lstlisting}
 theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
 \end{lstlisting}
-proved as the conjunction of an upper bound and a lower bound.
-
-\paragraph{Upper bound.}
-\begin{lstlisting}
-theorem ErdosPentagon_Turan_upperBound
-    : generalizedTuranDensity K3 C5 <= 24/625 :=
-  generalizedTuranDensity_le_of_forbidLE (by norm_num)
-    ErdosPentagon_flagAlgebra
-\end{lstlisting}
-The key lemma \lean{ErdosPentagon\_flagAlgebra} establishes the flag-algebra
-inequality $C_5 \leq \frac{24}{625} \cdot \mathbf{1}$, i.e., that
-$C_5$-density is at most $24/625$ under the $K_3$-free assumption.  The proof
-exhibits three PSD matrices $P, Q, R$ over $\mathbb{Q}$ (one per 1-vertex
-type, of sizes $8\times 8$, $6\times 6$, and $5\times 5$) and shows that the
-sum of the corresponding quadratic forms, after downward-averaging, equals
-$\frac{24}{625} \cdot \mathbf{1} - [C_5]$.
-
-\emph{Which layer does what.}  The PSD verification (\lean{P\_posSemidef},
-\lean{Q\_posSemidef}, \lean{R\_posSemidef}) lives in
-Section~\ref{sec:flagmatic-psd}: $LDL^\top$ decomposition over $\Q$, with the matrix
-equalities discharged by \lean{decide +kernel}.  The expansion and
-multiplication identities are discharged by the tactic layer
-(\lean{prove\_flag\_expand\_with\_forbidden\_flag 5} and the corresponding
-multiplication tactic) on top of the elaboration-time-generated density and
-multiplication tables.  The linear normalization is done by
-\lean{ac\_sort\_pipeline}.  The final assembly into a flag-algebra inequality
-is done in \lean{ErdosPentagon/ErdosPentagon.lean}; the Automation-style restatement
-\lean{ErdosPentagon\_flagAlgebra\_API} in \lean{API/ErdosPentagonAPI.lean}
-shows the same proof in the Automation style of the previous two case studies.
-
-The final one-line proof \lean{ErdosPentagon\_Turan\_upperBound} connects
-\lean{ErdosPentagon\_flagAlgebra} to the combinatorial statement via
-\lean{generalizedTuranDensity\_le\_of\_forbidLE}.
-
-\paragraph{Lower bound.}
-The lower bound
+is the conjunction of the upper bound of Section~\ref{sec:results} and a lower
+bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= 24/625 := ...
 \end{lstlisting}
-is proved by an explicit construction in
-\lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  The blow-up
-construction is:
+proved by an explicit construction in
+\lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  The blow-up construction
+is:
 \begin{lstlisting}
 def blowUp
     {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat)
@@ -3091,8 +2953,8 @@ def blowUp
   { Adj v w := G.Adj v.1 w.1
     symm v w := by apply G.symm }
 \end{lstlisting}
-The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set
-of $n$ vertices and each edge by a complete bipartite graph) is
+The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set of
+$n$ vertices and each edge by a complete bipartite graph) is
 induced-triangle-free.  Since \(K_3\) is complete, this is the same condition
 as the Lean predicate appearing below: any triangle subgraph is automatically
 an induced triangle.  The repository proves the statement by transporting any
@@ -3110,8 +2972,8 @@ lemma subgraphCount_blowUp_C5_ge
     subgraphCount C5 (blowUp C5 n) >= n ^ 5
 \end{lstlisting}
 The proof of this counting lemma constructs an injection
-\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in
-each of the five parts determines a copy of $C_5$, and distinct choices give
+\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in each
+of the five parts determines a copy of $C_5$, and distinct choices give
 distinct subgraphs.  After transferring the blow-up to the vertex type
 \lean{Fin (5 * n)}, the repository obtains the finite extremal lower bound
 \lean{generalizedExtremalNumber\_K3\_C5\_div\_choose\_ge}.  The asymptotic
@@ -3125,24 +2987,20 @@ arithmetic is the elementary estimate
 \]
 combined with the convergence theorem \lean{tendsto\_generalizedTuranDensity}
 in \lean{Turan/GeneralizedTuran.lean}.  Mathematically, the lower bound uses
-$\lim_{n\to\infty} n^5/\binom{5n}{5} = 24/625$; in the Lean proof the limit
-is replaced by the displayed lower bound on the subsequence, plus general
+$\lim_{n\to\infty} n^5/\binom{5n}{5} = 24/625$; in the Lean proof the limit is
+replaced by the displayed lower bound on the subsequence, plus general
 convergence machinery.
 
-\paragraph{Reading the trust profile of this proof.}
-The proof of \lean{ErdosPentagon\_Turan} depends on two classes of
-computational verification.  \lean{native\_decide} is used for all density
-table equalities; it relies on the correctness of the Lean-to-native
-compiler, which is outside the kernel.  \lean{decide +kernel} is used for the
-three SDP matrix equalities; it uses no compiled native code, so it
-introduces no trust beyond the standard Lean axioms (\lean{propext},
-\lean{Quot.sound}, \lean{Classical.choice}).  As we noted in
-Section~\ref{sec:flagmatic-trust}, the choice of \lean{native\_decide} for the density
-tables was forced by feasibility, while the choice of \lean{decide +kernel}
-for the SDP equalities was deliberate: the SDP step is the trust-critical
-component, and the small matrices allow kernel evaluation.  There are no
-\lean{sorry}s or new \lean{axiom}s in the proof paths of either
-\lean{Mantel\_theorem} or \lean{ErdosPentagon\_Turan}.
+\paragraph{Additional Goodman-style consequences.}
+The active \lean{MantelTheorem/} directory also contains two small
+flag-algebraic inequalities proved with the same basic infrastructure:
+\lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
+$K_3 \geq K_2(2K_2-\mathbf{1})$, and
+\lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
+$O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
+These results are not needed for the pentagon proof, but they demonstrate
+that the formalized algebraic layer is not specialized solely to the two
+headline theorems.
 
 
 \section{Engineering Obstacles}
