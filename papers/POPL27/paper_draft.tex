@@ -2368,20 +2368,21 @@ such instances are available, a definition that says ``count all objects
 satisfying this predicate'' can be evaluated by iterating over the finite
 collection and filtering by the decision procedure.
 
-The specification layer of Section~\ref{sec:abstract} deliberately starts from
-Mathlib's graph type \lean{SimpleGraph V}.  Here \lean{V} is the
-type whose elements are the vertices of the graph, and the adjacency relation
-\lean{Adj} takes two vertices and returns a proposition:
+The specification layer of Section~\ref{sec:abstract}, however, is not designed
+around producing such executable \lean{Fintype} and \lean{Decidable} instances.
+Its starting point is Mathlib's graph type \lean{SimpleGraph V}, where
+\lean{V} is the type whose elements are the vertices of the graph and the
+adjacency relation \lean{Adj} takes two vertices and returns a proposition:
 \begin{lstlisting}
 structure SimpleGraph (V : Type*) where
   Adj      : V -> V -> Prop
   symm     : Symmetric Adj
   loopless : Irreflexive Adj
 \end{lstlisting}
-This is exactly the right language for the mathematics, but it is too general to
-be the data structure of the evaluator.  The type \lean{V} need not come with a
-computable enumeration of its vertices, and the relation \lean{Adj} need not
-come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
+This works well for the mathematical specification, but it is too general to be
+the data structure of the evaluator.  The vertex type \lean{V} need not come
+with an algorithm for enumerating its vertices, and the relation \lean{Adj} need
+not come with a Boolean decision procedure.  Since \lean{LabeledGraph}s and
 \lean{Flag}s are built on top of this graph type, they inherit the same
 generality.  Even if the specification layer knows that, for each size, there are
 only finitely many flags up to isomorphism, this does not by itself provide the
