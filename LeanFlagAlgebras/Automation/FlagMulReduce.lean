@@ -233,15 +233,22 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
 step ever made progress, fail with a diagnostic describing the goal shape;
 otherwise stop once no further progress is possible. -/
 private partial def runReduceDownwardFlagMul
-    (fuel : Nat := 16384) (steps : Nat := 0) : TacticM Unit := do
-  if fuel = 0 then
+    (fuel : Nat := 16384) : TacticM Unit := do
+  -- Iterative (not recursive) fixpoint loop: each reduction step rewrites one
+  -- summand, and a size-6 SOS needs thousands of steps. A monadic self-recursion
+  -- is NOT tail-call optimized through `bind`, so it grows the native stack one
+  -- frame per step and overflows it (server crash) on the larger examples. The
+  -- `for` loop runs in constant stack.
+  let mut steps : Nat := 0
+  for _ in [0:fuel] do
+    let progressed ← stepReduceDownwardFlagMul
+    if !progressed then
+      break
+    steps := steps + 1
+  if steps = fuel then
     throwError "reduce_downward_flagmul: fuel exhausted"
-  let progressed ← stepReduceDownwardFlagMul
-  if progressed then
-    runReduceDownwardFlagMul (fuel - 1) (steps + 1)
-  else
-    if steps = 0 then
-      withMainContext do
+  if steps = 0 then
+    withMainContext do
         let goal   ← getMainGoal
         let target ← goal.getType
         let args   := target.getAppArgs
@@ -257,8 +264,6 @@ private partial def runReduceDownwardFlagMul
               | none => none
           | none => none
         throwError m!"reduce_downward_flagmul made no progress. lhs={lhs}; addDetected={add?.isSome}; downwardDetected={down?.isSome}; smulOnHeadDetected={smulOnHead?.isSome}"
-    else
-      pure ()
 
 /-- Repeatedly rewrite the left-hand side of a `forbidLEWith`/`inducedForbidLE` goal whose summands
 have the form `downward (c • (A * B))`, replacing each `A * B` with the
