@@ -2599,15 +2599,8 @@ order, with only the sizes and the data changing.  That regularity is what
 convinced us the manual work could be mechanized, and it showed which recurring
 step each tactic would later have to automate.
 
-The section is organized around that shared shape.
-Section~\ref{sec:flagmatic-shape} isolates it as a four-part skeleton, and
-Section~\ref{sec:flagmatic-pipeline} shows how each part is discharged by a
-reusable, kernel-checked component and how the translator assembles the whole
-proof from a Flagmatic certificate alone.  The translator realizes the second
-contribution of Section~\ref{sec:intro}: a certificate-to-proof pipeline whose
-output the Lean kernel checks and whose own computation never enters the trusted
-base (Section~\ref{sec:flagmatic-trust}), validated on six certificates
-(Section~\ref{sec:flagmatic-scenarios}).
+We first identify this common proof structure, then show how each step becomes a
+reusable, kernel-checked component in the certificate-to-Lean compiler.
 
 \subsection{The Four-Part Proof Skeleton}
 \label{sec:flagmatic-shape}
@@ -2632,8 +2625,10 @@ order a finished proof presents them:
     normalizing, and closing by non-negativity.
 \end{enumerate}
 
-Each part of the shape is discharged by a verified, reusable component, taken up
-in turn by the pipeline of the next subsection.
+Across these proofs the same four parts recur; only the sizes and the numbers
+inside each part change.  That invariance is what the next subsection exploits:
+it discharges each part with a single reusable, kernel-checked component fed the
+per-proof data, so a new theorem is new data, not a new proof.
 
 
 \subsection{The Certificate-to-Lean Pipeline}
@@ -2643,64 +2638,55 @@ in turn by the pipeline of the next subsection.
 % subsection absorbed the former per-part subsections.
 
 The script \lean{flagmatic\_to\_lean.py} turns a Flagmatic certificate into a
-self-contained Lean file that compiles under \lean{lake build} as a complete
-proof, with no \lean{sorry} gaps:
+self-contained Lean file that compiles as a complete proof, with no \lean{sorry}
+gaps:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-The diagnostic subcommands \lean{inspect} and \lean{check-deps} validate a
-certificate before compilation.  The emitted file fills the four parts of
+The diagnostic subcommand \lean{inspect} validates a certificate before
+compilation.  The generated file fills the four parts of
 Section~\ref{sec:flagmatic-shape}, each discharged by a reusable, kernel-checked
 component; we take them in turn and then show the assembled output.
 
-% TODO/REVISIT: How much detail Part 1 needs (pruned generation, completeness
-% via native_decide, adequacy-based density/product proofs) depends on how much
-% the reflection layer (Section~\ref{sec:reflection}) ends up covering the same
-% machinery -- revisit once that section's level of detail is settled.
 \paragraph{Flags and density data (Part~1).}
-The forbidden graph is an explicit \lean{Sym2Graph} term \lean{K}, and the flags
-and their density and product identities are generated inside Lean by a handful
-of \lean{generate\_pruned\_*} commands parametric in \lean{K}, rather than read
-from precomputed tables.  The commands enumerate only the
-induced-$\mathcal{H}$-free flags---those containing the forbidden graph are
-pruned before they are ever materialized, which keeps the enumeration tractable
-at the larger host sizes---and a single \lean{native\_decide} certifies
-completeness.  Every density and product is recomputed and re-checked in Lean
-each build, so the certificate never asserts a value the kernel does not
-reproduce.  Because the commands take the forbidden graph as a term argument, a
-new forbid is a new \lean{Sym2Graph} definition, not a new branch in the
-generator.
+Part 1 defines the certificate's forbidden graph as a \lean{Sym2Graph} term, then
+runs a handful of \lean{generate\_pruned\_*} commands: they enumerate the
+induced-$\mathcal{H}$-free flags, prove their pair-density identities, then their
+product-expansion identities, giving the subflag-to-host bookkeeping the body
+rewrites with.  All of this runs inside Lean by the machinery of
+Section~\ref{sec:reflection}, so nothing is read from a precomputed table.
 
 \paragraph{Certificate matrices (Part~2).}
-The method proves $P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ not by manipulating $P$
-but by adding to it a provably non-negative quantity: a quadratic form
-$\langle v_t, M_t\,v_t\rangle$ whose matrix $M_t$ is positive semidefinite---the
-flag-algebra analogue of a sum of squares.  The solver supplies the $M_t$; Lean
-need only re-establish that each is PSD, which it does from an $LDL^\top$
-factorization over $\mathbb{Q}$: exhibiting $M = L D L^\top$ with $d \geq 0$ is a
-rational matrix equality the kernel checks exactly (\lean{decide +kernel})---no
-eigenvalues, no floating point---and the result lifts to $\mathbb{R}$, where the
-flags live.  A wrong factorization therefore surfaces as a compile error, never
-as a silently accepted non-PSD matrix; this is the one place we pay for in-kernel
-evaluation.
+Part 2 discharges the positive-semidefiniteness the method depends on.  A
+flag-algebra bound $P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ is proved not by
+manipulating $P$ but by adding to it a provably non-negative quantity, the
+flag-algebra analogue of a sum of squares: a quadratic form
+$\langle v_t, M_t\,v_t\rangle$ whose matrix $M_t$ is positive semidefinite.  The
+solver supplies each $M_t$, and re-establishing that each is PSD is exactly
+Lean's task.  Testing that spectrally, by asking every eigenvalue to be
+non-negative, would need real, approximate arithmetic the kernel cannot check
+exactly; instead we certify it from a rational factorization $M_t = L D L^\top$
+with $D$ diagonal and non-negative, which reduces the whole question to one exact
+rational identity the kernel decides directly (\lean{decide +kernel}), with no
+eigenvalues and no floating point, and which lifts from $\mathbb{Q}$ to
+$\mathbb{R}$ where the flags live.  A wrong factorization fails this identity and
+stops the build, so no non-PSD matrix can slip past; this is the one place we pay
+for in-kernel evaluation.
 
-\paragraph{Lifting the objective (Part~3, Branch~B).}
+\paragraph{Lifting the objective (Part~3).}
 The densities live at the host size $N$, but the objective is not always a flag
-of that size.  When it is smaller (\emph{Branch~B}: Mantel, $K_4$- and
+of that size, which splits the certificates into two branches.  When it is
+smaller (\emph{Branch~B}: Mantel, $K_4$- and
 $K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K} rewrites it over the
 $N$-vertex induced-$\mathcal{H}$-free flags, dropping the forbidden host terms;
 when it is already host-size (\emph{Branch~A}: the $C_4$-density bound,
 Erd\H{o}s pentagon) this step is empty.
 
 \paragraph{The main theorem (Part~4).}
-% Phrased in terms of the established forbid order $\leq_{\mathcal{H}}$ to avoid
-% introducing the undefined term "forbid-cone" (used nowhere else).
-The standard upper-bound move---add one or more PSD quadratic forms to the
-target, then check that the augmented target is
-$\leq_{\mathcal{H}} c\cdot\mathbf{1}$---rests on
-\lean{forbidLE\_add\_QuadraticForm}, which does the adding (from
-$f \leq_{\mathcal{H}} g$ it gives
-$f \leq_{\mathcal{H}} g + \llbracket\langle v, M\,v\rangle\rrbracket$):
+The standard upper-bound move is to add one or more PSD quadratic forms to the
+target and then check that the augmented target is
+$\leq_{\mathcal{H}} c\cdot\mathbf{1}$.  Each addition is performed by
+\lean{forbidLE\_add\_QuadraticForm}:
 \begin{lstlisting}
 theorem forbidLE_add_QuadraticForm
     (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
@@ -2714,27 +2700,26 @@ are discharged by \lean{reduce\_downward\_flagmul}, which first right-associates
 the sum with \lean{simp only [downward\_add, add\_assoc]} and then rewrites each
 head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
 identity, moving each rewritten term across the inequality.  The resulting
-equality between two reordered combinations of flag terms is normalized by
-\lean{flagsum\_ac\_sort\_rhs\_pipeline}, which sorts the summands by the index in
-each flag's name and proves the reordering up to add-AC (an index-guided
-substitute for \lean{ring}/\lean{ac\_rfl}, which grow too slow past ${\sim}20$
-terms).  Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
+equality is normalized by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an
+index-guided sort of the reordered sum.
+Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
 distributes an arbitrary positive homomorphism over the sum, splits with
 \lean{add\_nonneg}, and discharges each leaf by
 \lean{positiveHom\_basisVector\_ge\_zero}.
 
 \paragraph{The translator.}
-The script's own work is bookkeeping.  Every part above refers to flags by their
-canonical index, so it first parses each certificate string and
-isomorphism-matches it against a canonical enumeration that reproduces the order
-of Lean's flag generators; the index it computes is then already the $i$ in
-\lean{Flag\_n\_k\_m\_i}, with no separate table to keep in sync.  With the indices
-in hand it fills the four parts---three of them mechanically, as fixed templates
-keyed to the sizes, the only real computation being the certificate matrices,
-which it reconstructs as $M_t = R_t\,Q_t'\,R_t^\top$ and factors as
-$L_t D_t L_t^\top$.  Choosing the branch, the per-block parameters, and the order
-of the additions is the entire ``intelligence'' of the generator; why none of it
-has to be trusted is the subject of Section~\ref{sec:flagmatic-trust}.
+The script itself does no mathematics; its job is to read the certificate and
+emit the four-part proof above.  A certificate names its flags as short strings
+like \texttt{3:121323} (a triangle: three vertices with edges $12$, $13$, $23$),
+so the script parses each one and isomorphism-matches it against a canonical
+enumeration that reproduces the order of Lean's flag generators.  The index it
+computes is then already the $i$ in \lean{Flag\_n\_k\_m\_i}, with no separate
+table to keep in sync.  With the indices in hand it emits the four parts: three
+are fixed templates keyed to the sizes, and the only real computation is
+reconstructing and factoring the certificate matrices (the witness Part~2's
+kernel check then consumes).  Choosing the branch, the per-block parameters, and
+the order of the additions is the entire ``intelligence'' of the generator; why
+none of it has to be trusted is the subject of Section~\ref{sec:flagmatic-trust}.
 
 Assembled, the file the script emits for Mantel ($K_3$-free, $N=3$, Branch~B) is,
 abridged:
@@ -2776,10 +2761,8 @@ one matrix and one \lean{forbidLE\_add\_QuadraticForm} call each.
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
 
-The script computes a great deal: it resolves certificate strings to flag
-indices, reconstructs and factors the certificate matrices, and decides which
-declarations and imports to emit.  \emph{None} of this enters the trusted
-base.  Every emitted
+The script computes a great deal, from flag indices to the certificate matrices,
+yet \emph{none} of it enters the trusted base.  Every emitted
 proof obligation is closed by one of: \lean{decide +kernel} (in the kernel),
 \lean{native\_decide} (by compiled code outside the kernel), or a verified
 tactic of Section~\ref{sec:flagmatic-pipeline}.  A
@@ -2798,13 +2781,13 @@ specification uses.
 
 The tactics that produce these obligations are themselves unverified
 metaprograms, and the same discipline covers them.  Each must tolerate the
-syntactic variation Lean's elaborator introduces---after unification the same
-flag can reach a tactic in several forms---so we normalize expression trees with
+syntactic variation Lean's elaborator introduces (after unification the same
+flag can reach a tactic in several forms), so we normalize expression trees with
 a \lean{collectPrefixConstants} traversal and compare flags with \lean{Expr.eqv}
 rather than structural equality.  This machinery took substantial experimentation
 with the Lean~4 metaprogramming API and is among the least portable parts of the
 development, but a tactic that misfires only ever builds a term the kernel
-rejects: the cost of its fragility is a failed compile, never a false theorem.
+rejects, so its fragility costs at most a failed build.
 
 \subsection{Evaluation}
 \label{sec:flagmatic-scenarios}
