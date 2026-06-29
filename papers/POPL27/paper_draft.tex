@@ -2399,16 +2399,18 @@ unordered pairs of vertices.  This representation is packaged as the structure
 concrete flag type, \lean{Sym2FlagType}, and a concrete labeled graph,
 \lean{Sym2LabeledGraph}.
 \begin{lstlisting}
-structure Sym2Graph (n : Nat) where
+structure Sym2Graph (n : (*@$\mathbb{N}$@*)) where
   edges       : Finset (Sym2 (Fin n))
-  edges_valid : forall e in edges, not e.IsDiag
+  edges_valid : forall e in edges, (*@$\neg$@*) e.IsDiag
 
-abbrev Sym2FlagType (k : Nat) := Sym2Graph k
+abbrev Sym2FlagType (k : (*@$\mathbb{N}$@*)) := Sym2Graph k
 
-structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
+structure Sym2LabeledGraph
+    {k : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : Sym2FlagType k)
+    (n : (*@$\mathbb{N}$@*)) where
   edges       : Finset (Sym2 (Fin n))
-  edges_valid : forall e in edges, not e.IsDiag
-  type_embed  : fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
+  edges_valid : forall e in edges, (*@$\neg$@*) e.IsDiag
+  type_embed  : fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
 In this concrete definition, unlike in a general \lean{SimpleGraph}, Lean can
 enumerate all vertices of the type \lean{Fin n}, namely \(0,1,\ldots,n-1\).
@@ -2426,20 +2428,20 @@ The following \lean{Fintype} instance provides the enumeration used to range
 over these possible placements:
 \begin{lstlisting}
 structure Sym2InducedLabeledSubgraph
-    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
-    (G : Sym2LabeledGraph sigma n) where
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+    (G : Sym2LabeledGraph (*@$\sigma$@*) n) where
   verts : Finset (Fin n)
   verts_subset : G.type_verts (*@$\subseteq$@*) verts
 
 def Sym2InducedLabeledSubgraph.edges
-    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
-    {G : Sym2LabeledGraph sigma n} (H : Sym2InducedLabeledSubgraph G) :
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+    {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G) :
     Finset (Sym2 (Fin n)) :=
   G.edges.filter (fun e => forall v in e, v in H.verts)
 
 instance
-    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
-    (G : Sym2LabeledGraph sigma n) :
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+    (G : Sym2LabeledGraph (*@$\sigma$@*) n) :
     Fintype (Sym2InducedLabeledSubgraph G) where
   elems := (@Finset.univ (Finset (Fin n))).filterMap (fun V =>
     if hV : G.type_verts (*@$\subseteq$@*) V
@@ -2473,8 +2475,8 @@ then maps the labeled vertices according to the two embeddings and searches
 only over permutations of the remaining vertices:
 \begin{lstlisting}
 def isIsoFast_bool
-    {k n : Nat} {sigma : Sym2FlagType k}
-    (G1 G2 : Sym2LabeledGraph sigma n) : Bool :=
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    (G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n) : Bool :=
   if G1.edges.card != G2.edges.card then false
   else
     let nonType1 := getNonTypeVerts n k G1.type_embed
@@ -2482,27 +2484,28 @@ def isIsoFast_bool
     let perms := nonType2.permutations
     let edges := allEdges n
     perms.any fun p =>
-      let fullMap :=
-        buildFullMap n k G1.type_embed G2.type_embed nonType1 p
+      let fullMap := buildFullMap n k G1.type_embed G2.type_embed nonType1 p
       edges.all fun e =>
         decide (e (*@$\in$@*) G1.edges) ==
         decide (applyPermEdge fullMap e (*@$\in$@*) G2.edges)
 
+theorem isIsoFast_bool_true_correct
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
+    (h : isIsoFast_bool G1 G2 = true) :
+    G1 (*@$\sim_{\mathsf{sf}}$@*) G2 := ...
+
+theorem isIsoFast_bool_false_correct
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
+    (h : isIsoFast_bool G1 G2 = false) :
+    (*@$\neg$@*) (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) := ...
+
 instance (priority := high) fastDecidableSym2LabeledGraphEqv
-    {k n : Nat} {sigma : Sym2FlagType k}
-    (G1 G2 : Sym2LabeledGraph sigma n) :
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} (G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n) :
     Decidable (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) :=
   if h : isIsoFast_bool G1 G2 = true then
     isTrue  (isIsoFast_bool_true_correct h)
   else
-    isFalse (isIsoFast_bool_false_correct ...)
-
-instance (priority := high) fastFintypeSym2Flag
-    {k : Nat} {sigma : Sym2FlagType k} {n : Nat} :
-    Fintype (Sym2Flag sigma n) := by
-  refine @Quotient.fintype _ _ (sym2LabeledGraphSetoid sigma n) ?_
-  intro G G'
-  exact fastDecidableSym2LabeledGraphEqv G G'
+    isFalse (isIsoFast_bool_false_correct (eq_false_of_ne_true h))
 \end{lstlisting}
 The Boolean program is not trusted on its own: the \lean{true\_correct} and
 \lean{false\_correct} theorems turn its two possible outcomes into proofs about
@@ -3155,7 +3158,8 @@ be filled.
 
 Proof-valued structure fields create a related difficulty.  The
 \lean{Sym2Graph} type carries a field
-\lean{edges\_valid : forall e in edges, not e.IsDiag}; two \lean{Sym2Graph}
+\lean{edges\_valid}, asserting that every \(e \in \lean{edges}\) satisfies
+\(\neg\,\lean{e.IsDiag}\); two \lean{Sym2Graph}
 values with the same edge set but different proof terms for
 \lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
 definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
