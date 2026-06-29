@@ -63,25 +63,20 @@ Not yet tested:
 ## Workflow for a new certificate
 
 ```powershell
-# 1. Optional: mapping sanity check
+# 1. Optional: mapping sanity check (also validates the cert — every flagmatic
+#    string is resolved to a canonical Lean identifier, raising on any failure).
 python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect <cert>.json
 
-# 2. Check dependencies - missing JSON files, recommended imports, load_* commands
-python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py check-deps <cert>.json
-
-# 3. If needed, generate missing free_indices / density JSON files
-python LeanFlagAlgebras/Flags/Densities/gen_free_indices.py ...
-python LeanFlagAlgebras/Flags/Densities/calculate_densities.py ...
-
-# 4. Generate the Lean file
+# 2. Generate the Lean file (flags, densities and products are all generated
+#    inside Lean by the `generate_pruned_*` commands — no JSON files on disk).
 python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton `
     LeanFlagAlgebras/Flagmatic/Certificates/<name>_cert.json `
     LeanFlagAlgebras/Flagmatic/<Name>.lean --namespace <Name> --force
 
-# 5. Build
+# 3. Build
 lake build LeanFlagAlgebras.Flagmatic.<Name>
 
-# 6. Optional: add the import to the root manifest LeanFlagAlgebras.lean
+# 4. Optional: add the import to the root manifest LeanFlagAlgebras.lean
 ```
 
 ---

@@ -23,11 +23,11 @@
 # cosmetics) and `lake build` accepts the generated proofs.
 #
 # Scope: complete-graph forbids (K_r) only, matching the migrated examples.
-# `check-deps` / `inspect` report against the edge-based pruned commands too:
-# they validate the cert (complete-graph forbid; all flag strings resolve via the
-# in-memory enumeration) and print the `generate_pruned_*` block -- there are no
-# JSON files to locate. (The old JSON-pipeline machinery -- `check_dependencies`,
-# the `Dep` class, `required_json_files`, the CommonGraphs/FlagDef parsers -- has
+# `inspect` reports against the edge-based pruned commands too: it dumps the
+# cert -> Lean-identifier mapping (every flag string resolved via the in-memory
+# enumeration) and prints the `generate_pruned_*` block -- there are no JSON
+# files to locate. (The old JSON-pipeline machinery -- `check_dependencies`, the
+# `Dep` class, `required_json_files`, the CommonGraphs/FlagDef parsers -- has
 # been removed; see git history if you need it.)
 # =============================================================================
 
@@ -57,16 +57,14 @@ This file has two layers:
         assemble_block_matrix, ldl_decomposition, induced_density,
         render_pruned_commands, render_matrices, render_flag_vectors,
         render_expand_under_forbid, render_proof_body,
-        render_theorem_statement, render_skeleton, render_dependency_report
+        render_theorem_statement, render_skeleton
 
-  (2) CLI subcommands — used as a script. Five are provided:
+  (2) CLI subcommands — used as a script. Four are provided:
 
         inspect       certificate -> Lean-identifier mapping dump + the
-                      `generate_pruned_*` command block it maps to
-        check-deps    validate the cert (complete-graph forbid; every flagmatic
-                      string resolves via the in-memory enumeration) and print
-                      the `generate_pruned_*` block. Exit 0 if ready, 1 if not.
-                      No JSON on disk is needed (densities are generated in Lean).
+                      `generate_pruned_*` command block it maps to (every
+                      flagmatic string is resolved via the in-memory
+                      enumeration, so this also validates the cert)
         gen-skeleton  write a complete starter Lean file: imports + opens +
                       namespace + `def K{r} := completeSym2Graph r` + the
                       `generate_pruned_*` commands + M_t/dM_t/LM_t with PSD
@@ -82,28 +80,25 @@ This file has two layers:
 USAGE EXAMPLES (PowerShell; use `\\` on bash):
 
   # 1. Quick sanity check on a new certificate — does every flagmatic
-  #    string resolve to a canonical Lean identifier?
+  #    string resolve to a canonical Lean identifier, and what commands will
+  #    gen-skeleton emit? (`inspect` resolves every string, so it also
+  #    validates the cert; it raises on the first string that fails to resolve.)
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect `
       LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
 
-  # 2. Check the cert is supported and preview the commands gen-skeleton emits.
-  #    Exit code 0 if ready, 1 otherwise. (No JSON files are involved.)
-  python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py check-deps `
-      LeanFlagAlgebras/Flagmatic/Certificates/K3forbidC4_cert.json
-
-  # 3. Generate a complete starter Lean file with auto-proved main theorem.
+  # 2. Generate a complete starter Lean file with auto-proved main theorem.
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton `
       LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json `
       LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 
-  # 4. Or, append-mode helpers when you have an existing file:
+  # 3. Or, append-mode helpers when you have an existing file:
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-matrices `
       <cert>.json <target>.lean
   python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-vectors `
       <cert>.json <target>.lean
 
 Typical workflow for a fresh certificate:
-  inspect  ->  check-deps  ->  gen-skeleton
+  inspect  ->  gen-skeleton
    ->  lake build LeanFlagAlgebras.Flagmatic.<Name>
 
 For per-command help: `python flagmatic_to_lean.py <subcommand> --help`.
@@ -347,22 +342,8 @@ def sigma_flag_to_lean(s: str, type_str: str) -> tuple[str, int, int, int, int]:
 
 
 # --------------------------------------------------------------------------- #
-# Certificate inspection: which JSON files will be needed?
+# Forbid-graph recognition (complete-graph K_n detection)
 # --------------------------------------------------------------------------- #
-
-
-# Cache for parsed CommonGraphs.lean table
-# Regex matching `lemma <Name>_toFinFlag_eq : <Name>.toFinFlag = ⟨<n>, Flag_<n>_0_0_<i>⟩`.
-# This is more robust than parsing the `def <Name> : SimpleGraph ... := ...` line,
-# because the `def` body varies (`completeGraph (Fin n)` vs explicit adjacency)
-# while the `_toFinFlag_eq` lemma always has the same shape.
-# Regex matching the `generate_complete_graph <r> <idx>` macro invocation. The
-# complete graphs K3/K4/K5/... are not written out as literal
-# `lemma K{r}_toFinFlag_eq` declarations — the macro at the top of
-# `CommonGraphs.lean` emits both `def K{r}` and the `_toFinFlag_eq` lemma. So
-# `_TOFINFLAG_RE` never sees them and we must recover `K{r}` from the macro call
-# itself. The graph is the complete graph on `r` vertices (edges = all pairs),
-# which we can build directly without consulting graphs_<r>.json.
 
 
 def _parse_forbid_edges(n: int, edges_str: str) -> frozenset[tuple[int, int]] | None:
@@ -624,19 +605,6 @@ def _forbid_graph_from_description(desc: str):
     if tag is None:
         return None, None, None
     return n, edges, tag
-
-
-def _forbid_expr_from_description(desc: str) -> tuple[str | None, str | None]:
-    """Return (Lean forbid `FinFlag` expression, tag) parsed from description.
-
-    e.g. "forbid 3:121323" → ("(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)",
-    "K3"). For non-complete graphs returns (None, None) so the caller can emit a
-    TODO placeholder.
-    """
-    _n, _edges, tag = _forbid_graph_from_description(desc)
-    if tag is None:
-        return None, None
-    return _forbid_finflag_expr(tag), tag
 
 
 # --------------------------------------------------------------------------- #
@@ -1179,76 +1147,6 @@ def required_lean_imports(cert: dict, branch_b: bool = False) -> list[str]:
     return base
 
 
-def _resolution_failures(cert: dict) -> list[str]:
-    """Flagmatic strings in `cert` that do NOT resolve to a canonical Lean
-    identifier via the in-memory enumeration (objective, types, σ-flags). Empty
-    list means everything resolves."""
-    desc = cert.get("description", "")
-    failures: list[str] = []
-    try:
-        _objective_from_description(desc)
-    except (ValueError, LookupError) as e:
-        failures.append(f"objective: {e}")
-    for t, type_str in enumerate(cert.get("types", [])):
-        try:
-            type_to_lean(type_str)
-            for fs in cert.get("flags", [])[t]:
-                sigma_flag_to_lean(fs, type_str)
-        except (ValueError, LookupError, IndexError) as e:
-            failures.append(f"block {t + 1} ({type_str!r}): {e}")
-    return failures
-
-
-def render_dependency_report(cert: dict) -> tuple[str, bool]:
-    """Report what `gen-skeleton` will emit and whether the certificate is
-    supported. Returns (text, ok).
-
-    The edge-based pruned pipeline has NO on-disk dependencies — flags, densities
-    and products are all generated inside Lean — so there are no JSON files to
-    locate. Instead this checks the two real preconditions (the forbid is a
-    complete graph; every flagmatic string resolves to a canonical identifier via
-    the in-memory enumeration) and prints the `generate_pruned_*` command block.
-    """
-    desc = cert.get("description", "")
-    lines = [f"Dependency check for: {desc or '<no description>'}",
-             "(edge-based pruned pipeline — everything is generated in Lean; no JSON on disk)"]
-    ok = True
-
-    # 1. Forbid graph must be a complete graph K_n (the only supported edge-based forbid).
-    forbid_n, _edges, tag = _forbid_graph_from_description(desc)
-    if tag is not None:
-        lines.append(f"  [OK         ] forbid {forbid_n}-clique -> `def {tag} : Sym2Graph {forbid_n} := completeSym2Graph {forbid_n}`")
-        lines.append( "                generated inline (a Sym2Graph term) — no CommonGraphs.lean edit needed")
-    else:
-        ok = False
-        m = re.search(r"forbid\s+(\S+)", desc)
-        lines.append(f"  [UNSUPPORTED] forbid {(m.group(1) if m else '<none>')!r} is not a complete graph K_n")
-        lines.append( "                the edge-based pruned pipeline currently supports complete-graph forbids only")
-
-    # 2. Every flagmatic string must resolve to a canonical identifier (in-memory, no JSON).
-    failures = _resolution_failures(cert)
-    if failures:
-        ok = False
-        lines.append("  [MISSING    ] some flagmatic strings did not resolve to a canonical flag:")
-        for fmsg in failures:
-            lines.append(f"                - {fmsg}")
-    else:
-        lines.append("  [OK         ] all objective / type / σ-flag strings resolve (in-memory enumeration, n <= 7)")
-
-    # 3. Show the commands gen-skeleton will emit.
-    lines.append("")
-    lines.append("gen-skeleton will emit these commands (def + generate_pruned_*):")
-    for cmd in render_pruned_commands(cert).splitlines():
-        if cmd.startswith("--") or not cmd.strip():
-            continue
-        lines.append(f"  {cmd}")
-
-    lines.append("")
-    lines.append("OK — `gen-skeleton` should produce a buildable proof file." if ok
-                 else "NOT READY — resolve the issues above before `gen-skeleton`.")
-    return "\n".join(lines), ok
-
-
 def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> str:
     """Render a complete starter Lean API file for the edge-based pruned pipeline:
     imports, opens, namespace, `def K{r}` + `generate_pruned_*` commands, the
@@ -1384,14 +1282,6 @@ def _cmd_gen_skeleton(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_check_deps(args: argparse.Namespace) -> int:
-    with args.certificate.open() as f:
-        cert = json.load(f)
-    text, ok = render_dependency_report(cert)
-    print(text)
-    return 0 if ok else 1
-
-
 def _cmd_inspect(args: argparse.Namespace) -> None:
     with args.certificate.open() as f:
         cert = json.load(f)
@@ -1460,11 +1350,10 @@ def main(argv: list[str] | None = None) -> None:
         epilog=(
             "Examples:\n"
             "  python flagmatic_to_lean.py inspect       mantel_sparse_cert.json\n"
-            "  python flagmatic_to_lean.py check-deps    c4turan_sparse_cert.json\n"
             "  python flagmatic_to_lean.py gen-skeleton  mantel_sparse_cert.json out.lean\n"
             "  python flagmatic_to_lean.py gen-matrices  mantel_sparse_cert.json out.lean\n"
             "  python flagmatic_to_lean.py gen-vectors   mantel_sparse_cert.json out.lean\n"
-            "\nTypical workflow:  inspect  ->  check-deps  ->  gen-skeleton\n"
+            "\nTypical workflow:  inspect  ->  gen-skeleton\n"
             "Per-command help:  flagmatic_to_lean.py <subcommand> --help\n"
             "Full reference:    see the module docstring at the top of this file."
         ),
@@ -1483,13 +1372,6 @@ def main(argv: list[str] | None = None) -> None:
     p_gen.add_argument("target", type=Path,
                        help="Lean file to append to (created if absent)")
     p_gen.set_defaults(func=_cmd_gen_vectors)
-
-    p_chk = sub.add_parser(
-        "check-deps",
-        help="report which Lean JSON files this certificate needs, and whether they exist",
-    )
-    p_chk.add_argument("certificate", type=Path)
-    p_chk.set_defaults(func=_cmd_check_deps)
 
     p_mat = sub.add_parser(
         "gen-matrices",

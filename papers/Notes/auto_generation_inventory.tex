@@ -240,20 +240,14 @@ flagmatic SDP certificate JSON; output is a \texttt{.lean} module under
 \texttt{Flagmatic/}. Subcommands:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py inspect      <cert>.json
-python flagmatic_to_lean.py check-deps   <cert>.json
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean [--namespace N]
 \end{lstlisting}
 
 \paragraph{\texttt{inspect}.} Read-only. Prints the Lean identifier each
 flagmatic string in the certificate resolves to. Run it first on a new
-certificate to confirm the strings map to constants that exist.
-
-\paragraph{\texttt{check-deps}.} Reports which density JSON files
-(\S\ref{sec:pipeline}) the certificate will need, marks each present or
-missing, and prints the \texttt{load\_*} lines that will be emitted. Exits
-nonzero if anything is missing, so it doubles as a pre-build guard. If it
-reports a missing file, generate it with the relevant pipeline script,
-then re-run.
+certificate to confirm the strings map to constants that exist; because it
+resolves every string, it doubles as a validity check (it raises on the
+first string that fails to resolve).
 
 \paragraph{\texttt{gen-skeleton}.} Writes the full module: the SDP matrices
 $M_t$ with their LDL$^\top$ positive-semidefiniteness proofs, the real
@@ -265,10 +259,9 @@ size -- an \texttt{*\_expand\_under\_forbid} lemma plus its
 
 \paragraph{Workflow.}
 \begin{lstlisting}[language={}]
-inspect  →  check-deps  →  gen-skeleton  →  lake build
+inspect  →  gen-skeleton  →  lake build
 \end{lstlisting}
-The first two catch identifier and dependency problems before any Lean
-compilation.
+\texttt{inspect} catches identifier problems before any Lean compilation.
 
 \section{Worked example (Mantel)}
 
@@ -281,7 +274,6 @@ python calculate_densities.py --host ../Flags/flags_3_1_0.json \
        --pattern ../Flags/flags_2_1_0.json --forbid-K3
 
 # port the certificate
-python flagmatic_to_lean.py check-deps   Certificates/mantel_cert.json
 python flagmatic_to_lean.py gen-skeleton Certificates/mantel_cert.json \
        Mantel.lean --namespace Mantel
 lake build
