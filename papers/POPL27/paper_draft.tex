@@ -2389,12 +2389,16 @@ only finitely many flags up to isomorphism, this does not by itself provide the
 computational choices needed by the evaluator: a concrete enumeration of
 representatives and a Boolean procedure for comparing them up to isomorphism.
 
-To supply these choices, the reflection layer introduces a family of more rigid
-edge-set representations: vertices are fixed finite types, edges are explicit
-finite data, and isomorphism is reduced to finite search over permutations
-compatible with the labels.  The empty-type core is \lean{Sym2Graph n}; typed
-flags use the same representation style through \lean{Sym2FlagType} and
-\lean{Sym2LabeledGraph}:
+The reflection layer therefore does not use \lean{SimpleGraph} directly as the
+evaluator's representation.  Instead, it introduces a family of more rigid
+edge-set representations: an \(n\)-vertex graph has vertex type \lean{Fin n},
+and its edges are stored as a finite set of unordered pairs
+\lean{Finset (Sym2 (Fin n))}, where \lean{Sym2} forms unordered pairs.  The
+empty-type case uses the structure \lean{Sym2Graph n}.  For typed flags, the
+flag type itself is encoded as \lean{Sym2FlagType k}; since a flag type is just
+a graph on the labeled vertices, \lean{Sym2FlagType} has the same fields as
+\lean{Sym2Graph}.  The labeled graph is then represented by
+\lean{Sym2LabeledGraph}, the edge-set analogue of \lean{LabeledGraph}: \gw{I'm here.}
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
@@ -2407,9 +2411,7 @@ structure Sym2FlagType (k : Nat) where
 structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
   edges_valid : forall e in edges, not e.IsDiag
-  type_embed  :
-    fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*)
-      fromEdgeSet (SetLike.coe edges)
+  type_embed  : fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
 Thus a graph on $\{0,\ldots,n-1\}$ is stored as a finite set of unordered
 non-diagonal pairs.  Adjacency is checked by membership in this finite edge set,
@@ -2417,7 +2419,7 @@ and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
 enumerating possible edge sets.  The typed versions add the finite edge set for
 the type graph and the embedding of those type vertices into the host.  All of
 these representations still decode to the abstract graph language by
-interpreting adjacency as membership in \lean{edges}. \gw{I'm here.}
+interpreting adjacency as membership in \lean{edges}.
 
 These edge-set representations also make the two ingredients above concrete.
 Candidate induced subflags are represented by finite vertex sets, so their
