@@ -969,6 +969,77 @@ theorem basisVector_quot_familyForbidEq_sum
         obtain ⟨D, hD, hDF'⟩ := hF'
         exact basisVector_familyForbidEq_zero Fs D hD ⟨ℓ, F'⟩ hDF')
 
+/-! ### Finite-family `forbidEq H` expansions (subgraph forbidding, Route B / G3)
+
+The ordinary `_ofMem` lemmas (further below) kill by a *single* forbidden flag's induced density —
+exact for complete-graph forbids (induced = subgraph there). For an arbitrary forbidden graph `H`
+under *subgraph* semantics, the killed flags are those containing **some** member of a finite family
+`Fs ⊆ forbiddenFlags H` (e.g. the supergraphs of `H`) with positive induced density. These wrappers
+state the `=[H]` expansion with that finite-family kill, reusing the generic kill lemmas and the
+family vanishing `basisVector_familyForbidEq_zero` (each member is in `forbiddenFlags H`, so each
+killed term is `forbiddenCondition H`-zero). Matching the survivor set to the generator's
+subgraph-`H`-free flag set is done at the generator (G4). -/
+
+/-- **Finite-family ordinary expansion** (subgraph forbidding). Survivors are the flags with zero
+induced density of *every* `D ∈ Fs`; this is the family analogue of `basisVector_quot_forbidEq_sum_ofMem`. -/
+theorem basisVector_quot_forbidEq_sum_ofFamilyMem
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : Finset (FinFlag ∅ₜ))
+    (hmem : ∀ D ∈ Fs, D ∈ forbiddenFlags H) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : ⟦basisVector F⟧ =[H]
+      ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₁ F.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ := by
+  have hfilter :
+      Finset.univ.filter (fun F' : FlagWithSize σ ℓ => ∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0)
+        = Finset.univ.filter (fun F' => ¬ (∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))) :=
+    Finset.filter_congr (fun x _ => by
+      constructor
+      · intro h hex
+        obtain ⟨D, hD, hpos⟩ := hex
+        rw [h D hD] at hpos; exact lt_irrefl 0 hpos
+      · intro h D hD
+        by_contra hne
+        exact h ⟨D, hD, lt_of_le_of_ne (flagListDensity₁_ge_zero D.2 (unlabel x)) (Ne.symm hne)⟩)
+  rw [show (∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₁ F.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      = Finset.sum (Finset.univ.filter (fun F' => ¬ (∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))))
+          (fun F' => (flagDensity₁ F.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      from by rw [hfilter]]
+  exact basisVector_quot_forbidEqWith_sum_of_kill (forbiddenCondition H) F ℓ hℓ
+      (fun F' => ∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))
+      (fun F' hF' => by
+        obtain ⟨D, hD, hDF'⟩ := hF'
+        exact basisVector_familyForbidEq_zero (forbiddenFlags H) D (hmem D hD) ⟨ℓ, F'⟩ hDF')
+
+/-- **Finite-family ordinary product expansion** (subgraph forbidding). The multiplication analogue
+of `basisVector_quot_forbidEq_sum_ofFamilyMem`. -/
+theorem basisVector_quot_mul_forbidEq_sum_ofFamilyMem
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : Finset (FinFlag ∅ₜ))
+    (hmem : ∀ D ∈ Fs, D ∈ forbiddenFlags H) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
+    : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =[H]
+      ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ := by
+  have hfilter :
+      Finset.univ.filter (fun F' : FlagWithSize σ ℓ => ∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0)
+        = Finset.univ.filter (fun F' => ¬ (∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))) :=
+    Finset.filter_congr (fun x _ => by
+      constructor
+      · intro h hex
+        obtain ⟨D, hD, hpos⟩ := hex
+        rw [h D hD] at hpos; exact lt_irrefl 0 hpos
+      · intro h D hD
+        by_contra hne
+        exact h ⟨D, hD, lt_of_le_of_ne (flagListDensity₁_ge_zero D.2 (unlabel x)) (Ne.symm hne)⟩)
+  rw [show (∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      = Finset.sum (Finset.univ.filter (fun F' => ¬ (∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))))
+          (fun F' => (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      from by rw [hfilter]]
+  exact basisVector_quot_mul_forbidEqWith_sum_of_kill (forbiddenCondition H) F₁ F₂ ℓ hℓ
+      (fun F' => ∃ D ∈ Fs, 0 < flagDensity₁ D.2 (unlabel F'))
+      (fun F' hF' => by
+        obtain ⟨D, hD, hDF'⟩ := hF'
+        exact basisVector_familyForbidEq_zero (forbiddenFlags H) D (hmem D hD) ⟨ℓ, F'⟩ hDF')
+
 lemma flagType_asEmptyTypeAlgebra_emptyType_eq_one
     : ⟨∅ₜ⟩₀ = 1
   := by
