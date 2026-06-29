@@ -30,7 +30,7 @@ generate_pruned_forbid_free_empty_typed_flags 3 K3
 generate_pruned_forbid_free_flags 2 1 0 K3
 generate_pruned_forbid_free_flags 3 1 0 K3
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
-generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
+generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 /-- SDP certificate matrix for block 1 (rational, 2×2),
 paired with `v`. Assembled as R·Q'·Rᵀ from the flagmatic certificate. -/
@@ -89,10 +89,10 @@ private theorem auto_flagDensity1_2_0_0_1_3_0_0_2
 over the K3-free 3-vertex flags via `flag_expand_hfree 3 K3` (`basisVector_quot_inducedForbidEq_sum`
 rewritten onto `flagSetHfree_3_0_0_K3`; the triangle term is dropped automatically). -/
 lemma mantel_flagAlgebra_expand_under_forbid
-    : FlagAlgebra_2_0_0_1 =ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)]
         (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
   := by
-  flag_expand_hfree 3 K3
+  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 /-- **Main theorem (auto-generated).**
 Certificate description: '2-graph; maximize 2:12 density; forbid 3:121323'
@@ -100,17 +100,14 @@ Bound: '1/2'. -/
 theorem mantel_flagAlgebra
     : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 3)] (1 / 2 : ℝ) • (1 : FlagAlgebra ∅ₜ)
   := by
-  apply inducedForbidLE_toFinFlag_imp_forbidLE
-  rw [show (completeGraph (Fin 3)).toFinFlag = (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
-        from (completeSym2Graph_finFlag_eq 3).symm]
-  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤ᵢ[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)]
+  have quadraticForm_trans : FlagAlgebra_2_0_0_1 ≤[completeGraph (Fin 3)]
             FlagAlgebra_2_0_0_1 + ⟦flagQuadraticForm M_real v⟧₀
     := by
-    apply inducedForbidLE_add_QuadraticForm M_real M_real_posSemidef v
-    exact inducedForbidLE_refl (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) FlagAlgebra_2_0_0_1
-  apply inducedForbidLE_trans quadraticForm_trans
-  apply inducedForbidLE_trans_inducedForbidEq_right ?_  (inducedForbidEq_smul (inducedForbidEq_symm (one_inducedForbidEq_forbidExpand_one (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) 3)))
-  rw [inducedForbidLE_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
+    apply forbidLEWith_add_QuadraticForm M_real M_real_posSemidef v
+    exact forbidLEWith_refl _ FlagAlgebra_2_0_0_1
+  apply forbidLEWith_trans quadraticForm_trans
+  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ) (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 3)))
+  rw [forbidLEWith_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
 
   simp [flagQuadraticForm, v, M_real, ratMatrixToReal, M, Fin.sum_univ_two, add_assoc]
   reduce_downward_flagmul
@@ -120,7 +117,7 @@ theorem mantel_flagAlgebra
   simp [smul_smul, downward_add, downward_smul]
   flagsum_ac_sort_rhs_pipeline
 
-  apply inducedForbidLE_of_le
+  apply forbidLEWith_of_le
   flag_nonneg
 
 end Mantel

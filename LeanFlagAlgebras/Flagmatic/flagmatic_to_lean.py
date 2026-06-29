@@ -9,11 +9,11 @@
 #       generate_pruned_forbid_free_empty_typed_flags <n> K{r}
 #       generate_pruned_forbid_free_flags             <n> <k> <m> K{r}
 #       generate_pruned_flag_pair_density_theorems    <patN> <hostN> <k> <m> K{r}
-#       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r}
+#       generate_pruned_forbid_free_mul_theorems      <patN> <hostN> <k> <m> K{r} (completeGraph (Fin r)) (completeSym2Graph_finFlag_mem_forbiddenFlags r)
 #     (densities are computed inside Lean -- no `*.json`, no Python regeneration);
 #   * M_t / dM_t / LM_t + the one-line `psd_real_ldlt` PSD proof, the σ_t / v_t flag vectors, the forbid-free
 #     objective expansion (branch B, closed by `flag_expand_hfree`), and the
-#     auto-proved main theorem (`≤[(⟨_, Sym2EmptyTypedFlag.toFlag ⟦K{r}⟧⟩ : FinFlag ∅ₜ)]`).
+#     auto-proved main theorem (`≤[completeGraph (Fin r)]`, ordinary forbid).
 #
 # NO JSON ON DISK is required: the canonical graph/flag enumeration (which fixes
 # the `FlagAlgebra_…` identifier indices, in lockstep with the Lean generators'
@@ -781,9 +781,9 @@ def render_expand_under_forbid(
         f"`flag_expand_hfree {N} {forbid_tag}` (`basisVector_quot_forbidEq_sum` rewritten onto\n"
         f"`flagSetHfree_{N}_0_0_{forbid_tag}`; the forbidden terms are dropped automatically). -/\n"
         f"lemma {lemma_name}\n"
-        f"    : {obj_ident} =ᵢ[{forbid_expr}] {admissible_expr}\n"
+        f"    : {obj_ident} =[completeGraph (Fin {forbid_n})] {admissible_expr}\n"
         f"  := by\n"
-        f"  flag_expand_hfree {N} {forbid_tag}\n"
+        f"  flag_expand_hfree {N} {forbid_tag} (completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})\n"
     )
 
 
@@ -848,17 +848,9 @@ def render_proof_body(
         return None, None
     forbid_expr = _forbid_finflag_expr(forbid_tag)
 
-    # The SOS certificate lemmas are stated for the *induced* forbid relation
-    # (`≤ᵢ` / `inducedForbidLE`). Since the `forbidLE/forbidEq` API became
-    # non-induced by default, the proof opens by reducing the `≤[completeGraph
-    # (Fin r)]` goal to `≤ᵢ[⟦K{r}⟧ FinFlag]` via
-    # `inducedForbidLE_toFinFlag_imp_forbidLE` and the `completeSym2Graph`
-    # bridge, then works entirely in the induced API.
-    prefix = (
-        f"  apply inducedForbidLE_toFinFlag_imp_forbidLE\n"
-        f"  rw [show (completeGraph (Fin {forbid_n})).toFinFlag = {forbid_expr}\n"
-        f"        from (completeSym2Graph_finFlag_eq {forbid_n}).symm]\n"
-    )
+    # The proof works entirely in the ordinary `forbidLEWith`/`forbidEqWith` framework.
+    # The goal is already `≤[completeGraph (Fin r)]`, so no induced-bridge preamble is needed.
+    prefix = ""
 
     # Branch detection: when n_obj < N we need an expand_under_forbid lemma.
     helper_lemma: str | None = None
@@ -872,7 +864,7 @@ def render_proof_body(
             return None, None
         # Step 4: expand the objective under the forbid relation. When T ≥ 2,
         # the LHS arrives as left-associated `((obj + Q1) + Q2) + ...`, but
-        # `inducedForbidLE_rw_left_add_right` matches the pattern `obj + ?` only
+        # `forbidLEWith_rw_left_add_right` matches the pattern `obj + ?` only
         # at the top-level `+`. Pre-rewrite with `add_assoc` to right-associate
         # the sum so the pattern hits. For T = 1 this step is unnecessary
         # (and `simp only` would error with "made no progress").
@@ -880,10 +872,10 @@ def render_proof_body(
         if T_blocks >= 2:
             expand_rewrite = (
                 f"  simp only [add_assoc]\n"
-                f"  rw [inducedForbidLE_rw_left_add_right {helper_name}]\n"
+                f"  rw [forbidLEWith_rw_left_add_right {helper_name}]\n"
             )
         else:
-            expand_rewrite = f"  rw [inducedForbidLE_rw_left_add_right {helper_name}]\n"
+            expand_rewrite = f"  rw [forbidLEWith_rw_left_add_right {helper_name}]\n"
 
     T = len(cert["types"])
     if T == 0:
@@ -895,17 +887,17 @@ def render_proof_body(
         n = _block_names(t, T)
         have_rhs += f" + ⟦flagQuadraticForm {n['M_real']} {n['v']}⟧₀"
 
-    # Inner proof of `have` — stack `inducedForbidLE_add_QuadraticForm` calls in
+    # Inner proof of `have` — stack `forbidLEWith_add_QuadraticForm` calls in
     # reverse order (the outermost + on the RHS gets peeled first), then
     # close with reflexivity.
     have_lines: list[str] = []
     for t in reversed(range(T)):
         n = _block_names(t, T)
         have_lines.append(
-            f"    apply inducedForbidLE_add_QuadraticForm {n['M_real']} "
+            f"    apply forbidLEWith_add_QuadraticForm {n['M_real']} "
             f"{n['M_real_psd']} {n['v']}"
         )
-    have_lines.append(f"    exact inducedForbidLE_refl {forbid_expr} {obj_ident}")
+    have_lines.append(f"    exact forbidLEWith_refl _ {obj_ident}")
     have_block = "\n".join(have_lines)
 
     # Step 5: per-block simp expanding the quadratic form. To keep the file
@@ -936,14 +928,15 @@ def render_proof_body(
 
     proof = (
         f"{prefix}"
-        f"  have quadraticForm_trans : {obj_ident} ≤ᵢ[{forbid_expr}]\n"
+        f"  have quadraticForm_trans : {obj_ident} ≤[completeGraph (Fin {forbid_n})]\n"
         f"            {have_rhs}\n"
         f"    := by\n"
         f"{have_block}\n"
-        f"  apply inducedForbidLE_trans quadraticForm_trans\n"
-        f"  apply inducedForbidLE_trans_inducedForbidEq_right ?_  "
-        f"(inducedForbidEq_smul (inducedForbidEq_symm "
-        f"(one_inducedForbidEq_forbidExpand_one {forbid_expr} {N})))\n"
+        f"  apply forbidLEWith_trans quadraticForm_trans\n"
+        f"  apply forbidLEWith_trans_forbidEqWith_right ?_  "
+        f"(forbidEqWith_smul (forbidEqWith_symm "
+        f"(one_forbidEq_forbidExpand_one_ofMem {forbid_expr} "
+        f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n}) {N})))\n"
         f"{expand_rewrite}"
         f"\n"
         f"{simp_block}\n"
@@ -954,7 +947,7 @@ def render_proof_body(
         f"  simp [smul_smul, downward_add, downward_smul]\n"
         f"  flagsum_ac_sort_rhs_pipeline\n"
         f"\n"
-        f"  apply inducedForbidLE_of_le\n"
+        f"  apply forbidLEWith_of_le\n"
         f"  flag_nonneg"
     )
     return proof, helper_lemma
@@ -974,8 +967,8 @@ def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | No
         obj_repr = f"/- TODO: objective flag (parsing failed: {e}) -/"
 
     # The statement forbids the complete graph as a `SimpleGraph` term
-    # `completeGraph (Fin r)` (non-induced `forbidLE`); the proof bridges it to
-    # the induced `⟦K{r}⟧` FinFlag via `inducedForbidLE_toFinFlag_imp_forbidLE`.
+    # `completeGraph (Fin r)` (ordinary `forbidLE`); the proof works directly in the
+    # ordinary `forbidLEWith`/`forbidEqWith` framework (no induced bridge).
     forbid_n, _edges, _tag = _forbid_graph_from_description(desc)
     if forbid_n is None:
         forbid_expr = "/- TODO: forbid expression (no K_n match in description) -/"
@@ -1106,7 +1099,8 @@ def render_pruned_commands(cert: dict) -> str:
         lines.append(
             f"generate_pruned_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
         lines.append(
-            f"generate_pruned_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}")
+            f"generate_pruned_forbid_free_mul_theorems {patN} {N} {k} {m} {tag}"
+            f" (completeGraph (Fin {forbid_n})) (completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})")
     return "\n".join(lines)
 
 
