@@ -339,24 +339,32 @@ theorem _root_.FlagAlgebras.Flag.toSym2EmptyTypedFlag_toFlag_eq
 
 /-! ## Non-empty-typed flags -/
 
-/-- Computable encoding of a flag type `σ` on `Fin k`: its non-loop edge set. -/
+/-- Computable encoding of a flag type `σ` on `Fin k`.
+
+This is the same edge-set representation as `Sym2Graph`; the separate name records that the
+graph is being used as the type of a flag. -/
+abbrev Sym2FlagType (k : ℕ) := Sym2Graph k
+
+namespace Sym2FlagType
+
 @[ext]
-structure Sym2FlagType (k : ℕ) where
-  edges : Finset (Sym2 (Fin k))
-  edges_valid : ∀ e ∈ edges, ¬e.IsDiag
+theorem ext {k : ℕ} {σ τ : Sym2FlagType k} (h : σ.edges = τ.edges) : σ = τ :=
+  Sym2Graph.ext h
 
 /-- Decodes a `Sym2FlagType` to the abstract `FlagType (Fin k)`. -/
-def Sym2FlagType.toFlagType {k : ℕ} (σ : Sym2FlagType k) : FlagType (Fin k)
+def toFlagType {k : ℕ} (σ : Sym2FlagType k) : FlagType (Fin k)
   :=
   fromEdgeSet (SetLike.coe σ.edges)
 
-theorem Sym2FlagType.toFlagType_adj_iff
+theorem toFlagType_adj_iff
   {k : ℕ} (σ : Sym2FlagType k) (u v : Fin k) :
   σ.toFlagType.Adj u v ↔ Sym2.mk (u, v) ∈ σ.edges
   := by
   simp [Sym2FlagType.toFlagType]
   intro h
   exact σ.edges_valid (Sym2.mk (u, v)) h
+
+end Sym2FlagType
 
 /-- Computable encoding of a `σ`-typed labeled graph on `Fin n`: an edge set together with a
 graph embedding of the (decoded) type `σ` into it. -/
