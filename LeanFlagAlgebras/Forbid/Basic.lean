@@ -1497,6 +1497,144 @@ theorem inducedForbidLE_rw_left_add_right
     : ((f + h) ≤ᵢ[F_forbid] k) ↔ ((g + h) ≤ᵢ[F_forbid] k)
   := inducedForbidLE_rw_left (inducedForbidEq_add_right hfg)
 
+/-! ## Condition-generic relation algebra + ordinary expansions (Option B)
+
+These are condition-parametric (`forbidLEWith C` / `forbidEqWith C`) ports of the induced
+move/rewrite lemmas above, plus the ordinary `H`-free expansions. The induced lemmas are
+recovered as the `C := inducedForbiddenCondition _` instances; the ordinary examples use the
+`C := forbiddenCondition H` instances. -/
+
+theorem forbidLEWith_add_right {C : ForbidCondition} {f g h : FlagAlgebra σ}
+    (hfg : forbidLEWith C f g) : forbidLEWith C (f + h) (g + h)
+  := forbidLEWith_add hfg (forbidLEWith_refl C h)
+
+theorem forbidLEWith_add_left {C : ForbidCondition} {f g h : FlagAlgebra σ}
+    (hfg : forbidLEWith C f g) : forbidLEWith C (h + f) (h + g)
+  := forbidLEWith_add (forbidLEWith_refl C h) hfg
+
+theorem forbidEqWith_add_right {C : ForbidCondition} {f g h : FlagAlgebra σ}
+    (hfg : forbidEqWith C f g) : forbidEqWith C (f + h) (g + h)
+  := forbidEqWith_add hfg (forbidEqWith_refl C h)
+
+theorem forbidLEWith_move_add_left_iff {C : ForbidCondition} {a b c : FlagAlgebra σ}
+    : (forbidLEWith C (a + b) c) ↔ (forbidLEWith C b (c - a)) := by
+  constructor
+  · intro habc
+    have h1 := forbidLEWith_add_right (h := -a) habc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+  · intro hbc
+    have h1 := forbidLEWith_add_left (h := a) hbc
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+
+theorem forbidLEWith_move_term_left_iff {C : ForbidCondition} {a c : FlagAlgebra σ}
+    : (forbidLEWith C a c) ↔ (forbidLEWith C (0 : FlagAlgebra σ) (c - a)) := by
+  simpa using
+    (forbidLEWith_move_add_left_iff (C := C) (a := a) (b := (0 : FlagAlgebra σ)) (c := c))
+
+theorem forbidEqWith_move_term_left_iff {C : ForbidCondition} {a c : FlagAlgebra σ}
+    : (forbidEqWith C a c) ↔ (forbidEqWith C (0 : FlagAlgebra σ) (c - a)) := by
+  constructor
+  · intro h
+    have h1 := forbidEqWith_add_right (h := -a) h
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+  · intro h
+    have h1 := forbidEqWith_add_right (h := a) h
+    simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h1
+
+theorem forbidEqWith_move_term_left {C : ForbidCondition} {a c : FlagAlgebra σ}
+    (hac : forbidEqWith C a c) : forbidEqWith C (0 : FlagAlgebra σ) (c - a)
+  := forbidEqWith_move_term_left_iff.1 hac
+
+theorem forbidLEWith_rw_left {C : ForbidCondition} {f g h : FlagAlgebra σ}
+    (hfg : forbidEqWith C f g)
+    : (forbidLEWith C f h) ↔ (forbidLEWith C g h) := by
+  constructor
+  · intro hfh
+    exact forbidLEWith_trans (forbidLEWith_of_forbidEqWith (forbidEqWith_symm hfg)) hfh
+  · intro hgh
+    exact forbidLEWith_trans (forbidLEWith_of_forbidEqWith hfg) hgh
+
+theorem forbidLEWith_rw_left_add_right {C : ForbidCondition} {f g h k : FlagAlgebra σ}
+    (hfg : forbidEqWith C f g)
+    : (forbidLEWith C (f + h) k) ↔ (forbidLEWith C (g + h) k)
+  := forbidLEWith_rw_left (forbidEqWith_add_right hfg)
+
+theorem forbidLEWith_trans_forbidEqWith_right {C : ForbidCondition} {f g h : FlagAlgebra σ}
+    (hfg : forbidLEWith C f g) (hgh : forbidEqWith C g h) : forbidLEWith C f h
+  := forbidLEWith_trans hfg (forbidLEWith_of_forbidEqWith hgh)
+
+/-- Downward monotonicity for equalities (port of `downward_inducedForbidEq_zero`). -/
+theorem downward_forbidEqWith_zero {C : ForbidCondition} {f : FlagAlgebra σ}
+    (hf : forbidEqWith C f 0) : forbidEqWith C ⟦f⟧₀ 0 := by
+  refine forbidLEWith_antisymm ?_ ?_
+  · have hf' : forbidEqWith C (-1 • f) 0 := by
+      refine forbidEqWith_move_term_left_iff.mpr ?_
+      simp only [Int.reduceNeg, neg_smul, one_smul, sub_neg_eq_add, zero_add]
+      exact forbidEqWith_symm hf
+    simp only [Int.reduceNeg, neg_smul, one_smul] at hf'
+    rw [forbidLEWith_move_term_left_iff]
+    simp only [zero_sub, ← downward_neg]
+    exact downward_forbidLEWith_nonneg (forbidLEWith_of_forbidEqWith (forbidEqWith_symm hf'))
+  · exact downward_forbidLEWith_nonneg (forbidLEWith_of_forbidEqWith (forbidEqWith_symm hf))
+
+/-- Downward monotonicity for equalities (port of `downward_inducedForbidEq_equal_flags`). -/
+theorem downward_forbidEqWith_equal_flags {C : ForbidCondition} {a b : FlagAlgebra σ}
+    (hab : forbidEqWith C a b)
+    : forbidEqWith C ⟦a⟧₀ ⟦b⟧₀ := by
+  refine forbidEqWith_move_term_left_iff.mpr ?_
+  rw [← downward_sub]
+  exact forbidEqWith_symm (downward_forbidEqWith_zero ((forbidEqWith_symm (forbidEqWith_move_term_left hab))))
+
+/-- **Ordinary basis-vector expansion.** Modulo the ordinary `H`-free condition, `⟦basisVector F⟧`
+expands over the `Fforbid`-free flags. The kill predicate is the SAME decidable single-flag density
+check used by the induced version; the vanishing of killed flags under `forbiddenCondition H` is
+discharged from `Fforbid ∈ forbiddenFlags H` (`hmem`), so no family-existential decidability is
+needed. The examples instantiate `Fforbid := ⟨_, toFlag ⟦K_r⟧⟩`, `H := completeGraph (Fin r)`. -/
+theorem basisVector_quot_forbidEq_sum_ofMem
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fforbid : FinFlag ∅ₜ)
+    (hmem : Fforbid ∈ forbiddenFlags H) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
+    : ⟦basisVector F⟧ =[H]
+      ∑ F' : FlagWithSize σ ℓ with flagDensity₁ Fforbid.2 (unlabel F') = 0,
+        (flagDensity₁ F.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ := by
+  have hfilter :
+      Finset.univ.filter (fun F' : FlagWithSize σ ℓ => flagDensity₁ Fforbid.2 (unlabel F') = 0)
+        = Finset.univ.filter (fun F' => ¬ (0 < flagDensity₁ Fforbid.2 (unlabel F'))) :=
+    Finset.filter_congr (fun x _ => by
+      constructor
+      · intro hx; rw [hx]; exact lt_irrefl 0
+      · intro hx; exact le_antisymm (le_of_not_gt hx) (flagListDensity₁_ge_zero Fforbid.2 (unlabel x)))
+  rw [show (∑ F' : FlagWithSize σ ℓ with flagDensity₁ Fforbid.2 (unlabel F') = 0,
+        (flagDensity₁ F.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      = Finset.sum (Finset.univ.filter (fun F' => ¬ (0 < flagDensity₁ Fforbid.2 (unlabel F'))))
+          (fun F' => (flagDensity₁ F.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      from by rw [hfilter]]
+  exact basisVector_quot_forbidEqWith_sum_of_kill (forbiddenCondition H) F ℓ hℓ
+      (fun x => 0 < flagDensity₁ Fforbid.2 (unlabel x))
+      (fun x hx => basisVector_familyForbidEq_zero (forbiddenFlags H) Fforbid hmem ⟨ℓ, x⟩ hx)
+
+/-- **Ordinary product expansion** (multiplication analogue of `basisVector_quot_forbidEq_sum_ofMem`). -/
+theorem basisVector_quot_mul_forbidEq_sum_ofMem
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fforbid : FinFlag ∅ₜ)
+    (hmem : Fforbid ∈ forbiddenFlags H) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
+    : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =[H]
+      ∑ F' : FlagWithSize σ ℓ with flagDensity₁ Fforbid.2 (unlabel F') = 0,
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • ⟦basisVector ⟨ℓ, F'⟩⟧ := by
+  have hfilter :
+      Finset.univ.filter (fun F' : FlagWithSize σ ℓ => flagDensity₁ Fforbid.2 (unlabel F') = 0)
+        = Finset.univ.filter (fun F' => ¬ (0 < flagDensity₁ Fforbid.2 (unlabel F'))) :=
+    Finset.filter_congr (fun x _ => by
+      constructor
+      · intro hx; rw [hx]; exact lt_irrefl 0
+      · intro hx; exact le_antisymm (le_of_not_gt hx) (flagListDensity₁_ge_zero Fforbid.2 (unlabel x)))
+  rw [show (∑ F' : FlagWithSize σ ℓ with flagDensity₁ Fforbid.2 (unlabel F') = 0,
+        (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      = Finset.sum (Finset.univ.filter (fun F' => ¬ (0 < flagDensity₁ Fforbid.2 (unlabel F'))))
+          (fun F' => (flagDensity₂ F₁.2 F₂.2 F' : ℝ) • (⟦basisVector ⟨ℓ, F'⟩⟧ : FlagAlgebra σ))
+      from by rw [hfilter]]
+  exact basisVector_quot_mul_forbidEqWith_sum_of_kill (forbiddenCondition H) F₁ F₂ ℓ hℓ
+      (fun x => 0 < flagDensity₁ Fforbid.2 (unlabel x))
+      (fun x hx => basisVector_familyForbidEq_zero (forbiddenFlags H) Fforbid hmem ⟨ℓ, x⟩ hx)
+
 
 
 end Forbid

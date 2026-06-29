@@ -131,6 +131,17 @@ theorem completeSym2Graph_finFlag_eq (r : ℕ) :
               : Flag ∅ₜ (Fin r))⟩
   rw [hflag]
 
+open FlagAlgebras.Compute Forbid in
+/-- The edge-based complete graph's induced forbidden flag is `H`-forbidden for
+`H = completeGraph (Fin r)` (combines `completeSym2Graph_finFlag_eq` with `mem_forbiddenFlags_self`).
+Supplies the `hmem` hypothesis that the ordinary `_ofMem` expansion lemmas need; the examples'
+`def K_r := completeSym2Graph r` makes `⟦K_r⟧` defeq `⟦completeSym2Graph r⟧`. -/
+theorem completeSym2Graph_finFlag_mem_forbiddenFlags (r : ℕ) :
+    (⟨r, Sym2EmptyTypedFlag.toFlag ⟦completeSym2Graph r⟧⟩ : FinFlag ∅ₜ)
+      ∈ forbiddenFlags (completeGraph (Fin r)) := by
+  rw [completeSym2Graph_finFlag_eq r]
+  exact mem_forbiddenFlags_self (completeGraph (Fin r))
+
 /-- `forbid_complete_graph r` elaborates to the complete graph `K_r` as a `Sym2Graph r` term,
 for the edge-based forbid-free commands (Task 6). Typical use:
 `def K4 : Sym2Graph 4 := forbid_complete_graph 4`. -/

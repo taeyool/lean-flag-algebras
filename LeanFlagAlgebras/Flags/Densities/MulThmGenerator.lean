@@ -299,7 +299,8 @@ forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 -- `flagSetHfree_hostN_k_m_<F>` via its `…_eq` / `…_val_eq` lemmas (emitted by the edge-based
 -- generators). Prerequisite: run `generate_pruned_forbid_free_empty_typed_flags hostN F`
 -- (and, for `k > 0`, `generate_pruned_forbid_free_flags hostN k m F`) first.
-elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident : command => do
+elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident
+    HgStx:term:max hmemStx:term:max : command => do
   let k := kS.getNat
   let m := mS.getNat
   let patN := patS.getNat
@@ -332,6 +333,10 @@ elab "generate_pruned_forbid_free_mul_theorems" patS:num hostS:num kS:num mS:num
 edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
 `generate_pruned_forbid_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_pruned_forbid_free_flags {hostN} {k} {m} {tag}`" else ""} first."
 
+  -- Host `FlagAlgebra_*` idents, to unfold the folded RHS to `⟦basisVector⟧` form in the
+  -- proof finish (so `abel` can reconcile it with the right-associated, unfolded LHS sum).
+  let hostIdents : Array (TSyntax `ident) :=
+    (hostFree.map (fun h => mkIdent (Name.mkSimple s!"FlagAlgebra_{hostTag}_{h}"))).toArray
   let mut generated : Nat := 0
   for i in patternFree do
     for j in patternFree do
@@ -353,10 +358,11 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
         if i ≤ j then
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[$forbidFlagTm] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$HgStx] $rhs
               := by
-              apply inducedForbidEq_trans
-                (basisVector_quot_mul_inducedForbidEq_sum $forbidFlagTm
+              apply forbidEqWith_trans
+                (basisVector_quot_mul_forbidEq_sum_ofMem $forbidFlagTm
+                  $hmemStx
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -365,16 +371,19 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact inducedForbidEq_refl $forbidFlagTm _
+              refine forbidEqWith_of_eq ?_
+              try dsimp only [$[$hostIdents:ident],*]
+              abel
           ))
         else
           elabCommand (← `(
             theorem $thmName
-                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =ᵢ[$forbidFlagTm] $rhs
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[$HgStx] $rhs
               := by
               rw [mul_comm]
-              apply inducedForbidEq_trans
-                (basisVector_quot_mul_inducedForbidEq_sum $forbidFlagTm
+              apply forbidEqWith_trans
+                (basisVector_quot_mul_forbidEq_sum_ofMem $forbidFlagTm
+                  $hmemStx
                   ⟨$(Quote.quote patN), $flagOrd1⟩
                   ⟨$(Quote.quote patN), $flagOrd2⟩
                   $(Quote.quote hostN)
@@ -383,7 +392,9 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              exact inducedForbidEq_refl $forbidFlagTm _
+              refine forbidEqWith_of_eq ?_
+              try dsimp only [$[$hostIdents:ident],*]
+              abel
           ))
         generated := generated + 1
 
