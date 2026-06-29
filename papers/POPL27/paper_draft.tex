@@ -2398,7 +2398,7 @@ empty-type case uses the structure \lean{Sym2Graph n}.  For typed flags, the
 flag type itself is encoded as \lean{Sym2FlagType k}; since a flag type is just
 a graph on the labeled vertices, \lean{Sym2FlagType} has the same fields as
 \lean{Sym2Graph}.  The labeled graph is then represented by
-\lean{Sym2LabeledGraph}, the edge-set analogue of \lean{LabeledGraph}:
+\lean{Sym2LabeledGraph}, the edge-set analogue of \lean{LabeledGraph}: \gw{I'm here.}
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
@@ -2419,7 +2419,7 @@ and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
 enumerating possible edge sets.  The typed versions add the finite edge set for
 the type graph and the embedding of those type vertices into the host.  All of
 these representations still decode to the abstract graph language by
-interpreting adjacency as membership in \lean{edges}. \gw{I'm here.}
+interpreting adjacency as membership in \lean{edges}.
 
 These edge-set representations also make the two ingredients above concrete.
 Candidate induced subflags are represented by finite vertex sets, so their
