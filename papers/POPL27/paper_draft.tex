@@ -2396,7 +2396,7 @@ and its edge set is stored as \lean{Finset (Sym2 (Fin n))}, a finite set of
 unordered pairs of vertices.  This representation is packaged as the structure
 \lean{Sym2Graph}.  We then reuse the same graph structure to define a
 concrete flag type, \lean{Sym2FlagType}, and a concrete labeled graph,
-\lean{Sym2LabeledGraph}.  \gw{I'm here.}
+\lean{Sym2LabeledGraph}.
 \begin{lstlisting}
 structure Sym2Graph (n : Nat) where
   edges       : Finset (Sym2 (Fin n))
@@ -2409,62 +2409,96 @@ structure Sym2LabeledGraph {k : Nat} (sigma : Sym2FlagType k) (n : Nat) where
   edges_valid : forall e in edges, not e.IsDiag
   type_embed  : fromEdgeSet (SetLike.coe sigma.edges) (*@$\hookrightarrow_g$@*) fromEdgeSet (SetLike.coe edges)
 \end{lstlisting}
-Thus a graph on $\{0,\ldots,n-1\}$ is stored as a finite set of unordered
-non-diagonal pairs.  Adjacency is checked by membership in this finite edge set,
-and every possible graph on \(\{0,\ldots,n-1\}\) can be enumerated by
-enumerating possible edge sets.  The typed versions add the finite edge set for
-the type graph and the embedding of those type vertices into the host.  All of
-these representations still decode to the abstract graph language by
-interpreting adjacency as membership in \lean{edges}.
+In this concrete definition, unlike in a general \lean{SimpleGraph}, Lean can
+enumerate all vertices of the type \lean{Fin n}, namely \(0,1,\ldots,n-1\).
+It can also check whether two vertices \(u\) and \(v\) are adjacent by testing
+whether the unordered pair \(\{u,v\}\) belongs to the explicit finite edge set
+\lean{edges}.
 
-These edge-set representations also make the two ingredients above concrete.
-Candidate induced subflags are represented by finite vertex sets, so their
-enumeration is just the enumeration of all finite subsets of
-\(\{0,\ldots,n-1\}\):
+These basic choices then scale to the finite searches used by the evaluator.
+For example, to compute a density \(\den{F}{G}\),
+the evaluator must range over possible placements of \(F\)
+inside the host \(G\).  Such a placement first chooses a finite set of vertices
+of \(G\) that contains all labeled vertices; this set then determines an
+induced subflag of \(G\), which can be tested for isomorphism with \(F\).
+The following \lean{Fintype} instance provides the enumeration used to range
+over these possible placements:
 \begin{lstlisting}
-structure Sym2InducedSubgraph (G : Sym2Graph n) where
+structure Sym2InducedLabeledSubgraph
+    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
+    (G : Sym2LabeledGraph sigma n) where
   verts : Finset (Fin n)
+  verts_subset : G.type_verts (*@$\subseteq$@*) verts
 
-instance (G : Sym2Graph n) : Fintype (Sym2InducedSubgraph G) where
-  elems := Finset.map
-    { toFun := fun V => ({ verts := V } : Sym2InducedSubgraph G)
-      inj'  := ... }
-    (Finset.univ : Finset (Finset (Fin n)))
+instance
+    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
+    (G : Sym2LabeledGraph sigma n) :
+    Fintype (Sym2InducedLabeledSubgraph G) where
+  elems := (@Finset.univ (Finset (Fin n))).filterMap (fun V =>
+    if hV : G.type_verts (*@$\subseteq$@*) V
+    then some ({ verts := V, verts_subset := hV } : Sym2InducedLabeledSubgraph G)
+    else none)
+    (by grind)
   complete H := ...
-\end{lstlisting}
-Once a vertex set is chosen, its induced edge set is computed by filtering the
-host graph's explicit edge set.
 
-The isomorphism decision procedure is similarly concrete.  For empty-type
-graphs, it first rejects graphs with different edge counts, then searches over
-vertex permutations and checks edge membership:
+def Sym2InducedLabeledSubgraph.edges
+    {k : Nat} {sigma : Sym2FlagType k} {n : Nat}
+    {G : Sym2LabeledGraph sigma n} (H : Sym2InducedLabeledSubgraph G) :
+    Finset (Sym2 (Fin n)) :=
+  G.edges.filter (fun e => forall v in e, v in H.verts)
+\end{lstlisting}
+The enumeration is deliberately simple.  Since the vertices of \(G\) are
+\lean{Fin n}, Lean can enumerate the finite set of all subsets of
+\(\{0,\ldots,n-1\}\).  The instance scans this list and keeps a subset \(V\)
+precisely when it contains the type vertices \lean{G.type\_verts}; the retained
+subset is stored together with the proof of that containment.  Once such a
+vertex set is chosen, its induced edge set is computed by filtering the host
+graph's explicit edge set. \gw{I'm here.}
+
+The core reflection definitions already give a generic decidability instance for
+the relation \(G \sim_{\mathsf{sf}} G'\) by asking Lean to enumerate graph
+isomorphisms.  For the evaluator, the fast isomorphism module installs a
+high-priority replacement with the same specification but a more direct
+algorithm.  It first rejects typed labeled graphs with different edge counts,
+then maps the labeled vertices according to the two embeddings and searches
+only over permutations of the remaining vertices:
 \begin{lstlisting}
-def isEmptyIsoFast_bool (G1 G2 : Sym2Graph n) : Bool :=
+def isIsoFast_bool
+    {k n : Nat} {sigma : Sym2FlagType k}
+    (G1 G2 : Sym2LabeledGraph sigma n) : Bool :=
   if G1.edges.card != G2.edges.card then false
   else
-    let perms := (List.finRange n).permutations
+    let nonType1 := getNonTypeVerts n k G1.type_embed
+    let nonType2 := getNonTypeVerts n k G2.type_embed
+    let perms := nonType2.permutations
     let edges := allEdges n
-    perms.any fun perm =>
+    perms.any fun p =>
+      let fullMap :=
+        buildFullMap n k G1.type_embed G2.type_embed nonType1 p
       edges.all fun e =>
         decide (e (*@$\in$@*) G1.edges) ==
-        decide (applyPermEdge perm e (*@$\in$@*) G2.edges)
+        decide (applyPermEdge fullMap e (*@$\in$@*) G2.edges)
 
-instance fastDecidableSym2GraphEqv
-    (G1 G2 : Sym2Graph n) : Decidable (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) :=
-  if h : isEmptyIsoFast_bool G1 G2 = true then
-    isTrue  (isEmptyIsoFast_bool_true_correct h)
+instance (priority := high) fastDecidableSym2LabeledGraphEqv
+    {k n : Nat} {sigma : Sym2FlagType k}
+    (G1 G2 : Sym2LabeledGraph sigma n) :
+    Decidable (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) :=
+  if h : isIsoFast_bool G1 G2 = true then
+    isTrue  (isIsoFast_bool_true_correct h)
   else
-    isFalse (isEmptyIsoFast_bool_false_correct ...)
+    isFalse (isIsoFast_bool_false_correct ...)
 
-instance fastDecidableSym2EmptyTypedFlagEqv :
-    DecidableEq (Sym2EmptyTypedFlag n) := ...
+instance (priority := high) fastFintypeSym2Flag
+    {k : Nat} {sigma : Sym2FlagType k} {n : Nat} :
+    Fintype (Sym2Flag sigma n) := by
+  refine @Quotient.fintype _ _ (sym2LabeledGraphSetoid sigma n) ?_
+  intro G G'
+  exact fastDecidableSym2LabeledGraphEqv G G'
 \end{lstlisting}
 The Boolean program is not trusted on its own: the \lean{true\_correct} and
 \lean{false\_correct} theorems turn its two possible outcomes into proofs about
 the quotient relation.  Thus equality still means equality up to flag
-isomorphism; only the procedure used to decide it has changed.  For typed flags,
-the analogous checker fixes the labeled vertices and permutes only the
-remaining vertices.
+isomorphism; only the procedure used to decide it has changed.
 
 \subsection{Correctness as Adequacy}
 
