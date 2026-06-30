@@ -2417,18 +2417,16 @@ enumeration is deliberately simple: since the vertices of \(G\) are
 exactly those containing \lean{G.type\_verts}, and stores the retained subset
 with the proof of containment.  With this instance available, the evaluator can
 iterate through all induced subflags of \(G\) and count the ones isomorphic to
-the pattern \(F\) when computing \(\den{F}{G}\). \gw{The current density-counting
-path appears to enumerate all induced subflags and filter them using generic
-isomorphism checker rather than the fast same-size checker below; revisit this
-after the planned density-count refactor.}
+the pattern \(F\) when computing \(\den{F}{G}\).
 
-The core reflection definitions already give a generic decidability instance for
-the relation \(G \sim_{\mathsf{sf}} G'\) by asking Lean to enumerate graph
-isomorphisms.  For the evaluator, the fast isomorphism module installs a
-high-priority replacement with the same specification but a more direct
-algorithm.  It first rejects typed labeled graphs with different edge counts,
-then maps the labeled vertices according to the two embeddings and searches
-only over permutations of the remaining vertices:
+The remaining task in this count is the second basic ingredient: for each
+subflag, the evaluator must decide whether it is isomorphic to the pattern
+\(F\).  \gw{The current
+density computing framework does not appear to use the fast isomorphism-checking
+instance below.  This likely needs to be revised later.}
+The following \lean{Decidable} instance provides this concrete
+isomorphism test for two \lean{Sym2LabeledGraph}s \(G_1\) and \(G_2\) with the
+same vertex type \lean{Fin n}:
 \begin{lstlisting}
 def isIsoFast_bool
     {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
@@ -2446,27 +2444,41 @@ def isIsoFast_bool
         decide (applyPermEdge fullMap e (*@$\in$@*) G2.edges)
 
 theorem isIsoFast_bool_true_correct
-    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
     (h : isIsoFast_bool G1 G2 = true) :
     G1 (*@$\sim_{\mathsf{sf}}$@*) G2 := ...
 
 theorem isIsoFast_bool_false_correct
-    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n}
     (h : isIsoFast_bool G1 G2 = false) :
     (*@$\neg$@*) (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) := ...
 
 instance (priority := high) fastDecidableSym2LabeledGraphEqv
-    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} (G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n) :
+    {k n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    (G1 G2 : Sym2LabeledGraph (*@$\sigma$@*) n) :
     Decidable (G1 (*@$\sim_{\mathsf{sf}}$@*) G2) :=
   if h : isIsoFast_bool G1 G2 = true then
     isTrue  (isIsoFast_bool_true_correct h)
   else
     isFalse (isIsoFast_bool_false_correct (eq_false_of_ne_true h))
 \end{lstlisting}
-The Boolean program is not trusted on its own: the \lean{true\_correct} and
-\lean{false\_correct} theorems turn its two possible outcomes into proofs about
-the quotient relation.  Thus equality still means equality up to flag
-isomorphism; only the procedure used to decide it has changed.
+\lean{isIsoFast\_bool} is the executable Boolean procedure for testing
+isomorphism.  It first rejects graphs with different edge counts.  If the edge counts agree, the type embeddings
+determine where the labeled vertices must go, so the algorithm only searches
+over permutations of the remaining vertices and checks edge membership in the
+two explicit edge sets.
+
+The \lean{Decidable} instance packages this Boolean algorithm as a
+proof-producing decision procedure for the predicate
+\(G_1 \sim_{\mathsf{sf}} G_2\), meaning that the two \lean{Sym2LabeledGraph}s are
+isomorphic.  In Lean, a \lean{Decidable P} value is either \lean{isTrue h},
+carrying a proof \lean{h : P}, or \lean{isFalse h}, carrying a proof of
+\(\neg P\).  The two correctness theorems above turn the Boolean outcomes of
+\lean{isIsoFast\_bool} into exactly these proofs.  With this instance available,
+the evaluator can use \lean{isIsoFast\_bool} as a trusted
+isomorphism-checking algorithm when filtering the \lean{Fintype} enumeration. \gw{I'm here.}
 
 \subsection{Correctness as Adequacy}
 

@@ -722,6 +722,22 @@ def predIsoSym2LabeledHl
     (∀ (i : Fin t), Nonempty ((Gl i).toLabeledSubgraph.coe ≃f (Hl i).toLabeledGraph))
     ∧ predDisjointSym2InducedLabeledSubgraphList Gl
 
+/-- Necessary condition for a candidate placement: if the induced subflag's
+`coe` (on `↥H.verts`) is isomorphic to the size-`m` pattern `K`, then
+`H.verts.card = m`.  Used as a cheap prefilter in the `DecidablePred` below so
+that wrong-size candidates are rejected at `O(1)` without running the generic
+isomorphism search (the dominant cost when counting over all vertex subsets). -/
+theorem verts_card_of_coe_iso
+    {k : ℕ} {σ : Sym2FlagType k} {n : ℕ} {G : Sym2LabeledGraph σ n}
+    (H : Sym2InducedLabeledSubgraph G) {m : ℕ} (K : Sym2LabeledGraph σ m)
+    (h : Nonempty (H.toLabeledSubgraph.coe ≃f K.toLabeledGraph)) :
+    H.verts.card = m := by
+  obtain ⟨iso⟩ := h
+  have e : Fin H.verts.card ≃ Fin m :=
+    (H.verts.equivFin).symm.trans iso.graph_iso.toEquiv
+  have hcard := Fintype.card_congr e
+  simpa using hcard
+
 instance
     {t : ℕ} {k : ℕ} {σ : Sym2FlagType k} {n : ℕ}
     {G : Sym2LabeledGraph σ n} {Vl : Fin t → ℕ} (Hl : Sym2LabeledGraphList σ t Vl) :
@@ -742,7 +758,9 @@ instance
       intro a b
       simp [Sym2LabeledGraph.toLabeledGraph]
       exact instDecidableAnd
-    infer_instance
+    by_cases hc : (Gl i).verts.card = Vl i
+    · infer_instance
+    · exact isFalse (fun hiso => hc (verts_card_of_coe_iso (Gl i) (Hl i) hiso))
   · simp [predDisjointSym2InducedLabeledSubgraphList]
     refine @Fintype.decidableForallFintype (Fin t) _ ?_ _
     intro i
