@@ -2578,13 +2578,11 @@ the certificate.
 \label{sec:bridge}% legacy alias: this section absorbed the former ``Bridge'' section
 
 Software such as Flagmatic~\cite{vaughan2013flagmatic} searches for
-flag-algebra certificates automatically, but a certificate is numerical
-data---lists of flags, density and multiplication tables, and rational
-positive semidefinite matrices---not a machine-checked proof.  Turning one
-into a verified theorem means transcribing every number into the proof
-assistant, reproducing the bookkeeping that links subflags to host flags, and
-checking positive-semidefiniteness, densities, and product expansions inside
-the kernel.
+flag-algebra certificates automatically, but a certificate is numerical data,
+not a machine-checked proof.  Turning one into a verified theorem means
+transcribing every number into the proof assistant, reproducing the bookkeeping
+that links subflags to host flags, and checking positive-semidefiniteness,
+densities, and product expansions inside the kernel.
 
 The specification of Section~\ref{sec:abstract} and the reflection layer of
 Section~\ref{sec:reflection} make it possible to carry this out by hand.  We
@@ -2597,14 +2595,74 @@ order, with only the sizes and the data changing.  That regularity is what
 convinced us the manual work could be mechanized, and it showed which recurring
 step each tactic would later have to automate.
 
-We first identify this common proof structure, then show how each step becomes a
-reusable, kernel-checked component in the certificate-to-Lean compiler.
+We first recall how Flagmatic certificates are produced and why their positive
+semidefinite matrices certify extremal bounds, then identify this common proof
+structure and show how each step becomes a reusable, kernel-checked component in
+the certificate-to-Lean compiler.
+
+\subsection{Flagmatic Certificates and Positive Semidefiniteness}
+\label{sec:flagmatic-background}
+
+Many applications of Razborov's flag algebra method reduce to solving a
+\emph{semidefinite program} (SDP) whose solution determines the coefficients of
+suitable quadratic forms.  Flagmatic~\cite{vaughan2013flagmatic} automates this
+search.  To bound the density of a target $P$ in $\mathcal{H}$-free graphs by a
+constant $c$, Flagmatic fixes a host size $N$ and, for each flag type $\sigma_t$
+occurring at that size, represents these coefficients as the entries of a
+symmetric matrix $M_t$.  These entries are the variables of the SDP, and its
+constraints, linear in them, encode the bound.  An SDP solver assigns values to
+these variables so that every $M_t$ becomes \emph{positive semidefinite} (PSD)
+while the constraints hold, numerically; Flagmatic then converts the result to
+exact rational matrices.  The \emph{certificate} is this data: the flags, the
+density and multiplication tables among them, and the rational PSD matrices
+$M_t$ paired with vectors $v_t$ of $\sigma_t$-flags.
+
+Flag-algebra proofs certify an inequality by expressing its difference as a sum
+of semantically non-negative elements.  The simplest such element is a square:
+for $e \in \mathcal{A}^\sigma$ and any positive homomorphism $\phi$,
+$\phi(e^2) = \phi(e)^2 \geq 0$.  More generally, semantically non-negative
+elements arise from positive semidefinite matrices.  A real symmetric matrix $Q$ is PSD when
+$v^\top Q v \geq 0$ for every real vector $v$; given such a $Q$ and flags
+$e_1,\dots,e_r \in \mathcal{A}^\sigma$, every positive homomorphism sends the
+quadratic form $\sum_{i,j} Q_{ij}\, e_i e_j$ to the real number $v^\top Q v$ with
+$v=(\phi(e_1),\dots,\phi(e_r))$, which is non-negative because $Q$ is PSD.  The
+quadratic form therefore lies in the cone $\mathcal{C}^\sigma$, and this is the
+precise sense in which flag-algebra proofs are ``sums of squares'': the proof
+data is a quadratic expression whose value a PSD matrix forces to be
+non-negative.
+
+To use these non-negative quadratic forms in an extremal inequality, they must
+be transferred from the labeled algebra $\mathcal{A}^\sigma$ to the unlabeled
+algebra.  The downward operator $\llbracket\cdot\rrbracket_\sigma$ performs this
+transfer: by
+Theorem~\ref{thm:downward-nonneg} it maps $\mathcal{C}^\sigma$ into $\mathcal{C}$,
+so a downward-averaged PSD quadratic form is still semantically non-negative.  A
+bound then reduces to an identity.  After expanding $P$ and the unit to a common
+host size, and modulo the $\mathcal{H}$-free condition, the difference
+$c\cdot\mathbf{1} - P$ splits into the downward-averaged quadratic forms and a
+remainder $R$:
+\[
+  c\cdot\mathbf{1} - P
+  \;=\;
+  \sum_t \bigl\llbracket \langle v_t, M_t\, v_t\rangle \bigr\rrbracket_{\sigma_t}
+  \;+\; R,
+\]
+where $R$ is a combination of flags.  When $R$ has non-negative coefficients,
+both parts of the right-hand side are non-negative: the quadratic forms because
+the $M_t$ are PSD, and $R$ because flag densities are non-negative.  The bound
+$P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ then follows.  Flagmatic's search is
+exactly the problem of finding PSD matrices $M_t$ for which the resulting
+identity certifies the desired inequality.  The remaining task, and the
+focus of the rest of this section, is to reconstruct and verify this identity
+automatically inside Lean.
+
 
 \subsection{The Four-Part Proof Skeleton}
 \label{sec:flagmatic-shape}
 
-Each of these proofs has the same four-part skeleton.  We list the parts in the
-order a finished proof presents them:
+We organize the recurring structure into a four-part skeleton, one part for each
+obligation that turning a certificate into a verified proof requires.  The parts,
+in the order a finished proof presents them, are:
 
 \begin{enumerate}
   \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
@@ -2623,10 +2681,9 @@ order a finished proof presents them:
     normalizing, and closing by non-negativity.
 \end{enumerate}
 
-Across these proofs the same four parts recur; only the sizes and the numbers
-inside each part change.  That invariance is what the next subsection exploits:
-it discharges each part with a single reusable, kernel-checked component fed the
-per-proof data, so a new theorem is new data, not a new proof.
+The next subsection exploits this structure: it discharges each of the four parts
+with a single reusable, kernel-checked component fed the per-proof data, so a new
+theorem is new data, not a new proof.
 
 
 \subsection{The Certificate-to-Lean Pipeline}
@@ -2655,13 +2712,9 @@ rewrites with.  All of this runs inside Lean by the machinery of
 Section~\ref{sec:reflection}, so nothing is read from a precomputed table.
 
 \paragraph{Certificate matrices (Part~2).}
-Part 2 discharges the positive-semidefiniteness the method depends on.  A
-flag-algebra bound $P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ is proved not by
-manipulating $P$ but by adding to it a provably non-negative quantity, the
-flag-algebra analogue of a sum of squares: a quadratic form
-$\langle v_t, M_t\,v_t\rangle$ whose matrix $M_t$ is positive semidefinite.  The
-solver supplies each $M_t$, and re-establishing that each is PSD is exactly
-Lean's task.  Testing that spectrally, by asking every eigenvalue to be
+Part 2 discharges the positive-semidefiniteness the method depends on.  The
+solver supplies each $M_t$; re-establishing that each is PSD is exactly Lean's
+task.  Testing that spectrally, by asking every eigenvalue to be
 non-negative, would need real, approximate arithmetic the kernel cannot check
 exactly; instead we certify it from a rational factorization $M_t = L D L^\top$
 with $D$ diagonal and non-negative, which reduces the whole question to one exact
@@ -2791,13 +2844,13 @@ rejects, so its fragility costs at most a failed build.
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
 To see whether the pipeline produces checked proofs in practice, we ran
-\lean{gen-skeleton} on six certificates chosen to span the cases it must handle:
-both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$, and
-three forbids ($K_3$, $K_4$, $K_5$).  Every one compiles to a file the kernel
-accepts with no \lean{sorry} (Table~\ref{tab:flagmatic-scenarios}), and none
-required hand transcription of the certificate into Lean.  Three are classical
-extremal results, whose upper bounds we describe below; the rest appear only in
-the table.
+\lean{gen-skeleton} on seven certificates chosen to span the cases it must
+handle: both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$,
+and four forbidden graphs ($K_3$, $K_4$, $K_5$, and the cycle $C_5$).  Every one
+compiles to a file the kernel accepts with no \lean{sorry}
+(Table~\ref{tab:flagmatic-scenarios}), and none required hand transcription of
+the certificate into Lean.  Three are classical extremal results, whose upper
+bounds we describe below; the rest appear in the table.
 
 \begin{table}[t]
   \centering
@@ -2815,6 +2868,7 @@ the table.
     K4turan        & $K_4$ & 4 & 2 & B & 2 & $2/3$    \\
     ErdosPentagon  & $K_3$ & 5 & 5 & A & 3 & $24/625$ \\
     K5turan        & $K_5$ & 5 & 2 & B & 4 & $3/4$    \\
+    C5turan        & $C_5$ & 5 & 2 & B & 4 & $1/2$    \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -2844,24 +2898,33 @@ certificate-to-Lean pipeline introduced in Section~\ref{sec:flagmatic-pipeline},
 from a single hand-checkable certificate to multi-block SDP certificates
 requiring substantial symbolic normalization.
 
+\paragraph{A non-complete forbid.}
+C5turan forbids a non-complete graph: it bounds edge density at $\tfrac12$ in
+graphs with no $C_5$ subgraph.  For a complete forbid, forbidding an induced copy
+and forbidding a subgraph coincide, and the generators take a faster induced
+path; $C_5$ is the first forbid we have run where the two differ, handled instead
+through a subgraph-forbidding path.  The four-part skeleton is otherwise
+unchanged, so nothing in the pipeline assumes a complete forbid.
+
 As an aside, the pipeline proves only upper bounds; for Mantel and the pentagon,
 the matching lower bounds are formalized separately in Lean, completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
 
-\paragraph{What is not automated.}
+\paragraph{A limitation.}
 \label{sec:flagmatic-open}
-Two caveats bound the claim.  First, the Branch~B host-size expansion
+One limitation remains: the Branch~B host-size expansion
 (\lean{flag\_expand\_hfree}) ends in a \lean{ring\_nf} normalization that we
 have not formally characterized; it closes every case we have met, but we have
-not proved that no certificate produces a form it fails to normalize.  Second,
-the identifier and forbid machinery is written to be generic in the forbidden
-graph: nothing in the proof body or the generators assumes a complete graph.
-But only $K_3$, $K_4$, $K_5$ have been exercised end to end, so a non-$K_n$
-forbid such as $C_4$ or $P_4$ would be the first empirical test of the
-generality we claim.
-We list these alongside the open questions of Section~\ref{sec:unsure}
+not proved that no certificate produces a form it fails to normalize.
+We list it alongside the open questions of Section~\ref{sec:unsure}
 rather than presenting the pipeline as complete.
+
+\medskip
+Taken together, the construction of this section turns a Flagmatic certificate
+into a verified theorem with no manual intervention: the proof follows a fixed
+skeleton, the translator reconstructs it from the certificate alone, and the
+Lean kernel has the final say.
 
 
 \section{Proof-Style Observations}
