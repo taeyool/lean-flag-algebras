@@ -433,22 +433,22 @@ flag algebras, including the root-planting criterion and the resulting
 generalization beyond hereditary constraints.
 
 \paragraph{Organization.}
-Section~\ref{sec:background} recalls the mathematical background of flag algebras.
-Section~\ref{sec:abstract} describes the Lean specification layer and the
+\Cref{sec:background} recalls the mathematical background of flag algebras.
+\Cref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
-Section~\ref{sec:obstacles} describes the main formalization obstacles:
+\Cref{sec:obstacles} describes the main formalization obstacles:
 quotient eliminators, dependent-type transports, function extensionality, and
 \lean{Fintype}-instance ambiguity.
-Sections~\ref{sec:reflection} and~\ref{sec:bridge} describe the bridge from
+\Cref{sec:reflection,sec:bridge} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the Automation layer, elaboration-time theorem generation,
 and the verified results.
-Section~\ref{sec:proof-style} records a recurring proof pattern from the case
+\Cref{sec:proof-style} records a recurring proof pattern from the case
 studies: density equalities are proved by explicit bijections between finite
 sample spaces.
-Sections~\ref{sec:unsure} and~\ref{sec:lessons} discuss limitations and
-lessons for future formalizations, and Sections~\ref{sec:related}
-and~\ref{sec:conclusion} give related work and conclusions.
+\Cref{sec:unsure,sec:lessons} discuss limitations and
+lessons for future formalizations, and \Cref{sec:related,sec:conclusion}
+give related work and conclusions.
 
 
 \section{Background: Flag Algebras}
@@ -794,6 +794,7 @@ we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
 \begin{example}[Multiplication of $K_2^\bullet$ and $\overline{K_2}^\bullet$]
+\label{ex:typed-edge-nonedge-product}
   Let $\sigma$ be the one-vertex flag type.  Taking $\ell = 3$, the density
   $\den{\fKtwobull,\,\fbarKtwobull}{G}$ equals $\frac{1}{2}$ for each size-3
   $\sigma$-flag $G$ whose labeled vertex has degree exactly $1$:
@@ -1281,7 +1282,7 @@ the resulting equality can be used as a proof step only because previously
 proved theorems connect the computation to the mathematical definitions.  We
 call the interface supporting these proof-producing computations the
 \emph{specification layer}.  It formalizes the objects from
-Section~\ref{sec:background}---flags as isomorphism classes of labeled graphs,
+\Cref{sec:background}---flags as isomorphism classes of labeled graphs,
 densities as finite sampling probabilities, the flag algebra as a quotient by
 expansion identities, and positive homomorphisms as semantic interpretations of
 algebra elements---and proves their basic interface theorems.  Once this layer
@@ -1308,7 +1309,7 @@ theorem that turns an empty-type ensemble inequality into the corresponding
 extremal-density bound.
 
 One notational convention is specific to the formalization.  In
-Section~\ref{sec:background}, the empty flag type was written simply as
+\Cref{sec:background}, the empty flag type was written simply as
 $\emptyset$.  In Lean-related notation, we write it as $\emptyt$ to avoid
 confusion with ordinary empty sets.
 
@@ -1329,7 +1330,7 @@ the reader to remember a global Lean context or source-file naming convention.
 
 Our formalization builds on Mathlib, and in particular on Mathlib's graph
 library.  Before giving the Lean definitions of flags, we recall the small
-pieces of Mathlib notation used below.  In Section~\ref{sec:background} we
+pieces of Mathlib notation used below.  In \Cref{sec:background} we
 described a finite graph as having a vertex set $V(G)$.  In Lean, the vertex
 set is represented by a type: a term of type \lean{SimpleGraph V} is a simple
 graph whose vertices are the elements of \lean{V}.  Finiteness is supplied
@@ -1342,7 +1343,7 @@ from $G$ to $H$.  Such an embedding is an injective vertex map that
 preserves and reflects adjacency, so its image is an induced copy of $G$
 in $H$.  Mathlib also provides $G\simeq_g H$ for graph isomorphisms.
 With this notation in place, the concrete pair $(M,\theta_A)$ from
-Section~\ref{sec:background} is represented by \lean{LabeledGraph}, while its
+\Cref{sec:background} is represented by \lean{LabeledGraph}, while its
 isomorphism class is represented by \lean{Flag}.
 
 \begin{lstlisting}
@@ -1425,7 +1426,7 @@ def FinFlag {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n
   (*@$\Sigma$@*) (n : (*@$\mathbb{N}$@*)), Flag (*@$\sigma$@*) (Fin n)
 \end{lstlisting}
 
-Note that unlike Section~\ref{sec:background}, none of the definitions above carries the
+Note that unlike \Cref{sec:background}, none of the definitions above carries the
 \(\mathcal{H}\)-free condition: the underlying graphs are arbitrary.  This is a
 deliberate interface choice.  The core quotient and density machinery is
 developed once for all finite graphs, while the \(\mathcal{H}\)-free assumption
@@ -1436,7 +1437,7 @@ inequality.
 \label{sec:formal-subflag-densities}
 
 Formalizing the density function is not straightforward.  The density
-$\den{F_1,\ldots,F_t}{G}$ from Section~\ref{sec:background} should be a
+$\den{F_1,\ldots,F_t}{G}$ from \Cref{sec:background} should be a
 function taking $t$ pattern flags and a host flag to a value in $[0,1]$, but
 \lean{Flag} is a quotient type of \lean{LabeledGraph}.  The standard way to
 define a function from a quotient type in Lean is to first define it on the
@@ -1451,7 +1452,7 @@ Given such a tuple of pattern \lean{LabeledGraph}s and a host \lean{LabeledGraph
 \lean{labeledGraphListDensity} computes the density as the number of tuples
 $(S_1, \ldots, S_t)$ satisfying the conditions in the definition of $\den{F_1,\ldots,F_t}{G}$,
 divided by the total number of candidate tuples.  Rather than adopting the
-probabilistic sampling formulation of Section~\ref{sec:background}, this direct ratio is easier to work with in Lean.
+probabilistic sampling formulation of \Cref{sec:background}, this direct ratio is easier to work with in Lean.
 \begin{lstlisting}
 abbrev LabeledGraphList {T : Type} [Fintype T]
     ((*@$\sigma$@*) : FlagType T) (t : (*@$\mathbb{N}$@*)) (Vl : Fin t (*@$\to$@*) Type) : Type :=
@@ -1497,7 +1498,7 @@ pairwise-disjoint vertex sets of those sizes among the unlabeled vertices of
 The \lean{noncomputable} keyword signals that Lean cannot synthesize an
 algorithm to evaluate this definition directly.  This poses no obstacle to
 formalizing flag algebra itself, but becomes relevant when applying the algebra
-to concrete extremal problems, a point we return to in Section~\ref{sec:reflection}.
+to concrete extremal problems, a point we return to in \Cref{sec:reflection}.
 
 The concrete function \lean{labeledGraphListDensity} has two inputs: the tuple
 \lean{Hl} of pattern labeled graphs and the target labeled graph \lean{G}.  To
@@ -1611,7 +1612,7 @@ add another quotienting operation.
 
 Building on the definitions above, we prove the following chain rule (Lemma~\ref{lem:chain-rule}) and several of its variants.
 Although the statement mirrors the elementary sampling identity from
-Section~\ref{sec:background}, the formal proof must also commute finite counts
+\Cref{sec:background}, the formal proof must also commute finite counts
 with quotient lifts and the coercions between rational densities and real-valued
 algebra expressions.
 \begin{lstlisting}
@@ -1664,7 +1665,7 @@ noncomputable def ZeroSpace {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) :
 \end{lstlisting}
 
 Following the same pattern as the definition of \lean{Flag} from
-\lean{LabeledGraph} in Section~\ref{sec:flagtypes}, we now define
+\lean{LabeledGraph} in \Cref{sec:flagtypes}, we now define
 the flag algebra $\mathcal{A}^\sigma$ as a quotient of \lean{FlagVector} $\sigma$.
 The equivalence relation \lean{flagVectorEqv} declares two elements of \lean{FlagVector} $\sigma$ equivalent
 when their difference lies in \lean{ZeroSpace} $\sigma$, and \lean{flagVectorSetoid} $\sigma$
@@ -1905,8 +1906,9 @@ instance {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@
 \end{lstlisting}
 
 \subsection{The Downward Operator}
+\label{sec:formal-downward}
 
-The downward operator from Section~\ref{sec:background-downward} forgets the
+The downward operator from \Cref{sec:background-downward} forgets the
 labels of a typed flag-algebra expression while keeping the correct averaging
 factor.  On a single flag the intended formula is
 \[
@@ -1998,7 +2000,7 @@ The last definition is the quotient-level downward operator, and the final
 line of the snippet is the Lean notation declaration saying that
 \(\llbracket f\rrbracket_0\) expands to \lean{downward f}.  In mathematical
 prose we write this operator as \(\llbracket-\rrbracket_\sigma\), following
-Section~\ref{sec:background-downward}.  In Lean code, the subscript \(0\)
+\Cref{sec:background-downward}.  In Lean code, the subscript \(0\)
 emphasizes that the codomain is the
 \(\emptyt\)-typed algebra.  The notation is compact, but the implementation
 contains the full sequence of quotient lifts: from concrete labeled graphs to
@@ -2100,7 +2102,7 @@ bounds.
 \subsection{Forbidden Graphs as Assumptions, Not New Theories}
 \label{sec:forbidden}
 
-Section~\ref{sec:background} presented flag algebras in the usual constrained
+\Cref{sec:background} presented flag algebras in the usual constrained
 form: a finite forbidden family \(\mathcal{H}\) is fixed first, and the flag
 types, flags, algebras, and positive homomorphisms are all built inside the
 \(\mathcal{H}\)-free world.  In that setup, an inequality
@@ -2270,7 +2272,7 @@ calculation from scratch, we prove once that an algorithm correctly performs the
 kind of calculation we need, and then we let Lean run that algorithm inside later
 proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
 Lean formalization is the computable counterpart of the abstract flag-algebra
-layer described in Section~\ref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
+layer described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
 such as testing flag isomorphism, computing a density, or expanding a product,
 it provides a program that carries out the calculation and a theorem saying that
 the program's output agrees with the abstract definition.  Later proofs can then
@@ -2287,7 +2289,7 @@ evaluator once, then use the verified evaluator repeatedly.  Each time Lean runs
 the evaluator, the correctness theorem explains why the computed answer has the
 claimed mathematical meaning.
 
-Section~\ref{sec:abstract} gave the specification layer: definitions close to
+\Cref{sec:abstract} gave the specification layer: definitions close to
 the mathematics, where flags are identified up to isomorphism and quotient
 classes hide arbitrary choices of representatives.  Those definitions are the
 right ones for stating theorems, but many are marked \lean{noncomputable}
@@ -2299,7 +2301,8 @@ quotient-based definitions.  The same pattern is used throughout the rest of the
 development: a concrete representation, an evaluator, and a theorem connecting
 the evaluator to the abstract specification.
 
-\subsection{Concrete Graph Representations}
+\subsection{Concrete Graph Representations and Finite Search}
+\label{sec:reflection-concrete}
 
 The finite coefficients in a flag-algebra proof come from concrete counting
 problems.  For example, suppose \(F\) and \(G\) are empty-type flags.  To
@@ -2322,7 +2325,7 @@ such instances are available, a definition that says ``count all objects
 satisfying this predicate'' can be evaluated by iterating over the finite
 collection and filtering by the decision procedure.
 
-The specification layer of Section~\ref{sec:abstract}, however, is not designed
+The specification layer of \Cref{sec:abstract}, however, is not designed
 around producing such executable \lean{Fintype} and \lean{Decidable} instances.
 Its starting point is Mathlib's graph type \lean{SimpleGraph V}, where
 \lean{V} is the type whose elements are the vertices of the graph and the
@@ -2478,64 +2481,124 @@ carrying a proof \lean{h : P}, or \lean{isFalse h}, carrying a proof of
 \(\neg P\).  The two correctness theorems above turn the Boolean outcomes of
 \lean{isIsoFast\_bool} into exactly these proofs.  With this instance available,
 the evaluator can use \lean{isIsoFast\_bool} as a trusted
-isomorphism-checking algorithm when filtering the \lean{Fintype} enumeration. \gw{I'm here.}
+isomorphism-checking algorithm when filtering the \lean{Fintype} enumeration.
 
 \subsection{Correctness as Adequacy}
+\label{sec:reflection-adequacy}
 
-For density computations, we define computable density functions such as
-\lean{sym2EmptyTypeFlagDensity1} entirely over \lean{Finset} operations.  The
-decoding map from the concrete representation to the abstract graph type makes
-abstract definitions \emph{applicable} to \lean{Sym2Graph} inputs, but
-applicability is not computability:
-\lean{flagDensity} composed with this decoding still unfolds to non-computable
-quotient machinery.  The concrete density function sidesteps this by computing
-directly over the \lean{Finset} of edges, producing a value that
-\lean{native\_decide} can evaluate.
-
-The reflected density computation also replaces abstract subgraph enumeration
-with data-oriented enumeration.  Rather than enumerate abstract
-\lean{LabeledSubgraph}s directly, it enumerates \lean{Sym2InducedSubgraph}s,
-represented only by finite vertex sets, and computes their edge sets by
-filtering the host graph's \lean{Finset} of edges.  For typed flags,
-\lean{Sym2InducedLabeledSubgraph} additionally stores the proof that the type
-vertices are included.  A count-level adequacy theorem proves that this
-enumeration has the same cardinality as the abstract \lean{LabeledSubgraph}
-enumeration.  Thus the cost of quotient and subgraph reasoning is paid once in
-the proof of adequacy, not in every generated density lemma.
-
-We use \emph{adequacy theorem} for this form of correctness theorem: a theorem
-stating that the reflected computation agrees with the abstract definition it
-implements.  For the density evaluator, the central adequacy theorems are:
+\Cref{sec:flagtypes} defined flags by quotienting labeled graphs by flag isomorphism.
+The reflection layer repeats the same construction for the concrete graph
+representation from \Cref{sec:reflection-concrete}.  A \lean{Sym2Flag} is the quotient of
+\lean{Sym2LabeledGraph}s by the isomorphism relation
+\(\sim_{\mathsf{sf}}\), and \lean{Sym2Flag.toFlag} decodes the resulting
+concrete flag back to the abstract \lean{Flag} used in the specification layer:
 \begin{lstlisting}
-theorem flagDensity1_eq_sym2FlagDensity1
-    (F : Sym2EmptyTypedFlag m) (G : Sym2EmptyTypedFlag n) :
-    flagDensity1 F.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity1 F G := ...
+def Sym2Flag {k : (*@$\mathbb{N}$@*)}
+    ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
+  Quotient (sym2LabeledGraphSetoid (*@$\sigma$@*) n)
 
-theorem flagDensity2_eq_sym2FlagDensity2
-    (F0 : Sym2EmptyTypedFlag m0) (F1 : Sym2EmptyTypedFlag m1)
-    (G : Sym2EmptyTypedFlag n) :
-    flagDensity2 F0.toFlag F1.toFlag G.toFlag =
-    sym2EmptyTypeFlagDensity2 F0 F1 G := ...
+def Sym2Flag.toFlag
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {n : (*@$\mathbb{N}$@*)} (G : Sym2Flag (*@$\sigma$@*) n) :
+    Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
+  Quotient.lift Sym2LabeledGraph.toFlag Sym2LabeledGraph.toFlag_respect_eqv G
 \end{lstlisting}
-The right-hand sides are defined entirely over \lean{Sym2Graph} and are fully
-computable.  After rewriting a density goal with these theorems, the goal
-becomes a decidable proposition about a finite computation over
-\lean{Finset}, which \lean{native\_decide} can evaluate directly.
 
-For a PL audience, the important point is that the adequacy theorem is a
-refinement theorem: the executable program computes exactly the denotation of
-the abstract specification.  The proof factors through count-level adequacy
-(\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}) and
-density-level adequacy
-(\lean{labeledSubgraphListDensity\_eq\_sym2InducedSubgraphListDensity}).
-Consequently, the generated theorem
-\[
-  \lean{flagDensity2 F0 F1 G = q}
-\]
-is not a certificate that the external JSON table is trusted; it is a kernel
-proof that the reflected evaluator, connected to the abstract definition by
-adequacy, computes the rational number $q$.
+The density functions follow the same pattern for the constructions of
+\Cref{sec:formal-subflag-densities}.  The functions \(\mathtt{flagDensity}_1\) and
+\(\mathtt{flagDensity}_2\) are the specification-level densities.  Their reflected
+counterparts run the finite search from \Cref{sec:reflection-concrete} over concrete induced
+subflags, count the isomorphic placements, and then lift the result through the
+\lean{Sym2Flag} quotients:
+\begin{lstlisting}
+def sym2FlagDensity(*@$_1$@*)
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+
+def sym2FlagDensity(*@$_2$@*)
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
+    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+\end{lstlisting}
+Unlike the specification-level density functions, these definitions do not
+carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
+evaluating them.  But computability alone does not say that they implement the
+density functions from the specification layer.  We therefore prove
+\emph{adequacy theorems}: theorems stating that the reflected computation agrees
+with the abstract definition after decoding \lean{Sym2Flag}s back to ordinary
+\lean{Flag}s. \gw{I'm here.}
+\begin{lstlisting}
+theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*)
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) :
+    flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
+
+theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
+    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) :
+    flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
+\end{lstlisting}
+After rewriting a density goal with one of these theorems, the right-hand side
+is a concrete finite computation over \lean{Finset}s and \lean{Bool} tests, so
+\lean{native\_decide} can evaluate it directly.  For example, one generated
+pair-density computation proves the first \(1/2\)-density from
+\Cref{ex:typed-edge-nonedge-product}:
+\begin{lstlisting}
+-- Sym2Flag_2_1_0_0 is (*@$\overline{K_2}^{\bullet}$@*).
+-- Sym2Flag_2_1_0_1 is (*@$K_2^{\bullet}$@*).
+-- Sym2Flag_3_1_0_1 is (*@$\overline{P_3}^{\bullet}$@*).
+example
+    : flagDensity(*@$_2$@*)
+        Sym2Flag_2_1_0_0.toFlag
+        Sym2Flag_2_1_0_1.toFlag
+        Sym2Flag_3_1_0_1.toFlag = 1 / 2
+  := by
+  rw [flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)]
+  native_decide
+\end{lstlisting}
+The statement already presents the abstract flags as the decoding of concrete
+\lean{Sym2Flag}s.  The proof rewrites the abstract density with the adequacy
+theorem and then lets \lean{native\_decide}
+evaluate the reflected density computation.
+
+The downward operator from \Cref{sec:formal-downward} has the same shape.  The abstract
+definition uses the normalizing factor \(q_\sigma(A)\).  In the reflection
+layer, we compute this factor by counting concrete type-preserving embeddings
+of the type into a \lean{Sym2LabeledGraph} and dividing by the number of all
+injections; then we lift the result to \lean{Sym2Flag}s:
+\begin{lstlisting}
+def downwardNormalizingFactor_sym2LabeledGraph
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {n : (*@$\mathbb{N}$@*)}
+    (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
+  let num_of_all_injections := n.factorial / (n - k).factorial
+  isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
+
+def downwardNormalizingFactor_Sym2Flag
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+
+theorem downwardNormalizingFactor_eq
+    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    {n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) n) :
+    downwardNormalizingFactor F.toFlag =
+    downwardNormalizingFactor_Sym2Flag F := ...
+\end{lstlisting}
+Thus the same reflection pattern covers both density and downward
+computations: define the executable version on the concrete graph structure,
+prove that decoding it gives the abstract operation, and use that theorem as a
+rewrite rule before evaluation.  For the downward normalizing factor, the proof
+has the same schematic shape:
+\begin{lstlisting}
+example : downwardNormalizingFactor F.toFlag = q := by
+  rw [downwardNormalizingFactor_eq]
+  native_decide
+\end{lstlisting}
+The external tables determine which statements Lean should try to prove and
+which rational number \(q\) appears in the statement.  They are not trusted as
+proof certificates: after the adequacy rewrite, Lean's kernel checks that the
+reflected evaluator really computes the stated value.
 
 \subsection{Elaboration-Time Theorem Generation}
 
@@ -2547,20 +2610,9 @@ them automatically from precomputed data.
 The elaboration macro \lean{load\_flag\_pair\_density\_theorems} reads a JSON
 file containing density values.  It is implemented in
 \lean{Flags/Densities/DensityLoader.lean}; for each entry
-\lean{(F1, F2, G, p/q)} it generates and immediately proves the theorem:
-\begin{lstlisting}
-@[simp]
-theorem flagDensity2_Flag_5_1_0_3_Flag_5_1_0_7_Flag_5_0_0_2
-    : flagDensity2 Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2 = 3/10
-  := by
-  delta Flag_5_1_0_3 Flag_5_1_0_7 Flag_5_0_0_2
-  rw [flagDensity2_eq_sym2FlagDensity2]
-  native_decide
-\end{lstlisting}
-The three proof steps are: unfold the concrete flag definitions (making their
-\lean{Sym2Graph} structure explicit), rewrite with the adequacy theorem, then
-call \lean{native\_decide} to evaluate the resulting finite computation.  The
-same elaboration pattern is used by \lean{MulLoader.lean} for flag
+\lean{(F1, F2, G, p/q)} it generates and immediately proves a theorem of the
+form shown in \Cref{sec:reflection-adequacy}.  The same elaboration pattern is
+used by \lean{MulLoader.lean} for flag
 multiplication tables, and by family-specific loaders such as
 \lean{load\_triangle\_density\_theorems} and
 \lean{load\_k4\_density\_theorems} that combine the generic adequacy lemma
@@ -2598,8 +2650,8 @@ assistant, reproducing the bookkeeping that links subflags to host flags, and
 checking positive-semidefiniteness, densities, and product expansions inside
 the kernel.
 
-The specification of Section~\ref{sec:abstract} and the reflection layer of
-Section~\ref{sec:reflection} make it possible to carry this out by hand.  We
+The specification of \Cref{sec:abstract} and the reflection layer of
+\Cref{sec:reflection} make it possible to carry this out by hand.  We
 did so for our first case studies---computing the expansions, products, and
 normalizations step by step---and found the proofs nearly identical in
 structure.  Mantel's theorem, the $C_4$-density bound, and the Erd\H{o}s
@@ -2655,7 +2707,7 @@ python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
 The diagnostic subcommand \lean{inspect} validates a certificate before
 compilation.  The generated file fills the four parts of
-Section~\ref{sec:flagmatic-shape}, each discharged by a reusable, kernel-checked
+\Cref{sec:flagmatic-shape}, each discharged by a reusable, kernel-checked
 component; we take them in turn and then show the assembled output.
 
 \paragraph{Flags and density data (Part~1).}
@@ -2664,7 +2716,7 @@ runs a handful of \lean{generate\_pruned\_*} commands: they enumerate the
 $\mathcal{H}$-free flags, prove their pair-density identities, then their
 product-expansion identities, giving the subflag-to-host bookkeeping the body
 rewrites with.  All of this runs inside Lean by the machinery of
-Section~\ref{sec:reflection}, so nothing is read from a precomputed table.
+\Cref{sec:reflection}, so nothing is read from a precomputed table.
 
 \paragraph{Certificate matrices (Part~2).}
 Part 2 discharges the positive-semidefiniteness the method depends on.  A
@@ -2729,7 +2781,7 @@ are fixed templates keyed to the sizes, and the only real computation is
 reconstructing and factoring the certificate matrices (the witness Part~2's
 kernel check then consumes).  Choosing the branch, the per-block parameters, and
 the order of the additions is the entire ``intelligence'' of the generator; why
-none of it has to be trusted is the subject of Section~\ref{sec:flagmatic-trust}.
+none of it has to be trusted is the subject of \Cref{sec:flagmatic-trust}.
 
 Assembled, the file the script emits for Mantel ($K_3$-free, $N=3$, Branch~B) is,
 abridged:
@@ -2775,7 +2827,7 @@ The script computes a great deal, from flag indices to the certificate matrices,
 yet \emph{none} of it enters the trusted base.  Every emitted
 proof obligation is closed by one of: \lean{decide +kernel} (in the kernel),
 \lean{native\_decide} (by compiled code outside the kernel), or a verified
-tactic of Section~\ref{sec:flagmatic-pipeline}.  A
+tactic of \Cref{sec:flagmatic-pipeline}.  A
 miscomputation in the script surfaces as a compile error, never as a silently
 accepted false theorem.  The certificate and the solver behind it are
 candidate generators; the kernel is the authority.
@@ -2852,7 +2904,7 @@ $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$, demonstrating that the same proof
 skeleton scales to substantially larger certificates without modification.
 
 Together, these examples exercise every structural variation of the
-certificate-to-Lean pipeline introduced in Section~\ref{sec:flagmatic-pipeline},
+certificate-to-Lean pipeline introduced in \Cref{sec:flagmatic-pipeline},
 from a single hand-checkable certificate to multi-block SDP certificates
 requiring substantial symbolic normalization.
 
@@ -2872,7 +2924,7 @@ graph: nothing in the proof body or the generators assumes a complete graph.
 But only $K_3$, $K_4$, $K_5$ have been exercised end to end, so a non-$K_n$
 forbid such as $C_4$ or $P_4$ would be the first empirical test of the
 generality we claim.
-We list these alongside the open questions of Section~\ref{sec:unsure}
+We list these alongside the open questions of \Cref{sec:unsure}
 rather than presenting the pipeline as complete.
 
 
@@ -2916,7 +2968,7 @@ is the last step, not the proof idea.
 We initially expected to use Mathlib's existing counting tactics for these
 identities and reach for explicit equivalences only as a fallback.  The
 opposite happened.  Once the \lean{Fintype}-instance ambiguity of
-Section~\ref{sec:fintype} is in play, generic counting tactics often fail to
+\Cref{sec:fintype} is in play, generic counting tactics often fail to
 elaborate because they pick up the ``wrong'' enumeration term for one of the
 two sets.  Constructing the equivalence makes the intended enumeration
 explicit and turns the cardinality equality into a one-line application of
@@ -2930,7 +2982,7 @@ mandatory rather than optional.
 \section{Lower Bounds and Other Inequalities}
 \label{sec:lowerbounds}
 
-The certificates of Section~\ref{sec:results} establish the flag-algebra upper
+The certificates of \Cref{sec:results} establish the flag-algebra upper
 bounds; the matching lower bounds, which pin down the Tur\'an densities exactly,
 are formalized separately in Lean, as are a few further inequalities.  We
 collect them here.
@@ -2947,7 +2999,7 @@ The full result
 \begin{lstlisting}
 theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
 \end{lstlisting}
-is the conjunction of the upper bound of Section~\ref{sec:results} and a lower
+is the conjunction of the upper bound of \Cref{sec:results} and a lower
 bound
 \begin{lstlisting}
 theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= 24/625 := ...
@@ -3015,7 +3067,7 @@ headline theorems.
 \section{Engineering Obstacles}
 \label{sec:obstacles}
 
-The specification layer of Section~\ref{sec:abstract} exposed several
+The specification layer of \Cref{sec:abstract} exposed several
 engineering obstacles that we report here as obstacles rather than design
 principles.  Three of them follow from Lean~4's intensional type theory and
 its typeclass mechanism: quotient eliminators carry recurring compatibility
@@ -3039,7 +3091,7 @@ a proof that the function respects the equivalence relation;
 \lean{Quotient.sound} requires producing a witness of the relation for each
 equality goal.
 
-The adequacy theorems in Section~\ref{sec:reflection} illustrate the cost.
+The adequacy theorems in \Cref{sec:reflection} illustrate the cost.
 To state that \lean{Sym2Graph.toFlag} is inverse to
 \lean{Flag.toSym2EmptyTypedFlag}, one cannot simply compute both sides to the
 same normal form; the map out of the quotient must go through an eliminator:
@@ -3222,7 +3274,7 @@ honest than implying that our final design settled them.
 
 \paragraph{Predicate-deferral vs.\ universal-theory specification.}
 The forbidden-subgraph predicate \lean{forbidLE}
-(Section~\ref{sec:forbidden}) defers the choice of forbidden graph from the
+(\Cref{sec:forbidden}) defers the choice of forbidden graph from the
 universal theory at the top of the algebra to a parameter on the semantic
 order at use sites.  Razborov's original presentation does the opposite.
 Both designs can express the same theorems.  We do not know which design is
@@ -3233,7 +3285,7 @@ Razborov's.  We invite future work to compare the two on a development that
 needs both styles.
 
 \paragraph{Are the intensionality obstacles inherent or accidental?}
-The mitigations of Section~\ref{sec:obstacles}---explicit \lean{Fintype}
+The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype}
 bindings, \lean{HEq}-and-\lean{cast} discipline for size-changing operations,
 proof-irrelevance bridges for \lean{Sym2Graph} fields---are responses to
 specific Lean~4 facts: typeclass coherence by convention rather than by
@@ -3248,7 +3300,7 @@ might dissolve some of these obstacles.  We report them as Lean~4 obstacles
 without claiming they are foundational.
 
 \paragraph{Is the bridge layer essential or an artifact of our spec choices?}
-Section~\ref{sec:bridge}'s reflection, tactic, and Automation layers are
+\Cref{sec:bridge}'s reflection, tactic, and Automation layers are
 load-bearing in our development: the pentagon proof does not go through
 without them.  But a different specification layer might collapse some of
 this work into the spec side.  For instance, a spec layer that committed to
@@ -3304,9 +3356,7 @@ formalization could pick canonical representatives in the specification
 layer to make every operation computable.  We do not.  The specification
 keeps the quotient, and the executable layer in \texttt{FlagAlgebra/Compute/}
 chooses representatives over the concrete \lean{Sym2Graph} type.  The two
-layers are connected by adequacy theorems such as
-\lean{flagDensity1\_eq\_sym2FlagDensity1} and
-\lean{flagDensity2\_eq\_sym2FlagDensity2}, whose proofs factor through
+layers are connected by density adequacy theorems, whose proofs factor through
 count-level adequacy
 (\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}).  The
 benefit is that quotient and subgraph reasoning is paid once, inside
@@ -3368,7 +3418,8 @@ JSON density tables produced by an enumeration script, and the rational PSD
 certificates produced by an SDP solver.  Neither is trusted.  The density
 tables drive the elaboration macros \lean{load\_flag\_pair\_density\_theorems}
 and \lean{MulLoader}: for each table entry the macros generate the
-statement Lean should prove (e.g., \lean{flagDensity2 F0 F1 G = 3/10}) and
+statement Lean should prove (e.g.,
+\(\mathtt{flagDensity}_2\,\mathtt{F}_0\,\mathtt{F}_1\,\mathtt{G} = 3/10\)) and
 prove it by unfolding the concrete flag definitions, rewriting with the
 adequacy theorem, and discharging the resulting decidable proposition.
 
@@ -3416,7 +3467,7 @@ The roughly 2,800 density-table lemmas are discharged by
 \lean{native\_decide}.  This was not a deliberate trust choice:
 \lean{decide +kernel} does not let our scripts type-check on the
 proof-relevant encoding the specification uses, even after the optimizations
-of Section~\ref{sec:reflection}.  The three SDP matrix equalities (sizes
+of \Cref{sec:reflection}.  The three SDP matrix equalities (sizes
 $8 \times 8$, $6 \times 6$, $5 \times 5$ over $\mathbb{Q}$) are discharged
 by \lean{decide +kernel}.  Here the choice is deliberate: the matrices are
 small enough that kernel evaluation finishes, and the upper bound proof
@@ -3463,7 +3514,7 @@ a systematic methodology for building efficiently computable representations
 alongside their abstract counterparts in Coq; our \lean{Sym2Graph} /
 \lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
 type-class and instance-search mechanism.  Our use of elaboration-time
-theorem generation from JSON data (Section~\ref{sec:reflection}) is related to
+theorem generation from JSON data (\Cref{sec:reflection}) is related to
 the approach of Amin and Rompf~\cite{amin2017collapsing}, who generate
 verified code from high-level specifications; we generate verified density
 lemmas from externally computed tables.
@@ -3476,10 +3527,10 @@ first formally verified end-to-end pipeline from flag algebra certificates
 to combinatorial theorems.  Razborov~\cite{razborov2013flag} gives a
 comprehensive survey of flag algebra applications; the $\sim$100 results
 catalogued there all involve the same recurring concerns identified in
-Section~\ref{sec:intro}: abstract structure, extensional finite counting,
+\Cref{sec:intro}: abstract structure, extensional finite counting,
 data-heavy computation, and algebraic bookkeeping.  This common shape
 suggests our infrastructure is broadly applicable, although
-Section~\ref{sec:unsure} flags the scaling question.
+\Cref{sec:unsure} flags the scaling question.
 
 \paragraph{SDP certificate verification.}
 The verification of SDP certificates has been studied in the context of
@@ -3552,7 +3603,7 @@ importing them from external solvers) remains a longer-term goal.  Most
 immediately, replacing \lean{native\_decide} with \lean{decide +kernel}
 throughout, or with a formally verified external checker, would eliminate
 the remaining dependency on the native compiler---though, as
-Section~\ref{sec:lessons} notes, this is a feasibility constraint of the
+\Cref{sec:lessons} notes, this is a feasibility constraint of the
 current encoding, not a logical limitation of the method.
 
 
