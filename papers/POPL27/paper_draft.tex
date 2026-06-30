@@ -227,7 +227,7 @@
              native_decide,decide,norm_num,simp,ring,linarith,omega,
              exact,apply,rw,calc,intro,constructor,use,refine,obtain,
              rcases,cases,induction,assumption,contradiction,trivial,rfl,
-             macro,elab,notation},
+             macro,elab,notation,example},
   keywordstyle=\color{blue!70!black}\bfseries,
   comment=[l]{--},
   commentstyle=\color{gray}\itshape,
@@ -2483,7 +2483,7 @@ carrying a proof \lean{h : P}, or \lean{isFalse h}, carrying a proof of
 the evaluator can use \lean{isIsoFast\_bool} as a trusted
 isomorphism-checking algorithm when filtering the \lean{Fintype} enumeration.
 
-\subsection{Correctness as Adequacy}
+\subsection{Adequacy Theorems for Reflection}
 \label{sec:reflection-adequacy}
 
 \Cref{sec:flagtypes} defined flags by quotienting labeled graphs by flag isomorphism.
@@ -2506,9 +2506,11 @@ def Sym2Flag.toFlag
 
 The density functions follow the same pattern for the constructions of
 \Cref{sec:formal-subflag-densities}.  The functions \(\mathtt{flagDensity}_1\) and
-\(\mathtt{flagDensity}_2\) are the specification-level densities.  Their reflected
-counterparts run the finite search from \Cref{sec:reflection-concrete} over concrete induced
-subflags, count the isomorphic placements, and then lift the result through the
+\(\mathtt{flagDensity}_2\) are the specification-level densities.  Their
+reflected counterparts, \(\mathtt{sym2FlagDensity}_1\) and
+\(\mathtt{sym2FlagDensity}_2\), are built by running the finite search from
+\Cref{sec:reflection-concrete} over concrete induced subflags, counting the
+isomorphic placements, and then lifting the result through the
 \lean{Sym2Flag} quotients:
 \begin{lstlisting}
 def sym2FlagDensity(*@$_1$@*)
@@ -2525,7 +2527,7 @@ evaluating them.  But computability alone does not say that they implement the
 density functions from the specification layer.  We therefore prove
 \emph{adequacy theorems}: theorems stating that the reflected computation agrees
 with the abstract definition after decoding \lean{Sym2Flag}s back to ordinary
-\lean{Flag}s. \gw{I'm here.}
+\lean{Flag}s. 
 \begin{lstlisting}
 theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*)
     {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
@@ -2537,15 +2539,17 @@ theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)
     (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) :
     flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
-After rewriting a density goal with one of these theorems, the right-hand side
-is a concrete finite computation over \lean{Finset}s and \lean{Bool} tests, so
-\lean{native\_decide} can evaluate it directly.  For example, one generated
-pair-density computation proves the first \(1/2\)-density from
-\Cref{ex:typed-edge-nonedge-product}:
+With these adequacy theorems in place, a proof about a density in the
+specification layer can be reduced to a proof about the corresponding
+computable density in the reflection layer.  Since this density is computable,
+Lean can then run the executable algorithm certified by the adequacy theorem to
+check the claimed value.  For example, the density
+\[
+  \den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}
+  = \frac{1}{2}
+\]
+from \Cref{ex:typed-edge-nonedge-product} is proved as follows:
 \begin{lstlisting}
--- Sym2Flag_2_1_0_0 is (*@$\overline{K_2}^{\bullet}$@*).
--- Sym2Flag_2_1_0_1 is (*@$K_2^{\bullet}$@*).
--- Sym2Flag_3_1_0_1 is (*@$\overline{P_3}^{\bullet}$@*).
 example
     : flagDensity(*@$_2$@*)
         Sym2Flag_2_1_0_0.toFlag
@@ -2555,16 +2559,42 @@ example
   rw [flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)]
   native_decide
 \end{lstlisting}
-The statement already presents the abstract flags as the decoding of concrete
-\lean{Sym2Flag}s.  The proof rewrites the abstract density with the adequacy
-theorem and then lets \lean{native\_decide}
-evaluate the reflected density computation.
+In the code, the three displayed constants are concrete \lean{Sym2Flag}s in
+the reflection layer: \lean{Sym2Flag\_2\_1\_0\_0} corresponds to
+\(\fbarKtwobull\), \lean{Sym2Flag\_2\_1\_0\_1} corresponds to \(\fKtwobull\),
+and \lean{Sym2Flag\_3\_1\_0\_1} corresponds to \(\fbarPthreebull\).  The
+statement applies \lean{toFlag} to each of these concrete flags, so it is a
+specification-level statement about
+\lean{flagDensity}$_2$.  The command \lean{rw} uses the adequacy theorem
+\lean{flagDensity}$_2$\lean{\_eq\_sym2FlagDensity}$_2$ and changes the goal to
+the closed reflection-layer computation
+\[
+  \text{\lean{sym2FlagDensity}}_2\,
+    \text{\lean{Sym2Flag\_2\_1\_0\_0}}\,
+    \text{\lean{Sym2Flag\_2\_1\_0\_1}}\,
+    \text{\lean{Sym2Flag\_3\_1\_0\_1}}
+  = 1 / 2.
+\]
+\lean{native\_decide} is a Lean tactic for closing a decidable goal by running
+the corresponding executable computation.  Here it evaluates the
+reflection-layer density computation above and closes the goal.
 
-The downward operator from \Cref{sec:formal-downward} has the same shape.  The abstract
-definition uses the normalizing factor \(q_\sigma(A)\).  In the reflection
-layer, we compute this factor by counting concrete type-preserving embeddings
-of the type into a \lean{Sym2LabeledGraph} and dividing by the number of all
-injections; then we lift the result to \lean{Sym2Flag}s:
+The caveat is that \lean{native\_decide} relies on Lean's native compiler to
+run the computation, rather than reducing it inside the kernel.  This is still
+a reasonable engineering choice here.  A realistic flag-algebra proof contains
+thousands of such density computations, so running them through the native
+evaluator is far more practical than reducing each one inside the slower Lean
+kernel.  The important mathematical reductions are still proved in Lean before
+this point; the native compiler is trusted only for the final evaluation of the
+closed finite computation.
+
+The downward operator from \Cref{sec:formal-downward} follows the same
+reflection pattern.  The specification-level definition uses the abstract downward
+normalizing factor \(q_\sigma(A)\), implemented as
+\lean{downwardNormalizingFactor}.  Its computable counterpart is
+\lean{downwardNormalizingFactor\_Sym2Flag}.  It is built in two steps: first
+compute the factor on a concrete \lean{Sym2LabeledGraph}, then lift that
+computation through the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
 def downwardNormalizingFactor_sym2LabeledGraph
     {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
@@ -2577,7 +2607,14 @@ def downwardNormalizingFactor_Sym2Flag
     {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     {n : (*@$\mathbb{N}$@*)}
     (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+\end{lstlisting}
+The first definition counts the type-preserving embeddings of \(\sigma\) into
+the concrete graph represented by \(G\) and divides by the number of all
+injections \(\mathrm{Fin}\,k \to \mathrm{Fin}\,n\).  The second definition
+packages this computable quantity as a function of \lean{Sym2Flag}s rather than
+representatives.
 
+\begin{lstlisting}
 theorem downwardNormalizingFactor_eq
     {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     {n : (*@$\mathbb{N}$@*)}
@@ -2585,20 +2622,29 @@ theorem downwardNormalizingFactor_eq
     downwardNormalizingFactor F.toFlag =
     downwardNormalizingFactor_Sym2Flag F := ...
 \end{lstlisting}
-Thus the same reflection pattern covers both density and downward
-computations: define the executable version on the concrete graph structure,
-prove that decoding it gives the abstract operation, and use that theorem as a
-rewrite rule before evaluation.  For the downward normalizing factor, the proof
-has the same schematic shape:
+This is the downward adequacy theorem: after decoding a concrete
+\lean{Sym2Flag} back to an abstract \lean{Flag}, the specification-level
+normalizing factor agrees with the computable one.  Thus a proof of an abstract
+downward coefficient can be reduced to a proof about
+\lean{downwardNormalizingFactor\_Sym2Flag}.  For instance, for the concrete
+flag corresponding to \(\fbarPthreebull\), where \(\sigma\) is the one-vertex
+flag type, Lean proves \(q_\sigma(\fbarPthreebull)=2/3\) by the same
+rewrite-and-evaluate pattern:
 \begin{lstlisting}
-example : downwardNormalizingFactor F.toFlag = q := by
+example : downwardNormalizingFactor Sym2Flag_3_1_0_1.toFlag = 2 / 3 := by
   rw [downwardNormalizingFactor_eq]
   native_decide
 \end{lstlisting}
-The external tables determine which statements Lean should try to prove and
-which rational number \(q\) appears in the statement.  They are not trusted as
-proof certificates: after the adequacy rewrite, Lean's kernel checks that the
-reflected evaluator really computes the stated value.
+Here the rewrite changes the goal to the closed computable equality
+\[
+  \text{\lean{downwardNormalizingFactor\_Sym2Flag}}\,
+    \text{\lean{Sym2Flag\_3\_1\_0\_1}}
+  = 2 / 3,
+\]
+and \lean{native\_decide} evaluates that finite computation.  The generated
+downward lemmas use this coefficient together with the unlabeling operation to
+rewrite an expression of the form \(\llbracket A\rrbracket_0\) into the
+corresponding scalar multiple of an empty-type basis flag. \gw{I'm here.}
 
 \subsection{Elaboration-Time Theorem Generation}
 
