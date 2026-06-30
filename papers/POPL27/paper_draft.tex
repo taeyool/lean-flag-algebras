@@ -2186,20 +2186,27 @@ Read \lean{forbidLE} first.  Its explicit argument
 \lean{H} is the forbidden graph, and \lean{f} and \lean{g} are the two
 ambient \(\sigma\)-typed flag-algebra elements being compared.  In particular,
 \lean{f} and \lean{g} do not live in a separately built \(H\)-free algebra.
-The definition delegates to the condition-generic \lean{forbidLEWith},
-instantiated at the forbidden condition \lean{forbiddenCondition H}.
+The definition delegates to \lean{forbidLEWith}, the condition-generic version
+that takes a \lean{ForbidCondition} as a parameter.  A \lean{ForbidCondition}
+is a predicate on empty-type positive homomorphisms,
+specifying which ambient limiting objects are allowed.  The particular condition
+\lean{forbiddenCondition H} selects the \(H\)-free ones: it considers only
+positive homomorphisms \(\phi_0\) such that
+\[
+  \phi_0(A)=0
+  \qquad
+  \text{for every empty-type flag } A
+  \text{ whose graph contains } H \text{ as a subgraph}.
+\]
 
 The body of \lean{forbidLEWith} ranges over empty-type positive homomorphisms
 \lean{$\phi_0$}.  The hypothesis
 \lean{$\phi_0$ $\langle\sigma\rangle_0$ > 0} says that the flag type \(\sigma\)
-has positive density after its labels are forgotten, which is the condition
+has positive density as an unlabeled graph in $\phi_0$, which is the condition
 needed to form the random-extension measure \(\mathbb{P}[\phi_0]\).  The
-hypothesis \lean{C $\phi_0$} is the forbidden-graph assumption.  Here
-\lean{forbiddenCondition H} unfolds to
-\lean{familyForbiddenCondition (forbiddenFlags H)}: it requires
-\lean{$\phi_0$ $\llbracket$basisVector F$\rrbracket_0$ = 0} for every empty-type
-flag \lean{F} in \lean{forbiddenFlags H}, the family of flags whose underlying
-graph contains \(H\) as a (not necessarily induced) subgraph.
+hypothesis \lean{C $\phi_0$} is the condition being imposed on the ambient
+empty-type limit; for \lean{forbidLE H}, this is exactly the \(H\)-free
+condition described above.
 
 The conclusion says that the event
 \lean{\{$\phi$ : PositiveHomSpace $\sigma$ | $\phi$ f $\leq$ $\phi$ g\}} has
@@ -2216,18 +2223,18 @@ the forbidden graph and \(F\) is the target graph.  The expression \lean{F.toFla
 the simple graph \(F\) into the corresponding element of the empty-type flag
 algebra \lean{FlagAlgebra $\emptyt$}, whose evaluation is the induced
 \(F\)-density.  The forbidden graph \(H\) enters \lean{forbidLE} directly as a
-\lean{SimpleGraph}, and the resulting condition \lean{forbiddenCondition H} is
-the semantic form of being \(H\)-free.
+\lean{SimpleGraph}; it supplies the \(H\)-free condition described above.
 
 The formal bridge packages this passage from semantic order to the finite
 asymptotic statement:
 \begin{lstlisting}
 theorem generalizedTuranDensity_le_of_forbidLE
-    {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)} {F : SimpleGraph (Fin m)} {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
-    (h : F.toFlagAlgebra <=[H] c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*)))
+    {n m : (*@$\mathbb{N}$@*)} {H : SimpleGraph (Fin n)}
+    {F : SimpleGraph (Fin m)} {c : (*@$\mathbb{R}$@*)} (hc : 0 <= c)
+    (h : forbidLE H F.toFlagAlgebra (c (*@$\leansmul$@*) (1 : FlagAlgebra (*@$\emptyt$@*))))
     : generalizedTuranDensity H F <= c := ...
 \end{lstlisting}
-The hypothesis is an empty-typed \lean{forbidLE} inequality: the target
+The hypothesis \lean{h} is an empty-typed \lean{forbidLE} inequality: the target
 graph \(F\), viewed as an element of the empty-type flag algebra, is at most
 \(c\cdot \mathbf{1}\) under the ensemble semantic order for the forbidden
 subgraph \(H\).  The conclusion is the corresponding
