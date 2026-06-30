@@ -371,9 +371,10 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
                     (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
               simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
               simp
-              refine forbidEqWith_of_eq ?_
-              try dsimp only [$[$hostIdents:ident],*]
-              abel
+              all_goals (try (refine forbidEqWith_of_eq ?_))
+              all_goals (try dsimp only [$[$hostIdents:ident],*])
+              all_goals (try abel)
+              all_goals (try rfl)
           ))
         else
           elabCommand (← `(
@@ -399,6 +400,107 @@ edge-based forbid-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
         generated := generated + 1
 
   logInfo s!"Generated {generated} {tag}-free (edge-based, forbid-free-host) multiplication theorem(s): pattern {patternTag}"
+
+/-- `generate_subgraph_free_mul_theorems patN hostN k m F`: the **subgraph**-forbidding analogue of
+`generate_pruned_forbid_free_mul_theorems`. The emitted `… =[F.toLabeledGraph.graph] …` theorems use
+the subgraph capstone `basisVector_quot_mul_forbidEq_sum_subgraph` (no canonical forbidden flag / `hmem`
+needed — the capstone derives the membership from `supergraphFamily`), the subgraph free split
+(`evalSubgraphFreeMask`), and rewrite onto the subgraph-`F`-free host set
+`flagSetHfree_hostN_k_m_<F>` whose `…_eq` filter matches the capstone's exactly. Prerequisite: run
+`generate_subgraph_free_empty_typed_flags hostN F` (and, for `k > 0`,
+`generate_subgraph_free_flags hostN k m F`) first. -/
+elab "generate_subgraph_free_mul_theorems" patS:num hostS:num kS:num mS:num fStx:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let tagFull := toString fStx.getId
+  let tag := (tagFull.splitOn ".").getLastD tagFull
+  let patternTag := s!"{patN}_{k}_{m}"
+  let hostTag := s!"{hostN}_{k}_{m}"
+  let patternFlagTypeName := Name.mkSimple s!"FlagType_{k}_{m}"
+  let flagTypeIdent := mkIdent patternFlagTypeName
+
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patMask ← evalSubgraphFreeMask patN fStx
+  let hostMask ← evalSubgraphFreeMask hostN fStx
+  let patternFree := inducedFreeFlagIndices patMask patterns
+  let hostFree := inducedFreeFlagIndices hostMask hosts
+
+  let flagSetHfreeName := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}")
+  let flagSetHfreeEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_eq")
+  let flagSetHfreeValEq := mkIdent (Name.mkSimple s!"flagSetHfree_{hostTag}_{tag}_val_eq")
+  let ns ← getCurrNamespace
+  unless ((← getEnv).contains (ns ++ flagSetHfreeEq.getId) || (← getEnv).contains flagSetHfreeEq.getId) do
+    throwError s!"`generate_subgraph_free_mul_theorems {patN} {hostN} {k} {m} {tag}` requires the \
+subgraph-free host set `flagSetHfree_{hostTag}_{tag}`. Run \
+`generate_subgraph_free_empty_typed_flags {hostN} {tag}`{if k > 0 then s!" and `generate_subgraph_free_flags {hostN} {k} {m} {tag}`" else ""} first."
+
+  let hostIdents : Array (TSyntax `ident) :=
+    (hostFree.map (fun h => mkIdent (Name.mkSimple s!"FlagAlgebra_{hostTag}_{h}"))).toArray
+  let mut generated : Nat := 0
+  for i in patternFree do
+    for j in patternFree do
+      let iOrd := if i ≤ j then i else j
+      let jOrd := if i ≤ j then j else i
+      let rhs ← buildMulRhs patN hostN hostTag patternFlagTypeName patterns hosts hostFree iOrd jOrd
+      let lhs1 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{i}")
+      let lhs2 := mkIdent (Name.mkSimple s!"FlagAlgebra_{patternTag}_{j}")
+      let flagOrd1 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{iOrd}")
+      let flagOrd2 := mkIdent (Name.mkSimple s!"Flag_{patternTag}_{jOrd}")
+      let thmName := mkIdent (Name.mkSimple s!"flagMul_FlagAlgebra_{patternTag}_{i}_FlagAlgebra_{patternTag}_{j}")
+
+      if !(← isDeclaredInScope lhs1.getId) then throwError s!"Missing definition: {lhs1.getId}"
+      if !(← isDeclaredInScope lhs2.getId) then throwError s!"Missing definition: {lhs2.getId}"
+      if !(← isDeclaredInScope flagOrd1.getId) then throwError s!"Missing definition: {flagOrd1.getId}"
+      if !(← isDeclaredInScope flagOrd2.getId) then throwError s!"Missing definition: {flagOrd2.getId}"
+
+      if !(← isDeclaredInScope thmName.getId) then
+        if i ≤ j then
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($fStx).toLabeledGraph.graph] $rhs
+              := by
+              apply forbidEqWith_trans
+                (basisVector_quot_mul_forbidEq_sum_subgraph $fStx
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              all_goals (try (refine forbidEqWith_of_eq ?_))
+              all_goals (try dsimp only [$[$hostIdents:ident],*])
+              all_goals (try abel)
+              all_goals (try rfl)
+          ))
+        else
+          elabCommand (← `(
+            theorem $thmName
+                : ($lhs1 * $lhs2 : FlagAlgebra $flagTypeIdent) =[($fStx).toLabeledGraph.graph] $rhs
+              := by
+              rw [mul_comm]
+              apply forbidEqWith_trans
+                (basisVector_quot_mul_forbidEq_sum_subgraph $fStx
+                  ⟨$(Quote.quote patN), $flagOrd1⟩
+                  ⟨$(Quote.quote patN), $flagOrd2⟩
+                  $(Quote.quote hostN)
+                  (by rfl))
+              rw [Finset.sum_congr (s₂ := $flagSetHfreeName)
+                    (by rw [$flagSetHfreeEq:ident]; try congr 1) (fun _ _ => rfl)]
+              simp only [Finset.sum_eq_multiset_sum, $flagSetHfreeValEq:ident]
+              simp
+              all_goals (try (refine forbidEqWith_of_eq ?_))
+              all_goals (try dsimp only [$[$hostIdents:ident],*])
+              all_goals (try abel)
+              all_goals (try rfl)
+          ))
+        generated := generated + 1
+
+  logInfo s!"Generated {generated} subgraph-{tag}-free (forbid-free-host) multiplication theorem(s): pattern {patternTag}"
 
 -- `generate_mul_theorems patN hostN k m`
 --

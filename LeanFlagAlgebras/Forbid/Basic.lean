@@ -546,6 +546,21 @@ theorem inducedForbidEq_smul
     : (c • f) =ᵢ[F_forbid] (c • g)
   := forbidEqWith_smul hfg
 
+/-- Forbidden equality is preserved by negation (the `c := -1` instance of `forbidEqWith_smul`).
+Used by `reduce_downward_flagmul` to handle `downward (-(A * B))` summands, where a `(-1) • _`
+coefficient was simplified to a bare negation. -/
+theorem forbidEqWith_neg
+    {C : ForbidCondition} {f g : FlagAlgebra σ}
+    (hfg : forbidEqWith C f g)
+    : forbidEqWith C (-f) (-g)
+  := by simpa only [neg_one_smul] using forbidEqWith_smul (c := -1) hfg
+
+theorem inducedForbidEq_neg
+    {F_forbid : FinFlag ∅ₜ} {f g : FlagAlgebra σ}
+    (hfg : f =ᵢ[F_forbid] g)
+    : (-f) =ᵢ[F_forbid] (-g)
+  := forbidEqWith_neg hfg
+
 theorem forbidEqWith_smul_zero
     {C : ForbidCondition} {f : FlagAlgebra σ} {c : ℝ}
     (hfg : forbidEqWith C f 0)
@@ -983,7 +998,7 @@ subgraph-`H`-free flag set is done at the generator (G4). -/
 /-- **Finite-family ordinary expansion** (subgraph forbidding). Survivors are the flags with zero
 induced density of *every* `D ∈ Fs`; this is the family analogue of `basisVector_quot_forbidEq_sum_ofMem`. -/
 theorem basisVector_quot_forbidEq_sum_ofFamilyMem
-    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : Finset (FinFlag ∅ₜ))
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : List (FinFlag ∅ₜ))
     (hmem : ∀ D ∈ Fs, D ∈ forbiddenFlags H) (F : FinFlag σ) (ℓ : ℕ) (hℓ : F.1 ≤ ℓ)
     : ⟦basisVector F⟧ =[H]
       ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),
@@ -1013,7 +1028,7 @@ theorem basisVector_quot_forbidEq_sum_ofFamilyMem
 /-- **Finite-family ordinary product expansion** (subgraph forbidding). The multiplication analogue
 of `basisVector_quot_forbidEq_sum_ofFamilyMem`. -/
 theorem basisVector_quot_mul_forbidEq_sum_ofFamilyMem
-    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : Finset (FinFlag ∅ₜ))
+    {N : ℕ} {H : SimpleGraph (Fin N)} (Fs : List (FinFlag ∅ₜ))
     (hmem : ∀ D ∈ Fs, D ∈ forbiddenFlags H) (F₁ F₂ : FinFlag σ) (ℓ : ℕ) (hℓ : F₁.1 + F₂.1 ≤ ℓ + n₀)
     : (⟦basisVector F₁⟧ * ⟦basisVector F₂⟧ : FlagAlgebra σ) =[H]
       ∑ F' : FlagWithSize σ ℓ with (∀ D ∈ Fs, flagDensity₁ D.2 (unlabel F') = 0),

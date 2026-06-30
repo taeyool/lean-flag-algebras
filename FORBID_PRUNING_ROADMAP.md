@@ -802,3 +802,75 @@ F** (eventually a finite *family* of forbidden graphs), end to end:
     concrete next steps for G4 (well-scoped, no remaining *math* unknowns — it is representation
     plumbing between the abstract `FinFlag` capstone and the computable `Sym2`/`native_decide` side,
     mirroring the single-flag command's `flagSetEqName` proof for a family).
+- **2026-06-29** — **G4 computability blocker RESOLVED — the supergraph family is now a computable
+  `List` (standalone-compiled, `#eval`-verified).** Both blockers dissolved by enumerating from `List`
+  primitives instead of `Finset` ops:
+  - `allEdgesList m : List (Sym2 (Fin m))` — non-diagonal edges via
+    `(List.finRange m).flatMap … |>.filter (!·.IsDiag) |>.dedup` (no `Finset.toList`).
+  - `supergraphSym2List H : List (Sym2EmptyTypedFlag m)` — `((allEdgesList m).filter (∉ H.edges)).sublists`
+    mapped to `⟦H.edges ∪ S.toFinset.filter (¬·.IsDiag)⟧`. **Genuinely computable**: `#eval
+    (supergraphSym2List (completeSym2Graph 3)).length = 1` (K₃ has only itself as a supergraph) passes
+    via `#guard_msgs`.
+  - `supergraphFamily H : List (FinFlag ∅ₜ) := (supergraphSym2List H).map (⟨m, ·.toFlag⟩)` — a `List`
+    (no `DecidableEq (FinFlag)`), computable. G3's `Fs` switched back to `List` (compiles).
+  - Bridges all proven: `supergraphFamily_eq_map` (rfl), `supergraphFamily_mem_forbiddenFlags`
+    (`List.mem_map` + the G4 building block), and **`supergraphFamily_filter_iff`** — the survivor
+    filter `∀ D ∈ supergraphFamily H, flagDensity₁ D.2 F'.toFlag = 0` ⟺ the fully computable
+    `∀ s ∈ supergraphSym2List H, sym2EmptyTypeFlagDensity₁ s F' = 0` (`List.forall_mem_map` +
+    `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁`). The capstones now sit on the `List` family unchanged.
+  - **So the abstract↔computable bridge for the family is DONE and native_decide-ready.** Remaining G4:
+    the elaborator command (emit the subgraph-`H`-free host/σ flags + the `=[H]` theorems, completeness
+    by `native_decide` on `supergraphSym2List` via `supergraphFamily_filter_iff`), then G5/G6.
+- **2026-06-29** — **G4 EMPTY-TYPED GENERATOR COMMAND WORKS END-TO-END (non-complete forbid!).** Built
+  and validated `generate_subgraph_free_empty_typed_flags n F` — the subgraph-forbidding analogue of
+  the induced empty-typed command. Layering: moved `allEdgesList` / `supergraphSym2List` /
+  `supergraphFamily` / `supergraphFamily_eq_map` / `supergraphFamily_filter_iff` down to
+  `Flags/ForbidFreePruned.lean` (the `FlagAlgebras.Compute` layer — they use only Compute/FlagAlgebra)
+  so the Flags-layer generator can reference them; the `forbiddenFlags` membership + capstones stay in
+  `Forbid/CommonGraphs.lean`. Added `evalSubgraphFreeMask` (mask via `subgraphContains`) to
+  `DensityThmGenerator`. The command emits: the free flag constants; `isHfree S := decide (∀ s ∈
+  supergraphSym2List F, sym2EmptyTypeFlagDensity₁ s S = 0)`; `sym2FlagSetHfree…_eq` (completeness by a
+  direct `native_decide`); `flagSetHfree…_eq` — the **bridge to the capstone's exact filter**
+  `flagSetHfree = univ.filter (∀ D ∈ supergraphFamily F, flagDensity₁ D.2 (unlabel F') = 0)`, proved by
+  mirroring the single-flag command's rep-bridge (`toSym2EmptyTypedFlag` / `unlabel_emptyType` /
+  `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁`) + `supergraphFamily_filter_iff`.
+  - **Validated** in `Forbid/SubgraphGenTest.lean` (standalone demo, not in the aggregator): forbidding
+    `P₃` (path on 3 vertices, **non-complete**) at n=3 generates exactly **2** subgraph-`P₃`-free flags
+    (empty + single edge), proves completeness + the bridge, and an `example` closes
+    `⟦basisVector F⟧ =[P₃] ∑ F' ∈ flagSetHfree_3_0_0_P3test, density • …` via `rw [flagSetHfree…_eq];
+    exact basisVector_quot_forbidEq_sum_subgraph …` — **a real subgraph-forbid expansion for a
+    non-complete graph, no sorry.** This is exactly what the induced pipeline (D1) could not target.
+  - **Remaining G4/G5/G6 (mechanical mirrors of the induced path):** the σ-typed generator
+    (`generate_subgraph_free_flags n k m F`), pair-density + mul commands, the expansion tactics
+    (`flag_expand_hfree` / `expand_one_hfree_at` subgraph variants — likely small, the latter is already
+    forbid-agnostic), and `flagmatic_to_lean.py` emission of non-complete forbids. The empty-typed
+    command proves the whole pattern; the rest is the same plumbing at σ-typed / pair / mul granularity.
+- **2026-06-30** — **G4 GENERATORS + G5 TACTICS + G6 (py) ALL DONE — full subgraph-forbidding pipeline,
+  validated end-to-end on a non-complete graph.** Every piece compiles; full `lake build` green.
+  - **G4 generators (all 4):** `generate_subgraph_free_empty_typed_flags` / `…_flags` (sigma-typed) in
+    `ForbidFreeGenerator`; `generate_subgraph_free_flag_pair_density_theorems` in `DensityThmGenerator`;
+    `generate_subgraph_free_mul_theorems` in `MulThmGenerator` (cites the capstone
+    `basisVector_quot_mul_forbidEq_sum_subgraph`). Free split via `evalSubgraphFreeMask`
+    (`subgraphContains`); `isHfree` = `forall s in supergraphSym2List F, sym2EmptyTypeFlagDensity1 s S = 0`;
+    completeness by **direct** `native_decide`; `flagSetHfree..._eq` bridges to the capstone filter via
+    `supergraphFamily_filter_iff`. Mul finish hardened to stepwise
+    `all_goals (try refine forbidEqWith_of_eq) / dsimp / abel / rfl` (some products are the trivial
+    `0 = 0`). Layering: `supergraphFamily` + `_filter_iff` moved to `ForbidFreePruned` (Compute) so the
+    Flags-layer generators can reference them.
+  - **G5 tactics:** `flag_expand_hfree_subgraph` (in `Automation/FlagExpand`, + import CommonGraphs);
+    `forbidExpand_one_subgraph` / `one_forbidEq_forbidExpand_one_subgraph` / `expand_one_hfree_at_subgraph`
+    (in `Automation/Basic`, + import CommonGraphs). `reduce_downward_flagmul` (dual-head),
+    `flag_nonneg`, `flagsum_ac_sort` are forbid-generic -- no change.
+  - **G6 (flagmatic_to_lean.py):** `_forbid_graph_from_description` now returns `(n, edges, None)` for a
+    non-complete forbid (was `(None,None,None)`). Generator preamble, bound statement, expand-under-forbid
+    helper, and main-theorem proof all branch on `subgraph_mode` -> emit
+    `def ForbidGraph : Sym2Graph m where edges := ...`, the `generate_subgraph_free_*` calls, bound
+    `<=[ForbidGraph.toLabeledGraph.graph]`, and the subgraph tactics. Complete-graph certs keep the
+    induced path unchanged.
+  - **Validated:** `Forbid/SubgraphGenTest.lean` (standalone demo) forbids `P3` (non-complete) and runs
+    the full chain -- empty-typed (n=2,3) + sigma-typed (n=2,3) + pair-density (9) + mul (4) + an
+    `example` closing a real `=[P3] sum in flagSetHfree, ...` expansion, no sorry. And
+    `flagmatic_to_lean.py gen-skeleton` on the user's `C5free_cert.json` emits a complete
+    subgraph-forbidding `.lean` (no sorry). **Building that generated C5-free example end-to-end is the
+    natural next validation step** (size-5; the flag set must line up with the cert's 26
+    subgraph-C5-free admissible graphs).

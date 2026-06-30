@@ -182,6 +182,14 @@ def stripDownward? (e : Expr) : Option Expr :=
     if args.size >= 1 then some args[args.size - 1]! else none
   else none
 
+/-- If `e` is `-x` (`Neg.neg x`), return `x`. Used by `reduce_downward_flagmul` to handle
+`downward (-(A * B))` summands (a `(-1) • _` coefficient simplified to a bare negation). -/
+def stripNeg? (e : Expr) : Option Expr :=
+  if e.getAppFn.isConstOf ``Neg.neg then
+    let args := e.getAppArgs
+    if args.size >= 1 then some args[args.size - 1]! else none
+  else none
+
 /-- Given `mulTerm = A * B`, search the environment for a theorem named
 `flagMul_<A>_<B>` (or its reverse).
 

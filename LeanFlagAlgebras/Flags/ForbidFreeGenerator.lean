@@ -537,6 +537,128 @@ elab "generate_pruned_forbid_free_empty_typed_flags" nStx:num fStx:ident : comma
   logInfo s!"Generated {freeIndices.length} {tag}-free empty-typed flags (n = {n}) by genuine \
 pruning (edge-based, induced) via the {pathDesc}; flagSetHfree_{n}_0_0_{tag} completeness + val_eq proved."
 
+/-- `generate_subgraph_free_empty_typed_flags n F`: the **subgraph**-forbidding analogue of
+`generate_pruned_forbid_free_empty_typed_flags`. Emits the empty-typed `n`-vertex flags that are
+*subgraph*-`F`-free (computed by `subgraphContains`), the analytic test `isHfree` (zero density of
+every supergraph of `F`), the completeness `sym2FlagSetHfree…_eq` (direct `native_decide`), and the
+`FinFlag`-side bridge `flagSetHfree…_eq` to the filter the subgraph capstone
+`basisVector_quot_forbidEq_sum_subgraph` expands over (via `supergraphFamily_filter_iff`). -/
+elab "generate_subgraph_free_empty_typed_flags" nStx:num fStx:ident : command => do
+  let n := nStx.getNat
+  let tagFull := toString fStx.getId
+  let tag := (tagFull.splitOn ".").getLastD tagFull
+  let hostEdges ← evalCanonicalEdgeLists n
+  let freeMask ← evalSubgraphFreeMask n fStx
+  let freeIndices := (List.range hostEdges.length).filter (fun i => freeMask.getD i false)
+
+  for i in freeIndices do
+    let edgePairs := hostEdges[i]!
+    let graphName := mkIdent (Name.mkSimple s!"Sym2Graph_{n}_0_0_{i}")
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}")
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}")
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{i}")
+    let edgesTerm ← natPairsToEdgesTerm n edgePairs
+    elabUnlessDefined graphName.getId (← `(
+        def $graphName : Sym2Graph $(Quote.quote n) where
+          edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
+          edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
+      ))
+    elabUnlessDefined flagName.getId (← `(
+        def $flagName : Sym2EmptyTypedFlag $(Quote.quote n) :=
+          Quotient.mk (Sym2GraphSetoid $(Quote.quote n)) $graphName
+      ))
+    elabUnlessDefined flagBridgeName.getId (← `(
+        def $flagBridgeName := ($flagName : Sym2EmptyTypedFlag $(Quote.quote n)).toFlag
+      ))
+    elabUnlessDefined flagAlgebraName.getId (← `(
+        noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra ∅ₜ :=
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧
+      ))
+
+  let freeSym2Terms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Sym2Flag_{n}_0_0_{i}"))
+
+  let isHfreeName := mkIdent (Name.mkSimple s!"isHfree_{n}_0_0_{tag}")
+  let sym2SetName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_0_0_{tag}")
+  let sym2SetEqName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_0_0_{tag}_eq")
+  let flagSetName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}")
+  let flagSetEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}_eq")
+
+  -- Subgraph-free analytic test: zero density of *every* supergraph of `F`.
+  elabUnlessDefined isHfreeName.getId (← `(
+      def $isHfreeName (S : FlagAlgebras.Compute.Sym2EmptyTypedFlag $(Quote.quote n)) : Bool :=
+        decide (∀ s ∈ FlagAlgebras.Compute.supergraphSym2List $fStx,
+          FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁ s S = 0)
+    ))
+
+  elabUnlessDefined sym2SetName.getId (← `(
+      def $sym2SetName : Finset (Sym2EmptyTypedFlag $(Quote.quote n)) :=
+        ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).toFinset
+    ))
+
+  elabUnlessDefined sym2SetEqName.getId (← `(
+      theorem $sym2SetEqName :
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide
+    ))
+
+  elabUnlessDefined flagSetName.getId (← `(
+      noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n)) :=
+        ($sym2SetName).map ⟨Sym2EmptyTypedFlag.toFlag,
+          fun a b h => Sym2EmptyTypedFlag.toFlag_injective a b h⟩
+    ))
+
+  elabUnlessDefined flagSetEqName.getId (← `(
+      theorem $flagSetEqName :
+          $flagSetName
+            = Finset.univ.filter (fun F' =>
+                ∀ D ∈ FlagAlgebras.Compute.supergraphFamily $fStx,
+                  flagDensity₁ D.2 (unlabel F') = 0) := by
+        rw [$flagSetName:ident, $sym2SetEqName:ident]
+        ext x
+        simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
+          Function.Embedding.coeFn_mk]
+        constructor
+        · rintro ⟨S, hS, hSx⟩
+          rw [$isHfreeName:ident, decide_eq_true_eq] at hS
+          rw [← hSx, unlabel_emptyType]
+          exact (FlagAlgebras.Compute.supergraphFamily_filter_iff $fStx S).mpr hS
+        · intro hx
+          refine ⟨x.toSym2EmptyTypedFlag, ?_, x.toSym2EmptyTypedFlag_toFlag_eq⟩
+          rw [$isHfreeName:ident, decide_eq_true_eq]
+          rw [unlabel_emptyType, ← x.toSym2EmptyTypedFlag_toFlag_eq] at hx
+          exact (FlagAlgebras.Compute.supergraphFamily_filter_iff $fStx x.toSym2EmptyTypedFlag).mp hx
+    ))
+
+  -- Underlying multiset of `flagSetHfree` = the explicit free-flag list (for the expand tactics).
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_0_0_{tag}_val_eq")
+  let freeBridgeTerms : Array (TSyntax `term) := freeIndices.toArray.map (fun i =>
+    mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{i}"))
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize ∅ₜ $(Quote.quote n))).val
+            = [ $freeBridgeTerms,* ]) := by
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).Nodup := by
+          native_decide
+        have hdedup :
+            ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup
+              = ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))) :=
+          List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2EmptyTypedFlag.toFlag
+              ([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))))
+              = [ $freeBridgeTerms,* ] := by rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2EmptyTypedFlag.toFlag
+              (([ $freeSym2Terms,* ] : List (Sym2EmptyTypedFlag $(Quote.quote n))).dedup)
+                = [ $freeBridgeTerms,* ] := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
+  logInfo s!"Generated {freeIndices.length} subgraph-{tag}-free empty-typed flags (n = {n}); \
+flagSetHfree_{n}_0_0_{tag} completeness + capstone-filter bridge + val_eq proved."
+
 -- `generate_forbid_free_flags n k m Forbid`: the σ-typed analogue (flag size `n`
 -- first, matching `generate_flags n k m`). Emits only the `Forbid`-free σ-typed
 -- `n`-vertex flags `Flag_n_k_m_i` (those whose underlying graph is `Forbid`-free),
@@ -990,5 +1112,199 @@ elab "generate_pruned_forbid_free_flags" nStx:num kStx:num mStx:num fStx:ident :
 
   logInfo s!"Generated {freeArr.size} {tag}-free σ-typed flags (n = {n}, type {k}_{m}) edge-based \
 (induced); flagSetHfree_{n}_{k}_{m}_{tag} completeness + val_eq proved."
+
+/-- `generate_subgraph_free_flags n k m F`: the **subgraph**-forbidding σ-typed analogue. Identical
+flag/type/downward emission to `generate_pruned_forbid_free_flags`; only the forbid-free split
+(`subgraphContains`), the analytic test `isHfree` (zero density of every supergraph of `F`), the
+completeness (direct `native_decide`), and the `FinFlag`-bridge `flagSetHfree…_eq` (to the subgraph
+capstone's filter, via `supergraphFamily_filter_iff`) differ. Requires the subgraph-`F`-free
+empty-typed flags first (`generate_subgraph_free_empty_typed_flags n F`). -/
+elab "generate_subgraph_free_flags" nStx:num kStx:num mStx:num fStx:ident : command => do
+  let k := kStx.getNat
+  let m := mStx.getNat
+  let n := nStx.getNat
+  let tagFull := toString fStx.getId
+  let tag := (tagFull.splitOn ".").getLastD tagFull
+
+  unless (← isDeclaredInScope (Name.mkSimple s!"Flag_{n}_0_0_0")) do
+    throwError s!"`generate_subgraph_free_flags {n} {k} {m} {tag}` requires the underlying \
+subgraph-{tag}-free empty-typed flags. Add `generate_subgraph_free_empty_typed_flags {n} {tag}` first."
+
+  let allTypeEdges ← evalCanonicalEdgeLists k
+  let typeEdges := allTypeEdges.getD m []
+  let flagData ← evalFlagDataRows k m n
+  let count := flagData.length
+
+  let freeMask ← evalSubgraphFreeMask n fStx
+  let freeArr := ((List.range count).filter (fun i =>
+    freeMask.getD ((flagData.getD i (0, [], [], 0, 0)).1) false)).toArray
+
+  let typeName := mkIdent (Name.mkSimple s!"Sym2FlagType_{k}_{m}")
+  let flagTypeName := mkIdent (Name.mkSimple s!"FlagType_{k}_{m}")
+  let typeEdgesTerm ← natPairsToEdgesTerm k typeEdges
+  elabUnlessDefined typeName.getId (← `(
+      def $typeName : Sym2FlagType $(Quote.quote k) where
+        edges := mkEdgeFinset $(Quote.quote k) $typeEdgesTerm
+        edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
+    ))
+  elabUnlessDefined flagTypeName.getId (← `(
+      def $flagTypeName := (($typeName : Sym2FlagType $(Quote.quote k))).toFlagType))
+  let typeTerm ← `(($typeName : Sym2FlagType $(Quote.quote k)))
+
+  for i in freeArr do
+    let entry := flagData[i]!
+    let underlyingIdx := entry.1
+    let graphEdges := entry.2.1
+    let typeIndices := entry.2.2.1
+    let labeledName := mkIdent (Name.mkSimple s!"Sym2LabeledGraph_{n}_{k}_{m}_{i}")
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}")
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{m}_{i}")
+    let edgesTerm ← natPairsToEdgesTerm n graphEdges
+    let idxFinExpr ← mkTypeIndexFinExpr typeIndices.toArray n
+    elabUnlessDefined labeledName.getId (← `(
+        def $labeledName : Sym2LabeledGraph $typeTerm $(Quote.quote n) where
+          edges := mkEdgeFinset $(Quote.quote n) $edgesTerm
+          edges_valid := mkEdgeFinset_diag_free (by intro e he; fin_cases he <;> simp [Sym2.isDiag_iff_proj_eq])
+          type_embed := by
+            let e : (Fin $(Quote.quote k)) ↪ (Fin $(Quote.quote n)) :=
+              ⟨(fun i : Fin $(Quote.quote k) => $idxFinExpr), by decide⟩
+            have hmap : ∀ u v,
+                (SimpleGraph.fromEdgeSet ((mkEdgeFinset $(Quote.quote n) $edgesTerm : Finset (Sym2 (Fin $(Quote.quote n)))) : Set (Sym2 (Fin $(Quote.quote n))))).Adj (e u) (e v)
+                ↔
+                (SimpleGraph.fromEdgeSet ((($typeTerm).edges : Finset (Sym2 (Fin $(Quote.quote k)))) : Set (Sym2 (Fin $(Quote.quote k))))).Adj u v := by
+              decide
+            exact ⟨e, hmap _ _⟩
+      ))
+    elabUnlessDefined flagName.getId (← `(
+        def $flagName : Sym2Flag $typeTerm $(Quote.quote n) :=
+          Quotient.mk (sym2LabeledGraphSetoid $typeTerm $(Quote.quote n)) $labeledName))
+    elabUnlessDefined flagBridgeName.getId (← `(
+        def $flagBridgeName := ($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag))
+    elabUnlessDefined flagAlgebraName.getId (← `(
+        noncomputable def $flagAlgebraName : FlagAlgebras.FlagAlgebra $flagTypeName :=
+          ⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩⟧))
+    let unlabelThmName := mkIdent (Name.mkSimple s!"unlabel_{n}_{k}_{m}_{i}")
+    let baseFlagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{underlyingIdx}")
+    elabUnlessDefined unlabelThmName.getId (← `(
+        @[simp]
+        theorem $unlabelThmName : FlagAlgebras.unlabel $flagBridgeName = $baseFlagName := by
+          exact Quotient.sound (FlagAlgebras.flagEqv.refl _)))
+
+  let downwardFactorsEqName := mkIdent (Name.mkSimple s!"downwardFactorsHfree_{n}_{k}_{m}_{tag}_eq")
+  let mut dnfTerms : Array (TSyntax `term) := #[]
+  let mut coeffTerms : Array (TSyntax `term) := #[]
+  for i in freeArr do
+    let entry := flagData[i]!
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
+    dnfTerms := dnfTerms.push (←
+      `(FlagAlgebras.Compute.downwardNormalizingFactor_Sym2Flag
+          ($flagName : Sym2Flag $typeTerm $(Quote.quote n))))
+    coeffTerms := coeffTerms.push (← coeffQTerm entry.2.2.2.1 entry.2.2.2.2)
+  elabUnlessDefined downwardFactorsEqName.getId (← `(
+      theorem $downwardFactorsEqName : ([ $dnfTerms,* ] : List ℚ) = [ $coeffTerms,* ] := by
+        native_decide))
+
+  for pos in [0:freeArr.size] do
+    let i := freeArr[pos]!
+    let entry := flagData[i]!
+    let underlyingIdx := entry.1
+    let coeffQ ← coeffQTerm entry.2.2.2.1 entry.2.2.2.2
+    let coeffR ← `(($coeffQ : ℝ))
+    let flagName := mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}")
+    let flagBridgeName := mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}")
+    let flagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_{k}_{m}_{i}")
+    let downwardThmName := mkIdent (Name.mkSimple s!"downward_{n}_{k}_{m}_{i}")
+    let baseFlagName := mkIdent (Name.mkSimple s!"Flag_{n}_0_0_{underlyingIdx}")
+    let baseFlagAlgebraName := mkIdent (Name.mkSimple s!"FlagAlgebra_{n}_0_0_{underlyingIdx}")
+    elabUnlessDefined downwardThmName.getId (← `(
+        @[simp]
+        theorem $downwardThmName : ⟦$flagAlgebraName⟧₀ = $coeffR • $baseFlagAlgebraName := by
+          have hdnf : FlagAlgebras.downwardNormalizingFactor $flagBridgeName = $coeffQ := by
+            change FlagAlgebras.downwardNormalizingFactor (($flagName : Sym2Flag $typeTerm $(Quote.quote n)).toFlag) = $coeffQ
+            rw [FlagAlgebras.Compute.downwardNormalizingFactor_eq]
+            exact congrArg (fun l => l.getD $(Quote.quote pos) (0 : ℚ)) $downwardFactorsEqName
+          change
+            FlagAlgebras.downwardFlagVectorQuot (FlagAlgebras.basisVector ⟨$(Quote.quote n), $flagBridgeName⟩)
+              = $coeffR • (⟦FlagAlgebras.basisVector ⟨$(Quote.quote n), $baseFlagName⟩⟧ : FlagAlgebras.FlagAlgebra ∅ₜ)
+          apply Quotient.sound
+          simp [FlagAlgebras.downwardFlagVector, FlagAlgebras.downwardFlag, linearExtension, hdnf]))
+
+  let freeSym2Terms : Array (TSyntax `term) := freeArr.map (fun i =>
+    mkIdent (Name.mkSimple s!"Sym2Flag_{n}_{k}_{m}_{i}"))
+  let isHfreeName := mkIdent (Name.mkSimple s!"isHfree_{n}_{k}_{m}_{tag}")
+  let sym2SetName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_{k}_{m}_{tag}")
+  let sym2SetEqName := mkIdent (Name.mkSimple s!"sym2FlagSetHfree_{n}_{k}_{m}_{tag}_eq")
+  let flagSetName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}")
+  let flagSetEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_eq")
+
+  elabUnlessDefined isHfreeName.getId (← `(
+      def $isHfreeName (S : Sym2Flag $typeTerm $(Quote.quote n)) : Bool :=
+        decide (∀ s ∈ FlagAlgebras.Compute.supergraphSym2List $fStx,
+          FlagAlgebras.Compute.sym2EmptyTypeFlagDensity₁ s (S.toUnderlying) = 0)))
+
+  elabUnlessDefined sym2SetName.getId (← `(
+      def $sym2SetName : Finset (Sym2Flag $typeTerm $(Quote.quote n)) :=
+        ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).toFinset))
+
+  elabUnlessDefined sym2SetEqName.getId (← `(
+      theorem $sym2SetEqName :
+          $sym2SetName = Finset.univ.filter (fun S => $isHfreeName S = true) := by native_decide))
+
+  elabUnlessDefined flagSetName.getId (← `(
+      noncomputable def $flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)) :=
+        ($sym2SetName).map ⟨Sym2Flag.toFlag, fun a b h => Sym2Flag.toFlag_injective a b h⟩))
+
+  elabUnlessDefined flagSetEqName.getId (← `(
+      theorem $flagSetEqName :
+          $flagSetName
+            = Finset.univ.filter (fun F' =>
+                ∀ D ∈ FlagAlgebras.Compute.supergraphFamily $fStx,
+                  flagDensity₁ D.2 (unlabel F') = 0) := by
+        rw [$flagSetName:ident, $sym2SetEqName:ident]
+        ext x
+        simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
+          Function.Embedding.coeFn_mk]
+        constructor
+        · rintro ⟨S, hS, hSx⟩
+          rw [$isHfreeName:ident, decide_eq_true_eq] at hS
+          rw [← hSx, FlagAlgebras.Compute.Sym2Flag.unlabel_toFlag_eq]
+          exact (FlagAlgebras.Compute.supergraphFamily_filter_iff $fStx (S.toUnderlying)).mpr hS
+        · intro hx
+          refine ⟨x.toSym2Flag, ?_, x.toSym2Flag_toFlag_eq⟩
+          rw [$isHfreeName:ident, decide_eq_true_eq]
+          rw [← x.toSym2Flag_toFlag_eq, FlagAlgebras.Compute.Sym2Flag.unlabel_toFlag_eq] at hx
+          exact (FlagAlgebras.Compute.supergraphFamily_filter_iff $fStx (x.toSym2Flag.toUnderlying)).mp hx))
+
+  let flagSetValEqName := mkIdent (Name.mkSimple s!"flagSetHfree_{n}_{k}_{m}_{tag}_val_eq")
+  let freeBridgeTerms : Array (TSyntax `term) := freeArr.map (fun i =>
+    mkIdent (Name.mkSimple s!"Flag_{n}_{k}_{m}_{i}"))
+  elabUnlessDefined flagSetValEqName.getId (← `(
+      theorem $flagSetValEqName :
+          (($flagSetName : Finset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))).val
+            = ((([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) :
+                Multiset (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n)))) := by
+        have hnodup : ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).Nodup := by
+          native_decide
+        have hdedup :
+            ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup
+              = ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))) :=
+          List.Nodup.dedup hnodup
+        have hright :
+            (List.map Sym2Flag.toFlag
+              ([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))))
+              = ([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))) := by
+          rfl
+        refine Quot.sound ?_
+        have heq :
+            List.map Sym2Flag.toFlag
+              (([ $freeSym2Terms,* ] : List (Sym2Flag $typeTerm $(Quote.quote n))).dedup)
+                = ([ $freeBridgeTerms,* ] : List (FlagAlgebras.FlagWithSize $flagTypeName $(Quote.quote n))) := by
+          simpa [hdedup] using hright
+        exact heq ▸ List.Perm.refl _
+    ))
+
+  logInfo s!"Generated {freeArr.size} subgraph-{tag}-free σ-typed flags (n = {n}, type {k}_{m}); \
+flagSetHfree_{n}_{k}_{m}_{tag} completeness + capstone-filter bridge + val_eq proved."
 
 end Flags.Densities
