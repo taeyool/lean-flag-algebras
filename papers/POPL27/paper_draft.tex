@@ -2408,8 +2408,8 @@ of \(G\): it stores the chosen vertex set together with a proof that the
 labeled vertices are included.  Its edge set is then computed by filtering the
 host graph's explicit edge set to the edges whose endpoints both lie in the
 chosen vertex set.  The \lean{Fintype (Sym2InducedLabeledSubgraph G)} instance
-therefore provides an enumeration of all induced subflags of \(G\).  Concretely,
-the instance contains an \lean{elems} field listing all elements of this type,
+provides an enumeration of all induced subflags of \(G\).  Concretely,
+the instance contains an \lean{elems} field listing all elements of the type \lean{Sym2InducedLabeledSubgraph G},
 together with a \lean{complete} proof that this enumeration misses none of
 them.  Here the
 enumeration is deliberately simple: since the vertices of \(G\) are
@@ -2417,7 +2417,10 @@ enumeration is deliberately simple: since the vertices of \(G\) are
 exactly those containing \lean{G.type\_verts}, and stores the retained subset
 with the proof of containment.  With this instance available, the evaluator can
 iterate through all induced subflags of \(G\) and count the ones isomorphic to
-the pattern \(F\) when computing \(\den{F}{G}\). \gw{I'm here.}
+the pattern \(F\) when computing \(\den{F}{G}\). \gw{The current density-counting
+path appears to enumerate all induced subflags and filter them using generic
+isomorphism checker rather than the fast same-size checker below; revisit this
+after the planned density-count refactor.}
 
 The core reflection definitions already give a generic decidability instance for
 the relation \(G \sim_{\mathsf{sf}} G'\) by asking Lean to enumerate graph
