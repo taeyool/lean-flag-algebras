@@ -1,4 +1,5 @@
 import LeanFlagAlgebras.Forbid.Basic
+import LeanFlagAlgebras.Forbid.CommonGraphs
 
 /-! # Automation.Basic — core flag-algebra proof automation
 
@@ -48,6 +49,24 @@ theorem one_forbidEq_forbidExpand_one_ofMem
     : (1 : FlagAlgebra ∅ₜ) =[H] forbidExpand_one Fforbid expandSize := by
   simpa [forbidExpand_one] using
     (basisVector_quot_forbidEq_sum_ofMem (σ := ∅ₜ) Fforbid hmem (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
+
+open FlagAlgebras.Compute in
+/-- **Subgraph** unit expansion. `1` re-expressed under subgraph-`H`-freeness as the conditioned sum
+over the subgraph-`H`-free unlabeled flags (filter `∀ D ∈ supergraphFamily H, …`), matching the
+subgraph generator's `flagSetHfree_…_eq`. -/
+noncomputable def forbidExpand_one_subgraph {m : ℕ} (H : Sym2Graph m) (expandSize : ℕ)
+    : FlagAlgebra ∅ₜ :=
+  ∑ F' : FlagWithSize ∅ₜ expandSize with
+      (∀ D ∈ supergraphFamily H, flagDensity₁ D.2 (unlabel F') = 0),
+    (flagDensity₁ ((⟨0, default⟩ : FinFlag ∅ₜ).2) F' : ℝ) • ⟦basisVector ⟨expandSize, F'⟩⟧
+
+open FlagAlgebras.Compute in
+/-- Under subgraph-`H`-freeness, `1` equals its `forbidExpand_one_subgraph` expansion — the subgraph
+analogue of `one_forbidEq_forbidExpand_one_ofMem` (membership discharged by the capstone). -/
+theorem one_forbidEq_forbidExpand_one_subgraph {m : ℕ} (H : Sym2Graph m) (expandSize : ℕ)
+    : (1 : FlagAlgebra ∅ₜ) =[H.toLabeledGraph.graph] forbidExpand_one_subgraph H expandSize := by
+  simpa [forbidExpand_one_subgraph] using
+    (basisVector_quot_forbidEq_sum_subgraph H (⟨0, default⟩ : FinFlag ∅ₜ) expandSize (by simp))
 
 /-- If `f ≤ᵢ[F] g` and `c` is non-negative under `F`, then `f ≤ᵢ[F] g + c`. -/
 lemma inducedForbidLE_trans_add_nonneg
@@ -214,6 +233,31 @@ elab_rules : tactic
       let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
       let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
       evalTactic (← `(tactic| dsimp only [forbidExpand_one]))
+      evalTactic (← `(tactic|
+        rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; try congr 1) (fun _ _ => rfl)]))
+      evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))
+      evalTactic (← `(tactic| simp [unlabel_emptyType]))
+      evalTactic (← `(tactic| simp [default, flagDensity_empty]))
+      evalTactic (← `(tactic| fold_basis_vectors))
+
+/--
+`expand_one_hfree_at_subgraph n F` is the **subgraph**-forbidding analogue of `expand_one_hfree_at`:
+it unfolds `forbidExpand_one_subgraph` (the family-filter unit expansion) and reduces it onto the
+subgraph-`F`-free flag set `flagSetHfree_n_0_0_<F>` (via its `…_eq` / `…_val_eq`). Same name reuse as
+`expand_one_hfree_at`; only the unfolded definition differs. Prerequisite:
+`generate_subgraph_free_empty_typed_flags n F`.
+-/
+syntax "expand_one_hfree_at_subgraph" num ident : tactic
+
+elab_rules : tactic
+  | `(tactic| expand_one_hfree_at_subgraph $n:num $forbid:ident) => do
+      let nVal := n.getNat
+      let tagFull := forbid.getId.toString
+      let tag := (tagFull.splitOn ".").getLastD tagFull
+      let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}")
+      let eq_id   : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_eq")
+      let val_eq_id : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_0_0_{tag}_val_eq")
+      evalTactic (← `(tactic| dsimp only [forbidExpand_one_subgraph]))
       evalTactic (← `(tactic|
         rw [Finset.sum_congr (s₂ := $setName) (by rw [$eq_id:term]; try congr 1) (fun _ _ => rfl)]))
       evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $val_eq_id:term]))

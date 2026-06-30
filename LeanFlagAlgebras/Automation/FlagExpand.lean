@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.Automation.ExprHelpers
 import LeanFlagAlgebras.Forbid.Basic
+import LeanFlagAlgebras.Forbid.CommonGraphs
 import LeanFlagAlgebras.FlagAlgebra.Compute.Basic
 
 /-! # Automation.FlagExpand — flag expansion tactics
@@ -235,6 +236,60 @@ elab_rules : tactic
         -- *right*-associated while the stated RHS is *left*-associated, so we first unfold the
         -- `FlagAlgebra_*` constants (making both sides `⟦basisVector⟧`-atoms) and finish with an
         -- additive-commutative normalization that is insensitive to the bracketing.
+        evalTactic (← `(tactic| try exact Forbid.forbidEqWith_refl _ _))
+        unless (← getGoals).isEmpty do
+          withMainContext do
+            let faIdents := (collectPrefixConstants "FlagAlgebra_" (← getMainTarget)).map mkIdent
+            evalTactic (← `(tactic| refine Forbid.forbidEqWith_of_eq ?_))
+            unless faIdents.isEmpty do
+              evalTactic (← `(tactic| dsimp only [$[$faIdents:ident],*]))
+            evalTactic (← `(tactic|
+              first
+                | rfl
+                | abel
+                | simp only [add_assoc, add_comm, add_left_comm]))
+
+/--
+`flag_expand_hfree_subgraph N F` is the **subgraph**-forbidding analogue of `flag_expand_hfree`.
+On a goal `FlagAlgebra_n_k_m_i =[F.toLabeledGraph.graph] (its size-`N` subgraph-`F`-free expansion)`,
+it expands the flag with the subgraph capstone `basisVector_quot_forbidEq_sum_subgraph` rewritten onto
+the subgraph-`F`-free set `flagSetHfree_N_k_m_<F>` (via its `…_eq` / `…_val_eq`). Unlike the induced
+`flag_expand_hfree`, it needs **no** membership argument — the capstone derives it from
+`supergraphFamily`. Prerequisite: run `generate_subgraph_free_flags N k m F` (or the empty-typed
+`generate_subgraph_free_empty_typed_flags N F`).
+-/
+syntax (name := flagExpandHfreeSubgraphTac) "flag_expand_hfree_subgraph " num ident : tactic
+
+elab_rules : tactic
+  | `(tactic| flag_expand_hfree_subgraph $N:num $forbid:ident) =>
+      withMainContext do
+        let nVal := N.getNat
+        let tagFull := forbid.getId.toString
+        let tag := (tagFull.splitOn ".").getLastD tagFull
+        let target ← getMainTarget
+        let lhsExpr ←
+          match target.getAppFnArgs with
+          | (``Forbid.forbidEq, args) =>
+              match args[args.size - 2]? with
+              | some e => pure e
+              | none => throwError "flag_expand_hfree_subgraph: malformed `=[ ]` goal."
+          | _ => throwError "flag_expand_hfree_subgraph: goal must be `f =[H] g`."
+        let some lhsConst := findFlagAlgebraConst? lhsExpr
+          | throwError "flag_expand_hfree_subgraph: no `FlagAlgebra_*` constant on the LHS of `=[ ]`."
+        let some (lhsN, kVal, mVal, iVal) := parseFlagAlgebraIndices? lhsConst
+          | throwError m!"flag_expand_hfree_subgraph: could not parse indices from `{lhsConst}`."
+        let flagId : TSyntax `term := mkIdent (Name.mkSimple s!"Flag_{lhsN}_{kVal}_{mVal}_{iVal}")
+        let lhsNStx : TSyntax `term := Syntax.mkNumLit (toString lhsN)
+        let setName : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}")
+        let setEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_eq")
+        let valEqId : TSyntax `term := mkIdent (Name.mkSimple s!"flagSetHfree_{nVal}_{kVal}_{mVal}_{tag}_val_eq")
+        evalTactic (← `(tactic|
+          apply Forbid.forbidEqWith_trans
+            (basisVector_quot_forbidEq_sum_subgraph $forbid ⟨$lhsNStx, $flagId⟩ $N (by decide))))
+        evalTactic (← `(tactic|
+          rw [Finset.sum_congr (s₂ := $setName) (by rw [$setEqId:term]; try congr 1) (fun _ _ => rfl)]))
+        evalTactic (← `(tactic| simp only [Finset.sum_eq_multiset_sum, $valEqId:term]))
+        evalTactic (← `(tactic| simp))
         evalTactic (← `(tactic| try exact Forbid.forbidEqWith_refl _ _))
         unless (← getGoals).isEmpty do
           withMainContext do

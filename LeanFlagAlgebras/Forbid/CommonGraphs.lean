@@ -157,30 +157,19 @@ theorem sym2Graph_supergraph_mem_forbiddenFlags {m : ℕ} {H G : Sym2Graph m}
 
 section SupergraphFamily
 open FlagAlgebras.Compute Forbid
-open scoped Classical
 
-/-- The **supergraph family** of `H`: every edge-superset of `H` on `Fin m`, as empty-typed flags
-(`H.edges ∪ S` over subsets `S` of the non-`H` complete-graph edges). The finite `Fs` fed to
-`basisVector_quot_forbidEq_sum_ofFamilyMem` for subgraph-`H`-forbidding (a flag has zero induced
-density of *all* of these iff it is subgraph-`H`-free). `noncomputable` because `FinFlag` quotients
-carry only a classical `DecidableEq`; a *computable* enumeration for the generator's `native_decide`
-(built from `List` primitives, not the noncomputable `Finset.toList`) is the remaining G4 step. -/
-noncomputable def supergraphFamily {m : ℕ} (H : Sym2Graph m) : Finset (FinFlag ∅ₜ) :=
-  ((completeSym2Graph m).edges \ H.edges).powerset.image (fun S =>
-    ⟨m, Sym2EmptyTypedFlag.toFlag ⟦{
-      edges := H.edges ∪ S.filter (fun e => ¬ e.IsDiag)
-      edges_valid := fun e he => by
-        rcases Finset.mem_union.mp he with h | h
-        · exact H.edges_valid e h
-        · exact (Finset.mem_filter.mp h).2 }⟧⟩)
+-- `allEdgesList`, `supergraphSym2List`, `supergraphFamily`, `supergraphFamily_eq_map`, and
+-- `supergraphFamily_filter_iff` live in `Flags/ForbidFreePruned.lean` (the `FlagAlgebras.Compute`
+-- layer) so the forbid-free generator can reference them; here we add the `forbiddenFlags` membership
+-- (which needs the `Forbid` framework) and the subgraph-forbidding capstones on top.
 
 /-- Every member of `supergraphFamily H` is in `forbiddenFlags H` (it is an edge-superset of `H`,
 hence subgraph-contains `H`). This is the `hmem` input for `basisVector_quot_forbidEq_sum_ofFamilyMem`. -/
 theorem supergraphFamily_mem_forbiddenFlags {m : ℕ} (H : Sym2Graph m) :
     ∀ D ∈ supergraphFamily H, D ∈ forbiddenFlags H.toLabeledGraph.graph := by
   intro D hD
-  rw [supergraphFamily, Finset.mem_image] at hD
-  obtain ⟨S, _, rfl⟩ := hD
+  simp only [supergraphFamily, supergraphSym2List, List.mem_map] at hD
+  obtain ⟨s, ⟨S, _, rfl⟩, rfl⟩ := hD
   exact sym2Graph_supergraph_mem_forbiddenFlags Finset.subset_union_left
 
 /-- **Arbitrary-`H` subgraph-forbidding expansion** (capstone of G1–G4). Instantiates the

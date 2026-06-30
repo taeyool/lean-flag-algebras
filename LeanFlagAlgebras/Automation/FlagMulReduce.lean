@@ -160,6 +160,25 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
                     (downward_inducedForbidEq_equal_flags (inducedForbidEq_smul (c := _) $thmId)),
                   inducedForbidLE_move_add_left_iff]))
           return true
+        else if let some negInner := stripNeg? downInner then
+          -- (b') head = downward (-(A * B)) — a `(-1) • _` coefficient simplified to a bare negation
+          if (getMulArgs? negInner).isSome then
+            let some thmName ← mkFlagMulThmName? negInner curNs
+              | do
+                  let fNm? := findFlagAlgebraConst? negInner |>.orElse (fun _ => findFlagConst? negInner)
+                  throwError m!"reduce_downward_flagmul (neg-mul branch): could not find flagMul theorem for mulTerm={negInner}; detectedConst={fNm?.getD Name.anonymous}"
+            let thmId : TSyntax `term := mkIdent thmName
+            evalTactic (← `(tactic|
+              first
+              | rw [Forbid.forbidLEWith_rw_left_add_right
+                      (downward_forbidEqWith_equal_flags (forbidEqWith_neg $thmId)),
+                    forbidLEWith_move_add_left_iff]
+              | rw [Forbid.inducedForbidLE_rw_left_add_right
+                      (downward_inducedForbidEq_equal_flags (inducedForbidEq_neg $thmId)),
+                    inducedForbidLE_move_add_left_iff]))
+            return true
+          else
+            return false
         else if (getMulArgs? downInner).isSome then
           -- (b) head = downward (A * B) — no smul wrapper
           let some thmName ← mkFlagMulThmName? downInner curNs
@@ -204,6 +223,25 @@ private def stepReduceDownwardFlagMul : TacticM Bool :=
                     (downward_inducedForbidEq_equal_flags (inducedForbidEq_smul (c := _) $thmId)),
                   inducedForbidLE_move_term_left_iff]))
           return true
+        else if let some negInner := stripNeg? downInner then
+          -- (b') lhs = downward (-(A * B))
+          if (getMulArgs? negInner).isSome then
+            let some thmName ← mkFlagMulThmName? negInner curNs
+              | do
+                  let fNm? := findFlagAlgebraConst? negInner |>.orElse (fun _ => findFlagConst? negInner)
+                  throwError m!"reduce_downward_flagmul (terminal neg-mul branch): could not find flagMul theorem for mulTerm={negInner}; detectedConst={fNm?.getD Name.anonymous}"
+            let thmId : TSyntax `term := mkIdent thmName
+            evalTactic (← `(tactic|
+              first
+              | rw [forbidLEWith_rw_left
+                      (downward_forbidEqWith_equal_flags (forbidEqWith_neg $thmId)),
+                    forbidLEWith_move_term_left_iff]
+              | rw [inducedForbidLE_rw_left
+                      (downward_inducedForbidEq_equal_flags (inducedForbidEq_neg $thmId)),
+                    inducedForbidLE_move_term_left_iff]))
+            return true
+          else
+            return false
         else if (getMulArgs? downInner).isSome then
           -- (b) lhs = downward (A * B) — no smul wrapper
           let some thmName ← mkFlagMulThmName? downInner curNs

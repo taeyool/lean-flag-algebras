@@ -592,18 +592,16 @@ def _forbid_finflag_expr(tag: str) -> str:
 def _forbid_graph_from_description(desc: str):
     """Parse the ``forbid n:edges`` clause.
 
-    Returns ``(n, edges_frozenset, tag)`` for a **complete-graph** forbid (tag
-    ``"K{n}"``, defined on the Lean side as ``completeSym2Graph n``), else
-    ``(None, None, None)``. The migrated edge-based pipeline forbids a
-    ``completeSym2Graph`` term, so only complete graphs are supported.
+    Returns ``(n, edges_frozenset, tag)``: ``tag = "K{n}"`` for a **complete-graph** forbid
+    (defined on the Lean side as ``completeSym2Graph n``, induced pipeline), or ``tag = None`` for a
+    **non-complete** forbid (still returning ``n``/``edges`` — handled by the *subgraph* pipeline,
+    Route B). Returns ``(None, None, None)`` only when the ``forbid …`` clause cannot be parsed.
     """
     m = _DESC_FORBID_RE.search(desc)
     if not m:
         return None, None, None
     n, edges, _ = parse_flagmatic(m.group(1))
-    tag = _predict_forbid_tag(n, m.group(1).split(":", 1)[1])  # "K{n}" iff complete
-    if tag is None:
-        return None, None, None
+    tag = _predict_forbid_tag(n, m.group(1).split(":", 1)[1])  # "K{n}" iff complete; else None
     return n, edges, tag
 
 
@@ -644,6 +642,26 @@ def induced_density(
     return Fraction(count, total)
 
 
+def subgraph_contains(
+    sub_n: int,
+    sub_edges: frozenset[tuple[int, int]],
+    host_n: int,
+    host_edges: frozenset[tuple[int, int]],
+) -> bool:
+    """Does `host` contain `sub` as a *(not necessarily induced)* subgraph? I.e. is there an
+    injection of `sub`'s vertices into `host`'s that maps every `sub`-edge to a `host`-edge (extra
+    host edges among the image are allowed). This is the Lean `subgraphContains` predicate, and the
+    correct free/forbidden split for **subgraph** forbidding. For a *complete* `sub = K_r` it agrees
+    with `induced_density(K_r; host) ≠ 0` (a `K_r` subgraph is automatically induced), so using it
+    everywhere keeps the existing complete-graph examples unchanged."""
+    if sub_n > host_n:
+        return False
+    for verts in permutations(range(host_n), sub_n):
+        if all(tuple(sorted((verts[u], verts[v]))) in host_edges for (u, v) in sub_edges):
+            return True
+    return False
+
+
 def _expansion_coefficients(
     obj_flagmatic: str, N: int, forbid_n: int, forbid_edges: frozenset[tuple[int, int]]
 ) -> tuple[list[tuple[int, Fraction]], list[tuple[int, Fraction]]]:
@@ -654,9 +672,10 @@ def _expansion_coefficients(
     host index ascending.
 
     The split is computed **in-memory** (no JSON): a host graph is *forbidden*
-    iff it contains an induced copy of the forbid graph — for a complete graph
-    `K_r` this is exactly `induced_density(K_r; host) ≠ 0` (= contains `K_r`),
-    the same induced semantics the pruned generator uses.
+    iff it contains the forbid graph as a **(non-induced) subgraph**
+    (`subgraph_contains`) — the same semantics the `generate_subgraph_free_*`
+    pruned generators use. For a complete forbid `K_r` this coincides with
+    `induced_density(K_r; host) ≠ 0`, so complete-graph examples are unchanged.
     """
     obj_n, obj_edges, _ = parse_flagmatic(obj_flagmatic)
     hosts = load_graphs(N)
@@ -666,7 +685,7 @@ def _expansion_coefficients(
         d = induced_density(obj_n, obj_edges, N, host_edges)
         if d == 0:
             continue
-        is_free = induced_density(forbid_n, forbid_edges, N, host_edges) == 0
+        is_free = not subgraph_contains(forbid_n, forbid_edges, N, host_edges)
         (admissible if is_free else forbidden).append((i, d))
     return admissible, forbidden
 
@@ -753,17 +772,27 @@ def render_expand_under_forbid(
         cert.get("description", ""))
     if forbid_n is None:
         return None
+    subgraph_mode = _tag is None
+    forbid_graph_expr = (f"{forbid_tag}.toLabeledGraph.graph" if subgraph_mode
+                         else f"completeGraph (Fin {forbid_n})")
+    expand_tac = (f"flag_expand_hfree_subgraph {N} {forbid_tag}" if subgraph_mode
+                  else f"flag_expand_hfree {N} {forbid_tag} "
+                       f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})")
     admissible, forbidden = _expansion_coefficients(
         obj_flagmatic, N, forbid_n, forbid_edges)
     if not admissible:
         return None
 
     # Auto-generate the @[simp] density-evaluation lemmas — these are what
-    # `flag_expand_hfree N K{r}` needs to close (it relies on `flagDensity₁`
-    # evaluating to concrete rationals via simp). The forbid-containing hosts are
-    # skipped: the pruned commands never generate their `Flag_N_0_0_i`, so naming
-    # one would reference an undefined constant.
-    skip = frozenset(i for (i, _c) in forbidden)
+    # `flag_expand_hfree N F` needs to close (it relies on `flagDensity₁`
+    # evaluating to concrete rationals via simp). **Every** forbid-containing host
+    # is skipped (not just the nonzero-objective-density ones in `forbidden`): the
+    # pruned commands never generate its `Flag_N_0_0_i`, so naming one — even in a
+    # `= 0` lemma — would reference an undefined constant. Uses subgraph containment
+    # so the skip set exactly matches the `generate_subgraph_free_*` output.
+    skip = frozenset(
+        i for i, he in enumerate(load_graphs(N))
+        if subgraph_contains(forbid_n, forbid_edges, N, he))
     density_lemmas, _densities = render_density_simp_lemmas(
         obj_flagmatic, N, skip_indices=skip)
 
@@ -781,9 +810,9 @@ def render_expand_under_forbid(
         f"`flag_expand_hfree {N} {forbid_tag}` (`basisVector_quot_forbidEq_sum` rewritten onto\n"
         f"`flagSetHfree_{N}_0_0_{forbid_tag}`; the forbidden terms are dropped automatically). -/\n"
         f"lemma {lemma_name}\n"
-        f"    : {obj_ident} =[completeGraph (Fin {forbid_n})] {admissible_expr}\n"
+        f"    : {obj_ident} =[{forbid_graph_expr}] {admissible_expr}\n"
         f"  := by\n"
-        f"  flag_expand_hfree {N} {forbid_tag} (completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n})\n"
+        f"  {expand_tac}\n"
     )
 
 
@@ -844,12 +873,19 @@ def render_proof_body(
         return None, None
     N = int(cert["order_of_admissible_graphs"])
     forbid_n, _forbid_edges, forbid_tag = _forbid_graph_from_description(desc)
-    if forbid_n is None or forbid_tag is None:
+    if forbid_n is None:
         return None, None
-    forbid_expr = _forbid_finflag_expr(forbid_tag)
+    subgraph_mode = forbid_tag is None  # non-complete forbid → subgraph semantics (Route B)
+    if subgraph_mode:
+        forbid_tag = "ForbidGraph"
+        forbid_graph_expr = f"{forbid_tag}.toLabeledGraph.graph"
+        forbid_expr = forbid_tag  # the `Sym2Graph` term itself
+    else:
+        forbid_graph_expr = f"completeGraph (Fin {forbid_n})"
+        forbid_expr = _forbid_finflag_expr(forbid_tag)
 
     # The proof works entirely in the ordinary `forbidLEWith`/`forbidEqWith` framework.
-    # The goal is already `≤[completeGraph (Fin r)]`, so no induced-bridge preamble is needed.
+    # The goal is already `≤[…]`, so no induced-bridge preamble is needed.
     prefix = ""
 
     # Branch detection: when n_obj < N we need an expand_under_forbid lemma.
@@ -926,25 +962,41 @@ def render_proof_body(
         simp_lines.append(f"  simp [{', '.join(pieces)}]")
     simp_block = "\n".join(simp_lines)
 
+    if subgraph_mode:
+        one_expand_line = (
+            f"  apply forbidLEWith_trans_forbidEqWith_right ?_  "
+            f"(forbidEqWith_smul (forbidEqWith_symm "
+            f"(one_forbidEq_forbidExpand_one_subgraph {forbid_tag} {N})))\n"
+        )
+        expand_one_line = f"  expand_one_hfree_at_subgraph {N} {forbid_tag}\n"
+    else:
+        one_expand_line = (
+            f"  apply forbidLEWith_trans_forbidEqWith_right ?_  "
+            f"(forbidEqWith_smul (forbidEqWith_symm "
+            f"(one_forbidEq_forbidExpand_one_ofMem {forbid_expr} "
+            f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n}) {N})))\n"
+        )
+        expand_one_line = f"  expand_one_hfree_at {N} {forbid_tag}\n"
+
     proof = (
         f"{prefix}"
-        f"  have quadraticForm_trans : {obj_ident} ≤[completeGraph (Fin {forbid_n})]\n"
+        f"  have quadraticForm_trans : {obj_ident} ≤[{forbid_graph_expr}]\n"
         f"            {have_rhs}\n"
         f"    := by\n"
         f"{have_block}\n"
         f"  apply forbidLEWith_trans quadraticForm_trans\n"
-        f"  apply forbidLEWith_trans_forbidEqWith_right ?_  "
-        f"(forbidEqWith_smul (forbidEqWith_symm "
-        f"(one_forbidEq_forbidExpand_one_ofMem {forbid_expr} "
-        f"(completeSym2Graph_finFlag_mem_forbiddenFlags {forbid_n}) {N})))\n"
+        f"{one_expand_line}"
         f"{expand_rewrite}"
         f"\n"
         f"{simp_block}\n"
         f"  reduce_downward_flagmul\n"
         f"\n"
-        f"  expand_one_hfree_at {N} {forbid_tag}\n"
+        f"{expand_one_line}"
         f"\n"
-        f"  simp [smul_smul, downward_add, downward_smul]\n"
+        # `downward_neg` / `downward_zero` are needed alongside `downward_add` / `downward_smul`:
+        # reduce's neg branch produces `downward (-(c • F))` summands (and `downward 0`), and without
+        # these lemmas the outer negation blocks `downward` from distributing, leaving the term stuck.
+        f"  simp [smul_smul, downward_add, downward_smul, downward_neg, downward_zero]\n"
         f"  flagsum_ac_sort_rhs_pipeline\n"
         f"\n"
         f"  apply forbidLEWith_of_le\n"
@@ -971,7 +1023,9 @@ def render_theorem_statement(cert: dict, theorem_name: str, proof_body: str | No
     # ordinary `forbidLEWith`/`forbidEqWith` framework (no induced bridge).
     forbid_n, _edges, _tag = _forbid_graph_from_description(desc)
     if forbid_n is None:
-        forbid_expr = "/- TODO: forbid expression (no K_n match in description) -/"
+        forbid_expr = "/- TODO: forbid expression (could not parse the `forbid …` clause) -/"
+    elif _tag is None:
+        forbid_expr = "ForbidGraph.toLabeledGraph.graph"  # non-complete → subgraph semantics
     else:
         forbid_expr = f"completeGraph (Fin {forbid_n})"
 
@@ -1060,9 +1114,12 @@ def render_pruned_commands(cert: dict) -> str:
     Only complete-graph forbids are supported (the forbid is `completeSym2Graph r`).
     """
     desc = cert.get("description", "")
-    forbid_n, _edges, tag = _forbid_graph_from_description(desc)
-    if tag is None:
-        return "-- TODO: forbid graph (no complete-graph K_n match in description)"
+    forbid_n, forbid_edges, tag = _forbid_graph_from_description(desc)
+    if forbid_n is None:
+        return "-- TODO: forbid graph (could not parse the `forbid …` clause)"
+    subgraph_mode = tag is None  # non-complete forbid → subgraph semantics
+    if subgraph_mode:
+        tag = "ForbidGraph"
     N = int(cert["order_of_admissible_graphs"])
 
     # Objective size — the empty-typed flags the objective / its expansion name.
@@ -1082,6 +1139,28 @@ def render_pruned_commands(cert: dict) -> str:
         typed_triples.add((patN, k, type_idx))
         typed_triples.add((N, k, type_idx))
         block_params.append((patN, k, type_idx))
+
+    if subgraph_mode:
+        # Non-complete forbid → *subgraph* semantics (Route B). The forbidden graph is an explicit
+        # `Sym2Graph` term, and the `generate_subgraph_free_*` commands emit the subgraph-`F`-free
+        # flags whose completeness bridges to the subgraph capstone's filter.
+        edge_terms = ", ".join(f"s({u}, {v})" for (u, v) in sorted(forbid_edges))
+        lines = [
+            f"-- Subgraph-forbidding generation (Route B): `{tag}` is forbidden as a (non-induced)",
+            f"-- subgraph. The `generate_subgraph_free_*` commands emit only the subgraph-`{tag}`-free",
+            f"-- flags + completeness bridging to the subgraph capstone filter (`supergraphFamily`).",
+            f"def {tag} : Sym2Graph {forbid_n} where",
+            f"  edges := {{{edge_terms}}}",
+            f"  edges_valid := by decide",
+        ]
+        for n in sorted(empty_sizes):
+            lines.append(f"generate_subgraph_free_empty_typed_flags {n} {tag}")
+        for (n, k, m) in sorted(typed_triples):
+            lines.append(f"generate_subgraph_free_flags {n} {k} {m} {tag}")
+        for (patN, k, m) in block_params:
+            lines.append(f"generate_subgraph_free_flag_pair_density_theorems {patN} {N} {k} {m} {tag}")
+            lines.append(f"generate_subgraph_free_mul_theorems {patN} {N} {k} {m} {tag}")
+        return "\n".join(lines)
 
     lines = [
         f"-- Edge-based, pruning-backed forbid-free generation (decision D2): the forbidden",
@@ -1182,8 +1261,11 @@ def render_skeleton(cert: dict, namespace: str, theorem_name: str = "main") -> s
     imports = "\n".join(import_list)
 
     theorem_block = (
+        # `maxHeartbeats 0` already disables the heartbeat limit (0 = unlimited). `maxRecDepth` is
+        # bumped well above the 2000 default: the AC-sort / re-association on a long RHS sum (large
+        # SDP blocks, e.g. subgraph forbids) otherwise hits "maximum recursion depth has been reached".
         f"set_option maxHeartbeats 0\n"
-        f"set_option maxRecDepth 2000\n"
+        f"set_option maxRecDepth 1000000\n"
         f"\n"
         f"{helper_section}"
         f"{fallback_note}"

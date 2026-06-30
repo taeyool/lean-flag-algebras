@@ -814,6 +814,47 @@ theorem subgraphContains_of_edges_subset {m : ℕ} {H G : Sym2Graph m}
   refine ⟨Function.Embedding.refl (Fin m), fun i j hij => ?_⟩
   simpa using hsub hij
 
+/-- All non-diagonal edges of `Fin m`, **computably** — the base for the supergraph enumeration,
+built from `List` primitives so it avoids the noncomputable `Finset.toList`. Lives here (the
+computable `Sym2` layer) so the forbid-free generator can reference it; `supergraphFamily` (the
+`FinFlag`-side image) is built on top in `Forbid/CommonGraphs.lean`. -/
+def allEdgesList (m : ℕ) : List (Sym2 (Fin m)) :=
+  (((List.finRange m).flatMap (fun i => (List.finRange m).map (fun j => s(i, j)))).filter
+    (fun e => !decide e.IsDiag)).dedup
+
+/-- **Computable** Sym2-side supergraph list of `H`: edge-supersets `H.edges ∪ S` over sublists `S`
+of the non-`H` edges. Genuinely executable (`List.sublists` / `List.map` / `Finset.union`), so the
+generator can `native_decide` the subgraph-`H`-free split and the survivor filter. -/
+def supergraphSym2List {m : ℕ} (H : Sym2Graph m) : List (Sym2EmptyTypedFlag m) :=
+  ((allEdgesList m).filter (fun e => !decide (e ∈ H.edges))).sublists.map (fun S =>
+    ⟦{ edges := H.edges ∪ (S.toFinset.filter (fun e => ¬ e.IsDiag))
+       edges_valid := fun e he => by
+         rcases Finset.mem_union.mp he with h | h
+         · exact H.edges_valid e h
+         · exact (Finset.mem_filter.mp h).2 }⟧)
+
+/-- The **supergraph family** of `H` as a **computable** `List (FinFlag ∅ₜ)` (the `toFlag`-image of
+`supergraphSym2List`). A `List` (not `Finset`) needs no `DecidableEq (FinFlag)`, and being built from
+`List` primitives it stays `native_decide`-able. The finite `Fs` fed to the G3 family expansions; the
+`hmem`/capstone wrappers live in `Forbid/CommonGraphs.lean`. -/
+def supergraphFamily {m : ℕ} (H : Sym2Graph m) : List (FinFlag ∅ₜ) :=
+  (supergraphSym2List H).map (fun s => ⟨m, s.toFlag⟩)
+
+/-- `supergraphFamily` is the `toFlag`-image of `supergraphSym2List` — definitional. -/
+theorem supergraphFamily_eq_map {m : ℕ} (H : Sym2Graph m) :
+    supergraphFamily H = (supergraphSym2List H).map (fun s => (⟨m, s.toFlag⟩ : FinFlag ∅ₜ)) := rfl
+
+/-- **Computable form of the capstone's survivor filter** (empty-typed host flags). The `FinFlag`-side
+`supergraphFamily` density condition equals the fully computable `Sym2EmptyTypedFlag` one, so the
+generator can decide it by `native_decide` (via `flagDensity₁_eq_sym2EmptyTypeFlagDensity₁`). -/
+theorem supergraphFamily_filter_iff {m ℓ : ℕ} (H : Sym2Graph m) (F' : Sym2EmptyTypedFlag ℓ) :
+    (∀ D ∈ supergraphFamily H, flagDensity₁ D.2 F'.toFlag = 0)
+      ↔ (∀ s ∈ supergraphSym2List H, sym2EmptyTypeFlagDensity₁ s F' = 0) := by
+  simp only [supergraphFamily, List.forall_mem_map]
+  refine forall_congr' (fun s => imp_congr_right (fun _ => ?_))
+  show flagDensity₁ s.toFlag F'.toFlag = 0 ↔ _
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+
 /-- Consistency with Task 1: the general predicate at `F := triangleGraph` is exactly `hasTri`,
 so the general bridge subsumes the K₃ bridge `not_hasTri_iff_triangleDensity_eq_zero`. -/
 theorem inducedContains_triangleGraph_iff_hasTri {n : ℕ} (G : Sym2Graph n) :

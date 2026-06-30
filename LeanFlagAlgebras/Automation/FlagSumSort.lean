@@ -361,11 +361,15 @@ Use this inside `conv` when you want to normalize arithmetic first and then
 perform add-AC sorting on the focused expression.
 -/
 elab "ac_sort_at_pipeline" : conv => do
+  -- `maxSteps` is bumped well above the default (100000): the `add_assoc` re-association is
+  -- roughly quadratic in the number of summands, so a long RHS sum (large SDP blocks) otherwise
+  -- trips `simp`'s "maximum number of steps exceeded" guard. This is a limit, not a loop.
   evalTactic (← `(tactic|
-    (try (simp only [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
+    (try (simp (config := { maxSteps := 10000000 }) only
+      [neg_add, neg_neg, sub_eq_add_neg, ← neg_smul, add_assoc, smul_smul]))))
   acSortNormalizeConv
   evalTactic (← `(tactic|
-    (try (simp only [← add_assoc, ← add_smul]);
+    (try (simp (config := { maxSteps := 10000000 }) only [← add_assoc, ← add_smul]);
      try norm_num)))
 
 /--

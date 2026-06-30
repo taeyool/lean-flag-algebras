@@ -209,6 +209,18 @@ def inducedFreeFlagIndices (freeMask : List Bool)
   (List.range flags.length).filter (fun i =>
     freeMask.getD ((flags.getD i (0, [], [], 0, 0)).1) false)
 
+/-- Like `evalInducedFreeMask`, but for **subgraph** (non-induced) forbidding: entry `i` is `true`
+iff the `i`-th canonical `n`-vertex graph does **not** contain `F` as a (non-induced) subgraph
+(`subgraphContains F G`, the G1 predicate). This drives the subgraph-`H`-free flag split (G4). -/
+def evalSubgraphFreeMask (n : Nat) (fStx : TSyntax `ident) : CommandElabM (List Bool) := do
+  let stx ← `((FlagAlgebras.Compute.genSym2Graphs $(Quote.quote n)).map
+    (fun G => !decide (FlagAlgebras.Compute.subgraphContains $fStx G)))
+  liftTermElabM do
+    let e ← Lean.Elab.Term.elabTermAndSynthesize stx none
+    let e ← instantiateMVars e
+    let t ← Lean.Meta.inferType e
+    evalBoolList t e
+
 /-- Like `evalInducedFreeMask`, but for a **complete-graph** forbid `K_r`: uses the cheap
 `hasClique r` (vertex-subset scan) instead of the generic embedding-based `inducedContains`
 (Task 8a). Same mask, far cheaper at high `n`. -/
@@ -615,6 +627,24 @@ elab "generate_pruned_flag_pair_density_theorems" patS:num hostS:num kS:num mS:n
   let hosts ← evalFlagDataRows k m hostN
   let patMask ← evalInducedFreeMask patN fStx
   let hostMask ← evalInducedFreeMask hostN fStx
+  let patternFree := inducedFreeFlagIndices patMask patterns
+  let hostFree := inducedFreeFlagIndices hostMask hosts
+  genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
+
+/-- `generate_subgraph_free_flag_pair_density_theorems patN hostN k m F`: the **subgraph**-forbidding
+analogue. A density is a density (forbid-independent); only *which* pattern/host pairs are computed
+differs — here via the subgraph mask `evalSubgraphFreeMask` (`subgraphContains F`). Prerequisite: the
+subgraph-`F`-free pattern/host flags must exist (`generate_subgraph_free_flags …` first). -/
+elab "generate_subgraph_free_flag_pair_density_theorems" patS:num hostS:num kS:num mS:num
+    fStx:ident : command => do
+  let k := kS.getNat
+  let m := mS.getNat
+  let patN := patS.getNat
+  let hostN := hostS.getNat
+  let patterns ← evalFlagDataRows k m patN
+  let hosts ← evalFlagDataRows k m hostN
+  let patMask ← evalSubgraphFreeMask patN fStx
+  let hostMask ← evalSubgraphFreeMask hostN fStx
   let patternFree := inducedFreeFlagIndices patMask patterns
   let hostFree := inducedFreeFlagIndices hostMask hosts
   genPairDensityCoreOn k m patN hostN patterns hosts patternFree hostFree
