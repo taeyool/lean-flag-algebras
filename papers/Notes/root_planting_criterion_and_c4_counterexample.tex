@@ -292,9 +292,10 @@ equality slice---the triangle-free limits that actually attain edge density
 $\tfrac12$---this recovers the local statistics of the extremal complete bipartite
 limit, for instance that a typical vertex has degree $\tfrac12$ (\cref{thm:relative-mantel}).
 Applied to the verified $K_4$-free $P_4$ certificate, the same mechanism forces every
-extremiser to have edge density $\tfrac23$, hence (by the equality case of Tur\'an's
-theorem) to be the balanced complete tripartite graph (\cref{thm:k4free-p4-tripartite}),
-with a quantitative stability version (\cref{thm:k4free-p4-quant-stability}) and an
+extremiser to be the balanced complete tripartite graph outright---the two mined
+labelled equations are rigid by themselves, with no appeal to the equality case of
+Tur\'an's theorem (\cref{thm:k4free-p4-tripartite})---with a quantitative stability
+version (\cref{thm:k4free-p4-quant-stability}) and an
 $r$-partite generalisation (\cref{thm:parametric-p4-equality-slice}).
 
 \section{Flag-algebra background}\label{sec:background}
@@ -3679,7 +3680,17 @@ $F_\triangle=0$ on $S_\tau$ (\cref{cor:c5-edge-pinned}).
 The framework is not tied to a single forbidden-subgraph constraint.  It applies
 unchanged to any hereditary class, in particular to the intersection $\K\cap\K'$ of the
 constrained class with a further graph property $\K'$, provided the intersection is again
-hereditary.
+hereditary.  When the further constraint is \emph{not} hereditary, there is no quotient
+algebra to retreat to, but ensemble semantics still makes sense relative to an arbitrary
+set of admissible limits.  This section develops that relative theory in its natural
+generality---soundness, a support-closure criterion, a complementary-slackness
+principle in exact, quantitative, and matrix-kernel forms, and completeness theorems
+(a relative Positivstellensatz and a relative closed-cone collapse) showing the
+resulting slice method misses nothing---and then instantiates it twice: on the
+Tur\'an equality slices, of which the Mantel slice is the first case, and on the equality
+slices of verified certificates, where the slackness principle turns a density bound into
+labelled local equations, moment identities, rigidity theorems for the extremal graphon,
+and stability estimates.
 
 \subsection{When the further constraint is hereditary}
 
@@ -3711,14 +3722,15 @@ in the class.  In this case there may be no canonical quotient flag algebra for
 $\K\cap\K'$ of the usual kind.
 
 Ensemble semantics has more room.  Instead of forming a new quotient algebra, fix a
-closed set
+nonempty set
 \[
   Y\subseteq Q_0
 \]
 of admissible unlabelled limits inside an existing hereditary class.  The set $Y$ may
 be cut out by arbitrary continuous density constraints, for example
-$\phi_0(g_i)=0$, $\phi_0(h_j)\ge0$, or $\phi_0(\rho)=c$.  The relative labelled support
-at type $\sigma$ is
+$\phi_0(g_i)=0$, $\phi_0(h_j)\ge0$, or $\phi_0(\rho)=c$---but no structure whatever is
+assumed: $Y$ need not be closed, and need not be describable by density constraints at
+all.  The relative labelled support at type $\sigma$ is
 \[
   S_\sigma(Y):=
   \overline{
@@ -3728,39 +3740,771 @@ at type $\sigma$ is
 \]
 Relative ensemble positivity asks only for non-negativity on $S_\sigma(Y)$.  This is a
 genuine enhancement of the class: it can impose limit-level conditions that are meaningful for
-the intended extremal problem but are invisible to hereditary quotients.
+the intended extremal problem but are invisible to hereditary quotients.  Taking $Y=Q_0$
+recovers the absolute theory: $S_\sigma(Q_0)$ is exactly the root-planting set $S_\sigma$
+of \cref{def:root-planting}, so every statement below about $S_\sigma(Y)$ generalises a
+statement about $S_\sigma$.
+
+Before using the relative supports we record two structural facts.  The first says that
+nothing is lost or gained by closing the constraint set; closedness hypotheses can
+therefore be dropped throughout.
+
+\begin{lemma}[Closing the constraint set does not change the support]\label{lem:relative-closure}
+Let $Y\subseteq Q_0$ be nonempty, and let $\overline Y$ be its closure in
+$X_0:=\Homp(\A^0[\T_0],\R)$ (equivalently in $Q_0$, which is closed in $X_0$).  Then, for
+every type $\sigma$,
+\[
+  S_\sigma(\overline Y)=S_\sigma(Y).
+\]
+\end{lemma}
+
+\begin{proof}
+Since $Y\subseteq\overline Y$, the inclusion $S_\sigma(Y)\subseteq S_\sigma(\overline Y)$
+is immediate; both sides are closed, so it suffices to show
+$\supp(\Ext_\sigma(\phi_0))\subseteq S_\sigma(Y)$ for every $\phi_0\in\overline Y$ with
+$\phi_0(\brak\sigma)>0$.
+
+First, the assignment $\phi\mapsto\Ext_\sigma(\phi)$ is weakly continuous on the set
+$\{\phi\in X_0:\phi(\brak\sigma)>0\}$.  The evaluation functions
+$\chi\mapsto\chi(g)$, $g\in\A^\sigma[\T_0]$, form a unital \emph{subalgebra} of
+$C(X_\sigma)$: linear combinations of evaluations are evaluations by the linearity of
+each $\chi$, and products are evaluations because each $\chi$ is multiplicative,
+$\chi(g_1)\chi(g_2)=\chi(g_1g_2)$.  This subalgebra separates the points of $X_\sigma$,
+so it is dense in $C(X_\sigma)$ by Stone--Weierstrass.  By
+\eqref{eq:extension-expectation} the integral of the evaluation of $g$ against
+$\Ext_\sigma(\phi)$ equals $\phi(\avg{g}{\sigma})/\phi(\brak\sigma)$, a continuous
+function of $\phi$ wherever the denominator is positive.  For probability measures on a
+compact space, convergence of integrals on a dense subspace of $C(X_\sigma)$ upgrades to
+convergence of the integrals of every continuous function, that is, to weak convergence.
+
+Second, supports are lower semicontinuous along weak convergence: if $P_n\to P$ weakly on
+the compact metrizable space $X_\sigma$, then
+$\supp(P)\subseteq\overline{\bigcup_n\supp(P_n)}$.  Indeed, let $\chi\in\supp(P)$ and let
+$U\ni\chi$ be open; the portmanteau theorem gives $\liminf_nP_n(U)\ge P(U)>0$, so $U$
+meets $\supp(P_n)$ for all large $n$, and letting $U$ shrink through a countable
+neighbourhood basis of $\chi$ produces points of $\bigcup_n\supp(P_n)$ converging to
+$\chi$.
+
+Now let $\phi_0\in\overline Y$ with $\phi_0(\brak\sigma)>0$.  By metrizability choose
+$\phi_n\in Y$ with $\phi_n\to\phi_0$.  Evaluation at $\brak\sigma$ is continuous, so
+$\phi_n(\brak\sigma)>0$ for all large $n$; discard the finitely many others.  By the
+first step $\Ext_\sigma(\phi_n)\to\Ext_\sigma(\phi_0)$ weakly, and by the second step
+\[
+  \supp(\Ext_\sigma(\phi_0))
+  \subseteq
+  \overline{\bigcup_n\supp(\Ext_\sigma(\phi_n))}
+  \subseteq
+  S_\sigma(Y),
+\]
+the last inclusion because each $\phi_n$ lies in $Y$ and $S_\sigma(Y)$ is closed.
+\end{proof}
+
+The second fact is soundness, now in its general form: the constraint set is arbitrary,
+and the tested element may be taken in the ambient labelled algebra.
 
 \begin{proposition}[Relative ensemble soundness]\label{prop:relative-soundness}
-Let $Y\subseteq Q_0$ be closed, and let $s\in\A^\sigma[\T_1]$ be non-negative on
-$S_\sigma(Y)$.  Then
+Let $Y\subseteq Q_0$ be nonempty, let $\sigma$ be a type, and let
+$f\in\A^\sigma[\T_0]$ satisfy $\chi(f)\ge0$ for every $\chi\in S_\sigma(Y)$.  Then
 \[
-  \phi_0(\avg{s}{\sigma})\ge0
+  \phi_0(\avg{f}{\sigma})\ge0
   \qquad(\phi_0\in Y).
 \]
 \end{proposition}
 
 \begin{proof}
-If $\phi_0(\brak\sigma)>0$, then $\Ext_\sigma(\phi_0)$ is supported on
-$S_\sigma(Y)$, so \eqref{eq:extension-expectation} gives
+Let $\phi_0\in Y$.  If $\phi_0(\brak\sigma)>0$, then $\supp(\Ext_\sigma(\phi_0))$ is one
+of the sets whose union defines $S_\sigma(Y)$, so $\psi(f)\ge0$ for
+$\Ext_\sigma(\phi_0)$-almost every $\psi$ by \cref{lem:support-as}, and
+\eqref{eq:extension-expectation} gives
 \[
-  \phi_0(\avg{s}{\sigma})
+  \phi_0(\avg{f}{\sigma})
   =
   \phi_0(\brak\sigma)\,
-  \E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(s)]
+  \E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(f)]
   \ge0.
 \]
 If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
-$\avg{s}{\sigma}$ contains an embedding of $\sigma$, hence has $\phi_0$-density $0$ by
-monotonicity.  Thus $\phi_0(\avg{s}{\sigma})=0$.
+$\avg{f}{\sigma}$ contains an embedding of $\sigma$, hence has $\phi_0$-density $0$ by
+monotonicity.  Thus $\phi_0(\avg{f}{\sigma})=0$.
 \end{proof}
 
-\subsection{Example: the Mantel equality slice}
+\begin{remark}[Elements of the quotient algebra]\label{rem:quotient-elements}
+The statement for $s\in\A^\sigma[\T_1]$, which is how a certificate produced by a
+quotient computation presents itself, is the same statement in disguise: the quotient map
+$\qmap_\sigma$ is surjective, every point of $S_\sigma(Y)\subseteq Q_\sigma$ factors
+through $\qmap_\sigma$, and unlabelling commutes with the quotient maps (the unlabelling
+of a forbidden flag is a non-negative multiple of its forbidden underlying graph, which
+the unlabelled quotient sends to $0$).  So one may replace $s$ by any preimage
+$f\in\qmap_\sigma^{-1}(s)$ without changing either the hypothesis or the conclusion.  We
+use the two formulations interchangeably below.
+\end{remark}
 
-Let $\T_1$ be the triangle-free graph class, let $\rho\in\A^0[\T_1]$ be the
-unlabelled edge density, and set
+The relative theory also has a support-closure criterion, and---in sharp contrast with
+the absolute criterion of \cref{thm:support-criterion}---it holds unconditionally.
+
+\begin{proposition}[Relative support-closure criterion]\label{prop:relative-criterion}
+Let $Y\subseteq Q_0$ be nonempty, let $\sigma$ be a type, and let $f\in\A^\sigma[\T_0]$.
+The following are equivalent.
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
+  \item\label{rel-crit-support} $\chi(f)\ge0$ for every $\chi\in S_\sigma(Y)$.
+  \item\label{rel-crit-ensemble} For every $\phi_0\in Y$ with $\phi_0(\brak\sigma)>0$,
+  \[
+    \Prob_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(f)\ge0]=1.
+  \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\ref{rel-crit-support}$\Rightarrow$\ref{rel-crit-ensemble}: each support
+$\supp(\Ext_\sigma(\phi_0))$ with $\phi_0\in Y$ is contained in $S_\sigma(Y)$, so
+\cref{lem:support-as} applies.
+\ref{rel-crit-ensemble}$\Rightarrow$\ref{rel-crit-support}: by \cref{lem:support-as},
+$f\ge0$ on each such support, hence on their union; the evaluation
+$\chi\mapsto\chi(f)$ is continuous, so $f\ge0$ on the closure of the union, which is
+$S_\sigma(Y)$.
+\end{proof}
+
+\begin{remark}[Relative semantics is complete by construction]
+In the absolute setting, ensemble semantics is compared against an \emph{external}
+benchmark, the quotient set $Q_\sigma$, and \cref{thm:support-criterion} says the two
+agree exactly under root-plantability.  Relative to $Y$ there is no quotient to compare
+against---the support set $S_\sigma(Y)$ \emph{is} the semantics---so the analogue of
+root-plantability is automatic and the relative theory never has a completeness gap: an
+inequality holds almost surely under random rooting from every limit in $Y$ if and only
+if it holds everywhere on $S_\sigma(Y)$.  With $Y=Q_0$,
+\cref{prop:relative-criterion} says that ensemble semantics coincides with
+non-negativity on $S_\sigma$; the root-planting question of this paper is precisely
+whether that internal benchmark matches the external one $Q_\sigma$.
+\end{remark}
+
+\subsection{Complementary slackness on extremal slices}
+
+\Cref{prop:relative-soundness} says which terms may appear in a relative certificate:
+anything non-negative on the relevant relative support.  The next theorem is the general
+workhorse of this section.  It packages, over an arbitrary constraint set, the three uses
+one makes of such a certificate: soundness; the quantitative control that near-equality
+exerts on every term; and the exact vanishing forced on the equality slice.  Every
+concrete result in the remainder of the section is an instance.
+
+\begin{theorem}[Relative complementary slackness]\label{thm:relative-slackness}
+Let $Y\subseteq Q_0$ be nonempty.  Let $h,n\in\A^0[\T_0]$, let $c\in\R$, and for finitely
+many indices $1\le i\le m$ let $\sigma_i$ be a type, $\lambda_i>0$ a real, and
+$f_i\in\A^{\sigma_i}[\T_0]$.  Assume:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.8em]
+  \item\label{cs-hyp-supports} $\chi(f_i)\ge0$ for every $\chi\in S_{\sigma_i}(Y)$ and
+  every $i$;
+  \item\label{cs-hyp-slack} $\phi_0(n)\ge0$ for every $\phi_0\in Y$;
+  \item\label{cs-hyp-certificate} the certificate inequality
+  \[
+    \phi_0(h)+\sum_{i=1}^m\lambda_i\,\phi_0(\avg{f_i}{\sigma_i})+\phi_0(n)\le c
+    \qquad(\phi_0\in Y)
+  \]
+  holds.
+\end{enumerate}
+Then the following hold.
+\begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
+  \item\label{cs-soundness} \textup{(Soundness)}  $\phi_0(h)\le c$ for every
+  $\phi_0\in Y$.
+  \item\label{cs-approx} \textup{(Approximate slackness)}  For every $\phi_0\in Y$,
+  writing $\Delta:=c-\phi_0(h)\ge0$,
+  \[
+    \sum_{i=1}^m\lambda_i\,\phi_0(\avg{f_i}{\sigma_i})+\phi_0(n)\le\Delta;
+  \]
+  in particular $\phi_0(\avg{f_i}{\sigma_i})\le\Delta/\lambda_i$ for every $i$, and
+  $\phi_0(n)\le\Delta$.
+  \item\label{cs-exact} \textup{(Exact slackness)}  If $\phi_0\in Y$ attains
+  $\phi_0(h)=c$, then $\phi_0(n)=0$ and, for every $i$,
+  $\phi_0(\avg{f_i}{\sigma_i})=0$; moreover, when $\phi_0(\brak{\sigma_i})>0$,
+  \[
+    \psi(f_i)=0
+    \qquad\text{for }\Ext_{\sigma_i}(\phi_0)\text{-almost every }\psi.
+  \]
+  \item\label{cs-global} \textup{(Global vanishing)}  If every $\phi_0\in Y$ attains
+  $\phi_0(h)=c$, then $f_i=0$ identically on $S_{\sigma_i}(Y)$, for every $i$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By \cref{prop:relative-soundness} and hypothesis \ref{cs-hyp-supports}, each
+$\phi_0(\avg{f_i}{\sigma_i})$ with $\phi_0\in Y$ is non-negative.  Together with
+\ref{cs-hyp-slack}, every term on the left of \ref{cs-hyp-certificate} other than
+$\phi_0(h)$ is non-negative; dropping those terms gives \ref{cs-soundness}, and moving
+$\phi_0(h)$ to the right-hand side gives the displayed inequality of \ref{cs-approx},
+whose stated consequences follow because each summand is non-negative and each
+$\lambda_i$ is positive.
+
+For \ref{cs-exact}, apply \ref{cs-approx} with $\Delta=0$: a sum of non-negative terms is
+bounded by $0$, so every term vanishes.  If moreover $\phi_0(\brak{\sigma_i})>0$, then by
+\eqref{eq:extension-expectation}
+\[
+  0=\phi_0(\avg{f_i}{\sigma_i})
+  =\phi_0(\brak{\sigma_i})\,\E_{\psi\sim\Ext_{\sigma_i}(\phi_0)}[\psi(f_i)],
+\]
+so $\psi(f_i)$ is a random variable with zero mean.  It is almost surely non-negative,
+because the support of $\Ext_{\sigma_i}(\phi_0)$ is contained in $S_{\sigma_i}(Y)$, where
+\ref{cs-hyp-supports} holds; a non-negative random variable with zero mean vanishes
+almost surely.
+
+For \ref{cs-global}, fix $i$ and let $\phi_0\in Y$ with $\phi_0(\brak{\sigma_i})>0$.  By
+\ref{cs-exact}, both $\psi(f_i)\ge0$ and $\psi(-f_i)\ge0$ hold almost surely, so
+\cref{lem:support-as}, applied to $f_i$ and to $-f_i$, makes $f_i$ vanish on
+$\supp(\Ext_{\sigma_i}(\phi_0))$.  Thus $f_i$ vanishes on the union of these supports
+over $\phi_0\in Y$, and by continuity of $\chi\mapsto\chi(f_i)$ also on the closure of
+that union, which is $S_{\sigma_i}(Y)$.
+\end{proof}
+
+\begin{remark}[The shape of the hypotheses]\label{rem:cs-shape}
+Three comments on how \cref{thm:relative-slackness} is meant to be used.  First, the
+standard instance is $f_i=\ell_i^2$ with $\ell_i\in\A^{\sigma_i}[\T_0]$ arbitrary: then
+hypothesis \ref{cs-hyp-supports} is automatic at \emph{every} homomorphism, since
+$\chi(\ell_i^2)=\chi(\ell_i)^2\ge0$, and conclusions
+\ref{cs-exact}--\ref{cs-global} read $\psi(\ell_i)=0$ almost surely, respectively
+$\ell_i=0$ identically on $S_{\sigma_i}(Y)$.  But squares are not required: any element
+non-negative merely on the relative support qualifies, which is strictly weaker than
+being a sum of squares.  Second, the unlabelled slack term $n$ absorbs ingredients that
+are non-negative for classical reasons rather than by virtue of being averaged
+squares---the Zykov $K_4$-density term in \cref{thm:parametric-p4-equality-slice} below
+is of this kind---and the theorem returns the vanishing $\phi_0(n)=0$ on the slice,
+which is itself usable information.  Third, hypothesis \ref{cs-hyp-certificate} is
+required only \emph{on} $Y$.  A certificate proved in the quotient holds on all of
+$Q_0\supseteq Y$ and so qualifies, but genuinely relative certificates, with terms
+non-negative only on the relative supports, qualify as well.
+\end{remark}
+
+Near-extremal limits admit a quantitative form of the vanishing conclusion.  The bridge
+is the Cauchy--Schwarz inequality, which converts the $O(\Delta)$ control on averaged
+squares into $O(\sqrt\Delta)$ control on every first moment.
+
+\begin{lemma}[Cauchy--Schwarz for unlabelled averages]\label{lem:relative-cauchy-schwarz}
+For every $\phi_0\in X_0$, every type $\sigma$, and all $\ell,g\in\A^\sigma[\T_0]$,
+\[
+  \phi_0(\avg{\ell g}{\sigma})^2
+  \le
+  \phi_0(\avg{\ell^2}{\sigma})\,
+  \phi_0(\avg{g^2}{\sigma}).
+\]
+\end{lemma}
+
+\begin{proof}
+If $\phi_0(\brak\sigma)=0$, then all three averages vanish at $\phi_0$---each is a
+combination of unlabelled graphs containing an embedding of $\sigma$, as in the proof of
+\cref{prop:relative-soundness}---and the inequality reads $0\le0$.  Otherwise, by
+\eqref{eq:extension-expectation} and the multiplicativity of each $\psi$,
+\[
+  \phi_0(\avg{\ell g}{\sigma})
+  =\phi_0(\brak\sigma)\,\E[\psi(\ell)\psi(g)],
+  \qquad
+  \phi_0(\avg{\ell^2}{\sigma})
+  =\phi_0(\brak\sigma)\,\E[\psi(\ell)^2],
+  \qquad
+  \phi_0(\avg{g^2}{\sigma})
+  =\phi_0(\brak\sigma)\,\E[\psi(g)^2],
+\]
+the expectations being over $\psi\sim\Ext_\sigma(\phi_0)$.  The claim is the
+Cauchy--Schwarz inequality for these expectations, multiplied through by
+$\phi_0(\brak\sigma)^2$.  (This is Razborov's Cauchy--Schwarz inequality
+\cite{Razborov2007}, re-proved through the extension measure.)
+\end{proof}
+
+\begin{corollary}[Certificates control first moments at rate $\sqrt\Delta$]\label{cor:sos-first-moments}
+In the setting of \cref{thm:relative-slackness}, suppose $f_i=\ell_i^2$.  Then for every
+$\phi_0\in Y$, every $i$, and every $g\in\A^{\sigma_i}[\T_0]$,
+\[
+  \bigl|\phi_0(\avg{\ell_i\,g}{\sigma_i})\bigr|
+  \le
+  \sqrt{\tfrac{\Delta}{\lambda_i}}\,
+  \sqrt{\phi_0(\avg{g^2}{\sigma_i})},
+  \qquad
+  \Delta:=c-\phi_0(h).
+\]
+In particular, taking $g=\one_{\sigma_i}$,
+\[
+  \bigl|\phi_0(\avg{\ell_i}{\sigma_i})\bigr|
+  \le
+  \sqrt{\tfrac{\Delta}{\lambda_i}\,\phi_0(\brak{\sigma_i})}
+  \le
+  \sqrt{\tfrac{\Delta}{\lambda_i}}\,.
+\]
+\end{corollary}
+
+\begin{proof}
+Combine \cref{lem:relative-cauchy-schwarz} with the bound
+$\phi_0(\avg{\ell_i^2}{\sigma_i})\le\Delta/\lambda_i$ of
+\cref{thm:relative-slackness}\ref{cs-approx}.  For the final display,
+$\avg{\one_{\sigma_i}^2}{\sigma_i}=\avg{\one_{\sigma_i}}{\sigma_i}=\brak{\sigma_i}$, and
+$\phi_0(\brak{\sigma_i})\le1$.
+\end{proof}
+
+In practice a certificate's labelled terms do not arrive as an explicit list of squares.
+An SDP solver returns, for each type, a positive semidefinite matrix $Q$ over a vector
+$v$ of flags, and after rounding $Q$ is rational; extracting squares means
+eigendecomposing $Q$, which in general destroys rationality.  The next form of the
+slackness theorem consumes $Q$ directly.  Its equality conclusion is that the labelled
+moment vector falls into $\ker Q$, so a certificate yields, mechanically and in exact
+arithmetic, precisely $\operatorname{rank}Q$ independent labelled equations per type.
+
+\begin{theorem}[Kernel form of complementary slackness]\label{thm:kernel-slackness}
+Let $Y\subseteq Q_0$ be nonempty.  Let $h,n\in\A^0[\T_0]$, let $c\in\R$, and for finitely
+many indices $1\le t\le m$ let $\sigma_t$ be a type, $v^{(t)}=(v^{(t)}_1,\dots,v^{(t)}_{k_t})$
+a vector of elements of $\A^{\sigma_t}[\T_0]$, and $Q^{(t)}\in\R^{k_t\times k_t}$ a
+symmetric positive semidefinite matrix; write
+\[
+  \bigl\langle Q^{(t)}v^{(t)},v^{(t)}\bigr\rangle
+  :=
+  \sum_{a,b=1}^{k_t}Q^{(t)}_{ab}\,v^{(t)}_a v^{(t)}_b
+  \;\in\;\A^{\sigma_t}[\T_0].
+\]
+Assume $\phi_0(n)\ge0$ for every $\phi_0\in Y$, and the certificate inequality
+\[
+  \phi_0(h)
+  +\sum_{t=1}^m\phi_0\Bigl(\avg{\langle Q^{(t)}v^{(t)},v^{(t)}\rangle}{\sigma_t}\Bigr)
+  +\phi_0(n)\le c
+  \qquad(\phi_0\in Y).
+\]
+Then, writing $\Delta:=c-\phi_0(h)$ for $\phi_0\in Y$:
+\begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
+  \item\label{ks-soundness} $\phi_0(h)\le c$ for every $\phi_0\in Y$, so $\Delta\ge0$;
+  \item\label{ks-approx} for every $\phi_0\in Y$, every $t$, and every $w\in\R^{k_t}$,
+  \[
+    \phi_0\Bigl(\avg{\bigl(w^{\mathsf T}Q^{(t)}v^{(t)}\bigr)^2}{\sigma_t}\Bigr)
+    \le
+    \bigl\langle Q^{(t)}w,w\bigr\rangle\,\Delta ;
+  \]
+  \item\label{ks-exact} if $\phi_0\in Y$ attains $\phi_0(h)=c$, then $\phi_0(n)=0$ and,
+  for every $t$ with $\phi_0(\brak{\sigma_t})>0$, the moment vector
+  $\psi(v^{(t)}):=(\psi(v^{(t)}_1),\dots,\psi(v^{(t)}_{k_t}))$ satisfies
+  \[
+    Q^{(t)}\,\psi(v^{(t)})=0
+    \qquad\text{for }\Ext_{\sigma_t}(\phi_0)\text{-almost every }\psi ;
+  \]
+  \item\label{ks-global} if every $\phi_0\in Y$ attains $\phi_0(h)=c$, then
+  $\chi(v^{(t)})\in\ker Q^{(t)}$ for every $\chi\in S_{\sigma_t}(Y)$ and every $t$;
+  equivalently, each row $w^{\mathsf T}Q^{(t)}$ gives the labelled equation
+  $w^{\mathsf T}Q^{(t)}v^{(t)}=0$ on $S_{\sigma_t}(Y)$, and a basis of the row space of
+  $Q^{(t)}$ gives $\operatorname{rank}Q^{(t)}$ linearly independent such equations.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Set $f_t:=\langle Q^{(t)}v^{(t)},v^{(t)}\rangle$.  Every homomorphism $\chi$ is linear
+and multiplicative, so
+$\chi(f_t)=\langle Q^{(t)}\chi(v^{(t)}),\chi(v^{(t)})\rangle\ge0$ by positive
+semidefiniteness; thus hypothesis \ref{cs-hyp-supports} of
+\cref{thm:relative-slackness} holds automatically---at every homomorphism, not merely on
+the relative supports---and that theorem applies with $\lambda_t=1$.  Conclusion
+\ref{ks-soundness} is \cref{thm:relative-slackness}\ref{cs-soundness}.
+
+For \ref{ks-approx}, fix $w$ and put $\ell_w:=w^{\mathsf T}Q^{(t)}v^{(t)}
+\in\A^{\sigma_t}[\T_0]$.  For every homomorphism $\psi$, the Cauchy--Schwarz inequality
+for the positive semidefinite form $Q^{(t)}$ gives
+\[
+  \psi(\ell_w)^2
+  =\bigl\langle Q^{(t)}\psi(v^{(t)}),w\bigr\rangle^2
+  \le
+  \bigl\langle Q^{(t)}w,w\bigr\rangle\,
+  \bigl\langle Q^{(t)}\psi(v^{(t)}),\psi(v^{(t)})\bigr\rangle
+  =
+  \bigl\langle Q^{(t)}w,w\bigr\rangle\,\psi(f_t).
+\]
+If $\phi_0(\brak{\sigma_t})=0$, both sides of \ref{ks-approx} vanish by the monotonicity
+argument of \cref{prop:relative-soundness}.  Otherwise, taking expectations over
+$\psi\sim\Ext_{\sigma_t}(\phi_0)$ and multiplying by $\phi_0(\brak{\sigma_t})$,
+\[
+  \phi_0(\avg{\ell_w^2}{\sigma_t})
+  \le
+  \bigl\langle Q^{(t)}w,w\bigr\rangle\,\phi_0(\avg{f_t}{\sigma_t})
+  \le
+  \bigl\langle Q^{(t)}w,w\bigr\rangle\,\Delta,
+\]
+the last step by \cref{thm:relative-slackness}\ref{cs-approx}.
+
+For \ref{ks-exact}, \cref{thm:relative-slackness}\ref{cs-exact} gives $\phi_0(n)=0$ and
+$\psi(f_t)=\langle Q^{(t)}\psi(v^{(t)}),\psi(v^{(t)})\rangle=0$ almost surely; for a
+positive semidefinite matrix, $\langle Qx,x\rangle=0$ forces $Qx=0$.  For
+\ref{ks-global}, \ref{ks-exact} makes each coordinate function
+$w^{\mathsf T}Q^{(t)}v^{(t)}$ vanish almost surely under every admissible extension
+measure, hence---by \cref{lem:support-as} applied to $\pm\,w^{\mathsf T}Q^{(t)}v^{(t)}$---%
+on every support, hence by continuity on the closure $S_{\sigma_t}(Y)$; linear
+independence of the equations is linear independence of the rows.
+\end{proof}
+
+\begin{remark}[Certificates in practice]\label{rem:kernel-practice}
+\Cref{thm:kernel-slackness} is the form of slackness adapted to certificates as they are
+actually produced and verified.  A rounded certificate ships rational matrices
+$Q^{(t)}$; a rational basis of $\ker Q^{(t)}$, computed by row reduction in exact
+arithmetic, determines via \ref{ks-global} the complete list of labelled slice
+equations the certificate yields at the type $\sigma_t$---no eigendecomposition, and no
+irrational square roots, ever enter.  The scalar form (\cref{prop:equality-slice-vanishing})
+is recovered by choosing any decomposition $Q^{(t)}=\sum_i\lambda_iu_iu_i^{\mathsf T}$
+with $\lambda_i>0$: the equations $u_i^{\mathsf T}v^{(t)}=0$ span the same space as the
+rows of $Q^{(t)}$.  The count is worth noting: the number of independent local equations
+mined per type equals $\operatorname{rank}Q^{(t)}$, so a certificate with small kernels
+pins the extremal ensemble tightly, while a certificate whose matrices have large
+kernels leaves the slice correspondingly unconstrained.  The parametric certificate of
+\cref{thm:parametric-p4-equality-slice} corresponds to rank-one and rank-two blocks
+whose row spaces are spanned by the displayed equations.
+\end{remark}
+
+Finally, a slice that consists of a single limit upgrades automatically to a stability
+statement, by nothing more than compactness.
+
+\begin{proposition}[Unique slices give qualitative stability]\label{prop:unique-slice-stability}
+Let $Z\subseteq X_0$ be closed---for instance $Z=Q_0$ for any hereditary class---let
+$h_j\in\A^0[\T_0]$ and $c_j\in\R$ for countably many indices $j$, and set
+\[
+  Y:=\{\phi\in Z:\phi(h_j)=c_j\ \text{for all }j\}.
+\]
+If $Y=\{\phi^\ast\}$ is a single point, then every sequence $(\phi_k)$ in $Z$ with
+$\phi_k(h_j)\to c_j$ for every $j$ converges to $\phi^\ast$.
+\end{proposition}
+
+\begin{proof}
+$Z$ is a closed subspace of the compact metrizable space $X_0$, hence itself compact
+metrizable.  If $\phi$ is the limit of a convergent subsequence of $(\phi_k)$, then
+$\phi\in Z$, and continuity of each evaluation $\chi\mapsto\chi(h_j)$ gives
+$\phi(h_j)=c_j$; so $\phi\in Y$, that is, $\phi=\phi^\ast$.  A sequence in a compact
+metric space all of whose convergent subsequences have the same limit converges to that
+limit.
+\end{proof}
+
+\begin{remark}
+Under the standard identification of unlabelled limits with graphons up to
+measure-preserving relabelling, in which the density topology coincides with the
+cut-metric topology on the compact graphon space,
+\cref{prop:unique-slice-stability} is a cut-distance stability statement;
+\cref{cor:k4free-p4-qualitative-stability} below is the instance for the $P_4$ slice.
+\end{remark}
+
+\subsection{Completeness of the slice method}\label{subsec:slice-completeness}
+
+Before turning to examples we settle how much the slice method can see.  Three
+questions arise.  Does the root-planting question of this paper have a relative
+analogue, and how does it behave on slices?  Do labelled multipliers that are
+non-negative merely on the relative support prove more density consequences over the
+slice than sums of squares do?  And is every density inequality valid on a slice
+reachable by a certificate at all?  The first question we answer by example: slices
+generically \emph{break} root-plantability, and that breakage is precisely the mining
+signal.  The other two we answer in the affirmative, in the same ``up to closure''
+sense as \cref{sec:empty-type}: over a slice, sums of squares remain a complete
+multiplier system, and one squared penalty in the constraints is the only genuinely new
+ingredient a slice certificate ever needs.
+
+\begin{definition}[Relative planted set and relative root-plantability]\label{def:relative-plantability}
+Let $Y\subseteq Q_0$ be nonempty and let $\sigma$ be a type.  A point $\chi\in X_\sigma$
+is a \emph{$Y$-planted view} if there are finite $\sigma$-flags $(G_n,\theta_n)$ with
+every $G_n\in\T_1$ such that $p(F,(G_n,\theta_n))\to\chi(F)$ for every $\sigma$-flag
+$F$, while the underlying unlabelled graphs $G_n$ converge to a limit belonging to
+$\overline Y$.  Write $Q_\sigma(Y)\subseteq X_\sigma$ for the set of $Y$-planted views.
+The pair $(Y,\sigma)$ is \emph{relatively root-plantable} if
+$S_\sigma(Y)=Q_\sigma(Y)$.
+\end{definition}
+
+Thus $Q_\sigma(Y)$ collects the views obtained by planting the roots \emph{anywhere}
+---including at exceptional vertices---in large constrained graphs whose global
+statistics converge into $Y$, while $S_\sigma(Y)$ keeps only the views a random rooting
+sees.  Taking $Y=Q_0$ recovers the absolute theory.
+
+\begin{proposition}[Structure of the planted set]\label{prop:relative-plantability}
+Let $Y\subseteq Q_0$ be nonempty and $\sigma$ a type.
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item\label{rp-basic} $Q_\sigma(Y)$ is a closed subset of $X_\sigma$ with
+  $S_\sigma(Y)\subseteq Q_\sigma(Y)\subseteq Q_\sigma$, and $Q_\sigma(Q_0)=Q_\sigma$;
+  in particular, for $Y=Q_0$ relative root-plantability is root-plantability.
+  \item\label{rp-criterion} For every $f\in\A^\sigma[\T_0]$, non-negativity of $f$ on
+  $Q_\sigma(Y)$ implies the relative ensemble semantics of
+  \cref{prop:relative-criterion}\ref{rel-crit-ensemble}; the two are equivalent for
+  every $f$ if and only if $(Y,\sigma)$ is relatively root-plantable.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\ref{rp-basic}.  A $Y$-planted view is a limit of finite flag density vectors, hence a
+positive homomorphism \cite[Theorem 3.3]{Razborov2007}, and it vanishes on every
+forbidden flag because forbidden flags have density $0$ in every flag with underlying
+graph in $\T_1$; by the intrinsic description of $Q_\sigma$ this gives
+$Q_\sigma(Y)\subseteq Q_\sigma$.  Closedness is a diagonal argument: if
+$\chi^{(k)}\to\chi$ with witnessing sequences for each $\chi^{(k)}$, choose from the
+$k$-th sequence a flag whose labelled densities are within $1/k$ of $\chi^{(k)}$ on the
+first $k$ flags and whose underlying graph is within $1/k$ of its base limit
+$\phi^{(k)}\in\overline Y$ on the first $k$ graphs; since $\overline Y$ is compact, a
+subsequence of the $\phi^{(k)}$ converges in $\overline Y$, and along it the chosen
+flags witness $\chi\in Q_\sigma(Y)$.  For $S_\sigma(Y)\subseteq Q_\sigma(Y)$, let
+$\psi\in\supp(\Ext_\sigma(\phi_0))$ with $\phi_0\in Y$, $\phi_0(\brak\sigma)>0$, and
+let finite graphs $G_n\in\T_1$ converge to $\phi_0$.  The finite random-rooting
+distributions of the $G_n$ converge weakly to $\Ext_\sigma(\phi_0)$
+\cite[Theorems 3.5 and 3.12]{Razborov2007}, so every neighbourhood of $\psi$ receives
+positive rooting probability for all large $n$; choosing for each $k$ an $n_k$ and a
+rooting $\theta_k$ whose view lies within $1/k$ of $\psi$ produces a witnessing
+sequence with base limit $\phi_0\in\overline Y$.  Hence
+$\psi\in Q_\sigma(Y)$, and $S_\sigma(Y)\subseteq Q_\sigma(Y)$ follows since the latter
+is closed.  Finally, for $Y=Q_0$: every $\chi\in Q_\sigma$ is a limit of finite
+$\T_1$-flags \cite[Theorem 3.3]{Razborov2007}, and after passing to a subsequence the
+underlying graphs converge, necessarily to a point of $Q_0=\overline{Q_0}$; so
+$Q_\sigma\subseteq Q_\sigma(Q_0)$, and the reverse inclusion was shown above.
+
+\ref{rp-criterion}.  By \cref{prop:relative-criterion}, relative ensemble semantics for
+$f$ is non-negativity of $f$ on $S_\sigma(Y)$, so the implication follows from
+$S_\sigma(Y)\subseteq Q_\sigma(Y)$, and equivalence for every $f$ compares
+non-negativity on two closed subsets of $X_\sigma$, one contained in the other.  If the
+sets are equal the two conditions coincide; if not, the separation argument in the
+proof of \cref{thm:support-criterion}---Urysohn on the compact metrizable
+$Q_\sigma(Y)$, Tietze extension to $X_\sigma$, and Stone--Weierstrass
+approximation by an element of $\A^\sigma[\T_0]$---produces an $f$ strictly positive
+on $S_\sigma(Y)$ and negative somewhere on $Q_\sigma(Y)$.
+\end{proof}
+
+\begin{proposition}[Slices break root-plantability: the Mantel slice]\label{prop:mantel-not-plantable}
+Let $\T_1$ be the triangle-free class and $Y_{\mathrm{Mantel}}$ the Mantel slice of
+\cref{thm:relative-mantel}.  Then $(Y_{\mathrm{Mantel}},\vtype)$ is not relatively
+root-plantable:
+\[
+  S_{\vtype}(Y_{\mathrm{Mantel}})\subsetneq Q_{\vtype}(Y_{\mathrm{Mantel}}),
+\]
+although the triangle-free class itself is root-plantable at every type
+(\cref{cor:clique-free}).
+\end{proposition}
+
+\begin{proof}
+Let $G_n$ be $K_{n,n}$ together with one additional isolated vertex $w_n$, and let
+$\theta_n$ root the one-vertex type at $w_n$.  Each $G_n$ is triangle-free, and the
+single extra vertex changes every induced density by $O(1/n)$, so the underlying graphs
+converge to the balanced complete bipartite limit, which is the point of
+$Y_{\mathrm{Mantel}}$.  The rooted views converge as well: a flag containing an edge at
+the root has density $0$ for every $n$, and a flag whose root is isolated has, up to
+$O(1/n)$, the density of its unrooted part in $K_{n,n}$.  The limit $\chi$ is therefore
+a $Y_{\mathrm{Mantel}}$-planted view with one-root edge density $\chi(e)=0$.  By
+\cref{thm:relative-mantel}, $S_{\vtype}(Y_{\mathrm{Mantel}})$ is a single point with
+$e=\frac12\one_{\vtype}$, so $\chi\notin S_{\vtype}(Y_{\mathrm{Mantel}})$.
+\end{proof}
+
+\begin{remark}[Relative pinning is the mining signal]\label{rem:relative-pinning}
+\Cref{prop:mantel-not-plantable} is the relative avatar of the pinning phenomenon of
+this paper, with its sign reversed.  On the Mantel slice the element
+$e-\frac12\one_{\vtype}$ vanishes identically on $S_{\vtype}(Y_{\mathrm{Mantel}})$ yet is
+non-zero on $Q_{\vtype}(Y_{\mathrm{Mantel}})$: a \emph{relative pinning witness}.  In
+the absolute theory such a witness certified an incompleteness of the quotient
+calculus; relative to $Y$ there is no quotient benchmark
+(\cref{prop:relative-criterion}), and the witness \emph{is} the extracted information
+---the local law of extremisers that mining reports.  The analogue of
+\cref{prop:ideal-zero} still holds, with ``zero element'' weakened to ``$Y$-null'': if
+$a\in\A^\sigma[\T_1]$ vanishes on $S_\sigma(Y)$, then $\phi_0(\avg{a}{\sigma})=0$ for
+every $\phi_0\in Y$, by the argument of \cref{prop:ideal-zero} verbatim.  The Mantel
+witness illustrates the sharpened conclusion: $e-\frac12\one_{\vtype}$ unlabels to
+$\rho-\frac12\one_0$, which is not the zero element of $\A^0[\T_1]$ but is exactly the
+defining constraint of the slice---a $Y$-null element, as it must be.
+\end{remark}
+
+We now turn to certificates.  Following \cref{sec:empty-type}, measure empty-type
+contributions relative to the slice by the seminorm
+\[
+  \|u\|_{Y}:=\sup_{\phi_0\in Y}|\phi_0(u)|
+  \qquad(u\in\A^0[\T_1]),
+\]
+so that $\|\cdot\|_{Q_0}$ is the case $Y=Q_0$, and write
+\[
+  \C^{\mathrm{ens}}_\sigma(Y):=\{\avg{s}{\sigma}:s\in\A^\sigma[\T_1],\
+  s\ge0\text{ on }S_\sigma(Y)\},
+\]
+the empty-type contributions available to an ensemble-relaxed method over the slice;
+$\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma(Y)$ always, since squares
+are non-negative everywhere.  The absolute closed-cone collapse of
+\cref{thm:no-closed-certificate-gap} survives relativisation unchanged.
+
+\begin{theorem}[No closed certificate gap over a slice]\label{thm:relative-certificate-gap}
+For every nonempty $Y\subseteq Q_0$ and every type $\sigma$,
+\[
+  \overline{\C^{\mathrm{quot}}_\sigma}^{\,\|\cdot\|_{Y}}
+  =
+  \overline{\C^{\mathrm{ens}}_\sigma(Y)}^{\,\|\cdot\|_{Y}} .
+\]
+Thus, even over a slice, labelled multipliers non-negative merely on the relative
+support prove no density consequence beyond sums of squares, except possibly at the
+exact, non-closed certificate level.
+\end{theorem}
+
+\begin{proof}
+If $S_\sigma(Y)=\emptyset$, then $\phi_0(\brak\sigma)=0$ for every $\phi_0\in Y$, and
+by the monotonicity argument of \cref{prop:relative-soundness} every unlabelled average
+$\avg{s}{\sigma}$ is $Y$-null; both closures then coincide trivially.  Otherwise let
+$s\in\A^\sigma[\T_1]$ be non-negative on the compact set $S_\sigma(Y)$ and let
+$\delta>0$.  Exactly as in the proof of \cref{thm:no-closed-certificate-gap},
+Stone--Weierstrass applied to $\sqrt{s}$ on $S_\sigma(Y)$ produces
+$h\in\A^\sigma[\T_1]$ with $\sup_{\psi\in S_\sigma(Y)}|s(\psi)-h(\psi)^2|<\delta$.  For
+$\phi_0\in Y$ with $\phi_0(\brak\sigma)>0$ the measure $\Ext_\sigma(\phi_0)$ is
+supported on $S_\sigma(Y)$ by the definition of the relative support, so
+\eqref{eq:extension-expectation} gives
+$|\phi_0(\avg{s-h^2}{\sigma})|\le\delta\,\phi_0(\brak\sigma)\le\delta$; for
+$\phi_0(\brak\sigma)=0$ the same quantity is $0$.  Hence
+$\|\avg{s}{\sigma}-\avg{h^2}{\sigma}\|_{Y}\le\delta$ with
+$\avg{h^2}{\sigma}\in\C^{\mathrm{quot}}_\sigma$.
+\end{proof}
+
+The remaining question is whether the certificates reach every inequality that is
+\emph{true} on the slice.  They do, up to an arbitrarily small constant, and the only
+new ingredient needed is a penalty term: a single non-negative multiple of the sum of
+squared constraints.
+
+\begin{theorem}[Relative Positivstellensatz]\label{thm:relative-positivstellensatz}
+Let $J$ be a countable index set, let $g_j\in\A^0[\T_1]$ for $j\in J$, and let
+\[
+  Y:=\{\phi_0\in Q_0:\phi_0(g_j)=0\ \text{for all }j\in J\}
+\]
+(a slice $\phi_0(h)=c$ enters with $g:=h-c\,\one_0$).  For $f\in\A^0[\T_1]$ the
+following are equivalent.
+\begin{enumerate}[label=\textup{(\alph*)}, leftmargin=2.8em]
+  \item\label{psatz-semantic} $\phi_0(f)\ge0$ for every $\phi_0\in Y$.
+  \item\label{psatz-penalty} For every $\eps>0$ there are finitely many indices
+  $j_1,\dots,j_N\in J$ and a constant $M\ge0$ such that
+  \[
+    \phi_0\Bigl(f+\eps\,\one_0+M\sum_{i=1}^{N}g_{j_i}^2\Bigr)\ge0
+    \qquad\text{for every }\phi_0\in Q_0 .
+  \]
+\end{enumerate}
+Equivalently, writing $\C_{Q_0}:=\{u\in\A^0[\T_1]:\phi_0(u)\ge0\ \forall\phi_0\in Q_0\}$
+for the semantic cone of the class,
+\[
+  \{f:\phi_0(f)\ge0\ \forall\phi_0\in Y\}
+  =
+  \overline{\C_{Q_0}+\operatorname{span}\{g_j^2:j\in J\}}^{\,\|\cdot\|_{Q_0}} .
+\]
+The statement holds for $Y=\emptyset$ as well, both sides then being all of
+$\A^0[\T_1]$.
+\end{theorem}
+
+\begin{proof}
+\ref{psatz-penalty}$\Rightarrow$\ref{psatz-semantic}: evaluate at $\phi_0\in Y$; by
+multiplicativity $\phi_0(g_j^2)=\phi_0(g_j)^2=0$, so $\phi_0(f)\ge-\eps$ for every
+$\eps>0$.
+
+\ref{psatz-semantic}$\Rightarrow$\ref{psatz-penalty}: fix $\eps>0$ and enumerate
+$J=\{j_1,j_2,\dots\}$.  For $n\ge1$ let
+\[
+  K_n:=\{\phi_0\in Q_0:\phi_0(g_{j_i})^2\le1/n\ \text{for }1\le i\le n\},
+\]
+a decreasing sequence of closed subsets of the compact space $Q_0$ with
+$\bigcap_nK_n=Y$.  The closed sets $K_n\cap\{\phi_0:\phi_0(f)\le-\eps/2\}$ decrease and
+have empty intersection (the intersection would lie in $Y$, where $f\ge0$), so by
+compactness some $K_N\cap\{\phi_0(f)\le-\eps/2\}=\emptyset$; that is, $\phi_0(f)>-\eps/2$
+on $K_N$.  Put $u:=\sum_{i=1}^{N}g_{j_i}^2$, let
+$B:=\sup_{\phi_0\in Q_0}|\phi_0(f)|<\infty$ (a continuous function on a compact space),
+and set $M:=BN$.  For $\phi_0\in Q_0$: if $\phi_0\in K_N$, then
+$\phi_0(f)+\eps+M\phi_0(u)\ge-\eps/2+\eps+0=\eps/2$, since
+$\phi_0(u)=\sum_i\phi_0(g_{j_i})^2\ge0$; if $\phi_0\notin K_N$, then
+$\phi_0(g_{j_i})^2>1/N$ for some $i\le N$, so $\phi_0(u)>1/N$ and
+$\phi_0(f)+\eps+M\phi_0(u)\ge-B+\eps+B=\eps$.  In either case the displayed inequality
+of \ref{psatz-penalty} holds (strictly).  For $Y=\emptyset$ the same compactness
+argument makes some $K_N$ empty, and the second branch alone applies to any $f$.
+
+For the cone identity: each element of $\C_{Q_0}$ is non-negative on $Y\subseteq Q_0$,
+each $g_j^2$ is $Y$-null by multiplicativity, and $\|\cdot\|_{Q_0}$-limits preserve
+non-negativity on $Y$ since $\|\cdot\|_Y\le\|\cdot\|_{Q_0}$; this proves
+``$\supseteq$''.  Conversely, if $f$ is non-negative on $Y$, then by
+\ref{psatz-penalty} $f+\eps\,\one_0\in\C_{Q_0}-M\sum_ig_{j_i}^2\subseteq
+\C_{Q_0}+\operatorname{span}\{g_j^2\}$ for every $\eps$, and
+$\|f-(f+\eps\one_0)\|_{Q_0}=\eps\to0$.
+\end{proof}
+
+\begin{remark}[The slice method is complete, modulo the absolute question]\label{rem:slice-complete}
+\Cref{thm:relative-positivstellensatz} reduces non-negativity over a slice to
+non-negativity over the whole class, at the price of one squared-constraint penalty and
+an arbitrarily small shift of the constant term; and by
+\cref{thm:relative-certificate-gap} the labelled multiplier side over the slice
+collapses, after closure, to ordinary sums of squares.  Together: every density
+inequality valid on an equality slice is provable, up to $\eps$ and up to closure, by a
+certificate of the standard quotient shape augmented by the single term
+$M\sum_ig_{j_i}^2$.  In this precise sense the mining procedure of this section is
+semantically complete---nothing true on the slice is invisible to it.  What the
+reduction does \emph{not} settle is the absolute question it reduces to: whether
+$\C_{Q_0}$ itself is the closure of the finite sum-of-squares certificates of the
+class.  For the unconstrained class this is the weak Positivstellensatz of
+Lov\'asz and Szegedy \cite{LovaszSzegedy2012}; for hereditary subclasses it is open in
+general, and it is independent of everything relative in this section.  Inequality
+constraints $\phi_0(h)\ge0$, by contrast, genuinely require localised multipliers in
+the Positivstellensatz style; equality constraints cover every slice used in this
+paper.
+\end{remark}
+
+\subsection{Example: Tur\'an equality slices}
+
+The simplest slices pin a single density at the extreme value of a classical theorem
+whose equality case is known.  The slice is then one limit, and the relative supports
+read off its local statistics---which the hereditary quotient deliberately forgets.  We
+record the whole Tur\'an family at once; the Mantel slice is the case $r=2$.
+
+\begin{theorem}[Tur\'an equality slices]\label{thm:turan-slice}
+Fix $r\ge2$.  Let $\T_r$ be the $K_{r+1}$-free graph class, let $Q_0^{(r)}$ be its space
+of constrained unlabelled limits, let $\rho$ be the unlabelled edge density, and set
+\[
+  Y_{\mathrm{Tur}}^{(r)}
+  :=
+  \Bigl\{\phi_0\in Q_0^{(r)}:\phi_0(\rho)=\tfrac{r-1}{r}\Bigr\}.
+\]
+Then $Y_{\mathrm{Tur}}^{(r)}$ consists of exactly one point, the balanced complete
+$r$-partite limit, represented by the graphon $T_r$.  Consequently the relative supports
+at the one-vertex type $\vtype$, the ordered edge type $\tau$, and the ordered non-edge
+type $\eta$ are single points, and the following identities hold.
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item If $e\in\A^{\vtype}[\T_r]$ is the one-root edge flag, then on
+        $S_{\vtype}(Y_{\mathrm{Tur}}^{(r)})$,
+        \[
+          e=\frac{r-1}{r}\,\one_{\vtype} .
+        \]
+  \item At $\tau$, let $a_\tau$ and $b_\tau$ be the two three-vertex flags in which the
+        new vertex is adjacent to exactly the first, respectively exactly the second,
+        root; let $z_\tau$ be the flag in which it is adjacent to neither root; and let
+        $g_\tau$ be the common-neighbour flag, in which it is adjacent to both.  On
+        $S_\tau(Y_{\mathrm{Tur}}^{(r)})$,
+        \[
+          a_\tau=b_\tau=\frac1r\,\one_\tau,
+          \qquad
+          g_\tau=\frac{r-2}{r}\,\one_\tau,
+          \qquad
+          z_\tau=0 .
+        \]
+  \item At $\eta$, let $a_\eta,b_\eta,z_\eta,g_\eta$ denote the analogous flags.  On
+        $S_\eta(Y_{\mathrm{Tur}}^{(r)})$,
+        \[
+          z_\eta=\frac1r\,\one_\eta,
+          \qquad
+          g_\eta=\frac{r-1}{r}\,\one_\eta,
+          \qquad
+          a_\eta=b_\eta=0 .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By Tur\'an's theorem, a $K_{r+1}$-free graph on $n$ vertices has edge density at most
+$\frac{r-1}{r}+o(1)$, and by the Erd\H{o}s--Simonovits stability theorem
+\cite{ErdosSimonovits,Simonovits1968}, a $K_{r+1}$-free sequence whose edge density
+tends to $\frac{r-1}{r}$ converges, after changing $o(n^2)$ edges, to balanced complete
+$r$-partite graphs.  Equivalently, the only $K_{r+1}$-free graphon of edge density
+$\frac{r-1}{r}$ is the balanced complete $r$-partite graphon $T_r$.  Thus
+$Y_{\mathrm{Tur}}^{(r)}$ is the single limit represented by $T_r$.
+
+The identities are direct readings of random labelled extensions of $T_r$.  The parts of
+$T_r$ are interchangeable and its vertices within a part indistinguishable, so the views
+from almost every vertex, from almost every ordered edge, and from almost every ordered
+non-edge coincide; each extension measure is therefore a Dirac measure and each relative
+support a single point.  A random vertex is adjacent to all parts except its own, giving
+(i).  A random ordered edge has its endpoints in two distinct parts; a further random
+vertex lies in the first endpoint's part, the second endpoint's part, or one of the
+remaining $r-2$ parts with probabilities $\frac1r$, $\frac1r$, and $\frac{r-2}r$, and is
+then adjacent to exactly the second root, exactly the first root, or both, respectively;
+no position leaves it adjacent to neither root.  This gives (ii).  A random ordered
+non-edge has both endpoints in one part; a further random vertex lies in that part with
+probability $\frac1r$, adjacent to neither root, and in one of the other $r-1$ parts
+with probability $\frac{r-1}r$, adjacent to both.  This gives (iii).
+\end{proof}
+
+At $r=2$ this is the Mantel slice of the introduction.  Let $\T_1$ be the triangle-free
+graph class (that is, $\T_2$ above), let $\rho\in\A^0[\T_1]$ be the unlabelled edge
+density, and set
 \[
   Y_{\mathrm{Mantel}}
   :=
+  Y_{\mathrm{Tur}}^{(2)}
+  =
   \{\phi_0\in Q_0:\phi_0(\rho)=1/2\}.
 \]
 This is a closed, non-hereditary enhancement: it describes the equality case of Mantel's
@@ -3801,24 +4545,11 @@ More explicitly:
 \end{theorem}
 
 \begin{proof}
-By Mantel's theorem together with its equality/stability form, a triangle-free graph
-sequence with edge density tending to $1/2$ converges, after changing $o(n^2)$ edges, to
-the balanced complete bipartite graphs.  Equivalently, the only triangle-free graphon of
-edge density $1/2$ is the balanced complete bipartite graphon.  Thus
-$Y_{\mathrm{Mantel}}=\{\beta\}$, where $\beta$ denotes that limit.
-
-The remaining statements are direct readings of random labelled extensions of $\beta$.
-A random vertex of the balanced bipartite limit sees exactly half of the space across the
-bipartition and half on its own side, so the one-root edge density is $1/2$.
-
-A random ordered edge has its endpoints on opposite sides.  A further random vertex lies
-on the first endpoint's side with probability $1/2$ and is then adjacent only to the
-second endpoint; it lies on the second endpoint's side with probability $1/2$ and is then
-adjacent only to the first endpoint.  This gives the asserted $\tau$-identities.  A random
-ordered non-edge has both endpoints on the same side.  A further random vertex lies on
-the opposite side with probability $1/2$ and is adjacent to both roots, and lies on the
-same side with probability $1/2$ and is adjacent to neither.  This gives the asserted
-$\eta$-identities.
+This is the case $r=2$ of \cref{thm:turan-slice}: the identities there read
+$e=\frac12\one_{\vtype}$; $a_\tau=b_\tau=\frac12\one_\tau$ with
+$g_\tau=\frac{r-2}{r}\one_\tau=0$ and $z_\tau=0$ (at $r=2$ the common-neighbour flag
+$g_\tau$ is the triangle flag, already zero in the triangle-free quotient); and
+$z_\eta=g_\eta=\frac12\one_\eta$ with $a_\eta=b_\eta=0$.
 \end{proof}
 
 \begin{remark}[Why this is not quotient semantics]
@@ -3829,6 +4560,9 @@ $e=\frac12\one_{\vtype}$ on $S_{\vtype}(Y_{\mathrm{Mantel}})$, while this equali
 ordinary triangle-free quotient: stars rooted at their centres give quotient points
 with $e=1$, and empty graphs give quotient points with $e=0$.  Thus relative ensemble semantics can express
 local information about extremisers that the hereditary quotient deliberately forgets.
+The same contrast holds for every $r$: on $S_{\vtype}(Y_{\mathrm{Tur}}^{(r)})$ the
+one-root edge density is pinned to $\frac{r-1}r$, a statement no hereditary quotient of
+the $K_{r+1}$-free class can make.
 \end{remark}
 
 \subsection{Example: equality slices from a certificate}
@@ -3859,18 +4593,13 @@ Then each linear certificate term vanishes on the corresponding relative support
 \end{proposition}
 
 \begin{proof}
-For $\phi_0\in Y$, the displayed certificate gives
-\[
-  \sum_i \lambda_i\,\phi_0(\avg{\ell_i^2}{\sigma_i})\le0.
-\]
-Each summand is non-negative by \eqref{eq:extension-expectation}: if
-$\phi_0(\brak{\sigma_i})>0$, it is
-$\phi_0(\brak{\sigma_i})\,\E[\psi(\ell_i)^2]$, and if
-$\phi_0(\brak{\sigma_i})=0$ it is $0$ by monotonicity.  Since all
-$\lambda_i$ are positive, every summand is zero for every $\phi_0\in Y$.
-Thus $\psi(\ell_i)^2=0$ almost surely under every admissible
-$\Ext_{\sigma_i}(\phi_0)$.  Hence $\ell_i=0$ on the union of the supports, and by
-continuity also on its closure $S_{\sigma_i}(Y)$.
+This is \cref{thm:relative-slackness} with $f_i:=\ell_i^2$ and $n:=0$.  Hypothesis
+\ref{cs-hyp-supports} holds at every homomorphism because
+$\chi(\ell_i^2)=\chi(\ell_i)^2\ge0$; hypothesis \ref{cs-hyp-certificate} holds on
+$Q_0\supseteq Y$ because the certificate is proved on $Q_0$; and every $\phi_0\in Y$
+attains $\phi_0(h)=c$ by the definition of $Y$.  Conclusion \ref{cs-global} gives
+$\chi(\ell_i)^2=\chi(\ell_i^2)=0$, hence $\chi(\ell_i)=0$, for every
+$\chi\in S_{\sigma_i}(Y)$.
 \end{proof}
 
 \begin{theorem}[The $K_4$-free $P_4$ equality slice]\label{thm:k4free-p4-equality-slice}
@@ -3936,276 +4665,8 @@ relative support sees only roots that occur with positive probability inside
 $P_4$-extremal limits.
 \end{remark}
 
-\begin{theorem}[A certificate route to the tripartite extremiser]\label{thm:k4free-p4-tripartite}
-Every $K_4$-free graphon in the equality slice $Y_{P_4}$ has edge density $2/3$.
-Consequently, by the equality case of Tur\'an's theorem, every element of $Y_{P_4}$ is the
-balanced complete tripartite graphon.  The slice is moreover non-empty---the balanced
-complete tripartite graphon attains $\pi_{P_4}=32/9$---so $Y_{P_4}$ consists of exactly
-that graphon.
-\end{theorem}
-
-\begin{proof}
-Let $W$ represent a point of $Y_{P_4}$.  Write
-\[
-  d(x):=\int W(x,u)\,du,\qquad
-  c(x,y):=\int W(x,u)W(y,u)\,du,
-\]
-and set
-\[
-  p:=\int d(x)\,dx,\qquad
-  D:=\int d(x)^2\,dx,\qquad
-  T:=\int W(x,y)c(x,y)\,dx\,dy .
-\]
-Thus $p$ is the edge density and $T$ is the triangle density in the usual graphon
-normalisation.
-
-The edge-root identity
-\[
-  a_\tau+b_\tau=2g_\tau
-\]
-from \cref{thm:k4free-p4-equality-slice} says that, for $W(x,y)$-almost every ordered
-pair $(x,y)$,
-\[
-  d(x)+d(y)-2c(x,y)=2c(x,y).
-\]
-Multiplying by $W(x,y)$ and integrating gives
-\[
-  2D=4T,
-  \qquad\text{hence}\qquad
-  D=2T. \tag{1}
-\]
-
-The non-edge-root identity
-\[
-  2z_\eta=g_\eta
-\]
-says that, for $(1-W(x,y))$-almost every ordered pair $(x,y)$,
-\[
-  2\bigl(1-d(x)-d(y)+c(x,y)\bigr)=c(x,y).
-\]
-Multiplying by $1-W(x,y)$ and integrating gives
-\[
-  D-T=6p-4D-2,
-\]
-or equivalently
-\[
-  5D-T=6p-2. \tag{2}
-\]
-Combining (1) and (2) yields
-\[
-  D=\frac{12p-4}{9}.
-\]
-On the other hand, Cauchy--Schwarz gives $D\ge p^2$.  Therefore
-\[
-  p^2\le \frac{12p-4}{9},
-  \qquad\text{so}\qquad
-  (3p-2)^2\le0.
-\]
-Thus $p=2/3$.
-
-Since $W$ is $K_4$-free and has the maximum possible $K_4$-free edge density, the graphon
-equality case of Tur\'an's theorem applies: $W$ is equivalent, up to a measure-preserving
-relabelling, to the balanced complete tripartite graphon.
-
-Conversely, the balanced complete tripartite graphon is itself $K_4$-free and attains
-$\pi_{P_4}=32/9$: this is the matching lower bound for the $P_4$ density, the achievability
-direction formalised in \texttt{API.CompleteGraphFreeP4} at $r=3$.  It therefore lies in
-$Y_{P_4}$, so the slice is non-empty and equals exactly this graphon.
-\end{proof}
-
-\begin{remark}
-The point of \cref{thm:k4free-p4-tripartite} is not that Tur\'an's equality case is new;
-it is that the $P_4$ certificate itself forces the problem back onto that equality case.
-The relative ensemble enhancement converts the vanishing of labelled SOS terms into
-labelled local equations, and those equations are strong enough to recover the global edge
-density of an extremiser.
-\end{remark}
-
-\begin{corollary}[Qualitative stability]\label{cor:k4free-p4-qualitative-stability}
-Let $(W_n)$ be a sequence of $K_4$-free graphons such that
-\[
-  \phi_{W_n}(\pi_{P_4})\longrightarrow \frac{32}{9}.
-\]
-Then $W_n$ converges in cut distance, up to measure-preserving relabelling, to the
-balanced complete tripartite graphon $T_3$.
-
-Equivalently, if $(G_n)$ is a sequence of finite $K_4$-free graphs with
-$\pi_{P_4}(G_n)\to32/9$, then $G_n$ converges to $T_3$ in the graphon sense.
-\end{corollary}
-
-\begin{proof}
-The graphon space modulo measure-preserving relabelling is compact.  If a subsequence of
-$(W_n)$ converges to $W$, then $W$ is still $K_4$-free, because clique density is
-continuous in the cut topology.  The $P_4$ density expression is also continuous, so
-$\phi_W(\pi_{P_4})=32/9$, meaning $W\in Y_{P_4}$.  By
-\cref{thm:k4free-p4-tripartite}, $W$ is the balanced complete tripartite graphon.
-Thus every convergent subsequence has the same limit $T_3$, and compactness gives
-convergence of the whole sequence.
-\end{proof}
-
-\begin{proposition}[Near equality forces approximate local equations]
-\label{prop:k4free-p4-certificate-stability}
-Let $W$ be a $K_4$-free graphon, and put
-\[
-  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4})\ge0 .
-\]
-As before, write
-\[
-  d(x):=\int W(x,u)\,du,\qquad
-  c(x,y):=\int W(x,u)W(y,u)\,du .
-\]
-Define the three local square errors
-\[
-\begin{aligned}
-  R_\eta(W)
-    &:=\int (1-W(x,y))
-      \bigl(2(1-d(x)-d(y)+c(x,y))-c(x,y)\bigr)^2\,dx\,dy,\\
-  R_\tau^{-}(W)
-    &:=\int W(x,y)\bigl(d(x)-d(y)\bigr)^2\,dx\,dy,\\
-  R_\tau^{+}(W)
-    &:=\int W(x,y)\bigl(d(x)+d(y)-4c(x,y)\bigr)^2\,dx\,dy .
-\end{aligned}
-\]
-Then
-\[
-  R_\eta(W)\le\frac98\,\Delta,\qquad
-  R_\tau^{-}(W)\le\frac15\,\Delta,\qquad
-  R_\tau^{+}(W)\le\frac9{35}\,\Delta .
-\]
-\end{proposition}
-
-\begin{proof}
-The three integrals are the graphon evaluations of the three averaged square terms
-\[
-  \avg{(2z_\eta-g_\eta)^2}{\eta},\qquad
-  \avg{(a_\tau-b_\tau)^2}{\tau},\qquad
-  \avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}.
-\]
-Indeed, at a non-edge root $(x,y)$ one has
-\[
-  z_\eta=1-d(x)-d(y)+c(x,y),\qquad g_\eta=c(x,y),
-\]
-while at an edge root $(x,y)$ one has
-\[
-  a_\tau=d(x)-c(x,y),\qquad b_\tau=d(y)-c(x,y),\qquad g_\tau=c(x,y).
-\]
-Evaluating the verified certificate
-\[
-  \pi_{P_4}
-  +\frac89\,\avg{(2z_\eta-g_\eta)^2}{\eta}
-  +5\,\avg{(a_\tau-b_\tau)^2}{\tau}
-  +\frac{35}{9}\,\avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}
-  \le \frac{32}{9}\one_0
-\]
-at $W$ gives
-\[
-  \frac89 R_\eta(W)+5R_\tau^{-}(W)+\frac{35}{9}R_\tau^{+}(W)\le\Delta .
-\]
-Each summand is non-negative, so the three displayed estimates follow.
-\end{proof}
-
-\begin{theorem}[Certificate-to-Tur\'an stability]\label{thm:k4free-p4-quant-stability}
-Let $W$ be a $K_4$-free graphon, let
-\[
-  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4}),
-\]
-and let $p:=\int W(x,y)\,dx\,dy$ be its edge density.  Then
-\[
-  (3p-2)^2
-  \le
-  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta},
-\]
-and hence
-\[
-  \left|p-\frac23\right|
-  \le
-  \frac13
-  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}
-  \Delta^{1/4}.
-\]
-
-Moreover, let $\omega_{\mathrm{Tur}}$ be any graphon Tur\'an-stability modulus for
-$K_4$-free graphons: for every $\gamma>0$, if a $K_4$-free graphon $U$ has edge
-density at least $2/3-\omega_{\mathrm{Tur}}(\gamma)$, then
-$\delta_\square(U,T_3)<\gamma$.  Such a modulus exists by compactness and the equality
-case of Tur\'an's theorem.  Then
-\[
-  \Delta
-  \le
-  \left(
-    \frac{3\,\omega_{\mathrm{Tur}}(\gamma)}
-    {\left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}}
-  \right)^4
-  \quad\Longrightarrow\quad
-  \delta_\square(W,T_3)<\gamma .
-\]
-\end{theorem}
-
-\begin{proof}
-Set
-\[
-  D:=\int d(x)^2\,dx,\qquad
-  T:=\int W(x,y)c(x,y)\,dx\,dy .
-\]
-Define the two integrated local-equation errors
-\[
-\begin{aligned}
-  E_\tau
-    &:=\int W(x,y)\bigl(d(x)+d(y)-4c(x,y)\bigr)\,dx\,dy,\\
-  E_\eta
-    &:=\int (1-W(x,y))
-      \bigl(2(1-d(x)-d(y)+c(x,y))-c(x,y)\bigr)\,dx\,dy .
-\end{aligned}
-\]
-As in the equality proof,
-\[
-  E_\tau=2D-4T,\qquad
-  E_\eta=2-6p+5D-T .
-\]
-Therefore
-\[
-  2E_\eta-\frac12E_\tau
-  =
-  4-12p+9D
-  =
-  (3p-2)^2+9(D-p^2).
-\]
-Since $D\ge p^2$ by Cauchy--Schwarz,
-\[
-  (3p-2)^2
-  \le
-  2|E_\eta|+\frac12|E_\tau|.
-\]
-Another application of Cauchy--Schwarz gives
-\[
-  |E_\eta|\le R_\eta(W)^{1/2},\qquad
-  |E_\tau|\le R_\tau^{+}(W)^{1/2}.
-\]
-Using \cref{prop:k4free-p4-certificate-stability},
-\[
-  (3p-2)^2
-  \le
-  2\left(\frac98\Delta\right)^{1/2}
-  +\frac12\left(\frac9{35}\Delta\right)^{1/2}
-  =
-  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta}.
-\]
-This is the first assertion, and the displayed edge-density estimate follows by taking
-square roots and dividing by $3$.
-
-The final implication is just Tur\'an stability applied after this edge-density estimate:
-the displayed upper bound on $\Delta$ gives
-$p\ge2/3-\omega_{\mathrm{Tur}}(\gamma)$, hence
-$\delta_\square(W,T_3)<\gamma$.
-\end{proof}
-
-\begin{remark}[On the exponent]
-The certificate controls the squared local errors by $O(\Delta)$, hence it controls the
-integrated local-equation errors by $O(\sqrt{\Delta})$.  The edge-density argument above
-then bounds $(3p-2)^2$ by these integrated errors.  Thus the direct certificate route
-gives the explicit fourth-root modulus in \cref{thm:k4free-p4-quant-stability}.  A
-sharper modulus would require additional information beyond these three square terms.
-\end{remark}
+The same mechanism applies uniformly to the whole parametric family of certificates, and
+there it also processes terms that are not averaged squares.
 
 \begin{theorem}[Parametric $K_{r+1}$-free $P_4$ equality equations]
 \label{thm:parametric-p4-equality-slice}
@@ -4265,15 +4726,281 @@ is non-negative on $K_{r+1}$-free limits by the Zykov $K_4$-density bound
 \cite{Zykov1949}, and
 $L_r$ is the non-negative leftover term in the Lean file.
 
-If $\phi_0\in Y_r$, evaluating the displayed identity at $\phi_0$ gives a sum of
-non-negative terms equal to zero.  Hence all four positive-multiplier terms vanish, and
-also $\phi_0(L_r)=0$.  The vanishing of the three averaged squares is converted to
-pointwise vanishing on relative supports exactly as in
-\cref{prop:equality-slice-vanishing}.  This gives the two displayed labelled equations
-for $\eta$ and $\tau$.
+This is an instance of \cref{thm:relative-slackness}, with $Y:=Y_r$,
+$h:=\pi_{P_4}^{(r)}$, the three averaged squares as the terms
+$\lambda_i\avg{f_i}{\sigma_i}$ (so hypothesis \ref{cs-hyp-supports} is automatic), and
+\[
+  n:=p_0(r)\,\kappa_4^{(r)}+L_r,
+\]
+which satisfies hypothesis \ref{cs-hyp-slack} because both parts are non-negative on
+$Q_0^{(r)}\supseteq Y_r$.  The displayed identity gives hypothesis
+\ref{cs-hyp-certificate} on all of $Q_0^{(r)}$, and every $\phi_0\in Y_r$ attains the
+bound by the definition of the slice.  Conclusion \ref{cs-global} makes the three squares
+vanish identically on the corresponding relative supports, which---taking square roots,
+as in \cref{prop:equality-slice-vanishing}---is exactly the displayed labelled equation
+for $\eta$ and the two for $\tau$.  Conclusion \ref{cs-exact} gives $\phi_0(n)=0$; both
+parts of $n$ are non-negative, so $\phi_0(\kappa_4^{(r)})=0$, which is precisely the
+stated extremal $K_4$ density.
+\end{proof}
 
-The vanishing of the $p_0(r)\kappa_4^{(r)}$ term gives
-$\phi_0(\kappa_4^{(r)})=0$, which is precisely the stated extremal $K_4$ density.
+\begin{remark}[The parametric slice is non-empty]\label{rem:parametric-nonempty}
+For every $r\ge3$ the slice $Y_r$ is non-empty: the balanced complete $r$-partite limit
+attains $\pi_{P_4}^{(r)}=12\bigl(\frac{r-1}r\bigr)^3$.  This achievability direction is
+formalised, for every $r\ge3$, as
+\texttt{Kr\_plus\_1\_free\_P4\_density\_achievable} in
+\texttt{API.CompleteGraphFreeP4}; \cref{thm:k4free-p4-tripartite} below uses its $r=3$
+instance.
+\end{remark}
+
+\subsection{Moment consequences and the extremal graphon}
+
+The labelled slice equations integrate against a representing graphon to exact moment
+identities, and we work these out for the whole parametric family at once.  For a
+graphon $W$ write
+\[
+  d(x):=\int W(x,u)\,du,\qquad
+  c(x,y):=\int W(x,u)W(y,u)\,du,
+\]
+\[
+  p:=\int d(x)\,dx,\qquad
+  D:=\int d(x)^2\,dx,\qquad
+  T:=\int W(x,y)c(x,y)\,dx\,dy,
+\]
+so that $p$ is the edge density and $T$ the triangle density in the usual graphon
+normalisation, and $D-p^2=\int(d(x)-p)^2\,dx\ge0$ is the variance of the degree
+function.  The translation between three-vertex rooted flags and these kernels is: at an
+ordered non-edge root $(x,y)$,
+\[
+  z_\eta=1-d(x)-d(y)+c(x,y),\qquad g_\eta=c(x,y),
+\]
+while at an ordered edge root $(x,y)$,
+\[
+  a_\tau=d(x)-c(x,y),\qquad b_\tau=d(y)-c(x,y),\qquad g_\tau=c(x,y).
+\]
+An identity between rooted flags valid on a relative support translates, for a graphon
+$W$ representing a point of the slice, into the corresponding kernel identity holding
+almost everywhere with respect to the natural rooting measure: the extension measure at
+$\tau$, respectively $\eta$, is the law of the view from a $W$-random ordered edge,
+respectively ordered non-edge, so the identity holds for $W(x,y)$-almost every,
+respectively $(1-W(x,y))$-almost every, ordered pair $(x,y)$.
+
+\begin{theorem}[Moment identities from the local equations]\label{thm:parametric-moments}
+Fix $r\ge3$ and set
+\[
+  \alpha_r^-:=\frac{r-1}{2r-3},
+  \qquad
+  \alpha_r^+:=\frac{r-1}{r},
+\]
+so that $\alpha_r^-\le\alpha_r^+$ for all $r\ge3$, with equality exactly at $r=3$, where
+both equal $\frac23$.  Let $W$ be \emph{any} graphon whose kernels satisfy the two local
+equations
+\[
+  (r-2)\bigl(d(x)+d(y)-2c(x,y)\bigr)=2c(x,y)
+  \qquad\text{for $W$-almost every }(x,y),
+\]
+\[
+  (r-1)\bigl(1-d(x)-d(y)+c(x,y)\bigr)=c(x,y)
+  \qquad\text{for $(1-W)$-almost every }(x,y).
+\]
+By \cref{thm:parametric-p4-equality-slice} and the translation above, every graphon
+representing a point of $Y_r$ is of this kind---and in addition satisfies
+$d(x)=d(y)$ for $W$-almost every pair, an equation the moment identities below do not
+need; at $r=3$, by \cref{thm:k4free-p4-equality-slice}, so is every graphon
+representing a point of $Y_{P_4}$.  Then:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item\label{pm:T} $(r-1)\,T=(r-2)\,D$;
+  \item\label{pm:D} $r(2r-3)\,D=(r-1)^2(3p-1)$;
+  \item\label{pm:var} the degree variance is an explicit function of the edge density:
+  \[
+    \int(d(x)-p)^2\,dx
+    =
+    D-p^2
+    =
+    (\alpha_r^+-p)(p-\alpha_r^-);
+  \]
+  \item\label{pm:interval} consequently $\alpha_r^-\le p\le\alpha_r^+$, and $W$ is
+  degree-regular ($d=p$ almost everywhere) precisely when
+  $p\in\{\alpha_r^-,\alpha_r^+\}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Integrating the edge equation against $W(x,y)$ and the non-edge equation against
+$1-W(x,y)$, using
+\[
+  \int W(x,y)\,d(x)\,dx\,dy=\int d(x)^2\,dx=D,
+  \qquad
+  \int c(x,y)\,dx\,dy=\int d(u)^2\,du=D,
+\]
+gives
+\[
+  (r-2)(2D-2T)=2T,
+  \qquad
+  (r-1)\bigl((1-p)-(2p-2D)+(D-T)\bigr)=D-T .
+\]
+The first display is \ref{pm:T}.  Substituting $T=\frac{r-2}{r-1}D$ into the second and
+collecting terms yields
+\[
+  (r-1)(1-3p)+(2r-1)D=\frac{D}{r-1},
+  \qquad\text{i.e.}\qquad
+  \bigl[(2r-1)(r-1)-1\bigr]D=(r-1)^2(3p-1),
+\]
+and $(2r-1)(r-1)-1=2r^2-3r=r(2r-3)$, which is \ref{pm:D}.
+
+For \ref{pm:var}, \ref{pm:D} gives
+\[
+  D-p^2
+  =
+  \frac{(r-1)^2(3p-1)-r(2r-3)\,p^2}{r(2r-3)} .
+\]
+The numerator is $-r(2r-3)(p-\alpha_r^+)(p-\alpha_r^-)$: the monic quadratic
+$p^2-\frac{3(r-1)^2}{r(2r-3)}p+\frac{(r-1)^2}{r(2r-3)}$ has root product
+$\frac{(r-1)^2}{r(2r-3)}=\alpha_r^+\alpha_r^-$ and root sum
+$\frac{3(r-1)^2}{r(2r-3)}=\alpha_r^++\alpha_r^-$, as one checks directly.  Hence
+$D-p^2=(\alpha_r^+-p)(p-\alpha_r^-)$, and the left-hand side is the degree variance
+$\int(d-p)^2$.
+
+For \ref{pm:interval}: the variance is non-negative, and the product
+$(\alpha_r^+-p)(p-\alpha_r^-)$ is non-negative exactly for
+$\alpha_r^-\le p\le\alpha_r^+$; it vanishes exactly at the two endpoints, and the
+variance vanishes exactly when $d=p$ almost everywhere.
+\end{proof}
+
+Note that \cref{thm:parametric-moments} uses neither $K_{r+1}$-freeness nor the
+certificate: it is a statement about any graphon obeying the two local equations.
+Remarkably, identifying the extremiser needs no more.  At the regular endpoint the two
+equations are \emph{rigid} by themselves---no forbidden subgraph, no certificate, and no
+classical equality theorem enters.
+
+\begin{theorem}[Rigidity at the regular endpoint]\label{thm:slice-rigidity}
+Fix $r\ge3$ and let $W$ be any graphon satisfying the two local equations of
+\cref{thm:parametric-moments}.  If the edge density of $W$ is
+$p=\alpha_r^+=\frac{r-1}r$, then $W$ is, up to a measure-preserving relabelling, the
+balanced complete $r$-partite graphon $T_r$.
+\end{theorem}
+
+\begin{proof}
+\emph{Step 1: the local profile.}
+By \cref{thm:parametric-moments}\ref{pm:var}, $p=\alpha_r^+$ forces
+$\int(d-p)^2=0$, so $d(x)=\frac{r-1}r$ for almost every $x$.  Substituting into the
+non-edge equation: for $(1-W)$-almost every $(x,y)$,
+\[
+  (r-1)\Bigl(1-\tfrac{2(r-1)}r+c(x,y)\Bigr)=c(x,y),
+  \qquad\text{i.e.}\qquad
+  (r-2)\,c(x,y)=\frac{(r-1)(r-2)}{r},
+\]
+so $c(x,y)=\frac{r-1}r$ for $(1-W)$-almost every $(x,y)$ (here $r-2\ge1$).
+
+\emph{Step 2: the equality case of $c\le d$.}
+For such a pair,
+\[
+  0=d(y)-c(x,y)=\int W(y,u)\bigl(1-W(x,u)\bigr)\,du,
+\]
+so $W(x,u)=1$ for almost every $u$ with $W(y,u)>0$, and symmetrically with $x$ and $y$
+exchanged.  Writing $\{W(x,\cdot)>0\}$ for the support of the section, this gives the
+chain of inclusions, all modulo null sets,
+\[
+  \{W(y,\cdot)>0\}\subseteq\{W(x,\cdot)=1\}\subseteq\{W(x,\cdot)>0\}
+  \subseteq\{W(y,\cdot)=1\}\subseteq\{W(y,\cdot)>0\},
+\]
+so all five sets coincide up to null sets.  In particular $W(x,\cdot)$ is almost
+everywhere $\{0,1\}$-valued, equal to the indicator of a set
+$N(x):=\{W(x,\cdot)>0\}$ of measure $d(x)=\frac{r-1}r$, and $N(x)=N(y)$.  Since
+$\int(1-W(x,y))\,dy=1-d(x)=\frac1r>0$ for almost every $x$, Fubini's theorem upgrades
+this to: for almost every $x$, $W(x,\cdot)=\one_{N(x)}$ almost everywhere with
+$|N(x)|=\frac{r-1}r$, and $N(x)=N(y)$ for almost every $y$ with $W(x,y)<1$.
+
+\emph{Step 3: the partition.}
+Set $C(x):=[0,1]\setminus N(x)$, so $|C(x)|=\frac1r$ and, up to a null set,
+$C(x)=\{y:W(x,y)=0\}$.  Step 2 reads: for almost every $x$ and almost every
+$y\in C(x)$, $C(y)=C(x)$.  Two consequences, for $x,x'$ in a suitable full-measure
+set.  First, any two of the sets $C(x)$ are equal or disjoint modulo null sets: if
+$|C(x)\cap C(x')|>0$, then a generic $y$ in the intersection satisfies both
+$C(y)=C(x)$ and $C(y)=C(x')$.  Second, almost every $x$ lies in its own set: choosing
+a generic $y\in C(x)$, symmetry of $W$ gives $W(y,x)=W(x,y)=0$, so
+$x\in C(y)=C(x)$.  The distinct sets among the $C(x)$ are therefore pairwise disjoint
+modulo null sets, each of measure exactly $\frac1r$, and they cover almost every point
+of $[0,1]$; hence there are exactly $r$ of them, say $P_1,\dots,P_r$, and for almost
+every $x\in P_i$ one has $C(x)=P_i$.
+
+Thus, for almost every pair $(x,y)$: $W(x,y)=0$ when $x$ and $y$ lie in the same part
+and $W(x,y)=1$ otherwise.  A measure-preserving relabelling sending each $P_i$ to an
+interval of length $\frac1r$ carries $W$ to the balanced complete $r$-partite graphon.
+\end{proof}
+
+\begin{corollary}[Unconditional rigidity at $r=3$]\label{cor:r3-rigidity}
+Any graphon satisfying the two local equations at $r=3$---that is,
+$d(x)+d(y)=4c(x,y)$ for $W$-almost every pair and
+$2\bigl(1-d(x)-d(y)+c(x,y)\bigr)=c(x,y)$ for $(1-W)$-almost every pair---is, up to a
+measure-preserving relabelling, the balanced complete tripartite graphon $T_3$.
+\end{corollary}
+
+\begin{proof}
+At $r=3$ the roots coincide, $\alpha_3^-=\alpha_3^+=\frac23$, so
+\cref{thm:parametric-moments}\ref{pm:var} reads
+$0\le\int(d-p)^2=-(p-\frac23)^2\le0$; hence $p=\frac23=\alpha_3^+$, and
+\cref{thm:slice-rigidity} applies.
+\end{proof}
+
+\begin{theorem}[A certificate route to the tripartite extremiser]\label{thm:k4free-p4-tripartite}
+Every element of the equality slice $Y_{P_4}$ is the balanced complete tripartite
+graphon; in particular every extremiser has edge density $2/3$ and is degree-regular.
+The identification uses no classical equality theorem: the two labelled slice equations
+are rigid by themselves (\cref{cor:r3-rigidity}).  The slice is moreover
+non-empty---the balanced complete tripartite graphon attains $\pi_{P_4}=32/9$---so
+$Y_{P_4}$ consists of exactly that graphon.
+\end{theorem}
+
+\begin{proof}
+Let $W$ represent a point of $Y_{P_4}$.  By \cref{thm:k4free-p4-equality-slice}, the
+kernels of $W$ satisfy the two local equations of \cref{thm:parametric-moments} at
+$r=3$: the equation $a_\tau+b_\tau=2g_\tau$ gives the edge line and $2z_\eta=g_\eta$
+gives the non-edge line (the third slice equation, $a_\tau=b_\tau$, is not needed).
+\Cref{cor:r3-rigidity} identifies $W$, up to measure-preserving relabelling, with the
+balanced complete tripartite graphon; the edge density $2/3$ and the degree-regularity
+are read off from it.  Note that even the $K_4$-freeness of $W$ played no role in the
+identification.
+
+Conversely, the balanced complete tripartite graphon is itself $K_4$-free and attains
+$\pi_{P_4}=32/9$: this is the matching lower bound for the $P_4$ density, the achievability
+direction formalised in \texttt{API.CompleteGraphFreeP4} at $r=3$
+(\cref{rem:parametric-nonempty}).  It therefore lies in
+$Y_{P_4}$, so the slice is non-empty and equals exactly this graphon.
+\end{proof}
+
+\begin{remark}
+An earlier version of \cref{thm:k4free-p4-tripartite} pinned the edge density from the
+slice equations and then invoked the equality case of Tur\'an's theorem to identify the
+extremiser.  \Cref{cor:r3-rigidity} shows the detour is unnecessary: the relative
+ensemble enhancement converts the vanishing of labelled SOS terms into labelled local
+equations, and \emph{those two equations alone characterise the extremal graphon}.  The
+$P_4$ certificate is thus a first instance of a slice that is not controlled by a
+pre-existing extremal equality theorem but by its own mined equations---the situation
+open problem (3) below asks to produce systematically.
+\end{remark}
+
+\begin{corollary}[Qualitative stability]\label{cor:k4free-p4-qualitative-stability}
+Let $(W_n)$ be a sequence of $K_4$-free graphons such that
+\[
+  \phi_{W_n}(\pi_{P_4})\longrightarrow \frac{32}{9}.
+\]
+Then $W_n$ converges in cut distance, up to measure-preserving relabelling, to the
+balanced complete tripartite graphon $T_3$.
+
+Equivalently, if $(G_n)$ is a sequence of finite $K_4$-free graphs with
+$\pi_{P_4}(G_n)\to32/9$, then $G_n$ converges to $T_3$ in the graphon sense.
+\end{corollary}
+
+\begin{proof}
+By \cref{thm:k4free-p4-tripartite}, the slice $Y_{P_4}$ is the single point represented
+by $T_3$.  The space $Q_0$ of $K_4$-free unlabelled limits is closed in $X_0$, and the
+$P_4$ density expression evaluates continuously, so
+\cref{prop:unique-slice-stability}---with $Z:=Q_0$ and the single constraint
+$\phi(\pi_{P_4})=32/9$---gives $\phi_{W_n}\to\phi_{T_3}$ in the density topology.  Under
+the identification of unlabelled limits with graphons up to measure-preserving
+relabelling, in which the density topology coincides with the cut metric, this is the
+assertion; the finite-graph statement follows by applying it to the graphons of the
+graphs $G_n$.
 \end{proof}
 
 \begin{corollary}[Recovery modulo Zykov equality]
@@ -4311,16 +5038,381 @@ At the non-edge type $\eta$,
 By \cref{thm:parametric-p4-equality-slice}, every $\phi_0\in Y_r$ has the extremal
 $K_4$ density among $K_{r+1}$-free graphons.  The assumed equality case of Zykov's
 theorem therefore identifies $\phi_0$ with the balanced complete $r$-partite graphon.
-
-The displayed labelled identities are direct readings of random labelled extensions of that
-graphon.  A random vertex is adjacent to all parts except its own, giving
-$e=(r-1)\one_{\vtype}/r$.  A random ordered edge has its endpoints in two distinct parts; a new
-vertex lies in the first endpoint's part, the second endpoint's part, or one of the
-remaining $r-2$ parts with probabilities $1/r$, $1/r$, and $(r-2)/r$, respectively.
-This gives the $\tau$-identities.  A random ordered non-edge has both endpoints in the
-same part; a new vertex lies in that part with probability $1/r$ and in one of the other
-$r-1$ parts with probability $(r-1)/r$, giving the $\eta$-identities.
+The displayed labelled identities are the readings of random labelled extensions of that
+graphon computed in the proof of \cref{thm:turan-slice}.
 \end{proof}
+
+The rigidity theorem localises what the Zykov assumption is actually for: not the
+structure of the extremiser, only its edge density.
+
+\begin{corollary}[Unconditional recovery at the regular endpoint]\label{cor:top-endpoint-recovery}
+Fix $r\ge4$.  Every $\phi_0\in Y_r$ with edge density $\phi_0(\rho)=\frac{r-1}r$ is the
+balanced complete $r$-partite graphon---with no appeal to the Zykov equality case.
+Consequently, the hypothesis of \cref{cor:parametric-p4-turan-recovery} can be weakened
+from the full equality case of Zykov's theorem to the single scalar statement that
+every element of $Y_r$ has edge density $\frac{r-1}r$.
+\end{corollary}
+
+\begin{proof}
+A graphon representing such a $\phi_0$ satisfies the two local equations by
+\cref{thm:parametric-p4-equality-slice}, and its edge density is $\alpha_r^+$, so
+\cref{thm:slice-rigidity} identifies it with $T_r$; the labelled identities of
+\cref{cor:parametric-p4-turan-recovery} then follow as before.
+\end{proof}
+
+\begin{corollary}[Parametric qualitative stability]\label{cor:parametric-qualitative-stability}
+Fix $r\ge4$ and assume the equality case of Zykov's theorem, as in
+\cref{cor:parametric-p4-turan-recovery}.  If $(W_k)$ is a sequence of $K_{r+1}$-free
+graphons with
+\[
+  \phi_{W_k}(\pi_{P_4}^{(r)})\longrightarrow12\left(\frac{r-1}{r}\right)^3,
+\]
+then $W_k$ converges in cut distance, up to measure-preserving relabelling, to the
+balanced complete $r$-partite graphon $T_r$.
+\end{corollary}
+
+\begin{proof}
+By \cref{cor:parametric-p4-turan-recovery}, every element of $Y_r$ is the limit
+represented by $T_r$, and by \cref{rem:parametric-nonempty} the slice is non-empty; so
+$Y_r$ is the single point represented by $T_r$, and
+\cref{prop:unique-slice-stability} applies exactly as in
+\cref{cor:k4free-p4-qualitative-stability}.
+\end{proof}
+
+\begin{remark}[Why $r=3$ is special]\label{rem:r3-special}
+For $r\ge4$ the two moment identities alone do not pin the edge density: by
+\cref{thm:parametric-moments} they force the exact trade-off between edge density and
+degree variance recorded in \ref{pm:var}, confining $p$ to the interval
+$[\alpha_r^-,\alpha_r^+]$ whose endpoints are the only degree-regular options, and no
+interior value of $p$ is excluded by the moment identities themselves.  The case $r=3$
+is exactly the degenerate case $\alpha_r^-=\alpha_r^+$ of a double root, and it is this
+coincidence---not any additional strength of the certificate---that pins $p$
+unconditionally and hands the argument to the rigidity theorem.  For $r\ge4$ the
+structure question is settled by rigidity at the regular endpoint
+(\cref{thm:slice-rigidity,cor:top-endpoint-recovery}); what remains classical is the
+single scalar step of pinning $p$ to that endpoint, for which the certificate's
+$\kappa_4^{(r)}$ term---pinning the $K_4$ density at its Zykov-extremal value
+(\cref{thm:parametric-p4-equality-slice})---delegates to the Zykov equality case
+(\cref{cor:parametric-p4-turan-recovery,cor:parametric-qualitative-stability}).
+Whether that last step can also be internalised---for instance by playing the pinned
+$K_4$ density against the moment identities---is open problem (4) below.  The equality
+analysis behind \cref{thm:slice-rigidity} genuinely fails at the other endpoint: at
+$p=\alpha_r^-$ the non-edge codegree equals $\frac{d}{r-2}<d$, so no equality case of
+$c\le d$ is available there.
+\end{remark}
+
+\subsection{Quantitative stability}
+
+Near the slice, the exact moment identities survive with explicit errors.  The next
+theorem is certificate-free: it is pure Cauchy--Schwarz and holds for \emph{every}
+graphon; certificates enter only afterwards, to bound the two square errors by the
+certificate deficit.
+
+\begin{theorem}[Approximate moment identities]\label{thm:approximate-moments}
+Fix $r\ge3$ and let $W$ be any graphon.  Define the local errors
+\[
+  \ell_\eta(x,y):=(r-1)\bigl(1-d(x)-d(y)+c(x,y)\bigr)-c(x,y),
+  \qquad
+  \ell_\tau(x,y):=(r-2)\bigl(d(x)+d(y)-2c(x,y)\bigr)-2c(x,y),
+\]
+and their square averages
+\[
+  R_\eta:=\int(1-W(x,y))\,\ell_\eta(x,y)^2\,dx\,dy,
+  \qquad
+  R_\tau:=\int W(x,y)\,\ell_\tau(x,y)^2\,dx\,dy .
+\]
+Then, with $\alpha_r^\pm$ as in \cref{thm:parametric-moments},
+\[
+  \Bigl|
+  r(2r-3)\bigl(D-p^2\bigr)
+  -
+  r(2r-3)\,(\alpha_r^+-p)(p-\alpha_r^-)
+  \Bigr|
+  \le
+  (r-1)\sqrt{R_\eta}+\frac{r-2}{2}\sqrt{R_\tau}.
+\]
+In particular, since $D-p^2\ge0$,
+\[
+  r(2r-3)\,(p-\alpha_r^-)(p-\alpha_r^+)
+  \le
+  (r-1)\sqrt{R_\eta}+\frac{r-2}{2}\sqrt{R_\tau},
+\]
+and
+\[
+  r(2r-3)\int(d(x)-p)^2\,dx
+  \le
+  r(2r-3)\,(\alpha_r^+-p)(p-\alpha_r^-)
+  +
+  (r-1)\sqrt{R_\eta}+\frac{r-2}{2}\sqrt{R_\tau}.
+\]
+\end{theorem}
+
+\begin{proof}
+Define the integrated local errors
+\[
+  E_\eta:=\int(1-W(x,y))\,\ell_\eta(x,y)\,dx\,dy,
+  \qquad
+  E_\tau:=\int W(x,y)\,\ell_\tau(x,y)\,dx\,dy .
+\]
+Expanding as in the proof of \cref{thm:parametric-moments},
+\[
+  E_\tau=2(r-2)D-2(r-1)T,
+  \qquad
+  E_\eta=(r-1)(1-3p)+(3r-4)D-(r-2)T .
+\]
+Eliminating $T$,
+\[
+  (r-1)E_\eta-\frac{r-2}{2}E_\tau
+  =
+  (r-1)^2(1-3p)+\bigl[(r-1)(3r-4)-(r-2)^2\bigr]D
+  =
+  (r-1)^2(1-3p)+r(2r-3)D,
+\]
+since $(r-1)(3r-4)-(r-2)^2=2r^2-3r=r(2r-3)$.  Subtracting $r(2r-3)p^2$ from
+$r(2r-3)D=(r-1)^2(3p-1)+(r-1)E_\eta-\frac{r-2}{2}E_\tau$ and using the factorisation
+$(r-1)^2(3p-1)-r(2r-3)p^2=r(2r-3)(\alpha_r^+-p)(p-\alpha_r^-)$ from the proof of
+\cref{thm:parametric-moments},
+\[
+  r(2r-3)\bigl(D-p^2\bigr)
+  =
+  r(2r-3)\,(\alpha_r^+-p)(p-\alpha_r^-)
+  +(r-1)E_\eta-\frac{r-2}{2}E_\tau .
+\]
+By the Cauchy--Schwarz inequality,
+\[
+  |E_\eta|
+  \le
+  \Bigl(\int(1-W)\Bigr)^{1/2}
+  \Bigl(\int(1-W)\,\ell_\eta^2\Bigr)^{1/2}
+  \le\sqrt{R_\eta},
+  \qquad
+  |E_\tau|\le\sqrt{R_\tau},
+\]
+and the first display follows.  The second display drops the non-negative term
+$r(2r-3)(D-p^2)$ from the right-hand side of the identity (after moving the product term
+to the left), and the third drops nothing but the sign of the error.
+\end{proof}
+
+The certificate now supplies the bounds on $R_\eta$ and $R_\tau$.  We first record the
+$r=3$ instance in the notation of the verified certificate \texttt{API.K4freeP4}, then
+the parametric family.
+
+\begin{proposition}[Near equality forces approximate local equations]
+\label{prop:k4free-p4-certificate-stability}
+Let $W$ be a $K_4$-free graphon, and put
+\[
+  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4})\ge0 .
+\]
+As before, write
+\[
+  d(x):=\int W(x,u)\,du,\qquad
+  c(x,y):=\int W(x,u)W(y,u)\,du .
+\]
+Define the three local square errors
+\[
+\begin{aligned}
+  R_\eta(W)
+    &:=\int (1-W(x,y))
+      \bigl(2(1-d(x)-d(y)+c(x,y))-c(x,y)\bigr)^2\,dx\,dy,\\
+  R_\tau^{-}(W)
+    &:=\int W(x,y)\bigl(d(x)-d(y)\bigr)^2\,dx\,dy,\\
+  R_\tau^{+}(W)
+    &:=\int W(x,y)\bigl(d(x)+d(y)-4c(x,y)\bigr)^2\,dx\,dy .
+\end{aligned}
+\]
+Then
+\[
+  R_\eta(W)\le\frac98\,\Delta,\qquad
+  R_\tau^{-}(W)\le\frac15\,\Delta,\qquad
+  R_\tau^{+}(W)\le\frac9{35}\,\Delta .
+\]
+\end{proposition}
+
+\begin{proof}
+The three integrals are the graphon evaluations of the three averaged square terms
+\[
+  \avg{(2z_\eta-g_\eta)^2}{\eta},\qquad
+  \avg{(a_\tau-b_\tau)^2}{\tau},\qquad
+  \avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau},
+\]
+by the translation between rooted three-vertex flags and the kernels $d,c$ recorded
+before \cref{thm:parametric-moments}.  Evaluating the verified certificate
+\[
+  \pi_{P_4}
+  +\frac89\,\avg{(2z_\eta-g_\eta)^2}{\eta}
+  +5\,\avg{(a_\tau-b_\tau)^2}{\tau}
+  +\frac{35}{9}\,\avg{(a_\tau+b_\tau-2g_\tau)^2}{\tau}
+  \le \frac{32}{9}\one_0
+\]
+at $W$ gives
+\[
+  \frac89 R_\eta(W)+5R_\tau^{-}(W)+\frac{35}{9}R_\tau^{+}(W)\le\Delta ,
+\]
+which is \cref{thm:relative-slackness}\ref{cs-approx} for this certificate.  Each
+summand is non-negative, so the three displayed estimates follow.
+\end{proof}
+
+\begin{theorem}[Certificate-to-Tur\'an stability]\label{thm:k4free-p4-quant-stability}
+Let $W$ be a $K_4$-free graphon, let
+\[
+  \Delta:=\frac{32}{9}-\phi_W(\pi_{P_4}),
+\]
+and let $p:=\int W(x,y)\,dx\,dy$ be its edge density.  Then
+\[
+  (3p-2)^2
+  \le
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta},
+\]
+and hence
+\[
+  \left|p-\frac23\right|
+  \le
+  \frac13
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}
+  \Delta^{1/4}.
+\]
+Moreover the degree function concentrates: with $d(x):=\int W(x,u)\,du$,
+\[
+  \int\bigl(d(x)-p\bigr)^2\,dx
+  \le
+  \frac19\left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta}.
+\]
+
+Finally, let $\omega_{\mathrm{Tur}}$ be any graphon Tur\'an-stability modulus for
+$K_4$-free graphons: for every $\gamma>0$, if a $K_4$-free graphon $U$ has edge
+density at least $2/3-\omega_{\mathrm{Tur}}(\gamma)$, then
+$\delta_\square(U,T_3)<\gamma$.  Such a modulus exists by compactness and the equality
+case of Tur\'an's theorem.  Then
+\[
+  \Delta
+  \le
+  \left(
+    \frac{3\,\omega_{\mathrm{Tur}}(\gamma)}
+    {\left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)^{1/2}}
+  \right)^4
+  \quad\Longrightarrow\quad
+  \delta_\square(W,T_3)<\gamma .
+\]
+\end{theorem}
+
+\begin{proof}
+At $r=3$ the local errors of \cref{thm:approximate-moments} are
+$\ell_\eta=2(1-d(x)-d(y)+c)-c$ and $\ell_\tau=d(x)+d(y)-4c$, so that
+$R_\eta=R_\eta(W)$ and $R_\tau=R_\tau^{+}(W)$ in the notation of
+\cref{prop:k4free-p4-certificate-stability}; moreover $r(2r-3)=9$ and
+$\alpha_3^\pm=\frac23$, so $9(\alpha_3^+-p)(p-\alpha_3^-)=-(3p-2)^2$.  The first display
+of \cref{thm:approximate-moments} therefore reads
+\[
+  \Bigl|\,9\bigl(D-p^2\bigr)+(3p-2)^2\,\Bigr|
+  \le
+  2\sqrt{R_\eta(W)}+\frac12\sqrt{R_\tau^{+}(W)} .
+\]
+Both $9(D-p^2)$ and $(3p-2)^2$ are non-negative, so each is at most the right-hand side,
+which by \cref{prop:k4free-p4-certificate-stability} is at most
+\[
+  2\left(\frac98\Delta\right)^{1/2}
+  +\frac12\left(\frac9{35}\Delta\right)^{1/2}
+  =
+  \left(\frac{3}{\sqrt2}+\frac{3}{2\sqrt{35}}\right)\sqrt{\Delta}.
+\]
+This gives the first assertion and, after dividing by $9$, the degree-concentration
+estimate; the displayed edge-density estimate follows by taking square roots and
+dividing by $3$.
+
+The final implication is just Tur\'an stability applied after this edge-density estimate:
+the displayed upper bound on $\Delta$ gives
+$p\ge2/3-\omega_{\mathrm{Tur}}(\gamma)$, hence
+$\delta_\square(W,T_3)<\gamma$.
+\end{proof}
+
+\begin{theorem}[Parametric quantitative stability]\label{thm:parametric-quant-stability}
+Fix $r\ge3$, let $W$ be a $K_{r+1}$-free graphon, and let
+\[
+  \Delta:=12\left(\frac{r-1}{r}\right)^3-\phi_W(\pi_{P_4}^{(r)}),
+\]
+which is non-negative by \cref{thm:relative-slackness}\ref{cs-soundness} applied to the
+parametric certificate of \cref{thm:parametric-p4-equality-slice}.  Let
+$p_0(r),\dots,p_3(r)>0$ be the coefficients of that certificate and let
+$R_\eta,R_\tau$ be as in \cref{thm:approximate-moments}.  Then:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item\label{pq:squares} $R_\eta\le\Delta/p_1(r)$, $R_\tau\le\Delta/p_3(r)$, and
+  $\displaystyle\int W(x,y)\bigl(d(x)-d(y)\bigr)^2\,dx\,dy\le\Delta/p_2(r)$;
+  \item\label{pq:k4} the $K_4$ density of $W$ is nearly extremal:
+  \[
+    \phi_W(K_4)\ge\frac{(r-1)(r-2)(r-3)}{r^3}-\frac{\Delta}{p_0(r)}\,;
+  \]
+  \item\label{pq:quadratic} with
+  $C_r:=\dfrac{r-1}{\sqrt{p_1(r)}}+\dfrac{r-2}{2\sqrt{p_3(r)}}$,
+  \[
+    r(2r-3)\,(p-\alpha_r^-)(p-\alpha_r^+)
+    \le
+    C_r\sqrt\Delta
+    \qquad\text{and}\qquad
+    r(2r-3)\Bigl|\,\bigl(D-p^2\bigr)-(\alpha_r^+-p)(p-\alpha_r^-)\Bigr|
+    \le
+    C_r\sqrt\Delta ;
+  \]
+  in particular $p$ lies within $C_r\sqrt\Delta/\bigl((r-1)(r-3)\bigr)$ of the interval
+  $[\alpha_r^-,\alpha_r^+]$ when $r\ge4$, and
+  $|p-\tfrac23|\le\tfrac13C_3^{1/2}\Delta^{1/4}$ when $r=3$;
+  \item\label{pq:zykov} if $r\ge4$, assume the equality case of Zykov's theorem as in
+  \cref{cor:parametric-p4-turan-recovery}, and let $\omega_{\mathrm{Zyk}}$ be any
+  corresponding stability modulus: for every $\gamma>0$, if a $K_{r+1}$-free graphon $U$
+  has $\phi_U(K_4)\ge\frac{(r-1)(r-2)(r-3)}{r^3}-\omega_{\mathrm{Zyk}}(\gamma)$, then
+  $\delta_\square(U,T_r)<\gamma$.  (Such a modulus exists by compactness and the assumed
+  equality case, exactly as for $\omega_{\mathrm{Tur}}$ in
+  \cref{thm:k4free-p4-quant-stability}.)  Then
+  \[
+    \Delta\le p_0(r)\,\omega_{\mathrm{Zyk}}(\gamma)
+    \quad\Longrightarrow\quad
+    \delta_\square(W,T_r)<\gamma .
+  \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The parametric certificate is an identity whose left-hand side evaluates at $\phi_W$ to
+$\phi_W(\pi_{P_4}^{(r)})$ plus non-negative terms, so
+\cref{thm:relative-slackness}\ref{cs-approx}---with $Y=Q_0^{(r)}$, the three squares as
+the $f_i$, and $n=p_0(r)\kappa_4^{(r)}+L_r$ as in the proof of
+\cref{thm:parametric-p4-equality-slice}---bounds their weighted sum by $\Delta$.  The
+three squares evaluate at $W$ to the three integrals of \ref{pq:squares}, by the same
+translation as in \cref{prop:k4free-p4-certificate-stability}; this gives
+\ref{pq:squares}, and the bound $\phi_W(n)\le\Delta$ gives
+$p_0(r)\,\phi_W(\kappa_4^{(r)})\le\Delta$, which is \ref{pq:k4}.
+
+\Cref{thm:approximate-moments} combined with \ref{pq:squares} gives \ref{pq:quadratic}:
+both displayed inequalities follow from the identity in that proof once
+$(r-1)\sqrt{R_\eta}+\frac{r-2}2\sqrt{R_\tau}\le C_r\sqrt\Delta$.  For $r\ge4$ the
+quadratic $q(p):=r(2r-3)(p-\alpha_r^-)(p-\alpha_r^+)$ has simple roots at distance
+$\alpha_r^+-\alpha_r^-=\frac{(r-1)(r-3)}{r(2r-3)}>0$; if, say, $p>\alpha_r^+$, then
+\[
+  q(p)\ge r(2r-3)\,(p-\alpha_r^+)(\alpha_r^+-\alpha_r^-)
+  =(r-1)(r-3)\,(p-\alpha_r^+),
+\]
+so $q(p)\le C_r\sqrt\Delta$ places $p$ within $C_r\sqrt\Delta/\bigl((r-1)(r-3)\bigr)$
+of the interval, and symmetrically below $\alpha_r^-$.  At $r=3$ the roots coincide and
+the same inequality reads $(3p-2)^2\le C_3\sqrt\Delta$, giving the $\Delta^{1/4}$ rate.
+
+For \ref{pq:zykov}, \ref{pq:k4} gives
+$\phi_W(K_4)\ge\frac{(r-1)(r-2)(r-3)}{r^3}-\omega_{\mathrm{Zyk}}(\gamma)$, and the
+modulus applies.
+\end{proof}
+
+\begin{remark}[On the exponents]
+The certificate controls the squared local errors by $O(\Delta)$, hence the integrated
+local equations by $O(\sqrt\Delta)$, and the moment argument spends one more square root
+exactly when the quadratic in $p$ has a double root.  Thus the direct certificate route
+gives the fourth-root modulus of \cref{thm:k4free-p4-quant-stability} at $r=3$, where
+$\alpha_3^-=\alpha_3^+$; for $r\ge4$ the same inequality confines $p$ to an
+$O_r(\sqrt\Delta)$-neighbourhood of the interval $[\alpha_r^-,\alpha_r^+]$---a
+square-root rate, but only interval localisation.  What pins the extremiser for
+$r\ge4$ is instead the $\kappa_4^{(r)}$ term, whose control in
+\cref{thm:parametric-quant-stability}\ref{pq:k4} is \emph{linear} in $\Delta$; the only
+non-explicit ingredient of \cref{thm:parametric-quant-stability}\ref{pq:zykov} is the
+modulus of the Zykov equality case.  A sharper modulus at $r=3$ would require additional
+information beyond the three square terms.
+\end{remark}
 
 \section{Open problems}
 
@@ -4348,11 +5440,28 @@ Four questions remain.
   \item \textbf{Equality-slice mining beyond classical equality theorems.}
   \Cref{thm:k4free-p4-tripartite,thm:parametric-p4-equality-slice} show that a verified
   density certificate can be read backwards as a system of labelled local equations on its
-  equality slice.  In the $K_{r+1}$-free $P_4$ family, the final identification still
-  leans on classical Tur\'an/Zykov equality cases.  The next genuinely new test is to mine
-  a certificate whose equality slice is not already controlled by a standard extremal
-  equality theorem, and see whether the relative equations themselves determine new
-  structure.
+  equality slice, and \cref{cor:r3-rigidity,thm:slice-rigidity} show that in the
+  $K_{r+1}$-free $P_4$ family these equations are rigid by themselves at $r=3$, and at
+  the regular endpoint for every $r$; the only remaining classical ingredient is the
+  endpoint pinning for $r\ge4$ (\cref{cor:top-endpoint-recovery}).  The next test is to
+  mine a certificate for a problem whose extremal structure is genuinely unknown, and
+  decide whether the kernel equations of \cref{thm:kernel-slackness} are rigid there
+  too.
+
+  \item \textbf{Internalising the endpoint, and relative plantability.}
+  Two questions raised by the completeness theory of
+  \cref{subsec:slice-completeness}.  First, for $r\ge4$, can the edge density of a
+  point of $Y_r$ be pinned to $\frac{r-1}r$ without the Zykov equality case---for
+  instance by playing the pinned $K_4$ density of
+  \cref{thm:parametric-p4-equality-slice} against the moment identities of
+  \cref{thm:parametric-moments}, or against further labelled equations mined at larger
+  types?  By \cref{cor:top-endpoint-recovery} this scalar step is all that separates
+  the parametric family from a fully certificate-internal identification.  Second,
+  \cref{prop:mantel-not-plantable} shows a slice can fail relative root-plantability
+  while the ambient class satisfies the absolute property; characterise the relatively
+  plantable pairs $(Y,\sigma)$, and decide whether the gap
+  $Q_\sigma(Y)\setminus S_\sigma(Y)$ can ever carry an \emph{exact} certificate
+  difference, in the sense of question (2), that survives over the slice seminorm.
 \end{enumerate}
 
 \begin{thebibliography}{9}
@@ -4393,6 +5502,11 @@ T.~K\H{o}v\'ari, V.~T.~S\'os, and P.~Tur\'an.
 J.~A.~Bondy and M.~Simonovits.
 \newblock Cycles of even length in graphs.
 \newblock \emph{Journal of Combinatorial Theory, Series B}, 16(2):97--105, 1974.
+
+\bibitem{LovaszSzegedy2012}
+L.~Lov\'asz and B.~Szegedy.
+\newblock Random graphons and a weak Positivstellensatz for graph algebras.
+\newblock \emph{Journal of Graph Theory}, 70(2):214--225, 2012.
 
 \end{thebibliography}
 
