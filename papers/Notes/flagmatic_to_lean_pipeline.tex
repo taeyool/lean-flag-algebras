@@ -1,0 +1,646 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{stmaryrd}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{fontspec}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+
+\sloppy
+\setlength{\emergencystretch}{3em}
+\setlist{itemsep=2pt, topsep=3pt}
+
+\newcommand{\btt}[1]{\texttt{\detokenize{#1}}}
+
+% ---- Lean code listing style -------------------------------------------
+\lstdefinelanguage{lean}{
+  morekeywords={theorem, lemma, def, by, fun, let, in, do, match, with,
+    if, then, else, return, import, open, namespace, end, structure,
+    inductive, partial, private, noncomputable, syntax, elab, elab_rules,
+    macro, macro_rules, tactic, conv, command, example, have, show, intro,
+    apply, simp, rw, ring, all_goals, repeat, decide, native_decide,
+    fin_cases, norm_num, exact, set_option, where},
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  inputencoding=utf8,
+  extendedchars=true,
+  language=lean,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  backgroundcolor=\color{gray!6},
+  xleftmargin=6pt,
+  xrightmargin=6pt,
+  aboveskip=0.8\baselineskip,
+  belowskip=0.8\baselineskip
+}
+% -----------------------------------------------------------------------
+
+\title{From Flagmatic Certificate to Verified Lean Proof\\
+       \large The JSON-free, pruning-backed pipeline}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+This note is both a description of the certificate-to-Lean framework and a
+reference for what it can currently generate. Given a flagmatic SDP
+certificate (a single JSON file) and a target path, one command produces a
+Lean~4 module that the kernel accepts as a proof of the corresponding density
+inequality, with no \texttt{sorry}. Everything the translation script computes
+--- string-to-identifier matching, matrix assembly, $\mathrm{LDL}^\top$
+factorization, induced densities --- is re-checked inside Lean, so a
+miscomputation surfaces as a build failure rather than a false theorem.
+
+The pipeline is now \emph{JSON-free}: the canonical graph/flag enumeration runs
+in-memory, and the flags, densities, and product expansions are generated at
+Lean elaboration time by pruning-backed macros that never enumerate a forbidden
+flag. Adding a new forbidden graph --- complete or not --- requires no
+hand-written Lean and no data files: the script emits the forbid graph and its
+generation commands directly from the certificate.
+\end{abstract}
+
+\section{Introduction}
+
+The flag algebra method, introduced by Razborov, has become a workhorse of
+extremal combinatorics. A typical proof of a density inequality
+$d(F;G) \le \alpha$ in some forbidden-subgraph class exhibits a positive
+semidefinite matrix $M$ and a vector $v$ of subflags such that the quadratic
+form $v^\top M v$ closes a gap in a linear combination of flag densities.
+Software such as flagmatic produces these certificates automatically: it solves
+an SDP, rounds the floating-point solution to exact rationals, and outputs a
+JSON file containing the matrices, the chosen subflag types, and a manifest of
+the admissible host flags.
+
+What is normally \emph{not} in scope for such tools is a machine-checked proof.
+A flagmatic certificate is a body of numerical data; to turn it into a verified
+theorem one must transcribe every number into a proof assistant, reproduce the
+bookkeeping that links subflag indices to host flags, and check positive
+semidefiniteness, density tables, and product expansions inside the kernel.
+
+This framework closes that gap. Given a certificate JSON and a target file path,
+one command
+\begin{lstlisting}[language={}]
+python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton \
+       <cert>.json <target>.lean --namespace <Name>
+\end{lstlisting}
+produces a complete Lean~4 file that the kernel accepts. The output contains the
+SDP matrices with an exact-rational $\mathrm{LDL}^\top$
+positive-semidefiniteness proof for each, the elaboration-time generation
+commands for the relevant forbid-free flags and their density/product theorems,
+the subflag vector declarations, and the body of the main theorem, all assembled
+so that \texttt{lake build} succeeds with zero \texttt{sorry}.
+
+\paragraph{What changed (2026-06).}
+Earlier versions of this pipeline (and the two notes this one supersedes,
+\texttt{flagmatic\_to\_lean.tex} and \texttt{auto\_generation\_inventory.tex})
+routed everything through JSON files on disk: Python scripts produced
+\texttt{graphs\_n.json}, \texttt{flags\_n\_k\_m.json}, and
+\texttt{density\_*.json}, and Lean loaders read them back. That machinery
+--- the JSON files, the \texttt{load\_*} commands, the per-forbid loader
+branches, the \texttt{check-deps} dependency checker, and the five-file
+``add a forbidden graph'' procedure --- is gone. The enumeration runs in memory,
+the flags and densities are generated inside Lean by pruning-backed macros, and
+the forbidden graph is emitted by the script itself. This note documents the
+current pipeline; where it helps, it flags what the older approach did.
+
+\paragraph{Layout.}
+The Lean side lives under \texttt{LeanFlagAlgebras/}; the translation script is
+\texttt{LeanFlagAlgebras/Flag\-matic/flagmatic\_to\_lean.py}, with the in-memory
+enumerators \texttt{graph\_enumeration.py} and \texttt{flag\_enumeration.py}
+beside it; certificates sit in
+\texttt{LeanFlagAlgebras/Flag\-matic/Certificates/}, and generated proofs in
+\texttt{LeanFlagAlgebras/Flagmatic/}. Names follow the convention
+\texttt{\_n\_k\_m\_i}: $n$ vertices, type $\sigma$ the $k$-vertex graph of index
+$m$ (\texttt{0\_0} is the empty type $\emptyset_t$), enumeration index $i$.
+
+\section{The framework underneath}
+\label{sec:layers}
+
+The system is three layers, each consuming only what the layer below produced.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Layer & Produces & Needs as input \\
+\midrule
+Enumeration (in-memory) & canonical graph/flag indices & nothing \\
+Generation (elab-time)  & forbid-free flags, densities, products & a forbid graph + sizes \\
+Translation (this script) & SDP matrices, vectors, the main theorem & a flagmatic JSON \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{In-memory canonical enumeration}
+\label{sec:enum}
+
+Every flag carries its identifying indices in its name. For an unlabeled flag
+(``empty-typed'') of size $n$ at canonical index $i$:
+\begin{itemize}
+  \item \texttt{Flag\_n\_0\_0\_i} --- the flag as an object in the flag category;
+  \item \texttt{FlagAlgebra\_n\_0\_0\_i} --- the corresponding generator of the
+    flag algebra.
+\end{itemize}
+For a flag of size $n$ on a $k$-vertex type of canonical index $m$: the type
+\texttt{FlagType\_k\_m}, the flag \texttt{Flag\_n\_k\_m\_i}, and the generator
+\texttt{FlagAlgebra\_n\_k\_m\_i}.
+
+The indices $i$ come from a fixed canonical enumeration. It is computed
+\emph{in memory} by \texttt{graph\_enumeration.py} (\btt{canonical_graphs(n)},
+using a lexicographic-minimal canonicalization) and \texttt{flag\_enumeration.py}
+(\btt{canonical_flags(m, k, type_num)}, which additionally records each flag's
+type embedding \texttt{type\_indices}). These reproduce \emph{exactly} the order
+the Lean generators (\texttt{genSym2Graphs} / \texttt{genFlagData}) use, so the
+indices the script computes match the generated \texttt{FlagAlgebra\_\ldots}
+constants. \textbf{No \texttt{*.json} file is read or written.} (The old pipeline
+stored this enumeration in \texttt{graphs\_n.json} / \texttt{flags\_n\_k\_m.json};
+those files, and the loaders that read them, have been removed.)
+
+\subsection{Elaboration-time generation, with pruning}
+\label{sec:gen}
+
+The flags a proof needs are not committed anywhere; the generated \texttt{.lean}
+file creates them itself, at elaboration time, with a block of macros keyed to a
+forbidden graph. Because the forbid is fixed up front, the generators
+\emph{prune}: a flag that contains the forbidden graph is never enumerated at
+all. This is what makes host size $N=5,6$ feasible where a full enumeration
+would not be.
+
+There are two routes, chosen automatically by whether the forbidden graph is
+complete.
+
+\paragraph{Route A --- complete-graph forbid $K_r$.}
+The forbid is the parametric library graph \texttt{completeSym2Graph r}; the
+script emits a one-line local alias and the pruned commands:
+\begin{lstlisting}
+def K3 : Sym2Graph 3 := completeSym2Graph 3
+generate_pruned_forbid_free_empty_typed_flags 2 K3
+generate_pruned_forbid_free_empty_typed_flags 3 K3
+generate_pruned_forbid_free_flags 2 1 0 K3
+generate_pruned_forbid_free_flags 3 1 0 K3
+generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
+generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
+    (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+\end{lstlisting}
+
+\paragraph{Route B --- non-complete forbid (subgraph semantics).}
+Any other graph is forbidden as a \emph{(non-induced) subgraph}. The script
+writes the graph out explicitly from the certificate's forbid edges and uses the
+\texttt{subgraph\_free} generators:
+\begin{lstlisting}
+def ForbidGraph : Sym2Graph 5 where
+  edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}
+  edges_valid := by decide
+generate_subgraph_free_empty_typed_flags 5 ForbidGraph
+generate_subgraph_free_flags 4 3 0 ForbidGraph
+generate_subgraph_free_flag_pair_density_theorems 4 5 3 0 ForbidGraph
+generate_subgraph_free_mul_theorems 4 5 3 0 ForbidGraph
+\end{lstlisting}
+For a complete $K_r$ the two notions coincide (a $K_r$ subgraph is automatically
+induced), so Route A is just the specialization that gets the parametric library
+graph and the tighter capstone.
+
+\paragraph{What the commands produce.}
+For each requested size the \texttt{empty\_typed} / \texttt{flags} commands
+register \texttt{Flag\_*}, \texttt{FlagAlgebra\_*}, and a completeness lemma
+(\texttt{flagSetHfree\_n\_0\_0\_<tag>}) covering \emph{only} the forbid-free
+flags. The \texttt{pair\_density} command registers the exact rational pair
+densities $\mathrm{flagDensity}_2(F_{p_1},F_{p_2};F_h)$, and the \texttt{mul}
+command the product expansions
+$F_i \cdot F_j =_{H\text{-forbid}} \sum_h c_{ijh}\,F_h$ over the forbid-free
+hosts. All densities are computed \emph{inside Lean} and re-verified there; there
+is no Python density step and no JSON.
+
+\paragraph{Which sizes/triples.}
+The script derives the command set from the certificate:
+empty-typed sizes are $\{n_{\mathit{obj}}\} \cup \{N\} \cup \{\text{pattern size
+per block}\}$; typed triples are $(\text{patN},k,m)$ and $(N,k,m)$ per block; and
+one pair-density${+}$mul pair is emitted per block.
+
+\section{The certificate format}
+\label{sec:format}
+
+The input is a JSON file in flagmatic's ``sparse SDP output'' format --- twelve
+fields, exactly. Mantel's theorem as a running example:
+\begin{lstlisting}[language={}]
+{
+  "description":                "2-graph; maximize 2:12 density; forbid 3:121323",
+  "bound":                      "1/2",
+  "order_of_admissible_graphs":  3,
+  "number_of_admissible_graphs": 3,
+  "admissible_graphs":          ["3:", "3:12", "3:1213"],
+  "admissible_graph_densities": [0, "1/3", "2/3"],
+  "number_of_types":             1,
+  "types":                      ["1:"],
+  "numbers_of_flags":           [2],
+  "flags":                      [["2:(1)", "2:12(1)"]],
+  "qdash_matrices":             [[[2]]],
+  "r_matrices":                 [[["1/2"], ["-1/2"]]]
+}
+\end{lstlisting}
+
+\paragraph{Flagmatic strings.}
+Graphs are compact strings \texttt{N:e\textsubscript{1}e\textsubscript{2}\ldots},
+where $N$ is the vertex count and each $e_i$ is a two-digit pair of vertices
+(1-indexed, single digits) forming one edge. Thus \texttt{"3:1213"} is the path
+$1$\,-$2$, $1$\,-$3$. A sigma-flag uses \texttt{m:edges(k)}, where the
+parenthesized integer $k$ is the type size; by convention the first $k$ vertices
+are the type vertices in label order. Hence \texttt{"2:12(1)"} is a $2$-vertex
+flag on a $1$-vertex type.
+
+\paragraph{The matrix data.}
+Each SDP block is stored as a pair $(Q_t', R_t)$, not the assembled matrix.
+\texttt{r\_matrices[t]} is the (number of flags $\times$ rank) matrix $R_t$, row
+by row; \texttt{qdash\_matrices[t]} is the inner PSD matrix $Q_t'$ in
+\emph{upper-triangular row form} (row $i$ holds
+$Q_t'[i,i],\ldots,Q_t'[i,n{-}1]$). The assembled matrix is
+$M_t = R_t \cdot Q_t' \cdot R_t^\top$. For Mantel, $R_1=(1/2,-1/2)^\top$ and
+$Q_1'=[\,2\,]$ give
+$M_1 = \left(\begin{smallmatrix} 1/2 & -1/2 \\ -1/2 & 1/2 \end{smallmatrix}\right)$.
+
+\paragraph{The description field.}
+Fixed grammar:
+\texttt{2-graph; maximize <objective\_str> density; forbid <forbid\_str>}. The
+script parses both graph strings out of it --- the objective for the theorem
+statement and its host-size expansion, the forbid for Route A/B selection and the
+generation commands.
+
+\section{The subcommands}
+\label{sec:cli}
+
+\texttt{flagmatic\_to\_lean.py} exposes four subcommands:
+\begin{lstlisting}[language={}]
+python flagmatic_to_lean.py inspect       <cert>.json
+python flagmatic_to_lean.py gen-skeleton  <cert>.json <target>.lean [opts]
+python flagmatic_to_lean.py gen-matrices  <cert>.json <target>.lean
+python flagmatic_to_lean.py gen-vectors   <cert>.json <target>.lean
+\end{lstlisting}
+
+\paragraph{\texttt{inspect}.} Read-only. Prints, for every flagmatic string in
+the certificate (admissible graphs, types, $\sigma$-flags), the Lean identifier
+it resolves to (\S\ref{sec:mapping}), the forbid graph's route, and the exact
+\texttt{generate\_pruned\_*} / \texttt{generate\_subgraph\_free\_*} block
+\texttt{gen-skeleton} will emit. Because it resolves every string it doubles as a
+validity check: it raises on the first string that fails to resolve. There are no
+JSON files to locate, so it does not report any.
+
+\paragraph{\texttt{gen-skeleton}.} The main entry point. Produces a complete,
+self-contained module: imports and opens, namespace, the \texttt{def} of the
+forbid graph and its generation commands, per-block matrices with PSD proofs,
+$\sigma_t$/$v_t$ vectors, the branch-B expansion lemma when needed, and the main
+theorem. Options: \texttt{--namespace} (default: target file stem),
+\texttt{--theorem-name} (default: derived from the certificate file name, e.g.\
+\texttt{mantel\_cert.json} $\to$ \texttt{mantel\_flagAlgebra}), and
+\texttt{--force} to overwrite. For a cert shape the script does not yet handle
+(e.g.\ a block whose flag count has no \texttt{Fin.sum\_univ\_*}), it falls back
+to a \texttt{sorry}-bodied stub.
+
+\paragraph{\texttt{gen-matrices}, \texttt{gen-vectors}.} Append-only helpers that
+emit just the matrix cluster, or just the $\sigma_t$/$v_t$ definitions --- useful
+when extending an existing file. Both follow the same identifier conventions as
+\texttt{gen-skeleton}.
+
+The standard workflow is
+\begin{lstlisting}[language={}]
+inspect  ->  gen-skeleton  ->  lake build LeanFlagAlgebras.Flagmatic.<Name>
+\end{lstlisting}
+where \texttt{inspect} catches identifier problems before any Lean compilation.
+(The old \texttt{check-deps} step, which checked that the required JSON files and
+\texttt{FlagDef.lean} loads were present, no longer exists --- there are no such
+dependencies.)
+
+\section{Resolving flagmatic strings to Lean identifiers}
+\label{sec:mapping}
+
+The certificate refers to graphs by flagmatic strings; the Lean side refers to
+them by canonical index. Matching them is the script's first job.
+
+\paragraph{Parsing.}
+\btt{parse_flagmatic} turns each string into a triple $(n, E, \mathit{labels})$,
+with $E$ a frozen set of $0$-indexed edges and $\mathit{labels}$ either
+\texttt{None} (unlabeled graph or type) or the tuple of type-vertex positions
+(sigma-flag). It rejects odd-length edge fields, self-loops, duplicate edges, and
+out-of-range vertices.
+
+\paragraph{Unlabeled lookup.}
+For an unlabeled string $(n,E)$ the script takes the in-memory
+\btt{canonical_graphs(n)} and finds the index $i$ whose canonical graph is
+isomorphic to $(n,E)$, brute-forcing over all $n!$ permutations (fine since
+$n \le 6$). That $i$ is the one in \texttt{Flag\_n\_0\_0\_i}.
+
+\paragraph{Sigma-flag lookup.}
+For \texttt{m:edges(k)} the script first finds the underlying unlabeled graph,
+then searches \btt{canonical_flags(m, k, type_num)} for a permutation that
+simultaneously sends the input edges to the stored edges \emph{and} the input
+type positions to the stored \texttt{type\_indices}. The result is $i$ in
+\texttt{FlagAlgebra\_m\_k\_typeIdx\_i}.
+
+\paragraph{Forbid recognition.}
+The forbid string is parsed to $(n, E)$. If $E$ is the complete graph on $n$
+vertices, the script tags it \texttt{K\{n\}} and takes Route A; otherwise it
+takes Route B and writes the edges out verbatim. \textbf{No file is parsed to
+find the forbid graph.} (The old pipeline resolved the forbid by regex-scanning
+\texttt{CommonGraphs.lean} for a \texttt{<Name>\_toFinFlag\_eq} lemma; that step
+is gone, because the script now supplies the forbid graph itself.)
+
+\section{Matrix assembly and PSD proofs}
+\label{sec:matrices}
+
+For each block $t$ the script emits four definitions and one PSD theorem. The
+shape, from the generated \texttt{Mantel.lean} (single block, $2\times 2$):
+\begin{lstlisting}
+def M : Matrix (Fin 2) (Fin 2) ℚ :=
+  !![(1 / 2 : ℚ), (-1 / 2 : ℚ);
+    (-1 / 2 : ℚ), (1 / 2 : ℚ)]
+noncomputable def M_real : Matrix (Fin 2) (Fin 2) ℝ :=
+  ratMatrixToReal M
+def dM : Fin 2 → ℚ := ![(1 / 2 : ℚ), 0]
+def LM : Matrix (Fin 2) (Fin 2) ℚ :=
+  !![(1 : ℚ), 0;
+    (-1 : ℚ), (1 : ℚ)]
+theorem M_real_posSemidef : M_real.PosSemidef := by
+  psd_real_ldlt M LM dM
+\end{lstlisting}
+
+\paragraph{Assembly.}
+The script reconstructs $M_t = R_t \cdot Q_t' \cdot R_t^\top$ exactly over Python
+\texttt{Fraction}s, unfolding $Q_t'$ from upper-triangular row form into a full
+symmetric matrix.
+
+\paragraph{$\mathrm{LDL}^\top$ decomposition.}
+\btt{ldl_decomposition} factors $M_t = L\cdot\mathrm{diag}(d)\cdot L^\top$ with
+$L$ unit lower triangular, by a textbook elimination loop over
+\texttt{Fraction}s. For each column $i$:
+\[
+  d_i = M_t[i,i] - \sum_{k<i} L[i,k]^2 d_k, \qquad
+  L[j,i] = \frac{M_t[j,i] - \sum_{k<i} L[j,k]L[i,k]d_k}{d_i}\ (j>i).
+\]
+The assembled matrix is typically rank-deficient, so when $d_i = 0$ the loop
+requires the numerator to vanish for every $j>i$ (else the matrix is rejected as
+not PSD) and sets $L[j,i]=0$. The factors go into \texttt{dM} ($d$) and
+\texttt{LM} ($L$).
+
+\paragraph{PSD proof --- one line.}
+The entire PSD argument collapses to \texttt{psd\_real\_ldlt M LM dM} (from
+\texttt{Auto\-mation/Matrix/PosSemiDef.lean}), which discharges the diagonal
+nonnegativity and the equality $M = LM\cdot\mathrm{diag}(dM)\cdot LM^\top$
+internally, then lifts through \texttt{ratMatrixToReal} to give
+\texttt{M\_real.PosSemidef}. (The older template spelled out a six-lemma cluster
+--- \texttt{dM\_nonneg}, \texttt{M\_eq\_LDL}, a rational \texttt{M\_posSemidef},
+and the real-lift copies; nothing downstream consumed the intermediates, so they
+were removed.) A miscomputed $L$ or $d$ surfaces as a failure of this one tactic,
+never as a silently accepted bad PSD claim.
+
+\section{The main theorem: branches A and B}
+\label{sec:body}
+
+The theorem states $\mathit{obj} \le[\,\mathit{forbid}\,]\ \alpha\cdot 1$, where
+\texttt{forbid} is \texttt{completeGraph (Fin r)} (Route A) or
+\texttt{ForbidGraph.toLabeledGraph.graph} (Route B), and $\alpha$ is the bound.
+The proof body follows one of two templates, selected by comparing the
+objective's vertex count $n_{\mathit{obj}}$ to the host size $N$. Both work
+entirely in the ordinary \texttt{forbidLEWith}/\texttt{forbidEqWith} framework.
+
+\subsection{Branch A: $n_{\mathit{obj}} = N$}
+
+When the objective is already at host size the body is a fixed sequence
+parametrized by $N$, the block count $T$, and the per-block dimensions. From the
+generated \texttt{K3forbidC6.lean} ($N=6$, $T=2$, dims $15,10$):
+\begin{lstlisting}
+theorem K3forbidC6_flagAlgebra
+    : FlagAlgebra_6_0_0_53 ≤[completeGraph (Fin 3)] (92129 / 5242880 : ℝ) • (1 : FlagAlgebra ∅ₜ)
+  := by
+  have quadraticForm_trans : FlagAlgebra_6_0_0_53 ≤[completeGraph (Fin 3)]
+            FlagAlgebra_6_0_0_53 + ⟦flagQuadraticForm M₁_real v₁⟧₀ + ⟦flagQuadraticForm M₂_real v₂⟧₀
+    := by
+    apply forbidLEWith_add_QuadraticForm M₂_real M₂_real_posSemidef v₂
+    apply forbidLEWith_add_QuadraticForm M₁_real M₁_real_posSemidef v₁
+    exact forbidLEWith_refl _ FlagAlgebra_6_0_0_53
+  apply forbidLEWith_trans quadraticForm_trans
+  apply forbidLEWith_trans_forbidEqWith_right ?_  (forbidEqWith_smul (forbidEqWith_symm
+    (one_forbidEq_forbidExpand_one_ofMem (⟨_, Sym2EmptyTypedFlag.toFlag ⟦K3⟧⟩ : FinFlag ∅ₜ)
+      (completeSym2Graph_finFlag_mem_forbiddenFlags 3) 6)))
+  simp [flagQuadraticForm, v₁, M₁_real, ratMatrixToReal, M₁, Fin.sum_univ_fifteen, add_assoc]
+  simp [v₂, M₂_real, ratMatrixToReal, M₂, Fin.sum_univ_ten, add_assoc]
+  reduce_downward_flagmul
+  expand_one_hfree_at 6 K3
+  simp [smul_smul, downward_add, downward_smul]
+  flagsum_ac_sort_rhs_pipeline
+  apply forbidLEWith_of_le
+  flag_nonneg
+\end{lstlisting}
+Each line is one step of the method: the \texttt{have}-block adds each block's
+quadratic form to the left under the forbid relation (the
+\texttt{forbidLEWith\_add\_QuadraticForm} calls are stacked in \emph{reverse}, so
+the outermost \texttt{+} peels first); the
+\texttt{forbidLEWith\_trans\_forbidEqWith\_right} step replaces the unit $1$ by
+its size-$N$ forbid-free expansion; the per-block \texttt{simp}s unfold the
+quadratic forms into explicit sums of $\sigma$-flag products;
+\texttt{reduce\_downward\_flagmul} substitutes the generated product expansions;
+\texttt{expand\_one\_hfree\_at} finishes the right-hand-side rewrite; and
+\texttt{flagsum\_ac\_sort\_rhs\_pipeline}, \texttt{forbidLEWith\_of\_le},
+\texttt{flag\_nonneg} close the resulting nonnegativity goal.
+
+\paragraph{Warning-free \texttt{simp}s.}
+\texttt{flagQuadraticForm} appears only in the first \texttt{simp}; the
+\texttt{Fin.sum\_univ\_<n\_t>} and \texttt{add\_assoc} lemmas appear only the
+first time a given block dimension is seen. Repeating them on a later block of
+the same size would make simp's linter flag them unused.
+
+\subsection{Branch B: $n_{\mathit{obj}} < N$}
+
+When the objective lives below host size (Mantel, $2<3$; K4turan, $2<4$; the
+$C_5$ scenarios, $2<5$), the body needs one extra step: lift the objective to
+host size, dropping forbidden contributions. The script emits a standalone helper
+lemma and inserts a rewrite after the unit-expansion step. From
+\texttt{Mantel.lean}:
+\begin{lstlisting}
+lemma mantel_flagAlgebra_expand_under_forbid
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)]
+        (1 / 3 : ℝ) • FlagAlgebra_3_0_0_1 + (2 / 3 : ℝ) • FlagAlgebra_3_0_0_2
+  := by
+  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
+\end{lstlisting}
+and, inside the main proof, right after the
+\texttt{one\_forbidEq\_forbidExpand\_one} step:
+\begin{lstlisting}
+  rw [forbidLEWith_rw_left_add_right mantel_flagAlgebra_expand_under_forbid]
+\end{lstlisting}
+
+\paragraph{Why it is now one tactic.}
+The pruned generator's \texttt{flagSetHfree} already excludes the forbidden
+hosts, so the stated right-hand side is \emph{just} the admissible (forbid-free)
+expansion, and the whole lemma closes with \texttt{flag\_expand\_hfree}
+(Route~A) or \texttt{flag\_expand\_hfree\_subgraph} (Route~B). There is no manual
+peeling of forbidden terms. (The old branch-B lemma carried, per forbidden host,
+an \texttt{h\_unit\_i}/\texttt{h\_zero\_i} pair identifying the flag with its
+unit-vector representative and proving it forbid-equivalent to zero, then dropped
+those terms one by one --- all of that is subsumed by the generator's pruning.)
+
+\paragraph{Density evaluation table.}
+\texttt{flag\_expand\_hfree} needs each
+$\mathrm{flagDensity}_1\,\texttt{Flag\_obj}\,\texttt{Flag\_host\_i}$ to reduce to
+a concrete rational. The script emits these as \texttt{@[simp]} lemmas above the
+helper, each closed by
+\begin{lstlisting}
+  dsimp [Flag_2_0_0_1, Flag_3_0_0_1]
+  rw [flagDensity₁_eq_sym2EmptyTypeFlagDensity₁]
+  native_decide
+\end{lstlisting}
+The coefficients in the lemma statement and the table values come from the same
+in-memory induced-density computation, so they agree by construction.
+\emph{Forbid-containing hosts are skipped entirely}: the pruned commands never
+generate their \texttt{Flag\_N\_0\_0\_i}, so even a ``$=0$'' lemma naming one
+would reference an undefined constant.
+
+\paragraph{Multiple blocks.}
+\texttt{forbidLEWith\_rw\_left\_add\_right} matches $\mathit{obj} + \texttt{?}$
+only at the top-level \texttt{+}. With $T\ge 2$ blocks the left side arrives
+left-associated, so the script prepends \texttt{simp only [add\_assoc]} to
+right-associate it first; for a single block that would be a no-op and is
+omitted.
+
+\paragraph{Subgraph route.}
+In Route B the same shape uses the subgraph variants throughout:
+\texttt{one\_forbidEq\_forbidExpand\_one\_subgraph},
+\texttt{expand\_one\_hfree\_at\_subgraph}, and the forbid expression
+\texttt{ForbidGraph.toLabeledGraph.graph}. The negation-handling lemmas
+\texttt{downward\_neg} and \texttt{downward\_zero} are added to the closing
+\texttt{simp} (the subgraph reduce can leave negated summands).
+
+\section{Imports and options}
+
+The generated file's imports are a fixed base set (the flag / forbid-free /
+density / mul generators, the Automation layer with the matrix-PSD utilities, and
+\texttt{Forbid.CommonGraphs}, where \texttt{completeSym2Graph} lives). Branch~B
+additionally pulls in \texttt{Automation.FlagExpand} (the
+\texttt{flag\_expand\_hfree} tactic) and \texttt{FlagAlgebra.Compute.FlagDensity}
+(the reflection lemma for the density table). A block with more than eight
+$\sigma$-flags pulls in \texttt{Automation.FinSumUniv} for the
+\texttt{Fin.sum\_univ\_\{nine..sixteen\}} continuation lemmas mathlib does not
+ship. The file sets \texttt{maxHeartbeats 0} and a large \texttt{maxRecDepth}
+(the AC-sort re-association on a long right-hand sum can otherwise exceed the
+default).
+
+\section{Trust model}
+\label{sec:trust}
+
+The script computes a lot: it isomorphism-matches flagmatic strings to canonical
+indices, assembles $R_t\cdot Q_t'\cdot R_t^\top$ in exact rationals, factors it
+as $L\cdot\mathrm{diag}(d)\cdot L^\top$, exhaustively counts induced subgraphs for
+the branch-B table, and chooses which identifiers and generation commands to
+emit. \textbf{None of this enters the trusted base.} Every emitted lemma is closed
+by one of:
+\begin{itemize}
+  \item \texttt{decide} / \texttt{decide +kernel} --- re-evaluated in the kernel;
+  \item \texttt{native\_decide} --- compiled and re-evaluated (kernel-checked for
+    soundness);
+  \item a verified tactic (\texttt{psd\_real\_ldlt},
+    \texttt{reduce\_downward\_flagmul}, \texttt{flag\_expand\_hfree}, \ldots),
+    each using only the names registered by the generation commands.
+\end{itemize}
+A miscomputation --- a wrong LDL pair, a wrong density, a mis-resolved identifier
+--- surfaces as a compile error, never as a silently accepted false claim. This
+is the same trust model as the generation macros themselves; the script adds
+nothing to it.
+
+\section{What is available now}
+\label{sec:scenarios}
+
+Eight certificates have been carried through the pipeline and produce files the
+kernel accepts with no \texttt{sorry}.
+
+\begin{center}
+\begin{tabular}{lccccccc}
+\toprule
+Certificate & Forbid & Route & $N$ & $n_{\mathit{obj}}$ & Branch & $T$ & Bound \\
+\midrule
+Mantel        & $K_3$ & A & 3 & 2 & B & 1 & $1/2$    \\
+K3forbidP3    & $K_3$ & A & 3 & 3 & A & 1 & $3/4$    \\
+K3forbidC4    & $K_3$ & A & 4 & 4 & A & 2 & $3/8$    \\
+ErdosPentagon & $K_3$ & A & 5 & 5 & A & 3 & $24/625$ \\
+K3forbidC6    & $K_3$ & A & 6 & 6 & A & 2 & $92129/5242880$ \\
+K4turan       & $K_4$ & A & 4 & 2 & B & 2 & $2/3$    \\
+K5turan       & $K_5$ & A & 5 & 2 & B & 4 & $3/4$    \\
+C5turan       & $C_5$ & B & 5 & 2 & B & 4 & $1/2$    \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Between them they exercise both routes, both branches, host sizes
+$N\in\{3,4,5,6\}$, block counts $1$ through $4$, and forbids that are complete
+($K_3,K_4,K_5$) and non-complete ($C_5$, the first end-to-end subgraph forbid).
+\texttt{C5turan} is the standout: it confirms that the non-complete route is not
+merely ``general in principle'' but actually realized --- the two notes this one
+supersedes both listed non-$K_n$ forbids as untested.
+
+\section{Adding a new forbidden graph}
+\label{sec:extension}
+
+This is now essentially free.
+
+\paragraph{Complete graph $K_r$.}
+Nothing to add. \texttt{completeSym2Graph} is parametric in $r$ and already in
+the library, so the script emits \btt{def K{r} := completeSym2Graph r} inline and
+prunes against it. Point \texttt{gen-skeleton} at the certificate and build.
+
+\paragraph{Any other graph $X$.}
+Still nothing to write by hand. The script detects that $X$ is not complete,
+writes \btt{def ForbidGraph : Sym2Graph n where edges := {...}} straight from the
+certificate's forbid edges, and emits the \texttt{generate\_subgraph\_free\_*}
+commands (Route~B). The only genuine input is the certificate itself.
+
+\paragraph{Contrast with the old procedure.}
+Adding a forbid used to touch five files across three steps: a \texttt{def} plus
+a \texttt{<Name>\_toFinFlag\_eq} lemma in \texttt{CommonGraphs.lean}; two Python
+data scripts run to produce forbid-tagged JSON; and a copied \texttt{match}
+branch in each of two Lean loaders (\texttt{DensityLoader.lean},
+\texttt{MulLoader.lean}) that dispatched on the forbid tag. Every one of those
+steps is gone: no \texttt{CommonGraphs} edit, no JSON, no loader branches. The
+per-graph datum that used to remain (the canonical forbid index) is gone too ---
+the forbid graph is generated, not looked up.
+
+\section{What is still not automated}
+
+\paragraph{Expansion normalization.}
+The branch-B helper is closed by \texttt{flag\_expand\_hfree}, and the density
+table by \texttt{native\_decide}. Both have worked on every scenario so far, but
+the tactic ends in a normalization step whose success has not been formally
+characterized; a pathological certificate could in principle require manual
+intervention. None has appeared in the eight verified cases.
+
+\paragraph{Cert-shape coverage.}
+Proof-body generation supports the block shapes exercised above. A block whose
+$\sigma$-flag count exceeds the \texttt{Fin.sum\_univ\_*} table (currently up to
+sixteen) falls back to a \texttt{sorry} stub; extending it means bumping both the
+Python name table and \texttt{Automation/FinSumUniv.lean} in lockstep.
+
+\paragraph{Cost.}
+Pruning makes $N=5,6$ feasible by never enumerating forbidden flags, but the
+\texttt{native\_decide} / kernel-checking steps on large blocks are heavy. If a
+build is slow or runs out of memory, build the single module
+(\texttt{lake build LeanFlagAlgebras.Flagmatic.<Name>}) and retry; the file
+already disables the heartbeat limit.
+
+\end{document}

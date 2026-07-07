@@ -23,7 +23,7 @@
 
 % ---- shell / Lean code-listing style ------------------------------------
 \lstdefinelanguage{shell}{
-  morekeywords={python, lake, build},
+  morekeywords={python, lake, build, pip, install},
   sensitive=true,
   morecomment=[l]{\#},
   morestring=[b]"
@@ -70,22 +70,30 @@
 \section{The tool and what you need}
 
 \code{flagmatic_to_lean.py}\, converts a \textbf{Flagmatic certificate (JSON)} into a
-\textbf{Lean proof file (\code{.lean})}. The certificate holds only \emph{numeric
-data} --- matrices and a list of flags --- and this tool maps those numbers to Lean
+\textbf{Lean proof file (\code{.lean})}. The certificate holds only \emph{numeric data}
+--- matrices and a list of flags --- and this tool maps those numbers to Lean
 identifiers and attaches the positive-semidefiniteness lemmas, density tables, and
-product expansions automatically. So a single final \code{lake build} turns it into a
-\textbf{theorem verified in the kernel} (when all the data is in place, even the proof
-body is filled in automatically).
+product expansions automatically. A single final \code{lake build} then turns it into a
+\textbf{theorem verified in the kernel}; the proof body is filled in automatically too.
+
+\medskip\noindent\textbf{No data files to prepare.} Everything the proof needs is
+generated \emph{inside Lean} when the file is built: the forbid-free flags, their
+densities, and the product expansions are all emitted by \code{generate_*} commands the
+tool writes into the \code{.lean}. There are \textbf{no \code{*.json} data files on disk},
+no \code{FlagDef.lean} to edit, and no forbid graph to define by hand --- the tool writes
+the forbidden graph out itself.
 
 \medskip\noindent You need three things to start.
 
 \begin{itemize}
-  \item \textbf{Python 3} --- runs the converter (standard library only, nothing to
-        install). \code{pip install networkx} is needed only when you have to enumerate
-        a graph list of a \emph{new size}.
+  \item \textbf{Python 3 with NetworkX} --- runs the converter. Install NetworkX once with
+        \code{pip install networkx}; the tool uses its graph atlas to enumerate the
+        canonical graphs \emph{in memory} (this is how it resolves each flag to its Lean
+        index without reading any JSON). This enumeration supports up to $n=7$ vertices.
   \item \textbf{A working Lean / \code{lake} setup and this repository} --- where the
-        generated \code{.lean} is actually built and verified. The canonical
-        flag/graph definitions and the forbid-graph library all live in this repo too.
+        generated \code{.lean} is actually built and verified. The generic forbid
+        machinery (\code{completeSym2Graph}, the \code{generate_*} elaboration commands, the
+        proof tactics) all live in this repo.
   \item \textbf{One certificate JSON} --- the input to convert; it encodes \emph{which
         density inequality to prove under which forbid}. Ready-to-use examples are in
         \code{LeanFlagAlgebras/Flagmatic/Certificates/}.
@@ -95,36 +103,34 @@ body is filled in automatically).
 
 \section{The workflow, step by step}
 
-You normally use \code{flagmatic_to_lean.py}'s subcommands in the order \code{inspect}
-$\to$ \code{check-deps} $\to$ \code{gen-skeleton}, then verify with \code{lake build}.
-Since \code{check-deps} prints, for each missing item, the exact command to run on its
-\code{fix:} line, the rule is simply:
+The whole workflow is two converter commands followed by a build:
 
 \begin{quote}
-\textbf{Run the \code{fix:} actions top to bottom and re-run \code{check-deps} until
-everything is \code{[OK]} $\;\to\;$ \code{gen-skeleton} $\;\to\;$ \code{lake build}.}
+\textbf{\code{inspect} (sanity-check the certificate) $\;\to\;$ \code{gen-skeleton} (write
+the \code{.lean}) $\;\to\;$ \code{lake build} (verify in the kernel).}
 \end{quote}
 
-\noindent The steps below use Mantel (forbid $K_3$, edge density $\le 1/2$) as the
-worked example.
+\noindent The steps below use Mantel (forbid $K_3$, edge density $\le 1/2$) as the worked
+example.
 
-\subsection*{Step 1 --- \texttt{inspect}: check parsing and the forbid status}
+\subsection*{Step 1 --- \texttt{inspect}: check parsing and the forbid}
 
 \begin{lstlisting}[language=shell]
 python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py inspect LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
 \end{lstlisting}
 
-\noindent If every \code{->} resolves without error, you're fine. The
-\code{forbid graph:} line shows the forbidden graph's canonical index and whether it is
-defined in Lean (the \code{idx} you need to define a complete graph by hand is right
-here). The \code{required JSON files} block at the bottom lists every file this
-certificate needs.
+\noindent If every \code{->} resolves without error, the certificate is good to go.
+\code{inspect} resolves \emph{every} flagmatic string (raising on the first that fails), so
+it doubles as a validity check. The \code{forbid graph:} line names the forbidden graph and
+how it will be stated in Lean, and the final block prints the exact \code{generate_*}
+commands \code{gen-skeleton} will emit --- there are no JSON files to locate.
 
 \begin{lstlisting}[style=output]
 === mantel_cert.json ===
 description: 2-graph; maximize 2:12 density; forbid 3:121323
 bound: 1/2
-forbid graph: 3:121323  ->  Flag_3_0_0_3   [defined in CommonGraphs.lean (tag K3)]
+forbid graph: 3:121323 = K_3  ->  def K3 : Sym2Graph 3 := completeSym2Graph 3   (Route A: complete)
+              bound stated as  ≤[completeGraph (Fin 3)]  (ordinary forbid)
 
 admissible graphs (host-size):
                   '3:'  ->  FlagAlgebra_3_0_0_0     density=0
@@ -139,147 +145,57 @@ sigma-flags per type:
                  '2:(1)'  ->  FlagAlgebra_2_1_0_0
                '2:12(1)'  ->  FlagAlgebra_2_1_0_1
 
-required JSON files:
-  graphs: ['graphs_3.json', 'graphs_1.json']
-  flags: ['flags_2_1_0.json']
-  forbid_indices: ['graphs_3_K3_free_indices.json']
-  density_loaders: ['density_3_1_0_from_2_1_0_forbid_K3.json']
+generation commands (what gen-skeleton emits; no JSON on disk):
+  def K3 : Sym2Graph 3 := completeSym2Graph 3
+  generate_pruned_forbid_free_empty_typed_flags 2 K3
+  generate_pruned_forbid_free_empty_typed_flags 3 K3
+  generate_pruned_forbid_free_flags 2 1 0 K3
+  generate_pruned_forbid_free_flags 3 1 0 K3
+  generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
+  generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3 (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 \end{lstlisting}
 
-\noindent\textbf{If you get stuck:} \code{no graph in graphs_N.json isomorphic ...} or
-\code{FileNotFoundError} means the canonical graph/flag list for that size is missing.
-Build the file for the size named in the error as shown below, then re-run
-\code{inspect} --- \textbf{the graphs (\code{graphs_<n>}) first, then the flags
-(\code{flags_<n>_<k>_<t>}) on top of them}.
+\noindent\textbf{If you get stuck:} a \code{ValueError: not a flagmatic string} or a
+\code{LookupError: no graph in graphs_N isomorphic ...} points at a malformed certificate
+(a bad edge string, or a vertex count above the supported $n=7$). Fix the certificate and
+re-run. Unlike the old pipeline, there is nothing to \emph{build first}: the flags are
+generated at \code{lake build} time, so there is no missing-data state to repair here.
 
-\begin{lstlisting}[language=shell]
-# 1) graphs_<n>.json : open generate_graphs.py, in its __main__ last line change
-#    generate_graphs_json(0) -> generate_graphs_json(<n>), then run:
-python LeanFlagAlgebras/Flags/generate_graphs.py
-# 2) flags_<n>_<k>_<t>.json : needs graphs_<n> and graphs_<k> to exist first
-python LeanFlagAlgebras/Flags/generate_flags.py <n> <k> <t>
-\end{lstlisting}
-
-\noindent You don't have to work out which sizes you need in advance --- just make
-whatever the error points to; Step 2's \code{check-deps} also pinpoints any missing file.
-
-\subsection*{Step 2 --- \texttt{check-deps}: check everything is in place}
-
-\begin{lstlisting}[language=shell]
-python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py check-deps LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json
-\end{lstlisting}
-
-\noindent If every line is \code{[OK]} (exit code 0), go straight to Step 3. The check
-also covers whether the forbid graph is defined and whether \code{FlagDef.lean} actually
-loads the flags you need:
-
-\begin{lstlisting}[style=output]
-Dependency check for: 2-graph; maximize 2:12 density; forbid 3:121323
-  [OK     ] LeanFlagAlgebras/Flags/Graphs/graphs_3.json
-  [OK     ] LeanFlagAlgebras/Forbid/CommonGraphs.lean
-          purpose: forbid graph '3:121323' is defined in CommonGraphs.lean (tag K3)
-  [OK     ] LeanFlagAlgebras/Flags/Densities/graphs_3_K3_free_indices.json
-  [OK     ] LeanFlagAlgebras/Flags/Graphs/graphs_1.json
-  [OK     ] LeanFlagAlgebras/Flags/Flags/flags_2_1_0.json
-  [OK     ] LeanFlagAlgebras/Flags/Densities/density_3_1_0_from_2_1_0_forbid_K3.json
-  [OK     ] LeanFlagAlgebras/Flags/FlagDef.lean
-          purpose: FlagDef.lean must load empty-typed 3-vertex flags (FlagAlgebra_3_0_0_*)
-  [OK     ] LeanFlagAlgebras/Flags/FlagDef.lean
-          purpose: FlagDef.lean must load typed flags FlagAlgebra_2_1_0_*
-  [OK     ] LeanFlagAlgebras/Flags/FlagDef.lean
-          purpose: FlagDef.lean must load typed flags FlagAlgebra_3_1_0_*
-\end{lstlisting}
-
-\noindent When you see \code{[MISSING]}, that line's \code{fix:} is the exact command
-(or one-line addition) that resolves it. Run the \code{fix:} actions top to bottom and
-re-run \code{check-deps}, repeating until everything is \code{[OK]}. A missing item is
-always one of two kinds --- a \textbf{data JSON file that isn't on disk}, or a
-\textbf{definition/load missing on the Lean side}.
-
-For example, if you use a forbid graph $C_4$ that isn't defined yet, \code{check-deps}
-tells you to define that graph first:
-
-\begin{lstlisting}[style=output]
-  [MISSING] LeanFlagAlgebras/Forbid/CommonGraphs.lean
-          purpose: forbid graph '4:12233441' must be defined in CommonGraphs.lean
-          fix:     define `def C4 ...` + `C4_toFinFlag_eq` by hand (see below)
-  [MISSING] ...Densities/graphs_4_???_free_indices.json
-          purpose: forbid-free index list (define the forbid graph first to pin the tag)
-\end{lstlisting}
-
-\medskip\noindent\textbf{(1) Define the forbid graph (\code{CommonGraphs.lean}).}
-A \emph{complete graph} $K_r$ needs a single line, \code{generate_complete_graph r idx}
-(read \code{idx} off the \code{forbid graph:} line from \code{inspect} in Step 1). Any
-other graph (e.g.\ $C_4$) needs a hand-written \code{def} and \code{_toFinFlag_eq} ---
-copy the verified $C_4$ example in the same file, using the \emph{canonical labeling}:
-
-\begin{lstlisting}[style=output]
-def C4 : SimpleGraph (Fin 4) := {
-  Adj i j := match i, j with
-    | 0,1 | 1,0 | 0,2 | 2,0 | 1,3 | 3,1 | 2,3 | 3,2 => true
-    | _,_ => false }
-
-lemma C4_toFinFlag_eq : C4.toFinFlag = ⟨4, Flag_4_0_0_8⟩ := by
-  simp [toFinFlag, C4]; congr
-  all_goals { ext i j; fin_cases i <;> fin_cases j <;> simp [Sym2Graph_4_0_0_8, mkEdgeFinset] }
-\end{lstlisting}
-
-\noindent The edge set must match the canonical graph exactly (a different labeling
-makes the short proof above fail). Find the edges with \code{#print Sym2Graph_4_0_0_8}
-(or \code{Sym2LabeledGraph_...} for a typed graph) and copy them straight into
-\code{Adj}.
-
-\noindent The name you give the definition (\code{C4}, \code{K6}, ...) is the
-\textbf{tag}. The data-file names and the converter's forbid detection both key off this
-tag, so once the definition is in place and you re-run \code{check-deps}, the data-file
-\code{fix:} lines become concrete commands.
-
-\medskip\noindent\textbf{(2) Data JSON.} The forbid-free index file and the
-density-coefficient file. Just run the \code{gen_free_indices.py} /
-\code{calculate_densities.py} commands from \code{fix:} (the file names, \code{--host},
-and \code{--tag} are all filled in); if a flag file the density step reads is missing, a
-\code{generate_flags.py} command is prepended, so run them in order.
-
-\medskip\noindent\textbf{(3) FlagDef loads (\code{FlagDef.lean}).} Even when the JSON
-exists, the build breaks if those flags aren't \emph{instantiated} on the Lean side.
-\code{fix:} gives the one line to add (\code{generate_empty_typed_flags <n>} or
-\code{generate_flags <k> <typeNum> <n>}). Adding it rebuilds \code{FlagDef} (large
-\code{n} is slow), so add only the sizes you actually need.
-
-\medskip\noindent Once each \code{fix:} is done and \code{check-deps} comes back all
-\code{[OK]}, move on to Step 3.
-
-\subsection*{Step 3 --- \texttt{gen-skeleton}: generate the Lean proof file}
+\subsection*{Step 2 --- \texttt{gen-skeleton}: generate the Lean proof file}
 
 \begin{lstlisting}[language=shell]
 python LeanFlagAlgebras/Flagmatic/flagmatic_to_lean.py gen-skeleton LeanFlagAlgebras/Flagmatic/Certificates/mantel_cert.json LeanFlagAlgebras/Flagmatic/Mantel.lean --namespace Mantel --force
 \end{lstlisting}
 
-\noindent This one line means success. The file contains the imports, \code{load_*}
-commands, the matrices and PSD lemmas, the flag vectors, and the \textbf{automatically
-proved main theorem}.
+\noindent This one line is the whole job. The file it writes contains the imports, the
+\code{def K3} forbid graph and its \code{generate_*} commands, the matrices with their PSD
+lemmas, the flag vectors, and the \textbf{automatically proved main theorem}.
 
 \begin{lstlisting}[style=output]
-wrote 5757 chars to ...\Mantel.lean (namespace Mantel)
+wrote 5078 chars to ...\Mantel.lean (namespace Mantel)
 \end{lstlisting}
 
-\noindent(\code{--force} overwrites an existing file of the same name; omit
-\code{--namespace} to derive it from the target file name.)
+\noindent Options: \code{--force} overwrites an existing file of the same name; omit
+\code{--namespace} to derive it from the target file name; \code{--theorem-name} sets the
+theorem name (default: derived from the certificate file name, e.g.\
+\code{mantel_cert.json} $\to$ \code{mantel_flagAlgebra}).
 
-\noindent If Step 2 passed all \code{[OK]}, the main theorem is filled in too --- no
-\code{sorry} is left. (Only for the rare certificate shapes the converter doesn't yet
-handle --- e.g.\ a block whose number of flags is outside the supported range --- is the
-proof body left as a \code{sorry} stub.)
+\noindent For the supported certificate shapes the main theorem is filled in with no
+\code{sorry}. (Only for a shape the converter does not yet handle --- e.g.\ a block whose
+number of flags exceeds the built-in \code{Fin.sum_univ_*} table --- is the proof body left
+as a \code{sorry} stub, with a comment saying so.)
 
-\subsection*{Step 4 --- \texttt{lake build}: verify in the kernel}
+\subsection*{Step 3 --- \texttt{lake build}: verify in the kernel}
 
 \begin{lstlisting}[language=shell]
 lake build LeanFlagAlgebras.Flagmatic.Mantel
 \end{lstlisting}
 
-\noindent If it finishes without errors, \textbf{the proof is verified in the Lean
-kernel}. The result is \code{theorem mantel_flagAlgebra} inside the \code{Mantel.lean}
-you just generated.
+\noindent If it finishes without errors, \textbf{the proof is verified in the Lean kernel}.
+The result is \code{theorem mantel_flagAlgebra} inside the \code{Mantel.lean} you just
+generated. This build is where the flags are actually enumerated, the densities computed,
+and the matrices' positive-semidefiniteness re-checked --- so it is the step that does the
+real work.
 
 \noindent\textbf{If the build is very slow or runs out of memory:} that is almost always
 the large \code{native_decide} / kernel-checking steps, not a timeout (the generated file
@@ -287,29 +203,79 @@ already sets \code{maxHeartbeats 0}). Build just this one module (as above), clo
 heavy processes, and retry.
 
 \medskip\noindent We used Mantel as the example throughout. \textbf{Any other certificate
-works the same way} --- in the commands above, change only the certificate path and the
-target \code{.lean} file name / namespace, and follow Steps 1--4 unchanged.
+works the same way} --- change only the certificate path and the target \code{.lean} file
+name / namespace, and follow Steps 1--3 unchanged.
+
+\section{Two kinds of forbid: complete and non-complete}
+
+The tool picks its generation route automatically from the forbidden graph.
+
+\paragraph{Complete-graph forbids ($K_3, K_4, K_5, \ldots$).} The common case. The forbid
+is the library graph \code{completeSym2Graph r}, the tool emits \code{def K}$r$ and the
+\code{generate_pruned_*} commands (as in the Mantel output above), and the theorem is stated
+\code{≤[completeGraph (Fin r)]}. Nothing extra is needed for a new clique size --- $K_6$,
+$K_7$, \ldots\ work the same way (subject to the $n \le 7$ enumeration limit).
+
+\paragraph{Non-complete forbids ($C_4, C_5, P_k, \ldots$).} Also supported.
+\code{gen-skeleton} writes the forbidden graph out explicitly from the certificate's edges
+and uses the \emph{subgraph} generators:
+\begin{lstlisting}[style=output]
+def ForbidGraph : Sym2Graph 5 where
+  edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}
+  edges_valid := by decide
+generate_subgraph_free_empty_typed_flags 5 ForbidGraph
+generate_subgraph_free_flags 5 1 0 ForbidGraph
+generate_subgraph_free_flag_pair_density_theorems 3 5 1 0 ForbidGraph
+generate_subgraph_free_mul_theorems 3 5 1 0 ForbidGraph
+\end{lstlisting}
+The theorem is stated \code{≤[ForbidGraph.toLabeledGraph.graph]}. This is fully automatic:
+the \code{C5turan.lean} example in the repository is generated this way and builds with no
+\code{sorry}. \code{inspect} reports the subgraph route directly:
+\begin{lstlisting}[style=output]
+forbid graph: 5:1223344551  ->  def ForbidGraph : Sym2Graph 5 where edges := {s(0, 1), s(0, 4), s(1, 2), s(2, 3), s(3, 4)}   (Route B: subgraph)
+              bound stated as  ≤[ForbidGraph.toLabeledGraph.graph]  (subgraph forbid)
+\end{lstlisting}
 
 \section{Example certificates to try}
 
-You can practice Steps 1--4 with the certificates below, found in
-\code{LeanFlagAlgebras/Flagmatic/Certificates/}. All forbid $K_3/K_4/K_5$ (cases the
-converter supports), so following the steps produces a complete, \code{sorry}-free proof.
+Practice Steps 1--3 with the certificates below, all in
+\code{LeanFlagAlgebras/Flagmatic/Certificates/}. Each produces a complete, \code{sorry}-free
+proof.
 
 \begin{center}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-certificate & forbid & host size $N$ & blocks & bound \\
+certificate & forbid & route & host size $N$ & blocks & bound \\
 \midrule
-\code{mantel\_cert}        & $K_3$ & 3 & 1 & $1/2$ \\
-\code{K3forbidC4\_cert}    & $K_3$ & 4 & 2 & $3/8$ \\
-\code{K3forbidP3\_cert}    & $K_3$ & 3 & 1 & $3/4$ \\
-\code{K4turan\_cert}       & $K_4$ & 4 & 2 & $2/3$ \\
-\code{K5turan\_cert}       & $K_5$ & 5 & 4 & $3/4$ \\
-\code{ErdosPentagon\_cert} & $K_3$ & 5 & 3 & $24/625$ \\
+\code{mantel\_cert}        & $K_3$ & complete   & 3 & 1 & $1/2$ \\
+\code{K3forbidP3\_cert}    & $K_3$ & complete   & 3 & 1 & $3/4$ \\
+\code{K3forbidC4\_cert}    & $K_3$ & complete   & 4 & 2 & $3/8$ \\
+\code{ErdosPentagon\_cert} & $K_3$ & complete   & 5 & 3 & $24/625$ \\
+\code{K3forbidC6\_cert}    & $K_3$ & complete   & 6 & 2 & $92129/5242880$ \\
+\code{K4turan\_cert}       & $K_4$ & complete   & 4 & 2 & $2/3$ \\
+\code{K5turan\_cert}       & $K_5$ & complete   & 5 & 4 & $3/4$ \\
+\code{C5turan\_cert}       & $C_5$ & subgraph   & 5 & 4 & $1/2$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\noindent The first seven forbid a complete graph; \code{C5turan} forbids the $5$-cycle and
+exercises the non-complete (subgraph) route.
+
+\section{Reference: the other subcommands}
+
+\code{gen-skeleton} is the one you normally use. Two append-only helpers exist for editing an
+existing file rather than regenerating it:
+
+\begin{itemize}
+  \item \code{gen-matrices <cert>.json <target>.lean} --- append just the \code{M_t} /
+        \code{dM_t} / \code{LM_t} definitions and the PSD theorem.
+  \item \code{gen-vectors <cert>.json <target>.lean} --- append just the \code{σ_t} and
+        \code{v_t} flag-vector definitions.
+\end{itemize}
+
+\noindent Per-command help is available with
+\code{python flagmatic_to_lean.py <subcommand> --help}.
 
 \end{document}
