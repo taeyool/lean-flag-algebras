@@ -2260,7 +2260,7 @@ reused.
 
 There are at least two ways to carry out a formal proof.  One is to proceed as a
 mathematician usually would: when a finite claim is needed, write a proof of
-that claim directly.  In the flag-algebra setting this would mean proving, one
+that claim directly.  In the flag-algebra setting, this would mean proving, one
 by one, that two particular flags are isomorphic, that a certain density is a
 given rational number, or that a product of basis flags expands into a specified
 linear combination.  This is possible in principle, but it is the wrong scale:
@@ -2281,25 +2281,19 @@ the finite verification case by case.
 
 Flag algebras are especially well suited to this style.  In applications, the
 certificates are often found by computer search or semidefinite programming, and
-checking them already involves many finite computations: flag isomorphism,
+checking them already amounts to checking finite data: flag isomorphism,
 subflag densities, multiplication tables, and rational arithmetic.  A formal
-proof should not trust an external table, but it also should not replay every
-table entry as a long hand proof.  Reflection gives the middle path: verify the
-evaluator once, then use the verified evaluator repeatedly.  Each time Lean runs
-the evaluator, the correctness theorem explains why the computed answer has the
-claimed mathematical meaning.
+proof should neither trust those external tables nor replay each entry as a
+hand proof.  Reflection gives the middle path.
 
-\Cref{sec:abstract} gave the specification layer: definitions close to
-the mathematics, where flags are identified up to isomorphism and quotient
-classes hide arbitrary choices of representatives.  Those definitions are the
-right ones for stating theorems, but many are marked \lean{noncomputable}
-because they are specifications rather than efficient programs.  This section
-develops the executable mirror of that specification layer: concrete graph and
-flag representations, optimized procedures for isomorphism and density
-computations, and adequacy theorems proving that those procedures agree with the
-quotient-based definitions.  The same pattern is used throughout the rest of the
-development: a concrete representation, an evaluator, and a theorem connecting
-the evaluator to the abstract specification.
+\Cref{sec:abstract} gave the specification layer: definitions close to the
+mathematics, where flags are identified up to isomorphism and quotient classes
+hide arbitrary choices of representatives.  Those definitions are the right ones
+for stating theorems, but many are marked \lean{noncomputable} because they are
+specifications rather than efficient programs.  This section develops the
+executable mirror of that layer: concrete graph and flag representations,
+procedures for isomorphism and density computations, and adequacy theorems
+proving that those procedures agree with the quotient-based definitions.
 
 \subsection{Concrete Graph Representations and Finite Search}
 \label{sec:reflection-concrete}
