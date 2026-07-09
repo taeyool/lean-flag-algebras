@@ -64,10 +64,22 @@ import LeanFlagAlgebras.MetaTheory.RelativeSupport
 import LeanFlagAlgebras.MetaTheory.RelativeClosure
 import LeanFlagAlgebras.MetaTheory.RelativeSlackness
 import LeanFlagAlgebras.MetaTheory.KernelSlackness
+import LeanFlagAlgebras.MetaTheory.RelativePlanted
+import LeanFlagAlgebras.MetaTheory.RelativeCertificateGap
+import LeanFlagAlgebras.MetaTheory.RelativePositivstellensatz
+import LeanFlagAlgebras.MetaTheory.CertificateSliceVanishing
+import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
+import LeanFlagAlgebras.MetaTheory.TuranLimit
+import LeanFlagAlgebras.MetaTheory.MantelNotPlantable
+import LeanFlagAlgebras.MetaTheory.SliceRecovery
+import LeanFlagAlgebras.MetaTheory.GraphonBasic
+import LeanFlagAlgebras.MetaTheory.GraphonMoments
+import LeanFlagAlgebras.MetaTheory.GraphonRigidity
+import LeanFlagAlgebras.MetaTheory.GraphonQuantStability
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
-Formalisation of the proved results in §1–10 and §11.2–§11.3 of `MetaTheory/paper.tex`: when
+Formalisation of the proved results in §1–10 and §11.2–§11.8 of `MetaTheory/paper.tex`: when
 forbidden-subgraph ("quotient") reasoning is *complete* for a constrained graph class, when it
 can fail, and the relative (slice) theory that strengthens it by further constraints.
 
@@ -369,4 +381,43 @@ empty type, and the witnesses that expose the gap unlabel to zero.
 * `KernelSlackness` — §11.3 `thm:kernel-slackness` (the `kernel_slackness_*` family): the
   matrix form of complementary slackness consuming a PSD block certificate directly; on the
   equality slice the labelled moment vector falls into `ker Q` (a.s. and on all of `S_σ(Y)`).
+* `RelativePlanted` — §11.4 `def:relative-plantability` + `prop:relative-plantability`: the
+  relative planted set `relQσ` (`Y`-planted views), relative root-plantability, closedness,
+  `relSσ Y σ ⊆ relQσ hc Y σ ⊆ Qσ`, `Q_σ(Q₀) = Q_σ` (`relativelyRootPlantable_Q0_iff`), and the
+  unconditional relative planted criterion (`relative_planted_criterion`).
+* `RelativeCertificateGap` — §11.4 `thm:relative-certificate-gap`
+  (`no_relative_closed_certificate_gap`): the quotient and relative-ensemble certificate cones
+  have the same `‖·‖_Y`-closure over every slice.
+* `RelativePositivstellensatz` — §11.4 `thm:relative-positivstellensatz`
+  (`relative_positivstellensatz(_closure)`): non-negativity over an equality slice equals, up to
+  `ε` and one squared-constraint penalty, non-negativity over the whole class.
+* `CertificateSliceVanishing` — §11.6 `prop:equality-slice-vanishing` (`equality_slice_vanishing`)
+  and the equality-slice construction `eqSlice`.
+* `ParametricP4Slice` — §11.6 `thm:k4free-p4-equality-slice` + `thm:parametric-p4-equality-slice`:
+  the verified `CompleteGraphFreeP4.gap_identity` certificate fed through relative slackness —
+  the labelled slice equations at the non-edge/edge types (`parametricP4_eta_equation`,
+  `parametricP4_tau_symm`, `parametricP4_tau_equation`, and the `k4freeP4_*` `r = 3` forms) and
+  the extremal `K₄` density (`parametricP4_K4_density`; Zykov bound as explicit hypothesis).
+* `TuranLimit` — §11.5, the existence half of `thm:turan-slice` / `thm:relative-mantel`: the
+  Turán-graph flag sequence, its edge-density limit `(r-1)/r`, the balanced `r`-partite limit
+  (`exists_turan_limit`), and nonemptiness of the Turán/Mantel slices.
+* `MantelNotPlantable` — §11.4 `prop:mantel-not-plantable` (`mantel_not_relatively_plantable`):
+  rooting at an isolated vertex added to `K_{n+1,n+1}` gives a Mantel-slice planted view with
+  rooted edge density `0`, so `S_vtype(Y_Mantel) ⊊ Q_vtype(Y_Mantel)` (pinning input
+  `thm:relative-mantel` (i) as explicit hypothesis).
+* `SliceRecovery` — §11.7 `cor:parametric-p4-turan-recovery` (`parametric_recovery`) and the
+  qualitative-stability corollaries (`parametric_qualitative_stability`,
+  `k4free_qualitative_stability`), conditioned on the classical equality-case inputs.
+* `GraphonBasic` — §11.7 preliminaries: graphons on `unitInterval`, the kernels `deg`/`codeg`,
+  densities `p`/`D`/`T`, and the Fubini identities of the moment computations.
+* `GraphonMoments` — §11.7 `thm:parametric-moments` (`moments_T`/`moments_D`/`moments_variance`/
+  `moments_interval`/`moments_regular_iff`) and §11.8 `thm:approximate-moments`
+  (`approximate_moments(_interval/_variance)`) — kernel-level, certificate-free.
+* `GraphonRigidity` — §11.7 `thm:slice-rigidity` (`slice_rigidity`) + `cor:r3-rigidity`
+  (`r3_rigidity`): the two local equations at the regular endpoint force the balanced complete
+  `r`-partite graphon, in measurable-partition form.
+* `GraphonQuantStability` — §11.8 `prop:k4free-p4-certificate-stability` /
+  `thm:k4free-p4-quant-stability` / `thm:parametric-quant-stability` (kernel-level chains:
+  `quadratic_confinement`, `interval_localisation`, the `r = 3` `Δ^{1/4}` edge-density
+  stability, and `stability_via_modulus`).
 -/

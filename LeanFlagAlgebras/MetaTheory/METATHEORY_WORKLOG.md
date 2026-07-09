@@ -7,24 +7,27 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-09 (third session that day: repository hygiene pass). (Stopping point:
-§1–**10** of `paper.tex` formalised PLUS the **§11.2–§11.3 relative theory** — the
-relative-ensemble foundation of the slice method (Lemma 71–Prop 82: `lem:relative-closure`,
-`prop:relative-soundness`, `prop:relative-criterion`, `thm:relative-slackness` + `rem:cs-shape`
-square instances, `lem:relative-cauchy-schwarz`, `cor:sos-first-moments`, `thm:kernel-slackness`,
-`prop:unique-slice-stability`) in four modules
-(`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`) — see
-"§11.2–§11.3 — DONE" below. This third session did a **repository-wide cleanup/refactor** (no
-new results): see "Hygiene pass — DONE" below. Prior sessions: §10 ("§10 — DONE"), §9.3–§9.5
-("§9.3–§9.5 — DONE"), §1–9.2 + `lem:complementation` ("§9–§9.2 — DONE"), §8 ("§8 — DONE").
-`lake build LeanFlagAlgebras.MetaTheory` → **7972 jobs green** (66 modules; "Build completed
+Last updated: 2026-07-10 (fourth session of 2026-07-09/10: **§11.4–§11.8**). (Stopping point:
+§1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory** — the
+§11.2–§11.3 foundation (four modules,
+`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`, "§11.2–§11.3 — DONE"
+below) AND the §11.4–§11.8 slice method + graphon layer (twelve modules,
+`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/`CertificateSliceVanishing`/
+`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery` +
+`GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`, "§11.4–§11.8 — DONE"
+below; partial-coverage caveats in README Deviation 14 + the PARTIAL table rows). Prior sessions:
+hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 + `lem:complementation`,
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8001 jobs green** (78 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
-`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all headline theorems (spanning
-§4–§11.3) `#print axioms` = `[propext, Classical.choice, Quot.sound]`. Next target: **§11.4**
-(completeness of the slice method: `def:relative-plantability`, `prop:relative-plantability`,
-`prop:mantel-not-plantable`, `thm:relative-certificate-gap`, `thm:relative-positivstellensatz`),
-then §11.5–§11.8 (`thm:turan-slice`/`thm:relative-mantel`, the `K₄`-free-`P₄` equality-slice /
-moment / rigidity / stability results).)
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
+`#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
+certificate consumers (`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`,
+`parametric_qualitative_stability`), which additionally print
+`[Lean.ofReduceBool, Lean.trustCompiler]` inherited from the `Automation` layer's `native_decide`
+(README "Axioms assumed", two tiers). Next targets: the §11.5 support identities (Dirac /
+second-moment computations at the Turán limit), the Lovász–Szegedy representation bridge (the big
+unlock for Thm 102 / Cor 105–106), and the `R_τ⁻` kernel functional + Thm 112(iv); §12 is open
+problems — prose, nothing to formalise.)
 
 ---
 
@@ -87,12 +90,34 @@ moment / rigidity / stability results).)
   (`cor:sos-first-moments`), `unique_slice_stability` (`prop:unique-slice-stability`), and the
   matrix form `kernel_slackness_*` (`thm:kernel-slackness`: PSD blocks in, `ker Q` moment
   equations out) — the foundation for the §11.4+ slice results.
-* **Scale:** 66 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline results (§11.4–§11.8, the slice method + the graphon layer):**
+  `relative_planted_criterion` (`prop:relative-plantability`: the relative planted set `relQσ`
+  with the planted criterion), `mantel_not_relatively_plantable` (`prop:mantel-not-plantable`:
+  the Mantel slice breaks relative root-plantability; pinning input `hpin` = Thm 92(i), explicit
+  hypothesis), `no_relative_closed_certificate_gap` (`thm:relative-certificate-gap`),
+  `relative_positivstellensatz(_closure)` (`thm:relative-positivstellensatz`: slice-valid ⟹
+  class-valid up to `ε` with a finite `M·∑g²` penalty, by compactness), `equality_slice_vanishing`
+  (`prop:equality-slice-vanishing`), the `parametricP4_*`/`k4freeP4_*` slice equations
+  (`thm:k4free-p4-equality-slice` unconditional at `r = 3` / `thm:parametric-p4-equality-slice`
+  under `hZykov` — the verified `CompleteGraphFreeP4.gap_identity` certificate consumed through
+  relative slackness; **Tier-2 axioms**), the nonempty Turán/Mantel slices (`exists_turan_limit`,
+  existence halves of Thm 91/92), the recovery/stability corollaries (`parametric_recovery`,
+  `parametric_qualitative_stability`, `k4free_qualitative_stability`; classical equality cases as
+  `hZykEq`/`huniq` hypotheses), and the standalone **graphon layer**: `Graphon.moments_*` +
+  `approximate_moments*` (`thm:parametric-moments`/`thm:approximate-moments`),
+  `Graphon.slice_rigidity`/`r3_rigidity` (`thm:slice-rigidity`/`cor:r3-rigidity`, in
+  measurable-partition form), and the `GraphonQuantStability` chain
+  (`thm:k4free-p4-quant-stability`, `thm:parametric-quant-stability` (iii)). Partial coverage +
+  hypothesis-ised classical inputs: README Deviation 14.
+* **Scale:** 78 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
   [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
   [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
   `SinglePoint`/`C5EdgeInert`], +4 for §11.2–§11.3
-  [`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`]) + 4 committed
+  [`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`], +12 for §11.4–§11.8
+  [`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/
+  `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
+  `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`]) + 4 committed
   reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in
   namespace `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the
   top build manifest `LeanFlagAlgebras.lean`.
@@ -130,7 +155,7 @@ moment / rigidity / stability results).)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 7972 jobs, green (§1–10 + §11.2–§11.3)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8001 jobs, green (§1–10 + §11.2–§11.8)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -141,9 +166,19 @@ moment / rigidity / stability results).)
               coEdgeDegenerate_cone_collapse c5free_edge_no_closed_certificate_gap \
               relSσ_closure_eq relative_soundness relative_criterion relative_slackness_global \
               downward_cauchy_schwarz certificate_first_moment_sq_bound unique_slice_stability \
-              kernel_slackness_global; \
+              kernel_slackness_global \
+              relative_planted_criterion relative_positivstellensatz \
+              mantel_not_relatively_plantable equality_slice_vanishing \
+              parametricP4_tau_equation Graphon.slice_rigidity Graphon.approximate_moments; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
+   # …EXCEPT `parametricP4_tau_equation` (and every other Tier-2 certificate consumer:
+   # the parametricP4_*/k4freeP4_* equations, parametric_recovery,
+   # parametric_qualitative_stability), which legitimately also prints
+   # `Lean.ofReduceBool, Lean.trustCompiler` — inherited from the Automation layer's
+   # native_decide bridges, NOT from MetaTheory (which contains no native_decide).
+   # The Automation layer's declared axioms (Zykov_K4_density_bound, Turan_limit_P4_density)
+   # must appear in NO MetaTheory output — they enter only as hZykov/hne hypotheses.
    ```
    **Stale-`.olean` gotcha:** `lake build <single module>` can serve a stale `.olean`, so a "green"
    single-module build can hide a real error — `touch` the file (or run the full
@@ -474,6 +509,108 @@ modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the a
 per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
 clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
 
+## §11.4–§11.8 — DONE (2026-07-10, fourth session). "The slice method + the graphon layer"
+
+Twelve new modules (all green, `sorry`/`admit`/`native_decide`-free), wired into `MetaTheory.lean`
+after `KernelSlackness`. **The whole applied slice programme §11.4–§11.8 is now formalised** —
+§11.4 in full, §11.5–§11.8 with the partial-coverage caveats recorded in **README Deviation 14**
+and the **PARTIAL** rows of the README results table / §11.4–§11.8 audit map (classical inputs as
+named hypotheses `hpin`/`huniq`/`hZykov`/`hZykEq`/`hmod`/`hne`; kernel `R`-bounds as hypotheses;
+Thm 91/92 existence halves only; Thm 102/Cor 106 kernel engines only; Thm 112(iv) open). Axioms:
+`[propext, Classical.choice, Quot.sound]` throughout, **except** the certificate consumers
+(`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`, `parametric_qualitative_stability`), which
+additionally carry `[Lean.ofReduceBool, Lean.trustCompiler]` — inherited from the `Automation`
+layer's `native_decide` flag-enumeration bridges, no `native_decide` in `MetaTheory` itself; the
+`Automation` layer's declared axioms `Zykov_K4_density_bound`/`Turan_limit_P4_density` are used by
+NO MetaTheory theorem (`#print axioms`-verified). Full story: README "Axioms assumed" (two tiers).
+Build: `lake build LeanFlagAlgebras.MetaTheory` → **8001 jobs green** (78 modules).
+
+* **`RelativePlanted`** — §11.4 `def:relative-plantability` + `prop:relative-plantability`. The
+  relative planted set `relQσ hc Y σ` (= `Q_σ(Y)`: density limits of in-class σ-flags whose
+  unlabelled flags converge into `closure Y`) and `RelativelyRootPlantable`; `relQσ_isClosed`
+  (diagonal), `relQσ_subset_Qσ`, the weak-convergence/portmanteau inclusion
+  `support_subset_relQσ` (⟹ `relSσ_subset_relQσ`), the `Y = Q₀` recovery
+  `relQσ_Q0_eq`/`relativelyRootPlantable_Q0_iff`, and part (ii)
+  `relQσ_nonneg_implies_relEnsemble` + `relative_planted_criterion`.
+* **`RelativeCertificateGap`** — §11.4 `thm:relative-certificate-gap`
+  (`no_relative_closed_certificate_gap`): §10's closed-cone equality re-run over `relSσ` and the
+  `Y`-seminorm (`YWithin`/`MemYClosure`/`relEnsCone`; the Stone–Weierstrass crux handles the
+  `S_σ(Y) = ∅` degenerate branch).
+* **`RelativePositivstellensatz`** — §11.4 `thm:relative-positivstellensatz`
+  (`relative_positivstellensatz(_closure)`): slice-valid ⟹ class-valid up to `ε·1₀` with a
+  finite penalty `M·∑ g_{j_i}²`, by compactness of `Q₀` + finite intersection of the sublevel
+  sets `K_n`; the cone form gives the `‖·‖_{Q₀}`-closure of `C_{Q₀} + span{gⱼ²}`.
+* **`CertificateSliceVanishing`** — §11.6 `prop:equality-slice-vanishing`
+  (`equality_slice_vanishing` + `eqSlice`): the generic mining principle —
+  `relative_slackness_global_sq` with `fᵢ := ℓᵢ²`, `n := 0`.
+* **`ParametricP4Slice`** — §11.6 `thm:k4free-p4-equality-slice` +
+  `thm:parametric-p4-equality-slice` (+ the hom halves of Prop 110 / Thm 112(i)–(ii)). The
+  certificate bridge: the verified `CompleteGraphFreeP4.gap_identity` consumed through relative
+  slackness on `parametricP4Slice r` (`parametricP4_cert`; the `p₀·f₀ + leftover` remainder
+  folded into the slack term `n` — Deviation 14f), yielding
+  `parametricP4_eta_equation`/`_tau_symm`/`_tau_equation`, `parametricP4_K4_density` (`hZykov`),
+  `parametricP4_sq_bounds` (the 9/8, 1/5, 9/35 pattern), `parametricP4_K4_density_approx`
+  (NO Zykov input); at `r = 3` the `κ₄` coefficient vanishes, so the `k4freeP4_*` forms are
+  unconditional (`k4freeP4Slice`, `k4freeP4Slice_eq_parametric`). **Tier-2 axioms.**
+* **`TuranLimit`** — §11.5 existence halves of `thm:turan-slice`/`thm:relative-mantel`: the
+  Turán-graph flag sequence (Mathlib `turanGraph`), edge density `→ (r-1)/r`,
+  `exists_turan_limit`, and the nonempty slices `turanSlice(_nonempty)`/`mantelSlice(_nonempty)`.
+  The singleton claim (Erdős–Simonovits) and the support identities (i)–(iii) are UNFORMALISED.
+* **`MantelNotPlantable`** — §11.4 `prop:mantel-not-plantable`
+  (`mantel_not_relatively_plantable`): the parity-bipartite witness `knnPlusW`
+  (`K_{n+1,n+1}` + isolated root — Deviation 14g; paper: `K_{n,n}+w`, same limit) gives a
+  Mantel-slice planted view with rooted edge density `0`
+  (`exists_mantel_planted_view_edge_zero`), so `relSσ ⊂ relQσ`; the pinning input `hpin` is
+  Thm 92(i), an explicit hypothesis.
+* **`SliceRecovery`** — §11.7 Cor 105 (first half)/Cor 104/Cor 107: `parametric_recovery`
+  (`hZykEq` collapses the slice to `{χ★}`; the "consequently" support identities UNFORMALISED),
+  `parametric_qualitative_stability` (+ `hne`, via `unique_slice_stability`),
+  `k4free_qualitative_stability` (`huniq` = Thm 102's hom avatar). **Tier-2** on the two
+  `parametric_*` results.
+* **`GraphonBasic`** — §11.7 preliminaries: Mathlib has no graphons, so the `Graphon` structure
+  (symmetric measurable `[0,1]`-kernel on `unitInterval`), `deg`/`codeg`,
+  `edgeDensity`/`degSq`/`triDensity`, and the Fubini identities are built from scratch
+  (Deviation 14b — the layer is standalone kernel measure theory).
+* **`GraphonMoments`** — §11.7 `thm:parametric-moments` (`moments_T`/`_D`/`_variance`/
+  `_interval`/`_regular_iff`, the `R_η = R_τ = 0` instance) + §11.8 `thm:approximate-moments`
+  (`approximate_moments(_interval/_variance)`, certificate-free, every graphon); the a.e.
+  hypothesis forms via `Rtau_eq_zero_iff_ae`/`Reta_eq_zero_iff_ae`.
+* **`GraphonRigidity`** — §11.7 `thm:slice-rigidity` (`slice_rigidity`) + `cor:r3-rigidity`
+  (`r3_rigidity`): the ladder `rigid_deg_ae` → `rigid_codeg_ae` → `rigid_sections_boolean` →
+  the measurable partition (`P : I → Fin r`, fibers `1/r`, `W = 0/1` by block a.e. —
+  Deviation 14c), colour classes grown by the Markov-selection trick.
+* **`GraphonQuantStability`** — §11.8 kernel level: `quadratic_confinement`,
+  `moment_deviation_bound`, `interval_localisation(_below)` (both halves of Thm 112(iii)),
+  the `r = 3` chain `r3_edge_sq_bound`/`r3_degree_concentration`/`r3_edge_density_stability`/
+  `r3_certificate_instance`, and `stability_via_modulus` (`ω_Tur` abstracted over the target
+  predicate — Deviation 14d; the `ω_Zyk` route of Thm 112(iv) is NOT formalised, documented in
+  the docstring). `R`-bounds enter as hypotheses.
+
+**Deviations:** all recorded as **README Deviation 14 (a)–(g)** — hypothesis-ised classical
+inputs, the standalone graphon layer + missing flag↔kernel dictionary, measurable-partition
+rigidity, squared/abstracted quantitative forms, Tier-2 axiom inheritance, the folded certificate
+remainder, and the `K_{n+1,n+1}` Mantel witness.
+
+**Adversarial statement audit (keep this step):** a **9-agent** statement-vs-paper audit
+(§11.4–§11.8, quantifiers/hypotheses/inequality directions/definitional faithfulness) found **NO
+fidelity errors in the formalised statements**. It caught one **docstring overclaim** (fixed:
+`stability_via_modulus`'s docstring now honestly scoped to the `ω_Tur` route, not all of
+Thm 112(iv)) and drove **three same-session additions**: `Graphon.interval_localisation_below`
+(the missing `p < α⁻` half of Thm 112(iii)), `parametricP4_sq_bounds`, and
+`parametricP4_K4_density_approx`. Also fixed same-session: an open-namespace bug in
+`SliceRecovery`.
+
+**Workflow (what worked / what broke):** 12 statement scaffolds (with `sorry`) built once →
+proofs delegated to **parallel agents in two rounds** — the first round was killed by rate limits
+mid-flight and was relaunched clean (lesson: relaunch, don't resume half-dead agents) — each agent
+iterating `lake env lean <module>` only (no build lock). One genuine cross-module fix:
+**`GraphonMoments`' section-variable hypotheses had to be explicitly `include`-d**
+(`include hη hτ`/`include hr`) so the exact-moment theorems carry their `R = 0` hypotheses in
+their public signatures for the downstream `GraphonRigidity`/`GraphonQuantStability` consumers.
+Then: aggregator build (8001 jobs) → `#print axioms` on every public declaration (two-tier check,
+incl. the *negative* check that `Zykov_K4_density_bound`/`Turan_limit_P4_density` appear nowhere)
+→ the 9-agent adversarial audit → docs → commit.
+
 ## §11.2–§11.3 — DONE (2026-07-09, second session). "Relative ensembles + complementary slackness"
 
 Four new modules (all green, `sorry`/`admit`/`native_decide`-free, no `maxHeartbeats` raises,
@@ -625,44 +762,55 @@ snapshot (public declaration lists identical) → per-module rebuilds → aggreg
 ## Next work / open follow-ups
 
 **▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE**, plus the
-**§11.2–§11.3 relative theory added 2026-07-09 (second session)** — the 4 new modules
-`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` + `MetaTheory.lean`
-+ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync. All green, `sorry`-free, axiom-clean,
-statement-audited (5-agent adversarial audit vs the paper). The natural next target is **§11.4**.
-In paper order (find sections by `\section{...}`/`\label{...}`, **not** line number — they drift):
+**whole §11.2–§11.8 relative (slice) theory** — most recently the §11.4–§11.8 wave of 2026-07-10
+(fourth session): the 12 new modules
+`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/`CertificateSliceVanishing`/
+`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery` +
+`GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability` + `MetaTheory.lean`
++ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync. All green, `sorry`-free,
+statement-audited (9-agent adversarial audit vs the paper), axiom-clean modulo the sanctioned
+Tier-2 certificate consumers (README "Axioms assumed"). **§12 is open problems — prose, nothing
+to formalise** — so the remaining Lean work is the §11 partial-coverage frontier. Next targets,
+in rough order of value (find results by `\label{...}`, **not** line number — they drift):
 
-* **§11.4 `subsec:slice-completeness`** — `def:relative-plantability` (the relative planted set
-  `Q_σ(Y)` and relative root-plantability), `prop:relative-plantability` (structure of the planted
-  set; part (ii) is the relative criterion vs the QUOTIENT-relative benchmark),
-  `prop:mantel-not-plantable` (the Mantel slice breaks relative root-plantability — needs the
-  triangle-free extremal structure at the slice), `thm:relative-certificate-gap` (no closed
-  certificate gap over a slice — should mirror `CertificateCones` with `relSσ` in place of `Sσ`),
-  and `thm:relative-positivstellensatz` (the ε-penalty completeness theorem). Expect
-  `CertificateCones`-style Stone–Weierstrass work; `relSσ`/`relative_soundness` are the inputs.
-* Then **§11.5–§11.6** (`thm:turan-slice`, `thm:relative-mantel`,
-  `prop:equality-slice-vanishing`, `thm:k4free-p4-equality-slice`,
-  `thm:parametric-p4-equality-slice`) and **§11.7–§11.8** (moment identities, rigidity,
-  tripartite certificate route, recovery, qualitative + quantitative stability). These consume
-  `relative_slackness_*`/`kernel_slackness_*` and concrete certificates; scope a session per
-  subsection.
+* **The §11.5 support identities** (the rest of `thm:turan-slice`/`thm:relative-mantel`, Thm
+  91/92): the singleton claim is Erdős–Simonovits stability (big; possibly keep hypothesis-ised),
+  but the **support identities via the Dirac/second-moment computations at the Turán limit** are
+  self-contained and would also discharge `MantelNotPlantable`'s `hpin` hypothesis (Thm 92(i)).
+  Inputs: `exists_turan_limit`, the extension-measure spec, `relSσ`.
+* **The representation bridge (Lovász–Szegedy)** — the **big unlock**: graphon⟷hom
+  correspondence for unlabelled limits. It would convert `Graphon.r3_rigidity`/`slice_rigidity`
+  into `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as stated,
+  discharge `SliceRecovery`'s `huniq`, and yield Cor 105's "consequently" support identities.
+  Major project — scope it as its own multi-session effort.
+* **The `R_τ⁻` kernel functional + Thm 112(iv)**: define `R_τ⁻ = ∫W(d(x)−d(y))²` at the kernel
+  level, connect it to the certificate's τ⁻ square bounds, and formalise the `ω_Zyk` route of
+  `thm:parametric-quant-stability` (iv) (currently documented as unformalised in
+  `stability_via_modulus`'s docstring).
 
-Reusable scaffolding for the above: the §11.2–§11.3 layer just added (`relSσ`,
-`relative_soundness`/`relative_criterion`, `relSσ_closure_eq`, the slackness families,
+Reusable scaffolding for the above: the §11.2–§11.8 layer just completed (`relSσ`/`relQσ`, the
+slackness families, `eqSlice`/`equality_slice_vanishing`, the `Graphon` kernel calculus,
 `unique_slice_stability`), the generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
-(`FinitePlanting`/`SparseRootRepair`), the §9 obstruction + complement stacks, and
-`CertificateCones` (whose ε-closure and Stone–Weierstrass pattern `thm:relative-certificate-gap`
-mirrors). **Workflow that worked this session (repeat it):** scaffold each statement (with
+(`FinitePlanting`/`SparseRootRepair`), and the §9 obstruction + complement stacks.
+**Workflow that worked this session (repeat it):** scaffold each statement (with
 `sorry`) and build the sorry-oleans once → delegate each module's proofs to its own agent
-iterating on `lake env lean <module>` (no build lock) → statement-drift check vs the scaffold
-snapshot → full aggregator build → `#print axioms` on every public declaration → 5-agent
-adversarial statement-audit workflow vs the paper (cheap, caught a real coverage nit this time)
+iterating on `lake env lean <module>` (no build lock; relaunch clean if a round dies mid-flight —
+rate limits killed round one this session) → statement-drift check vs the scaffold
+snapshot → full aggregator build → `#print axioms` on every public declaration (two-tier check)
+→ adversarial statement-audit workflow vs the paper (9 agents this time; again caught real gaps:
+a docstring overclaim + three missing statement halves, all fixed same-session)
 → docs → commit. In a fresh worktree, clone the warm `.lake` from the main checkout with
 `cp -Rc` (~30 s) instead of rebuilding.
 
-**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.3 — most recently the
-§11.2–§11.3 relative theory (`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/
-`KernelSlackness`, session 2026-07-09 #2); before that the whole of §10
+**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently the
+§11.4–§11.8 slice method + graphon layer (`RelativePlanted`/`RelativeCertificateGap`/
+`RelativePositivstellensatz`/`CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/
+`MantelNotPlantable`/`SliceRecovery`/`GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/
+`GraphonQuantStability`, session 2026-07-10 #4; PARTIAL-coverage caveats in README Deviation 14 —
+the *remaining halves* listed under "▶ TO RESUME" above are fair game, the formalised parts are
+not); before that the §11.2–§11.3 relative theory (`RelativeSupport`/`RelativeClosure`/
+`RelativeSlackness`/`KernelSlackness`, session 2026-07-09 #2); before that the whole of §10
 (`sec:empty-type`, Prop 64–Cor 70; the seven modules `DownwardAverage`/`EmptyTypeCollapse`/
 `CertificateCones`/`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert`, session 2026-07-09);
 before that §9 / §9.1–§9.5 (the obstruction modules
