@@ -3564,20 +3564,34 @@ For every hereditary class $\T_1$ and every non-degenerate type $\sigma$,
   =
   \overline{\C^{\mathrm{ens}}_\sigma}^{\,\|\cdot\|_{Q_0}} .
 \]
-Consequently, allowing labelled terms \(s\in\A^\sigma[\T_1]\) that are non-negative only on
-$S_\sigma$ cannot improve any density bound except possibly at the level of exact finite
-certificates using non-empty types.
 \end{theorem}
+
+Thus allowing labelled terms \(s\in\A^\sigma[\T_1]\) that are non-negative only on
+$S_\sigma$ does not enlarge the $Q_0$-closed cone of empty-type certificate
+contributions.  It may still give a finite exact certificate for a boundary point that
+quotient certificates reach only as a $Q_0$-limit, equivalently only with arbitrarily
+small additive slack; any such exact-certifiability gap must occur at non-empty types.
 
 \begin{proof}
 It suffices to prove
 $\C^{\mathrm{ens}}_\sigma\subseteq
 \overline{\C^{\mathrm{quot}}_\sigma}^{\,\|\cdot\|_{Q_0}}$.
 Let $s\in\A^\sigma[\T_1]$ be non-negative on $S_\sigma$.  As a function on the
-compact set $S_\sigma$, $s$ is continuous and non-negative.  The restrictions of
-$\A^\sigma[\T_1]$ to $S_\sigma$ form a unital real algebra separating points, since
-flag densities separate homomorphisms.  Applying Stone--Weierstrass to the continuous
-function $\sqrt{s}$, and choosing the approximation sufficiently close, for every
+compact set $S_\sigma$, $s$ is continuous and non-negative: each
+$\psi\in S_\sigma\subseteq Q_\sigma$ factors through the quotient
+$\A^\sigma[\T_0]\twoheadrightarrow\A^\sigma[\T_1]$, say
+$\psi=\bar\psi\circ\qmap_\sigma$, so an element
+$a\in\A^\sigma[\T_1]$ defines the continuous function
+\[
+  \widehat a:S_\sigma\to\R,\qquad \widehat a(\psi)=\bar\psi(a).
+\]
+We use the shorthand $\psi(a)$ for this value.  These functions form a unital real
+subalgebra of $C(S_\sigma)$, the algebra of continuous real-valued functions on
+$S_\sigma$.  They separate points:
+if $\psi_1,\psi_2\in S_\sigma$ are distinct labelled limits, then they differ on some
+$\sigma$-flag density, equivalently on some element of $\A^\sigma[\T_1]$.  Applying
+Stone--Weierstrass to the continuous function $\sqrt{s}$, and choosing the approximation
+sufficiently close, for every
 $\delta>0$ there is $h\in\A^\sigma[\T_1]$ such that
 \[
   \sup_{\psi\in S_\sigma}\left|s(\psi)-h(\psi)^2\right|<\delta .
@@ -3587,13 +3601,22 @@ The element $h^2$ is a square, so $\avg{h^2}{\sigma}\in\C^{\mathrm{quot}}_\sigma
 Let $\phi_0\in Q_0$.  If $\phi_0(\brak\sigma)>0$, then
 $\Ext_\sigma(\phi_0)$ is supported on $S_\sigma$, and
 \eqref{eq:extension-expectation} gives
-\[
-  \left|\phi_0\!\left(\avg{s-h^2}{\sigma}\right)\right|
+\begin{align*}
+  \left|\phi_0\!\left(\avg{s}{\sigma}-\avg{h^2}{\sigma}\right)\right| 
   =
+  \left|\phi_0\!\left(\avg{s-h^2}{\sigma}\right)\right|
+  & =
   \phi_0(\brak\sigma)\,
   \left|\E_{\psi\sim\Ext_\sigma(\phi_0)}[\psi(s-h^2)]\right|
+  \\
+  & = 
+  \phi_0(\brak\sigma)\,
+  \left|\E_{\psi\sim\Ext_\sigma(\phi_0)}[s(\psi)-h(\psi)^2]\right|
+  \\
+  & 
+  \le \phi_0(\brak\sigma)\,\delta
   \le \delta .
-\]
+\end{align*}
 If $\phi_0(\brak\sigma)=0$, then every unlabelled graph appearing in
 $\avg{s-h^2}{\sigma}$ contains an embedding of $\sigma$, so its $\phi_0$-density is zero
 by monotonicity; hence the same displayed quantity is $0$.  Therefore
