@@ -7,23 +7,24 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-09 (second session that day). (Stopping point: §1–**10** of `paper.tex`
-formalised PLUS the **§11.2–§11.3 relative theory** — the relative-ensemble foundation of the
-slice method (Lemma 71–Prop 82: `lem:relative-closure`, `prop:relative-soundness`,
-`prop:relative-criterion`, `thm:relative-slackness` + `rem:cs-shape` square instances,
-`lem:relative-cauchy-schwarz`, `cor:sos-first-moments`, `thm:kernel-slackness`,
-`prop:unique-slice-stability`) added this session in four new modules
+Last updated: 2026-07-09 (third session that day: repository hygiene pass). (Stopping point:
+§1–**10** of `paper.tex` formalised PLUS the **§11.2–§11.3 relative theory** — the
+relative-ensemble foundation of the slice method (Lemma 71–Prop 82: `lem:relative-closure`,
+`prop:relative-soundness`, `prop:relative-criterion`, `thm:relative-slackness` + `rem:cs-shape`
+square instances, `lem:relative-cauchy-schwarz`, `cor:sos-first-moments`, `thm:kernel-slackness`,
+`prop:unique-slice-stability`) in four modules
 (`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`) — see
-"§11.2–§11.3 — DONE" below. Prior sessions: §10 ("§10 — DONE"), §9.3–§9.5
+"§11.2–§11.3 — DONE" below. This third session did a **repository-wide cleanup/refactor** (no
+new results): see "Hygiene pass — DONE" below. Prior sessions: §10 ("§10 — DONE"), §9.3–§9.5
 ("§9.3–§9.5 — DONE"), §1–9.2 + `lem:complementation` ("§9–§9.2 — DONE"), §8 ("§8 — DONE").
-`lake build LeanFlagAlgebras.MetaTheory` → **7972 jobs green** (66 modules);
-`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all 33 public §11.2–§11.3
-declarations (and all earlier headline theorems) `#print axioms`
-= `[propext, Classical.choice, Quot.sound]`. Next target: **§11.4** (completeness of the slice
-method: `def:relative-plantability`, `prop:relative-plantability`, `prop:mantel-not-plantable`,
-`thm:relative-certificate-gap`, `thm:relative-positivstellensatz`), then §11.5–§11.8
-(`thm:turan-slice`/`thm:relative-mantel`, the `K₄`-free-`P₄` equality-slice / moment / rigidity /
-stability results).)
+`lake build LeanFlagAlgebras.MetaTheory` → **7972 jobs green** (66 modules; "Build completed
+successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all headline theorems (spanning
+§4–§11.3) `#print axioms` = `[propext, Classical.choice, Quot.sound]`. Next target: **§11.4**
+(completeness of the slice method: `def:relative-plantability`, `prop:relative-plantability`,
+`prop:mantel-not-plantable`, `thm:relative-certificate-gap`, `thm:relative-positivstellensatz`),
+then §11.5–§11.8 (`thm:turan-slice`/`thm:relative-mantel`, the `K₄`-free-`P₄` equality-slice /
+moment / rigidity / stability results).)
 
 ---
 
@@ -417,6 +418,61 @@ each module's proofs to its own background agent iterating on `lake env lean <mo
 per-module oleans only after; full aggregator build + `#print axioms` at the end. The four §9.4
 modules were proved by **four agents in parallel** (each owning one file, using the others' stable
 *types* as black boxes), then the full clean rebuild connected the chain.
+
+## Hygiene pass — DONE (2026-07-09, third session). "Cleanup / refactor / doc refresh"
+
+A repository-wide cleanup of the 66 `MetaTheory/*.lean` modules and the four docs — **no new
+results, no statement changes**, the verified sorry-free axiom-clean state preserved throughout.
+End state: `lake build LeanFlagAlgebras.MetaTheory` → 7972 jobs green; `sorry`/`admit`/
+`native_decide` grep empty; all headline theorems axiom-clean `[propext, Classical.choice,
+Quot.sound]`; compiler warnings cut from ~25 to **6, all intentional** (see below).
+
+**What was cleaned (88 edits across 43 modules, all build-verified):**
+* Removed unused `open` namespaces / narrowed multi-namespace opens (~39 sites) — the bulk.
+* Removed 11 redundant `import` lines (relying on transitive availability, e.g. `LabeledCount`
+  no longer imports `SubflagDensity`, `RelativeSlackness` drops the now-unused
+  `Mathlib.Algebra.QuadraticDiscriminant`).
+* Lint: dropped unused `set … with h` equation bindings, deleted unused `have`s, underscore-prefixed
+  unused private-helper parameters, anonymised unused `obtain`/`rcases` binders, removed redundant
+  `simp only [...]` arguments in `BlowupClosed`, `omit`-guarded an unused section variable.
+* **Tighter base integration:** `KernelSlackness.eval_flagQuadraticForm_nonneg` now proves its body
+  by a pointwise instance of the base library's `flagQuadraticForm_nonneg`
+  (`FlagAlgebra/QuadraticForm.lean`) instead of re-deriving it from `Matrix.PosSemidef`.
+* Removed two genuinely-dead private lemmas (`SparseRootRepair.ratio_of_nat_le`,
+  `DownwardAverage.unlabel_eval_eq_zero_of_degenerate`); added missing docstrings to a few public
+  simp/projection lemmas.
+
+**The one real bug the cleanup introduced and how it was caught (record this — it is the key
+lesson):** the `BlowupSequence` agent removed `import ConstrainedRep` (correct — `BlowupSequence`
+itself does not use it), but `SubstitutionClosed` had been reaching
+`exists_constrained_flagSeq_limit` *transitively* through that import, so it broke. The per-file
+`lake env lean <module>` checks all passed (they read the stable BASELINE oleans, which still had
+everything), and the first full rebuild REPORTED SUCCESS while actually **serving a stale
+`SubstitutionClosed.olean`** — the documented stale-olean gotcha. It only surfaced on a genuinely
+clean rebuild whose "Build completed successfully (N jobs)" line was checked explicitly. Fix: add an
+explicit `import LeanFlagAlgebras.MetaTheory.ConstrainedRep` to `SubstitutionClosed` (the module that
+actually uses the identifier) — the correct outcome, not a revert. **Lesson for next time: after
+import-removal cleanups, ALWAYS `touch` the whole layer and re-run the full `lake build`, and grep
+for the explicit "Build completed successfully" line — never trust the exit code or a downstream
+`#print axioms` alone (both can pass against stale oleans).**
+
+**Remaining 6 warnings are all intentional and were deliberately left:** `BinomialRatio.hr` and
+`C5TwoRootNonEdge.hrs` (paper-faithful statement hypotheses, unused in the proof but part of the
+stated setup — see README Deviation 8d for `hrs`); three unused-section-variable warnings in
+`ProductTV` (the superseded, off-critical-path module — kept untouched, one attempted `omit` fix
+turned into whack-a-mole and was reverted); and one unused bound-variable `v` inside a public
+statement's `∀`-type in `SubstitutionClosed` (alpha-renamable to `_`, but a statement-hypothesis
+binder, so left).
+
+**Workflow that worked (repeat it):** (1) capture the ground-truth compiler warnings by
+`touch`-ing all modules and rebuilding; `shake` (unused-import detector) is available but was
+finicky about olean freshness. (2) A 10-agent read-only analysis workflow surfaced 87 findings
+(unused opens/imports, lint, base-reuse, dead code, docstrings) tagged safe/moderate/risky; I
+kept the safe + high-confidence-moderate ones and SKIPPED risky base-reuse that edits imported
+modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the analysis flagged as
+"needs author confirmation" (likely intentional API). (3) An 8-agent apply workflow made the edits
+per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
+clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
 
 ## §11.2–§11.3 — DONE (2026-07-09, second session). "Relative ensembles + complementary slackness"
 

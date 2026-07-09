@@ -108,7 +108,7 @@ private theorem isomorphismCount_emptyLabeledGraph_vtype :
   refine Fintype.card_eq_one_iff.mpr ?_
   refine ⟨⟨emptyLabeledGraph vtype, ⟨rfl, ⟨LabeledGraphIso.refl⟩⟩⟩, ?_⟩
   rintro ⟨H, hH⟩
-  rcases hH with ⟨hGraph, hIso⟩
+  rcases hH with ⟨hGraph, _⟩
   congr
   rcases H with ⟨Hgraph, Hembed⟩
   simp only at hGraph ⊢

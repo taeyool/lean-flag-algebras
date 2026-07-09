@@ -17,7 +17,7 @@ The only complementation facts used are elementary: the edge-count identity
 `e(G) + e(Gᶜ) = C(|G|,2)` and the observation that the complement of a co-star is a star.
 -/
 
-open MeasureTheory SimpleGraph Filter
+open SimpleGraph Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

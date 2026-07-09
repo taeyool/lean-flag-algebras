@@ -29,9 +29,6 @@ Main results: `quotCone_subset_ensCone`, `ensCone_subset_closure_quotCone` (the 
 by Stone–Weierstrass approximation of `√s`), and `no_closed_certificate_gap`.
 -/
 
-open MeasureTheory
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}

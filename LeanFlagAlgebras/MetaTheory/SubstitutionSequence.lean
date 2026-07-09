@@ -17,12 +17,12 @@ type `σ`, an in-class base graph `Γ` (`hc.Mem Γ`) with `σ ↪g Γ`, and a wi
   planted subset count, which is insensitive to the within-class structure).
 -/
 
-open MeasureTheory Filter Topology
+open Filter Topology
 open SimpleGraph Finset GraphAlgebras
 
 namespace FlagAlgebras.MetaTheory
 
-open FlagAlgebras Forbid
+open FlagAlgebras
 
 attribute [local instance] Classical.propDecidable
 
@@ -80,6 +80,9 @@ theorem blowupFlagSeq_sub_increases {n : ℕ} (hn : 0 < n) (Γ : SimpleGraph (Fi
 
 /-! ## The base limit -/
 
+/-- **The base limit** (mirror of §5's `exists_blowup_limit`).  Extracts a convergent subsequence
+`blowupFlagSeq_sub Γ Wf ∘ ϕ` of the increasing generalised-blow-up flag sequence, together with its
+base limit `φ₀ : PositiveHom ∅ₜ`. -/
 theorem exists_blowup_limit_sub {n : ℕ} (hn : 0 < n) (Γ : SimpleGraph (Fin n))
     (Wf : (M : ℕ) → ∀ _v : Fin n, SimpleGraph (Fin (M + 1))) :
     ∃ (ϕ : ℕ → ℕ) (φ₀ : PositiveHom ∅ₜ),

@@ -21,8 +21,6 @@ on the whole ideal (its kernel is automatically an ideal), so it factors through
 We also record that `Q_σ` is closed (`Qσ_isClosed`).
 -/
 
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
@@ -65,7 +63,7 @@ theorem mem_Qσ_iff (forb : FinFlag σ → Prop) (χ : PositiveHomSpace σ) :
     rw [hval F, qmap_basisVector_forbidden hF, map_zero]
   · intro hforb
     -- the recovered homomorphism, as an algebra map `A^σ[T₀] → ℝ`
-    set f : FlagAlgebra σ →ₐ[ℝ] ℝ := (PositiveHomSpace.toPosHom χ).val with hf
+    set f : FlagAlgebra σ →ₐ[ℝ] ℝ := (PositiveHomSpace.toPosHom χ).val
     have hf_basis : ∀ F : FinFlag σ, f ⟦basisVector F⟧ = χ.val F := fun F =>
       PositiveHomSpace.toPosHom_basisVector χ F
     -- the forbidden ideal lies in the kernel of `f`

@@ -26,8 +26,7 @@ quadratic discriminant (`posSemidef_dotProduct_mulVec_sq_le`,
 `LeanFlagAlgebras/FlagAlgebra/QuadraticForm.lean`.
 -/
 
-open MeasureTheory Filter Matrix
-open scoped Topology
+open MeasureTheory Matrix
 
 namespace FlagAlgebras.MetaTheory
 
@@ -55,11 +54,11 @@ for matrix-certificate terms). -/
 lemma eval_flagQuadraticForm_nonneg {kq : ℕ} {Q : Matrix (Fin kq) (Fin kq) ℝ}
     (hQ : Q.PosSemidef) (v : Fin kq → FlagAlgebra σ) (φ : PositiveHom σ) :
     0 ≤ φ (flagQuadraticForm Q v) := by
-  -- `eval_flagQuadraticForm` + `Matrix.PosSemidef.dotProduct_mulVec_nonneg`
-  -- (`star x = x` over ℝ: `star_trivial`).
-  have h := hQ.dotProduct_mulVec_nonneg (fun a => φ (v a))
-  rw [star_trivial] at h
-  rwa [eval_flagQuadraticForm]
+  -- Pointwise instance of the base cone-nonnegativity lemma
+  -- (`flagQuadraticForm_nonneg`, `FlagAlgebra/QuadraticForm.lean`).
+  have h := flagQuadraticForm_nonneg Q hQ v
+  rw [ge_iff_le, le_def, sub_zero] at h
+  exact h φ
 
 /-! ## Two elementary facts about real PSD matrices -/
 

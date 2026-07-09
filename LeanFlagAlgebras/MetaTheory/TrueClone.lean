@@ -13,9 +13,6 @@ clique, `TrueCloneClosed.toBlowupClosed`), this is now a **corollary of the unif
 `blowupClosed_root_plantable` (paper `cor:closures-imply-blowup`(2)).
 -/
 
-open MeasureTheory
-open SimpleGraph
-
 namespace FlagAlgebras.MetaTheory
 
 open FlagAlgebras

@@ -1,5 +1,6 @@
 import LeanFlagAlgebras.MetaTheory.SubstitutionSequence
 import LeanFlagAlgebras.MetaTheory.SubstitutionEstimate
+import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.HeredClass
 import LeanFlagAlgebras.MetaTheory.CapstoneShared
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
@@ -78,7 +79,6 @@ private theorem planted_cylinder_mass_step_sub {n : ℕ} (hn : 0 < n) (hn₀ : 0
           : Measure (FlagDensitySpace σ))
           (cyl Fs (fun Fi => (flagDensity₁ Fi.2 (⟦baseLabeledGraph θ⟧ : Flag σ (Fin n)) : ℝ)) δ)).toReal := by
   classical
-  have hn0le : n₀ ≤ n := fin_card_le_of_embedding θ
   set N : ℕ := n * (M + 1) with hN
   set m : Fin n → ℕ := fun _ => M + 1 with hm
   set K : SimpleGraph (Fin N) := subBlowupGraphFin Γ Wf M with hK
@@ -272,7 +272,6 @@ private theorem planted_cylinder_mass_sub {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n�
           : Measure (FlagDensitySpace σ))
           (cyl Fs (fun Fi => (flagDensity₁ Fi.2 (⟦baseLabeledGraph θ⟧ : Flag σ (Fin n)) : ℝ)) δ)).toReal := by
   classical
-  have hn0le : n₀ ≤ n := fin_card_le_of_embedding θ
   -- The planted fraction lower bound.
   refine ⟨(1 / (2 * n : ℝ)) ^ n₀, by positivity, ?_⟩
   -- For each coordinate `Fi ∈ Fs`, the planted-estimate ratio eventually drops the gap below `δ`.

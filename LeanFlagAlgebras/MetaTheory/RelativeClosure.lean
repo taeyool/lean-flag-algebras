@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 import Mathlib.MeasureTheory.Measure.Portmanteau
 
 /-! # Closing the constraint set does not change the relative support (paper §11,

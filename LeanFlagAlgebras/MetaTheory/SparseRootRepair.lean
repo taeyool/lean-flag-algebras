@@ -67,7 +67,7 @@ private lemma coupling_real_bound (nUH nUG nNot nBad nExtra CW CU : ℝ)
     (hCWpos : 0 < CW) (hCUpos : 0 < CU) (hCUleCW : CU ≤ CW)
     (hnNot_real : nNot = CW - CU)
     (hExtra_le : nExtra ≤ nNot) (hExtra0 : 0 ≤ nExtra)
-    (hnUG0 : 0 ≤ nUG) (hnBad0 : 0 ≤ nBad)
+    (hnUG0 : 0 ≤ nUG) (_hnBad0 : 0 ≤ nBad)
     (hUHUG : nUH ≤ nUG + nBad) (hUGUH : nUG ≤ nUH + nBad)
     (hpG_le1 : nUG ≤ CU) :
     |(nUH + nExtra)/CW - nUG / CU|
@@ -259,7 +259,7 @@ open Finset in
 /-- **Meets-`Uf`ᶜ bound** (the "sample leaves the pool" event), cross-multiplied: the number of
 `q`-samples not contained in `Uf`, times `|Vall|`, is at most `|Vall∖Uf| · q · C(|Vall|, q)`. -/
 private lemma meets_R_nat {W : Type} [DecidableEq W] (Vall Uf : Finset W) (q : ℕ)
-    (hUf : Uf ⊆ Vall) :
+    (_hUf : Uf ⊆ Vall) :
     ((Vall.powersetCard q).filter (fun S => ¬ S ⊆ Uf)).card * Vall.card
       ≤ (Vall \ Uf).card * q * Vall.card.choose q := by
   classical
@@ -358,17 +358,6 @@ private lemma spans_pair_nat {W : Type} [DecidableEq W] (Vall : Finset W) (D : F
             rw [hcz, hlz]; ring
           · rw [choose_mul_pair_eq m q hm2 hq2]
       _ = D.card * (q * (q - 1)) * m.choose q := by ring
-
-/-- From a cross-multiplied `ℕ` bound `X·m ≤ A·CW` (with `m > 0`) to a real ratio bound. -/
-private lemma ratio_of_nat_le (X m A CW : ℕ) (hm : 0 < m) (h : X * m ≤ A * CW) :
-    (X : ℝ) / (CW : ℝ) ≤ (A : ℝ) / (m : ℝ) := by
-  have hmR : (0:ℝ) < m := by exact_mod_cast hm
-  rcases Nat.eq_zero_or_pos CW with hCW0 | hCWpos
-  · subst hCW0; simp; positivity
-  · have hCWR : (0:ℝ) < CW := by exact_mod_cast hCWpos
-    rw [div_le_div_iff₀ hCWR hmR]
-    have : (X : ℝ) * m ≤ A * CW := by exact_mod_cast h
-    linarith
 
 open LabeledSubgraph in
 /-- The non-root vertex count of a `σ'`-flag is `n₀`. -/
@@ -501,6 +490,9 @@ private lemma flagDensity_eq_pool_count {n₀ : ℕ} {σ' : FlagType (Fin n₀)}
 
 
 open LabeledSubgraph in
+/-- **The planted labelled graph** (`thm:sparse-repair-planting`): the repaired host graph `H` on
+`U ⊕ (Fin n₀ × Fin L)`, labelled by `i ↦ Sum.inr (i, c i)` — one chosen representative `c i` per root
+cluster `Rᵢ`.  Clause (i) of the repair (`hclI`) makes this a valid `σ`-labelling. -/
 noncomputable def plantedLabeled {n L : ℕ} (G : LabeledGraph σ (Fin n))
     (H : SimpleGraph (nonRoot G ⊕ (Fin n₀ × Fin L))) (c : Fin n₀ → Fin L)
     (hclI : ∀ (i j : Fin n₀), i ≠ j → ∀ (a b : Fin L),
@@ -521,14 +513,18 @@ noncomputable def plantedLabeled {n L : ℕ} (G : LabeledGraph σ (Fin n))
       · rw [hclI i j hij (c i) (c j), ← type_embed_Adj_iff G i j]
   }
 
+/-- The planted labelling sends root `i` to its cluster representative `Sum.inr (i, c i)`. -/
 @[simp] lemma plantedLabeled_type_embed {n L : ℕ} (G : LabeledGraph σ (Fin n))
     (H : SimpleGraph (nonRoot G ⊕ (Fin n₀ × Fin L))) (c : Fin n₀ → Fin L) (hclI) (i : Fin n₀) :
     (plantedLabeled G H c hclI).type_embed i = Sum.inr (i, c i) := rfl
 
+/-- The planted labelled graph carries the repaired host graph `H`. -/
 @[simp] lemma plantedLabeled_graph {n L : ℕ} (G : LabeledGraph σ (Fin n))
     (H : SimpleGraph (nonRoot G ⊕ (Fin n₀ × Fin L))) (c : Fin n₀ → Fin L) (hclI) :
     (plantedLabeled G H c hclI).graph = H := rfl
 
+/-- Collapses the planted vertex set `U ⊕ (Fin n₀ × Fin L)` onto `Fin n`: a non-root vertex maps to
+itself and a cluster vertex `(i, a)` to the labelled root `G.type_embed i`. -/
 def iotaG {n L : ℕ} (G : LabeledGraph σ (Fin n)) : (nonRoot G ⊕ (Fin n₀ × Fin L)) → Fin n :=
   Sum.elim Subtype.val (fun p => G.type_embed p.1)
 
@@ -721,7 +717,7 @@ private lemma meets_ratio_le (X CW Vc Vsub qn : ℕ)
 
 private lemma spans_ratio_le (Y CW Vc Dc qn : ℕ)
     (hnat : Y * (Vc * (Vc - 1)) ≤ Dc * (qn * (qn - 1)) * CW)
-    (nv lam m ρ : ℝ)
+    (nv _lam m ρ : ℝ)
     (hVc_ge : nv/2 ≤ (Vc:ℝ)) (hnvpos : 0 < nv)
     (hq2 : 2 ≤ qn) (hqVc : qn ≤ Vc) (hqm : (qn:ℝ) ≤ m)
     (hDc : (Dc:ℝ) ≤ ρ * nv^2)
@@ -786,7 +782,7 @@ private lemma final_lt (a b XC YC ε Cm lam ρ m n₀ : ℝ)
     (hb : |a - b| ≤ 2 * XC + YC)
     (hX : XC ≤ 2 * m * n₀ * lam) (hY : YC ≤ 4 * m^2 * ρ)
     (hCm : Cm = 4 * m^2) (hn₀m : n₀ ≤ m) (hlam0 : 0 ≤ lam)
-    (hm0 : 0 ≤ m) (hρ0 : 0 ≤ ρ)
+    (hm0 : 0 ≤ m) (_hρ0 : 0 ≤ ρ)
     (hconst : Cm * lam + Cm * ρ < ε) : |a - b| < ε := by
   have hmeets : 2 * (2 * m * n₀ * lam) ≤ Cm * lam := by
     rw [hCm]

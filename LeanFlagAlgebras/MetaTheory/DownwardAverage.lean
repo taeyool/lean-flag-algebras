@@ -30,7 +30,6 @@ evaluation facts every §10 result rests on:
 -/
 
 open MeasureTheory
-open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 
@@ -137,19 +136,6 @@ lemma posHom_one_downward_le_one (φ₀ : PositiveHom ∅ₜ) :
     _ = 1 := one_mul 1
 
 /-! ## Degenerate base limits kill all unlabelled averages -/
-
-/-- If the type has unlabelled density `0` at `φ₀`, then the unlabelling of every single
-`σ`-flag also has `φ₀`-density `0`.
-
-Proof route: the unlabelling of any `σ`-flag contains the type graph
-`σ.toEmptyTypeFlag` with positive density (`flagDensity₁_flagType_asEmptyType_pos`), and
-vanishing propagates along positive density (`positiveHom_basisVector_eq_zero`): since
-`φ₀ ⟨σ⟩₀ = 0`, the containing flag `⟦basisVector ⟨F.1, unlabel F.2⟩⟧` is killed too. -/
-lemma unlabel_eval_eq_zero_of_degenerate {φ₀ : PositiveHom ∅ₜ}
-    (hdeg : φ₀ ⟨σ⟩₀ = 0) (F : FinFlag σ) :
-    φ₀ (⟦basisVector ⟨F.1, unlabel F.2⟩⟧ : FlagAlgebra ∅ₜ) = 0 := by
-  apply positiveHom_basisVector_eq_zero φ₀ (flagDensity₁_flagType_asEmptyType_pos F)
-  exact hdeg
 
 /-- **Degenerate types are invisible**: if `φ₀ ⟨σ⟩₀ = 0` then `φ₀ ⟦g⟧₀ = 0` for every
 `g ∈ A^σ`.  (Every unlabelled graph appearing in an unlabelled average contains an

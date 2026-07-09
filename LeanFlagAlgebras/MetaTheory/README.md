@@ -1,9 +1,10 @@
 # MetaTheory — a Lean 4 formalisation of the root-plantability meta-theory of flag algebras
 
 This directory formalises, in Lean 4 (toolchain `leanprover/lean4:v4.27.0`, Mathlib `v4.27.0`),
-the **proved results of Sections 1–9 of [`paper.tex`](./paper.tex)** — the *meta-theory* of flag
-algebras that asks **when forbidden-subgraph ("quotient") reasoning is complete** for a constrained
-graph class.
+the **proved results of Sections 1–10 of [`paper.tex`](./paper.tex), together with the §11.2–§11.3
+relative (slice) theory** — the *meta-theory* of flag algebras that asks **when forbidden-subgraph
+("quotient") reasoning is complete** for a constrained graph class, when it can fail, and how a
+further constraint sharpens it.
 
 The headline result is:
 
@@ -76,6 +77,30 @@ also formalised** (`complementation_invariance`, the four-module `FlagComplement
 homomorphism spaces rather than the paper's explicit flag-algebra complement isomorphism (a
 documented proof-route deviation, Deviation 9b). The only §9 result that remains future work is the
 general pinning **conjecture** `conj:characterisation` — see [Scope & limitations](#scope--limitations).
+
+**§10 shows the obstructions are harmless for actual density bounds:**
+
+> **`no_closed_certificate_gap`** ([`CertificateCones.lean`](./CertificateCones.lean), paper §10
+> `thm:no-closed-certificate-gap`) — for **every** type, the sums-of-squares certificate cone and
+> the "non-negative on `S_σ`" ensemble cone have the *same* `Q₀`-seminorm closure. Together with the
+> empty-type collapse `emptyType_rootPlantable` (`prop:empty-type`: `Ext_∅(φ₀) = δ_{φ₀}`, so
+> `S_∅ = Q₀`, always root-plantable) and the single-point collapse of the §9 counterexamples
+> (`prop:single-point`), this says the quotient/ensemble gap is **invisible to any empty-type density
+> bound** — the whole obstruction half of the paper costs nothing in applications
+> (`DownwardAverage` / `EmptyTypeCollapse` / `CertificateCones` / `VanishingIdeal` / `BooleanPoint` /
+> `SinglePoint` / `C5EdgeInert`).
+
+**§11.2–§11.3 relativises the theory to an arbitrary constraint set** `Y` of admissible limits — the
+foundation of the paper's *slice method*:
+
+> **`relative_slackness_*`** and **`kernel_slackness_*`** ([`RelativeSlackness.lean`](./RelativeSlackness.lean),
+> [`KernelSlackness.lean`](./KernelSlackness.lean), paper `thm:relative-slackness` /
+> `thm:kernel-slackness`) — over the relative support `S_σ(Y)` (`relSσ`, `RelativeSupport`; the
+> unconditional criterion `relative_criterion`, closure-invariance `relSσ_closure_eq`), an SOS/PSD
+> certificate yields soundness, `√Δ`-rate control of every first moment (`cor:sos-first-moments`),
+> and — on the equality slice — the exact vanishing of every certificate term (the labelled moment
+> vector falls into `ker Q`). This is the machinery the applied §11.4+ slice results (Turán/Mantel
+> slices, the `K₄`-free-`P₄` equality slice) are built on; those applied instances are future work.
 
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom`.
@@ -223,6 +248,42 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   the elaboration step budget for proofs run in a large local context. This affects *how long* the
   kernel is willing to check, not *what* it checks: it is not `native_decide` and introduces no
   axiom; the `#print axioms` output above is unaffected.
+* **Warning-clean, modulo six intentional warnings.** A `lake build` of the layer emits exactly six
+  linter warnings, all deliberately retained: `BinomialRatio.hr` and `C5TwoRootNonEdge.hrs` are
+  paper-faithful statement hypotheses that the proof happens not to use (part of the stated setup;
+  `hrs` is Deviation 8d); three unused-section-variable warnings live in the superseded, off-critical-path
+  `ProductTV` (Deviation 1), left untouched; and one is an unused bound-variable name inside a
+  `∀`-type in a public `SubstitutionClosed` statement. None indicates an incomplete or incorrect
+  proof.
+
+### Axioms assumed
+
+Every theorem in this development is proved from **exactly the three axioms of Mathlib's classical
+foundation, and nothing else**:
+
+| Axiom | What it asserts | Why it is trusted |
+|---|---|---|
+| `propext` | *propositional extensionality* — two propositions that imply each other are equal (`(a ↔ b) → a = b`). | Part of Lean 4 core; standard classical logic, consistent with Lean's type theory. |
+| `Classical.choice` | *the axiom of choice* — a nonempty type has a distinguished element. | The basis of classical reasoning (excluded middle, `Classical.em`, decidability of every proposition) throughout Mathlib. |
+| `Quot.sound` | *soundness of quotients* — related elements have equal quotient images. | Part of Lean 4 core; what makes quotient types (used pervasively here — `FlagAlgebra σ` is a quotient) compute correctly. |
+
+These three are the axioms underlying essentially all of Mathlib; a proof that depends only on them
+is as trustworthy as the Lean/Mathlib platform itself. What matters for *this* formalisation is the
+**absence** of anything else, checked mechanically by `#print axioms`:
+
+* **No `sorryAx`.** `sorryAx` is the axiom Lean inserts for a `sorry`/`admit`; its absence from the
+  `#print axioms` output of every headline theorem certifies there is no hidden gap. (`grep` for the
+  tokens `sorry`/`admit` is a syntactic check; the `#print axioms` `sorryAx` check is the semantic
+  one, and also catches a `sorry` reached *transitively* through any dependency.)
+* **No `native_decide`.** `native_decide` would add the `Lean.ofReduceBool` axiom and move part of
+  the proof into compiled native code (outside the kernel); it is used **nowhere**.
+* **No project `axiom` declarations.** This development declares no axioms of its own; the base
+  `LeanFlagAlgebras/FlagAlgebra/` library it builds on is likewise `sorry`-free Lean, not a set of
+  postulated axioms.
+
+So the trusted base is precisely *Lean 4 + Mathlib's three classical axioms* — the reader need not
+trust any bespoke assumption. The [verification recipe below](#how-to-verify-it-yourself) reproduces
+the `#print axioms` output for the headline theorems of every section.
 
 ### How to verify it yourself
 
@@ -654,14 +715,17 @@ lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.
 This meta-theory is a layer **on top of** the repository's existing formalisation of flag algebras
 (`LeanFlagAlgebras/FlagAlgebra/`, `LeanFlagAlgebras/Forbid/`). That base supplied the entire
 *semantic foundation* — Razborov's flag algebra, its homomorphism space, the random-extension
-measure, the density and rooting machinery — so the §1–9 results could be **stated and proved by
+measure, the density and rooting machinery — so the §1–11 results could be **stated and proved by
 reusing deep existing results rather than re-deriving the framework**. This is what reduced the task
 from "formalise flag algebras *and then* the meta-theory" to "formalise the meta-theory, reusing
-the flag algebras", and is the single biggest reason a `sorry`-free §1–9 was feasible. (§6–§7 add a
-second layer of reuse on top — they are built by reusing §5, see the §6–§7 row of the results table
-and Deviation 5 — §8 a third, reusing the §5/§7 capstone toolkit, see item 9 below; and §9 a fourth,
-reusing §5's constrained representation, §8's diagonal/finite-planting pattern, the §4 cylinder/
-Portmanteau tail, and the §9.1 degeneracy template, see item 10.) Concretely:
+the flag algebras", and is the single biggest reason a `sorry`-free development was feasible. (§6–§7
+add a second layer of reuse on top — they are built by reusing §5, see the §6–§7 row of the results
+table and Deviation 5 — §8 a third, reusing the §5/§7 capstone toolkit, see item 9 below; §9 a
+fourth, reusing §5's constrained representation, §8's diagonal/finite-planting pattern, the §4
+cylinder/Portmanteau tail, and the §9.1 degeneracy template, see item 10; §10 rests on the §4
+support machinery, the moment-uniqueness theorem, and Stone–Weierstrass; and §11.2–§11.3 re-runs the
+§4 support-closure argument over an arbitrary constraint set and reuses the base library's
+Cauchy–Schwarz and quadratic-form lemmas — see Deviations 12–13.) Concretely:
 
 1. **The objects to talk about already existed.** `FlagAlgebra σ` (the algebra `A^σ`, with
    `basisVector`, the product, `flagDensity_self`), `PositiveHom σ`, and — crucially — the **compact
@@ -780,7 +844,8 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
 
 ## Scope & limitations
 
-* **Formalised:** the proved results of §1–9 (above) — including §6 (complete blow-ups / true twins,
+* **Formalised:** the proved results of §1–10, plus the §11.2–§11.3 relative theory (above) —
+  including §6 (complete blow-ups / true twins,
   `thm:true-clone-root-plantable`, `cor:cluster-graphs`), §7 (substitution-closed classes,
   `thm:substitution-root-plantable`), obtained by generalising the §5 planted estimate to the
   generalised blow-up `subBlowup` (`SubstitutionBlowup`/`SubstitutionEstimate`/`SubstitutionClosed`),

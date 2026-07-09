@@ -22,7 +22,6 @@ This is the Lean counterpart of paper §2's `lem:support-passes-general` and the
 -/
 
 open MeasureTheory
-open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 

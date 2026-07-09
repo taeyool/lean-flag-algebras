@@ -29,9 +29,11 @@ def blowupLabeledGraph (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (�
   graph := independentBlowup G m
   type_embed := blowupPlantedEmb m θ c
 
+/-- The base labelling evaluates to `θ i`. -/
 @[simp] lemma baseLabeledGraph_type_embed (θ : H ↪g G) (i : Fin k) :
     (baseLabeledGraph θ).type_embed i = θ i := rfl
 
+/-- The planted labelling evaluates to `⟨θ i, c i⟩`. -/
 @[simp] lemma blowupLabeledGraph_type_embed (m : Fin n → ℕ) (θ : H ↪g G) (c : ∀ i, Fin (m (θ i)))
     (i : Fin k) : (blowupLabeledGraph m θ c).type_embed i = ⟨θ i, c i⟩ := rfl
 

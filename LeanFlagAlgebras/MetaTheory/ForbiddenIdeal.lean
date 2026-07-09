@@ -23,7 +23,7 @@ theorem forbiddenIdeal_eq_span (forb : FinFlag σ → Prop)
     (hered : ∀ (F : FinFlag σ) (g : FlagAlgebra σ), forb F →
       (⟦basisVector F⟧ : FlagAlgebra σ) * g ∈ Submodule.span ℝ (forbiddenGens forb)) :
     (forbiddenIdeal forb : Set (FlagAlgebra σ)) = (Submodule.span ℝ (forbiddenGens forb) : Set (FlagAlgebra σ)) := by
-  set S := forbiddenGens forb with hS
+  set S := forbiddenGens forb
   -- Multiplicative closure of the ℝ-span: `g * x ∈ span ℝ S` for every `g` and `x ∈ span ℝ S`.
   have hmul : ∀ (g : FlagAlgebra σ) (x : FlagAlgebra σ),
       x ∈ Submodule.span ℝ S → g * x ∈ Submodule.span ℝ S := by

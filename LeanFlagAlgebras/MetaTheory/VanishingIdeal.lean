@@ -18,9 +18,6 @@ All results are `δ = 0` instances of the master bound
 `abs_downward_eval_le_of_abs_le_on_Sσ`.
 -/
 
-open MeasureTheory
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}

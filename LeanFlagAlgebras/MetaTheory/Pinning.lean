@@ -17,7 +17,6 @@ root-plantable at the chosen type.  The proof is purely topological:
 -/
 
 open MeasureTheory
-open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 

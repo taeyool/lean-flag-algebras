@@ -28,7 +28,6 @@ complementation.
 -/
 
 open Classical
-open scoped Topology
 
 namespace FlagAlgebras
 

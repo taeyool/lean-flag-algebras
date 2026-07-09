@@ -12,8 +12,6 @@ The headline `thm:no-interior` (no interior pinning) is proved in
 [`NoInteriorThinning`](./NoInteriorThinning.lean), which sits above the thinning construction.
 -/
 
-open SimpleGraph
-
 namespace FlagAlgebras.MetaTheory
 
 /-- **Edge-deletion closure.**  Every spanning subgraph of an in-class graph is again in the class. -/

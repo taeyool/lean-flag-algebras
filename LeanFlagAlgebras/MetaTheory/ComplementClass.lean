@@ -24,8 +24,6 @@ onto `Q_{σᶜ}(K̄)`.
   through the bijection `F ↦ F.compl` (inverse `G ↦ G.uncompl`).
 -/
 
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}

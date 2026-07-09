@@ -222,7 +222,7 @@ theorem tendsto_rootingMeasure_extend
   intro ns hns
   -- `ns : ℕ → ℕ` is an arbitrary index map with `Tendsto ns atTop atTop`.
   -- First make the index strictly monotone: extract `ms₀` so that `ns ∘ ms₀` is strictMono.
-  obtain ⟨ms₀, hms₀_mono, hns_ms₀_mono⟩ := strictMono_subseq_of_tendsto_atTop hns
+  obtain ⟨ms₀, _, hns_ms₀_mono⟩ := strictMono_subseq_of_tendsto_atTop hns
   -- Sequential compactness of the probability measures on `FlagDensitySpace σ`: the sequence
   -- `k ↦ s.toProbMeasureSeq hs (ns (ms₀ k))` has a weakly convergent subsequence.
   have hcompact := @flagDensitySpace_probMeasure_isSeqCompact _ σ

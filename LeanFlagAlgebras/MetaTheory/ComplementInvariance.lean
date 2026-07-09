@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.ComplementClass
-import LeanFlagAlgebras.MetaTheory.SupportClosure
 import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 
 /-! # Root-plantability is invariant under graph complementation (paper `lem:complementation`)
@@ -36,7 +35,6 @@ root-planting set of a hereditary class onto that of its complement — and, tog
 -/
 
 open MeasureTheory
-open scoped Topology
 
 namespace FlagAlgebras
 

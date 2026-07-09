@@ -29,8 +29,6 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 attribute [local instance 0] Classical.propDecidable
 
-open FlagAlgebras
-
 /-! ## Part A scaffolding: edgeless ("cloud") `σ`-flags and the boolean profile
 
 A `σ`-flag is *edgeless* when its underlying graph is exactly the image of `σ` under its type
@@ -473,7 +471,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
   have habs_tendsto : ∀ (Fi : FinFlag σ),
       Tendsto (fun k => ∫ χ, |χ.val Fi - bProfile Fi| ∂(P k)) atTop (𝓝 0) := by
     intro Fi
-    haveI hpp := hPprob
+    haveI _hpp := hPprob
     have hcoordeq : (fun χ : PositiveHomSpace σ => χ.val Fi)
         = (fun χ => (PositiveHomSpace.toPosHom χ) ⟦basisVector Fi⟧) :=
       funext (fun χ => (PositiveHomSpace.toPosHom_basisVector χ Fi).symm)

@@ -1,4 +1,3 @@
-import LeanFlagAlgebras.FlagAlgebra.SubflagDensity
 import LeanFlagAlgebras.MetaTheory.DensityBridge
 
 /-! # Labeled graph count as a vertex-subset count

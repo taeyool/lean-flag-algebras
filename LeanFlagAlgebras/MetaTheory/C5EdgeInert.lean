@@ -19,9 +19,6 @@ density bounds:
   `h = 1` recovers §9.5's `Ftri_downward_zero`).
 -/
 
-open MeasureTheory
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 /-- The triangle flag vanishes on the whole root-planting set of the `C₅`-free class at

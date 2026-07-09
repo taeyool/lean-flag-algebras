@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
-import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.SupportClosure
 import LeanFlagAlgebras.FlagAlgebra.RandomHom
 import LeanFlagAlgebras.Forbid.TuranDensity
@@ -39,7 +38,7 @@ The capstone consumes these as: "from an in-class base with a σ-copy, get `φ�
 `φ₀⟨σ⟩₀ > 0`, as a subsequential blow-up limit."
 -/
 
-open MeasureTheory Filter Topology
+open Filter Topology
 open SimpleGraph Finset GraphAlgebras
 
 namespace FlagAlgebras.MetaTheory
@@ -89,10 +88,12 @@ theorem blowupGraphFin_mem (gc : GraphClass) {n : ℕ} {Γ : SimpleGraph (Fin n)
 noncomputable def blowupFlagSeq {n : ℕ} (Γ : SimpleGraph (Fin n)) : FlagSeq ∅ₜ :=
   fun M => ⟨n * (M + 1), graphFlag (blowupGraphFin Γ M)⟩
 
+/-- The size of the `M`-th blow-up flag is `n·(M+1)`. -/
 @[simp]
 theorem blowupFlagSeq_fst {n : ℕ} (Γ : SimpleGraph (Fin n)) (M : ℕ) :
     (blowupFlagSeq Γ M).1 = n * (M + 1) := rfl
 
+/-- The underlying flag of the `M`-th blow-up flag is the graph flag of `blowupGraphFin Γ M`. -/
 @[simp]
 theorem blowupFlagSeq_snd {n : ℕ} (Γ : SimpleGraph (Fin n)) (M : ℕ) :
     (blowupFlagSeq Γ M).2 = graphFlag (blowupGraphFin Γ M) := rfl

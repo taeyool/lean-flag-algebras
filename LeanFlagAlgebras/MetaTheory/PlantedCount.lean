@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.BlowupFlag
-import LeanFlagAlgebras.MetaTheory.LabeledCount
 import LeanFlagAlgebras.MetaTheory.CloneCount
 
 /-! # The good-event count for the planted estimate

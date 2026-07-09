@@ -111,14 +111,14 @@ def oneBlowupEquiv (v : V) (N : ℕ) :
     | inl w =>
       simp only [dif_neg w.2]
     | inr i =>
-      simp only [dif_pos rfl]
+      simp only
       refine congrArg Sum.inr (Fin.ext ?_)
       rfl
   right_inv p := by
     obtain ⟨w, x⟩ := p
     by_cases h : w = v
     · subst h
-      simp only [dif_pos rfl]
+      simp only
       refine Sigma.ext rfl (heq_of_eq (Fin.ext ?_))
       rfl
     · simp only [dif_neg h]
@@ -162,15 +162,16 @@ noncomputable def oneBlowup_iso (G : SimpleGraph V) (v : V) {N : ℕ} (H : Simpl
         constructor
         · rintro (hG | ⟨_, hint⟩)
           · exact absurd hG (G.loopless v)
-          · simp only [oneFamily, dif_pos rfl, SimpleGraph.comap_adj] at hint
+          · simp only [oneFamily] at hint
             simpa [Fin.cast] using hint
         · intro hH
           refine Or.inr ⟨rfl, ?_⟩
-          simp only [oneFamily, dif_pos rfl, SimpleGraph.comap_adj]
+          simp only [oneFamily]
           simpa [Fin.cast] using hH
 
 /-! ## Reductions of one-class sub-blow-ups to standard blow-ups -/
 
+omit [DecidableEq V] in
 /-- A sub-blow-up all of whose clone classes are edgeless is the independent blow-up. -/
 lemma subBlowup_eq_independentBlowup (G : SimpleGraph V) {m : V → ℕ}
     (W : ∀ w, SimpleGraph (Fin (m w))) (hW : ∀ w, W w = ⊥) :
@@ -189,7 +190,7 @@ lemma oneFamily_bot_eq_bot (v : V) (N : ℕ) (w : V) :
     oneFamily v (⊥ : SimpleGraph (Fin N)) w = ⊥ := by
   unfold oneFamily
   split
-  · ext a b; simp [SimpleGraph.comap_adj]
+  · ext a b; simp
   · rfl
 
 /-- The one-vertex blow-up to an **edgeless** interior is the independent blow-up with one enlarged
@@ -331,13 +332,13 @@ def stepEquiv {n : ℕ} (v : Fin n) {a : Fin n → ℕ} (hav : a v = 1) {N : ℕ
       refine congrArg Sum.inl (Subtype.ext (Sigma.ext rfl (heq_of_eq (Fin.ext ?_))))
       rfl
     | inr i =>
-      simp only [dif_pos rfl]
+      simp only
       exact congrArg Sum.inr (Fin.ext rfl)
   right_inv p := by
     obtain ⟨w, x⟩ := p
     by_cases h : w = v
     · subst h
-      simp only [dif_pos rfl]
+      simp only
       exact Sigma.ext rfl (heq_of_eq (Fin.ext rfl))
     · simp only [dif_neg h]
       exact Sigma.ext rfl (heq_of_eq (Fin.ext rfl))
@@ -404,11 +405,11 @@ noncomputable def subBlowupStepIso {n : ℕ} (Γ : SimpleGraph (Fin n)) (v : Fin
         constructor
         · rintro (hG | ⟨_, hint⟩)
           · exact absurd hG (Γ.loopless v)
-          · simp only [stepFamily, dif_pos rfl, SimpleGraph.comap_adj] at hint
+          · simp only [stepFamily] at hint
             simpa [Fin.cast] using hint
         · intro hH
           refine Or.inr ⟨rfl, ?_⟩
-          simp only [stepFamily, dif_pos rfl, SimpleGraph.comap_adj]
+          simp only [stepFamily]
           simpa [Fin.cast] using hH
 
 /-! ## Recasting clone sizes along a pointwise equality -/
@@ -500,7 +501,7 @@ theorem BlowupClosed.subBlowup_partial {hc : HeredClass} (hbc : BlowupClosed hc)
       intro w
       by_cases h : w = v
       · subst h; simp [Function.update_self]
-      · simp [Function.update_of_ne h, h, Finset.mem_insert]
+      · simp [h, Finset.mem_insert]
     -- Recast the in-class step blow-up to the goal sizes.
     exact ⟨_, subBlowup_mem_recast Γ hsize (stepFamily v W' H) hmem⟩
 
@@ -511,7 +512,7 @@ consumes.  The interiors `W` are chosen by the class; the between-class structur
 Specialises `subBlowup_partial` to `m = fun _ => M+1` and `S = univ`. -/
 theorem BlowupClosed.toUniform {hc : HeredClass} (hbc : BlowupClosed hc) {n : ℕ}
     (Γ : SimpleGraph (Fin n)) (hΓ : hc.Mem Γ) (M : ℕ) :
-    ∃ (W : ∀ v : Fin n, SimpleGraph (Fin (M + 1))), hc.Mem (subBlowup Γ W) := by
+    ∃ (W : ∀ _ : Fin n, SimpleGraph (Fin (M + 1))), hc.Mem (subBlowup Γ W) := by
   classical
   -- Enlarge every vertex to size `M+1`: take the prescribed family `m = fun _ => M+1` and `S = univ`.
   obtain ⟨W, hW⟩ :=

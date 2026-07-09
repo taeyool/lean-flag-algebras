@@ -14,7 +14,6 @@ blow-up-closure (blow up a vertex to an in-class graph of the right size,
 `blowupClosed_root_plantable` (paper `cor:closures-imply-blowup`(3)).
 -/
 
-open MeasureTheory
 open SimpleGraph
 
 namespace FlagAlgebras.MetaTheory

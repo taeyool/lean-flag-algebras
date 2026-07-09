@@ -20,7 +20,7 @@ These two bounds are exactly what `NoInteriorThinning` needs to push the random 
 to the deterministic `{0,1}`-valued boolean point as `λ → 0`.
 -/
 
-open MeasureTheory SimpleGraph Filter
+open Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

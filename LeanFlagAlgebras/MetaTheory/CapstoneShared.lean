@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.RootingUniform
-import LeanFlagAlgebras.MetaTheory.SupportClosure
 
 /-! # The construction-agnostic capstone toolkit
 

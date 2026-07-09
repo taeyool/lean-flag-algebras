@@ -16,7 +16,7 @@ The headline result is `measure_eq_of_integral_flag_eq`.
 -/
 
 open MeasureTheory
-open scoped Topology BoundedContinuousFunction
+open scoped BoundedContinuousFunction
 
 namespace FlagAlgebras.MetaTheory
 

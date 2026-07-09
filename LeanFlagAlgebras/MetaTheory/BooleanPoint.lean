@@ -25,7 +25,7 @@ vanishing pattern:
   `completePoint_val`.
 -/
 
-open MeasureTheory SimpleGraph Filter
+open SimpleGraph Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

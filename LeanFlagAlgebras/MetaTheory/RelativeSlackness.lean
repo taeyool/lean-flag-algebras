@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.RelativeSupport
-import Mathlib.Algebra.QuadraticDiscriminant
 
 /-! # Relative complementary slackness (paper §11.3, `thm:relative-slackness`)
 

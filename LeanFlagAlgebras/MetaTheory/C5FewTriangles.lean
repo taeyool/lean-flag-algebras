@@ -1,6 +1,5 @@
 import LeanFlagAlgebras.MetaTheory.C5Free
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
-import LeanFlagAlgebras.MetaTheory.EdgeObstruction
 import Mathlib.Combinatorics.SimpleGraph.Clique
 import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 
@@ -24,8 +23,8 @@ This module proves the combinatorial heart:
   `c4FreeClass_edgeDegenerate`.
 -/
 
-open MeasureTheory SimpleGraph Filter
-open scoped Topology Finset
+open SimpleGraph Filter
+open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 

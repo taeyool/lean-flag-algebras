@@ -16,8 +16,6 @@ homomorphisms disagree on some flag), and conclude density via Mathlib's
 flag-algebra element.
 -/
 
-open scoped Topology
-
 namespace FlagAlgebras.MetaTheory
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}

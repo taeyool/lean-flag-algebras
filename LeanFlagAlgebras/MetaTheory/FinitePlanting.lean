@@ -1,7 +1,6 @@
 import LeanFlagAlgebras.MetaTheory.HeredClass
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.RootingUniform
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
 import LeanFlagAlgebras.MetaTheory.SupportClosure

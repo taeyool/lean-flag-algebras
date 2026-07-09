@@ -18,7 +18,7 @@ here (`c4FreeClass_edgeDegenerate` / `c4free_card_edges_sq_le`); the deeper extr
 instances are stated at the level of the criterion rather than re-proved.
 -/
 
-open MeasureTheory SimpleGraph Filter
+open Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

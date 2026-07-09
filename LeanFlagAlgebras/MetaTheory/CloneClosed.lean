@@ -1,7 +1,6 @@
 import LeanFlagAlgebras.MetaTheory.ConstrainedRep
 import LeanFlagAlgebras.MetaTheory.GraphClassConstraint
 import LeanFlagAlgebras.MetaTheory.CapstoneShared
-import LeanFlagAlgebras.MetaTheory.RootingUniform
 import LeanFlagAlgebras.MetaTheory.BlowupSequence
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.BinomialRatio
@@ -37,8 +36,6 @@ open FlagAlgebras
 attribute [local instance] Classical.propDecidable
 
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
-
-open Classical
 
 /-! ## The cylinder mass lower bound (the planted-mass bridge) -/
 
@@ -82,7 +79,6 @@ private theorem planted_cylinder_mass_step {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n
           : Measure (FlagDensitySpace σ))
           (cyl Fs (fun Fi => (flagDensity₁ Fi.2 (⟦baseLabeledGraph θ⟧ : Flag σ (Fin n)) : ℝ)) δ)).toReal := by
   classical
-  have hn0le : n₀ ≤ n := fin_card_le_of_embedding θ
   set N : ℕ := n * (M + 1) with hN
   set m : Fin n → ℕ := fun _ => M + 1 with hm
   set K : SimpleGraph (Fin N) := blowupGraphFin Γ M with hK
@@ -92,11 +88,10 @@ private theorem planted_cylinder_mass_step {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n
     fun Fi => (flagDensity₁ Fi.2 (⟦baseLabeledGraph θ⟧ : Flag σ (Fin n)) : ℝ) with hbase
   set C : Set (FlagDensitySpace σ) := cyl Fs base δ with hC
   -- The representative host graph and its iso to `K`.
-  set host' : SimpleGraph (Fin F_M.1) := (Quotient.out F_M.2).graph with hhost'
-  have hF_M1 : F_M.1 = N := rfl
+  set host' : SimpleGraph (Fin F_M.1) := (Quotient.out F_M.2).graph
   -- `out F_M.2 ∼f Krep` where `Krep` is `K` with the empty-type embedding.
   set Krep : LabeledGraph ∅ₜ (Fin N) :=
-    {graph := K, type_embed := RelEmbedding.ofIsEmpty (∅ₜ).Adj K.Adj} with hKrep
+    {graph := K, type_embed := RelEmbedding.ofIsEmpty (∅ₜ).Adj K.Adj}
   have hFM2 : F_M.2 = (graphFlag K) := rfl
   have hgraphFlag : graphFlag K = (⟦Krep⟧ : Flag ∅ₜ (Fin N)) := rfl
   have hout_eq : (⟦Quotient.out F_M.2⟧ : Flag ∅ₜ (Fin N)) = (⟦Krep⟧ : Flag ∅ₜ (Fin N)) := by
@@ -282,7 +277,6 @@ private theorem planted_cylinder_mass {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n₀)
           : Measure (FlagDensitySpace σ))
           (cyl Fs (fun Fi => (flagDensity₁ Fi.2 (⟦baseLabeledGraph θ⟧ : Flag σ (Fin n)) : ℝ)) δ)).toReal := by
   classical
-  have hn0le : n₀ ≤ n := fin_card_le_of_embedding θ
   -- The planted fraction lower bound.
   refine ⟨(1 / (2 * n : ℝ)) ^ n₀, by positivity, ?_⟩
   -- For each coordinate `Fi ∈ Fs`, the planted-estimate ratio (at uniform clone size `M+1`)

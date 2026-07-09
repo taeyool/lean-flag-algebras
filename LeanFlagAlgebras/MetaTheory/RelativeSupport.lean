@@ -27,7 +27,6 @@ absolute theory is the instance `Y = Qσ T.forb0`).  Membership of a base limit
 -/
 
 open MeasureTheory
-open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 

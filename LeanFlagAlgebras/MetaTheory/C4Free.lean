@@ -20,7 +20,7 @@ Kővári–Sós–Turán bound, here in its elementary `C₄` form.
   one-vertex type (edge-degenerate + contains all stars ⟹ `degenerate_not_rootPlantable`).
 -/
 
-open MeasureTheory SimpleGraph Filter
+open SimpleGraph Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

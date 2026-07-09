@@ -18,7 +18,7 @@ forbidden flag has density `0` in an in-class flag (`flagDensity_forbidden_eq_ze
 `σ`-typed analogue of `HeredClass.forbiddenFree_of_mem`).
 -/
 
-open MeasureTheory SimpleGraph Filter
+open SimpleGraph Filter
 open scoped Topology
 
 namespace FlagAlgebras.MetaTheory

@@ -24,8 +24,6 @@ open FlagAlgebras
 
 namespace FlagAlgebras.MetaTheory
 
-open SimpleGraph
-
 attribute [local instance] Classical.propDecidable
 
 /-! ## The clone-closed graph-class structure -/

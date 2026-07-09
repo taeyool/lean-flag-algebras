@@ -1,5 +1,4 @@
 import LeanFlagAlgebras.MetaTheory.BooleanPoint
-import LeanFlagAlgebras.MetaTheory.VanishingIdeal
 import LeanFlagAlgebras.MetaTheory.CertificateCones
 import LeanFlagAlgebras.MetaTheory.DenseObstruction
 
@@ -41,7 +40,6 @@ homeomorphism.  As in `prop:ideal-zero`, cone equalities are stated in evaluatio
 -/
 
 open MeasureTheory SimpleGraph
-open scoped Topology
 
 namespace FlagAlgebras.MetaTheory
 

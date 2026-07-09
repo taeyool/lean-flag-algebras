@@ -27,7 +27,6 @@ The single most important result is `flagDensity₁_compl`; everything else supp
 flag-algebra-level complementation isomorphism. -/
 
 open Classical
-open SimpleGraph
 
 namespace FlagAlgebras
 
