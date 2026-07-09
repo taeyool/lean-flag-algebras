@@ -2303,15 +2303,15 @@ problems.  For example, suppose \(F\) and \(G\) are empty-type flags.  To
 compute the density \(\den{F}{G}\), one can conceptually enumerate all
 \(|V(F)|\)-vertex induced subflags of \(G\), test which of them are isomorphic
 to \(F\), count the successful ones, and divide by
-\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-typed density the same experiment
+\(\binom{|V(G)|}{|V(F)|}\).  For a \(\sigma\)-typed density, the same experiment
 keeps the labeled vertices fixed and chooses only the additional unlabeled
 vertices.  The downward normalizing factor \(q_\sigma(F)\) is another finite
 count of the same flavor: it counts label placements rather than subflags.
 
-Thus an executable flag-algebra development needs two basic ingredients.  It
+Thus, an executable flag-algebra development needs two basic ingredients.  It
 must be able to enumerate the finite objects being counted, such as candidate
 induced subflags, and it must be able to answer finite yes/no questions, such
-as whether two flags are isomorphic.  In Lean these ingredients are usually
+as whether two flags are isomorphic.  In Lean, these ingredients are usually
 provided by typeclass instances.  A \lean{Fintype} instance gives Lean an
 explicit finite collection containing every element of a type; a
 \lean{Decidable} instance gives a procedure for deciding a proposition.  Once
