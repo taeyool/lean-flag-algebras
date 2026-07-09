@@ -625,7 +625,7 @@ Let $\sigma$ be a flag type of size $k$.  For a $\sigma$-flag $F$ of size $m$
 (the host flag), the \emph{density of $F$ in $G$}, written $\den{F}{G}$, is
 the probability that a uniformly random $(m-k)$-element subset of
 $V(G) \setminus \operatorname{Im}(\theta_G)$, together with the $k$ labeled
-vertices of $G$, induces a $\sigma$-flag isomorphic to $F$.
+vertices of $G$, induces a $\sigma$-flag \(F'\) with \(F' \cong_\sigma F\).
 % The \emph{density of $F$ in $G$}, written $\den{F}{G}$, is the probability
 % that a uniformly random $(m-k)$-element subset $S$ of
 % $V(G) \setminus \operatorname{Im}(\theta_G)$ satisfies
@@ -998,7 +998,7 @@ For a $\sigma$-flag $F$ of size $m$ with $|V(\sigma)|=k$, let
        {m(m-1)\cdots(m-k+1)}
 \]
 be the probability that a uniformly random injection $[k]\hookrightarrow V(M)$
-recovers a flag isomorphic to $F$.
+recovers the same $\sigma$-typed flag as $F$.
 The \emph{downward operator}
 $\llbracket\cdot\rrbracket_\sigma:\mathcal{A}^\sigma\to\mathcal{A}^\emptyset$
 is then defined on flags by
@@ -1932,8 +1932,9 @@ scaled by the normalizing factor.
 The normalizing factor is computed by counting label placements.  For a
 concrete typed labeled graph \(G\) on \(n\) vertices, \lean{isomorphismCount G}
 is the number of ways to place the \(n_0\) labels on the same underlying
-unlabeled graph so that the resulting typed labeled graph is flag-isomorphic to
-\(G\).  The denominator \(n!/(n-n_0)!\) is the total number of injections of the
+unlabeled graph so that the resulting typed labeled graph is related to
+\(G\) by a label-preserving graph isomorphism.  The denominator
+\(n!/(n-n_0)!\) is the total number of injections of the
 \(n_0\) labels into the \(n\) vertices, so their ratio is exactly
 \(q_\sigma(G)\).  In the last line of the snippet, the black dot is Lean's
 scalar multiplication operation on \lean{FlagVector}s: it scales the basis
@@ -2273,7 +2274,8 @@ kind of calculation we need, and then we let Lean run that algorithm inside late
 proofs.  This is the idea of \emph{reflection}.  The reflection layer of our
 Lean formalization is the computable counterpart of the abstract flag-algebra
 layer described in \Cref{sec:abstract}.  For each finite operation that would otherwise require a hand proof,
-such as testing flag isomorphism, computing a density, or expanding a product,
+such as testing whether two labeled graphs represent the same flag, computing a
+density, or expanding a product,
 it provides a program that carries out the calculation and a theorem saying that
 the program's output agrees with the abstract definition.  Later proofs can then
 run the program and invoke the correctness theorem, rather than reconstructing
@@ -2281,8 +2283,8 @@ the finite verification case by case.
 
 Flag algebras are especially well suited to this style.  In applications, the
 certificates are often found by computer search or semidefinite programming, and
-checking them already amounts to checking finite data: flag isomorphism,
-subflag densities, multiplication tables, and rational arithmetic.  A formal
+checking them already amounts to checking finite data: same-flag tests, subflag
+densities, multiplication tables, and rational arithmetic.  A formal
 proof should neither trust those external tables nor replay each entry as a
 hand proof.  Reflection gives the middle path.
 
@@ -2433,55 +2435,84 @@ This is the second basic ingredient: a decidable predicate on candidates which,
 given \(H\), decides whether the labeled graph associated to \(H\) is
 isomorphic to \(F\), with the type labels respected.
 
-The (\lean{candidateMatches F H}) below is 
-such a predicate. It
-turns the induced subgraph \(H\) into its associated labeled graph,  and asks whether the result is isomorphic to $F$
-as a labeled graph.
-two
-labeled graphs are flag-isomorphic.  Once Lean has a decidability instance for
-this predicate, the density itself is just the finite count obtained by
-filtering the enumeration of candidates.
+The predicate \lean{candidateMatches F H} below is exactly this test.  It turns the
+induced subgraph \(H\) into its associated labeled graph and asks whether the
+result is isomorphic to \(F\), with the type labels respected.  As a
+mathematical statement this is still a proposition, not a program.  The
+reflection step is to show Lean how to decide the proposition from the concrete
+data stored in \(F\), \(G\), and \(H\).  The following small instance displays
+the mechanism used in the implementation: expose the finite vertex set of the
+candidate, read adjacency from explicit edge membership, reject candidates of
+the wrong size, and then invoke the finite isomorphism search.
 \begin{lstlisting}
 /-- The induced candidate H is isomorphic to the concrete pattern F. -/
 def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    (F : Sym2LabeledGraph (*@$\sigma$@*) m)
-    {G : Sym2LabeledGraph (*@$\sigma$@*) n}
-  (H : Sym2InducedLabeledSubgraph G) : Prop :=
+    (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
+    : Prop :=
   Nonempty ((H.toLabeledSubgraph).coe (*@$\simeq$@*)f F.toLabeledGraph)
 
-/-- A one-pattern baby version of the reflected density computation. -/
-def sym2FlagDensity1Baby
-    {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    (F : Sym2LabeledGraph (*@$\sigma$@*) m)
-    (G : Sym2LabeledGraph (*@$\sigma$@*) n)
-    [DecidablePred (fun H : Sym2InducedLabeledSubgraph G =>
-      candidateMatches1 F H)] :
-    (*@$\mathbb{Q}$@*) :=
-  ((Finset.univ : Finset (Sym2InducedLabeledSubgraph G)).filter
-    (fun H => candidateMatches1 F H)).card / Nat.choose (n - k) (m - k)
-\end{lstlisting}
-The displayed density definition assumes the \lean{DecidablePred} needed by
-\lean{Finset.filter}.  In the concrete \lean{Sym2} representation, this
-instance is supplied from the data already stored in the objects: \(H\) has a
-finite vertex set and an explicit edge set, and \(F\) is also given by an
-explicit finite edge set.  Thus the predicate is not merely a mathematical
-condition; it is a finite test that the evaluator can run while counting.
+/-- The finite edge-set representation turns the predicate into executable code. -/
+instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
+    : DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H) :=
+  fun H => by
+    have : Fintype H.toLabeledSubgraph.subgraph.verts := by ...
+    -- adjacency in H is membership in the filtered finite edge set H.edges
+    have : DecidableRel H.toLabeledSubgraph.coe.graph.Adj := by ...
+    -- adjacency in F is membership in the finite edge set F.edges
+    have : DecidableRel F.toLabeledGraph.graph.Adj := by ...
+    exact if hsize : H.verts.card = m then
+      (by
+        dsimp [candidateMatches]
+        infer_instance)
+    else
+      isFalse (fun hIso => hsize (verts_card_of_coe_iso H F hIso))
 
-The actual repository definition generalizes this baby version rather than
-changing its computational idea.  It uses a predicate on lists of candidate
-subflags, because product densities must choose several patterns at once and
-also enforce disjointness away from the shared type vertices.  The normalizing
-factor is correspondingly the multinomial coefficient for those choices.  The
-reflected computation is otherwise the same: enumerate finite candidates,
-decide flag isomorphism, count, and normalize.  Generated application files
-then rewrite abstract densities to \(\mathtt{sym2FlagDensity}_1\) or
-\(\mathtt{sym2FlagDensity}_2\) and close the resulting rational equalities by
-\lean{native\_decide}.
+/-- A one-pattern illustrative version of the reflected density computation. -/
+def sym2FlagDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+    (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
+    [DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H)]
+    : (*@$\mathbb{Q}$@*) :=
+  ((Finset.univ : Finset (Sym2InducedLabeledSubgraph G)).filter
+    (fun H => candidateMatches F H)).card / Nat.choose (n - k) (m - k)
+\end{lstlisting}
+The proof of the instance is the computational heart of the example.  After the
+local \lean{Fintype} and \lean{DecidableRel} instances have been assembled, the
+\lean{hsize} branch reaches the \lean{infer\_instance} line; this is the
+generic inference step.  It asks typeclass search to decide the
+\lean{Nonempty} proposition that such a label-preserving graph isomorphism
+exists.  The generic decidability instance does this by enumerating finitely
+many graph isomorphisms and checking the type-preservation condition.
+The predicate \lean{candidateMatches F H} has therefore been compiled into a
+finite search.  The size branch is not conceptually necessary for the
+definition, but it matches the implementation's computation-oriented proof: a
+candidate whose vertex set has the wrong cardinality cannot be isomorphic to
+\(F\), so it is rejected before the isomorphism search is run.
+
+Once \lean{candidateMatches F H} is decidable, the density computation is just
+ordinary finite evaluation.  The definition \lean{sym2FlagDensity}$_1$
+enumerates all candidates \(H : \lean{Sym2InducedLabeledSubgraph G}\), filters
+them by \lean{candidateMatches F H}, counts the survivors, and divides by the
+number of ways to choose the non-type vertices.  The same pattern is used for
+the multi-argument density \(\den{F_1,\ldots,F_t}{G}\) formalized in
+\Cref{sec:formal-subflag-densities}.  There the numerator counts tuples of
+induced subgraphs that realize \(F_1,\ldots,F_t\) inside \(G\), with the
+chosen non-type vertices pairwise disjoint.  The predicate
+\lean{predIsoSym2LabeledHl} is the computable version of exactly this
+``tuple should be counted'' condition.  Given the tuple of patterns \lean{Hl}
+and a tuple of candidate induced subgraphs \lean{Gl}, it checks, for every
+\lean{i : Fin t}, that \lean{Gl i} matches the corresponding pattern
+\lean{Hl i}, using the same decidable matching test as above, and that the
+candidates are disjoint away from the shared type vertices.  The finite count
+then filters all candidate tuples by this predicate.  The adequacy theorems in
+the next subsection rewrite the abstract \lean{flagDensity}$_1$ and
+\lean{flagDensity}$_2$ to these executable computations.
 
 \subsection{Adequacy Theorems for Reflection}
 \label{sec:reflection-adequacy}
 
-\Cref{sec:flagtypes} defined flags by quotienting labeled graphs by flag isomorphism.
+\Cref{sec:flagtypes} defined flags by quotienting labeled graphs by
+label-preserving graph isomorphisms.
 The reflection layer repeats the same construction for the concrete graph
 representation from \Cref{sec:reflection-concrete}.  A \lean{Sym2Flag} is the quotient of
 \lean{Sym2LabeledGraph}s by the isomorphism relation
@@ -3478,7 +3509,7 @@ place, give the relevant finite types \lean{Fintype} instances, and ask
 \lean{flagDensity}.  This type-checks.  It is not a viable compilation
 strategy for the pentagon proof: each density check repeatedly constructs
 finite sets of abstract subgraphs, compares quotient classes by searching
-for flag isomorphisms, synthesizes overlapping \lean{Fintype} instances, and
+for label-preserving graph isomorphisms, synthesizes overlapping \lean{Fintype} instances, and
 carries proof-valued fields through the evaluator.  The graphs are small but
 the proof terms are not---the evaluator is reducing a proof-relevant
 encoding of finite combinatorics, not a graph algorithm.
