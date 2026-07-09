@@ -3637,11 +3637,19 @@ where each $\psi\in S_\sigma\subseteq Q_\sigma$ is evaluated on $\A^\sigma[\T_1]
 the unique homomorphism $\bar\psi\in\Homp(\A^\sigma[\T_1],\R)$ it factors as,
 $\psi=\bar\psi\circ\qmap_\sigma$.
 Then $\avg{a}{\sigma}=0$ in $\A^0[\T_1]$ for every $a\in\mathcal I_\sigma$.  In
-particular every pinning witness $F-c\,\one_\sigma$, and every flag-multiple
-$(F-c\,\one_\sigma)\,h$, unlabels to zero.  Consequently $\avg{\cdot}{\sigma}$ depends
-only on the restriction $s|_{S_\sigma}$, so
-$\C^{\mathrm{ens}}_\sigma\supsetneq\C^{\mathrm{quot}}_\sigma$ requires some $s\ge0$ on
-$S_\sigma$ whose restriction $s|_{S_\sigma}$ is the restriction of no sum of squares.
+particular, suppose a flag $F$ is pinned to the value $c$ on $S_\sigma$, so that
+$F-c\,\one_\sigma$ vanishes on $S_\sigma$.  Then this pinning witness, and every
+flag-multiple $(F-c\,\one_\sigma)\,h$, has zero image under the unlabelling operator
+$\avg{\cdot}{\sigma}$; equivalently, its average over random embeddings of the type
+$\sigma$ is $0$ in the empty-type algebra.  More generally, if
+two labelled elements $s,s'\in\A^\sigma[\T_1]$ have the same evaluation function on
+$S_\sigma$,
+then $\avg{s}{\sigma}=\avg{s'}{\sigma}$.  Hence a strict exact inclusion
+$\C^{\mathrm{ens}}_\sigma\supsetneq\C^{\mathrm{quot}}_\sigma$ can occur only if there is
+an element $s\in\A^\sigma[\T_1]$ such that the function
+$\psi\mapsto\psi(s)$ is non-negative on $S_\sigma$, but is not equal on
+$S_\sigma$ to the function $\psi\mapsto\psi(q)$ for any sum of squares
+$q\in\A^\sigma[\T_1]$.
 \end{proposition}
 
 \begin{proof}
@@ -3658,47 +3666,80 @@ $s-s'\in\mathcal I_\sigma$ whenever $s,s'$ agree on $S_\sigma$.
 \end{proof}
 
 \begin{proposition}[Degenerate roots collapse to a point]\label{prop:single-point}
-If $\K$ is edge-degenerate, or co-edge-degenerate, then $S_{\vtype}$ is a single point.
-Consequently $\C^{\mathrm{ens}}_{\vtype}=\C^{\mathrm{quot}}_{\vtype}=\R_{\ge0}\,\one_0$: at the
-one-vertex type the ensemble relaxation certifies exactly the density bounds the
-quotient method does.  The degeneracy and co-degeneracy counterexamples
+If $\K$ is edge-degenerate (all constrained limits have edge density $0$), or
+co-edge-degenerate (all constrained limits have edge density $1$), then $S_{\vtype}$ is a single point
+and $\C^{\mathrm{ens}}_{\vtype}=\C^{\mathrm{quot}}_{\vtype}=\R_{\ge0}\,\one_0$, the ray of
+non-negative multiples of the empty-type unit: at the one-vertex type the ensemble
+relaxation certifies exactly the density bounds the
+quotient method does.
+\end{proposition}
+Note that because of this proposition, the degeneracy and co-degeneracy counterexamples
 (\cref{cor:c4-counterexample,cor:degenerate-family,cor:codegenerate}) therefore cost
 nothing for density bounds.
-\end{proposition}
-
 \begin{proof}
 Take $\K$ edge-degenerate; the co-degenerate case follows by complementation
 (\cref{lem:complementation}).  Let $F$ be any \(\vtype\)-flag whose underlying graph $M$ has an
-edge.  A random $|M|$-subset of an $n$-vertex graph spans, in expectation,
-$\binom{|M|}{2}$ times the edge density many edges, so the induced density obeys
-$p(M,G)\le\binom{|M|}{2}\rho(G)$; in the limit
+edge.  Put $k:=|M|$, and choose a $k$-vertex subset $U$ uniformly at random from an
+$n$-vertex graph $G$.  Write $\rho(G):=e(G)/\binom n2$ for the edge density of $G$.
+Let $X=e(G[U])$ be the number of edges induced by $U$.  Each of
+the $\binom{k}{2}$ vertex-pairs inside $U$ is, marginally, a uniformly random pair of
+vertices of $G$, so it is an edge with probability $\rho(G)$.  By linearity of
+expectation,
+\[
+  \E X=\binom{k}{2}\rho(G).
+\]
+If $G[U]$ is isomorphic to $M$, then $X\ge1$ because $M$ has an edge.  Hence
+\[
+  p(M,G)\le \Prob[X\ge1]\le \E X=\binom{k}{2}\rho(G),
+\]
+where the middle inequality is Markov's inequality.  Passing to the limit gives
 $\phi_0(M)\le\binom{|M|}2\phi_0(\rho)=0$ for every $\phi_0\in Q_0$.  As $\avg{F}{\vtype}$ is a
 non-negative multiple of $M$, we get
 $\E_{\phi^{\vtype}\sim\Ext_{\vtype}(\phi_0)}[\phi^{\vtype}(F)]=\phi_0(\avg{F}{\vtype})=0$, and since
-$\phi^{\vtype}(F)\ge0$, $\phi^{\vtype}(F)=0$ almost surely.  Thus every support point of every
+$\phi^{\vtype}(F)\ge0$, $\phi^{\vtype}(F)=0$ almost surely.  Thus, every support point of every
 $\Ext_{\vtype}(\phi_0)$ assigns density $0$ to every edge-containing \(\vtype\)-flag; exactly one
 homomorphism $o\in X_{\vtype}$ does so (the labelled empty-graph limit, the others being
-determined by the chain relations), so $S_{\vtype}=\{o\}$.  On a single point every element
-non-negative there agrees with the constant $s(o)\,\one_{\vtype}$, a sum of squares, so
-$\avg{s}{\vtype}=s(o)\,\brak{\vtype}=s(o)\,\one_0$ for every such $s$; both cones equal
+determined by the chain relations), so $S_{\vtype}=\{o\}$.
+
+Now let $s\in\A^{\vtype}[\T_1]$ be non-negative on $S_{\vtype}$.  Since
+$S_{\vtype}$ has only the point $o$, the only value of $s$ seen by the ensemble support
+is the number $s(o)\ge0$.  Hence $s$ agrees on $S_{\vtype}$ with the constant labelled
+element $s(o)\,\one_{\vtype}$.  By \cref{prop:ideal-zero}, agreeing on the support gives
+the same unlabelled average, so
+\[
+  \avg{s}{\vtype}
+  =
+  \avg{s(o)\,\one_{\vtype}}{\vtype}
+  =
+  s(o)\,\brak{\vtype}
+  =
+  s(o)\,\one_0 .
+\]
+The constant labelled element $s(o)\,\one_{\vtype}$ is a sum of squares, namely
+$(\sqrt{s(o)}\,\one_{\vtype})^2$.  Thus every ensemble-allowed contribution is already a
+quotient sum-of-squares contribution, and both cones are exactly
 $\R_{\ge0}\,\one_0$.
 \end{proof}
 
 \begin{remark}[What a practically relevant exact gap would require]
-\Cref{prop:single-point} shows the gap is not merely witness-inert but completely inert
-for the exhibited classes: a degenerate root choice carries no information, so its only
-contribution to a density bound is an additive constant, in either semantics.  A gap
-that survives at the exact certificate level therefore requires, by
-\cref{prop:ideal-zero}, a \emph{Positivstellensatz gap on the support variety}: a
-non-root-plantable type whose $S_\sigma$ is rich enough to carry a non-negative
-element whose restriction is not represented exactly by a sum of squares.  By
-\cref{thm:no-closed-certificate-gap}, any such gap is necessarily non-closed: after
-unlabelling it can be approximated arbitrarily well by ordinary quotient sums of
-squares.  Boundary pinning to a single point supplies no exact gap, and by
-\cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free class
-illustrates both possibilities at once: the one-vertex and
-non-edge-type supports are rich but plantable, while the edge-type support has a
-boundary pinning obstruction coming from common neighbours of an exceptional book edge.
+\Cref{prop:ideal-zero,prop:single-point} say that the counterexamples above disappear
+after applying the downward operator.  The pinned witnesses themselves, and all their
+flag-multiples, unlabel to zero; in the degenerate one-root cases, even the whole
+ensemble cone collapses under $\avg{\cdot}{\vtype}$ to the single ray
+$\R_{\ge0}\one_0$.  Thus, these failures of root-plantability do not create a new
+empty-type density certificate.
+
+A gap that survives at the exact certificate level would therefore need something more:
+a \emph{Positivstellensatz gap on the support variety}.  In concrete terms, one would need
+a non-root-plantable type whose $S_\sigma$ supports a non-negative evaluation function
+coming from some $s\in\A^\sigma[\T_1]$, but no sum of squares has the same restriction to
+$S_\sigma$.  By \cref{thm:no-closed-certificate-gap}, any such gap is necessarily
+non-closed: after unlabelling it can be approximated arbitrarily well by ordinary
+quotient sums of squares.  Boundary pinning to a single point supplies no exact gap, and
+by \cref{thm:no-interior} pinning is \emph{always} to a boundary value.  The $C_5$-free
+class illustrates both possibilities at once: the one-vertex and non-edge-type supports
+are rich but plantable, while the edge-type support has a boundary pinning obstruction
+coming from common neighbours of an exceptional book edge.
 \end{remark}
 
 As a final, concrete instance, take the $C_5$-free class at the edge type $\tau$ of
@@ -3712,7 +3753,7 @@ For the $C_5$-free class and the edge type $\tau$,
   =
   \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
 \]
-Thus the ensemble-relaxed edge-type labelled terms do not improve any asymptotic
+Thus, the ensemble-relaxed edge-type labelled terms do not improve any asymptotic
 $C_5$-free density bound, even though $\tau$ is not root-plantable.
 \end{corollary}
 
