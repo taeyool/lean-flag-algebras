@@ -148,6 +148,15 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §10 (limit points) | the labelled empty-graph / complete-graph limits in `X_vtype`, unique with their vanishing patterns | `edgelessPoint`, `completePoint`, `eq_edgelessPoint_of_nonEdgeless_zero`, `eq_completePoint_of_nonComplete_zero` | [`BooleanPoint`](./BooleanPoint.lean) |
 | §10 `prop:single-point` | for an (co-)edge-degenerate class, `S_vtype` is a single point and both certificate cones collapse to the ray `ℝ≥0·1₀` | `Sσ_eq_singleton_of_edgeDegenerate` / `_coEdgeDegenerate`, `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` | [`SinglePoint`](./SinglePoint.lean) |
 | §10 `cor:c5-edge-closed-inert` | the `C₅`-free edge-type gap is closed-cone inert: the ensemble relaxation improves no asymptotic `C₅`-free density bound | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` | [`C5EdgeInert`](./C5EdgeInert.lean) |
+| §11.2 (relative supports) | the relative labelled support `S_σ(Y)` over an arbitrary set `Y` of admissible limits; `Y = Q₀` recovers the absolute `S_σ` | `relSσ`, `support_subset_relSσ`, `relSσ_mono`, `Sσ_eq_relSσ` | [`RelativeSupport`](./RelativeSupport.lean) |
+| §11.2 `prop:relative-soundness` | `f ≥ 0` on `S_σ(Y)` ⟹ `φ₀ ⟦f⟧₀ ≥ 0` for every `φ₀ ∈ Y` (degenerate types included) | `relative_soundness` | [`RelativeSupport`](./RelativeSupport.lean) |
+| §11.2 `prop:relative-criterion` | non-negativity on `S_σ(Y)` ⇔ a.s. non-negativity under every admissible extension — **unconditionally** (the relative analogue of root-plantability is automatic) | `relative_criterion`, `RelEnsembleNonneg` | [`RelativeSupport`](./RelativeSupport.lean) |
+| §11.2 `lem:relative-closure` | closing the constraint set does not change the support: `S_σ(closure Y) = S_σ(Y)` | `relSσ_closure_eq` (via weak continuity `extend_tendsto` and support lower-semicontinuity `support_subset_closure_iUnion_support`) | [`RelativeClosure`](./RelativeClosure.lean) |
+| §11.3 `thm:relative-slackness` (+ `rem:cs-shape` square instances) | **the §11 workhorse**: a relative certificate yields soundness, approximate slackness (`Δ`-bounds per term), exact slackness on the equality slice (incl. a.s. vanishing), and global vanishing on `S_σ(Y)`; for `fᵢ = l·l` the exact/global conclusions read `ψ(l) = 0` a.s. / `l = 0` on `S_{σᵢ}(Y)` | `relative_slackness_soundness` / `_approx` / `_term` / `_slack` / `_exact_slack` / `_exact_term` / `_exact_ae` / `_global` / `_exact_ae_sq` / `_global_sq` | [`RelativeSlackness`](./RelativeSlackness.lean) |
+| §11.3 `lem:relative-cauchy-schwarz` | Cauchy–Schwarz for unlabelled averages: `(φ₀ ⟦l·g⟧₀)² ≤ φ₀ ⟦l·l⟧₀ · φ₀ ⟦g·g⟧₀` | `downward_cauchy_schwarz` (+ `downward_sq_eval_nonneg`) | [`RelativeSlackness`](./RelativeSlackness.lean) |
+| §11.3 `cor:sos-first-moments` | certificates control first moments at rate `√Δ` (stated in the equivalent squared form) | `certificate_first_moment_sq_bound`, `certificate_first_moment_sq_bound_one` | [`RelativeSlackness`](./RelativeSlackness.lean) |
+| §11.3 `prop:unique-slice-stability` | a slice consisting of a single limit upgrades to qualitative stability, by compactness alone | `unique_slice_stability` | [`RelativeSlackness`](./RelativeSlackness.lean) |
+| §11.3 `thm:kernel-slackness` | the matrix form: a PSD block certificate `⟨Q v, v⟩` is consumed directly (no eigendecomposition); on the equality slice the labelled moment vector falls into `ker Q`, a.s. and on all of `S_σ(Y)` | `kernel_slackness_soundness` / `_approx` / `_exact_slack` / `_exact_ae` / `_global` (+ `kernelCombo`, `eval_flagQuadraticForm`, `posSemidef_dotProduct_mulVec_sq_le`) | [`KernelSlackness`](./KernelSlackness.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -171,8 +180,14 @@ the complement homeomorphism (Deviation 9b). **All of §10 ("the gap is invisibl
 bounds") is formalised** (the empty-type collapse `prop:empty-type` / `cor:confined`, the
 closed-cone equality `thm:no-closed-certificate-gap`, the vanishing ideal `prop:ideal-zero`, the
 single-point collapse `prop:single-point`, and the `C₅`-edge inertness `cor:c5-edge-closed-inert`) —
-see the §10 rows above and Deviation 12. The only §9 result still open is the general pinning
-*conjecture* `conj:characterisation` — see [Scope & limitations](#scope--limitations).
+see the §10 rows above and Deviation 12. **§11.1 is prose** (it points back to the already-formalised
+§5–§8 criteria), and **the foundational §11.2–§11.3 relative theory is formalised** (the relative
+support `S_σ(Y)` with `lem:relative-closure` / `prop:relative-soundness` / `prop:relative-criterion`,
+and the complementary-slackness principle `thm:relative-slackness` with `lem:relative-cauchy-schwarz`,
+`cor:sos-first-moments`, `thm:kernel-slackness`, `prop:unique-slice-stability`) in the
+`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules (Deviation 13).
+The only §9 result still open is the general pinning *conjecture* `conj:characterisation` — see
+[Scope & limitations](#scope--limitations).
 
 A note on how to read the §8 rows against the paper, and what to scrutinise when checking the
 correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#auditing-the-correspondence-to-papertex) below.
@@ -195,11 +210,14 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   `no_closed_certificate_gap` / `downward_eval_eq_zero_of_zero_on_Sσ` /
   `Sσ_eq_singleton_of_edgeDegenerate` / `Sσ_eq_singleton_of_coEdgeDegenerate` /
   `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` /
-  `c5free_edge_no_closed_certificate_gap` —
+  `c5free_edge_no_closed_certificate_gap`, and the §11.2–§11.3 `relSσ_closure_eq` /
+  `relative_soundness` / `relative_criterion` / the full `relative_slackness_*` family /
+  `downward_cauchy_schwarz` / `certificate_first_moment_sq_bound(_one)` / `unique_slice_stability` /
+  the full `kernel_slackness_*` family —
   depends on **only the three standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` —
   no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 62 modules (7968 jobs); the full
-  project `lake build LeanFlagAlgebras` builds with §9–§10 integrated.
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 66 modules (7972 jobs); the full
+  project `lake build LeanFlagAlgebras` builds with §9–§11.3 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
   the elaboration step budget for proofs run in a large local context. This affects *how long* the
@@ -468,6 +486,44 @@ Each is detailed below and in the relevant module's header.
       exists (`hne`), which the paper leaves implicit; the cone-collapse statements avoid it
       (when `Q₀ = ∅` the evaluation claim is vacuous and `c = 0` works).
 
+13. **§11.2–§11.3 formalisation choices (`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/
+    `KernelSlackness`).** The relative-theory *statements* are formalised faithfully; the
+    deliberate choices are:
+    * **(a) `Y` is an arbitrary subset of `X₀`.** The paper fixes a *nonempty* `Y ⊆ Q₀`; no
+      §11.2–§11.3 statement needs either hypothesis (an inadmissible or degenerate base limit
+      contributes nothing to `S_σ(Y)`, and `downward_eval_eq_zero_of_degenerate` handles
+      `φ₀(⟨σ⟩) = 0`), so the Lean statements quantify over any
+      `Y : Set (PositiveHomSpace ∅ₜ)` — a strict generalisation; the paper's setting is the
+      special case, and `Sσ_eq_relSσ` (with `Y = Qσ forb0`) recovers the absolute theory
+      *definitionally* (`rfl`).
+    * **(b) Squared form of the `√Δ` first-moment bounds.** `cor:sos-first-moments` is stated as
+      `(φ₀ ⟦l·g⟧₀)² ≤ (Δ/λᵢ)·φ₀ ⟦g·g⟧₀` (and `(φ₀ ⟦l⟧₀)² ≤ Δ/λᵢ`), avoiding `Real.sqrt`; the
+      paper's form follows by taking square roots.
+    * **(c) `prop:unique-slice-stability` for an arbitrary index family.** The paper takes
+      countably many density equations; the proof is pure compactness, so the Lean statement
+      allows any index type `J`.
+    * **(d) Cauchy–Schwarz by reuse.** `lem:relative-cauchy-schwarz` is a thin wrapper over the
+      pre-existing base-library lemma `square_downward_mul_ge_mul_downward_square`
+      (`FlagAlgebra/RandomHom.lean`) — the identical inequality, already proved there through the
+      extension measure, exactly as the paper remarks ("Razborov's Cauchy–Schwarz, re-proved
+      through the extension measure").
+    * **(e) `thm:kernel-slackness` via the existing `flagQuadraticForm`.** The paper's
+      `⟨Q v, v⟩` is the base library's `flagQuadraticForm Q v`
+      (`FlagAlgebra/QuadraticForm.lean`), so the kernel form plugs into the SOS machinery already
+      used by the repository's certificate developments; the row combination `wᵀQv` is
+      `kernelCombo Q v w = ∑ₐ (Q *ᵥ w)ₐ • vₐ` (equal to the paper's by symmetry of `Q`). The
+      closing sentence of conclusion (4) — that a basis of the row space yields
+      `rank Q` linearly independent equations — is elementary linear-algebra prose and is not
+      separately formalised; the Lean conclusion `Q *ᵥ χ(v) = 0` *is* the full list of row
+      equations.
+    * **(f) Remarks are mostly not formalised.** `rem:quotient-elements` (transfer between
+      `f ∈ A^σ[T₀]` and its quotient image), `rem:kernel-practice`, and the two unnamed remarks
+      are expository; the Lean statements are phrased directly in the ambient algebra `A^σ[T₀]`,
+      which is the formulation the remarks justify. The one *mathematical* claim inside
+      `rem:cs-shape` — for the standard instance `fᵢ = l·l`, the exact/global conclusions read
+      `ψ(l) = 0` a.s. / `l = 0` on `S_{σᵢ}(Y)` — **is** exported
+      (`relative_slackness_exact_ae_sq` / `relative_slackness_global_sq`).
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -541,6 +597,20 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 | `prop:single-point` (Prop 68, l.3668) | `Sσ_eq_singleton_of_edgeDegenerate` ([`SinglePoint.lean`](./SinglePoint.lean) l.393) / `Sσ_eq_singleton_of_coEdgeDegenerate` (l.435); cones `edgeDegenerate_cone_collapse` (l.498) / `coEdgeDegenerate_cone_collapse` (l.519), ray `smul_one_mem_quotCone_vtype` (l.478); the points `edgelessPoint` / `completePoint` with value lemmas `edgelessPoint_val` / `completePoint_val` ([`BooleanPoint.lean`](./BooleanPoint.lean) l.367–379) | `S_vtype` is exactly the labelled empty-graph (resp. complete-graph) limit — the boolean profile `1` on the edgeless (resp. complete) flag of each size, `0` elsewhere — given a constrained limit exists (Deviation 12f); every ensemble-cone member equals some `c ≥ 0` on all of `Q₀` and `c•1₀` is a quotient sum-of-squares average (evaluation form 12c; co-case by direct mirror 12e) |
 | `cor:c5-edge-closed-inert` (Cor 70, l.3749) | `c5free_edge_no_closed_certificate_gap` ([`C5EdgeInert.lean`](./C5EdgeInert.lean) l.40), `c5free_Ftri_zero_on_Sσ` (l.30), `c5free_Ftri_mul_downward_eq_zero` (l.48) | the closed-cone equality instantiated at `(c5FreeClass, edgeType)`; the pinned witness `F_△` vanishes on `S_τ` and, with all its flag-multiples, unlabels to zero on `Q₀` |
 
+**§11.2–§11.3 audit map** (paper label @ `paper.tex` line ↦ Lean statement to read):
+
+| `paper.tex` (paper #, line) | Lean statement to read (file line) | What to verify |
+|---|---|---|
+| `S_σ(Y)` display (§11.2, l.3822) | `relSσ` ([`RelativeSupport.lean`](./RelativeSupport.lean) l.39); recovery `Sσ_eq_relSσ` (l.69) | the closure of the union of `supp ℙ[φ₀]` over `posHomPoint φ₀ ∈ Y` with `φ₀ ⟨σ⟩₀ > 0`; `Y` is an *arbitrary* subset of `X₀` (Deviation 13a — the paper's nonempty `Y ⊆ Q₀` is the special case); with `Y = Qσ forb0` this is `Sσ` by `rfl` |
+| `lem:relative-closure` (Lemma 71, l.3841) | `relSσ_closure_eq` ([`RelativeClosure.lean`](./RelativeClosure.lean) l.191); ingredients `extend_tendsto` (l.109), `support_subset_closure_iUnion_support` (l.156) | `S_σ(closure Y) = S_σ(Y)`, closure taken in `X₀ = PositiveHomSpace ∅ₜ`; the two ingredients are the paper's two proof steps (weak continuity of `Ext_σ` where `φ(⟨σ⟩) > 0`; support lower-semicontinuity along weak convergence), stated for sequences — sufficient since `X₀` is compact metrizable |
+| `prop:relative-soundness` (Prop 72, l.3894) | `relative_soundness` ([`RelativeSupport.lean`](./RelativeSupport.lean) l.82) | `f ≥ 0` on `S_σ(Y)` ⟹ `φ₀ ⟦f⟧₀ ≥ 0` for every `φ₀` with `posHomPoint φ₀ ∈ Y` — including the degenerate case `φ₀(⟨σ⟩) = 0` (handled by `downward_eval_eq_zero_of_degenerate`, as in the paper's monotonicity aside) |
+| `prop:relative-criterion` (Prop 74, l.3934) | `relative_criterion` ([`RelativeSupport.lean`](./RelativeSupport.lean) l.115); condition (b) is `RelEnsembleNonneg` (l.106) | the equivalence holds for every `Y` with **no root-plantability hypothesis** (both directions are the "easy" directions of `thm:support-criterion`); (b) is the paper's `P[ψ(f) ≥ 0] = 1` for every admissible `φ₀ ∈ Y` |
+| `thm:relative-slackness` (Thm 76, l.3978) + `rem:cs-shape` (Rem 77) square instances | `relative_slackness_soundness` / `_approx` / `_term` / `_slack` / `_exact_slack` / `_exact_term` / `_exact_ae` / `_global`, and `_exact_ae_sq` / `_global_sq` ([`RelativeSlackness.lean`](./RelativeSlackness.lean) l.58–285) | hypotheses (i)–(iii) are `hf`/`hn`/`hcert` with `λᵢ > 0` (`hlam`); conclusions (1)–(4) split across the eight statements — check the a.s. clause of (3) carries the paper's proviso `φ₀(⟨σᵢ⟩) > 0` (`hσi`) and that (4) concludes vanishing *identically on* `S_{σᵢ}(Y)`; the `_sq` forms are `rem:cs-shape`'s standard-instance readings (`fᵢ = l·l` ⟹ `ψ(l) = 0` a.s. / `l = 0` on the support) |
+| `lem:relative-cauchy-schwarz` (Lemma 78, l.4067) | `downward_cauchy_schwarz` ([`RelativeSlackness.lean`](./RelativeSlackness.lean) l.271; helper `downward_sq_eval_nonneg` l.254) | `(φ₀ ⟦l·g⟧₀)² ≤ φ₀ ⟦l·l⟧₀ · φ₀ ⟦g·g⟧₀` for **every** `φ₀ ∈ X₀` (no constraint set involved); a wrapper over the base library's `square_downward_mul_ge_mul_downward_square` (Deviation 13d) |
+| `cor:sos-first-moments` (Cor 79, l.4098) | `certificate_first_moment_sq_bound` ([`RelativeSlackness.lean`](./RelativeSlackness.lean) l.308), `_one` (l.331) | the squared form of the `√Δ` bounds (Deviation 13b): `(φ₀ ⟦l·g⟧₀)² ≤ (Δ/λᵢ)·φ₀ ⟦g·g⟧₀` under `fᵢ = l·l`, and `(φ₀ ⟦l⟧₀)² ≤ Δ/λᵢ` at `g = 1` (the intermediate `φ₀(⟨σᵢ⟩) ≤ 1` step is `posHom_one_downward_le_one`) |
+| `thm:kernel-slackness` (Thm 80, l.4135) | `kernel_slackness_soundness` / `_approx` / `_exact_slack` / `_exact_ae` / `_global` ([`KernelSlackness.lean`](./KernelSlackness.lean) l.141–301); `⟨Qv,v⟩` is `flagQuadraticForm` (`FlagAlgebra/QuadraticForm.lean`), `wᵀQv` is `kernelCombo` (l.127) | the certificate consumes PSD blocks directly (`hQ : (Qs i).PosSemidef`, symmetry included in `PosSemidef`); conclusion (2) is `φ₀ ⟦(wᵀQv)²⟧₀ ≤ ⟨Qw,w⟩·Δ` with `⟨Qw,w⟩ = w ⬝ᵥ Q *ᵥ w`; conclusions (3)–(4) put the moment vector in `ker Q` (`Q *ᵥ χ(v) = 0`), a.s. and on all of `S_{σₜ}(Y)`; the rank/row-space sentence is unformalised linear-algebra prose (Deviation 13e) |
+| `prop:unique-slice-stability` (Prop 82, l.4240) | `unique_slice_stability` ([`RelativeSlackness.lean`](./RelativeSlackness.lean) l.366) | `Z` closed, slice `{φ ∈ Z ∣ ∀ j, φ(h_j) = c_j} = {φ*}` ⟹ every sequence in `Z` with converging densities converges to `φ*`; the index family is arbitrary (Deviation 13c — countability is unnecessary) |
+
 **Statements worth the closest reading** (their Lean encoding involves a modelling choice you should
 confirm is faithful, rather than a routine transcription): `FinitePlanting` and `SparseRootRepair`
 (the quantifier structure and the sum-type host), and the planting `def`s `oneRootPlant`/`twoRootPlant`
@@ -551,7 +621,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 7961 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 7972 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -565,7 +635,15 @@ printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' 
 #print axioms edgeDegenerate_of_subquadratic
 #print axioms complementation_invariance
 #print axioms no_interior_pinning
-#print axioms c5free_edge_not_rootPlantable' > /tmp/chk8.lean
+#print axioms c5free_edge_not_rootPlantable
+#print axioms relSσ_closure_eq
+#print axioms relative_soundness
+#print axioms relative_criterion
+#print axioms relative_slackness_global
+#print axioms downward_cauchy_schwarz
+#print axioms certificate_first_moment_sq_bound
+#print axioms unique_slice_stability
+#print axioms kernel_slackness_global' > /tmp/chk8.lean
 lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.sound]
 ```
 
@@ -686,8 +764,9 @@ flag-algebra base.
 
 ## Repository layout (this directory)
 
-* **`paper.tex`** — the source article; §1–9 (all subsections) are formalised here.
-* **`*.lean`** — 55 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.3 relative
+  theory are formalised here.
+* **`*.lean`** — 66 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
@@ -723,10 +802,17 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   density bounds": `prop:empty-type`, `cor:confined`, `thm:no-closed-certificate-gap`,
   `prop:ideal-zero`, `prop:single-point`, `cor:c5-edge-closed-inert`) is formalised in the
   `DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
-  `SinglePoint`/`C5EdgeInert` modules (Deviation 12).
+  `SinglePoint`/`C5EdgeInert` modules (Deviation 12). **§11.2–§11.3** (the relative-ensemble
+  foundation of the slice method: the relative support `S_σ(Y)` with `lem:relative-closure` /
+  `prop:relative-soundness` / `prop:relative-criterion`, and complementary slackness
+  `thm:relative-slackness` / `lem:relative-cauchy-schwarz` / `cor:sos-first-moments` /
+  `thm:kernel-slackness` / `prop:unique-slice-stability`) is formalised in the
+  `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules (Deviation 13).
 * **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
-  tentative general characterisation) — the one §9 result still open; **§11** (relative ensembles, the
-  `K₄`-free-`P₄` equality slice); and, within `cor:degenerate-family`, the non-`C₄` families (general
+  tentative general characterisation) — the one §9 result still open; **§11.4–§11.8** (the relative
+  Positivstellensatz / slice completeness, the Turán and Mantel equality slices, the `K₄`-free-`P₄`
+  equality slice, moment identities, rigidity, and quantitative stability — the applied instances
+  built on the §11.2–§11.3 foundation formalised here); and, within `cor:degenerate-family`, the non-`C₄` families (general
   `K_{s,t}` with `s ≥ 3`, even cycles, planar), which instantiate `edgeDegenerate_of_subquadratic`
   via classical extremal bounds that are outside the current Mathlib, so only the criterion (not
   those specific instances) is formalised. The criterion and machinery here are intended to be

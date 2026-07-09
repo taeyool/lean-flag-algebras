@@ -3,7 +3,7 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
-The development is 62 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+The development is 66 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
 
 ---
 
@@ -102,6 +102,15 @@ will meet them constantly:
   (`BooleanPoint`); the single-point collapse `Sσ_eq_singleton_of_edgeDegenerate` and the cone
   collapses (`SinglePoint`); and the `C₅`-edge inertness `c5free_edge_no_closed_certificate_gap`
   (`C5EdgeInert`).
+* In `MetaTheory` (§11.2–§11.3): the relative support `relSσ Y σ` (= `S_σ(Y)`, over an arbitrary
+  constraint set `Y ⊆ X₀`; `Sσ_eq_relSσ` recovers the absolute `Sσ` at `Y = Qσ forb0`), the
+  relative soundness/criterion pair `relative_soundness` / `relative_criterion`
+  (`RelativeSupport`); the closure invariance `relSσ_closure_eq` with the weak-continuity and
+  support-semicontinuity ingredients (`RelativeClosure`); the complementary-slackness family
+  `relative_slackness_*` with `downward_cauchy_schwarz`, the `√Δ` first-moment bounds (squared
+  form), and `unique_slice_stability` (`RelativeSlackness`); and the matrix form
+  `kernel_slackness_*` with `kernelCombo` and `eval_flagQuadraticForm` on top of the base
+  library's `flagQuadraticForm` (`KernelSlackness`).
 
 ---
 
@@ -153,6 +162,12 @@ jump straight to the module and Lean name; read that module's header, then the n
     bound) → `EmptyTypeCollapse` (`prop:empty-type`/`cor:confined`) → `CertificateCones`
     (`thm:no-closed-certificate-gap`) → `VanishingIdeal` (`prop:ideal-zero`) → `BooleanPoint` →
     `SinglePoint` (`prop:single-point`) → `C5EdgeInert` (`cor:c5-edge-closed-inert`).
+12. **§11.2–§11.3 the relative (slice) theory:** `RelativeSupport` (the relative support
+    `relSσ` = `S_σ(Y)`, soundness, the unconditional criterion) → `RelativeClosure`
+    (`lem:relative-closure`: weak continuity of `Ext_σ` + support lower-semicontinuity) →
+    `RelativeSlackness` (the `relative_slackness_*` workhorse, Cauchy–Schwarz, `√Δ` first
+    moments, unique-slice stability) → `KernelSlackness` (the matrix form: PSD blocks in,
+    `ker Q` moment equations out).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -218,6 +233,15 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 | Proposition 67 | §10 `prop:ideal-zero` (l.3634) | `VanishingIdeal` (+ final clause in `CertificateCones`) | `downward_eval_eq_zero_of_zero_on_Sσ`, `downward_mul_eval_eq_zero_of_zero_on_Sσ`, `pinned_witness_downward_eq_zero`, `downward_eval_congr_of_eqOn_Sσ`, `ensCone_eval_eq_quotCone_of_sos_agreement` |
 | Proposition 68 | §10 `prop:single-point` (l.3668) | `BooleanPoint`, `SinglePoint` | `edgelessPoint`, `completePoint`, `Sσ_eq_singleton_of_edgeDegenerate`, `Sσ_eq_singleton_of_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`, `coEdgeDegenerate_cone_collapse`, `smul_one_mem_quotCone_vtype` |
 | Corollary 70 | §10 `cor:c5-edge-closed-inert` (l.3749) | `C5EdgeInert` | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` |
+| — | §11.2 the relative support `S_σ(Y)` (display l.3822) | `RelativeSupport` | `relSσ`, `relSσ_isClosed`, `relSσ_mono`, `support_subset_relSσ`, `Sσ_eq_relSσ` |
+| Lemma 71 | §11.2 `lem:relative-closure` (l.3841) | `RelativeClosure` | `relSσ_closure_eq`, `extend_tendsto`, `support_subset_closure_iUnion_support` |
+| Proposition 72 | §11.2 `prop:relative-soundness` (l.3894) | `RelativeSupport` | `relative_soundness` |
+| Proposition 74 | §11.2 `prop:relative-criterion` (l.3934) | `RelativeSupport` | `relative_criterion`, `RelEnsembleNonneg` |
+| Theorem 76 (+ Remark 77 square instances) | §11.3 `thm:relative-slackness` (l.3978), `rem:cs-shape` (l.4045) | `RelativeSlackness` | `relative_slackness_soundness`, `_approx`, `_term`, `_slack`, `_exact_slack`, `_exact_term`, `_exact_ae`, `_global`, `_exact_ae_sq`, `_global_sq` |
+| Lemma 78 | §11.3 `lem:relative-cauchy-schwarz` (l.4067) | `RelativeSlackness` | `downward_cauchy_schwarz`, `downward_sq_eval_nonneg` |
+| Corollary 79 | §11.3 `cor:sos-first-moments` (l.4098) | `RelativeSlackness` | `certificate_first_moment_sq_bound`, `certificate_first_moment_sq_bound_one` |
+| Theorem 80 | §11.3 `thm:kernel-slackness` (l.4135) | `KernelSlackness` | `kernel_slackness_soundness`, `_approx`, `_exact_slack`, `_exact_ae`, `_global`; `kernelCombo`, `eval_flagQuadraticForm`, `posSemidef_dotProduct_mulVec_sq_le`, `posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero` |
+| Proposition 82 | §11.3 `prop:unique-slice-stability` (l.4240) | `RelativeSlackness` | `unique_slice_stability` |
 
 **Scope of `cor:degenerate-family` (Corollary 49).** Only the *abstract* subquadratic criterion
 `edgeDegenerate_of_subquadratic` is formalised. The named instances in the paper (general `K_{s,t}`
@@ -226,20 +250,23 @@ criterion via a classical extremal bound (`ex(n, K_{s,t})`, `ex(n, C_{2k})`, pla
 is outside the current Mathlib. The `C₄` case (`c4FreeClass_edgeDegenerate`, Lemma 47) is the one
 instance that is carried through.
 
-For line-numbered `paper.tex` ↦ Lean audit maps of **§8** and **§9 (§9.1–§9.5, incl.
-`lem:complementation`)**, see the
+For line-numbered `paper.tex` ↦ Lean audit maps of **§8**, **§9 (§9.1–§9.5, incl.
+`lem:complementation`)**, **§10**, and **§11.2–§11.3**, see the
 **[Auditing the correspondence](./README.md#auditing-the-correspondence-to-papertex)** section of the
 README — each row cites the paper number, `\label`, line, module, and Lean name. Statement-level
 checking of §9 can equally be done from the §9 rows of the map above, together with `#print axioms`
 on the headline theorems — so §9 is fully audited, not unverified.
 
-**Scope / not yet formalised.** The formalised frontier is **through §10** — including all of §9
-(`thm:pinning` Theorem 53, `lem:complementation` Lemma 50, the §9.4 boundary / no-interior theorem
-`thm:no-interior` Theorem 55, the §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable`
-Theorem 62) and all of §10 (`sec:empty-type`: Proposition 64 through Corollary 70). Not yet
-formalised (future work): the characterisation *conjecture* (`conj:characterisation`) — the one §9
-result still open — §11 (relative ensembles, the `K₄`-free-`P₄` equality slice), and the non-`C₄`
-degenerate families of Corollary 49. See the README's
+**Scope / not yet formalised.** The formalised frontier is **through §10, plus the §11.2–§11.3
+relative theory** — including all of §9 (`thm:pinning` Theorem 53, `lem:complementation` Lemma 50,
+the §9.4 boundary / no-interior theorem `thm:no-interior` Theorem 55, the §9.5 `C₅`-edge obstruction
+`thm:c5-edge-not-root-plantable` Theorem 62), all of §10 (`sec:empty-type`: Proposition 64 through
+Corollary 70), and the §11.2–§11.3 relative-ensemble foundation (Lemma 71 through Proposition 82;
+§11.1 is prose). Not yet formalised (future work): the characterisation *conjecture*
+(`conj:characterisation`) — the one §9 result still open — §11.4–§11.8 (slice completeness / the
+relative Positivstellensatz, the Turán and Mantel equality slices, the `K₄`-free-`P₄` equality
+slice, moment identities, rigidity, quantitative stability), and the non-`C₄` degenerate families
+of Corollary 49. See the README's
 **[Scope & limitations](./README.md#scope--limitations)** for the authoritative list.
 
 ---
@@ -262,7 +289,10 @@ degenerate families of Corollary 49. See the README's
   `complementation_invariance`, `no_interior_pinning`, `c5free_edge_not_rootPlantable` (§9);
   `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `no_closed_certificate_gap`,
   `Sσ_eq_singleton_of_edgeDegenerate`, `edgeDegenerate_cone_collapse`,
-  `c5free_edge_no_closed_certificate_gap` (§10). The README's
+  `c5free_edge_no_closed_certificate_gap` (§10); `relSσ_closure_eq`, `relative_soundness`,
+  `relative_criterion`, `relative_slackness_global`, `downward_cauchy_schwarz`,
+  `certificate_first_moment_sq_bound`, `unique_slice_stability`, `kernel_slackness_global`
+  (§11.2–§11.3). The README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
   §8/§9 subset of these in one `printf | lake env lean` invocation.
 

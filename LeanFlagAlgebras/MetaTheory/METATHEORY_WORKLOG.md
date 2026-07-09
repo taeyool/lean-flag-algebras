@@ -7,20 +7,23 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-09. (Stopping point: §1–**10** of `paper.tex` formalised — the WHOLE of §10
-(`sec:empty-type`, "the gap is invisible to density bounds", Prop 64–Cor 70) added this session in
-seven new modules (`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/
-`BooleanPoint`/`SinglePoint`/`C5EdgeInert`) — see "§10 — DONE" below. Prior sessions: §9.3–§9.5
+Last updated: 2026-07-09 (second session that day). (Stopping point: §1–**10** of `paper.tex`
+formalised PLUS the **§11.2–§11.3 relative theory** — the relative-ensemble foundation of the
+slice method (Lemma 71–Prop 82: `lem:relative-closure`, `prop:relative-soundness`,
+`prop:relative-criterion`, `thm:relative-slackness` + `rem:cs-shape` square instances,
+`lem:relative-cauchy-schwarz`, `cor:sos-first-moments`, `thm:kernel-slackness`,
+`prop:unique-slice-stability`) added this session in four new modules
+(`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`) — see
+"§11.2–§11.3 — DONE" below. Prior sessions: §10 ("§10 — DONE"), §9.3–§9.5
 ("§9.3–§9.5 — DONE"), §1–9.2 + `lem:complementation` ("§9–§9.2 — DONE"), §8 ("§8 — DONE").
-`lake build LeanFlagAlgebras.MetaTheory` → **7968 jobs green** (62 modules);
-`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all §10 headline theorems
-(`emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `extend_emptyType_eq_dirac`,
-`no_closed_certificate_gap`, `downward_eval_eq_zero_of_zero_on_Sσ`,
-`Sσ_eq_singleton_of_edgeDegenerate`/`_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`/
-`coEdgeDegenerate_cone_collapse`, `c5free_edge_no_closed_certificate_gap`) `#print axioms`
-= `[propext, Classical.choice, Quot.sound]`. Next target: **§11** (strengthening by a further
-constraint; relative-ensemble enhancements, `thm:relative-mantel`, the `K₄`-free-`P₄`
-equality-slice / stability results).)
+`lake build LeanFlagAlgebras.MetaTheory` → **7972 jobs green** (66 modules);
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all 33 public §11.2–§11.3
+declarations (and all earlier headline theorems) `#print axioms`
+= `[propext, Classical.choice, Quot.sound]`. Next target: **§11.4** (completeness of the slice
+method: `def:relative-plantability`, `prop:relative-plantability`, `prop:mantel-not-plantable`,
+`thm:relative-certificate-gap`, `thm:relative-positivstellensatz`), then §11.5–§11.8
+(`thm:turan-slice`/`thm:relative-mantel`, the `K₄`-free-`P₄` equality-slice / moment / rigidity /
+stability results).)
 
 ---
 
@@ -72,14 +75,26 @@ equality-slice / stability results).)
   `Sσ_eq_singleton_of_edgeDegenerate`/`_coEdgeDegenerate` + `edgeDegenerate_cone_collapse`/
   `coEdgeDegenerate_cone_collapse` (`prop:single-point`: `S_vtype` a single point, cones = `ℝ≥0·1₀`),
   `c5free_edge_no_closed_certificate_gap` (`cor:c5-edge-closed-inert`).
-* **Scale:** 62 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline results (§11.2–§11.3, the relative / slice theory):** the relative support
+  `relSσ Y σ` (= `S_σ(Y)`, arbitrary `Y`; `Sσ_eq_relSσ` = `Y = Q₀` recovery, `rfl`),
+  `relative_soundness` (`prop:relative-soundness`), `relative_criterion`
+  (`prop:relative-criterion`, **unconditional**), `relSσ_closure_eq` (`lem:relative-closure`,
+  via `extend_tendsto` weak continuity + `support_subset_closure_iUnion_support`), the
+  complementary-slackness family `relative_slackness_*` (+ `_exact_ae_sq`/`_global_sq`,
+  `thm:relative-slackness` + `rem:cs-shape`), `downward_cauchy_schwarz`
+  (`lem:relative-cauchy-schwarz`), `certificate_first_moment_sq_bound(_one)`
+  (`cor:sos-first-moments`), `unique_slice_stability` (`prop:unique-slice-stability`), and the
+  matrix form `kernel_slackness_*` (`thm:kernel-slackness`: PSD blocks in, `ker Q` moment
+  equations out) — the foundation for the §11.4+ slice results.
+* **Scale:** 66 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
   [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
   [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
-  `SinglePoint`/`C5EdgeInert`]) + 4 committed reference docs
-  (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in namespace
-  `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the top build
-  manifest `LeanFlagAlgebras.lean`.
+  `SinglePoint`/`C5EdgeInert`], +4 for §11.2–§11.3
+  [`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`]) + 4 committed
+  reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in
+  namespace `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the
+  top build manifest `LeanFlagAlgebras.lean`.
 
 ## Read these first (committed reference docs, same directory)
 
@@ -114,7 +129,7 @@ equality-slice / stability results).)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 7968 jobs, green (§1–10)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 7972 jobs, green (§1–10 + §11.2–§11.3)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -122,7 +137,10 @@ equality-slice / stability results).)
               pinning_obstruction no_interior_pinning c5free_edge_not_rootPlantable \
               emptyType_rootPlantable heredClass_emptyType_rootPlantable no_closed_certificate_gap \
               Sσ_eq_singleton_of_edgeDegenerate edgeDegenerate_cone_collapse \
-              coEdgeDegenerate_cone_collapse c5free_edge_no_closed_certificate_gap; \
+              coEdgeDegenerate_cone_collapse c5free_edge_no_closed_certificate_gap \
+              relSσ_closure_eq relative_soundness relative_criterion relative_slackness_global \
+              downward_cauchy_schwarz certificate_first_moment_sq_bound unique_slice_stability \
+              kernel_slackness_global; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    ```
@@ -400,6 +418,76 @@ per-module oleans only after; full aggregator build + `#print axioms` at the end
 modules were proved by **four agents in parallel** (each owning one file, using the others' stable
 *types* as black boxes), then the full clean rebuild connected the chain.
 
+## §11.2–§11.3 — DONE (2026-07-09, second session). "Relative ensembles + complementary slackness"
+
+Four new modules (all green, `sorry`/`admit`/`native_decide`-free, no `maxHeartbeats` raises,
+axioms `[propext, Classical.choice, Quot.sound]` on all 33 public declarations), wired into
+`MetaTheory.lean` after `C5EdgeInert`. **The foundational §11.2–§11.3 relative theory (Lemma
+71–Prop 82) is now formalised**; §11.1 is prose (it cites the already-formalised §5–§8 criteria).
+
+* **`RelativeSupport`** — §11.2. The relative support `relSσ Y σ` (= `S_σ(Y)`) generalises `Sσ`
+  by replacing the `Qσ forb0` membership with an arbitrary `Y : Set (PositiveHomSpace ∅ₜ)` in the
+  same closure-of-supports definition — so `Sσ_eq_relSσ` (`Y = Q₀` recovery) is `rfl`. Relative
+  soundness `relative_soundness` (`prop:relative-soundness`; degenerate `φ₀⟨σ⟩₀ = 0` case via
+  `downward_eval_eq_zero_of_degenerate`) and the **unconditional** relative criterion
+  `relative_criterion` (`prop:relative-criterion`) — both directions are the "easy" directions of
+  `support_criterion`, no Urysohn needed (relative semantics has no external benchmark to miss).
+* **`RelativeClosure`** — §11.2 `lem:relative-closure` (`relSσ_closure_eq`:
+  `S_σ(closure Y) = S_σ(Y)`). The one genuinely new analysis: weak continuity of the random
+  extension on the positive-type-density region (`extend_tendsto` — flag-evaluation integrals are
+  the evaluation-continuous ratios `φ ⟦f⟧₀ / φ ⟦1⟧₀` by the extension spec; ε/3 +
+  `exists_flag_near` upgrades to all of `C(X_σ)` via
+  `ProbabilityMeasure.tendsto_iff_forall_integral_tendsto`), plus support lower-semicontinuity
+  along weak convergence (`support_subset_closure_iUnion_support`; portmanteau
+  `ProbabilityMeasure.le_liminf_measure_open_of_tendsto` on balls +
+  `Measure.measure_compl_support`).
+* **`RelativeSlackness`** — §11.3 `thm:relative-slackness` as the `relative_slackness_*` family
+  (soundness / aggregate / per-term / slack approximate; slack, term, a.s. exact; global
+  vanishing on `S_σ(Y)` via ±f `ae_nonneg_iff_nonneg_on_support` + `closure_minimal`), the
+  `rem:cs-shape` square instances `_exact_ae_sq`/`_global_sq` (`fᵢ = l·l` ⟹ `ψ(l) = 0` a.s. /
+  `l = 0` on the support; added post-audit), `downward_cauchy_schwarz`
+  (`lem:relative-cauchy-schwarz` — a thin wrapper over the PRE-EXISTING base-library
+  `square_downward_mul_ge_mul_downward_square`, RandomHom), the `√Δ` first-moment bounds in
+  squared form (`certificate_first_moment_sq_bound(_one)`, `cor:sos-first-moments`), and
+  `unique_slice_stability` (`prop:unique-slice-stability`; arbitrary index family —
+  countability unnecessary; `tendsto_of_subseq_tendsto` + `CompactSpace.tendsto_subseq`).
+* **`KernelSlackness`** — §11.3 `thm:kernel-slackness` (`kernel_slackness_*`): the matrix form
+  over the base library's `flagQuadraticForm` (`⟨Qv,v⟩`); `eval_flagQuadraticForm` (evaluation =
+  moment-vector quadratic form), the two real-PSD facts by `discrim_le_zero`
+  (`posSemidef_dotProduct_mulVec_sq_le`, `posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero`),
+  `kernelCombo` (= `wᵀQv`), and a **measure-free semantic-cone route** for the approximate bound
+  (`downward_preserve_semanticCone` on `⟨Qw,w⟩•⟨Qv,v⟩ − (wᵀQv)²` — no degenerate-case split).
+
+**Deviations (README Deviation 13):** (a) `Y` arbitrary ⊆ `X₀` (paper: nonempty ⊆ `Q₀`) — strict
+generalisation, nothing needs the dropped hypotheses; (b) `√Δ` bounds in squared form (no
+`Real.sqrt`); (c) `prop:unique-slice-stability` over an arbitrary index family; (d)
+Cauchy–Schwarz by reuse of the existing RandomHom lemma; (e) kernel form on `flagQuadraticForm`,
+`wᵀQv` as `kernelCombo` via symmetry, the rank/row-space closing sentence left as prose; (f)
+remarks not formalised except `rem:cs-shape`'s square-instance readings (the `_sq` exports).
+
+**Adversarial statement audit (this session's extra verification step):** a 5-agent workflow
+(one auditor per module + a coverage critic) compared every Lean statement against the paper's
+§11.2–§11.3 claims (quantifiers, hypotheses, inequality directions, definitional faithfulness).
+Result: **no substantive mismatch**; all findings FAITHFUL or sanctioned-deviation, except one
+low-severity coverage nit (the `rem:cs-shape` square instances not being exported) — fixed on the
+spot by adding `relative_slackness_exact_ae_sq`/`relative_slackness_global_sq`.
+
+**How it was reused.** `RelativeSupport` is `SupportClosure`/`DownwardAverage` re-run over `Y`
+(same proofs, one membership swapped); the a.e.-vanishing arguments reuse the `forbidden_ae_zero`
+pattern + `integral_eq_zero_iff_of_nonneg_ae`; `RelativeClosure` reuses the extension spec,
+`exists_flag_near` (Stone–Weierstrass), `positiveHom_one_downward_pos`, and Mathlib's portmanteau
++ `Measure.support` API; the slackness modules consume `relative_soundness` + the spec only; the
+kernel module reuses `FlagAlgebra/QuadraticForm.lean` (`flagQuadraticForm`,
+`downward_preserve_semanticCone`, `le_def`) and `Matrix.PosSemidef.dotProduct_mulVec_nonneg`.
+**Workflow (same as §9.3–§10, and it worked again):** scaffold all four modules' *statements*
+with `sorry`, build the sorry-oleans once → four agents in parallel, one per module, each
+iterating `lake env lean <file>` only (no build-lock conflicts), with a shared verified-API cheat
+sheet and per-sorry proof-route comments → statement-drift check against a scaffold snapshot
+(public declaration lists identical) → aggregator build (7972 jobs) → `#print axioms` on all
+public declarations → **adversarial statement-audit workflow** (new step; keep it) → docs → commit.
+NB this session ran in a fresh git worktree: the warm `.lake` was CLONED from the main checkout
+with `cp -Rc` (APFS copy-on-write, ~30 s) instead of rebuilding — worked perfectly.
+
 ## §10 — DONE (2026-07-09). "The gap is invisible to density bounds"
 
 Seven new modules (all green, `sorry`/`admit`/`native_decide`-free, no `maxHeartbeats` raises,
@@ -480,29 +568,45 @@ snapshot (public declaration lists identical) → per-module rebuilds → aggreg
 
 ## Next work / open follow-ups
 
-**▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE** — §9 (all of
-§9.1–§9.5) + `lem:complementation` from the previous sessions, and **§10 (`sec:empty-type`,
-Prop 64–Cor 70) added 2026-07-09** (the 7 new modules `DownwardAverage`/`EmptyTypeCollapse`/
-`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert` + `MetaTheory.lean`
-+ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync). All green, `sorry`-free, axiom-clean.
-The natural next target is **§11**. In paper order (find sections by `\section{...}`/`\label{...}`,
-**not** line number — they drift):
+**▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE**, plus the
+**§11.2–§11.3 relative theory added 2026-07-09 (second session)** — the 4 new modules
+`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` + `MetaTheory.lean`
++ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync. All green, `sorry`-free, axiom-clean,
+statement-audited (5-agent adversarial audit vs the paper). The natural next target is **§11.4**.
+In paper order (find sections by `\section{...}`/`\label{...}`, **not** line number — they drift):
 
-* **§11 "Strengthening by a further constraint"** — relative-ensemble enhancements + the
-  `K₄`-free-`P₄` equality-slice / stability results (`thm:relative-mantel`,
-  `thm:k4free-p4-equality-slice`/`-tripartite`, `subsec:slice-completeness`, the moment/graphon and
-  quantitative-stability subsections). This is the large applied section; scope a session per
+* **§11.4 `subsec:slice-completeness`** — `def:relative-plantability` (the relative planted set
+  `Q_σ(Y)` and relative root-plantability), `prop:relative-plantability` (structure of the planted
+  set; part (ii) is the relative criterion vs the QUOTIENT-relative benchmark),
+  `prop:mantel-not-plantable` (the Mantel slice breaks relative root-plantability — needs the
+  triangle-free extremal structure at the slice), `thm:relative-certificate-gap` (no closed
+  certificate gap over a slice — should mirror `CertificateCones` with `relSσ` in place of `Sσ`),
+  and `thm:relative-positivstellensatz` (the ε-penalty completeness theorem). Expect
+  `CertificateCones`-style Stone–Weierstrass work; `relSσ`/`relative_soundness` are the inputs.
+* Then **§11.5–§11.6** (`thm:turan-slice`, `thm:relative-mantel`,
+  `prop:equality-slice-vanishing`, `thm:k4free-p4-equality-slice`,
+  `thm:parametric-p4-equality-slice`) and **§11.7–§11.8** (moment identities, rigidity,
+  tripartite certificate route, recovery, qualitative + quantitative stability). These consume
+  `relative_slackness_*`/`kernel_slackness_*` and concrete certificates; scope a session per
   subsection.
 
-Reusable scaffolding for the above: the generalised-blow-up machinery (`subBlowup`,
+Reusable scaffolding for the above: the §11.2–§11.3 layer just added (`relSσ`,
+`relative_soundness`/`relative_criterion`, `relSσ_closure_eq`, the slackness families,
+`unique_slice_stability`), the generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
-(`FinitePlanting`/`SparseRootRepair`), and the §9 obstruction + complement stacks. **Workflow that
-worked this session:** scaffold each statement (with `sorry`) and parse-check via `lake env lean`
-first → delegate each intricate proof to its own agent iterating on `lake env lean <module>` (no
-build lock) → build per-module oleans → full aggregator build → `#print axioms` → commit. For a big
-multi-piece result (like `lem:complementation`) build it in **verified layers**, one module each.
+(`FinitePlanting`/`SparseRootRepair`), the §9 obstruction + complement stacks, and
+`CertificateCones` (whose ε-closure and Stone–Weierstrass pattern `thm:relative-certificate-gap`
+mirrors). **Workflow that worked this session (repeat it):** scaffold each statement (with
+`sorry`) and build the sorry-oleans once → delegate each module's proofs to its own agent
+iterating on `lake env lean <module>` (no build lock) → statement-drift check vs the scaffold
+snapshot → full aggregator build → `#print axioms` on every public declaration → 5-agent
+adversarial statement-audit workflow vs the paper (cheap, caught a real coverage nit this time)
+→ docs → commit. In a fresh worktree, clone the warm `.lake` from the main checkout with
+`cp -Rc` (~30 s) instead of rebuilding.
 
-**Already DONE (do NOT re-attempt):** ALL of §1–§10 — most recently the whole of §10
+**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.3 — most recently the
+§11.2–§11.3 relative theory (`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/
+`KernelSlackness`, session 2026-07-09 #2); before that the whole of §10
 (`sec:empty-type`, Prop 64–Cor 70; the seven modules `DownwardAverage`/`EmptyTypeCollapse`/
 `CertificateCones`/`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert`, session 2026-07-09);
 before that §9 / §9.1–§9.5 (the obstruction modules

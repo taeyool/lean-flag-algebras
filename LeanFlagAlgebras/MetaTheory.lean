@@ -60,11 +60,16 @@ import LeanFlagAlgebras.MetaTheory.VanishingIdeal
 import LeanFlagAlgebras.MetaTheory.BooleanPoint
 import LeanFlagAlgebras.MetaTheory.SinglePoint
 import LeanFlagAlgebras.MetaTheory.C5EdgeInert
+import LeanFlagAlgebras.MetaTheory.RelativeSupport
+import LeanFlagAlgebras.MetaTheory.RelativeClosure
+import LeanFlagAlgebras.MetaTheory.RelativeSlackness
+import LeanFlagAlgebras.MetaTheory.KernelSlackness
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
-Formalisation of the proved results in §1–10 of `MetaTheory/paper.tex`: when forbidden-subgraph
-("quotient") reasoning is *complete* for a constrained graph class, and when it can fail.
+Formalisation of the proved results in §1–10 and §11.2–§11.3 of `MetaTheory/paper.tex`: when
+forbidden-subgraph ("quotient") reasoning is *complete* for a constrained graph class, when it
+can fail, and the relative (slice) theory that strengthens it by further constraints.
 
 Aggregator. Currently wires in:
 
@@ -348,4 +353,20 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   inert (`c5free_edge_no_closed_certificate_gap`); the pinned witness `F_△` vanishes on all of
   `S_τ` (`c5free_Ftri_zero_on_Sσ`) and, with every flag-multiple, unlabels to zero
   (`c5free_Ftri_mul_downward_eq_zero`).
+* `RelativeSupport` — §11.2 relative ensemble semantics: the relative support `relSσ Y σ`
+  (= `S_σ(Y)`), relative soundness (`prop:relative-soundness`, `relative_soundness`), the
+  unconditional relative support-closure criterion (`prop:relative-criterion`,
+  `relative_criterion`), and `Y = Q₀` recovery of the absolute theory (`Sσ_eq_relSσ`).
+* `RelativeClosure` — §11.2 `lem:relative-closure` (`relSσ_closure_eq`): closing the constraint
+  set does not change the relative support; via weak continuity of the random extension
+  (`extend_tendsto`) and support lower-semicontinuity along weak convergence
+  (`support_subset_closure_iUnion_support`).
+* `RelativeSlackness` — §11.3 `thm:relative-slackness` (the `relative_slackness_*` family:
+  soundness, approximate, exact, and global vanishing), `lem:relative-cauchy-schwarz`
+  (`downward_cauchy_schwarz`), `cor:sos-first-moments`
+  (`certificate_first_moment_sq_bound(_one)`), and `prop:unique-slice-stability`
+  (`unique_slice_stability`).
+* `KernelSlackness` — §11.3 `thm:kernel-slackness` (the `kernel_slackness_*` family): the
+  matrix form of complementary slackness consuming a PSD block certificate directly; on the
+  equality slice the labelled moment vector falls into `ker Q` (a.s. and on all of `S_σ(Y)`).
 -/

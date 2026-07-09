@@ -148,6 +148,31 @@ every edge-containing (non-complete) flag, and per size exactly one flag survive
 so both certificate cones collapse to the ray `ℝ≥0·1₀`. `cor:c5-edge-closed-inert` instantiates the
 closed-cone equality at `(c5FreeClass, edgeType)`.
 
+**§11.2–§11.3** relativise the whole semantic apparatus to an *arbitrary* constraint set `Y ⊆ X₀`
+of admissible unlabelled limits — the foundation of the paper's slice method. The relative support
+`relSσ Y σ` (= `S_σ(Y)`) generalises `Sσ` by replacing "`posHomPoint φ₀ ∈ Qσ forb0`" with
+"`posHomPoint φ₀ ∈ Y`" in the same closure-of-supports definition (so `Sσ_eq_relSσ` is `rfl`), and
+the two §4 "easy directions" become the *unconditional* relative criterion
+(`relative_criterion` — no Urysohn, no root-plantability: relative semantics has no external
+benchmark to miss). `lem:relative-closure` (`relSσ_closure_eq`) needs the only genuinely new
+analysis of the layer: the random-extension map `φ ↦ ℙ[φ]` is weakly continuous where the type
+density is positive (`extend_tendsto` — on flag evaluations the integral is the ratio
+`φ ⟦f⟧₀ / φ ⟦1⟧₀` by the extension spec, and Stone–Weierstrass upgrades to all of `C(X_σ)` by an
+ε/3 argument), and supports are lower-semicontinuous along weak convergence
+(`support_subset_closure_iUnion_support`, portmanteau on open balls). On top of soundness sits the
+complementary-slackness workhorse (`relative_slackness_*`): soundness drops non-negative terms;
+near-equality bounds every term by the slack `Δ`; on the equality slice every term vanishes —
+pointwise, almost surely under every admissible rooting (`integral_eq_zero_iff_of_nonneg_ae` at the
+extension measure), and — by closure — identically on `S_σ(Y)`. Cauchy–Schwarz
+(`downward_cauchy_schwarz`, the base library's extension-measure proof re-exposed) converts the
+`O(Δ)` control on averaged squares into `O(√Δ)` control on first moments (kept in squared form),
+and compactness alone upgrades a singleton slice to qualitative stability
+(`unique_slice_stability`). The kernel form (`kernel_slackness_*`) consumes an SDP certificate's
+PSD blocks directly through the base library's `flagQuadraticForm`: the pointwise PSD
+Cauchy–Schwarz (`posSemidef_dotProduct_mulVec_sq_le`, proved by the quadratic discriminant) turns
+each weight vector `w` into the labelled equation `wᵀQv = 0` on the slice, i.e. the moment vector
+falls into `ker Q` (`posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero`).
+
 ---
 
 ## Dependency layers
@@ -636,6 +661,43 @@ the §9 `EdgeObstruction` layer, and the base-library expansion lemmas
   `c5free_edge_no_closed_certificate_gap` (instance of Thm 66), `c5free_Ftri_zero_on_Sσ`
   (a.s. pinning upgraded to all of `S_τ`), `c5free_Ftri_mul_downward_eq_zero` (Prop 67 applied).
 
+### §11.2–§11.3 the relative (slice) theory
+
+Four modules; a thin, reuse-heavy layer — `RelativeSupport` mirrors `SupportClosure`/
+`DownwardAverage` over an arbitrary `Y`, `RelativeClosure` is the one new analytic result, and the
+two slackness modules are consequences of `relative_soundness` plus the extension-measure spec.
+
+* **[`RelativeSupport`](./RelativeSupport.lean)** — the relative support `relSσ Y σ` (= `S_σ(Y)`;
+  `Sσ_eq_relSσ` recovers `Sσ` at `Y = Qσ forb0` by `rfl`), `support_subset_relSσ`/`relSσ_mono`,
+  relative soundness `relative_soundness` (`prop:relative-soundness`; the degenerate case via
+  `downward_eval_eq_zero_of_degenerate`), and the **unconditional** relative criterion
+  `relative_criterion` (`prop:relative-criterion`) with `RelEnsembleNonneg` — both directions are
+  the "easy" directions of `thm:support-criterion`, no Urysohn function needed.
+* **[`RelativeClosure`](./RelativeClosure.lean)** — `lem:relative-closure` (`relSσ_closure_eq`:
+  `S_σ(closure Y) = S_σ(Y)`), from weak continuity of the random extension (`extend_tendsto`;
+  flag-evaluation integrals are evaluation-continuous ratios by the extension spec, ε/3 +
+  `exists_flag_near` upgrades to all bounded continuous functions) and support
+  lower-semicontinuity along weak convergence (`support_subset_closure_iUnion_support`;
+  portmanteau `ProbabilityMeasure.le_liminf_measure_open_of_tendsto` on open balls +
+  `Measure.measure_compl_support`).
+* **[`RelativeSlackness`](./RelativeSlackness.lean)** — `thm:relative-slackness` as the
+  `relative_slackness_*` family (soundness / aggregate / per-term / slack-term approximate bounds;
+  slack, term, and almost-sure exact vanishing; global vanishing on `S_σ(Y)` via
+  `ae_nonneg_iff_nonneg_on_support` applied to `±f` and `closure_minimal`; plus the `rem:cs-shape`
+  square instances `relative_slackness_exact_ae_sq` / `relative_slackness_global_sq`, reading
+  `ψ(l) = 0` a.s. and `l = 0` on `S_{σᵢ}(Y)` when `fᵢ = l·l`); Cauchy–Schwarz
+  `downward_cauchy_schwarz` (wrapper over the base library's
+  `square_downward_mul_ge_mul_downward_square`); the `√Δ` first-moment bounds in squared form
+  (`certificate_first_moment_sq_bound(_one)`); and `unique_slice_stability`
+  (`tendsto_of_subseq_tendsto` + compactness of `X₀`).
+* **[`KernelSlackness`](./KernelSlackness.lean)** — `thm:kernel-slackness` as the five-part
+  `kernel_slackness_*` family over the base library's `flagQuadraticForm` (`⟨Qv,v⟩`): the
+  evaluation identity `eval_flagQuadraticForm` (moment-vector quadratic form), two elementary
+  real-PSD facts by the quadratic discriminant (`posSemidef_dotProduct_mulVec_sq_le`,
+  `posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero`), the row combination `kernelCombo`
+  (= `wᵀQv`), and — notably — a measure-free semantic-cone route for the approximate bound
+  (`downward_preserve_semanticCone` on `⟨Qw,w⟩•⟨Qv,v⟩ − (wᵀQv)²`).
+
 ---
 
 ## The capstone proof, step by step (`clone_root_plantable`)
@@ -743,12 +805,23 @@ elsewhere). **§10 is formalised in full** (`sec:empty-type`, Prop 64–Cor 70: 
 vanishing ideal `prop:ideal-zero`, the single-point collapse `prop:single-point`, and the `C₅`-edge
 inertness `cor:c5-edge-closed-inert` — the `DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/
 `VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert` modules, README Deviation 12).
+**The §11.2–§11.3 relative theory is formalised** (Lemma 71–Proposition 82: the relative support
+`S_σ(Y)` with `lem:relative-closure`/`prop:relative-soundness`/`prop:relative-criterion`, and the
+complementary-slackness principle `thm:relative-slackness`/`lem:relative-cauchy-schwarz`/
+`cor:sos-first-moments`/`thm:kernel-slackness`/`prop:unique-slice-stability` — the
+`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules, README
+Deviation 13; §11.1 is prose).
 
 Not yet formalised (future work; the machinery here is intended to be reusable for it):
 
 * the pinning **conjecture** `conj:characterisation` (the tentative general characterisation) — the
   one §9 result still open;
-* **§11** (relative ensembles, the `K₄`-free-`P₄` equality slice);
+* **§11.4–§11.8** (slice completeness / the relative Positivstellensatz
+  `thm:relative-positivstellensatz` / `thm:relative-certificate-gap` with
+  `def:relative-plantability`, the Turán / Mantel equality slices `thm:turan-slice` /
+  `thm:relative-mantel`, the `K₄`-free-`P₄` equality slice and its parametric version, the moment
+  identities / rigidity / recovery corollaries, and quantitative stability — the applied §11
+  instances built on the §11.2–§11.3 foundation formalised here);
 * within `cor:degenerate-family`, the **three non-`C₄` families** — general `K_{s,t}` (`s ≥ 3`), even
   cycles `C_{2k}`, and planar graphs — whose extremal edge bounds (Kővári–Sós–Turán,
   Bondy–Simonovits, the planar `≤ 3n−6` bound) lie outside current Mathlib. Only the abstract
