@@ -53,10 +53,17 @@ import LeanFlagAlgebras.MetaTheory.NoInterior
 import LeanFlagAlgebras.MetaTheory.EdgeThinning
 import LeanFlagAlgebras.MetaTheory.EdgeThinningLimit
 import LeanFlagAlgebras.MetaTheory.NoInteriorThinning
+import LeanFlagAlgebras.MetaTheory.DownwardAverage
+import LeanFlagAlgebras.MetaTheory.EmptyTypeCollapse
+import LeanFlagAlgebras.MetaTheory.CertificateCones
+import LeanFlagAlgebras.MetaTheory.VanishingIdeal
+import LeanFlagAlgebras.MetaTheory.BooleanPoint
+import LeanFlagAlgebras.MetaTheory.SinglePoint
+import LeanFlagAlgebras.MetaTheory.C5EdgeInert
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
-Formalisation of the proved results in §1–9.2 of `MetaTheory/paper.tex`: when forbidden-subgraph
+Formalisation of the proved results in §1–10 of `MetaTheory/paper.tex`: when forbidden-subgraph
 ("quotient") reasoning is *complete* for a constrained graph class, and when it can fail.
 
 Aggregator. Currently wires in:
@@ -296,4 +303,49 @@ constrained limits.
   edgeless extension of each size `→ 1`), so an L¹/Markov cylinder argument places that boolean point
   `ψ_σ ∈ S_σ`; hence the capstone `no_interior_pinning` (`thm:no-interior`): a `σ`-flag pinned to `c`
   on `S_σ` has `c ∈ {0,1}`.
+
+§10 is **the gap is invisible to density bounds** (`sec:empty-type`, Prop 64–Cor 70): the §9
+obstructions never affect an actual empty-type density bound — the two semantics coincide at the
+empty type, and the witnesses that expose the gap unlabel to zero.
+
+* `DownwardAverage` — the §10 engine: the `posHomPoint`/`toPosHom` roundtrips, the unlabelling
+  weight is a probability (`downwardNormalizingFactor_le_one`, so `φ₀ ⟦1⟧₀ ∈ [0,1]`), degenerate
+  base limits kill every unlabelled average (`downward_eval_eq_zero_of_degenerate`), the **master
+  evaluation bound** `abs_downward_eval_le_of_abs_le_on_Sσ` (`|s| ≤ δ` on `S_σ` ⟹ `|φ₀ ⟦s⟧₀| ≤ δ`
+  on `Q₀`), and the singleton collapse `downward_eval_eq_of_Sσ_singleton`.
+* `EmptyTypeCollapse` — §10 `prop:empty-type` + `cor:confined`: the empty-type extension is Dirac
+  (`extend_emptyType_eq_dirac`, via the moment-uniqueness theorem `measure_eq_of_integral_flag_eq`
+  and `downward_emptyType`), `S_∅ = Q₀` (`Sσ_emptyType_eq`), the empty type is always
+  root-plantable (`emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`), and the two
+  semantics coincide on `A⁰` (`emptyType_quotient_iff_ensemble`,
+  `ensemble_implies_quotient_emptyType`).
+* `CertificateCones` — §10 `thm:no-closed-certificate-gap`: the quotient cone `quotCone`
+  (unlabelled averages of sums of squares) and the ensemble cone `ensCone` (of elements
+  non-negative on `S_σ`) have the same closure in the `Q₀`-seminorm (`Q0Within`/`MemQ0Closure`);
+  the crux `ensCone_subset_closure_quotCone` approximates `√(max(s,0))` by a flag evaluation
+  (Stone–Weierstrass `exists_flag_near`) and squares it; the equality `no_closed_certificate_gap`
+  holds for every type — no non-degeneracy needed.
+* `VanishingIdeal` — §10 `prop:ideal-zero`: elements vanishing on `S_σ` unlabel to zero on `Q₀`
+  (`downward_eval_eq_zero_of_zero_on_Sσ`), an ideal (`downward_mul_eval_eq_zero_of_zero_on_Sσ`);
+  pinning witnesses `g − c•1` and their flag-multiples unlabel to zero
+  (`pinned_witness_downward_eq_zero`); equal evaluations on `S_σ` give equal averages
+  (`downward_eval_congr_of_eqOn_Sσ`).
+* `BooleanPoint` — the labelled empty-graph limit `edgelessPoint` and complete-graph limit
+  `completePoint` in `X_vtype`: the `IsEdgelessFlag`/`IsCompleteFlag` predicates, per-size
+  uniqueness of the edgeless/complete flag, existence via rooted flag-sequence limits, and the
+  boolean-profile workhorse `val_eq_boolean_of_nonEdgeless_zero` (vanishing pattern ⟹ full
+  profile, by size-`n` sum-to-one), with the uniqueness lemmas
+  `eq_edgelessPoint_of_nonEdgeless_zero` / `eq_completePoint_of_nonComplete_zero`.
+* `SinglePoint` — §10 `prop:single-point`: for an edge-degenerate class every edge-containing
+  unlabelled flag dies (`eval_eq_zero_of_edgeDegenerate`, expanding the 2-vertex edge flag), so
+  all non-edgeless `vtype`-flags vanish a.s. and `S_vtype = {edgelessPoint}`
+  (`Sσ_eq_singleton_of_edgeDegenerate`); dually `S_vtype = {completePoint}` for a
+  co-edge-degenerate class (direct mirror — not via `lem:complementation`).  Both certificate
+  cones collapse to the ray `ℝ≥0·1₀` (`edgeDegenerate_cone_collapse`,
+  `coEdgeDegenerate_cone_collapse`, `smul_one_mem_quotCone_vtype`): the §9 degeneracy
+  counterexamples cost nothing for density bounds.
+* `C5EdgeInert` — §10 `cor:c5-edge-closed-inert`: the `C₅`-free edge-type gap is closed-cone
+  inert (`c5free_edge_no_closed_certificate_gap`); the pinned witness `F_△` vanishes on all of
+  `S_τ` (`c5free_Ftri_zero_on_Sσ`) and, with every flag-multiple, unlabels to zero
+  (`c5free_Ftri_mul_downward_eq_zero`).
 -/
