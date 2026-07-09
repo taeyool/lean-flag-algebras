@@ -130,7 +130,12 @@ ensemble semantics is strictly more flexible: it can impose non-hereditary const
 such as fixing a limit's edge density, and thereby read off the local structure of
 extremal configurations.  For instance, the verified $K_4$-free $P_4$ certificate, read
 through this lens, forces every extremiser to be the balanced complete tripartite graph,
-with a quantitative stability version.
+with a quantitative stability version.  Ensemble semantics also carries a variational
+calculus the quotient cannot express: every hereditary class is invariant under
+reweighting the vertices of a limit, so extremisers satisfy almost-sure Euler--Lagrange
+and second-variation conditions at typical roots; these alone re-derive Mantel's
+theorem with the uniqueness and stability of its extremiser, and on the $P_4$ slices
+they exclude the sparse endpoint of the admissible density interval.
 \end{abstract}
 
 \section{Introduction}
@@ -296,7 +301,16 @@ extremiser to be the balanced complete tripartite graph outright---the two mined
 labelled equations are rigid by themselves, with no appeal to the equality case of
 Tur\'an's theorem (\cref{thm:k4free-p4-tripartite})---with a quantitative stability
 version (\cref{thm:k4free-p4-quant-stability}) and an
-$r$-partite generalisation (\cref{thm:parametric-p4-equality-slice}).
+$r$-partite generalisation (\cref{thm:parametric-p4-equality-slice}).  Ensemble
+semantics also supports a certificate-free variational calculus
+(\cref{sec:variational}): every hereditary class is invariant under reweighting the
+vertices of a limit, so an extremiser of any density functional obeys an almost-sure
+Euler--Lagrange equation and a second-order spectral condition at typical
+roots---statements that fail at exceptional roots and so cannot be phrased in the
+quotient.  First and second variation alone re-derive Mantel's theorem together with
+the uniqueness and stability of its extremiser (\cref{thm:variational-mantel}), and on
+the $P_4$ slices the Euler--Lagrange equation excludes the sparse endpoint of the
+admissible density interval outright (\cref{cor:p4-lower-endpoint}).
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -5504,9 +5518,890 @@ modulus of the Zykov equality case.  A sharper modulus at $r=3$ would require ad
 information beyond the three square terms.
 \end{remark}
 
+\section{A variational calculus on extremal slices}\label{sec:variational}
+
+The mining mechanism of \cref{thm:relative-slackness} starts from a certificate:
+complementary slackness converts each certificate term into a labelled equation on the
+equality slice.  This section develops a second source of such equations, one that needs
+no certificate at all---and, once again, one that lives in ensemble semantics.
+The starting observation is that the space $Q_0$ of constrained limits of \emph{every}
+hereditary class carries a family of flows under which it is invariant: reweightings of
+the vertices of a representing graphon.  A forbidden subgraph can be created by adding
+or deleting edges, but never by resampling vertices, so edge perturbations---the usual
+directions of variational arguments over all graphs---are unavailable under a
+forbidden-subgraph constraint, while vertex reweightings always are.  An extremiser of a
+density functional is a maximum along every such flow, and the optimality conditions are
+almost-sure statements about the view from a typical root.  The first-order condition is
+Razborov's differential method: his \cite[Theorem 4.3]{Razborov2007} proves, by vertex
+deletion and in exactly this paper's ensemble semantics, that the rooted derivative of
+the objective vanishes almost surely at a locally extremal homomorphism of any
+vertex-uniform universal theory; Lov\'asz \cite[Lemma 16.5]{Lovasz2012book} re-derives
+the condition over the unconstrained graphon space by the reweighting flow itself, and
+the flow has recently been used problem-by-problem \cite{LiLiuZhang2026}.  The finite
+ancestor of all of it is the weight-shifting symmetrisation of Zykov and of
+Motzkin--Straus \cite{Zykov1949,MotzkinStraus}.
+
+What this section adds is the rest of the calculus, in the relative-support formalism
+of this paper.  The reweighting flows make the hereditary invariance a one-line lemma
+(\cref{lem:reweighting-invariance}) and then deliver, uniformly over all hereditary
+classes and all density functionals: the Euler--Lagrange equation as a \emph{pinning
+statement on the relative support} $S_\vtype(Y^\ast)$ of the extremal slice
+(\cref{thm:ensemble-EL}), where it composes with the certificate mining of
+\cref{thm:relative-slackness}; a constrained, Lagrange-multiplier form
+(\cref{prop:lagrange}); a \emph{second variation}---a negative-semidefiniteness
+constraint on a two-root Hessian kernel (\cref{thm:second-variation})---which we have
+not found in the literature at any generality; and a \emph{planted maximum principle}
+at exceptional roots (\cref{thm:planted-max}), whose reach is governed by exactly the
+planting notions of this paper.  None of these statements can even be formulated in the
+quotient: they are false at exceptional quotient views---the star centres of
+\cref{cor:c4-counterexample} violate the Euler--Lagrange equation---and their content
+is precisely that typical views are constrained in ways arbitrary views are not.  Two
+demonstrations follow.  First, the two variations alone re-derive Mantel's theorem,
+together with the uniqueness and the stability of its extremiser
+(\cref{thm:variational-mantel}); the result is classical
+\cite[Theorem~16.23]{Lovasz2012book}, but the route---first variation, second
+variation, Perron--Frobenius---is, to our knowledge, new, and it is the second
+variation that powers it.  Second, on the parametric $P_4$ slices of
+\cref{thm:parametric-p4-equality-slice}, the Euler--Lagrange equation is a genuinely
+new labelled equation, and it \emph{excludes the sparse endpoint}
+$\alpha_r^-$ unconditionally (\cref{cor:p4-lower-endpoint})---settling the
+$\alpha_r^-$-side of the endpoint question of \cref{rem:r3-special} and narrowing open
+problem (4) to the interior.
+
+\subsection{Views and reweightings of a represented limit}
+
+We represent limits analytically.  A \emph{graphon} is a symmetric measurable function
+$W\colon[0,1]^2\to[0,1]$.  For points $\bar x=(x_1,\dots,x_m)\in[0,1]^m$ let $G(\bar x)$
+be the random graph on $\{1,\dots,m\}$ in which each pair $\{i,j\}$ is an edge with
+probability $W(x_i,x_j)$, independently, and for an unlabelled graph $F$ on $m$ vertices
+put
+\[
+  P_F(\bar x):=\Prob[G(\bar x)\cong F],
+\]
+a symmetric measurable function of $\bar x$.  Likewise, for a $\vtype$-flag $A$ on $m$
+vertices, $P_A(x;\bar y)$ denotes the probability that $G(x,y_2,\dots,y_m)$, rooted at
+the first coordinate, is flag-isomorphic to $A$.  Sampling defines
+\[
+  \phi_W(F):=\int_{[0,1]^m}P_F(\bar x)\,d\bar x ,
+\]
+and $\phi_W\in X_0$; conversely every point of $X_0$ is of this form for some graphon
+$W$ \cite{LovaszSzegedy2006}.  By the intrinsic description of $Q_0$, $\phi_W\in Q_0$
+if and only if $\phi_W(F)=0$ for every forbidden graph $F$, that is, if and only if
+$P_F=0$ almost everywhere for every forbidden $F$ (for the graphon form see also
+\cite{Janson2013}).  Finally, the \emph{view of $W$ from
+$x$} is defined coordinatewise by
+\[
+  \psi_x(A):=\int P_A(x;\bar y)\,d\bar y
+  \qquad(A\ \text{a $\vtype$-flag}).
+\]
+
+One normalisation must be fixed before the views can be matched with the extension
+measures.  \Cref{sec:background} uses only that unlabelling a flag returns a
+non-negative multiple of its underlying graph; the multiple is Razborov's
+\cite[\S2.2]{Razborov2007}: for a $\vtype$-flag $A$ with underlying graph $M$ on $m$
+vertices,
+\[
+  \avg{A}{\vtype}=q_A\,M,
+  \qquad
+  q_A:=\frac{\#\{v\in V(M):(M,v)\cong A\ \text{as flags}\}}{m},
+\]
+the probability that rooting $M$ at a uniformly random vertex produces $A$; this is
+the normalisation for which Razborov proves \eqref{eq:extension-expectation}
+\cite[Theorems 3.5, 3.12]{Razborov2007}.  Two consequences we use repeatedly: each
+vertex of $M$ realises exactly one rooting, so $\sum_Aq_A=1$ over the rootings $A$ of
+$M$; and $\brak\vtype=\avg{\one_\vtype}{\vtype}=K_1=\one_0$, the last step by the
+level identity $\sum_{|H|=1}H=\one_0$---in particular the one-vertex type is
+non-degenerate for every class, and $\Ext_{\vtype}(\phi)$ is defined for every
+$\phi\in X_0$.
+
+\begin{lemma}[Views realise the extension measure]\label{lem:rooting-law}
+Let $W$ be a graphon and $\phi:=\phi_W$.  Then:
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item\label{rl-hom} for almost every $x$, the functional $\psi_x$ is a point
+  of $X_{\vtype}$, and $x\mapsto\psi_x$ is Borel;
+  \item\label{rl-law} the law of $\psi_x$, for $x$ uniform on $[0,1]$, is
+  $\Ext_{\vtype}(\phi)$;
+  \item\label{rl-expectation} $\displaystyle\int_0^1\psi_x(u)\,dx
+  =\phi(\avg{u}{\vtype})$ for every $u\in\A^{\vtype}[\T_0]$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+\ref{rl-hom}.  Each coordinate $x\mapsto\psi_x(A)$ is measurable by Fubini's theorem,
+since $P_A$ is a finite sum of products of values of $W$ and $1-W$; as
+$\F^{\vtype}$ is countable, the Borel $\sigma$-algebra of
+$X_\vtype\subseteq[0,1]^{\F^{\vtype}}$ is generated by the coordinate evaluations, so
+coordinatewise measurability makes $x\mapsto\psi_x$ Borel.  The chain relation holds
+at $\psi_x$: $\sum_{|B|=|A|+1}p(A,B)\,\psi_x(B)$ is the probability that deleting a
+uniformly random non-root point from a rooted sample of $|A|$ fresh points leaves the
+flag $A$ at the root, and by exchangeability of the independent points this equals
+$\psi_x(A)$.  For multiplicativity, the product flag $A\cdot B$ expands as the
+average, over uniform splits of $|A|+|B|-2$ fresh sample points into two ordered
+blocks, of the event that the blocks (each together with the root $x$) induce $A$ and
+$B$ respectively; by exchangeability the average equals the value at one fixed split,
+and conditionally on the root $x$ the two block events involve disjoint sample points
+and disjoint edge coins, hence are independent, giving
+$\psi_x(A\cdot B)=\psi_x(A)\psi_x(B)$.  Non-negativity on flags and
+$\psi_x(\one_\vtype)=1$ are clear, so $\psi_x$ is a positive homomorphism and its
+density profile is a point of $X_\vtype$.
+
+\ref{rl-expectation}.  By linearity it suffices to take $u$ a single flag $A$ on $m$
+vertices with underlying graph $M$.  By Fubini,
+$\int_0^1\psi_x(A)\,dx=\Prob[G(\bar x)\cong M\ \text{and the root realises }A]$; by
+exchangeability of the $m$ coordinates, conditionally on $G(\bar x)\cong M$ the root
+is a uniformly random vertex of the sampled copy of $M$ and realises $A$ with
+probability $q_A$.  Hence the integral equals
+$q_A\,\phi(M)=\phi(\avg{A}{\vtype})$ by the normalisation above.
+
+\ref{rl-law}.  Let $\nu$ be the law of $\psi_x$: the pushforward of Lebesgue measure
+under the Borel map of \ref{rl-hom}, a Borel probability measure on $X_\vtype$.  For
+every $g\in\A^{\vtype}[\T_0]$, part \ref{rl-expectation} gives
+$\E_{\psi\sim\nu}[\psi(g)]=\phi(\avg{g}{\vtype})=\phi(\avg{g}{\vtype})/\phi(\brak\vtype)$,
+since $\brak\vtype=\one_0$.  This is the defining property
+\eqref{eq:extension-expectation} of $\Ext_{\vtype}(\phi)$, which determines the measure
+uniquely; hence $\nu=\Ext_{\vtype}(\phi)$.
+\end{proof}
+
+\begin{definition}[Reweighting flow]\label{def:reweighting}
+Let $\phi=\phi_W\in X_0$, and let $g\colon[0,1]\to\R$ be bounded and measurable with
+$\int g=0$; call such $g$ a \emph{direction}.  For $|t|\,\|g\|_\infty<1$ let $\mu_t$ be
+the probability measure with density $1+tg$ on $[0,1]$ and define
+\[
+  \phi_t(F):=\int_{[0,1]^m}P_F(\bar x)\prod_{i=1}^m\bigl(1+t\,g(x_i)\bigr)\,d\bar x
+  \qquad(|F|=m),
+\]
+extended linearly to formal combinations of graphs: $\phi_t(F)$ is the probability
+that $m$ independent $\mu_t$-samples induce $F$.  (That $\phi_t$ descends to
+$\A^0[\T_0]$ is part of the next lemma.)
+\end{definition}
+
+\begin{lemma}[Hereditary classes are reweighting-invariant]\label{lem:reweighting-invariance}
+In the setting of \cref{def:reweighting}: $t\mapsto\phi_t(F)$ is a polynomial of degree
+at most $|F|$ with $\phi_0=\phi$; each $\phi_t$ lies in $X_0$; and if $\phi\in Q_0$ for
+a hereditary class $\T_1$, then $\phi_t\in Q_0$.
+\end{lemma}
+
+\begin{proof}
+Polynomiality is immediate on expanding the product, and $\phi_0=\phi$ by definition.
+Since $|t|\,\|g\|_\infty<1$ makes $1+tg$ positive almost everywhere, $\mu_t$ is a
+probability measure and $\phi_t(F)\in[0,1]$; also $\phi_t(K_1)=\int(1+tg)=1$.  The
+chain relations hold:
+$\sum_{|H|=m+1}p(F,H)\,\phi_t(H)=\E\bigl[p\bigl(F,G(\bar y)\bigr)\bigr]$ for $\bar y$
+a vector of $m+1$ independent $\mu_t$-samples, which is the probability that a
+uniformly random $m$ of the $m+1$ points, with their sampled edges, induce $F$; by
+exchangeability, deleting the omitted point leaves $m$ independent $\mu_t$-points, so
+this equals $\phi_t(F)$.  In particular the linear extension annihilates the defining
+relations of $\A^0[\T_0]$, so $\phi_t$ is well-defined on the quotient algebra.  For
+multiplicativity: $\phi_t(F_1\cdot F_2)$ is the average, over uniform splits of
+$|F_1|+|F_2|$ independent $\mu_t$-points into two blocks, of the event that the blocks
+induce $F_1$ and $F_2$; by exchangeability the average equals the value at one fixed
+split, and the two events involve disjoint points and disjoint edge coins, so it
+factors as $\phi_t(F_1)\phi_t(F_2)$.  Hence $\phi_t\in X_0$.  Finally, if
+$\phi\in Q_0$ and $F$ is forbidden, then
+$\int P_F\,d\bar x=\phi(F)=0$ with $P_F\ge0$, so $P_F=0$ almost everywhere and
+$\phi_t(F)=0$ as well; by the intrinsic description of $Q_0$, $\phi_t\in Q_0$.
+\end{proof}
+
+Note what the lemma does \emph{not} require: no closure property of the class beyond
+heredity, no repair construction, and no plantability.  The flow moves mass among the
+vertices a limit already has; it never creates a configuration the limit did not
+already exhibit on a positive-measure set of samples.
+
+\subsection{The root localisation and the first variation}
+
+\begin{definition}[Root localisation]\label{def:root-localisation}
+Graphs of a fixed size $m$ are linearly independent in $\A^0[\T_0]$: if
+$\sum_{|F|=m}a_FF=0$, evaluate at $\phi_{W_\alpha}\in X_0$ for $W_\alpha$ the step
+graphon of a graph $G$ on $m$ vertices with block masses
+$\alpha_v>0$, $\sum_v\alpha_v=1$; each $\phi_{W_\alpha}(F)$ is a polynomial in
+$\alpha$, and only injective sample patterns contribute to the coefficient of
+$\alpha_{v_1}\cdots\alpha_{v_m}$, where the sampled graph is a deterministic copy of
+$G$, so that coefficient in $\sum_Fa_F\,\phi_{W_\alpha}(F)$ is $m!\,a_G$; the zero
+polynomial forces $a_G=0$ for every $G$.  Hence every $h\in\A^0[\T_0]$ has, for each
+sufficiently large $m$, a unique presentation $h=\sum_{|F|=m}a_F\,F$ \emph{at level
+$m$}.  For an unlabelled graph $F$ on $m\ge1$ vertices let
+\[
+  \nabla F:=\sum_{A}A\ \in\A^{\vtype}[\T_0],
+\]
+the sum over the (finitely many, up to flag isomorphism) \emph{rootings} of $F$: the
+$\vtype$-flags $A$ whose underlying graph is $F$.  For $h$ presented at level $m$ set
+$\nabla h:=\sum_{|F|=m}a_F\,\nabla F$.
+\end{definition}
+
+\begin{lemma}[Conditioning interpretation]\label{lem:conditioning}
+Let $W$ be a graphon and $h=\sum_{|F|=m}a_F F$.  Then, for almost every
+$x\in[0,1]$,
+\[
+  \psi_x(\nabla h)=\sum_{|F|=m}a_F\int P_F(x,\bar y)\,d\bar y :
+\]
+the conditional expectation of the level-$m$ statistic $h$ given that one of the $m$
+sample points is the root $x$.
+\end{lemma}
+
+\begin{proof}
+For a single $F$, the events ``$G(x,\bar y)\cong F$ with the root playing a vertex of
+the rooting $A$'', over the distinct rootings $A$ of $F$, are disjoint with union
+``$G(x,\bar y)\cong F$'', and the probability of the $A$-th is $\psi_x(A)$.
+\end{proof}
+
+\begin{lemma}[$\nabla$ splits unlabelling; level covariance]\label{lem:nabla-basic}
+Let $h$ be presented at level $m$.
+\begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
+  \item\label{nb-split} $\avg{\nabla h}{\vtype}=h$.
+  \item\label{nb-level} If $h$ is also presented at level $m+1$, then for every graphon
+  $W$ and almost every $x$,
+  \[
+    \psi_x(\nabla_{(m+1)}h)
+    =\frac{m\,\psi_x(\nabla_{(m)}h)+\phi_W(h)}{m+1},
+  \]
+  where $\nabla_{(m)}$, $\nabla_{(m+1)}$ are the root localisations of the two
+  presentations.  In particular, for $\phi_W(h)=c$, the statement
+  ``$\psi_x(\nabla h)=c$ for almost every $x$'' does not depend on the presentation
+  level, and we suppress the level from the notation.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+\ref{nb-split}.  For a rooting $A$ of $F$ we have $\avg{A}{\vtype}=q_A F$ with $q_A$
+as in the proof of \cref{lem:rooting-law}\ref{rl-expectation}; the events realising the
+distinct rootings partition the rooting choices, so $\sum_Aq_A=1$ and
+$\avg{\nabla F}{\vtype}=F$.
+
+\ref{nb-level}.  Write the level-$(m+1)$ presentation as
+$h=\sum_{|H|=m+1}b_H H$ with $b_H=\sum_{|F|=m}a_F\,p(F,H)$.  By
+\cref{lem:conditioning}, with $\bar z=(z_1,\dots,z_m)$ uniform,
+\[
+  \psi_x(\nabla_{(m+1)}h)
+  =\sum_F a_F\,\E\bigl[p\bigl(F,\,G(x,\bar z)\bigr)\bigr],
+\]
+since $\sum_Hp(F,H)\Prob[G(x,\bar z)\cong H]=\E[p(F,G(x,\bar z))]$.  Now
+$p(F,G(x,\bar z))$ is the probability that a uniformly random $m$-subset of the $m+1$
+points induces $F$.  The subset omits $x$ with probability $\frac1{m+1}$, in which case
+the remaining points are $m$ independent uniforms and the probability is $\phi_W(F)$;
+it retains $x$ with probability $\frac m{m+1}$, in which case, by exchangeability of
+the $z_i$, the probability is $\int P_F(x,\bar y)\,d\bar y$.  Summing against $a_F$ and
+applying \cref{lem:conditioning} at level $m$ gives the display.  For the final
+claim: the display expresses each of $\psi_x(\nabla_{(m)}h)$,
+$\psi_x(\nabla_{(m+1)}h)$ as an affine function of the other with positive slope, and
+when $\phi_W(h)=c$ the value $c$ is the fixed point of both, so pinning at either
+level implies pinning at the other; induction connects any two admissible levels.
+\end{proof}
+
+\begin{lemma}[First variation formula]\label{lem:first-variation}
+Let $\phi=\phi_W\in X_0$, let $h$ be presented at level $m$, and let $g$ be a
+direction.  Then
+\[
+  \frac{d}{dt}\Big|_{t=0}\phi_t(h)
+  =m\int_0^1 g(x)\,\psi_x(\nabla h)\,dx .
+\]
+\end{lemma}
+
+\begin{proof}
+Differentiating the polynomial of \cref{def:reweighting} at $t=0$,
+\[
+  \frac{d}{dt}\Big|_{0}\phi_t(F)
+  =\sum_{i=1}^m\int g(x_i)\,P_F(\bar x)\,d\bar x
+  =m\int g(x)\Bigl(\int P_F(x,\bar y)\,d\bar y\Bigr)dx,
+\]
+by the symmetry of $P_F$; now sum against $a_F$ and apply \cref{lem:conditioning}.
+\end{proof}
+
+The first-order principle is essentially Razborov's
+\cite[Theorem 4.3]{Razborov2007}, proved there by vertex deletion; the reweighting
+proof below follows the mechanism of \cite[Lemma 16.5]{Lovasz2012book}, which
+\cref{lem:reweighting-invariance} extends from the unconstrained graphon space to every
+hereditary class.  What we need, and state, is the relative-support form.
+
+\begin{theorem}[Euler--Lagrange equation on the extremal slice]\label{thm:ensemble-EL}
+Let $\T_1$ be a hereditary class with $Q_0\neq\emptyset$, let $h\in\A^0[\T_0]$, let
+\[
+  c:=\max_{\phi\in Q_0}\phi(h)
+\]
+(attained, since $Q_0$ is compact and evaluation is continuous), and let
+$Y^\ast:=\{\phi\in Q_0:\phi(h)=c\}$ be the extremal slice.  Then the root localisation
+of the objective is pinned to the optimum on the relative support:
+\[
+  \nabla h=c\,\one_{\vtype}
+  \quad\text{identically on }S_{\vtype}(Y^\ast);
+\]
+equivalently, for every $\phi\in Y^\ast$,
+\[
+  \Prob_{\psi\sim\Ext_{\vtype}(\phi)}\bigl[\psi(\nabla h)=c\bigr]=1 .
+\]
+\end{theorem}
+
+\begin{proof}
+Fix $\phi\in Y^\ast$ and represent $\phi=\phi_W$.  For every direction $g$, the
+polynomial $t\mapsto\phi_t(h)$ is defined on a neighbourhood of $0$, takes values at
+most $c$ there (\cref{lem:reweighting-invariance}: $\phi_t\in Q_0$), and equals $c$ at
+$t=0$; hence its derivative at $0$ vanishes, and by \cref{lem:first-variation}
+\[
+  \int_0^1 g(x)\,\psi_x(\nabla h)\,dx=0 .
+\]
+The function $u(x):=\psi_x(\nabla h)$ is bounded and measurable
+(\cref{lem:rooting-law}\ref{rl-hom}).  For an arbitrary bounded measurable $f$,
+applying the display to the direction $g:=f-\int f$ yields
+$\int f\,u\,dx=(\int f)(\int u\,dx)$; taking $f:=u$ gives $\int u^2=(\int u)^2$, so
+the variance of $u$ vanishes and $u$ is almost everywhere equal to the constant
+\[
+  \kappa=\int_0^1\psi_x(\nabla h)\,dx
+  =\phi(\avg{\nabla h}{\vtype})
+  =\phi(h)=c,
+\]
+by \cref{lem:rooting-law}\ref{rl-expectation} and
+\cref{lem:nabla-basic}\ref{nb-split}.  By \cref{lem:rooting-law}\ref{rl-law} the law of
+$\psi_x$ is $\Ext_{\vtype}(\phi)$, which gives the almost-sure statement.  Applying
+\cref{lem:support-as} to $\pm(\nabla h-c\,\one_{\vtype})$ makes $\nabla h-c\one_\vtype$
+vanish on $\supp(\Ext_{\vtype}(\phi))$ for every $\phi\in Y^\ast$, hence, by continuity
+of evaluation, on the closure $S_{\vtype}(Y^\ast)$ of the union of these supports.
+(By \cref{lem:nabla-basic}\ref{nb-level}, using $\phi(h)=c$ on $Y^\ast$, the
+almost-sure statement holds at every admissible presentation level, and the support
+argument then applies verbatim at each level; so the conclusion is independent of the
+presentation.)
+\end{proof}
+
+\begin{remark}[A witness factory]\label{rem:witness-factory}
+$\nabla h-c\,\one_\vtype$ is a relative pinning witness in the sense of
+\cref{rem:relative-pinning}, produced without a certificate and available for
+\emph{every} extremal problem over every hereditary class.  Consistently with the
+relative form of \cref{prop:ideal-zero}, it unlabels to
+$\avg{\nabla h-c\one_\vtype}{\vtype}=h-c\,\one_0$ by
+\cref{lem:nabla-basic}\ref{nb-split}: not the zero element, but exactly the defining
+constraint of the slice---a $Y^\ast$-null element, as it must be.  The Mantel witness
+$e-\frac12\one_\vtype$ of \cref{rem:relative-pinning} is the instance $h=\rho$,
+since $\nabla\rho=e$.  And the equation genuinely lives in the ensemble: in the
+$C_4$-free class the maximiser of $\rho$ has $c=0$ and the equation reads
+``$\psi(e)=0$ almost surely'', while the star-centre views in $Q_{\vtype}$ have
+$\psi(e)=1$ (\cref{cor:c4-counterexample})---the quotient cannot state, let alone
+prove, the Euler--Lagrange equation.
+\end{remark}
+
+\begin{corollary}[Edge-extremal limits are degree-regular]\label{cor:degree-regular}
+Let $\T_1$ be any hereditary class, $\rho$ the edge density, $c:=\max_{Q_0}\phi(\rho)$,
+and $e$ the one-root edge flag.  Then $e=c\,\one_{\vtype}$ on
+$S_{\vtype}(Y^\ast)$: every edge-density maximiser of every hereditary class is
+almost surely degree-regular.  (This is a theorem of Pikhurko
+\cite[Lemma 22]{Pikhurko2010}, proved there by deleting low-degree and cloning
+high-degree vertices.)  For the $K_{r+1}$-free classes it recovers
+\cref{thm:turan-slice}\textup{(i)} with no appeal to the Erd\H{o}s--Simonovits
+stability theorem (the \emph{value} $c=\frac{r-1}r$ is Tur\'an's theorem; the pinning
+is what stability provided).
+\end{corollary}
+
+\begin{proof}
+$K_2$ has a single rooting up to isomorphism, so $\nabla\rho=e$;
+apply \cref{thm:ensemble-EL}.
+\end{proof}
+
+The constrained version is proved by the same flows, run in several directions at once.
+
+\begin{proposition}[Constrained Euler--Lagrange equation]\label{prop:lagrange}
+Let $\T_1$ be hereditary, let $h,g_1,\dots,g_k\in\A^0[\T_0]$, let $\gamma\in\R^k$, and
+suppose $\phi^\ast$ maximises $\phi(h)$ over the constrained slice
+$Y:=\{\phi\in Q_0:\phi(g_j)=\gamma_j,\ 1\le j\le k\}$, assumed nonempty.  Then there is
+$(\lambda_0,\lambda_1,\dots,\lambda_k)\neq0$ such that, writing
+$u:=\lambda_0h-\sum_{j}\lambda_jg_j$,
+\[
+  \Prob_{\psi\sim\Ext_{\vtype}(\phi^\ast)}
+  \bigl[\psi(\nabla u)=\phi^\ast(u)\bigr]=1 .
+\]
+If no combination $v=\sum_j\mu_jg_j$ with $\mu\neq0$ satisfies
+$\psi(\nabla v)=\phi^\ast(v)$ almost surely, one may take $\lambda_0=1$.
+\end{proposition}
+
+\begin{proof}
+Represent $\phi^\ast=\phi_W$ and present $h,g_1,\dots,g_k$ at a common level $m$.
+Consider the linear subspace
+\[
+  V:=\Bigl\{\Bigl(\smallint g\,\psi_x(\nabla h),\,
+  \smallint g\,\psi_x(\nabla g_1),\dots,
+  \smallint g\,\psi_x(\nabla g_k)\Bigr):g\ \text{a direction}\Bigr\}
+  \subseteq\R^{k+1}.
+\]
+Suppose first $V=\R^{k+1}$.  Choose directions $g^{(0)},\dots,g^{(k)}$ whose images
+form a basis, and for small $\bar t=(t_0,\dots,t_k)$ let $\phi_{\bar t}$ be the
+reweighting of $\phi^\ast$ with density $1+\sum_it_ig^{(i)}$---that is,
+\cref{def:reweighting} with direction $\sum_it_ig^{(i)}$ evaluated at parameter $1$,
+defined for $\|\sum_it_ig^{(i)}\|_\infty<1$ and jointly polynomial in $\bar t$---so
+that \cref{lem:reweighting-invariance} keeps $\phi_{\bar t}$ in $Q_0$.  The map
+$\bar t\mapsto(\phi_{\bar t}(h),\phi_{\bar t}(g_1),\dots,\phi_{\bar t}(g_k))$ is
+polynomial, and by \cref{lem:first-variation} its Jacobian at $\bar t=0$ is $m$ times
+the invertible matrix whose columns are the images of the chosen directions.  By the inverse function
+theorem its image contains a neighbourhood of
+$(\phi^\ast(h),\gamma)$; in particular some $\phi_{\bar t}\in Q_0$ has
+$\phi_{\bar t}(g_j)=\gamma_j$ for all $j$ and $\phi_{\bar t}(h)>\phi^\ast(h)$,
+contradicting the maximality of $\phi^\ast$ on $Y$.
+
+Hence $V\neq\R^{k+1}$, and there is $\lambda\neq0$ orthogonal to $V$; after replacing
+$\lambda_j$ by $-\lambda_j$ for $1\le j\le k$, which preserves $\lambda\neq0$,
+orthogonality reads $\int g\,\psi_x(\nabla u)\,dx=0$ for every direction $g$, with $u$
+as in the statement.
+As in the proof of \cref{thm:ensemble-EL}, $x\mapsto\psi_x(\nabla u)$ is almost
+everywhere the constant $\phi^\ast(\avg{\nabla u}{\vtype})=\phi^\ast(u)$, and the law
+of $\psi_x$ is $\Ext_\vtype(\phi^\ast)$.  For the last claim: if $\lambda_0=0$, the
+conclusion says exactly that $v:=\sum_j\lambda_jg_j$, with
+$(\lambda_1,\dots,\lambda_k)\neq0$, satisfies
+$\psi(\nabla v)=\phi^\ast(v)$ almost surely, which the hypothesis excludes; so
+$\lambda_0\neq0$, and one rescales.
+\end{proof}
+
+\begin{remark}[Profile boundaries]
+\Cref{prop:lagrange} applies at every boundary point of a density profile.  For the
+triangle-versus-edge profile, for instance, every boundary limit
+$\phi^\ast$ carries a multiplier $\lambda$ with
+$\psi(\nabla(K_3-\lambda\rho))$ pinned almost surely---labelled local equations for
+the profile's extremisers, mined with no certificate.  Razborov's solution of that
+profile \cite{Razborov2008} runs on exactly such first-order conditions (his equations
+(3.2)--(3.4), obtained by an interior-point argument in place of multipliers), and
+Pikhurko--Razborov \cite{PikhurkoRazborov2017} combine them with certificate
+slackness to determine all extremal homomorphisms---the same first-order-plus-slackness
+synthesis that \cref{thm:relative-slackness} and this section systematise.
+\end{remark}
+
+\subsection{The second variation}
+
+\begin{definition}[Hessian kernel]\label{def:hessian-kernel}
+For $h$ presented at a level $m\ge2$, $h=\sum_{|F|=m}a_FF$, and a graphon $W$, define
+\[
+  K_h(x,y):=\sum_{|F|=m}a_F\int P_F(x,y,\bar z)\,d\bar z
+  \qquad(x,y\in[0,1]):
+\]
+the conditional expectation of the level-$m$ statistic $h$ given that two of the $m$
+sample points are $x$ and $y$ (measurable by Fubini as in
+\cref{lem:rooting-law}\ref{rl-hom}, symmetric since $P_F$ is invariant under permuting
+coordinates, bounded by $\sum_F|a_F|$; for $m=2$ the inner integral is
+$P_F(x,y)$ itself).  The kernel depends on the presentation level; the theorem below
+holds at every admissible level, and we fix one.
+\end{definition}
+
+\begin{theorem}[Second variation]\label{thm:second-variation}
+Let $\T_1$, $h$, $c$, $Y^\ast$ be as in \cref{thm:ensemble-EL}, let $\phi\in Y^\ast$ be
+represented by $W$, let $h$ be presented at a level $m\ge2$, and let $K_h$ be the
+associated Hessian kernel.  Then
+\[
+  \int_0^1\!\!\int_0^1 g(x)\,g(y)\,K_h(x,y)\,dx\,dy\ \le\ 0
+\]
+for every $g\in L^2[0,1]$ with $\int g=0$.
+\end{theorem}
+
+\begin{proof}
+First let $g$ be a bounded direction.  Differentiating the polynomial
+$\phi_t(F)$ of \cref{def:reweighting} twice at $t=0$,
+\[
+  \frac{d^2}{dt^2}\Big|_0\phi_t(F)
+  =\sum_{i\neq j}\int g(x_i)g(x_j)P_F(\bar x)\,d\bar x
+  =m(m-1)\int\!\!\int g(x)g(y)\Bigl(\int P_F(x,y,\bar z)\,d\bar z\Bigr)dx\,dy
+\]
+by the symmetry of $P_F$; summing against $a_F$, the double integral in the statement
+is $\frac1{m(m-1)}\frac{d^2}{dt^2}\big|_0\phi_t(h)$.  The polynomial
+$t\mapsto\phi_t(h)$ is at most $c$ on a neighbourhood of $0$
+(\cref{lem:reweighting-invariance}) and equals $c$ at $t=0$, so it has an interior
+maximum there: its first derivative vanishes and its second is non-positive.  For general
+mean-zero $g\in L^2$, approximate: the quadratic form of the bounded kernel $K_h$ is
+continuous on $L^2$, truncations $g\one_{|g|\le n}-\int g\one_{|g|\le n}$ are bounded
+directions, and they converge to $g$ in $L^2$.
+\end{proof}
+
+\begin{corollary}[Flag directions]\label{cor:second-variation-flags}
+In the setting of \cref{thm:second-variation}, let $u\in\A^{\vtype}[\T_0]$ and put
+$g_u(x):=\psi_x(u)-\phi(\avg{u}{\vtype})$.  Then $g_u$ is a bounded direction
+(\cref{lem:rooting-law}\ref{rl-expectation}) and
+\[
+  \int\!\!\int g_u(x)\,g_u(y)\,K_h(x,y)\,dx\,dy\ \le\ 0 ,
+\]
+an inequality between finitely many unlabelled densities of $\phi$, valid on the whole
+extremal slice.  For $h=\rho$ one has $K_\rho(x,y)=W(x,y)$, and the direction $u=e$
+gives, in the kernel notation of \cref{thm:parametric-moments},
+\[
+  \int\!\!\int W(x,y)\bigl(d(x)-p\bigr)\bigl(d(y)-p\bigr)\,dx\,dy\le0,
+  \qquad\text{that is}\qquad
+  \int\!\!\int W(x,y)\,d(x)\,d(y)\,dx\,dy\ \le\ 2pD-p^3 .
+\]
+\end{corollary}
+
+\begin{proof}
+$g_u$ is measurable by \cref{lem:rooting-law}\ref{rl-hom}, bounded since $\psi_x$
+takes values in $[0,1]$ on flags, and mean-zero by
+\cref{lem:rooting-law}\ref{rl-expectation}; apply \cref{thm:second-variation}.  For
+the density claim, write $u$ at a level and expand: the fresh sample batches behind
+$\psi_x(A)$, $\psi_y(B)$, and $K_h(x,y)$ are independent, so each product
+$\psi_x(A)\psi_y(B)\,\bigl(\smallint P_F(x,y,\bar z)d\bar z\bigr)$, integrated over
+independent uniform $x,y$, is the probability of a single sampling event on the union
+of the batches together with $x,y$---a finite combination, with combinatorial
+weights, of the quantities $\phi(G)$ over unlabelled graphs $G$ on
+$|A|+|B|+m-2$ vertices.  For $h=\rho$ at level $2$,
+$K_\rho(x,y)=P_{K_2}(x,y)=W(x,y)$, and $\psi_x(e)=d(x)$ with
+$\phi(\avg{e}{\vtype})=p$; expand.
+\end{proof}
+
+\subsection{Mantel's theorem, variationally}
+
+The two variations, combined with nothing further than the spectral theory of the
+kernel operator, already reprove Mantel's theorem with the uniqueness of its
+extremiser.  The statement is classical---the graphon Tur\'an theorem with uniqueness
+is \cite[Theorem 16.23]{Lovasz2012book}, proved by symmetrisation---but the route is
+new, and it isolates what the second variation contributes: a spectral constraint that
+symmetrisation arguments reach only combinatorially.  Throughout,
+$T_Wg:=\int W(\cdot,y)g(y)\,dy$ denotes the kernel operator of
+$W$ on $L^2[0,1]$: a self-adjoint Hilbert--Schmidt operator, with real nonzero
+eigenvalues $(\lambda_i)_{i\ge1}$ listed with multiplicity in decreasing modulus,
+$|\lambda_1|\ge|\lambda_2|\ge\cdots\to0$, orthonormal eigenfunctions $(e_i)$,
+the expansion $W=\sum_i\lambda_ie_i(x)e_i(y)$ in $L^2([0,1]^2)$,
+$\sum_i\lambda_i^2=\int\!\!\int W^2$, and
+$\sum_i\lambda_i^3=\int\!\!\int\!\!\int W(x,y)W(y,z)W(z,x)$
+\cite{Lovasz2012book}.
+
+\begin{theorem}[Mantel, with uniqueness, from two variations]\label{thm:variational-mantel}
+Let $\T_1$ be the triangle-free class.  Then
+\[
+  \max_{\phi\in Q_0}\phi(\rho)=\frac12,
+\]
+and the maximum is attained exactly at the balanced complete bipartite limit.
+Consequently \textup(\cref{prop:unique-slice-stability}\textup) every sequence of
+triangle-free graphons with edge density tending to $\frac12$ converges in cut
+distance to $K_{\frac12,\frac12}$.
+\end{theorem}
+
+\begin{proof}
+The balanced complete bipartite limit is triangle-free with $\rho=\frac12$, so
+$c:=\max_{Q_0}\phi(\rho)\ge\frac12>0$.  Let $\phi\in Y^\ast$ be a maximiser,
+represented by a graphon $W$, and write $p:=c=\phi(\rho)$, $d(x):=\int W(x,y)\,dy$.
+
+\emph{The two variational conditions.}
+By \cref{cor:degree-regular}, $e=p\,\one_\vtype$ on $S_\vtype(Y^\ast)$; combined with
+\cref{lem:rooting-law}\ref{rl-law}, the event $\{\psi:\psi(e)=p\}$ is Borel of full
+$\Ext_\vtype(\phi)$-measure and the law of $\psi_x$ is $\Ext_\vtype(\phi)$, so
+$d(x)=\psi_x(e)=p$ for almost every $x$.  Equivalently $T_W\one=p\one$: $\one$ is an
+eigenfunction with eigenvalue $p$.  By \cref{thm:second-variation}
+with $h=\rho$ (so $K_\rho=W$), $\langle g,T_Wg\rangle\le0$ for every mean-zero
+$g\in L^2$.
+
+\emph{The spectrum.}
+Every eigenfunction with eigenvalue $\neq p$ is orthogonal to $\one$, hence has
+non-positive eigenvalue; and the eigenvalue $p$ is simple, for if $u$ were a
+$p$-eigenfunction not proportional to $\one$, then $v:=u-\langle u,\one\rangle\one$
+would be a mean-zero $p$-eigenfunction with
+$0\ge\langle v,T_Wv\rangle=p\|v\|^2$, forcing $v=0$.  Moreover every eigenvalue
+$\lambda$ has $|\lambda|\le p$: since $W\ge0$ pointwise,
+$|\langle g,T_Wg\rangle|\le\langle|g|,T_W|g|\rangle$, and decomposing
+$|g|=a\one+v$ with $v\perp\one$ gives
+\[
+  \langle|g|,T_W|g|\rangle
+  =a^2p+2a\langle T_W\one,v\rangle+\langle v,T_Wv\rangle
+  =a^2p+2ap\langle\one,v\rangle+\langle v,T_Wv\rangle
+  \le p\,\|g\|^2 ,
+\]
+the cross term vanishing since $v\perp\one$.  We may therefore enumerate the nonzero
+eigenvalues with
+\[
+  \lambda_1=p,\qquad
+  \lambda_i\le0\ (i\ge2),\qquad
+  |\lambda_i|\le p\ (i\ge1).
+\]
+
+\emph{The traces.}
+The triangle is forbidden and $P_{K_3}(x,y,z)=W(x,y)W(y,z)W(z,x)$, so
+\[
+  \sum_i\lambda_i^3=\int\!\!\int\!\!\int W(x,y)W(y,z)W(z,x)=\phi(K_3)=0 ,
+\]
+while $0\le W\le1$ gives
+$\sum_i\lambda_i^2=\int\!\!\int W^2\le\int\!\!\int W=p$.  Hence
+\[
+  p^3=\sum_{i\ge2}|\lambda_i|^3
+  \le\Bigl(\max_{i\ge2}|\lambda_i|\Bigr)\sum_{i\ge2}\lambda_i^2
+  \le p\,(p-p^2),
+\]
+that is, $p^2(2p-1)\le0$, so $p\le\frac12$; with the lower bound, $c=p=\frac12$.
+
+\emph{Uniqueness.}
+At $p=\frac12$ the chain of inequalities is forced to be tight, and both factors of
+the middle bound with it.  Writing $S:=\sum_{i\ge2}\lambda_i^2=\int\!\!\int W^2-p^2$
+and $M:=\max_{i\ge2}|\lambda_i|\le p$: tightness of $S\le p-p^2$ gives
+$\int\!\!\int W^2=\int\!\!\int W$, so $W\in\{0,1\}$ almost everywhere, and
+$S=p-p^2=p^2>0$; then $MS\ge\sum_{i\ge2}|\lambda_i|^3=p^3=p\,S$ forces $M=p$, and
+$\sum_{i\ge2}(M-|\lambda_i|)\lambda_i^2=MS-p^3=0$ forces $|\lambda_i|=p$, hence
+$\lambda_i=-p$, for every $i\ge2$; finally $S=p^2$ shows there is exactly one such
+eigenvalue.  So the spectral expansion has exactly two terms,
+\[
+  W(x,y)=p\bigl(1-u(x)u(y)\bigr)
+  \qquad\text{almost everywhere}
+\]
+(the expansion converges in $L^2([0,1]^2)$ and a symmetric $L^2$ kernel is determined
+almost everywhere by its operator), where $u$ is a unit $(-p)$-eigenfunction,
+$u\perp\one$.  Since $W\in\{0,1\}$ and $p=\frac12$, we get
+$u(x)u(y)\in\{-1,1\}$, hence $|u(x)|\,|u(y)|=1$, for almost every pair; by Fubini,
+for almost every $x$ one has $|u(y)|=1/|u(x)|$ for almost every $y$, so $|u|$ is an
+almost-everywhere constant $c_0$ with $c_0^2=1$, that is, $u=\pm1$ almost everywhere.
+As $\int u=0$, the two level sets $A:=\{u=1\}$ and $A^c$ have measure $\frac12$ each,
+and $W$ is the indicator of $(A\times A^c)\cup(A^c\times A)$.  The sampling densities
+of such a $W$ depend only on the measures of the parts, so $\phi=\phi_W$ is the
+balanced complete bipartite limit, and $Y^\ast$ is that single point.
+
+\emph{Stability.}
+A graphon $U$ with $\int P_{K_3}=0$ has $\phi_U\in Q_0$: a forbidden graph $F$
+contains a triangle, so a sample inducing $F$ has a triangle on some triple of its
+points, whence
+$P_F(\bar x)\le\sum_{i<j<k}P_{K_3}(x_i,x_j,x_k)$ pointwise and
+$\phi_U(F)\le\binom{|F|}3\int P_{K_3}=0$; the intrinsic description applies.  The stability statement is then \cref{prop:unique-slice-stability} with
+$Z=Q_0$ and the single constraint $\phi(\rho)=\frac12$, read through the standard
+identification of the density topology with the cut metric, as in
+\cref{cor:k4free-p4-qualitative-stability}.
+\end{proof}
+
+\begin{remark}[What went in, and what did not]\label{rem:mantel-comparison}
+\Cref{thm:relative-mantel} described the same slice by \emph{assuming} Mantel's theorem
+and the Erd\H{o}s--Simonovits stability theorem.  Here both the value $\frac12$ and the
+uniqueness of the extremiser are outputs, produced by the Euler--Lagrange equation and
+the second variation alone; the only external ingredients are standard facts about
+Hilbert--Schmidt operators.  The same two conditions hold for every edge-density
+maximiser of every $K_{r+1}$-free class---the second variation again says the kernel
+operator has exactly one positive eigenvalue---and the classical finite counterpart of
+that spectral condition (a graph has at most one positive adjacency eigenvalue if and
+only if it is a complete multipartite graph with isolated vertices \cite{Smith1970})
+identifies precisely the Tur\'an-type structure.  Whether first and second variation
+alone pin the $K_{r+1}$-free edge maximiser to $T_r$ for every $r$ is part of open
+problem (5) below.
+\end{remark}
+
+\subsection{The planted maximum principle}
+
+The Euler--Lagrange equation constrains typical roots.  At exceptional roots the
+equation degrades to a one-sided inequality, and its scope is exactly the reach of the
+planting constructions of this paper: perturbing an extremiser by \emph{adding} mass at
+a new vertex profile is admissible only in the inward direction, and only when the
+planted limit stays in the class.
+
+\begin{definition}[Plantable profile]\label{def:plantable-profile}
+Let $\phi=\phi_W\in Q_0$.  A \emph{profile} is a measurable $w\colon[0,1]\to[0,1]$.
+For $\eps>0$ let $\phi^{w,\eps}$ be the point of $X_0$ obtained by sampling as
+follows: each of $m$ points is, independently, \emph{new} with probability
+$\frac{\eps}{1+\eps}$ and otherwise \emph{old} and uniform on $[0,1]$; old pairs
+$x,y$ are adjacent with probability $W(x,y)$, an old $y$ and a new point are adjacent
+with probability $w(y)$, and new pairs are never adjacent, all independently.
+(Equivalently $\phi^{w,\eps}=\phi_{W_\eps}$ for the graphon $W_\eps$ that places the
+new block on an interval of mass $\frac{\eps}{1+\eps}$ with kernel $0$ inside it, a
+rescaled copy of $W$ on the complementary interval, and the rescaled $w$ between; so
+$\phi^{w,\eps}\in X_0$.)  The profile
+$w$ is \emph{plantable at $(\phi,W)$} if $\phi^{w,\eps}\in Q_0$ for all sufficiently
+small $\eps>0$.  The \emph{planted view} $\chi_w\in X_{\vtype}$ is defined by
+\[
+  \chi_w(A):=\Prob\bigl[\text{a new root together with $|A|-1$ old points induces
+  }A\bigr],
+\]
+a positive homomorphism by the argument of \cref{lem:rooting-law}\ref{rl-hom}.
+\end{definition}
+
+\begin{theorem}[Planted maximum principle]\label{thm:planted-max}
+Let $\T_1$, $h$, $c$, $Y^\ast$ be as in \cref{thm:ensemble-EL}, let $\phi\in Y^\ast$
+be represented by $W$, let $h$ be presented at a level $m$, and let $w$ be plantable
+at $(\phi,W)$.  Then
+\[
+  \chi_w(\nabla h)\ \le\ c .
+\]
+The conclusion is level-independent: the covariance identity of
+\cref{lem:nabla-basic}\ref{nb-level} holds verbatim with $\chi_w$ in place of
+$\psi_x$ (same computation, with the old points sampled from $W$), so
+$\chi_w(\nabla_{(m+1)}h)-c=\frac m{m+1}\bigl(\chi_w(\nabla_{(m)}h)-c\bigr)$ on
+$Y^\ast$, and the bounds at consecutive levels are equivalent.
+\end{theorem}
+
+\begin{proof}
+Present $h$ at level $m$.  Conditioning on the number of new points among the $m$
+samples,
+\[
+  \phi^{w,\eps}(h)
+  =\Bigl(\tfrac1{1+\eps}\Bigr)^{m}\phi(h)
+  +m\,\tfrac{\eps}{1+\eps}\Bigl(\tfrac1{1+\eps}\Bigr)^{m-1}\chi_w(\nabla h)
+  +O(\eps^2),
+\]
+where the middle term is the ``exactly one new point'' contribution: the new point is
+the root, the disjoint events over the rootings of each $F$ sum to
+$\chi_w(\nabla F)$ as in \cref{lem:conditioning}.  Since $w$ is plantable,
+$\phi^{w,\eps}\in Q_0$ and $\phi^{w,\eps}(h)\le c=\phi(h)$ for all small $\eps>0$;
+the right derivative at $\eps=0$ of the display is
+$m\bigl(\chi_w(\nabla h)-\phi(h)\bigr)$, which is therefore $\le0$.
+\end{proof}
+
+\begin{example}[Independent profiles in the triangle-free class]\label{ex:planted-triangle-free}
+Let $\T_1$ be the triangle-free class, $\phi\in Y^\ast$ an edge-density maximiser
+represented by $W$, and $w$ a profile whose support spans no edges:
+$\int\!\!\int w(y)w(y')W(y,y')\,dy\,dy'=0$.  Then $w$ is plantable at $(\phi,W)$: in a sample from
+$\phi^{w,\eps}$, a triangle would need two of its vertices adjacent with both in the
+old part and both adjacent to a new point---excluded almost surely by the
+hypothesis---or two new vertices adjacent---excluded by construction---or all three
+old---excluded since $\phi\in Q_0$.  \Cref{thm:planted-max} with
+$\chi_w(\nabla\rho)=\chi_w(e)=\int w$ gives: \emph{no profile independent in $W$
+carries mass more than $c=\frac12$}.  In $K_{\frac12,\frac12}$ this is tight: the
+independent profiles are those supported in one side.
+\end{example}
+
+\begin{remark}[Exceptional roots, plantable and not]\label{rem:planted-scope}
+The planted views $\chi_w$ are exceptional: nothing requires them to lie in any
+ensemble support, and the principle extends the Euler--Lagrange equation to them only
+as an inequality.  This is the variational shadow of the planting constructions of
+\cref{thm:blowup-root-plantable}: what those constructions realise at typical roots,
+the maximum principle constrains at exceptional ones.  The $C_4$-free star centre shows
+the plantability hypothesis is essential and sharp.  The $C_4$-free class is
+edge-degenerate (\cref{cor:c4-counterexample}), so every constrained limit has
+$\phi(\rho)=0$; by the chain relations every graph containing an edge then has density
+$0$, so $c=0$, any representing graphon vanishes almost everywhere, and samples are
+almost surely edgeless.  The all-ones profile
+$w\equiv\one$ would give $\chi_w(e)=1>0=c$; and indeed $w$ is \emph{not} plantable---
+two new points and two old points sampled from $\phi^{w,\eps}$ then induce a
+four-cycle (new--old edges present, old--old and new--new absent) with positive
+probability, and the resulting graphs contain $C_4$.  A vertex adjacent to everything
+survives in the quotient, which
+adds it one exceptional root at a time, but not at the positive mass that planting, and
+hence ensemble semantics, requires.
+\end{remark}
+
+\subsection{Certificate-free equations on the \texorpdfstring{$P_4$}{P4} slices}
+
+On the parametric slices of \cref{thm:parametric-p4-equality-slice} the calculus adds
+new labelled equations to the mined system---at a type the certificate's kernel
+equations do not reach---and the new equation has an immediate structural consequence:
+it kills the sparse endpoint of the density interval of
+\cref{thm:parametric-moments}\ref{pm:interval}.
+
+Recall that the $P_4$ density expression of the verified certificates is the spanning-path
+count.  Writing $h_P(F)$ for the number of spanning (Hamiltonian) paths of a $4$-vertex
+graph $F$, set
+\[
+  \widehat\pi:=\sum_{|F|=4}h_P(F)\,F\ \in\A^0[\T_0],
+\]
+with coefficients $1,2,4,6,12$ on the path, the paw, the $4$-cycle, the diamond, and
+$K_4$ respectively.  The quotient image of $\widehat\pi$ is the certificate's
+expression $\pi_{P_4}^{(r)}\in\A^0[\T_r]$ (in \texttt{API.K4freeP4} the $K_4$ term is
+omitted, being zero in the $K_4$-free quotient), so
+$\phi(\widehat\pi)=\phi(\pi_{P_4}^{(r)})$ for every $\phi\in Q_0^{(r)}$
+(\cref{rem:quotient-elements}); the calculus, which is stated for elements of the
+ambient algebra, is applied to $\widehat\pi$.  At a graphon,
+$\phi_W(\widehat\pi)$ is the expected number of spanning paths among four $W$-random
+points.
+
+\begin{proposition}[Euler--Lagrange on the $P_4$ slices]\label{prop:p4-el}
+Fix $r\ge3$ and let $Y_r$ be the extremal slice of
+\cref{thm:parametric-p4-equality-slice}.  Every $\phi\in Y_r$ maximises
+$\widehat\pi$ over $Q_0^{(r)}$: the certificate gives
+$\phi(\widehat\pi)=\phi(\pi_{P_4}^{(r)})\le12\bigl(\tfrac{r-1}r\bigr)^3$ on
+$Q_0^{(r)}$
+\textup(\cref{thm:relative-slackness}\ref{cs-soundness}, applied with
+$Y:=Q_0^{(r)}$, whose hypotheses hold by the certificate identity displayed in the
+proof of \cref{thm:parametric-p4-equality-slice}\textup), and the bound is
+attained \textup(\cref{rem:parametric-nonempty}\textup).  Hence, by
+\cref{thm:ensemble-EL},
+\[
+  \nabla\widehat\pi
+  =12\Bigl(\frac{r-1}{r}\Bigr)^3\one_{\vtype}
+  \qquad\text{identically on }S_{\vtype}(Y_r):
+\]
+a labelled equation at the one-vertex type, supplementing the three two-root kernel
+equations of \cref{thm:parametric-p4-equality-slice}.  In kernel form: if $W$
+represents a point of $Y_r$, then, with $d(x):=\int W(x,y)\,dy$ and
+$(Wd)(x):=\int W(x,y)\,d(y)\,dy$ and $(W^2d)(x):=\int W(x,y)(Wd)(y)\,dy$,
+\begin{equation}\label{eq:p4-el-kernel}
+  (W^2d)(x)+d(x)\,(Wd)(x)=2\Bigl(\frac{r-1}{r}\Bigr)^3
+  \qquad\text{for almost every }x ,
+\end{equation}
+and, integrating,
+\begin{equation}\label{eq:p4-el-moment}
+  \int\!\!\int W(x,y)\,d(x)\,d(y)\,dx\,dy=\Bigl(\frac{r-1}{r}\Bigr)^3 .
+\end{equation}
+In addition every mean-zero direction satisfies the second-variation inequality of
+\cref{thm:second-variation} for $h=\widehat\pi$, and, for each $\phi\in Y_r$
+represented by $W$, every profile $w=\one_N$ with
+$\int_{N^r}P_{K_r}=0$ is plantable at $(\phi,W)$, so \cref{thm:planted-max} bounds
+$\chi_w(\nabla\widehat\pi)$ by the optimum.
+\end{proposition}
+
+\begin{proof}
+For the kernel form, evaluate $\psi_x(\nabla\widehat\pi)$ by
+\cref{lem:conditioning}: it is the conditional expected number of spanning paths of
+$G(x,y_2,y_3,y_4)$, that is, one half of the sum, over the $24$ orderings of the four
+points, of the probability that the three consecutive pairs are all edges.  In the
+$12$ orderings placing $x$ at an end the probability is
+$\int W(x,a)W(a,b)W(b,c)\,da\,db\,dc=(W^2d)(x)$; in the $12$ placing $x$ second or
+third it is $\int W(a,x)W(x,b)W(b,c)\,da\,db\,dc=d(x)(Wd)(x)$.  Hence
+$\psi_x(\nabla\widehat\pi)=6\bigl[(W^2d)(x)+d(x)(Wd)(x)\bigr]$, and the pinning to
+$12(\tfrac{r-1}r)^3$ almost surely, transported through
+\cref{lem:rooting-law}\ref{rl-law}, is \eqref{eq:p4-el-kernel}.  Integrating over $x$
+and using the symmetry of $W$,
+$\int(W^2d)=\langle\one,T_W^2d\rangle=\langle d,T_Wd\rangle=\int d\,(Wd)$, so both
+terms integrate to the left side of \eqref{eq:p4-el-moment}.
+
+For the plantability claim: a copy of $K_{r+1}$ in a sample from
+$\phi^{w,\eps}$ uses at most one new point, since new points are pairwise
+non-adjacent; a copy using no new point lies in the old part, excluded almost surely
+since $\phi\in Q_0^{(r)}$; and a copy using one new point consists of a new point
+together with a $K_r$ among old points of $N$ (a new point is adjacent to an old $y$
+only when $y\in N$), excluded almost surely by $\int_{N^r}P_{K_r}=0$.
+\end{proof}
+
+The moment \eqref{eq:p4-el-moment} is a new pinned quantity: the certificate's kernel
+equations determine the moments $D$ and $T$ as functions of the edge density $p$
+(\cref{thm:parametric-moments}), but not $\int\!\!\int W\,d\,d$.  Its first
+consequence is that the sparse endpoint of the interval
+$[\alpha_r^-,\alpha_r^+]$ is unattainable.
+
+\begin{corollary}[The sparse endpoint is excluded]\label{cor:p4-lower-endpoint}
+Fix $r\ge4$.  If $\phi\in Y_r$ is represented by a degree-regular graphon
+($d=p$ almost everywhere), then $p=\alpha_r^+$, and $\phi$ is the balanced complete
+$r$-partite limit \textup(\cref{thm:slice-rigidity}\textup).  In particular no point of
+$Y_r$ has edge density $\alpha_r^-$: on $Y_r$,
+\[
+  \alpha_r^-<p\le\alpha_r^+ ,
+\]
+sharpening \cref{thm:parametric-moments}\ref{pm:interval}.  Consequently, of the two
+degree-regular options left open there, only the dense one survives, and the equality
+analysis whose failure at $\alpha_r^-$ was noted in \cref{rem:r3-special} is not
+needed: the Euler--Lagrange equation removes that endpoint outright.
+\end{corollary}
+
+\begin{proof}
+If $d=p$ almost everywhere, then $(Wd)=p\,d=p^2$ and $(W^2d)=p^3$ almost everywhere,
+so \eqref{eq:p4-el-kernel} reads $2p^3=2(\alpha_r^+)^3$, giving $p=\alpha_r^+$;
+\cref{thm:slice-rigidity} then identifies the graphon.  If some $\phi\in Y_r$ had
+$p=\alpha_r^-$, then \cref{thm:parametric-moments}\ref{pm:var} would give degree
+variance $(\alpha_r^+-p)(p-\alpha_r^-)=0$, so the graphon would be degree-regular with
+$p=\alpha_r^-<\alpha_r^+$ ($r\ge4$), contradicting the first part.
+\end{proof}
+
+Whether the enlarged system---the three kernel equations, the pinned $K_4$ density,
+\eqref{eq:p4-el-kernel}, the second-variation inequalities, and the planted
+bounds---also excludes the interior $\alpha_r^-<p<\alpha_r^+$ for
+$r\ge4$, and so pins $Y_r$ to the regular endpoint with no Zykov input at all, is now
+the remaining content of open problem (4); we record it as open problem (5) below.
+
+\begin{remark}[Positioning]\label{rem:variational-positioning}
+Each ingredient has relatives, and the first variation is not ours.  Razborov's
+differential method \cite[\S4.3]{Razborov2007} proves the first-order condition by
+vertex deletion, in ensemble semantics, for every vertex-uniform universal theory, and
+deploys it (with an edge-deletion counterpart) to solve the triangle-versus-edge
+profile \cite{Razborov2008}; Lov\'asz \cite[\S16.2]{Lovasz2012book} re-derives these
+``Kuhn--Tucker conditions'' over the unconstrained graphon space by the reweighting
+flow used here; Pikhurko's degree-regularity lemma \cite[Lemma 22]{Pikhurko2010} is
+the edge-density instance inside a hereditary class; Pikhurko--Razborov
+\cite{PikhurkoRazborov2017} combine first-order conditions with certificate slackness,
+and Pikhurko--Sliacan--Tyros \cite{PikhurkoSliacanTyros2019} systematise the
+kernel-of-$Q$ mechanism of \cref{thm:kernel-slackness} at the finite level; the finite
+ancestor of all the flows is weight-shifting symmetrisation
+\cite{Zykov1949,MotzkinStraus}.  Three things here are, to our knowledge, new: the
+second variation (\cref{thm:second-variation})---the literature's second-order
+arguments are finite-dimensional, within structural ans\"atze---with its spectral
+consequences (\cref{thm:variational-mantel}); the planted maximum principle inside a
+hereditary class (\cref{thm:planted-max}), whose one-sided directions are governed by
+the plantability notions of this paper rather than by boundary values of the kernel;
+and the packaging of all the optimality conditions as pinning statements on the
+relative supports $S_\vtype(Y)$ of \cref{thm:relative-slackness}, where they compose
+with certificate mining---it is this composition that yields
+\cref{cor:p4-lower-endpoint}.  And the conditions are ensemble statements in the
+strict sense of this paper: false at exceptional quotient views, hence inexpressible
+in the quotient calculus.
+\end{remark}
+
 \section{Open problems}
 
-Four questions remain.
+Five questions remain.
 
 \begin{enumerate}[label=\textup{(\arabic*)}, leftmargin=2.8em]
   \item \textbf{Beyond sparse root repairs.}
@@ -5552,9 +6447,28 @@ Four questions remain.
   plantable pairs $(Y,\sigma)$, and decide whether the gap
   $Q_\sigma(Y)\setminus S_\sigma(Y)$ can ever carry an \emph{exact} certificate
   difference, in the sense of question (2), that survives over the slice seminorm.
+
+  \item \textbf{Variational rigidity.}
+  The calculus of \cref{sec:variational} attaches to every extremal slice the
+  Euler--Lagrange equation (\cref{thm:ensemble-EL}), the second-variation
+  inequalities (\cref{thm:second-variation}), and the planted maximum principle
+  (\cref{thm:planted-max}), all certificate-free; on the parametric $P_4$ slices the
+  first of these already excludes the sparse endpoint
+  (\cref{cor:p4-lower-endpoint}).  Three questions.  First---the sharpened form of
+  question (4)---do these conditions, together with the kernel equations and the
+  pinned $K_4$ density of \cref{thm:parametric-p4-equality-slice}, exclude the
+  interior $\alpha_r^-<p<\alpha_r^+$ as well, and so pin $Y_r$ to the regular
+  endpoint with no Zykov input?  Second, first and second variation alone identify
+  the Mantel extremiser (\cref{thm:variational-mantel}); decide whether they identify
+  $T_r$ among $K_{r+1}$-free edge maximisers for every $r$, as the finite spectral
+  characterisation of complete multipartite graphs \cite{Smith1970} suggests.  Third,
+  systematise the higher variations: the $n$-th derivative of a reweighting flow is
+  an $n$-root statement, and the calculus should have a form at every type---the
+  analogue, for optimality conditions, of the all-types root-planting question of
+  this paper.
 \end{enumerate}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{Razborov2007}
 A.~A.~Razborov.
@@ -5597,6 +6511,58 @@ J.~A.~Bondy and M.~Simonovits.
 L.~Lov\'asz and B.~Szegedy.
 \newblock Random graphons and a weak Positivstellensatz for graph algebras.
 \newblock \emph{Journal of Graph Theory}, 70(2):214--225, 2012.
+
+\bibitem{Razborov2008}
+A.~A.~Razborov.
+\newblock On the minimal density of triangles in graphs.
+\newblock \emph{Combinatorics, Probability and Computing}, 17(4):603--618, 2008.
+
+\bibitem{MotzkinStraus}
+T.~S.~Motzkin and E.~G.~Straus.
+\newblock Maxima for graphs and a new proof of a theorem of Tur\'an.
+\newblock \emph{Canadian Journal of Mathematics}, 17:533--540, 1965.
+
+\bibitem{LovaszSzegedy2006}
+L.~Lov\'asz and B.~Szegedy.
+\newblock Limits of dense graph sequences.
+\newblock \emph{Journal of Combinatorial Theory, Series B}, 96(6):933--957, 2006.
+
+\bibitem{Lovasz2012book}
+L.~Lov\'asz.
+\newblock \emph{Large Networks and Graph Limits}.
+\newblock American Mathematical Society Colloquium Publications, vol.~60,
+Providence, RI, 2012.
+
+\bibitem{Janson2013}
+S.~Janson.
+\newblock Graph limits and hereditary properties.
+\newblock \emph{European Journal of Combinatorics}, 52:321--337, 2016.
+
+\bibitem{Pikhurko2010}
+O.~Pikhurko.
+\newblock An analytic approach to stability.
+\newblock \emph{Discrete Mathematics}, 310(21):2951--2964, 2010.
+
+\bibitem{PikhurkoRazborov2017}
+O.~Pikhurko and A.~Razborov.
+\newblock Asymptotic structure of graphs with the minimum number of triangles.
+\newblock \emph{Combinatorics, Probability and Computing}, 26(1):138--160, 2017.
+
+\bibitem{PikhurkoSliacanTyros2019}
+O.~Pikhurko, J.~Sliacan, and K.~Tyros.
+\newblock Strong forms of stability from flag algebra calculations.
+\newblock \emph{Journal of Combinatorial Theory, Series B}, 135:129--178, 2019.
+
+\bibitem{Smith1970}
+J.~H.~Smith.
+\newblock Some properties of the spectrum of a graph.
+\newblock In \emph{Combinatorial Structures and their Applications}, pages 403--406.
+\newblock Gordon and Breach, New York, 1970.
+
+\bibitem{LiLiuZhang2026}
+H.~Li, H.~Liu, and Y.~Zhang.
+\newblock A higher-order clique density theorem.
+\newblock arXiv:2607.06545, 2026.
 
 \end{thebibliography}
 
