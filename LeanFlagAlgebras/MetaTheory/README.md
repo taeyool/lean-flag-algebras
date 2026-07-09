@@ -140,6 +140,14 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §9.5 `def:c5-book` / `lem:c5-book` | the `C₅`-free **book graph**, with `F_△`-density `1` | `bookLabeled`, `book_c5free`, `book_Ftri_density` | [`C5EdgeObstruction`](./C5EdgeObstruction.lean) |
 | §9.5 `cor:c5-no-pin` | no obstruction at the vertex type: triangle-over-vtype density `0` on `Q_vtype`, edge not pinned | `c5free_triOverVtype_zero_on_Qvtype`, `c5free_edge_not_pinned` | [`C5EdgeObstruction`](./C5EdgeObstruction.lean) |
 | §9.5 `thm:c5-edge-not-root-plantable` | the `C₅`-free class is **not** root-plantable at the two-root edge type (refuting the all-types conjecture) | `c5free_edge_not_rootPlantable` | [`C5EdgeObstruction`](./C5EdgeObstruction.lean) |
+| §10 (engine) | the master evaluation bound `\|s\| ≤ δ` on `S_σ` ⟹ `\|φ₀ ⟦s⟧₀\| ≤ δ` on `Q₀`; degenerate types kill all unlabelled averages; a singleton `S_σ` collapses them | `abs_downward_eval_le_of_abs_le_on_Sσ`, `downward_eval_eq_zero_of_degenerate`, `downward_eval_eq_of_Sσ_singleton` | [`DownwardAverage`](./DownwardAverage.lean) |
+| §10 `prop:empty-type` | the empty-type extension is Dirac (`Ext_∅(φ₀) = δ_{φ₀}`), `S_∅ = Q₀`, and the empty type is **always** root-plantable | `extend_emptyType_eq_dirac`, `Sσ_emptyType_eq`, `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `emptyType_quotient_iff_ensemble` | [`EmptyTypeCollapse`](./EmptyTypeCollapse.lean) |
+| §10 `cor:confined` | no empty-type density bound is ensemble-true but quotient-false | `ensemble_implies_quotient_emptyType` | [`EmptyTypeCollapse`](./EmptyTypeCollapse.lean) |
+| §10 `thm:no-closed-certificate-gap` | the quotient (sums-of-squares) and ensemble (non-negative on `S_σ`) certificate cones have the same `Q₀`-seminorm closure, for **every** type | `quotCone`, `ensCone`, `ensCone_subset_closure_quotCone`, `no_closed_certificate_gap` | [`CertificateCones`](./CertificateCones.lean) |
+| §10 `prop:ideal-zero` | elements vanishing on `S_σ` — pinning witnesses and their flag-multiples — unlabel to zero on `Q₀` | `downward_eval_eq_zero_of_zero_on_Sσ`, `pinned_witness_downward_eq_zero`, `downward_eval_congr_of_eqOn_Sσ` | [`VanishingIdeal`](./VanishingIdeal.lean) |
+| §10 (limit points) | the labelled empty-graph / complete-graph limits in `X_vtype`, unique with their vanishing patterns | `edgelessPoint`, `completePoint`, `eq_edgelessPoint_of_nonEdgeless_zero`, `eq_completePoint_of_nonComplete_zero` | [`BooleanPoint`](./BooleanPoint.lean) |
+| §10 `prop:single-point` | for an (co-)edge-degenerate class, `S_vtype` is a single point and both certificate cones collapse to the ray `ℝ≥0·1₀` | `Sσ_eq_singleton_of_edgeDegenerate` / `_coEdgeDegenerate`, `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` | [`SinglePoint`](./SinglePoint.lean) |
+| §10 `cor:c5-edge-closed-inert` | the `C₅`-free edge-type gap is closed-cone inert: the ensemble relaxation improves no asymptotic `C₅`-free density bound | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` | [`C5EdgeInert`](./C5EdgeInert.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -159,7 +167,11 @@ counterpart `cor:codegenerate`, the §9.4 boundary / no-interior theorem `thm:no
 §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable` with `lem:c5-few-triangles` and the
 book-graph quotient point), reusing the §5/§8 constrained-representation and class machinery;
 **`lem:complementation`** (complementation invariance of root-plantability) is formalised too, via
-the complement homeomorphism (Deviation 9b). The only §9 result still open is the general pinning
+the complement homeomorphism (Deviation 9b). **All of §10 ("the gap is invisible to density
+bounds") is formalised** (the empty-type collapse `prop:empty-type` / `cor:confined`, the
+closed-cone equality `thm:no-closed-certificate-gap`, the vanishing ideal `prop:ideal-zero`, the
+single-point collapse `prop:single-point`, and the `C₅`-edge inertness `cor:c5-edge-closed-inert`) —
+see the §10 rows above and Deviation 12. The only §9 result still open is the general pinning
 *conjecture* `conj:characterisation` — see [Scope & limitations](#scope--limitations).
 
 A note on how to read the §8 rows against the paper, and what to scrutinise when checking the
@@ -178,11 +190,16 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   `c5free_one_root_plantable` / `c5free_two_root_nonedge_plantable`, and the §9 `pinning_obstruction`
   / `degenerate_not_rootPlantable` / `c4free_not_rootPlantable` / `coDegenerate_not_rootPlantable` /
   `coC4free_not_rootPlantable` / `edgeDegenerate_of_subquadratic` / `complementation_invariance` /
-  `no_interior_pinning` / `c5free_edge_not_rootPlantable` —
+  `no_interior_pinning` / `c5free_edge_not_rootPlantable`, and the §10
+  `emptyType_rootPlantable` / `heredClass_emptyType_rootPlantable` / `extend_emptyType_eq_dirac` /
+  `no_closed_certificate_gap` / `downward_eval_eq_zero_of_zero_on_Sσ` /
+  `Sσ_eq_singleton_of_edgeDegenerate` / `Sσ_eq_singleton_of_coEdgeDegenerate` /
+  `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` /
+  `c5free_edge_no_closed_certificate_gap` —
   depends on **only the three standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` —
   no `sorryAx`.
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 55 modules (7961 jobs); the full
-  project `lake build LeanFlagAlgebras` builds with §9 integrated.
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 62 modules (7968 jobs); the full
+  project `lake build LeanFlagAlgebras` builds with §9–§10 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
   the elaboration step budget for proofs run in a large local context. This affects *how long* the
@@ -417,6 +434,40 @@ Each is detailed below and in the relevant module's header.
     book-graph's `C₅`-freeness (`book_c5free`) and `F_△`-density `1` (`book_Ftri_density`) are direct.
     The quotient-point assembly is the generic `exists_Qσ_point_flag_eq` (any `σ`, any flag).
 
+12. **§10 formalisation choices (`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`SinglePoint`).**
+    * **(a) `Q₀`-seminorm closures are stated in ε-form.** The paper takes closures of the
+      certificate cones in the seminorm `‖u‖_{Q₀} = sup_{φ₀∈Q₀}|φ₀ u|`. The Lean statements
+      (`Q0Within`, `MemQ0Closure`) express `‖u−v‖_{Q₀} ≤ ε` pointwise (`∀ φ₀ ∈ Q₀,
+      |φ₀ u − φ₀ v| ≤ ε`) and closure membership as ε-approximability — the same content,
+      without formalising a seminormed space.
+    * **(b) Ambient sums of squares.** `quotCone` uses sums of squares of the *ambient* algebra
+      `A^σ[T₀]` (Mathlib's `IsSumSq`), whereas the paper's cone uses sums of squares of the
+      quotient `A^σ[T₁]`. The ambient cone is contained in the paper's cone (apply `qmap`), which
+      is contained in `ensCone` (a quotient positive hom evaluates a square non-negatively), so
+      the proved closure equality — with the *smallest* of the three cones — implies the paper's.
+      (The sandwich argument itself uses two standard §2–§3 facts — surjectivity of the quotient
+      map and compatibility of unlabelling with the quotient — that are asserted in the paper and
+      not separately formalised; they justify this documentation note only, no Lean statement or
+      proof depends on them.)
+    * **(c) Evaluation form of "zero in `A⁰[T₁]`".** `prop:ideal-zero` and `prop:single-point`
+      conclude that certain unlabelled averages are the zero element of `A⁰[T₁]` (resp. a
+      non-negative multiple of the unit). The Lean statements assert the evaluation form — the
+      value at **every** `φ₀ ∈ Q₀` is `0` (resp. `c`) — which is exactly what the paper's proofs
+      establish and what all uses consume; equality in the quotient algebra itself would
+      additionally require a separation theorem for `A⁰[T₁]` that is not part of this development.
+    * **(d) `thm:no-closed-certificate-gap` holds without non-degeneracy.** The paper assumes `σ`
+      non-degenerate; the Lean proof needs no such hypothesis — at a degenerate base point every
+      unlabelled average vanishes (`downward_eval_eq_zero_of_degenerate`), so such points never
+      distinguish the cones.
+    * **(e) Direct mirror for the co-degenerate case.** The paper derives the co-edge-degenerate
+      half of `prop:single-point` by complementation (`lem:complementation`); the Lean proof
+      mirrors the edge-degenerate argument directly (complete flags in place of edgeless flags),
+      which is shorter than transporting the cone identity through `complHomeo`.
+    * **(f) Non-vacuousness in `prop:single-point`.** The literal identity
+      `S_vtype = {edgelessPoint}` takes the explicit hypothesis that some constrained limit
+      exists (`hne`), which the paper leaves implicit; the cone-collapse statements avoid it
+      (when `Q₀ = ∅` the evaluation claim is vacuous and `c = 0` works).
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -438,7 +489,7 @@ by a handful of lines, locate the result by its `\label{…}` or its number inst
 
 **General orientation.** The notation map (`⟦·⟧`, `⟦·⟧₀`, `∅ₜ`, `⟨σ⟩₀`, `ℙ[φ₀]`, `≃f`, `↪g`,
 `flagDensity₁`, `S_σ`, `Q_σ`, `RootPlantable`) is in [`READING_GUIDE.md`](./READING_GUIDE.md), which
-also carries the full *paper-result → module → Lean-name* table for §2–§9.5 (incl. `lem:complementation`). Every module opens with a
+also carries the full *paper-result → module → Lean-name* table for §2–§10 (incl. `lem:complementation`). Every module opens with a
 `/-! # … -/` header naming the `paper.tex` result(s) it formalises; start there. The semantic
 objects (`Q_σ`, `S_σ`, `RootPlantable`, `Constraint`, the random extension `ℙ[φ₀]`) are defined in
 [`ConstrainedClass`](./ConstrainedClass.lean) / [`SupportClosure`](./SupportClosure.lean) — read
@@ -478,6 +529,17 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 | `def:c5-book` / `lem:c5-book` (Def 60 / Lem 61, l.3362/l.3368) | `bookLabeled` (`C5EdgeObstruction.lean` l.162), `book_c5free` (l.182), `book_Ftri_density` (l.375) | the book graph is `C₅`-free (`book_c5free`) with `F_△`-density `1` (`book_Ftri_density`); `exists_book_Qτ_point` (l.459) packages it as the `Q_τ` point of `F_△`-density `1` |
 | `thm:c5-edge-not-root-plantable` (Thm 62, l.3392) | `c5free_edge_not_rootPlantable` (`C5EdgeObstruction.lean` l.489) | the `C₅`-free class is **not** root-plantable at the two-root edge type `τ` — `cor:c5-edge-pinned` pins `F_△` to `0` while the book point of `def:c5-book` realises `F_△ = 1` in `Q_τ`, contradicting `pinning_obstruction` |
 | `cor:c5-no-pin` (Cor 57, l.3296) | `c5free_triOverVtype_zero_on_Qvtype` (`C5EdgeObstruction.lean` l.889), `c5free_edge_not_pinned` (l.987) | the two no-obstruction-at-the-vertex-type facts: triangle-over-vtype density `0` on `Q_vtype`, and the edge is not pinned (so the obstruction is genuinely *edge-type*-specific) |
+
+**§10 audit map** (paper label @ `paper.tex` line ↦ Lean statement to read):
+
+| `paper.tex` (paper #, line) | Lean statement to read (file line) | What to verify |
+|---|---|---|
+| `prop:empty-type` (Prop 64, l.3476) | `extend_emptyType_eq_dirac` ([`EmptyTypeCollapse.lean`](./EmptyTypeCollapse.lean) l.67), `Sσ_emptyType_eq` (l.124), `emptyType_rootPlantable` (l.147), `emptyType_quotient_iff_ensemble` (l.159) | `Ext_∅(φ₀) = δ_{φ₀}` ≙ `(ℙ[φ₀] : Measure _) = Measure.dirac (posHomPoint φ₀)`; `S_∅ = Q_∅ = Q₀` ≙ `Sσ T = Qσ T.forb0`; "always root-plantable" takes `hforb : ∀ F, T.forbσ F ↔ T.forb0 F` (the two forbidden predicates agree at the empty type — automatic for a hereditary class, `heredClass_emptyType_rootPlantable` l.180) |
+| `cor:confined` (Cor 65, l.3500) | `ensemble_implies_quotient_emptyType` (`EmptyTypeCollapse.lean` l.166) | an `EnsembleNonneg` bound on `A⁰` is `QuotientNonneg` — no bound is ensemble-true but quotient-false |
+| `thm:no-closed-certificate-gap` (Thm 66, l.3560) | `no_closed_certificate_gap` ([`CertificateCones.lean`](./CertificateCones.lean) l.168); cones `quotCone` (l.54) / `ensCone` (l.59); closure `Q0Within` (l.42) / `MemQ0Closure` (l.47); crux `ensCone_subset_closure_quotCone` (l.97) | the two cones have the same `Q₀`-seminorm closure; the closure is in ε-form (Deviation 12a), the quotient cone uses ambient sums of squares (12b), and the statement holds for every type, without non-degeneracy (12d) |
+| `prop:ideal-zero` (Prop 67, l.3634) | `downward_eval_eq_zero_of_zero_on_Sσ` ([`VanishingIdeal.lean`](./VanishingIdeal.lean) l.30), `downward_mul_eval_eq_zero_of_zero_on_Sσ` (l.42), `pinned_witness_downward_eq_zero` (l.53), `downward_eval_congr_of_eqOn_Sσ` (l.65); final clause `ensCone_eval_eq_quotCone_of_sos_agreement` ([`CertificateCones.lean`](./CertificateCones.lean), end of file) | vanishing on `S_σ` ⟹ zero unlabelled average at every `φ₀ ∈ Q₀` (evaluation form, Deviation 12c); the ideal clause; the pinning witness `(g − c•1)·h`; agreeing on `S_σ` ⟹ equal averages; and the final clause in contrapositive form — a strict exact cone gap requires a Positivstellensatz gap on `S_σ` |
+| `prop:single-point` (Prop 68, l.3668) | `Sσ_eq_singleton_of_edgeDegenerate` ([`SinglePoint.lean`](./SinglePoint.lean) l.393) / `Sσ_eq_singleton_of_coEdgeDegenerate` (l.435); cones `edgeDegenerate_cone_collapse` (l.498) / `coEdgeDegenerate_cone_collapse` (l.519), ray `smul_one_mem_quotCone_vtype` (l.478); the points `edgelessPoint` / `completePoint` with value lemmas `edgelessPoint_val` / `completePoint_val` ([`BooleanPoint.lean`](./BooleanPoint.lean) l.367–379) | `S_vtype` is exactly the labelled empty-graph (resp. complete-graph) limit — the boolean profile `1` on the edgeless (resp. complete) flag of each size, `0` elsewhere — given a constrained limit exists (Deviation 12f); every ensemble-cone member equals some `c ≥ 0` on all of `Q₀` and `c•1₀` is a quotient sum-of-squares average (evaluation form 12c; co-case by direct mirror 12e) |
+| `cor:c5-edge-closed-inert` (Cor 70, l.3749) | `c5free_edge_no_closed_certificate_gap` ([`C5EdgeInert.lean`](./C5EdgeInert.lean) l.40), `c5free_Ftri_zero_on_Sσ` (l.30), `c5free_Ftri_mul_downward_eq_zero` (l.48) | the closed-cone equality instantiated at `(c5FreeClass, edgeType)`; the pinned witness `F_△` vanishes on `S_τ` and, with all its flag-multiples, unlabels to zero on `Q₀` |
 
 **Statements worth the closest reading** (their Lean encoding involves a modelling choice you should
 confirm is faithful, rather than a routine transcription): `FinitePlanting` and `SparseRootRepair`
@@ -657,10 +719,13 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   `C₅`-edge obstruction (`thm:c5-edge-not-root-plantable`, `sec:c5-edge`) with `lem:c5-few-triangles`,
   the book-graph quotient point, and the no-vtype-obstruction corollary (`cor:c5-no-pin`) in
   `C5FewTriangles`/`C5EdgeObstruction`. `lem:complementation` (Lemma 50) is also formalised, via the
-  complement homeomorphism (Deviation 9b).
+  complement homeomorphism (Deviation 9b). **§10** (`sec:empty-type`, "the gap is invisible to
+  density bounds": `prop:empty-type`, `cor:confined`, `thm:no-closed-certificate-gap`,
+  `prop:ideal-zero`, `prop:single-point`, `cor:c5-edge-closed-inert`) is formalised in the
+  `DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
+  `SinglePoint`/`C5EdgeInert` modules (Deviation 12).
 * **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
-  tentative general characterisation) — the one §9 result still open; **§10** (`sec:empty-type`,
-  `prop:empty-type` empty-type collapse and its later consequences); **§11** (relative ensembles, the
+  tentative general characterisation) — the one §9 result still open; **§11** (relative ensembles, the
   `K₄`-free-`P₄` equality slice); and, within `cor:degenerate-family`, the non-`C₄` families (general
   `K_{s,t}` with `s ≥ 3`, even cycles, planar), which instantiate `edgeDegenerate_of_subquadratic`
   via classical extremal bounds that are outside the current Mathlib, so only the criterion (not

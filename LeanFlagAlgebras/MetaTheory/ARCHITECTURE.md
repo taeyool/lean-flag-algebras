@@ -129,6 +129,25 @@ the same squeeze pattern as §9.1's edge case). Yet the `C₅`-free **book graph
 applies. The vertex type is genuinely different (`cor:c5-no-pin`): there the triangle-over-vtype
 density is `0` on `Q_vtype` and the edge is not pinned, so the obstruction is *edge-type*-specific.
 
+**§10** is the payoff that the whole obstruction half is *harmless for applications*: a flag-algebra
+application outputs an empty-type density bound, and the gap is invisible there. Everything runs
+through one estimate, the **master evaluation bound** (`abs_downward_eval_le_of_abs_le_on_Sσ`): if
+`|s| ≤ δ` pointwise on `S_σ` then `|φ₀ ⟦s⟧₀| ≤ δ` for every `φ₀ ∈ Q₀` — for admissible `φ₀` because
+`eq:extension-expectation` writes `φ₀ ⟦s⟧₀` as `φ₀ ⟦1⟧₀ ∈ [0,1]` times an integral over the support
+(⊆ `S_σ`), and for degenerate `φ₀` because a degenerate base point kills *every* unlabelled average
+(`downward_eval_eq_zero_of_degenerate`, proved by unlabelling the level-`ℓ` expansion of `1`).
+`prop:empty-type` is a Dirac collapse: at `∅ₜ` the unlabelling operator is the identity, so `ℙ[φ₀]`
+and `δ_{φ₀}` integrate every flag evaluation identically and the moment-uniqueness theorem
+(`measure_eq_of_integral_flag_eq`) forces `Ext_∅(φ₀) = δ_{φ₀}`; hence `S_∅ = Q₀` and the empty type
+is always root-plantable. `thm:no-closed-certificate-gap` approximates `√(max(s,0))` uniformly by a
+flag evaluation (Stone–Weierstrass, `exists_flag_near`), squares it, and feeds `s − q₀²` to the
+master bound with `δ = ε`; `prop:ideal-zero` is the `δ = 0` case. `prop:single-point` pins the whole
+of `S_vtype` of an (co-)edge-degenerate class to the labelled empty-graph (complete-graph) limit —
+the two-vertex edge (non-edge) flag dies at every constrained limit, its level-`m` expansion kills
+every edge-containing (non-complete) flag, and per size exactly one flag survives the sum-to-one —
+so both certificate cones collapse to the ray `ℝ≥0·1₀`. `cor:c5-edge-closed-inert` instantiates the
+closed-cone equality at `(c5FreeClass, edgeType)`.
+
 ---
 
 ## Dependency layers
@@ -578,6 +597,45 @@ constrained-representation + `Q_σ`-point machinery.
   edge type, refuting the all-types conjecture. `cor:c5-no-pin` is the two no-obstruction-at-vtype
   facts `c5free_triOverVtype_zero_on_Qvtype` and `c5free_edge_not_pinned`.
 
+### §10 the gap is invisible to density bounds (`sec:empty-type`)
+
+Seven modules; the engine is the master evaluation bound, everything else is paper-ordered on top.
+They reuse `SupportClosure` (`Sσ`, `support_criterion`), the random-extension spec, the
+moment-uniqueness theorem `measure_eq_of_integral_flag_eq`, Stone–Weierstrass `exists_flag_near`,
+the §9 `EdgeObstruction` layer, and the base-library expansion lemmas
+(`basisVector_quot_eq_sum`, `sum_flagWithSize_eq_one`).
+
+* **[`DownwardAverage`](./DownwardAverage.lean)** — the `posHomPoint`/`toPosHom` roundtrips; the
+  unlabelling weight is a probability (`downwardNormalizingFactor_le_one`, by injecting label
+  placements into `Fin n₀ ↪ Fin n`), so `φ₀ ⟦1⟧₀ ∈ [0,1]`; the degenerate-type collapse
+  `downward_eval_eq_zero_of_degenerate`; the **master evaluation bound**
+  `abs_downward_eval_le_of_abs_le_on_Sσ`; and the singleton collapse
+  `downward_eval_eq_of_Sσ_singleton`.
+* **[`EmptyTypeCollapse`](./EmptyTypeCollapse.lean)** — §10 `prop:empty-type` + `cor:confined`:
+  `⟨∅ₜ⟩₀ = 1` (every base limit is admissible), the Dirac identity `extend_emptyType_eq_dirac`,
+  `Sσ_emptyType_eq` (`S_∅ = Q₀`), `emptyType_rootPlantable` / `heredClass_emptyType_rootPlantable`,
+  and the semantic coincidence `emptyType_quotient_iff_ensemble` /
+  `ensemble_implies_quotient_emptyType`.
+* **[`CertificateCones`](./CertificateCones.lean)** — §10 `thm:no-closed-certificate-gap`: the cones
+  `quotCone` (ambient sums of squares, Mathlib `IsSumSq` — README Deviation 12b) and `ensCone`, the
+  ε-form `Q₀`-closure (`Q0Within`/`MemQ0Closure` — 12a), the Stone–Weierstrass crux
+  `ensCone_subset_closure_quotCone`, and `no_closed_certificate_gap` (for every type — 12d).
+* **[`VanishingIdeal`](./VanishingIdeal.lean)** — §10 `prop:ideal-zero`, four `δ = 0` instances of
+  the master bound (core, ideal/multiple, pinning-witness, congruence forms; evaluation form — 12c).
+* **[`BooleanPoint`](./BooleanPoint.lean)** — the labelled empty-graph / complete-graph limits
+  `edgelessPoint` / `completePoint` in `X_vtype`: `IsEdgelessFlag`/`IsCompleteFlag`, per-size
+  uniqueness of the edgeless/complete flag (at `vtype` and `∅ₜ`), existence as rooted flag-sequence
+  limits, and the profile workhorse `val_eq_boolean_of_nonEdgeless_zero` (+ `…nonComplete…`).
+* **[`SinglePoint`](./SinglePoint.lean)** — §10 `prop:single-point`: the two-vertex edge/non-edge
+  density positivity, the flag-killing lemmas (`eval_eq_zero_of_edgeDegenerate` /
+  `…coEdgeDegenerate`), the a.s. vanishing of non-boolean flags,
+  `Sσ_eq_singleton_of_edgeDegenerate` / `…coEdgeDegenerate`, and the cone collapses
+  `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` (with
+  `smul_one_mem_quotCone_vtype`); the co-case is a direct mirror (12e).
+* **[`C5EdgeInert`](./C5EdgeInert.lean)** — §10 `cor:c5-edge-closed-inert`:
+  `c5free_edge_no_closed_certificate_gap` (instance of Thm 66), `c5free_Ftri_zero_on_Sσ`
+  (a.s. pinning upgraded to all of `S_τ`), `c5free_Ftri_mul_downward_eq_zero` (Prop 67 applied).
+
 ---
 
 ## The capstone proof, step by step (`clone_root_plantable`)
@@ -669,7 +727,7 @@ instances supply the hypothesis, with `lem:c5-nbhd` bounding the repaired-edge c
 
 ## Formalisation frontier / what remains
 
-This directory formalises `paper.tex` **§1–§9 in full** — including the whole obstruction half:
+This directory formalises `paper.tex` **§1–§10 in full** — including the whole obstruction half:
 `thm:pinning` (Theorem 53, `pinning_obstruction`); `lem:complementation` (Lemma 50), the
 complementation invariance of root-plantability, formalised as `complementation_invariance` (the
 `FlagComplement` → `ComplementHom` → `ComplementClass` → `ComplementInvariance` stack — via the
@@ -680,14 +738,16 @@ edge-thinning stack — McDiarmid-free, README Deviation 10); and the §9.5 `C�
 `thm:c5-edge-not-root-plantable` (Theorem 62, `c5free_edge_not_rootPlantable`, the
 `C5FewTriangles` + `C5EdgeObstruction` pair) with `lem:c5-few-triangles` and the book-graph quotient
 point. **`lem:complementation` is formalised** (this overrides any stale note to the contrary
-elsewhere).
+elsewhere). **§10 is formalised in full** (`sec:empty-type`, Prop 64–Cor 70: the empty-type collapse
+`prop:empty-type`/`cor:confined`, the closed-cone equality `thm:no-closed-certificate-gap`, the
+vanishing ideal `prop:ideal-zero`, the single-point collapse `prop:single-point`, and the `C₅`-edge
+inertness `cor:c5-edge-closed-inert` — the `DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/
+`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert` modules, README Deviation 12).
 
 Not yet formalised (future work; the machinery here is intended to be reusable for it):
 
 * the pinning **conjecture** `conj:characterisation` (the tentative general characterisation) — the
   one §9 result still open;
-* **§10** `prop:empty-type` (`sec:empty-type`, empty-type collapse) and the later consequences built
-  on it;
 * **§11** (relative ensembles, the `K₄`-free-`P₄` equality slice);
 * within `cor:degenerate-family`, the **three non-`C₄` families** — general `K_{s,t}` (`s ≥ 3`), even
   cycles `C_{2k}`, and planar graphs — whose extremal edge bounds (Kővári–Sós–Turán,

@@ -7,19 +7,20 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-06-26. (Stopping point: §1–**9.5** of `paper.tex` formalised — the WHOLE of §9.
-This session added **§9.3** (`thm:pinning` general obstruction — already present as `pinning_obstruction`),
-**§9.4** (`thm:no-interior`, boundary pinning for edge-deletion-closed classes — the edge-thinning
-stack), and **§9.5** (the `C₅`-free edge-type obstruction `thm:c5-edge-not-root-plantable`, refuting
-the all-types conjecture). See "§9.3–§9.5 — DONE" below. Prior sessions: §1–9.2 + `lem:complementation`
-("§9–§9.2 — DONE"), §8 ("§8 — DONE"). `lake build LeanFlagAlgebras.MetaTheory` → **7961 jobs green**
-(55 modules); `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all headline
-theorems (`pinning_obstruction`, `no_interior_pinning`, `c5free_edge_not_rootPlantable`) `#print axioms`
-= `[propext, Classical.choice, Quot.sound]`. **COMMITTED+PUSHED to `main`** as `4288088` (the 6 new Lean
-modules + `MetaTheory.lean`, rebased onto the user's §5/paper-draft commits); the reference-doc sync
-(`README`/`ARCHITECTURE`/`READING_GUIDE` + this `METATHEORY_WORKLOG`) is in the follow-up commit this
-session. Next target: **§10** (`sec:empty-type`, "the gap is invisible to density bounds") and **§11**
-(strengthening by a further constraint; the `K₄`-free-`P₄` equality slice).)
+Last updated: 2026-07-09. (Stopping point: §1–**10** of `paper.tex` formalised — the WHOLE of §10
+(`sec:empty-type`, "the gap is invisible to density bounds", Prop 64–Cor 70) added this session in
+seven new modules (`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/
+`BooleanPoint`/`SinglePoint`/`C5EdgeInert`) — see "§10 — DONE" below. Prior sessions: §9.3–§9.5
+("§9.3–§9.5 — DONE"), §1–9.2 + `lem:complementation` ("§9–§9.2 — DONE"), §8 ("§8 — DONE").
+`lake build LeanFlagAlgebras.MetaTheory` → **7968 jobs green** (62 modules);
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; all §10 headline theorems
+(`emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `extend_emptyType_eq_dirac`,
+`no_closed_certificate_gap`, `downward_eval_eq_zero_of_zero_on_Sσ`,
+`Sσ_eq_singleton_of_edgeDegenerate`/`_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`/
+`coEdgeDegenerate_cone_collapse`, `c5free_edge_no_closed_certificate_gap`) `#print axioms`
+= `[propext, Classical.choice, Quot.sound]`. Next target: **§11** (strengthening by a further
+constraint; relative-ensemble enhancements, `thm:relative-mantel`, the `K₄`-free-`P₄`
+equality-slice / stability results).)
 
 ---
 
@@ -61,9 +62,21 @@ session. Next target: **§10** (`sec:empty-type`, "the gap is invisible to densi
   at the two-root edge type, refuting the all-types conjecture). These are the obstruction capstones —
   a class can FAIL to be root-plantable, on both the sparse and the dense side, and even at one type but
   not another.
-* **Scale:** 55 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline results (§10, "the gap is invisible to density bounds"):** the §9 obstructions never
+  affect an actual empty-type density bound. `emptyType_rootPlantable` /
+  `heredClass_emptyType_rootPlantable` (`prop:empty-type`: `Ext_∅ = δ`, `S_∅ = Q₀`, always
+  root-plantable; `cor:confined` via `ensemble_implies_quotient_emptyType`),
+  `no_closed_certificate_gap` (`thm:no-closed-certificate-gap`: the sums-of-squares and
+  nonneg-on-`S_σ` certificate cones have the same `Q₀`-seminorm closure, every type),
+  `downward_eval_eq_zero_of_zero_on_Sσ` + `pinned_witness_downward_eq_zero` (`prop:ideal-zero`),
+  `Sσ_eq_singleton_of_edgeDegenerate`/`_coEdgeDegenerate` + `edgeDegenerate_cone_collapse`/
+  `coEdgeDegenerate_cone_collapse` (`prop:single-point`: `S_vtype` a single point, cones = `ℝ≥0·1₀`),
+  `c5free_edge_no_closed_certificate_gap` (`cor:c5-edge-closed-inert`).
+* **Scale:** 62 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
-  [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`]) + 4 committed reference docs
+  [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
+  [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
+  `SinglePoint`/`C5EdgeInert`]) + 4 committed reference docs
   (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in namespace
   `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the top build
   manifest `LeanFlagAlgebras.lean`.
@@ -101,12 +114,15 @@ session. Next target: **§10** (`sec:empty-type`, "the gap is invisible to densi
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 7961 jobs, green (§1–9, all of §9)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 7968 jobs, green (§1–10)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
               coDegenerate_not_rootPlantable c4free_not_rootPlantable coC4free_not_rootPlantable \
-              pinning_obstruction no_interior_pinning c5free_edge_not_rootPlantable; \
+              pinning_obstruction no_interior_pinning c5free_edge_not_rootPlantable \
+              emptyType_rootPlantable heredClass_emptyType_rootPlantable no_closed_certificate_gap \
+              Sσ_eq_singleton_of_edgeDegenerate edgeDegenerate_cone_collapse \
+              coEdgeDegenerate_cone_collapse c5free_edge_no_closed_certificate_gap; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    ```
@@ -384,23 +400,99 @@ per-module oleans only after; full aggregator build + `#print axioms` at the end
 modules were proved by **four agents in parallel** (each owning one file, using the others' stable
 *types* as black boxes), then the full clean rebuild connected the chain.
 
+## §10 — DONE (2026-07-09). "The gap is invisible to density bounds"
+
+Seven new modules (all green, `sorry`/`admit`/`native_decide`-free, no `maxHeartbeats` raises,
+axioms `[propext, Classical.choice, Quot.sound]`), wired into `MetaTheory.lean` after the §9.4/§9.5
+stack. **The whole of §10 (`sec:empty-type`, Prop 64–Cor 70) is now formalised.**
+
+* **`DownwardAverage`** — the §10 engine. The two `PositiveHom`/`posHomPoint` roundtrips,
+  `downwardNormalizingFactor_le_one` (unlabelling weights are probabilities, by injecting the label
+  placements into `Fin n₀ ↪ Fin n`), the degenerate-type collapse
+  `downward_eval_eq_zero_of_degenerate` (`φ₀⟨σ⟩₀ = 0` kills every unlabelled average — proved by
+  unlabelling the level-`ℓ` expansion of `1`; no separate density-monotonicity lemma needed), the
+  **master evaluation bound** `abs_downward_eval_le_of_abs_le_on_Sσ` (`|s| ≤ δ` on `S_σ` ⟹
+  `|φ₀ ⟦s⟧₀| ≤ δ` on `Q₀`; drives Thm 66 with `δ = ε` and Prop 67 with `δ = 0`), and the singleton
+  collapse `downward_eval_eq_of_Sσ_singleton`.
+* **`EmptyTypeCollapse`** — `prop:empty-type` (Prop 64) + `cor:confined` (Cor 65). `⟨∅ₜ⟩₀ = 1`, the
+  Dirac identity `extend_emptyType_eq_dirac` (`Ext_∅(φ₀) = δ_{φ₀}` — the paper's variance
+  computation is subsumed by the Lemma-50-session moment-uniqueness theorem
+  `measure_eq_of_integral_flag_eq`, since `downward` is the identity at `∅ₜ`), `Sσ_emptyType_eq`
+  (`S_∅ = Q₀`), `emptyType_rootPlantable` + `heredClass_emptyType_rootPlantable`, and the semantic
+  coincidence `emptyType_quotient_iff_ensemble` / `ensemble_implies_quotient_emptyType`.
+* **`CertificateCones`** — `thm:no-closed-certificate-gap` (Thm 66). The cones `quotCone`
+  (unlabelled averages of ambient sums of squares, Mathlib `IsSumSq`) and `ensCone` (of elements
+  non-negative on `S_σ`), the `Q₀`-seminorm ε-closeness `Q0Within`/`MemQ0Closure`, the crux
+  Stone–Weierstrass step `ensCone_subset_closure_quotCone` (approximate `√(max(s,0))` by a flag
+  evaluation via `exists_flag_near`, square it), and the closure equality
+  `no_closed_certificate_gap` — proved for EVERY type (non-degeneracy not needed).
+* **`VanishingIdeal`** — `prop:ideal-zero` (Prop 67): four `δ = 0` instances of the master bound —
+  vanishing on `S_σ` ⟹ zero unlabelled average, the ideal property, the pinning witness
+  `(g − c·1)·h`, and the congruence form.
+* **`BooleanPoint`** — the labelled empty-graph limit `edgelessPoint` and complete-graph limit
+  `completePoint` in `X_vtype`: `IsEdgelessFlag`/`IsCompleteFlag`, per-size uniqueness of the
+  edgeless/complete flag (at `vtype` and at `∅ₜ`), existence via limits of the rooted edgeless/
+  complete flag sequences, and the workhorse `val_eq_boolean_of_nonEdgeless_zero` (the vanishing
+  pattern forces the whole boolean profile, by size-`n` sum-to-one), giving
+  `eq_edgelessPoint_of_nonEdgeless_zero` / `eq_completePoint_of_nonComplete_zero`.
+* **`SinglePoint`** — `prop:single-point` (Prop 68). Edge-degeneracy kills every edge-containing
+  unlabelled flag (`eval_eq_zero_of_edgeDegenerate`: expand the 2-vertex edge flag,
+  `flagDensity_unlabelledEdge_pos`); dually for co-edge-degeneracy (via the size-2 classification
+  `flagWithSize_two_edgeless_or_complete` + `nonEdge_eval_eq_zero_of_coEdgeDegenerate`); hence a.s.
+  vanishing of all non-boolean flags and `Sσ_eq_singleton_of_edgeDegenerate` / `_coEdgeDegenerate`
+  (`S_vtype = {point}`, given a constrained limit exists). Cone collapse:
+  `edgeDegenerate_cone_collapse` / `coEdgeDegenerate_cone_collapse` — every ensemble-cone member
+  agrees on `Q₀` with some `c•1₀`, `c ≥ 0`, itself in the quotient cone
+  (`smul_one_mem_quotCone_vtype`): the §9 degeneracy counterexamples cost nothing for density
+  bounds.
+* **`C5EdgeInert`** — `cor:c5-edge-closed-inert` (Cor 70): the closed-cone equality at
+  `(c5FreeClass, edgeType)` (`c5free_edge_no_closed_certificate_gap`, an instance of Thm 66), plus
+  the inertness of the pinned witness: `F_△ = 0` on all of `S_τ` (`c5free_Ftri_zero_on_Sσ`), so
+  `F_△` and all its flag-multiples unlabel to zero (`c5free_Ftri_mul_downward_eq_zero`).
+
+**Deviations worth recording (README Deviation 12).** (a) `Q₀`-closures in ε-form
+(`Q0Within`/`MemQ0Closure`), not a seminormed-space closure. (b) `quotCone` uses *ambient* sums of
+squares — the smallest of the three sandwiched cones, hence the strongest closure equality, which
+implies the paper's. (c) "zero in `A⁰[T₁]`" stated in evaluation form (`φ₀ u = 0`/`= c` for all
+`φ₀ ∈ Q₀`) — a quotient-algebra equality would need a separation theorem the development doesn't
+have; the paper's own proofs establish exactly the evaluation form. (d) Thm 66 proved without the
+paper's non-degeneracy hypothesis. (e) the co-degenerate half of Prop 68 by direct mirror instead
+of `lem:complementation`. (f) Prop 68's literal `S = {pt}` takes an explicit non-vacuousness
+hypothesis (`Q₀ ≠ ∅`); the cone collapse avoids it.
+
+**How it was reused.** §10 rests almost entirely on prior layers: `Sσ`/`support_criterion`/
+`support_passes` (§4), the `eq:extension-expectation` spec
+(`probMeasure_extend_emptyType_positiveHom_spec`), `measure_eq_of_integral_flag_eq` (the Lemma-50
+session — it turns Prop 64's Dirac identity into a 10-liner), `exists_flag_near`
+(Stone–Weierstrass), the base-library expansion lemmas `basisVector_quot_eq_sum` /
+`sum_flagWithSize_eq_one` / `sum_positiveHom_basisVector_flagWithSize_eq_one` (which replace the
+paper's "monotonicity" argument in the degenerate-type collapse), `Sσ_subset_eval_eq_of_ae_pinned`
+(§9.3), `EdgeDegenerate`/`CoEdgeDegenerate`/`one_downward_vtype` (§9),
+`downwardNormalizingFactor_edge_eq_one` (§9.2), `flagDensity_unlabelledEdge_eq` (§9.1),
+`ae_Ftri_eq_zero_of_pinned` (§9.5), and the flag-sequence limit machinery
+(`increasing_flagSeq_contain_convergent_subseq` + `flagSeq_limit_mem_positiveHom`).
+**Workflow (same as §9.3–§9.5, and it worked again):** scaffold all seven modules' *statements*
+with `sorry` and build the sorry-oleans once → six agents in parallel, one per module, each
+iterating `lake env lean <file>` only (no `lake build` — no build-lock conflicts), with a shared
+verified-API cheat sheet and per-module proof notes → statement-drift check against a scaffold
+snapshot (public declaration lists identical) → per-module rebuilds → aggregator build (7968 jobs)
+→ `#print axioms` on all 20 public §10 theorems → docs → commit.
+
 ## Next work / open follow-ups
 
-**▶ TO RESUME (start here).** Everything through `paper.tex` **§9 (all of §9.1–§9.5) +
-`lem:complementation` is DONE**, green and `sorry`-free, axiom-clean, and **COMMITTED+PUSHED to `main`**
-(the 6 new modules `C5FewTriangles`/`C5EdgeObstruction`/`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/
-`NoInteriorThinning` + `MetaTheory.lean` in `4288088`; the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc
-sync in the follow-up commit). The natural next target is **§10** (`sec:empty-type`, "the gap
-is invisible to density bounds") and **§11**. In paper order (find sections by
-`\section{...}`/`\label{...}`, **not** line number — they drift):
+**▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE** — §9 (all of
+§9.1–§9.5) + `lem:complementation` from the previous sessions, and **§10 (`sec:empty-type`,
+Prop 64–Cor 70) added 2026-07-09** (the 7 new modules `DownwardAverage`/`EmptyTypeCollapse`/
+`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert` + `MetaTheory.lean`
++ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync). All green, `sorry`-free, axiom-clean.
+The natural next target is **§11**. In paper order (find sections by `\section{...}`/`\label{...}`,
+**not** line number — they drift):
 
-* **§10 "The gap is invisible to density bounds"** — `prop:empty-type` (`sec:empty-type`), with
-  `cor:confined`, `thm:no-closed-certificate-gap`, `prop:ideal-zero`, `prop:single-point`,
-  `cor:c5-edge-closed-inert`: degenerate-type gaps collapse at the empty type, so they never affect
-  closed-cone density bounds — the "payoff" that pinning obstructions are harmless for actual bounds.
-* (Further, larger/applied: **§11 "Strengthening by a further constraint"** — relative-ensemble
-  enhancements + the `K₄`-free-`P₄` equality-slice / stability results, `thm:relative-mantel`,
-  `thm:k4free-p4-equality-slice`/`-tripartite`, …)
+* **§11 "Strengthening by a further constraint"** — relative-ensemble enhancements + the
+  `K₄`-free-`P₄` equality-slice / stability results (`thm:relative-mantel`,
+  `thm:k4free-p4-equality-slice`/`-tripartite`, `subsec:slice-completeness`, the moment/graphon and
+  quantitative-stability subsections). This is the large applied section; scope a session per
+  subsection.
 
 Reusable scaffolding for the above: the generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
@@ -410,11 +502,15 @@ first → delegate each intricate proof to its own agent iterating on `lake env 
 build lock) → build per-module oleans → full aggregator build → `#print axioms` → commit. For a big
 multi-piece result (like `lem:complementation`) build it in **verified layers**, one module each.
 
-**Already DONE this session (do NOT re-attempt):** §9 / §9.1 / §9.2 (the five obstruction modules
-`EdgeObstruction`/`StarWitness`/`C4Free`/`DegenerateFamily`/`DenseObstruction`), `lem:complementation`
-(Lemma 50; the four-module stack `FlagComplement`/`ComplementHom`/`ComplementClass`/`ComplementInvariance`),
-`cor:codegenerate` (Cor 51), `thm:pinning` (Thm 53). All committed+pushed (`4533cf6`/`e416e0e`/`14ee426`/
-`c3c149a`; §8's six modules earlier in `39dc693`, abstract `Pinning` in `25f1bb4`). This file is now
+**Already DONE (do NOT re-attempt):** ALL of §1–§10 — most recently the whole of §10
+(`sec:empty-type`, Prop 64–Cor 70; the seven modules `DownwardAverage`/`EmptyTypeCollapse`/
+`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/`SinglePoint`/`C5EdgeInert`, session 2026-07-09);
+before that §9 / §9.1–§9.5 (the obstruction modules
+`EdgeObstruction`/`StarWitness`/`C4Free`/`DegenerateFamily`/`DenseObstruction`, the §9.4 thinning
+stack, the §9.5 `C₅`-edge pair), `lem:complementation` (Lemma 50; the four-module stack
+`FlagComplement`/`ComplementHom`/`ComplementClass`/`ComplementInvariance`), `cor:codegenerate`
+(Cor 51), `thm:pinning` (Thm 53). §9 committed+pushed (`4533cf6`/`e416e0e`/`14ee426`/`c3c149a`/
+`4288088`; §8's six modules earlier in `39dc693`, abstract `Pinning` in `25f1bb4`). This file is
 tracked+committed on `main` as `METATHEORY_WORKLOG.md` (renamed from `WORKLOG.md`).
 * **Non-`C₄` degenerate families (`cor:degenerate-family`).** The three non-`C₄` families (general
   `K_{s,t}`, even cycles `C_{2k}`, planar) are formalised only as *instances* of the abstract

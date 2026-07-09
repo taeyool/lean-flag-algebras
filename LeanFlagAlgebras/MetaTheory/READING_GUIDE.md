@@ -3,7 +3,7 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
-The development is 55 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+The development is 62 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
 
 ---
 
@@ -92,6 +92,16 @@ will meet them constantly:
   `C₅`-free book graph `bookLabeled` (`book_c5free`, `book_Ftri_density = 1`), and the capstone
   `c5free_edge_not_rootPlantable` (`thm:c5-edge-not-root-plantable`: not root-plantable at the edge
   type), with the no-vtype-obstruction corollary `cor:c5-no-pin`.
+* In `MetaTheory` (§10): the master evaluation bound `abs_downward_eval_le_of_abs_le_on_Sσ`
+  (`|s| ≤ δ` on `S_σ` ⟹ `|φ₀ ⟦s⟧₀| ≤ δ` on `Q₀`) and the degenerate-type collapse
+  `downward_eval_eq_zero_of_degenerate` (`DownwardAverage`); the empty-type Dirac collapse
+  `extend_emptyType_eq_dirac` with `emptyType_rootPlantable` (`EmptyTypeCollapse`); the certificate
+  cones `quotCone`/`ensCone` with the `Q₀`-seminorm closure `Q0Within`/`MemQ0Closure` and the
+  closure equality `no_closed_certificate_gap` (`CertificateCones`); the vanishing-ideal facts
+  (`VanishingIdeal`); the boolean limit points `edgelessPoint`/`completePoint` at `vtype`
+  (`BooleanPoint`); the single-point collapse `Sσ_eq_singleton_of_edgeDegenerate` and the cone
+  collapses (`SinglePoint`); and the `C₅`-edge inertness `c5free_edge_no_closed_certificate_gap`
+  (`C5EdgeInert`).
 
 ---
 
@@ -139,6 +149,10 @@ jump straight to the module and Lean name; read that module's header, then the n
 10. **§9.5 the `C₅`-edge obstruction:** `C5FewTriangles` (`lem:c5-few-triangles`, the triangle-density
     squeeze) → `C5EdgeObstruction` (the edge type, `F_△`, the a.s. pinning, the book-graph quotient
     point), ending at `c5free_edge_not_rootPlantable` (`thm:c5-edge-not-root-plantable`).
+11. **§10 the gap is invisible to density bounds:** `DownwardAverage` (the master evaluation
+    bound) → `EmptyTypeCollapse` (`prop:empty-type`/`cor:confined`) → `CertificateCones`
+    (`thm:no-closed-certificate-gap`) → `VanishingIdeal` (`prop:ideal-zero`) → `BooleanPoint` →
+    `SinglePoint` (`prop:single-point`) → `C5EdgeInert` (`cor:c5-edge-closed-inert`).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -198,6 +212,12 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 | Corollary 57 / Corollary 59 | §9.5 `cor:c5-no-pin` (l.3296), `cor:c5-edge-pinned` (l.3340) | `C5EdgeObstruction` | `c5free_triOverVtype_zero_on_Qvtype`, `c5free_edge_not_pinned`, `ae_Ftri_eq_zero_of_pinned`, `edgeType`, `F_tri`/`triangleFF` |
 | Definition 60 / Lemma 61 | §9.5 `def:c5-book` (l.3362), `lem:c5-book` (l.3368) | `C5EdgeObstruction` | `bookLabeled`, `book_c5free`, `book_Ftri_density`, `exists_book_Qτ_point` |
 | Theorem 62 | §9.5 `thm:c5-edge-not-root-plantable` (l.3392) | `C5EdgeObstruction` | `c5free_edge_not_rootPlantable`, `exists_Qσ_point_flag_eq` |
+| — | §10 groundwork (evaluation bounds) | `DownwardAverage` | `abs_downward_eval_le_of_abs_le_on_Sσ`, `downward_eval_eq_zero_of_degenerate`, `downward_eval_eq_of_Sσ_singleton`, `downwardNormalizingFactor_le_one` |
+| Proposition 64 / Corollary 65 | §10 `prop:empty-type` (l.3476), `cor:confined` (l.3500) | `EmptyTypeCollapse` | `extend_emptyType_eq_dirac`, `Sσ_emptyType_eq`, `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `emptyType_quotient_iff_ensemble`, `ensemble_implies_quotient_emptyType` |
+| Theorem 66 | §10 `thm:no-closed-certificate-gap` (l.3560) | `CertificateCones` | `quotCone`, `ensCone`, `Q0Within`, `MemQ0Closure`, `ensCone_subset_closure_quotCone`, `no_closed_certificate_gap` |
+| Proposition 67 | §10 `prop:ideal-zero` (l.3634) | `VanishingIdeal` (+ final clause in `CertificateCones`) | `downward_eval_eq_zero_of_zero_on_Sσ`, `downward_mul_eval_eq_zero_of_zero_on_Sσ`, `pinned_witness_downward_eq_zero`, `downward_eval_congr_of_eqOn_Sσ`, `ensCone_eval_eq_quotCone_of_sos_agreement` |
+| Proposition 68 | §10 `prop:single-point` (l.3668) | `BooleanPoint`, `SinglePoint` | `edgelessPoint`, `completePoint`, `Sσ_eq_singleton_of_edgeDegenerate`, `Sσ_eq_singleton_of_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`, `coEdgeDegenerate_cone_collapse`, `smul_one_mem_quotCone_vtype` |
+| Corollary 70 | §10 `cor:c5-edge-closed-inert` (l.3749) | `C5EdgeInert` | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` |
 
 **Scope of `cor:degenerate-family` (Corollary 49).** Only the *abstract* subquadratic criterion
 `edgeDegenerate_of_subquadratic` is formalised. The named instances in the paper (general `K_{s,t}`
@@ -213,12 +233,12 @@ README — each row cites the paper number, `\label`, line, module, and Lean nam
 checking of §9 can equally be done from the §9 rows of the map above, together with `#print axioms`
 on the headline theorems — so §9 is fully audited, not unverified.
 
-**Scope / not yet formalised.** The formalised frontier is **through §9 (all of §9.1–§9.5)** —
-including `thm:pinning` (Theorem 53), `lem:complementation` (Lemma 50), the §9.4 boundary /
-no-interior theorem `thm:no-interior` (Theorem 55), and the §9.5 `C₅`-edge obstruction
-`thm:c5-edge-not-root-plantable` (Theorem 62). Not yet formalised (future work): the characterisation
-*conjecture* (`conj:characterisation`) — the one §9 result still open — §10 (`sec:empty-type`,
-`prop:empty-type`), §11 (relative ensembles, the `K₄`-free-`P₄` equality slice), and the non-`C₄`
+**Scope / not yet formalised.** The formalised frontier is **through §10** — including all of §9
+(`thm:pinning` Theorem 53, `lem:complementation` Lemma 50, the §9.4 boundary / no-interior theorem
+`thm:no-interior` Theorem 55, the §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable`
+Theorem 62) and all of §10 (`sec:empty-type`: Proposition 64 through Corollary 70). Not yet
+formalised (future work): the characterisation *conjecture* (`conj:characterisation`) — the one §9
+result still open — §11 (relative ensembles, the `K₄`-free-`P₄` equality slice), and the non-`C₄`
 degenerate families of Corollary 49. See the README's
 **[Scope & limitations](./README.md#scope--limitations)** for the authoritative list.
 
@@ -239,7 +259,10 @@ degenerate families of Corollary 49. See the README's
   `sparseRootRepair_finitePlanting`, `c5free_one_root_plantable`, `c5free_two_root_nonedge_plantable`
   (§8); `pinning_obstruction`, `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`,
   `c4free_not_rootPlantable`, `coC4free_not_rootPlantable`, `edgeDegenerate_of_subquadratic`,
-  `complementation_invariance`, `no_interior_pinning`, `c5free_edge_not_rootPlantable` (§9). The README's
+  `complementation_invariance`, `no_interior_pinning`, `c5free_edge_not_rootPlantable` (§9);
+  `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `no_closed_certificate_gap`,
+  `Sσ_eq_singleton_of_edgeDegenerate`, `edgeDegenerate_cone_collapse`,
+  `c5free_edge_no_closed_certificate_gap` (§10). The README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
   §8/§9 subset of these in one `printf | lake env lean` invocation.
 
