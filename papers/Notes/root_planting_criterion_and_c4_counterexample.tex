@@ -3503,22 +3503,26 @@ the quotient/ensemble correspondence occurs at a non-empty type $\sigma\ne\empty
 \end{corollary}
 
 \Cref{cor:confined} settles the question of \emph{truth}.  A flag-algebra proof, though,
-reaches its empty-type conclusion through labelled multipliers, so one must still ask
-whether the labelled gap can affect a \emph{certificate}.  We measure empty-type
-contributions in the usual constrained seminorm
+reaches its empty-type conclusion through labelled non-negative terms: elements
+$s_i\in\A^{\sigma_i}[\T_1]$ whose unlabelled averages $\avg{s_i}{\sigma_i}$ appear in
+the final empty-type identity.  Thus one must still ask
+whether the labelled gap can affect \emph{provability}: whether an empty-type inequality
+could be certified by an ensemble-relaxed proof system but not by the quotient
+flag-algebra proof system.  We measure empty-type contributions in the usual constrained seminorm
 \[
   \|u\|_{Q_0}:=\sup_{\phi_0\in Q_0}|\phi_0(u)|
   \qquad (u\in\A^0[\T_1]).
 \]
-The method writes
+A standard flag-algebra certificate writes
 \[
   f-\sum_i\avg{s_i}{\sigma_i}=(\text{a manifestly non-negative combination of flags}),
 \]
 each $s_i$ a sum of squares in $\A^{\sigma_i}[\T_1]$.  Because $\avg{s_i}{\sigma_i}$
 integrates $s_i$ against $\Ext_{\sigma_i}(\phi_0)$, a measure supported on
 $S_{\sigma_i}$, non-negativity of $s_i$ on $S_{\sigma_i}$ already suffices---weaker than
-the sum-of-squares condition, which is non-negativity on all of $Q_{\sigma_i}$.  An
-\emph{ensemble-relaxed} method could therefore use any multiplier non-negative on
+the sum-of-squares condition, which is non-negativity on all of $Q_{\sigma_i}$.
+Equivalently, at a fixed type $\sigma$, an \emph{ensemble-relaxed} flag-algebra proof
+system could enlarge the allowed cone of labelled terms to all elements non-negative on
 $S_\sigma$.  Write, as cones inside $\A^0[\T_1]$,
 \[
   \C^{\mathrm{quot}}_\sigma=\{\avg{s}{\sigma}:s\text{ a sum of squares}\},
@@ -3527,8 +3531,31 @@ $S_\sigma$.  Write, as cones inside $\A^0[\T_1]$,
 \]
 for the empty-type contributions the type $\sigma$ can make to the two methods, so that
 $\C^{\mathrm{quot}}_\sigma\subseteq\C^{\mathrm{ens}}_\sigma$ always.  The next result
-shows that this inclusion becomes equality after closure.  Thus the labelled gap cannot
-improve an asymptotic density bound, although exact finite certificates may still differ.
+shows that this inclusion becomes equality after closure.  Here closure is taken in the
+$Q_0$-seminorm because an empty-type expression is used in a density problem only through
+its values on constrained limits: $\|u-v\|_{Q_0}<\eps$ means that every admissible limit
+$\phi_0\in Q_0$ evaluates $u$ and $v$ within $\eps$.
+
+Concretely, a labelled term $s\in\A^\sigma[\T_1]$ enters an empty-type certificate only
+through its averaged term $\avg{s}{\sigma}$.  The theorem says that if
+$s$ is merely non-negative on $S_\sigma$, then for every $\eps>0$ there is an ordinary
+sum-of-squares term $q\in\A^\sigma[\T_1]$ such that
+\[
+  \sup_{\phi_0\in Q_0}
+  \left|
+    \phi_0\!\left(\avg{s}{\sigma}\right)
+    -
+    \phi_0\!\left(\avg{q}{\sigma}\right)
+  \right|
+  <\eps .
+\]
+Thus any density certificate using the ensemble-allowed term $\avg{s}{\sigma}$ gives,
+after allowing an arbitrarily small additive slack in the final bound, a quotient
+certificate using $\avg{q}{\sigma}$.  This is the natural notion for asymptotic density
+bounds, which are statements about the limiting values on $Q_0$ rather than about a
+particular finite algebraic identity.  Thus the labelled gap cannot improve an
+asymptotic density bound, although exact finite certificates at non-empty types may still
+differ.
 
 \begin{theorem}[No closed certificate gap]\label{thm:no-closed-certificate-gap}
 For every hereditary class $\T_1$ and every non-degenerate type $\sigma$,
@@ -3537,9 +3564,9 @@ For every hereditary class $\T_1$ and every non-degenerate type $\sigma$,
   =
   \overline{\C^{\mathrm{ens}}_\sigma}^{\,\|\cdot\|_{Q_0}} .
 \]
-Consequently, allowing labelled multipliers that are non-negative only on
-$S_\sigma$ cannot improve any density bound except possibly at the exact, non-closed
-certificate level.
+Consequently, allowing labelled terms \(s\in\A^\sigma[\T_1]\) that are non-negative only on
+$S_\sigma$ cannot improve any density bound except possibly at the level of exact finite
+certificates using non-empty types.
 \end{theorem}
 
 \begin{proof}
@@ -3662,7 +3689,7 @@ For the $C_5$-free class and the edge type $\tau$,
   =
   \overline{\C^{\mathrm{ens}}_\tau}^{\,\|\cdot\|_{Q_0}} .
 \]
-Thus the ensemble-relaxed edge-type multipliers do not improve any asymptotic
+Thus the ensemble-relaxed edge-type labelled terms do not improve any asymptotic
 $C_5$-free density bound, even though $\tau$ is not root-plantable.
 \end{corollary}
 
@@ -4177,15 +4204,16 @@ cut-metric topology on the compact graphon space,
 
 Before turning to examples we settle how much the slice method can see.  Three
 questions arise.  Does the root-planting question of this paper have a relative
-analogue, and how does it behave on slices?  Do labelled multipliers that are
-non-negative merely on the relative support prove more density consequences over the
-slice than sums of squares do?  And is every density inequality valid on a slice
+analogue, and how does it behave on slices?  Do labelled averaged terms
+\(\avg{s}{\sigma}\), with \(s\) non-negative merely on the relative support, prove more
+density consequences over the slice than averaged sums of squares do?  And is every
+density inequality valid on a slice
 reachable by a certificate at all?  The first question we answer by example: slices
 generically \emph{break} root-plantability, and that breakage is precisely the mining
 signal.  The other two we answer in the affirmative, in the same ``up to closure''
 sense as \cref{sec:empty-type}: over a slice, sums of squares remain a complete
-multiplier system, and one squared penalty in the constraints is the only genuinely new
-ingredient a slice certificate ever needs.
+source of labelled averaged terms, and one squared penalty in the constraints is the only
+genuinely new ingredient a slice certificate ever needs.
 
 \begin{definition}[Relative planted set and relative root-plantability]\label{def:relative-plantability}
 Let $Y\subseteq Q_0$ be nonempty and let $\sigma$ be a type.  A point $\chi\in X_\sigma$
@@ -4315,9 +4343,9 @@ For every nonempty $Y\subseteq Q_0$ and every type $\sigma$,
   =
   \overline{\C^{\mathrm{ens}}_\sigma(Y)}^{\,\|\cdot\|_{Y}} .
 \]
-Thus, even over a slice, labelled multipliers non-negative merely on the relative
-support prove no density consequence beyond sums of squares, except possibly at the
-exact, non-closed certificate level.
+Thus, even over a slice, labelled terms non-negative merely on the relative support prove
+no density consequence beyond averaged sums of squares, except possibly at the exact
+finite-certificate level.
 \end{theorem}
 
 \begin{proof}
@@ -4406,8 +4434,8 @@ $\|f-(f+\eps\one_0)\|_{Q_0}=\eps\to0$.
 \Cref{thm:relative-positivstellensatz} reduces non-negativity over a slice to
 non-negativity over the whole class, at the price of one squared-constraint penalty and
 an arbitrarily small shift of the constant term; and by
-\cref{thm:relative-certificate-gap} the labelled multiplier side over the slice
-collapses, after closure, to ordinary sums of squares.  Together: every density
+\cref{thm:relative-certificate-gap} the labelled-term side over the slice collapses,
+after closure, to ordinary sums of squares.  Together: every density
 inequality valid on an equality slice is provable, up to $\eps$ and up to closure, by a
 certificate of the standard quotient shape augmented by the single term
 $M\sum_ig_{j_i}^2$.  In this precise sense the mining procedure of this section is
@@ -4417,9 +4445,9 @@ $\C_{Q_0}$ itself is the closure of the finite sum-of-squares certificates of th
 class.  For the unconstrained class this is the weak Positivstellensatz of
 Lov\'asz and Szegedy \cite{LovaszSzegedy2012}; for hereditary subclasses it is open in
 general, and it is independent of everything relative in this section.  Inequality
-constraints $\phi_0(h)\ge0$, by contrast, genuinely require localised multipliers in
-the Positivstellensatz style; equality constraints cover every slice used in this
-paper.
+constraints $\phi_0(h)\ge0$, by contrast, genuinely require Positivstellensatz-style
+terms attached to the inequality constraints; equality constraints cover every slice used
+in this paper.
 \end{remark}
 
 \subsection{Example: Tur\'an equality slices}
