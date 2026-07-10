@@ -84,6 +84,8 @@ import LeanFlagAlgebras.MetaTheory.PairSubsetCount
 import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
 import LeanFlagAlgebras.MetaTheory.GraphonHom
 import LeanFlagAlgebras.MetaTheory.StdRootedBridge
+import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
+import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -464,4 +466,16 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   isomorphism, standard-rooted representatives, the root-fixing permutation engine
   (`exists_rootfix_perm_comp_emb(_pair)`), and the rooted density-as-subset-count formula
   (`flagDensity₁_stdRooted`).
+* `GraphonRootedDensity` — sub-project A, module 1a: the unnormalised rooted density
+  `unnormRootedDensity` (induced weight with the root coordinates pinned), the root factor
+  `rootWeight`/`RootAdmissible`, root-fixing relabelling invariance, the rooted extension
+  partition, total mass = `rootWeight`, the glued block product
+  (`unnormRootedDensity_block_mul`, sharing the root pair), and the subset↔embedding bridge
+  (`exists_rootFixing_emb_range`, `stdRooted_subset_iso_iff`).
+* `GraphonRootedHom` — sub-project A, module 1b: **the rooted conditional homomorphism**.
+  The conditional profile `graphonRootedProfileFun` (standard-rooted class sums over
+  `rootWeight`) satisfies the chain rule, normalisation and multiplicativity at every
+  admissible pinned pair, assembling to `graphonRootedHom W σ' u v h : PositiveHom σ'` — the
+  view of `φ_W` from a `W`-random root pair — with joint measurability in the pair
+  (`measurable_graphonRootedProfileFun`) for the upcoming rooted-view measure.
 -/

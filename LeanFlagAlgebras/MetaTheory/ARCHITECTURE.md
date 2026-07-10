@@ -31,7 +31,7 @@ the `paper.tex` result(s) it formalises.
 
 ```bash
 lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
-lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 86 modules)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 88 modules)
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
 ```
 
@@ -782,7 +782,7 @@ two slackness modules are consequences of `relative_soundness` plus the extensio
 
 ### §11.4–§11.8 the slice method and the graphon layer
 
-Twenty modules in three strands. The **slice strand** (`RelativePlanted` →
+Twenty-two modules in three strands. The **slice strand** (`RelativePlanted` →
 `RelativeCertificateGap`/`RelativePositivstellensatz` → `CertificateSliceVanishing` →
 `ParametricP4Slice` → `TuranLimit` → `TuranAut` → `TuranDirac` →
 `MantelNotPlantable`/`SliceRecovery` → `TuranSliceIdentities`) sits on the
@@ -914,8 +914,25 @@ axioms (README "Axioms assumed") — the `φ_W` strand is Tier-1 throughout.
   root-fixing isomorphism (`mkStdRooted_flag_eq_iff`), standard-rooted representatives
   (`exists_stdRooted_rep`), the root-fixing permutation engine
   (`exists_rootfix_perm_comp_emb(_pair)`), and the rooted density-as-subset-count formula
-  (`flagDensity₁_stdRooted`). Certificate-free (general `σ : FlagType (Fin 2)`); feeds the
-  upcoming `GraphonRootedHom`.
+  (`flagDensity₁_stdRooted`). Certificate-free (general `σ : FlagType (Fin 2)`); feeds
+  `GraphonRootedDensity`/`GraphonRootedHom`.
+* **[`GraphonRootedDensity`](./GraphonRootedDensity.lean)** — sub-project A, module 1a: the
+  unnormalised rooted density `unnormRootedDensity` (induced weight with the root coordinates
+  pinned at `u, v` via `pinRoots`), the root factor `rootWeight`/`RootAdmissible`,
+  root-fixing relabelling invariance, the rooted extension partition, total mass
+  `sum_unnormRootedDensity = rootWeight`, the glued block product
+  `unnormRootedDensity_block_mul` (glue embeddings `Fin.castLE`/`glueEmb₂` overlapping
+  exactly in the shared roots — whence the single surviving `rootWeight` factor), and the
+  subset↔embedding bridge (`exists_rootFixing_emb_range`, `stdRooted_subset_iso_iff`).
+* **[`GraphonRootedHom`](./GraphonRootedHom.lean)** — sub-project A, module 1b: **the rooted
+  conditional homomorphism**. The conditional profile `graphonRootedProfileFun` (sum over the
+  standard-rooted class, divided by `rootWeight`) satisfies `zeroSpaceProp` (root-fixing
+  subset-averaging with the `C(ℓ−2, n−2)` count), `oneProp` (needs `RootAdmissible`), and
+  `mulProp` (the glued block product; at the tight glued size the second subset of a valid
+  pair is forced to be the complement-plus-roots of the first, collapsing the pair count),
+  assembling to `graphonRootedHom W σ' u v h : PositiveHom σ'` — the view of `φ_W` from a
+  `W`-random root pair — with joint measurability in `(u, v)` for the rooted-view measure of
+  the upcoming `GraphonRootedMeasure` (module 2).
 * **[`GraphonBasic`](./GraphonBasic.lean)** — §11.7 preliminaries. The `Graphon` structure
   (symmetric measurable `[0,1]`-kernel on `unitInterval`), `deg`/`codeg`,
   `edgeDensity`/`degSq`/`triDensity`, measurability/boundedness/integrability, and the two Fubini
