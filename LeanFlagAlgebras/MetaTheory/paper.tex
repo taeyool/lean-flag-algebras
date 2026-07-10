@@ -3781,6 +3781,19 @@ slices of verified certificates, where the slackness principle turns a density b
 labelled local equations, moment identities, rigidity theorems for the extremal graphon,
 and stability estimates.
 
+Three classical theorems enter this section as unproved external inputs: the
+Erd\H{o}s--Simonovits stability theorem (uniqueness of the balanced complete $r$-partite
+graphon as the extremiser of Tur\'an's theorem at exact equality, \cref{thm:turan-slice},
+\cref{thm:relative-mantel}); the equality case of Zykov's $K_4$-density theorem
+(uniqueness of the same graphon as the extremiser of the induced-$K_4$-density bound,
+\cref{cor:parametric-p4-turan-recovery}, \cref{thm:parametric-quant-stability}); and the
+existence half of the Lov\'asz--Szegedy representation theorem (every unlabelled limit is
+represented by some graphon, \cref{thm:k4free-p4-tripartite},
+\cref{cor:top-endpoint-recovery}).  Where a result of this section depends on one of
+these, the dependence is recorded as an explicit hypothesis of the result, in the same
+style already used for the Zykov equality case throughout \S11.7--\S11.8; no classical
+theorem is left to enter silently through a proof-only citation.
+
 \subsection{When the further constraint is hereditary}
 
 If $\K'$ is itself a hereditary graph property---closed under induced subgraphs---then the
@@ -4345,6 +4358,7 @@ on $S_\sigma(Y)$ and negative somewhere on $Q_\sigma(Y)$.
 
 \begin{proposition}[Slices break root-plantability: the Mantel slice]\label{prop:mantel-not-plantable}
 Let $\T_1$ be the triangle-free class and $Y_{\mathrm{Mantel}}$ the Mantel slice of
+\cref{thm:relative-mantel}, and assume the Erd\H{o}s--Simonovits hypothesis of
 \cref{thm:relative-mantel}.  Then $(Y_{\mathrm{Mantel}},\vtype)$ is not relatively
 root-plantable:
 \[
@@ -4529,10 +4543,14 @@ of constrained unlabelled limits, let $\rho$ be the unlabelled edge density, and
   :=
   \Bigl\{\phi_0\in Q_0^{(r)}:\phi_0(\rho)=\tfrac{r-1}{r}\Bigr\}.
 \]
-Then $Y_{\mathrm{Tur}}^{(r)}$ consists of exactly one point, the balanced complete
-$r$-partite limit, represented by the graphon $T_r$.  Consequently the relative supports
-at the one-vertex type $\vtype$, the ordered edge type $\tau$, and the ordered non-edge
-type $\eta$ are single points, and the following identities hold.
+The set $Y_{\mathrm{Tur}}^{(r)}$ contains the balanced complete $r$-partite limit,
+represented by the graphon $T_r$; this existence half needs no further input.  Assume, in
+addition, the following instance of the Erd\H{o}s--Simonovits stability theorem: $T_r$ is
+the \emph{only} point of $Y_{\mathrm{Tur}}^{(r)}$, i.e. $Y_{\mathrm{Tur}}^{(r)}=\{T_r\}$
+(equivalently, every $K_{r+1}$-free graphon of edge density $\frac{r-1}r$ is, up to
+measure-preserving relabelling, $T_r$).  Then the relative supports at the one-vertex type
+$\vtype$, the ordered edge type $\tau$, and the ordered non-edge type $\eta$ are single
+points, and the following identities hold.
 \begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
   \item If $e\in\A^{\vtype}[\T_r]$ is the one-root edge flag, then on
         $S_{\vtype}(Y_{\mathrm{Tur}}^{(r)})$,
@@ -4564,13 +4582,13 @@ type $\eta$ are single points, and the following identities hold.
 \end{theorem}
 
 \begin{proof}
-By Tur\'an's theorem, a $K_{r+1}$-free graph on $n$ vertices has edge density at most
-$\frac{r-1}{r}+o(1)$, and by the Erd\H{o}s--Simonovits stability theorem
-\cite{ErdosSimonovits,Simonovits1968}, a $K_{r+1}$-free sequence whose edge density
-tends to $\frac{r-1}{r}$ converges, after changing $o(n^2)$ edges, to balanced complete
-$r$-partite graphs.  Equivalently, the only $K_{r+1}$-free graphon of edge density
-$\frac{r-1}{r}$ is the balanced complete $r$-partite graphon $T_r$.  Thus
-$Y_{\mathrm{Tur}}^{(r)}$ is the single limit represented by $T_r$.
+Existence needs only Tur\'an's theorem: the balanced complete $r$-partite graph attains
+edge density $\frac{r-1}r$ exactly, so $T_r\in Y_{\mathrm{Tur}}^{(r)}$.  Uniqueness is
+exactly the assumed hypothesis; it is the content of the Erd\H{o}s--Simonovits stability
+theorem \cite{ErdosSimonovits,Simonovits1968}, which says that a $K_{r+1}$-free sequence
+whose edge density tends to $\frac{r-1}{r}$ converges, after changing $o(n^2)$ edges, to
+balanced complete $r$-partite graphs---equivalently, that $T_r$ is the only $K_{r+1}$-free
+graphon of edge density $\frac{r-1}r$.
 
 The identities are direct readings of random labelled extensions of $T_r$.  The parts of
 $T_r$ are interchangeable and its vertices within a part indistinguishable, so the views
@@ -4601,9 +4619,12 @@ This is a closed, non-hereditary enhancement: it describes the equality case of 
 theorem at the level of limits, not a hereditary graph class.
 
 \begin{theorem}[Relative Mantel equality support]\label{thm:relative-mantel}
-The set $Y_{\mathrm{Mantel}}$ consists of the balanced complete bipartite limit.  Hence
-the relative supports at the one-vertex type, the edge type $\tau$, and the non-edge type
-$\eta$ are all single points.
+The set $Y_{\mathrm{Mantel}}$ contains the balanced complete bipartite limit; this
+existence half needs no further input.  Assume, in addition, the $r=2$ instance of the
+Erd\H{o}s--Simonovits hypothesis of \cref{thm:turan-slice}: the balanced complete
+bipartite limit is the \emph{only} point of $Y_{\mathrm{Mantel}}$.  Then the relative
+supports at the one-vertex type, the edge type $\tau$, and the non-edge type $\eta$ are
+all single points.
 
 More explicitly:
 \begin{enumerate}[label=\textup{(\roman*)}, leftmargin=2.5em]
@@ -4635,7 +4656,8 @@ More explicitly:
 \end{theorem}
 
 \begin{proof}
-This is the case $r=2$ of \cref{thm:turan-slice}: the identities there read
+This is the case $r=2$ of \cref{thm:turan-slice}, whose Erd\H{o}s--Simonovits
+hypothesis specialises at $r=2$ to the one assumed here: the identities there read
 $e=\frac12\one_{\vtype}$; $a_\tau=b_\tau=\frac12\one_\tau$ with
 $g_\tau=\frac{r-2}{r}\one_\tau=0$ and $z_\tau=0$ (at $r=2$ the common-neighbour flag
 $g_\tau$ is the triangle flag, already zero in the triangle-free quotient); and
@@ -5033,16 +5055,24 @@ $0\le\int(d-p)^2=-(p-\frac23)^2\le0$; hence $p=\frac23=\alpha_3^+$, and
 \end{proof}
 
 \begin{theorem}[A certificate route to the tripartite extremiser]\label{thm:k4free-p4-tripartite}
-Every element of the equality slice $Y_{P_4}$ is the balanced complete tripartite
-graphon; in particular every extremiser has edge density $2/3$ and is degree-regular.
-The identification uses no classical equality theorem: the two labelled slice equations
-are rigid by themselves (\cref{cor:r3-rigidity}).  The slice is moreover
-non-empty---the balanced complete tripartite graphon attains $\pi_{P_4}=32/9$---so
-$Y_{P_4}$ consists of exactly that graphon.
+Let $W$ be a graphon representing a point of the equality slice $Y_{P_4}$, and suppose the
+ordered edge type $\tau$ and the ordered non-edge type $\eta$ both occur with positive
+probability under random rooting from $W$ (this holds automatically at every point of
+$Y_{P_4}$, since the graphon identified below has edge density $2/3$ and non-edge density
+$1/3$ --- a routine consequence of the identification, not separately verified here; we
+record it as an explicit hypothesis because passing from a point of $Y_{P_4}$ to some
+representing graphon $W$ already invokes the existence half of the Lov\'asz--Szegedy
+representation theorem).  Then $W$ is, up to a measure-preserving relabelling, the
+balanced complete tripartite graphon; in particular every extremiser has edge density
+$2/3$ and is degree-regular.  The identification itself uses no further classical equality
+theorem: the two labelled slice equations are rigid by themselves
+(\cref{cor:r3-rigidity}).  The slice is moreover non-empty---the balanced complete
+tripartite graphon attains $\pi_{P_4}=32/9$---so $Y_{P_4}$ consists of exactly that
+graphon.
 \end{theorem}
 
 \begin{proof}
-Let $W$ represent a point of $Y_{P_4}$.  By \cref{thm:k4free-p4-equality-slice}, the
+By \cref{thm:k4free-p4-equality-slice}, the
 kernels of $W$ satisfy the two local equations of \cref{thm:parametric-moments} at
 $r=3$: the equation $a_\tau+b_\tau=2g_\tau$ gives the edge line and $2z_\eta=g_\eta$
 gives the non-edge line (the third slice equation, $a_\tau=b_\tau$, is not needed).
@@ -5095,10 +5125,12 @@ graphs $G_n$.
 
 \begin{corollary}[Recovery modulo Zykov equality]
 \label{cor:parametric-p4-turan-recovery}
-Assume $r\ge4$ and the equality case of Zykov's $K_4$-density theorem
+Assume $r\ge3$ and the equality case of Zykov's $K_4$-density theorem
 \cite{Zykov1949}: among $K_{r+1}$-free graphons, equality in the $K_4$-density bound
 occurs only at the balanced complete $r$-partite graphon.  Then every element of $Y_r$
-is the balanced complete $r$-partite graphon.
+is the balanced complete $r$-partite graphon.  (At $r=3$ the Zykov-equality hypothesis
+is not actually needed, by \cref{cor:r3-rigidity}; the statement is recorded for
+$r\ge3$ uniformly because it remains true, and the $r=3$ case costs nothing extra.)
 
 Consequently, the relative supports at the one-vertex type, the ordered edge type
 $\tau$, and the ordered non-edge type $\eta$ are all single points.  More explicitly, if
@@ -5136,11 +5168,16 @@ The rigidity theorem localises what the Zykov assumption is actually for: not th
 structure of the extremiser, only its edge density.
 
 \begin{corollary}[Unconditional recovery at the regular endpoint]\label{cor:top-endpoint-recovery}
-Fix $r\ge4$.  Every $\phi_0\in Y_r$ with edge density $\phi_0(\rho)=\frac{r-1}r$ is the
-balanced complete $r$-partite graphon---with no appeal to the Zykov equality case.
-Consequently, the hypothesis of \cref{cor:parametric-p4-turan-recovery} can be weakened
-from the full equality case of Zykov's theorem to the single scalar statement that
-every element of $Y_r$ has edge density $\frac{r-1}r$.
+Fix $r\ge4$, let $W$ be a graphon representing a point $\phi_0\in Y_r$ with edge density
+$\phi_0(\rho)=\frac{r-1}r$, and suppose the ordered edge type $\tau$ and the ordered
+non-edge type $\eta$ both occur with positive probability under random rooting from $W$
+(automatic at this edge density, exactly as in \cref{thm:k4free-p4-tripartite}; recorded
+as an explicit hypothesis for the same reason: identifying a representing $W$ already
+invokes Lov\'asz--Szegedy existence).  Then $W$ is, up to a measure-preserving
+relabelling, the balanced complete $r$-partite graphon---with no appeal to the Zykov
+equality case.  Consequently, the hypothesis of \cref{cor:parametric-p4-turan-recovery}
+can be weakened from the full equality case of Zykov's theorem to the single scalar
+statement that every element of $Y_r$ has edge density $\frac{r-1}r$.
 \end{corollary}
 
 \begin{proof}
