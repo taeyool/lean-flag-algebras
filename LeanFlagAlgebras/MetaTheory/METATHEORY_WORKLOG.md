@@ -974,7 +974,14 @@ work is the §11 partial-coverage frontier. Next targets, in the agreed plan (fi
   `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as literally
   stated, and discharges `SliceRecovery`'s `huniq`. This is the Lovász–Szegedy direction proper
   (compactness of graph sequences to a graphon limit object) — a major, substantially harder
-  project than Phase 2; **it needs its own design doc before scaffolding**, not an inline start.
+  project than Phase 2. **The design doc now exists: `HOM_TO_GRAPHON_DESIGN.md`** (frozen
+  2026-07-10). Headline findings: only the *existence* half is needed (no injectivity); a
+  second, previously unnamed gap — the **rooted transport** of the slice identities into a.e.
+  kernel hypotheses — should ship FIRST as its own 1–2-session sub-project (low risk, reuses
+  the `GraphonHom` averaging technique + `measure_eq_of_integral_flag_eq`); the recommended
+  route for existence is sampling (`positiveHom_as_flagSeq_limit`, already proved) + step
+  graphons + Doob martingale convergence, with the sequential-compactness module as the single
+  riskiest piece (checkpoint after the counting lemma). Start there, not here.
 * **Optional: Phase 3, kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for
   the Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
   §11.5 identities be discharged through the bridge once both halves of Phase 4 exist.
