@@ -33,7 +33,7 @@ half) remains; remaining partial-coverage caveats in README Deviations 14–17 +
 Prior sessions: `φ_W`, §11.5 identity halves,
 §11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
 `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8013 jobs green** (90 modules; "Build completed
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8015 jobs green** (92 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
@@ -43,11 +43,21 @@ certificate consumers (`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`,
 `[Lean.ofReduceBool, Lean.trustCompiler]` inherited from the `Automation` layer's `native_decide`
 (README "Axioms assumed", two tiers — **the Tier-2 list gains exactly those three names this
 session**; everything else in the five new rooted-transport modules is Tier-1, no new certificate
-material). Next targets: **Phase 4, sub-project B: hom→graphon existence** — the harder,
-remaining half of the Lovász–Szegedy representation bridge (every homomorphism is represented by
-some graphon; the sole remaining piece for Thm 102 / Cor 106 verbatim) — design doc's module list
-3–6 (`GraphonStep` → `GraphonCounting` → checkpoint → `GraphonMartingaleLimit` →
-`GraphonRepresentation`); optional
+material). **Sub-project B modules 3–4 (`GraphonStep` + `GraphonCounting`) are also DONE**
+(same 2026-07-11 stretch, Tier-1, audited 7/7 FAITHFUL / SHIP; 92 modules / 8015 jobs): step
+graphons with the pointwise indicator identity (LITERAL graph equality
+`G.comap (cellIdx ∘ c) = H` — flag-class equality would be wrong pointwise), the counting lemma
+`graphonProfileFun_stepGraphon_sub_le` with explicit error `n(n−1)/N` (exact tuple-count
+formula, injective-tuple/subset-count bijection, birthday-bound defects), and the payoff
+`exists_graphonHomPoint_seq_tendsto`: **the graphon-hom range is dense in `X_∅`**.  Next
+targets: **THE MODULE-4→5 CHECKPOINT of `HOM_TO_GRAPHON_DESIGN.md` — a design-only spike is
+REQUIRED before any module-5 Lean**: the remaining piece of `exists_graphon_rep` is exactly
+`IsClosed (Set.range graphonHomPoint)` (graphon-space compactness); the naive "nested
+partitions + Doob" route has a recorded gap (the martingale averaging identity is not free
+across unrelated graphs — see the design doc's revised sub-project B section); candidate
+routes: regularity-lemma adaptation, a genuine fixed-space martingale device, or a direct
+attack on the `IsClosed` statement. Then `GraphonRepresentation` (assembly + Thm 102/Cor 106
+verbatim + `SliceRecovery` `huniq` discharge); optional
 **Phase 3: kernel-level Mantel uniqueness**; and the `R_τ⁻` kernel functional + Thm 112(iv); §12
 is open problems — prose, nothing to formalise.)
 
@@ -222,7 +232,7 @@ is open problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8013 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + the complete rooted transport)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8015 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + rooted transport + step-graphon density)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \

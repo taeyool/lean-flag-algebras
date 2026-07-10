@@ -88,6 +88,8 @@ import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
 import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
 import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
 import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
+import LeanFlagAlgebras.MetaTheory.GraphonStep
+import LeanFlagAlgebras.MetaTheory.GraphonCounting
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -494,4 +496,17 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   **`k4freeP4_graphon_tripartite`**: any graphon whose `φ_W` lies in the `K₄`-free
   `P₄`-slice is a.e. the balanced complete tripartite graphon — the graphon-side content of
   `thm:k4free-p4-tripartite`, awaiting only the representation existence (sub-project B).
+* `GraphonStep` — sub-project B, module 3: step graphons.  The cell map `cellIdx` (equal
+  `N`-cell interval partition, fibres of volume `1/N`), the indicator kernel
+  `stepGraphon hN G`, and the pointwise indicator identity `inducedWeight_stepGraphon`
+  (the induced weight of `H` at samples `c` is the indicator of the literal equality
+  `G.comap (cellIdx ∘ c) = H`).
+* `GraphonCounting` — sub-project B, module 4 (the pre-checkpoint payoff): the counting
+  lemma `graphonProfileFun_stepGraphon_sub_le` with explicit error `n(n−1)/N` (injective
+  cell tuples reproduce the finite subset count; non-injective mass and the
+  falling-factorial defect each contribute `C(n,2)/N`), and **density of the graphon-hom
+  range**: `exists_graphonHomPoint_seq_tendsto` — every `φ : PositiveHom ∅ₜ` is a limit of
+  `graphonHomPoint` points.  With `positiveHomSpace_isClosed`, the representation theorem
+  `exists_graphon_rep` is now equivalent to `IsClosed (Set.range graphonHomPoint)`
+  (module 5, gated behind the design spike of `HOM_TO_GRAPHON_DESIGN.md`).
 -/

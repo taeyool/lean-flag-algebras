@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 90 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 92 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order. The precise
@@ -31,7 +31,7 @@ the `paper.tex` result(s) it formalises.
 
 ```bash
 lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
-lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 90 modules)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 92 modules)
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
 ```
 
@@ -782,7 +782,7 @@ two slackness modules are consequences of `relative_soundness` plus the extensio
 
 ### §11.4–§11.8 the slice method and the graphon layer
 
-Twenty-four modules in three strands. The **slice strand** (`RelativePlanted` →
+Twenty-six modules in three strands. The **slice strand** (`RelativePlanted` →
 `RelativeCertificateGap`/`RelativePositivstellensatz` → `CertificateSliceVanishing` →
 `ParametricP4Slice` → `TuranLimit` → `TuranAut` → `TuranDirac` →
 `MantelNotPlantable`/`SliceRecovery` → `TuranSliceIdentities`) sits on the
@@ -968,6 +968,20 @@ capstone theorems.
   graphon — `Graphon.r3_rigidity` with both hypotheses discharged, the graphon-side content of
   `thm:k4free-p4-tripartite` (Thm 102). **Tier-2** on these three theorems (they consume the
   slice equations); the dictionary lemmas are Tier-1.
+* **[`GraphonStep`](./GraphonStep.lean)** — sub-project B, module 3: **step graphons**.  The
+  equal-`N`-cell map `cellIdx` (floor-based, clamped at `x = 1`; measurable, fibres of volume
+  exactly `1/N`), the indicator kernel `stepGraphon hN G`, and the pointwise indicator
+  identity `inducedWeight_stepGraphon`: the induced weight of `H` at samples `c` is the
+  indicator of the *literal* graph equality `G.comap (cellIdx ∘ c) = H`.  Tier-1.
+* **[`GraphonCounting`](./GraphonCounting.lean)** — sub-project B, module 4 (the
+  pre-checkpoint payoff): the counting lemma `graphonProfileFun_stepGraphon_sub_le` with
+  explicit error `n(n−1)/N` (exact tuple-count formula `profile = #{realising cell
+  tuples}/Nⁿ`, injective tuples ↔ `n!` times the subset count of `flagDensity₁_graphFlag`,
+  non-injective mass and falling-factorial defect each `≤ C(n,2)/N`), and **density of the
+  graphon-hom range**: `exists_graphonHomPoint_seq_tendsto` — every `φ : PositiveHom ∅ₜ` is
+  a limit of `graphonHomPoint` points.  With `positiveHomSpace_isClosed`, the representation
+  theorem is now equivalent to `IsClosed (Set.range graphonHomPoint)` (module 5, gated
+  behind the design spike).  Tier-1.
 * **[`GraphonBasic`](./GraphonBasic.lean)** — §11.7 preliminaries. The `Graphon` structure
   (symmetric measurable `[0,1]`-kernel on `unitInterval`), `deg`/`codeg`,
   `edgeDensity`/`degSq`/`triDensity`, measurability/boundedness/integrability, and the two Fubini

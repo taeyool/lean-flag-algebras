@@ -170,21 +170,22 @@ the probe's own first sketch had a genuine bug.*
   (a) regularity-lemma adaptation, (b) another device producing a genuine fixed-space
   martingale, or (c) a direct attack on the `IsClosed` reframing.
 
-3. `GraphonStep.lean` — step graphons: `cellIdx N : I → Fin N` (floor-based, clamped at
-   `x = 1`), `stepGraphon G : Graphon` (indicator kernel), measurability + cell volume `1/N`,
-   and the pointwise indicator identity
-   `inducedWeight (stepGraphon G) H c = [graphFlag (G.comap (cellIdx N ∘ c)) = graphFlag H]`.
-   Mechanical; no missing Mathlib prerequisites (`Nat.measurable_floor`,
-   `unitInterval.volume_Ico`).
-4. `GraphonCounting.lean` — the counting lemma with the probe's **explicit constant**:
+3. `GraphonStep.lean` — **SHIPPED 2026-07-11** (sorry-free, Tier-1, audited): step graphons:
+   `cellIdx N : I → Fin N` (floor-based, clamped at `x = 1`), `stepGraphon G : Graphon`
+   (indicator kernel), measurability + cell volume `1/N`, and the pointwise indicator
+   identity `inducedWeight (stepGraphon G) H c = [G.comap (cellIdx N ∘ c) = H]` — note the
+   shipped identity uses **literal graph equality** (the weight product detects per-pair
+   adjacency on the common vertex set), not the flag-class equality of the earlier sketch.
+4. `GraphonCounting.lean` — **SHIPPED 2026-07-11** (sorry-free, Tier-1, audited 7/7): the
+   counting lemma with the probe's **explicit constant**:
    `|graphonProfileFun (stepGraphon G) F − flagDensity₁ F.2 (graphFlag G)| ≤ F.1·(F.1−1)/N`
-   (injective cell-tuples ↔ the subset count of `flagDensity₁_graphFlag` times `n!`, giving the
-   falling-factorial ratio; non-injective tuples ≤ `C(n,2)/N` by the union bound; needs one
-   ~25-line `descFactorial/N^n ≥ 1 − C(n,2)/N` bound not present in Mathlib), then
-   `tendsto_graphonProfileFun_stepGraphon_of_convergesTo` and the payoff
+   (exact tuple-count formula `profile = #{realising cell tuples}/Nⁿ`; injective cell-tuples
+   ↔ the subset count of `flagDensity₁_graphFlag` times `n!`; non-injective tuples ≤
+   `C(n,2)/N` by the union bound; the `descFactorial/N^n ≥ 1 − C(n,2)/N` bound proved from
+   scratch), then `tendsto_graphonHomPoint_stepGraphon` and the payoff
    `exists_graphonHomPoint_seq_tendsto (φ) : ∃ V : ℕ → Graphon, Tendsto (graphonHomPoint ∘ V) …`
-   — density of the graphon-hom range.  **Checkpoint after this module** — run the module-5
-   design spike; do not proceed on the unrepaired martingale route.
+   — **density of the graphon-hom range: DONE**.  **WE ARE NOW AT THE CHECKPOINT** — run the
+   module-5 design spike; do not proceed on the unrepaired martingale route.
 5. `GraphonMartingaleLimit.lean` (name may change per the spike) — **the single riskiest
    piece**: the `IsClosed (Set.range graphonHomPoint)` statement (equivalently graphon-space
    compactness).  Est. 1500–3000+ lines as a FLOOR, no Mathlib precedent; route to be fixed by
