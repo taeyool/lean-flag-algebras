@@ -2449,7 +2449,10 @@ the wrong size, and then invoke the finite isomorphism search.
 def candidateMatches {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) {G : Sym2LabeledGraph (*@$\sigma$@*) n} (H : Sym2InducedLabeledSubgraph G)
     : Prop :=
-  Nonempty ((H.toLabeledSubgraph).coe (*@$\simeq$@*)f F.toLabeledGraph)
+  -- H.toLabeledSubgraph is the abstract labeled subgraph of G.toLabeledGraph
+  -- induced by the vertex set H.verts. This subgraph gets converted to
+  -- the graph by H.toLabeledSubgraph.coe, which fogets the subgraph structure.
+  Nonempty (H.toLabeledSubgraph.coe (*@$\simeq$@*)f F.toLabeledGraph)
 
 /-- The finite edge-set representation turns the predicate into executable code. -/
 instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
@@ -2469,7 +2472,7 @@ instance candidateMatchesDecidable {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) 
       isFalse (fun hIso => hsize (verts_card_of_coe_iso H F hIso))
 
 /-- A one-pattern illustrative version of the reflected density computation. -/
-def sym2FlagDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
+def sym2LabeledGraphDensity(*@$_1$@*) {k m n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
     (F : Sym2LabeledGraph (*@$\sigma$@*) m) (G : Sym2LabeledGraph (*@$\sigma$@*) n)
     [DecidablePred (fun H : Sym2InducedLabeledSubgraph G => candidateMatches F H)]
     : (*@$\mathbb{Q}$@*) :=
@@ -2490,7 +2493,7 @@ candidate whose vertex set has the wrong cardinality cannot be isomorphic to
 \(F\), so it is rejected before the isomorphism search is run.
 
 Once \lean{candidateMatches F H} is decidable, the density computation is just
-ordinary finite evaluation.  The definition \lean{sym2FlagDensity}$_1$
+ordinary finite evaluation.  The definition \lean{sym2LabeledGraphDensity}$_1$
 enumerates all candidates \(H : \lean{Sym2InducedLabeledSubgraph G}\), filters
 them by \lean{candidateMatches F H}, counts the survivors, and divides by the
 number of ways to choose the non-type vertices.  The same pattern is used for
@@ -2499,14 +2502,31 @@ the multi-argument density \(\den{F_1,\ldots,F_t}{G}\) formalized in
 induced subgraphs that realize \(F_1,\ldots,F_t\) inside \(G\), with the
 chosen non-type vertices pairwise disjoint.  The predicate
 \lean{predIsoSym2LabeledHl} is the computable version of exactly this
-``tuple should be counted'' condition.  Given the tuple of patterns \lean{Hl}
+conditon for tuples.  Given the tuple of patterns \lean{Hl}
 and a tuple of candidate induced subgraphs \lean{Gl}, it checks, for every
 \lean{i : Fin t}, that \lean{Gl i} matches the corresponding pattern
 \lean{Hl i}, using the same decidable matching test as above, and that the
-candidates are disjoint away from the shared type vertices.  The finite count
-then filters all candidate tuples by this predicate.  The adequacy theorems in
-the next subsection rewrite the abstract \lean{flagDensity}$_1$ and
-\lean{flagDensity}$_2$ to these executable computations.
+candidates are disjoint away from the shared type vertices.  Our
+computable implementation of \(\den{F_1,\ldots,F_t}{G}\) uses this
+predicate to filter the finite set of candidate tuples, and then counts the
+surviving tuples. In particular, the computable counterparts
+of the specification-level densities \(\mathtt{flagDensity}_1\) and
+\(\mathtt{flagDensity}_2\) are:
+\begin{lstlisting}
+def sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)} 
+    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+
+def sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)} 
+    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+\end{lstlisting}
+Note that unlike the specification-level density functions, these definitions do not
+carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
+evaluating them.  But computability alone does not say that they implement the
+density functions from the specification layer. 
+ The correspondence between this implementation and
+our non-computable formalization of \(\den{F_1,\ldots,F_t}{G}\) is established by
+the adequacy theorems explained in
+the next subsection. 
 
 \subsection{Adequacy Theorems for Reflection}
 \label{sec:reflection-adequacy}
@@ -2514,56 +2534,54 @@ the next subsection rewrite the abstract \lean{flagDensity}$_1$ and
 \Cref{sec:flagtypes} defined flags by quotienting labeled graphs by
 label-preserving graph isomorphisms.
 The reflection layer repeats the same construction for the concrete graph
-representation from \Cref{sec:reflection-concrete}.  A \lean{Sym2Flag} is the quotient of
-\lean{Sym2LabeledGraph}s by the isomorphism relation
-\(\sim_{\mathsf{sf}}\), and \lean{Sym2Flag.toFlag} decodes the resulting
-concrete flag back to the abstract \lean{Flag} used in the specification layer:
+representation from \Cref{sec:reflection-concrete}:
 \begin{lstlisting}
-def Sym2Flag {k : (*@$\mathbb{N}$@*)}
-    ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
+def sym2LabeledGraphEqv (G G' : Sym2LabeledGraph (*@$\sigma$@*) n) : Prop := ...
+
+instance sym2LabeledGraphSetoid : Setoid (Sym2LabeledGraph (*@$\sigma$@*) n) where
+  r     := sym2LabeledGraphEqv
+  iseqv := ... -- reflexivity, symmetry, and transitivity of r
+
+def Sym2Flag ((*@$\sigma$@*) : Sym2FlagType k) (n : (*@$\mathbb{N}$@*)) : Type :=
   Quotient (sym2LabeledGraphSetoid (*@$\sigma$@*) n)
+\end{lstlisting}
+The omitted definition of \lean{sym2LabeledGraphEqv} is standard, and says
+that two concrete labeled graphs are equivalent if there
+exists a label-preserving graph isomorphism between them.
+The displayed setoid instance packages this relation with its equivalence
+proofs, and \lean{Sym2Flag} takes the resulting quotient.
 
-def Sym2Flag.toFlag
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    {n : (*@$\mathbb{N}$@*)} (G : Sym2Flag (*@$\sigma$@*) n) :
-    Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
-  Quotient.lift Sym2LabeledGraph.toFlag Sym2LabeledGraph.toFlag_respect_eqv G
+We now have two corresponding representations of flags.  The
+specification-oriented development of \Cref{sec:flagtypes} uses
+\lean{Flag}, while the computation-oriented development
+of \Cref{sec:reflection-concrete} uses
+\lean{Sym2Flag}.  To use a reflected computation in a theorem stated in the
+specification layer, we need an explicit map from the latter representation to
+the former.  We call this map \lean{Sym2Flag.toFlag}:
+\begin{lstlisting}
+def Sym2Flag.toFlag (G : Sym2Flag (*@$\sigma$@*) n) : Flag (fromEdgeSet (SetLike.coe (*@$\sigma$@*).edges)) (Fin n) :=
+  Quotient.lift 
+    (fun G : Sym2LabeledGraph (*@$\sigma$@*) n => (*@$\llbracket$@*)G.toLabeledGraph(*@$\rrbracket$@*))
+    ... -- proof that the lift respects the equivalence relation of the quotient 
+    G
 \end{lstlisting}
 
-The density functions follow the same pattern for the constructions of
-\Cref{sec:formal-subflag-densities}.  The functions \(\mathtt{flagDensity}_1\) and
-\(\mathtt{flagDensity}_2\) are the specification-level densities.  Their
-reflected counterparts, \(\mathtt{sym2FlagDensity}_1\) and
-\(\mathtt{sym2FlagDensity}_2\), are built by running the finite search from
-\Cref{sec:reflection-concrete} over concrete induced subflags, counting the
-isomorphic placements, and then lifting the result through the
-\lean{Sym2Flag} quotients:
+Our
+\emph{adequacy theorems} state that the reflected computations in
+\lean{sym2FlagDensity$_1$} and \lean{sym2FlagDensity$_2$}
+agree
+with the abstract definitions 
+of \lean{flagDensity$_1$} and \lean{flagDensity$_2$}
+after we decode \lean{Sym2Flag}s back to ordinary
+\lean{Flag}s using \lean{Sym2Flag.toFlag}:
 \begin{lstlisting}
-def sym2FlagDensity(*@$_1$@*)
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) 
+    : flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
 
-def sym2FlagDensity(*@$_2$@*)
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
-    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
-\end{lstlisting}
-Unlike the specification-level density functions, these definitions do not
-carry the \lean{noncomputable} keyword: Lean has an executable algorithm for
-evaluating them.  But computability alone does not say that they implement the
-density functions from the specification layer.  We therefore prove
-\emph{adequacy theorems}: theorems stating that the reflected computation agrees
-with the abstract definition after decoding \lean{Sym2Flag}s back to ordinary
-\lean{Flag}s. 
-\begin{lstlisting}
-theorem flagDensity(*@$_1$@*)_eq_sym2FlagDensity(*@$_1$@*)
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) m) (G : Sym2Flag (*@$\sigma$@*) n) :
-    flagDensity(*@$_1$@*) F.toFlag G.toFlag = sym2FlagDensity(*@$_1$@*) F G := ...
-
-theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
-    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) :
-    flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
+theorem flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*) {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {m(*@$_0$@*) m(*@$_1$@*) n : (*@$\mathbb{N}$@*)}
+    (F(*@$_0$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_0$@*)) (F(*@$_1$@*) : Sym2Flag (*@$\sigma$@*) m(*@$_1$@*)) (G : Sym2Flag (*@$\sigma$@*) n) 
+    : flagDensity(*@$_2$@*) F(*@$_0$@*).toFlag F(*@$_1$@*).toFlag G.toFlag = sym2FlagDensity(*@$_2$@*) F(*@$_0$@*) F(*@$_1$@*) G := ...
 \end{lstlisting}
 With these adequacy theorems in place, a proof about a density in the
 specification layer can be reduced to a proof about the corresponding
