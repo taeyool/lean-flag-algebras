@@ -1,6 +1,6 @@
 # Architecture of the MetaTheory formalisation
 
-This document describes how the 81 Lean modules fit together: the proof strategy, the dependency
+This document describes how the 85 Lean modules fit together: the proof strategy, the dependency
 layers, a module-by-module map, and a walkthrough of the capstone proof. See
 [`README.md`](./README.md) for the results and verification status, and
 [`READING_GUIDE.md`](./READING_GUIDE.md) for conventions and a reading order. The precise
@@ -31,7 +31,7 @@ the `paper.tex` result(s) it formalises.
 
 ```bash
 lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
-lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 81 modules)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 85 modules)
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
 ```
 
@@ -229,6 +229,31 @@ Erdős–Simonovits singleton claim enters as the one named hypothesis `hES`
 Deviation 15). Composed downstream, this discharges `MantelNotPlantable`'s `hpin`
 (`mantel_not_relatively_plantable_of_uniqueness`) and completes Cor 105's "consequently" clauses
 (`parametric_recovery_identities`).
+
+**`φ_W` rides subset-averaging, not orbit counting.** The graphon→hom half of the representation
+bridge (`GraphonInducedDensity` → `PairSubsetCount` → `EmptyTypeGraphBridge` → `GraphonHom`; no
+single `paper.tex` display — the paper takes "every graphon is a limit object" as folklore) needs
+no automorphism/orbit-stabiliser bookkeeping at all, unlike a textbook proof that a graphon's
+sampled-graph distribution is exchangeable. The profile `graphonProfileFun W F` sums the induced
+density `graphonFlagDensity` (the probability that a `W`-random graph on `n` samples equals a
+*fixed labelled* graph `G` exactly) over **every** labelled graph `G` in the isomorphism class `F`
+— so the "labelling" is never collapsed away by counting how many labellings a class has; it is
+carried along explicitly in the sum. The chain rule (`zeroSpaceProp`) and multiplicativity
+(`mulProp`) are then both proved by the same **subset-averaging** move: any two embeddings
+`Fin n ↪ Fin ℓ` (any two *disjoint pairs* of embeddings, for the product) differ by a permutation
+of `Fin ℓ` (`exists_perm_comp_emb`/`exists_perm_comp_emb_pair`, [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean)),
+and permuting the ambient vertex set changes neither the induced density
+(`graphonFlagDensity_comap_equiv`, via a measure-preserving change of variables) nor the flag class
+(`graphFlag_comap_equiv`) of what it acts on — so summing the labelled-graph fibre over any one
+embedding, or averaging it over *all* size-`n` subsets, gives the same value, and the subset count
+is exactly the base library's `flagDensity₁`/`flagDensity₂` (`flagDensity₁_graphFlag`/
+`flagDensity₂_graphFlag`, the unlabelled specialisations of the pre-existing
+`LabeledCount.flagDensity₁_eq_subset_count_div` and the new `PairSubsetCount` pair analogue).
+Contrast the transitivity→Dirac route just above: there, automorphisms of *one* graph (the Turán
+graph) collapse a *measure* to a Dirac mass; here, permutation-invariance of a density/class *pair*
+collapses an *average* over embeddings directly, with no measure and no orbit-stabiliser count in
+sight. The sanity link `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` closes the loop
+back to the pre-existing kernel layer (`GraphonBasic`).
 
 ---
 
@@ -757,16 +782,19 @@ two slackness modules are consequences of `relative_soundness` plus the extensio
 
 ### §11.4–§11.8 the slice method and the graphon layer
 
-Fifteen modules in two independent strands. The **slice strand** (`RelativePlanted` →
+Nineteen modules in three strands. The **slice strand** (`RelativePlanted` →
 `RelativeCertificateGap`/`RelativePositivstellensatz` → `CertificateSliceVanishing` →
 `ParametricP4Slice` → `TuranLimit` → `TuranAut` → `TuranDirac` →
 `MantelNotPlantable`/`SliceRecovery` → `TuranSliceIdentities`) sits on the
 §11.2–§11.3 layer; the **graphon strand** (`GraphonBasic` → `GraphonMoments` →
 `GraphonRigidity`/`GraphonQuantStability`) is standalone kernel measure theory with no
-flag-algebra imports. Classical inputs enter as named hypotheses throughout (README
-Deviations 14a, 15b); the `ParametricP4Slice`/`SliceRecovery` certificate consumers, and
-`TuranSliceIdentities`'s `parametric_recovery_identities`, carry the Tier-2
-axioms (README "Axioms assumed").
+flag-algebra imports; and the **`φ_W` strand** (`GraphonInducedDensity` →
+`PairSubsetCount`/`EmptyTypeGraphBridge` → `GraphonHom`) bridges the graphon strand back into the
+flag-algebra world — the graphon→hom half of the representation bridge, infrastructure with no
+single `paper.tex` display (README Deviation 16). Classical inputs enter as named hypotheses
+throughout (README Deviations 14a, 15b); the `ParametricP4Slice`/`SliceRecovery` certificate
+consumers, and `TuranSliceIdentities`'s `parametric_recovery_identities`, carry the Tier-2
+axioms (README "Axioms assumed") — the `φ_W` strand is Tier-1 throughout.
 
 * **[`RelativePlanted`](./RelativePlanted.lean)** — §11.4 `def:relative-plantability` +
   `prop:relative-plantability`. The relative planted set `relQσ hc Y σ` (= `Q_σ(Y)`) and
@@ -840,6 +868,45 @@ axioms (README "Axioms assumed").
   `mantel_not_relatively_plantable_of_uniqueness` (Prop 86 with `hpin` discharged) and
   `parametric_recovery_identities` (Cor 105's "consequently" clauses; **Tier-2**, inherited via
   `parametric_recovery` — README Deviation 15).
+* **[`GraphonInducedDensity`](./GraphonInducedDensity.lean)** — the `φ_W` analytic layer;
+  infrastructure, no single `paper.tex` display (README Deviation 16). `graphonFlagDensity W G`
+  (the probability that a `W`-random graph on `|G|` uniform samples equals `G` exactly), built
+  from the pointwise `inducedWeight`/`adjWeight` product over strictly-increasing vertex pairs;
+  relabelling invariance `graphonFlagDensity_comap_equiv` (a measure-preserving change of
+  variables, `volume_measurePreserving_piCongrLeft`); the **extension partition**
+  `graphonFlagDensity_extension_sum` (the density on `Fin n` is the sum over all `Fin ℓ`
+  restrictions, via a `Finset.prod_add` partition of unity over the new pairs and
+  `volume_preserving_piEquivPiSubtypeProd` marginalisation); the **block product**
+  `graphonFlagDensity_block_mul` (the analogous identity for two disjoint blocks, via
+  `volume_measurePreserving_sumPiEquivProdPi` + `integral_prod`); and the closing identities
+  `sum_graphonFlagDensity = 1` and `graphonFlagDensity_top_two = W.edgeDensity`.
+* **[`PairSubsetCount`](./PairSubsetCount.lean)** — the two-flag analogue of `LabeledCount`,
+  needed because multiplicativity is a *joint* statement about two flags. `IsInducedPairOn` (two
+  vertex subsets, each containing the roots, disjoint outside them, each inducing one of the two
+  flags) and `flagDensity₂_eq_subset_count_div` (the pair density as the count of such subset
+  pairs over the multinomial coefficient); the base-library `flagDensity₂`/`labeledGraphPairToList`
+  machinery is reused as-is, only this pair-counting bridge is new.
+* **[`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean)** — unlabelled flags as plain graphs.
+  `flagEqv_emptyType_iff`/`graphFlag_eq_iff` (at `∅ₜ`, flag isomorphism is graph isomorphism —
+  the `type_preserve` law is vacuous on `Fin 0`); `graphFlag_out`/`graphFlag_surjective`; the
+  relabelling equivalence `graphComapEquiv`/`graphFlag_comap_equiv`; the **permutation toolkit**
+  `exists_perm_comp_emb`/`exists_perm_comp_emb_pair` (any two embeddings, resp. disjoint pairs of
+  embeddings, of `Fin n` into `Fin ℓ` differ by a permutation of `Fin ℓ` — built from
+  `Equiv.ofInjective` on the ranges plus `Fintype.equivOfCardEq` on the complements) — the
+  reindexing engine `GraphonHom`'s subset-averaging runs on; and the subset-count specialisations
+  `flagDensity₁_graphFlag`/`flagDensity₂_graphFlag` (unlabelling `LabeledCount`/`PairSubsetCount`'s
+  general-`σ'` results to `∅ₜ`).
+* **[`GraphonHom`](./GraphonHom.lean)** — the capstone: **every graphon is a positive
+  homomorphism**. The profile `graphonProfileFun W F = ∑_{H, ⟦H⟧=F} graphonFlagDensity W H` and
+  `graphonProfile W : FlagDensitySpace ∅ₜ`; the three structural properties
+  `graphonProfile_oneProp` (the unique graph on `Fin 0`), `graphonProfile_zeroSpaceProp` (the
+  chain rule, via `graphonFlagDensity_extension_sum` + subset-averaging over
+  `exists_perm_comp_emb`), and `graphonProfile_mulProp` (multiplicativity, via
+  `graphonFlagDensity_block_mul` + `exists_perm_comp_emb_pair`); the assembled homomorphism
+  `graphonHom W : PositiveHom ∅ₜ` (via `positiveHomFromZeroSpaceOneMulProp`, the same pattern
+  `ComplementHom`'s `complHom` used) with its point `graphonHomPoint`; and the sanity link
+  `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` tying this flag-algebra-side
+  construction back to the `GraphonBasic` kernel layer.
 * **[`GraphonBasic`](./GraphonBasic.lean)** — §11.7 preliminaries. The `Graphon` structure
   (symmetric measurable `[0,1]`-kernel on `unitInterval`), `deg`/`codeg`,
   `edgeDensity`/`degSq`/`triDensity`, measurability/boundedness/integrability, and the two Fubini
@@ -992,7 +1059,13 @@ including its "consequently" identities — the
 `TuranAut`/`TuranDirac`/`TuranSliceIdentities` +
 `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability` modules, README
 Deviations 14–15 — classical inputs as named hypotheses, Tier-2 axioms on the certificate
-consumers).
+consumers). **The graphon→hom half of the representation bridge is formalised as
+infrastructure**: every graphon `W` is a positive homomorphism `φ_W : PositiveHom ∅ₜ`
+(`graphonHom`, [`GraphonHom`](./GraphonHom.lean)), built via the induced flag density
+([`GraphonInducedDensity`](./GraphonInducedDensity.lean)) and the subset-count bridges
+([`PairSubsetCount`](./PairSubsetCount.lean), [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean)),
+with the sanity link `graphonHom_edge` to `GraphonBasic.edgeDensity` — no single `paper.tex`
+display (README Deviation 16); the harder hom→graphon half remains open (below).
 
 Not yet formalised (future work; the machinery here is intended to be reusable for it):
 
@@ -1007,7 +1080,12 @@ Not yet formalised (future work; the machinery here is intended to be reusable f
   `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) — their kernel
   engines (`Graphon.r3_rigidity`/`Graphon.slice_rigidity`) are done, and Thm 102's hom avatar is
   the `huniq` hypothesis of `SliceRecovery` (Cor 105's "consequently" identities no longer need
-  the bridge — `parametric_recovery_identities` delivers them through the Turán stack);
+  the bridge — `parametric_recovery_identities` delivers them through the Turán stack). **The
+  graphon→hom half is now done** (`graphonHom`, `GraphonHom`/`GraphonInducedDensity`/
+  `PairSubsetCount`/`EmptyTypeGraphBridge` — infrastructure, README Deviation 16); **what remains
+  is the hom→graphon half** — every homomorphism in `PositiveHom ∅ₜ` is represented by some
+  graphon — which is the actual content Thm 102/Cor 106 need and is a substantially harder,
+  separate design effort (its own design doc, not attempted here);
 * **`thm:parametric-quant-stability` (iv)** — the `ω_Zyk` kernel route — together with the
   **`R_τ⁻ = ∫W(d(x)−d(y))²` kernel functional** it runs on (documented in
   `stability_via_modulus`'s docstring);

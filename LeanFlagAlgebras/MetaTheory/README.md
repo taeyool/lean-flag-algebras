@@ -156,6 +156,27 @@ concrete extremal problem and its stability:
 > ([`GraphonQuantStability`](./GraphonQuantStability.lean), `thm:k4free-p4-quant-stability` /
 > `thm:parametric-quant-stability`).
 
+> **`graphonHom`** ([`GraphonHom.lean`](./GraphonHom.lean); no single `paper.tex` display — the
+> §11.7 area treats "every graphon is a limit object" as folklore input) — **every graphon is a
+> positive homomorphism**. For a graphon `W`, the induced flag density
+> ([`GraphonInducedDensity.lean`](./GraphonInducedDensity.lean)) `graphonFlagDensity W G` (the
+> probability that a `W`-random graph on `|G|` samples equals `G` exactly, with relabelling
+> invariance, an extension partition, and a block-product identity) assembles into a profile
+> `graphonProfile W : FlagDensitySpace ∅ₜ` satisfying the three homomorphism laws —
+> normalisation, the chain rule, and multiplicativity
+> (`graphonProfile_oneProp`/`_zeroSpaceProp`/`_mulProp`) — via
+> `positiveHomFromZeroSpaceOneMulProp`, giving `graphonHom W : PositiveHom ∅ₜ`. The chain rule and
+> multiplicativity are both proved by a **subset-averaging** argument over the new bridge modules
+> [`PairSubsetCount.lean`](./PairSubsetCount.lean) and
+> [`EmptyTypeGraphBridge.lean`](./EmptyTypeGraphBridge.lean) (`flagDensity₁_graphFlag`/
+> `flagDensity₂_graphFlag`, `exists_perm_comp_emb(_pair)`) — no automorphism/orbit-stabiliser
+> counting is needed (Deviation 16). The sanity link
+> `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` ties this new flag-algebra-side
+> construction back to the §11.7 kernel layer. This is the **graphon→hom** half of the (still only
+> partly formalised) Lovász–Szegedy representation bridge — infrastructure toward
+> `thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`; the harder, remaining half (every
+> homomorphism is represented by some graphon) is future work.
+
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom` in this
 directory. One caveat is inherited rather than local: the §11.6–§11.7 theorems that consume the
@@ -339,7 +360,10 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   `_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge`, `relative_mantel_vtype`,
   `mantel_not_relatively_plantable_of_uniqueness`) / the whole `Graphon.*` layer (`moments_*`,
   `approximate_moments*`,
-  `slice_rigidity`, `r3_rigidity`, the quantitative-stability chain) —
+  `slice_rigidity`, `r3_rigidity`, the quantitative-stability chain), and the new §11.7 `φ_W`
+  construction (`graphonHom`, `graphonProfile_zeroSpaceProp`/`_oneProp`/`_mulProp`,
+  `graphonHom_edge`, and the induced-density/subset-count lemmas of
+  `GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`) —
   depends on **only the three standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` —
   no `sorryAx`. **The one exception (Tier 2):** the theorems consuming the verified parametric
   certificate `CompleteGraphFreeP4.gap_identity` — the `parametricP4_*` / `k4freeP4_*` slice
@@ -348,7 +372,7 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   additionally depend on `[Lean.ofReduceBool, Lean.trustCompiler]`, *inherited* from the
   `Automation` layer's `native_decide` bridges, not from any `native_decide` here; see
   [Axioms assumed](#axioms-assumed).
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 81 modules (8004 jobs); the full
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 85 modules (8008 jobs); the full
   project `lake build LeanFlagAlgebras` builds with §9–§11.8 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
@@ -796,6 +820,38 @@ Each is detailed below and in the relevant module's header.
       `FlagAlgebra_3_2_0_{0,3,1,2}` ↔ `z_η, g_η, a_η, b_η`); the vertex-type identity uses §9's
       one-root edge flag `e`.
 
+16. **`graphonHom`: every graphon is a positive homomorphism**
+    (`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`). There is no
+    single `paper.tex` display to formalise here: the paper's §11.7 area cites "every graphon is a
+    limit object" as folklore, needed for the (still open) *hom→graphon* direction of the
+    Lovász–Szegedy representation. This wave formalises the *other* direction, graphon→hom, as
+    reusable infrastructure; the deliberate choices:
+    * **(a) Subset-averaging, not orbit-stabiliser counting.** The profile `graphonProfileFun`
+      sums the induced density `graphonFlagDensity` ([`GraphonInducedDensity.lean`](./GraphonInducedDensity.lean))
+      over *every* labelled graph in an isomorphism class, and both structural properties
+      (`zeroSpaceProp`/`mulProp`) are proved by averaging that sum over vertex-subset embeddings:
+      any two embeddings `Fin n ↪ Fin ℓ` (resp. disjoint pairs of embeddings) are related by a
+      permutation of `Fin ℓ` (`exists_perm_comp_emb`/`exists_perm_comp_emb_pair`,
+      [`EmptyTypeGraphBridge.lean`](./EmptyTypeGraphBridge.lean)), and both the induced density
+      (`graphonFlagDensity_comap_equiv`) and the flag class (`graphFlag_comap_equiv`) are
+      permutation-invariant — so the averaging argument never needs to count automorphisms or
+      orbit-stabilisers of the target flag class (contrast the transitivity→Dirac route of
+      Deviation 15, which collapses a *measure* via automorphisms of one graph; here
+      permutation-invariance of a density/class pair collapses an *average* directly).
+    * **(b) Minimal new base-bridge machinery.** The pre-existing
+      `LabeledCount.flagDensity₁_eq_subset_count_div` is reused as-is, specialised to the empty
+      type by `flagDensity₁_graphFlag`; only its **pair** analogue
+      ([`PairSubsetCount.lean`](./PairSubsetCount.lean), specialised by `flagDensity₂_graphFlag`)
+      is genuinely new, needed because `mulProp` is a two-flag (joint) statement.
+    * **(c) `graphonHom_edge` is a deliberate sanity check, not a dependency.** It links the new
+      flag-algebra-side profile `φ_W` back to the pre-existing §11.7 kernel layer
+      (`GraphonBasic.edgeDensity`) at the one point (the edge) where both sides compute the same
+      quantity by construction; nothing downstream currently consumes it.
+    * **(d) Infrastructure, not a numbered theorem.** `graphonHom`/`graphonProfile` and its three
+      structural lemmas have no `\label` to check against; the statement-level audit here is
+      against the module's own informal spec ("the probability that a `W`-random graph on `|F|`
+      uniform samples is isomorphic to `F`"), not a paper display.
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -921,7 +977,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 8004 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 8008 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -953,7 +1009,9 @@ printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' 
 #print axioms turan_slice_identity_vtype
 #print axioms mantel_not_relatively_plantable_of_uniqueness
 #print axioms Graphon.slice_rigidity
-#print axioms Graphon.approximate_moments' > /tmp/chk8.lean
+#print axioms Graphon.approximate_moments
+#print axioms graphonHom
+#print axioms graphonProfile_zeroSpaceProp' > /tmp/chk8.lean
 lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.sound]
 
 # the Tier-2 certificate consumers additionally print the two compiled-evaluation axioms:
@@ -1087,7 +1145,10 @@ flag-algebra base.
 * **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.8 relative
   (slice) theory are formalised here (§11.4–§11.8 with the partial-coverage caveats listed in
   [Scope & limitations](#scope--limitations)).
-* **`*.lean`** — 81 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`*.lean`** — 85 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
+  recently [`GraphonInducedDensity`](./GraphonInducedDensity.lean), [`PairSubsetCount`](./PairSubsetCount.lean),
+  [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean) and [`GraphonHom`](./GraphonHom.lean) —
+  the `φ_W` infrastructure (every graphon is a positive homomorphism). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
@@ -1148,14 +1209,26 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   (Deviations 14–15) — with the **partial-coverage caveats** flagged in the results table and the
   §11.4–§11.8 audit map: classical inputs (Erdős–Simonovits, Zykov and its equality case,
   stability moduli, axiom-backed slice nonemptiness) enter as named hypotheses, and the kernel
-  theorems take the certificate-supplied `R`-bounds as hypotheses.
+  theorems take the certificate-supplied `R`-bounds as hypotheses. Building on the graphon layer,
+  the **graphon→hom half of the Lovász–Szegedy representation bridge is now formalised as
+  infrastructure**: every graphon `W` is a positive homomorphism `φ_W ∈ PositiveHom ∅ₜ`
+  (`graphonHom`, [`GraphonHom.lean`](./GraphonHom.lean)), built from the induced flag density
+  (`graphonFlagDensity`, [`GraphonInducedDensity.lean`](./GraphonInducedDensity.lean)) via the
+  subset-count bridges `flagDensity₁_graphFlag`/`flagDensity₂_graphFlag`
+  ([`EmptyTypeGraphBridge.lean`](./EmptyTypeGraphBridge.lean),
+  [`PairSubsetCount.lean`](./PairSubsetCount.lean)), with the sanity link
+  `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` (Deviation 16). There is no
+  `paper.tex` display for this construction — it is folklore input the §11.7 representation
+  results assume.
 * **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
   tentative general characterisation) — the one §9 result still open; **Erdős–Simonovits
   uniqueness itself** (the singleton claim of Thm 91/Thm 92), which enters the now-formalised
   identity halves only as the named hypothesis `hES`; **Thm 102 and Cor 106**
   (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`),
   which need the graphon⟷hom **representation bridge** (Lovász–Szegedy) — their kernel engines
-  (`Graphon.r3_rigidity` / `Graphon.slice_rigidity`) are done; **Thm 112(iv)** — the `ω_Zyk`
+  (`Graphon.r3_rigidity` / `Graphon.slice_rigidity`) are done, and the **graphon→hom half of the
+  bridge is now formalised** (`graphonHom`, above); the remaining, harder half — every
+  homomorphism in `PositiveHom ∅ₜ` is represented by some graphon — is still open; **Thm 112(iv)** — the `ω_Zyk`
   kernel route — together with the **`R_τ⁻ = ∫W(d(x)−d(y))²` kernel functional** it runs on; the
   **§12 open problems** (prose — nothing to formalise); and, within `cor:degenerate-family`, the non-`C₄` families (general
   `K_{s,t}` with `s ≥ 3`, even cycles, planar), which instantiate `edgeDegenerate_of_subquadratic`

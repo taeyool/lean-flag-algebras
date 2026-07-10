@@ -7,7 +7,8 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-10 (fifth session of 2026-07-09/10: **Turán slice identities**). (Stopping
+Last updated: 2026-07-10 (sixth session of 2026-07-09/10: **`φ_W` — every graphon is a positive
+homomorphism**). (Stopping
 point: §1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory**
 — the §11.2–§11.3 foundation (four modules,
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`, "§11.2–§11.3 — DONE"
@@ -15,24 +16,30 @@ below), the §11.4–§11.8 slice method + graphon layer (twelve modules,
 `RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/`CertificateSliceVanishing`/
 `ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery` +
 `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`, "§11.4–§11.8 — DONE"
-below), AND the **§11.5 identity halves** (three modules,
+below), the **§11.5 identity halves** (three modules,
 `TuranAut`/`TuranDirac`/`TuranSliceIdentities`, "§11.5 identity halves — DONE" below — the Thm
 91/92 identity halves under the named Erdős–Simonovits hypothesis `hES`, `hpin` discharged,
-Cor 105 complete; remaining partial-coverage caveats in README Deviations 14–15 + the table
-rows). Prior sessions:
+Cor 105 complete), AND now **`φ_W`: every graphon is a positive homomorphism** (four modules,
+`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`, "φ_W: every
+graphon is a positive homomorphism — DONE" below — the **graphon→hom half** of the
+Lovász–Szegedy representation bridge, infrastructure with no single `paper.tex` display; the
+harder hom→graphon half remains open; remaining partial-coverage caveats in README
+Deviations 14–16 + the table rows). Prior sessions: §11.5 identity halves,
 §11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
 `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8004 jobs green** (81 modules; "Build completed
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8008 jobs green** (85 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
 certificate consumers (`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`,
 `parametric_qualitative_stability`, `parametric_recovery_identities`), which additionally print
 `[Lean.ofReduceBool, Lean.trustCompiler]` inherited from the `Automation` layer's `native_decide`
-(README "Axioms assumed", two tiers). Next targets: **Phase 2 `GraphonHom`** — the Lovász–Szegedy
-representation bridge, starting with the `φ_W` embedding (the big unlock for Thm 102 / Cor 106) —
-and the `R_τ⁻` kernel functional + Thm 112(iv); §12 is open
-problems — prose, nothing to formalise.)
+(README "Axioms assumed", two tiers — **unchanged this session**: all four new `φ_W` modules are
+Tier-1, no new certificate consumer). Next targets: **Phase 4: hom→graphon** — the harder,
+remaining half of the Lovász–Szegedy representation bridge (every homomorphism is represented by
+some graphon; the big unlock for Thm 102 / Cor 106) — needs its own design doc; optional
+**Phase 3: kernel-level Mantel uniqueness**; and the `R_τ⁻` kernel functional + Thm 112(iv); §12
+is open problems — prose, nothing to formalise.)
 
 ---
 
@@ -125,7 +132,21 @@ problems — prose, nothing to formalise.)
   "consequently" clauses — Cor 105 now **complete**; Tier-2, inherited via
   `parametric_recovery`). Proof route: **transitivity→Dirac** — no graphons, no second moments
   (README Deviation 15, "§11.5 identity halves — DONE" below).
-* **Scale:** 81 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline result (`φ_W`, sixth session):** **every graphon is a positive homomorphism.** The
+  induced density `graphonFlagDensity W G` (a `W`-random graph on `|G|` samples equals `G`
+  exactly, [`GraphonInducedDensity`](./GraphonInducedDensity.lean)) assembles into
+  `graphonHom W : PositiveHom ∅ₜ` (`graphonProfile`/`graphonHom`, via
+  `positiveHomFromZeroSpaceOneMulProp`), with the sanity link
+  `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` tying the new construction to the
+  §11.7 kernel layer. Proof route: **subset-averaging, not orbit-stabiliser counting** — every
+  embedding `Fin n ↪ Fin ℓ` is conjugate to the standard one by a permutation of `Fin ℓ`
+  (`exists_perm_comp_emb`/`_pair`, [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean)), and both
+  the density (`graphonFlagDensity_comap_equiv`) and the flag class (`graphFlag_comap_equiv`) are
+  permutation-invariant, so no automorphism/orbit counting is needed anywhere (README
+  Deviation 16, "`φ_W`: every graphon is a positive homomorphism — DONE" below). This is the
+  **graphon→hom** half of the Lovász–Szegedy representation bridge; the harder hom→graphon half
+  (the big unlock for Thm 102 / Cor 106) remains open.
+* **Scale:** 85 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
   [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
   [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
@@ -134,7 +155,8 @@ problems — prose, nothing to formalise.)
   [`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/
   `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
   `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`], +3 for the §11.5
-  identity halves [`TuranAut`/`TuranDirac`/`TuranSliceIdentities`]) + 4 committed
+  identity halves [`TuranAut`/`TuranDirac`/`TuranSliceIdentities`], +4 for `φ_W`
+  [`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`]) + 4 committed
   reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in
   namespace `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the
   top build manifest `LeanFlagAlgebras.lean`.
@@ -172,7 +194,7 @@ problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8004 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8008 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -187,7 +209,8 @@ problems — prose, nothing to formalise.)
               relative_planted_criterion relative_positivstellensatz \
               mantel_not_relatively_plantable equality_slice_vanishing \
               turan_slice_identity_vtype mantel_not_relatively_plantable_of_uniqueness \
-              parametricP4_tau_equation Graphon.slice_rigidity Graphon.approximate_moments; \
+              parametricP4_tau_equation Graphon.slice_rigidity Graphon.approximate_moments \
+              graphonHom graphonHom_edge graphonProfile_zeroSpaceProp; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    # …EXCEPT `parametricP4_tau_equation` (and every other Tier-2 certificate consumer:
@@ -528,6 +551,83 @@ modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the a
 per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
 clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
 
+## φ_W: every graphon is a positive homomorphism — DONE (2026-07-10, sixth session)
+
+Four new modules (all green, `sorry`/`admit`/`native_decide`-free, axioms `[propext,
+Classical.choice, Quot.sound]` throughout — Tier-1), wired into `MetaTheory.lean` after the
+§11.5 identity-halves wave. **Every graphon is a positive homomorphism of the flag algebra at
+the empty type** — the graphon→hom half of the (still only partly formalised) Lovász–Szegedy
+representation bridge, formalised as reusable infrastructure. There is no single `paper.tex`
+display for this construction: the paper's §11.7 area treats "every graphon is a limit object"
+as folklore input, needed for the *other*, harder direction (hom→graphon) that
+`thm:k4free-p4-tripartite` (Thm 102) / `cor:top-endpoint-recovery` (Cor 106) actually need — that
+direction remains open.
+
+* **`GraphonInducedDensity`** (~1135 lines, the largest of the four) — the analytic layer.
+  `belowDiagPairs`/`adjWeight`/`inducedWeight` build the pointwise induced weight of a labelled
+  graph `G` in a graphon `W`; `graphonFlagDensity W G = ∫_{Fin n → I} inducedWeight W G` is the
+  probability that a `W`-random graph on `n` uniform samples equals `G` exactly. Three
+  structural identities: **relabelling invariance** `graphonFlagDensity_comap_equiv` (change of
+  variables via `volume_measurePreserving_piCongrLeft`); the **extension partition**
+  `graphonFlagDensity_extension_sum` (the density on `Fin n` is the sum over all `Fin ℓ`
+  restrictions — a `Finset.prod_add` partition of unity over the new pairs, plus
+  `volume_preserving_piEquivPiSubtypeProd` marginalisation); and the **block product**
+  `graphonFlagDensity_block_mul` (the analogue for two disjoint blocks, via
+  `volume_measurePreserving_sumPiEquivProdPi` + `integral_prod`). Closing identities:
+  `sum_graphonFlagDensity = 1` and `graphonFlagDensity_top_two = W.edgeDensity`.
+* **`PairSubsetCount`** — the two-flag analogue of `LabeledCount`: `IsInducedPairOn` and
+  `flagDensity₂_eq_subset_count_div` (the pair density as a count of disjoint-outside-roots
+  vertex-subset pairs over the multinomial coefficient) — new base-bridge machinery, needed
+  because multiplicativity is a joint statement about two flags.
+* **`EmptyTypeGraphBridge`** — unlabelled flags as plain graphs: `flagEqv_emptyType_iff`/
+  `graphFlag_eq_iff` (at `∅ₜ`, flag isomorphism is graph isomorphism), `graphFlag_out`/
+  `graphFlag_surjective`, the **permutation toolkit** `exists_perm_comp_emb`/`_pair` (any two
+  embeddings, resp. disjoint pairs of embeddings, of `Fin n` into `Fin ℓ` differ by a
+  permutation of `Fin ℓ`), and the subset-count specialisations `flagDensity₁_graphFlag`/
+  `flagDensity₂_graphFlag` (unlabelling `LabeledCount`/`PairSubsetCount` to `∅ₜ`).
+* **`GraphonHom`** — the capstone. `graphonProfileFun`/`graphonProfile` (the profile summed over
+  *every* labelled graph in an iso class); the three homomorphism laws
+  `graphonProfile_oneProp`/`_zeroSpaceProp`/`_mulProp`; `graphonHom W : PositiveHom ∅ₜ` via
+  `positiveHomFromZeroSpaceOneMulProp`; `graphonHom_coe`, `graphonHomPoint`; and the sanity link
+  `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity`.
+
+**THE KEY DESIGN INSIGHT (record this):** the profile sums the induced density over **all**
+labelled graphs in an isomorphism class — not one representative — and both `zeroSpaceProp` and
+`mulProp` are discharged by a **subset-averaging** argument: every embedding `Fin n ↪ Fin ℓ` is
+conjugate to the standard one (`Fin.castLE`/`Fin.castAdd`/`Fin.natAdd`) by a permutation of
+`Fin ℓ` (`exists_perm_comp_emb`/`exists_perm_comp_emb_pair`), and both the density
+(`graphonFlagDensity_comap_equiv`) and the flag class (`graphFlag_comap_equiv`) are invariant
+under that permutation — so **no automorphism/orbit-stabiliser counting of the target flag
+class ever appears**, unlike a textbook exchangeability argument. The pre-existing
+`LabeledCount.flagDensity₁_eq_subset_count_div` was reused **as-is** — discovered during design,
+not anticipated going in; only the **pair** analogue (`PairSubsetCount`) needed genuinely new
+base-bridge machinery. The design dossier itself was produced **inline in the main loop**, not
+by dedicated dossier agents as planned — those were rate-limited mid-session, so the proof-route
+mapping (which base lemmas to reuse, where the averaging argument needed to bottom out) was
+worked out directly rather than delegated first. The proving wave then ran as **4 parallel
+sonnet-tier agents, one per module, all first-try green** (each iterating `lake env lean
+<module>` only, no build-lock conflicts).
+
+**Adversarial statement audit (keep this step):** a **single-auditor** adversarial audit against
+the module docstrings' informal spec (there is no paper display to check against) found **12/12
+FAITHFUL — verdict SHIP**. Notable checks: the **cardinality-forcing** in the subset filters
+(`card_eq_of_induce_iso`: an isomorphism forces `S.card = n`, so mismatched-size subsets
+contribute `0` rather than silently corrupting the count); the **sufficiency of the
+disjointness clause** in `IsInducedPairOn`/`PairSubsetCount` (disjoint *outside the roots*, not
+fully disjoint — matching the general-`σ'` base definition it specialises); and the
+**non-vacuity of `graphonHom_edge`** (the two-vertex flag class of the unlabelled edge really
+does contain exactly the graph `⊤` — checked via `simpleGraph_fin2_eq_top_of_adj`, not assumed).
+
+**Build:** `lake build LeanFlagAlgebras.MetaTheory` → **8008 jobs green** (85 modules);
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty. `#print axioms` on the new
+public declarations — `graphonFlagDensity_comap_equiv`, `graphonFlagDensity_extension_sum`,
+`graphonFlagDensity_block_mul`, `sum_graphonFlagDensity`, `graphonFlagDensity_top_two`,
+`flagDensity₂_eq_subset_count_div`, `graphFlag_eq_iff`, `exists_perm_comp_emb(_pair)`,
+`flagDensity₁_graphFlag`, `flagDensity₂_graphFlag`, `graphonProfile_zeroSpaceProp`/`_oneProp`/
+`_mulProp`, `graphonHom`, `graphonHom_edge` — every one **Tier-1**
+`[propext, Classical.choice, Quot.sound]`, no `sorryAx`; the Tier-2 list (the
+`parametricP4_*`/`k4freeP4_*`/`parametric_recovery*` certificate consumers) is **unchanged**.
+
 ## §11.5 identity halves — DONE (2026-07-10, fifth session). "Turán slice identities"
 
 Three new modules (all green, `sorry`/`admit`/`native_decide`-free), wired into `MetaTheory.lean`
@@ -853,57 +953,70 @@ snapshot (public declaration lists identical) → per-module rebuilds → aggreg
 ## Next work / open follow-ups
 
 **▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE**, plus the
-**whole §11.2–§11.8 relative (slice) theory** — most recently the **§11.5 identity halves** wave
-of 2026-07-10 (fifth session): the 3 new modules `TuranAut`/`TuranDirac`/`TuranSliceIdentities`
-(the Thm 91/92 identity halves under `hES`, `hpin` discharged, Cor 105 complete) + `MetaTheory.lean`
-+ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync; before that the §11.4–§11.8 wave
-(fourth session, 12 modules). All green, `sorry`-free,
-statement-audited (adversarial audits vs the paper), axiom-clean modulo the sanctioned
-Tier-2 certificate consumers (README "Axioms assumed"). **§12 is open problems — prose, nothing
-to formalise** — so the remaining Lean work is the §11 partial-coverage frontier. Next targets,
-in rough order of value (find results by `\label{...}`, **not** line number — they drift):
+**whole §11.2–§11.8 relative (slice) theory**, plus the **§11.5 identity halves** — most
+recently the **`φ_W`** wave of 2026-07-10 (sixth session): the 4 new modules
+`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom` — **Phase 2
+`GraphonHom` is now DONE**: every graphon is a positive homomorphism, the graphon→hom half of
+the representation bridge (no `paper.tex` display; README Deviation 16) — + `MetaTheory.lean` +
+the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync; before that the §11.5 identity-halves
+wave (fifth session, 3 modules `TuranAut`/`TuranDirac`/`TuranSliceIdentities`); before that the
+§11.4–§11.8 wave (fourth session, 12 modules). All green, `sorry`-free, statement-audited
+(adversarial audits vs the paper / the module docstrings when there is no paper display), axiom-
+clean modulo the sanctioned Tier-2 certificate consumers (README "Axioms assumed" — **unchanged**
+this session). **§12 is open problems — prose, nothing to formalise** — so the remaining Lean
+work is the §11 partial-coverage frontier. Next targets, in the agreed plan (find results by
+`\label{...}`, **not** line number — they drift):
 
-* **Phase 2: `GraphonHom` — the graphon→hom half of the representation bridge (START HERE; GO
-  verdict recorded).** Build the positive homomorphism `φ_W` of a graphon `W` via
-  `positiveHomFromZeroSpaceOneMulProp` (the same profile-first construction that built
-  `ComplementHom`'s `complHom`), i.e. define the density profile `F ↦ t(F, W)` and verify the
-  three homomorphism axioms. **First milestone: the bridge lemma `t(F,W) = ∫ flagDensity₁`-style
-  integral identity** connecting the kernel calculus (`GraphonBasic`) to the flag densities;
-  estimated **~4–5 sessions**. This is the on-ramp to the full Lovász–Szegedy correspondence.
-* **Then: the hom→graphon half — the big unlock.** Every unlabelled limit is represented by a
-  graphon. Together with `GraphonHom` it converts `Graphon.r3_rigidity`/`slice_rigidity` into
-  `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as stated, and
-  discharges `SliceRecovery`'s `huniq`. Major project — scope it as its own multi-session effort.
-* **Optional: kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for the
-  Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
-  §11.5 identities be discharged through the bridge once both halves exist.
+* **Phase 4: the hom→graphon half of the representation bridge — the big unlock (headline
+  target).** Every unlabelled limit — every `PositiveHom ∅ₜ`, equivalently every point of
+  `PositiveHomSpace ∅ₜ` — is represented by *some* graphon. Together with the now-DONE
+  `GraphonHom` (Phase 2) this converts `Graphon.r3_rigidity`/`slice_rigidity` into
+  `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as literally
+  stated, and discharges `SliceRecovery`'s `huniq`. This is the Lovász–Szegedy direction proper
+  (compactness of graph sequences to a graphon limit object) — a major, substantially harder
+  project than Phase 2; **it needs its own design doc before scaffolding**, not an inline start.
+* **Optional: Phase 3, kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for
+  the Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
+  §11.5 identities be discharged through the bridge once both halves of Phase 4 exist.
 * **The `R_τ⁻` kernel functional + Thm 112(iv)**: define `R_τ⁻ = ∫W(d(x)−d(y))²` at the kernel
   level, connect it to the certificate's τ⁻ square bounds, and formalise the `ω_Zyk` route of
   `thm:parametric-quant-stability` (iv) (currently documented as unformalised in
-  `stability_via_modulus`'s docstring).
+  `stability_via_modulus`'s docstring). Kept over from prior sessions; still open.
 
 Reusable scaffolding for the above: the §11.2–§11.8 layer (`relSσ`/`relQσ`, the
 slackness families, `eqSlice`/`equality_slice_vanishing`, the `Graphon` kernel calculus,
 `unique_slice_stability`), the §11.5 Turán Dirac toolkit (`TuranAut`'s `labelExtensions`
 subsingletons, `TuranDirac`'s `toProbMeasure_eq_dirac_of_subsingleton`/
 `extend_eq_dirac_of_labelExtensions_subsingleton`/`relSσ_singleton_of_extend_dirac`, the fixed
-`turanLimit`; `ComplementHom`'s profile-first `positiveHomFromZeroSpaceOneMulProp` pattern is the
-template for `φ_W`), the generalised-blow-up machinery (`subBlowup`,
+`turanLimit`), the new **`φ_W` toolkit** (`graphonHom`/`graphonProfile` via
+`positiveHomFromZeroSpaceOneMulProp` — the same profile-first pattern `ComplementHom`'s `complHom`
+used; the subset-averaging scheme of `GraphonInducedDensity`/`PairSubsetCount`/
+`EmptyTypeGraphBridge` is the template for any further graphon↔flag-algebra bridge work, and
+`graphonHom_edge` is a ready-made sanity-check pattern to mirror at any new kernel↔flag
+comparison point), the generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
 (`FinitePlanting`/`SparseRootRepair`), and the §9 obstruction + complement stacks.
 **Workflow that worked (repeat it):** scaffold each statement (with
 `sorry`) and build the sorry-oleans once → delegate each module's proofs to its own agent
 iterating on `lake env lean <module>` (no build lock; relaunch clean if a round dies mid-flight —
-rate limits killed round one in the fourth session) → statement-drift check vs the scaffold
-snapshot → full aggregator build → `#print axioms` on every public declaration (two-tier check)
-→ adversarial statement-audit workflow vs the paper (9 agents in the fourth session; again caught
-real gaps: a docstring overclaim + three missing statement halves, all fixed same-session)
-→ docs → commit. Fifth-session refinement: a **read-only dossier probe** mapping the available
-API into per-module proof-route dossiers *before* scaffolding — 3 parallel agents, all first-try
-green ("§11.5 identity halves — DONE" above). In a fresh worktree, clone the warm `.lake` from
-the main checkout with `cp -Rc` (~30 s) instead of rebuilding.
+rate limits killed round one in the fourth session, and killed a planned dedicated dossier round
+in the sixth, whose design work was done inline in the main loop instead) → statement-drift
+check vs the scaffold snapshot → full aggregator build → `#print axioms` on every public
+declaration (two-tier check) → adversarial statement-audit workflow (9 agents vs the paper in
+the fourth session, catching a docstring overclaim + three missing statement halves;
+single-auditor vs the module docstrings in the sixth, 12/12 FAITHFUL, SHIP — both caught real,
+fixable issues) → docs → commit. Fifth-session refinement, reused in the sixth: a **read-only
+dossier probe** (or, when rate-limited, an inline design pass) mapping the available API into
+per-module proof-route dossiers *before* scaffolding — all-first-try-green proving waves in both
+the fifth (3 parallel agents) and sixth (4 parallel agents) sessions. In a fresh worktree, clone
+the warm `.lake` from the main checkout with `cp -Rc` (~30 s) instead of rebuilding.
 
-**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently the
+**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently **`φ_W`:
+every graphon is a positive homomorphism** (`GraphonInducedDensity`/`PairSubsetCount`/
+`EmptyTypeGraphBridge`/`GraphonHom`, session 2026-07-10 #6: the graphon→hom half of the
+representation bridge, `graphonHom`/`graphonProfile` via `positiveHomFromZeroSpaceOneMulProp`,
+the sanity link `graphonHom_edge` — README Deviation 16; infrastructure, no `paper.tex` display);
+before that the
 **§11.5 identity halves** (`TuranAut`/`TuranDirac`/`TuranSliceIdentities`, session 2026-07-10 #5:
 the Thm 91/92 identity halves under `hES`, `relative_mantel_vtype`,
 `mantel_not_relatively_plantable_of_uniqueness`, `parametric_recovery_identities` — README

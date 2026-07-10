@@ -79,6 +79,10 @@ import LeanFlagAlgebras.MetaTheory.GraphonQuantStability
 import LeanFlagAlgebras.MetaTheory.TuranAut
 import LeanFlagAlgebras.MetaTheory.TuranDirac
 import LeanFlagAlgebras.MetaTheory.TuranSliceIdentities
+import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
+import LeanFlagAlgebras.MetaTheory.PairSubsetCount
+import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
+import LeanFlagAlgebras.MetaTheory.GraphonHom
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -439,4 +443,19 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   pinning hypothesis (`mantel_not_relatively_plantable_of_uniqueness`) and supplies the
   "consequently" clauses of §11.7 `cor:parametric-p4-turan-recovery`
   (`parametric_recovery_identities`).
+* `GraphonInducedDensity` — the analytic layer of `φ_W`: the induced density
+  `graphonFlagDensity W G = ∫ ∏_{i<j} wt(G.Adj i j, xᵢ, xⱼ)` of a labelled graph in a
+  graphon, with relabelling invariance, the extension partition, the block product, total
+  mass one, and the edge computation `= W.edgeDensity`.
+* `PairSubsetCount` — the two-flag analogue of `LabeledCount`: `flagDensity₂` as a count of
+  ordered pairs of vertex subsets, disjoint outside the roots, inducing the two flags
+  (`flagDensity₂_eq_subset_count_div`).
+* `EmptyTypeGraphBridge` — unlabelled flags as plain graphs: `graphFlag_eq_iff`,
+  `graphFlag_out`, the embedding/permutation toolkit (`exists_perm_comp_emb(_pair)`), and
+  the `∅ₜ` density-count formulas `flagDensity₁_graphFlag` / `flagDensity₂_graphFlag`.
+* `GraphonHom` — **every graphon is a positive homomorphism**: the profile
+  `graphonProfileFun W F = ℙ[W-random graph on |F| samples ≅ F]` satisfies the chain rule,
+  normalisation and multiplicativity, assembling to `graphonHom W : PositiveHom ∅ₜ`
+  (`positiveHomFromZeroSpaceOneMulProp`), with the sanity identity
+  `graphonHom_edge : φ_W(edge) = W.edgeDensity` tying the flag-algebra and kernel layers.
 -/

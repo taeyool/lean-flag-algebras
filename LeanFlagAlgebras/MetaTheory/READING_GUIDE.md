@@ -3,7 +3,7 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
-The development is 81 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+The development is 85 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
 
 ---
 
@@ -133,6 +133,16 @@ will meet them constantly:
   (`GraphonBasic`), the local errors `ellEta`/`ellTau` and square averages `Reta`/`Rtau` with
   the moment theorems (`GraphonMoments`), rigidity (`GraphonRigidity`), and quantitative
   stability (`GraphonQuantStability`).
+* In `MetaTheory` (the `φ_W` construction, infrastructure — no `paper.tex` display): the induced
+  flag density `graphonFlagDensity W G` (a `W`-random graph on `|G|` samples equals `G` exactly)
+  with its relabelling invariance, extension partition, and block-product identity
+  (`GraphonInducedDensity`); the two-flag subset-pair count `flagDensity₂_eq_subset_count_div`
+  (`PairSubsetCount`); the unlabelled-flag/plain-graph bridge `graphFlag_eq_iff` and the
+  subset-count specialisations `flagDensity₁_graphFlag`/`flagDensity₂_graphFlag`, plus the
+  permutation toolkit `exists_perm_comp_emb(_pair)` (`EmptyTypeGraphBridge`); and the
+  homomorphism itself, `graphonHom W : PositiveHom ∅ₜ` with its profile
+  `graphonProfile`/`graphonProfileFun` and the sanity link
+  `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` (`GraphonHom`).
 
 ---
 
@@ -210,6 +220,18 @@ jump straight to the module and Lean name; read that module's header, then the n
     `relative_mantel_vtype`, the `hpin`-discharged
     `mantel_not_relatively_plantable_of_uniqueness`, and Cor 105's "consequently" clauses
     `parametric_recovery_identities` — the last one Tier-2).
+15. **The `φ_W` construction (every graphon is a positive homomorphism; infrastructure, no
+    `paper.tex` display):** `GraphonInducedDensity` (the induced density `graphonFlagDensity` —
+    why: the raw analytic input, with relabelling invariance, the extension partition, and the
+    block-product identity, that the chain rule and multiplicativity below are built from) →
+    `PairSubsetCount` (the two-flag density as a subset-*pair* count — why: multiplicativity is a
+    joint statement about two flags, needing the pair analogue of `LabeledCount`) →
+    `EmptyTypeGraphBridge` (unlabelled flags as plain graphs, plus the permutation toolkit
+    `exists_perm_comp_emb(_pair)` — why: the averaging argument needs "any embedding is conjugate
+    to any other by a permutation") → `GraphonHom` (assembles `graphonProfile`/`graphonHom` via
+    `positiveHomFromZeroSpaceOneMulProp`, the same pattern `ComplementHom` used for `complHom`;
+    ends at the sanity link `graphonHom_edge`, tying the new construction back to the §11.7
+    kernel layer).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -335,7 +357,8 @@ halves and the Cor 105 "consequently" identities are formalised in the
 work): the characterisation *conjecture* (`conj:characterisation`) — the one §9 result still open —
 Erdős–Simonovits uniqueness itself (the Thm 91/92 singleton claim, entering only as the named
 hypothesis `hES`), Theorem 102 / Corollary 106 (the
-graphon⟷hom representation bridge; their kernel engines `Graphon.r3_rigidity` /
+graphon⟷hom representation bridge — the **graphon→hom half is now formalised as infrastructure**,
+`graphonHom`; the harder hom→graphon half remains open; their kernel engines `Graphon.r3_rigidity` /
 `Graphon.slice_rigidity` are done), Theorem 112(iv) (`ω_Zyk` kernel route) with the `R_τ⁻` kernel
 functional, the §12 open problems (prose), and the non-`C₄` degenerate families of Corollary 49.
 See the README's **[Scope & limitations](./README.md#scope--limitations)** for the authoritative
@@ -368,7 +391,8 @@ list.
   `no_relative_closed_certificate_gap`, `mantel_not_relatively_plantable`,
   `equality_slice_vanishing`, `exists_turan_limit`, `turan_slice_identity_vtype`,
   `mantel_not_relatively_plantable_of_uniqueness`, `Graphon.slice_rigidity`,
-  `Graphon.approximate_moments` (§11.4–§11.8). The README's
+  `Graphon.approximate_moments` (§11.4–§11.8); `graphonHom`, `graphonHom_edge` (the `φ_W`
+  construction — infrastructure, no paper result of its own, but worth the same check). The README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
   §8/§9 subset of these in one `printf | lake env lean` invocation.
 
