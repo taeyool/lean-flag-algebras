@@ -3,7 +3,7 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
-The development is 78 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+The development is 81 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
 
 ---
 
@@ -122,7 +122,13 @@ will meet them constantly:
   `k4freeP4Slice`, yielding the `parametricP4_*`/`k4freeP4_*` equations (`ParametricP4Slice`;
   Tier-2 axioms — see Tips below); the Turán/Mantel slices `turanSlice r`/`mantelSlice` with
   their nonemptiness (`TuranLimit`), the Mantel witness `knnPlusW` (`MantelNotPlantable`), and
-  the recovery/stability corollaries (`SliceRecovery`); and the **graphon layer** — the
+  the recovery/stability corollaries (`SliceRecovery`); the **Turán slice-identity stack** —
+  Turán-graph automorphism transitivity making all `σ`-labellings one flag class (`TuranAut`),
+  the Dirac collapse of the rooting/extension measures with the fixed limit `turanLimit`
+  (`TuranDirac`), and the pinned identities `turan_slice_identity_{vtype,edge,nonEdge}` /
+  `relative_mantel_vtype` / `mantel_not_relatively_plantable_of_uniqueness` /
+  `parametric_recovery_identities` under the named Erdős–Simonovits hypothesis `hES`
+  (`TuranSliceIdentities`); and the **graphon layer** — the
   `Graphon` structure on `unitInterval` with `deg`/`codeg`/`edgeDensity`/`degSq`/`triDensity`
   (`GraphonBasic`), the local errors `ellEta`/`ellTau` and square averages `Reta`/`Rtau` with
   the moment theorems (`GraphonMoments`), rigidity (`GraphonRigidity`), and quantitative
@@ -194,6 +200,16 @@ jump straight to the module and Lean name; read that module's header, then the n
     the graphon layer: `GraphonBasic` (graphons on `unitInterval`, the kernel calculus) →
     `GraphonMoments` (exact + approximate moment identities) → `GraphonRigidity`
     (`slice_rigidity`/`r3_rigidity`) → `GraphonQuantStability` (quantitative stability).
+14. **§11.5 the Turán slice identities (the transitivity→Dirac stack):** `TuranAut`
+    (Turán-graph automorphism transitivity — translation / residue-transposition lift /
+    within-class swap; all `σ`-labellings of a Turán flag are one flag class) → `TuranDirac`
+    (unique labellings make the finite rooting measures Dirac; Dirac-ness passes to the weak
+    limit via Mathlib's `diracProba` embedding; the fixed choice `turanLimit`) →
+    `TuranSliceIdentities` (single-point relative supports with the explicit rooted densities;
+    the `turan_slice_identity_*` theorems under the named Erdős–Simonovits hypothesis `hES`,
+    `relative_mantel_vtype`, the `hpin`-discharged
+    `mantel_not_relatively_plantable_of_uniqueness`, and Cor 105's "consequently" clauses
+    `parametric_recovery_identities` — the last one Tier-2).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -270,11 +286,12 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 | Proposition 82 | §11.3 `prop:unique-slice-stability` (l.4240) | `RelativeSlackness` | `unique_slice_stability` |
 | Definition 84 | §11.4 `def:relative-plantability` (l.4282) | `RelativePlanted` | `relQσ`, `RelativelyRootPlantable` |
 | Proposition 85 | §11.4 `prop:relative-plantability` (l.4297) | `RelativePlanted` | `relQσ_isClosed`, `relQσ_subset_Qσ`, `support_subset_relQσ`, `relSσ_subset_relQσ`, `relQσ_Q0_eq`, `relativelyRootPlantable_Q0_iff`, `relQσ_nonneg_implies_relEnsemble`, `relative_planted_criterion` |
-| Proposition 86 | §11.4 `prop:mantel-not-plantable` (l.4346) | `MantelNotPlantable` | `mantel_not_relatively_plantable` (pinning input `hpin` = Thm 92(i), explicit hypothesis), `exists_mantel_planted_view_edge_zero`, `knnPlusW` |
+| Proposition 86 | §11.4 `prop:mantel-not-plantable` (l.4346) | `MantelNotPlantable`, `TuranSliceIdentities` | `mantel_not_relatively_plantable` (pinning input `hpin` = Thm 92(i), explicit hypothesis), `mantel_not_relatively_plantable_of_uniqueness` (`hpin` discharged — needs only the Erdős–Simonovits hypothesis `hES`), `exists_mantel_planted_view_edge_zero`, `knnPlusW` |
 | Theorem 88 | §11.4 `thm:relative-certificate-gap` (l.4403) | `RelativeCertificateGap` | `no_relative_closed_certificate_gap`, `YWithin`, `MemYClosure`, `relEnsCone`, `relEnsCone_subset_closure_quotCone` |
 | Theorem 89 | §11.4 `thm:relative-positivstellensatz` (l.4437) | `RelativePositivstellensatz` | `relative_positivstellensatz`, `relative_positivstellensatz_closure` |
-| Theorem 91 *(existence half only)* | §11.5 `thm:turan-slice` (l.4524) | `TuranLimit` | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit` *(singleton + support identities unformalised)* |
-| Theorem 92 *(existence half only)* | §11.5 `thm:relative-mantel` (l.4603) | `TuranLimit` | `mantelSlice`, `mantelSlice_nonempty` *(clause (i) only as `MantelNotPlantable`'s `hpin`)* |
+| Theorem 91 *(existence + identity halves; ES as `hES`)* | §11.5 `thm:turan-slice` (l.4524) | `TuranLimit`, `TuranDirac`, `TuranSliceIdentities` | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit`; `turanLimit`, `turanLimit_mem_slice`; `turanLimit_relSσ_vtype`/`_edge`/`_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge` *(identity halves (i)–(iii) under `hES`, equivalent to the paper's singleton claim; only ES itself is classical input)* |
+| Theorem 92 *(existence + clause (i); ES as `hES`)* | §11.5 `thm:relative-mantel` (l.4603) | `TuranLimit`, `TuranSliceIdentities` | `mantelSlice`, `mantelSlice_nonempty`, `relative_mantel_vtype` *(clause (i) = `MantelNotPlantable`'s `hpin`, now a theorem under `hES`; τ/η clauses = the `r = 2` parametric instances)* |
+| — | §11.5 supporting layer (the transitivity→Dirac route) | `TuranAut`, `TuranDirac` | `turan_vertex_transitive`, `turan_pair_transitive`, `labelExtensions_turan_vtype/_edge/_nonEdge_subsingleton`; `toProbMeasure_eq_dirac_of_subsingleton`, `extend_eq_dirac_of_labelExtensions_subsingleton`, `relSσ_singleton_of_extend_dirac`, `turanSubseq`/`turanLimit`/`turanLimit_spec`/`turanLimit_mem_slice` |
 | Proposition 94 | §11.6 `prop:equality-slice-vanishing` (l.4666) | `CertificateSliceVanishing` | `equality_slice_vanishing`, `eqSlice` |
 | Theorem 95 | §11.6 `thm:k4free-p4-equality-slice` (l.4695) | `ParametricP4Slice` | `k4freeP4_eta_equation`, `k4freeP4_tau_symm`, `k4freeP4_tau_equation`, `k4freeP4Slice`, `k4freeP4Slice_eq_parametric` *(Tier-2 axioms)* |
 | Theorem 97 | §11.6 `thm:parametric-p4-equality-slice` (l.4761) | `ParametricP4Slice` | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` (`hZykov` hypothesis), `parametricP4Slice`, `parametricP4_cert` *(Tier-2 axioms)* |
@@ -283,7 +300,7 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 | Corollary 101 | §11.7 `cor:r3-rigidity` (l.5021) | `GraphonRigidity` | `Graphon.r3_rigidity` |
 | Theorem 102 *(not formalised as stated)* | §11.7 `thm:k4free-p4-tripartite` (l.5035) | (`GraphonRigidity` / `SliceRecovery`) | kernel engine `Graphon.r3_rigidity`; hom avatar = the `huniq` hypothesis (needs the unformalised graphon⟷hom representation) |
 | Corollary 104 | §11.7 `cor:k4free-p4-qualitative-stability` (l.5072) | `SliceRecovery` | `k4free_qualitative_stability` (`huniq` hypothesis) |
-| Corollary 105 *(first half only)* | §11.7 `cor:parametric-p4-turan-recovery` (l.5096) | `SliceRecovery` | `parametric_recovery` (`hZykEq` hypothesis) *(the "consequently" support identities unformalised; Tier-2 axioms)* |
+| Corollary 105 *(complete)* | §11.7 `cor:parametric-p4-turan-recovery` (l.5096) | `SliceRecovery`, `TuranSliceIdentities` | `parametric_recovery` (`hZykEq` hypothesis), `parametric_recovery_identities` (the "consequently" support identities) *(Tier-2 axioms; Lean assumes `3 ≤ r` vs the paper's `r ≥ 4` — benign generalisation, README Deviation 15c)* |
 | Corollary 106 *(not formalised)* | §11.7 `cor:top-endpoint-recovery` (l.5138) | (`GraphonRigidity`) | representation bridge missing; kernel engine `Graphon.slice_rigidity` done |
 | Corollary 107 | §11.7 `cor:parametric-qualitative-stability` (l.5153) | `SliceRecovery` | `parametric_qualitative_stability` *(Tier-2 axioms)* |
 | Theorem 109 | §11.8 `thm:approximate-moments` (l.5201) | `GraphonMoments` | `Graphon.approximate_moments`, `approximate_moments_interval`, `approximate_moments_variance` |
@@ -312,10 +329,12 @@ Theorem 55, the §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable` T
 (`sec:empty-type`: Proposition 64 through Corollary 70), the §11.2–§11.3 relative-ensemble
 foundation (Lemma 71 through Proposition 82; §11.1 is prose), all of §11.4 (Definition 84 through
 Theorem 89), and the §11.5–§11.8 slice/graphon results with the partial coverage marked in the map
-above (classical inputs as named hypotheses — README Deviation 14). Not yet formalised (future
+above (classical inputs as named hypotheses — README Deviations 14–15; the Thm 91/92 identity
+halves and the Cor 105 "consequently" identities are formalised in the
+`TuranAut`/`TuranDirac`/`TuranSliceIdentities` stack). Not yet formalised (future
 work): the characterisation *conjecture* (`conj:characterisation`) — the one §9 result still open —
-the singleton + support identities of Theorems 91/92 (Erdős–Simonovits + the Dirac computations at
-the Turán limit), Theorem 102 / Corollary 106 and the Cor 105 support identities (the
+Erdős–Simonovits uniqueness itself (the Thm 91/92 singleton claim, entering only as the named
+hypothesis `hES`), Theorem 102 / Corollary 106 (the
 graphon⟷hom representation bridge; their kernel engines `Graphon.r3_rigidity` /
 `Graphon.slice_rigidity` are done), Theorem 112(iv) (`ω_Zyk` kernel route) with the `R_τ⁻` kernel
 functional, the §12 open problems (prose), and the non-`C₄` degenerate families of Corollary 49.
@@ -347,14 +366,17 @@ list.
   `certificate_first_moment_sq_bound`, `unique_slice_stability`, `kernel_slackness_global`
   (§11.2–§11.3); `relative_planted_criterion`, `relative_positivstellensatz`,
   `no_relative_closed_certificate_gap`, `mantel_not_relatively_plantable`,
-  `equality_slice_vanishing`, `exists_turan_limit`, `Graphon.slice_rigidity`,
+  `equality_slice_vanishing`, `exists_turan_limit`, `turan_slice_identity_vtype`,
+  `mantel_not_relatively_plantable_of_uniqueness`, `Graphon.slice_rigidity`,
   `Graphon.approximate_moments` (§11.4–§11.8). The README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
   §8/§9 subset of these in one `printf | lake env lean` invocation.
 
   **Tier-2 caveat:** the §11.6–§11.7 consumers of the verified parametric certificate — the
-  `parametricP4_*` / `k4freeP4_*` slice equations and `SliceRecovery`'s `parametric_recovery` /
-  `parametric_qualitative_stability` — legitimately print **two extra axioms**,
+  `parametricP4_*` / `k4freeP4_*` slice equations, `SliceRecovery`'s `parametric_recovery` /
+  `parametric_qualitative_stability`, and `TuranSliceIdentities`'s
+  `parametric_recovery_identities` (inherited via `parametric_recovery`) — legitimately print
+  **two extra axioms**,
   `Lean.ofReduceBool` and `Lean.trustCompiler`, inherited from the `Automation` layer's
   `native_decide` bridges (there is no `native_decide` inside `MetaTheory`). Everything else must
   print exactly the three standard axioms. See the README's

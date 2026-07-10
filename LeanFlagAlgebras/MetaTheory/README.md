@@ -133,6 +133,18 @@ concrete extremal problem and its stability:
 > in [`SliceRecovery`](./SliceRecovery.lean) — classical equality cases entering as named
 > hypotheses (Deviation 14a).
 
+> **`turan_slice_identity_*`** ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean), paper
+> `thm:turan-slice` / `thm:relative-mantel`, the identity halves) — under the single named
+> Erdős–Simonovits hypothesis `hES`, the relative supports of the Turán slice are **single points**
+> with the paper's explicit rooted densities (`e = (r-1)/r`; `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`,
+> `z_τ = 0`; `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0`). The route is **not** the paper's
+> graphon computation: Turán graphs are vertex- and ordered-pair transitive
+> ([`TuranAut`](./TuranAut.lean)), so every finite rooting measure is *exactly* Dirac and
+> Dirac-ness passes to the weak limit ([`TuranDirac`](./TuranDirac.lean); Deviation 15). This
+> discharges `MantelNotPlantable`'s pinning hypothesis
+> (`mantel_not_relatively_plantable_of_uniqueness`) and completes Cor 105's "consequently"
+> support identities (`parametric_recovery_identities`).
+
 > **`Graphon.slice_rigidity`** ([`GraphonRigidity.lean`](./GraphonRigidity.lean), paper
 > `thm:slice-rigidity`) — a self-contained **graphon layer** ([`GraphonBasic`](./GraphonBasic.lean);
 > Mathlib has no graphons) proves the kernel-level §11.7–§11.8 results: the exact and approximate
@@ -229,11 +241,11 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §11.3 `thm:kernel-slackness` | the matrix form: a PSD block certificate `⟨Q v, v⟩` is consumed directly (no eigendecomposition); on the equality slice the labelled moment vector falls into `ker Q`, a.s. and on all of `S_σ(Y)` | `kernel_slackness_soundness` / `_approx` / `_exact_slack` / `_exact_ae` / `_global` (+ `kernelCombo`, `eval_flagQuadraticForm`, `posSemidef_dotProduct_mulVec_sq_le`) | [`KernelSlackness`](./KernelSlackness.lean) |
 | §11.4 `def:relative-plantability` (Def 84) | the relative planted set `Q_σ(Y)` (density limits of in-class σ-flags whose unlabelled limits fall in `closure Y`) and relative root-plantability `S_σ(Y) = Q_σ(Y)` | `relQσ`, `RelativelyRootPlantable` | [`RelativePlanted`](./RelativePlanted.lean) |
 | §11.4 `prop:relative-plantability` (Prop 85) | structure of the planted set: closed, `⊆ Q_σ`, `⊇ supp ℙ[φ₀]` and `⊇ S_σ(Y)`, `Y = Q₀` recovers absolute root-plantability, and the relative planted criterion (non-negativity on `Q_σ(Y)` ⇔ relative ensemble semantics for every `f`, iff relatively root-plantable) | `relQσ_isClosed`, `relQσ_subset_Qσ`, `support_subset_relQσ`, `relSσ_subset_relQσ`, `relQσ_Q0_eq`, `relativelyRootPlantable_Q0_iff`, `relQσ_nonneg_implies_relEnsemble`, `relative_planted_criterion` | [`RelativePlanted`](./RelativePlanted.lean) |
-| §11.4 `prop:mantel-not-plantable` (Prop 86) | the Mantel slice breaks relative root-plantability: `S_vtype(Y_Mantel) ⊊ Q_vtype(Y_Mantel)` (witness = parity-bipartite `K_{n+1,n+1}` + isolated root, Deviation 14g; the pinning input is Thm 92(i), taken as the explicit hypothesis `hpin` — Deviation 14a) | `mantel_not_relatively_plantable`, `exists_mantel_planted_view_edge_zero`, `knnPlusW` | [`MantelNotPlantable`](./MantelNotPlantable.lean) |
+| §11.4 `prop:mantel-not-plantable` (Prop 86) | the Mantel slice breaks relative root-plantability: `S_vtype(Y_Mantel) ⊊ Q_vtype(Y_Mantel)` (witness = parity-bipartite `K_{n+1,n+1}` + isolated root, Deviation 14g). The raw pinning hypothesis `hpin` (Thm 92(i)) is now **discharged**: `mantel_not_relatively_plantable_of_uniqueness` needs only the named Erdős–Simonovits hypothesis `hES` (the original `hpin`-form remains too) | `mantel_not_relatively_plantable` (`hpin`-form), `mantel_not_relatively_plantable_of_uniqueness` (`hES`-form), `exists_mantel_planted_view_edge_zero`, `knnPlusW` | [`MantelNotPlantable`](./MantelNotPlantable.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
 | §11.4 `thm:relative-certificate-gap` (Thm 88) | no closed certificate gap over a slice: the quotient SOS cone and the relative ensemble cone have the same `‖·‖_Y`-closure | `no_relative_closed_certificate_gap` (+ `YWithin`, `MemYClosure`, `relEnsCone`) | [`RelativeCertificateGap`](./RelativeCertificateGap.lean) |
 | §11.4 `thm:relative-positivstellensatz` (Thm 89) | slice-valid density bounds are whole-class-provable up to `ε·1₀`, with a finite penalty `M·∑ gⱼ²`; cone form: the `Y`-non-negative elements are the `‖·‖_{Q₀}`-closure of `C_{Q₀} + span{gⱼ²}` | `relative_positivstellensatz`, `relative_positivstellensatz_closure` | [`RelativePositivstellensatz`](./RelativePositivstellensatz.lean) |
-| §11.5 `thm:turan-slice` (Thm 91) — **PARTIAL** | the **existence half only**: the Turán slice `Y_Tur^{(r)}` is nonempty, witnessed by the balanced `r`-partite (Turán-graph) limit; the singleton claim (Erdős–Simonovits) and the support identities (i)–(iii) are **unformalised** | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit` | [`TuranLimit`](./TuranLimit.lean) |
-| §11.5 `thm:relative-mantel` (Thm 92) — **PARTIAL** | likewise the existence half at `r = 2` (the Mantel slice); clause (i) appears only as `MantelNotPlantable`'s `hpin` hypothesis | `mantelSlice`, `mantelSlice_nonempty` | [`TuranLimit`](./TuranLimit.lean) |
+| §11.5 `thm:turan-slice` (Thm 91) | the **existence half** (unconditional: the Turán slice `Y_Tur^{(r)}` is nonempty, witnessed by the balanced `r`-partite limit) **plus the full identity halves (i)–(iii)** under the single named Erdős–Simonovits hypothesis `hES : turanSlice r ⊆ {posHomPoint (turanLimit r hr)}` — equivalent to the paper's "consists of exactly one point", since `turanLimit_mem_slice` gives the reverse inclusion unconditionally. Values: `e = (r-1)/r` at `vtype`; `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`, `z_τ = 0` at `FlagType_2_1`; `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0` at `FlagType_2_0`. Only ES itself remains a classical input (Deviation 15) | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit`; `turanLimit`, `turanLimit_mem_slice`, `turanLimit_relSσ_vtype`/`_edge`/`_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge` | [`TuranLimit`](./TuranLimit.lean), [`TuranAut`](./TuranAut.lean), [`TuranDirac`](./TuranDirac.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
+| §11.5 `thm:relative-mantel` (Thm 92) | likewise at `r = 2` (the Mantel slice): existence unconditional, and — under `hES` — clause (i), the relative-support edge pinning at `1/2` (`relative_mantel_vtype`, exactly `MantelNotPlantable`'s `hpin`); the `τ`/`η` clauses are the `r = 2` instances of the parametric identities | `mantelSlice`, `mantelSlice_nonempty`, `relative_mantel_vtype` | [`TuranLimit`](./TuranLimit.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
 | §11.6 `prop:equality-slice-vanishing` (Prop 94) | equality slices force certificate terms to vanish: a certificate `h + ∑ λᵢ ⟦ℓᵢ²⟧₀ ≤ c·1₀` on `Q₀` makes every `ℓᵢ` vanish identically on `S_{σᵢ}(Y)` over the slice `Y = {φ₀ : φ₀ h = c}` | `equality_slice_vanishing`, `eqSlice` | [`CertificateSliceVanishing`](./CertificateSliceVanishing.lean) |
 | §11.6 `thm:k4free-p4-equality-slice` (Thm 95) | the `K₄`-free `P₄` equality-slice equations at the non-edge/edge types — **unconditional at `r = 3`** (no Zykov input) | `k4freeP4_eta_equation`, `k4freeP4_tau_symm`, `k4freeP4_tau_equation`, `k4freeP4Slice` (`k4freeP4Slice_eq_parametric`) | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
 | §11.6 `thm:parametric-p4-equality-slice` (Thm 97) | the parametric slice equations `(r-1)·z_η = g_η`, `a_τ = b_τ`, `(r-2)(a_τ+b_τ) = 2g_τ`, and the extremal `K₄` density on `Y_r` (Zykov bound as the explicit hypothesis `hZykov` — Deviation 14a) | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
@@ -241,7 +253,7 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §11.7 `thm:slice-rigidity` (Thm 100) | rigidity at the regular endpoint: the two mined local equations at `p = (r-1)/r` force the balanced complete `r`-partite graphon, in measurable-partition form (`P : I → Fin r`, fibers of volume `1/r`, `W = 0/1` by block a.e. — Deviation 14c) | `Graphon.slice_rigidity` | [`GraphonRigidity`](./GraphonRigidity.lean) |
 | §11.7 `cor:r3-rigidity` (Cor 101) | unconditional rigidity at `r = 3` (the two endpoints coincide, so no edge-density hypothesis) | `Graphon.r3_rigidity` | [`GraphonRigidity`](./GraphonRigidity.lean) |
 | §11.7 `cor:k4free-p4-qualitative-stability` (Cor 104) | qualitative stability for the `K₄`-free `P₄` problem (singleton slice identification as the explicit hypothesis `huniq` — its content is Thm 102, whose kernel engine `r3_rigidity` **is** formalised) | `k4free_qualitative_stability` | [`SliceRecovery`](./SliceRecovery.lean) |
-| §11.7 `cor:parametric-p4-turan-recovery` (Cor 105) — **PARTIAL** | the recovery half: Zykov equality (`hZykEq` hypothesis) collapses the parametric slice to `{χ★}`; the "consequently" support identities are **unformalised** | `parametric_recovery` | [`SliceRecovery`](./SliceRecovery.lean) |
+| §11.7 `cor:parametric-p4-turan-recovery` (Cor 105) — **COMPLETE** | the recovery half: Zykov equality (`hZykEq` hypothesis) collapses the parametric slice to `{χ★}`; **and** the "consequently" support identities at all three types (Tier-2, inherited via `parametric_recovery`). Benign deviation: Lean assumes `3 ≤ r` where the paper says `r ≥ 4` — a hypothesis weakening (at `r = 3` the `hZykEq` input degenerates but the statement stays sound as a conditional; Deviation 15c) | `parametric_recovery`, `parametric_recovery_identities` | [`SliceRecovery`](./SliceRecovery.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
 | §11.7 `cor:parametric-qualitative-stability` (Cor 107) | parametric qualitative stability: extremal `P₄`-density sequences converge to the balanced `r`-partite limit (under `hZykov`/`hZykEq`/`hne`) | `parametric_qualitative_stability` | [`SliceRecovery`](./SliceRecovery.lean) |
 | §11.8 `thm:approximate-moments` (Thm 109) | the approximate moment identities, certificate-free, for **every** graphon: deviation `≤ (r-1)√R_η + ((r-2)/2)√R_τ` | `Graphon.approximate_moments` (`_interval` / `_variance`) | [`GraphonMoments`](./GraphonMoments.lean) |
 | §11.8 `prop:k4free-p4-certificate-stability` (Prop 110) — **PARTIAL** | the hom level: the certificate square bounds (the `9/8`, `1/5`, `9/35` pattern after dividing by the coefficients); the kernel-level `R`-integrals enter `GraphonQuantStability` as hypotheses (the kernel functional `R_τ⁻ = ∫W(d(x)−d(y))²` itself is not defined — future work) | `parametricP4_sq_bounds` | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
@@ -277,14 +289,19 @@ and the complementary-slackness principle `thm:relative-slackness` with `lem:rel
 `cor:sos-first-moments`, `thm:kernel-slackness`, `prop:unique-slice-stability`) in the
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules (Deviation 13).
 **§11.4–§11.8 — the slice method and the graphon layer — is formalised too** (the rows above;
-partial coverage marked **PARTIAL**; Deviation 14): §11.4 in full
+partial coverage marked **PARTIAL**; Deviations 14–15): §11.4 in full
 (`def:relative-plantability`/`prop:relative-plantability`/`prop:mantel-not-plantable`/
-`thm:relative-certificate-gap`/`thm:relative-positivstellensatz`), the existence halves of the
-§11.5 Turán/Mantel slice theorems, the §11.6 equality-slice results (`prop:equality-slice-vanishing`
+`thm:relative-certificate-gap`/`thm:relative-positivstellensatz`), the §11.5 Turán/Mantel slice
+theorems (existence unconditional; the identity halves under the named Erdős–Simonovits
+hypothesis `hES`, via the transitivity→Dirac route of the
+`TuranAut`/`TuranDirac`/`TuranSliceIdentities` stack — Deviation 15), the §11.6 equality-slice
+results (`prop:equality-slice-vanishing`
 and the two `P₄` slice theorems, fed by the verified `CompleteGraphFreeP4.gap_identity`
 certificate), the §11.7–§11.8 kernel-level moment / rigidity / quantitative-stability theorems in a
 self-contained graphon layer, and the recovery / qualitative-stability corollaries with classical
-inputs as named hypotheses (Deviation 14a). The graphon⟷hom representation bridge
+inputs as named hypotheses (Deviation 14a) — Cor 105 now **complete**, including its
+"consequently" support identities (`parametric_recovery_identities`). The graphon⟷hom
+representation bridge
 (Lovász–Szegedy) is **not** formalised, so `thm:k4free-p4-tripartite` (Thm 102) and
 `cor:top-endpoint-recovery` (Cor 106) are covered only by their kernel engines
 (`Graphon.r3_rigidity` / `Graphon.slice_rigidity`); Thm 102's hom avatar enters `SliceRecovery`
@@ -318,16 +335,20 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   the full `kernel_slackness_*` family, and the §11.4–§11.8 `relative_planted_criterion` /
   `relative_positivstellensatz(_closure)` / `no_relative_closed_certificate_gap` /
   `mantel_not_relatively_plantable` / `equality_slice_vanishing` / `exists_turan_limit` /
-  `turanSlice_nonempty` / the whole `Graphon.*` layer (`moments_*`, `approximate_moments*`,
+  `turanSlice_nonempty` / the §11.5 Turán slice-identity family (`turanLimit_relSσ_vtype`/`_edge`/
+  `_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge`, `relative_mantel_vtype`,
+  `mantel_not_relatively_plantable_of_uniqueness`) / the whole `Graphon.*` layer (`moments_*`,
+  `approximate_moments*`,
   `slice_rigidity`, `r3_rigidity`, the quantitative-stability chain) —
   depends on **only the three standard Mathlib axioms** `[propext, Classical.choice, Quot.sound]` —
   no `sorryAx`. **The one exception (Tier 2):** the theorems consuming the verified parametric
   certificate `CompleteGraphFreeP4.gap_identity` — the `parametricP4_*` / `k4freeP4_*` slice
-  equations and `SliceRecovery`'s `parametric_recovery` / `parametric_qualitative_stability` —
+  equations and `SliceRecovery`'s `parametric_recovery` / `parametric_qualitative_stability`, plus
+  `parametric_recovery_identities` (which inherits through `parametric_recovery`) —
   additionally depend on `[Lean.ofReduceBool, Lean.trustCompiler]`, *inherited* from the
   `Automation` layer's `native_decide` bridges, not from any `native_decide` here; see
   [Axioms assumed](#axioms-assumed).
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 78 modules (8001 jobs); the full
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 81 modules (8004 jobs); the full
   project `lake build LeanFlagAlgebras` builds with §9–§11.8 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
@@ -386,8 +407,9 @@ the headline theorems of every section.
 `ParametricP4Slice`'s `parametricP4_cert` / `parametricP4_eta_equation` / `parametricP4_tau_symm` /
 `parametricP4_tau_equation` / `parametricP4_K4_density` / `parametricP4_sq_bounds` /
 `parametricP4_K4_density_approx`, its `r = 3` forms `k4freeP4_eta_equation` / `k4freeP4_tau_symm` /
-`k4freeP4_tau_equation`, and `SliceRecovery`'s `parametric_recovery` /
-`parametric_qualitative_stability` — additionally depend on
+`k4freeP4_tau_equation`, `SliceRecovery`'s `parametric_recovery` /
+`parametric_qualitative_stability`, and `TuranSliceIdentities`'s
+`parametric_recovery_identities` (inherited via `parametric_recovery`) — additionally depend on
 
 ```
 [Lean.ofReduceBool, Lean.trustCompiler]
@@ -445,7 +467,8 @@ kinds:
   flag-algebra complement *isomorphism* `C_σ`** (Deviation 9b); and — for §9.4's `thm:no-interior` —
   a **second-moment (variance/Chebyshev) concentration** in place of the paper's **McDiarmid**
   bounded-difference inequality (absent from Mathlib), reaching the same theorem McDiarmid-free
-  (Deviation 10).
+  (Deviation 10); and — for the §11.5 Turán slice identities — the **transitivity→Dirac route**
+  in place of the paper's graphon computation at `T_r` (Deviation 15a).
 * **Scope** — a paper result formalised only in part: the abstract `cor:degenerate-family` criterion
   without its named extremal-bound instances (Deviation 9c), the positive half of
   `cor:cluster-graphs` (Deviation 7), and the §11.4–§11.8 partial-coverage items — classical
@@ -712,7 +735,9 @@ Each is detailed below and in the relevant module's header.
     slice results are formalised faithfully where they are formalised at all (partial coverage is
     marked **PARTIAL** in the tables); the deliberate choices are:
     * **(a) Classical inputs are named hypotheses, not axioms.** Erdős–Simonovits uniqueness of
-      the extremal Turán/Mantel limits enters as `hpin` (`mantel_not_relatively_plantable`) and
+      the extremal Turán/Mantel limits enters as `hpin` (`mantel_not_relatively_plantable`; since
+      the §11.5 identity wave, `hpin` is itself a theorem under the ES hypothesis `hES` —
+      Deviation 15) and
       `huniq` (`k4free_qualitative_stability`); Zykov's `K₄`-density bound as `hZykov` and its
       equality case as `hZykEq` (`ParametricP4Slice`/`SliceRecovery`); stability moduli as `hmod`
       (`Graphon.stability_via_modulus`); and slice nonemptiness, where it is axiom-backed upstream
@@ -742,6 +767,34 @@ Each is detailed below and in the relevant module's header.
     * **(g) The Mantel witness graph is parity-bipartite `K_{n+1,n+1} + w`.** The paper's witness
       is `K_{n,n}` plus an isolated root; `knnPlusW` bipartitions the first `2(n+1)` vertices by
       parity and isolates the last — the same limit, a cleaner `Fin` indexing.
+
+15. **§11.5 Turán slice identities (`TuranAut`/`TuranDirac`/`TuranSliceIdentities`).** The
+    identity halves of `thm:turan-slice`/`thm:relative-mantel` and the Cor 105 "consequently"
+    clauses are formalised faithfully; the deliberate choices are:
+    * **(a) The transitivity→Dirac proof route — no graphons, no second moments.** The paper reads
+      the pinned rooted densities off the graphon `T_r`. The Lean route avoids graphons **and**
+      second-moment computations entirely: **Turán graphs are vertex- and ordered-pair transitive**
+      (`turan_vertex_transitive` / `turan_pair_transitive`, [`TuranAut`](./TuranAut.lean)), so all
+      `σ`-labellings of a Turán flag are a single flag class
+      (`labelExtensions_turan_{vtype,edge,nonEdge}_subsingleton`), **every finite rooting measure
+      is exactly Dirac** (`toProbMeasure_eq_dirac_of_subsingleton`), and Dirac-ness passes to the
+      weak limit — Mathlib's `diracProba` is a closed embedding on the compact metric profile
+      space (`extend_eq_dirac_of_labelExtensions_subsingleton`,
+      [`TuranDirac`](./TuranDirac.lean)). The pinned values are then plain **single-root extension
+      counts** in `turanGraph (r·m) r`. Same statements, an elementary route.
+    * **(b) The Erdős–Simonovits singleton claim is the named hypothesis `hES`.** It enters as
+      `hES : turanSlice r ⊆ {posHomPoint (turanLimit r hr)}` — **equivalent** to the paper's
+      "consists of exactly one point", since `turanLimit_mem_slice` supplies the reverse inclusion
+      unconditionally. Only ES itself remains classical input (as in Deviation 14a).
+    * **(c) `parametric_recovery_identities` assumes `3 ≤ r` where the paper says `r ≥ 4`.** A
+      hypothesis weakening/generalisation: at `r = 3` the `hZykEq` input degenerates, but the
+      statement stays sound as a conditional.
+    * **(d) The identities are stated at the generated types, in the §9 `e`-vocabulary at
+      `vtype`.** The `τ`/`η` identities are phrased at the generated flag types
+      `FlagType_2_1`/`FlagType_2_0` via the generated-flag dictionary
+      (`FlagAlgebra_3_2_1_{1,2,3,0}` ↔ `a_τ, b_τ, g_τ, z_τ`;
+      `FlagAlgebra_3_2_0_{0,3,1,2}` ↔ `z_η, g_η, a_η, b_η`); the vertex-type identity uses §9's
+      one-root edge flag `e`.
 
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
@@ -837,11 +890,11 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 |---|---|---|
 | `def:relative-plantability` (Def 84, l.4282) | `relQσ` ([`RelativePlanted.lean`](./RelativePlanted.lean) l.46), `RelativelyRootPlantable` (l.56) | `Q_σ(Y)` = the points of `X_σ` that are density limits of finite σ-flags whose underlying graphs are in the class and whose unlabelled flags converge into `closure Y`; relatively root-plantable ⇔ `relSσ Y σ = relQσ hc Y σ` |
 | `prop:relative-plantability` (Prop 85, l.4297) | `relQσ_isClosed` (l.151), `relQσ_subset_Qσ` (l.114), `support_subset_relQσ` (l.320), `relSσ_subset_relQσ` (l.481), `relQσ_Q0_eq` (l.491), `relativelyRootPlantable_Q0_iff` (l.544), `relQσ_nonneg_implies_relEnsemble` (l.557), `relative_planted_criterion` (l.567) (all [`RelativePlanted.lean`](./RelativePlanted.lean)) | the structure clauses: closedness (diagonal argument), `Q_σ(Y) ⊆ Q_σ`, `supp ℙ[φ₀] ⊆ Q_σ(Y)` hence `S_σ(Y) ⊆ Q_σ(Y)` (finite rooting distributions ⇒ extension measure, weak convergence + portmanteau), `Q_σ(Q₀) = Q_σ` (so `Y = Q₀` recovers absolute root-plantability), and part (ii): non-negativity on `Q_σ(Y)` ⟹ relative ensemble semantics, equivalent for every `f` iff relatively root-plantable |
-| `prop:mantel-not-plantable` (Prop 86, l.4346) | `mantel_not_relatively_plantable` ([`MantelNotPlantable.lean`](./MantelNotPlantable.lean) l.392), witness `exists_mantel_planted_view_edge_zero` (l.274), host `knnPlusW` (l.37) | conclusion `relSσ mantelSlice vtype ⊂ relQσ … mantelSlice vtype` (strict); the witness is the parity-bipartite `K_{n+1,n+1}` + isolated root (Deviation 14g), giving a planted view with `χ(e) = 0`; the pinning input `hpin` (every relative-support point has `ψ(e) = 1/2`) is Thm 92(i), an **explicit hypothesis** (Deviation 14a) |
+| `prop:mantel-not-plantable` (Prop 86, l.4346) | `mantel_not_relatively_plantable` ([`MantelNotPlantable.lean`](./MantelNotPlantable.lean) l.392), witness `exists_mantel_planted_view_edge_zero` (l.274), host `knnPlusW` (l.37); **`hpin` discharged:** `mantel_not_relatively_plantable_of_uniqueness` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1710) | conclusion `relSσ mantelSlice vtype ⊂ relQσ … mantelSlice vtype` (strict); the witness is the parity-bipartite `K_{n+1,n+1}` + isolated root (Deviation 14g), giving a planted view with `χ(e) = 0`; the pinning input `hpin` (every relative-support point has `ψ(e) = 1/2`) is Thm 92(i) — either the explicit hypothesis of the original form (Deviation 14a), or supplied by `relative_mantel_vtype` in the `_of_uniqueness` form, which needs only the Erdős–Simonovits hypothesis `hES` |
 | `thm:relative-certificate-gap` (Thm 88, l.4403) | `no_relative_closed_certificate_gap` ([`RelativeCertificateGap.lean`](./RelativeCertificateGap.lean) l.212); `YWithin` (l.34) / `MemYClosure` (l.38) / `relEnsCone` (l.46); crux `relEnsCone_subset_closure_quotCone` (l.110) | the quotient SOS cone and the relative ensemble cone (non-negative on `S_σ(Y)`) have the same `‖·‖_Y`-seminorm closure, in the same ε-form as §10 (Deviation 12a); mind the `S_σ(Y) = ∅` degenerate branch |
 | `thm:relative-positivstellensatz` (Thm 89, l.4437) | `relative_positivstellensatz` ([`RelativePositivstellensatz.lean`](./RelativePositivstellensatz.lean) l.99), `relative_positivstellensatz_closure` (l.256) | slice-valid ⇔ for every `ε > 0` some finite penalty `M·∑ g_{j_i}²` makes `f + ε·1₀ + M·∑ g²` class-valid (compactness of `Q₀` + finite-intersection on the sublevel sets); the closure form: `Y`-non-negative = `‖·‖_{Q₀}`-closure of `C_{Q₀} + span{gⱼ²}`; holds for `Y = ∅` too |
-| `thm:turan-slice` (Thm 91, l.4524) — **PARTIAL** | `turanSlice` ([`TuranLimit.lean`](./TuranLimit.lean) l.323), `turanSlice_nonempty` (l.327), `exists_turan_limit` (l.269) | **only the existence half is formalised**: the Turán-graph flag sequence is `K_{r+1}`-free with edge density `→ (r-1)/r`, so the slice is nonempty; the singleton claim (Erdős–Simonovits) and the support identities (i)–(iii) are **unformalised** (future work) |
-| `thm:relative-mantel` (Thm 92, l.4603) — **PARTIAL** | `mantelSlice` ([`TuranLimit.lean`](./TuranLimit.lean) l.333), `mantelSlice_nonempty` (l.336) | likewise: only nonemptiness (`= turanSlice 2`); clause (i) — the relative-support edge pinning at `1/2` — appears only as `MantelNotPlantable`'s `hpin` hypothesis |
+| `thm:turan-slice` (Thm 91, l.4524) | existence: `turanSlice` ([`TuranLimit.lean`](./TuranLimit.lean) l.323), `turanSlice_nonempty` (l.327), `exists_turan_limit` (l.269); the fixed limit `turanLimit` ([`TuranDirac.lean`](./TuranDirac.lean) l.290) with `turanLimit_mem_slice` (l.302); **identity halves**: `turan_slice_identity_vtype` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1653), `_edge` (l.1665), `_nonEdge` (l.1682), via the singleton supports `turanLimit_relSσ_vtype` (l.1449) / `_edge` (l.1483) / `_nonEdge` (l.1563) | the existence half is unconditional; the identity halves (i)–(iii) hold under `hES : turanSlice r ⊆ {posHomPoint (turanLimit r hr)}` — check this is **equivalent** to the paper's "exactly one point" (`turanLimit_mem_slice` gives `⊇` unconditionally) and that the pinned values match the paper: `e = (r-1)/r`; `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`, `z_τ = 0`; `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0` (dictionary: Deviation 15d). The route is transitivity→Dirac (`labelExtensions_turan_{vtype,edge,nonEdge}_subsingleton`, [`TuranAut.lean`](./TuranAut.lean) l.272/286/310; `extend_eq_dirac_of_labelExtensions_subsingleton`, [`TuranDirac.lean`](./TuranDirac.lean) l.73 — Deviation 15a) |
+| `thm:relative-mantel` (Thm 92, l.4603) | `mantelSlice` ([`TuranLimit.lean`](./TuranLimit.lean) l.333), `mantelSlice_nonempty` (l.336); clause (i): `relative_mantel_vtype` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1700) | existence = `turanSlice 2`; clause (i) — the relative-support edge pinning at `1/2` — is now a theorem under `hES` (exactly `MantelNotPlantable`'s `hpin`); the `τ`/`η` clauses are the `r = 2` instances of the Thm 91 parametric identities |
 | `prop:equality-slice-vanishing` (Prop 94, l.4666) | `equality_slice_vanishing` ([`CertificateSliceVanishing.lean`](./CertificateSliceVanishing.lean) l.40), `eqSlice` (l.25) | a certificate `h + ∑ λᵢ ⟦ℓᵢ²⟧₀ ≤ c·1₀` on `Q₀` (`λᵢ > 0`) forces `ψ(ℓᵢ) = 0` for every `ψ ∈ S_{σᵢ}(Y)` over the slice `Y = eqSlice forb0 h c`; this is `relative_slackness_global_sq` with `fᵢ := ℓᵢ²`, `n := 0` |
 | `thm:k4free-p4-equality-slice` (Thm 95, l.4695) | `k4freeP4_eta_equation` ([`ParametricP4Slice.lean`](./ParametricP4Slice.lean) l.428), `k4freeP4_tau_symm` (l.439), `k4freeP4_tau_equation` (l.449); slice `k4freeP4Slice` (l.382), `k4freeP4Slice_eq_parametric` (l.398) | the `r = 3` slice equations, **unconditional** (the `κ₄` coefficient vanishes at `r = 3`, so no Zykov input); the slice is stated with the `K4freeP4.P4_density` four-atom form as in the paper, shown equal to the parametric slice; **Tier-2 axioms** (certificate consumers) |
 | `thm:parametric-p4-equality-slice` (Thm 97, l.4761) | `parametricP4_eta_equation` (l.263), `parametricP4_tau_symm` (l.290), `parametricP4_tau_equation` (l.315), `parametricP4_K4_density` (l.345); slice `parametricP4Slice` (l.85); certificate bridge `parametricP4_cert` (l.156) (all [`ParametricP4Slice.lean`](./ParametricP4Slice.lean)) | the mined equations `(r-1)·z_η = g_η` on `S_η(Y_r)`, `a_τ = b_τ` and `(r-2)(a_τ+b_τ) = 2g_τ` on `S_τ(Y_r)`, and the extremal `K₄` density `(r-1)(r-2)(r-3)/r³` on `Y_r`; the Zykov bound is the explicit hypothesis `hZykov` (Deviation 14a); **Tier-2 axioms** |
@@ -850,7 +903,7 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 | `cor:r3-rigidity` (Cor 101, l.5021) | `Graphon.r3_rigidity` ([`GraphonRigidity.lean`](./GraphonRigidity.lean) l.799) | at `r = 3` the endpoints coincide, so the edge-density hypothesis disappears: the two local equations alone force the balanced tripartite partition form |
 | `thm:k4free-p4-tripartite` (Thm 102, l.5035) — **NOT formalised as stated** | (kernel engine: `Graphon.r3_rigidity`, above) | the statement needs the graphon⟷hom representation (Lovász–Szegedy), which is unformalised; its kernel engine **is** formalised (`r3_rigidity`), and its hom avatar enters [`SliceRecovery`](./SliceRecovery.lean) as the `huniq` hypothesis |
 | `cor:k4free-p4-qualitative-stability` (Cor 104, l.5072) | `k4free_qualitative_stability` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.106) | every `K₄`-free sequence with `P₄` density `→ 32/9` converges to the balanced tripartite limit, **given** the singleton slice identification `huniq` (= Thm 102's conclusion, hypothesis-ised) |
-| `cor:parametric-p4-turan-recovery` (Cor 105, l.5096) — **PARTIAL** | `parametric_recovery` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.36) | the first half: under `hZykov` and the Zykov **equality case** `hZykEq`, the parametric slice collapses to `{χ★}`; the "consequently" support identities are **unformalised**; **Tier-2 axioms** |
+| `cor:parametric-p4-turan-recovery` (Cor 105, l.5096) — **COMPLETE** | `parametric_recovery` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.36); the "consequently" clauses `parametric_recovery_identities` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1720) | the first half: under `hZykov` and the Zykov **equality case** `hZykEq`, the parametric slice collapses to `{χ★}`; the "consequently" support identities then follow at all three types (composing with the `turanLimit_relSσ_*` singletons). Mind the benign deviation `3 ≤ r` vs the paper's `r ≥ 4` (Deviation 15c); **Tier-2 axioms** |
 | `cor:top-endpoint-recovery` (Cor 106, l.5138) — **NOT formalised** | (kernel engine: `Graphon.slice_rigidity`, above) | needs the same representation bridge as Thm 102; the kernel engine (`slice_rigidity`) is done |
 | `cor:parametric-qualitative-stability` (Cor 107, l.5153) | `parametric_qualitative_stability` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.69) | extremal `P₄`-density sequences converge to `χ★`, under `hZykov`/`hZykEq`/`hne` (via `unique_slice_stability`); **Tier-2 axioms** |
 | `thm:approximate-moments` (Thm 109, l.5201) | `Graphon.approximate_moments` ([`GraphonMoments.lean`](./GraphonMoments.lean) l.415), `_interval` (l.446), `_variance` (l.465) | certificate-free, for **every** graphon: the moment-identity deviations are `≤ (r-1)·√R_η + ((r-2)/2)·√R_τ` |
@@ -868,7 +921,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 8001 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 8004 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -897,6 +950,8 @@ printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' 
 #print axioms mantel_not_relatively_plantable
 #print axioms equality_slice_vanishing
 #print axioms exists_turan_limit
+#print axioms turan_slice_identity_vtype
+#print axioms mantel_not_relatively_plantable_of_uniqueness
 #print axioms Graphon.slice_rigidity
 #print axioms Graphon.approximate_moments' > /tmp/chk8.lean
 lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.sound]
@@ -904,7 +959,8 @@ lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.
 # the Tier-2 certificate consumers additionally print the two compiled-evaluation axioms:
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms parametricP4_tau_equation
-#print axioms parametric_qualitative_stability' > /tmp/chk11.lean
+#print axioms parametric_qualitative_stability
+#print axioms parametric_recovery_identities' > /tmp/chk11.lean
 lake env lean /tmp/chk11.lean       # each → [propext, Classical.choice, Quot.sound, Lean.ofReduceBool, Lean.trustCompiler]
 ```
 
@@ -1031,7 +1087,7 @@ flag-algebra base.
 * **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.8 relative
   (slice) theory are formalised here (§11.4–§11.8 with the partial-coverage caveats listed in
   [Scope & limitations](#scope--limitations)).
-* **`*.lean`** — 78 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
+* **`*.lean`** — 81 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
   turn is in the top-level build manifest `../../LeanFlagAlgebras.lean`.
 * **`README.md`** (this file), **`ARCHITECTURE.md`**, **`READING_GUIDE.md`** — documentation.
@@ -1076,26 +1132,28 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules (Deviation 13).
   **§11.4–§11.8** (the slice method and the graphon layer: `def:relative-plantability` /
   `prop:relative-plantability` / `prop:mantel-not-plantable` / `thm:relative-certificate-gap` /
-  `thm:relative-positivstellensatz`; the existence halves of `thm:turan-slice` /
-  `thm:relative-mantel`; `prop:equality-slice-vanishing` and the `K₄`-free-`P₄` slice theorems
+  `thm:relative-positivstellensatz`; `thm:turan-slice` / `thm:relative-mantel` — existence
+  unconditional, the identity halves under the named Erdős–Simonovits hypothesis `hES`
+  (Deviation 15); `prop:equality-slice-vanishing` and the `K₄`-free-`P₄` slice theorems
   `thm:k4free-p4-equality-slice` / `thm:parametric-p4-equality-slice`, fed by the verified
   `CompleteGraphFreeP4.gap_identity` certificate; the kernel-level `thm:parametric-moments` /
   `thm:slice-rigidity` / `cor:r3-rigidity` / `thm:approximate-moments` /
   `thm:k4free-p4-quant-stability` / `thm:parametric-quant-stability`(i)–(iii); and the recovery /
-  qualitative-stability corollaries Cor 104/105/107) is formalised in the
+  qualitative-stability corollaries Cor 104/105/107, Cor 105 complete including its
+  "consequently" identities) is formalised in the
   `RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/
-  `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`
+  `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
+  `TuranAut`/`TuranDirac`/`TuranSliceIdentities`
   and `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability` modules
-  (Deviation 14) — with the **partial-coverage caveats** flagged in the results table and the
+  (Deviations 14–15) — with the **partial-coverage caveats** flagged in the results table and the
   §11.4–§11.8 audit map: classical inputs (Erdős–Simonovits, Zykov and its equality case,
   stability moduli, axiom-backed slice nonemptiness) enter as named hypotheses, and the kernel
   theorems take the certificate-supplied `R`-bounds as hypotheses.
 * **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
-  tentative general characterisation) — the one §9 result still open; the **singleton and support
-  identities of Thm 91/Thm 92** (`thm:turan-slice`/`thm:relative-mantel`), which need
-  Erdős–Simonovits uniqueness plus the Dirac/second-moment extension computations at the Turán
-  limit; **Thm 102, Cor 106, and the "consequently" support identities of Cor 105**
-  (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery` / `cor:parametric-p4-turan-recovery`),
+  tentative general characterisation) — the one §9 result still open; **Erdős–Simonovits
+  uniqueness itself** (the singleton claim of Thm 91/Thm 92), which enters the now-formalised
+  identity halves only as the named hypothesis `hES`; **Thm 102 and Cor 106**
+  (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`),
   which need the graphon⟷hom **representation bridge** (Lovász–Szegedy) — their kernel engines
   (`Graphon.r3_rigidity` / `Graphon.slice_rigidity`) are done; **Thm 112(iv)** — the `ω_Zyk`
   kernel route — together with the **`R_τ⁻ = ∫W(d(x)−d(y))²` kernel functional** it runs on; the

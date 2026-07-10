@@ -7,26 +7,31 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-10 (fourth session of 2026-07-09/10: **§11.4–§11.8**). (Stopping point:
-§1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory** — the
-§11.2–§11.3 foundation (four modules,
+Last updated: 2026-07-10 (fifth session of 2026-07-09/10: **Turán slice identities**). (Stopping
+point: §1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory**
+— the §11.2–§11.3 foundation (four modules,
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`, "§11.2–§11.3 — DONE"
-below) AND the §11.4–§11.8 slice method + graphon layer (twelve modules,
+below), the §11.4–§11.8 slice method + graphon layer (twelve modules,
 `RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/`CertificateSliceVanishing`/
 `ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery` +
 `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`, "§11.4–§11.8 — DONE"
-below; partial-coverage caveats in README Deviation 14 + the PARTIAL table rows). Prior sessions:
-hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 + `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8001 jobs green** (78 modules; "Build completed
+below), AND the **§11.5 identity halves** (three modules,
+`TuranAut`/`TuranDirac`/`TuranSliceIdentities`, "§11.5 identity halves — DONE" below — the Thm
+91/92 identity halves under the named Erdős–Simonovits hypothesis `hES`, `hpin` discharged,
+Cor 105 complete; remaining partial-coverage caveats in README Deviations 14–15 + the table
+rows). Prior sessions:
+§11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
+`lem:complementation`,
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8004 jobs green** (81 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
 certificate consumers (`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`,
-`parametric_qualitative_stability`), which additionally print
+`parametric_qualitative_stability`, `parametric_recovery_identities`), which additionally print
 `[Lean.ofReduceBool, Lean.trustCompiler]` inherited from the `Automation` layer's `native_decide`
-(README "Axioms assumed", two tiers). Next targets: the §11.5 support identities (Dirac /
-second-moment computations at the Turán limit), the Lovász–Szegedy representation bridge (the big
-unlock for Thm 102 / Cor 105–106), and the `R_τ⁻` kernel functional + Thm 112(iv); §12 is open
+(README "Axioms assumed", two tiers). Next targets: **Phase 2 `GraphonHom`** — the Lovász–Szegedy
+representation bridge, starting with the `φ_W` embedding (the big unlock for Thm 102 / Cor 106) —
+and the `R_τ⁻` kernel functional + Thm 112(iv); §12 is open
 problems — prose, nothing to formalise.)
 
 ---
@@ -109,7 +114,18 @@ problems — prose, nothing to formalise.)
   measurable-partition form), and the `GraphonQuantStability` chain
   (`thm:k4free-p4-quant-stability`, `thm:parametric-quant-stability` (iii)). Partial coverage +
   hypothesis-ised classical inputs: README Deviation 14.
-* **Scale:** 78 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline results (§11.5 Turán slice identities, fifth session):** the **identity halves** of
+  Thm 91/92 under the single named Erdős–Simonovits hypothesis
+  `hES : turanSlice r ⊆ {posHomPoint (turanLimit r hr)}` (equivalent to the paper's singleton
+  claim via `turanLimit_mem_slice`): `turan_slice_identity_vtype/_edge/_nonEdge` +
+  `turanLimit_relSσ_*` (the relative supports are **single points** with `e = (r-1)/r`;
+  `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`, `z_τ = 0`; `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0`),
+  `relative_mantel_vtype` (Thm 92(i)), `mantel_not_relatively_plantable_of_uniqueness` (Prop 86
+  with the raw `hpin` **discharged**), and `parametric_recovery_identities` (Cor 105's
+  "consequently" clauses — Cor 105 now **complete**; Tier-2, inherited via
+  `parametric_recovery`). Proof route: **transitivity→Dirac** — no graphons, no second moments
+  (README Deviation 15, "§11.5 identity halves — DONE" below).
+* **Scale:** 81 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
   [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
   [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
@@ -117,7 +133,8 @@ problems — prose, nothing to formalise.)
   [`RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`], +12 for §11.4–§11.8
   [`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/
   `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
-  `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`]) + 4 committed
+  `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`], +3 for the §11.5
+  identity halves [`TuranAut`/`TuranDirac`/`TuranSliceIdentities`]) + 4 committed
   reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in
   namespace `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the
   top build manifest `LeanFlagAlgebras.lean`.
@@ -137,9 +154,9 @@ problems — prose, nothing to formalise.)
 
 1. **Get the latest.** The repo is Dropbox-synced, so the files are already there; still, prefer
    `git pull` to be sure you are at the latest `main`. (My formalisation work is committed+pushed
-   through `c3c149a` — the latest `MetaTheory.lean` / Lean / doc commit; any newer `update` commits on
-   `main` are the user's own edits to `papers/POPL27/paper_draft.tex` and do not touch the MetaTheory
-   Lean / docs.) This file (`METATHEORY_WORKLOG.md`) is now **tracked and committed** on `main`, so
+   through the latest `MetaTheory` commit on `main` — see the session list at the end of this file
+   for the current head; any newer `update` commits on `main` are the user's own edits under
+   `papers/` and do not touch the MetaTheory Lean / docs.) This file (`METATHEORY_WORKLOG.md`) is now **tracked and committed** on `main`, so
    `git pull` fetches it like any other doc (it is no longer an untracked "stray").
 2. **TOOLCHAIN IS NOT ON THE NON-INTERACTIVE PATH.** `lake`/`elan`/`lean` live at `~/.elan/bin`,
    which an automated/AI shell does not have on `PATH`. Prefix every command:
@@ -155,7 +172,7 @@ problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8001 jobs, green (§1–10 + §11.2–§11.8)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8004 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -169,12 +186,14 @@ problems — prose, nothing to formalise.)
               kernel_slackness_global \
               relative_planted_criterion relative_positivstellensatz \
               mantel_not_relatively_plantable equality_slice_vanishing \
+              turan_slice_identity_vtype mantel_not_relatively_plantable_of_uniqueness \
               parametricP4_tau_equation Graphon.slice_rigidity Graphon.approximate_moments; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    # …EXCEPT `parametricP4_tau_equation` (and every other Tier-2 certificate consumer:
    # the parametricP4_*/k4freeP4_* equations, parametric_recovery,
-   # parametric_qualitative_stability), which legitimately also prints
+   # parametric_qualitative_stability, parametric_recovery_identities), which legitimately
+   # also prints
    # `Lean.ofReduceBool, Lean.trustCompiler` — inherited from the Automation layer's
    # native_decide bridges, NOT from MetaTheory (which contains no native_decide).
    # The Automation layer's declared axioms (Zykov_K4_density_bound, Turan_limit_P4_density)
@@ -509,6 +528,78 @@ modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the a
 per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
 clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
 
+## §11.5 identity halves — DONE (2026-07-10, fifth session). "Turán slice identities"
+
+Three new modules (all green, `sorry`/`admit`/`native_decide`-free), wired into `MetaTheory.lean`
+after the §11.4–§11.8 wave. **The identity halves of `thm:turan-slice`/`thm:relative-mantel`
+(Thm 91/92 (i)–(iii)) are now formalised** under the single named Erdős–Simonovits hypothesis
+`hES : turanSlice r ⊆ {posHomPoint (turanLimit r hr)}` — equivalent to the paper's "consists of
+exactly one point", since `turanLimit_mem_slice` gives the reverse inclusion unconditionally;
+only ES itself remains classical input. This **discharges `MantelNotPlantable`'s raw pinning
+hypothesis `hpin`** (`mantel_not_relatively_plantable_of_uniqueness`; the original `hpin`-form
+remains too) and **completes Cor 105** (`parametric_recovery_identities`, the "consequently"
+support identities). Axioms: all new theorems Tier-1 `[propext, Classical.choice, Quot.sound]`
+EXCEPT `parametric_recovery_identities` (Tier-2, `+[Lean.ofReduceBool, Lean.trustCompiler]`,
+inherited via `parametric_recovery`). Build: `lake build LeanFlagAlgebras.MetaTheory` →
+**8004 jobs green** (81 modules); `sorry` grep → empty.
+
+* **`TuranAut`** — Turán-graph automorphism transitivity on rooted patterns. The toolkit:
+  translation (`x ↦ c + x`; residues shift uniformly since `r ∣ r·m`), the
+  residue-transposition lift (swap two residue classes, fix the rest), and within-class
+  transpositions — giving `turan_vertex_transitive` / `turan_pair_transitive`, whence **all
+  `σ`-labellings of a Turán flag are one flag class**:
+  `labelExtensions_turan_{vtype,edge,nonEdge}_subsingleton`.
+* **`TuranDirac`** — unique labellings ⟹ Dirac. Finite rooting measures with a unique labelling
+  are Dirac (`toProbMeasure_eq_dirac_of_subsingleton`); weak-limit transfer via Mathlib's
+  `diracProba` embedding (`extend_eq_dirac_of_labelExtensions_subsingleton` — `diracProba` is a
+  closed embedding on the compact metric `FlagDensitySpace σ`, so a weak limit of Diracs is a
+  Dirac and the underlying points converge); `relSσ_singleton_of_extend_dirac` (the relative
+  support of a singleton constraint set collapses to one point); and the fixed choice
+  `turanLimit`/`turanSubseq`/`turanLimit_spec`/`turanLimit_mem_slice`.
+* **`TuranSliceIdentities`** — the capstone. Canonical labellings of the Turán flags +
+  single-root extension counts give the singleton supports with pinned values
+  `turanLimit_relSσ_{vtype,edge,nonEdge}` (`e = (r-1)/r`; `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`,
+  `z_τ = 0`; `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0`); the ES-conditioned
+  `turan_slice_identity_{vtype,edge,nonEdge}` (Thm 91 (i)–(iii)); `relative_mantel_vtype`
+  (Thm 92(i) — exactly `hpin`); `mantel_not_relatively_plantable_of_uniqueness` (Prop 86, `hpin`
+  discharged); `parametric_recovery_identities` (Cor 105, Tier-2).
+
+**THE KEY INSIGHT (record this — it replaced a planned second-moment counting campaign, and it is
+the lesson for future waves):** the plan of record was to compute the Turán extension measures by
+second-moment/variance counting (as the paper does at the graphon `T_r`). Instead, **Turán graphs
+are vertex- and ordered-pair transitive, so every finite rooting measure is exactly Dirac, and
+Dirac-ness passes to the weak limit** (`diracProba` is a closed embedding on the compact metric
+profile space); the pinned values are then plain single-root extension counts. No graphons, no
+second moments, no variance estimates — an automorphism argument plus one Mathlib embedding
+lemma. When a rooting measure looks like it needs concentration, first ask whether symmetry
+already makes it deterministic.
+
+**Deviations:** recorded as **README Deviation 15 (a)–(d)** — the transitivity→Dirac proof route
+(15a), the `hES` rendering of the ES singleton claim (15b), the `3 ≤ r` vs `r ≥ 4` hypothesis
+weakening in `parametric_recovery_identities` (15c, DEVIATION_OK — at `r = 3` the `hZykEq` input
+degenerates but the statement stays sound as a conditional), and the generated-type/`e`-vocabulary
+statement of the identities (15d).
+
+**Adversarial statement audit (keep this step):** a single-auditor adversarial audit vs the paper
+(quantifiers, hypotheses, values, definitional faithfulness) found the formalisation **FAITHFUL
+on all displays**:
+* the pinned values in `turanLimit_relSσ_*`/`turan_slice_identity_*` match the paper's (i)–(iii)
+  displays exactly at all three types;
+* the **generated-flag dictionary** (`Flag_3_2_1_{1,2,3,0}` ↔ `a_τ/b_τ/g_τ/z_τ`,
+  `Flag_3_2_0_{0,3,1,2}` ↔ `z_η/g_η/a_η/b_η`) was **independently re-verified from the generator
+  data** — no index swap;
+* the `hES` rendering was assessed **EQUIVALENT** to the paper's abstract uniqueness claim
+  (`turanLimit_mem_slice` supplies the reverse inclusion unconditionally);
+* one finding, classed **DEVIATION_OK**: `parametric_recovery_identities` assumes `3 ≤ r` where
+  the paper says `r ≥ 4` (a benign hypothesis weakening — README Deviation 15c).
+
+**Workflow (what worked — a compact wave):** a **dossier probe** first (one read-only agent
+mapping the available API — `labelExtensions`, `toProbMeasure_apply_eq_dnf_ratio`, the
+`diracProba` Mathlib surface — into per-module proof-route dossiers) → **3 statement scaffolds**
+(with `sorry`) built once → **3 parallel agents**, one per module, each iterating
+`lake env lean <module>` only (no build lock) — **all three first-try green** → aggregator build
+(8004 jobs) → `#print axioms` two-tier check → the single-auditor adversarial audit → docs.
+
 ## §11.4–§11.8 — DONE (2026-07-10, fourth session). "The slice method + the graphon layer"
 
 Twelve new modules (all green, `sorry`/`admit`/`native_decide`-free), wired into `MetaTheory.lean`
@@ -762,48 +853,61 @@ snapshot (public declaration lists identical) → per-module rebuilds → aggreg
 ## Next work / open follow-ups
 
 **▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE**, plus the
-**whole §11.2–§11.8 relative (slice) theory** — most recently the §11.4–§11.8 wave of 2026-07-10
-(fourth session): the 12 new modules
-`RelativePlanted`/`RelativeCertificateGap`/`RelativePositivstellensatz`/`CertificateSliceVanishing`/
-`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery` +
-`GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability` + `MetaTheory.lean`
-+ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync. All green, `sorry`-free,
-statement-audited (9-agent adversarial audit vs the paper), axiom-clean modulo the sanctioned
+**whole §11.2–§11.8 relative (slice) theory** — most recently the **§11.5 identity halves** wave
+of 2026-07-10 (fifth session): the 3 new modules `TuranAut`/`TuranDirac`/`TuranSliceIdentities`
+(the Thm 91/92 identity halves under `hES`, `hpin` discharged, Cor 105 complete) + `MetaTheory.lean`
++ the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync; before that the §11.4–§11.8 wave
+(fourth session, 12 modules). All green, `sorry`-free,
+statement-audited (adversarial audits vs the paper), axiom-clean modulo the sanctioned
 Tier-2 certificate consumers (README "Axioms assumed"). **§12 is open problems — prose, nothing
 to formalise** — so the remaining Lean work is the §11 partial-coverage frontier. Next targets,
 in rough order of value (find results by `\label{...}`, **not** line number — they drift):
 
-* **The §11.5 support identities** (the rest of `thm:turan-slice`/`thm:relative-mantel`, Thm
-  91/92): the singleton claim is Erdős–Simonovits stability (big; possibly keep hypothesis-ised),
-  but the **support identities via the Dirac/second-moment computations at the Turán limit** are
-  self-contained and would also discharge `MantelNotPlantable`'s `hpin` hypothesis (Thm 92(i)).
-  Inputs: `exists_turan_limit`, the extension-measure spec, `relSσ`.
-* **The representation bridge (Lovász–Szegedy)** — the **big unlock**: graphon⟷hom
-  correspondence for unlabelled limits. It would convert `Graphon.r3_rigidity`/`slice_rigidity`
-  into `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as stated,
-  discharge `SliceRecovery`'s `huniq`, and yield Cor 105's "consequently" support identities.
-  Major project — scope it as its own multi-session effort.
+* **Phase 2: `GraphonHom` — the graphon→hom half of the representation bridge (START HERE; GO
+  verdict recorded).** Build the positive homomorphism `φ_W` of a graphon `W` via
+  `positiveHomFromZeroSpaceOneMulProp` (the same profile-first construction that built
+  `ComplementHom`'s `complHom`), i.e. define the density profile `F ↦ t(F, W)` and verify the
+  three homomorphism axioms. **First milestone: the bridge lemma `t(F,W) = ∫ flagDensity₁`-style
+  integral identity** connecting the kernel calculus (`GraphonBasic`) to the flag densities;
+  estimated **~4–5 sessions**. This is the on-ramp to the full Lovász–Szegedy correspondence.
+* **Then: the hom→graphon half — the big unlock.** Every unlabelled limit is represented by a
+  graphon. Together with `GraphonHom` it converts `Graphon.r3_rigidity`/`slice_rigidity` into
+  `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as stated, and
+  discharges `SliceRecovery`'s `huniq`. Major project — scope it as its own multi-session effort.
+* **Optional: kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for the
+  Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
+  §11.5 identities be discharged through the bridge once both halves exist.
 * **The `R_τ⁻` kernel functional + Thm 112(iv)**: define `R_τ⁻ = ∫W(d(x)−d(y))²` at the kernel
   level, connect it to the certificate's τ⁻ square bounds, and formalise the `ω_Zyk` route of
   `thm:parametric-quant-stability` (iv) (currently documented as unformalised in
   `stability_via_modulus`'s docstring).
 
-Reusable scaffolding for the above: the §11.2–§11.8 layer just completed (`relSσ`/`relQσ`, the
+Reusable scaffolding for the above: the §11.2–§11.8 layer (`relSσ`/`relQσ`, the
 slackness families, `eqSlice`/`equality_slice_vanishing`, the `Graphon` kernel calculus,
-`unique_slice_stability`), the generalised-blow-up machinery (`subBlowup`,
+`unique_slice_stability`), the §11.5 Turán Dirac toolkit (`TuranAut`'s `labelExtensions`
+subsingletons, `TuranDirac`'s `toProbMeasure_eq_dirac_of_subsingleton`/
+`extend_eq_dirac_of_labelExtensions_subsingleton`/`relSσ_singleton_of_extend_dirac`, the fixed
+`turanLimit`; `ComplementHom`'s profile-first `positiveHomFromZeroSpaceOneMulProp` pattern is the
+template for `φ_W`), the generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
 (`FinitePlanting`/`SparseRootRepair`), and the §9 obstruction + complement stacks.
-**Workflow that worked this session (repeat it):** scaffold each statement (with
+**Workflow that worked (repeat it):** scaffold each statement (with
 `sorry`) and build the sorry-oleans once → delegate each module's proofs to its own agent
 iterating on `lake env lean <module>` (no build lock; relaunch clean if a round dies mid-flight —
-rate limits killed round one this session) → statement-drift check vs the scaffold
+rate limits killed round one in the fourth session) → statement-drift check vs the scaffold
 snapshot → full aggregator build → `#print axioms` on every public declaration (two-tier check)
-→ adversarial statement-audit workflow vs the paper (9 agents this time; again caught real gaps:
-a docstring overclaim + three missing statement halves, all fixed same-session)
-→ docs → commit. In a fresh worktree, clone the warm `.lake` from the main checkout with
-`cp -Rc` (~30 s) instead of rebuilding.
+→ adversarial statement-audit workflow vs the paper (9 agents in the fourth session; again caught
+real gaps: a docstring overclaim + three missing statement halves, all fixed same-session)
+→ docs → commit. Fifth-session refinement: a **read-only dossier probe** mapping the available
+API into per-module proof-route dossiers *before* scaffolding — 3 parallel agents, all first-try
+green ("§11.5 identity halves — DONE" above). In a fresh worktree, clone the warm `.lake` from
+the main checkout with `cp -Rc` (~30 s) instead of rebuilding.
 
 **Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently the
+**§11.5 identity halves** (`TuranAut`/`TuranDirac`/`TuranSliceIdentities`, session 2026-07-10 #5:
+the Thm 91/92 identity halves under `hES`, `relative_mantel_vtype`,
+`mantel_not_relatively_plantable_of_uniqueness`, `parametric_recovery_identities` — README
+Deviation 15); before that the
 §11.4–§11.8 slice method + graphon layer (`RelativePlanted`/`RelativeCertificateGap`/
 `RelativePositivstellensatz`/`CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/
 `MantelNotPlantable`/`SliceRecovery`/`GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/

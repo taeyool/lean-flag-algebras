@@ -76,6 +76,9 @@ import LeanFlagAlgebras.MetaTheory.GraphonBasic
 import LeanFlagAlgebras.MetaTheory.GraphonMoments
 import LeanFlagAlgebras.MetaTheory.GraphonRigidity
 import LeanFlagAlgebras.MetaTheory.GraphonQuantStability
+import LeanFlagAlgebras.MetaTheory.TuranAut
+import LeanFlagAlgebras.MetaTheory.TuranDirac
+import LeanFlagAlgebras.MetaTheory.TuranSliceIdentities
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -420,4 +423,20 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   `thm:k4free-p4-quant-stability` / `thm:parametric-quant-stability` (kernel-level chains:
   `quadratic_confinement`, `interval_localisation`, the `r = 3` `Δ^{1/4}` edge-density
   stability, and `stability_via_modulus`).
+* `TuranAut` — §11.5 supporting layer: Turán-graph automorphism transitivity on rooted
+  patterns; all `σ`-labellings of a Turán flag are one flag class (`labelExtensions`
+  subsingletons at the one-vertex, edge, and non-edge types).
+* `TuranDirac` — §11.5 supporting layer: unique labellings make the finite rooting
+  measures Dirac; weak convergence transfers Dirac-ness to the extension measure
+  (`extend_eq_dirac_of_labelExtensions_subsingleton`), collapsing the relative support of
+  a singleton constraint set (`relSσ_singleton_of_extend_dirac`); fixes the choice
+  `turanLimit` of the balanced complete `r`-partite limit with its subsequence exposed.
+* `TuranSliceIdentities` — §11.5 `thm:turan-slice` / `thm:relative-mantel`, the identity
+  halves under the named Erdős–Simonovits hypothesis (`turan_slice_identity_vtype/_edge/
+  _nonEdge`, `relative_mantel_vtype`): the relative supports of the Turán slice are
+  single points with `e = (r-1)/r`; `a_τ = b_τ = 1/r`, `g_τ = (r-2)/r`, `z_τ = 0`;
+  `z_η = 1/r`, `g_η = (r-1)/r`, `a_η = b_η = 0`.  Discharges `MantelNotPlantable`'s
+  pinning hypothesis (`mantel_not_relatively_plantable_of_uniqueness`) and supplies the
+  "consequently" clauses of §11.7 `cor:parametric-p4-turan-recovery`
+  (`parametric_recovery_identities`).
 -/
