@@ -145,17 +145,54 @@ the probe's own first sketch had a genuine bug.*
    the product topology follows the `measurable_inducedWeight`/Fubini precedent.
 
 **Sub-project B — existence (I).  4–8 sessions; treat as its own campaign with a checkpoint.**
-3. `GraphonStep.lean` — step graphons from finite graphs / partitions; densities of step graphons
-   agree with finite densities (finite Fubini).
-4. `GraphonCounting.lean` — the general counting/domination lemma (test-graph densities are
-   continuous under the relevant convergence of kernels).  **Checkpoint after this module** —
-   reassess before attempting 5.
-5. `GraphonMartingaleLimit.lean` — **the single riskiest piece**: sequential compactness of the
-   graphon space along refining partitions (Lovász Thm 11.21 analogue) via Doob martingale
-   convergence; simultaneous convergence of countably many test densities by diagonalisation;
-   a.e.-vs-everywhere bookkeeping.  Est. 1500–3000+ lines, no Mathlib precedent.
-6. `GraphonRepresentation.lean` — assembly: `exists_graphon_rep`, then the Thm 102 / Cor 106
-   discharges replacing the `huniq` hypotheses in `SliceRecovery.lean`.
+
+*Plan revised 2026-07-11 after the module-3/4 design probe.  Two structural findings:*
+
+* ***The density/closedness reframing.***  `positiveHomSpace_isClosed`/compactness
+  (`FlagSequence.lean:483-512`) are already in place, so modules 3–4 chained prove **density**
+  of `Set.range graphonHomPoint` in `PositiveHomSpace ∅ₜ` (every `φ` is a pointwise limit of
+  step-graphon points, via `positiveHom_as_flagSeq_limit` + the counting lemma), and
+  `exists_graphon_rep` becomes *equivalent* to the single frozen statement
+  `IsClosed (Set.range graphonHomPoint : Set (PositiveHomSpace ∅ₜ))` — adopt THAT as module 5's
+  target, not the vaguer "sequential compactness along refining partitions".
+* ***The martingale gap (do not ignore).***  The route recommendation "nested partitions +
+  Doob" is NOT free as stated: Mathlib's Doob theorems
+  (`Probability/Martingale/Convergence.lean`: `tendsto_ae_condExp` :426,
+  `Submartingale.ae_tendsto_limitProcess` :208) need the kernels to be conditional expectations
+  of one fixed function w.r.t. an increasing filtration on a single space; a sequence
+  `stepGraphon Gₙ` for combinatorially unrelated `Gₙ` does not satisfy the averaging identity
+  `Wₙ = E[Wₙ₊₁ | ℱₙ]` even with nested cell geometry — nesting the partition geometry is not
+  nesting the *values*.  The repo's §5 blow-up machinery solves only the within-one-graph
+  refinement problem.  Candidate assets for the fix: Mathlib's finite Szemerédi regularity
+  lemma (`Combinatorics/SimpleGraph/Regularity/Lemma.lean:76`, energy-increment partitions)
+  adapted to a cross-graph nested/value-compatible construction.  **A design-only spike is
+  REQUIRED at the module-4→5 checkpoint** before writing any module-5 Lean: choose between
+  (a) regularity-lemma adaptation, (b) another device producing a genuine fixed-space
+  martingale, or (c) a direct attack on the `IsClosed` reframing.
+
+3. `GraphonStep.lean` — step graphons: `cellIdx N : I → Fin N` (floor-based, clamped at
+   `x = 1`), `stepGraphon G : Graphon` (indicator kernel), measurability + cell volume `1/N`,
+   and the pointwise indicator identity
+   `inducedWeight (stepGraphon G) H c = [graphFlag (G.comap (cellIdx N ∘ c)) = graphFlag H]`.
+   Mechanical; no missing Mathlib prerequisites (`Nat.measurable_floor`,
+   `unitInterval.volume_Ico`).
+4. `GraphonCounting.lean` — the counting lemma with the probe's **explicit constant**:
+   `|graphonProfileFun (stepGraphon G) F − flagDensity₁ F.2 (graphFlag G)| ≤ F.1·(F.1−1)/N`
+   (injective cell-tuples ↔ the subset count of `flagDensity₁_graphFlag` times `n!`, giving the
+   falling-factorial ratio; non-injective tuples ≤ `C(n,2)/N` by the union bound; needs one
+   ~25-line `descFactorial/N^n ≥ 1 − C(n,2)/N` bound not present in Mathlib), then
+   `tendsto_graphonProfileFun_stepGraphon_of_convergesTo` and the payoff
+   `exists_graphonHomPoint_seq_tendsto (φ) : ∃ V : ℕ → Graphon, Tendsto (graphonHomPoint ∘ V) …`
+   — density of the graphon-hom range.  **Checkpoint after this module** — run the module-5
+   design spike; do not proceed on the unrepaired martingale route.
+5. `GraphonMartingaleLimit.lean` (name may change per the spike) — **the single riskiest
+   piece**: the `IsClosed (Set.range graphonHomPoint)` statement (equivalently graphon-space
+   compactness).  Est. 1500–3000+ lines as a FLOOR, no Mathlib precedent; route to be fixed by
+   the checkpoint spike.
+6. `GraphonRepresentation.lean` — assembly: `exists_graphon_rep` (= density + closedness), then
+   the Thm 102 / Cor 106 discharges replacing the `huniq` hypotheses in `SliceRecovery.lean`,
+   and the composition with `k4freeP4_graphon_tripartite` recovering the paper statements
+   verbatim.
 
 ## Non-goals
 
