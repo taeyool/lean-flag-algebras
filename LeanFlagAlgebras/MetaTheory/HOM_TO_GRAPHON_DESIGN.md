@@ -65,14 +65,64 @@ test-graph density to the limit.
 
 ## Module decomposition and estimates
 
-**Sub-project A — rooted transport (II).  Ship first: 1–2 sessions, low–medium risk.**
-1. `GraphonRootedHom.lean` — rooted analogue of `graphonProfileFun`/`graphonHom`: pin the root
-   vertices (edge type `τ` / non-edge type `η`), reuse the subset-averaging technique of
-   `GraphonHom.lean` verbatim; conditional profile `Graphon → (roots ↦ I) → PositiveHom σ`-style
-   values.
-2. `GraphonRootedMeasure.lean` — the graphon-side rooted-view measure on `PositiveHomSpace σ`;
-   identify with `ℙ[φ₀]` via `measure_eq_of_integral_flag_eq`; pass "holds on `relSσ`" to
-   "holds a.e." via `Measure.support_mem_ae` (as in `RelativeSupport.lean:98`).
+**Sub-project A — rooted transport (II).  Ship first: 2–3 sessions (module 1 is
+GraphonHom-sized; the 1–2 estimate held only for module 2).**
+
+*Design detail frozen 2026-07-10 after the rooted-API dossier probe; heed the corrections below —
+the probe's own first sketch had a genuine bug.*
+
+1. `GraphonRootedHom.lean` — the rooted conditional homomorphism.  Key decisions:
+   * **Index set (bug fix): sum over STANDARD-ROOTED graphs only.**  The rooted profile at
+     pinned samples `u v : I` is
+     `aᵤᵥ(F) = (∑_{G std-rooted, ⟦mkStdRooted G⟧ = F.2} unnormRootedDensity W G u v) / rootWeight`,
+     where the sum ranges over `G : SimpleGraph (Fin F.1)` satisfying
+     `RootCompatible σ hn G := ∀ a b : Fin 2, σ.Adj a b ↔ G.Adj (Fin.castLE hn a) (Fin.castLE hn b)`
+     and `mkStdRooted` equips `G` with the `Fin.castLE`-embedding as `type_embed`.  Summing over
+     the whole quotient class `{H : LabeledGraph σ _ // ⟦H⟧ = F.2}` (as in the probe's sketch) is
+     WRONG: pinning coordinates `0,1` only computes the rooted density of graphs whose roots sit
+     at `0,1`.
+   * **Host convention: general `n` with `hn : 2 ≤ n` and roots at `Fin.castLE hn 0/1`** —
+     avoids `Fin (n+2)` offset arithmetic and matches the `castLE` machinery of Phase 2.
+   * **Unnormalised density integrates over ALL `n` coordinates** with the root coordinates
+     overridden (`Function.update`-style pinning); the two dummy coordinates integrate out on the
+     probability space.  This keeps the extension/marginalisation lemmas uniform (no `Fin (n−2)`).
+   * `rootWeight W σ u v := adjWeight W (σ.Adj 0 1) u v` (`= W(u,v)` at `τ`, `1−W(u,v)` at `η`);
+     `RootAdmissible := 0 < rootWeight`.  The `(0,1)`-pair factor of the unnormalised density of a
+     std-rooted graph IS `rootWeight`, so division implements the conditioning exactly:
+     `oneProp` = `rootWeight/rootWeight`; in `mulProp` the left side carries `rootWeight⁻²` and the
+     glued sum carries `rootWeight·(∏₁)(∏₂)` (the root pair is SHARED at `n₀ = 2`), so the
+     normalisation cancels — verified by hand, record in the module docstring.
+   * The Props run by the Phase-2 subset-averaging scheme with permutations of `Fin ℓ` **fixing
+     the two roots**: need the root-fixing analogues of `exists_perm_comp_emb(_pair)` (same
+     complement construction, pinned points) and root-fixing relabelling invariance of the
+     unnormalised density.  The counting bridges are ALREADY GENERAL-σ
+     (`flagDensity₁_eq_subset_count_div`, `flagDensity₂_eq_subset_count_div`) — no new counting
+     infrastructure; what is new is the std-rooted analogue of `EmptyTypeGraphBridge`
+     (std-rooted class equality iff root-preserving graph iso; every rooted flag class has a
+     std-rooted representative; subsets in the count formulas contain the roots).
+   * Generated-type transports `FlagType_2_1 = ⊤` / `FlagType_2_0 = ⊥` exist only as `private`
+     lemmas in `TuranSliceIdentities.lean` (:1361/:1366) — re-derive locally (≈5 lines each,
+     `ext` + `Sym2FlagType.toFlagType_adj_iff` + `decide`).
+2. `GraphonRootedMeasure.lean` — the rooted-view measure
+   `Measure.map (fun z : I×I => posHomPoint (graphonRootedHom W σ z.1 z.2 _))` of the
+   `rootWeight`-weighted normalised measure on `I × I`; identify with `ℙ[graphonHom W]` via
+   `measure_eq_of_integral_flag_eq` (`MeasureUniqueness.lean:60` — needs only integral agreement
+   on every `f : FlagAlgebra σ`; the LHS reduces by Fubini to an unrooted density of the downward
+   average, so the bridge identity is `∫∫ rootWeight·aᵤᵥ(F) = φ_W-value of ⟦F⟧₀`, a
+   `downwardNormalizingFactor` computation).  Then `support_subset_relSσ` +
+   `Measure.support_mem_ae` (pattern at `RelativeSupport.lean:95-99`) turns the
+   `ParametricP4Slice` equations (`:263-340`, stated on `relSσ … FlagType_2_0/2_1`) into
+   `∀ᵐ z : I×I` kernel statements, landing on `Rtau_eq_zero_iff_ae`/`Reta_eq_zero_iff_ae`
+   (`GraphonMoments.lean:583-616`) — the exact hypothesis shapes of `Graphon.r3_rigidity`
+   (`GraphonRigidity.lean:799`).  Paper's prescribed dictionary (`paper.tex:4861-4875`): at an
+   ordered edge root, `a_τ = d(x)−c(x,y)`, `b_τ = d(y)−c(x,y)`, `g_τ = c(x,y)`; at an ordered
+   non-edge root, `z_η = 1−d(x)−d(y)+c(x,y)`, `g_η = c(x,y)`.
+   Sub-project A takes `hrep : graphonHomPoint W = posHomPoint φ₀` as a NAMED HYPOTHESIS, so it
+   ships independently of sub-project B and upgrades the conditional results on its own.
+   Admissibility (`RootAdmissible` fails on a `(u,v)`-set) is null under the weighted measure but
+   must be threaded through the map (junk-value the hom outside admissibility; the pushforward
+   only sees the conull admissible set).  Joint measurability of `(u,v) ↦` the rooted point in
+   the product topology follows the `measurable_inducedWeight`/Fubini precedent.
 
 **Sub-project B — existence (I).  4–8 sessions; treat as its own campaign with a checkpoint.**
 3. `GraphonStep.lean` — step graphons from finite graphs / partitions; densities of step graphons
