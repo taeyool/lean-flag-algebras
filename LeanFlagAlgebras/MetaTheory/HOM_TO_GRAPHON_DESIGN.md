@@ -68,6 +68,26 @@ test-graph density to the limit.
 **Sub-project A — rooted transport (II).  Ship first: 2–3 sessions (module 1 is
 GraphonHom-sized; the 1–2 estimate held only for module 2).**
 
+> **STATUS: COMPLETE — shipped 2026-07-11** (sixth/seventh sessions, 2026-07-10/11). The design
+> below was carried out as **five** modules rather than the two anticipated here — the "module 1"
+> plan below split into `StdRootedBridge` (module 0, the two-root analogue of
+> `EmptyTypeGraphBridge`) + `GraphonRootedDensity` (module 1a, the density calculus) +
+> `GraphonRootedHom` (module 1b, the conditional homomorphism itself), and "module 2" split into
+> `GraphonRootedMeasure` (module 2a, the measure identification) + `GraphonKernelTransport`
+> (module 2b, the capstone kernel dictionary + transport). Capstone theorem:
+> **`k4freeP4_graphon_tripartite`** (`GraphonKernelTransport.lean`) — any graphon whose `φ_W` lies
+> in the `K₄`-free `P₄`-slice (both root types of positive mass) is a.e. the balanced complete
+> tripartite graphon, i.e. `Graphon.r3_rigidity` with both a.e. kernel hypotheses discharged —
+> the graphon-side content of `thm:k4free-p4-tripartite` (Thm 102). All five modules sorry-free,
+> Tier-1 except the last three theorems of `GraphonKernelTransport`
+> (`k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`/`_tripartite`, Tier-2 — they consume the
+> `k4freeP4_*` slice equations). Three adversarial audits, all verdict SHIP (12/12 FAITHFUL for
+> modules 0–1, 8/8 FAITHFUL for module 2). Full details, the technical notes, and the audit/build
+> record are in `METATHEORY_WORKLOG.md` § **"Sub-project A: the rooted transport — DONE"**. The
+> design text below is kept for the record (it correctly anticipated the mathematical content and
+> caught the one indexing bug in advance; only the module count differs from what shipped).
+> **Sub-project B (existence, below) is now the sole remaining piece of Phase 4.**
+
 *Design detail frozen 2026-07-10 after the rooted-API dossier probe; heed the corrections below —
 the probe's own first sketch had a genuine bug.*
 
@@ -144,3 +164,17 @@ sake; any use of exchangeability theory.  If sub-project B stalls at module 5, s
 alone still upgrades the conditional results (the rooted identities become checkable against any
 *hypothesised* representative), and the `hrep : ∃ W, …` named-hypothesis form remains available
 as an interim tier, consistent with the repo's classical-input convention.
+
+**Update (2026-07-11, post-shipping):** the interim tier that actually shipped is *not* the
+`hrep : ∃ W, …` existential sketched above — it is the **shipped interface**
+`hmem : posHomPoint (graphonHom W) ∈ k4freeP4Slice` together with the root-type admissibility
+hypotheses `hστ`/`hση`, all as named hypotheses on `k4freeP4_graphon_tripartite`
+(`GraphonKernelTransport.lean`). This is equivalent in spirit (a named hypothesis standing in for
+"take a representative graphon") but syntactically different: it is a hypothesis *on the graphon
+`W` itself* (any `W`, given as a bare `Graphon`, whose `φ_W` happens to land in the slice — `hmem`
+is purely algebraic, `mem_Qσ_iff`, no graph-limit existential), rather than an existential
+quantifier over slice points asserting a representative exists. See README Deviation 17 for the
+full comparison against the paper's "let `W` represent a point of `Y_{P4}`". Once sub-project B
+ships `exists_graphon_rep`, composing it with `k4freeP4_graphon_tripartite` recovers the paper
+statement verbatim: apply `exists_graphon_rep` to any `φ₀ ∈ k4freeP4Slice` to get a representing
+`W`, for which `hmem` holds by construction.

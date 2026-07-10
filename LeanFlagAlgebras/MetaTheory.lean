@@ -86,6 +86,8 @@ import LeanFlagAlgebras.MetaTheory.GraphonHom
 import LeanFlagAlgebras.MetaTheory.StdRootedBridge
 import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
 import LeanFlagAlgebras.MetaTheory.GraphonRootedHom
+import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
+import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -478,4 +480,18 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   admissible pinned pair, assembling to `graphonRootedHom W σ' u v h : PositiveHom σ'` — the
   view of `φ_W` from a `W`-random root pair — with joint measurability in the pair
   (`measurable_graphonRootedProfileFun`) for the upcoming rooted-view measure.
+* `GraphonRootedMeasure` — sub-project A, module 2a: **the rooted-view measure is the
+  extension measure**.  The normalised `rootWeight`-weighted law of the rooted conditional
+  homomorphism equals `ℙ[graphonHom W]` (`rootedViewMeasure_eq_extend`), via the
+  rooted-vs-unrooted counting bridge (`card_stdRooted_class`, a same-size double count
+  against `downwardNormalizingFactor`) and the bridge integral identity
+  (`integral_rootedClassSum`).
+* `GraphonKernelTransport` — sub-project A, module 2b (capstone): the kernel dictionary
+  (`graphonRootedHom_a_tau/_b_tau/_g_tau/_z_eta/_g_eta`: rooted three-vertex flag values are
+  `deg`/`codeg` expressions) and the transport of the `K₄`-free `P₄`-slice equations into
+  the a.e. kernel hypotheses of `Graphon.r3_rigidity`
+  (`k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`), assembling to
+  **`k4freeP4_graphon_tripartite`**: any graphon whose `φ_W` lies in the `K₄`-free
+  `P₄`-slice is a.e. the balanced complete tripartite graphon — the graphon-side content of
+  `thm:k4free-p4-tripartite`, awaiting only the representation existence (sub-project B).
 -/

@@ -177,6 +177,28 @@ concrete extremal problem and its stability:
 > `thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`; the harder, remaining half (every
 > homomorphism is represented by some graphon) is future work.
 
+**The rooted transport (sub-project A of [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md))
+is now complete**, carrying `φ_W` all the way to the kernel hypotheses of `r3_rigidity`:
+
+> **`k4freeP4_graphon_tripartite`** ([`GraphonKernelTransport.lean`](./GraphonKernelTransport.lean))
+> — any graphon `W` whose `φ_W` lies in the `K₄`-free `P₄`-slice (with both root types of positive
+> mass) is almost everywhere the balanced complete tripartite graphon. This is **the graphon-side
+> content of `thm:k4free-p4-tripartite` (Thm 102)**: composing with the (future, sub-project B)
+> representation theorem yields the paper statement verbatim. The route is a five-module rooted
+> stack — [`StdRootedBridge`](./StdRootedBridge.lean) (standard-rooted graphs and the root-fixing
+> permutation engine), [`GraphonRootedDensity`](./GraphonRootedDensity.lean) (the pinned-root
+> induced density `unnormRootedDensity` and its calculus), [`GraphonRootedHom`](./GraphonRootedHom.lean)
+> (`graphonRootedHom W σ' u v h : PositiveHom σ'`, the rooted conditional homomorphism —
+> `φ_W`'s view from a `W`-random root pair), [`GraphonRootedMeasure`](./GraphonRootedMeasure.lean)
+> (`rootedViewMeasure_eq_extend`: the rooted-view measure **is** the abstract extension measure
+> `ℙ[φ_W]`, via the rooted-vs-unrooted counting bridge `card_stdRooted_class` and
+> `measure_eq_of_integral_flag_eq`), and the capstone `GraphonKernelTransport` (the kernel
+> dictionary translating rooted 3-vertex flag values into `deg`/`codeg` expressions, transporting
+> the `K₄`-free `P₄`-slice equations of [`ParametricP4Slice`](./ParametricP4Slice.lean) into the
+> a.e. kernel hypotheses `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero`).
+> Tier-2 (the last three theorems inherit the certificate-consumer axioms); everything upstream in
+> the stack is Tier-1.
+
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom` in this
 directory. One caveat is inherited rather than local: the §11.6–§11.7 theorems that consume the
@@ -321,13 +343,16 @@ and the two `P₄` slice theorems, fed by the verified `CompleteGraphFreeP4.gap_
 certificate), the §11.7–§11.8 kernel-level moment / rigidity / quantitative-stability theorems in a
 self-contained graphon layer, and the recovery / qualitative-stability corollaries with classical
 inputs as named hypotheses (Deviation 14a) — Cor 105 now **complete**, including its
-"consequently" support identities (`parametric_recovery_identities`). The graphon⟷hom
-representation bridge
-(Lovász–Szegedy) is **not** formalised, so `thm:k4free-p4-tripartite` (Thm 102) and
-`cor:top-endpoint-recovery` (Cor 106) are covered only by their kernel engines
-(`Graphon.r3_rigidity` / `Graphon.slice_rigidity`); Thm 102's hom avatar enters `SliceRecovery`
-as the `huniq` hypothesis. The only §9 result still open is the general pinning *conjecture*
-`conj:characterisation` — see [Scope & limitations](#scope--limitations).
+"consequently" support identities (`parametric_recovery_identities`). The rooted transport
+(sub-project A of `HOM_TO_GRAPHON_DESIGN.md`, five modules ending at `GraphonKernelTransport`) now
+carries the `K₄`-free `P₄`-slice equations all the way to `Graphon.r3_rigidity`'s a.e. kernel
+hypotheses, discharging both of them (`k4freeP4_graphon_tripartite`) — the graphon-side content of
+`thm:k4free-p4-tripartite` (Thm 102). The remaining piece of the graphon⟷hom representation bridge
+(Lovász–Szegedy) is the **existence** half — every homomorphism is represented by *some* graphon
+(sub-project B) — needed to compose `k4freeP4_graphon_tripartite` into Thm 102 / Cor 106 verbatim;
+Thm 102's hom avatar still enters `SliceRecovery` as the `huniq` hypothesis pending that half. The
+only §9 result still open is the general pinning *conjecture* `conj:characterisation` — see
+[Scope & limitations](#scope--limitations).
 
 A note on how to read the §8 rows against the paper, and what to scrutinise when checking the
 correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#auditing-the-correspondence-to-papertex) below.
@@ -368,11 +393,14 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   no `sorryAx`. **The one exception (Tier 2):** the theorems consuming the verified parametric
   certificate `CompleteGraphFreeP4.gap_identity` — the `parametricP4_*` / `k4freeP4_*` slice
   equations and `SliceRecovery`'s `parametric_recovery` / `parametric_qualitative_stability`, plus
-  `parametric_recovery_identities` (which inherits through `parametric_recovery`) —
+  `parametric_recovery_identities` (which inherits through `parametric_recovery`), and now
+  `GraphonKernelTransport`'s `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero` /
+  `k4freeP4_graphon_tripartite` (which inherit through the `k4freeP4_*` slice equations they
+  transport into kernel form) —
   additionally depend on `[Lean.ofReduceBool, Lean.trustCompiler]`, *inherited* from the
   `Automation` layer's `native_decide` bridges, not from any `native_decide` here; see
   [Axioms assumed](#axioms-assumed).
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 88 modules (8011 jobs); the full
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 90 modules (8013 jobs); the full
   project `lake build LeanFlagAlgebras` builds with §9–§11.8 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
@@ -432,8 +460,11 @@ the headline theorems of every section.
 `parametricP4_tau_equation` / `parametricP4_K4_density` / `parametricP4_sq_bounds` /
 `parametricP4_K4_density_approx`, its `r = 3` forms `k4freeP4_eta_equation` / `k4freeP4_tau_symm` /
 `k4freeP4_tau_equation`, `SliceRecovery`'s `parametric_recovery` /
-`parametric_qualitative_stability`, and `TuranSliceIdentities`'s
-`parametric_recovery_identities` (inherited via `parametric_recovery`) — additionally depend on
+`parametric_qualitative_stability`, `TuranSliceIdentities`'s
+`parametric_recovery_identities` (inherited via `parametric_recovery`), and
+`GraphonKernelTransport`'s `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero` /
+`k4freeP4_graphon_tripartite` (inherited via the `k4freeP4_*` slice equations they consume) —
+additionally depend on
 
 ```
 [Lean.ofReduceBool, Lean.trustCompiler]
@@ -852,6 +883,26 @@ Each is detailed below and in the relevant module's header.
       against the module's own informal spec ("the probability that a `W`-random graph on `|F|`
       uniform samples is isomorphic to `F`"), not a paper display.
 
+17. **The rooted transport's slice-membership hypothesis `hmem` is a named hypothesis, not an
+    existential representation.** ([`StdRootedBridge`](./StdRootedBridge.lean)/
+    [`GraphonRootedDensity`](./GraphonRootedDensity.lean)/[`GraphonRootedHom`](./GraphonRootedHom.lean)/
+    [`GraphonRootedMeasure`](./GraphonRootedMeasure.lean)/
+    [`GraphonKernelTransport`](./GraphonKernelTransport.lean).) The paper's route to
+    `thm:k4free-p4-tripartite` begins "let `W` represent a point of `Y_{P4}`" — i.e. it assumes a
+    graphon *already given* as a representative of a slice point. Lean instead takes
+    `hmem : posHomPoint (graphonHom W) ∈ k4freeP4Slice` (`φ_W` itself, built from any graphon `W`
+    via the now-formalised graphon→hom direction, lies in the slice) together with the two
+    root-type admissibility hypotheses `hστ`/`hση` (`(graphonHom W)⟨FlagType_2_1/2_0⟩₀ > 0`) as
+    named hypotheses on `k4freeP4_graphon_tripartite`. This is not a strengthening or a weakening —
+    `hmem` is purely algebraic (`mem_Qσ_iff`: `φ_W` vanishes on the forbidden `K₄` flags plus the
+    `P₄`-density evaluation; no graph-limit existential enters, per the module's design note) — but
+    it packages the paper's informal "let `W` represent…" as an explicit predicate on `W` rather
+    than an existential quantifier over slice points, and it is the shipped interface pending
+    sub-project B: once every homomorphism is known to be represented by some graphon, composing
+    that existence theorem with `k4freeP4_graphon_tripartite` recovers the paper's Thm 102
+    verbatim (any `φ₀ ∈ k4freeP4Slice` has *some* representing `W`, and `hmem` holds for it by
+    construction).
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -957,7 +1008,7 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 | `thm:parametric-moments` (Thm 99, l.4877) | `Graphon.moments_T` ([`GraphonMoments.lean`](./GraphonMoments.lean) l.497), `moments_D` (l.508), `moments_variance` (l.521), `moments_interval` (l.537), `moments_regular_iff` (l.562) | kernel level, on `unitInterval` graphons (Deviation 14b): from `R_τ = 0` / `R_η = 0` (the a.e. forms are `Rtau_eq_zero_iff_ae` / `Reta_eq_zero_iff_ae`), the identities (i)–(iv): `(r-1)T = (r-2)D`, `r(2r-3)D = (r-1)²(3p-1)`, `D - p² = (α⁺-p)(p-α⁻)`, `α⁻ ≤ p ≤ α⁺` with degree-regularity exactly at the endpoints |
 | `thm:slice-rigidity` (Thm 100, l.4965) | `Graphon.slice_rigidity` ([`GraphonRigidity.lean`](./GraphonRigidity.lean) l.593) | conclusion in **measurable-partition form** (Deviation 14c): a measurable `P : I → Fin r` with all fibers of volume `1/r` such that a.e. `W = 0` on same-colour and `W = 1` on different-colour pairs — the paper's "up to relabelling, `T_r`" minus the cosmetic relabelling |
 | `cor:r3-rigidity` (Cor 101, l.5021) | `Graphon.r3_rigidity` ([`GraphonRigidity.lean`](./GraphonRigidity.lean) l.799) | at `r = 3` the endpoints coincide, so the edge-density hypothesis disappears: the two local equations alone force the balanced tripartite partition form |
-| `thm:k4free-p4-tripartite` (Thm 102, l.5035) — **NOT formalised as stated** | (kernel engine: `Graphon.r3_rigidity`, above) | the statement needs the graphon⟷hom representation (Lovász–Szegedy), which is unformalised; its kernel engine **is** formalised (`r3_rigidity`), and its hom avatar enters [`SliceRecovery`](./SliceRecovery.lean) as the `huniq` hypothesis |
+| `thm:k4free-p4-tripartite` (Thm 102, l.5035) — **graphon side COMPLETE, statement pending sub-project B** | `k4freeP4_graphon_tripartite` ([`GraphonKernelTransport.lean`](./GraphonKernelTransport.lean)) | the rooted transport discharges both `r3_rigidity` hypotheses from the `K₄`-free `P₄`-slice membership `hmem` — this **is** the graphon-side content of Thm 102; the statement needs the graphon⟷hom representation (Lovász–Szegedy) **existence** half (sub-project B) to read verbatim; its hom avatar still enters [`SliceRecovery`](./SliceRecovery.lean) as the `huniq` hypothesis |
 | `cor:k4free-p4-qualitative-stability` (Cor 104, l.5072) | `k4free_qualitative_stability` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.106) | every `K₄`-free sequence with `P₄` density `→ 32/9` converges to the balanced tripartite limit, **given** the singleton slice identification `huniq` (= Thm 102's conclusion, hypothesis-ised) |
 | `cor:parametric-p4-turan-recovery` (Cor 105, l.5096) — **COMPLETE** | `parametric_recovery` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.36); the "consequently" clauses `parametric_recovery_identities` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1720) | the first half: under `hZykov` and the Zykov **equality case** `hZykEq`, the parametric slice collapses to `{χ★}`; the "consequently" support identities then follow at all three types (composing with the `turanLimit_relSσ_*` singletons). Mind the benign deviation `3 ≤ r` vs the paper's `r ≥ 4` (Deviation 15c); **Tier-2 axioms** |
 | `cor:top-endpoint-recovery` (Cor 106, l.5138) — **NOT formalised** | (kernel engine: `Graphon.slice_rigidity`, above) | needs the same representation bridge as Thm 102; the kernel engine (`slice_rigidity`) is done |
@@ -977,7 +1028,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 8011 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 8013 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -1011,14 +1062,16 @@ printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' 
 #print axioms Graphon.slice_rigidity
 #print axioms Graphon.approximate_moments
 #print axioms graphonHom
-#print axioms graphonProfile_zeroSpaceProp' > /tmp/chk8.lean
+#print axioms graphonProfile_zeroSpaceProp
+#print axioms rootedViewMeasure_eq_extend' > /tmp/chk8.lean
 lake env lean /tmp/chk8.lean        # each → [propext, Classical.choice, Quot.sound]
 
 # the Tier-2 certificate consumers additionally print the two compiled-evaluation axioms:
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms parametricP4_tau_equation
 #print axioms parametric_qualitative_stability
-#print axioms parametric_recovery_identities' > /tmp/chk11.lean
+#print axioms parametric_recovery_identities
+#print axioms k4freeP4_graphon_tripartite' > /tmp/chk11.lean
 lake env lean /tmp/chk11.lean       # each → [propext, Classical.choice, Quot.sound, Lean.ofReduceBool, Lean.trustCompiler]
 ```
 
@@ -1145,8 +1198,14 @@ flag-algebra base.
 * **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.8 relative
   (slice) theory are formalised here (§11.4–§11.8 with the partial-coverage caveats listed in
   [Scope & limitations](#scope--limitations)).
-* **`*.lean`** — 88 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
-  recently [`GraphonInducedDensity`](./GraphonInducedDensity.lean), [`PairSubsetCount`](./PairSubsetCount.lean),
+* **`*.lean`** — 90 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
+  recently the five-module **rooted transport** (sub-project A of
+  [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md)) — [`StdRootedBridge`](./StdRootedBridge.lean),
+  [`GraphonRootedDensity`](./GraphonRootedDensity.lean), [`GraphonRootedHom`](./GraphonRootedHom.lean),
+  [`GraphonRootedMeasure`](./GraphonRootedMeasure.lean) and the capstone
+  [`GraphonKernelTransport`](./GraphonKernelTransport.lean) — carrying the `K₄`-free `P₄`-slice
+  equations into `r3_rigidity`'s a.e. kernel hypotheses (`k4freeP4_graphon_tripartite`); before
+  that [`GraphonInducedDensity`](./GraphonInducedDensity.lean), [`PairSubsetCount`](./PairSubsetCount.lean),
   [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean) and [`GraphonHom`](./GraphonHom.lean) —
   the `φ_W` infrastructure (every graphon is a positive homomorphism). They are
   imported and re-exported by [`../MetaTheory.lean`](../MetaTheory.lean), the aggregator, which in
@@ -1219,16 +1278,26 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   [`PairSubsetCount.lean`](./PairSubsetCount.lean)), with the sanity link
   `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` (Deviation 16). There is no
   `paper.tex` display for this construction — it is folklore input the §11.7 representation
-  results assume.
+  results assume. Building further on `graphonHom`, **the full rooted transport (sub-project A of
+  `HOM_TO_GRAPHON_DESIGN.md`) is now formalised too**: the five-module stack
+  `StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/
+  `GraphonKernelTransport` carries the `K₄`-free `P₄`-slice equations (mined by
+  `ParametricP4Slice`) through the rooted conditional homomorphism and the rooted-view-measure
+  identification `rootedViewMeasure_eq_extend` (= `ℙ[φ_W]`) into the a.e. kernel hypotheses of
+  `Graphon.r3_rigidity`, discharging both of them unconditionally for any graphon in the slice
+  (`k4freeP4_graphon_tripartite`) — the graphon-side content of `thm:k4free-p4-tripartite`
+  (Thm 102), pending only sub-project B for the paper statement verbatim (Deviation 17).
 * **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
   tentative general characterisation) — the one §9 result still open; **Erdős–Simonovits
   uniqueness itself** (the singleton claim of Thm 91/Thm 92), which enters the now-formalised
   identity halves only as the named hypothesis `hES`; **Thm 102 and Cor 106**
-  (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`),
-  which need the graphon⟷hom **representation bridge** (Lovász–Szegedy) — their kernel engines
-  (`Graphon.r3_rigidity` / `Graphon.slice_rigidity`) are done, and the **graphon→hom half of the
-  bridge is now formalised** (`graphonHom`, above); the remaining, harder half — every
-  homomorphism in `PositiveHom ∅ₜ` is represented by some graphon — is still open; **Thm 112(iv)** — the `ω_Zyk`
+  (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`) as the paper states them verbatim —
+  the representation-bridge (Lovász–Szegedy) status is now: **graphon→hom done** (`graphonHom`,
+  `φ_W`) **+ the full rooted transport done** (slice equations → `r3_rigidity` hypotheses,
+  `k4freeP4_graphon_tripartite`); **remaining: existence of a representing graphon** for an
+  arbitrary `PositiveHom ∅ₜ` (sub-project B) — the harder, still-open half. (Cor 106's kernel
+  engine `Graphon.slice_rigidity` is done but has no rooted-transport counterpart yet.)
+  **Thm 112(iv)** — the `ω_Zyk`
   kernel route — together with the **`R_τ⁻ = ∫W(d(x)−d(y))²` kernel functional** it runs on; the
   **§12 open problems** (prose — nothing to formalise); and, within `cor:degenerate-family`, the non-`C₄` families (general
   `K_{s,t}` with `s ≥ 3`, even cycles, planar), which instantiate `edgeDegenerate_of_subquadratic`

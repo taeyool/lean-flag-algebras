@@ -7,8 +7,8 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-10 (sixth session of 2026-07-09/10: **`φ_W` — every graphon is a positive
-homomorphism**). (Stopping
+Last updated: 2026-07-11 (seventh session of 2026-07-10/11: **sub-project A — the rooted
+transport, DONE**). (Stopping
 point: §1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory**
 — the §11.2–§11.3 foundation (four modules,
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`, "§11.2–§11.3 — DONE"
@@ -22,22 +22,32 @@ below), the **§11.5 identity halves** (three modules,
 Cor 105 complete), AND now **`φ_W`: every graphon is a positive homomorphism** (four modules,
 `GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`, "φ_W: every
 graphon is a positive homomorphism — DONE" below — the **graphon→hom half** of the
-Lovász–Szegedy representation bridge, infrastructure with no single `paper.tex` display; the
-harder hom→graphon half remains open; remaining partial-coverage caveats in README
-Deviations 14–16 + the table rows). Prior sessions: §11.5 identity halves,
+Lovász–Szegedy representation bridge, infrastructure with no single `paper.tex` display), AND now
+**sub-project A — the rooted transport — is complete** (five modules,
+`StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/
+`GraphonKernelTransport`, "Sub-project A: the rooted transport — DONE" below — carrying the
+`K₄`-free `P₄`-slice equations all the way to `Graphon.r3_rigidity`'s a.e. kernel hypotheses,
+capstone `k4freeP4_graphon_tripartite`: the graphon-side content of `thm:k4free-p4-tripartite`
+(Thm 102); only **sub-project B** (existence of a representing graphon, the harder hom→graphon
+half) remains; remaining partial-coverage caveats in README Deviations 14–17 + the table rows).
+Prior sessions: `φ_W`, §11.5 identity halves,
 §11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
 `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8011 jobs green** (88 modules; "Build completed
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8013 jobs green** (90 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
 certificate consumers (`parametricP4_*`/`k4freeP4_*`, `parametric_recovery`,
-`parametric_qualitative_stability`, `parametric_recovery_identities`), which additionally print
+`parametric_qualitative_stability`, `parametric_recovery_identities`, and now
+**`k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`/`_tripartite`**), which additionally print
 `[Lean.ofReduceBool, Lean.trustCompiler]` inherited from the `Automation` layer's `native_decide`
-(README "Axioms assumed", two tiers — **unchanged this session**: all four new `φ_W` modules are
-Tier-1, no new certificate consumer). Next targets: **Phase 4: hom→graphon** — the harder,
+(README "Axioms assumed", two tiers — **the Tier-2 list gains exactly those three names this
+session**; everything else in the five new rooted-transport modules is Tier-1, no new certificate
+material). Next targets: **Phase 4, sub-project B: hom→graphon existence** — the harder,
 remaining half of the Lovász–Szegedy representation bridge (every homomorphism is represented by
-some graphon; the big unlock for Thm 102 / Cor 106) — needs its own design doc; optional
+some graphon; the sole remaining piece for Thm 102 / Cor 106 verbatim) — design doc's module list
+3–6 (`GraphonStep` → `GraphonCounting` → checkpoint → `GraphonMartingaleLimit` →
+`GraphonRepresentation`); optional
 **Phase 3: kernel-level Mantel uniqueness**; and the `R_τ⁻` kernel functional + Thm 112(iv); §12
 is open problems — prose, nothing to formalise.)
 
@@ -146,7 +156,21 @@ is open problems — prose, nothing to formalise.)
   Deviation 16, "`φ_W`: every graphon is a positive homomorphism — DONE" below). This is the
   **graphon→hom** half of the Lovász–Szegedy representation bridge; the harder hom→graphon half
   (the big unlock for Thm 102 / Cor 106) remains open.
-* **Scale:** 85 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
+* **Headline result (rooted transport complete, seventh session):** **`k4freeP4_graphon_tripartite`**
+  — any graphon `W` whose `φ_W` lies in the `K₄`-free `P₄`-slice (with both root types of positive
+  mass) is almost everywhere the balanced complete tripartite graphon
+  ([`GraphonKernelTransport`](./GraphonKernelTransport.lean)) — **the graphon-side content of
+  `thm:k4free-p4-tripartite` (Thm 102)**, `Graphon.r3_rigidity` with both a.e. kernel hypotheses
+  discharged. Reached via the five-module rooted stack
+  `StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/
+  `GraphonKernelTransport`: the rooted conditional homomorphism `graphonRootedHom W σ' u v h`,
+  its measure identification **`rootedViewMeasure_eq_extend`** (`= ℙ[graphonHom W]`, via the
+  rooted-vs-unrooted counting bridge `card_stdRooted_class` +
+  `measure_eq_of_integral_flag_eq`), and the kernel dictionary transporting the `K₄`-free
+  `P₄`-slice equations into `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`. Only sub-project B
+  (existence of a representing graphon) separates this from Thm 102 verbatim (README
+  Deviation 17).
+* **Scale:** 90 Lean modules (33 through §7, +6 for §8, +1 §9 abstract `Pinning`, +5 for §9/§9.1/§9.2,
   +4 for `lem:complementation`, +2 for §9.5 [`C5FewTriangles`/`C5EdgeObstruction`], +4 for §9.4
   [`NoInterior`/`EdgeThinning`/`EdgeThinningLimit`/`NoInteriorThinning`], +7 for §10
   [`DownwardAverage`/`EmptyTypeCollapse`/`CertificateCones`/`VanishingIdeal`/`BooleanPoint`/
@@ -156,8 +180,12 @@ is open problems — prose, nothing to formalise.)
   `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
   `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability`], +3 for the §11.5
   identity halves [`TuranAut`/`TuranDirac`/`TuranSliceIdentities`], +4 for `φ_W`
-  [`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`]) + 4 committed
-  reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`, same dir), in
+  [`GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom`], +5 for the
+  rooted transport (sub-project A)
+  [`StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/
+  `GraphonKernelTransport`]) + 5 committed
+  reference docs (`README`/`ARCHITECTURE`/`READING_GUIDE`/`METATHEORY_WORKLOG`/
+  `HOM_TO_GRAPHON_DESIGN`, same dir), in
   namespace `FlagAlgebras.MetaTheory`, aggregated by `LeanFlagAlgebras/MetaTheory.lean` and in the
   top build manifest `LeanFlagAlgebras.lean`.
 
@@ -194,7 +222,7 @@ is open problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8011 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + rooted transport 0-1)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8013 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + the complete rooted transport)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -210,12 +238,14 @@ is open problems — prose, nothing to formalise.)
               mantel_not_relatively_plantable equality_slice_vanishing \
               turan_slice_identity_vtype mantel_not_relatively_plantable_of_uniqueness \
               parametricP4_tau_equation Graphon.slice_rigidity Graphon.approximate_moments \
-              graphonHom graphonHom_edge graphonProfile_zeroSpaceProp; \
+              graphonHom graphonHom_edge graphonProfile_zeroSpaceProp \
+              rootedViewMeasure_eq_extend k4freeP4_graphon_tripartite; \
        do printf '#print axioms %s\n' "$t"; done; } > /tmp/chk.lean
    lake env lean /tmp/chk.lean      # each → axioms: [propext, Classical.choice, Quot.sound]  (no sorryAx)
    # …EXCEPT `parametricP4_tau_equation` (and every other Tier-2 certificate consumer:
    # the parametricP4_*/k4freeP4_* equations, parametric_recovery,
-   # parametric_qualitative_stability, parametric_recovery_identities), which legitimately
+   # parametric_qualitative_stability, parametric_recovery_identities, and now
+   # k4freeP4_graphon_Rtau_eq_zero/_Reta_eq_zero/_tripartite), which legitimately
    # also prints
    # `Lean.ofReduceBool, Lean.trustCompiler` — inherited from the Automation layer's
    # native_decide bridges, NOT from MetaTheory (which contains no native_decide).
@@ -550,6 +580,129 @@ modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the a
 "needs author confirmation" (likely intentional API). (3) An 8-agent apply workflow made the edits
 per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
 clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
+
+## Sub-project A: the rooted transport — DONE (2026-07-10/11, seventh session)
+
+Five new modules (all green, `sorry`/`admit`/`native_decide`-free), wired into `MetaTheory.lean`
+after the `φ_W` wave — **sub-project A of [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md)**
+("the rooted transport"), carrying the `K₄`-free `P₄`-slice equations mined in `ParametricP4Slice`
+all the way to `Graphon.r3_rigidity`'s a.e. kernel hypotheses. Landed across two intermediate
+pushes plus this session's finish: module 0 (`StdRootedBridge`, commit `7cb1f96`, 86 modules /
+8009 jobs), modules 1a+1b (`GraphonRootedDensity`/`GraphonRootedHom`, commit `3713075`, 88
+modules / 8011 jobs), and modules 2a+2b (`GraphonRootedMeasure`/`GraphonKernelTransport`, this
+commit, 90 modules / 8013 jobs). One wave agent was killed by an API server error mid-run during
+the campaign; a successor agent picked up cleanly from its last good partial state — no rework
+needed.
+
+* **`StdRootedBridge`** (module 0) — standard-rooted graphs at a two-vertex type
+  (`RootCompatible`/`mkStdRooted`, roots at `0, 1` via `Fin.castLE`), flag equality iff
+  root-fixing isomorphism, standard-rooted representatives, the **root-fixing permutation
+  engine** `exists_rootfix_perm_comp_emb(_pair)`, and the rooted density-as-subset-count formula
+  `flagDensity₁_stdRooted`. Certificate-free, general `σ : FlagType (Fin 2)`; feeds
+  `GraphonRootedDensity`/`GraphonRootedHom`.
+* **`GraphonRootedDensity`** (module 1a) — the unnormalised rooted density
+  `unnormRootedDensity` (induced weight with the root coordinates pinned via `pinRoots`), the
+  root factor `rootWeight`/`RootAdmissible`, root-fixing relabelling invariance, the rooted
+  extension partition, total mass `= rootWeight`, the glued block product
+  `unnormRootedDensity_block_mul` (sharing the root pair), and the subset↔embedding bridge
+  (`exists_rootFixing_emb_range`, `stdRooted_subset_iso_iff`).
+* **`GraphonRootedHom`** (module 1b) — **the rooted conditional homomorphism**. The conditional
+  profile `graphonRootedProfileFun` (standard-rooted class sums over `rootWeight`) satisfies the
+  chain rule, normalisation and multiplicativity at every admissible pinned pair, assembling to
+  `graphonRootedHom W σ' u v h : PositiveHom σ'` — the view of `φ_W` from a `W`-random root pair —
+  with joint measurability in the pair (`measurable_graphonRootedProfileFun`), needed by the
+  upcoming rooted-view measure. `mulProp`'s pair count collapses at the tight glued size (the
+  second subset is forced to be the complement-plus-roots of the first); `RootAdmissible` is
+  needed only by `oneProp` (the other two Props hold by the junk-division convention; the
+  hypothesis is kept anyway for a uniform API).
+* **`GraphonRootedMeasure`** (module 2a) — **the rooted-view measure is the extension measure**.
+  `rootMass`/`rootMass_eq_typeFlag` (the total root-factor mass is `φ_W`'s value on the
+  two-vertex type flag), `integral_unnormRootedDensity` (pinned coordinates integrate out to
+  recover the unrooted `graphonFlagDensity`), the **rooted-vs-unrooted counting bridge**
+  `card_stdRooted_class` (the standard-rooted class count is `downwardNormalizingFactor` times
+  the unlabelled class count — a same-size double count over `(graph, root-placement)` pairs),
+  the bridge integral identity `integral_rootedClassSum`, and the capstone
+  **`rootedViewMeasure_eq_extend`**: the normalised `rootWeight`-weighted pushforward of
+  `graphonRootedHom` equals `ℙ[graphonHom W]`, via `measure_eq_of_integral_flag_eq`.
+* **`GraphonKernelTransport`** (module 2b, **the capstone**) — the **kernel dictionary**
+  (`graphonRootedHom_a_tau`/`_b_tau`/`_g_tau`/`_z_eta`/`_g_eta`: rooted three-vertex flag values
+  are `deg`/`codeg` expressions, per `paper.tex:4861–4875`) and the **transport**:
+  `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` push the `K₄`-free `P₄`-slice equations
+  (`k4freeP4_tau_equation`/`_tau_symm`/`_eta_equation`) through `support_subset_relSσ` +
+  `rootedViewMeasure_eq_extend` into the a.e. kernel hypotheses, assembling to
+  **`k4freeP4_graphon_tripartite`**: any graphon whose `φ_W` lies in the `K₄`-free `P₄`-slice
+  (both root types of positive mass) is a.e. the balanced complete tripartite graphon —
+  `Graphon.r3_rigidity` with both hypotheses discharged, the graphon-side content of
+  `thm:k4free-p4-tripartite` (Thm 102); only sub-project B (representation existence) separates
+  this from the paper statement verbatim.
+
+**Technical notes (record these):**
+* **(a)** the rooted-vs-unrooted counting bridge (`card_stdRooted_class`) is a same-size
+  degenerate case of the `FlagOperators.isoInjectiveMapSet` double-count pattern, generalised to
+  arbitrary root placements via the private `RootCompatibleAt`/`mkRootedAt` machinery (root
+  compatibility and the rooted labelled graph at an arbitrary embedding `θ`, not just the
+  standard `Fin.castLE`).
+* **(b)** the kernel dictionary's 3-vertex fibres are **singletons** because a root-fixing
+  permutation of `Fin 3` is forced to be the identity (fixing two of the three points forces the
+  third) — `stdRooted_filter_singleton` — so each dictionary value reduces to one
+  `unnormRootedDensity` computation, no averaging needed.
+* **(c)** `k4freeP4_tau_symm` turned out unnecessary for the transport: the `τ`-equation
+  (`k4freeP4_tau_equation`) alone already forces `ellTau 3 = 0` (the symmetry adds no new
+  information at this step).
+* **(d)** the slice-membership hypothesis `hmem : posHomPoint (graphonHom W) ∈ k4freeP4Slice` is
+  **purely algebraic** (`mem_Qσ_iff`: `φ_W` vanishes on the forbidden `K₄` flags, plus the
+  `P₄`-density evaluation) — **no graph-limit existential enters**; see README Deviation 17 for the
+  resulting hypothesis-shape gap against the paper's "let `W` represent a point of `Y_{P4}`".
+* **(e)** one wave agent was killed by an API server error mid-run; a successor agent continued
+  cleanly from its last good partial state (no lost work, no re-scaffolding needed).
+
+**TIER-2 UPDATE:** the Tier-2 list gains **exactly three names**: `k4freeP4_graphon_Rtau_eq_zero`,
+`k4freeP4_graphon_Reta_eq_zero`, `k4freeP4_graphon_tripartite` (they consume the `k4freeP4_*`
+slice equations, hence inherit `[Lean.ofReduceBool, Lean.trustCompiler]`). Everything else in the
+five modules is **Tier-1** `[propext, Classical.choice, Quot.sound]`. The forbidden *declared*
+axioms (`Zykov_K4_density_bound`, `Turan_limit_P4_density`) remain unused by any theorem here —
+grep-verified in the audit below, as in every prior wave.
+
+**Adversarial statement audits (keep this step):** three separate adversarial audits ran across
+the sub-project's two pushes, **all returning verdict SHIP**: **12/12 FAITHFUL** for modules 0–1
+(`StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`) and **8/8 FAITHFUL** for module 2
+(`GraphonRootedMeasure`/`GraphonKernelTransport`). No statement-level issues found; the notable
+checks were the same shape as prior waves — cardinality-forcing in the rooted subset filters,
+the root-fixing analogue of the permutation-conjugacy argument, and (this wave) the
+singleton-fibre argument of technical note (b) above and the purely-algebraic reading of `hmem`
+in technical note (d).
+
+**Build:** `lake build LeanFlagAlgebras.MetaTheory` → **8013 jobs green** (90 modules);
+`grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty.
+
+```bash
+printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
+  '#print axioms flagDensity₁_stdRooted
+#print axioms unnormRootedDensity_block_mul
+#print axioms graphonRootedHom_coe
+#print axioms card_stdRooted_class
+#print axioms rootedViewMeasure_eq_extend
+#print axioms graphonRootedHom_a_tau' > /tmp/chkA.lean
+lake env lean /tmp/chkA.lean        # each → [propext, Classical.choice, Quot.sound]  (Tier-1)
+
+printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
+  '#print axioms k4freeP4_graphon_Rtau_eq_zero
+#print axioms k4freeP4_graphon_Reta_eq_zero
+#print axioms k4freeP4_graphon_tripartite' > /tmp/chkB.lean
+lake env lean /tmp/chkB.lean        # each → [propext, Classical.choice, Quot.sound, Lean.ofReduceBool, Lean.trustCompiler]  (Tier-2)
+```
+
+**Workflow (what worked — repeat it):** the established pattern held: **scaffold-freeze first**
+(the full statement API of the five modules, `sorry`-stubbed and building, frozen before any proof
+work — the design probe embedded in `HOM_TO_GRAPHON_DESIGN.md` had already located the one bug in
+the naive rooted-profile index set, so the frozen scaffold was correct on the first pass) →
+**parallel sonnet-tier proving waves**, one agent per module iterating `lake env lean <module>`
+only (no build-lock contention) → a **finisher-agent pass** cleaning up any module left with a
+residual `sorry` or a statement drift from the frozen scaffold → full aggregator build → the
+two-tier `#print axioms` check → the three adversarial audits above → docs (this pass). The
+API-death recovery of technical note (e) is the one workflow wrinkle worth remembering: a killed
+agent's clean partial state (whatever compiled so far) is safe to resume from directly — no need
+to restart the module from the scaffold.
 
 ## φ_W: every graphon is a positive homomorphism — DONE (2026-07-10, sixth session)
 
@@ -953,54 +1106,49 @@ snapshot (public declaration lists identical) → per-module rebuilds → aggreg
 ## Next work / open follow-ups
 
 **▶ TO RESUME (start here).** Everything through `paper.tex` **§10 is DONE**, plus the
-**whole §11.2–§11.8 relative (slice) theory**, plus the **§11.5 identity halves** — most
-recently the **`φ_W`** wave of 2026-07-10 (sixth session): the 4 new modules
+**whole §11.2–§11.8 relative (slice) theory**, plus the **§11.5 identity halves**, plus **`φ_W`**
+— most recently **sub-project A, the rooted transport, of 2026-07-10/11 (seventh session): now
+COMPLETE**. The 5 modules `StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/
+`GraphonRootedMeasure`/`GraphonKernelTransport` carry the `K₄`-free `P₄`-slice equations all the
+way to `Graphon.r3_rigidity`'s a.e. kernel hypotheses, capstone `k4freeP4_graphon_tripartite`
+(see "Sub-project A: the rooted transport — DONE" above); before that the **`φ_W`** wave of
+2026-07-10 (sixth session): the 4 modules
 `GraphonInducedDensity`/`PairSubsetCount`/`EmptyTypeGraphBridge`/`GraphonHom` — **Phase 2
-`GraphonHom` is now DONE**: every graphon is a positive homomorphism, the graphon→hom half of
+`GraphonHom` DONE**: every graphon is a positive homomorphism, the graphon→hom half of
 the representation bridge (no `paper.tex` display; README Deviation 16) — + `MetaTheory.lean` +
-the README/ARCHITECTURE/READING_GUIDE/WORKLOG doc sync; before that the §11.5 identity-halves
-wave (fifth session, 3 modules `TuranAut`/`TuranDirac`/`TuranSliceIdentities`); before that the
-§11.4–§11.8 wave (fourth session, 12 modules). All green, `sorry`-free, statement-audited
-(adversarial audits vs the paper / the module docstrings when there is no paper display), axiom-
-clean modulo the sanctioned Tier-2 certificate consumers (README "Axioms assumed" — **unchanged**
-this session). **§12 is open problems — prose, nothing to formalise** — so the remaining Lean
-work is the §11 partial-coverage frontier. Next targets, in the agreed plan (find results by
+the README/ARCHITECTURE/READING_GUIDE/WORKLOG/HOM_TO_GRAPHON_DESIGN doc sync; before that the §11.5
+identity-halves wave (fifth session, 3 modules `TuranAut`/`TuranDirac`/`TuranSliceIdentities`);
+before that the §11.4–§11.8 wave (fourth session, 12 modules). All green, `sorry`-free,
+statement-audited (adversarial audits vs the paper / the module docstrings when there is no paper
+display), axiom-clean modulo the sanctioned Tier-2 certificate consumers, which this session gain
+exactly the three names `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`/`_tripartite` (README
+"Axioms assumed"). **§12 is open problems — prose, nothing to formalise** — so the remaining Lean
+work is the §11 partial-coverage frontier, now narrowed to sub-project B. Next targets, in the
+agreed plan (find results by
 `\label{...}`, **not** line number — they drift):
 
-* **Phase 4: the hom→graphon half of the representation bridge — the big unlock (headline
-  target).** Every unlabelled limit — every `PositiveHom ∅ₜ`, equivalently every point of
-  `PositiveHomSpace ∅ₜ` — is represented by *some* graphon. Together with the now-DONE
-  `GraphonHom` (Phase 2) this converts `Graphon.r3_rigidity`/`slice_rigidity` into
+* **Phase 4, sub-project B: the hom→graphon existence half of the representation bridge — the
+  big unlock (headline target; the sole remaining piece).** Every unlabelled limit — every
+  `PositiveHom ∅ₜ`, equivalently every point of `PositiveHomSpace ∅ₜ` — is represented by *some*
+  graphon. Together with the now-DONE `GraphonHom` (Phase 2) **and** the now-DONE rooted
+  transport (sub-project A, above — `k4freeP4_graphon_tripartite` already discharges both
+  `r3_rigidity` hypotheses conditional on such a representative existing), this is the **sole**
+  remaining piece needed to convert `Graphon.r3_rigidity`/`slice_rigidity` into
   `thm:k4free-p4-tripartite` (Thm 102) and `cor:top-endpoint-recovery` (Cor 106) as literally
-  stated, and discharges `SliceRecovery`'s `huniq`. This is the Lovász–Szegedy direction proper
+  stated, and to discharge `SliceRecovery`'s `huniq`. This is the Lovász–Szegedy direction proper
   (compactness of graph sequences to a graphon limit object) — a major, substantially harder
-  project than Phase 2. **The design doc now exists: `HOM_TO_GRAPHON_DESIGN.md`** (frozen
-  2026-07-10). Headline findings: only the *existence* half is needed (no injectivity); a
-  second, previously unnamed gap — the **rooted transport** of the slice identities into a.e.
-  kernel hypotheses — should ship FIRST as its own 1–2-session sub-project (low risk, reuses
-  the `GraphonHom` averaging technique + `measure_eq_of_integral_flag_eq`); the recommended
-  route for existence is sampling (`positiveHom_as_flagSeq_limit`, already proved) + step
-  graphons + Doob martingale convergence, with the sequential-compactness module as the single
-  riskiest piece (checkpoint after the counting lemma). Start there, not here.
-  **Sub-project A progress: modules 0–1 are DONE** (2026-07-10/11, sorry-free, Tier-1,
-  88 modules / 8011 jobs, audited 12/12 FAITHFUL / SHIP):
-  module 0 `StdRootedBridge.lean` (the standard-rooted bridge + root-fixing permutation
-  engine + `flagDensity₁_stdRooted`); module 1a `GraphonRootedDensity.lean`
-  (`unnormRootedDensity` with pinned roots, extension partition, total mass = `rootWeight`,
-  the glued block product `unnormRootedDensity_block_mul`, the subset↔embedding bridge);
-  module 1b `GraphonRootedHom.lean` (**`graphonRootedHom W σ' u v h : PositiveHom σ'`**, the
-  rooted conditional homomorphism — the three Props by root-fixing subset-averaging; the
-  `mulProp` pair count collapses because at the tight glued size the second subset is forced
-  to be the complement-plus-roots of the first). Audit note: `RootAdmissible` is only needed
-  by `oneProp`; the other two Props hold by the junk-division convention (hypothesis kept for
-  a uniform API). **Next in sub-project A: `GraphonRootedMeasure.lean` (module 2)** — the
-  rooted-view measure `Measure.map (z ↦ posHomPoint (graphonRootedHom W σ' z.1 z.2 _))` of
-  the `rootWeight`-weighted normalised measure on `I × I`; identify with `ℙ[graphonHom W]`
-  via `measure_eq_of_integral_flag_eq` (the bridge integral identity reduces by Fubini to a
-  `downwardNormalizingFactor` computation); then `support_subset_relSσ` +
-  `Measure.support_mem_ae` turn the `ParametricP4Slice` `relSσ` equations into
-  `Rtau/Reta_eq_zero_iff_ae` for `r3_rigidity` (see the design doc's module-2 spec and the
-  `paper.tex:4861-4875` kernel dictionary).
+  project than Phase 2 or sub-project A. **The design doc `HOM_TO_GRAPHON_DESIGN.md`** (frozen
+  2026-07-10, sub-project A section now marked COMPLETE) **has the module plan for this**:
+  modules 3–6 — `GraphonStep.lean` (step graphons from finite graphs/partitions; finite-Fubini
+  density agreement) → `GraphonCounting.lean` (the general counting/domination lemma) →
+  **checkpoint, reassess before module 5** → `GraphonMartingaleLimit.lean` (**the single riskiest
+  piece**: sequential compactness of the graphon space via Doob martingale convergence,
+  est. 1500–3000+ lines, no Mathlib precedent) → `GraphonRepresentation.lean` (assembly:
+  `exists_graphon_rep`, then the Thm 102/Cor 106 discharges). The recommended route is sampling
+  (`positiveHom_as_flagSeq_limit`, already proved) + step graphons + Doob martingale convergence,
+  exactly as in the design doc's route comparison. Start at module 3, not from scratch. If this
+  sub-project stalls at module 5, sub-project A alone still upgrades the conditional results
+  (the `hmem`-hypothesis form of README Deviation 17 remains available as an interim tier).
 * **Optional: Phase 3, kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for
   the Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
   §11.5 identities be discharged through the bridge once both halves of Phase 4 exist.
@@ -1019,25 +1167,42 @@ subsingletons, `TuranDirac`'s `toProbMeasure_eq_dirac_of_subsingleton`/
 used; the subset-averaging scheme of `GraphonInducedDensity`/`PairSubsetCount`/
 `EmptyTypeGraphBridge` is the template for any further graphon↔flag-algebra bridge work, and
 `graphonHom_edge` is a ready-made sanity-check pattern to mirror at any new kernel↔flag
-comparison point), the generalised-blow-up machinery (`subBlowup`,
+comparison point), the **rooted-transport toolkit** (`graphonRootedHom`/`graphonRootedProfileFun`
+via the root-fixing analogue of the `φ_W` subset-averaging scheme; `rootedViewMeasure_eq_extend`
+as the template for identifying any further pushforward measure with an extension measure via
+`measure_eq_of_integral_flag_eq`; the `RootCompatibleAt`/`mkRootedAt` degenerate-double-count
+machinery as the template for any further rooted-vs-unrooted counting bridge — all reusable for
+sub-project B's `GraphonRepresentation` assembly step once existence is in hand), the
+generalised-blow-up machinery (`subBlowup`,
 `planted_estimate_host`, `subst_root_plantable`, `BlowupClosed`), the finite-planting criterion
 (`FinitePlanting`/`SparseRootRepair`), and the §9 obstruction + complement stacks.
 **Workflow that worked (repeat it):** scaffold each statement (with
 `sorry`) and build the sorry-oleans once → delegate each module's proofs to its own agent
 iterating on `lake env lean <module>` (no build lock; relaunch clean if a round dies mid-flight —
-rate limits killed round one in the fourth session, and killed a planned dedicated dossier round
-in the sixth, whose design work was done inline in the main loop instead) → statement-drift
+rate limits killed round one in the fourth session, killed a planned dedicated dossier round
+in the sixth (whose design work was done inline in the main loop instead), and killed one proving
+agent mid-run in the seventh (a successor agent resumed cleanly from its clean partial state, no
+rework)) → statement-drift
 check vs the scaffold snapshot → full aggregator build → `#print axioms` on every public
 declaration (two-tier check) → adversarial statement-audit workflow (9 agents vs the paper in
 the fourth session, catching a docstring overclaim + three missing statement halves;
-single-auditor vs the module docstrings in the sixth, 12/12 FAITHFUL, SHIP — both caught real,
-fixable issues) → docs → commit. Fifth-session refinement, reused in the sixth: a **read-only
+single-auditor vs the module docstrings in the sixth, 12/12 FAITHFUL, SHIP; three separate
+single-auditor passes across the seventh session's two pushes, 12/12 then 8/8 FAITHFUL, SHIP —
+all caught real, fixable issues or confirmed none) → docs → commit. Fifth-session refinement,
+reused in the sixth and seventh: a **read-only
 dossier probe** (or, when rate-limited, an inline design pass) mapping the available API into
-per-module proof-route dossiers *before* scaffolding — all-first-try-green proving waves in both
-the fifth (3 parallel agents) and sixth (4 parallel agents) sessions. In a fresh worktree, clone
-the warm `.lake` from the main checkout with `cp -Rc` (~30 s) instead of rebuilding.
+per-module proof-route dossiers *before* scaffolding — all-first-try-green proving waves in the
+fifth (3 parallel agents), sixth (4 parallel agents), and seventh (scaffold-freeze → parallel
+sonnet-tier proving waves → a finisher-agent pass, per module wave) sessions. In a fresh worktree,
+clone the warm `.lake` from the main checkout with `cp -Rc` (~30 s) instead of rebuilding.
 
-**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently **`φ_W`:
+**Already DONE (do NOT re-attempt):** ALL of §1–§10 AND §11.2–§11.8 — most recently
+**sub-project A, the rooted transport** (`StdRootedBridge`/`GraphonRootedDensity`/
+`GraphonRootedHom`/`GraphonRootedMeasure`/`GraphonKernelTransport`, sessions 2026-07-10/11 #7: the
+rooted conditional homomorphism, the rooted-view-measure identification
+`rootedViewMeasure_eq_extend`, and the kernel-dictionary transport to
+`k4freeP4_graphon_tripartite` — the graphon-side content of `thm:k4free-p4-tripartite` (Thm 102);
+README Deviation 17; Tier-2 on the last three theorems only); before that **`φ_W`:
 every graphon is a positive homomorphism** (`GraphonInducedDensity`/`PairSubsetCount`/
 `EmptyTypeGraphBridge`/`GraphonHom`, session 2026-07-10 #6: the graphon→hom half of the
 representation bridge, `graphonHom`/`graphonProfile` via `positiveHomFromZeroSpaceOneMulProp`,
