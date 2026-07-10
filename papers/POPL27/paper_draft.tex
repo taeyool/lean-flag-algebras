@@ -87,6 +87,7 @@
 \newcommand{\leansmul}{\mathbin{\vcenter{\hbox{$\scriptstyle\bullet$}}}}
 \newcommand{\gw}[1]{\textcolor{red}{\textbf{[GW: #1]}}}
 \newcommand{\sh}[1]{\textcolor{red}{\textbf{[SH: #1]}}}
+\newcommand{\hy}[1]{\textcolor{blue}{\textbf{[HY: #1]}}}
 \newcommand{\Ext}{\operatorname{Ext}}
 
 \tikzset{
@@ -2594,11 +2595,10 @@ check the claimed value.  For example, the density
 \]
 from \Cref{ex:typed-edge-nonedge-product} is proved as follows:
 \begin{lstlisting}
-example
-    : flagDensity(*@$_2$@*)
-        Sym2Flag_2_1_0_0.toFlag
-        Sym2Flag_2_1_0_1.toFlag
-        Sym2Flag_3_1_0_1.toFlag = 1 / 2
+example : flagDensity(*@$_2$@*) 
+             Sym2Flag_2_1_0_0.toFlag 
+             Sym2Flag_2_1_0_1.toFlag
+             Sym2Flag_3_1_0_1.toFlag = 1 / 2
   := by
   rw [flagDensity(*@$_2$@*)_eq_sym2FlagDensity(*@$_2$@*)]
   native_decide
@@ -2612,13 +2612,9 @@ specification-level statement about
 \lean{flagDensity}$_2$.  The command \lean{rw} uses the adequacy theorem
 \lean{flagDensity}$_2$\lean{\_eq\_sym2FlagDensity}$_2$ and changes the goal to
 the closed reflection-layer computation
-\[
-  \text{\lean{sym2FlagDensity}}_2\,
-    \text{\lean{Sym2Flag\_2\_1\_0\_0}}\,
-    \text{\lean{Sym2Flag\_2\_1\_0\_1}}\,
-    \text{\lean{Sym2Flag\_3\_1\_0\_1}}
-  = 1 / 2.
-\]
+\begin{lstlisting}
+  sym2FlagDensity(*@$_2$@*)  Sym2Flag_2_1_0_0  Sym2Flag_2_1_0_1  Sym2Flag_3_1_0_1  =  1 / 2
+\end{lstlisting}
 \lean{native\_decide} is a Lean tactic for closing a decidable goal by running
 the corresponding executable computation.  Here it evaluates the
 reflection-layer density computation above and closes the goal.
@@ -2631,6 +2627,8 @@ evaluator is far more practical than reducing each one inside the slower Lean
 kernel.  The important mathematical reductions are still proved in Lean before
 this point; the native compiler is trusted only for the final evaluation of the
 closed finite computation.
+
+\hy{I am here.}
 
 The downward operator from \Cref{sec:formal-downward} follows the same
 reflection pattern.  The specification-level definition uses the abstract downward
