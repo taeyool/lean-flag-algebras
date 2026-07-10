@@ -90,6 +90,7 @@ import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
 import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
 import LeanFlagAlgebras.MetaTheory.GraphonStep
 import LeanFlagAlgebras.MetaTheory.GraphonCounting
+import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -509,4 +510,12 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   `graphonHomPoint` points.  With `positiveHomSpace_isClosed`, the representation theorem
   `exists_graphon_rep` is now equivalent to `IsClosed (Set.range graphonHomPoint)`
   (module 5, gated behind the design spike of `HOM_TO_GRAPHON_DESIGN.md`).
+* `GraphonRepresentation` — the Route-3 closure of Phase 4 (per the checkpoint-spike
+  verdict): `posHomPoint_eq_of_graphonProfileFun_eq`, the **unconditional paper-verbatim
+  Thm 102** `k4free_p4_tripartite_of_represents` (*every* graphon representing a point of
+  the `K₄`-free `P₄`-slice is a.e. the balanced complete tripartite graphon — the paper's
+  own quantifier, no representation-existence input needed), and the existence form
+  `k4free_p4_tripartite_of_rep_exists` conditional on the one named classical input of
+  Phase 4, `hrep` (Lovász–Szegedy existence; its retirement plan — the weak-regularity
+  campaign — is costed in the design doc).
 -/

@@ -186,14 +186,38 @@ the probe's own first sketch had a genuine bug.*
    `exists_graphonHomPoint_seq_tendsto (φ) : ∃ V : ℕ → Graphon, Tendsto (graphonHomPoint ∘ V) …`
    — **density of the graphon-hom range: DONE**.  **WE ARE NOW AT THE CHECKPOINT** — run the
    module-5 design spike; do not proceed on the unrepaired martingale route.
-5. `GraphonMartingaleLimit.lean` (name may change per the spike) — **the single riskiest
-   piece**: the `IsClosed (Set.range graphonHomPoint)` statement (equivalently graphon-space
-   compactness).  Est. 1500–3000+ lines as a FLOOR, no Mathlib precedent; route to be fixed by
-   the checkpoint spike.
-6. `GraphonRepresentation.lean` — assembly: `exists_graphon_rep` (= density + closedness), then
-   the Thm 102 / Cor 106 discharges replacing the `huniq` hypotheses in `SliceRecovery.lean`,
-   and the composition with `k4freeP4_graphon_tripartite` recovering the paper statements
-   verbatim.
+5. **CHECKPOINT SPIKE VERDICT (2026-07-11): Route 3 adopted; the regularity campaign is
+   deferred as a separately-budgeted project.**  The spike (i) *confirmed* the martingale gap
+   — the correct counterexample is the **hidden-bipartite-block** kernel (a fine checkerboard
+   is quasirandom and harmless; a bipartite kernel of density `1/2` hidden inside one coarse
+   cell predicts triangle density `1/8` but has `0`), and no `n`-independent nesting scheme
+   fixes it because the partition must *adapt to each graph's structure* — exactly what
+   (weak) regularity buys and nothing weaker does; (ii) costed the honest repair
+   (Frieze–Kannan weak regularity for kernels + FK counting lemma + a
+   continue-the-energy-increment nested chain + diagonal + genuine Doob martingale):
+   cut norm ~100–200 lines (absent from Mathlib), weak regularity ~400–700 (the
+   `condExpL2`/orthogonal-projection engine exists; the finite `Equitabilise` cost centre
+   disappears for kernels), FK counting ~250–450 (Mathlib has only the triangle case),
+   nested-diagonal-martingale ~350–600 (`Submartingale.ae_tendsto_limitProcess` applies;
+   Mathlib's packaged `szemeredi_regularity` restarts per call and is not reusable as a
+   dependency, only as a shape template), assembly ~200–400 — total ≈ 1300–2350 lines,
+   **6–10 sessions**; checkpoints after (cut norm + weak regularity), (counting lemma),
+   (martingale-diagonal).  Partition convention if/when built: measurable `I → Fin K` maps
+   (the `cellIdx` convention), feeding generated σ-algebras to Mathlib only at the
+   `condExpL2`/filtration boundary.  (iii) Observed that `exists_graphonHomPoint_seq_tendsto`
+   already reduces the target to literal textbook Lovász–Szegedy for a convergent sequence of
+   finite graphs.
+6. `GraphonRepresentation.lean` — **the Route-3 closure** (shipped with this revision): the
+   bridge `posHomPoint_eq_of_graphonProfileFun_eq`, the **unconditional paper-verbatim
+   Thm 102** `k4free_p4_tripartite_of_represents` (*every* graphon representing a point of the
+   slice is a.e. balanced tripartite — no `hrep` needed for this direction, which is the
+   paper's actual quantifier), and the `hrep`-conditional existence form
+   `k4free_p4_tripartite_of_rep_exists` with
+   `hrep : ∀ φ₀, ∃ W, ∀ F, graphonProfileFun W F = φ₀.coe F` as the one named classical input
+   of Phase 4 (standing convention of `hES`/`hZykov`; retire it by running the deferred
+   regularity campaign of item 5).  Cor 106 CANNOT yet get the same treatment even under
+   `hrep`: `Graphon.slice_rigidity` has no rooted-transport counterpart — a separate future
+   module in the sub-project-A style is required first.
 
 ## Non-goals
 

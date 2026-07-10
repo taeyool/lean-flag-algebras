@@ -33,7 +33,7 @@ half) remains; remaining partial-coverage caveats in README Deviations 14–17 +
 Prior sessions: `φ_W`, §11.5 identity halves,
 §11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
 `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8015 jobs green** (92 modules; "Build completed
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8016 jobs green** (93 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
@@ -49,15 +49,22 @@ graphons with the pointwise indicator identity (LITERAL graph equality
 `G.comap (cellIdx ∘ c) = H` — flag-class equality would be wrong pointwise), the counting lemma
 `graphonProfileFun_stepGraphon_sub_le` with explicit error `n(n−1)/N` (exact tuple-count
 formula, injective-tuple/subset-count bijection, birthday-bound defects), and the payoff
-`exists_graphonHomPoint_seq_tendsto`: **the graphon-hom range is dense in `X_∅`**.  Next
-targets: **THE MODULE-4→5 CHECKPOINT of `HOM_TO_GRAPHON_DESIGN.md` — a design-only spike is
-REQUIRED before any module-5 Lean**: the remaining piece of `exists_graphon_rep` is exactly
-`IsClosed (Set.range graphonHomPoint)` (graphon-space compactness); the naive "nested
-partitions + Doob" route has a recorded gap (the martingale averaging identity is not free
-across unrelated graphs — see the design doc's revised sub-project B section); candidate
-routes: regularity-lemma adaptation, a genuine fixed-space martingale device, or a direct
-attack on the `IsClosed` statement. Then `GraphonRepresentation` (assembly + Thm 102/Cor 106
-verbatim + `SliceRecovery` `huniq` discharge); optional
+`exists_graphonHomPoint_seq_tendsto`: **the graphon-hom range is dense in `X_∅`**.
+**THE CHECKPOINT SPIKE RAN AND ITS VERDICT SHIPPED (Route 3, `GraphonRepresentation.lean`;
+93 modules / 8016 jobs)**: the martingale gap was CONFIRMED (correct counterexample: a hidden
+bipartite block — a fine checkerboard is quasirandom and harmless; no `n`-independent nesting
+scheme adapts to each graph's structure, which is exactly what weak regularity buys); the
+honest repair (cut norm + Frieze–Kannan weak regularity via `condExpL2` + FK counting +
+nested-diagonal-martingale) is COSTED in the design doc at ≈1300–2350 lines / 6–10 sessions
+with its own checkpoints; and **Phase 4 is CLOSED in Route-3 form**:
+`k4free_p4_tripartite_of_represents` — the **unconditional paper-verbatim Thm 102** (every
+graphon representing a slice point is a.e. balanced tripartite; the paper's own quantifier
+runs over representatives, so no existence input is needed) — plus the existence form
+`k4free_p4_tripartite_of_rep_exists` under the ONE named classical input
+`hrep : ∀ φ₀, ∃ W, ∀ F, graphonProfileFun W F = φ₀.coe F` (Lovász–Szegedy existence, the
+standing `hES`/`hZykov` convention; retire it by running the costed regularity campaign).
+Cor 106 needs a `slice_rigidity` rooted-transport counterpart first (a future
+sub-project-A-style module). Optional next targets:
 **Phase 3: kernel-level Mantel uniqueness**; and the `R_τ⁻` kernel functional + Thm 112(iv); §12
 is open problems — prose, nothing to formalise.)
 
@@ -232,7 +239,7 @@ is open problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8015 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + rooted transport + step-graphon density)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8016 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + rooted transport + step-graphon density + Route-3 closure)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \

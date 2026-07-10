@@ -400,7 +400,7 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   additionally depend on `[Lean.ofReduceBool, Lean.trustCompiler]`, *inherited* from the
   `Automation` layer's `native_decide` bridges, not from any `native_decide` here; see
   [Axioms assumed](#axioms-assumed).
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 92 modules (8015 jobs); the full
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 93 modules (8016 jobs); the full
   project `lake build LeanFlagAlgebras` builds with §9–§11.8 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
@@ -1028,7 +1028,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 8015 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 8016 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -1198,7 +1198,7 @@ flag-algebra base.
 * **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.8 relative
   (slice) theory are formalised here (§11.4–§11.8 with the partial-coverage caveats listed in
   [Scope & limitations](#scope--limitations)).
-* **`*.lean`** — 92 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
+* **`*.lean`** — 93 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
   recently the five-module **rooted transport** (sub-project A of
   [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md)) — [`StdRootedBridge`](./StdRootedBridge.lean),
   [`GraphonRootedDensity`](./GraphonRootedDensity.lean), [`GraphonRootedHom`](./GraphonRootedHom.lean),
