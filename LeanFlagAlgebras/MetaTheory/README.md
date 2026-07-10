@@ -199,6 +199,42 @@ is now complete**, carrying `φ_W` all the way to the kernel hypotheses of `r3_r
 > Tier-2 (the last three theorems inherit the certificate-consumer axioms); everything upstream in
 > the stack is Tier-1.
 
+**Phase 4 was then closed in Route-3 form** ([`GraphonRepresentation.lean`](./GraphonRepresentation.lean),
+a prior session): **`k4free_p4_tripartite_of_represents`** is the unconditional, paper-verbatim
+`thm:k4free-p4-tripartite` (Thm 102) — every graphon *representing* a point of the slice is a.e.
+balanced tripartite, with no representation-existence input, since the paper's own quantifier runs
+over representatives — plus `k4free_p4_tripartite_of_rep_exists`, the existence form conditional on
+the one named classical input `hrep` (Lovász–Szegedy existence). This session's wave extends that
+closure to Cor 106 and Thm 112(iv):
+
+> **`GraphonParametricTransport`/`ParametricStabilityModulus`** — the general-`r` rooted transport
+> and the last two open pieces of §11.8, **`cor:top-endpoint-recovery` (Cor 106)** and
+> **`thm:parametric-quant-stability` (iv) (Thm 112(iv))**, both now formalised. The `R_τ⁻` kernel
+> functional (`Graphon.RtauMinus := ∫∫W(x,y)(d(x)−d(y))²`) is defined with its a.e.
+> characterisation, and the **hom→kernel bridge** `graphonHom_f₂_eq_RtauMinus : φ_W(f₂) = R_τ⁻(W)`
+> is proved via the extension-measure spec at the edge type — **no new density computations**, the
+> same route that discharges the kernel-level third clause of Thm 112(i)
+> (`parametricP4_graphon_RtauMinus_le`/`_eq_zero`). The general-`r` rooted transports
+> `parametricP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` mirror the shipped `r = 3` ones; the kernel-level
+> Cor 106, `parametricP4_graphon_top_endpoint_rigidity`, shows that slice membership plus the single
+> scalar pin `edgeDensity = α_r⁺` — in place of the Zykov equality case — identify the graphon a.e.
+> with the balanced complete `r`-partite graphon (`Graphon.slice_rigidity` with all hypotheses
+> discharged); `parametricP4_top_endpoint_of_represents`/`_of_rep_exists` package this paper-verbatim,
+> mirroring the `GraphonRepresentation` pattern above. Independently,
+> `parametric_stability_via_modulus`/`parametric_graphon_stability_via_modulus`
+> (`ParametricStabilityModulus.lean`) close Thm 112(iv): the certificate deficit forces the `K₄`
+> density near-extremal (`parametricP4_K4_density_approx`), triggering the assumed Zykov stability
+> modulus — notably **without using the Zykov bound hypothesis at all** (the `K₄`-density
+> approximation drops the certificate's Zykov term without needing its sign, so the modulus itself is
+> the only classical content). Both new modules are Tier-2 (they consume the certificate-supplied
+> slice equations / the `K₄`-density approximation).
+>
+> With this wave, **every numbered result of §11 is formalised**, modulo exactly **four permanent
+> named classical inputs** the paper itself cites as external theorems — Erdős–Simonovits stability,
+> Zykov's `K₄`-density *bound* (`r ≥ 4`), its *equality case*, and Lovász–Szegedy existence — see
+> [Scope & limitations](#scope--limitations). (`paper.tex` §11 was itself surgically revised this
+> session to align its statements with the formalisation — Deviation 18.)
+
 Everything here is **machine-checked and `sorry`-free**: "a result is verified" means the Lean
 kernel accepts its proof with no `sorry`, `admit`, `native_decide`, or new `axiom` in this
 directory. One caveat is inherited rather than local: the §11.6–§11.7 theorems that consume the
@@ -291,17 +327,18 @@ for conventions and a suggested reading order see **[`READING_GUIDE.md`](./READI
 | §11.5 `thm:relative-mantel` (Thm 92) | likewise at `r = 2` (the Mantel slice): existence unconditional, and — under `hES` — clause (i), the relative-support edge pinning at `1/2` (`relative_mantel_vtype`, exactly `MantelNotPlantable`'s `hpin`); the `τ`/`η` clauses are the `r = 2` instances of the parametric identities | `mantelSlice`, `mantelSlice_nonempty`, `relative_mantel_vtype` | [`TuranLimit`](./TuranLimit.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
 | §11.6 `prop:equality-slice-vanishing` (Prop 94) | equality slices force certificate terms to vanish: a certificate `h + ∑ λᵢ ⟦ℓᵢ²⟧₀ ≤ c·1₀` on `Q₀` makes every `ℓᵢ` vanish identically on `S_{σᵢ}(Y)` over the slice `Y = {φ₀ : φ₀ h = c}` | `equality_slice_vanishing`, `eqSlice` | [`CertificateSliceVanishing`](./CertificateSliceVanishing.lean) |
 | §11.6 `thm:k4free-p4-equality-slice` (Thm 95) | the `K₄`-free `P₄` equality-slice equations at the non-edge/edge types — **unconditional at `r = 3`** (no Zykov input) | `k4freeP4_eta_equation`, `k4freeP4_tau_symm`, `k4freeP4_tau_equation`, `k4freeP4Slice` (`k4freeP4Slice_eq_parametric`) | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
-| §11.6 `thm:parametric-p4-equality-slice` (Thm 97) | the parametric slice equations `(r-1)·z_η = g_η`, `a_τ = b_τ`, `(r-2)(a_τ+b_τ) = 2g_τ`, and the extremal `K₄` density on `Y_r` (Zykov bound as the explicit hypothesis `hZykov` — Deviation 14a) | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
+| §11.6 `thm:parametric-p4-equality-slice` (Thm 97) | the parametric slice equations `(r-1)·z_η = g_η`, `a_τ = b_τ`, `(r-2)(a_τ+b_τ) = 2g_τ`, and the extremal `K₄` density on `Y_r` (Zykov bound as the explicit hypothesis `hZykov` — Deviation 14a; the paper's restated Thm 97 now names this bound explicitly for `r ≥ 4` too, matching `hZykov` here — Deviation 18) | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
 | §11.7 `thm:parametric-moments` (Thm 99) | the exact kernel-level moment identities `(r-1)T = (r-2)D`, `r(2r-3)D = (r-1)²(3p-1)`, the variance factorisation, the interval `α⁻ ≤ p ≤ α⁺` with regularity at the endpoints (on `unitInterval` graphons — Deviation 14b) | `Graphon.moments_T` / `_D` / `_variance` / `_interval` / `_regular_iff` | [`GraphonMoments`](./GraphonMoments.lean) |
 | §11.7 `thm:slice-rigidity` (Thm 100) | rigidity at the regular endpoint: the two mined local equations at `p = (r-1)/r` force the balanced complete `r`-partite graphon, in measurable-partition form (`P : I → Fin r`, fibers of volume `1/r`, `W = 0/1` by block a.e. — Deviation 14c) | `Graphon.slice_rigidity` | [`GraphonRigidity`](./GraphonRigidity.lean) |
 | §11.7 `cor:r3-rigidity` (Cor 101) | unconditional rigidity at `r = 3` (the two endpoints coincide, so no edge-density hypothesis) | `Graphon.r3_rigidity` | [`GraphonRigidity`](./GraphonRigidity.lean) |
 | §11.7 `cor:k4free-p4-qualitative-stability` (Cor 104) | qualitative stability for the `K₄`-free `P₄` problem (singleton slice identification as the explicit hypothesis `huniq` — its content is Thm 102, whose kernel engine `r3_rigidity` **is** formalised) | `k4free_qualitative_stability` | [`SliceRecovery`](./SliceRecovery.lean) |
 | §11.7 `cor:parametric-p4-turan-recovery` (Cor 105) — **COMPLETE** | the recovery half: Zykov equality (`hZykEq` hypothesis) collapses the parametric slice to `{χ★}`; **and** the "consequently" support identities at all three types (Tier-2, inherited via `parametric_recovery`). Benign deviation: Lean assumes `3 ≤ r` where the paper says `r ≥ 4` — a hypothesis weakening (at `r = 3` the `hZykEq` input degenerates but the statement stays sound as a conditional; Deviation 15c) | `parametric_recovery`, `parametric_recovery_identities` | [`SliceRecovery`](./SliceRecovery.lean), [`TuranSliceIdentities`](./TuranSliceIdentities.lean) |
+| §11.7 `cor:top-endpoint-recovery` (Cor 106) — **COMPLETE** | the single scalar pin `edgeDensity = α_r⁺` — in place of the Zykov equality case — identifies a representing graphon a.e. with the balanced complete `r`-partite graphon: the kernel-level rigidity (`Graphon.slice_rigidity` with all hypotheses discharged), the paper-verbatim representative-quantified form (unconditional, no representation-existence input, mirroring Thm 102's `k4free_p4_tripartite_of_represents`), and the `hrep`-conditional existence form. Stated at `3 ≤ r` (benign generalisation, same pattern as Cor 105 — Deviation 15c) | `parametricP4_graphon_top_endpoint_rigidity`, `parametricP4_top_endpoint_of_represents`, `parametricP4_top_endpoint_of_rep_exists` | [`GraphonParametricTransport`](./GraphonParametricTransport.lean) |
 | §11.7 `cor:parametric-qualitative-stability` (Cor 107) | parametric qualitative stability: extremal `P₄`-density sequences converge to the balanced `r`-partite limit (under `hZykov`/`hZykEq`/`hne`) | `parametric_qualitative_stability` | [`SliceRecovery`](./SliceRecovery.lean) |
 | §11.8 `thm:approximate-moments` (Thm 109) | the approximate moment identities, certificate-free, for **every** graphon: deviation `≤ (r-1)√R_η + ((r-2)/2)√R_τ` | `Graphon.approximate_moments` (`_interval` / `_variance`) | [`GraphonMoments`](./GraphonMoments.lean) |
-| §11.8 `prop:k4free-p4-certificate-stability` (Prop 110) — **PARTIAL** | the hom level: the certificate square bounds (the `9/8`, `1/5`, `9/35` pattern after dividing by the coefficients); the kernel-level `R`-integrals enter `GraphonQuantStability` as hypotheses (the kernel functional `R_τ⁻ = ∫W(d(x)−d(y))²` itself is not defined — future work) | `parametricP4_sq_bounds` | [`ParametricP4Slice`](./ParametricP4Slice.lean) |
+| §11.8 `prop:k4free-p4-certificate-stability` (Prop 110) — **COMPLETE** | the hom level: the certificate square bounds (the `9/8`, `1/5`, `9/35` pattern after dividing by the coefficients); **the `R_τ⁻` kernel functional is now defined** (`Graphon.RtauMinus := ∫∫W(d(x)−d(y))²`, with its a.e. characterisation), and its bound against `Δ` is now proved at the kernel level via the hom→kernel bridge `graphonHom_f₂_eq_RtauMinus`, rather than entering `GraphonQuantStability` as a bare hypothesis | `parametricP4_sq_bounds`; `Graphon.RtauMinus`, `graphonHom_f₂_eq_RtauMinus`, `parametricP4_graphon_RtauMinus_le`/`_eq_zero` | [`ParametricP4Slice`](./ParametricP4Slice.lean), [`GraphonParametricTransport`](./GraphonParametricTransport.lean) |
 | §11.8 `thm:k4free-p4-quant-stability` (Thm 111) | the `r = 3` quantitative chain: `(3p-2)² ≤ C`, degree concentration, the `Δ^{1/4}` edge-density stability, the certificate instance, and the final modulus implication (`ω_Tur` abstracted as a target-predicate modulus; `δ□` not formalised — Deviation 14d) | `Graphon.r3_edge_sq_bound`, `r3_degree_concentration`, `r3_edge_density_stability`, `r3_certificate_instance`, `stability_via_modulus` | [`GraphonQuantStability`](./GraphonQuantStability.lean) |
-| §11.8 `thm:parametric-quant-stability` (Thm 112) — **PARTIAL** | (i) hom level: the square bounds; (ii) hom level: the approximate `K₄` density — notably **without** Zykov input; (iii) both sides: quadratic confinement and interval localisation (both halves); (iv) the `ω_Zyk` kernel route is **not** formalised | (i) `parametricP4_sq_bounds`; (ii) `parametricP4_K4_density_approx`; (iii) `Graphon.interval_localisation` / `_below` (+ `quadratic_confinement`, `moment_deviation_bound`) | [`ParametricP4Slice`](./ParametricP4Slice.lean), [`GraphonQuantStability`](./GraphonQuantStability.lean) |
+| §11.8 `thm:parametric-quant-stability` (Thm 112) — **COMPLETE** | (i) hom level: the square bounds, plus the kernel-level third clause `p₂(r)·R_τ⁻(W) ≤ Δ`; (ii) hom level: the approximate `K₄` density — notably **without** Zykov input; (iii) both sides: quadratic confinement and interval localisation (both halves); (iv) the `ω_Zyk` route is **now formalised** — notably, also **without** needing the Zykov bound hypothesis (the `K₄`-density approximation drops the certificate's Zykov term without using its sign, so the modulus `hmod` is the only classical content) | (i) `parametricP4_sq_bounds`, `parametricP4_graphon_RtauMinus_le`; (ii) `parametricP4_K4_density_approx`; (iii) `Graphon.interval_localisation` / `_below` (+ `quadratic_confinement`, `moment_deviation_bound`); (iv) `parametric_stability_via_modulus`, `parametric_graphon_stability_via_modulus` | [`ParametricP4Slice`](./ParametricP4Slice.lean), [`GraphonQuantStability`](./GraphonQuantStability.lean), [`GraphonParametricTransport`](./GraphonParametricTransport.lean), [`ParametricStabilityModulus`](./ParametricStabilityModulus.lean) |
 
 A **new supporting theorem** that does not appear as a numbered result in the paper but is the
 foundational input to `thm:clone-root-plantable`:
@@ -331,8 +368,8 @@ support `S_σ(Y)` with `lem:relative-closure` / `prop:relative-soundness` / `pro
 and the complementary-slackness principle `thm:relative-slackness` with `lem:relative-cauchy-schwarz`,
 `cor:sos-first-moments`, `thm:kernel-slackness`, `prop:unique-slice-stability`) in the
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness` modules (Deviation 13).
-**§11.4–§11.8 — the slice method and the graphon layer — is formalised too** (the rows above;
-partial coverage marked **PARTIAL**; Deviations 14–15): §11.4 in full
+**§11.4–§11.8 — the slice method and the graphon layer — is now formalised in full** (the rows
+above; Deviations 14–15, 18): §11.4 in full
 (`def:relative-plantability`/`prop:relative-plantability`/`prop:mantel-not-plantable`/
 `thm:relative-certificate-gap`/`thm:relative-positivstellensatz`), the §11.5 Turán/Mantel slice
 theorems (existence unconditional; the identity halves under the named Erdős–Simonovits
@@ -342,15 +379,25 @@ results (`prop:equality-slice-vanishing`
 and the two `P₄` slice theorems, fed by the verified `CompleteGraphFreeP4.gap_identity`
 certificate), the §11.7–§11.8 kernel-level moment / rigidity / quantitative-stability theorems in a
 self-contained graphon layer, and the recovery / qualitative-stability corollaries with classical
-inputs as named hypotheses (Deviation 14a) — Cor 105 now **complete**, including its
+inputs as named hypotheses (Deviation 14a) — Cor 105 **complete**, including its
 "consequently" support identities (`parametric_recovery_identities`). The rooted transport
-(sub-project A of `HOM_TO_GRAPHON_DESIGN.md`, five modules ending at `GraphonKernelTransport`) now
+(sub-project A of `HOM_TO_GRAPHON_DESIGN.md`, five modules ending at `GraphonKernelTransport`)
 carries the `K₄`-free `P₄`-slice equations all the way to `Graphon.r3_rigidity`'s a.e. kernel
 hypotheses, discharging both of them (`k4freeP4_graphon_tripartite`) — the graphon-side content of
-`thm:k4free-p4-tripartite` (Thm 102). The remaining piece of the graphon⟷hom representation bridge
-(Lovász–Szegedy) is the **existence** half — every homomorphism is represented by *some* graphon
-(sub-project B) — needed to compose `k4freeP4_graphon_tripartite` into Thm 102 / Cor 106 verbatim;
-Thm 102's hom avatar still enters `SliceRecovery` as the `huniq` hypothesis pending that half. The
+`thm:k4free-p4-tripartite` (Thm 102). **Route-3 then closes Thm 102 itself**
+([`GraphonRepresentation.lean`](./GraphonRepresentation.lean), a prior session):
+`k4free_p4_tripartite_of_represents` is the unconditional, paper-verbatim statement (the paper's
+own quantifier runs over *representing* graphons, so no representation-existence input is needed),
+plus `k4free_p4_tripartite_of_rep_exists` conditional on the one named classical input `hrep`
+(Lovász–Szegedy existence). **This session's wave closes the two pieces that remained the same
+way**: Cor 106 (`GraphonParametricTransport.lean`'s `parametricP4_top_endpoint_of_represents` /
+`_of_rep_exists`) and Thm 112(iv) (`ParametricStabilityModulus.lean`'s
+`parametric_stability_via_modulus`). **Every numbered result of §11 is now formalised**, modulo
+exactly the four permanent named classical inputs of [Scope & limitations](#scope--limitations) —
+Erdős–Simonovits stability, Zykov's `K₄`-density bound and its equality case, and
+Lovász–Szegedy existence (`hrep`, retirable only by the costed weak-regularity campaign of
+`HOM_TO_GRAPHON_DESIGN.md`). (`SliceRecovery`'s `huniq` hypothesis for Cor 104 is a separate,
+optional-to-retire hom-level shortcut untouched by this wave.) The
 only §9 result still open is the general pinning *conjecture* `conj:characterisation` — see
 [Scope & limitations](#scope--limitations).
 
@@ -393,14 +440,21 @@ correspondence by hand, is in [Auditing the correspondence to `paper.tex`](#audi
   no `sorryAx`. **The one exception (Tier 2):** the theorems consuming the verified parametric
   certificate `CompleteGraphFreeP4.gap_identity` — the `parametricP4_*` / `k4freeP4_*` slice
   equations and `SliceRecovery`'s `parametric_recovery` / `parametric_qualitative_stability`, plus
-  `parametric_recovery_identities` (which inherits through `parametric_recovery`), and now
+  `parametric_recovery_identities` (which inherits through `parametric_recovery`),
   `GraphonKernelTransport`'s `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero` /
   `k4freeP4_graphon_tripartite` (which inherit through the `k4freeP4_*` slice equations they
-  transport into kernel form) —
+  transport into kernel form), `GraphonRepresentation`'s `k4free_p4_tripartite_of_represents` /
+  `k4free_p4_tripartite_of_rep_exists` (which inherit through `k4freeP4_graphon_tripartite`), and now
+  `GraphonParametricTransport`'s `parametricP4_graphon_Rtau_eq_zero` / `_Reta_eq_zero` /
+  `_RtauMinus_le` / `_RtauMinus_eq_zero` / `_top_endpoint_rigidity` /
+  `parametricP4_top_endpoint_of_represents` / `_of_rep_exists`, plus
+  `ParametricStabilityModulus`'s `parametric_stability_via_modulus` /
+  `parametric_graphon_stability_via_modulus` (which inherit through `parametricP4_sq_bounds` /
+  `parametricP4_K4_density_approx`) —
   additionally depend on `[Lean.ofReduceBool, Lean.trustCompiler]`, *inherited* from the
   `Automation` layer's `native_decide` bridges, not from any `native_decide` here; see
   [Axioms assumed](#axioms-assumed).
-* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 93 modules (8016 jobs); the full
+* **Builds.** `lake build LeanFlagAlgebras.MetaTheory` compiles all 95 modules (8018 jobs); the full
   project `lake build LeanFlagAlgebras` builds with §9–§11.8 integrated.
 * **One non-default option.** Two §8 declarations carry `set_option maxHeartbeats …` (1000000 on
   `sparseRootRepair_finitePlanting`, 800000 on `c5FreeClass_sparseRootRepair_oneVertex`) — a raise of
@@ -461,9 +515,16 @@ the headline theorems of every section.
 `parametricP4_K4_density_approx`, its `r = 3` forms `k4freeP4_eta_equation` / `k4freeP4_tau_symm` /
 `k4freeP4_tau_equation`, `SliceRecovery`'s `parametric_recovery` /
 `parametric_qualitative_stability`, `TuranSliceIdentities`'s
-`parametric_recovery_identities` (inherited via `parametric_recovery`), and
+`parametric_recovery_identities` (inherited via `parametric_recovery`),
 `GraphonKernelTransport`'s `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero` /
-`k4freeP4_graphon_tripartite` (inherited via the `k4freeP4_*` slice equations they consume) —
+`k4freeP4_graphon_tripartite` (inherited via the `k4freeP4_*` slice equations they consume),
+`GraphonRepresentation`'s `k4free_p4_tripartite_of_represents` / `k4free_p4_tripartite_of_rep_exists`
+(inherited via `k4freeP4_graphon_tripartite`), `GraphonParametricTransport`'s
+`parametricP4_graphon_Rtau_eq_zero` / `_Reta_eq_zero` / `_RtauMinus_le` / `_RtauMinus_eq_zero` /
+`_top_endpoint_rigidity` / `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` (inherited via
+the general-`r` slice equations, and via `parametricP4_sq_bounds`), and
+`ParametricStabilityModulus`'s `parametric_stability_via_modulus` /
+`parametric_graphon_stability_via_modulus` (inherited via `parametricP4_K4_density_approx`) —
 additionally depend on
 
 ```
@@ -526,9 +587,10 @@ kinds:
   in place of the paper's graphon computation at `T_r` (Deviation 15a).
 * **Scope** — a paper result formalised only in part: the abstract `cor:degenerate-family` criterion
   without its named extremal-bound instances (Deviation 9c), the positive half of
-  `cor:cluster-graphs` (Deviation 7), and the §11.4–§11.8 partial-coverage items — classical
-  inputs as named hypotheses, kernel-side `R`-bounds as hypotheses, partial theorem halves
-  (Deviation 14, and the **PARTIAL** rows of the results table).
+  `cor:cluster-graphs` (Deviation 7), and the §11.4–§11.8 classical inputs as named hypotheses
+  (Deviation 14) — as of this session every §11 result table row is either **COMPLETE** or
+  formalised outright; the only genuine partial-coverage item left is `cor:degenerate-family`
+  above.
 * **Packaging / minor generalisation** — structural repackaging and statements proved slightly more
   generally than needed (Deviations 4, 6).
 
@@ -787,8 +849,9 @@ Each is detailed below and in the relevant module's header.
       (`relative_slackness_exact_ae_sq` / `relative_slackness_global_sq`).
 
 14. **§11.4–§11.8 formalisation choices (the slice method + the graphon layer).** The applied
-    slice results are formalised faithfully where they are formalised at all (partial coverage is
-    marked **PARTIAL** in the tables); the deliberate choices are:
+    slice results are formalised faithfully (as of this session every result-table row for §11 is
+    **COMPLETE**, modulo the four permanent classical inputs — see [Scope &
+    limitations](#scope--limitations)); the deliberate choices are:
     * **(a) Classical inputs are named hypotheses, not axioms.** Erdős–Simonovits uniqueness of
       the extremal Turán/Mantel limits enters as `hpin` (`mantel_not_relatively_plantable`; since
       the §11.5 identity wave, `hpin` is itself a theorem under the ES hypothesis `hES` —
@@ -903,6 +966,46 @@ Each is detailed below and in the relevant module's header.
     verbatim (any `φ₀ ∈ k4freeP4Slice` has *some* representing `W`, and `hmem` holds for it by
     construction).
 
+18. **`paper.tex` §11 was surgically revised this session to align its statements with the
+    formalisation** — a *paper*-side change, not a Lean deviation, recorded here because it
+    explains why several rows above now read differently from older commits. No environment was
+    added or removed (the shared theorem counter and every cross-reference are untouched; verified
+    by diff and a clean `latexmk` build with zero undefined references). The edits:
+    * a new standing paragraph at the head of §11 names the classical results that enter as
+      unproved external inputs and fixes the convention that every dependence on one is an
+      explicit hypothesis of the result that uses it;
+    * Thm 91 (`thm:turan-slice`) and Thm 92 (`thm:relative-mantel`) are each split into an
+      unconditional *existence* half and an Erdős–Simonovits-*conditional* uniqueness half, with
+      the exact ES instance stated as a hypothesis (matching `turanSlice_nonempty`/`hES` here);
+    * Prop 86 (`prop:mantel-not-plantable`) now names its inherited ES hypothesis in the statement
+      instead of letting it enter silently through a citation of Thm 92;
+    * Thm 102 (`thm:k4free-p4-tripartite`) is restated with the quantifier over *representing*
+      graphons and the two positive-root-mass hypotheses made explicit — matching
+      `k4free_p4_tripartite_of_represents` verbatim;
+    * Cor 105 (`cor:parametric-p4-turan-recovery`) is widened from `r ≥ 4` to `r ≥ 3` (the
+      formalisation proves the wider range; at `r = 3` the Zykov hypothesis is redundant by
+      `cor:r3-rigidity`);
+    * Cor 106 (`cor:top-endpoint-recovery`) is restated in the same representative-quantified
+      shape as Thm 102 — matching `parametricP4_top_endpoint_of_represents` verbatim — and widened
+      from `r ≥ 4` to `r ≥ 3` in the "consequently" recovery corollary;
+    * Thm 97 (`thm:parametric-p4-equality-slice`) now states Zykov's `K₄`-density *bound* (the
+      plain inequality, not the equality case) as an explicit hypothesis for `r ≥ 4` — see the
+      audit catch below;
+    * Thm 112(iv) and Prop 110 needed no change: their hypothesis shape (an explicit Zykov-equality
+      hypothesis, an assumed modulus `ω_Zyk`) already matched the formalisation convention.
+
+    **The audit's catch.** The first revision pass wrote the standing paragraph as "**three**
+    classical theorems enter as unproved external inputs" (Erdős–Simonovits stability, Zykov
+    *equality*, Lovász–Szegedy existence) — but Thm 97/Thm 112(i)–(iii) already depend on Zykov's
+    `K₄`-density *bound* (`hZykov` here, the plain inequality, logically distinct from its equality
+    case `hZykEq`) as a genuine fourth external input, used unconditionally for `r ≥ 4` even where
+    the equality case is never invoked. A probe caught the gap; the paragraph was corrected to
+    "**four** classical results" (adding the bound alongside the equality case) and Thm 97's
+    statement was given the bound as an explicit hypothesis to match. **The Lean was already the
+    more honest of the two**: `parametricP4_K4_density`/`parametricP4_eta_equation`/etc. have always
+    taken `hZykov` as a separate named hypothesis from `hZykEq`; the paper briefly under-stated its
+    own dependency count until this fix.
+
 None of these changes the theorems being proved; they are formalisation choices, and each is
 documented in the relevant module's header.
 
@@ -1008,15 +1111,15 @@ those definitions once and the meaning of every "`S_σ = Q_σ`" conclusion is fi
 | `thm:parametric-moments` (Thm 99, l.4877) | `Graphon.moments_T` ([`GraphonMoments.lean`](./GraphonMoments.lean) l.497), `moments_D` (l.508), `moments_variance` (l.521), `moments_interval` (l.537), `moments_regular_iff` (l.562) | kernel level, on `unitInterval` graphons (Deviation 14b): from `R_τ = 0` / `R_η = 0` (the a.e. forms are `Rtau_eq_zero_iff_ae` / `Reta_eq_zero_iff_ae`), the identities (i)–(iv): `(r-1)T = (r-2)D`, `r(2r-3)D = (r-1)²(3p-1)`, `D - p² = (α⁺-p)(p-α⁻)`, `α⁻ ≤ p ≤ α⁺` with degree-regularity exactly at the endpoints |
 | `thm:slice-rigidity` (Thm 100, l.4965) | `Graphon.slice_rigidity` ([`GraphonRigidity.lean`](./GraphonRigidity.lean) l.593) | conclusion in **measurable-partition form** (Deviation 14c): a measurable `P : I → Fin r` with all fibers of volume `1/r` such that a.e. `W = 0` on same-colour and `W = 1` on different-colour pairs — the paper's "up to relabelling, `T_r`" minus the cosmetic relabelling |
 | `cor:r3-rigidity` (Cor 101, l.5021) | `Graphon.r3_rigidity` ([`GraphonRigidity.lean`](./GraphonRigidity.lean) l.799) | at `r = 3` the endpoints coincide, so the edge-density hypothesis disappears: the two local equations alone force the balanced tripartite partition form |
-| `thm:k4free-p4-tripartite` (Thm 102, l.5035) — **graphon side COMPLETE, statement pending sub-project B** | `k4freeP4_graphon_tripartite` ([`GraphonKernelTransport.lean`](./GraphonKernelTransport.lean)) | the rooted transport discharges both `r3_rigidity` hypotheses from the `K₄`-free `P₄`-slice membership `hmem` — this **is** the graphon-side content of Thm 102; the statement needs the graphon⟷hom representation (Lovász–Szegedy) **existence** half (sub-project B) to read verbatim; its hom avatar still enters [`SliceRecovery`](./SliceRecovery.lean) as the `huniq` hypothesis |
+| `thm:k4free-p4-tripartite` (Thm 102, l.5035) — **COMPLETE (Route-3 form)** | `k4free_p4_tripartite_of_represents` / `k4free_p4_tripartite_of_rep_exists` ([`GraphonRepresentation.lean`](./GraphonRepresentation.lean)); kernel engine `k4freeP4_graphon_tripartite` ([`GraphonKernelTransport.lean`](./GraphonKernelTransport.lean)) | the rooted transport discharges both `r3_rigidity` hypotheses from the `K₄`-free `P₄`-slice membership `hmem`; `k4free_p4_tripartite_of_represents` composes this with profile agreement to give the **unconditional, paper-verbatim** statement, quantified over *representing* graphons (no representation-existence input — the paper's own quantifier shape); `_of_rep_exists` additionally supplies the existence half, conditional on the one named classical input `hrep` (Lovász–Szegedy existence); its hom avatar still separately enters [`SliceRecovery`](./SliceRecovery.lean) as the `huniq` hypothesis for Cor 104, untouched by this closure |
 | `cor:k4free-p4-qualitative-stability` (Cor 104, l.5072) | `k4free_qualitative_stability` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.106) | every `K₄`-free sequence with `P₄` density `→ 32/9` converges to the balanced tripartite limit, **given** the singleton slice identification `huniq` (= Thm 102's conclusion, hypothesis-ised) |
 | `cor:parametric-p4-turan-recovery` (Cor 105, l.5096) — **COMPLETE** | `parametric_recovery` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.36); the "consequently" clauses `parametric_recovery_identities` ([`TuranSliceIdentities.lean`](./TuranSliceIdentities.lean) l.1720) | the first half: under `hZykov` and the Zykov **equality case** `hZykEq`, the parametric slice collapses to `{χ★}`; the "consequently" support identities then follow at all three types (composing with the `turanLimit_relSσ_*` singletons). Mind the benign deviation `3 ≤ r` vs the paper's `r ≥ 4` (Deviation 15c); **Tier-2 axioms** |
-| `cor:top-endpoint-recovery` (Cor 106, l.5138) — **NOT formalised** | (kernel engine: `Graphon.slice_rigidity`, above) | needs the same representation bridge as Thm 102; the kernel engine (`slice_rigidity`) is done |
+| `cor:top-endpoint-recovery` (Cor 106, l.5138) — **COMPLETE** | `parametricP4_graphon_top_endpoint_rigidity` (kernel level), `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` (paper-verbatim / `hrep`-conditional) ([`GraphonParametricTransport.lean`](./GraphonParametricTransport.lean)) | the same Route-3 pattern as Thm 102, now run at general `r ≥ 3`: `Graphon.slice_rigidity` with the edge-density pin `edgeDensity = α_r⁺` (in place of the Zykov equality case) discharged from slice membership, then composed with profile agreement into the representative-quantified, `hrep`-conditional forms |
 | `cor:parametric-qualitative-stability` (Cor 107, l.5153) | `parametric_qualitative_stability` ([`SliceRecovery.lean`](./SliceRecovery.lean) l.69) | extremal `P₄`-density sequences converge to `χ★`, under `hZykov`/`hZykEq`/`hne` (via `unique_slice_stability`); **Tier-2 axioms** |
 | `thm:approximate-moments` (Thm 109, l.5201) | `Graphon.approximate_moments` ([`GraphonMoments.lean`](./GraphonMoments.lean) l.415), `_interval` (l.446), `_variance` (l.465) | certificate-free, for **every** graphon: the moment-identity deviations are `≤ (r-1)·√R_η + ((r-2)/2)·√R_τ` |
-| `prop:k4free-p4-certificate-stability` (Prop 110, l.5290) — **PARTIAL** | hom level: `parametricP4_sq_bounds` ([`ParametricP4Slice.lean`](./ParametricP4Slice.lean) l.200) | the certificate square bounds — the `9/8`, `1/5`, `9/35` pattern after dividing by the coefficients; the kernel-level `R`-integrals enter [`GraphonQuantStability`](./GraphonQuantStability.lean) as hypotheses, and the kernel functional `R_τ⁻ = ∫W(d(x)−d(y))²` is **not defined** (future work; Deviation 14b); **Tier-2 axioms** (hom half) |
+| `prop:k4free-p4-certificate-stability` (Prop 110, l.5290) — **COMPLETE** | hom level: `parametricP4_sq_bounds` ([`ParametricP4Slice.lean`](./ParametricP4Slice.lean) l.200); kernel level: `Graphon.RtauMinus`, `graphonHom_f₂_eq_RtauMinus`, `parametricP4_graphon_RtauMinus_le`/`_eq_zero` ([`GraphonParametricTransport.lean`](./GraphonParametricTransport.lean)) | the certificate square bounds — the `9/8`, `1/5`, `9/35` pattern after dividing by the coefficients; the kernel functional `R_τ⁻ = ∫∫W(d(x)−d(y))²` **is now defined**, with the hom→kernel bridge `graphonHom_f₂_eq_RtauMinus : φ_W(f₂) = R_τ⁻(W)` (via the extension-measure spec, no new density computations) replacing the former bare `R`-bound hypothesis; **Tier-2 axioms** (both halves) |
 | `thm:k4free-p4-quant-stability` (Thm 111, l.5345) | `Graphon.r3_edge_sq_bound` ([`GraphonQuantStability.lean`](./GraphonQuantStability.lean) l.195), `r3_degree_concentration` (l.210), `r3_edge_density_stability` (l.226), `r3_certificate_instance` (l.244), `stability_via_modulus` (l.291) | the `r = 3` chain: `(3p-2)² ≤ C`, `9·∫(d-p)²` concentration, `|p - 2/3| ≤ (1/3)√C` with the `(3/√2 + 3/(2√35))√Δ` certificate instance, and the final implication with `ω_Tur` abstracted as a target-predicate modulus `hmod` (`δ□` not formalised — Deviation 14d) |
-| `thm:parametric-quant-stability` (Thm 112, l.5418) — **PARTIAL** | (i) `parametricP4_sq_bounds` ([`ParametricP4Slice.lean`](./ParametricP4Slice.lean) l.200); (ii) `parametricP4_K4_density_approx` (l.217); (iii) `Graphon.interval_localisation` ([`GraphonQuantStability.lean`](./GraphonQuantStability.lean) l.104), `interval_localisation_below` (l.148), `quadratic_confinement` (l.45), `moment_deviation_bound` (l.63) | (i) hom level; (ii) hom level, notably **without** Zykov input; (iii) formalised on **both** sides (quadratic confinement + both interval-localisation halves, `r ≥ 4`); (iv) the `ω_Zyk` kernel route is **not** formalised (documented in `stability_via_modulus`'s docstring); the hom halves are **Tier-2** |
+| `thm:parametric-quant-stability` (Thm 112, l.5418) — **COMPLETE** | (i) `parametricP4_sq_bounds` ([`ParametricP4Slice.lean`](./ParametricP4Slice.lean) l.200), `parametricP4_graphon_RtauMinus_le` ([`GraphonParametricTransport.lean`](./GraphonParametricTransport.lean)); (ii) `parametricP4_K4_density_approx` (l.217); (iii) `Graphon.interval_localisation` ([`GraphonQuantStability.lean`](./GraphonQuantStability.lean) l.104), `interval_localisation_below` (l.148), `quadratic_confinement` (l.45), `moment_deviation_bound` (l.63); (iv) `parametric_stability_via_modulus`, `parametric_graphon_stability_via_modulus` ([`ParametricStabilityModulus.lean`](./ParametricStabilityModulus.lean)) | (i) hom level plus the kernel-level third clause; (ii) hom level, notably **without** Zykov input; (iii) formalised on **both** sides (quadratic confinement + both interval-localisation halves, `r ≥ 4`); (iv) the `ω_Zyk` route is **now formalised** — also **without** needing the Zykov bound hypothesis (only the assumed modulus `hmod` is classical content); the hom halves are **Tier-2** |
 
 **Statements worth the closest reading** (their Lean encoding involves a modelling choice you should
 confirm is faithful, rather than a routine transcription): `FinitePlanting` and `SparseRootRepair`
@@ -1028,7 +1131,7 @@ in [Notable deviations](#notable-deviations-from-the-paper) Deviation 8.
 **Mechanical re-verification** (reproduces the claims above, ~minutes after `lake exe cache get`):
 
 ```bash
-lake build LeanFlagAlgebras.MetaTheory                                  # 8016 jobs, green
+lake build LeanFlagAlgebras.MetaTheory                                  # 8018 jobs, green
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → no output
 printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' \
   '#print axioms finitePlanting_root_plantable
@@ -1071,7 +1174,9 @@ printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n%s\n' 
   '#print axioms parametricP4_tau_equation
 #print axioms parametric_qualitative_stability
 #print axioms parametric_recovery_identities
-#print axioms k4freeP4_graphon_tripartite' > /tmp/chk11.lean
+#print axioms k4freeP4_graphon_tripartite
+#print axioms parametricP4_top_endpoint_of_represents
+#print axioms parametric_stability_via_modulus' > /tmp/chk11.lean
 lake env lean /tmp/chk11.lean       # each → [propext, Classical.choice, Quot.sound, Lean.ofReduceBool, Lean.trustCompiler]
 ```
 
@@ -1198,8 +1303,14 @@ flag-algebra base.
 * **`paper.tex`** — the source article; §1–10 (all subsections) and the §11.2–§11.8 relative
   (slice) theory are formalised here (§11.4–§11.8 with the partial-coverage caveats listed in
   [Scope & limitations](#scope--limitations)).
-* **`*.lean`** — 93 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
-  recently the five-module **rooted transport** (sub-project A of
+* **`*.lean`** — 95 modules (see [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full map), most
+  recently [`GraphonParametricTransport.lean`](./GraphonParametricTransport.lean) (the general-`r`
+  rooted transport, the `R_τ⁻` kernel functional, and Cor 106) and
+  [`ParametricStabilityModulus.lean`](./ParametricStabilityModulus.lean) (Thm 112(iv)); before that
+  [`GraphonRepresentation.lean`](./GraphonRepresentation.lean) (Route-3 closure of Thm 102) and the
+  step-graphon density modules [`GraphonStep.lean`](./GraphonStep.lean)/
+  [`GraphonCounting.lean`](./GraphonCounting.lean); before that the five-module **rooted transport**
+  (sub-project A of
   [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md)) — [`StdRootedBridge`](./StdRootedBridge.lean),
   [`GraphonRootedDensity`](./GraphonRootedDensity.lean), [`GraphonRootedHom`](./GraphonRootedHom.lean),
   [`GraphonRootedMeasure`](./GraphonRootedMeasure.lean) and the capstone
@@ -1265,45 +1376,60 @@ above, and the repository's top-level `CLAUDE.md` for the overall flag-algebra c
   `CertificateSliceVanishing`/`ParametricP4Slice`/`TuranLimit`/`MantelNotPlantable`/`SliceRecovery`/
   `TuranAut`/`TuranDirac`/`TuranSliceIdentities`
   and `GraphonBasic`/`GraphonMoments`/`GraphonRigidity`/`GraphonQuantStability` modules
-  (Deviations 14–15) — with the **partial-coverage caveats** flagged in the results table and the
-  §11.4–§11.8 audit map: classical inputs (Erdős–Simonovits, Zykov and its equality case,
-  stability moduli, axiom-backed slice nonemptiness) enter as named hypotheses, and the kernel
-  theorems take the certificate-supplied `R`-bounds as hypotheses. Building on the graphon layer,
-  the **graphon→hom half of the Lovász–Szegedy representation bridge is now formalised as
-  infrastructure**: every graphon `W` is a positive homomorphism `φ_W ∈ PositiveHom ∅ₜ`
-  (`graphonHom`, [`GraphonHom.lean`](./GraphonHom.lean)), built from the induced flag density
-  (`graphonFlagDensity`, [`GraphonInducedDensity.lean`](./GraphonInducedDensity.lean)) via the
-  subset-count bridges `flagDensity₁_graphFlag`/`flagDensity₂_graphFlag`
+  (Deviations 14–15, 18) — **every numbered result of §11 is now formalised**, modulo exactly the
+  four permanent classical inputs in the next bullet: Erdős–Simonovits stability, Zykov's
+  `K₄`-density bound and its equality case, and Lovász–Szegedy existence enter as named hypotheses
+  throughout, in the same shape the paper's (now-revised, Deviation 18) statements name them.
+  Building on the graphon layer, the **graphon→hom half of the Lovász–Szegedy representation
+  bridge is formalised as infrastructure**: every graphon `W` is a positive homomorphism
+  `φ_W ∈ PositiveHom ∅ₜ` (`graphonHom`, [`GraphonHom.lean`](./GraphonHom.lean)), built from the
+  induced flag density (`graphonFlagDensity`,
+  [`GraphonInducedDensity.lean`](./GraphonInducedDensity.lean)) via the subset-count bridges
+  `flagDensity₁_graphFlag`/`flagDensity₂_graphFlag`
   ([`EmptyTypeGraphBridge.lean`](./EmptyTypeGraphBridge.lean),
   [`PairSubsetCount.lean`](./PairSubsetCount.lean)), with the sanity link
   `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` (Deviation 16). There is no
   `paper.tex` display for this construction — it is folklore input the §11.7 representation
   results assume. Building further on `graphonHom`, **the full rooted transport (sub-project A of
-  `HOM_TO_GRAPHON_DESIGN.md`) is now formalised too**: the five-module stack
+  `HOM_TO_GRAPHON_DESIGN.md`) is formalised**: the five-module stack
   `StdRootedBridge`/`GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/
   `GraphonKernelTransport` carries the `K₄`-free `P₄`-slice equations (mined by
   `ParametricP4Slice`) through the rooted conditional homomorphism and the rooted-view-measure
   identification `rootedViewMeasure_eq_extend` (= `ℙ[φ_W]`) into the a.e. kernel hypotheses of
   `Graphon.r3_rigidity`, discharging both of them unconditionally for any graphon in the slice
   (`k4freeP4_graphon_tripartite`) — the graphon-side content of `thm:k4free-p4-tripartite`
-  (Thm 102), pending only sub-project B for the paper statement verbatim (Deviation 17).
-* **Not formalised (future work):** the general pinning *conjecture* (`conj:characterisation`, the
-  tentative general characterisation) — the one §9 result still open; **Erdős–Simonovits
-  uniqueness itself** (the singleton claim of Thm 91/Thm 92), which enters the now-formalised
-  identity halves only as the named hypothesis `hES`; **Thm 102 and Cor 106**
-  (`thm:k4free-p4-tripartite` / `cor:top-endpoint-recovery`) as the paper states them verbatim —
-  the representation-bridge (Lovász–Szegedy) status is now: **graphon→hom done** (`graphonHom`,
-  `φ_W`) **+ the full rooted transport done** (slice equations → `r3_rigidity` hypotheses,
-  `k4freeP4_graphon_tripartite`); **remaining: existence of a representing graphon** for an
-  arbitrary `PositiveHom ∅ₜ` (sub-project B) — the harder, still-open half. (Cor 106's kernel
-  engine `Graphon.slice_rigidity` is done but has no rooted-transport counterpart yet.)
-  **Thm 112(iv)** — the `ω_Zyk`
-  kernel route — together with the **`R_τ⁻ = ∫W(d(x)−d(y))²` kernel functional** it runs on; the
-  **§12 open problems** (prose — nothing to formalise); and, within `cor:degenerate-family`, the non-`C₄` families (general
-  `K_{s,t}` with `s ≥ 3`, even cycles, planar), which instantiate `edgeDegenerate_of_subquadratic`
-  via classical extremal bounds that are outside the current Mathlib, so only the criterion (not
-  those specific instances) is formalised. The criterion and machinery here are intended to be
-  reusable for the remaining work.
+  (Thm 102) (Deviation 17). **Route-3 then closes the paper-verbatim statements themselves**: Thm
+  102 ([`GraphonRepresentation.lean`](./GraphonRepresentation.lean),
+  `k4free_p4_tripartite_of_represents` unconditional over representing graphons, plus
+  `_of_rep_exists` conditional on `hrep`) and — this session —
+  **Cor 106** in the identical representative-quantified shape
+  ([`GraphonParametricTransport.lean`](./GraphonParametricTransport.lean),
+  `parametricP4_top_endpoint_of_represents`/`_of_rep_exists`) and **Thm 112(iv)**
+  ([`ParametricStabilityModulus.lean`](./ParametricStabilityModulus.lean),
+  `parametric_stability_via_modulus`, which turns out not to need the Zykov bound hypothesis at
+  all).
+* **Not formalised — by permanent design decision, not a gap:** four classical results are cited
+  by the paper itself as unproved external inputs and are never intended to be proved inside this
+  development — **Erdős–Simonovits stability** (the singleton claim of Thm 91/92, entering the
+  formalised identity halves only as the named hypothesis `hES`), **Zykov's `K₄`-density bound**
+  for `r ≥ 4` (`hZykov`) and its **equality case** (`hZykEq`), and **Lovász–Szegedy existence**
+  (`hrep`, the one hypothesis behind every `_of_rep_exists`-style corollary above).
+  The `hrep` hypothesis alone has a costed retirement path — the weak-regularity campaign of
+  [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md) — should it ever be undertaken; the
+  other three are genuinely permanent (proving them is a different, much larger project — classical
+  extremal graph theory, not this meta-theory).
+* **Not formalised (future work, all optional):** the general pinning *conjecture*
+  (`conj:characterisation`, the tentative general characterisation, not itself a numbered theorem)
+  — the one §9 result still open; the **§12 open problems** (prose — nothing to formalise); within
+  `cor:degenerate-family`, the non-`C₄` families (general `K_{s,t}` with `s ≥ 3`, even cycles,
+  planar), which instantiate `edgeDegenerate_of_subquadratic` via classical extremal bounds
+  (Kővári–Sós–Turán, Bondy–Simonovits, the planar edge bound) that are outside the current
+  Mathlib, so only the abstract criterion (not those specific instances) is formalised; and two
+  optional campaigns kept over from prior sessions with no open correctness gap behind them —
+  **Phase 3** (a kernel-level Mantel/Turán-uniqueness theorem that would let `hES` be discharged
+  through the graphon⟷hom bridge once both its directions exist) and the same **Kővári–Sós–Turán
+  (KST)**-type extremal bounds just mentioned for `cor:degenerate-family`. The criterion and
+  machinery here are intended to be reusable for any of this remaining, entirely optional work.
 * The development reuses results from the surrounding `LeanFlagAlgebras/FlagAlgebra/` directory
   (representation theorem, random-extension measure, Prokhorov compactness, …) as already-proved
   lemmas — these are part of the trusted base, not re-verified here, but they are themselves

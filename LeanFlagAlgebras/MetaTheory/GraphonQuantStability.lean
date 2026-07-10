@@ -285,9 +285,10 @@ certificate deficit guarantees `close`.  Quantitatively: if
 `(1/3)·√(2√A + (1/2)√B) ≤ ω`, then `close` holds.
 
 (The `r ≥ 4` analogue — `thm:parametric-quant-stability` (iv), the `ω_Zyk` route through
-the near-extremal `K₄` density — is NOT formalised at the kernel level: its input is the
-hom-level `parametricP4_K4_density_approx` (`ParametricP4Slice`), and connecting the two
-runs through the unformalised graphon representation; README deviation.) -/
+the near-extremal `K₄` density — is formalised in `ParametricStabilityModulus.lean`
+(`parametric_stability_via_modulus`), stated at the hom level in the same
+modulus-abstraction pattern as this theorem; the kernel-level `R_τ⁻` correspondence is
+`graphonHom_f₂_eq_RtauMinus` in `GraphonParametricTransport.lean`.) -/
 theorem stability_via_modulus {A B : ℝ} (hA : G.Reta 3 ≤ A) (hB : G.Rtau 3 ≤ B)
     (hA0 : 0 ≤ A) (hB0 : 0 ≤ B)
     {ω : ℝ} {close : Prop}

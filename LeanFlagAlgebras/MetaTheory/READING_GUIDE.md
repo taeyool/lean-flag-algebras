@@ -3,7 +3,7 @@
 How to read and navigate the MetaTheory Lean files. See [`README.md`](./README.md) for *what* is
 proved and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for *how the modules fit together*.
 
-The development is 93 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
+The development is 95 modules under `MetaTheory/`, aggregated in [`../MetaTheory.lean`](../MetaTheory.lean).
 
 ---
 
@@ -156,7 +156,29 @@ will meet them constantly:
   assembling to **`k4freeP4_graphon_tripartite`** — any graphon whose `φ_W` lies in the slice is
   a.e. the balanced complete tripartite graphon, the graphon-side content of
   `thm:k4free-p4-tripartite` (Thm 102) (`GraphonKernelTransport`; Tier-2 on the last three
-  theorems).
+  theorems). **Route-3 closure** (`GraphonRepresentation`) then composes this with profile
+  agreement (`posHomPoint_eq_of_graphonProfileFun_eq`) to give **`k4free_p4_tripartite_of_represents`**
+  — the unconditional, paper-verbatim Thm 102, quantified over *representing* graphons — and
+  `k4free_p4_tripartite_of_rep_exists`, the existence form conditional on the one named classical
+  input `hrep` (Lovász–Szegedy existence).
+* In `MetaTheory` (the general-`r` parametric transport and Thm 112(iv), this session; no
+  `paper.tex` display of their own beyond the results they close): **`GraphonParametricTransport`**
+  — the `r`-free mirror of the rooted-transport stack, closing **Cor 106**
+  (`cor:top-endpoint-recovery`). The `r`-independent kernel functional **`Graphon.RtauMinus`**
+  (`= ∫∫W(x,y)(d(x)−d(y))²`, with its a.e. characterisation `RtauMinus_eq_zero_iff_ae`); the
+  **`f₂` hom→kernel bridge** `graphonHom_f₂_eq_RtauMinus : φ_W(f₂) = R_τ⁻(W)` (via the
+  extension-measure spec — no new density computations, the key insight reused for the kernel-level
+  third clause of Thm 112(i), `parametricP4_graphon_RtauMinus_le`); the general-`r` transports
+  `parametricP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` (mirroring the `r = 3` ones); the kernel-level
+  Cor 106 `parametricP4_graphon_top_endpoint_rigidity` (slice membership + the scalar pin
+  `edgeDensity = α_r⁺` force the balanced complete `r`-partite graphon via `Graphon.slice_rigidity`);
+  and, in the Route-3 pattern above, **`parametricP4_top_endpoint_of_represents`** /
+  `_of_rep_exists`. **`ParametricStabilityModulus`** closes **Thm 112(iv)** (`ω_Zyk` route):
+  `parametric_stability_via_modulus` (hom level) and `parametric_graphon_stability_via_modulus` (the
+  graphon-facing instantiation) — notably, the Zykov *bound* hypothesis `hZykov` turns out **not**
+  to be needed at all (the near-extremal `K₄`-density approximation drops the certificate's Zykov
+  term without using its sign, so the assumed modulus `hmod` is the only classical content). Both
+  modules Tier-2.
 
 ---
 
@@ -265,6 +287,18 @@ jump straight to the module and Lean name; read that module's header, then the n
     `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`, and assembling to
     **`k4freeP4_graphon_tripartite`** — the graphon-side content of `thm:k4free-p4-tripartite`
     (Thm 102); Tier-2 on the last three theorems, Tier-1 upstream).
+17. **Closing Thm 102, Cor 106 and Thm 112(iv) (Route-3 + this session's wave):**
+    `GraphonRepresentation` (a prior session — composes `k4freeP4_graphon_tripartite` with profile
+    agreement into `k4free_p4_tripartite_of_represents`, the unconditional paper-verbatim Thm 102,
+    plus the `hrep`-conditional `k4free_p4_tripartite_of_rep_exists`) → `GraphonParametricTransport`
+    (this session — the `r`-free mirror of the rooted-transport stack: the general-`r` transports,
+    the `R_τ⁻` kernel functional and its `f₂` hom→kernel bridge `graphonHom_f₂_eq_RtauMinus`, and the
+    same represents/rep-exists closure for **Cor 106**,
+    `parametricP4_top_endpoint_of_represents`/`_of_rep_exists`) → `ParametricStabilityModulus` (this
+    session — **Thm 112(iv)**, `parametric_stability_via_modulus`, in the same modulus-abstraction
+    pattern as `GraphonQuantStability.stability_via_modulus`; read its docstring for the
+    hZykov-unused finding). After this chain, every §11 result-table row is **COMPLETE** modulo the
+    four permanent classical inputs (README [Scope & limitations](./README.md#scope--limitations)).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
 ([`ConstrainedRep.lean`](./ConstrainedRep.lean)) and the capstone assembly
@@ -353,15 +387,15 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 | Theorem 99 | §11.7 `thm:parametric-moments` (l.4877) | `GraphonMoments` | `Graphon.moments_T`, `moments_D`, `moments_variance`, `moments_interval`, `moments_regular_iff` (kernel level, on `unitInterval` graphons) |
 | Theorem 100 | §11.7 `thm:slice-rigidity` (l.4965) | `GraphonRigidity` | `Graphon.slice_rigidity` (measurable-partition form) |
 | Corollary 101 | §11.7 `cor:r3-rigidity` (l.5021) | `GraphonRigidity` | `Graphon.r3_rigidity` |
-| Theorem 102 *(graphon side complete, statement pending sub-project B)* | §11.7 `thm:k4free-p4-tripartite` (l.5035) | `GraphonKernelTransport` (kernel engine `Graphon.r3_rigidity`; hom avatar in `SliceRecovery`) | `k4freeP4_graphon_tripartite` discharges both `r3_rigidity` hypotheses from the slice-membership `hmem` — the graphon-side content of Thm 102; the statement needs the graphon⟷hom representation **existence** half (sub-project B) to read verbatim; `SliceRecovery`'s `huniq` hypothesis stands in until then |
+| Theorem 102 *(COMPLETE, Route-3 form)* | §11.7 `thm:k4free-p4-tripartite` (l.5035) | `GraphonRepresentation` (kernel engine `Graphon.r3_rigidity`/`GraphonKernelTransport`; hom avatar still in `SliceRecovery`'s `huniq`, for Cor 104 only) | `k4free_p4_tripartite_of_represents` — unconditional, paper-verbatim, quantified over *representing* graphons (no existence input); `k4free_p4_tripartite_of_rep_exists` — the existence form conditional on the one named classical input `hrep` (Lovász–Szegedy existence) |
 | Corollary 104 | §11.7 `cor:k4free-p4-qualitative-stability` (l.5072) | `SliceRecovery` | `k4free_qualitative_stability` (`huniq` hypothesis) |
 | Corollary 105 *(complete)* | §11.7 `cor:parametric-p4-turan-recovery` (l.5096) | `SliceRecovery`, `TuranSliceIdentities` | `parametric_recovery` (`hZykEq` hypothesis), `parametric_recovery_identities` (the "consequently" support identities) *(Tier-2 axioms; Lean assumes `3 ≤ r` vs the paper's `r ≥ 4` — benign generalisation, README Deviation 15c)* |
-| Corollary 106 *(not formalised)* | §11.7 `cor:top-endpoint-recovery` (l.5138) | (`GraphonRigidity`) | representation bridge missing; kernel engine `Graphon.slice_rigidity` done |
+| Corollary 106 *(COMPLETE)* | §11.7 `cor:top-endpoint-recovery` (l.5138) | `GraphonParametricTransport` (kernel engine `Graphon.slice_rigidity`) | `parametricP4_graphon_top_endpoint_rigidity` (kernel level: slice membership + the pin `edgeDensity = α_r⁺` force the balanced complete `r`-partite graphon); `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` — same Route-3 pattern as Thm 102, at general `3 ≤ r` |
 | Corollary 107 | §11.7 `cor:parametric-qualitative-stability` (l.5153) | `SliceRecovery` | `parametric_qualitative_stability` *(Tier-2 axioms)* |
 | Theorem 109 | §11.8 `thm:approximate-moments` (l.5201) | `GraphonMoments` | `Graphon.approximate_moments`, `approximate_moments_interval`, `approximate_moments_variance` |
-| Proposition 110 *(hom level)* | §11.8 `prop:k4free-p4-certificate-stability` (l.5290) | `ParametricP4Slice` | `parametricP4_sq_bounds` *(kernel-level `R`-integrals enter `GraphonQuantStability` as hypotheses; the `R_τ⁻` kernel functional is not defined — future work; Tier-2 axioms)* |
+| Proposition 110 *(COMPLETE)* | §11.8 `prop:k4free-p4-certificate-stability` (l.5290) | `ParametricP4Slice`, `GraphonParametricTransport` | hom level `parametricP4_sq_bounds`; the `R_τ⁻` kernel functional is now **defined** (`Graphon.RtauMinus`) with the hom→kernel bridge `graphonHom_f₂_eq_RtauMinus` and the kernel bound `parametricP4_graphon_RtauMinus_le`/`_eq_zero` *(Tier-2 axioms)* |
 | Theorem 111 | §11.8 `thm:k4free-p4-quant-stability` (l.5345) | `GraphonQuantStability` | `Graphon.r3_edge_sq_bound`, `r3_degree_concentration`, `r3_edge_density_stability`, `r3_certificate_instance`, `stability_via_modulus` (`ω_Tur` as an abstract modulus; `δ□` not formalised) |
-| Theorem 112 *(parts (i)–(iii))* | §11.8 `thm:parametric-quant-stability` (l.5418) | `ParametricP4Slice`, `GraphonQuantStability` | (i) `parametricP4_sq_bounds`; (ii) `parametricP4_K4_density_approx` (no Zykov input); (iii) `Graphon.interval_localisation`, `interval_localisation_below`, `quadratic_confinement`, `moment_deviation_bound` *((iv) `ω_Zyk` kernel route not formalised)* |
+| Theorem 112 *(COMPLETE)* | §11.8 `thm:parametric-quant-stability` (l.5418) | `ParametricP4Slice`, `GraphonQuantStability`, `GraphonParametricTransport`, `ParametricStabilityModulus` | (i) `parametricP4_sq_bounds` + kernel clause `parametricP4_graphon_RtauMinus_le`; (ii) `parametricP4_K4_density_approx` (no Zykov input); (iii) `Graphon.interval_localisation`, `interval_localisation_below`, `quadratic_confinement`, `moment_deviation_bound`; (iv) `parametric_stability_via_modulus`/`parametric_graphon_stability_via_modulus` — the `ω_Zyk` route, also **without** needing the Zykov bound |
 
 **Scope of `cor:degenerate-family` (Corollary 49).** Only the *abstract* subquadratic criterion
 `edgeDegenerate_of_subquadratic` is formalised. The named instances in the paper (general `K_{s,t}`
@@ -377,28 +411,27 @@ README — each row cites the paper number, `\label`, line, module, and Lean nam
 checking of §9 can equally be done from the §9 rows of the map above, together with `#print axioms`
 on the headline theorems — so §9 is fully audited, not unverified.
 
-**Scope / not yet formalised.** The formalised frontier is **through §10, plus the whole
-§11.2–§11.8 relative (slice) theory** — including all of §9 (`thm:pinning` Theorem 53,
+**Scope / not yet formalised.** The formalised frontier is **through §10, plus the whole of
+§11 modulo four permanent classical inputs** — including all of §9 (`thm:pinning` Theorem 53,
 `lem:complementation` Lemma 50, the §9.4 boundary / no-interior theorem `thm:no-interior`
 Theorem 55, the §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable` Theorem 62), all of §10
 (`sec:empty-type`: Proposition 64 through Corollary 70), the §11.2–§11.3 relative-ensemble
 foundation (Lemma 71 through Proposition 82; §11.1 is prose), all of §11.4 (Definition 84 through
-Theorem 89), and the §11.5–§11.8 slice/graphon results with the partial coverage marked in the map
-above (classical inputs as named hypotheses — README Deviations 14–15; the Thm 91/92 identity
+Theorem 89), and now every §11.5–§11.8 slice/graphon result in the map above, **each row COMPLETE**
+(classical inputs as named hypotheses — README Deviations 14–15, 18; the Thm 91/92 identity
 halves and the Cor 105 "consequently" identities are formalised in the
-`TuranAut`/`TuranDirac`/`TuranSliceIdentities` stack). Not yet formalised (future
-work): the characterisation *conjecture* (`conj:characterisation`) — the one §9 result still open —
-Erdős–Simonovits uniqueness itself (the Thm 91/92 singleton claim, entering only as the named
-hypothesis `hES`), Theorem 102 / Corollary 106 as the paper states them verbatim (the
-graphon⟷hom representation bridge — the **graphon→hom half is now formalised as infrastructure**,
-`graphonHom`, **and the rooted transport is now complete** too, discharging both `r3_rigidity`
-hypotheses for Theorem 102 (`k4freeP4_graphon_tripartite`, the graphon-side content of Thm 102);
-the harder, still-open half is the **existence** of a representing graphon for an arbitrary
-homomorphism (sub-project B) — their kernel engines `Graphon.r3_rigidity` /
-`Graphon.slice_rigidity` are done), Theorem 112(iv) (`ω_Zyk` kernel route) with the `R_τ⁻` kernel
-functional, the §12 open problems (prose), and the non-`C₄` degenerate families of Corollary 49.
-See the README's **[Scope & limitations](./README.md#scope--limitations)** for the authoritative
-list.
+`TuranAut`/`TuranDirac`/`TuranSliceIdentities` stack; Thm 102/Cor 106 in the represents-quantified
+Route-3 shape via `GraphonRepresentation`/`GraphonParametricTransport`; Thm 112(iv) via
+`ParametricStabilityModulus`). Not formalised — by **permanent design decision**, not a gap: the
+four classical results the paper itself cites as external inputs — Erdős–Simonovits stability (the
+Thm 91/92 singleton claim, `hES`), Zykov's `K₄`-density bound (`hZykov`) and its equality case
+(`hZykEq`), and Lovász–Szegedy existence (`hrep` — the one with a costed, optional retirement path,
+the weak-regularity campaign of `HOM_TO_GRAPHON_DESIGN.md`). Not yet formalised (future work, all
+optional): the characterisation *conjecture* (`conj:characterisation`) — the one §9 result still
+open — the §12 open problems (prose), and the non-`C₄` degenerate families of Corollary 49 (need
+classical extremal bounds — Kővári–Sós–Turán, Bondy–Simonovits, planar — outside current
+Mathlib), plus the optional Phase 3 (kernel-level Mantel/Turán uniqueness) campaign. See the
+README's **[Scope & limitations](./README.md#scope--limitations)** for the authoritative list.
 
 ---
 
@@ -430,7 +463,11 @@ list.
   `Graphon.approximate_moments` (§11.4–§11.8); `graphonHom`, `graphonHom_edge` (the `φ_W`
   construction — infrastructure, no paper result of its own, but worth the same check);
   `rootedViewMeasure_eq_extend`, `k4freeP4_graphon_tripartite` (the rooted transport — the latter
-  is the graphon-side content of Thm 102, worth checking against both axiom tiers below). The
+  is the graphon-side content of Thm 102, worth checking against both axiom tiers below);
+  `k4free_p4_tripartite_of_represents` (`GraphonRepresentation` — the paper-verbatim Thm 102,
+  Route-3 closure); and, this session, `parametricP4_top_endpoint_of_represents`
+  (`GraphonParametricTransport` — the paper-verbatim Cor 106, same Route-3 pattern) and
+  `parametric_stability_via_modulus` (`ParametricStabilityModulus` — Thm 112(iv)). The
   README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the
   §8/§9 subset of these in one `printf | lake env lean` invocation.
@@ -438,9 +475,13 @@ list.
   **Tier-2 caveat:** the §11.6–§11.7 consumers of the verified parametric certificate — the
   `parametricP4_*` / `k4freeP4_*` slice equations, `SliceRecovery`'s `parametric_recovery` /
   `parametric_qualitative_stability`, `TuranSliceIdentities`'s
-  `parametric_recovery_identities` (inherited via `parametric_recovery`), and
+  `parametric_recovery_identities` (inherited via `parametric_recovery`),
   `GraphonKernelTransport`'s `k4freeP4_graphon_Rtau_eq_zero` / `k4freeP4_graphon_Reta_eq_zero` /
-  `k4freeP4_graphon_tripartite` (inherited via the `k4freeP4_*` equations they transport) —
+  `k4freeP4_graphon_tripartite` (inherited via the `k4freeP4_*` equations they transport),
+  `GraphonRepresentation`'s `k4free_p4_tripartite_of_represents` / `_of_rep_exists`, and now
+  `GraphonParametricTransport`'s `parametricP4_graphon_*` / `parametricP4_top_endpoint_of_*` family
+  and `ParametricStabilityModulus`'s `parametric_stability_via_modulus` /
+  `parametric_graphon_stability_via_modulus` —
   legitimately print
   **two extra axioms**,
   `Lean.ofReduceBool` and `Lean.trustCompiler`, inherited from the `Automation` layer's

@@ -91,6 +91,8 @@ import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
 import LeanFlagAlgebras.MetaTheory.GraphonStep
 import LeanFlagAlgebras.MetaTheory.GraphonCounting
 import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
+import LeanFlagAlgebras.MetaTheory.GraphonParametricTransport
+import LeanFlagAlgebras.MetaTheory.ParametricStabilityModulus
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -518,4 +520,19 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   `k4free_p4_tripartite_of_rep_exists` conditional on the one named classical input of
   Phase 4, `hrep` (Lovász–Szegedy existence; its retirement plan — the weak-regularity
   campaign — is costed in the design doc).
+* `GraphonParametricTransport` — `cor:top-endpoint-recovery` (Cor 106) and the `R_τ⁻`
+  kernel functional.  The general-`r` rooted transports
+  (`parametricP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`), the hom→kernel bridge
+  `graphonHom_f₂_eq_RtauMinus : φ_W(f₂) = R_τ⁻(W)` (via the extension-measure spec — no
+  new density computations), the kernel-level Thm 112(i) clause
+  `parametricP4_graphon_RtauMinus_le` and its exact-slice vanishing, and the top-endpoint
+  recovery: slice membership + the single scalar pin `edgeDensity = α_r⁺` identify the
+  graphon a.e. with the balanced complete `r`-partite graphon
+  (`parametricP4_graphon_top_endpoint_rigidity`, with the paper-verbatim
+  `parametricP4_top_endpoint_of_represents` and `hrep`-conditional forms).
+* `ParametricStabilityModulus` — `thm:parametric-quant-stability` (iv) (Thm 112(iv)): the
+  `ω_Zyk` route, with the modulus abstracted as in `stability_via_modulus` — a certificate
+  deficit `Δ ≤ p₀(r)·ω` forces the `K₄` density within `ω` of extremal, triggering the
+  modulus's conclusion (`parametric_stability_via_modulus`, plus the graphon-facing
+  instantiation).
 -/

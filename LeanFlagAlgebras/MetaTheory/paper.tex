@@ -3781,11 +3781,14 @@ slices of verified certificates, where the slackness principle turns a density b
 labelled local equations, moment identities, rigidity theorems for the extremal graphon,
 and stability estimates.
 
-Three classical theorems enter this section as unproved external inputs: the
+Four classical results enter this section as unproved external inputs: the
 Erd\H{o}s--Simonovits stability theorem (uniqueness of the balanced complete $r$-partite
 graphon as the extremiser of Tur\'an's theorem at exact equality, \cref{thm:turan-slice},
-\cref{thm:relative-mantel}); the equality case of Zykov's $K_4$-density theorem
-(uniqueness of the same graphon as the extremiser of the induced-$K_4$-density bound,
+\cref{thm:relative-mantel}); Zykov's $K_4$-density \emph{bound} for $r\ge4$ (the plain
+inequality, which underlies the parametric slice equations of
+\cref{thm:parametric-p4-equality-slice} and everything downstream of them; at $r=3$ it is
+derived internally from $K_4$-freeness); the \emph{equality case} of the same theorem
+(uniqueness of the balanced complete $r$-partite graphon as its extremiser,
 \cref{cor:parametric-p4-turan-recovery}, \cref{thm:parametric-quant-stability}); and the
 existence half of the Lov\'asz--Szegedy representation theorem (every unlabelled limit is
 represented by some graphon, \cref{thm:k4free-p4-tripartite},
@@ -4782,8 +4785,11 @@ there it also processes terms that are not averaged squares.
 
 \begin{theorem}[Parametric $K_{r+1}$-free $P_4$ equality equations]
 \label{thm:parametric-p4-equality-slice}
-Fix an integer $r\ge3$.  Let $\T_r$ be the $K_{r+1}$-free graph class, and let
-$\pi_{P_4}^{(r)}\in\A^0[\T_r]$ be the $P_4$ density expression used in
+Fix an integer $r\ge3$; for $r\ge4$, assume Zykov's $K_4$-density \emph{bound}
+\cite{Zykov1949}: every $K_{r+1}$-free graphon has induced-$K_4$ density at most
+$\frac{(r-1)(r-2)(r-3)}{r^3}$ (at $r=3$ this is the vacuous bound $\phi_0(K_4)\le0$,
+derived internally from $K_4$-freeness).  Let $\T_r$ be the $K_{r+1}$-free graph class, and
+let $\pi_{P_4}^{(r)}\in\A^0[\T_r]$ be the $P_4$ density expression used in
 \texttt{API.CompleteGraphFreeP4}.  Define the extremal slice
 \[
   Y_r:=\left\{\phi_0\in Q_0^{(r)}:
@@ -5175,9 +5181,11 @@ non-edge type $\eta$ both occur with positive probability under random rooting f
 as an explicit hypothesis for the same reason: identifying a representing $W$ already
 invokes Lov\'asz--Szegedy existence).  Then $W$ is, up to a measure-preserving
 relabelling, the balanced complete $r$-partite graphon---with no appeal to the Zykov
-equality case.  Consequently, the hypothesis of \cref{cor:parametric-p4-turan-recovery}
-can be weakened from the full equality case of Zykov's theorem to the single scalar
-statement that every element of $Y_r$ has edge density $\frac{r-1}r$.
+\emph{equality} case (the Zykov \emph{bound} underlying
+\cref{thm:parametric-p4-equality-slice} is still assumed, as throughout).  Consequently,
+the hypothesis of \cref{cor:parametric-p4-turan-recovery} can be weakened from the full
+equality case of Zykov's theorem to the single scalar statement that every element of
+$Y_r$ has edge density $\frac{r-1}r$.
 \end{corollary}
 
 \begin{proof}
