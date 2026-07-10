@@ -31,7 +31,7 @@ the `paper.tex` result(s) it formalises.
 
 ```bash
 lake exe cache get                                                                  # fetch Mathlib cache (don't compile from source)
-lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 85 modules)
+lake build LeanFlagAlgebras.MetaTheory                                              # the kernel-acceptance gate (builds all 86 modules)
 grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
 ```
 
@@ -782,7 +782,7 @@ two slackness modules are consequences of `relative_soundness` plus the extensio
 
 ### §11.4–§11.8 the slice method and the graphon layer
 
-Nineteen modules in three strands. The **slice strand** (`RelativePlanted` →
+Twenty modules in three strands. The **slice strand** (`RelativePlanted` →
 `RelativeCertificateGap`/`RelativePositivstellensatz` → `CertificateSliceVanishing` →
 `ParametricP4Slice` → `TuranLimit` → `TuranAut` → `TuranDirac` →
 `MantelNotPlantable`/`SliceRecovery` → `TuranSliceIdentities`) sits on the
@@ -907,6 +907,15 @@ axioms (README "Axioms assumed") — the `φ_W` strand is Tier-1 throughout.
   `ComplementHom`'s `complHom` used) with its point `graphonHomPoint`; and the sanity link
   `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` tying this flag-algebra-side
   construction back to the `GraphonBasic` kernel layer.
+* **[`StdRootedBridge`](./StdRootedBridge.lean)** — sub-project A, module 0 of
+  [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md): the two-root analogue of
+  `EmptyTypeGraphBridge`. Standard-rooted graphs at a two-vertex type
+  (`RootCompatible`/`mkStdRooted`, roots at `0, 1` via `Fin.castLE`), flag equality iff
+  root-fixing isomorphism (`mkStdRooted_flag_eq_iff`), standard-rooted representatives
+  (`exists_stdRooted_rep`), the root-fixing permutation engine
+  (`exists_rootfix_perm_comp_emb(_pair)`), and the rooted density-as-subset-count formula
+  (`flagDensity₁_stdRooted`). Certificate-free (general `σ : FlagType (Fin 2)`); feeds the
+  upcoming `GraphonRootedHom`.
 * **[`GraphonBasic`](./GraphonBasic.lean)** — §11.7 preliminaries. The `Graphon` structure
   (symmetric measurable `[0,1]`-kernel on `unitInterval`), `deg`/`codeg`,
   `edgeDensity`/`degSq`/`triDensity`, measurability/boundedness/integrability, and the two Fubini

@@ -27,7 +27,7 @@ harder hom→graphon half remains open; remaining partial-coverage caveats in RE
 Deviations 14–16 + the table rows). Prior sessions: §11.5 identity halves,
 §11.4–§11.8, hygiene pass ("Hygiene pass — DONE"), §11.2–§11.3, §10, §9.3–§9.5, §1–9.2 +
 `lem:complementation`,
-§8. `lake build LeanFlagAlgebras.MetaTheory` → **8008 jobs green** (85 modules; "Build completed
+§8. `lake build LeanFlagAlgebras.MetaTheory` → **8009 jobs green** (86 modules; "Build completed
 successfully" line confirmed — do NOT trust exit-code alone, stale oleans can mask a failure);
 `grep -rnwE 'sorry|admit|native_decide'` over `MetaTheory` → empty; headline theorems
 `#print axioms` = `[propext, Classical.choice, Quot.sound]` — EXCEPT the sanctioned Tier-2
@@ -194,7 +194,7 @@ is open problems — prose, nothing to formalise.)
 4. **Build & verify** (run from the repository ROOT — `cd`-drift breaks `lake`):
    ```bash
    export PATH="$HOME/.elan/bin:$PATH"
-   lake build LeanFlagAlgebras.MetaTheory                                   # 8008 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W)
+   lake build LeanFlagAlgebras.MetaTheory                                   # 8009 jobs, green (§1–10 + §11.2–§11.8 + §11.5 identities + φ_W + StdRootedBridge)
    grep -rnwE 'sorry|admit|native_decide' LeanFlagAlgebras/MetaTheory --include='*.lean'   # → empty
    { printf 'import LeanFlagAlgebras.MetaTheory\nopen FlagAlgebras.MetaTheory\n';
      for t in blowupClosed_root_plantable complementation_invariance degenerate_not_rootPlantable \
@@ -982,6 +982,13 @@ work is the §11 partial-coverage frontier. Next targets, in the agreed plan (fi
   route for existence is sampling (`positiveHom_as_flagSeq_limit`, already proved) + step
   graphons + Doob martingale convergence, with the sequential-compactness module as the single
   riskiest piece (checkpoint after the counting lemma). Start there, not here.
+  **Sub-project A progress: module 0 (`StdRootedBridge.lean`) is DONE** (same day, sorry-free,
+  Tier-1, 86 modules / 8009 jobs): the standard-rooted bridge (`RootCompatible`/`mkStdRooted`,
+  `mkStdRooted_flag_eq_iff`, `exists_stdRooted_rep`, the root-fixing permutation engine
+  `exists_rootfix_perm_comp_emb(_pair)`, `flagDensity₁_stdRooted`). Next in sub-project A:
+  `GraphonRootedHom.lean` (the rooted conditional profile + Props — GraphonHom-sized; see the
+  design doc's frozen module-1 spec, esp. the index-set correction and the `rootWeight`
+  conditioning bookkeeping), then `GraphonRootedMeasure.lean`.
 * **Optional: Phase 3, kernel-level Mantel uniqueness.** A kernel-side uniqueness statement for
   the Mantel/Turán extremal graphon (rigidity-style) that would let the `hES` hypothesis of the
   §11.5 identities be discharged through the bridge once both halves of Phase 4 exist.

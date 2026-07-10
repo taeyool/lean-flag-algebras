@@ -83,6 +83,7 @@ import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
 import LeanFlagAlgebras.MetaTheory.PairSubsetCount
 import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
 import LeanFlagAlgebras.MetaTheory.GraphonHom
+import LeanFlagAlgebras.MetaTheory.StdRootedBridge
 
 /-! # Meta-theory of flag algebras (`MetaTheory/paper.tex`)
 
@@ -458,4 +459,9 @@ empty type, and the witnesses that expose the gap unlabel to zero.
   normalisation and multiplicativity, assembling to `graphonHom W : PositiveHom ∅ₜ`
   (`positiveHomFromZeroSpaceOneMulProp`), with the sanity identity
   `graphonHom_edge : φ_W(edge) = W.edgeDensity` tying the flag-algebra and kernel layers.
+* `StdRootedBridge` — sub-project A, module 0 of `HOM_TO_GRAPHON_DESIGN.md`: standard-rooted
+  graphs at a two-vertex type (`RootCompatible`/`mkStdRooted`), flag equality iff root-fixing
+  isomorphism, standard-rooted representatives, the root-fixing permutation engine
+  (`exists_rootfix_perm_comp_emb(_pair)`), and the rooted density-as-subset-count formula
+  (`flagDensity₁_stdRooted`).
 -/
