@@ -1,11 +1,11 @@
 import LeanFlagAlgebras.MetaTheory.GraphonHom
 
-/-! # Step graphons (sub-project B, module 3)
+/-! # Step graphons
 
-The finite-to-graphon functor of `HOM_TO_GRAPHON_DESIGN.md` sub-project B: a graph `G` on
-`Fin N` becomes the **step graphon** `stepGraphon hN G` — the `{0,1}`-valued kernel that is
-`1` on the cell pair `(i, j)` exactly when `G.Adj i j`, for the equal `N`-cell interval
-partition of `I` given by `cellIdx`.
+The finite-to-graphon functor: a graph `G` on `Fin N` becomes the **step graphon**
+`stepGraphon hN G` — the `{0,1}`-valued kernel that is `1` on the cell pair `(i, j)`
+exactly when `G.Adj i j`, for the equal `N`-cell interval partition of `I` given by
+`cellIdx`.
 
 * `cellIdx N hN : I → Fin N` — the cell map `x ↦ ⌊N·x⌋` (clamped at the single endpoint
   `x = 1`), measurable, with every fibre of volume exactly `1/N`.
@@ -15,7 +15,8 @@ partition of `I` given by `cellIdx`.
   equality `G.comap (cellIdx N hN ∘ c) = H` (every factor of the weight product is `0` or
   `1`, and the product is `1` exactly when the cell tuple realises `H`'s adjacency pattern
   on the nose — note: literal equality on the common vertex set `Fin n`, NOT flag-class
-  equality).  This is the fact the module-4 counting lemma integrates.
+  equality).  This identity underlies the counting lemma relating hom-density in `G` to
+  induced weight in `stepGraphon hN G`.
 
 Everything is Tier-1; no certificate material.
 -/

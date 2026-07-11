@@ -38,15 +38,10 @@ lemma toProbMeasure_eq_dirac_of_subsingleton (F : FinFlag ∅ₜ)
     (F.toProbMeasure hF : Measure (FlagDensitySpace σ))
       = Measure.dirac (funFromFlagWithSizeToFlagDensitySpace σ F.1 G) := by
   -- `hsing` + `hG` make `labelExtensions F.2 σ = {G}` (`Finset.eq_singleton_iff_unique_mem`).
-  -- Route (dossier §1): `toProbMeasure_apply_eq_dnf_ratio` (RootingUniform) — for any set
-  -- `A`, the filtered dnf-sum over the singleton is `dnf G` or `0` according to whether
-  -- the profile of `G` lies in `A`, and the total is `dnf G` (nonzero: positivity of the
-  -- ratio's denominator is implicit in the PMF's existence; alternatively use the
-  -- `FinFlag.toPMF_support` + `PMF.toMeasure_pure` route: singleton support ⟹
-  -- `toPMF = PMF.pure _` via `PMF.support_subset_singleton`-style reasoning).
-  -- Conclude by `Measure.ext`/`ext_of_...` on measurable sets or the toReal comparison
-  -- (both probability measures; equality of ENNReal measures from equality of `toReal`s
-  -- on measurable sets — measures are finite).
+  -- `toProbMeasure_apply_eq_dnf_ratio` (RootingUniform) then gives, for any measurable set
+  -- `A`, the filtered dnf-sum over the singleton as `dnf G` or `0` according to whether the
+  -- profile of `G` lies in `A`, with total `dnf G`; equality of the two probability
+  -- measures follows from equality of their `toReal` values on every measurable set.
   have hL : labelExtensions F.2 σ = {G} :=
     Finset.eq_singleton_iff_unique_mem.mpr ⟨hG, fun b hb => hsing b hb G hG⟩
   have hdnf : (0 : ℝ) < (downwardNormalizingFactor G : ℝ) := by
@@ -82,41 +77,6 @@ theorem extend_eq_dirac_of_labelExtensions_subsingleton
       (ℙ[φ] : Measure (PositiveHomSpace σ)) = Measure.dirac χ ∧
       ∀ F : FinFlag σ,
         Tendsto (fun n => (flagDensity₁ F.2 (Gsel n) : ℝ)) atTop (𝓝 (χ.val F)) := by
-  -- Route (dossier §3, risk-3 mitigation):
-  -- 1. Each `s.toProbMeasureSeq hs n = diracProba xₙ` with
-  --    `xₙ := funFromFlagWithSizeToFlagDensitySpace σ (s n).1 (Gsel n)`
-  --    (`toProbMeasure_eq_dirac_of_subsingleton`; `diracProba x = ⟨Measure.dirac x, _⟩`,
-  --    equality of `ProbabilityMeasure`s from equality of measures via
-  --    `ProbabilityMeasure.toMeasure_injective`).
-  -- 2. `tendsto_rootingMeasure_extend hσ s hs hconv` gives
-  --    `diracProba xₙ ⇒ rootingMeasureFDS φ hσ` on the compact metric
-  --    `FlagDensitySpace σ` (T0 + CompletelyRegularSpace hold).
-  -- 3. `range diracProba` is closed: `isEmbedding_diracProba` +
-  --    the domain is compact ⟹ the range is compact (continuous image,
-  --    `continuous_diracProba`) ⟹ closed (Hausdorff codomain — `ProbabilityMeasure` of a
-  --    metrizable space is metrizable/T2; check the instance route, else use
-  --    `IsCompact.isClosed`).  The limit of a sequence in a closed set stays in it, so
-  --    `rootingMeasureFDS φ hσ = diracProba x` for some `x : FlagDensitySpace σ`.
-  -- 4. `isEmbedding_diracProba.tendsto_nhds_iff` (or `tendsto_diracProba_iff_tendsto`)
-  --    upgrades step 2 to `xₙ → x`; coordinatewise convergence at each `F` follows from
-  --    continuity of the coordinate maps on `FlagDensitySpace σ` (subtype of a pi type:
-  --    `continuous_apply` composed with `continuous_subtype_val`), and
-  --    `xₙ.val F = flagDensity₁ F.2 (Gsel n)` is definitional
-  --    (`funFromFlagWithSizeToFlagDensitySpace`).
-  -- 5. Transport to `PositiveHomSpace σ`: `rootingMeasureFDS φ hσ` is the
-  --    `Subtype.val`-pushforward of `ℙ[φ]`, whose support lies in the (closed, measurable)
-  --    `PositiveHomSpace σ`; `x` must lie in it (the pushforward Dirac has full mass on
-  --    it — `Measure.dirac_apply` on the complement; mirror the
-  --    `Measure.comap Subtype.val` gymnastics of
-  --    `WeakConvergence.subseq_limit_eq_rootingMeasureFDS` / the `ℙ'` construction in
-  --    `RandomHom.exists_probMeasure_extend_emptyType_positiveHom`), giving
-  --    `χ : PositiveHomSpace σ` with `val χ = x`; then
-  --    `map val (ℙ[φ]) = map val (dirac χ)` and injectivity of the pushforward along the
-  --    measurable embedding `Subtype.val` (`MeasurableEmbedding.subtype_coe` +
-  --    `MeasurableEmbedding.map_injective` — or compare via
-  --    `measure_eq_of_integral_flag_eq` against `Measure.dirac χ` directly, mirroring
-  --    `extend_emptyType_eq_dirac`'s use of `integral_dirac'`) yields
-  --    `(ℙ[φ] : Measure _) = Measure.dirac χ`.
   classical
   set xseq : ℕ → FlagDensitySpace σ :=
     fun n => funFromFlagWithSizeToFlagDensitySpace σ (s n).1 (Gsel n)
@@ -226,12 +186,11 @@ theorem exists_turan_limit_with_seq (r : ℕ) (hr : 2 ≤ r) :
       ConvergesTo (turanFlagSeq r ∘ ϕ) φ.coe ∧
       posHomPoint φ ∈ Qσ (constraintOf (cliqueFreeClass (r + 1)) ∅ₜ).forb0 ∧
       φ ρ = ((r : ℝ) - 1) / r := by
-  -- Mirror `exists_turan_limit`'s proof (TuranLimit.lean — subsequence extraction via
+  -- Same construction as `exists_turan_limit` (TuranLimit.lean) — subsequence extraction via
   -- `increasing_flagSeq_contain_convergent_subseq`, limit hom via
   -- `flagSeq_limit_mem_positiveHom`, in-class membership, and the `ρ`-value via the
-  -- edge-density limit along the subsequence), KEEPING `ϕ` and the `ConvergesTo` in the
-  -- statement instead of discarding them.  All ingredients are public exports of
-  -- `TuranLimit`; copy its proof structure.
+  -- edge-density limit along the subsequence — but with `ϕ` and the `ConvergesTo` witness
+  -- kept in the statement rather than discarded.
   have hinc : Increases (turanFlagSeq r) := by
     apply increases_of_consecutive_lt
     intro n
@@ -301,7 +260,7 @@ lemma turanLimit_spec (r : ℕ) (hr : 2 ≤ r) :
 /-- The chosen limit lies in the Turán slice. -/
 lemma turanLimit_mem_slice (r : ℕ) (hr : 2 ≤ r) :
     posHomPoint (turanLimit r hr) ∈ turanSlice r := by
-  -- `posHomPoint_mem_eqSlice` from `turanLimit_spec` (mirror `turanSlice_nonempty`).
+  -- `posHomPoint_mem_eqSlice` from `turanLimit_spec`, as in `turanSlice_nonempty`.
   obtain ⟨-, -, hQ, hρ⟩ := turanLimit_spec r hr
   exact posHomPoint_mem_eqSlice.mpr ⟨hQ, hρ⟩
 

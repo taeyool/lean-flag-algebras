@@ -2,7 +2,7 @@ import LeanFlagAlgebras.MetaTheory.GraphonBasic
 import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.Combinatorics.SimpleGraph.Finite
 
-/-! # Induced flag densities of a graphon (Phase 2 of the graphon layer)
+/-! # Induced flag densities of a graphon
 
 The analytic layer of the `φ_W` construction (infrastructure toward `thm:k4free-p4-tripartite`'s
 representation input; no direct `paper.tex` display — the paper treats "every graphon is a limit

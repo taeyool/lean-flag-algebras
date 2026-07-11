@@ -25,8 +25,7 @@ produces the paper's quantitative conclusions:
   taken abstractly: any predicate `close` guaranteed by a sufficiently high edge density is
   guaranteed by a sufficiently small deficit.
 
-The `Δ^{1/4}` rates are stated with nested square roots (`√(C·√Δ)`), avoiding `Real.rpow`
-(README deviation).
+The `Δ^{1/4}` rates are stated with nested square roots (`√(C·√Δ)`), avoiding `Real.rpow`.
 -/
 
 open MeasureTheory unitInterval
@@ -151,7 +150,7 @@ theorem interval_localisation_below (r : ℕ) (hr : 4 ≤ r) {A B : ℝ}
     alphaMinus r - G.edgeDensity
       ≤ (((r : ℝ) - 1) * Real.sqrt A + (((r : ℝ) - 2) / 2) * Real.sqrt B)
           / (((r : ℝ) - 1) * ((r : ℝ) - 3)) := by
-  -- Mirror of `interval_localisation`: for `p < α⁻` both factors of
+  -- By symmetry with `interval_localisation`: for `p < α⁻` both factors of
   -- `q(p) = r(2r-3)(p-α⁻)(p-α⁺)` are negative, so
   -- `q(p) = r(2r-3)(α⁻-p)(α⁺-p) ≥ r(2r-3)(α⁺-α⁻)(α⁻-p) = (r-1)(r-3)(α⁻-p)`.
   have hr' : (4 : ℝ) ≤ (r : ℝ) := by exact_mod_cast hr
@@ -193,7 +192,7 @@ theorem interval_localisation_below (r : ℕ) (hr : 4 ≤ r) {A B : ℝ}
 /-- At `r = 3`: `(3p-2)² ≤ 2√A + (1/2)√B` (the square of the edge-density deviation is
 controlled by the square-error bounds). -/
 theorem r3_edge_sq_bound {A B : ℝ} (hA : G.Reta 3 ≤ A) (hB : G.Rtau 3 ≤ B)
-    (hA0 : 0 ≤ A) (hB0 : 0 ≤ B) :
+    (_hA0 : 0 ≤ A) (_hB0 : 0 ≤ B) :
     (3 * G.edgeDensity - 2) ^ 2 ≤ 2 * Real.sqrt A + (1 / 2) * Real.sqrt B := by
   -- At `r = 3`: `r(2r-3) = 9`, `α₃⁻ = α₃⁺ = 2/3`, so
   -- `9(p-α⁻)(p-α⁺) = 9(p-2/3)² = (3p-2)²` (`norm_num`/`ring` after unfolding `alpha*`),
@@ -208,7 +207,7 @@ theorem r3_edge_sq_bound {A B : ℝ} (hA : G.Reta 3 ≤ A) (hB : G.Rtau 3 ≤ B)
 
 /-- At `r = 3`: the degree concentration `9·∫(d-p)² ≤ 2√A + (1/2)√B`. -/
 theorem r3_degree_concentration {A B : ℝ} (hA : G.Reta 3 ≤ A) (hB : G.Rtau 3 ≤ B)
-    (hA0 : 0 ≤ A) (hB0 : 0 ≤ B) :
+    (_hA0 : 0 ≤ A) (_hB0 : 0 ≤ B) :
     9 * (∫ x, (G.deg x - G.edgeDensity) ^ 2) ≤ 2 * Real.sqrt A + (1 / 2) * Real.sqrt B := by
   -- `approximate_moments_variance` at `r = 3`: the product term is `-(3p-2)²/9·9 ≤ 0`,
   -- so it can be dropped; coefficients as above.

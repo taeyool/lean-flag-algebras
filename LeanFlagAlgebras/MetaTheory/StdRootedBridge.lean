@@ -3,14 +3,13 @@ import LeanFlagAlgebras.MetaTheory.EmptyTypeGraphBridge
 
 /-! # Standard-rooted flags on `Fin n`: the two-root bridge
 
-Sub-project A, module 0 of `HOM_TO_GRAPHON_DESIGN.md` (the rooted-transport layer): the
-two-root analogue of `MetaTheory/EmptyTypeGraphBridge.lean`.  For a two-vertex type
+The two-root analogue of `MetaTheory/EmptyTypeGraphBridge.lean`.  For a two-vertex type
 `σ : FlagType (Fin 2)` a **standard-rooted** graph is a `G : SimpleGraph (Fin n)` whose
 adjacency at the vertex pair `(0, 1)` matches `σ` (`RootCompatible`); such a `G` carries the
 canonical root embedding `Fin.castLE`, giving the labelled graph `mkStdRooted` and its flag
 class.  The rooted conditional profile of `GraphonRootedHom.lean` sums over exactly these
 graphs (pinning the samples of coordinates `0, 1` is only meaningful for the standard
-embedding — see the design doc's index-set correction).
+embedding).
 
 Contents:
 
@@ -101,11 +100,11 @@ theorem mkStdRooted_flag_eq_iff {n : ℕ} (hn : 2 ≤ n) (G G' : SimpleGraph (Fi
 /-- Every flag class on `Fin n` has a standard-rooted representative: relabel any
 representative by a permutation carrying its roots to `0, 1`.
 
-Proof route: take `F.out`, extend the injection `Fin 2 → Fin n` given by its `type_embed`
+The proof takes `F.out`, extends the injection `Fin 2 → Fin n` given by its `type_embed`
 to a permutation `π` of `Fin n` sending `type_embed a ↦ Fin.castLE hn a`
-(`exists_perm_comp_emb` from `EmptyTypeGraphBridge` applied to the two-element embeddings,
-or the complement construction directly), pull the graph back along `π.symm`, and check the
-resulting labelled graph is flag-equivalent to `F.out` via the iso `π`. -/
+(via `exists_perm_comp_emb` from `EmptyTypeGraphBridge` applied to the two-element
+embeddings), pulls the graph back along `π.symm`, and checks the resulting labelled graph
+is flag-equivalent to `F.out` via the iso `π`. -/
 theorem exists_stdRooted_rep {n : ℕ} (hn : 2 ≤ n) (F : FlagWithSize σ n) :
     ∃ (G : SimpleGraph (Fin n)) (h : RootCompatible σ hn G),
       (⟦mkStdRooted σ hn G h⟧ : Flag σ (Fin n)) = F := by
@@ -187,8 +186,8 @@ theorem mkStdRooted_comap_rootfix_perm {ℓ : ℕ} (hℓ : 2 ≤ ℓ) (π : Fin 
 permutation of the codomain.  (Root-fixing of `π` on the roots follows from the first clause
 and `RootFixing`; it is exposed for convenience.)
 
-Proof route: the complement construction of `exists_perm_comp_emb`
-(`EmptyTypeGraphBridge`), run relative to the roots: the ranges agree on the roots, so the
+The proof adapts the complement construction of `exists_perm_comp_emb`
+(`EmptyTypeGraphBridge`) relative to the roots: the ranges agree on the roots, so the
 range bijection `j₁ i ↦ j₂ i` already fixes them, and the complement bijection never
 touches them. -/
 theorem exists_rootfix_perm_comp_emb {n ℓ : ℕ} (hn : 2 ≤ n) (hℓ : 2 ≤ ℓ)
@@ -235,7 +234,7 @@ private lemma range_restrict_roots_compl {n' ℓ : ℕ} (hn' : 2 ≤ n') (hℓ :
 whose ranges overlap **exactly** in the roots (the gluing configuration of the rooted
 `mulProp`): a single root-fixing permutation aligns both simultaneously.
 
-Proof route: split `Fin ℓ` into the roots, the two non-root range parts, and the rest; the
+The proof splits `Fin ℓ` into the roots, the two non-root range parts, and the rest; the
 non-root parts of the ranges are disjoint by the overlap hypotheses, so the three-piece
 assembly of `exists_perm_comp_emb_pair` applies on the complement of the roots. -/
 theorem exists_rootfix_perm_comp_emb_pair {n₁ n₂ ℓ : ℕ}

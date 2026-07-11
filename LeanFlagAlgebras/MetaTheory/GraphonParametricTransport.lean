@@ -3,15 +3,14 @@ import LeanFlagAlgebras.MetaTheory.GraphonRepresentation
 
 /-! # The parametric rooted transport and the top-endpoint recovery (Cor 106)
 
-The general-`r` counterpart of `GraphonKernelTransport.lean`, formalising
+The general-`r` form of the rooted transport in `GraphonKernelTransport.lean`, formalising
 `cor:top-endpoint-recovery` (Cor 106) of `paper.tex` together with the `R_τ⁻` kernel
-functional tracked by the worklog.  Everything runs on the shipped rooted-transport stack;
-the classical inputs are, as everywhere, explicit named hypotheses (`hZykov` — the
-non-equality Zykov bound — and, in the `_of_rep_exists` form, Lovász–Szegedy existence).
+functional.  The classical inputs are, as everywhere, explicit named hypotheses (`hZykov` —
+the non-equality Zykov bound — and, in the `_of_rep_exists` form, Lovász–Szegedy existence).
 
 * `parametricP4_graphon_Rtau_eq_zero` / `parametricP4_graphon_Reta_eq_zero` — the general-`r`
   transports: for a graphon whose `φ_W` lies in the parametric slice `Y_r`, the two local
-  equations hold a.e., i.e. `R_τ(r) = R_η(r) = 0` (mechanical generalisation of the shipped
+  equations hold a.e., i.e. `R_τ(r) = R_η(r) = 0` (the general-`r` form of the
   `k4freeP4_graphon_*` theorems; only the slice equations change, the measure-theoretic
   chain is `r`-free).
 * `Graphon.RtauMinus` — the `r`-independent kernel functional
@@ -31,11 +30,11 @@ non-equality Zykov bound — and, in the `_of_rep_exists` form, Lovász–Szeged
   confines it to `[α_r⁻, α_r⁺]` — which is exactly the paper's point).
 * `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` — the paper-verbatim forms,
   quantified over representatives (no existence input) and conditional on `hrep`
-  respectively, mirroring `GraphonRepresentation.lean`.
+  respectively, in the style of `GraphonRepresentation.lean`.
 
 Stated at `3 ≤ r` (the paper fixes `r ≥ 4` because `r = 3` is already covered
-unconditionally by `thm:k4free-p4-tripartite`; the wider range is a benign generalisation
-in the Deviation-15c pattern).  All slice-consuming theorems are Tier-2.
+unconditionally by `thm:k4free-p4-tripartite`; the wider range is a benign generalisation).
+All slice-consuming theorems are Tier-2.
 -/
 
 open MeasureTheory unitInterval
@@ -129,7 +128,7 @@ variable (hZykov : ∀ φ₀ : PositiveHom ∅ₜ, posHomPoint φ₀ ∈ Qσ (kr
 
 include hr hZykov in
 /-- **The `τ`-transport at general `r`**: `R_τ(r) = 0` for any graphon whose `φ_W` lies in
-the parametric slice (mirror of `k4freeP4_graphon_Rtau_eq_zero` with
+the parametric slice (the general-`r` form of `k4freeP4_graphon_Rtau_eq_zero`, with
 `parametricP4_tau_equation` in place of the `r = 3` slice equation; the measure-theoretic
 chain — `support_subset_relSσ`, `rootedViewMeasure_eq_extend`, `ae_of_ae_map`,
 `ae_withDensity_iff`, the kernel dictionary — is unchanged). -/
@@ -383,7 +382,7 @@ theorem parametricP4_top_endpoint_of_represents {W : Graphon} {φ₀ : PositiveH
 
 include hr hZykov in
 /-- The existence form of Cor 106, conditional on the Lovász–Szegedy existence input
-`hrep` (the one named classical input of Phase 4). -/
+`hrep` (the sole representation-existence classical input this result needs). -/
 theorem parametricP4_top_endpoint_of_rep_exists
     (hrep : ∀ φ₀ : PositiveHom ∅ₜ, ∃ W : Graphon,
         ∀ F : FinFlag ∅ₜ, graphonProfileFun W F = φ₀.coe F)

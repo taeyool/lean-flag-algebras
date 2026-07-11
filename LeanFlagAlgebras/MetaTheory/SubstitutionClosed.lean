@@ -6,7 +6,7 @@ import LeanFlagAlgebras.MetaTheory.CapstoneShared
 import LeanFlagAlgebras.MetaTheory.WeakConvergence
 import LeanFlagAlgebras.MetaTheory.BinomialRatio
 
-/-! # The substitution-root-plantability theorem (paper §6–§7, the generalised capstone)
+/-! # The substitution-root-plantability theorem (paper §6–§7)
 
 This is the §6–§7 analogue of `clone_root_plantable` (`thm:true-clone-root-plantable` /
 `thm:substitution-root-plantable`).  For a hereditary class `hc` (no clone-closure assumption) and a
@@ -14,13 +14,13 @@ nontrivial type `σ`, given a *within-class blow-up closure* hypothesis `hclosur
 has, for every `M`, a within-class family `W` whose uniform `(M+1)`-generalised blow-up
 `subBlowup Γ W` stays in the class — the constraint `hc.constraintOf σ` is root-plantable.
 
-The proof MIRRORS the §5 capstone (`CloneClosed.lean`) line-for-line, swapping the independent
-blow-up for `subBlowup Γ (Wf M)` and the §5 sequence/estimate lemmas for their `…_sub` analogues:
+The proof follows the same line as the §5 capstone (`CloneClosed.lean`), replacing the independent
+blow-up with `subBlowup Γ (Wf M)` and the §5 sequence/estimate lemmas with their `…_sub` analogues:
 the asymptotic planted-estimate gap has the same `1 − ρ` form, so the arithmetic carries over
 verbatim.  All the §5 measure-theoretic / topological infrastructure
 (`toProbMeasure_apply_eq_labeling_ratio`, `cyl`, `isClosed_cyl`,
 `mem_closure_of_forall_finset_cylinder`, `rhoInf`, the labelling-count lemmas, `transportLabeled`,
-…) is reused verbatim from `CloneClosed.lean`.
+…) is reused directly from `CloneClosed.lean`.
 -/
 
 open MeasureTheory Filter Topology
@@ -37,7 +37,7 @@ open Classical
 variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 /-- σ-type density of every generalised blow-up flag is positive (a uniform `1/n^{n₀}` lower
-bound).  Mirror of `blowupFlagSeq_type_pos`. -/
+bound), the generalised-blow-up analogue of `blowupFlagSeq_type_pos`. -/
 theorem blowupFlagSeq_sub_type_pos {n : ℕ} (hn : 0 < n) {Γ : SimpleGraph (Fin n)} (θ : σ ↪g Γ)
     (Wf : (M : ℕ) → ∀ _v : Fin n, SimpleGraph (Fin (M + 1))) (M : ℕ) :
     flagDensity₁ σ.toEmptyTypeFlag (blowupFlagSeq_sub Γ Wf M).2 > 0 := by
@@ -46,8 +46,8 @@ theorem blowupFlagSeq_sub_type_pos {n : ℕ} (hn : 0 < n) {Γ : SimpleGraph (Fin
   exact lt_of_lt_of_le hpos h
 
 /-- σ-embeddings into the generalised blow-up biject with the ordered induced embeddings
-`blowupEmbeddings_sub` (an embedding is exactly an injective, adjacency-reflecting vertex map).
-Mirror of `embeddingEquivBlowupEmbeddings`. -/
+`blowupEmbeddings_sub` (an embedding is exactly an injective, adjacency-reflecting vertex map),
+the generalised-blow-up analogue of `embeddingEquivBlowupEmbeddings`. -/
 private def embeddingEquivBlowupEmbeddings_sub {n : ℕ} (Γ : SimpleGraph (Fin n))
     (m : Fin n → ℕ) (W : ∀ v, SimpleGraph (Fin (m v))) :
     (σ ↪g subBlowup Γ W) ≃ {g // g ∈ blowupEmbeddings_sub Γ σ m W} where
@@ -67,8 +67,8 @@ private def embeddingEquivBlowupEmbeddings_sub {n : ℕ} (Γ : SimpleGraph (Fin 
 
 /-- **Per-`M` step of the planted-mass cylinder bound (generalised).**  Given the planted-estimate
 gap bound on every coordinate of `Fs` at the uniform clone size `M+1`, the σ-rooting measure of the
-closed cylinder centered at the base profile is at least the planted fraction `(1/(2n))^{n₀}`.
-Mirror of `planted_cylinder_mass_step`. -/
+closed cylinder centered at the base profile is at least the planted fraction `(1/(2n))^{n₀}`,
+the generalised-blow-up analogue of `planted_cylinder_mass_step`. -/
 private theorem planted_cylinder_mass_step_sub {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n₀)
     {Γ : SimpleGraph (Fin n)} (θ : σ ↪g Γ) (Fs : Finset (FinFlag σ)) {δ : ℝ} (_hδ : 0 < δ)
     (Wf : (M : ℕ) → ∀ _v : Fin n, SimpleGraph (Fin (M + 1))) (M : ℕ)
@@ -257,8 +257,8 @@ private theorem planted_cylinder_mass_step_sub {n : ℕ} (hn : 0 < n) (hn₀ : 0
   rw [hden_eq] at hden_pos
   exact div_le_div_of_nonneg_right (by exact_mod_cast hplanted_inj) hden_pos.le
 
-/-- **The planted-mass cylinder bound (generalised, CRUX).**  Mirror of `planted_cylinder_mass`.
-For the uniform generalised blow-up sequence of an in-class base `Γ` with `σ`-embedding `θ`, if the
+/-- **The planted-mass cylinder bound (generalised).**  The generalised-blow-up analogue of
+`planted_cylinder_mass`.  For the uniform generalised blow-up sequence of an in-class base `Γ` with `σ`-embedding `θ`, if the
 cylinder radius `δ` accommodates the asymptotic planted-estimate gap on every coordinate of `Fs`,
 then the σ-rooting measure of the closed cylinder centered at the *base* density profile carries,
 for all large `M`, a positive mass bounded below by the planted fraction `(1/(2n))^{n₀}`. -/
@@ -328,11 +328,12 @@ private theorem planted_cylinder_mass_sub {n : ℕ} (hn : 0 < n) (hn₀ : 0 < n�
 /-- **Substitution-root-plantability** (`thm:true-clone-root-plantable` /
 `thm:substitution-root-plantable`).  For any hereditary graph class `hc` with the within-class
 blow-up closure hypothesis `hclosure` and any nontrivial type `σ`, the constraint `hc.constraintOf σ`
-is root-plantable: `S_σ = Q_σ`.  Mirror of `clone_root_plantable`, using `subBlowup Γ (Wf M)` for an
-`hclosure`-supplied within-class family `Wf` in place of the §5 independent blow-up. -/
+is root-plantable: `S_σ = Q_σ`.  This is the generalised-blow-up form of `clone_root_plantable`,
+using `subBlowup Γ (Wf M)` for an `hclosure`-supplied within-class family `Wf` in place of the §5
+independent blow-up. -/
 theorem subst_root_plantable (hc : HeredClass) {n₀ : ℕ} (σ : FlagType (Fin n₀)) (hn₀ : 0 < n₀)
     (hclosure : ∀ {n : ℕ} (Γ : SimpleGraph (Fin n)), hc.Mem Γ → ∀ (M : ℕ),
-        ∃ (W : ∀ v : Fin n, SimpleGraph (Fin (M + 1))), hc.Mem (subBlowup Γ W)) :
+        ∃ (W : ∀ _v : Fin n, SimpleGraph (Fin (M + 1))), hc.Mem (subBlowup Γ W)) :
     RootPlantable (hc.constraintOf σ) := by
   -- It suffices to prove `Q_σ ⊆ S_σ` (the reverse holds always).
   refine Set.Subset.antisymm (Sσ_subset_Qσ _) ?_

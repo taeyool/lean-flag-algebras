@@ -795,15 +795,14 @@ flag-algebra imports; and the **`φ_W` strand** (`GraphonInducedDensity` →
 `GraphonParametricTransport`/`ParametricStabilityModulus`)
 bridges the graphon strand back into the flag-algebra world — starting with the graphon→hom half
 of the representation bridge (infrastructure with no single `paper.tex` display, README
-Deviation 16), then, via the **rooted transport** (sub-project A of
-[`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md), the five modules from `StdRootedBridge`
+Deviation 16), then, via the **rooted transport** (described in
+[`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md); the five modules from `StdRootedBridge`
 on), running all the way to `r3_rigidity`'s a.e. kernel hypotheses (`k4freeP4_graphon_tripartite`,
-the graphon-side content of `thm:k4free-p4-tripartite`, Thm 102). **Route-3**
-(`GraphonRepresentation`, a prior session) then closes Thm 102 itself in paper-verbatim,
-representative-quantified form, and **this session's wave** (`GraphonParametricTransport` +
-`ParametricStabilityModulus`) closes the two pieces that remained the same way — Cor 106 and
-Thm 112(iv). Classical inputs enter as named hypotheses throughout (README Deviations 14a, 15b,
-18); with this wave, **every §11 result is formalised modulo exactly the four permanent named
+the graphon-side content of `thm:k4free-p4-tripartite`, Thm 102). `GraphonRepresentation`
+then closes Thm 102 itself in paper-verbatim, representative-quantified form, and
+`GraphonParametricTransport` + `ParametricStabilityModulus` close the two remaining pieces the
+same way — Cor 106 and Thm 112(iv). Classical inputs enter as named hypotheses throughout (README
+Deviations 14a, 15b, 18); **every §11 result is formalised modulo exactly the four permanent named
 classical inputs** (Erdős–Simonovits stability, Zykov's bound and its equality case,
 Lovász–Szegedy existence — README [Scope & limitations](./README.md#scope--limitations)); what
 remains beyond that is only the optional campaigns below. The
@@ -926,7 +925,7 @@ capstone theorems.
   `ComplementHom`'s `complHom` used) with its point `graphonHomPoint`; and the sanity link
   `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` tying this flag-algebra-side
   construction back to the `GraphonBasic` kernel layer.
-* **[`StdRootedBridge`](./StdRootedBridge.lean)** — sub-project A, module 0 of
+* **[`StdRootedBridge`](./StdRootedBridge.lean)** — the rooted-transport foundation described in
   [`HOM_TO_GRAPHON_DESIGN.md`](./HOM_TO_GRAPHON_DESIGN.md): the two-root analogue of
   `EmptyTypeGraphBridge`. Standard-rooted graphs at a two-vertex type
   (`RootCompatible`/`mkStdRooted`, roots at `0, 1` via `Fin.castLE`), flag equality iff
@@ -935,7 +934,7 @@ capstone theorems.
   (`exists_rootfix_perm_comp_emb(_pair)`), and the rooted density-as-subset-count formula
   (`flagDensity₁_stdRooted`). Certificate-free (general `σ : FlagType (Fin 2)`); feeds
   `GraphonRootedDensity`/`GraphonRootedHom`.
-* **[`GraphonRootedDensity`](./GraphonRootedDensity.lean)** — sub-project A, module 1a: the
+* **[`GraphonRootedDensity`](./GraphonRootedDensity.lean)** — the
   unnormalised rooted density `unnormRootedDensity` (induced weight with the root coordinates
   pinned at `u, v` via `pinRoots`), the root factor `rootWeight`/`RootAdmissible`,
   root-fixing relabelling invariance, the rooted extension partition, total mass
@@ -943,7 +942,7 @@ capstone theorems.
   `unnormRootedDensity_block_mul` (glue embeddings `Fin.castLE`/`glueEmb₂` overlapping
   exactly in the shared roots — whence the single surviving `rootWeight` factor), and the
   subset↔embedding bridge (`exists_rootFixing_emb_range`, `stdRooted_subset_iso_iff`).
-* **[`GraphonRootedHom`](./GraphonRootedHom.lean)** — sub-project A, module 1b: **the rooted
+* **[`GraphonRootedHom`](./GraphonRootedHom.lean)** — **the rooted
   conditional homomorphism**. The conditional profile `graphonRootedProfileFun` (sum over the
   standard-rooted class, divided by `rootWeight`) satisfies `zeroSpaceProp` (root-fixing
   subset-averaging with the `C(ℓ−2, n−2)` count), `oneProp` (needs `RootAdmissible`), and
@@ -951,8 +950,8 @@ capstone theorems.
   pair is forced to be the complement-plus-roots of the first, collapsing the pair count),
   assembling to `graphonRootedHom W σ' u v h : PositiveHom σ'` — the view of `φ_W` from a
   `W`-random root pair — with joint measurability in `(u, v)` for the rooted-view measure of
-  the upcoming `GraphonRootedMeasure` (module 2).
-* **[`GraphonRootedMeasure`](./GraphonRootedMeasure.lean)** — sub-project A, module 2a: **the
+  [`GraphonRootedMeasure`](./GraphonRootedMeasure.lean) below.
+* **[`GraphonRootedMeasure`](./GraphonRootedMeasure.lean)** — **the
   rooted-view measure is the extension measure**. `rootMass`/`rootMass_eq_typeFlag` (the total
   root-factor mass is `φ_W`'s value on the two-vertex type flag), `integral_unnormRootedDensity`
   (integrating out the pinned coordinates recovers the unrooted `graphonFlagDensity`), the
@@ -964,10 +963,10 @@ capstone theorems.
   identity `integral_rootedClassSum`, and the capstone
   `rootedViewMeasure`/**`rootedViewMeasure_eq_extend`**: the normalised `rootWeight`-weighted
   pushforward of `graphonRootedHom` equals `ℙ[graphonHom W]`, via `measure_eq_of_integral_flag_eq`.
-* **[`GraphonKernelTransport`](./GraphonKernelTransport.lean)** — sub-project A, module 2b
-  (**the capstone**): the **kernel dictionary** — `graphonRootedHom_a_tau`/`_b_tau`/`_g_tau`/
+* **[`GraphonKernelTransport`](./GraphonKernelTransport.lean)** — **the capstone**: the **kernel
+  dictionary** — `graphonRootedHom_a_tau`/`_b_tau`/`_g_tau`/
   `_z_eta`/`_g_eta`, the rooted three-vertex flag values as `deg`/`codeg` expressions
-  (`paper.tex:4861–4875`; each a single standard-rooted graph on `Fin 3`, since a root-fixing
+  (each a single standard-rooted graph on `Fin 3`, since a root-fixing
   permutation of `Fin 3` is forced to be the identity) — and the **transport**:
   `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` push the `K₄`-free `P₄`-slice equations of
   `ParametricP4Slice` (holding on `relSσ k4freeP4Slice`, hence `ℙ[φ_W]`-a.e. via
@@ -978,23 +977,22 @@ capstone theorems.
   graphon — `Graphon.r3_rigidity` with both hypotheses discharged, the graphon-side content of
   `thm:k4free-p4-tripartite` (Thm 102). **Tier-2** on these three theorems (they consume the
   slice equations); the dictionary lemmas are Tier-1.
-* **[`GraphonStep`](./GraphonStep.lean)** — sub-project B, module 3: **step graphons**.  The
+* **[`GraphonStep`](./GraphonStep.lean)** — **step graphons**.  The
   equal-`N`-cell map `cellIdx` (floor-based, clamped at `x = 1`; measurable, fibres of volume
   exactly `1/N`), the indicator kernel `stepGraphon hN G`, and the pointwise indicator
   identity `inducedWeight_stepGraphon`: the induced weight of `H` at samples `c` is the
   indicator of the *literal* graph equality `G.comap (cellIdx ∘ c) = H`.  Tier-1.
-* **[`GraphonCounting`](./GraphonCounting.lean)** — sub-project B, module 4 (the
-  pre-checkpoint payoff): the counting lemma `graphonProfileFun_stepGraphon_sub_le` with
+* **[`GraphonCounting`](./GraphonCounting.lean)** — the counting lemma `graphonProfileFun_stepGraphon_sub_le` with
   explicit error `n(n−1)/N` (exact tuple-count formula `profile = #{realising cell
   tuples}/Nⁿ`, injective tuples ↔ `n!` times the subset count of `flagDensity₁_graphFlag`,
   non-injective mass and falling-factorial defect each `≤ C(n,2)/N`), and **density of the
   graphon-hom range**: `exists_graphonHomPoint_seq_tendsto` — every `φ : PositiveHom ∅ₜ` is
   a limit of `graphonHomPoint` points.  With `positiveHomSpace_isClosed`, the representation
-  theorem is now equivalent to `IsClosed (Set.range graphonHomPoint)` (module 5, gated
-  behind the design spike).  Tier-1.
-* **[`GraphonRepresentation`](./GraphonRepresentation.lean)** — **Route-3 closure of Phase 4** (a
-  prior session; the checkpoint spike's adopted route after the honest martingale-limit repair was
-  costed at 1500–3000+ lines with no Mathlib precedent). `posHomPoint_eq_of_graphonProfileFun_eq`
+  theorem is equivalent to `IsClosed (Set.range graphonHomPoint)`.  Tier-1.
+* **[`GraphonRepresentation`](./GraphonRepresentation.lean)** — closes Thm 102 by composing
+  profile agreement with the kernel-transport result, bypassing the closedness route above (an
+  honest martingale-limit proof of that route was costed at 1500–3000+ lines with no Mathlib
+  precedent). `posHomPoint_eq_of_graphonProfileFun_eq`
   (profile agreement gives point agreement) composes with `k4freeP4_graphon_tripartite` to give
   **`k4free_p4_tripartite_of_represents`** — the unconditional, **paper-verbatim** `thm:k4free-p4-tripartite`
   (Thm 102): every graphon *representing* a point of the slice is a.e. balanced tripartite, no
@@ -1003,14 +1001,14 @@ capstone theorems.
   classical input `hrep : ∀ φ₀, ∃ W, ∀ F, graphonProfileFun W F = φ₀.coe F` (Lovász–Szegedy
   existence; `hrep` is equivalent to `IsClosed (Set.range graphonHomPoint)` given
   `exists_graphonHomPoint_seq_tendsto` above, so retiring it is the deferred weak-regularity
-  campaign). Tier-2 (consumes `k4freeP4_graphon_tripartite`); at the time of this closure, Cor 106
-  did not yet admit the same treatment (`Graphon.slice_rigidity` had no rooted-transport
-  counterpart) — the gap this session's `GraphonParametricTransport` fills.
-* **[`GraphonParametricTransport`](./GraphonParametricTransport.lean)** — this session: the
+  campaign). Tier-2 (consumes `k4freeP4_graphon_tripartite`); `Graphon.slice_rigidity` alone has no
+  rooted-transport counterpart for Cor 106 — that counterpart is supplied by
+  `GraphonParametricTransport` below.
+* **[`GraphonParametricTransport`](./GraphonParametricTransport.lean)** — the
   general-`r` mirror of the rooted-transport stack, closing **Cor 106**
-  (`cor:top-endpoint-recovery`) the same Route-3 way. The general-`r` rooted transports
+  (`cor:top-endpoint-recovery`) the same way as Thm 102. The general-`r` rooted transports
   `parametricP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` (mechanical `r`-generalisations of the
-  shipped `r = 3` ones); the **`R_τ⁻` kernel functional** `Graphon.RtauMinus := ∫∫W(x,y)(d(x)−d(y))²`
+  `r = 3` ones); the **`R_τ⁻` kernel functional** `Graphon.RtauMinus := ∫∫W(x,y)(d(x)−d(y))²`
   with its a.e. characterisation; the **`f₂` hom→kernel bridge** `graphonHom_f₂_eq_RtauMinus :
   φ_W(f₂) = R_τ⁻(W)` (via the extension-measure spec at the edge type — no new density
   computations), which discharges the kernel-level third clause of Thm 112(i)
@@ -1021,7 +1019,7 @@ capstone theorems.
   `GraphonRepresentation`, **`parametricP4_top_endpoint_of_represents`** / `_of_rep_exists`. Stated
   at `3 ≤ r` (the paper's `r ≥ 4`, since `r = 3` is already unconditional — Deviation 15c). Tier-2
   on the slice-consuming theorems.
-* **[`ParametricStabilityModulus`](./ParametricStabilityModulus.lean)** — this session: closes
+* **[`ParametricStabilityModulus`](./ParametricStabilityModulus.lean)** — closes
   **Thm 112(iv)** (the `ω_Zyk` route). `parametric_stability_via_modulus` (hom level) and
   `parametric_graphon_stability_via_modulus` (the graphon-facing instantiation), in the same
   modulus-abstraction pattern as `GraphonQuantStability.stability_via_modulus`'s `ω_Tur` route: the
@@ -1191,19 +1189,19 @@ infrastructure**: every graphon `W` is a positive homomorphism `φ_W : PositiveH
 ([`GraphonInducedDensity`](./GraphonInducedDensity.lean)) and the subset-count bridges
 ([`PairSubsetCount`](./PairSubsetCount.lean), [`EmptyTypeGraphBridge`](./EmptyTypeGraphBridge.lean)),
 with the sanity link `graphonHom_edge` to `GraphonBasic.edgeDensity` — no single `paper.tex`
-display (README Deviation 16). **Sub-project A of `HOM_TO_GRAPHON_DESIGN.md` — the rooted
-transport — is complete**: the five-module stack `StdRootedBridge`/
+display (README Deviation 16). **The rooted transport described in `HOM_TO_GRAPHON_DESIGN.md`
+is complete**: the five-module stack `StdRootedBridge`/
 `GraphonRootedDensity`/`GraphonRootedHom`/`GraphonRootedMeasure`/`GraphonKernelTransport` carries
 the `K₄`-free `P₄`-slice equations, through the rooted conditional homomorphism and the measure
 identification `rootedViewMeasure_eq_extend` (= `ℙ[φ_W]`), into `r3_rigidity`'s a.e. kernel
 hypotheses, discharging both of them for any graphon in the slice
 (`k4freeP4_graphon_tripartite`) — the graphon-side content of `thm:k4free-p4-tripartite`
-(Thm 102). **Route-3 then closes Thm 102 itself** ([`GraphonRepresentation`](./GraphonRepresentation.lean),
-a prior session): `k4free_p4_tripartite_of_represents` is the unconditional, paper-verbatim
+(Thm 102). **[`GraphonRepresentation`](./GraphonRepresentation.lean) then closes Thm 102 itself**:
+`k4free_p4_tripartite_of_represents` is the unconditional, paper-verbatim
 statement (quantified over *representing* graphons — the paper's own quantifier shape, so no
 representation-existence input is needed), plus `k4free_p4_tripartite_of_rep_exists` conditional
-on the one named classical input `hrep` (Lovász–Szegedy existence). **This session's wave closes
-the two pieces that remained the same way**: **Cor 106**
+on the one named classical input `hrep` (Lovász–Szegedy existence). The same route closes
+**Cor 106**
 ([`GraphonParametricTransport`](./GraphonParametricTransport.lean),
 `parametricP4_top_endpoint_of_represents`/`_of_rep_exists`) and **Thm 112(iv)**
 ([`ParametricStabilityModulus`](./ParametricStabilityModulus.lean),

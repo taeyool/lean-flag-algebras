@@ -3,11 +3,11 @@ import LeanFlagAlgebras.MetaTheory.GraphonHom
 import LeanFlagAlgebras.MetaTheory.MeasureUniqueness
 import LeanFlagAlgebras.MetaTheory.SupportClosure
 
-/-! # The rooted-view measure of a graphon (sub-project A, module 2a)
+/-! # The rooted-view measure of a graphon
 
-The measure layer of the rooted transport (`HOM_TO_GRAPHON_DESIGN.md`, sub-project A): the
-law of the rooted conditional homomorphism `graphonRootedHom W σ' u v` under a `W`-random
-root pair **is** the abstract extension measure `ℙ[graphonHom W]`.  Concretely:
+The measure layer of the rooted transport: the law of the rooted conditional homomorphism
+`graphonRootedHom W σ' u v` under a `W`-random root pair **is** the abstract extension
+measure `ℙ[graphonHom W]`.  Concretely:
 
 * `rootedViewPoint` — the (junk-totalised) map `I × I → X_{σ'}` sending an admissible pair to
   the point of its rooted conditional homomorphism, with `measurable_rootedViewPoint`.
@@ -20,8 +20,7 @@ root pair **is** the abstract extension measure `ℙ[graphonHom W]`.  Concretely
 * `card_stdRooted_class` — **the rooted-vs-unrooted counting bridge**: the number of
   standard-rooted graphs in a rooted class is `downwardNormalizingFactor` times the number of
   labelled graphs in its unlabelled class (a same-size double count over pairs `(G, θ)` of a
-  graph and a root placement, in the style of `FlagOperators.isoInjectiveMapSet`; see the
-  probe notes in the design doc).
+  graph and a root placement, in the style of `FlagOperators.isoInjectiveMapSet`).
 * `integral_rootedClassSum` — the **bridge integral identity** assembling the last two:
   `∫∫ (unnormalised rooted class-sum of F) = dnf F.2 · graphonProfileFun W ⟨F.1, unlabel F.2⟩`.
 * `rootedViewMeasure` and `rootedViewMeasure_eq_extend` — the normalised weighted pushforward
@@ -460,7 +459,7 @@ private theorem integral_pinRoots_eq {n : ℕ} (hn : 2 ≤ n) (F : (Fin n → I)
       unfold rootsPart
       show (if (rootsEquivFin2 hn (0 : Fin 2) : Fin n) = Fin.castLE hn 0 then z.1 else z.2,
           if (rootsEquivFin2 hn (1 : Fin 2) : Fin n) = Fin.castLE hn 0 then z.1 else z.2) = _
-      simp [rootsEquivFin2, castLE01_ne_pin hn]
+      simp [rootsEquivFin2]
     have hRsymm := (rootsToII hn).symm_apply_apply (rootsPart hn z.1 z.2)
     rw [hR] at hRsymm
     rw [hRsymm]
@@ -727,7 +726,7 @@ private lemma card_graph_fiber_eq_zero_of_not_mem (σ' : FlagType (Fin 2)) {n : 
 rooted class of `F` equals `downwardNormalizingFactor F.2` times the number of labelled
 graphs in the unlabelled class of `F` (as rationals).
 
-Proof route (worked out in the design probe): double-count the pairs `(G, θ)` of a graph
+Proof route: double-count the pairs `(G, θ)` of a graph
 `G : SimpleGraph (Fin F.1)` and a root placement `θ : Fin 2 ↪ Fin F.1` whose labelled graph
 `(G, θ)` is flag-isomorphic to a representative of `F.2`.  Counting by `θ` first gives
 `(number of unlabelled-class members) × isomorphismCount`; counting by `G` first gives
@@ -1030,8 +1029,7 @@ the extension-measure integral is `φ_W ⟦F⟧₀ / φ_W ⟦1⟧₀`
 (`probMeasure_extend_emptyType_positiveHom_spec`), which unfolds to the same value by
 `downward_basisVector`, `one_downward_eq`, `dnf_emptyFlag_two`, and `rootMass_eq_typeFlag`;
 extend from basis flags to all of `FlagAlgebra σ'` by linearity of both sides (integral and
-algebra evaluation; mirror how `measure_eq_of_integral_flag_eq`'s callers reduce to basis
-vectors, or run the uniqueness on the basis directly if its statement already suffices). -/
+algebra evaluation), as `measure_eq_of_integral_flag_eq`'s callers reduce to basis vectors. -/
 theorem rootedViewMeasure_eq_extend (W : Graphon) (σ' : FlagType (Fin 2))
     (hσ : (graphonHom W) ⟨σ'⟩₀ > 0) :
     rootedViewMeasure W σ'

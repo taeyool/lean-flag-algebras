@@ -143,7 +143,7 @@ will meet them constantly:
   homomorphism itself, `graphonHom W : PositiveHom ∅ₜ` with its profile
   `graphonProfile`/`graphonProfileFun` and the sanity link
   `graphonHom_edge : φ_W(unlabelledEdgeFlag) = W.edgeDensity` (`GraphonHom`).
-* In `MetaTheory` (the rooted transport, sub-project A of `HOM_TO_GRAPHON_DESIGN.md`; infrastructure,
+* In `MetaTheory` (the rooted transport; infrastructure,
   no `paper.tex` display of its own): standard-rooted graphs and the root-fixing permutation engine
   `exists_rootfix_perm_comp_emb(_pair)` (`StdRootedBridge`); the pinned-root induced density
   `unnormRootedDensity`/`rootWeight`/`RootAdmissible` with its extension partition and glued block
@@ -156,12 +156,12 @@ will meet them constantly:
   assembling to **`k4freeP4_graphon_tripartite`** — any graphon whose `φ_W` lies in the slice is
   a.e. the balanced complete tripartite graphon, the graphon-side content of
   `thm:k4free-p4-tripartite` (Thm 102) (`GraphonKernelTransport`; Tier-2 on the last three
-  theorems). **Route-3 closure** (`GraphonRepresentation`) then composes this with profile
+  theorems). **representative-quantified closure** (`GraphonRepresentation`) then composes this with profile
   agreement (`posHomPoint_eq_of_graphonProfileFun_eq`) to give **`k4free_p4_tripartite_of_represents`**
   — the unconditional, paper-verbatim Thm 102, quantified over *representing* graphons — and
   `k4free_p4_tripartite_of_rep_exists`, the existence form conditional on the one named classical
   input `hrep` (Lovász–Szegedy existence).
-* In `MetaTheory` (the general-`r` parametric transport and Thm 112(iv), this session; no
+* In `MetaTheory` (the general-`r` parametric transport and Thm 112(iv); no
   `paper.tex` display of their own beyond the results they close): **`GraphonParametricTransport`**
   — the `r`-free mirror of the rooted-transport stack, closing **Cor 106**
   (`cor:top-endpoint-recovery`). The `r`-independent kernel functional **`Graphon.RtauMinus`**
@@ -172,7 +172,7 @@ will meet them constantly:
   `parametricP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero` (mirroring the `r = 3` ones); the kernel-level
   Cor 106 `parametricP4_graphon_top_endpoint_rigidity` (slice membership + the scalar pin
   `edgeDensity = α_r⁺` force the balanced complete `r`-partite graphon via `Graphon.slice_rigidity`);
-  and, in the Route-3 pattern above, **`parametricP4_top_endpoint_of_represents`** /
+  and, in the representative-quantified pattern above, **`parametricP4_top_endpoint_of_represents`** /
   `_of_rep_exists`. **`ParametricStabilityModulus`** closes **Thm 112(iv)** (`ω_Zyk` route):
   `parametric_stability_via_modulus` (hom level) and `parametric_graphon_stability_via_modulus` (the
   graphon-facing instantiation) — notably, the Zykov *bound* hypothesis `hZykov` turns out **not**
@@ -268,7 +268,7 @@ jump straight to the module and Lean name; read that module's header, then the n
     `positiveHomFromZeroSpaceOneMulProp`, the same pattern `ComplementHom` used for `complHom`;
     ends at the sanity link `graphonHom_edge`, tying the new construction back to the §11.7
     kernel layer).
-16. **The rooted transport (sub-project A of `HOM_TO_GRAPHON_DESIGN.md`; carries `φ_W` to the
+16. **The rooted transport (carries `φ_W` to the
     kernel hypotheses of `r3_rigidity`; no `paper.tex` display of its own until the capstone):**
     `StdRootedBridge` (standard-rooted graphs at a two-vertex type, flag equality iff root-fixing
     isomorphism, and the root-fixing permutation engine `exists_rootfix_perm_comp_emb(_pair)` —
@@ -282,22 +282,22 @@ jump straight to the module and Lean name; read that module's header, then the n
     identity `integral_rootedClassSum`, assembling to **`rootedViewMeasure_eq_extend`**: the
     rooted-view measure **is** `ℙ[graphonHom W]`, via `measure_eq_of_integral_flag_eq`) →
     `GraphonKernelTransport` (the capstone: the kernel dictionary translating rooted 3-vertex flag
-    values into `deg`/`codeg` expressions per `paper.tex:4861–4875`, transporting the `K₄`-free
+    values into `deg`/`codeg` expressions, transporting the `K₄`-free
     `P₄`-slice equations of `ParametricP4Slice` into the a.e. kernel hypotheses
     `k4freeP4_graphon_Rtau_eq_zero`/`_Reta_eq_zero`, and assembling to
     **`k4freeP4_graphon_tripartite`** — the graphon-side content of `thm:k4free-p4-tripartite`
     (Thm 102); Tier-2 on the last three theorems, Tier-1 upstream).
-17. **Closing Thm 102, Cor 106 and Thm 112(iv) (Route-3 + this session's wave):**
-    `GraphonRepresentation` (a prior session — composes `k4freeP4_graphon_tripartite` with profile
+17. **Closing Thm 102, Cor 106 and Thm 112(iv) via the representative-quantified closure:**
+    `GraphonRepresentation` (composes `k4freeP4_graphon_tripartite` with profile
     agreement into `k4free_p4_tripartite_of_represents`, the unconditional paper-verbatim Thm 102,
     plus the `hrep`-conditional `k4free_p4_tripartite_of_rep_exists`) → `GraphonParametricTransport`
-    (this session — the `r`-free mirror of the rooted-transport stack: the general-`r` transports,
+    (the `r`-free mirror of the rooted-transport stack: the general-`r` transports,
     the `R_τ⁻` kernel functional and its `f₂` hom→kernel bridge `graphonHom_f₂_eq_RtauMinus`, and the
     same represents/rep-exists closure for **Cor 106**,
-    `parametricP4_top_endpoint_of_represents`/`_of_rep_exists`) → `ParametricStabilityModulus` (this
-    session — **Thm 112(iv)**, `parametric_stability_via_modulus`, in the same modulus-abstraction
+    `parametricP4_top_endpoint_of_represents`/`_of_rep_exists`) → `ParametricStabilityModulus`
+    (**Thm 112(iv)**, `parametric_stability_via_modulus`, in the same modulus-abstraction
     pattern as `GraphonQuantStability.stability_via_modulus`; read its docstring for the
-    hZykov-unused finding). After this chain, every §11 result-table row is **COMPLETE** modulo the
+    hZykov-unused finding). Every §11 result in the map below is proved, modulo the
     four permanent classical inputs (README [Scope & limitations](./README.md#scope--limitations)).
 
 **(d) "Where's the genuinely new mathematics?"** The constrained representation theorem
@@ -318,84 +318,84 @@ not its line. (Lines below were last synced to the current `paper.tex`.)
 
 | Paper # | `paper.tex` | Module | Lean declaration(s) |
 |---|---|---|---|
-| Lemma 1 | §2 `lem:support-as` (l.444) | `MeasureSupport` | `ae_nonneg_iff_nonneg_on_support` |
+| Lemma 1 | §2 `lem:support-as` | `MeasureSupport` | `ae_nonneg_iff_nonneg_on_support` |
 | — | §3 quotient algebra / `Q_σ` | `ConstrainedClass` | `ConstrainedAlgebra`, `qmap`, `Qσ`, `mem_Qσ_iff`, `Qσ_isClosed` |
 | — | §3 forbidden-ideal faithfulness | `ForbiddenIdeal` | `forbiddenIdeal_eq_span` |
-| Lemma 2 | §3 `lem:support-passes-general` (l.552) | `SupportClosure` | `support_passes` |
-| Definition 3 | §4 `def:root-planting` (l.579) | `SupportClosure` | `Sσ`, `RootPlantable`, `Sσ_subset_Qσ` |
-| Theorem 4 | §4 `thm:support-criterion` (l.603) | `SupportClosure` | `support_criterion`, `quotient_implies_ensemble` |
-| Definition 5 | §5 `def:independent-blow-up` (l.697) | `Blowup` | `independentBlowup`, `blowupProj`, `cliqueFree_independentBlowup` |
-| Lemma 9 | §5 `lem:planted-mass` (l.1170) | `Blowup` | `planted_mass` |
-| Lemma 8 | §5 `lem:planted-estimate` (l.756) | `PlantedEstimate` | `planted_estimate` (uniform-clone form) |
+| Lemma 2 | §3 `lem:support-passes-general` | `SupportClosure` | `support_passes` |
+| Definition 3 | §4 `def:root-planting` | `SupportClosure` | `Sσ`, `RootPlantable`, `Sσ_subset_Qσ` |
+| Theorem 4 | §4 `thm:support-criterion` | `SupportClosure` | `support_criterion`, `quotient_implies_ensemble` |
+| Definition 5 | §5 `def:independent-blow-up` | `Blowup` | `independentBlowup`, `blowupProj`, `cliqueFree_independentBlowup` |
+| Lemma 9 | §5 `lem:planted-mass` | `Blowup` | `planted_mass` |
+| Lemma 8 | §5 `lem:planted-estimate` | `PlantedEstimate` | `planted_estimate` (uniform-clone form) |
 | — | — (its general TV bound) | `ProductTV` | `prod_tv_bound`, `l1_normalization_bound` *(superseded)* |
-| Theorem 10 | §5 `thm:clone-root-plantable` (l.1233) | `CloneClosed` | `clone_root_plantable` |
-| Corollary 11 | §5 `cor:clique-free` (l.1385) | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
+| Theorem 10 | §5 `thm:clone-root-plantable` | `CloneClosed` | `clone_root_plantable` |
+| Corollary 11 | §5 `cor:clique-free` | `CloneClosed` | `clique_free_root_plantable`, `clique_free_quotient_iff_ensemble` |
 | — | (new) constrained representation thm | `ConstrainedRep` | `exists_constrained_flagSeq_limit` |
 | — | §6 `def:complete-blow-up` / §7 `def:substitution-closed` | `SubstitutionBlowup` | `subBlowup`, `completeBlowup` |
-| Lemma 14 / Lemma 20 | §6 `lem:true-planted-estimate` (l.1444) / §7 `lem:general-planting-estimate` (l.1781) (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
+| Lemma 14 / Lemma 20 | §6 `lem:true-planted-estimate` / §7 `lem:general-planting-estimate` (planting is blind to the interior) | `SubstitutionEstimate` | `planted_mass_sub`, `planted_estimate_sub` |
 | — | (engine) uniform within-class blow-up closure ⟹ root-plantable | `SubstitutionClosed` | `subst_root_plantable` |
-| Definition 18 / Theorem 21 | §7 `def:blow-up-closed` (l.1740), `thm:blowup-root-plantable` (l.1828) (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
-| Lemma 19 / Corollary 22 | §7 `lem:blowup-iterate` (l.1752), `cor:closures-imply-blowup` (l.1913) | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
-| Theorem 15 | §6 `thm:true-clone-root-plantable` (l.1534) | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
-| Corollary 16 | §6 `cor:cluster-graphs` (l.1684) | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
-| Theorem 24 | §7 `thm:substitution-root-plantable` (l.1948) | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
+| Definition 18 / Theorem 21 | §7 `def:blow-up-closed`, `thm:blowup-root-plantable` (**the unified theorem**) | `BlowupClosed` | `oneBlowup`, `BlowupClosed`, `blowupClosed_root_plantable` |
+| Lemma 19 / Corollary 22 | §7 `lem:blowup-iterate`, `cor:closures-imply-blowup` | `BlowupClosed` (+ `TrueClone`/`Substitution`) | `BlowupClosed.toUniform`, `GraphClass.toBlowupClosed`, `TrueCloneClosed.toBlowupClosed`, `SubstitutionClosed.toBlowupClosed` |
+| Theorem 15 | §6 `thm:true-clone-root-plantable` | `TrueClone` | `true_clone_root_plantable`, `true_clone_quotient_iff_ensemble` |
+| Corollary 16 | §6 `cor:cluster-graphs` | `ClusterGraph` | `cluster_root_plantable`, `cluster_quotient_iff_ensemble` |
+| Theorem 24 | §7 `thm:substitution-root-plantable` | `Substitution` | `substitution_root_plantable`, `substitution_quotient_iff_ensemble` |
 | — | (new) host-parametric planted estimate | `PlantedEstimate` | `planted_estimate_host` |
-| Theorem 27 | §8 `def:finite-local-planting`, `thm:finite-local-planting` (l.2060) | `FinitePlanting` | `FinitePlanting`, `finitePlanting_root_plantable` |
-| Theorem 30 | §8 `def:sparse-root-repair`, `thm:sparse-repair-planting` (l.2182) | `SparseRootRepair` | `SparseRootRepair`, `sparseRootRepair_finitePlanting` (crux helper `counting_coupling_bound`) |
-| Lemma 32 | §8 `lem:c5-nbhd` (l.2350) (+ the `C₅`-free class) | `C5Free` | `c5free_neighborhood_edge_card_le`, `c5FreeClass`, `C5g`, `c5_copy_of_pentagon` |
-| Theorem 36 | §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` (l.2443) | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
-| Theorem 41 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` (l.2547) | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
-| Lemma 42 | §8 `lem:c5-blowup` (l.2563) | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
-| Theorem 53 | §9 `thm:pinning` (l.3081) | `Pinning` | `pinning_obstruction` |
-| Definition 43 | §9 `def:edge-degenerate` (l.2605), endpoint pinning | `EdgeObstruction` | `EdgeDegenerate`, `CoEdgeDegenerate`, `e`, `ρ`, `vtype`, `ae_e_eq_zero_of_pinned`, `ae_e_eq_one_of_pinned`, `edgeDegenerate_not_rootPlantable_of_witness` |
-| Theorem 44 / Corollary 51 | §9 `thm:degenerate-obstruction` (l.2612), §9.2 `cor:codegenerate` (l.2992) (abstract) | `StarWitness` | `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`, `exists_Qσ_point_edge_eq`, `starLabeled`, `coStarLabeled` |
-| Lemma 47 / Corollary 48 | §9.1 `lem:c4-edge-zero` (l.2682), `cor:c4-counterexample` (l.2714) | `C4Free` | `c4FreeClass`, `c4free_card_edges_sq_le`, `c4FreeClass_edgeDegenerate`, `c4free_not_rootPlantable`, `c4_copy_of_square` |
-| Corollary 49 | §9.1 `cor:degenerate-family` (l.2721) (general criterion; see scope note below) | `DegenerateFamily` | `edgeDegenerate_of_subquadratic` |
-| Corollary 51 | §9.2 `cor:codegenerate` (l.2992) (concrete dense) | `DenseObstruction` | `coC4FreeClass`, `coC4FreeClass_coEdgeDegenerate`, `coC4free_not_rootPlantable` |
-| Lemma 50 | §9.2 `lem:complementation` (l.2743) (complementation invariance) | `FlagComplement`, `ComplementHom`, `ComplementClass`, `ComplementInvariance` | `Flag.compl`/`uncompl`, `flagDensity₁_compl`, `complHom`, `complHomeo`, `HeredClass.compl`, `complHomeo_image_Qσ`, `complHomeo_map_eq`, `complHomeo_image_Sσ`, `complementation_invariance`, `complementation_invariance_oneVertex` |
-| Theorem 55 | §9.4 `thm:no-interior`, `subsec:boundary` (l.3133) (boundary / no-interior pinning) | `NoInterior`, `EdgeThinning`, `EdgeThinningLimit`, `NoInteriorThinning` | `EdgeDeletionClosed`, `thinMeasure`, `thinGraph`, `thinExpectDensity`, `thinExpectDensity_le_pow`, `exists_thinned_realization`, `exists_thinned_limit`, `exists_boolean_point_in_Sσ`, `no_interior_pinning` |
-| Lemma 58 | §9.5 `lem:c5-few-triangles` (l.3320) | `C5FewTriangles` | `c5free_three_mul_triangle_le`, `three_mul_card_cliqueFinset_three_eq`, `flagDensity_unlabelledTriangle_eq`, `c5FreeClass_triangleDensity_zero` |
-| Corollary 57 / Corollary 59 | §9.5 `cor:c5-no-pin` (l.3296), `cor:c5-edge-pinned` (l.3340) | `C5EdgeObstruction` | `c5free_triOverVtype_zero_on_Qvtype`, `c5free_edge_not_pinned`, `ae_Ftri_eq_zero_of_pinned`, `edgeType`, `F_tri`/`triangleFF` |
-| Definition 60 / Lemma 61 | §9.5 `def:c5-book` (l.3362), `lem:c5-book` (l.3368) | `C5EdgeObstruction` | `bookLabeled`, `book_c5free`, `book_Ftri_density`, `exists_book_Qτ_point` |
-| Theorem 62 | §9.5 `thm:c5-edge-not-root-plantable` (l.3392) | `C5EdgeObstruction` | `c5free_edge_not_rootPlantable`, `exists_Qσ_point_flag_eq` |
+| Theorem 27 | §8 `def:finite-local-planting`, `thm:finite-local-planting` | `FinitePlanting` | `FinitePlanting`, `finitePlanting_root_plantable` |
+| Theorem 30 | §8 `def:sparse-root-repair`, `thm:sparse-repair-planting` | `SparseRootRepair` | `SparseRootRepair`, `sparseRootRepair_finitePlanting` (crux helper `counting_coupling_bound`) |
+| Lemma 32 | §8 `lem:c5-nbhd` (+ the `C₅`-free class) | `C5Free` | `c5free_neighborhood_edge_card_le`, `c5FreeClass`, `C5g`, `c5_copy_of_pentagon` |
+| Theorem 36 | §8 `def:c5-one-root-planting`, `lem:c5-planting-free`, `lem:c5-one-root-sparse-repair`, `thm:c5-one-root` | `C5OneRoot` | `oneRootPlant`, `oneRootPlant_c5free`, `c5FreeClass_sparseRootRepair_oneVertex`, `c5free_one_root_plantable` |
+| Theorem 41 | §8 `def:c5-nonedge-planting`, `lem:c5-nonedge-planting-free`, `lem:c5-nonedge-sparse-repair`, `thm:c5-nonedge-root` | `C5TwoRootNonEdge` | `twoRootPlant`, `twoRootPlant_c5free`, `c5FreeClass_sparseRootRepair_twoNonEdge`, `c5free_two_root_nonedge_plantable` |
+| Lemma 42 | §8 `lem:c5-blowup` | `C5Blowup` | `c5_blowup_free_iff_triangleFree` |
+| Theorem 53 | §9 `thm:pinning` | `Pinning` | `pinning_obstruction` |
+| Definition 43 | §9 `def:edge-degenerate`, endpoint pinning | `EdgeObstruction` | `EdgeDegenerate`, `CoEdgeDegenerate`, `e`, `ρ`, `vtype`, `ae_e_eq_zero_of_pinned`, `ae_e_eq_one_of_pinned`, `edgeDegenerate_not_rootPlantable_of_witness` |
+| Theorem 44 / Corollary 51 | §9 `thm:degenerate-obstruction`, §9.2 `cor:codegenerate` (abstract) | `StarWitness` | `degenerate_not_rootPlantable`, `coDegenerate_not_rootPlantable`, `exists_Qσ_point_edge_eq`, `starLabeled`, `coStarLabeled` |
+| Lemma 47 / Corollary 48 | §9.1 `lem:c4-edge-zero`, `cor:c4-counterexample` | `C4Free` | `c4FreeClass`, `c4free_card_edges_sq_le`, `c4FreeClass_edgeDegenerate`, `c4free_not_rootPlantable`, `c4_copy_of_square` |
+| Corollary 49 | §9.1 `cor:degenerate-family` (general criterion; see scope note below) | `DegenerateFamily` | `edgeDegenerate_of_subquadratic` |
+| Corollary 51 | §9.2 `cor:codegenerate` (concrete dense) | `DenseObstruction` | `coC4FreeClass`, `coC4FreeClass_coEdgeDegenerate`, `coC4free_not_rootPlantable` |
+| Lemma 50 | §9.2 `lem:complementation` (complementation invariance) | `FlagComplement`, `ComplementHom`, `ComplementClass`, `ComplementInvariance` | `Flag.compl`/`uncompl`, `flagDensity₁_compl`, `complHom`, `complHomeo`, `HeredClass.compl`, `complHomeo_image_Qσ`, `complHomeo_map_eq`, `complHomeo_image_Sσ`, `complementation_invariance`, `complementation_invariance_oneVertex` |
+| Theorem 55 | §9.4 `thm:no-interior`, `subsec:boundary` (boundary / no-interior pinning) | `NoInterior`, `EdgeThinning`, `EdgeThinningLimit`, `NoInteriorThinning` | `EdgeDeletionClosed`, `thinMeasure`, `thinGraph`, `thinExpectDensity`, `thinExpectDensity_le_pow`, `exists_thinned_realization`, `exists_thinned_limit`, `exists_boolean_point_in_Sσ`, `no_interior_pinning` |
+| Lemma 58 | §9.5 `lem:c5-few-triangles` | `C5FewTriangles` | `c5free_three_mul_triangle_le`, `three_mul_card_cliqueFinset_three_eq`, `flagDensity_unlabelledTriangle_eq`, `c5FreeClass_triangleDensity_zero` |
+| Corollary 57 / Corollary 59 | §9.5 `cor:c5-no-pin`, `cor:c5-edge-pinned` | `C5EdgeObstruction` | `c5free_triOverVtype_zero_on_Qvtype`, `c5free_edge_not_pinned`, `ae_Ftri_eq_zero_of_pinned`, `edgeType`, `F_tri`/`triangleFF` |
+| Definition 60 / Lemma 61 | §9.5 `def:c5-book`, `lem:c5-book` | `C5EdgeObstruction` | `bookLabeled`, `book_c5free`, `book_Ftri_density`, `exists_book_Qτ_point` |
+| Theorem 62 | §9.5 `thm:c5-edge-not-root-plantable` | `C5EdgeObstruction` | `c5free_edge_not_rootPlantable`, `exists_Qσ_point_flag_eq` |
 | — | §10 groundwork (evaluation bounds) | `DownwardAverage` | `abs_downward_eval_le_of_abs_le_on_Sσ`, `downward_eval_eq_zero_of_degenerate`, `downward_eval_eq_of_Sσ_singleton`, `downwardNormalizingFactor_le_one` |
-| Proposition 64 / Corollary 65 | §10 `prop:empty-type` (l.3476), `cor:confined` (l.3500) | `EmptyTypeCollapse` | `extend_emptyType_eq_dirac`, `Sσ_emptyType_eq`, `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `emptyType_quotient_iff_ensemble`, `ensemble_implies_quotient_emptyType` |
-| Theorem 66 | §10 `thm:no-closed-certificate-gap` (l.3560) | `CertificateCones` | `quotCone`, `ensCone`, `Q0Within`, `MemQ0Closure`, `ensCone_subset_closure_quotCone`, `no_closed_certificate_gap` |
-| Proposition 67 | §10 `prop:ideal-zero` (l.3634) | `VanishingIdeal` (+ final clause in `CertificateCones`) | `downward_eval_eq_zero_of_zero_on_Sσ`, `downward_mul_eval_eq_zero_of_zero_on_Sσ`, `pinned_witness_downward_eq_zero`, `downward_eval_congr_of_eqOn_Sσ`, `ensCone_eval_eq_quotCone_of_sos_agreement` |
-| Proposition 68 | §10 `prop:single-point` (l.3668) | `BooleanPoint`, `SinglePoint` | `edgelessPoint`, `completePoint`, `Sσ_eq_singleton_of_edgeDegenerate`, `Sσ_eq_singleton_of_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`, `coEdgeDegenerate_cone_collapse`, `smul_one_mem_quotCone_vtype` |
-| Corollary 70 | §10 `cor:c5-edge-closed-inert` (l.3749) | `C5EdgeInert` | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` |
-| — | §11.2 the relative support `S_σ(Y)` (display l.3822) | `RelativeSupport` | `relSσ`, `relSσ_isClosed`, `relSσ_mono`, `support_subset_relSσ`, `Sσ_eq_relSσ` |
-| Lemma 71 | §11.2 `lem:relative-closure` (l.3841) | `RelativeClosure` | `relSσ_closure_eq`, `extend_tendsto`, `support_subset_closure_iUnion_support` |
-| Proposition 72 | §11.2 `prop:relative-soundness` (l.3894) | `RelativeSupport` | `relative_soundness` |
-| Proposition 74 | §11.2 `prop:relative-criterion` (l.3934) | `RelativeSupport` | `relative_criterion`, `RelEnsembleNonneg` |
-| Theorem 76 (+ Remark 77 square instances) | §11.3 `thm:relative-slackness` (l.3978), `rem:cs-shape` (l.4045) | `RelativeSlackness` | `relative_slackness_soundness`, `_approx`, `_term`, `_slack`, `_exact_slack`, `_exact_term`, `_exact_ae`, `_global`, `_exact_ae_sq`, `_global_sq` |
-| Lemma 78 | §11.3 `lem:relative-cauchy-schwarz` (l.4067) | `RelativeSlackness` | `downward_cauchy_schwarz`, `downward_sq_eval_nonneg` |
-| Corollary 79 | §11.3 `cor:sos-first-moments` (l.4098) | `RelativeSlackness` | `certificate_first_moment_sq_bound`, `certificate_first_moment_sq_bound_one` |
-| Theorem 80 | §11.3 `thm:kernel-slackness` (l.4135) | `KernelSlackness` | `kernel_slackness_soundness`, `_approx`, `_exact_slack`, `_exact_ae`, `_global`; `kernelCombo`, `eval_flagQuadraticForm`, `posSemidef_dotProduct_mulVec_sq_le`, `posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero` |
-| Proposition 82 | §11.3 `prop:unique-slice-stability` (l.4240) | `RelativeSlackness` | `unique_slice_stability` |
-| Definition 84 | §11.4 `def:relative-plantability` (l.4282) | `RelativePlanted` | `relQσ`, `RelativelyRootPlantable` |
-| Proposition 85 | §11.4 `prop:relative-plantability` (l.4297) | `RelativePlanted` | `relQσ_isClosed`, `relQσ_subset_Qσ`, `support_subset_relQσ`, `relSσ_subset_relQσ`, `relQσ_Q0_eq`, `relativelyRootPlantable_Q0_iff`, `relQσ_nonneg_implies_relEnsemble`, `relative_planted_criterion` |
-| Proposition 86 | §11.4 `prop:mantel-not-plantable` (l.4346) | `MantelNotPlantable`, `TuranSliceIdentities` | `mantel_not_relatively_plantable` (pinning input `hpin` = Thm 92(i), explicit hypothesis), `mantel_not_relatively_plantable_of_uniqueness` (`hpin` discharged — needs only the Erdős–Simonovits hypothesis `hES`), `exists_mantel_planted_view_edge_zero`, `knnPlusW` |
-| Theorem 88 | §11.4 `thm:relative-certificate-gap` (l.4403) | `RelativeCertificateGap` | `no_relative_closed_certificate_gap`, `YWithin`, `MemYClosure`, `relEnsCone`, `relEnsCone_subset_closure_quotCone` |
-| Theorem 89 | §11.4 `thm:relative-positivstellensatz` (l.4437) | `RelativePositivstellensatz` | `relative_positivstellensatz`, `relative_positivstellensatz_closure` |
-| Theorem 91 *(existence + identity halves; ES as `hES`)* | §11.5 `thm:turan-slice` (l.4524) | `TuranLimit`, `TuranDirac`, `TuranSliceIdentities` | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit`; `turanLimit`, `turanLimit_mem_slice`; `turanLimit_relSσ_vtype`/`_edge`/`_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge` *(identity halves (i)–(iii) under `hES`, equivalent to the paper's singleton claim; only ES itself is classical input)* |
-| Theorem 92 *(existence + clause (i); ES as `hES`)* | §11.5 `thm:relative-mantel` (l.4603) | `TuranLimit`, `TuranSliceIdentities` | `mantelSlice`, `mantelSlice_nonempty`, `relative_mantel_vtype` *(clause (i) = `MantelNotPlantable`'s `hpin`, now a theorem under `hES`; τ/η clauses = the `r = 2` parametric instances)* |
+| Proposition 64 / Corollary 65 | §10 `prop:empty-type`, `cor:confined` | `EmptyTypeCollapse` | `extend_emptyType_eq_dirac`, `Sσ_emptyType_eq`, `emptyType_rootPlantable`, `heredClass_emptyType_rootPlantable`, `emptyType_quotient_iff_ensemble`, `ensemble_implies_quotient_emptyType` |
+| Theorem 66 | §10 `thm:no-closed-certificate-gap` | `CertificateCones` | `quotCone`, `ensCone`, `Q0Within`, `MemQ0Closure`, `ensCone_subset_closure_quotCone`, `no_closed_certificate_gap` |
+| Proposition 67 | §10 `prop:ideal-zero` | `VanishingIdeal` (+ final clause in `CertificateCones`) | `downward_eval_eq_zero_of_zero_on_Sσ`, `downward_mul_eval_eq_zero_of_zero_on_Sσ`, `pinned_witness_downward_eq_zero`, `downward_eval_congr_of_eqOn_Sσ`, `ensCone_eval_eq_quotCone_of_sos_agreement` |
+| Proposition 68 | §10 `prop:single-point` | `BooleanPoint`, `SinglePoint` | `edgelessPoint`, `completePoint`, `Sσ_eq_singleton_of_edgeDegenerate`, `Sσ_eq_singleton_of_coEdgeDegenerate`, `edgeDegenerate_cone_collapse`, `coEdgeDegenerate_cone_collapse`, `smul_one_mem_quotCone_vtype` |
+| Corollary 70 | §10 `cor:c5-edge-closed-inert` | `C5EdgeInert` | `c5free_edge_no_closed_certificate_gap`, `c5free_Ftri_zero_on_Sσ`, `c5free_Ftri_mul_downward_eq_zero` |
+| — | §11.2 the relative support `S_σ(Y)` | `RelativeSupport` | `relSσ`, `relSσ_isClosed`, `relSσ_mono`, `support_subset_relSσ`, `Sσ_eq_relSσ` |
+| Lemma 71 | §11.2 `lem:relative-closure` | `RelativeClosure` | `relSσ_closure_eq`, `extend_tendsto`, `support_subset_closure_iUnion_support` |
+| Proposition 72 | §11.2 `prop:relative-soundness` | `RelativeSupport` | `relative_soundness` |
+| Proposition 74 | §11.2 `prop:relative-criterion` | `RelativeSupport` | `relative_criterion`, `RelEnsembleNonneg` |
+| Theorem 76 (+ Remark 77 square instances) | §11.3 `thm:relative-slackness`, `rem:cs-shape` | `RelativeSlackness` | `relative_slackness_soundness`, `_approx`, `_term`, `_slack`, `_exact_slack`, `_exact_term`, `_exact_ae`, `_global`, `_exact_ae_sq`, `_global_sq` |
+| Lemma 78 | §11.3 `lem:relative-cauchy-schwarz` | `RelativeSlackness` | `downward_cauchy_schwarz`, `downward_sq_eval_nonneg` |
+| Corollary 79 | §11.3 `cor:sos-first-moments` | `RelativeSlackness` | `certificate_first_moment_sq_bound`, `certificate_first_moment_sq_bound_one` |
+| Theorem 80 | §11.3 `thm:kernel-slackness` | `KernelSlackness` | `kernel_slackness_soundness`, `_approx`, `_exact_slack`, `_exact_ae`, `_global`; `kernelCombo`, `eval_flagQuadraticForm`, `posSemidef_dotProduct_mulVec_sq_le`, `posSemidef_mulVec_eq_zero_of_dotProduct_eq_zero` |
+| Proposition 82 | §11.3 `prop:unique-slice-stability` | `RelativeSlackness` | `unique_slice_stability` |
+| Definition 84 | §11.4 `def:relative-plantability` | `RelativePlanted` | `relQσ`, `RelativelyRootPlantable` |
+| Proposition 85 | §11.4 `prop:relative-plantability` | `RelativePlanted` | `relQσ_isClosed`, `relQσ_subset_Qσ`, `support_subset_relQσ`, `relSσ_subset_relQσ`, `relQσ_Q0_eq`, `relativelyRootPlantable_Q0_iff`, `relQσ_nonneg_implies_relEnsemble`, `relative_planted_criterion` |
+| Proposition 86 | §11.4 `prop:mantel-not-plantable` | `MantelNotPlantable`, `TuranSliceIdentities` | `mantel_not_relatively_plantable` (pinning input `hpin` = Thm 92(i), explicit hypothesis), `mantel_not_relatively_plantable_of_uniqueness` (`hpin` discharged — needs only the Erdős–Simonovits hypothesis `hES`), `exists_mantel_planted_view_edge_zero`, `knnPlusW` |
+| Theorem 88 | §11.4 `thm:relative-certificate-gap` | `RelativeCertificateGap` | `no_relative_closed_certificate_gap`, `YWithin`, `MemYClosure`, `relEnsCone`, `relEnsCone_subset_closure_quotCone` |
+| Theorem 89 | §11.4 `thm:relative-positivstellensatz` | `RelativePositivstellensatz` | `relative_positivstellensatz`, `relative_positivstellensatz_closure` |
+| Theorem 91 *(existence + identity halves; ES as `hES`)* | §11.5 `thm:turan-slice` | `TuranLimit`, `TuranDirac`, `TuranSliceIdentities` | `turanSlice`, `turanSlice_nonempty`, `exists_turan_limit`; `turanLimit`, `turanLimit_mem_slice`; `turanLimit_relSσ_vtype`/`_edge`/`_nonEdge`, `turan_slice_identity_vtype`/`_edge`/`_nonEdge` *(identity halves (i)–(iii) under `hES`, equivalent to the paper's singleton claim; only ES itself is classical input)* |
+| Theorem 92 *(existence + clause (i); ES as `hES`)* | §11.5 `thm:relative-mantel` | `TuranLimit`, `TuranSliceIdentities` | `mantelSlice`, `mantelSlice_nonempty`, `relative_mantel_vtype` *(clause (i) = `MantelNotPlantable`'s `hpin`, now a theorem under `hES`; τ/η clauses = the `r = 2` parametric instances)* |
 | — | §11.5 supporting layer (the transitivity→Dirac route) | `TuranAut`, `TuranDirac` | `turan_vertex_transitive`, `turan_pair_transitive`, `labelExtensions_turan_vtype/_edge/_nonEdge_subsingleton`; `toProbMeasure_eq_dirac_of_subsingleton`, `extend_eq_dirac_of_labelExtensions_subsingleton`, `relSσ_singleton_of_extend_dirac`, `turanSubseq`/`turanLimit`/`turanLimit_spec`/`turanLimit_mem_slice` |
-| Proposition 94 | §11.6 `prop:equality-slice-vanishing` (l.4666) | `CertificateSliceVanishing` | `equality_slice_vanishing`, `eqSlice` |
-| Theorem 95 | §11.6 `thm:k4free-p4-equality-slice` (l.4695) | `ParametricP4Slice` | `k4freeP4_eta_equation`, `k4freeP4_tau_symm`, `k4freeP4_tau_equation`, `k4freeP4Slice`, `k4freeP4Slice_eq_parametric` *(Tier-2 axioms)* |
-| Theorem 97 | §11.6 `thm:parametric-p4-equality-slice` (l.4761) | `ParametricP4Slice` | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` (`hZykov` hypothesis), `parametricP4Slice`, `parametricP4_cert` *(Tier-2 axioms)* |
-| Theorem 99 | §11.7 `thm:parametric-moments` (l.4877) | `GraphonMoments` | `Graphon.moments_T`, `moments_D`, `moments_variance`, `moments_interval`, `moments_regular_iff` (kernel level, on `unitInterval` graphons) |
-| Theorem 100 | §11.7 `thm:slice-rigidity` (l.4965) | `GraphonRigidity` | `Graphon.slice_rigidity` (measurable-partition form) |
-| Corollary 101 | §11.7 `cor:r3-rigidity` (l.5021) | `GraphonRigidity` | `Graphon.r3_rigidity` |
-| Theorem 102 *(COMPLETE, Route-3 form)* | §11.7 `thm:k4free-p4-tripartite` (l.5035) | `GraphonRepresentation` (kernel engine `Graphon.r3_rigidity`/`GraphonKernelTransport`; hom avatar still in `SliceRecovery`'s `huniq`, for Cor 104 only) | `k4free_p4_tripartite_of_represents` — unconditional, paper-verbatim, quantified over *representing* graphons (no existence input); `k4free_p4_tripartite_of_rep_exists` — the existence form conditional on the one named classical input `hrep` (Lovász–Szegedy existence) |
-| Corollary 104 | §11.7 `cor:k4free-p4-qualitative-stability` (l.5072) | `SliceRecovery` | `k4free_qualitative_stability` (`huniq` hypothesis) |
-| Corollary 105 *(complete)* | §11.7 `cor:parametric-p4-turan-recovery` (l.5096) | `SliceRecovery`, `TuranSliceIdentities` | `parametric_recovery` (`hZykEq` hypothesis), `parametric_recovery_identities` (the "consequently" support identities) *(Tier-2 axioms; Lean assumes `3 ≤ r` vs the paper's `r ≥ 4` — benign generalisation, README Deviation 15c)* |
-| Corollary 106 *(COMPLETE)* | §11.7 `cor:top-endpoint-recovery` (l.5138) | `GraphonParametricTransport` (kernel engine `Graphon.slice_rigidity`) | `parametricP4_graphon_top_endpoint_rigidity` (kernel level: slice membership + the pin `edgeDensity = α_r⁺` force the balanced complete `r`-partite graphon); `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` — same Route-3 pattern as Thm 102, at general `3 ≤ r` |
-| Corollary 107 | §11.7 `cor:parametric-qualitative-stability` (l.5153) | `SliceRecovery` | `parametric_qualitative_stability` *(Tier-2 axioms)* |
-| Theorem 109 | §11.8 `thm:approximate-moments` (l.5201) | `GraphonMoments` | `Graphon.approximate_moments`, `approximate_moments_interval`, `approximate_moments_variance` |
-| Proposition 110 *(COMPLETE)* | §11.8 `prop:k4free-p4-certificate-stability` (l.5290) | `ParametricP4Slice`, `GraphonParametricTransport` | hom level `parametricP4_sq_bounds`; the `R_τ⁻` kernel functional is now **defined** (`Graphon.RtauMinus`) with the hom→kernel bridge `graphonHom_f₂_eq_RtauMinus` and the kernel bound `parametricP4_graphon_RtauMinus_le`/`_eq_zero` *(Tier-2 axioms)* |
-| Theorem 111 | §11.8 `thm:k4free-p4-quant-stability` (l.5345) | `GraphonQuantStability` | `Graphon.r3_edge_sq_bound`, `r3_degree_concentration`, `r3_edge_density_stability`, `r3_certificate_instance`, `stability_via_modulus` (`ω_Tur` as an abstract modulus; `δ□` not formalised) |
-| Theorem 112 *(COMPLETE)* | §11.8 `thm:parametric-quant-stability` (l.5418) | `ParametricP4Slice`, `GraphonQuantStability`, `GraphonParametricTransport`, `ParametricStabilityModulus` | (i) `parametricP4_sq_bounds` + kernel clause `parametricP4_graphon_RtauMinus_le`; (ii) `parametricP4_K4_density_approx` (no Zykov input); (iii) `Graphon.interval_localisation`, `interval_localisation_below`, `quadratic_confinement`, `moment_deviation_bound`; (iv) `parametric_stability_via_modulus`/`parametric_graphon_stability_via_modulus` — the `ω_Zyk` route, also **without** needing the Zykov bound |
+| Proposition 94 | §11.6 `prop:equality-slice-vanishing` | `CertificateSliceVanishing` | `equality_slice_vanishing`, `eqSlice` |
+| Theorem 95 | §11.6 `thm:k4free-p4-equality-slice` | `ParametricP4Slice` | `k4freeP4_eta_equation`, `k4freeP4_tau_symm`, `k4freeP4_tau_equation`, `k4freeP4Slice`, `k4freeP4Slice_eq_parametric` *(Tier-2 axioms)* |
+| Theorem 97 | §11.6 `thm:parametric-p4-equality-slice` | `ParametricP4Slice` | `parametricP4_eta_equation`, `parametricP4_tau_symm`, `parametricP4_tau_equation`, `parametricP4_K4_density` (`hZykov` hypothesis), `parametricP4Slice`, `parametricP4_cert` *(Tier-2 axioms)* |
+| Theorem 99 | §11.7 `thm:parametric-moments` | `GraphonMoments` | `Graphon.moments_T`, `moments_D`, `moments_variance`, `moments_interval`, `moments_regular_iff` (kernel level, on `unitInterval` graphons) |
+| Theorem 100 | §11.7 `thm:slice-rigidity` | `GraphonRigidity` | `Graphon.slice_rigidity` (measurable-partition form) |
+| Corollary 101 | §11.7 `cor:r3-rigidity` | `GraphonRigidity` | `Graphon.r3_rigidity` |
+| Theorem 102 *(representative-quantified form)* | §11.7 `thm:k4free-p4-tripartite` | `GraphonRepresentation` (kernel engine `Graphon.r3_rigidity`/`GraphonKernelTransport`; hom avatar still in `SliceRecovery`'s `huniq`, for Cor 104 only) | `k4free_p4_tripartite_of_represents` — unconditional, paper-verbatim, quantified over *representing* graphons (no existence input); `k4free_p4_tripartite_of_rep_exists` — the existence form conditional on the one named classical input `hrep` (Lovász–Szegedy existence) |
+| Corollary 104 | §11.7 `cor:k4free-p4-qualitative-stability` | `SliceRecovery` | `k4free_qualitative_stability` (`huniq` hypothesis) |
+| Corollary 105 | §11.7 `cor:parametric-p4-turan-recovery` | `SliceRecovery`, `TuranSliceIdentities` | `parametric_recovery` (`hZykEq` hypothesis), `parametric_recovery_identities` (the "consequently" support identities) *(Tier-2 axioms; Lean assumes `3 ≤ r` vs the paper's `r ≥ 4` — benign generalisation, README Deviation 15c)* |
+| Corollary 106 | §11.7 `cor:top-endpoint-recovery` | `GraphonParametricTransport` (kernel engine `Graphon.slice_rigidity`) | `parametricP4_graphon_top_endpoint_rigidity` (kernel level: slice membership + the pin `edgeDensity = α_r⁺` force the balanced complete `r`-partite graphon); `parametricP4_top_endpoint_of_represents` / `_of_rep_exists` — same representative-quantified pattern as Thm 102, at general `3 ≤ r` |
+| Corollary 107 | §11.7 `cor:parametric-qualitative-stability` | `SliceRecovery` | `parametric_qualitative_stability` *(Tier-2 axioms)* |
+| Theorem 109 | §11.8 `thm:approximate-moments` | `GraphonMoments` | `Graphon.approximate_moments`, `approximate_moments_interval`, `approximate_moments_variance` |
+| Proposition 110 | §11.8 `prop:k4free-p4-certificate-stability` | `ParametricP4Slice`, `GraphonParametricTransport` | hom level `parametricP4_sq_bounds`; the `R_τ⁻` kernel functional is now **defined** (`Graphon.RtauMinus`) with the hom→kernel bridge `graphonHom_f₂_eq_RtauMinus` and the kernel bound `parametricP4_graphon_RtauMinus_le`/`_eq_zero` *(Tier-2 axioms)* |
+| Theorem 111 | §11.8 `thm:k4free-p4-quant-stability` | `GraphonQuantStability` | `Graphon.r3_edge_sq_bound`, `r3_degree_concentration`, `r3_edge_density_stability`, `r3_certificate_instance`, `stability_via_modulus` (`ω_Tur` as an abstract modulus; `δ□` not formalised) |
+| Theorem 112 | §11.8 `thm:parametric-quant-stability` | `ParametricP4Slice`, `GraphonQuantStability`, `GraphonParametricTransport`, `ParametricStabilityModulus` | (i) `parametricP4_sq_bounds` + kernel clause `parametricP4_graphon_RtauMinus_le`; (ii) `parametricP4_K4_density_approx` (no Zykov input); (iii) `Graphon.interval_localisation`, `interval_localisation_below`, `quadratic_confinement`, `moment_deviation_bound`; (iv) `parametric_stability_via_modulus`/`parametric_graphon_stability_via_modulus` — the `ω_Zyk` route, also **without** needing the Zykov bound |
 
 **Scope of `cor:degenerate-family` (Corollary 49).** Only the *abstract* subquadratic criterion
 `edgeDegenerate_of_subquadratic` is formalised. The named instances in the paper (general `K_{s,t}`
@@ -411,26 +411,26 @@ README — each row cites the paper number, `\label`, line, module, and Lean nam
 checking of §9 can equally be done from the §9 rows of the map above, together with `#print axioms`
 on the headline theorems — so §9 is fully audited, not unverified.
 
-**Scope / not yet formalised.** The formalised frontier is **through §10, plus the whole of
+**Scope.** The formalisation covers **§1–§10 in full, plus the whole of
 §11 modulo four permanent classical inputs** — including all of §9 (`thm:pinning` Theorem 53,
 `lem:complementation` Lemma 50, the §9.4 boundary / no-interior theorem `thm:no-interior`
 Theorem 55, the §9.5 `C₅`-edge obstruction `thm:c5-edge-not-root-plantable` Theorem 62), all of §10
 (`sec:empty-type`: Proposition 64 through Corollary 70), the §11.2–§11.3 relative-ensemble
 foundation (Lemma 71 through Proposition 82; §11.1 is prose), all of §11.4 (Definition 84 through
-Theorem 89), and now every §11.5–§11.8 slice/graphon result in the map above, **each row COMPLETE**
+Theorem 89), and every §11.5–§11.8 slice/graphon result in the map above
 (classical inputs as named hypotheses — README Deviations 14–15, 18; the Thm 91/92 identity
 halves and the Cor 105 "consequently" identities are formalised in the
 `TuranAut`/`TuranDirac`/`TuranSliceIdentities` stack; Thm 102/Cor 106 in the represents-quantified
-Route-3 shape via `GraphonRepresentation`/`GraphonParametricTransport`; Thm 112(iv) via
-`ParametricStabilityModulus`). Not formalised — by **permanent design decision**, not a gap: the
+representative-quantified shape via `GraphonRepresentation`/`GraphonParametricTransport`; Thm 112(iv) via
+`ParametricStabilityModulus`). Not formalised — by **permanent author decision**, not a gap: the
 four classical results the paper itself cites as external inputs — Erdős–Simonovits stability (the
 Thm 91/92 singleton claim, `hES`), Zykov's `K₄`-density bound (`hZykov`) and its equality case
 (`hZykEq`), and Lovász–Szegedy existence (`hrep` — the one with a costed, optional retirement path,
-the weak-regularity campaign of `HOM_TO_GRAPHON_DESIGN.md`). Not yet formalised (future work, all
-optional): the characterisation *conjecture* (`conj:characterisation`) — the one §9 result still
-open — the §12 open problems (prose), and the non-`C₄` degenerate families of Corollary 49 (need
+the weak-regularity campaign of `HOM_TO_GRAPHON_DESIGN.md`). Remaining optional future work: the
+characterisation *conjecture* (`conj:characterisation`) — the one §9 result still
+open — the §12 open problems (prose), the non-`C₄` degenerate families of Corollary 49 (need
 classical extremal bounds — Kővári–Sós–Turán, Bondy–Simonovits, planar — outside current
-Mathlib), plus the optional Phase 3 (kernel-level Mantel/Turán uniqueness) campaign. See the
+Mathlib), and a kernel-level Mantel/Turán uniqueness result that would discharge `hES`. See the
 README's **[Scope & limitations](./README.md#scope--limitations)** for the authoritative list.
 
 ---
@@ -465,8 +465,8 @@ README's **[Scope & limitations](./README.md#scope--limitations)** for the autho
   `rootedViewMeasure_eq_extend`, `k4freeP4_graphon_tripartite` (the rooted transport — the latter
   is the graphon-side content of Thm 102, worth checking against both axiom tiers below);
   `k4free_p4_tripartite_of_represents` (`GraphonRepresentation` — the paper-verbatim Thm 102,
-  Route-3 closure); and, this session, `parametricP4_top_endpoint_of_represents`
-  (`GraphonParametricTransport` — the paper-verbatim Cor 106, same Route-3 pattern) and
+  representative-quantified closure); `parametricP4_top_endpoint_of_represents`
+  (`GraphonParametricTransport` — the paper-verbatim Cor 106, same representative-quantified pattern) and
   `parametric_stability_via_modulus` (`ParametricStabilityModulus` — Thm 112(iv)). The
   README's
   **[Mechanical re-verification](./README.md#auditing-the-correspondence-to-papertex)** block runs the

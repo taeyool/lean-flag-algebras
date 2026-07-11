@@ -269,7 +269,7 @@ private lemma turan_labelExtensions_eq {n₀ N : ℕ} {σ : FlagType (Fin n₀)}
   flagEqv.sound ⟨{ graph_iso := ψ, type_preserve := funext hψ }⟩
 
 /-- All `vtype`-labellings of a Turán flag coincide (vertex transitivity). -/
-theorem labelExtensions_turan_vtype_subsingleton (r n : ℕ) (hr : 2 ≤ r) :
+theorem labelExtensions_turan_vtype_subsingleton (r n : ℕ) (_hr : 2 ≤ r) :
     ∀ G₁ ∈ labelExtensions ((turanFlagSeq r n).2) vtype,
     ∀ G₂ ∈ labelExtensions ((turanFlagSeq r n).2) vtype, G₁ = G₂ := by
   intro G₁ hG₁ G₂ hG₂
@@ -283,7 +283,7 @@ theorem labelExtensions_turan_vtype_subsingleton (r n : ℕ) (hr : 2 ≤ r) :
   exact hψ
 
 /-- All ordered-edge labellings (`FlagType_2_1`) of a Turán flag coincide. -/
-theorem labelExtensions_turan_edge_subsingleton (r n : ℕ) (hr : 2 ≤ r) :
+theorem labelExtensions_turan_edge_subsingleton (r n : ℕ) (_hr : 2 ≤ r) :
     ∀ G₁ ∈ labelExtensions ((turanFlagSeq r n).2) CompleteGraphFreeP4.FlagType_2_1,
     ∀ G₂ ∈ labelExtensions ((turanFlagSeq r n).2) CompleteGraphFreeP4.FlagType_2_1,
       G₁ = G₂ := by
@@ -307,7 +307,7 @@ theorem labelExtensions_turan_edge_subsingleton (r n : ℕ) (hr : 2 ≤ r) :
   · exact hψ1
 
 /-- All ordered-non-edge labellings (`FlagType_2_0`) of a Turán flag coincide. -/
-theorem labelExtensions_turan_nonEdge_subsingleton (r n : ℕ) (hr : 2 ≤ r) :
+theorem labelExtensions_turan_nonEdge_subsingleton (r n : ℕ) (_hr : 2 ≤ r) :
     ∀ G₁ ∈ labelExtensions ((turanFlagSeq r n).2) CompleteGraphFreeP4.FlagType_2_0,
     ∀ G₂ ∈ labelExtensions ((turanFlagSeq r n).2) CompleteGraphFreeP4.FlagType_2_0,
       G₁ = G₂ := by

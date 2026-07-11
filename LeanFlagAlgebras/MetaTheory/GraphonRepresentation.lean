@@ -1,29 +1,26 @@
 import LeanFlagAlgebras.MetaTheory.GraphonKernelTransport
 import LeanFlagAlgebras.MetaTheory.GraphonCounting
 
-/-! # The paper-verbatim tripartite theorem (sub-project B, Route-3 closure)
+/-! # The paper-verbatim tripartite theorem
 
-The closure of Phase 4 in the checkpoint-spike's adopted form (`HOM_TO_GRAPHON_DESIGN.md`,
-item 6): the paper's `thm:k4free-p4-tripartite` (Thm 102) in its own quantifier shape.
+The paper's `thm:k4free-p4-tripartite` (Thm 102), stated in its own quantifier shape: over
+graphons representing a point of the slice, rather than over the slice's points directly.
 
 * `posHomPoint_eq_of_graphonProfileFun_eq` — a graphon whose profile agrees with `φ₀`'s
   carries the same point of `X_∅`.
 * `k4free_p4_tripartite_of_represents` — **the unconditional paper-verbatim Thm 102**:
   *every* graphon representing a point of the `K₄`-free `P₄`-slice (with both root types of
-  positive mass) is a.e. the balanced complete tripartite graphon.  This is the paper's own
+  positive mass) is a.e. the balanced complete tripartite graphon. This is the paper's own
   "let `W` represent a point of `Y_{P4}`; then `W` is a.e. …" — and it needs **no**
   representation-existence input, because the quantifier runs over the representatives.
-* `k4free_p4_tripartite_of_rep_exists` — the existence form, conditional on the **one named
-  classical input of Phase 4**:
-  `hrep : ∀ φ₀, ∃ W, ∀ F, graphonProfileFun W F = φ₀.coe F` (Lovász–Szegedy existence, in
-  the standing named-hypothesis convention of `hES`/`hZykov`).  Retiring `hrep` is the
-  deferred weak-regularity campaign costed in the design doc; the graphon-hom range is
-  already proved **dense** in `X_∅` (`exists_graphonHomPoint_seq_tendsto`), so `hrep` is
-  equivalent to `IsClosed (Set.range graphonHomPoint)`.
+* `k4free_p4_tripartite_of_rep_exists` — the existence form, conditional on the one named
+  classical input `hrep : ∀ φ₀, ∃ W, ∀ F, graphonProfileFun W F = φ₀.coe F` (Lovász–Szegedy
+  existence, in the standing named-hypothesis convention of `hES`/`hZykov`). The graphon-hom
+  range is already proved **dense** in `X_∅` (`exists_graphonHomPoint_seq_tendsto`), so `hrep`
+  is equivalent to `IsClosed (Set.range graphonHomPoint)`.
 
 Cor 106 does not yet admit the same treatment: `Graphon.slice_rigidity` has no
-rooted-transport counterpart (see the design doc).  These theorems are Tier-2 (they consume
-`k4freeP4_graphon_tripartite`).
+rooted-transport counterpart. These theorems consume `k4freeP4_graphon_tripartite`.
 -/
 
 open MeasureTheory unitInterval
@@ -48,7 +45,7 @@ theorem posHomPoint_eq_of_graphonProfileFun_eq {W : Graphon} {φ₀ : PositiveHo
 
 /-- The value of `⟨σ'⟩₀` transports along profile agreement: a graphon-hom value on the
 type-flag class is exactly the profile value, so `hW` identifies `φ_W ⟨σ'⟩₀` with
-`φ₀ ⟨σ'⟩₀` (mirrors the idiom of `GraphonRootedMeasure.rootMass_eq_typeFlag`). -/
+`φ₀ ⟨σ'⟩₀` (the same idiom as `GraphonRootedMeasure.rootMass_eq_typeFlag`). -/
 private lemma graphonHom_typeFlag_eq_of_graphonProfileFun_eq {W : Graphon} {φ₀ : PositiveHom ∅ₜ}
     (hW : ∀ F : FinFlag ∅ₜ, graphonProfileFun W F = φ₀.coe F) (σ' : FlagType (Fin 2)) :
     (graphonHom W) ⟨σ'⟩₀ = φ₀ ⟨σ'⟩₀ := by
@@ -75,7 +72,7 @@ theorem k4free_p4_tripartite_of_represents {W : Graphon} {φ₀ : PositiveHom �
   · rw [hpt]
     exact hmem
 
-/-- The existence form of Thm 102, conditional on the one named classical input of Phase 4
+/-- The existence form of Thm 102, conditional on the one named classical input
 (Lovász–Szegedy existence, `hrep`): every point of the slice (with both root types of
 positive mass) is represented by some graphon, and any such representative is a.e. the
 balanced complete tripartite graphon. -/
