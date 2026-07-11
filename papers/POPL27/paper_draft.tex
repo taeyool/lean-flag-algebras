@@ -2266,7 +2266,7 @@ that claim directly.  In the flag-algebra setting, this would mean proving, one
 by one, that two particular flags are isomorphic, that a certain density is a
 given rational number, or that a product of basis flags expands into a specified
 linear combination.  This is possible in principle, but it is the wrong scale:
-a single certificate contains many such finite checks, and hand-proving each
+a single nontrivial application contains many such finite checks, and hand-proving each
 one would bury the mathematical argument under routine case analysis.
 
 The second approach is computation-oriented.  Instead of proving each finite
@@ -2283,8 +2283,9 @@ run the program and invoke the correctness theorem, rather than reconstructing
 the finite verification case by case.
 
 Flag algebras are especially well suited to this style.  In applications, the
-certificates are often found by computer search or semidefinite programming, and
-checking them already amounts to checking finite data: same-flag tests, subflag
+candidate bounds and their supporting numerical data are often found by
+computer search or semidefinite programming, and validating the resulting
+proof already amounts to checking finite data: same-flag tests, subflag
 densities, multiplication tables, and rational arithmetic.  A formal
 proof should neither trust those external tables nor replay each entry as a
 hand proof.  Reflection gives the middle path.
@@ -2690,54 +2691,95 @@ Here the rewrite changes the goal to the closed computable equality
   downwardNormalizingFactor_Sym2Flag  Sym2Flag_3_1_0_1  =  2 / 3
 \end{lstlisting}
 and \lean{native\_decide} evaluates that finite computation.  The reflected
-normalizing factor makes the downward operator executable on concrete 
+normalizing factor makes the downward operator executable on concrete
 flags.  The reflection layer computes the underlying unlabeled flag and its
 normalizing factor; the adequacy theorem then certifies their product as the
 abstract downward image.  By linearity, finite flag expressions can be handled
-term by term, so the downward identities needed in the certificate proofs of
-\Cref{sec:flagmatic} can be established computationally rather than by separate
-counting arguments.
+term by term, so the downward identities needed in later flag-algebra proofs can
+be established computationally rather than by separate counting arguments.
 
-\subsection{Elaboration-Time Theorem Generation}
+\subsection{From Reflected Computations to Reusable Theorems}
+\label{sec:reflection-generation}
 
-Having established the adequacy theorems, we need to generate and prove the
-density and multiplication lemmas required for each specific theorem.  Rather
-than writing these by hand, we use Lean~4's elaboration monad to generate
-them automatically from precomputed data.
+The two examples in the preceding subsection show the basic unit of work.  To
+prove the concrete density
+\(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\), Lean rewrites the
+specification-level goal with the density adequacy theorem and then evaluates
+the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
+\(q_\sigma(\fbarPthreebull)=2/3\), it performs the same two steps with
+\lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
+uniform: they prove the reflected evaluators correct for every possible input.
+What repeats in a concrete development is their specialization to every flag,
+pair of pattern flags, and host flag that the later algebraic proof will use.
 
-The elaboration macro \lean{load\_flag\_pair\_density\_theorems} reads a JSON
-file containing density values.  It is implemented in
-\lean{Flags/Densities/DensityLoader.lean}; for each entry
-\lean{(F1, F2, G, p/q)} it generates and immediately proves a theorem of the
-form shown in \Cref{sec:reflection-adequacy}.  The same elaboration pattern is
-used by \lean{MulLoader.lean} for flag
-multiplication tables, and by family-specific loaders such as
-\lean{load\_triangle\_density\_theorems} and
-\lean{load\_k4\_density\_theorems} that combine the generic adequacy lemma
-with a forbidden-graph filter.
+We automate this repetition using Lean's metaprogramming facilities.  More
+precisely, the generation commands displayed below are custom command
+elaborators written using Lean's metaprogramming framework.  During
+elaboration---the phase in which Lean processes source commands and produces
+checked definitions and theorems---they run the finite enumerators and
+automatically generate the statements and proofs of the required specialized
+facts.  This both makes those facts available as
+ordinary reusable theorems and avoids repeating their finite computations at
+every later use: the computation is performed while the theorem family is
+generated, after which later proofs reuse the checked result by rewriting.  In
+this sense, the generated theorems form a certified cache of the reflected
+computations.  For the sizes and flag type used in the two examples above, the
+relevant commands have the following form:
+\begin{lstlisting}
+-- Generate empty-typed flags at pattern size 2 and host size 3.
+generate_empty_typed_flags 2
+generate_empty_typed_flags 3
 
-The macro \lean{generate\_basisVector\_lemmas} in \lean{Automation/Basic.lean} plays
-a similar role for unit-vector identities.  Given \lean{n} and a count, it
-emits simp lemmas of the form
-$\lean{[[basisVector <n, Flag\_n\_0\_0\_i>]] = FlagAlgebra\_n\_0\_0\_i}$ for
-each index in range, so that subsequent tactics can rewrite quotient classes
-into named constants without invoking \lean{Quotient.out\_inj.mp rfl}
-explicitly.
+-- Use the unique type on one labeled vertex (k = 1, m = 0),
+-- and generate its flags at the sizes 2 and 3
+generate_flags 2 1 0
+generate_flags 3 1 0
 
-This design also changes the proof-engineering scale.  The JSON files are not
-used as proof certificates in the logical sense; they are build inputs that
-determine which theorems Lean should attempt to prove and what rational value
-they should state.  If a table entry is wrong, the generated theorem fails at
-\lean{native\_decide}.  If the table entry is right, the theorem is stored as
-a named lemma and later proofs use it by rewriting rather than by recomputing
-the density from scratch.  In effect, the elaborator performs a verified
-specialization pass: it turns a general reflective evaluator into thousands
-of small, reusable theorem constants specialized to the flags that appear in
-the certificate.
+-- Prove all pair densities, then all product expansions.
+generate_flag_pair_density_theorems_no_forbid 2 3 1 0
+generate_mul_theorems 2 3 1 0
+\end{lstlisting}
+
+The reader need not remember these numerical parameters, but their convention
+explains how the commands fit together.  The argument of
+\lean{generate\_empty\_typed\_flags n} is the number \(n\) of vertices.  In
+\lean{generate\_flags n k m}, \(n\) is again the total number of vertices,
+\(k\) is the number of labeled vertices, and \(m\) selects one of the
+\(k\)-vertex flag types.  The last two commands take the pattern size, the host
+size, and then the same \(k,m\) describing the type.  Here \(k=1,m=0\) selects
+the unique type on one labeled vertex, while the suffix
+\lean{no\_forbid} says that no forbidden-graph filter is being applied.
+
+The important point is the output of each group, rather than the particular
+indices.  The first four commands create the named two- and three-vertex flags
+used in the examples of \Cref{sec:reflection-adequacy}.  Generating the typed
+flags also computes and proves their downward identities, including the
+coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
+generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every pair of
+two-vertex patterns \((F_1,F_2)\) and every three-vertex host \(G\); this family includes the
+displayed value \(c=1/2\).  These evaluations are batched to avoid invoking the
+native compiler separately for every tuple.  Finally, the multiplication
+command uses all of those coefficients to prove the product expansion
+\(F_1 \cdot F_2=\sum_G c_G\,G\) for every pattern pair.  Thus elaboration produces the
+basis flags, their unlabelings and downward coefficients, the density table,
+and the multiplication table, together with proofs of every entry.  Variants
+for a fixed forbidden graph first discard flags that cannot contribute and then
+perform the same computations on the surviving family.
+
+Metaprogramming automates theorem construction, not verification: Lean still
+checks every generated proof, and a wrong coefficient makes that proof fail.
+Once accepted, these theorems let later arguments simplify downward images,
+densities, and products by rewriting rather than reopening the finite searches.
+Thus the pipeline of this section is: executable concrete representations,
+uniform adequacy theorems, and elaboration-time generation of a reusable,
+checked table.  The next section uses this table to automate recurring
+flag-algebra proofs.
 
 \section{From a Recurring Proof Pattern to a Certificate-to-Lean Compiler}
 \label{sec:flagmatic}
 \label{sec:bridge}% legacy alias: this section absorbed the former ``Bridge'' section
+
+\hy{I am here.}
 
 Software such as Flagmatic~\cite{vaughan2013flagmatic} searches for
 flag-algebra certificates automatically, but a certificate is numerical data,
