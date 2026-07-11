@@ -1,8 +1,8 @@
 import LeanFlagAlgebras.MetaTheory.GraphonRootedDensity
 
-/-! # The rooted conditional homomorphism of a graphon (sub-project A, module 1b)
+/-! # The rooted conditional homomorphism of a graphon
 
-The assembly layer of the rooted transport (`HOM_TO_GRAPHON_DESIGN.md`, sub-project A): for a
+The assembly layer of the rooted transport: for a
 graphon `W`, a two-vertex type `σ'`, and an **admissible** pinned pair `u v : I`
 (`RootAdmissible`: positive root factor), the profile
 
@@ -10,9 +10,9 @@ graphon `W`, a two-vertex type `σ'`, and an **admissible** pinned pair `u v : I
    = (∑_{G std-rooted, ⟦G⟧ = F.2} unnormRootedDensity W _ G u v) / rootWeight W σ' u v`
 
 is the conditional law of the `σ'`-rooted `W`-random graph given the root samples: the sum
-ranges over the **standard-rooted** graphs in the class of `F` (`StdRootedBridge`; see the
-design doc's index-set correction), and division by the root factor conditions on the root
-pair's adjacency.  The three structural properties hold at every admissible pair —
+ranges over the **standard-rooted** graphs in the class of `F` (`StdRootedBridge`), and
+division by the root factor conditions on the root pair's adjacency.  The three structural
+properties hold at every admissible pair —
 
 * `oneProp`: the unit flag is the type itself on two vertices, of unnormalised density
   exactly `rootWeight` (`unnormRootedDensity_two`);
@@ -30,7 +30,7 @@ pair's adjacency.  The three structural properties hold at every admissible pair
 so `positiveHomFromZeroSpaceOneMulProp` assembles the **rooted conditional homomorphism**
 `graphonRootedHom W σ' u v h : PositiveHom σ'`.  Its joint measurability in `(u, v)`
 (`measurable_graphonRootedProfileFun`) feeds the rooted-view measure of
-`GraphonRootedMeasure.lean` (module 2).
+`GraphonRootedMeasure.lean`.
 -/
 
 open MeasureTheory unitInterval Finset
@@ -154,7 +154,7 @@ private lemma rootCompatible_comap_rootFixing_iff (σ' : FlagType (Fin 2)) {n �
   · exact rootCompatible_comap_of_rootFixing hn hℓ j hj
 
 /-- A sum of an indicator (`0`/constant `c`) over a `Fintype` is the count of the true set
-times the constant.  (Local copy of the `GraphonHom` workhorse.) -/
+times the constant (the same summation identity used in `GraphonHom`). -/
 private lemma sum_ite_const_rooted {α : Type*} [Fintype α] (P : α → Prop) [DecidablePred P]
     (c : ℝ) : ∑ _x : α, (if P _x then c else 0) = (Finset.univ.filter P).card * c := by
   rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul]
@@ -179,7 +179,7 @@ private lemma card_eq_of_stdRooted_subset_iso (σ' : FlagType (Fin 2)) {n ℓ : 
 /-- The number of `n`-element subsets of `Fin ℓ` containing both standard roots is
 `C(ℓ−2, n−2)`: bijection with the `(n−2)`-subsets of the root-erased universe. -/
 private lemma count_rootContaining_subsets {n ℓ : ℕ}
-    (hn : 2 ≤ n) (hℓ : 2 ≤ ℓ) (hnℓ : n ≤ ℓ) :
+    (hn : 2 ≤ n) (hℓ : 2 ≤ ℓ) (_hnℓ : n ≤ ℓ) :
     (Finset.univ.filter (fun S : Finset (Fin ℓ) =>
         ({Fin.castLE hℓ 0, Fin.castLE hℓ 1} : Set (Fin ℓ)) ⊆ ↑S ∧ S.card = n)).card
       = (ℓ - 2).choose (n - 2) := by
@@ -188,7 +188,7 @@ private lemma count_rootContaining_subsets {n ℓ : ℕ}
   have hne : Fin.castLE hℓ (0 : Fin 2) ≠ Fin.castLE hℓ (1 : Fin 2) := by
     simp only [ne_eq, Fin.castLE_inj]; decide
   have hrootscard : roots.card = 2 := by
-    rw [hrootsdef, Finset.card_insert_of_notMem (by simpa using hne), Finset.card_singleton]
+    rw [hrootsdef, Finset.card_insert_of_notMem (by simp [hne]), Finset.card_singleton]
   have hcoe : (↑roots : Set (Fin ℓ)) = ({Fin.castLE hℓ 0, Fin.castLE hℓ 1} : Set (Fin ℓ)) := by
     rw [hrootsdef]; simp
   have hfilter_eq : (Finset.univ.filter (fun S : Finset (Fin ℓ) =>
@@ -491,15 +491,14 @@ private lemma graphonRootedProfile_zeroSpace_aux (W : Graphon) (σ' : FlagType (
   · intro Hp _; rfl
 
 theorem graphonRootedProfile_zeroSpaceProp (W : Graphon) (σ' : FlagType (Fin 2)) (u v : I)
-    (h : RootAdmissible W σ' u v) : zeroSpaceProp (graphonRootedProfileFun W σ' u v) := by
-  -- The chain rule, by the rooted extension-partition + root-fixing subset-averaging scheme
-  -- of the module docstring (mirror `graphonProfile_zeroSpaceProp` of `GraphonHom.lean`,
-  -- with: extensions `unnormRootedDensity_extension_sum`; averaging
+    (_h : RootAdmissible W σ' u v) : zeroSpaceProp (graphonRootedProfileFun W σ' u v) := by
+  -- The chain rule, via the rooted extension-partition + root-fixing subset-averaging scheme:
+  -- extensions `unnormRootedDensity_extension_sum`; averaging
   -- `exists_rootfix_perm_comp_emb` + `unnormRootedDensity_comap_rootfix_perm` +
   -- `mkStdRooted_comap_rootfix_perm`; subsets ↔ embeddings `exists_rootFixing_emb_range` /
   -- `stdRooted_subset_iso_iff`; count `flagDensity₁_stdRooted`, denominator
   -- `C(ℓ−2, n−2)` = the number of root-containing `n`-subsets; class regrouping
-  -- `exists_stdRooted_rep` + `Finset.sum_fiberwise`-style reindexing).  The `rootWeight`
+  -- `exists_stdRooted_rep` + `Finset.sum_fiberwise`-style reindexing.  The `rootWeight`
   -- normalisation passes through the (linear) chain rule untouched.
   intro F ℓ hFl
   show graphonRootedProfileFun W σ' u v F
@@ -514,8 +513,8 @@ theorem graphonRootedProfile_zeroSpaceProp (W : Graphon) (σ' : FlagType (Fin 2)
 /-! ### Private machinery for `mulProp` -/
 
 /-- Regroup a triple sum (two labels + the underlying index) picking out the fibre of a pair
-`(g1, g2)` over `t1 × t2` into a single filtered sum. (Local copy of the `GraphonHom`
-workhorse.) -/
+`(g1, g2)` over `t1 × t2` into a single filtered sum (the same regrouping identity used in
+`GraphonHom`). -/
 private lemma sum_double_fiberwise {ι κ₁ κ₂ : Type*} [Fintype ι] [DecidableEq κ₁] [DecidableEq κ₂]
     (t₁ : Finset κ₁) (t₂ : Finset κ₂) (g₁ : ι → κ₁) (g₂ : ι → κ₂) (f : ι → ℝ) :
     (∑ j₁ ∈ t₁, ∑ j₂ ∈ t₂,
@@ -551,7 +550,7 @@ private lemma rootFinset_coe {ℓ : ℕ} (hℓ : 2 ≤ ℓ) :
 private lemma rootFinset_card {ℓ : ℕ} (hℓ : 2 ≤ ℓ) : (rootFinset hℓ).card = 2 := by
   have hne : Fin.castLE hℓ (0 : Fin 2) ≠ Fin.castLE hℓ (1 : Fin 2) := by
     simp only [ne_eq, Fin.castLE_inj]; decide
-  rw [rootFinset, Finset.card_insert_of_notMem (by simpa using hne), Finset.card_singleton]
+  rw [rootFinset, Finset.card_insert_of_notMem (by simp [hne]), Finset.card_singleton]
 
 /-- `roots ⊆ range j` for any root-fixing embedding `j`: each root is the image of the
 corresponding root of the domain. -/
@@ -564,8 +563,8 @@ private lemma roots_subset_range_of_rootFixing {n' ℓ : ℕ} (hn' : 2 ≤ n') (
   · exact ⟨Fin.castLE hn' 0, hj 0⟩
   · exact ⟨Fin.castLE hn' 1, hj 1⟩
 
-/-- `multinomialCoefficient ![a, b] (a + b) = (a + b).choose a` (copy of the reduction used in
-`EmptyTypeGraphBridge.flagDensity₂_graphFlag`). -/
+/-- `multinomialCoefficient ![a, b] (a + b) = (a + b).choose a`, the same reduction used in
+`EmptyTypeGraphBridge.flagDensity₂_graphFlag`. -/
 private lemma multinomialCoefficient_two_eq_choose (a b : ℕ) :
     multinomialCoefficient ![a, b] (a + b) = (a + b).choose a := by
   rw [multinomialCoefficient_eq_choose_mul_multinomial]
@@ -668,7 +667,7 @@ private lemma sum_unnormRootedDensity_comap_rootfix_pair_embedding_eq (W : Graph
 /-- **The key simplification**: for an `IsInducedPairOn` subset pair `P` realising two
 standard-rooted flags of the exact sizes `n₁, n₂` glued into a host of size `n₁ + n₂ - 2`, the
 second coordinate is forced to be the complement of the first, union the roots. -/
-private lemma pair_snd_eq_compl_union_roots {n₁ n₂ ℓ : ℕ} (hn₁ : 2 ≤ n₁) (hn₂ : 2 ≤ n₂)
+private lemma pair_snd_eq_compl_union_roots {n₁ n₂ ℓ : ℕ} (_hn₁ : 2 ≤ n₁) (hn₂ : 2 ≤ n₂)
     (hℓ : 2 ≤ ℓ) (hℓeq : ℓ = n₁ + n₂ - 2) (P : Finset (Fin ℓ) × Finset (Fin ℓ))
     (hsub1 : rootFinset hℓ ⊆ P.1) (hsub2 : rootFinset hℓ ⊆ P.2)
     (hdisj : ((↑P.1 : Set (Fin ℓ)) \ ↑(rootFinset hℓ)) ∩ ((↑P.2 : Set (Fin ℓ)) \ ↑(rootFinset hℓ))
@@ -1106,9 +1105,9 @@ private lemma graphonRootedProfile_mul_aux (W : Graphon) (σ' : FlagType (Fin 2)
   · intro H _; rfl
 
 theorem graphonRootedProfile_mulProp (W : Graphon) (σ' : FlagType (Fin 2)) (u v : I)
-    (h : RootAdmissible W σ' u v) : mulProp (graphonRootedProfileFun W σ' u v) := by
-  -- Multiplicativity, by the glued block product + pair averaging scheme of the module
-  -- docstring.  Sizes: `F₁.1 + F₂.1 − n₀` with `n₀ = 2` is the glued host size of
+    (_h : RootAdmissible W σ' u v) : mulProp (graphonRootedProfileFun W σ' u v) := by
+  -- Multiplicativity, via the glued block product + pair averaging scheme.
+  -- Sizes: `F₁.1 + F₂.1 − n₀` with `n₀ = 2` is the glued host size of
   -- `unnormRootedDensity_block_mul`; the conditioning bookkeeping (`rootWeight⁻²` on the
   -- left, one `rootWeight` in the glued sum) cancels against the single `rootWeight⁻¹` of
   -- each right-hand profile value.  Pair count from `flagDensity₂_eq_subset_count_div`

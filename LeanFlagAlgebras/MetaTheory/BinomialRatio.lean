@@ -58,7 +58,7 @@ private theorem factor_tendsto' (n k i : ℕ) (hn : 0 < n) :
 
 /-- **E1.**  For fixed `n, k, r` (with `1 ≤ r` and `0 < n`), the uniform-clone planted-estimate ratio
 `Mʳ · C(n−k, r) / C(n·M−k, r)` tends, as `M → ∞`, to `ρ_∞(n) = descFactorial(n−k, r) / nʳ`. -/
-theorem rho_tendsto_atTop (n k r : ℕ) (hr : 1 ≤ r) (hn : 0 < n) :
+theorem rho_tendsto_atTop (n k r : ℕ) (_hr : 1 ≤ r) (hn : 0 < n) :
     Tendsto (fun M : ℕ => ((M : ℚ) ^ r * ((n - k).choose r : ℚ)) / (((n * M - k).choose r : ℚ)))
       atTop (𝓝 (((n - k).descFactorial r : ℚ) / ((n : ℚ) ^ r))) := by
   -- The `r`-fold product of blow-up factors tends to `∏ (1/n) = 1/nʳ`.

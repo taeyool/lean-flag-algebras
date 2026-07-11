@@ -2,15 +2,14 @@ import LeanFlagAlgebras.MetaTheory.GraphonRootedMeasure
 import LeanFlagAlgebras.MetaTheory.ParametricP4Slice
 import LeanFlagAlgebras.MetaTheory.GraphonRigidity
 
-/-! # From slice identities to kernel equations (sub-project A, module 2b)
+/-! # From slice identities to kernel equations
 
-The capstone of the rooted transport (`HOM_TO_GRAPHON_DESIGN.md`, sub-project A): rooted flag
-identities holding on the relative support of the `K₄`-free `P₄`-slice become **almost-
-everywhere kernel equations** for any graphon whose `φ_W` lies in the slice — exactly the
-hypotheses of `Graphon.r3_rigidity`.  This is the Lean form of the paper's rooted dictionary
-(`paper.tex:4861–4875`): at an ordered edge root `(x, y)`, `a_τ = d(x) − c(x,y)`,
-`b_τ = d(y) − c(x,y)`, `g_τ = c(x,y)`; at an ordered non-edge root, `z_η = 1 − d(x) − d(y)
-+ c(x,y)`, `g_η = c(x,y)`.
+The capstone of the rooted transport: rooted flag identities holding on the relative support
+of the `K₄`-free `P₄`-slice become **almost-everywhere kernel equations** for any graphon
+whose `φ_W` lies in the slice — exactly the hypotheses of `Graphon.r3_rigidity`.  This is the
+Lean form of the paper's rooted dictionary (`paper.tex:4861–4875`): at an ordered edge root
+`(x, y)`, `a_τ = d(x) − c(x,y)`, `b_τ = d(y) − c(x,y)`, `g_τ = c(x,y)`; at an ordered non-edge
+root, `z_η = 1 − d(x) − d(y) + c(x,y)`, `g_η = c(x,y)`.
 
 * `graphonRootedHom_a_tau` / `_b_tau` / `_g_tau` / `_z_eta` / `_g_eta` — the **kernel
   dictionary**: the rooted conditional homomorphism's values on the generated three-vertex
@@ -27,11 +26,10 @@ hypotheses of `Graphon.r3_rigidity`.  This is the Lean form of the paper's roote
   `φ_W` lies in the `K₄`-free `P₄`-slice (and has both root types admissible in mass) is
   a.e. the balanced complete tripartite graphon.
 
-Hypothesis shape (per the design probe): membership `posHomPoint (graphonHom W) ∈
-k4freeP4Slice` is purely algebraic (`mem_Qσ_iff`: `φ_W` vanishes on the forbidden `K₄`
-flags, plus the `P₄`-density evaluation) — no graph-limit existential enters.  These
-theorems are **Tier-2** (they consume the certificate-derived slice equations); the
-dictionary lemmas themselves are Tier-1.
+The hypothesis `posHomPoint (graphonHom W) ∈ k4freeP4Slice` is purely algebraic
+(`mem_Qσ_iff`: `φ_W` vanishes on the forbidden `K₄` flags, plus the `P₄`-density evaluation) —
+no graph-limit existential enters.  The transport theorems are **Tier-2** (they consume the
+certificate-derived slice equations); the dictionary lemmas themselves are Tier-1.
 -/
 
 open MeasureTheory unitInterval Finset
@@ -686,8 +684,7 @@ theorem k4freeP4_graphon_Reta_eq_zero (W : Graphon)
 `P₄`-slice (with both root types of positive mass) is almost everywhere the balanced
 complete tripartite graphon — `Graphon.r3_rigidity` with both hypotheses discharged by the
 rooted transport.  This is the graphon-side content of `thm:k4free-p4-tripartite` (Thm 102);
-composing with the (future, sub-project B) representation theorem yields the paper statement
-verbatim. -/
+composing with the representation theorem yields the paper statement verbatim. -/
 theorem k4freeP4_graphon_tripartite (W : Graphon)
     (hστ : (graphonHom W) ⟨FlagType_2_1⟩₀ > 0)
     (hση : (graphonHom W) ⟨FlagType_2_0⟩₀ > 0)

@@ -4,17 +4,17 @@ import LeanFlagAlgebras.MetaTheory.C4Free
 
 /-! # Every graphon is a positive homomorphism: `φ_W`
 
-Phase 2 of the graphon layer (infrastructure toward the representation results of §11.7 of
-`MetaTheory/paper.tex`, which use "graphons are limit objects" as a folklore input; there is
-no single paper display for this construction).  For a graphon `W` we build the positive
-homomorphism `φ_W : A^{∅ₜ} → ℝ` whose value on an unlabelled flag `F` is the probability that
-a `W`-random graph on `|F|` uniformly sampled points is isomorphic to `F`:
+Infrastructure toward the representation results of §11.7 of `MetaTheory/paper.tex`, which use
+"graphons are limit objects" as a folklore input; there is no single paper display for this
+construction. For a graphon `W` we build the positive homomorphism `φ_W : A^{∅ₜ} → ℝ` whose
+value on an unlabelled flag `F` is the probability that a `W`-random graph on `|F|` uniformly
+sampled points is isomorphic to `F`:
 
 `graphonProfileFun W F = ∑_{H : SimpleGraph (Fin |F|), ⟦H⟧ = F} graphonFlagDensity W H`.
 
 The three structural properties of a density profile are discharged as follows and the
-homomorphism is assembled by `positiveHomFromZeroSpaceOneMulProp` (as in
-`MetaTheory/ComplementHom.lean`, which transported them; here they are proved from scratch):
+homomorphism is assembled by `positiveHomFromZeroSpaceOneMulProp`, following the same scheme
+as `MetaTheory/ComplementHom.lean` but proved here from scratch for the graphon profile:
 
 * `oneProp` — on `Fin 0` there is one graph, of density `1` (`graphonFlagDensity_fin_zero`).
 * `zeroSpaceProp` — the chain rule.  Expand each labelled density through the extension

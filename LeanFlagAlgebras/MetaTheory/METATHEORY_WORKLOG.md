@@ -7,8 +7,12 @@ any other doc. (My detailed AI working memory under `~/.claude/` is **machine-lo
 be on a different machine — this file plus the other committed `MetaTheory/*.md` docs are the portable
 context.)*
 
-Last updated: 2026-07-11 (**eighth session** of 2026-07-10/11: **paper alignment + Cor 106 +
-Thm 112(iv), DONE**). (Stopping
+Last updated: 2026-07-11 (**ninth session**: a **code & doc hygiene pass** — every MetaTheory
+compiler warning eliminated (29 → 0), process-history phrasing stripped from Lean docstrings and
+from the reference docs, `HOM_TO_GRAPHON_DESIGN.md` trimmed to its live campaign; build unchanged
+at **8018 jobs / 95 modules**, sorry-free, axiom tiers unchanged. See "Code & doc hygiene pass —
+DONE" below. The eighth session — **paper alignment + Cor 106 + Thm 112(iv), DONE** — is recorded
+after it.) (Stopping
 point: §1–**10** of `paper.tex` formalised PLUS the **whole §11.2–§11.8 relative (slice) theory**
 — the §11.2–§11.3 foundation (four modules,
 `RelativeSupport`/`RelativeClosure`/`RelativeSlackness`/`KernelSlackness`, "§11.2–§11.3 — DONE"
@@ -640,6 +644,47 @@ modules with defeq-load-bearing proofs, cross-module hoists, and dead-code the a
 "needs author confirmation" (likely intentional API). (3) An 8-agent apply workflow made the edits
 per module group, each `lake env lean`-verified with revert-on-failure. (4) The authoritative full
 clean rebuild + `#print axioms` (this is where the stale-olean bug was caught and fixed). (5) Docs.
+
+## Code & doc hygiene pass — DONE (2026-07-11, ninth session)
+
+A quality pass over the finished formalisation — no new mathematics, no statement changes.
+
+* **Warnings: 29 → 0.** Every MetaTheory compiler warning cleared: unused local binders and
+  unused-but-documented signature hypotheses underscore-prefixed (API-preserving — the type is
+  unchanged and positional callers are unaffected); unused auto-included section variables in
+  `ProductTV` given `omit … in`; two `simpa`→`simp` linter swaps in `GraphonRootedHom`; one unused
+  `simp` argument dropped in `GraphonRootedMeasure`. (The 5 remaining warnings in the build log are
+  all in the base `FlagAlgebra`/`Forbid` layers, outside this directory and out of scope.)
+* **Process-history phrasing stripped from Lean docstrings.** Module and declaration docstrings
+  across the graphon and Turán modules said things like "sub-project A module 1b", "the Route-3
+  closure", "mechanical generalisation of the shipped X", "mirror of the r=3 version", session
+  stamps, and pointers to this worklog / `HOM_TO_GRAPHON_DESIGN.md` as the status authority — all
+  reworded to describe what each module *contains* mathematically, keeping every `paper.tex` label
+  and inter-module cross-reference. Two files shed long deletions that were pure scaffolding: the
+  verbose "Skeleton: …" planning comments inside `GraphonRigidity`'s big proofs (replaced by concise
+  descriptions using the actual helper names), and leftover dossier/proof-route planning comments in
+  `TuranDirac` — both comment-only, no code touched.
+* **Reference docs streamlined.** `README.md`, `ARCHITECTURE.md`, `READING_GUIDE.md` had the
+  drift-prone `l.NNNN` paper/Lean line numbers stripped from their correspondence tables (keeping the
+  stable *paper-label → Lean-name → module* anchors), and the build-process vocabulary
+  ("**COMPLETE**"/"PARTIAL"/"as of this session"/"@commit"/"sub-project"/"Route-3"/"the wave"/
+  "checkpoint"/"probe") converted to plain present-tense descriptions of the finished artifact. The
+  genuine content — what is proved, the mathematical paper-deviations, the verification instructions,
+  the module map, the axiom-tier explanation, the four permanent classical inputs and the optional
+  future-work list — was preserved.
+* **`HOM_TO_GRAPHON_DESIGN.md` trimmed** from a completed-module construction log to a lean design
+  note for the one remaining optional campaign (retiring `hrep` via Frieze–Kannan weak regularity),
+  keeping the `IsClosed (Set.range graphonHomPoint)` reframing, the martingale-gap rationale, and the
+  costed plan.
+* **This worklog is deliberately left as the running history** (per the author's instruction); only
+  the header and this section were added.
+
+Verification: `touch MetaTheory/*.lean && lake build LeanFlagAlgebras.MetaTheory` →
+**"Build completed successfully (8018 jobs)"** with **zero** MetaTheory warnings; `sorry`/`admit`
+grep empty; `#print axioms` on the capstones unchanged (`clone_root_plantable`,
+`graphonHom_f₂_eq_RtauMinus`, `Graphon.slice_rigidity` Tier-1; the certificate consumers Tier-2 as
+before). Workflow: one cleanup agent per file (22 files, each `lake env lean`-verified), then the
+authoritative full rebuild + axiom spot-check, then the doc streamline.
 
 ## Paper alignment + Cor 106 + Thm 112(iv) — DONE (2026-07-11, eighth session)
 

@@ -1,11 +1,11 @@
 import LeanFlagAlgebras.MetaTheory.GraphonInducedDensity
 import LeanFlagAlgebras.MetaTheory.StdRootedBridge
 
-/-! # Rooted induced densities of a graphon (sub-project A, module 1a)
+/-! # Rooted induced densities of a graphon
 
-The analytic layer of the rooted conditional homomorphism of `HOM_TO_GRAPHON_DESIGN.md`
-(sub-project A): for a graphon `W`, a standard-rooted graph `G` on `Fin n`
-(`StdRootedBridge`), and pinned root samples `u v : I`, the **unnormalised rooted density**
+The analytic layer of the rooted conditional homomorphism: for a graphon `W`, a
+standard-rooted graph `G` on `Fin n` (`StdRootedBridge`), and pinned root samples `u v : I`,
+the **unnormalised rooted density**
 
 `unnormRootedDensity W hn G u v = ∫_{y : Fin n → I} inducedWeight W G (pinRoots hn u v y)`
 
@@ -23,8 +23,7 @@ non-edge type), which is why all identities below carry it:
 * `unnormRootedDensity_block_mul` — the glued block product: two rooted densities at the
   same type multiply to `rootWeight` times the total density of the graphs on
   `Fin (n₁ + n₂ − 2)` restricting to the two factors along the glue embeddings (the roots
-  are SHARED, whence the single surviving `rootWeight` factor — see the design doc's
-  conditioning bookkeeping).
+  are SHARED, whence the single surviving `rootWeight` factor).
 * `exists_rootFixing_emb_range` / `stdRooted_subset_iso_iff` — the subset↔embedding bridge
   the profile's averaging argument runs on (rooted analogues of the `orderEmbOfFin` and
   `comap_iso_induce_range` steps of `GraphonHom.lean`).
@@ -186,11 +185,11 @@ private lemma integrable_pinnedInducedWeight (W : Graphon) {n : ℕ} (hn : 2 ≤
     Integrable (fun y : Fin n → I => inducedWeight W G (pinRoots hn u v y))
       (volume : Measure (Fin n → I)) :=
   integrable_of_bounds' (measurable_pinnedInducedWeight W hn G u v)
-    (fun y => inducedWeight_nonneg W G _) (fun y => inducedWeight_le_one W G _)
+    (fun _y => inducedWeight_nonneg W G _) (fun _y => inducedWeight_le_one W G _)
 
 lemma unnormRootedDensity_nonneg (W : Graphon) {n : ℕ} (hn : 2 ≤ n)
     (G : SimpleGraph (Fin n)) (u v : I) : 0 ≤ unnormRootedDensity W hn G u v :=
-  integral_nonneg fun y => inducedWeight_nonneg W G _
+  integral_nonneg fun _y => inducedWeight_nonneg W G _
 
 lemma unnormRootedDensity_le_one (W : Graphon) {n : ℕ} (hn : 2 ≤ n)
     (G : SimpleGraph (Fin n)) (u v : I) : unnormRootedDensity W hn G u v ≤ 1 := by
@@ -1036,8 +1035,8 @@ private lemma glue_pair_eq_root {n₁ n₂ : ℕ} (hn₁ : 2 ≤ n₁) (hn₂ : 
 integral of a product of a function of the first `p` coordinates and a function of the last
 `q` coordinates splits as the product of the two integrals. -/
 private lemma blkMarginalAbstract {p q : ℕ} (Φ : (Fin p → I) → ℝ) (Ψ : (Fin q → I) → ℝ)
-    (hΦ : Measurable Φ) (hΦ0 : ∀ y, 0 ≤ Φ y) (hΦ1 : ∀ y, Φ y ≤ 1)
-    (hΨ : Measurable Ψ) (hΨ0 : ∀ y, 0 ≤ Ψ y) (hΨ1 : ∀ y, Ψ y ≤ 1) :
+    (_hΦ : Measurable Φ) (_hΦ0 : ∀ y, 0 ≤ Φ y) (_hΦ1 : ∀ y, Φ y ≤ 1)
+    (_hΨ : Measurable Ψ) (_hΨ0 : ∀ y, 0 ≤ Ψ y) (_hΨ1 : ∀ y, Ψ y ≤ 1) :
     ∫ x : Fin (p + q) → I, Φ (x ∘ Fin.castAdd q) * Ψ (x ∘ Fin.natAdd p)
       = (∫ y : Fin p → I, Φ y) * (∫ y : Fin q → I, Ψ y) := by
   classical
@@ -1298,17 +1297,16 @@ private lemma glue_marginal_split {n₁ n₂ : ℕ} (hn₁ : 2 ≤ n₁) (hn₂ 
 set_option maxHeartbeats 2000000 in
 /-- **The glued block product**: two rooted densities at the same type multiply to the root
 factor times the total rooted density of the glued fibre.  The roots are shared between the
-two blocks, so exactly one `rootWeight` factor survives on the right (see the design doc's
-conditioning bookkeeping: LHS carries `rootWeight²` inside the two densities, each glued
-summand carries one).
+two blocks, so exactly one `rootWeight` factor survives on the right: the LHS carries
+`rootWeight²` inside the two densities, while each glued summand carries only one.
 
 Proof route: pointwise, split the pairs of the glued host into block-1 pairs (image of
 `Fin.castLE`), block-2 pairs (image of `glueEmb₂`), and cross pairs (one non-root vertex in
 each block); over the fibre the cross parts sum to `1` (partition of unity), the root pair
 belongs to both blocks but is counted once (it is the shared `rootWeight`); the integral of
 the two non-root block marginals splits since the pinned roots are constants and the two
-blocks integrate disjoint coordinates (`sumPiEquivProdPi` route of
-`graphonFlagDensity_block_mul`). -/
+blocks integrate disjoint coordinates, following the `sumPiEquivProdPi` change-of-variables
+used for the unrooted block product `graphonFlagDensity_block_mul`. -/
 theorem unnormRootedDensity_block_mul (W : Graphon) (σ' : FlagType (Fin 2)) {n₁ n₂ : ℕ}
     (hn₁ : 2 ≤ n₁) (hn₂ : 2 ≤ n₂)
     (G₁ : SimpleGraph (Fin n₁)) (G₂ : SimpleGraph (Fin n₂))

@@ -6,15 +6,15 @@ import LeanFlagAlgebras.MetaTheory.GraphonHom
 `thm:parametric-quant-stability` part (iv) of `paper.tex`: near-extremal `P₄` density pins
 the graphon near the balanced complete `r`-partite graphon **through the `K₄` density and a
 Zykov stability modulus**.  The paper's proof is a one-line composition: clause (ii) — the
-near-extremal `K₄`-density bound `parametricP4_K4_density_approx`, already shipped — feeds
-the assumed modulus.
+near-extremal `K₄`-density bound `parametricP4_K4_density_approx` — feeds the assumed
+modulus.
 
-Following the house pattern of `GraphonQuantStability.stability_via_modulus` (the `r = 3` /
-`ω_Tur` route of Thm 111), the modulus and its cut-distance conclusion are abstracted: the
-target `close : Prop` stands for `δ_□(W, T_r) < γ`, and the modulus enters as the named
-hypothesis `hmod` (its existence is classical — "by compactness and the assumed equality
-case" — and is exactly the `ω_Zyk` external input of the paper; no cut-distance machinery
-is built here, matching the paper's own treatment of `ω_Tur`).
+As in `GraphonQuantStability.stability_via_modulus` (the `r = 3` / `ω_Tur` route of
+Thm 111), the modulus and its cut-distance conclusion are abstracted: the target
+`close : Prop` stands for `δ_□(W, T_r) < γ`, and the modulus enters as the named hypothesis
+`hmod` (its existence is classical — by compactness and the assumed equality case — and is
+exactly the `ω_Zyk` external input of the paper; no cut-distance machinery is built here,
+matching the paper's own treatment of `ω_Tur`).
 
 * `parametric_stability_via_modulus` — the hom-level Thm 112(iv): if the certificate
   deficit satisfies `Δ ≤ p₀(r)·ω`, and `K₄`-density within `ω` of extremal implies `close`,

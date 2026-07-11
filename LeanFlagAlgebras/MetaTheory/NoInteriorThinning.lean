@@ -29,7 +29,7 @@ variable {n₀ : ℕ} {σ : FlagType (Fin n₀)}
 
 attribute [local instance 0] Classical.propDecidable
 
-/-! ## Part A scaffolding: edgeless ("cloud") `σ`-flags and the boolean profile
+/-! ## Edgeless ("cloud") `σ`-flags and the boolean profile
 
 A `σ`-flag is *edgeless* when its underlying graph is exactly the image of `σ` under its type
 embedding (so the non-root vertices are isolated and there are no root–non-root edges).  The
@@ -273,7 +273,7 @@ private theorem cloud_converges : ConvergesTo cloudSeq (bvec : FlagDensitySpace 
     rw [hbF]
     exact tendsto_const_nhds.congr' hee
 
-/-- **Part A.**  There is a positive homomorphism point of `FlagDensitySpace σ` realising the
+/-- There is a positive homomorphism point of `FlagDensitySpace σ` realising the
 `{0,1}`-valued boolean profile `bProfile`. -/
 private theorem exists_bool_psi :
     ∃ ψ : PositiveHomSpace σ, ∀ F : FinFlag σ, ψ.val F = bProfile F := by
@@ -306,7 +306,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
   obtain ⟨φ₀, hφ₀Q, hφ₀σ⟩ := hnd
   obtain ⟨ψ, hψval⟩ := exists_bool_psi (σ := σ)
   set eσ := σ.edgeFinset.card with heσ
-  -- (Part B, step 2) the edge-thinned limits `φ_k` at `λ_k = 1/(k+2)`.
+  -- The edge-thinned limits `φ_k` at `λ_k = 1/(k+2)`.
   set lam : ℕ → ℝ := fun k => 1 / ((k : ℝ) + 2) with hlam
   have hlam_pos : ∀ k, 0 < lam k := fun k => by rw [hlam]; positivity
   have hlam_le : ∀ k, lam k ≤ 1 := fun k => by
@@ -334,7 +334,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
     fun k G => ∫ χ, (PositiveHomSpace.toPosHom χ) ⟦basisVector G⟧ ∂(P k) with hmom
   have hdnf1_pos : (0 : ℝ) < (downwardNormalizingFactor (emptyFlag σ) : ℝ) := by
     simp only [Rat.cast_pos]; exact downwardNormalizingFactor_emptyFlag_pos
-  -- (Part B, step 3) the moment formula.
+  -- The flag-moment formula.
   have hmoment : ∀ k (G : FinFlag σ), mom k G
       = ((downwardNormalizingFactor G.2 : ℝ) * (φk k).coe ⟨G.1, unlabel G.2⟩)
           / ((downwardNormalizingFactor (emptyFlag σ) : ℝ) * (φk k) ⟨σ⟩₀) := by
@@ -355,7 +355,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
     show 0 ≤ ∫ χ, (PositiveHomSpace.toPosHom χ) ⟦basisVector G⟧ ∂(P k)
     refine integral_nonneg (fun χ => ?_)
     exact positiveHom_basisVector_ge_zero (PositiveHomSpace.toPosHom χ) G
-  -- (Part B, step 4a) moments of new-edge flags vanish.
+  -- Moments of new-edge flags vanish.
   have hmoment_zero : ∀ (G : FinFlag σ), eσ < G.2.out.graph.edgeFinset.card →
       Tendsto (fun k => mom k G) atTop (𝓝 0) := by
     intro G hG
@@ -412,7 +412,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
     haveI := hPprob k
     exact BoundedContinuousFunction.integrable _
       (BoundedContinuousFunction.mkOfCompact (evalContinuousMap f))
-  -- (Part B, step 4b) the size-`s` moments sum to one.
+  -- The size-`s` moments sum to one.
   have hsum_moment : ∀ k (s : ℕ), n₀ ≤ s →
       (∑ F' : FlagWithSize σ s, mom k ⟨s, F'⟩) = 1 := by
     intro k s hs
@@ -426,7 +426,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
       show (fun χ : PositiveHomSpace σ => ∑ F' : FlagWithSize σ s,
           (PositiveHomSpace.toPosHom χ) ⟦basisVector ⟨s, F'⟩⟧) = fun _ => (1 : ℝ) from funext hpt,
       MeasureTheory.integral_const, MeasureTheory.probReal_univ, smul_eq_mul, mul_one]
-  -- (Part B, step 4) the moment converges to the boolean profile.
+  -- The moment converges to the boolean profile.
   have hmoment_tendsto : ∀ (G : FinFlag σ), Tendsto (fun k => mom k G) atTop (𝓝 (bProfile G)) := by
     intro G
     by_cases hcanon : G.2 = canonFlag G.1 (finFlag_size_ge_n₀ G)
@@ -467,7 +467,7 @@ theorem exists_boolean_point_in_Sσ (hc : HeredClass) (hedc : EdgeDeletionClosed
       have hedge_ne : G.2.out.graph.edgeFinset.card ≠ eσ := by
         intro he; exact hcanon ((canon_iff_edges G).mpr he)
       exact hmoment_zero G (lt_of_le_of_ne (edges_ge _) (Ne.symm hedge_ne))
-  -- (Part C) the absolute-deviation integral vanishes.
+  -- The absolute-deviation integral vanishes.
   have habs_tendsto : ∀ (Fi : FinFlag σ),
       Tendsto (fun k => ∫ χ, |χ.val Fi - bProfile Fi| ∂(P k)) atTop (𝓝 0) := by
     intro Fi

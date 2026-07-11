@@ -11,8 +11,7 @@ Formalisation of "up to measure-preserving relabelling, `T_r`": we produce the i
 normal form — a measurable `r`-colouring `P : I → Fin r` with all colour classes of measure
 `1/r` such that `W = 0` on same-colour pairs and `W = 1` on different-colour pairs, almost
 everywhere (`slice_rigidity`).  A measure-preserving relabelling sending each class to an
-interval then carries `W` to `T_r` literally; that final cosmetic step is not formalised
-(README deviation).
+interval then carries `W` to `T_r` literally; that final cosmetic step is not formalised.
 
 At `r = 3` the two endpoints coincide, so the edge-density hypothesis is automatic:
 `cor:r3-rigidity` (`r3_rigidity`) holds for ANY graphon satisfying the two local equations.
@@ -112,12 +111,8 @@ theorem rigid_codeg_ae (r : ℕ) (hr : 3 ≤ r)
     (hτ : G.Rtau r = 0) (hη : G.Reta r = 0) (hp : G.edgeDensity = alphaPlus r) :
     ∀ᵐ z : I × I, G.W z.1 z.2 = 1 ∨ G.codeg z.1 z.2 = ((r : ℝ) - 1) / r := by
   -- Combine `Reta_eq_zero_iff_ae` (the non-edge equation a.e.) with `rigid_deg_ae` at both
-  -- coordinates (upgrade the a.e.-in-`x` statement to a.e.-in-pairs via
-  -- `Measure.ae_prod_mem_iff_ae_ae_mem`-style: the set
-  -- `{z | d(z.1) = c ∧ d(z.2) = c}` is a product-full-measure set — e.g.
-  -- `((hdeg.prod_mk ...)` or `Measure.ae_of_ae_fst`/`ae_of_ae_snd`-style helpers; if
-  -- missing, prove privately via `measure_prod_null` on the complements).  On the good
-  -- set: `ℓ_η = 0` and `d = (r-1)/r` at both roots give
+  -- coordinates, lifted to the product via `Measure.quasiMeasurePreserving_fst/snd`. On
+  -- the good set, `ℓ_η = 0` and `d = (r-1)/r` at both roots give
   -- `(r-1)(1 - 2(r-1)/r + c) = c`, i.e. `(r-2)c = (r-1)(r-2)/r`, and `r-2 ≠ 0` yields
   -- `c = (r-1)/r` (`field_simp`, `(r:ℝ) ≠ 0`, `(r:ℝ)-2 ≠ 0` from `hr`).
   have hEta : ∀ᵐ z : I × I, G.W z.1 z.2 = 1 ∨ G.ellEta r z.1 z.2 = 0 :=
@@ -207,28 +202,13 @@ theorem rigid_sections_boolean (r : ℕ) (hr : 3 ≤ r)
         ∧ volume (G.zeroSet x) = ENNReal.ofReal (1 / r))
       ∧ (∀ᵐ x, ∀ᵐ y, G.W x y = 0 →
           volume (symmDiff (G.zeroSet x) (G.zeroSet y)) = 0) := by
-  -- The paper's Step 2, in a.e. form.  Skeleton:
-  -- * From `rigid_codeg_ae` + `rigid_deg_ae`: for a.e. pair with `W(x,y) ≠ 1`,
-  --   `0 = d(y) - c(x,y) = ∫ u, W(y,u)·(1 - W(x,u))` — a non-negative integrand with zero
-  --   integral, so a.e. `u`: `W(y,u) > 0 → W(x,u) = 1`; symmetrically (swap via `G.symm`
-  --   and `Measure.prod_swap`-invariance) `W(x,u) > 0 → W(y,u) = 1`.
-  -- * In particular for a.e. `x` there is a positive-measure set of `y` with
-  --   `W(x,y) < 1` — indeed `∫ (1 - W(x,·)) = 1 - d(x) = 1/r > 0` — and chaining the two
-  --   implications through such a partner `y` gives, for a.e. `u`,
-  --   `W(x,u) ∈ {0,1}` (the five-set chain of the paper collapses:
-  --   `{W(x,·)>0} ⊆ {W(y,·)=1}` wait — use the printed chain:
-  --   `{W(y,·)>0} ⊆ {W(x,·)=1} ⊆ {W(x,·)>0} ⊆ {W(y,·)=1} ⊆ {W(y,·)>0}` mod null, hence all
-  --   equal; so `W(x,·)` is a.e. the indicator of its own support).
-  -- * The zero-set measure: `volume (zeroSet x) = 1 - measure{W(x,·) > 0}` (a.e.-boolean
-  --   section) and `measure{W(x,·)>0} = ∫ W(x,·) = d(x) = (r-1)/r` for a boolean section
-  --   (`integral` of an a.e.-indicator = measure; `ENNReal`/real conversions via
-  --   `Measure.real`-style lemmas or `integral_indicator_one`).
-  -- * The zero-set agreement: for a.e. pair with `W(x,y) = 0` (`≤ W < 1`), the two chains
-  --   give `zeroSet x =ᵐ zeroSet y` (`measure_symmDiff_eq_zero_iff` ↔ `ae_eq_set`).
-  -- HEAVY Fubini/a.e. bookkeeping: introduce as many private helpers as you need; keep
-  -- each a.e. manipulation small.  `ae_ae_of_ae_prod`, `measure_prod_null`,
-  -- `integral_eq_zero_iff_of_nonneg_ae`, `ae_eq_set`, `measure_symmDiff_eq_zero_iff` are
-  -- the workhorses.
+  -- From `pair_key`, lifted from pairs to a.e.-in-`x`-then-a.e.-in-`y` via
+  -- `Measure.ae_ae_of_ae_prod`: for a.e. `x`, pick a partner `y` with `W x y ≠ 1`
+  -- (possible since `d(x) = (r-1)/r < 1`, so `{W x · ≠ 1}` has positive measure); the
+  -- boolean-section half of `pair_key` at `(x,y)` gives the section statement directly,
+  -- and the zero-set measure follows by expressing `1 - W(x,·)` as the a.e.-indicator of
+  -- `zeroSet x` and integrating.  The zero-set-agreement half restates `pair_key`'s
+  -- iff-of-zero-sets via `measure_symmDiff_eq_zero_iff ↔ ae_eq_set`.
   have hkey := G.pair_key r hr hτ hη hp
   rw [Measure.volume_eq_prod] at hkey
   have hkey' := Measure.ae_ae_of_ae_prod hkey
@@ -595,35 +575,21 @@ theorem slice_rigidity (r : ℕ) (hr : 3 ≤ r)
     ∃ P : I → Fin r, Measurable P
       ∧ (∀ i, volume (P ⁻¹' {i}) = ENNReal.ofReal (1 / r))
       ∧ ∀ᵐ z : I × I, G.W z.1 z.2 = if P z.1 = P z.2 then 0 else 1 := by
-  -- The paper's Step 3, with the representative trick for measurability:
-  -- * Call `x` GOOD if it lies in the (full-measure) sets of `rigid_sections_boolean`
-  --   (boolean section, zero-set measure `1/r`, a.e.-agreement with its zero-partners) and
-  --   the section-level Fubini refinements you need.  Goodness is a full-measure property.
-  -- * Choose representatives `x₀, …, x_{r-1}` recursively: having chosen `x_j` (`j < i`)
-  --   with pairwise-a.e.-disjoint zero-sets `C j := zeroSet (x j)` (each measure `1/r`),
-  --   the union has measure `i/r < 1`, so its complement (intersected with the good set)
-  --   has positive measure and CONTAINS a good point `x_i` — moreover one can choose
-  --   `x_i` with `W(x_i, x_j) ≠ 0`-side conditions a.e.-avoided… the robust criterion:
-  --   choose `x_i` good with `x_i ∉ ⋃_{j<i} C j` up to the right null refinements, so
-  --   `C i` is a.e.-disjoint from the previous classes (two zero-sets are a.e.-equal or
-  --   a.e.-disjoint: if the intersection has positive measure, a generic common point `y`
-  --   has `zeroSet y =ᵐ C j` and `=ᵐ C i`).  Also each good `x` lies a.e.-in its own
-  --   class-closure: for a.e. `y ∈ C x`, symmetry gives `x ∈ zeroSet y =ᵐ C x`.
-  -- * After `r` steps the classes tile `I` up to a null set (total measure `r·(1/r) = 1`).
-  --   Define `P x := if h : ∃ i, x ∈ C i \ ⋃_{j<i} C j then (least such i) else 0` —
-  --   concretely, define the disjointified measurable sets
-  --   `A i := C i \ ⋃_{j < i} C j` and set `P x := the unique/least `i` with `x ∈ A i``
-  --   (default `0` on the null leftover); measurable since each `A i` is measurable.
-  --   `volume (P ⁻¹' {i}) = volume (C i) = 1/r` up to the null corrections.
-  -- * The block form a.e.: for a.e. `(x, y)`: if `P x = P y = i`, both lie a.e.-in
-  --   `C i =ᵐ zeroSet x`, so `W(x,y) = 0` (mind: pointwise membership vs a.e. equality —
-  --   quantify over pairs and use Fubini to discard the null exceptional sets); if
-  --   `P x ≠ P y`, then `y ∉ zeroSet x` mod null, and the boolean section forces
-  --   `W(x,y) = 1`.
-  -- This is the hardest proof of the wave (~400–800 lines with helpers).  Structure it
-  -- with `private` lemmas; if the FULL assembly resists, it is acceptable to leave THIS
-  -- final theorem for a follow-up ONLY IF steps 1–3 are complete — but try hard: the
-  -- decomposition above is designed to be executable.
+  -- The paper's Step 3, with a representative trick for measurability. Call `x` GOOD
+  -- (`GoodPt`) if it satisfies the conclusions of `rigid_sections_boolean` pointwise:
+  -- boolean section, zero-set measure `1/r`, a.e.-agreement with its zero-partners — a
+  -- full-measure property (`ae_goodPt`). Representatives `f 0, …, f (r-1)` with
+  -- pairwise-a.e.-disjoint zero-sets `C i := zeroSet (f i)` are extracted recursively
+  -- (`exists_reps`): having chosen `j < i` many, a Markov/Fubini bound
+  -- (`overlap_bound`) shows the set of points whose class overlaps a previous one
+  -- substantially has small measure, leaving room for a fresh good point (two zero-sets
+  -- are a.e.-equal or a.e.-disjoint, `goodPt_eq_or_disjoint`, via a generic common
+  -- point). After `r` steps the disjointified classes `A i := C i \ ⋃_{j<i} C j` tile `I`
+  -- up to a null set (total measure `r·(1/r) = 1`). The colouring `P := colour f` sends
+  -- `x` to the least `i` with `x ∈ A i` (default `0` on the null leftover); each fibre
+  -- has measure `1/r`. The block form follows a.e.: if `P x = P y = i`, both lie
+  -- a.e.-in `C i =ᵐ zeroSet x`, so `W(x,y) = 0`; if `P x ≠ P y`, then `y ∉ zeroSet x` mod
+  -- null and the boolean section forces `W(x,y) = 1`.
   classical
   haveI : NeZero r := ⟨by omega⟩
   have hr0 : 0 < (r : ℝ) := by

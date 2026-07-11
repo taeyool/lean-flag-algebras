@@ -32,11 +32,11 @@ Layer structure:
   quotient cone (`smul_one_mem_quotCone_vtype`): both cones have evaluation image
   `ℝ≥0 · 1₀`.
 
-Deviation (documented in `README.md`): the paper derives the co-degenerate case by
-complementation (`lem:complementation`); here it is proved by the direct mirror argument,
-which is shorter than transporting the cone identity through the complement
-homeomorphism.  As in `prop:ideal-zero`, cone equalities are stated in evaluation form
-(values at every `φ₀ ∈ Q₀`).
+Deviation from the paper: the paper derives the co-degenerate case by complementation
+(`lem:complementation`); here it is proved by a direct symmetric argument, which is
+shorter than transporting the cone identity through the complement homeomorphism.  As in
+`prop:ideal-zero`, cone equalities are stated in evaluation form (values at every
+`φ₀ ∈ Q₀`).
 -/
 
 open MeasureTheory SimpleGraph
@@ -279,8 +279,8 @@ lemma nonEdge_eval_eq_zero_of_coEdgeDegenerate (hc : HeredClass)
   linarith only [hsum, hedge]
 
 /-- Under a co-edge-degenerate class, every non-complete unlabelled flag has density `0`
-at every constrained limit (mirror of `eval_eq_zero_of_edgeDegenerate`, propagating the
-vanishing of the two-vertex non-edge flag along its positive density). -/
+at every constrained limit: the symmetric counterpart of `eval_eq_zero_of_edgeDegenerate`,
+propagating the vanishing of the two-vertex non-edge flag along its positive density. -/
 theorem eval_eq_zero_of_coEdgeDegenerate (hc : HeredClass) (hdeg : CoEdgeDegenerate hc)
     {φ₀ : PositiveHom ∅ₜ} (hφ₀ : posHomPoint φ₀ ∈ Qσ (hc.constraintOf vtype).forb0)
     {D : FinFlag ∅ₜ} (hD : ¬ IsCompleteFlag D.2) :
@@ -334,7 +334,7 @@ lemma ae_nonEdgeless_zero_of_edgeDegenerate (hc : HeredClass) (hdeg : EdgeDegene
     rw [← PositiveHomSpace.toPosHom_basisVector]
     exact hχ0
 
-/-- Mirror of `ae_nonEdgeless_zero_of_edgeDegenerate` for a co-edge-degenerate class:
+/-- The co-edge-degenerate counterpart of `ae_nonEdgeless_zero_of_edgeDegenerate`:
 almost every labelled limit vanishes on every non-complete flag. -/
 lemma ae_nonComplete_zero_of_coEdgeDegenerate (hc : HeredClass)
     (hdeg : CoEdgeDegenerate hc)
@@ -512,8 +512,9 @@ theorem edgeDegenerate_cone_collapse (hc : HeredClass) (hdeg : EdgeDegenerate hc
   · exact ⟨0, le_rfl, smul_one_mem_quotCone_vtype le_rfl,
       fun φ₀ hφ₀ => absurd ⟨φ₀, hφ₀⟩ hex⟩
 
-/-- **`prop:single-point`, cone form (co-edge-degenerate)**: mirror of
-`edgeDegenerate_cone_collapse` with the complete-graph limit. -/
+/-- **`prop:single-point`, cone form (co-edge-degenerate)**: the co-edge-degenerate
+counterpart of `edgeDegenerate_cone_collapse`, with the complete-graph limit in place of
+the empty-graph limit. -/
 theorem coEdgeDegenerate_cone_collapse (hc : HeredClass) (hdeg : CoEdgeDegenerate hc)
     {u : FlagAlgebra ∅ₜ} (hu : u ∈ ensCone (hc.constraintOf vtype)) :
     ∃ c : ℝ, 0 ≤ c ∧ c • (1 : FlagAlgebra ∅ₜ) ∈ quotCone vtype ∧

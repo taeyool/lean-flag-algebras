@@ -158,7 +158,7 @@ genuine `C₅` in `G` (`c5_copy_of_pentagon`), contradicting `hG`.  The non-edge
 not needed: two cluster positions are never adjacent, so a missing `rs`-edge never has to be
 supplied. -/
 theorem twoRootPlant_c5free {n : ℕ} (G : LabeledGraph twoNonEdgeType (Fin n))
-    (hG : C5g.Free G.graph) (hrs : ¬ G.graph.Adj (G.type_embed 0) (G.type_embed 1)) (L : ℕ) :
+    (hG : C5g.Free G.graph) (_hrs : ¬ G.graph.Adj (G.type_embed 0) (G.type_embed 1)) (L : ℕ) :
     C5g.Free (twoRootPlant G L) := by
   rintro ⟨φ⟩
   set f := φ.toHom with hfdef

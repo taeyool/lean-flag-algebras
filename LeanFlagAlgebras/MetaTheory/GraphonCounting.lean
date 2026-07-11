@@ -1,12 +1,11 @@
 import LeanFlagAlgebras.MetaTheory.GraphonStep
 import LeanFlagAlgebras.FlagAlgebra.FlagSequence
 
-/-! # The step-graphon counting lemma and density of the graphon range (module 4)
+/-! # The step-graphon counting lemma and density of the graphon range
 
-The pre-checkpoint payoff of sub-project B (`HOM_TO_GRAPHON_DESIGN.md`): the induced-density
-profile of a step graphon approximates the finite flag density with the **explicit error
-`n(n−1)/N`**, and consequently every unlabelled limit functional is a limit of graphon-hom
-points — **the range of `graphonHomPoint` is dense in `X_∅`**.
+The induced-density profile of a step graphon approximates the finite flag density with the
+**explicit error `n(n−1)/N`**, and consequently every unlabelled limit functional is a limit
+of graphon-hom points — **the range of `graphonHomPoint` is dense in `X_∅`**.
 
 * `descFactorial_div_pow_le_one` / `one_sub_choose_div_le_descFactorial_div_pow` — the
   sampling-with-vs-without-replacement bounds `1 − C(n,2)/N ≤ (N)ₙ/Nⁿ ≤ 1`.
@@ -22,9 +21,8 @@ points — **the range of `graphonHomPoint` is dense in `X_∅`**.
 * `exists_graphonHomPoint_seq_tendsto` — **density**: every `φ : PositiveHom ∅ₜ` is the
   limit of graphon-hom points (`positiveHom_as_flagSeq_limit` supplies the sequence).
 
-**Checkpoint** (per the design doc): after this module, the sole remaining piece of
-`exists_graphon_rep` is `IsClosed (Set.range graphonHomPoint)` — do NOT proceed to module 5
-without the design spike resolving the martingale gap.
+The sole remaining piece of `exists_graphon_rep` beyond this file's results is
+`IsClosed (Set.range graphonHomPoint)`.
 
 Everything is Tier-1.
 -/
