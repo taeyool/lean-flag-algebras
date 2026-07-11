@@ -389,9 +389,9 @@ obligation: graphs and flags are used only up to isomorphism, density
 expressions are identified when they have the same asymptotic meaning, and a
 claimed inequality must hold under every positive homomorphism.  Second, there
 is a data-heavy computation obligation: the external search proposes finite
-data, namely, lists of flags, density and multiplication tables, and rational
-positive-semidefinite matrices, but Lean must check those data against the
-formal definitions rather than trust the scripts that produced them.  Third,
+data, including lists of flags, target densities, and rational
+positive-semidefinite matrices, while Lean must independently compute the
+density and multiplication facts needed to check them.  Third,
 there is an algebraic bookkeeping obligation: the proof repeatedly expands
 flags to common sizes, multiplies typed flags, applies forbidden-graph
 assumptions, and normalizes large linear combinations.  Our bridge layer
@@ -440,9 +440,9 @@ semantic treatment of forbidden-graph assumptions.
 \Cref{sec:obstacles} describes the main formalization obstacles:
 quotient eliminators, dependent-type transports, function extensionality, and
 \lean{Fintype}-instance ambiguity.
-\Cref{sec:reflection,sec:bridge} describe the bridge from
+\Cref{sec:reflection,sec:flagmatic} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
-the tactic layer, the Automation layer, elaboration-time theorem generation,
+the tactic layer, the automation layer, elaboration-time theorem generation,
 and the verified results.
 \Cref{sec:proof-style} records a recurring proof pattern from the case
 studies: density equalities are proved by explicit bijections between finite
@@ -2701,37 +2701,36 @@ be established computationally rather than by separate counting arguments.
 \subsection{From Reflected Computations to Reusable Theorems}
 \label{sec:reflection-generation}
 
-The two examples in the preceding subsection show the basic unit of work.  To
-prove the concrete density
+The two examples in the preceding subsection show the basic unit of reflected
+computation.  To prove the concrete density
 \(\den{\fKtwobull,\,\fbarKtwobull}{\fbarPthreebull}=1/2\), Lean rewrites the
 specification-level goal with the density adequacy theorem and then evaluates
 the resulting closed \lean{sym2FlagDensity}$_2$ computation.  To prove
 \(q_\sigma(\fbarPthreebull)=2/3\), it performs the same two steps with
 \lean{downwardNormalizingFactor\_eq}.  The adequacy theorems themselves are
 uniform: they prove the reflected evaluators correct for every possible input.
-What repeats in a concrete development is their specialization to every flag,
-pair of pattern flags, and host flag that the later algebraic proof will use.
+What repeats in a concrete development is not the correctness argument, but
+its specialization to each concrete flag and to each pattern-pair/host
+combination used by the later algebraic proof.
 
 We automate this repetition using Lean's metaprogramming facilities.  More
 precisely, the generation commands displayed below are custom command
 elaborators written using Lean's metaprogramming framework.  During
 elaboration---the phase in which Lean processes source commands and produces
 checked definitions and theorems---they run the finite enumerators and
-automatically generate the statements and proofs of the required specialized
-facts.  This both makes those facts available as
-ordinary reusable theorems and avoids repeating their finite computations at
-every later use: the computation is performed while the theorem family is
-generated, after which later proofs reuse the checked result by rewriting.  In
-this sense, the generated theorems form a certified cache of the reflected
-computations.  For the sizes and flag type used in the two examples above, the
-relevant commands have the following form:
+generate statements and proofs for the required specialized facts.  The
+resulting theorems are both a reusable interface and a cache: each finite
+computation is performed when its theorem family is generated, and later
+proofs recover the result by rewriting rather than recomputing it.  For the
+sizes and flag type used in the two examples above, the relevant commands have
+the following form:
 \begin{lstlisting}
 -- Generate empty-typed flags at pattern size 2 and host size 3.
 generate_empty_typed_flags 2
 generate_empty_typed_flags 3
 
 -- Use the unique type on one labeled vertex (k = 1, m = 0),
--- and generate its flags at the sizes 2 and 3
+-- and generate its flags at the sizes 2 and 3.
 generate_flags 2 1 0
 generate_flags 3 1 0
 
@@ -2740,8 +2739,9 @@ generate_flag_pair_density_theorems_no_forbid 2 3 1 0
 generate_mul_theorems 2 3 1 0
 \end{lstlisting}
 
-The reader need not remember these numerical parameters, but their convention
-explains how the commands fit together.  The argument of
+The numerical parameters are bookkeeping, not the message of the example.
+Their convention nevertheless explains how the commands fit together.  The
+argument of
 \lean{generate\_empty\_typed\_flags n} is the number \(n\) of vertices.  In
 \lean{generate\_flags n k m}, \(n\) is again the total number of vertices,
 \(k\) is the number of labeled vertices, and \(m\) selects one of the
@@ -2750,15 +2750,16 @@ size, and then the same \(k,m\) describing the type.  Here \(k=1,m=0\) selects
 the unique type on one labeled vertex, while the suffix
 \lean{no\_forbid} says that no forbidden-graph filter is being applied.
 
-The important point is the output of each group, rather than the particular
-indices.  The first four commands create the named two- and three-vertex flags
+The important point is what each group contributes to subsequent proofs.  The
+first four commands create the named two- and three-vertex flags
 used in the examples of \Cref{sec:reflection-adequacy}.  Generating the typed
 flags also computes and proves their downward identities, including the
 coefficient \(q_\sigma(\fbarPthreebull)=2/3\).  The pair-density command then
-generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every pair of
-two-vertex patterns \((F_1,F_2)\) and every three-vertex host \(G\); this family includes the
-displayed value \(c=1/2\).  These evaluations are batched to avoid invoking the
-native compiler separately for every tuple.  Finally, the multiplication
+generates a theorem \(\lean{flagDensity}_2\,F_1\,F_2\,G=c\) for every unordered
+pair of two-vertex patterns \((F_1,F_2)\) and every three-vertex host \(G\);
+this family includes the displayed value \(c=1/2\).  These evaluations are
+batched to avoid invoking the native compiler separately for every tuple.
+Finally, the multiplication
 command uses all of those coefficients to prove the product expansion
 \(F_1 \cdot F_2=\sum_G c_G\,G\) for every pattern pair.  Thus elaboration produces the
 basis flags, their unlabelings and downward coefficients, the density table,
@@ -2770,23 +2771,22 @@ Metaprogramming automates theorem construction, not verification: Lean still
 checks every generated proof, and a wrong coefficient makes that proof fail.
 Once accepted, these theorems let later arguments simplify downward images,
 densities, and products by rewriting rather than reopening the finite searches.
-Thus the pipeline of this section is: executable concrete representations,
-uniform adequacy theorems, and elaboration-time generation of a reusable,
-checked table.  The next section uses this table to automate recurring
-flag-algebra proofs.
+Thus the story of this section has three steps: concrete representations make
+the finite operations executable, adequacy theorems connect those operations
+to the abstract definitions, and elaboration-time generation turns their
+individual results into a reusable table of proved facts.  The next section
+uses that table to automate complete flag-algebra arguments.
 
 \section{From a Recurring Proof Pattern to a Certificate-to-Lean Compiler}
 \label{sec:flagmatic}
-\label{sec:bridge}% legacy alias: this section absorbed the former ``Bridge'' section
-
-\hy{I am here.}
 
 Software such as Flagmatic~\cite{vaughan2013flagmatic} searches for
 flag-algebra certificates automatically, but a certificate is numerical data,
 not a machine-checked proof.  Turning one into a verified theorem means
-transcribing every number into the proof assistant, reproducing the bookkeeping
-that links subflags to host flags, and checking positive-semidefiniteness,
-densities, and product expansions inside the kernel.
+transcribing its numerical data into the proof assistant, reproducing the
+bookkeeping that links subflags to host flags, and checking
+positive-semidefiniteness, densities, and product expansions within Lean's
+proof pipeline.
 
 The specification of \Cref{sec:abstract} and the reflection layer of
 \Cref{sec:reflection} make it possible to carry this out by hand.  We
@@ -2800,9 +2800,9 @@ convinced us the manual work could be mechanized, and it showed which recurring
 step each tactic would later have to automate.
 
 We first recall how Flagmatic certificates are produced and why their positive
-semidefinite matrices certify extremal bounds, then identify this common proof
-structure and show how each step becomes a reusable, kernel-checked component in
-the certificate-to-Lean compiler.
+semidefinite matrices certify extremal bounds.  We then identify the common
+proof structure and show how the certificate-to-Lean compiler realizes each
+step with reusable proof-producing components.
 
 \subsection{Flagmatic Certificates and Positive Semidefiniteness}
 \label{sec:flagmatic-background}
@@ -2812,14 +2812,16 @@ Many applications of Razborov's flag algebra method reduce to solving a
 suitable quadratic forms.  Flagmatic~\cite{vaughan2013flagmatic} automates this
 search.  To bound the density of a target $P$ in $\mathcal{H}$-free graphs by a
 constant $c$, Flagmatic fixes a host size $N$ and, for each flag type $\sigma_t$
-occurring at that size, represents these coefficients as the entries of a
+used by the certificate, represents these coefficients as the entries of a
 symmetric matrix $M_t$.  These entries are the variables of the SDP, and its
 constraints, linear in them, encode the bound.  An SDP solver assigns values to
 these variables so that every $M_t$ becomes \emph{positive semidefinite} (PSD)
 while the constraints hold, numerically; Flagmatic then converts the result to
-exact rational matrices.  The \emph{certificate} is this data: the flags, the
-density and multiplication tables among them, and the rational PSD matrices
-$M_t$ paired with vectors $v_t$ of $\sigma_t$-flags.
+exact rational matrices.  The resulting \emph{certificate} records the
+admissible graphs and flags, the target-density data, and the rational PSD
+matrices $M_t$ paired with vectors $v_t$ of $\sigma_t$-flags.  The density and
+multiplication tables needed to check the certificate are then recomputed in
+Lean rather than trusted as part of the input.
 
 Flag-algebra proofs certify an inequality by expressing its difference as a sum
 of semantically non-negative elements.  The simplest such element is a square:
@@ -2864,14 +2866,14 @@ automatically inside Lean.
 \subsection{The Four-Part Proof Skeleton}
 \label{sec:flagmatic-shape}
 
-We organize the recurring structure into a four-part skeleton, one part for each
-obligation that turning a certificate into a verified proof requires.  The parts,
-in the order a finished proof presents them, are:
+We organize the recurring structure into a four-part skeleton, with one part
+for each obligation in turning a certificate into a verified proof.  In the
+order in which a finished proof presents them, the parts are:
 
 \begin{enumerate}
   \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
-    (only those that are free of the chosen forbidden graph), together with the pair-density
-    and typed-multiplication identities among them that the body rewrites with.
+    (only those that are free of the chosen forbidden graph), together with
+    the pair-density and typed-multiplication identities used for rewriting.
   \item \textbf{Certificate matrices and flag vectors.}  For each subflag type
     $\sigma_t$, a rational matrix $M_t$ paired with a vector $v_t$ of
     $\sigma_t$-flags; together they form the quadratic form
@@ -2885,9 +2887,9 @@ in the order a finished proof presents them, are:
     normalizing, and closing by non-negativity.
 \end{enumerate}
 
-The next subsection exploits this structure: it discharges each of the four parts
-with a single reusable, kernel-checked component fed the per-proof data, so a new
-theorem is new data, not a new proof.
+The next subsection exploits this structure by assigning each part to a small
+set of reusable proof-producing components.  Consequently, a new theorem
+primarily requires new certificate data rather than a new proof architecture.
 
 
 \subsection{The Certificate-to-Lean Pipeline}
@@ -2902,31 +2904,33 @@ gaps:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-The diagnostic subcommand \lean{inspect} validates a certificate before
+The diagnostic subcommand \lean{inspect} checks that the certificate can be
+parsed and that its flags can be matched to Lean's enumeration before
 compilation.  The generated file fills the four parts of
-\Cref{sec:flagmatic-shape}, each discharged by a reusable, kernel-checked
-component; we take them in turn and then show the assembled output.
+\Cref{sec:flagmatic-shape}; we take them in turn and then show the assembled
+output.
 
 \paragraph{Flags and density data (Part~1).}
-Part 1 defines the certificate's forbidden graph as a \lean{Sym2Graph} term, then
-runs a handful of \lean{generate\_pruned\_*} commands: they enumerate the
-$\mathcal{H}$-free flags, prove their pair-density identities, then their
-product-expansion identities, giving the subflag-to-host bookkeeping the body
-rewrites with.  All of this runs inside Lean by the machinery of
+Part 1 defines the certificate's forbidden graph as a \lean{Sym2Graph} term and
+selects one of two generation routes.  Complete-graph forbids use the
+\lean{generate\_pruned\_*} commands, while a general graph forbidden as a
+subgraph uses the parallel \lean{generate\_subgraph\_free\_*} commands.  Both
+routes enumerate the surviving flags, prove their pair-density identities, and
+then prove their product expansions, supplying the subflag-to-host bookkeeping
+used by the main proof.  All of this runs inside Lean by the machinery of
 \Cref{sec:reflection}, so nothing is read from a precomputed table.
 
 \paragraph{Certificate matrices (Part~2).}
 Part 2 discharges the positive-semidefiniteness the method depends on.  The
 solver supplies each $M_t$; re-establishing that each is PSD is exactly Lean's
-task.  Testing that spectrally, by asking every eigenvalue to be
-non-negative, would need real, approximate arithmetic the kernel cannot check
-exactly; instead we certify it from a rational factorization $M_t = L D L^\top$
-with $D$ diagonal and non-negative, which reduces the whole question to one exact
-rational identity the kernel decides directly (\lean{decide +kernel}), with no
-eigenvalues and no floating point, and which lifts from $\mathbb{Q}$ to
-$\mathbb{R}$ where the flags live.  A wrong factorization fails this identity and
-stops the build, so no non-PSD matrix can slip past; this is the one place we pay
-for in-kernel evaluation.
+task.  Rather than reason about numerically approximated eigenvalues, we certify
+PSD from a rational factorization $M_t = L D L^\top$ with $D$ diagonal and
+non-negative.  Lean checks the diagonal entries by exact rational arithmetic
+and the matrix identity with \lean{decide +kernel}, without eigenvalues or
+floating-point arithmetic, and then lifts the result from $\mathbb{Q}$ to
+$\mathbb{R}$, where the flags live.  A wrong factorization makes one of these
+checks fail; this is the one place where we deliberately pay for in-kernel
+evaluation.
 
 \paragraph{Lifting the objective (Part~3).}
 The densities live at the host size $N$, but the objective is not always a flag
@@ -2935,7 +2939,8 @@ smaller (\emph{Branch~B}: Mantel, $K_4$- and
 $K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K} rewrites it over the
 $N$-vertex $\mathcal{H}$-free flags, dropping the forbidden host terms;
 when it is already host-size (\emph{Branch~A}: the $C_4$-density bound,
-Erd\H{o}s pentagon) this step is empty.
+Erd\H{o}s pentagon) this step is empty.  The non-complete subgraph-forbid route
+uses the corresponding \lean{flag\_expand\_hfree\_subgraph} tactic.
 
 \paragraph{The main theorem (Part~4).}
 The standard upper-bound move is to add one or more PSD quadratic forms to the
@@ -2950,31 +2955,33 @@ theorem forbidLE_add_QuadraticForm
 iterated once per type to build a transitive chain of additions.  The rest of the
 body performs the check.  The unit is expanded to host size by
 \lean{expand\_one\_hfree\_at N K} (rewriting $\mathbf{1}$ as the sum of
-$N$-vertex \(\mathcal{H}\)-free flags), and the downward-averaged products
-are discharged by \lean{reduce\_downward\_flagmul}, which first right-associates
-the sum with \lean{simp only [downward\_add, add\_assoc]} and then rewrites each
-head summand $\llbracket c\,(A\cdot B)\rrbracket$ by its \lean{flagMul\_<A>\_<B>}
-identity, moving each rewritten term across the inequality.  The resulting
-equality is normalized by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an
-index-guided sort of the reordered sum.
+$N$-vertex \(\mathcal{H}\)-free flags), or by
+\lean{expand\_one\_hfree\_at\_subgraph N K} on the general subgraph-forbid
+route.  The downward-averaged products
+are discharged by \lean{reduce\_downward\_flagmul}.  This tactic recognizes each
+summand $\llbracket c\,(A\cdot B)\rrbracket$ and rewrites it with the generated
+product identity \lean{flagMul\_<A>\_<B>}.  The resulting equality is normalized
+by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an index-guided sort of the
+reordered sum.
 Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
 distributes an arbitrary positive homomorphism over the sum, splits with
 \lean{add\_nonneg}, and discharges each leaf by
 \lean{positiveHom\_basisVector\_ge\_zero}.
 
 \paragraph{The translator.}
-The script itself does no mathematics; its job is to read the certificate and
-emit the four-part proof above.  A certificate names its flags as short strings
+The script translates certificate data but does not establish its correctness;
+that remains Lean's task.  A certificate names its flags as short strings
 like \texttt{3:121323} (a triangle: three vertices with edges $12$, $13$, $23$),
 so the script parses each one and isomorphism-matches it against a canonical
 enumeration that reproduces the order of Lean's flag generators.  The index it
 computes is then already the $i$ in \lean{Flag\_n\_k\_m\_i}, with no separate
-table to keep in sync.  With the indices in hand it emits the four parts: three
-are fixed templates keyed to the sizes, and the only real computation is
-reconstructing and factoring the certificate matrices (the witness Part~2's
-kernel check then consumes).  Choosing the branch, the per-block parameters, and
-the order of the additions is the entire ``intelligence'' of the generator; why
-none of it has to be trusted is the subject of \Cref{sec:flagmatic-trust}.
+table to keep in sync.  With the indices in hand, it emits the four parts.  Most
+of the output comes from templates keyed to the sizes; the substantial
+translation step reconstructs and factors the certificate matrices, producing
+the witness consumed by Part~2's kernel check.  The generator also chooses the
+branch, the per-block parameters, and the order of the additions.  Why errors in
+any of these choices cannot silently establish a false theorem is the subject
+of \Cref{sec:flagmatic-trust}.
 
 Assembled, the file the script emits for Mantel ($K_3$-free, $N=3$, Branch~B) is,
 abridged:
@@ -3016,14 +3023,14 @@ one matrix and one \lean{forbidLE\_add\_QuadraticForm} call each.
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
 
-The script computes a great deal, from flag indices to the certificate matrices,
-yet \emph{none} of it enters the trusted base.  Every emitted
-proof obligation is closed by one of: \lean{decide +kernel} (in the kernel),
-\lean{native\_decide} (by compiled code outside the kernel), or a verified
-tactic of \Cref{sec:flagmatic-pipeline}.  A
-miscomputation in the script surfaces as a compile error, never as a silently
-accepted false theorem.  The certificate and the solver behind it are
-candidate generators; the kernel is the authority.
+The translator computes a great deal, from flag indices to matrix
+factorizations, but neither it nor the SDP solver must be trusted: their output
+is accepted only through proof obligations generated in Lean.  Those
+obligations are closed by \lean{decide +kernel}, by
+\lean{native\_decide}, or by tactics that construct proof terms checked by the
+kernel.  A mistake in the certificate or translator therefore causes a failed
+check rather than silently establishing a false theorem.  The important
+trust distinction lies between the two evaluators used for those checks.
 
 Those two checkers do not carry the same trust.  Because \lean{native\_decide}
 evaluates outside the kernel, the proof obligations it closes also rest on the
@@ -3034,15 +3041,14 @@ rather than a chosen design: we would keep the density obligations in the
 kernel as well if it could check them, but it cannot yet on the encoding the
 specification uses.
 
-The tactics that produce these obligations are themselves unverified
-metaprograms, and the same discipline covers them.  Each must tolerate the
-syntactic variation Lean's elaborator introduces (after unification the same
-flag can reach a tactic in several forms), so we normalize expression trees with
-a \lean{collectPrefixConstants} traversal and compare flags with \lean{Expr.eqv}
-rather than structural equality.  This machinery took substantial experimentation
-with the Lean~4 metaprogramming API and is among the least portable parts of the
-development, but a tactic that misfires only ever builds a term the kernel
-rejects, so its fragility costs at most a failed build.
+The tactics are themselves unverified metaprograms, and the same discipline
+applies to them.  They traverse elaborated expressions, recover flag constants
+through the naming convention, and decompose the normalized forms of sums,
+scalar multiples, products, and downward operators.  This machinery is among
+the least portable parts of the development because it depends on the shapes
+produced by Lean's elaborator.  Nevertheless, a tactic that mishandles such a
+shape can only fail or construct a term that the kernel rejects; it cannot make
+an invalid proof term valid.
 
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
@@ -3050,13 +3056,13 @@ rejects, so its fragility costs at most a failed build.
 To see whether the pipeline produces checked proofs in practice, we ran
 \lean{gen-skeleton} on seven certificates chosen to span the cases it must
 handle: both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$,
-and four forbidden graphs ($K_3$, $K_4$, $K_5$, and the cycle $C_5$).  Every one
-compiles to a file the kernel accepts with no \lean{sorry}
+and four forbidden graphs ($K_3$, $K_4$, $K_5$, and the cycle $C_5$).  Every
+generated file compiles with no \lean{sorry}
 (Table~\ref{tab:flagmatic-scenarios}), and none required hand transcription of
 the certificate into Lean.  Three are classical extremal results, whose upper
-bounds we describe below; the rest appear in the table.
+bounds we describe below; the remaining cases appear in the table.
 
-\begin{table}[t]
+\begin{table}[b]
   \centering
   \caption{Certificates carried end-to-end through the translator.  ``Branch''
   is A when $n_{\mathit{obj}}=N$ and B when $n_{\mathit{obj}}<N$; $T$ is the
@@ -3078,39 +3084,43 @@ bounds we describe below; the rest appear in the table.
 \end{table}
 
 \paragraph{Mantel's theorem.}
-The smallest and most transparent case: its single block is small enough to
-write the certificate by hand as an explicit square,
+This is the smallest and most transparent case.  Its single block is small
+enough to write the certificate by hand as an explicit square,
 $\llbracket (a-b)^2\rrbracket_1 = 2K_2 - \mathbf{1} \geq 0$, with no external
 solver.  It proves $K_2 \leq \tfrac12\cdot\mathbf{1}$, and therefore serves as
 the simplest validation of the entire certificate-to-proof pipeline.
 
 \paragraph{A $C_4$-density bound.}
-A sum of two PSD forms, one per size-$2$ type ($4\times4$ and $3\times3$ over
-$\mathbb{Q}$), again with no externally generated SDP.  It proves a
+This certificate is a sum of two PSD forms, one per size-$2$ type
+($4\times4$ and $3\times3$ over $\mathbb{Q}$), again with no externally
+generated SDP.  It proves a
 $\tfrac38\cdot\mathbf{1}$ bound on $C_4$ density, and is the first example to
 require the pipeline to combine multiple independently certified PSD blocks into
 a single proof.
 
 \paragraph{The Erd\H{o}s pentagon theorem.}
-The most demanding of the three: three PSD blocks of sizes $8$, $6$, and $5$
-that the tactics must add, expand, and normalize in a single pass.  It proves
+This is the most demanding of the three, with PSD blocks of sizes $8$, $6$,
+and $5$ that the tactics must add, expand, and normalize in a single pass.  It proves
 $C_5 \leq \tfrac{24}{625}\cdot\mathbf{1}$, demonstrating that the same proof
 skeleton scales to substantially larger certificates without modification.
 
-Together, these examples exercise every structural variation of the
-certificate-to-Lean pipeline introduced in \Cref{sec:flagmatic-pipeline},
-from a single hand-checkable certificate to multi-block SDP certificates
-requiring substantial symbolic normalization.
+Together with the remaining scenarios in
+Table~\ref{tab:flagmatic-scenarios}, these examples exercise every structural
+variation of the certificate-to-Lean pipeline introduced in
+\Cref{sec:flagmatic-pipeline}, from a single hand-checkable certificate to
+multi-block SDP certificates requiring substantial symbolic normalization.
 
 \paragraph{A non-complete forbid.}
-C5turan forbids a non-complete graph: it bounds edge density at $\tfrac12$ in
-graphs with no $C_5$ subgraph.  For a complete forbid, forbidding an induced copy
+The \lean{C5turan} certificate forbids a non-complete graph: it bounds edge
+density at $\tfrac12$ in graphs with no $C_5$ subgraph.  For a complete
+forbidden graph, forbidding an induced copy
 and forbidding a subgraph coincide, and the generators take a faster induced
-path; $C_5$ is the first forbid we have run where the two differ, handled instead
-through a subgraph-forbidding path.  The four-part skeleton is otherwise
-unchanged, so nothing in the pipeline assumes a complete forbid.
+path.  The $C_5$ case is the first evaluated certificate in which the two
+notions differ, so it instead uses the subgraph-forbidding route.  The four-part
+skeleton is otherwise unchanged; the pipeline does not assume that the
+forbidden graph is complete.
 
-As an aside, the pipeline proves only upper bounds; for Mantel and the pentagon,
+The pipeline itself proves only upper bounds.  For Mantel and the pentagon,
 the matching lower bounds are formalized separately in Lean, completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
@@ -3120,24 +3130,26 @@ and~\ref{ex:pentagon}.
 One limitation remains: the Branch~B host-size expansion
 (\lean{flag\_expand\_hfree}) ends in a \lean{ring\_nf} normalization that we
 have not formally characterized; it closes every case we have met, but we have
-not proved that no certificate produces a form it fails to normalize.
-We list it alongside the open questions of Section~\ref{sec:unsure}
-rather than presenting the pipeline as complete.
+not proved that it normalizes every form a future certificate might produce.
+This is a limitation of automation rather than soundness: if normalization
+fails, the generated proof remains incomplete.  We list the issue alongside
+the open questions of Section~\ref{sec:unsure} rather than presenting the
+pipeline as complete.
 
 \medskip
 Taken together, the construction of this section turns a Flagmatic certificate
 into a verified theorem with no manual intervention: the proof follows a fixed
-skeleton, the translator reconstructs it from the certificate alone, and the
-Lean kernel has the final say.
+skeleton, the translator reconstructs it from the certificate alone, and Lean
+checks the result under the trust model stated above.
 
 
 \section{Proof-Style Observations}
 \label{sec:proof-style}
 
 The case studies produced one recurring proof-style observation worth
-reporting on its own, separate from the engineering choices and the
-certificate-to-Lean construction.  We do not claim it generalizes beyond extremal combinatorics
-formalization; we report it because we noticed it repeatedly.
+separating from the engineering choices and the certificate-to-Lean
+construction.  We do not claim that it generalizes beyond formalizations of
+extremal combinatorics; we report it because the same pattern arose repeatedly.
 
 \paragraph{Density equalities want bijective justification.}
 The most common informal move in flag-algebra calculations is to say that
@@ -3249,8 +3261,8 @@ arithmetic is the elementary estimate
   \;=\;
   \frac{24}{625},
 \]
-combined with the convergence theorem \lean{tendsto\_generalizedTuranDensity}
-in \lean{Turan/GeneralizedTuran.lean}.  Mathematically, the lower bound uses
+combined with the convergence theorem
+\lean{tendsto\_generalizedTuranDensity}.  Mathematically, the lower bound uses
 $\lim_{n\to\infty} n^5/\binom{5n}{5} = 24/625$; in the Lean proof the limit is
 replaced by the displayed lower bound on the subsequence, plus general
 convergence machinery.
@@ -3266,33 +3278,42 @@ These results are not needed for the pentagon proof, but they demonstrate
 that the formalized algebraic layer is not specialized solely to the two
 headline theorems.
 
+\paragraph{A $K_4$-free $P_4$ bound.}
+The theorem \lean{K4\_free\_P4\_density\_upper\_bound} provides a further test
+of the automation layer:
+\begin{lstlisting}
+theorem K4_free_P4_density_upper_bound
+    : inducedForbidLE K4.toFinFlag P4_density ((32 / 9 : R) (*@$\bullet$@*) 1) := ...
+\end{lstlisting}
+Its proof adds three downward-projected squares and then uses the same product
+reduction, unit expansion, sum normalization, and basis non-negativity tactics
+as the preceding case studies.  This example is stated using the induced-forbid
+relation and shows that the automation is not tied to triangle-free problems.
+
 
 \section{Engineering Obstacles}
 \label{sec:obstacles}
 
-The specification layer of \Cref{sec:abstract} exposed several
-engineering obstacles that we report here as obstacles rather than design
-principles.  Three of them follow from Lean~4's intensional type theory and
-its typeclass mechanism: quotient eliminators carry recurring compatibility
-proofs; size-changing combinatorial operations produce dependent-type
-transports; and \lean{Fintype} instances synthesized through different
-elaboration paths are extensionally but not definitionally equal.  A fourth
-obstacle, function extensionality, is mathematically benign but appears at
-every step that relates a function-level equality to a pointwise one.  We
-describe the obstacles, the mitigations we used, and where the open ends
-remain.  The point is not the particular workarounds; it is that an
+The specification layer of \Cref{sec:abstract} exposed four recurring
+engineering obstacles.  Quotient eliminators carry compatibility proofs;
+size-changing combinatorial operations produce dependent-type transports;
+function extensionality appears when pointwise information must be turned into
+a function-level equality; and \lean{Fintype} instances synthesized through
+different elaboration paths can be extensionally equal without being
+definitionally equal.  We report these as obstacles rather than design
+principles and describe how the implementation confines each one.  The point
+is not the particular workarounds; it is that an
 intensional type theory makes these obstacles visible at the boundaries of
 quotient, dependent-type, and finite-enumeration constructions, and someone
 formalizing similar material should expect to face them.
 
 \subsection{Quotient Eliminators and Their Recurring Cost}
 
-Both \lean{Flag} and \lean{FlagAlgebra} are quotients, so any function
-\emph{from} them or equality \emph{in} them must go through
-\lean{Quotient.lift} or \lean{Quotient.sound}.  \lean{Quotient.lift} requires
-a proof that the function respects the equivalence relation;
-\lean{Quotient.sound} requires producing a witness of the relation for each
-equality goal.
+Both \lean{Flag} and \lean{FlagAlgebra} are quotients.  Defining a function on
+representatives therefore requires \lean{Quotient.lift} and a proof that the
+function respects the equivalence relation; proving two quotient classes equal
+from representative-level data typically requires \lean{Quotient.sound} and a
+witness of that relation.
 
 The adequacy theorems in \Cref{sec:reflection} illustrate the cost.
 To state that \lean{Sym2Graph.toFlag} is inverse to
@@ -3365,8 +3386,8 @@ details remain in the small layer where they belong.
 \subsection{Function Extensionality and Proof-Valued Fields}
 
 In Lean~4's intensional type theory, function extensionality
-($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not definitional but is
-available as an axiom (\lean{funext}, derived from \lean{propext}).  This
+($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not part of definitional
+equality; it is available through \lean{funext}.  This
 creates friction wherever the formalization must relate a function-level
 equality (such as a type embedding) to a pointwise equality (the embedding's
 behavior on individual vertices).  For example, constructing a labeled-graph
@@ -3382,11 +3403,10 @@ be filled.
 Proof-valued structure fields create a related difficulty.  The
 \lean{Sym2Graph} type carries a field
 \lean{edges\_valid}, asserting that every \(e \in \lean{edges}\) satisfies
-\(\neg\,\lean{e.IsDiag}\); two \lean{Sym2Graph}
-values with the same edge set but different proof terms for
-\lean{edges\_valid} are propositionally equal (by proof irrelevance) but not
-definitionally equal.  Comparing \lean{Sym2Graph} values in the adequacy
-theorems therefore requires \lean{proof\_irrel\_heq} at every such field:
+\(\neg\,\lean{e.IsDiag}\).  When two \lean{Sym2Graph} values are constructed
+through different proof paths, their \lean{edges\_valid} fields still appear
+as congruence goals even after the edge data has been identified.  The
+adequacy proofs discharge those goals with \lean{proof\_irrel\_heq}:
 \begin{lstlisting}
 theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
     G.toLabeledGraph.toSym2Graph = G := by
@@ -3450,30 +3470,23 @@ type, where Lean's typeclass search does not look through \lean{match}
 expressions inside type-valued functions; the \lean{FintypeList} typeclass
 threads \lean{Fintype} instances per component explicitly to compensate.
 
-\paragraph{What remains open.}
-Not all intensionality obstacles were resolved.  The most significant gap is
-in \lean{Forbid/Basic.lean}: several strengthening lemmas about recovering
-representative-level information from quotient-level forbidden equalities
-remain as commented proof sketches, not as imported declarations or trusted
-axioms.  For example, one would like a general theorem saying that if a
-basis vector is zero under the forbidden equality relation, then the
-corresponding unlabeled flag has positive density of the forbidden
-graph.
-Proving such a statement requires careful reasoning about how zero-space
-relations interact with individual representatives.  This is not needed for
-the main case studies---\lean{Mantel\_theorem} and \lean{ErdosPentagon\_Turan}
-are proved without those sketches---but it marks a natural direction for
-making the \lean{forbidLE} framework more convenient for future applications.
+The resulting inconvenience is concentrated rather than eliminated.  The
+small transport and instance-management lemmas hide most of it from the main
+case studies, but a new size-changing operation or counting equivalence still
+has to cross the same intensional boundaries once.  This is why we treat these
+lemmas as an engineering interface: they do not remove the underlying proof
+obligations, but they keep those obligations from spreading through every
+algebraic proof.
 
 
 
 \section{What We Are Unsure About}
 \label{sec:unsure}
 
-This is the section that distinguishes this paper from a single-thesis
-formalization paper.  Several questions surfaced during the work; we do not
-resolve them here, and we believe that being explicit about them is more
-honest than implying that our final design settled them.
+The development resolves the proof obligations needed by our case studies, but
+it does not settle every design question exposed by the formalization.  We
+record four such questions to separate demonstrated properties of the current
+system from conjectures about how the approach might generalize.
 
 \paragraph{Predicate-deferral vs.\ universal-theory specification.}
 The forbidden-subgraph predicate \lean{forbidLE}
@@ -3488,12 +3501,12 @@ Razborov's.  We invite future work to compare the two on a development that
 needs both styles.
 
 \paragraph{Are the intensionality obstacles inherent or accidental?}
-The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype}
-bindings, \lean{HEq}-and-\lean{cast} discipline for size-changing operations,
-proof-irrelevance bridges for \lean{Sym2Graph} fields---are responses to
+The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype} bindings,
+systematic use of \lean{HEq} and \lean{cast} for size changes, and
+proof-irrelevance bridges---are responses to
 specific Lean~4 facts: typeclass coherence by convention rather than by
-enforcement, definitional inequality for dependently-typed families that are
-propositionally equal, decidable definitional equality that does not include
+enforcement, definitional inequality for dependently typed families that are
+propositionally equal, and a definitional equality that does not include
 function extensionality.  We do not know which of these would survive a port
 to a different ITP (Rocq with SSReflect, Agda, Isabelle/HOL with a different
 typeclass story).  In particular, the \lean{Fintype} ambiguity issue and the
@@ -3503,12 +3516,13 @@ might dissolve some of these obstacles.  We report them as Lean~4 obstacles
 without claiming they are foundational.
 
 \paragraph{Is the bridge layer essential or an artifact of our spec choices?}
-\Cref{sec:bridge}'s reflection, tactic, and Automation layers are
+The reflection and automation layers of
+\Cref{sec:reflection,sec:flagmatic-pipeline} are
 load-bearing in our development: the pentagon proof does not go through
 without them.  But a different specification layer might collapse some of
-this work into the spec side.  For instance, a spec layer that committed to
-canonical representatives in the quotient (rather than carrying isomorphism
-classes as quotients) would not need the same adequacy theorems, though it
+this work into the specification side.  For instance, a specification that
+represented each isomorphism class by a chosen canonical graph, rather than as
+a quotient, would not need the same adequacy theorems, though it
 would attach representation-specific side conditions to every algebraic
 lemma.  Whether the bridge layer is essential to the flag-algebra method or
 a consequence of our specific design choices is an open question that
@@ -3516,28 +3530,14 @@ deserves a different formalization to test.
 
 \paragraph{Does the elaboration-time generation pattern scale beyond
 pentagon size?}
-The pentagon proof generates roughly 2,847 density lemmas at elaboration
-time.  This is large but well within Lean's elaborator budget on contemporary
-hardware.  Larger flag-algebra results in the literature, particularly those
+The pentagon proof generates 2,832 specialized pair-density theorems, in 15
+native-evaluation batches, at elaboration time.  Lean accepts this workload in
+our current case study.  Larger flag-algebra results in the literature, particularly those
 that work with $7$-vertex flags or beyond, would generate far more.  We have
 not stress-tested the elaboration-time generation pattern at that scale and
-do not know which part of the pipeline---density-table loading,
-multiplication-table loading, or the named-lemma cache itself---would be the
-first bottleneck.
-
-\paragraph{Work in progress: $K_4$-free $P_4$ density.}
-The file \lean{Automation/K4freeP4.lean} contains a skeleton for the
-inequality
-\[
-  \lean{P4\_density <=[K4.toFinFlag] (96/27) * 1}
-\]
-as a further test of the Automation layer.  The proof structure compiles---it uses
-the same Automation tactics as Mantel, $C_4$, and the pentagon---but several
-non-negativity facts (\lean{f}$_1$\lean{\_nonneg}, the main combined
-inequality) currently remain as \lean{sorry} placeholders.  We mention it
-because it demonstrates that the Automation layer generalizes beyond triangle-free
-forbids ($K_3$) to a $4$-clique forbid ($K_4$); we do \emph{not} count it
-among the proved results.
+do not know which part of the pipeline---flag enumeration, density-theorem
+generation, multiplication-theorem generation, or the growing collection of
+named theorems---would be the first bottleneck.
 
 
 \section{Lessons for the Next Person}
@@ -3551,8 +3551,8 @@ conjectural---we mark it as such in the body.  The sixth is a reporting
 lesson about how to read the development's trust profile; it is included
 because the trust profile is otherwise easy to misread.
 
-\paragraph{Lesson 1 (Quotient objects are best left as quotients in the
-specification).}
+\paragraph{Lesson 1 (Keeping quotient objects as quotients localizes
+representation costs).}
 Flag algebras are naturally quotient objects: graphs up to isomorphism, and
 flag-algebra elements modulo the equational theory of the algebra.  A
 formalization could pick canonical representatives in the specification
@@ -3588,13 +3588,12 @@ definitions remain the specification; the executable code in
 compilation target with deliberate optimizations (edge-count pruning before
 permutation enumeration; type-aware permutation that fixes labeled vertices
 and enumerates only the remainder).  Adequacy theorems certify that the
-compilation preserves the specification's meaning.  The generalization is:
-when reflection on the natural specification is computable in principle but
-stuck in practice, the right move is not to make the specification more
-computable but to separate spec from implementation and connect them once.
+compilation preserves the specification's meaning.  In this development, when
+reflection on the natural specification was computable in principle but
+impractical, separating specification from implementation and connecting them
+once proved more effective than reshaping the specification around evaluation.
 
-\paragraph{Lesson 3 (Names can be elaboration-time metadata when type-class
-search is too slow).}
+\paragraph{Lesson 3 (Names can serve as elaboration-time metadata).}
 Every flag and flag-algebra constant in the development is named according
 to the scheme \lean{Flag\_n\_k\_m\_i} and \lean{FlagAlgebra\_n\_k\_m\_i},
 where $n$ is the vertex count, $k$ and $m$ identify the type graph, and $i$
@@ -3608,7 +3607,7 @@ The recorded counterexample is in \texttt{ErdosPentagon/Lemmas.lean}: a
 commented-out call reads \texttt{-- sort\_at -- takes more than 10 minutes}.
 The generic \lean{sort\_at}, which uses \lean{simp} without index guidance,
 times out on expressions of around 25 flag terms.  The index-guided
-\lean{ac\_sort} completes the same step in under a second by exploiting the
+\lean{ac\_sort} completes the same step promptly by exploiting the
 name encoding to bypass combinatorial search.  We do not claim that names
 beat user attributes or a custom AST in general; on this development they
 did, and the design axis is worth naming so that future formalizations
@@ -3616,27 +3615,21 @@ facing the same large-expression performance wall know to consider it.
 
 \paragraph{Lesson 4 (External computation is a candidate generator, not a
 proof).}
-Two pieces of unverified external machinery feed the pentagon proof: the
-JSON density tables produced by an enumeration script, and the rational PSD
-certificates produced by an SDP solver.  Neither is trusted.  The density
-tables drive the elaboration macros \lean{load\_flag\_pair\_density\_theorems}
-and \lean{MulLoader}: for each table entry the macros generate the
-statement Lean should prove (e.g.,
-\(\mathtt{flagDensity}_2\,\mathtt{F}_0\,\mathtt{F}_1\,\mathtt{G} = 3/10\)) and
-prove it by unfolding the concrete flag definitions, rewriting with the
-adequacy theorem, and discharging the resulting decidable proposition.
+The rational certificate produced by the SDP workflow, and the Python
+translator that turns it into Lean source, are both unverified.  Neither has to
+be trusted.  The translator emits the chosen flags, matrices, factorizations,
+and target inequality, while Lean independently enumerates the required flags
+and computes the density and multiplication theorems described in
+\Cref{sec:reflection-generation}.  A wrong flag index or coefficient therefore
+causes a generated equality or the final algebraic normalization to fail.
 
-A wrong table entry does not corrupt the proof; it fails as a theorem at the
-evaluator step, because after adequacy rewriting the goal is a decidable
-equality between two rationals computed independently.  The SDP certificate
-is handled analogously: the matrix \lean{P} and its claimed
-\lean{LDL$^\top$} decomposition are written explicitly in
-\lean{ErdosPentagon.MatrixDef}, and the equality \lean{P = LP * Matrix.diagonal dP * LP.transpose}
-is verified by Lean rather than asserted.  The transferable framing is: the
-external tool proposes values; the elaboration layer generates the
-corresponding theorem statements; the verified evaluator accepts only those
-it can reproduce.  JSON tables and solver output are test vectors against
-the spec, not certificates.
+The PSD data is checked separately: the rational matrix and its claimed
+$LDL^\top$ factorization are written explicitly, and Lean verifies both the
+non-negativity of the diagonal and the matrix identity before using the
+quadratic form.  The transferable framing is that the external tool proposes
+data and proof structure, while the proof assistant reconstructs the finite
+calculations and accepts only a complete proof.  External computation remains
+a candidate generator, not a proof authority.
 
 \paragraph{Lesson 5 (When a constraint is already expressible in the
 textbook framework, the formalization choice is the timing of commitment).}
@@ -3666,11 +3659,12 @@ uses two evaluators with different trusted-computing-base profiles:
 it outside the kernel; and \lean{decide +kernel}, which evaluates inside the
 kernel.  They are not interchangeable.
 
-The roughly 2,800 density-table lemmas are discharged by
+The 2,832 generated pair-density theorems are discharged by
 \lean{native\_decide}.  This was not a deliberate trust choice:
-\lean{decide +kernel} does not let our scripts type-check on the
-proof-relevant encoding the specification uses, even after the optimizations
-of \Cref{sec:reflection}.  The three SDP matrix equalities (sizes
+\lean{decide +kernel} does not complete at this scale on the
+proof-relevant encoding used by the specification, even after the optimizations
+of \Cref{sec:reflection}.  For the pentagon proof, the three SDP matrix
+equalities (sizes
 $8 \times 8$, $6 \times 6$, $5 \times 5$ over $\mathbb{Q}$) are discharged
 by \lean{decide +kernel}.  Here the choice is deliberate: the matrices are
 small enough that kernel evaluation finishes, and the upper bound proof
@@ -3682,7 +3676,7 @@ reader who depends on the artifact may want to know that the load-bearing
 PSD step is kernel-checked and that the bulk of the density bookkeeping is
 checked by compiled code; the profile is information they can act on.  A
 reader who finds the profile insufficient---for example, who would want
-\lean{decide +kernel} on the density tables as well---can read this as a
+\lean{decide +kernel} on the generated density theorems as well---can read this as a
 record of where the current development sits, not as a claim that the
 current placement is principled.  The trust profile of a large formalization
 is not always chosen, but it is always reportable.
@@ -3716,18 +3710,19 @@ for verified computation (e.g., in Mathlib's \lean{decide} and
 a systematic methodology for building efficiently computable representations
 alongside their abstract counterparts in Coq; our \lean{Sym2Graph} /
 \lean{SimpleGraph} pair follows the same philosophy adapted to Lean~4's
-type-class and instance-search mechanism.  Our use of elaboration-time
-theorem generation from JSON data (\Cref{sec:reflection}) is related to
-the approach of Amin and Rompf~\cite{amin2017collapsing}, who generate
-verified code from high-level specifications; we generate verified density
-lemmas from externally computed tables.
+type-class and instance-search mechanism.  Our elaboration-time command
+elaborators play a complementary role: they run the in-Lean finite enumerators
+and specialize the adequacy theorems to produce reusable density and
+multiplication facts (\Cref{sec:reflection-generation}).  The unverified
+certificate translator operates outside this reflected core and emits source
+whose mathematical obligations Lean subsequently checks.
 
 \paragraph{Computer-assisted flag algebra arguments.}
 The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
-of flag algebra certificates as a Python tool, but produces results that
-are validated only informally.  To our knowledge, our work provides the
-first formally verified end-to-end pipeline from flag algebra certificates
-to combinatorial theorems.  Razborov~\cite{razborov2013flag} gives a
+of flag-algebra certificates, but it does not itself produce proof-assistant
+proof terms.  To our knowledge, our work provides the first formally verified
+end-to-end pipeline from such certificates to combinatorial theorems.
+Razborov~\cite{razborov2013flag} gives a
 comprehensive survey of flag algebra applications; the $\sim$100 results
 catalogued there all involve the same recurring concerns identified in
 \Cref{sec:intro}: abstract structure, extensional finite counting,
@@ -3775,23 +3770,24 @@ We have reported on a Lean~4 formalization of Razborov's flag algebra method
 for simple graphs.  The development carries a specification of the
 mathematical theory---flags as quotients modulo isomorphism, the quotient
 algebra of density-expansion relations, positive homomorphisms and the
-semantic non-negativity cone, and the predicate-based forbidden-subgraph framework---and a
-bridge of reflection, tactic, and Automation layers that turns specifications
-written in this language into proofs Lean's kernel can check.  The case
+semantic non-negativity cone, and the predicate-based forbidden-subgraph
+framework---and reflection and automation layers that turn specifications
+written in this language into proofs that Lean can check.  The case
 studies prove the flag-algebra form of Mantel's theorem, the Erd\H{o}s
 pentagon theorem ($\tdensity{C_5}{K_3} = 24/625$), two Goodman-style
 inequalities, and an inequality bounding the $C_4$-density of triangle-free
-graphs.
+graphs.  A further case study proves a $K_4$-free $P_4$ density bound using the
+same automation layer.
 
 We do not claim to have found
 \emph{the} right way to formalize flag algebras.  We have described the
 choices we made for the mathematical specification, the engineering
-obstacles those choices exposed, the bridge layer we built around them, the
-recurring proof patterns we observed, the questions our work surfaced but
+obstacles those choices exposed, the executable and automation layers we built
+around them, the recurring proof patterns we observed, the questions our work surfaced but
 did not resolve, and the lessons we believe are transferable beyond flag
 algebras.  In places where an outcome was forced by feasibility rather than
 chosen for principled reasons---the use of \lean{native\_decide} for the
-density tables being the most prominent example---we have said so.
+generated density theorems being the most prominent example---we have said so.
 
 We expect the architecture to transfer to further graph flag algebra
 arguments because the same concerns recur: quotient-level semantics, exact
