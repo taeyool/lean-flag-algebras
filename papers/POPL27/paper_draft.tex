@@ -275,16 +275,16 @@ semidefinite-programming certificate.  The method is especially useful in
 constrained settings, where the desired inequality is required only for graphs
 that avoid specified finite patterns, such as triangles.  We present a
 machine-checked formalization of flag algebras for finite simple graphs,
-together with a certificate-to-proof pipeline that reconstructs, in Lean,
+together with a certificate-to-proof compiler that reconstructs, in Lean,
 algebraic proofs suggested by external certificate data.
 
 The formalization covers the mathematical layer of the method: partially
 labeled graphs, their densities in large graphs, the quotient algebra of
 density expressions, graph-limit semantics through positive homomorphisms, and
 the downward operators used to average out labels.  The external search is
-used only to suggest finite data: lists of flags, density and multiplication
-tables, and rational positive-semidefinite matrices.  Lean then checks these
-data against computable graph enumerations, connects the computations to the
+used only to suggest finite data: lists of flags, target-density data, and
+rational positive-semidefinite matrices.  Lean independently computes the
+required density and multiplication facts, connects these computations to the
 quotient definitions, verifies positive-semidefiniteness exactly over
 $\mathbb{Q}$, and automates the algebraic normalization steps that occur in
 flag-algebra proofs.  As case studies, we obtain machine-checked proofs of Mantel's
@@ -371,7 +371,7 @@ density of pentagons in triangle-free graphs.
 
 \paragraph{From certificates to formal proofs.}
 This paper presents a machine-checked formalization of flag algebras for
-finite simple graphs, together with a certificate-to-proof pipeline that
+finite simple graphs, together with a certificate-to-proof compiler that
 reconstructs, in Lean, algebraic proofs suggested by external certificate
 data.  The aim is not only to verify a few final inequalities, but to
 formalize enough of the method that certificates found by
@@ -424,9 +424,9 @@ The paper makes four main contributions.  First, it gives a Lean
 formalization of the core flag-algebra objects for finite simple graphs:
 flags, densities, the quotient algebra, positive homomorphisms, semantic
 order, and the downward/random-homomorphism machinery used in flag-algebra
-proofs.  Second, it builds a certificate-to-proof pipeline that turns
+proofs.  Second, it builds a certificate-to-proof compiler that turns
 externally generated rational certificate data into Lean-checked algebraic
-proofs.  Third, it demonstrates the pipeline on machine-checked proofs of
+proofs.  Third, it demonstrates the compiler on machine-checked proofs of
 Mantel's theorem, the Erd\H{o}s pentagon theorem, Goodman-type inequalities,
 and a $C_4$-density bound for triangle-free graphs.  Fourth, it develops the
 semantic comparison between built-in constraint and ensemble approaches to constrained
@@ -2777,32 +2777,30 @@ to the abstract definitions, and elaboration-time generation turns their
 individual results into a reusable table of proved facts.  The next section
 uses that table to automate complete flag-algebra arguments.
 
-\section{From a Recurring Proof Pattern to a Certificate-to-Lean Compiler}
+\section{Automating Flag-Algebra Proofs}
 \label{sec:flagmatic}
 
-Software such as Flagmatic~\cite{vaughan2013flagmatic} searches for
-flag-algebra certificates automatically, but a certificate is numerical data,
-not a machine-checked proof.  Turning one into a verified theorem means
-transcribing its numerical data into the proof assistant, reproducing the
-bookkeeping that links subflags to host flags, and checking
-positive-semidefiniteness, densities, and product expansions within Lean's
-proof pipeline.
+A \emph{flag-algebra certificate} is a finite witness for a proposed density
+inequality $P \leq_{\mathcal H} c\cdot\mathbf{1}$.  It specifies concrete flags,
+rational coefficients, and positive semidefinite matrices arranged so that,
+after all terms are expanded at a common host size, the difference
+$c\cdot\mathbf{1}-P$ is a sum of downward-averaged positive semidefinite
+quadratic forms and a remainder with non-negative coefficients.  Checking this
+decomposition proves the inequality.  Flagmatic~\cite{vaughan2013flagmatic}
+uses semidefinite programming to search for such finite witnesses.
 
-The specification of \Cref{sec:abstract} and the reflection layer of
-\Cref{sec:reflection} make it possible to carry this out by hand.  We
-did so for our first case studies---computing the expansions, products, and
-normalizations step by step---and found the proofs nearly identical in
-structure.  Mantel's theorem, the $C_4$-density bound, and the Erd\H{o}s
-pentagon theorem differ in their flags, their coefficients, and their positive
-semidefinite matrices, but each follows the same sequence of moves, in the same
-order, with only the sizes and the data changing.  That regularity is what
-convinced us the manual work could be mechanized, and it showed which recurring
-step each tactic would later have to automate.
+This section presents a compiler that turns this data into a self-contained
+Lean proof.  For each certificate, it generates the required flags, asks Lean
+to recompute their density and multiplication identities, verifies the rational
+matrix factorizations, and assembles the final inequality.  Thus the external
+search proposes the data, while Lean checks every mathematical obligation; no
+manual copying of coefficients or reconstruction of the finite bookkeeping is
+required.
 
-We first recall how Flagmatic certificates are produced and why their positive
-semidefinite matrices certify extremal bounds.  We then identify the common
-proof structure and show how the certificate-to-Lean compiler realizes each
-step with reusable proof-producing components.
+We first explain why positive semidefinite matrices provide the non-negative
+terms in a certificate.  We then identify the four obligations common to our
+examples and show how the compiler discharges them.  Finally, we state the
+trust model and evaluate the compiler on seven certificates.
 
 \subsection{Flagmatic Certificates and Positive Semidefiniteness}
 \label{sec:flagmatic-background}
@@ -2892,7 +2890,7 @@ set of reusable proof-producing components.  Consequently, a new theorem
 primarily requires new certificate data rather than a new proof architecture.
 
 
-\subsection{The Certificate-to-Lean Pipeline}
+\subsection{Compiling Certificates into Lean Proofs}
 \label{sec:flagmatic-pipeline}
 \label{sec:flagmatic-gen}\label{sec:flagmatic-psd}\label{sec:flagmatic-expand}%
 \label{sec:flagmatic-close}\label{sec:flagmatic-script}% legacy aliases: this
@@ -3053,13 +3051,13 @@ an invalid proof term valid.
 \subsection{Evaluation}
 \label{sec:results}\label{sec:flagmatic-scenarios}
 
-To see whether the pipeline produces checked proofs in practice, we ran
+To evaluate the compiler, we ran
 \lean{gen-skeleton} on seven certificates chosen to span the cases it must
 handle: both branches, host sizes $N\in\{3,4,5\}$, block counts $1$ through $4$,
 and four forbidden graphs ($K_3$, $K_4$, $K_5$, and the cycle $C_5$).  Every
 generated file compiles with no \lean{sorry}
-(Table~\ref{tab:flagmatic-scenarios}), and none required hand transcription of
-the certificate into Lean.  Three are classical extremal results, whose upper
+(Table~\ref{tab:flagmatic-scenarios}), and no certificate coefficients had to
+be copied into Lean by hand.  Three are classical extremal results, whose upper
 bounds we describe below; the remaining cases appear in the table.
 
 \begin{table}[b]
@@ -3088,14 +3086,14 @@ This is the smallest and most transparent case.  Its single block is small
 enough to write the certificate by hand as an explicit square,
 $\llbracket (a-b)^2\rrbracket_1 = 2K_2 - \mathbf{1} \geq 0$, with no external
 solver.  It proves $K_2 \leq \tfrac12\cdot\mathbf{1}$, and therefore serves as
-the simplest validation of the entire certificate-to-proof pipeline.
+the simplest validation of the compiler.
 
 \paragraph{A $C_4$-density bound.}
 This certificate is a sum of two PSD forms, one per size-$2$ type
 ($4\times4$ and $3\times3$ over $\mathbb{Q}$), again with no externally
 generated SDP.  It proves a
 $\tfrac38\cdot\mathbf{1}$ bound on $C_4$ density, and is the first example to
-require the pipeline to combine multiple independently certified PSD blocks into
+require the compiler to combine multiple independently certified PSD blocks into
 a single proof.
 
 \paragraph{The Erd\H{o}s pentagon theorem.}
@@ -3106,7 +3104,7 @@ skeleton scales to substantially larger certificates without modification.
 
 Together with the remaining scenarios in
 Table~\ref{tab:flagmatic-scenarios}, these examples exercise every structural
-variation of the certificate-to-Lean pipeline introduced in
+variation of the compiler described in
 \Cref{sec:flagmatic-pipeline}, from a single hand-checkable certificate to
 multi-block SDP certificates requiring substantial symbolic normalization.
 
@@ -3117,10 +3115,11 @@ forbidden graph, forbidding an induced copy
 and forbidding a subgraph coincide, and the generators take a faster induced
 path.  The $C_5$ case is the first evaluated certificate in which the two
 notions differ, so it instead uses the subgraph-forbidding route.  The four-part
-skeleton is otherwise unchanged; the pipeline does not assume that the
+skeleton is otherwise unchanged; the compiler does not assume that the
 forbidden graph is complete.
 
-The pipeline itself proves only upper bounds.  For Mantel and the pentagon,
+The generated certificate argument establishes only the upper-bound direction.
+For Mantel and the pentagon,
 the matching lower bounds are formalized separately in Lean, completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
@@ -3134,7 +3133,7 @@ not proved that it normalizes every form a future certificate might produce.
 This is a limitation of automation rather than soundness: if normalization
 fails, the generated proof remains incomplete.  We list the issue alongside
 the open questions of Section~\ref{sec:unsure} rather than presenting the
-pipeline as complete.
+automation as complete.
 
 \medskip
 Taken together, the construction of this section turns a Flagmatic certificate
@@ -3535,7 +3534,7 @@ native-evaluation batches, at elaboration time.  Lean accepts this workload in
 our current case study.  Larger flag-algebra results in the literature, particularly those
 that work with $7$-vertex flags or beyond, would generate far more.  We have
 not stress-tested the elaboration-time generation pattern at that scale and
-do not know which part of the pipeline---flag enumeration, density-theorem
+do not know which part of the compiler---flag enumeration, density-theorem
 generation, multiplication-theorem generation, or the growing collection of
 named theorems---would be the first bottleneck.
 
@@ -3721,7 +3720,7 @@ whose mathematical obligations Lean subsequently checks.
 The Flagmatic software~\cite{vaughan2013flagmatic} automates the computation
 of flag-algebra certificates, but it does not itself produce proof-assistant
 proof terms.  To our knowledge, our work provides the first formally verified
-end-to-end pipeline from such certificates to combinatorial theorems.
+translation from such certificates to combinatorial theorems.
 Razborov~\cite{razborov2013flag} gives a
 comprehensive survey of flag algebra applications; the $\sim$100 results
 catalogued there all involve the same recurring concerns identified in
