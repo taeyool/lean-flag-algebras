@@ -2628,46 +2628,54 @@ kernel.  The important mathematical reductions are still proved in Lean before
 this point; the native compiler is trusted only for the final evaluation of the
 closed finite computation.
 
-\hy{I am here.}
-
 The downward operator from \Cref{sec:formal-downward} follows the same
-reflection pattern.  The specification-level definition uses the abstract downward
-normalizing factor \(q_\sigma(A)\), implemented as
-\lean{downwardNormalizingFactor}.  Its computable counterpart is
-\lean{downwardNormalizingFactor\_Sym2Flag}.  It is built in two steps: first
-compute the factor on a concrete \lean{Sym2LabeledGraph}, then lift that
-computation through the \lean{Sym2Flag} quotient.
+reflection pattern.  The specification-level definition uses the abstract
+downward normalizing factor \(q_\sigma(F)\), implemented as
+\lean{downwardNormalizingFactor}.  Its executable counterpart is
+\lean{downwardNormalizingFactor\_Sym2Flag}.  On a concrete
+\lean{Sym2LabeledGraph}, Lean enumerates the finite set of type embeddings that
+produce an equivalent flag, takes its cardinality, and divides by the total
+number \(n!/(n-k)!\) of injections from $[k]$ to $[n]$.
+The resulting computation is invariant under flag equivalence, so it can then
+be lifted through the \lean{Sym2Flag} quotient.
 \begin{lstlisting}
-def downwardNormalizingFactor_sym2LabeledGraph
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    {n : (*@$\mathbb{N}$@*)}
+def isoEmbeddingCount_Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+    (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{N}$@*) :=
+  (isoSym2TypeEmbeddingSetWithSameGraph G).card
+  -- isoSym2TypeEmbeddingSetWithSameGraph G is a finite set of embeddings
+  -- whose elements can be enumerated by an algorithm, so its cardinality
+  -- can be computed.
+
+def downwardNormalizingFactor_Sym2LabeledGraph {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
     (G : Sym2LabeledGraph (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
   let num_of_all_injections := n.factorial / (n - k).factorial
-  isoEmbeddingCount_sym2LabeledGraph G / num_of_all_injections
+  isoEmbeddingCount_Sym2LabeledGraph G / num_of_all_injections
 
-def downwardNormalizingFactor_Sym2Flag
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    {n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) := ...
+def downwardNormalizingFactor_Sym2Flag {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)}
+    (F : Sym2Flag (*@$\sigma$@*) n) : (*@$\mathbb{Q}$@*) :=
+  Quotient.lift
+    (fun G => downwardNormalizingFactor_Sym2LabeledGraph G)
+    ... -- proof that downwardNormalizingFactor_Sym2LabeledGraph respects the equivalence relation
+    F
 \end{lstlisting}
-The first definition counts the type-preserving embeddings of \(\sigma\) into
-the concrete graph represented by \(G\) and divides by the number of all
-injections \(\mathrm{Fin}\,k \to \mathrm{Fin}\,n\).  The second definition
-packages this computable quantity as a function of \lean{Sym2Flag}s rather than
-representatives.
+These are executable \lean{def}s, rather than specification-level
+\lean{noncomputable def}s.  The first definition computes a natural number by
+taking the cardinality of the explicitly finite set
+\lean{isoSym2TypeEmbeddingSetWithSameGraph G}.  The second performs the
+rational normalization.  The final \lean{Quotient.lift} applies this same
+representative-level computation to a \lean{Sym2Flag}; its omitted
+representative-invariance argument proves that equivalent representatives give
+the same value.
 
+We then prove that the specification-level and executable implementations of
+the downward normalizing factor agree.
 \begin{lstlisting}
-theorem downwardNormalizingFactor_eq
-    {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k}
-    {n : (*@$\mathbb{N}$@*)}
-    (F : Sym2Flag (*@$\sigma$@*) n) :
-    downwardNormalizingFactor F.toFlag =
-    downwardNormalizingFactor_Sym2Flag F := ...
+theorem downwardNormalizingFactor_eq {k : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : Sym2FlagType k} {n : (*@$\mathbb{N}$@*)} (F : Sym2Flag (*@$\sigma$@*) n)
+    : downwardNormalizingFactor F.toFlag = downwardNormalizingFactor_Sym2Flag F := ...
 \end{lstlisting}
-This is the downward adequacy theorem: after decoding a concrete
-\lean{Sym2Flag} back to an abstract \lean{Flag}, the specification-level
-normalizing factor agrees with the computable one.  Thus a proof of an abstract
-downward coefficient can be reduced to a proof about
+After decoding a concrete \lean{Sym2Flag} back to an abstract \lean{Flag}, this
+adequacy theorem rewrites a goal about the specification-level coefficient as
+a goal about the executable function
 \lean{downwardNormalizingFactor\_Sym2Flag}.  For instance, for the concrete
 flag corresponding to \(\fbarPthreebull\), where \(\sigma\) is the one-vertex
 flag type, Lean proves \(q_\sigma(\fbarPthreebull)=2/3\) by the same
@@ -2678,15 +2686,17 @@ example : downwardNormalizingFactor Sym2Flag_3_1_0_1.toFlag = 2 / 3 := by
   native_decide
 \end{lstlisting}
 Here the rewrite changes the goal to the closed computable equality
-\[
-  \text{\lean{downwardNormalizingFactor\_Sym2Flag}}\,
-    \text{\lean{Sym2Flag\_3\_1\_0\_1}}
-  = 2 / 3,
-\]
-and \lean{native\_decide} evaluates that finite computation.  The generated
-downward lemmas use this coefficient together with the unlabeling operation to
-rewrite an expression of the form \(\llbracket A\rrbracket_0\) into the
-corresponding scalar multiple of an empty-type basis flag. \gw{I'm here.}
+\begin{lstlisting}
+  downwardNormalizingFactor_Sym2Flag  Sym2Flag_3_1_0_1  =  2 / 3
+\end{lstlisting}
+and \lean{native\_decide} evaluates that finite computation.  The reflected
+normalizing factor makes the downward operator executable on concrete 
+flags.  The reflection layer computes the underlying unlabeled flag and its
+normalizing factor; the adequacy theorem then certifies their product as the
+abstract downward image.  By linearity, finite flag expressions can be handled
+term by term, so the downward identities needed in the certificate proofs of
+\Cref{sec:flagmatic} can be established computationally rather than by separate
+counting arguments.
 
 \subsection{Elaboration-Time Theorem Generation}
 
