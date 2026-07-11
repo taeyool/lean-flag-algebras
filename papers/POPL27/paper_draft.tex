@@ -2780,14 +2780,15 @@ uses that table to automate complete flag-algebra arguments.
 \section{Automating Flag-Algebra Proofs}
 \label{sec:flagmatic}
 
-A \emph{flag-algebra certificate} is a finite witness for a proposed density
-inequality $P \leq_{\mathcal H} c\cdot\mathbf{1}$.  It specifies concrete flags,
-rational coefficients, and positive semidefinite matrices arranged so that,
-after all terms are expanded at a common host size, the difference
-$c\cdot\mathbf{1}-P$ is a sum of downward-averaged positive semidefinite
-quadratic forms and a remainder with non-negative coefficients.  Checking this
-decomposition proves the inequality.  Flagmatic~\cite{vaughan2013flagmatic}
-uses semidefinite programming to search for such finite witnesses.
+All certificate problems considered in this section have the same form: among
+graphs avoiding a fixed forbidden graph, prove that the density of a target
+graph $P$ is at most some constant $c$.  A \emph{flag-algebra certificate} is a
+finite package of algebraic data that makes this proposed bound checkable.  It lists
+the flags and rational matrices needed to rewrite the difference between the
+claimed bound and the target density as a combination of quantities already
+known to be non-negative.  Verifying this finite calculation is enough to prove
+the bound for the entire graph class.  Flagmatic~\cite{vaughan2013flagmatic}
+uses semidefinite programming to search for such certificates.
 
 This section presents a compiler that turns this data into a self-contained
 Lean proof.  For each certificate, it generates the required flags, asks Lean
@@ -2797,8 +2798,8 @@ search proposes the data, while Lean checks every mathematical obligation; no
 manual copying of coefficients or reconstruction of the finite bookkeeping is
 required.
 
-We first explain why positive semidefinite matrices provide the non-negative
-terms in a certificate.  We then identify the four obligations common to our
+We first explain how positive semidefinite matrices justify the inequalities
+encoded by a certificate.  We then identify the four obligations common to our
 examples and show how the compiler discharges them.  Finally, we state the
 trust model and evaluate the compiler on seven certificates.
 
