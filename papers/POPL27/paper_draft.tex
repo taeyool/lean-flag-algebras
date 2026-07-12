@@ -2956,13 +2956,17 @@ four recurring parts of that verification and how the compiler generates them.
 % subsection absorbed the former proof-skeleton and per-part subsections.
 
 We organize the compiler around a four-part proof skeleton, with one part
-for each obligation in turning a certificate into a verified proof.  In the
-order in which a finished proof presents them, the parts are:
+for each obligation in turning a certificate into a verified proof.
+The compiler uses the reflection machinery of \Cref{sec:reflection} to make
+the finite bookkeeping involving flags and densities executable and
+checkable.  We explain this connection in detail under Part~1 below.  The four
+parts are:
 
 \begin{enumerate}
-  \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
-    (only those that are free of the chosen forbidden graph), together with
-    the pair-density and typed-multiplication identities used for rewriting.
+  \item \textbf{Flags and density data.}  The named flags and flag-algebra
+    basis elements of the sizes the proof needs (only those that are free of
+    the chosen forbidden graph), together with the proved pair-density and
+    typed-multiplication identities used for rewriting.
   \item \textbf{Certificate matrices and basis-element vectors.}  For each
     subflag type $\sigma_t$, a rational matrix $M_t$ paired with a list of
     $\sigma_t$-flags $E_{t,i}$; their basis elements
@@ -2973,78 +2977,130 @@ order in which a finished proof presents them, the parts are:
     dropping the contributions that contain a copy of the forbidden graph.
   \item \textbf{The main theorem.}  The bound $[P] \leq_{\mathcal{H}}
     c\cdot\mathbf{1}$, discharged by adding each block's quadratic form,
-    expanding the unit at host size, reducing every downward-averaged product,
+    reducing every downward-averaged product, expanding the unit at host size,
     normalizing, and closing by non-negativity.
 \end{enumerate}
 
-The compiler assigns each part to a small set of reusable proof-producing
+The compiler handles each part with a small set of reusable proof-producing
 components.  Consequently, a new theorem primarily requires new certificate
 data rather than a new proof architecture.
 
-The script \lean{flagmatic\_to\_lean.py} turns a Flagmatic certificate into a
-self-contained Lean file that compiles as a complete proof, with no \lean{sorry}
-gaps:
+For the certificate shapes supported by the current implementation, this
+four-part process is exposed through the \lean{gen-skeleton} subcommand of
+\lean{flagmatic\_to\_lean.py}:
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton <cert>.json <target>.lean
 \end{lstlisting}
-The diagnostic subcommand \lean{inspect} checks that the certificate can be
-parsed and that its flags can be matched to Lean's enumeration before
-compilation.  The generated file fills the four parts of
-\Cref{sec:flagmatic-shape}; we take them in turn and then show the assembled
-output.
+Here \lean{<cert>.json} is a placeholder for a Flagmatic certificate file, which
+identifies the target and forbidden graphs and contains the proposed bound,
+the types and flags used by each SDP block, and the rational matrix data.  The
+argument \lean{<target>.lean} is the path at which the script should write the
+generated Lean source file.  The name
+\lean{gen-skeleton} refers to the fixed four-part proof skeleton above; for the
+supported cases, the command fills in all four parts rather than leaving an
+incomplete template.  In particular, the output file contains the flag and
+density generation commands of Part~1, the matrices and basis-element vectors
+of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
+proof of the bound in Part~4.  The resulting file compiles with no
+\lean{sorry} gaps.
+
+For example, when run from the \lean{LeanFlagAlgebras/Flagmatic} directory, the
+command
+\begin{lstlisting}[language={}]
+python flagmatic_to_lean.py gen-skeleton \
+  Certificates/mantel_cert.json Mantel.lean \
+  --namespace Mantel --force
+\end{lstlisting}
+generates \lean{Mantel.lean} from the Mantel certificate.  The optional
+\lean{--namespace Mantel} argument selects the namespace of the generated
+declarations, and \lean{--force} permits the script to replace an existing
+target file.  Before generating the file, one can run the separate diagnostic
+command
+\begin{lstlisting}[language={}]
+python flagmatic_to_lean.py inspect Certificates/mantel_cert.json
+\end{lstlisting}
+to check that the certificate can be parsed and that its flags can be matched
+to Lean's enumeration.  This command does not generate a proof file; it prints
+the resulting identifier mapping and the Part~1 generation commands.  We now
+explain the generated Lean file one part at a time before showing an abridged
+assembled output.
 
 \paragraph{Flags and density data (Part~1).}
-Part 1 defines the certificate's forbidden graph as a \lean{Sym2Graph} term and
-selects one of two generation routes.  Complete-graph forbids use the
-\lean{generate\_pruned\_*} commands, while a general graph forbidden as a
-subgraph uses the parallel \lean{generate\_subgraph\_free\_*} commands.  Both
-routes enumerate the surviving flags, prove their pair-density identities, and
-then prove their product expansions, supplying the subflag-to-host bookkeeping
-used by the main proof.  All of this runs inside Lean by the machinery of
-\Cref{sec:reflection}, so nothing is read from a precomputed table.
+This is where the reflection layer of \Cref{sec:reflection} enters the
+compiler.  Part~1 defines the certificate's forbidden graph as a
+\lean{Sym2Graph} term and selects one of two generation routes.  Complete-graph
+forbids use the \lean{generate\_pruned\_*} commands, while a general graph
+forbidden as a subgraph uses the parallel
+\lean{generate\_subgraph\_free\_*} commands.  Both routes enumerate the
+surviving concrete flags during elaboration.  For every retained isomorphism
+class, the commands emit a concrete quotient flag---a
+\lean{Sym2EmptyTypedFlag} at the empty type or a \lean{Sym2Flag} at a nonempty
+type---and its decoded specification-level \lean{Flag} and
+\lean{FlagAlgebra} basis element.
+
+The finite downward coefficients and pair densities are evaluated on the
+concrete flags.  The adequacy theorems from \Cref{sec:reflection} turn those
+evaluations into proved statements about the decoded flags.  The multiplication
+generator then derives the required product expansions from the general
+specification-level multiplication theorem, the proved pair-density identities,
+and the completeness theorem for the generated flag set.  Thus Part~1 leaves
+the rest of the proof with specification-level basis elements and rewrite
+theorems, although reflection performed the finite coefficient computations
+behind them.  These commands compute the enumerations and density data during
+elaboration; they do not load precomputed graph, flag, density, or
+multiplication tables.
 
 \paragraph{Certificate matrices (Part~2).}
-Part 2 discharges the positive-semidefiniteness the method depends on.  The
-solver supplies each $M_t$; re-establishing that each is PSD is exactly Lean's
-task.  Rather than reason about numerically approximated eigenvalues, we certify
-PSD from a rational factorization $M_t = L D L^\top$ with $D$ diagonal and
-non-negative.  Lean checks the diagonal entries by exact rational arithmetic
-and the matrix identity with \lean{decide +kernel}, without eigenvalues or
-floating-point arithmetic, and then lifts the result from $\mathbb{Q}$ to
-$\mathbb{R}$, the scalar field of the flag algebra.  A wrong factorization makes one of these
-checks fail; this is the one place where we deliberately pay for in-kernel
-evaluation.
+With the flags and their rewrite theorems in place, Part~2 discharges the
+positive-semidefiniteness obligations.  The certificate supplies rational
+matrices $Q'_t$ and $R_t$, from which the
+translator constructs $M_t=R_tQ'_tR_t^\top$.  It then computes an exact rational
+factorization $M_t=L_tD_tL_t^\top$ and emits $M_t,L_t$, and the diagonal of
+$D_t$.  Lean proves positive semidefiniteness from these emitted witnesses: the
+\lean{psd\_real\_ldlt} tactic checks diagonal non-negativity by
+\lean{fin\_cases} and \lean{norm\_num}, checks the rational matrix identity with
+\lean{decide +kernel}, and applies the proved lemma that transports the result
+to $\mathbb{R}$, the scalar field of the flag algebra.  No eigenvalue or
+floating-point calculation enters this check.  A wrong reconstruction or
+factorization therefore makes the generated proof fail.
 
 \paragraph{Lifting the objective (Part~3).}
-The densities live at the host size $N$, but the objective basis element is not
-always represented by a flag of that size, which splits the certificates into two branches.  When it is
-smaller (\emph{Branch~B}: Mantel, $K_4$- and
-$K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K} rewrites it over the
-$N$-vertex $\mathcal{H}$-free flags, dropping the forbidden host terms;
-when it is already host-size (\emph{Branch~A}: the $C_4$-density bound,
+The first two parts provide the algebraic data used by the certificate.  Part~3
+aligns the objective with that data when necessary.  The certificate identities
+are expressed at the host size $N$, but the objective basis element is not
+always represented by a flag of that size.  This splits the certificates into
+two branches.  When the objective is smaller (\emph{Branch~B}: Mantel, $K_4$- and
+$K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K hmem} rewrites it over
+the $N$-vertex $\mathcal{H}$-free flags, dropping the forbidden host terms;
+here \lean{hmem} proves that the concrete forbidden flag represents a member
+of the ordinary forbidden-graph condition.  When it is already host-size
+(\emph{Branch~A}: the $C_4$-density bound,
 Erd\H{o}s pentagon) this step is empty.  The non-complete subgraph-forbid route
 uses the corresponding \lean{flag\_expand\_hfree\_subgraph} tactic.
 
 \paragraph{The main theorem (Part~4).}
-The standard upper-bound move is to add one or more PSD quadratic forms to the
-target basis element and then check that the augmented algebra element is
+Part~4 assembles the outputs of the preceding parts.  The standard upper-bound
+move is to add one or more PSD quadratic forms to the target basis element and
+then check that the augmented algebra element is
 $\leq_{\mathcal{H}} c\cdot\mathbf{1}$.  Each addition is performed by
-\lean{forbidLE\_add\_QuadraticForm}:
+\lean{forbidLEWith\_add\_QuadraticForm}:
 \begin{lstlisting}
-theorem forbidLE_add_QuadraticForm
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef) (v : FlagAlgebraVec sigma n)
-    : (f <=[F_forbid] g) -> f <=[F_forbid] g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*) := ...
+theorem forbidLEWith_add_QuadraticForm
+    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef)
+    (v : FlagAlgebraVec sigma n)
+    : forbidLEWith C f g ->
+      forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
 \end{lstlisting}
-iterated once per type to build a transitive chain of additions.  The rest of the
-body performs the check.  The unit is expanded to host size by
+iterated once per type to build a transitive chain of additions.  After the
+quadratic forms are expanded, the downward-averaged products are discharged by
+\lean{reduce\_downward\_flagmul}.  This tactic recognizes each
+summand $\llbracket c\,(f\cdot g)\rrbracket$, where $f=[F]$ and $g=[G]$ are
+basis elements, and rewrites it with the generated product identity
+\lean{flagMul\_<F>\_<G>}.  The unit is then expanded to host size by
 \lean{expand\_one\_hfree\_at N K} (rewriting $\mathbf{1}$ as the sum of
 $N$-vertex \(\mathcal{H}\)-free flags), or by
 \lean{expand\_one\_hfree\_at\_subgraph N K} on the general subgraph-forbid
-route.  The downward-averaged products
-are discharged by \lean{reduce\_downward\_flagmul}.  This tactic recognizes each
-summand $\llbracket c\,(f\cdot g)\rrbracket$, where $f=[F]$ and $g=[G]$ are
-basis elements, and rewrites it with the generated product identity
-\lean{flagMul\_<F>\_<G>}.  The resulting equality is normalized
+route.  The resulting algebraic expression is normalized
 by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an index-guided sort of the
 reordered sum.
 Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
@@ -3053,8 +3109,9 @@ distributes an arbitrary positive homomorphism over the sum, splits with
 \lean{positiveHom\_basisVector\_ge\_zero}.
 
 \paragraph{The translator.}
-The script translates certificate data but does not establish its correctness;
-that remains Lean's task.  A certificate names its flags as short strings
+The four parts above describe the Lean output.  The external script that
+produces this output is not verified; instead, every mathematical claim it
+emits must be accepted by Lean.  A certificate names its flags as short strings
 like \texttt{3:121323} (a triangle: three vertices with edges $12$, $13$, $23$),
 so the script parses each one and isomorphism-matches it against a canonical
 enumeration that reproduces the order of Lean's flag generators.  The index it
@@ -3071,10 +3128,13 @@ Assembled, the file the script emits for Mantel ($K_3$-free, $N=3$, Branch~B) is
 abridged:
 \begin{lstlisting}
 def K3 : Sym2Graph 3 := completeSym2Graph 3              -- Part 1: flags + data
+generate_pruned_forbid_free_empty_typed_flags 2 K3
 generate_pruned_forbid_free_empty_typed_flags 3 K3
+generate_pruned_forbid_free_flags 2 1 0 K3
 generate_pruned_forbid_free_flags 3 1 0 K3
 generate_pruned_flag_pair_density_theorems 2 3 1 0 K3
 generate_pruned_forbid_free_mul_theorems 2 3 1 0 K3
+  (completeGraph (Fin 3)) (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 def M  : Matrix (Fin 2) (Fin 2) Q := !![1/2, -1/2; -1/2, 1/2]  -- Part 2: matrix + PSD
 def dM : Fin 2 -> Q := ![1/2, 0]
@@ -3085,24 +3145,29 @@ def sigma : FlagType (Fin 1) := FlagType_1_0
 noncomputable def v : FlagAlgebraVec sigma 2 := ![FlagAlgebra_2_1_0_0, FlagAlgebra_2_1_0_1]
 
 lemma mantel_expand_under_forbid                         -- Part 3: objective lift (Branch B)
-    : FlagAlgebra_2_0_0_1 =[K3] ... := by
-  flag_expand_hfree 3 K3
+    : FlagAlgebra_2_0_0_1 =[completeGraph (Fin 3)] ... := by
+  flag_expand_hfree 3 K3 (completeSym2Graph_finFlag_mem_forbiddenFlags 3)
 
 theorem mantel_flagAlgebra                               -- Part 4: main theorem
-    : FlagAlgebra_2_0_0_1 <=[K3] (1/2 : R) (*@$\bullet$@*) 1 := by
+    : FlagAlgebra_2_0_0_1 <=[completeGraph (Fin 3)] (1/2 : R) (*@$\bullet$@*) 1 := by
   have quadraticForm_trans : ... := by                   -- add the block's PSD form
-    apply forbidLE_add_QuadraticForm M_real M_real_posSemidef v; ...
-  apply forbidLE_trans quadraticForm_trans
-  rw [forbidLE_rw_left_add_right mantel_expand_under_forbid]  -- lift objective (Branch B)
+    apply forbidLEWith_add_QuadraticForm M_real M_real_posSemidef v; ...
+  apply forbidLEWith_trans quadraticForm_trans
+  ...                                                     -- rewrite the unit expansion
+  rw [forbidLEWith_rw_left_add_right mantel_expand_under_forbid]
   simp [...]                                              -- expand the quadratic form
   reduce_downward_flagmul                                 -- reduce downward products
   expand_one_hfree_at 3 K3                                -- expand the unit to host size
   flagsum_ac_sort_rhs_pipeline                            -- normalize the reordered sum
-  apply forbidLE_of_le; flag_nonneg                      -- close by non-negativity
+  apply forbidLEWith_of_le; flag_nonneg                  -- close by non-negativity
 \end{lstlisting}
-(The forbid bracket \lean{<=[K3]} abbreviates the \lean{FinFlag} built from
-\lean{K3}.)  A Branch~A certificate drops the Part~3 lemma; extra SDP blocks add
-one matrix and one \lean{forbidLE\_add\_QuadraticForm} call each.
+Here \lean{K3} is the concrete \lean{Sym2Graph} consumed by the generators,
+whereas the theorem is stated using the specification-level graph
+\lean{completeGraph (Fin 3)}.  The final membership argument in the generation
+and expansion calls supplies the bridge required by the ordinary
+forbidden-graph framework.  A Branch~A certificate drops the Part~3 lemma;
+extra SDP blocks add one matrix and one
+\lean{forbidLEWith\_add\_QuadraticForm} call each.
 
 \subsection{Trust Model}
 \label{sec:flagmatic-trust}
