@@ -965,7 +965,7 @@ Two classical results illustrate how this looks in flag algebra language.
 % generally, if $Q$ is PSD and $e_1,\ldots,e_r\in\mathcal{A}^\sigma$, then every
 % positive homomorphism sends
 % \[
-%   \sum_{i,j=1}^r Q_{ij}\,e_i e_j
+%   \sum_{i,j=1}^r Q_{ij}\,e_i\cdot e_j
 % \]
 % to the real quadratic form $v^\top Q v$ for
 % $v=(\phi(e_1),\ldots,\phi(e_r))$, which is always non-negative.  So the
@@ -1109,7 +1109,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 %   For any flag type $\sigma$, elements $e_1,\ldots,e_r \in \mathcal{A}^\sigma$,
 %   and positive semidefinite matrix $Q \in \mathbb{R}^{r\times r}$,
 %   \[
-%     \Bigl\llbracket \sum_{i,j=1}^r Q_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma
+%     \Bigl\llbracket \sum_{i,j=1}^r Q_{ij}\, e_i\cdot e_j \Bigr\rrbracket_\sigma
 %     \;\in\; \mathcal{C}.
 %   \]
 % \end{corollary}
@@ -1128,7 +1128,7 @@ Starting from \eqref{eq:k2-expansion}, we add two non-negative terms and simplif
 % \[
 %   c \cdot \mathbf{1} - x_0
 %   \;=\;
-%   \Bigl\llbracket \sum_{i,j} Q_{ij}\, e_i\, e_j \Bigr\rrbracket_\sigma,
+%   \Bigl\llbracket \sum_{i,j} Q_{ij}\, e_i\cdot e_j \Bigr\rrbracket_\sigma,
 % \]
 % then $c\cdot\mathbf{1}-x_0\in\mathcal{C}$, so
 % $\phi(x_0) \leq c$ for every positive homomorphism
@@ -2815,32 +2815,73 @@ decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data,
 while our compiler reconstructs the decomposition in Lean and proves that
 every term in it is non-negative.
 
-Mantel's theorem gives a small example of the whole idea.  Fix one labeled
-vertex, and let $a$ and $b$ be the two flags obtained by adding one unlabeled
-vertex: in $a$ the two vertices are adjacent, whereas in $b$ they are not.  The
-square $(a-b)^2$ is non-negative under every positive homomorphism because it
-evaluates to an ordinary real square.  Writing $G_{\mathrm{one}}$ for the
-three-vertex graph with exactly one edge, expansion in the triangle-free
-algebra gives
+Mantel's theorem gives a small example of the whole idea.  Fix the one-vertex
+type $\sigma$, and let $a:=\fKtwobull$ and $b:=\fbarKtwobull$ be the two flags
+obtained by adding one unlabeled vertex: in $a$ the two vertices are adjacent,
+whereas in $b$ they are not.  For every positive homomorphism
+$\phi\in\poshom{\sigma}$,
+\[
+  \phi\bigl((a-b)^2\bigr)
+  = \phi(a-b)\,\phi(a-b)
+  = \bigl(\phi(a)-\phi(b)\bigr)^2
+  \geq 0.
+\]
+The first equality uses preservation of multiplication, and the second uses
+preservation of addition and scalar multiplication.  This makes the source of
+non-negativity explicit: after applying $\phi$, the flag-algebra square becomes
+an ordinary square of real numbers.
+
+We next compute what this square contributes after removing the label.  Let
+$G_0:=\fbarKthree$, $G_1:=\fbarPthree$, and $G_2:=\fPthree$ denote,
+respectively, the three-vertex graphs with zero, one, and two edges.  These are
+the three triangle-free graphs on three vertices.  Expanding the unit and the
+edge $K_2$ at size three, and omitting the triangle term that has density zero
+under the $K_3$-free condition, gives
+\[
+  \mathbf 1 = G_0+G_1+G_2,
+  \qquad
+  K_2 = \tfrac13G_1+\tfrac23G_2.
+\]
+The coefficients in the second identity are simply the edge densities of the
+three host graphs: $0$, $1/3$, and $2/3$.
+
+It remains to expand the square and apply the downward operator.  Write
+$(a-b)^2=a^2-2a\cdot b+b^2$.  In a rooted three-vertex graph, if the two unlabeled
+vertices have the same adjacency to the labeled vertex, either $a^2$ or $b^2$
+has pair density $1$, giving coefficient $+1$.  If their adjacencies differ,
+$a\cdot b$ has pair density $1/2$ (only one of the two assignments puts the adjacent
+vertex in the $a$ position), so $-2a\cdot b$ gives coefficient $-1$.  The downward
+operator averages these coefficients over the three possible choices of the
+labeled vertex.  For $G_0$, all three choices give $+1$; for each of $G_1$ and
+$G_2$, one choice gives $+1$ and two give $-1$.  Including the factor $1/2$
+therefore yields
+\[
+  \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
+  = \tfrac12G_0-\tfrac16G_1-\tfrac16G_2.
+\]
+Combining the two expansions now gives the desired decomposition:
 \[
   \tfrac12\cdot\mathbf 1-K_2
-  =
-  \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_1
-  + \tfrac13 G_{\mathrm{one}}.
+  = \tfrac12G_0+\tfrac16G_1-\tfrac16G_2
+  = \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
+    + \tfrac13G_1.
 \]
-The first term remains non-negative after the label is removed by the downward
-operator (Theorem~\ref{thm:downward-nonneg}), and the second is non-negative
-because graph densities are non-negative.  The right-hand side is therefore
-non-negative, proving $K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.  Thus, in this
-smallest example, the certificate is simply a square together with the
-non-negative remainder left by its expansion.
+The downward square is non-negative by
+Theorem~\ref{thm:downward-nonneg}, and $G_1$ is non-negative because graph
+densities are non-negative.  Hence the right-hand side is non-negative, proving
+$K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.  Even this smallest certificate requires
+expanding a product, computing a downward average, expanding the objective and
+the unit to a common host size, and collecting coefficients.  These are exactly
+the calculations that become impractical in larger certificates and that our
+compiler automates.
 
-Larger proofs use weighted sums of many such squares.  For flags
+The same idea scales by replacing one square with weighted sums of many
+squares.  For flags
 $e_1,\ldots,e_r$ of the same type, collect them into a vector
 $v=(e_1,\ldots,e_r)$.  A symmetric matrix $M$ is \emph{positive semidefinite}
 (PSD) if $x^\top Mx\geq 0$ for every real vector $x$.  Consequently, when $M$
 is PSD, the flag-algebra quadratic form
-$\langle v,Mv\rangle=\sum_{i,j}M_{ij}e_i e_j$ is non-negative under every
+$\langle v,Mv\rangle=\sum_{i,j}M_{ij}\,(e_i\cdot e_j)$ is non-negative under every
 positive homomorphism: evaluating the flags turns it into the ordinary real
 quadratic form $x^\top Mx$.  The downward operator then transfers this
 non-negativity from the labeled algebra to the unlabeled one.
@@ -3096,8 +3137,8 @@ bounds we describe below; the remaining cases appear in the table.
 This is the smallest and most transparent case.  Its single block is small
 enough to write the certificate by hand.  As explained in
 \Cref{sec:flagmatic-background}, the PSD block is the explicit square
-$\llbracket \tfrac12(a-b)^2\rrbracket_1$; together with the non-negative
-remainder $\tfrac13G_{\mathrm{one}}$, it proves
+$\llbracket \tfrac12(a-b)^2\rrbracket_\sigma$; together with the non-negative
+remainder $\tfrac13G_1$, it proves
 $K_2 \leq \tfrac12\cdot\mathbf{1}$ without an external solver.  It therefore
 serves as the simplest validation of the compiler.
 
@@ -3283,7 +3324,7 @@ convergence machinery.
 The active \lean{MantelTheorem/} directory also contains two small
 flag-algebraic inequalities proved with the same basic infrastructure:
 \lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
-$K_3 \geq K_2(2K_2-\mathbf{1})$, and
+$K_3 \geq K_2\cdot(2K_2-\mathbf{1})$, and
 \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
 $O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
 These results are not needed for the pentagon proof, but they demonstrate
