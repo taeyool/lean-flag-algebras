@@ -439,14 +439,12 @@ generalization beyond hereditary constraints.
 semantic treatment of forbidden-graph assumptions.
 \Cref{sec:obstacles} describes the main formalization obstacles:
 quotient eliminators, dependent-type transports, function extensionality, and
-\lean{Fintype}-instance ambiguity.
+\lean{Fintype}-instance ambiguity, together with the bijective proof pattern
+that emerged for density equalities.
 \Cref{sec:reflection,sec:flagmatic} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the automation layer, elaboration-time theorem generation,
 and the verified results.
-\Cref{sec:proof-style} records a recurring proof pattern from the case
-studies: density equalities are proved by explicit bijections between finite
-sample spaces.
 \Cref{sec:unsure,sec:lessons} discuss limitations and
 lessons for future formalizations, and \Cref{sec:related,sec:conclusion}
 give related work and conclusions.
@@ -794,9 +792,10 @@ and the choice of representatives for $[F_1]$ and $[F_2]$.  The zero-space
 quotient ensures neither matters: the product is independent of $\ell$ and
 respects isomorphism classes of the input flags.  Extending bilinearly to all
 of $\mathcal{A}^\sigma$ gives a commutative, associative $\mathbb{R}$-algebra.
-The unit of this algebra is the $\sigma$-flag $(\sigma, \operatorname{id}_{[k]})$ of size $k$,
-in which the underlying graph is $\sigma$ itself and every vertex is labeled;
-we write it as $\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
+The unit of this algebra is the basis element represented by the $\sigma$-flag
+$(\sigma, \operatorname{id}_{[k]})$ of size $k$, in which the underlying graph
+is $\sigma$ itself and every vertex is labeled; we write it as
+$\mathbf{1}_\sigma$, and simply as $\mathbf{1}$ when
 $\sigma=\emptyset$.
 
 \begin{example}[Multiplication of $K_2^\bullet$ and $\overline{K_2}^\bullet$]
@@ -838,7 +837,7 @@ consider increasing sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
 $\mathcal{C}^\sigma$ then consists of the flag-algebra elements
-whose density at every such limiting object is non-negative, and establishing
+whose value at every such limiting object is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
 to do.
 
@@ -855,7 +854,7 @@ Fix a flag type $\sigma$.  A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
 $\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
-number to each flag algebra expression, respects addition, multiplication, and the unit, and
+number to each flag-algebra element, respects addition, multiplication, and the unit, and
 never assigns a negative value to a flag basis element.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
@@ -920,7 +919,7 @@ reduces to establishing membership in $\mathcal{C}^\emptyset$, as the following
 lemma shows.
 
 \begin{lemma}\label{lem:semantic-bound}
-  If $P \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
+  If $[P] \leq c \cdot \mathbf{1}$ for some $c \in \mathbb{R}$, then
   $\tdensity{P}{\mathcal{H}} \leq c$.
 \end{lemma}
 \begin{proof}
@@ -933,8 +932,8 @@ lemma shows.
   subsequence $\{p^{G_{k_j}}\}$; by \Cref{thm:convergent-hom}(a) its limit is some
   $\phi \in \poshom{\emptyset}$.  Since $\phi$ is the pointwise limit of
   $\{p^{G_{k_j}}\}$, we have
-  $\phi(P) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
-  $P \leq c \cdot \mathbf{1}$ means $\phi(P) \leq c$ for every
+  $\phi([P]) = \lim_j \den{P}{G_{k_j}} \geq c + \varepsilon > c$.  But
+  $[P] \leq c \cdot \mathbf{1}$ means $\phi([P]) \leq c$ for every
   $\phi \in \poshom{\emptyset}$, a contradiction.
 \end{proof}
 
@@ -1008,11 +1007,11 @@ be the probability that a uniformly random injection $[k]\hookrightarrow V(M)$
 recovers the same $\sigma$-typed flag as $F$.
 The \emph{downward operator}
 $\llbracket\cdot\rrbracket_\sigma:\mathcal{A}^\sigma\to\mathcal{A}^\emptyset$
-is then defined on flags by
+is then defined on flag basis elements by
 \[
-  \llbracket F \rrbracket_\sigma
+  \llbracket [F] \rrbracket_\sigma
   \;:=\;
-  q_\sigma(F)\cdot F|_\emptyset,
+  q_\sigma(F)\cdot [F|_\emptyset],
 \]
 extended linearly to all of $\mathcal{A}^\sigma$.
 
@@ -1066,13 +1065,13 @@ Equation~\eqref{eq:ensemble} implies that the downward operator $\llbracket \cdo
   Since $\phi_0$ was arbitrary, $0 \leq \llbracket f \rrbracket_\sigma$.
 \end{proof}
 
-A flag algebra proof of $P \leq c\cdot\mathbf{1}$ typically proceeds as follows:
+A flag algebra proof of $[P] \leq c\cdot\mathbf{1}$ typically proceeds as follows:
 first, one exhibits $f \in \mathcal{A}^\sigma$ with $0 \leq_\sigma f$ for some
 non-empty flag type $\sigma$ (e.g., a square $f = g^2$) and applies
 \Cref{thm:downward-nonneg} to obtain $0 \leq \llbracket f \rrbracket_\sigma$;
-then, one adds $\llbracket f \rrbracket_\sigma$ to $P$ or an expansion of $P$
-at an appropriate size, and uses non-negativity of flags and
-\eqref{eq:sum-to-one} to conclude $P \leq c\cdot\mathbf{1}$.
+then, one adds $\llbracket f \rrbracket_\sigma$ to $[P]$ or an expansion of $[P]$
+at an appropriate size, and uses non-negativity of flag basis elements and
+\eqref{eq:sum-to-one} to conclude $[P] \leq c\cdot\mathbf{1}$.
 The following example illustrates this pattern.
 
 \begin{example}[Mantel's theorem via flag algebras]\label{ex:mantel-fa}
@@ -1648,7 +1647,7 @@ Here $\to_0$ denotes the type of finitely supported functions, and \lean{Finsupp
 
 Next, we define the zero space $\mathcal{Z}^\sigma$.  The auxiliary function
 \lean{flagExpansion F}~$\ell$ is the Lean version of
-$\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G}\cdot G$, the expansion of
+$\sum_{G \in \mathcal{F}^\sigma_\ell} \den{F}{G}\cdot \mathbf e_G$, the expansion of
 $F$ at size $\ell$.  We encode the generating element of
 Equation~\eqref{eq:zero-element} as \lean{zeroElement}, \lean{zeroSet} $\sigma$
 collects all elements of this form, and \lean{ZeroSpace} $\sigma$ is the
@@ -1809,8 +1808,7 @@ for every finite \(\sigma\)-flag \(F\),
 Mathematically, a positive homomorphism is an
 \(\mathbb{R}\)-algebra homomorphism
 \(\phi:\mathcal{A}^\sigma\to\mathbb{R}\) such that
-\(\phi(F)\ge 0\) for every finite \(\sigma\)-flag \(F\), viewed as a basis
-element of the flag algebra.  The Lean definition follows this sentence almost
+\(\phi([F])\ge 0\) for every finite \(\sigma\)-flag \(F\).  The Lean definition follows this sentence almost
 literally:
 \begin{lstlisting}
 abbrev Hom {n(*@$_0$@*) : (*@$\mathbb{N}$@*)} ((*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))) :=
@@ -1828,7 +1826,7 @@ homomorphisms from \lean{FlagAlgebra} to \(\mathbb{R}\), with the flag type
 construction.  Mathematically, we read it in the usual set-comprehension form
 \[
   \{\phi\in \operatorname{Hom}(\mathcal{A}^\sigma,\mathbb{R})
-    \mid \phi(F)\ge 0
+    \mid \phi([F])\ge 0
     \text{ for every }F\in\mathcal{F}^{\sigma}\}.
 \]
 In other words, the only extra condition on an algebra homomorphism is the
@@ -1868,16 +1866,16 @@ Both directions require nontrivial formalization work.  In part (a), one must
 show that the limit \(a\) of a flag sequence \(s\) satisfies all algebraic
 properties of a positive homomorphism, including details that informal proofs
 leave implicit.  Part (b) goes in the opposite direction.  Starting from a
-positive homomorphism \(\phi\), the proof uses the values \(\phi(G)\) to put a
+positive homomorphism \(\phi\), the proof uses the values \(\phi([G])\) to put a
 probability distribution on the finite \(\sigma\)-flags of each sufficiently
-large size: a flag \(G\) is sampled with weight \(\phi(G)\).  These weights are
-indeed probabilities because \(\phi\) is non-negative on flags and satisfies the normalization
+large size: a flag \(G\) is sampled with weight \(\phi([G])\).  These weights are
+indeed probabilities because \(\phi\) is non-negative on flag basis elements and satisfies the normalization
 identity
 \[
-  \sum_{G\in\mathcal{F}^{\sigma}_{\ell}} \phi(G) 
-  = 
-  \phi\left(\sum_{G\in\mathcal{F}^{\sigma}_{\ell}} G\right) 
-  = 
+  \sum_{G\in\mathcal{F}^{\sigma}_{\ell}} \phi([G])
+  =
+  \phi\left(\sum_{G\in\mathcal{F}^{\sigma}_{\ell}} [G]\right)
+  =
   \phi(\mathbf{1}_\sigma)
   = 
   1.
@@ -1888,7 +1886,7 @@ One then samples an entire sequence
 \]
 where \(X_n\) is chosen from the distribution on flags of size \(n^2+n_0\).
 The key estimate says that, for each fixed test flag \(F\), the density
-\(\den{F}{X_n}\) is very likely to be close to \(\phi(F)\) once \(n\) is large.
+\(\den{F}{X_n}\) is very likely to be close to \(\phi([F])\) once \(n\) is large.
 Thus almost every sampled sequence has the limiting density profile prescribed
 by \(\phi\).  Selecting one such realization and calling it
 \(G_0,G_1,\ldots\) gives the deterministic flag sequence required by
@@ -1919,7 +1917,7 @@ The downward operator from \Cref{sec:background-downward} forgets the
 labels of a typed flag-algebra expression while keeping the correct averaging
 factor.  On a single flag the intended formula is
 \[
-  \llbracket F \rrbracket_\sigma = q_\sigma(F)\cdot F|_\emptyset.
+  \llbracket [F] \rrbracket_\sigma = q_\sigma(F)\cdot [F|_\emptyset].
 \]
 The formalization follows this formula, but it has to pass through the two
 quotients already introduced: first the quotient from concrete labeled graphs
@@ -1970,10 +1968,11 @@ noncomputable def downwardFlag {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$
 \end{lstlisting}
 
 The algebra-level operator is built in three steps.  First,
-\lean{downwardFlagVector} extends the single-flag map linearly from basis
-flags to arbitrary \(\sigma\)-typed \lean{FlagVector} terms.  Second,
-\lean{downwardFlagVectorQuot} sends the resulting empty-type flag vector into
-\(\emptyt\)-typed \lean{FlagAlgebra}.  Third, \lean{downward} turns this
+\lean{downwardFlagVector} extends the single-flag map linearly from flag basis
+vectors to arbitrary \(\sigma\)-typed \lean{FlagVector} terms.  Second,
+\lean{downwardFlagVectorQuot} quotients the resulting empty-type flag vector,
+producing an element of \lean{FlagAlgebra}~\(\emptyt\).  Third,
+\lean{downward} turns this
 representative-level construction into a function whose input is an element of
 the \(\sigma\)-typed quotient algebra, rather than a chosen
 \lean{FlagVector} representative.
@@ -2144,7 +2143,7 @@ Fix a forbidden graph \(H\), a flag type \(\sigma\), and elements
 homomorphism \(\phi_0\) such that, viewing graphs and \(\sigma\) as
 empty-type flag-algebra elements,
 \[
-  \phi_0(F)=0 \ \text{ for every graph } F \text{ containing } H
+  \phi_0([F])=0 \ \text{ for every graph } F \text{ containing } H
   \qquad\text{and}\qquad
   \phi_0(\sigma)>0,
 \]
@@ -2203,7 +2202,7 @@ specifying which ambient limiting objects are allowed.  The particular condition
 \lean{forbiddenCondition H} selects the \(H\)-free ones: it considers only
 positive homomorphisms \(\phi_0\) such that
 \[
-  \phi_0(A)=0
+  \phi_0([A])=0
   \qquad
   \text{for every empty-type flag } A
   \text{ whose graph contains } H \text{ as a subgraph}.
@@ -2270,7 +2269,7 @@ There are at least two ways to carry out a formal proof.  One is to proceed as a
 mathematician usually would: when a finite claim is needed, write a proof of
 that claim directly.  In the flag-algebra setting, this would mean proving, one
 by one, that two particular flags are isomorphic, that a certain density is a
-given rational number, or that a product of basis flags expands into a specified
+given rational number, or that a product of flag-algebra basis elements expands into a specified
 linear combination.  This is possible in principle, but it is the wrong scale:
 a single nontrivial application contains many such finite checks, and hand-proving each
 one would bury the mathematical argument under routine case analysis.
@@ -2700,8 +2699,8 @@ and \lean{native\_decide} evaluates that finite computation.  The reflected
 normalizing factor makes the downward operator executable on concrete
 flags.  The reflection layer computes the underlying unlabeled flag and its
 normalizing factor; the adequacy theorem then certifies their product as the
-abstract downward image.  By linearity, finite flag expressions can be handled
-term by term, so the downward identities needed in later flag-algebra proofs can
+abstract downward image.  By linearity, finite linear combinations of flag
+basis elements can be handled term by term, so the downward identities needed in later flag-algebra proofs can
 be established computationally rather than by separate counting arguments.
 
 \subsection{From Reflected Computations to Reusable Theorems}
@@ -2767,8 +2766,8 @@ this family includes the displayed value \(c=1/2\).  These evaluations are
 batched to avoid invoking the native compiler separately for every tuple.
 Finally, the multiplication
 command uses all of those coefficients to prove the product expansion
-\(F_1 \cdot F_2=\sum_G c_G\,G\) for every pattern pair.  Thus elaboration produces the
-basis flags, their unlabelings and downward coefficients, the density table,
+\([F_1] \cdot [F_2]=\sum_G c_G\,[G]\) for every pattern pair.  Thus elaboration produces the
+flags and their corresponding algebra basis elements, their unlabelings and downward coefficients, the density table,
 and the multiplication table, together with proofs of every entry.  Variants
 for a fixed forbidden graph first discard flags that cannot contribute and then
 perform the same computations on the surviving family.
@@ -2790,7 +2789,8 @@ All certificate problems considered in this section have the same form: among
 graphs avoiding a fixed forbidden graph, prove that the density of a target
 graph $P$ is at most some constant $c$.  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
-the flags and rational matrices needed to rewrite the difference between the
+the flags whose basis elements enter the proof, together with the rational
+matrices needed to rewrite the difference between the
 claimed bound and the target density as a combination of quantities already
 known to be non-negative.  Verifying this finite calculation is enough to prove
 the bound for the entire graph class.  Flagmatic~\cite{vaughan2013flagmatic}
@@ -2884,13 +2884,13 @@ the calculations that become impractical in larger certificates and that our
 compiler automates.
 
 The same idea scales by replacing one square with weighted sums of many
-squares.  For flags
-$e_1,\ldots,e_r$ of the same type, collect them into a vector
-$v=(e_1,\ldots,e_r)$.  A symmetric matrix $M$ is \emph{positive semidefinite}
+squares.  Choose flags $E_1,\ldots,E_r$ of the same type, let
+$e_i:=[E_i]\in\mathcal A^\sigma$ be their basis elements, and collect these
+algebra elements into a vector $v=(e_1,\ldots,e_r)$.  A symmetric matrix $M$ is \emph{positive semidefinite}
 (PSD) if $x^\top Mx\geq 0$ for every real vector $x$.  Consequently, when $M$
 is PSD, the flag-algebra quadratic form
 $\langle v,Mv\rangle=\sum_{i,j}M_{ij}\,(e_i\cdot e_j)$ is non-negative under every
-positive homomorphism: evaluating the flags turns it into the ordinary real
+positive homomorphism: evaluating the algebra elements turns it into the ordinary real
 quadratic form $x^\top Mx$.  The downward operator then transfers this
 non-negativity from the labeled algebra to the unlabeled one.
 
@@ -2908,12 +2908,12 @@ them into exact rational matrices.
 In general, the resulting certificate specifies an identity, modulo the
 $\mathcal H$-free condition, of the form
 \[
-  c\cdot\mathbf{1} - P
+  c\cdot\mathbf{1} - [P]
   \;=\;
   \sum_t \bigl\llbracket \langle v_t, M_t\, v_t\rangle \bigr\rrbracket_{\sigma_t}
-  \;+\; R,
+  \;+\; r,
 \]
-where every $M_t$ is PSD and $R$ has non-negative coefficients.  It records the
+where every $M_t$ is PSD and $r$ has non-negative coefficients.  It records the
 chosen flags, the rational matrices $M_t$, and the target-density data needed
 to state this identity.  Our compiler does not trust the certificate's derived
 density or multiplication tables: it recomputes them in Lean, proves the
@@ -2921,10 +2921,14 @@ matrices PSD, and checks the identity.  The rest of this section explains the
 four recurring parts of that verification and how the compiler generates them.
 
 
-\subsection{The Four-Part Proof Skeleton}
+\subsection{The Four-Part Compiler}
 \label{sec:flagmatic-shape}
+\label{sec:flagmatic-pipeline}
+\label{sec:flagmatic-gen}\label{sec:flagmatic-psd}\label{sec:flagmatic-expand}%
+\label{sec:flagmatic-close}\label{sec:flagmatic-script}% legacy aliases: this
+% subsection absorbed the former proof-skeleton and per-part subsections.
 
-We organize the recurring structure into a four-part skeleton, with one part
+We organize the compiler around a four-part proof skeleton, with one part
 for each obligation in turning a certificate into a verified proof.  In the
 order in which a finished proof presents them, the parts are:
 
@@ -2932,29 +2936,23 @@ order in which a finished proof presents them, the parts are:
   \item \textbf{Flags and density data.}  The flags of the sizes the proof needs
     (only those that are free of the chosen forbidden graph), together with
     the pair-density and typed-multiplication identities used for rewriting.
-  \item \textbf{Certificate matrices and flag vectors.}  For each subflag type
-    $\sigma_t$, a rational matrix $M_t$ paired with a vector $v_t$ of
-    $\sigma_t$-flags; together they form the quadratic form
+  \item \textbf{Certificate matrices and basis-element vectors.}  For each
+    subflag type $\sigma_t$, a rational matrix $M_t$ paired with a list of
+    $\sigma_t$-flags $E_{t,i}$; their basis elements
+    $e_{t,i}:=[E_{t,i}]$ form the vector $v_t$ and the quadratic form
     $\langle v_t, M_t\, v_t\rangle$.
-  \item \textbf{Lifting the objective (when needed).}  If the objective is
-    smaller than the host size, one auxiliary lemma first lifts it to host size,
+  \item \textbf{Lifting the objective (when needed).}  If the flag $P$
+    representing the objective is smaller than the host size, one auxiliary lemma first lifts $[P]$ to host size,
     dropping the contributions that contain a copy of the forbidden graph.
-  \item \textbf{The main theorem.}  The bound $P \leq_{\mathcal{H}}
+  \item \textbf{The main theorem.}  The bound $[P] \leq_{\mathcal{H}}
     c\cdot\mathbf{1}$, discharged by adding each block's quadratic form,
     expanding the unit at host size, reducing every downward-averaged product,
     normalizing, and closing by non-negativity.
 \end{enumerate}
 
-The next subsection exploits this structure by assigning each part to a small
-set of reusable proof-producing components.  Consequently, a new theorem
-primarily requires new certificate data rather than a new proof architecture.
-
-
-\subsection{Compiling Certificates into Lean Proofs}
-\label{sec:flagmatic-pipeline}
-\label{sec:flagmatic-gen}\label{sec:flagmatic-psd}\label{sec:flagmatic-expand}%
-\label{sec:flagmatic-close}\label{sec:flagmatic-script}% legacy aliases: this
-% subsection absorbed the former per-part subsections.
+The compiler assigns each part to a small set of reusable proof-producing
+components.  Consequently, a new theorem primarily requires new certificate
+data rather than a new proof architecture.
 
 The script \lean{flagmatic\_to\_lean.py} turns a Flagmatic certificate into a
 self-contained Lean file that compiles as a complete proof, with no \lean{sorry}
@@ -2986,13 +2984,13 @@ PSD from a rational factorization $M_t = L D L^\top$ with $D$ diagonal and
 non-negative.  Lean checks the diagonal entries by exact rational arithmetic
 and the matrix identity with \lean{decide +kernel}, without eigenvalues or
 floating-point arithmetic, and then lifts the result from $\mathbb{Q}$ to
-$\mathbb{R}$, where the flags live.  A wrong factorization makes one of these
+$\mathbb{R}$, the scalar field of the flag algebra.  A wrong factorization makes one of these
 checks fail; this is the one place where we deliberately pay for in-kernel
 evaluation.
 
 \paragraph{Lifting the objective (Part~3).}
-The densities live at the host size $N$, but the objective is not always a flag
-of that size, which splits the certificates into two branches.  When it is
+The densities live at the host size $N$, but the objective basis element is not
+always represented by a flag of that size, which splits the certificates into two branches.  When it is
 smaller (\emph{Branch~B}: Mantel, $K_4$- and
 $K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K} rewrites it over the
 $N$-vertex $\mathcal{H}$-free flags, dropping the forbidden host terms;
@@ -3002,7 +3000,7 @@ uses the corresponding \lean{flag\_expand\_hfree\_subgraph} tactic.
 
 \paragraph{The main theorem (Part~4).}
 The standard upper-bound move is to add one or more PSD quadratic forms to the
-target and then check that the augmented target is
+target basis element and then check that the augmented algebra element is
 $\leq_{\mathcal{H}} c\cdot\mathbf{1}$.  Each addition is performed by
 \lean{forbidLE\_add\_QuadraticForm}:
 \begin{lstlisting}
@@ -3017,13 +3015,14 @@ $N$-vertex \(\mathcal{H}\)-free flags), or by
 \lean{expand\_one\_hfree\_at\_subgraph N K} on the general subgraph-forbid
 route.  The downward-averaged products
 are discharged by \lean{reduce\_downward\_flagmul}.  This tactic recognizes each
-summand $\llbracket c\,(A\cdot B)\rrbracket$ and rewrites it with the generated
-product identity \lean{flagMul\_<A>\_<B>}.  The resulting equality is normalized
+summand $\llbracket c\,(f\cdot g)\rrbracket$, where $f=[F]$ and $g=[G]$ are
+basis elements, and rewrites it with the generated product identity
+\lean{flagMul\_<F>\_<G>}.  The resulting equality is normalized
 by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an index-guided sort of the
 reordered sum.
 Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
 distributes an arbitrary positive homomorphism over the sum, splits with
-\lean{add\_nonneg}, and discharges each leaf by
+\lean{add\_nonneg}, and discharges each basis-element leaf by
 \lean{positiveHom\_basisVector\_ge\_zero}.
 
 \paragraph{The translator.}
@@ -3146,7 +3145,7 @@ This is the smallest and most transparent case.  Its single block is small
 enough to write the certificate by hand.  As explained in
 \Cref{sec:flagmatic-background}, the PSD block is the explicit square
 $\llbracket \tfrac12(a-b)^2\rrbracket_\sigma$; together with the non-negative
-remainder $\tfrac13G_1$, it proves
+remainder $\tfrac13g_1$, it proves
 $K_2 \leq \tfrac12\cdot\mathbf{1}$ without an external solver.  It therefore
 serves as the simplest validation of the compiler.
 
@@ -3202,57 +3201,6 @@ Taken together, the construction of this section turns a Flagmatic certificate
 into a verified theorem with no manual intervention: the proof follows a fixed
 skeleton, the translator reconstructs it from the certificate alone, and Lean
 checks the result under the trust model stated above.
-
-
-\section{Proof-Style Observations}
-\label{sec:proof-style}
-
-The case studies produced one recurring proof-style observation worth
-separating from the engineering choices and the certificate-to-Lean
-construction.  We do not claim that it generalizes beyond formalizations of
-extremal combinatorics; we report it because the same pattern arose repeatedly.
-
-\paragraph{Density equalities want bijective justification.}
-The most common informal move in flag-algebra calculations is to say that
-two densities are equal because the two sampling procedures count the same
-objects after a reindexing.  In Lean we make this extensional argument
-explicit.  The proof first names the two sample spaces, fixes the
-\lean{Fintype} instances that will be used to count them, constructs an
-equivalence between the sample spaces, and only then simplifies the resulting
-rational equality.  A typical proof has the following shape:
-\begin{lstlisting}
-let S0 := setOfLabeledSubgraphListIsoHl G Hl0
-let S1 := setOfLabeledSubgraphListIsoHl G Hl1
-let hS0 : Fintype S0 := Fintype.ofFinite S0
-let hS1 : Fintype S1 := Fintype.ofFinite S1
-let h_iso : Equiv S0 S1 := ...
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso
-simp_all only [Set.toFinset_card]
-\end{lstlisting}
-
-This is the pattern used in \lean{flagDensity\_permute} to show that
-permuting the order of sampled flags does not change density, and in
-\lean{flagDensity\_insert\_empty} to show that inserting an empty flag
-leaves the density unchanged.  It also appears in the adequacy proof that
-the concrete \lean{Sym2InducedSubgraph} enumeration has the same count as
-the abstract \lean{LabeledSubgraph} enumeration.  The invariant the pattern
-enforces is that a numerical equality is justified by an explicit
-isomorphism between the finite sets being counted; arithmetic simplification
-is the last step, not the proof idea.
-
-We initially expected to use Mathlib's existing counting tactics for these
-identities and reach for explicit equivalences only as a fallback.  The
-opposite happened.  Once the \lean{Fintype}-instance ambiguity of
-\Cref{sec:fintype} is in play, generic counting tactics often fail to
-elaborate because they pick up the ``wrong'' enumeration term for one of the
-two sets.  Constructing the equivalence makes the intended enumeration
-explicit and turns the cardinality equality into a one-line application of
-\lean{Fintype.card\_congr}.  The pattern is, in a sense, the same kind of
-move combinatorialists make when they search for a combinatorial
-interpretation of an algebraic identity: the equivalence is the
-combinatorial interpretation, and the formalization makes its presence
-mandatory rather than optional.
 
 
 \section{Lower Bounds and Other Inequalities}
@@ -3367,6 +3315,9 @@ is not the particular workarounds; it is that an
 intensional type theory makes these obstacles visible at the boundaries of
 quotient, dependent-type, and finite-enumeration constructions, and someone
 formalizing similar material should expect to face them.
+After describing the four obstacles, we close with a recurring proof pattern
+that emerged from the last one: proving density equalities through explicit
+bijections between finite sample spaces.
 
 \subsection{Quotient Eliminators and Their Recurring Cost}
 
@@ -3400,9 +3351,10 @@ a tradeoff we cannot evaluate from this vantage point.
 
 \subsection{Dependent-Type Transports from Size-Changing Operations}
 
-Flag algebra operations change the vertex count of flags: the product of a
-size-$m_1$ and a size-$m_2$ flag lives at size $\ell \geq m_1 + m_2 - k$.  In
-the formalization, the product of basis elements is computed as a sum over
+Flag algebra operations change the vertex size used to represent their output:
+the product of basis elements represented by a size-$m_1$ and a size-$m_2$
+flag is expanded at a size $\ell \geq m_1 + m_2 - k$.  In the formalization,
+this product is computed as a sum over
 all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
 independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
 Its hypotheses say that both output sizes are large enough, and its proof has
@@ -3539,6 +3491,49 @@ lemmas as an engineering interface: they do not remove the underlying proof
 obligations, but they keep those obligations from spreading through every
 algebraic proof.
 
+\subsection{Bijective Proofs for Density Equalities}
+\label{sec:proof-style}
+
+The \lean{Fintype}-instance ambiguity just described also shaped how we prove
+density identities.  The most common informal move in flag-algebra
+calculations is to say that two densities are equal because the two sampling
+procedures count the same objects after a reindexing.  In Lean we make this
+extensional argument explicit.  The proof first names the two sample spaces,
+fixes the \lean{Fintype} instances that will be used to count them, constructs
+an equivalence between the sample spaces, and only then simplifies the
+resulting rational equality.  A typical proof has the following shape:
+\begin{lstlisting}
+let S0 := setOfLabeledSubgraphListIsoHl G Hl0
+let S1 := setOfLabeledSubgraphListIsoHl G Hl1
+let hS0 : Fintype S0 := Fintype.ofFinite S0
+let hS1 : Fintype S1 := Fintype.ofFinite S1
+let h_iso : Equiv S0 S1 := ...
+have card_eq : Fintype.card S0 = Fintype.card S1 :=
+  Fintype.card_congr h_iso
+simp_all only [Set.toFinset_card]
+\end{lstlisting}
+
+This is the pattern used in \lean{flagDensity\_permute} to show that
+permuting the order of sampled flags does not change density, and in
+\lean{flagDensity\_insert\_empty} to show that inserting an empty flag leaves
+the density unchanged.  It also appears in the adequacy proof that the
+concrete \lean{Sym2InducedSubgraph} enumeration has the same count as the
+abstract \lean{LabeledSubgraph} enumeration.  The invariant enforced by the
+pattern is that a numerical equality is justified by an explicit isomorphism
+between the finite sets being counted; arithmetic simplification is the last
+step, not the proof idea.
+
+We initially expected to use Mathlib's existing counting tactics for these
+identities and reach for explicit equivalences only as a fallback.  The
+opposite happened.  Generic counting tactics often fail to elaborate because
+they pick up the ``wrong'' enumeration term for one of the two sets.
+Constructing the equivalence makes the intended enumeration explicit and
+turns the cardinality equality into a one-line application of
+\lean{Fintype.card\_congr}.  The pattern resembles the familiar
+combinatorial search for an interpretation of an algebraic identity: here the
+equivalence is that interpretation, and the formalization makes it mandatory
+rather than optional.
+
 
 
 \section{What We Are Unsure About}
@@ -3667,7 +3662,7 @@ elaboration path.
 The recorded counterexample is in \texttt{ErdosPentagon/Lemmas.lean}: a
 commented-out call reads \texttt{-- sort\_at -- takes more than 10 minutes}.
 The generic \lean{sort\_at}, which uses \lean{simp} without index guidance,
-times out on expressions of around 25 flag terms.  The index-guided
+times out on expressions of around 25 flag-basis terms.  The index-guided
 \lean{ac\_sort} completes the same step promptly by exploiting the
 name encoding to bypass combinatorial search.  We do not claim that names
 beat user attributes or a custom AST in general; on this development they
