@@ -712,24 +712,29 @@ Lemma~\ref{lem:chain-rule}.
 Formally, let
 $\mathbb{R}[\mathcal{F}^\sigma]$ be the free $\mathbb{R}$-module with basis
 $\mathcal{F}^\sigma$, i.e., the vector space of finite formal real linear
-combinations of $\sigma$-flags.  We also write $F$ for the basis vector
-corresponding to a flag $F$.
+combinations of $\sigma$-flags.  For a flag $F$, write $\mathbf e_F$ for its
+corresponding basis vector.
 Define the \emph{zero space} $\mathcal{Z}^\sigma$ as the subspace generated
 by all elements of the form
 \begin{equation}
   \label{eq:zero-element}
-  F - \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot H,
+  \mathbf e_F - \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H,
   \qquad \text{for}\ F \in \mathcal{F}^\sigma_m \ \text{and}\ n \geq m.
 \end{equation}
 The \emph{flag algebra} is the quotient module
 \[
   \mathcal{A}^\sigma \;:=\; \mathbb{R}[\mathcal{F}^\sigma] \,/\, \mathcal{Z}^\sigma.
 \]
-We write $[F]$ for the equivalence class of a flag $F$ in $\mathcal{A}^\sigma$.
-By abuse of notation, we write $F$ for $[F]$ whenever the distinction between
-a flag and its equivalence class is immaterial.
+We write $[F]$ for the class of $\mathbf e_F$ in $\mathcal{A}^\sigma$.
+Throughout the paper, capital letters $F,G,H$ denote finite flags, while
+lowercase letters $f,g,h$ denote arbitrary flag-algebra elements.  Thus a
+positive homomorphism is applied to $[F]$, not directly to the finite flag
+$F$.  For familiar named or pictorial flags, such as $K_2$ or
+$\fKtwobull$, we retain the standard shorthand of omitting the brackets in
+algebraic formulas; there the surrounding algebraic context makes the
+canonical image unambiguous.
 
-We call $\sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot H$ the
+We call $\sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H} \cdot \mathbf e_H$ the
 \emph{expansion of $F$ at size $n$}.
 By Lemma~\ref{lem:chain-rule}, a flag $F \in \mathcal{F}^\sigma_m$ and
 its expansion at any size $n \geq m$ have the same density in every host flag of size $\geq n$.
@@ -741,7 +746,7 @@ equality
   \sum_{H \in \mathcal{F}^\sigma_n} \den{F}{H}\,[H]
   \qquad\text{in }\mathcal{A}^\sigma .
 \]
-We may therefore freely replace $F$ by its expansion at any size $n \geq m$.
+We may therefore freely replace $[F]$ by its expansion at any size $n \geq m$.
 % The zero-space relations express the combinatorial identity that, in a
 % sufficiently large host flag $G$,
 % \[
@@ -832,7 +837,7 @@ densities of pattern $\sigma$-flags.  Flag algebra proofs, however, target
 consider increasing sequences $\{G_n\}_{n\in\mathbb{N}}$ of host flags with $|V(G_n)|\to\infty$ and ask
 what happens to flag densities in the limit.  Positive homomorphisms can be thought of as the limiting objects of convergent
 sequences of host flags.  The semantic non-negativity cone
-$\mathcal{C}^\sigma$ then consists of the pattern $\sigma$-flag expressions
+$\mathcal{C}^\sigma$ then consists of the flag-algebra elements
 whose density at every such limiting object is non-negative, and establishing
 membership in $\mathcal{C}^\sigma$ is precisely what flag algebra proofs aim
 to do.
@@ -849,22 +854,22 @@ equivalently, if $\lim_{n\to\infty}\den{F}{G_n}$ exists for every $\sigma$-flag 
 Fix a flag type $\sigma$.  A \emph{positive homomorphism} on
 $\mathcal{A}^\sigma$ is an $\mathbb{R}$-algebra homomorphism
 $\phi:\mathcal{A}^\sigma \to \mathbb{R}$ such that
-$\phi(F) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
+$\phi([F]) \geq 0$ for every $\sigma$-flag $F$.  Thus $\phi$ assigns a real
 number to each flag algebra expression, respects addition, multiplication, and the unit, and
-never assigns a negative value to any flag.
+never assigns a negative value to a flag basis element.
 We write $\poshom{\sigma}$ for the set of all positive homomorphisms on
 $\mathcal{A}^\sigma$.
 
 In $\mathcal{A}^\sigma$, the following identity holds for every $\ell \geq |V(\sigma)|$:
 \begin{equation}
-  \sum_{F \in \mathcal{F}^\sigma_\ell} F \;=\; \mathbf{1}_\sigma.
+  \sum_{F \in \mathcal{F}^\sigma_\ell} [F] \;=\; \mathbf{1}_\sigma.
   \label{eq:sum-to-one}
 \end{equation}
 Applying any $\phi \in \poshom{\sigma}$ to both sides gives
-$\sum_{F \in \mathcal{F}^\sigma_\ell} \phi(F) = 1$;
-non-negativity then forces $\phi(F) \in [0,1]$ for every $\sigma$-flag $F$.
+$\sum_{F \in \mathcal{F}^\sigma_\ell} \phi([F]) = 1$;
+non-negativity then forces $\phi([F]) \in [0,1]$ for every $\sigma$-flag $F$.
 Thus, each $\phi \in \poshom{\sigma}$ determines a point in $[0,1]^{\mathcal{F}^\sigma}$
-via the assignment $F \mapsto \phi(F)$, so $\poshom{\sigma}$ can be identified with
+via the assignment $F \mapsto \phi([F])$, so $\poshom{\sigma}$ can be identified with
 a subset of $[0,1]^{\mathcal{F}^\sigma}$.  % It is moreover compact.
 
 The following theorem makes precise the sense in which positive homomorphisms
@@ -899,9 +904,10 @@ Equivalently, $f\leq_\sigma g$ means that
 $\phi(f)\leq\phi(g)$ for every $\phi \in \poshom{\sigma}$.  When $\sigma=\emptyset$, we write $f \leq g$ in place of $f \leq_\emptyset g$, and $\mathcal{C}$ in place of $\mathcal{C}^\emptyset$.
 Note that $f \in \mathcal{C}^\sigma$ is the same as saying $0 \leq_\sigma f$.
 
-Two immediate examples of elements of $\mathcal{C}^\sigma$ are flags and squares.
-Every $\sigma$-flag $F$ satisfies $0 \leq_\sigma F$,
-because positive homomorphisms send every flag to a non-negative real by definition.
+Two immediate examples of elements of $\mathcal{C}^\sigma$ are flag basis
+elements and squares.  Every $\sigma$-flag $F$ gives an element
+$[F]\in\mathcal{C}^\sigma$, because positive homomorphisms send every flag
+basis element to a non-negative real by definition.
 For any $f \in \mathcal{A}^\sigma$, the square $f^2$ satisfies $0 \leq_\sigma f^2$,
 because $\phi(f^2) = \phi(f)^2 \geq 0$ for every $\phi \in \poshom{\sigma}$.
 Moreover, if $0 \leq_\sigma f$ and $0 \leq_\sigma g$, then $0 \leq_\sigma f + g$,
@@ -2807,8 +2813,8 @@ trust model and evaluate the compiler on seven certificates.
 \label{sec:flagmatic-background}
 
 At a high level, a flag-algebra proof of
-$P \leq_{\mathcal H} c\cdot\mathbf 1$ works by decomposing the gap
-$c\cdot\mathbf 1-P$ into expressions that evaluate to non-negative real
+$[P] \leq_{\mathcal H} c\cdot\mathbf 1$ works by decomposing the gap
+$c\cdot\mathbf 1-[P]$ into expressions that evaluate to non-negative real
 numbers under every positive homomorphism satisfying the $\mathcal H$-free
 condition.  A \emph{certificate} is finite algebraic data specifying such a
 decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data,
@@ -2816,9 +2822,10 @@ while our compiler reconstructs the decomposition in Lean and proves that
 every term in it is non-negative.
 
 Mantel's theorem gives a small example of the whole idea.  Fix the one-vertex
-type $\sigma$, and let $a:=\fKtwobull$ and $b:=\fbarKtwobull$ be the two flags
-obtained by adding one unlabeled vertex: in $a$ the two vertices are adjacent,
-whereas in $b$ they are not.  For every positive homomorphism
+type $\sigma$, and let $A:=\fKtwobull$ and $B:=\fbarKtwobull$ be the two flags
+obtained by adding one unlabeled vertex: in $A$ the two vertices are adjacent,
+whereas in $B$ they are not.  Write $a:=[A]$ and $b:=[B]$ for their images in
+$\mathcal A^\sigma$.  For every positive homomorphism
 $\phi\in\poshom{\sigma}$,
 \[
   \phi\bigl((a-b)^2\bigr)
@@ -2834,41 +2841,42 @@ an ordinary square of real numbers.
 We next compute what this square contributes after removing the label.  Let
 $G_0:=\fbarKthree$, $G_1:=\fbarPthree$, and $G_2:=\fPthree$ denote,
 respectively, the three-vertex graphs with zero, one, and two edges.  These are
-the three triangle-free graphs on three vertices.  Expanding the unit and the
-edge $K_2$ at size three, and omitting the triangle term that has density zero
-under the $K_3$-free condition, gives
+the three triangle-free graphs on three vertices; write $g_i:=[G_i]$ for their
+images in $\mathcal A^\emptyset$.  Expanding the unit and the edge $K_2$ at
+size three, and omitting the triangle term that has density zero under the
+$K_3$-free condition, gives
 \[
-  \mathbf 1 = G_0+G_1+G_2,
+  \mathbf 1 = g_0+g_1+g_2,
   \qquad
-  K_2 = \tfrac13G_1+\tfrac23G_2.
+  K_2 = \tfrac13g_1+\tfrac23g_2.
 \]
 The coefficients in the second identity are simply the edge densities of the
 three host graphs: $0$, $1/3$, and $2/3$.
 
 It remains to expand the square and apply the downward operator.  Write
-$(a-b)^2=a^2-2a\cdot b+b^2$.  In a rooted three-vertex graph, if the two unlabeled
+$(a-b)^2=a^2-2\,(a\cdot b)+b^2$.  In a rooted three-vertex graph, if the two unlabeled
 vertices have the same adjacency to the labeled vertex, either $a^2$ or $b^2$
 has pair density $1$, giving coefficient $+1$.  If their adjacencies differ,
 $a\cdot b$ has pair density $1/2$ (only one of the two assignments puts the adjacent
-vertex in the $a$ position), so $-2a\cdot b$ gives coefficient $-1$.  The downward
+vertex in the $a$ position), so $-2\,(a\cdot b)$ gives coefficient $-1$.  The downward
 operator averages these coefficients over the three possible choices of the
-labeled vertex.  For $G_0$, all three choices give $+1$; for each of $G_1$ and
-$G_2$, one choice gives $+1$ and two give $-1$.  Including the factor $1/2$
+labeled vertex.  For the finite flag $G_0$, all three choices give $+1$; for
+each of $G_1$ and $G_2$, one choice gives $+1$ and two give $-1$.  Including the factor $1/2$
 therefore yields
 \[
   \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
-  = \tfrac12G_0-\tfrac16G_1-\tfrac16G_2.
+  = \tfrac12g_0-\tfrac16g_1-\tfrac16g_2.
 \]
 Combining the two expansions now gives the desired decomposition:
 \[
   \tfrac12\cdot\mathbf 1-K_2
-  = \tfrac12G_0+\tfrac16G_1-\tfrac16G_2
+  = \tfrac12g_0+\tfrac16g_1-\tfrac16g_2
   = \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
-    + \tfrac13G_1.
+    + \tfrac13g_1.
 \]
 The downward square is non-negative by
-Theorem~\ref{thm:downward-nonneg}, and $G_1$ is non-negative because graph
-densities are non-negative.  Hence the right-hand side is non-negative, proving
+Theorem~\ref{thm:downward-nonneg}, and the basis element $g_1=[G_1]$ is
+non-negative because graph densities are non-negative.  Hence the right-hand side is non-negative, proving
 $K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.  Even this smallest certificate requires
 expanding a product, computing a downward average, expanding the objective and
 the unit to a common host size, and collecting coefficients.  These are exactly
