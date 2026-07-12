@@ -2796,13 +2796,14 @@ known to be non-negative.  Verifying this finite calculation is enough to prove
 the bound for the entire graph class.  Flagmatic~\cite{vaughan2013flagmatic}
 uses semidefinite programming to search for such certificates.
 
-This section presents a compiler that turns this data into a self-contained
-Lean proof.  For each certificate, it generates the required flags, asks Lean
-to recompute their density and multiplication identities, verifies the rational
-matrix factorizations, and assembles the final inequality.  Thus the external
-search proposes the data, while Lean checks every mathematical obligation; no
-manual copying of coefficients or reconstruction of the finite bookkeeping is
-required.
+This section presents a compiler whose input is a certificate produced by
+Flagmatic.  The compiler does not run the semidefinite program or search for a
+decomposition.  Instead, it translates the certificate's flags, matrices, and
+target data into Lean, generates the required flags, asks Lean to recompute
+their density and multiplication identities, verifies the rational matrix
+factorizations, and assembles the final inequality.  Thus Flagmatic proposes
+the data, while Lean checks every mathematical obligation; no manual copying
+of coefficients or reconstruction of the finite bookkeeping is required.
 
 We first explain how positive semidefinite matrices justify the inequalities
 encoded by a certificate.  We then identify the four obligations common to our
@@ -2817,20 +2818,26 @@ $[P] \leq_{\mathcal H} c\cdot\mathbf 1$ works by decomposing the gap
 $c\cdot\mathbf 1-[P]$ into expressions that evaluate to non-negative real
 numbers under every positive homomorphism satisfying the $\mathcal H$-free
 condition.  A \emph{certificate} is finite algebraic data specifying such a
-decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data,
-while our compiler reconstructs the decomposition in Lean and proves that
-every term in it is non-negative.
+decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data
+using an SDP solver and outputs it as a certificate.  Our compiler consumes
+that certificate as untrusted input: it translates the proposed decomposition
+into Lean and generates a proof that each of its terms is non-negative and
+that their sum is the claimed gap.
 
 Mantel's theorem gives a small example of the whole idea.  Fix the one-vertex
-type $\sigma$, and let $A:=\fKtwobull$ and $B:=\fbarKtwobull$ be the two flags
-obtained by adding one unlabeled vertex: in $A$ the two vertices are adjacent,
-whereas in $B$ they are not.  Write $a:=[A]$ and $b:=[B]$ for their images in
-$\mathcal A^\sigma$.  For every positive homomorphism
+type $\sigma$.  The two flags obtained by adding one unlabeled vertex are
+$\fKtwobull$ and $\fbarKtwobull$, according to whether the two vertices are
+adjacent.  We use these pictures directly in the algebraic calculation below.\footnote{Strictly,
+each picture denotes a finite $\sigma$-flag, whereas the algebraic operations
+below apply to its quotient class in $\mathcal A^\sigma$.  We follow the usual
+convention of omitting brackets around pictorial basis elements.}
+For every positive homomorphism
 $\phi\in\poshom{\sigma}$,
 \[
-  \phi\bigl((a-b)^2\bigr)
-  = \phi(a-b)\,\phi(a-b)
-  = \bigl(\phi(a)-\phi(b)\bigr)^2
+  \phi\bigl(((\fKtwobull)-(\fbarKtwobull))^2\bigr)
+  = \phi((\fKtwobull)-(\fbarKtwobull))\,
+    \phi((\fKtwobull)-(\fbarKtwobull))
+  = \bigl(\phi(\fKtwobull)-\phi(\fbarKtwobull)\bigr)^2
   \geq 0.
 \]
 The first equality uses preservation of multiplication, and the second uses
@@ -2838,50 +2845,70 @@ preservation of addition and scalar multiplication.  This makes the source of
 non-negativity explicit: after applying $\phi$, the flag-algebra square becomes
 an ordinary square of real numbers.
 
-We next compute what this square contributes after removing the label.  Let
-$G_0:=\fbarKthree$, $G_1:=\fbarPthree$, and $G_2:=\fPthree$ denote,
-respectively, the three-vertex graphs with zero, one, and two edges.  These are
-the three triangle-free graphs on three vertices; write $g_i:=[G_i]$ for their
-images in $\mathcal A^\emptyset$.  Expanding the unit and the edge $K_2$ at
-size three, and omitting the triangle term that has density zero under the
-$K_3$-free condition, gives
+We next compute what this square contributes after removing the label.  The
+triangle-free unlabeled basis at size three consists of
+$\fbarKthree$, $\fbarPthree$, and $\fPthree$.  Expanding the unit and the edge
+$K_2$ in this basis gives
 \[
-  \mathbf 1 = g_0+g_1+g_2,
+  \mathbf 1 = \fbarKthree+\fbarPthree+\fPthree,
   \qquad
-  K_2 = \tfrac13g_1+\tfrac23g_2.
+  K_2
+  =0\cdot\fbarKthree+\tfrac13\cdot\fbarPthree+\tfrac23\cdot\fPthree
+  =\tfrac13\cdot\fbarPthree+\tfrac23\cdot\fPthree.
 \]
 The coefficients in the second identity are simply the edge densities of the
 three host graphs: $0$, $1/3$, and $2/3$.
 
-It remains to expand the square and apply the downward operator.  Write
-$(a-b)^2=a^2-2\,(a\cdot b)+b^2$.  In a rooted three-vertex graph, if the two unlabeled
-vertices have the same adjacency to the labeled vertex, either $a^2$ or $b^2$
-has pair density $1$, giving coefficient $+1$.  If their adjacencies differ,
-$a\cdot b$ has pair density $1/2$ (only one of the two assignments puts the adjacent
-vertex in the $a$ position), so $-2\,(a\cdot b)$ gives coefficient $-1$.  The downward
-operator averages these coefficients over the three possible choices of the
-labeled vertex.  For the finite flag $G_0$, all three choices give $+1$; for
-each of $G_1$ and $G_2$, one choice gives $+1$ and two give $-1$.  Including the factor $1/2$
-therefore yields
-\[
-  \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
-  = \tfrac12g_0-\tfrac16g_1-\tfrac16g_2.
-\]
+It remains to expand the square in the rooted three-vertex basis and apply the
+downward operator term by term:
+\begin{align*}
+  \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
+  &= \tfrac12\left(
+       \fbarKthreebull+\fEthreebull
+       -\fbarPthreebull-\fPthreebull
+       +\fKonetwobull
+     \right),\\
+  \bigl\llbracket
+    \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
+  \bigr\rrbracket_\sigma
+  &= \tfrac12\left(
+       \fbarKthree
+       +\tfrac13\cdot \fbarPthree-\tfrac23\cdot\fbarPthree
+       -\tfrac23\cdot\fPthree+\tfrac13\cdot\fPthree
+     \right)\\
+  &= \tfrac12\cdot\fbarKthree
+     -\tfrac16\cdot\fbarPthree
+     -\tfrac16\cdot\fPthree.
+\end{align*}
+The fractions in the second line are the downward normalizing factors: they
+record whether one, two, or all three choices of the labeled vertex produce
+the displayed rooted flag.
+
 Combining the two expansions now gives the desired decomposition:
 \[
   \tfrac12\cdot\mathbf 1-K_2
-  = \tfrac12g_0+\tfrac16g_1-\tfrac16g_2
-  = \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_\sigma
-    + \tfrac13g_1.
+  = \tfrac12\cdot\fbarKthree+\tfrac16\cdot\fbarPthree-\tfrac16\cdot\fPthree
+  = \bigl\llbracket
+      \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
+    \bigr\rrbracket_\sigma
+    + \tfrac13\cdot\fbarPthree.
 \]
 The downward square is non-negative by
-Theorem~\ref{thm:downward-nonneg}, and the basis element $g_1=[G_1]$ is
+Theorem~\ref{thm:downward-nonneg}, and the basis element $\fbarPthree$ is
 non-negative because graph densities are non-negative.  Hence the right-hand side is non-negative, proving
-$K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.  Even this smallest certificate requires
-expanding a product, computing a downward average, expanding the objective and
-the unit to a common host size, and collecting coefficients.  These are exactly
-the calculations that become impractical in larger certificates and that our
-compiler automates.
+$K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.
+
+The essential certificate data for this example are precisely the data on the
+right-hand side of the displayed decomposition: the two rooted flags
+$\fKtwobull$ and $\fbarKtwobull$, the halved squared
+difference between them, and the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We
+chose this small certificate by hand; in larger examples, Flagmatic's SDP
+search supplies the analogous flags, PSD matrices, and remainder coefficients.
+Checking even this certificate requires expanding a product, computing a
+downward average, expanding the objective and the unit to a common host size,
+and collecting coefficients.  These calculations remain suitable for
+automation but become impractical to perform and transcribe by hand for larger
+certificates; they are exactly what our compiler automates.
 
 The same idea scales by replacing one square with weighted sums of many
 squares.  Choose flags $E_1,\ldots,E_r$ of the same type, let
@@ -2917,7 +2944,7 @@ where every $M_t$ is PSD and $r$ has non-negative coefficients.  It records the
 chosen flags, the rational matrices $M_t$, and the target-density data needed
 to state this identity.  Our compiler does not trust the certificate's derived
 density or multiplication tables: it recomputes them in Lean, proves the
-matrices PSD, and checks the identity.  The rest of this section explains the
+matrices are PSD, and checks the identity.  The rest of this section explains the
 four recurring parts of that verification and how the compiler generates them.
 
 
@@ -3144,8 +3171,10 @@ bounds we describe below; the remaining cases appear in the table.
 This is the smallest and most transparent case.  Its single block is small
 enough to write the certificate by hand.  As explained in
 \Cref{sec:flagmatic-background}, the PSD block is the explicit square
-$\llbracket \tfrac12(a-b)^2\rrbracket_\sigma$; together with the non-negative
-remainder $\tfrac13g_1$, it proves
+$\llbracket
+  \tfrac12(\fKtwobull-\fbarKtwobull)^2
+\rrbracket_\sigma$; together with the non-negative
+remainder $\tfrac13\fbarPthree$, it proves
 $K_2 \leq \tfrac12\cdot\mathbf{1}$ without an external solver.  It therefore
 serves as the simplest validation of the compiler.
 
