@@ -2803,63 +2803,73 @@ encoded by a certificate.  We then identify the four obligations common to our
 examples and show how the compiler discharges them.  Finally, we state the
 trust model and evaluate the compiler on seven certificates.
 
-\subsection{Flagmatic Certificates and Positive Semidefiniteness}
+\subsection{How a Certificate Proves a Bound}
 \label{sec:flagmatic-background}
 
-Many applications of Razborov's flag algebra method reduce to solving a
-\emph{semidefinite program} (SDP) whose solution determines the coefficients of
-suitable quadratic forms.  Flagmatic~\cite{vaughan2013flagmatic} automates this
-search.  To bound the density of a target $P$ in $\mathcal{H}$-free graphs by a
-constant $c$, Flagmatic fixes a host size $N$ and, for each flag type $\sigma_t$
-used by the certificate, represents these coefficients as the entries of a
-symmetric matrix $M_t$.  These entries are the variables of the SDP, and its
-constraints, linear in them, encode the bound.  An SDP solver assigns values to
-these variables so that every $M_t$ becomes \emph{positive semidefinite} (PSD)
-while the constraints hold, numerically; Flagmatic then converts the result to
-exact rational matrices.  The resulting \emph{certificate} records the
-admissible graphs and flags, the target-density data, and the rational PSD
-matrices $M_t$ paired with vectors $v_t$ of $\sigma_t$-flags.  The density and
-multiplication tables needed to check the certificate are then recomputed in
-Lean rather than trusted as part of the input.
+At a high level, a flag-algebra proof of
+$P \leq_{\mathcal H} c\cdot\mathbf 1$ works by decomposing the gap
+$c\cdot\mathbf 1-P$ into expressions that evaluate to non-negative real
+numbers under every positive homomorphism satisfying the $\mathcal H$-free
+condition.  A \emph{certificate} is finite algebraic data specifying such a
+decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data,
+while our compiler reconstructs the decomposition in Lean and proves that
+every term in it is non-negative.
 
-Flag-algebra proofs certify an inequality by expressing its difference as a sum
-of semantically non-negative elements.  The simplest such element is a square:
-for $e \in \mathcal{A}^\sigma$ and any positive homomorphism $\phi$,
-$\phi(e^2) = \phi(e)^2 \geq 0$.  More generally, semantically non-negative
-elements arise from positive semidefinite matrices.  A real symmetric matrix $Q$ is PSD when
-$v^\top Q v \geq 0$ for every real vector $v$; given such a $Q$ and flags
-$e_1,\dots,e_r \in \mathcal{A}^\sigma$, every positive homomorphism sends the
-quadratic form $\sum_{i,j} Q_{ij}\, e_i e_j$ to the real number $v^\top Q v$ with
-$v=(\phi(e_1),\dots,\phi(e_r))$, which is non-negative because $Q$ is PSD.  The
-quadratic form therefore lies in the cone $\mathcal{C}^\sigma$, and this is the
-precise sense in which flag-algebra proofs are ``sums of squares'': the proof
-data is a quadratic expression whose value a PSD matrix forces to be
-non-negative.
+Mantel's theorem gives a small example of the whole idea.  Fix one labeled
+vertex, and let $a$ and $b$ be the two flags obtained by adding one unlabeled
+vertex: in $a$ the two vertices are adjacent, whereas in $b$ they are not.  The
+square $(a-b)^2$ is non-negative under every positive homomorphism because it
+evaluates to an ordinary real square.  Writing $G_{\mathrm{one}}$ for the
+three-vertex graph with exactly one edge, expansion in the triangle-free
+algebra gives
+\[
+  \tfrac12\cdot\mathbf 1-K_2
+  =
+  \bigl\llbracket \tfrac12(a-b)^2\bigr\rrbracket_1
+  + \tfrac13 G_{\mathrm{one}}.
+\]
+The first term remains non-negative after the label is removed by the downward
+operator (Theorem~\ref{thm:downward-nonneg}), and the second is non-negative
+because graph densities are non-negative.  The right-hand side is therefore
+non-negative, proving $K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.  Thus, in this
+smallest example, the certificate is simply a square together with the
+non-negative remainder left by its expansion.
 
-To use these non-negative quadratic forms in an extremal inequality, they must
-be transferred from the labeled algebra $\mathcal{A}^\sigma$ to the unlabeled
-algebra.  The downward operator $\llbracket\cdot\rrbracket_\sigma$ performs this
-transfer: by
-Theorem~\ref{thm:downward-nonneg} it maps $\mathcal{C}^\sigma$ into $\mathcal{C}$,
-so a downward-averaged PSD quadratic form is still semantically non-negative.  A
-bound then reduces to an identity.  After expanding $P$ and the unit to a common
-host size, and modulo the $\mathcal{H}$-free condition, the difference
-$c\cdot\mathbf{1} - P$ splits into the downward-averaged quadratic forms and a
-remainder $R$:
+Larger proofs use weighted sums of many such squares.  For flags
+$e_1,\ldots,e_r$ of the same type, collect them into a vector
+$v=(e_1,\ldots,e_r)$.  A symmetric matrix $M$ is \emph{positive semidefinite}
+(PSD) if $x^\top Mx\geq 0$ for every real vector $x$.  Consequently, when $M$
+is PSD, the flag-algebra quadratic form
+$\langle v,Mv\rangle=\sum_{i,j}M_{ij}e_i e_j$ is non-negative under every
+positive homomorphism: evaluating the flags turns it into the ordinary real
+quadratic form $x^\top Mx$.  The downward operator then transfers this
+non-negativity from the labeled algebra to the unlabeled one.
+
+Flagmatic finds the matrices by turning this decomposition problem into a
+\emph{semidefinite program} (SDP).  It first fixes a host size $N$ and chooses
+the flag types and flags that may occur.  It expands the target, the unit, and
+the downward quadratic forms in the common basis of allowed $N$-vertex graphs,
+namely those that avoid $\mathcal H$.  At this point the entries of the matrices
+are unknowns.  Requiring the coefficient left over for every host graph to be
+non-negative gives linear constraints on those entries, and requiring each
+matrix to be PSD gives the semidefinite constraints.  An SDP solver finds
+numerical matrices satisfying these conditions, after which Flagmatic converts
+them into exact rational matrices.
+
+In general, the resulting certificate specifies an identity, modulo the
+$\mathcal H$-free condition, of the form
 \[
   c\cdot\mathbf{1} - P
   \;=\;
   \sum_t \bigl\llbracket \langle v_t, M_t\, v_t\rangle \bigr\rrbracket_{\sigma_t}
   \;+\; R,
 \]
-where $R$ is a combination of flags.  When $R$ has non-negative coefficients,
-both parts of the right-hand side are non-negative: the quadratic forms because
-the $M_t$ are PSD, and $R$ because flag densities are non-negative.  The bound
-$P \leq_{\mathcal{H}} c\cdot\mathbf{1}$ then follows.  Flagmatic's search is
-exactly the problem of finding PSD matrices $M_t$ for which the resulting
-identity certifies the desired inequality.  The remaining task, and the
-focus of the rest of this section, is to reconstruct and verify this identity
-automatically inside Lean.
+where every $M_t$ is PSD and $R$ has non-negative coefficients.  It records the
+chosen flags, the rational matrices $M_t$, and the target-density data needed
+to state this identity.  Our compiler does not trust the certificate's derived
+density or multiplication tables: it recomputes them in Lean, proves the
+matrices PSD, and checks the identity.  The rest of this section explains the
+four recurring parts of that verification and how the compiler generates them.
 
 
 \subsection{The Four-Part Proof Skeleton}
@@ -3084,10 +3094,12 @@ bounds we describe below; the remaining cases appear in the table.
 
 \paragraph{Mantel's theorem.}
 This is the smallest and most transparent case.  Its single block is small
-enough to write the certificate by hand as an explicit square,
-$\llbracket (a-b)^2\rrbracket_1 = 2K_2 - \mathbf{1} \geq 0$, with no external
-solver.  It proves $K_2 \leq \tfrac12\cdot\mathbf{1}$, and therefore serves as
-the simplest validation of the compiler.
+enough to write the certificate by hand.  As explained in
+\Cref{sec:flagmatic-background}, the PSD block is the explicit square
+$\llbracket \tfrac12(a-b)^2\rrbracket_1$; together with the non-negative
+remainder $\tfrac13G_{\mathrm{one}}$, it proves
+$K_2 \leq \tfrac12\cdot\mathbf{1}$ without an external solver.  It therefore
+serves as the simplest validation of the compiler.
 
 \paragraph{A $C_4$-density bound.}
 This certificate is a sum of two PSD forms, one per size-$2$ type
