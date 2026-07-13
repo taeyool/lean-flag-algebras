@@ -1,0 +1,18 @@
+Title: Formalising Razborov's Flag Algebras in Lean
+
+Abstract: 
+Razborov's flag algebras are a powerful method for proving asymptotic inequalities in
+extremal combinatorics. They often reduce an asymptotic extremal problem over combinatorial objects to a
+semidefinite-programming (SDP) problem, and in doing so, they enable the automatic resolution 
+of the problem by a computer. In this talk, I will explain our experience of formalising flag algebras 
+for finite simple graphs in Lean for the past year and a half. My colleagues and I very much enjoyed 
+writing Lean code for flag algebras, but at the same time, we were constantly worried that others 
+might not care about the formalisation as much as we hoped, because flag algebras are believed to
+have no major errors. In the talk, I will also describe our attempts to address this concern. Using the meta-programming
+capabilities of Lean and the reflection mechanism, we built a semi-automatic pipeline for converting 
+an SDP certificate of a flag-algebra proof to a formal proof in Lean. We also developed a meta-theory that
+justifies the deviation of our formalisation from the original flag algebras, which was needed to make our 
+formalisation project more tractable and manageable. This meta-theory itself later was formalised in Lean as well,
+but automatically by Claude due to the formalisation that we built manually. 
+
+This is joint work with Jihoon Hyun, Gyeongwon Jeong, Sang-il Oum, and Seonghun Park.
