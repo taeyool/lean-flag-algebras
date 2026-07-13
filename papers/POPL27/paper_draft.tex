@@ -3067,11 +3067,11 @@ of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
 proof of the bound in Part~4.  The resulting file compiles with no
 \lean{sorry} gaps.
 
-For example, running the following command from the
-\lean{LeanFlagAlgebras/Flagmatic} directory within the formalization repository
+For example, applying the translator to the Mantel certificate with
+the following command
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton \
-  Certificates/mantel_cert.json Mantel.lean \
+  <mantel-cert>.json Mantel.lean \
   --namespace Mantel --force
 \end{lstlisting}
 generates \lean{Mantel.lean} from the Mantel certificate.  The optional
@@ -3080,7 +3080,7 @@ declarations, and \lean{--force} permits the script to replace an existing
 target file.  Before generating the file, one can run the separate diagnostic
 command
 \begin{lstlisting}[language={}]
-python flagmatic_to_lean.py inspect Certificates/mantel_cert.json
+python flagmatic_to_lean.py inspect <mantel-cert>.json
 \end{lstlisting}
 to check that the certificate can be parsed and that its flags can be matched
 to Lean's enumeration.  This command does not generate a proof file; it prints
@@ -3390,7 +3390,7 @@ collect them here.
 
 \paragraph{Mantel's theorem.}
 Combined with its complete-bipartite lower-bound construction, the upper bound
-gives the Tur\'an-density theorem in the same module:
+gives the Tur\'an-density theorem:
 \begin{lstlisting}
 theorem Turan_density_K3 : turanDensity (completeGraph (Fin 3)) = 1 / 2 := ...
 \end{lstlisting}
@@ -3403,100 +3403,93 @@ theorem ErdosPentagon_Turan : generalizedTuranDensity K3 C5 = 24/625 := ...
 is the conjunction of the upper bound of \Cref{sec:results} and a lower
 bound
 \begin{lstlisting}
-theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= 24/625 := ...
+theorem ErdosPentagon_Turan_lowerBound : generalizedTuranDensity K3 C5 >= (*@$\,$@*) 24/625 := ...
 \end{lstlisting}
-proved by an explicit construction in
-\lean{LeanFlagAlgebras.ErdosPentagon.ErdosPentagon}.  The blow-up construction
-is:
+proved by an explicit construction in Lean.  The blow-up construction is:
 \begin{lstlisting}
-def blowUp
-    {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat)
-    : SimpleGraph (Prod V (Fin n)) :=
+def blowUp {V : Type} [Fintype V] (G : SimpleGraph V) (n : Nat) : SimpleGraph (Prod V (Fin n)) :=
   { Adj v w := G.Adj v.1 w.1
     symm v w := by apply G.symm }
 \end{lstlisting}
 The $n$-fold blow-up of $C_5$ (replacing each vertex by an independent set of
 $n$ vertices and each edge by a complete bipartite graph) is
-triangle-free.  Since \(K_3\) is complete, this is the same condition
-as the Lean predicate appearing below: any triangle subgraph is automatically
-an induced triangle.  The repository proves the statement by transporting any
+triangle-free.  We prove this in Lean by transporting any
 hypothetical triangle in the blow-up back to a triangle in the base graph:
 \begin{lstlisting}
-theorem blowUp_K3_free
-    {m : Nat} {G : SimpleGraph (Fin m)}
-    (n : Nat) (hfree : K3.Free G) :
-    K3.Free (blowUp G n) := ...
+theorem blowUp_K3_free {m : Nat} {G : SimpleGraph (Fin m)} (n : Nat) (hfree : K3.Free G) 
+    : K3.Free (blowUp G n) := ...
 \end{lstlisting}
-The construction has $5n$ vertices and at least $n^5$ copies of $C_5$:
+The $n$-fold blow-up of $C_5$ has $5n$ vertices,
+and at least $n^5$ copies of $C_5$:
 \begin{lstlisting}
-lemma subgraphCount_blowUp_C5_ge
-    (n : Nat) :
-    subgraphCount C5 (blowUp C5 n) >= n ^ 5
+lemma subgraphCount_blowUp_C5_ge (n : Nat) : subgraphCount C5 (blowUp C5 n) >= (*@$\,$@*) n ^ 5
 \end{lstlisting}
-The proof of this counting lemma constructs an injection
-\lean{(Fin 5 -> Fin n) -> (blowUp C5 n).Subgraph}: choosing one vertex in each
+The proof of this counting lemma builds an injection from
+\lean{(Fin 5 -> Fin n)} to \lean{(blowUp C5 n).Subgraph},
+the set of subgraphs of the blow-up: choosing one vertex in each
 of the five parts determines a copy of $C_5$, and distinct choices give
-distinct subgraphs.  After transferring the blow-up to the vertex type
-\lean{Fin (5 * n)}, the repository obtains the finite extremal lower bound
-\lean{generalizedExtremalNumber\_K3\_C5\_div\_choose\_ge}.  The asymptotic
-arithmetic is the elementary estimate
+distinct subgraphs.  Thus, for every $n$, there is a triangle-free graph on
+$5n$ vertices containing at least $n^5$ induced copies of $C_5$.  Its
+normalized $C_5$ count satisfies
 \[
   \frac{n^5}{\binom{5n}{5}}
   \;\geq\;
   \frac{n^5}{(5n)^5 / 5!}
   \;=\;
-  \frac{24}{625},
+  \frac{24}{625}.
 \]
-combined with the convergence theorem
-\lean{tendsto\_generalizedTuranDensity}.  Mathematically, the lower bound uses
-$\lim_{n\to\infty} n^5/\binom{5n}{5} = 24/625$; in the Lean proof the limit is
-replaced by the displayed lower bound on the subsequence, plus general
-convergence machinery.
+Since the normalized generalized extremal numbers converge to the generalized
+Tur\'an density, the lower bound along the subsequence of orders $5n$ implies
+\[
+  \operatorname{generalizedTuranDensity}(K_3,C_5)
+  \geq \frac{24}{625},
+\]
+which is formalized as \lean{ErdosPentagon\_Turan\_lowerBound}.
 
 \paragraph{Additional Goodman-style consequences.}
-The active \lean{MantelTheorem/} directory also contains two small
-flag-algebraic inequalities proved with the same basic infrastructure:
+The formalization also includes two additional flag-algebraic inequalities proved
+with the same basic infrastructure:
 \lean{Goodman\_bound\_on\_triangle\_density} proves the algebraic lower bound
 $K_3 \geq K_2\cdot(2K_2-\mathbf{1})$, and
 \lean{Goodman\_theorem\_on\_Ramsey\_multiplicity} proves
 $O_3 + K_3 \geq \frac14\mathbf{1}$, a Ramsey-multiplicity style statement.
-These results are not needed for the pentagon proof, but they demonstrate
-that the formalized algebraic layer is not specialized solely to the two
-headline theorems.
-
-\paragraph{A $K_4$-free $P_4$ bound.}
-The theorem \lean{K4\_free\_P4\_density\_upper\_bound} provides a further test
-of the automation layer:
-\begin{lstlisting}
-theorem K4_free_P4_density_upper_bound
-    : inducedForbidLE K4.toFinFlag P4_density ((32 / 9 : R) (*@$\bullet$@*) 1) := ...
-\end{lstlisting}
-Its proof adds three downward-projected squares and then uses the same product
-reduction, unit expansion, sum normalization, and basis non-negativity tactics
-as the preceding case studies.  This example is stated using the induced-forbid
-relation and shows that the automation is not tied to triangle-free problems.
-
+These statements illustrate that the formalized algebraic layer supports
+inequalities among flag-algebra expressions beyond generalized Tur\'an
+problems that maximize the induced density of one graph subject to forbidding
+another as a subgraph.
 
 \section{Engineering Obstacles}
 \label{sec:obstacles}
 
-The specification layer of \Cref{sec:abstract} exposed four recurring
-engineering obstacles.  Quotient eliminators carry compatibility proofs;
-size-changing combinatorial operations produce dependent-type transports;
-function extensionality appears when pointwise information must be turned into
-a function-level equality; and \lean{Fintype} instances synthesized through
-different elaboration paths can be extensionally equal without being
-definitionally equal.  We report these as obstacles rather than design
-principles and describe how the implementation confines each one.  The point
-is not the particular workarounds; it is that an
-intensional type theory makes these obstacles visible at the boundaries of
-quotient, dependent-type, and finite-enumeration constructions, and someone
-formalizing similar material should expect to face them.
-After describing the four obstacles, we close with a recurring proof pattern
-that emerged from the last one: proving density equalities through explicit
-bijections between finite sample spaces.
+The specification layer of \Cref{sec:abstract} exposed several proof
+obligations that ordinary combinatorial notation hides.  A construction on
+graphs considered up to isomorphism must be shown to be independent of the
+chosen representatives.  An operation that changes the number of vertices
+moves between differently indexed types, so the corresponding data must be
+transported explicitly.  Pointwise agreement between two embeddings must
+sometimes be reassembled into equality of the functions or structures
+themselves.  Finally, when a density is defined by counting a finite set, Lean
+must be made to use a consistent finite enumeration.  None of these issues
+changes the underlying mathematics, but each recurs often enough to become a
+substantial proof-engineering cost.
 
-\subsection{Quotient Eliminators and Their Recurring Cost}
+These obligations have related but not identical causes.  Lean automatically
+identifies expressions only when they reduce to the same term; other
+mathematically evident identifications require explicit proofs.  This accounts
+for many of the size-indexing and function-equality obligations.  By contrast,
+well-definedness on quotient classes is an ordinary quotient obligation, while
+ambiguity between finite enumerations is more specific to Lean's elaboration
+and typeclass mechanisms.  We therefore report the concrete obstacles without
+claiming that they all arise from a single foundational feature.
+
+A final recurring challenge is to prove equality between numerical densities
+whose numerators count differently presented finite sample spaces.  Our most
+reliable solution is combinatorial: name the two sample spaces, construct an
+explicit bijection between them, and deduce equality of their cardinalities.
+The final subsection describes this proof pattern after the representation and
+enumeration issues that motivate it.
+
+\subsection{Computing with Graphs up to Isomorphism}
 
 Both \lean{Flag} and \lean{FlagAlgebra} are quotients.  Defining a function on
 representatives therefore requires \lean{Quotient.lift} and a proof that the
@@ -3526,7 +3519,7 @@ the specification close to Razborov's mathematics and accept the eliminator
 overhead.  Whether the alternative would have been more economical overall is
 a tradeoff we cannot evaluate from this vantage point.
 
-\subsection{Dependent-Type Transports from Size-Changing Operations}
+\subsection{Relating Size-Indexed Representations}
 
 Flag algebra operations change the vertex size used to represent their output:
 the product of basis elements represented by a size-$m_1$ and a size-$m_2$
@@ -3573,7 +3566,7 @@ lemma---examples are \lean{flagList\_HEq},
 that high-level proofs invoke clean invariance statements while the transport
 details remain in the small layer where they belong.
 
-\subsection{Function Extensionality and Proof-Valued Fields}
+\subsection{From Pointwise Agreement to Equality of Structures}
 
 In Lean~4's intensional type theory, function extensionality
 ($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not part of definitional
@@ -3605,7 +3598,7 @@ theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
   exact proof_irrel_heq _ _  -- edge validity field
 \end{lstlisting}
 
-\subsection{Fintype Instance Conflicts}
+\subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
 
 The fourth obstacle is the most pervasive in the counting layer.  Sets defined
@@ -3629,21 +3622,20 @@ let hS1 : Fintype S1 := Fintype.ofFinite S1
 have card_eq : Fintype.card S0 = Fintype.card S1 :=
   Fintype.card_congr h_iso_S0_S1
 \end{lstlisting}
-This pattern appears repeatedly in \lean{SubflagListDensity.lean}: for the
-quotient-respect lemma for list densities, for permutation of sampled flags,
-and for insertion of an empty flag.  Without the explicit \lean{let} bindings,
+This pattern appears repeatedly in the list-density proofs: for the
+quotient-respect lemma, for permutation of sampled flags, and for insertion of
+an empty flag.  Without the explicit \lean{let} bindings,
 Lean can synthesize a \lean{Fintype} for each set through a different path at
 each use, and \lean{Fintype.card\_congr} no longer sees the two cardinalities
-as referring to the same enumeration terms.  A similar explicit
-\lean{Fintype.ofFinite} construction is used in \lean{FlagOperators.lean} for
-the isomorphism set with a fixed underlying graph.
+as referring to the same enumeration terms.  The flag-operator proofs use a
+similar explicit \lean{Fintype.ofFinite} construction for the isomorphism set
+with a fixed underlying graph.
 
 For parameterized types such as injections \lean{Embedding V W} and
 equivalences \lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in
-multiple ways depending on which prior instances are in scope.  In
-\lean{Compute/Basic.lean}, where \lean{Fintype} instances for these types are
-defined, the elaborator had to be given explicit guidance via
-\lean{Finset.univ} with a type ascription:
+multiple ways depending on which prior instances are in scope.  When defining
+the executable \lean{Fintype} instances for these types, we had to give the
+elaborator explicit guidance via \lean{Finset.univ} with a type ascription:
 \begin{lstlisting}
 instance : Fintype (Embedding V W) :=
   { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
@@ -3668,7 +3660,7 @@ lemmas as an engineering interface: they do not remove the underlying proof
 obligations, but they keep those obligations from spreading through every
 algebraic proof.
 
-\subsection{Bijective Proofs for Density Equalities}
+\subsection{Proving Counting Identities by Bijections}
 \label{sec:proof-style}
 
 The \lean{Fintype}-instance ambiguity just described also shaped how we prove
@@ -3790,8 +3782,8 @@ Flag algebras are naturally quotient objects: graphs up to isomorphism, and
 flag-algebra elements modulo the equational theory of the algebra.  A
 formalization could pick canonical representatives in the specification
 layer to make every operation computable.  We do not.  The specification
-keeps the quotient, and the executable layer in \texttt{FlagAlgebra/Compute/}
-chooses representatives over the concrete \lean{Sym2Graph} type.  The two
+keeps the quotient, while a separate executable layer chooses representatives
+over the concrete \lean{Sym2Graph} type.  The two
 layers are connected by density adequacy theorems, whose proofs factor through
 count-level adequacy
 (\lean{labeledSubgraphListCount\_eq\_sym2InducedSubgraphListCount}).  The
@@ -3816,12 +3808,11 @@ the proof terms are not---the evaluator is reducing a proof-relevant
 encoding of finite combinatorics, not a graph algorithm.
 
 What worked was to treat reflection as verified compilation.  The abstract
-definitions remain the specification; the executable code in
-\texttt{Compute/FastIso.lean} and \texttt{Compute/FlagDensity.lean} is a
-compilation target with deliberate optimizations (edge-count pruning before
-permutation enumeration; type-aware permutation that fixes labeled vertices
-and enumerates only the remainder).  Adequacy theorems certify that the
-compilation preserves the specification's meaning.  In this development, when
+definitions remain the specification; the reflected isomorphism and density
+procedures form a compilation target with deliberate optimizations (edge-count
+pruning before permutation enumeration; type-aware permutation that fixes
+labeled vertices and enumerates only the remainder).  Adequacy theorems certify
+that the compilation preserves the specification's meaning.  In this development, when
 reflection on the natural specification was computable in principle but
 impractical, separating specification from implementation and connecting them
 once proved more effective than reshaping the specification around evaluation.
@@ -3836,8 +3827,8 @@ the elaborator can inspect without type-checking or attribute resolution.
 \lean{ac\_sort\_pipeline} computes sort keys entirely in the fast
 elaboration path.
 
-The recorded counterexample is in \texttt{ErdosPentagon/Lemmas.lean}: a
-commented-out call reads \texttt{-- sort\_at -- takes more than 10 minutes}.
+A recorded counterexample from the pentagon proof is a commented-out call that
+reads \texttt{-- sort\_at -- takes more than 10 minutes}.
 The generic \lean{sort\_at}, which uses \lean{simp} without index guidance,
 times out on expressions of around 25 flag-basis terms.  The index-guided
 \lean{ac\_sort} completes the same step promptly by exploiting the
@@ -3990,9 +3981,9 @@ Morrisett~\cite{malecha2014towards}.
 The mathematical foundation of flag algebras (convergent graph sequences,
 positive homomorphisms, the graphon limit) is developed in depth by
 Lov\'asz~\cite{lovasz2012large}.  To our knowledge, no formalization of
-graph limit theory exists in any proof assistant; our \lean{FlagSequence.lean}
-and \lean{RandomHom.lean} provide a partial formalization sufficient for
-the flag algebra method, but a full formalization of the graphon theory
+graph limit theory exists in any proof assistant; our treatment of flag
+sequences and random homomorphisms provides a partial formalization sufficient
+for the flag algebra method, but a full formalization of the graphon theory
 remains an open challenge.
 
 
