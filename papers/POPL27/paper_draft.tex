@@ -3505,16 +3505,14 @@ prove
   G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G').
 \]
 Only then is the rule $[G]\mapsto A(G)$ independent of the representative.
-Lean packages this step as \lean{Quotient.lift}.  In the opposite direction,
-to prove that two representatives determine the same flag, one supplies their
-isomorphism to \lean{Quotient.sound}.  These two Lean operations are short;
-the real work is the accompanying proof that the representative-level
-construction is invariant under isomorphism.
+Lean packages this step as \lean{Quotient.lift}.  The use of
+\lean{Quotient.lift} is itself short; the substantive obligation is proving
+that the representative-level construction is invariant under isomorphism.
 
 This pattern occurs when lifting densities and graph operators to flags and
-again at the reflection boundary.  For example, decoding an executable
+also at the reflection boundary.  For example, decoding an executable
 edge-set representation must yield the same abstract flag for every
-isomorphic concrete encoding.  Rather than expose the two representations in
+isomorphic concrete encoding.  Rather than exposing the two representations in
 every later theorem, we prove this compatibility once and let subsequent
 proofs operate on the resulting flag.  The same issue appears one level higher
 when flag vectors are quotiented by the zero-space relations to form
