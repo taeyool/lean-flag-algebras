@@ -438,9 +438,9 @@ generalization beyond hereditary constraints.
 \Cref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
 \Cref{sec:obstacles} describes the main formalization obstacles:
-well-definedness on quotient classes, transports between size-indexed
-representations, and \lean{Fintype}-instance ambiguity, together with the
-bijective proof pattern used for density equalities.
+well-definedness on quotient classes, comparisons between flag expansions at
+different vertex sizes, and \lean{Fintype}-instance ambiguity, together with
+the bijective proof pattern used for density equalities.
 \Cref{sec:reflection,sec:flagmatic} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the automation layer, elaboration-time theorem generation,
@@ -3527,52 +3527,141 @@ We instead keep the quotient specification close to Razborov's mathematics
 and concentrate the representation-specific work at the boundaries where a
 construction is lifted to equivalence classes.
 
-\subsection{Relating Size-Indexed Representations}
+\subsection{Making the Auxiliary Expansion Size Irrelevant}
 
-Flag algebra operations change the vertex size used to represent their output:
-the product of basis elements represented by a size-$m_1$ and a size-$m_2$
-flag is expanded at a size $\ell \geq m_1 + m_2 - k$.  In the formalization,
-this product is computed as a sum over
-all size-$\ell$ flags.  To show this is well-defined on the quotient (i.e.,
-independent of $\ell$), one proves \lean{flagMulWithSize\_indep\_on\_size}.
-Its hypotheses say that both output sizes are large enough, and its proof has
-to relate sums over \lean{Flag sigma (Fin ell)} and
-\lean{Flag sigma (Fin ell')}, which are definitionally distinct types even
-when the corresponding mathematical sets are connected by expansion.
+The product formula in Equation~\eqref{eq:mul} chooses an auxiliary size
+$\ell$ and expands the product of $F_1$ and $F_2$ as a linear combination of
+all $\sigma$-flags of that size.  The choice of $\ell$ is only bookkeeping:
+any sufficiently large value should define the same element of the flag
+algebra.  The formalization must prove this independence explicitly.  The
+term \lean{flagMulWithSize} denotes the expansion at one chosen size, and
+\lean{flagMulWithSize\_indep\_on\_size} proves that the expansions
+at two admissible sizes are equivalent modulo the zero-space relations, and
+hence equal in the flag algebra.
 
-The same issue arises internally when collecting the flags for the
-multiplication sum.  A \lean{FlagList sigma t Vl} (a $t$-tuple of flags with
-type family $Vl$) changes type when a new flag is inserted: the result has
-type \lean{FlagList sigma (t+1) (listTypeInsert Vl W)}.  Because
-\lean{listTypeInsert Vl W} is not definitionally equal to any pre-existing
-type family, relating the old and new lists requires \emph{heterogeneous
-equality} (\lean{HEq}):
-\begin{lstlisting}
-theorem flagList_HEq
-    (h_Vl_eq : Vl' = Vl)
-    (h_Fl_eq : forall i, Fl i = cast (Flag.type_eq h_Vl_eq i) (Fl' i))
-    : HEq Fl Fl'
-\end{lstlisting}
-The \lean{cast} calls are explicit coercions through propositional equality
-proofs; they are the formalization's acknowledgment that two types are equal
-only up to a proof, not by computation.
+The mathematical comparison is familiar.  Given $\ell_1\leq\ell_2$, expand
+each size-$\ell_1$ flag into flags of size $\ell_2$ and apply the chain rule of
+\Cref{lem:chain-rule} to collect the coefficients.  Both completed expansions
+are flag vectors, so their equivalence is a well-formed statement.  The
+difficulty appears inside this comparison: the first sum ranges over
+\lean{Flag $\sigma$ (Fin $\ell_1$)}, whereas the second ranges over
+\lean{Flag $\sigma$ (Fin $\ell_2$)}.  A term from the first type cannot be used
+where Lean expects a term of the second, and an ordinary equality can only
+compare terms having the same type.  Thus a term-by-term rewrite is not merely
+hard to prove; it is not a well-typed statement.
 
-Similarly, even if two indices $i$ and $i'$ into a flag list are
-propositionally equal ($i = i'$), the types \lean{Flag sigma (Vl i)} and
-\lean{Flag sigma (Vl i')} are not definitionally equal, forcing the use of
-heterogeneous equality:
-\begin{lstlisting}
-theorem flaglist_heq_of_idx_eq {i i' : Fin t} (h : i = i')
-    : HEq (Fl i) (Fl i') := by subst h; rfl
-\end{lstlisting}
-This pervasive use of \lean{HEq} and \lean{cast} propagates through the entire
-density computation infrastructure: every operation that crosses a size
-boundary must carry explicit propositional equality evidence.  Our
-\emph{mitigation} was to isolate each size-change obligation in a small named
-lemma---examples are \lean{flagList\_HEq},
-\lean{flaglist\_heq\_of\_idx\_eq}, and \lean{flagListDensity\_HEq\_eq}---so
-that high-level proofs invoke clean invariance statements while the transport
-details remain in the small layer where they belong.
+The first additional formalization task is therefore to construct explicitly
+the common ambient space that paper mathematics leaves implicit.
+Mathematically, we regard every fixed-size family
+$\mathcal{F}^{\sigma}_{\ell}$ as part of the all-size family
+$\mathcal{F}^{\sigma}$, and hence regard expansions at different sizes as
+vectors in the same space.  In Lean, however, the types
+\lean{Flag $\sigma$ (Fin $\ell$)} vary with $\ell$ and do not come with such a
+common ambient type.  We therefore use the dependent sum
+\[
+  \text{\lean{FinFlag}}~\sigma
+  \;=\;
+  \mathop{\Sigma}_{\ell : \mathbb{N}}
+    \text{\lean{Flag}}~\sigma~(\text{\lean{Fin}}~\ell).
+\]
+A size-$\ell_1$ flag $H$ is therefore stored as the tagged pair
+$\langle\ell_1,H\rangle$, while a size-$\ell_2$ flag $G$ is stored as
+$\langle\ell_2,G\rangle$.  The second components have different types, but
+both tagged pairs belong to the single type \lean{FinFlag}~$\sigma$.
+Recall that \lean{FlagVector}~$\sigma$ is the vector space of finitely
+supported real-valued functions on \lean{FinFlag}~$\sigma$, or equivalently
+of finite formal real linear combinations of its elements.  Thus the two
+tagged flags index basis vectors in the same vector space, and both product
+expansions can be stated in that common space.
+
+This dependent-sum packaging solves the typing problem, but it is not an equality
+principle for dependent pairs.  The tagged pairs
+$\langle\ell_1,H\rangle$ and $\langle\ell_2,G\rangle$ remain different basis
+indices when their size tags differ.  What the packaging provides is a common
+ambient type in which linear combinations involving either index can be
+formed.  At this point the comparison is well typed, but no equality between
+the two product expansions has yet been proved.
+
+The missing bridge is the zero-space expansion identity.  It relates linear
+combinations in the common flag algebra without equating their vertex types.
+For every
+$H\in\mathcal{F}_{\ell_1}^{\sigma}$, the expansion identity gives
+\[
+  [H]
+  =
+  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
+    \den{H}{G}\,[G]
+  \qquad\text{in }\mathcal{A}^{\sigma}.
+\]
+Substituting this identity into the size-$\ell_1$ product gives
+\[
+\begin{aligned}
+  \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
+    \den{F_1,F_2}{H}\,[H]
+  &=
+  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
+    \left(
+      \sum_{H\in\mathcal{F}_{\ell_1}^{\sigma}}
+        \den{F_1,F_2}{H}\,\den{H}{G}
+    \right)[G] \\
+  &=
+  \sum_{G\in\mathcal{F}_{\ell_2}^{\sigma}}
+    \den{F_1,F_2}{G}\,[G].
+\end{aligned}
+\]
+The first equality expands every $H$ into size $\ell_2$; the second is the
+chain rule.  Thus the ``flag-expansion relation'' is not a relationship
+between the two vertex types.  It is an equality, in the common flag algebra,
+between two linear combinations whose basis flags carry different size tags.
+In the Lean proof, \lean{flagExpansion} constructs the size-$\ell_2$ linear
+combination for each tagged size-$\ell_1$ flag, and the zero-space relation
+\lean{flagVectorEqv} justifies replacing the original basis vector by that
+combination.  The proof reasons about equality modulo this relation.
+
+\paragraph{A separate issue: comparing two descriptions of a reordered tuple.}
+Another type-theoretic issue appears, for example, when proving the symmetry
+\(
+  \den{F_1,F_2}{G}=\den{F_2,F_1}{G}
+\).
+Suppose $F_1$ has vertex type $U_1$ and $F_2$ has vertex type $U_2$.
+Let $V:\operatorname{Fin}2\to\mathsf{Type}$ be the vertex-type family defined
+by $V_0=U_1$ and $V_1=U_2$.  The tuple is represented by the dependent
+function
+\[
+  \mathbf{F}:
+  \prod_{i:\operatorname{Fin}2}
+    \text{\lean{Flag}}~\sigma~V_i,
+  \qquad \mathbf{F}(0)=F_1,\quad \mathbf{F}(1)=F_2.
+\]
+The dependency is in the codomain: at index $i$, the value $\mathbf{F}(i)$ has
+type \lean{Flag $\sigma$ $V_i$}, so the type of the returned flag varies with
+$i$.  If $\pi$ swaps the two positions, \lean{FlagList.permute} produces a
+tuple with vertex-type family $i\mapsto V_{\pi(i)}$; thus Lean does track that
+position $0$ now contains a flag on $U_2$ and position $1$ a flag on $U_1$.
+
+The difficulty arises when the tuple produced by \lean{FlagList.permute} is
+compared with the separately constructed tuple $(F_2,F_1)$.  The latter's
+vertex-type family $W$ is written directly
+as $W_0=U_2$ and $W_1=U_1$.  The families $W$ and
+$i\mapsto V_{\pi(i)}$ are pointwise equal, but Lean need not reduce these two
+expressions to the same term.  Because the type of the whole flag tuple depends
+on its vertex-type family, ordinary equality between the two tuples is not
+available until this equality of families has been made explicit.  The
+equality sought here is between two descriptions of the same reordered tuple,
+not between $F_1$ and $F_2$ or between $U_1$ and $U_2$.
+
+The proof first establishes an equality
+$h:W=(i\mapsto V_{\pi(i)})$.  Given any equality of types $A=B$ and a term
+$x:A$, \lean{cast} transports $x$ across that equality, producing a term of
+type $B$ without changing the underlying mathematical object.  Here it is used
+to place each component of $(F_2,F_1)$ in the corresponding component type of
+the permuted tuple.  Heterogeneous equality, written \lean{HEq $x$ $y$}, then
+allows $x:A$ and $y:B$ to be compared even when $A$ and $B$ are not
+definitionally the same; it asserts that they become equal after the required
+transport.  Applied to the whole tuples, this records that the two
+representations agree.  The lemma \lean{flagListDensity\_HEq\_eq} then states
+that heterogeneously equal tuples have the same multi-flag density once their
+vertex-type families have been identified.
 
 \subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
