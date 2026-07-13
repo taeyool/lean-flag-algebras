@@ -135,7 +135,8 @@ calculus the quotient cannot express: every hereditary class is invariant under
 reweighting the vertices of a limit, so extremisers satisfy almost-sure Euler--Lagrange
 and second-variation conditions at typical roots; these alone re-derive Mantel's
 theorem with the uniqueness and stability of its extremiser, and on the $P_4$ slices
-they exclude the sparse endpoint of the admissible density interval.
+they exclude the sparse endpoint of the admissible density interval for every
+$r\ge4$.
 \end{abstract}
 
 \section{Introduction}
@@ -310,7 +311,8 @@ roots---statements that fail at exceptional roots and so cannot be phrased in th
 quotient.  First and second variation alone re-derive Mantel's theorem together with
 the uniqueness and stability of its extremiser (\cref{thm:variational-mantel}), and on
 the $P_4$ slices the Euler--Lagrange equation excludes the sparse endpoint of the
-admissible density interval outright (\cref{cor:p4-lower-endpoint}).
+admissible density interval outright for every $r\ge4$
+(\cref{cor:p4-lower-endpoint}).
 
 \section{Flag-algebra background}\label{sec:background}
 
@@ -5564,7 +5566,8 @@ variation, Perron--Frobenius---is, to our knowledge, new, and it is the second
 variation that powers it.  Second, on the parametric $P_4$ slices of
 \cref{thm:parametric-p4-equality-slice}, the Euler--Lagrange equation is a genuinely
 new labelled equation, and it \emph{excludes the sparse endpoint}
-$\alpha_r^-$ unconditionally (\cref{cor:p4-lower-endpoint})---settling the
+$\alpha_r^-$ unconditionally for every $r\ge4$
+(\cref{cor:p4-lower-endpoint})---settling the
 $\alpha_r^-$-side of the endpoint question of \cref{rem:r3-special} and narrowing open
 problem (4) to the interior.
 
@@ -6043,9 +6046,10 @@ is \cite[Theorem 16.23]{Lovasz2012book}, proved by symmetrisation---but the rout
 new, and it isolates what the second variation contributes: a spectral constraint that
 symmetrisation arguments reach only combinatorially.  Throughout,
 $T_Wg:=\int W(\cdot,y)g(y)\,dy$ denotes the kernel operator of
-$W$ on $L^2[0,1]$: a self-adjoint Hilbert--Schmidt operator, with real nonzero
-eigenvalues $(\lambda_i)_{i\ge1}$ listed with multiplicity in decreasing modulus,
-$|\lambda_1|\ge|\lambda_2|\ge\cdots\to0$, orthonormal eigenfunctions $(e_i)$,
+$W$ on $L^2[0,1]$: a self-adjoint Hilbert--Schmidt operator, with its (at most
+countably many) nonzero eigenvalues $(\lambda_i)$ listed with multiplicity in
+nonincreasing modulus---when the list is infinite, $|\lambda_i|\to0$---orthonormal
+eigenfunctions $(e_i)$,
 the expansion $W=\sum_i\lambda_ie_i(x)e_i(y)$ in $L^2([0,1]^2)$,
 $\sum_i\lambda_i^2=\int\!\!\int W^2$, and
 $\sum_i\lambda_i^3=\int\!\!\int\!\!\int W(x,y)W(y,z)W(z,x)$
@@ -6341,7 +6345,7 @@ The moment \eqref{eq:p4-el-moment} is a new pinned quantity: the certificate's k
 equations determine the moments $D$ and $T$ as functions of the edge density $p$
 (\cref{thm:parametric-moments}), but not $\int\!\!\int W\,d\,d$.  Its first
 consequence is that the sparse endpoint of the interval
-$[\alpha_r^-,\alpha_r^+]$ is unattainable.
+$[\alpha_r^-,\alpha_r^+]$ is unattainable for $r\ge4$.
 
 \begin{corollary}[The sparse endpoint is excluded]\label{cor:p4-lower-endpoint}
 Fix $r\ge4$.  If $\phi\in Y_r$ is represented by a degree-regular graphon
