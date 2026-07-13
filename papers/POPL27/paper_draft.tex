@@ -438,9 +438,9 @@ generalization beyond hereditary constraints.
 \Cref{sec:abstract} describes the Lean specification layer and the
 semantic treatment of forbidden-graph assumptions.
 \Cref{sec:obstacles} describes the main formalization obstacles:
-quotient eliminators, dependent-type transports, function extensionality, and
-\lean{Fintype}-instance ambiguity, together with the bijective proof pattern
-that emerged for density equalities.
+well-definedness on quotient classes, transports between size-indexed
+representations, and \lean{Fintype}-instance ambiguity, together with the
+bijective proof pattern used for density equalities.
 \Cref{sec:reflection,sec:flagmatic} describe the bridge from
 specification to evaluable proof: reflection, SDP-certificate verification,
 the tactic layer, the automation layer, elaboration-time theorem generation,
@@ -3464,23 +3464,22 @@ another as a subgraph.
 The specification layer of \Cref{sec:abstract} exposed several proof
 obligations that ordinary combinatorial notation hides.  A construction on
 graphs considered up to isomorphism must be shown to be independent of the
-chosen representatives.  An operation that changes the number of vertices
-moves between differently indexed types, so the corresponding data must be
-transported explicitly.  Pointwise agreement between two embeddings must
-sometimes be reassembled into equality of the functions or structures
-themselves.  Finally, when a density is defined by counting a finite set, Lean
-must be made to use a consistent finite enumeration.  None of these issues
-changes the underlying mathematics, but each recurs often enough to become a
-substantial proof-engineering cost.
+chosen representatives.  Lean records the vertex set, and hence its size, in
+the type of each flag.  When multiplication or another construction changes
+the number of vertices, its input and output therefore have different Lean
+types, and the proof must explicitly relate them.  Finally, when a density is
+defined by counting a finite set, Lean must be made to use a consistent finite
+enumeration.  None of these issues changes the underlying mathematics, but
+each recurs often enough to become a substantial proof-engineering cost.
 
 These obligations have related but not identical causes.  Lean automatically
-identifies expressions only when they reduce to the same term; other
-mathematically evident identifications require explicit proofs.  This accounts
-for many of the size-indexing and function-equality obligations.  By contrast,
-well-definedness on quotient classes is an ordinary quotient obligation, while
-ambiguity between finite enumerations is more specific to Lean's elaboration
-and typeclass mechanisms.  We therefore report the concrete obstacles without
-claiming that they all arise from a single foundational feature.
+identifies types only when their definitions reduce to the same expression;
+size-indexed representations that are mathematically equivalent may therefore
+require explicit transport.  By contrast, well-definedness on quotient classes
+is an ordinary quotient obligation, while ambiguity between finite
+enumerations is more specific to Lean's elaboration and typeclass mechanisms.
+We therefore report the concrete obstacles without claiming that they all
+arise from a single foundational feature.
 
 A final recurring challenge is to prove equality between numerical densities
 whose numerators count differently presented finite sample spaces.  Our most
@@ -3491,33 +3490,44 @@ enumeration issues that motivate it.
 
 \subsection{Computing with Graphs up to Isomorphism}
 
-Both \lean{Flag} and \lean{FlagAlgebra} are quotients.  Defining a function on
-representatives therefore requires \lean{Quotient.lift} and a proof that the
-function respects the equivalence relation; proving two quotient classes equal
-from representative-level data typically requires \lean{Quotient.sound} and a
-witness of that relation.
+As described in \Cref{sec:flagtypes}, a flag is an isomorphism class of
+concrete labeled graphs.  Thus two isomorphic labeled graphs $G$ and $G'$ may
+use different vertex names and be represented by different Lean values, but
+they represent the same flag.  This is the mathematically natural
+representation: subsequent statements should not depend on arbitrary vertex
+names.  It creates a recurring well-definedness obligation, however, whenever
+a construction is first described using a concrete representative.
 
-The adequacy theorems in \Cref{sec:reflection} illustrate the cost.
-To state that \lean{Sym2Graph.toFlag} is inverse to
-\lean{Flag.toSym2EmptyTypedFlag}, one cannot simply compute both sides to the
-same normal form; the map out of the quotient must go through an eliminator:
-\begin{lstlisting}
-def Sym2EmptyTypedFlag.toFlag (F : Sym2EmptyTypedFlag n) : Flag (*@$\emptyt$@*) (Fin n) :=
-  Quotient.lift Sym2Graph.toFlag Sym2Graph.toFlag_respect_eqv F
-\end{lstlisting}
-The \lean{toFlag\_respect\_eqv} proof---showing that isomorphic
-\lean{Sym2Graph} values map to the same \lean{Flag}---is not automatic; it
-required \lean{Quotient.sound} applied to a graph isomorphism witness
-assembled from the concrete data.  This is exactly the kind of compatibility
-proof that ordinary mathematical notation suppresses.
+Suppose such a construction assigns a value $A(G)$ to a labeled graph $G$.
+To define the corresponding value of the flag represented by $G$, one must
+prove
+\[
+  G \simeq_f G' \quad\Longrightarrow\quad A(G)=A(G').
+\]
+Only then is the rule $[G]\mapsto A(G)$ independent of the representative.
+Lean packages this step as \lean{Quotient.lift}.  In the opposite direction,
+to prove that two representatives determine the same flag, one supplies their
+isomorphism to \lean{Quotient.sound}.  These two Lean operations are short;
+the real work is the accompanying proof that the representative-level
+construction is invariant under isomorphism.
 
-The recurring cost of carrying \lean{Quotient} eliminators through the
-development is real.  A design built around canonical representatives from the
-start would not pay this cost, but it would attach representation-specific
-side conditions to every algebraic lemma; we chose the quotient design to keep
-the specification close to Razborov's mathematics and accept the eliminator
-overhead.  Whether the alternative would have been more economical overall is
-a tradeoff we cannot evaluate from this vantage point.
+This pattern occurs when lifting densities and graph operators to flags and
+again at the reflection boundary.  For example, decoding an executable
+edge-set representation must yield the same abstract flag for every
+isomorphic concrete encoding.  Rather than expose the two representations in
+every later theorem, we prove this compatibility once and let subsequent
+proofs operate on the resulting flag.  The same issue appears one level higher
+when flag vectors are quotiented by the zero-space relations to form
+\lean{FlagAlgebra}: a construction on vectors must respect those relations
+before it descends to the algebra.
+
+One could avoid these compatibility proofs by choosing a canonical
+representative for every isomorphism class.  That choice would make the
+representation easier to compute with, but it would introduce
+canonicalization details into the statements and proofs of algebraic lemmas.
+We instead keep the quotient specification close to Razborov's mathematics
+and concentrate the representation-specific work at the boundaries where a
+construction is lifted to equivalence classes.
 
 \subsection{Relating Size-Indexed Representations}
 
@@ -3566,42 +3576,10 @@ lemma---examples are \lean{flagList\_HEq},
 that high-level proofs invoke clean invariance statements while the transport
 details remain in the small layer where they belong.
 
-\subsection{From Pointwise Agreement to Equality of Structures}
-
-In Lean~4's intensional type theory, function extensionality
-($(\forall x,\, f\,x = g\,x) \Rightarrow f = g$) is not part of definitional
-equality; it is available through \lean{funext}.  This
-creates friction wherever the formalization must relate a function-level
-equality (such as a type embedding) to a pointwise equality (the embedding's
-behavior on individual vertices).  For example, constructing a labeled-graph
-isomorphism from a vertex map $\zeta$ requires reassembling pointwise
-information back into a function:
-\begin{lstlisting}
-have h_emb : forall t : T, zeta (G0'.type_embed t) = G1'.type_embed t := ...
-let iso : G0'.coe =~f G1'.coe := { ..., type_preserve := funext h_emb }
-\end{lstlisting}
-Without \lean{funext} as an axiom, the \lean{type\_preserve} field could not
-be filled.
-
-Proof-valued structure fields create a related difficulty.  The
-\lean{Sym2Graph} type carries a field
-\lean{edges\_valid}, asserting that every \(e \in \lean{edges}\) satisfies
-\(\neg\,\lean{e.IsDiag}\).  When two \lean{Sym2Graph} values are constructed
-through different proof paths, their \lean{edges\_valid} fields still appear
-as congruence goals even after the edge data has been identified.  The
-adequacy proofs discharge those goals with \lean{proof\_irrel\_heq}:
-\begin{lstlisting}
-theorem Sym2Graph.toLabeledGraph_toSym2Graph_eq (G : Sym2Graph n) :
-    G.toLabeledGraph.toSym2Graph = G := by
-  congr  -- reduces to field equalities
-  ...
-  exact proof_irrel_heq _ _  -- edge validity field
-\end{lstlisting}
-
 \subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
 
-The fourth obstacle is the most pervasive in the counting layer.  Sets defined
+This obstacle is the most pervasive in the counting layer.  Sets defined
 by set-builder notation $\{x \mid P\ x\}$ have type \lean{Set T}, which is
 \lean{Finite} whenever \lean{T} is a \lean{Fintype}, but does not
 automatically carry a \lean{Fintype} instance.  Many Mathlib lemmas about
@@ -3725,20 +3703,18 @@ exploit a specific forbidden graph from the outset may be cleaner in
 Razborov's.  We invite future work to compare the two on a development that
 needs both styles.
 
-\paragraph{Are the intensionality obstacles inherent or accidental?}
-The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype} bindings,
-systematic use of \lean{HEq} and \lean{cast} for size changes, and
-proof-irrelevance bridges---are responses to
-specific Lean~4 facts: typeclass coherence by convention rather than by
-enforcement, definitional inequality for dependently typed families that are
-propositionally equal, and a definitional equality that does not include
-function extensionality.  We do not know which of these would survive a port
-to a different ITP (Rocq with SSReflect, Agda, Isabelle/HOL with a different
-typeclass story).  In particular, the \lean{Fintype} ambiguity issue and the
-\lean{HEq} discipline are tied to specific elaboration heuristics; a
-proof assistant with stricter coherence or with proof-irrelevant elaboration
-might dissolve some of these obstacles.  We report them as Lean~4 obstacles
-without claiming they are foundational.
+\paragraph{Which engineering obstacles are Lean-specific?}
+The mitigations of \Cref{sec:obstacles}---explicit \lean{Fintype} bindings and
+systematic use of \lean{HEq} and \lean{cast} for size changes---respond to two
+features of Lean~4: typeclass coherence by convention rather than by
+enforcement, and definitional inequality for dependently typed families that
+are propositionally equal.  We do not know which of these issues would survive
+a port to a different ITP (Rocq with SSReflect, Agda, or Isabelle/HOL with a
+different typeclass story).  In particular, the \lean{Fintype} ambiguity and
+the \lean{HEq} discipline depend on specific elaboration and equality
+mechanisms; a proof assistant with stricter coherence or a different treatment
+of dependent equality might dissolve some of these obstacles.  We report them
+as Lean~4 obstacles without claiming that they are foundational.
 
 \paragraph{Is the bridge layer essential or an artifact of our spec choices?}
 The reflection and automation layers of
