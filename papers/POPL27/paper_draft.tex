@@ -3311,10 +3311,10 @@ certificate coefficient is transcribed into Lean by hand.
 Table~\ref{tab:flagmatic-scenarios} reports the mathematical cases rather than
 the implementation filenames.
 
-\begin{table}[h]
+\begin{table}
   \centering
   \caption{Certificates carried end-to-end through the translator.  ``Branch''
-  is A when $n_{\mathit{obj}}=N$ and B when $n_{\mathit{obj}}<N$; $T$ is the
+  is A when  the size of the target graph $n_{\mathit{obj}}$ is the same as that of the host graph $N$ and B when $n_{\mathit{obj}}<N$; $T$ is the
   number of SDP blocks.}
   \label{tab:flagmatic-scenarios}
   \begin{tabular}{lcccccc}
@@ -3334,10 +3334,13 @@ the implementation filenames.
 
 The cases play complementary roles.  Mantel is a hand-checkable baseline: its
 single $2\times2$ block is the explicit square from
-\Cref{sec:flagmatic-background}.  The $C_4$-density certificate combines blocks
-of sizes $4$ and $3$, while the Erd\H{o}s pentagon certificate combines blocks
-of sizes $8$, $6$, and $5$.  The $K_5$- and $C_5$-free edge-density cases each
-use four blocks of size $8$.  Together, these examples exercise both objective
+\Cref{sec:flagmatic-background}.  Here the dimension of an SDP block is the
+dimension of its certificate matrix, equivalently the length of its associated
+flag vector.  The $C_4$-density certificate has two blocks, with matrices of
+dimensions $4\times4$ and $3\times3$, while the Erd\H{o}s pentagon certificate
+has three blocks, with matrices of dimensions $8\times8$, $6\times6$, and
+$5\times5$.  The $K_5$- and $C_5$-free edge-density cases each use four blocks,
+all with $8\times8$ matrices.  Together, these examples exercise both objective
 branches and increasingly large multi-block normalizations.
 
 The $C_5$-free edge-density case also tests the route for a non-complete
@@ -3354,24 +3357,27 @@ the matching lower bounds are formalized separately in Lean, completing the
 Tur\'an densities $\tfrac12$ and $\tfrac{24}{625}$ of Examples~\ref{ex:mantel}
 and~\ref{ex:pentagon}.
 
-\paragraph{A limitation.}
+\paragraph{Limitations.}
 \label{sec:flagmatic-open}
-This evaluation establishes coverage of the seven cases above, not
+We point out two limitations of the current translator.  
+First, this evaluation establishes coverage of the seven cases above, not
 completeness of the translator.  The current input language assumes the
 supported simple-graph certificate format, a parseable objective and singleton
-forbidden graph, and one of the currently supported finite block sizes.
+forbidden graph, and one of the currently supported certificate-matrix
+dimensions.
 Malformed inputs are rejected; an otherwise well-formed certificate outside
 this proof fragment produces an explicitly incomplete skeleton containing
 \lean{sorry}.  Within the fragment, a future certificate may still expose a
-normalization shape not handled by the custom tactics.  Each situation is
-visible as the absence of a complete Lean proof, not as an unchecked theorem.
-
-\medskip
-For the seven evaluated certificates, the translator therefore carries all
-coefficients and structural choices into the fixed proof skeleton without
-manual editing.  Lean checks the resulting theorem under the trust model above;
-the separate question of whether the generated file faithfully transcribes
-the source certificate remains at the translator boundary.
+normalization shape not handled by the custom tactics.  Each situation leads to
+the failure of constructing a complete Lean proof, not an unchecked theorem.
+Second, as explained in the trust model, we do not verify translation fidelity:
+Lean does not check that the generated declarations faithfully transcribe the
+source certificate.  For each of the seven evaluated certificates, however,
+the translator fills the fixed proof skeleton without manual editing, and Lean
+checks every proof obligation in the generated file under the trust model of
+\Cref{sec:flagmatic-trust}.  Thus, the fidelity of the generated theorem to the
+source certificate remains a limitation, while the logical validity of the
+generated theorem itself is checked by Lean.
 
 
 \section{Lower Bounds and Other Inequalities}
