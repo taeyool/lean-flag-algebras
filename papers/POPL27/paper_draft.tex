@@ -2786,8 +2786,9 @@ uses that table to automate complete flag-algebra arguments.
 \label{sec:flagmatic}
 
 All certificate problems considered in this section have the same form: among
-graphs avoiding a fixed forbidden graph, prove that the density of a target
-graph $P$ is at most some constant $c$.  A \emph{flag-algebra certificate} is a
+graphs avoiding a fixed forbidden graph, prove that the flag-algebra basis
+element $[P]$ of a target graph $P$ satisfies
+$[P]\leq_{\mathcal H}c\cdot\mathbf 1$.  A \emph{flag-algebra certificate} is a
 finite package of algebraic data that makes this proposed bound checkable.  It lists
 the flags whose basis elements enter the proof, together with the rational
 matrices needed to rewrite the difference between the
@@ -2814,18 +2815,26 @@ trust model and evaluate the compiler on seven certificates.
 \label{sec:flagmatic-background}
 
 At a high level, a flag-algebra proof of
-$[P] \leq_{\mathcal H} c\cdot\mathbf 1$ works by decomposing the gap
-$c\cdot\mathbf 1-[P]$ into expressions that evaluate to non-negative real
-numbers under every positive homomorphism satisfying the $\mathcal H$-free
-condition.  A \emph{certificate} is finite algebraic data specifying such a
-decomposition.  Flagmatic~\cite{vaughan2013flagmatic} searches for this data
-using an SDP solver and outputs it as a certificate.  Our compiler consumes
-that certificate as untrusted input: it translates the proposed decomposition
-into Lean and generates a proof that each of its terms is non-negative and
-that their sum is the claimed gap.
+$[P] \leq_{\mathcal H} c\cdot\mathbf 1$ supplies downward quadratic forms $Q_t$
+and a remainder $r$ that, under the $\mathcal H$-free condition, justify the
+forward chain
+\[
+  [P]
+  \leq_{\mathcal H} [P]+\sum_t Q_t
+  = c\cdot\mathbf 1-r
+  \leq_{\mathcal H} c\cdot\mathbf 1.
+\]
+The first inequality uses the non-negativity of the $Q_t$, the equality is the
+finite calculation recorded by the certificate, and the final inequality uses
+the non-negativity of $r$.  Equivalently, the certificate decomposes the gap as
+$c\cdot\mathbf 1-[P]=\sum_t Q_t+r$.  Flagmatic~\cite{vaughan2013flagmatic}
+searches for this data using an SDP solver and outputs it as a certificate.  Our
+compiler consumes the certificate as untrusted input and asks Lean to verify
+the non-negativity of the $Q_t$ and $r$ and the intervening equality.
 
-Mantel's theorem gives a small example of the whole idea.  Fix the one-vertex
-type $\sigma$.  The two flags obtained by adding one unlabeled vertex are
+Mantel's theorem gives a small example of the whole idea.  Here the target is
+$P=K_2$, and we abbreviate its basis element $[K_2]$ by $K_2$.  Fix the
+one-vertex type $\sigma$.  The two flags obtained by adding one unlabeled vertex are
 $\fKtwobull$ and $\fbarKtwobull$, according to whether the two vertices are
 adjacent.  We use these pictures directly in the algebraic calculation below.\footnote{Strictly,
 each picture denotes a finite $\sigma$-flag, whereas the algebraic operations
@@ -2862,15 +2871,17 @@ three host graphs: $0$, $1/3$, and $2/3$.
 It remains to expand the square in the rooted three-vertex basis and apply the
 downward operator term by term:
 \begin{align*}
-  \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
-  &= \tfrac12\left(
-       \fbarKthreebull+\fEthreebull
-       -\fbarPthreebull-\fPthreebull
-       +\fKonetwobull
-     \right),\\
   \bigl\llbracket
     \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
   \bigr\rrbracket_\sigma
+  &=
+  \bigl\llbracket
+    \tfrac12\left(
+       \fbarKthreebull+\fEthreebull
+       -\fbarPthreebull-\fPthreebull
+       +\fKonetwobull
+     \right)
+  \bigr\rrbracket_\sigma\\
   &= \tfrac12\left(
        \fbarKthree
        +\tfrac13\cdot \fbarPthree-\tfrac23\cdot\fbarPthree
@@ -2884,26 +2895,42 @@ The fractions in the second line are the downward normalizing factors: they
 record whether one, two, or all three choices of the labeled vertex produce
 the displayed rooted flag.
 
-Combining the two expansions now gives the desired decomposition:
+Write
 \[
-  \tfrac12\cdot\mathbf 1-K_2
-  = \tfrac12\cdot\fbarKthree+\tfrac16\cdot\fbarPthree-\tfrac16\cdot\fPthree
-  = \bigl\llbracket
-      \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
-    \bigr\rrbracket_\sigma
-    + \tfrac13\cdot\fbarPthree.
+  Q := \bigl\llbracket
+    \tfrac12((\fKtwobull)-(\fbarKtwobull))^2
+  \bigr\rrbracket_\sigma.
 \]
-The downward square is non-negative by
-Theorem~\ref{thm:downward-nonneg}, and the basis element $\fbarPthree$ is
-non-negative because graph densities are non-negative.  Hence the right-hand side is non-negative, proving
-$K_2\leq_{K_3}\tfrac12\cdot\mathbf 1$.
+Combining the two expansions now gives a forward derivation of the desired
+bound:
+\begin{align*}
+  K_2
+  &\leq_{K_3} K_2+Q \\
+  &= \bigl(\tfrac13\cdot\fbarPthree
+     + \tfrac23\cdot\fPthree\bigr)
+     +
+     \bigl(\tfrac12\cdot\fbarKthree
+     - \tfrac16\cdot\fbarPthree
+     - \tfrac16\cdot\fPthree\bigr)\\
+  &= \tfrac12\cdot\fbarKthree
+     +\tfrac16\cdot\fbarPthree
+     +\tfrac12\cdot\fPthree \\
+  &= \tfrac12\cdot\mathbf 1-\tfrac13\cdot\fbarPthree \\
+  &\leq_{K_3} \tfrac12\cdot\mathbf 1.
+\end{align*}
+The first inequality adds the non-negative downward square $Q$, whose
+non-negativity follows from Theorem~\ref{thm:downward-nonneg}.  The first
+equality substitutes the expansions of $K_2$ and $Q$, the second collects their
+coefficients, and the third uses the expansion of the unit.  The final
+inequality follows because the
+remainder $\tfrac13\cdot\fbarPthree$ is non-negative.
 
-The essential certificate data for this example are precisely the data on the
-right-hand side of the displayed decomposition: the two rooted flags
-$\fKtwobull$ and $\fbarKtwobull$, the halved squared
-difference between them, and the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We
-chose this small certificate by hand; in larger examples, Flagmatic's SDP
-search supplies the analogous flags, PSD matrices, and remainder coefficients.
+The essential certificate data for this example are precisely the nontrivial
+terms in this derivation: the two rooted flags $\fKtwobull$ and
+$\fbarKtwobull$, the downward image $Q$ of their halved squared difference, and
+the non-negative remainder $\tfrac13\cdot\fbarPthree$.  We chose this small
+certificate by hand; in larger examples, Flagmatic's SDP search supplies the
+analogous flags, PSD matrices, and remainder coefficients.
 Checking even this certificate requires expanding a product, computing a
 downward average, expanding the objective and the unit to a common host size,
 and collecting coefficients.  These calculations remain suitable for
@@ -2932,20 +2959,39 @@ matrix to be PSD gives the semidefinite constraints.  An SDP solver finds
 numerical matrices satisfying these conditions, after which Flagmatic converts
 them into exact rational matrices.
 
-In general, the resulting certificate specifies an identity, modulo the
-$\mathcal H$-free condition, of the form
+In general, write
 \[
-  c\cdot\mathbf{1} - [P]
-  \;=\;
-  \sum_t \bigl\llbracket \langle v_t, M_t\, v_t\rangle \bigr\rrbracket_{\sigma_t}
-  \;+\; r,
+  Q_t := \bigl\llbracket
+    \langle v_t, M_t\, v_t\rangle
+  \bigr\rrbracket_{\sigma_t}.
 \]
-where every $M_t$ is PSD and $r$ has non-negative coefficients.  It records the
-chosen flags, the rational matrices $M_t$, and the target-density data needed
-to state this identity.  Our compiler does not trust the certificate's derived
+The resulting certificate specifies an identity, modulo the $\mathcal H$-free
+condition, of the form
+\[
+  [P] + \sum_t Q_t
+  =
+  c\cdot\mathbf{1} - r,
+\]
+where every $M_t$ is PSD and $r$ has non-negative coefficients.  Equivalently,
+the certificate justifies the forward derivation
+\begin{align*}
+  [P]
+  \leq_{\mathcal H}
+  \bigl([P]+\sum_t Q_t\bigr)
+  =
+  \bigl(c\cdot\mathbf 1-r\bigr)
+  \leq_{\mathcal H} c\cdot\mathbf 1.
+\end{align*}
+The first inequality adds the non-negative downward quadratic forms.  The
+equality is the certificate identity checked after all terms have been
+expanded in the common host-size basis, and the final inequality follows from
+the coefficientwise non-negativity of $r$.  The certificate records the chosen
+flags, the rational matrices $M_t$, and the target-density data needed to state
+this calculation.  Our compiler does not trust the certificate's derived
 density or multiplication tables: it recomputes them in Lean, proves the
-matrices are PSD, and checks the identity.  The rest of this section explains the
-four recurring parts of that verification and how the compiler generates them.
+matrices are PSD, and checks the calculation.  The rest of this section explains
+the four recurring parts of that verification and how the compiler generates
+them.
 
 
 \subsection{The Four-Part Compiler}
@@ -2963,22 +3009,39 @@ checkable.  We explain this connection in detail under Part~1 below.  The four
 parts are:
 
 \begin{enumerate}
-  \item \textbf{Flags and density data.}  The named flags and flag-algebra
-    basis elements of the sizes the proof needs (only those that are free of
-    the chosen forbidden graph), together with the proved pair-density and
-    typed-multiplication identities used for rewriting.
-  \item \textbf{Certificate matrices and basis-element vectors.}  For each
-    subflag type $\sigma_t$, a rational matrix $M_t$ paired with a list of
-    $\sigma_t$-flags $E_{t,i}$; their basis elements
+  \item \textbf{Flags and density data.}  The named flags and corresponding
+    flag-algebra basis elements used by the proof (restricted to those that are
+    free of the chosen forbidden graph), together with proved identities for
+    single-flag densities, flag-pair densities, and products of typed flags.
+    These identities support the algebraic rewrites used later in the proof.
+  \item \textbf{Certificate matrices and basis-element vectors.}  For each SDP
+    block $t$, a subflag type $\sigma_t$ and a rational matrix $M_t$ paired with
+    a list of $\sigma_t$-flags $E_{t,i}$; their basis elements
     $e_{t,i}:=[E_{t,i}]$ form the vector $v_t$ and the quadratic form
     $\langle v_t, M_t\, v_t\rangle$.
-  \item \textbf{Lifting the objective (when needed).}  If the flag $P$
-    representing the objective is smaller than the host size, one auxiliary lemma first lifts $[P]$ to host size,
-    dropping the contributions that contain a copy of the forbidden graph.
-  \item \textbf{The main theorem.}  The bound $[P] \leq_{\mathcal{H}}
-    c\cdot\mathbf{1}$, discharged by adding each block's quadratic form,
-    reducing every downward-averaged product, expanding the unit at host size,
-    normalizing, and closing by non-negativity.
+  \item \textbf{Lifting the objective (when needed).}  If the target graph $P$
+    has fewer than $N$ vertices, one auxiliary lemma first lifts $[P]$ to the
+    host-size basis, dropping the contributions that contain a copy of the
+    forbidden graph.
+  \item \textbf{The main theorem.}  With
+    $Q_t:=\bigl\llbracket\langle v_t,M_t v_t\rangle\bigr\rrbracket_{\sigma_t}$
+    and $r$ the certificate's non-negative remainder, the compiler assembles
+    the bound $[P] \leq_{\mathcal{H}} c\cdot\mathbf{1}$ through the same chain as
+    in \Cref{sec:flagmatic-background}:
+    \[
+      [P]
+      \;\leq_{\mathcal H}\;
+      [P] + \sum_t Q_t
+      \;=\;
+      c\cdot\mathbf 1-r
+      \;\leq_{\mathcal H}\;
+      c\cdot\mathbf 1.
+    \]
+    The first inequality adds the non-negative downward quadratic forms arising
+    from the matrices certified in Part~2.  The middle equality is checked using
+    the identities from Part~1 and, when needed, the objective-lifting identity
+    from Part~3.  The final inequality follows because $r$ has non-negative
+    coefficients.
 \end{enumerate}
 
 The compiler handles each part with a small set of reusable proof-producing
@@ -3004,8 +3067,8 @@ of Part~2, the objective-lifting lemma when Part~3 is needed, and the complete
 proof of the bound in Part~4.  The resulting file compiles with no
 \lean{sorry} gaps.
 
-For example, when run from the \lean{LeanFlagAlgebras/Flagmatic} directory, the
-command
+For example, running the following command from the
+\lean{LeanFlagAlgebras/Flagmatic} directory within the formalization repository
 \begin{lstlisting}[language={}]
 python flagmatic_to_lean.py gen-skeleton \
   Certificates/mantel_cert.json Mantel.lean \
@@ -3031,82 +3094,145 @@ compiler.  Part~1 defines the certificate's forbidden graph as a
 \lean{Sym2Graph} term and selects one of two generation routes.  Complete-graph
 forbids use the \lean{generate\_pruned\_*} commands, while a general graph
 forbidden as a subgraph uses the parallel
-\lean{generate\_subgraph\_free\_*} commands.  Both routes enumerate the
-surviving concrete flags during elaboration.  For every retained isomorphism
-class, the commands emit a concrete quotient flag---a
-\lean{Sym2EmptyTypedFlag} at the empty type or a \lean{Sym2Flag} at a nonempty
-type---and its decoded specification-level \lean{Flag} and
-\lean{FlagAlgebra} basis element.
+\lean{generate\_subgraph\_free\_*} commands.  During elaboration, both routes
+enumerate the flags that avoid the forbidden graph, with isomorphic flags
+appearing only once.  For each enumerated flag, the commands emit a concrete
+reflection-layer constant---a \lean{Sym2EmptyTypedFlag} at the empty type or a
+\lean{Sym2Flag} at a nonempty type---together with its decoded
+specification-level \lean{Flag} and \lean{FlagAlgebra} basis element.
 
-The finite downward coefficients and pair densities are evaluated on the
-concrete flags.  The adequacy theorems from \Cref{sec:reflection} turn those
-evaluations into proved statements about the decoded flags.  The multiplication
-generator then derives the required product expansions from the general
-specification-level multiplication theorem, the proved pair-density identities,
-and the completeness theorem for the generated flag set.  Thus Part~1 leaves
-the rest of the proof with specification-level basis elements and rewrite
-theorems, although reflection performed the finite coefficient computations
-behind them.  These commands compute the enumerations and density data during
-elaboration; they do not load precomputed graph, flag, density, or
-multiplication tables.
+After emitting these flags, Part 1 generates
+the rewrite theorems, which are used later
+in Parts 3 and 4 of the proof. Concretely, for each emitted typed flag $F$, Part~1 evaluates the downward normalizing
+factor $q_\sigma(F)$ from \Cref{sec:formal-downward}.
+For each relevant pair of typed flags $F_1,F_2$ and host flag $G$, it also
+evaluates the pair density
+\(\lean{flagDensity}_2\,F_1\,F_2\,G\), which supplies the coefficient of $[G]$
+in the product expansion of $[F_1]\cdot[F_2]$.  When the objective must be
+lifted in Part~3, the generated file similarly contains proved evaluations of
+the required single-flag densities.  The adequacy theorems from
+\Cref{sec:reflection} turn all these reflection-layer evaluations into
+specification-level statements about the decoded flags.  The multiplication
+generator then combines the pair-density identities with the general
+multiplication theorem and the completeness theorem for the generated flag set
+to derive the required product expansions.
 
 \paragraph{Certificate matrices (Part~2).}
 With the flags and their rewrite theorems in place, Part~2 discharges the
 positive-semidefiniteness obligations.  The certificate supplies rational
-matrices $Q'_t$ and $R_t$, from which the
-translator constructs $M_t=R_tQ'_tR_t^\top$.  It then computes an exact rational
-factorization $M_t=L_tD_tL_t^\top$ and emits $M_t,L_t$, and the diagonal of
-$D_t$.  Lean proves positive semidefiniteness from these emitted witnesses: the
-\lean{psd\_real\_ldlt} tactic checks diagonal non-negativity by
-\lean{fin\_cases} and \lean{norm\_num}, checks the rational matrix identity with
-\lean{decide +kernel}, and applies the proved lemma that transports the result
-to $\mathbb{R}$, the scalar field of the flag algebra.  No eigenvalue or
-floating-point calculation enters this check.  A wrong reconstruction or
-factorization therefore makes the generated proof fail.
+matrices $Q'_t$ and $R_t$ that already give an exact rational congruence
+factorization
+$M_t=R_tQ'_tR_t^\top$.  Here $R_t$ may be rectangular and $Q'_t$ is a smaller
+symmetric matrix; in the certificates used here, $Q'_t$ is diagonal with
+positive entries.  Thus these data already witness positive semidefiniteness in
+principle, but they are not an $LDL^\top$ factorization of $M_t$: $R_t$ need not
+be square or unit lower triangular, and $Q'_t$ need not have the same dimension
+as $M_t$.
+
+The external Python translator first constructs $M_t$ from these certificate
+data using exact rational arithmetic.  For the interface used by our Lean PSD
+lemma, it then computes a second exact rational factorization
+$M_t=L_t\operatorname{diag}(d_t)L_t^\top$, where $L_t$ is square and unit lower
+triangular.  It emits $M_t$, $L_t$, and $d_t$ in the generated Lean file.  Lean
+treats this second factorization only as a candidate witness: the
+\lean{psd\_real\_ldlt} tactic must prove two rational facts required by the
+lemma \lean{posSemidef\_real\_of\_LDLt}.  First, it checks that every entry of
+$d_t$ is non-negative, using \lean{fin\_cases} and \lean{norm\_num}.  Second,
+it checks the exact factorization equality
+$M_t=L_t\operatorname{diag}(d_t)L_t^\top$.  Since both sides are concrete finite
+matrices over $\mathbb{Q}$, \lean{decide +kernel} evaluates their decidable
+equality and has the Lean kernel certify that their rational entries agree.
+The lemma then casts these two verified facts from $\mathbb{Q}$ to
+$\mathbb{R}$ and concludes that the entrywise real cast of $M_t$ is positive
+semidefinite.  No eigenvalue or floating-point calculation enters this check.
+A wrong reconstruction or factorization therefore makes the generated proof
+fail.
 
 \paragraph{Lifting the objective (Part~3).}
 The first two parts provide the algebraic data used by the certificate.  Part~3
 aligns the objective with that data when necessary.  The certificate identities
 are expressed at the host size $N$, but the objective basis element is not
 always represented by a flag of that size.  This splits the certificates into
-two branches.  When the objective is smaller (\emph{Branch~B}: Mantel, $K_4$- and
-$K_5$-Tur\'an), a single \lean{flag\_expand\_hfree N K hmem} rewrites it over
-the $N$-vertex $\mathcal{H}$-free flags, dropping the forbidden host terms;
-here \lean{hmem} proves that the concrete forbidden flag represents a member
-of the ordinary forbidden-graph condition.  When it is already host-size
-(\emph{Branch~A}: the $C_4$-density bound,
-Erd\H{o}s pentagon) this step is empty.  The non-complete subgraph-forbid route
-uses the corresponding \lean{flag\_expand\_hfree\_subgraph} tactic.
+two branches.  When the objective is already represented at host size
+(\emph{Branch~A}: the $P_3$- and $C_4$-density bounds and Erd\H{o}s pentagon),
+this part is empty.  When the objective is smaller (\emph{Branch~B}: Mantel,
+the $K_4$- and $K_5$-Tur\'an bounds, and the $C_5$-free edge-density bound), the
+compiler proves an auxiliary identity that expands it over the $N$-vertex
+$\mathcal{H}$-free flags, with coefficients given by the single-flag densities
+generated in Part~1.
+
+All certificates considered here have a singleton forbidden family
+$\mathcal{H}=\{H\}$.  For a complete $H$, the generated proof invokes the
+\lean{flag\_expand\_hfree N K hmem} tactic, where $N$ is the host size and $K$ is the
+reflection-layer \lean{Sym2Graph} encoding of $H$ (for example, \lean{K3} in
+the Mantel proof).  The expansion theorem is stated using the
+specification-level $H$-free semantic condition from
+\Cref{def:ensemble-semantic-order}, whereas the host flags were enumerated and
+filtered using the concrete graph $K$.  The argument \lean{hmem} connects these
+two representations: it proves that the flag decoded from $K$ belongs to
+\lean{forbiddenFlags H}, the set of flags whose underlying graphs contain $H$.
+Consequently, the $H$-free condition forces the decoded $K$ to have density
+zero, which justifies removing from the objective expansion the host flags
+that the reflection computation found to contain $K$.
+
+For a non-complete $H$, a subgraph copy may have additional edges and therefore
+need not be an induced copy of $H$.  The alternative tactic
+\lean{flag\_expand\_hfree\_subgraph N K} handles the corresponding induced
+supergraphs internally.  Thus the two tactics implement the same lifting step
+for two representations of subgraph-freeness; neither introduces additional
+forbidden graphs into the certificate.
 
 \paragraph{The main theorem (Part~4).}
-Part~4 assembles the outputs of the preceding parts.  The standard upper-bound
-move is to add one or more PSD quadratic forms to the target basis element and
-then check that the augmented algebra element is
-$\leq_{\mathcal{H}} c\cdot\mathbf{1}$.  Each addition is performed by
-\lean{forbidLEWith\_add\_QuadraticForm}:
+Part~4 assembles the outputs of the preceding parts and realizes the forward
+chain from \Cref{sec:flagmatic-background}.  The certificate identity
+$[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ supplies its middle equality, while the
+non-negativity of the $Q_t$ and of $r$ supplies its two inequalities.  In the
+Mantel example, there is one $Q_t$---the downward image of the halved
+square---and $r=\tfrac13\cdot\fbarPthree$.  The generated Lean proof does not
+define $r$ explicitly; it appears as the coefficientwise difference left after
+the two sides are expanded in a common basis.
+
+The first step is to prove
+$[P]\leq_H[P]+\sum_tQ_t$.  It uses the following general lemma:
 \begin{lstlisting}
-theorem forbidLEWith_add_QuadraticForm
-    (M : Matrix (Fin n) (Fin n) R) (hM : M.PosSemidef)
-    (v : FlagAlgebraVec sigma n)
-    : forbidLEWith C f g ->
-      forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
+theorem forbidLEWith_add_QuadraticForm {n(*@$_0$@*) n : (*@$\mathbb{N}$@*)} {(*@$\sigma$@*) : FlagType (Fin n(*@$_0$@*))} 
+    {C : ForbidCondition} {f g : FlagAlgebra (*@$\emptyt$@*)}
+    (M : Matrix (Fin n) (Fin n) (*@$\mathbb{R}$@*)) (hM : M.PosSemidef) (v : FlagAlgebraVec (*@$\sigma$@*) n)
+    : forbidLEWith C f g -> (*@$\,$@*) forbidLEWith C f (g + (*@$\llbracket$@*)flagQuadraticForm M v(*@$\rrbracket_0$@*)) := ...
 \end{lstlisting}
-iterated once per type to build a transitive chain of additions.  After the
-quadratic forms are expanded, the downward-averaged products are discharged by
-\lean{reduce\_downward\_flagmul}.  This tactic recognizes each
-summand $\llbracket c\,(f\cdot g)\rrbracket$, where $f=[F]$ and $g=[G]$ are
-basis elements, and rewrites it with the generated product identity
-\lean{flagMul\_<F>\_<G>}.  The unit is then expanded to host size by
-\lean{expand\_one\_hfree\_at N K} (rewriting $\mathbf{1}$ as the sum of
-$N$-vertex \(\mathcal{H}\)-free flags), or by
-\lean{expand\_one\_hfree\_at\_subgraph N K} on the general subgraph-forbid
-route.  The resulting algebraic expression is normalized
-by \lean{flagsum\_ac\_sort\_rhs\_pipeline}, an index-guided sort of the
-reordered sum.
-Finally, the non-negativity goal is closed by \lean{flag\_nonneg}, which
-distributes an arbitrary positive homomorphism over the sum, splits with
-\lean{add\_nonneg}, and discharges each basis-element leaf by
-\lean{positiveHom\_basisVector\_ge\_zero}.
+Here $C$ is a predicate encoding the forbidden-subgraph set $\mathcal{H}$; for a problem
+forbidding a single graph $H$, it is \lean{forbiddenCondition H}.  Thus
+\lean{forbidLEWith C f g} is the implementation-level form of $f\leq_H g$.
+The lemma says that if $f\leq_H g$, then the inequality remains true after the
+non-negative downward quadratic form determined by the PSD matrix $M$ and flag
+vector $v$ is added to the right-hand side; \lean{hM} is the proof of positive
+semidefiniteness generated in Part~2.  
+The first step starts with applying this
+theorem with 
+the reflexive inequality $[P]\leq_H[P]$, 
+and repeatedly applying the theorem 
+to the result once per each SDP
+block.  After all blocks have been added, its conclusion is precisely
+$[P]\leq_H[P]+\sum_tQ_t$.
+
+It remains to prove $[P]+\sum_tQ_t\leq_H c\cdot\mathbf 1$.  The compiler checks
+this comparison by rewriting both sides in the basis of $N$-vertex $H$-free
+flags.  When necessary, the Part~3 lemma first expands $[P]$ to host size.
+Expanding each quadratic form produces downward images of products of basis algebra
+elements; the \lean{reduce\_downward\_flagmul} tactic rewrites them using the multiplication
+and downward identities generated in Part~1.  The appropriate
+\lean{expand\_one\_hfree\_at} tactic similarly expands $\mathbf 1$ in the same
+host-size basis.  Finally,
+the \lean{flagsum\_ac\_sort\_rhs\_pipeline} tactic collects the coefficients of matching
+basis elements.
+
+After these rewrites, the difference between the right- and left-hand sides is
+exactly the remainder $r$ from the certificate calculation.  The tactic
+\lean{flag\_nonneg} checks that its coefficients are non-negative and then uses
+the non-negativity of every basis element to conclude $0\leq_H r$.  In this way,
+the normalization and the final non-negativity check together verify the
+conceptual equality $[P]+\sum_tQ_t=c\cdot\mathbf 1-r$ and the last inequality
+$c\cdot\mathbf 1-r\leq_Hc\cdot\mathbf 1$.
 
 \paragraph{The translator.}
 The four parts above describe the Lean output.  The external script that
