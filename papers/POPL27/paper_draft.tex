@@ -3666,12 +3666,29 @@ vertex-type families have been identified.
 \subsection{Controlling Finite Enumerations}
 \label{sec:fintype}
 
-This obstacle is the most pervasive in the counting layer.  Sets defined
-by set-builder notation $\{x \mid P\ x\}$ have type \lean{Set T}, which is
-\lean{Finite} whenever \lean{T} is a \lean{Fintype}, but does not
-automatically carry a \lean{Fintype} instance.  Many Mathlib lemmas about
-cardinality (\lean{Fintype.card}, \lean{Finset.card\_univ},
-\lean{Fintype.card\_congr}) require \lean{Fintype}, not merely \lean{Finite}.
+Lean distinguishes a proof that a type is finite from a mechanism for
+enumerating its elements.  An instance of \lean{Finite T} provides only the
+former: it asserts that $T$ has finitely many elements but gives no way to
+visit them.  An instance of \lean{Fintype T} provides the latter by packaging
+all elements of $T$ into a finite, traversable collection.  This collection
+has no mathematically significant order, but it allows generic operations to
+count the elements, inspect every candidate, and form finite sums and
+products.  Thus, \lean{Fintype} is the interface needed by counting algorithms,
+whereas \lean{Finite} records only the underlying finiteness fact.  Every
+\lean{Fintype} instance implies \lean{Finite}; in the other direction,
+\lean{Fintype.ofFinite} uses classical choice to obtain such an interface from
+a proof of finiteness.  This noncomputable choice is sufficient for
+proof-oriented counting, while executable enumeration requires an explicitly
+computable \lean{Fintype} instance.
+
+This distinction becomes especially important when formalizing cardinalities of finite sets
+and finite counting arguments.  A set $S=\{x:T\mid P(x)\}$ is represented as a
+predicate of type \lean{Set T}; when
+we count its elements, the relevant type is the subtype of terms $x:T$
+satisfying $P(x)$.  Lean can often infer that this subtype is \lean{Finite}
+without having a particular \lean{Fintype} enumeration available.  Many
+Mathlib lemmas about cardinality (\lean{Fintype.card},
+\lean{Finset.card\_univ}, \lean{Fintype.card\_congr}) require the latter.
 The elaborator infers \lean{Fintype} instances automatically, but in a
 development with multiple overlapping constructions (quotient types, embedded
 subgraphs, partial-function spaces), the same type can receive different
@@ -3682,40 +3699,65 @@ the goal even if the instances are provably equal.
 The mitigation is to bind the intended \lean{Fintype} instance immediately
 after naming a finite set:
 \begin{lstlisting}
+-- S0 and S1 are the two finite collections being counted.
+-- Choose and name the Fintype enumeration used for each one.
 let hS0 : Fintype S0 := Fintype.ofFinite S0
 let hS1 : Fintype S1 := Fintype.ofFinite S1
-have card_eq : Fintype.card S0 = Fintype.card S1 :=
-  Fintype.card_congr h_iso_S0_S1
+-- h_iso_S0_S1 is a bijection between the two collections.
+have card_eq : Fintype.card S0 = Fintype.card S1 := Fintype.card_congr h_iso_S0_S1
 \end{lstlisting}
-This pattern appears repeatedly in the list-density proofs: for the
-quotient-respect lemma, for permutation of sampled flags, and for insertion of
-an empty flag.  Without the explicit \lean{let} bindings,
-Lean can synthesize a \lean{Fintype} for each set through a different path at
-each use, and \lean{Fintype.card\_congr} no longer sees the two cardinalities
-as referring to the same enumeration terms.  The flag-operator proofs use a
-similar explicit \lean{Fintype.ofFinite} construction for the isomorphism set
-with a fixed underlying graph.
+This pattern appears repeatedly in the list-density proofs.  It is used to
+show that the density is independent of the chosen labeled-graph
+representatives of its input flags, and to show that
+$\den{F_1,\ldots,F_t}{G}$ is unchanged when the prescribed tuple
+$(F_1,\ldots,F_t)$ is reordered.  In the latter proof, the two finite
+collections consist of the tuples of disjoint induced copies counted before
+and after the reordering, and the bijection reindexes each such tuple by the
+same permutation.   Without the
+explicit \lean{let} bindings, Lean can synthesize a \lean{Fintype} for each set
+through a different path at each use, and \lean{Fintype.card\_congr} no longer
+sees the two cardinalities as referring to the same enumeration terms.  The
+flag-operator proofs use a similar explicit \lean{Fintype.ofFinite}
+construction for the isomorphism set with a fixed underlying graph.
 
-For parameterized types such as injections \lean{Embedding V W} and
-equivalences \lean{Equiv V W}, Lean can synthesize \lean{Fintype} instances in
-multiple ways depending on which prior instances are in scope.  When defining
-the executable \lean{Fintype} instances for these types, we had to give the
-elaborator explicit guidance via \lean{Finset.univ} with a type ascription:
+The executable enumerations of embeddings are constructed by exhaustive
+search.  To enumerate injections from $V$ to $W$, we enumerate all functions
+$V\to W$ and discard those that are not injective.  To enumerate graph
+embeddings, we then enumerate all injections and discard those that do not
+preserve the graph relation.  In the first line below, the annotation
+\lean{(Finset.univ : Finset (V -> W))} tells Lean explicitly that
+\lean{Finset.univ} is the finite collection of all functions $V\to W$:
 \begin{lstlisting}
+-- Enumerate all functions V -> W and retain the injective ones.
 instance : Fintype (Embedding V W) :=
   { elems := (Finset.univ : Finset (V -> W)).filterMap ..., ... }
 
+-- Enumerate all injections and retain the graph embeddings.
 instance : Fintype (G1 ->g G2) :=
   { elems := (Finset.univ : Finset (Embedding V W)).filterMap ..., ... }
 \end{lstlisting}
-The graph-embedding and graph-isomorphism instances are built by filtering
-finite enumerations of simpler function or equivalence types.  The explicit
-\lean{Finset.univ} type ascription keeps the intended enumeration visible to the elaborator,
-instead of relying on typeclass search to rediscover it in a later goal.
-A related issue arose for dependent function types indexed by a small finite
-type, where Lean's typeclass search does not look through \lean{match}
-expressions inside type-valued functions; the \lean{FintypeList} typeclass
-threads \lean{Fintype} instances per component explicitly to compensate.
+The annotation is needed because \lean{Finset.univ} is polymorphic: without
+being told its element type, Lean may not determine which \lean{Fintype}
+enumeration should be used before it elaborates the filtering operation.
+
+A different inference problem occurs when the definition of multi-flag
+density processes a tuple whose entries use different vertex types.  For
+example, a pair $(F_1,F_2)$ may have vertex-type family $V_0=V$ and $V_1=W$.
+The generic definition accesses a component $F_i$ using a variable index
+$i:\operatorname{Fin}2$.  To perform the finite constructions associated with
+that component, Lean needs a \lean{Fintype} enumeration of its vertex type
+$V_i$.  We already have separate instances \lean{Fintype V} and
+\lean{Fintype W}: if $i$ were known to be $0$ or $1$, Lean could use the
+corresponding one.  While $i$ remains a variable, however, the expression for
+$V_i$ cannot reduce to either branch, and typeclass search does not itself
+split into the two cases.
+
+The missing object is a single pointwise rule that supplies a \lean{Fintype}
+enumeration of $V_i$ for every index $i$.  The auxiliary class
+\lean{FintypeList} records exactly this rule.  Its instance for a pair is
+constructed once by considering $i=0$ and $i=1$; subsequent definitions can
+then request the enumeration at an arbitrary position without repeating that
+case analysis.
 
 The resulting inconvenience is concentrated rather than eliminated.  The
 small transport and instance-management lemmas hide most of it from the main
